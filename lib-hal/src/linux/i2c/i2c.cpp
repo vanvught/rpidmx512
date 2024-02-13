@@ -51,7 +51,7 @@ void i2c_begin() {
 	DEBUG_EXIT
 }
 
-void i2c_set_baudrate(__attribute__((unused)) uint32_t baudrate) {
+void i2c_set_baudrate([[maybe_unused]] uint32_t baudrate) {
 }
 
 void i2c_set_address(uint8_t address) {

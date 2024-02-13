@@ -2,7 +2,7 @@
  * @file hardware.h
  *
  */
-/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,44 +23,64 @@
  * THE SOFTWARE.
  */
 
-#ifndef HARDWARE_H_
-#define HARDWARE_H_
+#ifndef LINUX_MINIMUM_HARDWARE_H_
+#define LINUX_MINIMUM_HARDWARE_H_
 
 #include <cstdint>
 #include <cstring>
+#include <sys/time.h>
 #include <uuid/uuid.h>
 
-namespace hardware {
-enum class BootDevice {
-	UNKOWN,
-	FEL,	// H3 Only
-	MMC0,
-	SPI,	// H3 Only
-	HDD,
-	FLASH,
-	RAM
-};
-namespace ledblink {
-enum class Mode {
-	OFF_OFF, OFF_ON, NORMAL, DATA, FAST, REBOOT, UNKNOWN
-};
-}  // namespace ledblink
-}  // namespace hardware
+namespace hal {
+void uuid_init(uuid_t);
+uint32_t get_uptime();
+}  // namespace hal
 
-#if defined (BARE_METAL)
-# if defined (H3)
-#  include "h3/hardware.h"
-# elif defined (GD32)
-#  include "gd32/hardware.h"
-# else
-#  include "rpi/hardware.h"
-# endif
+class Hardware {
+public:
+	static Hardware *Get() {
+		static Hardware instance;
+		return &instance;
+	}
+
+	void GetUuid(uuid_t out) {
+		memcpy(out, m_uuid, sizeof(uuid_t));
+	}
+
+	uint32_t GetUpTime() {
+		return ::hal::get_uptime();
+	}
+
+	uint32_t Millis() {
+		struct timeval tv;
+		gettimeofday(&tv, nullptr);
+
+#if defined (__APPLE__)
+		return (tv.tv_sec * static_cast<__darwin_time_t>(1000) + (tv.tv_usec / static_cast<__darwin_time_t>(1000)));
 #else
-# if defined (CONFIG_HAL_USE_MINIMUM)
-#  include "linux/minimum/hardware.h"
-# else
-#  include "linux/hardware.h"
-# endif
+		return static_cast<uint32_t>(tv.tv_sec * static_cast<__time_t >(1000) + (tv.tv_usec / static_cast<__suseconds_t >(1000)));
 #endif
+	}
 
-#endif /* HARDWARE_H_ */
+	/*
+	 * Not implemented
+	 */
+
+	void Print() {}
+	bool Reboot() { return false;}
+	void SetMode([[maybe_unused]] const hardware::ledblink::Mode mode) {}
+	const char *GetBoardName(uint8_t& nLength) {
+		nLength = 0;
+		return "";
+	}
+
+private:
+	Hardware() {
+		hal::uuid_init(m_uuid);
+	}
+
+private:
+	uuid_t m_uuid;
+ };
+
+#endif /* LINUX_MINIMUM_HARDWARE_H_ */

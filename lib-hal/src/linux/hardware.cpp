@@ -1,8 +1,9 @@
+#if !defined (CONFIG_HAL_USE_MINIMUM)
 /**
  * @file hardware.cpp
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,18 +33,15 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include <sys/reboot.h>
-#if defined (__APPLE__)
-# include <sys/sysctl.h>
-#else
-# include <sys/sysinfo.h>
-#endif
 #include <sys/utsname.h>
 #include <cassert>
 
+#include "hardware.h"
+
+#include "exec_cmd.h"
+
 #include "hal_i2c.h"
 #include "hal_spi.h"
-
-#include "hardware.h"
 
 #if defined (DEBUG_I2C)
 # include "i2cdetect.h"
@@ -103,7 +101,12 @@ static constexpr char RASPBIAN_LED_FLASH[] = "echo timer | sudo tee /sys/class/l
 
 static constexpr char UNKNOWN[] = "Unknown";
 
-Hardware *Hardware::s_pThis = 0;
+namespace hal {
+void uuid_init(uuid_t);
+uint32_t get_uptime();
+}  // namespace hal
+
+Hardware *Hardware::s_pThis;
 
 Hardware::Hardware():
 #if defined (__linux__)
@@ -115,6 +118,8 @@ Hardware::Hardware():
 #endif
 {
 	s_pThis = this;
+
+    hal::uuid_init(m_uuid);
 
 	memset(&m_TOsInfo, 0, sizeof(struct utsname));
 
@@ -166,12 +171,12 @@ Hardware::Hardware():
 	{ // Board Name
 #if defined (__APPLE__)
 		constexpr char cat[] = "sysctl -n hw.model";
-		ExecCmd(cat, m_aBoardName, sizeof(m_aBoardName));
+		exec_cmd(cat, m_aBoardName, sizeof(m_aBoardName));
 #elif defined (__linux__)
 		constexpr char cat[] = "cat /sys/firmware/devicetree/base/model";
-		if (!ExecCmd(cat, m_aBoardName, sizeof(m_aBoardName))) {
+		if (!exec_cmd(cat, m_aBoardName, sizeof(m_aBoardName))) {
 			constexpr char cat[] = "cat /sys/class/dmi/id/board_name";
-			ExecCmd(cat, m_aBoardName, sizeof(m_aBoardName));
+			exec_cmd(cat, m_aBoardName, sizeof(m_aBoardName));
 		}
 #endif
 		str_find_replace(m_aBoardName, "Rev ", "V");
@@ -183,18 +188,18 @@ Hardware::Hardware():
 #else
 		constexpr char cmd[] = "cat /proc/cpuinfo | grep 'model name' | head -n 1 | sed 's/^[^:]*://g' |  sed 's/^[^ ]* //g'";
 #endif
-		ExecCmd(cmd, m_aCpuName, sizeof(m_aCpuName));
+		exec_cmd(cmd, m_aCpuName, sizeof(m_aCpuName));
 	}
 
 	{ // SoC Name
 		constexpr char cmd[] = "cat /proc/cpuinfo | grep 'Hardware' | awk '{print $3}'";
-		ExecCmd(cmd, m_aSocName, sizeof(m_aSocName));
+		exec_cmd(cmd, m_aSocName, sizeof(m_aSocName));
 	}
 
 	if (m_boardType == Board::TYPE_RASPBIAN) {
 		char aResult[16];
 		constexpr char cmd[] = "cat /proc/cpuinfo | grep 'Revision' | awk '{print $3}'";
-		ExecCmd(cmd, aResult, sizeof(aResult));
+		exec_cmd(cmd, aResult, sizeof(aResult));
 		m_nBoardId = static_cast<uint32_t>(strtol(aResult, NULL, 16));
 	}
 
@@ -252,40 +257,12 @@ const char* Hardware::GetBoardName(uint8_t& nLength) {
 }
 
 uint32_t Hardware::GetUpTime() {
-#if defined (__APPLE__)
-	struct timeval boottime;
-	size_t len = sizeof(boottime);
-	int mib[2] = {CTL_KERN, KERN_BOOTTIME};
-
-	if (sysctl(mib, 2, &boottime, &len, NULL, 0) < 0 ) {
-		return 0;
-	}
-
-	time_t bsec = boottime.tv_sec;
-	time_t csec = time(NULL);
-
-	return difftime(csec, bsec);
-#else
-	struct sysinfo s_info;
-	int error = sysinfo(&s_info);
-
-	if (error != 0) {
-		printf("code error = %d\n", error);
-	}
-
-	return static_cast<uint32_t>(s_info.uptime);
-#endif
+	return hal::get_uptime();
 }
 
-bool Hardware::SetTime(__attribute__((unused)) const struct tm *pTime) {
+bool Hardware::SetTime([[maybe_unused]] const struct tm *pTime) {
 	DEBUG_PRINTF("%s", asctime(pTime));
 	return true;
-}
-
-void Hardware::GetTime(struct tm *pTime) {
-	auto ltime = time(nullptr);
-	const auto *pLocalTime = localtime(&ltime);
-	memcpy(pTime, pLocalTime, sizeof(struct tm));
 }
 
 #if !defined(DISABLE_RTC)
@@ -363,14 +340,14 @@ float Hardware::GetCoreTemperature() {
 		const char cmd[] = "vcgencmd measure_temp| egrep \"[0-9.]{4,}\" -o";
 		char aResult[8];
 
-		ExecCmd(cmd, aResult, sizeof(aResult));
+		exec_cmd(cmd, aResult, sizeof(aResult));
 
 		return atof(aResult);
 	} else {
 		const char cmd[] = "sensors | grep 'Core 0' | awk '{print $3}' | cut -c2-3";
 		char aResult[6];
 
-		ExecCmd(cmd, aResult, sizeof(aResult));
+		exec_cmd(cmd, aResult, sizeof(aResult));
 
 		return atof(aResult);
 	}
@@ -390,7 +367,7 @@ float Hardware::GetCoreTemperatureMax() {
  static hardware::LedStatus s_ledStatus;
 #endif
 
-void Hardware::SetLed(__attribute__((unused)) hardware::LedStatus ledStatus) {
+void Hardware::SetLed([[maybe_unused]] hardware::LedStatus ledStatus) {
 #if defined (__linux__)
 	if (m_boardType == Board::TYPE_RASPBIAN) {
 		if (s_ledStatus == ledStatus) {
@@ -425,33 +402,15 @@ void Hardware::SetLed(__attribute__((unused)) hardware::LedStatus ledStatus) {
 #endif
 }
 
-bool Hardware::ExecCmd(const char *pCmd, char *Result, int nResultSize) {
-	FILE *fp = popen(pCmd, "r");
-
-	if (fgets(Result, nResultSize - 1, fp) == 0) {
-		pclose(fp);
-		return false;
-	}
-
-	auto nLength = strlen(Result);
-
-	if (Result[nLength - 1] < ' ') {
-		Result[nLength - 1] = '\0';
-	}
-
-	pclose(fp);
-	return true;
-}
-
 uint32_t Hardware::Micros() {
 	struct timeval tv;
-	gettimeofday(&tv, NULL);
+	gettimeofday(&tv, nullptr);
 	return static_cast<uint32_t>((tv.tv_sec * 1000000) + tv.tv_usec);
 }
 
 uint32_t Hardware::Millis() {
 	struct timeval tv;
-	gettimeofday(&tv, NULL);
+	gettimeofday(&tv, nullptr);
 
 #if defined (__APPLE__)
 	return (tv.tv_sec * static_cast<__darwin_time_t>(1000) + (tv.tv_usec / static_cast<__darwin_time_t>(1000)));
@@ -460,51 +419,13 @@ uint32_t Hardware::Millis() {
 #endif
 }
 
-static constexpr auto  UUID_STRING_LENGTH =	36;
-
-void Hardware::GetUuid(uuid_t out) {
-	char uuid_str[UUID_STRING_LENGTH + 2];
-
-#if defined (__APPLE__)
-	constexpr char cmd[] = "sysctl -n kern.uuid";
-#else
-	constexpr char cmd[] = "cat /etc/machine-id";
-#endif
-	ExecCmd(cmd, uuid_str, sizeof(uuid_str));
-
-#if defined (__APPLE__)
-#else
-	for (uint32_t i = 13; i > 0; i--) {
-		uuid_str[36 - 13 + i] = uuid_str[36 - 13 + i - 4];
-	}
-
-	for (uint32_t i = 5; i > 0; i--) {
-		uuid_str[23 - 5 + i] = uuid_str[23 - 5 + i - 3];
-	}
-
-	for (uint32_t i = 5; i > 0; i--) {
-		uuid_str[18 - 5 + i] = uuid_str[18 - 5 + i - 2];
-	}
-
-	for (uint32_t i = 5; i > 0; i--) {
-		uuid_str[13 - 5 + i] = uuid_str[13 - 5 + i - 1];
-	}
-
-	uuid_str[23] = '-';
-	uuid_str[18] = '-';
-	uuid_str[13] = '-';
-	uuid_str[8] = '-';
-#endif
-
-	uuid_parse(uuid_str, out);
-}
-
 void Hardware::Print() {
+	static constexpr auto UUID_STRING_LENGTH = 36;
 	char uuid_str[UUID_STRING_LENGTH + 1];
 	uuid_str[UUID_STRING_LENGTH] = '\0';
 
 	uuid_t out;
-	GetUuid(out);
+	Hardware::Get()->GetUuid(out);
 
 	uuid_unparse(out, uuid_str);
 
@@ -513,3 +434,4 @@ void Hardware::Print() {
 	printf("Board: %s\n", m_aBoardName);
 	printf("UUID : %s\n", uuid_str);
 }
+#endif

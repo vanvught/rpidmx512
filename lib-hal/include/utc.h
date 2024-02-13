@@ -2,7 +2,7 @@
  * @file utc.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,14 +26,13 @@
 
 #include <cstdint>
 
-enum TUtcOffset {
+namespace hal {
+enum class UtcOffset {
 	UTC_OFFSET_MIN = -12,
 	UTC_OFFSET_MAX = 14
 };
 
-class Utc {
-public:
-	static int32_t Validate(float fOffset);
-};
+int32_t utc_validate(const float fOffset);
+}  // namespace hal
 
 #endif /* UTC_H_ */

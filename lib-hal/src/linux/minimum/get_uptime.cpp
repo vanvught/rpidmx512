@@ -1,8 +1,8 @@
 /**
- * @file hardware.h
+ * @file get_uptime.cpp
  *
  */
-/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,44 +23,41 @@
  * THE SOFTWARE.
  */
 
-#ifndef HARDWARE_H_
-#define HARDWARE_H_
-
 #include <cstdint>
-#include <cstring>
-#include <uuid/uuid.h>
+#include <cstdio>
 
-namespace hardware {
-enum class BootDevice {
-	UNKOWN,
-	FEL,	// H3 Only
-	MMC0,
-	SPI,	// H3 Only
-	HDD,
-	FLASH,
-	RAM
-};
-namespace ledblink {
-enum class Mode {
-	OFF_OFF, OFF_ON, NORMAL, DATA, FAST, REBOOT, UNKNOWN
-};
-}  // namespace ledblink
-}  // namespace hardware
-
-#if defined (BARE_METAL)
-# if defined (H3)
-#  include "h3/hardware.h"
-# elif defined (GD32)
-#  include "gd32/hardware.h"
-# else
-#  include "rpi/hardware.h"
-# endif
+#if defined (__APPLE__)
+# include <time.h>
+# include <sys/sysctl.h>
 #else
-# if defined (CONFIG_HAL_USE_MINIMUM)
-#  include "linux/minimum/hardware.h"
-# else
-#  include "linux/hardware.h"
-# endif
+# include <sys/sysinfo.h>
 #endif
 
-#endif /* HARDWARE_H_ */
+namespace hal {
+uint32_t get_uptime() {
+#if defined (__APPLE__)
+	struct timeval boottime;
+	size_t len = sizeof(boottime);
+	int mib[2] = {CTL_KERN, KERN_BOOTTIME};
+
+	if (sysctl(mib, 2, &boottime, &len, NULL, 0) < 0 ) {
+		return 0;
+	}
+
+	time_t bsec = boottime.tv_sec;
+	time_t csec = time(NULL);
+
+	return difftime(csec, bsec);
+#else
+	struct sysinfo s_info;
+	int error = sysinfo(&s_info);
+
+	if (error != 0) {
+		printf("code error = %d\n", error);
+	}
+
+	return static_cast<uint32_t>(s_info.uptime);
+#endif
+}
+}  // namespace hal
+

@@ -2,7 +2,7 @@
  * @file hardware.h
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,8 +26,9 @@
 #ifndef LINUX_HARDWARE_H_
 #define LINUX_HARDWARE_H_
 
-#include <time.h>
 #include <cstdint>
+#include <cstring>
+#include <time.h>
 #include <uuid/uuid.h>
 #include <sys/utsname.h>
 
@@ -47,16 +48,19 @@ class Hardware {
 public:
 	Hardware();
 
+	uint32_t GetReleaseId();
+
+	void GetUuid(uuid_t out) {
+		memcpy(out, m_uuid, sizeof(uuid_t));
+	}
+
 	void Print();
 
-	void GetUuid(uuid_t out);
 	const char *GetMachine(uint8_t &nLength);
 	const char *GetSysName(uint8_t &nLength);
 	const char *GetBoardName(uint8_t &nLength);
 	const char *GetCpuName(uint8_t &nLength);
 	const char *GetSocName(uint8_t &nLength);
-
-	uint32_t GetReleaseId();
 
 	uint32_t GetBoardId() {
 		return m_nBoardId;
@@ -75,10 +79,6 @@ public:
 	bool PowerOff();
 
 	uint32_t GetUpTime();
-
-	time_t GetTime() {
-		return time(nullptr);
-	}
 
 	bool SetTime(const struct tm *pTime);
 	void GetTime(struct tm *pTime);
@@ -120,7 +120,6 @@ public:
 	}
 
 private:
-	bool ExecCmd(const char* pCmd, char *Result, int nResultSize);
 	void SetFrequency(uint32_t nFreqHz) {
 		if (nFreqHz == 0) {
 			SetLed(hardware::LedStatus::OFF);
@@ -139,6 +138,7 @@ private:
 #if !defined(DISABLE_RTC)
 	HwClock m_HwClock;
 #endif
+	uuid_t m_uuid;
 
 	enum class Board {
 		TYPE_LINUX,

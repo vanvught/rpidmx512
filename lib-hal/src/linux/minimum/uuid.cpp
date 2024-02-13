@@ -1,14 +1,14 @@
 /**
- * @file hardware.h
+ * @file uuid.cpp
  *
  */
-/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
+ * copies of thnDmxDataDirecte Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
 
  * The above copyright notice and this permission notice shall be included in
@@ -23,44 +23,49 @@
  * THE SOFTWARE.
  */
 
-#ifndef HARDWARE_H_
-#define HARDWARE_H_
-
 #include <cstdint>
 #include <cstring>
 #include <uuid/uuid.h>
 
-namespace hardware {
-enum class BootDevice {
-	UNKOWN,
-	FEL,	// H3 Only
-	MMC0,
-	SPI,	// H3 Only
-	HDD,
-	FLASH,
-	RAM
-};
-namespace ledblink {
-enum class Mode {
-	OFF_OFF, OFF_ON, NORMAL, DATA, FAST, REBOOT, UNKNOWN
-};
-}  // namespace ledblink
-}  // namespace hardware
+#include "exec_cmd.h"
 
-#if defined (BARE_METAL)
-# if defined (H3)
-#  include "h3/hardware.h"
-# elif defined (GD32)
-#  include "gd32/hardware.h"
-# else
-#  include "rpi/hardware.h"
-# endif
+namespace hal {
+static constexpr auto UUID_STRING_LENGTH = 36;
+
+void uuid_init(uuid_t out) {
+	char uuid_str[hal::UUID_STRING_LENGTH + 2];
+
+#if defined (__APPLE__)
+	constexpr char cmd[] = "sysctl -n kern.uuid";
 #else
-# if defined (CONFIG_HAL_USE_MINIMUM)
-#  include "linux/minimum/hardware.h"
-# else
-#  include "linux/hardware.h"
-# endif
+	constexpr char cmd[] = "cat /etc/machine-id";
+#endif
+	exec_cmd(cmd, uuid_str, sizeof(uuid_str));
+
+#if defined (__APPLE__)
+#else
+	for (uint32_t i = 13; i > 0; i--) {
+		uuid_str[36 - 13 + i] = uuid_str[36 - 13 + i - 4];
+	}
+
+	for (uint32_t i = 5; i > 0; i--) {
+		uuid_str[23 - 5 + i] = uuid_str[23 - 5 + i - 3];
+	}
+
+	for (uint32_t i = 5; i > 0; i--) {
+		uuid_str[18 - 5 + i] = uuid_str[18 - 5 + i - 2];
+	}
+
+	for (uint32_t i = 5; i > 0; i--) {
+		uuid_str[13 - 5 + i] = uuid_str[13 - 5 + i - 1];
+	}
+
+	uuid_str[23] = '-';
+	uuid_str[18] = '-';
+	uuid_str[13] = '-';
+	uuid_str[8] = '-';
 #endif
 
-#endif /* HARDWARE_H_ */
+	uuid_parse(uuid_str, out);
+}
+}  // namespace hal

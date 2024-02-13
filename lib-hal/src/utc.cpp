@@ -2,7 +2,7 @@
  * @file utc.cpp
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,9 +27,10 @@
 
 // https://en.wikipedia.org/wiki/List_of_UTC_time_offsets
 
+namespace hal {
 static const float s_ValidOffets[] = { -9.5, -3.5, 3.5, 4.5, 5.5, 5.75, 6.5, 8.75, 9.5, 10.5, 12.75 };
 
-int32_t Utc::Validate(float fOffset) {
+int32_t utc_validate(const float fOffset) {
 	auto nInt = static_cast<int32_t>(fOffset);
 
 	if ((nInt >= -12) && (nInt <= 14)) {
@@ -46,3 +47,4 @@ int32_t Utc::Validate(float fOffset) {
 
 	return 0;
 }
+}  // namespace hal

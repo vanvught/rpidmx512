@@ -1,8 +1,8 @@
 /**
- * @file hardware.h
+ * @file exec_cmd.h
  *
  */
-/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,44 +23,9 @@
  * THE SOFTWARE.
  */
 
-#ifndef HARDWARE_H_
-#define HARDWARE_H_
+#ifndef LINUX_EXEC_CMD_H_
+#define LINUX_EXEC_CMD_H_
 
-#include <cstdint>
-#include <cstring>
-#include <uuid/uuid.h>
+bool exec_cmd(const char *pCmd, char *Result, int nResultSize);
 
-namespace hardware {
-enum class BootDevice {
-	UNKOWN,
-	FEL,	// H3 Only
-	MMC0,
-	SPI,	// H3 Only
-	HDD,
-	FLASH,
-	RAM
-};
-namespace ledblink {
-enum class Mode {
-	OFF_OFF, OFF_ON, NORMAL, DATA, FAST, REBOOT, UNKNOWN
-};
-}  // namespace ledblink
-}  // namespace hardware
-
-#if defined (BARE_METAL)
-# if defined (H3)
-#  include "h3/hardware.h"
-# elif defined (GD32)
-#  include "gd32/hardware.h"
-# else
-#  include "rpi/hardware.h"
-# endif
-#else
-# if defined (CONFIG_HAL_USE_MINIMUM)
-#  include "linux/minimum/hardware.h"
-# else
-#  include "linux/hardware.h"
-# endif
-#endif
-
-#endif /* HARDWARE_H_ */
+#endif /* LINUX_EXEC_CMD_H_ */

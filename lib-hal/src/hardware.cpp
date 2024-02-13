@@ -2,7 +2,7 @@
  * @file hardware.cpp
  *
  */
-/* Copyright (C) 2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2023-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,7 @@
 
 namespace hardware {
 namespace ledblink {
-void __attribute__((weak)) display(__attribute__((unused)) const uint32_t nState) {}
+void __attribute__((weak)) display([[maybe_unused]] const uint32_t nState) {}
 }  // namespace ledblink
 }  // namespace hardware
 
@@ -38,6 +38,7 @@ enum class FreqMode {
 	OFF_OFF = 0, NORMAL = 1, DATA = 3, FAST = 5, REBOOT = 8, OFF_ON = 255
 };
 
+#if !defined (CONFIG_HAL_USE_MINIMUM)
 void Hardware::SetModeWithLock(hardware::ledblink::Mode mode, bool doLock) {
 	m_doLock = false;
 	SetMode(mode);
@@ -79,3 +80,4 @@ void Hardware::SetMode(hardware::ledblink::Mode mode) {
 
 	DEBUG_PRINTF("Mode=%d", static_cast<int>(m_Mode));
 }
+#endif

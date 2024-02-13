@@ -65,7 +65,7 @@ namespace ds3231 {
 namespace reg {
 static constexpr uint8_t ALARM1_SECONDS = 0x07;
 static constexpr uint8_t CONTROL 		= 0x0e;
-static constexpr uint8_t STATUS 		= 0x0f;
+//static constexpr uint8_t STATUS 		= 0x0f;
 }  // namespace reg
 namespace bit {
 static constexpr uint8_t A1IE = (1U << 0);
@@ -79,11 +79,11 @@ namespace reg {
 static constexpr uint8_t CONTROL_STATUS1 = 0x00;
 static constexpr uint8_t CONTROL_STATUS2 = 0x01;
 static constexpr uint8_t SECONDS 		 = 0x02;
-static constexpr uint8_t MINUTES 		 = 0x03;
-static constexpr uint8_t HOURS 			 = 0x04;
-static constexpr uint8_t DAY 			 = 0x05;
-static constexpr uint8_t WEEKDAY 		 = 0x06;
-static constexpr uint8_t MONTH 			 = 0x07;
+//static constexpr uint8_t MINUTES 		 = 0x03;
+//static constexpr uint8_t HOURS 		 = 0x04;
+//static constexpr uint8_t DAY 			 = 0x05;
+//static constexpr uint8_t WEEKDAY 		 = 0x06;
+//static constexpr uint8_t MONTH 		 = 0x07;
 static constexpr uint8_t YEAR 			 = 0x08;
 static constexpr uint8_t ALARM 			 = 0x09;
 }  // namespace reg
