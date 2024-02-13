@@ -2,6 +2,7 @@ DEFINES=NDEBUG
 
 EXTRA_INCLUDES=
 
-EXTRA_SRCDIR=console posix rtc rtc/i2c ff12c ff12c/option src/rpi/sdcard
+EXTRA_SRCDIR=src/rpi/sdcard
 
+include Rules.mk
 include ../firmware-template-bcm/lib/Rules.mk

@@ -2,7 +2,7 @@
  * @file hardware_init.cpp
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,15 +39,16 @@
 #include "arm/synchronize.h"
 
 #include "console.h"
-#include "../ff12c/ff.h"
-//#include "../ff14b/source/ff.h"
+
+//#include "../ff12c/ff.h"
+#include "../ff14b/source/ff.h"
 
 #define WIFI_EN_PIO		7	// PL7
 #define POWER_LED_PIO	10	// PL10
 #define EXTERNAL_LED 	GPIO_EXT_16
 
-#if (_FFCONF == 68300)		// R0.12c
-//#if (FF_DEFINED	== 86631)		// R0.14b
+//#if (_FFCONF == 68300)		// R0.12c
+#if (FF_DEFINED	== 86631)		// R0.14b
  static FATFS fat_fs;
 #else
 # error Not a recognized/tested FatFs version
