@@ -2,7 +2,7 @@
  * @file h3_board.h
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -83,6 +83,9 @@
 #define KEY1_GPIO			GPIO_EXT_7
 #define KEY2_GPIO			GPIO_EXT_15
 #define KEY3_GPIO			GPIO_EXT_22
+
+#define PIXELDMXSTARTSTOP_GPIO	GPIO_EXT_12
+#define DISPLAYTIMEOUT_GPIO		GPIO_EXT_15	// KEY2
 
 #ifdef __cplusplus
 extern "C" {
