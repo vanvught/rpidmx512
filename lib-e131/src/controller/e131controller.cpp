@@ -2,7 +2,7 @@
  * @file e131controller.cpp
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -362,7 +362,7 @@ uint8_t E131Controller::GetSequenceNumber(uint16_t nUniverse, uint32_t &nMultica
 }
 
 void E131Controller::Print() {
-	printf("sACN E1.31 Controller\n");
+	puts("sACN E1.31 Controller");
 	printf(" Max Universes : %d\n", static_cast<int>(sizeof(s_SequenceNumbers) / sizeof(s_SequenceNumbers[0])));
 	if (m_State.SynchronizationPacket.nUniverseNumber != 0) {
 		printf(" Synchronization Universe : %u\n", m_State.SynchronizationPacket.nUniverseNumber);

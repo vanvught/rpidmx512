@@ -1,8 +1,8 @@
 /**
- * @file e131bridgeconst.cpp
+ * @file e131const.h
  *
  */
-/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,13 @@
  * THE SOFTWARE.
  */
 
+#ifndef E131CONST_H_
+#define E131CONST_H_
+
 #include <cstdint>
 
-#include "e131bridgeconst.h"
+struct E131Const {
+	static const uint8_t VERSION[];
+};
 
-const uint8_t E131BridgeConst::VERSION[] = { 1, 27 };
+#endif /* E131CONST_H_ */

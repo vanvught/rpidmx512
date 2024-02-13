@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,13 +41,12 @@
 
 #include "debug.h"
 
-#define ARTNET_MIN_HEADER_SIZE		12
-
-static uint16_t s_ActiveUniverses[ARTNET_POLL_TABLE_SIZE_UNIVERSES] __attribute__ ((aligned (4)));
-
 ArtNetController *ArtNetController::s_pThis;
 
 using namespace artnet;
+
+static constexpr uint32_t ARTNET_MIN_HEADER_SIZE = 12;
+static uint16_t s_ActiveUniverses[POLL_TABLE_SIZE_UNIVERSES] __attribute__ ((aligned (4)));
 
 ArtNetController::ArtNetController() {
 	DEBUG_ENTRY
@@ -258,7 +257,7 @@ void ArtNetController::HandleTrigger() {
 void ArtNetController::HandlePoll() {
 	const auto nCurrentMillis = Hardware::Get()->Millis();
 
-	if (__builtin_expect((nCurrentMillis - m_nLastPollMillis > ARTNET_POLL_INTERVAL_MILLIS), 0)) {
+	if (__builtin_expect((nCurrentMillis - m_nLastPollMillis > POLL_INTERVAL_MILLIS), 0)) {
 		Network::Get()->SendTo(m_nHandle, &m_ArtNetPoll, sizeof(struct ArtPoll), m_tArtNetController.nIPAddressBroadcast, artnet::UDP_PORT);
 		m_nLastPollMillis= nCurrentMillis;
 
@@ -268,7 +267,7 @@ void ArtNetController::HandlePoll() {
 #endif
 	}
 
-	if (m_bDoTableCleanup && (__builtin_expect((nCurrentMillis - m_nLastPollMillis > ARTNET_POLL_INTERVAL_MILLIS/4), 0))) {
+	if (m_bDoTableCleanup && (__builtin_expect((nCurrentMillis - m_nLastPollMillis > POLL_INTERVAL_MILLIS/4), 0))) {
 		Clean();
 	}
 }
@@ -289,7 +288,7 @@ void ArtNetController::Run() {
 		HandlePoll();
 	}
 
-	const int nBytesReceived = Network::Get()->RecvFrom(m_nHandle, pArtPacket, sizeof(struct TArtNetPacket), &m_pArtNetPacket->IPAddressFrom, &nForeignPort) ;
+	const auto nBytesReceived = Network::Get()->RecvFrom(m_nHandle, pArtPacket, sizeof(struct TArtNetPacket), &m_pArtNetPacket->IPAddressFrom, &nForeignPort) ;
 
 	if (__builtin_expect((nBytesReceived < ARTNET_MIN_HEADER_SIZE), 1)) {
 		return;
@@ -376,9 +375,9 @@ void ArtNetController::ActiveUniversesAdd(uint16_t nUniverse) {
 }
 
 void ArtNetController::Print() {
-	printf("Art-Net Controller\n");
-	printf(" Max Node's    : %u\n", ARTNET_POLL_TABLE_SIZE_ENRIES);
-	printf(" Max Universes : %u\n", ARTNET_POLL_TABLE_SIZE_UNIVERSES);
+	puts("Art-Net Controller");
+	printf(" Max Node's    : %u\n", POLL_TABLE_SIZE_ENRIES);
+	printf(" Max Universes : %u\n", POLL_TABLE_SIZE_UNIVERSES);
 	if (!m_bUnicast) {
 		puts(" Unicast is disabled");
 	}

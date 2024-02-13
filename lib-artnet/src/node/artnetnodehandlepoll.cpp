@@ -48,7 +48,7 @@ union uip {
 	uint8_t u8[4];
 } static ip;
 
-void ArtNetNode::ProcessPollRelply(const uint32_t nPortIndex, __attribute__((unused)) uint32_t& NumPortsInput, uint32_t& NumPortsOutput) {
+void ArtNetNode::ProcessPollRelply(const uint32_t nPortIndex, [[maybe_unused]] uint32_t& NumPortsInput, uint32_t& NumPortsOutput) {
 	if (m_Node.Port[nPortIndex].direction == lightset::PortDir::OUTPUT) {
 #if (ARTNET_VERSION >= 4)
 		if (m_Node.Port[nPortIndex].protocol == artnet::PortProtocol::SACN) {

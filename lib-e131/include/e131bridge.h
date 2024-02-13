@@ -2,7 +2,7 @@
  * @file e131bridge.h
  *
  */
-/* Copyright (C) 2016-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,6 +36,14 @@
 
 #include "lightset.h"
 #include "lightsetdata.h"
+
+#if !(ARTNET_VERSION >= 4)
+# if defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI)
+#  if !defined(E131_DISABLE_DMX_CONFIG_UDP)
+#   include "dmxconfigudp.h"
+#  endif
+# endif
+#endif
 
 #include "network.h"
 #include "hardware.h"
@@ -345,14 +353,25 @@ public:
 			m_nPreviousLedpanelMillis = m_nCurrentPacketMillis;
 			for (uint32_t nPortIndex = 0; nPortIndex < e131bridge::MAX_PORTS; nPortIndex++) {
 				hal::panel_led_off(hal::panelled::PORT_A_TX << nPortIndex);
-#if defined (ARTNET_HAVE_DMXIN)
+#if defined (E131_HAVE_DMXIN)
 				hal::panel_led_off(hal::panelled::PORT_A_RX << nPortIndex);
 #endif
 			}
 		}
 #endif
-
+#if defined (DMXCONFIGUDP_H)
+		m_DmxConfigUdp.Run();
+#endif
 	}
+
+#if defined (NODE_SHOWFILE) && defined (CONFIG_SHOWFILE_PROTOCOL_NODE_E131)
+	void HandleShowFile(const TE131DataPacket *pE131DataPacket) {
+		m_nCurrentPacketMillis = Hardware::Get()->Millis();
+		m_nIpAddressFrom = Network::Get()->GetIp();
+		m_pReceiveBuffer = reinterpret_cast<uint8_t *>(const_cast<TE131DataPacket *>(pE131DataPacket));
+		HandleDmx();
+	}
+#endif
 
 	void Print();
 
@@ -411,6 +430,13 @@ private:
 
 	// Synchronization handler
 	E131Sync *m_pE131Sync { nullptr };
+
+#if defined (DMXCONFIGUDP_H_)
+# if defined (ARTNET_VERSION)
+#  error
+# endif
+	DmxConfigUdp m_DmxConfigUdp;
+#endif
 
 	static E131Bridge *s_pThis;
 };

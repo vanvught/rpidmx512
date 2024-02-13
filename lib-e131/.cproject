@@ -39,6 +39,8 @@
 									<listOptionValue builtIn="false" value="E131_HAVE_DMXIN"/>
 									<listOptionValue builtIn="false" value="OUTPUT_HAVE_STYLESWITCH"/>
 									<listOptionValue builtIn="false" value="OUTPUT_DMX_SEND"/>
+									<listOptionValue builtIn="false" value="NODE_SHOWFILE"/>
+									<listOptionValue builtIn="false" value="CONFIG_SHOWFILE_PROTOCOL_NODE_E131"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.579444895" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -61,6 +63,8 @@
 									<listOptionValue builtIn="false" value="E131_HAVE_DMXIN"/>
 									<listOptionValue builtIn="false" value="OUTPUT_HAVE_STYLESWITCH"/>
 									<listOptionValue builtIn="false" value="OUTPUT_DMX_SEND"/>
+									<listOptionValue builtIn="false" value="NODE_SHOWFILE"/>
+									<listOptionValue builtIn="false" value="CONFIG_SHOWFILE_PROTOCOL_NODE_E131"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1672044734" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -136,6 +140,8 @@
 									<listOptionValue builtIn="false" value="E131_HAVE_DMXIN"/>
 									<listOptionValue builtIn="false" value="OUTPUT_HAVE_STYLESWITCH"/>
 									<listOptionValue builtIn="false" value="OUTPUT_DMX_SEND"/>
+									<listOptionValue builtIn="false" value="NODE_SHOWFILE"/>
+									<listOptionValue builtIn="false" value="CONFIG_SHOWFILE_PROTOCOL_NODE_E131"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.960582409" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -155,6 +161,8 @@
 									<listOptionValue builtIn="false" value="E131_HAVE_DMXIN"/>
 									<listOptionValue builtIn="false" value="OUTPUT_HAVE_STYLESWITCH"/>
 									<listOptionValue builtIn="false" value="OUTPUT_DMX_SEND"/>
+									<listOptionValue builtIn="false" value="NODE_SHOWFILE"/>
+									<listOptionValue builtIn="false" value="CONFIG_SHOWFILE_PROTOCOL_NODE_E131"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.266811692" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -227,6 +235,8 @@
 									<listOptionValue builtIn="false" value="E131_HAVE_DMXIN"/>
 									<listOptionValue builtIn="false" value="OUTPUT_HAVE_STYLESWITCH"/>
 									<listOptionValue builtIn="false" value="OUTPUT_DMX_SEND"/>
+									<listOptionValue builtIn="false" value="NODE_SHOWFILE"/>
+									<listOptionValue builtIn="false" value="CONFIG_SHOWFILE_PROTOCOL_NODE_E131"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.200265664" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -247,6 +257,8 @@
 									<listOptionValue builtIn="false" value="E131_HAVE_DMXIN"/>
 									<listOptionValue builtIn="false" value="OUTPUT_HAVE_STYLESWITCH"/>
 									<listOptionValue builtIn="false" value="OUTPUT_DMX_SEND"/>
+									<listOptionValue builtIn="false" value="NODE_SHOWFILE"/>
+									<listOptionValue builtIn="false" value="CONFIG_SHOWFILE_PROTOCOL_NODE_E131"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1788037285" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>

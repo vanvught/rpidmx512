@@ -2,7 +2,7 @@
  * @file e131bridgeprint.cpp
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,7 @@
 #include <uuid/uuid.h>
 
 #include "e131bridge.h"
-#include "e131bridgeconst.h"
+#include "e131const.h"
 #include "e131.h"
 
 #if defined (E131_HAVE_DMXIN)
@@ -46,8 +46,7 @@ void E131Bridge::Print() {
 	uuid_str[UUID_STRING_LENGTH] = '\0';
 	uuid_unparse(m_Cid, uuid_str);
 #endif
-	printf("Bridge\n");
-	printf(" Firmware : %d.%d\n", E131BridgeConst::VERSION[0], E131BridgeConst::VERSION[1]);
+	printf("sACN E1.31 V%d.%d\n", E131Const::VERSION[0], E131Const::VERSION[1]);
 #if defined (E131_HAVE_DMXIN)
 	printf(" CID      : %s\n", uuid_str);
 #endif

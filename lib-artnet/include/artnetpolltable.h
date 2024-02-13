@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,16 +33,13 @@
 
 #include "artnet.h"
 
-enum TArtNetPollInterval {
-	ARTNET_POLL_INTERVAL_SECONDS = 8,
-	ARTNET_POLL_INTERVAL_MILLIS = (ARTNET_POLL_INTERVAL_SECONDS * 1000)
-};
-
-enum TArtNetPollTableSizes {
-	ARTNET_POLL_TABLE_SIZE_ENRIES = 255,
-	ARTNET_POLL_TABLE_SIZE_NODE_UNIVERSES = 64,
-	ARTNET_POLL_TABLE_SIZE_UNIVERSES = 512
-};
+namespace artnet {
+static constexpr uint32_t POLL_INTERVAL_SECONDS = 8;
+static constexpr uint32_t POLL_INTERVAL_MILLIS = (POLL_INTERVAL_SECONDS * 1000U);
+static constexpr uint32_t POLL_TABLE_SIZE_ENRIES = 255;
+static constexpr uint32_t POLL_TABLE_SIZE_NODE_UNIVERSES = 64;
+static constexpr uint32_t POLL_TABLE_SIZE_UNIVERSES = 512;
+}  // namespace artnet
 
 struct TArtNetNodeEntryUniverse {
 	uint32_t nLastUpdateMillis;
@@ -55,7 +52,7 @@ struct TArtNetNodeEntry {
 	uint8_t ShortName[artnet::SHORT_NAME_LENGTH];
 	uint8_t LongName[artnet::LONG_NAME_LENGTH];
 	uint16_t nUniversesCount;
-	struct TArtNetNodeEntryUniverse Universe[ARTNET_POLL_TABLE_SIZE_NODE_UNIVERSES];
+	struct TArtNetNodeEntryUniverse Universe[artnet::POLL_TABLE_SIZE_NODE_UNIVERSES];
 };
 
 struct TArtNetPollTableUniverses {
