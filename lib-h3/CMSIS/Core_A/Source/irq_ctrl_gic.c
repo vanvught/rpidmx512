@@ -24,7 +24,7 @@
 
 #include <stddef.h>
 
-#include "RTE_Components.h"
+// #include "RTE_Components.h"
 #include CMSIS_device_header
 
 #include "irq_ctrl.h"
