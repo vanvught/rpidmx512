@@ -41,13 +41,13 @@ void TFTPFileServer::Exit() {
 	DEBUG_EXIT
 }
 
-bool TFTPFileServer::FileOpen(__attribute__((unused)) const char* pFileName, __attribute__((unused)) tftp::Mode mode) {
+bool TFTPFileServer::FileOpen([[maybe_unused]] const char* pFileName, [[maybe_unused]] tftp::Mode mode) {
 	DEBUG_ENTRY
 	DEBUG_EXIT
 	return false;
 }
 
-bool TFTPFileServer::FileCreate(__attribute__((unused)) const char* pFileName, __attribute__((unused)) tftp::Mode mode) {
+bool TFTPFileServer::FileCreate([[maybe_unused]] const char* pFileName, [[maybe_unused]] tftp::Mode mode) {
 	DEBUG_ENTRY
 	DEBUG_EXIT
 	return false;
@@ -59,13 +59,13 @@ bool TFTPFileServer::FileClose() {
 	return false;
 }
 
-size_t TFTPFileServer::FileRead(__attribute__((unused)) void* pBuffer, __attribute__((unused)) size_t nCount, __attribute__((unused)) unsigned nBlockNumber) {
+size_t TFTPFileServer::FileRead([[maybe_unused]] void* pBuffer, [[maybe_unused]] size_t nCount, [[maybe_unused]] unsigned nBlockNumber) {
 	DEBUG_ENTRY
 	DEBUG_EXIT
 	return 0;
 }
 
-size_t TFTPFileServer::FileWrite(__attribute__((unused)) const void *pBuffer, __attribute__((unused)) size_t nCount, __attribute__((unused)) unsigned nBlockNumber) {
+size_t TFTPFileServer::FileWrite([[maybe_unused]] const void *pBuffer, [[maybe_unused]] size_t nCount, [[maybe_unused]] unsigned nBlockNumber) {
 	DEBUG_ENTRY
 	DEBUG_EXIT
 	return 0;

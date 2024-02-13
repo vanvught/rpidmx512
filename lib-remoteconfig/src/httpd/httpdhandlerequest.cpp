@@ -366,6 +366,21 @@ http::Status HttpDeamonHandleRequest::HandleGet() {
 				}
 			} else
 #endif
+#if defined (NODE_SHOWFILE)
+			if (memcmp(pGet, "showfile/", 9) == 0) {
+				const auto *pShowfile = &pGet[9];
+				switch (http::get_uint(pShowfile)) {
+				case http::json::get::STATUS:
+					nLength = remoteconfig::showfile::json_get_status(m_Content, sizeof(m_Content));
+					break;
+				case http::json::get::DIRECTORY:
+					nLength = remoteconfig::showfile::json_get_directory(m_Content, sizeof(m_Content));
+					break;
+				default:
+					break;
+				}
+			} else
+#endif
 			{
 				return HandleGetTxt();
 
@@ -383,6 +398,13 @@ http::Status HttpDeamonHandleRequest::HandleGet() {
 	else if (strcmp(m_pUri, "/rdm") == 0) {
 		http::contentTypes contentType;
 		nLength = get_file_content("rdm.html", m_Content, contentType);
+		m_pContentType = s_contentType[static_cast<uint32_t>(contentType)];
+	}
+#endif
+#if defined (NODE_SHOWFILE)
+	else if (strcmp(m_pUri, "/showfile") == 0) {
+		http::contentTypes contentType;
+		nLength = get_file_content("showfile.html", m_Content, contentType);
 		m_pContentType = s_contentType[static_cast<uint32_t>(contentType)];
 	}
 #endif
@@ -477,10 +499,15 @@ http::Status HttpDeamonHandleRequest::HandlePost(bool hasDataOnly) {
 	DEBUG_PRINTF("%d|%.*s|->%d", m_nFileDataLength, m_nFileDataLength, m_pFileData, m_IsAction);
 
 	if (m_IsAction) {
-		if (properties::convert_json_file(m_pFileData, m_nFileDataLength, true) <= 0) {
+		auto const nJsonLength = properties::convert_json_file(m_pFileData, m_nFileDataLength, true);
+
+		if (nJsonLength <= 0) {
 			DEBUG_PUTS("Status::BAD_REQUEST");
 			return http::Status::BAD_REQUEST;
 		}
+
+		m_pFileData[nJsonLength - 1] = '\0';
+		debug_dump(m_pFileData, nJsonLength);
 
 		uint8_t value8;
 
@@ -509,6 +536,11 @@ http::Status HttpDeamonHandleRequest::HandlePost(bool hasDataOnly) {
 		else if (Sscan::Uint8(m_pFileData, "rdm", value8) == Sscan::OK) {
 			ArtNetNode::Get()->SetRdm(!(value8 != 1));
 			DEBUG_PRINTF("rdm=%d", ArtNetNode::Get()->GetRdm());
+		}
+#endif
+#if defined (NODE_SHOWFILE)
+		else if (memcmp(m_pFileData, "show=", 5) == 0) {
+			remoteconfig::showfile::json_set_status(m_pFileData, nJsonLength);
 		}
 #endif
 		else {

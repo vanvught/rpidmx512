@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="styles.css" />
+<title></title>
+</head>
+<body>
+	<header><ul id="idList"></ul></header>
+	<p><button onclick="refresh()">Refresh</button></p>
+	<table id="idStatus" border='1'></table>
+	 <div>
+    <button onclick="start()">Start</button>
+    <button onclick="stop()">Stop</button>
+    <button onclick="resume()">Resume</button>
+  </div>
+   <div>
+    <button id="idLoop" onclick="loop()"></button>
+   </div>
+  <p>Show <select id="idDirectory"></select><button onclick="select()">Select</button></p>
+	<footer><ul id="idVersion"></ul></footer>
+	<script src="static.js" type="text/javascript"></script>
+	<script src="showfile.js" type="text/javascript"></script>
+	<script>list();version();directory();refresh()</script>
+</body>
+</html>

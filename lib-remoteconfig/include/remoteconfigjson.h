@@ -2,7 +2,7 @@
  * @file remoteconfig.h
  *
  */
-/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,6 +50,11 @@ namespace dsa {
 uint32_t json_get_portstatus(char *pOutBuffer, const uint32_t nOutBufferSize);
 uint32_t json_get_vlantable(char *pOutBuffer, const uint32_t nOutBufferSize);
 }  // namespace dsa
+namespace showfile {
+uint32_t json_get_status(char *pOutBuffer, const uint32_t nOutBufferSize);
+uint32_t json_get_directory(char *pOutBuffer, const uint32_t nOutBufferSize);
+void json_set_status(const char *pBuffer, const uint32_t nBufferSize);
+}  // namespace showfile
 }  // namespace remoteconfig
 
 #endif /* REMOTECONFIGJSON_H_ */

@@ -7,7 +7,7 @@ LD	= $(PREFIX)ld
 AR	= $(PREFIX)ar
 
 ROOT = ./../../..
-INCLUDES := -I$(ROOT)/lib-network/include -I$(ROOT)/lib-remoteconfig/include
+INCLUDES := -I$(ROOT)/lib-network/include -I$(ROOT)/lib-remoteconfig/include -I$(ROOT)/lib-configstore/include -I$(ROOT)/lib-debug/include
 COPS := -std=c++11 -Wall -Werror
 
 all : content generate_json_switch
