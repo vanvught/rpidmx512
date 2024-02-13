@@ -136,7 +136,11 @@ void mdns_shutdown();
 #  include "emac/network.h"
 # endif
 #else
-# include "linux/network.h"
+# if defined (CONFIG_NETWORK_USE_MINIMUM)
+#  include "linux/minimum/network.h"
+# else
+#  include "linux/network.h"
+# endif
 #endif
 
 #endif /* NETWORK_H_ */

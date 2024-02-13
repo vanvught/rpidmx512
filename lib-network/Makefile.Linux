@@ -2,6 +2,11 @@ DEFINES=NDEBUG
 
 EXTRA_INCLUDES=../lib-properties/include
 
-EXTRA_SRCDIR=src/apps/mdns src/apps/tftp src/params
+EXTRA_SRCDIR=src/apps/tftp
+
+ifeq ($(findstring CONFIG_NETWORK_USE_MINIMUM,$(MAKE_FLAGS)), CONFIG_NETWORK_USE_MINIMUM)
+else
+	EXTRA_SRCDIR+=src/apps/mdns src/params
+endif
 
 include ../firmware-template-linux/lib/Rules.mk

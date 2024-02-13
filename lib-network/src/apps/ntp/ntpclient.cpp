@@ -2,7 +2,7 @@
  * @file ntpclient.cpp
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -73,7 +73,8 @@ NtpClient::NtpClient(const uint32_t nServerIp):
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 
-	SetUtcOffset(Network::Get()->GetNtpUtcOffset());
+	// https://en.wikipedia.org/wiki/List_of_UTC_time_offsets
+	m_nUtcOffset = hal::utc_validate((Network::Get()->GetNtpUtcOffset()));
 
 	memset(&m_Request, 0, sizeof m_Request);
 
@@ -82,11 +83,6 @@ NtpClient::NtpClient(const uint32_t nServerIp):
 	m_Request.ReferenceID = ('A' << 0) | ('V' << 8) | ('S' << 16);
 
 	DEBUG_EXIT
-}
-
-void NtpClient::SetUtcOffset(const float fUtcOffset) {
-	// https://en.wikipedia.org/wiki/List_of_UTC_time_offsets
-	m_nUtcOffset = Utc::Validate(fUtcOffset);
 }
 
 /*
@@ -283,7 +279,7 @@ void NtpClient::Stop() {
 	DEBUG_EXIT
 }
 
-void NtpClient::PrintNtpTime(__attribute__((unused)) const char *pText, __attribute__((unused)) const struct TimeStamp *pNtpTime) {
+void NtpClient::PrintNtpTime([[maybe_unused]] const char *pText, [[maybe_unused]] const struct TimeStamp *pNtpTime) {
 #ifndef NDEBUG
 	const auto nSeconds = static_cast<time_t>(pNtpTime->nSeconds - JAN_1970);
 	const auto *pTm = localtime(&nSeconds);

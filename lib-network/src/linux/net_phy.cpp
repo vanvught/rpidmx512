@@ -1,3 +1,4 @@
+#if !defined (CONFIG_NETWORK_USE_MINIMUM)
 /**
  * net_phy.cpp
  *
@@ -154,3 +155,4 @@ uint32_t json_get_vlantable(char *pOutBuffer, const uint32_t nOutBufferSize) {
 }
 }  // namespace dsa
 }  // namespace remoteconfig
+#endif

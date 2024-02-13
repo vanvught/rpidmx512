@@ -115,7 +115,7 @@ bool phy_write(const uint32_t nAddress, const uint32_t nRegister, uint16_t nValu
 	return bResult;
 }
 
-bool phy_config(__attribute__((unused)) const uint32_t nAddress) {
+bool phy_config([[maybe_unused]] const uint32_t nAddress) {
 	DEBUG_ENTRY
 
 	/**

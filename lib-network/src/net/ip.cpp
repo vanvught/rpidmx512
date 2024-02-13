@@ -40,7 +40,9 @@ void __attribute__((cold)) ip_init() {
 
 	udp_init();
 	igmp_init();
+#if defined (ENABLE_HTTPD)
 	tcp_init();
+#endif
 
 	DEBUG_EXIT
 }
@@ -48,7 +50,9 @@ void __attribute__((cold)) ip_init() {
 void __attribute__((cold)) ip_shutdown() {
 	DEBUG_ENTRY
 
+#if defined (ENABLE_HTTPD)
 	tcp_shutdown();
+#endif
 	igmp_shutdown();
 
 	DEBUG_EXIT

@@ -1,8 +1,9 @@
+#if !defined (CONFIG_NETWORK_USE_MINIMUM)
 /**
  * @file network.cpp
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,7 +52,7 @@ static uint8_t s_ReadBuffer[MAX_SEGMENT_LENGTH];
 namespace max {
 	static constexpr auto PORTS_ALLOWED = 32;
 	static constexpr auto ENTRIES = (1 << 2); // Must always be a power of 2
-	static constexpr auto ENTRIES_MASK __attribute__((unused)) = (ENTRIES - 1);
+	static constexpr auto ENTRIES_MASK [[maybe_unused]] = (ENTRIES - 1);
 }
 
 static int s_ports_allowed[max::PORTS_ALLOWED];
@@ -294,7 +295,7 @@ int32_t Network::End(uint16_t nPort) {
  */
 }
 
-void Network::SetIp(__attribute__((unused)) uint32_t nIp) {
+void Network::SetIp([[maybe_unused]] uint32_t nIp) {
 #if defined(__linux__)
 	if (nIp == m_nLocalIp) {
 		return;
@@ -340,13 +341,13 @@ void Network::SetIp(__attribute__((unused)) uint32_t nIp) {
 #endif
 }
 
-void Network::SetNetmask(__attribute__((unused)) uint32_t nNetmask) {
+void Network::SetNetmask([[maybe_unused]] uint32_t nNetmask) {
 #if defined(__linux__)
 	m_nNetmask = nNetmask;
 #endif
 }
 
-void Network::SetGatewayIp(__attribute__((unused)) uint32_t nGatewayIp) {
+void Network::SetGatewayIp([[maybe_unused]] uint32_t nGatewayIp) {
 #if defined(__linux__)
 	m_nGatewayIp = nGatewayIp;
 #endif
@@ -639,3 +640,4 @@ void Network::Print() {
 	printf(" Mac       : " MACSTR "\n", MAC2STR(m_aNetMacaddr));
 	printf(" Mode      : %c\n", GetAddressingMode());
 }
+#endif
