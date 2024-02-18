@@ -2,7 +2,7 @@
  * @file hwclock.cpp
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,9 +34,7 @@
 
 #include "debug.h"
 
-using namespace rtc;
-
-HwClock *HwClock::s_pThis = nullptr;
+HwClock *HwClock::s_pThis;
 
 HwClock::HwClock() {
 	assert(s_pThis == nullptr);
@@ -52,27 +50,25 @@ void HwClock::Print() {
 	const char *pType = "Unknown";
 
 	switch (m_Type) {
-	case Type::MCP7941X:
+	case rtc::Type::MCP7941X:
 		pType = "MCP7941X";
 		break;
-	case Type::DS3231:
+	case rtc::Type::DS3231:
 		pType = "DS3231";
 		break;
-	case Type::PCF8563:
+	case rtc::Type::PCF8563:
 		pType = "PCF8563";
 		break;
-	case Type::SOC_INTERNAL:
+	case rtc::Type::SOC_INTERNAL:
 		pType = "SOC_INTERNAL";
 		break;
 	default:
 		break;
 	}
 
-	printf("%s\n", pType);
-
 	struct tm tm;
 	RtcGet(&tm);
-	printf("%.4d/%.2d/%.2d %.2d:%.2d:%.2d\n", 1900 + tm.tm_year, 1 + tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+	printf("%s %.4d/%.2d/%.2d %.2d:%.2d:%.2d\n", pType, 1900 + tm.tm_year, 1 + tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
 }
 
 /*

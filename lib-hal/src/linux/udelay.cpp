@@ -32,7 +32,7 @@ static constexpr uint32_t TICKS_PER_US = 1;
 
 static uint32_t micros() {
 	struct timeval tv;
-	gettimeofday(&tv, NULL);
+	gettimeofday(&tv, nullptr);
 	return (uint32_t)((tv.tv_sec * 1000000) + tv.tv_usec);
 }
 
