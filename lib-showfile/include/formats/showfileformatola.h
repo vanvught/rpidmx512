@@ -84,7 +84,7 @@ public:
 	void ShowFileRun();
 
 protected:
-	uint32_t m_nShowFileNumber { showfile::FILE_MAX_NUMBER + 1 };
+	uint32_t m_nShowFileCurrent { showfile::FILE_MAX_NUMBER + 1 };
 	bool m_bDoLoop { false };
 	FILE *m_pShowFile { nullptr };
 

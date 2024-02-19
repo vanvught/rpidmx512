@@ -134,17 +134,14 @@ public:
 	}
 
 	void LoadShows();
+	void UnloadShows() {
+		m_nShows = 0;
 
-	uint8_t GetShows() const {
-		return m_nShows;
-	}
-
-	int8_t GetShowNumber(const uint32_t nIndex) {
-		if (nIndex < sizeof(m_aFileIndex) / sizeof(m_aFileIndex[0]) ) {
-			return m_aFileIndex[nIndex];
+		for (auto &FileIndex : m_nShowFileNumber) {
+			FileIndex = -1;
 		}
 
-		return -1;
+		m_nShowFileCurrent = showfile::FILE_MAX_NUMBER + 1U;
 	}
 
 	void SetShowFile(const uint32_t nShowFileNumber);
@@ -154,7 +151,22 @@ public:
 	}
 
 	uint32_t GetShowFile() const {
-		return m_nShowFileNumber;
+		return m_nShowFileCurrent;
+	}
+
+	int8_t GetShowFile(const uint32_t nIndex) {
+		if (nIndex < sizeof(m_nShowFileNumber) / sizeof(m_nShowFileNumber[0]) ) {
+			return m_nShowFileNumber[nIndex];
+		}
+
+		return -1;
+	}
+
+	uint8_t GetShows() {
+		if (m_nShows == 0) {
+			LoadShows();
+		}
+		return m_nShows;
 	}
 
 	bool DeleteShowFile(const uint32_t nShowFileNumber);
@@ -234,7 +246,7 @@ private:
 	showfile::Status m_Status { showfile::Status::IDLE };
 	char m_aShowFileName[showfile::FILE_NAME_LENGTH + 1]; // Including '\0'
 	uint8_t m_nShows { 0 };
-	int8_t m_aFileIndex[showfile::FILE_MAX_NUMBER + 1];
+	int8_t m_nShowFileNumber[showfile::FILE_MAX_NUMBER + 1];
 	bool m_bAutoStart { false };
 #if !defined(CONFIG_SHOWFILE_DISABLE_TFTP)
 	bool m_bEnableTFTP { false };

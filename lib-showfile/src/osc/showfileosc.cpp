@@ -242,7 +242,7 @@ void ShowFileOSC::Process() {
 
 		DEBUG_PRINTF("Index %u", nIndex);
 
-		const auto nShow = ShowFile::Get()->GetShowNumber(nIndex);
+		const auto nShow = ShowFile::Get()->GetShowFile(nIndex);
 
 		if (nShow < 0) {
 			return;
@@ -283,7 +283,7 @@ void ShowFileOSC::ShowFiles() {
 
     for (i = 0; i < ShowFile::Get()->GetShows(); i++) {
     	snprintf(aPath, sizeof(aPath) - 1, "/showfile/%d/show", i);
-    	snprintf(aValue, sizeof(aValue) - 1, "%.2d", ShowFile::Get()->GetShowNumber(i));
+    	snprintf(aValue, sizeof(aValue) - 1, "%.2d", ShowFile::Get()->GetShowFile(i));
     	OscSimpleSend MsgStatus(m_nHandle, m_nRemoteIp, m_nPortOutgoing, aPath, "s", aValue);
     }
 

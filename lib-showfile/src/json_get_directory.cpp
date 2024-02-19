@@ -39,7 +39,7 @@ uint32_t json_get_directory(char *pOutBuffer, const uint32_t nOutBufferSize) {
 
 	for (uint32_t nShows = 0; nShows < ShowFile::Get()->GetShows(); nShows++) {
 		const auto nSize = nBufferSize - nLength;
-		const auto nCharacters = static_cast<uint32_t>(snprintf(&pOutBuffer[nLength], nSize, "\"%d\",", ShowFile::Get()->GetShowNumber(nShows)));
+		const auto nCharacters = static_cast<uint32_t>(snprintf(&pOutBuffer[nLength], nSize, "\"%d\",", ShowFile::Get()->GetShowFile(nShows)));
 
 		if (nCharacters > nSize) {
 			break;
