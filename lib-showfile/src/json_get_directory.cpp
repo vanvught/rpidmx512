@@ -27,9 +27,6 @@
 #include <cstdint>
 #include <cassert>
 #include <dirent.h>
-#ifndef NDEBUG
-# include <errno.h>
-#endif
 
 #include "showfile.h"
 
@@ -38,48 +35,25 @@ namespace showfile {
 
 uint32_t json_get_directory(char *pOutBuffer, const uint32_t nOutBufferSize) {
 	const auto nBufferSize = nOutBufferSize - 2U;
-#if defined (CONFIG_USB_HOST_MSC)
-	auto *dirp = opendir("0:/");
-#else
-	auto *dirp = opendir(".");
-#endif
-#ifndef NDEBUG
-	perror("opendir");
-#endif
-
 	auto nLength = static_cast<uint32_t>(snprintf(pOutBuffer, nBufferSize, "{\"shows\":["));
 
-	if (dirp != nullptr) {
-		struct dirent *dp;
-		do {
-			if ((dp = readdir(dirp)) != nullptr) {
-				if (dp->d_type == DT_DIR) {
-					continue;
-				}
+	for (uint32_t nShows = 0; nShows < ShowFile::Get()->GetShows(); nShows++) {
+		const auto nSize = nBufferSize - nLength;
+		const auto nCharacters = static_cast<uint32_t>(snprintf(&pOutBuffer[nLength], nSize, "\"%d\",", ShowFile::Get()->GetShowNumber(nShows)));
 
-	          	uint32_t nShowFileNumber;
-	        	if (!::showfile::filename_check(dp->d_name, nShowFileNumber)) {
-	                continue;
-	            }
-
-				const auto nSize = nBufferSize - nLength;
-				const auto nCharacters = static_cast<uint32_t>(snprintf(&pOutBuffer[nLength], nSize, "\"%d\",", nShowFileNumber));
-
-				if (nCharacters > nSize) {
-					break;
-				}
-
-				nLength+=nCharacters;
-
-				if (nLength >= nBufferSize) {
-					break;
-				}
-			}
-		} while (dp != nullptr);
-
-		if (pOutBuffer[nLength - 1] == ',') {
-			nLength--;
+		if (nCharacters > nSize) {
+			break;
 		}
+
+		nLength+=nCharacters;
+
+		if (nLength >= nBufferSize) {
+			break;
+		}
+	}
+
+	if (pOutBuffer[nLength - 1] == ',') {
+		nLength--;
 	}
 
 	pOutBuffer[nLength++] = ']';

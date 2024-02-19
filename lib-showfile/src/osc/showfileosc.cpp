@@ -73,14 +73,8 @@ namespace length {
 	static constexpr uint32_t INDEX = sizeof(cmd::INDEX) - 1;
 }
 
-ShowFileOSC::ShowFileOSC(uint16_t nPortIncoming, uint16_t nPortOutgoing) :
-	m_nPortIncoming(nPortIncoming), m_nPortOutgoing(nPortOutgoing)
-{
+ShowFileOSC::ShowFileOSC(uint16_t nPortIncoming, uint16_t nPortOutgoing) : m_nPortIncoming(nPortIncoming), m_nPortOutgoing(nPortOutgoing) {
 	DEBUG_ENTRY
-
-	for (uint32_t i = 0; i < ShowFileOSCMax::FILES_ENTRIES; i++) {
-		m_aFileIndex[i] = -1;
-	}
 
 	m_nHandle = Network::Get()->Begin(m_nPortIncoming);
 	assert(m_nHandle != -1);
@@ -237,14 +231,6 @@ void ShowFileOSC::Process() {
 		return;
 	}
 
-	// TouchOSC
-	if (memcmp(&m_pBuffer[length::PATH], cmd::RELOAD, length::RELOAD) == 0) {
-		Reload();
-		DEBUG_PUTS("Reload");
-		return;
-	}
-
-	// TouchOSC
 	if (memcmp(&m_pBuffer[length::PATH], cmd::INDEX, length::INDEX) == 0) {
 		OscSimpleMessage Msg(m_pBuffer, m_nBytesReceived);
 
@@ -256,21 +242,24 @@ void ShowFileOSC::Process() {
 
 		DEBUG_PRINTF("Index %u", nIndex);
 
-		if (nIndex >= ShowFileOSCMax::FILES_ENTRIES) {
-			return;
-		}
-
-		auto nShow = m_aFileIndex[nIndex];
+		const auto nShow = ShowFile::Get()->GetShowNumber(nIndex);
 
 		if (nShow < 0) {
 			return;
 		}
 
-		if (nShow <= static_cast<int32_t>(showfile::FILE_MAX_NUMBER)) {
-			ShowFile::Get()->SetShowFile(static_cast<uint32_t>(nShow));
-			SendStatus();
-		}
+		DEBUG_PRINTF("nShow %d", nShow);
 
+		ShowFile::Get()->SetShowFile(static_cast<uint32_t>(nShow));
+		SendStatus();
+
+		return;
+	}
+
+	// TouchOSC
+	if (memcmp(&m_pBuffer[length::PATH], cmd::RELOAD, length::RELOAD) == 0) {
+		ShowFiles();
+		DEBUG_PUTS("Reload");
 		return;
 	}
 }
@@ -286,79 +275,22 @@ void ShowFileOSC::SendStatus() {
 }
 
 // TouchOSC
-void ShowFileOSC::Reload() {
-    struct dirent *dp;
-    uint32_t nIndex = 0;
-
-#if defined (CONFIG_USB_HOST_MSC)
-	auto *dirp = opendir("0:/");
-#else
-	auto *dirp = opendir(".");
-#endif
-
-    if (dirp == nullptr) {
-		perror("opendir");
-
-		for (uint32_t i = 0; i < ShowFileOSCMax::FILES_ENTRIES; i++) {
-			m_aFileIndex[i] = -1;
-		}
-
-		return;
-	}
-
-    do {
-        if ((dp = readdir(dirp)) != nullptr) {
-        	if (dp->d_type == DT_DIR) {
-        		continue;
-        	}
-
-          	uint32_t nShowFileNumber;
-        	if (!showfile::filename_check(dp->d_name, nShowFileNumber)) {
-                continue;
-            }
-
-        	m_aFileIndex[nIndex] = static_cast<int32_t>(nShowFileNumber);
-
-            DEBUG_PRINTF("[%d] found %s", nIndex, dp->d_name);
-
-            nIndex++;
-
-            if (nIndex == ShowFileOSCMax::FILES_ENTRIES) {
-            	break;
-            }
-        }
-    } while (dp != nullptr);
-
-    // Sort
-	for (uint32_t i = 0; i < nIndex; i++) {
-		for (uint32_t j = 0; j < nIndex; j++) {
-			if (m_aFileIndex[j] > m_aFileIndex[i]) {
-				int32_t tmp = m_aFileIndex[i];
-				m_aFileIndex[i] = m_aFileIndex[j];
-				m_aFileIndex[j] = tmp;
-			}
-		}
-	}
-
+void ShowFileOSC::ShowFiles() {
 	char aPath[64];
 	char aValue[4];
+
 	uint32_t i;
 
-    for (i = 0; i < nIndex; i++) {
+    for (i = 0; i < ShowFile::Get()->GetShows(); i++) {
     	snprintf(aPath, sizeof(aPath) - 1, "/showfile/%d/show", i);
-    	snprintf(aValue, sizeof(aValue) - 1, "%.2d", m_aFileIndex[i]);
-
+    	snprintf(aValue, sizeof(aValue) - 1, "%.2d", ShowFile::Get()->GetShowNumber(i));
     	OscSimpleSend MsgStatus(m_nHandle, m_nRemoteIp, m_nPortOutgoing, aPath, "s", aValue);
-    	DEBUG_PRINTF("%s s %s", aPath, aValue);
     }
 
 	for (; i < ShowFileOSCMax::FILES_ENTRIES; i++) {
 		snprintf(aPath, sizeof(aPath) - 1, "/showfile/%d/show", i);
 		OscSimpleSend MsgStatus(m_nHandle, m_nRemoteIp, m_nPortOutgoing, aPath, "s", "  ");
-		m_aFileIndex[i] = -1;
 	}
-
-	closedir(dirp);
 
 	SendStatus();
 }

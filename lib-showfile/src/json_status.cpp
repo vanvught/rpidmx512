@@ -30,6 +30,7 @@
 #include "showfile.h"
 #include "showfileconst.h"
 #include "showfileparamsconst.h"
+#include "showfiledisplay.h"
 
 #include "readconfigfile.h"
 #include "sscan.h"

@@ -24,6 +24,7 @@
  */
 
 #include <cstdio>
+#include <dirent.h>
 #include <unistd.h>
 #include <cassert>
 
@@ -53,10 +54,12 @@ ShowFile::ShowFile() {
 
 	m_aShowFileName[0] = '\0';
 
+	LoadShows();
+
 	DEBUG_EXIT
 }
 
-void ShowFile::SetShowFile(uint32_t nShowFileNumber) {
+void ShowFile::SetShowFile(const uint32_t nShowFileNumber) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("nShowFileNumber=%u", nShowFileNumber);
 
@@ -96,7 +99,7 @@ void ShowFile::SetShowFile(uint32_t nShowFileNumber) {
 	DEBUG_EXIT
 }
 
-bool ShowFile::DeleteShowFile([[maybe_unused]] uint32_t nShowFileNumber) {
+bool ShowFile::DeleteShowFile([[maybe_unused]] const uint32_t nShowFileNumber) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("nShowFileNumber=%u, m_bEnableTFTP=%d", nShowFileNumber, m_bEnableTFTP);
 
@@ -109,7 +112,7 @@ bool ShowFile::DeleteShowFile([[maybe_unused]] uint32_t nShowFileNumber) {
 	char aFileName[showfile::FILE_NAME_LENGTH + 1U];
 
 	if (showfile::filename_copyto(aFileName, sizeof(aFileName), nShowFileNumber)) {
-		const int nResult = unlink(aFileName);
+		const auto nResult = unlink(aFileName);
 		DEBUG_PRINTF("nResult=%d", nResult);
 		DEBUG_EXIT
 		return (nResult == 0);
@@ -118,6 +121,66 @@ bool ShowFile::DeleteShowFile([[maybe_unused]] uint32_t nShowFileNumber) {
 
 	DEBUG_EXIT
 	return false;
+}
+
+void ShowFile::LoadShows() {
+	m_nShows = 0;
+
+	for (auto &FileIndex : m_aFileIndex) {
+		FileIndex = -1;
+	}
+
+#if defined (CONFIG_USB_HOST_MSC)
+	auto *dirp = opendir("0:/");
+#else
+	auto *dirp = opendir(".");
+#endif
+
+	if (dirp == nullptr) {
+		perror("opendir");
+
+		for (auto &FileIndex : m_aFileIndex) {
+			FileIndex = -1;
+		}
+	}
+
+	struct dirent *dp;
+
+    do {
+        if ((dp = readdir(dirp)) != nullptr) {
+        	if (dp->d_type == DT_DIR) {
+        		continue;
+        	}
+
+          	uint32_t nShowFileNumber;
+        	if (!showfile::filename_check(dp->d_name, nShowFileNumber)) {
+                continue;
+            }
+
+            DEBUG_PRINTF("[%d] found %s", nShows, dp->d_name);
+
+    		if (m_nShows == 0) {
+    			m_aFileIndex[0] = static_cast<int32_t>(nShowFileNumber);
+    		} else {
+    			int32_t i = m_nShows - 1;
+    			while ((static_cast<int32_t>(nShowFileNumber) < m_aFileIndex[i]) && i >= 0) {
+    				m_aFileIndex[i + 1] = m_aFileIndex[i];
+    				i--;
+    			}
+    			m_aFileIndex[i + 1] = static_cast<int32_t>(nShowFileNumber);
+    		}
+
+    		m_nShows++;
+
+            if (m_nShows == (showfile::FILE_MAX_NUMBER + 1U)) {
+            	break;
+            }
+        }
+    } while (dp != nullptr);
+
+	for (auto &FileIndex : m_aFileIndex) {
+		printf("%d ", FileIndex);
+	}
 }
 
 void ShowFile::EnableTFTP([[maybe_unused]] bool bEnableTFTP) {
@@ -161,7 +224,7 @@ void ShowFile::EnableTFTP([[maybe_unused]] bool bEnableTFTP) {
 	DEBUG_EXIT
 }
 
-void ShowFile::SetStatus(showfile::Status Status) {
+void ShowFile::SetStatus(const showfile::Status Status) {
 	DEBUG_ENTRY
 
 	if (Status == m_Status) {

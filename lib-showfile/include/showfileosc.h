@@ -48,7 +48,7 @@ static constexpr uint32_t PATH = sizeof(cmd::PATH) - 1;
 
 struct ShowFileOSCMax {
 	static constexpr auto CMD_LENGTH = 128;
-	static constexpr auto FILES_ENTRIES = 20;
+	static constexpr auto FILES_ENTRIES = 10;
 };
 
 class ShowFileOSC {
@@ -93,7 +93,7 @@ public:
 private:
 	void Process();
 	void SendStatus();
-	void Reload();
+	void ShowFiles();
 
 private:
 	uint16_t m_nPortIncoming;
@@ -103,7 +103,6 @@ private:
 	uint16_t m_nRemotePort { 0 };
 	uint16_t m_nBytesReceived;
 	char *m_pBuffer { nullptr };
-	int32_t m_aFileIndex[ShowFileOSCMax::FILES_ENTRIES];
 };
 
 #endif /* SHOWFILEOSC_H_ */

@@ -127,13 +127,27 @@ public:
 #endif
 	}
 
-	void SetStatus(showfile::Status Status);
+	void SetStatus(const showfile::Status Status);
 
 	showfile::Status GetStatus() const {
 		return m_Status;
 	}
 
-	void SetShowFile(uint32_t nShowFileNumber);
+	void LoadShows();
+
+	uint8_t GetShows() const {
+		return m_nShows;
+	}
+
+	int8_t GetShowNumber(const uint32_t nIndex) {
+		if (nIndex < sizeof(m_aFileIndex) / sizeof(m_aFileIndex[0]) ) {
+			return m_aFileIndex[nIndex];
+		}
+
+		return -1;
+	}
+
+	void SetShowFile(const uint32_t nShowFileNumber);
 
 	const char *GetShowFileName() const {
 		return static_cast<const char *>(m_aShowFileName);
@@ -143,9 +157,9 @@ public:
 		return m_nShowFileNumber;
 	}
 
-	bool DeleteShowFile(uint32_t nShowFileNumber);
+	bool DeleteShowFile(const uint32_t nShowFileNumber);
 
-	void DoLoop(bool bDoLoop) {
+	void DoLoop(const bool bDoLoop) {
 		m_bDoLoop = bDoLoop;
 	}
 
@@ -162,8 +176,10 @@ public:
 	}
 
 	void BlackOut() {
+#if defined (SHOWFILE_ENABLE_DMX_MASTER)
 		Stop();
 		ShowFileProtocol::DmxBlackout();
+#endif
 	}
 
 	void SetMaster([[maybe_unused]] const uint32_t nMaster) {
@@ -217,6 +233,8 @@ private:
 #endif
 	showfile::Status m_Status { showfile::Status::IDLE };
 	char m_aShowFileName[showfile::FILE_NAME_LENGTH + 1]; // Including '\0'
+	uint8_t m_nShows { 0 };
+	int8_t m_aFileIndex[showfile::FILE_MAX_NUMBER + 1];
 	bool m_bAutoStart { false };
 #if !defined(CONFIG_SHOWFILE_DISABLE_TFTP)
 	bool m_bEnableTFTP { false };
