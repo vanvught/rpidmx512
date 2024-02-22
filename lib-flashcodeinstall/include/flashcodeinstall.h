@@ -75,6 +75,9 @@
 # elif defined (BOARD_GD32F470Z_EVAL)
 #  define OFFSET_UIMAGE		0x008000		// 32K
 #  define FIRMWARE_MAX_SIZE (171 * 1024)	// 171K
+# elif defined (BOARD_GD32H759I_EVAL)
+#  define OFFSET_UIMAGE		0x008000		// 32K
+#  define FIRMWARE_MAX_SIZE (171 * 1024)	// 171K
 # else
 #  error Board is not supported
 # endif

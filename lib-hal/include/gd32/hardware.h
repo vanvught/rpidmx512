@@ -35,7 +35,6 @@
 
 #include "gd32.h"
 #include "gd32_adc.h"
-#include "gd32_micros.h"
 
 #if defined (ENABLE_USB_HOST) && defined (CONFIG_USB_HOST_MSC)
 extern "C" {
@@ -77,7 +76,19 @@ public:
 	}
 
 	uint32_t Micros() {
-		return micros();
+		static uint32_t nMicrosPrevious;
+		static uint32_t nResult;
+		const auto nMicros = DWT->CYCCNT / (MCU_CLOCK_FREQ / 1000000U);
+
+		if (nMicros > nMicrosPrevious) {
+			nResult += (nMicros - nMicrosPrevious);
+		} else {
+			nResult += ((UINT32_MAX / (MCU_CLOCK_FREQ / 1000000U)) - nMicrosPrevious + nMicros);
+		}
+
+		nMicrosPrevious = nMicros;
+
+		return nResult;
 	}
 
 	uint32_t GetUpTime() {
