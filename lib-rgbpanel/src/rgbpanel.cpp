@@ -221,6 +221,6 @@ void RgbPanel::Stop() {
 }
 
 void RgbPanel::Print() {
-	printf("RGB led panel\n");
+	puts("RGB led panel");
 	printf(" %ux%ux%u\n", m_nColumns, m_nRows, m_nChain);
 }

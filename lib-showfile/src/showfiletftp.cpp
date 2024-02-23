@@ -2,7 +2,7 @@
  * @file showfiletftp.cpp
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,19 +23,12 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
 #include <cstdio>
 
 #include "showfiletftp.h"
 #include "showfile.h"
 
 #include "debug.h"
-
-ShowFileTFTP::ShowFileTFTP() {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
 
 void ShowFileTFTP::Exit() {
 	DEBUG_ENTRY
@@ -45,11 +38,11 @@ void ShowFileTFTP::Exit() {
 	DEBUG_EXIT
 }
 
-bool ShowFileTFTP::FileOpen(const char *pFileName, __attribute__((unused)) tftp::Mode mode) {
-	DEBUG_PRINTF("pFileName=%s, tMode=%d", pFileName, static_cast<int>(mode));
+bool ShowFileTFTP::FileOpen(const char *pFileName, [[maybe_unused]] tftp::Mode mode) {
+	DEBUG_PRINTF("pFileName=%s, mode=%d", pFileName, static_cast<int>(mode));
 
 	uint32_t nShowFileNumber;
-	if (!ShowFile::CheckShowFileName(pFileName, nShowFileNumber)) {
+	if (!showfile::filename_check(pFileName, nShowFileNumber)) {
 		DEBUG_EXIT
 		return false;
 	}
@@ -58,35 +51,15 @@ bool ShowFileTFTP::FileOpen(const char *pFileName, __attribute__((unused)) tftp:
 	return (m_pFile != nullptr);
 }
 
-bool ShowFileTFTP::FileCreate(const char *pFileName, __attribute__((unused)) tftp::Mode mode) {
-	DEBUG_PRINTF("pFileName=%s, tMode=%d", pFileName, static_cast<int>(mode));
+bool ShowFileTFTP::FileCreate(const char *pFileName, [[maybe_unused]] tftp::Mode mode) {
+	DEBUG_PRINTF("pFileName=%s, mode=%d", pFileName, static_cast<int>(mode));
 
 	uint32_t nShowFileNumber;
-	if (!ShowFile::CheckShowFileName(pFileName, nShowFileNumber)) {
+	if (!showfile::filename_check(pFileName, nShowFileNumber)) {
 		DEBUG_EXIT
 		return false;
 	}
 
 	m_pFile = fopen(pFileName, "w+");
 	return (m_pFile != nullptr);
-}
-
-bool ShowFileTFTP::FileClose() {
-	DEBUG_ENTRY
-
-	if (m_pFile != nullptr) {
-		fclose(m_pFile);
-		m_pFile = nullptr;
-	}
-
-	DEBUG_EXIT
-	return true;
-}
-
-size_t ShowFileTFTP::FileRead(void *pBuffer, size_t nCount, __attribute__((unused)) unsigned nBlockNumber) {
-	return fread(pBuffer, 1, nCount, m_pFile);
-}
-
-size_t ShowFileTFTP::FileWrite(const void *pBuffer, size_t nCount, __attribute__((unused)) unsigned nBlockNumber) {
-	return fwrite(pBuffer, 1, nCount, m_pFile);
 }

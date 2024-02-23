@@ -342,7 +342,7 @@ static void hdmi_lcdc_init(const struct display_timing *edid, uint32_t bpp) {
 	h3_lcdc_enable(bpp);
 }
 
-static int hdmi_phy_cfg(__attribute__((unused)) struct dw_hdmi *hdmi, uint32_t mpixelclock) {
+static int hdmi_phy_cfg([[maybe_unused]] struct dw_hdmi *hdmi, uint32_t mpixelclock) {
 	hdmi_pll_set(mpixelclock / 1000U);
 	hdmi_phy_set(mpixelclock);
 	return 0;

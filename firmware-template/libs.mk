@@ -2,7 +2,10 @@ $(info $$DEFINES [${DEFINES}])
 
 ifeq ($(findstring NO_EMAC,$(DEFINES)),NO_EMAC)
 else
-	LIBS+=remoteconfig
+	ifeq ($(findstring CONFIG_NETWORK_USE_MINIMUM,$(DEFINES)),CONFIG_NETWORK_USE_MINIMUM)
+	else
+		LIBS+=remoteconfig
+	endif
 endif
 
 ifeq ($(findstring NODE_NODE,$(DEFINES)),NODE_NODE)
@@ -19,6 +22,12 @@ ifeq ($(findstring NODE_ARTNET,$(DEFINES)),NODE_ARTNET)
 endif
 
 ifeq ($(findstring NODE_E131,$(DEFINES)),NODE_E131)
+	ifneq ($(findstring e131,$(LIBS)),e131)
+		LIBS+=e131
+	endif
+endif
+
+ifeq ($(findstring E131_CONTROLLER,$(DEFINES)),E131_CONTROLLER)
 	ifneq ($(findstring e131,$(LIBS)),e131)
 		LIBS+=e131
 	endif
@@ -55,12 +64,12 @@ ifeq ($(findstring ARTNET_CONTROLLER,$(DEFINES)),ARTNET_CONTROLLER)
 endif
 
 ifeq ($(findstring RDM_CONTROLLER,$(DEFINES)),RDM_CONTROLLER)
-	LIBS+=rdm
+	RDM=1
 	DMX=1
 endif
 
 ifeq ($(findstring RDM_RESPONDER,$(DEFINES)),RDM_RESPONDER)
-	LIBS+=rdm
+	RDM=1
 	ifneq ($(findstring NODE_ARTNET,$(DEFINES)),NODE_ARTNET)
 		ifneq ($(findstring dmxreceiver,$(LIBS)),dmxreceiver)
 			LIBS+=dmxreceiver
@@ -82,12 +91,7 @@ ifeq ($(findstring NODE_DMX,$(DEFINES)),NODE_DMX)
 endif
 
 ifeq ($(findstring NODE_RDMNET_LLRP_ONLY,$(DEFINES)),NODE_RDMNET_LLRP_ONLY)
-	ifneq ($(findstring RDM_CONTROLLER,$(DEFINES)),RDM_CONTROLLER)
-		LIBS+=rdm
-	endif
-	ifneq ($(findstring rdmnet,$(LIBS)),rdmnet)
-		LIBS+=rdmnet
-	endif
+	RDM=1
 	ifneq ($(findstring e131,$(LIBS)),e131)
 		LIBS+=e131
 	endif
@@ -99,10 +103,6 @@ ifeq ($(findstring NODE_RDMNET_LLRP_ONLY,$(DEFINES)),NODE_RDMNET_LLRP_ONLY)
 	endif
 endif
 
-ifeq ($(findstring e131,$(LIBS)),e131)
-	LIBS+=uuid
-endif
-
 ifeq ($(findstring OUTPUT_DMX_MONITOR,$(DEFINES)),OUTPUT_DMX_MONITOR)
 	LIBS+=dmxmonitor	
 endif
@@ -112,8 +112,16 @@ ifeq ($(findstring OUTPUT_DMX_SEND,$(DEFINES)),OUTPUT_DMX_SEND)
 	DMX=1
 endif
 
+ifdef RDM
+	LIBS+=rdm
+endif
+
 ifdef DMX
 	LIBS+=dmx
+endif
+
+ifeq ($(findstring e131,$(LIBS)),e131)
+	LIBS+=uuid
 endif
 
 ifeq ($(findstring OUTPUT_DDP_PIXEL_MULTI,$(DEFINES)),OUTPUT_DDP_PIXEL_MULTI)

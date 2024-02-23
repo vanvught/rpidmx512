@@ -318,7 +318,7 @@ void DdpDisplay::Run() {
 }
 
 void DdpDisplay::Print() {
-	puts("DDP Display:");
+	puts("DDP Display");
 	printf(" Count             : %u\n", m_nCount);
 	printf(" Channels per pixel: %u\n", GetChannelsPerPixel());
 	printf(" Active ports      : %u\n", m_nActivePorts);

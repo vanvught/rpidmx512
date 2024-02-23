@@ -338,7 +338,7 @@ void Ssd1311::SetContrast(uint8_t nContrast) {
 #if defined(CONFIG_DISPLAY_ENABLE_CURSOR_MODE)
 # define UNUSED
 #else
-# define UNUSED __attribute__((unused))
+# define UNUSED [[maybe_unused]]
 #endif
 
 void Ssd1311::SetCursor(UNUSED uint32_t nMode) {

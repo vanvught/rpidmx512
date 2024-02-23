@@ -200,7 +200,7 @@ void Hd44780::WriteReg(const uint8_t nReg) {
 #if defined(CONFIG_DISPLAY_ENABLE_CURSOR_MODE)
 # define UNUSED
 #else
-# define UNUSED __attribute__((unused))
+# define UNUSED [[maybe_unused]]
 #endif
 
 void Hd44780::SetCursor(UNUSED uint32_t nMode) {

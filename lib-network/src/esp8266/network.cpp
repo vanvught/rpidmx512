@@ -86,7 +86,7 @@ int32_t Network::Begin(uint16_t nPort) {
 	return 0;
 }
 
-int32_t Network::End(__attribute__((unused)) uint16_t nPort) {
+int32_t Network::End([[maybe_unused]] uint16_t nPort) {
 	return 0;
 }
 
@@ -100,13 +100,13 @@ void Network::MacAddressCopyTo(uint8_t* pMacAddress) {
 	}
 }
 
-void Network::JoinGroup(__attribute__((unused)) int32_t nHandle, uint32_t nIp) {
+void Network::JoinGroup([[maybe_unused]] int32_t nHandle, uint32_t nIp) {
 	esp8266_write_4bits(CMD_WIFI_UDP_JOIN_GROUP);
 
 	esp8266_write_word(nIp);
 }
 
-uint16_t Network::RecvFrom(__attribute__((unused)) int32_t nHandle, void *pBuffer, uint16_t nLength, uint32_t *from_ip, uint16_t* from_port) {
+uint16_t Network::RecvFrom([[maybe_unused]] int32_t nHandle, void *pBuffer, uint16_t nLength, uint32_t *from_ip, uint16_t* from_port) {
 	assert(pBuffer != nullptr);
 	assert(from_ip != nullptr);
 	assert(from_port != nullptr);
@@ -136,7 +136,7 @@ uint16_t  Network::RecvFrom(int32_t nHandle, const void **ppBuffer, uint32_t *pF
 	return RecvFrom(nHandle, s_ReadBuffer, MAX_SEGMENT_LENGTH, pFromIp, pFromPort);
 }
 
-void Network::SendTo(__attribute__((unused)) int32_t nHandle, const void *pBuffer, uint16_t nLength, uint32_t to_ip, uint16_t remote_port) {
+void Network::SendTo([[maybe_unused]] int32_t nHandle, const void *pBuffer, uint16_t nLength, uint32_t to_ip, uint16_t remote_port) {
 	assert(pBuffer != nullptr);
 
 	esp8266_write_4bits(CMD_WIFI_UDP_SEND);

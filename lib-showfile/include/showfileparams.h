@@ -2,7 +2,7 @@
  * @file showfileparams.h
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,33 +34,25 @@
 namespace showfileparams {
 struct Params {
 	uint32_t nSetList;
-	uint8_t nFormat;
 	uint8_t nShow;
-	uint16_t nOptions;
 	uint16_t nOscPortIncoming;
 	uint16_t nOscPortOutgoing;
-	uint8_t nProtocol;
 	uint16_t nUniverse;
 	uint8_t nDisableUnicast;
 	uint8_t nDmxMaster;
 } __attribute__((packed));
 
-struct Options {
-	static constexpr auto AUTO_START = (1U << 0);
-	static constexpr auto LOOP = (1U << 1);
-	static constexpr auto DISABLE_SYNC = (1U << 2);
-};
-
 struct Mask {
-	static constexpr auto FORMAT = (1U << 0);
-	static constexpr auto SHOW = (1U << 1);
-	static constexpr auto OPTIONS = (1U << 2);
-	static constexpr auto OSC_PORT_INCOMING = (1U << 3);
-	static constexpr auto OSC_PORT_OUTGOING = (1U << 4);
-	static constexpr auto PROTOCOL = (1U << 5);
-	static constexpr auto SACN_UNIVERSE = (1U << 6);
-	static constexpr auto ARTNET_UNICAST_DISABLED = (1U << 7);
-	static constexpr auto DMX_MASTER = (1U << 8);
+	static constexpr uint32_t SHOW = (1U << 0);
+	static constexpr uint32_t OSC_PORT_INCOMING = (1U << 1);
+	static constexpr uint32_t OSC_PORT_OUTGOING = (1U << 2);
+	static constexpr uint32_t PROTOCOL = (1U << 3);
+	static constexpr uint32_t SACN_UNIVERSE = (1U << 4);
+	static constexpr uint32_t ARTNET_UNICAST_DISABLED = (1U << 5);
+	static constexpr uint32_t DMX_MASTER = (1U << 6);
+	static constexpr uint32_t OPTION_AUTO_START = (1U << 7);
+	static constexpr uint32_t OPTION_LOOP = (1U << 8);
+	static constexpr uint32_t OPTION_DISABLE_SYNC = (1U << 9);
 };
 }  // namespace showfileparams
 
@@ -89,22 +81,6 @@ public:
 
 	void Set();
 
-	showfile::Formats GetFormat() const {
-		return static_cast<showfile::Formats>(m_showFileParams.nFormat);
-	}
-
-	showfile::Protocols GetProtocol() const {
-		return static_cast<showfile::Protocols>(m_showFileParams.nProtocol);
-	}
-
-	uint8_t GetShow() const {
-		return m_showFileParams.nShow;
-	}
-
-	bool IsAutoStart() const {
-		return isOptionSet(showfileparams::Options::AUTO_START);
-	}
-
 	bool IsArtNetBroadcast() const {
 		return isMaskSet(showfileparams::Mask::ARTNET_UNICAST_DISABLED);
 	}
@@ -116,14 +92,12 @@ private:
     void HandleOptions(const char *pLine, const char *pKeyword, uint16_t nMask);
     void callbackFunction(const char *s);
     bool isMaskSet(uint32_t nMask) const {
-    	return (m_showFileParams.nSetList & nMask) == nMask;
+    	return (m_Params.nSetList & nMask) == nMask;
     }
-    bool isOptionSet(uint16_t nMask) const {
-    	return (m_showFileParams.nOptions & nMask) == nMask;
-    }
+    void SetBool(const uint8_t nValue, const uint32_t nMask);
 
 private:
-    showfileparams::Params m_showFileParams;
+    showfileparams::Params m_Params;
 };
 
 #endif /* SHOWFILEPARAMS_H_ */

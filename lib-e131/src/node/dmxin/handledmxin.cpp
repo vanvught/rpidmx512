@@ -64,8 +64,7 @@ static uint32_t s_ReceivingMask = 0;
 
 void E131Bridge::HandleDmxIn() {
 	for (uint32_t nPortIndex = 0 ; nPortIndex < e131bridge::MAX_PORTS; nPortIndex++) {
-		if ((m_Bridge.Port[nPortIndex].direction == lightset::PortDir::INPUT) 
-		&& (!m_InputPort[nPortIndex].IsDisabled)) {
+		if ((m_Bridge.Port[nPortIndex].direction == lightset::PortDir::INPUT) && (!m_InputPort[nPortIndex].IsDisabled)) {
 
 			const auto *const pDmxData = reinterpret_cast<const struct Data *>(Dmx::Get()->GetDmxChanged(nPortIndex));
 

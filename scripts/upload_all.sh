@@ -4,7 +4,7 @@ echo $1
 DIR=../opi_emac*
 UIMAGE=orangepi_zero.uImage.gz
 
-array=('rconfig.txt' 'display.txt' 'network.txt' 'artnet.txt' 'e131.txt' 'devices.txt' 'params.txt' 'rdm_device.txt' 'ltc.txt' 'osc.txt' 'sensors.txt' 'subdev.txt' 'serial.txt' 'show.txt' 'tcnet.txt')
+array=('rconfig.txt' 'display.txt' 'network.txt' 'artnet.txt' 'e131.txt' 'devices.txt' 'params.txt' 'rdm_device.txt' 'ltc.txt' 'osc.txt' 'sensors.txt' 'subdev.txt' 'serial.txt' 'show.txt' 'tcnet.txt' 'show.txt')
 
 for f in $DIR
 do

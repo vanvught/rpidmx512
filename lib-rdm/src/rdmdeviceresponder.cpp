@@ -132,7 +132,7 @@ void RDMDeviceResponder::Print() {
 	const char *pPersonalityDescription = pPersonality->GetDescription();
 	const uint8_t nPersonalityDescriptionLength =pPersonality->GetDescriptionLength();
 
-	printf("RDM Responder configuration\n");
+	puts("RDM Responder configuration");
 	printf(" Protocol Version %d.%d\n", pDeviceInfo->protocol_major, pDeviceInfo->protocol_minor);
 	printf(" DMX Address      : %d\n", (pDeviceInfo->dmx_start_address[0] << 8) + pDeviceInfo->dmx_start_address[1]);
 	printf(" DMX Footprint    : %d\n", (pDeviceInfo->dmx_footprint[0] << 8) + pDeviceInfo->dmx_footprint[1]);
@@ -141,7 +141,7 @@ void RDMDeviceResponder::Print() {
 	printf(" Sensors          : %d\n", pDeviceInfo->sensor_count);
 }
 
-void RDMDeviceResponder::PersonalityUpdate(__attribute__((unused))  LightSet *pLightSet) {
+void RDMDeviceResponder::PersonalityUpdate([[maybe_unused]]  LightSet *pLightSet) {
 }
 
 void RDMDeviceResponder::DmxStartAddressUpdate() {

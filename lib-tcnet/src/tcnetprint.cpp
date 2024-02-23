@@ -29,7 +29,7 @@
 #include "tcnetconst.h"
 
 void TCNet::Print() {
-	printf("TCNet\n");
+	puts("TCNet");
 	printf(" Node : %.8s\n", m_tOptIn.ManagementHeader.NodeName);
 	if (m_tLayer != TCNetLayer::LAYER_UNDEFINED) {
 		printf(" L%c T%d\n", GetLayerName(m_tLayer), TCNetConst::FPS[m_tTimeCodeType]);

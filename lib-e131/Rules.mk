@@ -17,6 +17,9 @@ ifneq ($(MAKE_FLAGS),)
 	ifeq ($(findstring NODE_NODE,$(MAKE_FLAGS)), NODE_NODE)
 		EXTRA_SRCDIR+=src/node
 	endif
+	ifeq ($(findstring OUTPUT_DMX_SEND,$(MAKE_FLAGS)), OUTPUT_DMX_SEND)
+			EXTRA_INCLUDES+=../lib-dmx/include
+	endif
 else
   EXTRA_SRCDIR+=src/node src/node/dmxin src/controller
   DEFINES+=E131_HAVE_DMXIN
@@ -24,4 +27,6 @@ else
   DEFINES+=OUTPUT_DMX_SEND
   DEFINES+=LIGHTSET_PORTS=4
   EXTRA_INCLUDES+=../lib-dmx/include
+  DEFINES+=NODE_SHOWFILE 
+	DEFINES+=CONFIG_SHOWFILE_PROTOCOL_NODE_E131
 endif

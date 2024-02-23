@@ -26,6 +26,7 @@ SRCDIR+=src/debug
 $(info [${SRCDIR}])
 
 INCLUDES:=-I./include -I../include -I../lib-device/include -I../lib-flash/include -I../lib-configstore/include -I../lib-hal/include -I../lib-debug/include -I../lib-h3/include -I../lib-arm/include 
+INCLUDES+=-I../lib-h3/CMSIS/Core_A/Include
 INCLUDES+=$(addprefix -I,$(EXTRA_INCLUDES))
 
 DEFINES:=-D$(PLATFORM) $(addprefix -D,$(DISPLAYS)) $(addprefix -D,$(DEFINES))
@@ -35,9 +36,10 @@ ifneq ($(findstring _TIME_STAMP_YEAR_,$(DEFINES)), _TIME_STAMP_YEAR_)
 endif
 
 DEFINES+=-DPHY_TYPE=PHY_GENERIC
-DEFINES+=-DENABLE_TFTP_SERVER -D__FPU_PRESENT=1
+DEFINES+=-DENABLE_TFTP_SERVER
 DEFINES+=-DCONFIG_MDNS_DOMAIN_REVERSE
 DEFINES+=-DISABLE_INTERNAL_RTC
+DEFINES+=-D__FPU_PRESENT=1 -D__GIC_PRESENT=1
 
 ifneq ($(findstring CONFIG_STORE_USE_SPI,$(DEFINES)), CONFIG_STORE_USE_SPI)
 	DEFINES+=-DCONFIG_STORE_USE_SPI
@@ -66,12 +68,11 @@ $(info $$MAKE_FLAGS [${MAKE_FLAGS}])
 COPS=-DBARE_METAL -DH3 $(DEFINES) $(MAKE_FLAGS) $(INCLUDES)
 COPS+=-mfpu=neon-vfpv4 -mcpu=cortex-a7 -mfloat-abi=hard -mhard-float
 COPS+=-nostartfiles -ffreestanding -nostdlib -fprefetch-loop-arrays
-#COPS+=-ftree-vectorize -fdump-tree-vect-details
 COPS+=-O2 -Wall -Werror -Wextra -Wpedantic -Wunused -Wsign-conversion -Wconversion 
-COPS+=-Wduplicated-cond -Wlogical-op #-Wduplicated-branches
+COPS+=-Wduplicated-cond -Wlogical-op -Wduplicated-branches
 COPS+=-ffunction-sections -fdata-sections
 
-CPPOPS=-std=c++11 -Wuseless-cast -Wold-style-cast -Wnon-virtual-dtor -Woverloaded-virtual -Wnull-dereference -fno-rtti -fno-exceptions -fno-unwind-tables
+CPPOPS=-std=c++20 -Wuseless-cast -Wold-style-cast -Wnon-virtual-dtor -Woverloaded-virtual -Wnull-dereference -fno-rtti -fno-exceptions -fno-unwind-tables
 CPPOPS+=-fno-threadsafe-statics
 
 CURR_DIR:=$(notdir $(patsubst %/,%,$(CURDIR)))

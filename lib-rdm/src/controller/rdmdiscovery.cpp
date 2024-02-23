@@ -62,11 +62,11 @@ static const uint8_t *convert_uid(uint64_t nUid) {
 }
 
 #ifndef NDEBUG
-static void print_uid(__attribute__((unused)) const uint8_t *pUid) {
+static void print_uid([[maybe_unused]] const uint8_t *pUid) {
 	printf("%.2x%.2x:%.2x%.2x%.2x%.2x", pUid[0], pUid[1], pUid[2], pUid[3], pUid[4], pUid[5]);
 }
 
-static void print_uid(__attribute__((unused)) uint64_t nUid) {
+static void print_uid([[maybe_unused]] uint64_t nUid) {
 	print_uid(convert_uid(nUid));
 }
 #endif
@@ -227,7 +227,7 @@ bool RDMDiscovery::IsValidDiscoveryResponse(uint8_t *pUid) {
 	return bIsValid;
 }
 
-void RDMDiscovery::SavedState(__attribute__((unused)) const uint32_t nLine) {
+void RDMDiscovery::SavedState([[maybe_unused]] const uint32_t nLine) {
 	assert(m_SavedState != m_State);
 #ifndef NDEBUG
 	printf("State %s->%s at line %u\n", rdmdiscovery::StateName[static_cast<uint32_t>(m_State)], rdmdiscovery::StateName[static_cast<uint32_t>(m_SavedState)], nLine);
@@ -235,7 +235,7 @@ void RDMDiscovery::SavedState(__attribute__((unused)) const uint32_t nLine) {
 	m_State = m_SavedState;
 }
 
-void RDMDiscovery::NewState(const rdmdiscovery::State state, const bool doStateLateResponse, __attribute__((unused)) const uint32_t nLine) {
+void RDMDiscovery::NewState(const rdmdiscovery::State state, const bool doStateLateResponse, [[maybe_unused]] const uint32_t nLine) {
 	assert(m_State != state);
 
 	if (doStateLateResponse && (m_State != rdmdiscovery::State::LATE_RESPONSE)) {

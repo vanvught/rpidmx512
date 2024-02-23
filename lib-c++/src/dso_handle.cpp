@@ -2,7 +2,7 @@
  * @file dso_handle.cpp
  *
  */
-/* Copyright (C) 2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2023 by Arjan van Vught mailto:info@info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-extern "C" int __aeabi_atexit(void *object, void (*destructor)(void*), void *dso_handle) {
+extern "C" int __aeabi_atexit(void *object, void (*destructor)(void *), void *dso_handle) {
 	static_cast<void>(object);
 	static_cast<void>(destructor);
 	static_cast<void>(dso_handle);

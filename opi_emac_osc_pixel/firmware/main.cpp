@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,7 +43,7 @@
 #include "pixeltestpattern.h"
 #include "pixeldmxparams.h"
 #include "ws28xxdmx.h"
-#include "ws28xxdmxstartstop.h"
+
 #include "handler.h"
 
 #include "remoteconfig.h"
@@ -115,9 +115,6 @@ void main() {
 
 	const auto nTestPattern = static_cast<pixelpatterns::Pattern>(pixelDmxParams.GetTestPattern());
 	PixelTestPattern pixelTestPattern(nTestPattern, 1);
-
-	PixelDmxStartStop pixelDmxStartStop;
-	pixelDmx.SetPixelDmxHandler(&pixelDmxStartStop);
 
 	display.Printf(7, "%s:%d G%d", PixelType::GetType(pixelDmxConfiguration.GetType()), pixelDmxConfiguration.GetCount(), pixelDmxConfiguration.GetGroupingCount());
 

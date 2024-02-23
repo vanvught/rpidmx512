@@ -126,7 +126,7 @@ void PixelConfiguration::GetTxH(Type type, uint8_t &nLowCode, uint8_t &nHighCode
 #include <cstdio>
 
 void PixelConfiguration::Print() {
-	printf("Pixel configuration\n");
+	puts("Pixel configuration");
 	printf(" Type    : %s [%d]\n", PixelType::GetType(m_type), static_cast<int>(m_type));
 	printf(" Count   : %d\n", m_nCount);
 

@@ -2,7 +2,7 @@
  * @file showfileosc.h
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,36 +26,63 @@
 #ifndef SHOWFILEOSC_H_
 #define SHOWFILEOSC_H_
 
+#if !defined (CONFIG_SHOWFILE_ENABLE_OSC)
+# error This file should not be included
+#endif
+
 #include <cstdint>
+#include <cstring>
+#include <cstdio>
 
 #include "showfiledisplay.h"
-
 #include "osc.h"
+
+#include "network.h"
+
+namespace cmd {
+static constexpr char PATH[] = "/showfile/";
+}
+namespace length {
+static constexpr uint32_t PATH = sizeof(cmd::PATH) - 1;
+}  // namespace length
 
 struct ShowFileOSCMax {
 	static constexpr auto CMD_LENGTH = 128;
-	static constexpr auto FILES_ENTRIES = 20;
+	static constexpr auto FILES_ENTRIES = 10;
 };
 
 class ShowFileOSC {
 public:
-	ShowFileOSC();
+	ShowFileOSC(uint16_t nPortIncoming = osc::port::DEFAULT_INCOMING, uint16_t nPortOutgoing = osc::port::DEFAULT_OUTGOING);
 	~ShowFileOSC();
 
-	void Start();
-	void Stop();
-	void Run();
+	void Run() {
+		m_nBytesReceived = Network::Get()->RecvFrom(m_nHandle, const_cast<const void **>(reinterpret_cast<void **>(&m_pBuffer)), &m_nRemoteIp, &m_nRemotePort);
 
-	void Print();
+		if (__builtin_expect((m_nBytesReceived <= length::PATH), 1)) {
+			return;
+		}
 
-	void SetPortIncoming(uint16_t nPortIncoming) {
+		if (memcmp(m_pBuffer, cmd::PATH, length::PATH) == 0) {
+			Process();
+		}
+	}
+
+	void Print() {
+		puts("OSC Server");
+		printf(" Path : [%s]\n", cmd::PATH);
+		printf(" Incoming port : %u\n", m_nPortIncoming);
+		printf(" Outgoing port : %u\n", m_nPortOutgoing);
+	}
+
+	void SetPortIncoming(const uint16_t nPortIncoming) {
 		m_nPortIncoming = nPortIncoming;
 	}
 	uint16_t GetPortIncoming() const {
 		return m_nPortIncoming;
 	}
 
-	void SetPortOutgoing(uint16_t nPortOutgoing) {
+	void SetPortOutgoing(const uint16_t nPortOutgoing) {
 		m_nPortOutgoing = nPortOutgoing;
 	}
 
@@ -63,24 +90,19 @@ public:
 		return m_nPortOutgoing;
 	}
 
-	static ShowFileOSC *Get() {
-		return s_pThis;
-	}
-
 private:
+	void Process();
 	void SendStatus();
-	void Reload();
+	void ShowFiles();
 
 private:
-	uint16_t m_nPortIncoming = osc::port::DEFAULT_INCOMING;
-	uint16_t m_nPortOutgoing = osc::port::DEFAULT_OUTGOING;
+	uint16_t m_nPortIncoming;
+	uint16_t m_nPortOutgoing;
 	int32_t m_nHandle { -1 };
 	uint32_t m_nRemoteIp { 0 };
 	uint16_t m_nRemotePort { 0 };
+	uint16_t m_nBytesReceived;
 	char *m_pBuffer { nullptr };
-	int32_t m_aFileIndex[ShowFileOSCMax::FILES_ENTRIES];
-
-	static ShowFileOSC *s_pThis;
 };
 
 #endif /* SHOWFILEOSC_H_ */

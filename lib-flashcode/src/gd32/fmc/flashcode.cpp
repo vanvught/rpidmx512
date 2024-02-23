@@ -31,6 +31,16 @@
 
 #include "gd32.h"
 
+/**
+ * With the latest GD32F firmware, this function is declared as static.
+ */
+#if defined (GD32F20X)
+extern "C" {
+fmc_state_enum fmc_bank0_state_get(void);
+fmc_state_enum fmc_bank1_state_get(void);
+}
+#endif
+
 #include "debug.h"
 
 namespace flashcode {

@@ -32,6 +32,18 @@ ifneq ($(MAKE_FLAGS),)
 	ifeq ($(findstring NODE_OSC_SERVER,$(MAKE_FLAGS)), NODE_OSC_SERVER)
 		EXTRA_INCLUDES+=../lib-oscserver/include
 	endif
+	ifeq ($(findstring NODE_SHOWFILE,$(MAKE_FLAGS)), NODE_SHOWFILE)
+		EXTRA_INCLUDES+=../lib-showfile/include
+		ifeq ($(findstring CONFIG_SHOWFILE_ENABLE_OSC,$(MAKE_FLAGS)), CONFIG_SHOWFILE_ENABLE_OSC)
+			EXTRA_INCLUDES+=../lib-osc/include
+		endif
+		ifeq ($(findstring CONFIG_SHOWFILE_PROTOCOL_E131,$(MAKE_FLAGS)), CONFIG_SHOWFILE_PROTOCOL_E131)
+			EXTRA_INCLUDES+=../lib-e131/include
+		endif
+		ifeq ($(findstring CONFIG_SHOWFILE_PROTOCOL_ARTNET,$(MAKE_FLAGS)), CONFIG_SHOWFILE_PROTOCOL_ARTNET)
+			EXTRA_INCLUDES+=../lib-artnet/include
+		endif
+	endif
 	
 	ifeq ($(findstring RDM_CONTROLLER,$(MAKE_FLAGS)), RDM_CONTROLLER)
 		EXTRA_INCLUDES+=../lib-rdm/include ../lib-dmx/include
@@ -95,4 +107,7 @@ else
 	EXTRA_INCLUDES+=../lib-showfile/include
 	EXTRA_INCLUDES+=../lib-dmxmonitor/include 
 	EXTRA_INCLUDES+=../lib-oscclient/include ../lib-oscserver/include
+	
+	DEFINES+=RDM_CONTROLLER ENABLE_NET_PHYSTATUS CONFIG_USB_HOST_MSC ENABLE_PHY_SWITCH
+	DEFINES+=NODE_SHOWFILE CONFIG_SHOWFILE_FORMAT_OLA CONFIG_SHOWFILE_PROTOCOL_E131
 endif

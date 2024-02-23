@@ -18,6 +18,7 @@ ifneq ($(MAKE_FLAGS),)
 	
 	ifneq (,$(findstring NODE_E131,$(MAKE_FLAGS)))
 		EXTRA_INCLUDES+=../lib-e131/include
+		EXTRA_INCLUDES+=../lib-dmx/include
 		EXTRA_SRCDIR+=src/e131
 	endif
 	

@@ -33,6 +33,7 @@
 #include <cstdio>
 #include <cassert>
 
+#include "dmxmonitor.h"
 #include "dmxmonitorparams.h"
 #include "dmxmonitorparamsconst.h"
 

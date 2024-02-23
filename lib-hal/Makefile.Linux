@@ -1,8 +1,7 @@
 #DEFINES=NDEBUG
 
-EXTRA_INCLUDES= 
-
-EXTRA_SRCDIR=
+EXTRA_INCLUDES=src/linux/minimum
+EXTRA_SRCDIR=src/linux/minimum
 
 ifneq ($(MAKE_FLAGS),)
 	ifeq (,$(findstring DISABLE_RTC,$(MAKE_FLAGS)))

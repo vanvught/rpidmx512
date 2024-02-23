@@ -46,8 +46,6 @@ typedef enum arm_vector {
 # define ARM_VECTOR(x)	(unsigned *)(x)
 #endif
 
-#define	__enable_irq()	asm volatile ("cpsie i")
-#define	__disable_irq()	asm volatile ("cpsid i")
 #define	__enable_fiq()	asm volatile ("cpsie f")
 #define	__disable_fiq()	asm volatile ("cpsid f")
 

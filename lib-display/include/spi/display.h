@@ -41,6 +41,10 @@
 # include "spi/st7789.h"
 #endif
 
+#if defined (DISPLAYTIMEOUT_GPIO)
+# include "hal_gpio.h"
+#endif
+
 #include "hardware.h"
 
 class Display {
@@ -242,9 +246,11 @@ public:
 				SetSleep(true);
 			}
 		} else {
-			if (__builtin_expect((display::timeout::gpio_renew()), 0)) {
+#if defined (DISPLAYTIMEOUT_GPIO)
+			if (__builtin_expect(((FUNC_PREFIX(gpio_lev(DISPLAYTIMEOUT_GPIO)) == LOW)), 0)) {
 				SetSleep(false);
 			}
+#endif
 		}
 	}
 

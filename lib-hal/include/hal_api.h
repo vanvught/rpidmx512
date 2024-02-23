@@ -2,7 +2,7 @@
  * @file hal_api.h
  *
  */
-/* Copyright (C) 2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2023-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,11 +36,12 @@
 # include "rpi/hal_api.h"
 #endif
 
-#include <cstdint>
-
-#if !defined(UDELAY)
-# define UDELAY
+#ifdef __cplusplus
+# if !defined(UDELAY)
+#  define UDELAY
+#  include <cstdint>
  void udelay(uint32_t us, uint32_t offset = 0);
+# endif
 #endif
 
 #endif /* HAL_API_H_ */

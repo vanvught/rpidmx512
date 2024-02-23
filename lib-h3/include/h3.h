@@ -2,7 +2,7 @@
  * @file h3.h
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,14 @@
 
 #ifndef H3_H_
 #define H3_H_
+
+#ifdef __cplusplus
+# pragma GCC diagnostic push
+# if __cplusplus > 201402
+// error: compound assignment with 'volatile'-qualified left operand is deprecated
+#  pragma GCC diagnostic ignored "-Wvolatile"
+# endif
+#endif
 
 #ifdef __cplusplus
 # define _CAST(x)	reinterpret_cast<x>
@@ -807,7 +815,19 @@ extern void h3_dump_memory_mapping(void);
 #  define UDELAY
  void udelay(uint32_t us, uint32_t offset = 0);
 # endif
-#endif
+#endif //
 
 #endif
+
+#define GIC_DISTRIBUTOR_BASE	H3_GIC_DIST_BASE
+#define GIC_INTERFACE_BASE		H3_GIC_CPUIF_BASE
+#define IRQn_Type				H3_IRQn_TypeDef
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wconversion"
+#pragma GCC diagnostic ignored "-Wsign-conversion"
+
+#include "core_ca.h"
+#include "irq_ctrl.h"
+
 #endif /* H3_H_ */

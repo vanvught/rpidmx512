@@ -44,21 +44,21 @@ PixelDmxParamsRdm::PixelDmxParamsRdm() {
 	DEBUG_EXIT
 }
 
-void PixelDmxParamsRdm::Start(__attribute__((unused)) uint32_t nPortIndex) {
+void PixelDmxParamsRdm::Start([[maybe_unused]] uint32_t nPortIndex) {
 	DEBUG_ENTRY
 	assert(nPortIndex == 0);
 
 	DEBUG_EXIT
 }
 
-void PixelDmxParamsRdm::Stop(__attribute__((unused)) uint32_t nPortIndex) {
+void PixelDmxParamsRdm::Stop([[maybe_unused]] uint32_t nPortIndex) {
 	DEBUG_ENTRY
 	assert(nPortIndex == 0);
 
 	DEBUG_EXIT
 }
 
-void PixelDmxParamsRdm::SetData(__attribute__((unused)) uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, __attribute__((unused)) const bool doUpdate) {
+void PixelDmxParamsRdm::SetData([[maybe_unused]] uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, [[maybe_unused]] const bool doUpdate) {
 	assert(nPortIndex == 0);
 
 	if (nLength < DMX_FOOTPRINT) {
@@ -117,6 +117,6 @@ bool PixelDmxParamsRdm::GetSlotInfo(uint16_t nSlotOffset, lightset::SlotInfo &sl
 	return true;
 }
 
-void PixelDmxParamsRdm::Display(__attribute__((unused)) const uint8_t *pData) {
+void PixelDmxParamsRdm::Display([[maybe_unused]] const uint8_t *pData) {
 	// Weak
 }

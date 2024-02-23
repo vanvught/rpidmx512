@@ -38,6 +38,7 @@
 									<listOptionValue builtIn="false" value="PARAMS_INLCUDE_ALL"/>
 									<listOptionValue builtIn="false" value="LOGIC_ANALYZER"/>
 									<listOptionValue builtIn="false" value="CONFIG_RDM_MANUFACTURER_PIDS_SET"/>
+									<listOptionValue builtIn="false" value="PIXELDMXSTARTSTOP_GPIO"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.612160791" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -58,6 +59,7 @@
 									<listOptionValue builtIn="false" value="PARAMS_INLCUDE_ALL"/>
 									<listOptionValue builtIn="false" value="LOGIC_ANALYZER"/>
 									<listOptionValue builtIn="false" value="CONFIG_RDM_MANUFACTURER_PIDS_SET"/>
+									<listOptionValue builtIn="false" value="PIXELDMXSTARTSTOP_GPIO"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.241570484" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -137,6 +139,7 @@
 									<listOptionValue builtIn="false" value="PARAMS_INLCUDE_ALL"/>
 									<listOptionValue builtIn="false" value="LOGIC_ANALYZER"/>
 									<listOptionValue builtIn="false" value="CONFIG_RDM_MANUFACTURER_PIDS_SET"/>
+									<listOptionValue builtIn="false" value="PIXELDMXSTARTSTOP_GPIO"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.379475916" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -160,6 +163,7 @@
 									<listOptionValue builtIn="false" value="PARAMS_INLCUDE_ALL"/>
 									<listOptionValue builtIn="false" value="LOGIC_ANALYZER"/>
 									<listOptionValue builtIn="false" value="CONFIG_RDM_MANUFACTURER_PIDS_SET"/>
+									<listOptionValue builtIn="false" value="PIXELDMXSTARTSTOP_GPIO"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.169852792" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -239,6 +243,7 @@
 									<listOptionValue builtIn="false" value="PARAMS_INLCUDE_ALL"/>
 									<listOptionValue builtIn="false" value="LOGIC_ANALYZER"/>
 									<listOptionValue builtIn="false" value="CONFIG_RDM_MANUFACTURER_PIDS_SET"/>
+									<listOptionValue builtIn="false" value="PIXELDMXSTARTSTOP_GPIO"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1845175879" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -260,6 +265,7 @@
 									<listOptionValue builtIn="false" value="PARAMS_INLCUDE_ALL"/>
 									<listOptionValue builtIn="false" value="LOGIC_ANALYZER"/>
 									<listOptionValue builtIn="false" value="CONFIG_RDM_MANUFACTURER_PIDS_SET"/>
+									<listOptionValue builtIn="false" value="PIXELDMXSTARTSTOP_GPIO=1"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.236762928" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>

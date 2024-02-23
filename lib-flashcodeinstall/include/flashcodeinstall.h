@@ -2,7 +2,7 @@
  * @file flashcodeinstall.h
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -72,6 +72,14 @@
 # elif defined (BOARD_16X4U_PIXEL)
 #  define OFFSET_UIMAGE		0x008000		// 32K
 #  define FIRMWARE_MAX_SIZE (224 * 1024)	// 224K
+# elif defined (BOARD_GD32F470Z_EVAL)
+#  define OFFSET_UIMAGE		0x008000		// 32K
+#  define FIRMWARE_MAX_SIZE (171 * 1024)	// 171K
+# elif defined (BOARD_GD32H759I_EVAL)
+#  define OFFSET_UIMAGE		0x008000		// 32K
+#  define FIRMWARE_MAX_SIZE (171 * 1024)	// 171K
+# else
+#  error Board is not supported
 # endif
 #else
 # define OFFSET_UIMAGE		0x0

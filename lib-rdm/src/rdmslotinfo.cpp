@@ -139,7 +139,7 @@ const char *RDMSlotInfo::GetCategoryText(uint16_t nSlotOffset, uint16_t nId, uin
 	return s_tTableC2[nIndex].pDescription;
 }
 
-const char *RDMSlotInfo::GetCategoryTextUndefined(__attribute__((unused)) uint16_t nSlotOffset, uint32_t& nLength) {
+const char *RDMSlotInfo::GetCategoryTextUndefined([[maybe_unused]] uint16_t nSlotOffset, uint32_t& nLength) {
 	const auto nIndex = TABLE_C2_SIZE - 1;
 	nLength = static_cast<uint16_t>(strlen(s_tTableC2[nIndex].pDescription));
 	return s_tTableC2[nIndex].pDescription;

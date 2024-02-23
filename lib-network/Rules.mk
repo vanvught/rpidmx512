@@ -16,8 +16,8 @@ ifneq ($(MAKE_FLAGS),)
 	endif
 	ifndef COND
 		EXTRA_SRCDIR+=src/apps/mdns src/apps/ntp src/apps/tftp
-		EXTRA_SRCDIR+=src/emac src/params src/net
-		EXTRA_SRCDIR+=src/emac/phy
+		EXTRA_SRCDIR+=src/emac src/net src/emac/phy
+		EXTRA_SRCDIR+=src/params 
 		ifeq ($(findstring ENABLE_PHY_SWITCH,$(MAKE_FLAGS)), ENABLE_PHY_SWITCH)
 			EXTRA_SRCDIR+=src/emac/dsa
 		endif		

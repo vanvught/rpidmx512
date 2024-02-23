@@ -119,7 +119,7 @@ void DmxSend::Sync(const bool doForce) {
 #include <cstdio>
 
 void DmxSend::Print() {
-	printf("DMX Send\n");
+	puts("DMX Send");
 	printf(" Break time   : %u\n", Dmx::Get()->GetDmxBreakTime());
 	printf(" MAB time     : %u\n", Dmx::Get()->GetDmxMabTime());
 	printf(" Refresh rate : %u\n", 1000000U / Dmx::Get()->GetDmxPeriodTime());

@@ -2,7 +2,7 @@
  * @file display.cpp
  *
  */
-/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,17 +29,29 @@
 #include "display.h"
 #include "displayset.h"
 
-#if defined(CONFIG_DISPLAY_ENABLE_HD44780)
-# include "i2c/hd44780.h"
-#endif
 #include "i2c/ssd1306.h"
 #if defined(CONFIG_DISPLAY_ENABLE_SSD1311)
 # include "i2c/ssd1311.h"
+#endif
+#if defined(CONFIG_DISPLAY_ENABLE_HD44780)
+# include "i2c/hd44780.h"
 #endif
 
 #include "display7segment.h"
 
 #include "hal_i2c.h"
+#include "hal_gpio.h"
+
+namespace display {
+namespace timeout {
+static void gpio_init() {
+#if defined (DISPLAYTIMEOUT_GPIO)
+	FUNC_PREFIX(gpio_fsel(DISPLAYTIMEOUT_GPIO, GPIO_FSEL_INPUT));
+	FUNC_PREFIX(gpio_set_pud(DISPLAYTIMEOUT_GPIO, GPIO_PULL_UP));
+#endif
+}
+}  // namespace timeout
+}  // namespace display
 
 Display *Display::s_pThis;
 

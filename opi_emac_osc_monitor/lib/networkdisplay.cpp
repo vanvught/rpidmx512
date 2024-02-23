@@ -28,7 +28,7 @@
 namespace network {
 void display_emac_config() {}
 void display_emac_start() {}
-void display_emac_status(__attribute__((unused)) const bool isLinkUp) {}
+void display_emac_status([[maybe_unused]] const bool isLinkUp) {}
 
 void display_ip() {}
 
@@ -41,6 +41,6 @@ void display_hostname() {}
 void display_emac_shutdown() {}
 
 // DHCP Client
-void display_dhcp_status(__attribute__((unused)) network::dhcp::ClientStatus nStatus) {}
+void display_dhcp_status([[maybe_unused]] network::dhcp::ClientStatus nStatus) {}
 }  // namespace network
 

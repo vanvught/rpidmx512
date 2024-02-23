@@ -1,3 +1,8 @@
+#pragma GCC push_options
+#pragma GCC optimize ("Os")
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wconversion"
+#pragma GCC diagnostic ignored "-Wsign-conversion"
 /*----------------------------------------------------------------------------/
 /  FatFs - Generic FAT Filesystem Module  R0.14b                              /
 /-----------------------------------------------------------------------------/

@@ -1,8 +1,9 @@
+#if !defined (CONFIG_NETWORK_USE_MINIMUM)
 /**
  * @file networktcp.cpp
  *
  */
-/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -199,3 +200,4 @@ void Network::TcpWrite(const int32_t nHandle, const uint8_t *pBuffer, uint16_t n
 		perror("write");
 	}
 }
+#endif

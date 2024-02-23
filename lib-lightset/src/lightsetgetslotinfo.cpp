@@ -27,7 +27,7 @@
 
 using namespace lightset;
 
-bool LightSet::GetSlotInfo(__attribute__((unused)) uint16_t nSlot, SlotInfo &tSlotInfo) {
+bool LightSet::GetSlotInfo([[maybe_unused]] uint16_t nSlot, SlotInfo &tSlotInfo) {
 	tSlotInfo.nType = 0x00; // ST_PRIMARY
 	tSlotInfo.nCategory = 0x0001; // SD_INTENSITY
 	return true;

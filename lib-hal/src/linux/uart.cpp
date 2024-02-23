@@ -152,12 +152,12 @@ void uart_begin(const uint32_t nUart, uint32_t nBaudrate, uint32_t nBits, uint32
 	s_configure_termios();
 }
 
-void uart_set_baudrate(__attribute__((unused)) const uint32_t uart_base, uint32_t nBaudrate) {
+void uart_set_baudrate([[maybe_unused]] const uint32_t uart_base, uint32_t nBaudrate) {
 	s_nBaudrate = nBaudrate;
 	s_configure_termios();
 }
 
-void uart_transmit(__attribute__((unused)) const uint32_t uart_base, const uint8_t *pDate, uint32_t nLength) {
+void uart_transmit([[maybe_unused]] const uint32_t uart_base, const uint8_t *pDate, uint32_t nLength) {
 	if (fd < 0) {
 		DEBUG_EXIT
 		return;
@@ -170,7 +170,7 @@ void uart_transmit(__attribute__((unused)) const uint32_t uart_base, const uint8
 	}
 }
 
-void uart_transmit_string(__attribute__((unused)) const uint32_t uart_base, const char *pData) {
+void uart_transmit_string([[maybe_unused]] const uint32_t uart_base, const char *pData) {
 	if (fd < 0) {
 		DEBUG_EXIT
 		return;
@@ -184,7 +184,7 @@ void uart_transmit_string(__attribute__((unused)) const uint32_t uart_base, cons
 	}
 }
 
-uint32_t uart_get_rx_fifo_level(__attribute__((unused)) const uint32_t uart_base) {
+uint32_t uart_get_rx_fifo_level([[maybe_unused]] const uint32_t uart_base) {
 	if (fd < 0) {
 		DEBUG_EXIT
 		return 0;
@@ -201,7 +201,7 @@ uint32_t uart_get_rx_fifo_level(__attribute__((unused)) const uint32_t uart_base
     return static_cast<uint32_t>(ret);
 }
 
-uint8_t uart_get_rx_data(__attribute__((unused)) const uint32_t uart_base) {
+uint8_t uart_get_rx_data([[maybe_unused]] const uint32_t uart_base) {
 	if (fd < 0) {
 		DEBUG_EXIT
 		return ' ';
@@ -218,7 +218,7 @@ uint8_t uart_get_rx_data(__attribute__((unused)) const uint32_t uart_base) {
 	return static_cast<uint8_t>(c);
 }
 
-uint32_t uart_get_rx(__attribute__((unused)) const uint32_t uart_base, char *pData, uint32_t nLength) {
+uint32_t uart_get_rx([[maybe_unused]] const uint32_t uart_base, char *pData, uint32_t nLength) {
 	if (fd < 0) {
 		DEBUG_EXIT
 		return 0;

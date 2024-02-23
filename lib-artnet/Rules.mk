@@ -44,6 +44,10 @@ ifneq ($(MAKE_FLAGS),)
 		EXTRA_INCLUDES+=../lib-e131/include
 	endif
 	
+	ifeq ($(findstring OUTPUT_DMX_SEND,$(MAKE_FLAGS)), OUTPUT_DMX_SEND)
+			EXTRA_INCLUDES+=../lib-dmx/include
+	endif
+	
 	ifneq (,$(findstring CONFIG_STORE_USE_ROM,$(MAKE_FLAGS)))
 		EXTRA_INCLUDES+=../lib-flashcode/include
 	endif
@@ -63,4 +67,6 @@ else
 	DEFINES+=RDM_CONTROLLER
 	DEFINES+=ARTNET_VERSION=4
 	DEFINES+=LIGHTSET_PORTS=1
+	DEFINES+=NODE_SHOWFILE 
+	DEFINES+=CONFIG_SHOWFILE_PROTOCOL_NODE_ARTNET
 endif

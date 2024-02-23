@@ -33,7 +33,7 @@
 static constexpr uint32_t DMX_FOOTPRINT = 1;
 static RDMPersonality *s_RDMPersonalities[] = {new RDMPersonality("Dimmer", DMX_FOOTPRINT)};
 
-RDMSubDeviceBwDimmer::RDMSubDeviceBwDimmer(uint16_t nDmxStartAddress, char nChipSselect, uint8_t nSlaveAddress, __attribute__((unused)) uint32_t nSpiSpeed) :
+RDMSubDeviceBwDimmer::RDMSubDeviceBwDimmer(uint16_t nDmxStartAddress, char nChipSselect, uint8_t nSlaveAddress, [[maybe_unused]] uint32_t nSpiSpeed) :
 	RDMSubDevice("bw_spi_dimmer", nDmxStartAddress), m_BwSpiDimmer(nChipSselect, nSlaveAddress)
 {
 	SetDmxFootprint(DMX_FOOTPRINT);

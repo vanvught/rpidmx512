@@ -31,7 +31,7 @@
 #include "debug.h"
 
 namespace tftpfileserver {
-bool is_valid(__attribute__((unused)) const void *pBuffer) {
+bool is_valid([[maybe_unused]] const void *pBuffer) {
 	return true;
 }
 }  // namespace tftpfileserver

@@ -49,7 +49,7 @@ static void arm_timer_handler() {
 	gv_ltc_nUpdatesPrevious = gv_ltc_nUpdates;
 }
 
-static void irq_timer0_handler(__attribute__((unused)) uint32_t clo) {
+static void irq_timer0_handler([[maybe_unused]] uint32_t clo) {
 	gv_ltc_bTimeCodeAvailable = true;
 	gv_ltc_nTimeCodeCounter++;
 }

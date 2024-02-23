@@ -2,7 +2,7 @@
  * @file showfileparamsconst.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,6 @@
 
 const char ShowFileParamsConst::FILE_NAME[] = "show.txt";
 
-const char ShowFileParamsConst::FORMAT[] = "format";
 const char ShowFileParamsConst::SHOW[] = "show";
 
 const char ShowFileParamsConst::DMX_MASTER[] = "dmx_master";
@@ -36,6 +35,5 @@ const char ShowFileParamsConst::OPTION_AUTO_START[] = "auto_start";
 const char ShowFileParamsConst::OPTION_LOOP[] = "loop";
 const char ShowFileParamsConst::OPTION_DISABLE_SYNC[] = "disable_sync";
 
-const char ShowFileParamsConst::PROTOCOL[] = "protocol";
 const char ShowFileParamsConst::SACN_SYNC_UNIVERSE[] = "sync_universe";
 const char ShowFileParamsConst::ARTNET_DISABLE_UNICAST[] = "disable_unicast";

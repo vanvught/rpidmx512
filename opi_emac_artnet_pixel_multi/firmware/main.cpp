@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +34,6 @@
 #include "displayudf.h"
 #include "displayudfparams.h"
 #include "displayhandler.h"
-#include "display_timeout.h"
 #include "handleroled.h"
 
 #include "artnetnode.h"
@@ -48,7 +47,7 @@
 #include "ws28xxmulti.h"
 #include "pixeldmxparams.h"
 #include "ws28xxdmxmulti.h"
-#include "ws28xxdmxstartstop.h"
+
 
 #if defined (NODE_RDMNET_LLRP_ONLY)
 # include "rdmdeviceparams.h"
@@ -59,12 +58,16 @@
 # include "factorydefaults.h"
 #endif
 
+#if defined (NODE_SHOWFILE)
+# include "showfile.h"
+# include "showfileparams.h"
+#endif
+
 #include "remoteconfig.h"
 #include "remoteconfigparams.h"
 
 #include "flashcodeinstall.h"
 #include "configstore.h"
-
 
 #include "firmwareversion.h"
 #include "software_version.h"
@@ -109,7 +112,7 @@ void main() {
 	pixelDmxParams.Set(&pixelDmxConfiguration);
 
 	WS28xxDmxMulti pixelDmxMulti(pixelDmxConfiguration);
-	pixelDmxMulti.SetPixelDmxHandler(new PixelDmxStartStop);
+
 	WS28xxMulti::Get()->SetJamSTAPLDisplay(new HandlerOled);
 
 	const auto nPixelActivePorts = pixelDmxMulti.GetOutputPorts();
@@ -168,6 +171,20 @@ void main() {
 	llrpOnlyDevice.Print();
 #endif
 
+#if defined (NODE_SHOWFILE)
+	ShowFile showFile;
+
+	ShowFileParams showFileParams;
+	showFileParams.Load();
+	showFileParams.Set();
+
+	if (showFile.IsAutoStart()) {
+		showFile.Start();
+	}
+
+	showFile.Print();
+#endif
+
 	node.Print();
 	pixelDmxMulti.Print();
 
@@ -217,6 +234,9 @@ void main() {
 		hw.WatchdogFeed();
 		nw.Run();
 		node.Run();
+#if defined (NODE_SHOWFILE)
+		showFile.Run();
+#endif
 		remoteConfig.Run();
 #if defined (NODE_RDMNET_LLRP_ONLY)
 		llrpOnlyDevice.Run();

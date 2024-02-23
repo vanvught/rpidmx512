@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,6 @@
 #include "displayudf.h"
 #include "displayudfparams.h"
 #include "displayhandler.h"
-#include "display_timeout.h"
 
 #include "artnetnode.h"
 #include "artnetparams.h"
@@ -47,12 +46,16 @@
 #include "rdmdeviceparams.h"
 #include "dmxconfigudp.h"
 
+#if defined (NODE_SHOWFILE)
+# include "showfile.h"
+# include "showfileparams.h"
+#endif
+
 #include "remoteconfig.h"
 #include "remoteconfigparams.h"
 
 #include "flashcodeinstall.h"
 #include "configstore.h"
-
 
 #include "firmwareversion.h"
 #include "software_version.h"
@@ -108,8 +111,6 @@ void main() {
 
 	node.SetOutput(&dmxSend);
 
-	DmxConfigUdp dmxConfigUdp;
-
 	ArtNetRdmController artNetRdmController;
 
 	RDMDeviceParams rdmDeviceParams;
@@ -122,6 +123,20 @@ void main() {
 	node.SetRdmController(&artNetRdmController, artnetParams.IsRdm());
 
 	node.Print();
+
+#if defined (NODE_SHOWFILE)
+	ShowFile showFile;
+
+	ShowFileParams showFileParams;
+	showFileParams.Load();
+	showFileParams.Set();
+
+	if (showFile.IsAutoStart()) {
+		showFile.Start();
+	}
+
+	showFile.Print();
+#endif
 
 	const auto nActivePorts = node.GetActiveInputPorts() + node.GetActiveOutputPorts();
 
@@ -160,11 +175,11 @@ void main() {
 		hw.WatchdogFeed();
 		nw.Run();
 		node.Run();
+#if defined (NODE_SHOWFILE)
+		showFile.Run();
+#endif
 		remoteConfig.Run();
 		configStore.Flash();
-		if (node.GetActiveOutputPorts() != 0) {
-			dmxConfigUdp.Run();
-		}
 		mDns.Run();
 		display.Run();
 		hw.Run();

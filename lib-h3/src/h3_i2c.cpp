@@ -40,8 +40,8 @@
 static uint8_t s_slave_address;
 static uint32_t s_current_baudrate;
 
-static constexpr uint32_t ALT_FUNCTION_SCK = (EXT_I2C_NUMBER == 0 ? static_cast<uint32_t>(H3_PA11_SELECT_TWI0_SCK) : static_cast<uint32_t>(H3_PA18_SELECT_TWI1_SCK));
-static constexpr uint32_t ALT_FUNCTION_SDA = (EXT_I2C_NUMBER == 0 ? static_cast<uint32_t>(H3_PA12_SELECT_TWI0_SDA) : static_cast<uint32_t>(H3_PA19_SELECT_TWI1_SDA));
+static constexpr auto ALT_FUNCTION_SCK = (EXT_I2C_NUMBER == 0 ? static_cast<uint32_t>(H3_PA11_SELECT_TWI0_SCK) : static_cast<uint32_t>(H3_PA18_SELECT_TWI1_SCK));
+static constexpr auto ALT_FUNCTION_SDA = (EXT_I2C_NUMBER == 0 ? static_cast<uint32_t>(H3_PA12_SELECT_TWI0_SDA) : static_cast<uint32_t>(H3_PA19_SELECT_TWI1_SDA));
 
 #define TIMEOUT			0xffff
 
@@ -119,7 +119,7 @@ static void _set_clock(const uint32_t clk_in, const uint32_t sclk_req) {
 	return;
 }
 
-static int32_t _stop(void) {
+static int32_t _stop() {
 	int32_t time = TIMEOUT;
 	uint32_t tmp_val;
 
@@ -145,7 +145,7 @@ static int32_t _stop(void) {
 	return H3_I2C_OK;
 }
 
-static int32_t _sendstart(void) {
+static int32_t _sendstart() {
 	int32_t time = 0xfffff;
 	uint32_t tmp_val;
 
@@ -353,7 +353,7 @@ static int _write(const char *buffer, const int len) {
 	return ret0;
 }
 
-void __attribute__((cold)) h3_i2c_begin(void) {
+void __attribute__((cold)) h3_i2c_begin() {
 	h3_gpio_fsel(EXT_I2C_SCL, ALT_FUNCTION_SCK);
 	h3_gpio_fsel(EXT_I2C_SDA, ALT_FUNCTION_SDA);
 
@@ -392,7 +392,7 @@ void __attribute__((cold)) h3_i2c_begin(void) {
 #endif
 }
 
-void __attribute__((cold)) h3_i2c_end(void) {
+void __attribute__((cold)) h3_i2c_end() {
 #if (EXT_I2C_NUMBER == 0)
 	H3_CCU->BUS_CLK_GATING3 &= ~CCU_BUS_CLK_GATING3_TWI0;
 	H3_CCU->BUS_SOFT_RESET4 &= ~CCU_BUS_SOFT_RESET4_TWI0;

@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +34,6 @@
 
 #include "displayudf.h"
 #include "displayudfparams.h"
-#include "display_timeout.h"
 
 #include "rdmresponder.h"
 #include "rdmpersonality.h"
@@ -47,10 +46,10 @@
 #include "factorydefaults.h"
 
 #include "pixeldmxparams.h"
-#include "ws28xxdmx.h"
-#include "pixeldmxstartstop.h"
 #include "pixeldmxparamsrdm.h"
 #include "pixeltestpattern.h"
+
+#include "ws28xxdmx.h"
 
 #if !defined(NO_EMAC)
 # include "remoteconfig.h"
@@ -118,9 +117,6 @@ void main() {
 	}
 
 	WS28xxDmx pixelDmx(pixelDmxConfiguration);
-
-	PixelDmxStartStop pixelDmxStartStop;
-	pixelDmx.SetPixelDmxHandler(&pixelDmxStartStop);
 
 	const auto nTestPattern = static_cast<pixelpatterns::Pattern>(pixelDmxParams.GetTestPattern());
 	PixelTestPattern pixelTestPattern(nTestPattern, 1);

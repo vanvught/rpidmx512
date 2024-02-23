@@ -356,7 +356,7 @@ int spi_flash_cmd_write_status(uint8_t sr) {
 	return 0;
 }
 
-int spi_flash_probe(__attribute__((unused)) unsigned int cs, __attribute__((unused)) unsigned int max_hz, __attribute__((unused)) unsigned int spi_mode) {
+int spi_flash_probe([[maybe_unused]] unsigned int cs, [[maybe_unused]] unsigned int max_hz, [[maybe_unused]] unsigned int spi_mode) {
 	int shift;
 	unsigned i;
 	uint8_t idcode[IDCODE_LEN] = {0, };

@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +34,6 @@
 #include "displayudf.h"
 #include "displayudfparams.h"
 #include "displayhandler.h"
-#include "display_timeout.h"
 #include "handleroled.h"
 
 #include "e131.h"
@@ -48,7 +47,7 @@
 #include "ws28xxmulti.h"
 #include "pixeldmxparams.h"
 #include "ws28xxdmxmulti.h"
-#include "ws28xxdmxstartstop.h"
+
 
 #if defined (NODE_RDMNET_LLRP_ONLY)
 # include "rdmdeviceparams.h"
@@ -57,6 +56,11 @@
 # include "rdmpersonality.h"
 # include "rdm_e120.h"
 # include "factorydefaults.h"
+#endif
+
+#if defined (NODE_SHOWFILE)
+# include "showfile.h"
+# include "showfileparams.h"
 #endif
 
 #include "remoteconfig.h"
@@ -109,7 +113,6 @@ void main() {
 
 	WS28xxDmxMulti pixelDmxMulti(pixelDmxConfiguration);
 	WS28xxMulti::Get()->SetJamSTAPLDisplay(new HandlerOled);
-	pixelDmxMulti.SetPixelDmxHandler(new PixelDmxStartStop);
 
 	const auto nUniverses = pixelDmxMulti.GetUniverses();
 	const auto nActivePorts = pixelDmxMulti.GetOutputPorts();
@@ -159,6 +162,20 @@ void main() {
 	rdmDeviceParams.Set(&llrpOnlyDevice);
 
 	llrpOnlyDevice.Print();
+#endif
+
+#if defined (NODE_SHOWFILE)
+	ShowFile showFile;
+
+	ShowFileParams showFileParams;
+	showFileParams.Load();
+	showFileParams.Set();
+
+	if (showFile.IsAutoStart()) {
+		showFile.Start();
+	}
+
+	showFile.Print();
 #endif
 
 	bridge.Print();
@@ -211,6 +228,9 @@ void main() {
 		hw.WatchdogFeed();
 		nw.Run();
 		bridge.Run();
+#if defined (NODE_SHOWFILE)
+		showFile.Run();
+#endif
 		remoteConfig.Run();
 #if defined (NODE_RDMNET_LLRP_ONLY)
 		llrpOnlyDevice.Run();

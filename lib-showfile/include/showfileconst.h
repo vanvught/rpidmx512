@@ -2,7 +2,7 @@
  * @file showfileconst.h
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,13 +26,14 @@
 #ifndef SHOWFILECONST_H_
 #define SHOWFILECONST_H_
 
-#include "showfile.h"
+#include <cstdint>
 
-struct ShowFileConst {
-	static constexpr auto SHOWFILECONST_FORMAT_NAME_LENGTH = 6;	///< Includes '\0'
-	static const char FORMAT[static_cast<unsigned>(showfile::Formats::UNDEFINED)][SHOWFILECONST_FORMAT_NAME_LENGTH];
-
-	static const char STATUS[static_cast<int>(showfile::Status::UNDEFINED)][12];
+namespace showfile {
+enum class Status {
+	IDLE, PLAYING, STOPPED, ENDED, UNDEFINED
 };
+
+static constexpr char STATUS[static_cast<int>(showfile::Status::UNDEFINED)][12] = { "Idle", "Playing", "Stopped", "Ended" };
+}  // namespace showfile
 
 #endif /* SHOWFILECONST_H_ */

@@ -2,7 +2,7 @@
  * @file spi_flash.cpp
  *
  */
-/* Copyright (C) 2022-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2022-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,6 +40,16 @@ int spi_init() {
 
 	gpio_fsel(SPI_FLASH_CS_GPIOx, SPI_FLASH_CS_GPIO_PINx, GPIO_FSEL_OUTPUT);
 	gpio_bit_set(SPI_FLASH_CS_GPIOx, SPI_FLASH_CS_GPIO_PINx);
+
+#if defined (SPI_FLASH_WP_GPIO_PINx)
+	gpio_fsel(SPI_GPIOx, SPI_FLASH_WP_GPIO_PINx, GPIO_FSEL_OUTPUT);
+	gpio_bit_set(SPI_GPIOx, SPI_FLASH_WP_GPIO_PINx);
+#endif
+
+#if defined (SPI_FLASH_HOLD_GPIO_PINx)
+	gpio_fsel(SPI_GPIOx, SPI_FLASH_HOLD_GPIO_PINx, GPIO_FSEL_OUTPUT);
+	gpio_bit_set(SPI_GPIOx, SPI_FLASH_HOLD_GPIO_PINx);
+#endif
 
 	return 0;
 }

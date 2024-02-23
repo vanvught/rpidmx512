@@ -115,7 +115,6 @@ public:
 	}
 
 private:
-	void SetUtcOffset(const float fUtcOffset);
 	void GetTimeNtpFormat(uint32_t &nSeconds, uint32_t &nFraction);
 	void Send();
 	bool Receive(uint8_t& LiVnMode);

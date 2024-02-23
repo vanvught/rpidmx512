@@ -25,8 +25,8 @@ ifneq ($(MAKE_FLAGS),)
  	endif
  	
  	ifdef FATFS
-		EXTRA_SRCDIR+=ff12c ff12c/option
-#		EXTRA_SRCDIR+=ff14b/source
+#		EXTRA_SRCDIR+=ff12c ff12c/option
+		EXTRA_SRCDIR+=ff14b/source
  		EXTRA_SRCDIR+=posix
  	endif
 	

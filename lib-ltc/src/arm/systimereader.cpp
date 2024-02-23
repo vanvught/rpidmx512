@@ -64,7 +64,7 @@ static constexpr auto PORT = 0x5443;
 }
 
 #if defined (H3)
-static void irq_timer0_handler(__attribute__((unused)) uint32_t clo) {
+static void irq_timer0_handler([[maybe_unused]] uint32_t clo) {
 	gv_ltc_bTimeCodeAvailable = true;
 }
 #elif defined (GD32)

@@ -68,6 +68,11 @@
 #include "sparkfundmx.h"
 #include "sparkfundmxconst.h"
 
+#if defined (NODE_SHOWFILE)
+# include "showfile.h"
+# include "showfileparams.h"
+#endif
+
 #include "firmwareversion.h"
 #include "software_version.h"
 
@@ -186,6 +191,20 @@ void main() {
 
 	pBoard->Print();
 
+#if defined (NODE_SHOWFILE)
+	ShowFile showFile;
+
+	ShowFileParams showFileParams;
+	showFileParams.Load();
+	showFileParams.Set();
+
+	if (showFile.IsAutoStart()) {
+		showFile.Start();
+	}
+
+	showFile.Print();
+#endif
+
 	display.SetTitle("Art-Net 4 L6470");
 	display.Set(2, displayudf::Labels::IP);
 	display.Set(3, displayudf::Labels::VERSION);
@@ -225,6 +244,9 @@ void main() {
 		hw.WatchdogFeed();
 		nw.Run();
 		node.Run();
+#if defined (NODE_SHOWFILE)
+		showFile.Run();
+#endif
 		ntpClient.Run();
 		remoteConfig.Run();
 		configStore.Flash();

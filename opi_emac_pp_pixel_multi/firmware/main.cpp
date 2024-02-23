@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2022-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,7 +36,7 @@
 #include "displayudf.h"
 #include "displayudfparams.h"
 #include "displayhandler.h"
-#include "display_timeout.h"
+#include "handleroled.h"
 
 #include "pp.h"
 
@@ -46,8 +46,6 @@
 #include "pixeldmxparams.h"
 #include "ws28xxmulti.h"
 #include "ws28xxdmxmulti.h"
-#include "ws28xxdmxstartstop.h"
-#include "handleroled.h"
 
 #if defined (NODE_RDMNET_LLRP_ONLY)
 # include "rdmdeviceparams.h"
@@ -98,7 +96,6 @@ void main() {
 
 	WS28xxDmxMulti pixelDmxMulti(pixelDmxConfiguration);
 	WS28xxMulti::Get()->SetJamSTAPLDisplay(new HandlerOled);
-	pixelDmxMulti.SetPixelDmxHandler(new PixelDmxStartStop);
 
 	PixelPusher pp;
 

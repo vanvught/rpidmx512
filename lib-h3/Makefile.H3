@@ -1,8 +1,9 @@
 DEFINES=NDEBUG
+DEFINES+=CMSIS_device_header=\"h3.h\"
 
-EXTRA_SRCDIR=arm device/mmc firmware
+EXTRA_SRCDIR=CMSIS/Core_A/Source arm device/mmc firmware
 
-EXTRA_INCLUDES =
+EXTRA_INCLUDES=CMSIS/Core_A/Include
 
 ifneq ($(MAKE_FLAGS),)
 	ifneq (,$(findstring CONSOLE_FB,$(MAKE_FLAGS)))

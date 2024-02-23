@@ -195,7 +195,7 @@ void PixelPusher::Run() {
 #endif
 }
 
-void PixelPusher::HandlePusherCommand(__attribute__((unused)) const uint8_t *pBuffer, __attribute__((unused)) uint32_t nSize) {
+void PixelPusher::HandlePusherCommand([[maybe_unused]] const uint8_t *pBuffer, [[maybe_unused]] uint32_t nSize) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("pBuffer=%p, nSize=%u", reinterpret_cast<const void *>(pBuffer), nSize);
 #if !defined(CONFIG_PP_16BITSTUFF)
@@ -207,7 +207,7 @@ void PixelPusher::HandlePusherCommand(__attribute__((unused)) const uint8_t *pBu
 #include <cstdio>
 
 void PixelPusher::Print() {
-	puts("PixelPusher:");
+	puts("PixelPusher");
 	printf(" Count             : %u\n", m_nCount);
 	printf(" Channels per pixel: %u\n", pp::configuration::CHANNELS_PER_PIXEL);
 	printf(" Active ports      : %u\n", m_nActivePorts);

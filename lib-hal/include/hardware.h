@@ -2,7 +2,7 @@
  * @file hardware.h
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,8 @@
 #define HARDWARE_H_
 
 #include <cstdint>
+#include <cstring>
+#include <uuid/uuid.h>
 
 namespace hardware {
 enum class BootDevice {
@@ -42,8 +44,6 @@ namespace ledblink {
 enum class Mode {
 	OFF_OFF, OFF_ON, NORMAL, DATA, FAST, REBOOT, UNKNOWN
 };
-
-void display(const uint32_t nState);
 }  // namespace ledblink
 }  // namespace hardware
 
@@ -56,7 +56,11 @@ void display(const uint32_t nState);
 #  include "rpi/hardware.h"
 # endif
 #else
-# include "linux/hardware.h"
+# if defined (CONFIG_HAL_USE_MINIMUM)
+#  include "linux/minimum/hardware.h"
+# else
+#  include "linux/hardware.h"
+# endif
 #endif
 
 #endif /* HARDWARE_H_ */

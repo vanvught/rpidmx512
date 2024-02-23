@@ -2,7 +2,7 @@
  * @file ws28xxdmxmulti.cpp
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,6 +39,10 @@
 #include "pixeldmxparams.h"
 #include "pixeldmxconfiguration.h"
 
+#if defined (PIXELDMXSTARTSTOP_GPIO)
+# include "hal_gpio.h"
+#endif
+
 #include "debug.h"
 
 WS28xxDmxMulti::WS28xxDmxMulti(PixelDmxConfiguration& pixelDmxConfiguration): m_pixelDmxConfiguration(pixelDmxConfiguration){
@@ -50,6 +54,11 @@ WS28xxDmxMulti::WS28xxDmxMulti(PixelDmxConfiguration& pixelDmxConfiguration): m_
 
 	m_pWS28xxMulti = new WS28xxMulti(pixelDmxConfiguration);
 	assert(m_pWS28xxMulti != nullptr);
+
+#if defined (PIXELDMXSTARTSTOP_GPIO)
+	FUNC_PREFIX(gpio_fsel(PIXELDMXSTARTSTOP_GPIO, GPIO_FSEL_OUTPUT));
+	FUNC_PREFIX(gpio_clr(PIXELDMXSTARTSTOP_GPIO));
+#endif
 
 	m_pWS28xxMulti->Blackout();
 
@@ -65,10 +74,11 @@ void WS28xxDmxMulti::Start(const uint32_t nPortIndex) {
 	DEBUG_PRINTF("%u", nPortIndex);
 
 	if (m_bIsStarted == 0) {
-		if (m_pPixelDmxHandler != nullptr) {
-			m_pPixelDmxHandler->Start();
-		}
+#if defined (PIXELDMXSTARTSTOP_GPIO)
+		FUNC_PREFIX(gpio_set(PIXELDMXSTARTSTOP_GPIO));
+#endif
 	}
+
 	m_bIsStarted |= (1U << nPortIndex);
 }
 
@@ -80,9 +90,9 @@ void WS28xxDmxMulti::Stop(const uint32_t nPortIndex) {
 	}
 
 	if (m_bIsStarted == 0)  {
-		if (m_pPixelDmxHandler != nullptr) {
-			m_pPixelDmxHandler->Stop();
-		}
+#if defined (PIXELDMXSTARTSTOP_GPIO)
+		FUNC_PREFIX(gpio_clr(PIXELDMXSTARTSTOP_GPIO));
+#endif
 	}
 }
 

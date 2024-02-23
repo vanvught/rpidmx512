@@ -2,7 +2,7 @@
  * @file gps.cpp
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -69,7 +69,7 @@ constexpr char aTag[static_cast<int>(nmea::UNDEFINED)][nmea::length::TAG] =
 
 GPS *GPS::s_pThis = nullptr;
 
-GPS::GPS(float fUtcOffset, GPSModule module): m_nUtcOffset(Utc::Validate(fUtcOffset)), m_tModule(module) {
+GPS::GPS(float fUtcOffset, GPSModule module): m_nUtcOffset(hal::utc_validate(fUtcOffset)), m_tModule(module) {
 	DEBUG_ENTRY
 	assert(s_pThis == nullptr);
 	s_pThis = this;
@@ -237,7 +237,7 @@ void GPS::Run() {
 	}
 }
 
-void GPS::DumpSentence(__attribute__((unused)) const char *pSentence) {
+void GPS::DumpSentence([[maybe_unused]] const char *pSentence) {
 #ifndef NDEBUG
 	printf("%p |", pSentence);
 

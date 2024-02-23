@@ -2,7 +2,7 @@
  * @file irq_timer.c
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,8 @@
 # pragma GCC target ("general-regs-only")
 #endif
 
+//#define CONFIG_SYSTEM_CMSIS_IRQ_HANDLER
+
 #include <stdint.h>
 #include <stddef.h>
 
@@ -40,6 +42,11 @@
 #include "h3_timer.h"
 #include "h3_hs_timer.h"
 
+#define ARM_TIMER_ENABLE			(1U<<0)
+#define ARM_PHYSICAL_TIMER_IRQ		H3_PPI13_IRQn
+#define ARM_VIRTUAL_TIMER_IRQ		H3_PPI11_IRQn
+
+#if !defined(CONFIG_SYSTEM_CMSIS_IRQ_HANDLER)
 /**
  * Generic ARM Timer
  */
@@ -48,63 +55,64 @@ static volatile thunk_irq_timer_arm_t arm_virtual_timer_func = NULL;
 
 static volatile uint32_t timer_value;
 
-#define ARM_TIMER_ENABLE			(1U<<0)
-#define ARM_PHYSICAL_TIMER_IRQ		H3_PPI13_IRQn
-#define ARM_VIRTUAL_TIMER_IRQ		H3_PPI11_IRQn
-
 /**
  * H3 Timers
  */
 static thunk_irq_timer_t h3_timer0_func = NULL;
 static thunk_irq_timer_t h3_timer1_func = NULL;
 
-static void arm_physical_timer_handler(void) {
+static void TIMER0_IRQHandler() {
+	H3_TIMER->IRQ_STA = TIMER_IRQ_PEND_TMR0;	/* Clear Timer 0 Pending bit */
+	h3_timer0_func(H3_HS_TIMER->CURNT_LO);
+}
+
+static void TIMER1_IRQHandler() {
+	H3_TIMER->IRQ_STA = TIMER_IRQ_PEND_TMR1;	/* Clear Timer 1 Pending bit */
+	h3_timer1_func(H3_HS_TIMER->CURNT_LO);
+}
+
+static void ARM_Physical_Timer_IRQHandler(void) {
 	__asm volatile ("mcr p15, 0, %0, c14, c2, 0" : : "r" (H3_F_24M));
 	__asm volatile ("mcr p15, 0, %0, c14, c2, 1" : : "r" (ARM_TIMER_ENABLE));
 
 	if (arm_physical_timer_func != NULL) {
 		arm_physical_timer_func();
 	}
-
-	H3_GIC_CPUIF->AEOI = ARM_PHYSICAL_TIMER_IRQ;
-	H3_GIC_DIST->ICPEND[ARM_PHYSICAL_TIMER_IRQ / 32] = 1 << (ARM_PHYSICAL_TIMER_IRQ % 32);
 }
 
-static void arm_virtual_timer_handler(void) {
+static void ARM_Virtual_Timer_IRQHandler(void) {
 	__asm volatile ("mcr p15, 0, %0, c14, c3, 0" : : "r" (timer_value));
 	__asm volatile ("mcr p15, 0, %0, c14, c3, 1" : : "r" (ARM_TIMER_ENABLE));
 
 	if (arm_virtual_timer_func != NULL) {
 		arm_virtual_timer_func();
 	}
-
-	H3_GIC_CPUIF->AEOI = ARM_VIRTUAL_TIMER_IRQ;
-	H3_GIC_DIST->ICPEND[ARM_VIRTUAL_TIMER_IRQ / 32] = 1 << (ARM_VIRTUAL_TIMER_IRQ % 32);
 }
 
 static void __attribute__((interrupt("IRQ"))) irq_timer_handler(void) {
-	dmb();
+	__DMB();
 
-	const uint32_t irq_timer_micros = h3_hs_timer_lo_us();
 	const uint32_t irq = H3_GIC_CPUIF->AIA;
 
 	if ((h3_timer0_func != NULL) && (irq == H3_TIMER0_IRQn)) {
-		H3_TIMER->IRQ_STA = TIMER_IRQ_PEND_TMR0;	/* Clear Timer 0 Pending bit */
-		h3_timer0_func(irq_timer_micros);
+		TIMER0_IRQHandler();
 		H3_GIC_CPUIF->AEOI = H3_TIMER0_IRQn;
 		H3_GIC_DIST->ICPEND[H3_TIMER0_IRQn / 32] = 1 << (H3_TIMER0_IRQn % 32);
 	} else if ((h3_timer1_func != NULL) && (irq == H3_TIMER1_IRQn)) {
-		H3_TIMER->IRQ_STA = TIMER_IRQ_PEND_TMR1;	/* Clear Timer 1 Pending bit */
-		h3_timer1_func(irq_timer_micros);
+		TIMER1_IRQHandler();
 		H3_GIC_CPUIF->AEOI = H3_TIMER1_IRQn;
 		H3_GIC_DIST->ICPEND[H3_TIMER1_IRQn / 32] = 1 << (H3_TIMER1_IRQn % 32);
 	} else if (irq == ARM_PHYSICAL_TIMER_IRQ) {
-		arm_physical_timer_handler();
+		ARM_Physical_Timer_IRQHandler();
+		H3_GIC_CPUIF->AEOI = ARM_PHYSICAL_TIMER_IRQ;
+		H3_GIC_DIST->ICPEND[ARM_PHYSICAL_TIMER_IRQ / 32] = 1 << (ARM_PHYSICAL_TIMER_IRQ % 32);
 	} else if (irq == ARM_VIRTUAL_TIMER_IRQ) {
-		arm_virtual_timer_handler();
+		ARM_Virtual_Timer_IRQHandler();
+		H3_GIC_CPUIF->AEOI = ARM_VIRTUAL_TIMER_IRQ;
+		H3_GIC_DIST->ICPEND[ARM_VIRTUAL_TIMER_IRQ / 32] = 1 << (ARM_VIRTUAL_TIMER_IRQ % 32);
 	}
 
-	dmb();
+	__DMB();
 }
 
 void irq_timer_arm_physical_set(thunk_irq_timer_arm_t func) {
@@ -118,7 +126,7 @@ void irq_timer_arm_physical_set(thunk_irq_timer_arm_t func) {
 		__asm volatile ("mcr p15, 0, %0, c14, c2, 1" : : "r" (0));
 	}
 
-	isb();
+	__ISB();
 }
 
 void irq_timer_arm_virtual_set(thunk_irq_timer_arm_t func, uint32_t value) {
@@ -136,7 +144,7 @@ void irq_timer_arm_virtual_set(thunk_irq_timer_arm_t func, uint32_t value) {
 		__asm volatile ("mcr p15, 0, %0, c14, c3, 1" : : "r" (0));
 	}
 
-	isb();
+	__ISB();
 }
 
 void irq_timer_set(_irq_timers timer, thunk_irq_timer_t func) {
@@ -159,7 +167,7 @@ void irq_timer_set(_irq_timers timer, thunk_irq_timer_t func) {
 		}
 	}
 
-	isb();
+	__ISB();
 }
 
 void __attribute__((cold)) irq_timer_init(void) {
@@ -170,3 +178,24 @@ void __attribute__((cold)) irq_timer_init(void) {
 
 	__enable_irq();
 }
+#else
+static void __attribute__((interrupt("IRQ"))) IRQ_Handler(void) {
+	const IRQn_ID_t irqn = IRQ_GetActiveIRQ();
+	IRQHandler_t const handler = IRQ_GetHandler(irqn);
+
+	if (handler != NULL) {
+		handler();
+	}
+
+	IRQ_EndOfInterrupt(irqn);
+}
+
+void __attribute__((cold)) irq_timer_init(void) {
+	arm_install_handler((unsigned) IRQ_Handler, ARM_VECTOR(ARM_VECTOR_IRQ));
+
+	gic_irq_config(H3_TIMER0_IRQn, GIC_CORE0);
+	gic_irq_config(H3_TIMER1_IRQn, GIC_CORE0);
+
+	__enable_irq();
+}
+#endif

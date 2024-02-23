@@ -101,7 +101,7 @@ RDMDevice::RDMDevice() {
 }
 
 void RDMDevice::Print() {
-	printf("RDM Device configuration\n");
+	puts("RDM Device configuration");
 	const auto nLength = static_cast<uint8_t>(std::min(static_cast<size_t>(RDM_MANUFACTURER_LABEL_MAX_LENGTH), strlen(RDMConst::MANUFACTURER_NAME)));
 	printf(" Manufacturer Name : %.*s\n", nLength, const_cast<char *>(&RDMConst::MANUFACTURER_NAME[0]));
 	printf(" Manufacturer ID   : %.2X%.2X\n", m_aUID[0], m_aUID[1]);

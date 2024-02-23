@@ -2,7 +2,7 @@
  * @file showfile.cpp
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,11 +24,17 @@
  */
 
 #include <cstdio>
+#include <dirent.h>
 #include <unistd.h>
 #include <cassert>
 
 #include "showfile.h"
 #include "showfiletftp.h"
+#include "showfiledisplay.h"
+
+#if defined CONFIG_USB_HOST_MSC
+# include "device/usb/host.h"
+#endif
 
 #include "hardware.h"
 
@@ -36,7 +42,11 @@
 
 ShowFile *ShowFile::s_pThis;
 
+#if defined (CONFIG_SHOWFILE_ENABLE_OSC)
+ShowFile::ShowFile(uint16_t nPortIncoming, uint16_t nPortOutgoing): m_showFileOSC(nPortIncoming, nPortOutgoing) {
+#else
 ShowFile::ShowFile() {
+#endif
 	DEBUG_ENTRY
 
 	assert(s_pThis == nullptr);
@@ -47,11 +57,23 @@ ShowFile::ShowFile() {
 	DEBUG_EXIT
 }
 
-void ShowFile::SetShowFile(uint32_t nShowFileNumber) {
+void ShowFile::SetShowFile(const uint32_t nShowFileNumber) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("nShowFileNumber=%u", nShowFileNumber);
 
-	if (nShowFileNumber <= showfile::File::MAX_NUMBER) {
+	if (nShowFileNumber <= showfile::FILE_MAX_NUMBER) {
+		m_nShowFileCurrent = nShowFileNumber;
+		showfile::filename_copyto(m_aShowFileName, sizeof(m_aShowFileName), m_nShowFileCurrent);
+
+		DEBUG_PRINTF("m_aShowFileName=[%s]", m_aShowFileName);
+
+#if defined CONFIG_USB_HOST_MSC
+		if (usb::host::get_status() != usb::host::Status::READY) {
+			DEBUG_EXIT
+			return;
+		}
+#endif
+
 		ShowFileStop();
 
 		if (m_pShowFile != nullptr) {
@@ -61,12 +83,6 @@ void ShowFile::SetShowFile(uint32_t nShowFileNumber) {
 			m_pShowFile = nullptr;
 		}
 
-		m_nShowFileNumber = nShowFileNumber;
-
-		ShowFileNameCopyTo(m_aShowFileName, sizeof(m_aShowFileName), nShowFileNumber);
-
-		DEBUG_PRINTF("m_aShowFileName=[%s]", m_aShowFileName);
-
 		m_pShowFile = fopen(m_aShowFileName, "r");
 
 		if (m_pShowFile == nullptr) {
@@ -74,42 +90,97 @@ void ShowFile::SetShowFile(uint32_t nShowFileNumber) {
 			m_aShowFileName[0] = '\0';
 		}
 
-		if (m_pShowFileDisplay != nullptr) {
-			m_pShowFileDisplay->ShowFileName(m_aShowFileName, nShowFileNumber);
-			m_pShowFileDisplay->ShowShowFileStatus();
-		}
+		showfile::display_filename(m_aShowFileName, nShowFileNumber);
+		showfile::display_status();
 	}
 
 	DEBUG_EXIT
 }
 
-bool ShowFile::DeleteShowFile(__attribute__((unused)) uint32_t nShowFileNumber) {
+bool ShowFile::DeleteShowFile([[maybe_unused]] const uint32_t nShowFileNumber) {
 	DEBUG_ENTRY
-#if !defined(CONFIG_SHOWFILE_DISABLE_TFTP)
 	DEBUG_PRINTF("nShowFileNumber=%u, m_bEnableTFTP=%d", nShowFileNumber, m_bEnableTFTP);
 
+#if !defined(CONFIG_SHOWFILE_DISABLE_TFTP)
 	if (!m_bEnableTFTP) {
 		DEBUG_EXIT
 		return false;
 	}
 
-	char aFileName[showfile::File::NAME_LENGTH + 1];
+	char aFileName[showfile::FILE_NAME_LENGTH + 1U];
 
-	if (ShowFileNameCopyTo(aFileName, sizeof(aFileName), nShowFileNumber)) {
-		const int nResult = unlink(aFileName);
+	if (showfile::filename_copyto(aFileName, sizeof(aFileName), nShowFileNumber)) {
+		const auto nResult = unlink(aFileName);
 		DEBUG_PRINTF("nResult=%d", nResult);
 		DEBUG_EXIT
 		return (nResult == 0);
 	}
 #endif
+
 	DEBUG_EXIT
 	return false;
 }
 
-void ShowFile::EnableTFTP(__attribute__((unused))bool bEnableTFTP) {
-	DEBUG_ENTRY
-#if !defined(CONFIG_SHOWFILE_DISABLE_TFTP)
+void ShowFile::LoadShows() {
+	UnloadShows();
 
+#if defined (CONFIG_USB_HOST_MSC)
+	auto *dirp = opendir("0:/");
+#else
+	auto *dirp = opendir(".");
+#endif
+
+	if (dirp == nullptr) {
+		perror("opendir");
+
+		for (auto &FileIndex : m_nShowFileNumber) {
+			FileIndex = -1;
+		}
+	}
+
+	struct dirent *dp;
+
+    do {
+        if ((dp = readdir(dirp)) != nullptr) {
+        	if (dp->d_type == DT_DIR) {
+        		continue;
+        	}
+
+          	uint32_t nShowFileNumber;
+        	if (!showfile::filename_check(dp->d_name, nShowFileNumber)) {
+                continue;
+            }
+
+            DEBUG_PRINTF("[%d] found %s", nShows, dp->d_name);
+
+    		if (m_nShows == 0) {
+    			m_nShowFileNumber[0] = static_cast<int32_t>(nShowFileNumber);
+    		} else {
+    			int32_t i = m_nShows - 1;
+    			while ((static_cast<int32_t>(nShowFileNumber) < m_nShowFileNumber[i]) && i >= 0) {
+    				m_nShowFileNumber[i + 1] = m_nShowFileNumber[i];
+    				i--;
+    			}
+    			m_nShowFileNumber[i + 1] = static_cast<int32_t>(nShowFileNumber);
+    		}
+
+    		m_nShows++;
+
+            if (m_nShows == (showfile::FILE_MAX_NUMBER + 1U)) {
+            	break;
+            }
+        }
+    } while (dp != nullptr);
+
+	for (auto &FileIndex : m_nShowFileNumber) {
+		printf("%d ", FileIndex);
+	}
+}
+
+void ShowFile::EnableTFTP([[maybe_unused]] bool bEnableTFTP) {
+	DEBUG_ENTRY
+
+#if !defined(CONFIG_SHOWFILE_DISABLE_TFTP)
 	if (bEnableTFTP == m_bEnableTFTP) {
 		DEBUG_EXIT
 		return;
@@ -137,16 +208,17 @@ void ShowFile::EnableTFTP(__attribute__((unused))bool bEnableTFTP) {
 		delete m_pShowFileTFTP;
 		m_pShowFileTFTP = nullptr;
 
-		SetShowFile(m_nShowFileNumber);
+		SetShowFile(m_nShowFileCurrent);
 		SetStatus(showfile::Status::IDLE);
 	}
 
-	UpdateDisplayStatus();
+	showfile::display_status();
 #endif
+
 	DEBUG_EXIT
 }
 
-void ShowFile::SetStatus(showfile::Status Status) {
+void ShowFile::SetStatus(const showfile::Status Status) {
 	DEBUG_ENTRY
 
 	if (Status == m_Status) {
@@ -158,23 +230,23 @@ void ShowFile::SetStatus(showfile::Status Status) {
 
 	switch (m_Status) {
 		case showfile::Status::IDLE:
-			m_pShowFileProtocolHandler->DoRunCleanupProcess(true);
+			ShowFileProtocol::DoRunCleanupProcess(true);
 			Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
 			break;
-		case showfile::Status::RUNNING:
-			m_pShowFileProtocolHandler->DoRunCleanupProcess(false);
+		case showfile::Status::PLAYING:
+			ShowFileProtocol::DoRunCleanupProcess(false);
 			Hardware::Get()->SetMode(hardware::ledblink::Mode::DATA);
 			break;
 		case showfile::Status::STOPPED:
 		case showfile::Status::ENDED:
-			m_pShowFileProtocolHandler->DoRunCleanupProcess(true);
+			ShowFileProtocol::DoRunCleanupProcess(true);
 			Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
 			break;
 		default:
 			break;
 	}
 
-	UpdateDisplayStatus();
+	showfile::display_status();
 
 	DEBUG_EXIT
 }

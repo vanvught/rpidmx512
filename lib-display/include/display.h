@@ -33,10 +33,6 @@ namespace display {
 struct Defaults {
 	static constexpr auto SEEP_TIMEOUT = 5;
 };
-namespace timeout {
-void gpio_init();
-bool gpio_renew();
-}  // namespace timeout
 }  // namespace display
 
 #if !defined (CONFIG_DISPLAY_USE_CUSTOM)

@@ -67,7 +67,7 @@ $(BUILD)$1/%.o: $1/%.c
 	$(CC) $(COPS) -c $$< -o $$@
 	
 $(BUILD)$1/%.o: $1/%.cpp
-	$(CPP) $(COPS) -pedantic -fno-exceptions -fno-unwind-tables -fno-rtti -fno-threadsafe-statics -std=c++11 -c $$< -o $$@
+	$(CPP) $(COPS) -pedantic -fno-exceptions -fno-unwind-tables -fno-rtti -fno-threadsafe-statics -std=c++14 -c $$< -o $$@
 	
 $(BUILD)$1/%.o: $1/%.S
 	$(CC) $(COPS) -D__ASSEMBLY__ -c $$< -o $$@	
@@ -78,7 +78,7 @@ $(BUILD7)$1/%.o: $1/%.c
 	$(CC) $(COPS7) -c $$< -o $$@
 	
 $(BUILD7)$1/%.o: $1/%.cpp
-	$(CPP) $(COPS7) -pedantic -fno-exceptions -fno-unwind-tables -fno-rtti -fno-threadsafe-statics -std=c++11 -c $$< -o $$@	
+	$(CPP) $(COPS7) -pedantic -fno-exceptions -fno-unwind-tables -fno-rtti -fno-threadsafe-statics -std=c++14 -c $$< -o $$@	
 	
 $(BUILD7)$1/%.o: $1/%.S	
 	$(CC) $(COPS7) -D__ASSEMBLY__ -c $$< -o $$@		

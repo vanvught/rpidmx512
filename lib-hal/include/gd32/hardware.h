@@ -2,7 +2,7 @@
  * @file hardware.h
  *
  */
-/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,6 @@
 
 #include "gd32.h"
 #include "gd32_adc.h"
-#include "gd32_micros.h"
 
 #if defined (ENABLE_USB_HOST) && defined (CONFIG_USB_HOST_MSC)
 extern "C" {
@@ -67,7 +66,9 @@ public:
 		return 0;	// FIXME GetReleaseId
 	}
 
-	void GetUuid(uuid_t out);
+	void GetUuid(uuid_t out) {
+		memcpy(out, m_uuid, sizeof(uuid_t));
+	}
 
 	uint32_t Millis() {
 		extern volatile uint32_t s_nSysTickMillis;
@@ -75,7 +76,19 @@ public:
 	}
 
 	uint32_t Micros() {
-		return micros();
+		static uint32_t nMicrosPrevious;
+		static uint32_t nResult;
+		const auto nMicros = DWT->CYCCNT / (MCU_CLOCK_FREQ / 1000000U);
+
+		if (nMicros > nMicrosPrevious) {
+			nResult += (nMicros - nMicrosPrevious);
+		} else {
+			nResult += ((UINT32_MAX / (MCU_CLOCK_FREQ / 1000000U)) - nMicrosPrevious + nMicros);
+		}
+
+		nMicrosPrevious = nMicros;
+
+		return nResult;
 	}
 
 	uint32_t GetUpTime() {
@@ -83,12 +96,12 @@ public:
 	}
 
 	bool SetTime(__attribute__((unused)) const struct tm *pTime) {
-	#if !defined(DISABLE_RTC)
+#if !defined(DISABLE_RTC)
 		m_HwClock.Set(pTime);
 		return true;
-	#else
+#else
 		return false;
-	#endif
+#endif
 	}
 
 	void GetTime(struct tm *pTime) {
@@ -108,22 +121,22 @@ public:
 	}
 #endif
 
-	const char *GetBoardName(uint8_t &nLength) {
+	const char *GetBoardName(uint8_t& nLength) {
 		nLength = sizeof(GD32_BOARD_NAME) - 1U;
 		return GD32_BOARD_NAME;
 	}
 
-	const char *GetSysName(uint8_t &nLength) {
+	const char* GetSysName(uint8_t& nLength) {
 		nLength = 8;
 		return "Embedded";
 	}
 
-	const char *GetSocName(uint8_t &nLength) {
-		nLength = 5;
-		return "GD32F";
+	const char* GetSocName(uint8_t& nLength) {
+		nLength = 4;
+		return "GD32";
 	}
 
-	const char *GetCpuName(uint8_t &nLength) {
+	const char *GetCpuName(uint8_t& nLength) {
 		nLength = sizeof(GD32_MCU_NAME) - 1U;
 		return GD32_MCU_NAME;
 	}
@@ -137,8 +150,8 @@ public:
 	}
 
 	void WatchdogInit() {
-		const auto status = fwdgt_config(0xFFFF, FWDGT_PSC_DIV16);
-		m_bIsWatchdog = (SUCCESS == status);
+		m_bIsWatchdog = (SUCCESS == fwdgt_config(0xFFFF, FWDGT_PSC_DIV16));
+
 		if (m_bIsWatchdog) {
 			fwdgt_enable();
 		}
@@ -262,6 +275,7 @@ private:
 #if !defined(DISABLE_RTC)
 	HwClock m_HwClock;
 #endif
+	uuid_t m_uuid;
 	bool m_bIsWatchdog { false };
 	hardware::ledblink::Mode m_Mode { hardware::ledblink::Mode::UNKNOWN };
 	bool m_doLock { false };

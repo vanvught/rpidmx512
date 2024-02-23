@@ -2,7 +2,7 @@
  * @file remoteconfig.cpp
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -486,12 +486,12 @@ void RemoteConfig::HandleDisplaySet() {
 
 	const auto nCmdLength = s_SET[static_cast<uint32_t>(remoteconfig::udp::set::Command::DISPLAY)].nLength;
 
-	if (m_nBytesReceived != (nCmdLength + 1)) {
+	if (m_nBytesReceived != (nCmdLength + 1U)) {
 		DEBUG_EXIT
 		return;
 	}
 
-	Display::Get()->SetSleep(s_pUdpBuffer[nCmdLength + 1] == '0');
+	Display::Get()->SetSleep(s_pUdpBuffer[nCmdLength + 1U] == '0');
 
 	DEBUG_PRINTF("%c", s_pUdpBuffer[nCmdLength + 1]);
 	DEBUG_EXIT
@@ -518,14 +518,14 @@ void RemoteConfig::HandleRdmSet() {
 
 	const auto nCmdLength = s_SET[static_cast<uint32_t>(remoteconfig::udp::set::Command::RDM)].nLength;
 
-	if (m_nBytesReceived != (nCmdLength + 1)) {
+	if (m_nBytesReceived != (nCmdLength + 1U)) {
 		DEBUG_EXIT
 		return;
 	}
 
-	ArtNetNode::Get()->SetRdm(s_pUdpBuffer[nCmdLength + 1] != '0');
+	ArtNetNode::Get()->SetRdm(s_pUdpBuffer[nCmdLength + 1U] != '0');
 
-	DEBUG_PRINTF("%c", s_pUdpBuffer[nCmdLength + 1]);
+	DEBUG_PRINTF("%c", s_pUdpBuffer[nCmdLength + 1U]);
 	DEBUG_EXIT
 }
 
@@ -1242,12 +1242,12 @@ void RemoteConfig::HandleTftpSet() {
 
 	const auto nCmdLength = s_SET[static_cast<uint32_t>(remoteconfig::udp::set::Command::TFTP)].nLength;
 
-	if (m_nBytesReceived != (nCmdLength + 1)) {
+	if (m_nBytesReceived != (nCmdLength + 1U)) {
 		DEBUG_EXIT
 		return;
 	}
 
-	m_bEnableTFTP = (s_pUdpBuffer[nCmdLength + 1] != '0');
+	m_bEnableTFTP = (s_pUdpBuffer[nCmdLength + 1U] != '0');
 
 	if (m_bEnableTFTP) {
 		Display::Get()->SetSleep(false);
