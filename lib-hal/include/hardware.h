@@ -47,19 +47,19 @@ enum class Mode {
 }  // namespace ledblink
 }  // namespace hardware
 
-#if defined (BARE_METAL)
+#if defined(__linux__) || defined (__APPLE__)
+# if defined (CONFIG_HAL_USE_MINIMUM)
+#  include "linux/minimum/hardware.h"
+# else
+#  include "linux/hardware.h"
+# endif
+#else
 # if defined (H3)
 #  include "h3/hardware.h"
 # elif defined (GD32)
 #  include "gd32/hardware.h"
 # else
 #  include "rpi/hardware.h"
-# endif
-#else
-# if defined (CONFIG_HAL_USE_MINIMUM)
-#  include "linux/minimum/hardware.h"
-# else
-#  include "linux/hardware.h"
 # endif
 #endif
 

@@ -39,10 +39,10 @@
 #if defined (ENABLE_USB_HOST) && defined (CONFIG_USB_HOST_MSC)
 extern "C" {
 #include "usbh_core.h"
-#if !defined (GD32F4XX)
- extern usbh_host usb_host;
-#else
+#if defined (GD32H7XX) || defined (GD32F4XX)
  extern usbh_host usb_host_msc;
+#else
+ extern usbh_host usb_host;
 #endif
 }
 #endif
@@ -192,10 +192,10 @@ public:
 
 	void Run() {
 #if defined (ENABLE_USB_HOST) && defined (CONFIG_USB_HOST_MSC)
-# if !defined (GD32F4XX)
-		usbh_core_task(&usb_host);
-# else
+# if defined (GD32H7XX) || defined (GD32F4XX)
 		usbh_core_task(&usb_host_msc);
+# else
+		usbh_core_task(&usb_host);
 # endif
 #endif
 		if (__builtin_expect (m_nTicksPerSecond != 0, 1)) {

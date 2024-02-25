@@ -2,7 +2,7 @@
  * @file panel_led.h
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -56,7 +56,9 @@
  * }  // namespace hal
 */
 
-#if defined (BARE_METAL)
+#if defined(__linux__) || defined (__APPLE__)
+# include "linux/panel_led.h"
+#else
 # if defined (H3)
 #  include "h3/panel_led.h"
 # elif defined (GD32)
@@ -64,8 +66,6 @@
 # else
 #  include "rpi/panel_led.h"
 # endif
-#else
-# include "linux/panel_led.h"
 #endif
 
 #endif /* PANEL_LED_H_ */

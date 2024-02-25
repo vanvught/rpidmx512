@@ -231,7 +231,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-configstore/include}&quot;"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.compiler.option.preprocessor.def.symbols.1209242136" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="BARE_METAL"/>
 									<listOptionValue builtIn="false" value="E131_HAVE_DMXIN"/>
 									<listOptionValue builtIn="false" value="OUTPUT_HAVE_STYLESWITCH"/>
 									<listOptionValue builtIn="false" value="OUTPUT_DMX_SEND"/>
@@ -253,7 +252,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-configstore/include}&quot;"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.preprocessor.def.79583252" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="BARE_METAL"/>
 									<listOptionValue builtIn="false" value="E131_HAVE_DMXIN"/>
 									<listOptionValue builtIn="false" value="OUTPUT_HAVE_STYLESWITCH"/>
 									<listOptionValue builtIn="false" value="OUTPUT_DMX_SEND"/>

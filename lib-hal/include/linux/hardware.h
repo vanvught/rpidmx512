@@ -26,6 +26,11 @@
 #ifndef LINUX_HARDWARE_H_
 #define LINUX_HARDWARE_H_
 
+#if defined(__linux__) || defined (__APPLE__)
+#else
+# error
+#endif
+
 #include <cstdint>
 #include <cstring>
 #include <time.h>

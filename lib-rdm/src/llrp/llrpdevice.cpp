@@ -41,7 +41,7 @@
 
 #include "debug.h"
 
-#if !defined(BARE_METAL)
+#if defined(__linux__) || defined (__APPLE__)
 # define SHOW_LLRP_MESSAGE
 # define SHOW_RDM_MESSAGE
 #endif

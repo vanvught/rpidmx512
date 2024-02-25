@@ -160,7 +160,7 @@ void arp_cache_dump() {
 }
 
 #ifndef NDEBUG
-void arp_cache_timer(void) {
+void arp_cache_timer() {
 	s_ticker--;
 
 	if (s_ticker == 0) {

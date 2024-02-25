@@ -146,7 +146,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-display/include}&quot;"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.compiler.option.preprocessor.def.symbols.1312071326" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="BARE_METAL"/>
 									<listOptionValue builtIn="false" value="ENABLE_RDM_PRESET_PLAYBACK"/>
 									<listOptionValue builtIn="false" value="RDM_CONTROLLER"/>
 									<listOptionValue builtIn="false" value="ENABLE_RDM_MANUFACTURER_PIDS"/>
@@ -171,7 +170,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-e131/include}&quot;"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.preprocessor.def.600113324" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="BARE_METAL"/>
 									<listOptionValue builtIn="false" value="ENABLE_RDM_SELF_TEST"/>
 									<listOptionValue builtIn="false" value="ENABLE_RDM_PRESET_PLAYBACK"/>
 									<listOptionValue builtIn="false" value="RDM_CONTROLLER"/>
@@ -243,7 +241,6 @@
 							<tool id="cdt.managedbuild.tool.gnu.cross.c.compiler.660678137" name="Cross GCC Compiler" superClass="cdt.managedbuild.tool.gnu.cross.c.compiler">
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="true" id="gnu.c.compiler.option.include.paths.524432613" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.compiler.option.preprocessor.def.symbols.1911458566" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="BARE_METAL=1"/>
 									<listOptionValue builtIn="false" value="H3"/>
 									<listOptionValue builtIn="false" value="ENABLE_RDM_PRESET_PLAYBACK"/>
 									<listOptionValue builtIn="false" value="RDM_CONTROLLER"/>
@@ -268,7 +265,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-e131/include}&quot;"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.preprocessor.def.343978073" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="BARE_METAL"/>
 									<listOptionValue builtIn="false" value="H3"/>
 									<listOptionValue builtIn="false" value="ENABLE_RDM_SELF_TEST"/>
 									<listOptionValue builtIn="false" value="ENABLE_RDM_PRESET_PLAYBACK"/>

@@ -135,7 +135,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-configstore/include}&quot;"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.compiler.option.preprocessor.def.symbols.1518475857" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="BARE_METAL"/>
 									<listOptionValue builtIn="false" value="PARAMS_INLCUDE_ALL"/>
 									<listOptionValue builtIn="false" value="LOGIC_ANALYZER"/>
 									<listOptionValue builtIn="false" value="CONFIG_RDM_MANUFACTURER_PIDS_SET"/>
@@ -159,7 +158,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-configstore/include}&quot;"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.preprocessor.def.657785827" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="BARE_METAL"/>
 									<listOptionValue builtIn="false" value="PARAMS_INLCUDE_ALL"/>
 									<listOptionValue builtIn="false" value="LOGIC_ANALYZER"/>
 									<listOptionValue builtIn="false" value="CONFIG_RDM_MANUFACTURER_PIDS_SET"/>
@@ -239,7 +237,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-configstore/include}&quot;"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.compiler.option.preprocessor.def.symbols.317437801" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="BARE_METAL"/>
 									<listOptionValue builtIn="false" value="PARAMS_INLCUDE_ALL"/>
 									<listOptionValue builtIn="false" value="LOGIC_ANALYZER"/>
 									<listOptionValue builtIn="false" value="CONFIG_RDM_MANUFACTURER_PIDS_SET"/>
@@ -261,7 +258,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-configstore/include}&quot;"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.preprocessor.def.2115049776" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="BARE_METAL"/>
 									<listOptionValue builtIn="false" value="PARAMS_INLCUDE_ALL"/>
 									<listOptionValue builtIn="false" value="LOGIC_ANALYZER"/>
 									<listOptionValue builtIn="false" value="CONFIG_RDM_MANUFACTURER_PIDS_SET"/>

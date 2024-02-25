@@ -8,7 +8,7 @@
  * Copyright (C) 2014-2016  R. Stange <rsta2@o2online.de>
  * https://github.com/rsta2/circle/blob/master/lib/alloc.cpp
  */
-/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,7 +42,7 @@
 #include <stdio.h>
 #endif
 
-extern int console_error(const char *);
+extern void console_error(const char *);
 
 extern unsigned char heap_low; /* Defined by the linker */
 extern unsigned char heap_top; /* Defined by the linker */

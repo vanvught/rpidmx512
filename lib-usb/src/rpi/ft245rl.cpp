@@ -129,7 +129,7 @@ static void data_gpio_fsel_input() {
  * Set RD#, WR to output, TXE#, RXF# to input.
  * Set RD# to high, set WR to low
  */
-void FT245RL_init(void) {
+void FT245RL_init() {
 	// RD#, WR output
 	dmb();
 	uint32_t value = BCM2835_GPIO->GPFSEL2;
@@ -213,7 +213,7 @@ const uint8_t FT245RL_read_data() {
  *
  * @return
  */
-const bool FT245RL_data_available(void) {
+const bool FT245RL_data_available() {
 	dmb();
 	return (!(BCM2835_GPIO->GPLEV0 & (1 << 25)));
 }
@@ -225,7 +225,7 @@ const bool FT245RL_data_available(void) {
  *
  * @return
  */
-const bool FT245RL_can_write(void) {
+const bool FT245RL_can_write() {
 	dmb();
 	return (!(BCM2835_GPIO->GPLEV0 & (1 << 24)));
 }

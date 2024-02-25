@@ -2,7 +2,7 @@
  * @file network.h
  *
  */
-/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -127,19 +127,19 @@ void mdns_announcement();
 void mdns_shutdown();
 }  // namespace network
 
-#if defined (BARE_METAL)
+#if defined(__linux__) || defined (__APPLE__)
+# if defined (CONFIG_NETWORK_USE_MINIMUM)
+#  include "linux/minimum/network.h"
+# else
+#  include "linux/network.h"
+# endif
+#else
 # if defined (ESP8266)
 #  include "esp8266/network.h"
 # elif defined (NO_EMAC)
 #  include "noemac/network.h"
 # else
 #  include "emac/network.h"
-# endif
-#else
-# if defined (CONFIG_NETWORK_USE_MINIMUM)
-#  include "linux/minimum/network.h"
-# else
-#  include "linux/network.h"
 # endif
 #endif
 
