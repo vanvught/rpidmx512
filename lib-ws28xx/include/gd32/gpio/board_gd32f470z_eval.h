@@ -1,8 +1,8 @@
 /**
- * @file pixelmulti_config.h
+ * @file board_gd32f470z_eval.h
  *
  */
-/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2022 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,23 +23,24 @@
  * THE SOFTWARE.
  */
 
-#ifndef GPIO_PIXELMULTI_CONFIG_H_
-#define GPIO_PIXELMULTI_CONFIG_H_
+#ifndef GPIO_BOARD_GD32F470Z_EVAL_H_
+#define GPIO_BOARD_GD32F470Z_EVAL_H_
 
-#if defined (BOARD_GD32F207RG)
-# include "board_gd32f207rg.h"
-#elif defined (BOARD_GD32F407RE)
-# include "board_gd32f407re.h"
-#elif defined (BOARD_GD32F450VI)
-# include "board_gd32f450vi.h"
-#elif defined (BOARD_16X4U_PIXEL)
-# include "board_gd32f450vi.h"
-#elif defined (BOARD_GD32F207C_EVAL)
-# include "board_gd32f207c_eval.h"
-#elif defined (BOARD_GD32F470Z_EVAL)
-# include "board_gd32f470z_eval.h"
-#else
-# error Board is not supported
-#endif
+#include "gd32.h"
 
-#endif /* GPIO_PIXELMULTI_CONFIG_H_ */
+#define RCU_GPIOx				RCU_GPIOC
+#define GPIOx					GPIOC
+#define GPIO_PINx				(GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12 | GPIO_PIN_13)
+#define GPIO_PIN_OFFSET			6U
+
+#define MASTER_TIMER_CLOCK		(APB2_CLOCK_FREQ * 2)
+
+/**
+ * Implementation note: CLOCK is Timer 2 Channel 0 is GPIOA6
+ */
+
+#define DEBUG_CS_RCU_GPIOx		RCU_GPIOA
+#define DEBUG_CS_GPIOx			GPIOA
+#define DEBUG_CS_GPIO_PINx		GPIO_PIN_14
+
+#endif /* GPIO_BOARD_GD32F470Z_EVAL_H_ */
