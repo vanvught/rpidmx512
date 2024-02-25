@@ -33,6 +33,11 @@
 
 #include "debug.h"
 
+#if defined (__APPLE__) || (defined (__linux__) && !defined (RASPPI))
+#else
+# define RDM_SENSORS_ENABLE
+#endif
+
 #if !defined (__APPLE__)
 # define RDMSENSOR_CPU_ENABLE
 #endif
