@@ -53,7 +53,7 @@ clean:
 	done
 	
 prerequisites:
-	@echo "constexpr uint32_t DEVICE_SOFTWARE_VERSION_ID="$(shell date "+%s")";" > sofware_version_id.h
+	@echo "constexpr uint32_t DEVICE_SOFTWARE_VERSION_ID="$(shell date "+%s")";" > software_version_id.h
 
 
 $(LIBSDEP):

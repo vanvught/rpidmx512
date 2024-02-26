@@ -28,5 +28,5 @@ LIBS=
 include ../firmware-template-linux/Rules.mk
 
 prerequisites:
-	@echo "constexpr uint32_t DEVICE_SOFTWARE_VERSION_ID="$(shell date "+%s")";" > ./include/sofware_version_id.h
+	@echo "constexpr uint32_t DEVICE_SOFTWARE_VERSION_ID="$(shell date "+%s")";" > ./include/software_version_id.h
 
