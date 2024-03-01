@@ -36,6 +36,7 @@
 									<listOptionValue builtIn="false" value="CONFIG_FS_ENABLE_WRITE"/>
 									<listOptionValue builtIn="false" value="DEBUG_I2C"/>
 									<listOptionValue builtIn="false" value="DEBUG_STACK"/>
+									<listOptionValue builtIn="false" value="DEBUG_POSIX"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1762764634" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -58,6 +59,7 @@
 									<listOptionValue builtIn="false" value="CONFIG_FS_ENABLE_WRITE"/>
 									<listOptionValue builtIn="false" value="DEBUG_I2C"/>
 									<listOptionValue builtIn="false" value="DEBUG_STACK"/>
+									<listOptionValue builtIn="false" value="DEBUG_POSIX"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1855214365" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -150,6 +152,7 @@
 									<listOptionValue builtIn="false" value="CONFIG_FS_ENABLE_WRITE"/>
 									<listOptionValue builtIn="false" value="DEBUG_I2C"/>
 									<listOptionValue builtIn="false" value="DEBUG_STACK"/>
+									<listOptionValue builtIn="false" value="DEBUG_POSIX"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.547402764" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -169,6 +172,7 @@
 									<listOptionValue builtIn="false" value="CONFIG_FS_ENABLE_WRITE"/>
 									<listOptionValue builtIn="false" value="DEBUG_I2C"/>
 									<listOptionValue builtIn="false" value="DEBUG_STACK"/>
+									<listOptionValue builtIn="false" value="DEBUG_POSIX"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1736087489" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -248,6 +252,7 @@
 									<listOptionValue builtIn="false" value="CONFIG_FS_ENABLE_WRITE"/>
 									<listOptionValue builtIn="false" value="DEBUG_I2C"/>
 									<listOptionValue builtIn="false" value="DEBUG_STACK"/>
+									<listOptionValue builtIn="false" value="DEBUG_POSIX"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.789944049" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -270,6 +275,7 @@
 									<listOptionValue builtIn="false" value="CONFIG_FS_ENABLE_WRITE"/>
 									<listOptionValue builtIn="false" value="DEBUG_I2C"/>
 									<listOptionValue builtIn="false" value="DEBUG_STACK"/>
+									<listOptionValue builtIn="false" value="DEBUG_POSIX"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1495498778" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>

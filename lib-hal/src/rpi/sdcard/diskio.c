@@ -31,7 +31,7 @@
 #include <stddef.h>
 #include <time.h>
 
-#include "../ff12c/diskio.h"
+#include "../ff14b/source/diskio.h"
 #include "../../lib-bcm2835/device/emmc/sd.h"
 
 #if (_MAX_SS != _MIN_SS) && (_MAX_SS != 512)
