@@ -23,13 +23,14 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <stdio.h>
-#include <stdarg.h>
+#include <cstdint>
+#include <cstdio>
+#include <cstdarg>
 
 #include "h3.h"
 #include "h3_uart.h"
 
+extern "C" {
 void __attribute__((cold)) uart0_init(void) {
 	h3_uart_begin(H3_UART0_BASE, 115200, H3_UART_BITS_8, H3_UART_PARITY_NONE, H3_UART_STOP_1BIT);
 
@@ -42,13 +43,13 @@ void uart0_putc(int c) {
 	if (c == '\n') {
 		while (!(H3_UART0->LSR & UART_LSR_THRE))
 			;
-		H3_UART0->O00.THR = (uint32_t) '\r';
+		H3_UART0->O00.THR = static_cast<uint32_t>('\r');
 	}
 
 	while (!(H3_UART0->LSR & UART_LSR_THRE))
 		;
 	
-	H3_UART0->O00.THR = (uint32_t) (c);
+	H3_UART0->O00.THR = static_cast<uint32_t>(c);
 }
 
 void uart0_puts(char *s) {
@@ -67,7 +68,7 @@ int uart0_getc(void) {
 		return EOF;
 	}
 
-	const int c = (int) H3_UART0->O00.RBR;
+	const auto c = static_cast<int>(H3_UART0->O00.RBR);
 
 #if defined (UART0_ECHO)
 	uart0_putc(c);
@@ -97,4 +98,5 @@ int uart0_printf(const char *fmt, ...) {
 	}
 
 	return i;
+}
 }

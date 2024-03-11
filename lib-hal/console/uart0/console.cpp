@@ -1,8 +1,8 @@
 /**
- * @file console.c
+ * @file console.cpp
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,15 +23,16 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "console.h"
 
-extern void uart0_init(void);
-extern void uart0_putc(int);
-extern void uart0_puts(const char *);
+extern "C" {
+void uart0_init();
+void uart0_putc(int);
+void uart0_puts(const char *);
 
-void __attribute__((cold)) console_init(void) {
+void __attribute__((cold)) console_init() {
 	uart0_init();
 
 	console_set_fg_color(CONSOLE_WHITE);
@@ -44,6 +45,12 @@ void console_putc(int c) {
 
 void console_puts(const char *s) {
 	uart0_puts(s);
+}
+
+void console_error(const char *s) {
+	uart0_puts("\x1b[31m");
+	uart0_puts(s);
+	uart0_puts("\x1b[37m");
 }
 
 void console_set_fg_color(uint16_t fg) {
@@ -89,23 +96,18 @@ void console_set_bg_color(uint16_t bg) {
 void console_write(const char *s, unsigned int n) {
 	char c;
 
-	while (((c = *s++) != (char) 0) && (n-- != 0)) {
-		console_putc((int) c);
+	while (((c = *s++) != 0) && (n-- != 0)) {
+		console_putc(static_cast<int>(c));
 	}
 }
 
-void console_error(const char *s) {
-	uart0_puts("\x1b[31m");
-	uart0_puts(s);
-	uart0_puts("\x1b[37m");
-}
-
-void console_status(uint32_t color, const char *s) {
-	console_set_fg_color((uint16_t) color);
+void console_status(uint32_t nColour, const char *s) {
+	console_set_fg_color(static_cast<uint16_t>(nColour));
 	console_set_bg_color(CONSOLE_BLACK);
 
 	uart0_puts(s);
 	console_putc('\n');
 
 	console_set_fg_color(CONSOLE_WHITE);
+}
 }

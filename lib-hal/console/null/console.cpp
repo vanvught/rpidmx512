@@ -1,8 +1,8 @@
 /**
- * @file console.c
+ * @file console.cpp
  *
  */
-/* Copyright (C) 2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2023-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,22 +23,13 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <cstdint>
 
-void console_init(void) {
-}
-
-void console_putc(__attribute__((unused)) int i) {
-}
-
-void console_puts(__attribute__((unused)) const char *p) {
-}
-
-void console_write(__attribute__((unused)) const char *p, __attribute__((unused)) unsigned int i) {
-}
-
-void console_status(__attribute__((unused))  uint32_t i, __attribute__((unused)) const char *p) {
-}
-
-void console_error(__attribute__((unused)) const char *p) {
+extern "C" {
+void console_puts([[maybe_unused]] const char *p) {}
+void console_write([[maybe_unused]] const char *p, [[maybe_unused]] unsigned int i) {}
+void console_status([[maybe_unused]]  uint32_t i, [[maybe_unused]] const char *p) {}
+void console_error([[maybe_unused]] const char *p) {}
+void console_init() {}
+void console_putc([[maybe_unused]] int i) {}
 }

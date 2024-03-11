@@ -1,8 +1,8 @@
 /**
- * @file console.c
+ * @file console.cpp
  *
  */
-/* Copyright (C) 2022-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -97,7 +97,7 @@ static bool is_connected(const uint8_t address, const uint32_t baudrate) {
 	}
 
 	/* This is known to corrupt the Atmel AT24RF08 EEPROM */
-	return FUNC_PREFIX(i2c_write(NULL, 0)) == 0;
+	return FUNC_PREFIX(i2c_write(nullptr, 0)) == 0;
 }
 
 static void setup() {
@@ -108,8 +108,8 @@ static void setup() {
 static void write_register(uint8_t nRegister, uint8_t nValue) {
 	char buffer[2];
 
-	buffer[0] = (char)(nRegister);
-	buffer[1] = (char)(nValue);
+	buffer[0] = static_cast<char>(nRegister);
+	buffer[1] = static_cast<char>(nValue);
 
 	setup();
 	FUNC_PREFIX(i2c_write(buffer, 2));
@@ -121,13 +121,13 @@ static uint8_t read_byte() {
 	setup();
 	FUNC_PREFIX(i2c_read(buffer, 1));
 
-	return (uint8_t) (buffer[0]);
+	return static_cast<uint8_t>(buffer[0]);
 }
 
 static uint8_t read_register(uint8_t nRegister) {
 	char buffer[1];
 
-	buffer[0] = (char) (nRegister);
+	buffer[0] = static_cast<char>(nRegister);
 
 	setup();
 	FUNC_PREFIX(i2c_write(buffer, 1));
@@ -135,7 +135,7 @@ static uint8_t read_register(uint8_t nRegister) {
 	return read_byte();
 }
 
-inline static bool is_writable() {
+static bool is_writable() {
 	return (read_register(SC16IS7X0_TXLVL) != 0);
 }
 
@@ -157,7 +157,8 @@ static void set_baud(uint32_t nBaud) {
 	write_register(SC16IS7X0_LCR, nRegisterLCR);
 }
 
-void __attribute__((cold)) console_init(void) {
+extern "C" {
+void __attribute__((cold)) console_init() {
 	FUNC_PREFIX(i2c_begin());
 
 	s_isConnected = is_connected(CONSOLE_I2C_ADDRESS, 100000);
@@ -303,14 +304,15 @@ void console_set_bg_color(uint16_t bg) {
 	}
 }
 
-void console_status(uint32_t color, const char *s) {
+void console_status(uint32_t nColour, const char *s) {
 	if (!s_isConnected) {
 		return;
 	}
 
-	console_set_fg_color((uint16_t) color);
+	console_set_fg_color(static_cast<uint16_t>(nColour));
 	console_set_bg_color(CONSOLE_BLACK);
 	console_puts(s);
 	console_putc('\n');
 	console_set_fg_color(CONSOLE_WHITE);
+}
 }
