@@ -74,7 +74,7 @@ void RDMSubDeviceDummy::Data(const uint8_t* pData, uint32_t nLength) {
 		}
 	}
 
-	printf("\n");
+	puts("");
 }
 
 void RDMSubDeviceDummy::UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent) {

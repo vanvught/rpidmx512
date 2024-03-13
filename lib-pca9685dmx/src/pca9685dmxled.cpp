@@ -71,7 +71,7 @@ PCA9685DmxLed::PCA9685DmxLed(const pca9685dmx::Configuration& configuration) {
 #ifndef NDEBUG
 		printf("Instance %d [%X]\n", i, configuration.nAddress + i);
 		m_pPWMLed[i]->Dump();
-		printf("\n");
+		puts("");
 #endif
 	}
 

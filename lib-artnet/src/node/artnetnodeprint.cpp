@@ -86,7 +86,7 @@ void ArtNetNode::Print() {
 #if (ARTNET_VERSION >= 4)
 				printf(" %s\n", artnet::get_protocol_mode(m_Node.Port[nPortIndex].protocol, true));
 #else
-				printf("\n");
+				puts("");
 #endif
 			}
 		}

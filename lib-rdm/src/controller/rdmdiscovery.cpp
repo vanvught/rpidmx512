@@ -83,7 +83,7 @@ RDMDiscovery::RDMDiscovery(const uint8_t *pUid) {
 #ifndef NDEBUG
 	printf("Uid : ");
 	rdmdiscovery::print_uid(m_Uid);
-	printf("\n");
+	puts("");
 #endif
 }
 
@@ -446,7 +446,7 @@ void RDMDiscovery::Process() {
 #ifndef NDEBUG
 				printf("AddUid : ");
 				rdmdiscovery::print_uid(m_Discovery.uid);
-				printf("\n");
+				puts("");
 #endif
 
 				m_DiscoverySingleDevice.nCounter = rdmdiscovery::QUIKFIND_DISCOVERY_COUNTER;
@@ -501,7 +501,7 @@ void RDMDiscovery::Process() {
 #ifndef NDEBUG
 			printf("QuickFind : ");
 			rdmdiscovery::print_uid(m_QuikFind.uid);
-			printf("\n");
+			puts("");
 #endif
 
 			m_Message.SetCc(E120_DISCOVERY_COMMAND);
@@ -532,7 +532,7 @@ void RDMDiscovery::Process() {
 #ifndef NDEBUG
 				printf("AddUid : ");
 				rdmdiscovery::print_uid(m_QuikFind.uid);
-				printf("\n");
+				puts("");
 #endif
 			}
 

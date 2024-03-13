@@ -336,7 +336,7 @@ void TLC59711::Dump() {
 		}
 	}
 
-	printf("\n");
+	puts("");
 
 	for (uint32_t i = 0; i < m_nBoards * TLC59711Channels::OUT; i++) {
 		uint16_t nValue = 0;
@@ -345,7 +345,7 @@ void TLC59711::Dump() {
 		}
 	}
 
-	printf("\n");
+	puts("");
 #endif
 }
 

@@ -88,7 +88,7 @@ void debug_dump(const void *packet, uint16_t len) {
 			q++;
 		}
 
-		printf("\n");
+		puts("");
 
 	} while (chars < len);
 

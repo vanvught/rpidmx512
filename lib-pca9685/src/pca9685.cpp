@@ -328,7 +328,7 @@ void PCA9685::Dump() {
 	printf("\nPRE_SCALE register (address FEh) : %02Xh\n", reg);
 	printf("\t Frequency : %d Hz\n", CalcFrequency(reg));
 
-	printf("\n");
+	puts("");
 
 	uint16_t on, off;
 
@@ -338,7 +338,7 @@ void PCA9685::Dump() {
 		printf("LED%d_OFF : %04x\n", nLed, off);
 	}
 
-	printf("\n");
+	puts("");
 
 	Read(16, &on, &off);
 	printf("ALL_LED_ON  : %04x\n", on);

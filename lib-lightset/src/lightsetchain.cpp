@@ -275,7 +275,7 @@ void LightSetChain::Dump([[maybe_unused]] uint8_t nEntries) {
 		printf("%d\t%p\t%d\n", i, reinterpret_cast<void *>(m_pTable[i].pLightSet), m_pTable[i].nType);
 	}
 
-	printf("\n");
+	puts("");
 #endif
 }
 

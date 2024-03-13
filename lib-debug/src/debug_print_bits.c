@@ -44,5 +44,5 @@ void debug_print_bits(uint32_t u) {
 		b = b >> 1;
 	}
 
-	printf("\n");
+	puts("");
 }

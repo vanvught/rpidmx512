@@ -104,7 +104,7 @@ void DmxSerialChannelData::Dump() {
 			for (uint32_t j = 0; j <  m_nChannelDataLength[i]; j++) {
 				printf("%d ", m_pChannelData[i][j]);
 			}
-			printf("\n");
+			puts("");
 		}
 	}
 #endif

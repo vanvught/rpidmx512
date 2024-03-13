@@ -67,7 +67,7 @@ PCA9685DmxServo::PCA9685DmxServo(const pca9685dmx::Configuration& configuration)
 #ifndef NDEBUG
 		printf("Instance %d [%X]\n", i, configuration.nAddress + i);
 		m_pServo[i]->Dump();
-		printf("\n");
+		puts("");
 #endif
 	}
 
