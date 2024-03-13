@@ -390,7 +390,7 @@ extern int printf(const char *format, ...);
 #define EMMC_TRACE(...)     {										\
         printf("EMMC %s:%4d[%s] : ", __FILE__, __LINE__, __func__);	\
         printf(__VA_ARGS__);										\
-        printf("\n"); }
+        puts(""); }
 #else
 #define EMMC_TRACE(...)
 #endif
@@ -399,7 +399,7 @@ extern int printf(const char *format, ...);
 #define SD_TRACE(...)     {											\
         printf("SD   %s:%4d[%s] : ", __FILE__, __LINE__, __func__);	\
         printf(__VA_ARGS__);										\
-        printf("\n"); }
+        puts(""); }
 #else
 #define SD_TRACE(...)
 #endif

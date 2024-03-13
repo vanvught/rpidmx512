@@ -296,7 +296,7 @@ void ConfigStore::Dump() {
 	}
 
 	debug_dump(s_SpiFlashData, OFFSET_STORES);
-	printf("\n");
+	puts("");
 
 	for (uint32_t j = 0; j < static_cast<uint32_t>(Store::LAST); j++) {
 		printf("Store [%s]:%d\n", s_aStoreName[j], j);
@@ -304,7 +304,7 @@ void ConfigStore::Dump() {
 		auto *p = &s_SpiFlashData[GetStoreOffset(static_cast<Store>(j))];
 		debug_dump(p, static_cast<uint16_t>(s_aStorSize[j]));
 
-		printf("\n");
+		puts("");
 	}
 
 	if (IsWatchDog) {
