@@ -70,12 +70,6 @@ static constexpr auto SIZE = 514;	// multiple of uint16_t
 }  // namespace buffer
 }  // namespace dmx
 
-/**
- * PORTs check
- */
-static_assert(DMX_MAX_PORTS <= dmx::config::max::IN, "IN: DMX_MAX_PORTS");
-static_assert(DMX_MAX_PORTS <= dmx::config::max::OUT, "OUT: DMX_MAX_PORTS");
-
 #if defined(GD32F10X_HD) || defined (GD32F10X_CL)
  static_assert(DMX_MAX_PORTS <= 4, "Too many ports defined");
 #endif

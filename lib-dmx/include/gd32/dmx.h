@@ -30,6 +30,7 @@
 
 #include "dmxconst.h"
 #include "dmx_config.h"
+#include "dmxstatistics.h"
 
 struct Statistics {
 	uint32_t nSlotsInPacket;
@@ -51,6 +52,8 @@ public:
 	}
 
 	void ClearData(const uint32_t nPortIndex);
+
+	volatile dmx::TotalStatistics& GetTotalStatistics(const uint32_t nPortIndex);
 
 	// RDM Send
 
@@ -103,7 +106,6 @@ public:
 	const uint8_t *GetDmxCurrentData(const uint32_t nPortIndex);
 
 	uint32_t GetDmxUpdatesPerSecond(const uint32_t nPortIndex);
-	uint32_t GetDmxReceivedCount(const uint32_t nPortIndex);
 
 	static Dmx* Get() {
 		return s_pThis;
@@ -119,9 +121,9 @@ private:
 	uint32_t m_nDmxTransmitMabTime { dmx::transmit::MAB_TIME_MIN };
 	uint32_t m_nDmxTransmitPeriod { dmx::transmit::PERIOD_DEFAULT };
 	uint32_t m_nDmxTransmitPeriodRequested { dmx::transmit::PERIOD_DEFAULT };
-	uint32_t m_nDmxTransmissionLength[dmx::config::max::OUT];
+	uint32_t m_nDmxTransmissionLength[dmx::config::max::PORTS];
 	uint16_t m_nDmxTransmitSlots { dmx::max::CHANNELS };
-	dmx::PortDirection m_dmxPortDirection[dmx::config::max::OUT];
+	dmx::PortDirection m_dmxPortDirection[dmx::config::max::PORTS];
 
 	static Dmx *s_pThis;
 };

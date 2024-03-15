@@ -28,13 +28,12 @@
 
 #include "gd32_board.h"
 
+#define DMX_MAX_PORTS  4
+
 namespace max {
-static constexpr auto OUT = 4U;
-static constexpr auto IN = 4U;
+	static const uint32_t PORTS = DMX_MAX_PORTS;
 }  // namespace max
 
-#define DMX_MAX_PORTS  4
-//
 //#define DMX_USE_USART0
 #define DMX_USE_USART1
 #define DMX_USE_USART2
