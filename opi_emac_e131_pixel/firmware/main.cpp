@@ -108,7 +108,7 @@ void main() {
 	pixelDmxParams.Load();
 	pixelDmxParams.Set(&pixelDmxConfiguration);
 
-	WS28xxDmx pixelDmx(pixelDmxConfiguration);
+	WS28xxDmx pixelDmx(&pixelDmxConfiguration);
 
 	const auto nUniverses = pixelDmx.GetUniverses();
 
@@ -127,7 +127,7 @@ void main() {
 	const auto nTestPattern = static_cast<pixelpatterns::Pattern>(pixelDmxParams.GetTestPattern());
 	PixelTestPattern pixelTestPattern(nTestPattern, 1);
 
-	if (PixelTestPattern::GetPattern() != pixelpatterns::Pattern::NONE) {
+	if (PixelTestPattern::Get()->GetPattern() != pixelpatterns::Pattern::NONE) {
 		bridge.SetOutput(nullptr);
 	} else {
 		bridge.SetOutput(&pixelDmx);
@@ -228,9 +228,7 @@ void main() {
 		llrpOnlyDevice.Run();
 #endif
 		configStore.Flash();
-		if (__builtin_expect((PixelTestPattern::GetPattern() != pixelpatterns::Pattern::NONE), 0)) {
-			pixelTestPattern.Run();
-		}
+		pixelTestPattern.Run();
 		mDns.Run();
 		display.Run();
 		hw.Run();

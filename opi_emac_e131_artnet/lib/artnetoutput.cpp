@@ -81,7 +81,7 @@ void ArtNetOutput::Stop(const uint32_t nPortIndex) {
 	DEBUG_EXIT
 }
 
-void ArtNetOutput::SetData(uint32_t nPortIndex, const uint8_t *pDmxData, uint32_t nLength, [[maybe_unused]] const bool doUpdate) {
+void ArtNetOutput::SetData(const uint32_t nPortIndex, const uint8_t *pDmxData, uint32_t nLength, [[maybe_unused]] const bool doUpdate) {
 	assert(nPortIndex < e131bridge::MAX_PORTS);
 
 	if (m_nUniverse[nPortIndex] != 0) {
