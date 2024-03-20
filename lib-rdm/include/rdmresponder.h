@@ -52,9 +52,9 @@ static constexpr auto INVALID_RESPONSE = -3;
 
 class RDMResponder final : DMXReceiver, public RDMDeviceResponder, RDMHandler {
 public:
-	RDMResponder(RDMPersonality **pRDMPersonalities, uint32_t nPersonalityCount) :
-			DMXReceiver(pRDMPersonalities[rdm::device::responder::DEFAULT_CURRENT_PERSONALITY - 1]->GetLightSet()),
-			RDMDeviceResponder(pRDMPersonalities, nPersonalityCount)
+	RDMResponder(RDMPersonality **pRDMPersonalities, uint32_t nPersonalityCount, const uint32_t nCurrentPersonality = rdm::device::responder::DEFAULT_CURRENT_PERSONALITY) :
+			DMXReceiver(pRDMPersonalities[nCurrentPersonality - 1]->GetLightSet()),
+			RDMDeviceResponder(pRDMPersonalities, nPersonalityCount, nCurrentPersonality)
 	{
 		assert(s_pThis == nullptr);
 		s_pThis = this;

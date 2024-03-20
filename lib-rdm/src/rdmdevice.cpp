@@ -60,8 +60,13 @@
 # endif
 #endif
 
+RDMDevice *RDMDevice::s_pThis;
+
 RDMDevice::RDMDevice() {
 	DEBUG_ENTRY
+
+	assert(s_pThis == nullptr);
+	s_pThis = this;
 
 #if defined (NO_EMAC)
 	uint8_t aMacAddress[network::MAC_SIZE];

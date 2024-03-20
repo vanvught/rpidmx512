@@ -2,7 +2,7 @@
  * @file rdmdeviceresponder.h
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,6 +42,22 @@ namespace rdm {
 namespace device {
 namespace responder {
 static constexpr uint8_t DEFAULT_CURRENT_PERSONALITY = 1;
+
+///< http://rdm.openlighting.org/pid/display?manufacturer=0&pid=96
+struct DeviceInfo {
+	uint8_t protocol_major;			///< The response for this field shall always be same regardless of whether this message is directed to the Root Device or a Sub-Device.
+	uint8_t protocol_minor;			///< The response for this field shall always be same regardless of whether this message is directed to the Root Device or a Sub-Device.
+	uint8_t device_model[2];		///< This field identifies the Device Model ID of the Root Device or the Sub-Device. The Manufacturer shall not use the same ID to represent more than one unique model type.
+	uint8_t product_category[2];	///< Devices shall report a Product Category based on the products primary function.
+	uint8_t software_version[4];	///< This field indicates the Software Version ID for the device. The Software Version ID is a 32-bit value determined by the Manufacturer.
+	uint8_t dmx_footprint[2];		///< If the DEVICE_INFO message is directed to a Sub-Device, then the response for this field contains the DMX512 Footprint for that Sub-Device. If the message is sent to the Root Device, it is the Footprint for the Root Device itself. If the Device or Sub-Device does not utilize Null Start Code packets for any control or functionality then it shall report a Footprint of 0x0000.
+	uint8_t current_personality;	///<
+	uint8_t personality_count;		///<
+	uint8_t dmx_start_address[2];	///< If the Device or Sub-Device that this message is directed to has a DMX512 Footprint of 0, then this field shall be set to 0xFFFF.
+	uint8_t sub_device_count[2];	///< The response for this field shall always be same regardless of whether this message is directed to the Root Device or a Sub-Device.
+	uint8_t sensor_count;			///< This field indicates the number of available sensors in a Root Device or Sub-Device. When this parameter is directed to a Sub-Device, the reply shall be identical for any Sub-Device owned by a specific Root Device.
+};
+
 void factorydefaults();
 }  // namespace responder
 }  // namespace device
@@ -49,31 +65,36 @@ void factorydefaults();
 
 class RDMDeviceResponder: public RDMDevice {
 public:
-	RDMDeviceResponder(RDMPersonality **pRDMPersonalities, uint32_t nPersonalityCount);
+	RDMDeviceResponder(RDMPersonality **pRDMPersonalities, const uint32_t nPersonalityCount, const uint32_t nCurrentPersonality = rdm::device::responder::DEFAULT_CURRENT_PERSONALITY);
 	virtual ~RDMDeviceResponder() = default;
 
 	void Init();
 	void Print();
 
 	// E120_DEVICE_INFO				0x0060
-	struct TRDMDeviceInfo *GetDeviceInfo(uint16_t nSubDevice = RDM_ROOT_DEVICE) {
+	struct rdm::device::responder::DeviceInfo *GetDeviceInfo(uint16_t nSubDevice = RDM_ROOT_DEVICE) {
 		if (nSubDevice != RDM_ROOT_DEVICE) {
 			const auto *sub_device_info = m_RDMSubDevices.GetInfo(nSubDevice);
 
 			if (sub_device_info != nullptr) {
-				m_tRDMSubDeviceInfo.dmx_footprint[0] = static_cast<uint8_t>(sub_device_info->dmx_footprint >> 8);
-				m_tRDMSubDeviceInfo.dmx_footprint[1] = static_cast<uint8_t>(sub_device_info->dmx_footprint);
-				m_tRDMSubDeviceInfo.current_personality = sub_device_info->current_personality;
-				m_tRDMSubDeviceInfo.personality_count = sub_device_info->personality_count;
-				m_tRDMSubDeviceInfo.dmx_start_address[0] = static_cast<uint8_t>(sub_device_info->dmx_start_address >> 8);
-				m_tRDMSubDeviceInfo.dmx_start_address[1] =  static_cast<uint8_t>(sub_device_info->dmx_start_address);
-				m_tRDMSubDeviceInfo.sensor_count = sub_device_info->sensor_count;
+				m_SubDeviceInfo.dmx_footprint[0] = static_cast<uint8_t>(sub_device_info->dmx_footprint >> 8);
+				m_SubDeviceInfo.dmx_footprint[1] = static_cast<uint8_t>(sub_device_info->dmx_footprint);
+				m_SubDeviceInfo.current_personality = sub_device_info->current_personality;
+				m_SubDeviceInfo.personality_count = sub_device_info->personality_count;
+				m_SubDeviceInfo.dmx_start_address[0] = static_cast<uint8_t>(sub_device_info->dmx_start_address >> 8);
+				m_SubDeviceInfo.dmx_start_address[1] =  static_cast<uint8_t>(sub_device_info->dmx_start_address);
+				m_SubDeviceInfo.sensor_count = sub_device_info->sensor_count;
 			}
 
-			return &m_tRDMSubDeviceInfo;
+			return &m_SubDeviceInfo;
 		}
 
-		return &m_tRDMDeviceInfo;
+		//TODO FIXME Quick fix
+		const auto nProductCategory = RDMDevice::GetProductCategory();
+		m_DeviceInfo.product_category[0] =static_cast<uint8_t>( nProductCategory >> 8);
+		m_DeviceInfo.product_category[1] = static_cast<uint8_t>(nProductCategory);
+
+		return &m_DeviceInfo;
 	}
 
 	// E120_DEVICE_LABEL			0x0082
@@ -113,7 +134,7 @@ public:
 		SetPersonalityCurrent(RDM_ROOT_DEVICE, rdm::device::responder::DEFAULT_CURRENT_PERSONALITY);
 		SetDmxStartAddress(RDM_ROOT_DEVICE, m_nDmxStartAddressFactoryDefault);
 
-		memcpy(&m_tRDMSubDeviceInfo, &m_tRDMDeviceInfo, sizeof(struct TRDMDeviceInfo));
+		memcpy(&m_SubDeviceInfo, &m_DeviceInfo, sizeof(struct rdm::device::responder::DeviceInfo));
 
 		m_RDMSubDevices.SetFactoryDefaults();
 
@@ -173,15 +194,15 @@ public:
 			return;
 		}
 
-		const auto *pPersonality = m_pRDMPersonalities[m_tRDMDeviceInfo.current_personality - 1];
+		const auto *pPersonality = m_pRDMPersonalities[m_DeviceInfo.current_personality - 1];
 		assert(pPersonality != nullptr);
 
 		auto *pLightSet = pPersonality->GetLightSet();
 
 		if (pLightSet != nullptr) {
 			if (pLightSet->SetDmxStartAddress(nDmxStartAddress)) {
-				m_tRDMDeviceInfo.dmx_start_address[0] = static_cast<uint8_t>(nDmxStartAddress >> 8);
-				m_tRDMDeviceInfo.dmx_start_address[1] = static_cast<uint8_t>(nDmxStartAddress);
+				m_DeviceInfo.dmx_start_address[0] = static_cast<uint8_t>(nDmxStartAddress >> 8);
+				m_DeviceInfo.dmx_start_address[1] = static_cast<uint8_t>(nDmxStartAddress);
 			}
 
 			DmxStartAddressUpdate();
@@ -195,7 +216,7 @@ public:
 			return m_RDMSubDevices.GetDmxStartAddress(nSubDevice);
 		}
 
-		return static_cast<uint16_t>((m_tRDMDeviceInfo.dmx_start_address[0] << 8) + m_tRDMDeviceInfo.dmx_start_address[1]);
+		return static_cast<uint16_t>((m_DeviceInfo.dmx_start_address[0] << 8) + m_DeviceInfo.dmx_start_address[1]);
 	}
 
 	// E120_SLOT_INFO				0x0120
@@ -204,7 +225,7 @@ public:
 			return false; // TODO GetSlotInfo SubDevice
 		}
 
-		const auto *pPersonality = m_pRDMPersonalities[m_tRDMDeviceInfo.current_personality - 1];
+		const auto *pPersonality = m_pRDMPersonalities[m_DeviceInfo.current_personality - 1];
 		auto *pLightSet = pPersonality->GetLightSet();
 
 		return pLightSet->GetSlotInfo(nSlotOffset, tSlotInfo);
@@ -215,7 +236,7 @@ public:
 			return m_RDMSubDevices.GetDmxFootPrint(nSubDevice);
 		}
 
-		return static_cast<uint16_t>((m_tRDMDeviceInfo.dmx_footprint[0] << 8) + m_tRDMDeviceInfo.dmx_footprint[1]);
+		return static_cast<uint16_t>((m_DeviceInfo.dmx_footprint[0] << 8) + m_DeviceInfo.dmx_footprint[1]);
 	}
 
 	// Personalities
@@ -226,7 +247,7 @@ public:
 			return m_RDMSubDevices.GetPersonality(nSubDevice, nPersonality);
 		}
 
-		assert(nPersonality <= m_tRDMDeviceInfo.personality_count);
+		assert(nPersonality <= m_DeviceInfo.personality_count);
 
 		return m_pRDMPersonalities[nPersonality - 1];
 	}
@@ -236,7 +257,7 @@ public:
 			return m_RDMSubDevices.GetPersonalityCount(nSubDevice);
 		}
 
-		return m_tRDMDeviceInfo.personality_count;
+		return m_DeviceInfo.personality_count;
 	}
 
 	void SetPersonalityCurrent(uint16_t nSubDevice, uint8_t nPersonality) {
@@ -247,9 +268,9 @@ public:
 			return;
 		}
 
-		m_tRDMDeviceInfo.current_personality = nPersonality;
+		m_DeviceInfo.current_personality = nPersonality;
 
-		assert(nPersonality <= m_tRDMDeviceInfo.personality_count);
+		assert(nPersonality <= m_DeviceInfo.personality_count);
 
 		const auto *pPersonality = m_pRDMPersonalities[nPersonality - 1];
 		assert(pPersonality != nullptr);
@@ -257,10 +278,10 @@ public:
 		auto *pLightSet = pPersonality->GetLightSet();
 
 		if (pLightSet != nullptr) {
-			m_tRDMDeviceInfo.dmx_footprint[0] = static_cast<uint8_t>(pLightSet->GetDmxFootprint() >> 8);
-			m_tRDMDeviceInfo.dmx_footprint[1] = static_cast<uint8_t>(pLightSet->GetDmxFootprint());
-			m_tRDMDeviceInfo.dmx_start_address[0] = static_cast<uint8_t>(pLightSet->GetDmxStartAddress() >> 8);
-			m_tRDMDeviceInfo.dmx_start_address[1] = static_cast<uint8_t>(pLightSet->GetDmxStartAddress());
+			m_DeviceInfo.dmx_footprint[0] = static_cast<uint8_t>(pLightSet->GetDmxFootprint() >> 8);
+			m_DeviceInfo.dmx_footprint[1] = static_cast<uint8_t>(pLightSet->GetDmxFootprint());
+			m_DeviceInfo.dmx_start_address[0] = static_cast<uint8_t>(pLightSet->GetDmxStartAddress() >> 8);
+			m_DeviceInfo.dmx_start_address[1] = static_cast<uint8_t>(pLightSet->GetDmxStartAddress());
 
 			PersonalityUpdate(pLightSet);
 		}
@@ -271,7 +292,7 @@ public:
 			return m_RDMSubDevices.GetPersonalityCurrent(nSubDevice);
 		}
 
-		return m_tRDMDeviceInfo.current_personality;
+		return m_DeviceInfo.current_personality;
 	}
 
 	static RDMDeviceResponder* Get() {
@@ -280,8 +301,8 @@ public:
 
 private:
 	uint16_t CalculateChecksum() {
-		auto nChecksum = static_cast<uint16_t>((m_tRDMDeviceInfo.dmx_start_address[0] >> 8) + m_tRDMDeviceInfo.dmx_start_address[1]);
-		nChecksum = static_cast<uint16_t>(nChecksum + m_tRDMDeviceInfo.current_personality);
+		auto nChecksum = static_cast<uint16_t>((m_DeviceInfo.dmx_start_address[0] >> 8) + m_DeviceInfo.dmx_start_address[1]);
+		nChecksum = static_cast<uint16_t>(nChecksum + m_DeviceInfo.current_personality);
 		return nChecksum;
 	}
 
@@ -295,8 +316,8 @@ private:
 	RDMPersonality **m_pRDMPersonalities;
 	char *m_pSoftwareVersion;
 	uint8_t m_nSoftwareVersionLength;
-	TRDMDeviceInfo m_tRDMDeviceInfo;
-	TRDMDeviceInfo m_tRDMSubDeviceInfo;
+	rdm::device::responder::DeviceInfo m_DeviceInfo;
+	rdm::device::responder::DeviceInfo m_SubDeviceInfo;
 	char m_aLanguage[2];
 	//
 	bool m_IsFactoryDefaults { true };
