@@ -338,7 +338,7 @@ void ArtNetNode::SetOutputStyle(const uint32_t nPortIndex, lightset::OutputStyle
 		return;
 	}
 
-	if ((m_State.status == artnetnode::Status::ON) && (m_pLightSet != nullptr)) {
+	if (m_pLightSet != nullptr) {
 		m_pLightSet->SetOutputStyle(nPortIndex, outputStyle);
 		outputStyle = m_pLightSet->GetOutputStyle(nPortIndex);
 	}
