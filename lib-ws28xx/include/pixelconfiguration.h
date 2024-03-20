@@ -31,6 +31,8 @@
 #include "pixeltype.h"
 #include "gamma/gamma_tables.h"
 
+#include "debug.h"
+
 class PixelConfiguration {
 public:
 	void SetType(pixel::Type Type) {

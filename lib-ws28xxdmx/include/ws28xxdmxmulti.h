@@ -54,7 +54,7 @@ public:
 	void Start(const uint32_t nPortIndex) override;
 	void Stop(const uint32_t nPortIndex) override;
 
-	void SetData(uint32_t nPortIndex, __attribute__((unused)) const uint8_t *pData, __attribute__((unused)) uint32_t nLength, const bool doUpdate) override {
+	void SetData(const uint32_t nPortIndex, __attribute__((unused)) const uint8_t *pData, __attribute__((unused)) uint32_t nLength, const bool doUpdate) override {
 		logic_analyzer::ch0_set();
 
 		if (!doUpdate) {
@@ -175,7 +175,7 @@ public:
 	}
 
 private:
-	void SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength);
+	void SetData(const uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength);
 
 private:
 	PixelDmxConfiguration m_pixelDmxConfiguration;

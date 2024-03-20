@@ -2,7 +2,7 @@
  * @file ws28xx.h
  *
  */
-/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,42 +30,40 @@
 
 #include "pixelconfiguration.h"
 
-#if defined (USE_SPI_DMA)
-# include "hal_spi.h"
-#endif
+#include "hal_spi.h"
 
 class WS28xx {
 public:
-	WS28xx(PixelConfiguration& pixelConfiguration);
+	WS28xx(PixelConfiguration *pPixelConfiguration);
 	~WS28xx();
 
 	void SetPixel(uint32_t nIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
 	void SetPixel(uint32_t nIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite);
 
-#if defined ( USE_SPI_DMA )
 	bool IsUpdating () {
-		return FUNC_PREFIX (spi_dma_tx_is_active());
-	}
+#if defined (GD32)
+		return i2s::gd32_spi_dma_tx_is_active();
+#elif defined (H3)
+		return h3_spi_dma_tx_is_active();
 #else
-	bool IsUpdating() const {
 		return false;
-	}
 #endif
+	}
 
 	void Update();
 	void Blackout();
 	void FullOn();
 
 	pixel::Type GetType() const {
-		return m_PixelConfiguration.GetType();
+		return m_pPixelConfiguration->GetType();
 	}
 
 	uint32_t GetCount() const {
-		return m_PixelConfiguration.GetCount();
+		return m_pPixelConfiguration->GetCount();
 	}
 
 	pixel::Map GetMap() const {
-		return m_PixelConfiguration.GetMap();
+		return m_pPixelConfiguration->GetMap();
 	}
 
 	static WS28xx *Get() {
@@ -77,7 +75,7 @@ private:
 	void SetColorWS28xx(uint32_t nOffset, uint8_t nValue);
 
 private:
-	PixelConfiguration m_PixelConfiguration;
+	PixelConfiguration *m_pPixelConfiguration;
 	uint32_t m_nBufSize;
 	uint8_t *m_pBuffer { nullptr };
 	uint8_t *m_pBlackoutBuffer { nullptr };

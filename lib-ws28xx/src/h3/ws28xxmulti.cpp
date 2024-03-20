@@ -281,11 +281,13 @@ void WS28xxMulti::SetPixel4Bytes(uint32_t nPortIndex, uint32_t nPixelIndex, uint
 }
 
 void WS28xxMulti::SetPixel(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
-//	const auto pGammaTable = m_PixelConfiguration.GetGammaTable();
-//
-//	nRed = pGammaTable[nRed];
-//	nGreen = pGammaTable[nGreen];
-//	nBlue = pGammaTable[nBlue];
+#if defined(CONFIG_PIXELDMX_ENABLE_GAMMATABLE)
+	const auto pGammaTable = m_PixelConfiguration.GetGammaTable();
+
+	nRed = pGammaTable[nRed];
+	nGreen = pGammaTable[nGreen];
+	nBlue = pGammaTable[nBlue];
+#endif
 
 	const auto type = m_PixelConfiguration.GetType();
 
@@ -310,12 +312,14 @@ void WS28xxMulti::SetPixel(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nR
 }
 
 void WS28xxMulti::SetPixel(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite) {
+#if defined(CONFIG_PIXELDMX_ENABLE_GAMMATABLE)
 	const auto pGammaTable = m_PixelConfiguration.GetGammaTable();
 
 	nRed = pGammaTable[nRed];
 	nGreen = pGammaTable[nGreen];
 	nBlue = pGammaTable[nBlue];
 	nWhite = pGammaTable[nWhite];
+#endif
 
 	const auto k = nPixelIndex * pixel::single::RGBW;
 	uint32_t j = 0;

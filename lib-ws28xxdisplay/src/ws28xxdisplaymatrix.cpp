@@ -2,7 +2,7 @@
  * @file ws28xxmatrix.cpp
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -65,7 +65,7 @@ WS28xxDisplayMatrix::WS28xxDisplayMatrix(uint8_t nColumns, uint8_t nRows, Type t
 
 	pixelConfiguration.SetCount(m_nMaxLeds);
 
-	m_pWS28xx = new WS28xx(pixelConfiguration);
+	m_pWS28xx = new WS28xx(&pixelConfiguration);
 	assert(m_pWS28xx != nullptr);
 
 	m_pWS28xx->Blackout();

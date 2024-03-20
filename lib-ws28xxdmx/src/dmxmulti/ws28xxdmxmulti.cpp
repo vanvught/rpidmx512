@@ -96,7 +96,7 @@ void WS28xxDmxMulti::Stop(const uint32_t nPortIndex) {
 	}
 }
 
-void WS28xxDmxMulti::SetData(uint32_t nPortIndex, const uint8_t* pData, uint32_t nLength) {
+void WS28xxDmxMulti::SetData(const uint32_t nPortIndex, const uint8_t* pData, uint32_t nLength) {
 	assert(pData != nullptr);
 	assert(nLength <= lightset::dmx::UNIVERSE_SIZE);
 

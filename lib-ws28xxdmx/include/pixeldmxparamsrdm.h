@@ -45,7 +45,7 @@ public:
 
 	void Start(const uint32_t nPortIndex) override;
 	void Stop(const uint32_t nPortIndex) override;
-	void SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate = true) override;
+	void SetData(const uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate = true) override;
 	void Sync(__attribute__((unused)) const uint32_t nPortIndex) override {}
 	void Sync(__attribute__((unused)) const bool doForce) override {}
 

@@ -48,19 +48,36 @@
 
 WS28xxDmx *WS28xxDmx::s_pThis;
 
-WS28xxDmx::WS28xxDmx(PixelDmxConfiguration& pixelDmxConfiguration): m_pixelDmxConfiguration(pixelDmxConfiguration) {
+WS28xxDmx::WS28xxDmx(PixelDmxConfiguration *pPixelDmxConfiguration): m_pPixelDmxConfiguration(pPixelDmxConfiguration) {
 	DEBUG_ENTRY
 
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 
-	m_pixelDmxConfiguration.Validate(1 , m_nChannelsPerPixel, m_PortInfo);
+	/*
+	 * DMX Footprint = (Channels per Pixel * Groups) <= 512 (1 Universe)
+	 * Groups = Led count / Grouping count
+	 *
+	 * Channels per Pixel * (Led count / Grouping count) <= 512
+	 * Channels per Pixel * Led count <= 512 * Grouping count
+	 *
+	 * Led count <= (512 * Grouping count) / Channels per Pixel
+	 */
 
-	m_pWS28xx = new WS28xx(m_pixelDmxConfiguration);
+	m_pPixelDmxConfiguration->Validate(1 , m_nChannelsPerPixel, m_PortInfo);
+
+	if (m_pPixelDmxConfiguration->GetUniverses() > 1) {
+		const auto nCount = (512U * m_pPixelDmxConfiguration->GetGroupingCount()) / m_nChannelsPerPixel;
+		m_pPixelDmxConfiguration->SetCount(nCount);
+	}
+
+	m_pPixelDmxConfiguration->Validate(1 , m_nChannelsPerPixel, m_PortInfo);
+
+	m_pWS28xx = new WS28xx(m_pPixelDmxConfiguration);
 	assert(m_pWS28xx != nullptr);
 
-	m_nDmxStartAddress = m_pixelDmxConfiguration.GetDmxStartAddress();
-	m_nDmxFootprint = static_cast<uint16_t>(m_nChannelsPerPixel * m_pixelDmxConfiguration.GetGroups());
+	m_nDmxStartAddress = m_pPixelDmxConfiguration->GetDmxStartAddress();
+	m_nDmxFootprint = static_cast<uint16_t>(m_nChannelsPerPixel * m_pPixelDmxConfiguration->GetGroups());
 
 #if defined (PIXELDMXSTARTSTOP_GPIO)
 	FUNC_PREFIX(gpio_fsel(PIXELDMXSTARTSTOP_GPIO, GPIO_FSEL_OUTPUT));
@@ -105,7 +122,7 @@ void WS28xxDmx::Stop([[maybe_unused]] uint32_t nPortIndex) {
 #endif
 }
 
-void WS28xxDmx::SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate) {
+void WS28xxDmx::SetData([[maybe_unused]] uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate) {
 	assert(pData != nullptr);
 	assert(nLength <= lightset::dmx::UNIVERSE_SIZE);
 
@@ -115,19 +132,27 @@ void WS28xxDmx::SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLen
 
 	uint32_t d = 0;
 
+#if !defined(LIGHTSET_PORTS)
+	static constexpr uint32_t nSwitch = 0;
+#else
 	const auto nSwitch = nPortIndex & 0x03;
-	const auto nGroups = m_pixelDmxConfiguration.GetGroups();
+#endif
+	const auto nGroups = m_pPixelDmxConfiguration->GetGroups();
+#if !defined(LIGHTSET_PORTS)
+	static constexpr uint32_t beginIndex = 0;
+#else
 	const auto beginIndex = m_PortInfo.nBeginIndexPort[nSwitch];
+#endif
 	const auto endIndex = std::min(nGroups, (beginIndex + (nLength / m_nChannelsPerPixel)));
 
 	if ((nSwitch == 0) && (nGroups < m_PortInfo.nBeginIndexPort[1])) {
-		d = static_cast<uint32_t>(m_pixelDmxConfiguration.GetDmxStartAddress() - 1);
+		d = static_cast<uint32_t>(m_pPixelDmxConfiguration->GetDmxStartAddress() - 1);
 	}
 
-	const auto nGroupingCount = m_pixelDmxConfiguration.GetGroupingCount();
+	const auto nGroupingCount = m_pPixelDmxConfiguration->GetGroupingCount();
 
 	if (m_nChannelsPerPixel == 3) {
-		switch (m_pixelDmxConfiguration.GetMap()) {
+		switch (m_pPixelDmxConfiguration->GetMap()) {
 		case pixel::Map::RGB:
 			for (uint32_t j = beginIndex; (j < endIndex) && (d < nLength); j++) {
 				auto const nPixelIndexStart = (j * nGroupingCount);
@@ -198,7 +223,11 @@ void WS28xxDmx::SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLen
 		}
 	}
 
+#if !defined(LIGHTSET_PORTS)
+	if (doUpdate) {
+#else
 	if ((doUpdate) && (nPortIndex == m_PortInfo.nProtocolPortIndexLast)) {
+#endif
 		if (__builtin_expect((m_bBlackout), 0)) {
 			return;
 		}
