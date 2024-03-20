@@ -71,7 +71,7 @@ public:
 		}
 	}
 
-	void SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate) override {
+	void SetData(const uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate) override {
 		if ((nPortIndex < 4) && (m_pA != nullptr)) {
 			return m_pA->SetData(nPortIndex, pData, nLength, doUpdate);
 		}
