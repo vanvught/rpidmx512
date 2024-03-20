@@ -2,7 +2,7 @@
  * @file dmxreceiver.h
  *
  */
-/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,12 +39,12 @@
 class DMXReceiver: Dmx {
 public:
 	DMXReceiver(LightSet *pLightSet) {
-		s_pLightSet = pLightSet;
+		m_pLightSet = pLightSet;
 	}
 
 	~DMXReceiver() {
 		DMXReceiver::Stop();
-		s_IsActive = false;
+		m_IsActive = false;
 	}
 
 	void Start() {
@@ -53,28 +53,28 @@ public:
 
 	void Stop() {
 		Dmx::SetPortDirection(0, dmx::PortDirection::INP, false);
-		s_pLightSet->Stop(0);
+		m_pLightSet->Stop(0);
 	}
 
 	void SetLightSet(LightSet *pLightSet) {
-		if (pLightSet != s_pLightSet) {
-			s_pLightSet->Stop(0);
-			s_pLightSet = pLightSet;
-			s_IsActive = false;
+		if (pLightSet != m_pLightSet) {
+			m_pLightSet->Stop(0);
+			m_pLightSet = pLightSet;
+			m_IsActive = false;
 		}
 
 	}
 
-	const uint8_t* Run(int16_t &nLength) {
-		if (__builtin_expect((s_bDisableOutput), 0)) {
+	const uint8_t *Run(int16_t &nLength) {
+		if (__builtin_expect((m_bDisableOutput), 0)) {
 			nLength = 0;
 			return nullptr;
 		}
 
 		if (Dmx::GetDmxUpdatesPerSecond(0) == 0) {
-			if (s_IsActive) {
-				s_pLightSet->Stop(0);
-				s_IsActive = false;
+			if (m_IsActive) {
+				m_pLightSet->Stop(0);
+				m_IsActive = false;
 				Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
 			}
 
@@ -83,21 +83,21 @@ public:
 		} else {
 			const auto *pDmx = Dmx::GetDmxAvailable(0);
 
-			if (pDmx != nullptr) {
-				const auto *pDmxStatistics = reinterpret_cast<const struct Data*>(pDmx);
+			if (__builtin_expect((pDmx != nullptr), 0)) {
+				const auto *pDmxStatistics = reinterpret_cast<const struct Data *>(pDmx);
 				nLength = static_cast<int16_t>(pDmxStatistics->Statistics.nSlotsInPacket);
 
 				++pDmx;
 
-				s_pLightSet->SetData(0, pDmx, static_cast<uint16_t>(nLength));
+				m_pLightSet->SetData(0, pDmx, static_cast<uint16_t>(nLength));
 
-				if (!s_IsActive) {
-					s_pLightSet->Start(0);
-					s_IsActive = true;
+				if (!m_IsActive) {
+					m_pLightSet->Start(0);
+					m_IsActive = true;
 					Hardware::Get()->SetMode(hardware::ledblink::Mode::DATA);
 				}
 
-				return const_cast<uint8_t*>(pDmx);
+				return const_cast<uint8_t *>(pDmx);
 			}
 		}
 
@@ -106,25 +106,25 @@ public:
 	}
 
 	void SetDisableOutput(const bool bDisable = true) {
-		s_bDisableOutput = bDisable;
+		m_bDisableOutput = bDisable;
 	}
 
 	uint32_t GetUpdatesPerSecond(const uint32_t nPortIndex) {
 		return Dmx::GetDmxUpdatesPerSecond(nPortIndex);
 	}
 
-	const uint8_t* GetDmxCurrentData(const uint32_t nPortIndex) {
+	const uint8_t *GetDmxCurrentData(const uint32_t nPortIndex) {
 		return Dmx::GetDmxCurrentData(nPortIndex);
 	}
 
 	void Print() {
-		printf(" Output %s\n", s_bDisableOutput ? "disabled" : "enabled");
+		printf(" Output %s\n", m_bDisableOutput ? "disabled" : "enabled");
 	}
 
 private:
-	static LightSet *s_pLightSet;
-	static bool s_IsActive;
-	static bool s_bDisableOutput;
+	LightSet *m_pLightSet { nullptr };
+	bool m_IsActive { false };
+	bool m_bDisableOutput { false };
 };
 
 #endif /* DMXRECEIVER_H */
