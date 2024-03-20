@@ -2,7 +2,7 @@
  * @file e133.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -53,6 +53,15 @@
  * Table A.12 RDM Command PDU Vector
  */
 #define VECTOR_RDM_CMD_RDM_DATA	0xCC
+
+/**
+ * Table A.15 RDM Parameter ID
+ */
+
+#define E133_COMPONENT_SCOPE	0x0800
+#define E133_SEARCH_DOMAIN		0x0801
+#define E133_TCP_COMMS_STATUS	0x0802
+#define E133_BROKER_STATUS		0x0803
 
 /**
  * Table A-23: LLRP Component Type Codes

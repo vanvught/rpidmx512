@@ -62,7 +62,7 @@ struct ManufacturerPid {
 
 template <typename T, size_t N>
 struct Description {
-    static constexpr size_t size = N - 1;
+    static constexpr auto size = N - 1U;
     static_assert(size <= DEVICE_DESCRIPTION_MAX_LENGTH, "Description is too long");
     static constexpr char const* value = T::description;
 };

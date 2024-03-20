@@ -39,7 +39,7 @@
 #include "rdmconst.h"
 #include "rdm_e120.h"
 #include "rdm_message_print.h"
-#if defined (ENABLE_RDM_MANUFACTURER_PIDS)
+#if defined (CONFIG_RDM_ENABLE_MANUFACTURER_PIDS)
 # include "rdm_manufacturer_pid.h"
 #endif
 
@@ -73,7 +73,7 @@ const RDMHandler::PidDefinition RDMHandler::PID_DEFINITIONS[] {
 	{E120_QUEUED_MESSAGE,              	&RDMHandler::GetQueuedMessage,           	nullptr,               				1, true , false},
 #endif
 	{E120_SUPPORTED_PARAMETERS,        	&RDMHandler::GetSupportedParameters,      	nullptr,             				0, false, true , false},
-#if defined (ENABLE_RDM_MANUFACTURER_PIDS)
+#if defined (CONFIG_RDM_ENABLE_MANUFACTURER_PIDS)
 	{E120_PARAMETER_DESCRIPTION,		&RDMHandler::GetParameterDescription,     	nullptr,             				2, false, true , false},
 #endif
 	{E120_PRODUCT_DETAIL_ID_LIST, 	   	&RDMHandler::GetProductDetailIdList,     	nullptr,							0, true , true , false},
@@ -95,7 +95,7 @@ const RDMHandler::PidDefinition RDMHandler::PID_DEFINITIONS[] {
 	{E120_DISPLAY_LEVEL,				&RDMHandler::GetDisplayLevel,				&RDMHandler::SetDisplayLevel,		0, true , true , false},
 	{E120_REAL_TIME_CLOCK,		       	&RDMHandler::GetRealTimeClock,  			&RDMHandler::SetRealTimeClock,    	0, true , true , false},
 	{E120_POWER_STATE,					&RDMHandler::GetPowerState,					&RDMHandler::SetPowerState,			0, true , true , false},
-#if defined (ENABLE_RDM_SELF_TEST)
+#if defined (CONFIG_RDM_ENABLE_SELF_TEST)
 	{E120_PERFORM_SELFTEST,				&RDMHandler::GetPerformSelfTest,			&RDMHandler::SetPerformSelfTest,	0, true , true , false},
 	{E120_SELF_TEST_DESCRIPTION,		&RDMHandler::GetSelfTestDescription,		nullptr,							1, true , true , false},
 #endif
@@ -134,7 +134,7 @@ const RDMHandler::PidDefinition RDMHandler::PID_DEFINITIONS_SUB_DEVICES[] {
 #endif
 };
 
-#if defined (ENABLE_RDM_MANUFACTURER_PIDS)
+#if defined (CONFIG_RDM_ENABLE_MANUFACTURER_PIDS)
 # if defined (CONFIG_RDM_MANUFACTURER_PIDS_SET)
 const RDMHandler::PidDefinition RDMHandler::PID_DEFINITION_MANUFACTURER_GENERAL { 0, &RDMHandler::GetManufacturerPid, &RDMHandler::SetManufacturerPid, 0, false, true, false };
 # else
@@ -145,10 +145,12 @@ const RDMHandler::PidDefinition RDMHandler::PID_DEFINITION_MANUFACTURER_GENERAL 
 RDMHandler::RDMHandler(bool bIsRdm): m_bIsRDM(bIsRdm) {
 	DEBUG_ENTRY
 
-#if defined (ENABLE_RDM_MANUFACTURER_PIDS)
+#if defined (CONFIG_RDM_ENABLE_MANUFACTURER_PIDS)
+# ifndef NDEBUG
 	for (uint32_t i = 0; i < GetParameterDescriptionCount(); i++) {
 		printf("0x%.4x [%.*s]\n", __builtin_bswap16(PARAMETER_DESCRIPTIONS[i].pid), PARAMETER_DESCRIPTIONS[i].pdl-0x14, PARAMETER_DESCRIPTIONS[i].description);
 	}
+# endif
 #endif
 
 	DEBUG_EXIT
@@ -405,7 +407,7 @@ void RDMHandler::Handlers(bool bIsBroadcast, uint8_t nCommandClass, uint16_t nPa
 		}
 	}
 
-#if defined (ENABLE_RDM_MANUFACTURER_PIDS)
+#if defined (CONFIG_RDM_ENABLE_MANUFACTURER_PIDS)
 	if (!pid_handler) {
 		for (uint32_t i = 0; i < GetParameterDescriptionCount(); i++) {
 			if (PARAMETER_DESCRIPTIONS[i].pid == __builtin_bswap16(nParamId)) {
@@ -510,13 +512,13 @@ void RDMHandler::GetSupportedParameters(uint16_t nSubDevice) {
 		}
 	}
 
-#if defined (ENABLE_RDM_MANUFACTURER_PIDS)
+#if defined (CONFIG_RDM_ENABLE_MANUFACTURER_PIDS)
 	const auto nSupportedParamsManufacturer = GetParameterDescriptionCount();
 
 	nSupportedParams = static_cast<uint8_t>(nSupportedParams + nSupportedParamsManufacturer);
 
 	for (uint32_t i = 0; i < nSupportedParamsManufacturer; i++) {
-		pRdmDataOut->param_data[j + j] = static_cast<uint8_t>(PARAMETER_DESCRIPTIONS[i].pid);
+		pRdmDataOut->param_data[j + j] = static_cast<uint8_t>(PARAMETER_DESCRIPTIONS[i].pid);	///< The PIDs are swapped
 		pRdmDataOut->param_data[j + j + 1] = static_cast<uint8_t>(PARAMETER_DESCRIPTIONS[i].pid >> 8);
 		j++;
 	}
@@ -527,12 +529,12 @@ void RDMHandler::GetSupportedParameters(uint16_t nSubDevice) {
 	RespondMessageAck();
 }
 
-# if defined (ENABLE_RDM_MANUFACTURER_PIDS)
+# if defined (CONFIG_RDM_ENABLE_MANUFACTURER_PIDS)
 void RDMHandler::GetParameterDescription([[maybe_unused]] uint16_t nSubDevice) {
 	const auto *pRdmDataIn = reinterpret_cast<struct TRdmMessageNoSc *>(m_pRdmDataIn);
-	const auto nPid = static_cast<uint16_t>((pRdmDataIn->param_data[0] << 8) + pRdmDataIn->param_data[1]);
+	const auto nPid = static_cast<uint16_t>(pRdmDataIn->param_data[0] + (pRdmDataIn->param_data[1] << 8));
 
-	if (!(nPid >= 0x8000 && nPid <= 0xFFDF)) {
+	if (!(nPid >= __builtin_bswap16(0x8000) && nPid <= __builtin_bswap16(0xFFDF))) {
 		RespondMessageNack(E120_NR_DATA_OUT_OF_RANGE);
 		return;
 	}
@@ -540,7 +542,7 @@ void RDMHandler::GetParameterDescription([[maybe_unused]] uint16_t nSubDevice) {
 	const auto nSupportedParamsManufacturer = GetParameterDescriptionCount();
 
 	for (uint32_t i = 0; i < nSupportedParamsManufacturer; i++) {
-		if (PARAMETER_DESCRIPTIONS[i].pid == __builtin_bswap16(nPid)) {
+		if (PARAMETER_DESCRIPTIONS[i].pid == nPid) {
 			auto *pRdmDataOut = reinterpret_cast<struct TRdmMessage *>(m_pRdmDataOut);
 
 			pRdmDataOut->param_data_length = PARAMETER_DESCRIPTIONS[i].pdl;
@@ -595,17 +597,17 @@ void RDMHandler::SetManufacturerPid(bool IsBroadcast, [[maybe_unused]] uint16_t 
 	RespondMessageNack(nReason);
 }
 #  endif // CONFIG_RDM_MANUFACTURER_PIDS_SET
-# endif	// ENABLE_RDM_MANUFACTURER_PIDS
+# endif	// CONFIG_RDM_ENABLE_MANUFACTURER_PIDS
 #endif
 
 void RDMHandler::GetDeviceInfo(uint16_t nSubDevice) {
 	const auto *pRdmDeviceInfoRequested = RDMDeviceResponder::Get()->GetDeviceInfo(nSubDevice);
 
 	auto *pRdmDataOut = reinterpret_cast<struct TRdmMessage *>(m_pRdmDataOut);
-	auto *pDeviceInfoOut = reinterpret_cast<struct TRDMDeviceInfo*>(pRdmDataOut->param_data);
+	auto *pDeviceInfoOut = reinterpret_cast<struct rdm::device::responder::DeviceInfo*>(pRdmDataOut->param_data);
 
-	pRdmDataOut->param_data_length = sizeof(struct TRDMDeviceInfo);
-	memcpy(pDeviceInfoOut, pRdmDeviceInfoRequested, sizeof(struct TRDMDeviceInfo));
+	pRdmDataOut->param_data_length = sizeof(struct rdm::device::responder::DeviceInfo);
+	memcpy(pDeviceInfoOut, pRdmDeviceInfoRequested, sizeof(struct rdm::device::responder::DeviceInfo));
 
 	RespondMessageAck();
 }
@@ -1299,7 +1301,7 @@ void RDMHandler::SetPowerState([[maybe_unused]] bool IsBroadcast, [[maybe_unused
 	RespondMessageNack(E120_NR_WRITE_PROTECT);
 }
 
-#if defined (ENABLE_RDM_SELF_TEST)
+#if defined (CONFIG_RDM_ENABLE_SELF_TEST)
 #include "rdm_selftest.h"
 
 void RDMHandler::GetPerformSelfTest([[maybe_unused]] uint16_t nSubDevice) {
@@ -1356,7 +1358,7 @@ void RDMHandler::GetSelfTestDescription([[maybe_unused]] uint16_t nSubDevice) {
 
 	RespondMessageAck();
 }
-#endif // ENABLE_RDM_SELF_TEST
+#endif // CONFIG_RDM_ENABLE_SELF_TEST
 
 #if defined (ENABLE_RDM_PRESET_PLAYBACK)
 #include "rdm_preset_playback.h"

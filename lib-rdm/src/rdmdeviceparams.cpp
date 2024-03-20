@@ -2,7 +2,7 @@
  * @file rdmdeviceparams.cpp
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -171,8 +171,21 @@ void RDMDeviceParams::Builder(const struct rdm::deviceparams::Params *pParams, c
 
 	PropertiesBuilder builder(RDMDeviceParamsConst::FILE_NAME, pBuffer, nLength);
 
-	builder.AddHex16(RDMDeviceParamsConst::PRODUCT_CATEGORY, m_Params.nProductCategory, isMaskSet(rdm::deviceparams::Mask::PRODUCT_CATEGORY));
-	builder.AddHex16(RDMDeviceParamsConst::PRODUCT_DETAIL, m_Params.nProductDetail, isMaskSet(rdm::deviceparams::Mask::PRODUCT_DETAIL));
+	const auto isProductCategory = isMaskSet(rdm::deviceparams::Mask::PRODUCT_CATEGORY);
+
+	if (!isProductCategory) {
+		m_Params.nProductCategory = RDMDevice::Get()->GetProductCategory();
+	}
+
+	builder.AddHex16(RDMDeviceParamsConst::PRODUCT_CATEGORY, m_Params.nProductCategory, isProductCategory);
+
+	const auto isProductDetail = isMaskSet(rdm::deviceparams::Mask::PRODUCT_DETAIL);
+
+	if (!isProductDetail) {
+		m_Params.nProductDetail = RDMDevice::Get()->GetProductDetail();
+	}
+
+	builder.AddHex16(RDMDeviceParamsConst::PRODUCT_DETAIL, m_Params.nProductDetail, isProductDetail);
 
 	nSize = builder.GetSize();
 
@@ -189,16 +202,7 @@ void RDMDeviceParams::staticCallbackFunction(void *p, const char *s) {
 
 void RDMDeviceParams::Dump() {
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, RDMDeviceParamsConst::FILE_NAME);
-
-	if (isMaskSet(rdm::deviceparams::Mask::LABEL)) {
-		printf(" %s=%.*s\n", RDMDeviceParamsConst::LABEL, m_Params.nDeviceRootLabelLength, m_Params.aDeviceRootLabel);
-	}
-
-	if (isMaskSet(rdm::deviceparams::Mask::PRODUCT_CATEGORY)) {
-		printf(" %s=%.4x\n", RDMDeviceParamsConst::PRODUCT_CATEGORY, m_Params.nProductCategory);
-	}
-
-	if (isMaskSet(rdm::deviceparams::Mask::PRODUCT_DETAIL)) {
-		printf(" %s=%.4x\n", RDMDeviceParamsConst::PRODUCT_DETAIL, m_Params.nProductDetail);
-	}
+	printf(" %s=%.*s\n", RDMDeviceParamsConst::LABEL, m_Params.nDeviceRootLabelLength, m_Params.aDeviceRootLabel);
+	printf(" %s=%.4x\n", RDMDeviceParamsConst::PRODUCT_CATEGORY, m_Params.nProductCategory);
+	printf(" %s=%.4x\n", RDMDeviceParamsConst::PRODUCT_DETAIL, m_Params.nProductDetail);
 }
