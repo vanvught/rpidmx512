@@ -37,9 +37,20 @@
 #include "e131bridge.h"
 #include "e131params.h"
 
+// DMX output
 #include "dmx.h"
 #include "dmxparams.h"
 #include "dmxsend.h"
+#ifndef H3
+ // Monitor Output
+ #include "dmxmonitor.h"
+#endif
+// Pixel Controller
+#include "ws28xxdmx.h"
+#include "pixeldmxconfiguration.h"
+#include "pixeltype.h"
+#include "lightset.h"
+#include "pixeldmxparams.h"
 
 #if defined(ORANGE_PI)
 # include "flashcodeinstall.h"
@@ -78,8 +89,8 @@ void main() {
 
 	console_puts("WiFi sACN E1.31 ");
 	console_set_fg_color(CONSOLE_GREEN);
-	console_puts("DMX Output");
-
+	console_puts("Real-time DMX Monitor");
+	console_set_fg_color(CONSOLE_WHITE);
 #ifdef H3
 	console_putc('\n');
 #endif
@@ -105,23 +116,18 @@ void main() {
 
 	bridge.SetUniverse(0, lightset::PortDir::OUTPUT, nStartUniverse);
 
-	Dmx	dmx;
-	DmxSend dmxSend;
-
-	DmxParams dmxparams;
-	dmxparams.Load();
-	dmxparams.Set(&dmx);
-
-	bridge.SetOutput(&dmxSend);
+	// There is support for HEX output only
+	bridge.SetOutput(&monitor);
+	monitor.Cls();
+	console_set_top_row(20);
 
 	bridge.Print();
-	dmxSend.Print();
 
 	for (uint32_t i = 0; i < 7 ; i++) {
 		display.ClearLine(i);
 	}
 
-	display.Write(1, "WiFi sACN E1.31 DMX");
+	display.Write(1, "WiFi sACN E1.31 Monitor");
 
 	if (nw.GetOpmode() == WIFI_STA) {
 		display.Printf(2, "S: %s", nw.GetSsid());

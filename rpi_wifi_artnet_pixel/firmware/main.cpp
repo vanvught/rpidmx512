@@ -25,7 +25,6 @@
 
 #include <stdio.h>
 #include <stdint.h>
-#include <string.h>
 #include <cassert>
 
 #include "hardware.h"
@@ -34,12 +33,14 @@
 #include "console.h"
 #include "display.h"
 
-#include "e131bridge.h"
-#include "e131params.h"
+#include "artnetnode.h"
+#include "artnetparams.h"
 
-#include "dmx.h"
-#include "dmxparams.h"
-#include "dmxsend.h"
+#include "pixeldmxconfiguration.h"
+#include "pixeltype.h"
+#include "lightset.h"
+#include "pixeldmxparams.h"
+#include "ws28xxdmx.h"
 
 #if defined(ORANGE_PI)
 # include "flashcodeinstall.h"
@@ -48,16 +49,19 @@
 
 #include "software_version.h"
 
-constexpr char NETWORK_INIT[] = "Network init ...";
-constexpr char BRIDGE_PARMAS[] = "Setting Bridge parameters ...";
-constexpr char START_BRIDGE[] = "Starting the Bridge ...";
-constexpr char BRIDGE_STARTED[] = "Bridge started";
+using namespace artnet;
 
-namespace e131bridge {
+constexpr char NETWORK_INIT[] = "Network init ...";
+constexpr char NODE_PARMAS[] = "Setting Node parameters ...";
+constexpr char RUN_RDM[] = "Running RDM Discovery ...";
+constexpr char START_NODE[] = "Starting the Node ...";
+constexpr char NODE_STARTED[] = "Node started";
+
+namespace artnetnode {
 namespace configstore {
 uint32_t DMXPORT_OFFSET = 0;
 }  // namespace configstore
-}  // namespace e131bridge
+}  // namespace artnetnode
 
 void main() {
 	Hardware hw;
@@ -68,25 +72,22 @@ void main() {
 	ConfigStore configStore;
 #endif
 
-	E131Bridge bridge;
-
-	E131Params e131params;
-	e131params.Load();
+	ArtNetNode node;
+	
+	ArtNetParams artnetParams;
+	artnetParams.Load();
 
 	uint8_t nHwTextLength;
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
 
-	console_puts("WiFi sACN E1.31 ");
+	console_puts("WiFi Art-Net 3 Node ");
 	console_set_fg_color(CONSOLE_GREEN);
-	console_puts("DMX Output");
-
+	console_puts("Pixel controller {4 Universes}");
+	console_set_fg_color(CONSOLE_WHITE);
 #ifdef H3
 	console_putc('\n');
 #endif
-
 #ifndef H3
-	DMXMonitor monitor;
-
 	console_set_top_row(3);
 #endif
 
@@ -95,33 +96,45 @@ void main() {
 
 	nw.Init();
 
-	console_status(CONSOLE_YELLOW, BRIDGE_PARMAS);
-	display.TextStatus(BRIDGE_PARMAS);
+	console_status(CONSOLE_YELLOW, NODE_PARMAS);
+	display.TextStatus(NODE_PARMAS);
 
-	e131params.Set();
+	artnetParams.Set();
 
-	bool IsSet;
-	const auto nStartUniverse = e131params.GetUniverse(0, IsSet);
+	const auto nStartUniverse = artnetParams.GetUniverse(0);
 
-	bridge.SetUniverse(0, lightset::PortDir::OUTPUT, nStartUniverse);
+	node.SetUniverse(0, lightset::PortDir::OUTPUT, nStartUniverse);
 
-	Dmx	dmx;
-	DmxSend dmxSend;
+	LightSet *pSpi = nullptr;
 
-	DmxParams dmxparams;
-	dmxparams.Load();
-	dmxparams.Set(&dmx);
+	PixelDmxConfiguration pixelDmxConfiguration;
 
-	bridge.SetOutput(&dmxSend);
+	PixelDmxParams pixelDmxParams;
+	pixelDmxParams.Load();
+	pixelDmxParams.Set(&pixelDmxConfiguration);
 
-	bridge.Print();
-	dmxSend.Print();
+	auto *pWS28xxDmx = new WS28xxDmx(&pixelDmxConfiguration);
+	assert(pWS28xxDmx != nullptr);
+	pSpi = pWS28xxDmx;
 
-	for (uint32_t i = 0; i < 7 ; i++) {
+	display.Printf(7, "%s:%d G%d", PixelType::GetType(pixelDmxConfiguration.GetType()), pixelDmxConfiguration.GetCount(), pixelDmxConfiguration.GetGroupingCount());
+
+	const auto nUniverses = pWS28xxDmx->GetUniverses();
+
+	for (uint32_t nPortIndex = 1; nPortIndex < nUniverses; nPortIndex++) {
+		node.SetUniverse(nPortIndex, lightset::PortDir::OUTPUT, static_cast<uint8_t>(nStartUniverse + nPortIndex));
+	}
+
+	node.SetOutput(pSpi);
+	node.Print();
+
+	pSpi->Print();
+
+	for (uint32_t i = 0; i < 7; i++) {
 		display.ClearLine(i);
 	}
 
-	display.Write(1, "WiFi sACN E1.31 DMX");
+	display.Write(1, "WiFi Art-Net 3 Pixel");
 
 	if (nw.GetOpmode() == WIFI_STA) {
 		display.Printf(2, "S: %s", nw.GetSsid());
@@ -141,26 +154,24 @@ void main() {
 
 	display.Printf(4, "N: " IPSTR "", IP2STR(Network::Get()->GetNetmask()));
 	display.Printf(5, "U: %d", nStartUniverse);
-	display.Printf(6, "Active ports: %d", bridge.GetActiveOutputPorts());
+	display.Printf(6, "Active ports: %d", node.GetActiveOutputPorts());
 
-	console_status(CONSOLE_YELLOW, START_BRIDGE);
-	display.TextStatus(START_BRIDGE);
+	console_status(CONSOLE_YELLOW, START_NODE);
+	display.TextStatus(START_NODE);
 
-	bridge.Start();
+	node.Start();
 
-	console_status(CONSOLE_GREEN, BRIDGE_STARTED);
-	display.TextStatus(BRIDGE_STARTED);
+	console_status(CONSOLE_GREEN, NODE_STARTED);
+	display.TextStatus(NODE_STARTED);
 
-#if defined (ORANGE_PI)
-	while (configStore.Flash())
-		;
-#endif
-
-	hw.WatchdogInit();
+	hw.WatchdogFeed();
 
 	for (;;) {
 		hw.WatchdogFeed();
-		bridge.Run();
+		node.Run();
+#if defined (ORANGE_PI)
+		configStore.Flash();
+#endif
 		hw.Run();
 	}
 }

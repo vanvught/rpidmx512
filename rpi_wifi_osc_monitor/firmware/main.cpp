@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdint.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdint>
 #include <cassert>
 
 #include "hardware.h"
@@ -34,12 +33,25 @@
 #include "console.h"
 #include "display.h"
 
-#include "e131bridge.h"
-#include "e131params.h"
+#include "oscserverparams.h"
+#include "oscserver.h"
 
+// DMX output
 #include "dmx.h"
 #include "dmxparams.h"
 #include "dmxsend.h"
+#ifndef H3
+// DMX real-time monitor
+# include "dmxmonitor.h"
+#endif
+// Pixel Controller
+#include "pixeldmxconfiguration.h"
+#include "pixeltype.h"
+#include "lightset.h"
+#include "pixeldmxparams.h"
+#include "ws28xxdmx.h"
+
+#include "handler.h"
 
 #if defined(ORANGE_PI)
 # include "flashcodeinstall.h"
@@ -53,75 +65,123 @@ constexpr char BRIDGE_PARMAS[] = "Setting Bridge parameters ...";
 constexpr char START_BRIDGE[] = "Starting the Bridge ...";
 constexpr char BRIDGE_STARTED[] = "Bridge started";
 
-namespace e131bridge {
-namespace configstore {
-uint32_t DMXPORT_OFFSET = 0;
-}  // namespace configstore
-}  // namespace e131bridge
-
 void main() {
 	Hardware hw;
 	Network nw;
 	Display display;
+
+#ifndef H3
+	DMXMonitor monitor;
+#endif
+
 #if defined (ORANGE_PI)
 	FlashCodeInstall spiFlashInstall;
 	ConfigStore configStore;
 #endif
+	OSCServerParams params;
+	OscServer server;
 
-	E131Bridge bridge;
+	params.Load();
+	params.Set(&server);
 
-	E131Params e131params;
-	e131params.Load();
+	const auto tOutputType = params.GetOutputType();
 
 	uint8_t nHwTextLength;
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
 
-	console_puts("WiFi sACN E1.31 ");
-	console_set_fg_color(CONSOLE_GREEN);
+	console_puts("WiFi OSC Server ");
+	console_set_fg_color(tOutputType == lightset::OutputType::DMX ? CONSOLE_GREEN : CONSOLE_WHITE);
 	console_puts("DMX Output");
-
+	console_set_fg_color(CONSOLE_WHITE);
+#ifndef H3
+	console_puts(" / ");
+	console_set_fg_color(tOutputType == lightset::OutputType::MONITOR ? CONSOLE_GREEN : CONSOLE_WHITE);
+	console_puts("Real-time DMX Monitor");
+	console_set_fg_color(CONSOLE_WHITE);
+#endif
+	console_puts(" / ");
+	console_set_fg_color(tOutputType == lightset::OutputType::SPI ? CONSOLE_GREEN : CONSOLE_WHITE);
+	console_puts("Pixel controller {1 Universe}");
+	console_set_fg_color(CONSOLE_WHITE);
 #ifdef H3
 	console_putc('\n');
 #endif
 
 #ifndef H3
-	DMXMonitor monitor;
-
 	console_set_top_row(3);
 #endif
 
 	console_status(CONSOLE_YELLOW, NETWORK_INIT);
 	display.TextStatus(NETWORK_INIT);
 
-	nw.Init();
+	nw.Print();
 
 	console_status(CONSOLE_YELLOW, BRIDGE_PARMAS);
 	display.TextStatus(BRIDGE_PARMAS);
 
-	e131params.Set();
-
-	bool IsSet;
-	const auto nStartUniverse = e131params.GetUniverse(0, IsSet);
-
-	bridge.SetUniverse(0, lightset::PortDir::OUTPUT, nStartUniverse);
-
-	Dmx	dmx;
+	Dmx dmx;
 	DmxSend dmxSend;
+	LightSet *pSpi = nullptr;
 
-	DmxParams dmxparams;
-	dmxparams.Load();
-	dmxparams.Set(&dmx);
+	if (tOutputType == lightset::OutputType::SPI) {
+		PixelDmxConfiguration pixelDmxConfiguration;
 
-	bridge.SetOutput(&dmxSend);
+		PixelDmxParams pixelDmxParams;
+		pixelDmxParams.Load();
+		pixelDmxParams.Set(&pixelDmxConfiguration);
 
-	bridge.Print();
-	dmxSend.Print();
+		// For the time being, just 1 Universe
+		if (pixelDmxConfiguration.GetType() == pixel::Type::SK6812W) {
+			if (pixelDmxConfiguration.GetCount() > 128) {
+				pixelDmxConfiguration.SetCount(128);
+			}
+		} else {
+			if (pixelDmxConfiguration.GetCount() > 170) {
+				pixelDmxConfiguration.SetCount(170);
+			}
+		}
+
+		auto *pPixelDmx = new WS28xxDmx(&pixelDmxConfiguration);
+		assert(pPixelDmx != nullptr);
+		pSpi = pPixelDmx;
+
+		display.Printf(7, "%s:%d G%d", PixelType::GetType(pixelDmxConfiguration.GetType()), pixelDmxConfiguration.GetCount(), pixelDmxConfiguration.GetGroupingCount());
+
+		server.SetOutput(pSpi);
+		server.SetOscServerHandler(new Handler(pPixelDmx));
+	}
+#ifndef H3
+	else if (tOutputType == lightset::OutputType::MONITOR) {
+		// There is support for HEX output only
+		server.SetOutput(&monitor);
+		monitor.Cls();
+		console_set_top_row(20);
+	}
+#endif
+	else {
+		DmxParams dmxparams;
+		dmxparams.Load();
+		dmxparams.Set(&dmx);
+
+		server.SetOutput(&dmxSend);
+	}
+
+	server.Print();
+
+	if (tOutputType == lightset::OutputType::SPI) {
+		assert(pSpi != 0);
+		pSpi->Print();
+	} else 	if (tOutputType == lightset::OutputType::MONITOR) {
+		printf(" Server ip-address    : " IPSTR "\n\n\n", IP2STR(nw.GetIp()));
+	} else {
+		dmxSend.Print();
+	}
 
 	for (uint32_t i = 0; i < 7 ; i++) {
 		display.ClearLine(i);
 	}
 
-	display.Write(1, "WiFi sACN E1.31 DMX");
+	display.Printf(1, "WiFi OSC %s", tOutputType == lightset::OutputType::SPI ? "Pixel" : "DMX");
 
 	if (nw.GetOpmode() == WIFI_STA) {
 		display.Printf(2, "S: %s", nw.GetSsid());
@@ -139,14 +199,13 @@ void main() {
 		}
 	}
 
-	display.Printf(4, "N: " IPSTR "", IP2STR(Network::Get()->GetNetmask()));
-	display.Printf(5, "U: %d", nStartUniverse);
-	display.Printf(6, "Active ports: %d", bridge.GetActiveOutputPorts());
+	display.Printf(4, "In: %d", server.GetPortIncoming());
+	display.Printf(5, "Out: %d", server.GetPortOutgoing());
 
 	console_status(CONSOLE_YELLOW, START_BRIDGE);
 	display.TextStatus(START_BRIDGE);
 
-	bridge.Start();
+	server.Start();
 
 	console_status(CONSOLE_GREEN, BRIDGE_STARTED);
 	display.TextStatus(BRIDGE_STARTED);
@@ -160,7 +219,7 @@ void main() {
 
 	for (;;) {
 		hw.WatchdogFeed();
-		bridge.Run();
+		server.Run();
 		hw.Run();
 	}
 }

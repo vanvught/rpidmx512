@@ -37,9 +37,11 @@
 #include "e131bridge.h"
 #include "e131params.h"
 
-#include "dmx.h"
-#include "dmxparams.h"
-#include "dmxsend.h"
+#include "ws28xxdmx.h"
+#include "pixeldmxconfiguration.h"
+#include "pixeltype.h"
+#include "lightset.h"
+#include "pixeldmxparams.h"
 
 #if defined(ORANGE_PI)
 # include "flashcodeinstall.h"
@@ -78,16 +80,10 @@ void main() {
 
 	console_puts("WiFi sACN E1.31 ");
 	console_set_fg_color(CONSOLE_GREEN);
-	console_puts("DMX Output");
-
+	console_puts("Pixel controller {4 Universes}");
+	console_set_fg_color(CONSOLE_WHITE);
 #ifdef H3
 	console_putc('\n');
-#endif
-
-#ifndef H3
-	DMXMonitor monitor;
-
-	console_set_top_row(3);
 #endif
 
 	console_status(CONSOLE_YELLOW, NETWORK_INIT);
@@ -105,23 +101,38 @@ void main() {
 
 	bridge.SetUniverse(0, lightset::PortDir::OUTPUT, nStartUniverse);
 
-	Dmx	dmx;
-	DmxSend dmxSend;
+	LightSet *pSpi = nullptr;
 
-	DmxParams dmxparams;
-	dmxparams.Load();
-	dmxparams.Set(&dmx);
+	PixelDmxConfiguration pixelDmxConfiguration;
 
-	bridge.SetOutput(&dmxSend);
+	PixelDmxParams pixelDmxParams;
+	pixelDmxParams.Load();
+	pixelDmxParams.Set(&pixelDmxConfiguration);
+
+	auto *pWS28xxDmx = new WS28xxDmx(&pixelDmxConfiguration);
+	assert(pWS28xxDmx != nullptr);
+	pSpi = pWS28xxDmx;
+
+	display.Printf(7, "%s:%d G%d", PixelType::GetType(pixelDmxConfiguration.GetType()), pixelDmxConfiguration.GetCount(), pixelDmxConfiguration.GetGroupingCount());
+
+	const auto nUniverses = pWS28xxDmx->GetUniverses();
+
+	for (uint32_t nPortIndex = 1; nPortIndex < nUniverses; nPortIndex++) {
+		bridge.SetUniverse(nPortIndex, lightset::PortDir::OUTPUT, static_cast<uint16_t>(nStartUniverse + nPortIndex));
+	}
+
+	bridge.SetOutput(pSpi);
+
 
 	bridge.Print();
-	dmxSend.Print();
+
+	pSpi->Print();
 
 	for (uint32_t i = 0; i < 7 ; i++) {
 		display.ClearLine(i);
 	}
 
-	display.Write(1, "WiFi sACN E1.31 DMX");
+	display.Write(1, "WiFi sACN E1.31 Pixel");
 
 	if (nw.GetOpmode() == WIFI_STA) {
 		display.Printf(2, "S: %s", nw.GetSsid());

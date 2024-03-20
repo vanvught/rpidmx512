@@ -44,8 +44,7 @@ done
 
 cd ..
 
-find . -name sofware_version_id.h | xargs rm
-
+find . -name sofware_version_id.h -delete
 find . -name "*.uImage" | xargs ls -al | wc -l
 find . -name "*.uImage" | sort | xargs -I{} bash -c "do_check {}"
 find . -name "*.uImage" | xargs ls -al | wc -l
