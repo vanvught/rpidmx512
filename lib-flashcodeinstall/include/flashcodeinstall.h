@@ -26,9 +26,6 @@
 #ifndef FLASHCODEINSTALL_H_
 #define FLASHCODEINSTALL_H_
 
-#include <cstdint>
-#include <cstdio>
-
 #if defined (H3)
 // nuc-i5:~/uboot-spi/u-boot$ grep CONFIG_BOOTCOMMAND include/configs/sunxi-common.h
 // #define CONFIG_BOOTCOMMAND "sf probe; sf read 48000000 180000 22000; bootm 48000000"
@@ -38,46 +35,46 @@
 #elif defined (GD32)
 # if defined (BOARD_GD32F107RC)
 #  define OFFSET_UIMAGE		0x007000		// 28K
-#  define FIRMWARE_MAX_SIZE (74 * 1024)		// 74K
+#  define FIRMWARE_MAX_SIZE (78 * 1024)		// 78K
 # elif defined (BOARD_GD32F207RG)
 #  define OFFSET_UIMAGE		0x008000		// 32K
-#  define FIRMWARE_MAX_SIZE (234 * 1024)	// 234K
+#  define FIRMWARE_MAX_SIZE (236 * 1024)	// 236K
 # elif defined (BOARD_GD32F207VC_2)
 #  define OFFSET_UIMAGE		0x008000		// 32K
-#  define FIRMWARE_MAX_SIZE (108 * 1024)	// 108K
+#  define FIRMWARE_MAX_SIZE (110 * 1024)	// 110K
 # elif defined (BOARD_GD32F207VC_4)
 #  define OFFSET_UIMAGE		0x008000		// 32K
-#  define FIRMWARE_MAX_SIZE (108 * 1024)	// 108K
+#  define FIRMWARE_MAX_SIZE (110 * 1024)	// 110K
 # elif defined (BOARD_GD32F207C_EVAL)
 #  define OFFSET_UIMAGE		0x008000		// 32K
-#  define FIRMWARE_MAX_SIZE (106 * 1024)	// 106K
+#  define FIRMWARE_MAX_SIZE (110 * 1024)	// 110K
 # elif defined (BOARD_GD32F407RE)
 #  define OFFSET_UIMAGE		0x008000		// 32K
-#  define FIRMWARE_MAX_SIZE (106 * 1024)	// 106K
+#  define FIRMWARE_MAX_SIZE (116 * 1024)	// 116K
 # elif defined (BOARD_BW_OPIDMX4)
 #  define OFFSET_UIMAGE		0x008000		// 32K
-#  define FIRMWARE_MAX_SIZE (106 * 1024)	// 106K
+#  define FIRMWARE_MAX_SIZE (116 * 1024)	// 116K
 # elif defined (BOARD_DMX3)
 #  define OFFSET_UIMAGE		0x008000		// 32K
-#  define FIRMWARE_MAX_SIZE (106 * 1024)	// 106K
+#  define FIRMWARE_MAX_SIZE (116 * 1024)	// 116K
 # elif defined (BOARD_DMX4)
 #  define OFFSET_UIMAGE		0x008000		// 32K
-#  define FIRMWARE_MAX_SIZE (106 * 1024)	// 106K
+#  define FIRMWARE_MAX_SIZE (116 * 1024)	// 116K
 # elif defined (BOARD_GD32F450VE)
 #  define OFFSET_UIMAGE		0x008000		// 32K
-#  define FIRMWARE_MAX_SIZE (168 * 1024)	// 168K
+#  define FIRMWARE_MAX_SIZE (180 * 1024)	// 180K
 # elif defined (BOARD_GD32F450VI)
 #  define OFFSET_UIMAGE		0x008000		// 32K
-#  define FIRMWARE_MAX_SIZE (224 * 1024)	// 224K
+#  define FIRMWARE_MAX_SIZE (234 * 1024)	// 234K
 # elif defined (BOARD_16X4U_PIXEL)
 #  define OFFSET_UIMAGE		0x008000		// 32K
-#  define FIRMWARE_MAX_SIZE (224 * 1024)	// 224K
+#  define FIRMWARE_MAX_SIZE (234 * 1024)	// 234K
 # elif defined (BOARD_GD32F470Z_EVAL)
 #  define OFFSET_UIMAGE		0x008000		// 32K
-#  define FIRMWARE_MAX_SIZE (171 * 1024)	// 171K
+#  define FIRMWARE_MAX_SIZE (175 * 1024)	// 175K
 # elif defined (BOARD_GD32H759I_EVAL)
 #  define OFFSET_UIMAGE		0x008000		// 32K
-#  define FIRMWARE_MAX_SIZE (171 * 1024)	// 171K
+#  define FIRMWARE_MAX_SIZE (234 * 1024)	// 234K
 # else
 #  error Board is not supported
 # endif
@@ -86,6 +83,9 @@
 #endif
 
 #ifdef __cplusplus
+
+#include <cstdint>
+#include <cstdio>
 
 #include "flashcode.h"
 
