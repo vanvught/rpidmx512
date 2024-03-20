@@ -23,9 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <stddef.h>
-#include <stdbool.h>
+#include <cstdint>
+#include <cstddef>
 
 #include "console.h"
 
@@ -34,57 +33,57 @@
 static bool s_isConnected;
 
 #if !defined (CONSOLE_I2C_ADDRESS)
-# define CONSOLE_I2C_ADDRESS			((uint8_t)0x4D)
+# define CONSOLE_I2C_ADDRESS			(0x4D)
 #endif
 
 #if !defined (CONSOLE_I2C_ONBOARD_CRYSTAL)
-# define CONSOLE_I2C_ONBOARD_CRYSTAL	14745600UL
+# define CONSOLE_I2C_ONBOARD_CRYSTAL	(14745600UL)
 #endif
 
 #if !defined (CONSOLE_I2C_BAUDRATE)
-# define CONSOLE_I2C_BAUDRATE			115200U
+# define CONSOLE_I2C_BAUDRATE			(115200U)
 #endif
 
 #define SC16IS7X0_REG_SHIFT		3
 
-#define	SC16IS7X0_THR		((uint8_t)(0x00 << SC16IS7X0_REG_SHIFT))
-#define	SC16IS7X0_FCR 		((uint8_t)(0x02 << SC16IS7X0_REG_SHIFT))
-#define	SC16IS7X0_LCR		((uint8_t)(0x03 << SC16IS7X0_REG_SHIFT))
-#define	SC16IS7X0_MCR		((uint8_t)(0x04 << SC16IS7X0_REG_SHIFT))
-#define	SC16IS7X0_SPR		((uint8_t)(0x07 << SC16IS7X0_REG_SHIFT))
-#define	SC16IS7X0_TLR		((uint8_t)(0x07 << SC16IS7X0_REG_SHIFT))
-#define	SC16IS7X0_TXLVL		((uint8_t)(0x08 << SC16IS7X0_REG_SHIFT))
+#define	SC16IS7X0_THR		(0x00 << SC16IS7X0_REG_SHIFT)
+#define	SC16IS7X0_FCR 		(0x02 << SC16IS7X0_REG_SHIFT)
+#define	SC16IS7X0_LCR		(0x03 << SC16IS7X0_REG_SHIFT)
+#define	SC16IS7X0_MCR		(0x04 << SC16IS7X0_REG_SHIFT)
+#define	SC16IS7X0_SPR		(0x07 << SC16IS7X0_REG_SHIFT)
+#define	SC16IS7X0_TLR		(0x07 << SC16IS7X0_REG_SHIFT)
+#define	SC16IS7X0_TXLVL		(0x08 << SC16IS7X0_REG_SHIFT)
 
-#define	SC16IS7X0_DLL		((uint8_t)(0x00 << SC16IS7X0_REG_SHIFT))
-#define	SC16IS7X0_DLH		((uint8_t)(0x01 << SC16IS7X0_REG_SHIFT))
-#define	SC16IS7X0_EFR		((uint8_t)(0x02 << SC16IS7X0_REG_SHIFT))
+#define	SC16IS7X0_DLL		(0x00 << SC16IS7X0_REG_SHIFT)
+#define	SC16IS7X0_DLH		(0x01 << SC16IS7X0_REG_SHIFT)
+#define	SC16IS7X0_EFR		(0x02 << SC16IS7X0_REG_SHIFT)
 
 /** See section 8.3 of the datasheet for definitions
  * of bits in the FIFO Control Register (FCR)
  */
-#define FCR_TX_FIFO_RST		((uint8_t)(1U << 2))
-#define FCR_ENABLE_FIFO		((uint8_t)(1U << 0))
+#define FCR_TX_FIFO_RST		(1U << 2)
+#define FCR_ENABLE_FIFO		(1U << 0)
 
 /** See section 8.4 of the datasheet for definitions
  * of bits in the Line Control Register (LCR)
  */
 
-#define LCR_BITS8			((uint8_t)0x03)
-#define LCR_BITS1			((uint8_t)0x00)
-#define LCR_NONE			((uint8_t)0x00)
-#define	LCR_ENABLE_DIV		((uint8_t)0x80)
+#define LCR_BITS8			(0x03)
+#define LCR_BITS1			(0x00)
+#define LCR_NONE			(0x00)
+#define	LCR_ENABLE_DIV		(0x80)
 
 /**
  * 8.6 Modem Control Register (MCR)
  */
 //MCR[2] only accessible when EFR[4] is set
-#define	MCR_ENABLE_TCR_TLR	((uint8_t)(1U << 2))
-#define	MCR_PRESCALE_4		((uint8_t)(1U << 7))
+#define	MCR_ENABLE_TCR_TLR	(1U << 2)
+#define	MCR_PRESCALE_4		(1U << 7)
 
 /**
  * 8.11 Enhanced Features Register (EFR)
  */
-#define	EFR_ENABLE_ENHANCED_FUNCTIONS	((uint8_t)(1U << 4))
+#define	EFR_ENABLE_ENHANCED_FUNCTIONS	(1U << 4)
 
 static bool is_connected(const uint8_t address, const uint32_t baudrate) {
 	char buf;

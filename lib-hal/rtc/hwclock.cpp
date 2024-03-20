@@ -81,29 +81,28 @@ void HwClock::HcToSys() {
 		return;
 	}
 
-	assert(Hardware::Get() != nullptr);
-	const bool bIsWatchdog = Hardware::Get()->IsWatchdog();
+	const auto bIsWatchdog = Hardware::Get()->IsWatchdog();
 
 	if (bIsWatchdog) {
 		Hardware::Get()->WatchdogStop();
 	}
 
 	struct tm rtcT1;
-	struct tm rtcT2;
-
 	struct timeval tvT1;
-	struct timeval tvT2;
 
 	RtcGet(&rtcT1);
 	gettimeofday(&tvT1, nullptr);
 
-	const int32_t nSecondsT1 = rtcT1.tm_sec + rtcT1.tm_min * 60;
-	const time_t nSeconds = mktime(&rtcT1);
+	const auto nSecondsT1 = rtcT1.tm_sec + rtcT1.tm_min * 60;
+	const auto nSeconds = mktime(&rtcT1);
+
+	struct tm rtcT2;
+	struct timeval tvT2;
 
 	while(true) {
 		RtcGet(&rtcT2);
 
-		const int32_t nSeconds2 = rtcT2.tm_sec + rtcT2.tm_min * 60;
+		const auto nSeconds2 = rtcT2.tm_sec + rtcT2.tm_min * 60;
 
 		if (nSecondsT1 != nSeconds2) {
 			gettimeofday(&tvT2, nullptr);
@@ -145,8 +144,7 @@ void HwClock::SysToHc() {
 		return;
 	}
 
-	assert(Hardware::Get() != nullptr);
-	const bool bIsWatchdog = Hardware::Get()->IsWatchdog();
+	const auto bIsWatchdog = Hardware::Get()->IsWatchdog();
 
 	if (bIsWatchdog) {
 		Hardware::Get()->WatchdogStop();
