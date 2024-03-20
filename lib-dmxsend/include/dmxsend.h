@@ -2,7 +2,7 @@
  * @file dmxsend.h
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,11 +41,78 @@
 
 class DmxSend final: public LightSet  {
 public:
-	void Start(const uint32_t nPortIndex) override;
-	void Stop(const uint32_t nPortIndex) override;
-	void SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate) override;
-	void Sync(uint32_t const nPortIndex) override;
-	void Sync(const bool doForce) override;
+	void Start(const uint32_t nPortIndex) override {
+		DEBUG_ENTRY
+		DEBUG_PRINTF("nPortIndex=%d", nPortIndex);
+
+		assert(nPortIndex < CHAR_BIT);
+
+		if (is_started(m_nStarted, nPortIndex)) {
+			DEBUG_EXIT
+			return;
+		}
+
+		m_nStarted = static_cast<uint8_t>(m_nStarted | (1U << nPortIndex));
+
+		Dmx::Get()->SetPortDirection(nPortIndex, dmx::PortDirection::OUTP, true);
+
+		if (Dmx::Get()->GetOutputStyle(nPortIndex) == dmx::OutputStyle::CONTINOUS) {
+			hal::panel_led_on(hal::panelled::PORT_A_TX << nPortIndex);
+		}
+
+		DEBUG_EXIT
+	}
+
+	void Stop(const uint32_t nPortIndex) override {
+		DEBUG_ENTRY
+		DEBUG_PRINTF("nPortIndex=%d -> %u", nPortIndex,	is_started(m_nStarted, static_cast<uint8_t>(nPortIndex)));
+
+		assert(nPortIndex < CHAR_BIT);
+
+		if (!is_started(m_nStarted, nPortIndex)) {
+			DEBUG_EXIT
+			return;
+		}
+
+		m_nStarted = static_cast<uint8_t>(m_nStarted & ~(1U << nPortIndex));
+
+		Dmx::Get()->SetPortDirection(nPortIndex, dmx::PortDirection::OUTP, false);
+
+		hal::panel_led_off(hal::panelled::PORT_A_TX << nPortIndex);
+
+		DEBUG_EXIT
+	}
+
+	void SetData(const uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate) override {
+		assert(nPortIndex < CHAR_BIT);
+		assert(pData != nullptr);
+		assert(nLength != 0);
+
+		if (doUpdate) {
+			Dmx::Get()->SetSendDataWithoutSC(nPortIndex, pData, nLength);
+			Dmx::Get()->StartOutput(nPortIndex);
+			hal::panel_led_on(hal::panelled::PORT_A_TX << nPortIndex);
+		}
+	}
+
+	void Sync(uint32_t const nPortIndex) override {
+		assert(lightset::Data::GetLength(nPortIndex) != 0);
+		Dmx::Get()->SetSendDataWithoutSC(nPortIndex, lightset::Data::Backup(nPortIndex), lightset::Data::GetLength(nPortIndex));
+	}
+
+	void Sync(const bool doForce) override {
+		Dmx::Get()->SetOutput(doForce);
+
+		for (uint32_t nPortIndex = 0; nPortIndex < dmx::config::max::PORTS; nPortIndex++) {
+			if (lightset::Data::GetLength(nPortIndex) != 0) {
+				lightset::Data::ClearLength(nPortIndex);
+				hal::panel_led_on(hal::panelled::PORT_A_TX << nPortIndex);
+				if (!is_started(m_nStarted, nPortIndex)) {
+					Start(nPortIndex);
+				}
+			}
+		}
+	}
 
 #if defined (OUTPUT_HAVE_STYLESWITCH)
 	void SetOutputStyle(const uint32_t nPortIndex, const lightset::OutputStyle outputStyle) override {
@@ -57,7 +124,7 @@ public:
 	}
 #endif
 
-	void Blackout(__attribute__((unused)) bool bBlackout) override {
+	void Blackout([[maybe_unused]] bool bBlackout) override {
 		Dmx::Get()->Blackout();
 	}
 
@@ -65,7 +132,18 @@ public:
 		Dmx::Get()->FullOn();
 	}
 
-	void Print() override;
+	void Print() override {
+		puts("DMX Send");
+		printf(" Break time   : %u\n", Dmx::Get()->GetDmxBreakTime());
+		printf(" MAB time     : %u\n", Dmx::Get()->GetDmxMabTime());
+		printf(" Refresh rate : %u\n", 1000000U / Dmx::Get()->GetDmxPeriodTime());
+		printf(" Slots        : %u\n", Dmx::Get()->GetDmxSlots());
+	}
+
+private:
+	static constexpr bool is_started(const uint8_t v, const uint32_t p) {
+		return (v & (1U << p)) == (1U << p);
+	}
 
 private:
 	uint8_t m_nStarted { 0 };
