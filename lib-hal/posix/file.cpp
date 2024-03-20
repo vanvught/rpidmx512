@@ -149,6 +149,8 @@ FILE *fopen(const char *path, const char *mode) {
 	assert(path != nullptr);
 	assert(mode != nullptr);
 
+	DEBUG_PRINTF("%s %s", path, mode);
+
 	errno = 0;
 	BYTE fm, fo;
 
@@ -200,6 +202,7 @@ FILE *fopen(const char *path, const char *mode) {
 	if (s_fresult == FR_OK) {
 		return &s_file[fd];
 	} else {
+		s_file[fd].udata = nullptr;
 		return nullptr;
 	}
 }
