@@ -2,7 +2,7 @@
  * @file platform_ltc.h
  *
  */
-/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,8 +28,6 @@
 
 #include <cstdint>
 
-#include "ltc.h"
-
 extern volatile uint32_t gv_ltc_nUpdatesPerSecond;
 extern volatile uint32_t gv_ltc_nUpdatesPrevious;
 extern volatile uint32_t gv_ltc_nUpdates;
@@ -40,11 +38,11 @@ extern volatile uint32_t gv_ltc_nTimeCodeCounter;
 extern struct ltc::TimeCode g_ltc_LtcTimeCode;
 
 #if defined (H3)
+# define PLATFORM_LTC_ARM
 # include "../src/arm/h3/platform_ltc.h"
 #elif  defined (GD32)
+# define PLATFORM_LTC_ARM
 # include "../src/arm/gd32/platform_ltc.h"
-#else
-# error platform ltc
 #endif
 
 #endif /* PLATFORM_LTC_H_ */

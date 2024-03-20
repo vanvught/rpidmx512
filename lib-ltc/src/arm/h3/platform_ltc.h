@@ -2,7 +2,7 @@
  * @file platform_ltc.h
  *
  */
-/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,8 @@
 #ifndef H3_PLATFORM_LTC_H_
 #define H3_PLATFORM_LTC_H_
 
+#include "h3.h"
+
 /* ignore some GCC warnings */
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsign-conversion"
@@ -39,7 +41,6 @@
 #include "arm/arm.h"
 #include "arm/gic.h"
 
-#include "h3.h"
 #include "h3_timer.h"
 #include "irq_timer.h"
 
