@@ -1,0 +1,17 @@
+DEFINES=
+
+EXTRA_INCLUDES=
+
+EXTRA_SRCDIR=src/arm src/arm/gd32
+
+ifneq ($(MAKE_FLAGS),)
+else
+	DEFINES+=CONFIG_LTC_DISABLE_GPIO_BUTTONS
+
+	DEFINES+=CONFIG_LTC_DISABLE_RGB_PANEL
+	DEFINES+=CONFIG_LTC_DISABLE_WS28XX
+endif
+
+include Rules.mk
+include ../firmware-template-gd32/lib/Rules.mk
+

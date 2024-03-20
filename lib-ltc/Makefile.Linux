@@ -1,7 +1,7 @@
 # Debug purposes ONLY
-#
-DEFINES = #RASPPI NDEBUG
-#
-EXTRA_INCLUDES = ../lib-network/include ../lib-device/include ../lib-display/include ../lib-ws28xxdisplay/include ../lib-ws28xx/include ../lib-artnet/include ../lib-midi/include ../lib-tcnet/include ../lib-lightset/include ../lib-properties/include ../lib-rgbpanel/include
-#
+
+DEFINES=NDEBUG
+
+EXTRA_INCLUDES=../lib-network/include ../lib-device/include ../lib-display/include ../lib-ws28xxdisplay/include ../lib-ws28xx/include ../lib-artnet/include ../lib-midi/include ../lib-tcnet/include ../lib-lightset/include ../lib-properties/include ../lib-rgbpanel/include
+
 include ../firmware-template-linux/lib/Rules.mk
