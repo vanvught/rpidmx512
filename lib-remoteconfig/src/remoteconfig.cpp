@@ -168,7 +168,7 @@
 /* sensors.txt */
 # include "rdmsensorsparams.h"
 /* "subdev.txt" */
-# if defined (ENABLE_RDM_SUBDEVICES)
+# if defined (CONFIG_RDM_ENABLE_SUBDEVICES)
 #  include "rdmsubdevicesparams.h"
 # endif
 #endif
@@ -670,7 +670,7 @@ void RemoteConfig::HandleGetRdmSensorsTxt(uint32_t& nSize) {
 	DEBUG_EXIT
 }
 
-# if defined (ENABLE_RDM_SUBDEVICES)
+# if defined (CONFIG_RDM_ENABLE_SUBDEVICES)
 void RemoteConfig::HandleGetRdmSubdevTxt(uint32_t& nSize) {
 	DEBUG_ENTRY
 
@@ -1179,7 +1179,7 @@ void RemoteConfig::HandleSetRdmSensorsTxt() {
 	DEBUG_EXIT
 }
 
-# if defined (ENABLE_RDM_SUBDEVICES)
+# if defined (CONFIG_RDM_ENABLE_SUBDEVICES)
 void RemoteConfig::HandleSetRdmSubdevTxt() {
 	DEBUG_ENTRY
 

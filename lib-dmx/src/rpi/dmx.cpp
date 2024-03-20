@@ -113,7 +113,7 @@ static volatile uint32_t sv_nRdmDataBufferIndexHead;
 static volatile uint32_t sv_nRdmDataBufferIndexTail;
 static uint8_t s_RdmData[RDM_DATA_BUFFER_INDEX_ENTRIES][RDM_DATA_BUFFER_SIZE] ALIGNED;
 static volatile uint16_t sv_nRdmChecksum;	///< This must be uint16_t
-volatile uint32_t gv_RdmDataReceiveEnd;
+volatile uint32_t gsv_RdmDataReceiveEnd;
 static volatile uint32_t sv_RdmDiscIndex;
 
 /**
@@ -293,7 +293,7 @@ static void fiq_dmx_in_handler(void) {
 
 			if ((sv_nRdmChecksum == 0) && (p->sub_start_code == E120_SC_SUB_MESSAGE)) {
 				sv_nRdmDataBufferIndexHead = (sv_nRdmDataBufferIndexHead + 1) & RDM_DATA_BUFFER_INDEX_MASK;
-				gv_RdmDataReceiveEnd = BCM2835_ST->CLO;
+				gsv_RdmDataReceiveEnd = BCM2835_ST->CLO;
 				dmb();
 			}
 			sv_DmxReceiveState = IDLE;
@@ -323,7 +323,7 @@ static void fiq_dmx_in_handler(void) {
 			if (sv_RdmDiscIndex == 4) {
 				sv_nRdmDataBufferIndexHead = (sv_nRdmDataBufferIndexHead + 1) & RDM_DATA_BUFFER_INDEX_MASK;
 				sv_DmxReceiveState = IDLE;
-				gv_RdmDataReceiveEnd = BCM2835_ST->CLO;
+				gsv_RdmDataReceiveEnd = BCM2835_ST->CLO;
 				dmb();
 			}
 			break;

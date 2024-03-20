@@ -62,7 +62,7 @@
 
 namespace remoteconfig {
 namespace udp {
-static constexpr auto BUFFER_SIZE = 1024;
+static constexpr auto BUFFER_SIZE = 1420;
 } // namespace udp
 
 enum class Node {
@@ -296,7 +296,7 @@ private:
 #if defined (RDM_RESPONDER)
 	void HandleGetRdmDeviceTxt(uint32_t& nSize);
 	void HandleGetRdmSensorsTxt(uint32_t& nSize);
-# if defined (ENABLE_RDM_SUBDEVICES)
+# if defined (CONFIG_RDM_ENABLE_SUBDEVICES)
 	void HandleGetRdmSubdevTxt(uint32_t& nSize);
 # endif
 #endif
@@ -405,7 +405,7 @@ private:
 #if defined (RDM_RESPONDER)
 	void HandleSetRdmDeviceTxt();
 	void HandleSetRdmSensorsTxt();
-# if defined (ENABLE_RDM_SUBDEVICES)
+# if defined (CONFIG_RDM_ENABLE_SUBDEVICES)
 	void HandleSetRdmSubdevTxt();
 # endif
 #endif

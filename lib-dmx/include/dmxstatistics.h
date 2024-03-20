@@ -1,8 +1,8 @@
 /**
- * @file dmx_config.h
+ * @file dmxstatistics.h
  *
  */
-/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,33 +23,30 @@
  * THE SOFTWARE.
  */
 
-#ifndef LINUX_DMX_CONFIG_H_
-#define LINUX_DMX_CONFIG_H_
+#ifndef DMXSTATISTICS_H_
+#define DMXSTATISTICS_H_
 
 #include <cstdint>
 
-#if !defined (OUTPUT_DMX_SEND_MULTI)
-# define DMX_MAX_PORTS  1
-#else
-# if !defined(LIGHTSET_PORTS)
-#  define DMX_MAX_PORTS 4
-# else
-#  define DMX_MAX_PORTS LIGHTSET_PORTS;
-# endif
-#endif
-
 namespace dmx {
-namespace config {
-namespace max {
-	static const uint32_t PORTS = DMX_MAX_PORTS;
-}  // namespace max
-}  // namespace config
+struct TotalStatistics {
+	struct  {
+		uint32_t Sent;
+		uint32_t Received;
+	} Dmx;
+
+	struct {
+		struct  {
+			uint32_t Good;
+			uint32_t Bad;
+			uint32_t DiscoveryResponse;
+		} Received;
+		struct  {
+			uint32_t Class;
+			uint32_t DiscoveryResponse;
+		} Sent;
+	} Rdm;
+};
 }  // namespace dmx
 
-namespace dmx {
-namespace buffer {
-static constexpr auto SIZE = 516;
-}  // namespace buffer
-}  // namespace dmx
-
-#endif /* LINUX_DMX_CONFIG_H_ */
+#endif /* DMXSTATISTICS_H_ */

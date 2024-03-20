@@ -48,6 +48,12 @@
 # include "artnetnode.h"
 #endif
 
+#if !defined (CONFIG_HTTP_HTML_NO_DMX)
+# if defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI)
+#  define HAVE_DMX
+# endif
+#endif
+
 #include "debug.h"
 
 #if defined ENABLE_CONTENT
@@ -301,7 +307,7 @@ http::Status HttpDeamonHandleRequest::HandleGet() {
 		case http::json::get::DIRECTORY:
 			nLength = remoteconfig::json_get_directory(m_Content, sizeof(m_Content));
 			break;
-#if defined (RDM_CONTROLLER)
+#if defined (RDM_CONTROLLER) && !defined (CONFIG_HTTP_HTML_NO_RDM)
 		case http::json::get::RDM:
 			nLength = remoteconfig::rdm::json_get_rdm(m_Content, sizeof(m_Content));
 			break;
@@ -312,7 +318,31 @@ http::Status HttpDeamonHandleRequest::HandleGet() {
 			break;
 #endif
 		default:
-#if defined (RDM_CONTROLLER)
+#if defined (HAVE_DMX)
+			if (memcmp(pGet, "dmx/", 4) == 0) {
+				const auto *pDmx = &pGet[4];
+				const bool isQuestionMark = (pDmx[6] == '?'); // Handle /dmx/status?X
+				if (isQuestionMark) {
+					auto *p = const_cast<char *>(pDmx);
+					p[6] = '\0';
+				}
+				DEBUG_PRINTF("pDmx=[%s]", pDmx);
+				switch (http::get_uint(pDmx)) {
+				case http::json::get::PORTSTATUS:
+					nLength = remoteconfig::dmx::json_get_ports(m_Content, sizeof(m_Content));
+					break;
+				case http::json::get::STATUS: {
+					const auto *pStatus = &pDmx[7];
+					if (isQuestionMark && isalpha(static_cast<int>(pStatus[0])))  {
+						nLength = remoteconfig::dmx::json_get_portstatus(pStatus[0], m_Content, sizeof(m_Content));
+					}
+				}
+				default:
+					break;
+				}
+			} else
+#endif
+#if defined (RDM_CONTROLLER) && !defined (CONFIG_HTTP_HTML_NO_RDM)
 			if (memcmp(pGet, "rdm/", 4) == 0) {
 				const auto *pRdm = &pGet[4];
 				const bool isQuestionMark = (pRdm[3] == '?'); // Handle /rdm/tod?X
@@ -394,7 +424,14 @@ http::Status HttpDeamonHandleRequest::HandleGet() {
 		nLength = get_file_content("index.html", m_Content, contentType);
 		m_pContentType = s_contentType[static_cast<uint32_t>(contentType)];
 	}
-#if defined (RDM_CONTROLLER)
+#if defined (HAVE_DMX)
+	else if (strcmp(m_pUri, "/dmx") == 0) {
+		http::contentTypes contentType;
+		nLength = get_file_content("dmx.html", m_Content, contentType);
+		m_pContentType = s_contentType[static_cast<uint32_t>(contentType)];
+	}
+#endif
+#if defined (RDM_CONTROLLER) && !defined (CONFIG_HTTP_HTML_NO_RDM)
 	else if (strcmp(m_pUri, "/rdm") == 0) {
 		http::contentTypes contentType;
 		nLength = get_file_content("rdm.html", m_Content, contentType);

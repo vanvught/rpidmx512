@@ -1,3 +1,6 @@
+#if !defined (CONFIG_HTTP_HTML_NO_DMX) && (defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI))
+# include "dmx.js.h"
+#endif /* !defined (CONFIG_HTTP_HTML_NO_DMX) && (defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI)) */
 #include "static.js.h"
 #include "styles.css.h"
 #include "index.js.h"
@@ -5,7 +8,7 @@
 # include "dsa.js.h"
 #endif /* (ENABLE_PHY_SWITCH) */
 #if defined (NODE_SHOWFILE)
-#include "showfile.html.h"
+# include "showfile.html.h"
 #endif /* (NODE_SHOWFILE) */
 #include "default.js.h"
 #if !defined (CONFIG_HTTP_HTML_NO_RDM) && defined (RDM_CONTROLLER)
@@ -16,8 +19,11 @@
 #endif /* !defined (CONFIG_HTTP_HTML_NO_RDM) && defined (RDM_CONTROLLER) */
 #include "index.html.h"
 #if defined (NODE_SHOWFILE)
-#include "showfile.js.h"
+# include "showfile.js.h"
 #endif /* (NODE_SHOWFILE) */
+#if !defined (CONFIG_HTTP_HTML_NO_DMX) && (defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI))
+# include "dmx.html.h"
+#endif /* !defined (CONFIG_HTTP_HTML_NO_DMX) && (defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI)) */
 #if defined (ENABLE_PHY_SWITCH)
 # include "dsa.html.h"
 #endif /* (ENABLE_PHY_SWITCH) */

@@ -1,8 +1,8 @@
 /**
- * @file dmx_config.h
+ * @file json_get_portstatus.cpp
  *
  */
-/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,33 +23,32 @@
  * THE SOFTWARE.
  */
 
-#ifndef LINUX_DMX_CONFIG_H_
-#define LINUX_DMX_CONFIG_H_
-
 #include <cstdint>
+#include <cstdio>
 
-#if !defined (OUTPUT_DMX_SEND_MULTI)
-# define DMX_MAX_PORTS  1
-#else
-# if !defined(LIGHTSET_PORTS)
-#  define DMX_MAX_PORTS 4
-# else
-#  define DMX_MAX_PORTS LIGHTSET_PORTS;
-# endif
-#endif
+#include "dmx.h"
+#include "dmxconst.h"
 
+namespace remoteconfig {
 namespace dmx {
-namespace config {
-namespace max {
-	static const uint32_t PORTS = DMX_MAX_PORTS;
-}  // namespace max
-}  // namespace config
-}  // namespace dmx
+uint32_t json_get_portstatus(const char cPort, char *pOutBuffer, const uint32_t nOutBufferSize) {
+	const uint32_t nPortIndex = (cPort | 0x20) - 'a';
 
-namespace dmx {
-namespace buffer {
-static constexpr auto SIZE = 516;
-}  // namespace buffer
-}  // namespace dmx
+	if (nPortIndex < ::dmx::config::max::PORTS) {
+		auto& statistics = Dmx::Get()->GetTotalStatistics(nPortIndex);
+		auto nLength = static_cast<uint32_t>(snprintf(pOutBuffer, nOutBufferSize,
+				"{\"port\":\"%c\","
+				"\"dmx\":{\"sent\":\"%u\",\"received\":\"%u\"},"
+				"\"rdm\":{\"sent\":{\"class\":\"%u\",\"discovery\":\"%u\"},\"received\":{\"good\":\"%u\",\"bad\":\"%u\",\"discovery\":\"%u\"}}}",
+				'A' + nPortIndex,
+				statistics.Dmx.Sent,statistics.Dmx.Received,
+				statistics.Rdm.Sent.Class, statistics.Rdm.Sent.DiscoveryResponse,
+				statistics.Rdm.Received.Good, statistics.Rdm.Received.Bad, statistics.Rdm.Received.DiscoveryResponse));
 
-#endif /* LINUX_DMX_CONFIG_H_ */
+		return nLength;
+	}
+
+	return 0;
+}
+}  // namespace dmx
+}  // namespace remoteconfig

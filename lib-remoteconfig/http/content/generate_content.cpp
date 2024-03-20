@@ -51,6 +51,9 @@ static constexpr char content_header[] =
 static constexpr char HAVE_DSA_BEGIN[] = "#if defined (ENABLE_PHY_SWITCH)\n";
 static constexpr char HAVE_DSA_END[] = "#endif /* (ENABLE_PHY_SWITCH) */\n";
 
+static constexpr char HAVE_DMX_BEGIN[] = "#if !defined (CONFIG_HTTP_HTML_NO_DMX) && (defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI))\n";
+static constexpr char HAVE_DMX_END[] = "#endif /* !defined (CONFIG_HTTP_HTML_NO_DMX) && (defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI)) */\n";
+
 static constexpr char HAVE_RDM_BEGIN[] = "#if !defined (CONFIG_HTTP_HTML_NO_RDM) && defined (RDM_CONTROLLER)\n";
 static constexpr char HAVE_RDM_END[] = "#endif /* !defined (CONFIG_HTTP_HTML_NO_RDM) && defined (RDM_CONTROLLER) */\n";
 
@@ -111,6 +114,12 @@ static int convert_to_h(const char *pFileName) {
 		fwrite(HAVE_DSA_BEGIN, sizeof(char),sizeof(HAVE_DSA_BEGIN) - 1, pFileIncludes);
 	}
 
+	const auto bHasDMX = (strstr(pFileNameOut, "dmx") != nullptr);
+
+	if (bHasDMX)  {
+		fwrite(HAVE_DMX_BEGIN, sizeof(char),sizeof(HAVE_DMX_BEGIN) - 1, pFileIncludes);
+	}
+
 	const auto bHasRDM = (strstr(pFileNameOut, "rdm") != nullptr);
 
 	if (bHasRDM)  {
@@ -123,13 +132,17 @@ static int convert_to_h(const char *pFileName) {
 		fwrite(HAVE_SHOWFILE_BEGIN, sizeof(char),sizeof(HAVE_SHOWFILE_BEGIN) - 1, pFileIncludes);
 	}
 
-	auto i = snprintf(buffer, sizeof(buffer) - 1, "#%sinclude \"%s\"\n", (bHasDSA || bHasRDM) ? " " : "" , pFileNameOut);
+	auto i = snprintf(buffer, sizeof(buffer) - 1, "#%sinclude \"%s\"\n", (bHasDSA || bHasDMX || bHasRDM || bHasSHOWFILE) ? " " : "" , pFileNameOut);
 	assert(i < static_cast<int>(sizeof(buffer)));
 
 	fwrite(buffer, sizeof(char), i, pFileIncludes);
 
 	if (bHasDSA)  {
 		fwrite(HAVE_DSA_END, sizeof(char),sizeof(HAVE_DSA_END) - 1, pFileIncludes);
+	}
+
+	if (bHasDMX)  {
+		fwrite(HAVE_DMX_END, sizeof(char),sizeof(HAVE_DMX_END) - 1, pFileIncludes);
 	}
 
 	if (bHasRDM)  {
@@ -226,11 +239,16 @@ int main() {
 				assert(pFileName != nullptr);
 
 				const auto bHasDSA = (strstr(pDirEntry->d_name, "dsa") != nullptr);
+				const auto bHasDMX = (strstr(pDirEntry->d_name, "dmx") != nullptr);
 				const auto bHasRDM = (strstr(pDirEntry->d_name, "rdm") != nullptr);
 				const auto bHasSHOWFILE = (strstr(pDirEntry->d_name, "showfile") != nullptr);
 
 				if (bHasDSA)  {
 					fwrite(HAVE_DSA_BEGIN, sizeof(char),sizeof(HAVE_DSA_BEGIN) - 1, pFileContent);
+				}
+
+				if (bHasDMX)  {
+					fwrite(HAVE_DMX_BEGIN, sizeof(char),sizeof(HAVE_DMX_BEGIN) - 1, pFileContent);
 				}
 
 				if (bHasRDM)  {
@@ -256,6 +274,10 @@ int main() {
 
 				if (bHasDSA)  {
 					fwrite(HAVE_DSA_END, sizeof(char),sizeof(HAVE_DSA_END) - 1, pFileContent);
+				}
+
+				if (bHasDMX)  {
+					fwrite(HAVE_DMX_END, sizeof(char),sizeof(HAVE_DMX_END) - 1, pFileContent);
 				}
 
 				if (bHasRDM)  {

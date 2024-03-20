@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head><link rel="stylesheet" href="styles.css" /><title>DMX</title></head>
+<body>
+  <header><ul id="idList"></ul></header>
+  <p><button onclick="refresh()">Refresh</button></p>
+  <div class="stats"><table id="idStats" border='1'></table></div>
+  <div class="ports"><table id="idPorts" border='1'></table></div>
+  <footer><ul id="idVersion"></ul></footer>
+  <script src="static.js" type="text/javascript"></script>
+  <script src="dmx.js" type="text/javascript"></script>
+<script>list();version();refresh()</script>
+</body>
+</html>

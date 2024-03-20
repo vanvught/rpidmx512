@@ -37,6 +37,10 @@ uint32_t json_get_directory(char *pOutBuffer, const uint32_t nOutBufferSize);
 namespace net {
 uint32_t json_get_phystatus(char *pOutBuffer, const uint32_t nOutBufferSize);
 }  // namespace net
+namespace dmx {
+uint32_t json_get_ports(char *pOutBuffer, const uint32_t nOutBufferSize);
+uint32_t json_get_portstatus(const char cPort, char *pOutBuffer, const uint32_t nOutBufferSize);
+}  // namespace dmx
 namespace rdm {
 uint32_t json_get_rdm(char *pOutBuffer, const uint32_t nOutBufferSize);
 uint32_t json_get_queue(char *pOutBuffer, const uint32_t nOutBufferSize);
