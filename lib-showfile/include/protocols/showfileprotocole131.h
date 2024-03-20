@@ -77,7 +77,7 @@ public:
 		m_E131Controller.SetMaster(nMaster);
 	}
 
-	void DoRunCleanupProcess(__attribute__((unused)) bool bDoRun) {
+	void DoRunCleanupProcess([[maybe_unused]] bool bDoRun) {
 	}
 
 	void Run() {

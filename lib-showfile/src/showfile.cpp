@@ -78,7 +78,7 @@ void ShowFile::SetShowFile(const uint32_t nShowFileNumber) {
 
 		if (m_pShowFile != nullptr) {
 			if (fclose(m_pShowFile) != 0) {
-				perror("fclose(m_pShowFile)");
+				perror("fclose()");
 			}
 			m_pShowFile = nullptr;
 		}
@@ -154,14 +154,15 @@ void ShowFile::LoadShows() {
             DEBUG_PRINTF("[%d] found %s", nShows, dp->d_name);
 
     		if (m_nShows == 0) {
-    			m_nShowFileNumber[0] = static_cast<int32_t>(nShowFileNumber);
+    			m_nShowFileNumber[0] = static_cast<int8_t>(nShowFileNumber);
     		} else {
     			int32_t i = m_nShows - 1;
     			while ((static_cast<int32_t>(nShowFileNumber) < m_nShowFileNumber[i]) && i >= 0) {
     				m_nShowFileNumber[i + 1] = m_nShowFileNumber[i];
     				i--;
     			}
-    			m_nShowFileNumber[i + 1] = static_cast<int32_t>(nShowFileNumber);
+
+    			m_nShowFileNumber[i + 1] = static_cast<int8_t>(nShowFileNumber);
     		}
 
     		m_nShows++;
@@ -171,10 +172,6 @@ void ShowFile::LoadShows() {
             }
         }
     } while (dp != nullptr);
-
-	for (auto &FileIndex : m_nShowFileNumber) {
-		printf("%d ", FileIndex);
-	}
 }
 
 void ShowFile::EnableTFTP([[maybe_unused]] bool bEnableTFTP) {
