@@ -57,7 +57,10 @@ public:
 		return RtcGetAlarm(pTime);
 	}
 	void AlarmEnable(const bool bEnable) {
-		RtcAlarmEnable(bEnable);
+		m_bRtcAlarmEnabled = bEnable;
+	}
+	bool AlarmIsEnabled() const {
+		return m_bRtcAlarmEnabled;
 	}
 
 	bool IsConnected() const {
@@ -83,9 +86,6 @@ private:
 	bool RtcGet(struct tm *pTime);
 	bool RtcSetAlarm(const struct tm *pTime);
 	bool RtcGetAlarm(struct tm *pTime);
-	void RtcAlarmEnable(const bool bEnable) {
-		m_bRtcAlarmEnabled = bEnable;
-	}
 	int MCP794xxAlarmWeekday(struct tm *pTime);
 	void PCF8563GetAlarmMode();
 	void PCF8563SetAlarmMode();

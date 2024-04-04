@@ -307,6 +307,14 @@ http::Status HttpDeamonHandleRequest::HandleGet() {
 		case http::json::get::DIRECTORY:
 			nLength = remoteconfig::json_get_directory(m_Content, sizeof(m_Content));
 			break;
+		case http::json::get::TIMEDATE:
+			nLength = remoteconfig::timedate::json_get_timeofday(m_Content, sizeof(m_Content));
+			break;
+#if !defined (DISABLE_RTC)
+		case http::json::get::RTCALARM:
+			nLength = remoteconfig::rtc::json_get_rtc(m_Content, sizeof(m_Content));
+			break;
+#endif
 #if defined (RDM_CONTROLLER) && !defined (CONFIG_HTTP_HTML_NO_RDM)
 		case http::json::get::RDM:
 			nLength = remoteconfig::rdm::json_get_rdm(m_Content, sizeof(m_Content));
@@ -452,6 +460,20 @@ http::Status HttpDeamonHandleRequest::HandleGet() {
 		m_pContentType = s_contentType[static_cast<uint32_t>(contentType)];
 	}
 #endif
+#if !defined (CONFIG_HTTP_HTML_NO_TIME)
+	else if (strcmp(m_pUri, "/time") == 0) {
+		http::contentTypes contentType;
+		nLength = get_file_content("time.html", m_Content, contentType);
+		m_pContentType = s_contentType[static_cast<uint32_t>(contentType)];
+	}
+#endif
+#if !defined (CONFIG_HTTP_HTML_NO_RTC) && !defined (DISABLE_RTC)
+	else if (strcmp(m_pUri, "/rtc") == 0) {
+		http::contentTypes contentType;
+		nLength = get_file_content("rtc.html", m_Content, contentType);
+		m_pContentType = s_contentType[static_cast<uint32_t>(contentType)];
+	}
+#endif
 	else {
 		http::contentTypes contentType;
 		nLength = get_file_content(&m_pUri[1], m_Content, contentType);
@@ -527,7 +549,6 @@ http::Status HttpDeamonHandleRequest::HandlePost(bool hasDataOnly) {
 		return http::Status::OK;
 	}
 
-
 	if (hasDataOnly) {
 		m_pFileData = m_RequestHeaderResponse;
 		m_nFileDataLength = static_cast<uint16_t>(m_nBytesReceived);
@@ -568,7 +589,14 @@ http::Status HttpDeamonHandleRequest::HandlePost(bool hasDataOnly) {
 				Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
 			}
 			DEBUG_PRINTF("identify=%d", value8 != 0);
+		} else if (memcmp(m_pFileData, "date=", 5) == 0) {
+			remoteconfig::timedate::json_set_timeofday(m_pFileData, nJsonLength);
 		}
+#if !defined (DISABLE_RTC)
+		else if (memcmp(m_pFileData, "rtc=", 4) == 0) {
+			remoteconfig::rtc::json_set_rtc(m_pFileData, nJsonLength);
+		}
+#endif
 #if defined (RDM_CONTROLLER)
 		else if (Sscan::Uint8(m_pFileData, "rdm", value8) == Sscan::OK) {
 			ArtNetNode::Get()->SetRdm(!(value8 != 1));

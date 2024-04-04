@@ -2,7 +2,7 @@
  * @file  hwclockrtc.cpp
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -342,13 +342,14 @@ bool HwClock::RtcSetAlarm(const struct tm *pTime) {
 	DEBUG_ENTRY
 	assert(pTime != nullptr);
 
-	DEBUG_PRINTF("sec=%d min=%d hour=%d wday=%d mday=%d mon=%d",
-			pTime->tm_sec,
-			pTime->tm_min,
-			pTime->tm_hour,
-			pTime->tm_wday,
-			pTime->tm_mday,
-			pTime->tm_mon);
+	DEBUG_PRINTF("secs=%d, mins=%d, hours=%d, mday=%d, mon=%d, year=%d, wday=%d",
+		pTime->tm_sec,
+		pTime->tm_min,
+		pTime->tm_hour,
+		pTime->tm_mday,
+		pTime->tm_mon,
+		pTime->tm_year,
+		pTime->tm_wday);
 
 	switch (m_Type) {
 #if !defined (CONFIG_RTC_DISABLE_MCP7941X)
@@ -465,6 +466,11 @@ bool HwClock::RtcGetAlarm(struct tm *pTime) {
 	DEBUG_ENTRY
 	assert(pTime != nullptr);
 
+	if (!RtcGet(pTime)) {
+		DEBUG_EXIT
+		return false;
+	}
+
 	switch (m_Type) {
 #if !defined (CONFIG_RTC_DISABLE_MCP7941X)
 	case Type::MCP7941X: {
@@ -483,9 +489,6 @@ bool HwClock::RtcGetAlarm(struct tm *pTime) {
 		pTime->tm_wday = BCD2DEC(registers[6] & 0x7) - 1;
 		pTime->tm_mday = BCD2DEC(registers[7] & 0x3f);
 		pTime->tm_mon = BCD2DEC(registers[8] & 0x1f) - 1;
-		pTime->tm_year = -1;
-		pTime->tm_yday = -1;
-		pTime->tm_isdst = -1;
 
 		m_bRtcAlarmEnabled = registers[0] & mcp7941x::bit::ALM0_EN;
 
@@ -500,6 +503,9 @@ bool HwClock::RtcGetAlarm(struct tm *pTime) {
 				(registers[6] & mcp7941x::bit::ALMX_POL),
 				(registers[6] & mcp7941x::bit::ALMX_IF),
 				(registers[6] & mcp7941x::bit::MSK_ALMX_MATCH) >> 4);
+
+		DEBUG_EXIT
+		return true;
 	}
 	break;
 #endif
@@ -529,6 +535,9 @@ bool HwClock::RtcGetAlarm(struct tm *pTime) {
 				pTime->tm_mday,
 				m_bRtcAlarmEnabled,
 				m_bRtcAlarmPending);
+
+		DEBUG_EXIT
+		return true;
 	}
 
 		break;
@@ -565,6 +574,9 @@ bool HwClock::RtcGetAlarm(struct tm *pTime) {
 				pTime->tm_wday,
 				m_bRtcAlarmEnabled,
 				m_bRtcAlarmPending);
+
+		DEBUG_EXIT
+		return true;
 	}
 	break;
 #endif

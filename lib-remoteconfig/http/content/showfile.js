@@ -13,29 +13,29 @@ async function refresh() {
 }
 
 function send(status) {
-  return post({ show: "", status: status }).then(refresh).catch(error)
+  post({ show: "", status: status }).then(refresh)
 }
 
 function start() {
-  return send("start")
+  send("start")
 }
 
 function stop() {
-  return send("stop")
+  send("stop")
 }
 
 function resume() {
-  return send("resume")
+  send("resume")
 }
 
 function select() {
   const v=document.getElementById("idDirectory").value;
-  post({ show:`${v}` }).then(() => { refresh() }).catch(error)
+  post({ show:`${v}` }).then(() => { refresh() })
 }
 
 function loop() {
   const v=document.getElementById('idLoop').innerHTML =="Looping" ? "1" : "0"
-  post({ show:"",loop:`${v}` }).then(() => { refresh() }).catch(error)
+  post({ show:"",loop:`${v}` }).then(() => { refresh() })
 }
 
 async function directory() {

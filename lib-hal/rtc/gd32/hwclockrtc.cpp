@@ -27,6 +27,8 @@
 #include <cstring>
 #include <time.h>
 
+#include "hwclock.h"
+
 #include "hardware.h"
 #include "gd32.h"
 
@@ -207,5 +209,85 @@ bool HwClock::RtcGet(struct tm *pTime) {
 		pTime->tm_year,
 		pTime->tm_wday);
 
+	return true;
+}
+
+bool HwClock::RtcSetAlarm(const struct tm *pTime) {
+	DEBUG_ENTRY
+	assert(pTime != nullptr);
+
+	DEBUG_PRINTF("secs=%d, mins=%d, hours=%d, mday=%d, mon=%d, year=%d, wday=%d, enabled=%d",
+		pTime->tm_sec,
+		pTime->tm_min,
+		pTime->tm_hour,
+		pTime->tm_mday,
+		pTime->tm_mon,
+		pTime->tm_year,
+		pTime->tm_wday,
+		m_bRtcAlarmEnabled);
+
+#if defined (GD32F4XX) || defined (GD32H7XX)
+	rtc_alarm_disable (RTC_ALARM0);
+	rtc_alarm_struct rtc_alarm;
+
+	rtc_alarm.alarm_mask = RTC_ALARM_ALL_MASK;
+	rtc_alarm.weekday_or_date = RTC_ALARM_DATE_SELECTED;
+	rtc_alarm.am_pm = 0;
+	rtc_alarm.alarm_day = DEC2BCD(pTime->tm_mday);
+	rtc_alarm.alarm_hour = DEC2BCD(pTime->tm_hour);
+	rtc_alarm.alarm_minute = DEC2BCD(pTime->tm_min);
+	rtc_alarm.alarm_second = DEC2BCD(pTime->tm_sec);
+
+	rtc_alarm_config(RTC_ALARM0, &rtc_alarm);
+
+	if (m_bRtcAlarmEnabled) {
+		rtc_interrupt_enable (RTC_INT_ALARM0);
+		rtc_alarm_enable(RTC_ALARM0);
+	} else {
+		rtc_alarm_disable(RTC_ALARM0);
+		rtc_interrupt_disable(RTC_INT_ALARM0);
+	}
+#else
+	rtc_alarm_config(mktime(const_cast<struct tm *>(pTime)));
+#endif
+
+	DEBUG_EXIT
+	return true;
+}
+
+bool HwClock::RtcGetAlarm(struct tm *pTime) {
+	DEBUG_ENTRY
+	assert(pTime != nullptr);
+
+#if defined (GD32F4XX) || defined (GD32H7XX)
+	if (!RtcGet(pTime)) {
+		DEBUG_EXIT
+		return false;
+	}
+
+	rtc_alarm_struct rtc_alarm;
+	rtc_alarm_get(RTC_ALARM0, &rtc_alarm);
+
+	pTime->tm_sec= BCD2DEC(rtc_alarm.alarm_second);
+	pTime->tm_min = BCD2DEC(rtc_alarm.alarm_minute);
+	pTime->tm_hour = BCD2DEC(rtc_alarm.alarm_hour);
+	pTime->tm_mday = BCD2DEC(rtc_alarm.alarm_day);
+#else
+	const auto nSeconds = static_cast<time_t>((RTC_ALRMH << 16U) | RTC_ALRML);
+	const auto *pTm = localtime(&nSeconds);
+	memcpy(pTime, pTm, sizeof(struct tm));
+#endif
+
+	DEBUG_PRINTF("secs=%d, mins=%d, hours=%d, mday=%d, mon=%d, year=%d, wday=%d, enabled=%d",
+		pTime->tm_sec,
+		pTime->tm_min,
+		pTime->tm_hour,
+		pTime->tm_mday,
+		pTime->tm_mon,
+		pTime->tm_year,
+		pTime->tm_wday,
+		m_bRtcAlarmEnabled);
+
+	DEBUG_EXIT
 	return true;
 }
