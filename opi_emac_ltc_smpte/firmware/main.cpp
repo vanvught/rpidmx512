@@ -148,7 +148,7 @@ extern "C" {
 void h3_cpu_off(uint32_t);
 }
 
-void main() {
+int main() {
 	Hardware hw;
 	Display display(4);
 	ConfigStore configStore;

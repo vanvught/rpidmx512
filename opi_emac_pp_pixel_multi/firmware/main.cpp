@@ -72,7 +72,7 @@ void Hardware::RebootHandler() {
 	PixelPusher::Get()->Stop();
 }
 
-void main() {
+int main() {
 	Hardware hw;
 	DisplayUdf display;
 	ConfigStore configStore;

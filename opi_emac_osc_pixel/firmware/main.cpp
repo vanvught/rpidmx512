@@ -61,7 +61,7 @@ void Hardware::RebootHandler() {
 	WS28xx::Get()->Blackout();
 }
 
-void main() {
+int main() {
 	Hardware hw;
 	Display display;
 	ConfigStore configStore;
@@ -90,26 +90,6 @@ void main() {
 	PixelDmxParams pixelDmxParams;
 	pixelDmxParams.Load();
 	pixelDmxParams.Set(&pixelDmxConfiguration);
-
-	/*
-	 * DMX Footprint = (Channels per Pixel * Groups) <= 512 (1 Universe)
-	 * Groups = Led count / Grouping count
-	 *
-	 * Channels per Pixel * (Led count / Grouping count) <= 512
-	 * Channels per Pixel * Led count <= 512 * Grouping count
-	 *
-	 * Led count <= (512 * Grouping count) / Channels per Pixel
-	 */
-
-	uint32_t nLedsPerPixel;
-	pixeldmxconfiguration::PortInfo portInfo;
-
-	pixelDmxConfiguration.Validate(1 , nLedsPerPixel, portInfo);
-
-	if (pixelDmxConfiguration.GetUniverses() > 1) {
-		const auto nCount = (512U * pixelDmxConfiguration.GetGroupingCount()) / nLedsPerPixel;
-		pixelDmxConfiguration.SetCount(nCount);
-	}
 
 	WS28xxDmx pixelDmx(&pixelDmxConfiguration);
 

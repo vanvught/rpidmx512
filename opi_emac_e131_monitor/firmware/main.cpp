@@ -76,7 +76,7 @@ uint32_t DMXPORT_OFFSET = 0;
 void Hardware::RebootHandler() {
 }
 
-void main() {
+int main() {
 	Hardware hw;
 	DisplayUdf display;
 	ConfigStore configStore;

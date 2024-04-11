@@ -46,7 +46,7 @@
 #include "software_version.h"
 #include "firmwareversion.h"
 
-void main() {
+int main() {
 	Hardware hw;
 	Display display;
 #if !defined(NO_EMAC)

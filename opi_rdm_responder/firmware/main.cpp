@@ -69,7 +69,7 @@ void Hardware::RebootHandler() {
 	WS28xx::Get()->Blackout();
 }
 
-void main() {
+int main() {
 	config_mode_init();
 	Hardware hw;
 	DisplayUdf display;

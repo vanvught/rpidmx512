@@ -71,7 +71,7 @@ void Hardware::RebootHandler() {
 	}
 }
 
-void main() {
+int main() {
 	Hardware hw;
 	DisplayUdf display;
 	ConfigStore configStore;

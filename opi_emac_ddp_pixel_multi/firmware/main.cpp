@@ -73,7 +73,7 @@ void Hardware::RebootHandler() {
 	DdpDisplay::Get()->Stop();
 }
 
-void main() {
+int main() {
 	Hardware hw;
 	DisplayUdf display;
 	ConfigStore configStore;

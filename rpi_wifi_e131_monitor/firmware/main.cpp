@@ -70,7 +70,7 @@ uint32_t DMXPORT_OFFSET = 0;
 }  // namespace configstore
 }  // namespace e131bridge
 
-void main() {
+int main() {
 	Hardware hw;
 	Network nw;
 	Display display;

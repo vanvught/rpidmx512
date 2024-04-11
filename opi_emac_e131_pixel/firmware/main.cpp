@@ -80,7 +80,7 @@ void Hardware::RebootHandler() {
 	E131Bridge::Get()->Stop();
 }
 
-void main() {
+int main() {
 	Hardware hw;
 	DisplayUdf display;
 	ConfigStore configStore;

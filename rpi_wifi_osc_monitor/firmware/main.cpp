@@ -65,7 +65,7 @@ constexpr char BRIDGE_PARMAS[] = "Setting Bridge parameters ...";
 constexpr char START_BRIDGE[] = "Starting the Bridge ...";
 constexpr char BRIDGE_STARTED[] = "Bridge started";
 
-void main() {
+int main() {
 	Hardware hw;
 	Network nw;
 	Display display;
