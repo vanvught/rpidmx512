@@ -36,7 +36,7 @@ static uint32_t get_portstatus(const uint32_t nPortIndex, char *pOutBuffer, cons
 	const auto direction = Dmx::Get()->GetPortDirection(nPortIndex) == ::dmx::PortDirection::INP ? ::lightset::PortDir::INPUT : ::lightset::PortDir::OUTPUT;
 	auto nLength = static_cast<uint32_t>(snprintf(pOutBuffer, nOutBufferSize,
 			"{\"port\":\"%c\",\"direction\":\"%s\"},",
-			'A' + nPortIndex,
+			static_cast<char>('A' + nPortIndex),
 			lightset::get_direction(direction)));
 
 	return nLength;

@@ -40,10 +40,14 @@ uint32_t json_get_portstatus(const char cPort, char *pOutBuffer, const uint32_t 
 				"{\"port\":\"%c\","
 				"\"dmx\":{\"sent\":\"%u\",\"received\":\"%u\"},"
 				"\"rdm\":{\"sent\":{\"class\":\"%u\",\"discovery\":\"%u\"},\"received\":{\"good\":\"%u\",\"bad\":\"%u\",\"discovery\":\"%u\"}}}",
-				'A' + nPortIndex,
-				statistics.Dmx.Sent,statistics.Dmx.Received,
-				statistics.Rdm.Sent.Class, statistics.Rdm.Sent.DiscoveryResponse,
-				statistics.Rdm.Received.Good, statistics.Rdm.Received.Bad, statistics.Rdm.Received.DiscoveryResponse));
+				static_cast<char>('A' + nPortIndex),
+				static_cast<unsigned int>(statistics.Dmx.Sent),
+				static_cast<unsigned int>(statistics.Dmx.Received),
+				static_cast<unsigned int>(statistics.Rdm.Sent.Class),
+				static_cast<unsigned int>(statistics.Rdm.Sent.DiscoveryResponse),
+				static_cast<unsigned int>(statistics.Rdm.Received.Good),
+				static_cast<unsigned int>(statistics.Rdm.Received.Bad),
+				static_cast<unsigned int>(statistics.Rdm.Received.DiscoveryResponse)));
 
 		return nLength;
 	}

@@ -73,8 +73,8 @@ public:
 	void StartOutput(uint32_t nPortIndex);
 	void SetOutput(const bool doForce);
 
-	void SetOutputStyle(__attribute__((unused)) const uint32_t nPortIndex, __attribute__((unused)) const dmx::OutputStyle outputStyle) {}
-	dmx::OutputStyle GetOutputStyle(__attribute__((unused)) const uint32_t nPortIndex) const {
+	void SetOutputStyle([[maybe_unused]] const uint32_t nPortIndex, [[maybe_unused]] const dmx::OutputStyle outputStyle) {}
+	dmx::OutputStyle GetOutputStyle([[maybe_unused]] const uint32_t nPortIndex) const {
 		return dmx::OutputStyle::DELTA;
 	}
 

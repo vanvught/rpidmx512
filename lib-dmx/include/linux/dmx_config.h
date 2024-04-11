@@ -34,7 +34,7 @@
 # if !defined(LIGHTSET_PORTS)
 #  define DMX_MAX_PORTS 4
 # else
-#  define DMX_MAX_PORTS LIGHTSET_PORTS;
+#  define DMX_MAX_PORTS LIGHTSET_PORTS
 # endif
 #endif
 

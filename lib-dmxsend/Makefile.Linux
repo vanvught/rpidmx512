@@ -1,6 +1,0 @@
-# Debug purposes ONLY
-DEFINES=
-
-EXTRA_INCLUDES=../lib-lightset/include ../lib-properties/include ../lib-dmx/include
-
-include ../firmware-template-linux/lib/Rules.mk

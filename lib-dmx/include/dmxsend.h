@@ -134,9 +134,9 @@ public:
 
 	void Print() override {
 		puts("DMX Send");
-		printf(" Break time   : %u\n", Dmx::Get()->GetDmxBreakTime());
-		printf(" MAB time     : %u\n", Dmx::Get()->GetDmxMabTime());
-		printf(" Refresh rate : %u\n", 1000000U / Dmx::Get()->GetDmxPeriodTime());
+		printf(" Break time   : %u\n", static_cast<unsigned int>(Dmx::Get()->GetDmxBreakTime()));
+		printf(" MAB time     : %u\n", static_cast<unsigned int>(Dmx::Get()->GetDmxMabTime()));
+		printf(" Refresh rate : %u\n", static_cast<unsigned int>(1000000U / Dmx::Get()->GetDmxPeriodTime()));
 		printf(" Slots        : %u\n", Dmx::Get()->GetDmxSlots());
 	}
 

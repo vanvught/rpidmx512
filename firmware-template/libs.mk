@@ -70,11 +70,6 @@ endif
 
 ifeq ($(findstring RDM_RESPONDER,$(DEFINES)),RDM_RESPONDER)
 	RDM=1
-	ifneq ($(findstring NODE_ARTNET,$(DEFINES)),NODE_ARTNET)
-		ifneq ($(findstring dmxreceiver,$(LIBS)),dmxreceiver)
-			LIBS+=dmxreceiver
-		endif
-	endif
 	ifneq ($(findstring rdmsensor,$(LIBS)),rdmsensor)
 		LIBS+=rdmsensor
 	endif
@@ -86,7 +81,6 @@ ifeq ($(findstring CONFIG_RDM_ENABLE_SUBDEVICES,$(DEFINES)),CONFIG_RDM_ENABLE_SU
 endif
 
 ifeq ($(findstring NODE_DMX,$(DEFINES)),NODE_DMX)
-	LIBS+=dmxreceiver
 	DMX=1
 endif
 
@@ -108,7 +102,6 @@ ifeq ($(findstring OUTPUT_DMX_MONITOR,$(DEFINES)),OUTPUT_DMX_MONITOR)
 endif
 
 ifeq ($(findstring OUTPUT_DMX_SEND,$(DEFINES)),OUTPUT_DMX_SEND)
-	LIBS+=dmxsend
 	DMX=1
 endif
 
