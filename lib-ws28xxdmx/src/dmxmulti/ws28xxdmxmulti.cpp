@@ -50,17 +50,14 @@ WS28xxDmxMulti::WS28xxDmxMulti(PixelDmxConfiguration& pixelDmxConfiguration): m_
 
 	m_pixelDmxConfiguration.Validate(ws28xxdmxmulti::MAX_PORTS , m_nChannelsPerPixel, m_PortInfo);
 
-	DEBUG_PRINTF("m_PortInfo.nProtocolPortIndexLast=%u", m_PortInfo.nProtocolPortIndexLast);
-
 	m_pWS28xxMulti = new WS28xxMulti(pixelDmxConfiguration);
 	assert(m_pWS28xxMulti != nullptr);
+	m_pWS28xxMulti->Blackout();
 
 #if defined (PIXELDMXSTARTSTOP_GPIO)
 	FUNC_PREFIX(gpio_fsel(PIXELDMXSTARTSTOP_GPIO, GPIO_FSEL_OUTPUT));
 	FUNC_PREFIX(gpio_clr(PIXELDMXSTARTSTOP_GPIO));
 #endif
-
-	m_pWS28xxMulti->Blackout();
 
 	DEBUG_EXIT
 }
@@ -111,7 +108,7 @@ void WS28xxDmxMulti::SetData(const uint32_t nPortIndex, const uint8_t* pData, ui
 
 	const auto nGroups = m_pixelDmxConfiguration.GetGroups();
 	const auto beginIndex = m_PortInfo.nBeginIndexPort[nSwitch];
-	const auto endIndex = std::min(nGroups, (beginIndex + (nLength / m_nChannelsPerPixel)));
+	const auto endIndex = std::min(nGroups, static_cast<uint16_t>(beginIndex + (nLength / m_nChannelsPerPixel)));
 
 	uint32_t d = 0;
 

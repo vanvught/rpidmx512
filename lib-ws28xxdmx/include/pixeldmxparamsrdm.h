@@ -2,7 +2,7 @@
  * @file pixeldmxparamsrdm.h
  *
  */
-/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,8 +27,11 @@
 #define PIXELDMXPARAMSRDM_H_
 
 #include <cstdint>
+#include <cassert>
 
 #include "lightset.h"
+
+#include "debug.h"
 
 namespace pixeldmx {
 namespace paramsdmx {
@@ -39,17 +42,31 @@ static constexpr auto DMX_FOOTPRINT = static_cast<uint16_t>(SlotInfo::LAST);
 }  // namespace paramsdmx
 }  // namespace pixeldmx
 
-class PixelDmxParamsRdm: public LightSet {
+class PixelDmxParamsRdm final: public LightSet {
 public:
-	PixelDmxParamsRdm();
+	PixelDmxParamsRdm() {
+		DEBUG_ENTRY
+		DEBUG_EXIT
+	}
 
-	void Start(const uint32_t nPortIndex) override;
-	void Stop(const uint32_t nPortIndex) override;
+	void Start([[maybe_unused]] uint32_t nPortIndex) override {
+		DEBUG_ENTRY
+		assert(nPortIndex == 0);
+		DEBUG_EXIT
+	}
+
+	void Stop([[maybe_unused]] uint32_t nPortIndex) override {
+		DEBUG_ENTRY
+		assert(nPortIndex == 0);
+		DEBUG_EXIT
+	}
+
 	void SetData(const uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate = true) override;
-	void Sync(__attribute__((unused)) const uint32_t nPortIndex) override {}
-	void Sync(__attribute__((unused)) const bool doForce) override {}
 
-	bool SetDmxStartAddress(__attribute__((unused)) uint16_t nDmxStartAddress) override {
+	void Sync([[maybe_unused]] const uint32_t nPortIndex) override {}
+	void Sync([[maybe_unused]] const bool doForce) override {}
+
+	bool SetDmxStartAddress([[maybe_unused]] uint16_t nDmxStartAddress) override {
 		return false;
 	}
 
@@ -61,12 +78,21 @@ public:
 		return pixeldmx::paramsdmx::DMX_FOOTPRINT;
 	}
 
-	bool GetSlotInfo(uint16_t nSlotOffset, lightset::SlotInfo &tSlotInfo) override;
+	bool GetSlotInfo(uint16_t nSlotOffset, lightset::SlotInfo &slotInfo) override {
+		if (nSlotOffset >= pixeldmx::paramsdmx::DMX_FOOTPRINT) {
+			return false;
+		}
+
+		slotInfo.nType = 0x00;			// ST_PRIMARY
+		slotInfo.nCategory = 0xFFFF;	// SD_UNDEFINED;
+
+		return true;
+	}
 
 	void Display(const uint8_t *pData) __attribute__((weak));
 
 private:
-	static uint8_t s_Data;
+	uint8_t m_Data { 0 };
 };
 
 #endif /* PIXELDMXPARAMSRDM_H_ */

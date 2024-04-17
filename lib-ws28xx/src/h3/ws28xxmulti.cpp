@@ -56,7 +56,7 @@ WS28xxMulti::WS28xxMulti(PixelConfiguration& pixelConfiguration): m_PixelConfigu
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 
-	uint32_t nLedsPerPixel;
+	uint16_t nLedsPerPixel;
 	m_PixelConfiguration.Validate(nLedsPerPixel);
 
 	const auto nCount = m_PixelConfiguration.GetCount();

@@ -33,8 +33,9 @@
 
 class PixelTestPattern: PixelPatterns {
 public:
-	PixelTestPattern(pixelpatterns::Pattern Pattern, uint32_t OutputPorts) : PixelPatterns(OutputPorts) {
-		m_Pattern = Pattern;
+	PixelTestPattern(const pixelpatterns::Pattern Pattern, const uint32_t OutputPorts) : PixelPatterns(OutputPorts) {
+		assert(s_pThis == nullptr);
+		s_pThis = this;
 		SetPattern(Pattern);
 	}
 

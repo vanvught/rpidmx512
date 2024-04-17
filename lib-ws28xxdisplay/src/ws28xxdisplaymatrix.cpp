@@ -67,10 +67,7 @@ WS28xxDisplayMatrix::WS28xxDisplayMatrix(uint8_t nColumns, uint8_t nRows, Type t
 
 	m_pWS28xx = new WS28xx(&pixelConfiguration);
 	assert(m_pWS28xx != nullptr);
-
 	m_pWS28xx->Blackout();
-
-	pixelConfiguration.Dump();
 
 	DEBUG_PRINTF("m_nColumns=%u, m_nRows=%u, m_nOffset=%u, m_nMaxPosition=%u, m_nMaxLine=%u", m_nColumns, m_nRows, m_nOffset, m_nMaxPosition, m_nMaxLine);
 	DEBUG_EXIT

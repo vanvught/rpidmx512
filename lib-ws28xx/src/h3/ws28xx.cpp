@@ -49,9 +49,8 @@ WS28xx::WS28xx(PixelConfiguration *pPixelConfiguration): m_pPixelConfiguration(p
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 
-	uint32_t nLedsPerPixel;
+	uint16_t nLedsPerPixel;
 	m_pPixelConfiguration->Validate(nLedsPerPixel);
-	m_pPixelConfiguration->Dump();
 
 	const auto nCount = m_pPixelConfiguration->GetCount();
 

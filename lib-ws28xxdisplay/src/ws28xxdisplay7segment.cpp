@@ -204,10 +204,8 @@ WS28xxDisplay7Segment::WS28xxDisplay7Segment(Type tLedType, Map tRGBMapping) {
 
 	m_pWS28xx = new WS28xx(&pixelConfiguration);
 	assert(m_pWS28xx != nullptr);
-
 	m_pWS28xx->Blackout();
 
-	pixelConfiguration.Dump();
 	DEBUG_EXIT
 }
 

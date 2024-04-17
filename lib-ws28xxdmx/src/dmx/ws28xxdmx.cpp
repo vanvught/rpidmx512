@@ -54,37 +54,16 @@ WS28xxDmx::WS28xxDmx(PixelDmxConfiguration *pPixelDmxConfiguration): m_pPixelDmx
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 
-	/*
-	 * DMX Footprint = (Channels per Pixel * Groups) <= 512 (1 Universe)
-	 * Groups = Led count / Grouping count
-	 *
-	 * Channels per Pixel * (Led count / Grouping count) <= 512
-	 * Channels per Pixel * Led count <= 512 * Grouping count
-	 *
-	 * Led count <= (512 * Grouping count) / Channels per Pixel
-	 */
-
-	m_pPixelDmxConfiguration->Validate(1 , m_nChannelsPerPixel, m_PortInfo);
-
-	if (m_pPixelDmxConfiguration->GetUniverses() > 1) {
-		const auto nCount = (512U * m_pPixelDmxConfiguration->GetGroupingCount()) / m_nChannelsPerPixel;
-		m_pPixelDmxConfiguration->SetCount(nCount);
-	}
-
 	m_pPixelDmxConfiguration->Validate(1 , m_nChannelsPerPixel, m_PortInfo);
 
 	m_pWS28xx = new WS28xx(m_pPixelDmxConfiguration);
 	assert(m_pWS28xx != nullptr);
-
-	m_nDmxStartAddress = m_pPixelDmxConfiguration->GetDmxStartAddress();
-	m_nDmxFootprint = static_cast<uint16_t>(m_nChannelsPerPixel * m_pPixelDmxConfiguration->GetGroups());
+	m_pWS28xx->Blackout();
 
 #if defined (PIXELDMXSTARTSTOP_GPIO)
 	FUNC_PREFIX(gpio_fsel(PIXELDMXSTARTSTOP_GPIO, GPIO_FSEL_OUTPUT));
 	FUNC_PREFIX(gpio_clr(PIXELDMXSTARTSTOP_GPIO));
 #endif
-
-	m_pWS28xx->Blackout();
 
 	DEBUG_EXIT
 }
@@ -143,7 +122,7 @@ void WS28xxDmx::SetData([[maybe_unused]] uint32_t nPortIndex, const uint8_t *pDa
 #else
 	const auto beginIndex = m_PortInfo.nBeginIndexPort[nSwitch];
 #endif
-	const auto endIndex = std::min(nGroups, (beginIndex + (nLength / m_nChannelsPerPixel)));
+	const auto endIndex = std::min(nGroups, static_cast<uint16_t>(beginIndex + (nLength / m_nChannelsPerPixel)));
 
 	if ((nSwitch == 0) && (nGroups < m_PortInfo.nBeginIndexPort[1])) {
 		d = static_cast<uint32_t>(m_pPixelDmxConfiguration->GetDmxStartAddress() - 1);
@@ -262,17 +241,17 @@ void WS28xxDmx::FullOn() {
 bool WS28xxDmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 	assert((nDmxStartAddress != 0) && (nDmxStartAddress <= lightset::dmx::UNIVERSE_SIZE));
 
-	if (nDmxStartAddress == m_nDmxStartAddress) {
+	if (nDmxStartAddress == m_pPixelDmxConfiguration->GetDmxStartAddress()) {
 		return true;
 	}
 
-	if ((nDmxStartAddress + m_nDmxFootprint) > lightset::dmx::UNIVERSE_SIZE) {
+	if ((nDmxStartAddress + m_pPixelDmxConfiguration->GetDmxFootprint()) > lightset::dmx::UNIVERSE_SIZE) {
 		return false;
 	}
 
 	if ((nDmxStartAddress != 0) && (nDmxStartAddress <= lightset::dmx::UNIVERSE_SIZE)) {
-		m_nDmxStartAddress = nDmxStartAddress;
-		PixelDmxStore::SaveDmxStartAddress(m_nDmxStartAddress);
+		m_pPixelDmxConfiguration->SetDmxStartAddress(nDmxStartAddress);
+		PixelDmxStore::SaveDmxStartAddress(nDmxStartAddress);
 		return true;
 	}
 
@@ -282,7 +261,7 @@ bool WS28xxDmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 // RDM
 
 bool WS28xxDmx::GetSlotInfo(uint16_t nSlotOffset, lightset::SlotInfo& slotInfo) {
-	if (nSlotOffset >  m_nDmxFootprint) {
+	if (nSlotOffset >  m_pPixelDmxConfiguration->GetDmxFootprint()) {
 		return false;
 	}
 
