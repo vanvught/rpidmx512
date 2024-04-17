@@ -27,6 +27,7 @@
 #define FORMATS_SHOWFILEFORMATOLA_H_
 
 #include <cstdio>
+#include <cassert>
 
 #include "showfileprotocol.h"
 #include "showfileconst.h"
@@ -41,10 +42,13 @@ static constexpr uint32_t FILE_NAME_LENGTH = sizeof(SHOWFILE_PREFIX "NN" SHOWFIL
 static constexpr uint32_t FILE_MAX_NUMBER = 99;
 }  // namespace showfile
 
-class ShowFileFormat: public ShowFileProtocol {
+class ShowFileFormat: ShowFileProtocol {
 public:
 	ShowFileFormat() {
 		DEBUG_ENTRY
+
+		assert(s_pThis == nullptr);
+		s_pThis = this;
 
 		DEBUG_EXIT
 	}
@@ -59,11 +63,15 @@ public:
 
 		m_OlaState = OlaState::IDLE;
 
+		ShowFileProtocol::Start();
+
 		DEBUG_EXIT
 	}
 
 	void ShowFileStop() {
 		DEBUG_ENTRY
+
+		ShowFileProtocol::Stop();
 
 		DEBUG_EXIT
 	}
@@ -77,11 +85,76 @@ public:
 		DEBUG_EXIT
 	}
 
+	void ShowFileRecord() {
+		DEBUG_ENTRY
+
+		if (m_pShowFile != nullptr) {
+			fputs("OLA Show\n", m_pShowFile);
+			m_OlaState = OlaState::RECORD_FIRST;
+		} else {
+			m_OlaState = OlaState::IDLE;
+		}
+
+		ShowFileProtocol::Record();
+
+		DEBUG_EXIT
+	}
+
 	void ShowFilePrint() {
 		puts(" Format: OLA");
+		ShowFileProtocol::Print();
 	}
 
 	void ShowFileRun();
+
+	void DoRunCleanupProcess(const bool bDoRun) {
+		ShowFileProtocol::DoRunCleanupProcess(bDoRun);
+	}
+
+	void ShowfileWrite([[maybe_unused]] const uint8_t *pDmxData,[[maybe_unused]] const uint32_t nSize, const uint32_t nUniverse, const uint32_t nMillis) {
+		fputs(itoa_with_linefeed(nUniverse), m_pShowFile);
+
+		if (m_OlaState == OlaState::RECORD_FIRST) {
+			m_OlaState = OlaState::RECORDING;
+		} else {
+			fputs(itoa_with_linefeed(m_nLastMillis - nMillis), m_pShowFile);
+		}
+
+		m_nLastMillis = nMillis;
+	}
+
+	void BlackOut() {
+#if defined (SHOWFILE_ENABLE_DMX_MASTER)
+		ShowFileProtocol::DmxBlackout();
+#endif
+	}
+
+	void SetMaster([[maybe_unused]] const uint32_t nMaster) {
+#if defined (SHOWFILE_ENABLE_DMX_MASTER)
+		ShowFileProtocol::DmxMaster(nMaster);
+#endif
+	}
+
+	bool IsSyncDisabled() {
+		return ShowFileProtocol::IsSyncDisabled();
+	}
+
+	static ShowFileFormat *Get() {
+		return s_pThis;
+	}
+
+private:
+#define UINT_DIGITS 12
+	char *itoa_with_linefeed(uint32_t i) {
+		m_buffer[UINT_DIGITS + 1] = '\n';
+		m_buffer[UINT_DIGITS + 2] = '\0';
+		char *p = m_buffer + UINT_DIGITS;
+		do {
+			*--p = '0' + static_cast<char>(i % 10);
+			i /= 10;
+		} while (i != 0);
+		return p;
+	}
 
 protected:
 	uint32_t m_nShowFileCurrent { showfile::FILE_MAX_NUMBER + 1 };
@@ -90,7 +163,7 @@ protected:
 
 private:
 	enum class OlaState {
-		IDLE, PARSING_DMX, TIME_WAITING
+		IDLE, PARSING_DMX, TIME_WAITING, RECORD_FIRST, RECORDING
 	};
 
 	enum class OlaParseCode {
@@ -110,6 +183,8 @@ private:
 	uint32_t m_nDmxDataLength { 0 };
 	uint16_t m_nUniverse { 0 };
 	uint8_t m_DmxData[512];
+
+	static ShowFileFormat *s_pThis;
 };
 
 #endif /* FORMATS_SHOWFILEFORMATOLA_H_ */

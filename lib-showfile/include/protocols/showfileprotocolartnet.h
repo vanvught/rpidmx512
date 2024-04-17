@@ -62,6 +62,12 @@ public:
 		DEBUG_EXIT
 	}
 
+	void Record() {
+		DEBUG_ENTRY
+
+		DEBUG_EXIT
+	}
+
 	void DmxOut(uint16_t nUniverse, const uint8_t *pDmxData, uint32_t nLength) {
 		m_ArtNetController.HandleDmxOut(nUniverse, pDmxData, nLength);
 	}

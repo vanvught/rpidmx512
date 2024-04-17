@@ -63,7 +63,6 @@ public:
 
 		if (m_pShowFile != nullptr) {
 			ShowFileFormat::ShowFileStart();
-			ShowFileProtocol::Start();
 			SetStatus(showfile::Status::PLAYING);
 		} else {
 			SetStatus(showfile::Status::STOPPED);
@@ -77,7 +76,6 @@ public:
 
 		if (m_pShowFile != nullptr) {
 			ShowFileFormat::ShowFileStop();
-			ShowFileProtocol::Stop();
 			SetStatus(showfile::Status::STOPPED);
 		}
 
@@ -95,13 +93,25 @@ public:
 		DEBUG_EXIT
 	}
 
+	void Record() {
+		DEBUG_ENTRY
+
+		if (m_pShowFile != nullptr) {
+			ShowFileFormat::ShowFileRecord();
+			SetStatus(showfile::Status::RECORDING);
+		} else {
+			SetStatus(showfile::Status::IDLE);
+		}
+
+		DEBUG_EXIT
+	}
+
 	void Run() {
 		if (m_Status == showfile::Status::PLAYING) {
 			ShowFileFormat::ShowFileRun();
-			ShowFileProtocol::Run();
 		}
 
-		#if defined (CONFIG_SHOWFILE_ENABLE_OSC)
+#if defined (CONFIG_SHOWFILE_ENABLE_OSC)
 		m_showFileOSC.Run();
 #endif
 #if !defined(CONFIG_SHOWFILE_DISABLE_TFTP)
@@ -121,7 +131,6 @@ public:
 		}
 		printf(" %s\n", m_bDoLoop ? "Looping" : "Not looping");
 		ShowFileFormat::ShowFilePrint();
-		ShowFileProtocol::Print();
 #if defined (CONFIG_SHOWFILE_ENABLE_OSC)
 		m_showFileOSC.Print();
 #endif
@@ -187,16 +196,20 @@ public:
 		return m_bAutoStart;
 	}
 
+	bool IsSyncDisabled() {
+		return ShowFileFormat::IsSyncDisabled();
+	}
+
 	void BlackOut() {
 #if defined (SHOWFILE_ENABLE_DMX_MASTER)
 		Stop();
-		ShowFileProtocol::DmxBlackout();
+		ShowFileFormat::BlackOut();
 #endif
 	}
 
 	void SetMaster([[maybe_unused]] const uint32_t nMaster) {
 #if defined (SHOWFILE_ENABLE_DMX_MASTER)
-		ShowFileProtocol::DmxMaster(nMaster);
+		ShowFileFormat::SetMaster(nMaster);
 #endif
 	}
 

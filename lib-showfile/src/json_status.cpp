@@ -85,7 +85,7 @@ uint32_t json_get_status(char *pOutBuffer, const uint32_t nOutBufferSize) {
 	const auto nLength = static_cast<uint32_t>(snprintf(pOutBuffer, nOutBufferSize,
 						"{\"%s\":\"%u\",\"status\":\"%s\",\"%s\":\"%s\"}",
 						ShowFileParamsConst::SHOW,
-						ShowFile::Get()->GetShowFile(),
+						static_cast<unsigned int>(ShowFile::Get()->GetShowFile()),
 						::showfile::STATUS[static_cast<int>(status)],
 						ShowFileParamsConst::OPTION_LOOP,
 						ShowFile::Get()->GetDoLoop() ? "1" : "0"));

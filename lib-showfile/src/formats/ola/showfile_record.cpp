@@ -1,5 +1,5 @@
 /**
- * @file showfileconst.h
+ * @file showfile_record.cpp
  *
  */
 /* Copyright (C) 2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -23,17 +23,36 @@
  * THE SOFTWARE.
  */
 
-#ifndef SHOWFILECONST_H_
-#define SHOWFILECONST_H_
-
 #include <cstdint>
+#include "formats/showfileformatola.h"
+
+#if defined (CONFIG_SHOWFILE_PROTOCOL_NODE_ARTNET)
+#include "artnet.h"
 
 namespace showfile {
-enum class Status {
-	IDLE, PLAYING, STOPPED, ENDED, RECORDING, UNDEFINED
-};
+void record(const struct artnet::ArtDmx *pArtDmx, const uint32_t nMillis) {
+	ShowFileFormat::Get()->ShowfileWrite(pArtDmx->Data, pArtDmx->Length, pArtDmx->PortAddress, nMillis);
+}
 
-static constexpr char STATUS[static_cast<int>(showfile::Status::UNDEFINED)][12] = { "Idle", "Playing", "Stopped", "Ended", "Recording" };
+void record([[maybe_unused]] const struct artnet::ArtSync *pArtSync, [[maybe_unused]] const uint32_t nMillis) {
+	// Nothng to do here
+}
 }  // namespace showfile
+#endif
 
-#endif /* SHOWFILECONST_H_ */
+#if defined (CONFIG_SHOWFILE_PROTOCOL_NODE_E131)
+#include "e131packets.h"
+
+namespace showfile {
+void record(const struct TE131DataPacket *pE131DataPacket, const uint32_t nMillis) {
+	const auto *const pDmxData = &pE131DataPacket->DMPLayer.PropertyValues[1];
+	const auto nLength = __builtin_bswap16(pE131DataPacket->DMPLayer.PropertyValueCount) - 1U;
+	const auto Universe = __builtin_bswap16(pE131DataPacket->FrameLayer.Universe);
+	ShowFileFormat::Get()->ShowfileWrite(pDmxData, nLength, Universe, nMillis);
+}
+
+void record([[maybe_unused]] const struct TE131SynchronizationPacket *pE131SynchronizationPacke, [[maybe_unused]] const uint32_t nMillis) {
+	// Nothing to do here
+}
+}  // namespace showfile
+#endif

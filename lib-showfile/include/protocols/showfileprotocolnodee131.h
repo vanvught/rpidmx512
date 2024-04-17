@@ -78,6 +78,12 @@ public:
 		DEBUG_EXIT
 	}
 
+	void Record() {
+		DEBUG_ENTRY
+
+		DEBUG_EXIT
+	}
+
 	void DmxOut(const uint16_t nUniverse, const uint8_t *pDmxData, uint32_t nLength) {
 		nLength++; // Add 1 for SC
 		// Root Layer (See Section 5)

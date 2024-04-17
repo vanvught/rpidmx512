@@ -227,16 +227,16 @@ void ShowFile::SetStatus(const showfile::Status Status) {
 
 	switch (m_Status) {
 		case showfile::Status::IDLE:
-			ShowFileProtocol::DoRunCleanupProcess(true);
+			ShowFileFormat::DoRunCleanupProcess(true);
 			Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
 			break;
 		case showfile::Status::PLAYING:
-			ShowFileProtocol::DoRunCleanupProcess(false);
+			ShowFileFormat::DoRunCleanupProcess(false);
 			Hardware::Get()->SetMode(hardware::ledblink::Mode::DATA);
 			break;
 		case showfile::Status::STOPPED:
 		case showfile::Status::ENDED:
-			ShowFileProtocol::DoRunCleanupProcess(true);
+			ShowFileFormat::DoRunCleanupProcess(true);
 			Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
 			break;
 		default:

@@ -282,13 +282,13 @@ void ShowFileOSC::ShowFiles() {
 	uint32_t i;
 
     for (i = 0; i < ShowFile::Get()->GetShows(); i++) {
-    	snprintf(aPath, sizeof(aPath) - 1, "/showfile/%d/show", i);
-    	snprintf(aValue, sizeof(aValue) - 1, "%.2d", ShowFile::Get()->GetShowFile(i));
+    	snprintf(aPath, sizeof(aPath) - 1, "/showfile/%u/show", static_cast<unsigned int>(i));
+    	snprintf(aValue, sizeof(aValue) - 1, "%.2u", static_cast<unsigned int>(ShowFile::Get()->GetShowFile(i)));
     	OscSimpleSend MsgStatus(m_nHandle, m_nRemoteIp, m_nPortOutgoing, aPath, "s", aValue);
     }
 
 	for (; i < ShowFileOSCMax::FILES_ENTRIES; i++) {
-		snprintf(aPath, sizeof(aPath) - 1, "/showfile/%d/show", i);
+		snprintf(aPath, sizeof(aPath) - 1, "/showfile/%u/show", static_cast<unsigned int>(i));
 		OscSimpleSend MsgStatus(m_nHandle, m_nRemoteIp, m_nPortOutgoing, aPath, "s", "  ");
 	}
 
