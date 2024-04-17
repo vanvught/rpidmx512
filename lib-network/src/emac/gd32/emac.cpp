@@ -33,8 +33,14 @@
 #include "debug.h"
 
 extern void enet_gpio_config();
-extern enet_descriptors_struct  txdesc_tab[ENET_TXBUF_NUM];
+extern enet_descriptors_struct txdesc_tab[ENET_TXBUF_NUM];
 extern void mac_address_get(uint8_t paddr[]);
+
+#if defined (CONFIG_ENET_ENABLE_PTP)
+# include "gd32_ptp.h"
+enet_descriptors_struct ptp_rxdesc_tab[ENET_RXBUF_NUM] __attribute__((aligned(4)));
+enet_descriptors_struct ptp_txdesc_tab[ENET_TXBUF_NUM] __attribute__((aligned(4)));
+#endif
 
 /*
  * Public function
@@ -150,13 +156,22 @@ void __attribute__((cold)) emac_start(uint8_t mac_address[], net::Link& link) {
 	enet_descriptors_chain_init(ENETx, ENET_DMA_RX);
 #else
 	enet_mac_address_set(ENET_MAC_ADDRESS0, mac_address);
+# if defined (CONFIG_ENET_ENABLE_PTP)
+	enet_ptp_normal_descriptors_chain_init(ENET_DMA_TX, ptp_txdesc_tab);
+	enet_ptp_normal_descriptors_chain_init(ENET_DMA_RX, ptp_rxdesc_tab);
+# else
 	enet_descriptors_chain_init(ENET_DMA_TX);
 	enet_descriptors_chain_init(ENET_DMA_RX);
+# endif
 #endif
 
 	for (uint32_t i = 0; i < ENET_TXBUF_NUM; i++) {
 		enet_transmit_checksum_config(&txdesc_tab[i], ENET_CHECKSUM_TCPUDPICMP_FULL);
 	}
+
+#if defined (CONFIG_ENET_ENABLE_PTP)
+	gd32_ptp_start();
+#endif
 
 	enet_enable(ENETx);
 

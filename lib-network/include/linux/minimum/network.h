@@ -166,7 +166,7 @@ private:
 	}
 
 private:
-	char m_aHostName[HOST_NAME_MAX + 1];
+	char m_aHostName[network::HOSTNAME_SIZE + 1];
 	uint8_t m_buffer[MAX_SEGMENT_LENGTH];
 };
 

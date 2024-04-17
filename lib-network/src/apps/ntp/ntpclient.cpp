@@ -163,20 +163,20 @@ int NtpClient::SetTimeOfDay() {
 	Difference(&T1, &T2, nDiffSeconds1, nDiffFraction1);
 	Difference(&T4, &T3, nDiffSeconds2, nDiffFraction2);
 
-	m_nOffsetSeconds = nDiffSeconds1 + nDiffSeconds2;
-	m_nOffsetMicros = nDiffFraction1 + nDiffFraction2;
+	auto nOffsetSeconds = static_cast<int64_t>(nDiffSeconds1) + static_cast<int64_t>(nDiffSeconds2);
+	auto nOffsetMicros =  static_cast<uint64_t>(nDiffFraction1) + static_cast<uint64_t>(nDiffFraction2);
 
-	if (m_nOffsetMicros >= 1000000u) {
-		m_nOffsetMicros -= 1000000u;
-		m_nOffsetSeconds += 1;
+	if (nOffsetMicros >= 1000000u) {
+		nOffsetMicros -= 1000000u;
+		nOffsetSeconds += 1;
 	}
 
-	m_nOffsetSeconds /= 2;
-	m_nOffsetMicros /= 2;
+	m_nOffsetSeconds = nOffsetSeconds / 2;
+	m_nOffsetMicros  = nOffsetMicros / 2;
 
 	struct timeval tv;
 
-	tv.tv_sec =	static_cast<time_t>(T4.nSeconds - JAN_1970)  + m_nOffsetSeconds + m_nUtcOffset;
+	tv.tv_sec =	static_cast<time_t>(T4.nSeconds - JAN_1970) + m_nOffsetSeconds + m_nUtcOffset;
 	tv.tv_usec = (static_cast<int32_t>(USEC(T4.nFraction)) + static_cast<int32_t>(m_nOffsetMicros));
 
 	if (tv.tv_usec >= 1000000) {
@@ -297,7 +297,7 @@ void NtpClient::Print() {
 	}
 	printf(" Server : " IPSTR ":%d\n", IP2STR(m_nServerIp), ntp::UDP_PORT);
 	auto rawtime = time(nullptr);
-	printf(" %s UTC offset : %d (seconds)\n", asctime(localtime(&rawtime)), m_nUtcOffset);
+	printf(" %s UTC offset : %d (seconds)\n", asctime(localtime(&rawtime)), static_cast<int>(m_nUtcOffset));
 #ifndef NDEBUG
 	PrintNtpTime("Originate", &T1);
 	PrintNtpTime("Receive", &T2);

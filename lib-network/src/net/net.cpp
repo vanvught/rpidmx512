@@ -2,7 +2,7 @@
  * @file net.cpp
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,9 @@
  * THE SOFTWARE.
  */
 
+#pragma GCC push_options
+#pragma GCC optimize ("O2")
+
 #include <cstdint>
 #include <cstring>
 
@@ -40,6 +43,11 @@ uint32_t nBroadcastMask;
 uint32_t nOnNetworkMask;
 uint8_t macAddress[ETH_ADDR_LEN]  ALIGNED;
 }  // namespace globals
+#if defined (CONFIG_ENET_ENABLE_PTP)
+void ptp_init();
+void ptp_handle(const uint8_t *);
+void ptp_run();
+#endif
 }  // namespace net
 
 static uint8_t *s_p;
@@ -112,6 +120,10 @@ void __attribute__((cold)) net_init(const uint8_t *const pMacAddress, struct IpI
 	} else {
 		console_error("IP Conflict!\n");
 	}
+
+#if defined (CONFIG_ENET_ENABLE_PTP)
+	net::ptp_init();
+#endif
 
 	DEBUG_EXIT
 }
@@ -207,6 +219,11 @@ __attribute__((hot)) void net_handle() {
 	if (__builtin_expect((nLength > 0), 0)) {
 		const auto *const eth = reinterpret_cast<struct ether_header *>(s_p);
 
+#if defined (CONFIG_ENET_ENABLE_PTP)
+		if (eth->type == __builtin_bswap16(ETHER_TYPE_PTP)) {
+			net::ptp_handle(const_cast<const uint8_t *>(s_p));
+		} else
+#endif
 		if (eth->type == __builtin_bswap16(ETHER_TYPE_IPv4)) {
 			ip_handle(reinterpret_cast<struct t_ip4 *>(s_p));
 		} else if (eth->type == __builtin_bswap16(ETHER_TYPE_ARP)) {
@@ -219,4 +236,8 @@ __attribute__((hot)) void net_handle() {
 	}
 
 	net_timers_run();
+
+#if defined (CONFIG_ENET_ENABLE_PTP)
+	net::ptp_run();
+#endif
 }

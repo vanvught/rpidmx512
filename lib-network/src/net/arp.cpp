@@ -2,7 +2,7 @@
  * @file arp.cpp
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,21 +23,23 @@
  * THE SOFTWARE.
  */
 
+#pragma GCC push_options
+#pragma GCC optimize ("O2")
+
 #include <cstdint>
 #include <cstring>
 #include <cassert>
 
 #include "net.h"
 #include "net_private.h"
-
 #include "../../config/net_config.h"
+
+#include "hardware.h"
 
 namespace net {
 namespace arp {
 enum class RequestType {
-	REQUEST,
-	PROBE,
-	ANNNOUNCEMENT
+	REQUEST, PROBE, ANNNOUNCEMENT
 };
 }  // namespace arp
 }  // namespace net
@@ -99,24 +101,27 @@ void __attribute__((cold)) arp_init() {
 }
 
 bool arp_do_probe() {
-	int32_t nTimeout;
+#ifndef NDEBUG
+	static constexpr uint32_t TIMEOUT_MILLIS = 500;
+#else
+	static constexpr uint32_t TIMEOUT_MILLIS = 10;
+#endif
+
 	auto nRetries = 3;
 
 	while (nRetries--) {
 		arp_send_probe();
 
-		nTimeout = 0x1FFFF;
-#ifndef NDEBUG
-		nTimeout+= 0x40000;
-#endif
+		Hardware::Get()->WatchdogFeed();
 
-		while ((nTimeout-- > 0) && !s_isProbeReplyReceived) {
+		const auto nMillis = Hardware::Get()->Millis();
+
+		do {
 			net_handle();
-		}
-
-		if (s_isProbeReplyReceived) {
-			return true;
-		}
+			if (s_isProbeReplyReceived) {
+				return true;
+			}
+		} while ((Hardware::Get()->Millis() - nMillis) < TIMEOUT_MILLIS);
 	}
 
 	return false;

@@ -38,7 +38,8 @@ enum MTU {
 
 enum ETHER_TYPE {
 	ETHER_TYPE_IPv4 = 0x0800,
-	ETHER_TYPE_ARP = 0x0806
+	ETHER_TYPE_ARP = 0x0806,
+	ETHER_TYPE_PTP = 0x88F7		/* IEEE1588v2 (PTPv2) over Ethernet */
 };
 
 enum ETH_ADDR {
