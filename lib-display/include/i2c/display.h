@@ -431,12 +431,14 @@ private:
 	display::Type m_tType { display::Type::UNKNOWN };
 	uint32_t m_nMillis { 0 };
 	HAL_I2C m_I2C;
-	bool m_bIsSleep { false };
-	bool m_bHave7Segment { false };
 	uint32_t m_nSleepTimeout { 1000 * 60 * display::Defaults::SEEP_TIMEOUT };
-
 	uint8_t m_nContrast { 0x7F };
+
+	bool m_bIsSleep { false };
 	bool m_bIsFlippedVertically { false };
+#if defined (CONFIG_DISPLAY_HAVE_7SEGMENT)
+	bool m_bHave7Segment { false };
+#endif
 
 	DisplaySet *m_LcdDisplay { nullptr };
 	static Display *s_pThis;

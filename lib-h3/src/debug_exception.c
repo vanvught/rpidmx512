@@ -2,7 +2,7 @@
  * @file debug_exception.c
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,15 +49,15 @@ void debug_exception(unsigned int type, unsigned int address) {
 	console_set_fg_color(CONSOLE_RED);
 
 	if (type == 0) {
-		printf("\nUndefined exception at address: %p\n",address);
+		printf("\nUndefined exception at address: %p\n", (void *)address);
 	} else if (type == 1) {
-		printf("\nPrefetch abort at address: %p\n",address);
+		printf("\nPrefetch abort at address: %p\n", (void *)address);
 	} else if (type == 2) {
 		volatile unsigned int datafaultaddr;
 		asm volatile ("mrc p15, 0, %[dfa], c6, c0, 0\n\t" : [dfa] "=r" (datafaultaddr));
-		printf("\nData abort at address: %p -> %p\n", address, datafaultaddr);
+		printf("\nData abort at address: %p -> %p\n", (void *)address, (void *)datafaultaddr);
 	} else {
-		printf("\nUnknown exception! [%d]\n", type);
+		printf("\nUnknown exception! [%u]\n", type);
 	}
 
 	console_set_fg_color(CONSOLE_WHITE);

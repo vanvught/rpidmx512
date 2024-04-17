@@ -2,7 +2,7 @@
  * @file h3_uart.h
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -114,11 +114,11 @@ extern void h3_uart_set_baudrate(const uint32_t uart_base, uint32_t baudrate);
 extern void h3_uart_transmit(const uint32_t uart_base, const uint8_t *data, uint32_t length);
 extern void h3_uart_transmit_string(const uint32_t uart_base, const char *data);
 
-static inline uint32_t h3_uart_get_rx_fifo_level(const uint32_t uart_base) {
+inline uint32_t h3_uart_get_rx_fifo_level(const uint32_t uart_base) {
 	return ((const H3_UART_TypeDef *)(uintptr_t)(uart_base))->RFL;
 }
 
-static inline uint8_t h3_uart_get_rx_data(const uint32_t uart_base) {
+inline uint8_t h3_uart_get_rx_data(const uint32_t uart_base) {
 	return (uint8_t) ((const H3_UART_TypeDef *)(uintptr_t)(uart_base))->O00.RBR;
 }
 
