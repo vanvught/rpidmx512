@@ -44,6 +44,13 @@
 # include "e131.h"
 #endif
 
+#if defined (ARTNET_SHOWFILE)
+namespace showfile {
+void record(const struct artnet::ArtDmx *pArtDmx, const uint32_t nMillis);
+void record(const struct artnet::ArtSync *pArtSync, const uint32_t nMillis);
+}  // namespace showfile
+#endif
+
 #include "lightset.h"
 #include "lightsetdata.h"
 
@@ -294,7 +301,7 @@ void ArtNetNode::GetLongNameDefault(char *pLongName) {
 	uint8_t nBoardNameLength;
 	const auto *const pBoardName = Hardware::Get()->GetBoardName(nBoardNameLength);
 	const auto *const pWebsiteUrl = Hardware::Get()->GetWebsiteUrl();
-	snprintf(pLongName, artnet::LONG_NAME_LENGTH - 1, "%s %s %d %s", pBoardName, artnet::NODE_ID, artnet::VERSION, pWebsiteUrl);
+	snprintf(pLongName, artnet::LONG_NAME_LENGTH - 1, "%s %s %u %s", pBoardName, artnet::NODE_ID, static_cast<unsigned int>(artnet::VERSION), pWebsiteUrl);
 #else
 	uint32_t i;
 
@@ -519,6 +526,11 @@ void ArtNetNode::Process(const uint16_t nBytesReceived) {
 		if (m_pLightSet != nullptr) {
 			HandleDmx();
 			m_State.ArtDmxIpAddress = m_nIpAddressFrom;
+#if defined (ARTNET_SHOWFILE)
+			if (m_State.DoRecord) {
+				showfile::record(reinterpret_cast<const artnet::ArtDmx *>(m_pReceiveBuffer), m_nCurrentPacketMillis);
+			}
+#endif
 		}
 		break;
 	case artnet::OpCodes::OP_SYNC:
@@ -537,6 +549,11 @@ void ArtNetNode::Process(const uint16_t nBytesReceived) {
 				m_State.ArtSyncMillis = Hardware::Get()->Millis();
 				HandleSync();
 			}
+#if defined (ARTNET_SHOWFILE)
+			if (m_State.DoRecord) {
+				showfile::record(reinterpret_cast<const artnet::ArtSync *>(m_pReceiveBuffer), m_nCurrentPacketMillis);
+			}
+#endif
 		}
 		break;
 #endif		

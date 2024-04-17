@@ -2,7 +2,7 @@
  * @file json_get_portstatus.cpp
  *
  */
-/* Copyright (C) 2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2023-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,13 +32,25 @@
 namespace remoteconfig {
 namespace rdm {
 static uint32_t get_portstatus(const uint32_t nPortIndex, char *pOutBuffer, const uint32_t nOutBufferSize) {
+	const auto direction = ArtNetNode::Get()->GetPortDirection(nPortIndex);
 	const char *status;
-	if (ArtNetNode::Get()->GetRdm(nPortIndex)) {
-		bool bIsIncremental;
-		if (ArtNetNode::Get()->RdmIsRunning(nPortIndex, bIsIncremental)) {
-			status = bIsIncremental ? "Incremental" : "Full";
+
+	if (direction == lightset::PortDir::OUTPUT) {
+		if (ArtNetNode::Get()->GetRdm(nPortIndex)) {
+			bool bIsIncremental;
+			if (ArtNetNode::Get()->RdmIsRunning(nPortIndex, bIsIncremental)) {
+				status = bIsIncremental ? "Incremental" : "Full";
+			} else {
+				status = "Idle";
+			}
 		} else {
-			status = "Idle";
+			return 0;
+		}
+	} else if (direction == lightset::PortDir::INPUT) {
+		if (ArtNetNode::Get()->RdmGetUidCount(nPortIndex) != 0) {
+			status = "TOD";
+		} else {
+			return 0;
 		}
 	} else {
 		return 0;
@@ -46,8 +58,8 @@ static uint32_t get_portstatus(const uint32_t nPortIndex, char *pOutBuffer, cons
 
 	auto nLength = static_cast<uint32_t>(snprintf(pOutBuffer, nOutBufferSize,
 			"{\"port\":\"%c\",\"direction\":\"%s\",\"status\":\"%s\"},",
-			'A' + nPortIndex,
-			lightset::get_direction(ArtNetNode::Get()->GetPortDirection(nPortIndex)),
+			static_cast<char>('A' + nPortIndex),
+			lightset::get_direction(direction),
 			status));
 
 	return nLength;
@@ -59,6 +71,10 @@ uint32_t json_get_portstatus(char *pOutBuffer, const uint32_t nOutBufferSize) {
 
 	for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
 		nLength += get_portstatus(nPortIndex, &pOutBuffer[nLength], nOutBufferSize - nLength);
+	}
+
+	if (nLength == 1) {
+		nLength++;
 	}
 
 	pOutBuffer[nLength - 1] = ']';

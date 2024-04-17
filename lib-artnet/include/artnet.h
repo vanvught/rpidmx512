@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2016-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -593,7 +593,7 @@ struct ArtRdm {
 	uint8_t Net;			///< The top 7 bits of the 15 bit Port-Address of Nodes that must respond to this packet.
 	uint8_t Command;		///< 0x00 ArProcess Process RDM Packet0x00 AtcNone No action. 0x01 AtcFlush The node flushes its TOD and instigates full discovery.
 	uint8_t Address;		///< The low 8 bits of the Port-Address that should action this command.
-	uint8_t RdmPacket[255];	///< The RDM data packet excluding the DMX StartCode.
+	uint8_t RdmPacket[256];	///< The RDM data packet excluding the DMX StartCode with Checksum
 }PACKED;
 
 /**

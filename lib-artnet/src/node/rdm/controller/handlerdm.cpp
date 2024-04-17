@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,9 +31,8 @@
 #include <cassert>
 
 #include "artnetnode.h"
-
+#include "rdm.h"
 #include "network.h"
-
 #include "panel_led.h"
 
 #include "debug.h"
@@ -45,20 +44,26 @@
 void ArtNetNode::HandleTodControl() {
 	DEBUG_ENTRY
 
-	const auto *const pArtTodControl =  reinterpret_cast<artnet::ArtTodControl *>(m_pReceiveBuffer);
+	const auto *const pArtTodControl = reinterpret_cast<artnet::ArtTodControl *>(m_pReceiveBuffer);
+
+	if (pArtTodControl->Command != 0x01) {	// Not a AtcFlush
+		DEBUG_EXIT
+		return;
+	}
+
 	const auto portAddress = static_cast<uint16_t>((pArtTodControl->Net << 8)) | static_cast<uint16_t>((pArtTodControl->Address));
 
 	for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
-		if ((m_OutputPort[nPortIndex].GoodOutputB & artnet::GoodOutputB::RDM_DISABLED) == artnet::GoodOutputB::RDM_DISABLED) {
-			DEBUG_EXIT
+		if (portAddress != m_Node.Port[nPortIndex].PortAddress) {
 			continue;
 		}
 
-		if ((portAddress == m_Node.Port[nPortIndex].PortAddress) && (m_Node.Port[nPortIndex].direction == lightset::PortDir::OUTPUT)) {
-			if (pArtTodControl->Command == 0x01) {	// AtcFlush
-				m_pArtNetRdmController->Full(nPortIndex);
-			}
-		}
+        if ((m_Node.Port[nPortIndex].direction == lightset::PortDir::OUTPUT) &&
+           ((m_OutputPort[nPortIndex].GoodOutputB & artnet::GoodOutputB::RDM_DISABLED) != artnet::GoodOutputB::RDM_DISABLED)) {
+                m_pArtNetRdmController->Full(nPortIndex);
+        } else if (m_Node.Port[nPortIndex].direction == lightset::PortDir::INPUT) {
+        	m_pArtNetRdmController->TodReset(nPortIndex);
+        }
 	}
 
 	DEBUG_EXIT
@@ -175,38 +180,6 @@ void ArtNetNode::SendTodRequest(uint32_t nPortIndex) {
 	DEBUG_EXIT
 }
 
-static void rdm_send(const uint32_t nPortIndex, const uint8_t *pRdmData) {
-	assert(pRdmData != nullptr);
-
-	auto *pRdmMessage = reinterpret_cast<const TRdmMessageNoSc *>(pRdmData);
-
-	if ((pRdmMessage->command_class == E120_GET_COMMAND_RESPONSE) || (pRdmMessage->command_class == E120_SET_COMMAND_RESPONSE)) {
-		struct TRdmMessage rdmMessage;
-
-		rdmMessage.start_code = E120_SC_RDM;
-
-		auto *pData = reinterpret_cast<uint8_t *>(&rdmMessage);
-
-		memcpy(&pData[1], pRdmData, pRdmMessage->message_length - 1U);
-
-		uint32_t i;
-		uint16_t nChecksum = 0;
-
-		for (i = 0; i < rdmMessage.message_length; i++) {
-			nChecksum = static_cast<uint16_t>(nChecksum + pData[i]);
-		}
-
-		pData[i++] = static_cast<uint8_t>(nChecksum >> 8);
-		pData[i] = static_cast<uint8_t>(nChecksum & 0XFF);
-
-		Rdm::SendRaw(nPortIndex, reinterpret_cast<const uint8_t*>(&rdmMessage), rdmMessage.message_length + RDM_MESSAGE_CHECKSUM_SIZE);
-
-#ifndef NDEBUG
-		rdm::message_print(reinterpret_cast<const uint8_t *>(&rdmMessage));
-#endif
-	}
-}
-
 void ArtNetNode::HandleRdm() {
 	auto *const pArtRdm = reinterpret_cast<artnet::ArtRdm *>(m_pReceiveBuffer);
 
@@ -217,13 +190,13 @@ void ArtNetNode::HandleRdm() {
 
 	const auto portAddress = static_cast<uint16_t>((pArtRdm->Net << 8)) | static_cast<uint16_t>((pArtRdm->Address));
 
-	// Output ports
 	for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
-		if ((m_OutputPort[nPortIndex].GoodOutputB & artnet::GoodOutputB::RDM_DISABLED) == artnet::GoodOutputB::RDM_DISABLED) {
+		if (m_Node.Port[nPortIndex].PortAddress != portAddress) {
 			continue;
 		}
 
-		if ((portAddress == m_Node.Port[nPortIndex].PortAddress) && (m_Node.Port[nPortIndex].direction == lightset::PortDir::OUTPUT)) {
+		if ((m_Node.Port[nPortIndex].direction == lightset::PortDir::OUTPUT) &&
+		   ((m_OutputPort[nPortIndex].GoodOutputB & artnet::GoodOutputB::RDM_DISABLED) != artnet::GoodOutputB::RDM_DISABLED)) {
 # if (ARTNET_VERSION >= 4)
 			if (m_Node.Port[nPortIndex].protocol == artnet::PortProtocol::SACN) {
 				constexpr auto nMask = artnet::GoodOutput::OUTPUT_IS_MERGING | artnet::GoodOutput::DATA_IS_BEING_TRANSMITTED | artnet::GoodOutput::OUTPUT_IS_SACN;
@@ -231,44 +204,37 @@ void ArtNetNode::HandleRdm() {
 			}
 # endif
 			if (m_OutputPort[nPortIndex].IsTransmitting) {
+				m_OutputPort[nPortIndex].IsTransmitting = false;
 				m_pLightSet->Stop(nPortIndex); // Stop DMX if was running
 			}
 
-			const auto *pRdmResponse = const_cast<uint8_t*>(m_pArtNetRdmController->Handler(nPortIndex, pArtRdm->RdmPacket));
+			m_OutputPort[nPortIndex].nIpRdm = m_nIpAddressFrom;
 
-			if (pRdmResponse != nullptr) {
-				pArtRdm->RdmVer = 0x01;
+			auto *pRdmMessage = reinterpret_cast<const TRdmMessage *>(&pArtRdm->Address);
 
-				const auto nMessageLength = static_cast<uint16_t>(pRdmResponse[2] + 1);
-				memcpy(pArtRdm->RdmPacket, &pRdmResponse[1], nMessageLength);
+			pArtRdm->Address = E120_SC_RDM;
+			Rdm::SendRaw(nPortIndex, &pArtRdm->Address, pRdmMessage->message_length + RDM_MESSAGE_CHECKSUM_SIZE);
 
-				const auto nLength = sizeof(struct artnet::ArtRdm) - sizeof(pArtRdm->RdmPacket) + nMessageLength;
-
-				Network::Get()->SendTo(m_nHandle, m_pReceiveBuffer, static_cast<uint16_t>(nLength), m_nIpAddressFrom, artnet::UDP_PORT);
-			} else {
-				DEBUG_PUTS("No RDM response");
-			}
-
-			if (m_OutputPort[nPortIndex].IsTransmitting) {
-				m_pLightSet->Start(nPortIndex); // Start DMX if was running
-			}
+#ifndef NDEBUG
+			rdm::message_print(pRdmMessage);
+#endif
 
 #if defined(CONFIG_PANELLED_RDM_PORT)
 			hal::panel_led_on(hal::panelled::PORT_A_RDM << nPortIndex);
 #elif defined(CONFIG_PANELLED_RDM_NO_PORT)
 			hal::panel_led_on(hal::panelled::RDM << nPortIndex);
 #endif
-		}
-	}
+		} else if (m_Node.Port[nPortIndex].direction == lightset::PortDir::INPUT) {
+			auto *pRdmMessage = reinterpret_cast<const TRdmMessage *>(&pArtRdm->Address);
 
-	// Input ports
-	for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
-		if ((m_Node.Port[nPortIndex].direction != lightset::PortDir::INPUT)) {
-			continue;
-		}
+			if ((pRdmMessage->command_class == E120_GET_COMMAND_RESPONSE) || (pRdmMessage->command_class == E120_SET_COMMAND_RESPONSE)) {
+				pArtRdm->Address = E120_SC_RDM;
+				Rdm::SendRaw(nPortIndex, reinterpret_cast<const uint8_t *>(pRdmMessage), pRdmMessage->message_length + RDM_MESSAGE_CHECKSUM_SIZE);
 
-		if (m_Node.Port[nPortIndex].PortAddress == portAddress) {
-			rdm_send(nPortIndex, pArtRdm->RdmPacket);
+#ifndef NDEBUG
+				rdm::message_print(reinterpret_cast<const uint8_t *>(pRdmMessage));
+#endif
+			}
 
 #if defined(CONFIG_PANELLED_RDM_PORT)
 			hal::panel_led_on(hal::panelled::PORT_A_RDM << nPortIndex);

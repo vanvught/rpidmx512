@@ -2,7 +2,7 @@
  * @file artnetrdmresponder.h
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,20 +34,33 @@
 #include "rdmpersonality.h"
 #include "rdmhandler.h"
 #include "rdmconst.h"
+#include "rdm_message_print.h"
 
 #include "lightset.h"
+
+#include "debug.h"
 
 #if defined (NODE_RDMNET_LLRP_ONLY)
 # error "Cannot be both RDMNet Device and RDM Responder"
 #endif
 
-class ArtNetRdmResponder: public RDMDeviceResponder, RDMHandler {
+class ArtNetRdmResponder final: public RDMDeviceResponder, RDMHandler {
 public:
-	ArtNetRdmResponder(RDMPersonality **pRDMPersonalities, uint32_t nPersonalityCount);
-	~ArtNetRdmResponder();
+	ArtNetRdmResponder(RDMPersonality **pRDMPersonalities, const uint32_t nPersonalityCount) :
+		RDMDeviceResponder(pRDMPersonalities, nPersonalityCount)
+	{
+		DEBUG_ENTRY
+		DEBUG_EXIT
+	}
+
+	~ArtNetRdmResponder() {
+		DEBUG_ENTRY
+		DEBUG_EXIT
+	}
 
 	void TodCopy(const uint32_t nPortIndex, unsigned char *tod) {
 		DEBUG_PRINTF("nPortIndex=%u", nPortIndex);
+
 		if (nPortIndex == 0) {
 			memcpy(tod, RDMDeviceResponder::GetUID(), RDM_UID_SIZE);
 		} else {
@@ -55,22 +68,39 @@ public:
 		}
 	}
 
-	const uint8_t *Handler(uint32_t nPortIndex, const uint8_t *);
+	const uint8_t *Handler(const uint32_t nPortIndex, const uint8_t *pRdmDataNoSC) {
+		DEBUG_ENTRY
 
-	uint16_t GetDmxStartAddress(uint16_t nSubDevice = RDM_ROOT_DEVICE) {
-		return RDMDeviceResponder::GetDmxStartAddress(nSubDevice);
-	}
+		if (nPortIndex != 0) {
+			DEBUG_EXIT
+			return nullptr;
+		}
 
-	uint16_t GetDmxFootPrint(uint16_t nSubDevice = RDM_ROOT_DEVICE) {
-		return RDMDeviceResponder::GetDmxFootPrint(nSubDevice);
-	}
+		if (pRdmDataNoSC == nullptr) {
+			DEBUG_EXIT
+			return nullptr;
+		}
 
-	static ArtNetRdmResponder* Get() {
-		return s_pThis;
+#ifndef NDEBUG
+		rdm::message_print_no_sc(pRdmDataNoSC);
+#endif
+
+		RDMHandler::HandleData(pRdmDataNoSC, reinterpret_cast<uint8_t*>(&s_RdmCommand));
+
+		if (s_RdmCommand.start_code != E120_SC_RDM) {
+			DEBUG_EXIT
+			return nullptr;
+		}
+
+#ifndef NDEBUG
+		rdm::message_print(reinterpret_cast<uint8_t*>(&s_RdmCommand));
+#endif
+
+		DEBUG_EXIT
+		return reinterpret_cast<const uint8_t*>(&s_RdmCommand);
 	}
 
 private:
-	static ArtNetRdmResponder *s_pThis;
 	static TRdmMessage s_RdmCommand;
 };
 
