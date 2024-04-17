@@ -125,7 +125,7 @@ void HttpDeamonHandleRequest::HandleRequest(const uint32_t nBytesReceived, char 
 				"<html>\n"
 				"<head><title>%u %s</title></head>\n"
 				"<body><h1>%s</h1></body>\n"
-				"</html>\n", static_cast<uint32_t>(m_Status), pStatusMsg, pStatusMsg));
+				"</html>\n", static_cast<unsigned int>(m_Status), pStatusMsg, pStatusMsg));
 	}
 
 	uint8_t nLength;
@@ -135,7 +135,7 @@ void HttpDeamonHandleRequest::HandleRequest(const uint32_t nBytesReceived, char 
 			"Content-Type: %s\r\n"
 			"Content-Length: %u\r\n"
 			"Connection: close\r\n"
-			"\r\n", static_cast<uint32_t>(m_Status), pStatusMsg, Hardware::Get()->GetBoardName(nLength), m_pContentType, m_nContentLength);
+			"\r\n", static_cast<unsigned int>(m_Status), pStatusMsg, Hardware::Get()->GetBoardName(nLength), m_pContentType, static_cast<unsigned int>(m_nContentLength));
 
 	Network::Get()->TcpWrite(m_nHandle, reinterpret_cast<uint8_t *>(m_RequestHeaderResponse), static_cast<uint16_t>(nHeaderLength), m_nConnectionHandle);
 	Network::Get()->TcpWrite(m_nHandle, reinterpret_cast<uint8_t *>(m_Content), static_cast<uint16_t>(m_nContentLength), m_nConnectionHandle);

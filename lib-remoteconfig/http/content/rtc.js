@@ -10,18 +10,18 @@ async function refresh() {
 }
 
 async function hcToSys() {
-  await post({ rtc: "", action: "hctosys" })
-  refresh()
+  await post({ rtc: "", action: "hctosys" });
+  refresh();
 }
 
 async function sysToHc() {
-  await post({ rtc: "", action: "systohc" })
-  refresh()
+  await post({ rtc: "", action: "systohc" });
+  refresh();
 }
 
 async function alarm() {
   const a = document.getElementById('alarmInput').value;
   const b = document.getElementById('chkbox').checked ? "1" : "0";
-  await post({ rtc:"", alarm: a, enable: b })
-  refresh()
+  await post({ rtc:"", alarm: a, enable: b });
+  refresh();
 }

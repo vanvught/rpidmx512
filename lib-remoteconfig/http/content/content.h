@@ -74,7 +74,7 @@ static constexpr struct FilesContent HttpContent[] = {
 #endif /* (NODE_SHOWFILE) */
 	{ "default.js", default_js, 254, static_cast<http::contentTypes>(2) },
 #if !defined (CONFIG_HTTP_HTML_NO_RTC) && !defined (DISABLE_RTC)
-	{ "rtc.js", rtc_js, 837, static_cast<http::contentTypes>(2) },
+	{ "rtc.js", rtc_js, 843, static_cast<http::contentTypes>(2) },
 #endif /* !defined (CONFIG_HTTP_HTML_NO_RTC) && !defined (DISABLE_RTC) */
 #if !defined (CONFIG_HTTP_HTML_NO_RDM) && defined (RDM_CONTROLLER)
 	{ "rdm.js", rdm_js, 991, static_cast<http::contentTypes>(2) },
@@ -87,7 +87,7 @@ static constexpr struct FilesContent HttpContent[] = {
 #endif /* !defined (CONFIG_HTTP_HTML_NO_RDM) && defined (RDM_CONTROLLER) */
 	{ "index.html", index_html, 669, static_cast<http::contentTypes>(0) },
 #if defined (NODE_SHOWFILE)
-	{ "showfile.js", showfile_js, 1270, static_cast<http::contentTypes>(2) },
+	{ "showfile.js", showfile_js, 1281, static_cast<http::contentTypes>(2) },
 #endif /* (NODE_SHOWFILE) */
 #if !defined (CONFIG_HTTP_HTML_NO_TIME)
 	{ "time.html", time_html, 599, static_cast<http::contentTypes>(0) },

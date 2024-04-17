@@ -12,30 +12,33 @@ async function refresh() {
   } catch (error){}
 }
 
-function send(status) {
-  post({ show: "", status: status }).then(refresh)
+async function send(status) {
+  await post({ show: "", status: status });
+  refresh();
 }
 
 function start() {
-  send("start")
+  send("start");
 }
 
 function stop() {
-  send("stop")
+  send("stop");
 }
 
 function resume() {
-  send("resume")
+  send("resume");
 }
 
-function select() {
+async function select() {
   const v=document.getElementById("idDirectory").value;
-  post({ show:`${v}` }).then(() => { refresh() })
+  await post({ show:`${v}` });
+  refresh();
 }
 
-function loop() {
-  const v=document.getElementById('idLoop').innerHTML =="Looping" ? "1" : "0"
-  post({ show:"",loop:`${v}` }).then(() => { refresh() })
+async function loop() {
+  const v=document.getElementById('idLoop').innerHTML == "Looping" ? "1" : "0";
+  await post({ show:"",loop:`${v}` });
+  refresh();
 }
 
 async function directory() {
