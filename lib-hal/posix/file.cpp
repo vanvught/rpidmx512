@@ -335,11 +335,8 @@ int fputs([[maybe_unused]] const char *s, [[maybe_unused]] FILE *stream) {
 	return -1;
 #else
 	assert(s != nullptr);
+	assert(stream != nullptr);
 	errno = 0;
-
-	if (stream == nullptr) {
-		return 0;
-	}
 
 	return f_puts(s, (FIL *)stream->udata);
 #endif
@@ -350,6 +347,7 @@ size_t fwrite([[maybe_unused]] const void *ptr, [[maybe_unused]] size_t size, [[
 	errno = ENOSYS;
 	return 0;
 #else
+	assert(stream != nullptr);
 	UINT bytes_write;
 
 	s_fresult = f_write((FIL *)stream->udata, ptr, (size * nmemb), &bytes_write);
@@ -357,6 +355,26 @@ size_t fwrite([[maybe_unused]] const void *ptr, [[maybe_unused]] size_t size, [[
 
 	if (s_fresult == FR_OK) {
 		return bytes_write;
+	}
+
+	return 0;
+#endif
+}
+
+int fputc([[maybe_unused]] int c, [[maybe_unused]] FILE *stream) {
+#if !defined (CONFIG_FS_ENABLE_WRITE)
+	errno = ENOSYS;
+	return 0;
+#else
+	assert(stream != nullptr);
+
+	UINT bytes_write;
+
+	s_fresult = f_write((FIL *)stream->udata, &c, 1, &bytes_write);
+	errno = fatfs_to_errno(s_fresult);
+
+	if (s_fresult == FR_OK) {
+		return 1;
 	}
 
 	return 0;

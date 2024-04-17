@@ -57,7 +57,9 @@ static constexpr uint8_t ALMX_IF 		= (1U << 3);
 static constexpr uint8_t ALMX_C0 		= (1U << 4);
 static constexpr uint8_t ALMX_C1 		= (1U << 5);
 static constexpr uint8_t ALMX_C2 		= (1U << 6);
+#ifndef NDEBUG
 static constexpr uint8_t ALMX_POL 		= (1U << 7);
+#endif
 static constexpr uint8_t MSK_ALMX_MATCH = (ALMX_C0 | ALMX_C1 | ALMX_C2);
 }  // namespace bit
 }  // namespace mcp7941x

@@ -77,6 +77,7 @@ FILE *fopen(const char *path, const char *mode);
 int fclose(FILE *stream);
 
 int fgetc(FILE *stream);
+int fputc(int c, FILE *stream);
 
 char *fgets(char *s, int size, FILE *stream);
 int fputs(const char *s, FILE *stream);
