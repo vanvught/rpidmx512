@@ -85,7 +85,7 @@ public:
 #if defined (CONFIG_RDM_ENABLE_SUBDEVICES)
 # define UNUSED
 #else
-# define UNUSED  __attribute__((unused))
+# define UNUSED  [[maybe_unused]]
 #endif
 
 	bool Add(UNUSED RDMSubDevice *pRDMSubDevice) {

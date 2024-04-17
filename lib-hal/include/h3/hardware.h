@@ -92,7 +92,7 @@ public:
 		return false;
 	}
 
-	bool SetTime(__attribute__((unused)) const struct tm *pTime) {
+	bool SetTime([[maybe_unused]] const struct tm *pTime) {
 #if !defined(DISABLE_RTC)
 		m_HwClock.Set(pTime);
 		return true;

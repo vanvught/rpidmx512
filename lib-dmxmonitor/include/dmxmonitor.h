@@ -63,8 +63,8 @@ public:
 	void Start(const uint32_t nPortIndex) override;
 	void Stop(const uint32_t nPortIndex) override;
 
-	void SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate = true) override;
-	void Sync(__attribute__((unused)) const uint32_t nPortIndex) override {
+	void SetData(const uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate = true) override;
+	void Sync([[maybe_unused]] const uint32_t nPortIndex) override {
 #if defined (__linux__) || defined(__APPLE__)
 		Update(nPortIndex, m_Data[nPortIndex].data, m_Data[nPortIndex].nLength);
 #else
@@ -72,9 +72,9 @@ public:
 #endif
 	}
 
-	void Sync(__attribute__((unused)) const bool doForce = false) override {}
+	void Sync([[maybe_unused]] const bool doForce = false) override {}
 
-	void Blackout(__attribute__((unused)) bool bBlackout) override {
+	void Blackout([[maybe_unused]] bool bBlackout) override {
 		DEBUG_ENTRY
 		DEBUG_EXIT
 	}
@@ -94,7 +94,7 @@ public:
 		DEBUG_EXIT
 	}
 
-	lightset::OutputStyle GetOutputStyle(__attribute__((unused)) const uint32_t nPortIndex) const override {
+	lightset::OutputStyle GetOutputStyle([[maybe_unused]] const uint32_t nPortIndex) const override {
 		DEBUG_ENTRY
 #if defined (__linux__) || defined(__APPLE__)
 		assert(nPortIndex < 32);
@@ -148,9 +148,10 @@ private:
 
 private:
 	dmxmonitor::Format m_Format { dmxmonitor::Format::HEX };
-	uint16_t m_nSlots { 0 };
 	uint16_t m_nDmxStartAddress { lightset::dmx::START_ADDRESS_DEFAULT };
+#if defined (OUTPUT_HAVE_STYLESWITCH)
 	uint32_t m_nOutPutStyle;
+#endif
 #if defined (__linux__) || defined(__APPLE__)
 	enum {
 		DMX_DEFAULT_MAX_CHANNELS = 32,
@@ -163,6 +164,7 @@ private:
 	};
 	struct Data m_Data[dmxmonitor::output::text::MAX_PORTS];
 #else
+	uint16_t m_nSlots { 0 };
 	bool m_bIsStarted { false };
 	uint8_t m_Data[512];
 #endif

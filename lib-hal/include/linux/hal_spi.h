@@ -50,12 +50,12 @@
 #  include <stdint.h>
 # endif
   inline static void spi_begin() {}
-  inline static void spi_chipSelect(__attribute__((unused)) uint8_t _q) {}
-  inline static void spi_setDataMode(__attribute__((unused)) uint8_t _q) {}
-  inline static void spi_set_speed_hz(__attribute__((unused)) uint32_t _q) {}
-  inline static void spi_write(__attribute__((unused)) uint16_t _q) {}
-  inline static void spi_transfern(__attribute__((unused)) const char *_p, __attribute__((unused)) uint32_t _q) {}
-  inline static void spi_writenb(__attribute__((unused)) const char *_p, __attribute__((unused)) uint32_t _q) {}
+  inline static void spi_chipSelect([[maybe_unused]] uint8_t _q) {}
+  inline static void spi_setDataMode([[maybe_unused]] uint8_t _q) {}
+  inline static void spi_set_speed_hz([[maybe_unused]] uint32_t _q) {}
+  inline static void spi_write([[maybe_unused]] uint16_t _q) {}
+  inline static void spi_transfern([[maybe_unused]] const char *_p, [[maybe_unused]] uint32_t _q) {}
+  inline static void spi_writenb([[maybe_unused]] const char *_p, [[maybe_unused]] uint32_t _q) {}
 # ifdef __cplusplus
  }
 # endif

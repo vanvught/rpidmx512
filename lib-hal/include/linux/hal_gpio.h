@@ -68,11 +68,11 @@ extern "C" {
 # else
 # include <stdint.h>
 # endif
-  inline void gpio_fsel(__attribute__((unused)) uint8_t _p, __attribute__((unused)) uint8_t _q) { }
-  inline void gpio_set(__attribute__((unused)) uint8_t _p) { }
-  inline void gpio_clr(__attribute__((unused)) uint8_t _p) { }
-  inline uint8_t gpio_lev(__attribute__((unused)) uint8_t _p) { return 0; }
-  inline void gpio_pud(__attribute__((unused)) uint8_t _p, __attribute__((unused)) uint8_t _q) {}
+  inline void gpio_fsel([[maybe_unused]] uint8_t _p, [[maybe_unused]] uint8_t _q) { }
+  inline void gpio_set([[maybe_unused]] uint8_t _p) { }
+  inline void gpio_clr([[maybe_unused]] uint8_t _p) { }
+  inline uint8_t gpio_lev([[maybe_unused]] uint8_t _p) { return 0; }
+  inline void gpio_pud([[maybe_unused]] uint8_t _p, [[maybe_unused]] uint8_t _q) {}
 # ifdef __cplusplus
 }
 # endif

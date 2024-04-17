@@ -175,7 +175,7 @@ protected:
 	}
 
 private:
-	virtual void UpdateEvent(__attribute__((unused)) TRDMSubDeviceUpdateEvent tUpdateEvent) {}
+	virtual void UpdateEvent([[maybe_unused]] TRDMSubDeviceUpdateEvent tUpdateEvent) {}
 	uint16_t CalculateChecksum() {
 		uint16_t nChecksum = m_tSubDevicesInfo.dmx_start_address;
 		nChecksum = static_cast<uint16_t>(nChecksum + m_tSubDevicesInfo.current_personality);

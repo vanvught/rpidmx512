@@ -45,7 +45,7 @@ public:
 	void Stop(const uint32_t nPortIndex) override;
 
 	void SetData(const uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate = true) override;
-	void Sync(__attribute__((unused)) const uint32_t nPortIndex) override {}
+	void Sync([[maybe_unused]] const uint32_t nPortIndex) override {}
 	void Sync(const bool doForce) override {
 		if (__builtin_expect((!doForce), 1)) {
 			assert(m_pWS28xx != nullptr);
@@ -54,8 +54,8 @@ public:
 	}
 
 #if defined (OUTPUT_HAVE_STYLESWITCH)
-	void SetOutputStyle(__attribute__((unused)) const uint32_t nPortIndex, __attribute__((unused)) const lightset::OutputStyle outputStyle) override {}
-	lightset::OutputStyle GetOutputStyle(__attribute__((unused)) const uint32_t nPortIndex) const override {
+	void SetOutputStyle([[maybe_unused]] const uint32_t nPortIndex, [[maybe_unused]] const lightset::OutputStyle outputStyle) override {}
+	lightset::OutputStyle GetOutputStyle([[maybe_unused]] const uint32_t nPortIndex) const override {
 		return lightset::OutputStyle::DELTA;
 	}
 #endif
@@ -95,11 +95,11 @@ public:
 	bool SetDmxStartAddress(uint16_t nDmxStartAddress) override;
 
 	uint16_t GetDmxStartAddress() override {
-		return m_nDmxStartAddress;
+		return m_pPixelDmxConfiguration->GetDmxStartAddress();
 	}
 
 	uint16_t GetDmxFootprint() override {
-		return m_nDmxFootprint;
+		return m_pPixelDmxConfiguration->GetDmxFootprint();
 	}
 
 	bool GetSlotInfo(uint16_t nSlotOffset, lightset::SlotInfo &tSlotInfo) override;
@@ -111,10 +111,7 @@ public:
 private:
 	PixelDmxConfiguration *m_pPixelDmxConfiguration;
 	pixeldmxconfiguration::PortInfo m_PortInfo;
-	uint32_t m_nChannelsPerPixel;
-
-	uint16_t m_nDmxStartAddress;
-	uint16_t m_nDmxFootprint;
+	uint16_t m_nChannelsPerPixel;
 
 	WS28xx *m_pWS28xx { nullptr };
 

@@ -56,11 +56,11 @@ typedef enum {
 # endif
 #elif defined (CONSOLE_NULL)
 inline void console_init(void) {}
-inline void console_putc(__attribute__((unused)) int i) {}
-inline void console_puts(__attribute__((unused)) const char *p) {}
-inline void console_write(__attribute__((unused)) const char *p, __attribute__((unused)) unsigned int i) {}
-inline void console_status(__attribute__((unused)) uint32_t i, __attribute__((unused)) const char *p) {}
-inline void console_error(__attribute__((unused)) const char *p) {}
+inline void console_putc([[maybe_unused]] int i) {}
+inline void console_puts([[maybe_unused]] const char *p) {}
+inline void console_write([[maybe_unused]] const char *p, [[maybe_unused]] unsigned int i) {}
+inline void console_status([[maybe_unused]] uint32_t i, [[maybe_unused]] const char *p) {}
+inline void console_error([[maybe_unused]] const char *p) {}
 #else
 #ifdef __cplusplus
 extern "C" {

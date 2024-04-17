@@ -39,12 +39,12 @@ public:
 	PCA9685DmxServo(const pca9685dmx::Configuration &configuration);
 	~PCA9685DmxServo() override;
 
-	void Start(__attribute__((unused)) const uint32_t nPortIndex = 0) override {};
-	void Stop(__attribute__((unused)) const uint32_t nPortIndex = 0) override {};
+	void Start([[maybe_unused]] const uint32_t nPortIndex = 0) override {};
+	void Stop([[maybe_unused]] const uint32_t nPortIndex = 0) override {};
 
-	void SetData(uint32_t nPortIndex, const uint8_t *pDmxData, uint32_t nLength, const bool doUpdate = true) override;
-	void Sync(__attribute__((unused)) const uint32_t nPortIndex) override {};
-	void Sync(__attribute__((unused)) const bool doForce = false) override {};
+	void SetData(const uint32_t nPortIndex, const uint8_t *pDmxData, uint32_t nLength, const bool doUpdate = true) override;
+	void Sync([[maybe_unused]] const uint32_t nPortIndex) override {};
+	void Sync([[maybe_unused]] const bool doForce = false) override {};
 
 	bool SetDmxStartAddress(const uint16_t nDmxStartAddress) override {
 		assert((nDmxStartAddress != 0) && (nDmxStartAddress <= lightset::dmx::UNIVERSE_SIZE));

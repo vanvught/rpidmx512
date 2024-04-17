@@ -2,7 +2,7 @@
  * @file propertiesbuilder.h
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,7 +38,7 @@ public:
 	}
 
 	template<typename T>
-	bool Add(const char *pProperty, const T x, bool bIsSet, uint32_t nPrecision = 1) {
+	bool Add(const char *pProperty, const T x, bool bIsSet, int nPrecision = 1) {
 		if (m_nSize >= m_nLength) {
 			return false;
 		}
@@ -57,7 +57,7 @@ public:
 		return true;
 	}
 
-	template<typename T> int inline add_part(char *p, uint32_t nSize, const char *pProperty, const T x, bool bIsSet, __attribute__((unused)) uint32_t nPrecision) {
+	template<typename T> int inline add_part(char *p, uint32_t nSize, const char *pProperty, const T x, bool bIsSet, [[maybe_unused]] int nPrecision) {
 		if (bIsSet || m_bJson) {
 			if (m_bJson) {
 				return snprintf(p, nSize, "\"%s\":%d,", pProperty, static_cast<int>(x));
@@ -102,7 +102,7 @@ public:
 	}
 
 private:
-	bool AddHex(const char *pProperty, uint32_t nValue, const bool bIsSet, const uint32_t nWidth);
+	bool AddHex(const char *pProperty, uint32_t nValue, const bool bIsSet, const int nWidth);
 
 private:
 	char *m_pBuffer;
@@ -111,7 +111,7 @@ private:
 	bool m_bJson;
 };
 
-template<> int inline PropertiesBuilder::add_part<float>(char *p, uint32_t nSize, const char *pProperty, const float x, bool bIsSet, uint32_t nPrecision) {
+template<> int inline PropertiesBuilder::add_part<float>(char *p, uint32_t nSize, const char *pProperty, const float x, bool bIsSet, int nPrecision) {
 	if (bIsSet || m_bJson) {
 		if (m_bJson) {
 			return snprintf(p, nSize, "\"%s\":%.*f,", pProperty, nPrecision, x);
@@ -123,7 +123,7 @@ template<> int inline PropertiesBuilder::add_part<float>(char *p, uint32_t nSize
 	return snprintf(p, nSize, "#%s=%.*f\n", pProperty, nPrecision, x);
 }
 
-template<> int inline PropertiesBuilder::add_part<char*>(char *p, uint32_t nSize, const char *pProperty, char* x, bool bIsSet, __attribute__((unused)) uint32_t nPrecision) {
+template<> int inline PropertiesBuilder::add_part<char*>(char *p, uint32_t nSize, const char *pProperty, char* x, bool bIsSet, [[maybe_unused]] int nPrecision) {
 	if (bIsSet || m_bJson) {
 		if (m_bJson) {
 			return snprintf(p, nSize, "\"%s\":\"%s\",", pProperty, x);
@@ -135,7 +135,7 @@ template<> int inline PropertiesBuilder::add_part<char*>(char *p, uint32_t nSize
 	return snprintf(p, nSize, "#%s=%s\n", pProperty, x);
 }
 
-template<> int inline PropertiesBuilder::add_part<const char*>(char *p, uint32_t nSize, const char *pProperty, const char* x, bool bIsSet, uint32_t nPrecision) {
+template<> int inline PropertiesBuilder::add_part<const char*>(char *p, uint32_t nSize, const char *pProperty, const char* x, bool bIsSet, int nPrecision) {
 	return PropertiesBuilder::add_part(p, nSize, pProperty, const_cast<char *>(x), bIsSet, nPrecision);
 }
 

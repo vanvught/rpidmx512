@@ -43,7 +43,7 @@ namespace node {
 static constexpr uint32_t LABEL_NAME_LENGTH = 18;
 
 inline void get_short_name_default(const uint32_t nPortIndex, char *pShortName) {
-	snprintf(pShortName, node::LABEL_NAME_LENGTH - 1, "Port %u", 1U + nPortIndex);
+	snprintf(pShortName, node::LABEL_NAME_LENGTH - 1, "Port %u", static_cast<unsigned int>(1 + nPortIndex));
 }
 }  // namespace node
 
@@ -202,7 +202,7 @@ public:
 	virtual lightset::OutputStyle GetOutputStyle(const uint32_t nPortIndex) const=0;
 #endif
 	// Optional
-	virtual void Blackout(__attribute__((unused)) bool bBlackout) {}
+	virtual void Blackout([[maybe_unused]] bool bBlackout) {}
 	virtual void FullOn() {}
 	virtual void Print() {}
 	// RDM Optional

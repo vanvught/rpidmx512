@@ -184,11 +184,11 @@ public:
 	 * IGMP
 	 */
 
-	void JoinGroup(__attribute__((unused)) int32_t nHandle, uint32_t nIp) {
+	void JoinGroup([[maybe_unused]] int32_t nHandle, uint32_t nIp) {
 		igmp_join(nIp);
 	}
 
-	void LeaveGroup(__attribute__((unused)) int32_t nHandle, uint32_t nIp) {
+	void LeaveGroup([[maybe_unused]] int32_t nHandle, uint32_t nIp) {
 		igmp_leave(nIp);
 	}
 

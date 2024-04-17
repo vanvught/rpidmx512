@@ -54,7 +54,7 @@ public:
 	void Start(const uint32_t nPortIndex) override;
 	void Stop(const uint32_t nPortIndex) override;
 
-	void SetData(const uint32_t nPortIndex, __attribute__((unused)) const uint8_t *pData, __attribute__((unused)) uint32_t nLength, const bool doUpdate) override {
+	void SetData(const uint32_t nPortIndex, [[maybe_unused]] const uint8_t *pData, [[maybe_unused]] uint32_t nLength, const bool doUpdate) override {
 		logic_analyzer::ch0_set();
 
 		if (!doUpdate) {
@@ -116,8 +116,8 @@ public:
 	}
 
 #if defined (OUTPUT_HAVE_STYLESWITCH)
-	void SetOutputStyle(__attribute__((unused)) const uint32_t nPortIndex, __attribute__((unused)) const lightset::OutputStyle outputStyle) override {}
-	lightset::OutputStyle GetOutputStyle(__attribute__((unused)) const uint32_t nPortIndex) const override {
+	void SetOutputStyle([[maybe_unused]] const uint32_t nPortIndex, [[maybe_unused]] const lightset::OutputStyle outputStyle) override {}
+	lightset::OutputStyle GetOutputStyle([[maybe_unused]] const uint32_t nPortIndex) const override {
 		return lightset::OutputStyle::DELTA;
 	}
 #endif
@@ -162,7 +162,7 @@ public:
 	}
 
 	// RDMNet LLRP Device Only
-	bool SetDmxStartAddress(__attribute__((unused)) uint16_t nDmxStartAddress) override {
+	bool SetDmxStartAddress([[maybe_unused]] uint16_t nDmxStartAddress) override {
 		return false;
 	}
 
@@ -180,7 +180,7 @@ private:
 private:
 	PixelDmxConfiguration m_pixelDmxConfiguration;
 	pixeldmxconfiguration::PortInfo m_PortInfo;
-	uint32_t m_nChannelsPerPixel;
+	uint16_t m_nChannelsPerPixel;
 
 	WS28xxMulti *m_pWS28xxMulti { nullptr };
 
