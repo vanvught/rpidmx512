@@ -105,9 +105,10 @@ linux_pp/linux_pp
 */spiflash.bin
 *.bin
 
-lib-nextion
-lib-node
-lib-eve
-
 software_version_id.h
+
+/lib-eve
+/lib-network/src/emac/gd32/dsa
+/lib-nextion
+/lib-node
 /lib-showfile/Doxygen
