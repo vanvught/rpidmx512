@@ -93,7 +93,7 @@ void DMXMonitor::Stop(const uint32_t nPortIndex) {
 	DisplayDateTime(nPortIndex, "Stop");
 }
 
-void DMXMonitor::SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate) {
+void DMXMonitor::SetData(const uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate) {
 	assert(nPortIndex < output::text::MAX_PORTS);
 
 	if (doUpdate) {

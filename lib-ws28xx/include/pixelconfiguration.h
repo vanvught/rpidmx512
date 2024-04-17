@@ -2,7 +2,7 @@
  * @file pixelconfiguration.h
  *
  */
-/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,9 @@
 #include <cstdint>
 
 #include "pixeltype.h"
-#include "gamma/gamma_tables.h"
+#if defined (CONFIG_PIXELDMX_ENABLE_GAMMATABLE)
+# include "gamma/gamma_tables.h"
+#endif
 
 #include "debug.h"
 
@@ -43,15 +45,15 @@ public:
 		return m_type;
 	}
 
-	void SetCount(uint32_t nCount) {
-		m_nCount = nCount == 0 ? pixel::defaults::COUNT : nCount;
+	void SetCount(const uint16_t nCount) {
+		m_nCount = (nCount == 0 ? pixel::defaults::COUNT : nCount);
 	}
 
-	uint32_t GetCount() const {
+	uint16_t GetCount() const {
 		return m_nCount;
 	}
 
-	void SetMap(pixel::Map tMap) {
+	void SetMap(const pixel::Map tMap) {
 		m_map = tMap;
 	}
 
@@ -59,7 +61,7 @@ public:
 		return m_map;
 	}
 
-	void SetLowCode(uint8_t nLowCode) {
+	void SetLowCode(const uint8_t nLowCode) {
 		m_nLowCode = nLowCode;
 	}
 
@@ -75,7 +77,7 @@ public:
 		return m_nHighCode;
 	}
 
-	void SetClockSpeedHz(uint32_t nClockSpeedHz)  {
+	void SetClockSpeedHz(const uint32_t nClockSpeedHz)  {
 		m_nClockSpeedHz = nClockSpeedHz;
 	}
 
@@ -83,7 +85,7 @@ public:
 		return m_nClockSpeedHz;
 	}
 
-	void SetGlobalBrightness(uint8_t nGlobalBrightness) {
+	void SetGlobalBrightness(const uint8_t nGlobalBrightness) {
 		m_nGlobalBrightness = nGlobalBrightness;
 	}
 
@@ -95,7 +97,8 @@ public:
 		return m_bIsRTZProtocol;
 	}
 
-	void SetEnableGammaCorrection(bool doEnable) {
+#if defined (CONFIG_PIXELDMX_ENABLE_GAMMATABLE)
+	void SetEnableGammaCorrection(const bool doEnable) {
 		m_bEnableGammaCorrection = doEnable;
 	}
 
@@ -103,38 +106,35 @@ public:
 		return m_bEnableGammaCorrection;
 	}
 
-	void SetGammaTable(uint32_t nValue) {
+	void SetGammaTable(const uint32_t nValue) {
 		m_nGammaValue = static_cast<uint8_t>(nValue);
 	}
 
 	const uint8_t *GetGammaTable() const {
 		return m_pGammaTable;
 	}
+#endif
 
-	void Validate(uint32_t& nLedsPerPixel);
+	void Validate(uint16_t& nLedsPerPixel);
 
 	void Print();
-
-	void Dump() {
-#ifndef NDEBUG
-		Print();
-#endif
-	}
 
 	static void GetTxH(pixel::Type tType, uint8_t &nLowCode, uint8_t &nHighCode);
 
 private:
 	pixel::Type m_type { pixel::defaults::TYPE };
-	uint32_t m_nCount { pixel::defaults::COUNT };
+	uint16_t m_nCount { pixel::defaults::COUNT };
 	pixel::Map m_map { pixel::Map::UNDEFINED };
 	uint32_t m_nClockSpeedHz { 0 };
 	uint8_t m_nLowCode { 0 };
 	uint8_t m_nHighCode { 0 };
 	uint8_t m_nGlobalBrightness { 0xFF };
 	uint8_t m_nGammaValue { 0 };
-	bool m_bEnableGammaCorrection { false };
 	bool m_bIsRTZProtocol { true };
+#if defined (CONFIG_PIXELDMX_ENABLE_GAMMATABLE)
+	bool m_bEnableGammaCorrection { false };
 	const uint8_t *m_pGammaTable { gamma10_0 };
+#endif
 };
 
 #endif /* PIXELCONFIGURATION_H_ */

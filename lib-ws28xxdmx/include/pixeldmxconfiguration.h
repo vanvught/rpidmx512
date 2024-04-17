@@ -36,38 +36,38 @@
 
 namespace pixeldmxconfiguration {
 struct PortInfo {
-	uint32_t nBeginIndexPort[4];
-	uint32_t nProtocolPortIndexLast;
+	uint16_t nBeginIndexPort[4];
+	uint16_t nProtocolPortIndexLast;
 };
 }  // namespace pixeldmxconfiguration
 
 class PixelDmxConfiguration: public PixelConfiguration {
 public:
-	void SetOutputPorts(uint32_t nOutputPorts) {
+	void SetOutputPorts(const uint16_t nOutputPorts) {
 		m_nOutputPorts = nOutputPorts;
 	}
 
-	uint32_t GetOutputPorts() const {
+	uint16_t GetOutputPorts() const {
 		return m_nOutputPorts;
 	}
 
-	void SetGroupingCount(uint16_t nGroupingCount) {
+	void SetGroupingCount(const uint16_t nGroupingCount) {
 		m_nGroupingCount = nGroupingCount;
 	}
 
-	uint32_t GetGroupingCount() const {
+	uint16_t GetGroupingCount() const {
 		return m_nGroupingCount;
 	}
 
-	uint32_t GetGroups() const {
+	uint16_t GetGroups() const {
 		return m_nGroups;
 	}
 
-	uint32_t GetUniverses() const {
+	uint16_t GetUniverses() const {
 		return m_nUniverses;
 	}
 
-	void SetDmxStartAddress(uint16_t nDmxStartAddress) {
+	void SetDmxStartAddress(const uint16_t nDmxStartAddress) {
 		m_nDmxStartAddress = nDmxStartAddress;
 	}
 
@@ -75,7 +75,11 @@ public:
 		return m_nDmxStartAddress;
 	}
 
-	void Validate(const uint32_t nPortsMax, uint32_t& nLedsPerPixel, pixeldmxconfiguration::PortInfo& portInfo) {
+	uint16_t GetDmxFootprint() const {
+		return m_nDmxFootprint;
+	}
+
+	void Validate(const uint16_t nPortsMax, uint16_t& nLedsPerPixel, pixeldmxconfiguration::PortInfo& portInfo) {
 		DEBUG_ENTRY
 
 		PixelConfiguration::Validate(nLedsPerPixel);
@@ -102,20 +106,21 @@ public:
 		}
 
 		if ((m_nGroupingCount == 0) || (m_nGroupingCount > GetCount())) {
-			m_nGroupingCount = GetCount();
+			m_nGroupingCount = PixelConfiguration::GetCount();
 		}
 
 		m_nGroups = PixelConfiguration::GetCount() / m_nGroupingCount;
 		m_nOutputPorts = std::min(nPortsMax, m_nOutputPorts);
-		m_nUniverses = (1U + (m_nGroups  / (1U + portInfo.nBeginIndexPort[1])));
+		m_nUniverses = static_cast<uint16_t>(1U + (m_nGroups  / (1U + portInfo.nBeginIndexPort[1])));
+		m_nDmxFootprint = static_cast<uint16_t>(nLedsPerPixel * m_nGroups);
 
 		if (nPortsMax == 1) {
-			portInfo.nProtocolPortIndexLast = (m_nGroups / (1U + portInfo.nBeginIndexPort[1]));
+			portInfo.nProtocolPortIndexLast = static_cast<uint16_t>(m_nGroups / (1U + portInfo.nBeginIndexPort[1]));
 		} else {
 #if defined (NODE_DDP_DISPLAY)
-			portInfo.nProtocolPortIndexLast = (((m_nOutputPorts - 1U) * 4U) + m_nUniverses - 1U);
+			portInfo.nProtocolPortIndexLast = static_cast<uint16_t>(((m_nOutputPorts - 1U) * 4U) + m_nUniverses - 1U);
 #else
-			portInfo.nProtocolPortIndexLast = ((m_nOutputPorts * m_nUniverses)  - 1U);
+			portInfo.nProtocolPortIndexLast = static_cast<uint16_t>((m_nOutputPorts * m_nUniverses)  - 1U);
 #endif
 		}
 
@@ -132,11 +137,12 @@ public:
 	}
 
 private:
-	uint32_t m_nOutputPorts { 1 };
-	uint32_t m_nGroupingCount { 1 };
-	uint32_t m_nGroups { pixel::defaults::COUNT };
-	uint32_t m_nUniverses;
+	uint16_t m_nOutputPorts { 1 };
+	uint16_t m_nGroupingCount { 1 };
+	uint16_t m_nGroups { pixel::defaults::COUNT };
+	uint16_t m_nUniverses;
 	uint16_t m_nDmxStartAddress { 1 };
+	uint16_t m_nDmxFootprint;
 };
 
 #endif /* PIXELDMXCONFIGURATION_H_ */

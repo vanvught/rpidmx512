@@ -2,7 +2,7 @@
  * @file rdmresponder.h
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,15 +27,19 @@
 #define RDMRESPONDER_H_
 
 #include <cstdint>
+#include <cstring>
 #include <cassert>
 
-#include "dmxreceiver.h"
-
+#include "rdm.h"
 #include "rdmhandler.h"
 #include "rdmdeviceresponder.h"
 #include "rdmpersonality.h"
 
+#include "dmxreceiver.h"
+
 #include "lightset.h"
+
+#include "debug.h"
 
 #if defined (NODE_RDMNET_LLRP_ONLY)
 # error "Cannot be both RDMNet Device and RDM Responder"
@@ -43,18 +47,22 @@
 
 namespace rdm {
 namespace responder {
-static constexpr auto NO_DATA = 0;
-static constexpr auto DISCOVERY_RESPONSE = -1;
-static constexpr auto INVALID_DATA_RECEIVED = -2;
-static constexpr auto INVALID_RESPONSE = -3;
+static constexpr int NO_DATA = 0;
+static constexpr int DISCOVERY_RESPONSE = -1;
+static constexpr int INVALID_DATA_RECEIVED = -2;
+static constexpr int INVALID_RESPONSE = -3;
 }  // namespace responder
 }  // namespace rdm
+
+namespace configstore {
+void delay();
+}  // namespace configstore
 
 class RDMResponder final : DMXReceiver, public RDMDeviceResponder, RDMHandler {
 public:
 	RDMResponder(RDMPersonality **pRDMPersonalities, uint32_t nPersonalityCount, const uint32_t nCurrentPersonality = rdm::device::responder::DEFAULT_CURRENT_PERSONALITY) :
-			DMXReceiver(pRDMPersonalities[nCurrentPersonality - 1]->GetLightSet()),
-			RDMDeviceResponder(pRDMPersonalities, nPersonalityCount, nCurrentPersonality)
+		DMXReceiver(pRDMPersonalities[nCurrentPersonality - 1]->GetLightSet()),
+		RDMDeviceResponder(pRDMPersonalities, nPersonalityCount, nCurrentPersonality)
 	{
 		assert(s_pThis == nullptr);
 		s_pThis = this;
@@ -67,7 +75,60 @@ public:
 		// There is no DMXReceiver::Init()
 	}
 
-	int Run();
+	int Run() {
+		int16_t nLength;
+
+#if !defined (CONFIG_RDM_ENABLE_SUBDEVICES)
+		DMXReceiver::Run(nLength);
+#else
+		const auto *pDmxDataIn = DMXReceiver::Run(nLength);
+
+		if (RDMSubDevices::Get()->GetCount() != 0) {
+			if (nLength == -1) {
+				if (m_IsSubDeviceActive) {
+					RDMSubDevices::Get()->Stop();
+					m_IsSubDeviceActive = false;
+				}
+			} else if (pDmxDataIn != nullptr) {
+				RDMSubDevices::Get()->SetData(pDmxDataIn, static_cast<uint16_t>(nLength));
+				if (!m_IsSubDeviceActive) {
+					RDMSubDevices::Get()->Start();
+					m_IsSubDeviceActive = true;
+				}
+			}
+		}
+#endif
+
+		const auto *pRdmDataIn = Rdm::Receive(0);
+
+		if (pRdmDataIn == nullptr) {
+			return rdm::responder::NO_DATA;
+		}
+
+#ifndef NDEBUG
+		rdm::message_print(pRdmDataIn);
+#endif
+
+		if (pRdmDataIn[0] == E120_SC_RDM) {
+			const auto *pRdmCommand = reinterpret_cast<const struct TRdmMessage*>(pRdmDataIn);
+
+			switch (pRdmCommand->command_class) {
+			case E120_DISCOVERY_COMMAND:
+			case E120_GET_COMMAND:
+			case E120_SET_COMMAND:
+				HandleData(&pRdmDataIn[1], reinterpret_cast<uint8_t*>(&s_RdmCommand));
+				return HandleResponse(reinterpret_cast<uint8_t*>(&s_RdmCommand));
+				break;
+			default:
+				DEBUG_PUTS("RDM_RESPONDER_INVALID_DATA_RECEIVED");
+				return rdm::responder::INVALID_DATA_RECEIVED;
+				break;
+			}
+		}
+
+		DEBUG_PUTS("RDM_RESPONDER_DISCOVERY_RESPONSE");
+		return rdm::responder::DISCOVERY_RESPONSE;
+	}
 
 	void Print() {
 		RDMDeviceResponder::Print();
@@ -79,19 +140,11 @@ public:
 		DMXReceiver::Start();
 	}
 
-	void DmxDisableOutput(bool bDisable) {
+	void DmxDisableOutput(const bool bDisable) {
 		DMXReceiver::SetDisableOutput(bDisable);
 	}
 
-	uint16_t GetDmxStartAddress(uint16_t nSubDevice = RDM_ROOT_DEVICE) {
-		return RDMDeviceResponder::GetDmxStartAddress(nSubDevice);
-	}
-
-	uint16_t GetDmxFootPrint(uint16_t nSubDevice = RDM_ROOT_DEVICE) {
-		return RDMDeviceResponder::GetDmxFootPrint(nSubDevice);
-	}
-
-	static RDMResponder* Get() {
+	static RDMResponder *Get() {
 		return s_pThis;
 	}
 
@@ -99,7 +152,27 @@ public:
 	void DmxStartAddressUpdate(uint16_t nDmxStartAddress) __attribute__((weak));
 
 private:
-	int HandleResponse(uint8_t *pResponse);
+	int HandleResponse(const uint8_t *pResponse) {
+		auto nLength = rdm::responder::INVALID_RESPONSE;
+
+		if (pResponse[0] == E120_SC_RDM) {
+			const auto *p = reinterpret_cast<const struct TRdmMessage*>(pResponse);
+			nLength = static_cast<int>(p->message_length + RDM_MESSAGE_CHECKSUM_SIZE);
+			Rdm::SendRawRespondMessage(0, pResponse, static_cast<uint16_t>(nLength));
+		} else if (pResponse[0] == 0xFE) {
+			nLength = sizeof(struct TRdmDiscoveryMsg);
+			Rdm::SendDiscoveryRespondMessage(0, pResponse, static_cast<uint16_t>(nLength));
+		}
+
+#ifndef NDEBUG
+		if (nLength != INVALID_RESPONSE) {
+			rdm::message_print(pResponse);
+		}
+#endif
+
+		configstore::delay();
+		return nLength;
+	}
 
 	void PersonalityUpdate(LightSet *pLightSet) override {
 		DMXReceiver::SetLightSet(pLightSet);

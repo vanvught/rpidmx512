@@ -156,7 +156,7 @@ RDMHandler::RDMHandler(bool bIsRdm): m_bIsRDM(bIsRdm) {
 	DEBUG_EXIT
 }
 
-void RDMHandler::HandleString(const char *pString, uint32_t nLength) {
+void RDMHandler::HandleString(const char *pString, const uint32_t nLength) {
 	auto *RdmMessage = reinterpret_cast<struct TRdmMessage *>(m_pRdmDataOut);
 
 	RdmMessage->param_data_length = static_cast<uint8_t>(nLength);
@@ -166,9 +166,7 @@ void RDMHandler::HandleString(const char *pString, uint32_t nLength) {
 	}
 }
 
-void RDMHandler::CreateRespondMessage(uint8_t nResponseType, uint16_t nReason) {
-	unsigned i;
-
+void RDMHandler::CreateRespondMessage(const uint8_t nResponseType, const uint16_t nReason) {
 	auto *pRdmDataIn = reinterpret_cast<struct TRdmMessageNoSc *>(m_pRdmDataIn);
 	auto *pRdmDataOut = reinterpret_cast<struct TRdmMessage *>(m_pRdmDataOut);
 
@@ -203,12 +201,13 @@ void RDMHandler::CreateRespondMessage(uint8_t nResponseType, uint16_t nReason) {
 
 	const auto *pUID = RDMDeviceResponder::Get()->GetUID();
 
-	for (i = 0; i < RDM_UID_SIZE; i++) {
+	for (uint32_t i = 0; i < RDM_UID_SIZE; i++) {
 		pRdmDataOut->destination_uid[i] = pRdmDataIn->source_uid[i];
 		pRdmDataOut->source_uid[i] = pUID[i];
 	}
 
 	uint16_t rdm_checksum = 0;
+	uint32_t i;
 
 	for (i = 0; i < pRdmDataOut->message_length; i++) {
 		rdm_checksum = static_cast<uint16_t>(rdm_checksum + m_pRdmDataOut[i]);
@@ -219,16 +218,10 @@ void RDMHandler::CreateRespondMessage(uint8_t nResponseType, uint16_t nReason) {
 }
 
 void RDMHandler::RespondMessageAck() {
-	auto *pRdmDataIn = reinterpret_cast<struct TRdmMessageNoSc *>(m_pRdmDataIn);
-
-	if(pRdmDataIn->param_data_length == 0) {
-		pRdmDataIn->message_length = RDM_MESSAGE_MINIMUM_SIZE;
-	}
-
-	CreateRespondMessage(E120_RESPONSE_TYPE_ACK);
+	CreateRespondMessage(E120_RESPONSE_TYPE_ACK, 0);
 }
 
-void RDMHandler::RespondMessageNack(uint16_t nReason) {
+void RDMHandler::RespondMessageNack(const uint16_t nReason) {
 	CreateRespondMessage(E120_RESPONSE_TYPE_NACK_REASON, nReason);
 }
 
@@ -493,10 +486,10 @@ void RDMHandler::GetSupportedParameters(uint16_t nSubDevice) {
 	uint32_t nTableSize = 0;
 
 	if (nSubDevice != 0) {
-		pPidDefinitions = const_cast<PidDefinition*>(&PID_DEFINITIONS_SUB_DEVICES[0]);
+		pPidDefinitions = const_cast<PidDefinition *>(&PID_DEFINITIONS_SUB_DEVICES[0]);
 		nTableSize = sizeof(PID_DEFINITIONS_SUB_DEVICES) / sizeof(PID_DEFINITIONS_SUB_DEVICES[0]);
 	} else {
-		pPidDefinitions = const_cast<PidDefinition*>(&PID_DEFINITIONS[0]);
+		pPidDefinitions = const_cast<PidDefinition *>(&PID_DEFINITIONS[0]);
 		nTableSize = sizeof(PID_DEFINITIONS) / sizeof(PID_DEFINITIONS[0]);
 	}
 
