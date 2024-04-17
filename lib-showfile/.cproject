@@ -5,7 +5,6 @@
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="cdt.managedbuild.toolchain.gnu.cross.base.1354968116" moduleId="org.eclipse.cdt.core.settings" name="H3">
 				<externalSettings/>
 				<extensions>
-					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
 					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GmakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
@@ -40,6 +39,8 @@
 									<listOptionValue builtIn="false" value="CONFIG_SHOWFILE_ENABLE_OSC"/>
 									<listOptionValue builtIn="false" value="CONFIG_SHOWFILE_PROTOCOL_E131"/>
 									<listOptionValue builtIn="false" value="SHOWFILE_ENABLE_DMX_MASTER"/>
+									<listOptionValue builtIn="false" value="CONFIG_SHOWFILE_PROTOCOL_NODE_ARTNET"/>
+									<listOptionValue builtIn="false" value="CONFIG_SHOWFILE_PROTOCOL_NODE_E131"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1232086148" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -62,6 +63,8 @@
 									<listOptionValue builtIn="false" value="CONFIG_SHOWFILE_ENABLE_OSC"/>
 									<listOptionValue builtIn="false" value="CONFIG_SHOWFILE_PROTOCOL_E131"/>
 									<listOptionValue builtIn="false" value="SHOWFILE_ENABLE_DMX_MASTER"/>
+									<listOptionValue builtIn="false" value="CONFIG_SHOWFILE_PROTOCOL_NODE_ARTNET"/>
+									<listOptionValue builtIn="false" value="CONFIG_SHOWFILE_PROTOCOL_NODE_E131"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1598756209" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -109,7 +112,6 @@
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="cdt.managedbuild.toolchain.gnu.cross.base.252252823.1507776794.202961412.525923780.383227639.626020714" moduleId="org.eclipse.cdt.core.settings" name="Linux">
 				<externalSettings/>
 				<extensions>
-					<extension id="org.eclipse.cdt.core.GNU_ELF" point="org.eclipse.cdt.core.BinaryParser"/>
 					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GmakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
@@ -142,6 +144,8 @@
 									<listOptionValue builtIn="false" value="CONFIG_SHOWFILE_ENABLE_OSC"/>
 									<listOptionValue builtIn="false" value="CONFIG_SHOWFILE_PROTOCOL_E131"/>
 									<listOptionValue builtIn="false" value="SHOWFILE_ENABLE_DMX_MASTER"/>
+									<listOptionValue builtIn="false" value="CONFIG_SHOWFILE_PROTOCOL_NODE_ARTNET"/>
+									<listOptionValue builtIn="false" value="CONFIG_SHOWFILE_PROTOCOL_NODE_E131"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.419746025" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -164,6 +168,8 @@
 									<listOptionValue builtIn="false" value="CONFIG_SHOWFILE_ENABLE_OSC"/>
 									<listOptionValue builtIn="false" value="CONFIG_SHOWFILE_PROTOCOL_E131"/>
 									<listOptionValue builtIn="false" value="SHOWFILE_ENABLE_DMX_MASTER"/>
+									<listOptionValue builtIn="false" value="CONFIG_SHOWFILE_PROTOCOL_NODE_ARTNET"/>
+									<listOptionValue builtIn="false" value="CONFIG_SHOWFILE_PROTOCOL_NODE_E131"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.2043592442" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
