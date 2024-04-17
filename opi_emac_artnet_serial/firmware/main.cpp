@@ -135,7 +135,7 @@ int main() {
 	displayUdfParams.Load();
 	displayUdfParams.Set(&display);
 
-	display.Show(&node);
+	display.Show();
 
 	uint32_t nFilesCount = dmxSerial.GetFilesCount();
 	if (nFilesCount == 0) {

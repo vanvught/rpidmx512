@@ -170,7 +170,7 @@ int main() {
 	displayUdfParams.Load();
 	displayUdfParams.Set(&display);
 
-	display.Show(&bridge);
+	display.Show();
 
 	RemoteConfig remoteConfig(remoteconfig::Node::E131, remoteconfig::Output::MONITOR, 0);
 

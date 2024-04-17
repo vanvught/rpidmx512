@@ -2,7 +2,7 @@
  * @file displayudfshowartnet.cpp
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,15 +41,15 @@ extern uint32_t DMXPORT_OFFSET;
 }  // namespace configstore
 }  // namespace artnetnode
 
-void DisplayUdf::Show(ArtNetNode *pArtNetNode) {
+void DisplayUdf::ShowArtNetNode() {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("artnetnode::configstore::DMXPORT_OFFSET=%u", artnetnode::configstore::DMXPORT_OFFSET);
 
-	Show();
+	auto *pArtNetNode = ArtNetNode::Get();
 
-	ShowUniverse(pArtNetNode);
+	ShowUniverseArtNetNode();
 #if defined (ARTNET_HAVE_DMXIN)
-	ShowDestinationIp(pArtNetNode);
+	ShowDestinationIpArtNetNode();
 #endif
 	Printf(m_aLabels[static_cast<uint32_t>(displayudf::Labels::AP)], "AP: %d", pArtNetNode->GetActiveOutputPorts() + pArtNetNode->GetActiveInputPorts());
 
@@ -58,8 +58,10 @@ void DisplayUdf::Show(ArtNetNode *pArtNetNode) {
 	DEBUG_EXIT
 }
 
-void DisplayUdf::ShowUniverse(ArtNetNode *pArtNetNode) {
+void DisplayUdf::ShowUniverseArtNetNode() {
 	DEBUG_ENTRY
+
+	auto *pArtNetNode = ArtNetNode::Get();
 	uint16_t nUniverse;
 
 	for (uint32_t nArtNetPortIndex = 0; nArtNetPortIndex < std::min(artnet::PORTS, artnetnode::MAX_PORTS); nArtNetPortIndex++) {
@@ -96,8 +98,10 @@ void DisplayUdf::ShowUniverse(ArtNetNode *pArtNetNode) {
 	DEBUG_EXIT
 }
 
-void DisplayUdf::ShowDestinationIp(ArtNetNode *pArtNetNode) {
+void DisplayUdf::ShowDestinationIpArtNetNode() {
 	DEBUG_ENTRY
+
+	auto *pArtNetNode = ArtNetNode::Get();
 
 	for (uint32_t nPortIndex = 0; nPortIndex < std::min(artnet::PORTS, artnetnode::MAX_PORTS); nPortIndex++) {
 		Printf(m_aLabels[static_cast<uint32_t>(displayudf::Labels::DESTINATION_IP_PORT_A) + nPortIndex], "%c: " IPSTR, 'A' + nPortIndex, IP2STR(pArtNetNode->GetDestinationIp(nPortIndex)));

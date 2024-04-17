@@ -2,7 +2,7 @@
  * @file displayudfshowe131.cpp
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,11 +38,11 @@ extern uint32_t DMXPORT_OFFSET;
 }  // namespace configstore
 }  // namespace e131bridge
 
-void DisplayUdf::Show(E131Bridge *pE131Bridge) {
+void DisplayUdf::ShowE131Bridge() {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("e131bridge::configstore::DMXPORT_OFFSET=%u", e131bridge::configstore::DMXPORT_OFFSET);
 
-	Show();
+	auto *pE131Bridge = E131Bridge::Get();
 
 	Printf(m_aLabels[static_cast<uint32_t>(displayudf::Labels::AP)], "AP: %d", pE131Bridge->GetActiveOutputPorts() + pE131Bridge->GetActiveInputPorts());
 
