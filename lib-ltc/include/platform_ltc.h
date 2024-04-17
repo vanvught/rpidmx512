@@ -39,10 +39,10 @@ extern struct ltc::TimeCode g_ltc_LtcTimeCode;
 
 #if defined (H3)
 # define PLATFORM_LTC_ARM
-# include "../src/arm/h3/platform_ltc.h"
+# include "../src/arm/h3/h3_platform_ltc.h"
 #elif  defined (GD32)
 # define PLATFORM_LTC_ARM
-# include "../src/arm/gd32/platform_ltc.h"
+# include "../src/arm/gd32/gd32_platform_ltc.h"
 #endif
 
 #endif /* PLATFORM_LTC_H_ */
