@@ -36,7 +36,7 @@ uint32_t json_get_tod(const char cPort, char *pOutBuffer, const uint32_t nOutBuf
 
 	if (nPortIndex < artnetnode::MAX_PORTS) {
 		const auto nBufferSize = nOutBufferSize - 2U;
-		auto nLength = static_cast<uint32_t>(snprintf(pOutBuffer, nBufferSize, "{\"port\":\"%c\",\"tod\":[" , (nPortIndex + 'A')));
+		auto nLength = static_cast<uint32_t>(snprintf(pOutBuffer, nBufferSize, "{\"port\":\"%c\",\"tod\":[" , static_cast<char>(nPortIndex + 'A')));
 
 		nLength += ArtNetNode::Get()->RdmCopyTod(nPortIndex, &pOutBuffer[nLength], nBufferSize - nLength);
 

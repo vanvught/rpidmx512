@@ -2,7 +2,7 @@
  * @file rdmsensorsparams.cpp
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -297,6 +297,6 @@ void RDMSensorsParams::Dump() {
 	}
 
 	for (uint32_t i = 0; i < rdm::sensors::MAX; i++) {
-		printf("%2d %d\n", i, m_Params.nCalibrate[i]);
+		printf("%2u %u\n", static_cast<unsigned int>(i), static_cast<unsigned int>(m_Params.nCalibrate[i]));
 	}
 }

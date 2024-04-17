@@ -28,7 +28,7 @@
 
 #include <cstdint>
 
-#define IP2STR(addr) (addr & 0xFF), ((addr >> 8) & 0xFF), ((addr >> 16) & 0xFF), ((addr >> 24) & 0xFF)
+#define IP2STR(addr)  static_cast<int>(addr & 0xFF),  static_cast<int>((addr >> 8) & 0xFF),  static_cast<int>((addr >> 16) & 0xFF),  static_cast<int>((addr >> 24) & 0xFF)
 #define IPSTR "%d.%d.%d.%d"
 
 #define MAC2STR(mac) static_cast<int>(mac[0]),static_cast<int>(mac[1]),static_cast<int>(mac[2]),static_cast<int>(mac[3]), static_cast<int>(mac[4]), static_cast<int>(mac[5])

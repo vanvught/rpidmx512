@@ -101,7 +101,7 @@ bool Ssd1311::Start() {
 }
 
 void Ssd1311::PrintInfo() {
-	printf("SSD1311 (%d,%d)\n", m_nRows, m_nCols);
+	printf("SSD1311 (%u,%u)\n", static_cast<unsigned int>(m_nRows), static_cast<unsigned int>(m_nCols));
 }
 
 void Ssd1311::Cls() {

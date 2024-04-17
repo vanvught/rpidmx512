@@ -546,7 +546,7 @@ void ArtNetParams::Dump() {
 
 	for (uint32_t i = 0; i < artnet::PORTS; i++) {
 		const auto portDir = portdir_get(i);
-		printf(" %s=%u [%s]\n", LightSetParamsConst::DIRECTION[i], static_cast<uint32_t>(portDir), lightset::get_direction(portDir));
+		printf(" %s=%u [%s]\n", LightSetParamsConst::DIRECTION[i], static_cast<unsigned int>(portDir), lightset::get_direction(portDir));
 	}
 
 	for (uint32_t i = 0; i < artnet::PORTS; i++) {
@@ -556,7 +556,7 @@ void ArtNetParams::Dump() {
 
 	for (uint32_t i = 0; i < artnet::PORTS; i++) {
 		const auto nOutputStyle = static_cast<uint32_t>(isOutputStyleSet(1U << i));
-		printf(" %s=%u [%s]\n", LightSetParamsConst::OUTPUT_STYLE[i], nOutputStyle, lightset::get_output_style(static_cast<lightset::OutputStyle>(nOutputStyle)));
+		printf(" %s=%u [%s]\n", LightSetParamsConst::OUTPUT_STYLE[i], static_cast<unsigned int>(nOutputStyle), lightset::get_output_style(static_cast<lightset::OutputStyle>(nOutputStyle)));
 	}
 
 	/**

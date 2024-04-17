@@ -233,7 +233,7 @@ Ssd1306::Ssd1306(uint8_t nSlaveAddress, TOledPanel tOledPanel) : m_I2C(nSlaveAdd
 }
 
 void Ssd1306::PrintInfo() {
-	printf("%s (%d,%d)\n", m_bHaveSH1106 ? "SH1106" : "SSD1306", m_nRows, m_nCols);
+	printf("%s (%u,%u)\n", m_bHaveSH1106 ? "SH1106" : "SSD1306", static_cast<unsigned int>(m_nRows), static_cast<unsigned int>(m_nCols));
 }
 
 void Ssd1306::CheckSH1106() {

@@ -2,7 +2,7 @@
  * @file arm_dump_vector_table.c
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,16 +31,16 @@ void arm_dump_vector_table(void) {
 	unsigned vector_table;
 	asm volatile ("mrc p15, 0, %0, c12, c0, 0" : "=r" (vector_table));
 	isb();
-	printf("Vector table at address: %p\n", vector_table);
+	printf("Vector table at address: %p\n", (void *)vector_table);
 
 	const unsigned *p = (unsigned *)vector_table;
 
-	printf(" Reset: %p\n", p[0]);
-	printf(" Undefined Instruction: %p\n", p[1]);
-	printf(" SWI: %p\n", p[2]);
-	printf(" Prefetch Abort: %p\n", p[3]);
-	printf(" Data Abort: %p\n", p[4]);
-	printf(" Reserved: %p\n", p[5]);
-	printf(" IRQ: %p\n", p[6]);
-	printf(" FIQ: %p\n", p[7]);
+	printf(" Reset: %p\n", (void *)p[0]);
+	printf(" Undefined Instruction: %p\n", (void *)p[1]);
+	printf(" SWI: %p\n", (void *)p[2]);
+	printf(" Prefetch Abort: %p\n", (void *)p[3]);
+	printf(" Data Abort: %p\n", (void *)p[4]);
+	printf(" Reserved: %p\n", (void *)p[5]);
+	printf(" IRQ: %p\n", (void *)p[6]);
+	printf(" FIQ: %p\n", (void *)p[7]);
 }

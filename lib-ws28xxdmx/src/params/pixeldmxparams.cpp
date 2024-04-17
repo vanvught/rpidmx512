@@ -450,7 +450,7 @@ void PixelDmxParams::Dump() {
 
 	printf(" %s=%d\n", DevicesParamsConst::ACTIVE_OUT, m_Params.nActiveOutputs);
 	printf(" %s=%d\n", DevicesParamsConst::GROUPING_COUNT, m_Params.nGroupingCount);
-	printf(" %s=%d\n", DevicesParamsConst::SPI_SPEED_HZ, m_Params.nSpiSpeedHz);
+	printf(" %s=%u\n", DevicesParamsConst::SPI_SPEED_HZ, static_cast<unsigned int>(m_Params.nSpiSpeedHz));
 	printf(" %s=%d\n", DevicesParamsConst::GLOBAL_BRIGHTNESS, m_Params.nGlobalBrightness);
 	printf(" %s=%d\n", LightSetParamsConst::DMX_START_ADDRESS, m_Params.nDmxStartAddress);
 	printf(" %s=%d\n", DevicesParamsConst::TEST_PATTERN, m_Params.nTestPattern);
