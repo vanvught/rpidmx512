@@ -1,5 +1,5 @@
 /**
- * net.c
+ * net.cpp
  *
  */
 /* Copyright (C) 2022-2024 by Arjan van Vught mailto:info@gd32-dmx.org
@@ -51,9 +51,9 @@ int emac_eth_recv(uint8_t **ppPacket) {
 
 	if (nLength > 0) {
 #if defined (CONFIG_ENET_ENABLE_PTP)
-		*ppPacket = (uint8_t *)(dma_current_ptp_rxdesc->buffer1_addr);
+		*ppPacket = reinterpret_cast<uint8_t *>(dma_current_ptp_rxdesc->buffer1_addr);
 #else
-		*ppPacket = (uint8_t *)(dma_current_rxdesc->buffer1_addr);
+		*ppPacket = reinterpret_cast<uint8_t *>(dma_current_rxdesc->buffer1_addr);
 #endif
 		return nLength;
 	}
@@ -67,6 +67,7 @@ void emac_free_pkt() {
 	if (status != ERROR) {
 		net::globals::IsValidPtpTimestamp = true;
 	} else {
+		net::globals::IsValidPtpTimestamp = false;
 		console_error("ENET_NOCOPY_PTPFRAME_RECEIVE_NORMAL_MODE failed\n");
 	}
 #else
@@ -87,16 +88,36 @@ void emac_eth_send(void *pBuffer, int nLength) {
 	auto nStatus = dma_current_txdesc->status;
 	if (isPTP(pBuffer)) {
 		nStatus |= ENET_TDES0_TTSEN;
+		dma_current_txdesc->status = nStatus;
+
+		const auto status = enet_ptpframe_transmit_normal_mode(reinterpret_cast<uint8_t *>(pBuffer), nLength, net::globals::ptpTimestamp);
+
+		if (status != ERROR) {
+			net::globals::IsValidPtpTimestamp = true;
+		} else {
+			net::globals::IsValidPtpTimestamp = false;
+# if defined (DEBUG_ENET_PTP)
+			console_error("PTP: enet_ptpframe_transmit_normal_mode failed\n");
+# endif
+		}
 	} else {
 		nStatus &= ~ENET_TDES0_TTSEN;
-	}
-	dma_current_txdesc->status = nStatus;
-	ErrStatus status = enet_ptpframe_transmit_normal_mode((uint8_t *)pBuffer, nLength, NULL);
-#else
-	ErrStatus status = enet_frame_transmit((uint8_t *)pBuffer, nLength);
+		dma_current_txdesc->status = nStatus;
+
+		[[maybe_unused]] const auto status = enet_ptpframe_transmit_normal_mode(reinterpret_cast<uint8_t *>(pBuffer), nLength, nullptr);
+#if defined (DEBUG_ENET_PTP)
+		if (status == ERROR) {
+			console_error("enet_ptpframe_transmit_normal_mode failed\n");
+		}
 #endif
-	if (status == ERROR) {
-		console_error("emac_eth_send failed\n");
 	}
+#else
+	[[maybe_unused]] const auto status = enet_frame_transmit(reinterpret_cast<uint8_t *>(pBuffer), nLength);
+# if defined (DEBUG_ENET)
+	if (status == ERROR) {
+		console_error("enet_frame_transmit failed\n");
+	}
+# endif
+#endif
 }
 }

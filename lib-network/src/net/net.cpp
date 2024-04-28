@@ -2,7 +2,7 @@
  * @file net.cpp
  *
  */
-/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,7 +45,7 @@ uint8_t macAddress[ETH_ADDR_LEN]  ALIGNED;
 }  // namespace globals
 #if defined (CONFIG_ENET_ENABLE_PTP)
 void ptp_init();
-void ptp_handle(const uint8_t *);
+void ptp_handle(const uint8_t *, const uint32_t);
 void ptp_run();
 #endif
 }  // namespace net
@@ -221,7 +221,7 @@ __attribute__((hot)) void net_handle() {
 
 #if defined (CONFIG_ENET_ENABLE_PTP)
 		if (eth->type == __builtin_bswap16(ETHER_TYPE_PTP)) {
-			net::ptp_handle(const_cast<const uint8_t *>(s_p));
+			net::ptp_handle(const_cast<const uint8_t *>(s_p), nLength);
 		} else
 #endif
 		if (eth->type == __builtin_bswap16(ETHER_TYPE_IPv4)) {

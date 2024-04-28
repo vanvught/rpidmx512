@@ -55,10 +55,11 @@ __attribute__((hot)) void icmp_handle(struct t_icmp *p_icmp) {
 			// IPv4
 			p_icmp->ip4.id = static_cast<uint16_t>(~p_icmp->ip4.id);
 
-			memcpy(p_icmp->ip4.dst, p_icmp->ip4.src, IPv4_ADDR_LEN);
-
 			_pcast32 dst;
 			memcpy(dst.u8, p_icmp->ip4.dst, IPv4_ADDR_LEN);
+
+			memcpy(p_icmp->ip4.dst, p_icmp->ip4.src, IPv4_ADDR_LEN);
+
 			if (dst.u32 == net::globals::ipInfo.secondary_ip.addr) {
 				memcpy(p_icmp->ip4.src, dst.u8, IPv4_ADDR_LEN);
 			} else {
