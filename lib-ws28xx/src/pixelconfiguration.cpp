@@ -38,7 +38,7 @@
 
 using namespace pixel;
 
-void PixelConfiguration::Validate(uint16_t& nLedsPerPixel) {
+void PixelConfiguration::Validate(uint32_t& nLedsPerPixel) {
 	DEBUG_ENTRY
 
 	if (m_type == Type::SK6812W) {

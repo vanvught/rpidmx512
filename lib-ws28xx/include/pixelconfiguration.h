@@ -45,11 +45,11 @@ public:
 		return m_type;
 	}
 
-	void SetCount(const uint16_t nCount) {
+	void SetCount(const uint32_t nCount) {
 		m_nCount = (nCount == 0 ? pixel::defaults::COUNT : nCount);
 	}
 
-	uint16_t GetCount() const {
+	uint32_t GetCount() const {
 		return m_nCount;
 	}
 
@@ -115,23 +115,23 @@ public:
 	}
 #endif
 
-	void Validate(uint16_t& nLedsPerPixel);
+	void Validate(uint32_t& nLedsPerPixel);
 
 	void Print();
 
-	static void GetTxH(pixel::Type tType, uint8_t &nLowCode, uint8_t &nHighCode);
+	static void GetTxH(pixel::Type type, uint8_t &nLowCode, uint8_t &nHighCode);
 
 private:
-	pixel::Type m_type { pixel::defaults::TYPE };
-	uint16_t m_nCount { pixel::defaults::COUNT };
-	pixel::Map m_map { pixel::Map::UNDEFINED };
+	uint32_t m_nCount { pixel::defaults::COUNT };
 	uint32_t m_nClockSpeedHz { 0 };
 	uint8_t m_nLowCode { 0 };
 	uint8_t m_nHighCode { 0 };
 	uint8_t m_nGlobalBrightness { 0xFF };
-	uint8_t m_nGammaValue { 0 };
+	pixel::Map m_map { pixel::Map::UNDEFINED };
+	pixel::Type m_type { pixel::defaults::TYPE };
 	bool m_bIsRTZProtocol { true };
 #if defined (CONFIG_PIXELDMX_ENABLE_GAMMATABLE)
+	uint8_t m_nGammaValue { 0 };
 	bool m_bEnableGammaCorrection { false };
 	const uint8_t *m_pGammaTable { gamma10_0 };
 #endif

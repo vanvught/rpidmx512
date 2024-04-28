@@ -122,10 +122,10 @@ void WS28xxDmx::SetData([[maybe_unused]] uint32_t nPortIndex, const uint8_t *pDa
 #else
 	const auto beginIndex = m_PortInfo.nBeginIndexPort[nSwitch];
 #endif
-	const auto endIndex = std::min(nGroups, static_cast<uint16_t>(beginIndex + (nLength / m_nChannelsPerPixel)));
+	const auto endIndex = std::min(nGroups, (beginIndex + (nLength / m_nChannelsPerPixel)));
 
 	if ((nSwitch == 0) && (nGroups < m_PortInfo.nBeginIndexPort[1])) {
-		d = static_cast<uint32_t>(m_pPixelDmxConfiguration->GetDmxStartAddress() - 1);
+		d = (m_pPixelDmxConfiguration->GetDmxStartAddress() - 1U);
 	}
 
 	const auto nGroupingCount = m_pPixelDmxConfiguration->GetGroupingCount();

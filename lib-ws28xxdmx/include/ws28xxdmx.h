@@ -111,7 +111,7 @@ public:
 private:
 	PixelDmxConfiguration *m_pPixelDmxConfiguration;
 	pixeldmxconfiguration::PortInfo m_PortInfo;
-	uint16_t m_nChannelsPerPixel;
+	uint32_t m_nChannelsPerPixel;
 
 	WS28xx *m_pWS28xx { nullptr };
 

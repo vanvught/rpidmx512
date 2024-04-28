@@ -180,7 +180,7 @@ private:
 private:
 	PixelDmxConfiguration m_pixelDmxConfiguration;
 	pixeldmxconfiguration::PortInfo m_PortInfo;
-	uint16_t m_nChannelsPerPixel;
+	uint32_t m_nChannelsPerPixel;
 
 	WS28xxMulti *m_pWS28xxMulti { nullptr };
 

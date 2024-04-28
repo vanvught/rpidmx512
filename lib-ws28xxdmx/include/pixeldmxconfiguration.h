@@ -47,7 +47,7 @@ public:
 		m_nOutputPorts = nOutputPorts;
 	}
 
-	uint16_t GetOutputPorts() const {
+	uint32_t GetOutputPorts() const {
 		return m_nOutputPorts;
 	}
 
@@ -55,15 +55,15 @@ public:
 		m_nGroupingCount = nGroupingCount;
 	}
 
-	uint16_t GetGroupingCount() const {
+	uint32_t GetGroupingCount() const {
 		return m_nGroupingCount;
 	}
 
-	uint16_t GetGroups() const {
+	uint32_t GetGroups() const {
 		return m_nGroups;
 	}
 
-	uint16_t GetUniverses() const {
+	uint32_t GetUniverses() const {
 		return m_nUniverses;
 	}
 
@@ -71,15 +71,15 @@ public:
 		m_nDmxStartAddress = nDmxStartAddress;
 	}
 
-	uint16_t GetDmxStartAddress() const {
+	uint32_t GetDmxStartAddress() const {
 		return m_nDmxStartAddress;
 	}
 
-	uint16_t GetDmxFootprint() const {
+	uint32_t GetDmxFootprint() const {
 		return m_nDmxFootprint;
 	}
 
-	void Validate(const uint16_t nPortsMax, uint16_t& nLedsPerPixel, pixeldmxconfiguration::PortInfo& portInfo) {
+	void Validate(const uint32_t nPortsMax, uint32_t& nLedsPerPixel, pixeldmxconfiguration::PortInfo& portInfo) {
 		DEBUG_ENTRY
 
 		PixelConfiguration::Validate(nLedsPerPixel);
@@ -137,12 +137,12 @@ public:
 	}
 
 private:
-	uint16_t m_nOutputPorts { 1 };
-	uint16_t m_nGroupingCount { 1 };
-	uint16_t m_nGroups { pixel::defaults::COUNT };
-	uint16_t m_nUniverses;
-	uint16_t m_nDmxStartAddress { 1 };
-	uint16_t m_nDmxFootprint;
+	uint32_t m_nOutputPorts { 1 };
+	uint32_t m_nGroupingCount { 1 };
+	uint32_t m_nGroups { pixel::defaults::COUNT };
+	uint32_t m_nUniverses;
+	uint32_t m_nDmxStartAddress { 1 };
+	uint32_t m_nDmxFootprint;
 };
 
 #endif /* PIXELDMXCONFIGURATION_H_ */
