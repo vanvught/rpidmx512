@@ -1,8 +1,8 @@
 /**
- * @file showfileparamsconst.cpp
+ * @file json_delete.cpp
  *
  */
-/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,17 +23,43 @@
  * THE SOFTWARE.
  */
 
+#include <cstdint>
+#include <cstdio>
+#include <cassert>
+
+#include "showfile.h"
+#include "showfileconst.h"
 #include "showfileparamsconst.h"
 
-const char ShowFileParamsConst::FILE_NAME[] = "show.txt";
+#include "sscan.h"
 
-const char ShowFileParamsConst::SHOW[] = "show";
+#include "debug.h"
 
-const char ShowFileParamsConst::DMX_MASTER[] = "dmx_master";
+namespace remoteconfig {
+namespace showfile {
+void json_delete(const char *pBuffer, const uint32_t nBufferSize) {
+	DEBUG_ENTRY
 
-const char ShowFileParamsConst::OPTION_AUTO_PLAY[] = "auto_play";
-const char ShowFileParamsConst::OPTION_LOOP[] = "loop";
-const char ShowFileParamsConst::OPTION_DISABLE_SYNC[] = "disable_sync";
+	if (nBufferSize < sizeof("show=x")) {
+		DEBUG_EXIT
+		return;
+	}
 
-const char ShowFileParamsConst::SACN_SYNC_UNIVERSE[] = "sync_universe";
-const char ShowFileParamsConst::ARTNET_DISABLE_UNICAST[] = "disable_unicast";
+	uint8_t nValue8;
+
+	if (Sscan::Uint8(pBuffer, ShowFileParamsConst::SHOW, nValue8) == Sscan::OK) {
+		if (nValue8 <= ::showfile::FILE_MAX_NUMBER) {
+			ShowFile::Get()->DeleteShowFile(nValue8);
+
+			DEBUG_EXIT
+			return;
+		}
+
+		DEBUG_EXIT
+		return;
+	}
+
+	DEBUG_EXIT
+}
+}  // namespace showfile
+}  // namespace remoteconfig

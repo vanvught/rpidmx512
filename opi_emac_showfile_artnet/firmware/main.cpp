@@ -92,7 +92,7 @@ int main() {
 	showFileParams.Set();
 
 	if (showFile.IsAutoStart()) {
-		showFile.Start();
+		showFile.Play();
 	}
 
 #if defined (NODE_RDMNET_LLRP_ONLY)

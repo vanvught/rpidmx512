@@ -41,7 +41,7 @@ enum class Status {
 	UNKNOWN_ERROR = 520
 };
 enum class RequestMethod {
-	GET, POST, UNKNOWN
+	GET, POST, DELETE, UNKNOWN
 };
 
 enum class contentTypes {

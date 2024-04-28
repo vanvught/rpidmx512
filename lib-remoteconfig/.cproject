@@ -13,7 +13,7 @@
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration artifactName="${ProjName}" buildProperties="" description="" id="cdt.managedbuild.toolchain.gnu.cross.base.563973127.2069184351.1105965086" name="H3" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.dockerdpath=,org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=" parent="org.eclipse.cdt.build.core.emptycfg">
+				<configuration artifactName="${ProjName}" buildProperties="" description="" id="cdt.managedbuild.toolchain.gnu.cross.base.563973127.2069184351.1105965086" name="H3" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.dockerdpath=,org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=" parent="org.eclipse.cdt.build.core.emptycfg">
 					<folderInfo id="cdt.managedbuild.toolchain.gnu.cross.base.563973127.2069184351.1105965086." name="/" resourcePath="">
 						<toolChain id="cdt.managedbuild.toolchain.gnu.cross.base.1534882414" name="Cross GCC" superClass="cdt.managedbuild.toolchain.gnu.cross.base">
 							<option id="cdt.managedbuild.option.gnu.cross.prefix.1286884084" name="Prefix" superClass="cdt.managedbuild.option.gnu.cross.prefix"/>
@@ -33,6 +33,7 @@
 									<listOptionValue builtIn="false" value="RDM_CONTROLLER"/>
 									<listOptionValue builtIn="false" value="OUTPUT_DMX_PCA9685"/>
 									<listOptionValue builtIn="false" value="ENABLE_RDM_SUBDEVICES"/>
+									<listOptionValue builtIn="false" value="ARTNET_CONTROLLER"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1698677010" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -108,6 +109,7 @@
 									<listOptionValue builtIn="false" value="ENABLE_NET_PHYSTATUS"/>
 									<listOptionValue builtIn="false" value="RDM_CONTROLLER"/>
 									<listOptionValue builtIn="false" value="OUTPUT_DMX_PCA9685"/>
+									<listOptionValue builtIn="false" value="ARTNET_CONTROLLER"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1071720682" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -211,6 +213,7 @@
 									<listOptionValue builtIn="false" value="ENABLE_PHY_SWITCH"/>
 									<listOptionValue builtIn="false" value="RDM_CONTROLLER"/>
 									<listOptionValue builtIn="false" value="OUTPUT_DMX_PCA9685"/>
+									<listOptionValue builtIn="false" value="ARTNET_CONTROLLER"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1810325769" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -307,6 +310,7 @@
 									<listOptionValue builtIn="false" value="NET_ENABLE_PHYSTATUS"/>
 									<listOptionValue builtIn="false" value="RDM_CONTROLLER"/>
 									<listOptionValue builtIn="false" value="OUTPUT_DMX_PCA9685"/>
+									<listOptionValue builtIn="false" value="ARTNET_CONTROLLER"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1213842804" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>

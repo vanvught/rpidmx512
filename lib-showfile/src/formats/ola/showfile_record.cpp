@@ -23,6 +23,11 @@
  * THE SOFTWARE.
  */
 
+#if !defined(__clang__)
+# pragma GCC push_options
+# pragma GCC optimize ("O2")
+#endif
+
 #include <cstdint>
 #include "formats/showfileformatola.h"
 
@@ -31,7 +36,8 @@
 
 namespace showfile {
 void record(const struct artnet::ArtDmx *pArtDmx, const uint32_t nMillis) {
-	ShowFileFormat::Get()->ShowfileWrite(pArtDmx->Data, pArtDmx->Length, pArtDmx->PortAddress, nMillis);
+	const auto nDmxSlots = static_cast<uint32_t>(((pArtDmx->LengthHi << 8) & 0xff00) | pArtDmx->Length);
+	ShowFileFormat::Get()->ShowfileWrite(pArtDmx->Data, nDmxSlots, pArtDmx->PortAddress, nMillis);
 }
 
 void record([[maybe_unused]] const struct artnet::ArtSync *pArtSync, [[maybe_unused]] const uint32_t nMillis) {

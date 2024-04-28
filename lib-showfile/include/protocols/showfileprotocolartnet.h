@@ -80,11 +80,13 @@ public:
 		m_ArtNetController.HandleBlackout();
 	}
 
-	void DmxMaster(uint32_t nMaster) {
+	void DmxMaster([[maybe_unused]] const uint32_t nMaster) {
+#if defined(CONFIG_ARTNET_CONTROLLER_ENABLE_MASTER)
 		m_ArtNetController.SetMaster(nMaster);
+#endif
 	}
 
-	void DoRunCleanupProcess(bool bDoRun) {
+	void DoRunCleanupProcess(const bool bDoRun) {
 		m_ArtNetController.SetRunTableCleanup(bDoRun);
 	}
 

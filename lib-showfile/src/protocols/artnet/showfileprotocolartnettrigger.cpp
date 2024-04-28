@@ -38,7 +38,7 @@ void ShowFileProtocolArtNetTrigger::Handler(const struct TArtNetTrigger *ptArtNe
 			ShowFile::Get()->BlackOut();
 			break;
 		case 'G':
-			ShowFile::Get()->Start();
+			ShowFile::Get()->Play();
 			break;
 		case 'R':
 			ShowFile::Get()->Resume();
@@ -52,7 +52,7 @@ void ShowFileProtocolArtNetTrigger::Handler(const struct TArtNetTrigger *ptArtNe
 	}
 
 	if (ptArtNetTrigger->Key == ART_TRIGGER_KEY_SHOW) {
-		ShowFile::Get()->SetShowFile(ptArtNetTrigger->SubKey);
+		ShowFile::Get()->SetPlayerShowFileCurrent(ptArtNetTrigger->SubKey);
 	}
 
 	DEBUG_EXIT

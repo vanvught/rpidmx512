@@ -198,7 +198,7 @@ void ShowFileParams::callbackFunction(const char *pLine) {
 # endif
 #endif
 
-#if defined (SHOWFILE_ENABLE_DMX_MASTER)
+#if defined (CONFIG_SHOWFILE_ENABLE_MASTER)
 	if (Sscan::Uint8(pLine, ShowFileParamsConst::DMX_MASTER, nValue8) == Sscan::OK) {
 		if (nValue8 < UINT8_MAX) {
 			m_Params.nDmxMaster = nValue8;
@@ -211,8 +211,8 @@ void ShowFileParams::callbackFunction(const char *pLine) {
 	}
 #endif
 
-	if (Sscan::Uint8(pLine, ShowFileParamsConst::OPTION_AUTO_START, nValue8) == Sscan::OK) {
-		SetBool(nValue8, showfileparams::Mask::OPTION_AUTO_START);
+	if (Sscan::Uint8(pLine, ShowFileParamsConst::OPTION_AUTO_PLAY, nValue8) == Sscan::OK) {
+		SetBool(nValue8, showfileparams::Mask::OPTION_AUTO_PLAY);
 		return;
 	}
 
@@ -240,7 +240,7 @@ void ShowFileParams::Builder(const struct TShowFileParams *ptShowFileParamss, ch
 
 	builder.Add(ShowFileParamsConst::SHOW, static_cast<uint32_t>(m_Params.nShow), isMaskSet(showfileparams::Mask::SHOW));
 
-#if defined (SHOWFILE_ENABLE_DMX_MASTER)
+#if defined (CONFIG_SHOWFILE_ENABLE_MASTER)
 	builder.AddComment("Pixel");
 	builder.Add(ShowFileParamsConst::DMX_MASTER, static_cast<uint32_t>(m_Params.nDmxMaster), isMaskSet(showfileparams::Mask::DMX_MASTER));
 #endif
@@ -257,7 +257,7 @@ void ShowFileParams::Builder(const struct TShowFileParams *ptShowFileParamss, ch
 #endif
 
 	builder.AddComment("Options");
-	builder.Add(ShowFileParamsConst::OPTION_AUTO_START, isMaskSet(showfileparams::Mask::OPTION_AUTO_START), isMaskSet(showfileparams::Mask::OPTION_AUTO_START));
+	builder.Add(ShowFileParamsConst::OPTION_AUTO_PLAY, isMaskSet(showfileparams::Mask::OPTION_AUTO_PLAY), isMaskSet(showfileparams::Mask::OPTION_AUTO_PLAY));
 	builder.Add(ShowFileParamsConst::OPTION_LOOP, isMaskSet(showfileparams::Mask::OPTION_LOOP), isMaskSet(showfileparams::Mask::OPTION_LOOP));
 #if !defined (CONFIG_SHOWFILE_PROTOCOL_INTERNAL)
 	builder.Add(ShowFileParamsConst::OPTION_DISABLE_SYNC, isMaskSet(showfileparams::Mask::OPTION_DISABLE_SYNC), isMaskSet(showfileparams::Mask::OPTION_DISABLE_SYNC));
@@ -278,10 +278,10 @@ void ShowFileParams::Set() {
 	DEBUG_ENTRY
 
 	if (isMaskSet(showfileparams::Mask::SHOW)) {
-		ShowFile::Get()->SetShowFile(m_Params.nShow);
+		ShowFile::Get()->SetPlayerShowFileCurrent(m_Params.nShow);
 	}
 
-#if defined (SHOWFILE_ENABLE_DMX_MASTER)
+#if defined (CONFIG_SHOWFILE_ENABLE_MASTER)
 	if (isMaskSet(showfileparams::Mask::DMX_MASTER)) {
 		ShowFile::Get()->SetMaster(m_Params.nDmxMaster);
 	}
@@ -316,7 +316,7 @@ void ShowFileParams::Set() {
 
 	// Options
 
-	if (isMaskSet(showfileparams::Mask::OPTION_AUTO_START)) {
+	if (isMaskSet(showfileparams::Mask::OPTION_AUTO_PLAY)) {
 		ShowFile::Get()->SetAutoStart(true);
 	}
 
@@ -353,7 +353,7 @@ void ShowFileParams::Dump() {
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, ShowFileParamsConst::FILE_NAME);
 	printf(" %s=%u\n", ShowFileParamsConst::SHOW, m_Params.nShow);
 
-#if defined (SHOWFILE_ENABLE_DMX_MASTER)
+#if defined (CONFIG_SHOWFILE_ENABLE_MASTER)
 	printf(" %s=%u\n", ShowFileParamsConst::DMX_MASTER, m_Params.nDmxMaster);
 #endif
 
@@ -370,7 +370,7 @@ void ShowFileParams::Dump() {
 # endif
 #endif
 
-	if (isMaskSet(showfileparams::Mask::OPTION_AUTO_START)) {
+	if (isMaskSet(showfileparams::Mask::OPTION_AUTO_PLAY)) {
 		printf("  Auto start is enabled\n");
 	}
 

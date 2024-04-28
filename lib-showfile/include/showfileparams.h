@@ -50,7 +50,7 @@ struct Mask {
 	static constexpr uint32_t SACN_UNIVERSE = (1U << 4);
 	static constexpr uint32_t ARTNET_UNICAST_DISABLED = (1U << 5);
 	static constexpr uint32_t DMX_MASTER = (1U << 6);
-	static constexpr uint32_t OPTION_AUTO_START = (1U << 7);
+	static constexpr uint32_t OPTION_AUTO_PLAY = (1U << 7);
 	static constexpr uint32_t OPTION_LOOP = (1U << 8);
 	static constexpr uint32_t OPTION_DISABLE_SYNC = (1U << 9);
 };

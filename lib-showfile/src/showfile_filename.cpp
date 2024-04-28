@@ -37,7 +37,7 @@ namespace showfile {
 bool filename_copyto(char *pShowFileName, const uint32_t nLength, const uint32_t nShowFileNumber) {
 	assert(nLength == showfile::FILE_NAME_LENGTH + 1);
 
-	if (nShowFileNumber < showfile::FILE_MAX_NUMBER) {
+	if (nShowFileNumber <= showfile::FILE_MAX_NUMBER) {
 		snprintf(pShowFileName, nLength, "show%.2u.txt", static_cast<unsigned int>(nShowFileNumber));
 		return true;
 	}

@@ -34,6 +34,12 @@ enum class Status {
 };
 
 static constexpr char STATUS[static_cast<int>(showfile::Status::UNDEFINED)][12] = { "Idle", "Playing", "Stopped", "Ended", "Recording" };
+
+enum class Mode {
+	PLAYER, RECORDER, UNDEFINED
+};
+
+static constexpr char MODE[static_cast<int>(showfile::Mode::UNDEFINED)][10] = { "Player", "Recorder" };
 }  // namespace showfile
 
 #endif /* SHOWFILECONST_H_ */
