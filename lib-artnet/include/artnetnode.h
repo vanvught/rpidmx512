@@ -83,53 +83,16 @@ enum class FailSafe : uint8_t {
 	LAST = 0x08, OFF= 0x09, ON = 0x0a, PLAYBACK = 0x0b, RECORD = 0x0c
 };
 
-/**
- * Table 3 – NodeReport Codes
- * The NodeReport code defines generic error, advisory and status messages for both Nodes and Controllers.
- * The NodeReport is returned in ArtPollReply.
- */
-enum class ReportCode : uint8_t {
-	RCDEBUG,
-	RCPOWEROK,
-	RCPOWERFAIL,
-	RCSOCKETWR1,
-	RCPARSEFAIL,
-	RCUDPFAIL,
-	RCSHNAMEOK,
-	RCLONAMEOK,
-	RCDMXERROR,
-	RCDMXUDPFULL,
-	RCDMXRXFULL,
-	RCSWITCHERR,
-	RCCONFIGERR,
-	RCDMXSHORT,
-	RCFIRMWAREFAIL,
-	RCUSERFAIL
-};
-
-enum class Status : uint8_t {
-	OFF, STANDBY, ON
-};
-
-struct ArtPollQueue {
-	uint32_t ArtPollMillis;
-	uint32_t ArtPollReplyIpAddress;
-	struct {
-		uint16_t TargetPortAddressTop;
-		uint16_t TargetPortAddressBottom;
-	} ArtPollReply;
-};
-
 struct State {
 	uint32_t ArtDiagIpAddress;
 	uint32_t ArtPollIpAddress;
 	uint32_t ArtPollReplyCount;
 	uint32_t ArtPollReplyDelayMillis;
-	ArtPollQueue ArtPollReplyQueue[4];
+	artnet::ArtPollQueue ArtPollReplyQueue[4];
 	uint32_t ArtDmxIpAddress;
 	uint32_t ArtSyncMillis;				///< Latest ArtSync received time
-	ReportCode reportCode;
-	Status status;
+	artnet::ReportCode reportCode;
+	artnet::Status status;
 	bool SendArtPollReplyOnChange;		///< ArtPoll : Flags Bit 1 : 1 = Send ArtPollReply whenever Node conditions change.
 	bool SendArtDiagData;				///< ArtPoll : Flags Bit 2 : 1 = Send me diagnostics messages.
 	bool IsMultipleControllersReqDiag;	///< ArtPoll : Multiple controllers requesting diagnostics
@@ -651,7 +614,7 @@ private:
 	void CheckMergeTimeouts(const uint32_t nPortIndex);
 
 	void ProcessPollRelply(const uint32_t nPortIndex, uint32_t& NumPortsInput, uint32_t& NumPortsOutput);
-	void SendPollRelply(const uint32_t nBindIndex, const uint32_t nDestinationIp, artnetnode::ArtPollQueue *pQueue = nullptr);
+	void SendPollRelply(const uint32_t nBindIndex, const uint32_t nDestinationIp, artnet::ArtPollQueue *pQueue = nullptr);
 
 	void SendTod(uint32_t nPortIndex);
 	void SendTodRequest(uint32_t nPortIndex);

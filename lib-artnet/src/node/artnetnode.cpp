@@ -91,8 +91,8 @@ ArtNetNode::ArtNetNode() {
 #endif
 
 	memset(&m_State, 0, sizeof(struct artnetnode::State));
-	m_State.reportCode = artnetnode::ReportCode::RCPOWEROK;
-	m_State.status = artnetnode::Status::STANDBY;
+	m_State.reportCode = artnet::ReportCode::RCPOWEROK;
+	m_State.status = artnet::Status::STANDBY;
 	// The device should wait for a random delay of up to 1s before sending the reply.
 	m_State.ArtPollReplyDelayMillis = (m_ArtPollReply.MAC[5] | (static_cast<uint32_t>(m_ArtPollReply.MAC[4]) << 8)) % 1000;
 
@@ -175,7 +175,7 @@ void ArtNetNode::Start() {
 	m_ArtPollReply.Status2 &= static_cast<uint8_t>(~artnet::Status2::DHCP_CAPABLE);
 	m_ArtPollReply.Status2 |= Network::Get()->IsDhcpCapable() ? artnet::Status2::DHCP_CAPABLE : static_cast<uint8_t>(0);
 
-	#if defined (ENABLE_HTTPD) && defined (ENABLE_CONTENT)
+#if defined (ENABLE_HTTPD) && defined (ENABLE_CONTENT)
 	m_ArtPollReply.Status2 |= artnet::Status2::WEB_BROWSER_SUPPORT;
 #endif
 #if defined (OUTPUT_HAVE_STYLESWITCH)
@@ -235,7 +235,7 @@ void ArtNetNode::Start() {
 	E131Bridge::Start();
 #endif
 
-	m_State.status = artnetnode::Status::ON;
+	m_State.status = artnet::Status::ON;
 	Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
 
 	DEBUG_EXIT
@@ -270,7 +270,7 @@ void ArtNetNode::Stop() {
 	hal::panel_led_off(hal::panelled::ARTNET);
 
 	m_ArtPollReply.Status1 = static_cast<uint8_t>((m_ArtPollReply.Status1 & ~artnet::Status1::INDICATOR_MASK) | artnet::Status1::INDICATOR_MUTE_MODE);
-	m_State.status = artnetnode::Status::STANDBY;
+	m_State.status = artnet::Status::STANDBY;
 
 	DEBUG_EXIT
 }
@@ -288,7 +288,7 @@ void ArtNetNode::SetShortName(const uint32_t nPortIndex, const char *pShortName)
 
 	m_Node.Port[nPortIndex].ShortName[artnet::SHORT_NAME_LENGTH - 1] = '\0';
 
-	if (m_State.status == artnetnode::Status::ON) {
+	if (m_State.status == artnet::Status::ON) {
 		ArtNetStore::SaveShortName(nPortIndex, m_Node.Port[nPortIndex].ShortName);
 	}
 
@@ -328,7 +328,7 @@ void ArtNetNode::SetLongName(const char *pLongName) {
 
 	m_ArtPollReply.LongName[artnet::LONG_NAME_LENGTH - 1] = '\0';
 
-	if (m_State.status == artnetnode::Status::ON) {
+	if (m_State.status == artnet::Status::ON) {
 		ArtNetStore::SaveLongName(reinterpret_cast<char *>(m_ArtPollReply.LongName));
 		artnet::display_longname(reinterpret_cast<char *>(m_ArtPollReply.LongName));
 	}
@@ -372,7 +372,7 @@ void ArtNetNode::SetOutputStyle(const uint32_t nPortIndex, lightset::OutputStyle
 
 	m_State.IsSynchronousMode = false;
 
-	if (m_State.status == artnetnode::Status::ON) {
+	if (m_State.status == artnet::Status::ON) {
 		ArtNetStore::SaveOutputStyle(nPortIndex, outputStyle);
 		artnet::display_outputstyle(nPortIndex, outputStyle);
 	}

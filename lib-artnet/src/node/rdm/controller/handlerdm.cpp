@@ -216,7 +216,7 @@ void ArtNetNode::HandleRdm() {
 			Rdm::SendRaw(nPortIndex, &pArtRdm->Address, pRdmMessage->message_length + RDM_MESSAGE_CHECKSUM_SIZE);
 
 #ifndef NDEBUG
-			rdm::message_print(pRdmMessage);
+			rdm::message_print(reinterpret_cast<const uint8_t *>(pRdmMessage));
 #endif
 
 #if defined(CONFIG_PANELLED_RDM_PORT)

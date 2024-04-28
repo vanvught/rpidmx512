@@ -72,7 +72,11 @@ public:
 	ArtNetPollTable();
 	~ArtNetPollTable();
 
-	uint32_t GetEntries() const {
+	const TArtNetNodeEntry *GetPollTable() const {
+		return m_pPollTable;
+	}
+
+	uint32_t GetPollTableEntries() const {
 		return m_nPollTableEntries;
 	}
 

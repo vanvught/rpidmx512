@@ -63,6 +63,34 @@ enum class PortProtocol {
 };
 
 /**
+ * Table 3 – NodeReport Codes
+ * The NodeReport code defines generic error, advisory and status messages for both Nodes and Controllers.
+ * The NodeReport is returned in ArtPollReply.
+ */
+enum class ReportCode : uint8_t {
+	RCDEBUG,
+	RCPOWEROK,
+	RCPOWERFAIL,
+	RCSOCKETWR1,
+	RCPARSEFAIL,
+	RCUDPFAIL,
+	RCSHNAMEOK,
+	RCLONAMEOK,
+	RCDMXERROR,
+	RCDMXUDPFULL,
+	RCDMXRXFULL,
+	RCSWITCHERR,
+	RCCONFIGERR,
+	RCDMXSHORT,
+	RCFIRMWAREFAIL,
+	RCUSERFAIL
+};
+
+enum class Status : uint8_t {
+	OFF, STANDBY, ON
+};
+
+/**
  * Table 4 – Style Codes
  * The Style code defines the general functionality of a Controller.
  * The Style code is returned in ArtPollReply.
@@ -734,6 +762,15 @@ union UArtPacket {
 	struct ArtTrigger ArtTrigger;				///< ArtTrigger packet
 	struct ArtDirectory ArtDirectory;			///< ArtDirectory packet
 	struct ArtDirectoryReply ArtDirectoryReply;///< ArtDirectoryReply packet
+};
+
+struct ArtPollQueue {
+	uint32_t ArtPollMillis;
+	uint32_t ArtPollReplyIpAddress;
+	struct {
+		uint16_t TargetPortAddressTop;
+		uint16_t TargetPortAddressBottom;
+	} ArtPollReply;
 };
 }  // namespace artnet
 

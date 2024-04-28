@@ -87,7 +87,7 @@ void ArtNetNode::ProcessPollRelply(const uint32_t nPortIndex, [[maybe_unused]] u
 #endif
 }
 
-void ArtNetNode::SendPollRelply(const uint32_t nBindIndex, const uint32_t nDestinationIp, artnetnode::ArtPollQueue *pQueue) {
+void ArtNetNode::SendPollRelply(const uint32_t nBindIndex, const uint32_t nDestinationIp, artnet::ArtPollQueue *pQueue) {
 	DEBUG_PRINTF("nBindIndex=%u", nBindIndex);
 
 	ip.u32 = Network::Get()->GetIp();
