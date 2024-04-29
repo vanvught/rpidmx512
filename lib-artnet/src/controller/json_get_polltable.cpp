@@ -40,11 +40,31 @@ namespace remoteconfig {
 namespace artnet {
 namespace controller {
 
+static uint32_t get_port(const struct TArtNetNodeEntryUniverse *pArtNetNodeEntryUniverse, char *pOutBuffer, const uint32_t nOutBufferSize) {
+	const auto nLength = static_cast<uint32_t>(snprintf(pOutBuffer, nOutBufferSize,
+			"{\"name\":\"%s\",\"universe\":%u},",
+			pArtNetNodeEntryUniverse->ShortName, pArtNetNodeEntryUniverse->nUniverse));
+
+	if (nLength <= nOutBufferSize) {
+		return nLength;
+	}
+
+	return 0;
+}
+
 static uint32_t get_entry(const uint32_t nIndex, char *pOutBuffer, const uint32_t nOutBufferSize) {
 	const auto *pPollTable = ArtNetController::Get()->GetPollTable();
-	const auto nLength = static_cast<uint32_t>(snprintf(pOutBuffer, nOutBufferSize,
-			"{\"name\":\"%s\",\"ip\":\"" IPSTR "\",\"mac\":\"" MACSTR "\"},",
+	auto nLength = static_cast<uint32_t>(snprintf(pOutBuffer, nOutBufferSize,
+			"{\"name\":\"%s\",\"ip\":\"" IPSTR "\",\"mac\":\"" MACSTR "\",\"ports\":[",
 			pPollTable[nIndex].LongName, IP2STR(pPollTable[nIndex].IPAddress), MAC2STR(pPollTable[nIndex].Mac)));
+
+	for (uint32_t nUniverse = 0; nUniverse < pPollTable[nIndex].nUniversesCount; nUniverse++) {
+		const auto *pArtNetNodeEntryUniverse = &pPollTable[nIndex].Universe[nUniverse];
+		nLength += get_port(pArtNetNodeEntryUniverse, &pOutBuffer[nLength], nLength);
+	}
+
+	nLength--;
+	nLength += static_cast<uint32_t>(snprintf(&pOutBuffer[nLength], nOutBufferSize - nLength, "]},"));
 
 	if (nLength <= nOutBufferSize) {
 		return nLength;
@@ -69,6 +89,7 @@ uint32_t json_get_polltable(char *pOutBuffer, const uint32_t nOutBufferSize) {
 		pOutBuffer[nLength - 1] = ']';
 	} else {
 		pOutBuffer[1] = ']';
+		nLength = 2;
 	}
 
 	assert(nLength <= nOutBufferSize);

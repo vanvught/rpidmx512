@@ -42,6 +42,7 @@ static constexpr uint32_t POLL_TABLE_SIZE_UNIVERSES = 512;
 }  // namespace artnet
 
 struct TArtNetNodeEntryUniverse {
+	uint8_t ShortName[artnet::SHORT_NAME_LENGTH];
 	uint32_t nLastUpdateMillis;
 	uint16_t nUniverse;
 };
@@ -49,7 +50,6 @@ struct TArtNetNodeEntryUniverse {
 struct TArtNetNodeEntry {
 	uint32_t IPAddress;
 	uint8_t Mac[artnet::MAC_SIZE];
-	uint8_t ShortName[artnet::SHORT_NAME_LENGTH];
 	uint8_t LongName[artnet::LONG_NAME_LENGTH];
 	uint16_t nUniversesCount;
 	struct TArtNetNodeEntryUniverse Universe[artnet::POLL_TABLE_SIZE_NODE_UNIVERSES];

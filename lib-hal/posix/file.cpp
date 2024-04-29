@@ -41,7 +41,7 @@
 #include "debug.h"
 
 #if !defined (CONFIG_POSIX_OPEN_FILES_MAX) || (CONFIG_POSIX_OPEN_FILES_MAX < 1)
-# define CONFIG_POSIX_OPEN_FILES_MAX 1
+# define CONFIG_POSIX_OPEN_FILES_MAX 2
 #endif
 
 namespace posix {

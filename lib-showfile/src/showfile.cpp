@@ -165,10 +165,13 @@ bool ShowFile::GetShowFileSize(const uint32_t nShowFileNumber, uint32_t &nSize) 
 		if (pFile != nullptr) {
 			if (fseek(pFile, 0L, SEEK_END) == 0) {
 				nSize = ftell(pFile);
+				fclose(pFile);
 				DEBUG_PRINTF("nSize=%u", nSize);
 				DEBUG_EXIT
 				return true;
 			}
+		} else {
+			perror("fopen()");
 		}
 	}
 

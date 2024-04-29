@@ -26,6 +26,8 @@
  * THE SOFTWARE.
  */
 
+#undef NDEBUG
+
 #if !defined(__clang__)	// Needed for compiling on MacOS
 # if __GNUC__ < 9
 #  pragma GCC diagnostic push
@@ -291,15 +293,12 @@ void ArtNetPollTable::Add(const struct artnet::ArtPollReply *ptArtPollReply) {
 		m_nPollTableEntries++;
 	}
 
-#ifndef NDEBUG
 	if (ptArtPollReply->BindIndex <= 1) {
 		memcpy(m_pPollTable[i].Mac, ptArtPollReply->MAC, artnet::MAC_SIZE);
-
-		const uint8_t *pSrc = ptArtPollReply->ShortName;
-		uint8_t *pDst = m_pPollTable[i].ShortName;
-		memcpy(pDst, pSrc, artnet::SHORT_NAME_LENGTH + artnet::LONG_NAME_LENGTH);
+		const uint8_t *pSrc = ptArtPollReply->LongName;
+		uint8_t *pDst = m_pPollTable[i].LongName;
+		memcpy(pDst, pSrc, artnet::LONG_NAME_LENGTH);
 	}
-#endif
 
 	const auto nMillis = Hardware::Get()->Millis();
 
@@ -322,6 +321,9 @@ void ArtNetPollTable::Add(const struct artnet::ArtPollReply *ptArtPollReply) {
 				if (m_pPollTable[i].nUniversesCount < POLL_TABLE_SIZE_NODE_UNIVERSES) {
 					m_pPollTable[i].nUniversesCount++;
 					m_pPollTable[i].Universe[nIndexUniverse].nUniverse = nUniverse;
+					const uint8_t *pSrc = ptArtPollReply->ShortName;
+					uint8_t *pDst = m_pPollTable[i].Universe[nIndexUniverse].ShortName;
+					memcpy(pDst, pSrc, artnet::SHORT_NAME_LENGTH);
 					ProcessUniverse(ip.u32, nUniverse);
 				} else {
 					// No room
@@ -399,11 +401,11 @@ void ArtNetPollTable::Dump() {
 	printf("Entries : %d\n", m_nPollTableEntries);
 
 	for (uint32_t i = 0; i < m_nPollTableEntries; i++) {
-		printf("\t" IPSTR " [" MACSTR "] |%-18s|%-64s|\n", IP2STR(m_pPollTable[i].IPAddress), MAC2STR(m_pPollTable[i].Mac), m_pPollTable[i].ShortName, m_pPollTable[i].LongName);
+		printf("\t" IPSTR " [" MACSTR "] |%-64s|\n", IP2STR(m_pPollTable[i].IPAddress), MAC2STR(m_pPollTable[i].Mac), m_pPollTable[i].LongName);
 
 		for (uint32_t nUniverse = 0; nUniverse < m_pPollTable[i].nUniversesCount; nUniverse++) {
 			auto *pArtNetNodeEntryUniverse = &m_pPollTable[i].Universe[nUniverse];
-			printf("\t %u [%u]\n", pArtNetNodeEntryUniverse->nUniverse, (Hardware::Get()->Millis() - pArtNetNodeEntryUniverse->nLastUpdateMillis) / 1000U);
+			printf("\t %u [%u] |%-18s|\n", pArtNetNodeEntryUniverse->nUniverse, (Hardware::Get()->Millis() - pArtNetNodeEntryUniverse->nLastUpdateMillis) / 1000U, pArtNetNodeEntryUniverse->ShortName);
 		}
 		puts("");
 	}

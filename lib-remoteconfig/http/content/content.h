@@ -70,7 +70,7 @@ static constexpr struct FilesContent HttpContent[] = {
 	{ "dsa.js", dsa_js, 613, static_cast<http::contentTypes>(2) },
 #endif /* (ENABLE_PHY_SWITCH) */
 #if defined (NODE_SHOWFILE)
-	{ "showfile.html", showfile_html, 1317, static_cast<http::contentTypes>(0) },
+	{ "showfile.html", showfile_html, 1305, static_cast<http::contentTypes>(0) },
 #endif /* (NODE_SHOWFILE) */
 	{ "default.js", default_js, 254, static_cast<http::contentTypes>(2) },
 #if !defined (CONFIG_HTTP_HTML_NO_RTC) && !defined (DISABLE_RTC)

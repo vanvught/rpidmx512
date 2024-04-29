@@ -134,11 +134,14 @@ public:
 		if (m_OlaState == OlaState::RECORD_FIRST) {
 			m_OlaState = OlaState::RECORDING;
 		} else {
-			const auto *p = itoa_with_linefeed(nMillis - m_nLastMillis);
-			fputs(p, m_pShowFile);
+			auto *p = m_buffer;
+			p += fast_itoa_universe(nMillis - m_nLastMillis, p);
+			*p++ = '\n';
+			*p = '\0';
+			fputs(m_buffer, m_pShowFile);
 #ifndef NDEBUG
 			perror("fputs");
-			puts(p);
+			printf("[%s]", m_buffer);
 #endif
 		}
 
@@ -158,10 +161,10 @@ public:
 		*++p = '\0';
 
 		fputs(m_buffer, m_pShowFile);
-//#ifndef NDEBUG
+#ifndef NDEBUG
 		perror("fputs");
 		printf("[%s]", m_buffer);
-//#endif
+#endif
 	}
 
 	void BlackOut() {
