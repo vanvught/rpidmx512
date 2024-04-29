@@ -39,8 +39,7 @@
 namespace remoteconfig {
 namespace artnet {
 namespace controller {
-
-static uint32_t get_port(const struct TArtNetNodeEntryUniverse *pArtNetNodeEntryUniverse, char *pOutBuffer, const uint32_t nOutBufferSize) {
+static uint32_t get_port(const struct ::artnet::NodeEntryUniverse *pArtNetNodeEntryUniverse, char *pOutBuffer, const uint32_t nOutBufferSize) {
 	const auto nLength = static_cast<uint32_t>(snprintf(pOutBuffer, nOutBufferSize,
 			"{\"name\":\"%s\",\"universe\":%u},",
 			pArtNetNodeEntryUniverse->ShortName, pArtNetNodeEntryUniverse->nUniverse));
@@ -74,7 +73,6 @@ static uint32_t get_entry(const uint32_t nIndex, char *pOutBuffer, const uint32_
 }
 
 uint32_t json_get_polltable(char *pOutBuffer, const uint32_t nOutBufferSize) {
-
 	const auto nBufferSize = nOutBufferSize - 2U;
 	pOutBuffer[0] = '[';
 

@@ -281,7 +281,7 @@ void ArtNetController::HandleDmxOut(uint16_t nUniverse, const uint8_t *pDmxData,
 #endif
 
 	uint32_t nCount = 0;
-	auto IpAddresses = const_cast<struct TArtNetPollTableUniverses*>(GetIpAddress(nUniverse));
+	auto IpAddresses = const_cast<struct artnet::PollTableUniverses *>(GetIpAddress(nUniverse));
 
 	if (m_bUnicast && !m_bForceBroadcast) {
 		if (IpAddresses != nullptr) {
