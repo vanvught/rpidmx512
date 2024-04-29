@@ -1,13 +1,4 @@
 #!/bin/bash
-NPROC=2
-
-if [ "$(uname)" == "Darwin" ]; then
-     NPROC=$(sysctl -a | grep machdep.cpu.core_count | cut -d ':' -f 2)     
-elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-     NPROC=$(nproc)
-fi
-
-let NPROC--
 
 echo $1 $2 $3
 
@@ -72,8 +63,8 @@ do
 				board=1
 			fi
 			echo $f $1 $2 $3 > build$board.txt
-			make -f Makefile.H3 -j $1 $2 $3 clean 
-			make -f Makefile.H3 -j $NPROC $1 $2 $3
+			make -f Makefile.H3 $1 $2 $3 clean -j
+			make -f Makefile.H3 $1 $2 $3 -j 2
 			retVal=$?
 			if [ $retVal -ne 0 ]; then
     			echo "Error : " "$f"
@@ -114,7 +105,7 @@ do
 					echo -e "\e[33mSkipping...\e[0m"
 				else
 					echo $1 $2 $3
-					make -f Makefile.H3 $1 $2 $3 clean && make -f Makefile.H3 -j $NPROC $1 $2 $3
+					make -f Makefile.H3 $1 $2 $3 clean -j && make -f Makefile.H3 $1 $2 $3
 				fi
 			else
 				echo -e "\e[33mSkipping...\e[0m"
