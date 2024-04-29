@@ -1,4 +1,3 @@
-# Orange Pi Zero / Raspberry Pi OSC WiFi
-## DMX Out / Pixel controller [Plug & Play]
+# Orange Pi Zero WiFi
 
-[http://www.raspberrypi-dmx.org/raspberry-pi-osc-dmx](http://www.raspberrypi-dmx.org/raspberry-pi-osc-dmx)
+[https://www.orangepi-dmx.org](https://www.orangepi-dmx.org)

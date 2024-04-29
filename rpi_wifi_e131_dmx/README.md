@@ -1,4 +1,3 @@
-# Orange Pi Zero / Raspberry Pi sACN E1.31 WiFi 
-## DMX Out / Pixel controller [Plug & Play]
+# Orange Pi Zero WiFi
 
-[http://www.orangepi-dmx.org/raspberry-pi-e131-wifi-bridge](http://www.orangepi-dmx.org/raspberry-pi-e131-wifi-bridge)
+[https://www.orangepi-dmx.org](https://www.orangepi-dmx.org)
