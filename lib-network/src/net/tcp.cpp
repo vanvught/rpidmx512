@@ -34,7 +34,9 @@
 # pragma GCC diagnostic ignored "-Wconversion"
 # pragma GCC diagnostic ignored "-Wsign-conversion"
 #endif
+#pragma GCC push_options
 #pragma GCC optimize ("O2")
+#pragma GCC optimize ("no-tree-loop-distribute-patterns")
 
 #include <cstdint>
 #include <cstring>
@@ -42,6 +44,7 @@
 #include <cassert>
 
 #include "net.h"
+#include "net_memcpy.h"
 #include "net_private.h"
 
 #include "hardware.h"
@@ -1125,15 +1128,8 @@ uint16_t tcp_read(const int32_t nHandleListen, const uint8_t **pData, uint32_t &
 	return pQueueEntry->nSize;
 }
 
-void tcp_write(const int32_t nHandleListen, const uint8_t *pBuffer, uint16_t nLength, uint32_t nHandleConnection) {
-	assert(nHandleListen >= 0);
-	assert(nHandleListen < TCP_MAX_PORTS_ALLOWED);
-	assert(pBuffer != nullptr);
-	assert(nHandleConnection < TCP_MAX_TCBS_ALLOWED);
-
-	nLength = std::min(nLength, static_cast<uint16_t>(TCP_DATA_SIZE));
-
-	auto *pTCB = &s_Port[nHandleListen].TCB[nHandleConnection];
+static void _write(struct tcb *pTCB, const uint8_t *pBuffer, uint32_t nLength) {
+	nLength = std::min(nLength, static_cast<uint32_t>(TCP_DATA_SIZE));
 
 	pTCB->TX.data = const_cast<uint8_t *>(pBuffer);
 	pTCB->TX.size = nLength;
@@ -1149,6 +1145,17 @@ void tcp_write(const int32_t nHandleListen, const uint8_t *pBuffer, uint16_t nLe
 	pTCB->TX.size = 0;
 
 	pTCB->SND.NXT += nLength;
+}
+
+void tcp_write(const int32_t nHandleListen, const uint8_t *pBuffer, uint16_t nLength, uint32_t nHandleConnection) {
+	assert(nHandleListen >= 0);
+	assert(nHandleListen < TCP_MAX_PORTS_ALLOWED);
+	assert(pBuffer != nullptr);
+	assert(nHandleConnection < TCP_MAX_TCBS_ALLOWED);
+
+	auto *pTCB = &s_Port[nHandleListen].TCB[nHandleConnection];
+
+	_write(pTCB, pBuffer, nLength);
 }
 
 // <---

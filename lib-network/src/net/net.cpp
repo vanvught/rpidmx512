@@ -25,6 +25,7 @@
 
 #pragma GCC push_options
 #pragma GCC optimize ("O2")
+#pragma GCC optimize ("no-tree-loop-distribute-patterns")
 
 #include <cstdint>
 #include <cstring>
@@ -51,9 +52,9 @@ void ptp_run();
 }  // namespace net
 
 static uint8_t *s_p;
-static bool s_isDhcp = false;
+static bool s_isDhcp;
 
-static void refresh_and_init(struct IpInfo *pIpInfo, bool doInit) {
+static void refresh_and_init(struct IpInfo *pIpInfo, const bool doInit) {
 	net::globals::ipInfo.broadcast_ip.addr = net::globals::ipInfo.ip.addr | ~net::globals::ipInfo.netmask.addr;
 
 	net::globals::nBroadcastMask = ~(net::globals::ipInfo.netmask.addr);
@@ -140,7 +141,7 @@ void net_set_ip(struct IpInfo *pIpInfo) {
 	net::globals::ipInfo.ip.addr = pIpInfo->ip.addr;
 
 	if (net::globals::ipInfo.ip.addr == 0) {
-			set_secondary_ip();
+		set_secondary_ip();
 	}
 
 	refresh_and_init(pIpInfo, true);
@@ -166,7 +167,7 @@ void net_set_gw(struct IpInfo *pIpInfo) {
 }
 
 bool net_set_dhcp(struct IpInfo *pIpInfo, const char *const pHostname, bool *isZeroconfUsed) {
-	bool isDhcp = false;
+	auto isDhcp = false;
 	*isZeroconfUsed = false;
 
 	if (dhcp_client(pHostname) < 0) {
@@ -185,6 +186,7 @@ bool net_set_dhcp(struct IpInfo *pIpInfo, const char *const pHostname, bool *isZ
 		arp_send_announcement();
 	} else {
 		console_error("IP Conflict!\n");
+		return false;
 	}
 
 	return isDhcp;
@@ -196,9 +198,7 @@ void net_dhcp_release() {
 }
 
 bool net_set_zeroconf(struct IpInfo *pIpInfo) {
-	const auto b = rfc3927();
-
-	if (b) {
+	if (rfc3927()) {
 		refresh_and_init(pIpInfo, true);
 
 		s_isDhcp = false;

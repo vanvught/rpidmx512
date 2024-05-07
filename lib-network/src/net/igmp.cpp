@@ -2,7 +2,7 @@
  * @file igmp.cpp
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,11 +23,16 @@
  * THE SOFTWARE.
  */
 
+#pragma GCC push_options
+#pragma GCC optimize ("O2")
+#pragma GCC optimize ("no-tree-loop-distribute-patterns")
+
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
 
 #include "net.h"
+#include "net_memcpy.h"
 #include "net_private.h"
 
 #include "../../config/net_config.h"
@@ -68,12 +73,8 @@ extern uint8_t macAddress[ETH_ADDR_LEN];
 static void _send_report(uint32_t nGroupAddress);
 
 void igmp_set_ip() {
-	_pcast32 src;
-
-	src.u32 = net::globals::ipInfo.ip.addr;
-
-	memcpy(s_report.ip4.src, src.u8, IPv4_ADDR_LEN);
-	memcpy(s_leave.ip4.src, src.u8, IPv4_ADDR_LEN);
+	net::memcpy_ip(s_report.ip4.src, net::globals::ipInfo.ip.addr);
+	net::memcpy_ip(s_leave.ip4.src, net::globals::ipInfo.ip.addr);
 }
 
 void __attribute__((cold)) igmp_init() {
@@ -186,10 +187,6 @@ static void _send_report(const uint32_t nGroupAddress) {
 
 static void _send_leave(const uint32_t nGroupAddress) {
 	DEBUG_ENTRY
-	_pcast32 multicast_ip;
-
-	multicast_ip.u32 = nGroupAddress;
-
 	DEBUG_PRINTF(IPSTR " " MACSTR, IP2STR(nGroupAddress), MAC2STR(s_multicast_mac));
 
 	// IPv4
@@ -199,7 +196,7 @@ static void _send_leave(const uint32_t nGroupAddress) {
 	s_leave.ip4.chksum = net_chksum(reinterpret_cast<void *>(&s_leave.ip4), 24); //TODO
 #endif
 	// IGMP
-	memcpy(s_leave.igmp.report.igmp.group_address, multicast_ip.u8, IPv4_ADDR_LEN);
+	net::memcpy_ip(s_leave.igmp.report.igmp.group_address, nGroupAddress);
 	s_leave.igmp.report.igmp.checksum = 0;
 #if !defined (CHECKSUM_BY_HARDWARE)
 	s_leave.igmp.report.igmp.checksum = net_chksum(reinterpret_cast<void *>(&s_leave.ip4), IPv4_IGMP_REPORT_HEADERS_SIZE);

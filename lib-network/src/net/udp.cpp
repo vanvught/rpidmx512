@@ -2,7 +2,7 @@
  * @file udp.cpp
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,7 @@
 
 #pragma GCC push_options
 #pragma GCC optimize ("O2")
+#pragma GCC optimize ("no-tree-loop-distribute-patterns")
 
 #include <cstdint>
 #include <cstring>
@@ -45,11 +46,6 @@ struct data_entry {
 	uint8_t data[UDP_DATA_SIZE];
 } ALIGNED;
 
-typedef union pcast32 {
-	uint32_t u32;
-	uint8_t u8[4];
-} _pcast32;
-
 static uint16_t s_Port[UDP_MAX_PORTS_ALLOWED] SECTION_NETWORK ALIGNED;
 static struct data_entry s_data[UDP_MAX_PORTS_ALLOWED] SECTION_NETWORK ALIGNED;
 static struct t_udp s_send_packet SECTION_NETWORK ALIGNED;
@@ -65,11 +61,13 @@ extern uint8_t macAddress[ETH_ADDR_LEN];
 }  // namespace globals
 }  // namespace net
 
-void udp_set_ip() {
-	_pcast32 src;
+typedef union pcast32 {
+	uint32_t u32;
+	uint8_t u8[4];
+} _pcast32;
 
-	src.u32 = net::globals::ipInfo.ip.addr;
-	memcpy(s_send_packet.ip4.src, src.u8, IPv4_ADDR_LEN);
+void udp_set_ip() {
+	net::memcpy_ip(s_send_packet.ip4.src, net::globals::ipInfo.ip.addr);
 }
 
 void __attribute__((cold)) udp_init() {
@@ -110,17 +108,13 @@ __attribute__((hot)) void udp_handle(struct t_udp *pUdp) {
 			const auto nDataLength = static_cast<uint16_t>(__builtin_bswap16(pUdp->udp.len) - UDP_HEADER_SIZE);
 			const auto i = std::min(static_cast<uint16_t>(UDP_DATA_SIZE), nDataLength);
 
-			net_memcpy(p_queue_entry->data, pUdp->udp.data, i);
+			net::memcpy(p_queue_entry->data, pUdp->udp.data, i);
 
-			_pcast32 src;
-
-			memcpy(src.u8, pUdp->ip4.src, IPv4_ADDR_LEN);
-			p_queue_entry->from_ip = src.u32;
+			p_queue_entry->from_ip = net::memcpy_ip(pUdp->ip4.src);
 			p_queue_entry->from_port = __builtin_bswap16(pUdp->udp.source_port);
 			p_queue_entry->size = static_cast<uint16_t>(i);
 
 			return;
-
 		}
 	}
 
@@ -177,7 +171,7 @@ uint16_t udp_recv1(int nIndex, uint8_t *pData, uint16_t nSize, uint32_t *pFromIp
 	auto *p_data = &s_data[nIndex];
 	const auto i = std::min(nSize, p_data->size);
 
-	net_memcpy(pData, p_data->data, i);
+	net::memcpy(pData, p_data->data, i);
 
 	*pFromIp = p_data->from_ip;
 	*FromPort = p_data->from_port;
@@ -211,7 +205,6 @@ uint16_t udp_recv2(int nIndex, const uint8_t **pData, uint32_t *pFromIp, uint16_
 int udp_send(int nIndex, const uint8_t *pData, uint16_t nSize, uint32_t RemoteIp, uint16_t RemotePort) {
 	assert(nIndex >= 0);
 	assert(nIndex < UDP_MAX_PORTS_ALLOWED);
-	_pcast32 dst;
 
 	if (__builtin_expect ((s_Port[nIndex] == 0), 0)) {
 		DEBUG_PUTS("ports_allowed[idx] == 0");
@@ -223,27 +216,22 @@ int udp_send(int nIndex, const uint8_t *pData, uint16_t nSize, uint32_t RemoteIp
 		memset(s_send_packet.ip4.dst, 0xFF, IPv4_ADDR_LEN);
 	} else if ((RemoteIp & net::globals::nBroadcastMask) == net::globals::nBroadcastMask) {
 		memset(s_send_packet.ether.dst, 0xFF, ETH_ADDR_LEN);
-		dst.u32 = RemoteIp;
-		memcpy(s_send_packet.ip4.dst, dst.u8, IPv4_ADDR_LEN);
+		net::memcpy_ip(s_send_packet.ip4.dst, RemoteIp);
 	} else {
 		if ((RemoteIp & 0xE0) == 0xE0) { // Multicast, we know the MAC Address
 			_pcast32 multicast_ip;
 
 			multicast_ip.u32 = RemoteIp;
-
 			s_multicast_mac[3] = multicast_ip.u8[1] & 0x7F;
 			s_multicast_mac[4] = multicast_ip.u8[2];
 			s_multicast_mac[5] = multicast_ip.u8[3];
 
 			memcpy(s_send_packet.ether.dst, s_multicast_mac, ETH_ADDR_LEN);
-
-			dst.u32 = RemoteIp;
-			memcpy(s_send_packet.ip4.dst, dst.u8, IPv4_ADDR_LEN);
+			net::memcpy_ip(s_send_packet.ip4.dst, RemoteIp);
 		} else {
 			if  (__builtin_expect((net::globals::nOnNetworkMask != (RemoteIp & net::globals::nOnNetworkMask)), 0)) {
 				if (net::globals::ipInfo.gw.addr == arp_cache_lookup(net::globals::ipInfo.gw.addr, s_send_packet.ether.dst)) {
-					dst.u32 = RemoteIp;
-					memcpy(s_send_packet.ip4.dst, dst.u8, IPv4_ADDR_LEN);
+					net::memcpy_ip(s_send_packet.ip4.dst, RemoteIp);
 				} else {
 #ifndef NDEBUG
 					console_error("ARP lookup failed -> default gateway :");
@@ -253,8 +241,7 @@ int udp_send(int nIndex, const uint8_t *pData, uint16_t nSize, uint32_t RemoteIp
 				}
 			} else {
 				if (RemoteIp == arp_cache_lookup(RemoteIp, s_send_packet.ether.dst)) {
-					dst.u32 = RemoteIp;
-					memcpy(s_send_packet.ip4.dst, dst.u8, IPv4_ADDR_LEN);
+					net::memcpy_ip(s_send_packet.ip4.dst, RemoteIp);
 				} else {
 #ifndef NDEBUG
 					console_error("ARP lookup failed: ");
@@ -278,7 +265,7 @@ int udp_send(int nIndex, const uint8_t *pData, uint16_t nSize, uint32_t RemoteIp
 	s_send_packet.udp.destination_port = __builtin_bswap16(RemotePort);
 	s_send_packet.udp.len = __builtin_bswap16((nSize + UDP_HEADER_SIZE));
 
-	net_memcpy(s_send_packet.udp.data, pData, std::min(static_cast<uint16_t>(UDP_DATA_SIZE), nSize));
+	net::memcpy(s_send_packet.udp.data, pData, std::min(static_cast<uint16_t>(UDP_DATA_SIZE), nSize));
 
 	emac_eth_send(reinterpret_cast<void *>(&s_send_packet), nSize + UDP_PACKET_HEADERS_SIZE);
 

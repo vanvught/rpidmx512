@@ -29,6 +29,7 @@
 #if !defined(__clang__)
 # pragma GCC push_options
 # pragma GCC optimize ("O2")
+# pragma GCC optimize ("no-tree-loop-distribute-patterns")
 #endif
 
 #include <cstdint>

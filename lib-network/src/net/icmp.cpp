@@ -25,11 +25,13 @@
 
 #pragma GCC push_options
 #pragma GCC optimize ("O2")
+#pragma GCC optimize ("no-tree-loop-distribute-patterns")
 
 #include <cstdint>
 #include <cstring>
 
 #include "net.h"
+#include "net_memcpy.h"
 #include "net_private.h"
 
 #include "../../config/net_config.h"
@@ -41,11 +43,6 @@ extern uint8_t macAddress[ETH_ADDR_LEN];
 }  // namespace globals
 }  // namespace net
 
-typedef union pcast32 {
-	uint32_t u32;
-	uint8_t u8[4];
-} _pcast32;
-
 __attribute__((hot)) void icmp_handle(struct t_icmp *p_icmp) {
 	if (p_icmp->icmp.type == ICMP_TYPE_ECHO) {
 		if (p_icmp->icmp.code == ICMP_CODE_ECHO) {
@@ -55,17 +52,14 @@ __attribute__((hot)) void icmp_handle(struct t_icmp *p_icmp) {
 			// IPv4
 			p_icmp->ip4.id = static_cast<uint16_t>(~p_icmp->ip4.id);
 
-			_pcast32 dst;
-			memcpy(dst.u8, p_icmp->ip4.dst, IPv4_ADDR_LEN);
+			const auto nIpDestination = net::memcpy_ip(p_icmp->ip4.dst);
 
 			memcpy(p_icmp->ip4.dst, p_icmp->ip4.src, IPv4_ADDR_LEN);
 
-			if (dst.u32 == net::globals::ipInfo.secondary_ip.addr) {
-				memcpy(p_icmp->ip4.src, dst.u8, IPv4_ADDR_LEN);
+			if (nIpDestination == net::globals::ipInfo.secondary_ip.addr) {
+				net::memcpy_ip(p_icmp->ip4.src, net::globals::ipInfo.secondary_ip.addr);
 			} else {
-				_pcast32 src;
-				src.u32 = net::globals::ipInfo.ip.addr;
-				memcpy(p_icmp->ip4.src, src.u8, IPv4_ADDR_LEN);
+				net::memcpy_ip(p_icmp->ip4.src, net::globals::ipInfo.ip.addr);
 			}
 
 			p_icmp->ip4.chksum = 0;

@@ -25,6 +25,7 @@
 
 #pragma GCC push_options
 #pragma GCC optimize ("O2")
+#pragma GCC optimize ("no-tree-loop-distribute-patterns")
 
 #include <cstdint>
 #include <cstring>
@@ -32,6 +33,7 @@
 
 #include "net.h"
 #include "net_private.h"
+#include "net_memcpy.h"
 #include "../../config/net_config.h"
 
 #include "hardware.h"
@@ -56,11 +58,6 @@ extern uint8_t macAddress[ETH_ADDR_LEN];
 }  // namespace globals
 }  // namespace net
 
-typedef union pcast32 {
-	uint32_t u32;
-	uint8_t u8[4];
-} _pcast32;
-
 void __attribute__((cold)) arp_init() {
 	arp_cache_init();
 
@@ -80,9 +77,7 @@ void __attribute__((cold)) arp_init() {
 	s_arp_request.arp.opcode = __builtin_bswap16(ARP_OPCODE_RQST);
 
 	memcpy(s_arp_request.arp.sender_mac, net::globals::macAddress, ETH_ADDR_LEN);
-	_pcast32 ip_addr;
-	ip_addr.u32 = net::globals::ipInfo.ip.addr;
-	memcpy(s_arp_request.arp.sender_ip, ip_addr.u8, IPv4_ADDR_LEN);
+	net::memcpy_ip(s_arp_request.arp.sender_ip, net::globals::ipInfo.ip.addr);
 	memset(s_arp_request.arp.target_mac, 0x00, ETH_ADDR_LEN);
 
 	// ARP Reply Template
@@ -133,10 +128,7 @@ void arp_send_request(uint32_t nIp) {
 
 	s_requestType = net::arp::RequestType::REQUEST;
 
-	_pcast32 ip_addr;
-	ip_addr.u32 = nIp;
-
-	memcpy(s_arp_request.arp.target_ip, ip_addr.u8, IPv4_ADDR_LEN);
+	net::memcpy_ip(s_arp_request.arp.target_ip, nIp);
 
 	emac_eth_send(reinterpret_cast<void *>(&s_arp_request), sizeof(struct t_arp));
 
@@ -159,9 +151,7 @@ void arp_send_probe() {
 
 	arp_send_request(net::globals::ipInfo.ip.addr);
 
-	_pcast32 ip_addr;
-	ip_addr.u32 = net::globals::ipInfo.ip.addr;
-	memcpy(s_arp_request.arp.sender_ip, ip_addr.u8, IPv4_ADDR_LEN);
+	net::memcpy_ip(s_arp_request.arp.sender_ip, net::globals::ipInfo.ip.addr);
 
 	DEBUG_EXIT
 }
@@ -185,17 +175,14 @@ void arp_send_announcement() {
 void arp_handle_request(struct t_arp *p_arp) {
 	DEBUG_ENTRY
 
-	_pcast32 target;
+	const auto nIpTarget = net::memcpy_ip(p_arp->arp.target_ip);
 
-	memcpy(target.u8, p_arp->arp.target_ip, IPv4_ADDR_LEN);
+#ifndef NDEBUG
+	const auto nIpSender = net::memcpy_ip(p_arp->arp.sender_ip);
+	DEBUG_PRINTF("Sender " IPSTR " Target " IPSTR, IP2STR(nIpSender), IP2STR(nIpTarget));
+#endif
 
-	_pcast32 sender;
-
-	memcpy(sender.u8, p_arp->arp.sender_ip, IPv4_ADDR_LEN);
-
-	DEBUG_PRINTF("Sender " IPSTR " Target " IPSTR, IP2STR(sender.u32), IP2STR(target.u32));
-
-	if (!((target.u32 == net::globals::ipInfo.ip.addr) || (target.u32 == net::globals::ipInfo.secondary_ip.addr) || (target.u32 == net::globals::ipInfo.broadcast_ip.addr))) {
+	if (!((nIpTarget == net::globals::ipInfo.ip.addr) || (nIpTarget == net::globals::ipInfo.secondary_ip.addr) || (nIpTarget == net::globals::ipInfo.broadcast_ip.addr))) {
 		DEBUG_PUTS("No for me.");
 		DEBUG_EXIT
 		return;
@@ -206,7 +193,7 @@ void arp_handle_request(struct t_arp *p_arp) {
 	// ARP Header
 	memcpy(s_arp_reply.arp.target_mac, p_arp->arp.sender_mac, ETH_ADDR_LEN);
 	memcpy(s_arp_reply.arp.target_ip, p_arp->arp.sender_ip, IPv4_ADDR_LEN);
-	memcpy(s_arp_reply.arp.sender_ip, target.u8, IPv4_ADDR_LEN);
+	net::memcpy_ip(s_arp_reply.arp.sender_ip, nIpTarget);
 
 	emac_eth_send(reinterpret_cast<void *>(&s_arp_reply), sizeof(struct t_arp));
 
@@ -218,9 +205,7 @@ void arp_handle_reply(struct t_arp *p_arp) {
 
 	switch (s_requestType) {
 	case net::arp::RequestType::REQUEST: {
-		_pcast32 sender;
-		memcpy(sender.u8, p_arp->arp.sender_ip, IPv4_ADDR_LEN);
-		arp_cache_update(p_arp->arp.sender_mac, sender.u32);
+		arp_cache_update(p_arp->arp.sender_mac, net::memcpy_ip(p_arp->arp.sender_ip));
 	}
 		break;
 	case net::arp::RequestType::PROBE:
