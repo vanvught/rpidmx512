@@ -72,14 +72,13 @@ void __attribute__((cold)) emac_config() {
 	DEBUG_EXIT
 }
 
-void __attribute__((cold)) emac_start(uint8_t mac_address[], net::Link& link) {
+void emac_adjust_link(const net::PhyStatus phyStatus) {
 	DEBUG_ENTRY
-	DEBUG_PRINTF("ENET_RXBUF_NUM=%u, ENET_TXBUF_NUM=%u", ENET_RXBUF_NUM, ENET_TXBUF_NUM);
 
-	net::PhyStatus phyStatus;
-	net::phy_start(PHY_ADDRESS, phyStatus);
-
-	link = phyStatus.link;
+	printf("Link %s, %d, %s\n",
+			phyStatus.link == net::Link::STATE_UP ? "Up" : "Down",
+			phyStatus.speed == net::Speed::SPEED10 ? 10 : 100,
+			phyStatus.duplex == net::Duplex::DUPLEX_HALF ? "HALF" : "FULL");
 
 #ifndef NDEBUG
 	{
@@ -113,11 +112,6 @@ void __attribute__((cold)) emac_start(uint8_t mac_address[], net::Link& link) {
 		mediamode = ENET_10M_FULLDUPLEX;
 	}
 
-	printf("Link %s, %d, %s\n",
-			phyStatus.link == net::Link::STATE_UP ? "Up" : "Down",
-			phyStatus.speed == net::Speed::SPEED10 ? 10 : 100,
-			phyStatus.duplex == net::Duplex::DUPLEX_HALF ? "HALF" : "FULL");
-
 #if defined (GD32H7XX)
 	const auto enet_init_status = enet_init(ENETx, mediamode, ENET_AUTOCHECKSUM_DROP_FAILFRAMES, ENET_CUSTOM);
 #else
@@ -147,6 +141,19 @@ void __attribute__((cold)) emac_start(uint8_t mac_address[], net::Link& link) {
 		printf("BSR: %.4x %s\n", phy_value & (PHY_AUTONEGO_COMPLETE | PHY_LINKED_STATUS | PHY_JABBER_DETECTION), phy_state == SUCCESS ? "SUCCES" : "ERROR" );
 	}
 #endif
+	DEBUG_EXIT
+}
+
+void __attribute__((cold)) emac_start(uint8_t mac_address[], net::Link& link) {
+	DEBUG_ENTRY
+	DEBUG_PRINTF("ENET_RXBUF_NUM=%u, ENET_TXBUF_NUM=%u", ENET_RXBUF_NUM, ENET_TXBUF_NUM);
+
+	net::PhyStatus phyStatus;
+	net::phy_start(PHY_ADDRESS, phyStatus);
+
+	link = phyStatus.link;
+
+	emac_adjust_link(phyStatus);
 
 	mac_address_get(mac_address);
 

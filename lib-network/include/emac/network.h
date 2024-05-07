@@ -30,6 +30,10 @@
 # error This file should not be included
 #endif
 
+#if !defined (HAVE_NET_HANDLE)
+# define HAVE_NET_HANDLE
+#endif
+
 #include <cstdint>
 #include <cstring>
 #include <cassert>
@@ -48,6 +52,7 @@ public:
 	Network();
 	~Network() = default;
 
+	void Start(const net::Link link);
 	void Print();
 
 	void Shutdown() {
@@ -267,6 +272,7 @@ private:
 	uint32_t m_nIfIndex { 1 };
 	uint32_t m_nNtpServerIp { 0 };
 	float m_fNtpUtcOffset { 0 };
+	uint8_t m_nDhcpRetryTime { 0 };
 
 	struct IpInfo m_IpInfo;
 

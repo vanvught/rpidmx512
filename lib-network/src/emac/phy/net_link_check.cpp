@@ -2,7 +2,7 @@
  * net_link_check.cpp
  *
  */
-/* Copyright (C) 2022-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2022-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -48,13 +48,6 @@ void link_pin_poll_init() {
 #endif
 
 net::Link link_status_read() {
-	uint16_t nValue = 0;
-	phy_read(PHY_ADDRESS, mmi::REG_BMSR, nValue);
-
-	if (mmi::BMSR_LINKED_STATUS == (nValue & mmi::BMSR_LINKED_STATUS)) {
-		return net::Link::STATE_UP;
-	}
-
-	return net::Link::STATE_DOWN;
+	return net::phy_get_link(PHY_ADDRESS);
 }
 }  // namespace net

@@ -25,6 +25,7 @@
 
 #include <cstdint>
 
+#include "emac/phy.h"
 #include "emac/net_link_check.h"
 
 #include "gd32.h"

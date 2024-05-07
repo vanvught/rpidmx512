@@ -2,7 +2,7 @@
  * link_handle_change.cpp
  *
  */
-/* Copyright (C) 2022 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2022-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,22 +23,40 @@
  * THE SOFTWARE.
  */
 
+#include "hardware.h"
 #include "network.h"
 
 #include "debug.h"
 
-/**
- * Default implementation
- */
+#if !defined(PHY_ADDRESS)
+# define PHY_ADDRESS	1
+#endif
+
+extern void emac_adjust_link(const net::PhyStatus);
 
 namespace net {
-void __attribute__((weak)) link_handle_change(const net::Link state) {
+void link_handle_change(const net::Link state) {
 	DEBUG_PRINTF("net::Link %s", state == net::Link::STATE_UP ? "UP" : "DOWN");
 
 	if (net::Link::STATE_UP == state) {
-		if (Network::Get()->IsDhcpUsed()) {
-			DEBUG_PUTS("Enable DHCP");
-			Network::Get()->EnableDhcp();
+		const bool isWatchdog = Hardware::Get()->IsWatchdog();
+		if (isWatchdog) {
+			Hardware::Get()->WatchdogStop();
+		}
+
+		net::PhyStatus phyStatus;
+		net::phy_start(PHY_ADDRESS, phyStatus);
+
+		emac_adjust_link(phyStatus);
+
+		Network::Get()->Start(net::Link::STATE_UP);
+
+		network::mdns_announcement();
+
+		Network::Get()->Print();
+
+		if (isWatchdog) {
+			Hardware::Get()->WatchdogInit();
 		}
 	}
 }
