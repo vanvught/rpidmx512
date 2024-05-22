@@ -548,24 +548,77 @@ static void scan_options(struct t_tcp *pTcp, struct tcb *pTcb, const int32_t nDa
 }
 
 __attribute__((hot)) void tcp_run() {
-	for (auto nIndexPort = 0; nIndexPort < TCP_MAX_PORTS_ALLOWED; nIndexPort++) {
-		for (auto nIndexTCB = 0; nIndexTCB < TCP_MAX_TCBS_ALLOWED; nIndexTCB++) {
-			auto *pTCB = &s_Port[nIndexPort].TCB[nIndexTCB];
-
-			if (pTCB->state == STATE_CLOSE_WAIT) {
-				struct SendInfo info;
-				info.SEQ = pTCB->SND.NXT;
-				info.ACK = pTCB->RCV.NXT;
+	for (auto& port : s_Port) {
+		for (auto& tcb : port.TCB) {
+			if (tcb.state == STATE_CLOSE_WAIT) {
+				SendInfo info;
+				info.SEQ = tcb.SND.NXT;
+				info.ACK = tcb.RCV.NXT;
 				info.CTL = Control::FIN | Control::ACK;
 
-				send_package(pTCB, info);
+				send_package(&tcb, info);
 
-				NEW_STATE(pTCB, STATE_LAST_ACK);
+				NEW_STATE(&tcb, STATE_LAST_ACK);
 
-				pTCB->SND.NXT++;
+				tcb.SND.NXT++;
 			}
 		}
 	}
+}
+
+static bool find_matching_tcb(const t_tcp *pTcp, const uint32_t nIndexPort, uint32_t& nIndexTCB) {
+    for (nIndexTCB = 0; nIndexTCB < TCP_MAX_TCBS_ALLOWED; nIndexTCB++) {
+        auto *pTCB = &s_Port[nIndexPort].TCB[nIndexTCB];
+
+        if (pTCB->state == STATE_LISTEN) {
+            continue;
+        }
+
+        if (pTCB->nRemotePort == pTcp->tcp.srcpt && memcmp(pTCB->remoteIp, pTcp->ip4.src, IPv4_ADDR_LEN) == 0) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+static bool find_available_tcb(const uint32_t nIndexPort, uint32_t& nIndexTCB) {
+    for (nIndexTCB = 0; nIndexTCB < TCP_MAX_TCBS_ALLOWED; nIndexTCB++) {
+        auto *pTCB = &s_Port[nIndexPort].TCB[nIndexTCB];
+
+        if (pTCB->state == STATE_LISTEN) {
+            DEBUG_PUTS("pTCB->state == STATE_LISTEN");
+            return true;
+        }
+    }
+
+    return false;
+}
+
+static void find_tcb(const t_tcp *pTcp, uint32_t& nIndexPort, uint32_t& nIndexTCB) {
+    // Search each port for a match with the destination port
+    for (nIndexPort = 0; nIndexPort < TCP_MAX_PORTS_ALLOWED; nIndexPort++) {
+        if (s_Port[nIndexPort].nLocalPort != pTcp->tcp.dstpt) {
+            continue;
+        }
+
+        // Search for an existing active TCB matching the source IP and port
+        if (find_matching_tcb(pTcp, nIndexPort, nIndexTCB)) {
+            DEBUG_EXIT
+            return;
+        }
+
+        // If no matching TCB, find an available TCB in listening state
+        if (find_available_tcb(nIndexPort, nIndexTCB)) {
+            DEBUG_EXIT
+            return;
+        }
+
+        // If no available TCB, trigger retransmission
+        DEBUG_PUTS("MAX_TCB_ALLOWED -> Force retransmission");
+        DEBUG_EXIT
+        return;
+    }
 }
 
 /**
@@ -579,53 +632,16 @@ __attribute__((hot)) void tcp_handle(struct t_tcp *pTcp) {
 
 	DEBUG_PRINTF(IPSTR ":%d[%d] -> %d", pTcp->ip4.src[0], pTcp->ip4.src[1], pTcp->ip4.src[2], pTcp->ip4.src[3], pTcp->tcp.dstpt, pTcp->tcp.srcpt, tcplen);
 
-	uint32_t nIndexPort;
-	/*
-	  src/net/tcp.cpp: In function 'void tcp_handle(t_tcp*)':
-src/net/tcp.cpp:871:31: error: 'nIndexTCB' may be used uninitialized in this function [-Werror=maybe-uninitialized]
-  871 |                 switch (pTCB->state) {
-	 */
+	uint32_t nIndexPort = 0;
 	uint32_t nIndexTCB = 0;
-
-	// Find a TCB
-	for (nIndexPort = 0; nIndexPort < TCP_MAX_PORTS_ALLOWED; nIndexPort++) {
-		if (s_Port[nIndexPort].nLocalPort == pTcp->tcp.dstpt) {
-			// Find an active TCB
-			for (nIndexTCB = 0; nIndexTCB < TCP_MAX_TCBS_ALLOWED; nIndexTCB++) {
-				auto *pTCB = &s_Port[nIndexPort].TCB[nIndexTCB];
-				if (pTCB->state != STATE_LISTEN) {
-					if ((pTCB->nRemotePort == pTcp->tcp.srcpt) && (memcmp(pTCB->remoteIp, pTcp->ip4.src, IPv4_ADDR_LEN) == 0)) {
-						break;
-					}
-				}
-			}
-
-			if (nIndexTCB == TCP_MAX_TCBS_ALLOWED) {
-				// Find an available TCB
-				for (nIndexTCB = 0; nIndexTCB < TCP_MAX_TCBS_ALLOWED; nIndexTCB++) {
-					auto *pTCB = &s_Port[nIndexPort].TCB[nIndexTCB];
-					if (pTCB->state == STATE_LISTEN) {
-						break;
-					}
-				}
-
-				if (nIndexTCB == TCP_MAX_TCBS_ALLOWED) {
-					DEBUG_PUTS("MAX_TCB_ALLOWED -> Force retransmission");
-					DEBUG_EXIT
-					return;
-				}
-			}
-
-			break;
-		}
-	}
+	find_tcb(pTcp, nIndexPort, nIndexTCB);
+	DEBUG_PRINTF("nIndexPort=%u, nIndexTCB=%u", nIndexPort, nIndexTCB);
 
 	const auto nDataOffset = offset2octets(pTcp->tcp.offset);
 
 	// https://www.rfc-editor.org/rfc/rfc9293.html#name-closed-state
 	// CLOSED (i.e., TCB does not exist)
 	if (nIndexPort == TCP_MAX_PORTS_ALLOWED) {
-		DEBUG_PUTS("TCP_MAX_PORTS_ALLOWED");
 		struct tcb TCB;
 
 		memset(&TCB, 0, sizeof(struct tcb));
@@ -642,6 +658,7 @@ src/net/tcp.cpp:871:31: error: 'nIndexTCB' may be used uninitialized in this fun
 		scan_options(pTcp, &TCB, nDataOffset);
 		send_reset(pTcp, &TCB);
 
+		DEBUG_PUTS("TCP_MAX_PORTS_ALLOWED");
 		DEBUG_EXIT
 		return;
 	}
@@ -651,19 +668,6 @@ src/net/tcp.cpp:871:31: error: 'nIndexTCB' may be used uninitialized in this fun
 	_bswap32(pTcp);
 	pTcp->tcp.window = __builtin_bswap16(pTcp->tcp.window);
 	pTcp->tcp.urgent = __builtin_bswap16(pTcp->tcp.urgent);
-
-	DEBUG_PRINTF("%c%c%c%c%c%c SEQ=%u, ACK=%u, tcplen=%u, data_offset=%u, data_length=%u",
-			pTcp->tcp.control & Control::URG ? 'U' : '-',
-			pTcp->tcp.control & Control::ACK ? 'A' : '-',
-			pTcp->tcp.control & Control::PSH ? 'P' : '-',
-			pTcp->tcp.control & Control::RST ? 'R' : '-',
-			pTcp->tcp.control & Control::SYN ? 'S' : '-',
-			pTcp->tcp.control & Control::FIN ? 'F' : '-',
-			_get_seqnum(pTcp),
-			_get_acknum(pTcp),
-			tcplen,
-			nDataOffset,
-			nDataLength);
 
 	SendInfo sendInfo;
 
@@ -714,6 +718,7 @@ src/net/tcp.cpp:871:31: error: 'nIndexTCB' may be used uninitialized in this fun
 		if (pTcp->tcp.control & Control::ACK) {
 			send_reset(pTcp, pTCB);
 
+			DEBUG_PUTS("pTcp->tcp.control & Control::ACK");
 			DEBUG_EXIT
 			return;
 		}
@@ -851,8 +856,9 @@ src/net/tcp.cpp:871:31: error: 'nIndexTCB' may be used uninitialized in this fun
 				return;
 			}
 
-			DEBUG_PUTS("_send_reset");
 			send_reset(pTcp, pTCB);
+
+			DEBUG_PUTS("pTcp->tcp.control & Control::SYN");
 		}
 
 		/*  fifth check the ACK field, *//* Page 72 */
@@ -877,8 +883,9 @@ src/net/tcp.cpp:871:31: error: 'nIndexTCB' may be used uninitialized in this fun
 				return;
 			} else {
 				// <SEQ=SEG.ACK><CTL=RST>
-				DEBUG_PUTS("_send_reset");
 				send_reset(pTcp, pTCB);
+
+				DEBUG_PUTS("<SEQ=SEG.ACK><CTL=RST>");
 			}
 			break;
 		case STATE_ESTABLISHED:
@@ -1128,8 +1135,17 @@ uint16_t tcp_read(const int32_t nHandleListen, const uint8_t **pData, uint32_t &
 	return pQueueEntry->nSize;
 }
 
-static void _write(struct tcb *pTCB, const uint8_t *pBuffer, uint32_t nLength) {
-	nLength = std::min(nLength, static_cast<uint32_t>(TCP_DATA_SIZE));
+static void _write(struct tcb *pTCB, const uint8_t *pBuffer, const uint32_t nLength, const bool isLastSegment) {
+	assert(nLength != 0);
+	assert(nLength <= static_cast<uint32_t>(TCP_DATA_SIZE));
+
+	DEBUG_PRINTF("nLength=%u, pTCB->SND.WND=%u", nLength, pTCB->SND.WND);
+
+    if (nLength > pTCB->SND.WND) {
+    	console_error("Retry or queue the data for later transmission\n");
+        // TODO retry or queue the data for later transmission.
+        return;
+    }
 
 	pTCB->TX.data = const_cast<uint8_t *>(pBuffer);
 	pTCB->TX.size = nLength;
@@ -1137,14 +1153,18 @@ static void _write(struct tcb *pTCB, const uint8_t *pBuffer, uint32_t nLength) {
 	struct SendInfo info;
 	info.SEQ = pTCB->SND.NXT;
 	info.ACK = pTCB->RCV.NXT;
-	info.CTL = Control::ACK | Control::PSH;
+	info.CTL = Control::ACK;
+	if (isLastSegment) {
+		info.CTL |= Control::PSH;
+	}
 
 	send_package(pTCB, info);
 
 	pTCB->TX.data = nullptr;
 	pTCB->TX.size = 0;
 
-	pTCB->SND.NXT += nLength;
+    pTCB->SND.NXT += nLength;
+    pTCB->SND.WND -= nLength;
 }
 
 void tcp_write(const int32_t nHandleListen, const uint8_t *pBuffer, uint16_t nLength, uint32_t nHandleConnection) {
@@ -1154,8 +1174,17 @@ void tcp_write(const int32_t nHandleListen, const uint8_t *pBuffer, uint16_t nLe
 	assert(nHandleConnection < TCP_MAX_TCBS_ALLOWED);
 
 	auto *pTCB = &s_Port[nHandleListen].TCB[nHandleConnection];
+	assert(pTCB != nullptr);
 
-	_write(pTCB, pBuffer, nLength);
+	const auto *p = pBuffer;
+
+	while (nLength > 0) {
+		const auto nWriteLength = (nLength > TCP_DATA_SIZE) ? TCP_DATA_SIZE : nLength;
+		const bool isLastSegment = (nLength < TCP_DATA_SIZE);
+		_write(pTCB, p, nWriteLength, isLastSegment);
+		p += nWriteLength;
+		nLength -= nWriteLength;
+	}
 }
 
 // <---

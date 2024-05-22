@@ -27,7 +27,7 @@
 #define HTTPD_HTTP_H_
 
 namespace http {
-static constexpr uint32_t BUFSIZE = 1440;
+static constexpr uint32_t BUFSIZE = 1440; //TODO We need the TCP max segment size here
 enum class Status {
 	OK = 200,
 	BAD_REQUEST = 400,

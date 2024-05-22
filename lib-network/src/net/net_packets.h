@@ -171,8 +171,9 @@ struct t_tcp_packet {
 	uint16_t checksum;				/* 18 */
 	uint16_t urgent;				/* 20 */
 #define TCP_HEADER_SIZE		20
-#define TCP_DATA_SIZE		(MTU_SIZE - TCP_HEADER_SIZE - sizeof(struct ip4_header) - 20U)
-	uint8_t data[TCP_DATA_SIZE];
+#define TCP_OPTIONS_SIZE	40	/* Assuming maximum TCP options size is 40 bytes */
+#define TCP_DATA_SIZE		(MTU_SIZE - TCP_HEADER_SIZE - sizeof(struct ip4_header) - TCP_OPTIONS_SIZE)
+	uint8_t data[MTU_SIZE - TCP_HEADER_SIZE - sizeof(struct ip4_header)];
 } PACKED;
 
 struct t_arp {
