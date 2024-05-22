@@ -24,24 +24,30 @@
  */
 
 #pragma GCC push_options
-#pragma GCC optimize ("O3")
+#pragma GCC optimize ("O2")
+#pragma GCC optimize ("no-tree-loop-distribute-patterns")
 
 #include <cstdint>
+#include <cassert>
 
 #include "gd32.h"
+#include "gd32_ptp.h"
 #include "../src/net/net_packets.h"
+#include "../src/net/net_memcpy.h"
+
+#include "debug.h"
 
 #if defined (CONFIG_ENET_ENABLE_PTP)
 extern enet_descriptors_struct *dma_current_ptp_rxdesc;
-extern enet_descriptors_struct *dma_current_txdesc;
+extern enet_descriptors_struct *dma_current_ptp_txdesc;
 namespace net {
 namespace globals {
 extern uint32_t ptpTimestamp[2];
-extern bool IsValidPtpTimestamp;
 }  // namespace globals
 }  // namespace net
 #endif
-extern enet_descriptors_struct  *dma_current_rxdesc;
+extern enet_descriptors_struct *dma_current_rxdesc;
+extern enet_descriptors_struct *dma_current_txdesc;
 
 extern "C" {
 int console_error(const char *);
@@ -61,63 +67,180 @@ int emac_eth_recv(uint8_t **ppPacket) {
 	return -1;
 }
 
-void emac_free_pkt() {
 #if defined (CONFIG_ENET_ENABLE_PTP)
-	const auto status = ENET_NOCOPY_PTPFRAME_RECEIVE_NORMAL_MODE(net::globals::ptpTimestamp);
-	if (status != ERROR) {
-		net::globals::IsValidPtpTimestamp = true;
-	} else {
-		net::globals::IsValidPtpTimestamp = false;
-		console_error("ENET_NOCOPY_PTPFRAME_RECEIVE_NORMAL_MODE failed\n");
+static void ptpframe_receive_normal_mode() {
+	net::globals::ptpTimestamp[0] = dma_current_rxdesc->buffer1_addr;
+	net::globals::ptpTimestamp[1] = dma_current_rxdesc->buffer2_next_desc_addr;
+
+	dma_current_rxdesc->buffer1_addr = dma_current_ptp_rxdesc->buffer1_addr;
+	dma_current_rxdesc->buffer2_next_desc_addr = dma_current_ptp_rxdesc->buffer2_next_desc_addr;
+	dma_current_rxdesc->status = ENET_RDES0_DAV;
+
+	if (0 != (ENET_DMA_STAT & ENET_DMA_STAT_RBU)) {
+		/* clear RBU flag */
+		ENET_DMA_STAT = ENET_DMA_STAT_RBU;
+		/* resume DMA reception by writing to the RPEN register*/
+		ENET_DMA_RPEN = 0U;
 	}
+
+	 assert(0 != (dma_current_rxdesc->control_buffer_size & ENET_RDES1_RCHM));
+
+	 dma_current_rxdesc = reinterpret_cast<enet_descriptors_struct *>(dma_current_ptp_rxdesc->buffer2_next_desc_addr);
+	 /* if it is the last ptp descriptor */
+	 if (0 != dma_current_ptp_rxdesc->status) {
+		 /* pointer back to the first ptp descriptor address in the desc_ptptab list address */
+		 dma_current_ptp_rxdesc = reinterpret_cast<enet_descriptors_struct *>(dma_current_ptp_rxdesc->status);
+	 } else {
+		 /* ponter to the next ptp descriptor */
+		 dma_current_ptp_rxdesc++;
+	 }
+}
 #else
-	ENET_NOCOPY_FRAME_RECEIVE();
+static void frame_receive() {
+	dma_current_rxdesc->status = ENET_RDES0_DAV;
+
+	/* check Rx buffer unavailable flag status */
+	if (0 != (ENET_DMA_STAT & ENET_DMA_STAT_RBU)) {
+		/* clear RBU flag */
+		ENET_DMA_STAT = ENET_DMA_STAT_RBU;
+		/* resume DMA reception by writing to the RPEN register*/
+		ENET_DMA_RPEN = 0U;
+	}
+
+	assert(0 != (dma_current_rxdesc->control_buffer_size & ENET_RDES1_RCHM));
+
+	dma_current_rxdesc = reinterpret_cast<enet_descriptors_struct *>(dma_current_rxdesc->buffer2_next_desc_addr);
+}
+#endif
+
+void emac_free_pkt() {
+    while(0 != (dma_current_rxdesc->status & ENET_RDES0_DAV)) {
+        __DMB();
+    }
+#if defined (CONFIG_ENET_ENABLE_PTP)
+    ptpframe_receive_normal_mode();
+#else
+    frame_receive();
 #endif
 }
 
 #if defined (CONFIG_ENET_ENABLE_PTP)
-static bool isPTP(void *pBuffer) {
-	const auto *const ether = reinterpret_cast<struct ether_header *>(pBuffer);
-	// Support for Ethernet level 2 only
-	return (ether->type == __builtin_bswap16(ETHER_TYPE_PTP));
+static void ptpframe_transmit(const uint8_t *pBuffer, const uint32_t nLength, uint32_t timestamp[]) {
+	assert (nullptr != pBuffer);
+	assert(nLength <= ENET_MAX_FRAME_SIZE);
+
+	auto *pDst = reinterpret_cast<uint8_t *>(dma_current_ptp_txdesc->buffer1_addr);
+	net::memcpy(pDst, pBuffer, nLength);
+
+    dma_current_txdesc->control_buffer_size = (nLength & (uint32_t)0x1FFF);
+    /* set the segment of frame, frame is transmitted in one descriptor */
+    dma_current_txdesc->status |= ENET_TDES0_LSG | ENET_TDES0_FSG;
+    /* enable the DMA transmission */
+    dma_current_txdesc->status |= ENET_TDES0_DAV;
+
+    /* check Tx buffer unavailable flag status */
+    const auto dma_tbu_flag = (ENET_DMA_STAT & ENET_DMA_STAT_TBU);
+    const auto dma_tu_flag = (ENET_DMA_STAT & ENET_DMA_STAT_TU);
+
+	if ((0 != dma_tbu_flag) || (0 != dma_tu_flag)) {
+		/* clear TBU and TU flag */
+		ENET_DMA_STAT = (dma_tbu_flag | dma_tu_flag);
+		/* resume DMA transmission by writing to the TPEN register*/
+		ENET_DMA_TPEN = 0U;
+	}
+
+    uint32_t timeout = 0;
+    uint32_t tdes0_ttmss_flag;
+
+    if (nullptr != timestamp) {
+         do {
+           tdes0_ttmss_flag = (dma_current_txdesc->status & ENET_TDES0_TTMSS);
+           __DMB();
+            timeout++;
+        } while((0 == tdes0_ttmss_flag) && (timeout < UINT32_MAX));
+
+        DEBUG_PRINTF("timeout=%x %d", timeout, (dma_current_txdesc->status & ENET_TDES0_TTMSS));
+
+        dma_current_txdesc->status &= ~ENET_TDES0_TTMSS;
+
+        timestamp[0] = dma_current_txdesc->buffer1_addr;
+        timestamp[1] = dma_current_txdesc->buffer2_next_desc_addr;
+    }
+
+	dma_current_txdesc->buffer1_addr = dma_current_ptp_txdesc->buffer1_addr;
+	dma_current_txdesc->buffer2_next_desc_addr = dma_current_ptp_txdesc->buffer2_next_desc_addr;
+
+    /* update the current TxDMA descriptor pointer to the next descriptor in TxDMA descriptor table */
+    assert(0 != (dma_current_txdesc->status & ENET_TDES0_TCHM)); /* chained mode */
+
+    dma_current_txdesc = reinterpret_cast<enet_descriptors_struct *>(dma_current_ptp_txdesc->buffer2_next_desc_addr);
+    /* if it is the last ptp descriptor */
+    if(0 != dma_current_ptp_txdesc->status) {
+    	/* pointer back to the first ptp descriptor address in the desc_ptptab list address */
+    	dma_current_ptp_txdesc = reinterpret_cast<enet_descriptors_struct *>(dma_current_ptp_txdesc->status);
+    } else {
+    	/* pointer to the next ptp descriptor */
+    	dma_current_ptp_txdesc++;
+    }
 }
-#endif
 
 void emac_eth_send(void *pBuffer, int nLength) {
-#if defined (CONFIG_ENET_ENABLE_PTP)
+	while (0 != (dma_current_txdesc->status & ENET_TDES0_DAV)) {
+        __DMB();
+	}
+
 	auto nStatus = dma_current_txdesc->status;
-	if (isPTP(pBuffer)) {
-		nStatus |= ENET_TDES0_TTSEN;
-		dma_current_txdesc->status = nStatus;
+	nStatus &= ~ENET_TDES0_TTSEN;
+	dma_current_txdesc->status = nStatus;
 
-		const auto status = enet_ptpframe_transmit_normal_mode(reinterpret_cast<uint8_t *>(pBuffer), nLength, net::globals::ptpTimestamp);
-
-		if (status != ERROR) {
-			net::globals::IsValidPtpTimestamp = true;
-		} else {
-			net::globals::IsValidPtpTimestamp = false;
-# if defined (DEBUG_ENET_PTP)
-			console_error("PTP: enet_ptpframe_transmit_normal_mode failed\n");
-# endif
-		}
-	} else {
-		nStatus &= ~ENET_TDES0_TTSEN;
-		dma_current_txdesc->status = nStatus;
-
-		[[maybe_unused]] const auto status = enet_ptpframe_transmit_normal_mode(reinterpret_cast<uint8_t *>(pBuffer), nLength, nullptr);
-#if defined (DEBUG_ENET_PTP)
-		if (status == ERROR) {
-			console_error("enet_ptpframe_transmit_normal_mode failed\n");
-		}
-#endif
-	}
-#else
-	[[maybe_unused]] const auto status = enet_frame_transmit(reinterpret_cast<uint8_t *>(pBuffer), nLength);
-# if defined (DEBUG_ENET)
-	if (status == ERROR) {
-		console_error("enet_frame_transmit failed\n");
-	}
-# endif
-#endif
+	ptpframe_transmit(reinterpret_cast<uint8_t *>(pBuffer), nLength, nullptr);
 }
+
+void emac_eth_send_timestamp(void *pBuffer, int nLength) {
+	while (0 != (dma_current_txdesc->status & ENET_TDES0_DAV)) {
+        __DMB();
+	}
+
+	auto nStatus = dma_current_txdesc->status;
+	nStatus |= ENET_TDES0_TTSEN;
+	dma_current_txdesc->status = nStatus;
+
+	ptpframe_transmit(reinterpret_cast<uint8_t *>(pBuffer), nLength, net::globals::ptpTimestamp);
+}
+#else
+void emac_eth_send(void *pBuffer, int nLength) {
+	assert(nullptr != pBuffer);
+	assert(nLength <= static_cast<int>(ENET_MAX_FRAME_SIZE));
+
+	while (0 != (dma_current_txdesc->status & ENET_TDES0_DAV)) {
+		__DMB();
+	}
+
+	auto *pDst = reinterpret_cast<uint8_t *>(dma_current_txdesc->buffer1_addr);
+	net::memcpy(pDst, pBuffer, nLength);
+
+	/* set the frame length */
+	dma_current_txdesc->control_buffer_size = nLength;
+	/* set the segment of frame, frame is transmitted in one descriptor */
+	dma_current_txdesc->status |= ENET_TDES0_LSG | ENET_TDES0_FSG;
+	/* enable the DMA transmission */
+	dma_current_txdesc->status |= ENET_TDES0_DAV;
+
+	/* check Tx buffer unavailable flag status */
+	const auto dma_tbu_flag = (ENET_DMA_STAT & ENET_DMA_STAT_TBU);
+	const auto dma_tu_flag = (ENET_DMA_STAT & ENET_DMA_STAT_TU);
+
+	if ((0 != dma_tbu_flag) || (0 != dma_tu_flag)) {
+		/* clear TBU and TU flag */
+		ENET_DMA_STAT = (dma_tbu_flag | dma_tu_flag);
+		/* resume DMA transmission by writing to the TPEN register*/
+		ENET_DMA_TPEN = 0;
+	}
+
+	assert(0 != (dma_current_txdesc->status & ENET_TDES0_TCHM)); /* chained mode */
+
+	/* update the current TxDMA descriptor pointer to the next descriptor in TxDMA descriptor table*/
+	dma_current_txdesc = reinterpret_cast<enet_descriptors_struct *>(dma_current_txdesc->buffer2_next_desc_addr);
+}
+#endif
 }

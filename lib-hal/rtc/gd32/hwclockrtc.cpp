@@ -126,16 +126,18 @@ void HwClock::RtcProbe() {
 			return;
 		}
 
-#if defined (GD32F4XX) || defined (GD32H7XX)
-		const auto ltime = time(nullptr);
-		const auto *tm = localtime(&ltime);
-		RtcSet(tm);
-#else
-		rtc_lwoff_wait();
-		rtc_counter_set(time(nullptr));
-		rtc_lwoff_wait();
-#endif
 		bkp_data_write(BKP_DATA_0, 0xA5A5);
+
+		struct tm RtcTime;
+
+		RtcTime.tm_hour = 0;
+		RtcTime.tm_min = 0;
+		RtcTime.tm_sec = 0;
+		RtcTime.tm_mday = _TIME_STAMP_DAY_;
+		RtcTime.tm_mon = _TIME_STAMP_MONTH_ - 1;
+		RtcTime.tm_year = _TIME_STAMP_YEAR_ - 1900;
+
+		RtcSet(&RtcTime);
 	} else {
 		DEBUG_PUTS("No need to configure RTC");
 		rtc_register_sync_wait();

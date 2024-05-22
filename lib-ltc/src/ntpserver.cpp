@@ -2,7 +2,7 @@
  * @file ntpserver.cpp
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,9 +39,9 @@
 #include <cassert>
 
 #include "ntpserver.h"
+#include "ntp.h"
 
 #include "network.h"
-#include "ntp.h"
 
 #include "debug.h"
 
@@ -62,14 +62,14 @@ NtpServer::NtpServer(const uint32_t nYear, const uint32_t nMonth, const uint32_t
 	timeDate.tm_mon = static_cast<int>(nMonth - 1);
 	timeDate.tm_mday = static_cast<int>(nDay);
 
-	m_tDate = mktime(&timeDate);
-	assert(m_tDate != -1);
+	m_Time = mktime(&timeDate);
+	assert(m_Time != -1);
 
-	DEBUG_PRINTF("m_tDate=%.8x %ld", static_cast<unsigned int>(m_tDate), m_tDate);
+	DEBUG_PRINTF("m_Time=%.8x %ld", static_cast<unsigned int>(m_Time), m_Time);
 
-	m_tDate += static_cast<time_t>(ntp::NTP_TIMESTAMP_DELTA);
+	m_Time += static_cast<time_t>(ntp::JAN_1970);
 
-	DEBUG_PRINTF("m_tDate=%.8x %ld", static_cast<unsigned int>(m_tDate), m_tDate);
+	DEBUG_PRINTF("m_Time=%.8x %ld", static_cast<unsigned int>(m_Time), m_Time);
 	DEBUG_EXIT
 }
 
@@ -103,7 +103,7 @@ void NtpServer::Stop() {
 }
 
 void NtpServer::SetTimeCode(const struct ltc::TimeCode *pLtcTimeCode) {
-	m_tTimeDate = m_tDate;
+	m_tTimeDate = m_Time;
 	m_tTimeDate += pLtcTimeCode->nSeconds;
 	m_tTimeDate += pLtcTimeCode->nMinutes * 60;
 	m_tTimeDate += pLtcTimeCode->nHours * 60 * 60;
@@ -120,8 +120,6 @@ void NtpServer::SetTimeCode(const struct ltc::TimeCode *pLtcTimeCode) {
 		assert(0);
 	}
 
-//	DEBUG_PRINTF("m_timeDate=%.8x %ld", static_cast<unsigned int>(m_tTimeDate), m_tTimeDate);
-
 	s_Reply.ReferenceTimestamp_s = __builtin_bswap32(static_cast<uint32_t>(m_tTimeDate));
 	s_Reply.ReferenceTimestamp_f = __builtin_bswap32(m_nFraction);
 	s_Reply.ReceiveTimestamp_s = __builtin_bswap32(static_cast<uint32_t>(m_tTimeDate));
@@ -135,7 +133,7 @@ void NtpServer::Print() {
 	printf(" Port : %d\n", ntp::UDP_PORT);
 	printf(" Stratum : %d\n", ntp::STRATUM);
 
-	const auto t = static_cast<time_t>(static_cast<uint32_t>(m_tDate) - ntp::NTP_TIMESTAMP_DELTA);
+	const auto t = static_cast<time_t>(static_cast<uint32_t>(m_Time) - ntp::JAN_1970);
 
 	printf(" %s", asctime(localtime(&t)));
 }

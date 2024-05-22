@@ -2,7 +2,7 @@
  * @file ntpclient.h
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,13 +37,10 @@
 
 namespace ntpclient {
 static constexpr uint32_t TIMEOUT_MILLIS = 3000; 	// 3 seconds
-static constexpr uint32_t POLL_SECONDS = 1024;		// 2ˆ10
+static constexpr uint8_t POLL_POWER = 3;
+static constexpr uint32_t POLL_SECONDS = (1 << POLL_POWER);
 
-enum class Status {
-	STOPPED, IDLE, WAITING, FAILED
-};
-
-void display_status(const Status status);
+void display_status(const ::ntp::Status status);
 }  // namespace ntpclient
 
 class NtpClient {
@@ -54,35 +51,35 @@ public:
 	void Stop();
 	void Print();
 
-	ntpclient::Status GetStatus() const {
+	ntp::Status GetStatus() const {
 		return m_Status;
 	}
 
 	void Run() {
-		if (m_Status == ntpclient::Status::STOPPED) {
+		if (m_Status == ntp::Status::STOPPED) {
 			return;
 		}
 
-		if ((m_Status == ntpclient::Status::IDLE) || (m_Status == ntpclient::Status::FAILED)) {
+		if ((m_Status == ntp::Status::IDLE) || (m_Status == ntp::Status::FAILED)) {
 			if (__builtin_expect(((Hardware::Get()->Millis() - m_MillisLastPoll) > (1000 * ntpclient::POLL_SECONDS)), 0)) {
 				Send();
 				m_MillisRequest = Hardware::Get()->Millis();
-				m_Status = ntpclient::Status::WAITING;
-				ntpclient::display_status(ntpclient::Status::WAITING);
-				DEBUG_PUTS("ntpclient::Status::WAITING");
+				m_Status = ntp::Status::WAITING;
+				ntpclient::display_status(ntp::Status::WAITING);
+				DEBUG_PUTS("ntp::Status::WAITING");
 			}
 
 			return;
 		}
 
-		if (m_Status == ntpclient::Status::WAITING) {
+		if (m_Status == ntp::Status::WAITING) {
 			uint8_t LiVnMode;
 
 			if (!Receive(LiVnMode)) {
 				if (__builtin_expect(((Hardware::Get()->Millis() - m_MillisRequest) > ntpclient::TIMEOUT_MILLIS), 0)) {
-					m_Status = ntpclient::Status::FAILED;
-					ntpclient::display_status(ntpclient::Status::FAILED);
-					DEBUG_PUTS("ntpclient::Status::FAILED");
+					m_Status = ntp::Status::FAILED;
+					ntpclient::display_status(ntp::Status::FAILED);
+					DEBUG_PUTS("ntp::Status::FAILED");
 				}
 
 				return;
@@ -91,22 +88,19 @@ public:
 			if (__builtin_expect(((LiVnMode & ntp::MODE_SERVER) == ntp::MODE_SERVER), 1)) {
 				m_MillisLastPoll = Hardware::Get()->Millis();
 
-				if (SetTimeOfDay() == 0) {
+				SetTimeOfDay();
 #ifndef NDEBUG
-					const auto nTime = time(nullptr);
-					const auto *pLocalTime = localtime(&nTime);
-					DEBUG_PRINTF("localtime: %.4d/%.2d/%.2d %.2d:%.2d:%.2d", pLocalTime->tm_year, pLocalTime->tm_mon, pLocalTime->tm_mday, pLocalTime->tm_hour, pLocalTime->tm_min, pLocalTime->tm_sec);
+				const auto nTime = time(nullptr);
+				const auto *pLocalTime = localtime(&nTime);
+				DEBUG_PRINTF("localtime: %.4d/%.2d/%.2d %.2d:%.2d:%.2d", pLocalTime->tm_year + 1900, pLocalTime->tm_mon + 1, pLocalTime->tm_mday, pLocalTime->tm_hour, pLocalTime->tm_min, pLocalTime->tm_sec);
 #endif
-				} else {
-					// Error
-				}
 			} else {
 				DEBUG_PUTS("!>> Invalid reply <<!");
 			}
 
-			m_Status = ntpclient::Status::IDLE;
-			ntpclient::display_status(ntpclient::Status::IDLE);
-			DEBUG_PUTS("ntpclient::Status::IDLE");
+			m_Status = ntp::Status::IDLE;
+			ntpclient::display_status(ntp::Status::IDLE);
+			DEBUG_PUTS("ntp::Status::IDLE");
 		}
 	}
 
@@ -119,33 +113,26 @@ private:
 	void Send();
 	bool Receive(uint8_t& LiVnMode);
 
-	struct TimeStamp {
-		uint32_t nSeconds;
-		uint32_t nFraction;
-	};
+	void Difference(const struct ntp::TimeStamp& Start, const struct ntp::TimeStamp& Stop, int32_t &nDiffSeconds, int32_t &nDiffMicroSeconds);
+	void SetTimeOfDay();
 
-	void Difference(const struct TimeStamp *Start, const struct TimeStamp *Stop, int32_t &nDiffSeconds, uint32_t &nDiffFraction);
-	int SetTimeOfDay();
-
-	void PrintNtpTime(const char *pText, const struct TimeStamp *pNtpTime);
+	void PrintNtpTime(const char *pText, const struct ntp::TimeStamp *pNtpTime);
 
 private:
 	uint32_t m_nServerIp;
 	int32_t m_nUtcOffset;
 	int32_t m_nHandle { -1 };
-	int32_t m_nOffsetSeconds { 0 };
-	uint32_t m_nOffsetMicros { 0 };
 	uint32_t m_MillisRequest { 0 };
 	uint32_t m_MillisLastPoll { 0 };
 
-	struct TimeStamp T1 { 0, 0 };	// time request sent by client
-	struct TimeStamp T2 { 0, 0 };	// time request received by server
-	struct TimeStamp T3 { 0, 0 };	// time reply sent by server
-	struct TimeStamp T4 { 0, 0 };	// time reply received by client
+	struct ntp::TimeStamp T1 { 0, 0 };	// time request sent by client
+	struct ntp::TimeStamp T2 { 0, 0 };	// time request received by server
+	struct ntp::TimeStamp T3 { 0, 0 };	// time reply sent by server
+	struct ntp::TimeStamp T4 { 0, 0 };	// time reply received by client
 
 	struct ntp::Packet m_Request;
 
-	ntpclient::Status m_Status { ntpclient::Status::STOPPED };
+	ntp::Status m_Status { ntp::Status::STOPPED };
 
 	static NtpClient *s_pThis;
 };

@@ -30,6 +30,8 @@
 
 #include "emac/phy.h"
 
+#include "hwclock.h"
+
 #include "debug.h"
 
 extern void enet_gpio_config();
@@ -178,6 +180,10 @@ void __attribute__((cold)) emac_start(uint8_t mac_address[], net::Link& link) {
 
 #if defined (CONFIG_ENET_ENABLE_PTP)
 	gd32_ptp_start();
+# if !defined(DISABLE_RTC)
+	// Set the System Clock from the Hardware Clock
+	HwClock::Get()->HcToSys();
+# endif
 #endif
 
 	enet_enable(ENETx);

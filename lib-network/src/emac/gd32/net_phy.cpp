@@ -28,14 +28,12 @@
 #include "emac/phy.h"
 #include "emac/mmi.h"
 
+#include "hardware.h"
 #include "gd32.h"
 
 #include "debug.h"
 
-extern volatile uint32_t s_nSysTickMillis;
-
 namespace net {
-
 bool phy_read(uint32_t nAddress, const uint32_t nRegister, uint16_t &nValue) {
 #if defined (GD32H7XX)
 	const auto bResult = enet_phy_write_read(ENETx, ENET_PHY_READ, nAddress, nRegister, &nValue) == SUCCESS;
@@ -147,17 +145,17 @@ bool phy_config(const uint32_t nAddress) {
 	 * IEEE spec.
 	 */
 
-	const auto nMillis = s_nSysTickMillis;
+	const auto nMillis = Hardware::Get()->Millis();
 	uint16_t nValue;
 
-	while (s_nSysTickMillis - nMillis < 500) {
+	while (Hardware::Get()->Millis() - nMillis < 500) {
 		if (!phy_read(nAddress, mmi::REG_BMCR, nValue)) {
 			DEBUG_PUTS("PHY status read failed");
 			return false;
 		}
 
 		if (!(nValue & mmi::BMCR_RESET)) {
-			DEBUG_PRINTF("%u", s_nSysTickMillis - nMillis);
+			DEBUG_PRINTF("%u", Hardware::Get()->Millis() - nMillis);
 			DEBUG_EXIT
 			return true;
 		}
@@ -168,7 +166,7 @@ bool phy_config(const uint32_t nAddress) {
 		return false;
 	}
 
-	DEBUG_PRINTF("%u", s_nSysTickMillis - nMillis);
+	DEBUG_PRINTF("%u", Hardware::Get()->Millis() - nMillis);
 	DEBUG_EXIT
 	return true;
 }

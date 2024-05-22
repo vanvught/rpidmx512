@@ -42,7 +42,7 @@ inline static void show(ltc::Source ltcSource, bool bRunGpsTimeClient) {
 		Display::Get()->SetCursorPos(static_cast<uint8_t>(Display::Get()->GetColumns() - 3U), 3);
 		if (bRunGpsTimeClient) {
 			GPS::Get()->Display(GPS::Get()->GetStatus());
-		} else if ((NtpClient::Get()->GetStatus() != ntpclient::Status::FAILED) && (NtpClient::Get()->GetStatus() != ntpclient::Status::STOPPED)) {
+		} else if ((NtpClient::Get()->GetStatus() != ::ntp::Status::FAILED) && (NtpClient::Get()->GetStatus() != ::ntp::Status::STOPPED)) {
 			Display::Get()->PutString("NTP");
 		} else if (HwClock::Get()->IsConnected()) {
 			Display::Get()->PutString("RTC");

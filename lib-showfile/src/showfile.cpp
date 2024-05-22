@@ -58,6 +58,8 @@ ShowFile::ShowFile() {
 }
 
 void ShowFile::OpenFile(const showfile::Mode mode, const uint32_t nShowFileNumber) {
+	DEBUG_ENTRY
+
 	if (showfile::filename_copyto(m_aShowFileNameCurrent, sizeof(m_aShowFileNameCurrent), nShowFileNumber)) {
 #if defined CONFIG_USB_HOST_MSC
 		if (usb::host::get_status() != usb::host::Status::READY) {
@@ -213,7 +215,7 @@ bool ShowFile::AddShow(const uint32_t nShowFileNumber) {
 }
 
 void ShowFile::LoadShows() {
-	UnloadShows();
+	DEBUG_ENTRY
 
 #if defined (CONFIG_USB_HOST_MSC)
 	auto *dirp = opendir("0:/");
@@ -223,11 +225,15 @@ void ShowFile::LoadShows() {
 
 	if (dirp == nullptr) {
 		perror("opendir");
-
-		for (auto &FileIndex : m_nShowFileNumber) {
-			FileIndex = -1;
-		}
+		DEBUG_EXIT
+		return;
 	}
+
+	for (auto &FileIndex : m_nShowFileNumber) {
+		FileIndex = -1;
+	}
+
+	m_nShows = 0;
 
 	struct dirent *dp;
 
@@ -249,6 +255,10 @@ void ShowFile::LoadShows() {
             }
         }
     } while (dp != nullptr);
+
+	closedir(dirp);
+
+    DEBUG_EXIT
 }
 
 void ShowFile::EnableTFTP([[maybe_unused]] bool bEnableTFTP) {

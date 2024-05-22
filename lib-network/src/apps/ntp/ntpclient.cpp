@@ -40,7 +40,6 @@
 #include "debug.h"
 
 static constexpr auto RETRIES = 3;
-static constexpr auto JAN_1970 = 0x83aa7e80; 	// 2208988800 1970 - 1900 in seconds
 
 /* How to multiply by 4294.967296 quickly (and not quite exactly)
  * without using floating point or greater than 32-bit integers.
@@ -79,7 +78,7 @@ NtpClient::NtpClient(const uint32_t nServerIp):
 	memset(&m_Request, 0, sizeof m_Request);
 
 	m_Request.LiVnMode = ntp::VERSION | ntp::MODE_CLIENT;
-	m_Request.Poll = 10; // Poll: 1024 seconds
+	m_Request.Poll = ntpclient::POLL_POWER;
 	m_Request.ReferenceID = ('A' << 0) | ('V' << 8) | ('S' << 16);
 
 	DEBUG_EXIT
@@ -91,7 +90,7 @@ NtpClient::NtpClient(const uint32_t nServerIp):
 void NtpClient::GetTimeNtpFormat(uint32_t &nSeconds, uint32_t &nFraction) {
 	struct timeval now;
 	gettimeofday(&now, nullptr);
-	nSeconds = static_cast<uint32_t>(now.tv_sec - m_nUtcOffset) + JAN_1970;
+	nSeconds = static_cast<uint32_t>(now.tv_sec - m_nUtcOffset) + ntp::JAN_1970;
 	nFraction = NTPFRAC(now.tv_usec);
 }
 
@@ -130,72 +129,80 @@ bool NtpClient::Receive(uint8_t& LiVnMode) {
 	T3.nSeconds = __builtin_bswap32(pReply->TransmitTimestamp_s);
 	T3.nFraction = __builtin_bswap32(pReply->TransmitTimestamp_f);
 
-	PrintNtpTime("Originate", &T1);
-	PrintNtpTime("Receive", &T2);
-	PrintNtpTime("Transmit", &T3);
-	PrintNtpTime("Destination", &T4);
+	PrintNtpTime("T1: ", &T1);
+	PrintNtpTime("T2: ", &T2);
+	PrintNtpTime("T3: ", &T3);
+	PrintNtpTime("T4: ", &T4);
 
 	return true;
 }
 
-void NtpClient::Difference(const struct TimeStamp *Start, const struct TimeStamp *Stop, int32_t &nDiffSeconds, uint32_t &nDiffMicros) {
-	nDiffSeconds = static_cast<int32_t>(Stop->nSeconds - Start->nSeconds);
-	uint32_t nDiffFraction;
+void NtpClient::Difference(const struct ntp::TimeStamp& Start, const struct ntp::TimeStamp& Stop, int32_t &nDiffSeconds, int32_t &nDiffMicroSeconds) {
+    ntp::time_t r;
+	const ntp::time_t x = {.tv_sec = static_cast<int32_t>(Stop.nSeconds), .tv_usec = static_cast<int32_t>(USEC(Stop.nFraction))};
+	const ntp::time_t y = {.tv_sec = static_cast<int32_t>(Start.nSeconds), .tv_usec = static_cast<int32_t>(USEC(Start.nFraction))};
+    ntp::sub_time(&r, &x, &y);
 
-	if (Stop->nFraction >= Start->nFraction) {
-		nDiffFraction = Stop->nFraction - Start->nFraction;
-	} else {
-		nDiffFraction = Start->nFraction - Stop->nFraction;
-		nDiffFraction = ~nDiffFraction;
-		nDiffSeconds -= 1;
-	}
-
-	nDiffMicros = USEC(nDiffFraction);
-
-	DEBUG_PRINTF("Seconds  %u - %u = %d", Stop->nSeconds, Start->nSeconds, nDiffSeconds);
-	DEBUG_PRINTF("Micros   %u - %u = %u", USEC(Stop->nFraction), USEC(Start->nFraction), nDiffMicros);
+    nDiffSeconds = r.tv_sec;
+    nDiffMicroSeconds = r.tv_usec;
 }
 
-int NtpClient::SetTimeOfDay() {
+void NtpClient::SetTimeOfDay() {
 	int32_t nDiffSeconds1, nDiffSeconds2 ;
-	uint32_t nDiffFraction1, nDiffFraction2;
+	int32_t nDiffMicroSeconds1, nDiffMicroSeconds2;
 
-	Difference(&T1, &T2, nDiffSeconds1, nDiffFraction1);
-	Difference(&T4, &T3, nDiffSeconds2, nDiffFraction2);
+	Difference(T1, T2, nDiffSeconds1, nDiffMicroSeconds1);
+	Difference(T4, T3, nDiffSeconds2, nDiffMicroSeconds2);
 
 	auto nOffsetSeconds = static_cast<int64_t>(nDiffSeconds1) + static_cast<int64_t>(nDiffSeconds2);
-	auto nOffsetMicros =  static_cast<uint64_t>(nDiffFraction1) + static_cast<uint64_t>(nDiffFraction2);
+	auto nOffsetMicroSeconds =  static_cast<int64_t>(nDiffMicroSeconds1) + static_cast<int64_t>(nDiffMicroSeconds2);
 
-	if (nOffsetMicros >= 1000000u) {
-		nOffsetMicros -= 1000000u;
-		nOffsetSeconds += 1;
-	}
+	const int32_t nOffsetSecondsAverage = nOffsetSeconds / 2;
+	const int32_t nOffsetMicrosAverage  = nOffsetMicroSeconds / 2;
 
-	m_nOffsetSeconds = nOffsetSeconds / 2;
-	m_nOffsetMicros  = nOffsetMicros / 2;
+	ntp::time_t ptpOffset = {.tv_sec = nOffsetSecondsAverage, .tv_usec = nOffsetMicrosAverage};
+	ntp::normalize_time(&ptpOffset);
 
 	struct timeval tv;
 
-	tv.tv_sec =	static_cast<time_t>(T4.nSeconds - JAN_1970) + m_nOffsetSeconds + m_nUtcOffset;
-	tv.tv_usec = (static_cast<int32_t>(USEC(T4.nFraction)) + static_cast<int32_t>(m_nOffsetMicros));
+	tv.tv_sec =	static_cast<time_t>(T4.nSeconds - ntp::JAN_1970) + nOffsetSecondsAverage + m_nUtcOffset;
+	tv.tv_usec = (static_cast<int32_t>(USEC(T4.nFraction)) + static_cast<int32_t>(nOffsetMicrosAverage));
 
-	if (tv.tv_usec >= 1000000) {
-		tv.tv_sec++;
-		tv.tv_usec = 1000000 - tv.tv_usec;
+	settimeofday(&tv, nullptr);
+
+#ifndef NDEBUG
+	/* delay */
+	ntp::time_t diff1;
+	ntp::time_t diff2;
+
+	Difference(T1, T4, diff1.tv_sec, diff1.tv_usec);
+	Difference(T2, T3, diff2.tv_sec, diff2.tv_usec);
+
+	ntp::time_t ntpDelay;
+	ntp::sub_time(&ntpDelay, &diff1, &diff2);
+
+	char sign = '+';
+
+	if (ptpOffset.tv_sec < 0) {
+		ptpOffset.tv_sec = -ptpOffset.tv_sec;
+		sign = '-';
 	}
 
-	DEBUG_PRINTF("(%ld, %d) %s ", tv.tv_sec, static_cast<int>(tv.tv_usec) , tv.tv_usec  >= 1E6 ? "!" : "");
-	DEBUG_PRINTF("%d %u",m_nOffsetSeconds, m_nOffsetMicros);
+	if (ptpOffset.tv_usec < 0) {
+		ptpOffset.tv_usec = -ptpOffset.tv_usec;
+		sign = '-';
+	}
 
-	return settimeofday(&tv, nullptr);
+	printf(" offset=%c%d.%06d delay=%d.%06d\n", sign, ptpOffset.tv_sec, ptpOffset.tv_usec, ntpDelay.tv_sec, ntpDelay.tv_usec);
+#endif
 }
 
 void NtpClient::Start() {
 	DEBUG_ENTRY
 
 	if (m_nServerIp == 0) {
-		m_Status = ntpclient::Status::STOPPED;
-		ntpclient::display_status(ntpclient::Status::STOPPED);
+		m_Status = ntp::Status::STOPPED;
+		ntpclient::display_status(ntp::Status::STOPPED);
 		DEBUG_EXIT
 		return;
 	}
@@ -224,13 +231,10 @@ void NtpClient::Start() {
 		}
 
 		if ((LiVnMode & ntp::MODE_SERVER) == ntp::MODE_SERVER) {
-			if (SetTimeOfDay() == 0) {
-				m_Status = ntpclient::Status::IDLE;
-			} else {
-				// Error
-			}
+			SetTimeOfDay();
+			m_Status = ntp::Status::IDLE;
 		} else {
-			m_Status = ntpclient::Status::FAILED;
+			m_Status = ntp::Status::FAILED;
 			DEBUG_PUTS("!>> Invalid reply <<!");
 		}
 
@@ -240,13 +244,13 @@ void NtpClient::Start() {
 	m_MillisLastPoll = Hardware::Get()->Millis();
 
 	if (nRetries == RETRIES) {
-		m_Status = ntpclient::Status::FAILED;
+		m_Status = ntp::Status::FAILED;
 	}
 
 	DEBUG_PRINTF("nRetries=%d, m_Status=%d", nRetries, static_cast<int>(m_Status));
 
 #if !defined(DISABLE_RTC)
-	if (m_Status != ntpclient::Status::FAILED) {
+	if (m_Status != ntp::Status::FAILED) {
 		printf("Set RTC from System Clock\n");
 		HwClock::Get()->SysToHc();
 #ifndef NDEBUG
@@ -264,7 +268,7 @@ void NtpClient::Start() {
 void NtpClient::Stop() {
 	DEBUG_ENTRY
 
-	if (m_Status == ntpclient::Status::STOPPED) {
+	if (m_Status == ntp::Status::STOPPED) {
 		return;
 	}
 
@@ -272,36 +276,26 @@ void NtpClient::Stop() {
 	Network::Get()->End(ntp::UDP_PORT);
 	m_nHandle = -1;
 
-	m_Status = ntpclient::Status::STOPPED;
+	m_Status = ntp::Status::STOPPED;
 
-	ntpclient::display_status(ntpclient::Status::STOPPED);
+	ntpclient::display_status(ntp::Status::STOPPED);
 
 	DEBUG_EXIT
 }
 
-void NtpClient::PrintNtpTime([[maybe_unused]] const char *pText, [[maybe_unused]] const struct TimeStamp *pNtpTime) {
+void NtpClient::PrintNtpTime([[maybe_unused]] const char *pText, [[maybe_unused]] const struct ntp::TimeStamp *pNtpTime) {
 #ifndef NDEBUG
-	const auto nSeconds = static_cast<time_t>(pNtpTime->nSeconds - JAN_1970);
+	const auto nSeconds = static_cast<time_t>(pNtpTime->nSeconds - ntp::JAN_1970);
 	const auto *pTm = localtime(&nSeconds);
 	printf("%s %02d:%02d:%02d.%06d %04d [%u]\n", pText, pTm->tm_hour, pTm->tm_min,  pTm->tm_sec, USEC(pNtpTime->nFraction), pTm->tm_year + 1900, pNtpTime->nSeconds);
 #endif
 }
 
-static constexpr char STATUS[4][8] = { "Stopped", "Idle", "Waiting", "Failed" };
-
 void NtpClient::Print() {
-	printf("NTP v%d Client [%s]\n", (ntp::VERSION >> 3), STATUS[static_cast<int>(m_Status)]);
-	if (m_Status == ntpclient::Status::STOPPED) {
-		printf(" Not enabled\n");
+	printf("NTP v%d Client [%s]\n", (ntp::VERSION >> 3), ntp::STATUS[static_cast<int>(m_Status)]);
+	if (m_Status == ntp::Status::STOPPED) {
+		puts(" Not enabled");
 		return;
 	}
 	printf(" Server : " IPSTR ":%d\n", IP2STR(m_nServerIp), ntp::UDP_PORT);
-	auto rawtime = time(nullptr);
-	printf(" %s UTC offset : %d (seconds)\n", asctime(localtime(&rawtime)), static_cast<int>(m_nUtcOffset));
-#ifndef NDEBUG
-	PrintNtpTime("Originate", &T1);
-	PrintNtpTime("Receive", &T2);
-	PrintNtpTime("Transmit", &T3);
-	PrintNtpTime("Destination", &T4);
-#endif
 }
