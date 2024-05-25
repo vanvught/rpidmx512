@@ -30,6 +30,7 @@
 #include "network.h"
 #if !defined(NO_EMAC)
 # include "networkconst.h"
+# include "mdns.h"
 #endif
 
 #include "displayudf.h"
@@ -39,7 +40,7 @@
 #include "rdmpersonality.h"
 #include "rdmdeviceparams.h"
 #include "rdmsensorsparams.h"
-#if defined (ENABLE_RDM_SUBDEVICES)
+#if defined (CONFIG_RDM_ENABLE_SUBDEVICES)
 # include "rdmsubdevicesparams.h"
 #endif
 
@@ -68,7 +69,7 @@ void Hardware::RebootHandler() {
 	WS28xx::Get()->Blackout();
 }
 
-void main() {
+int main() {
 	config_mode_init();
 	Hardware hw;
 	DisplayUdf display;
@@ -76,6 +77,7 @@ void main() {
 #if !defined(NO_EMAC)
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 	Network nw;
+	MDNS mDns;
 	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, Display7SegmentMessage::INFO_NONE, CONSOLE_GREEN);
 #else
 	Network nw;
@@ -96,27 +98,7 @@ void main() {
 	pixelDmxParams.Load();
 	pixelDmxParams.Set(&pixelDmxConfiguration);
 
-	/*
-	 * DMX Footprint = (Channels per Pixel * Groups) <= 512 (1 Universe)
-	 * Groups = Led count / Grouping count
-	 *
-	 * Channels per Pixel * (Led count / Grouping count) <= 512
-	 * Channels per Pixel * Led count <= 512 * Grouping count
-	 *
-	 * Led count <= (512 * Grouping count) / Channels per Pixel
-	 */
-
-	uint32_t nLedsPerPixel;
-	pixeldmxconfiguration::PortInfo portInfo;
-
-	pixelDmxConfiguration.Validate(1 , nLedsPerPixel, portInfo);
-
-	if (pixelDmxConfiguration.GetUniverses() > 1) {
-		const auto nCount = (512U * pixelDmxConfiguration.GetGroupingCount()) / nLedsPerPixel;
-		pixelDmxConfiguration.SetCount(nCount);
-	}
-
-	WS28xxDmx pixelDmx(pixelDmxConfiguration);
+	WS28xxDmx pixelDmx(&pixelDmxConfiguration);
 
 	const auto nTestPattern = static_cast<pixelpatterns::Pattern>(pixelDmxParams.GetTestPattern());
 	PixelTestPattern pixelTestPattern(nTestPattern, 1);
@@ -145,7 +127,7 @@ void main() {
 	rdmSensorsParams.Load();
 	rdmSensorsParams.Set();
 
-#if defined (ENABLE_RDM_SUBDEVICES)
+#if defined (CONFIG_RDM_ENABLE_SUBDEVICES)
 	RDMSubDevicesParams rdmSubDevicesParams;
 
 	rdmSubDevicesParams.Load();
@@ -223,10 +205,9 @@ void main() {
 #if !defined(NO_EMAC)
 		nw.Run();
 		remoteConfig.Run();
+		mDns.Run();
 #endif
-		if (__builtin_expect((PixelTestPattern::GetPattern() != pixelpatterns::Pattern::NONE), 0)) {
-			pixelTestPattern.Run();
-		}
+		pixelTestPattern.Run();
 		display.Run();
 		hw.Run();
 	}

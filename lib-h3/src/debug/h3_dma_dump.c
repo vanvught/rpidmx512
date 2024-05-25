@@ -2,7 +2,7 @@
  * @file h3_dma_dump.c
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,7 @@
 #include "h3_dma.h"
 #include "h3.h"
 
+extern void uart0_puts(const char *);
 extern int uart0_printf(const char* fmt, ...);
 
 void __attribute__((cold)) h3_dma_dump_lli(const struct sunxi_dma_lli *lli) {
@@ -38,7 +39,7 @@ void __attribute__((cold)) h3_dma_dump_lli(const struct sunxi_dma_lli *lli) {
 	uart0_printf("\tlen        0x%08x\n", lli->len);
 	uart0_printf("\tpara       0x%08x\n", lli->para);
 	uart0_printf("\tp_lli_next 0x%08x\n", lli->p_lli_next);
-	uart0_printf("\n");
+	uart0_puts("");
 }
 
 void __attribute__((cold)) h3_dma_dump_common(void) {
@@ -50,7 +51,7 @@ void __attribute__((cold)) h3_dma_dump_common(void) {
 	uart0_printf("\t[%p] SEC        0x%08x\n", &H3_DMA->SEC, H3_DMA->SEC);
 	uart0_printf("\t[%p] AUTO_GATE  0x%08x\n", &H3_DMA->AUTO_GATE, H3_DMA->AUTO_GATE);
 	uart0_printf("\t[%p] STA        0x%08x\n", &H3_DMA->STA, H3_DMA->STA);
-	uart0_printf("\n");
+	uart0_puts("");
 }
 
 void __attribute__((cold)) h3_dma_dump_chl(uint32_t base) {
@@ -76,5 +77,5 @@ void __attribute__((cold)) h3_dma_dump_chl(uint32_t base) {
 	uart0_printf("\t[%p] PARA       0x%08x\n", &p->PARA, p->PARA);
 	uart0_printf("\t[%p] FDESC_ADDR 0x%08x\n", &p->FDESC_ADDR, p->FDESC_ADDR);
 	uart0_printf("\t[%p] PKG_NUM    0x%08x\n", &p->PKG_NUM, p->PKG_NUM);
-	uart0_printf("\n");
+	uart0_puts("");
 }

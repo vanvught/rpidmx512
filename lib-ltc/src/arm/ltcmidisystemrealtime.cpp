@@ -2,7 +2,7 @@
  * @file ltcmidisystemrealtime.cpp
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -78,7 +78,7 @@ void LtcMidiSystemRealtime::SetBPM(uint32_t nBPM) {
 #endif
 			} else if ((nBPM >= midi::bpm::MIN) && (nBPM <= midi::bpm::MAX)) {
 #if defined (H3)
-				const uint32_t nValue =  60000000 / nBPM;
+				const uint32_t nValue =  60000000U / nBPM;
 				irq_timer_arm_virtual_set(reinterpret_cast<thunk_irq_timer_arm_t>(timer_handler), nValue);
 #elif defined (GD32)
 #endif

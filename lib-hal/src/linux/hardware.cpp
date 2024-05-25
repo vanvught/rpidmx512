@@ -200,7 +200,7 @@ Hardware::Hardware():
 		char aResult[16];
 		constexpr char cmd[] = "cat /proc/cpuinfo | grep 'Revision' | awk '{print $3}'";
 		exec_cmd(cmd, aResult, sizeof(aResult));
-		m_nBoardId = static_cast<uint32_t>(strtol(aResult, NULL, 16));
+		m_nBoardId = static_cast<uint32_t>(strtol(aResult, nullptr, 16));
 	}
 
 	FUNC_PREFIX(i2c_begin());
@@ -308,7 +308,7 @@ bool Hardware::Reboot() {
 //			m_pSoftResetHandler->Run();
 //		}
 //
-//		if (execve(m_argv[0], m_argv, NULL) == -1) {
+//		if (execve(m_argv[0], m_argv, nullptr) == -1) {
 //			perror("call to execve failed.\n");
 //		}
 //	}

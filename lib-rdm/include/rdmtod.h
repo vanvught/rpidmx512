@@ -105,7 +105,7 @@ public:
 
 	void Copy(uint8_t *pTable) {
 		DEBUG_ENTRY
-		DEBUG_PRINTF("m_nEntries=%u", m_nEntries);
+		DEBUG_PRINTF("m_nEntries=%u", static_cast<unsigned int>(m_nEntries));
 		assert(pTable != nullptr);
 
 		const auto *pSrc = reinterpret_cast<const uint8_t*>(m_Tod);
@@ -208,13 +208,13 @@ public:
 		return (mutes & (1U << shift)) == (1U << shift);
 	}
 
-	void Dump(__attribute__((unused)) uint32_t nCount) {
+	void Dump([[maybe_unused]] uint32_t nCount) {
 #ifndef NDEBUG
 	if (nCount > rdmtod::TOD_TABLE_SIZE) {
 		nCount = rdmtod::TOD_TABLE_SIZE;
 	}
 
-	printf("[%u]\n", nCount);
+	printf("[%u]\n", static_cast<unsigned int>(nCount));
 	for (uint32_t i = 0 ; i < nCount; i++) {
 		printf("%.2x%.2x:%.2x%.2x%.2x%.2x\n", m_Tod[i].uid[0], m_Tod[i].uid[1], m_Tod[i].uid[2], m_Tod[i].uid[3], m_Tod[i].uid[4], m_Tod[i].uid[5]);
 	}

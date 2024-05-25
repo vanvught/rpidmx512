@@ -168,7 +168,7 @@
 /* sensors.txt */
 # include "rdmsensorsparams.h"
 /* "subdev.txt" */
-# if defined (ENABLE_RDM_SUBDEVICES)
+# if defined (CONFIG_RDM_ENABLE_SUBDEVICES)
 #  include "rdmsubdevicesparams.h"
 # endif
 #endif
@@ -423,7 +423,7 @@ void RemoteConfig::HandleUptime() {
 	const auto nCmdLength = s_GET[static_cast<uint32_t>(remoteconfig::udp::get::Command::UPTIME)].nLength;
 
 	if (m_nBytesReceived == nCmdLength) {
-		const auto nLength = snprintf(s_pUdpBuffer, remoteconfig::udp::BUFFER_SIZE - 1, "uptime: %us\n", nUptime);
+		const auto nLength = snprintf(s_pUdpBuffer, remoteconfig::udp::BUFFER_SIZE - 1, "uptime: %us\n", static_cast<unsigned int>(nUptime));
 		Network::Get()->SendTo(m_nHandle, s_pUdpBuffer, static_cast<uint16_t>(nLength), m_nIPAddressFrom, remoteconfig::udp::PORT);
 		DEBUG_EXIT
 		return;
@@ -462,18 +462,18 @@ void RemoteConfig::HandleList() {
 	int32_t nListLength;
 
 	if (s_RemoteConfigListBin.aDisplayName[0] != '\0') {
-		nListLength = snprintf(pListResponse, nListResponseBufferLength - 1, "" IPSTR ",%s,%s,%d,%s\n",
+		nListLength = snprintf(pListResponse, nListResponseBufferLength - 1, "" IPSTR ",%s,%s,%u,%s\n",
 				IP2STR(Network::Get()->GetIp()),
 				s_Node[static_cast<uint32_t>(m_tNode)],
 				s_Output[static_cast<uint32_t>(m_tOutput)],
-				m_nActiveOutputs,
+				static_cast<unsigned int>(m_nActiveOutputs),
 				s_RemoteConfigListBin.aDisplayName);
 	} else {
-		nListLength = snprintf(pListResponse, nListResponseBufferLength - 1, "" IPSTR ",%s,%s,%d\n",
+		nListLength = snprintf(pListResponse, nListResponseBufferLength - 1, "" IPSTR ",%s,%s,%u\n",
 				IP2STR(Network::Get()->GetIp()),
 				s_Node[static_cast<uint32_t>(m_tNode)],
 				s_Output[static_cast<uint32_t>(m_tOutput)],
-				m_nActiveOutputs);
+				static_cast<unsigned int>(m_nActiveOutputs));
 	}
 
 	Network::Get()->SendTo(m_nHandle, pListResponse, static_cast<uint16_t>(nListLength), m_nIPAddressFrom, remoteconfig::udp::PORT);
@@ -670,7 +670,7 @@ void RemoteConfig::HandleGetRdmSensorsTxt(uint32_t& nSize) {
 	DEBUG_EXIT
 }
 
-# if defined (ENABLE_RDM_SUBDEVICES)
+# if defined (CONFIG_RDM_ENABLE_SUBDEVICES)
 void RemoteConfig::HandleGetRdmSubdevTxt(uint32_t& nSize) {
 	DEBUG_ENTRY
 
@@ -1179,7 +1179,7 @@ void RemoteConfig::HandleSetRdmSensorsTxt() {
 	DEBUG_EXIT
 }
 
-# if defined (ENABLE_RDM_SUBDEVICES)
+# if defined (CONFIG_RDM_ENABLE_SUBDEVICES)
 void RemoteConfig::HandleSetRdmSubdevTxt() {
 	DEBUG_ENTRY
 

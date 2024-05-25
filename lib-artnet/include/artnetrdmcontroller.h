@@ -2,7 +2,7 @@
  * @file artnetrdmcontroller.h
  *
  */
-/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,38 +38,35 @@
 
 #include "debug.h"
 
-class ArtNetRdmController: public RDMDeviceController, RDMDiscovery {
+class ArtNetRdmController final: public RDMDeviceController, RDMDiscovery {
 public:
-	ArtNetRdmController();
-
-	void Print() {
-		RDMDeviceController::Print();
+	ArtNetRdmController(): RDMDiscovery(RDMDeviceController::GetUID()) {
+		DEBUG_ENTRY
+		DEBUG_EXIT
 	}
-
-	const uint8_t *Handler(uint32_t nPortIndex, const uint8_t *pRdmData);
 
 	// Discovery
 
-	void Full(uint32_t nPortIndex) {
+	void Full(const uint32_t nPortIndex) {
 		DEBUG_ENTRY
 		assert(nPortIndex < artnetnode::MAX_PORTS);
 		RDMDiscovery::Full(nPortIndex, &m_pRDMTod[nPortIndex]);
 		DEBUG_EXIT
 	}
 
-	void Incremental(uint32_t nPortIndex) {
+	void Incremental(const uint32_t nPortIndex) {
 		DEBUG_ENTRY
 		assert(nPortIndex < artnetnode::MAX_PORTS);
 		RDMDiscovery::Incremental(nPortIndex, &m_pRDMTod[nPortIndex]);
 		DEBUG_EXIT
 	}
 
-	uint32_t GetUidCount(uint32_t nPortIndex) {
+	uint32_t GetUidCount(const uint32_t nPortIndex) {
 		assert(nPortIndex < artnetnode::MAX_PORTS);
 		return m_pRDMTod[nPortIndex].GetUidCount();
 	}
 
-	void TodCopy(uint32_t nPortIndex, uint8_t *pTod) {
+	void TodCopy(const uint32_t nPortIndex, uint8_t *pTod) {
 		DEBUG_ENTRY
 		assert(nPortIndex < artnetnode::MAX_PORTS);
 		m_pRDMTod[nPortIndex].Copy(pTod);
@@ -120,25 +117,25 @@ public:
 
 	// Gateway
 
-	bool RdmReceive(uint32_t nPortIndex, uint8_t *pRdmData);
+	bool RdmReceive(const uint32_t nPortIndex, const uint8_t *pRdmData);
 
-	void TodReset(uint32_t nPortIndex) {
+	void TodReset(const uint32_t nPortIndex) {
 		assert(nPortIndex < artnetnode::MAX_PORTS);
 		m_pRDMTod[nPortIndex].Reset();
 	}
 
-	bool TodAddUid(uint32_t nPortIndex, const uint8_t *pUid) {
+	bool TodAddUid(const uint32_t nPortIndex, const uint8_t *pUid) {
 		return m_pRDMTod[nPortIndex].AddUid(pUid);
 	}
 
 	// Generic
 
-	bool CopyTodEntry(uint32_t nPortIndex, uint32_t nIndex, uint8_t uid[RDM_UID_SIZE]) {
+	bool CopyTodEntry(const uint32_t nPortIndex, uint32_t nIndex, uint8_t uid[RDM_UID_SIZE]) {
 		assert(nPortIndex < artnetnode::MAX_PORTS);
 		return m_pRDMTod[nPortIndex].CopyUidEntry(nIndex, uid);
 	}
 
-	void TodDump(uint32_t nPortIndex) {
+	void TodDump(const uint32_t nPortIndex) {
 		assert(nPortIndex < artnetnode::MAX_PORTS);
 		m_pRDMTod[nPortIndex].Dump();
 	}
@@ -149,11 +146,7 @@ public:
 	}
 
 private:
-	void RespondMessageAck(uint32_t nPortIndex, const uint8_t *pUid, const struct TRdmMessage *pRdmMessage);
-
-private:
 	static RDMTod m_pRDMTod[artnetnode::MAX_PORTS];
-	static TRdmMessage s_rdmMessage;
 };
 
 #endif /* ARTNETRDMCONTROLLER_H_ */

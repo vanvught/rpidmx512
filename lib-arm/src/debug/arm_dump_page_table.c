@@ -43,7 +43,7 @@ static void _print_bits(uint32_t u) {
 		u = u >> 1;
 	}
 
-	printf("\n");
+	puts("");
 }
 
 static void _dump_page_table(const uint32_t *p) {

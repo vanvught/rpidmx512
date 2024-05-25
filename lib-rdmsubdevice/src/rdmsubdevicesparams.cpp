@@ -2,7 +2,7 @@
  * @file rdmsubdevicesparams.cpp
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,7 +42,7 @@
 #include "sscan.h"
 #include "propertiesbuilder.h"
 
-#if defined(ENABLE_RDM_SUBDEVICES)
+#if defined(CONFIG_RDM_ENABLE_SUBDEVICES)
 # if defined(CONFIG_RDM_SUBDEVICES_USE_SPI)
 #  include "spi/rdmsubdevicebw7fets.h"
 #  include "spi/rdmsubdevicebwdimmer.h"
@@ -134,7 +134,7 @@ void RDMSubDevicesParams::Builder(const rdm::subdevicesparams::Params *pParams, 
 	for (uint32_t nCount = 0; nCount < m_Params.nCount; nCount++) {
 		char buffer[32];
 		const auto *p = &m_Params.Entry[nCount];
-		snprintf(buffer, sizeof(buffer) - 1, "%u,%s,%u,%u,%u", p->nChipSelect, rdm::subdevices::get_type_string(static_cast<rdm::subdevices::Types>(p->nType)), p->nAddress, p->nDmxStartAddress, p->nSpeedHz);
+		snprintf(buffer, sizeof(buffer) - 1, "%u,%s,%u,%u,%u", p->nChipSelect, rdm::subdevices::get_type_string(static_cast<rdm::subdevices::Types>(p->nType)), p->nAddress, p->nDmxStartAddress, static_cast<unsigned int>(p->nSpeedHz));
 		builder.AddRaw(buffer);
 	}
 
@@ -160,7 +160,7 @@ bool RDMSubDevicesParams::Add(RDMSubDevice *pRDMSubDevice) {
 }
 
 void RDMSubDevicesParams::Set() {
-#if defined(ENABLE_RDM_SUBDEVICES)
+#if defined(CONFIG_RDM_ENABLE_SUBDEVICES)
 	for (uint32_t i = 0; i < m_Params.nCount; i++) {
 # if defined(CONFIG_RDM_SUBDEVICES_USE_SPI) ||  defined(CONFIG_RDM_SUBDEVICES_USE_I2C)
 		const auto nChipSelect = m_Params.Entry[i].nChipSelect;

@@ -38,7 +38,7 @@
 #endif
 
 #if defined (OUTPUT_DMX_PIXEL) || defined (OUTPUT_DMX_PIXEL_MULTI)
-# define SHOWFILE_ENABLE_DMX_MASTER
+# define CONFIG_SHOWFILE_ENABLE_MASTER
 #endif
 
 #include "debug.h"
@@ -48,7 +48,7 @@ bool filename_copyto(char *pShowFileName, const uint32_t nLength, const uint32_t
 bool filename_check(const char *pShowFileName, uint32_t &nShowFileNumber);
 }  // namespace showfile
 
-class ShowFile: public ShowFileFormat {
+class ShowFile final: public ShowFileFormat {
 public:
 #if defined (CONFIG_SHOWFILE_ENABLE_OSC)
 	ShowFile(uint16_t nPortIncoming = osc::port::DEFAULT_INCOMING, uint16_t nPortOutgoing = osc::port::DEFAULT_OUTGOING);
@@ -56,17 +56,21 @@ public:
 	ShowFile();
 #endif
 
-	void Start() {
+	void Play() {
 		DEBUG_ENTRY
+
+		if ((m_Mode == showfile::Mode::RECORDER) || (m_Status == showfile::Status::PLAYING) || (m_Status == showfile::Status::RECORDING)) {
+			DEBUG_EXIT
+			return;
+		}
 
 		EnableTFTP(false);
 
 		if (m_pShowFile != nullptr) {
 			ShowFileFormat::ShowFileStart();
-			ShowFileProtocol::Start();
 			SetStatus(showfile::Status::PLAYING);
 		} else {
-			SetStatus(showfile::Status::STOPPED);
+			SetStatus(showfile::Status::IDLE);
 		}
 
 		DEBUG_EXIT
@@ -77,8 +81,15 @@ public:
 
 		if (m_pShowFile != nullptr) {
 			ShowFileFormat::ShowFileStop();
-			ShowFileProtocol::Stop();
-			SetStatus(showfile::Status::STOPPED);
+
+			if ((m_Status == showfile::Status::STOPPED) || (m_Status == showfile::Status::RECORDING)) {
+				if (m_Status == showfile::Status::RECORDING) {
+					fclose(m_pShowFile);
+				}
+				SetStatus(showfile::Status::IDLE);
+			} else {
+				SetStatus(showfile::Status::STOPPED);
+			}
 		}
 
 		DEBUG_EXIT
@@ -86,6 +97,11 @@ public:
 
 	void Resume() {
 		DEBUG_ENTRY
+
+		if (m_Status != showfile::Status::STOPPED) {
+			DEBUG_EXIT
+			return;
+		}
 
 		if (m_pShowFile != nullptr) {
 			ShowFileFormat::ShowFileResume();
@@ -95,13 +111,29 @@ public:
 		DEBUG_EXIT
 	}
 
-	void Run() {
-		if (m_Status == showfile::Status::PLAYING) {
-			ShowFileFormat::ShowFileRun();
-			ShowFileProtocol::Run();
+#if !defined (CONFIG_SHOWFILE_DISABLE_RECORD)
+	void Record() {
+		DEBUG_ENTRY
+
+		if ((m_Mode == showfile::Mode::PLAYER) || (m_Status != showfile::Status::IDLE)) {
+			DEBUG_EXIT
+			return;
 		}
 
-		#if defined (CONFIG_SHOWFILE_ENABLE_OSC)
+		if (m_pShowFile != nullptr) {
+			ShowFileFormat::ShowFileRecord();
+			SetStatus(showfile::Status::RECORDING);
+		} else {
+			SetStatus(showfile::Status::IDLE);
+		}
+
+		DEBUG_EXIT
+	}
+#endif
+
+	void Run() {
+		ShowFileFormat::ShowFileRun(m_Status == showfile::Status::PLAYING);
+#if defined (CONFIG_SHOWFILE_ENABLE_OSC)
 		m_showFileOSC.Run();
 #endif
 #if !defined(CONFIG_SHOWFILE_DISABLE_TFTP)
@@ -113,18 +145,24 @@ public:
 
 	void Print() {
 		puts("Showfile");
-		if (m_aShowFileName[0] != '\0') {
-			printf(" %s\n", m_aShowFileName);
+		if (m_aShowFileNameCurrent[0] != '\0') {
+			printf(" %s\n", m_aShowFileNameCurrent);
 		}
-		if (m_bAutoStart) {
-			puts(" Auto start");
+		if (m_bAutoPlay) {
+			puts(" Auto play");
 		}
 		printf(" %s\n", m_bDoLoop ? "Looping" : "Not looping");
+#if defined (CONFIG_SHOWFILE_DISABLE_RECORD)
+		puts(" Recorder is disabled.");
+#endif
 		ShowFileFormat::ShowFilePrint();
-		ShowFileProtocol::Print();
 #if defined (CONFIG_SHOWFILE_ENABLE_OSC)
 		m_showFileOSC.Print();
 #endif
+	}
+
+	showfile::Mode GetMode() const {
+		return m_Mode;
 	}
 
 	void SetStatus(const showfile::Status Status);
@@ -144,17 +182,28 @@ public:
 		m_nShowFileCurrent = showfile::FILE_MAX_NUMBER + 1U;
 	}
 
-	void SetShowFile(const uint32_t nShowFileNumber);
+	void SetPlayerShowFileCurrent(const uint32_t nShowFileNumber);
 
-	const char *GetShowFileName() const {
-		return static_cast<const char *>(m_aShowFileName);
+#if !defined (CONFIG_SHOWFILE_DISABLE_RECORD)
+	void SetRecorderShowFileCurrent(const uint32_t nShowFileNumber);
+#endif
+
+	const char *GetShowFileNameCurrent() const {
+		return static_cast<const char *>(m_aShowFileNameCurrent);
 	}
 
-	uint32_t GetShowFile() const {
+	uint32_t GetShowFileCurrent() const {
 		return m_nShowFileCurrent;
 	}
 
-	int8_t GetShowFile(const uint32_t nIndex) {
+	uint32_t GetShows() {
+		if (m_nShows == 0) {
+			LoadShows();
+		}
+		return m_nShows;
+	}
+
+	int32_t GetPlayerShowFile(const uint32_t nIndex) const {
 		if (nIndex < sizeof(m_nShowFileNumber) / sizeof(m_nShowFileNumber[0]) ) {
 			return m_nShowFileNumber[nIndex];
 		}
@@ -162,14 +211,9 @@ public:
 		return -1;
 	}
 
-	uint8_t GetShows() {
-		if (m_nShows == 0) {
-			LoadShows();
-		}
-		return m_nShows;
-	}
-
 	bool DeleteShowFile(const uint32_t nShowFileNumber);
+
+	bool GetShowFileSize(const uint32_t nShowFileNumber, uint32_t &nSize);
 
 	void DoLoop(const bool bDoLoop) {
 		m_bDoLoop = bDoLoop;
@@ -179,24 +223,28 @@ public:
 		return m_bDoLoop;
 	}
 
-	void SetAutoStart(const bool bAutoStart) {
-		m_bAutoStart = bAutoStart;
+	void SetAutoStart(const bool bAutoPlay) {
+		m_bAutoPlay = bAutoPlay;
 	}
 
 	bool IsAutoStart() const {
-		return m_bAutoStart;
+		return m_bAutoPlay;
+	}
+
+	bool IsSyncDisabled() {
+		return ShowFileFormat::IsSyncDisabled();
 	}
 
 	void BlackOut() {
-#if defined (SHOWFILE_ENABLE_DMX_MASTER)
+#if defined (CONFIG_SHOWFILE_ENABLE_MASTER)
 		Stop();
-		ShowFileProtocol::DmxBlackout();
+		ShowFileFormat::BlackOut();
 #endif
 	}
 
 	void SetMaster([[maybe_unused]] const uint32_t nMaster) {
-#if defined (SHOWFILE_ENABLE_DMX_MASTER)
-		ShowFileProtocol::DmxMaster(nMaster);
+#if defined (CONFIG_SHOWFILE_ENABLE_MASTER)
+		ShowFileFormat::SetMaster(nMaster);
 #endif
 	}
 
@@ -235,19 +283,24 @@ public:
 	}
 #endif
 
-	static ShowFile* Get() {
+	static ShowFile *Get() {
 		return s_pThis;
 	}
+
+private:
+	void OpenFile(const showfile::Mode mode, const uint32_t nShowFileNumber);
+	bool AddShow(const uint32_t nShowFileNumber);
 
 private:
 #if defined (CONFIG_SHOWFILE_ENABLE_OSC)
 	ShowFileOSC m_showFileOSC;
 #endif
+	showfile::Mode m_Mode {showfile::Mode::PLAYER };
 	showfile::Status m_Status { showfile::Status::IDLE };
-	char m_aShowFileName[showfile::FILE_NAME_LENGTH + 1]; // Including '\0'
-	uint8_t m_nShows { 0 };
-	int8_t m_nShowFileNumber[showfile::FILE_MAX_NUMBER + 1];
-	bool m_bAutoStart { false };
+	char m_aShowFileNameCurrent[showfile::FILE_NAME_LENGTH + 1]; // Including '\0'
+	uint32_t m_nShows { 0 };
+	int32_t m_nShowFileNumber[showfile::FILE_MAX_NUMBER + 1];
+	bool m_bAutoPlay { false };
 #if !defined(CONFIG_SHOWFILE_DISABLE_TFTP)
 	bool m_bEnableTFTP { false };
 	ShowFileTFTP *m_pShowFileTFTP { nullptr };

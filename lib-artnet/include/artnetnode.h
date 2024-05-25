@@ -45,6 +45,10 @@
 # endif
 #endif
 
+#if defined (NODE_SHOWFILE) && defined (CONFIG_SHOWFILE_PROTOCOL_NODE_ARTNET)
+# define ARTNET_SHOWFILE
+#endif
+
 #include "artnet.h"
 #include "artnetnode_ports.h"
 #include "artnettimecode.h"
@@ -79,53 +83,16 @@ enum class FailSafe : uint8_t {
 	LAST = 0x08, OFF= 0x09, ON = 0x0a, PLAYBACK = 0x0b, RECORD = 0x0c
 };
 
-/**
- * Table 3 – NodeReport Codes
- * The NodeReport code defines generic error, advisory and status messages for both Nodes and Controllers.
- * The NodeReport is returned in ArtPollReply.
- */
-enum class ReportCode : uint8_t {
-	RCDEBUG,
-	RCPOWEROK,
-	RCPOWERFAIL,
-	RCSOCKETWR1,
-	RCPARSEFAIL,
-	RCUDPFAIL,
-	RCSHNAMEOK,
-	RCLONAMEOK,
-	RCDMXERROR,
-	RCDMXUDPFULL,
-	RCDMXRXFULL,
-	RCSWITCHERR,
-	RCCONFIGERR,
-	RCDMXSHORT,
-	RCFIRMWAREFAIL,
-	RCUSERFAIL
-};
-
-enum class Status : uint8_t {
-	OFF, STANDBY, ON
-};
-
-struct ArtPollQueue {
-	uint32_t ArtPollMillis;
-	uint32_t ArtPollReplyIpAddress;
-	struct {
-		uint16_t TargetPortAddressTop;
-		uint16_t TargetPortAddressBottom;
-	} ArtPollReply;
-};
-
 struct State {
 	uint32_t ArtDiagIpAddress;
 	uint32_t ArtPollIpAddress;
 	uint32_t ArtPollReplyCount;
 	uint32_t ArtPollReplyDelayMillis;
-	ArtPollQueue ArtPollReplyQueue[4];
+	artnet::ArtPollQueue ArtPollReplyQueue[4];
 	uint32_t ArtDmxIpAddress;
 	uint32_t ArtSyncMillis;				///< Latest ArtSync received time
-	ReportCode reportCode;
-	Status status;
+	artnet::ReportCode reportCode;
+	artnet::Status status;
 	bool SendArtPollReplyOnChange;		///< ArtPoll : Flags Bit 1 : 1 = Send ArtPollReply whenever Node conditions change.
 	bool SendArtDiagData;				///< ArtPoll : Flags Bit 2 : 1 = Send me diagnostics messages.
 	bool IsMultipleControllersReqDiag;	///< ArtPoll : Multiple controllers requesting diagnostics
@@ -133,6 +100,7 @@ struct State {
 	bool IsMergeMode;
 	bool IsChanged;
 	bool bDisableMergeTimeout;
+	bool DoRecord;
 	uint8_t nReceivingDmx;
 	uint8_t nEnabledOutputPorts;
 	uint8_t nEnabledInputPorts;
@@ -171,6 +139,7 @@ struct OutputPort {
 	Source SourceB;
 	uint8_t GoodOutput;
 	uint8_t GoodOutputB;
+	uint32_t nIpRdm;
 	uint8_t nPollReplyIndex;
 	bool IsTransmitting;
 	bool IsDataPending;
@@ -247,7 +216,7 @@ public:
 				if (m_pArtNetRdmController->IsFinished(nPortIndex, bIsIncremental)) {
 					SendTod(nPortIndex);
 
-					DEBUG_PRINTF("TOD sent -> %u", nPortIndex);
+					DEBUG_PRINTF("TOD sent -> %u", static_cast<unsigned int>(nPortIndex));
 
 					if (m_OutputPort[nPortIndex].IsTransmitting) {
 						DEBUG_PUTS("m_pLightSet->Stop/Start");
@@ -278,7 +247,7 @@ public:
 #endif
 	}
 
-#if defined (NODE_SHOWFILE) && defined (CONFIG_SHOWFILE_PROTOCOL_NODE_ARTNET)
+#if defined (ARTNET_SHOWFILE)
 	void HandleShowFile(const artnet::ArtDmx *pArtDmx) {
 		m_nCurrentPacketMillis = Hardware::Get()->Millis();
 		m_nIpAddressFrom = Network::Get()->GetIp();
@@ -286,6 +255,13 @@ public:
 		HandleDmx();
 	}
 #endif
+
+	void SetRecordShowfile(const bool doRecord) {
+		m_State.DoRecord = doRecord;
+	}
+	bool GetRecordShowfile() const {
+		return m_State.DoRecord;
+	}
 
 	uint8_t GetVersion() const {
 		return artnet::VERSION;
@@ -425,6 +401,14 @@ public:
 		return 0;
 	}
 
+	uint32_t RdmGetUidCount(const uint32_t nPortIndex) {
+		if (m_pArtNetRdmController != nullptr) {
+			return m_pArtNetRdmController->GetUidCount(nPortIndex);
+		}
+
+		return 0;
+	}
+
 	uint32_t RdmCopyTod(const uint32_t nPortIndex, char *pOutBuffer, const uint32_t nOutBufferSize) {
 		if (m_pArtNetRdmController != nullptr) {
 			return m_pArtNetRdmController->CopyTod(nPortIndex, pOutBuffer, nOutBufferSize);
@@ -433,7 +417,7 @@ public:
 		return 0;
 	}
 
-	bool RdmIsRunning(uint32_t nPortIndex, bool& bIsIncremental) {
+	bool RdmIsRunning(const uint32_t nPortIndex, bool& bIsIncremental) {
 		uint32_t nRdmnPortIndex;
 		if (m_pArtNetRdmController->IsRunning(nRdmnPortIndex, bIsIncremental)) {
 			return (nRdmnPortIndex == nPortIndex);
@@ -574,7 +558,7 @@ private:
 #if defined (ARTNET_ENABLE_SENDDIAG)
 # define UNUSED
 #else
-# define UNUSED  __attribute__((unused))
+# define UNUSED  [[maybe_unused]]
 #endif
 
 	void SendDiag(UNUSED const artnet::PriorityCodes priorityCode, UNUSED const char *format, ...) {
@@ -630,7 +614,7 @@ private:
 	void CheckMergeTimeouts(const uint32_t nPortIndex);
 
 	void ProcessPollRelply(const uint32_t nPortIndex, uint32_t& NumPortsInput, uint32_t& NumPortsOutput);
-	void SendPollRelply(const uint32_t nBindIndex, const uint32_t nDestinationIp, artnetnode::ArtPollQueue *pQueue = nullptr);
+	void SendPollRelply(const uint32_t nBindIndex, const uint32_t nDestinationIp, artnet::ArtPollQueue *pQueue = nullptr);
 
 	void SendTod(uint32_t nPortIndex);
 	void SendTodRequest(uint32_t nPortIndex);
@@ -666,7 +650,7 @@ private:
 			}
 
 			if (!m_pArtNetRdmController->IsRunning(nPortIndex, bIsIncremental)) {
-				DEBUG_PRINTF("RDM Discovery Incremental -> %u", m_State.rdm.nDiscoveryPortIndex);
+				DEBUG_PRINTF("RDM Discovery Incremental -> %u", static_cast<unsigned int>(m_State.rdm.nDiscoveryPortIndex));
 				m_pArtNetRdmController->Incremental(m_State.rdm.nDiscoveryPortIndex);
 			}
 

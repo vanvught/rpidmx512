@@ -37,18 +37,24 @@ uint32_t json_get_directory(char *pOutBuffer, const uint32_t nOutBufferSize) {
 	const auto nBufferSize = nOutBufferSize - 2U;
 	auto nLength = static_cast<uint32_t>(snprintf(pOutBuffer, nBufferSize, "{\"shows\":["));
 
-	for (uint32_t nShows = 0; nShows < ShowFile::Get()->GetShows(); nShows++) {
-		const auto nSize = nBufferSize - nLength;
-		const auto nCharacters = static_cast<uint32_t>(snprintf(&pOutBuffer[nLength], nSize, "\"%d\",", ShowFile::Get()->GetShowFile(nShows)));
+	for (uint32_t nShowIndex = 0; nShowIndex < ShowFile::Get()->GetShows(); nShowIndex++) {
+		const auto nShow = ShowFile::Get()->GetPlayerShowFile(nShowIndex);
+		if (nShow >= 0) {
+			uint32_t nFileSize;
+			if (ShowFile::Get()->GetShowFileSize(static_cast<uint32_t>(nShow), nFileSize)) {
+				const auto nSize = nBufferSize - nLength;
+				const auto nCharacters = static_cast<uint32_t>(snprintf(&pOutBuffer[nLength], nSize, "{\"show\":%d,\"size\":%u},", nShow, nFileSize));
 
-		if (nCharacters > nSize) {
-			break;
-		}
+				if (nCharacters > nSize) {
+					break;
+				}
 
-		nLength+=nCharacters;
+				nLength+=nCharacters;
 
-		if (nLength >= nBufferSize) {
-			break;
+				if (nLength >= nBufferSize) {
+					break;
+				}
+			}
 		}
 	}
 

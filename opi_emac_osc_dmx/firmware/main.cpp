@@ -57,7 +57,7 @@ void Hardware::RebootHandler() {
 	Dmx::Get()->Blackout();
 }
 
-void main() {
+int main() {
 	Hardware hw;
 	Display display;
 	ConfigStore configStore;

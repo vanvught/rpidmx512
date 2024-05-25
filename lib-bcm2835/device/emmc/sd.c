@@ -2,7 +2,7 @@
  * @file sd.c
  *
  */
-/* Copyright (C) 2015-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2015-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  * Based on
  * https://github.com/jncronin/rpi-boot/blob/master/emmc.c
  *
@@ -34,6 +34,8 @@
 
 #include "sd.h"
 #include "device/sdhci.h"
+
+extern void udelay(uint32_t);
 
 #define TIMEOUT_WAIT(stop_if_true, usec) 						\
 do {															\
@@ -388,7 +390,7 @@ extern int printf(const char *format, ...);
 #define EMMC_TRACE(...)     {										\
         printf("EMMC %s:%4d[%s] : ", __FILE__, __LINE__, __func__);	\
         printf(__VA_ARGS__);										\
-        printf("\n"); }
+        puts(""); }
 #else
 #define EMMC_TRACE(...)
 #endif
@@ -397,7 +399,7 @@ extern int printf(const char *format, ...);
 #define SD_TRACE(...)     {											\
         printf("SD   %s:%4d[%s] : ", __FILE__, __LINE__, __func__);	\
         printf(__VA_ARGS__);										\
-        printf("\n"); }
+        puts(""); }
 #else
 #define SD_TRACE(...)
 #endif

@@ -1,6 +1,5 @@
-#
-DEFINES = NDEBUG
-#
-EXTRA_INCLUDES = ../lib-console/include
-#
+DEFINES=NDEBUG
+EXTRA_SRCDIR=src/ca
+EXTRA_INCLUDES=../lib-console/include
+
 include ../firmware-template-h3/lib/Rules.mk

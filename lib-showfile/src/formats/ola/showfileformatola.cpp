@@ -35,7 +35,9 @@
 
 #include "debug.h"
 
-void ShowFileFormat::ShowFileRun() {
+ShowFileFormat *ShowFileFormat::s_pThis;
+
+void ShowFileFormat::Run() {
 	if (m_OlaState != OlaState::TIME_WAITING) {
 		m_OlaParseCode = GetNextLine();
 

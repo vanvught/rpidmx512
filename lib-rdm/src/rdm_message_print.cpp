@@ -83,13 +83,13 @@ void message_print(const uint8_t *pRdmData) {
 			}
 		}
 
-		printf("\n");
+		puts("");
 
 	} else if (pRdmData[0] == 0xFE) {
 		for (uint32_t i = 0 ; i < 24; i++) {
 			printf("%.2x ", pRdmData[i]);
 		}
-		printf("\n");
+		puts("");
 	} else {
 		printf("Corrupted? RDM data [0-3]: %.2x:%.2x:%.2x:%.2x\n", pRdmData[0], pRdmData[1], pRdmData[2], pRdmData[3]);
 	}

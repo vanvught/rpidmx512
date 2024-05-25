@@ -2,7 +2,7 @@
  * @file lightset64with4.h
  *
  */
-/* Copyright (C) 2022-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2022-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -54,7 +54,7 @@ public:
 	}
 
 	void Start(const uint32_t nPortIndex) override {
-		if ((nPortIndex < 32) && (m_pA != nullptr)) {
+		if ((nPortIndex < 64) && (m_pA != nullptr)) {
 			return m_pA->Start(nPortIndex);
 		}
 		if (m_pB != nullptr) {
@@ -71,7 +71,7 @@ public:
 		}
 	}
 
-	void SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate) override {
+	void SetData(const uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate) override {
 		if ((nPortIndex < 64) && (m_pA != nullptr)) {
 			return m_pA->SetData(nPortIndex, pData, nLength, doUpdate);
 		}
@@ -82,25 +82,25 @@ public:
 
 	void Sync(const uint32_t nPortIndex) override {
 		if (m_pA != nullptr) {
-			return m_pA->Sync(nPortIndex);
+			m_pA->Sync(nPortIndex);
 		}
 		if (m_pB != nullptr) {
-			return m_pB->Sync(nPortIndex);
+			m_pB->Sync(nPortIndex);
 		}
 	}
 
 	void Sync(const bool doForce) override {
 		if (m_pA != nullptr) {
-			return m_pA->Sync(doForce);
+			m_pA->Sync(doForce);
 		}
 		if (m_pB != nullptr) {
-			return m_pB->Sync(doForce);
+			m_pB->Sync(doForce);
 		}
 	}
 
 #if defined (OUTPUT_HAVE_STYLESWITCH)
 	void SetOutputStyle(const uint32_t nPortIndex, const lightset::OutputStyle outputStyle) override {
-		if (m_pA != nullptr) {
+		if ((nPortIndex < 64) && (m_pA != nullptr)) {
 			return m_pA->SetOutputStyle(nPortIndex, outputStyle);
 		}
 		if (m_pB != nullptr) {
@@ -109,7 +109,7 @@ public:
 	}
 
 	lightset::OutputStyle GetOutputStyle(const uint32_t nPortIndex) const override {
-		if (m_pA != nullptr) {
+		if ((nPortIndex < 64) && (m_pA != nullptr)) {
 			return m_pA->GetOutputStyle(nPortIndex);
 		}
 		if (m_pB != nullptr) {
@@ -138,7 +138,7 @@ public:
 		}
 	}
 
-	bool SetDmxStartAddress(__attribute__((unused)) uint16_t nDmxStartAddress) override {
+	bool SetDmxStartAddress([[maybe_unused]] uint16_t nDmxStartAddress) override {
 		return false;
 	}
 
@@ -150,7 +150,7 @@ public:
 		return 0;
 	}
 
-	bool GetSlotInfo(__attribute__((unused)) uint16_t nSlotOffset, __attribute__((unused)) lightset::SlotInfo &tSlotInfo) override {
+	bool GetSlotInfo([[maybe_unused]] uint16_t nSlotOffset, [[maybe_unused]] lightset::SlotInfo &tSlotInfo) override {
 		return false;
 	}
 

@@ -2,7 +2,7 @@
  * @file artnetrdmresponder.cpp
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,73 +23,6 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cstring>
-
 #include "artnetrdmresponder.h"
 
-#include "rdmdeviceresponder.h"
-#include "rdmhandler.h"
-#include "rdm_message_print.h"
-#include "rdmconst.h"
-#include "rdm_e120.h"
-
-#include "lightset.h"
-
-#include "debug.h"
-
-namespace configstore {
-void delay();
-}  // namespace configstore
-
-ArtNetRdmResponder *ArtNetRdmResponder::s_pThis;
 TRdmMessage ArtNetRdmResponder::s_RdmCommand;
-
-ArtNetRdmResponder::ArtNetRdmResponder(RDMPersonality **pRDMPersonalities, uint32_t nPersonalityCount) :
-	RDMDeviceResponder(pRDMPersonalities, nPersonalityCount)
-{
-	DEBUG_ENTRY
-
-	assert(s_pThis == nullptr);
-	s_pThis = this;
-
-	DEBUG_EXIT
-}
-
-ArtNetRdmResponder::~ArtNetRdmResponder() {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
-const uint8_t *ArtNetRdmResponder::Handler(uint32_t nPortIndex, const uint8_t *pRdmDataNoSC) {
-	DEBUG_ENTRY
-
-	if (nPortIndex != 0) {
-		DEBUG_EXIT
-		return nullptr;
-	}
-
-	if (pRdmDataNoSC == nullptr) {
-		DEBUG_EXIT
-		return nullptr;
-	}
-
-#ifndef NDEBUG
-	rdm::message_print_no_sc(pRdmDataNoSC);
-#endif
-
-	HandleData(pRdmDataNoSC, reinterpret_cast<uint8_t*>(&s_RdmCommand));
-
-	if (s_RdmCommand.start_code != E120_SC_RDM) {
-		DEBUG_EXIT
-		return nullptr;
-	}
-
-#ifndef NDEBUG
-	rdm::message_print(reinterpret_cast<uint8_t*>(&s_RdmCommand));
-#endif
-
-	DEBUG_EXIT
-	return reinterpret_cast<const uint8_t*>(&s_RdmCommand);
-}

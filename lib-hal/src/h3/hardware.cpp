@@ -132,8 +132,12 @@ const char *Hardware::GetSocName(uint8_t &nLength) {
 #include <cstdio>
 
 bool Hardware::Reboot() {
-	printf("Rebooting ...\n");
+	puts("Rebooting ...");
 	
+#if !defined(DISABLE_RTC)
+	m_HwClock.SysToHc();
+#endif
+
 	h3_watchdog_disable();
 
 	RebootHandler();

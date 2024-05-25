@@ -163,7 +163,7 @@ void Hardware::GetTime(struct tm *pTime) {
 	time_t ltime;
 	struct tm *local_time;
 
-	ltime = time(NULL);
+	ltime = time(nullptr);
     local_time = localtime(&ltime);
 
     pTime->tm_year = local_time->tm_year;

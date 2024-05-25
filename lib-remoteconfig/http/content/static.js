@@ -28,6 +28,16 @@ function post(s) {
 	})
 }
 
+function delet(s) {
+  return fetch('/json/action', {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(s)
+  })
+}
+
 function reboot() {
 	post({ reboot: 1 })
 }

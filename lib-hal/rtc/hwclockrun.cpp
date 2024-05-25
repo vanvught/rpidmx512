@@ -2,7 +2,7 @@
  * @file hwclockrun.cpp
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -63,7 +63,7 @@ void HwClock::Process() {
 	if (Status == Status::SAMPLING) {
 		RtcGet(&rtcT2);
 
-		const int32_t nSeconds2 = rtcT2.tm_sec + rtcT2.tm_min * 60;
+		const auto nSeconds2 = rtcT2.tm_sec + rtcT2.tm_min * 60;
 
 		if (nSecondsT1 != nSeconds2) {
 			gettimeofday(&tvT2, nullptr);

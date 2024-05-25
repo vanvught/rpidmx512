@@ -59,6 +59,9 @@ void  display_status() {
 		case showfile::Status::ENDED:
 			Display::Get()->PutString("Ended    ");
 			break;
+		case showfile::Status::RECORDING:
+			Display::Get()->PutString("Recording ");
+			break;
 		case showfile::Status::UNDEFINED:
 		default:
 			Display::Get()->PutString("No Status");
@@ -69,7 +72,7 @@ void  display_status() {
 
 	if (ShowFile::Get()->IsTFTPEnabled()) {
 		Display::Get()->PutString("[TFTP On]");
-	} else 	if (ShowFile::Get()->GetDoLoop()) {
+	} else if (ShowFile::Get()->GetDoLoop()) {
 		Display::Get()->PutString("[Looping]");
 	} else {
 		Display::Get()->PutString("         ");

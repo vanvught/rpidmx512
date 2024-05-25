@@ -29,9 +29,6 @@
 #include <cstring>
 #include <cstdio>
 #include <time.h>
-#if !defined (BARE_METAL)
-# include <unistd.h>
-#endif
 #include <cassert>
 
 #include "gps.h"
@@ -39,6 +36,7 @@
 #include "utc.h"
 
 #include "hardware.h"
+#include "hal_api.h"
 
 #include "debug.h"
 
@@ -147,11 +145,7 @@ void GPS::Start() {
 
 	if (m_tModule < GPSModule::UNDEFINED) {
 		UartSend(GPSConst::BAUD_115200[static_cast<unsigned>(m_tModule)]);
-#if defined (BARE_METAL)
 		udelay(100*1000);
-#else
-		sleep(1);
-#endif
 		UartSetBaud(115200);
 		UartSend(GPSConst::BAUD_115200[static_cast<unsigned>(m_tModule)]);
 

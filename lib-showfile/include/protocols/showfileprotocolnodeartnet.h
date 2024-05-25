@@ -59,6 +59,16 @@ public:
 	void Stop() {
 		DEBUG_ENTRY
 
+		ArtNetNode::Get()->SetRecordShowfile(false);
+
+		DEBUG_EXIT
+	}
+
+	void Record() {
+		DEBUG_ENTRY
+
+		ArtNetNode::Get()->SetRecordShowfile(true);
+
 		DEBUG_EXIT
 	}
 

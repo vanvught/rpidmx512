@@ -62,6 +62,12 @@ public:
 		DEBUG_EXIT
 	}
 
+	void Record() {
+		DEBUG_ENTRY
+
+		DEBUG_EXIT
+	}
+
 	void DmxOut(uint16_t nUniverse, const uint8_t *pDmxData, uint32_t nLength) {
 		m_ArtNetController.HandleDmxOut(nUniverse, pDmxData, nLength);
 	}
@@ -74,11 +80,13 @@ public:
 		m_ArtNetController.HandleBlackout();
 	}
 
-	void DmxMaster(uint32_t nMaster) {
+	void DmxMaster([[maybe_unused]] const uint32_t nMaster) {
+#if defined(CONFIG_ARTNET_CONTROLLER_ENABLE_MASTER)
 		m_ArtNetController.SetMaster(nMaster);
+#endif
 	}
 
-	void DoRunCleanupProcess(bool bDoRun) {
+	void DoRunCleanupProcess(const bool bDoRun) {
 		m_ArtNetController.SetRunTableCleanup(bDoRun);
 	}
 

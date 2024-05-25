@@ -47,7 +47,7 @@
 static constexpr char widget_mode_names[4][12] ALIGNED = {"DMX_RDM", "DMX", "RDM" , "RDM_SNIFFER" };
 static constexpr TRDMDeviceInfoData deviceLabel ALIGNED = { const_cast<char*>("Orange Pi Zero DMX USB Pro"), 26 };
 
-void main() {
+int main() {
 	Hardware hw;
 	Display display; 	// Display is not supported. We just need a pointer to object
 	ConfigStore configStore;

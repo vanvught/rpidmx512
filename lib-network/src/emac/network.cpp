@@ -79,10 +79,6 @@ Network::Network() {
 	NetworkParams params;
 	params.Load();
 
-	m_IpInfo.ip.addr = params.GetIpAddress();
-	m_IpInfo.netmask.addr = params.GetNetMask();
-	m_IpInfo.gw.addr = params.GetDefaultGateway();
-	m_IsDhcpUsed = params.isDhcpUsed();
 	m_nNtpServerIp = params.GetNtpServer();
 	m_fNtpUtcOffset = params.GetNtpUtcOffset();
 
@@ -118,11 +114,28 @@ Network::Network() {
 	net::link_status_read();
 #endif
 
-	network::display_emac_status(net::Link::STATE_UP == s_lastState);
+	Start(s_lastState);
+}
 
-	if (net::Link::STATE_UP == s_lastState) {
-		DEBUG_PUTS("net::Link::STATE_UP");
+void Network::Start(const net::Link link) {
+	DEBUG_PRINTF("Link %s", link == net::Link::STATE_UP ? "Up" : "Down");
 
+	NetworkParams params;
+	params.Load();
+
+	m_IpInfo.ip.addr = params.GetIpAddress();
+	m_IpInfo.netmask.addr = params.GetNetMask();
+	m_IpInfo.gw.addr = params.GetDefaultGateway();
+	m_IsDhcpUsed = params.isDhcpUsed();
+	m_nDhcpRetryTime = params.GetDhcpRetryTime();
+
+#ifndef NDEBUG
+	Print();
+#endif
+
+	network::display_emac_status(net::Link::STATE_UP == link);
+
+	if (net::Link::STATE_UP == link) {
 		if (!m_IsDhcpUsed) {
 			DEBUG_PUTS("");
 			if (m_IpInfo.ip.addr == 0) {
@@ -143,17 +156,13 @@ Network::Network() {
 			network::display_dhcp_status(network::dhcp::ClientStatus::FAILED);
 		}
 
-		const auto nRetryTime = params.GetDhcpRetryTime();
-		const auto bUseDhcp = params.isDhcpUsed();
-
-		while (m_IsZeroconfUsed && (nRetryTime != 0) && bUseDhcp) {
+		while (m_IsZeroconfUsed && (m_nDhcpRetryTime != 0) && m_IsDhcpUsed) {
 			Hardware::Get()->SetMode(hardware::ledblink::Mode::FAST);
 
 			network::display_dhcp_status(network::dhcp::ClientStatus::RETRYING);
 
-			DEBUG_PUTS("");
 			auto nTime = time(nullptr);
-			while ((time(nullptr) - nTime) < (nRetryTime * 60)) {
+			while ((time(nullptr) - nTime) < (m_nDhcpRetryTime * 60)) {
 				Hardware::Get()->Run();
 			}
 
@@ -171,8 +180,6 @@ Network::Network() {
 			}
 		}
 	} else {
-		DEBUG_PUTS("net::Link::STATE_DOWN");
-
 		if (m_IsDhcpUsed) {
 			DEBUG_PUTS("m_IsDhcpUsed=true");
 			m_IpInfo.ip.addr = 0;
@@ -397,8 +404,8 @@ bool Network::ApplyQueuedConfig() {
 void Network::Print() {
 	printf("Network [%c]\n", GetAddressingMode());
 	printf(" Hostname  : %s\n", m_aHostName);
-	printf(" IfName    : %d: %s " MACSTR "\n", m_nIfIndex, m_aIfName, MAC2STR(m_aNetMacaddr));
-	printf(" Primary   : " IPSTR "/%d (HTTP only " IPSTR ")\n", IP2STR(m_IpInfo.ip.addr), GetNetmaskCIDR(), IP2STR(m_IpInfo.secondary_ip.addr));
+	printf(" IfName    : %u: %s " MACSTR "\n", static_cast<unsigned int>(m_nIfIndex), m_aIfName, MAC2STR(m_aNetMacaddr));
+	printf(" Primary   : " IPSTR "/%u (HTTP only " IPSTR ")\n", IP2STR(m_IpInfo.ip.addr), static_cast<unsigned int>(GetNetmaskCIDR()), IP2STR(m_IpInfo.secondary_ip.addr));
 	printf(" Gateway   : " IPSTR "\n", IP2STR(m_IpInfo.gw.addr));
 	printf(" Broadcast : " IPSTR "\n", IP2STR(GetBroadcastIp()));
 }

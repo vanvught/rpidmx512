@@ -23,6 +23,8 @@
  * THE SOFTWARE.
  */
 
+#undef NDEBUG
+
 #if defined(__clang__)
 # pragma GCC diagnostic ignored "-Wunused-private-field"
 #endif
@@ -45,7 +47,7 @@
 
 static uint32_t micros(void) {
 	struct timeval tv;
-	gettimeofday(&tv, NULL);
+	gettimeofday(&tv, nullptr);
 	return static_cast<uint32_t>((tv.tv_sec * 1000000) + tv.tv_usec);
 }
 
@@ -53,9 +55,11 @@ static uint32_t micros(void) {
 
 using namespace dmx;
 
-static int s_nHandePortDmx[dmx::config::max::OUT];
-static int s_nHandePortRdm[dmx::config::max::OUT];
+static int s_nHandePortDmx[dmx::config::max::PORTS];
+static int s_nHandePortRdm[dmx::config::max::PORTS];
 static uint8_t rdmReceiveBuffer[1500];
+
+static dmx::TotalStatistics sv_TotalStatistics[dmx::config::max::PORTS];
 
 struct Data dmxDataRx;
 
@@ -63,18 +67,18 @@ static uint8_t dmxSendBuffer[513];
 
 // RDM
 
-volatile uint32_t gv_RdmDataReceiveEnd;
+volatile uint32_t gsv_RdmDataReceiveEnd;
 
 Dmx *Dmx::s_pThis = nullptr;
 
 Dmx::Dmx() {
 	DEBUG_ENTRY
-	printf("Dmx: dmx::config::max::OUT=%u\n", dmx::config::max::OUT);
+	printf("Dmx: dmx::config::max::PORTS=%u\n", dmx::config::max::PORTS);
 
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 
-	for (uint32_t i = 0; i < dmx::config::max::OUT; i++) {
+	for (uint32_t i = 0; i < dmx::config::max::PORTS; i++) {
 		s_nHandePortDmx[i] = Network::Get()->Begin(UDP_PORT_DMX_START + i);
 		assert(s_nHandePortDmx[i] != -1);
 
@@ -89,8 +93,8 @@ Dmx::Dmx() {
 
 void Dmx::SetPortDirection(uint32_t nPortIndex, PortDirection tPortDirection, bool bEnableData) {
 	DEBUG_ENTRY
-	DEBUG_PRINTF("nPortIndex=%u", nPortIndex);
-	assert(nPortIndex < dmx::config::max::OUT);
+	DEBUG_PRINTF("nPortIndex=%u, tPortDirection=%u", nPortIndex, static_cast<uint32_t>(tPortDirection));
+	assert(nPortIndex < dmx::config::max::PORTS);
 
 	if (tPortDirection != m_tDmxPortDirection[nPortIndex]) {
 		StopData(0, nPortIndex);
@@ -118,6 +122,10 @@ void Dmx::SetPortDirection(uint32_t nPortIndex, PortDirection tPortDirection, bo
 void Dmx::ClearData([[maybe_unused]] uint32_t nUart) {
 }
 
+volatile dmx::TotalStatistics& Dmx::GetTotalStatistics(const uint32_t nPortIndex) {
+	return sv_TotalStatistics[nPortIndex];
+}
+
 void Dmx::StartData([[maybe_unused]] uint32_t nUart, [[maybe_unused]] uint32_t nPortIndex) {
 	DEBUG_ENTRY
 	DEBUG_EXIT
@@ -143,7 +151,7 @@ void Dmx::SetDmxSlots([[maybe_unused]] uint16_t nSlots) {
 }
 
 void Dmx::SetSendDataWithoutSC(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
-	assert(nPortIndex < dmx::config::max::OUT);
+	assert(nPortIndex < dmx::config::max::PORTS);
 	assert(pData != 0);
 	assert(nLength != 0);
 	assert(nLength <= 512);
@@ -169,7 +177,7 @@ void Dmx::FullOn() {
 // DMX Receive
 
 const uint8_t *Dmx::GetDmxAvailable([[maybe_unused]] uint32_t nPortIndex)  {
-	assert(nPortIndex < dmx::config::max::OUT);
+	assert(nPortIndex < dmx::config::max::PORTS);
 
 	uint32_t fromIp;
 	uint16_t fromPort;
@@ -213,17 +221,19 @@ uint32_t GetDmxReceivedCount([[maybe_unused]] uint32_t nPortIndex) {
 // RDM Send
 
 void Dmx::RdmSendRaw(uint32_t nPortIndex, const uint8_t* pRdmData, uint32_t nLength) {
-	assert(nPortIndex < dmx::config::max::OUT);
+	assert(nPortIndex < dmx::config::max::PORTS);
 	assert(pRdmData != nullptr);
 	assert(nLength != 0);
 
 	Network::Get()->SendTo(s_nHandePortRdm[nPortIndex], pRdmData, nLength, Network::Get()->GetBroadcastIp(), UDP_PORT_RDM_START + nPortIndex);
+
+	sv_TotalStatistics[nPortIndex].Rdm.Sent.Class++;
 }
 
 void Dmx::RdmSendDiscoveryRespondMessage(uint32_t nPortIndex, const uint8_t *pRdmData, uint32_t nLength) {
 	DEBUG_ENTRY
 
-	assert(nPortIndex < dmx::config::max::OUT);
+	assert(nPortIndex < dmx::config::max::PORTS);
 	assert(pRdmData != nullptr);
 	assert(nLength != 0);
 
@@ -235,13 +245,15 @@ void Dmx::RdmSendDiscoveryRespondMessage(uint32_t nPortIndex, const uint8_t *pRd
 
 	SetPortDirection(nPortIndex, dmx::PortDirection::INP, true);
 
+	sv_TotalStatistics[nPortIndex].Rdm.Sent.DiscoveryResponse++;
+
 	DEBUG_EXIT
 }
 
 // RDM Receive
 
 const uint8_t *Dmx::RdmReceive(uint32_t nPortIndex) {
-	assert(nPortIndex < dmx::config::max::OUT);
+	assert(nPortIndex < dmx::config::max::PORTS);
 
 	uint32_t fromIp;
 	uint16_t fromPort;
@@ -276,7 +288,7 @@ const uint8_t *Dmx::RdmReceive(uint32_t nPortIndex) {
 
 const uint8_t *Dmx::RdmReceiveTimeOut(uint32_t nPortIndex, uint16_t nTimeOut) {
 	DEBUG_PRINTF("nTimeOut=%u", nTimeOut);
-	assert(nPortIndex < dmx::config::max::OUT);
+	assert(nPortIndex < dmx::config::max::PORTS);
 
 	uint8_t *p = nullptr;
 	const auto nMicros = micros();

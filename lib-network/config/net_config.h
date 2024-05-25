@@ -2,7 +2,7 @@
  * @file net_config
  *
  */
-/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,12 @@
 #ifndef NET_CONFIG_H_
 #define NET_CONFIG_H_
 
-#if defined (BARE_METAL)
+#if defined(__linux__) || defined (__APPLE__)
+# define UDP_MAX_PORTS_ALLOWED			16
+# define IGMP_MAX_JOINS_ALLOWED			(4 + (8 * 4)) /* 8 outputs x 4 Universes */
+# define TCP_MAX_TCBS_ALLOWED			16
+# define TCP_MAX_PORTS_ALLOWED			2
+#else
 # define TCP_MAX_PORTS_ALLOWED			1
 # if defined (H3)
 #  if !defined(HOST_NAME_PREFIX)
@@ -55,11 +60,6 @@
 # else
 #  error
 # endif
-#else
-#  define UDP_MAX_PORTS_ALLOWED			16
-#  define IGMP_MAX_JOINS_ALLOWED		(4 + (8 * 4)) /* 8 outputs x 4 Universes */
-#  define TCP_MAX_TCBS_ALLOWED			16
-# define TCP_MAX_PORTS_ALLOWED			2
 #endif
 
 #if !defined (UDP_MAX_PORTS_ALLOWED)

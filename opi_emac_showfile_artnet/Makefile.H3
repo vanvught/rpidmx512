@@ -4,6 +4,9 @@ DEFINES =NODE_SHOWFILE
 DEFINES+=CONFIG_SHOWFILE_FORMAT_OLA
 DEFINES+=CONFIG_SHOWFILE_PROTOCOL_ARTNET
 DEFINES+=CONFIG_SHOWFILE_ENABLE_OSC
+DEFINES+=CONFIG_SHOWFILE_DISABLE_RECORD
+
+DEFINES+=ARTNET_LONG_NAME=\"Controller_showfile\"
 
 DEFINES+=ARTNET_CONTROLLER 
 
@@ -17,7 +20,9 @@ DEFINES+=CONFIG_FS_ENABLE_WRITE SD_EXFAT_SUPPORT
 
 DEFINES+=ENABLE_HTTPD ENABLE_CONTENT
 
-#DEFINES+=NDEBUG
+DEFINES+=DEBUG_POSIX
+
+DEFINES+=NDEBUG
 
 SRCDIR=firmware lib
 
@@ -26,4 +31,4 @@ LIBS=
 include ../firmware-template-h3/Rules.mk
 
 prerequisites:
-	@echo "constexpr uint32_t DEVICE_SOFTWARE_VERSION_ID="$(shell date "+%s")";" > ./include/sofware_version_id.h
+	@echo "constexpr uint32_t DEVICE_SOFTWARE_VERSION_ID="$(shell date "+%s")";" > ./include/software_version_id.h

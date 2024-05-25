@@ -38,7 +38,8 @@ enum MTU {
 
 enum ETHER_TYPE {
 	ETHER_TYPE_IPv4 = 0x0800,
-	ETHER_TYPE_ARP = 0x0806
+	ETHER_TYPE_ARP = 0x0806,
+	ETHER_TYPE_PTP = 0x88F7		/* IEEE1588v2 (PTPv2) over Ethernet */
 };
 
 enum ETH_ADDR {
@@ -170,8 +171,9 @@ struct t_tcp_packet {
 	uint16_t checksum;				/* 18 */
 	uint16_t urgent;				/* 20 */
 #define TCP_HEADER_SIZE		20
-#define TCP_DATA_SIZE		(MTU_SIZE - TCP_HEADER_SIZE - sizeof(struct ip4_header) - 20U)
-	uint8_t data[TCP_DATA_SIZE];
+#define TCP_OPTIONS_SIZE	40	/* Assuming maximum TCP options size is 40 bytes */
+#define TCP_DATA_SIZE		(MTU_SIZE - TCP_HEADER_SIZE - sizeof(struct ip4_header) - TCP_OPTIONS_SIZE)
+	uint8_t data[MTU_SIZE - TCP_HEADER_SIZE - sizeof(struct ip4_header)];
 } PACKED;
 
 struct t_arp {

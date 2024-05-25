@@ -25,7 +25,6 @@ ifneq ($(MAKE_FLAGS),)
  	endif
  	
  	ifdef FATFS
-#		EXTRA_SRCDIR+=ff12c ff12c/option
 		EXTRA_SRCDIR+=ff14b/source
  		EXTRA_SRCDIR+=posix
  	endif
@@ -35,6 +34,7 @@ ifneq ($(MAKE_FLAGS),)
 		ifneq (,$(findstring DISABLE_INTERNAL_RTC,$(MAKE_FLAGS)))
 			EXTRA_SRCDIR+=rtc/i2c
 		endif
+		EXTRA_INCLUDES+=../lib-properties/include
 	endif
 	
 	ifneq (,$(findstring DEBUG_I2C,$(MAKE_FLAGS)))
@@ -46,10 +46,11 @@ ifneq ($(MAKE_FLAGS),)
 		EXTRA_SRCDIR+=debug/stack
 	endif
 else
-	DEFINES+=DEBUG_I2C DEBUG_STACK
+	DEFINES+=DEBUG_I2C DEBUG_STACK DEBUG_POSIX
 	DEFINES+=LOGIC_ANALYZER
 	EXTRA_INCLUDES+=debug/i2c debug/stack
 	EXTRA_SRCDIR+=console/i2c console/null console/uart0 
 	EXTRA_SRCDIR+=posix
 	EXTRA_SRCDIR+=rtc rtc/i2c
+	EXTRA_INCLUDES+=../lib-properties/include
 endif

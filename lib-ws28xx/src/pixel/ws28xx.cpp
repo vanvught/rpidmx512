@@ -40,14 +40,14 @@
 #include "gamma/gamma_tables.h"
 
 void WS28xx::SetColorWS28xx(uint32_t nOffset, uint8_t nValue) {
-	assert(m_PixelConfiguration.GetType() != pixel::Type::WS2801);
+	assert(m_pPixelConfiguration->GetType() != pixel::Type::WS2801);
 	assert(m_pBuffer != nullptr);
 	assert(nOffset + 7 < m_nBufSize);
 
 	nOffset += 1;
 
-	const auto nLowCode = m_PixelConfiguration.GetLowCode();
-	const auto nHighCode = m_PixelConfiguration.GetHighCode();
+	const auto nLowCode = m_pPixelConfiguration->GetLowCode();
+	const auto nHighCode = m_pPixelConfiguration->GetHighCode();
 
 	for (uint8_t mask = 0x80; mask != 0; mask = static_cast<uint8_t>(mask >> 1)) {
 		if (nValue & mask) {
@@ -60,15 +60,17 @@ void WS28xx::SetColorWS28xx(uint32_t nOffset, uint8_t nValue) {
 }
 
 void WS28xx::SetPixel(uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
-	assert(nPixelIndex < m_PixelConfiguration.GetCount());
+	assert(nPixelIndex < m_pPixelConfiguration->GetCount());
 
-	const auto pGammaTable = m_PixelConfiguration.GetGammaTable();
+#if defined(CONFIG_PIXELDMX_ENABLE_GAMMATABLE)
+	const auto pGammaTable = m_pPixelConfiguration->GetGammaTable();
 
 	nRed = pGammaTable[nRed];
 	nGreen = pGammaTable[nGreen];
 	nBlue = pGammaTable[nBlue];
+#endif
 
-	if (m_PixelConfiguration.IsRTZProtocol()) {
+	if (m_pPixelConfiguration->IsRTZProtocol()) {
 		const auto nOffset = nPixelIndex * 24U;
 
 		SetColorWS28xx(nOffset, nRed);
@@ -79,7 +81,7 @@ void WS28xx::SetPixel(uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_
 
 	assert(m_pBuffer != nullptr);
 
-	const auto type = m_PixelConfiguration.GetType();
+	const auto type = m_pPixelConfiguration->GetType();
 
 	if (type == pixel::Type::WS2801) {
 		const auto nOffset = nPixelIndex * 3U;
@@ -96,7 +98,7 @@ void WS28xx::SetPixel(uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_
 		const auto nOffset = 4U + (nPixelIndex * 4U);
 		assert(nOffset + 3U < m_nBufSize);
 
-		m_pBuffer[nOffset] = m_PixelConfiguration.GetGlobalBrightness();
+		m_pBuffer[nOffset] = m_pPixelConfiguration->GetGlobalBrightness();
 		m_pBuffer[nOffset + 1] = nRed;
 		m_pBuffer[nOffset + 2] = nGreen;
 		m_pBuffer[nOffset + 3] = nBlue;
@@ -123,15 +125,17 @@ void WS28xx::SetPixel(uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_
 }
 
 void WS28xx::SetPixel(uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite) {
-	assert(nPixelIndex < m_PixelConfiguration.GetCount());
-	assert(m_PixelConfiguration.GetType() == pixel::Type::SK6812W);
+	assert(nPixelIndex < m_pPixelConfiguration->GetCount());
+	assert(m_pPixelConfiguration->GetType() == pixel::Type::SK6812W);
 
-	const auto pGammaTable = m_PixelConfiguration.GetGammaTable();
+#if defined(CONFIG_PIXELDMX_ENABLE_GAMMATABLE)
+	const auto pGammaTable = m_pPixelConfiguration->GetGammaTable();
 
 	nRed = pGammaTable[nRed];
 	nGreen = pGammaTable[nGreen];
 	nBlue = pGammaTable[nBlue];
 	nWhite = pGammaTable[nWhite];
+#endif
 
 	const auto nOffset = nPixelIndex * 32U;
 

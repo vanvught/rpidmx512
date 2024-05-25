@@ -2,7 +2,7 @@
  * @file artnetrdmcontroller.cpp
  *
  */
-/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,83 +23,72 @@
  * THE SOFTWARE.
  */
 
+#if !defined(__clang__)
+# pragma GCC push_options
+# pragma GCC optimize ("O2")
+# pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#endif
+
 #include <cstdint>
 #include <cstring>
 #include <cassert>
-
-#include "hardware.h"
 
 #include "artnetnode.h"
 #include "artnetrdmcontroller.h"
 
 #include "rdm.h"
+#include "rdmconst.h"
 #include "rdm_e120.h"
-#include "rdmdevicecontroller.h"
-#include "rdmdiscovery.h"
 
 #include "debug.h"
 
 RDMTod ArtNetRdmController::m_pRDMTod[artnetnode::MAX_PORTS];
-TRdmMessage ArtNetRdmController::s_rdmMessage;
 
-ArtNetRdmController::ArtNetRdmController(): RDMDiscovery(RDMDeviceController::GetUID()) {
-	DEBUG_ENTRY
-	s_rdmMessage.start_code = E120_SC_RDM;
-	DEBUG_EXIT
-}
+static void respond_message_ack(const uint32_t nPortIndex, struct TRdmMessage *pRdmMessage) {
+	assert(pRdmMessage->start_code == E120_SC_RDM);
 
-const uint8_t *ArtNetRdmController::Handler(uint32_t nPortIndex, const uint8_t *pRdmData) {
-	assert(nPortIndex < artnetnode::MAX_PORTS);
+	pRdmMessage->message_count = 0;
+	pRdmMessage->command_class = static_cast<uint8_t>(pRdmMessage->command_class + 1U);
+	pRdmMessage->message_length = static_cast<uint8_t>(RDM_MESSAGE_MINIMUM_SIZE + pRdmMessage->param_data_length);
+	pRdmMessage->slot16.response_type = E120_RESPONSE_TYPE_ACK;
 
-	if (pRdmData == nullptr) {
-		return nullptr;
+	for (uint32_t i = 0; i < RDM_UID_SIZE; i++) {
+		auto nUid = pRdmMessage->destination_uid[i];
+		pRdmMessage->destination_uid[i] = pRdmMessage->source_uid[i];
+		pRdmMessage->source_uid[i] = nUid;
 	}
 
-	Hardware::Get()->WatchdogFeed();
+	uint16_t nChecksum = 0;
+	uint32_t i;
 
-	while (nullptr != Rdm::Receive(nPortIndex)) {
-		// Discard late responses
-		Hardware::Get()->WatchdogFeed();
+	auto *pRdmData = reinterpret_cast<uint8_t *>(pRdmMessage);
+
+	for (i = 0; i < pRdmMessage->message_length; i++) {
+		nChecksum = static_cast<uint16_t>(nChecksum + pRdmData[i]);
 	}
 
-	const auto *pRdmMessageNoSc = reinterpret_cast<const TRdmMessageNoSc*>(const_cast<uint8_t*>(pRdmData));
-	auto *pRdmCommand = reinterpret_cast<uint8_t*>(&s_rdmMessage);
+	pRdmData[i++] = static_cast<uint8_t>(nChecksum >> 8);
+	pRdmData[i++] = static_cast<uint8_t>(nChecksum & 0XFF);
 
-	memcpy(&pRdmCommand[1], pRdmData, static_cast<size_t>(pRdmMessageNoSc->message_length + 2));
-
-#ifndef NDEBUG
-	rdm::message_print(pRdmCommand);
-#endif
-
-	Rdm::SendRaw(nPortIndex, pRdmCommand, pRdmMessageNoSc->message_length + 2U);
-
-	const auto *pResponse = Rdm::ReceiveTimeOut(nPortIndex, 60000);
-
-#ifndef NDEBUG
-	rdm::message_print(pResponse);
-#endif
-	return pResponse;
+	Rdm::SendRawRespondMessage(nPortIndex, reinterpret_cast<uint8_t *>(pRdmMessage), i);
 }
 
-bool ArtNetRdmController::RdmReceive(uint32_t nPortIndex, uint8_t *pRdmData) {
+bool ArtNetRdmController::RdmReceive(const uint32_t nPortIndex, const uint8_t *pRdmData) {
 	assert(nPortIndex < artnetnode::MAX_PORTS);
 	assert(pRdmData != nullptr);
 
-	auto *pData = Rdm::Receive(nPortIndex);
-
-	if (pData == nullptr) {
-		return false;
-	}
-
-	auto *pRdmMessage = reinterpret_cast<const struct TRdmMessage *>(pData);
-
+	auto *pRdmMessage = reinterpret_cast<const struct TRdmMessage *>(pRdmData);
 	auto *pUid = pRdmMessage->destination_uid;
-
-	auto bIsRdmPacketBroadcast = (memcmp(pUid, UID_ALL, RDM_UID_SIZE) == 0);
 	auto bIsRdmPacketForMe = false;
 
+	auto bIsRdmPacketBroadcast = (memcmp(pUid, UID_ALL, RDM_UID_SIZE) == 0);
+
 	if (!bIsRdmPacketBroadcast) {
-		bIsRdmPacketForMe = m_pRDMTod[nPortIndex].Exist(pUid);
+		bIsRdmPacketBroadcast = (memcmp(&pRdmMessage->destination_uid[2], UID_ALL, 4) == 0);
+
+		if (!bIsRdmPacketBroadcast) {
+			bIsRdmPacketForMe = m_pRDMTod[nPortIndex].Exist(pUid);
+		}
 	}
 
 	if ((!bIsRdmPacketForMe) && (!bIsRdmPacketBroadcast)) {
@@ -107,7 +96,6 @@ bool ArtNetRdmController::RdmReceive(uint32_t nPortIndex, uint8_t *pRdmData) {
 	}
 
 	if ((pRdmMessage->command_class == E120_GET_COMMAND) || (pRdmMessage->command_class == E120_SET_COMMAND) ) {
-		memcpy(pRdmData, &pData[1], pRdmMessage->message_length);
 		return true;
 	}
 
@@ -121,7 +109,7 @@ bool ArtNetRdmController::RdmReceive(uint32_t nPortIndex, uint8_t *pRdmData) {
 		if (nParamId == E120_DISC_UNIQUE_BRANCH) {
 			if (!m_pRDMTod[nPortIndex].IsMuted()) {
 				if ((memcmp(pRdmMessage->param_data, pUid, RDM_UID_SIZE) <= 0) && (memcmp(pUid, pRdmMessage->param_data + 6, RDM_UID_SIZE) <= 0)) {
-					auto *pResponse = reinterpret_cast<struct TRdmDiscoveryMsg *>(&s_rdmMessage);
+					auto *pResponse = reinterpret_cast<struct TRdmDiscoveryMsg *>(const_cast<uint8_t *>(pRdmData));
 
 					uint16_t nChecksum = 6 * 0xFF;
 
@@ -157,11 +145,13 @@ bool ArtNetRdmController::RdmReceive(uint32_t nPortIndex, uint8_t *pRdmData) {
 			if (!bIsRdmPacketBroadcast && bIsRdmPacketForMe) {
 				m_pRDMTod[nPortIndex].UnMute();
 
-				s_rdmMessage.param_data_length = 2;
-				s_rdmMessage.param_data[0] = 0x00;	// Control Field
-				s_rdmMessage.param_data[1] = 0x00;	// Control Field
+				auto *pRdmMessage = reinterpret_cast<struct TRdmMessage *>(const_cast<uint8_t *>(pRdmData));
 
-				RespondMessageAck(nPortIndex, pUid, pRdmMessage);
+				pRdmMessage->param_data_length = 2;
+				pRdmMessage->param_data[0] = 0x00;	// Control Field
+				pRdmMessage->param_data[1] = 0x00;	// Control Field
+
+				respond_message_ack(nPortIndex, pRdmMessage);
 			} else {
 				m_pRDMTod[nPortIndex].UnMuteAll();
 			}
@@ -178,50 +168,17 @@ bool ArtNetRdmController::RdmReceive(uint32_t nPortIndex, uint8_t *pRdmData) {
 			if (bIsRdmPacketForMe) {
 				m_pRDMTod[nPortIndex].Mute();
 
-				s_rdmMessage.param_data_length = 2;
-				s_rdmMessage.param_data[0] = 0x00;	// Control Field
-				s_rdmMessage.param_data[1] = 0x00;	// Control Field
+				auto *pRdmMessage = reinterpret_cast<struct TRdmMessage *>(const_cast<uint8_t *>(pRdmData));
 
-				RespondMessageAck(nPortIndex, pUid, pRdmMessage);;
+				pRdmMessage->param_data_length = 2;
+				pRdmMessage->param_data[0] = 0x00;	// Control Field
+				pRdmMessage->param_data[1] = 0x00;	// Control Field
+
+				respond_message_ack(nPortIndex, pRdmMessage);;
 				return false;
 			}
 		}
 	}
 
 	return false;
-}
-
-void ArtNetRdmController::RespondMessageAck(uint32_t nPortIndex, const uint8_t *pUid, const struct TRdmMessage *pRdmMessage) {
-	s_rdmMessage.start_code = E120_SC_RDM;
-	s_rdmMessage.sub_start_code = pRdmMessage->sub_start_code;
-	s_rdmMessage.transaction_number = pRdmMessage->transaction_number;
-	s_rdmMessage.message_count = 0;
-	s_rdmMessage.sub_device[0] = pRdmMessage->sub_device[0];
-	s_rdmMessage.sub_device[1] = pRdmMessage->sub_device[1];
-	s_rdmMessage.command_class = static_cast<uint8_t>(pRdmMessage->command_class + 1);
-	s_rdmMessage.param_id[0] = pRdmMessage->param_id[0];
-	s_rdmMessage.param_id[1] = pRdmMessage->param_id[1];
-	s_rdmMessage.message_length = static_cast<uint8_t>(RDM_MESSAGE_MINIMUM_SIZE + s_rdmMessage.param_data_length);
-	s_rdmMessage.slot16.response_type = E120_RESPONSE_TYPE_ACK;
-
-	for (uint32_t i = 0; i < RDM_UID_SIZE; i++) {
-		s_rdmMessage.destination_uid[i] = pRdmMessage->source_uid[i];
-		s_rdmMessage.source_uid[i] = pUid[i];
-	}
-
-	auto *pResponse = reinterpret_cast<uint8_t *>(&s_rdmMessage);
-
-	uint16_t nChecksum = 0;
-	uint32_t i;
-
-	for (i = 0; i < s_rdmMessage.message_length; i++) {
-		nChecksum = static_cast<uint16_t>(nChecksum + pResponse[i]);
-	}
-
-	pResponse[i++] = static_cast<uint8_t>(nChecksum >> 8);
-	pResponse[i] = static_cast<uint8_t>(nChecksum & 0XFF);
-
-	const auto nLength = static_cast<uint16_t>(s_rdmMessage.message_length + RDM_MESSAGE_CHECKSUM_SIZE);
-
-	Rdm::SendRawRespondMessage(nPortIndex, pResponse, nLength);
 }

@@ -87,7 +87,7 @@ void Hardware::RebootHandler() {
 	E131Bridge::Get()->Stop();
 }
 
-void main() {
+int main() {
 	Hardware hw;
 	DisplayUdf display;
 	ConfigStore configStore;
@@ -117,7 +117,7 @@ void main() {
 	pixelDmxParams.Load();
 	pixelDmxParams.Set(&pixelDmxConfiguration);
 
-	WS28xxDmx pixelDmx(pixelDmxConfiguration);
+	WS28xxDmx pixelDmx(&pixelDmxConfiguration);
 
 	auto isPixelUniverseSet = false;
 	const auto nStartPixelUniverse = pixelDmxParams.GetStartUniversePort(0, isPixelUniverseSet);
@@ -163,7 +163,7 @@ void main() {
 
 	// LightSet 4with4
 
-	LightSet4with4 lightSet((PixelTestPattern::GetPattern() != pixelpatterns::Pattern::NONE) ? nullptr : &pixelDmx, isDmxUniverseSet ? &dmxSend : nullptr);
+	LightSet4with4 lightSet((PixelTestPattern::Get()->GetPattern() != pixelpatterns::Pattern::NONE) ? nullptr : &pixelDmx, isDmxUniverseSet ? &dmxSend : nullptr);
 	lightSet.Print();
 
 	bridge.SetOutput(&lightSet);
@@ -202,7 +202,7 @@ void main() {
 	showFileParams.Set();
 
 	if (showFile.IsAutoStart()) {
-		showFile.Start();
+		showFile.Play();
 	}
 
 	showFile.Print();
@@ -219,7 +219,7 @@ void main() {
 	displayUdfParams.Load();
 	displayUdfParams.Set(&display);
 
-	display.Show(&bridge);
+	display.Show();
 
 	display.Printf(7, "%s:%d G%d %s",
 		PixelType::GetType(pixelDmxConfiguration.GetType()),
@@ -263,9 +263,7 @@ void main() {
 		llrpOnlyDevice.Run();
 #endif
 		configStore.Flash();
-		if (__builtin_expect((PixelTestPattern::GetPattern() != pixelpatterns::Pattern::NONE), 0)) {
-			pixelTestPattern.Run();
-		}
+		pixelTestPattern.Run();
 		mDns.Run();
 		display.Run();
 		hw.Run();

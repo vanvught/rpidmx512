@@ -36,6 +36,7 @@
 #  undef bcm2835_i2c_read
 #  undef bcm2835_i2c_write
 # endif
+#else
 #endif
 
 #endif /* LINUX_HAL_API_H_ */

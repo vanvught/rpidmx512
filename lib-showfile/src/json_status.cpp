@@ -42,11 +42,20 @@ static void staticCallbackFunction([[maybe_unused]] void *p, const char *s) {
 	uint8_t nValue8;
 
 	if (Sscan::Uint8(s, ShowFileParamsConst::SHOW, nValue8) == Sscan::OK) {
-		if (nValue8 < showfile::FILE_MAX_NUMBER) {
-			ShowFile::Get()->SetShowFile(nValue8);
+		if (nValue8 <= showfile::FILE_MAX_NUMBER) {
+			ShowFile::Get()->SetPlayerShowFileCurrent(nValue8);
 		}
 		return;
 	}
+
+#if !defined (CONFIG_SHOWFILE_DISABLE_RECORD)
+	if (Sscan::Uint8(s, "recorder", nValue8) == Sscan::OK) {
+		if (nValue8 <= showfile::FILE_MAX_NUMBER) {
+			ShowFile::Get()->SetRecorderShowFileCurrent(nValue8);
+		}
+		return;
+	}
+#endif
 
 	if (Sscan::Uint8(s, ShowFileParamsConst::OPTION_LOOP, nValue8) == Sscan::OK) {
 		ShowFile::Get()->DoLoop(nValue8 != 0);
@@ -57,8 +66,8 @@ static void staticCallbackFunction([[maybe_unused]] void *p, const char *s) {
 	uint32_t nLength = sizeof(action) - 1;
 
 	if (Sscan::Char(s, "status" , action, nLength) == Sscan::OK) {
-		if (strncmp(action, "start", nLength) == 0) {
-			ShowFile::Get()->Start();
+		if (strncmp(action, "play", nLength) == 0) {
+			ShowFile::Get()->Play();
 			return;
 		}
 
@@ -72,6 +81,13 @@ static void staticCallbackFunction([[maybe_unused]] void *p, const char *s) {
 			return;
 		}
 
+#if !defined (CONFIG_SHOWFILE_DISABLE_RECORD)
+		if (strncmp(action, "record", nLength) == 0) {
+			ShowFile::Get()->Record();
+			return;
+		}
+#endif
+
 		return;
 	}
 }
@@ -83,9 +99,10 @@ uint32_t json_get_status(char *pOutBuffer, const uint32_t nOutBufferSize) {
 	assert(status != ::showfile::Status::UNDEFINED);
 
 	const auto nLength = static_cast<uint32_t>(snprintf(pOutBuffer, nOutBufferSize,
-						"{\"%s\":\"%u\",\"status\":\"%s\",\"%s\":\"%s\"}",
+						"{\"mode\":\"%s\",\"%s\":\"%u\",\"status\":\"%s\",\"%s\":\"%s\"}",
+						ShowFile::Get()->GetMode() == ::showfile::Mode::RECORDER ? "Recorder" : "Player",
 						ShowFileParamsConst::SHOW,
-						ShowFile::Get()->GetShowFile(),
+						static_cast<unsigned int>(ShowFile::Get()->GetShowFileCurrent()),
 						::showfile::STATUS[static_cast<int>(status)],
 						ShowFileParamsConst::OPTION_LOOP,
 						ShowFile::Get()->GetDoLoop() ? "1" : "0"));

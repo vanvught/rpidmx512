@@ -2,7 +2,7 @@
  * @file bcm2835_mailbox.c
  *
  */
-/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,8 @@
 
 #include "bcm2835.h"
 #include "arm/synchronize.h"
+
+extern void udelay(uint32_t);
 
 #define BCM2835_MAILBOX_STATUS_WF	0x80000000	///< Write full
 #define	BCM2835_MAILBOX_STATUS_RE	0x40000000	///< Read empty

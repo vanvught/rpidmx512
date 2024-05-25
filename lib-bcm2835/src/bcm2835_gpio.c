@@ -2,7 +2,7 @@
  * @file bcm2835_gpio.c
  *
  */
-/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,7 @@
 #include "bcm2835.h"
 #include "bcm2835_gpio.h"
 
+extern void udelay(uint32_t);
 
 /**
  * @ingroup GPIO

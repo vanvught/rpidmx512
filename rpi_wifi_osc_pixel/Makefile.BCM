@@ -1,0 +1,15 @@
+DEFINES =NODE_OSC_SERVER LIGHTSET_PORTS=4 
+DEFINES+=CONFIG_PIXELDMX_MAX_PORTS=1
+DEFINES+=ESP8266 
+DEFINES+=CONSOLE_FB 
+DEFINES+=ENABLE_MMU 
+DEFINES+=DISABLE_RTC 
+DEFINES+=NDEBUG
+
+LIBS=display oscserver osc dmxmonitor dmxsend ws28xxdmx ws28xx dmx lightset
+
+SRCDIR=firmware lib
+
+include ../firmware-template-bcm/Rules.mk
+
+prerequisites:

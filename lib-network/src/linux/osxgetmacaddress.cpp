@@ -44,17 +44,17 @@ bool Network::OSxGetMacaddress(const char *pIfName, uint8_t *pMacAddress) {
 		return false;
 	}
 
-	if (sysctl(mib, 6, NULL, &len, NULL, 0) < 0) {
+	if (sysctl(mib, 6, nullptr, &len, nullptr, 0) < 0) {
 		perror("sysctl 1 error");
 		return false;
 	}
 
-	if ((buf = (char *)malloc(len)) == NULL) {
+	if ((buf = (char *)malloc(len)) == nullptr) {
 		perror("malloc error");
 		return false;
 	}
 
-	if (sysctl(mib, 6, buf, &len, NULL, 0) < 0) {
+	if (sysctl(mib, 6, buf, &len, nullptr, 0) < 0) {
 		perror("sysctl 2 error");
 		free(buf);
 		return false;

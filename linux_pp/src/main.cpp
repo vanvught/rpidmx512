@@ -66,7 +66,7 @@ void intHandler(int) {
 int main(int argc, char **argv) {
     struct sigaction act;
     act.sa_handler = intHandler;
-    sigaction(SIGINT, &act, NULL);
+    sigaction(SIGINT, &act, nullptr);
 	Hardware hw;
 	Display display;
 	ConfigStore configStore;

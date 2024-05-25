@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2016-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -60,6 +60,34 @@ static constexpr uint32_t NETWORK_DATA_LOSS_TIMEOUT = 10;	///< Seconds
 enum class PortProtocol {
 	ARTNET,	///< Output both DMX512 and RDM packets from the Art-Net protocol (default).
 	SACN	///< Output DMX512 data from the sACN protocol and RDM data from the Art-Net protocol.
+};
+
+/**
+ * Table 3 – NodeReport Codes
+ * The NodeReport code defines generic error, advisory and status messages for both Nodes and Controllers.
+ * The NodeReport is returned in ArtPollReply.
+ */
+enum class ReportCode : uint8_t {
+	RCDEBUG,
+	RCPOWEROK,
+	RCPOWERFAIL,
+	RCSOCKETWR1,
+	RCPARSEFAIL,
+	RCUDPFAIL,
+	RCSHNAMEOK,
+	RCLONAMEOK,
+	RCDMXERROR,
+	RCDMXUDPFULL,
+	RCDMXRXFULL,
+	RCSWITCHERR,
+	RCCONFIGERR,
+	RCDMXSHORT,
+	RCFIRMWAREFAIL,
+	RCUSERFAIL
+};
+
+enum class Status : uint8_t {
+	OFF, STANDBY, ON
 };
 
 /**
@@ -593,7 +621,7 @@ struct ArtRdm {
 	uint8_t Net;			///< The top 7 bits of the 15 bit Port-Address of Nodes that must respond to this packet.
 	uint8_t Command;		///< 0x00 ArProcess Process RDM Packet0x00 AtcNone No action. 0x01 AtcFlush The node flushes its TOD and instigates full discovery.
 	uint8_t Address;		///< The low 8 bits of the Port-Address that should action this command.
-	uint8_t RdmPacket[255];	///< The RDM data packet excluding the DMX StartCode.
+	uint8_t RdmPacket[256];	///< The RDM data packet excluding the DMX StartCode with Checksum
 }PACKED;
 
 /**
@@ -734,6 +762,15 @@ union UArtPacket {
 	struct ArtTrigger ArtTrigger;				///< ArtTrigger packet
 	struct ArtDirectory ArtDirectory;			///< ArtDirectory packet
 	struct ArtDirectoryReply ArtDirectoryReply;///< ArtDirectoryReply packet
+};
+
+struct ArtPollQueue {
+	uint32_t ArtPollMillis;
+	uint32_t ArtPollReplyIpAddress;
+	struct {
+		uint16_t TargetPortAddressTop;
+		uint16_t TargetPortAddressBottom;
+	} ArtPollReply;
 };
 }  // namespace artnet
 

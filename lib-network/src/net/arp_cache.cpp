@@ -2,7 +2,7 @@
  * @file arp_cache.cpp
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
+#pragma GCC push_options
+#pragma GCC optimize ("O2")
+#pragma GCC optimize ("no-tree-loop-distribute-patterns")
 
 #include <cstdint>
 #include <cstring>
@@ -47,17 +51,12 @@ struct ArpRecord {
 	uint8_t mac_address[ETH_ADDR_LEN];
 };
 
-typedef union pcast32 {
-	uint32_t u32;
-	uint8_t u8[4];
-} _pcast32;
-
 static ArpRecord s_ArpRecords[MAX_RECORDS] SECTION_NETWORK ALIGNED;
 static uint16_t s_Entries SECTION_NETWORK ALIGNED;
 
 #ifndef NDEBUG
 # define TICKER_COUNT 100	///< 10 seconds
-  static volatile uint32_t s_ticker ;
+  static uint32_t s_ticker ;
 #endif
 
 void __attribute__((cold)) arp_cache_init() {
@@ -100,16 +99,14 @@ uint32_t arp_cache_lookup(uint32_t nIp, uint8_t *pMacAddress) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF(IPSTR " " MACSTR, IP2STR(nIp), MAC2STR(pMacAddress));
 
-	uint32_t i;
-
-	for (i = 0; i < MAX_RECORDS; i++) {
-		if (s_ArpRecords[i].nIp == nIp) {
-			memcpy(pMacAddress, s_ArpRecords[i].mac_address, ETH_ADDR_LEN);
+	for (auto& record : s_ArpRecords) {
+		if (record.nIp == nIp) {
+			memcpy(pMacAddress, record.mac_address, ETH_ADDR_LEN);
 			DEBUG_EXIT
 			return nIp;
 		}
 
-		if (s_ArpRecords[i].nIp == 0) {
+		if (record.nIp == 0) {
 			break;
 		}
 	}
@@ -160,7 +157,7 @@ void arp_cache_dump() {
 }
 
 #ifndef NDEBUG
-void arp_cache_timer(void) {
+void arp_cache_timer() {
 	s_ticker--;
 
 	if (s_ticker == 0) {

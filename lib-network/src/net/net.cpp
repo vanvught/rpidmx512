@@ -2,7 +2,7 @@
  * @file net.cpp
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,10 @@
  * THE SOFTWARE.
  */
 
+#pragma GCC push_options
+#pragma GCC optimize ("O2")
+#pragma GCC optimize ("no-tree-loop-distribute-patterns")
+
 #include <cstdint>
 #include <cstring>
 
@@ -40,12 +44,17 @@ uint32_t nBroadcastMask;
 uint32_t nOnNetworkMask;
 uint8_t macAddress[ETH_ADDR_LEN]  ALIGNED;
 }  // namespace globals
+#if defined (CONFIG_ENET_ENABLE_PTP)
+void ptp_init();
+void ptp_handle(const uint8_t *, const uint32_t);
+void ptp_run();
+#endif
 }  // namespace net
 
 static uint8_t *s_p;
-static bool s_isDhcp = false;
+static bool s_isDhcp;
 
-static void refresh_and_init(struct IpInfo *pIpInfo, bool doInit) {
+static void refresh_and_init(struct IpInfo *pIpInfo, const bool doInit) {
 	net::globals::ipInfo.broadcast_ip.addr = net::globals::ipInfo.ip.addr | ~net::globals::ipInfo.netmask.addr;
 
 	net::globals::nBroadcastMask = ~(net::globals::ipInfo.netmask.addr);
@@ -113,6 +122,10 @@ void __attribute__((cold)) net_init(const uint8_t *const pMacAddress, struct IpI
 		console_error("IP Conflict!\n");
 	}
 
+#if defined (CONFIG_ENET_ENABLE_PTP)
+	net::ptp_init();
+#endif
+
 	DEBUG_EXIT
 }
 
@@ -128,7 +141,7 @@ void net_set_ip(struct IpInfo *pIpInfo) {
 	net::globals::ipInfo.ip.addr = pIpInfo->ip.addr;
 
 	if (net::globals::ipInfo.ip.addr == 0) {
-			set_secondary_ip();
+		set_secondary_ip();
 	}
 
 	refresh_and_init(pIpInfo, true);
@@ -154,7 +167,7 @@ void net_set_gw(struct IpInfo *pIpInfo) {
 }
 
 bool net_set_dhcp(struct IpInfo *pIpInfo, const char *const pHostname, bool *isZeroconfUsed) {
-	bool isDhcp = false;
+	auto isDhcp = false;
 	*isZeroconfUsed = false;
 
 	if (dhcp_client(pHostname) < 0) {
@@ -173,6 +186,7 @@ bool net_set_dhcp(struct IpInfo *pIpInfo, const char *const pHostname, bool *isZ
 		arp_send_announcement();
 	} else {
 		console_error("IP Conflict!\n");
+		return false;
 	}
 
 	return isDhcp;
@@ -184,9 +198,7 @@ void net_dhcp_release() {
 }
 
 bool net_set_zeroconf(struct IpInfo *pIpInfo) {
-	const auto b = rfc3927();
-
-	if (b) {
+	if (rfc3927()) {
 		refresh_and_init(pIpInfo, true);
 
 		s_isDhcp = false;
@@ -207,6 +219,11 @@ __attribute__((hot)) void net_handle() {
 	if (__builtin_expect((nLength > 0), 0)) {
 		const auto *const eth = reinterpret_cast<struct ether_header *>(s_p);
 
+#if defined (CONFIG_ENET_ENABLE_PTP)
+		if (eth->type == __builtin_bswap16(ETHER_TYPE_PTP)) {
+			net::ptp_handle(const_cast<const uint8_t *>(s_p), nLength);
+		} else
+#endif
 		if (eth->type == __builtin_bswap16(ETHER_TYPE_IPv4)) {
 			ip_handle(reinterpret_cast<struct t_ip4 *>(s_p));
 		} else if (eth->type == __builtin_bswap16(ETHER_TYPE_ARP)) {
@@ -219,4 +236,8 @@ __attribute__((hot)) void net_handle() {
 	}
 
 	net_timers_run();
+
+#if defined (CONFIG_ENET_ENABLE_PTP)
+	net::ptp_run();
+#endif
 }

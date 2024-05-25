@@ -33,7 +33,7 @@ struct ShowFileParamsConst {
 
 	static  const char DMX_MASTER[];
 
-	static  const char OPTION_AUTO_START[];
+	static  const char OPTION_AUTO_PLAY[];
 	static  const char OPTION_LOOP[];
 	static  const char OPTION_DISABLE_SYNC[];
 

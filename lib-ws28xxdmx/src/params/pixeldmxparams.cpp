@@ -2,7 +2,7 @@
  * @file pixeldmxparams.cpp
  *
  */
-/* Copyright (C) 2016-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -221,7 +221,7 @@ void PixelDmxParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-#if defined (PARAMS_INLCUDE_ALL) || !defined(OUTPUT_DMX_PIXEL_MULTI)
+#if !defined(OUTPUT_DMX_PIXEL_MULTI)
 	if (Sscan::Uint16(pLine, LightSetParamsConst::DMX_START_ADDRESS, nValue16) == Sscan::OK) {
 		if ((nValue16 != 0) && nValue16 <= (dmx::UNIVERSE_SIZE) && (nValue16 != dmx::START_ADDRESS_DEFAULT)) {
 			m_Params.nDmxStartAddress = nValue16;
@@ -246,7 +246,7 @@ void PixelDmxParams::callbackFunction(const char *pLine) {
 		}
 	}
 
-#if defined (PARAMS_INLCUDE_ALL) || defined(OUTPUT_DMX_PIXEL_MULTI)
+#if defined(OUTPUT_DMX_PIXEL_MULTI)
 	if (Sscan::Uint8(pLine, DevicesParamsConst::ACTIVE_OUT, nValue8) == Sscan::OK) {
 		if ((nValue8 > 0) &&  (nValue8 <= pixeldmxparams::MAX_PORTS) &&  (nValue8 != pixel::defaults::OUTPUT_PORTS)) {
 			m_Params.nActiveOutputs = nValue8;
@@ -270,6 +270,7 @@ void PixelDmxParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
+#if defined(CONFIG_PIXELDMX_ENABLE_GAMMATABLE)
 	if (Sscan::Uint8(pLine, DevicesParamsConst::GAMMA_CORRECTION, nValue8) == Sscan::OK) {
 		if (nValue8 != 0) {
 			m_Params.nSetList |= pixeldmxparams::Mask::GAMMA_CORRECTION;
@@ -286,7 +287,9 @@ void PixelDmxParams::callbackFunction(const char *pLine) {
 		} else {
 			m_Params.nGammaValue = nValue;
 		}
+		return;
 	}
+#endif
 }
 
 void PixelDmxParams::Builder(const struct pixeldmxparams::Params *ptWS28xxParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
@@ -302,6 +305,8 @@ void PixelDmxParams::Builder(const struct pixeldmxparams::Params *ptWS28xxParams
 
 	builder.Add(DevicesParamsConst::TYPE, PixelType::GetType(static_cast<pixel::Type>(m_Params.nType)), isMaskSet(pixeldmxparams::Mask::TYPE));
 	builder.Add(DevicesParamsConst::COUNT, m_Params.nCount, isMaskSet(pixeldmxparams::Mask::COUNT));
+
+#if defined(CONFIG_PIXELDMX_ENABLE_GAMMATABLE)
 	builder.Add(DevicesParamsConst::GAMMA_CORRECTION, isMaskSet(pixeldmxparams::Mask::GAMMA_CORRECTION));
 
 	if (m_Params.nGammaValue == 0) {
@@ -309,6 +314,7 @@ void PixelDmxParams::Builder(const struct pixeldmxparams::Params *ptWS28xxParams
 	} else {
 		builder.Add(DevicesParamsConst::GAMMA_VALUE, static_cast<float>(m_Params.nGammaValue) / 10, true);
 	}
+#endif
 
 	builder.AddComment("Overwrite datasheet");
 	if (!isMaskSet(pixeldmxparams::Mask::MAP)) {
@@ -344,7 +350,7 @@ void PixelDmxParams::Builder(const struct pixeldmxparams::Params *ptWS28xxParams
 	builder.AddComment("APA102/SK9822");
 	builder.Add(DevicesParamsConst::GLOBAL_BRIGHTNESS, m_Params.nGlobalBrightness, isMaskSet(pixeldmxparams::Mask::GLOBAL_BRIGHTNESS));
 
-#if defined (PARAMS_INLCUDE_ALL) || !defined(OUTPUT_DMX_PIXEL_MULTI)
+#if !defined(OUTPUT_DMX_PIXEL_MULTI)
 	builder.AddComment("DMX");
 	builder.Add(LightSetParamsConst::DMX_START_ADDRESS, m_Params.nDmxStartAddress, isMaskSet(pixeldmxparams::Mask::DMX_START_ADDRESS));
 #endif
@@ -352,7 +358,7 @@ void PixelDmxParams::Builder(const struct pixeldmxparams::Params *ptWS28xxParams
 	for (uint32_t i = 0; i < pixeldmxparams::MAX_PORTS; i++) {
 		builder.Add(LightSetParamsConst::START_UNI_PORT[i],m_Params.nStartUniverse[i], isMaskSet(pixeldmxparams::Mask::START_UNI_PORT_1 << i));
 	}
-#if defined (PARAMS_INLCUDE_ALL) || defined(OUTPUT_DMX_PIXEL_MULTI)
+#if defined(OUTPUT_DMX_PIXEL_MULTI)
 	builder.Add(DevicesParamsConst::ACTIVE_OUT, m_Params.nActiveOutputs, isMaskSet(pixeldmxparams::Mask::ACTIVE_OUT));
 #endif
 
@@ -397,12 +403,14 @@ void PixelDmxParams::Set(PixelDmxConfiguration *pPixelDmxConfiguration) {
 		pPixelDmxConfiguration->SetGlobalBrightness(m_Params.nGlobalBrightness);
 	}
 
+#if defined(CONFIG_PIXELDMX_ENABLE_GAMMATABLE)
 	if (isMaskSet(pixeldmxparams::Mask::GAMMA_CORRECTION)) {
 		pPixelDmxConfiguration->SetEnableGammaCorrection(true);
 		if (m_Params.nGammaValue != 0) {
 			pPixelDmxConfiguration->SetGammaTable(m_Params.nGammaValue);
 		}
 	}
+#endif
 
 	// Dmx
 
@@ -414,7 +422,7 @@ void PixelDmxParams::Set(PixelDmxConfiguration *pPixelDmxConfiguration) {
 		pPixelDmxConfiguration->SetGroupingCount(m_Params.nGroupingCount);
 	}
 
-#if defined (PARAMS_INLCUDE_ALL) || defined(OUTPUT_DMX_PIXEL_MULTI)
+#if defined(OUTPUT_DMX_PIXEL_MULTI)
 	if (isMaskSet(pixeldmxparams::Mask::ACTIVE_OUT)) {
 		pPixelDmxConfiguration->SetOutputPorts(m_Params.nActiveOutputs);
 	}
@@ -442,10 +450,12 @@ void PixelDmxParams::Dump() {
 
 	printf(" %s=%d\n", DevicesParamsConst::ACTIVE_OUT, m_Params.nActiveOutputs);
 	printf(" %s=%d\n", DevicesParamsConst::GROUPING_COUNT, m_Params.nGroupingCount);
-	printf(" %s=%d\n", DevicesParamsConst::SPI_SPEED_HZ, m_Params.nSpiSpeedHz);
+	printf(" %s=%u\n", DevicesParamsConst::SPI_SPEED_HZ, static_cast<unsigned int>(m_Params.nSpiSpeedHz));
 	printf(" %s=%d\n", DevicesParamsConst::GLOBAL_BRIGHTNESS, m_Params.nGlobalBrightness);
 	printf(" %s=%d\n", LightSetParamsConst::DMX_START_ADDRESS, m_Params.nDmxStartAddress);
 	printf(" %s=%d\n", DevicesParamsConst::TEST_PATTERN, m_Params.nTestPattern);
+#if defined(CONFIG_PIXELDMX_ENABLE_GAMMATABLE)
 	printf(" %s=%d\n", DevicesParamsConst::GAMMA_CORRECTION, isMaskSet(pixeldmxparams::Mask::GAMMA_CORRECTION));
 	printf(" %s=%1.1f [%u]\n", DevicesParamsConst::GAMMA_VALUE, static_cast<float>(m_Params.nGammaValue) / 10, m_Params.nGammaValue);
+#endif
 }

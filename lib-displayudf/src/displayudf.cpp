@@ -87,6 +87,14 @@ void DisplayUdf::Set(uint32_t nLine, Labels label) {
 }
 
 void DisplayUdf::Show() {
+#if defined (NODE_ARTNET)
+	ShowArtNetNode();
+#elif defined (NODE_E131)
+	ShowE131Bridge();
+#elif defined (NODE_NODE)
+	ShowNode();
+#endif
+
 	for (uint32_t i = 0; i < static_cast<uint32_t>(Labels::UNKNOWN); i++) {
 		if (m_aLabels[i] > LABEL_MAX_ROWS) {
 			m_aLabels[i] = 0xFF;

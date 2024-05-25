@@ -2,7 +2,7 @@
  * @file phy.h
  *
  */
-/* Copyright (C) 2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2023-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,7 @@
 
 namespace net {
 enum class Link {
-	STATE_UP, STATE_DOWN
+	STATE_DOWN, STATE_UP
 };
 
 enum class Duplex {
@@ -59,6 +59,7 @@ struct PhyIdentifier {
 */
 
 bool phy_get_id(const uint32_t nAddress, PhyIdentifier& phyIdentifier);
+Link phy_get_link(const uint32_t nAddress);
 
 /**
  *

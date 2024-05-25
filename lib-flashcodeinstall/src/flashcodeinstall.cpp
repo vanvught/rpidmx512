@@ -39,10 +39,10 @@ bool FlashCodeInstall::WriteFirmware(const uint8_t *pBuffer, uint32_t nSize) {
 	assert(pBuffer != nullptr);
 	assert(nSize != 0);
 
-	DEBUG_PRINTF("(%p + %p)=%p, m_nFlashSize=%d", OFFSET_UIMAGE, nSize, (OFFSET_UIMAGE + nSize), m_nFlashSize);
+	DEBUG_PRINTF("(%p + %p)=%p, m_nFlashSize=%u", OFFSET_UIMAGE, nSize, (OFFSET_UIMAGE + nSize), static_cast<unsigned int>(m_nFlashSize));
 
 	if ((OFFSET_UIMAGE + nSize) > m_nFlashSize) {
-		printf("error: flash size %d > %d\n", (OFFSET_UIMAGE + nSize), m_nFlashSize);
+		printf("error: flash size %u > %u\n", static_cast<unsigned int>(OFFSET_UIMAGE + nSize), static_cast<unsigned int>(m_nFlashSize));
 		DEBUG_EXIT
 		return false;
 	}

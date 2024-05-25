@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef HTTPD_H_
-#define HTTPD_H_
+#ifndef HTTPD_HTTPD_H_
+#define HTTPD_HTTPD_H_
 
 #include <cstdint>
 
@@ -59,4 +59,4 @@ private:
 	char *m_RequestHeaderResponse { nullptr };
 };
 
-#endif /* HTTPD_H_ */
+#endif /* HTTPD_HTTPD_H_ */

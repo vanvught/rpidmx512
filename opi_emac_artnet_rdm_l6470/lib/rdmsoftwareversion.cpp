@@ -28,7 +28,7 @@
 #include "rdmsoftwareversion.h"
 
 #include "software_version.h"
-#include "sofware_version_id.h"
+#include "software_version_id.h"
 
 const char *RDMSoftwareVersion::GetVersion() {
 	return SOFTWARE_VERSION;

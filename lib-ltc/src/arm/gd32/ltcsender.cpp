@@ -2,7 +2,7 @@
  * @file ltcsender.cpp
  *
  */
-/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,7 @@
 
 LtcSender *LtcSender::s_pThis;
 
-LtcSender::LtcSender(uint32_t nVolume) {
+LtcSender::LtcSender([[maybe_unused]] uint32_t nVolume) {
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 

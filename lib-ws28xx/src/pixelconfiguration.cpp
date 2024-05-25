@@ -2,7 +2,7 @@
  * @file pixelconfiguration.cpp
  *
  */
-/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -104,6 +104,7 @@ void PixelConfiguration::Validate(uint32_t& nLedsPerPixel) {
 		m_nClockSpeedHz = 6400000;	// 6.4MHz / 8 bits = 800Hz
 	}
 
+#if defined (CONFIG_PIXELDMX_ENABLE_GAMMATABLE)
 	if (m_bEnableGammaCorrection) {
 		if (m_nGammaValue == 0) {
 			m_pGammaTable = gamma::get_table_default(m_type);
@@ -113,6 +114,7 @@ void PixelConfiguration::Validate(uint32_t& nLedsPerPixel) {
 	} else {
 		m_pGammaTable = gamma10_0;
 	}
+#endif
 
 	DEBUG_EXIT
 }
@@ -140,6 +142,9 @@ void PixelConfiguration::Print() {
 		}
 	}
 
+	printf(" Clock: %u Hz\n", static_cast<unsigned int>(m_nClockSpeedHz));
+
+#if defined (CONFIG_PIXELDMX_ENABLE_GAMMATABLE)
 	printf(" Gamma correction %s\n", m_bEnableGammaCorrection ? "Yes" :  "No");
-	printf(" Clock: %u Hz\n", m_nClockSpeedHz);
+#endif
 }

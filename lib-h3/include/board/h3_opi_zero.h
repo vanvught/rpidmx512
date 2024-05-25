@@ -2,7 +2,7 @@
  * @file h3_opi_zero.h
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -65,5 +65,8 @@ typedef enum H3_BOARD_OPI_ZERO {
 	GPIO_EXT_24 = H3_PORT_TO_GPIO(H3_GPIO_PORTA, 13),	///< SPI1 SPICS0, PA13
 	GPIO_EXT_26 = H3_PORT_TO_GPIO(H3_GPIO_PORTA, 10)	///< PA10
 } _gpio_pin;
+
+#define FT8XX_LCD_DC_GPIO	GPIO_EXT_26
+#define FT8XX_LCD_CS_GPIO	GPIO_EXT_22
 
 #endif /* H3_OPI_ZERO_H_ */

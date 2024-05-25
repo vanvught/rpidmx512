@@ -2,7 +2,7 @@
  * @file pixelpatterns.h
  *
  */
-/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -56,7 +56,7 @@ enum class Direction {
 
 class PixelPatterns {
 public:
-	PixelPatterns(uint32_t nActivePorts);
+	PixelPatterns(const uint32_t nActivePorts);
 	~PixelPatterns() = default;
 
 	static const char* GetName(pixelpatterns::Pattern pattern);
@@ -66,16 +66,31 @@ public:
 	void ColourWipe(uint32_t nPortIndex, uint32_t nColour, uint32_t nInterval, pixelpatterns::Direction dir = pixelpatterns::Direction::FORWARD);
 	void Scanner(uint32_t nPortIndex, uint32_t nColour1, uint32_t nInterval) ;
 	void Fade(uint32_t nPortIndex, uint32_t nColour1, uint32_t nColour2, uint32_t nSteps, uint32_t nInterval, pixelpatterns::Direction dir = pixelpatterns::Direction::FORWARD);
-	void None(uint32_t nPortIndex) {
-		m_PortConfig[nPortIndex].ActivePattern = pixelpatterns::Pattern::NONE;
+	void None(const uint32_t nPortIndex) {
+		s_PortConfig[nPortIndex].ActivePattern = pixelpatterns::Pattern::NONE;
 		Clear(nPortIndex);
-		while (m_pOutput->IsUpdating()) {
+		while (s_pOutput->IsUpdating()) {
 
 		}
-		m_pOutput->Update();
+		s_pOutput->Update();
 	}
 
-	void Run();
+	void Run() {
+		if (s_pOutput->IsUpdating()) {
+			return;
+		}
+
+		auto bIsUpdated = false;
+		const auto nMillis = Hardware::Get()->Millis();
+
+		for (uint32_t i = 0; i < s_nActivePorts; i++) {
+			bIsUpdated |= PortUpdate(i, nMillis);
+		}
+
+		if (bIsUpdated) {
+			s_pOutput->Update();
+		}
+	}
 
 	uint32_t Colour(uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
 		return static_cast<uint32_t>(nRed << 16) | static_cast<uint32_t>(nGreen << 8) | nBlue;
@@ -94,67 +109,67 @@ private:
 	void Increment(uint32_t nPortIndex);
 	void Reverse(uint32_t nPortIndex);
 
-	void SetPixelColour(__attribute__((unused)) uint32_t nPortIndex, uint32_t nPixelIndex, uint32_t nColour) {
+	void SetPixelColour([[maybe_unused]] uint32_t nPortIndex, const uint32_t nPixelIndex, const uint32_t nColour) {
 		const auto nRed = Red(nColour);
 		const auto nGreen = Green(nColour);
 		const auto nBlue = Blue(nColour);
 #if defined (PIXELPATTERNS_MULTI)
-		if (m_pOutput->GetType() != pixel::Type::SK6812W) {
-			m_pOutput->SetPixel(nPortIndex, nPixelIndex, nRed, nGreen, nBlue);
+		if (s_pOutput->GetType() != pixel::Type::SK6812W) {
+			s_pOutput->SetPixel(nPortIndex, nPixelIndex, nRed, nGreen, nBlue);
 		} else {
 			if ((nRed == nGreen) && (nGreen == nBlue)) {
-				m_pOutput->SetPixel(nPortIndex, nPixelIndex, 0x00, 0x00, 0x00, nRed);
+				s_pOutput->SetPixel(nPortIndex, nPixelIndex, 0x00, 0x00, 0x00, nRed);
 			} else {
-				m_pOutput->SetPixel(nPortIndex, nPixelIndex, nRed, nGreen, nBlue, 0x00);
+				s_pOutput->SetPixel(nPortIndex, nPixelIndex, nRed, nGreen, nBlue, 0x00);
 			}
 		}
 #else
-		if (m_pOutput->GetType() != pixel::Type::SK6812W) {
-			m_pOutput->SetPixel(nPixelIndex, nRed, nGreen, nBlue);
+		if (s_pOutput->GetType() != pixel::Type::SK6812W) {
+			s_pOutput->SetPixel(nPixelIndex, nRed, nGreen, nBlue);
 		} else {
 			if ((nRed == nGreen) && (nGreen == nBlue)) {
-				m_pOutput->SetPixel(nPixelIndex, 0x00, 0x00, 0x00, nRed);
+				s_pOutput->SetPixel(nPixelIndex, 0x00, 0x00, 0x00, nRed);
 			} else {
-				m_pOutput->SetPixel(nPixelIndex, nRed, nGreen, nBlue, 0x00);
+				s_pOutput->SetPixel(nPixelIndex, nRed, nGreen, nBlue, 0x00);
 			}
 		}
 #endif
 	}
 
-	void ColourSet(uint32_t nPortIndex, uint32_t nColour) {
-		for (uint32_t i = 0; i < m_nCount; i++) {
+	void ColourSet(const uint32_t nPortIndex, const uint32_t nColour) {
+		for (uint32_t i = 0; i < s_nCount; i++) {
 			SetPixelColour(nPortIndex, i, nColour);
 		}
 	}
 
-    uint32_t DimColour(uint32_t nColour) {
+    uint32_t DimColour(const uint32_t nColour) {
         return Colour(static_cast<uint8_t>(Red(nColour) >> 1), static_cast<uint8_t>(Green(nColour) >> 1), static_cast<uint8_t>(Blue(nColour) >> 1));
     }
 
-    uint8_t Red(uint32_t nColour) {
+    uint8_t Red(const uint32_t nColour) {
 		return (nColour >> 16) & 0xFF;
 	}
 
-	uint8_t Green(uint32_t nColour) {
+	uint8_t Green(const uint32_t nColour) {
 		return (nColour >> 8) & 0xFF;
 	}
 
-	uint8_t Blue(uint32_t nColour) {
+	uint8_t Blue(const uint32_t nColour) {
 		return nColour & 0xFF;
 	}
 
-	void Clear(uint32_t nPortIndex) {
+	void Clear(const uint32_t nPortIndex) {
 		ColourSet(nPortIndex, 0);
 	}
 
 private:
 #if defined (PIXELPATTERNS_MULTI)
-	static WS28xxMulti *m_pOutput;
+	static WS28xxMulti *s_pOutput;
 #else
-	static WS28xx *m_pOutput;
+	static WS28xx *s_pOutput;
 #endif
-	static uint32_t m_nActivePorts;
-	static uint32_t m_nCount;
+	static uint32_t s_nActivePorts;
+	static uint32_t s_nCount;
 
 	struct PortConfig {
 		uint32_t nLastUpdate;
@@ -167,9 +182,9 @@ private:
 		pixelpatterns::Pattern ActivePattern;
 	};
 
-	static PortConfig m_PortConfig[pixelpatterns::MAX_PORTS];
+	static PortConfig s_PortConfig[pixelpatterns::MAX_PORTS];
 
-	static uint32_t *m_pScannerColours;
+	static uint32_t *s_pScannerColours;
 };
 
 #endif /* PIXELPATTERNS_H_ */

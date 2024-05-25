@@ -1,6 +1,6 @@
-EXTRA_INCLUDES+=../lib-display/include ../lib-artnet/include ../lib-tcnet/include  ../lib-midi/include ../lib-network/include ../lib-properties/include ../lib-lightset/include
-
 $(info $$MAKE_FLAGS [${MAKE_FLAGS}])
+
+EXTRA_INCLUDES+=../lib-display/include ../lib-artnet/include ../lib-tcnet/include  ../lib-midi/include ../lib-network/include ../lib-properties/include ../lib-lightset/include
 
 ifneq ($(MAKE_FLAGS),)
 	COND=

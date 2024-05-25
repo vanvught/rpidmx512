@@ -49,7 +49,7 @@
 #include "rdmpersonality.h"
 #include "rdmdeviceparams.h"
 #include "rdmsensorsparams.h"
-#if defined (ENABLE_RDM_SUBDEVICES)
+#if defined (CONFIG_RDM_ENABLE_SUBDEVICES)
 # include "rdmsubdevicesparams.h"
 #endif
 
@@ -83,7 +83,7 @@ void Hardware::RebootHandler() {
 	ArtNetNode::Get()->Stop();
 }
 
-void main() {
+int main() {
 	Hardware hw;
 	DisplayUdf display;
 	ConfigStore configStore;
@@ -133,7 +133,7 @@ void main() {
 	rdmSensorsParams.Load();
 	rdmSensorsParams.Set();
 
-#if defined (ENABLE_RDM_SUBDEVICES)
+#if defined (CONFIG_RDM_ENABLE_SUBDEVICES)
 	RDMSubDevicesParams rdmSubDevicesParams;
 	rdmSubDevicesParams.Load();
 	rdmSubDevicesParams.Set();
@@ -160,7 +160,7 @@ void main() {
 	showFileParams.Set();
 
 	if (showFile.IsAutoStart()) {
-		showFile.Start();
+		showFile.Play();
 	}
 
 	showFile.Print();
@@ -176,7 +176,7 @@ void main() {
 	displayUdfParams.Load();
 	displayUdfParams.Set(&display);
 
-	display.Show(&node);
+	display.Show();
 
 	RemoteConfig remoteConfig(remoteconfig::Node::ARTNET, remoteconfig::Output::PWM, node.GetActiveOutputPorts());
 

@@ -66,9 +66,9 @@ public:
 	virtual void SetCursorPos(uint32_t nCol, uint32_t nRow)= 0;
 	virtual void SetCursor(uint32_t)= 0;
 
-	virtual void SetSleep(__attribute__((unused)) bool bSleep) {}
-	virtual void SetContrast(__attribute__((unused)) uint8_t nContrast) {}
-	virtual void SetFlipVertically(__attribute__((unused)) bool doFlipVertically) {}
+	virtual void SetSleep([[maybe_unused]] bool bSleep) {}
+	virtual void SetContrast([[maybe_unused]] uint8_t nContrast) {}
+	virtual void SetFlipVertically([[maybe_unused]] bool doFlipVertically) {}
 
 	virtual void PrintInfo() {}
 

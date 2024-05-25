@@ -7,6 +7,7 @@ EXTRA_SRCDIR=
 
 ifneq ($(MAKE_FLAGS),)
 else
+	DEFINES+=CONFIG_LTC_USE_DAC
 	EXTRA_SRCDIR+=src/displayrgb src/displayrgb/panel src/displayrgb/ws28xx
 	EXTRA_INCLUDES+=../lib-rgbpanel/include ../lib-ws28xxdisplay/include ../lib-ws28xx/include
 endif

@@ -2,7 +2,7 @@
  * @file storedevice.cpp
  *
  */
-/* Copyright (C) 2022-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,9 +39,9 @@ StoreDevice::StoreDevice() {
 	} else {
 		printf("StoreDevice: Detected %s with sector size %u total %u bytes [%u kB]\n",
 				spi_flash_get_name(),
-				spi_flash_get_sector_size(),
-				spi_flash_get_size(),
-				spi_flash_get_size() / 1024U);
+				static_cast<unsigned int>(spi_flash_get_sector_size()),
+				static_cast<unsigned int>(spi_flash_get_size()),
+				static_cast<unsigned int>(spi_flash_get_size() / 1024U));
 		m_IsDetected = true;
 	}
 

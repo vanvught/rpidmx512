@@ -1,5 +1,5 @@
 DEFINES =USE_SPI_DMA
-#DEFINES+=NDEBUG
+DEFINES+=NDEBUG
 
 EXTRA_INCLUDES=../lib-device/include ../lib-jamstapl/include
 

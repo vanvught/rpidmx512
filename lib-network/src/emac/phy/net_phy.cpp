@@ -2,7 +2,7 @@
  * net_phy.cpp
  *
  */
-/* Copyright (C) 2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2023-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,10 +33,11 @@
 #include "hardware.h"
 #include "debug.h"
 
+#if !defined(PHY_ADDRESS)
+# define PHY_ADDRESS	1
+#endif
+
 namespace net {
-
-static PhyStatus s_phyStatus;
-
 bool phy_get_id(const uint32_t nAddress, PhyIdentifier& phyIdentifier) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("nAddress=%.2x", nAddress);
@@ -62,6 +63,17 @@ bool phy_get_id(const uint32_t nAddress, PhyIdentifier& phyIdentifier) {
 	DEBUG_PRINTF("%.8x %.4x %.4x", phyIdentifier.nOui, phyIdentifier.nVendorModel, phyIdentifier.nModelRevision);
 	DEBUG_EXIT
 	return true;
+}
+
+Link phy_get_link(const uint32_t nAddress) {
+	uint16_t nValue = 0;
+	phy_read(nAddress, mmi::REG_BMSR, nValue);
+
+	if (mmi::BMSR_LINKED_STATUS == (nValue & mmi::BMSR_LINKED_STATUS)) {
+		return net::Link::STATE_UP;
+	}
+
+	return net::Link::STATE_DOWN;
 }
 
 bool phy_powerdown(const uint32_t nAddress) {
@@ -163,7 +175,7 @@ static bool phy_config_autonegotiation(const uint32_t nAddress, const uint16_t n
  * @param nAddress PHY address
  * @return true for success, false for failure
  */
-static bool phy_update_link(const uint32_t nAddress) {
+static bool phy_update_link(const uint32_t nAddress, PhyStatus& phyStatus) {
 	DEBUG_ENTRY
 
 	uint16_t nBMSR;
@@ -178,7 +190,7 @@ static bool phy_update_link(const uint32_t nAddress) {
 	 * we don't need to wait for autoneg again
 	 */
 
-	if ((s_phyStatus.link == Link::STATE_DOWN) && (nBMSR & mmi::BMSR_LINKED_STATUS)) {
+	if ((phyStatus.link == Link::STATE_DOWN) && (nBMSR & mmi::BMSR_LINKED_STATUS)) {
 		DEBUG_EXIT
 		return true;
 	}
@@ -195,14 +207,14 @@ static bool phy_update_link(const uint32_t nAddress) {
 			phy_read(nAddress, mmi::REG_BMSR, nBMSR);
 		}
 
-		s_phyStatus.link = Link::STATE_UP;
+		phyStatus.link = Link::STATE_UP;
 
 		DEBUG_PRINTF("%u", Hardware::Get()->Millis() - nMillis);
 		DEBUG_EXIT
 		return true;
 	} else {
 		phy_read(nAddress, mmi::REG_BMSR, nBMSR);
-		s_phyStatus.link = nBMSR & mmi::BMSR_LINKED_STATUS ? Link::STATE_UP : Link::STATE_DOWN;
+		phyStatus.link = nBMSR & mmi::BMSR_LINKED_STATUS ? Link::STATE_UP : Link::STATE_DOWN;
 
 		DEBUG_EXIT
 		return true;
@@ -214,10 +226,10 @@ static bool phy_update_link(const uint32_t nAddress) {
 	return true;
 }
 
-static bool phy_parse_link(const uint32_t nAddress) {
+static void phy_parse_link(const uint32_t nAddress, PhyStatus& phyStatus) {
 
-	s_phyStatus.duplex = Duplex::DUPLEX_HALF;
-	s_phyStatus.speed = Speed::SPEED10;
+	phyStatus.duplex = Duplex::DUPLEX_HALF;
+	phyStatus.speed = Speed::SPEED10;
 
 	uint16_t nADVERTISE;
 	phy_read(nAddress, mmi::REG_ADVERTISE, nADVERTISE);
@@ -227,16 +239,14 @@ static bool phy_parse_link(const uint32_t nAddress) {
 	nLPA &= nADVERTISE;
 
 	if (nLPA & (mmi::LPA_100FULL | mmi::LPA_100HALF)) {
-		s_phyStatus.speed = Speed::SPEED100;
+		phyStatus.speed = Speed::SPEED100;
 
 		if (nLPA & mmi::LPA_100FULL) {
-			s_phyStatus.duplex = Duplex::DUPLEX_FULL;
+			phyStatus.duplex = Duplex::DUPLEX_FULL;
 		}
 	} else if (nLPA & mmi::LPA_10FULL) {
-		s_phyStatus.duplex = Duplex::DUPLEX_FULL;
+		phyStatus.duplex = Duplex::DUPLEX_FULL;
 	}
-
-	return true;
 }
 
 bool phy_start(const uint32_t nAddress, PhyStatus& phyStatus) {
@@ -249,17 +259,19 @@ bool phy_start(const uint32_t nAddress, PhyStatus& phyStatus) {
 		return false;
 	}
 
-	if (!phy_update_link(nAddress)) {
+	if (!phy_update_link(nAddress, phyStatus)) {
 		DEBUG_EXIT
 		return false;
 	}
 
-	if (!phy_parse_link(nAddress)) {
-		DEBUG_EXIT
-		return false;
-	}
+	phy_parse_link(nAddress, phyStatus);
 
-	phyStatus = s_phyStatus;
+	phyStatus.link = phy_get_link(nAddress);
+
+	DEBUG_PRINTF("Link %s, %d, %s",
+			phyStatus.link == net::Link::STATE_UP ? "Up" : "Down",
+			phyStatus.speed == net::Speed::SPEED10 ? 10 : 100,
+			phyStatus.duplex == net::Duplex::DUPLEX_HALF ? "HALF" : "FULL");
 
 	DEBUG_EXIT
 	return true;

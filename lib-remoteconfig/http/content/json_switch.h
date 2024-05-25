@@ -18,6 +18,9 @@ static constexpr uint16_t PHYSTATUS   = 0xb63a;
 static constexpr uint16_t PORTSTATUS  = 0x394e;
 static constexpr uint16_t VLANTABLE   = 0xe4be;
 static constexpr uint16_t STATUS      = 0x8d49;
+static constexpr uint16_t TIMEDATE    = 0x2472;
+static constexpr uint16_t RTCALARM    = 0x817b;
+static constexpr uint16_t POLLTABLE   = 0x0864;
 }
 }
 }

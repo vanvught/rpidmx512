@@ -1,16 +1,17 @@
 async function refresh() {
   try {
     let data=await getJSON('rdm/portstatus')
-    let tr=await Promise.all(
-      data.map(item => getJSON('rdm/tod?' + item.port).then(response => ({ port: item.port, tod: response.tod })))
-    );
-
     let h='<tr><th>Port</th><th>Direction</th><th>Status</th></tr>'
+    
     data.forEach(item => {
       h+=`<tr><td>${item.port}</td><td>${item.direction}</td><td>${item.status}</td></tr>`
     });
   
     document.getElementById("idCfg").innerHTML=h
+    
+    let tr=await Promise.all(
+      data.map(item => getJSON('rdm/tod?' + item.port).then(response => ({ port: item.port, tod: response.tod })))
+    );
 
     try {
       let q=await getJSON('rdm/queue')
@@ -22,13 +23,12 @@ async function refresh() {
     
     document.getElementById("idQue").innerHTML=h
 
-    h=''
-    let hdrs='<tr>'
-    let tdd='<tr>'
-
     tr.sort((a, b) => {
       return data.findIndex(item => item.port === a.port) - data.findIndex(item => item.port === b.port);
     });
+    
+    let hdrs='<tr>'
+    let tdd='<tr>'
 
     tr.forEach(r => {
       hdrs+=`<th>${r.port}</th>`;
@@ -41,6 +41,6 @@ async function refresh() {
 
     hdrs+='</tr>'
     tdd+='</tr>'
-    document.getElementById("idDis").innerHTML='<table>' + h + hdrs + tdd + '</table>'
+    document.getElementById("idDis").innerHTML=hdrs + tdd
   } catch (error){}
 }

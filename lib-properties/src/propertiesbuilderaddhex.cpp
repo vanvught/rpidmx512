@@ -2,7 +2,7 @@
  * @file propertiesbuilderaddhex.cpp
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,13 +30,14 @@
 
 #include <cstring>
 #include <cstdio>
+#include <cstddef>
 #include <cassert>
 
 #include "propertiesbuilder.h"
 
 #include "debug.h"
 
-bool PropertiesBuilder::AddHex(const char *pProperty, uint32_t nValue, const bool bIsSet, const uint32_t nWidth) {
+bool PropertiesBuilder::AddHex(const char *pProperty, uint32_t nValue, const bool bIsSet, const int nWidth) {
 	if (m_nSize >= m_nLength) {
 		return false;
 	}
@@ -48,12 +49,12 @@ bool PropertiesBuilder::AddHex(const char *pProperty, uint32_t nValue, const boo
 
 	if (bIsSet || m_bJson) {
 		if (m_bJson) {
-			i = snprintf(p, nSize, "\"%s\":\"%.*x\",", pProperty, nWidth, nValue);
+			i = snprintf(p, nSize, "\"%s\":\"%.*x\",", pProperty, static_cast<int>(nWidth), static_cast<unsigned int>(nValue));
 		} else {
-			i = snprintf(p, nSize, "%s=%.*x\n", pProperty, nWidth, nValue);
+			i = snprintf(p, nSize, "%s=%.*x\n", pProperty, static_cast<int>(nWidth), static_cast<unsigned int>(nValue));
 		}
 	} else {
-		i = snprintf(p, nSize, "#%s=%.*x\n", pProperty, nWidth, nValue);
+		i = snprintf(p, nSize, "#%s=%.*x\n", pProperty, static_cast<int>(nWidth), static_cast<unsigned int>(nValue));
 	}
 
 	if (i > static_cast<int>(nSize)) {

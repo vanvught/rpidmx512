@@ -56,7 +56,7 @@ static constexpr auto TOP_ROW_STATS = 26;
 
 void Hardware::RebootHandler() {}
 
-void main() {
+int main() {
 	Hardware hw;
 	DisplayUdf display;
 #if !defined(NO_EMAC)

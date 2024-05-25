@@ -44,6 +44,13 @@
 # include "e131.h"
 #endif
 
+#if defined (ARTNET_SHOWFILE)
+namespace showfile {
+void record(const struct artnet::ArtDmx *pArtDmx, const uint32_t nMillis);
+void record(const struct artnet::ArtSync *pArtSync, const uint32_t nMillis);
+}  // namespace showfile
+#endif
+
 #include "lightset.h"
 #include "lightsetdata.h"
 
@@ -84,8 +91,8 @@ ArtNetNode::ArtNetNode() {
 #endif
 
 	memset(&m_State, 0, sizeof(struct artnetnode::State));
-	m_State.reportCode = artnetnode::ReportCode::RCPOWEROK;
-	m_State.status = artnetnode::Status::STANDBY;
+	m_State.reportCode = artnet::ReportCode::RCPOWEROK;
+	m_State.status = artnet::Status::STANDBY;
 	// The device should wait for a random delay of up to 1s before sending the reply.
 	m_State.ArtPollReplyDelayMillis = (m_ArtPollReply.MAC[5] | (static_cast<uint32_t>(m_ArtPollReply.MAC[4]) << 8)) % 1000;
 
@@ -168,7 +175,7 @@ void ArtNetNode::Start() {
 	m_ArtPollReply.Status2 &= static_cast<uint8_t>(~artnet::Status2::DHCP_CAPABLE);
 	m_ArtPollReply.Status2 |= Network::Get()->IsDhcpCapable() ? artnet::Status2::DHCP_CAPABLE : static_cast<uint8_t>(0);
 
-	#if defined (ENABLE_HTTPD) && defined (ENABLE_CONTENT)
+#if defined (ENABLE_HTTPD) && defined (ENABLE_CONTENT)
 	m_ArtPollReply.Status2 |= artnet::Status2::WEB_BROWSER_SUPPORT;
 #endif
 #if defined (OUTPUT_HAVE_STYLESWITCH)
@@ -228,7 +235,7 @@ void ArtNetNode::Start() {
 	E131Bridge::Start();
 #endif
 
-	m_State.status = artnetnode::Status::ON;
+	m_State.status = artnet::Status::ON;
 	Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
 
 	DEBUG_EXIT
@@ -263,7 +270,7 @@ void ArtNetNode::Stop() {
 	hal::panel_led_off(hal::panelled::ARTNET);
 
 	m_ArtPollReply.Status1 = static_cast<uint8_t>((m_ArtPollReply.Status1 & ~artnet::Status1::INDICATOR_MASK) | artnet::Status1::INDICATOR_MUTE_MODE);
-	m_State.status = artnetnode::Status::STANDBY;
+	m_State.status = artnet::Status::STANDBY;
 
 	DEBUG_EXIT
 }
@@ -281,7 +288,7 @@ void ArtNetNode::SetShortName(const uint32_t nPortIndex, const char *pShortName)
 
 	m_Node.Port[nPortIndex].ShortName[artnet::SHORT_NAME_LENGTH - 1] = '\0';
 
-	if (m_State.status == artnetnode::Status::ON) {
+	if (m_State.status == artnet::Status::ON) {
 		ArtNetStore::SaveShortName(nPortIndex, m_Node.Port[nPortIndex].ShortName);
 	}
 
@@ -294,7 +301,7 @@ void ArtNetNode::GetLongNameDefault(char *pLongName) {
 	uint8_t nBoardNameLength;
 	const auto *const pBoardName = Hardware::Get()->GetBoardName(nBoardNameLength);
 	const auto *const pWebsiteUrl = Hardware::Get()->GetWebsiteUrl();
-	snprintf(pLongName, artnet::LONG_NAME_LENGTH - 1, "%s %s %d %s", pBoardName, artnet::NODE_ID, artnet::VERSION, pWebsiteUrl);
+	snprintf(pLongName, artnet::LONG_NAME_LENGTH - 1, "%s %s %u %s", pBoardName, artnet::NODE_ID, static_cast<unsigned int>(artnet::VERSION), pWebsiteUrl);
 #else
 	uint32_t i;
 
@@ -321,7 +328,7 @@ void ArtNetNode::SetLongName(const char *pLongName) {
 
 	m_ArtPollReply.LongName[artnet::LONG_NAME_LENGTH - 1] = '\0';
 
-	if (m_State.status == artnetnode::Status::ON) {
+	if (m_State.status == artnet::Status::ON) {
 		ArtNetStore::SaveLongName(reinterpret_cast<char *>(m_ArtPollReply.LongName));
 		artnet::display_longname(reinterpret_cast<char *>(m_ArtPollReply.LongName));
 	}
@@ -338,7 +345,7 @@ void ArtNetNode::SetOutputStyle(const uint32_t nPortIndex, lightset::OutputStyle
 		return;
 	}
 
-	if ((m_State.status == artnetnode::Status::ON) && (m_pLightSet != nullptr)) {
+	if (m_pLightSet != nullptr) {
 		m_pLightSet->SetOutputStyle(nPortIndex, outputStyle);
 		outputStyle = m_pLightSet->GetOutputStyle(nPortIndex);
 	}
@@ -365,7 +372,7 @@ void ArtNetNode::SetOutputStyle(const uint32_t nPortIndex, lightset::OutputStyle
 
 	m_State.IsSynchronousMode = false;
 
-	if (m_State.status == artnetnode::Status::ON) {
+	if (m_State.status == artnet::Status::ON) {
 		ArtNetStore::SaveOutputStyle(nPortIndex, outputStyle);
 		artnet::display_outputstyle(nPortIndex, outputStyle);
 	}
@@ -519,6 +526,11 @@ void ArtNetNode::Process(const uint16_t nBytesReceived) {
 		if (m_pLightSet != nullptr) {
 			HandleDmx();
 			m_State.ArtDmxIpAddress = m_nIpAddressFrom;
+#if defined (ARTNET_SHOWFILE)
+			if (m_State.DoRecord) {
+				showfile::record(reinterpret_cast<const artnet::ArtDmx *>(m_pReceiveBuffer), m_nCurrentPacketMillis);
+			}
+#endif
 		}
 		break;
 	case artnet::OpCodes::OP_SYNC:
@@ -537,6 +549,11 @@ void ArtNetNode::Process(const uint16_t nBytesReceived) {
 				m_State.ArtSyncMillis = Hardware::Get()->Millis();
 				HandleSync();
 			}
+#if defined (ARTNET_SHOWFILE)
+			if (m_State.DoRecord) {
+				showfile::record(reinterpret_cast<const artnet::ArtSync *>(m_pReceiveBuffer), m_nCurrentPacketMillis);
+			}
+#endif
 		}
 		break;
 #endif		

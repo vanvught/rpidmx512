@@ -79,7 +79,7 @@ void Hardware::RebootHandler() {
 	DdpDisplay::Get()->Stop();
 }
 
-void main() {
+int main() {
 	Hardware hw;
 	DisplayUdf display;
 	ConfigStore configStore;
@@ -129,7 +129,7 @@ void main() {
 
 	// LightSet 32with4
 
-	LightSet32with4 lightSet((PixelTestPattern::GetPattern() != pixelpatterns::Pattern::NONE) ? nullptr : &pixelDmxMulti, &dmxSend);
+	LightSet32with4 lightSet((PixelTestPattern::Get()->GetPattern() != pixelpatterns::Pattern::NONE) ? nullptr : &pixelDmxMulti, &dmxSend);
 	lightSet.Print();
 
 	ddpDisplay.SetOutput(&lightSet);
@@ -208,9 +208,7 @@ void main() {
 		ddpDisplay.Run();
 		remoteConfig.Run();
 		configStore.Flash();
-		if (__builtin_expect((PixelTestPattern::GetPattern() != pixelpatterns::Pattern::NONE), 0)) {
-			pixelTestPattern.Run();
-		}
+		pixelTestPattern.Run();
 		mDns.Run();
 #if defined (NODE_RDMNET_LLRP_ONLY)
 		llrpOnlyDevice.Run();

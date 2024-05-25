@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head><link rel="stylesheet" href="styles.css" /><title>Real-time clock</title></head>
+<body>
+  <header><ul id="idList"></ul></header>
+  <p><button onclick="refresh()">Refresh</button></p>
+  <p id="nodeTime">Node time will be displayed here</p>
+  <p id="rtcTime">RTC time will be displayed here</p>
+   <div>
+    <button onclick="hcToSys()">Set the Node time from the RTC</button>
+    <button onclick="sysToHc()">Set the RTC from the Node time</button>
+  </div>
+  <p>
+  <form id="form">
+    <label for="alarmInput">RTC Alarm:</label>
+    <input type="datetime-local" id="alarmInput" name="alarmInput" required>
+    <label for="chkbox">Enable</label>
+    <input type="checkbox" id="chkbox" name="Enable">
+    <button type="button" onclick="alarm()">Set</button>
+  </form>
+  <footer><ul id="idVersion"></ul></footer>
+  <script src="static.js" type="text/javascript"></script>
+  <script src="date.js" type="text/javascript"></script>
+  <script src="rtc.js" type="text/javascript"></script>
+<script>list();version();refresh()</script>
+</body>
+</html>

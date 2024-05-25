@@ -61,6 +61,12 @@ public:
 		DEBUG_EXIT
 	}
 
+	void Record() {
+		DEBUG_ENTRY
+
+		DEBUG_EXIT
+	}
+
 	void DmxOut(const uint16_t nUniverse, const uint8_t *pDmxData, const uint32_t nLength) {
 		m_E131Controller.HandleDmxOut(nUniverse, pDmxData, nLength);
 	}
@@ -77,7 +83,7 @@ public:
 		m_E131Controller.SetMaster(nMaster);
 	}
 
-	void DoRunCleanupProcess(__attribute__((unused)) bool bDoRun) {
+	void DoRunCleanupProcess([[maybe_unused]] bool bDoRun) {
 	}
 
 	void Run() {

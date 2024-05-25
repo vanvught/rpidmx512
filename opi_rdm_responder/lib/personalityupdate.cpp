@@ -46,7 +46,7 @@ void RDMResponder::PersonalityUpdate(uint32_t nPersonality)  {
 	DisplayUdf::Get()->Show();
 
 	if (nPersonality == 1) {
-		const auto nTestPattern = PixelTestPattern::GetPattern();
+		const auto nTestPattern = PixelTestPattern::Get()->GetPattern();
 
 		if (nTestPattern == pixelpatterns::Pattern::NONE) {
 		} else {

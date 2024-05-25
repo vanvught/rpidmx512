@@ -2,7 +2,7 @@
  * @file net_timers.cpp
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,10 @@
  * THE SOFTWARE.
  */
 
+#pragma GCC push_options
+#pragma GCC optimize ("O2")
+#pragma GCC optimize ("no-tree-loop-distribute-patterns")
+
 #include <cstdint>
 
 #include "net_private.h"
@@ -42,8 +46,8 @@ static volatile uint32_t s_ticker;
 void net_timers_run() {
 	const auto nMillis = Hardware::Get()->Millis();
 
-	if (__builtin_expect((nMillis >= s_ticker), 0)) {
-		s_ticker = nMillis + INTERVAL_MS;
+	if (__builtin_expect(((nMillis - s_ticker) > INTERVAL_MS), 0)) {
+		s_ticker = nMillis;
 		igmp_timer();
 #ifndef NDEBUG
 		arp_cache_timer();

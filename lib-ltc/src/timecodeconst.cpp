@@ -1,7 +1,7 @@
 /**
  * @file timecodeconst.cpp
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,4 +27,10 @@
 #include "timecodeconst.h"
 
 const uint8_t TimeCodeConst::FPS[4] = { 24, 25, 30, 30 };
+#if defined (H3)
 const uint32_t TimeCodeConst::TMR_INTV[4] = {12000000 / 24, 12000000 / 25, 12000000 / 30, 12000000 / 30};
+#elif defined (GD32)
+# include "gd32.h"
+# define MASTER_TIMER_CLOCK		(APB2_CLOCK_FREQ * 2)
+  const uint32_t TimeCodeConst::TMR_INTV[4] = {(MASTER_TIMER_CLOCK / 24) - 1, (MASTER_TIMER_CLOCK / 25) - 1, (MASTER_TIMER_CLOCK / 30) - 1, (MASTER_TIMER_CLOCK / 30) - 1};
+#endif

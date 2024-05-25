@@ -40,12 +40,12 @@ uint32_t get_uptime() {
 	size_t len = sizeof(boottime);
 	int mib[2] = {CTL_KERN, KERN_BOOTTIME};
 
-	if (sysctl(mib, 2, &boottime, &len, NULL, 0) < 0 ) {
+	if (sysctl(mib, 2, &boottime, &len, nullptr, 0) < 0 ) {
 		return 0;
 	}
 
 	time_t bsec = boottime.tv_sec;
-	time_t csec = time(NULL);
+	time_t csec = time(nullptr);
 
 	return difftime(csec, bsec);
 #else

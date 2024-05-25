@@ -1,7 +1,7 @@
 /**
  * @file ltcencoder.h
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,18 +25,43 @@
 #ifndef LTCENCODER_H_
 #define LTCENCODER_H_
 
+#if !(defined(CONFIG_LTC_USE_DAC) || defined(CONFIG_LTC_USE_GPIO))
+# error No output defined
+#endif
+
 #include <cstdint>
 
 #include "ltc.h"
+
+namespace ltc {
+namespace encoder {
+#define LTCENCODER_CEILING(x,y)		(((x) + (y) - 1) / (y))
+static constexpr uint32_t FORMAT_SIZE_BITS 		= 80;
+static constexpr uint32_t FORMAT_SIZE_BYTES 	= LTCENCODER_CEILING(FORMAT_SIZE_BITS, 8);
+static constexpr uint32_t FORMAT_SIZE_HALFWORDS	= LTCENCODER_CEILING(FORMAT_SIZE_BYTES, 2);
+static constexpr uint32_t FORMAT_SIZE_WORDS 	= LTCENCODER_CEILING(FORMAT_SIZE_BYTES, 4);
+#undef LTCENCODER_CEILING
+
+static constexpr uint16_t SYNC_WORD_VALUE = 0x3FFD;
+
+struct FormatTemplate {
+	union Format {
+		uint8_t bytes[FORMAT_SIZE_BYTES];
+		uint16_t half_words[FORMAT_SIZE_HALFWORDS];
+		uint32_t words[FORMAT_SIZE_WORDS];
+		uint64_t data;
+	} Format;
+};
+}  // namespace encoder
+}  // namespace ltc
 
 class LtcEncoder {
 public:
 	LtcEncoder();
 	~LtcEncoder();
 
-	void SetTimeCode(const struct ltc::TimeCode* pLtcTimeCode, bool nExternalClock = true);
+	void SetTimeCode(const struct ltc::TimeCode *pLtcTimeCode, bool nExternalClock = true);
 	void Encode();
-	void Send();
 
 	void Dump();
 	void DumpBuffer();
@@ -52,15 +77,9 @@ public:
 	}
 
 private:
-	bool GetParity(uint32_t nValue);
-	void SetPolarity(uint32_t nType);
-	uint8_t ReverseBits(uint8_t nBits);
-
-private:
-	uint8_t *m_pLtcBits{nullptr};
-	int16_t *m_pBuffer{nullptr};
-	uint32_t m_nBufferSize;
-	uint32_t m_nType{0xFF};
+	uint8_t *m_pLtcBits { nullptr };
+	int16_t *m_pBuffer { nullptr };
+	uint32_t m_nType { 0xFF };
 
 	static LtcEncoder *s_pThis;
 };

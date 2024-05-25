@@ -105,9 +105,9 @@ public:
 		m_bClearEndOfLine = true;
 	}
 
-	void Status(__attribute__((unused)) Display7SegmentMessage nValue) { }
+	void Status([[maybe_unused]] Display7SegmentMessage nValue) { }
 
-	void Status(__attribute__((unused)) uint8_t nValue, __attribute__((unused)) bool bHex) {}
+	void Status([[maybe_unused]] uint8_t nValue, [[maybe_unused]] bool bHex) {}
 
 	void Text(const char *pData, uint32_t nLength) {
 		if (nLength > m_nCols) {

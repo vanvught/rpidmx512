@@ -2,7 +2,7 @@
  * @file apps_config
  *
  */
-/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,9 @@
 #ifndef APPS_CONFIG_H_
 #define APPS_CONFIG_H_
 
-#if defined (BARE_METAL)
+#if defined(__linux__) || defined (__APPLE__)
+# define MDNS_SERVICE_RECORDS_MAX	8
+#else
 # if defined (H3)
 #  define MDNS_SERVICE_RECORDS_MAX	8
 # elif defined (GD32)
@@ -36,8 +38,6 @@
 # else
 #  error
 # endif
-#else
-# define MDNS_SERVICE_RECORDS_MAX	8
 #endif
 
 #if !defined (MDNS_SERVICE_RECORDS_MAX)

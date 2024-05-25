@@ -2,7 +2,7 @@
  * @file ltcreader.cpp
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
+#pragma GCC push_options
+#pragma GCC optimize ("O2")
+#pragma GCC optimize ("no-tree-loop-distribute-patterns")
 
 #include <cstdint>
 #include <cstring>
@@ -90,7 +94,12 @@ static void arm_timer_handler(void) {
 static void __attribute__((interrupt("FIQ"))) fiq_handler() {
 #elif defined (GD32)
 extern "C" {
-void EXTI4_IRQHandler() {
+void EXTI10_15_IRQHandler() {
+	if (0 != exti_interrupt_flag_get(EXTI_14)) {
+		exti_interrupt_flag_clear(EXTI_14);
+# ifndef NDEBUG
+		GPIO_TG(GPIOA) = GPIO_PIN_4;
+# endif
 #endif
 	__DMB();
 
@@ -106,6 +115,12 @@ void EXTI4_IRQHandler() {
 		nBitTime = nFiqUsCurrent - nFiqUsPrevious;
 	}
 #elif defined (GD32)
+	nFiqUsCurrent = TIMER_CNT(TIMER5);
+	if (nFiqUsCurrent >= nFiqUsPrevious) {
+		nBitTime = nFiqUsCurrent - nFiqUsPrevious;
+	} else {
+		nBitTime = UINT16_MAX - (nFiqUsPrevious - nFiqUsCurrent);
+	}
 #endif
 
 	nFiqUsPrevious = nFiqUsCurrent;
@@ -173,7 +188,9 @@ void EXTI4_IRQHandler() {
 			bTimeCodeAvailable = true;
 		}
 	}
-
+#if defined (GD32)
+	}
+#endif
 	__DMB();
 }
 #if defined (GD32)
@@ -207,6 +224,31 @@ void LtcReader::Start() {
 	__enable_fiq();
 #elif defined (GD32)
 	platform::ltc::timer6_config();
+	/**
+	 * https://www.gd32-dmx.org/dev-board.html
+	 * GPIO_EXT_26 = PA14
+	 */
+	static_assert(GD32_GPIO_TO_NUMBER(GPIO_EXT_26) == 14, "GPIO PIN is not 14");
+	static_assert(GD32_GPIO_TO_PORT(GPIO_EXT_26) == GD32_GPIO_PORTA, "GPIO PORT is not A");
+
+	rcu_periph_clock_enable(RCU_GPIOA);
+	gpio_mode_set(GPIOA, GPIO_MODE_INPUT, GPIO_PUPD_PULLDOWN, GPIO_PIN_14);
+	/* connect key EXTI line to key GPIO pin */
+	syscfg_exti_line_config(EXTI_SOURCE_GPIOA, EXTI_SOURCE_PIN14);
+	/* configure key EXTI line */
+	exti_init(EXTI_14, EXTI_INTERRUPT, EXTI_TRIG_BOTH);
+	exti_interrupt_flag_clear(EXTI_14);
+    NVIC_EnableIRQ(EXTI10_15_IRQn);
+#ifndef NDEBUG
+	rcu_periph_clock_enable(RCU_GPIOA);
+# if defined (GPIO_INIT)
+	gpio_init(GPIOA, GPIO_MODE_OUT_PP, GPIO_OSPEED_50MHZ, GPIO_PIN_4);
+# else
+	gpio_mode_set(GPIOA, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO_PIN_4);
+	gpio_output_options_set(GPIOA, GPIO_OTYPE_PP, GPIO_OSPEED, GPIO_PIN_4);
+# endif
+	GPIO_BOP(GPIOA) = GPIO_PIN_4;
+# endif
 #endif
 }
 
@@ -264,6 +306,8 @@ void LtcReader::Run() {
 			H3_TIMER->TMR1_INTV = TimeCodeConst::TMR_INTV[static_cast<uint32_t>(TimeCodeType)] / 4;
 			H3_TIMER->TMR1_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
 #elif defined (GD32)
+			TIMER_CNT(TIMER11) = 0;
+			TIMER_CH0CV(TIMER11) = TimeCodeConst::TMR_INTV[static_cast<uint32_t>(TimeCodeType)] / 4;
 #endif
 		}
 

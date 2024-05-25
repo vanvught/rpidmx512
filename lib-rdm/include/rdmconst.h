@@ -140,7 +140,7 @@ struct TRdmDiscoveryMsg {
 }PACKED;
 
 // Unique identifier (UID) which consists of a 2 byte ESTA manufacturer ID, and a 4 byte device ID.
-static const uint8_t UID_ALL[RDM_UID_SIZE] __attribute__((aligned(4))) = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
+static constexpr uint8_t UID_ALL[RDM_UID_SIZE] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
 
 struct RDMConst {
 	static const char MANUFACTURER_NAME[];

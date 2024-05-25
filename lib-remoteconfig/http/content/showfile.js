@@ -1,41 +1,45 @@
 async function refresh() {
   try {
-    let data=await getJSON('showfile/status')
-    let show=(parseInt(data.show) >= 0 && parseInt(data.show) <= 99) ? data.show : 'None'
-    let loop=data.loop === "1" ? "Yes" : "No"
-    h=`<tr><td>Show</td><td>${show}</td> </tr>`
-    h+=`<tr><td>Status</td><td>${data.status}</td></tr>`
+    directory()
+    let d=await getJSON('showfile/status')
+    let s=(parseInt(d.show) >= 0 && parseInt(d.show) <= 99) ? d.show : 'None'
+    let loop=d.loop === "1" ? "Yes" : "No"
+    h=`<tr><td>Mode</td><td>${d.mode}</td> </tr>`
+    h+=`<tr><td>Show</td><td>${s}</td> </tr>`
+    h+=`<tr><td>Status</td><td>${d.status}</td></tr>`
     h+=`<tr><td>Looping</td><td>${loop}</td></tr>`
     document.getElementById("idStatus").innerHTML='<table>'+h+'</table>'
-    let b=data.loop === "1" ? "No loop" : "Looping"
-    document.getElementById("idLoop").innerHTML=b
+    let b=d.loop === "1" ? "No loop" : "Looping"
+    document.getElementById("id4").innerHTML=b
   } catch (error){}
 }
 
-function send(status) {
-  return post({ show: "", status: status }).then(refresh).catch(error)
+async function sel() {
+  const v=document.getElementById("id1").value
+  await post({ show:`${v}` })
+  refresh()
 }
 
-function start() {
-  return send("start")
+async function rec() {
+  const v=document.getElementById("id3").innerHTML
+  await post({ show:"",recorder:`${v}` })
+  refresh()
 }
 
-function stop() {
-  return send("stop")
+async function del() {
+    const v=document.getElementById("id2").value
+    await delet({ show:`${v}` })
+    refresh()
 }
 
-function resume() {
-  return send("resume")
-}
-
-function select() {
-  const v=document.getElementById("idDirectory").value;
-  post({ show:`${v}` }).then(() => { refresh() }).catch(error)
-}
-
-function loop() {
-  const v=document.getElementById('idLoop').innerHTML =="Looping" ? "1" : "0"
-  post({ show:"",loop:`${v}` }).then(() => { refresh() }).catch(error)
+function ff(d) {
+    const s = d.shows.map(show => show.show)
+    let e = 0;
+    for (let n of s) {
+        if (n !== e) { return e;}
+        e++;
+    }
+    return e
 }
 
 async function directory() {
@@ -45,8 +49,10 @@ async function directory() {
   let f=Object.keys(d["shows"])
   f.forEach(function(key) {
     var v = d["shows"][key]
-    h += "<option value="+v+">"+v+"</option>"
+    h += "<option value="+v.show+">"+v.show+" | "+v.size+"</option>"
   });
-  document.getElementById("idDirectory").innerHTML = h
+  document.getElementById("id1").innerHTML = h
+  document.getElementById("id2").innerHTML = h
+  document.getElementById("id3").innerHTML = ff(d)
   } catch (error){}
 }

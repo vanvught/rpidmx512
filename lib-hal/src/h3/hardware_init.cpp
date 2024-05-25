@@ -40,7 +40,6 @@
 
 #include "console.h"
 
-//#include "../ff12c/ff.h"
 #include "../ff14b/source/ff.h"
 
 #define WIFI_EN_PIO		7	// PL7

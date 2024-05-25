@@ -52,10 +52,10 @@
   uint8_t i2c_read(char *, uint32_t);
 #else
   inline static void i2c_begin() {}
-  inline static void i2c_set_baudrate(__attribute__((unused)) uint32_t _q) {}
-  inline static void i2c_set_address(__attribute__((unused)) uint8_t _q) {}
-  inline static uint8_t i2c_write(__attribute__((unused)) const char *_p, __attribute__((unused)) uint32_t _q) { return 1;}
-  inline static uint8_t i2c_read(__attribute__((unused)) char *_p, __attribute__((unused)) uint32_t _q) { return 1;}
+  inline static void i2c_set_baudrate([[maybe_unused]] uint32_t _q) {}
+  inline static void i2c_set_address([[maybe_unused]] uint8_t _q) {}
+  inline static uint8_t i2c_write([[maybe_unused]] const char *_p, [[maybe_unused]] uint32_t _q) { return 1;}
+  inline static uint8_t i2c_read([[maybe_unused]] char *_p, [[maybe_unused]] uint32_t _q) { return 1;}
 #endif
 #endif
 

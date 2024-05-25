@@ -76,19 +76,19 @@ public:
 		DEBUG_EXIT
 	}
 
-	static void SaveUniverseSwitch(const uint32_t nPortIndex, __attribute__((unused)) const uint8_t nUniverseSwitch) {
+	static void SaveUniverseSwitch(const uint32_t nPortIndex, [[maybe_unused]] const uint8_t nUniverseSwitch) {
 		DEBUG_ENTRY
 		SaveUniverse(nPortIndex);
 		DEBUG_EXIT
 	}
 
-	static void SaveNetSwitch(const uint32_t nPortIndex, __attribute__((unused)) const uint8_t nNetSwitch) {
+	static void SaveNetSwitch(const uint32_t nPortIndex, [[maybe_unused]] const uint8_t nNetSwitch) {
 		DEBUG_ENTRY
 		SaveUniverse(nPortIndex);
 		DEBUG_EXIT
 	}
 
-	static void SaveSubnetSwitch(const uint32_t nPortIndex, __attribute__((unused)) const uint8_t nSubnetSwitch) {
+	static void SaveSubnetSwitch(const uint32_t nPortIndex, [[maybe_unused]] const uint8_t nSubnetSwitch) {
 		DEBUG_ENTRY
 		SaveUniverse(nPortIndex);
 		DEBUG_EXIT

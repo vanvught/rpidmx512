@@ -104,8 +104,8 @@ private:
 	bool Start(const uint32_t nPortIndex, RDMTod *pRDMTod, const bool doIncremental);
 	bool IsValidDiscoveryResponse(uint8_t *pUid);
 
-	void SavedState(__attribute__((unused)) const uint32_t nLine);
-	void NewState(const rdmdiscovery::State state, const bool doStateLateResponse, __attribute__((unused)) const uint32_t nLine);
+	void SavedState([[maybe_unused]] const uint32_t nLine);
+	void NewState(const rdmdiscovery::State state, const bool doStateLateResponse, [[maybe_unused]] const uint32_t nLine);
 
 private:
 	RDMMessage m_Message;

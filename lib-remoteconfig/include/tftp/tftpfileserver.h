@@ -37,7 +37,8 @@
 
 namespace tftpfileserver {
 	bool is_valid(const void *pBuffer);
-#if defined (BARE_METAL)
+#if defined(__linux__) || defined (__APPLE__)
+#else
 # if defined (H3)
 #  if defined(ORANGE_PI)
 	static constexpr char FILE_NAME[] = "orangepi_zero.uImage";
@@ -54,7 +55,7 @@ namespace tftpfileserver {
 #  elif defined (GD32H7XX)
     static constexpr char FILE_NAME[] = "gd32h7xx.bin";
 #  else
-#   error MCU is not defined
+#   error FAMILY is not defined
 #  endif
 # endif
 #endif

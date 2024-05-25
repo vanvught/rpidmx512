@@ -83,7 +83,7 @@ void Hardware::RebootHandler() {
 	ArtNetNode::Get()->Stop();
 }
 
-void main() {
+int main() {
 	Hardware hw;
 	DisplayUdf display;
 	ConfigStore configStore;
@@ -127,7 +127,7 @@ void main() {
 			if (isSet) {
 				node.SetUniverse(nPortProtocolIndex, lightset::PortDir::OUTPUT, static_cast<uint16_t>(nStartUniversePort + u));
 				char label[artnet::SHORT_NAME_LENGTH];
-				snprintf(label, artnet::SHORT_NAME_LENGTH - 1, "Pixel %c U:%u", 'A' + nOutportIndex, nStartUniversePort + u);
+				snprintf(label, artnet::SHORT_NAME_LENGTH - 1, "Pixel %c U:%u", static_cast<char>('A' + nOutportIndex), static_cast<unsigned int>(nStartUniversePort + u));
 				node.SetShortName(nPortProtocolIndex, label);
 			}
 			nPortProtocolIndex++;
@@ -137,7 +137,7 @@ void main() {
 	const auto nTestPattern = static_cast<pixelpatterns::Pattern>(pixelDmxParams.GetTestPattern());
 	PixelTestPattern pixelTestPattern(nTestPattern, nPixelActivePorts);
 	
-	if (PixelTestPattern::GetPattern() != pixelpatterns::Pattern::NONE) {
+	if (PixelTestPattern::Get()->GetPattern() != pixelpatterns::Pattern::NONE) {
 		node.SetOutput(nullptr);
 	} else {
 		node.SetOutput(&pixelDmxMulti);
@@ -148,7 +148,7 @@ void main() {
 #if defined (NODE_RDMNET_LLRP_ONLY)
 	display.TextStatus(RDMNetConst::MSG_CONFIG, Display7SegmentMessage::INFO_RDMNET_CONFIG, CONSOLE_YELLOW);
 	char aDescription[rdm::personality::DESCRIPTION_MAX_LENGTH + 1];
-	snprintf(aDescription, sizeof(aDescription) - 1, "Art-Net Pixel %d-%s:%d", nPixelActivePorts, PixelType::GetType(WS28xxMulti::Get()->GetType()), WS28xxMulti::Get()->GetCount());
+	snprintf(aDescription, sizeof(aDescription) - 1, "Art-Net Pixel %u-%s:%u", static_cast<unsigned int>(nPixelActivePorts), PixelType::GetType(WS28xxMulti::Get()->GetType()), static_cast<unsigned int>(WS28xxMulti::Get()->GetCount()));
 
 	char aLabel[RDM_DEVICE_LABEL_MAX_LENGTH + 1];
 	const auto nLength = snprintf(aLabel, sizeof(aLabel) - 1, "Orange Pi Zero Pixel");
@@ -179,7 +179,7 @@ void main() {
 	showFileParams.Set();
 
 	if (showFile.IsAutoStart()) {
-		showFile.Start();
+		showFile.Play();
 	}
 
 	showFile.Print();
@@ -198,7 +198,7 @@ void main() {
 	displayUdfParams.Load();
 	displayUdfParams.Set(&display);
 
-	display.Show(&node);
+	display.Show();
 
 	display.Printf(7, "%s:%d G%d %s",
 		PixelType::GetType(pixelDmxConfiguration.GetType()),
@@ -242,9 +242,7 @@ void main() {
 		llrpOnlyDevice.Run();
 #endif
 		configStore.Flash();
-		if (__builtin_expect((PixelTestPattern::GetPattern() != pixelpatterns::Pattern::NONE), 0)) {
-			pixelTestPattern.Run();
-		}
+		pixelTestPattern.Run();
 		mDns.Run();
 		display.Run();
 		hw.Run();

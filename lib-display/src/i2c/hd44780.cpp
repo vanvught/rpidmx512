@@ -2,7 +2,7 @@
  * @file hd44780.cpp
  *
  */
-/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -168,7 +168,7 @@ void Hd44780::ClearLine(uint32_t nLine) {
 }
 
 void Hd44780::PrintInfo() {
-	printf("HD44780 [PCF8574T] (%d,%d)\n", m_nRows, m_nCols);
+	printf("HD44780 [PCF8574T] (%u,%u)\n", static_cast<unsigned int>(m_nRows), static_cast<unsigned int>(m_nCols));
 }
 
 void Hd44780::SetCursorPos(uint32_t nCol, uint32_t nRow) {

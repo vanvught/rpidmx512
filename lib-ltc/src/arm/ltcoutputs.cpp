@@ -2,7 +2,7 @@
  * @file ltcoutputs.cpp
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -57,6 +57,15 @@ static void irq_timer1_midi_handler([[maybe_unused]] uint32_t clo) {
 	sv_isMidiQuarterFrameMessage = true;
 }
 #elif defined (GD32)
+void TIMER12_IRQHandler() {
+	const auto nIntFlag = TIMER_INTF(TIMER12);
+
+	if ((nIntFlag & TIMER_INT_FLAG_UP) == TIMER_INT_FLAG_UP) {
+		sv_isMidiQuarterFrameMessage = true;
+	}
+
+	timer_interrupt_flag_clear(TIMER12, nIntFlag);
+}
 #endif
 
 LtcOutputs *LtcOutputs::s_pThis;
@@ -116,6 +125,8 @@ void LtcOutputs::Update(const struct ltc::TimeCode *ptLtcTimeCode) {
 		H3_TIMER->TMR1_INTV = TimeCodeConst::TMR_INTV[ptLtcTimeCode->nType] / 4;
 		H3_TIMER->TMR1_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
 #elif defined (GD32)
+		TIMER_CNT(TIMER11) = 0;
+		TIMER_CH0CV(TIMER11) = TimeCodeConst::TMR_INTV[ptLtcTimeCode->nType] / 4;
 #endif
 
 		m_nMidiQuarterFramePiece = 0;

@@ -121,8 +121,6 @@ void Hardware::RebootHandler() {
 //		break;
 //	}
 
-	HwClock::Get()->SysToHc();
-
 	if (!g_ltc_ptLtcDisabledOutputs.bMax7219) {
 		LtcDisplayMax7219::Get()->Init(2); // TODO WriteChar
 	}
@@ -148,7 +146,7 @@ extern "C" {
 void h3_cpu_off(uint32_t);
 }
 
-void main() {
+int main() {
 	Hardware hw;
 	Display display(4);
 	ConfigStore configStore;
@@ -557,7 +555,7 @@ void main() {
 				if (bRunNtpServer) {
 					HwClock::Get()->Run(true);
 				} else {
-					HwClock::Get()->Run(NtpClient::Get()->GetStatus() == ntpclient::Status::FAILED); // No need to check for STOPPED
+					HwClock::Get()->Run(NtpClient::Get()->GetStatus() == ::ntp::Status::FAILED); // No need to check for STOPPED
 				}
 			} else {
 				gpsTimeClient.Run();

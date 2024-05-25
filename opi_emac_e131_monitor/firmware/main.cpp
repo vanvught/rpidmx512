@@ -76,7 +76,7 @@ uint32_t DMXPORT_OFFSET = 0;
 void Hardware::RebootHandler() {
 }
 
-void main() {
+int main() {
 	Hardware hw;
 	DisplayUdf display;
 	ConfigStore configStore;
@@ -144,7 +144,7 @@ void main() {
 	showFileParams.Set();
 
 	if (showFile.IsAutoStart()) {
-		showFile.Start();
+		showFile.Play();
 	}
 
 	showFile.Print();
@@ -170,7 +170,7 @@ void main() {
 	displayUdfParams.Load();
 	displayUdfParams.Set(&display);
 
-	display.Show(&bridge);
+	display.Show();
 
 	RemoteConfig remoteConfig(remoteconfig::Node::E131, remoteconfig::Output::MONITOR, 0);
 

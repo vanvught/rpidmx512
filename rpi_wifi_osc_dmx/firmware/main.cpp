@@ -36,20 +36,9 @@
 #include "oscserverparams.h"
 #include "oscserver.h"
 
-// DMX output
 #include "dmx.h"
 #include "dmxparams.h"
 #include "dmxsend.h"
-#ifndef H3
-// DMX real-time monitor
-# include "dmxmonitor.h"
-#endif
-// Pixel Controller
-#include "pixeldmxconfiguration.h"
-#include "pixeltype.h"
-#include "lightset.h"
-#include "pixeldmxparams.h"
-#include "ws28xxdmx.h"
 
 #include "handler.h"
 
@@ -65,7 +54,7 @@ constexpr char BRIDGE_PARMAS[] = "Setting Bridge parameters ...";
 constexpr char START_BRIDGE[] = "Starting the Bridge ...";
 constexpr char BRIDGE_STARTED[] = "Bridge started";
 
-void main() {
+int main() {
 	Hardware hw;
 	Network nw;
 	Display display;
@@ -84,24 +73,12 @@ void main() {
 	params.Load();
 	params.Set(&server);
 
-	const auto tOutputType = params.GetOutputType();
-
 	uint8_t nHwTextLength;
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
 
 	console_puts("WiFi OSC Server ");
-	console_set_fg_color(tOutputType == lightset::OutputType::DMX ? CONSOLE_GREEN : CONSOLE_WHITE);
+	console_set_fg_color(CONSOLE_GREEN);
 	console_puts("DMX Output");
-	console_set_fg_color(CONSOLE_WHITE);
-#ifndef H3
-	console_puts(" / ");
-	console_set_fg_color(tOutputType == lightset::OutputType::MONITOR ? CONSOLE_GREEN : CONSOLE_WHITE);
-	console_puts("Real-time DMX Monitor");
-	console_set_fg_color(CONSOLE_WHITE);
-#endif
-	console_puts(" / ");
-	console_set_fg_color(tOutputType == lightset::OutputType::SPI ? CONSOLE_GREEN : CONSOLE_WHITE);
-	console_puts("Pixel controller {1 Universe}");
 	console_set_fg_color(CONSOLE_WHITE);
 #ifdef H3
 	console_putc('\n');
@@ -121,67 +98,21 @@ void main() {
 
 	Dmx dmx;
 	DmxSend dmxSend;
-	LightSet *pSpi = nullptr;
 
-	if (tOutputType == lightset::OutputType::SPI) {
-		PixelDmxConfiguration pixelDmxConfiguration;
+	DmxParams dmxparams;
+	dmxparams.Load();
+	dmxparams.Set(&dmx);
 
-		PixelDmxParams pixelDmxParams;
-		pixelDmxParams.Load();
-		pixelDmxParams.Set(&pixelDmxConfiguration);
-
-		// For the time being, just 1 Universe
-		if (pixelDmxConfiguration.GetType() == pixel::Type::SK6812W) {
-			if (pixelDmxConfiguration.GetCount() > 128) {
-				pixelDmxConfiguration.SetCount(128);
-			}
-		} else {
-			if (pixelDmxConfiguration.GetCount() > 170) {
-				pixelDmxConfiguration.SetCount(170);
-			}
-		}
-
-		auto *pPixelDmx = new WS28xxDmx(pixelDmxConfiguration);
-		assert(pPixelDmx != nullptr);
-		pSpi = pPixelDmx;
-
-		display.Printf(7, "%s:%d G%d", PixelType::GetType(pixelDmxConfiguration.GetType()), pixelDmxConfiguration.GetCount(), pixelDmxConfiguration.GetGroupingCount());
-
-		server.SetOutput(pSpi);
-		server.SetOscServerHandler(new Handler(pPixelDmx));
-	}
-#ifndef H3
-	else if (tOutputType == lightset::OutputType::MONITOR) {
-		// There is support for HEX output only
-		server.SetOutput(&monitor);
-		monitor.Cls();
-		console_set_top_row(20);
-	}
-#endif
-	else {
-		DmxParams dmxparams;
-		dmxparams.Load();
-		dmxparams.Set(&dmx);
-
-		server.SetOutput(&dmxSend);
-	}
-
+	server.SetOutput(&dmxSend);
 	server.Print();
 
-	if (tOutputType == lightset::OutputType::SPI) {
-		assert(pSpi != 0);
-		pSpi->Print();
-	} else 	if (tOutputType == lightset::OutputType::MONITOR) {
-		printf(" Server ip-address    : " IPSTR "\n\n\n", IP2STR(nw.GetIp()));
-	} else {
-		dmxSend.Print();
-	}
+	dmxSend.Print();
 
 	for (uint32_t i = 0; i < 7 ; i++) {
 		display.ClearLine(i);
 	}
 
-	display.Printf(1, "WiFi OSC %s", tOutputType == lightset::OutputType::SPI ? "Pixel" : "DMX");
+	display.Printf(1, "WiFi OSC DMX");
 
 	if (nw.GetOpmode() == WIFI_STA) {
 		display.Printf(2, "S: %s", nw.GetSsid());

@@ -1,6 +1,4 @@
-#DEFINES=NDEBUG
-#DEFINES=DO_NOT_USE_UART0
-DEFINES=
+DEFINES=NDEBUG
 
 EXTRA_INCLUDES=../lib-rdm/include ../lib-properties/include
 

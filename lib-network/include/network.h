@@ -2,7 +2,7 @@
  * @file network.h
  *
  */
-/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@
 
 #include <cstdint>
 
-#define IP2STR(addr) (addr & 0xFF), ((addr >> 8) & 0xFF), ((addr >> 16) & 0xFF), ((addr >> 24) & 0xFF)
+#define IP2STR(addr)  static_cast<int>(addr & 0xFF),  static_cast<int>((addr >> 8) & 0xFF),  static_cast<int>((addr >> 16) & 0xFF),  static_cast<int>((addr >> 24) & 0xFF)
 #define IPSTR "%d.%d.%d.%d"
 
 #define MAC2STR(mac) static_cast<int>(mac[0]),static_cast<int>(mac[1]),static_cast<int>(mac[2]),static_cast<int>(mac[3]), static_cast<int>(mac[4]), static_cast<int>(mac[5])
@@ -127,19 +127,19 @@ void mdns_announcement();
 void mdns_shutdown();
 }  // namespace network
 
-#if defined (BARE_METAL)
+#if defined(__linux__) || defined (__APPLE__)
+# if defined (CONFIG_NETWORK_USE_MINIMUM)
+#  include "linux/minimum/network.h"
+# else
+#  include "linux/network.h"
+# endif
+#else
 # if defined (ESP8266)
 #  include "esp8266/network.h"
 # elif defined (NO_EMAC)
 #  include "noemac/network.h"
 # else
 #  include "emac/network.h"
-# endif
-#else
-# if defined (CONFIG_NETWORK_USE_MINIMUM)
-#  include "linux/minimum/network.h"
-# else
-#  include "linux/network.h"
 # endif
 #endif
 

@@ -2,7 +2,7 @@
  * @file flashcode.cpp
  *
  */
-/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,8 +46,8 @@ FlashCode::FlashCode() {
 	} else {
 		printf("Detected %s with sector size %d total %d bytes\n",
 				spi_flash_get_name(),
-				spi_flash_get_sector_size(),
-				spi_flash_get_size());
+				static_cast<unsigned int>(spi_flash_get_sector_size()),
+				static_cast<unsigned int>(spi_flash_get_size()));
 		m_IsDetected = true;
 	}
 

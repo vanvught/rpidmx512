@@ -50,17 +50,14 @@ WS28xxDmxMulti::WS28xxDmxMulti(PixelDmxConfiguration& pixelDmxConfiguration): m_
 
 	m_pixelDmxConfiguration.Validate(ws28xxdmxmulti::MAX_PORTS , m_nChannelsPerPixel, m_PortInfo);
 
-	DEBUG_PRINTF("m_PortInfo.nProtocolPortIndexLast=%u", m_PortInfo.nProtocolPortIndexLast);
-
 	m_pWS28xxMulti = new WS28xxMulti(pixelDmxConfiguration);
 	assert(m_pWS28xxMulti != nullptr);
+	m_pWS28xxMulti->Blackout();
 
 #if defined (PIXELDMXSTARTSTOP_GPIO)
 	FUNC_PREFIX(gpio_fsel(PIXELDMXSTARTSTOP_GPIO, GPIO_FSEL_OUTPUT));
 	FUNC_PREFIX(gpio_clr(PIXELDMXSTARTSTOP_GPIO));
 #endif
-
-	m_pWS28xxMulti->Blackout();
 
 	DEBUG_EXIT
 }
@@ -96,7 +93,7 @@ void WS28xxDmxMulti::Stop(const uint32_t nPortIndex) {
 	}
 }
 
-void WS28xxDmxMulti::SetData(uint32_t nPortIndex, const uint8_t* pData, uint32_t nLength) {
+void WS28xxDmxMulti::SetData(const uint32_t nPortIndex, const uint8_t* pData, uint32_t nLength) {
 	assert(pData != nullptr);
 	assert(nLength <= lightset::dmx::UNIVERSE_SIZE);
 

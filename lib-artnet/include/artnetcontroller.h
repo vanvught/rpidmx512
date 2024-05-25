@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,6 +41,15 @@
 #define DMX_MAX_VALUE 255
 #endif
 
+struct State {
+	uint32_t ArtPollIpAddress;
+	uint32_t ArtPollReplyCount;
+	uint32_t ArtPollReplyDelayMillis;
+	artnet::ArtPollQueue ArtPollReplyQueue[4];
+	artnet::ReportCode reportCode;
+	artnet::Status status;
+};
+
 struct TArtNetController {
 	uint32_t nIPAddressLocal;
 	uint32_t nIPAddressBroadcast;
@@ -52,6 +61,12 @@ public:
 	ArtNetController();
 	~ArtNetController();
 
+	void GetShortNameDefault(char *pShortName);
+	void SetShortName(const char *pShortName);
+
+	void GetLongNameDefault(char *pLongName);
+	void SetLongName(const char *pLongName);
+
 	void Start();
 	void Stop();
 	void Run();
@@ -62,24 +77,32 @@ public:
 	void HandleSync();
 	void HandleBlackout();
 
-	void SetRunTableCleanup(bool bDoTableCleanup) {
+	void SetRunTableCleanup(const bool bDoTableCleanup) {
 		m_bDoTableCleanup = bDoTableCleanup;
 	}
 
-	void SetSynchronization(bool bSynchronization) {
+	void SetSynchronization(const bool bSynchronization) {
 		m_bSynchronization = bSynchronization;
 	}
 	bool GetSynchronization() const {
 		return m_bSynchronization;
 	}
 
-	void SetUnicast(bool bUnicast) {
+	void SetUnicast(const bool bUnicast) {
 		m_bUnicast = bUnicast;
 	}
 	bool GetUnicast() const {
 		return m_bUnicast;
 	}
 
+	void SetForceBroadcast(const bool bForceBroadcast) {
+		m_bForceBroadcast = bForceBroadcast;
+	}
+	bool GetForceBroadcast() const {
+		return m_bForceBroadcast;
+	}
+
+#ifdef CONFIG_ARTNET_CONTROLLER_ENABLE_MASTER
 	void SetMaster(uint32_t nMaster = DMX_MAX_VALUE) {
 		if (nMaster < DMX_MAX_VALUE) {
 			m_nMaster = nMaster;
@@ -90,6 +113,7 @@ public:
 	uint32_t GetMaster() const {
 		return m_nMaster;
 	}
+#endif
 
 	// Handler
 	void SetArtNetTrigger(ArtNetTrigger *pArtNetTrigger) {
@@ -106,6 +130,7 @@ public:
 	}
 
 private:
+	void ProcessPoll();
 	void HandlePoll();
 	void HandlePollReply();
 	void HandleTrigger();
@@ -113,10 +138,8 @@ private:
 	void ActiveUniversesClear();
 
 private:
-	struct TArtNetController m_tArtNetController;
-	bool m_bSynchronization { true };
-	bool m_bUnicast { true };
-	int32_t m_nHandle { -1 };
+	TArtNetController m_ArtNetController;
+	State m_State;
 
 	struct TArtNetPacket {
 		union artnet::UArtPacket ArtPacket;
@@ -125,17 +148,27 @@ private:
 		artnet::OpCodes OpCode;
 	};
 
-	struct TArtNetPacket *m_pArtNetPacket;
 	artnet::ArtPoll m_ArtNetPoll;
+	artnet::ArtPollReply m_ArtPollReply;
+
+	TArtNetPacket *m_pArtNetPacket;
+
 	artnet::ArtDmx *m_pArtDmx;
 	artnet::ArtSync *m_pArtSync;
 	ArtNetTrigger *m_pArtNetTrigger { nullptr }; // Trigger handler
-	uint32_t m_nLastPollMillis { 0 };
+
+	bool m_bSynchronization { true };
+	bool m_bUnicast { true };
+	bool m_bForceBroadcast { false };
 	bool m_bDoTableCleanup { true };
 	bool m_bDmxHandled { false };
-	uint32_t m_nActiveUniverses { 0 };
-	uint32_t m_nMaster { DMX_MAX_VALUE };
 
+	int32_t m_nHandle { -1 };
+	uint32_t m_nLastPollMillis { 0 };
+	uint32_t m_nActiveUniverses { 0 };
+#ifdef CONFIG_ARTNET_CONTROLLER_ENABLE_MASTER
+	uint32_t m_nMaster { DMX_MAX_VALUE };
+#endif
 	static ArtNetController *s_pThis;
 };
 

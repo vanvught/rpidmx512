@@ -23,6 +23,11 @@
  * THE SOFTWARE.
  */
 
+#if !defined(__clang__)
+# pragma GCC push_options
+# pragma GCC optimize ("O2")
+#endif
+
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
@@ -48,6 +53,16 @@
 # include "artnetnode.h"
 #endif
 
+#if !defined (CONFIG_HTTP_HTML_NO_DMX)
+# if defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI)
+#  define HAVE_DMX
+# endif
+#endif
+
+#if defined (NODE_SHOWFILE)
+# define ENABLE_METHOD_DELETE
+#endif
+
 #include "debug.h"
 
 #if defined ENABLE_CONTENT
@@ -57,10 +72,9 @@ extern uint32_t get_file_content(const char *fileName, char *pDst, http::content
 char HttpDeamonHandleRequest::m_Content[http::BUFSIZE];
 
 static constexpr char s_contentType[static_cast<uint32_t>(http::contentTypes::NOT_DEFINED)][32] =
-	{ "text/html", "text/css", "text/javascript", "application/json" };
+{ "text/html", "text/css", "text/javascript", "application/json" };
 
 void HttpDeamonHandleRequest::HandleRequest(const uint32_t nBytesReceived, char *pRequestHeaderResponse) {
-//	m_pContentType = s_contentType[static_cast<uint32_t>(http::contentTypes::TEXT_HTML)];
 	m_nBytesReceived = nBytesReceived;
 	m_RequestHeaderResponse = pRequestHeaderResponse;
 
@@ -80,10 +94,24 @@ void HttpDeamonHandleRequest::HandleRequest(const uint32_t nBytesReceived, char 
 					return;
 				}
 			}
+#if defined (ENABLE_METHOD_DELETE)
+			else if (m_RequestMethod == http::RequestMethod::DELETE) {
+				m_Status = HandleDelete(false);
+				if ((m_Status == http::Status::OK) && (m_nFileDataLength == 0)) {
+					DEBUG_PUTS("There is a DELETE header only -> no data");
+					return;
+				}
+			}
+#endif
 		}
 	} else if ((m_Status == http::Status::OK) && (m_RequestMethod == http::RequestMethod::POST)) {
 		m_Status = HandlePost(true);
 	}
+#if defined (ENABLE_METHOD_DELETE)
+	else if ((m_Status == http::Status::OK) && (m_RequestMethod == http::RequestMethod::DELETE)) {
+		m_Status = HandleDelete(true);
+	}
+#endif
 
 	if (m_Status != http::Status::OK) {
 		switch (m_Status) {
@@ -119,7 +147,7 @@ void HttpDeamonHandleRequest::HandleRequest(const uint32_t nBytesReceived, char 
 				"<html>\n"
 				"<head><title>%u %s</title></head>\n"
 				"<body><h1>%s</h1></body>\n"
-				"</html>\n", static_cast<uint32_t>(m_Status), pStatusMsg, pStatusMsg));
+				"</html>\n", static_cast<unsigned int>(m_Status), pStatusMsg, pStatusMsg));
 	}
 
 	uint8_t nLength;
@@ -129,7 +157,7 @@ void HttpDeamonHandleRequest::HandleRequest(const uint32_t nBytesReceived, char 
 			"Content-Type: %s\r\n"
 			"Content-Length: %u\r\n"
 			"Connection: close\r\n"
-			"\r\n", static_cast<uint32_t>(m_Status), pStatusMsg, Hardware::Get()->GetBoardName(nLength), m_pContentType, m_nContentLength);
+			"\r\n", static_cast<unsigned int>(m_Status), pStatusMsg, Hardware::Get()->GetBoardName(nLength), m_pContentType, static_cast<unsigned int>(m_nContentLength));
 
 	Network::Get()->TcpWrite(m_nHandle, reinterpret_cast<uint8_t *>(m_RequestHeaderResponse), static_cast<uint16_t>(nHeaderLength), m_nConnectionHandle);
 	Network::Get()->TcpWrite(m_nHandle, reinterpret_cast<uint8_t *>(m_Content), static_cast<uint16_t>(m_nContentLength), m_nConnectionHandle);
@@ -195,7 +223,13 @@ http::Status HttpDeamonHandleRequest::ParseMethod(char *pLine) {
 		m_RequestMethod = http::RequestMethod::GET;
 	} else if (strcmp(pToken, "POST") == 0) {
 		m_RequestMethod = http::RequestMethod::POST;
-	} else {
+	}
+#if defined (ENABLE_METHOD_DELETE)
+	else if (strcmp(pToken, "DELETE") == 0) {
+		m_RequestMethod = http::RequestMethod::DELETE;
+	}
+#endif
+	else {
 		return http::Status::METHOD_NOT_IMPLEMENTED;
 	}
 
@@ -301,9 +335,22 @@ http::Status HttpDeamonHandleRequest::HandleGet() {
 		case http::json::get::DIRECTORY:
 			nLength = remoteconfig::json_get_directory(m_Content, sizeof(m_Content));
 			break;
-#if defined (RDM_CONTROLLER)
+		case http::json::get::TIMEDATE:
+			nLength = remoteconfig::timedate::json_get_timeofday(m_Content, sizeof(m_Content));
+			break;
+#if !defined (DISABLE_RTC)
+		case http::json::get::RTCALARM:
+			nLength = remoteconfig::rtc::json_get_rtc(m_Content, sizeof(m_Content));
+			break;
+#endif
+#if defined (RDM_CONTROLLER) && !defined (CONFIG_HTTP_HTML_NO_RDM)
 		case http::json::get::RDM:
 			nLength = remoteconfig::rdm::json_get_rdm(m_Content, sizeof(m_Content));
+			break;
+#endif
+#if defined (ARTNET_CONTROLLER)
+		case http::json::get::POLLTABLE:
+			nLength = remoteconfig::artnet::controller::json_get_polltable(m_Content, sizeof(m_Content));
 			break;
 #endif
 #if defined (ENABLE_NET_PHYSTATUS)
@@ -312,79 +359,103 @@ http::Status HttpDeamonHandleRequest::HandleGet() {
 			break;
 #endif
 		default:
-#if defined (RDM_CONTROLLER)
-			if (memcmp(pGet, "rdm/", 4) == 0) {
-				const auto *pRdm = &pGet[4];
-				const bool isQuestionMark = (pRdm[3] == '?'); // Handle /rdm/tod?X
+#if defined (HAVE_DMX)
+			if (memcmp(pGet, "dmx/", 4) == 0) {
+				const auto *pDmx = &pGet[4];
+				const bool isQuestionMark = (pDmx[6] == '?'); // Handle /dmx/status?X
 				if (isQuestionMark) {
-					auto *p = const_cast<char *>(pRdm);
-					p[3] = '\0';
+					auto *p = const_cast<char *>(pDmx);
+					p[6] = '\0';
 				}
-				switch (http::get_uint(pRdm)) {
-				case http::json::get::QUEUE:
-					nLength = remoteconfig::rdm::json_get_queue(m_Content, sizeof(m_Content));
-					break;
+				DEBUG_PRINTF("pDmx=[%s]", pDmx);
+				switch (http::get_uint(pDmx)) {
 				case http::json::get::PORTSTATUS:
-					nLength = remoteconfig::rdm::json_get_portstatus(m_Content, sizeof(m_Content));
+					nLength = remoteconfig::dmx::json_get_ports(m_Content, sizeof(m_Content));
 					break;
-				case http::json::get::TOD: {
-					const auto *pTod = &pRdm[4];
-					if (isQuestionMark && isalpha(static_cast<int>(pTod[0])))  {
-						nLength = remoteconfig::rdm::json_get_tod(pTod[0], m_Content, sizeof(m_Content));
+				case http::json::get::STATUS: {
+					const auto *pStatus = &pDmx[7];
+					if (isQuestionMark && isalpha(static_cast<int>(pStatus[0])))  {
+						nLength = remoteconfig::dmx::json_get_portstatus(pStatus[0], m_Content, sizeof(m_Content));
 					}
 				}
-					break;
 				default:
 					break;
 				}
 			} else
+#endif
+#if defined (RDM_CONTROLLER) && !defined (CONFIG_HTTP_HTML_NO_RDM)
+				if (memcmp(pGet, "rdm/", 4) == 0) {
+					const auto *pRdm = &pGet[4];
+					const bool isQuestionMark = (pRdm[3] == '?'); // Handle /rdm/tod?X
+					if (isQuestionMark) {
+						auto *p = const_cast<char *>(pRdm);
+						p[3] = '\0';
+					}
+					switch (http::get_uint(pRdm)) {
+					case http::json::get::QUEUE:
+						nLength = remoteconfig::rdm::json_get_queue(m_Content, sizeof(m_Content));
+						break;
+					case http::json::get::PORTSTATUS:
+						nLength = remoteconfig::rdm::json_get_portstatus(m_Content, sizeof(m_Content));
+						break;
+					case http::json::get::TOD: {
+						const auto *pTod = &pRdm[4];
+						if (isQuestionMark && isalpha(static_cast<int>(pTod[0])))  {
+							nLength = remoteconfig::rdm::json_get_tod(pTod[0], m_Content, sizeof(m_Content));
+						}
+					}
+					break;
+					default:
+						break;
+					}
+				} else
 #endif
 #if !defined(DISABLE_FS) || defined (CONFIG_USB_HOST_MSC)
-			if (memcmp(pGet, "storage/", 8) == 0) {
-				const auto *pStorage = &pGet[8];
-				switch (http::get_uint(pStorage)) {
-				case http::json::get::DIRECTORY:
-					nLength = remoteconfig::storage::json_get_directory(m_Content, sizeof(m_Content));
-					break;
-				default:
-					break;
-				}
-			} else
+					if (memcmp(pGet, "storage/", 8) == 0) {
+						const auto *pStorage = &pGet[8];
+						switch (http::get_uint(pStorage)) {
+						case http::json::get::DIRECTORY:
+							nLength = remoteconfig::storage::json_get_directory(m_Content, sizeof(m_Content));
+							break;
+						default:
+							break;
+						}
+					} else
 #endif
 #if defined (ENABLE_PHY_SWITCH)
-			if (memcmp(pGet, "dsa/", 4) == 0) {
-				const auto *pDsa = &pGet[4];
-				switch (http::get_uint(pDsa)) {
-				case http::json::get::PORTSTATUS:
-					nLength = remoteconfig::dsa::json_get_portstatus(m_Content, sizeof(m_Content));
-					break;
-				case http::json::get::VLANTABLE:
-					nLength = remoteconfig::dsa::json_get_vlantable(m_Content, sizeof(m_Content));
-					break;
-				default:
-					break;
-				}
-			} else
+						if (memcmp(pGet, "dsa/", 4) == 0) {
+							const auto *pDsa = &pGet[4];
+							switch (http::get_uint(pDsa)) {
+							case http::json::get::PORTSTATUS:
+								nLength = remoteconfig::dsa::json_get_portstatus(m_Content, sizeof(m_Content));
+								break;
+							case http::json::get::VLANTABLE:
+								nLength = remoteconfig::dsa::json_get_vlantable(m_Content, sizeof(m_Content));
+								break;
+							default:
+								break;
+							}
+						} else
 #endif
 #if defined (NODE_SHOWFILE)
-			if (memcmp(pGet, "showfile/", 9) == 0) {
-				const auto *pShowfile = &pGet[9];
-				switch (http::get_uint(pShowfile)) {
-				case http::json::get::STATUS:
-					nLength = remoteconfig::showfile::json_get_status(m_Content, sizeof(m_Content));
-					break;
-				case http::json::get::DIRECTORY:
-					nLength = remoteconfig::showfile::json_get_directory(m_Content, sizeof(m_Content));
-					break;
-				default:
-					break;
-				}
-			} else
+							if (memcmp(pGet, "showfile/", 9) == 0) {
+								const auto *pShowfile = &pGet[9];
+								switch (http::get_uint(pShowfile)) {
+								case http::json::get::STATUS:
+									nLength = remoteconfig::showfile::json_get_status(m_Content, sizeof(m_Content));
+									break;
+								case http::json::get::DIRECTORY:
+									nLength = remoteconfig::showfile::json_get_directory(m_Content, sizeof(m_Content));
+									break;
+								default:
+									break;
+								}
+							} else
 #endif
-			{
-				return HandleGetTxt();
+							{
+								return HandleGetTxt();
 
-			}
+							}
 			break;
 		}
 	}
@@ -394,7 +465,14 @@ http::Status HttpDeamonHandleRequest::HandleGet() {
 		nLength = get_file_content("index.html", m_Content, contentType);
 		m_pContentType = s_contentType[static_cast<uint32_t>(contentType)];
 	}
-#if defined (RDM_CONTROLLER)
+#if defined (HAVE_DMX)
+	else if (strcmp(m_pUri, "/dmx") == 0) {
+		http::contentTypes contentType;
+		nLength = get_file_content("dmx.html", m_Content, contentType);
+		m_pContentType = s_contentType[static_cast<uint32_t>(contentType)];
+	}
+#endif
+#if defined (RDM_CONTROLLER) && !defined (CONFIG_HTTP_HTML_NO_RDM)
 	else if (strcmp(m_pUri, "/rdm") == 0) {
 		http::contentTypes contentType;
 		nLength = get_file_content("rdm.html", m_Content, contentType);
@@ -412,6 +490,20 @@ http::Status HttpDeamonHandleRequest::HandleGet() {
 	else if (strcmp(m_pUri, "/dsa") == 0) {
 		http::contentTypes contentType;
 		nLength = get_file_content("dsa.html", m_Content, contentType);
+		m_pContentType = s_contentType[static_cast<uint32_t>(contentType)];
+	}
+#endif
+#if !defined (CONFIG_HTTP_HTML_NO_TIME)
+	else if (strcmp(m_pUri, "/time") == 0) {
+		http::contentTypes contentType;
+		nLength = get_file_content("time.html", m_Content, contentType);
+		m_pContentType = s_contentType[static_cast<uint32_t>(contentType)];
+	}
+#endif
+#if !defined (CONFIG_HTTP_HTML_NO_RTC) && !defined (DISABLE_RTC)
+	else if (strcmp(m_pUri, "/rtc") == 0) {
+		http::contentTypes contentType;
+		nLength = get_file_content("rtc.html", m_Content, contentType);
 		m_pContentType = s_contentType[static_cast<uint32_t>(contentType)];
 	}
 #endif
@@ -490,7 +582,6 @@ http::Status HttpDeamonHandleRequest::HandlePost(bool hasDataOnly) {
 		return http::Status::OK;
 	}
 
-
 	if (hasDataOnly) {
 		m_pFileData = m_RequestHeaderResponse;
 		m_nFileDataLength = static_cast<uint16_t>(m_nBytesReceived);
@@ -531,7 +622,14 @@ http::Status HttpDeamonHandleRequest::HandlePost(bool hasDataOnly) {
 				Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
 			}
 			DEBUG_PRINTF("identify=%d", value8 != 0);
+		} else if (memcmp(m_pFileData, "date=", 5) == 0) {
+			remoteconfig::timedate::json_set_timeofday(m_pFileData, nJsonLength);
 		}
+#if !defined (DISABLE_RTC)
+		else if (memcmp(m_pFileData, "rtc=", 4) == 0) {
+			remoteconfig::rtc::json_set_rtc(m_pFileData, nJsonLength);
+		}
+#endif
 #if defined (RDM_CONTROLLER)
 		else if (Sscan::Uint8(m_pFileData, "rdm", value8) == Sscan::OK) {
 			ArtNetNode::Get()->SetRdm(!(value8 != 1));
@@ -552,8 +650,67 @@ http::Status HttpDeamonHandleRequest::HandlePost(bool hasDataOnly) {
 
 		PropertiesConfig::EnableJSON(true);
 		RemoteConfig::Get()->HandleSet(m_pFileData, m_nFileDataLength);
-
 		PropertiesConfig::EnableJSON(bIsJSON);
+	}
+
+	m_pContentType = s_contentType[static_cast<uint32_t>(http::contentTypes::TEXT_HTML)];
+	m_nContentLength = static_cast<uint32_t>(snprintf(m_Content, http::BUFSIZE - 1U,
+			"<!DOCTYPE html>\n"
+			"<html>\n"
+			"<head><title>Submit</title></head>\n"
+			"<body><h1>OK</h1></body>\n"
+			"</html>\n"));
+
+	return http::Status::OK;
+}
+
+http::Status HttpDeamonHandleRequest::HandleDelete(bool hasDataOnly) {
+	DEBUG_PRINTF("m_nBytesReceived=%d, m_nFileDataLength=%u, m_nRequestContentLength=%u -> hasDataOnly=%c", m_nBytesReceived, m_nFileDataLength, m_nRequestContentLength, hasDataOnly ? 'Y' : 'N');
+
+	if (!hasDataOnly) {
+		if (!m_bContentTypeJson) {
+			return http::Status::BAD_REQUEST;
+		}
+
+		m_IsAction = (strcmp(m_pUri, "/json/action") == 0);
+
+		if (!m_IsAction) {
+			return http::Status::NOT_FOUND;
+		}
+	}
+
+	const auto hasHeadersOnly = (!hasDataOnly && ((m_nBytesReceived < m_nRequestContentLength) || m_nFileDataLength == 0));
+
+	if (hasHeadersOnly) {
+		DEBUG_PUTS("hasHeadersOnly");
+		return http::Status::OK;
+	}
+
+	if (hasDataOnly) {
+		m_pFileData = m_RequestHeaderResponse;
+		m_nFileDataLength = static_cast<uint16_t>(m_nBytesReceived);
+	}
+
+	DEBUG_PRINTF("%d|%.*s|->%d", m_nFileDataLength, m_nFileDataLength, m_pFileData, m_IsAction);
+
+	auto const nJsonLength = properties::convert_json_file(m_pFileData, m_nFileDataLength, true);
+
+	if (nJsonLength <= 0) {
+		DEBUG_PUTS("Status::BAD_REQUEST");
+		return http::Status::BAD_REQUEST;
+	}
+
+	m_pFileData[nJsonLength - 1] = '\0';
+	debug_dump(m_pFileData, nJsonLength);
+
+#if defined (NODE_SHOWFILE)
+	if (memcmp(m_pFileData, "show=", 5) == 0) {
+		remoteconfig::showfile::json_delete(m_pFileData, nJsonLength);
+	} else
+#endif
+	{
+		DEBUG_PUTS("Status::BAD_REQUEST");
+		return http::Status::BAD_REQUEST;
 	}
 
 	m_pContentType = s_contentType[static_cast<uint32_t>(http::contentTypes::TEXT_HTML)];

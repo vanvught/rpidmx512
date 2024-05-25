@@ -80,7 +80,7 @@ uint32_t DMXPORT_OFFSET = 0;
 int main(int argc, char **argv) {
     struct sigaction act;
     act.sa_handler = intHandler;
-    sigaction(SIGINT, &act, NULL);
+    sigaction(SIGINT, &act, nullptr);
 #ifndef NDEBUG
 	if (argc > 2) {
 		const int c = argv[2][0];
@@ -172,7 +172,7 @@ int main(int argc, char **argv) {
 	showFileParams.Set();
 
 	if (showFile.IsAutoStart()) {
-		showFile.Start();
+		showFile.Play();
 	}
 
 	showFile.Print();

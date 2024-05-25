@@ -79,6 +79,8 @@ uint32_t json_get_directory(char *pOutBuffer, const uint32_t nOutBufferSize) {
 			}
 		} while (dp != nullptr);
 
+		closedir(dirp);
+
 		if (pOutBuffer[nLength - 1] == ',') {
 			nLength--;
 		}

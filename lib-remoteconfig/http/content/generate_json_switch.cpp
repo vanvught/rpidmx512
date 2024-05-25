@@ -2,7 +2,7 @@
  * @file generate_json_switch.cpp
  *
  */
-/* Copyright (C) 2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2023-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,7 +44,10 @@ static constexpr char JSON_ENDPOINTS[][MAX_LENGTH] = {
 		"phystatus",
 		"portstatus",
 		"vlantable",
-		"status"
+		"status",
+		"timedate",
+		"rtcalarm",
+		"polltable"
 };
 
 inline uint16_t get_uint(const char *pString) {					/* djb2 */

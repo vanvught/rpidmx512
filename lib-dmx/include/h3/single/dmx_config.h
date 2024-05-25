@@ -2,7 +2,7 @@
  * @file dmx_config.h
  *
  */
-/* Copyright (C) 2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2023-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,11 +28,12 @@
 
 #include "h3_board.h"
 
+#define DMX_MAX_PORTS  1
+
 namespace dmx {
 namespace config {
 namespace max {
-static constexpr auto OUT = 1U;
-static constexpr auto IN = 1U;
+	static const uint32_t PORTS = DMX_MAX_PORTS;
 }  // namespace max
 }  // namespace config
 }  // namespace dmx

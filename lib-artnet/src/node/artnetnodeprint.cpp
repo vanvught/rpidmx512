@@ -45,8 +45,11 @@
 #include "network.h"
 
 void ArtNetNode::Print() {
-	printf("Art-Net %d V%d.%d\n", artnet::VERSION, ArtNetConst::VERSION[0], ArtNetConst::VERSION[1]);
-	printf(" Long name  : %s\n", reinterpret_cast<char *>(m_ArtPollReply.LongName));
+	printf("Art-Net %u V%u.%u\n",
+			static_cast<unsigned int>(artnet::VERSION),
+			static_cast<unsigned int>(ArtNetConst::VERSION[0]),
+			static_cast<unsigned int>(ArtNetConst::VERSION[1]));
+	printf(" Long name  : %s\n", reinterpret_cast<char*>(m_ArtPollReply.LongName));
 #if defined (ARTNET_HAVE_TIMECODE)
 	printf(" TimeCode IP: " IPSTR "\n", IP2STR(m_Node.IPAddressTimeCode));
 #endif
@@ -58,7 +61,7 @@ void ArtNetNode::Print() {
 			uint16_t nUniverse;
 			if (GetPortAddress(nPortIndex, nUniverse, lightset::PortDir::OUTPUT)) {
 				const auto mergeMode = ((m_OutputPort[nPortIndex].GoodOutput & artnet::GoodOutput::MERGE_MODE_LTP) == artnet::GoodOutput::MERGE_MODE_LTP) ? lightset::MergeMode::LTP : lightset::MergeMode::HTP;
-				printf("  Port %-2d %-4u %s", nPortIndex, nUniverse, lightset::get_merge_mode(mergeMode, true));
+				printf("  Port %-2u %-4u %s", static_cast<unsigned int>(nPortIndex), static_cast<unsigned int>(nUniverse), lightset::get_merge_mode(mergeMode, true));
 #if defined (OUTPUT_HAVE_STYLESWITCH)
 				printf(" %s", lightset::get_output_style(GetOutputStyle(nPortIndex), true));
 #endif
@@ -78,7 +81,7 @@ void ArtNetNode::Print() {
 
 			uint16_t nUniverse;
 			if (GetPortAddress(nPortIndex, nUniverse, lightset::PortDir::INPUT)) {
-				printf("  Port %-2d %-4u", nPortIndex, nUniverse);
+				printf("  Port %-2u %-4u", static_cast<unsigned int>(nPortIndex), static_cast<unsigned int>(nUniverse));
 				if (m_Node.Port[nPortIndex].protocol == artnet::PortProtocol::ARTNET) {
 					const auto nDestinationIp = (m_InputPort[nPortIndex].nDestinationIp == 0 ? Network::Get()->GetBroadcastIp() : m_InputPort[nPortIndex].nDestinationIp);
 					printf(" -> " IPSTR, IP2STR(nDestinationIp));
@@ -86,7 +89,7 @@ void ArtNetNode::Print() {
 #if (ARTNET_VERSION >= 4)
 				printf(" %s\n", artnet::get_protocol_mode(m_Node.Port[nPortIndex].protocol, true));
 #else
-				printf("\n");
+				puts("");
 #endif
 			}
 		}

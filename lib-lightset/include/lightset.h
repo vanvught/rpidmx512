@@ -43,7 +43,7 @@ namespace node {
 static constexpr uint32_t LABEL_NAME_LENGTH = 18;
 
 inline void get_short_name_default(const uint32_t nPortIndex, char *pShortName) {
-	snprintf(pShortName, node::LABEL_NAME_LENGTH - 1, "Port %u", 1U + nPortIndex);
+	snprintf(pShortName, node::LABEL_NAME_LENGTH - 1, "Port %u", static_cast<unsigned int>(1 + nPortIndex));
 }
 }  // namespace node
 
@@ -67,12 +67,6 @@ struct SlotInfo {
 	uint16_t nCategory;
 	uint8_t nType;
 };
-
-#if defined (ESP8266)
-enum class OutputType {
-	DMX, SPI, MONITOR, UNDEFINED
-};
-#endif
 
 inline MergeMode get_merge_mode(const char *pMergeMode) {
 	if (pMergeMode != nullptr) {
@@ -191,7 +185,7 @@ public:
 
 	virtual void Start(const uint32_t nPortIndex)= 0;
 	virtual void Stop(const uint32_t nPortIndex)= 0;
-	virtual void SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate = true)= 0;
+	virtual void SetData(const uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate = true)= 0;
 	/**
 	 * This is used for preparing the lightset output for a SYNC
 	 * Typically used with DMX512 output
@@ -208,7 +202,7 @@ public:
 	virtual lightset::OutputStyle GetOutputStyle(const uint32_t nPortIndex) const=0;
 #endif
 	// Optional
-	virtual void Blackout(__attribute__((unused)) bool bBlackout) {}
+	virtual void Blackout([[maybe_unused]] bool bBlackout) {}
 	virtual void FullOn() {}
 	virtual void Print() {}
 	// RDM Optional
@@ -216,10 +210,6 @@ public:
 	virtual uint16_t GetDmxStartAddress();
 	virtual uint16_t GetDmxFootprint();
 	virtual bool GetSlotInfo(uint16_t nSlotOffset, lightset::SlotInfo &tSlotInfo);
-#if defined (ESP8266)
-	static const char *GetOutputType(lightset::OutputType type);
-	static lightset::OutputType GetOutputType(const char *sType);
-#endif
 };
 
 #endif /* LIGHTSET_H_ */

@@ -260,7 +260,7 @@ public:
 	void SetOutputStyle(const uint32_t nPortIndex, lightset::OutputStyle outputStyle) {
 		assert(nPortIndex < e131bridge::MAX_PORTS);
 
-		if ((m_State.status == e131bridge::Status::ON) && (m_pLightSet != nullptr)) {
+		if (m_pLightSet != nullptr) {
 			m_pLightSet->SetOutputStyle(nPortIndex, outputStyle);
 			outputStyle = m_pLightSet->GetOutputStyle(nPortIndex);
 		}

@@ -47,7 +47,7 @@ void ArtNetNode::SetRdm(const uint32_t nPortIndex, const bool bEnable) {
 		m_OutputPort[nPortIndex].GoodOutputB &= static_cast<uint8_t>(~artnet::GoodOutputB::RDM_DISABLED);
 	}
 
-	if (m_State.status == artnetnode::Status::ON) {
+	if (m_State.status == artnet::Status::ON) {
 		ArtNetStore::SaveRdmEnabled(nPortIndex, bEnable);
 		artnet::display_rdm_enabled(nPortIndex, bEnable);
 	}

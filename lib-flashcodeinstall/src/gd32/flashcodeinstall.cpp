@@ -58,13 +58,13 @@ FlashCodeInstall::~FlashCodeInstall() {
 	DEBUG_EXIT
 }
 
-void FlashCodeInstall::Process(__attribute__((unused)) const char *pFileName, __attribute__((unused)) uint32_t nOffset) {
+void FlashCodeInstall::Process([[maybe_unused]] const char *pFileName, [[maybe_unused]] uint32_t nOffset) {
 	DEBUG_ENTRY
 	assert(0);
 	DEBUG_EXIT
 }
 
-bool FlashCodeInstall::Open(__attribute__((unused)) const char *pFileName) {
+bool FlashCodeInstall::Open([[maybe_unused]] const char *pFileName) {
 	DEBUG_ENTRY
 	assert(0);
 	DEBUG_EXIT
@@ -77,21 +77,21 @@ void FlashCodeInstall::Close() {
 	DEBUG_EXIT
 }
 
-bool FlashCodeInstall::BuffersCompare(__attribute__((unused)) uint32_t nSize) {
+bool FlashCodeInstall::BuffersCompare([[maybe_unused]] uint32_t nSize) {
 	DEBUG_ENTRY
 	assert(0);
 	DEBUG_EXIT
 	return false;
 }
 
-bool FlashCodeInstall::Diff(__attribute__((unused)) uint32_t nOffset) {
+bool FlashCodeInstall::Diff([[maybe_unused]] uint32_t nOffset) {
 	DEBUG_ENTRY
 	assert(0);
 	DEBUG_EXIT
 	return false;
 }
 
-void FlashCodeInstall::Write(__attribute__((unused)) uint32_t nOffset) {
+void FlashCodeInstall::Write([[maybe_unused]] uint32_t nOffset) {
 	DEBUG_ENTRY
 	assert(0);
 	DEBUG_EXIT

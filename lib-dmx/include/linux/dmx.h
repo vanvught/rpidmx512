@@ -2,7 +2,7 @@
  * @file dmx.h
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,11 +30,7 @@
 
 #include "dmxconst.h"
 #include "dmx_config.h"
-
-struct TotalStatistics {
-	uint32_t nDmxPackets;
-	uint32_t nRdmPackets;
-};
+#include "dmxstatistics.h"
 
 struct Statistics {
 	uint32_t nSlotsInPacket;
@@ -53,7 +49,11 @@ public:
 	Dmx();
 
 	void SetPortDirection(uint32_t nPortIndex, dmx::PortDirection portDirection, bool bEnableData = false);
-	dmx::PortDirection GetPortDirection();
+	dmx::PortDirection GetPortDirection(const uint32_t nPortIndex) {
+		return m_tDmxPortDirection[nPortIndex];
+	}
+
+	volatile dmx::TotalStatistics& GetTotalStatistics(const uint32_t nPortIndex);
 
 	// RDM Send
 
@@ -73,8 +73,8 @@ public:
 	void StartOutput(uint32_t nPortIndex);
 	void SetOutput(const bool doForce);
 
-	void SetOutputStyle(__attribute__((unused)) const uint32_t nPortIndex, __attribute__((unused)) const dmx::OutputStyle outputStyle) {}
-	dmx::OutputStyle GetOutputStyle(__attribute__((unused)) const uint32_t nPortIndex) const {
+	void SetOutputStyle([[maybe_unused]] const uint32_t nPortIndex, [[maybe_unused]] const dmx::OutputStyle outputStyle) {}
+	dmx::OutputStyle GetOutputStyle([[maybe_unused]] const uint32_t nPortIndex) const {
 		return dmx::OutputStyle::DELTA;
 	}
 
@@ -125,8 +125,8 @@ private:
 	uint32_t m_nDmxTransmitPeriod { dmx::transmit::PERIOD_DEFAULT };
 	uint32_t m_nDmxTransmitPeriodRequested { dmx::transmit::PERIOD_DEFAULT };
 	uint16_t m_nDmxTransmitSlots { dmx::max::CHANNELS };
-	dmx::PortDirection m_tDmxPortDirection[dmx::config::max::OUT];
-	uint32_t m_nDmxTransmissionLength[dmx::config::max::OUT];
+	dmx::PortDirection m_tDmxPortDirection[dmx::config::max::PORTS];
+	uint32_t m_nDmxTransmissionLength[dmx::config::max::PORTS];
 
 	static Dmx *s_pThis;
 };

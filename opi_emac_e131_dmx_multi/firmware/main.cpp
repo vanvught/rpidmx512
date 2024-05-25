@@ -78,7 +78,7 @@ void Hardware::RebootHandler() {
 	E131Bridge::Get()->Stop();
 }
 
-void main() {
+int main() {
 	Hardware hw;
 	DisplayUdf display;
 	ConfigStore configStore;
@@ -164,7 +164,7 @@ void main() {
 	showFileParams.Set();
 
 	if (showFile.IsAutoStart()) {
-		showFile.Start();
+		showFile.Play();
 	}
 
 	showFile.Print();
@@ -181,7 +181,7 @@ void main() {
 	displayUdfParams.Load();
 	displayUdfParams.Set(&display);
 
-	display.Show(&bridge);
+	display.Show();
 
 	RemoteConfig remoteConfig(remoteconfig::Node::E131, remoteconfig::Output::DMX, nActivePorts);
 

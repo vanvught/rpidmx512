@@ -56,7 +56,7 @@
 
 void Hardware::RebootHandler() { }
 
-void main() {
+int main() {
 	Hardware hw;
 	Display display;
 	ConfigStore configStore;

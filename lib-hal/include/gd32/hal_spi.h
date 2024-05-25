@@ -2,7 +2,7 @@
  * @file hal_spi.h
  *
  */
-/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,12 +27,6 @@
 #define GD32_HAL_SPI_H_
 
 #include "gd32_spi.h"
-
-namespace hal {
-namespace spi {
-
-}  // namespace spi
-}  // namespace hal
 
 #define SPI_MODE0		GD32_SPI_MODE0
 #define SPI_MODE1		GD32_SPI_MODE1

@@ -163,7 +163,7 @@ void ArtNetNode::SetUniverseSwitch(const uint32_t nPortIndex, const lightset::Po
 	SetUniverse4(nPortIndex, dir);
 #endif
 
-	if (m_State.status == artnetnode::Status::ON) {
+	if (m_State.status == artnet::Status::ON) {
 		ArtNetStore::SaveUniverseSwitch(nPortIndex, nAddress);
 		artnet::display_universe_switch(nPortIndex, nAddress);
 
@@ -182,7 +182,7 @@ void ArtNetNode::SetSubnetSwitch(const uint32_t nPortIndex, const uint8_t nSubne
 	m_Node.Port[nPortIndex].SubSwitch = nSubnetSwitch;
 	m_Node.Port[nPortIndex].PortAddress = MakePortAddress(m_Node.Port[nPortIndex].PortAddress, nPortIndex);
 
-	if (m_State.status == artnetnode::Status::ON) {
+	if (m_State.status == artnet::Status::ON) {
 		ArtNetStore::SaveSubnetSwitch(nPortIndex, nSubnetSwitch);
 	}
 
@@ -196,7 +196,7 @@ void ArtNetNode::SetNetSwitch(const uint32_t nPortIndex, const uint8_t nNetSwitc
 	m_Node.Port[nPortIndex].NetSwitch = nNetSwitch;
 	m_Node.Port[nPortIndex].PortAddress = MakePortAddress(m_Node.Port[nPortIndex].PortAddress, nPortIndex);
 
-	if (m_State.status == artnetnode::Status::ON) {
+	if (m_State.status == artnet::Status::ON) {
 		ArtNetStore::SaveNetSwitch(nPortIndex, nNetSwitch);
 	}
 
@@ -216,7 +216,7 @@ void ArtNetNode::SetMergeMode(const uint32_t nPortIndex, const lightset::MergeMo
 	E131Bridge::SetMergeMode(nPortIndex, mergeMode);
 #endif
 
-	if (m_State.status == artnetnode::Status::ON) {
+	if (m_State.status == artnet::Status::ON) {
 		ArtNetStore::SaveMergeMode(nPortIndex, mergeMode);
 		artnet::display_merge_mode(nPortIndex, mergeMode);
 	}
@@ -226,7 +226,7 @@ void ArtNetNode::SetFailSafe(const artnetnode::FailSafe failsafe) {
 	DEBUG_PRINTF("failsafe=%u", static_cast<uint32_t>(failsafe));
 
 #if defined(ARTNET_HAVE_FAILSAFE_RECORD)
-	if ((m_State.status == artnetnode::Status::ON) && (failsafe == artnetnode::FailSafe::RECORD)) {
+	if ((m_State.status == artnet::Status::ON) && (failsafe == artnetnode::FailSafe::RECORD)) {
 		FailSafeRecord();
 		return;
 	}
@@ -270,7 +270,7 @@ void ArtNetNode::SetFailSafe(const artnetnode::FailSafe failsafe) {
 	E131Bridge::SetFailSafe(static_cast<lightset::FailSafe>(static_cast<uint8_t>(failsafe) & 0x3));
 #endif
 
-	if (m_State.status == artnetnode::Status::ON) {
+	if (m_State.status == artnet::Status::ON) {
 		const auto nFailSafe = static_cast<uint8_t>(static_cast<uint8_t>(failsafe) & 0x3);
 		ArtNetStore::SaveFailSafe(nFailSafe);
 		artnet::display_failsafe(nFailSafe);
@@ -281,7 +281,7 @@ void ArtNetNode::SetFailSafe(const artnetnode::FailSafe failsafe) {
 
 void ArtNetNode::HandleAddress() {
 	const auto *const pArtAddress = reinterpret_cast<artnet::ArtAddress *>(m_pReceiveBuffer);
-	m_State.reportCode = artnetnode::ReportCode::RCPOWEROK;
+	m_State.reportCode = artnet::ReportCode::RCPOWEROK;
 
 	const auto nPage = static_cast<uint32_t>(pArtAddress->BindIndex > 0 ? pArtAddress->BindIndex - 1 : 0);
 
@@ -289,12 +289,12 @@ void ArtNetNode::HandleAddress() {
 
 	if (pArtAddress->ShortName[0] != 0)  {
 		SetShortName(nPage, reinterpret_cast<const char*>(pArtAddress->ShortName));
-		m_State.reportCode = artnetnode::ReportCode::RCSHNAMEOK;
+		m_State.reportCode = artnet::ReportCode::RCSHNAMEOK;
 	}
 
 	if (pArtAddress->LongName[0] != 0) {
 		SetLongName(reinterpret_cast<const char*>(pArtAddress->LongName));
-		m_State.reportCode = artnetnode::ReportCode::RCLONAMEOK;
+		m_State.reportCode = artnet::ReportCode::RCLONAMEOK;
 	}
 
 	if (pArtAddress->SubSwitch == artnet::Program::DEFAULTS) {

@@ -2,7 +2,7 @@
  * @file dmxslotinfo.h
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -140,7 +140,7 @@ const char *DmxSlotInfo::ToString(uint32_t nMask) {
 
 void DmxSlotInfo::Dump() {
 	for (uint32_t i = 0; i < m_nSize; i++) {
-		printf("  Slot:%d %.2X:%.4X\n", i, m_pSlotInfo[i].nType, m_pSlotInfo[i].nCategory);
+		printf("  Slot:%u %.2X:%.4X\n", static_cast<unsigned int>(i), m_pSlotInfo[i].nType, m_pSlotInfo[i].nCategory);
 	}
 }
 

@@ -71,7 +71,7 @@ void Hardware::RebootHandler() {
 	}
 }
 
-void main() {
+int main() {
 	Hardware hw;
 	DisplayUdf display;
 	ConfigStore configStore;
@@ -92,7 +92,7 @@ void main() {
 	showFileParams.Set();
 
 	if (showFile.IsAutoStart()) {
-		showFile.Start();
+		showFile.Play();
 	}
 
 #if defined (NODE_RDMNET_LLRP_ONLY)

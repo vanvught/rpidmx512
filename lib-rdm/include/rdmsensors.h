@@ -2,7 +2,7 @@
  * @file rdmsensors.h
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,11 +33,12 @@
 
 #include "debug.h"
 
-#if defined (RASPPI) || defined(BARE_METAL)
+#if defined (__APPLE__) || (defined (__linux__) && !defined (RASPPI))
+#else
 # define RDM_SENSORS_ENABLE
 #endif
 
-#if !defined (__CYGWIN__) && !defined (__APPLE__)
+#if !defined (__APPLE__)
 # define RDMSENSOR_CPU_ENABLE
 #endif
 

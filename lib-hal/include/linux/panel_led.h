@@ -46,10 +46,10 @@ static constexpr uint32_t PORT_A_RX = 0;
 static constexpr uint32_t PORT_A_TX = 0;
 }  // namespace panelled
 
-inline static void panel_led_on(uint32_t __attribute__((unused)) on) {
+inline static void panel_led_on([[maybe_unused]] uint32_t  on) {
 }
 
-inline static void panel_led_off(uint32_t __attribute__((unused)) off) {
+inline static void panel_led_off([[maybe_unused]] uint32_t  off) {
 }
 
 }  // namespace hal

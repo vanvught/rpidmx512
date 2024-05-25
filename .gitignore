@@ -80,16 +80,13 @@ simple
 
 # lib-tlc59711
 pwmled
+
 artnet.txt
 e131.txt
 osc.txt
 *.MacOS
 # 
 *.gz
-#
-*/sofware_version_id.h
-*/include/sofware_version_id.h
-*/example/sofware_version_id.h
 
 # Scripts
 loop.sh
@@ -97,13 +94,22 @@ do-tftp.sh
 */do-tftp.sh
 do-tftp-one.sh
 */do-tftp-one.sh
+
+#
+mcp3424
 linux_artnet/linux_artnet
+linux_ddp/linux_ddp
 linux_e131/linux_e131
 linux_osc/linux_osc
+linux_pp/linux_pp
 */spiflash.bin
 *.bin
 
-lib-nextion
-lib-node
-lib-eve
+software_version_id.h
 
+/lib-eve
+/lib-network/src/emac/gd32/dsa
+/lib-nextion
+/lib-node
+/lib-showfile/Doxygen
+/lib-clib

@@ -36,13 +36,17 @@
 #include "gd32.h"
 #include "gd32_adc.h"
 
+#if !defined (CONFIG_LEDBLINK_USE_PANELLED) && (defined (GD32F4XX) || defined(GD32H7XX))
+# define HAL_HAVE_PORT_BIT_TOGGLE
+#endif
+
 #if defined (ENABLE_USB_HOST) && defined (CONFIG_USB_HOST_MSC)
 extern "C" {
 #include "usbh_core.h"
-#if !defined (GD32F4XX)
- extern usbh_host usb_host;
-#else
+#if defined (GD32H7XX) || defined (GD32F4XX)
  extern usbh_host usb_host_msc;
+#else
+ extern usbh_host usb_host;
 #endif
 }
 #endif
@@ -192,31 +196,34 @@ public:
 
 	void Run() {
 #if defined (ENABLE_USB_HOST) && defined (CONFIG_USB_HOST_MSC)
-# if !defined (GD32F4XX)
-		usbh_core_task(&usb_host);
-# else
+# if defined (GD32H7XX) || defined (GD32F4XX)
 		usbh_core_task(&usb_host_msc);
+# else
+		usbh_core_task(&usb_host);
 # endif
 #endif
 		if (__builtin_expect (m_nTicksPerSecond != 0, 1)) {
-			if (__builtin_expect (!(s_nSysTickMillis - m_nMillisPrevious < m_nTicksPerSecond), 1)) {
-				m_nMillisPrevious = s_nSysTickMillis;
+			if (__builtin_expect (!(Hardware::Get()->Millis() - m_nMillisPrevious < m_nTicksPerSecond), 1)) {
+				m_nMillisPrevious = Hardware::Get()->Millis();
+#if defined(HAL_HAVE_PORT_BIT_TOGGLE)
+				GPIO_TG(LED_BLINK_GPIO_PORT) = LED_BLINK_PIN;
+#else
+				m_nToggleLed = -m_nToggleLed;
 
-				m_nToggleLed ^= 0x1;
-
-				if (m_nToggleLed != 0) {
-#if defined (CONFIG_LEDBLINK_USE_PANELLED)
+				if (m_nToggleLed > 0) {
+# if defined (CONFIG_LEDBLINK_USE_PANELLED)
 					hal::panel_led_on(hal::panelled::ACTIVITY);
-#else
+# else
 					GPIO_BOP(LED_BLINK_GPIO_PORT) = LED_BLINK_PIN;
-#endif
+# endif
 				} else {
-#if defined (CONFIG_LEDBLINK_USE_PANELLED)
+# if defined (CONFIG_LEDBLINK_USE_PANELLED)
 					hal::panel_led_off(hal::panelled::ACTIVITY);
-#else
+# else
 					GPIO_BC(LED_BLINK_GPIO_PORT) = LED_BLINK_PIN;
-#endif
+# endif
 				}
+#endif
 			}
 		}
 
@@ -280,7 +287,9 @@ private:
 	hardware::ledblink::Mode m_Mode { hardware::ledblink::Mode::UNKNOWN };
 	bool m_doLock { false };
 	uint32_t m_nTicksPerSecond { 1000 / 2 };
-	int32_t m_nToggleLed { 0 };
+#if !defined(HAL_HAVE_PORT_BIT_TOGGLE)
+	int32_t m_nToggleLed { 1 };
+#endif
 	uint32_t m_nMillisPrevious { 0 };
 
 	static Hardware *s_pThis;

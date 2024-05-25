@@ -72,7 +72,7 @@ void Hardware::RebootHandler() {
 	ArtNetNode::Get()->Stop();
 }
 
-void main() {
+int main() {
 	Hardware hw;
 	DisplayUdf display;
 	ConfigStore configStore;
@@ -119,7 +119,7 @@ void main() {
 	showFileParams.Set();
 
 	if (showFile.IsAutoStart()) {
-		showFile.Start();
+		showFile.Play();
 	}
 
 	showFile.Print();
@@ -135,7 +135,7 @@ void main() {
 	displayUdfParams.Load();
 	displayUdfParams.Set(&display);
 
-	display.Show(&node);
+	display.Show();
 
 	uint32_t nFilesCount = dmxSerial.GetFilesCount();
 	if (nFilesCount == 0) {

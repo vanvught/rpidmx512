@@ -9,17 +9,23 @@
 	<p><button onclick="refresh()">Refresh</button></p>
 	<table id="idStatus" border='1'></table>
 	 <div>
-    <button onclick="start()">Start</button>
+    <button onclick="play()">Play</button>
     <button onclick="stop()">Stop</button>
     <button onclick="resume()">Resume</button>
+    <button onclick="record()">Record</button>
   </div>
    <div>
-    <button id="idLoop" onclick="loop()"></button>
+    <button id="id4" onclick="loop()"></button>
    </div>
-  <p>Show <select id="idDirectory"></select><button onclick="select()">Select</button></p>
+  <p>Player Show <select id="id1"></select><button onclick="sel()">Select</button></p>
+  <p>Set new recorder file <button id="id3" onclick="rec()"></button></p>
+  <p>Delete Show <select id="id2"></select><button onclick="del()">Delete</button></p>
 	<footer><ul id="idVersion"></ul></footer>
 	<script src="static.js" type="text/javascript"></script>
 	<script src="showfile.js" type="text/javascript"></script>
-	<script>list();version();directory();refresh()</script>
+	<script>function play(){send("play");}function stop(){send("stop");}function resume() {send("resume");}function record() {send("record");}
+	async function send(status) {await post({ show: "", status: status });refresh();}
+	async function loop() {const v=document.getElementById('id4').innerHTML == "Looping" ? "1" : "0";await post({ show:"",loop:`${v}` });refresh();}</script>
+	<script>list();version();refresh()</script>
 </body>
 </html>

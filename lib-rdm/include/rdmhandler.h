@@ -27,10 +27,11 @@
 #define RDMHANDLER_H_
 
 #include <cstdint>
+#include <cstring>
 
 #if defined (NODE_RDMNET_LLRP_ONLY)
-# if defined (ENABLE_RDM_MANUFACTURER_PIDS)
-#  undef ENABLE_RDM_MANUFACTURER_PIDS
+# if defined (CONFIG_RDM_ENABLE_MANUFACTURER_PIDS)
+#  undef CONFIG_RDM_ENABLE_MANUFACTURER_PIDS
 # endif
 #endif
 
@@ -38,7 +39,7 @@
 # include "rdmqueuedmessage.h"
 #endif
 
-#if defined (ENABLE_RDM_MANUFACTURER_PIDS)
+#if defined (CONFIG_RDM_ENABLE_MANUFACTURER_PIDS)
 # include "rdm_manufacturer_pid.h"
 #endif
 
@@ -49,10 +50,10 @@ public:
 	void HandleData(const uint8_t *pRdmDataIn, uint8_t *pRdmDataOut);
 
 private:
-	void CreateRespondMessage(uint8_t nResponseType, uint16_t nReason = 0);
+	void CreateRespondMessage(const uint8_t nResponseType, const uint16_t nReason);
 	void RespondMessageAck();
-	void RespondMessageNack(uint16_t nReason);
-	void HandleString(const char *pString, uint32_t nLength);
+	void RespondMessageNack(const uint16_t nReason);
+	void HandleString(const char *pString, const uint32_t nLength);
 	void Handlers(bool bIsBroadcast, uint8_t nCommandClass, uint16_t nParamId, uint8_t nParamDataLength, uint16_t nSubDevice);
 
 	// Get
@@ -60,7 +61,7 @@ private:
 	void GetQueuedMessage(uint16_t nSubDevice);
 #endif
 	void GetSupportedParameters(uint16_t nSubDevice);
-#if defined (ENABLE_RDM_MANUFACTURER_PIDS)
+#if defined (CONFIG_RDM_ENABLE_MANUFACTURER_PIDS)
 	void GetParameterDescription(uint16_t nSubDevice);
 	void GetManufacturerPid(uint16_t nSubDevice);
 #endif
@@ -87,7 +88,7 @@ private:
 	void GetIdentifyDevice(uint16_t nSubDevice);
 	void GetRealTimeClock(uint16_t nSubDevice);
 	void GetPowerState(uint16_t nSubDevice);
-#if defined (ENABLE_RDM_SELF_TEST)
+#if defined (CONFIG_RDM_ENABLE_SELF_TEST)
 	void GetPerformSelfTest(uint16_t nSubDevice);
 	void GetSelfTestDescription(uint16_t nSubDevice);
 #endif
@@ -123,13 +124,13 @@ private:
 	void SetRealTimeClock(bool IsBroadcast, uint16_t nSubDevice);
 	void SetResetDevice(bool IsBroadcast, uint16_t nSubDevice);
 	void SetPowerState(bool IsBroadcast, uint16_t nSubDevice);
-#if defined (ENABLE_RDM_SELF_TEST)
+#if defined (CONFIG_RDM_ENABLE_SELF_TEST)
 	void SetPerformSelfTest(bool IsBroadcast, uint16_t nSubDevice);
 #endif
 #if defined (ENABLE_RDM_PRESET_PLAYBACK)
 	void SetPresetPlayback(bool IsBroadcast, uint16_t nSubDevice);
 #endif
-#if defined (ENABLE_RDM_MANUFACTURER_PIDS) && defined (CONFIG_RDM_MANUFACTURER_PIDS_SET)
+#if defined (CONFIG_RDM_ENABLE_MANUFACTURER_PIDS) && defined (CONFIG_RDM_MANUFACTURER_PIDS_SET)
 	void SetManufacturerPid(bool IsBroadcast, uint16_t nSubDevice);
 #endif
 	// ANSI E1.37-1
@@ -167,7 +168,7 @@ private:
 
 	static const PidDefinition PID_DEFINITIONS[];
 	static const PidDefinition PID_DEFINITIONS_SUB_DEVICES[];
-#if defined (ENABLE_RDM_MANUFACTURER_PIDS)
+#if defined (CONFIG_RDM_ENABLE_MANUFACTURER_PIDS)
 	static const PidDefinition PID_DEFINITION_MANUFACTURER_GENERAL;
 	static const rdm::ParameterDescription PARAMETER_DESCRIPTIONS[];
 

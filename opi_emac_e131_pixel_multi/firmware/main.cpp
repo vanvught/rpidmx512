@@ -83,7 +83,7 @@ void Hardware::RebootHandler() {
 	E131Bridge::Get()->Stop();
 }
 
-void main() {
+int main() {
 	Hardware hw;
 	DisplayUdf display;
 	ConfigStore configStore;
@@ -172,7 +172,7 @@ void main() {
 	showFileParams.Set();
 
 	if (showFile.IsAutoStart()) {
-		showFile.Start();
+		showFile.Play();
 	}
 
 	showFile.Print();
@@ -192,7 +192,7 @@ void main() {
 	displayUdfParams.Load();
 	displayUdfParams.Set(&display);
 
-	display.Show(&bridge);
+	display.Show();
 
 	display.Printf(7, "%s:%d G%d %s",
 		PixelType::GetType(pixelDmxConfiguration.GetType()),

@@ -31,7 +31,7 @@ const char ShowFileParamsConst::SHOW[] = "show";
 
 const char ShowFileParamsConst::DMX_MASTER[] = "dmx_master";
 
-const char ShowFileParamsConst::OPTION_AUTO_START[] = "auto_start";
+const char ShowFileParamsConst::OPTION_AUTO_PLAY[] = "auto_play";
 const char ShowFileParamsConst::OPTION_LOOP[] = "loop";
 const char ShowFileParamsConst::OPTION_DISABLE_SYNC[] = "disable_sync";
 

@@ -64,7 +64,7 @@ void LightSetChain::Stop(const uint32_t nPortIndex) {
 	}
 }
 
-void LightSetChain::SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate) {
+void LightSetChain::SetData(const uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate) {
 	assert(pData != nullptr);
 
 	for (uint32_t i = 0; i < m_nSize; i++) {
@@ -275,7 +275,7 @@ void LightSetChain::Dump([[maybe_unused]] uint8_t nEntries) {
 		printf("%d\t%p\t%d\n", i, reinterpret_cast<void *>(m_pTable[i].pLightSet), m_pTable[i].nType);
 	}
 
-	printf("\n");
+	puts("");
 #endif
 }
 

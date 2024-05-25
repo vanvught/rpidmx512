@@ -49,6 +49,7 @@ private:
 	http::Status HandleGet();
 	http::Status HandleGetTxt();
 	http::Status HandlePost(bool hasDataOnly);
+	http::Status HandleDelete(bool hasDataOnly);
 
 private:
 	uint32_t m_nConnectionHandle;
