@@ -1,7 +1,8 @@
 /**
- * @file ltcdisplaymax7219.cpp
+ * @file platform_midi.h
+ *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2022 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,10 +23,9 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cstdio>
-#include <cassert>
+#ifndef GD32_PLATFORM_MIDI_H_
+#define GD32_PLATFORM_MIDI_H_
 
-#include "ltcdisplaymax7219.h"
+#include "gd32.h"
 
-LtcDisplayMax7219 *LtcDisplayMax7219::s_pThis;
+#endif /* GD32_PLATFORM_MIDI_H_ */

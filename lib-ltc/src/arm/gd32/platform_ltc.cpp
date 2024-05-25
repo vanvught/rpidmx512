@@ -2,7 +2,7 @@
  * @file platform_ltc.cpp
  *
  */
-/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,20 +26,22 @@
 #include <cstdint>
 #include <cassert>
 
+#include "gd32.h"
 #include "ltc.h"
 
 extern "C" {
 void TIMER6_IRQHandler() {
-	__DMB();
+	const auto nIntFlag = TIMER_INTF(TIMER6);
 
-	gv_ltc_nUpdatesPerSecond = gv_ltc_nUpdates - gv_ltc_nUpdatesPrevious;
-	gv_ltc_nUpdatesPrevious = gv_ltc_nUpdates;
+	if ((nIntFlag & TIMER_INT_FLAG_UP) == TIMER_INT_FLAG_UP) {
+		gv_ltc_nUpdatesPerSecond = gv_ltc_nUpdates - gv_ltc_nUpdatesPrevious;
+		gv_ltc_nUpdatesPrevious = gv_ltc_nUpdates;
+	}
 
-	__DMB();
+	timer_interrupt_flag_clear(TIMER6, nIntFlag);
 }
 
 void TIMER7_BRK_TIMER11_IRQHandler() {
-	__DMB();
 	const auto nIntFlag = TIMER_INTF(TIMER11);
 
 	if ((nIntFlag & TIMER_INT_FLAG_CH0) == TIMER_INT_FLAG_CH0) {
@@ -50,7 +52,6 @@ void TIMER7_BRK_TIMER11_IRQHandler() {
 	}
 
 	timer_interrupt_flag_clear(TIMER11, nIntFlag);
-	__DMB();
 }
 }
 
@@ -63,7 +64,7 @@ void timer6_config() {
 
 	timer_parameter_struct timer_initpara;
 	timer_initpara.prescaler = TIMER_PSC_10KHZ;
-	timer_initpara.period = 10000;		// 1 second
+	timer_initpara.period = 10000 - 1;		// 1 second
 	timer_init(TIMER6, &timer_initpara);
 
 	timer_flag_clear(TIMER6, ~0);
@@ -71,10 +72,14 @@ void timer6_config() {
 
 	timer_interrupt_enable(TIMER6, TIMER_INT_UP);
 
-//	NVIC_SetPriority(TIMER6_IRQn, 0);
+	NVIC_SetPriority(TIMER6_IRQn, (1UL<<__NVIC_PRIO_BITS)-1UL); // Lowest priority
 	NVIC_EnableIRQ(TIMER6_IRQn);
 
 	timer_enable(TIMER6);
+}
+
+void timer12_config() {
+
 }
 
 void timer11_config() {

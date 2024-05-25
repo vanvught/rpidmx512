@@ -1,7 +1,7 @@
 /**
  * @file ltcparams.cpp
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -374,7 +374,7 @@ void LtcParams::Set(struct ltc::TimeCode *ptStartTimeCode, struct ltc::TimeCode 
 	g_ltc_ptLtcDisabledOutputs.bRgbPanel = false;
 #endif
 
-	assert (g_ltc_ptLtcDisabledOutputs.bWS28xx || g_ltc_ptLtcDisabledOutputs.bRgbPanel);
+//	assert (g_ltc_ptLtcDisabledOutputs.bWS28xx || g_ltc_ptLtcDisabledOutputs.bRgbPanel);
 
 	assert(ptStartTimeCode != nullptr);
 
