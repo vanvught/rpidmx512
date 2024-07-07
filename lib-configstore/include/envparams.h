@@ -1,8 +1,8 @@
 /**
- * @file console.cpp
+ * @file envparams.h
  *
  */
-/* Copyright (C) 2023-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,14 +23,26 @@
  * THE SOFTWARE.
  */
 
+#ifndef ENVPARAMS_H_
+#define ENVPARAMS_H_
+
 #include <cstdint>
 
-void console_init() {}
+class EnvParams {
+public:
+	EnvParams();
 
-extern "C" {
-void console_puts([[maybe_unused]] const char *p) {}
-void console_write([[maybe_unused]] const char *p, [[maybe_unused]] unsigned int i) {}
-void console_status([[maybe_unused]]  uint32_t i, [[maybe_unused]] const char *p) {}
-void console_error([[maybe_unused]] const char *p) {}
-void console_putc([[maybe_unused]] int i) {}
-}
+	void LoadAndSet();
+	void LoadAndSet(const char *pBuffer, uint32_t nLength);
+
+	void Builder(char *pBuffer, uint32_t nLength, uint32_t& nSize);
+
+public:
+    static void staticCallbackFunction(void *p, const char *s);
+
+private:
+	void Dump();
+    void callbackFunction(const char *s);
+};
+
+#endif /* ENVPARAMS_H_ */

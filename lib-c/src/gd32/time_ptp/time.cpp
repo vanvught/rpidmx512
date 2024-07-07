@@ -1,8 +1,8 @@
 /**
- * @file time.c
+ * @file time.cpp
  *
  */
-/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@gd32-dmx.nl
+/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,62 +26,60 @@
 #pragma GCC push_options
 #pragma GCC optimize ("O2")
 
-#include <stddef.h>
+#include <cstdint>
+#include <time.h>
 #include <sys/time.h>
-#include <stdint.h>
-#include <assert.h>
+#include <cassert>
 
-extern volatile uint32_t s_nSysTickMillis;
+#include "gd32.h"
+#include "gd32_ptp.h"
 
-static uint32_t set_timer;
-static struct timeval s_tv;
+#if defined (GD32H7XX)
+# define enet_ptp_timestamp_function_config(x)		enet_ptp_timestamp_function_config(ENETx, x)
+# define enet_ptp_timestamp_update_config(x,y,z)	enet_ptp_timestamp_update_config(ENETx, x, y, z)
+# define enet_ptp_system_time_get(x)				enet_ptp_system_time_get(ENETx, x)
+#endif
 
+extern "C" {
 /*
  * number of seconds and microseconds since the Epoch,
  *     1970-01-01 00:00:00 +0000 (UTC).
  */
 
-int gettimeofday(struct timeval *tv, __attribute__((unused))   struct timezone *tz) {
+int gettimeofday(struct timeval *tv, [[maybe_unused]] struct timezone *tz) {
 	assert(tv != 0);
 
-	const uint32_t timer = s_nSysTickMillis; // Millis timer
+	enet_ptp_systime_struct systime;
+	enet_ptp_system_time_get(&systime);
 
-	uint32_t millis_elapsed;
+	tv->tv_sec = systime.second;
 
-	if (set_timer >= timer) {
-		millis_elapsed = set_timer - timer;
-	} else {
-		millis_elapsed = timer - set_timer;
-	}
+#if !defined (GD32F4XX)
+	const auto nNanoSecond = systime.nanosecond;
+#else
+	const auto nNanoSecond = gd32::ptp_subsecond_2_nanosecond(systime.subsecond);
+#endif
 
-	set_timer = timer;
-
-	uint32_t sec = millis_elapsed / 1000U;
-	const uint32_t usec = (millis_elapsed - (sec * 1000U)) * 1000U;
-
-	s_tv.tv_sec += (time_t)sec;
-	s_tv.tv_usec += (suseconds_t)usec;
-
-	if (s_tv.tv_usec >= 1000000) {
-		s_tv.tv_sec++;
-		s_tv.tv_usec = 1000000 - s_tv.tv_usec;
-	}
-
-	tv->tv_sec = s_tv.tv_sec;
-	tv->tv_usec = s_tv.tv_usec;
+	tv->tv_usec = nNanoSecond / 1000U;
 
 	return 0;
 }
 
-int settimeofday(const struct timeval *tv, __attribute__((unused))  const struct timezone *tz) {
+int settimeofday(const struct timeval *tv, [[maybe_unused]] const struct timezone *tz) {
 	assert(tv != 0);
 
-	set_timer = s_nSysTickMillis;
+	const uint32_t nSign = ENET_PTP_ADD_TO_TIME;
+	const uint32_t nSecond = tv->tv_sec;
+	const uint32_t nNanoSecond = tv->tv_usec * 1000U;
+	const auto nSubSecond = gd32::ptp_nanosecond_2_subsecond(nNanoSecond);
 
-	s_tv.tv_sec = tv->tv_sec;
-	s_tv.tv_usec = tv->tv_usec;
+	enet_ptp_timestamp_update_config(nSign, nSecond, nSubSecond);
 
-	return 0;
+	if (SUCCESS == enet_ptp_timestamp_function_config(ENET_PTP_SYSTIME_INIT)) {
+		return 0;
+	}
+
+	return -1;
 }
 
 /*
@@ -92,9 +90,10 @@ time_t time(time_t *__timer) {
 	struct timeval tv;
 	gettimeofday(&tv, 0);
 
-	if (__timer != NULL) {
+	if (__timer != nullptr) {
 		*__timer = tv.tv_sec;
 	}
 
 	return tv.tv_sec;
+}
 }

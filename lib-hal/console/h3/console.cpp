@@ -1,8 +1,8 @@
 /**
- * @file console.c
+ * @file console.cpp
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -71,6 +71,7 @@ void __attribute__((cold)) console_init(void) {
 	}
 }
 
+extern "C" {
 uint32_t console_get_line_width(void) {
 	return FB_WIDTH / FB_CHAR_W;
 }
@@ -128,8 +129,8 @@ inline static void newline(void) {
 }
 
 inline static void draw_pixel(uint32_t x, uint32_t y, uint32_t color) {
-	volatile uint32_t *address = (volatile uint32_t *)(FB_ADDRESS + (x * FB_BYTES_PER_PIXEL) + (y * FB_WIDTH * FB_BYTES_PER_PIXEL));
-	*address = (uint32_t) color;
+	volatile auto *address = (volatile uint32_t *)(FB_ADDRESS + (x * FB_BYTES_PER_PIXEL) + (y * FB_WIDTH * FB_BYTES_PER_PIXEL));
+	*address = color;
 }
 
 inline static void draw_char(int c, uint32_t x, uint32_t y, uint32_t fore, uint32_t back) {
@@ -138,7 +139,7 @@ inline static void draw_char(int c, uint32_t x, uint32_t y, uint32_t fore, uint3
 	unsigned char *p = FONT + (c * (int) FB_CHAR_H);
 
 	for (i = 0; i < FB_CHAR_H; i++) {
-		line = (uint8_t) *p++;
+		line = *p++;
 		for (j = x; j < (FB_CHAR_W + x); j++) {
 			if ((line & 0x1) != 0) {
 				draw_pixel(j, y, fore);
@@ -153,7 +154,7 @@ inline static void draw_char(int c, uint32_t x, uint32_t y, uint32_t fore, uint3
 
 int console_draw_char(int ch, uint16_t x, uint16_t y, uint32_t fore, uint32_t back) {
 	draw_char(ch, x * FB_CHAR_W, y * FB_CHAR_H, fore, back);
-	return (int)ch;
+	return ch;
 }
 
 void console_putc(int ch) {
@@ -226,34 +227,34 @@ void console_status(uint32_t color, const char *s) {
 #define TO_HEX(i)	((i) < 10) ? (uint8_t)'0' + (i) : (uint8_t)'A' + ((i) - (uint8_t)10)
 
 void console_puthex(uint8_t data) {
-	console_putc((int) (TO_HEX(((data & 0xF0) >> 4))));
-	console_putc((int) (TO_HEX(data & 0x0F)));
+	console_putc((TO_HEX(((data & 0xF0) >> 4))));
+	console_putc((TO_HEX(data & 0x0F)));
 }
 
 void console_puthex_fg_bg(uint8_t data, uint32_t fore, uint32_t back) {
-	uint32_t fore_current = cur_fore;
-	uint32_t back_current = cur_back;
+	auto fore_current = cur_fore;
+	auto back_current = cur_back;
 
 	cur_fore = fore;
 	cur_back = back;
 
-	(void) console_putc((int) (TO_HEX(((data & 0xF0) >> 4))));
-	(void) console_putc((int) (TO_HEX(data & 0x0F)));
+	console_putc((TO_HEX(((data & 0xF0) >> 4))));
+	console_putc((TO_HEX(data & 0x0F)));
 
 	cur_fore = fore_current;
 	cur_back = back_current;
 }
 
 void console_putpct_fg_bg(uint8_t data, uint32_t fore, uint32_t back) {
-	uint32_t fore_current = cur_fore;
-	uint32_t back_current = cur_back;
+	auto fore_current = cur_fore;
+	auto back_current = cur_back;
 
 	cur_fore = fore;
 	cur_back = back;
 
 	if (data < 100) {
-		console_putc((int) ((char) '0' + (char) (data / 10)));
-		console_putc((int) ((char) '0' + (char) (data % 10)));
+		console_putc('0' + (data / 10U));
+		console_putc('0' + (data % 10U));
 	} else {
 		console_puts("%%");
 	}
@@ -263,20 +264,20 @@ void console_putpct_fg_bg(uint8_t data, uint32_t fore, uint32_t back) {
 }
 
 void console_put3dec_fg_bg(uint8_t data, uint32_t fore, uint32_t back) {
-	uint32_t fore_current = cur_fore;
-	uint32_t back_current = cur_back;
+	auto fore_current = cur_fore;
+	auto back_current = cur_back;
 
 	cur_fore = fore;
 	cur_back = back;
 
-	const uint8_t i = data / 100;
+	const int i = data / 100U;
 
-	(void) console_putc((int) ((char) '0' + (char) i));
+	console_putc('0' + i);
 
-	data = (uint8_t)(data -  (i * 100));
+	data = (data -  static_cast<uint8_t>(i * 100));
 
-	console_putc((int) ((char) '0' + (char) (data / 10)));
-	console_putc((int) ((char) '0' + (char) (data % 10)));
+	console_putc('0' + (data / 10U));
+	console_putc('0' + (data % 10U));
 
 	cur_fore = fore_current;
 	cur_back = back_current;
@@ -287,11 +288,11 @@ void console_newline(void){
 }
 
 void console_clear(void) {
-	uint32_t *address = (uint32_t *)(fb_addr);
+	auto *address = (uint32_t *)(fb_addr);
 	uint32_t i;
 
 	for (i = 0; i < (FB_HEIGHT * FB_WIDTH); i++) {
-		*address++ = (uint32_t) cur_back;
+		*address++ = cur_back;
 	}
 
 	current_x = 0;
@@ -377,5 +378,6 @@ void console_clear_top_row(void) {
 
 void console_putpixel(uint32_t x, uint32_t y, uint32_t color) {
 	draw_pixel(x, y, color);
+}
 }
 

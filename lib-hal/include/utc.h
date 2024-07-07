@@ -2,7 +2,7 @@
  * @file utc.h
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,8 @@
 #define UTC_H_
 
 #include <cstdint>
+
+#include "debug.h"
 
 // https://en.wikipedia.org/wiki/List_of_UTC_time_offsets
 
@@ -51,6 +53,42 @@ inline int32_t utc_validate(const float fOffset) {
 	}
 
 	return 0;
+}
+
+inline bool utc_validate(const int8_t nHours, const uint8_t nMinutes, int32_t& nUtcOffset) {
+    struct Offset {
+        int8_t nHours;
+        uint8_t nMinutes;
+    };
+    // https://en.wikipedia.org/wiki/List_of_UTC_time_offsets
+    static constexpr Offset s_ValidOffsets[] = { {-9, 30}, {-3, 30},
+    		{3, 30}, {4, 30}, {5, 30}, {5, 45}, {6, 30}, {8, 45}, {9, 30}, {10, 30}, {12, 45} };
+    constexpr int8_t UTC_OFFSET_MIN = -12;
+    constexpr int8_t UTC_OFFSET_MAX = 14;
+
+    // Check if nHours is within valid range
+    if (nHours >= UTC_OFFSET_MIN && nHours <= UTC_OFFSET_MAX) {
+        // Check if minutes are 0, meaning a whole hour offset
+        if (nMinutes == 0) {
+        	nUtcOffset = nHours * 3600;
+        	return true;
+        } else {
+            for (const auto& offset : s_ValidOffsets) {
+                if (nHours == offset.nHours && nMinutes == offset.nMinutes) {
+                	nUtcOffset = (nHours * 3600);
+                	if (nHours > 0) {
+                		nUtcOffset = nUtcOffset + (nMinutes * 60);
+                	} else {
+                		nUtcOffset = nUtcOffset - (nMinutes * 60);
+                	}
+                	return true;
+                }
+            }
+        }
+    }
+
+    // Return false if validation fails
+    return false;
 }
 }  // namespace hal
 

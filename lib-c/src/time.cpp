@@ -1,8 +1,8 @@
 /**
- * @file time.c
+ * @file time.cpp
  *
  */
-/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,12 +23,19 @@
  * THE SOFTWARE.
  */
 
-#include <stddef.h>
+#include <cstdio>
+
+#include <cstddef>
+#include <cstdint>
 #include <time.h>
 
-static const int days_of_month[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+namespace global {
+int32_t *gp_nUtcOffset;
+}  // namespace global
 
-static int isleapyear(int year) {
+static constexpr int days_of_month[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+
+static int isleapyear(const int year) {
 	if (year % 100 == 0) {
 		return year % 400 == 0;
 	}
@@ -36,7 +43,7 @@ static int isleapyear(int year) {
 	return year % 4 == 0;
 }
 
-static int getdaysofmonth(int month, int year) {
+static int getdaysofmonth(const int month, const int year) {
 	if ((month == 1) && isleapyear(year)) {
 		return 29;
 	}
@@ -46,106 +53,120 @@ static int getdaysofmonth(int month, int year) {
 
 static struct tm Tm;
 
-struct tm *localtime(const time_t *pTime) {
-	int nYear;
-	int nMonth;
+extern "C" {
 
+struct tm *localtime(const time_t *pTime) {
 	if (pTime == 0) {
-		return NULL;
+		return nullptr;
 	}
 
-	time_t Time = *pTime;
+	auto nTime = *pTime + *global::gp_nUtcOffset;
+	return gmtime(&nTime);
+}
 
-	Tm.tm_sec = Time % 60;
-	Time /= 60;
-	Tm.tm_min = Time % 60;
-	Time /= 60;
-	Tm.tm_hour = Time % 24;
-	Time /= 24;
+struct tm *gmtime(const time_t *pTime) {
+	if (pTime == 0) {
+		return nullptr;
+	}
 
-	Tm.tm_wday = (Time + 4) % 7;
+	auto nTime = *pTime;
 
-	nYear = 1970;
+	Tm.tm_sec = nTime % 60;
+	nTime /= 60;
+	Tm.tm_min = nTime % 60;
+	nTime /= 60;
+	Tm.tm_hour = nTime % 24;
+	nTime /= 24;
+
+	Tm.tm_wday = (nTime + 4) % 7;
+
+	int nYear = 1970;
+
 	while (1) {
-		int nDaysOfYear = isleapyear(nYear) ? 366 : 365;
-		if (Time < nDaysOfYear) {
+		const time_t nDaysOfYear = isleapyear(nYear) ? 366 : 365;
+		if (nTime < nDaysOfYear) {
 			break;
 		}
 
-		Time -= nDaysOfYear;
+		nTime -= nDaysOfYear;
 		nYear++;
 	}
 
 	Tm.tm_year = nYear - 1900;
-	Tm.tm_yday = Time;
+	Tm.tm_yday = nTime;
 
-	nMonth = 0;
+	int nMonth = 0;
+
 	while (1) {
-		int nDaysOfMonth = getdaysofmonth(nMonth, nYear);
-		if (Time < nDaysOfMonth) {
+		const time_t nDaysOfMonth = getdaysofmonth(nMonth, nYear);
+		if (nTime < nDaysOfMonth) {
 			break;
 		}
 
-		Time -= nDaysOfMonth;
+		nTime -= nDaysOfMonth;
 		nMonth++;
 	}
 
 	Tm.tm_mon = nMonth;
-	Tm.tm_mday = Time + 1;
+	Tm.tm_mday = nTime + 1;
 
 	return &Tm;
 }
 
 time_t mktime(struct tm *pTm) {
-	int year, month;
-	time_t result = 0;
+	time_t nResult = 0;
 
-	if (pTm == NULL) {
-		return (time_t) -1;
+	if (pTm == nullptr) {
+		return -1;
 	}
 
 	if (pTm->tm_year < 70 || pTm->tm_year > 139) {
-		return (time_t) -1;
+		return -1;
 	}
 
-	for (year = 1970; year < 1900 + pTm->tm_year; year++) {
-		result += isleapyear(year) ? 366 : 365;
+	int nYear;
+
+	for (nYear = 1970; nYear < 1900 + pTm->tm_year; nYear++) {
+		nResult += isleapyear(nYear) ? 366 : 365;
 	}
 
 	if (pTm->tm_mon < 0 || pTm->tm_mon > 11) {
-		return (time_t) -1;
+		return -1;
 	}
 
-	for (month = 0; month < pTm->tm_mon; month++) {
-		result += getdaysofmonth(month, pTm->tm_year);
+	int nMonth;
+
+	for (nMonth = 0; nMonth < pTm->tm_mon; nMonth++) {
+		nResult += getdaysofmonth(nMonth, pTm->tm_year);
 	}
 
 	if (pTm->tm_mday < 1 || pTm->tm_mday > getdaysofmonth(pTm->tm_mon, pTm->tm_year)) {
-		return (time_t) -1;
+		return -1;
 	}
 
-	result += pTm->tm_mday - 1;
-	result *= 24;
+	nResult += pTm->tm_mday - 1;
+	nResult *= 24;
 
 	if (pTm->tm_hour < 0 || pTm->tm_hour > 23) {
-		return (time_t) -1;
+		return -1;
 	}
 
-	result += pTm->tm_hour;
-	result *= 60;
+	nResult += pTm->tm_hour;
+	nResult *= 60;
 
 	if (pTm->tm_min < 0 || pTm->tm_min > 59) {
-		return (time_t) -1;
+		return -1;
 	}
 
-	result += pTm->tm_min;
-	result *= 60;
+	nResult += pTm->tm_min;
+	nResult *= 60;
 
 	if (pTm->tm_sec < 0 || pTm->tm_sec > 59) {
-		return (time_t) -1;
+		return -1;
 	}
 
-	result += pTm->tm_sec;
+	nResult += pTm->tm_sec;
 
-	return result;
+	return nResult;
+}
 }

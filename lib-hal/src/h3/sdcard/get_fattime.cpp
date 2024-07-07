@@ -1,8 +1,8 @@
 /**
- * @file console.cpp
+ * @file get_fattime.cpp
  *
  */
-/* Copyright (C) 2023-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,14 +23,21 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
+#include <time.h>
 
-void console_init() {}
+#include "../ff14b/source/ff.h"
 
 extern "C" {
-void console_puts([[maybe_unused]] const char *p) {}
-void console_write([[maybe_unused]] const char *p, [[maybe_unused]] unsigned int i) {}
-void console_status([[maybe_unused]]  uint32_t i, [[maybe_unused]] const char *p) {}
-void console_error([[maybe_unused]] const char *p) {}
-void console_putc([[maybe_unused]] int i) {}
+DWORD get_fattime() {
+	auto ltime = time(nullptr);
+	auto *local_time = localtime(&ltime);
+	auto packed_time = ((DWORD) (local_time->tm_year + 20) << 25)
+			| ((DWORD) (local_time->tm_mon + 1) << 21)
+			| ((DWORD) local_time->tm_mday << 16)
+			| ((DWORD) local_time->tm_hour << 11)
+			| ((DWORD) local_time->tm_min << 5)
+			| ((DWORD) local_time->tm_sec >> 1);
+
+	return packed_time;
+}
 }

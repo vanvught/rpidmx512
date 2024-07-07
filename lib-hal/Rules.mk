@@ -1,5 +1,7 @@
 $(info $$MAKE_FLAGS [${MAKE_FLAGS}])
 
+EXTRA_SRCDIR+=debug
+
 ifneq ($(MAKE_FLAGS),)
 	ifneq (,$(findstring CONSOLE_I2C,$(MAKE_FLAGS)))
 		EXTRA_SRCDIR+=console/i2c

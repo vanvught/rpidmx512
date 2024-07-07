@@ -1,8 +1,8 @@
 /**
- * @file console.cpp
+ * @file envparamsconst.h
  *
  */
-/* Copyright (C) 2023-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,14 +23,13 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
+#ifndef ENVPARAMSCONST_H_
+#define ENVPARAMSCONST_H_
 
-void console_init() {}
+struct EnvParamsConst {
+	static const char FILE_NAME[];
 
-extern "C" {
-void console_puts([[maybe_unused]] const char *p) {}
-void console_write([[maybe_unused]] const char *p, [[maybe_unused]] unsigned int i) {}
-void console_status([[maybe_unused]]  uint32_t i, [[maybe_unused]] const char *p) {}
-void console_error([[maybe_unused]] const char *p) {}
-void console_putc([[maybe_unused]] int i) {}
-}
+	static const char UTC_OFFSET[];
+};
+
+#endif /* ENVPARAMSCONST_H_ */

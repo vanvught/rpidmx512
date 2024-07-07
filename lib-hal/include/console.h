@@ -74,21 +74,19 @@ extern void console_set_bg_color(uint16_t);
 #endif
 #endif
 
+#if !defined (CONSOLE_NULL)
+extern void console_init();
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#if !defined (CONSOLE_NULL)
-extern void console_init(void);
 extern void console_putc(int);
 extern void console_puts(const char*);
 extern void console_write(const char*, unsigned int);
 extern void console_status(uint32_t, const char *);
 extern void console_error(const char*);
-#endif
-
 #ifdef __cplusplus
 }
+#endif
 #endif
 
 #endif /* CONSOLE_H_ */

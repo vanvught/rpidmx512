@@ -5,6 +5,8 @@
 #ifndef _DISKIO_DEFINED
 #define _DISKIO_DEFINED
 
+#include "ff.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif

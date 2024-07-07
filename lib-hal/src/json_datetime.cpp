@@ -29,9 +29,9 @@
 #include <sys/time.h>
 #include <cassert>
 
-#include "debug.h"
+#include "configstore.h"
 
-// ISO 8601 format (YYYY-MM-DDTHH:MM:SS)
+#include "debug.h"
 
 namespace remoteconfig {
 namespace timedate {
@@ -56,12 +56,27 @@ uint32_t json_get_timeofday(char *pOutBuffer, const uint32_t nOutBufferSize) {
 	struct timeval tv;
 	if (gettimeofday(&tv, nullptr) >= 0) {
 		auto *tm = localtime(&tv.tv_sec);
-		const auto nLength = static_cast<uint32_t>(snprintf(pOutBuffer, nOutBufferSize,
-				"{\"date\":\"%d-%.2d-%.2dT%.2d:%.2d:%.2d\"}\n",
-				1900 + tm->tm_year, 1 + tm->tm_mon, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec));
 
-		DEBUG_EXIT
-		return nLength;
+		int8_t nHours;
+		uint8_t nMinutes;
+		ConfigStore::Get()->GetEnvUtcOffset(nHours, nMinutes);
+
+		if ((nHours == 0) && (nMinutes == 0)) {
+			const auto nLength = static_cast<uint32_t>(snprintf(pOutBuffer, nOutBufferSize,
+					"{\"date\":\"%d-%.2d-%.2dT%.2d:%.2d:%.2dZ\"}\n",
+					1900 + tm->tm_year, 1 + tm->tm_mon, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec));
+
+			DEBUG_EXIT
+			return nLength;
+		} else {
+			const auto nLength = static_cast<uint32_t>(snprintf(pOutBuffer, nOutBufferSize,
+					"{\"date\":\"%d-%.2d-%.2dT%.2d:%.2d:%.2d%s%.2d:%.2u\"}\n",
+					1900 + tm->tm_year, 1 + tm->tm_mon, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec,
+					nHours > 0 ? "+" : "", nHours, nMinutes));
+
+			DEBUG_EXIT
+			return nLength;
+		}
 	}
 
 	DEBUG_EXIT
@@ -70,9 +85,9 @@ uint32_t json_get_timeofday(char *pOutBuffer, const uint32_t nOutBufferSize) {
 
 void json_set_timeofday(const char *pBuffer, const uint32_t nBufferSize) {
 	DEBUG_ENTRY
-//	debug_dump(pBuffer, static_cast<uint16_t>(nBufferSize));
+	debug_dump(pBuffer, nBufferSize);
 
-	if (nBufferSize == 25) {
+	if ((nBufferSize == 26) || (nBufferSize == 31)) {
 		struct tm tm;
 		tm.tm_year = atoi(&pBuffer[5], 4) - 1900;
 		tm.tm_mon = atoi(&pBuffer[10], 2) - 1;
@@ -83,6 +98,19 @@ void json_set_timeofday(const char *pBuffer, const uint32_t nBufferSize) {
 
 		struct timeval tv;
 		tv.tv_sec = mktime(&tm);
+		tv.tv_usec = 0;
+
+		if (nBufferSize == 26) {
+			assert(pBuffer[23] == 'Z');
+		} else {
+			const int8_t nSign = pBuffer[24] == '-' ? -1 : 1;
+			const auto nHours = static_cast<int8_t>(atoi(&pBuffer[25], 2) * nSign);
+			const auto nMinutes = static_cast<uint8_t>(atoi(&pBuffer[28], 2));
+
+			ConfigStore::Get()->SetEnvUtcOffset(nHours, nMinutes);
+
+			tv.tv_sec = tv.tv_sec - ConfigStore::Get()->GetEnvUtcOffset();
+		}
 
 		settimeofday(&tv, nullptr);
 

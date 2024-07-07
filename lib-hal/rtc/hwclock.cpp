@@ -2,7 +2,7 @@
  * @file hwclock.cpp
  *
  */
-/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -158,7 +158,7 @@ void HwClock::SysToHc() {
 		gettimeofday(&tv2, nullptr);
 
 		if (tv2.tv_sec >= (tv1.tv_sec + 1)) {
-			const struct tm *tm = localtime(&tv2.tv_sec);
+			const auto *tm = gmtime(&tv2.tv_sec);
 			RtcSet(tm);
 			break;
 		}

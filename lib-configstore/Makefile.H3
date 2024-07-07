@@ -1,5 +1,7 @@
 DEFINES =CONFIG_STORE_USE_SPI 
 DEFINES+=NDEBUG
 
+EXTRA_INCLUDES=
+
 include Rules.mk
 include ../firmware-template-h3/lib/Rules.mk

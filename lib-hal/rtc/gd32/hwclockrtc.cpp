@@ -198,7 +198,7 @@ bool HwClock::RtcGet(struct tm *pTime) {
    pTime->tm_sec = BCD2DEC(GET_TIME_SC(tr));
 #else
    const auto nSeconds = static_cast<time_t>(rtc_counter_get());
-   const auto *pTm = localtime(&nSeconds);
+   const auto *pTm = gmtime(&nSeconds);
    memcpy(pTime, pTm, sizeof(struct tm));
 #endif
 
