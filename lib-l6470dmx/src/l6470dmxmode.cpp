@@ -31,26 +31,26 @@ L6470DmxMode::~L6470DmxMode() {
 }
 
 void L6470DmxMode::InitSwitch() {
-	DEBUG1_ENTRY
+	DEBUG_ENTRY
 
-	DEBUG1_EXIT
+	DEBUG_EXIT
 }
 
 void L6470DmxMode::InitPos() {
-	DEBUG1_ENTRY
+	DEBUG_ENTRY
 
-	DEBUG1_EXIT
+	DEBUG_EXIT
 }
 
 void L6470DmxMode::HandleBusy() {
-	DEBUG1_ENTRY
+	DEBUG_ENTRY
 
-	DEBUG1_EXIT
+	DEBUG_EXIT
 }
 
 bool L6470DmxMode::BusyCheck() {
-	DEBUG1_ENTRY
+	DEBUG_ENTRY
 
-	DEBUG1_EXIT
+	DEBUG_EXIT
 	return false;
 }

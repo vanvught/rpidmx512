@@ -37,7 +37,7 @@
 #include "debug.h"
 
 L6470DmxMode3::L6470DmxMode3(L6470 *pL6470, MotorParams *pMotorParams) {
-	DEBUG2_ENTRY;
+	DEBUG_ENTRY;
 
 	assert(pL6470 != nullptr);
 	assert(pMotorParams != nullptr);
@@ -48,29 +48,29 @@ L6470DmxMode3::L6470DmxMode3(L6470 *pL6470, MotorParams *pMotorParams) {
 
 	m_fSteps = (360 * (static_cast<uint32_t>(1) << pL6470->getStepMode())) / pMotorParams->GetStepAngel() / 0xFF ;
 
-	DEBUG2_EXIT;
+	DEBUG_EXIT;
 }
 
 L6470DmxMode3::~L6470DmxMode3() {
-	DEBUG2_ENTRY;
+	DEBUG_ENTRY;
 
-	DEBUG2_EXIT;
+	DEBUG_EXIT;
 }
 
 void L6470DmxMode3::Start() {
-	DEBUG2_ENTRY;
+	DEBUG_ENTRY;
 
-	DEBUG2_EXIT;
+	DEBUG_EXIT;
 }
 
 void L6470DmxMode3::Stop() {
-	DEBUG2_ENTRY;
+	DEBUG_ENTRY;
 
-	DEBUG2_EXIT;
+	DEBUG_EXIT;
 }
 
 void L6470DmxMode3::HandleBusy() {
-	DEBUG2_ENTRY
+	DEBUG_ENTRY
 
 	if (m_pL6470->busyCheck()) {
 #ifndef NDEBUG
@@ -82,18 +82,18 @@ void L6470DmxMode3::HandleBusy() {
 		m_bWasBusy = false;
 	}
 
-	DEBUG2_EXIT
+	DEBUG_EXIT
 }
 
 bool L6470DmxMode3::BusyCheck() {
-	DEBUG2_ENTRY;
+	DEBUG_ENTRY;
 
-	DEBUG2_EXIT;
+	DEBUG_EXIT;
 	return m_pL6470->busyCheck();
 }
 
 void L6470DmxMode3::Data(const uint8_t *pDmxData) {
-	DEBUG2_ENTRY;
+	DEBUG_ENTRY;
 
 	const auto steps = static_cast<uint32_t>(static_cast<float>(pDmxData[0]) * m_fSteps);
 	bool isRev;
@@ -123,5 +123,5 @@ void L6470DmxMode3::Data(const uint8_t *pDmxData) {
 
 	m_nPreviousData = pDmxData[0];
 
-	DEBUG2_EXIT;
+	DEBUG_EXIT;
 }

@@ -34,7 +34,7 @@
 #include "debug.h"
 
 L6470DmxMode2::L6470DmxMode2(L6470 *pL6470) {
-	DEBUG2_ENTRY;
+	DEBUG_ENTRY;
 
 	assert(pL6470 != nullptr);
 
@@ -43,35 +43,35 @@ L6470DmxMode2::L6470DmxMode2(L6470 *pL6470) {
 	m_fMinSpeed = m_pL6470->getMinSpeed();
 	m_fMaxSpeed = m_pL6470->getMaxSpeed();
 
-	DEBUG2_EXIT;
+	DEBUG_EXIT;
 }
 
 L6470DmxMode2::~L6470DmxMode2() {
-	DEBUG2_ENTRY;
+	DEBUG_ENTRY;
 
-	DEBUG2_EXIT;
+	DEBUG_EXIT;
 }
 
 void L6470DmxMode2::Start() {
-	DEBUG2_ENTRY;
+	DEBUG_ENTRY;
 
 	m_pL6470->run(L6470_DIR_FWD, m_fMinSpeed);
 
-	DEBUG2_EXIT;
+	DEBUG_EXIT;
 }
 
 void L6470DmxMode2::Stop() {
-	DEBUG2_ENTRY;
+	DEBUG_ENTRY;
 
 	m_pL6470->hardHiZ();
 
-	DEBUG2_EXIT;
+	DEBUG_EXIT;
 }
 
 void L6470DmxMode2::Data(const uint8_t *pDmxData) {
-	DEBUG2_ENTRY;
+	DEBUG_ENTRY;
 
 	m_pL6470->run(L6470_DIR_FWD, m_fMinSpeed + static_cast<float>(pDmxData[0]) * ((m_fMaxSpeed - m_fMinSpeed) / 255));
 
-	DEBUG2_EXIT;
+	DEBUG_EXIT;
 }

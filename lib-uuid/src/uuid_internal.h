@@ -1,8 +1,8 @@
 /**
- * @file l6470dmxmode1.cpp
+ * @file uuid_internal.h
  *
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,59 +23,17 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cassert>
+#ifndef UUID_INTERNAL_H_
+#define UUID_INTERNAL_H_
 
-#include "l6470dmxmode1.h"
-#include "l6470.h"
+#include <stdint.h>
 
-#include "motorparams.h"
+struct uuid {
+	uint32_t time_low;
+	uint16_t time_mid;
+	uint16_t time_hi_and_version;
+	uint16_t clock_seq;
+	uint8_t node[6];
+};
 
-#include "debug.h"
-
-L6470DmxMode1::L6470DmxMode1(L6470 *pL6470) {
-	DEBUG_ENTRY;
-
-	assert(pL6470 != nullptr);
-
-	m_pL6470 = pL6470;
-
-	m_fMinSpeed = m_pL6470->getMinSpeed();
-	m_fMaxSpeed = m_pL6470->getMaxSpeed();
-
-	DEBUG_EXIT;
-}
-
-L6470DmxMode1::~L6470DmxMode1() {
-	DEBUG_ENTRY;
-
-	DEBUG_EXIT;
-}
-
-void L6470DmxMode1::Start() {
-	DEBUG_ENTRY;
-
-	DEBUG_EXIT;
-}
-
-void L6470DmxMode1::Stop() {
-	DEBUG_ENTRY;
-
-	m_pL6470->hardHiZ();
-
-	DEBUG_EXIT;
-}
-
-void L6470DmxMode1::Data(const uint8_t *pDmxData) {
-	DEBUG_ENTRY;
-
-	float speed = m_fMinSpeed + static_cast<float>(pDmxData[0]) * ((m_fMaxSpeed - m_fMinSpeed) / 255);
-
-	if (pDmxData[1] <= 127) {	// Right-hand rotation
-		m_pL6470->run(L6470_DIR_REV, speed);
-	} else {					// Left-hand rotation
-		m_pL6470->run(L6470_DIR_FWD, speed);
-	}
-
-	DEBUG_EXIT;
-}
+#endif /* UUID_INTERNAL_H_ */

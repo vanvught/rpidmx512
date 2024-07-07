@@ -211,7 +211,7 @@ void ModeParams::callbackFunction(const char *pLine) {
 }
 
 void ModeParams::Builder(uint32_t nMotorIndex, const struct modeparams::Params *ptModeParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
-	DEBUG1_ENTRY
+	DEBUG_ENTRY
 
 	assert(pBuffer != nullptr);
 
@@ -242,7 +242,7 @@ void ModeParams::Builder(uint32_t nMotorIndex, const struct modeparams::Params *
 
 	nSize = builder.GetSize();
 
-	DEBUG1_EXIT
+	DEBUG_EXIT
 }
 
 void ModeParams::Save(uint32_t nMotorIndex, char *pBuffer, uint32_t nLength, uint32_t& nSize) {

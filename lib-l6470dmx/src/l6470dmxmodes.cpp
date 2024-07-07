@@ -48,7 +48,7 @@
 #include "debug.h"
 
 L6470DmxModes::L6470DmxModes(TL6470DmxModes tMode, uint16_t nDmxStartAddress, L6470 *pL6470, MotorParams *pMotorParams, ModeParams *pModeParams) {
-	DEBUG1_ENTRY;
+	DEBUG_ENTRY;
 
 	assert(nDmxStartAddress <= lightset::dmx::UNIVERSE_SIZE);
 	assert(pL6470 != nullptr);
@@ -104,11 +104,11 @@ L6470DmxModes::L6470DmxModes(TL6470DmxModes tMode, uint16_t nDmxStartAddress, L6
 		}
 	}
 
-	DEBUG1_EXIT;
+	DEBUG_EXIT;
 }
 
 L6470DmxModes::~L6470DmxModes() {
-	DEBUG1_ENTRY;
+	DEBUG_ENTRY;
 
 	delete [] m_pDmxData;
 	m_pDmxData = nullptr;
@@ -116,23 +116,23 @@ L6470DmxModes::~L6470DmxModes() {
 	delete m_pDmxMode;
 	m_pDmxMode = nullptr;
 
-	DEBUG1_EXIT;
+	DEBUG_EXIT;
 }
 
 void L6470DmxModes::InitSwitch() {
-	DEBUG1_ENTRY;
+	DEBUG_ENTRY;
 
 	m_pDmxMode->InitSwitch();
 
-	DEBUG1_EXIT
+	DEBUG_EXIT
 }
 
 void L6470DmxModes::InitPos() {
-	DEBUG1_ENTRY;
+	DEBUG_ENTRY;
 
 	m_pDmxMode->InitPos();
 
-	DEBUG1_EXIT
+	DEBUG_EXIT
 }
 
 uint16_t L6470DmxModes::GetDmxFootPrintMode(uint32_t tMode) {
@@ -165,7 +165,7 @@ uint16_t L6470DmxModes::GetDmxFootPrintMode(uint32_t tMode) {
 }
 
 void L6470DmxModes::Start() {
-	DEBUG1_ENTRY;
+	DEBUG_ENTRY;
 
 	if (m_bIsStarted) {
 		return;
@@ -175,11 +175,11 @@ void L6470DmxModes::Start() {
 
 	m_bIsStarted = true;
 
-	DEBUG1_EXIT;
+	DEBUG_EXIT;
 }
 
 void L6470DmxModes::Stop() {
-	DEBUG1_ENTRY;
+	DEBUG_ENTRY;
 
 	if (!m_bIsStarted) {
 		return;
@@ -189,26 +189,26 @@ void L6470DmxModes::Stop() {
 
 	m_bIsStarted = false;
 
-	DEBUG1_EXIT;
+	DEBUG_EXIT;
 }
 
 void L6470DmxModes::HandleBusy() {
-	DEBUG1_ENTRY;
+	DEBUG_ENTRY;
 
 	m_pDmxMode->HandleBusy();
 
-	DEBUG1_EXIT;
+	DEBUG_EXIT;
 }
 
 bool L6470DmxModes::BusyCheck() {
-	DEBUG1_ENTRY;
+	DEBUG_ENTRY;
 
-	DEBUG1_EXIT;
+	DEBUG_EXIT;
 	return m_pDmxMode->BusyCheck();
 }
 
 bool L6470DmxModes::IsDmxDataChanged(const uint8_t *p) {
-	DEBUG1_ENTRY;
+	DEBUG_ENTRY;
 
 	auto isChanged = false;
 	const auto lastDmxChannel = static_cast<uint16_t>(m_nDmxStartAddress + m_DmxFootPrint - 1);
@@ -227,23 +227,23 @@ bool L6470DmxModes::IsDmxDataChanged(const uint8_t *p) {
 		q++;
 	}
 
-	DEBUG1_EXIT;
+	DEBUG_EXIT;
 	return isChanged;
 }
 
 bool L6470DmxModes::IsDmxDataChanged(const uint8_t *pDmxData, uint32_t nLength) {
-	DEBUG1_ENTRY;
+	DEBUG_ENTRY;
 
 	assert(m_pDmxMode != nullptr);
 	assert(pDmxData != nullptr);
 
 	if (m_pDmxMode == nullptr) {
-		DEBUG1_EXIT;
+		DEBUG_EXIT;
 		return false;
 	}
 
 	if (nLength < (m_nDmxStartAddress + m_DmxFootPrint)) {
-		DEBUG1_EXIT;
+		DEBUG_EXIT;
 		return false;
 	}
 
@@ -253,7 +253,7 @@ bool L6470DmxModes::IsDmxDataChanged(const uint8_t *pDmxData, uint32_t nLength) 
 }
 
 void L6470DmxModes::DmxData(const uint8_t *pDmxData, uint32_t nLength) {
-	DEBUG1_ENTRY;
+	DEBUG_ENTRY;
 
 	assert(m_pDmxMode != nullptr);
 	assert(pDmxData != nullptr);
@@ -277,6 +277,6 @@ void L6470DmxModes::DmxData(const uint8_t *pDmxData, uint32_t nLength) {
 
 	m_bIsStarted = true;
 
-	DEBUG1_EXIT;
+	DEBUG_EXIT;
 }
 
