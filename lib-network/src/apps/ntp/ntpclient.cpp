@@ -2,7 +2,7 @@
  * @file ntpclient.cpp
  *
  */
-/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,12 @@
  * THE SOFTWARE.
  */
 
+#if defined (DEBUG_NTP_CLIENT)
+# if defined (NDEBUG)
+#  undef NDEBUG
+# endif
+#endif
+
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
@@ -31,15 +37,13 @@
 
 #include "ntpclient.h"
 #include "ntp.h"
-
 #include "utc.h"
 
 #include "network.h"
+#include "networkparams.h"
 #include "hardware.h"
 
 #include "debug.h"
-
-static constexpr auto RETRIES = 3;
 
 /* How to multiply by 4294.967296 quickly (and not quite exactly)
  * without using floating point or greater than 32-bit integers.
@@ -65,21 +69,25 @@ Destination Timestamp T4   time reply received by client
 
 NtpClient *NtpClient::s_pThis;
 
-NtpClient::NtpClient(const uint32_t nServerIp):
-	m_nServerIp(nServerIp == 0 ? Network::Get()->GetNtpServerIp() : nServerIp)
-{
+NtpClient::NtpClient() {
 	DEBUG_ENTRY
 	assert(s_pThis == nullptr);
 	s_pThis = this;
-
-	// https://en.wikipedia.org/wiki/List_of_UTC_time_offsets
-	m_nUtcOffset = hal::utc_validate((Network::Get()->GetNtpUtcOffset()));
 
 	memset(&m_Request, 0, sizeof m_Request);
 
 	m_Request.LiVnMode = ntp::VERSION | ntp::MODE_CLIENT;
 	m_Request.Poll = ntpclient::POLL_POWER;
 	m_Request.ReferenceID = ('A' << 0) | ('V' << 8) | ('S' << 16);
+
+	NetworkParams networkParams;
+	networkParams.Load();
+
+	m_nServerIp = networkParams.GetNtpServer();
+
+	if (m_nServerIp == 0) {
+		m_Status = ntp::Status::STOPPED;
+	}
 
 	DEBUG_EXIT
 }
@@ -90,7 +98,7 @@ NtpClient::NtpClient(const uint32_t nServerIp):
 void NtpClient::GetTimeNtpFormat(uint32_t &nSeconds, uint32_t &nFraction) {
 	struct timeval now;
 	gettimeofday(&now, nullptr);
-	nSeconds = static_cast<uint32_t>(now.tv_sec - m_nUtcOffset) + ntp::JAN_1970;
+	nSeconds = now.tv_sec + ntp::JAN_1970;
 	nFraction = NTPFRAC(now.tv_usec);
 }
 
@@ -165,7 +173,7 @@ void NtpClient::SetTimeOfDay() {
 
 	struct timeval tv;
 
-	tv.tv_sec =	static_cast<time_t>(T4.nSeconds - ntp::JAN_1970) + nOffsetSecondsAverage + m_nUtcOffset;
+	tv.tv_sec =	static_cast<time_t>(T4.nSeconds - ntp::JAN_1970) + nOffsetSecondsAverage;
 	tv.tv_usec = (static_cast<int32_t>(USEC(T4.nFraction)) + static_cast<int32_t>(nOffsetMicrosAverage));
 
 	settimeofday(&tv, nullptr);
@@ -211,56 +219,10 @@ void NtpClient::Start() {
 	m_nHandle = Network::Get()->Begin(ntp::UDP_PORT);
 	assert(m_nHandle != -1);
 
-	ntpclient::display_status(m_Status);
+	m_MillisLastPoll = Hardware::Get()->Millis() - (1000 * ntpclient::POLL_SECONDS);
 
-	const auto nNow = Hardware::Get()->Millis();
-	uint32_t nRetries;
-
-	for (nRetries = 0; nRetries < RETRIES; nRetries++) {
-		Send();
-
-		uint8_t LiVnMode = 0;
-
-		while (!Receive(LiVnMode)) {
-#if defined (HAVE_NET_HANDLE)
-			net_handle();
-#endif
-			if ((Hardware::Get()->Millis() - nNow) > ntpclient::TIMEOUT_MILLIS) {
-				break;
-			}
-		}
-
-		if ((LiVnMode & ntp::MODE_SERVER) == ntp::MODE_SERVER) {
-			SetTimeOfDay();
-			m_Status = ntp::Status::IDLE;
-		} else {
-			m_Status = ntp::Status::FAILED;
-			DEBUG_PUTS("!>> Invalid reply <<!");
-		}
-
-		break;
-	}
-
-	m_MillisLastPoll = Hardware::Get()->Millis();
-
-	if (nRetries == RETRIES) {
-		m_Status = ntp::Status::FAILED;
-	}
-
-	DEBUG_PRINTF("nRetries=%d, m_Status=%d", nRetries, static_cast<int>(m_Status));
-
-#if !defined(DISABLE_RTC)
-	if (m_Status != ntp::Status::FAILED) {
-		printf("Set RTC from System Clock\n");
-		HwClock::Get()->SysToHc();
-#ifndef NDEBUG
-		const auto rawtime = time(nullptr);
-		printf(asctime(localtime(&rawtime)));
-#endif
-	}
-#endif
-
-	ntpclient::display_status(m_Status);
+	m_Status = ntp::Status::IDLE;
+	ntpclient::display_status(ntp::Status::IDLE);
 
 	DEBUG_EXIT
 }

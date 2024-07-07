@@ -2,7 +2,7 @@
  * @file tftpdaemon.h
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -70,11 +70,11 @@ private:
 	int m_nIdx { -1 };
 	uint8_t *m_pBuffer { nullptr };
 	uint32_t m_nFromIp { 0 };
-	uint16_t m_nFromPort { 0 };
-	size_t m_nLength { 0 };
-	uint16_t m_nBlockNumber { 0 };
-	size_t m_nDataLength { 0 };
+	uint32_t m_nLength { 0 };
+	uint32_t m_nDataLength { 0 };
 	uint16_t m_nPacketLength { 0 };
+	uint16_t m_nFromPort { 0 };
+	uint16_t m_nBlockNumber { 0 };
 	bool m_bIsLastBlock { false };
 
 	static TFTPDaemon* Get() {

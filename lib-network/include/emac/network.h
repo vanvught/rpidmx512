@@ -2,7 +2,7 @@
  * @file network.h
  *
  */
-/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,12 @@
 #if !defined (HAVE_NET_HANDLE)
 # define HAVE_NET_HANDLE
 #endif
+
+namespace net {
+#if defined (CONFIG_ENET_ENABLE_PTP)
+void ptp_run();
+#endif
+}  // namespace net
 
 #include <cstdint>
 #include <cstring>
@@ -233,20 +239,15 @@ public:
 		return m_nIfIndex;
 	}
 
-	uint32_t GetNtpServerIp() const {
-		return m_nNtpServerIp;
-	}
-
-	float GetNtpUtcOffset() const {
-		return m_fNtpUtcOffset;
-	}
-
 	bool IsValidIp(uint32_t nIp) {
 		return (m_IpInfo.ip.addr & m_IpInfo.netmask.addr) == (nIp & m_IpInfo.netmask.addr);
 	}
 
 	void Run() {
 		net_handle();
+#if defined (CONFIG_ENET_ENABLE_PTP)
+		net::ptp_run();
+#endif
 #if defined (ENET_LINK_CHECK_USE_PIN_POLL)
 		net::link_pin_poll();
 #elif defined (ENET_LINK_CHECK_REG_POLL)
@@ -270,8 +271,6 @@ private:
 	bool m_IsZeroconfCapable { true };
 	bool m_IsZeroconfUsed { false };
 	uint32_t m_nIfIndex { 1 };
-	uint32_t m_nNtpServerIp { 0 };
-	float m_fNtpUtcOffset { 0 };
 	uint8_t m_nDhcpRetryTime { 0 };
 
 	struct IpInfo m_IpInfo;
