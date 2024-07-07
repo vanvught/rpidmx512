@@ -1,8 +1,7 @@
-#
-DEFINES = #NDEBUG
-#
-EXTRA_SRCDIR = src/serial src/serial/linux
-#
-EXTRA_INCLUDES = ../lib-network/include ../lib-properties/include ../lib-lightset/include
-#
+DEFINES=NDEBUG
+
+EXTRA_SRCDIR=src/serial src/serial/linux
+
+EXTRA_INCLUDES=../lib-network/include ../lib-properties/include ../lib-lightset/include
+
 include ../firmware-template-linux/lib/Rules.mk
