@@ -5,5 +5,14 @@ function formatDateTime(date) {
     const hour = ('0' + date.getHours()).slice(-2);
     const min = ('0' + date.getMinutes()).slice(-2);
     const sec = ('0' + date.getSeconds()).slice(-2);
-    return `${year}-${mon}-${day}T${hour}:${min}:${sec}`;
+    const offset = date.getTimezoneOffset();
+    const offsetHour = ('0' + Math.floor(Math.abs(offset) / 60)).slice(-2);
+    const offsetMin = ('0' + Math.abs(offset) % 60).slice(-2);
+    const sign = offset <= 0 ? '+' : '-';
+    
+    if ((offsetHour == 0) && (offsetMin == 0)) {
+      return `${year}-${mon}-${day}T${hour}:${min}:${sec}Z`;  
+    } 
+    
+    return `${year}-${mon}-${day}T${hour}:${min}:${sec}${sign}${offsetHour}:${offsetMin}`;   
 }

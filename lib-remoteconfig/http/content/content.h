@@ -65,7 +65,7 @@ static constexpr struct FilesContent HttpContent[] = {
 	{ "static.js", static_js, 1219, static_cast<http::contentTypes>(2) },
 	{ "styles.css", styles_css, 409, static_cast<http::contentTypes>(1) },
 	{ "index.js", index_js, 1140, static_cast<http::contentTypes>(2) },
-	{ "date.js", date_js, 365, static_cast<http::contentTypes>(2) },
+	{ "date.js", date_js, 716, static_cast<http::contentTypes>(2) },
 #if defined (ENABLE_PHY_SWITCH)
 	{ "dsa.js", dsa_js, 613, static_cast<http::contentTypes>(2) },
 #endif /* (ENABLE_PHY_SWITCH) */
@@ -80,7 +80,7 @@ static constexpr struct FilesContent HttpContent[] = {
 	{ "rdm.js", rdm_js, 991, static_cast<http::contentTypes>(2) },
 #endif /* !defined (CONFIG_HTTP_HTML_NO_RDM) && defined (RDM_CONTROLLER) */
 #if !defined (CONFIG_HTTP_HTML_NO_TIME)
-	{ "time.js", time_js, 390, static_cast<http::contentTypes>(2) },
+	{ "time.js", time_js, 409, static_cast<http::contentTypes>(2) },
 #endif /* !defined (CONFIG_HTTP_HTML_NO_TIME) */
 #if !defined (CONFIG_HTTP_HTML_NO_RDM) && defined (RDM_CONTROLLER)
 	{ "rdm.html", rdm_html, 1142, static_cast<http::contentTypes>(0) },

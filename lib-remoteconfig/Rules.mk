@@ -27,10 +27,10 @@ ifneq ($(MAKE_FLAGS),)
 		EXTRA_INCLUDES+=../lib-rgbpanel/include ../lib-ws28xx/include
 	endif
 	ifeq ($(findstring NODE_OSC_CLIENT,$(MAKE_FLAGS)), NODE_OSC_CLIENT)
-		EXTRA_INCLUDES+=../lib-oscclient/include
+		EXTRA_INCLUDES+=../lib-osc/include
 	endif
 	ifeq ($(findstring NODE_OSC_SERVER,$(MAKE_FLAGS)), NODE_OSC_SERVER)
-		EXTRA_INCLUDES+=../lib-oscserver/include
+		EXTRA_INCLUDES+=../lib-osc/include
 	endif
 	ifeq ($(findstring NODE_SHOWFILE,$(MAKE_FLAGS)), NODE_SHOWFILE)
 		EXTRA_INCLUDES+=../lib-showfile/include
@@ -106,7 +106,7 @@ else
 	EXTRA_INCLUDES+=../lib-rdmsensor/include ../lib-rdmsubdevice/include
 	EXTRA_INCLUDES+=../lib-showfile/include
 	EXTRA_INCLUDES+=../lib-dmxmonitor/include 
-	EXTRA_INCLUDES+=../lib-oscclient/include ../lib-oscserver/include
+	EXTRA_INCLUDES+=../lib-osc/include 
 	
 	DEFINES+=ARTNET_VERSION=4
 	DEFINES+=RDM_CONTROLLER ENABLE_NET_PHYSTATUS CONFIG_USB_HOST_MSC ENABLE_PHY_SWITCH

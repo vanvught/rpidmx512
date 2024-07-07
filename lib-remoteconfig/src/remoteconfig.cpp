@@ -54,6 +54,8 @@
 
 /* rconfig.txt */
 #include "remoteconfigparams.h"
+/* env.txt */
+#include "envparams.h"
 /* network.txt */
 #include "networkparams.h"
 
@@ -598,6 +600,15 @@ void RemoteConfig::HandleGetRconfigTxt(uint32_t& nSize) {
 	DEBUG_EXIT
 }
 
+void RemoteConfig::HandleGetEnvTxt(uint32_t& nSize) {
+	DEBUG_ENTRY
+
+	EnvParams envParams;
+	envParams.Builder(s_pUdpBuffer, remoteconfig::udp::BUFFER_SIZE, nSize);
+
+	DEBUG_EXIT
+}
+
 void RemoteConfig::HandleGetNetworkTxt(uint32_t& nSize) {
 	DEBUG_ENTRY
 
@@ -941,12 +952,21 @@ void RemoteConfig::HandleSet(void *pBuffer, uint32_t nBufferLength) {
 	DEBUG_EXIT
 }
 
-void RemoteConfig::HandleSetRconfig() {
+void RemoteConfig::HandleSetRconfigTxt() {
 	DEBUG_ENTRY
 
 	RemoteConfigParams remoteConfigParams;
 	remoteConfigParams.Load(s_pUdpBuffer, m_nBytesReceived);
 	remoteConfigParams.Set(this);
+
+	DEBUG_EXIT
+}
+
+void RemoteConfig::HandleSetEnvTxt() {
+	DEBUG_ENTRY
+
+	EnvParams params;
+	params.LoadAndSet(s_pUdpBuffer, m_nBytesReceived);
 
 	DEBUG_EXIT
 }
