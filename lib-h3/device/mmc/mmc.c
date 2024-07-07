@@ -132,7 +132,7 @@ struct mmc *find_mmc_device(int dev_num) {
 
 #ifdef CONFIG_FS_ENABLE_WRITE
 unsigned mmc_write_blocks(struct mmc *mmc, unsigned long start, unsigned blkcnt, const void*src) {
-	DEBUG1_ENTRY
+	DEBUG_ENTRY
 
 	struct mmc_cmd cmd;
 	struct mmc_data data;
@@ -140,7 +140,7 @@ unsigned mmc_write_blocks(struct mmc *mmc, unsigned long start, unsigned blkcnt,
 
 	if ((start + blkcnt) > mmc->lba) {
 		DEBUG_PRINTF("block number 0x%lx exceeds max(0x%lx)", start + blkcnt, mmc->lba);
-		DEBUG1_EXIT
+		DEBUG_EXIT
 		return 0;
 	}
 
@@ -164,7 +164,7 @@ unsigned mmc_write_blocks(struct mmc *mmc, unsigned long start, unsigned blkcnt,
 
 	if (mmc_send_cmd(mmc, &cmd, &data)) {
 		DEBUG_PRINTF("mmc %d mmc write failed",mmc->control_num);
-		DEBUG1_EXIT
+		DEBUG_EXIT
 		return 0;
 	}
 
@@ -178,7 +178,7 @@ unsigned mmc_write_blocks(struct mmc *mmc, unsigned long start, unsigned blkcnt,
 		cmd.flags = 0;
 		if (mmc_send_cmd(mmc, &cmd, NULL)) {
 			DEBUG_PRINTF("mmc %d fail to send stop cmd",mmc->control_num);
-			DEBUG1_EXIT
+			DEBUG_EXIT
 			return 0;
 		}
 
@@ -188,13 +188,13 @@ unsigned mmc_write_blocks(struct mmc *mmc, unsigned long start, unsigned blkcnt,
 	/* Waiting for the ready status */
 	mmc_send_status(mmc, timeout);
 
-	DEBUG1_EXIT
+	DEBUG_EXIT
 	return blkcnt;
 }
 #endif
 
 int mmc_read_blocks(struct mmc *mmc, void *dst, unsigned long start, unsigned blkcnt) {
-	DEBUG1_ENTRY
+	DEBUG_ENTRY
 
 	struct mmc_cmd cmd;
 	struct mmc_data data;
@@ -220,7 +220,7 @@ int mmc_read_blocks(struct mmc *mmc, void *dst, unsigned long start, unsigned bl
 
 	if (mmc_send_cmd(mmc, &cmd, &data)){
 		DEBUG_PUTS("read block failed");
-		DEBUG1_EXIT
+		DEBUG_EXIT
 		return 0;
 	}
 
@@ -231,7 +231,7 @@ int mmc_read_blocks(struct mmc *mmc, void *dst, unsigned long start, unsigned bl
 		cmd.flags = 0;
 		if (mmc_send_cmd(mmc, &cmd, NULL)) {
 			DEBUG_PUTS("fail to send stop cmd");
-			DEBUG1_EXIT
+			DEBUG_EXIT
 			return 0;
 		}
 
@@ -239,7 +239,7 @@ int mmc_read_blocks(struct mmc *mmc, void *dst, unsigned long start, unsigned bl
 		mmc_send_status(mmc, timeout);
 	}
 
-	DEBUG1_EXIT
+	DEBUG_EXIT
 	return blkcnt;
 }
 
@@ -701,7 +701,7 @@ void mmc_set_bus_width(struct mmc *mmc, uint32_t width) {
 }
 
 int mmc_startup(struct mmc *mmc) {
-	DEBUG1_ENTRY
+	DEBUG_ENTRY
 
 	int err;
 	uint32_t mult, freq;
@@ -721,7 +721,7 @@ int mmc_startup(struct mmc *mmc) {
 
 	if (err){
 		DEBUG_PRINTF("mmc %d Put the Card in Identify Mode failed",mmc->control_num);
-		DEBUG1_EXIT
+		DEBUG_EXIT
 		return err;
 	}
 
@@ -742,7 +742,7 @@ int mmc_startup(struct mmc *mmc) {
 
 		if (err){
 			DEBUG_PRINTF("mmc %d send rca failed",mmc->control_num);
-			DEBUG1_EXIT
+			DEBUG_EXIT
 			return err;
 		}
 
@@ -763,7 +763,7 @@ int mmc_startup(struct mmc *mmc) {
 
 	if (err){
 		DEBUG_PRINTF("mmc %d get csd failed",mmc->control_num);
-		DEBUG1_EXIT
+		DEBUG_EXIT
 		return err;
 	}
 
@@ -843,7 +843,7 @@ int mmc_startup(struct mmc *mmc) {
 
 		if (err){
 			DEBUG_PUTS("Select the card failed");
-			DEBUG1_EXIT
+			DEBUG_EXIT
 			return err;
 		}
 	}
@@ -927,7 +927,7 @@ int mmc_startup(struct mmc *mmc) {
 
 	if (err){
 		DEBUG_PRINTF("mmc %d Change speed mode failed",mmc->control_num);
-		DEBUG1_EXIT
+		DEBUG_EXIT
 		return err;
 	}
 
@@ -1049,7 +1049,7 @@ int mmc_startup(struct mmc *mmc) {
 	DEBUG_PRINTF("vendor: Man %x Snr %x", (mmc->cid[0] >> 8) & 0xffffff, (mmc->cid[2] << 8) | (mmc->cid[3] >> 24));
 	DEBUG_PRINTF("product: %c%c%c%c%c", mmc->cid[0] & 0xff, (mmc->cid[1] >> 24), (mmc->cid[1] >> 16) & 0xff, (mmc->cid[1] >> 8) & 0xff, mmc->cid[1] & 0xff);
 	DEBUG_PRINTF("revision: %d.%d", mmc->cid[2] >> 28, (mmc->cid[2] >> 24) & 0xf);
-	DEBUG1_EXIT
+	DEBUG_EXIT
 	return 0;
 }
 
@@ -1080,20 +1080,20 @@ int mmc_send_if_cond(struct mmc *mmc)
 }
 
 int mmc_init(struct mmc *mmc) {
-	DEBUG1_ENTRY
+	DEBUG_ENTRY
 
 	int err;
 
 	if (mmc->has_init) {
 		DEBUG_PRINTF("mmc %d Has init",mmc->control_num);
-		DEBUG1_EXIT
+		DEBUG_EXIT
 		return 0;
 	}
 
 	err = mmc->init();
 	if (err) {
 		DEBUG_PRINTF("mmc %d host init failed",mmc->control_num);
-		DEBUG1_EXIT
+		DEBUG_EXIT
 		return err;
 	}
 
@@ -1104,7 +1104,7 @@ int mmc_init(struct mmc *mmc) {
 	err = mmc_go_idle(mmc);
 	if (err) {
 		DEBUG_PRINTF("mmc %d reset card failed",mmc->control_num);
-		DEBUG1_EXIT
+		DEBUG_EXIT
 		return err;
 	}
 
@@ -1126,7 +1126,7 @@ int mmc_init(struct mmc *mmc) {
 		if (err) {
 			DEBUG_PRINTF("mmc %d Card did not respond to voltage select!",mmc->control_num);
 			DEBUG_PRINTF("***SD/MMC %d init error!!!***",mmc->control_num);
-			DEBUG1_EXIT
+			DEBUG_EXIT
 			return UNUSABLE_ERR;
 		}
 	}
@@ -1140,18 +1140,18 @@ int mmc_init(struct mmc *mmc) {
 		DEBUG_PRINTF("***SD/MMC %d init OK!!!***",mmc->control_num);
 	}
 
-	DEBUG1_EXIT
+	DEBUG_EXIT
 	return err;
 }
 
 int mmc_register(int dev_num, struct mmc *mmc) {
-	DEBUG1_ENTRY
+	DEBUG_ENTRY
 
 	mmc_devices[dev_num] = mmc;
 
 	if (!mmc->b_max)
 		mmc->b_max = CONFIG_SYS_MMC_MAX_BLK_COUNT;
 
-	DEBUG1_EXIT
+	DEBUG_EXIT
 	return mmc_init(mmc);
 }
