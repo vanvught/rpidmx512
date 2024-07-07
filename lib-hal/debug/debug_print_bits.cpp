@@ -1,8 +1,8 @@
 /**
- * @file debug_dump.c
+ * @file debug_print_bits.cpp
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,73 +23,26 @@
  * THE SOFTWARE.
  */
 
-#include <ctype.h>
 #include <stdio.h>
 #include <stdint.h>
 
 #if defined (H3)
-extern int uart0_printf(const char* fmt, ...);
+extern "C" int uart0_printf(const char* fmt, ...);
 # define printf uart0_printf
 #endif
 
-#define CHARS_PER_LINE 16
+void debug_print_bits(uint32_t u) {
+	uint32_t i;
 
-void debug_dump(const void *packet, uint16_t len) {
-	uint16_t chars = 0;
-	uint16_t chars_this_line = 0;
-	const uint8_t *p = (const uint8_t *) packet;
+	uint32_t b = 1U << 31;
 
-	printf("%p:%d\n", packet, len);
-
-	do {
-		chars_this_line = 0;
-
-		printf("%04x ", chars);
-
-		const uint8_t *q = p;
-
-		while ((chars_this_line < CHARS_PER_LINE) && (chars < len)) {
-			if (chars_this_line % 8 == 0) {
-				printf(" ");
-			}
-
-			printf("%02x ", *p);
-
-			chars_this_line++;
-			chars++;
-			p++;
+	for (i = 0; i < 32; i++) {
+		if ((b & u) == b) {
+			uint32_t bit_number = 31 - i;
+			printf("%-2d ", bit_number);
 		}
+		b = b >> 1;
+	}
 
-		uint16_t chars_dot_line = chars_this_line;
-
-		for (; chars_this_line < CHARS_PER_LINE; chars_this_line++) {
-			if (chars_this_line % 8 == 0) {
-				printf(" ");
-			}
-			printf("   ");
-
-		}
-
-		chars_this_line = 0;
-
-		while (chars_this_line < chars_dot_line) {
-			if (chars_this_line % 8 == 0) {
-				printf(" ");
-			}
-
-			int ch = *q;
-			if (isprint(ch)) {
-				printf("%c", ch);
-			} else {
-				printf(".");
-			}
-
-			chars_this_line++;
-			q++;
-		}
-
-		puts("");
-
-	} while (chars < len);
-
+	puts("");
 }
