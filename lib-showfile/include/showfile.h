@@ -172,6 +172,7 @@ public:
 	}
 
 	void LoadShows();
+
 	void UnloadShows() {
 		m_nShows = 0;
 
