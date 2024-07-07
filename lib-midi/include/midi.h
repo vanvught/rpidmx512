@@ -166,7 +166,7 @@ public:
 	void Run();
 
 	midi::Direction GetDirection() const {
-		return m_tDirection;
+		return m_Direction;
 	}
 
 	void SetBaudrate(uint32_t nBaudrate) {
@@ -310,8 +310,8 @@ public:
 
 	void Print() {
 		printf("MIDI\n");
-		printf(" Direction    : %s\n", m_tDirection == midi::Direction::INPUT ? "Input" : "Output");
-		if (m_tDirection == midi::Direction::INPUT) {
+		printf(" Direction    : %s\n", m_Direction == midi::Direction::INPUT ? "Input" : "Output");
+		if (m_Direction == midi::Direction::INPUT) {
 			printf(" Channel      : %d %s\n", m_nInputChannel, m_nInputChannel == 0 ? "(OMNI mode)" : "");
 		}
 		printf(" Active sense : %s\n", m_bActiveSense ? "Enabled" : "Disabled");
@@ -386,7 +386,7 @@ private:
 
 private:
 	uint32_t m_nBaudrate { midi::defaults::BAUDRATE };
-	midi::Direction m_tDirection { midi::Direction::INPUT };
+	midi::Direction m_Direction { midi::Direction::INPUT };
 	bool m_bActiveSense { false };
 	struct midi::Message m_Message;
 	uint8_t m_nInputChannel { static_cast<uint8_t>(midi::Channel::OMNI) };
