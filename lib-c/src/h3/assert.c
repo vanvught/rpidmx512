@@ -2,7 +2,7 @@
  * @file assert.c
  *
  */
-/* Copyright (C) 2016-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,12 +26,9 @@
 #include <stdio.h>
 
 #include "console.h"
+#include "h3.h"
 
-#if defined (H3)
-	void h3_watchdog_disable(void);
-#else
-	void bcm2835_watchdog_stop(void);
-#endif
+void h3_watchdog_disable(void);
 
 /*
  * Description is taken from newlib https://sourceware.org/newlib/
@@ -58,10 +55,6 @@
 . (void(0))
  */
 
-#if defined (H3)
-# include "h3.h"
-#endif
-
 void __assert_func(const char *file, int line, const char *func, const char *failedexpr) {
 	console_set_fg_color(CONSOLE_RED);
 
@@ -69,11 +62,7 @@ void __assert_func(const char *file, int line, const char *func, const char *fai
 
 	console_set_fg_color(CONSOLE_WHITE);
 
-#if defined (H3)
 	H3_TIMER->WDOG0_MODE = 0;
-#else
-	bcm2835_watchdog_stop();
-#endif
 
 	for (;;)
 		;

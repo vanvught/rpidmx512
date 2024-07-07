@@ -38,7 +38,7 @@
 #include <stddef.h>
 #include <assert.h>
 
-#ifdef MEM_DEBUG
+#ifdef DEBUG_HEAP
 #include <stdio.h>
 #endif
 
@@ -61,14 +61,20 @@ struct block_header {
 
 struct block_bucket {
 	unsigned int size;
-#ifdef MEM_DEBUG
+#ifdef DEBUG_HEAP
 	unsigned int count;
 	unsigned int max_count;
 #endif
 	struct block_header *free_list;
 };
 
-static struct block_bucket s_block_bucket[] __attribute__((aligned(4))) = {{0x40, 0}, {0x400,0}, {0x1000,0}, {0x4000,0}, {0x40000,0}, {0x80000,0}, {0,0}};
+#if defined (H3)
+# include "h3/malloc.h"
+#elif defined (GD32)
+# include "gd32/malloc.h"
+#else
+# include "rpi/malloc.h"
+#endif
 
 size_t get_allocated(void *p) {
 	if (p == 0) {
@@ -96,7 +102,7 @@ void *malloc(size_t size) {
 	for (bucket = s_block_bucket; bucket->size > 0; bucket++) {
 		if (size <= bucket->size) {
 			size = bucket->size;
-#ifdef MEM_DEBUG
+#ifdef DEBUG_HEAP
 			if (++bucket->count > bucket->max_count) {
 				bucket->max_count = bucket->count;
 			}
@@ -131,7 +137,7 @@ void *malloc(size_t size) {
 	}
 
 	header->next = 0;
-#ifdef MEM_DEBUG
+#ifdef DEBUG_HEAP
 	printf("malloc: pBlockHeader = %p, size = %d\n", header, (int) size);
 #endif
 
@@ -148,7 +154,7 @@ void free(void *p) {
 
 	struct block_header *header = (struct block_header *) ((void *) p - sizeof(struct block_header));
 
-#ifdef MEM_DEBUG
+#ifdef DEBUG_HEAP
 	printf("free: pBlockHeader = %p, pBlock = %p\n", header, p);
 #endif
 
@@ -162,7 +168,7 @@ void free(void *p) {
 
 			header->next = bucket->free_list;
 			bucket->free_list = header;
-#ifdef MEM_DEBUG
+#ifdef DEBUG_HEAP
 			bucket->count--;
 #endif
 			break;
@@ -248,7 +254,7 @@ void *realloc(void *ptr, size_t size) {
 			*dst8++ = *src8++;
 		}
 
-		assert(((void *)dst8 - (void *)newblk) == size);
+		assert((size_t)((void *)dst8 - (void *)newblk) == size);
 
 		free(ptr);
 	}
@@ -256,8 +262,8 @@ void *realloc(void *ptr, size_t size) {
 	return newblk;
 }
 
-void mem_info(void) {
-#ifdef MEM_DEBUG
+void debug_heap(void) {
+#ifdef DEBUG_HEAP
 	struct block_bucket *pBucket;
 	struct block_header *pBlockHeader;
 	printf("s_pNextBlock = %p\n", next_block);
