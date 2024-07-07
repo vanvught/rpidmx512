@@ -2,7 +2,7 @@
  * @file sscan.h
  *
  */
-/* Copyright (C) 2016-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,6 +51,7 @@ public:
 	static ReturnCode I2c(const char *pBuffer, char *pName, uint8_t& nLength, uint8_t& nAddress, uint8_t& nReserved);
 	static ReturnCode Spi(const char *pBuffer, char& nChipSelect, char *pName, uint8_t& nLength, uint8_t& nAddress, uint16_t &nDmxStartAddress, uint32_t &nSpeedHz);
 
+	static ReturnCode UtcOffset(const char *pBuffer, const char *pName, int8_t& nHours, uint8_t& nMinutes);
 private:
 	static uint8_t fromHex(const char Hex[2]);
 	static const char *checkName(const char *pBuffer, const char *pName);

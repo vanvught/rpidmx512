@@ -2,7 +2,7 @@
  * @file propertiesbuilder.h
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -87,6 +87,8 @@ public:
 	bool AddHex24(const char *pProperty, const uint32_t nValue32, bool bIsSet = true) {
 		return AddHex(pProperty, nValue32, bIsSet, 6);
 	}
+
+	bool AddUtcOffset(const char *pProperty, const int8_t nHours, const uint8_t nMinutes);
 
 	bool AddComment(const char *pComment);
 
