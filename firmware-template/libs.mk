@@ -42,11 +42,11 @@ ifeq ($(findstring NODE_LTC_SMPTE,$(DEFINES)),NODE_LTC_SMPTE)
 endif
 
 ifeq ($(findstring NODE_OSC_CLIENT,$(DEFINES)),NODE_OSC_CLIENT)
-	LIBS+=oscclient osc
+	LIBS+=osc
 endif
 
 ifeq ($(findstring NODE_OSC_SERVER,$(DEFINES)),NODE_OSC_SERVER)
-	LIBS+=oscserver osc
+	LIBS+=osc
 endif
 
 ifeq ($(findstring NODE_DDP_DISPLAY,$(DEFINES)),NODE_DDP_DISPLAY)
@@ -111,10 +111,6 @@ endif
 
 ifdef DMX
 	LIBS+=dmx
-endif
-
-ifeq ($(findstring e131,$(LIBS)),e131)
-	LIBS+=uuid
 endif
 
 ifeq ($(findstring OUTPUT_DDP_PIXEL_MULTI,$(DEFINES)),OUTPUT_DDP_PIXEL_MULTI)

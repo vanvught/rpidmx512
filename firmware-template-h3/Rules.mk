@@ -29,7 +29,7 @@ endif
 
 include ../firmware-template/libs.mk
 
-LIBS+=c++ debug h3 c arm
+LIBS+=c++ h3 c arm
 
 # Output 
 TARGET=$(SUFFIX).img

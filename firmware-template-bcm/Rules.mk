@@ -90,7 +90,7 @@ $(BUILD)$1/%.o: $(SOURCE)$1/%.c
 	$(CC) $(COPS) -c $$< -o $$@
 	
 $(BUILD)$1/%.o: $(SOURCE)$1/%.cpp
-	$(CPP) -pedantic -fno-exceptions -fno-unwind-tables -fno-rtti -fno-threadsafe-statics -std=c++14 $(COPS) -c $$< -o $$@	
+	$(CPP) -std=c++20 -pedantic -fno-exceptions -fno-unwind-tables -fno-rtti -fno-threadsafe-statics $(COPS) -c $$< -o $$@	
 endef
 
 define compile-objects7
@@ -98,7 +98,7 @@ $(BUILD7)$1/%.o: $(SOURCE)$1/%.c
 	$(CC) $(COPS7) -c $$< -o $$@
 	
 $(BUILD7)$1/%.o: $(SOURCE)$1/%.cpp
-	$(CPP) -pedantic -fno-exceptions -fno-unwind-tables -fno-rtti -std=c++11 $(COPS7) -c $$< -o $$@		
+	$(CPP) -std=c++20 -pedantic -fno-exceptions -fno-unwind-tables -fno-rtti -fno-threadsafe-statics $(COPS7) -c $$< -o $$@		
 endef
 
 THISDIR=$(CURDIR)
