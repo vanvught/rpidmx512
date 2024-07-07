@@ -2,7 +2,7 @@
  * @file ltcmidisystemrealtime.cpp
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,10 @@
  * THE SOFTWARE.
  */
 
+#pragma GCC push_options
+#pragma GCC optimize ("O2")
+#pragma GCC optimize ("no-tree-loop-distribute-patterns")
+
 #include <cstdint>
 #include <cassert>
 
@@ -37,11 +41,11 @@
 
 #if defined (H3)
 static void timer_handler() {
-	if (!g_ltc_ptLtcDisabledOutputs.bRtpMidi) {
+	if (!ltc::g_DisabledOutputs.bRtpMidi) {
 		RtpMidi::Get()->SendRaw(midi::Types::CLOCK);
 	}
 
-	if (!g_ltc_ptLtcDisabledOutputs.bMidi) {
+	if (!ltc::g_DisabledOutputs.bMidi) {
 		Midi::Get()->SendRaw(midi::Types::CLOCK);
 	}
 }
@@ -57,17 +61,17 @@ LtcMidiSystemRealtime::LtcMidiSystemRealtime() {
 }
 
 void LtcMidiSystemRealtime::Send(midi::Types tType) {
-	if (!g_ltc_ptLtcDisabledOutputs.bRtpMidi) {
+	if (!ltc::g_DisabledOutputs.bRtpMidi) {
 		RtpMidi::Get()->SendRaw(tType);
 	}
 
-	if (!g_ltc_ptLtcDisabledOutputs.bMidi) {
+	if (!ltc::g_DisabledOutputs.bMidi) {
 		Midi::Get()->SendRaw(tType);
 	}
 }
 
 void LtcMidiSystemRealtime::SetBPM(uint32_t nBPM) {
-	if ((!g_ltc_ptLtcDisabledOutputs.bRtpMidi) || (!g_ltc_ptLtcDisabledOutputs.bMidi)) {
+	if ((!ltc::g_DisabledOutputs.bRtpMidi) || (!ltc::g_DisabledOutputs.bMidi)) {
 		if (nBPM != m_nBPMPrevious) {
 			m_nBPMPrevious = nBPM;
 

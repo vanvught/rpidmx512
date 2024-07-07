@@ -37,11 +37,6 @@
 namespace ltc {
 namespace encoder {
 #if defined (CONFIG_LTC_USE_DAC)
-static constexpr uint32_t SAMPLE_RATE =	48000;
-static constexpr int16_t S_TOP = 32000;
-static constexpr int16_t S_MAX = (S_TOP);
-static constexpr int16_t S_MIN = (-S_TOP);
-
 struct TTable {
 	uint32_t nSize;
 	uint32_t nFPS;
@@ -73,35 +68,24 @@ struct TTable {
 		{ S_MAX, S_MAX, S_MAX, S_MAX, S_MAX, S_MAX, S_MAX, S_MAX, S_MAX, S_MAX, S_MIN, S_MIN, S_MIN, S_MIN, S_MIN, S_MIN, S_MIN, S_MIN, S_MIN, S_MIN }
 	} }
 	};
-
-/*
- * Buffer size is nSampleRate / FPS where FPS is 24, 25, 29 or 30
- *
- */
-
-static constexpr uint32_t BUFFER_SIZE = SAMPLE_RATE / 24U;
-
 #else
-static constexpr uint32_t BUFFER_SIZE = FORMAT_SIZE_BITS * 2;
+# include "arm/gd32/ltc_gpio.h"
 #endif
 }  // namespace encode
 }  // namespace ltc
 
+#if defined (CONFIG_LTC_USE_DAC)
+	int16_t LtcEncoder::s_Buffer[ltc::encoder::BUFFER_SIZE];
+#else
+	uint32_t LtcEncoder::s_Buffer[ltc::encoder::BUFFER_SIZE];
+#endif
 LtcEncoder *LtcEncoder::s_pThis;
 
 LtcEncoder::LtcEncoder()  {
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 
-	m_pLtcBits = new uint8_t[sizeof (struct ltc::encoder::FormatTemplate)];
-	assert(m_pLtcBits != nullptr);
-
-	m_pBuffer = new int16_t[ltc::encoder::BUFFER_SIZE];
-	assert(m_pBuffer != nullptr);
-
-	DEBUG_PRINTF("m_pBuffer=%p", reinterpret_cast<void *>(m_pBuffer));
-
-	auto *p = reinterpret_cast<struct ltc::encoder::FormatTemplate*>(m_pLtcBits);
+	auto *p = reinterpret_cast<struct ltc::encoder::FormatTemplate *>(m_LtcBits);
 
 	for (uint32_t i = 0; i < ltc::encoder::FORMAT_SIZE_WORDS ;i ++) {
 		p->Format.words[i] = 0;
@@ -110,23 +94,27 @@ LtcEncoder::LtcEncoder()  {
 	p->Format.half_words[4] = __builtin_bswap16(ltc::encoder::SYNC_WORD_VALUE);
 }
 
-LtcEncoder::~LtcEncoder() {
-	delete [] m_pBuffer;
-	m_pBuffer = nullptr;
+void LtcEncoder::Encode(void *pBuffer) {
+	const auto *p = reinterpret_cast<struct ltc::encoder::FormatTemplate *>(m_LtcBits);
 
-	delete [] m_pLtcBits;
-	m_pLtcBits = nullptr;
-}
-
-void LtcEncoder::Encode() {
-	const auto *p = reinterpret_cast<struct ltc::encoder::FormatTemplate *>(m_pLtcBits);
-
-#if defined (CONFIG_LTC_USE_DAC) //Hack
-	auto *dst = m_pBuffer;
+	auto *pDst = s_Buffer;
+#if defined (CONFIG_LTC_USE_DAC)
+	if (pBuffer != nullptr) {
+		pDst = reinterpret_cast<int16_t *>(pBuffer);
+	}
+#else
+	if (pBuffer != nullptr) {
+		pDst = reinterpret_cast<uint32_t *>(pBuffer);
+	}
 #endif
-	uint32_t nIdx;
 
+	uint32_t nIdx;
 	uint32_t nIdxPrevious = 1; // Force rising first
+
+#if !defined (CONFIG_LTC_USE_DAC)
+	constexpr auto GPIO_SHIFT_SET = static_cast<uint32_t>(1U << LTC_OUTPUT_GPIO_PIN_OFFSET);
+	constexpr auto GPIO_SHIFT_CLEAR	= static_cast<uint32_t>(GPIO_SHIFT_SET << 16);
+#endif
 
 	for (uint32_t nBytesIndex = 0; nBytesIndex < ltc::encoder::FORMAT_SIZE_BYTES; nBytesIndex++) {
 		const auto w = p->Format.bytes[nBytesIndex];
@@ -135,28 +123,43 @@ void LtcEncoder::Encode() {
 			if (mask & w) {	// '1'
 				if ((nIdxPrevious == 0) || (nIdxPrevious == 2)) {
 					nIdx = 2;
+#if !defined (CONFIG_LTC_USE_DAC)
+					*pDst++ = GPIO_SHIFT_CLEAR;
+					*pDst++ = GPIO_SHIFT_SET;
+#endif
 				} else {
 					nIdx = 3;
+#if !defined (CONFIG_LTC_USE_DAC)
+					*pDst++ = GPIO_SHIFT_SET;
+					*pDst++ = GPIO_SHIFT_CLEAR;
+#endif
 				}
 			} else { // '0'
 				if ((nIdxPrevious == 0) || (nIdxPrevious == 2)) {
 					nIdx = 1;
+#if !defined (CONFIG_LTC_USE_DAC)
+					*pDst++ = GPIO_SHIFT_CLEAR;
+					*pDst++ = GPIO_SHIFT_CLEAR;
+#endif
 				} else {
 					nIdx = 0;
+#if !defined (CONFIG_LTC_USE_DAC)
+					*pDst++ = GPIO_SHIFT_SET;
+					*pDst++ = GPIO_SHIFT_SET;
+#endif
 				}
 			}
 
 			nIdxPrevious = nIdx;
 
 #if defined (CONFIG_LTC_USE_DAC)
-			const auto *src = ltc::encoder::sTables[m_nType].Samples[nIdx];
+			const auto *pSrc = ltc::encoder::sTables[m_nType].Samples[nIdx];
 
 			for (uint32_t i = 0; i < ltc::encoder::sTables[m_nType].nSize; i ++) {
-				*dst = *src;
-				dst++;
-				src++;
+				*pDst = *pSrc;
+				pDst++;
+				pSrc++;
 			}
-#else
 #endif
 		}
 	}
@@ -175,14 +178,14 @@ uint32_t LtcEncoder::GetBufferSize() {
 }
 
 void LtcEncoder::Dump() {
-	debug_dump(m_pLtcBits, sizeof(struct ltc::encoder::FormatTemplate));
+	debug_dump(m_LtcBits, sizeof(struct ltc::encoder::FormatTemplate));
 
 	puts("");
 	printf("0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3 3 3 3 3 3 3 3 3 4 4 4 4 4 4 4 4 4 4 5 5 5 5 5 5 5 5 5 5 6 6 6 6 6 6 6 6 6 6 7 7 7 7 7 7 7 7 7 7\n");
 	printf("0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9\n");
 	puts("");
 
-	const auto *p = reinterpret_cast<struct ltc::encoder::FormatTemplate *>(m_pLtcBits);
+	const auto *p = reinterpret_cast<struct ltc::encoder::FormatTemplate *>(m_LtcBits);
 
 	uint32_t nZeros = 0;
 	uint32_t nOnes = 0;
@@ -205,7 +208,11 @@ void LtcEncoder::Dump() {
 }
 
 void LtcEncoder::DumpBuffer() {
-	debug_dump(m_pBuffer, static_cast<uint16_t>(ltc::encoder::BUFFER_SIZE * 2));
+#if defined (CONFIG_LTC_USE_DAC)
+	debug_dump(s_Buffer, static_cast<uint16_t>(ltc::encoder::BUFFER_SIZE * 2));
+#else
+	debug_dump(s_Buffer, static_cast<uint16_t>(ltc::encoder::BUFFER_SIZE * 4));
+#endif
 }
 
 /*
@@ -267,26 +274,26 @@ static uint8_t reverse_bits(const uint8_t nBits) {
 }
 
 void LtcEncoder::SetTimeCode(const struct ltc::TimeCode *pLtcTimeCode, bool nExternalClock) {
-	auto *p = reinterpret_cast<struct ltc::encoder::FormatTemplate*>(m_pLtcBits);
+	auto *p = reinterpret_cast<struct ltc::encoder::FormatTemplate *>(m_LtcBits);
 
-	uint8_t nTens = pLtcTimeCode->nFrames / 10;
+	uint8_t nTens = pLtcTimeCode->nFrames / 10U;
 
-	p->Format.bytes[0] = reverse_bits(static_cast<uint8_t>(pLtcTimeCode->nFrames - (10 * nTens)));
+	p->Format.bytes[0] = reverse_bits(static_cast<uint8_t>(pLtcTimeCode->nFrames - (10U * nTens)));
 	p->Format.bytes[1] = reverse_bits(nTens);
 
-	nTens = pLtcTimeCode->nSeconds / 10;
+	nTens = pLtcTimeCode->nSeconds / 10U;
 
-	p->Format.bytes[2] = reverse_bits(static_cast<uint8_t>(pLtcTimeCode->nSeconds - (10 * nTens)));
+	p->Format.bytes[2] = reverse_bits(static_cast<uint8_t>(pLtcTimeCode->nSeconds - (10U * nTens)));
 	p->Format.bytes[3] = reverse_bits(nTens);
 
-	nTens = pLtcTimeCode->nMinutes / 10;
+	nTens = pLtcTimeCode->nMinutes / 10U;
 
-	p->Format.bytes[4] = reverse_bits(static_cast<uint8_t>(pLtcTimeCode->nMinutes - (10 * nTens)));
+	p->Format.bytes[4] = reverse_bits(static_cast<uint8_t>(pLtcTimeCode->nMinutes - (10U * nTens)));
 	p->Format.bytes[5] = reverse_bits(nTens);
 
-	nTens = pLtcTimeCode->nHours / 10;
+	nTens = pLtcTimeCode->nHours / 10U;
 
-	p->Format.bytes[6] = reverse_bits(static_cast<uint8_t>(pLtcTimeCode->nHours - (10 * nTens)));
+	p->Format.bytes[6] = reverse_bits(static_cast<uint8_t>(pLtcTimeCode->nHours - (10U * nTens)));
 	p->Format.bytes[7] = reverse_bits(nTens);
 
 	m_nType = pLtcTimeCode->nType & 0x3;
@@ -309,6 +316,6 @@ void LtcEncoder::SetTimeCode(const struct ltc::TimeCode *pLtcTimeCode, bool nExt
 		p->Format.bytes[7] |= (1U << 5);
 	}
 
-	set_polarity(pLtcTimeCode->nType, m_pLtcBits);
+	set_polarity(pLtcTimeCode->nType, m_LtcBits);
 }
 

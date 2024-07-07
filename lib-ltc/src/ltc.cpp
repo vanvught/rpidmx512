@@ -30,14 +30,14 @@
 
 #include "ltc.h"
 
-struct ltc::DisabledOutputs g_ltc_ptLtcDisabledOutputs;
-
 namespace ltc {
+struct ltc::DisabledOutputs g_DisabledOutputs;
+ltc::Type g_Type;
+
 static constexpr char aTypes[5][ltc::timecode::TYPE_MAX_LENGTH + 1] =
 	{ "Film 24fps ", "EBU 25fps  ", "DF 29.97fps", "SMPTE 30fps", "----- -----" };
 
-
-const char* get_type(ltc::Type type) {
+const char *get_type(const ltc::Type type) {
 	if (type > ltc::Type::UNKNOWN) {
 		return aTypes[static_cast<uint32_t>(ltc::Type::UNKNOWN)];
 	}
@@ -45,7 +45,16 @@ const char* get_type(ltc::Type type) {
 	return aTypes[static_cast<uint32_t>(type)];
 }
 
-ltc::Type get_type(uint8_t nFps) {
+
+const char *get_type() {
+	if (ltc::g_Type > ltc::Type::UNKNOWN) {
+		return aTypes[static_cast<uint32_t>(ltc::Type::UNKNOWN)];
+	}
+
+	return aTypes[static_cast<uint32_t>(ltc::g_Type)];
+}
+
+ltc::Type get_type(const uint8_t nFps) {
 	switch (nFps) {
 		case 24:
 			return ltc::Type::FILM;
@@ -64,6 +73,10 @@ ltc::Type get_type(uint8_t nFps) {
 	}
 
 	return ltc::Type::UNKNOWN;
+}
+
+void set_type(const uint8_t nFps) {
+	ltc::g_Type = get_type(nFps);
 }
 
 void init_timecode(char *pTimeCode) {
@@ -218,7 +231,7 @@ bool parse_timecode(const char *pTimeCode, uint8_t nFps, struct ltc::TimeCode *p
 	return true;
 }
 
-bool parse_timecode_rate(const char *pTimeCodeRate, uint8_t &nFPS, ltc::Type &tType) {
+bool parse_timecode_rate(const char *pTimeCodeRate, uint8_t &nFPS) {
 	assert(pTimeCodeRate != nullptr);
 
 	const auto nTenths = DIGIT(pTimeCodeRate[0]);
@@ -237,16 +250,16 @@ bool parse_timecode_rate(const char *pTimeCodeRate, uint8_t &nFPS, ltc::Type &tT
 
 	switch (nValue) {
 	case 24:
-		tType = ltc::Type::FILM;
+		ltc::g_Type = ltc::Type::FILM;
 		break;
 	case 25:
-		tType = ltc::Type::EBU;
+		ltc::g_Type = ltc::Type::EBU;
 		break;
 	case 29:
-		tType = ltc::Type::DF;
+		ltc::g_Type = ltc::Type::DF;
 		break;
 	case 30:
-		tType = ltc::Type::SMPTE;
+		ltc::g_Type = ltc::Type::SMPTE;
 		break;
 	default:
 		return false;

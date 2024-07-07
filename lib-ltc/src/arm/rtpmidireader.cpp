@@ -2,7 +2,7 @@
  * @file rtpmidireader.cpp
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
+#pragma GCC push_options
+#pragma GCC optimize ("O2")
+#pragma GCC optimize ("no-tree-loop-distribute-patterns")
 
 #include <cstdint>
 #include <cstring>
@@ -63,9 +67,8 @@ void RtpMidiReader::Start() {
 	irq_timer_arm_physical_set(static_cast<thunk_irq_timer_arm_t>(arm_timer_handler));
 	irq_timer_init();
 #elif defined (GD32)
-	platform::ltc::timer6_config();
 	platform::ltc::timer11_config();
-	timer_single_pulse_mode_config(TIMER11, TIMER_SP_MODE_SINGLE);
+	TIMER_CNT(TIMER11) = 0;
 #endif
 
 	LtcOutputs::Get()->Init();
@@ -107,11 +110,11 @@ void RtpMidiReader::MidiMessage(const struct midi::Message *ptMidiMessage) {
 void RtpMidiReader::HandleMtc(const struct midi::Message *ptMidiMessage) {
 	const auto *pSystemExclusive = ptMidiMessage->aSystemExclusive;
 
-	m_tLtcTimeCode.nFrames = pSystemExclusive[8];
-	m_tLtcTimeCode.nSeconds = pSystemExclusive[7];
-	m_tLtcTimeCode.nMinutes = pSystemExclusive[6];
-	m_tLtcTimeCode.nHours = pSystemExclusive[5] & 0x1F;
-	m_tLtcTimeCode.nType = static_cast<uint8_t>(pSystemExclusive[5] >> 5);
+	m_LtcTimeCode.nFrames = pSystemExclusive[8];
+	m_LtcTimeCode.nSeconds = pSystemExclusive[7];
+	m_LtcTimeCode.nMinutes = pSystemExclusive[6];
+	m_LtcTimeCode.nHours = pSystemExclusive[5] & 0x1F;
+	m_LtcTimeCode.nType = static_cast<uint8_t>(pSystemExclusive[5] >> 5);
 
 	Update();
 
@@ -131,21 +134,21 @@ void RtpMidiReader::HandleMtcQf(const struct midi::Message *ptMidiMessage) {
 	}
 
 	if ( (m_bDirection && (nPart == 7)) || (!m_bDirection && (nPart == 0)) ) {
-		m_tLtcTimeCode.nFrames = static_cast<uint8_t>(s_qf[0] | (s_qf[1] << 4));
-		m_tLtcTimeCode.nSeconds = static_cast<uint8_t>(s_qf[2] | (s_qf[3] << 4));
-		m_tLtcTimeCode.nMinutes = static_cast<uint8_t>(s_qf[4] | (s_qf[5] << 4));
-		m_tLtcTimeCode.nHours = static_cast<uint8_t>(s_qf[6] | ((s_qf[7] & 0x1) << 4));
-		m_tLtcTimeCode.nType = static_cast<uint8_t>((s_qf[7] >> 1));
+		m_LtcTimeCode.nFrames = static_cast<uint8_t>(s_qf[0] | (s_qf[1] << 4));
+		m_LtcTimeCode.nSeconds = static_cast<uint8_t>(s_qf[2] | (s_qf[3] << 4));
+		m_LtcTimeCode.nMinutes = static_cast<uint8_t>(s_qf[4] | (s_qf[5] << 4));
+		m_LtcTimeCode.nHours = static_cast<uint8_t>(s_qf[6] | ((s_qf[7] & 0x1) << 4));
+		m_LtcTimeCode.nType = static_cast<uint8_t>((s_qf[7] >> 1));
 
-		if (m_tLtcTimeCode.nFrames < m_nMtcQfFramePrevious) {
-			m_nMtcQfFramesDelta = m_nMtcQfFramePrevious - m_tLtcTimeCode.nFrames;
+		if (m_LtcTimeCode.nFrames < m_nMtcQfFramePrevious) {
+			m_nMtcQfFramesDelta = m_nMtcQfFramePrevious - m_LtcTimeCode.nFrames;
 		} else {
-			m_nMtcQfFramesDelta = m_tLtcTimeCode.nFrames - m_nMtcQfFramePrevious;
+			m_nMtcQfFramesDelta = m_LtcTimeCode.nFrames - m_nMtcQfFramePrevious;
 		}
 
-		m_nMtcQfFramePrevious = m_tLtcTimeCode.nFrames;
+		m_nMtcQfFramePrevious = m_LtcTimeCode.nFrames;
 
-		if (m_nMtcQfFramesDelta >= static_cast<uint32_t>(TimeCodeConst::FPS[m_tLtcTimeCode.nType] - 2)) {
+		if (m_nMtcQfFramesDelta >= static_cast<uint32_t>(TimeCodeConst::FPS[m_LtcTimeCode.nType] - 2)) {
 			m_nMtcQfFramesDelta = 2;
 		}
 
@@ -157,11 +160,10 @@ void RtpMidiReader::HandleMtcQf(const struct midi::Message *ptMidiMessage) {
 
 #if defined (H3)
 		H3_TIMER->TMR0_CTRL |= TIMER_CTRL_SINGLE_MODE;
-		H3_TIMER->TMR0_INTV = TimeCodeConst::TMR_INTV[m_tLtcTimeCode.nType];
+		H3_TIMER->TMR0_INTV = TimeCodeConst::TMR_INTV[m_LtcTimeCode.nType];
 		H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
 #elif defined (GD32)
 		TIMER_CNT(TIMER11) = 0;
-		TIMER_CH0CV(TIMER11) = TimeCodeConst::TMR_INTV[m_tLtcTimeCode.nType];
 #endif
 		gv_ltc_bTimeCodeAvailable = false;
 		gv_ltc_nTimeCodeCounter = 0;
@@ -171,19 +173,19 @@ void RtpMidiReader::HandleMtcQf(const struct midi::Message *ptMidiMessage) {
 }
 
 void RtpMidiReader::Update() {
-	if (!g_ltc_ptLtcDisabledOutputs.bLtc) {
-		LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct ltc::TimeCode*>(&m_tLtcTimeCode));
+	if (!ltc::g_DisabledOutputs.bLtc) {
+		LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct ltc::TimeCode*>(&m_LtcTimeCode));
 	}
 
-	if (!g_ltc_ptLtcDisabledOutputs.bArtNet) {
-		ArtNetNode::Get()->SendTimeCode(reinterpret_cast<struct TArtNetTimeCode*>(&m_tLtcTimeCode));
+	if (!ltc::g_DisabledOutputs.bArtNet) {
+		ArtNetNode::Get()->SendTimeCode(reinterpret_cast<struct artnet::TimeCode*>(&m_LtcTimeCode));
 	}
 
-	if (!g_ltc_ptLtcDisabledOutputs.bEtc) {
-		LtcEtc::Get()->Send(reinterpret_cast<const midi::Timecode *>(&m_tLtcTimeCode));
+	if (!ltc::g_DisabledOutputs.bEtc) {
+		LtcEtc::Get()->Send(reinterpret_cast<const midi::Timecode *>(&m_LtcTimeCode));
 	}
 
-	LtcOutputs::Get()->Update(reinterpret_cast<const struct ltc::TimeCode*>(&m_tLtcTimeCode));
+	LtcOutputs::Get()->Update(reinterpret_cast<const struct ltc::TimeCode*>(&m_LtcTimeCode));
 
 	gv_ltc_nUpdates++;
 }
@@ -194,48 +196,48 @@ void RtpMidiReader::Run() {
 	if (gv_ltc_bTimeCodeAvailable) {
 		gv_ltc_bTimeCodeAvailable = false;
 
-		const auto nFps = TimeCodeConst::FPS[m_tLtcTimeCode.nType];
+		const auto nFps = TimeCodeConst::FPS[m_LtcTimeCode.nType];
 
 		if (m_bDirection) {
-			m_tLtcTimeCode.nFrames++;
-			if (nFps == m_tLtcTimeCode.nFrames) {
-				m_tLtcTimeCode.nFrames = 0;
+			m_LtcTimeCode.nFrames++;
+			if (nFps == m_LtcTimeCode.nFrames) {
+				m_LtcTimeCode.nFrames = 0;
 
-				m_tLtcTimeCode.nSeconds++;
-				if (m_tLtcTimeCode.nSeconds == 60) {
-					m_tLtcTimeCode.nSeconds = 0;
+				m_LtcTimeCode.nSeconds++;
+				if (m_LtcTimeCode.nSeconds == 60) {
+					m_LtcTimeCode.nSeconds = 0;
 
-					m_tLtcTimeCode.nMinutes++;
-					if (m_tLtcTimeCode.nMinutes == 60) {
-						m_tLtcTimeCode.nMinutes = 0;
+					m_LtcTimeCode.nMinutes++;
+					if (m_LtcTimeCode.nMinutes == 60) {
+						m_LtcTimeCode.nMinutes = 0;
 
-						m_tLtcTimeCode.nHours++;
-						if (m_tLtcTimeCode.nHours == 24) {
-							m_tLtcTimeCode.nHours = 0;
+						m_LtcTimeCode.nHours++;
+						if (m_LtcTimeCode.nHours == 24) {
+							m_LtcTimeCode.nHours = 0;
 						}
 					}
 				}
 			}
 		} else {
-			if (m_tLtcTimeCode.nFrames == nFps - 1) {
-				if (m_tLtcTimeCode.nSeconds > 0) {
-					m_tLtcTimeCode.nSeconds--;
+			if (m_LtcTimeCode.nFrames == nFps - 1) {
+				if (m_LtcTimeCode.nSeconds > 0) {
+					m_LtcTimeCode.nSeconds--;
 				} else {
-					m_tLtcTimeCode.nSeconds = 59;
+					m_LtcTimeCode.nSeconds = 59;
 				}
 
-				if (m_tLtcTimeCode.nSeconds == 59) {
-					if (m_tLtcTimeCode.nMinutes > 0) {
-						m_tLtcTimeCode.nMinutes--;
+				if (m_LtcTimeCode.nSeconds == 59) {
+					if (m_LtcTimeCode.nMinutes > 0) {
+						m_LtcTimeCode.nMinutes--;
 					} else {
-						m_tLtcTimeCode.nMinutes = 59;
+						m_LtcTimeCode.nMinutes = 59;
 					}
 
-					if (m_tLtcTimeCode.nMinutes == 59) {
-						if (m_tLtcTimeCode.nHours > 0) {
-							m_tLtcTimeCode.nHours--;
+					if (m_LtcTimeCode.nMinutes == 59) {
+						if (m_LtcTimeCode.nHours > 0) {
+							m_LtcTimeCode.nHours--;
 						} else {
-							m_tLtcTimeCode.nHours = 23;
+							m_LtcTimeCode.nHours = 23;
 						}
 					}
 				}
@@ -248,16 +250,15 @@ void RtpMidiReader::Run() {
  			m_nMtcQfFramesDelta = 0;
 #if defined (H3)
  			H3_TIMER->TMR0_CTRL |= TIMER_CTRL_SINGLE_MODE;
- 			H3_TIMER->TMR0_INTV = TimeCodeConst::TMR_INTV[m_tLtcTimeCode.nType];
+ 			H3_TIMER->TMR0_INTV = TimeCodeConst::TMR_INTV[m_LtcTimeCode.nType];
  			H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
 #elif defined (GD32)
  			TIMER_CNT(TIMER11) = 0;
- 			TIMER_CH0CV(TIMER11) = TimeCodeConst::TMR_INTV[m_tLtcTimeCode.nType];
 #endif
  		}
 	}
 
-	LtcOutputs::Get()->UpdateMidiQuarterFrameMessage(reinterpret_cast<const struct ltc::TimeCode*>(&m_tLtcTimeCode));
+	LtcOutputs::Get()->UpdateMidiQuarterFrameMessage(reinterpret_cast<const struct ltc::TimeCode*>(&m_LtcTimeCode));
 
 	__DMB();
 	if (gv_ltc_nUpdatesPerSecond != 0) {

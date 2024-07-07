@@ -1,8 +1,8 @@
 /**
- * @file ltc7segment.cpp.cpp
+ * @file ltc_gpio.h
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,33 +23,14 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cassert>
+#ifndef ARM_GD32_LTC_GPIO_H_
+#define ARM_GD32_LTC_GPIO_H_
 
-#include "ltc7segment.h"
-#include "ltc.h"
+#include "gd32.h"
 
-#include "display.h"
-#include "display7segment.h"
+#define LTC_OUTPUT_RCU_GPIOx		RCU_GPIOA
+#define LTC_OUTPUT_GPIOx			GPIOA
+#define LTC_OUTPUT_GPIO_PINx		GPIO_PIN_4
+#define LTC_OUTPUT_GPIO_PIN_OFFSET	__builtin_ctz(LTC_OUTPUT_GPIO_PINx)
 
-Ltc7segment *Ltc7segment::s_pThis;
-
-static constexpr Display7SegmentMessage msg[4]  = {
-		Display7SegmentMessage::LTC_FILM,
-		Display7SegmentMessage::LTC_EBU,
-		Display7SegmentMessage::LTC_DF,
-		Display7SegmentMessage::LTC_SMPTE };
-
-Ltc7segment::Ltc7segment() {
-	assert(s_pThis == nullptr);
-	s_pThis = this;
-}
-
-void Ltc7segment::Show(ltc::Type type) {
-	if (type < ltc::Type::UNKNOWN) {
-		Display::Get()->Status(msg[static_cast<uint32_t>(type)]);
-	} else {
-		Display::Get()->Status(Display7SegmentMessage::LTC_WAITING);
-	}
-}
-
+#endif /* ARM_GD32_LTC_GPIO_H_ */

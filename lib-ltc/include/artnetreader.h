@@ -2,7 +2,7 @@
  * @file artnetreader.h
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,27 +23,24 @@
  * THE SOFTWARE.
  */
 
-#ifndef H3_ARTNETREADER_H_
-#define H3_ARTNETREADER_H_
+#ifndef ARTNETREADER_H_
+#define ARTNETREADER_H_
 
 #include <cstdint>
 
 #include "artnettimecode.h"
-
-#include "ltc.h"
 #include "midi.h"
 
-class ArtNetReader: public ArtNetTimeCode {
+class ArtNetReader final : public ArtNetTimeCode {
 public:
 	void Start();
 	void Stop();
-
 	void Run();
 
-	void Handler(const struct TArtNetTimeCode *);
+	void Handler(const struct artnet::TimeCode *) override;
 
 private:
-	struct midi::Timecode m_tMidiTimeCode;
+	struct midi::Timecode m_MidiTimeCode;
 };
 
-#endif /* H3_ARTNETREADER_H_ */
+#endif /* ARTNETREADER_H_ */

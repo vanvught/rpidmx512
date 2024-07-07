@@ -2,7 +2,7 @@
  * @file ltc.h
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -99,8 +99,10 @@ static constexpr auto FRAMES_UNITS = 10;
 }  // namespace index
 }  // namespace timecode
 
-const char *get_type(ltc::Type type);
-ltc::Type get_type(uint8_t nFps);
+const char *get_type();
+const char *get_type(const ltc::Type type);
+ltc::Type get_type(const uint8_t nFps);
+void set_type(const uint8_t nFps);
 
 void init_timecode(char *pTimeCode);
 void init_systemtime(char *pSystemTime);
@@ -109,12 +111,15 @@ void itoa_base10(const struct ltc::TimeCode *ptLtcTimeCode, char *pTimeCode);
 void itoa_base10(const struct tm *ptLocalTime, char *pSystemTime);
 
 bool parse_timecode(const char *pTimeCode, uint8_t nFps, struct ltc::TimeCode *ptLtcTimeCode);
-bool parse_timecode_rate(const char *pTimeCodeRate, uint8_t &nFPS, ltc::Type &tType);
+bool parse_timecode_rate(const char *pTimeCodeRate, uint8_t &nFPS);
 }  // namespace ltc
 
 
 #include "platform_ltc.h"
 
-extern struct ltc::DisabledOutputs g_ltc_ptLtcDisabledOutputs;
+namespace ltc {
+extern struct DisabledOutputs g_DisabledOutputs;
+extern ltc::Type g_Type;
+}  // namespace ltc
 
 #endif /* LTC_H_ */

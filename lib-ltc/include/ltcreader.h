@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef H3_LTC_READER_H_
-#define H3_LTC_READER_H_
+#ifndef LTC_READER_H_
+#define LTC_READER_H_
 
 #include "ltc.h"
 
@@ -37,4 +37,4 @@ private:
 	ltc::Type m_nTypePrevious { ltc::Type::INVALID };
 };
 
-#endif /* H3_LTC_READER_H_ */
+#endif /* LTC_READER_H_ */

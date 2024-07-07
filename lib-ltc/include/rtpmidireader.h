@@ -2,7 +2,7 @@
  * @file rtpmidireader.h
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef H3_RTPMIDIREADER_H_
-#define H3_RTPMIDIREADER_H_
+#ifndef RTPMIDIREADER_H_
+#define RTPMIDIREADER_H_
 
 #include <cstdint>
 
@@ -33,13 +33,13 @@
 
 #include "midibpm.h"
 
-class RtpMidiReader: public RtpMidiHandler {
+class RtpMidiReader final : public RtpMidiHandler {
 public:
 	void Start();
 	void Stop();
 	void Run();
 
-	void MidiMessage(const struct midi::Message *ptMidiMessage);
+	void MidiMessage(const struct midi::Message *ptMidiMessage) override;
 
 private:
 	void HandleMtc(const struct midi::Message *ptMidiMessage);
@@ -47,7 +47,7 @@ private:
 	void Update();
 
 private:
-	struct ltc::TimeCode m_tLtcTimeCode;
+	struct ltc::TimeCode m_LtcTimeCode;
 	uint8_t m_nPartPrevious { 0 };
 	bool m_bDirection { true };
 	uint32_t m_nMtcQfFramePrevious { 0 };
@@ -55,4 +55,4 @@ private:
 	MidiBPM m_MidiBPM;
 };
 
-#endif /* H3_RTPMIDIREADER_H_ */
+#endif /* RTPMIDIREADER_H_ */

@@ -2,7 +2,7 @@
  * @file midireader.cpp
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
+#pragma GCC push_options
+#pragma GCC optimize ("O2")
+#pragma GCC optimize ("no-tree-loop-distribute-patterns")
 
 #include <cstdint>
 #include <cstring>
@@ -58,25 +62,12 @@ static void irq_timer1_handler(void) {
 	// Defined in platform_ltc.cpp
 #endif
 
-inline static void itoa_base10(int nArg, char *pBuffer) {
-	auto *p = pBuffer;
-
-	if (nArg == 0) {
-		*p++ = '0';
-		*p = '0';
-		return;
-	}
-
-	*p++ = static_cast<char>('0' + (nArg / 10));
-	*p = static_cast<char>('0' + (nArg % 10));
-}
-
 void MidiReader::Start() {
 #if defined (H3)
 	Midi::Get()->SetIrqTimer1(irq_timer1_handler);
 #elif defined (GD32)
 	platform::ltc::timer11_config();
-	timer_single_pulse_mode_config(TIMER11, TIMER_SP_MODE_SINGLE);
+	TIMER_CNT(TIMER11) = 0;
 #endif
 	Midi::Get()->Init(midi::Direction::INPUT);
 }
@@ -138,8 +129,8 @@ void MidiReader::HandleMtcQf() {
 		H3_TIMER->TMR1_INTV = TimeCodeConst::TMR_INTV[m_MidiTimeCode.nType];
 		H3_TIMER->TMR1_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
 #elif defined (GD32)
+		TIMER_CAR(TIMER11) = TimeCodeConst::TMR_INTV[m_MidiTimeCode.nType];
 		TIMER_CNT(TIMER11) = 0;
-		TIMER_CH0CV(TIMER11) = TimeCodeConst::TMR_INTV[m_MidiTimeCode.nType];
 #endif
 		gv_ltc_bTimeCodeAvailable = false;
 		gv_ltc_nTimeCodeCounter = 0;
@@ -149,19 +140,19 @@ void MidiReader::HandleMtcQf() {
 }
 
 void MidiReader::Update() {
-	if (!g_ltc_ptLtcDisabledOutputs.bLtc) {
+	if (!ltc::g_DisabledOutputs.bLtc) {
 		LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct ltc::TimeCode*>(&m_MidiTimeCode));
 	}
 
-	if (!g_ltc_ptLtcDisabledOutputs.bArtNet) {
-		ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct TArtNetTimeCode*>(&m_MidiTimeCode));
+	if (!ltc::g_DisabledOutputs.bArtNet) {
+		ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct artnet::TimeCode*>(&m_MidiTimeCode));
 	}
 
-	if (!g_ltc_ptLtcDisabledOutputs.bRtpMidi) {
+	if (!ltc::g_DisabledOutputs.bRtpMidi) {
 		RtpMidi::Get()->SendTimeCode(&m_MidiTimeCode);
 	}
 
-	if (!g_ltc_ptLtcDisabledOutputs.bEtc) {
+	if (!ltc::g_DisabledOutputs.bEtc) {
 		LtcEtc::Get()->Send(&m_MidiTimeCode);
 	}
 
@@ -256,8 +247,8 @@ void MidiReader::Run() {
  			H3_TIMER->TMR1_INTV = TimeCodeConst::TMR_INTV[m_MidiTimeCode.nType];
  			H3_TIMER->TMR1_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
 #elif defined (GD32)
-			TIMER_CNT(TIMER11) = 0;
- 			TIMER_CH0CV(TIMER11) = TimeCodeConst::TMR_INTV[m_MidiTimeCode.nType];
+ 			TIMER_CAR(TIMER11) = TimeCodeConst::TMR_INTV[m_MidiTimeCode.nType];
+ 			TIMER_CNT(TIMER11) = 0;
 #endif
  		}
 	}

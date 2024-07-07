@@ -2,7 +2,7 @@
  * @file midireader.h
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef H3_MIDIREADER_H_
-#define H3_MIDIREADER_H_
+#ifndef MIDIREADER_H_
+#define MIDIREADER_H_
 
 #include "ltc.h"
 
@@ -43,7 +43,7 @@ private:
 
 private:
 	struct midi::Timecode m_MidiTimeCode;
-	midi::TimecodeType m_nTimeCodeType { midi::TimecodeType::UNKNOWN };
+	midi::TimecodeType m_TimeCodeType { midi::TimecodeType::UNKNOWN };
 	uint8_t m_nPartPrevious { 0 };
 	bool m_bDirection { true };
 	uint32_t m_nMtcQfFramePrevious { 0 };
@@ -51,4 +51,4 @@ private:
 	MidiBPM m_MidiBPM;
 };
 
-#endif /* H3_MIDIREADER_H_ */
+#endif /* MIDIREADER_H_ */

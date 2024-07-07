@@ -223,7 +223,6 @@ void LtcReader::Start() {
 
 	__enable_fiq();
 #elif defined (GD32)
-	platform::ltc::timer6_config();
 	/**
 	 * https://www.gd32-dmx.org/dev-board.html
 	 * GPIO_EXT_26 = PA14
@@ -285,15 +284,15 @@ void LtcReader::Run() {
 		ltcTimeCode.nHours = s_midiTimeCode.nHours;
 		ltcTimeCode.nType = s_midiTimeCode.nType;
 
-		if (!g_ltc_ptLtcDisabledOutputs.bArtNet) {
-			ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct TArtNetTimeCode*>(&ltcTimeCode));
+		if (!ltc::g_DisabledOutputs.bArtNet) {
+			ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct artnet::TimeCode*>(&ltcTimeCode));
 		}
 
-		if (!g_ltc_ptLtcDisabledOutputs.bRtpMidi) {
+		if (!ltc::g_DisabledOutputs.bRtpMidi) {
 			RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(const_cast<struct midi::Timecode *>(&s_midiTimeCode)));
 		}
 
-		if (!g_ltc_ptLtcDisabledOutputs.bEtc) {
+		if (!ltc::g_DisabledOutputs.bEtc) {
 			LtcEtc::Get()->Send(reinterpret_cast<const struct midi::Timecode *>(const_cast<struct midi::Timecode *>(&s_midiTimeCode)));
 		}
 

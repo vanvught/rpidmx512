@@ -1,7 +1,7 @@
 /**
  * @file timecodeconst.h
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,5 +31,12 @@ struct TimeCodeConst {
 	static const uint8_t FPS[4];
 	static const uint32_t TMR_INTV[4];
 };
+
+#if defined (GD32)
+# include "gd32.h"
+# define MASTER_TIMER_CLOCK		(APB2_CLOCK_FREQ * 2)
+# define TIMER_PRESCALER		(199)
+# define FREQUENCY_EFFECTIVE	(MASTER_TIMER_CLOCK / (TIMER_PRESCALER + 1))
+#endif
 
 #endif /* TIMECODECONST_H_ */
