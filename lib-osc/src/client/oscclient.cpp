@@ -36,9 +36,7 @@
 
 #include "hardware.h"
 #include "network.h"
-
 #include "display.h"
-#include "display7segment.h"
 
 #include "debug.h"
 
@@ -90,7 +88,7 @@ void OscClient::Run() {
 		if (m_bPingSent && ((m_nCurrenMillis - m_nPingTimeMillis) >= 1000)) {
 			if (m_bPongReceived) {
 				m_bPongReceived = false;
-				Display::Get()->TextStatus("No /Pong", Display7SegmentMessage::ERROR_OSCCLIENT_PING_PONG);
+				Display::Get()->TextStatus("No /Pong");
 				DEBUG_PUTS("No /Pong");
 			}
 		}
@@ -116,7 +114,7 @@ void OscClient::Run() {
 
 
 		if (!m_bPongReceived) {
-			Display::Get()->TextStatus("Ping-Pong", Display7SegmentMessage::INFO_OSCCLIENT_PING_PONG);
+			Display::Get()->TextStatus("Ping-Pong");
 			DEBUG_PUTS("Ping-Pong");
 		}
 
