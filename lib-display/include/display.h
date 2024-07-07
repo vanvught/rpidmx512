@@ -2,7 +2,7 @@
  * @file display.h
  *
  */
-/* Copyright (C) 2022-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,12 +26,11 @@
 #ifndef DISPLAY_H_
 #define DISPLAY_H_
 
-#include "display7segment.h"
-#include "console.h"
+#include <cstdint>
 
 namespace display {
 struct Defaults {
-	static constexpr auto SEEP_TIMEOUT = 5;
+	static constexpr uint32_t SEEP_TIMEOUT = 5;
 };
 }  // namespace display
 

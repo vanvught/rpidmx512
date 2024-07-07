@@ -62,8 +62,7 @@ void Hardware::RebootHandler() {
 		printf("Rebooting ...\n");
 
 		Display::Get()->Cls();
-		Display::Get()->TextStatus("Rebooting ...",
-		Display7SegmentMessage::INFO_REBOOTING);
+		Display::Get()->TextStatus("Rebooting ...");
 	}
 }
 
@@ -71,10 +70,10 @@ int main() {
 	Hardware hw;
 	DisplayUdf display;
 	ConfigStore configStore;
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
+	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, CONSOLE_YELLOW);
 	Network nw;
 	MDNS mDns;
-	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, Display7SegmentMessage::INFO_NONE, CONSOLE_GREEN);
+	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, CONSOLE_GREEN);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	FlashCodeInstall spiFlashInstall;
 
@@ -115,9 +114,11 @@ int main() {
 	display.Show();
 
 	display.Write(6, "mDNS enabled");
-	display.TextStatus("Device running", Display7SegmentMessage::INFO_NONE, CONSOLE_GREEN);
+	display.TextStatus("Device running", CONSOLE_GREEN);
 
 	hw.SetMode(hardware::ledblink::Mode::NORMAL);
+
+	auto t1 = time(nullptr);
 
 	for (;;) {
 		nw.Run();
@@ -130,5 +131,21 @@ int main() {
 		configStore.Flash();
 		display.Run();
 		hw.Run();
+		time_t ltime;
+		auto t2 = time(&ltime);
+		if (t1 != t2) {
+			t1 = t2;
+			auto *tm = localtime(&ltime);
+			struct tm tmlocal;
+			memcpy(&tmlocal, tm, sizeof(struct tm));
+			struct tm tmHwClock;
+			HwClock::Get()->Get(&tmHwClock);
+			display.Printf(7, "%.2d:%.2d:%.2d %.2d:%.2d:%.2d",
+					tmlocal.tm_hour, tmlocal.tm_min, tmlocal.tm_sec,
+					tmHwClock.tm_hour, tmHwClock.tm_min, tmHwClock.tm_sec);
+			printf("%.2d:%.2d:%.2d %.2d:%.2d:%.2d\n",
+					tmlocal.tm_hour, tmlocal.tm_min, tmlocal.tm_sec,
+					tmHwClock.tm_hour, tmHwClock.tm_min, tmHwClock.tm_sec);
+		}
 	}
 }

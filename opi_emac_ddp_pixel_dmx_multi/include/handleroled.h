@@ -42,7 +42,7 @@ struct HandlerOled: public JamSTAPLDisplay  {
 	}
 
 	void JamShowStatus(const char *pStatus, int ExitCode) {
-		Display::Get()->TextStatus(pStatus, Display7SegmentMessage::INFO_CPLD, ExitCode == 0 ? CONSOLE_GREEN : CONSOLE_RED);
+		Display::Get()->TextStatus(pStatus, ExitCode == 0 ? CONSOLE_GREEN : CONSOLE_RED);
 	}
 
 	static HandlerOled *Get(void) {

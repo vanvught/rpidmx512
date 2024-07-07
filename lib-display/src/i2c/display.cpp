@@ -2,7 +2,7 @@
  * @file display.cpp
  *
  */
-/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,8 +37,6 @@
 # include "i2c/hd44780.h"
 #endif
 
-#include "display7segment.h"
-
 #include "hal_i2c.h"
 #include "hal_gpio.h"
 
@@ -67,8 +65,6 @@ Display::Display() : m_nMillis(Hardware::Get()->Millis()), m_I2C(display::segmen
 		Detect(display::Type::SSD1306);
 	}
 
-	Detect7Segment();
-
 	if (m_LcdDisplay != nullptr) {
 		display::timeout::gpio_init();
 	}
@@ -82,8 +78,6 @@ Display::Display(uint32_t nRows) : m_nMillis(Hardware::Get()->Millis()), m_I2C(d
 
 	Detect(nRows);
 
-	Detect7Segment();
-
 	if (m_LcdDisplay != nullptr) {
 		display::timeout::gpio_init();
 	}
@@ -96,8 +90,6 @@ Display::Display(display::Type type): m_tType(type), m_nMillis(Hardware::Get()->
 	s_pThis = this;
 
 	Detect(type);
-
-	Detect7Segment();
 
 	if (m_LcdDisplay != nullptr) {
 		display::timeout::gpio_init();

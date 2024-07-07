@@ -60,7 +60,7 @@ bool FlashCodeInstall::WriteFirmware(const uint8_t *pBuffer, uint32_t nSize) {
 
 	DEBUG_PRINTF("nSize=%x, nSectorSize=%x, nEraseSize=%x", nSize, nSectorSize, nEraseSize);
 
-	Display::Get()->TextStatus("Erase", Display7SegmentMessage::INFO_SPI_ERASE, CONSOLE_GREEN);
+	Display::Get()->TextStatus("Erase", CONSOLE_GREEN);
 
 	flashcode::result nResult;
 
@@ -71,7 +71,7 @@ bool FlashCodeInstall::WriteFirmware(const uint8_t *pBuffer, uint32_t nSize) {
 		return false;
 	}
 
-	Display::Get()->TextStatus("Writing", Display7SegmentMessage::INFO_SPI_WRITING, CONSOLE_GREEN);
+	Display::Get()->TextStatus("Writing", CONSOLE_GREEN);
 
 	while(!FlashCode::Write(OFFSET_UIMAGE, nSize, pBuffer, nResult));
 
@@ -84,7 +84,7 @@ bool FlashCodeInstall::WriteFirmware(const uint8_t *pBuffer, uint32_t nSize) {
 		Hardware::Get()->WatchdogInit();
 	}
 
-	Display::Get()->TextStatus("Done", Display7SegmentMessage::INFO_SPI_DONE, CONSOLE_GREEN);
+	Display::Get()->TextStatus("Done", CONSOLE_GREEN);
 
 	DEBUG_EXIT
 	return true;

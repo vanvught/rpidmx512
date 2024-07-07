@@ -2,7 +2,7 @@
  * @file networkdisplay.cpp
  *
  */
-/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,6 @@
 #include "network.h"
 
 #include "display.h"
-#include "display7segment.h"
 
 namespace network {
 void display_emac_config() {
@@ -68,20 +67,16 @@ void display_dhcp_status(network::dhcp::ClientStatus nStatus) {
 	case network::dhcp::ClientStatus::IDLE:
 		break;
 	case network::dhcp::ClientStatus::RENEW:
-		Display::Get()->Status(Display7SegmentMessage::INFO_DHCP);
 		Display::Get()->ClearEndOfLine();
 		Display::Get()->Printf(3, "DHCP renewing");
 		break;
 	case network::dhcp::ClientStatus::GOT_IP:
-		Display::Get()->Status(Display7SegmentMessage::INFO_NONE);
 		break;
 	case network::dhcp::ClientStatus::RETRYING:
-		Display::Get()->Status(Display7SegmentMessage::INFO_DHCP);
 		Display::Get()->ClearEndOfLine();
 		Display::Get()->Printf(3, "DHCP retrying");
 		break;
 	case network::dhcp::ClientStatus::FAILED:
-		Display::Get()->Status(Display7SegmentMessage::ERROR_DHCP);
 		break;
 	default:
 		break;

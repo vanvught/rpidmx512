@@ -30,7 +30,6 @@
 #include "input.h"
 
 #include "ltc.h"
-#include "ltc7segment.h"
 
 #include "display.h"
 
@@ -80,7 +79,6 @@ void DisplayEditFps::HandleKey(int nKey, uint8_t &nType) {
 	}
 
 	Display::Get()->TextLine(2, ltc::get_type(static_cast<ltc::Type>(nType)), ltc::timecode::TYPE_MAX_LENGTH);
-	Ltc7segment::Get()->Show(static_cast<ltc::Type>(nType));
 
 	if (m_bCursorOn) {
 		Display::Get()->SetCursor(display::cursor::ON);

@@ -37,7 +37,6 @@
 #include "ltcparams.h"
 
 #include "display.h"
-#include "display7segment.h"
 #include "ltcdisplaymax7219.h"
 #include "rotaryencoder.h"
 
@@ -62,12 +61,6 @@
 #include "configstore.h"
 
 #include "debug.h"
-
-static constexpr Display7SegmentMessage s_7Segment[] = {
-		Display7SegmentMessage::GENERIC_1, Display7SegmentMessage::GENERIC_2,
-		Display7SegmentMessage::GENERIC_3, Display7SegmentMessage::GENERIC_4,
-		Display7SegmentMessage::GENERIC_5, Display7SegmentMessage::GENERIC_6,
-		Display7SegmentMessage::GENERIC_7, Display7SegmentMessage::GENERIC_8 };
 
 namespace mcp23017 {
 static constexpr auto I2C_ADDRESS = 0x20;
@@ -178,19 +171,19 @@ void McpButtons::HandleRotary(uint8_t nInputAB, ltc::Source &tLtcReaderSource) {
 void McpButtons::UpdateDisplays(const ltc::Source ltcSource) {
 	const auto nSource = static_cast<uint8_t>(ltcSource);
 
-	Display::Get()->TextStatus(LtcSourceConst::NAME[nSource], s_7Segment[nSource]);
+	Display::Get()->TextStatus(LtcSourceConst::NAME[nSource]);
 
-	if (!g_ltc_ptLtcDisabledOutputs.bMax7219) {
+	if (!ltc::g_DisabledOutputs.bMax7219) {
 		LtcDisplayMax7219::Get()->WriteChar(nSource);
 		return;
 	}
 
-	if (!g_ltc_ptLtcDisabledOutputs.bWS28xx){
+	if (!ltc::g_DisabledOutputs.bWS28xx){
 		LtcDisplayRgb::Get()->WriteChar(nSource);
 		return;
 	}
 
-	if (!g_ltc_ptLtcDisabledOutputs.bRgbPanel) {
+	if (!ltc::g_DisabledOutputs.bRgbPanel) {
 		LtcDisplayRgb::Get()->ShowSource(ltcSource);
 		return;
 	}
@@ -395,7 +388,7 @@ void McpButtons::HandleRunActionSelect() {
 		m_I2C.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(0xFF));
 
 		Display::Get()->Cls();
-		Display::Get()->TextStatus("Reboot ...", Display7SegmentMessage::INFO_REBOOTING);
+		Display::Get()->TextStatus("Reboot ...");
 
 		Network::Get()->Shutdown();
 		Hardware::Get()->Reboot();

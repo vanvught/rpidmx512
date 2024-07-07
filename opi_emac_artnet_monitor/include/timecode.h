@@ -2,7 +2,7 @@
  * @file timecode.h
  *
  */
-/* Copyright (C) 2016-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,10 +32,10 @@ class TimeCode final: public ArtNetTimeCode {
 public:
 	TimeCode() {}
 
-	void Start() override;
-	void Stop() override;
+	void Start();
+	void Stop();
 
-	void Handler(const struct TArtNetTimeCode *) override;
+	void Handler(const struct artnet::TimeCode *) override;
 };
 
 #endif /* TIMECODE_H_ */

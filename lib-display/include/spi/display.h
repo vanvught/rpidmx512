@@ -45,6 +45,7 @@
 # include "hal_gpio.h"
 #endif
 
+#include "console.h"
 #include "hardware.h"
 
 class Display {
@@ -105,10 +106,6 @@ public:
 		m_bClearEndOfLine = true;
 	}
 
-	void Status([[maybe_unused]] Display7SegmentMessage nValue) { }
-
-	void Status([[maybe_unused]] uint8_t nValue, [[maybe_unused]] bool bHex) {}
-
 	void Text(const char *pData, uint32_t nLength) {
 		if (nLength > m_nCols) {
 			nLength = m_nCols;
@@ -162,20 +159,14 @@ public:
 		Write(m_nRows, pText);
 	}
 
-	void TextStatus(const char *pText, Display7SegmentMessage message, uint32_t nConsoleColor = UINT32_MAX) {
+	void TextStatus(const char *pText, uint32_t nConsoleColor) {
 		TextStatus(pText);
-		Status(message);
 
 		if (nConsoleColor == UINT32_MAX) {
 			return;
 		}
 
 		console_status(nConsoleColor, pText);
-	}
-
-	void TextStatus(const char *pText, uint8_t nValue7Segment, bool bHex = false) {
-		TextStatus(pText);
-		Status(nValue7Segment, bHex);
 	}
 
 	void Progress() {
