@@ -2,7 +2,7 @@
  * @file networkparamsconst.cpp
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,7 +36,6 @@ const char NetworkParamsConst::DEFAULT_GATEWAY[] = "default_gateway";
 const char NetworkParamsConst::HOSTNAME[] = "hostname";
 
 const char NetworkParamsConst::NTP_SERVER[] = "ntp_server";
-const char NetworkParamsConst::NTP_UTC_OFFSET[] = "ntp_utc_offset";
 
 #if defined (ESP8266)
  const char NetworkParamsConst::NAME_SERVER[] = "name_server";
