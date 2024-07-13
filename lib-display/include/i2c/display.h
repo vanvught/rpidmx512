@@ -38,7 +38,6 @@
 #include "displayset.h"
 
 #include "hardware.h"
-#include "console.h"
 
 #include "hal_i2c.h"
 #if defined (DISPLAYTIMEOUT_GPIO)

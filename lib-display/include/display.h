@@ -28,6 +28,8 @@
 
 #include <cstdint>
 
+#include "console.h"
+
 namespace display {
 struct Defaults {
 	static constexpr uint32_t SEEP_TIMEOUT = 5;
