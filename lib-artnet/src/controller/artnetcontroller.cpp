@@ -66,6 +66,10 @@ ArtNetController::ArtNetController() {
 	m_pArtNetPacket = new struct TArtNetPacket;
 	assert(m_pArtNetPacket != nullptr);
 
+	memset(&m_State, 0, sizeof(struct State));
+	m_State.reportCode = artnet::ReportCode::RCPOWEROK;
+	m_State.status = artnet::Status::STANDBY;
+
 	memset(&m_ArtNetPoll, 0, sizeof(struct ArtPoll));
 	memcpy(&m_ArtNetPoll, artnet::NODE_ID, 8);
 	m_ArtNetPoll.OpCode = static_cast<uint16_t>(artnet::OpCodes::OP_POLL);
@@ -235,15 +239,20 @@ void ArtNetController::Start() {
 
 	Network::Get()->SendTo(m_nHandle, &m_ArtNetPoll, sizeof(struct ArtPoll), m_ArtNetController.nIPAddressBroadcast, artnet::UDP_PORT);
 
+	m_State.status = artnet::Status::ON;
+
 	DEBUG_EXIT
 }
 
 void ArtNetController::Stop() {
 	DEBUG_ENTRY
 
-	//FIXME ArtNetController::Stop
+//  FIXME ArtNetController::Stop
+//
 //	Network::Get()->End(artnet::UDP_PORT);
 //	m_nHandle = -1;
+//
+//	m_State.status = artnet::Status::OFF;
 
 	DEBUG_EXIT
 }
@@ -409,7 +418,7 @@ void ArtNetController::ProcessPoll() {
 void ArtNetController::HandlePoll() {
 	DEBUG_ENTRY
 
-	snprintf(reinterpret_cast<char*>(m_ArtPollReply.NodeReport), artnet::REPORT_LENGTH, "#%04x [%04d]", static_cast<int>(m_State.reportCode), static_cast<int>(m_State.ArtPollReplyCount));
+	snprintf(reinterpret_cast<char*>(m_ArtPollReply.NodeReport), artnet::REPORT_LENGTH, "#%04x [%u]", static_cast<int>(m_State.reportCode), static_cast<unsigned>(m_State.ArtPollReplyCount++));
 
 	Network::Get()->SendTo(m_nHandle, &m_ArtPollReply, sizeof(artnet::ArtPollReply), m_pArtNetPacket->IPAddressFrom, artnet::UDP_PORT);
 

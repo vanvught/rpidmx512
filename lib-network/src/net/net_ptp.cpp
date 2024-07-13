@@ -26,6 +26,10 @@
 #include <cstdint>
 
 namespace net {
-void __attribute__((weak))ptp_handle([[maybe_unused]] const uint8_t *p) {}
+namespace globals {
+uint32_t ptpTimestamp[2];
+}  // namespace globals
+
+void __attribute__((weak)) ptp_handle([[maybe_unused]] const uint8_t *pBuffer, [[maybe_unused]] const uint32_t nLength) {}
 void __attribute__((weak)) ptp_run() {}
 }  // namespace net

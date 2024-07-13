@@ -30,13 +30,13 @@ namespace ntpclient {
 void display_status(const ::ntp::Status status) {
 	switch (status) {
 	case ::ntp::Status::STOPPED:
-		Display::Get()->TextStatus("No NTP Client", Display7SegmentMessage::INFO_NTP);
+		Display::Get()->TextStatus("No NTP Client");
 		break;
 	case ::ntp::Status::IDLE:
-		Display::Get()->TextStatus("NTP Client", Display7SegmentMessage::INFO_NTP);
+		Display::Get()->TextStatus("NTP Client");
 		break;
 	case ::ntp::Status::FAILED:
-		Display::Get()->TextStatus("Error: NTP", Display7SegmentMessage::ERROR_NTP);
+		Display::Get()->TextStatus("Error: NTP");
 		break;
 	default:
 		break;

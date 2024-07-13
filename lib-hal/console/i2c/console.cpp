@@ -2,7 +2,7 @@
  * @file console.cpp
  *
  */
-/* Copyright (C) 2022-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -156,7 +156,6 @@ static void set_baud(uint32_t nBaud) {
 	write_register(SC16IS7X0_LCR, nRegisterLCR);
 }
 
-extern "C" {
 void __attribute__((cold)) console_init() {
 	FUNC_PREFIX(i2c_begin());
 
@@ -198,6 +197,7 @@ void __attribute__((cold)) console_init() {
 	write_register(SC16IS7X0_FCR, FCR_ENABLE_FIFO);
 }
 
+extern "C" {
 void console_putc(int c) {
 	if (!s_isConnected) {
 		return;

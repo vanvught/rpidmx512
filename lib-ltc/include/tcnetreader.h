@@ -2,7 +2,7 @@
  * @file tcnetreader.h
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,22 +23,21 @@
  * THE SOFTWARE.
  */
 
-#ifndef H3_TCNETREADER_H_
-#define H3_TCNETREADER_H_
+#ifndef TCNETREADER_H_
+#define TCNETREADER_H_
 
 #include "tcnettimecode.h"
 
 #include "midi.h"
 #include "ltc.h"
 
-class TCNetReader : public TCNetTimeCode {
+class TCNetReader final : public TCNetTimeCode {
 public:
 	void Start();
 	void Stop();
-
 	void Run();
 
-	void Handler(const struct TTCNetTimeCode *pTimeCode);
+	void Handler(const struct TTCNetTimeCode *pTimeCode) override;
 
 private:
 	void HandleUdpRequest();
@@ -51,4 +50,4 @@ private:
 	static char *s_pUdpBuffer;
 };
 
-#endif /* H3_TCNETREADER_H_ */
+#endif /* TCNETREADER_H_ */

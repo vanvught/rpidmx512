@@ -65,7 +65,7 @@ static constexpr struct FilesContent HttpContent[] = {
 	{ "static.js", static_js, 1219, static_cast<http::contentTypes>(2) },
 	{ "styles.css", styles_css, 409, static_cast<http::contentTypes>(1) },
 	{ "index.js", index_js, 1140, static_cast<http::contentTypes>(2) },
-	{ "date.js", date_js, 365, static_cast<http::contentTypes>(2) },
+	{ "date.js", date_js, 716, static_cast<http::contentTypes>(2) },
 #if defined (ENABLE_PHY_SWITCH)
 	{ "dsa.js", dsa_js, 613, static_cast<http::contentTypes>(2) },
 #endif /* (ENABLE_PHY_SWITCH) */

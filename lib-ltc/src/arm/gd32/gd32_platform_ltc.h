@@ -26,16 +26,33 @@
 #ifndef GD32_PLATFORM_LTC_H_
 #define GD32_PLATFORM_LTC_H_
 
-#include <cstdint>
-
 #include "gd32.h"
+
+#if defined DEBUG_LTC_TIMER3
+# define DEBUG_TIMER3_RCU_GPIOx		RCU_GPIOA
+# define DEBUG_TIMER3_GPIOx			GPIOA
+# define DEBUG_TIMER3_GPIO_PINx		GPIO_PIN_11
+#endif
+
+#if defined DEBUG_LTC_TIMER10
+# define DEBUG_TIMER10_RCU_GPIOx	RCU_GPIOA
+# define DEBUG_TIMER10_GPIOx		GPIOA
+# define DEBUG_TIMER10_GPIO_PINx	GPIO_PIN_13
+#endif
+
+#if defined DEBUG_LTC_TIMER11
+# define DEBUG_TIMER11_RCU_GPIOx	RCU_GPIOA
+# define DEBUG_TIMER11_GPIOx		GPIOA
+# define DEBUG_TIMER11_GPIO_PINx	GPIO_PIN_14
+#endif
 
 namespace platform {
 namespace ltc {
-void timer6_config();
+void timer3_config();
+void timer10_config();
 void timer11_config();
+void timer13_config();
 }  // namespace ltc
 }  // namespace platform
-
 
 #endif /* GD32_PLATFORM_LTC_H_ */

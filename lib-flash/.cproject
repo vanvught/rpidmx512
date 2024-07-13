@@ -30,7 +30,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-h3/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-h3/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-flash/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-debug/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
 								</option>
@@ -44,7 +43,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-h3/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-h3/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-flash/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-debug/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
 								</option>

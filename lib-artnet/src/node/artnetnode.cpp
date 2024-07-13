@@ -341,7 +341,7 @@ void ArtNetNode::SetLongName(const char *pLongName) {
 void ArtNetNode::SetOutputStyle(const uint32_t nPortIndex, lightset::OutputStyle outputStyle) {
 	assert(nPortIndex < artnetnode::MAX_PORTS);
 
-	if (outputStyle == GetOutputStyle(nPortIndex)) {
+	if ((outputStyle == GetOutputStyle(nPortIndex)) && (m_State.status == artnet::Status::ON)) {
 		return;
 	}
 
@@ -563,7 +563,8 @@ void ArtNetNode::Process(const uint16_t nBytesReceived) {
 #if defined (ARTNET_HAVE_TIMECODE)		
 	case artnet::OpCodes::OP_TIMECODE:
 		if (m_pArtNetTimeCode != nullptr) {
-			HandleTimeCode();
+			const auto *const pArtTimeCode = reinterpret_cast<artnet::ArtTimeCode *>(m_pReceiveBuffer);
+			m_pArtNetTimeCode->Handler(reinterpret_cast<const struct artnet::TimeCode *>(&pArtTimeCode->Frames));
 		}
 		break;
 #endif		

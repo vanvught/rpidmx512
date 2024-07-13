@@ -76,10 +76,10 @@ int main() {
 	Hardware hw;
 	DisplayUdf display;
 	ConfigStore configStore;
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
+	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, CONSOLE_YELLOW);
 	Network nw;
 	MDNS mDns;
-	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, Display7SegmentMessage::INFO_NONE, CONSOLE_GREEN);
+	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, CONSOLE_GREEN);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	FlashCodeInstall spiFlashInstall;
 
@@ -112,7 +112,7 @@ int main() {
 	pp.Print();
 
 #if defined (NODE_RDMNET_LLRP_ONLY)
-	display.TextStatus(RDMNetConst::MSG_CONFIG, Display7SegmentMessage::INFO_RDMNET_CONFIG, CONSOLE_YELLOW);
+	display.TextStatus(RDMNetConst::MSG_CONFIG, CONSOLE_YELLOW);
 
 	char aDescription[rdm::personality::DESCRIPTION_MAX_LENGTH + 1];
 	snprintf(aDescription, sizeof(aDescription) - 1, "PixelPusher %u-%s:%d", nActivePorts, PixelType::GetType(WS28xxMulti::Get()->GetType()), WS28xxMulti::Get()->GetCount());
@@ -170,11 +170,11 @@ int main() {
 
 	mDns.Print();
 
-	display.TextStatus("PixelPusher Start", Display7SegmentMessage::INFO_BRIDGE_START, CONSOLE_YELLOW);
+	display.TextStatus("PixelPusher Start", CONSOLE_YELLOW);
 
 	pp.Start();
 
-	display.TextStatus("PixelPusher Started", Display7SegmentMessage::INFO_BRIDGE_START, CONSOLE_GREEN);
+	display.TextStatus("PixelPusher Started", CONSOLE_GREEN);
 
 	hw.WatchdogInit();
 

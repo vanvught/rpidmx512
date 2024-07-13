@@ -28,7 +28,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-properties/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-lightset/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-debug/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-h3/include/board}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-rdm/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-rdm/include}&quot;"/>
@@ -43,7 +42,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-properties/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-lightset/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-debug/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-h3/include/board}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-rdm/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-rdm/include}&quot;"/>
@@ -66,7 +64,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-properties/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-lightset/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-debug/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-h3/include/board}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-rdm/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-rdm/include}&quot;"/>
@@ -112,7 +109,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-l6470dmx/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-lightset/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-debug/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-h3/include/board}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-rdm/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-rdm/include}&quot;"/>
@@ -128,7 +124,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-lightset/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-debug/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-h3/include/board}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-rdm/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-rdm/include}&quot;"/>
@@ -152,7 +147,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-l6470dmx/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-lightset/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-debug/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-h3/include/board}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-rdm/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-rdm/include}&quot;"/>
@@ -198,7 +192,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-l6470dmx/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-l6470/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-debug/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-h3/include/board}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-rdm/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-configstore/include}&quot;"/>
@@ -216,7 +209,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-properties/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-debug/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-h3/include/board}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-rdm/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-configstore/include}&quot;"/>
@@ -242,7 +234,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-l6470dmx/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-l6470/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-debug/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-h3/include/board}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-rdm/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-configstore/include}&quot;"/>

@@ -22,10 +22,6 @@ ifneq ($(MAKE_FLAGS),)
 		EXTRA_INCLUDES+=../lib-rdm/include
 	endif
 	
-	ifeq ($(findstring ARTNET_HAVE_TIMECODE,$(MAKE_FLAGS)), ARTNET_HAVE_TIMECODE)
-		EXTRA_SRCDIR+=src/node/timecode
-	endif
-	
 	ifeq ($(findstring ARTNET_CONTROLLER,$(MAKE_FLAGS)), ARTNET_CONTROLLER)
 		EXTRA_SRCDIR+=src/controller
 	endif

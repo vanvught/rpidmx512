@@ -75,8 +75,13 @@ public:
 	}
 
 	uint32_t Millis() {
+#if defined (CONFIG_HAL_USE_SYSTICK)
 		extern volatile uint32_t s_nSysTickMillis;
 		return s_nSysTickMillis;
+#else
+		extern uint32_t timer6_get_elapsed_milliseconds();
+		return timer6_get_elapsed_milliseconds();
+#endif
 	}
 
 	uint32_t Micros() {
@@ -95,8 +100,9 @@ public:
 		return nResult;
 	}
 
-	uint32_t GetUpTime() {
-		return Millis() / 1000U;
+	uint32_t GetUpTime() const {
+		extern struct HwTimersSeconds g_Seconds;
+		return g_Seconds.nUptime;
 	}
 
 	bool SetTime(__attribute__((unused)) const struct tm *pTime) {
@@ -180,11 +186,11 @@ public:
 		return gd32_adc_gettemp();
 	}
 
-	float GetCoreTemperatureMin() {
+	float GetCoreTemperatureMin() const {
 		return -40.0f;
 	}
 
-	float GetCoreTemperatureMax() {
+	float GetCoreTemperatureMax() const {
 		return 85.0f;
 	}
 
@@ -202,8 +208,8 @@ public:
 		usbh_core_task(&usb_host);
 # endif
 #endif
-		if (__builtin_expect (m_nTicksPerSecond != 0, 1)) {
-			if (__builtin_expect (!(Hardware::Get()->Millis() - m_nMillisPrevious < m_nTicksPerSecond), 1)) {
+		if (__builtin_expect(m_nTicksPerSecond != 0, 1)) {
+			if (__builtin_expect(!(Hardware::Get()->Millis() - m_nMillisPrevious < m_nTicksPerSecond), 1)) {
 				m_nMillisPrevious = Hardware::Get()->Millis();
 #if defined(HAL_HAVE_PORT_BIT_TOGGLE)
 				GPIO_TG(LED_BLINK_GPIO_PORT) = LED_BLINK_PIN;
@@ -273,7 +279,7 @@ private:
 #endif
 			break;
 		default:
-			m_nTicksPerSecond = (1000 / nFreqHz);
+			m_nTicksPerSecond = (1000U / nFreqHz);
 			break;
 		}
 	}

@@ -2,7 +2,7 @@
  * @file tcnet.h
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,8 @@
 #include "tcnetpackets.h"
 #include "tcnettimecode.h"
 
-enum class TCNetLayer {
+namespace tcnet {
+enum class Layer {
 	LAYER_1,
 	LAYER_2,
 	LAYER_3,
@@ -42,10 +43,12 @@ enum class TCNetLayer {
 	LAYER_C,
 	LAYER_UNDEFINED
 };
+}  // namespace tcnet
+
 
 class TCNet {
 public:
-	TCNet(TTCNetNodeType tNodeType = TCNET_TYPE_SLAVE);
+	TCNet();
 	~TCNet();
 
 	void Start();
@@ -55,29 +58,29 @@ public:
 
 	void Print();
 
-	TTCNetNodeType GetNodeType() {
-		return static_cast<TTCNetNodeType>(m_tOptIn.ManagementHeader.NodeType);
+	TTCNetNodeType GetNodeType() const {
+		return static_cast<TTCNetNodeType>(m_PacketOptIn.ManagementHeader.NodeType);
 	}
 
 	void SetNodeName(const char *pNodeName);
 	const char *GetNodeName() {
-		return reinterpret_cast<char*>(m_tOptIn.ManagementHeader.NodeName);
+		return reinterpret_cast<char*>(m_PacketOptIn.ManagementHeader.NodeName);
 	}
 
-	void SetLayer(TCNetLayer tLayer);
-	TCNetLayer GetLayer() {
-		return m_tLayer;
+	void SetLayer(const tcnet::Layer layer);
+	tcnet::Layer GetLayer() const {
+		return m_Layer;
 	}
 
 	void SetUseTimeCode(bool bUseTimeCode) {
 		m_bUseTimeCode = bUseTimeCode;
 	}
-	bool GetUseTimeCode() {
+	bool GetUseTimeCode() const {
 		return m_bUseTimeCode;
 	}
 
 	void SetTimeCodeType(TTCNetTimeCodeType tType);
-	TTCNetTimeCodeType GetTimeCodeType() {
+	TTCNetTimeCodeType GetTimeCodeType() const {
 		return m_tTimeCodeType;
 	}
 
@@ -86,8 +89,8 @@ public:
 	}
 
 public:
-	static char GetLayerName(TCNetLayer tLayer);
-	static TCNetLayer GetLayer(char nChar);
+	static char GetLayerName(const tcnet::Layer layer);
+	static tcnet::Layer GetLayer(const char nChar);
 
 	static TCNet *Get() {
 		return s_pThis;
@@ -105,29 +108,25 @@ private:
 
 private:
 	struct TCNetBroadcast {
-		static constexpr auto PORT_0 = 60000;
-		static constexpr auto PORT_1 = 60001;
-		static constexpr auto PORT_2 = 60002;
+		static constexpr uint16_t PORT_0 = 60000;
+		static constexpr uint16_t PORT_1 = 60001;
+		static constexpr uint16_t PORT_2 = 60002;
 	};
 	struct TCNETUnicast {
-		static constexpr auto PORT = 65023;
+		static constexpr uint16_t PORT = 65023;
 	};
-	struct TTCNetNodeIP {
-		uint32_t nIPAddressLocal;
-		uint32_t nIPAddressBroadcast;
-	};
-	TTCNetNodeIP m_tNode;
+
 	int32_t m_aHandles[4];
-	TTCNetPacketOptIn m_tOptIn;
+	TTCNetPacketOptIn m_PacketOptIn;
 	uint8_t *m_pReceiveBuffer { nullptr };
 	uint32_t m_nIpAddressFrom;
 	uint32_t m_nCurrentMillis { 0 };
 	uint32_t m_nPreviousMillis { 0 };
-	TCNetLayer m_tLayer = TCNetLayer::LAYER_M;
-	uint32_t *m_pLTime { nullptr };
-	TTCNetPacketTimeTimeCode *m_pLTimeCode { nullptr };
-	bool m_bUseTimeCode = false;
+	uint32_t m_nLxTimeOffset { 0 };
+	uint32_t m_nLxTimeCodeOffset { 0 };
 	TCNetTimeCode *m_pTCNetTimeCode { nullptr };
+	tcnet::Layer m_Layer = tcnet::Layer::LAYER_M;
+	bool m_bUseTimeCode = false;
 	float m_fTypeDivider { 1000.0F / 30 };
 	TTCNetTimeCodeType m_tTimeCodeType;
 	uint8_t m_nSeqTimeMessage { 0 };

@@ -53,7 +53,7 @@ TCNetParams::TCNetParams() {
 	m_Params.nSetList = 0;
 
 	memset(m_Params.aNodeName, '\0', TCNET_NODE_NAME_LENGTH);
-	m_Params.nLayer = static_cast<uint8_t>(TCNetLayer::LAYER_M);
+	m_Params.nLayer = static_cast<uint8_t>(tcnet::Layer::LAYER_M);
 	m_Params.nTimeCodeType = TCNET_TIMECODE_TYPE_SMPTE_30FPS;
 
 	DEBUG_EXIT
@@ -114,13 +114,13 @@ void TCNetParams::callbackFunction(const char *pLine) {
 	nLength = 1;
 	ch = ' ';
 	if (Sscan::Char(pLine, TCNetParamsConst::LAYER, &ch, nLength) == Sscan::OK) {
-		const TCNetLayer tLayer = TCNet::GetLayer(ch);
+		const tcnet::Layer tLayer = TCNet::GetLayer(ch);
 
-		if ((tLayer != TCNetLayer::LAYER_UNDEFINED) && (tLayer != TCNetLayer::LAYER_M)) {
+		if ((tLayer != tcnet::Layer::LAYER_UNDEFINED) && (tLayer != tcnet::Layer::LAYER_M)) {
 			m_Params.nLayer = static_cast<uint8_t>(tLayer);
 			m_Params.nSetList |= Mask::LAYER;
 		} else {
-			m_Params.nLayer = static_cast<uint8_t>(TCNetLayer::LAYER_M);
+			m_Params.nLayer = static_cast<uint8_t>(tcnet::Layer::LAYER_M);
 			m_Params.nSetList &= ~Mask::LAYER;
 		}
 		return;
@@ -183,7 +183,7 @@ void TCNetParams::Builder(const struct Params *pTTCNetParams, char *pBuffer, uin
 	}
 
 	char aName[2];
-	aName[0] = TCNet::GetLayerName(static_cast<TCNetLayer>(m_Params.nLayer));
+	aName[0] = TCNet::GetLayerName(static_cast<tcnet::Layer>(m_Params.nLayer));
 	aName[1] = '\0';
 
 	builder.Add(TCNetParamsConst::NODE_NAME, m_Params.aNodeName, isMaskSet(Mask::NODE_NAME));
@@ -210,7 +210,7 @@ void TCNetParams::Set(TCNet *pTCNet) {
 	}
 
 	if (isMaskSet(Mask::LAYER)) {
-		pTCNet->SetLayer(static_cast<TCNetLayer>(m_Params.nLayer));
+		pTCNet->SetLayer(static_cast<tcnet::Layer>(m_Params.nLayer));
 	}
 
 	if (isMaskSet(Mask::TIMECODE_TYPE)) {
@@ -235,7 +235,7 @@ void TCNetParams::Dump() {
 	}
 
 	if (isMaskSet(Mask::LAYER)) {
-		printf(" %s=%d [Layer%c]\n", TCNetParamsConst::LAYER, m_Params.nLayer, TCNet::GetLayerName(static_cast<TCNetLayer>(m_Params.nLayer)));
+		printf(" %s=%d [Layer%c]\n", TCNetParamsConst::LAYER, m_Params.nLayer, TCNet::GetLayerName(static_cast<tcnet::Layer>(m_Params.nLayer)));
 	}
 
 	if (isMaskSet(Mask::TIMECODE_TYPE)) {

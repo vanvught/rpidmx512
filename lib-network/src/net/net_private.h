@@ -2,7 +2,7 @@
  * @file net_private.h
  *
  */
-/* Copyright (C) 2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2023-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,12 +40,11 @@
 # define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
-extern "C" {
-int console_error(const char *);
+extern "C" int console_error(const char *);
+
 void emac_eth_send(void *, int);
 int emac_eth_recv(uint8_t **);
 void emac_free_pkt(void);
-}
 
 void net_handle();
 

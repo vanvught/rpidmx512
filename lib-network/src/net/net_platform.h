@@ -31,7 +31,7 @@
  * https://www.gd32-dmx.org/memory.html
  */
 # include "gd32.h"
-# if defined (GD32F207RG) || defined (GD32F4XX)
+# if defined (GD32F207RG) || defined (GD32F4XX) || defined(GD32H7XX)
 #  define SECTION_NETWORK __attribute__ ((section (".network")))
 # else
 #  define SECTION_NETWORK

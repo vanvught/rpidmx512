@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2016-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@gd332-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,20 +31,20 @@
 
 #include <cstdint>
 
-struct TArtNetTimeCode {
+namespace artnet {
+struct TimeCode {
 	uint8_t Frames;			///< Frames time. 0 – 29 depending on mode.
 	uint8_t Seconds;		///< Seconds. 0 - 59.
 	uint8_t Minutes;		///< Minutes. 0 - 59.
 	uint8_t Hours;			///< Hours. 0 - 59.
 	uint8_t Type;			///< 0 = Film (24fps) , 1 = EBU (25fps), 2 = DF (29.97fps), 3 = SMPTE (30fps)
 } __attribute__((packed));
+}  // namespace artnet
 
 class ArtNetTimeCode {
 public:
 	virtual ~ArtNetTimeCode() = default;
-	virtual void Start()= 0;
-	virtual void Stop()= 0;
-	virtual void Handler(const struct TArtNetTimeCode*)= 0;
+	virtual void Handler(const struct artnet::TimeCode *)= 0;
 };
 
 #endif /* ARTNETTIMECODE_H_ */

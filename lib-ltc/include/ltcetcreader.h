@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef H3_LTCETCREADER_H_
-#define H3_LTCETCREADER_H_
+#ifndef LTCETCREADER_H_
+#define LTCETCREADER_H_
 
 #include "ltcetc.h"
 #include "ltc.h"
@@ -33,13 +33,12 @@ class LtcEtcReader final : public LtcEtcHandler {
 public:
 	void Start();
 	void Stop();
-
 	void Run();
 
-	void Handler(const midi::Timecode *pTimeCode);
+	void Handler(const midi::Timecode *pTimeCode) override;
 
 private:
-	struct midi::Timecode m_tMidiTimeCode;
+	struct midi::Timecode m_MidiTimeCode;
 };
 
-#endif /* H3_LTCETCREADER_H_ */
+#endif /* LTCETCREADER_H_ */

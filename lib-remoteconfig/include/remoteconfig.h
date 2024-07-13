@@ -128,6 +128,7 @@ enum class TxtFile {
 	RGBPANEL,
 	LTCETC,
 	NODE,
+	ENV,
 	LAST
 };
 
@@ -246,6 +247,7 @@ private:
 	}
 
 	void HandleGetRconfigTxt(uint32_t& nSize);
+	void HandleGetEnvTxt(uint32_t& nSize);
 	void HandleGetNetworkTxt(uint32_t& nSize);
 
 #if defined (DISPLAY_UDF)
@@ -354,7 +356,8 @@ private:
 	void HandleGetPca9685Txt(uint32_t& nSize);
 #endif
 
-	void HandleSetRconfig();
+	void HandleSetRconfigTxt();
+	void HandleSetEnvTxt();
 	void HandleSetNetworkTxt();
 
 #if defined (DISPLAY_UDF)
@@ -493,7 +496,6 @@ private:
 		void (RemoteConfig::*SetHandler)();
 		const char *pFileName;
 		const uint8_t nFileNameLength;
-		const configstore::Store nStore;
 	};
 
 	static const Txt s_TXT[];

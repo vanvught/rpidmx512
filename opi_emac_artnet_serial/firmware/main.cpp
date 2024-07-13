@@ -76,17 +76,17 @@ int main() {
 	Hardware hw;
 	DisplayUdf display;
 	ConfigStore configStore;
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
+	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, CONSOLE_YELLOW);
 	Network nw;
 	MDNS mDns;
-	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, Display7SegmentMessage::INFO_NONE, CONSOLE_GREEN);
+	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, CONSOLE_GREEN);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	FlashCodeInstall spiFlashInstall;
 
 	fw.Print("Art-Net 4 Node Serial [UART/SPI/I2C] {1 Universe}");
 	nw.Print();
 
-	display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);
+	display.TextStatus(ArtNetMsgConst::PARAMS, CONSOLE_YELLOW);
 
 	ArtNetNode node;
 	
@@ -171,11 +171,11 @@ int main() {
 
 	mDns.Print();
 
-	display.TextStatus(ArtNetMsgConst::START, Display7SegmentMessage::INFO_NODE_START, CONSOLE_YELLOW);
+	display.TextStatus(ArtNetMsgConst::START, CONSOLE_YELLOW);
 
 	node.Start();
 
-	display.TextStatus(ArtNetMsgConst::STARTED, Display7SegmentMessage::INFO_NODE_STARTED, CONSOLE_GREEN);
+	display.TextStatus(ArtNetMsgConst::STARTED, CONSOLE_GREEN);
 
 	hw.WatchdogInit();
 

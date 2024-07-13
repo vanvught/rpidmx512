@@ -2,7 +2,7 @@
  * @file tcnetreader.cpp
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
+#pragma GCC push_options
+#pragma GCC optimize ("O2")
+#pragma GCC optimize ("no-tree-loop-distribute-patterns")
 
 #include <cstdint>
 #include <cstring>
@@ -79,7 +83,6 @@ void TCNetReader::Start() {
 	irq_timer_arm_physical_set(static_cast<thunk_irq_timer_arm_t>(arm_timer_handler));
 	irq_timer_init();
 #elif defined (GD32)
-	platform::ltc::timer6_config();
 #endif
 
 	LtcOutputs::Get()->Init();
@@ -113,19 +116,19 @@ void TCNetReader::Handler(const struct TTCNetTimeCode *pTimeCode) {
 	if (m_nTimeCodePrevious != *p) {
 		m_nTimeCodePrevious = *p;
 
-		if (!g_ltc_ptLtcDisabledOutputs.bLtc) {
+		if (!ltc::g_DisabledOutputs.bLtc) {
 			LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct ltc::TimeCode*>(pTimeCode));
 		}
 
-		if (!g_ltc_ptLtcDisabledOutputs.bArtNet) {
-			ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct TArtNetTimeCode*>(pTimeCode));
+		if (!ltc::g_DisabledOutputs.bArtNet) {
+			ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct artnet::TimeCode*>(pTimeCode));
 		}
 
-		if (!g_ltc_ptLtcDisabledOutputs.bRtpMidi) {
+		if (!ltc::g_DisabledOutputs.bRtpMidi) {
 			RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(pTimeCode));
 		}
 
-		if (!g_ltc_ptLtcDisabledOutputs.bEtc) {
+		if (!ltc::g_DisabledOutputs.bEtc) {
 			LtcEtc::Get()->Send(&m_tMidiTimeCode);
 		}
 

@@ -2,7 +2,7 @@
  * @file dhcp.cpp
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -147,7 +147,7 @@ static void send_discover(int nHandle, const uint8_t *pMacAddress) {
 	DEBUG_EXIT
 }
 
-static void _send_request(int idx, const uint8_t *pMacAddress, const char *pHostname) {
+static void send_request(int idx, const uint8_t *pMacAddress, const char *pHostname) {
 	DEBUG_ENTRY
 
 	uint32_t i;
@@ -201,10 +201,12 @@ static void _send_request(int idx, const uint8_t *pMacAddress, const char *pHost
 	DEBUG_EXIT
 }
 
-static int parse_response(int nHandle, const uint8_t *pMacAddress) {
+static int parse_response(const int nHandle, const uint8_t *pMacAddress) {
 	uint8_t *pResponse;
-	const auto nMillis = Hardware::Get()->Millis();
 	uint32_t nSize = 0;
+	uint32_t nTimeOut = 0;
+
+	const auto nMillis = Hardware::Get()->Millis();
 
 	do {
 		net_handle();
@@ -219,12 +221,15 @@ static int parse_response(int nHandle, const uint8_t *pMacAddress) {
 			const auto *const pDhcpMessage = reinterpret_cast<dhcp::Message *>(pResponse);
 
 			if (memcmp(pDhcpMessage->chaddr, pMacAddress, ETH_ADDR_LEN) == 0) {
+				DEBUG_PUTS("break");
 				break;
 			}
 		}
-	} while ((Hardware::Get()->Millis() - nMillis) < 500);
 
-	DEBUG_PRINTF("timeout %u", Hardware::Get()->Millis() - nMillis);
+		nTimeOut = Hardware::Get()->Millis() - nMillis;
+	} while (nTimeOut < 500);
+
+	DEBUG_PRINTF("timeout %u, nSize=%u", Hardware::Get()->Millis() - nMillis, nSize);
 
 	int type = 0;
 	uint8_t opt_len = 0;
@@ -297,21 +302,21 @@ static int parse_response(int nHandle, const uint8_t *pMacAddress) {
 int dhcp_client(const char *pHostname) {
 	DEBUG_ENTRY
 
-	auto bHaveIp = false;
-	int32_t retries = 20;
-
 	message_init(net::globals::macAddress);
 
 	auto nHandle = udp_begin(DHCP_PORT_CLIENT);
 
 	if (nHandle < 0) {
+		DEBUG_EXIT
 		return -1;
 	}
 
 	net::globals::ipInfo.ip.addr = 0;
 	ip_set_ip();
 
-	while (!bHaveIp && (retries-- > 0)) {
+	int32_t retries = 10;
+
+	while (retries-- > 0) {
 		DEBUG_PRINTF("retries=%d", retries);
 
 		send_discover(static_cast<uint8_t>(nHandle), net::globals::macAddress);
@@ -324,13 +329,20 @@ int dhcp_client(const char *pHostname) {
 
 		DEBUG_PRINTF("type=%d", type);
 
-		if (type != DCHP_TYPE_OFFER) {
-			continue;
+		if (type == DCHP_TYPE_OFFER) {
+			DEBUG_PRINTF(IPSTR, s_dhcp_server_ip[0],s_dhcp_server_ip[1],s_dhcp_server_ip[2],s_dhcp_server_ip[3]);
+			break;
 		}
+	}
 
-		DEBUG_PRINTF(IPSTR, s_dhcp_server_ip[0],s_dhcp_server_ip[1],s_dhcp_server_ip[2],s_dhcp_server_ip[3]);
+	auto bHaveIp = false;
 
-		_send_request(static_cast<uint8_t>(nHandle), net::globals::macAddress, pHostname);
+	while (retries-- > 0) {
+		DEBUG_PRINTF("retries=%d", retries);
+
+		send_request(static_cast<uint8_t>(nHandle), net::globals::macAddress, pHostname);
+
+		int type;
 
 		if ((type =parse_response(static_cast<uint8_t>(nHandle), net::globals::macAddress)) < 0) {
 			continue;
@@ -340,11 +352,10 @@ int dhcp_client(const char *pHostname) {
 
 		if (type == DCHP_TYPE_ACK) {
 			bHaveIp = true;
+			DEBUG_PUTS("bHaveIp = true");
 			break;
 		}
 	}
-
-	udp_end(DHCP_PORT_CLIENT);
 
 	if (bHaveIp) {
 		_pcast32 ip;
@@ -358,6 +369,8 @@ int dhcp_client(const char *pHostname) {
 		memcpy(ip.u8, s_dhcp_allocated_netmask, IPv4_ADDR_LEN);
 		net::globals::ipInfo.netmask.addr = ip.u32;
 	}
+
+	udp_end(DHCP_PORT_CLIENT);
 
 	DEBUG_EXIT
 	return bHaveIp ? 0 : -2;

@@ -148,8 +148,9 @@ void arp_send_probe() {
 	s_isProbeReplyReceived = false;
 
 	memset(s_arp_request.arp.sender_ip, 0, IPv4_ADDR_LEN);
+	net::memcpy_ip(s_arp_request.arp.target_ip, net::globals::ipInfo.ip.addr);
 
-	arp_send_request(net::globals::ipInfo.ip.addr);
+	emac_eth_send(reinterpret_cast<void *>(&s_arp_request), sizeof(struct t_arp));
 
 	net::memcpy_ip(s_arp_request.arp.sender_ip, net::globals::ipInfo.ip.addr);
 
@@ -167,7 +168,9 @@ void arp_send_announcement() {
 
 	s_requestType = net::arp::RequestType::ANNNOUNCEMENT;
 
-	arp_send_request(net::globals::ipInfo.ip.addr);
+	net::memcpy_ip(s_arp_request.arp.target_ip, net::globals::ipInfo.ip.addr);
+
+	emac_eth_send(reinterpret_cast<void *>(&s_arp_request), sizeof(struct t_arp));
 
 	DEBUG_EXIT
 }
@@ -213,7 +216,6 @@ void arp_handle_reply(struct t_arp *p_arp) {
 		break;
 	default:
 		assert(0);
-		__builtin_unreachable();
 		break;
 	}
 

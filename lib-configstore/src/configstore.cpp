@@ -2,7 +2,7 @@
  * @file configstore.cpp
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,10 +36,13 @@
 
 #include "debug.h"
 
+namespace global {
+extern int32_t *gp_nUtcOffset;
+}  // namespace global
+
 using namespace configstore;
 
 static constexpr uint8_t s_aSignature[] = {'A', 'v', 'V', 0x01};
-static constexpr auto OFFSET_STORES	= ((((sizeof(s_aSignature) + 15) / 16) * 16) + 16); // +16 is reserved for future use
 static constexpr uint32_t s_aStorSize[static_cast<uint32_t>(Store::LAST)]  = {96,        32,    64,      64,    32,     32,        480,          64,         32,        96,           48,        32,      944,          48,        64,            32,        96,         32,      1024,     32,     32,       64,            96,               32,    32,          320,    32};
 #ifndef NDEBUG
 static constexpr char s_aStoreName[static_cast<uint32_t>(Store::LAST)][16] = {"Network", "DMX", "Pixel", "LTC", "MIDI", "LTC ETC", "OSC Server", "TLC59711", "USB Pro", "RDM Device", "RConfig", "TCNet", "OSC Client", "Display", "LTC Display", "Monitor", "SparkFun", "Slush", "Motors", "Show", "Serial", "RDM Sensors", "RDM SubDevices", "GPS", "RGB Panel", "Node", "PCA9685"};
@@ -57,8 +60,12 @@ ConfigStore *ConfigStore::s_pThis;
 ConfigStore::ConfigStore() {
 	DEBUG_ENTRY
 
+	static_assert(sizeof(s_aSignature) <= FlashStore::SIGNATURE_SIZE);
+
 	assert(s_pThis == nullptr);
 	s_pThis = this;
+
+	global::gp_nUtcOffset = reinterpret_cast<int32_t *>(&s_SpiFlashData[FlashStore::SIGNATURE_SIZE]);
 
 	s_bHaveFlashChip = StoreDevice::IsDetected();
 
@@ -94,19 +101,31 @@ ConfigStore::ConfigStore() {
 
 	if (!bSignatureOK) {
 		DEBUG_PUTS("No signature");
-		memset(&s_SpiFlashData[OFFSET_STORES], 0, FlashStore::SIZE - OFFSET_STORES);
+		memset(&s_SpiFlashData[FlashStore::SIGNATURE_SIZE], 0, FlashStore::SIZE - FlashStore::SIGNATURE_SIZE);
 		s_State = State::CHANGED;
 	}
 
-	s_nSpiFlashStoreSize = OFFSET_STORES;
+	s_nSpiFlashStoreSize = FlashStore::OFFSET_STORES;
 
 	for (uint32_t j = 0; j < static_cast<uint32_t>(Store::LAST); j++) {
 		s_nSpiFlashStoreSize += s_aStorSize[j];
 	}
 
-	DEBUG_PRINTF("OFFSET_STORES=%d, m_nSpiFlashStoreSize=%d", static_cast<int>(OFFSET_STORES), s_nSpiFlashStoreSize);
+	DEBUG_PRINTF("FlashStore::OFFSET_STORES=%d, m_nSpiFlashStoreSize=%d", static_cast<int>(FlashStore::OFFSET_STORES), s_nSpiFlashStoreSize);
 
 	assert(s_nSpiFlashStoreSize <= FlashStore::SIZE);
+
+	for (uint32_t nStore = 0; nStore < static_cast<uint32_t>(Store::LAST); nStore++) {
+		auto *pSet = reinterpret_cast<uint32_t *>((&s_SpiFlashData[GetStoreOffset(static_cast<Store>(nStore))]));
+		if (*pSet == UINT32_MAX) {
+			*pSet = 0;
+		}
+	}
+
+	auto *p = reinterpret_cast<struct Env *>(&s_SpiFlashData[FlashStore::SIGNATURE_SIZE]);
+	if (p->nUtcOffset == -1) {
+		p->nUtcOffset = 0;
+	}
 
 	DEBUG_PUTS("");
 	debug_dump(s_SpiFlashData, FlashStore::SIZE);
@@ -117,7 +136,7 @@ ConfigStore::ConfigStore() {
 uint32_t ConfigStore::GetStoreOffset(Store store) {
 	assert(store < Store::LAST);
 
-	uint32_t nOffset = OFFSET_STORES;
+	uint32_t nOffset = FlashStore::OFFSET_STORES;
 
 	for (uint32_t i = 0; i < static_cast<uint32_t>(store); i++) {
 		nOffset += s_aStorSize[i];
@@ -172,7 +191,7 @@ void ConfigStore::Update(Store store, uint32_t nOffset, const void *pData, uint3
 	}
 
 	if (bIsChanged){
-		auto *pSet = reinterpret_cast<uint32_t*>((&s_SpiFlashData[GetStoreOffset(store)] + nOffsetSetList));
+		auto *pSet = reinterpret_cast<uint32_t *>((&s_SpiFlashData[GetStoreOffset(store)] + nOffsetSetList));
 		*pSet |= nSetList;
 	}
 
@@ -295,7 +314,7 @@ void ConfigStore::Dump() {
 		Hardware::Get()->WatchdogStop();
 	}
 
-	debug_dump(s_SpiFlashData, OFFSET_STORES);
+	debug_dump(s_SpiFlashData, FlashStore::OFFSET_STORES);
 	puts("");
 
 	for (uint32_t j = 0; j < static_cast<uint32_t>(Store::LAST); j++) {

@@ -2,7 +2,7 @@
  * @file ltcetcreader.cpp
  *
  */
-/* Copyright (C) 2022-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2022-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
+#pragma GCC push_options
+#pragma GCC optimize ("O2")
+#pragma GCC optimize ("no-tree-loop-distribute-patterns")
 
 #include <cstdint>
 #include <cassert>
@@ -52,7 +56,6 @@ void LtcEtcReader::Start() {
 	irq_timer_arm_physical_set(static_cast<thunk_irq_timer_arm_t>(arm_timer_handler));
 	irq_timer_init();
 #elif defined (GD32)
-	platform::ltc::timer6_config();
 #endif
 
 	LtcOutputs::Get()->Init();
@@ -69,25 +72,25 @@ void LtcEtcReader::Stop() {
 void LtcEtcReader::Handler(const midi::Timecode *pTimeCode) {
 	gv_ltc_nUpdates++;
 
-	if (!g_ltc_ptLtcDisabledOutputs.bLtc) {
-		LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct ltc::TimeCode*>(pTimeCode));
+	if (!ltc::g_DisabledOutputs.bLtc) {
+		LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct ltc::TimeCode *>(pTimeCode));
 	}
 
-	if (!g_ltc_ptLtcDisabledOutputs.bArtNet) {
-		ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct TArtNetTimeCode*>(pTimeCode));
+	if (!ltc::g_DisabledOutputs.bArtNet) {
+		ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct artnet::TimeCode *>(pTimeCode));
 	}
 
-	if (!g_ltc_ptLtcDisabledOutputs.bRtpMidi) {
+	if (!ltc::g_DisabledOutputs.bRtpMidi) {
 		RtpMidi::Get()->SendTimeCode(pTimeCode);
 	}
 
-	memcpy(&m_tMidiTimeCode, pTimeCode, sizeof(struct midi::Timecode));
+	memcpy(&m_MidiTimeCode, pTimeCode, sizeof(struct midi::Timecode));
 
 	LtcOutputs::Get()->Update(reinterpret_cast<const struct ltc::TimeCode*>(pTimeCode));
 }
 
 void LtcEtcReader::Run() {
-	LtcOutputs::Get()->UpdateMidiQuarterFrameMessage(reinterpret_cast<const struct ltc::TimeCode*>(&m_tMidiTimeCode));
+	LtcOutputs::Get()->UpdateMidiQuarterFrameMessage(reinterpret_cast<const struct ltc::TimeCode *>(&m_MidiTimeCode));
 
 	__DMB();
 	if (gv_ltc_nUpdatesPerSecond != 0) {

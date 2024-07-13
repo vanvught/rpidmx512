@@ -1,6 +1,6 @@
-#
-DEFINES = NDEBUG
-#
-EXTRA_INCLUDES = ../lib-network/include ../lib-properties/include
-#
+DEFINES=NDEBUG
+
+EXTRA_INCLUDES=../lib-network/include ../lib-properties/include
+
+include Rules.mk
 include ../firmware-template-bcm/lib/Rules.mk

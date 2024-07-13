@@ -2,7 +2,7 @@
  * @file midi.cpp
  *
  */
-/* Copyright (C) 2016-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,13 +23,19 @@
  * THE SOFTWARE.
  */
 
+#pragma GCC push_options
+#pragma GCC optimize ("O2")
+
 #include <cstdint>
+#include <cstring>
 
 #include "midi.h"
 
 #include "hal_uart.h"
 
 #include "platform_midi.h"
+
+#include "logic_analyzer.h"
 
 namespace midi {
 /**
@@ -45,12 +51,16 @@ static constexpr uint32_t RX_BUFFER_INDEX_MASK 		= (RX_BUFFER_INDEX_ENTRIES - 1)
 struct MidiReceive {
 	uint32_t nTimestamp;
 	uint8_t nData;
+} __attribute__ ((aligned (4)));
+
+struct RxData {
+	MidiReceive midi[midi::RX_BUFFER_INDEX_ENTRIES] __attribute__ ((aligned (4)));
+	uint32_t nIndexHead;
+	uint32_t nIndexTail;
 };
 }  // namespace midi
 
-static volatile struct midi::MidiReceive sv_RxBuffer[midi::RX_BUFFER_INDEX_ENTRIES] __attribute__ ((aligned (4)));
-static volatile uint32_t sv_RxBufferIndexHead;
-static volatile uint32_t sv_RxBufferIndexTail;
+static volatile midi::RxData sv_RxBuffer __attribute__ ((aligned (4)));
 
 static volatile uint32_t sv_nTick100ms;
 static volatile uint32_t sv_nUpdatesPerSecond;
@@ -85,9 +95,9 @@ static void __attribute__((interrupt("IRQ"))) irq_midi_in_handler() {
 
 	if (H3_UART2->O08.IIR & UART_IIR_IID_RD) {
 
-		sv_RxBuffer[sv_RxBufferIndexHead].nData = (H3_UART2->O00.RBR & 0xFF);
-		sv_RxBuffer[sv_RxBufferIndexHead].nTimestamp = H3_TIMER->AVS_CNT0;
-		sv_RxBufferIndexHead = (sv_RxBufferIndexHead + 1) & midi::RX_BUFFER_INDEX_MASK;
+		sv_RxBuffer.midi[sv_RxBuffer.nIndexHead].nData = (H3_UART2->O00.RBR & 0xFF);
+		sv_RxBuffer.midi[sv_RxBuffer.nIndexHead].nTimestamp = H3_TIMER->AVS_CNT0;
+		sv_RxBuffer.nIndexHead = (sv_RxBuffer.nIndexHead + 1) & midi::RX_BUFFER_INDEX_MASK;
 
 		H3_GIC_CPUIF->AEOI = H3_UART2_IRQn;
 		gic_unpend(H3_UART2_IRQn);
@@ -124,37 +134,104 @@ static void __attribute__((interrupt("IRQ"))) irq_midi_in_handler() {
 	__DMB();
 }
 #elif defined (GD32)
-extern "C" {
-void USART5_IRQHandler(void) {
-	if (RESET != usart_interrupt_flag_get(USART5, USART_INT_FLAG_RBNE)) {
-		sv_RxBuffer[sv_RxBufferIndexHead].nData = (uint8_t) usart_data_receive(USART5);
-//		sv_RxBuffer[sv_RxBufferIndexHead].nTimestamp =
-		sv_RxBufferIndexHead = (sv_RxBufferIndexHead + 1) & midi::RX_BUFFER_INDEX_MASK;
+#if defined(GD32H7XX)
+# define TIMERx			TIMER14
+# define RCU_TIMERx		RCU_TIMER14
+# define TIMERx_IRQn	TIMER14_IRQn
+#else
+# if defined (GD32F10X) || defined (GD32F30X)
+#  define TIMERx		TIMER3
+#  define RCU_TIMERx	RCU_TIMER3
+#  define TIMERx_IRQn	TIMER3_IRQn
+# else
+#  define TIMERx		TIMER8
+#  define RCU_TIMERx	RCU_TIMER8
+#  define TIMERx_IRQn	TIMER0_BRK_TIMER8_IRQn
+# endif
+#endif
 
+extern "C" {
+#if defined(GD32H7XX)
+void TIMER14_IRQHandler() {
+#elif defined (GD32F10X) || defined (GD32F30X)
+void TIMER3_IRQHandler() {
+#else
+void TIMER0_BRK_TIMER8_IRQHandler() {
+#endif
+	const auto nIntFlag = TIMER_INTF(TIMERx);
+
+	if ((nIntFlag & TIMER_INT_FLAG_UP) == TIMER_INT_FLAG_UP) {
+		if (sv_nTick100ms == 10) {
+			sv_nTick100ms = 0;
+			sv_nUpdatesPerSecond = sv_nUpdates - sv_nUpdatesPrevious;
+			sv_nUpdatesPrevious = sv_nUpdates;
+		} else {
+			sv_nTick100ms++;
+		}
+
+		if (sv_ActiveSenseState == midi::ActiveSenseState::ENABLED) {
+			sv_nActiveSenseTimeout++;
+			if (sv_nActiveSenseTimeout > 3) { // > 300 ms
+				sv_ActiveSenseState = midi::ActiveSenseState::FAILED;	// Turn All Notes Off
+			}
+		}
 	}
+
+	TIMER_INTF(TIMERx) = static_cast<uint32_t>(~nIntFlag);
+}
+
+void USART5_IRQHandler() {
+	if (RESET != usart_interrupt_flag_get(USART5, USART_INT_FLAG_RBNE)) {
+		sv_RxBuffer.midi[sv_RxBuffer.nIndexHead].nData = gd32_uart_get_rx_data(USART5);
+//		sv_RxBuffer[sv_RxBuffer.nIndexHead].nTimestamp =
+		sv_RxBuffer.nIndexHead = (sv_RxBuffer.nIndexHead + 1) & midi::RX_BUFFER_INDEX_MASK;
+	}
+}
+
+#if defined(GD32H7XX)
+static void timer14_config() {
+#elif defined (GD32F10X) || defined (GD32F30X)
+static void timer3_config() {
+#else
+static void timer8_config() {
+#endif
+	rcu_periph_clock_enable(RCU_TIMERx);
+	timer_deinit(TIMERx);
+
+	timer_parameter_struct timer_initpara;
+	timer_struct_para_init(&timer_initpara);
+
+	timer_initpara.prescaler = TIMER_PSC_10KHZ;
+	timer_initpara.alignedmode = TIMER_COUNTER_EDGE;
+	timer_initpara.counterdirection = TIMER_COUNTER_UP;
+	timer_initpara.period = (1000 - 1);		// 10Hz / 100 ms
+	timer_init(TIMERx, &timer_initpara);
+
+	timer_interrupt_flag_clear(TIMERx, ~0);
+
+	timer_interrupt_enable(TIMERx, TIMER_INT_UP);
+
+	NVIC_SetPriority(TIMERx_IRQn, (1UL << __NVIC_PRIO_BITS) - 1UL); // Lowest priority
+	NVIC_EnableIRQ(TIMERx_IRQn);
+
+	timer_enable(TIMERx);
 }
 }
 #endif
 
-void Midi::Init(midi::Direction tDirection) {
-	m_tDirection = tDirection;
+void Midi::Init(midi::Direction direction) {
+	m_Direction = direction;
 
 	FUNC_PREFIX (uart_begin(EXT_MIDI_UART_BASE, m_nBaudrate == 0 ? 31250 : m_nBaudrate, hal::uart::BITS_8, hal::uart::PARITY_NONE, hal::uart::STOP_1BIT));
 
-//	while ((H3_UART2->USR & UART_USR_BUSY) == UART_USR_BUSY) {
-//		static_cast<void>(H3_UART2->O00.RBR);
-//	}
-
-	if ((static_cast<uint32_t>(tDirection) & static_cast<uint32_t>(midi::Direction::INPUT)) == static_cast<uint32_t>(midi::Direction::INPUT)) {
+	if ((static_cast<uint32_t>(direction) & static_cast<uint32_t>(midi::Direction::INPUT)) == static_cast<uint32_t>(midi::Direction::INPUT)) {
 		ResetInput();
 
-		for (uint32_t i = 0; i < midi::RX_BUFFER_INDEX_ENTRIES; i++) {
-			sv_RxBuffer[i].nData = 0;
-			sv_RxBuffer[i].nTimestamp = 0;
+		auto nSize = sizeof(sv_RxBuffer);
+		auto *pDst = reinterpret_cast<volatile uint8_t *>(&sv_RxBuffer);
+		while (nSize--) {
+			*pDst++ = 0;
 		}
-
-		sv_RxBufferIndexHead = 0;
-		sv_RxBufferIndexTail = 0;
 
 #if defined (H3)
 		H3_TIMER->TMR0_CTRL = 0x14;					/* Select continuous mode, 24MHz clock source, 2 pre-scale */
@@ -170,17 +247,25 @@ void Midi::Init(midi::Direction tDirection) {
 
 		gic_irq_config(H3_TIMER0_IRQn, GIC_CORE0);
 		gic_irq_config(H3_UART2_IRQn, GIC_CORE0);
-#elif defined (GD32)
-		NVIC_EnableIRQ(USART5_IRQn);
 
-		usart_interrupt_flag_clear(USART5, USART_INT_FLAG_RBNE);
-	    usart_interrupt_enable(USART5, USART_INT_RBNE);
-#endif
 		__enable_irq();
 		__DMB();
+#elif defined (GD32)
+# if defined(GD32H7XX)
+		void timer14_config();
+# elif defined (GD32F10X) || defined (GD32F30X)
+		void timer3_config();
+# else
+		void timer8_config();
+# endif
+		usart_interrupt_flag_clear(USART5, USART_INT_FLAG_RBNE);
+		usart_interrupt_enable(USART5, USART_INT_RBNE);
+
+		NVIC_EnableIRQ(USART5_IRQn);
+#endif
 	}
 
-	if ((static_cast<uint32_t>(m_tDirection) & static_cast<uint32_t>(midi::Direction::OUTPUT)) == static_cast<uint32_t>(midi::Direction::OUTPUT)) {
+	if ((static_cast<uint32_t>(m_Direction) & static_cast<uint32_t>(midi::Direction::OUTPUT)) == static_cast<uint32_t>(midi::Direction::OUTPUT)) {
 #if defined (H3)
 		H3_UART2->O08.FCR = UART_FCR_EFIFO | UART_FCR_TRESET;
 		H3_UART2->O04.IER = 0;
@@ -201,10 +286,10 @@ uint32_t Midi::GetUpdatesPerSecond() {
 
 bool Midi::ReadRaw(uint8_t *pByte, uint32_t *pTimestamp) {
 	__DMB();
-	if (sv_RxBufferIndexHead != sv_RxBufferIndexTail) {
-		*pByte = sv_RxBuffer[sv_RxBufferIndexTail].nData;
-		*pTimestamp = sv_RxBuffer[sv_RxBufferIndexTail].nTimestamp;
-		sv_RxBufferIndexTail = (sv_RxBufferIndexTail + 1) & midi::RX_BUFFER_INDEX_MASK;
+	if (sv_RxBuffer.nIndexHead != sv_RxBuffer.nIndexTail) {
+		*pByte = sv_RxBuffer.midi[sv_RxBuffer.nIndexTail].nData;
+		*pTimestamp = sv_RxBuffer.midi[sv_RxBuffer.nIndexTail].nTimestamp;
+		sv_RxBuffer.nIndexTail = (sv_RxBuffer.nIndexTail + 1) & midi::RX_BUFFER_INDEX_MASK;
 		return true;
 	} else {
 		return false;

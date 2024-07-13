@@ -40,7 +40,7 @@
 #include "debug.h"
 
 L6470DmxMode5::L6470DmxMode5(L6470 *pL6470, [[maybe_unused]] MotorParams *pMotorParams, ModeParams *pModeParams) {
-	DEBUG2_ENTRY;
+	DEBUG_ENTRY;
 
 	assert(pL6470 != nullptr);
 	assert(pMotorParams != nullptr);
@@ -50,17 +50,17 @@ L6470DmxMode5::L6470DmxMode5(L6470 *pL6470, [[maybe_unused]] MotorParams *pMotor
 	m_pL6470 = pL6470;
 	m_fSteps = static_cast<float>(pModeParams->GetMaxSteps()) / 0xFFFF;
 
-	DEBUG2_EXIT;
+	DEBUG_EXIT;
 }
 
 L6470DmxMode5::~L6470DmxMode5() {
-	DEBUG2_ENTRY;
+	DEBUG_ENTRY;
 
-	DEBUG2_EXIT;
+	DEBUG_EXIT;
 }
 
 void L6470DmxMode5::InitSwitch() {
-	DEBUG2_ENTRY;
+	DEBUG_ENTRY;
 
 	if (m_pModeParams->HasSwitch()) {
 		const TL6470Action action = m_pModeParams->GetSwitchAction();
@@ -70,31 +70,31 @@ void L6470DmxMode5::InitSwitch() {
 		m_pL6470->goUntil(action, dir, stepsPerSec);
 	}
 
-	DEBUG2_EXIT;
+	DEBUG_EXIT;
 }
 
 void L6470DmxMode5::InitPos() {
-	DEBUG2_ENTRY;
+	DEBUG_ENTRY;
 
 	m_pL6470->resetPos();
 
-	DEBUG2_EXIT;
+	DEBUG_EXIT;
 }
 
 void L6470DmxMode5::Start() {
-	DEBUG2_ENTRY;
+	DEBUG_ENTRY;
 
-	DEBUG2_EXIT;
+	DEBUG_EXIT;
 }
 
 void L6470DmxMode5::Stop() {
-	DEBUG2_ENTRY;
+	DEBUG_ENTRY;
 
-	DEBUG2_EXIT;
+	DEBUG_EXIT;
 }
 
 void L6470DmxMode5::HandleBusy() {
-	DEBUG2_ENTRY
+	DEBUG_ENTRY
 
 	if (m_pL6470->busyCheck()) {
 #ifndef NDEBUG
@@ -106,18 +106,18 @@ void L6470DmxMode5::HandleBusy() {
 		m_bWasBusy = false;
 	}
 
-	DEBUG2_EXIT
+	DEBUG_EXIT
 }
 
 bool L6470DmxMode5::BusyCheck() {
-	DEBUG2_ENTRY;
+	DEBUG_ENTRY;
 
-	DEBUG2_EXIT;
+	DEBUG_EXIT;
 	return m_pL6470->busyCheck();
 }
 
 void L6470DmxMode5::Data(const uint8_t *pDmxData) {
-	DEBUG2_ENTRY;
+	DEBUG_ENTRY;
 	
 	const auto nData = static_cast<uint16_t>(pDmxData[1] | (pDmxData[0] << 8));
 	const auto nSteps = static_cast<uint32_t>(static_cast<float>(nData) * m_fSteps);
@@ -148,5 +148,5 @@ void L6470DmxMode5::Data(const uint8_t *pDmxData) {
 
 	m_nPreviousData = nData;
 
-	DEBUG2_EXIT;
+	DEBUG_EXIT;
 }

@@ -29,9 +29,7 @@
 #include <cassert>
 
 #include "displayudf.h"
-
 #include "display.h"
-#include "display7segment.h"
 
 #include "lightset.h"
 #include "network.h"

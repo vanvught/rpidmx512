@@ -34,7 +34,7 @@
 #include "debug.h"
 
 L6470DmxMode0::L6470DmxMode0(L6470 *pL6470) {
-	DEBUG2_ENTRY;
+	DEBUG_ENTRY;
 
 	assert(pL6470 != nullptr);
 
@@ -43,33 +43,33 @@ L6470DmxMode0::L6470DmxMode0(L6470 *pL6470) {
 	m_fMinSpeed = m_pL6470->getMinSpeed();
 	m_fMaxSpeed = m_pL6470->getMaxSpeed();
 
-	DEBUG2_EXIT;
+	DEBUG_EXIT;
 }
 
 L6470DmxMode0::~L6470DmxMode0() {
-	DEBUG2_ENTRY;
+	DEBUG_ENTRY;
 
-	DEBUG2_EXIT;
+	DEBUG_EXIT;
 }
 
 void L6470DmxMode0::Start() {
-	DEBUG2_ENTRY;
+	DEBUG_ENTRY;
 
 	m_pL6470->run(L6470_DIR_FWD, m_fMaxSpeed);
 
-	DEBUG2_EXIT;
+	DEBUG_EXIT;
 }
 
 void L6470DmxMode0::Stop() {
-	DEBUG2_ENTRY;
+	DEBUG_ENTRY;
 
 	m_pL6470->hardHiZ();
 
-	DEBUG2_EXIT;
+	DEBUG_EXIT;
 }
 
 void L6470DmxMode0::Data(const uint8_t *pDmxData) {
-	DEBUG2_ENTRY;
+	DEBUG_ENTRY;
 
 	if (pDmxData[0] <= 126) {	// Left-hand rotation
 		m_pL6470->run(L6470_DIR_FWD, m_fMinSpeed + static_cast<float>((127 - pDmxData[0])) * ((m_fMaxSpeed - m_fMinSpeed) / 127));
@@ -83,5 +83,5 @@ void L6470DmxMode0::Data(const uint8_t *pDmxData) {
 
 	m_pL6470->softStop();
 
-	DEBUG2_EXIT;
+	DEBUG_EXIT;
 }

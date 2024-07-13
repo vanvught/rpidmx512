@@ -30,7 +30,6 @@ const uint8_t TimeCodeConst::FPS[4] = { 24, 25, 30, 30 };
 #if defined (H3)
 const uint32_t TimeCodeConst::TMR_INTV[4] = {12000000 / 24, 12000000 / 25, 12000000 / 30, 12000000 / 30};
 #elif defined (GD32)
-# include "gd32.h"
-# define MASTER_TIMER_CLOCK		(APB2_CLOCK_FREQ * 2)
-  const uint32_t TimeCodeConst::TMR_INTV[4] = {(MASTER_TIMER_CLOCK / 24) - 1, (MASTER_TIMER_CLOCK / 25) - 1, (MASTER_TIMER_CLOCK / 30) - 1, (MASTER_TIMER_CLOCK / 30) - 1};
+ const uint32_t TimeCodeConst::TMR_INTV[4] = {(FREQUENCY_EFFECTIVE / 24), (FREQUENCY_EFFECTIVE / 25) - 1, (FREQUENCY_EFFECTIVE / 30) - 1, (FREQUENCY_EFFECTIVE / 30) - 1};
+ static_assert((FREQUENCY_EFFECTIVE / 24) <= UINT16_MAX);
 #endif

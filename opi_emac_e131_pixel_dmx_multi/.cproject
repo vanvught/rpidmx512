@@ -47,7 +47,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-ws28xx/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-rdm/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-jamstapl/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-dmxsend/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/opi_emac_e131_pixel_dmx_multi/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-dmx/include}&quot;"/>
 								</option>

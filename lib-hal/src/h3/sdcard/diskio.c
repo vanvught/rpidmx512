@@ -192,20 +192,3 @@ DRESULT disk_ioctl(__attribute__((unused)) BYTE drv, BYTE ctrl, void *buf) {
 	return RES_OK;
 }
 
-DWORD get_fattime(void) {
-	time_t ltime;
-	struct tm *local_time;
-	DWORD packed_time;
-
-	ltime = time(NULL);
-	local_time = localtime(&ltime);
-
-	packed_time = ((DWORD) (local_time->tm_year + 20) << 25)
-			| ((DWORD) (local_time->tm_mon + 1) << 21)
-			| ((DWORD) local_time->tm_mday << 16)
-			| ((DWORD) local_time->tm_hour << 11)
-			| ((DWORD) local_time->tm_min << 5)
-			| ((DWORD) local_time->tm_sec >> 1);
-
-	return packed_time;
-}

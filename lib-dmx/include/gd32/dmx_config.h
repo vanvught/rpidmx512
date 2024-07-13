@@ -52,6 +52,8 @@ namespace config {
 # include "board_gd32f470z_eval.h"
 #elif defined (BOARD_GD32F207C_EVAL)
 # include "board_gd32f207c_eval.h"
+#elif defined (BOARD_GD32H759I_EVAL)
+# include "board_gd32h759i_eval.h"
 #elif defined (BOARD_BW_OPIDMX4)
 # include "board_bw_opidmx4.h"
 #elif defined (BOARD_DMX3)

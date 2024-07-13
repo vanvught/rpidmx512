@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -443,13 +443,31 @@ public:
 		return m_State.bDisableMergeTimeout;
 	}
 
-	void SendTimeCode(const struct TArtNetTimeCode *);
+#if defined (ARTNET_HAVE_TIMECODE)
+	void SendTimeCode(const struct artnet::TimeCode *pArtNetTimeCode) {
+		assert(pArtNetTimeCode != nullptr);
+		assert(pArtNetTimeCode->Frames < 30);
+		assert(pArtNetTimeCode->Hours < 60);
+		assert(pArtNetTimeCode->Minutes < 60);
+		assert(pArtNetTimeCode->Seconds < 60);
+		assert(pArtNetTimeCode->Type < 4);
+
+		memcpy(&m_ArtTimeCode.Frames, pArtNetTimeCode, sizeof(struct artnet::TimeCode));
+		Network::Get()->SendTo(m_nHandle, &m_ArtTimeCode, sizeof(struct artnet::ArtTimeCode), m_Node.IPAddressTimeCode, artnet::UDP_PORT);
+	}
 
 	void SetTimeCodeHandler(ArtNetTimeCode *pArtNetTimeCode) {
 		m_pArtNetTimeCode = pArtNetTimeCode;
 	}
 
-	void SetTimeCodeIp(uint32_t nDestinationIp);
+	void SetTimeCodeIp(const uint32_t nDestinationIp) {
+		if (Network::Get()->IsValidIp(nDestinationIp)) {
+			m_Node.IPAddressTimeCode = nDestinationIp;
+		} else {
+			m_Node.IPAddressTimeCode = Network::Get()->GetBroadcastIp();
+		}
+	}
+#endif
 
 	void SetArtNetTrigger(ArtNetTrigger *pArtNetTrigger) {
 		m_pArtNetTrigger = pArtNetTrigger;

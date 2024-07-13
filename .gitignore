@@ -113,3 +113,4 @@ software_version_id.h
 /lib-node
 /lib-showfile/Doxygen
 /lib-clib
+lib-network/src/emac/gd32/ptp/ntp/net_ptp.cpp

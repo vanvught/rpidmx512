@@ -78,7 +78,7 @@ bool TFTPFileServer::FileCreate(const char* pFileName, tftp::Mode mode) {
 		return false;
 	}
 
-	Display::Get()->TextStatus("TFTP Started", Display7SegmentMessage::INFO_TFTP_STARTED, CONSOLE_GREEN);
+	Display::Get()->TextStatus("TFTP Started", CONSOLE_GREEN);
 
 	m_nFileSize = 0;
 
@@ -91,7 +91,7 @@ bool TFTPFileServer::FileClose() {
 
 	m_bDone = true;
 
-	Display::Get()->TextStatus("TFTP Ended", Display7SegmentMessage::INFO_TFTP_ENDED, CONSOLE_GREEN);
+	Display::Get()->TextStatus("TFTP Ended", CONSOLE_GREEN);
 
 	DEBUG_EXIT
 	return true;

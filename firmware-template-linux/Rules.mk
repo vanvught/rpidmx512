@@ -27,7 +27,6 @@ include ../firmware-template/libs.mk
 TTT=uuid
 TMPVAR:=$(LIBS)
 LIBS=$(filter-out $(TTT), $(TMPVAR))
-LIBS+=debug
 LDLIBS=
 
 DEFINES:=$(addprefix -D,$(DEFINES))

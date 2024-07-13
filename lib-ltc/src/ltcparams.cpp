@@ -1,7 +1,7 @@
 /**
  * @file ltcparams.cpp
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -70,6 +70,8 @@ LtcParams::LtcParams() {
 	m_Params.nOscPort = 8000;
 	m_Params.nSkipSeconds = 5;
 	m_Params.nTimeCodeIp = Network::Get()->GetBroadcastIp();
+
+	ltc::g_Type = get_type(m_Params.nFps);
 
 	DEBUG_EXIT
 }
@@ -230,6 +232,7 @@ void LtcParams::callbackFunction(const char* pLine) {
 
 	if (Sscan::Uint8(pLine, LtcParamsConst::FPS, nValue8) == Sscan::OK) {
 		SetValue((nValue8 >= 24) && (nValue8 <= 30), nValue8, m_Params.nFps, ltcparams::Mask::FPS);
+		ltc::g_Type = ltc::get_type(m_Params.nFps);
 		return;
 	}
 
@@ -355,26 +358,24 @@ void LtcParams::callbackFunction(const char* pLine) {
 }
 
 void LtcParams::Set(struct ltc::TimeCode *ptStartTimeCode, struct ltc::TimeCode *ptStopTimeCode) {
-	g_ltc_ptLtcDisabledOutputs.bOled = isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::DISPLAY);
-	g_ltc_ptLtcDisabledOutputs.bMax7219 = isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::MAX7219);
-	g_ltc_ptLtcDisabledOutputs.bMidi = isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::MIDI);
-	g_ltc_ptLtcDisabledOutputs.bArtNet = isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::ARTNET);
-	g_ltc_ptLtcDisabledOutputs.bLtc = isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::LTC);
-	g_ltc_ptLtcDisabledOutputs.bEtc = isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::ETC);
-	g_ltc_ptLtcDisabledOutputs.bNtp = (m_Params.nEnableNtp == 0);
-	g_ltc_ptLtcDisabledOutputs.bRtpMidi = isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::RTPMIDI);
+	ltc::g_DisabledOutputs.bOled = isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::DISPLAY);
+	ltc::g_DisabledOutputs.bMax7219 = isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::MAX7219);
+	ltc::g_DisabledOutputs.bMidi = isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::MIDI);
+	ltc::g_DisabledOutputs.bArtNet = isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::ARTNET);
+	ltc::g_DisabledOutputs.bLtc = isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::LTC);
+	ltc::g_DisabledOutputs.bEtc = isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::ETC);
+	ltc::g_DisabledOutputs.bNtp = (m_Params.nEnableNtp == 0);
+	ltc::g_DisabledOutputs.bRtpMidi = isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::RTPMIDI);
 #if !defined (CONFIG_LTC_DISABLE_WS28XX)
-	g_ltc_ptLtcDisabledOutputs.bWS28xx = (m_Params.nRgbLedType != ltcparams::RgbLedType::WS28XX);
+	ltc::g_DisabledOutputs.bWS28xx = (m_Params.nRgbLedType != ltcparams::RgbLedType::WS28XX);
 #else
-	g_ltc_ptLtcDisabledOutputs.bWS28xx = false;
+	ltc::g_DisabledOutputs.bWS28xx = true;
 #endif
 #if !defined (CONFIG_LTC_DISABLE_RGB_PANEL)
-	g_ltc_ptLtcDisabledOutputs.bRgbPanel = (m_Params.nRgbLedType != ltcparams::RgbLedType::RGBPANEL);
+	ltc::g_DisabledOutputs.bRgbPanel = (m_Params.nRgbLedType != ltcparams::RgbLedType::RGBPANEL);
 #else
-	g_ltc_ptLtcDisabledOutputs.bRgbPanel = false;
+	ltc::g_DisabledOutputs.bRgbPanel = true;
 #endif
-
-//	assert (g_ltc_ptLtcDisabledOutputs.bWS28xx || g_ltc_ptLtcDisabledOutputs.bRgbPanel);
 
 	assert(ptStartTimeCode != nullptr);
 
@@ -403,7 +404,7 @@ void LtcParams::Set(struct ltc::TimeCode *ptStartTimeCode, struct ltc::TimeCode 
 		ptStartTimeCode->nHours = m_Params.nStartHour;
 	}
 
-	ptStartTimeCode->nType = static_cast<uint8_t>(ltc::get_type(m_Params.nFps));
+	ptStartTimeCode->nType = static_cast<uint8_t>(ltc::g_Type);
 
 	assert(ptStopTimeCode != nullptr);
 
@@ -432,7 +433,7 @@ void LtcParams::Set(struct ltc::TimeCode *ptStartTimeCode, struct ltc::TimeCode 
 		ptStopTimeCode->nHours = m_Params.nStopHour;
 	}
 
-	ptStopTimeCode->nType = static_cast<uint8_t>(ltc::get_type(m_Params.nFps));
+	ptStopTimeCode->nType = static_cast<uint8_t>(ltc::g_Type);
 }
 
 void LtcParams::staticCallbackFunction(void *p, const char *s) {

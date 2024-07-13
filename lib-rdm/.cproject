@@ -28,7 +28,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-rdmsubdevice/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-properties/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-debug/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-h3/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-h3/include/board}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-display/include}&quot;"/>
@@ -55,7 +54,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-rdmsubdevice/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-properties/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-debug/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-h3/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-h3/include/board}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-display/include}&quot;"/>
@@ -87,7 +85,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-rdmsubdevice/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-properties/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-debug/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-h3/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-h3/include/board}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-display/include}&quot;"/>
@@ -139,7 +136,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-lightset/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-rdmsubdevice/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-debug/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-h3/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-h3/include/board}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-network/include}&quot;"/>
@@ -163,7 +159,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-lightset/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-rdmsubdevice/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-debug/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-h3/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-h3/include/board}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-network/include}&quot;"/>
@@ -197,7 +192,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-lightset/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-rdmsubdevice/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-debug/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-h3/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-h3/include/board}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-network/include}&quot;"/>
@@ -259,7 +253,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-lightset/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-rdmsubdevice/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-debug/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-network/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-display/include}&quot;"/>
@@ -331,28 +324,16 @@
 	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
 	<storageModule moduleId="scannerConfiguration">
 		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.cross.base.252252823.1507776794.590691213;cdt.managedbuild.toolchain.gnu.cross.base.252252823.1507776794.590691213.;cdt.managedbuild.tool.gnu.cross.c.compiler.17553377;cdt.managedbuild.tool.gnu.c.compiler.input.231893167">
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.cross.base.798028665.108769361;cdt.managedbuild.toolchain.gnu.cross.base.798028665.108769361.;cdt.managedbuild.tool.gnu.cross.cpp.compiler.1374568016;cdt.managedbuild.tool.gnu.cpp.compiler.input.1034222076">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.cross.base.563973127.34444174.988192522;cdt.managedbuild.toolchain.gnu.cross.base.563973127.34444174.988192522.;cdt.managedbuild.tool.gnu.cross.cpp.compiler.681997656;cdt.managedbuild.tool.gnu.cpp.compiler.input.1528083445">
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.cross.base.798028665;cdt.managedbuild.toolchain.gnu.cross.base.798028665.1176534136;cdt.managedbuild.tool.gnu.cross.cpp.compiler.756103573;cdt.managedbuild.tool.gnu.cpp.compiler.input.857869648">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.cross.base.252252823.1507776794.202961412.525923780.725926578;cdt.managedbuild.toolchain.gnu.cross.base.252252823.1507776794.202961412.525923780.725926578.;cdt.managedbuild.tool.gnu.cpp.compiler.base.1005036309;cdt.managedbuild.tool.gnu.cpp.compiler.input.1072672162">
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.cross.base.798028665.108769361;cdt.managedbuild.toolchain.gnu.cross.base.798028665.108769361.;cdt.managedbuild.tool.gnu.cross.c.compiler.574340158;cdt.managedbuild.tool.gnu.c.compiler.input.864894936">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.cross.base.563973127.34444174;cdt.managedbuild.toolchain.gnu.cross.base.563973127.34444174.;cdt.managedbuild.tool.gnu.cross.c.compiler.999066368;cdt.managedbuild.tool.gnu.c.compiler.input.1974211486">
-			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.cross.base.563973127.34444174;cdt.managedbuild.toolchain.gnu.cross.base.563973127.34444174.;cdt.managedbuild.tool.gnu.cross.cpp.compiler.1596749266;cdt.managedbuild.tool.gnu.cpp.compiler.input.247434554">
-			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.cross.base.252252823.1507776794.202961412.525923780.725926578;cdt.managedbuild.toolchain.gnu.cross.base.252252823.1507776794.202961412.525923780.725926578.;cdt.managedbuild.tool.gnu.c.compiler.base.172031644;cdt.managedbuild.tool.gnu.c.compiler.input.1132379556">
-			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.cross.base.252252823.1507776794.590691213;cdt.managedbuild.toolchain.gnu.cross.base.252252823.1507776794.590691213.;cdt.managedbuild.tool.gnu.cross.cpp.compiler.1531102971;cdt.managedbuild.tool.gnu.cpp.compiler.input.19549160">
-			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.cross.base.563973127.34444174.988192522;cdt.managedbuild.toolchain.gnu.cross.base.563973127.34444174.988192522.;cdt.managedbuild.tool.gnu.cross.c.compiler.660678137;cdt.managedbuild.tool.gnu.c.compiler.input.1605177827">
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.cross.base.798028665;cdt.managedbuild.toolchain.gnu.cross.base.798028665.1176534136;cdt.managedbuild.tool.gnu.cross.c.compiler.108374789;cdt.managedbuild.tool.gnu.c.compiler.input.913454193">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
 	</storageModule>

@@ -2,7 +2,7 @@
  * @file console.cpp
  *
  */
-/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,13 +31,6 @@ extern "C" {
 void uart0_init();
 void uart0_putc(int);
 void uart0_puts(const char *);
-
-void __attribute__((cold)) console_init() {
-	uart0_init();
-
-	console_set_fg_color(CONSOLE_WHITE);
-	console_set_bg_color(CONSOLE_BLACK);
-}
 
 void console_putc(int c) {
 	uart0_putc(c);
@@ -110,4 +103,11 @@ void console_status(uint32_t nColour, const char *s) {
 
 	console_set_fg_color(CONSOLE_WHITE);
 }
+}
+
+void __attribute__((cold)) console_init() {
+	uart0_init();
+
+	console_set_fg_color(CONSOLE_WHITE);
+	console_set_bg_color(CONSOLE_BLACK);
 }

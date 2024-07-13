@@ -85,17 +85,17 @@ int main() {
 	Hardware hw;
 	DisplayUdf display;
 	ConfigStore configStore;
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
+	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, CONSOLE_YELLOW);
 	Network nw;
 	MDNS mDns;
-	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, Display7SegmentMessage::INFO_NONE, CONSOLE_GREEN);
+	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, CONSOLE_GREEN);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	FlashCodeInstall spiFlashInstall;
 
 	fw.Print("Art-Net 4 Pixel controller {1x 4 Universes}");
 	nw.Print();
 
-	display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);
+	display.TextStatus(ArtNetMsgConst::PARAMS, CONSOLE_YELLOW);
 
 	ArtNetNode node;
 
@@ -140,7 +140,7 @@ int main() {
 	ArtNetTriggerHandler triggerHandler(&pixelDmx);
 
 #if defined (NODE_RDMNET_LLRP_ONLY)
-	display.TextStatus(RDMNetConst::MSG_CONFIG, Display7SegmentMessage::INFO_RDMNET_CONFIG, CONSOLE_YELLOW);
+	display.TextStatus(RDMNetConst::MSG_CONFIG, CONSOLE_YELLOW);
 	char aDescription[rdm::personality::DESCRIPTION_MAX_LENGTH + 1];
 	snprintf(aDescription, sizeof(aDescription) - 1, "Art-Net Pixel 1-%s:%d", PixelType::GetType(WS28xx::Get()->GetType()), WS28xx::Get()->GetCount());
 
@@ -215,11 +215,11 @@ int main() {
 
 	mDns.Print();
 
-	display.TextStatus(ArtNetMsgConst::START, Display7SegmentMessage::INFO_NODE_START, CONSOLE_YELLOW);
+	display.TextStatus(ArtNetMsgConst::START, CONSOLE_YELLOW);
 
 	node.Start();
 
-	display.TextStatus(ArtNetMsgConst::STARTED, Display7SegmentMessage::INFO_NODE_STARTED, CONSOLE_GREEN);
+	display.TextStatus(ArtNetMsgConst::STARTED, CONSOLE_GREEN);
 
 	hw.WatchdogInit();
 

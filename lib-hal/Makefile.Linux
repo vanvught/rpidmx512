@@ -3,6 +3,8 @@
 EXTRA_INCLUDES=src/linux/minimum
 EXTRA_SRCDIR=src/linux/minimum
 
+EXTRA_SRCDIR+=debug
+
 ifneq ($(MAKE_FLAGS),)
 	ifeq (,$(findstring DISABLE_RTC,$(MAKE_FLAGS)))
 		EXTRA_SRCDIR+=rtc rtc/i2c

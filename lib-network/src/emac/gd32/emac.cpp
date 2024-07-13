@@ -161,8 +161,13 @@ void __attribute__((cold)) emac_start(uint8_t mac_address[], net::Link& link) {
 
 #if defined (GD32H7XX)
 	enet_mac_address_set(ENETx, ENET_MAC_ADDRESS0, mac_address);
+# if defined (CONFIG_ENET_ENABLE_PTP)
+	enet_ptp_normal_descriptors_chain_init(ENETx, ENET_DMA_TX, ptp_txdesc_tab);
+	enet_ptp_normal_descriptors_chain_init(ENETx, ENET_DMA_RX, ptp_rxdesc_tab);
+# else
 	enet_descriptors_chain_init(ENETx, ENET_DMA_TX);
 	enet_descriptors_chain_init(ENETx, ENET_DMA_RX);
+# endif
 #else
 	enet_mac_address_set(ENET_MAC_ADDRESS0, mac_address);
 # if defined (CONFIG_ENET_ENABLE_PTP)

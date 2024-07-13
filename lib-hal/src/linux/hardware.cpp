@@ -49,6 +49,10 @@
 
 #include "debug.h"
 
+namespace global {
+int32_t *gp_nUtcOffset;
+}  // namespace global
+
 #if !defined (__APPLE__)
 extern "C" {
 int __attribute__((weak)) bcm2835_init(void) {

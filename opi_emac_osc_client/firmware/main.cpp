@@ -60,10 +60,10 @@ int main() {
 	Hardware hw;
 	Display display;
 	ConfigStore configStore;
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
+	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, CONSOLE_YELLOW);
 	Network nw;
 	MDNS mDns;
-	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, Display7SegmentMessage::INFO_NONE, CONSOLE_GREEN);
+	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, CONSOLE_GREEN);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	FlashCodeInstall spiFlashInstall;
 
@@ -78,7 +78,7 @@ int main() {
 
 	mDns.ServiceRecordAdd(nullptr, mdns::Services::OSC, "type=client", client.GetPortIncoming());
 
-	display.TextStatus(OscClientMsgConst::PARAMS, Display7SegmentMessage::INFO_OSCCLIENT_PARMAMS, CONSOLE_YELLOW);
+	display.TextStatus(OscClientMsgConst::PARAMS, CONSOLE_YELLOW);
 
 	client.Print();
 
@@ -124,11 +124,11 @@ int main() {
 	display.Printf(5, "O : %d", client.GetPortOutgoing());
 	display.Printf(6, "I : %d", client.GetPortIncoming());
 
-	display.TextStatus(OscClientMsgConst::START, Display7SegmentMessage::INFO_OSCCLIENT_START, CONSOLE_YELLOW);
+	display.TextStatus(OscClientMsgConst::START, CONSOLE_YELLOW);
 
 	client.Start();
 
-	display.TextStatus(OscClientMsgConst::STARTED, Display7SegmentMessage::INFO_OSCCLIENT_STARTED, CONSOLE_GREEN);
+	display.TextStatus(OscClientMsgConst::STARTED, CONSOLE_GREEN);
 
 	hw.SetMode(hardware::ledblink::Mode::NORMAL);
 	hw.WatchdogInit();

@@ -2,7 +2,7 @@
  * @file ltcoutputs.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,7 @@
 
 class LtcOutputs {
 public:
-	LtcOutputs(ltc::Source tSource, bool bShowSysTime);
+	LtcOutputs(const ltc::Source source, const bool bShowSysTime);
 
 	void Init();
 	void Update(const struct ltc::TimeCode *ptLtcTimeCode);
@@ -40,7 +40,7 @@ public:
 	void ShowBPM(uint32_t nBPM);
 
 	void ResetTimeCodeTypePrevious() {
-		m_tTimeCodeTypePrevious = ltc::Type::INVALID;
+		m_TypePrevious = ltc::Type::INVALID;
 	}
 
 	void Print();
@@ -51,7 +51,7 @@ public:
 
 private:
 	bool m_bShowSysTime;
-	ltc::Type m_tTimeCodeTypePrevious { ltc::Type::INVALID };
+	ltc::Type m_TypePrevious { ltc::Type::INVALID };
 	uint32_t m_nMidiQuarterFramePiece { 0 };
 	char m_aTimeCode[ltc::timecode::CODE_MAX_LENGTH];
 	char m_aSystemTime[ltc::timecode::SYSTIME_MAX_LENGTH];

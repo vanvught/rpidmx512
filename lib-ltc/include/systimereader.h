@@ -2,7 +2,7 @@
  * @file systimereader.h
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef H3_SYSTIMEREADER_H_
-#define H3_SYSTIMEREADER_H_
+#ifndef SYSTIMEREADER_H_
+#define SYSTIMEREADER_H_
 
 #include <cstdint>
 #include <time.h>
@@ -56,7 +56,6 @@ private:
 
 private:
 	uint8_t m_nFps;
-	uint32_t m_nTimer0Interval;
 	time_t m_nTimePrevious { 0 };
 	struct midi::Timecode m_tMidiTimeCode;
 	int32_t m_nHandle { -1 };
@@ -67,4 +66,4 @@ private:
 	static SystimeReader *s_pThis;
 };
 
-#endif /* H3_SYSTIMEREADER_H_ */
+#endif /* SYSTIMEREADER_H_ */

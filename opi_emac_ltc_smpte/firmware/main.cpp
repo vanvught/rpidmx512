@@ -39,7 +39,6 @@
 #include "ltcdisplayparams.h"
 #include "ltcdisplayrgb.h"
 #include "ltcdisplaymax7219.h"
-#include "ltc7segment.h"
 #include "ltcmidisystemrealtime.h"
 #include "ltcetc.h"
 #include "ltcetcparams.h"
@@ -83,8 +82,6 @@
 
 #include "configstore.h"
 
-
-
 #include "remoteconfig.h"
 #include "remoteconfigparams.h"
 
@@ -121,11 +118,11 @@ void Hardware::RebootHandler() {
 //		break;
 //	}
 
-	if (!g_ltc_ptLtcDisabledOutputs.bMax7219) {
+	if (!ltc::g_DisabledOutputs.bMax7219) {
 		LtcDisplayMax7219::Get()->Init(2); // TODO WriteChar
 	}
 
-	if ((!g_ltc_ptLtcDisabledOutputs.bWS28xx) || (!g_ltc_ptLtcDisabledOutputs.bRgbPanel)) {
+	if ((!ltc::g_DisabledOutputs.bWS28xx) || (!ltc::g_DisabledOutputs.bRgbPanel)) {
 		LtcDisplayRgb::Get()->WriteChar('-');
 	}
 
@@ -138,7 +135,7 @@ void Hardware::RebootHandler() {
 		Network::Get()->Shutdown();
 
 		Display::Get()->Cls();
-		Display::Get()->TextStatus("Rebooting ...", Display7SegmentMessage::INFO_REBOOTING);
+		Display::Get()->TextStatus("Rebooting ...");
 	}
 }
 
@@ -150,9 +147,9 @@ int main() {
 	Hardware hw;
 	Display display(4);
 	ConfigStore configStore;
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
+	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, CONSOLE_YELLOW);
 	Network nw;
-	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, Display7SegmentMessage::INFO_NONE, CONSOLE_GREEN);
+	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, CONSOLE_GREEN);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	FlashCodeInstall spiFlashInstall;
 
@@ -162,8 +159,6 @@ int main() {
 #if defined(ENABLE_SHELL)
 	Shell shell;
 #endif
-
-	Ltc7segment leds;
 
 	display.ClearLine(1);
 	display.ClearLine(2);
@@ -222,20 +217,18 @@ int main() {
 	shell.SetSource(ltcSource);
 #endif
 
-	Display::Get()->Status(Display7SegmentMessage::INFO_NONE);
-
 	LtcOutputs ltcOutputs(ltcSource, ltcParams.IsShowSysTime());
 
-	if (!g_ltc_ptLtcDisabledOutputs.bMax7219) {
+	if (!ltc::g_DisabledOutputs.bMax7219) {
 		DEBUG_PUTS("");
 		ltcDdisplayMax7219.Init(ltcDisplayParams.GetMax7219Intensity());
 		ltcDdisplayMax7219.Print();
 	}
 
-	if ((!g_ltc_ptLtcDisabledOutputs.bWS28xx) || (!g_ltc_ptLtcDisabledOutputs.bRgbPanel)) {
+	if ((!ltc::g_DisabledOutputs.bWS28xx) || (!ltc::g_DisabledOutputs.bRgbPanel)) {
 		ltcDisplayParams.Set(&ltcDisplayRgb);
 
-		if (!g_ltc_ptLtcDisabledOutputs.bRgbPanel) {
+		if (!ltc::g_DisabledOutputs.bRgbPanel) {
 			ltcDisplayRgb.Init();
 
 			char aInfoMessage[8 + 1];
@@ -253,7 +246,7 @@ int main() {
 		ltcDisplayRgb.Print();
 	}
 
-	if (g_ltc_ptLtcDisabledOutputs.bRgbPanel) {
+	if (ltc::g_DisabledOutputs.bRgbPanel) {
 		for (uint32_t nCpuNumber = 1; nCpuNumber < 4; nCpuNumber++) {
 			h3_cpu_off(nCpuNumber);
 		}
@@ -272,7 +265,7 @@ int main() {
 	 * Art-Net
 	 */
 
-	const auto bRunArtNet = ((ltcSource == ltc::Source::ARTNET) || (!g_ltc_ptLtcDisabledOutputs.bArtNet));
+	const auto bRunArtNet = ((ltcSource == ltc::Source::ARTNET) || (!ltc::g_DisabledOutputs.bArtNet));
 
 	ArtNetNode node;
 
@@ -305,7 +298,7 @@ int main() {
 
 	const auto bRunTCNet = (ltcSource == ltc::Source::TCNET);
 
-	TCNet tcnet(TCNET_TYPE_SLAVE);
+	TCNet tcnet;
 
 	if (bRunTCNet) {
 		TCNetParams tcnetparams;
@@ -323,11 +316,11 @@ int main() {
 
 	Midi midi;
 
-	if ((ltcSource != ltc::Source::MIDI) && (!g_ltc_ptLtcDisabledOutputs.bMidi)) {
+	if ((ltcSource != ltc::Source::MIDI) && (!ltc::g_DisabledOutputs.bMidi)) {
 		midi.Init(midi::Direction::OUTPUT);
 	}
 
-	if ((ltcSource == ltc::Source::MIDI) || (!g_ltc_ptLtcDisabledOutputs.bMidi)) {
+	if ((ltcSource == ltc::Source::MIDI) || (!ltc::g_DisabledOutputs.bMidi)) {
 		midi.Print();
 	}
 
@@ -335,7 +328,7 @@ int main() {
 	 * RTP-MIDI
 	 */
 
-	const auto bRunRtpMidi = ((ltcSource == ltc::Source::APPLEMIDI) || (!g_ltc_ptLtcDisabledOutputs.bRtpMidi));
+	const auto bRunRtpMidi = ((ltcSource == ltc::Source::APPLEMIDI) || (!ltc::g_DisabledOutputs.bRtpMidi));
 
 	RtpMidi rtpMidi;
 
@@ -356,7 +349,7 @@ int main() {
 
 	LtcEtc ltcEtc;
 
-	if (bRunLtcEtc || (!g_ltc_ptLtcDisabledOutputs.bEtc)) {
+	if (bRunLtcEtc || (!ltc::g_DisabledOutputs.bEtc)) {
 		LtcEtcParams ltcEtcParams;
 
 		ltcEtcParams.Load();
@@ -376,7 +369,7 @@ int main() {
 
 	LtcSender ltcSender(ltcParams.GetVolume());
 
-	if ((ltcSource != ltc::Source::LTC) && (!g_ltc_ptLtcDisabledOutputs.bLtc)) {
+	if ((ltcSource != ltc::Source::LTC) && (!ltc::g_DisabledOutputs.bLtc)) {
 		ltcSender.Start();
 	}
 
@@ -413,7 +406,7 @@ int main() {
 		gpsParams.Load();
 	}
 
-	const auto bRunGpsTimeClient = (gpsParams.IsEnabled() && (ltcSource == ltc::Source::SYSTIME) && g_ltc_ptLtcDisabledOutputs.bRgbPanel);
+	const auto bRunGpsTimeClient = (gpsParams.IsEnabled() && (ltcSource == ltc::Source::SYSTIME) && ltc::g_DisabledOutputs.bRgbPanel);
 	const auto bGpsStart = bRunGpsTimeClient && ltcParams.IsGpsStart();
 
 	GPSTimeClient gpsTimeClient(gpsParams.GetUtcOffset(), gpsParams.GetModule());
@@ -461,7 +454,7 @@ int main() {
 	 * AND when MIDI output is NOT disabled OR the RTP-MIDI is NOT disabled.
 	 */
 
-	const auto bRunMidiSystemRealtime = (ltcSource != ltc::Source::MIDI) && (ltcSource != ltc::Source::APPLEMIDI) && ((!g_ltc_ptLtcDisabledOutputs.bRtpMidi) || (!g_ltc_ptLtcDisabledOutputs.bMidi));
+	const auto bRunMidiSystemRealtime = (ltcSource != ltc::Source::MIDI) && (ltcSource != ltc::Source::APPLEMIDI) && ((!ltc::g_DisabledOutputs.bRtpMidi) || (!ltc::g_DisabledOutputs.bMidi));
 
 	if (bRunMidiSystemRealtime) {
 		ltcMidiSystemRealtime.Start();
@@ -514,7 +507,7 @@ int main() {
 
 	ltc::source::show(ltcSource, bRunGpsTimeClient);
 
-	if (!g_ltc_ptLtcDisabledOutputs.bRgbPanel) {
+	if (!ltc::g_DisabledOutputs.bRgbPanel) {
 		ltcDisplayRgb.ShowSource(ltcSource);
 	}
 
@@ -602,15 +595,15 @@ int main() {
 			ltcMidiSystemRealtime.Run();	// UDP requests
 		}
 
-		if (g_ltc_ptLtcDisabledOutputs.bOled) {
+		if (ltc::g_DisabledOutputs.bOled) {
 			display.Run();
 		}
 
-		if ((!g_ltc_ptLtcDisabledOutputs.bWS28xx) || (!g_ltc_ptLtcDisabledOutputs.bRgbPanel)) {
+		if ((!ltc::g_DisabledOutputs.bWS28xx) || (!ltc::g_DisabledOutputs.bRgbPanel)) {
 			ltcDisplayRgb.Run();
 		}
 
-		if (g_ltc_ptLtcDisabledOutputs.bRgbPanel) {
+		if (ltc::g_DisabledOutputs.bRgbPanel) {
 			hw.Run();
 		}
 

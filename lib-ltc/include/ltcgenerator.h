@@ -105,7 +105,6 @@ private:
 	uint32_t m_nPitchTicker { 1 };
 	uint32_t m_nPitchPrevious { 0 };
 	TLtcGeneratorPitch m_tPitch { LTC_GENERATOR_FASTER };
-	uint32_t m_nTimer0Interval { 0 };
 	uint32_t m_nButtons { 0 };
 	int m_nHandle { -1 };
 	uint16_t m_nBytesReceived { 0 };

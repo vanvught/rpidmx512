@@ -23,6 +23,10 @@
  * THE SOFTWARE.
  */
 
+#pragma GCC push_options
+#pragma GCC optimize ("O2")
+#pragma GCC optimize ("no-tree-loop-distribute-patterns")
+
 #include <cstdint>
 #include <cstring>
 #include <cstdio>
@@ -64,10 +68,6 @@
 
 #if defined (H3)
 static void irq_timer0_handler([[maybe_unused]] uint32_t clo) {
-	if (!g_ltc_ptLtcDisabledOutputs.bLtc) {
-		LtcSender::Get()->SetTimeCode(static_cast<const struct ltc::TimeCode*>(&g_ltc_LtcTimeCode), false);
-	}
-
 	gv_ltc_bTimeCodeAvailable = true;
 }
 #elif defined (GD32)
@@ -145,7 +145,6 @@ LtcGenerator::LtcGenerator(const struct ltc::TimeCode* pStartLtcTimeCode, const 
 	memcpy(&g_ltc_LtcTimeCode, pStartLtcTimeCode, sizeof(struct ltc::TimeCode));
 
 	m_nFps = TimeCodeConst::FPS[pStartLtcTimeCode->nType];
-	m_nTimer0Interval = TimeCodeConst::TMR_INTV[pStartLtcTimeCode->nType];
 
 	if (m_pStartLtcTimeCode->nFrames >= m_nFps) {
 		m_pStartLtcTimeCode->nFrames = static_cast<uint8_t>(m_nFps - 1);
@@ -183,33 +182,38 @@ void LtcGenerator::Start() {
 	m_nHandle = Network::Get()->Begin(udp::PORT);
 	assert(m_nHandle != -1);
 
+	const auto nType = static_cast<uint32_t>(ltc::g_Type);
+	const auto nTimerInterval = TimeCodeConst::TMR_INTV[nType];
+
 #if defined (H3)
 	irq_timer_init();
 	irq_timer_set(IRQ_TIMER_0, static_cast<thunk_irq_timer_t>(irq_timer0_handler));
 
-	H3_TIMER->TMR0_INTV = m_nTimer0Interval;
+	H3_TIMER->TMR0_INTV = nTimerInterval;
 	H3_TIMER->TMR0_CTRL &= ~(TIMER_CTRL_SINGLE_MODE);
 	H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
 #elif defined (GD32)
 	platform::ltc::timer11_config();
-	TIMER_CH0CV(TIMER11) = m_nTimer0Interval;
+	TIMER_CAR(TIMER11) = nTimerInterval;
+	TIMER_CNT(TIMER11) = 0;
+	TIMER_CTL0(TIMER11) |= TIMER_CTL0_CEN;
 #endif
 
 	LtcOutputs::Get()->Init();
 
-	if (!g_ltc_ptLtcDisabledOutputs.bLtc) {
+	if (!ltc::g_DisabledOutputs.bLtc) {
 		LtcSender::Get()->SetTimeCode(const_cast<const struct ltc::TimeCode*>(&g_ltc_LtcTimeCode), false);
 	}
 
-	if (!g_ltc_ptLtcDisabledOutputs.bArtNet) {
-		ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct TArtNetTimeCode*>(&g_ltc_LtcTimeCode));
+	if (!ltc::g_DisabledOutputs.bArtNet) {
+		ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct artnet::TimeCode*>(&g_ltc_LtcTimeCode));
 	}
 
-	if (!g_ltc_ptLtcDisabledOutputs.bRtpMidi) {
+	if (!ltc::g_DisabledOutputs.bRtpMidi) {
 		RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(&g_ltc_LtcTimeCode));
 	}
 
-	if (!g_ltc_ptLtcDisabledOutputs.bEtc) {
+	if (!ltc::g_DisabledOutputs.bEtc) {
 		LtcEtc::Get()->Send(reinterpret_cast<const struct midi::Timecode *>(&g_ltc_LtcTimeCode));
 	}
 
@@ -357,13 +361,12 @@ void LtcGenerator::ActionSetRate(const char *pTimeCodeRate) {
 	DEBUG_ENTRY
 
 	uint8_t nFps;
-	ltc::Type type;
 
-	if ((m_State == STOPPED) && (ltc::parse_timecode_rate(pTimeCodeRate, nFps, type))) {
+	if ((m_State == STOPPED) && (ltc::parse_timecode_rate(pTimeCodeRate, nFps))) {
 		if (nFps != m_nFps) {
-			const auto nType = static_cast<uint8_t>(type);
 			m_nFps = nFps;
 			//
+			const auto nType = static_cast<uint8_t>(ltc::g_Type);
 			g_ltc_LtcTimeCode.nType = nType;
 			//
 			m_pStartLtcTimeCode->nType = nType;
@@ -375,29 +378,29 @@ void LtcGenerator::ActionSetRate(const char *pTimeCodeRate) {
 				m_pStopLtcTimeCode->nFrames = static_cast<uint8_t>(m_nFps - 1);
 			}
 			//
-			m_nTimer0Interval = TimeCodeConst::TMR_INTV[nType];
+			const auto nTimerInterval = TimeCodeConst::TMR_INTV[nType];
 #if defined (H3)
-			H3_TIMER->TMR0_INTV = m_nTimer0Interval;
+			H3_TIMER->TMR0_INTV = nTimerInterval;
 			H3_TIMER->TMR0_CTRL &= ~(TIMER_CTRL_SINGLE_MODE);
 			H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
 #elif defined (GD32)
+			TIMER_CAR(TIMER11) = nTimerInterval;
 			TIMER_CNT(TIMER11) = 0;
-			TIMER_CH0CV(TIMER11) = m_nTimer0Interval;
 #endif
 			//
-			if (!g_ltc_ptLtcDisabledOutputs.bLtc) {
+			if (!ltc::g_DisabledOutputs.bLtc) {
 				LtcSender::Get()->SetTimeCode(const_cast<const struct ltc::TimeCode*>(&g_ltc_LtcTimeCode), false);
 			}
 
-			if (!g_ltc_ptLtcDisabledOutputs.bArtNet) {
-				ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct TArtNetTimeCode*>(&g_ltc_LtcTimeCode));
+			if (!ltc::g_DisabledOutputs.bArtNet) {
+				ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct artnet::TimeCode*>(&g_ltc_LtcTimeCode));
 			}
 
-			if (!g_ltc_ptLtcDisabledOutputs.bRtpMidi) {
+			if (!ltc::g_DisabledOutputs.bRtpMidi) {
 				RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(&g_ltc_LtcTimeCode));
 			}
 
-			if (!g_ltc_ptLtcDisabledOutputs.bEtc) {
+			if (!ltc::g_DisabledOutputs.bEtc) {
 				LtcEtc::Get()->Send(reinterpret_cast<const struct midi::Timecode *>(&g_ltc_LtcTimeCode));
 			}
 
@@ -730,10 +733,10 @@ bool LtcGenerator::PitchControl() {
 }
 
 void LtcGenerator::SetTimeCode(int32_t nSeconds) {
-	g_ltc_LtcTimeCode.nHours = static_cast<uint8_t>(nSeconds / 3600);
-	nSeconds -= g_ltc_LtcTimeCode.nHours * 3600;
-	g_ltc_LtcTimeCode.nMinutes = static_cast<uint8_t>(nSeconds / 60);
-	nSeconds -= g_ltc_LtcTimeCode.nMinutes * 60;
+	g_ltc_LtcTimeCode.nHours = static_cast<uint8_t>(nSeconds / 3600U);
+	nSeconds -= g_ltc_LtcTimeCode.nHours * 3600U;
+	g_ltc_LtcTimeCode.nMinutes = static_cast<uint8_t>(nSeconds / 60U);
+	nSeconds -= g_ltc_LtcTimeCode.nMinutes * 60U;
 	g_ltc_LtcTimeCode.nSeconds = static_cast<uint8_t>(nSeconds);
 }
 
@@ -746,15 +749,19 @@ void LtcGenerator::Update() {
 	if (gv_ltc_bTimeCodeAvailable) {
 		gv_ltc_bTimeCodeAvailable = false;
 
-		if (!g_ltc_ptLtcDisabledOutputs.bArtNet) {
-			ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct TArtNetTimeCode*>(&g_ltc_LtcTimeCode));
+		if (!ltc::g_DisabledOutputs.bLtc) {
+			LtcSender::Get()->SetTimeCode(static_cast<const struct ltc::TimeCode*>(&g_ltc_LtcTimeCode), false);
 		}
 
-		if (!g_ltc_ptLtcDisabledOutputs.bRtpMidi) {
+		if (!ltc::g_DisabledOutputs.bArtNet) {
+			ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct artnet::TimeCode*>(&g_ltc_LtcTimeCode));
+		}
+
+		if (!ltc::g_DisabledOutputs.bRtpMidi) {
 			RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(&g_ltc_LtcTimeCode));
 		}
 
-		if (!g_ltc_ptLtcDisabledOutputs.bEtc) {
+		if (!ltc::g_DisabledOutputs.bEtc) {
 			LtcEtc::Get()->Send(reinterpret_cast<const struct midi::Timecode *>(&g_ltc_LtcTimeCode));
 		}
 

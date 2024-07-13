@@ -402,10 +402,10 @@ bool SparkFunDmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 }
 
 bool SparkFunDmx::GetSlotInfo(uint16_t nSlotOffset, SlotInfo& tSlotInfo) {
-	DEBUG2_ENTRY;
+	DEBUG_ENTRY;
 
 	if (nSlotOffset > m_nDmxFootprint) {
-		DEBUG2_EXIT
+		DEBUG_EXIT
 		return false;
 	}
 
@@ -420,7 +420,7 @@ bool SparkFunDmx::GetSlotInfo(uint16_t nSlotOffset, SlotInfo& tSlotInfo) {
 				tSlotInfo.nType = m_pSlotInfo[i][nOffset].nType;
 				tSlotInfo.nCategory = m_pSlotInfo[i][nOffset].nCategory;
 
-				DEBUG2_EXIT
+				DEBUG_EXIT
 				return true;
 			}
 		}

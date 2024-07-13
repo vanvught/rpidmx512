@@ -44,6 +44,20 @@ static constexpr uint32_t FORMAT_SIZE_WORDS 	= LTCENCODER_CEILING(FORMAT_SIZE_BY
 
 static constexpr uint16_t SYNC_WORD_VALUE = 0x3FFD;
 
+#if defined (CONFIG_LTC_USE_DAC)
+static constexpr uint32_t SAMPLE_RATE =	48000;
+static constexpr int16_t S_TOP = 32000;
+static constexpr int16_t S_MAX = (S_TOP);
+static constexpr int16_t S_MIN = (-S_TOP);
+/*
+ * Buffer size is nSampleRate / FPS where FPS is 24, 25, 29 or 30
+ *
+ */
+static constexpr uint32_t BUFFER_SIZE = SAMPLE_RATE / 24U;
+#else
+static constexpr uint32_t BUFFER_SIZE = FORMAT_SIZE_BITS * 2;
+#endif
+
 struct FormatTemplate {
 	union Format {
 		uint8_t bytes[FORMAT_SIZE_BYTES];
@@ -61,14 +75,20 @@ public:
 	~LtcEncoder();
 
 	void SetTimeCode(const struct ltc::TimeCode *pLtcTimeCode, bool nExternalClock = true);
-	void Encode();
+	void Encode(void *pBuffer = nullptr);
 
 	void Dump();
 	void DumpBuffer();
 
-	int16_t *GetBufferPointer() {
-		return m_pBuffer;
+#if defined (CONFIG_LTC_USE_DAC)
+	int16_t *GetBufferPointer() const {
+		return s_Buffer;
 	}
+#else
+	uint32_t *GetBufferPointer() const {
+		return s_Buffer;
+	}
+#endif
 
 	uint32_t GetBufferSize();
 
@@ -77,10 +97,14 @@ public:
 	}
 
 private:
-	uint8_t *m_pLtcBits { nullptr };
-	int16_t *m_pBuffer { nullptr };
+	uint8_t m_LtcBits[sizeof(struct ltc::encoder::FormatTemplate)];
 	uint32_t m_nType { 0xFF };
 
+#if defined (CONFIG_LTC_USE_DAC)
+	static int16_t s_Buffer[ltc::encoder::BUFFER_SIZE];
+#else
+	static uint32_t s_Buffer[ltc::encoder::BUFFER_SIZE];
+#endif
 	static LtcEncoder *s_pThis;
 };
 

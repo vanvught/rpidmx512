@@ -30,7 +30,6 @@
 #include "showfiledisplay.h"
 
 #include "display.h"
-#include "display7segment.h"
 
 namespace showfile {
 void display_filename(const char *pFileName, const uint32_t nShow) {
@@ -39,7 +38,7 @@ void display_filename(const char *pFileName, const uint32_t nShow) {
 	if (pFileName[0] != 0) {
 		Display::Get()->TextStatus(pFileName, static_cast<uint8_t>(nShow));
 	} else {
-		Display::Get()->TextStatus("No showfile", Display7SegmentMessage::ERROR_PLAYER);
+		Display::Get()->TextStatus("No showfile");
 	}
 }
 

@@ -47,7 +47,6 @@ uint8_t macAddress[ETH_ADDR_LEN]  ALIGNED;
 #if defined (CONFIG_ENET_ENABLE_PTP)
 void ptp_init();
 void ptp_handle(const uint8_t *, const uint32_t);
-void ptp_run();
 #endif
 }  // namespace net
 
@@ -236,8 +235,4 @@ __attribute__((hot)) void net_handle() {
 	}
 
 	net_timers_run();
-
-#if defined (CONFIG_ENET_ENABLE_PTP)
-	net::ptp_run();
-#endif
 }

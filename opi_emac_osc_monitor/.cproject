@@ -35,7 +35,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-remoteconfig/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-display/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-lightset/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-oscserver/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-dmxmonitor/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/opi_emac_osc_monitor/include}&quot;"/>
 								</option>
@@ -55,7 +54,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-remoteconfig/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-display/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-lightset/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-oscserver/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-dmxmonitor/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/opi_emac_osc_monitor/include}&quot;"/>
 								</option>
@@ -79,7 +77,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-remoteconfig/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-display/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-lightset/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-oscserver/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-dmxmonitor/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/opi_emac_osc_monitor/include}&quot;"/>
 								</option>

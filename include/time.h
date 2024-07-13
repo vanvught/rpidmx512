@@ -2,7 +2,7 @@
  * @file time.h
  *
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -61,6 +61,7 @@ extern "C" {
 
 extern time_t time(time_t *t);
 extern time_t mktime(struct tm *tm);
+extern struct tm *gmtime(const time_t *timep);
 extern struct tm *localtime(const time_t *timep);
 extern char *asctime(const struct tm *tm);
 

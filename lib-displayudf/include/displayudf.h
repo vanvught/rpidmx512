@@ -246,20 +246,16 @@ public:
 		case network::dhcp::ClientStatus::IDLE:
 			break;
 		case network::dhcp::ClientStatus::RENEW:
-			Display::Get()->Status(Display7SegmentMessage::INFO_DHCP);
 			ClearEndOfLine();
 			Printf(m_aLabels[static_cast<uint32_t>(displayudf::Labels::IP)], "DHCP renewing");
 			break;
 		case network::dhcp::ClientStatus::GOT_IP:
-			Display::Get()->Status(Display7SegmentMessage::INFO_NONE);
 			break;
 		case network::dhcp::ClientStatus::RETRYING:
-			Display::Get()->Status(Display7SegmentMessage::INFO_DHCP);
 			ClearEndOfLine();
 			Printf(m_aLabels[static_cast<uint32_t>(displayudf::Labels::IP)], "DHCP retrying");
 			break;
 		case network::dhcp::ClientStatus::FAILED:
-			Display::Get()->Status(Display7SegmentMessage::ERROR_DHCP);
 			break;
 		default:
 			break;
@@ -267,7 +263,7 @@ public:
 	}
 
 	void ShowShutdown() {
-		TextStatus("Network shutdown", Display7SegmentMessage::INFO_NETWORK_SHUTDOWN);
+		TextStatus("Network shutdown");
 	}
 #endif
 
