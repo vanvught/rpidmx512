@@ -80,7 +80,7 @@ static constexpr struct FilesContent HttpContent[] = {
 	{ "rdm.js", rdm_js, 991, static_cast<http::contentTypes>(2) },
 #endif /* !defined (CONFIG_HTTP_HTML_NO_RDM) && defined (RDM_CONTROLLER) */
 #if !defined (CONFIG_HTTP_HTML_NO_TIME)
-	{ "time.js", time_js, 409, static_cast<http::contentTypes>(2) },
+	{ "time.js", time_js, 390, static_cast<http::contentTypes>(2) },
 #endif /* !defined (CONFIG_HTTP_HTML_NO_TIME) */
 #if !defined (CONFIG_HTTP_HTML_NO_RDM) && defined (RDM_CONTROLLER)
 	{ "rdm.html", rdm_html, 1142, static_cast<http::contentTypes>(0) },

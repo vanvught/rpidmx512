@@ -1,6 +1,5 @@
 async function refresh() {
   let data = await getJSON('timedate')
-  console.log(data);
   const node = formatDateTime(new Date(data.date))
   document.getElementById('nodeTime').textContent = `Node Time: ${node}`
 }
