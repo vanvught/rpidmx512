@@ -2,7 +2,7 @@
  * phy.cpp
  *
  */
-/* Copyright (C) 2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2023-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -83,7 +83,11 @@ void phy_customized_timing() {
 # define RMSR_RX_TIMING_VAL		0x4
 # define RMSR_TX_TIMING_SHIFT	8
 # define RMSR_TX_TIMING_MASK	0xF00
-# define RMSR_TX_TIMING_VAL		0xF
+# if defined (GD32F407)
+#  define RMSR_TX_TIMING_VAL		0x2	// The GD32F407 is now running at 200MHz
+# else
+#  define RMSR_TX_TIMING_VAL		0xF
+# endif
 
 	constexpr uint16_t phy_value = (RMSR_RX_TIMING_VAL << RMSR_RX_TIMING_SHIFT)
 				       | (RMSR_TX_TIMING_VAL << RMSR_TX_TIMING_SHIFT);

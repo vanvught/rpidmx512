@@ -1,8 +1,8 @@
 /**
- * @file net_chksum.cpp
+ * @file autoip.h
  *
  */
-/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,33 +23,21 @@
  * THE SOFTWARE.
  */
 
-#pragma GCC push_options
-#pragma GCC optimize ("O2")
-#pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#ifndef NET_PROTOCOL_AUTOIP_H_
+#define NET_PROTOCOL_AUTOIP_H_
 
-#include <cstdint>
+#include "ip4_address.h"
 
-namespace net {
-uint16_t net_chksum(const void *data, uint32_t len) {
-	auto *ptr = reinterpret_cast<const uint16_t *>(data);
-	uint32_t sum = 0;
+namespace net::autoip {
+static constexpr auto AUTOIP_NET = network::convert_to_uint(169,254,0,0);
+static constexpr auto AUTOIP_RANGE_START = network::convert_to_uint(169,254,1,0);
+static constexpr auto AUTOIP_RANGE_END = network::convert_to_uint(169,254,254,255);
 
-	while (len > 1) {
-		sum += *ptr;
-		ptr++;
-		len -= 2;
-	}
+enum class State {
+  AUTOIP_STATE_OFF,
+  AUTOIP_STATE_CHECKING,
+  AUTOIP_STATE_BOUND
+};
+}  // namespace autoip
 
-	/* Add left-over byte, if any */
-	if (len > 0) {
-		sum += __builtin_bswap16(static_cast<uint16_t>(*(reinterpret_cast<const uint8_t *>(ptr)) << 8));
-	}
-
-	/* Fold 32-bit sum into 16 bits */
-	while (sum >> 16) {
-		sum = (sum >> 16) + (sum & 0xFFFF);
-	}
-
-	return static_cast<uint16_t>(~sum);
-}
-}  // namespace net
+#endif /* NET_PROTOCOL_AUTOIP_H_ */

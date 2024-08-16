@@ -35,8 +35,8 @@
 #include <sys/time.h>
 #include <cassert>
 
-#include "ntpclient.h"
-#include "ntp.h"
+#include "net/apps/ntpclient.h"
+#include "net/protocol/ntp.h"
 #include "utc.h"
 
 #include "network.h"

@@ -1,8 +1,8 @@
 /**
- * @file net_chksum.cpp
+ * @file acd.h
  *
  */
-/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,34 +22,50 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+/* This code is inspired by: lwIP
+ * https://savannah.nongnu.org/projects/lwip/
+ */
 
-#pragma GCC push_options
-#pragma GCC optimize ("O2")
-#pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#ifndef NET_ACD_H_
+#define NET_ACD_H_
 
 #include <cstdint>
 
+#include "netif.h"
+#include "arp.h"
+#include "net/protocol/acd.h"
+#include "ip4_address.h"
+
+/**
+ * https://datatracker.ietf.org/doc/html/rfc5227.html
+ * IPv4 Address Conflict Detection
+ */
+
 namespace net {
-uint16_t net_chksum(const void *data, uint32_t len) {
-	auto *ptr = reinterpret_cast<const uint16_t *>(data);
-	uint32_t sum = 0;
+typedef void (*acd_conflict_callback_t)(acd::Callback callback);
 
-	while (len > 1) {
-		sum += *ptr;
-		ptr++;
-		len -= 2;
-	}
+namespace acd {
+struct Acd {
+	ip4_addr_t ipaddr;
+	State state;
+	uint8_t sent_num;
+	uint8_t lastconflict;
+	uint8_t num_conflicts;
+	acd_conflict_callback_t acd_conflict_callback;
+	uint16_t ttw;
+};
+}  // namespace acd
 
-	/* Add left-over byte, if any */
-	if (len > 0) {
-		sum += __builtin_bswap16(static_cast<uint16_t>(*(reinterpret_cast<const uint8_t *>(ptr)) << 8));
-	}
+void acd_add(struct acd::Acd *, acd_conflict_callback_t);
+void acd_remove(struct acd::Acd *);
 
-	/* Fold 32-bit sum into 16 bits */
-	while (sum >> 16) {
-		sum = (sum >> 16) + (sum & 0xFFFF);
-	}
+void acd_start(struct acd::Acd *, const ip4_addr_t ipaddr);
+void acd_stop(struct acd::Acd *);
 
-	return static_cast<uint16_t>(~sum);
-}
+void acd_arp_reply(struct t_arp *);
+
+void acd_network_changed_link_down();
+void acd_netif_ip_addr_changed(const ip4_addr_t nOldIpAddress, const ip4_addr_t nNewIpAddress);
 }  // namespace net
+
+#endif /* NET_ACD_H_ */

@@ -1,8 +1,8 @@
 /**
- * @file net_timers.cpp
+ * @file icmp.h
  *
  */
-/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,34 +23,43 @@
  * THE SOFTWARE.
  */
 
-#pragma GCC push_options
-#pragma GCC optimize ("O2")
-#pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#ifndef NET_PROTOCOL_ICMP_H_
+#define NET_PROTOCOL_ICMP_H_
 
 #include <cstdint>
 
-#include "net_private.h"
+#include "net/protocol/ethernet.h"
+#include "net/protocol/ip4.h"
 
-#include "hardware.h"
-
-#include "../../config/net_config.h"
-
-#ifndef NDEBUG
- extern void arp_cache_timer(void);
+#if !defined (PACKED)
+# define PACKED __attribute__((packed))
 #endif
 
-static volatile uint32_t s_ticker;
+enum ICMP_TYPE {
+	ICMP_TYPE_ECHO_REPLY = 0,
+	ICMP_TYPE_ECHO = 8
+};
 
-#define INTERVAL_MS (100)	// 100 msec, 1/10 second
+enum ICMP_CODE {
+	ICMP_CODE_ECHO = 0
+};
 
-void net_timers_run() {
-	const auto nMillis = Hardware::Get()->Millis();
+struct t_icmp_packet {
+	uint8_t type;					/* 1 */
+	uint8_t code;					/* 2 */
+	uint16_t checksum;				/* 4 */
+	uint8_t parameter[4];			/* 8 */
+#define ICMP_HEADER_SIZE	8
+#define ICMP_PAYLOAD_SIZE	(MTU_SIZE - ICMP_HEADER_SIZE - sizeof(struct ip4_header))
+	uint8_t payload[ICMP_PAYLOAD_SIZE];
+} PACKED;
 
-	if (__builtin_expect(((nMillis - s_ticker) > INTERVAL_MS), 0)) {
-		s_ticker = nMillis;
-		igmp_timer();
-#ifndef NDEBUG
-		arp_cache_timer();
-#endif
-	}
-}
+struct t_icmp {
+	struct ether_header ether;
+	struct ip4_header ip4;
+	struct t_icmp_packet icmp;
+} PACKED;
+
+#define IPv4_ICMP_HEADERS_SIZE 			(sizeof(struct t_icmp) - sizeof(struct ether_header))
+
+#endif /* NET_PROTOCOL_ICMP_H_ */

@@ -106,14 +106,14 @@ void Network::JoinGroup([[maybe_unused]] int32_t nHandle, uint32_t nIp) {
 	esp8266_write_word(nIp);
 }
 
-uint16_t Network::RecvFrom([[maybe_unused]] int32_t nHandle, void *pBuffer, uint16_t nLength, uint32_t *from_ip, uint16_t* from_port) {
+uint32_t Network::RecvFrom([[maybe_unused]] int32_t nHandle, void *pBuffer, uint32_t nLength, uint32_t *from_ip, uint16_t* from_port) {
 	assert(pBuffer != nullptr);
 	assert(from_ip != nullptr);
 	assert(from_port != nullptr);
 
 	esp8266_write_4bits(CMD_WIFI_UDP_RECEIVE);
 
-	auto nBytesReceived = esp8266_read_halfword();
+	uint32_t nBytesReceived = esp8266_read_halfword();
 
 	if (nBytesReceived != 0) {
 		*from_ip = esp8266_read_word();
@@ -131,12 +131,12 @@ uint16_t Network::RecvFrom([[maybe_unused]] int32_t nHandle, void *pBuffer, uint
 
 static uint8_t s_ReadBuffer[MAX_SEGMENT_LENGTH];
 
-uint16_t  Network::RecvFrom(int32_t nHandle, const void **ppBuffer, uint32_t *pFromIp, uint16_t *pFromPort) {
+uint32_t  Network::RecvFrom(int32_t nHandle, const void **ppBuffer, uint32_t *pFromIp, uint16_t *pFromPort) {
 	*ppBuffer = &s_ReadBuffer;
 	return RecvFrom(nHandle, s_ReadBuffer, MAX_SEGMENT_LENGTH, pFromIp, pFromPort);
 }
 
-void Network::SendTo([[maybe_unused]] int32_t nHandle, const void *pBuffer, uint16_t nLength, uint32_t to_ip, uint16_t remote_port) {
+void Network::SendTo([[maybe_unused]] int32_t nHandle, const void *pBuffer, uint32_t nLength, uint32_t to_ip, uint16_t remote_port) {
 	assert(pBuffer != nullptr);
 
 	esp8266_write_4bits(CMD_WIFI_UDP_SEND);

@@ -2,7 +2,7 @@
  * @file net_memcpy.h
  *
  */
-/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,7 @@
 #include <cstdint>
 #include <cstddef>
 
-#include "net_packets.h"
+#include "net/protocol/ip4.h"
 
 namespace net {
 inline void* memcpy(void *__restrict__ dest, void const *__restrict__ src, size_t n) {

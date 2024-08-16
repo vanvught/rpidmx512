@@ -2,7 +2,7 @@
  * @file mdns.h
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,12 +23,13 @@
  * THE SOFTWARE.
  */
 
-#ifndef MDNS_H_
-#define MDNS_H_
+#ifndef NET_APPS_MDNS_H_
+#define NET_APPS_MDNS_H_
 
 #include <cstdint>
 
 #include "network.h"
+#include "net/protocol/dns.h"
 
 #include "../config/apps_config.h"
 
@@ -36,16 +37,6 @@ namespace mdns {
 enum class Services {
 	CONFIG, TFTP, HTTP, RDMNET_LLRP, NTP, MIDI, OSC, DDP, PP, LAST_NOT_USED
 };
-
-struct Header {
-	uint16_t xid;
-	uint8_t nFlag1;
-	uint8_t nFlag2;
-	uint16_t nQueryCount;
-	uint16_t nAnswerCount;
-	uint16_t nAuthorityCount;
-	uint16_t nAdditionalCount;
-} __attribute__((__packed__));
 
 struct ServiceRecord {
 	char *pName;
@@ -71,18 +62,18 @@ public:
 	void Run() {
 		s_nBytesReceived = Network::Get()->RecvFrom(s_nHandle, const_cast<const void **>(reinterpret_cast<void **>(&s_pReceiveBuffer)), &s_nRemoteIp, &s_nRemotePort);
 
-		if (__builtin_expect((s_nBytesReceived < sizeof(struct mdns::Header)), 1)) {
+		if (__builtin_expect((s_nBytesReceived < sizeof(struct net::dns::Header)), 1)) {
 			return;
 		}
 
-		const auto *const pHeader = reinterpret_cast<mdns::Header *>(s_pReceiveBuffer);
+		const auto *const pHeader = reinterpret_cast<net::dns::Header *>(s_pReceiveBuffer);
 		const auto nFlag1 = pHeader->nFlag1;
 
 		if ((nFlag1 >> 3) & 0xF) {
 			return;
 		}
 
-		HandleQuestions(__builtin_bswap16(pHeader->nQueryCount));
+		HandleQuestions(static_cast<uint32_t>(__builtin_bswap16(pHeader->nQueryCount)));
 	}
 
 	static MDNS *Get() {
@@ -94,16 +85,16 @@ private:
 	void HandleQuestions(const uint32_t nQuestions);
 	void SendAnswerLocalIpAddress(const uint16_t nTransActionID, const uint32_t nTTL);
 	void SendMessage(mdns::ServiceRecord const& serviceRecord, const uint16_t nTransActionID, const uint32_t nTTL);
-	void SendTo(const uint16_t nLength);
+	void SendTo(const uint32_t nLength);
 
 private:
 	static int32_t s_nHandle;
 	static uint32_t s_nRemoteIp;
-	static uint16_t s_nRemotePort;
-	static uint16_t s_nBytesReceived;
+	static uint32_t s_nBytesReceived;
 	static uint8_t *s_pReceiveBuffer;
+	static uint16_t s_nRemotePort;
 
 	static MDNS *s_pThis;
 };
 
-#endif /* MDNS_H_ */
+#endif /* NET_APPS_MDNS_H_ */

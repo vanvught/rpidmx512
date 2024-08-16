@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 
-#include "tftpdaemon.h"
+#include "net/apps/tftpdaemon.h"
 
 class TFTPFileServer final: public TFTPDaemon {
 public:

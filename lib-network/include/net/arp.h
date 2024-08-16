@@ -1,8 +1,8 @@
 /**
- * @file net_chksum.cpp
+ * @file arp_private.h
  *
  */
-/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,33 +23,29 @@
  * THE SOFTWARE.
  */
 
-#pragma GCC push_options
-#pragma GCC optimize ("O2")
-#pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#ifndef ARP_PRIVATE_H_
+#define ARP_PRIVATE_H_
 
-#include <cstdint>
+#include "netif.h"
+#include "net/protocol/ip4.h"
+#include "net/protocol/arp.h"
+#include "net/protocol/udp.h"
 
 namespace net {
-uint16_t net_chksum(const void *data, uint32_t len) {
-	auto *ptr = reinterpret_cast<const uint16_t *>(data);
-	uint32_t sum = 0;
+namespace arp {
+enum class Flags {
+	FLAG_INSERT, FLAG_UPDATE
+};
+}  // namespace arp
 
-	while (len > 1) {
-		sum += *ptr;
-		ptr++;
-		len -= 2;
-	}
-
-	/* Add left-over byte, if any */
-	if (len > 0) {
-		sum += __builtin_bswap16(static_cast<uint16_t>(*(reinterpret_cast<const uint8_t *>(ptr)) << 8));
-	}
-
-	/* Fold 32-bit sum into 16 bits */
-	while (sum >> 16) {
-		sum = (sum >> 16) + (sum & 0xFFFF);
-	}
-
-	return static_cast<uint16_t>(~sum);
-}
+void arp_init();
+void arp_handle(struct t_arp *);
+void arp_send(struct t_udp *, const uint32_t, const uint32_t);
+#if defined CONFIG_ENET_ENABLE_PTP
+void arp_send_timestamp(struct t_udp *, const uint32_t, const uint32_t);
+#endif
+void arp_acd_probe(const ip4_addr_t ipaddr);
+void arp_acd_send_announcement(const ip4_addr_t ipaddr);
 }  // namespace net
+
+#endif /* ARP_PRIVATE_H_ */

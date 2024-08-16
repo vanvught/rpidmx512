@@ -34,6 +34,10 @@
 
 #include "debug.h"
 
+extern "C"  {
+void console_error(const char *);
+}
+
 extern void enet_gpio_config();
 extern enet_descriptors_struct txdesc_tab[ENET_TXBUF_NUM];
 extern void mac_address_get(uint8_t paddr[]);
@@ -69,7 +73,9 @@ void __attribute__((cold)) emac_config() {
 	enet_deinit(ENETx);
 	enet_software_reset(ENETx);
 
-	net::phy_config(PHY_ADDRESS);
+	if(!net::phy_config(PHY_ADDRESS)) {
+		console_error("net::phy_config(PHY_ADDRESS)");
+	}
 
 	DEBUG_EXIT
 }

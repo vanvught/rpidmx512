@@ -1,8 +1,8 @@
 /**
- * @file network.h
+ * @file arp.h
  *
  */
-/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,37 +23,54 @@
  * THE SOFTWARE.
  */
 
-#ifndef NETWORK_H_
-#define NETWORK_H_
-
-#include <cstdint>
+#ifndef NET_PROTOCOL_ARP_H_
+#define NET_PROTOCOL_ARP_H_
 
 #include "ip4_address.h"
+#include "net/protocol/ethernet.h"
+#include "net/protocol/ieee.h"
 
-namespace network {
-namespace dhcp {
-enum class Mode: uint8_t {
-	INACTIVE = 0x00,	///< The IP address was not obtained via DHCP
-	ACTIVE = 0x01,		///< The IP address was obtained via DHCP
-	UNKNOWN = 0x02		///< The system cannot determine if the address was obtained via DHCP
-};
-}  // namespace dhcp
-}  // namespace network
-
-#if defined(__linux__) || defined (__APPLE__)
-# if defined (CONFIG_NETWORK_USE_MINIMUM)
-#  include "linux/minimum/network.h"
-# else
-#  include "linux/network.h"
-# endif
-#else
-# if defined (ESP8266)
-#  include "esp8266/network.h"
-# elif defined (NO_EMAC)
-#  include "noemac/network.h"
-# else
-#  include "emac/network.h"
-# endif
+#if !defined (PACKED)
+# define PACKED __attribute__((packed))
 #endif
 
-#endif /* NETWORK_H_ */
+enum ARP_HARDWARE_TYPE {
+	ARP_HWTYPE_ETHERNET = 1
+};
+
+enum ARP_PROTOCOL_TYPE {
+	ARP_PRTYPE_IPv4 = ETHER_TYPE_IPv4
+};
+
+enum ARP_HARDWARE {
+	ARP_HARDWARE_SIZE = ETH_ADDR_LEN
+};
+
+enum ARP_PROTOCOL {
+	ARP_PROTOCOL_SIZE = IPv4_ADDR_LEN
+};
+
+enum ARP_OPCODE {
+	ARP_OPCODE_RQST = 1,
+	ARP_OPCODE_REPLY = 2
+};
+
+struct arp_packet {
+	uint16_t hardware_type;			/*  2 */
+	uint16_t protocol_type;			/*  4 */
+	uint8_t hardware_size;			/*  5 */
+	uint8_t protocol_size;			/*  6 */
+	uint16_t opcode;				/*  8 */
+	uint8_t sender_mac[ETH_ADDR_LEN];/*14 */
+	uint8_t sender_ip[IPv4_ADDR_LEN];/* 18 */
+	uint8_t target_mac[ETH_ADDR_LEN];/*24 */
+	uint8_t target_ip[IPv4_ADDR_LEN];/* 28 */
+	uint8_t padding[18];			/* 46 */ /* +14 = 60 */
+} PACKED;
+
+struct t_arp {
+	struct ether_header ether;
+	struct arp_packet arp;
+} PACKED;
+
+#endif /* NET_PROTOCOL_ARP_H_ */

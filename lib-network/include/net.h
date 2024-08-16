@@ -2,7 +2,7 @@
  * @file net.h
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,40 +28,43 @@
 
 #include <cstdint>
 
-struct ip_addr {
-    uint32_t addr;
-};
+#include "netif.h"
+#include "emac/phy.h"
+#include "net/dhcp.h"
+#include "net/protocol/dhcp.h"
 
-typedef struct ip_addr ip_addr_t;
+#include "debug.h"
 
-struct IpInfo {
-    struct ip_addr ip;
-    struct ip_addr netmask;
-    struct ip_addr gw;
-    struct ip_addr broadcast_ip;
-    struct ip_addr secondary_ip;
-};
+namespace network {
+void mdns_shutdown();
+}  // namespace network
 
-#define IP_BROADCAST	(0xFFFFFFFF)
-#define HOST_NAME_MAX 	64	/* including a terminating null byte. */
+namespace net {
+void tcp_shutdown();
+void igmp_shutdown();
+}
 
-void net_init(const uint8_t *const, struct IpInfo *, const char *, bool *, bool *);
-void net_shutdown();
+namespace net {
+void net_init(net::Link link, ip4_addr_t ipaddr, ip4_addr_t netmask, ip4_addr_t gw, bool &bUseDhcp);
+void net_set_primary_ip(const ip4_addr_t ipaddr);
+void net_set_secondary_ip();
 void net_handle();
 
-void net_set_ip(struct IpInfo *);
-void net_set_netmask(struct IpInfo *);
-void net_set_gw(struct IpInfo *);
-bool net_set_zeroconf(struct IpInfo *);
-
-bool net_set_dhcp(struct IpInfo *, const char *const, bool *);
-void net_dhcp_release();
+inline void net_link_down() {
+	network::mdns_shutdown();
+#if defined (ENABLE_HTTPD)
+	tcp_shutdown();
+#endif
+	igmp_shutdown();
+	dhcp_release_and_stop();
+}
 
 int udp_begin(uint16_t);
 int udp_end(uint16_t);
-uint16_t udp_recv1(int, uint8_t *, uint16_t, uint32_t *, uint16_t *);
-uint16_t udp_recv2(int, const uint8_t **, uint32_t *, uint16_t *);
-int udp_send(int, const uint8_t *, uint16_t, uint32_t, uint16_t);
+uint32_t udp_recv1(int, uint8_t *, uint32_t, uint32_t *, uint16_t *);
+uint32_t udp_recv2(int, const uint8_t **, uint32_t *, uint16_t *);
+void udp_send(int, const uint8_t *, uint32_t, uint32_t, uint16_t);
+void udp_send_timestamp(int, const uint8_t *, uint32_t, uint32_t, uint16_t);
 
 void igmp_join(uint32_t);
 void igmp_leave(uint32_t);
@@ -69,5 +72,19 @@ void igmp_leave(uint32_t);
 int tcp_begin(const uint16_t);
 uint16_t tcp_read(const int32_t, const uint8_t **, uint32_t &);
 void tcp_write(const int32_t, const uint8_t *, uint16_t, const uint32_t);
+
+/**
+ * Must be provided by the application
+ */
+void display_emac_config();
+void display_emac_start();
+void display_emac_status(const bool);
+void display_emac_shutdown();
+void display_ip();
+void display_netmask();
+void display_gateway();
+void display_hostname();
+void display_dhcp_status(net::dhcp::State);
+}  // namespace het
 
 #endif /* NET_H_ */

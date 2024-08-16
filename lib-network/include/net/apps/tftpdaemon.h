@@ -23,10 +23,11 @@
  * THE SOFTWARE.
  */
 
-#ifndef TFTPDAEMON_H_
-#define TFTPDAEMON_H_
+#ifndef NET_APPS_TFTPDAEMON_H_
+#define NET_APPS_TFTPDAEMON_H_
 
 #include <cstdint>
+#include <cstddef>
 
 namespace tftp {
 enum class Mode {
@@ -72,7 +73,7 @@ private:
 	uint32_t m_nFromIp { 0 };
 	uint32_t m_nLength { 0 };
 	uint32_t m_nDataLength { 0 };
-	uint16_t m_nPacketLength { 0 };
+	uint32_t m_nPacketLength { 0 };
 	uint16_t m_nFromPort { 0 };
 	uint16_t m_nBlockNumber { 0 };
 	bool m_bIsLastBlock { false };
@@ -85,4 +86,4 @@ private:
 	static TFTPDaemon *s_pThis;
 };
 
-#endif /* TFTPDAEMON_H_ */
+#endif /* NET_APPS_TFTPDAEMON_H_ */

@@ -2,7 +2,7 @@
  * @file ntp.h
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef NTP_H_
-#define NTP_H_
+#ifndef NET_PROTOCOL_NTP_H_
+#define NET_PROTOCOL_NTP_H_
 
 #include <cstdint>
 
@@ -98,4 +98,4 @@ inline void sub_time(struct ntp::time_t *r, const struct ntp::time_t *x, const s
 }
 }  // namespace ntp
 
-#endif /* NTP_H_ */
+#endif /* NET_PROTOCOL_NTP_H_ */

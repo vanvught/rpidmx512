@@ -2,7 +2,7 @@
  * @file ip.cpp
  *
  */
-/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,17 +23,26 @@
  * THE SOFTWARE.
  */
 
-#pragma GCC push_options
-#pragma GCC optimize ("O2")
-#pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#if defined (DEBUG_NET_IP)
+# undef NDEBUG
+#endif
+
+#if !defined (CONFIG_REMOTECONFIG_MINIMUM)
+# pragma GCC push_options
+# pragma GCC optimize ("O2")
+# pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#endif
 
 #include <cstdint>
+
+#include "../../config/net_config.h"
 
 #include "net.h"
 #include "net_private.h"
 
-#include "../../config/net_config.h"
+#include "debug.h"
 
+namespace net {
 void ip_set_ip() {
 	udp_set_ip();
 	igmp_set_ip();
@@ -47,17 +56,6 @@ void __attribute__((cold)) ip_init() {
 #if defined (ENABLE_HTTPD)
 	tcp_init();
 #endif
-
-	DEBUG_EXIT
-}
-
-void __attribute__((cold)) ip_shutdown() {
-	DEBUG_ENTRY
-
-#if defined (ENABLE_HTTPD)
-	tcp_shutdown();
-#endif
-	igmp_shutdown();
 
 	DEBUG_EXIT
 }
@@ -93,3 +91,4 @@ __attribute__((hot)) void ip_handle(struct t_ip4 *p_ip4) {
 		break;
 	}
 }
+}  // namespace net

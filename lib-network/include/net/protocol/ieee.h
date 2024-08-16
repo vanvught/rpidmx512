@@ -1,8 +1,8 @@
 /**
- * @file net_chksum.cpp
+ * @file ieee.h
  *
  */
-/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,33 +23,15 @@
  * THE SOFTWARE.
  */
 
-#pragma GCC push_options
-#pragma GCC optimize ("O2")
-#pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#ifndef NET_PROTOCOL_IEEE_H_
+#define NET_PROTOCOL_IEEE_H_
 
 #include <cstdint>
 
-namespace net {
-uint16_t net_chksum(const void *data, uint32_t len) {
-	auto *ptr = reinterpret_cast<const uint16_t *>(data);
-	uint32_t sum = 0;
+enum ETHER_TYPE {
+	ETHER_TYPE_IPv4 = 0x0800,
+	ETHER_TYPE_ARP = 0x0806,
+	ETHER_TYPE_PTP = 0x88F7		/* IEEE1588v2 (PTPv2) over Ethernet */
+};
 
-	while (len > 1) {
-		sum += *ptr;
-		ptr++;
-		len -= 2;
-	}
-
-	/* Add left-over byte, if any */
-	if (len > 0) {
-		sum += __builtin_bswap16(static_cast<uint16_t>(*(reinterpret_cast<const uint8_t *>(ptr)) << 8));
-	}
-
-	/* Fold 32-bit sum into 16 bits */
-	while (sum >> 16) {
-		sum = (sum >> 16) + (sum & 0xFFFF);
-	}
-
-	return static_cast<uint16_t>(~sum);
-}
-}  // namespace net
+#endif /* NET_PROTOCOL_IEEE_H_ */

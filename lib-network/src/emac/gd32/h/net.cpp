@@ -32,13 +32,13 @@
 #include <cassert>
 
 #include "gd32.h"
-#include "gd32_ptp.h"
-#include "../src/net/net_packets.h"
 #include "../src/net/net_memcpy.h"
 
 #include "debug.h"
 
 #if defined (CONFIG_ENET_ENABLE_PTP)
+#include "gd32_ptp.h"
+
 extern enet_descriptors_struct *dma_current_ptp_rxdesc;
 extern enet_descriptors_struct *dma_current_ptp_txdesc;
 namespace net {
@@ -187,7 +187,7 @@ inline static void ptpframe_transmit(void *pBuffer, const uint32_t nLength, cons
     }
 }
 
-void emac_eth_send(void *pBuffer, int nLength) {
+void emac_eth_send(void *pBuffer, uint32_t nLength) {
 	assert(nullptr != pBuffer);
 	assert(nLength <= static_cast<int>(ENET_MAX_FRAME_SIZE));
 
@@ -203,7 +203,7 @@ void emac_eth_send(void *pBuffer, int nLength) {
 	ptpframe_transmit(pBuffer, nLength, false);
 }
 
-void emac_eth_send_timestamp(void *pBuffer, int nLength) {
+void emac_eth_send_timestamp(void *pBuffer, uint32_t nLength) {
 	assert(nullptr != pBuffer);
 	assert(nLength <= static_cast<int>(ENET_MAX_FRAME_SIZE));
 
@@ -219,7 +219,7 @@ void emac_eth_send_timestamp(void *pBuffer, int nLength) {
 	ptpframe_transmit(pBuffer, nLength, true);
 }
 #else
-void emac_eth_send(void *pBuffer, int nLength) {
+void emac_eth_send(void *pBuffer, uint32_t nLength) {
 	assert(nullptr != pBuffer);
 	assert(nLength <= static_cast<int>(ENET_MAX_FRAME_SIZE));
 

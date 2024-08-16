@@ -1,8 +1,8 @@
 /**
- * @file net_debug.h
+ * @file iana.h
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,22 +23,18 @@
  * THE SOFTWARE.
  */
 
-#ifndef NET_DEBUG_H_
-#define NET_DEBUG_H_
+#ifndef NET_PROTOCOL_IANA_H_
+#define NET_PROTOCOL_IANA_H_
 
-#include "debug.h"
+#include <cstdint>
 
-#ifndef IP2STR
- #define IP2STR(addr) (addr & 0xFF), ((addr >> 8) & 0xFF), ((addr >> 16) & 0xFF), ((addr >> 24) & 0xFF)
- #define IPSTR "%d.%d.%d.%d"
-#endif
-#ifndef MAC2STR
- #define MAC2STR(mac) (mac[0]),(mac[1]),(mac[2]),(mac[3]), (mac[4]), (mac[5])
- #define MACSTR "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x"
-#endif
+namespace net::iana {
+static constexpr uint16_t IANA_PORT_DHCP_SERVER = 67;
+static constexpr uint16_t IANA_PORT_DHCP_CLIENT = 68;
+static constexpr uint16_t IANA_PORT_TFTP        = 69;
+static constexpr uint16_t IANA_PORT_HTTP        = 80;
+static constexpr uint16_t IANA_PORT_NTP_SERVER  = 123;
+static constexpr uint16_t IANA_PORT_MDNS        = 5353;
+}  // namespace net::iana
 
-#if defined (H3)
-# include "h3_timer.h"
-#endif
-
-#endif /* NET_DEBUG_H_ */
+#endif /* NET_PROTOCOL_IANA_H_ */

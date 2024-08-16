@@ -1,8 +1,8 @@
 /**
- * @file tftp_internal.h
+ * @file ethernet.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,11 +23,33 @@
  * THE SOFTWARE.
  */
 
-#ifndef TFTP_INTERNAL_H_
-#define TFTP_INTERNAL_H_
+#ifndef NET_PROTOCOL_ETHERNET_H_
+#define NET_PROTOCOL_ETHERNET_H_
 
-enum {
-	TFTP_PORT_SERVER = 69
+#include <stdint.h>
+
+#if !defined (PACKED)
+# define PACKED __attribute__((packed))
+#endif
+
+enum MTU {
+	MTU_SIZE = 1500
 };
 
-#endif /* TFTP_INTERNAL_H_ */
+enum ETH_ADDR {
+	ETH_ADDR_LEN = 6
+};
+
+struct ether_header {
+	uint8_t dst[ETH_ADDR_LEN];		/*  6 */
+	uint8_t src[ETH_ADDR_LEN];		/* 12 */
+	uint16_t type;					/* 14 */
+} PACKED;
+
+namespace net {
+static constexpr uint32_t ETH_HWADDR_LEN = 6;
+
+
+}  // namespace net
+
+#endif /* NET_PROTOCOL_ETHERNET_H_ */

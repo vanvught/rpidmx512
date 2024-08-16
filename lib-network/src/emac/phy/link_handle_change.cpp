@@ -25,6 +25,7 @@
 
 #include "hardware.h"
 #include "network.h"
+#include "netif.h"
 
 #include "debug.h"
 
@@ -38,26 +39,25 @@ namespace net {
 void link_handle_change(const net::Link state) {
 	DEBUG_PRINTF("net::Link %s", state == net::Link::STATE_UP ? "UP" : "DOWN");
 
-	if (net::Link::STATE_UP == state) {
+	if (Link::STATE_UP == state) {
 		const bool isWatchdog = Hardware::Get()->IsWatchdog();
 		if (isWatchdog) {
 			Hardware::Get()->WatchdogStop();
 		}
 
-		net::PhyStatus phyStatus;
-		net::phy_start(PHY_ADDRESS, phyStatus);
+		PhyStatus phyStatus;
+		phy_start(PHY_ADDRESS, phyStatus);
 
 		emac_adjust_link(phyStatus);
-
-		Network::Get()->Start(net::Link::STATE_UP);
-
-		network::mdns_announcement();
-
-		Network::Get()->Print();
 
 		if (isWatchdog) {
 			Hardware::Get()->WatchdogInit();
 		}
+
+		netif_set_link_up();
+		return;
 	}
+
+	netif_set_link_down();
 }
 }  // namespace net

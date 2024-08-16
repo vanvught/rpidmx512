@@ -23,21 +23,23 @@
  * THE SOFTWARE.
  */
 
-#pragma GCC push_options
-#pragma GCC optimize ("O2")
-#pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#if !defined (CONFIG_REMOTECONFIG_MINIMUM)
+# pragma GCC push_options
+# pragma GCC optimize ("O2")
+# pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#endif
 
 #include <cstdint>
 #include <cassert>
 
 #include "gd32.h"
-#include "gd32_ptp.h"
-#include "../src/net/net_packets.h"
 #include "../src/net/net_memcpy.h"
 
 #include "debug.h"
 
 #if defined (CONFIG_ENET_ENABLE_PTP)
+#include "gd32_ptp.h"
+
 extern enet_descriptors_struct *dma_current_ptp_rxdesc;
 extern enet_descriptors_struct *dma_current_ptp_txdesc;
 namespace net {
@@ -48,8 +50,6 @@ extern uint32_t ptpTimestamp[2];
 #endif
 extern enet_descriptors_struct *dma_current_rxdesc;
 extern enet_descriptors_struct *dma_current_txdesc;
-
-extern "C" int console_error(const char *);
 
 int emac_eth_recv(uint8_t **ppPacket) {
 	const auto nLength = enet_desc_information_get(dma_current_rxdesc, RXDESC_FRAME_LENGTH);
@@ -183,7 +183,7 @@ inline static void ptpframe_transmit(const uint8_t *pBuffer, const uint32_t nLen
     }
 }
 
-void emac_eth_send(void *pBuffer, int nLength) {
+void emac_eth_send(void *pBuffer, uint32_t nLength) {
 	while (0 != (dma_current_txdesc->status & ENET_TDES0_DAV)) {
         __DMB();
 	}
@@ -195,7 +195,7 @@ void emac_eth_send(void *pBuffer, int nLength) {
 	ptpframe_transmit(reinterpret_cast<uint8_t *>(pBuffer), nLength, false);
 }
 
-void emac_eth_send_timestamp(void *pBuffer, int nLength) {
+void emac_eth_send_timestamp(void *pBuffer, uint32_t nLength) {
 	while (0 != (dma_current_txdesc->status & ENET_TDES0_DAV)) {
         __DMB();
 	}
@@ -207,7 +207,7 @@ void emac_eth_send_timestamp(void *pBuffer, int nLength) {
 	ptpframe_transmit(reinterpret_cast<uint8_t *>(pBuffer), nLength, true);
 }
 #else
-void emac_eth_send(void *pBuffer, int nLength) {
+void emac_eth_send(void *pBuffer, uint32_t nLength) {
 	assert(nullptr != pBuffer);
 	assert(nLength <= static_cast<int>(ENET_MAX_FRAME_SIZE));
 

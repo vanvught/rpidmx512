@@ -31,7 +31,7 @@
 #include <cstring>
 #include <cassert>
 
-#include "tftpdaemon.h"
+#include "net/apps/tftpdaemon.h"
 
 #include "network.h"
 

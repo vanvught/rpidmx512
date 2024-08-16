@@ -1,8 +1,8 @@
 /**
- * @file ntp_internal.h
+ * @file udp.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,11 +23,34 @@
  * THE SOFTWARE.
  */
 
-#ifndef NTP_INTERNAL_H_
-#define NTP_INTERNAL_H_
+#ifndef NET_PROTOCOL_UDP_H_
+#define NET_PROTOCOL_UDP_H_
 
-enum {
-	NTP_PORT_SERVER = 123
-};
+#include <cstdint>
 
-#endif /* NTP_INTERNAL_H_ */
+#include "net/protocol/ethernet.h"
+#include "net/protocol/ip4.h"
+
+#if !defined (PACKED)
+# define PACKED __attribute__((packed))
+#endif
+
+struct t_udp_packet {
+	uint16_t source_port;			/* 2 */
+	uint16_t destination_port;		/* 4 */
+	uint16_t len;					/* 6 */
+	uint16_t checksum;				/* 8 */
+#define UDP_HEADER_SIZE		8
+#define UDP_DATA_SIZE		(MTU_SIZE - UDP_HEADER_SIZE - sizeof(struct ip4_header))
+	uint8_t data[UDP_DATA_SIZE];
+}PACKED;
+
+struct t_udp {
+	struct ether_header ether;
+	struct ip4_header ip4;
+	struct t_udp_packet udp;
+} PACKED;
+
+#define UDP_PACKET_HEADERS_SIZE			(sizeof(struct ether_header) + IPv4_UDP_HEADERS_SIZE)	/* ETH | IP | UDP */
+
+#endif /* NET_PROTOCOL_UDP_H_ */

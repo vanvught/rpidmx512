@@ -1,8 +1,8 @@
 /**
- * @file net_chksum.cpp
+ * @file igmp.h
  *
  */
-/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,33 +23,44 @@
  * THE SOFTWARE.
  */
 
-#pragma GCC push_options
-#pragma GCC optimize ("O2")
-#pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#ifndef NET_PROTOCOL_IGMP_H_
+#define NET_PROTOCOL_IGMP_H_
 
 #include <cstdint>
 
-namespace net {
-uint16_t net_chksum(const void *data, uint32_t len) {
-	auto *ptr = reinterpret_cast<const uint16_t *>(data);
-	uint32_t sum = 0;
+#include "net/protocol/ethernet.h"
+#include "net/protocol/ip4.h"
 
-	while (len > 1) {
-		sum += *ptr;
-		ptr++;
-		len -= 2;
-	}
+#if !defined (PACKED)
+# define PACKED __attribute__((packed))
+#endif
 
-	/* Add left-over byte, if any */
-	if (len > 0) {
-		sum += __builtin_bswap16(static_cast<uint16_t>(*(reinterpret_cast<const uint8_t *>(ptr)) << 8));
-	}
+enum IGMP_TYPE {
+	IGMP_TYPE_QUERY = 0x11,
+	IGMP_TYPE_REPORT = 0x16,
+	IGMP_TYPE_LEAVE = 0x17
+};
 
-	/* Fold 32-bit sum into 16 bits */
-	while (sum >> 16) {
-		sum = (sum >> 16) + (sum & 0xFFFF);
-	}
+struct t_igmp_packet {
+	uint8_t type;
+	uint8_t max_resp_time;
+	uint16_t checksum;
+	uint8_t group_address[IPv4_ADDR_LEN];
+} PACKED;
 
-	return static_cast<uint16_t>(~sum);
-}
-}  // namespace net
+struct t_igmp {
+	struct ether_header ether;
+	struct ip4_header ip4;
+	union {
+		struct {
+			uint32_t ip4_options;
+			struct t_igmp_packet igmp;
+		} report;
+		struct t_igmp_packet igmp;
+	} igmp;
+} PACKED;
+
+#define IPv4_IGMP_REPORT_HEADERS_SIZE 	(sizeof(struct t_igmp) - sizeof(struct ether_header))
+#define IGMP_REPORT_PACKET_SIZE			(sizeof(struct t_igmp))
+
+#endif /* NET_PROTOCOL_IGMP_H_ */

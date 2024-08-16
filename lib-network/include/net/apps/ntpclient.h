@@ -23,14 +23,14 @@
  * THE SOFTWARE.
  */
 
-#ifndef NTPCLIENT_H_
-#define NTPCLIENT_H_
+#ifndef NET_APPS_NTPCLIENT_H_
+#define NET_APPS_NTPCLIENT_H_
 
 #include <cstdint>
 #include <cstdio>
 #include <time.h>
 
-#include "ntp.h"
+#include "net/protocol/ntp.h"
 #include "hardware.h"
 
 #include "debug.h"
@@ -144,4 +144,4 @@ private:
 	static NtpClient *s_pThis;
 };
 
-#endif /* NTPCLIENT_H_ */
+#endif /* NET_APPS_NTPCLIENT_H_ */

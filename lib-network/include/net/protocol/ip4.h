@@ -1,8 +1,8 @@
 /**
- * @file dhcp_internal.h
+ * @file ip4.h
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,48 +22,50 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef NET_PROTOCOL_IP4_H_
+#define NET_PROTOCOL_IP4_H_
 
-#ifndef DHCP_INTERNAL_H_
-#define DHCP_INTERNAL_H_
+#include <cstdint>
 
-enum DHCP_PORT {
-	DHCP_PORT_SERVER = 67,
-	DHCP_PORT_CLIENT = 68
+#include "net/protocol/ethernet.h"
+
+#if !defined (PACKED)
+# define PACKED __attribute__((packed))
+#endif
+
+enum IPv4_ADDR {
+	IPv4_ADDR_LEN = 4
 };
 
-enum DHCP_OP {
-	DHCP_OP_BOOTREQUEST = 1,
-	DHCP_OP_BOOTREPLY = 2
+enum IPv4_PROTO {
+	IPv4_PROTO_ICMP = 1,
+	IPv4_PROTO_IGMP = 2,
+	IPv4_PROTO_TCP = 6,
+	IPv4_PROTO_UDP = 17
 };
 
-enum DHCP_HTYPE {
-	DHCP_HTYPE_10MB = 1,
-	DHCP_HTYPE_100MB = 2
+enum IPv4_FLAG {
+	IPv4_FLAG_LF = 0x0000,
+	IPv4_FLAG_MF = 0x2000,
+	IPv4_FLAG_DF = 0x4000
 };
 
-enum DCHP_TYPE {
-	DCHP_TYPE_DISCOVER = 1,
-	DCHP_TYPE_OFFER = 2,
-	DCHP_TYPE_REQUEST = 3,
-	DCHP_TYPE_DECLINE = 4,
-	DCHP_TYPE_ACK = 5,
-	DCHP_TYPE_NAK = 6,
-	DCHP_TYPE_RELEASE = 7,
-	DCHP_TYPE_INFORM = 8
-};
+struct ip4_header {
+	uint8_t ver_ihl;				/*  1 */
+	uint8_t tos;					/*  2 */
+	uint16_t len;					/*  4 */
+	uint16_t id;					/*  6 */
+	uint16_t flags_froff;			/*  8 */
+	uint8_t ttl;					/*  9 */
+	uint8_t proto;					/* 10 */
+	uint16_t chksum;				/* 12 */
+	uint8_t src[IPv4_ADDR_LEN];		/* 16 */
+	uint8_t dst[IPv4_ADDR_LEN];		/* 20 */
+} PACKED;
 
-enum DHCP_STATE {
-	DHCP_STATE_DHCP_INIT = 0,
-	DHCP_STATE_DHCP_DISCOVER = 1,
-	DHCP_STATE_DHCP_REQUEST = 2,
-	DHCP_STATE_DHCP_LEASED = 3,
-	DHCP_STATE_DHCP_REREQUEST = 4,
-	DHCP_STATE_DHCP_RELEASE = 5,
-	DHCP_STATE_DHCP_STOP = 6
-};
+struct t_ip4 {
+	struct ether_header ether;
+	struct ip4_header ip4;
+} PACKED;
 
-#define DHCP_OPT_SIZE	312
-
-#define MAGIC_COOKIE	0x63825363  ///< You should not modify it number.
-
-#endif /* DHCP_INTERNAL_H_ */
+#endif /* NET_PROTOCOL_IP4_H_ */

@@ -101,31 +101,31 @@ bool phy_config(const uint32_t nAddress) {
 		reg |= ENET_MDC_HCLK_DIV42;
 	} else if (ENET_RANGE(ahbclk, 100000000U, 150000000U)) {
 		reg |= ENET_MDC_HCLK_DIV62;
-	} else if ((ENET_RANGE(ahbclk, 150000000U, 200000000U)) || (200000000U == ahbclk)) {
+	} else if ((ENET_RANGE(ahbclk, 150000000U, 240000000U)) || (240000000U == ahbclk)) {
 		reg |= ENET_MDC_HCLK_DIV102;
 	} else {
 		return false;
 	}
 #elif defined GD32H7XX
-    if(ENET_RANGE(ahbclk, 20000000U, 35000000U)) {
-        reg |= ENET_MDC_HCLK_DIV16;
-    } else if(ENET_RANGE(ahbclk, 35000000U, 60000000U)) {
-        reg |= ENET_MDC_HCLK_DIV26;
-    } else if(ENET_RANGE(ahbclk, 60000000U, 100000000U)) {
-        reg |= ENET_MDC_HCLK_DIV42;
-    } else if(ENET_RANGE(ahbclk, 100000000U, 150000000U)) {
-        reg |= ENET_MDC_HCLK_DIV62;
-    } else if((ENET_RANGE(ahbclk, 150000000U, 180000000U)) || (180000000U == ahbclk)) {
-        reg |= ENET_MDC_HCLK_DIV102;
-    } else if(ENET_RANGE(ahbclk, 250000000U, 300000000U)) {
-        reg |= ENET_MDC_HCLK_DIV124;
-    } else if(ENET_RANGE(ahbclk, 300000000U, 350000000U)) {
-        reg |= ENET_MDC_HCLK_DIV142;
-    } else if((ENET_RANGE(ahbclk, 350000000U, 400000000U)) || (400000000U == ahbclk)) {
-        reg |= ENET_MDC_HCLK_DIV162;
-    } else {
-        return false;
-    }
+	if (ENET_RANGE(ahbclk, 20000000U, 35000000U)) {
+		reg |= ENET_MDC_HCLK_DIV16;
+	} else if (ENET_RANGE(ahbclk, 35000000U, 60000000U)) {
+		reg |= ENET_MDC_HCLK_DIV26;
+	} else if (ENET_RANGE(ahbclk, 60000000U, 100000000U)) {
+		reg |= ENET_MDC_HCLK_DIV42;
+	} else if (ENET_RANGE(ahbclk, 100000000U, 150000000U)) {
+		reg |= ENET_MDC_HCLK_DIV62;
+	} else if ((ENET_RANGE(ahbclk, 150000000U, 180000000U)) || (180000000U == ahbclk)) {
+		reg |= ENET_MDC_HCLK_DIV102;
+	} else if (ENET_RANGE(ahbclk, 250000000U, 300000000U)) {
+		reg |= ENET_MDC_HCLK_DIV124;
+	} else if (ENET_RANGE(ahbclk, 300000000U, 350000000U)) {
+		reg |= ENET_MDC_HCLK_DIV142;
+	} else if ((ENET_RANGE(ahbclk, 350000000U, 400000000U)) || (400000000U == ahbclk)) {
+		reg |= ENET_MDC_HCLK_DIV162;
+	} else {
+		return false;
+	}
 #endif
 
 #if defined (GD32H7XX)

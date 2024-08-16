@@ -35,6 +35,7 @@
 #endif
 
 namespace net {
+void dhcp_run();
 #if defined (CONFIG_ENET_ENABLE_PTP)
 void ptp_run();
 #endif
@@ -47,7 +48,10 @@ void ptp_run();
 
 #include "networkparams.h"
 
-#include "../src/net/net.h"
+#include "net.h"
+#include "netif.h"
+#include "ip4_address.h"
+#include "net/dhcp.h"
 
 #include "emac/net_link_check.h"
 
@@ -58,40 +62,33 @@ public:
 	Network();
 	~Network() = default;
 
-	void Start(const net::Link link);
 	void Print();
 
-	void Shutdown() {
-		network::display_emac_shutdown();
-		network::mdns_shutdown();
-		net_shutdown();
-	}
-
 	void MacAddressCopyTo(uint8_t *pMacAddress) {
-		memcpy(pMacAddress, m_aNetMacaddr, network::MAC_SIZE);
+		memcpy(pMacAddress, net::netif_hwaddr(), NETIF_MAX_HWADDR_LEN);
 	}
 
-	uint32_t GetSecondaryIp() const {
-		return m_IpInfo.secondary_ip.addr;
+	uint32_t GetSecondaryIp() {
+		return net::netif_secondary_ipaddr();
 	}
 
 	void SetIp(uint32_t nIp);
-	uint32_t GetIp() const {
-		return m_IpInfo.ip.addr;
+	uint32_t GetIp() {
+		return net::netif_ipaddr();
 	}
 
 	void SetNetmask(uint32_t nNetmask);
-	uint32_t GetNetmask() const {
-		return m_IpInfo.netmask.addr;
+	uint32_t GetNetmask() {
+		return net::netif_netmask();
 	}
 
 	void SetGatewayIp(uint32_t nGatewayIp);
-	uint32_t GetGatewayIp() const {
-		return m_IpInfo.gw.addr;
+	uint32_t GetGatewayIp()  {
+		return net::netif_gw();
 	}
 
-	uint32_t GetBroadcastIp() const {
-		return m_IpInfo.broadcast_ip.addr;
+	uint32_t GetBroadcastIp()  {
+		return net::netif_broadcast_ipaddr();
 	}
 
 	/*
@@ -102,18 +99,19 @@ public:
 		return m_IsDhcpCapable;
 	}
 
-	bool EnableDhcp();
+	void EnableDhcp();
 
-	bool IsDhcpUsed() const {
-		return m_IsDhcpUsed;
+	bool IsDhcpUsed() {
+		const auto b = net::netif_dhcp();
+		return b;
 	}
 
 	bool IsDhcpKnown() const {
 		return true;
 	}
 
-	network::dhcp::Mode GetDhcpMode() const {
-		if (m_IsDhcpUsed) {
+	network::dhcp::Mode GetDhcpMode() {
+		if (IsDhcpUsed()) {
 			return network::dhcp::Mode::ACTIVE;
 		}
 
@@ -121,21 +119,30 @@ public:
 	}
 
 	/*
-	 * Zeroconf
+	 * Zeroconf / autoip
 	 */
+
+	void SetZeroconf();
+	bool IsZeroconfUsed() const {
+		return net::netif_autoip();
+	}
 
 	bool IsZeroconfCapable() const {
 		return m_IsZeroconfCapable;
 	}
-	bool SetZeroconf();
-	bool IsZeroconfUsed() const {
-		return m_IsZeroconfUsed;
-	}
+
+	/*
+	 * Host name
+	 */
 
 	void SetHostName(const char *pHostName);
 	const char *GetHostName() const {
 		return m_aHostName;
 	}
+
+	/*
+	 * Domain name
+	 */
 
 	void SetDomainName(const char *pDomainName) {
 		strncpy(m_aDomainName, pDomainName, network::DOMAINNAME_SIZE - 1);
@@ -146,31 +153,61 @@ public:
 	}
 
 	/*
+	 * Name servers
+	 */
+
+	uint32_t GetNameServer(const uint32_t nIndex) const {
+		if (nIndex < network::NAMESERVERS_COUNT) {
+			return m_nNameservers[nIndex];
+		}
+
+		return 0;
+	}
+
+	uint32_t GetNameServers() const {
+		return network::NAMESERVERS_COUNT;
+	}
+
+	const char *GetIfName() const {
+		return m_aIfName;
+	}
+
+	uint32_t GetIfIndex() const {
+		return 1;
+	}
+
+	/*
 	 * UDP/IP
 	 */
 
 	int32_t Begin(uint16_t nPort) {
-		const auto nIndex = udp_begin(nPort);
+		const auto nIndex = net::udp_begin(nPort);
 		assert(nIndex != -1);
 		return nIndex;
 	}
 
 	int32_t End(uint16_t nPort) {
-		const auto nIndex = udp_end(nPort);
+		const auto nIndex = net::udp_end(nPort);
 		assert(nIndex == 0);
 		return nIndex;
 	}
 
-	uint16_t RecvFrom(int32_t nHandle, void *pBuffer, uint16_t nLength, uint32_t *from_ip, uint16_t *from_port) {
-		return udp_recv1(nHandle, reinterpret_cast<uint8_t *>(pBuffer), nLength, from_ip, from_port);
+	uint32_t RecvFrom(int32_t nHandle, void *pBuffer, uint32_t nLength, uint32_t *from_ip, uint16_t *from_port) {
+		return net::udp_recv1(nHandle, reinterpret_cast<uint8_t *>(pBuffer), nLength, from_ip, from_port);
 	}
 
-	uint16_t RecvFrom(int32_t nHandle, const void **ppBuffer, uint32_t *pFromIp, uint16_t *pFromPort) {
-		return udp_recv2(nHandle, reinterpret_cast<const uint8_t **>(ppBuffer), pFromIp, pFromPort);
+	uint32_t RecvFrom(int32_t nHandle, const void **ppBuffer, uint32_t *pFromIp, uint16_t *pFromPort) {
+		return net::udp_recv2(nHandle, reinterpret_cast<const uint8_t **>(ppBuffer), pFromIp, pFromPort);
 	}
 
-	void SendTo(int32_t nHandle, const void *pBuffer, uint16_t nLength, uint32_t to_ip, uint16_t remote_port) {
-		udp_send(nHandle, reinterpret_cast<const uint8_t *>(pBuffer), nLength, to_ip, remote_port);
+	void SendTo(int32_t nHandle, const void *pBuffer, uint32_t nLength, uint32_t to_ip, uint16_t remote_port) {
+		if (__builtin_expect((GetIp() != 0), 1)) {
+			net::udp_send(nHandle, reinterpret_cast<const uint8_t *>(pBuffer), nLength, to_ip, remote_port);
+		}
+	}
+
+	void SendToTimestamp(int32_t nHandle, const void *pBuffer, uint32_t nLength, uint32_t to_ip, uint16_t remote_port) {
+		net::udp_send_timestamp(nHandle, reinterpret_cast<const uint8_t *>(pBuffer), nLength, to_ip, remote_port);
 	}
 
 	/*
@@ -178,17 +215,17 @@ public:
 	 */
 
 	int32_t TcpBegin(const uint16_t nLocalPort) {
-		return tcp_begin(nLocalPort);
+		return net::tcp_begin(nLocalPort);
 	}
 
 	int32_t TcpEnd(const int32_t nHandle);
 
 	uint16_t TcpRead(const int32_t nHandleListen, const uint8_t **ppBuffer, uint32_t &HandleConnection) {
-		return tcp_read(nHandleListen, ppBuffer, HandleConnection);
+		return net::tcp_read(nHandleListen, ppBuffer, HandleConnection);
 	}
 
 	void TcpWrite(const int32_t nHandleListen, const uint8_t *pBuffer, uint16_t nLength, const uint32_t HandleConnection) {
-		tcp_write(nHandleListen, pBuffer, nLength, HandleConnection);
+		net::tcp_write(nHandleListen, pBuffer, nLength, HandleConnection);
 	}
 
 	/*
@@ -196,15 +233,17 @@ public:
 	 */
 
 	void JoinGroup([[maybe_unused]] int32_t nHandle, uint32_t nIp) {
-		igmp_join(nIp);
+		net::igmp_join(nIp);
 	}
 
 	void LeaveGroup([[maybe_unused]] int32_t nHandle, uint32_t nIp) {
-		igmp_leave(nIp);
+		net::igmp_leave(nIp);
 	}
 
-	void SetQueuedStaticIp(uint32_t nLocalIp = 0, uint32_t nNetmask = 0);
-	void SetQueuedDhcp() {
+	void SetQueuedStaticIp(const uint32_t nStaticIp, const uint32_t nNetmask);
+	void SetQueuedDefaultRoute(const uint32_t nGatewayIp);
+	void SetQueuedDhcp(const network::dhcp::Mode mode) {
+		m_QueuedConfig.mode = mode;
 		m_QueuedConfig.nMask |= QueuedConfig::DHCP;
 	}
 	void SetQueuedZeroconf() {
@@ -213,15 +252,15 @@ public:
 
 	bool ApplyQueuedConfig();
 
-	uint32_t GetNetmaskCIDR() const {
-		return static_cast<uint32_t>(__builtin_popcount(m_IpInfo.netmask.addr));
+	uint32_t GetNetmaskCIDR() {
+		return static_cast<uint32_t>(__builtin_popcount(GetNetmask()));
 	}
 
 	char GetAddressingMode() {
-		if (Network::Get()->IsZeroconfUsed()) {
+		if (IsZeroconfUsed()) {
 			return  'Z';
-		} else if (Network::Get()->IsDhcpKnown()) {
-			if (Network::Get()->IsDhcpUsed()) {
+		} else if (IsDhcpKnown()) {
+			if (IsDhcpUsed()) {
 				return 'D';
 			} else {
 				return 'S';
@@ -231,20 +270,12 @@ public:
 		return 'U';
 	}
 
-	const char *GetIfName() const {
-		return m_aIfName;
-	}
-
-	uint32_t GetIfIndex() const {
-		return m_nIfIndex;
-	}
-
-	bool IsValidIp(uint32_t nIp) {
-		return (m_IpInfo.ip.addr & m_IpInfo.netmask.addr) == (nIp & m_IpInfo.netmask.addr);
+	bool IsValidIp(const uint32_t nIp) {
+		return (GetIp() & GetNetmask()) == (nIp & GetNetmask());
 	}
 
 	void Run() {
-		net_handle();
+		net::net_handle();
 #if defined (CONFIG_ENET_ENABLE_PTP)
 		net::ptp_run();
 #endif
@@ -258,6 +289,7 @@ public:
 			net::link_handle_change(link_state);
 		}
 #endif
+		net::dhcp_run();
 	}
 
 	static Network *Get() {
@@ -267,28 +299,25 @@ public:
 private:
 	net::Link s_lastState { net::Link::STATE_DOWN };
 	bool m_IsDhcpCapable { true };
-	bool m_IsDhcpUsed { false };
 	bool m_IsZeroconfCapable { true };
-	bool m_IsZeroconfUsed { false };
-	uint32_t m_nIfIndex { 1 };
-	uint8_t m_nDhcpRetryTime { 0 };
 
-	struct IpInfo m_IpInfo;
-
+	char m_aIfName[IFNAMSIZ];
 	char m_aHostName[network::HOSTNAME_SIZE];
 	char m_aDomainName[network::DOMAINNAME_SIZE];
-	uint8_t m_aNetMacaddr[network::MAC_SIZE];
-	char m_aIfName[IFNAMSIZ];
+	uint32_t m_nNameservers[network::NAMESERVERS_COUNT];
 
 	struct QueuedConfig {
 		static constexpr uint32_t NONE = 0;
 		static constexpr uint32_t STATIC_IP = (1U << 0);
-		static constexpr uint32_t NET_MASK = (1U << 1);
-		static constexpr uint32_t DHCP = (1U << 2);
-		static constexpr uint32_t ZEROCONF = (1U << 3);
+		static constexpr uint32_t NETMASK   = (1U << 1);
+		static constexpr uint32_t GW        = (1U << 2);
+		static constexpr uint32_t DHCP      = (1U << 3);
+		static constexpr uint32_t ZEROCONF  = (1U << 4);
 		uint32_t nMask = QueuedConfig::NONE;
-		uint32_t nLocalIp = 0;
-		uint32_t nNetmask = 0;
+		uint32_t nStaticIp;
+		uint32_t nNetmask;
+		uint32_t nGateway;
+		network::dhcp::Mode mode;
 	};
 
 	QueuedConfig m_QueuedConfig;

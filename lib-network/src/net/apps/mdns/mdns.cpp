@@ -2,7 +2,7 @@
  * @file mdns.cpp
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,13 +23,21 @@
  * THE SOFTWARE.
  */
 
+#if defined (DEBUG_NET_APPS_MDNS)
+# if defined (NDEBUG)
+#  undef NDEBUG
+# endif
+#endif
+
 #include <cstdint>
 #include <cstring>
 #include <cstdio>
 #include <algorithm>
 #include <cassert>
 
-#include "mdns.h"
+#include "net/apps/mdns.h"
+#include "net/protocol/ip4.h"
+#include "net/protocol/iana.h"
 
 #include "network.h"
 #include "hardware.h"
@@ -42,10 +50,6 @@ static constexpr auto SERVICE_RECORDS_MAX = 8;
 #else
 static constexpr auto SERVICE_RECORDS_MAX = MDNS_SERVICE_RECORDS_MAX;
 #endif
-
-static constexpr uint32_t MULTICAST_MESSAGE_SIZE = 512;	///< The 1987 DNS specification [RFC1035] restricts DNS messages carried by UDP to no more than 512 bytes
-static constexpr uint32_t MULTICAST_ADDRESS = network::convert_to_uint(224, 0, 0, 251);
-static constexpr uint16_t UDP_PORT = 5353;
 
 static constexpr uint32_t MDNS_RESPONSE_TTL = 3600;		///< (in seconds)
 
@@ -68,24 +72,6 @@ static constexpr char DOMAIN_MIDI[]			= { 11, '_','a','p','p','l','e','-','m','i
 static constexpr char DOMAIN_OSC[]			= { 4 , '_','o','s','c'};
 static constexpr char DOMAIN_DDP[]			= { 4 , '_','d','d','p'};
 static constexpr char DOMAIN_PP[]			= { 3 , '_','p','p'};
-
-enum class Flags1 : uint8_t {
-	RESPONSE = 0x80,		///< query (0), or a response (1).
-	OPCODE_STATUS = 0x10,	///< a server status request (STATUS)
-	OPCODE_IQUERY = 0x08,	///< an inverse query (IQUERY)
-	OPCODE_STANDARD = 0x00,	///< (RFC 6762, section 18.3)
-	AUTHORATIVE = 0x04,		///< Authoritative Answer
-	TRUNC = 0x02,			///< TrunCation
-	RD = 0x01				///< If RD is set, it directs the name server to pursue the query recursively.
-};
-
-enum class Classes : uint16_t {
-	Internet = 1, Any = 255, Flush = 0x8000
-};
-
-enum class Types : uint16_t {
-	A = 1, PTR = 12, TXT = 16, SRV = 33, ALL = 255
-};
 
 enum class HostReply : uint32_t {
 	A = 0x01, PTR = 0x02
@@ -206,19 +192,11 @@ static constexpr Domain DOMAIN_DNSSD {
 static ServiceRecord s_ServiceRecords[mdns::SERVICE_RECORDS_MAX];
 static HostReply s_HostReplies;
 static ServiceReply s_ServiceReplies;
-static uint8_t s_RecordsData[MULTICAST_MESSAGE_SIZE];
+static uint8_t s_RecordsData[net::dns::MULTICAST_MESSAGE_SIZE];
 static bool s_isUnicast;
 static bool s_bLegacyQuery;
 
 }  // namespace mdns
-
-static constexpr uint8_t operator| (mdns::Flags1 a, mdns::Flags1 b) {
-	return static_cast<uint8_t>((static_cast<uint8_t>(a) | static_cast<uint8_t>(b)));
-}
-
-static constexpr uint16_t operator| (mdns::Classes a, mdns::Classes b) {
-	return static_cast<uint16_t>((static_cast<uint16_t>(a) | static_cast<uint16_t>(b)));
-}
 
 static constexpr mdns::HostReply operator| (mdns::HostReply a, mdns::HostReply b) {
 	return static_cast<mdns::HostReply>((static_cast<uint32_t>(a) | static_cast<uint32_t>(b)));
@@ -239,7 +217,7 @@ static constexpr mdns::ServiceReply operator& (mdns::ServiceReply a, mdns::Servi
 int32_t MDNS::s_nHandle;
 uint32_t MDNS::s_nRemoteIp;
 uint16_t MDNS::s_nRemotePort;
-uint16_t MDNS::s_nBytesReceived;
+uint32_t MDNS::s_nBytesReceived;
 uint8_t *MDNS::s_pReceiveBuffer;
 MDNS *MDNS::s_pThis;
 
@@ -303,7 +281,7 @@ static void create_reverse_domain(Domain &domain) {
 	auto nIp = Network::Get()->GetIp();
 	const auto *pIp = reinterpret_cast<const uint8_t *>(&nIp);
 
-	for (int32_t i = network::IP_SIZE - 1; i >= 0; i--) {
+	for (int32_t i = IPv4_ADDR_LEN - 1; i >= 0; i--) {
 		char buffer[3];
 		uint32_t nLength = 1;
 
@@ -439,12 +417,12 @@ static uint8_t *put_domain_name_as_labels(uint8_t *ptr, Domain const &domain) {
 	return ptr;
 }
 
-static uint8_t *add_question(uint8_t *pDestination, const Domain& domain, const Types type, const bool bFlush) {
+static uint8_t *add_question(uint8_t *pDestination, const Domain& domain, const net::dns::RRType type, const bool bFlush) {
 	auto *pDst = put_domain_name_as_labels(pDestination, domain);
 
 	*reinterpret_cast<volatile uint16_t*>(pDst) = __builtin_bswap16(static_cast<uint16_t>(type));
 	pDst += 2;
-	*reinterpret_cast<uint16_t*>(pDst) = __builtin_bswap16((bFlush ? Classes::Flush : static_cast<Classes>(0)) | Classes::Internet);
+	*reinterpret_cast<uint16_t*>(pDst) = __builtin_bswap16((bFlush ? net::dns::RRClass::RRCLASS_FLUSH : static_cast<net::dns::RRClass>(0)) | net::dns::RRClass::RRCLASS_INTERNET);
 	pDst += 2;
 
 	return pDst;
@@ -456,7 +434,7 @@ static uint32_t add_answer_srv(mdns::ServiceRecord const& serviceRecord, uint8_t
 	Domain domain;
 	create_service_domain(domain, serviceRecord, true);
 
-	auto *pDst = add_question(pDestination, domain, Types::SRV, true);
+	auto *pDst = add_question(pDestination, domain, net::dns::RRType::RRTYPE_SRV, true);
 
 	*reinterpret_cast<uint32_t*>(pDst) = __builtin_bswap32(nTTL);
 	pDst += 4;
@@ -483,7 +461,7 @@ static uint32_t add_answer_txt(mdns::ServiceRecord const& serviceRecord, uint8_t
 	Domain domain;
 	create_service_domain(domain, serviceRecord, true);
 
-	auto *pDst = add_question(pDestination, domain, Types::TXT, true);
+	auto *pDst = add_question(pDestination, domain, net::dns::RRType::RRTYPE_TXT, true);
 
 	*reinterpret_cast<uint32_t*>(pDst) = __builtin_bswap32(nTTL);
 	pDst += 4;
@@ -513,7 +491,7 @@ static uint32_t add_answer_ptr(mdns::ServiceRecord const& serviceRecord, uint8_t
 	Domain domain;
 	create_service_domain(domain, serviceRecord, false);
 
-	auto *pDst = add_question(pDestination, domain, Types::PTR, false);
+	auto *pDst = add_question(pDestination, domain, net::dns::RRType::RRTYPE_PTR, false);
 
 	*reinterpret_cast<uint32_t*>(pDst) = __builtin_bswap32(nTTL);
 	pDst += 4;
@@ -533,7 +511,7 @@ static uint32_t add_answer_ptr(mdns::ServiceRecord const& serviceRecord, uint8_t
 static uint32_t add_answer_dnsd_ptr(mdns::ServiceRecord const& serviceRecord, uint8_t *pDestination, const uint32_t nTTL) {
 	DEBUG_ENTRY
 
-	auto *pDst = add_question(pDestination, DOMAIN_DNSSD, Types::PTR, false);
+	auto *pDst = add_question(pDestination, DOMAIN_DNSSD, net::dns::RRType::RRTYPE_PTR, false);
 
 	*reinterpret_cast<uint32_t*>(pDst) = __builtin_bswap32(nTTL);
 	pDst += 4;
@@ -558,7 +536,7 @@ static uint32_t add_answer_a(uint8_t *pDestination, const uint32_t nTTL) {
 	Domain domain;
 	create_host_domain(domain);
 
-	auto *pDst = add_question(pDestination, domain, Types::A, true);
+	auto *pDst = add_question(pDestination, domain, net::dns::RRType::RRTYPE_A, true);
 
 	*reinterpret_cast<uint32_t*>(pDst) = __builtin_bswap32(nTTL);
 	pDst += 4;
@@ -578,7 +556,7 @@ static uint32_t add_answer_hostv4_ptr(uint8_t *pDestination, const uint32_t nTTL
 	Domain domain;
 	create_reverse_domain(domain);
 
-	auto *pDst = add_question(pDestination, domain, Types::PTR, true);
+	auto *pDst = add_question(pDestination, domain, net::dns::RRType::RRTYPE_PTR, true);
 
 	*reinterpret_cast<uint32_t*>(pDst) = __builtin_bswap32(nTTL);
 	pDst += 4;
@@ -675,14 +653,14 @@ void MDNS::SendAnswerLocalIpAddress(const uint16_t nTransActionID, const uint32_
 	DEBUG_ENTRY
 
 	uint32_t nAnswers = 0;
-	uint8_t *pDst = reinterpret_cast<uint8_t *>(&s_RecordsData) + sizeof(struct Header);
+	uint8_t *pDst = reinterpret_cast<uint8_t *>(&s_RecordsData) + sizeof(struct net::dns::Header);
 
 #if defined (CONFIG_MDNS_DOMAIN_REVERSE)
 	if ((HostReply::PTR & s_HostReplies) == HostReply::PTR) {
 		if (s_bLegacyQuery) {
 			Domain domain;
 			create_reverse_domain(domain);
-			pDst = add_question(pDst, domain, Types::PTR, false);
+			pDst = add_question(pDst, domain, net::dns::RRType::RRTYPE_PTR, false);
 		}
 	}
 #endif
@@ -698,10 +676,10 @@ void MDNS::SendAnswerLocalIpAddress(const uint16_t nTransActionID, const uint32_
 	}
 #endif
 
-	auto *pHeader = reinterpret_cast<Header*>(&s_RecordsData);
+	auto *pHeader = reinterpret_cast< net::dns::Header *>(&s_RecordsData);
 
 	pHeader->xid = nTransActionID;
-	pHeader->nFlag1 = Flags1::RESPONSE | Flags1::AUTHORATIVE;
+	pHeader->nFlag1 = net::dns::Flag1::FLAG1_RESPONSE | net::dns::Flag1::FLAG1_AUTHORATIVE;
 	pHeader->nFlag2 = 0;
 #if defined (CONFIG_MDNS_DOMAIN_REVERSE)
 	pHeader->nQueryCount = __builtin_bswap16(static_cast<uint16_t>(s_bLegacyQuery));
@@ -726,10 +704,10 @@ MDNS::MDNS() {
 		record.services = Services::LAST_NOT_USED;
 	}
 
-	s_nHandle = Network::Get()->Begin(mdns::UDP_PORT);
+	s_nHandle = Network::Get()->Begin(net::iana::IANA_PORT_MDNS);
 	assert(s_nHandle != -1);
 
-	Network::Get()->JoinGroup(s_nHandle, mdns::MULTICAST_ADDRESS);
+	Network::Get()->JoinGroup(s_nHandle, net::dns::MULTICAST_ADDRESS);
 	Network::Get()->SetDomainName(&DOMAIN_LOCAL[1]);
 
 	SendAnnouncement(MDNS_RESPONSE_TTL);
@@ -748,15 +726,15 @@ MDNS::~MDNS() {
 		}
 	}
 
-	Network::Get()->LeaveGroup(s_nHandle, mdns::MULTICAST_ADDRESS);
-	Network::Get()->End(mdns::UDP_PORT);
+	Network::Get()->LeaveGroup(s_nHandle, net::dns::MULTICAST_ADDRESS);
+	Network::Get()->End(net::iana::IANA_PORT_MDNS);
 	s_nHandle = -1;
 }
 
 void MDNS::SendAnnouncement(const uint32_t nTTL) {
 	DEBUG_ENTRY
 
-	s_nRemotePort = mdns::UDP_PORT; //FIXME Hack ;-)
+	s_nRemotePort = net::iana::IANA_PORT_MDNS; //FIXME Hack ;-)
 	s_HostReplies = HostReply::A;
 
 	SendAnswerLocalIpAddress(0, nTTL);
@@ -812,7 +790,7 @@ bool MDNS::ServiceRecordAdd(const char *pName, const mdns::Services services, co
 				record.nTextContentLength = static_cast<uint16_t>(nLength);
 			}
 
-			s_nRemotePort = mdns::UDP_PORT; //FIXME Hack ;-)
+			s_nRemotePort = net::iana::IANA_PORT_MDNS; //FIXME Hack ;-)
 
 			s_ServiceReplies = ServiceReply::TYPE_PTR
 					| ServiceReply::NAME_PTR
@@ -853,9 +831,9 @@ bool MDNS::ServiceRecordDelete(const mdns::Services service) {
 	return false;
 }
 
-void MDNS::SendTo(const uint16_t nLength) {
+void MDNS::SendTo(const uint32_t nLength) {
 	if (!s_isUnicast) {
-		Network::Get()->SendTo(s_nHandle, s_RecordsData, nLength, mdns::MULTICAST_ADDRESS, mdns::UDP_PORT);
+		Network::Get()->SendTo(s_nHandle, s_RecordsData, nLength, net::dns::MULTICAST_ADDRESS, net::iana::IANA_PORT_MDNS);
 		return;
 	}
 
@@ -866,7 +844,7 @@ void MDNS::SendMessage(mdns::ServiceRecord const& serviceRecord, const uint16_t 
 	DEBUG_ENTRY
 
 	uint32_t nAnswers = 0;
-	auto *pDst = reinterpret_cast<uint8_t *>(&s_RecordsData) + sizeof(struct Header);
+	auto *pDst = reinterpret_cast<uint8_t *>(&s_RecordsData) + sizeof(struct net::dns::Header);
 
 	if ((s_ServiceReplies & ServiceReply::TYPE_PTR) == ServiceReply::TYPE_PTR) {
 		nAnswers++;
@@ -890,10 +868,10 @@ void MDNS::SendMessage(mdns::ServiceRecord const& serviceRecord, const uint16_t 
 
 	pDst += add_answer_a(pDst, nTT);
 
-	auto *pHeader = reinterpret_cast<Header *>(&s_RecordsData);
+	auto *pHeader = reinterpret_cast<net::dns::Header *>(&s_RecordsData);
 
 	pHeader->xid = nTransActionID;
-	pHeader->nFlag1 = Flags1::RESPONSE | Flags1::AUTHORATIVE;
+	pHeader->nFlag1 = net::dns::Flag1::FLAG1_RESPONSE | net::dns::Flag1::FLAG1_AUTHORATIVE;
 	pHeader->nFlag2 = 0;
 	pHeader->nQueryCount = 0;
 	pHeader->nAnswerCount = __builtin_bswap16(static_cast<uint16_t>(nAnswers));
@@ -911,12 +889,12 @@ void MDNS::HandleQuestions(const uint32_t nQuestions) {
 	DEBUG_PRINTF("nQuestions=%u", nQuestions);
 
 	s_HostReplies = static_cast<mdns::HostReply>(0);
-	s_isUnicast = (s_nRemotePort != mdns::UDP_PORT);
+	s_isUnicast = (s_nRemotePort != net::iana::IANA_PORT_MDNS);
 	s_bLegacyQuery = s_isUnicast && (nQuestions == 1);
 
 	const auto nTransactionID = s_bLegacyQuery ? *reinterpret_cast<uint16_t *>(&s_pReceiveBuffer[0]) : static_cast<uint16_t>(0);
 
-	uint32_t nOffset = sizeof(struct Header);
+	uint32_t nOffset = sizeof(struct net::dns::Header);
 
 	for (uint32_t i = 0; i < nQuestions; i++) {
 		Domain resourceDomain;
@@ -930,10 +908,10 @@ void MDNS::HandleQuestions(const uint32_t nQuestions) {
 		resourceDomain.nLength = static_cast<uint16_t>(pResult - &s_pReceiveBuffer[nOffset]);
 		nOffset += resourceDomain.nLength;
 
-		const auto nType = static_cast<Types>(__builtin_bswap16(*reinterpret_cast<uint16_t*>(&s_pReceiveBuffer[nOffset])));
+		const auto nType = static_cast<net::dns::RRType>(__builtin_bswap16(*reinterpret_cast<uint16_t*>(&s_pReceiveBuffer[nOffset])));
 		nOffset += 2;
 
-		const auto nClass = static_cast<Classes>(__builtin_bswap16(*reinterpret_cast<uint16_t*>(&s_pReceiveBuffer[nOffset])) & 0x7F);
+		const auto nClass = static_cast<net::dns::RRClass>(__builtin_bswap16(*reinterpret_cast<uint16_t *>(&s_pReceiveBuffer[nOffset])) & 0x7F);
 		nOffset += 2;
 
 #ifndef NDEBUG
@@ -941,7 +919,7 @@ void MDNS::HandleQuestions(const uint32_t nQuestions) {
 		printf(" ==> Type : %d, Class: %d\n", static_cast<int>(nType), static_cast<int>(nClass));
 #endif
 
-		if ((nClass != Classes::Internet) && (nClass != Classes::Any)) {
+		if ((nClass != net::dns::RRClass::RRCLASS_INTERNET) && (nClass != net::dns::RRClass::RRCLASS_ANY)) {
 			continue;
 		}
 
@@ -951,7 +929,7 @@ void MDNS::HandleQuestions(const uint32_t nQuestions) {
 
 		Domain domainHost;
 
-		if ((nType == Types::A) || (nType == Types::ALL)) {
+		if ((nType == net::dns::RRType::RRTYPE_A) || (nType == net::dns::RRType::RRTYPE_ALL)) {
 			DEBUG_PUTS("");
 			create_host_domain(domainHost);
 
@@ -961,7 +939,7 @@ void MDNS::HandleQuestions(const uint32_t nQuestions) {
 		}
 
 #if defined (CONFIG_MDNS_DOMAIN_REVERSE)
-		if (nType == Types::PTR || nType == Types::ALL) {
+		if (nType == net::dns::RRType::RRTYPE_PTR || nType == net::dns::RRType::RRTYPE_ALL) {
 			DEBUG_PUTS("");
 			create_reverse_domain(domainHost);
 
@@ -981,7 +959,7 @@ void MDNS::HandleQuestions(const uint32_t nQuestions) {
 				s_ServiceReplies = static_cast<mdns::ServiceReply>(0);
 				Domain serviceDomain;
 
-				if (nType == Types::PTR || nType == Types::ALL) {
+				if (nType == net::dns::RRType::RRTYPE_PTR || nType == net::dns::RRType::RRTYPE_ALL) {
 					if (DOMAIN_DNSSD == resourceDomain) {
 						s_ServiceReplies = s_ServiceReplies | ServiceReply::TYPE_PTR;
 					}
@@ -996,11 +974,11 @@ void MDNS::HandleQuestions(const uint32_t nQuestions) {
 				create_service_domain(serviceDomain, record, true);
 
 				if (serviceDomain == resourceDomain) {
-					if ((nType == Types::SRV) || (nType == Types::ALL)) {
+					if ((nType == net::dns::RRType::RRTYPE_SRV) || (nType == net::dns::RRType::RRTYPE_ALL)) {
 						s_ServiceReplies = s_ServiceReplies | ServiceReply::SRV;
 					}
 
-					if ((nType == Types::TXT) || (nType == Types::ALL)) {
+					if ((nType == net::dns::RRType::RRTYPE_TXT) || (nType == net::dns::RRType::RRTYPE_ALL)) {
 						s_ServiceReplies = s_ServiceReplies | ServiceReply::TXT;
 					}
 				}
