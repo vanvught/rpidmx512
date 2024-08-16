@@ -100,8 +100,8 @@ public:
 		Dmx::Get()->SetSendDataWithoutSC(nPortIndex, lightset::Data::Backup(nPortIndex), lightset::Data::GetLength(nPortIndex));
 	}
 
-	void Sync(const bool doForce) override {
-		Dmx::Get()->SetOutput(doForce);
+	void Sync() override {
+		Dmx::Get()->Sync();
 
 		for (uint32_t nPortIndex = 0; nPortIndex < dmx::config::max::PORTS; nPortIndex++) {
 			if (lightset::Data::GetLength(nPortIndex) != 0) {

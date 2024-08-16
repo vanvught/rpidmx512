@@ -2,7 +2,7 @@
  * @file dmxconfigudp.h
  *
  */
-/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -83,7 +83,7 @@ public:
 		uint16_t nForeignPort;
 		auto nBytesReceived = Network::Get()->RecvFrom(s_nHandle, const_cast<const void **>(reinterpret_cast<void **>(&s_pUdpBuffer)), &nIPAddressFrom, &nForeignPort);
 
-		if (__builtin_expect((!dmxconfigudp::validate(static_cast<uint32_t>(nBytesReceived), dmxconfigudp::MIN_SIZE, dmxconfigudp::MAX_SIZE)), 1)) {
+		if (__builtin_expect((!dmxconfigudp::validate(nBytesReceived, dmxconfigudp::MIN_SIZE, dmxconfigudp::MAX_SIZE)), 1)) {
 			return;
 		}
 
@@ -99,7 +99,7 @@ public:
 
 		const auto *pCmd = &s_pUdpBuffer[4];
 
-		if (dmxconfigudp::validate(nBytesReceived, static_cast<uint16_t>(12), static_cast<uint16_t>(13)) && (memcmp("break#", pCmd, 6) == 0)) {
+		if (dmxconfigudp::validate(nBytesReceived, static_cast<uint32_t>(12), static_cast<uint32_t>(13)) && (memcmp("break#", pCmd, 6) == 0)) {
 			const auto nBreakTime = dmxconfigudp::atoi(reinterpret_cast<const char*>(&s_pUdpBuffer[10]), nBytesReceived - 10U);
 			if (nBreakTime >= dmx::transmit::BREAK_TIME_MIN) {
 				Dmx::Get()->SetDmxBreakTime(nBreakTime);
@@ -107,7 +107,7 @@ public:
 			return;
 		}
 
-		if (dmxconfigudp::validate(nBytesReceived, static_cast<uint16_t>(10), static_cast<uint16_t>(16)) && (memcmp("mab#", pCmd, 4) == 0)) {
+		if (dmxconfigudp::validate(nBytesReceived, static_cast<uint32_t>(10), static_cast<uint32_t>(16)) && (memcmp("mab#", pCmd, 4) == 0)) {
 			const auto nMapTime = dmxconfigudp::atoi(reinterpret_cast<const char*>(&s_pUdpBuffer[8]), nBytesReceived - 8U);
 			if (dmxconfigudp::validate(nMapTime, dmx::transmit::MAB_TIME_MIN, dmx::transmit::MAB_TIME_MAX)) {
 				Dmx::Get()->SetDmxMabTime(nMapTime);
@@ -115,7 +115,7 @@ public:
 			return;
 		}
 
-		if (dmxconfigudp::validate(nBytesReceived, static_cast<uint16_t>(13), static_cast<uint16_t>(14)) && (memcmp("refresh#", pCmd, 8) == 0)) {
+		if (dmxconfigudp::validate(nBytesReceived, static_cast<uint32_t>(13), static_cast<uint32_t>(14)) && (memcmp("refresh#", pCmd, 8) == 0)) {
 			const auto nRefreshRate = dmxconfigudp::atoi(reinterpret_cast<const char*>(&s_pUdpBuffer[12]), nBytesReceived - 12U);
 			uint32_t nPeriodTime = 0;
 			if (nRefreshRate != 0) {
@@ -125,7 +125,7 @@ public:
 			return;
 		}
 
-		if (dmxconfigudp::validate(nBytesReceived, static_cast<uint16_t>(11), static_cast<uint16_t>(13)) && (memcmp("slots#", pCmd, 6) == 0)) {
+		if (dmxconfigudp::validate(nBytesReceived, static_cast<uint32_t>(11), static_cast<uint32_t>(13)) && (memcmp("slots#", pCmd, 6) == 0)) {
 			const auto nSlots = dmxconfigudp::atoi(reinterpret_cast<const char*>(&s_pUdpBuffer[10]), nBytesReceived - 10U);
 				if (dmxconfigudp::validate(nSlots, dmx::min::CHANNELS, dmx::max::CHANNELS)) {
 				Dmx::Get()->SetDmxSlots(static_cast<uint16_t>(nSlots));

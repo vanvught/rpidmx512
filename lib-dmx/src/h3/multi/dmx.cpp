@@ -742,7 +742,7 @@ void Dmx::StartOutput([[maybe_unused]] const uint32_t nPortIndex) {
 	// Nothing to do here
 }
 
-void Dmx::SetOutput([[maybe_unused]] const bool doForce) {
+void Dmx::Sync() {
 	// Nothing to do here
 }
 

@@ -91,7 +91,7 @@ public:
 	void SetSendDataWithoutSC(const uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength);
 
 	void StartOutput(const uint32_t nPortIndex);
-	void SetOutput(const bool doForce);
+	void Sync();
 
 	void SetOutputStyle(const uint32_t nPortIndex, const dmx::OutputStyle outputStyle);
 	dmx::OutputStyle GetOutputStyle(const uint32_t nPortIndex) const;
