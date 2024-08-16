@@ -2,7 +2,7 @@
  * @file lightset.h
  *
  */
-/* Copyright (C) 2016-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -192,11 +192,7 @@ public:
 	 * @param [IN] PortIndex
 	 */
 	virtual void Sync(const uint32_t PortIndex)= 0;
-	/**
-	 *
-	 * @param [IN] doForce This parameter is used with Art-Net ArtSync only.
-	 */
-	virtual void Sync(const bool doForce = false)= 0;
+	virtual void Sync()= 0;
 #if defined (OUTPUT_HAVE_STYLESWITCH)
 	virtual void SetOutputStyle(const uint32_t nPortIndex, const lightset::OutputStyle outputStyle)=0;
 	virtual lightset::OutputStyle GetOutputStyle(const uint32_t nPortIndex) const=0;
@@ -206,10 +202,20 @@ public:
 	virtual void FullOn() {}
 	virtual void Print() {}
 	// RDM Optional
-	virtual bool SetDmxStartAddress(uint16_t nDmxStartAddress);
-	virtual uint16_t GetDmxStartAddress();
-	virtual uint16_t GetDmxFootprint();
-	virtual bool GetSlotInfo(uint16_t nSlotOffset, lightset::SlotInfo &tSlotInfo);
+	virtual bool SetDmxStartAddress([[maybe_unused]] const uint16_t nDmxStartAddress) {
+		return false;
+	}
+	virtual uint16_t GetDmxStartAddress() {
+		return lightset::dmx::START_ADDRESS_DEFAULT;
+	}
+	virtual uint16_t GetDmxFootprint() {
+		return lightset::dmx::UNIVERSE_SIZE;
+	}
+	virtual bool GetSlotInfo([[maybe_unused]] const uint16_t nSlotOffset, lightset::SlotInfo &slotInfo) {
+		slotInfo.nType = 0x00; // ST_PRIMARY
+		slotInfo.nCategory = 0x0001; // SD_INTENSITY
+		return true;
+	}
 };
 
 #endif /* LIGHTSET_H_ */

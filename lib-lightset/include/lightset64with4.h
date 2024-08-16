@@ -89,12 +89,12 @@ public:
 		}
 	}
 
-	void Sync(const bool doForce) override {
+	void Sync() override {
 		if (m_pA != nullptr) {
-			m_pA->Sync(doForce);
+			m_pA->Sync();
 		}
 		if (m_pB != nullptr) {
-			m_pB->Sync(doForce);
+			m_pB->Sync();
 		}
 	}
 
