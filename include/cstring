@@ -2,7 +2,7 @@
  * @file cstring
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,8 +26,37 @@
 #ifndef CSTRING_
 #define CSTRING_
 
-#ifdef __cplusplus
-# include <string.h>
-#endif
+#include <string.h>
+
+// Get rid of those macros defined in <string.h> in lieu of real functions.
+#undef memcmp
+#undef memcpy
+#undef memmove
+#undef memset
+#undef strchr
+#undef strcmp
+#undef strcpy
+#undef strerror
+#undef strlen
+#undef strncmp
+#undef strncpy
+#undef strstr
+#undef strtok
+
+namespace std {
+using ::memcmp;
+using ::memcpy;
+using ::memmove;
+using ::memset;
+using ::strcmp;
+using ::strcpy;
+using ::strerror;
+using ::strlen;
+using ::strncmp;
+using ::strncpy;
+using ::strtok;
+using ::strchr;
+using ::strstr;
+}
 
 #endif /* CSTRING_ */

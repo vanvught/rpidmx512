@@ -2,7 +2,7 @@
  * @file network.cpp
  *
  */
-/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,10 +23,12 @@
  * THE SOFTWARE.
  */
 
-#include "network.h"
-#include "displayudf.h"
+#undef NDEBUG
 
-namespace network {
+#include "displayudf.h"
+#include "net/protocol/dhcp.h"
+
+namespace net {
 void display_emac_config() {
 	DisplayUdf::Get()->ShowEmacInit();
 }
@@ -59,7 +61,7 @@ void display_emac_shutdown() {
 	DisplayUdf::Get()->ShowShutdown();
 }
 
-void display_dhcp_status(network::dhcp::ClientStatus status) {
-	DisplayUdf::Get()->ShowDhcpStatus(status);
+void display_dhcp_status(net::dhcp::State state) {
+	DisplayUdf::Get()->ShowDhcpStatus(state);
 }
 }  // namespace network

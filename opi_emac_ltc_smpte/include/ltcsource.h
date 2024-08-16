@@ -30,7 +30,7 @@
 #include "ltcsourceconst.h"
 #include "display.h"
 #include "gps.h"
-#include "ntpclient.h"
+#include "net/apps/ntpclient.h"
 #include "tcnetdisplay.h"
 
 namespace ltc {

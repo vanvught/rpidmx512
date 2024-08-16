@@ -31,7 +31,7 @@
 #include "hardware.h"
 #include "network.h"
 
-#include "mdns.h"
+#include "net/apps/mdns.h"
 
 #include "display.h"
 
@@ -92,7 +92,7 @@
 #endif
 
 // System Time
-#include "ntpclient.h"
+#include "net/apps/ntpclient.h"
 #include "gpstimeclient.h"
 #include "gpsparams.h"
 
@@ -132,8 +132,6 @@ void Hardware::RebootHandler() {
 		while (ConfigStore::Get()->Flash())
 			;
 
-		Network::Get()->Shutdown();
-
 		Display::Get()->Cls();
 		Display::Get()->TextStatus("Rebooting ...");
 	}
@@ -154,7 +152,7 @@ int main() {
 	FlashCodeInstall spiFlashInstall;
 
 	fw.Print("LTC SMPTE");
-	nw.Print();
+	
 
 #if defined(ENABLE_SHELL)
 	Shell shell;

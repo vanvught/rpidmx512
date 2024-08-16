@@ -75,7 +75,7 @@ void DmxSerial::HandleUdp() {
 	if (memcmp(s_UdpBuffer, cmd::REQUEST_FILES, length::REQUEST_FILES) == 0) {
 		for (uint32_t i = 0; i < m_nFilesCount; i++) {
 			const auto nLength = snprintf(s_UdpBuffer, sizeof(s_UdpBuffer) - 1, DMXSERIAL_FILE_PREFIX "%.3d" DMXSERIAL_FILE_SUFFIX "\n", m_aFileIndex[i]);
-			Network::Get()->SendTo(m_nHandle, s_UdpBuffer, static_cast<uint16_t>(nLength), nIPAddressFrom, UDP::PORT);
+			Network::Get()->SendTo(m_nHandle, s_UdpBuffer, nLength, nIPAddressFrom, UDP::PORT);
 		}
 		return;
 	}
@@ -83,7 +83,7 @@ void DmxSerial::HandleUdp() {
 	if ((nBytesReceived >= length::GET_TFTP) && (memcmp(s_UdpBuffer, cmd::GET_TFTP, length::GET_TFTP) == 0)) {
 		if (nBytesReceived == length::GET_TFTP) {
 			const auto nLength = snprintf(s_UdpBuffer, UDP::BUFFER_SIZE - 1, "tftp:%s\n", m_bEnableTFTP ? "On" : "Off");
-			Network::Get()->SendTo(m_nHandle, s_UdpBuffer, static_cast<uint16_t>(nLength), nIPAddressFrom, UDP::PORT);
+			Network::Get()->SendTo(m_nHandle, s_UdpBuffer,nLength, nIPAddressFrom, UDP::PORT);
 			return;
 		}
 
@@ -113,7 +113,7 @@ void DmxSerial::HandleUdp() {
 		} else {
 			const auto *pError = strerror(errno);
 			const auto nLength = snprintf(s_UdpBuffer, UDP::BUFFER_SIZE - 1, "%s\n", pError);
-			Network::Get()->SendTo(m_nHandle, s_UdpBuffer, static_cast<uint16_t>(nLength), nIPAddressFrom, UDP::PORT);
+			Network::Get()->SendTo(m_nHandle, s_UdpBuffer, nLength, nIPAddressFrom, UDP::PORT);
 		}
 		return;
 	}

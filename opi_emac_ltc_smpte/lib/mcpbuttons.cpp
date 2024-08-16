@@ -390,7 +390,6 @@ void McpButtons::HandleRunActionSelect() {
 		Display::Get()->Cls();
 		Display::Get()->TextStatus("Reboot ...");
 
-		Network::Get()->Shutdown();
 		Hardware::Get()->Reboot();
 
 		return;

@@ -23,6 +23,12 @@
  * THE SOFTWARE.
  */
 
+#if !defined(__clang__)
+# pragma GCC push_options
+# pragma GCC optimize ("O2")
+# pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#endif
+
 #include <algorithm>
 #include <cstdint>
 #include <cstdio>
@@ -71,7 +77,7 @@ E131Bridge::E131Bridge() {
 		m_InputPort[i].nPriority = 100;
 	}
 
-#if defined (E131_HAVE_DMXIN)
+#if defined (E131_HAVE_DMXIN) || defined (NODE_SHOWFILE)
 	char aSourceName[e131::SOURCE_NAME_LENGTH];
 	uint8_t nLength;
 	snprintf(aSourceName, e131::SOURCE_NAME_LENGTH, "%.48s %s", Network::Get()->GetHostName(), Hardware::Get()->GetBoardName(nLength));
@@ -94,18 +100,10 @@ E131Bridge::~E131Bridge() {
 
 void E131Bridge::Start() {
 #if defined (E131_HAVE_DMXIN)
-	if (m_pE131DataPacket == nullptr) {
-		const auto nIpMulticast = network::convert_to_uint(239, 255, 0, 0);
-		m_DiscoveryIpAddress = nIpMulticast | ((e131::universe::DISCOVERY & static_cast<uint32_t>(0xFF)) << 24) | ((e131::universe::DISCOVERY & 0xFF00) << 8);
-		// TE131DataPacket
-		m_pE131DataPacket = new TE131DataPacket;
-		assert(m_pE131DataPacket != nullptr);
-		FillDataPacket();
-		// TE131DiscoveryPacket
-		m_pE131DiscoveryPacket = new TE131DiscoveryPacket;
-		assert(m_pE131DiscoveryPacket != nullptr);
-		FillDiscoveryPacket();
-	}
+	const auto nIpMulticast = network::convert_to_uint(239, 255, 0, 0);
+	m_DiscoveryIpAddress = nIpMulticast | ((e131::universe::DISCOVERY & static_cast<uint32_t>(0xFF)) << 24) | ((e131::universe::DISCOVERY & 0xFF00) << 8);
+	FillDataPacket();
+	FillDiscoveryPacket();
 
 	for (uint32_t nPortIndex = 0; nPortIndex < e131bridge::MAX_PORTS; nPortIndex++) {
 		if (m_Bridge.Port[nPortIndex].direction == lightset::PortDir::INPUT) {
@@ -580,6 +578,7 @@ void E131Bridge::HandleDmx() {
 				}
 			} else {
 				lightset::Data::Set(m_pLightSet, nPortIndex);
+				m_OutputPort[nPortIndex].IsDataPending = true;
 			}
 
 			m_State.nReceivingDmx |= (1U << static_cast<uint8_t>(lightset::PortDir::OUTPUT));

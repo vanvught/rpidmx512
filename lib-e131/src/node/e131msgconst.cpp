@@ -2,7 +2,7 @@
  * @file e131mgsconst.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,5 @@
 
 #include "e131msgconst.h"
 
-const char E131MsgConst::PARAMS[] = "Configuring sACN E1.31";
 const char E131MsgConst::START[] = "Starting sACN E1.31";
 const char E131MsgConst::STARTED[] = "sACN E1.31 started";

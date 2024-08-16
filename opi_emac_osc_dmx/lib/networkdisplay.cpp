@@ -2,7 +2,7 @@
  * @file networkdisplay.cpp
  *
  */
-/* Copyright (C) 2022-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,24 +23,76 @@
  * THE SOFTWARE.
  */
 
+#include <cstdint>
+
+#include "display.h"
+
 #include "network.h"
+#include "net/protocol/dhcp.h"
 
-namespace network {
-void display_emac_config() {}
-void display_emac_start() {}
-void display_emac_status([[maybe_unused]] const bool isLinkUp) {}
+namespace net {
+static constexpr auto LINE_IP = 2U;
 
-void display_ip() {}
+void display_emac_config() {
+	Display::Get()->ClearLine(LINE_IP);
+	Display::Get()->PutString("Ethernet config");
+}
 
-void display_netmask() {}
+void display_emac_start() {
+	Display::Get()->ClearLine(LINE_IP);
+	Display::Get()->PutString("Ethernet start");
+}
 
-void display_gateway() {}
+void display_emac_status(const bool isLinkUp) {
+	Display::Get()->ClearLine(LINE_IP);
+	Display::Get()->PutString("Ethernet Link ");
+	if (isLinkUp) {
+		Display::Get()->PutString("UP");
+	} else {
+		Display::Get()->PutString("DOWN");
+	}
+}
 
-void display_hostname() {}
+void display_ip() {
+	Display::Get()->ClearLine(LINE_IP);
+	Display::Get()->Printf(LINE_IP, "" IPSTR "/%d %c", IP2STR(Network::Get()->GetIp()), Network::Get()->GetNetmaskCIDR(), Network::Get()->GetAddressingMode());
+}
 
-void display_emac_shutdown() {}
+void display_netmask() {
+	display_ip();
+}
 
-// DHCP Client
-void display_dhcp_status([[maybe_unused]] network::dhcp::ClientStatus nStatus) {}
+void display_gateway() {
+}
+
+void display_hostname() {
+}
+
+void display_emac_shutdown() {
+	Display::Get()->ClearLine(LINE_IP);
+	Display::Get()->PutString("Ethernet shutdown");
+}
+
+void display_dhcp_status(net::dhcp::State state) {
+	Display::Get()->ClearLine(LINE_IP);
+
+	switch (state) {
+	case net::dhcp::State::STATE_OFF:
+		break;
+	case net::dhcp::State::STATE_RENEWING:
+		Display::Get()->PutString("DHCP renewing");
+		break;
+	case net::dhcp::State::STATE_BOUND:
+		Display::Get()->PutString("Got IP");
+		break;
+	case net::dhcp::State::STATE_REQUESTING:
+		Display::Get()->PutString("DHCP requesting");
+		break;
+	case net::dhcp::State::STATE_BACKING_OFF:
+		Display::Get()->PutString("DHCP Error");
+		break;
+	default:
+		break;
+	}
+}
 }  // namespace network
-

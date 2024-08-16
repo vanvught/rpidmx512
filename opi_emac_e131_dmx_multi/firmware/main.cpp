@@ -29,7 +29,7 @@
 #include "network.h"
 #include "networkconst.h"
 
-#include "mdns.h"
+#include "net/apps/mdns.h"
 
 #include "displayudf.h"
 #include "displayudfparams.h"
@@ -90,10 +90,7 @@ int main() {
 	FlashCodeInstall spiFlashInstall;
 
 	fw.Print("sACN E1.31 DMX");
-	nw.Print();
-
-	display.TextStatus(E131MsgConst::PARAMS, CONSOLE_YELLOW);
-
+	
 	E131Bridge bridge;
 
 	E131Params e131params;

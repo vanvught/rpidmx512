@@ -372,8 +372,8 @@ void LtcDisplayRgb::Print() {
 		printf("Display RGB panel\n");
 	} else {
 		printf("Display WS28xx\n");
-		printf(" Type    : %s [%d]\n", PixelType::GetType(m_tLedType), static_cast<int>(m_tLedType));
-		printf(" Mapping : %s [%d]\n", PixelType::GetMap(m_tMapping), static_cast<int>(m_tMapping));
+		printf(" Type    : %s [%d]\n", pixel::pixel_get_type(m_tLedType), static_cast<int>(m_tLedType));
+		printf(" Mapping : %s [%d]\n", pixel::pixel_get_map(m_tMapping), static_cast<int>(m_tMapping));
 	}
 	printf(" Master  : %d\n", m_nMaster);
 	printf(" RGB     : Character 0x%.6X, Colon 0x%.6X, Message 0x%.6X\n", m_aColour[static_cast<uint32_t>(ColourIndex::TIME)], m_aColour[static_cast<uint32_t>(ColourIndex::COLON)], m_aColour[static_cast<uint32_t>(ColourIndex::MESSAGE)]);

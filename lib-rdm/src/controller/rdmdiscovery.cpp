@@ -256,7 +256,7 @@ void RDMDiscovery::NewState(const rdmdiscovery::State state, const bool doStateL
 
 void RDMDiscovery::Process() {
 	switch (m_State) {
-	case rdmdiscovery::State::LATE_RESPONSE:  //TODO LATE_RESPONSE
+	case rdmdiscovery::State::LATE_RESPONSE:  ///< LATE_RESPONSE
 		m_Message.Receive(m_nPortIndex);
 
 		if ((Hardware::Get()->Micros() - m_LateResponse.nMicros) > rdmdiscovery::LATE_RESPONSE_TIME_OUT) {
@@ -265,7 +265,7 @@ void RDMDiscovery::Process() {
 
 		return;
 		break;
-	case rdmdiscovery::State::UNMUTE:  //TODO UNMUTE
+	case rdmdiscovery::State::UNMUTE:  ///< UNMUTE
 		if (m_UnMute.nCounter == 0) {
 			m_UnMute.nCounter = rdmdiscovery::UNMUTE_COUNTER;
 			m_UnMute.bCommandRunning = false;
@@ -302,7 +302,7 @@ void RDMDiscovery::Process() {
 
 		return;
 		break;
-	case rdmdiscovery::State::MUTE:  //TODO MUTE
+	case rdmdiscovery::State::MUTE:  ///< MUTE
 		if (m_Mute.nTodEntries == 0) {
 			m_Mute.bCommandRunning = false;
 			NEW_STATE(rdmdiscovery::State::DISCOVERY, false);
@@ -358,7 +358,7 @@ void RDMDiscovery::Process() {
 
 		return;
 		break;
-	case rdmdiscovery::State::DISCOVERY:		//TODO DISCOVERY
+	case rdmdiscovery::State::DISCOVERY:		///< DISCOVERY
 		if (m_Discovery.bCommandRunning) {
 			m_pResponse = const_cast<uint8_t *>(m_Message.Receive(m_nPortIndex));
 
@@ -414,7 +414,7 @@ void RDMDiscovery::Process() {
 
 		return;
 		break;
-	case rdmdiscovery::State::DISCOVERY_SINGLE_DEVICE:		//TODO DISCOVERY_SINGLE_DEVICE
+	case rdmdiscovery::State::DISCOVERY_SINGLE_DEVICE:		///< DISCOVERY_SINGLE_DEVICE
 		if (m_DiscoverySingleDevice.nCounter == 0) {
 			m_DiscoverySingleDevice.nCounter = rdmdiscovery::QUIKFIND_DISCOVERY_COUNTER;
 			m_DiscoverySingleDevice.bCommandRunning = false;
@@ -466,7 +466,7 @@ void RDMDiscovery::Process() {
 
 		return;
 		break;
-	case rdmdiscovery::State::DUB:	//TODO DUB
+	case rdmdiscovery::State::DUB:	///< DUB
 		if (m_pResponse == nullptr) {
 #ifndef NDEBUG
 			puts("No responses");
@@ -490,7 +490,7 @@ void RDMDiscovery::Process() {
 
 		NEW_STATE(rdmdiscovery::State::DISCOVERY, true);
 		break;
-	case rdmdiscovery::State::QUICKFIND:	//TODO QUICKFIND
+	case rdmdiscovery::State::QUICKFIND:	///< QUICKFIND
 		if (m_QuikFind.nCounter == 0) {
 			m_QuikFind.bCommandRunning = false;
 			NEW_STATE(rdmdiscovery::State::QUICKFIND_DISCOVERY, false);
@@ -550,7 +550,7 @@ void RDMDiscovery::Process() {
 
 		return;
 		break;
-	case rdmdiscovery::State::QUICKFIND_DISCOVERY:	//TODO QUICKFIND_DISCOVERY
+	case rdmdiscovery::State::QUICKFIND_DISCOVERY:	///< QUICKFIND_DISCOVERY
 		if (m_QuikFindDiscovery.nCounter == 0) {
 			m_QuikFindDiscovery.nCounter = rdmdiscovery::QUIKFIND_DISCOVERY_COUNTER;
 			m_QuikFindDiscovery.bCommandRunning = false;
@@ -594,7 +594,7 @@ void RDMDiscovery::Process() {
 
 		return;
 		break;
-	case rdmdiscovery::State::FINISHED: //TODO FINISHED
+	case rdmdiscovery::State::FINISHED: ///< FINISHED
 		m_bIsFinished = true;
 		NEW_STATE(rdmdiscovery::State::IDLE, false);
 #ifndef NDEBUG

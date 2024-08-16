@@ -45,10 +45,10 @@ void PixelDmxParamsRdm::Display(const uint8_t *pData)  {
 	}
 
 	DisplayUdf::Get()->Printf(7, "%-8s %-2d G%-2d %-5s",
-			PixelType::GetType(static_cast<pixel::Type>(pData[static_cast<uint32_t>(SlotInfo::TYPE)])),
+			pixel::pixel_get_type(static_cast<pixel::Type>(pData[static_cast<uint32_t>(SlotInfo::TYPE)])),
 			pData[static_cast<uint32_t>(SlotInfo::COUNT)],
 			pData[static_cast<uint32_t>(SlotInfo::GROUPING_COUNT)],
-			PixelType::GetMap(static_cast<pixel::Map>(pData[static_cast<uint32_t>(SlotInfo::MAP)])));
+			pixel::pixel_get_map(static_cast<pixel::Map>(pData[static_cast<uint32_t>(SlotInfo::MAP)])));
 
 	if (pData[nLastIndex] == 0xFF) {
 		if (!s_IsProgrammed) {

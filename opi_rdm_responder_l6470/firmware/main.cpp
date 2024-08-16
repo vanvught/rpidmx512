@@ -82,7 +82,7 @@ int main() {
 
 	fw.Print();
 #if !defined(NO_EMAC)
-	nw.Print();
+	
 #endif
 
 	LightSet *pBoard;

@@ -100,7 +100,7 @@ extern "C" {
  * @return
  */
 /*@unused@*/inline static uint8_t bcm2835_gpio_lev(const uint8_t pin) {
-	const uint32_t value = BCM2835_GPIO->GPLEV0; // TODO BUG pin > 32
+	const uint32_t value = BCM2835_GPIO->GPLEV0;
 	return (value & (1 << pin)) ? (uint8_t) HIGH : (uint8_t) LOW;
 }
 
@@ -114,7 +114,7 @@ extern "C" {
  * @return
  */
 /*@unused@*/inline static uint8_t bcm2835_gpio_eds(const uint8_t pin) {
-	const uint32_t value = BCM2835_GPIO->GPEDS0; // TODO BUG pin > 32
+	const uint32_t value = BCM2835_GPIO->GPEDS0;
 	return (value & (1 << pin)) ? (uint8_t) HIGH : (uint8_t) LOW;
 }
 
@@ -126,7 +126,7 @@ extern "C" {
  * @param pin
  */
 /*@unused@*/inline static void bcm2835_gpio_set_eds(const uint8_t pin) {
-	BCM2835_GPIO->GPEDS0 = (1 << pin); // TODO BUG pin > 32
+	BCM2835_GPIO->GPEDS0 = (1 << pin);
 }
 
 

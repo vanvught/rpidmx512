@@ -169,7 +169,7 @@ void DdpDisplay::HandleQuery() {
 		m_Packet.header.len[0] = static_cast<uint8_t>(nLength >> 8);
 		m_Packet.header.len[1] = static_cast<uint8_t>(nLength);
 
-		Network::Get()->SendTo(m_nHandle, &m_Packet, static_cast<uint16_t>(HEADER_LEN + static_cast<uint16_t>(nLength)), Network::Get()->GetIp() | ~(Network::Get()->GetNetmask()), ddp::UDP_PORT);
+		Network::Get()->SendTo(m_nHandle, &m_Packet, (HEADER_LEN + static_cast<uint16_t>(nLength)), Network::Get()->GetIp() | ~(Network::Get()->GetNetmask()), ddp::UDP_PORT);
 	}
 
 	if ((m_Packet.header.id & id::STATUS) == id::CONFIG) {
@@ -206,9 +206,9 @@ void DdpDisplay::HandleQuery() {
 		m_Packet.header.len[0] = static_cast<uint8_t>(nLength >> 8);
 		m_Packet.header.len[1] = static_cast<uint8_t>(nLength);
 
-		Network::Get()->SendTo(m_nHandle, &m_Packet, static_cast<uint16_t>(HEADER_LEN + static_cast<uint16_t>(nLength)), m_nFromIp, ddp::UDP_PORT);
+		Network::Get()->SendTo(m_nHandle, &m_Packet, HEADER_LEN + nLength, m_nFromIp, ddp::UDP_PORT);
 
-		debug_dump(&m_Packet, static_cast<uint16_t>(HEADER_LEN + static_cast<uint16_t>(nLength)));
+		debug_dump(&m_Packet, HEADER_LEN + nLength);
 	}
 
 	DEBUG_EXIT

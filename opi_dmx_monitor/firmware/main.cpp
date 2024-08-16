@@ -64,7 +64,7 @@ int main() {
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, CONSOLE_YELLOW);
 	Network nw;
 	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, CONSOLE_GREEN);
-	nw.Print();
+	
 #endif
 
 	console_clear();

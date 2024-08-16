@@ -30,7 +30,7 @@
 #include "network.h"
 #include "networkconst.h"
 
-#include "mdns.h"
+#include "net/apps/mdns.h"
 
 #include "displayudf.h"
 #include "displayudfparams.h"
@@ -83,9 +83,6 @@ int main() {
 	FlashCodeInstall spiFlashInstall;
 
 	fw.Print("Art-Net " STR(LIGHTSET_PORTS) " Node DMX/RDM");
-	nw.Print();
-
-	display.TextStatus(ArtNetMsgConst::PARAMS, CONSOLE_YELLOW);
 
 	ArtNetNode node;
 

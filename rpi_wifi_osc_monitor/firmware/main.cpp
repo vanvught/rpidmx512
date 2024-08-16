@@ -145,7 +145,7 @@ int main() {
 		assert(pPixelDmx != nullptr);
 		pSpi = pPixelDmx;
 
-		display.Printf(7, "%s:%d G%d", PixelType::GetType(pixelDmxConfiguration.GetType()), pixelDmxConfiguration.GetCount(), pixelDmxConfiguration.GetGroupingCount());
+		display.Printf(7, "%s:%d G%d", pixel::pixel_get_type(pixelDmxConfiguration.GetType()), pixelDmxConfiguration.GetCount(), pixelDmxConfiguration.GetGroupingCount());
 
 		server.SetOutput(pSpi);
 		server.SetOscServerHandler(new Handler(pPixelDmx));

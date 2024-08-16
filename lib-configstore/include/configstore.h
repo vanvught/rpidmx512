@@ -81,10 +81,6 @@ public:
 			;
 	}
 
-	 bool HaveFlashChip() const {
-		return s_bHaveFlashChip;
-	}
-
 	void Update(configstore::Store store, uint32_t nOffset, const void *pData, uint32_t nDataLength, uint32_t nSetList = 0, uint32_t nOffsetSetList = 0);
 	void Update(configstore::Store store, const void *pData, uint32_t nDataLength) {
 		Update(store, 0, pData, nDataLength);
@@ -93,6 +89,11 @@ public:
 	void Copy(const configstore::Store store, void *pData, uint32_t nDataLength, uint32_t nOffset = 0, const bool doUpdate = true);
 
 	void ResetSetList(configstore::Store store);
+	void ResetSetListAll() {
+		for (uint32_t i = 0; i < static_cast<uint32_t>(configstore::Store::LAST); i++) {
+			ResetSetList(static_cast<configstore::Store>(i));
+		}
+	}
 
 	bool Flash();
 
@@ -167,7 +168,7 @@ private:
 		static constexpr uint32_t SIZE = 4096;
 	};
 
-	static_assert(sizeof(struct Env) == FlashStore::ENV_SIZE);
+	static_assert(sizeof(struct Env) == FlashStore::ENV_SIZE, "");
 
 	static bool s_bHaveFlashChip;
 

@@ -46,7 +46,7 @@
 
 #include "hardware.h"
 #include "network.h"
-#include "mdns.h"
+#include "net/apps/mdns.h"
 #include "display.h"
 
 #if defined(RDM_CONTROLLER)
@@ -264,7 +264,8 @@ http::Status HttpDeamonHandleRequest::ParseHeaderField(char *pLine) {
 	DEBUG_ENTRY
 	char *pToken;
 
-	assert(pLine != 0);
+	assert(pLine != nullptr);
+
 	if ((pToken = strtok(pLine, ":")) == nullptr) {
 		return http::Status::BAD_REQUEST;
 	}

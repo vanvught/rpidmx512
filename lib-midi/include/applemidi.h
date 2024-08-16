@@ -36,7 +36,7 @@
 #include <cassert>
 
 #include "midi.h"
-#include "mdns.h"
+#include "net/apps/mdns.h"
 
 #include "hardware.h"
 #include "network.h"

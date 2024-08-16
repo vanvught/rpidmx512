@@ -39,7 +39,7 @@
 Handler::Handler(WS28xxDmx *pWS28xxDmx):
 	m_pWS28xxDmx(pWS28xxDmx),
 	m_nCount(WS28xx::Get()->GetCount()),
-	m_TypeString(const_cast<char*>(PixelType::GetType(WS28xx::Get()->GetType())))
+	m_TypeString(const_cast<char*>(pixel::pixel_get_type(WS28xx::Get()->GetType())))
 {
 	DEBUG_ENTRY
 

@@ -30,7 +30,7 @@
 #include <time.h>
 
 #include "ltc.h"
-#include "ntp.h"
+#include "net/protocol/ntp.h"
 #include "network.h"
 
 #include "debug.h"

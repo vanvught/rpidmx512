@@ -356,20 +356,6 @@ void ArtNetNode::SetOutputStyle(const uint32_t nPortIndex, lightset::OutputStyle
 		m_OutputPort[nPortIndex].GoodOutputB &= static_cast<uint8_t>(~artnet::GoodOutputB::STYLE_CONSTANT);
 	}
 
-#if defined (OUTPUT_DMX_SEND) || defined (OUTPUT_DMX_SEND_MULTI)
-	/**
-	 * FIXME I do not like this hack. It should be handled in dmx.cpp
-	 */
-	if ((m_Node.Port[nPortIndex].direction == lightset::PortDir::OUTPUT)
-			&& (outputStyle == lightset::OutputStyle::CONSTANT)
-			&& (m_pLightSet != nullptr)) {
-		if (m_OutputPort[nPortIndex].IsTransmitting) {
-			m_OutputPort[nPortIndex].IsTransmitting = false;
-			m_pLightSet->Stop(nPortIndex);
-		}
-	}
-#endif
-
 	m_State.IsSynchronousMode = false;
 
 	if (m_State.status == artnet::Status::ON) {
@@ -459,7 +445,7 @@ static artnet::OpCodes get_op_code(const uint32_t nBytesReceived, const uint8_t 
 	return artnet::OpCodes::OP_NOT_DEFINED;
 }
 
-void ArtNetNode::Process(const uint16_t nBytesReceived) {
+void ArtNetNode::Process(const uint32_t nBytesReceived) {
 	if (__builtin_expect((nBytesReceived == 0), 1)) {
 		const auto nDeltaMillis = m_nCurrentPacketMillis - m_nPreviousPacketMillis;
 

@@ -24,11 +24,11 @@
  */
 
 #include <cstdio>
+#include <cstring>
 
 #include "hardware.h"
 #include "network.h"
 #include "networkconst.h"
-
 
 #include "displayudf.h"
 #include "displayudfparams.h"
@@ -41,9 +41,9 @@
 # include "rdmnetllrponly.h"
 #endif
 
-#include "mdns.h"
+#include "net/apps/mdns.h"
 
-#include "ntpclient.h"
+#include "net/apps/ntpclient.h"
 
 #include "factorydefaults.h"
 
@@ -56,8 +56,6 @@ void Hardware::RebootHandler() {
 
 		while (ConfigStore::Get()->Flash())
 			;
-
-		Network::Get()->Shutdown();
 
 		printf("Rebooting ...\n");
 
@@ -78,7 +76,7 @@ int main() {
 	FlashCodeInstall spiFlashInstall;
 
 	fw.Print("RDMNet LLRP device only");
-	nw.Print();
+	
 
 	NtpClient ntpClient;
 	ntpClient.Start();
@@ -119,6 +117,8 @@ int main() {
 	hw.SetMode(hardware::ledblink::Mode::NORMAL);
 
 	auto t1 = time(nullptr);
+	struct tm tmHwClock;
+	memset(&tmHwClock, 0, sizeof(struct tm));
 
 	for (;;) {
 		nw.Run();
@@ -138,12 +138,11 @@ int main() {
 			auto *tm = localtime(&ltime);
 			struct tm tmlocal;
 			memcpy(&tmlocal, tm, sizeof(struct tm));
-			struct tm tmHwClock;
 			HwClock::Get()->Get(&tmHwClock);
 			display.Printf(7, "%.2d:%.2d:%.2d %.2d:%.2d:%.2d",
 					tmlocal.tm_hour, tmlocal.tm_min, tmlocal.tm_sec,
 					tmHwClock.tm_hour, tmHwClock.tm_min, tmHwClock.tm_sec);
-			printf("%.2d:%.2d:%.2d %.2d:%.2d:%.2d\n",
+			printf("%.2d:%.2d:%.2d %.2d:%.2d:%.2d\r",
 					tmlocal.tm_hour, tmlocal.tm_min, tmlocal.tm_sec,
 					tmHwClock.tm_hour, tmHwClock.tm_min, tmHwClock.tm_sec);
 		}

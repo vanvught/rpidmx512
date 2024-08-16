@@ -51,6 +51,10 @@
 
 #include "debug.h"
 
+#ifndef ALIGNED
+# define ALIGNED __attribute__ ((aligned (4)))
+#endif
+
 namespace e131bridge {
 #if !defined(LIGHTSET_PORTS)
 # error LIGHTSET_PORTS is not defined
@@ -67,13 +71,6 @@ namespace e131bridge {
  };
 
 struct State {
-	bool IsNetworkDataLoss;
-	bool IsMergeMode;
-	bool IsSynchronized;
-	bool IsForcedSynchronized;
-	bool IsChanged;
-	bool bDisableMergeTimeout;
-	bool bDisableSynchronize;
 	uint32_t SynchronizationTime;
 	uint32_t DiscoveryTime;
 	uint16_t DiscoveryPacketLength;
@@ -85,6 +82,13 @@ struct State {
 	uint8_t nReceivingDmx;
 	lightset::FailSafe failsafe;
 	e131bridge::Status status;
+	bool IsNetworkDataLoss;
+	bool IsMergeMode;
+	bool IsSynchronized;
+	bool IsForcedSynchronized;
+	bool IsChanged;
+	bool bDisableMergeTimeout;
+	bool bDisableSynchronize;
 };
 
 struct Bridge {
@@ -92,7 +96,7 @@ struct Bridge {
 		uint16_t nUniverse;
 		lightset::PortDir direction;
 		bool bLocalMerge;
-	} Port[e131bridge::MAX_PORTS];
+	} Port[e131bridge::MAX_PORTS] ALIGNED;
 };
 
 struct Source {
@@ -103,12 +107,13 @@ struct Source {
 };
 
 struct OutputPort {
-	Source sourceA;
-	Source sourceB;
+	Source sourceA ALIGNED;
+	Source sourceB ALIGNED;
 	lightset::MergeMode mergeMode;
 	lightset::OutputStyle outputStyle;
 	bool IsMerging;
 	bool IsTransmitting;
+	bool IsDataPending;
 };
 
 struct InputPort {
@@ -224,19 +229,6 @@ public:
 		m_pE131Sync = pE131Sync;
 	}
 
-	const uint8_t *GetCid() const {
-		return m_Cid;
-	}
-
-	void SetSourceName(const char *pSourceName) {
-		assert(pSourceName != nullptr);
-		strncpy(m_SourceName, pSourceName, e131::SOURCE_NAME_LENGTH - 1);
-		m_SourceName[e131::SOURCE_NAME_LENGTH - 1] = '\0';
-	}
-	const char *GetSourceName() const {
-		return m_SourceName;
-	}
-
 	void SetPriority(const uint32_t nPortIndex, uint8_t nPriority) {
 		assert(nPortIndex < e131bridge::MAX_PORTS);
 		if ((nPriority >= e131::priority::LOWEST) && (nPriority <= e131::priority::HIGHEST)) {
@@ -266,21 +258,6 @@ public:
 		}
 
 		m_OutputPort[nPortIndex].outputStyle = outputStyle;
-
-#if defined (OUTPUT_DMX_SEND) || defined (OUTPUT_DMX_SEND_MULTI)
-		/**
-		 * FIXME I do not like this hack. It should be handled in dmx.cpp
-		 */
-		if (m_Bridge.Port[nPortIndex].direction == lightset::PortDir::OUTPUT
-				&& (outputStyle == lightset::OutputStyle::CONSTANT)
-				&& (m_pLightSet != nullptr)) {
-			if (m_OutputPort[nPortIndex].IsTransmitting) {
-				m_OutputPort[nPortIndex].IsTransmitting = false;
-				m_pLightSet->Stop(nPortIndex);
-			}
-		}
-#endif
-
 	}
 
 	lightset::OutputStyle GetOutputStyle(const uint32_t nPortIndex) const {
@@ -301,6 +278,21 @@ public:
 
 		m_State.IsNetworkDataLoss = false; // Force timeout
 	}
+
+#if defined (E131_HAVE_DMXIN) || defined (NODE_SHOWFILE)
+	void SetSourceName(const char *pSourceName) {
+		assert(pSourceName != nullptr);
+		strncpy(m_SourceName, pSourceName, e131::SOURCE_NAME_LENGTH - 1);
+		m_SourceName[e131::SOURCE_NAME_LENGTH - 1] = '\0';
+	}
+	const char *GetSourceName() const {
+		return m_SourceName;
+	}
+
+	const uint8_t *GetCid() const {
+		return m_Cid;
+	}
+#endif
 
 	void Start();
 	void Stop();
@@ -411,12 +403,6 @@ private:
 	uint32_t m_nPreviousPacketMillis { 0 };
 	uint32_t m_nPreviousLedpanelMillis { 0 };
 
-	TE131DataPacket *m_pE131DataPacket { nullptr };
-	TE131DiscoveryPacket *m_pE131DiscoveryPacket { nullptr };
-	uint32_t m_DiscoveryIpAddress { 0 };
-	uint8_t m_Cid[e131::CID_LENGTH];
-	char m_SourceName[e131::SOURCE_NAME_LENGTH];
-
 	e131bridge::State m_State;
 	e131bridge::Bridge m_Bridge;
 	e131bridge::OutputPort m_OutputPort[e131bridge::MAX_PORTS];
@@ -430,6 +416,17 @@ private:
 
 	// Synchronization handler
 	E131Sync *m_pE131Sync { nullptr };
+
+#if defined (E131_HAVE_DMXIN) || defined (NODE_SHOWFILE)
+	char m_SourceName[e131::SOURCE_NAME_LENGTH];
+	uint8_t m_Cid[e131::CID_LENGTH];
+#endif
+
+#if defined (E131_HAVE_DMXIN)
+	TE131DataPacket m_E131DataPacket;
+	TE131DiscoveryPacket m_E131DiscoveryPacket;
+	uint32_t m_DiscoveryIpAddress { 0 };
+#endif
 
 #if defined (DMXCONFIGUDP_H_)
 # if defined (ARTNET_VERSION)

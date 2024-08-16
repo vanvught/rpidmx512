@@ -31,9 +31,9 @@
 #include "network.h"
 #include "networkconst.h"
 
-#include "mdns.h"
+#include "net/apps/mdns.h"
 
-#include "ntpclient.h"
+#include "net/apps/ntpclient.h"
 
 #include "displayudf.h"
 #include "displayudfparams.h"
@@ -99,7 +99,7 @@ int main() {
 	FlashCodeInstall spiFlashInstall;
 
 	fw.Print("Art-Net 4 Stepper L6470");
-	nw.Print();
+	
 
 	NtpClient ntpClient;
 	ntpClient.Start();
@@ -144,8 +144,6 @@ int main() {
 	} else {
 		snprintf(aDescription, sizeof(aDescription) - 1, "Sparkfun [%d]", nMotorsConnected);
 	}
-
-	display.TextStatus(ArtNetMsgConst::PARAMS, CONSOLE_YELLOW);
 
 	ArtNetNode node;
 	

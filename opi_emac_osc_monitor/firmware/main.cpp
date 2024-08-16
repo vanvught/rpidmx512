@@ -34,9 +34,9 @@
 #include "console.h"
 #include "h3/showsystime.h"
 
-#include "ntpclient.h"
+#include "net/apps/ntpclient.h"
 
-#include "mdns.h"
+#include "net/apps/mdns.h"
 
 #include "display.h"
 #include "displayhandler.h"
@@ -81,7 +81,7 @@ int main() {
 	console_set_fg_color(CONSOLE_WHITE);
 	console_set_top_row(2);
 
-	nw.Print();
+	
 	
 	ShowSystime showSystime;
 

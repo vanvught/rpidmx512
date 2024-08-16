@@ -78,6 +78,10 @@
 
 #include "debug.h"
 
+#ifndef ALIGNED
+# define ALIGNED __attribute__ ((aligned (4)))
+#endif
+
 namespace artnetnode {
 enum class FailSafe : uint8_t {
 	LAST = 0x08, OFF= 0x09, ON = 0x0a, PLAYBACK = 0x0b, RECORD = 0x0c
@@ -88,9 +92,9 @@ struct State {
 	uint32_t ArtPollIpAddress;
 	uint32_t ArtPollReplyCount;
 	uint32_t ArtPollReplyDelayMillis;
-	artnet::ArtPollQueue ArtPollReplyQueue[4];
 	uint32_t ArtDmxIpAddress;
 	uint32_t ArtSyncMillis;				///< Latest ArtSync received time
+	artnet::ArtPollQueue ArtPollReplyQueue[4];
 	artnet::ReportCode reportCode;
 	artnet::Status status;
 	bool SendArtPollReplyOnChange;		///< ArtPoll : Flags Bit 1 : 1 = Send ArtPollReply whenever Node conditions change.
@@ -114,10 +118,7 @@ struct State {
 };
 
 struct Node {
-	uint32_t IPAddressTimeCode;
-	bool bMapUniverse0;										///< Art-Net 4
 	struct {
-		char ShortName[artnet::SHORT_NAME_LENGTH];
 		uint16_t PortAddress;								///< The Port-Address is a 15 bit number composed of Net+Sub-Net+Universe.
 		uint8_t DefaultAddress;
 		uint8_t NetSwitch;									///< Bits 14-8 of the 15 bit Port-Address are encoded into the bottom 7 bits of this field.
@@ -125,7 +126,11 @@ struct Node {
 		lightset::PortDir direction;
 		artnet::PortProtocol protocol;						///< Art-Net 4
 		bool bLocalMerge;
-	} Port[artnetnode::MAX_PORTS];
+		char ShortName[artnet::SHORT_NAME_LENGTH] ALIGNED;
+	} Port[artnetnode::MAX_PORTS] ALIGNED;
+
+	uint32_t IPAddressTimeCode;
+	bool bMapUniverse0;										///< Art-Net 4
 };
 
 struct Source {
@@ -135,11 +140,11 @@ struct Source {
 };
 
 struct OutputPort {
-	Source SourceA;
-	Source SourceB;
+	Source SourceA ALIGNED;
+	Source SourceB ALIGNED;
+	uint32_t nIpRdm;
 	uint8_t GoodOutput;
 	uint8_t GoodOutputB;
-	uint32_t nIpRdm;
 	uint8_t nPollReplyIndex;
 	bool IsTransmitting;
 	bool IsDataPending;
@@ -572,14 +577,7 @@ private:
 	void SetNetSwitch(const uint32_t nPortIndex, const uint8_t nNetSwitch);
 	void SetSubnetSwitch(const uint32_t nPortIndex, const uint8_t nSubnetSwitch);
 
-#undef UNUSED
-#if defined (ARTNET_ENABLE_SENDDIAG)
-# define UNUSED
-#else
-# define UNUSED  [[maybe_unused]]
-#endif
-
-	void SendDiag(UNUSED const artnet::PriorityCodes priorityCode, UNUSED const char *format, ...) {
+	void SendDiag([[maybe_unused]] const artnet::PriorityCodes priorityCode, [[maybe_unused]] const char *format, ...) {
 #if defined (ARTNET_ENABLE_SENDDIAG)
 		if (!m_State.SendArtDiagData) {
 			return;
@@ -626,7 +624,9 @@ private:
 	void HandleRdmIn();
 	void HandleTrigger();
 
-	uint16_t MakePortAddress(const uint16_t nUniverse, const uint32_t nPage);
+	uint16_t MakePortAddress(const uint16_t nUniverse, const uint32_t nPage) {
+		return artnet::make_port_address(m_Node.Port[nPage].NetSwitch, m_Node.Port[nPage].SubSwitch, nUniverse);
+	}
 
 	void UpdateMergeStatus(const uint32_t nPortIndex);
 	void CheckMergeTimeouts(const uint32_t nPortIndex);
@@ -642,7 +642,7 @@ private:
 	void FailSafeRecord();
 	void FailSafePlayback();
 
-	void Process(const uint16_t);
+	void Process(const uint32_t);
 
 #if defined (RDM_CONTROLLER)
 	bool RdmDiscoveryRun() {
@@ -709,12 +709,12 @@ private:
 		artnet::ArtRdm ArtRdm;
 	};
 	UArtTodPacket m_ArtTodPacket;
-#endif
-#if defined (RDM_CONTROLLER)
+# if defined (RDM_CONTROLLER)
 	ArtNetRdmController *m_pArtNetRdmController;
-#endif
-#if defined (RDM_RESPONDER)
+# endif
+# if defined (RDM_RESPONDER)
 	ArtNetRdmResponder *m_pArtNetRdmResponder;
+# endif
 #endif
 #if defined (ARTNET_HAVE_TIMECODE)
 	artnet::ArtTimeCode m_ArtTimeCode;
@@ -729,7 +729,4 @@ private:
 	static ArtNetNode *s_pThis;
 };
 
-#if defined (UNUSED)
-# undef UNUSED
-#endif
 #endif /* ARTNETNODE_H_ */

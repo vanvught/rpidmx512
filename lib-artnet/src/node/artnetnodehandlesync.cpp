@@ -41,12 +41,6 @@
 void ArtNetNode::HandleSync() {
 	if (!m_State.IsSynchronousMode) {
 		m_State.IsSynchronousMode = true;
-		/*
-		 * As the ArtSync is after the ArtDmx which are already processed
-		 * we need to do a forced sync
-		 */
-		m_pLightSet->Sync(true);
-		SendDiag(artnet::PriorityCodes::DIAG_LOW, "Sync forced");
 		return;
 	}
 

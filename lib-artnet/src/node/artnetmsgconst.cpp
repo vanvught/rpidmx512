@@ -2,10 +2,7 @@
  * @file artnetmsgconst.cpp
  *
  */
-/**
- * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
- */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,9 +25,6 @@
 
 #include "artnetmsgconst.h"
 
-const char ArtNetMsgConst::PARAMS[] = "Configuring Art-Net";
 const char ArtNetMsgConst::START[] = "Starting Art-Net";
 const char ArtNetMsgConst::STARTED[] = "Art-Net started";
 const char ArtNetMsgConst::RDM_RUN[] = "Running RDM Discovery";
-
-

@@ -38,7 +38,7 @@ using namespace remoteconfig;
 
 #if !defined (CONFIG_REMOTECONFIG_MINIMUM)
 
-const RemoteConfig::Txt RemoteConfig::s_TXT[] = {
+constexpr RemoteConfig::Txt RemoteConfig::s_TXT[] = {
 		{ &RemoteConfig::HandleGetRconfigTxt,    &RemoteConfig::HandleSetRconfigTxt,    "rconfig.txt",  11},
 		{ &RemoteConfig::HandleGetEnvTxt,        &RemoteConfig::HandleSetEnvTxt,        "env.txt",      7 },
 		{ &RemoteConfig::HandleGetNetworkTxt,    &RemoteConfig::HandleSetNetworkTxt,    "network.txt",  11},

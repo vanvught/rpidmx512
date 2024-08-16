@@ -57,7 +57,7 @@ void LLRPDevice::DumpCommon() {
 	}
 	puts("");
 
-	pPdu = (uint8_t *)pCommon->LlrpPDU.FlagsLength;
+	pPdu = reinterpret_cast<uint8_t *>(pCommon->LlrpPDU.FlagsLength);
 	nLength = (((pPdu[0] & 0x0fu) << 16) | static_cast<uint32_t>((pPdu[1] << 8)) | static_cast<uint32_t>(pPdu[2]));
 
 	printf("LlrpPDU PDU length=%d, High 4 bits=0x%.1x\n", nLength, static_cast<int>(pCommon->LlrpPDU.FlagsLength[0]) >> 4);

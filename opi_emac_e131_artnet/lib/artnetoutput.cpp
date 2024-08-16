@@ -2,7 +2,7 @@
  * @file artnetoutput.cpp
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -93,7 +93,7 @@ void ArtNetOutput::Sync([[maybe_unused]] uint32_t const nPortIndex) {
 	//TODO Implement Sync
 }
 
-void ArtNetOutput::Sync([[maybe_unused]] const bool doForce) {
+void ArtNetOutput::Sync() {
 	DEBUG_ENTRY
 
 	//TODO Implement Sync
