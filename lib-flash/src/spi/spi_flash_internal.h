@@ -2,7 +2,7 @@
  * @file spi_internal.h
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@g32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -73,8 +73,6 @@ struct spi_flash {
 #define SPI_XFER_END	0x02	///< Deassert CS after transfer
 
 #define SPI_XFER_SPEED_HZ	6000000	///< 6MHz
-
-extern uint32_t get_timer(uint32_t base); //TODO Remove
 
 extern int spi_init();
 extern int spi_xfer(uint32_t bitlen, const uint8_t *dout, uint8_t *din, uint32_t flags);
