@@ -159,22 +159,6 @@ bool Hardware::SetTime(const struct tm *pTime) {
 	return true;
 }
 
-void Hardware::GetTime(struct tm *pTime) {
-	time_t ltime;
-	struct tm *local_time;
-
-	ltime = time(nullptr);
-    local_time = localtime(&ltime);
-
-    pTime->tm_year = local_time->tm_year;
-    pTime->tm_mon = local_time->tm_mon ;
-    pTime->tm_mday = local_time->tm_mday;
-    //
-    pTime->tm_hour = local_time->tm_hour;
-    pTime->tm_min = local_time->tm_min;
-    pTime->tm_sec = local_time->tm_sec;
-}
-
 bool Hardware::Reboot() {
 	hardware_led_set(1);
 

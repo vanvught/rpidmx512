@@ -25,8 +25,9 @@
 
 #include <cstdint>
 #include <cstddef>
-#include <string.h>
+#include <cstdio>
 #include <time.h>
+#include <uuid/uuid.h>
 #include <cassert>
 
 #include "hardware.h"
@@ -46,6 +47,10 @@
 #endif
 
 #include "logic_analyzer.h"
+
+namespace net {
+void net_shutdown();
+}  // namespace net
 
 namespace soc {
 #if defined (ORANGE_PI)
@@ -129,20 +134,18 @@ const char *Hardware::GetSocName(uint8_t &nLength) {
 	return soc::NAME;
 }
 
-#include <cstdio>
-
 bool Hardware::Reboot() {
 	puts("Rebooting ...");
 	
+	h3_watchdog_disable();
+
 #if !defined(DISABLE_RTC)
 	m_HwClock.SysToHc();
 #endif
 
-	h3_watchdog_disable();
-
 	RebootHandler();
 
-	h3_watchdog_enable();
+	net::net_shutdown();
 
 	clean_data_cache();
 	invalidate_data_cache();
@@ -155,6 +158,8 @@ bool Hardware::Reboot() {
 	h3_gpio_set_pud(EXT_SPI_CS, GPIO_PULL_DOWN);
 
 	SetMode(hardware::ledblink::Mode::REBOOT);
+
+	h3_watchdog_enable();
 
 	for (;;) {
 		Run();

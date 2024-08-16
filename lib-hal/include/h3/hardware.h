@@ -39,19 +39,22 @@
 #include "h3_watchdog.h"
 #include "h3_thermal.h"
 
+#include "debug.h"
+
 #if defined (DEBUG_STACK)
  void stack_debug_run();
 #endif
 
 uint32_t hardware_uptime_seconds();
 void hardware_led_set(int);
+extern "C" void console_error(const char *);
 
 class Hardware {
 public:
 	Hardware();
 
 	uint32_t GetReleaseId() const {
-		return 0;	// TODO U-Boot version
+		return 0;
 	}
 
 	void GetUuid(uuid_t out) {
@@ -156,21 +159,71 @@ public:
 		return m_Mode;
 	}
 
+	struct Timer {
+	    uint32_t nExpireTime;
+	    uint32_t nIntervalMillis;
+	    int32_t nId;
+	    hal::TimerCallback callback;
+	};
+
+	int32_t SoftwareTimerAdd(const uint32_t nIntervalMillis, const hal::TimerCallback callback) {
+	    if (m_nTimersCount >= hal::SOFTWARE_TIMERS_MAX) {
+#ifdef NDEBUG
+            console_error("SoftwareTimerAdd\n");
+#endif
+	        return -1;
+	    }
+
+	    const auto nCurrentTime = Hardware::Millis();
+
+	    Timer newTimer = {
+	        .nExpireTime = nCurrentTime + nIntervalMillis,
+	        .nIntervalMillis = nIntervalMillis,
+			.nId = m_nNextId++,
+	        .callback = callback,
+	    };
+
+	    m_Timers[m_nTimersCount++] = newTimer;
+
+	    return newTimer.nId;
+	}
+
+    bool SoftwareTimerDelete(int32_t& nId) {
+        for (uint32_t i = 0; i < m_nTimersCount; ++i) {
+            if (m_Timers[i].nId == nId) {
+                for (uint32_t j = i; j < m_nTimersCount - 1; ++j) {
+                    m_Timers[j] = m_Timers[j + 1];
+                }
+                --m_nTimersCount;
+                nId = -1;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    bool SoftwareTimerChange(const int32_t nId, const uint32_t nIntervalMillis) {
+        for (uint32_t i = 0; i < m_nTimersCount; ++i) {
+            if (m_Timers[i].nId == nId) {
+            	m_Timers[i].nExpireTime = Hardware::Millis() + nIntervalMillis;
+            	m_Timers[i].nIntervalMillis = nIntervalMillis;
+            	return true;
+            }
+        }
+
+        return false;
+    }
+
 	void Run() {
-		if (__builtin_expect (m_nTicksPerSecond == 0, 0)) {
-			return;
-		}
+	    const auto nCurrentTime = Hardware::Get()->Millis();
 
-		const auto nMicros = H3_TIMER->AVS_CNT1;
-
-		if (__builtin_expect ((nMicros - m_nMicrosPrevious < m_nTicksPerSecond), 0)) {
-			return;
-		}
-
-		m_nMicrosPrevious = nMicros;
-
-		m_nToggleLed ^= 0x1;
-		hardware_led_set(m_nToggleLed);
+	    for (uint32_t i = 0; i < m_nTimersCount; i++) {
+	        if (m_Timers[i].nExpireTime <= nCurrentTime) {
+	        	m_Timers[i].callback();
+	            m_Timers[i].nExpireTime = nCurrentTime + m_Timers[i].nIntervalMillis;
+	        }
+	    }
 
 #if defined (DEBUG_STACK)
 		stack_debug_run();
@@ -184,29 +237,32 @@ public:
 private:
 	void RebootHandler();
 
-	void SetFrequency(uint32_t nFreqHz) {
-		switch (nFreqHz) {
-		case 0:
-			m_nTicksPerSecond = 0;
+	static void ledblink() {
+		m_nToggleLed ^= 0x1;
+		hardware_led_set(m_nToggleLed);
+	}
+
+	void SetFrequency(const uint32_t nFreqHz) {
+		if (nFreqHz == 0) {
+			SoftwareTimerDelete(m_nTimerId);
 			hardware_led_set(0);
-			break;
-		case 1:
-			m_nTicksPerSecond = (1000000 / 1);
-			break;
-		case 3:
-			m_nTicksPerSecond = (1000000 / 3);
-			break;
-		case 5:
-			m_nTicksPerSecond = (1000000 / 5);
-			break;
-		case 255:
-			m_nTicksPerSecond = 0;
-			hardware_led_set(1);
-			break;
-		default:
-			m_nTicksPerSecond = (1000000 / nFreqHz);
-			break;
+			return;
 		}
+
+		if (nFreqHz == 255) {
+			SoftwareTimerDelete(m_nTimerId);
+			hardware_led_set(1);
+			return;
+		}
+
+		if (m_nTimerId < 0) {
+			m_nTimerId = SoftwareTimerAdd((1000U / nFreqHz),ledblink);
+			DEBUG_PRINTF("m_nTimerId=%d", m_nTimerId);
+			return;
+		}
+
+		DEBUG_PRINTF("m_nTimerId=%d", m_nTimerId);
+		SoftwareTimerChange(m_nTimerId, (1000U / nFreqHz));
 	}
 
 private:
@@ -218,10 +274,13 @@ private:
 
 	hardware::ledblink::Mode m_Mode { hardware::ledblink::Mode::UNKNOWN };
 	bool m_doLock { false };
-	uint32_t m_nTicksPerSecond { 0 };
-	int32_t m_nToggleLed { 0 };
-	uint32_t m_nMicrosPrevious { 0 };
+	int32_t m_nTimerId { -1 };
 
+	Timer m_Timers[hal::SOFTWARE_TIMERS_MAX];
+	uint32_t m_nTimersCount { 0 };
+	int32_t m_nNextId { 0 };
+
+	static inline int32_t m_nToggleLed { 0 };
 	static Hardware *s_pThis;
 };
 

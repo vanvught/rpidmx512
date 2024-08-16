@@ -58,9 +58,13 @@ extern "C" {
  void emac_debug_run();
 #endif
 
+#ifdef NDEBUG
+ extern "C" void console_error(const char *);
+#endif
+
 #include "panel_led.h"
 
-extern volatile uint32_t s_nSysTickMillis;
+#include "debug.h"
 
 class Hardware {
 public:
@@ -76,8 +80,8 @@ public:
 
 	uint32_t Millis() {
 #if defined (CONFIG_HAL_USE_SYSTICK)
-		extern volatile uint32_t s_nSysTickMillis;
-		return s_nSysTickMillis;
+		extern volatile uint32_t gv_nSysTickMillis;
+		return gv_nSysTickMillis;
 #else
 		extern uint32_t timer6_get_elapsed_milliseconds();
 		return timer6_get_elapsed_milliseconds();
@@ -112,12 +116,6 @@ public:
 #else
 		return false;
 #endif
-	}
-
-	void GetTime(struct tm *pTime) {
-		auto ltime = time(nullptr);
-		const auto *pLocalTime = localtime(&ltime);
-		memcpy(pTime, pLocalTime, sizeof(struct tm));
 	}
 
 #if !defined(DISABLE_RTC)
@@ -200,6 +198,67 @@ public:
 		return m_Mode;
 	}
 
+	struct Timer {
+	    uint32_t nExpireTime;
+	    uint32_t nIntervalMillis;
+	    int32_t nId;
+	    hal::TimerCallback callback;
+	};
+
+	int32_t SoftwareTimerAdd(const uint32_t nIntervalMillis, const hal::TimerCallback callback) {
+	    if (m_nTimersCount >= hal::SOFTWARE_TIMERS_MAX) {
+#ifdef NDEBUG
+            console_error("SoftwareTimerAdd\n");
+#endif
+	        return -1;
+	    }
+
+	    const auto nCurrentTime = Hardware::Millis();
+
+		Timer newTimer = {
+				.nExpireTime = nCurrentTime + nIntervalMillis,
+				.nIntervalMillis = nIntervalMillis,
+				.nId = m_nNextId++,
+				.callback = callback,
+		};
+
+	    m_Timers[m_nTimersCount++] = newTimer;
+
+	    return newTimer.nId;
+	}
+
+	bool SoftwareTimerDelete(int32_t& nId) {
+		if (nId >= 0) {
+			for (uint32_t i = 0; i < m_nTimersCount; ++i) {
+				if (m_Timers[i].nId == nId) {
+					for (uint32_t j = i; j < m_nTimersCount - 1; ++j) {
+						m_Timers[j] = m_Timers[j + 1];
+					}
+					--m_nTimersCount;
+					nId = -1;
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	bool SoftwareTimerChange(const int32_t nId, const uint32_t nIntervalMillis) {
+		if (nId >= 0) {
+			for (uint32_t i = 0; i < m_nTimersCount; ++i) {
+				if (m_Timers[i].nId == nId) {
+					m_Timers[i].nExpireTime = Hardware::Millis() + nIntervalMillis;
+					m_Timers[i].nIntervalMillis = nIntervalMillis;
+
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
 	void Run() {
 #if defined (ENABLE_USB_HOST) && defined (CONFIG_USB_HOST_MSC)
 # if defined (GD32H7XX) || defined (GD32F4XX)
@@ -208,30 +267,14 @@ public:
 		usbh_core_task(&usb_host);
 # endif
 #endif
-		if (__builtin_expect(m_nTicksPerSecond != 0, 1)) {
-			if (__builtin_expect(!(Hardware::Get()->Millis() - m_nMillisPrevious < m_nTicksPerSecond), 1)) {
-				m_nMillisPrevious = Hardware::Get()->Millis();
-#if defined(HAL_HAVE_PORT_BIT_TOGGLE)
-				GPIO_TG(LED_BLINK_GPIO_PORT) = LED_BLINK_PIN;
-#else
-				m_nToggleLed = -m_nToggleLed;
+	    const auto nCurrentTime = Hardware::Get()->Millis();
 
-				if (m_nToggleLed > 0) {
-# if defined (CONFIG_LEDBLINK_USE_PANELLED)
-					hal::panel_led_on(hal::panelled::ACTIVITY);
-# else
-					GPIO_BOP(LED_BLINK_GPIO_PORT) = LED_BLINK_PIN;
-# endif
-				} else {
-# if defined (CONFIG_LEDBLINK_USE_PANELLED)
-					hal::panel_led_off(hal::panelled::ACTIVITY);
-# else
-					GPIO_BC(LED_BLINK_GPIO_PORT) = LED_BLINK_PIN;
-# endif
-				}
-#endif
-			}
-		}
+	    for (uint32_t i = 0; i < m_nTimersCount; i++) {
+	        if (m_Timers[i].nExpireTime <= nCurrentTime) {
+	        	m_Timers[i].callback();
+	            m_Timers[i].nExpireTime = nCurrentTime + m_Timers[i].nIntervalMillis;
+	        }
+	    }
 
 		hal::panel_led_run();
 
@@ -251,27 +294,63 @@ public:
 private:
 	void RebootHandler();
 
+	static void ledblink() {
+#if defined(HAL_HAVE_PORT_BIT_TOGGLE)
+		GPIO_TG(LED_BLINK_GPIO_PORT) = LED_BLINK_PIN;
+#else
+		m_nToggleLed = -m_nToggleLed;
+
+		if (m_nToggleLed > 0) {
+# if defined (CONFIG_LEDBLINK_USE_PANELLED)
+			hal::panel_led_on(hal::panelled::ACTIVITY);
+# else
+			GPIO_BOP(LED_BLINK_GPIO_PORT) = LED_BLINK_PIN;
+# endif
+		} else {
+# if defined (CONFIG_LEDBLINK_USE_PANELLED)
+			hal::panel_led_off(hal::panelled::ACTIVITY);
+# else
+			GPIO_BC(LED_BLINK_GPIO_PORT) = LED_BLINK_PIN;
+# endif
+		}
+#endif
+	}
+
 	void SetFrequency(const uint32_t nFreqHz) {
+		DEBUG_ENTRY
+		DEBUG_PRINTF("m_nTimerId=%d, nFreqHz=%u", m_nTimerId, nFreqHz);
+
+		if (m_nTimerId < 0) {
+			m_nTimerId = SoftwareTimerAdd((1000U / nFreqHz), ledblink);
+			DEBUG_EXIT
+			return;
+		}
+
 		switch (nFreqHz) {
 		case 0:
-			m_nTicksPerSecond = 0;
+			SoftwareTimerDelete(m_nTimerId);
 #if defined (CONFIG_LEDBLINK_USE_PANELLED)
 			hal::panel_led_off(hal::panelled::ACTIVITY);
 #else
 			GPIO_BC(LED_BLINK_GPIO_PORT) = LED_BLINK_PIN;
 #endif
 			break;
+# if !defined (CONFIG_HAL_USE_MINIMUM)
 		case 1:
-			m_nTicksPerSecond = (1000 / 1);
+			SoftwareTimerChange(m_nTimerId, (1000U / 1));
 			break;
 		case 3:
-			m_nTicksPerSecond = (1000 / 3);
+			SoftwareTimerChange(m_nTimerId, (1000U / 3));
 			break;
 		case 5:
-			m_nTicksPerSecond = (1000 / 5);
+			SoftwareTimerChange(m_nTimerId, (1000U / 5));
 			break;
+		case 8:
+			SoftwareTimerChange(m_nTimerId, (1000U / 8));
+			break;
+# endif
 		case 255:
-			m_nTicksPerSecond = 0;
+			SoftwareTimerDelete(m_nTimerId);
 #if defined (CONFIG_LEDBLINK_USE_PANELLED)
 			hal::panel_led_on(hal::panelled::ACTIVITY);
 #else
@@ -279,9 +358,11 @@ private:
 #endif
 			break;
 		default:
-			m_nTicksPerSecond = (1000U / nFreqHz);
+			SoftwareTimerChange(m_nTimerId, (1000U / nFreqHz));
 			break;
 		}
+
+		DEBUG_EXIT
 	}
 
 private:
@@ -292,12 +373,15 @@ private:
 	bool m_bIsWatchdog { false };
 	hardware::ledblink::Mode m_Mode { hardware::ledblink::Mode::UNKNOWN };
 	bool m_doLock { false };
-	uint32_t m_nTicksPerSecond { 1000 / 2 };
-#if !defined(HAL_HAVE_PORT_BIT_TOGGLE)
-	int32_t m_nToggleLed { 1 };
-#endif
-	uint32_t m_nMillisPrevious { 0 };
+	int32_t m_nTimerId { -1 };
 
+	Timer m_Timers[hal::SOFTWARE_TIMERS_MAX];
+	uint32_t m_nTimersCount { 0 };
+	int32_t m_nNextId { 0 };
+
+#if !defined(HAL_HAVE_PORT_BIT_TOGGLE)
+	static inline int32_t m_nToggleLed { 1 };
+#endif
 	static Hardware *s_pThis;
 };
 

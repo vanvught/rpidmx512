@@ -88,11 +88,6 @@ public:
 	}
 
 	bool SetTime(const struct tm *pTime);
-	void GetTime(struct tm *pTime);
-
-	time_t GetTime() {
-		return time(nullptr);
-	}
 
 	uint32_t GetUpTime() {
 		return hardware_uptime_seconds();

@@ -2,7 +2,7 @@
  * @file hardware.cpp
  *
  */
-/* Copyright (C) 2023-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2023-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,11 +28,9 @@
 #include "hardware.h"
 #include "debug.h"
 
-namespace hardware {
-namespace ledblink {
+namespace hardware::ledblink {
 void __attribute__((weak)) display([[maybe_unused]] const uint32_t nState) {}
-}  // namespace ledblink
-}  // namespace hardware
+}  // namespace hardware::ledblink
 
 enum class FreqMode {
 	OFF_OFF = 0, NORMAL = 1, DATA = 3, FAST = 5, REBOOT = 8, OFF_ON = 255
