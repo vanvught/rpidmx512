@@ -4,7 +4,7 @@
 
 #include <cstddef>
 
-typedef void (*exitfunc_t)(void);
+typedef void (*exitfunc_t)();
 
 static exitfunc_t atexit_funcs[32];
 static size_t atexit_count = 0;

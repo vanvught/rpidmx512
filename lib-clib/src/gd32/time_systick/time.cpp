@@ -31,7 +31,7 @@
 #include <cstdint>
 #include <cassert>
 
-extern volatile uint32_t s_nSysTickMillis;
+extern volatile uint32_t gv_nSysTickMillis;
 
 static uint32_t nPreviousSysTickMillis;
 static struct timeval s_tv;
@@ -45,7 +45,7 @@ extern "C" {
 int gettimeofday(struct timeval *tv, __attribute__((unused))    struct timezone *tz) {
 	assert(tv != 0);
 
-	const auto nCurrentSysTickMillis = s_nSysTickMillis;
+	const auto nCurrentSysTickMillis = gv_nSysTickMillis;
 
 	uint32_t nMillisElapsed;
 
@@ -80,7 +80,7 @@ int settimeofday(const struct timeval *tv, __attribute__((unused))  const struct
 	struct timeval g;
 	gettimeofday(&g, nullptr);
 
-	nPreviousSysTickMillis = s_nSysTickMillis;
+	nPreviousSysTickMillis = gv_nSysTickMillis;
 
 	s_tv.tv_sec = tv->tv_sec;
 	s_tv.tv_usec = tv->tv_usec;

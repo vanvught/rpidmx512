@@ -56,7 +56,7 @@ static struct tm Tm;
 extern "C" {
 
 struct tm *localtime(const time_t *pTime) {
-	if (pTime == 0) {
+	if (pTime == nullptr) {
 		return nullptr;
 	}
 
@@ -65,7 +65,7 @@ struct tm *localtime(const time_t *pTime) {
 }
 
 struct tm *gmtime(const time_t *pTime) {
-	if (pTime == 0) {
+	if (pTime == nullptr) {
 		return nullptr;
 	}
 
