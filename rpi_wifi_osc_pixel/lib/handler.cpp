@@ -2,7 +2,7 @@
  * @file handler.cpp
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,8 +38,8 @@
 
 Handler::Handler(WS28xxDmx *pWS28xxDmx):
 	m_pWS28xxDmx(pWS28xxDmx),
-	m_nCount(WS28xx::Get()->GetCount()),
-	m_TypeString(const_cast<char*>(PixelType::GetType(WS28xx::Get()->GetType())))
+	m_nCount(PixelConfiguration::Get().GetCount()),
+	m_TypeString(const_cast<char*>(pixel::pixel_get_type(PixelConfiguration::Get().GetType())))
 {
 	DEBUG_ENTRY
 

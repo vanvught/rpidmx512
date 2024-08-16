@@ -64,7 +64,7 @@ public:
 	void SetData(const uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate = true) override;
 
 	void Sync([[maybe_unused]] const uint32_t nPortIndex) override {}
-	void Sync([[maybe_unused]] const bool doForce) override {}
+	void Sync() override {}
 
 	bool SetDmxStartAddress([[maybe_unused]] uint16_t nDmxStartAddress) override {
 		return false;

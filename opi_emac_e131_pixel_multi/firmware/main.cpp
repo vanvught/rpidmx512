@@ -29,7 +29,7 @@
 #include "network.h"
 #include "networkconst.h"
 
-#include "mdns.h"
+#include "net/apps/mdns.h"
 
 #include "displayudf.h"
 #include "displayudfparams.h"
@@ -95,10 +95,7 @@ int main() {
 	FlashCodeInstall spiFlashInstall;
 
 	fw.Print("sACN E1.31 Pixel controller {8x 4 Universes}");
-	nw.Print();
-
-	display.TextStatus(E131MsgConst::PARAMS, CONSOLE_YELLOW);
-
+	
 	E131Bridge bridge;
 
 	E131Params e131params;
@@ -109,13 +106,14 @@ int main() {
 
 	PixelDmxParams pixelDmxParams;
 	pixelDmxParams.Load();
-	pixelDmxParams.Set(&pixelDmxConfiguration);
+	pixelDmxParams.Set();
 
-	WS28xxDmxMulti pixelDmxMulti(pixelDmxConfiguration);
+	WS28xxDmxMulti pixelDmxMulti;
+
 	WS28xxMulti::Get()->SetJamSTAPLDisplay(new HandlerOled);
 
-	const auto nUniverses = pixelDmxMulti.GetUniverses();
-	const auto nActivePorts = pixelDmxMulti.GetOutputPorts();
+	const auto nUniverses = pixelDmxConfiguration.GetUniverses();
+	const auto nActivePorts = pixelDmxConfiguration.GetOutputPorts();
 
 	uint32_t nPortProtocolIndex = 0;
 
@@ -143,7 +141,7 @@ int main() {
 #if defined (NODE_RDMNET_LLRP_ONLY)
 	display.TextStatus(RDMNetConst::MSG_CONFIG, CONSOLE_YELLOW);
 	char aDescription[rdm::personality::DESCRIPTION_MAX_LENGTH + 1];
-	snprintf(aDescription, sizeof(aDescription) - 1, "sACN Pixel %d-%s:%d", nActivePorts, PixelType::GetType(WS28xxMulti::Get()->GetType()), WS28xxMulti::Get()->GetCount());
+	snprintf(aDescription, sizeof(aDescription) - 1, "sACN Pixel %d-%s:%d", nActivePorts, pixel::pixel_get_type(pixelDmxConfiguration.GetType()), pixelDmxConfiguration.GetCount());
 
 	char aLabel[RDM_DEVICE_LABEL_MAX_LENGTH + 1];
 	const auto nLength = snprintf(aLabel, sizeof(aLabel) - 1, "Orange Pi Zero Pixel");
@@ -181,7 +179,7 @@ int main() {
 	bridge.Print();
 	pixelDmxMulti.Print();
 
-	display.SetTitle("sACN Pixel 8:%dx%d", nActivePorts, WS28xxMulti::Get()->GetCount());
+	display.SetTitle("sACN Pixel 8:%dx%d", nActivePorts, pixelDmxConfiguration.GetCount());
 	display.Set(2, displayudf::Labels::IP);
 	display.Set(3, displayudf::Labels::HOSTNAME);
 	display.Set(4, displayudf::Labels::VERSION);
@@ -195,10 +193,10 @@ int main() {
 	display.Show();
 
 	display.Printf(7, "%s:%d G%d %s",
-		PixelType::GetType(pixelDmxConfiguration.GetType()),
+		pixel::pixel_get_type(pixelDmxConfiguration.GetType()),
 		pixelDmxConfiguration.GetCount(),
 		pixelDmxConfiguration.GetGroupingCount(),
-		PixelType::GetMap(pixelDmxConfiguration.GetMap()));
+		pixel::pixel_get_map(pixelDmxConfiguration.GetMap()));
 
 	if (nTestPattern != pixelpatterns::Pattern::NONE) {
 		display.ClearLine(6);

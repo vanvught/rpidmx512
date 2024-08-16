@@ -29,7 +29,7 @@
 #include "network.h"
 #include "networkconst.h"
 
-#include "mdns.h"
+#include "net/apps/mdns.h"
 
 #include "display.h"
 #include "displayhandler.h"
@@ -52,8 +52,6 @@
 #include "flashcodeinstall.h"
 #include "configstore.h"
 
-
-
 #include "firmwareversion.h"
 #include "software_version.h"
 
@@ -73,7 +71,6 @@ int main() {
 	FlashCodeInstall spiFlashInstall;
 
 	fw.Print("OSC Server Pixel controller {1x Universe}");
-	nw.Print();
 	
 	OSCServerParams params;
 	OscServer server;
@@ -89,14 +86,14 @@ int main() {
 
 	PixelDmxParams pixelDmxParams;
 	pixelDmxParams.Load();
-	pixelDmxParams.Set(&pixelDmxConfiguration);
+	pixelDmxParams.Set();
 
-	WS28xxDmx pixelDmx(&pixelDmxConfiguration);
+	WS28xxDmx pixelDmx;
 
 	const auto nTestPattern = static_cast<pixelpatterns::Pattern>(pixelDmxParams.GetTestPattern());
 	PixelTestPattern pixelTestPattern(nTestPattern, 1);
 
-	display.Printf(7, "%s:%d G%d", PixelType::GetType(pixelDmxConfiguration.GetType()), pixelDmxConfiguration.GetCount(), pixelDmxConfiguration.GetGroupingCount());
+	display.Printf(7, "%s:%d G%d", pixel::pixel_get_type(pixelDmxConfiguration.GetType()), pixelDmxConfiguration.GetCount(), pixelDmxConfiguration.GetGroupingCount());
 
 	server.SetOutput(&pixelDmx);
 	server.SetOscServerHandler(new Handler(&pixelDmx));

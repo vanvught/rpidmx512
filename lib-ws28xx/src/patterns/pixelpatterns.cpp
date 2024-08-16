@@ -2,7 +2,7 @@
  * @file pixelpatterns.cpp
  *
  */
-/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,7 +51,6 @@ WS28xxMulti *PixelPatterns::s_pOutput;
 WS28xx *PixelPatterns::s_pOutput;
 #endif
 uint32_t PixelPatterns::s_nActivePorts;
-uint32_t PixelPatterns::s_nCount;
 PixelPatterns::PortConfig PixelPatterns::s_PortConfig[pixelpatterns::MAX_PORTS];
 uint32_t *PixelPatterns::s_pScannerColours;
 
@@ -67,7 +66,7 @@ PixelPatterns::PixelPatterns(const uint32_t nActivePorts) {
 	assert(s_pOutput != nullptr);
 
 	s_nActivePorts = std::min(MAX_PORTS, nActivePorts);
-	s_nCount = s_pOutput->GetCount();
+
 	const auto nMillis = Hardware::Get()->Millis();
 
 	for (uint32_t i = 0; i < MAX_PORTS; i++) {
@@ -131,8 +130,8 @@ void PixelPatterns::RainbowCycle(uint32_t nPortIndex, uint32_t nInterval, pixelp
 void PixelPatterns::RainbowCycleUpdate(uint32_t nPortIndex) {
 	const auto nIndex = s_PortConfig[nPortIndex].nPixelIndex;
 
-	for (uint32_t i = 0; i < s_nCount; i++) {
-		SetPixelColour(nPortIndex, i, Wheel(((i * 256U / s_nCount) + nIndex) & 0xFF));
+	for (uint32_t i = 0; i < PixelConfiguration::Get().GetCount(); i++) {
+		SetPixelColour(nPortIndex, i, Wheel(((i * 256U / PixelConfiguration::Get().GetCount()) + nIndex) & 0xFF));
 	}
 
 	Increment(nPortIndex);
@@ -143,7 +142,7 @@ void PixelPatterns::TheaterChase(uint32_t nPortIndex, uint32_t nColour1, uint32_
 
 	s_PortConfig[nPortIndex].ActivePattern = Pattern::THEATER_CHASE;
 	s_PortConfig[nPortIndex].nInterval = nInterval;
-	s_PortConfig[nPortIndex].nTotalSteps= s_nCount;
+	s_PortConfig[nPortIndex].nTotalSteps= PixelConfiguration::Get().GetCount();
 	s_PortConfig[nPortIndex].nColour1 = nColour1;
 	s_PortConfig[nPortIndex].nColour2 = nColour2;
     s_PortConfig[nPortIndex].nPixelIndex = 0;
@@ -155,7 +154,7 @@ void PixelPatterns::TheaterChaseUpdate(uint32_t nPortIndex) {
 	const auto Colour2 = s_PortConfig[nPortIndex].nColour2;
 	const auto Index = s_PortConfig[nPortIndex].nPixelIndex;
 
-	for (uint32_t i = 0; i < s_nCount; i++) {
+	for (uint32_t i = 0; i < PixelConfiguration::Get().GetCount(); i++) {
 		if ((i + Index) % 3 == 0) {
 			SetPixelColour(nPortIndex, i, Colour1);
 		} else {
@@ -171,7 +170,7 @@ void PixelPatterns::ColourWipe(uint32_t nPortIndex, uint32_t nColour, uint32_t n
 
 	s_PortConfig[nPortIndex].ActivePattern = Pattern::COLOR_WIPE;
 	s_PortConfig[nPortIndex].nInterval = nInterval;
-	s_PortConfig[nPortIndex].nTotalSteps= s_nCount;
+	s_PortConfig[nPortIndex].nTotalSteps= PixelConfiguration::Get().GetCount();
     s_PortConfig[nPortIndex].nColour1 = nColour;
     s_PortConfig[nPortIndex].nPixelIndex = 0;
     s_PortConfig[nPortIndex].Direction = Direction;
@@ -188,17 +187,19 @@ void PixelPatterns::ColourWipeUpdate(uint32_t nPortIndex) {
 void PixelPatterns::Scanner(uint32_t nPortIndex, uint32_t nColour1, uint32_t nInterval) {
 	Clear(nPortIndex);
 
+	const auto nCount = PixelConfiguration::Get().GetCount();
+
 	s_PortConfig[nPortIndex].ActivePattern = Pattern::SCANNER;
 	s_PortConfig[nPortIndex].nInterval = nInterval;
-	s_PortConfig[nPortIndex].nTotalSteps= static_cast<uint16_t>((s_nCount - 1U) * 2);
+	s_PortConfig[nPortIndex].nTotalSteps= static_cast<uint16_t>((nCount - 1U) * 2);
     s_PortConfig[nPortIndex].nColour1 = nColour1;
     s_PortConfig[nPortIndex].nPixelIndex = 0;
 
 
     if (s_pScannerColours == nullptr) {
-    	s_pScannerColours = new uint32_t[s_nCount];
+    	s_pScannerColours = new uint32_t[nCount];
     	assert(s_pScannerColours != nullptr);
-    	for (uint32_t i = 0; i < s_nCount; i++) {
+    	for (uint32_t i = 0; i < nCount; i++) {
     		s_pScannerColours[i] = 0;
     	}
     }
@@ -209,7 +210,7 @@ void PixelPatterns::ScannerUpdate(uint32_t nPortIndex) {
 	const auto nTotalSteps = s_PortConfig[nPortIndex].nTotalSteps;
 	const auto nIndex = s_PortConfig[nPortIndex].nPixelIndex;
 
-	for (uint32_t i = 0; i < s_nCount; i++) {
+	for (uint32_t i = 0; i < PixelConfiguration::Get().GetCount(); i++) {
 		if (i == nIndex) {
 			SetPixelColour(nPortIndex, i, nColour1);
 			s_pScannerColours[i] = nColour1;

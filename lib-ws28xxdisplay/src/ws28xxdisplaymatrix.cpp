@@ -2,7 +2,7 @@
  * @file ws28xxmatrix.cpp
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,7 +38,7 @@
 
 using namespace pixel;
 
-// FIXME Currently working for single row only
+///< Note: Currently working for single row only
 
 WS28xxDisplayMatrix::WS28xxDisplayMatrix(uint8_t nColumns, uint8_t nRows, Type tLedType, Map tRGBMapping):
 	m_nColumns(nColumns),
@@ -65,7 +65,7 @@ WS28xxDisplayMatrix::WS28xxDisplayMatrix(uint8_t nColumns, uint8_t nRows, Type t
 
 	pixelConfiguration.SetCount(m_nMaxLeds);
 
-	m_pWS28xx = new WS28xx(&pixelConfiguration);
+	m_pWS28xx = new WS28xx;
 	assert(m_pWS28xx != nullptr);
 	m_pWS28xx->Blackout();
 
@@ -186,7 +186,7 @@ void WS28xxDisplayMatrix::ClearLine(uint8_t nLine) {
 	}
 
 	for (uint32_t i = 0; i < m_nMaxLeds; i++) {
-		m_pWS28xx->SetPixel(i, 0, 0, 0); // FIXME Currently working for single row only
+		m_pWS28xx->SetPixel(i, 0, 0, 0);	///< Note: Currently working for single row only
 	}
 
 	SetCursorPos(0, static_cast<uint8_t>(nLine - 1));

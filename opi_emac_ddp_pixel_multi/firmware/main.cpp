@@ -25,13 +25,12 @@
 
 #include <cstdint>
 #include <cstdio>
-#include <cassert>
 
 #include "hardware.h"
 #include "network.h"
 #include "networkconst.h"
 
-#include "mdns.h"
+#include "net/apps/mdns.h"
 
 #include "displayudf.h"
 #include "displayudfparams.h"
@@ -85,26 +84,24 @@ int main() {
 	FlashCodeInstall spiFlashInstall;
 
 	fw.Print("DDP Pixel controller 8x 4U");
-	nw.Print();
-
-
+	
 	mDns.ServiceRecordAdd(nullptr, mdns::Services::DDP, "type=display");
 
 	PixelDmxConfiguration pixelDmxConfiguration;
 
 	PixelDmxParams pixelDmxParams;
 	pixelDmxParams.Load();
-	pixelDmxParams.Set(&pixelDmxConfiguration);
+	pixelDmxParams.Set();
 
-	WS28xxDmxMulti pixelDmxMulti(pixelDmxConfiguration);
+	WS28xxDmxMulti pixelDmxMulti;
 
 	WS28xxMulti::Get()->SetJamSTAPLDisplay(new HandlerOled);
 
 	DdpDisplay ddpDisplay;
 
-	const auto nActivePorts = pixelDmxMulti.GetOutputPorts();
+	const auto nActivePorts = pixelDmxConfiguration.GetOutputPorts();
 
-	ddpDisplay.SetCount(pixelDmxMulti.GetGroups(), pixelDmxMulti.GetChannelsPerPixel(), nActivePorts);
+	ddpDisplay.SetCount(pixelDmxConfiguration.GetGroups(), pixelDmxConfiguration.GetLedsPerPixel(), nActivePorts);
 
 	const auto nTestPattern = static_cast<pixelpatterns::Pattern>(pixelDmxParams.GetTestPattern());
 	PixelTestPattern pixelTestPattern(nTestPattern, nActivePorts);
@@ -116,7 +113,7 @@ int main() {
 	display.TextStatus(RDMNetConst::MSG_CONFIG, CONSOLE_YELLOW);
 
 	char aDescription[rdm::personality::DESCRIPTION_MAX_LENGTH + 1];
-	snprintf(aDescription, sizeof(aDescription) - 1, "DDP Display %u-%s:%d", nActivePorts, PixelType::GetType(WS28xxMulti::Get()->GetType()), WS28xxMulti::Get()->GetCount());
+	snprintf(aDescription, sizeof(aDescription) - 1, "DDP Display %u-%s:%d", nActivePorts, pixel::pixel_get_type(pixelDmxConfiguration.GetType()), pixelDmxConfiguration.GetCount());
 
 	char aLabel[RDM_DEVICE_LABEL_MAX_LENGTH + 1];
 	const auto nLength = snprintf(aLabel, sizeof(aLabel) - 1, "Orange Pi Zero Pixel");
@@ -150,10 +147,10 @@ int main() {
 	display.Show();
 
 	display.Printf(7, "%s:%d G%d %s",
-		PixelType::GetType(pixelDmxConfiguration.GetType()),
+		pixel::pixel_get_type(pixelDmxConfiguration.GetType()),
 		pixelDmxConfiguration.GetCount(),
 		pixelDmxConfiguration.GetGroupingCount(),
-		PixelType::GetMap(pixelDmxConfiguration.GetMap()));
+		pixel::pixel_get_map(pixelDmxConfiguration.GetMap()));
 
 	if (nTestPattern != pixelpatterns::Pattern::NONE) {
 		display.ClearLine(6);

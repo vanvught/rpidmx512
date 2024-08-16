@@ -23,6 +23,10 @@
  * THE SOFTWARE.
  */
 
+#if defined (DEBUG_PIXELDMX)
+# undef NDEBUG
+#endif
+
 #if !defined(__clang__)	// Needed for compiling on MacOS
 # pragma GCC push_options
 # pragma GCC optimize ("Os")
@@ -126,7 +130,7 @@ void PixelDmxParams::callbackFunction(const char *pLine) {
 
 	if (Sscan::Char(pLine, DevicesParamsConst::TYPE, cBuffer, nLength) == Sscan::OK) {
 		cBuffer[nLength] = '\0';
-		const auto type = PixelType::GetType(cBuffer);
+		const auto type = pixel::pixel_get_type(cBuffer);
 
 		if (type != pixel::Type::UNDEFINED) {
 			m_Params.nType = static_cast<uint8_t>(type);
@@ -153,7 +157,7 @@ void PixelDmxParams::callbackFunction(const char *pLine) {
 	if (Sscan::Char(pLine, DevicesParamsConst::MAP, cBuffer, nLength) == Sscan::OK) {
 		cBuffer[nLength] = '\0';
 
-		const auto map = PixelType::GetMap(cBuffer);
+		const auto map = pixel::pixel_get_map(cBuffer);
 
 		if (map != Map::UNDEFINED) {
 			m_Params.nSetList |= pixeldmxparams::Mask::MAP;
@@ -166,7 +170,7 @@ void PixelDmxParams::callbackFunction(const char *pLine) {
 	}
 
 	if (Sscan::Float(pLine, DevicesParamsConst::LED_T0H, fValue) == Sscan::OK) {
-		if ((nValue8 = PixelType::ConvertTxH(fValue)) != 0) {
+		if ((nValue8 = pixel::pixel_convert_TxH(fValue)) != 0) {
 			m_Params.nSetList |= pixeldmxparams::Mask::LOW_CODE;
 		} else {
 			m_Params.nSetList &= ~pixeldmxparams::Mask::LOW_CODE;
@@ -177,7 +181,7 @@ void PixelDmxParams::callbackFunction(const char *pLine) {
 	}
 
 	if (Sscan::Float(pLine, DevicesParamsConst::LED_T1H, fValue) == Sscan::OK) {
-		if ((nValue8 = PixelType::ConvertTxH(fValue)) != 0) {
+		if ((nValue8 = pixel::pixel_convert_TxH(fValue)) != 0) {
 			m_Params.nSetList |= pixeldmxparams::Mask::HIGH_CODE;
 		} else {
 			m_Params.nSetList &= ~pixeldmxparams::Mask::HIGH_CODE;
@@ -303,7 +307,7 @@ void PixelDmxParams::Builder(const struct pixeldmxparams::Params *ptWS28xxParams
 
 	PropertiesBuilder builder(DevicesParamsConst::FILE_NAME, pBuffer, nLength);
 
-	builder.Add(DevicesParamsConst::TYPE, PixelType::GetType(static_cast<pixel::Type>(m_Params.nType)), isMaskSet(pixeldmxparams::Mask::TYPE));
+	builder.Add(DevicesParamsConst::TYPE, pixel::pixel_get_type(static_cast<pixel::Type>(m_Params.nType)), isMaskSet(pixeldmxparams::Mask::TYPE));
 	builder.Add(DevicesParamsConst::COUNT, m_Params.nCount, isMaskSet(pixeldmxparams::Mask::COUNT));
 
 #if defined(CONFIG_PIXELDMX_ENABLE_GAMMATABLE)
@@ -318,15 +322,15 @@ void PixelDmxParams::Builder(const struct pixeldmxparams::Params *ptWS28xxParams
 
 	builder.AddComment("Overwrite datasheet");
 	if (!isMaskSet(pixeldmxparams::Mask::MAP)) {
-		m_Params.nMap = static_cast<uint8_t>(PixelType::GetMap(static_cast<pixel::Type>(m_Params.nType)));
+		m_Params.nMap = static_cast<uint8_t>(pixel::pixel_get_map(static_cast<pixel::Type>(m_Params.nType)));
 	}
-	builder.Add(DevicesParamsConst::MAP, PixelType::GetMap(static_cast<Map>(m_Params.nMap)), isMaskSet(pixeldmxparams::Mask::MAP));
+	builder.Add(DevicesParamsConst::MAP, pixel::pixel_get_map(static_cast<Map>(m_Params.nMap)), isMaskSet(pixeldmxparams::Mask::MAP));
 
 	if (!isMaskSet(pixeldmxparams::Mask::LOW_CODE) || !isMaskSet(pixeldmxparams::Mask::HIGH_CODE)) {
 		uint8_t nLowCode;
 		uint8_t nHighCode;
 
-		PixelConfiguration::GetTxH(static_cast<pixel::Type>(m_Params.nType), nLowCode, nHighCode);
+		PixelConfiguration::Get().GetTxH(static_cast<pixel::Type>(m_Params.nType), nLowCode, nHighCode);
 
 		if (!isMaskSet(pixeldmxparams::Mask::LOW_CODE)) {
 			m_Params.nLowCode = nLowCode;
@@ -338,8 +342,8 @@ void PixelDmxParams::Builder(const struct pixeldmxparams::Params *ptWS28xxParams
 	}
 
 	builder.AddComment("Overwrite timing (us)");
-	builder.Add(DevicesParamsConst::LED_T0H, PixelType::ConvertTxH(m_Params.nLowCode), isMaskSet(pixeldmxparams::Mask::LOW_CODE), 2);
-	builder.Add(DevicesParamsConst::LED_T1H, PixelType::ConvertTxH(m_Params.nHighCode), isMaskSet(pixeldmxparams::Mask::HIGH_CODE), 2);
+	builder.Add(DevicesParamsConst::LED_T0H, pixel::pixel_convert_TxH(m_Params.nLowCode), isMaskSet(pixeldmxparams::Mask::LOW_CODE), 2);
+	builder.Add(DevicesParamsConst::LED_T1H, pixel::pixel_convert_TxH(m_Params.nHighCode), isMaskSet(pixeldmxparams::Mask::HIGH_CODE), 2);
 
 	builder.AddComment("Grouping");
 	builder.Add(DevicesParamsConst::GROUPING_COUNT, m_Params.nGroupingCount, isMaskSet(pixeldmxparams::Mask::GROUPING_COUNT));
@@ -370,61 +374,61 @@ void PixelDmxParams::Builder(const struct pixeldmxparams::Params *ptWS28xxParams
 	DEBUG_PRINTF("nSize=%d", nSize);
 }
 
-void PixelDmxParams::Set(PixelDmxConfiguration *pPixelDmxConfiguration) {
-	assert(pPixelDmxConfiguration != nullptr);
-
+void PixelDmxParams::Set() {
 	// Pixel
+	auto& pixelConfiguration = PixelConfiguration::Get();
 
 	if (isMaskSet(pixeldmxparams::Mask::TYPE)) {
-		pPixelDmxConfiguration->SetType(static_cast<Type>(m_Params.nType));
+		pixelConfiguration.SetType(static_cast<Type>(m_Params.nType));
 	}
 
 	if (isMaskSet(pixeldmxparams::Mask::COUNT)) {
-		pPixelDmxConfiguration->SetCount(m_Params.nCount);
+		pixelConfiguration.SetCount(m_Params.nCount);
 	}
 
 	if (isMaskSet(pixeldmxparams::Mask::MAP)) {
-		pPixelDmxConfiguration->SetMap(static_cast<Map>(m_Params.nMap));
+		pixelConfiguration.SetMap(static_cast<Map>(m_Params.nMap));
 	}
 
 	if (isMaskSet(pixeldmxparams::Mask::LOW_CODE)) {
-		pPixelDmxConfiguration->SetLowCode(m_Params.nLowCode);
+		pixelConfiguration.SetLowCode(m_Params.nLowCode);
 	}
 
 	if (isMaskSet(pixeldmxparams::Mask::HIGH_CODE)) {
-		pPixelDmxConfiguration->SetHighCode(m_Params.nHighCode);
+		pixelConfiguration.SetHighCode(m_Params.nHighCode);
 	}
 
 	if (isMaskSet(pixeldmxparams::Mask::SPI_SPEED)) {
-		pPixelDmxConfiguration->SetClockSpeedHz(m_Params.nSpiSpeedHz);
+		pixelConfiguration.SetClockSpeedHz(m_Params.nSpiSpeedHz);
 	}
 
 	if (isMaskSet(pixeldmxparams::Mask::GLOBAL_BRIGHTNESS)) {
-		pPixelDmxConfiguration->SetGlobalBrightness(m_Params.nGlobalBrightness);
+		pixelConfiguration.SetGlobalBrightness(m_Params.nGlobalBrightness);
 	}
 
 #if defined(CONFIG_PIXELDMX_ENABLE_GAMMATABLE)
 	if (isMaskSet(pixeldmxparams::Mask::GAMMA_CORRECTION)) {
-		pPixelDmxConfiguration->SetEnableGammaCorrection(true);
+		pixelConfiguration.SetEnableGammaCorrection(true);
 		if (m_Params.nGammaValue != 0) {
-			pPixelDmxConfiguration->SetGammaTable(m_Params.nGammaValue);
+			pixelConfiguration.SetGammaTable(m_Params.nGammaValue);
 		}
 	}
 #endif
 
 	// Dmx
+	auto& pixelDmxConfiguration = PixelDmxConfiguration::Get();
 
 	if (isMaskSet(pixeldmxparams::Mask::DMX_START_ADDRESS)) {
-		pPixelDmxConfiguration->SetDmxStartAddress(m_Params.nDmxStartAddress);
+		pixelDmxConfiguration.SetDmxStartAddress(m_Params.nDmxStartAddress);
 	}
 
 	if (isMaskSet(pixeldmxparams::Mask::GROUPING_COUNT)) {
-		pPixelDmxConfiguration->SetGroupingCount(m_Params.nGroupingCount);
+		pixelDmxConfiguration.SetGroupingCount(m_Params.nGroupingCount);
 	}
 
 #if defined(OUTPUT_DMX_PIXEL_MULTI)
 	if (isMaskSet(pixeldmxparams::Mask::ACTIVE_OUT)) {
-		pPixelDmxConfiguration->SetOutputPorts(m_Params.nActiveOutputs);
+		pixelDmxConfiguration.SetOutputPorts(m_Params.nActiveOutputs);
 	}
 #endif
 }
@@ -438,10 +442,10 @@ void PixelDmxParams::staticCallbackFunction(void *p, const char *s) {
 
 void PixelDmxParams::Dump() {
 	printf("%s::%s \'%s\':\n", __FILE__,__FUNCTION__, DevicesParamsConst::FILE_NAME);
-	printf(" %s=%s [%d]\n", DevicesParamsConst::TYPE, PixelType::GetType(static_cast<pixel::Type>(m_Params.nType)), static_cast<int>(m_Params.nType));
-	printf(" %s=%d [%s]\n", DevicesParamsConst::MAP, static_cast<int>(m_Params.nMap), PixelType::GetMap(static_cast<pixel::Map>(m_Params.nMap)));
-	printf(" %s=%.2f [0x%X]\n", DevicesParamsConst::LED_T0H, PixelType::ConvertTxH(m_Params.nLowCode), m_Params.nLowCode);
-	printf(" %s=%.2f [0x%X]\n", DevicesParamsConst::LED_T1H, PixelType::ConvertTxH(m_Params.nHighCode), m_Params.nHighCode);
+	printf(" %s=%s [%d]\n", DevicesParamsConst::TYPE, pixel::pixel_get_type(static_cast<pixel::Type>(m_Params.nType)), static_cast<int>(m_Params.nType));
+	printf(" %s=%d [%s]\n", DevicesParamsConst::MAP, static_cast<int>(m_Params.nMap), pixel::pixel_get_map(static_cast<pixel::Map>(m_Params.nMap)));
+	printf(" %s=%.2f [0x%X]\n", DevicesParamsConst::LED_T0H, pixel::pixel_convert_TxH(m_Params.nLowCode), m_Params.nLowCode);
+	printf(" %s=%.2f [0x%X]\n", DevicesParamsConst::LED_T1H, pixel::pixel_convert_TxH(m_Params.nHighCode), m_Params.nHighCode);
 	printf(" %s=%d\n", DevicesParamsConst::COUNT, m_Params.nCount);
 
 	for (uint32_t i = 0; i < std::min(static_cast<size_t>(pixelpatterns::MAX_PORTS), sizeof(LightSetParamsConst::START_UNI_PORT) / sizeof(LightSetParamsConst::START_UNI_PORT[0])); i++) {

@@ -2,7 +2,7 @@
  * @file ws28xxmulti.cpp
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
+#if defined (DEBUG_PIXEL)
+# undef NDEBUG
+#endif
 
 #if !defined(__clang__)	// Needed for compiling on MacOS
 # pragma GCC push_options
@@ -50,19 +54,20 @@ using namespace pixel;
 
 WS28xxMulti *WS28xxMulti::s_pThis;
 
-WS28xxMulti::WS28xxMulti(PixelConfiguration& pixelConfiguration): m_PixelConfiguration(pixelConfiguration) {
+WS28xxMulti::WS28xxMulti() {
 	DEBUG_ENTRY
 
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 
-	uint32_t nLedsPerPixel;
-	m_PixelConfiguration.Validate(nLedsPerPixel);
+	auto& pixelConfiguration = PixelConfiguration::Get();
 
-	const auto nCount = m_PixelConfiguration.GetCount();
-	m_nBufSize = nCount * nLedsPerPixel;
+	pixelConfiguration.Validate();
 
-	const auto type = m_PixelConfiguration.GetType();
+	const auto nCount = pixelConfiguration.GetCount();
+	m_nBufSize = nCount * pixelConfiguration.GetLedsPerPixel();
+
+	const auto type = pixelConfiguration.GetType();
 
 	if ((type == Type::APA102) || (type == Type::SK9822) || (type == Type::P9813)) {
 		m_nBufSize += nCount;
@@ -73,20 +78,20 @@ WS28xxMulti::WS28xxMulti(PixelConfiguration& pixelConfiguration): m_PixelConfigu
 
 	DEBUG_PRINTF("m_nBufSize=%d", m_nBufSize);
 
-	const auto nLowCode = m_PixelConfiguration.GetLowCode();
-	const auto nHighCode = m_PixelConfiguration.GetHighCode();
+	const auto nLowCode = pixelConfiguration.GetLowCode();
+	const auto nHighCode = pixelConfiguration.GetHighCode();
 
 	m_hasCPLD = SetupCPLD();
 
 	SetupHC595(ReverseBits(nLowCode), ReverseBits(nHighCode));
 
-	if (m_PixelConfiguration.IsRTZProtocol()) {
-		SetupSPI(m_PixelConfiguration.GetClockSpeedHz());
+	if (pixelConfiguration.IsRTZProtocol()) {
+		SetupSPI(pixelConfiguration.GetClockSpeedHz());
 	} else {
 		if (m_hasCPLD) {
-			SetupSPI(m_PixelConfiguration.GetClockSpeedHz() * 6);
+			SetupSPI(pixelConfiguration.GetClockSpeedHz() * 6);
 		} else {
-			SetupSPI(m_PixelConfiguration.GetClockSpeedHz() * 4);
+			SetupSPI(pixelConfiguration.GetClockSpeedHz() * 4);
 		}
 	}
 
@@ -117,23 +122,25 @@ void WS28xxMulti::SetupBuffers() {
 
 	m_pDmaBufferBlackout = m_pDmaBuffer + (nSizeHalf & static_cast<uint32_t>(~3));
 
-	const auto type = m_PixelConfiguration.GetType();
-	const auto nCount = m_PixelConfiguration.GetCount();
+	auto& pixelConfiguration = PixelConfiguration::Get();
+
+	const auto type = pixelConfiguration.GetType();
+	const auto nCount = pixelConfiguration.GetCount();
 
 	if ((type == Type::APA102) || (type == Type::SK9822) || (type == Type::P9813)) {
 		DEBUG_PUTS("SPI");
 
 		for (uint32_t nPortIndex = 0; nPortIndex < 8; nPortIndex++) {
-			SetPixel(nPortIndex, 0, 0, 0, 0, 0);
+			SetPixel4Bytes(nPortIndex, 0, 0, 0, 0, 0);
 
 			for (uint32_t nPixelIndex = 1; nPixelIndex <= nCount; nPixelIndex++) {
-				SetPixel(nPortIndex, nPixelIndex, 0, 0xE0, 0, 0);
+				SetPixel4Bytes(nPortIndex, nPixelIndex, 0, 0xE0, 0, 0);
 			}
 
 			if ((type == Type::APA102) || (type == Type::SK9822)) {
-				SetPixel(nPortIndex, 1U + nCount, 0xFF, 0xFF, 0xFF, 0xFF);
+				SetPixel4Bytes(nPortIndex, 1U + nCount, 0xFF, 0xFF, 0xFF, 0xFF);
 			} else {
-				SetPixel(nPortIndex, 1U + nCount, 0, 0, 0, 0);
+				SetPixel4Bytes(nPortIndex, 1U + nCount, 0, 0, 0, 0);
 			}
 		}
 
@@ -280,38 +287,7 @@ void WS28xxMulti::SetPixel4Bytes(uint32_t nPortIndex, uint32_t nPixelIndex, uint
 	}
 }
 
-void WS28xxMulti::SetPixel(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
-#if defined(CONFIG_PIXELDMX_ENABLE_GAMMATABLE)
-	const auto pGammaTable = m_PixelConfiguration.GetGammaTable();
-
-	nRed = pGammaTable[nRed];
-	nGreen = pGammaTable[nGreen];
-	nBlue = pGammaTable[nBlue];
-#endif
-
-	const auto type = m_PixelConfiguration.GetType();
-
-	if ((m_PixelConfiguration.IsRTZProtocol()) || (type == Type::WS2801)) {
-		SetColour(nPortIndex, nPixelIndex, nRed, nGreen, nBlue);
-		return;
-	}
-
-	if ((type == Type::APA102) || (type == Type::SK9822)) {
-		SetPixel4Bytes(nPortIndex, 1 + nPixelIndex, nBlue, m_PixelConfiguration.GetGlobalBrightness(), nGreen, nRed);
-		return;
-	}
-
-	if (type == Type::P9813) {
-		const auto nFlag = static_cast<uint8_t>(0xC0 | ((~nBlue & 0xC0) >> 2) | ((~nGreen & 0xC0) >> 4) | ((~nRed & 0xC0) >> 6));
-		SetPixel4Bytes(nPortIndex, 1+ nPixelIndex, nRed, nFlag, nGreen, nBlue);
-		return;
-	}
-
-	assert(0);
-	__builtin_unreachable();
-}
-
-void WS28xxMulti::SetPixel(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite) {
+void WS28xxMulti::SetColourRTZ(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite) {
 #if defined(CONFIG_PIXELDMX_ENABLE_GAMMATABLE)
 	const auto pGammaTable = m_PixelConfiguration.GetGammaTable();
 
@@ -374,6 +350,10 @@ inline void memcpy64(void *dest, void const *src, size_t n) {
 void WS28xxMulti::Update() {
 	assert(!FUNC_PREFIX(spi_dma_tx_is_active()));
 
+	do { // https://github.com/vanvught/rpidmx512/issues/281
+		asm volatile ("isb" ::: "memory");
+	} while (FUNC_PREFIX(spi_dma_tx_is_active()));
+
 	memcpy64(m_pDmaBuffer, reinterpret_cast<void *>(H3_SRAM_A1_BASE + 4096), m_nBufSize);
 
 	FUNC_PREFIX(spi_dma_tx_start(m_pDmaBuffer, m_nBufSize));
@@ -405,22 +385,24 @@ void WS28xxMulti::FullOn() {
 		asm volatile ("isb" ::: "memory");
 	} while (FUNC_PREFIX(spi_dma_tx_is_active()));
 
-	const auto type = m_PixelConfiguration.GetType();
+	auto& pixelConfiguration = PixelConfiguration::Get();
+
+	const auto type = pixelConfiguration.GetType();
 
 	if ((type == Type::APA102) || (type == Type::SK9822) || (type == Type::P9813)) {
 		for (uint32_t nPortIndex = 0; nPortIndex < 8; nPortIndex++) {
-			SetPixel(nPortIndex, 0, 0, 0, 0, 0);
+			SetPixel4Bytes(nPortIndex, 0, 0, 0, 0, 0);
 
-			const auto nCount = m_PixelConfiguration.GetCount();
+			const auto nCount = pixelConfiguration.GetCount();
 
 			for (uint32_t nPixelIndex = 1; nPixelIndex <= nCount; nPixelIndex++) {
-				SetPixel(nPortIndex, nPixelIndex, 0xFF, 0xE0, 0xFF, 0xFF);
+				SetPixel4Bytes(nPortIndex, nPixelIndex, 0xFF, 0xE0, 0xFF, 0xFF);
 			}
 
 			if ((type == Type::APA102) || (type == Type::SK9822)) {
-				SetPixel(nPortIndex, 1U + nCount, 0xFF, 0xFF, 0xFF, 0xFF);
+				SetPixel4Bytes(nPortIndex, 1U + nCount, 0xFF, 0xFF, 0xFF, 0xFF);
 			} else {
-				SetPixel(nPortIndex, 1U + nCount, 0, 0, 0, 0);
+				SetPixel4Bytes(nPortIndex, 1U + nCount, 0, 0, 0, 0);
 			}
 		}
 	} else {
