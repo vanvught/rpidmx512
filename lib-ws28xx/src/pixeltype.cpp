@@ -30,6 +30,7 @@
 
 #include <cstdint>
 #include <cstring>
+#include <cstdio>
 #include <cassert>
 
 #include "pixeltype.h"
@@ -91,3 +92,22 @@ const char *pixel_get_map(pixel::Map map) {
 	return "Undefined";
 }
 }  // namespace pixel
+
+namespace remoteconfig::pixel {
+uint32_t json_get_types(char *pOutBuffer, const uint32_t nOutBufferSize) {
+	const auto nBufferSize = nOutBufferSize - 2U;
+	auto nLength = static_cast<uint32_t>(snprintf(pOutBuffer, nBufferSize, "{\"types\":[" ));
+
+	for (const char (&type)[::pixel::TYPES_MAX_NAME_LENGTH] : ::pixel::TYPES) {
+		nLength += static_cast<uint32_t>(snprintf(&pOutBuffer[nLength], nBufferSize - nLength, "\"%s\",", type));
+	}
+
+	nLength--;
+
+	pOutBuffer[nLength++] = ']';
+	pOutBuffer[nLength++] = '}';
+
+	assert(nLength <= nOutBufferSize);
+	return nLength;
+}
+}  // namespace remoteconfig::pixel

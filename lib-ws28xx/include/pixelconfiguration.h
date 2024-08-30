@@ -119,6 +119,10 @@ public:
 		return m_nLedsPerPixel;
 	}
 
+	uint32_t GetRefreshRate() const {
+		return m_nRefreshRate;
+	}
+
 #if defined (CONFIG_PIXELDMX_ENABLE_GAMMATABLE)
 	void SetEnableGammaCorrection(const bool doEnable) {
 		m_bEnableGammaCorrection = doEnable;
@@ -182,6 +186,10 @@ public:
 					m_nClockSpeedHz = pixel::spi::speed::ws2801::max_hz;
 				}
 			}
+
+			const auto nLedTime = (8U * 1000000U) / m_nClockSpeedHz;
+			const auto nLedsTime = nLedTime * m_nCount * m_nLedsPerPixel;
+			m_nRefreshRate = 1000000U / nLedsTime;
 		} else {
 			m_bIsRTZProtocol = true;
 
@@ -211,6 +219,12 @@ public:
 			}
 
 			m_nClockSpeedHz = 6400000;	// 6.4MHz / 8 bits = 800Hz
+
+			//                  8 * 1000.000
+			// led time (us) =  ------------ * 8 = 10 us
+			//                   6.400.000
+			const auto nLedsTime = 10U * m_nCount * m_nLedsPerPixel;
+			m_nRefreshRate = 1000000U / nLedsTime;
 		}
 
 #if defined (CONFIG_PIXELDMX_ENABLE_GAMMATABLE)
@@ -244,6 +258,7 @@ public:
 		}
 
 		printf(" Clock   : %u Hz\n", static_cast<unsigned int>(m_nClockSpeedHz));
+		printf(" Refresh : %u Hz\n", static_cast<unsigned int>(m_nRefreshRate));
 
 #if defined (CONFIG_PIXELDMX_ENABLE_GAMMATABLE)
 		printf(" Gamma correction %s\n", m_bEnableGammaCorrection ? "Yes" :  "No");
@@ -265,6 +280,7 @@ private:
 	uint8_t m_nLowCode { 0 };
 	uint8_t m_nHighCode { 0 };
 	uint8_t m_nGlobalBrightness { 0xFF };
+	uint32_t m_nRefreshRate { 0 };
 #if defined (CONFIG_PIXELDMX_ENABLE_GAMMATABLE)
 	uint8_t m_nGammaValue { 0 };
 	bool m_bEnableGammaCorrection { false };
