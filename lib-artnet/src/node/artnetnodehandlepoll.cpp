@@ -130,7 +130,12 @@ void ArtNetNode::SendPollRelply(const uint32_t nBindIndex, const uint32_t nDesti
 
 		ProcessPollRelply(nPortIndex, nPortsInput, nPortsOutput);
 
+		const auto nRefreshRate = m_pLightSet->GetRefreshRate();
+		m_ArtPollReply.RefreshRateLo = static_cast<uint8_t>(nRefreshRate);
+		m_ArtPollReply.RefreshRateHi = static_cast<uint8_t>(nRefreshRate >> 8);
+
 		m_ArtPollReply.NumPortsLo = static_cast<uint8_t>(std::max(nPortsInput, nPortsOutput));
+
 		m_State.ArtPollReplyCount++;
 
 		uint8_t nSysNameLenght;

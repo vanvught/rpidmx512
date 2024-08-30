@@ -395,6 +395,12 @@ public:
 		return !((m_OutputPort[nPortIndex].GoodOutputB & artnet::GoodOutputB::RDM_DISABLED) == artnet::GoodOutputB::RDM_DISABLED);
 	}
 
+	void SetRdmDiscovery(const uint32_t nPortIndex, const bool bEnable);
+	bool GetRdmDiscovery(const uint32_t nPortIndex) const {
+		assert(nPortIndex < artnetnode::MAX_PORTS);
+		return !((m_OutputPort[nPortIndex].GoodOutputB & artnet::GoodOutputB::DISCOVERY_DISABLED) == artnet::GoodOutputB::DISCOVERY_DISABLED);
+	}
+
 #if defined (RDM_CONTROLLER)
 	void SetRdmController(ArtNetRdmController *pArtNetRdmController, const bool doEnable = true);
 
@@ -425,7 +431,11 @@ public:
 	bool RdmIsRunning(const uint32_t nPortIndex, bool& bIsIncremental) {
 		uint32_t nRdmnPortIndex;
 		if (m_pArtNetRdmController->IsRunning(nRdmnPortIndex, bIsIncremental)) {
-			return (nRdmnPortIndex == nPortIndex);
+			const auto isRunning = (nRdmnPortIndex == nPortIndex);
+			if (isRunning) {
+				assert(!((m_OutputPort[nPortIndex].GoodOutputB & artnet::GoodOutputB::DISCOVERY_NOT_RUNNING) == artnet::GoodOutputB::DISCOVERY_NOT_RUNNING));
+			}
+			return isRunning;
 		}
 
 		return false;
@@ -646,7 +656,10 @@ private:
 
 #if defined (RDM_CONTROLLER)
 	bool RdmDiscoveryRun() {
-		if ((GetPortDirection(m_State.rdm.nDiscoveryPortIndex) == lightset::PortDir::OUTPUT) && (GetRdm(m_State.rdm.nDiscoveryPortIndex))) {
+		if ((GetPortDirection(m_State.rdm.nDiscoveryPortIndex) == lightset::PortDir::OUTPUT)
+				&& (GetRdm(m_State.rdm.nDiscoveryPortIndex))
+				&& (GetRdmDiscovery(m_State.rdm.nDiscoveryPortIndex)))
+		{
 			uint32_t nPortIndex;
 			bool bIsIncremental;
 
@@ -663,6 +676,8 @@ private:
 					m_pLightSet->Start(nPortIndex);
 				}
 
+				m_OutputPort[m_State.rdm.nDiscoveryPortIndex].GoodOutputB |= artnet::GoodOutputB::DISCOVERY_NOT_RUNNING;
+
 				m_State.rdm.nDiscoveryPortIndex++;
 				return (m_State.rdm.nDiscoveryPortIndex != artnetnode::MAX_PORTS);
 			}
@@ -670,6 +685,7 @@ private:
 			if (!m_pArtNetRdmController->IsRunning(nPortIndex, bIsIncremental)) {
 				DEBUG_PRINTF("RDM Discovery Incremental -> %u", static_cast<unsigned int>(m_State.rdm.nDiscoveryPortIndex));
 				m_pArtNetRdmController->Incremental(m_State.rdm.nDiscoveryPortIndex);
+				m_OutputPort[m_State.rdm.nDiscoveryPortIndex].GoodOutputB &= static_cast<uint8_t>(~artnet::GoodOutputB::DISCOVERY_NOT_RUNNING);
 			}
 
 			return true;

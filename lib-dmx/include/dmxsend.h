@@ -124,6 +124,10 @@ public:
 	}
 #endif
 
+	uint32_t GetRefreshRate() override {
+		return 1000000U / Dmx::Get()->GetDmxPeriodTime();
+	}
+
 	void Blackout([[maybe_unused]] bool bBlackout) override {
 		Dmx::Get()->Blackout();
 	}

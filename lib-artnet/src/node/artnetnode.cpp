@@ -113,7 +113,7 @@ ArtNetNode::ArtNetNode() {
 		memset(&m_OutputPort[nPortIndex], 0, sizeof(struct artnetnode::OutputPort));
 		m_OutputPort[nPortIndex].SourceA.nPhysical = 0x100;
 		m_OutputPort[nPortIndex].SourceB.nPhysical = 0x100;
-		m_OutputPort[nPortIndex].GoodOutputB = artnet::GoodOutputB::RDM_DISABLED;
+		m_OutputPort[nPortIndex].GoodOutputB = artnet::GoodOutputB::RDM_DISABLED | artnet::GoodOutputB::DISCOVERY_NOT_RUNNING;
 		memset(&m_InputPort[nPortIndex], 0, sizeof(struct artnetnode::InputPort));
 		m_InputPort[nPortIndex].nDestinationIp = Network::Get()->GetBroadcastIp();
 	}
@@ -187,7 +187,7 @@ void ArtNetNode::Start() {
 	/*
 	 * Status 3
 	 */
-	m_ArtPollReply.Status3 = artnet::Status3::NETWORKLOSS_LAST_STATE | artnet::Status3::FAILSAFE_CONTROL;
+	m_ArtPollReply.Status3 = artnet::Status3::NETWORKLOSS_LAST_STATE | artnet::Status3::FAILSAFE_CONTROL | artnet::Status3::SUPPORTS_BACKGROUNDDISCOVERY;
 #if defined (ARTNET_HAVE_DMXIN)
 	m_ArtPollReply.Status3 |= artnet::Status3::OUTPUT_SWITCH;
 #endif

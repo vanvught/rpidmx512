@@ -46,7 +46,7 @@ void ArtNetNode::HandleTodControl() {
 
 	const auto *const pArtTodControl = reinterpret_cast<artnet::ArtTodControl *>(m_pReceiveBuffer);
 
-	if (pArtTodControl->Command != 0x01) {	// Not a AtcFlush
+	if (pArtTodControl->Command == artnet::TodControlCommand::ATC_NONE) {
 		DEBUG_EXIT
 		return;
 	}
@@ -58,12 +58,31 @@ void ArtNetNode::HandleTodControl() {
 			continue;
 		}
 
-        if ((m_Node.Port[nPortIndex].direction == lightset::PortDir::OUTPUT) &&
-           ((m_OutputPort[nPortIndex].GoodOutputB & artnet::GoodOutputB::RDM_DISABLED) != artnet::GoodOutputB::RDM_DISABLED)) {
-                m_pArtNetRdmController->Full(nPortIndex);
-        } else if (m_Node.Port[nPortIndex].direction == lightset::PortDir::INPUT) {
-        	m_pArtNetRdmController->TodReset(nPortIndex);
-        }
+		if ((m_Node.Port[nPortIndex].direction == lightset::PortDir::OUTPUT) &&
+				((m_OutputPort[nPortIndex].GoodOutputB & artnet::GoodOutputB::RDM_DISABLED) != artnet::GoodOutputB::RDM_DISABLED)) {
+			switch (pArtTodControl->Command) {
+			case artnet::TodControlCommand::ATC_FLUSH:
+				m_pArtNetRdmController->Full(nPortIndex);
+				m_OutputPort[nPortIndex].GoodOutputB &= static_cast<uint8_t>(~artnet::GoodOutputB::DISCOVERY_NOT_RUNNING);
+				break;
+			case artnet::TodControlCommand::ATC_END:
+				m_pArtNetRdmController->Stop(nPortIndex);
+				m_OutputPort[nPortIndex].GoodOutputB |= artnet::GoodOutputB::DISCOVERY_NOT_RUNNING;
+				break;
+			case artnet::TodControlCommand::ATC_INCON:
+				m_OutputPort[nPortIndex].GoodOutputB &= static_cast<uint8_t>(~artnet::GoodOutputB::DISCOVERY_DISABLED);
+				break;
+			case artnet::TodControlCommand::ATC_INCOFF:
+				m_OutputPort[nPortIndex].GoodOutputB |= artnet::GoodOutputB::DISCOVERY_DISABLED;
+				break;
+			default:
+				break;
+			}
+		} else if (m_Node.Port[nPortIndex].direction == lightset::PortDir::INPUT) {
+			if (pArtTodControl->Command == artnet::TodControlCommand::ATC_FLUSH) {
+				m_pArtNetRdmController->TodReset(nPortIndex);
+			}
+		}
 	}
 
 	DEBUG_EXIT
