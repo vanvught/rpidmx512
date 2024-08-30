@@ -28,6 +28,7 @@
 #include "./../../spi/spi_flash_internal.h"
 
 #include "gd32_spi.h"
+#include "gd32_gpio.h"
 #include "gd32.h"
 
 #include "debug.h"
