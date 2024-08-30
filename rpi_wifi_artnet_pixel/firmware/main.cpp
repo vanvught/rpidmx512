@@ -111,15 +111,15 @@ int main() {
 
 	PixelDmxParams pixelDmxParams;
 	pixelDmxParams.Load();
-	pixelDmxParams.Set(&pixelDmxConfiguration);
+	pixelDmxParams.Set();
 
-	auto *pWS28xxDmx = new WS28xxDmx(&pixelDmxConfiguration);
+	auto *pWS28xxDmx = new WS28xxDmx();
 	assert(pWS28xxDmx != nullptr);
 	pSpi = pWS28xxDmx;
 
-	display.Printf(7, "%s:%d G%d", PixelType::GetType(pixelDmxConfiguration.GetType()), pixelDmxConfiguration.GetCount(), pixelDmxConfiguration.GetGroupingCount());
+	display.Printf(7, "%s:%d G%d", pixel::pixel_get_type(pixelDmxConfiguration.GetType()), pixelDmxConfiguration.GetCount(), pixelDmxConfiguration.GetGroupingCount());
 
-	const auto nUniverses = pWS28xxDmx->GetUniverses();
+	const auto nUniverses = pixelDmxConfiguration.GetUniverses();
 
 	for (uint32_t nPortIndex = 1; nPortIndex < nUniverses; nPortIndex++) {
 		node.SetUniverse(nPortIndex, lightset::PortDir::OUTPUT, static_cast<uint8_t>(nStartUniverse + nPortIndex));

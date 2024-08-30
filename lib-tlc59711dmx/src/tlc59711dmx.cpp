@@ -24,9 +24,6 @@
  */
 
 #include <cstdint>
-#ifndef NDEBUG	// FIXME Remove debug information
-# include <cstdio>
-#endif
 #include <cassert>
 
 #include "tlc59711dmx.h"
@@ -129,7 +126,7 @@ void TLC59711Dmx::SetMaxPct(uint32_t nIndexLed, uint32_t nPct) {
 		}
 	}
 
-# ifndef NDEBUG	// FIXME Remove debug information
+# if 0
 	for (uint32_t nIndexLed = 0; nIndexLed < m_nCount; nIndexLed++) {
 		if (m_type == tlc59711::Type::RGB) {
 			const auto nIndexArray = nIndexLed * 3U;
@@ -191,8 +188,8 @@ void TLC59711Dmx::Sync([[maybe_unused]] uint32_t const nPortIndex) {
 	// No actions here
 }
 
-void TLC59711Dmx::Sync(const bool doForce) {
-	if ((!doForce) && (!m_bBlackout)) {
+void TLC59711Dmx::Sync() {
+	if (!m_bBlackout) {
 		m_pTLC59711->Update();
 	}
 }

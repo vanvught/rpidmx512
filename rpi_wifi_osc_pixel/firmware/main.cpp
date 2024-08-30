@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -104,7 +104,7 @@ int main() {
 
 	PixelDmxParams pixelDmxParams;
 	pixelDmxParams.Load();
-	pixelDmxParams.Set(&pixelDmxConfiguration);
+	pixelDmxParams.Set();
 
 	// For the time being, just 1 Universe
 	if (pixelDmxConfiguration.GetType() == pixel::Type::SK6812W) {
@@ -117,11 +117,11 @@ int main() {
 		}
 	}
 
-	auto *pPixelDmx = new WS28xxDmx(&pixelDmxConfiguration);
+	auto *pPixelDmx = new WS28xxDmx();
 	assert(pPixelDmx != nullptr);
 	pSpi = pPixelDmx;
 
-	display.Printf(7, "%s:%d G%d", PixelType::GetType(pixelDmxConfiguration.GetType()), pixelDmxConfiguration.GetCount(), pixelDmxConfiguration.GetGroupingCount());
+	display.Printf(7, "%s:%d G%d", pixel::pixel_get_type(pixelDmxConfiguration.GetType()), pixelDmxConfiguration.GetCount(), pixelDmxConfiguration.GetGroupingCount());
 
 	server.SetOutput(pSpi);
 	server.SetOscServerHandler(new Handler(pPixelDmx));

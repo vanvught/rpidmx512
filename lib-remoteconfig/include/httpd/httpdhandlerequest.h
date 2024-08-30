@@ -2,7 +2,7 @@
  * @file httpdhandlerequest.h
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -48,29 +48,29 @@ private:
 	http::Status ParseHeaderField(char *pLine);
 	http::Status HandleGet();
 	http::Status HandleGetTxt();
-	http::Status HandlePost(bool hasDataOnly);
-	http::Status HandleDelete(bool hasDataOnly);
+	http::Status HandlePost(const bool hasDataOnly);
+	http::Status HandleDelete(const bool hasDataOnly);
 
 private:
 	uint32_t m_nConnectionHandle;
 	int32_t m_nHandle;
-	uint32_t m_nContentLength { 0 };
+	uint32_t m_nContentSize { 0 };
 	uint32_t m_nFileDataLength { 0 };
-	uint32_t m_nRequestContentLength { 0 };
+	uint32_t m_nRequestContentSize { 0 };
 	uint32_t m_nBytesReceived { 0 };
 
-	const char *m_pContentType;
 	char *m_pUri { nullptr };
 	char *m_pFileData { nullptr };
+	const char *m_pContent { nullptr };
 	char *m_RequestHeaderResponse { nullptr };
 
 	http::Status m_Status { http::Status::UNKNOWN_ERROR };
 	http::RequestMethod m_RequestMethod { http::RequestMethod::UNKNOWN };
+	http::contentTypes m_ContentType { http::contentTypes::NOT_DEFINED };
 
-	bool m_bContentTypeJson { false };
 	bool m_IsAction { false };
 
-	static char m_Content[http::BUFSIZE];
+	static char m_DynamicContent[http::BUFSIZE];
 };
 
 

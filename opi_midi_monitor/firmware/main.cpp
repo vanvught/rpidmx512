@@ -66,7 +66,7 @@ int main() {
 	midi.Init(midi::Direction::INPUT);
 
 #if !defined(NO_EMAC)
-	nw.Print();
+	
 
 	RemoteConfigParams remoteConfigParams;
 	remoteConfigParams.Load();

@@ -72,7 +72,7 @@ public:
 #endif
 	}
 
-	void Sync([[maybe_unused]] const bool doForce = false) override {}
+	void Sync() override {}
 
 	void Blackout([[maybe_unused]] bool bBlackout) override {
 		DEBUG_ENTRY

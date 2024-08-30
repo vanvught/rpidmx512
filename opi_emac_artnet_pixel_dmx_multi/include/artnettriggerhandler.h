@@ -33,11 +33,11 @@
 #include "displayudf.h"
 #include "artnetnode.h"
 #include "lightset.h"
-#include "lightset32with4.h"
+#include "lightsetwith4.h"
 
 class ArtNetTriggerHandler: ArtNetTrigger {
 public:
-	ArtNetTriggerHandler(LightSet32with4 *pLightSet32with4, LightSet *pLightSetA): m_pLightSet32with4(pLightSet32with4), m_pLightSetA(pLightSetA) {
+	ArtNetTriggerHandler(LightSetWith4<32> *pLightSet32with4, LightSet *pLightSetA): m_pLightSet32with4(pLightSet32with4), m_pLightSetA(pLightSetA) {
 		ArtNetNode::Get()->SetArtNetTrigger(this);
 	}
 
@@ -68,7 +68,7 @@ public:
 	}
 
 private:
-	LightSet32with4 *m_pLightSet32with4;
+	LightSetWith4<32> *m_pLightSet32with4;
 	LightSet *m_pLightSetA;
 };
 

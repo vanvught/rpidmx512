@@ -201,13 +201,13 @@ private:
 #endif
 
 	struct Source {
-		uint8_t data[dmx::UNIVERSE_SIZE];
+		uint8_t data[dmx::UNIVERSE_SIZE] __attribute__ ((aligned (4)));
 	};
 
 	struct OutputPort {
 		Source sourceA;
 		Source sourceB;
-		uint8_t data[dmx::UNIVERSE_SIZE];
+		uint8_t data[dmx::UNIVERSE_SIZE] __attribute__ ((aligned (4)));
 		uint32_t nLength;
 	};
 

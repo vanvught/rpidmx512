@@ -29,7 +29,7 @@
 bool exec_cmd(const char *pCmd, char *Result, int nResultSize) {
 	auto *fp = popen(pCmd, "r");
 
-	if (fgets(Result, nResultSize - 1, fp) == 0) {
+	if (fgets(Result, nResultSize - 1, fp) == nullptr) {
 		pclose(fp);
 		return false;
 	}

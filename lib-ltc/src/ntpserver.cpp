@@ -39,7 +39,7 @@
 #include <cassert>
 
 #include "ntpserver.h"
-#include "ntp.h"
+#include "net/protocol/ntp.h"
 
 #include "network.h"
 

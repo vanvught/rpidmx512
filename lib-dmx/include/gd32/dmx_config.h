@@ -68,12 +68,15 @@ namespace config {
 
 namespace dmx {
 namespace buffer {
-static constexpr auto SIZE = 514;	// multiple of uint16_t
+static constexpr auto SIZE = 516;	// multiple of uint32_t
 }  // namespace buffer
 }  // namespace dmx
 
 #if defined(GD32F10X_HD) || defined (GD32F10X_CL)
  static_assert(DMX_MAX_PORTS <= 4, "Too many ports defined");
+#endif
+#if defined (GD32F20X_CL)
+ static_assert(DMX_MAX_PORTS <= 6, "Too many ports defined");
 #endif
 
 /**

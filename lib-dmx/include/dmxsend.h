@@ -100,8 +100,8 @@ public:
 		Dmx::Get()->SetSendDataWithoutSC(nPortIndex, lightset::Data::Backup(nPortIndex), lightset::Data::GetLength(nPortIndex));
 	}
 
-	void Sync(const bool doForce) override {
-		Dmx::Get()->SetOutput(doForce);
+	void Sync() override {
+		Dmx::Get()->Sync();
 
 		for (uint32_t nPortIndex = 0; nPortIndex < dmx::config::max::PORTS; nPortIndex++) {
 			if (lightset::Data::GetLength(nPortIndex) != 0) {
@@ -123,6 +123,10 @@ public:
 		return Dmx::Get()->GetOutputStyle(nPortIndex) == dmx::OutputStyle::CONTINOUS ? lightset::OutputStyle::CONSTANT : lightset::OutputStyle::DELTA;
 	}
 #endif
+
+	uint32_t GetRefreshRate() override {
+		return 1000000U / Dmx::Get()->GetDmxPeriodTime();
+	}
 
 	void Blackout([[maybe_unused]] bool bBlackout) override {
 		Dmx::Get()->Blackout();

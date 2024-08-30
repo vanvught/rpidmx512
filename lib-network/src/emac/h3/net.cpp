@@ -63,12 +63,12 @@ __attribute__((hot)) int emac_eth_recv(uint8_t **packetp) {
 	return -1;
 }
 
-void emac_eth_send(void *packet, int len) {
+void emac_eth_send(void *packet, uint32_t len) {
 	auto desc_num = p_coherent_region->tx_currdescnum;
 	auto *desc_p = &p_coherent_region->tx_chain[desc_num];
 	auto data_start = static_cast<uintptr_t>(desc_p->buf_addr);
 
-	desc_p->st = static_cast<uint32_t>(len);
+	desc_p->st = len;
 	/* Mandatory undocumented bit */
 	desc_p->st |= (1U << 24);
 

@@ -2,7 +2,7 @@
  * @file ws28xxmulti.h
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,11 +38,17 @@ struct JamSTAPLDisplay;
 
 class WS28xxMulti {
 public:
-	WS28xxMulti(PixelConfiguration& pixelConfiguration);
+	WS28xxMulti();
 	~WS28xxMulti();
 
-	void SetPixel(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
-	void SetPixel(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite);
+	void SetColourRTZ(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nColour1, uint8_t nColour2, uint8_t nColour3) {
+		SetColour(nPortIndex, nPixelIndex, nColour1, nColour2, nColour3);
+	}
+	void SetColourRTZ(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite);
+	void SetColourWS2801(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nColour1, uint8_t nColour2, uint8_t nColour3) {
+		SetColour(nPortIndex, nPixelIndex, nColour1, nColour2, nColour3);
+	}
+	void SetPixel4Bytes(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite);
 
 	bool IsUpdating() {
 		return h3_spi_dma_tx_is_active();  // returns TRUE while DMA operation is active
@@ -51,18 +57,6 @@ public:
 	void Update();
 	void Blackout();
 	void FullOn();
-
-	pixel::Type GetType() const {
-		return m_PixelConfiguration.GetType();
-	}
-
-	uint32_t GetCount() const {
-		return m_PixelConfiguration.GetCount();
-	}
-
-	pixel::Map GetMap() const {
-		return m_PixelConfiguration.GetMap();
-	}
 
 	void SetJamSTAPLDisplay(JamSTAPLDisplay *pJamSTAPLDisplay) {
 		m_pJamSTAPLDisplay = pJamSTAPLDisplay;
@@ -78,11 +72,9 @@ private:
 	void SetupSPI(uint32_t nSpeedHz);
 	bool SetupCPLD();
 	void SetupBuffers();
-	void SetPixel4Bytes(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite);
 	void SetColour(const uint32_t nPortIndex, const uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
 
 private:
-	PixelConfiguration m_PixelConfiguration;
 	bool m_hasCPLD { false };
 	uint32_t m_nBufSize { 0 };
 

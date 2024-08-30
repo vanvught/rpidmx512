@@ -31,9 +31,9 @@
 #include "network.h"
 #include "networkconst.h"
 
-#include "mdns.h"
+#include "net/apps/mdns.h"
 
-#include "ntpclient.h"
+#include "net/apps/ntpclient.h"
 
 #include "displayudf.h"
 #include "displayudfparams.h"
@@ -94,7 +94,7 @@ int main() {
 	FlashCodeInstall spiFlashInstall;
 
 	fw.Print("Art-Net 4 PCA9685");
-	nw.Print();
+	
 
 	NtpClient ntpClient;
 	ntpClient.Start();
@@ -105,8 +105,6 @@ int main() {
 	PCA9685DmxParams pca9685DmxParams;
 	pca9685DmxParams.Load();
 	pca9685DmxParams.Set(&pca9685Dmx);
-
-	display.TextStatus(ArtNetMsgConst::PARAMS, CONSOLE_YELLOW);
 
 	ArtNetNode node;
 

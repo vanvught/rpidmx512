@@ -47,7 +47,7 @@ public:
 
 	void SetData(const uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate = true) override;
 	void Sync(const uint32_t nPortIndex) override;
-	void Sync(const bool doForce = false) override;
+	void Sync() override;
 #if defined (OUTPUT_HAVE_STYLESWITCH)
 	void SetOutputStyle(const uint32_t nPortIndex, const lightset::OutputStyle outputStyle) override;
 	lightset::OutputStyle GetOutputStyle(const uint32_t nPortIndex) const override;

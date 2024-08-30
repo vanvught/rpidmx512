@@ -25,13 +25,12 @@
 
 #include <cstdint>
 #include <cstdio>
-#include <cassert>
 
 #include "hardware.h"
 #include "network.h"
 #include "networkconst.h"
 
-#include "mdns.h"
+#include "net/apps/mdns.h"
 
 #include "displayudf.h"
 #include "displayudfparams.h"
@@ -54,7 +53,7 @@
 #include "dmxsend.h"
 #include "dmxconfigudp.h"
 
-#include "lightset32with4.h"
+#include "lightsetwith4.h"
 
 #if defined (NODE_RDMNET_LLRP_ONLY)
 # include "rdmdeviceparams.h"
@@ -103,10 +102,7 @@ int main() {
 	FlashCodeInstall spiFlashInstall;
 
 	fw.Print("sACN E1.31 Pixel controller {8x 4 Universes} / 2x DMX");
-	nw.Print();
-
-	display.TextStatus(E131MsgConst::PARAMS, CONSOLE_YELLOW);
-
+	
 	E131Bridge bridge;
 
 	E131Params e131params;
@@ -119,14 +115,14 @@ int main() {
 
 	PixelDmxParams pixelDmxParams;
 	pixelDmxParams.Load();
-	pixelDmxParams.Set(&pixelDmxConfiguration);
+	pixelDmxParams.Set();
 
-	WS28xxDmxMulti pixelDmxMulti(pixelDmxConfiguration);
+	WS28xxDmxMulti pixelDmxMulti;
 
 	WS28xxMulti::Get()->SetJamSTAPLDisplay(new HandlerOled);
 
-	const auto nActivePorts = pixelDmxMulti.GetOutputPorts();
-	const auto nUniverses = pixelDmxMulti.GetUniverses();
+	const auto nActivePorts = pixelDmxConfiguration.GetOutputPorts();
+	const auto nUniverses = pixelDmxConfiguration.GetUniverses();
 
 	uint32_t nPortProtocolIndex = 0;
 
@@ -189,7 +185,7 @@ int main() {
 
 	// LightSet 32with4
 
-	LightSet32with4 lightSet((PixelTestPattern::Get()->GetPattern() != pixelpatterns::Pattern::NONE) ? nullptr : &pixelDmxMulti, (nDmxUniverses != 0) ? &dmxSend : nullptr);
+	LightSetWith4<32> lightSet((PixelTestPattern::Get()->GetPattern() != pixelpatterns::Pattern::NONE) ? nullptr : &pixelDmxMulti, (nDmxUniverses != 0) ? &dmxSend : nullptr);
 	lightSet.Print();
 
 	bridge.SetOutput(&lightSet);
@@ -199,7 +195,7 @@ int main() {
 	display.TextStatus(RDMNetConst::MSG_CONFIG, CONSOLE_YELLOW);
 
 	char aDescription[rdm::personality::DESCRIPTION_MAX_LENGTH + 1];
-	snprintf(aDescription, sizeof(aDescription) - 1, "sACN Pixel %u-%s:%d DMX %u", nActivePorts, PixelType::GetType(WS28xxMulti::Get()->GetType()), WS28xxMulti::Get()->GetCount(), nDmxUniverses);
+	snprintf(aDescription, sizeof(aDescription) - 1, "sACN Pixel %u-%s:%d DMX %u", nActivePorts, pixel::pixel_get_type(pixelDmxConfiguration.GetType()), pixelDmxConfiguration.GetCount(), nDmxUniverses);
 
 	char aLabel[RDM_DEVICE_LABEL_MAX_LENGTH + 1];
 	const auto nLength = snprintf(aLabel, sizeof(aLabel) - 1, "Orange Pi Zero Pixel-DMX");
@@ -233,7 +229,7 @@ int main() {
 	showFile.Print();
 #endif
 
-	display.SetTitle("sACN Pixel 8:%dx%d", nActivePorts, WS28xxMulti::Get()->GetCount());
+	display.SetTitle("sACN Pixel 8:%dx%d", nActivePorts, pixelDmxConfiguration.GetCount());
 	display.Set(2, displayudf::Labels::IP);
 	display.Set(3, displayudf::Labels::HOSTNAME);
 	display.Set(4, displayudf::Labels::VERSION);
@@ -245,12 +241,11 @@ int main() {
 	displayUdfParams.Set(&display);
 
 	display.Show();
-
 	display.Printf(7, "%s:%d G%d %s",
-		PixelType::GetType(pixelDmxConfiguration.GetType()),
+		pixel::pixel_get_type(pixelDmxConfiguration.GetType()),
 		pixelDmxConfiguration.GetCount(),
 		pixelDmxConfiguration.GetGroupingCount(),
-		PixelType::GetMap(pixelDmxConfiguration.GetMap()));
+		pixel::pixel_get_map(pixelDmxConfiguration.GetMap()));
 
 	if (nTestPattern != pixelpatterns::Pattern::NONE) {
 		display.ClearLine(6);

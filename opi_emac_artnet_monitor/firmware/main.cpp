@@ -30,9 +30,9 @@
 #include "network.h"
 #include "networkconst.h"
 
-#include "mdns.h"
+#include "net/apps/mdns.h"
 
-#include "ntpclient.h"
+#include "net/apps/ntpclient.h"
 
 #include "console.h"
 #include "h3/showsystime.h"
@@ -92,15 +92,13 @@ int main() {
 	console_set_fg_color(CONSOLE_WHITE);
 	console_set_top_row(2);
 
-	nw.Print();
+	
 
 	NtpClient ntpClient;
 	ntpClient.Start();
 	ntpClient.Print();
 
 	ShowSystime showSystime;
-
-	display.TextStatus(ArtNetMsgConst::PARAMS, CONSOLE_YELLOW);
 
 	ArtNetNode node;
 

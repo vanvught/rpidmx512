@@ -26,10 +26,6 @@
  * THE SOFTWARE.
  */
 
-#ifdef NDEBUG
-# undef NDEBUG	//TODO Remove # undef NDEBUG
-#endif
-
 #include <cstring>
 #include <cstdio>
 #include <cassert>

@@ -34,7 +34,7 @@
 
 class WS28xx {
 public:
-	WS28xx(PixelConfiguration *pPixelConfiguration);
+	WS28xx();
 	~WS28xx();
 
 	void SetPixel(uint32_t nIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
@@ -54,18 +54,6 @@ public:
 	void Blackout();
 	void FullOn();
 
-	pixel::Type GetType() const {
-		return m_pPixelConfiguration->GetType();
-	}
-
-	uint32_t GetCount() const {
-		return m_pPixelConfiguration->GetCount();
-	}
-
-	pixel::Map GetMap() const {
-		return m_pPixelConfiguration->GetMap();
-	}
-
 	static WS28xx *Get() {
 		return s_pThis;
 	}
@@ -75,7 +63,6 @@ private:
 	void SetColorWS28xx(uint32_t nOffset, uint8_t nValue);
 
 private:
-	PixelConfiguration *m_pPixelConfiguration;
 	uint32_t m_nBufSize;
 	uint8_t *m_pBuffer { nullptr };
 	uint8_t *m_pBlackoutBuffer { nullptr };

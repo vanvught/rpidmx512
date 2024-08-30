@@ -38,7 +38,7 @@
 
 class WS28xxDmx final: public LightSet {
 public:
-	WS28xxDmx(PixelDmxConfiguration *pPixelDmxConfiguration);
+	WS28xxDmx();
 	~WS28xxDmx() override;
 
 	void Start(const uint32_t nPortIndex) override;
@@ -46,11 +46,9 @@ public:
 
 	void SetData(const uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate = true) override;
 	void Sync([[maybe_unused]] const uint32_t nPortIndex) override {}
-	void Sync(const bool doForce) override {
-		if (__builtin_expect((!doForce), 1)) {
-			assert(m_pWS28xx != nullptr);
-			m_pWS28xx->Update();
-		}
+	void Sync() override {
+		assert(m_pWS28xx != nullptr);
+		m_pWS28xx->Update();
 	}
 
 #if defined (OUTPUT_HAVE_STYLESWITCH)
@@ -64,42 +62,18 @@ public:
 	void FullOn() override;
 
 	void Print() override {
-		m_pPixelDmxConfiguration->Print();
-	}
-
-	pixel::Type GetType() const {
-		return m_pPixelDmxConfiguration->GetType();
-	}
-
-	pixel::Map GetMap() const {
-		return m_pPixelDmxConfiguration->GetMap();
-	}
-
-	uint32_t GetCount() const {
-		return m_pPixelDmxConfiguration->GetCount();
-	}
-
-	uint32_t GetGroups() const {
-		return m_pPixelDmxConfiguration->GetGroups();
-	}
-
-	uint32_t GetGroupingCount() const {
-		return m_pPixelDmxConfiguration->GetGroupingCount();
-	}
-
-	uint32_t GetUniverses() const {
-		return m_pPixelDmxConfiguration->GetUniverses();
+		PixelDmxConfiguration::Get().Print();
 	}
 
 // RDM
 	bool SetDmxStartAddress(uint16_t nDmxStartAddress) override;
 
 	uint16_t GetDmxStartAddress() override {
-		return m_pPixelDmxConfiguration->GetDmxStartAddress();
+		return PixelDmxConfiguration::Get().GetDmxStartAddress();
 	}
 
 	uint16_t GetDmxFootprint() override {
-		return m_pPixelDmxConfiguration->GetDmxFootprint();
+		return PixelDmxConfiguration::Get().GetDmxFootprint();
 	}
 
 	bool GetSlotInfo(uint16_t nSlotOffset, lightset::SlotInfo &tSlotInfo) override;
@@ -109,10 +83,6 @@ public:
 	}
 
 private:
-	PixelDmxConfiguration *m_pPixelDmxConfiguration;
-	pixeldmxconfiguration::PortInfo m_PortInfo;
-	uint32_t m_nChannelsPerPixel;
-
 	WS28xx *m_pWS28xx { nullptr };
 
 	bool m_bIsStarted { false };

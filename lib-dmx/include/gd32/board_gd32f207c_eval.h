@@ -2,7 +2,7 @@
  * @file board_gd32f207c_eval.h
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@
 
 #include "gd32_board.h"
 
-#define DMX_MAX_PORTS  4
+#define DMX_MAX_PORTS  2
 
 namespace max {
 	static const uint32_t PORTS = DMX_MAX_PORTS;
@@ -37,21 +37,21 @@ namespace max {
 //#define DMX_USE_USART0
 #define DMX_USE_USART1
 #define DMX_USE_USART2
-#define DMX_USE_UART3
-#define DMX_USE_UART4
+//#define DMX_USE_UART3
+//#define DMX_USE_UART4
 //#define DMX_USE_USART5
 //#define DMX_USE_UART6
 //#define DMX_USE_UART7
-//
+
 //static constexpr auto USART0_PORT = 0;
 static constexpr auto USART1_PORT = 0;
 static constexpr auto USART2_PORT = 1;
-static constexpr auto UART3_PORT = 2;
-static constexpr auto UART4_PORT = 3;
+//static constexpr auto UART3_PORT = 2;
+//static constexpr auto UART4_PORT = 3;
 //static constexpr auto USART5_PORT = 5;
 //static constexpr auto UART6_PORT = 6;
 //static constexpr auto UART7_PORT = 7;
-//
+
 static constexpr auto DIR_PORT_0_GPIO_PORT = GPIOE;
 static constexpr auto DIR_PORT_0_GPIO_PIN = GPIO_PIN_9;
 

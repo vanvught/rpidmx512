@@ -61,7 +61,7 @@ void ArtNetNode::HandleRdm() {
 
 				const auto nLength = sizeof(struct artnet::ArtRdm) - sizeof(pArtRdm->RdmPacket) + nMessageLength;
 
-				Network::Get()->SendTo(m_nHandle, m_pReceiveBuffer, static_cast<uint16_t>(nLength), m_nIpAddressFrom, artnet::UDP_PORT);
+				Network::Get()->SendTo(m_nHandle, m_pReceiveBuffer, nLength, m_nIpAddressFrom, artnet::UDP_PORT);
 			} else {
 				DEBUG_PUTS("No RDM response");
 			}
@@ -135,7 +135,7 @@ void ArtNetNode::SendTod(uint32_t nPortIndex) {
 
 	const auto nLength = sizeof(struct artnet::ArtTodData) - (sizeof(pTodData->Tod)) + (nDiscovered * 6U);
 
-	Network::Get()->SendTo(m_nHandle, pTodData, static_cast<uint16_t>(nLength), Network::Get()->GetBroadcastIp(), artnet::UDP_PORT);
+	Network::Get()->SendTo(m_nHandle, pTodData, nLength, Network::Get()->GetBroadcastIp(), artnet::UDP_PORT);
 
 	DEBUG_EXIT
 }

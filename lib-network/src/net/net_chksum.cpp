@@ -2,7 +2,7 @@
  * @file net_chksum.cpp
  *
  */
-/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,8 +29,7 @@
 
 #include <cstdint>
 
-#include "net_private.h"
-
+namespace net {
 uint16_t net_chksum(const void *data, uint32_t len) {
 	auto *ptr = reinterpret_cast<const uint16_t *>(data);
 	uint32_t sum = 0;
@@ -53,3 +52,4 @@ uint16_t net_chksum(const void *data, uint32_t len) {
 
 	return static_cast<uint16_t>(~sum);
 }
+}  // namespace net

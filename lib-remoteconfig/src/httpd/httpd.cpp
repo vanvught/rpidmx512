@@ -31,7 +31,7 @@
 #include "httpd/httpd.h"
 
 #include "network.h"
-#include "mdns.h"
+#include "net/apps/mdns.h"
 
 #include "../../lib-network/config/net_config.h"
 

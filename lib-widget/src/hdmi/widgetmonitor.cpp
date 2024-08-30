@@ -2,7 +2,7 @@
  * @file widgetmonitor.cpp
  *
  */
-/* Copyright (C) 2015-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2015-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,6 +38,8 @@
 #include "rdm.h"
 
 #include "hardware.h"
+
+static constexpr auto DISPLAY_LEVEL = 1;
 
 /* RDM START CODE (Slot 0)                                                                                                     */
 #define	E120_SC_RDM		0xCC
@@ -170,16 +172,15 @@ void WidgetMonitor::Sniffer() {
 
 void WidgetMonitor::Update() {
 	const auto tMode = Widget::Get()->GetMode();
-	const auto display_level = 1; // FIXME
 
-	if (tMode != Mode::RDM_SNIFFER && display_level == 0) {
+	if (tMode != Mode::RDM_SNIFFER && DISPLAY_LEVEL == 0) {
 		return;
 	}
 
 	struct TWidgetConfiguration widget_params;
 	WidgetConfiguration::Get(&widget_params);
 
-	if (display_level > 1) {
+	if (DISPLAY_LEVEL > 1) {
 		WidgetMonitor::Uptime(MonitorLine::TIME);
 	}
 
@@ -230,11 +231,10 @@ void WidgetMonitor::Update() {
 void WidgetMonitor::RdmData(int nLine, uint16_t nDataLength, const uint8_t *pData, bool isSent) {
 	auto *p = (uint8_t *) pData;
 	bool is_rdm_command = (*p == E120_SC_RDM);
-	const auto display_level = 1 ; // FIXME
 
 	WidgetMonitor::Line(nLine, "RDM [%s], l:%d\n", isSent ? "Sent" : "Received", (int) nDataLength);
 
-	if (display_level == 0) {
+	if (DISPLAY_LEVEL == 0) {
 		return;
 	}
 

@@ -5,7 +5,7 @@
 /*
  * Original code : https://github.com/martinezjavier/u-boot/blob/master/drivers/mtd/spi/spi_flash.c
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <time.h>
 
 #include "spi/spi_flash.h"
 
@@ -89,6 +90,14 @@ static const struct {
 #endif
 };
 #define IDCODE_LEN (IDCODE_CONT_LEN + IDCODE_PART_LEN)
+
+static uint32_t get_timer(uint32_t base) {
+	if (0 == base) {
+		return static_cast<uint32_t>(time(nullptr));
+	}
+
+	return static_cast<uint32_t>(time(nullptr)) - base;
+}
 
 uint32_t spi_flash_get_size() {
 	return s_flash.size;

@@ -1,6 +1,0 @@
-#
-DEFINES = NDEBUG
-#
-EXTRA_INCLUDES =
-#
-include ../firmware-template-h3/lib/Rules.mk

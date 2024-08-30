@@ -37,11 +37,15 @@ static uint32_t get_portstatus(const uint32_t nPortIndex, char *pOutBuffer, cons
 
 	if (direction == lightset::PortDir::OUTPUT) {
 		if (ArtNetNode::Get()->GetRdm(nPortIndex)) {
-			bool bIsIncremental;
-			if (ArtNetNode::Get()->RdmIsRunning(nPortIndex, bIsIncremental)) {
-				status = bIsIncremental ? "Incremental" : "Full";
+			if (ArtNetNode::Get()->GetRdmDiscovery(nPortIndex)) {
+				bool bIsIncremental;
+				if (ArtNetNode::Get()->RdmIsRunning(nPortIndex, bIsIncremental)) {
+					status = bIsIncremental ? "Incremental" : "Full";
+				} else {
+					status = "Idle";
+				}
 			} else {
-				status = "Idle";
+				status = "Disabled";
 			}
 		} else {
 			return 0;

@@ -406,7 +406,7 @@ static dirent_t s_dirent;
 DIR *opendir([[maybe_unused]] const char *dirname) {
 #if !defined (CONFIG_FS_ENABLE_WRITE)
 	errno = ENOSYS;
-	return 0;
+	return nullptr;
 #else
 	const auto len = strlen(dirname);
 
@@ -437,7 +437,7 @@ DIR *opendir([[maybe_unused]] const char *dirname) {
 struct dirent *readdir([[maybe_unused]] DIR *dirp) {
 #if !defined (CONFIG_FS_ENABLE_WRITE)
 	errno = ENOSYS;
-	return 0;
+	return nullptr;
 #else
 	FILINFO fno;
 

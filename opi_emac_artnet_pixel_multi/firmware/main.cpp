@@ -29,7 +29,7 @@
 #include "network.h"
 #include "networkconst.h"
 
-#include "mdns.h"
+#include "net/apps/mdns.h"
 
 #include "displayudf.h"
 #include "displayudfparams.h"
@@ -95,12 +95,9 @@ int main() {
 	FlashCodeInstall spiFlashInstall;
 
 	fw.Print("Art-Net 4 Pixel controller {8x 4 Universes}");
-	nw.Print();
-
-	display.TextStatus(ArtNetMsgConst::PARAMS, CONSOLE_YELLOW);
-
-	ArtNetNode node;
 	
+	ArtNetNode node;
+
 	ArtNetParams artnetParams;
 	artnetParams.Load();
 	artnetParams.Set();
@@ -109,14 +106,14 @@ int main() {
 
 	PixelDmxParams pixelDmxParams;
 	pixelDmxParams.Load();
-	pixelDmxParams.Set(&pixelDmxConfiguration);
+	pixelDmxParams.Set();
 
-	WS28xxDmxMulti pixelDmxMulti(pixelDmxConfiguration);
+	WS28xxDmxMulti pixelDmxMulti;
 
 	WS28xxMulti::Get()->SetJamSTAPLDisplay(new HandlerOled);
 
-	const auto nPixelActivePorts = pixelDmxMulti.GetOutputPorts();
-	const auto nUniverses = pixelDmxMulti.GetUniverses();
+	const auto nPixelActivePorts = pixelDmxConfiguration.GetOutputPorts();
+	const auto nUniverses = pixelDmxConfiguration.GetUniverses();
 
 	uint32_t nPortProtocolIndex = 0;
 
@@ -148,7 +145,7 @@ int main() {
 #if defined (NODE_RDMNET_LLRP_ONLY)
 	display.TextStatus(RDMNetConst::MSG_CONFIG, CONSOLE_YELLOW);
 	char aDescription[rdm::personality::DESCRIPTION_MAX_LENGTH + 1];
-	snprintf(aDescription, sizeof(aDescription) - 1, "Art-Net Pixel %u-%s:%u", static_cast<unsigned int>(nPixelActivePorts), PixelType::GetType(WS28xxMulti::Get()->GetType()), static_cast<unsigned int>(WS28xxMulti::Get()->GetCount()));
+	snprintf(aDescription, sizeof(aDescription) - 1, "Art-Net Pixel %u-%s:%u", static_cast<unsigned int>(nPixelActivePorts), pixel::pixel_get_type(pixelDmxConfiguration.GetType()), static_cast<unsigned int>(pixelDmxConfiguration.GetCount()));
 
 	char aLabel[RDM_DEVICE_LABEL_MAX_LENGTH + 1];
 	const auto nLength = snprintf(aLabel, sizeof(aLabel) - 1, "Orange Pi Zero Pixel");
@@ -188,7 +185,7 @@ int main() {
 	node.Print();
 	pixelDmxMulti.Print();
 
-	display.SetTitle("ArtNet 4 Pixel %dx%d", nPixelActivePorts, WS28xxMulti::Get()->GetCount());
+	display.SetTitle("ArtNet 4 Pixel %dx%d", nPixelActivePorts, pixelDmxConfiguration.GetCount());
 	display.Set(2, displayudf::Labels::IP);
 	display.Set(3, displayudf::Labels::VERSION);
 	display.Set(4, displayudf::Labels::UNIVERSE_PORT_A);
@@ -199,12 +196,11 @@ int main() {
 	displayUdfParams.Set(&display);
 
 	display.Show();
-
 	display.Printf(7, "%s:%d G%d %s",
-		PixelType::GetType(pixelDmxConfiguration.GetType()),
+		pixel::pixel_get_type(pixelDmxConfiguration.GetType()),
 		pixelDmxConfiguration.GetCount(),
 		pixelDmxConfiguration.GetGroupingCount(),
-		PixelType::GetMap(pixelDmxConfiguration.GetMap()));
+		pixel::pixel_get_map(pixelDmxConfiguration.GetMap()));
 
 	if (nTestPattern != pixelpatterns::Pattern::NONE) {
 		display.ClearLine(6);

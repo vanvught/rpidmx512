@@ -2,7 +2,7 @@
  * @file igmp.cpp
  *
  */
-/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,24 +23,43 @@
  * THE SOFTWARE.
  */
 
-#pragma GCC push_options
-#pragma GCC optimize ("O2")
-#pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#if defined (DEBUG_NET_IGMP)
+# undef NDEBUG
+#endif
+
+#if !defined (CONFIG_REMOTECONFIG_MINIMUM)
+# pragma GCC push_options
+# pragma GCC optimize ("O2")
+# pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#endif
 
 #include <cstdint>
-#include <cstdio>
+#include <cstdlib>
 #include <cstring>
+#include <cassert>
+
+#include "../../config/net_config.h"
 
 #include "net.h"
+#include "netif.h"
+#include "net/igmp.h"
+#include "net/protocol/igmp.h"
+
 #include "net_memcpy.h"
 #include "net_private.h"
 
-#include "../../config/net_config.h"
+#include "hardware.h"
+
+#include "debug.h"
 
 /*
  * https://www.rfc-editor.org/rfc/rfc2236.html
  * Internet Group Management Protocol, Version 2
  */
+
+namespace net {
+#define IGMP_TMR_INTERVAL              100 /* Milliseconds */
+#define IGMP_JOIN_DELAYING_MEMBER_TMR (500 /IGMP_TMR_INTERVAL)
 
 enum State {
 	NON_MEMBER, DELAYING_MEMBER, IDLE_MEMBER
@@ -62,19 +81,68 @@ static struct t_igmp s_leave SECTION_NETWORK ALIGNED;
 static uint8_t s_multicast_mac[ETH_ADDR_LEN] SECTION_NETWORK ALIGNED;
 static struct t_group_info s_groups[IGMP_MAX_JOINS_ALLOWED] SECTION_NETWORK ALIGNED;
 static uint16_t s_id SECTION_NETWORK ALIGNED;
-
-namespace net {
-namespace globals {
-extern struct IpInfo ipInfo;
-extern uint8_t macAddress[ETH_ADDR_LEN];
-}  // namespace globals
-}  // namespace net
-
-static void _send_report(uint32_t nGroupAddress);
+static int32_t nTimerId;
 
 void igmp_set_ip() {
-	net::memcpy_ip(s_report.ip4.src, net::globals::ipInfo.ip.addr);
-	net::memcpy_ip(s_leave.ip4.src, net::globals::ipInfo.ip.addr);
+	net::memcpy_ip(s_report.ip4.src, net::globals::netif_default.ip.addr);
+	net::memcpy_ip(s_leave.ip4.src, net::globals::netif_default.ip.addr);
+}
+
+static void igmp_send_report(const uint32_t nGroupAddress) {
+	DEBUG_ENTRY
+	_pcast32 multicast_ip;
+
+	multicast_ip.u32 = nGroupAddress;
+
+	s_multicast_mac[3] = multicast_ip.u8[1] & 0x7F;
+	s_multicast_mac[4] = multicast_ip.u8[2];
+	s_multicast_mac[5] = multicast_ip.u8[3];
+
+	DEBUG_PRINTF(IPSTR " " MACSTR, IP2STR(nGroupAddress),MAC2STR(s_multicast_mac));
+
+	// Ethernet
+	std::memcpy(s_report.ether.dst, s_multicast_mac, ETH_ADDR_LEN);
+	// IPv4
+	s_report.ip4.id = s_id;
+	std::memcpy(s_report.ip4.dst, multicast_ip.u8, IPv4_ADDR_LEN);
+	s_report.ip4.chksum = 0;
+	s_report.ip4.chksum = net_chksum(reinterpret_cast<void *>(&s_report.ip4), 24); //TODO
+	// IGMP
+	std::memcpy(s_report.igmp.report.igmp.group_address, multicast_ip.u8, IPv4_ADDR_LEN);
+	s_report.igmp.report.igmp.checksum = 0;
+	s_report.igmp.report.igmp.checksum = net_chksum(reinterpret_cast<void *>(&s_report.ip4), IPv4_IGMP_REPORT_HEADERS_SIZE);
+
+	emac_eth_send(reinterpret_cast<void *>(&s_report), IGMP_REPORT_PACKET_SIZE);
+
+	s_id++;
+
+	DEBUG_EXIT
+}
+
+static void igmp_start_timer(struct t_group_info &group, const uint32_t max_time) {
+	group.nTimer = (max_time > 2 ? (random() % max_time) : 1);
+
+	if (group.nTimer == 0) {
+		group.nTimer = 1;
+	}
+}
+
+static void igmp_timeout(struct t_group_info &group) {
+	if ((group.state == DELAYING_MEMBER) &&  (group.nGroupAddress != 0x010000e0)) { //FIXME all-systems
+		group.state = IDLE_MEMBER;
+		igmp_send_report(group.nGroupAddress);
+	}
+}
+
+static void igmp_timer() {
+	for (auto &group : s_groups) {
+		if (group.nTimer > 0) {
+			group.nTimer--;
+			if (group.nTimer == 0) {
+				igmp_timeout(group);
+			}
+		}
+	}
 }
 
 void __attribute__((cold)) igmp_init() {
@@ -85,7 +153,7 @@ void __attribute__((cold)) igmp_init() {
 	s_multicast_mac[2] = 0x5E;
 
 	// Ethernet
-	memcpy(s_report.ether.src, net::globals::macAddress, ETH_ADDR_LEN);
+	std::memcpy(s_report.ether.src, net::globals::netif_default.hwaddr, ETH_ADDR_LEN);
 	s_report.ether.type = __builtin_bswap16(ETHER_TYPE_IPv4);
 
 	// IPv4
@@ -109,7 +177,7 @@ void __attribute__((cold)) igmp_init() {
 	s_leave.ether.dst[3] = 0x00;
 	s_leave.ether.dst[4] = 0x00;
 	s_leave.ether.dst[5] = 0x02;
-	memcpy(s_leave.ether.src, net::globals::macAddress, ETH_ADDR_LEN);
+	std::memcpy(s_leave.ether.src, net::globals::netif_default.hwaddr, ETH_ADDR_LEN);
 	s_leave.ether.type = __builtin_bswap16(ETHER_TYPE_IPv4);
 
 	// IPv4
@@ -130,14 +198,8 @@ void __attribute__((cold)) igmp_init() {
 	s_leave.igmp.report.igmp.type = IGMP_TYPE_LEAVE;
 	s_leave.igmp.report.igmp.max_resp_time = 0;
 
-	/*
-	 * https://tldp.org/HOWTO/Multicast-HOWTO-2.html
-	 * 224.0.0.1 is the all-hosts group. If you ping that group,
-	 * all multicast capable hosts on the network should answer,
-	 * as every multicast capable host must join that group
-	 * at start-up on all it's multicast capable interfaces.
-	 */
-	_send_report(0x010000e0);
+	nTimerId = Hardware::Get()->SoftwareTimerAdd(IGMP_TMR_INTERVAL, igmp_timer);
+	assert(nTimerId >= 0);
 }
 
 void __attribute__((cold)) igmp_shutdown() {
@@ -154,38 +216,7 @@ void __attribute__((cold)) igmp_shutdown() {
 	DEBUG_EXIT
 }
 
-static void _send_report(const uint32_t nGroupAddress) {
-	DEBUG_ENTRY
-	_pcast32 multicast_ip;
-
-	multicast_ip.u32 = nGroupAddress;
-
-	s_multicast_mac[3] = multicast_ip.u8[1] & 0x7F;
-	s_multicast_mac[4] = multicast_ip.u8[2];
-	s_multicast_mac[5] = multicast_ip.u8[3];
-
-	DEBUG_PRINTF(IPSTR " " MACSTR, IP2STR(nGroupAddress),MAC2STR(s_multicast_mac));
-
-	// Ethernet
-	memcpy(s_report.ether.dst, s_multicast_mac, ETH_ADDR_LEN);
-	// IPv4
-	s_report.ip4.id = s_id;
-	memcpy(s_report.ip4.dst, multicast_ip.u8, IPv4_ADDR_LEN);
-	s_report.ip4.chksum = 0;
-	s_report.ip4.chksum = net_chksum(reinterpret_cast<void *>(&s_report.ip4), 24); //TODO
-	// IGMP
-	memcpy(s_report.igmp.report.igmp.group_address, multicast_ip.u8, IPv4_ADDR_LEN);
-	s_report.igmp.report.igmp.checksum = 0;
-	s_report.igmp.report.igmp.checksum = net_chksum(reinterpret_cast<void *>(&s_report.ip4), IPv4_IGMP_REPORT_HEADERS_SIZE);
-
-	emac_eth_send(reinterpret_cast<void *>(&s_report), IGMP_REPORT_PACKET_SIZE);
-
-	s_id++;
-
-	DEBUG_EXIT
-}
-
-static void _send_leave(const uint32_t nGroupAddress) {
+static void igmp_send_leave(const uint32_t nGroupAddress) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF(IPSTR " " MACSTR, IP2STR(nGroupAddress), MAC2STR(s_multicast_mac));
 
@@ -248,16 +279,11 @@ __attribute__((hot)) void igmp_handle(struct t_igmp *p_igmp) {
 	DEBUG_EXIT
 }
 
-void igmp_timer() {
-	for (auto& group : s_groups) {
-		if ((group.state == DELAYING_MEMBER) && (group.nTimer > 0)) {
-			group.nTimer--;
-
-			if (group.nTimer == 0) {
-				_send_report(group.nGroupAddress);
-				group.state = IDLE_MEMBER;
-			}
-		}
+static void igmp_delaying_member(struct t_group_info &group, const uint32_t maxresp) {
+	if ((group.state == IDLE_MEMBER)
+			|| ((group.state == DELAYING_MEMBER) && ((group.nTimer == 0) || (maxresp < group.nTimer)))) {
+		igmp_start_timer(group, maxresp);
+		group.state = DELAYING_MEMBER;
 	}
 }
 
@@ -283,7 +309,7 @@ void igmp_join(uint32_t nGroupAddress) {
 			s_groups[i].state = DELAYING_MEMBER;
 			s_groups[i].nTimer = 2; // TODO
 
-			_send_report(nGroupAddress);
+			igmp_send_report(nGroupAddress);
 
 			DEBUG_EXIT
 			return;
@@ -303,7 +329,7 @@ void igmp_leave(uint32_t nGroupAddress) {
 
 	for (auto& group : s_groups) {
 		if (group.nGroupAddress == nGroupAddress) {
-			_send_leave(group.nGroupAddress);
+			igmp_send_leave(group.nGroupAddress);
 
 			group.nGroupAddress = 0;
 			group.state = NON_MEMBER;
@@ -321,4 +347,10 @@ void igmp_leave(uint32_t nGroupAddress) {
 	DEBUG_EXIT
 }
 
+void igmp_report_groups() {
+	for (auto& group : s_groups) {
+		igmp_delaying_member(group, IGMP_JOIN_DELAYING_MEMBER_TMR);
+	}
+}
+}  // namespace net
 // <---

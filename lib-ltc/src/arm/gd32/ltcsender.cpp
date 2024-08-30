@@ -69,7 +69,6 @@ static void gpio_config(){
 #if !defined (GD32F4XX)
 	gpio_init(GPIOx, GPIO_MODE_OUT_PP, GPIO_OSPEED_50MHZ, GPIO_PINx);
 #else
-	gpio_af_set(LTC_OUTPUT_GPIOx, GPIO_AF_0, LTC_OUTPUT_GPIO_PINx);
     gpio_mode_set(LTC_OUTPUT_GPIOx, GPIO_MODE_OUTPUT, GPIO_PUPD_PULLDOWN, LTC_OUTPUT_GPIO_PINx);
     gpio_output_options_set(LTC_OUTPUT_GPIOx, GPIO_OTYPE_PP, GPIO_OSPEED_50MHZ, LTC_OUTPUT_GPIO_PINx);
 #endif

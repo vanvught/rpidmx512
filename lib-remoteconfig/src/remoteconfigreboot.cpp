@@ -51,8 +51,6 @@ void RemoteConfig::HandleReboot() {
 	while (ConfigStore::Get()->Flash())
 		;
 
-	Network::Get()->Shutdown();
-
 	Display::Get()->Cls();
 	Display::Get()->TextStatus("Rebooting ...");
 

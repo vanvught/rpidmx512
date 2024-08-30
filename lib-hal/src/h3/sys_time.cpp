@@ -43,5 +43,5 @@ void __attribute__((cold)) sys_time_init() {
 	settimeofday(&tv, nullptr);
 
 	DEBUG_PRINTF("%.4d/%.2d/%.2d %.2d:%.2d:%.2d", 1900 + tmbuf.tm_year, tmbuf.tm_mon, tmbuf.tm_mday, tmbuf.tm_hour, tmbuf.tm_min, tmbuf.tm_sec);
-	DEBUG_PRINTF("%s", asctime(localtime((const time_t* ) &seconds)));
+//	DEBUG_PRINTF("%s", asctime(localtime((const time_t* ) &seconds)));
 }

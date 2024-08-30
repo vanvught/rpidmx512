@@ -44,7 +44,7 @@ public:
 
 	void SetData(const uint32_t nPortIndex, const uint8_t *pDmxData, uint32_t nLength, const bool doUpdate = true) override;
 	void Sync([[maybe_unused]] const uint32_t nPortIndex) override {};
-	void Sync([[maybe_unused]] const bool doForce = false) override {};
+	void Sync() override {};
 
 	bool SetDmxStartAddress(const uint16_t nDmxStartAddress) override {
 		assert((nDmxStartAddress != 0) && (nDmxStartAddress <= lightset::dmx::UNIVERSE_SIZE));

@@ -6,7 +6,7 @@ DEFINES+=ENABLE_MMU
 DEFINES+=DISABLE_RTC 
 DEFINES+=NDEBUG
  
-LIBS=e131 uuid dmxsend dmx ws28xxdmx ws28xx dmxmonitor lightset display
+LIBS=e131 dmxsend dmx ws28xxdmx ws28xx dmxmonitor lightset display
 
 SRCDIR=firmware
 

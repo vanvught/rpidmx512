@@ -35,7 +35,7 @@
 #include "display.h"
 #include "displayudfparams.h"
 
-#include "mdns.h"
+#include "net/apps/mdns.h"
 
 #include "handler.h"
 

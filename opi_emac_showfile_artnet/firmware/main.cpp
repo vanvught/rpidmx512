@@ -30,7 +30,7 @@
 #include "network.h"
 #include "networkconst.h"
 
-#include "mdns.h"
+#include "net/apps/mdns.h"
 
 #include "displayudf.h"
 #include "displayudfparams.h"
@@ -62,8 +62,6 @@ void Hardware::RebootHandler() {
 		while (ConfigStore::Get()->Flash())
 			;
 
-		Network::Get()->Shutdown();
-
 		printf("Rebooting ...\n");
 
 		Display::Get()->Cls();
@@ -83,7 +81,7 @@ int main() {
 	FlashCodeInstall spiFlashInstall;
 
 	fw.Print("Showfile player");
-	nw.Print();
+	
 
 	ShowFile showFile;
 

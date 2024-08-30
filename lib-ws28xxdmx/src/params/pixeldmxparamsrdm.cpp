@@ -23,6 +23,10 @@
  * THE SOFTWARE.
  */
 
+#if defined (DEBUG_PIXELDMX)
+# undef NDEBUG
+#endif
+
 #include <cstdint>
 #include <cassert>
 

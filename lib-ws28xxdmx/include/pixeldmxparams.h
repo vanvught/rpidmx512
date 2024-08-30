@@ -98,7 +98,7 @@ public:
 		Builder(nullptr, pBuffer, nLength, nSize);
 	}
 
-	void Set(PixelDmxConfiguration *pPixelDmxConfiguration);
+	void Set();
 
 	uint16_t GetStartUniversePort(uint32_t nOutputPortIndex, bool& isSet) const {
 		if (nOutputPortIndex < pixeldmxparams::MAX_PORTS) {

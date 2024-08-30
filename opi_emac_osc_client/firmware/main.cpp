@@ -32,7 +32,7 @@
 
 #include "display.h"
 
-#include "mdns.h"
+#include "net/apps/mdns.h"
 
 #include "oscclient.h"
 #include "oscclientparams.h"
@@ -68,7 +68,7 @@ int main() {
 	FlashCodeInstall spiFlashInstall;
 
 	fw.Print("OSC Client");
-	nw.Print();
+	
 
 	OscClientParams params;
 	OscClient client;

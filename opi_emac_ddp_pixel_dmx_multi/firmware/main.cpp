@@ -31,7 +31,7 @@
 #include "network.h"
 #include "networkconst.h"
 
-#include "mdns.h"
+#include "net/apps/mdns.h"
 
 #include "displayudf.h"
 #include "displayudfparams.h"
@@ -52,7 +52,7 @@
 #include "dmxsend.h"
 #include "dmxconfigudp.h"
 
-#include "lightset32with4.h"
+#include "lightsetwith4.h"
 
 #if defined (NODE_RDMNET_LLRP_ONLY)
 # include "rdmdeviceparams.h"
@@ -68,8 +68,6 @@
 
 #include "flashcodeinstall.h"
 #include "configstore.h"
-
-
 
 #include "firmwareversion.h"
 #include "software_version.h"
@@ -91,8 +89,7 @@ int main() {
 	FlashCodeInstall spiFlashInstall;
 
 	fw.Print("DDP Pixel controller 8x 4U with 2x DMX");
-	nw.Print();
-
+	
 	mDns.ServiceRecordAdd(nullptr, mdns::Services::DDP, "type=display");
 
 	// LightSet A - Pixel - 32 Universes
@@ -101,17 +98,17 @@ int main() {
 
 	PixelDmxParams pixelDmxParams;
 	pixelDmxParams.Load();
-	pixelDmxParams.Set(&pixelDmxConfiguration);
+	pixelDmxParams.Set();
 
-	WS28xxDmxMulti pixelDmxMulti(pixelDmxConfiguration);
+	WS28xxDmxMulti pixelDmxMulti;
 
 	WS28xxMulti::Get()->SetJamSTAPLDisplay(new HandlerOled);
 
 	DdpDisplay ddpDisplay;
 
-	const auto nActivePorts = pixelDmxMulti.GetOutputPorts();
+	const auto nActivePorts = pixelDmxConfiguration.GetOutputPorts();
 
-	ddpDisplay.SetCount(pixelDmxMulti.GetGroups(), pixelDmxMulti.GetChannelsPerPixel(), nActivePorts);
+	ddpDisplay.SetCount(pixelDmxConfiguration.GetGroups(), pixelDmxConfiguration.GetLedsPerPixel(), nActivePorts);
 
 	const auto nTestPattern = static_cast<pixelpatterns::Pattern>(pixelDmxParams.GetTestPattern());
 	PixelTestPattern pixelTestPattern(nTestPattern, nActivePorts);
@@ -129,7 +126,7 @@ int main() {
 
 	// LightSet 32with4
 
-	LightSet32with4 lightSet((PixelTestPattern::Get()->GetPattern() != pixelpatterns::Pattern::NONE) ? nullptr : &pixelDmxMulti, &dmxSend);
+	LightSetWith4<32> lightSet((PixelTestPattern::Get()->GetPattern() != pixelpatterns::Pattern::NONE) ? nullptr : &pixelDmxMulti, &dmxSend);
 	lightSet.Print();
 
 	ddpDisplay.SetOutput(&lightSet);
@@ -139,7 +136,7 @@ int main() {
 	display.TextStatus(RDMNetConst::MSG_CONFIG, CONSOLE_YELLOW);
 
 	char aDescription[rdm::personality::DESCRIPTION_MAX_LENGTH + 1];
-	snprintf(aDescription, sizeof(aDescription) - 1, "DDP Display %u-%s:%d DMX 2x", nActivePorts, PixelType::GetType(WS28xxMulti::Get()->GetType()), WS28xxMulti::Get()->GetCount());
+	snprintf(aDescription, sizeof(aDescription) - 1, "DDP Display %u-%s:%d DMX 2x", nActivePorts, pixel::pixel_get_type(pixelDmxConfiguration.GetType()), pixelDmxConfiguration.GetCount());
 
 	char aLabel[RDM_DEVICE_LABEL_MAX_LENGTH + 1];
 	const auto nLength = snprintf(aLabel, sizeof(aLabel) - 1, "Orange Pi Zero Pixel-DMX");
@@ -173,10 +170,10 @@ int main() {
 	display.Show();
 
 	display.Printf(7, "%s:%d G%d %s",
-		PixelType::GetType(pixelDmxConfiguration.GetType()),
+		pixel::pixel_get_type(pixelDmxConfiguration.GetType()),
 		pixelDmxConfiguration.GetCount(),
 		pixelDmxConfiguration.GetGroupingCount(),
-		PixelType::GetMap(pixelDmxConfiguration.GetMap()));
+		pixel::pixel_get_map(pixelDmxConfiguration.GetMap()));
 
 	if (nTestPattern != pixelpatterns::Pattern::NONE) {
 		display.ClearLine(6);

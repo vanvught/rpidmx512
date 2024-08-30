@@ -60,7 +60,7 @@ inline void console_putc([[maybe_unused]] int i) {}
 inline void console_puts([[maybe_unused]] const char *p) {}
 inline void console_write([[maybe_unused]] const char *p, [[maybe_unused]] unsigned int i) {}
 inline void console_status([[maybe_unused]] uint32_t i, [[maybe_unused]] const char *p) {}
-inline void console_error([[maybe_unused]] const char *p) {}
+extern "C" inline void console_error([[maybe_unused]] const char *p) {}
 #else
 #ifdef __cplusplus
 extern "C" {

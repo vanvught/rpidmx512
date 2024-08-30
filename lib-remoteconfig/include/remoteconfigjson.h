@@ -73,6 +73,10 @@ namespace controller {
 uint32_t json_get_polltable(char *pOutBuffer, const uint32_t nOutBufferSize);
 }  // namespace controller
 }  // namespace artnet
+namespace pixel {
+uint32_t json_get_types(char *pOutBuffer, const uint32_t nOutBufferSize);
+uint32_t json_get_status(char *pOutBuffer, const uint32_t nOutBufferSize);
+}  // namespace pixel
 }  // namespace remoteconfig
 
 #endif /* REMOTECONFIGJSON_H_ */

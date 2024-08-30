@@ -2,7 +2,7 @@
  * @file networkdisplay.cpp
  *
  */
-/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2022-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,29 +23,39 @@
  * THE SOFTWARE.
  */
 
-#include "network.h"
+#include <cstdint>
 
 #include "display.h"
 
-namespace network {
+#include "network.h"
+#include "net/protocol/dhcp.h"
+
+namespace net {
+static constexpr auto LINE_IP = 2U;
+
 void display_emac_config() {
-	Display::Get()->ClearEndOfLine();
-	Display::Get()->Printf(3, "Ethernet config");
+	Display::Get()->ClearLine(LINE_IP);
+	Display::Get()->PutString("Ethernet config");
 }
 
 void display_emac_start() {
-	Display::Get()->ClearEndOfLine();
-	Display::Get()->Printf(3, "Ethernet start");
+	Display::Get()->ClearLine(LINE_IP);
+	Display::Get()->PutString("Ethernet start");
 }
 
 void display_emac_status(const bool isLinkUp) {
-	Display::Get()->ClearEndOfLine();
-	Display::Get()->Printf(3, "Ethernet Link %s", isLinkUp ? "UP" : "DOWN");
+	Display::Get()->ClearLine(LINE_IP);
+	Display::Get()->PutString("Ethernet Link ");
+	if (isLinkUp) {
+		Display::Get()->PutString("UP");
+	} else {
+		Display::Get()->PutString("DOWN");
+	}
 }
 
 void display_ip() {
-	Display::Get()->ClearEndOfLine();
-	Display::Get()->Printf(3, IPSTR "/%d %c", IP2STR(Network::Get()->GetIp()), static_cast<int>(Network::Get()->GetNetmaskCIDR()), Network::Get()->GetAddressingMode());
+	Display::Get()->ClearLine(LINE_IP);
+	Display::Get()->Printf(LINE_IP, "" IPSTR "/%d %c", IP2STR(Network::Get()->GetIp()), Network::Get()->GetNetmaskCIDR(), Network::Get()->GetAddressingMode());
 }
 
 void display_netmask() {
@@ -59,24 +69,27 @@ void display_hostname() {
 }
 
 void display_emac_shutdown() {
+	Display::Get()->ClearLine(LINE_IP);
+	Display::Get()->PutString("Ethernet shutdown");
 }
 
-// DHCP Client
-void display_dhcp_status(network::dhcp::ClientStatus nStatus) {
-	switch (nStatus) {
-	case network::dhcp::ClientStatus::IDLE:
+void display_dhcp_status(net::dhcp::State state) {
+	Display::Get()->ClearLine(LINE_IP);
+
+	switch (state) {
+	case net::dhcp::State::STATE_OFF:
 		break;
-	case network::dhcp::ClientStatus::RENEW:
-		Display::Get()->ClearEndOfLine();
-		Display::Get()->Printf(3, "DHCP renewing");
+	case net::dhcp::State::STATE_RENEWING:
+		Display::Get()->PutString("DHCP renewing");
 		break;
-	case network::dhcp::ClientStatus::GOT_IP:
+	case net::dhcp::State::STATE_BOUND:
+		Display::Get()->PutString("Got IP");
 		break;
-	case network::dhcp::ClientStatus::RETRYING:
-		Display::Get()->ClearEndOfLine();
-		Display::Get()->Printf(3, "DHCP retrying");
+	case net::dhcp::State::STATE_REQUESTING:
+		Display::Get()->PutString("DHCP requesting");
 		break;
-	case network::dhcp::ClientStatus::FAILED:
+	case net::dhcp::State::STATE_BACKING_OFF:
+		Display::Get()->PutString("DHCP Error");
 		break;
 	default:
 		break;

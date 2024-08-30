@@ -2,7 +2,7 @@
  * @file net_private.h
  *
  */
-/* Copyright (C) 2023-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2023-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,48 +28,46 @@
 
 #include <cstdint>
 
-#include "net_packets.h"
 #include "net_platform.h"
-#include "net_debug.h"
 
-#include "dhcp_internal.h"
-#include "tftp_internal.h"
-#include "ntp_internal.h"
+#include "net/arp.h"
+#include "net/protocol/icmp.h"
+#include "net/protocol/igmp.h"
+#include "net/protocol/udp.h"
+#include "net/protocol/tcp.h"
 
 #ifndef ALIGNED
 # define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
-extern "C" int console_error(const char *);
+namespace net::arp {
+enum class EthSend {
+	IS_NORMAL
+#if defined CONFIG_ENET_ENABLE_PTP
+	, IS_TIMESTAMP
+#endif
+};
+} // namespace net::arp
 
-void emac_eth_send(void *, int);
+extern "C" void console_error(const char *);
+
+void emac_eth_send(void *, uint32_t);
+#if defined CONFIG_ENET_ENABLE_PTP
+void emac_eth_send_timestamp(void *, uint32_t);
+#endif
 int emac_eth_recv(uint8_t **);
-void emac_free_pkt(void);
+void emac_free_pkt();
 
+namespace net {
 void net_handle();
 
 uint16_t net_chksum(const void *, uint32_t);
 void net_timers_run();
 
-void arp_init();
-void arp_handle(struct t_arp *);
-bool arp_do_probe();
-void arp_cache_init();
-void arp_send_request(uint32_t);
-void arp_send_probe();
-void arp_send_announcement();
-void arp_cache_update(const uint8_t *, uint32_t);
-uint32_t arp_cache_lookup(uint32_t, uint8_t *);
-
 void ip_init();
 void ip_set_ip();
 void ip_shutdown();
 void ip_handle(struct t_ip4 *);
-
-int dhcp_client(const char *);
-void dhcp_client_release();
-
-bool rfc3927();
 
 void udp_init();
 void udp_set_ip();
@@ -80,7 +78,6 @@ void igmp_init();
 void igmp_set_ip();
 void igmp_handle(struct t_igmp *);
 void igmp_shutdown();
-void igmp_timer();
 
 void icmp_handle(struct t_icmp *);
 void icmp_shutdown();
@@ -89,5 +86,6 @@ void tcp_init();
 void tcp_run();
 void tcp_handle(struct t_tcp *);
 void tcp_shutdown();
+}  // namespace net
 
 #endif /* NET_PRIVATE_H_ */

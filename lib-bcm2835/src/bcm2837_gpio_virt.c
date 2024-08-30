@@ -91,7 +91,7 @@ static uint32_t firmware_property_set(void) {
 	vc_msg->tag.tag_id = RPI_FIRMWARE_FRAMEBUFFER_SET_GPIO_VIRTBUF;
 	vc_msg->tag.buffer_size = 8;
 	vc_msg->tag.data_size = 4;
-	vc_msg->tag.value = address + 4096; // FIXME
+	vc_msg->tag.value = address + 4096;
 	vc_msg->end_tag = 0;
 
 	if (bcm2835_mailbox_write_read(BCM2835_MAILBOX_PROP_CHANNEL, address) != address) {

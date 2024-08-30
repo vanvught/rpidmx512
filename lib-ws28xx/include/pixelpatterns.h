@@ -2,7 +2,7 @@
  * @file pixelpatterns.h
  *
  */
-/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -114,17 +114,35 @@ private:
 		const auto nGreen = Green(nColour);
 		const auto nBlue = Blue(nColour);
 #if defined (PIXELPATTERNS_MULTI)
-		if (s_pOutput->GetType() != pixel::Type::SK6812W) {
-			s_pOutput->SetPixel(nPortIndex, nPixelIndex, nRed, nGreen, nBlue);
-		} else {
+		switch (PixelConfiguration::Get().GetType()) {
+		case pixel::Type::WS2801:
+			s_pOutput->SetColourWS2801(nPortIndex, nPixelIndex, nRed, nGreen, nBlue);
+			break;
+		case pixel::Type::APA102:
+		case pixel::Type::SK9822:
+			s_pOutput->SetPixel4Bytes(nPortIndex, nPixelIndex, 0xFF, nRed, nGreen, nBlue);
+			break;
+		case pixel::Type::P9813: {
+			const auto nFlag = static_cast<uint8_t>(0xC0 | ((~nBlue & 0xC0) >> 2) | ((~nRed & 0xC0) >> 4) | ((~nRed & 0xC0) >> 6));
+			s_pOutput->SetPixel4Bytes(nPortIndex, nPixelIndex, nFlag, nBlue, nGreen, nRed);
+		}
+			break;
+		case pixel::Type::SK6812W:
 			if ((nRed == nGreen) && (nGreen == nBlue)) {
-				s_pOutput->SetPixel(nPortIndex, nPixelIndex, 0x00, 0x00, 0x00, nRed);
+				s_pOutput->SetColourRTZ(nPortIndex, nPixelIndex, 0x00, 0x00, 0x00, nRed);
 			} else {
-				s_pOutput->SetPixel(nPortIndex, nPixelIndex, nRed, nGreen, nBlue, 0x00);
+				s_pOutput->SetColourRTZ(nPortIndex, nPixelIndex, nRed, nGreen, nBlue, 0x00);
 			}
+			break;
+		default:
+			s_pOutput->SetColourRTZ(nPortIndex, nPixelIndex, nRed, nGreen, nBlue);
+			break;
 		}
 #else
-		if (s_pOutput->GetType() != pixel::Type::SK6812W) {
+		auto& pixelConfiguration = PixelConfiguration::Get();
+		const auto type = pixelConfiguration.GetType();
+
+		if (type != pixel::Type::SK6812W) {
 			s_pOutput->SetPixel(nPixelIndex, nRed, nGreen, nBlue);
 		} else {
 			if ((nRed == nGreen) && (nGreen == nBlue)) {
@@ -137,7 +155,7 @@ private:
 	}
 
 	void ColourSet(const uint32_t nPortIndex, const uint32_t nColour) {
-		for (uint32_t i = 0; i < s_nCount; i++) {
+		for (uint32_t i = 0; i < PixelConfiguration::Get().GetCount(); i++) {
 			SetPixelColour(nPortIndex, i, nColour);
 		}
 	}
@@ -169,7 +187,6 @@ private:
 	static WS28xx *s_pOutput;
 #endif
 	static uint32_t s_nActivePorts;
-	static uint32_t s_nCount;
 
 	struct PortConfig {
 		uint32_t nLastUpdate;

@@ -199,6 +199,14 @@ struct PortCommand {
 	static constexpr uint8_t RDM_DISABLE3 = 0xd3;	///< Disable RDM on output port 3
 };
 
+struct TodControlCommand {
+	static constexpr uint8_t ATC_NONE = 0x00;	///< No action.
+	static constexpr uint8_t ATC_FLUSH = 0x01;	///< The port flushes its TOD and instigates full discovery.
+	static constexpr uint8_t ATC_END = 0x02;	///< The port ends current discovery but does not flush ToD.
+	static constexpr uint8_t ATC_INCON = 0x03;	///< The port enables incremental discovery.
+	static constexpr uint8_t ATC_INCOFF = 0x04;	///< The port disables incremental discovery.
+};
+
 struct Program {
 	static constexpr uint8_t NO_CHANGE = 0x7F;
 	static constexpr uint8_t DEFAULTS = 0x00;
@@ -239,16 +247,19 @@ struct Status2 {
 };
 
 struct Status3 {
-	static constexpr uint8_t NETWORKLOSS_MASK = (3U << 6);		///< bit 76
-	static constexpr uint8_t NETWORKLOSS_LAST_STATE = (0 << 6);	///< bit 76 = 00 If network data is lost, it will hold last state
-	static constexpr uint8_t NETWORKLOSS_OFF_STATE = (1U << 6);	///< bit 76 = 01 If network data is lost, it will set all outputs to off state
-	static constexpr uint8_t NETWORKLOSS_ON_STATE = (2U << 6);	///< bit 76 = 10 If network data is lost, it will set all outputs to full on
-	static constexpr uint8_t NETWORKLOSS_PLAYBACK = (3U << 6);	///< bit 76 = 11 If network data is lost, it will playback the fail-over scene
-	static constexpr uint8_t FAILSAFE_NO_CONTROL = (0 << 5);	///< bit 5 = 0 Node is not able to control failsafe mode by ArtCommand
-	static constexpr uint8_t FAILSAFE_CONTROL = (1U << 5);		///< bit 5 = 1 Node is able to control failsafe mode by ArtCommand
-	static constexpr uint8_t SUPPORTS_LLRP = (1U << 4);			///< bit 4 = 1 Node supports LLRP (Low Level Recovery Protocol
-	static constexpr uint8_t OUTPUT_NO_SWITCH = (0 << 3);  		///< bit 3 = 0 Outputs cannot be switched to an input
-	static constexpr uint8_t OUTPUT_SWITCH = (1U << 3);  		///< bit 3 = 1 Outputs can be switched to an input
+	static constexpr uint8_t NETWORKLOSS_MASK = (3U << 6);				///< bit 76
+	static constexpr uint8_t NETWORKLOSS_LAST_STATE = (0 << 6);			///< bit 76 = 00 If network data is lost, it will hold last state
+	static constexpr uint8_t NETWORKLOSS_OFF_STATE = (1U << 6);			///< bit 76 = 01 If network data is lost, it will set all outputs to off state
+	static constexpr uint8_t NETWORKLOSS_ON_STATE = (2U << 6);			///< bit 76 = 10 If network data is lost, it will set all outputs to full on
+	static constexpr uint8_t NETWORKLOSS_PLAYBACK = (3U << 6);			///< bit 76 = 11 If network data is lost, it will playback the fail-over scene
+	static constexpr uint8_t FAILSAFE_NO_CONTROL = (0 << 5);			///< bit 5 = 0 Node is not able to control failsafe mode by ArtCommand
+	static constexpr uint8_t FAILSAFE_CONTROL = (1U << 5);				///< bit 5 = 1 Node is able to control failsafe mode by ArtCommand
+	static constexpr uint8_t SUPPORTS_LLRP = (1U << 4);					///< bit 4 = 1 Node supports LLRP (Low Level Recovery Protocol
+	static constexpr uint8_t OUTPUT_NO_SWITCH = (0 << 3);  				///< bit 3 = 0 Outputs cannot be switched to an input
+	static constexpr uint8_t OUTPUT_SWITCH = (1U << 3);  				///< bit 3 = 1 Outputs can be switched to an input
+	static constexpr uint8_t SUPPORTS_RDMNET = (1U << 2);				///< bit 2 = 1 Node supports RDMnet
+	static constexpr uint8_t SUPPORTS_BACKGROUNDQUEUE = (1U << 1);		///< bit 1 = 1 BackgroundQueue is supported
+	static constexpr uint8_t SUPPORTS_BACKGROUNDDISCOVERY = (1U << 0);	///< bit 0 = 1 Programmable background discovery is supported.
 };
 
 struct Flags {
@@ -281,6 +292,10 @@ struct GoodOutputB {
 	static constexpr uint8_t RDM_ENABLED = (0 << 7);			///< bit 7 = 0 RDM is enabled.
 	static constexpr uint8_t STYLE_CONSTANT = (1U << 6);		///< bit 6 = 1 Output style is continuous.
 	static constexpr uint8_t STYLE_DELTA = (0 << 6);			///< bit 6 = 0 Output style is delta.
+	static constexpr uint8_t DISCOVERY_NOT_RUNNING = (1U << 5);	///< bit 5 = 1 Discovery is currently not running.
+	static constexpr uint8_t DISCOVERY_IS_RUNNING = (0 << 5);	///< bit 5 = 0 Discovery is currently running.
+	static constexpr uint8_t DISCOVERY_DISABLED = (1U << 4);	///< bit 4 = 1 Background discovery is disabled.
+	static constexpr uint8_t DISCOVERY_ENABLED = (0 << 4);		///< bit 4 = 0 Background Discovery is enabled.
 };
 
 struct GoodInput {
@@ -401,7 +416,15 @@ struct ArtPollReply {
 	uint8_t GoodOutputB[artnet::PORTS];	///< This array defines output status of the node.
 	uint8_t Status3;					///< General Status register
 	uint8_t DefaultUidResponder[6];		///< RDMnet & LLRP UID
-	uint8_t Filler[15];					///< Transmit as zero. For future expansion.
+	uint8_t UserHi;			///< Available for user specific data
+	uint8_t UserLo;			///< Available for user specific data
+	uint8_t RefreshRateHi;	///< Hi byte of RefreshRate
+	uint8_t RefreshRateLo;	///< Lo Byte of RefreshRate.
+	 	 	 	 	 	 	///< RefreshRate allows the device to specify the maximum refresh rate, expressed in Hz, at which it can process ArtDmx.
+	 	 	 	 	 	 	///< This is designed to allow refresh rates above DMX512 rates, for gateways that implement other protocols such as SPI.
+	 	 	 	 	 	 	///< A value of 0 to 44 represents the maximum DMX512 rate of 44Hz.
+	uint8_t BackgroundQueuePolicy; ///< The BackgroundQueuePolicy defines the method by with the node retrieves STATUS_MESSAGE and QUEUED_MESSAGE pids from the connected RDM devices.
+	uint8_t Filler[10];	///< Transmit as zero. For future expansion.
 }PACKED;
 
 /**

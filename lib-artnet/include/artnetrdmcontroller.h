@@ -61,6 +61,19 @@ public:
 		DEBUG_EXIT
 	}
 
+	void Stop(const uint32_t nPortIndex) {
+		DEBUG_ENTRY
+		assert(nPortIndex < artnetnode::MAX_PORTS);
+		bool bIsIncremental;
+		uint32_t _nPortIndex;
+		if (IsRunning(_nPortIndex, bIsIncremental)) {
+			if (_nPortIndex == nPortIndex) {
+				RDMDiscovery::Stop();
+			}
+		}
+		DEBUG_EXIT
+	}
+
 	uint32_t GetUidCount(const uint32_t nPortIndex) {
 		assert(nPortIndex < artnetnode::MAX_PORTS);
 		return m_pRDMTod[nPortIndex].GetUidCount();

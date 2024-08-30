@@ -50,7 +50,7 @@ StoreDevice::StoreDevice() : AT24C32(storedevice::I2C_INDEX) {
 	if (!m_IsDetected) {
 		printf("StoreDevice: No AT24C32 at %2x", AT24C32::GetAddress());
 	} else {
-		printf("StoreDevice: Detected AT24C32 with total %u bytes [%u kB]\n", GetSize(), GetSize() / 1024U);
+		printf("StoreDevice: AT24C32 total %u bytes [%u kB]\n", GetSize(), GetSize() / 1024U);
 	}
 
 	DEBUG_EXIT

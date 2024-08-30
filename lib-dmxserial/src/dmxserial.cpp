@@ -2,7 +2,7 @@
  * @file dmxserial.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -132,10 +132,8 @@ void DmxSerial::Sync([[maybe_unused]] uint32_t const nPortIndex) {
 	// No actions here
 }
 
-void DmxSerial::Sync(const bool doForce) {
-	if (__builtin_expect((!doForce), 1)) {
-		Update(m_SyncData.data, m_SyncData.nLength);
-	}
+void DmxSerial::Sync() {
+	Update(m_SyncData.data, m_SyncData.nLength);
 }
 
 void DmxSerial::Print() {

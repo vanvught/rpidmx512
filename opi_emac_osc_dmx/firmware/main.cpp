@@ -32,7 +32,7 @@
 
 #include "display.h"
 
-#include "mdns.h"
+#include "net/apps/mdns.h"
 
 #include "oscserver.h"
 #include "oscserverparams.h"
@@ -69,7 +69,7 @@ int main() {
 	FlashCodeInstall spiFlashInstall;
 
 	fw.Print("OSC Server DMX");
-	nw.Print();
+	
 
 	OSCServerParams params;
 	OscServer server;

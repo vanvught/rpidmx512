@@ -30,7 +30,7 @@
 #include "network.h"
 #if !defined(NO_EMAC)
 # include "networkconst.h"
-# include "mdns.h"
+# include "net/apps/mdns.h"
 #endif
 
 #include "displayudf.h"
@@ -89,16 +89,16 @@ int main() {
 
 	fw.Print("RDM Responder");
 #if !defined(NO_EMAC)
-	nw.Print();
+	
 #endif
 
 	PixelDmxConfiguration pixelDmxConfiguration;
 
 	PixelDmxParams pixelDmxParams;
 	pixelDmxParams.Load();
-	pixelDmxParams.Set(&pixelDmxConfiguration);
+	pixelDmxParams.Set();
 
-	WS28xxDmx pixelDmx(&pixelDmxConfiguration);
+	WS28xxDmx pixelDmx;
 
 	const auto nTestPattern = static_cast<pixelpatterns::Pattern>(pixelDmxParams.GetTestPattern());
 	PixelTestPattern pixelTestPattern(nTestPattern, 1);
@@ -107,10 +107,10 @@ int main() {
 
 	char aDescription[rdm::personality::DESCRIPTION_MAX_LENGTH];
 	snprintf(aDescription, sizeof(aDescription) - 1U, "%s:%u G%u [%s]",
-			PixelType::GetType(pixelDmxConfiguration.GetType()),
+			pixel::pixel_get_type(pixelDmxConfiguration.GetType()),
 			pixelDmxConfiguration.GetCount(),
 			pixelDmxConfiguration.GetGroupingCount(),
-			PixelType::GetMap(pixelDmxConfiguration.GetMap()));
+			pixel::pixel_get_map(pixelDmxConfiguration.GetMap()));
 
 	RDMPersonality *personalities[2] = {
 			new RDMPersonality(aDescription, &pixelDmx),
@@ -178,12 +178,11 @@ int main() {
 	displayUdfParams.Set(&display);
 
 	display.Show();
-
 	display.Printf(7, "%s:%d G%d %s",
-			PixelType::GetType(pixelDmxConfiguration.GetType()),
+			pixel::pixel_get_type(pixelDmxConfiguration.GetType()),
 			pixelDmxConfiguration.GetCount(),
 			pixelDmxConfiguration.GetGroupingCount(),
-			PixelType::GetMap(pixelDmxConfiguration.GetMap()));
+			pixel::pixel_get_map(pixelDmxConfiguration.GetMap()));
 
 	if (isConfigMode) {
 		display.ClearLine(3);

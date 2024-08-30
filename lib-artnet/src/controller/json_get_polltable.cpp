@@ -23,11 +23,6 @@
  * THE SOFTWARE.
  */
 
-/**
- * TODO
- * FIXME
- */
-
 #include <cstdint>
 #include <cstdio>
 #include <cassert>

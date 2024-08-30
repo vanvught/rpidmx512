@@ -202,7 +202,7 @@ WS28xxDisplay7Segment::WS28xxDisplay7Segment(Type tLedType, Map tRGBMapping) {
 
 	pixelConfiguration.SetCount(WS28xxDisplay7SegmentConfig::LED_COUNT);
 
-	m_pWS28xx = new WS28xx(&pixelConfiguration);
+	m_pWS28xx = new WS28xx;
 	assert(m_pWS28xx != nullptr);
 	m_pWS28xx->Blackout();
 

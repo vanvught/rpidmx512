@@ -2,7 +2,7 @@
  * @file pixeltype.cpp
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,20 +23,20 @@
  * THE SOFTWARE.
  */
 
-#if !defined(__clang__)	// Needed for compiling on MacOS
+#if defined(__GNUC__) && !defined(__clang__) ///< Needed for macOS
 # pragma GCC push_options
 # pragma GCC optimize ("Os")
 #endif
 
 #include <cstdint>
 #include <cstring>
+#include <cstdio>
 #include <cassert>
 
 #include "pixeltype.h"
 
-using namespace pixel;
-
-const char PixelType::TYPES[static_cast<uint32_t>(Type::UNDEFINED)][TYPES_MAX_NAME_LENGTH] =
+namespace pixel {
+const char TYPES[static_cast<uint32_t>(pixel::Type::UNDEFINED)][pixel::TYPES_MAX_NAME_LENGTH] =
 		{ "WS2801\0", 																// 1
 		  "WS2811\0", "WS2812\0", "WS2812B", "WS2813\0", "WS2815\0",				// 5
 		  "SK6812\0", "SK6812W",													// 2
@@ -46,130 +46,68 @@ const char PixelType::TYPES[static_cast<uint32_t>(Type::UNDEFINED)][TYPES_MAX_NA
 		  "P9813",																	// 1
 		};																			// = 14
 
-const char PixelType::MAPS[static_cast<uint32_t>(Map::UNDEFINED)][4] = { "RGB", "RBG", "GRB", "GBR", "BRG", "BGR"};
+const char MAPS[static_cast<uint32_t>(pixel::Map::UNDEFINED)][4] = { "RGB", "RBG", "GRB", "GBR", "BRG", "BGR"};
 
-const char *PixelType::GetType(Type type) {
-	if (type < Type::UNDEFINED) {
+const char *pixel_get_type(pixel::Type type) {
+	if (type < pixel::Type::UNDEFINED) {
 		return TYPES[static_cast<uint32_t>(type)];
 	}
 
 	return "Unknown";
 }
 
-Type PixelType::GetType(const char *pString) {
+pixel::Type pixel_get_type(const char *pString) {
 	assert(pString != nullptr);
+	uint32_t index = 0;
 
-	for (uint32_t i = 0; i < static_cast<uint32_t>(Type::UNDEFINED); i++) {
-		if (strcasecmp(pString, TYPES[i]) == 0) {
-			return static_cast<Type>(i);
+	for (const char (&type)[pixel::TYPES_MAX_NAME_LENGTH] : TYPES) {
+		if (strcasecmp(pString, type) == 0) {
+			return static_cast<pixel::Type>(index);
 		}
+		++index;
 	}
 
-	return Type::UNDEFINED;
+	return pixel::Type::UNDEFINED;
 }
 
-Map PixelType::GetMap(const char *pString) {
+pixel::Map pixel_get_map(const char *pString) {
 	assert(pString != nullptr);
+	uint32_t index = 0;
 
-	for (uint32_t nIndex = 0; nIndex < static_cast<uint32_t>(Map::UNDEFINED); nIndex++) {
-		if (strncasecmp(MAPS[nIndex], pString, 3) == 0) {
-			return static_cast<Map>(nIndex);
+	for (const char (&map)[4] : MAPS) {
+		if (strncasecmp(map, pString, 3) == 0) {
+			return static_cast<pixel::Map>(index);
 		}
+		++index;
 	}
 
-	return Map::UNDEFINED;
+	return pixel::Map::UNDEFINED;
 }
 
-const char *PixelType::GetMap(Map map) {
-	if (map < Map::UNDEFINED) {
+const char *pixel_get_map(pixel::Map map) {
+	if (map < pixel::Map::UNDEFINED) {
 		return MAPS[static_cast<uint32_t>(map)];
 	}
 
 	return "Undefined";
 }
+}  // namespace pixel
 
-Map PixelType::GetMap(Type type) {
-	if ((type == Type::WS2811) || (type == Type::UCS2903)) {
-		return Map::RGB;
+namespace remoteconfig::pixel {
+uint32_t json_get_types(char *pOutBuffer, const uint32_t nOutBufferSize) {
+	const auto nBufferSize = nOutBufferSize - 2U;
+	auto nLength = static_cast<uint32_t>(snprintf(pOutBuffer, nBufferSize, "{\"types\":[" ));
+
+	for (const char (&type)[::pixel::TYPES_MAX_NAME_LENGTH] : ::pixel::TYPES) {
+		nLength += static_cast<uint32_t>(snprintf(&pOutBuffer[nLength], nBufferSize - nLength, "\"%s\",", type));
 	}
 
-	if (type == Type::UCS1903) {
-		return Map::BRG;
-	}
+	nLength--;
 
-	if (type == Type::CS8812) {
-		return Map::BGR;
-	}
+	pOutBuffer[nLength++] = ']';
+	pOutBuffer[nLength++] = '}';
 
-	return Map::GRB;
+	assert(nLength <= nOutBufferSize);
+	return nLength;
 }
-
-static constexpr auto F_INTERVAL = 0.15625f;
-
-float PixelType::ConvertTxH(uint8_t nCode) {
-	switch (nCode) {
-	case 0x80:
-		return F_INTERVAL * 1;
-		break;
-	case 0xC0:
-		return F_INTERVAL * 2;
-		break;
-	case 0xE0:
-		return F_INTERVAL * 3;
-		break;
-	case 0xF0:
-		return F_INTERVAL * 4;
-		break;
-	case 0xF8:
-		return F_INTERVAL * 5;
-		break;
-	case 0xFC:
-		return F_INTERVAL * 6;
-		break;
-	case 0xFE:
-		return F_INTERVAL * 7;
-		break;
-	default:
-		return 0;
-		break;
-	}
-
-	assert(0);
-	__builtin_unreachable();
-}
-
-uint8_t PixelType::ConvertTxH(float fTxH) {
-	if (fTxH < 0.5f * F_INTERVAL) {
-		return 0x00;
-	}
-
-	if (fTxH < 1.5f * F_INTERVAL) {
-		return 0x80;
-	}
-
-	if (fTxH < 2.5f * F_INTERVAL) {
-		return 0xC0;
-	}
-
-	if (fTxH < 3.5f * F_INTERVAL) {
-		return 0xE0;
-	}
-
-	if (fTxH < 4.5f * F_INTERVAL) {
-		return 0xF0;
-	}
-
-	if (fTxH < 5.5f * F_INTERVAL) {
-		return 0xF8;
-	}
-
-	if (fTxH < 6.5f * F_INTERVAL) {
-		return 0xFC;
-	}
-
-	if (fTxH < 7.5f * F_INTERVAL) {
-		return 0xFE;
-	}
-
-	return 0x00;
-}
+}  // namespace remoteconfig::pixel

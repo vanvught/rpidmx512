@@ -131,7 +131,7 @@ void LLRPDevice::HandleRdmCommand() {
 	}
 
 	uint8_t DestinationCid[16];
-	memcpy(DestinationCid, pRDMCommand->Common.RootLayerPDU.SenderCid, 16); // TODO Optimize / cleanup
+	memcpy(DestinationCid, pRDMCommand->Common.RootLayerPDU.SenderCid, 16);
 
 	const auto nMessageLength = static_cast<uint8_t>(pReply[2] + 1);	// RDM Command length without SC
 
@@ -148,7 +148,7 @@ void LLRPDevice::HandleRdmCommand() {
 
 	const auto nLength = sizeof(struct TRootLayerPreAmble) + RDM_ROOT_LAYER_LENGTH(nMessageLength);
 
-	Network::Get()->SendTo(s_nHandleLLRP, pRDMCommand, static_cast<uint16_t>(nLength) , llrp::device::IPV4_LLRP_RESPONSE, llrp::device::LLRP_PORT);
+	Network::Get()->SendTo(s_nHandleLLRP, pRDMCommand, nLength , llrp::device::IPV4_LLRP_RESPONSE, llrp::device::LLRP_PORT);
 
 #ifdef SHOW_RDM_MESSAGE
 	rdm::message_print(pReply);

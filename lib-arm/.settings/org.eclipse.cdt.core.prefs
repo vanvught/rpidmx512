@@ -1,3 +1,8 @@
+doxygen/doxygen_new_line_after_brief=true
+doxygen/doxygen_use_brief_tag=false
+doxygen/doxygen_use_javadoc_tags=true
+doxygen/doxygen_use_pre_tag=false
+doxygen/doxygen_use_structural_commands=false
 eclipse.preferences.version=1
 environment/project/cdt.managedbuild.toolchain.gnu.cross.base.1544501101.820928665/PATH/delimiter=\:
 environment/project/cdt.managedbuild.toolchain.gnu.cross.base.1544501101.820928665/PATH/operation=replace

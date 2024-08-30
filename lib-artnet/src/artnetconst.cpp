@@ -2,10 +2,7 @@
  * @file artnetconst.cpp
  *
  */
-/**
- * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
- */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +28,7 @@
 #include "artnetconst.h"
 #include "artnet.h"
 
-const uint8_t ArtNetConst::VERSION[] = { 1, 59 };
+const uint8_t ArtNetConst::VERSION[] = { 1, 60 };
 
 const uint8_t ArtNetConst::ESTA_ID[artnet::ESTA_SIZE] = { 0x50, 0x00 };	///< https://tsp.esta.org/tsp/working_groups/CP/mfctrIDs.php
 const uint8_t ArtNetConst::OEM_ID[] = { 0xff, 0xff };					///< Waiting OEM from Artistic Licence Holdings Ltd.

@@ -113,7 +113,7 @@ ArtNetNode::ArtNetNode() {
 		memset(&m_OutputPort[nPortIndex], 0, sizeof(struct artnetnode::OutputPort));
 		m_OutputPort[nPortIndex].SourceA.nPhysical = 0x100;
 		m_OutputPort[nPortIndex].SourceB.nPhysical = 0x100;
-		m_OutputPort[nPortIndex].GoodOutputB = artnet::GoodOutputB::RDM_DISABLED;
+		m_OutputPort[nPortIndex].GoodOutputB = artnet::GoodOutputB::RDM_DISABLED | artnet::GoodOutputB::DISCOVERY_NOT_RUNNING;
 		memset(&m_InputPort[nPortIndex], 0, sizeof(struct artnetnode::InputPort));
 		m_InputPort[nPortIndex].nDestinationIp = Network::Get()->GetBroadcastIp();
 	}
@@ -187,7 +187,7 @@ void ArtNetNode::Start() {
 	/*
 	 * Status 3
 	 */
-	m_ArtPollReply.Status3 = artnet::Status3::NETWORKLOSS_LAST_STATE | artnet::Status3::FAILSAFE_CONTROL;
+	m_ArtPollReply.Status3 = artnet::Status3::NETWORKLOSS_LAST_STATE | artnet::Status3::FAILSAFE_CONTROL | artnet::Status3::SUPPORTS_BACKGROUNDDISCOVERY;
 #if defined (ARTNET_HAVE_DMXIN)
 	m_ArtPollReply.Status3 |= artnet::Status3::OUTPUT_SWITCH;
 #endif
@@ -356,20 +356,6 @@ void ArtNetNode::SetOutputStyle(const uint32_t nPortIndex, lightset::OutputStyle
 		m_OutputPort[nPortIndex].GoodOutputB &= static_cast<uint8_t>(~artnet::GoodOutputB::STYLE_CONSTANT);
 	}
 
-#if defined (OUTPUT_DMX_SEND) || defined (OUTPUT_DMX_SEND_MULTI)
-	/**
-	 * FIXME I do not like this hack. It should be handled in dmx.cpp
-	 */
-	if ((m_Node.Port[nPortIndex].direction == lightset::PortDir::OUTPUT)
-			&& (outputStyle == lightset::OutputStyle::CONSTANT)
-			&& (m_pLightSet != nullptr)) {
-		if (m_OutputPort[nPortIndex].IsTransmitting) {
-			m_OutputPort[nPortIndex].IsTransmitting = false;
-			m_pLightSet->Stop(nPortIndex);
-		}
-	}
-#endif
-
 	m_State.IsSynchronousMode = false;
 
 	if (m_State.status == artnet::Status::ON) {
@@ -459,7 +445,7 @@ static artnet::OpCodes get_op_code(const uint32_t nBytesReceived, const uint8_t 
 	return artnet::OpCodes::OP_NOT_DEFINED;
 }
 
-void ArtNetNode::Process(const uint16_t nBytesReceived) {
+void ArtNetNode::Process(const uint32_t nBytesReceived) {
 	if (__builtin_expect((nBytesReceived == 0), 1)) {
 		const auto nDeltaMillis = m_nCurrentPacketMillis - m_nPreviousPacketMillis;
 

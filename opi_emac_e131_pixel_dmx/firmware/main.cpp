@@ -24,13 +24,12 @@
  */
 
 #include <cstdint>
-#include <cassert>
 
 #include "hardware.h"
 #include "network.h"
 #include "networkconst.h"
 
-#include "mdns.h"
+#include "net/apps/mdns.h"
 
 #include "displayudf.h"
 #include "displayudfparams.h"
@@ -50,7 +49,7 @@
 #include "dmxsend.h"
 #include "dmxconfigudp.h"
 
-#include "lightset4with4.h"
+#include "lightsetwith4.h"
 
 #if defined (NODE_RDMNET_LLRP_ONLY)
 # include "rdmdeviceparams.h"
@@ -99,10 +98,7 @@ int main() {
 	FlashCodeInstall spiFlashInstall;
 
 	fw.Print("sACN E1.31 Pixel controller {1x 4 Universes} / DMX");
-	nw.Print();
-
-	display.TextStatus(E131MsgConst::PARAMS, CONSOLE_YELLOW);
-
+	
 	E131Bridge bridge;
 
 	E131Params e131params;
@@ -115,15 +111,15 @@ int main() {
 
 	PixelDmxParams pixelDmxParams;
 	pixelDmxParams.Load();
-	pixelDmxParams.Set(&pixelDmxConfiguration);
+	pixelDmxParams.Set();
 
-	WS28xxDmx pixelDmx(&pixelDmxConfiguration);
+	WS28xxDmx pixelDmx;
 
 	auto isPixelUniverseSet = false;
 	const auto nStartPixelUniverse = pixelDmxParams.GetStartUniversePort(0, isPixelUniverseSet);
 
 	if (isPixelUniverseSet) {
-		const auto nUniverses = pixelDmx.GetUniverses();
+		const auto nUniverses = pixelDmxConfiguration.GetUniverses();
 
 		for (uint32_t nPortIndex = 0; nPortIndex < nUniverses; nPortIndex++) {
 			bridge.SetUniverse(nPortIndex, lightset::PortDir::OUTPUT, static_cast<uint16_t>(nStartPixelUniverse + nPortIndex));
@@ -163,7 +159,7 @@ int main() {
 
 	// LightSet 4with4
 
-	LightSet4with4 lightSet((PixelTestPattern::Get()->GetPattern() != pixelpatterns::Pattern::NONE) ? nullptr : &pixelDmx, isDmxUniverseSet ? &dmxSend : nullptr);
+	LightSetWith4<4> lightSet((PixelTestPattern::Get()->GetPattern() != pixelpatterns::Pattern::NONE) ? nullptr : &pixelDmx, isDmxUniverseSet ? &dmxSend : nullptr);
 	lightSet.Print();
 
 	bridge.SetOutput(&lightSet);
@@ -173,7 +169,7 @@ int main() {
 	display.TextStatus(RDMNetConst::MSG_CONFIG, CONSOLE_YELLOW);
 
 	char aDescription[rdm::personality::DESCRIPTION_MAX_LENGTH + 1];
-	snprintf(aDescription, sizeof(aDescription) - 1, "sACN Pixel %d-%s:%d DMX %d", isPixelUniverseSet, PixelType::GetType(WS28xx::Get()->GetType()), WS28xx::Get()->GetCount(), isDmxUniverseSet);
+	snprintf(aDescription, sizeof(aDescription) - 1, "sACN Pixel %d-%s:%d DMX %d", isPixelUniverseSet, pixel::pixel_get_type(pixelDmxConfiguration.GetType()), pixelDmxConfiguration.GetCount(), isDmxUniverseSet);
 
 	char aLabel[RDM_DEVICE_LABEL_MAX_LENGTH + 1];
 	const auto nLength = snprintf(aLabel, sizeof(aLabel) - 1, "Orange Pi Zero Pixel-DMX");
@@ -222,10 +218,10 @@ int main() {
 	display.Show();
 
 	display.Printf(7, "%s:%d G%d %s",
-		PixelType::GetType(pixelDmxConfiguration.GetType()),
+		pixel::pixel_get_type(pixelDmxConfiguration.GetType()),
 		pixelDmxConfiguration.GetCount(),
 		pixelDmxConfiguration.GetGroupingCount(),
-		PixelType::GetMap(pixelDmxConfiguration.GetMap()));
+		pixel::pixel_get_map(pixelDmxConfiguration.GetMap()));
 
 	if (nTestPattern != pixelpatterns::Pattern::NONE) {
 		display.ClearLine(6);

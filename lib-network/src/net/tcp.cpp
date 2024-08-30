@@ -2,7 +2,7 @@
  * @file tcp.cpp
  *
  */
-/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,10 @@
  * LISTEN -> ESTABLISHED -> CLOSE_WAIT -> LAST_ACK -> CLOSED:LISTEN
  */
 
+#if defined (DEBUG_NET_TCP)
+# undef NDEBUG
+#endif
+
 #pragma GCC diagnostic push
 #if (__GNUC__ < 10)
 # pragma GCC diagnostic ignored "-Wconversion"
@@ -43,27 +47,24 @@
 #include <algorithm>
 #include <cassert>
 
+#include "../config/net_config.h"
+
 #include "net.h"
+#include "net/protocol/tcp.h"
+
 #include "net_memcpy.h"
 #include "net_private.h"
 
 #include "hardware.h"
 
-#include "../config/net_config.h"
+#include "debug.h"
 
+namespace net {
 #define TCP_RX_MSS						(TCP_DATA_SIZE)
 #define TCP_RX_MAX_ENTRIES				(1U << 1) // Must always be a power of 2
 #define TCP_RX_MAX_ENTRIES_MASK			(TCP_RX_MAX_ENTRIES - 1)
 #define TCP_MAX_RX_WND 					(TCP_RX_MAX_ENTRIES * TCP_RX_MSS);
 #define TCP_TX_MSS						(TCP_DATA_SIZE)
-
-namespace net {
-namespace tcp {
-}  // namespace tcp
-namespace globals {
-extern uint8_t macAddress[ETH_ADDR_LEN];
-}  // namespace globals
-}  // namespace net
 
 /**
  * Transmission control block (TCB)
@@ -256,13 +257,13 @@ static constexpr bool SEQ_GT(const uint32_t x, const uint32_t y) {
 	return static_cast<int32_t>(x - y) > 0;
 }
 
-static constexpr bool SEQ_GEQ(const uint32_t x, const uint32_t y) {
-	return static_cast<int32_t>(x - y) >= 0;
-}
-
-static constexpr bool SEQ_BETWEEN(const uint32_t l, const uint32_t x, const uint32_t h) {
-	return SEQ_LT(l, x) && SEQ_LT(x, h);
-}
+//static constexpr bool SEQ_GEQ(const uint32_t x, const uint32_t y) {
+//	return static_cast<int32_t>(x - y) >= 0;
+//}
+//
+//static constexpr bool SEQ_BETWEEN(const uint32_t l, const uint32_t x, const uint32_t h) {
+//	return SEQ_LT(l, x) && SEQ_LT(x, h);
+//}
 
 static constexpr bool  SEQ_BETWEEN_L(const uint32_t l, const uint32_t x, const uint32_t h)	{
 	return SEQ_LEQ(l, x) && SEQ_LT(x, h);	// low border inclusive
@@ -325,7 +326,7 @@ __attribute__((cold)) void tcp_init() {
 	DEBUG_ENTRY
 
 	/* Ethernet */
-	memcpy(s_tcp.ether.src, net::globals::macAddress, ETH_ADDR_LEN);
+	std::memcpy(s_tcp.ether.src, net::globals::netif_default.hwaddr, ETH_ADDR_LEN);
 	s_tcp.ether.type = __builtin_bswap16(ETHER_TYPE_IPv4);
 	/* IPv4 */
 	s_tcp.ip4.ver_ihl = 0x45;
@@ -363,8 +364,8 @@ static uint16_t _chksum(struct t_tcp *pTcp, const struct tcb *pTcb, uint16_t nLe
 	memcpy(buf, pseu, TCP_PSEUDO_LEN);
 
 	// Generate TCP psuedo header
-	memcpy(pseu->srcIp, pTcb->localIp, IPv4_ADDR_LEN);
-	memcpy(pseu->dstIp, pTcb->remoteIp, IPv4_ADDR_LEN);
+	std::memcpy(pseu->srcIp, pTcb->localIp, IPv4_ADDR_LEN);
+	std::memcpy(pseu->dstIp, pTcb->remoteIp, IPv4_ADDR_LEN);
 	pseu->zero = 0;
 	pseu->proto = IPv4_PROTO_TCP;
 	pseu->length = __builtin_bswap16(nLength);
@@ -394,12 +395,12 @@ static void send_package(const struct tcb *pTcb, const struct SendInfo &sendInfo
 	const auto tcplen = nHeaderLength + pTcb->TX.size;
 
 	/* Ethernet */
-	memcpy(s_tcp.ether.dst, pTcb->remoteEthAddr, ETH_ADDR_LEN);
+	std::memcpy(s_tcp.ether.dst, pTcb->remoteEthAddr, ETH_ADDR_LEN);
 	/* IPv4 */
 	s_tcp.ip4.id = s_id++;
 	s_tcp.ip4.len = __builtin_bswap16(static_cast<uint16_t>(tcplen + sizeof(struct ip4_header)));
-	memcpy(s_tcp.ip4.src, pTcb->localIp, IPv4_ADDR_LEN);
-	memcpy(s_tcp.ip4.dst, pTcb->remoteIp, IPv4_ADDR_LEN);
+	std::memcpy(s_tcp.ip4.src, pTcb->localIp, IPv4_ADDR_LEN);
+	std::memcpy(s_tcp.ip4.dst, pTcb->remoteIp, IPv4_ADDR_LEN);
 	s_tcp.ip4.chksum = 0;
 #if !defined (CHECKSUM_BY_HARDWARE)
 	s_tcp.ip4.chksum = net_chksum(reinterpret_cast<void *>(&s_tcp.ip4), 20);
@@ -644,14 +645,14 @@ __attribute__((hot)) void tcp_handle(struct t_tcp *pTcp) {
 	if (nIndexPort == TCP_MAX_PORTS_ALLOWED) {
 		struct tcb TCB;
 
-		memset(&TCB, 0, sizeof(struct tcb));
+		std::memset(&TCB, 0, sizeof(struct tcb));
 
 		TCB.nLocalPort = pTcp->tcp.dstpt;
-		memcpy(TCB.localIp, pTcp->ip4.dst, IPv4_ADDR_LEN);
+		std::memcpy(TCB.localIp, pTcp->ip4.dst, IPv4_ADDR_LEN);
 
 		TCB.nRemotePort = pTcp->tcp.srcpt;
-		memcpy(TCB.remoteIp, pTcp->ip4.src, IPv4_ADDR_LEN);
-		memcpy(TCB.remoteEthAddr, pTcp->ether.src, ETH_ADDR_LEN);
+		std::memcpy(TCB.remoteIp, pTcp->ip4.src, IPv4_ADDR_LEN);
+		std::memcpy(TCB.remoteEthAddr, pTcp->ether.src, ETH_ADDR_LEN);
 
 		_bswap32(pTcp);
 
@@ -698,11 +699,11 @@ __attribute__((hot)) void tcp_handle(struct t_tcp *pTcp) {
 
 	// https://www.rfc-editor.org/rfc/rfc9293.html#name-listen-state
 	if (pTCB->state == STATE_LISTEN) {
-		memcpy(pTCB->localIp, pTcp->ip4.dst, IPv4_ADDR_LEN);
+		std::memcpy(pTCB->localIp, pTcp->ip4.dst, IPv4_ADDR_LEN);
 
 		pTCB->nRemotePort = pTcp->tcp.srcpt;
-		memcpy(pTCB->remoteIp, pTcp->ip4.src, IPv4_ADDR_LEN);
-		memcpy(pTCB->remoteEthAddr, pTcp->ether.src, ETH_ADDR_LEN);
+		std::memcpy(pTCB->remoteIp, pTcp->ip4.src, IPv4_ADDR_LEN);
+		std::memcpy(pTCB->remoteEthAddr, pTcp->ether.src, ETH_ADDR_LEN);
 
 		// First, check for a RST
 		// An incoming RST should be ignored.
@@ -1167,7 +1168,7 @@ static void _write(struct tcb *pTCB, const uint8_t *pBuffer, const uint32_t nLen
     pTCB->SND.WND -= nLength;
 }
 
-void tcp_write(const int32_t nHandleListen, const uint8_t *pBuffer, uint16_t nLength, uint32_t nHandleConnection) {
+void tcp_write(const int32_t nHandleListen, const uint8_t *pBuffer, uint32_t nLength, uint32_t nHandleConnection) {
 	assert(nHandleListen >= 0);
 	assert(nHandleListen < TCP_MAX_PORTS_ALLOWED);
 	assert(pBuffer != nullptr);
@@ -1186,5 +1187,5 @@ void tcp_write(const int32_t nHandleListen, const uint8_t *pBuffer, uint16_t nLe
 		nLength -= nWriteLength;
 	}
 }
-
+}  // namespace net
 // <---

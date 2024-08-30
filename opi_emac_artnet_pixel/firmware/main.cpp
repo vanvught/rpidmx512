@@ -29,7 +29,7 @@
 #include "network.h"
 #include "networkconst.h"
 
-#include "mdns.h"
+#include "net/apps/mdns.h"
 
 #include "displayudf.h"
 #include "displayudfparams.h"
@@ -93,10 +93,7 @@ int main() {
 	FlashCodeInstall spiFlashInstall;
 
 	fw.Print("Art-Net 4 Pixel controller {1x 4 Universes}");
-	nw.Print();
-
-	display.TextStatus(ArtNetMsgConst::PARAMS, CONSOLE_YELLOW);
-
+	
 	ArtNetNode node;
 
 	ArtNetParams artnetParams;
@@ -107,11 +104,11 @@ int main() {
 
 	PixelDmxParams pixelDmxParams;
 	pixelDmxParams.Load();
-	pixelDmxParams.Set(&pixelDmxConfiguration);
+	pixelDmxParams.Set();
 
-	WS28xxDmx pixelDmx(&pixelDmxConfiguration);
+	WS28xxDmx pixelDmx;
 
-	const auto nUniverses = pixelDmx.GetUniverses();
+	const auto nUniverses = pixelDmxConfiguration.GetUniverses();
 
 	uint32_t nPortProtocolIndex = 0;
 
@@ -142,7 +139,7 @@ int main() {
 #if defined (NODE_RDMNET_LLRP_ONLY)
 	display.TextStatus(RDMNetConst::MSG_CONFIG, CONSOLE_YELLOW);
 	char aDescription[rdm::personality::DESCRIPTION_MAX_LENGTH + 1];
-	snprintf(aDescription, sizeof(aDescription) - 1, "Art-Net Pixel 1-%s:%d", PixelType::GetType(WS28xx::Get()->GetType()), WS28xx::Get()->GetCount());
+	snprintf(aDescription, sizeof(aDescription) - 1, "Art-Net Pixel 1-%s:%d", pixel::pixel_get_type(pixelDmxConfiguration.GetType()), pixelDmxConfiguration.GetCount());
 
 	char aLabel[RDM_DEVICE_LABEL_MAX_LENGTH + 1];
 	const auto nLength = snprintf(aLabel, sizeof(aLabel) - 1, "Orange Pi Zero Pixel");
@@ -194,10 +191,10 @@ int main() {
 
 	display.Show();
 	display.Printf(7, "%s:%d G%d %s",
-		PixelType::GetType(pixelDmxConfiguration.GetType()),
+		pixel::pixel_get_type(pixelDmxConfiguration.GetType()),
 		pixelDmxConfiguration.GetCount(),
 		pixelDmxConfiguration.GetGroupingCount(),
-		PixelType::GetMap(pixelDmxConfiguration.GetMap()));
+		pixel::pixel_get_map(pixelDmxConfiguration.GetMap()));
 
 	if (nTestPattern != pixelpatterns::Pattern::NONE) {
 		display.ClearLine(6);

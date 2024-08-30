@@ -68,5 +68,6 @@ typedef enum H3_BOARD_OPI_ZERO {
 
 #define FT8XX_LCD_DC_GPIO	GPIO_EXT_26
 #define FT8XX_LCD_CS_GPIO	GPIO_EXT_22
+#define FT8XX_LCD_INT_GPIO	GPIO_EXT_12
 
 #endif /* H3_OPI_ZERO_H_ */

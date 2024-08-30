@@ -85,7 +85,11 @@ void DisplayUdf::ShowUniverseArtNetNode() {
 						'A' + nArtNetPortIndex,
 						nUniverse,
 						lightset::get_merge_mode(pArtNetNode->GetMergeMode(nPortIndex), true),
+#if (ARTNET_VERSION >= 4)
 						artnet::get_protocol_mode(pArtNetNode->GetPortProtocol4(nPortIndex), true),
+#else
+						"Art-Net",
+#endif
 #if defined (OUTPUT_HAVE_STYLESWITCH)
 						pArtNetNode->GetOutputStyle(nPortIndex) == lightset::OutputStyle::CONSTANT ? 'C' : 'D',
 #endif

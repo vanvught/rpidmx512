@@ -78,9 +78,9 @@ void LightSetChain::Sync(const uint32_t nPortIndex) {
 	}
 }
 
-void LightSetChain::Sync(const bool doForce) {
+void LightSetChain::Sync() {
 	for (uint32_t i = 0; i < m_nSize; i++) {
-		m_pTable[i].pLightSet->Sync(doForce);
+		m_pTable[i].pLightSet->Sync();
 	}
 }
 

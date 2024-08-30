@@ -87,10 +87,6 @@ void ArtNetNode::SetLocalMerging() {
 	DEBUG_EXIT
 }
 
-uint16_t ArtNetNode::MakePortAddress(const uint16_t nUniverse, const uint32_t nPage) {
-	return artnet::make_port_address(m_Node.Port[nPage].NetSwitch, m_Node.Port[nPage].SubSwitch, nUniverse);
-}
-
 void ArtNetNode::SetUniverse(const uint32_t nPortIndex, const lightset::PortDir dir, const uint16_t nUniverse) {
 	assert(nPortIndex < artnetnode::MAX_PORTS);
 

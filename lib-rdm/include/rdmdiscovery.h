@@ -109,7 +109,7 @@ private:
 
 private:
 	RDMMessage m_Message;
-	uint8_t *m_pResponse;
+	uint8_t *m_pResponse { nullptr };
 	uint8_t m_Uid[RDM_UID_SIZE];
 	uint32_t m_nPortIndex { 0 };
 	RDMTod *m_pRDMTod { nullptr };

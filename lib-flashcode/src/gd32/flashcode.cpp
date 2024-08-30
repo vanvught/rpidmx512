@@ -41,7 +41,7 @@ FlashCode::FlashCode() {
 
 	m_IsDetected = true;
 
-	printf("FMC: Detected %s with total %u bytes [%u kB]\n", GetName(), static_cast<unsigned int>(GetSize()), static_cast<unsigned int>(GetSize() / 1024U));
+	printf("FMC: %s %u [%u]\n", GetName(), static_cast<unsigned int>(GetSize()), static_cast<unsigned int>(GetSize() / 1024U));
 	DEBUG_EXIT
 }
 

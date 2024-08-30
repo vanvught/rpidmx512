@@ -122,5 +122,5 @@ void OscSimpleSend::UpdateMessage(const char *pPath, uint32_t nPathLength, char 
 void OscSimpleSend::Send(uint32_t nMessageLength, int32_t nHandle, uint32_t nIpAddress, uint16_t nPort) {
 	debug_dump(s_Message, nMessageLength);
 
-	Network::Get()->SendTo(nHandle, s_Message, static_cast<uint16_t>(nMessageLength), nIpAddress, nPort);
+	Network::Get()->SendTo(nHandle, s_Message, nMessageLength, nIpAddress, nPort);
 }

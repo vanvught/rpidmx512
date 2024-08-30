@@ -372,7 +372,7 @@ void SparkFunDmx::Sync([[maybe_unused]] uint32_t const nPortIndex) {
 	//TODO Implement Sync
 }
 
-void SparkFunDmx::Sync([[maybe_unused]] const bool doForce) {
+void SparkFunDmx::Sync() {
 	//TODO Implement Sync
 }
 

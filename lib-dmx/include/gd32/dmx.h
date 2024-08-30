@@ -67,14 +67,10 @@ public:
 	// DMX Send
 
 	void SetDmxBreakTime(uint32_t nBreakTime);
-	uint32_t GetDmxBreakTime() const {
-		return m_nDmxTransmitBreakTime;
-	}
+	uint32_t GetDmxBreakTime() const;
 
 	void SetDmxMabTime(uint32_t nMabTime);
-	uint32_t GetDmxMabTime() const {
-		return m_nDmxTransmitMabTime;
-	}
+	uint32_t GetDmxMabTime() const;
 
 	void SetDmxPeriodTime(uint32_t nPeriodTime);
 	uint32_t GetDmxPeriodTime() const {
@@ -90,7 +86,7 @@ public:
 	void SetSendDataWithoutSC(const uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength);
 
 	void StartOutput(const uint32_t nPortIndex);
-	void SetOutput(const bool doForce);
+	void Sync();
 
 	void SetOutputStyle(const uint32_t nPortIndex, const dmx::OutputStyle outputStyle);
 	dmx::OutputStyle GetOutputStyle(const uint32_t nPortIndex) const;
@@ -116,13 +112,12 @@ private:
 	void StartDmxOutput(const uint32_t nPortIndex);
 
 private:
-	uint32_t m_nDmxTransmitBreakTime { dmx::transmit::BREAK_TIME_TYPICAL};
-	uint32_t m_nDmxTransmitMabTime { dmx::transmit::MAB_TIME_MIN };
 	uint32_t m_nDmxTransmitPeriod { dmx::transmit::PERIOD_DEFAULT };
 	uint32_t m_nDmxTransmitPeriodRequested { dmx::transmit::PERIOD_DEFAULT };
 	uint32_t m_nDmxTransmissionLength[dmx::config::max::PORTS];
-	uint16_t m_nDmxTransmitSlots { dmx::max::CHANNELS };
+	uint32_t m_nDmxTransmitSlots { dmx::max::CHANNELS };
 	dmx::PortDirection m_dmxPortDirection[dmx::config::max::PORTS];
+	bool m_bHasContinuosOutput { false };
 
 	static Dmx *s_pThis;
 };
