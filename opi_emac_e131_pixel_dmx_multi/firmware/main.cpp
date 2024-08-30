@@ -53,7 +53,7 @@
 #include "dmxsend.h"
 #include "dmxconfigudp.h"
 
-#include "lightset32with4.h"
+#include "lightsetwith4.h"
 
 #if defined (NODE_RDMNET_LLRP_ONLY)
 # include "rdmdeviceparams.h"
@@ -185,7 +185,7 @@ int main() {
 
 	// LightSet 32with4
 
-	LightSet32with4 lightSet((PixelTestPattern::Get()->GetPattern() != pixelpatterns::Pattern::NONE) ? nullptr : &pixelDmxMulti, (nDmxUniverses != 0) ? &dmxSend : nullptr);
+	LightSetWith4<32> lightSet((PixelTestPattern::Get()->GetPattern() != pixelpatterns::Pattern::NONE) ? nullptr : &pixelDmxMulti, (nDmxUniverses != 0) ? &dmxSend : nullptr);
 	lightSet.Print();
 
 	bridge.SetOutput(&lightSet);

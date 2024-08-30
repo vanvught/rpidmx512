@@ -39,7 +39,7 @@ public:
 
 	~LightSetWith4() override {}
 
-	void SetLightSetA(const LightSet *pA) {
+	void SetLightSetA(LightSet *const pA) {
 		m_pA = pA;
 	}
 
@@ -47,7 +47,7 @@ public:
 		return m_pA;
 	}
 
-	void SetLightSetB(const LightSet *pB) {
+	void SetLightSetB(LightSet *const pB) {
 		m_pB = pB;
 	}
 

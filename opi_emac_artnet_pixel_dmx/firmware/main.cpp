@@ -50,7 +50,7 @@
 #include "dmxsend.h"
 #include "dmxconfigudp.h"
 
-#include "lightset4with4.h"
+#include "lightsetwith4.h"
 
 #if defined (NODE_RDMNET_LLRP_ONLY)
 # include "rdmdeviceparams.h"
@@ -159,7 +159,7 @@ int main() {
 
 	// LightSet 4with4
 
-	LightSet4with4 lightSet((PixelTestPattern::Get()->GetPattern() != pixelpatterns::Pattern::NONE) ? nullptr : &pixelDmx, (nDmxUniverses != 0) ? &dmxSend : nullptr);
+	LightSetWith4<4> lightSet((PixelTestPattern::Get()->GetPattern() != pixelpatterns::Pattern::NONE) ? nullptr : &pixelDmx, (nDmxUniverses != 0) ? &dmxSend : nullptr);
 	lightSet.Print();
 
 	ArtNetTriggerHandler triggerHandler(&lightSet, &pixelDmx);

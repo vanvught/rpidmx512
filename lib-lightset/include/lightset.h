@@ -79,14 +79,14 @@ inline MergeMode get_merge_mode(const char *pMergeMode) {
 	return MergeMode::HTP;
 }
 
-inline const char* get_merge_mode(const MergeMode mergeMode, const bool bToUpper = false) {
+inline const char *get_merge_mode(const MergeMode mergeMode, const bool bToUpper = false) {
 	if (bToUpper) {
 		return (mergeMode == MergeMode::HTP) ? "HTP" : "LTP";
 	}
 	return (mergeMode == MergeMode::HTP) ? "htp" : "ltp";
 }
 
-inline const char* get_merge_mode(const unsigned m, const bool bToUpper = false) {
+inline const char *get_merge_mode(const unsigned m, const bool bToUpper = false) {
 	return get_merge_mode(static_cast<MergeMode>(m), bToUpper);
 }
 
@@ -198,6 +198,7 @@ public:
 	virtual lightset::OutputStyle GetOutputStyle(const uint32_t nPortIndex) const=0;
 #endif
 	// Optional
+	virtual uint32_t GetRefreshRate() { return 0; }
 	virtual void Blackout([[maybe_unused]] bool bBlackout) {}
 	virtual void FullOn() {}
 	virtual void Print() {}
