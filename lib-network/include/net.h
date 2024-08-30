@@ -71,7 +71,7 @@ void igmp_leave(uint32_t);
 
 int tcp_begin(const uint16_t);
 uint16_t tcp_read(const int32_t, const uint8_t **, uint32_t &);
-void tcp_write(const int32_t, const uint8_t *, uint16_t, const uint32_t);
+void tcp_write(const int32_t, const uint8_t *, uint32_t, const uint32_t);
 
 /**
  * Must be provided by the application

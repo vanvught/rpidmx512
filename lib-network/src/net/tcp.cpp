@@ -1168,7 +1168,7 @@ static void _write(struct tcb *pTCB, const uint8_t *pBuffer, const uint32_t nLen
     pTCB->SND.WND -= nLength;
 }
 
-void tcp_write(const int32_t nHandleListen, const uint8_t *pBuffer, uint16_t nLength, uint32_t nHandleConnection) {
+void tcp_write(const int32_t nHandleListen, const uint8_t *pBuffer, uint32_t nLength, uint32_t nHandleConnection) {
 	assert(nHandleListen >= 0);
 	assert(nHandleListen < TCP_MAX_PORTS_ALLOWED);
 	assert(pBuffer != nullptr);

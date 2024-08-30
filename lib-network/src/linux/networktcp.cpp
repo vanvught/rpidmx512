@@ -189,7 +189,7 @@ uint16_t Network::TcpRead(const int32_t nHandle, const uint8_t **ppBuffer, uint3
 	return 0;
 }
 
-void Network::TcpWrite(const int32_t nHandle, const uint8_t *pBuffer, uint16_t nLength, const uint32_t HandleConnectionIndex) {
+void Network::TcpWrite(const int32_t nHandle, const uint8_t *pBuffer, uint32_t nLength, const uint32_t HandleConnectionIndex) {
 	assert(nHandle < MAX_PORTS_ALLOWED);
 
 	DEBUG_PRINTF("Write client on fd %d [%u]", poll_set[nHandle][HandleConnectionIndex].fd, HandleConnectionIndex);

@@ -224,7 +224,7 @@ public:
 		return net::tcp_read(nHandleListen, ppBuffer, HandleConnection);
 	}
 
-	void TcpWrite(const int32_t nHandleListen, const uint8_t *pBuffer, uint16_t nLength, const uint32_t HandleConnection) {
+	void TcpWrite(const int32_t nHandleListen, const uint8_t *pBuffer, uint32_t nLength, const uint32_t HandleConnection) {
 		net::tcp_write(nHandleListen, pBuffer, nLength, HandleConnection);
 	}
 

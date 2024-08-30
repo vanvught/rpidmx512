@@ -87,6 +87,7 @@ ifneq ($(MAKE_FLAGS),)
 	endif
 else
 	EXTRA_SRCDIR+=src/httpd
+	DEFINES+=ENABLE_CONTENT
 
 	EXTRA_INCLUDES+=../lib-artnet/include ../lib-e131/include
 	EXTRA_INCLUDES+=../lib-rdmdiscovery/include
