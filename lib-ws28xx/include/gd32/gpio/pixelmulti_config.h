@@ -34,6 +34,8 @@
 # include "board_gd32f450vi.h"
 #elif defined (BOARD_16X4U_PIXEL)
 # include "board_gd32f450vi.h"
+#elif defined (BOARD_GD32F470VG)
+# include "board_gd32f470vg.h"
 #elif defined (BOARD_GD32F207C_EVAL)
 # include "board_gd32f207c_eval.h"
 #elif defined (BOARD_GD32F470Z_EVAL)
