@@ -476,11 +476,7 @@ public:
 	}
 
 	void SetTimeCodeIp(const uint32_t nDestinationIp) {
-		if (Network::Get()->IsValidIp(nDestinationIp)) {
-			m_Node.IPAddressTimeCode = nDestinationIp;
-		} else {
-			m_Node.IPAddressTimeCode = Network::Get()->GetBroadcastIp();
-		}
+		m_Node.IPAddressTimeCode = nDestinationIp;
 	}
 #endif
 
@@ -490,13 +486,8 @@ public:
 
 	void SetDestinationIp(const uint32_t nPortIndex, const uint32_t nDestinationIp) {
 		if (nPortIndex < artnetnode::MAX_PORTS) {
-			if (Network::Get()->IsValidIp(nDestinationIp)) {
-				m_InputPort[nPortIndex].nDestinationIp = nDestinationIp;
-			} else {
-				m_InputPort[nPortIndex].nDestinationIp = Network::Get()->GetBroadcastIp();
-			}
-
-			DEBUG_PRINTF("m_nDestinationIp=" IPSTR, IP2STR(m_InputPort[nPortIndex].nDestinationIp));
+			m_InputPort[nPortIndex].nDestinationIp = nDestinationIp;
+			DEBUG_PRINTF("nDestinationIp=" IPSTR, IP2STR(m_InputPort[nPortIndex].nDestinationIp));
 		}
 	}
 
