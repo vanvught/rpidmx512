@@ -8,6 +8,10 @@ ifneq ($(MAKE_FLAGS),)
 		EXTRA_SRCDIR+=src/httpd
 	endif
 	
+	ifneq (,$(findstring ENABLE_SHELL,$(MAKE_FLAGS)))
+		EXTRA_SRCDIR+=src/shell src/uart
+	endif
+	
 	ifeq ($(findstring NODE_ARTNET,$(MAKE_FLAGS)), NODE_ARTNET)
 		EXTRA_INCLUDES+=../lib-artnet/include
 		ifeq ($(findstring ARTNET_VERSION=4,$(MAKE_FLAGS)), ARTNET_VERSION=4)

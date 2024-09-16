@@ -1,8 +1,9 @@
 /**
- * net_phy.cpp
+ * @file shellcmd.cpp
  *
  */
-/* Copyright (C) 2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020 by hippy mailto:dmxout@gmail.com
+ * Copyright (C) 2020-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,44 +24,8 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
+#include "shell/shell.h"
 
-#include "emac/phy.h"
-#include "emac/net_link_check.h"
-#include "emac/mmi.h"
-
-#include "debug.h"
-
-#if !defined (BIT)
-# define BIT(x) static_cast<uint16_t>(1U<<(x))
-#endif
-
-#if !defined(PHY_ADDRESS)
-# define PHY_ADDRESS 1
-#endif
-
-namespace net {
-void phy_customized_led() {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
+void Shell::CmdDump() {
+	Puts(shell::msg::error::INVALID);
 }
-
-void phy_customized_timing() {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
-void phy_customized_status(PhyStatus& phyStatus) {
-	uint16_t nValue;
-	phy_read(PHY_ADDRESS, mmi::REG_BMSR, nValue);
-
-	debug_print_bits(nValue);
-
-	phyStatus.duplex = Duplex::DUPLEX_FULL;
-	phyStatus.speed = Speed::SPEED100;
-	phyStatus.link = (nValue & mmi::BMSR_LINKED_STATUS) ? Link::STATE_UP : Link::STATE_DOWN;
-	phyStatus.bAutonegotiation = (nValue & mmi::BMSR_AUTONEGO_COMPLETE);
-}
-}  // namespace net

@@ -1,8 +1,8 @@
 /**
- * net_phy.cpp
+ * @file rtl8201f.h
  *
  */
-/* Copyright (C) 2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,44 +23,15 @@
  * THE SOFTWARE.
  */
 
+#ifndef EMAC_PHY_RTL8201F_H_
+#define EMAC_PHY_RTL8201F_H_
+
 #include <cstdint>
 
-#include "emac/phy.h"
-#include "emac/net_link_check.h"
-#include "emac/mmi.h"
+namespace net::phy {
+void rtl8201f_set_rxtiming(const uint32_t nRxTiming);
+void rtl8201f_set_txtiming(const uint32_t nTxTiming);
+void rtl8201f_get_timings(uint32_t& nRxTiming, uint32_t& nTxTiming);
+}  // namespace net::phy
 
-#include "debug.h"
-
-#if !defined (BIT)
-# define BIT(x) static_cast<uint16_t>(1U<<(x))
-#endif
-
-#if !defined(PHY_ADDRESS)
-# define PHY_ADDRESS 1
-#endif
-
-namespace net {
-void phy_customized_led() {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
-void phy_customized_timing() {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
-void phy_customized_status(PhyStatus& phyStatus) {
-	uint16_t nValue;
-	phy_read(PHY_ADDRESS, mmi::REG_BMSR, nValue);
-
-	debug_print_bits(nValue);
-
-	phyStatus.duplex = Duplex::DUPLEX_FULL;
-	phyStatus.speed = Speed::SPEED100;
-	phyStatus.link = (nValue & mmi::BMSR_LINKED_STATUS) ? Link::STATE_UP : Link::STATE_DOWN;
-	phyStatus.bAutonegotiation = (nValue & mmi::BMSR_AUTONEGO_COMPLETE);
-}
-}  // namespace net
+#endif /* EMAC_PHY_RTL8201F_H_ */

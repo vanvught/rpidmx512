@@ -56,9 +56,16 @@ void phy_write_paged(uint16_t phy_page, uint16_t phy_reg, uint16_t phy_value, ui
 	DEBUG_PRINTF("tmp_value=0x%.4x, phy_value=0x%.4x", tmp_value, phy_value);
 
 	phy_write(PHY_ADDRESS, phy_reg, tmp_value);
+	phy_write(PHY_ADDRESS, PHY_REG_PAGE_SELECT, 0);
+}
 
-	phy_page = 0;
+void phy_read_paged(const uint16_t phy_page, const uint16_t phy_reg, uint16_t& phy_value, const uint16_t mask = 0x0) {
 	phy_write(PHY_ADDRESS, PHY_REG_PAGE_SELECT, phy_page);
+
+	phy_read(PHY_ADDRESS, phy_reg, phy_value);
+	phy_value &= mask;
+
+	phy_write(PHY_ADDRESS, PHY_REG_PAGE_SELECT, 0);
 }
 
 void phy_customized_led() {
@@ -75,22 +82,26 @@ void phy_customized_led() {
 	DEBUG_EXIT
 }
 
+#define RMSR_RX_TIMING_SHIFT	4
+#define RMSR_RX_TIMING_MASK		0xF0
+
+#define RMSR_TX_TIMING_SHIFT	8
+#define RMSR_TX_TIMING_MASK		0xF00
+
 void phy_customized_timing() {
 	DEBUG_ENTRY
-#if defined (GD32F407) || defined (GD32F450)
-# define RMSR_RX_TIMING_SHIFT	4
-# define RMSR_RX_TIMING_MASK	0xF0
+#if defined (GD32F4XX)
 # define RMSR_RX_TIMING_VAL		0x4
-# define RMSR_TX_TIMING_SHIFT	8
-# define RMSR_TX_TIMING_MASK	0xF00
 # if defined (GD32F407)
-#  define RMSR_TX_TIMING_VAL		0x2	// The GD32F407 is now running at 200MHz
+#  define RMSR_TX_TIMING_VAL	0x2	// The GD32F407 is now running at 200MHz
+# elif defined (GD32F470)
+#  define RMSR_TX_TIMING_VAL	0x1
 # else
-#  define RMSR_TX_TIMING_VAL		0xF
+#  define RMSR_TX_TIMING_VAL	0xF
 # endif
 
 	constexpr uint16_t phy_value = (RMSR_RX_TIMING_VAL << RMSR_RX_TIMING_SHIFT)
-				       | (RMSR_TX_TIMING_VAL << RMSR_TX_TIMING_SHIFT);
+								 | (RMSR_TX_TIMING_VAL << RMSR_TX_TIMING_SHIFT);
 	phy_write_paged(0x7, PHY_REG_RMSR, phy_value, RMSR_RX_TIMING_MASK | RMSR_TX_TIMING_MASK);
 #endif
 	DEBUG_EXIT
@@ -107,4 +118,24 @@ void phy_customized_status(PhyStatus& phyStatus) {
 	phyStatus.bAutonegotiation = ((nValue & mmi::BMCR_AUTONEGOTIATION) == mmi::BMCR_AUTONEGOTIATION);
 
 }
+namespace phy {
+void rtl8201f_get_timings(uint32_t& nRxTiming, uint32_t& nTxTiming) {
+	uint16_t  nValue;
+	phy_read_paged(0x7, PHY_REG_RMSR, nValue, RMSR_RX_TIMING_MASK | RMSR_TX_TIMING_MASK);
+
+	nRxTiming = (nValue >> RMSR_RX_TIMING_SHIFT) & 0xF;
+	nTxTiming = (nValue >> RMSR_TX_TIMING_SHIFT) & 0xF;
+}
+
+void rtl8201f_set_rxtiming(const uint32_t nRxTiming) {
+	const auto nValue = static_cast<uint16_t>((nRxTiming & 0xF) << RMSR_RX_TIMING_SHIFT);
+	phy_write_paged(0x7, PHY_REG_RMSR, nValue, RMSR_RX_TIMING_MASK);
+}
+
+void rtl8201f_set_txtiming(const uint32_t nTxTiming) {
+	const auto nValue = static_cast<uint16_t>((nTxTiming & 0xF) << RMSR_TX_TIMING_SHIFT);
+	phy_write_paged(0x7, PHY_REG_RMSR, nValue, RMSR_TX_TIMING_MASK);
+}
+
+}  // namespace phy
 }  // namespace net

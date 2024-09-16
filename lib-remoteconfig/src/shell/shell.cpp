@@ -3,7 +3,7 @@
  *
  */
 /* Copyright (C) 2020 by hippy mailto:dmxout@gmail.com
- * Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+ * Copyright (C) 2020-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,30 +31,43 @@
 
 #include "shell/shell.h"
 
+#if defined (GD32) // PHY_TYPE is defined here
+# include "gd32.h"
+#endif
+
 #include "debug.h"
 
-struct TCommands {
+struct ShellCommands {
 	const char *pName;
 	const uint32_t nArgc;
 };
 
-static constexpr TCommands cmd_table[] = {
+static constexpr ShellCommands cmd_table[] = {
 		{ "reboot", 0 },
 		{ "info", 0 },
-		{ "set", 2},
-		{ "get", 2},
-		{ "dhcp", 0},
-		{ "date", 0},
-		{ "hwclock", 1},
-#ifndef NDEBUG
-		{ "i2cdetect" , 0},
-		{ "dump" , 1},
-		{ "mem" , 2},
-		{ "ntp" , 1},
-		{ "gps" , 1},
+		{ "set", 2 },
+		{ "get", 2 },
+		{ "dhcp", 0 },
+		{ "date", 0 },
+		{ "phy", 0 },
+#if !defined (DISABLE_RTC)
+		{ "hwclock", 1 },
 #endif
-		{ "?", 0 }
-};
+#if defined (DEBUG_I2C)
+		{ "i2cdetect", 0 },
+#endif
+		{ "dump", 1 },
+		{ "mem", 2 },
+#if defined (ENABLE_NTP_CLIENT)
+		{ "ntp", 1 },
+#endif
+#if defined (CONFIG_SHELL_GPS)
+		{ "gps", 1 },
+#endif
+#if (PHY_TYPE == RTL8201F)
+		{ "rtl8201f" , 2},
+#endif
+		{ "?", 0 } };
 
 namespace shell {
 static constexpr auto TABLE_SIZE = sizeof(cmd_table) / sizeof(cmd_table[0]);
@@ -65,10 +78,8 @@ static constexpr char CMD_WRONG_ARGUMENTS[] = "Wrong arguments\n";
 }  // namespace msg
 }  // namespace shell
 
-using namespace shell;
-
 Shell::Shell() {
-	DEBUG_PRINTF("TABLE_SIZE=%d", TABLE_SIZE);
+	DEBUG_PRINTF("TABLE_SIZE=%d", shell::TABLE_SIZE);
 }
 
 int Shell::Printf(const char* fmt, ...) {
@@ -86,8 +97,8 @@ int Shell::Printf(const char* fmt, ...) {
 	return i;
 }
 
-uint16_t Shell::ValidateCmd(uint32_t nLength, CmdIndex &nCmdIndex) {
-	uint16_t i;
+uint32_t Shell::ValidateCmd(const uint32_t nLength,  shell::CmdIndex &nCmdIndex) {
+	uint32_t i;
 
 	m_Argc = 0;
 
@@ -98,17 +109,17 @@ uint16_t Shell::ValidateCmd(uint32_t nLength, CmdIndex &nCmdIndex) {
 		}
 	}
 
-	for (uint32_t j = 0; j < TABLE_SIZE; j++) {
+	for (uint32_t j = 0; j <  shell::TABLE_SIZE; j++) {
 		if (0 == strcmp(m_Buffer, cmd_table[j].pName)) {
-			nCmdIndex = static_cast<CmdIndex>(j);
-			return static_cast<uint16_t>(i + 1);
+			nCmdIndex = static_cast< shell::CmdIndex>(j);
+			return i + 1;
 		}
 	}
 
 	return 0;
 }
 
-void Shell::ValidateArg(uint16_t nOffset, uint32_t nLength) {
+void Shell::ValidateArg(uint32_t nOffset, const uint32_t nLength) {
 	if (nOffset > nLength) {
 		return;
 	}
@@ -121,11 +132,11 @@ void Shell::ValidateArg(uint16_t nOffset, uint32_t nLength) {
 		return;
 	}
 
-	uint16_t nArgvStart = nOffset;
+	auto nArgvStart = nOffset;
 	m_Argv[0] = &m_Buffer[nOffset++];
 	m_Argc = 1;
 
-	uint16_t i, j = 1;
+	uint32_t i, j = 1;
 
 	for (i = nOffset; i < nLength; i++) {
 		if ((m_Buffer[i] > ' ') && (m_Buffer[i] < 127)) {
@@ -133,13 +144,13 @@ void Shell::ValidateArg(uint16_t nOffset, uint32_t nLength) {
 		}
 
 		if ((m_Buffer[i] == ' ') || (m_Buffer[i] == '\t')) {
-			if (j < MAXARG) {
+			if (j <  shell::MAXARG) {
 				m_nArgvLength[j - 1] = static_cast<uint16_t>(i - nArgvStart);
 			}
 			while (i < nLength && ((m_Buffer[i] == ' ') || (m_Buffer[i] == '\t'))) {
 				m_Buffer[i++] = '\0';
 			}
-			if (j < MAXARG) {
+			if (j <  shell::MAXARG) {
 				nArgvStart = i;
 				m_Argv[j++] = &m_Buffer[i];
 			}
@@ -147,7 +158,7 @@ void Shell::ValidateArg(uint16_t nOffset, uint32_t nLength) {
 		}
 	}
 
-	if (j < MAXARG) {
+	if (j <  shell::MAXARG) {
 		m_nArgvLength[j - 1] = static_cast<uint16_t>(i - nArgvStart);
 	}
 
@@ -161,11 +172,18 @@ void Shell::ValidateArg(uint16_t nOffset, uint32_t nLength) {
 
 void Shell::CmdHelp() {
 	Puts("http://www.orangepi-dmx.org/orange-pi-dmx512-rdm/uart0-shell\n");
+
+	uint32_t i  = 0;
+	for (auto& cmd : cmd_table) {
+		Printf("%2u: %s <%u>\n", i++, cmd.pName, cmd.nArgc);
+	}
+
+	Puts("");
 }
 
 void Shell::Run() {	
 	if (__builtin_expect((!m_bShownPrompt), 1)) {
-		Puts(msg::CMD_PROMPT);
+		Puts(shell::msg::CMD_PROMPT);
 		m_bShownPrompt = true;
 	}
 	
@@ -179,64 +197,78 @@ void Shell::Run() {
 
 	m_bShownPrompt = false; // next time round, we show the prompt.
 
-	uint16_t nOffset;
-	CmdIndex nCmdIndex;
+	uint32_t nOffset;
+	shell::CmdIndex nCmdIndex;
 
 	if ((nOffset = ValidateCmd(nLength, nCmdIndex)) == 0) {
-		Printf("%s %s\n", msg::CMD_NOT_FOUND, m_Buffer);
+		Printf("%s %s\n", shell::msg::CMD_NOT_FOUND, m_Buffer);
 		return;
 	}
 
 	ValidateArg(nOffset, nLength);
 
 	if (m_Argc != cmd_table[static_cast<uint32_t>(nCmdIndex)].nArgc) {
-		Puts(msg::CMD_WRONG_ARGUMENTS);
+		Puts( shell::msg::CMD_WRONG_ARGUMENTS);
 		return;
 	}
 
 	switch (nCmdIndex) {
-		case CmdIndex::REBOOT:
-			CmdReboot();
-			break;
-		case CmdIndex::INFO:
-			CmdInfo();
-			break;
-		case CmdIndex::SET:
-			CmdSet();
-			break;
-		case CmdIndex::GET:
-			CmdGet();
-			break;
-		case CmdIndex::DHCP:
-			CmdDhcp();
-			break;
-		case CmdIndex::DATE:
-			CmdDate();
-			break;
-		case CmdIndex::HWCLOCK:
-			CmdHwClock();
-			break;
-#ifndef NDEBUG
-		case CmdIndex::I2CDETECT:
-			CmdI2cDetect();
-			break;
-		case CmdIndex::DUMP:
-			CmdDump();
-			break;
-		case CmdIndex::MEM:
-			CmdMem();
-			break;
-		case CmdIndex::NTP:
-			CmdNtp();
-			break;
-		case CmdIndex::GPS:
-			CmdGps();
-			break;
+	case shell::CmdIndex::REBOOT:
+		CmdReboot();
+		break;
+	case shell::CmdIndex::INFO:
+		CmdInfo();
+		break;
+	case shell::CmdIndex::SET:
+		CmdSet();
+		break;
+	case shell::CmdIndex::GET:
+		CmdGet();
+		break;
+	case shell::CmdIndex::DHCP:
+		CmdDhcp();
+		break;
+	case shell::CmdIndex::DATE:
+		CmdDate();
+		break;
+	case shell::CmdIndex::PHY:
+		CmdPhy();
+		break;
+#if !defined(DISABLE_RTC)
+	case shell::CmdIndex::HWCLOCK:
+		CmdHwClock();
+		break;
 #endif
-		case CmdIndex::HELP:
-			CmdHelp();
-			break;
-		default:
-			break;
+#if defined (DEBUG_I2C)
+	case shell::CmdIndex::I2CDETECT:
+		CmdI2cDetect();
+		break;
+#endif
+	case shell::CmdIndex::DUMP:
+		CmdDump();
+		break;
+	case shell::CmdIndex::MEM:
+		CmdMem();
+		break;
+#if defined (ENABLE_NTP_CLIENT)
+	case shell::CmdIndex::NTP:
+		CmdNtp();
+		break;
+#endif
+#if defined (CONFIG_SHELL_GPS)
+	case shell::CmdIndex::GPS:
+		CmdGps();
+		break;
+#endif
+#if (PHY_TYPE == RTL8201F)
+	case  shell::CmdIndex::PHY_TYPE_RTL8201F:
+		CmdPhyTypeRTL8201F();
+		break;
+#endif
+	case shell::CmdIndex::HELP:
+		CmdHelp();
+		break;
+	default:
+		break;
 	}
 }
