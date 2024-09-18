@@ -26,6 +26,6 @@
 #ifndef SOFTWARE_VERSION_H_
 #define SOFTWARE_VERSION_H_
 
-constexpr char SOFTWARE_VERSION[] = "4.7";
+constexpr char SOFTWARE_VERSION[] = "4.8";
 
 #endif /* SOFTWARE_VERSION_H_ */

@@ -92,8 +92,6 @@ int main() {
 	console_set_fg_color(CONSOLE_WHITE);
 	console_set_top_row(2);
 
-	
-
 	NtpClient ntpClient;
 	ntpClient.Start();
 	ntpClient.Print();
