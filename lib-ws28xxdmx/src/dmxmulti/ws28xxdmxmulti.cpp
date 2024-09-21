@@ -126,96 +126,75 @@ void WS28xxDmxMulti::SetData(const uint32_t nPortIndex, const uint8_t* pData, ui
 
 	if (nChannelsPerPixel == 3) {
 		// Define a lambda to handle pixel setting based on color order
-		auto setPixelsColor3 = [&](const uint32_t nPortIndex, const uint32_t nPixelIndex, const uint32_t r, const uint32_t g, const uint32_t b) {
+		auto setPixelsColourRTZ = [&](const uint32_t nPortIndex, const uint32_t nPixelIndex, const uint32_t r, const uint32_t g, const uint32_t b) {
 #if defined(CONFIG_PIXELDMX_ENABLE_GAMMATABLE)
 			const auto pGammaTable = m_pWS28xxMulti->m_PixelConfiguration.GetGammaTable();
 			r = pGammaTable[r];
 			g = pGammaTable[g];
 			b = pGammaTable[b];
 #endif
-			if (isRTZProtocol) {
-				m_pWS28xxMulti->SetColourRTZ(nPortIndex, nPixelIndex, r, g, b);
-			} else {
-				switch (pixelType) {
-				case pixel::Type::WS2801:
-					m_pWS28xxMulti->SetColourWS2801(nPortIndex, nPixelIndex, r, g, b);
-					break;
-				case pixel::Type::APA102:
-				case pixel::Type::SK9822:
-					m_pWS28xxMulti->SetPixel4Bytes(nPortIndex, 1 + nPixelIndex, pixelDmxConfiguration.GetGlobalBrightness(), b, g, r);
-					break;
-				case pixel::Type::P9813: {
-					const auto nFlag = static_cast<uint8_t>(0xC0 | ((~b & 0xC0) >> 2) | ((~r & 0xC0) >> 4) | ((~r & 0xC0) >> 6));
-					m_pWS28xxMulti->SetPixel4Bytes(nPortIndex, 1 + nPixelIndex, nFlag, b, g, r);
-				}
+			m_pWS28xxMulti->SetColourRTZ(nPortIndex, nPixelIndex, r, g, b);
+		};
+
+		// Define a lambda to handle pixel setting based on color order
+		auto setPixelsColour3 = [&](const uint32_t nPortIndex, const uint32_t nPixelIndex, const uint32_t r, const uint32_t g, const uint32_t b) {
+#if defined(CONFIG_PIXELDMX_ENABLE_GAMMATABLE)
+			const auto pGammaTable = m_pWS28xxMulti->m_PixelConfiguration.GetGammaTable();
+			r = pGammaTable[r];
+			g = pGammaTable[g];
+			b = pGammaTable[b];
+#endif
+
+			switch (pixelType) {
+			case pixel::Type::WS2801:
+				m_pWS28xxMulti->SetColourWS2801(nPortIndex, nPixelIndex, r, g, b);
 				break;
-				default:
-					assert(0);
-					__builtin_unreachable();
-					break;
-				}
+			case pixel::Type::APA102:
+			case pixel::Type::SK9822:
+				m_pWS28xxMulti->SetPixel4Bytes(nPortIndex, 1 + nPixelIndex, pixelDmxConfiguration.GetGlobalBrightness(), b, g, r);
+				break;
+			case pixel::Type::P9813: {
+				const auto nFlag = static_cast<uint8_t>(0xC0 | ((~b & 0xC0) >> 2) | ((~r & 0xC0) >> 4) | ((~r & 0xC0) >> 6));
+				m_pWS28xxMulti->SetPixel4Bytes(nPortIndex, 1 + nPixelIndex, nFlag, b, g, r);
+			}
+			break;
+			default:
+				assert(0);
+				__builtin_unreachable();
+				break;
 			}
 		};
 
-		switch (pixelDmxConfiguration.GetMap()) {
-		case pixel::Map::RGB:
+		constexpr uint32_t channelMap[6][3] = {
+		    {0, 1, 2}, // RGB
+		    {0, 2, 1}, // RBG
+		    {1, 0, 2}, // GRB
+		    {2, 0, 1}, // GBR
+		    {1, 2, 0}, // BRG
+		    {2, 1, 0}  // BGR
+		};
+
+		const auto mapIndex = static_cast<uint32_t>(pixelDmxConfiguration.GetMap());
+		// Ensure mapIndex is within valid bounds
+		assert(mapIndex < sizeof(channelMap) / sizeof(channelMap[0]));  // Runtime check
+		auto const& map = channelMap[mapIndex];
+
+		if (isRTZProtocol) {
 			for (uint32_t j = beginIndex; (j < endIndex) && (d < nLength); j++) {
 				auto const nPixelIndexStart = j * nGroupingCount;
 				for (uint32_t k = 0; k < nGroupingCount; k++) {
-					setPixelsColor3(nOutIndex, nPixelIndexStart + k, pData[d + 0], pData[d + 1], pData[d + 2]);
+					setPixelsColourRTZ(nOutIndex, nPixelIndexStart + k, pData[d + map[0]], pData[d + map[1]], pData[d + map[2]]);
 				}
 				d += 3; // Increment by 3 since we're processing 3 channels per pixel
 			}
-			break;
-		case pixel::Map::RBG:
+		} else {
 			for (uint32_t j = beginIndex; (j < endIndex) && (d < nLength); j++) {
 				auto const nPixelIndexStart = j * nGroupingCount;
 				for (uint32_t k = 0; k < nGroupingCount; k++) {
-					setPixelsColor3(nOutIndex, nPixelIndexStart + k, pData[d + 0], pData[d + 2], pData[d + 1]);
+					setPixelsColour3(nOutIndex, nPixelIndexStart + k, pData[d + map[0]], pData[d + map[1]], pData[d + map[2]]);
 				}
 				d += 3; // Increment by 3 since we're processing 3 channels per pixel
 			}
-			break;
-		case pixel::Map::GRB:
-			for (uint32_t j = beginIndex; (j < endIndex) && (d < nLength); j++) {
-				auto const nPixelIndexStart = j * nGroupingCount;
-				for (uint32_t k = 0; k < nGroupingCount; k++) {
-					setPixelsColor3(nOutIndex, nPixelIndexStart + k, pData[d + 1], pData[d + 0], pData[d + 2]);
-				}
-				d += 3; // Increment by 3 since we're processing 3 channels per pixel
-			}
-			break;
-		case pixel::Map::GBR:
-			for (uint32_t j = beginIndex; (j < endIndex) && (d < nLength); j++) {
-				auto const nPixelIndexStart = j * nGroupingCount;
-				for (uint32_t k = 0; k < nGroupingCount; k++) {
-					setPixelsColor3(nOutIndex, nPixelIndexStart + k, pData[d + 2], pData[d + 0], pData[d + 1]);
-				}
-				d += 3; // Increment by 3 since we're processing 3 channels per pixel
-			}
-			break;
-		case pixel::Map::BRG:
-			for (uint32_t j = beginIndex; (j < endIndex) && (d < nLength); j++) {
-				auto const nPixelIndexStart = j * nGroupingCount;
-				for (uint32_t k = 0; k < nGroupingCount; k++) {
-					setPixelsColor3(nOutIndex, nPixelIndexStart + k, pData[d + 1], pData[d + 2], pData[d + 0]);
-				}
-				d += 3; // Increment by 3 since we're processing 3 channels per pixel
-			}
-			break;
-		case pixel::Map::BGR:
-			for (uint32_t j = beginIndex; (j < endIndex) && (d < nLength); j++) {
-				auto const nPixelIndexStart = j * nGroupingCount;
-				for (uint32_t k = 0; k < nGroupingCount; k++) {
-					setPixelsColor3(nOutIndex, nPixelIndexStart + k, pData[d + 2], pData[d + 1], pData[d + 0]);
-				}
-				d += 3; // Increment by 3 since we're processing 3 channels per pixel
-			}
-			break;
-		default:
-			assert(0);
-			__builtin_unreachable();
-			break;
 		}
 	} else {
 		assert(nChannelsPerPixel == 4);

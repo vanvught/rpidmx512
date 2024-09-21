@@ -1,7 +1,7 @@
 $(info [${CURDIR}])
 $(info $$MAKE_FLAGS [${MAKE_FLAGS}])
 
-EXTRA_INCLUDES+=../lib-properties/include ../lib-network/include
+EXTRA_INCLUDES+=../lib-properties/include ../lib-lightset/include ../lib-network/include
 
 ifneq ($(MAKE_FLAGS),)
 	ifeq (,$(findstring CONFIG_SHOWFILE_USE_CUSTOM_DISPLAY,$(MAKE_FLAGS)))
