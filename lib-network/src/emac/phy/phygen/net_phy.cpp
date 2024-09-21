@@ -53,16 +53,14 @@ void phy_customized_timing() {
 }
 
 void phy_customized_status(PhyStatus& phyStatus) {
-	phyStatus.link = link_status_read();
-
 	uint16_t nValue;
-	phy_read(PHY_ADDRESS, mmi::REG_BMCR, nValue);
+	phy_read(PHY_ADDRESS, mmi::REG_BMSR, nValue);
 
 	debug_print_bits(nValue);
 
-	phyStatus.duplex = ((nValue & BIT(8)) == BIT(8)) ? Duplex::DUPLEX_FULL : Duplex::DUPLEX_HALF;
-	phyStatus.speed = ((nValue & BIT(13)) == BIT(13)) ? Speed::SPEED100 : Speed::SPEED10;
-	phyStatus.bAutonegotiation = ((nValue & mmi::BMCR_AUTONEGOTIATION) == mmi::BMCR_AUTONEGOTIATION);
-
+	phyStatus.duplex = Duplex::DUPLEX_FULL;
+	phyStatus.speed = Speed::SPEED100;
+	phyStatus.link = (nValue & mmi::BMSR_LINKED_STATUS) ? Link::STATE_UP : Link::STATE_DOWN;
+	phyStatus.bAutonegotiation = (nValue & mmi::BMSR_AUTONEGO_COMPLETE);
 }
 }  // namespace net

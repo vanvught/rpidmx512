@@ -16,3 +16,5 @@ EXTRA_SRCDIR+=src/tftp src/h3/tftp
 
 include Rules.mk
 include ../firmware-template-h3/lib/Rules.mk
+
+$(info $$PHY_TYPE [${PHY_TYPE}])

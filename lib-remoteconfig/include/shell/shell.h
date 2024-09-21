@@ -3,7 +3,7 @@
  *
  */
 /* Copyright (C) 2020 by hippy mailto:dmxout@gmail.com
- * Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+ * Copyright (C) 2020-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,18 +44,35 @@ enum class CmdIndex: uint32_t {
 	GET,
 	DHCP,
 	DATE,
+	PHY,
+#if !defined (DISABLE_RTC)
 	HWCLOCK,
-#ifndef NDEBUG
+#endif
+#if defined (DEBUG_I2C)
 	I2CDETECT,
+#endif
 	DUMP,
 	MEM,
+#if defined (ENABLE_NTP_CLIENT)
 	NTP,
+#endif
+#if defined (CONFIG_SHELL_GPS)
 	GPS,
+#endif
+#if (PHY_TYPE == RTL8201F)
+	PHY_TYPE_RTL8201F,
 #endif
 	HELP
 };
 static constexpr auto BUFLEN = 196;
 static constexpr auto MAXARG = 4;
+
+namespace msg {
+namespace error {
+static constexpr char INVALID[] = "Invalid command.\n";
+static constexpr char INTERNAL[] = "Internal error.\n";
+}  // namespace error
+}  // namespace msg
 }  // namespace shell
 
 class Shell {
@@ -75,34 +92,33 @@ private:
 	int Printf(const char* fmt, ...);
 	// shell.cpp
 	const char *ReadLine(uint32_t& nLength);
-	uint16_t ValidateCmd(uint32_t nLength, shell::CmdIndex &nCmdIndex);
-	void ValidateArg(uint16_t nOffset, uint32_t nLength);
+	uint32_t ValidateCmd(const uint32_t nLength, shell::CmdIndex &nCmdIndex);
+	void ValidateArg(uint32_t nOffset, const uint32_t nLength);
 	// shellcmd.cpp
-	uint32_t hexadecimalToDecimal(const char *pHexValue, uint32_t nLength);
 	void CmdReboot();
 	void CmdInfo();
 	void CmdSet();
 	void CmdGet();
 	void CmdDhcp();
 	void CmdDate();
+	void CmdPhy();
 	void CmdHwClock();
-#ifndef NDEBUG
 	void CmdI2cDetect();
 	void CmdDump();
 	void CmdMem();
 	void CmdNtp();
 	void CmdGps();
-#endif
+	void CmdPhyTypeRTL8201F();
 	void CmdHelp();
 
 private:
-	bool m_bIsEndOfLine { false };
-	uint16_t m_nLength { 0 };
 	char m_Buffer[shell::BUFLEN];
 	uint32_t m_Argc { 0 };
+	uint32_t m_nLength { 0 };
 	char *m_Argv[shell::MAXARG] { nullptr };
 	uint16_t m_nArgvLength[shell::MAXARG];
 	bool m_bShownPrompt { false };
+	bool m_bIsEndOfLine { false };
 
 // Firmware specific BEGIN
 #if defined (LTC_READER)

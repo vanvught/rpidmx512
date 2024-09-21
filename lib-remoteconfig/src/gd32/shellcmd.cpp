@@ -1,8 +1,9 @@
 /**
- * @file software_version.h
+ * @file shellcmd.cpp
  *
  */
-/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020 by hippy mailto:dmxout@gmail.com
+ * Copyright (C) 2020-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef SOFTWARE_VERSION_H_
-#define SOFTWARE_VERSION_H_
+#include "shell/shell.h"
 
-constexpr char SOFTWARE_VERSION[] = "4.5";
-
-#endif /* SOFTWARE_VERSION_H_ */
+void Shell::CmdDump() {
+	Puts(shell::msg::error::INVALID);
+}

@@ -1,5 +1,5 @@
 ![GitHub](https://img.shields.io/github/license/vanvught/rpidmx512)
-[![C++ Standard](https://img.shields.io/badge/C%2B%2B-11-blue.svg)](https://img.shields.io/badge/C%2B%2B-11%-blue.svg)
+[![C++ Standard](https://img.shields.io/badge/C%2B%2B-20-blue.svg)](https://img.shields.io/badge/C%2B%2B-11%-blue.svg)
 ![GitHub issues](https://img.shields.io/github/issues-raw/vanvught/rpidmx512)
 ![GitHub contributors](https://img.shields.io/github/contributors/vanvught/rpidmx512)
 ![GitHub Sponsors](https://img.shields.io/github/sponsors/vanvught)

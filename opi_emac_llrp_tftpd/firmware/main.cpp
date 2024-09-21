@@ -76,7 +76,6 @@ int main() {
 	FlashCodeInstall spiFlashInstall;
 
 	fw.Print("RDMNet LLRP device only");
-	
 
 	NtpClient ntpClient;
 	ntpClient.Start();

@@ -107,8 +107,8 @@ public:
 	}
 
 private:
-	void StartData(const uint32_t nUart, const uint32_t nPortIndex);
-	void StopData(const uint32_t nUart, const uint32_t nPortIndex);
+	void StartData(const uint32_t nPortIndex);
+	void StopData(const uint32_t nPortIndex);
 	void StartDmxOutput(const uint32_t nPortIndex);
 
 private:

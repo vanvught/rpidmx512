@@ -143,8 +143,13 @@ void NetworkParams::callbackFunction(const char *pLine) {
 	}
 
 	if (Sscan::IpAddress(pLine, NetworkParamsConst::DEFAULT_GATEWAY, nValue32) == Sscan::OK) {
-		m_Params.nGatewayIp = nValue32;
-		m_Params.nSetList |= networkparams::Mask::DEFAULT_GATEWAY;
+		if (nValue32 != 0) {
+			m_Params.nSetList |= networkparams::Mask::DEFAULT_GATEWAY;
+			m_Params.nGatewayIp = nValue32;
+		} else {
+			m_Params.nSetList &= ~networkparams::Mask::DEFAULT_GATEWAY;
+		}
+
 		return;
 	}
 
@@ -251,14 +256,12 @@ void NetworkParams::Builder(const struct networkparams::Params *ptNetworkParams,
 void NetworkParams::Dump() {
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, NetworkParamsConst::FILE_NAME);
 
-	debug_print_bits(m_Params.nSetList);
-
 	printf(" %s=%d [%s]\n", NetworkParamsConst::USE_DHCP, static_cast<int>(m_Params.bIsDhcpUsed), m_Params.bIsDhcpUsed != 0 ? "Yes" : "No");
 	printf(" %s=" IPSTR "\n", NetworkParamsConst::IP_ADDRESS, IP2STR(m_Params.nLocalIp));
 	printf(" %s=" IPSTR "\n", NetworkParamsConst::NET_MASK, IP2STR(m_Params.nNetmask));
+	printf(" %s=" IPSTR "\n", NetworkParamsConst::DEFAULT_GATEWAY, IP2STR(m_Params.nGatewayIp));
 
 #if defined (ESP8266)
-	printf(" %s=" IPSTR "\n", NetworkParamsConst::DEFAULT_GATEWAY, IP2STR(m_Params.nGatewayIp));
 	printf(" %s=" IPSTR "\n",  NetworkParamsConst::NAME_SERVER, IP2STR(m_Params.nNameServerIp));
 #endif
 
