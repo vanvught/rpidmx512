@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -230,14 +230,11 @@ void ArtNetController::SetLongName(const char *pLongName) {
 void ArtNetController::Start() {
 	DEBUG_ENTRY
 
-	m_ArtNetController.nIPAddressLocal = Network::Get()->GetIp();
-	m_ArtNetController.nIPAddressBroadcast = Network::Get()->GetBroadcastIp();
-
 	assert(m_nHandle == -1);
 	m_nHandle = Network::Get()->Begin(artnet::UDP_PORT);
 	assert(m_nHandle != -1);
 
-	Network::Get()->SendTo(m_nHandle, &m_ArtNetPoll, sizeof(struct ArtPoll), m_ArtNetController.nIPAddressBroadcast, artnet::UDP_PORT);
+	Network::Get()->SendTo(m_nHandle, &m_ArtNetPoll, sizeof(struct ArtPoll), Network::Get()->GetBroadcastIp(), artnet::UDP_PORT);
 
 	m_State.status = artnet::Status::ON;
 
@@ -315,7 +312,7 @@ void ArtNetController::HandleDmxOut(uint16_t nUniverse, const uint8_t *pDmxData,
 	}
 
 	if (!m_bUnicast || (nCount > 40) || !m_bForceBroadcast) {
-		Network::Get()->SendTo(m_nHandle, m_pArtDmx, sizeof(struct ArtDmx), m_ArtNetController.nIPAddressBroadcast, artnet::UDP_PORT);
+		Network::Get()->SendTo(m_nHandle, m_pArtDmx, sizeof(struct ArtDmx), Network::Get()->GetBroadcastIp(), artnet::UDP_PORT);
 
 		m_bDmxHandled = true;
 	}
@@ -326,7 +323,7 @@ void ArtNetController::HandleDmxOut(uint16_t nUniverse, const uint8_t *pDmxData,
 void ArtNetController::HandleSync() {
 	if (m_bSynchronization && m_bDmxHandled) {
 		m_bDmxHandled = false;
-		Network::Get()->SendTo(m_nHandle, m_pArtSync, sizeof(struct ArtSync), m_ArtNetController.nIPAddressBroadcast, artnet::UDP_PORT);
+		Network::Get()->SendTo(m_nHandle, m_pArtSync, sizeof(struct ArtSync), Network::Get()->GetBroadcastIp(), artnet::UDP_PORT);
 	}
 }
 
@@ -375,7 +372,7 @@ void ArtNetController::HandleBlackout() {
 				m_pArtDmx->Sequence = 1;
 			}
 
-			Network::Get()->SendTo(m_nHandle, m_pArtDmx, sizeof(struct ArtDmx), m_ArtNetController.nIPAddressBroadcast, artnet::UDP_PORT);
+			Network::Get()->SendTo(m_nHandle, m_pArtDmx, sizeof(struct ArtDmx), Network::Get()->GetBroadcastIp(), artnet::UDP_PORT);
 		}
 
 	}
@@ -401,7 +398,7 @@ void ArtNetController::ProcessPoll() {
 	const auto nCurrentMillis = Hardware::Get()->Millis();
 
 	if (__builtin_expect((nCurrentMillis - m_nLastPollMillis > POLL_INTERVAL_MILLIS), 0)) {
-		Network::Get()->SendTo(m_nHandle, &m_ArtNetPoll, sizeof(struct ArtPoll), m_ArtNetController.nIPAddressBroadcast, artnet::UDP_PORT);
+		Network::Get()->SendTo(m_nHandle, &m_ArtNetPoll, sizeof(struct ArtPoll), Network::Get()->GetBroadcastIp(), artnet::UDP_PORT);
 		m_nLastPollMillis= nCurrentMillis;
 
 #ifndef NDEBUG
