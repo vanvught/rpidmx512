@@ -112,6 +112,7 @@
 									<listOptionValue builtIn="false" value="__GIC_PRESENT=1"/>
 									<listOptionValue builtIn="false" value="__FPU_PRESENT"/>
 									<listOptionValue builtIn="false" value="BARE_METAL"/>
+									<listOptionValue builtIn="false" value="TCP_TX_QUEUE_SIZE=2"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.2014947009" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
 							</tool>
@@ -143,6 +144,7 @@
 									<listOptionValue builtIn="false" value="__GIC_PRESENT=1"/>
 									<listOptionValue builtIn="false" value="__FPU_PRESENT"/>
 									<listOptionValue builtIn="false" value="BARE_METAL"/>
+									<listOptionValue builtIn="false" value="TCP_TX_QUEUE_SIZE=2"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.839156230" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input"/>
 							</tool>
@@ -175,6 +177,8 @@
 									<listOptionValue builtIn="false" value="__GIC_PRESENT=1"/>
 									<listOptionValue builtIn="false" value="__FPU_PRESENT"/>
 									<listOptionValue builtIn="false" value="BARE_METAL"/>
+									<listOptionValue builtIn="false" value="TCP_RETRANSMISSION_QUEUE_SIZE=2"/>
+									<listOptionValue builtIn="false" value="TCP_TX_QUEUE_SIZE=2"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input.1741809360" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input"/>
 							</tool>
@@ -275,6 +279,8 @@
 									<listOptionValue builtIn="false" value="__GIC_PRESENT=1"/>
 									<listOptionValue builtIn="false" value="__FPU_PRESENT"/>
 									<listOptionValue builtIn="false" value="BARE_METAL"/>
+									<listOptionValue builtIn="false" value="TCP_RETRANSMISSION_QUEUE_SIZE=2"/>
+									<listOptionValue builtIn="false" value="TCP_TX_QUEUE_SIZE=2"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.108239718" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -308,6 +314,7 @@
 									<listOptionValue builtIn="false" value="__GIC_PRESENT=1"/>
 									<listOptionValue builtIn="false" value="__FPU_PRESENT"/>
 									<listOptionValue builtIn="false" value="BARE_METAL"/>
+									<listOptionValue builtIn="false" value="TCP_TX_QUEUE_SIZE=2"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.276408863" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -459,6 +466,7 @@
 									<listOptionValue builtIn="false" value="__GIC_PRESENT=1"/>
 									<listOptionValue builtIn="false" value="__FPU_PRESENT"/>
 									<listOptionValue builtIn="false" value="BARE_METAL"/>
+									<listOptionValue builtIn="false" value="TCP_TX_QUEUE_SIZE=2"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.495139120" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/include}&quot;"/>
@@ -476,6 +484,7 @@
 									<listOptionValue builtIn="false" value="__GIC_PRESENT=1"/>
 									<listOptionValue builtIn="false" value="__FPU_PRESENT"/>
 									<listOptionValue builtIn="false" value="BARE_METAL"/>
+									<listOptionValue builtIn="false" value="TCP_TX_QUEUE_SIZE=2"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths.2073243520" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/include}&quot;"/>
@@ -493,6 +502,7 @@
 									<listOptionValue builtIn="false" value="__GIC_PRESENT=1"/>
 									<listOptionValue builtIn="false" value="__FPU_PRESENT"/>
 									<listOptionValue builtIn="false" value="BARE_METAL"/>
+									<listOptionValue builtIn="false" value="TCP_TX_QUEUE_SIZE=2"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths.712127466" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/include}&quot;"/>

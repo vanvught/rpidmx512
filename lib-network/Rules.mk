@@ -45,4 +45,6 @@ else
 	EXTRA_SRCDIR+=src/emac/phy/dp83848 src/emac/phy/lan8700 src/emac/phy/phygen src/emac/phy/rtl8201f
 	EXTRA_SRCDIR+=src/params
 	DEFINES+=RTL8201F_LED1_LINK_ALL
+	DEFINES+=TCP_TX_QUEUE_SIZE=2
+	DEFINES+=DEBUG_NET_TCP
 endif

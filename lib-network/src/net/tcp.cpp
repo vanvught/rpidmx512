@@ -55,6 +55,8 @@
 #include "net_memcpy.h"
 #include "net_private.h"
 
+#include "datasegmentqueue.h"
+
 #include "hardware.h"
 
 #include "debug.h"
@@ -131,9 +133,17 @@ struct ReceiveQueue {
 	QueueEntry Entries[TCP_RX_MAX_ENTRIES];
 };
 
+struct TransmissionQueue {
+	tcb *pTcb;
+	DataSegmentQueue dataSegmentQueue;
+};
+
 struct Port {
 	tcb TCB[TCP_MAX_TCBS_ALLOWED];
 	ReceiveQueue receiveQueue;
+#if defined(TCP_TX_QUEUE_SIZE)
+	TransmissionQueue transmissionQueue;
+#endif
 	uint16_t nLocalPort;
 };
 
@@ -489,6 +499,35 @@ static void send_reset(struct t_tcp *pTcp, const struct tcb *pTcb) {
 	DEBUG_EXIT
 }
 
+static bool send_data(struct tcb *pTCB, const uint8_t *pBuffer, const uint32_t nLength, const bool isLastSegment) {
+	assert(nLength != 0);
+	assert(nLength <= static_cast<uint32_t>(TCP_DATA_SIZE));
+	assert(nLength <= pTCB->SND.WND);
+
+	DEBUG_PRINTF("nLength=%u, pTCB->SND.WND=%u", nLength, pTCB->SND.WND);
+
+	pTCB->TX.data = const_cast<uint8_t *>(pBuffer);
+	pTCB->TX.size = nLength;
+
+	struct SendInfo info;
+	info.SEQ = pTCB->SND.NXT;
+	info.ACK = pTCB->RCV.NXT;
+	info.CTL = Control::ACK;
+	if (isLastSegment) {
+		info.CTL |= Control::PSH;
+	}
+
+	send_package(pTCB, info);
+
+	pTCB->TX.data = nullptr;
+	pTCB->TX.size = 0;
+
+    pTCB->SND.NXT += nLength;
+    pTCB->SND.WND -= nLength;
+
+    return false;
+}
+
 struct Options {
 	uint8_t nKind;
 	uint8_t nLength;
@@ -564,12 +603,22 @@ __attribute__((hot)) void tcp_run() {
 				tcb.SND.NXT++;
 			}
 		}
+#if defined(TCP_TX_QUEUE_SIZE)
+			auto& transmissionQueue = port.transmissionQueue;
+			auto& dataSegmentQueue = transmissionQueue.dataSegmentQueue;
+
+			while (!dataSegmentQueue.IsEmpty() && dataSegmentQueue.GetFront().nLength <= transmissionQueue.pTcb->SND.WND) {
+			      const auto &segment = dataSegmentQueue.GetFront();
+			      send_data(transmissionQueue.pTcb, segment.buffer, segment.nLength, segment.isLastSegment);
+			      dataSegmentQueue.Pop();
+			}
+#endif
 	}
 }
 
 static bool find_matching_tcb(const t_tcp *pTcp, const uint32_t nIndexPort, uint32_t& nIndexTCB) {
     for (nIndexTCB = 0; nIndexTCB < TCP_MAX_TCBS_ALLOWED; nIndexTCB++) {
-        auto *pTCB = &s_Port[nIndexPort].TCB[nIndexTCB];
+        const auto *pTCB = &s_Port[nIndexPort].TCB[nIndexTCB];
 
         if (pTCB->state == STATE_LISTEN) {
             continue;
@@ -1099,6 +1148,9 @@ int tcp_begin(const uint16_t nLocalPort) {
 				_init_tcb(&s_Port[i].TCB[nIndexTCB], nLocalPort);
 			}
 
+#if defined(TCP_TX_QUEUE_SIZE)
+			s_Port[i].transmissionQueue.pTcb = nullptr;
+#endif
 			DEBUG_PRINTF("i=%d, nLocalPort=%d[%x]", i, nLocalPort, nLocalPort);
 			return i;
 		}
@@ -1136,38 +1188,6 @@ uint16_t tcp_read(const int32_t nHandleListen, const uint8_t **pData, uint32_t &
 	return pQueueEntry->nSize;
 }
 
-static void _write(struct tcb *pTCB, const uint8_t *pBuffer, const uint32_t nLength, const bool isLastSegment) {
-	assert(nLength != 0);
-	assert(nLength <= static_cast<uint32_t>(TCP_DATA_SIZE));
-
-	DEBUG_PRINTF("nLength=%u, pTCB->SND.WND=%u", nLength, pTCB->SND.WND);
-
-    if (nLength > pTCB->SND.WND) {
-    	console_error("Retry or queue the data for later transmission\n");
-        // TODO retry or queue the data for later transmission.
-        return;
-    }
-
-	pTCB->TX.data = const_cast<uint8_t *>(pBuffer);
-	pTCB->TX.size = nLength;
-
-	struct SendInfo info;
-	info.SEQ = pTCB->SND.NXT;
-	info.ACK = pTCB->RCV.NXT;
-	info.CTL = Control::ACK;
-	if (isLastSegment) {
-		info.CTL |= Control::PSH;
-	}
-
-	send_package(pTCB, info);
-
-	pTCB->TX.data = nullptr;
-	pTCB->TX.size = 0;
-
-    pTCB->SND.NXT += nLength;
-    pTCB->SND.WND -= nLength;
-}
-
 void tcp_write(const int32_t nHandleListen, const uint8_t *pBuffer, uint32_t nLength, uint32_t nHandleConnection) {
 	assert(nHandleListen >= 0);
 	assert(nHandleListen < TCP_MAX_PORTS_ALLOWED);
@@ -1179,12 +1199,35 @@ void tcp_write(const int32_t nHandleListen, const uint8_t *pBuffer, uint32_t nLe
 
 	const auto *p = pBuffer;
 
-	while (nLength > 0) {
+	while ((nLength > 0) && (nLength <= pTCB->SND.WND)) {
 		const auto nWriteLength = (nLength > TCP_DATA_SIZE) ? TCP_DATA_SIZE : nLength;
 		const bool isLastSegment = (nLength < TCP_DATA_SIZE);
-		_write(pTCB, p, nWriteLength, isLastSegment);
+
+		send_data(pTCB, p, nWriteLength, isLastSegment);
+
 		p += nWriteLength;
 		nLength -= nWriteLength;
+	}
+
+	if (nLength > 0) {
+#if defined(TCP_TX_QUEUE_SIZE)
+		auto& transmissionQueue = s_Port[nHandleListen].transmissionQueue;
+		auto& dataSegmentQueue = transmissionQueue.dataSegmentQueue;
+		assert(dataSegmentQueue.IsEmpty());
+
+		transmissionQueue.pTcb = pTCB;
+
+		while (nLength > 0) {
+			assert(!dataSegmentQueue.IsFull());
+			const auto nWriteLength = (nLength > TCP_DATA_SIZE) ? TCP_DATA_SIZE : nLength;
+			const bool isLastSegment = (nLength < TCP_DATA_SIZE);
+			dataSegmentQueue.Push(p, nWriteLength, isLastSegment);
+			p += nWriteLength;
+			nLength -= nWriteLength;
+		}
+#else
+		assert(0);
+#endif
 	}
 }
 }  // namespace net

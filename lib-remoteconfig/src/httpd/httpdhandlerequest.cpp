@@ -23,6 +23,10 @@
  * THE SOFTWARE.
  */
 
+#if defined (DEBUG_HTTPD)
+# undef NDEBUG
+#endif
+
 #if !defined(__clang__)
 # pragma GCC push_options
 # pragma GCC optimize ("O2")
@@ -69,11 +73,10 @@
 #include "debug.h"
 
 #if defined ENABLE_CONTENT
-//uint32_t get_file_content(const char *fileName, char *pDst, http::contentTypes& contentType);
 const char *get_file_content(const char *fileName, uint32_t& nSize, http::contentTypes& contentType);
 #endif
 
-char HttpDeamonHandleRequest::m_DynamicContent[http::BUFSIZE];
+char HttpDeamonHandleRequest::m_DynamicContent[httpd::BUFSIZE];
 
 #ifndef NDEBUG
 static constexpr char s_request_method[][8] = {"GET", "POST", "DELETE", "UNKNOWN" };
@@ -96,7 +99,7 @@ void HttpDeamonHandleRequest::HandleRequest(const uint32_t nBytesReceived, char 
 		// This is an initial incoming HTTP request
 		m_Status = ParseRequest();
 
-		DEBUG_PRINTF("%s %s", s_request_method[static_cast<uint32_t>(m_RequestMethod)], s_contentType[static_cast<uint32_t>(m_ContentType)]);
+		DEBUG_PRINTF("%s %s", s_request_method[static_cast<uint32_t>(m_RequestMethod)], m_ContentType < http::contentTypes::NOT_DEFINED ? s_contentType[static_cast<uint32_t>(m_ContentType)] : "Unknown");
 
 		if (m_Status == http::Status::OK) {
 			// It is a supported request
@@ -163,7 +166,7 @@ void HttpDeamonHandleRequest::HandleRequest(const uint32_t nBytesReceived, char 
 
 		m_ContentType = http::contentTypes::TEXT_HTML;
 		m_pContent = m_DynamicContent;
-		m_nContentSize = static_cast<uint32_t>(snprintf(m_DynamicContent, http::BUFSIZE - 1U,
+		m_nContentSize = static_cast<uint32_t>(snprintf(m_DynamicContent, sizeof(m_DynamicContent) - 1U,
 				"<!DOCTYPE html>\n"
 				"<html>\n"
 				"<head><title>%u %s</title></head>\n"
@@ -171,7 +174,7 @@ void HttpDeamonHandleRequest::HandleRequest(const uint32_t nBytesReceived, char 
 				"</html>\n", static_cast<unsigned int>(m_Status), pStatusMsg, pStatusMsg));
 	}
 
-	const auto nHeaderLength = snprintf(m_RequestHeaderResponse, http::BUFSIZE - 1U,
+	const auto nHeaderLength = snprintf(m_RequestHeaderResponse, sizeof(m_DynamicContent) - 1U,
 			"HTTP/1.1 %u %s\r\n"
 			"Server: %s\r\n"
 			"Content-Type: %s\r\n"
@@ -680,7 +683,7 @@ http::Status HttpDeamonHandleRequest::HandlePost(const bool hasDataOnly) {
 	}
 
 	m_ContentType = http::contentTypes::TEXT_HTML;
-	m_nContentSize = static_cast<uint32_t>(snprintf(m_DynamicContent, http::BUFSIZE - 1U,
+	m_nContentSize = static_cast<uint32_t>(snprintf(m_DynamicContent, sizeof(m_DynamicContent) - 1U,
 			"<!DOCTYPE html>\n"
 			"<html>\n"
 			"<head><title>Submit</title></head>\n"
@@ -746,7 +749,7 @@ http::Status HttpDeamonHandleRequest::HandleDelete(const bool hasDataOnly) {
 	}
 
 	m_ContentType = http::contentTypes::TEXT_HTML;
-	m_nContentSize = static_cast<uint32_t>(snprintf(m_DynamicContent, http::BUFSIZE - 1U,
+	m_nContentSize = static_cast<uint32_t>(snprintf(m_DynamicContent, sizeof(m_DynamicContent) - 1U,
 			"<!DOCTYPE html>\n"
 			"<html>\n"
 			"<head><title>Submit</title></head>\n"

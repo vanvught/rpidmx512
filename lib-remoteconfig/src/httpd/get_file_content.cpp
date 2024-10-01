@@ -23,6 +23,10 @@
  * THE SOFTWARE.
  */
 
+#if defined (DEBUG_HTTPD)
+# undef NDEBUG
+#endif
+
 #include <cstdint>
 #include <cstring>
 #include <cassert>
@@ -92,7 +96,7 @@ uint32_t get_file_content(const char *fileName, char *pDst, http::contentTypes& 
 			}
 		}
 		*p++ = c;
-		if ((p - pDst) == http::BUFSIZE) {
+		if ((p - pDst) == httpd::BUFSIZE) {
 			DEBUG_PUTS("File too long");
 			break;
 		}
@@ -104,7 +108,7 @@ uint32_t get_file_content(const char *fileName, char *pDst, http::contentTypes& 
 	return static_cast<uint32_t>(p - pDst);
 }
 
-static char s_StaticContent[http::BUFSIZE];
+static char s_StaticContent[httpd::BUFSIZE];
 
 const char *get_file_content(const char *pFileName, uint32_t& nSize, http::contentTypes& contentType) {
 	DEBUG_ENTRY

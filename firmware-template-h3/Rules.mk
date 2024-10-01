@@ -52,13 +52,7 @@ ifneq ($(findstring _TIME_STAMP_YEAR_,$(DEFINES)), _TIME_STAMP_YEAR_)
 	DEFINES+=-D_TIME_STAMP_YEAR_=$(shell date  +"%Y") -D_TIME_STAMP_MONTH_=$(shell date  +"%-m") -D_TIME_STAMP_DAY_=$(shell date  +"%-d")
 endif
 
-DEFINES+=-DBARE_METAL -DH3
-DEFINES+=-DPHY_GENERIC=255
-DEFINES+=-DPHY_TYPE=PHY_GENERIC
-DEFINES+=-DENABLE_TFTP_SERVER
-DEFINES+=-DCONFIG_MDNS_DOMAIN_REVERSE
-DEFINES+=-DISABLE_INTERNAL_RTC
-DEFINES+=-D__FPU_PRESENT=1 -D__GIC_PRESENT=1
+include ../firmware-template-h3/Common.mk
 
 ifneq ($(findstring CONFIG_STORE_USE_SPI,$(DEFINES)), CONFIG_STORE_USE_SPI)
 	DEFINES+=-DCONFIG_STORE_USE_SPI
@@ -90,7 +84,7 @@ LIBDEP=$(addprefix ../lib-,$(LIBS))
 
 $(info [${LIBDEP}])
 
-COPS=-D$(PLATFORM) $(DEFINES)
+COPS=-DBARE_METAL -DH3 -D$(PLATFORM) $(DEFINES)
 COPS+=$(INCDIRS) $(LIBINCDIRS) $(addprefix -I,$(EXTRA_INCLUDES))
 COPS+=-mfpu=neon-vfpv4 -mcpu=cortex-a7 -mfloat-abi=hard -mhard-float
 COPS+=-nostartfiles -ffreestanding -nostdlib -fprefetch-loop-arrays
