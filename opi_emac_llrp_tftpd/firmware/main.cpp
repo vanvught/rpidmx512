@@ -93,6 +93,8 @@ int main() {
 	remoteConfigParams.Load();
 	remoteConfigParams.Set(&remoteConfig);
 
+	DEBUG_PUTS("");
+
 	while (configStore.Flash())
 		;
 
@@ -118,6 +120,8 @@ int main() {
 	auto t1 = time(nullptr);
 	struct tm tmHwClock;
 	memset(&tmHwClock, 0, sizeof(struct tm));
+
+	DEBUG_PUTS("");
 
 	for (;;) {
 		nw.Run();

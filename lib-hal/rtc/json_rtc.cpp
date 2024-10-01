@@ -44,6 +44,8 @@ static void staticCallbackFunction([[maybe_unused]] void *p, const char *s) {
 	assert(p == nullptr);
 	assert(s != nullptr);
 
+	DEBUG_PUTS(s);
+
 	uint32_t nLength = iso8601FormatSize;
 
 	if (Sscan::Char(s, "alarm" , iso8601Format, nLength) == Sscan::OK) {
@@ -55,6 +57,8 @@ static void staticCallbackFunction([[maybe_unused]] void *p, const char *s) {
 	nLength = sizeof(action) - 1;
 
 	if (Sscan::Char(s, "action" , action, nLength) == Sscan::OK) {
+		DEBUG_PUTS("action");
+
 		if (strncmp(action, "hctosys", nLength) == 0) {
 			HwClock::Get()->HcToSys();
 			return;
@@ -71,6 +75,8 @@ static void staticCallbackFunction([[maybe_unused]] void *p, const char *s) {
 	uint8_t nValue8;
 
 	if (Sscan::Uint8(s, "enable", nValue8) == Sscan::OK) {
+		DEBUG_PUTS("enable");
+
 		HwClock::Get()->AlarmEnable(nValue8 != 0);
 		return;
 	}

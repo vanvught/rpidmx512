@@ -72,8 +72,8 @@ ArtNetPollTable::ArtNetPollTable() {
 	m_PollTableClean.nUniverseIndex = 0;
 	m_PollTableClean.bOffLine = true;
 
-	DEBUG_PRINTF("NodeEntry[%d] = %u bytes [%u Kb]", artnet::POLL_TABLE_SIZE_ENRIES, static_cast<unsigned>(sizeof(artnet::NodeEntry[artnet::POLL_TABLE_SIZE_ENRIES])), static_cast<unsigned>(sizeof(artnet::NodeEntry[artnet::POLL_TABLE_SIZE_ENRIES])) / 1024U);
-	DEBUG_PRINTF("PollTableUniverses[%d] = %u bytes [%u Kb]", artnet::POLL_TABLE_SIZE_UNIVERSES, static_cast<unsigned>(sizeof(artnet::PollTableUniverses[artnet::POLL_TABLE_SIZE_UNIVERSES])), static_cast<unsigned>(sizeof(artnet::PollTableUniverses[artnet::POLL_TABLE_SIZE_UNIVERSES])) / 1024U);
+	DEBUG_PRINTF("NodeEntry[%d] = %u bytes [%u Kb]", artnet::POLL_TABLE_SIZE_ENRIES, (sizeof(artnet::NodeEntry[artnet::POLL_TABLE_SIZE_ENRIES])), (sizeof(artnet::NodeEntry[artnet::POLL_TABLE_SIZE_ENRIES])) / 1024U);
+	DEBUG_PRINTF("PollTableUniverses[%d] = %u bytes [%u Kb]", artnet::POLL_TABLE_SIZE_UNIVERSES, (sizeof(artnet::PollTableUniverses[artnet::POLL_TABLE_SIZE_UNIVERSES])), (sizeof(artnet::PollTableUniverses[artnet::POLL_TABLE_SIZE_UNIVERSES])) / 1024U);
 	DEBUG_EXIT
 }
 

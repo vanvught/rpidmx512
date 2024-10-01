@@ -51,8 +51,6 @@ struct State {
 };
 
 struct TArtNetController {
-	uint32_t nIPAddressLocal;
-	uint32_t nIPAddressBroadcast;
 	uint8_t Oem[2];
 };
 

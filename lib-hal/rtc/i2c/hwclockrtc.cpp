@@ -2,7 +2,7 @@
  * @file  hwclockrtc.cpp
  *
  */
-/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,19 @@
  * THE SOFTWARE.
  */
 
+/**
+ * MCP7941X: It has specific control bits like the Start Timer (ST) and battery enable (VBATEN).
+ */
+
+/**
+ * DS3231: Known for its accuracy.
+ */
+
+/**
+ * PCF8563: The time integrity is checked using the SECONDS_VL bit.
+ *  Alarm: Minute, Hour, Day, Weekday
+ */
+
 #include <cassert>
 #include <time.h>
 
@@ -37,75 +50,71 @@
 
 namespace rtc {
 namespace reg {
-static constexpr uint8_t SECONDS = 0x00;
-static constexpr uint8_t MINUTES = 0x01;
-static constexpr uint8_t HOURS 	 = 0x02;
-static constexpr uint8_t DAY 	 = 0x03;
-static constexpr uint8_t DATE    = 0x04;
-static constexpr uint8_t MONTH   = 0x05;
-static constexpr uint8_t YEAR    = 0x06;
+static constexpr uint8_t SECONDS			= 0x00;
+static constexpr uint8_t MINUTES			= 0x01;
+static constexpr uint8_t HOURS				= 0x02;
+static constexpr uint8_t WDAY				= 0x03;
+static constexpr uint8_t MDAY				= 0x04;
+static constexpr uint8_t MONTH				= 0x05;
+static constexpr uint8_t YEAR				= 0x06;
 }  // namespace reg
 namespace mcp7941x {
 namespace reg {
-static constexpr uint8_t CONTROL = 0x07;
+static constexpr uint8_t CONTROL			= 0x07;
 }  // namespace reg
 namespace bit {
-static constexpr uint8_t ST 			= 0x80;
-static constexpr uint8_t VBATEN 		= 0x08;
-static constexpr uint8_t ALM0_EN 		= 0x10;
-static constexpr uint8_t ALMX_IF 		= (1U << 3);
-static constexpr uint8_t ALMX_C0 		= (1U << 4);
-static constexpr uint8_t ALMX_C1 		= (1U << 5);
-static constexpr uint8_t ALMX_C2 		= (1U << 6);
+static constexpr uint8_t ST 				= 0x80;
+static constexpr uint8_t VBATEN 			= 0x08;
+static constexpr uint8_t ALM0_EN 			= 0x10;
+static constexpr uint8_t ALMX_IF 			= (1U << 3);
+static constexpr uint8_t ALMX_C0 			= (1U << 4);
+static constexpr uint8_t ALMX_C1 			= (1U << 5);
+static constexpr uint8_t ALMX_C2 			= (1U << 6);
 #ifndef NDEBUG
-static constexpr uint8_t ALMX_POL 		= (1U << 7);
+static constexpr uint8_t ALMX_POL			= (1U << 7);
 #endif
-static constexpr uint8_t MSK_ALMX_MATCH = (ALMX_C0 | ALMX_C1 | ALMX_C2);
+static constexpr uint8_t MSK_ALMX_MATCH		= (ALMX_C0 | ALMX_C1 | ALMX_C2);
 }  // namespace bit
 }  // namespace mcp7941x
 namespace ds3231 {
 namespace reg {
-static constexpr uint8_t ALARM1_SECONDS = 0x07;
-static constexpr uint8_t CONTROL 		= 0x0e;
-//static constexpr uint8_t STATUS 		= 0x0f;
+static constexpr uint8_t ALARM1_SECONDS		= 0x07;
+static constexpr uint8_t CONTROL 			= 0x0e;
 }  // namespace reg
 namespace bit {
-static constexpr uint8_t A1IE = (1U << 0);
-static constexpr uint8_t A2IE = (1U << 1);
-static constexpr uint8_t A1F  = (1U << 0);
-static constexpr uint8_t A2F  = (1U << 1);
+static constexpr uint8_t A1IE				= (1U << 0);
+static constexpr uint8_t A2IE				= (1U << 1);
+static constexpr uint8_t A1F				= (1U << 0);
+static constexpr uint8_t A2F				= (1U << 1);
 }  // namespace bit
 }  // namespace ds3231
 namespace pcf8563 {
 namespace reg {
-static constexpr uint8_t CONTROL_STATUS1 = 0x00;
-static constexpr uint8_t CONTROL_STATUS2 = 0x01;
-static constexpr uint8_t SECONDS 		 = 0x02;
-//static constexpr uint8_t MINUTES 		 = 0x03;
-//static constexpr uint8_t HOURS 		 = 0x04;
-//static constexpr uint8_t DAY 			 = 0x05;
-//static constexpr uint8_t WEEKDAY 		 = 0x06;
-//static constexpr uint8_t MONTH 		 = 0x07;
-static constexpr uint8_t YEAR 			 = 0x08;
-static constexpr uint8_t ALARM 			 = 0x09;
+static constexpr uint8_t CONTROL_STATUS1	= 0x00;
+static constexpr uint8_t CONTROL_STATUS2	= 0x01;
+static constexpr uint8_t SECONDS			= 0x02;
+//static constexpr uint8_t MINUTES			= 0x03;
+//static constexpr uint8_t HOURS			= 0x04;
+static constexpr uint8_t MDAY				= 0x05;
+static constexpr uint8_t WDAY				= 0x06;
+//static constexpr uint8_t MONTH			= 0x07;
+static constexpr uint8_t YEAR				= 0x08;
+static constexpr uint8_t ALARM				= 0x09;
 }  // namespace reg
 namespace bit {
-static constexpr uint8_t SEC_VL = (1U << 7);
-static constexpr uint8_t AIE	= (1U << 1);
-static constexpr uint8_t AF 	= (1U << 3);
-static constexpr uint8_t ST2_N 	= (7U << 5);
+static constexpr uint8_t SECONDS_VL			= (1U << 7);
+static constexpr uint8_t STATUS2_AIE		= (1U << 1);	///< alarm interrupt enabled
+static constexpr uint8_t STATUS2_AF			= (1U << 3);	///< read: alarm flag active
 }  // namespace bit
 }  // namespace pcf8563
 namespace i2caddress {
-static constexpr uint8_t PCF8563  = 0x51;
-static constexpr uint8_t MCP7941X = 0x6F;
-static constexpr uint8_t DS3231   = 0x68;
+static constexpr uint8_t PCF8563			= 0x51;
+static constexpr uint8_t MCP7941X			= 0x6F;
+static constexpr uint8_t DS3231				= 0x68;
 }  // namespace i2caddress
 }  // namespace rtc
 
-using namespace rtc;
-
-static void write_register(uint8_t nRegister, uint8_t nValue) {
+static void i2c_write_register(const uint8_t nRegister, const uint8_t nValue) {
 	char buffer[2];
 
 	buffer[0] = static_cast<char>(nRegister);
@@ -114,6 +123,19 @@ static void write_register(uint8_t nRegister, uint8_t nValue) {
 	FUNC_PREFIX(i2c_write(buffer, 2));
 }
 
+static void i2c_read_register(const uint8_t nRegister, uint8_t& nValue) {
+	char buffer[1];
+
+	buffer[0] = static_cast<char>(nRegister);
+
+	FUNC_PREFIX(i2c_write(buffer, 1));
+	FUNC_PREFIX(i2c_read(buffer, 1));
+
+	nValue = buffer[0];
+}
+
+using namespace rtc;
+
 void HwClock::RtcProbe() {
 	DEBUG_ENTRY
 
@@ -121,17 +143,14 @@ void HwClock::RtcProbe() {
 
 	FUNC_PREFIX(i2c_set_baudrate(hal::i2c::NORMAL_SPEED));
 
-	char registers[1];
+	uint8_t nValue;
 
 #if !defined (CONFIG_RTC_DISABLE_MCP7941X)
 	FUNC_PREFIX(i2c_set_address(i2caddress::MCP7941X));
 
-	registers[0] = reg::YEAR;
-
 	// The I2C bus is not stable at cold start? These dummy write/read helps.
 	// This needs some more investigation for what is really happening here.
-	FUNC_PREFIX(i2c_write(registers, 1));
-	FUNC_PREFIX(i2c_read(registers, sizeof(registers) / sizeof(registers[0])));
+	i2c_read_register(reg::YEAR, nValue);
 
 	if (FUNC_PREFIX(i2c_write(nullptr, 0)) == 0) {
 		DEBUG_PUTS("MCP7941X");
@@ -140,12 +159,9 @@ void HwClock::RtcProbe() {
 		m_Type = Type::MCP7941X;
 		m_nAddress = i2caddress::MCP7941X;
 
-		registers[0] = reg::SECONDS;
+		i2c_read_register(reg::SECONDS, nValue);
 
-		FUNC_PREFIX(i2c_write(registers, 1));
-		FUNC_PREFIX(i2c_read(registers, sizeof(registers) / sizeof(registers[0])));
-
-		if ((registers[0] & mcp7941x::bit::ST) == 0) {
+		if ((nValue & mcp7941x::bit::ST) == 0) {
 			DEBUG_PUTS("Start the on-board oscillator");
 
 			struct tm RtcTime;
@@ -168,10 +184,9 @@ void HwClock::RtcProbe() {
 #if !defined (CONFIG_RTC_DISABLE_DS3231)
 	FUNC_PREFIX(i2c_set_address(i2caddress::DS3231));
 
-	registers[0] = reg::YEAR;
-
-	FUNC_PREFIX(i2c_write(registers, 1));
-	FUNC_PREFIX(i2c_read(registers, sizeof(registers) / sizeof(registers[0])));
+	// The I2C bus is not stable at cold start? These dummy write/read helps.
+	// This needs some more investigation for what is really happening here.
+	i2c_read_register(reg::YEAR, nValue);
 
 	if (FUNC_PREFIX(i2c_write(nullptr, 0)) == 0) {
 		DEBUG_PUTS("DS3231");
@@ -202,10 +217,9 @@ void HwClock::RtcProbe() {
 #if !defined (CONFIG_RTC_DISABLE_PCF8563)
 	FUNC_PREFIX(i2c_set_address(i2caddress::PCF8563));
 
-	registers[0] = pcf8563::reg::YEAR;
-
-	FUNC_PREFIX(i2c_write(registers, 1));
-	FUNC_PREFIX(i2c_read(registers, sizeof(registers) / sizeof(registers[0])));
+	// The I2C bus is not stable at cold start? These dummy write/read helps.
+	// This needs some more investigation for what is really happening here.
+	i2c_read_register(pcf8563::reg::YEAR, nValue);
 
 	if (FUNC_PREFIX(i2c_write(nullptr, 0)) == 0) {
 		DEBUG_PUTS("PCF8563");
@@ -214,15 +228,15 @@ void HwClock::RtcProbe() {
 		m_Type = Type::PCF8563;
 		m_nAddress = i2caddress::PCF8563;
 
-		write_register(pcf8563::reg::CONTROL_STATUS1, 0);
-		write_register(pcf8563::reg::CONTROL_STATUS2, 0);
+		i2c_write_register(pcf8563::reg::CONTROL_STATUS1, 0);
+		i2c_write_register(pcf8563::reg::CONTROL_STATUS2, 0);
 
-		registers[0] = pcf8563::reg::SECONDS;
+		i2c_read_register(pcf8563::reg::SECONDS, nValue);
 
-		FUNC_PREFIX(i2c_write(registers, 1));
-		FUNC_PREFIX(i2c_read(registers,1));
-
-		if (registers[0] & pcf8563::bit::SEC_VL) {
+		// Register seconds has the VL bit
+		// 0 - clock integrity is guaranteed
+		// 1 - integrity of the clock information is not guaranteed
+		if ((nValue & pcf8563::bit::SECONDS_VL) == pcf8563::bit::SECONDS_VL) {
 			DEBUG_PUTS("Integrity of the clock information is not guaranteed");
 
 			struct tm RtcTime;
@@ -237,12 +251,9 @@ void HwClock::RtcProbe() {
 			RtcSet(&RtcTime);
 		}
 
-		registers[0] = pcf8563::reg::SECONDS;
+		i2c_read_register(pcf8563::reg::SECONDS, nValue);
 
-		FUNC_PREFIX(i2c_write(registers, 1));
-		FUNC_PREFIX(i2c_read(registers,1));
-
-		if (registers[0] & pcf8563::bit::SEC_VL) {
+		if ((nValue & pcf8563::bit::SECONDS_VL) == pcf8563::bit::SECONDS_VL) {
 			DEBUG_PUTS("Clock is not running -> disconnected");
 			m_bIsConnected = false;
 		}
@@ -256,9 +267,11 @@ void HwClock::RtcProbe() {
 }
 
 bool HwClock::RtcSet(const struct tm *pTime) {
+	DEBUG_ENTRY
 	assert(pTime != nullptr);
 
 	if (!m_bIsConnected) {
+		DEBUG_EXIT
 		return false;
 	}
 
@@ -277,14 +290,24 @@ bool HwClock::RtcSet(const struct tm *pTime) {
 	registers[reg::SECONDS] = DEC2BCD(pTime->tm_sec          & 0x7f);
 	registers[reg::MINUTES] = DEC2BCD(pTime->tm_min          & 0x7f);
 	registers[reg::HOURS]   = DEC2BCD(pTime->tm_hour         & 0x1f);
-	registers[reg::DAY]     = DEC2BCD(pTime->tm_wday         & 0x07);
-	registers[reg::DATE]    = DEC2BCD(pTime->tm_mday         & 0x3f);
+
+#if !defined (CONFIG_RTC_DISABLE_PCF8563)
+	if (m_Type == Type::PCF8563) {
+		registers[pcf8563::reg::WDAY - pcf8563::reg::SECONDS] = DEC2BCD(pTime->tm_wday         & 0x07);
+		registers[pcf8563::reg::MDAY - pcf8563::reg::SECONDS] = DEC2BCD(pTime->tm_mday         & 0x3f);
+	} else
+#endif
+	{
+		registers[reg::WDAY]    = DEC2BCD(pTime->tm_wday         & 0x07);
+		registers[reg::MDAY]    = DEC2BCD(pTime->tm_mday         & 0x3f);
+	}
+
 	registers[reg::MONTH]   = DEC2BCD((pTime->tm_mon + 1)    & 0x1f);
 	registers[reg::YEAR]    = DEC2BCD((pTime->tm_year - 100) & 0xff);
 
 	if (m_Type == Type::MCP7941X) {
 		registers[reg::SECONDS] |= mcp7941x::bit::ST;
-		registers[reg::DAY] |=  mcp7941x::bit::VBATEN;
+		registers[reg::WDAY] |=  mcp7941x::bit::VBATEN;
 	}
 
 	if (m_Type == Type::PCF8563) {
@@ -297,13 +320,16 @@ bool HwClock::RtcSet(const struct tm *pTime) {
 	FUNC_PREFIX(i2c_set_baudrate(hal::i2c::FULL_SPEED));
 	FUNC_PREFIX(i2c_write(data, sizeof(data) / sizeof(data[0])));
 
+	DEBUG_EXIT
 	return true;
 }
 
 bool HwClock::RtcGet(struct tm *pTime) {
+	DEBUG_ENTRY
 	assert(pTime != nullptr);
 
 	if (!m_bIsConnected) {
+		DEBUG_EXIT
 		return false;
 	}
 
@@ -323,8 +349,18 @@ bool HwClock::RtcGet(struct tm *pTime) {
 	pTime->tm_sec  = BCD2DEC(registers[reg::SECONDS] & 0x7f);
 	pTime->tm_min  = BCD2DEC(registers[reg::MINUTES] & 0x7f);
 	pTime->tm_hour = BCD2DEC(registers[reg::HOURS]   & 0x3f);
-	pTime->tm_wday = BCD2DEC(registers[reg::DAY]     & 0x07);
-	pTime->tm_mday = BCD2DEC(registers[reg::DATE]    & 0x3f);
+
+#if !defined (CONFIG_RTC_DISABLE_PCF8563)
+	if (m_Type == Type::PCF8563) {
+		pTime->tm_wday = BCD2DEC(registers[pcf8563::reg::WDAY - pcf8563::reg::SECONDS] & 0x07);
+		pTime->tm_mday = BCD2DEC(registers[pcf8563::reg::MDAY - pcf8563::reg::SECONDS] & 0x3f);
+	} else
+#endif
+	{
+		pTime->tm_wday = BCD2DEC(registers[reg::WDAY] & 0x07);
+		pTime->tm_mday = BCD2DEC(registers[reg::MDAY] & 0x3f);
+	}
+
 	pTime->tm_mon  = BCD2DEC(registers[reg::MONTH]   & 0x1f) - 1;
 	pTime->tm_year = BCD2DEC(registers[reg::YEAR]) + 100;
 
@@ -337,6 +373,7 @@ bool HwClock::RtcGet(struct tm *pTime) {
 		pTime->tm_year,
 		pTime->tm_wday);
 
+	DEBUG_EXIT
 	return true;
 }
 
@@ -425,6 +462,7 @@ bool HwClock::RtcSetAlarm(const struct tm *pTime) {
 		FUNC_PREFIX(i2c_write(registers, sizeof(registers) / sizeof(registers[0])));
 
 		if (m_bRtcAlarmEnabled) {
+			DEBUG_PUTS("Alarm is enabled");
 			registers[0] = ds3231::reg::CONTROL;
 			registers[1] |= ds3231::bit::A1IE;
 			FUNC_PREFIX(i2c_write(registers, 2));
@@ -607,20 +645,20 @@ int HwClock::MCP794xxAlarmWeekday(struct tm *pTime) {
 }
 
 void HwClock::PCF8563GetAlarmMode() {
+	DEBUG_ENTRY
 	assert(m_Type == rtc::Type::PCF8563);
 
-	char data[1];
+	uint8_t nValue;
+	i2c_read_register(pcf8563::reg::CONTROL_STATUS2, nValue);
 
-	data[0] = pcf8563::reg::CONTROL_STATUS2;
+	m_bRtcAlarmEnabled = nValue & pcf8563::bit::STATUS2_AIE;
+	m_bRtcAlarmPending = nValue & pcf8563::bit::STATUS2_AF;
 
-	FUNC_PREFIX(i2c_write(data, 1));
-	FUNC_PREFIX(i2c_read(data, sizeof(data) / sizeof(data[0])));
-
-	m_bRtcAlarmEnabled = data[0] & pcf8563::bit::AIE;
-	m_bRtcAlarmPending = data[0] & pcf8563::bit::AF;
+	DEBUG_EXIT
 }
 
 void HwClock::PCF8563SetAlarmMode() {
+	DEBUG_ENTRY
 	assert(m_Type == rtc::Type::PCF8563);
 
 	char data[2];
@@ -631,14 +669,16 @@ void HwClock::PCF8563SetAlarmMode() {
 	FUNC_PREFIX(i2c_read(&data[1], 1));
 
 	if (m_bRtcAlarmEnabled) {
-		data[1] |= pcf8563::bit::AIE;
+		DEBUG_PUTS("Alarm is enabled");
+		data[1] |= pcf8563::bit::STATUS2_AIE;
 	} else {
-		data[1] &= static_cast<char>(~pcf8563::bit::AIE);
+		data[1] &= static_cast<char>(~pcf8563::bit::STATUS2_AIE);
 	}
 
-	data[1] &= static_cast<char>(~pcf8563::bit::AF | pcf8563::bit::ST2_N);
-
 	data[0] = pcf8563::reg::CONTROL_STATUS2;
+	data[1] &= static_cast<char>(~pcf8563::bit::STATUS2_AF);
 
 	FUNC_PREFIX(i2c_write(data, 2));
+
+	DEBUG_EXIT
 }

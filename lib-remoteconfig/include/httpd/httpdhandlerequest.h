@@ -29,14 +29,22 @@
 #include <cstdint>
 
 #include "http.h"
+#include "net/protocol/tcp.h"
 
 #include "debug.h"
+
+namespace httpd {
+#if !defined(HTTPD_CONTENT_SIZE)
+# define HTTPD_CONTENT_SIZE	TCP_DATA_SIZE
+#endif
+static constexpr uint32_t BUFSIZE = HTTPD_CONTENT_SIZE;
+}  // namespace httpd
 
 class HttpDeamonHandleRequest {
 public:
 	HttpDeamonHandleRequest(uint32_t nConnectionHandle, int32_t nHandle) : m_nConnectionHandle(nConnectionHandle), m_nHandle(nHandle) {
 		DEBUG_ENTRY
-		DEBUG_PRINTF("m_nConnectionHandle=%u", m_nConnectionHandle);
+		DEBUG_PRINTF("[%u] m_nConnectionHandle=%u, m_nHandle=%d", httpd::BUFSIZE, m_nConnectionHandle, m_nHandle);
 		DEBUG_EXIT
 	}
 
@@ -70,7 +78,7 @@ private:
 
 	bool m_IsAction { false };
 
-	static char m_DynamicContent[http::BUFSIZE];
+	static char m_DynamicContent[httpd::BUFSIZE];
 };
 
 

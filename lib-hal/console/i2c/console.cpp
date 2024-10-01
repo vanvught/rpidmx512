@@ -104,7 +104,7 @@ static void setup() {
 	FUNC_PREFIX(i2c_set_baudrate(400000));
 }
 
-static void write_register(uint8_t nRegister, uint8_t nValue) {
+static void write_register(const uint8_t nRegister, const uint8_t nValue) {
 	char buffer[2];
 
 	buffer[0] = static_cast<char>(nRegister);
@@ -187,13 +187,13 @@ void __attribute__((cold)) console_init() {
 	write_register(SC16IS7X0_MCR, MCR);
 
 	uint8_t EFR = read_register(SC16IS7X0_EFR);
-	write_register(SC16IS7X0_EFR, (uint8_t) (EFR | EFR_ENABLE_ENHANCED_FUNCTIONS));
+	write_register(SC16IS7X0_EFR, (EFR | EFR_ENABLE_ENHANCED_FUNCTIONS));
 
-	write_register(SC16IS7X0_TLR, (uint8_t) (0x10));
+	write_register(SC16IS7X0_TLR, (0x10));
 
 	write_register(SC16IS7X0_EFR, EFR);
 
-	write_register(SC16IS7X0_FCR, (uint8_t) (FCR_TX_FIFO_RST));
+	write_register(SC16IS7X0_FCR, (FCR_TX_FIFO_RST));
 	write_register(SC16IS7X0_FCR, FCR_ENABLE_FIFO);
 }
 
