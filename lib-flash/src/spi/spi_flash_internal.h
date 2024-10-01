@@ -74,16 +74,17 @@ struct spi_flash {
 
 #define SPI_XFER_SPEED_HZ	6000000	///< 6MHz
 
-extern int spi_init();
-extern int spi_xfer(uint32_t bitlen, const uint8_t *dout, uint8_t *din, uint32_t flags);
+int spi_init();
+int spi_xfer(uint32_t bitlen, const uint8_t *dout, uint8_t *din, uint32_t flags);
 
-//#define CONFIG_SPI_FLASH_MACRONIX
-//int spi_flash_probe_macronix(struct spi_flash *flash, uint8_t *idcode);
+#if defined (H3)
+# define CONFIG_SPI_FLASH_MACRONIX
+  int spi_flash_probe_macronix(struct spi_flash *flash, uint8_t *idcode);
+# define CONFIG_SPI_FLASH_GIGADEVICE
+  int spi_flash_probe_gigadevice(struct spi_flash *spi, uint8_t *idcode);
+#endif
 
 #define CONFIG_SPI_FLASH_WINBOND
 extern int spi_flash_probe_winbond(struct spi_flash *spi, uint8_t *idcode);
-
-//#define CONFIG_SPI_FLASH_GIGADEVICE
-//extern int spi_flash_probe_gigadevice(struct spi_flash *spi, uint8_t *idcode);
 
 #endif /* SPI_FLASH_INTERNAL_H_ */
