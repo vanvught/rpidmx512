@@ -115,7 +115,7 @@ const RDMHandler::PidDefinition RDMHandler::PID_DEFINITIONS[] {
 	{E137_2_IPV4_STATIC_ADDRESS,		&RDMHandler::GetStaticAddress,				&RDMHandler::SetStaticAddress,		4, false, false, true },
 	{E137_2_INTERFACE_APPLY_CONFIGURATION,nullptr,									&RDMHandler::ApplyConfiguration,	4, false, false, true },
 	{E137_2_DNS_IPV4_NAME_SERVER,		&RDMHandler::GetNameServers,				nullptr,							1, false, false, true },
-	{E137_2_IPV4_DEFAULT_ROUTE,			&RDMHandler::GetDefaultRoute,				&RDMHandler::SetDefaultRoute,		4, false, false, true },
+	{E137_2_IPV4_DEFAULT_ROUTE,			&RDMHandler::GetDefaultRoute,				&RDMHandler::SetDefaultRoute,		0, false, false, true },
 	{E137_2_DNS_HOSTNAME,               &RDMHandler::GetHostName,                   &RDMHandler::SetHostName,           0, false, false, true },
 	{E137_2_DNS_DOMAIN_NAME,			&RDMHandler::GetDomainName,					&RDMHandler::SetDomainName,			0, false, false, true }
 #endif

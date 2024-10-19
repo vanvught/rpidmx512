@@ -60,13 +60,13 @@ void message_print(const uint8_t *pRdmData) {
 			printf("GET_COMMAND");
 			break;
 		case E120_GET_COMMAND_RESPONSE:
-			printf("GET_COMMAND_RESPONSE");
+			printf("GET_COMMAND_RESPONSE %u", pRdmMessage->slot16.response_type);
 			break;
 		case E120_SET_COMMAND:
 			printf("SET_COMMAND");
 			break;
 		case E120_SET_COMMAND_RESPONSE:
-			printf("SET_COMMAND_RESPONSE");
+			printf("SET_COMMAND_RESPONSE %u", pRdmMessage->slot16.response_type);
 			break;
 		default:
 			printf("CC {%.2x}", pRdmMessage->command_class);

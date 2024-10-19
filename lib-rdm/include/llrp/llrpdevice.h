@@ -2,7 +2,7 @@
  * @file llrpdevice.h
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,8 +51,10 @@ class LLRPDevice {
 public:
 	LLRPDevice() {
 		DEBUG_ENTRY
+		assert(s_pThis == nullptr);
+		s_pThis = this;
 
-		s_nHandleLLRP = Network::Get()->Begin(llrp::device::LLRP_PORT);
+		s_nHandleLLRP = Network::Get()->Begin(llrp::device::LLRP_PORT, LLRPDevice::staticCallbackFunction);
 		assert(s_nHandleLLRP != -1);
 		Network::Get()->JoinGroup(s_nHandleLLRP, llrp::device::IPV4_LLRP_REQUEST);
 
@@ -65,16 +67,15 @@ public:
 		Network::Get()->LeaveGroup(s_nHandleLLRP, llrp::device::IPV4_LLRP_REQUEST);
 		Network::Get()->End(llrp::device::LLRP_PORT);
 
+		s_pThis = nullptr;
+
 		DEBUG_EXIT
 	}
 
-	void Run() {
-		uint16_t nForeignPort;
-
-		const auto nBytesReceived = Network::Get()->RecvFrom(s_nHandleLLRP, const_cast<const void **>(reinterpret_cast<void **>(&s_pLLRP)), &s_nIpAddressFrom, &nForeignPort) ;
-
-		if (__builtin_expect((nBytesReceived < sizeof(struct TLLRPCommonPacket)), 1)) {
-			return;
+	void Input(const uint8_t *pBuffer, [[maybe_unused]] uint32_t nSize, uint32_t nFromIp, [[maybe_unused]] uint16_t nFromPort) {
+		if (pBuffer != 0) {
+			s_pLLRP = const_cast<uint8_t *>(pBuffer);
+			s_nIpAddressFrom = nFromIp;
 		}
 
 #ifndef NDEBUG
@@ -107,6 +108,18 @@ public:
 		}
 	}
 
+	void Run() {
+		uint16_t nForeignPort;
+
+		const auto nBytesReceived = Network::Get()->RecvFrom(s_nHandleLLRP, const_cast<const void **>(reinterpret_cast<void **>(&s_pLLRP)), &s_nIpAddressFrom, &nForeignPort) ;
+
+		if (__builtin_expect((nBytesReceived < sizeof(struct TLLRPCommonPacket)), 1)) {
+			return;
+		}
+
+		Input(nullptr, 0, 0, 0);
+	}
+
 	void Print() {
 		printf("LLRP Device\n");
 		printf(" Port UDP           : %d\n", llrp::device::LLRP_PORT);
@@ -127,13 +140,17 @@ private:
 	void DumpLLRP();
 	void DumpRdmMessageInNoSc();
 
+	void static staticCallbackFunction(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
+		s_pThis->Input(pBuffer, nSize, nFromIp, nFromPort);
+	}
 private:
 	RDMHandler m_RDMHandler { false };
 
-	static int32_t s_nHandleLLRP;
-	static uint32_t s_nIpAddressFrom;
-	static uint8_t *s_pLLRP;
-	static TRdmMessage s_RdmCommand;
+	static inline int32_t s_nHandleLLRP;
+	static inline uint32_t s_nIpAddressFrom;
+	static inline uint8_t *s_pLLRP;
+	static inline TRdmMessage s_RdmCommand;
+	static inline LLRPDevice *s_pThis;
 };
 
 #endif /* LLRPDEVICE_H_ */

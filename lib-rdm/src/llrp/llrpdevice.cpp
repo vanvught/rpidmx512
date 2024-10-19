@@ -23,6 +23,10 @@
  * THE SOFTWARE.
  */
 
+#if defined (DEBUG_RDM_LLRPDEVICE)
+# undef NDEBUG
+#endif
+
 #include <cstdint>
 #include <cstring>
 #include <cstdio>
@@ -43,13 +47,8 @@
 
 #if defined(__linux__) || defined (__APPLE__)
 # define SHOW_LLRP_MESSAGE
-# define SHOW_RDM_MESSAGE
+# define DEBUG_RDM_SHOW_MESSAGE
 #endif
-
-int32_t LLRPDevice::s_nHandleLLRP ;
-uint32_t LLRPDevice::s_nIpAddressFrom;
-uint8_t *LLRPDevice::s_pLLRP;
-TRdmMessage LLRPDevice::s_RdmCommand;
 
 void LLRPDevice::HandleRequestMessage() {
 	DEBUG_ENTRY
@@ -118,7 +117,7 @@ void LLRPDevice::HandleRdmCommand() {
 
 	auto *pRDMCommand = reinterpret_cast<struct LTRDMCommandPDUPacket *>(s_pLLRP);
 
-#ifdef SHOW_RDM_MESSAGE
+#ifdef DEBUG_RDM_SHOW_MESSAGE
 	const auto *pRdmDataInNoSc = const_cast<uint8_t *>(pRDMCommand->RDMCommandPDU.RDMData);
  	rdm::message_print_no_sc(pRdmDataInNoSc);
 #endif
@@ -150,7 +149,7 @@ void LLRPDevice::HandleRdmCommand() {
 
 	Network::Get()->SendTo(s_nHandleLLRP, pRDMCommand, nLength , llrp::device::IPV4_LLRP_RESPONSE, llrp::device::LLRP_PORT);
 
-#ifdef SHOW_RDM_MESSAGE
+#ifdef DEBUG_RDM_SHOW_MESSAGE
 	rdm::message_print(pReply);
 #endif
 
