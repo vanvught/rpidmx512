@@ -77,7 +77,6 @@ int main() {
 	ConfigStore configStore;
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, CONSOLE_YELLOW);
 	Network nw;
-	MDNS mDns;
 	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, CONSOLE_GREEN);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	FlashCodeInstall spiFlashInstall;
@@ -85,7 +84,7 @@ int main() {
 	fw.Print("PixelPusher controller 8x 4U");
 	
 
-	mDns.ServiceRecordAdd(nullptr, mdns::Services::PP, "type=PixelPusher");
+	mdns_service_record_add(nullptr, mdns::Services::PP, "type=PixelPusher");
 
 	PixelDmxConfiguration pixelDmxConfiguration;
 
@@ -167,7 +166,7 @@ int main() {
 	while (configStore.Flash())
 		;
 
-	mDns.Print();
+	mdns_print(); //	mDns.Print();
 
 	display.TextStatus("PixelPusher Start", CONSOLE_YELLOW);
 
@@ -184,10 +183,6 @@ int main() {
 		remoteConfig.Run();
 		configStore.Flash();
 		pixelTestPattern.Run();
-		mDns.Run();
-#if defined (NODE_RDMNET_LLRP_ONLY)
-		llrpOnlyDevice.Run();
-#endif
 		display.Run();
 		hw.Run();
 	}

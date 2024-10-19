@@ -66,7 +66,6 @@ int main() {
 	ConfigStore configStore;
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, CONSOLE_YELLOW);
 	Network nw;
-	MDNS mDns;
 	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, CONSOLE_GREEN);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	FlashCodeInstall spiFlashInstall;
@@ -93,7 +92,7 @@ int main() {
 	params.Load();
 	params.Set(&server);
 
-	mDns.ServiceRecordAdd(nullptr, mdns::Services::OSC, "type=monitor", server.GetPortIncoming());
+	mdns_service_record_add(nullptr, mdns::Services::OSC, "type=monitor", server.GetPortIncoming());
 
 	NtpClient ntpClient;
 	ntpClient.Start();
@@ -125,7 +124,7 @@ int main() {
 	while (configStore.Flash())
 		;
 
-	mDns.Print();
+	mdns_print(); //	mDns.Print();
 
 	display.TextStatus(OscServerMsgConst::START, CONSOLE_YELLOW);
 
@@ -143,7 +142,7 @@ int main() {
 		configStore.Flash();
 		ntpClient.Run();
 		showSystime.Run();
-		mDns.Run();
+//		mdns_run(); //	mDns.Run(); //	mDns.Run();
 		display.Run();
 		hw.Run();
 	}

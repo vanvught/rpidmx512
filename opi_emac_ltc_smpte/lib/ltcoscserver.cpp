@@ -2,7 +2,7 @@
  * @file oscserver.cpp
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,34 +23,35 @@
  * THE SOFTWARE.
  */
 
+#if defined (DEBUG_LTCOSCSERVER)
+# undef NDEBUG
+#endif
+
 #include <cstdint>
 #include <string.h>
 #include <cstdio>
 #include <cassert>
 
-#include "ltcdisplayrgb.h"
 #include "ltcoscserver.h"
 
-#include "ltcmidisystemrealtime.h"
+#if !defined (LTC_NO_DISPLAY_RGB)
+# include "ltcdisplayrgb.h"
+#endif
+
+#include "arm/ltcmidisystemrealtime.h"
+#include "arm/ltcgenerator.h"
+#include "arm/ltcoutputs.h"
+#include "arm/systimereader.h"
 
 #include "tcnetdisplay.h"
+#include "tcnet.h"
+#include "midi.h"
 #include "osc.h"
 #include "oscsimplemessage.h"
 
 #include "network.h"
 
-#include "ltcgenerator.h"
-#include "systimereader.h"
-#include "ltcoutputs.h"
-
-#include "tcnet.h"
-#include "midi.h"
-
 #include "debug.h"
-
-namespace udp {
-static constexpr auto MAX_BUFFER = 1024;
-} // namespace udp
 
 namespace cmd {
 static constexpr char START[] = "start";
@@ -147,25 +148,13 @@ static constexpr auto INFO = sizeof(cmd::INFO) - 1;
 static constexpr auto VALUE_LENGTH = 11;
 static constexpr auto FPS_VALUE_LENGTH = 2;
 
-LtcOscServer::LtcOscServer(): m_nPortIncoming(osc::port::DEFAULT_INCOMING) {
-	m_nPathLength = static_cast<uint32_t>(snprintf(m_aPath, sizeof(m_aPath) - 1, "/%s/tc/*", Network::Get()->GetHostName()) - 1);
+void LtcOscServer::HandleOscRequest(const uint32_t nBytesReceived) {
+	auto *pBuffer = reinterpret_cast<const char *>(m_pBuffer);
 
-	DEBUG_PRINTF("%d [%s]", m_nPathLength, m_aPath);
-}
+	if (osc::is_match(pBuffer, m_aPath)) {
+		const auto nCommandLength = strlen(pBuffer);
 
-void LtcOscServer::Start() {
-	m_nHandle = Network::Get()->Begin(m_nPortIncoming);
-	assert(m_nHandle != -1);
-}
-
-void LtcOscServer::Stop() {
-}
-
-void LtcOscServer::HandleOscRequest(const uint16_t nBytesReceived) {
-	if (osc::is_match(m_pBuffer, m_aPath)) {
-		const auto nCommandLength = strlen(m_pBuffer);
-
-		DEBUG_PRINTF("[%s]:%d %d:|%s|", m_pBuffer, static_cast<int>(nCommandLength), m_nPathLength, &m_pBuffer[m_nPathLength]);
+		DEBUG_PRINTF("[%s]:%d %d:|%s|", pBuffer, static_cast<int>(nCommandLength), m_nPathLength, &m_pBuffer[m_nPathLength]);
 
 		// */pitch f
 		if (memcmp(&m_pBuffer[m_nPathLength], cmd::PITCH, length::PITCH) == 0) {
@@ -195,26 +184,34 @@ void LtcOscServer::HandleOscRequest(const uint16_t nBytesReceived) {
 			} else if ((nCommandLength == (m_nPathLength + length::START + 1 + VALUE_LENGTH))) {
 				if (m_pBuffer[m_nPathLength + length::START] == '/') {
 					const auto nOffset = m_nPathLength + length::START + 1;
-					m_pBuffer[nOffset + 2] = ':';
-					m_pBuffer[nOffset + 5] = ':';
-					m_pBuffer[nOffset + 8] = '.';
 
-					LtcGenerator::Get()->ActionSetStart(&m_pBuffer[nOffset]);
+					char timeCode[VALUE_LENGTH];
+					memcpy(timeCode, &m_pBuffer[nOffset], VALUE_LENGTH);
+
+					timeCode[2] = ':';
+					timeCode[5] = ':';
+					timeCode[8] = '.';
+
+					LtcGenerator::Get()->ActionSetStart(timeCode);
 					LtcGenerator::Get()->ActionStop();
 					LtcGenerator::Get()->ActionStart();
 
-					DEBUG_PUTS(&m_pBuffer[nOffset]);
+					DEBUG_PUTS(timeCode);
 				}
 			} else if ((nCommandLength == (m_nPathLength + length::START + length::SET + VALUE_LENGTH))) {
 				if (memcmp(&m_pBuffer[m_nPathLength + length::START], cmd::SET, length::SET) == 0) {
 					const auto nOffset = m_nPathLength + length::START + length::SET;
-					m_pBuffer[nOffset + 2] = ':';
-					m_pBuffer[nOffset + 5] = ':';
-					m_pBuffer[nOffset + 8] = '.';
 
-					LtcGenerator::Get()->ActionSetStart(&m_pBuffer[nOffset]);
+					char timeCode[VALUE_LENGTH];
+					memcpy(timeCode, &m_pBuffer[nOffset], VALUE_LENGTH);
 
-					DEBUG_PUTS(&m_pBuffer[nOffset]);
+					timeCode[2] = ':';
+					timeCode[5] = ':';
+					timeCode[8] = '.';
+
+					LtcGenerator::Get()->ActionSetStart(timeCode);
+
+					DEBUG_PUTS(timeCode);
 				}
 			}
 			return;
@@ -230,13 +227,17 @@ void LtcOscServer::HandleOscRequest(const uint16_t nBytesReceived) {
 			} else if ((nCommandLength == (m_nPathLength + length::STOP + length::SET + VALUE_LENGTH))) {
 				if (memcmp(&m_pBuffer[m_nPathLength + length::STOP], cmd::SET, length::SET) == 0) {
 					const auto nOffset = m_nPathLength + length::STOP + length::SET;
-					m_pBuffer[nOffset + 2] = ':';
-					m_pBuffer[nOffset + 5] = ':';
-					m_pBuffer[nOffset + 8] = '.';
 
-					LtcGenerator::Get()->ActionSetStop(&m_pBuffer[nOffset]);
+					char timeCode[VALUE_LENGTH];
+					memcpy(timeCode, &m_pBuffer[nOffset], VALUE_LENGTH);
 
-					DEBUG_PUTS(&m_pBuffer[nOffset]);
+					timeCode[2] = ':';
+					timeCode[5] = ':';
+					timeCode[8] = '.';
+
+					LtcGenerator::Get()->ActionSetStop(timeCode);
+
+					DEBUG_PUTS(timeCode);
 				}
 			}
 
@@ -279,7 +280,7 @@ void LtcOscServer::HandleOscRequest(const uint16_t nBytesReceived) {
 			if (memcmp(&m_pBuffer[m_nPathLength + length::RATE], cmd::SET, length::SET) == 0) {
 				const auto nOffset = m_nPathLength + length::RATE + length::SET;
 
-				LtcGenerator::Get()->ActionSetRate(&m_pBuffer[nOffset]);
+				LtcGenerator::Get()->ActionSetRate(&pBuffer[nOffset]);
 
 				DEBUG_PUTS(&m_pBuffer[nOffset]);
 				return;
@@ -296,13 +297,17 @@ void LtcOscServer::HandleOscRequest(const uint16_t nBytesReceived) {
 		if ((nCommandLength == (m_nPathLength + length::GOTO + 1 + VALUE_LENGTH)) && (memcmp(&m_pBuffer[m_nPathLength], cmd::GOTO, length::GOTO) == 0)) {
 			if (m_pBuffer[m_nPathLength + length::GOTO] == '/') {
 				const auto nOffset = m_nPathLength + length::GOTO + 1;
-				m_pBuffer[nOffset + 2] = ':';
-				m_pBuffer[nOffset + 5] = ':';
-				m_pBuffer[nOffset + 8] = '.';
 
-				LtcGenerator::Get()->ActionGoto(&m_pBuffer[nOffset]);
+				char timeCode[VALUE_LENGTH];
+				memcpy(timeCode, &m_pBuffer[nOffset], VALUE_LENGTH);
 
-				DEBUG_PUTS(&m_pBuffer[nOffset]);
+				timeCode[2] = ':';
+				timeCode[5] = ':';
+				timeCode[8] = '.';
+
+				LtcGenerator::Get()->ActionGoto(timeCode);
+
+				DEBUG_PUTS(timeCode);
 				return;
 			}
 		}
@@ -310,7 +315,7 @@ void LtcOscServer::HandleOscRequest(const uint16_t nBytesReceived) {
 		if ((nCommandLength <= (m_nPathLength + length::DIRECTION + 1 + 8)) && (memcmp(&m_pBuffer[m_nPathLength], cmd::DIRECTION, length::DIRECTION) == 0)) {
 			if (m_pBuffer[m_nPathLength + length::DIRECTION] == '/') {
 				const uint32_t nOffset = m_nPathLength + length::DIRECTION + 1;
-				LtcGenerator::Get()->ActionSetDirection(&m_pBuffer[nOffset]);
+				LtcGenerator::Get()->ActionSetDirection(&pBuffer[nOffset]);
 
 				DEBUG_PUTS(&m_pBuffer[nOffset]);
 				return;
@@ -434,7 +439,7 @@ void LtcOscServer::HandleOscRequest(const uint16_t nBytesReceived) {
 				return;
 			}
 		}
-
+#if !defined(LTC_NO_DISPLAY_RGB)
 		// */ws28xx/
 		if (memcmp(&m_pBuffer[m_nPathLength], ws28xx::cmd::PATH, ws28xx::length::PATH) == 0) {
 			// ws28xx/master i
@@ -532,9 +537,12 @@ void LtcOscServer::HandleOscRequest(const uint16_t nBytesReceived) {
 				}
 			}
 		}
+#endif
 	}
 }
 
+
+#if !defined(LTC_NO_DISPLAY_RGB)
 void LtcOscServer::SetWS28xxRGB(uint32_t nSize, ltcdisplayrgb::ColourIndex tIndex) {
 	OscSimpleMessage Msg(m_pBuffer, nSize);
 
@@ -550,9 +558,4 @@ void LtcOscServer::SetWS28xxRGB(uint32_t nSize, ltcdisplayrgb::ColourIndex tInde
 		DEBUG_PUTS("Invalid ws28xx/rgb/*");
 	}
 }
-
-void LtcOscServer::Print() {
-	printf("OSC Server\n");
-	printf(" Port : %d\n", m_nPortIncoming);
-	printf(" Path : [%s]\n", m_aPath);
-}
+#endif

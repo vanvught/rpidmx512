@@ -70,7 +70,6 @@ int main() {
 	ConfigStore configStore;
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, CONSOLE_YELLOW);
 	Network nw;
-	MDNS mDns;
 	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, CONSOLE_GREEN);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	FlashCodeInstall spiFlashInstall;
@@ -93,12 +92,10 @@ int main() {
 	remoteConfigParams.Load();
 	remoteConfigParams.Set(&remoteConfig);
 
-	DEBUG_PUTS("");
-
 	while (configStore.Flash())
 		;
 
-	mDns.Print();
+	mdns_print();
 
 	display.SetTitle("LLRP Only - TFTP");
 	display.Set(2, displayudf::Labels::HOSTNAME);
@@ -121,14 +118,8 @@ int main() {
 	struct tm tmHwClock;
 	memset(&tmHwClock, 0, sizeof(struct tm));
 
-	DEBUG_PUTS("");
-
 	for (;;) {
 		nw.Run();
-		mDns.Run();
-#if defined (NODE_RDMNET_LLRP_ONLY)
-		device.Run();
-#endif
 		remoteConfig.Run();
 		ntpClient.Run();
 		configStore.Flash();

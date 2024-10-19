@@ -77,7 +77,6 @@ int main() {
 #if !defined(NO_EMAC)
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, CONSOLE_YELLOW);
 	Network nw;
-	MDNS mDns;
 	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, CONSOLE_GREEN);
 #else
 	Network nw;
@@ -204,7 +203,7 @@ int main() {
 #if !defined(NO_EMAC)
 		nw.Run();
 		remoteConfig.Run();
-		mDns.Run();
+//		mdns_run(); //	mDns.Run(); //	mDns.Run();
 #endif
 		pixelTestPattern.Run();
 		display.Run();
