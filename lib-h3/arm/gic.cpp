@@ -29,11 +29,8 @@
 # include <stdio.h>
 #endif
 
-#include "arm/synchronize.h"
+#include "h3.h"
 #include "arm/gic.h"
-
-static uint16_t max_interrupts;
-static uint8_t impemented_cpu_interfaces;
 
 #define ICENABLE_N	(sizeof(H3_GIC_DIST->ICENABLE) / sizeof(H3_GIC_DIST->ICENABLE[0]))
 #define ICPEND_N	(sizeof(H3_GIC_DIST->ICPEND) / sizeof(H3_GIC_DIST->ICPEND[0]))
@@ -54,82 +51,44 @@ static uint8_t impemented_cpu_interfaces;
 #define GICC_CTL_ENABLE_GRP1	(1 << 1)
 #define GICC_CTL_ENABLE_FIQ		(1 << 3)
 
-void __attribute__((cold)) gic_init(void) {
-	unsigned i;
+extern "C" void clean_data_cache() __attribute__ ((optimize (3)));
 
-	max_interrupts = (uint16_t) (((H3_GIC_DIST->TYPE & 0x1F) + 1) * 32);
-	impemented_cpu_interfaces = (uint8_t) (1 + (uint8_t) ((H3_GIC_DIST->TYPE >> 5) & 0x7));
-
-	/* Initialize Distributor */
-
-	H3_GIC_DIST->CTL = 0;
-
-	for (i = 0; i < ICENABLE_N; i++) {
-		H3_GIC_DIST->ICENABLE[i] = 0xFFFFFFFF;	// Writing 1 to a Clear-enable bit disables forwarding
-	}
-
-	for (i = 0; i < ICPEND_N; i++) {
-		H3_GIC_DIST->ICPEND[i] = 0xFFFFFFFF;	// Writing 1 to a Clear-pending bit clears the pending states
-	}
-
-	for (i = 0; i < ICACTIVE_N; i++) {
-		H3_GIC_DIST->ICACTIVE[i] = 0xFFFFFFFF;	// Writing 1 to a Clear-active bit Deactivates the corresponding interrupt
-	}
-
-	for (i = 0; i < IPRIORITY_N; i++) {
-		H3_GIC_DIST->IPRIORITY[i] = 0x0;		// TODO What is this?
-	}
-
-	for (i = 0; i < ITARGETS_N; i++) {
-		H3_GIC_DIST->ITARGETS[i] = 0x01010101; // TODO This needs be changed for multi-core support
-	}
-
-	for (i = 0; i < ICFG_N; i++) {
-		H3_GIC_DIST->ICFG[i] = 0x0;				// 0 => Corresponding interrupt is level-sensitive.
-	}
-
+void __attribute__((cold)) gic_init() {
+	GIC_Enable();
 	H3_GIC_DIST->CTL = CTL_GRP0_ENABLE | CTL_GRP1_ENABLE;	// Group 1 -> IRQ, Group 0 -> FIQ
-
-	/* Initialize CPU Interface */
 	H3_GIC_CPUIF->PM = 0xFFFFFFFF;
-
-	H3_GIC_CPUIF->CTL = GICC_CTL_ENABLE_GRP0 | GICC_CTL_ENABLE_GRP1 | GICC_CTL_ENABLE_FIQ;
+	GICInterface->CTLR = GICC_CTL_ENABLE_GRP0 | GICC_CTL_ENABLE_GRP1 | GICC_CTL_ENABLE_FIQ;
 }
 
-static void int_config(H3_IRQn_TypeDef n, __attribute__((unused)) GIC_CORE_TypeDef cpu, GIC_GROUP_TypeDef group) {
+static void int_config(H3_IRQn_TypeDef nIRQ, [[maybe_unused]] GIC_CORE_TypeDef cpu, GIC_GROUP_TypeDef group) {
 #ifndef NDEBUG
-	printf("int_config(H3_IRQn_TypeDef %d,cpu %d, GIC_GROUP_TypeDef %d)\n", n, cpu, group);
+	printf("int_config(H3_IRQn_TypeDef %d,cpu %d, GIC_GROUP_TypeDef %d)\n", nIRQ, cpu, group);
 #endif
 
 	clean_data_cache();
-	dmb();
+	__DMB();
 
-	const uint32_t index = n / 32;
-	uint32_t mask = 1U << (n % 32);
+	GIC_EnableIRQ(nIRQ);
+	GIC_SetGroup(nIRQ, static_cast<uint32_t>(group));
 
-	H3_GIC_DIST->ISENABLE[index] = mask;
+	__ISB();
 
 #ifndef NDEBUG
+	const auto index = nIRQ / 32;
+	auto mask = 1U << (nIRQ % 32);
 	printf("H3_GIC_DIST->ISENABLE[%d] = %p [%p]\n", index, mask, H3_GIC_DIST->ISENABLE[index]);
-#endif
-
-	mask = (uint32_t)group << (n % 32);
-
-	H3_GIC_DIST->IGROUP[index] |= mask;
-
-	isb();
-
-#ifndef NDEBUG
+	mask = static_cast<uint32_t>(group << (nIRQ % 32));
 	printf("H3_GIC_DIST->IGROUP[%d] = %p [%p]\n", index, mask, H3_GIC_DIST->IGROUP[index]);
 #endif
 }
 
-void gic_irq_config(H3_IRQn_TypeDef n, GIC_CORE_TypeDef cpu) {
-	int_config(n, cpu, GIC_GROUP1);
+void gic_irq_config(H3_IRQn_TypeDef nIRQ, GIC_CORE_TypeDef nCPU) {
+	int_config(nIRQ, nCPU, GIC_GROUP1);
+	gic_int_dump(nIRQ);
 }
 
-void gic_fiq_config(H3_IRQn_TypeDef n, GIC_CORE_TypeDef cpu) {
-	int_config(n, cpu, GIC_GROUP0);
+void gic_fiq_config(H3_IRQn_TypeDef nIRQ, GIC_CORE_TypeDef nCPU) {
+	int_config(nIRQ, nCPU, GIC_GROUP0);
 }
 
 void gic_init_dump(void) {
@@ -174,11 +133,10 @@ void gic_int_dump(__attribute__((unused)) H3_IRQn_TypeDef n) {
 	uint32_t index = n / 32;
 	uint32_t mask = 1U << (n % 32);
 
-	GIC_GROUP_TypeDef group = (GIC_GROUP_TypeDef) ((H3_GIC_DIST->IGROUP[index] & mask) == mask);
+	GIC_GROUP_TypeDef group = static_cast<GIC_GROUP_TypeDef>((H3_GIC_DIST->IGROUP[index] & mask) == mask);
 	bool is_enabled = (H3_GIC_DIST->ISENABLE[index] & mask) == mask;
 	bool is_pending = (H3_GIC_DIST->ISPEND[index] & mask) == mask;
 
 	printf("H3_IRQn=%d (index=%d,mask=%p), group=%d, enabled=%d, pending=%d\n", n, index, mask, group, is_enabled, is_pending);
 #endif
 }
-

@@ -25,9 +25,7 @@
 
 #include <stdio.h>
 
-#if defined (H3)
-# include "h3.h"
-#endif
+#include "h3.h"
 
 void console_set_fg_color(int);
 

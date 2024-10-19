@@ -62,6 +62,10 @@ extern "C" {
  extern "C" void console_error(const char *);
 #endif
 
+#if !defined(USE_FREE_RTOS)
+# include "superloop/timers.h"
+#endif
+
 #include "panel_led.h"
 
 #include "debug.h"
@@ -198,67 +202,6 @@ public:
 		return m_Mode;
 	}
 
-	struct Timer {
-	    uint32_t nExpireTime;
-	    uint32_t nIntervalMillis;
-	    int32_t nId;
-	    hal::TimerCallback callback;
-	};
-
-	int32_t SoftwareTimerAdd(const uint32_t nIntervalMillis, const hal::TimerCallback callback) {
-	    if (m_nTimersCount >= hal::SOFTWARE_TIMERS_MAX) {
-#ifdef NDEBUG
-            console_error("SoftwareTimerAdd\n");
-#endif
-	        return -1;
-	    }
-
-	    const auto nCurrentTime = Hardware::Millis();
-
-		Timer newTimer = {
-				.nExpireTime = nCurrentTime + nIntervalMillis,
-				.nIntervalMillis = nIntervalMillis,
-				.nId = m_nNextId++,
-				.callback = callback,
-		};
-
-	    m_Timers[m_nTimersCount++] = newTimer;
-
-	    return newTimer.nId;
-	}
-
-	bool SoftwareTimerDelete(int32_t& nId) {
-		if (nId >= 0) {
-			for (uint32_t i = 0; i < m_nTimersCount; ++i) {
-				if (m_Timers[i].nId == nId) {
-					for (uint32_t j = i; j < m_nTimersCount - 1; ++j) {
-						m_Timers[j] = m_Timers[j + 1];
-					}
-					--m_nTimersCount;
-					nId = -1;
-					return true;
-				}
-			}
-		}
-
-		return false;
-	}
-
-	bool SoftwareTimerChange(const int32_t nId, const uint32_t nIntervalMillis) {
-		if (nId >= 0) {
-			for (uint32_t i = 0; i < m_nTimersCount; ++i) {
-				if (m_Timers[i].nId == nId) {
-					m_Timers[i].nExpireTime = Hardware::Millis() + nIntervalMillis;
-					m_Timers[i].nIntervalMillis = nIntervalMillis;
-
-					return true;
-				}
-			}
-		}
-
-		return false;
-	}
-
 	void Run() {
 #if defined (ENABLE_USB_HOST) && defined (CONFIG_USB_HOST_MSC)
 # if defined (GD32H7XX) || defined (GD32F4XX)
@@ -267,21 +210,13 @@ public:
 		usbh_core_task(&usb_host);
 # endif
 #endif
-	    const auto nCurrentTime = Hardware::Get()->Millis();
-
-	    for (uint32_t i = 0; i < m_nTimersCount; i++) {
-	        if (m_Timers[i].nExpireTime <= nCurrentTime) {
-	        	m_Timers[i].callback();
-	            m_Timers[i].nExpireTime = nCurrentTime + m_Timers[i].nIntervalMillis;
-	        }
-	    }
-
+#if !defined(USE_FREE_RTOS)
+		SoftwareTimerRun();
+#endif
 		hal::panel_led_run();
-
 #if defined (DEBUG_STACK)
 		stack_debug_run();
 #endif
-
 #if defined (DEBUG_EMAC)
 		emac_debug_run();
 #endif
@@ -294,7 +229,7 @@ public:
 private:
 	void RebootHandler();
 
-	static void ledblink() {
+	static void ledblink([[maybe_unused]] TimerHandle_t nHandle) {
 #if defined(HAL_HAVE_PORT_BIT_TOGGLE)
 		GPIO_TG(LED_BLINK_GPIO_PORT) = LED_BLINK_PIN;
 #else
@@ -374,10 +309,6 @@ private:
 	hardware::ledblink::Mode m_Mode { hardware::ledblink::Mode::UNKNOWN };
 	bool m_doLock { false };
 	int32_t m_nTimerId { -1 };
-
-	Timer m_Timers[hal::SOFTWARE_TIMERS_MAX];
-	uint32_t m_nTimersCount { 0 };
-	int32_t m_nNextId { 0 };
 
 #if !defined(HAL_HAVE_PORT_BIT_TOGGLE)
 	static inline int32_t m_nToggleLed { 1 };

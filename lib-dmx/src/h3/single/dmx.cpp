@@ -422,7 +422,7 @@ static void __attribute__((interrupt("FIQ"))) fiq_dmx(void) {
 		}
 
 		H3_GIC_CPUIF->EOI = UART_IRQN;
-		gic_unpend(UART_IRQN);
+		gic_unpend<UART_IRQN>();
 	} else {
 		console_error("spurious interrupt\n");
 	}
@@ -539,7 +539,7 @@ Dmx::Dmx() {
 
 	sv_DmxTransmitState = IDLE;
 
-	irq_timer_init();
+	irq_handler_init();
 
 	irq_timer_set(IRQ_TIMER_1, irq_timer1_dmx_receive);
 	H3_TIMER->TMR1_INTV = 0xB71B00; // 1 second

@@ -163,6 +163,7 @@ typedef enum T_H3_IRQn {
 	H3_UART2_IRQn = 34,
 	H3_UART3_IRQn = 35,
 	H3_PA_EINT_IRQn = 43,
+	H3_PG_EINT_IRQn = 49,
 	H3_TIMER0_IRQn = 50,
 	H3_TIMER1_IRQn = 51,
 	H3_AUDIO_CODEC_IRQn = 61,
@@ -826,8 +827,16 @@ extern void h3_dump_memory_mapping(void);
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wconversion"
 #pragma GCC diagnostic ignored "-Wsign-conversion"
-
+#ifdef __cplusplus
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+#endif
 #include "core_ca.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 #include "irq_ctrl.h"
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* H3_H_ */

@@ -2,7 +2,7 @@
  * @file stack_debug.cpp
  *
  */
-/* Copyright (C) 2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2023-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -78,7 +78,7 @@ void stack_debug_print() {
 #ifndef NDEBUG
 		printf("Stack: Size %uKB, [%p:%p:%p], Used: %u, Free: %u [%u]", nSize / (1024 / 4), pStart, p, pEnd, nUsedBytes, nFreeBytes, nFreePct);
 #else
-		printf("Stack: Size %uKB, Used: %u, Free: %u", nSize / (1024 / 4), nUsedBytes, nFreeBytes);
+		printf("Stack: Size %uKB, Used: %u, Free: %u", nSize / (1024 / 4), nUsedBytes,  nFreeBytes);
 #endif
 		printf("\x1b[39m\n");
 	}

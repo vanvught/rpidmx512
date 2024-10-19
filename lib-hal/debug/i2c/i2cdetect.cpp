@@ -2,7 +2,7 @@
  * @file i2cdetect.cpp
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,11 +25,9 @@
 
 #include <cstdio>
 
-#include "i2cdetect.h"
-
 #include "hal_i2c.h"
 
-inline static bool i2c_is_connected(uint8_t nAddress) {
+inline static bool i2c_is_connected(const uint8_t nAddress) {
 	uint8_t nResult;
 	char buffer;
 
@@ -48,7 +46,8 @@ inline static bool i2c_is_connected(uint8_t nAddress) {
 static constexpr uint32_t FIRST = 0x03;
 static constexpr uint32_t LAST = 0x77;
 
-I2cDetect::I2cDetect() {
+void i2c_detect() {
+	FUNC_PREFIX(i2c_begin());
 	FUNC_PREFIX(i2c_set_baudrate(100000));
 
 	puts("\n     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f");

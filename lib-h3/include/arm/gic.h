@@ -2,7 +2,7 @@
  * @file gic.h
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -107,32 +107,26 @@ typedef struct {
 #define H3_GIC_DIST		(_CAST(GIC_DIST_TypeDef *)(H3_GIC_DIST_BASE))
 #define H3_GIC_CPUIF	(_CAST(GIC_CPUIF_TypeDef *)(H3_GIC_CPUIF_BASE))
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+void gic_init();
 
-extern void gic_init(void);
+void gic_irq_config(H3_IRQn_TypeDef, GIC_CORE_TypeDef);
+void gic_fiq_config(H3_IRQn_TypeDef, GIC_CORE_TypeDef);
 
-extern void gic_irq_config(H3_IRQn_TypeDef n, GIC_CORE_TypeDef cpu);
-extern void gic_fiq_config(H3_IRQn_TypeDef n, GIC_CORE_TypeDef cpu);
+void gic_init_dump();
+void gic_int_dump(H3_IRQn_TypeDef);
 
-extern void gic_init_dump(void);
-extern void gic_int_dump(H3_IRQn_TypeDef n);
-
-inline static void gic_unpend(H3_IRQn_TypeDef irq) {
-	const uint32_t index = irq / 32;
-	const uint32_t mask = 1U << (irq % 32);
-
-	H3_GIC_DIST->ICPEND[index] = mask;
+template<H3_IRQn_TypeDef IRQn>
+inline void gic_unpend() {
+	constexpr auto nIndex = IRQn / 32;
+	constexpr auto nMask = 1U << (IRQn % 32);
+	GICDistributor->ICPENDR[nIndex] = nMask;
 }
 
-#include "arm/synchronize.h"
-
-inline static uint32_t gic_get_priority(H3_IRQn_TypeDef IRQn) {
+inline uint32_t gic_get_priority(H3_IRQn_TypeDef IRQn) {
 	return (H3_GIC_DIST->IPRIORITY[IRQn / 4U] >> ((IRQn % 4U) * 8U)) & 0xFFUL;
 }
 
-inline static void gic_set_priority(H3_IRQn_TypeDef IRQn, uint32_t priority) {
+inline void gic_set_priority(H3_IRQn_TypeDef IRQn, uint32_t priority) {
 	const uint32_t mask = H3_GIC_DIST->IPRIORITY[IRQn / 4U] & ~(0xFFUL << ((IRQn % 4U) * 8U));
 	H3_GIC_DIST->IPRIORITY[IRQn / 4U] = mask | ((priority & 0xFFUL) << ((IRQn % 4U) * 8U));
 }
@@ -140,12 +134,12 @@ inline static void gic_set_priority(H3_IRQn_TypeDef IRQn, uint32_t priority) {
 /**
  * https://github.com/ARM-software/CMSIS_5/blob/develop/CMSIS/Core_A/Source/irq_ctrl_gic.c#L239
  */
-inline static uint32_t gic_get_active_fiq() {
+inline uint32_t gic_get_active_fiq() {
 	/* Dummy read to avoid GIC 390 errata 801120 */
 	(void) H3_GIC_CPUIF->HPPI;
 
 	const uint32_t fiqn = H3_GIC_CPUIF->IA;
-	dsb();
+	__DSB();
 
 	/* Workaround GIC 390 errata 733075 (GIC-390_Errata_Notice_v6.pdf, 09-Jul-2014)  */
 	/* The following workaround code is for a single-core system.  It would be       */
@@ -157,18 +151,14 @@ inline static uint32_t gic_get_active_fiq() {
 
 	if ((fiqn == 0) || (fiqn >= 0x3FE)) {
 		/* Unlock the CPU interface with a dummy write to Interrupt Priority Register */
-		const uint32_t prio = gic_get_priority((H3_IRQn_TypeDef) 0);
-		gic_set_priority((H3_IRQn_TypeDef) 0, prio);
+		const uint32_t prio = gic_get_priority(static_cast<H3_IRQn_TypeDef>(0));
+		gic_set_priority(static_cast<H3_IRQn_TypeDef>(0), prio);
 
-		dsb();
+		__DSB();
 		/* End of Workaround GIC 390 errata 733075 */
 	}
 
 	return fiqn;
 }
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* GIC_H_ */

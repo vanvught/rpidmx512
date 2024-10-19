@@ -1,8 +1,8 @@
 /**
- * @file console_status.c
+ * @file console.c
  *
  */
-/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,4 +28,8 @@
 
 void console_status(__attribute__((unused)) uint32_t color, const char *s) {
 	puts(s);
+}
+
+void console_error(const char *s) {
+	fprintf(stderr, "%s", s);
 }

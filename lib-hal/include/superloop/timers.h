@@ -1,8 +1,8 @@
 /**
- * @file irq_timer.h
+ * @file timers.h
  *
  */
-/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,23 +23,18 @@
  * THE SOFTWARE.
  */
 
-#ifndef IRQ_TIMER_H_
-#define IRQ_TIMER_H_
+#ifndef HAL_SUPERLOOP_TIMERS_H_
+#define HAL_SUPERLOOP_TIMERS_H_
 
-#include <stdint.h>
+#include <cstdint>
 
-typedef enum irq_timers {
-	IRQ_TIMER_0,
-	IRQ_TIMER_1
-} _irq_timers;
+typedef int32_t TimerHandle_t;
+typedef void (*TimerCallbackFunction_t)(TimerHandle_t);
 
-typedef void (*thunk_irq_timer_t)(const uint32_t);
-typedef void (*thunk_irq_timer_arm_t)();
+TimerHandle_t SoftwareTimerAdd(const uint32_t nIntervalMillis, const TimerCallbackFunction_t callback);
+bool SoftwareTimerDelete(TimerHandle_t& nId);
+bool SoftwareTimerChange(const TimerHandle_t nId, const uint32_t nIntervalMillis);
 
-extern void irq_timer_set(_irq_timers, thunk_irq_timer_t);
-extern void irq_timer_arm_physical_set(thunk_irq_timer_arm_t);
-extern void irq_timer_arm_virtual_set(thunk_irq_timer_arm_t, uint32_t);
+void SoftwareTimerRun();
 
-extern void irq_handler_init();
-
-#endif /* IRQ_TIMER_H_ */
+#endif /* HAL_SUPERLOOP_TIMERS_H_ */

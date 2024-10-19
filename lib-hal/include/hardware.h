@@ -53,8 +53,6 @@ namespace hal {
 #endif
 
 static constexpr uint32_t SOFTWARE_TIMERS_MAX = CONFIG_HAL_TIMERS_COUNT;
-
-typedef void (*TimerCallback)();
 }  // namespace hal
 
 #if defined(__linux__) || defined (__APPLE__)

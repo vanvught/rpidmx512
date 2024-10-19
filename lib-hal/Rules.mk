@@ -47,6 +47,10 @@ ifneq ($(MAKE_FLAGS),)
 	ifneq (,$(findstring DEBUG_STACK,$(MAKE_FLAGS)))
 		EXTRA_SRCDIR+=debug/stack
 	endif
+	
+	ifeq (,$(findstring USE_FREE_RTOS,$(MAKE_FLAGS)))
+		EXTRA_SRCDIR+=superloop
+	endif
 else
 	DEFINES+=DEBUG_I2C DEBUG_STACK DEBUG_POSIX
 	DEFINES+=LOGIC_ANALYZER
@@ -54,5 +58,6 @@ else
 	EXTRA_SRCDIR+=console/i2c console/null console/uart0 
 	EXTRA_SRCDIR+=posix
 	EXTRA_SRCDIR+=rtc rtc/i2c
+	EXTRA_SRCDIR+=superloop
 	EXTRA_INCLUDES+=../lib-properties/include
 endif

@@ -425,7 +425,7 @@ static void __attribute__((interrupt("FIQ"))) codec_fiq_handler(void) {
 	H3_DMA->IRQ_PEND0 |= H3_DMA->IRQ_PEND0;
 
 	H3_GIC_CPUIF->EOI = H3_DMA_IRQn;
-	gic_unpend(H3_DMA_IRQn);
+	gic_unpend<H3_DMA_IRQn>();
 	isb();
 
 #ifdef LOGIC_ANALYZER

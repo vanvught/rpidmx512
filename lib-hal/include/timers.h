@@ -1,8 +1,8 @@
 /**
- * @file debug_exception.c
+ * @file timers.h
  *
  */
-/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,40 +23,13 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
+#ifndef HAL_TIMERS_H_
+#define HAL_TIMERS_H_
 
-#include "console.h"
-
-#if defined (H3)
-# include "h3.h"
+#if defined(USE_FREE_RTOS)
+# include "../FreeRTOS/FreeRTOS-Kernel/include/timers.h"
 #else
-void bcm2835_watchdog_stop(void);
+# include "superloop/timers.h"
 #endif
 
-void debug_exception(unsigned int type, unsigned int address) {
-	__sync_synchronize();
-
-	console_set_fg_color(CONSOLE_RED);
-
-	if (type == 0) {
-		printf("\nUndefined exception at address: %p\n", (void *)address);
-	} else if (type == 1) {
-		printf("\nPrefetch abort at address: %p\n", (void *)address);
-	} else if (type == 2) {
-		volatile unsigned int datafaultaddr;
-		asm volatile ("mrc p15, 0, %[dfa], c6, c0, 0\n\t" : [dfa] "=r" (datafaultaddr));
-		printf("\nData abort at address: %p -> %p\n", (void *)address, (void *)datafaultaddr);
-	} else {
-		printf("\nUnknown exception! [%u]\n", type);
-	}
-
-	console_set_fg_color(CONSOLE_WHITE);
-
-#if defined (H3)
-	H3_TIMER->WDOG0_MODE = 0;
-#else
-	bcm2835_watchdog_stop();
-#endif
-
-	for(;;);
-}
+#endif /* HAL_TIMERS_H_ */
