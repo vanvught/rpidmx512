@@ -27,6 +27,13 @@
 
 #include <cstdint>
 
+#if defined (GD32)
+# include "gd32.h"
+# define MASTER_TIMER_CLOCK		(APB2_CLOCK_FREQ * 2)
+# define TIMER_PRESCALER		(199)
+# define FREQUENCY_EFFECTIVE	(MASTER_TIMER_CLOCK / (TIMER_PRESCALER + 1))
+#endif
+
 struct TimeCodeConst {
 	static constexpr uint8_t FPS[4] = { 24, 25, 30, 30 };
 #if defined (H3)
@@ -35,14 +42,6 @@ struct TimeCodeConst {
 	static constexpr uint32_t TMR_INTV[4] = {(FREQUENCY_EFFECTIVE / 24), (FREQUENCY_EFFECTIVE / 25) - 1, (FREQUENCY_EFFECTIVE / 30) - 1, (FREQUENCY_EFFECTIVE / 30) - 1};
 	static_assert((FREQUENCY_EFFECTIVE / 24) <= UINT16_MAX);
 #endif
-
 };
-
-#if defined (GD32)
-# include "gd32.h"
-# define MASTER_TIMER_CLOCK		(APB2_CLOCK_FREQ * 2)
-# define TIMER_PRESCALER		(199)
-# define FREQUENCY_EFFECTIVE	(MASTER_TIMER_CLOCK / (TIMER_PRESCALER + 1))
-#endif
 
 #endif /* TIMECODECONST_H_ */
