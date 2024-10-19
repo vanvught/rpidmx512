@@ -1,5 +1,5 @@
 /**
- * @file midireader.h
+ * @file systimereader.h
  *
  */
 /* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
@@ -23,32 +23,45 @@
  * THE SOFTWARE.
  */
 
-#ifndef MIDIREADER_H_
-#define MIDIREADER_H_
+#ifndef ARM_SYSTIMEREADER_H_
+#define ARM_SYSTIMEREADER_H_
+
+#include <cstdint>
+#include <time.h>
 
 #include "ltc.h"
-
 #include "midi.h"
-#include "midibpm.h"
 
-class MidiReader {
+class SystimeReader {
 public:
-	void Start();
+	SystimeReader(uint8_t nFps);
+
+	void Start(bool bAutoStart = false);
 	void Run();
 
-private:
-	void HandleMtc();
-	void HandleMtcQf();
-	void Update();
+	void HandleRequest(char *pBuffer = nullptr, uint16_t nBufferLength = 0);
+
+	void ActionStart();
+	void ActionStop();
+	void ActionSetRate(const char *pTimeCodeRate);
+
+	static SystimeReader *Get() {
+		return s_pThis;
+	}
 
 private:
-	struct midi::Timecode m_MidiTimeCode;
-	midi::TimecodeType m_TimeCodeType { midi::TimecodeType::UNKNOWN };
-	uint8_t m_nPartPrevious { 0 };
-	bool m_bDirection { true };
-	uint32_t m_nMtcQfFramePrevious { 0 };
-	uint32_t m_nMtcQfFramesDelta { 0 };
-	MidiBPM m_MidiBPM;
+	void HandleUdpRequest();
+
+private:
+	uint8_t m_nFps;
+	time_t m_nTimePrevious { 0 };
+	midi::Timecode m_tMidiTimeCode;
+	int32_t m_nHandle { -1 };
+	uint32_t m_nBytesReceived { 0 };
+	bool m_bIsStarted { false };
+
+	static inline char *s_pUdpBuffer;
+	static inline SystimeReader *s_pThis;
 };
 
-#endif /* MIDIREADER_H_ */
+#endif /* ARM_SYSTIMEREADER_H_ */

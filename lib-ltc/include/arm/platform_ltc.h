@@ -1,8 +1,8 @@
 /**
- * @file ltcmidisystemrealtime.h
+ * @file platform_ltc.h
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2022-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,39 +23,28 @@
  * THE SOFTWARE.
  */
 
-#ifndef LTCMIDISYSTEMREALTIME_H_
-#define LTCMIDISYSTEMREALTIME_H_
+#ifndef ARM_PLATFORM_LTC_H_
+#define ARM_PLATFORM_LTC_H_
 
-#include "midi.h"
+#include <cstdint>
 
-class LtcMidiSystemRealtime {
-public:
-	LtcMidiSystemRealtime();
+#include "ltc.h"
 
-	void Start();
-	void Stop();
-	void Run();
+extern volatile uint32_t gv_ltc_nUpdatesPerSecond;
+extern volatile uint32_t gv_ltc_nUpdatesPrevious;
+extern volatile uint32_t gv_ltc_nUpdates;
 
-	void SendStart();
-	void SendStop();
-	void SendContinue();
+extern volatile bool gv_ltc_bTimeCodeAvailable;
+extern volatile uint32_t gv_ltc_nTimeCodeCounter;
 
-	void SetBPM(uint32_t nBPM);
+extern struct ltc::TimeCode g_ltc_LtcTimeCode;
 
-	static LtcMidiSystemRealtime *Get() {
-		return s_pThis;
-	}
+#if defined (H3)
+# define PLATFORM_LTC_ARM
+# include "../src/arm/h3/h3_platform_ltc.h"
+#elif  defined (GD32)
+# define PLATFORM_LTC_ARM
+# include "../src/arm/gd32/gd32_platform_ltc.h"
+#endif
 
-private:
-	void Send(midi::Types tType);
-	void ShowBPM(uint32_t nBPM);
-
-private:
-	int m_nHandle { -1 };
-	uint32_t m_nBPMPrevious { 999 };
-
-	static char *s_pUdpBuffer;
-	static LtcMidiSystemRealtime *s_pThis;
-};
-
-#endif /* LTCMIDISYSTEMREALTIME_H_ */
+#endif /* ARM_PLATFORM_LTC_H_ */

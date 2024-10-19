@@ -32,7 +32,7 @@
 #include <cstdio>
 #include <cassert>
 
-#include "ltcgenerator.h"
+#include "arm/ltcgenerator.h"
 #include "ltc.h"
 #include "timecodeconst.h"
 
@@ -44,9 +44,9 @@
 #include "rtpmidi.h"
 #include "ltcetc.h"
 #include "ltcsender.h"
-#include "ltcoutputs.h"
+#include "arm/ltcoutputs.h"
 
-#include "platform_ltc.h"
+#include "arm/platform_ltc.h"
 
 #include "debug.h"
 
@@ -59,11 +59,6 @@
 # define BUTTON2_GPIO		GPIO_EXT_7		// PA6 Resume
 
 # define BUTTONS_MASK		((1 << BUTTON0_GPIO) |  (1 << BUTTON1_GPIO) | (1 << BUTTON2_GPIO))
-
-# if defined (H3)
-# else
-#  error
-# endif
 #endif
 
 #if defined (H3)
@@ -74,31 +69,31 @@ static void irq_timer0_handler([[maybe_unused]] uint32_t clo) {
 	// Defined in platform_ltc.cpp
 #endif
 
-namespace cmd {
-static constexpr char START[] = "start";
-static constexpr char STOP[] = "stop";
-static constexpr char RESUME[] = "resume";
-static constexpr char RATE[] = "rate#";
-static constexpr char DIRECTION[] = "direction#";
-static constexpr char PITCH[] = "pitch#";
-static constexpr char FORWARD[] = "forward#";
-static constexpr char BACKWARD[] = "backward#";
-}
+static constexpr char CMD_START[] = "start";
+static constexpr auto START_LENGTH = sizeof(CMD_START) - 1;
 
-namespace length {
-static constexpr auto START = sizeof(cmd::START) - 1;
-static constexpr auto STOP = sizeof(cmd::STOP) - 1;
-static constexpr auto RESUME = sizeof(cmd::RESUME) - 1;
-static constexpr auto RATE = sizeof(cmd::RATE) - 1;
-static constexpr auto DIRECTION = sizeof(cmd::DIRECTION) - 1;
-static constexpr auto PITCH = sizeof(cmd::PITCH) - 1;
-static constexpr auto FORWARD = sizeof(cmd::FORWARD) - 1;
-static constexpr auto BACKWARD = sizeof(cmd::BACKWARD) - 1;
-}
+static constexpr char CMD_STOP[] = "stop";
+static constexpr auto STOP_LENGTH = sizeof(CMD_STOP) - 1;
 
-namespace udp {
-static constexpr auto PORT = 0x5443;
-}
+static constexpr char CMD_RESUME[] = "resume";
+static constexpr auto RESUME_LENGTH = sizeof(CMD_RESUME) - 1;
+
+static constexpr char CMD_RATE[] = "rate#";
+static constexpr auto RATE_LENGTH = sizeof(CMD_RATE) - 1;
+
+static constexpr char CMD_DIRECTION[] = "direction#";
+static constexpr auto DIRECTION_LENGTH = sizeof(CMD_DIRECTION) - 1;
+
+static constexpr char CMD_PITCH[] = "pitch#";
+static constexpr auto PITCH_LENGTH = sizeof(CMD_PITCH) - 1;
+
+static constexpr char CMD_FORWARD[] = "forward#";
+static constexpr auto FORWARD_LENGTH = sizeof(CMD_FORWARD) - 1;
+
+static constexpr char CMD_BACKWARD[] = "backward#";
+static constexpr auto BACKWARD_LENGTH = sizeof(CMD_BACKWARD) - 1;
+
+static constexpr auto UDP_PORT = 0x5443;
 
 static int32_t atoi(const char *pBuffer, uint32_t nSize) {
 	assert(pBuffer != nullptr);
@@ -123,9 +118,6 @@ static int32_t atoi(const char *pBuffer, uint32_t nSize) {
 
 	return sign * res;
 }
-
-char *LtcGenerator::s_pUdpBuffer;
-LtcGenerator *LtcGenerator::s_pThis;
 
 LtcGenerator::LtcGenerator(const struct ltc::TimeCode* pStartLtcTimeCode, const struct ltc::TimeCode* pStopLtcTimeCode, bool bSkipFree):
 	m_pStartLtcTimeCode(const_cast<struct ltc::TimeCode*>(pStartLtcTimeCode)),
@@ -179,14 +171,14 @@ void LtcGenerator::Start() {
 # endif
 #endif
 
-	m_nHandle = Network::Get()->Begin(udp::PORT);
+	m_nHandle = Network::Get()->Begin(UDP_PORT);
 	assert(m_nHandle != -1);
 
 	const auto nType = static_cast<uint32_t>(ltc::g_Type);
 	const auto nTimerInterval = TimeCodeConst::TMR_INTV[nType];
 
 #if defined (H3)
-	irq_timer_init();
+	irq_handler_init();
 	irq_timer_set(IRQ_TIMER_0, static_cast<thunk_irq_timer_t>(irq_timer0_handler));
 
 	H3_TIMER->TMR0_INTV = nTimerInterval;
@@ -233,7 +225,7 @@ void LtcGenerator::Stop() {
 #elif defined (GD32)
 #endif
 
-	m_nHandle = Network::Get()->End(udp::PORT);
+	m_nHandle = Network::Get()->End(UDP_PORT);
 
 	DEBUG_EXIT
 }
@@ -508,27 +500,27 @@ void LtcGenerator::HandleRequest(char *pBuffer, uint16_t nBufferLength) {
 
 	debug_dump(s_pUdpBuffer, m_nBytesReceived);
 
-	if (memcmp(&s_pUdpBuffer[4], cmd::START, length::START) == 0) {
-		if (m_nBytesReceived == (4 + length::START)) {
+	if (memcmp(&s_pUdpBuffer[4], CMD_START, START_LENGTH) == 0) {
+		if (m_nBytesReceived == (4 + START_LENGTH)) {
 			ActionStart();
 			return;
 		}
 
-		if (m_nBytesReceived == (4 + length::START + 1 + ltc::timecode::CODE_MAX_LENGTH)) {
-			if (s_pUdpBuffer[4 + length::START] == '#') {
-				ActionSetStart(&s_pUdpBuffer[(4 + length::START + 1)]);
+		if (m_nBytesReceived == (4 + START_LENGTH + 1 + ltc::timecode::CODE_MAX_LENGTH)) {
+			if (s_pUdpBuffer[4 + START_LENGTH] == '#') {
+				ActionSetStart(&s_pUdpBuffer[(4 + START_LENGTH + 1)]);
 				return;
 			}
 
-			if (s_pUdpBuffer[4 + length::START] == '!') {
-				ActionSetStart(&s_pUdpBuffer[(4 + length::START + 1)]);
+			if (s_pUdpBuffer[4 + START_LENGTH] == '!') {
+				ActionSetStart(&s_pUdpBuffer[(4 + START_LENGTH + 1)]);
 				ActionStop();
 				ActionStart();
 				return;
 			}
 
-			if (s_pUdpBuffer[4 + length::START] == '@') {
-				ActionGoto(&s_pUdpBuffer[(4 + length::START + 1)]);
+			if (s_pUdpBuffer[4 + START_LENGTH] == '@') {
+				ActionGoto(&s_pUdpBuffer[(4 + START_LENGTH + 1)]);
 				return;
 			}
 		}
@@ -537,14 +529,14 @@ void LtcGenerator::HandleRequest(char *pBuffer, uint16_t nBufferLength) {
 		return;
 	}
 
-	if (memcmp(&s_pUdpBuffer[4], cmd::STOP, length::STOP) == 0) {
-		if (m_nBytesReceived == (4 + length::STOP)) {
+	if (memcmp(&s_pUdpBuffer[4], CMD_STOP, STOP_LENGTH) == 0) {
+		if (m_nBytesReceived == (4 + STOP_LENGTH)) {
 			ActionStop();
 			return;
 		}
 
-		if ((m_nBytesReceived == (4 + length::STOP + 1 + ltc::timecode::CODE_MAX_LENGTH))  && (s_pUdpBuffer[4 + length::STOP] == '#')) {
-			ActionSetStop(&s_pUdpBuffer[(4 + length::STOP + 1)]);
+		if ((m_nBytesReceived == (4 + STOP_LENGTH + 1 + ltc::timecode::CODE_MAX_LENGTH))  && (s_pUdpBuffer[4 + STOP_LENGTH] == '#')) {
+			ActionSetStop(&s_pUdpBuffer[(4 + STOP_LENGTH + 1)]);
 			return;
 		}
 
@@ -552,42 +544,42 @@ void LtcGenerator::HandleRequest(char *pBuffer, uint16_t nBufferLength) {
 		return;
 	}
 
-	if (memcmp(&s_pUdpBuffer[4], cmd::RESUME, length::RESUME) == 0) {
+	if (memcmp(&s_pUdpBuffer[4], CMD_RESUME, RESUME_LENGTH) == 0) {
 		ActionResume();
 		return;
 	}
 
-	if (m_nBytesReceived == (4 + length::RATE + ltc::timecode::RATE_MAX_LENGTH)) {
-		if (memcmp(&s_pUdpBuffer[4], cmd::RATE, length::RATE) == 0) {
-			ActionSetRate(&s_pUdpBuffer[(4 + length::RATE)]);
+	if (m_nBytesReceived == (4 + RATE_LENGTH + ltc::timecode::RATE_MAX_LENGTH)) {
+		if (memcmp(&s_pUdpBuffer[4], CMD_RATE, RATE_LENGTH) == 0) {
+			ActionSetRate(&s_pUdpBuffer[(4 + RATE_LENGTH)]);
 			return;
 		}
 	}
 
-	if (m_nBytesReceived <= (4 + length::DIRECTION + 8)) {
-		if (memcmp(&s_pUdpBuffer[4], cmd::DIRECTION, length::DIRECTION) == 0) {
-			ActionSetDirection(&s_pUdpBuffer[(4 + length::DIRECTION)]);
+	if (m_nBytesReceived <= (4 + DIRECTION_LENGTH + 8)) {
+		if (memcmp(&s_pUdpBuffer[4], CMD_DIRECTION, DIRECTION_LENGTH) == 0) {
+			ActionSetDirection(&s_pUdpBuffer[(4 + DIRECTION_LENGTH)]);
 			return;
 		}
 	}
 
-	if (m_nBytesReceived <= (4 + length::PITCH + 4)) {
-		if (memcmp(&s_pUdpBuffer[4], cmd::PITCH, length::PITCH) == 0) {
-			SetPitch(&s_pUdpBuffer[(4 + length::PITCH)], m_nBytesReceived - (4 + length::PITCH));
+	if (m_nBytesReceived <= (4 + PITCH_LENGTH + 4)) {
+		if (memcmp(&s_pUdpBuffer[4], CMD_PITCH, PITCH_LENGTH) == 0) {
+			SetPitch(&s_pUdpBuffer[(4 + PITCH_LENGTH)], m_nBytesReceived - (4 + PITCH_LENGTH));
 			return;
 		}
 	}
 
-	if (m_nBytesReceived <= (4 + length::FORWARD + 2)) {
-		if (memcmp(&s_pUdpBuffer[4], cmd::FORWARD, length::FORWARD) == 0) {
-			SetSkip(&s_pUdpBuffer[(4 + length::FORWARD)], m_nBytesReceived - (4 + length::FORWARD), LTC_GENERATOR_FORWARD);
+	if (m_nBytesReceived <= (4 + FORWARD_LENGTH + 2)) {
+		if (memcmp(&s_pUdpBuffer[4], CMD_FORWARD, FORWARD_LENGTH) == 0) {
+			SetSkip(&s_pUdpBuffer[(4 + FORWARD_LENGTH)], m_nBytesReceived - (4 + FORWARD_LENGTH), LTC_GENERATOR_FORWARD);
 			return;
 		}
 	}
 
-	if (m_nBytesReceived <= (4 + length::BACKWARD + 2)) {
-		if (memcmp(&s_pUdpBuffer[4], cmd::BACKWARD, length::BACKWARD) == 0) {
-			SetSkip(&s_pUdpBuffer[(4 + length::BACKWARD)], m_nBytesReceived - (4 + length::BACKWARD), LTC_GENERATOR_BACKWARD);
+	if (m_nBytesReceived <= (4 + BACKWARD_LENGTH + 2)) {
+		if (memcmp(&s_pUdpBuffer[4], CMD_BACKWARD, BACKWARD_LENGTH) == 0) {
+			SetSkip(&s_pUdpBuffer[(4 + BACKWARD_LENGTH)], m_nBytesReceived - (4 + BACKWARD_LENGTH), LTC_GENERATOR_BACKWARD);
 			return;
 		}
 	}
@@ -641,7 +633,6 @@ void LtcGenerator::Print() {
 }
 
 void LtcGenerator::Increment() {
-
 	if (__builtin_expect((memcmp(&g_ltc_LtcTimeCode, m_pStopLtcTimeCode, sizeof(struct ltc::TimeCode)) == 0), 0)) {
 		if (m_State == STARTED) {
 			m_State = LIMIT;
@@ -677,7 +668,6 @@ void LtcGenerator::Increment() {
 }
 
 void LtcGenerator::Decrement() {
-
 	if (__builtin_expect((memcmp(&g_ltc_LtcTimeCode, m_pStartLtcTimeCode, sizeof(struct ltc::TimeCode)) == 0), 0)) {
 		if (m_State == STARTED) {
 			m_State = LIMIT;
@@ -733,10 +723,10 @@ bool LtcGenerator::PitchControl() {
 }
 
 void LtcGenerator::SetTimeCode(int32_t nSeconds) {
-	g_ltc_LtcTimeCode.nHours = static_cast<uint8_t>(nSeconds / 3600U);
-	nSeconds -= g_ltc_LtcTimeCode.nHours * 3600U;
-	g_ltc_LtcTimeCode.nMinutes = static_cast<uint8_t>(nSeconds / 60U);
-	nSeconds -= g_ltc_LtcTimeCode.nMinutes * 60U;
+	g_ltc_LtcTimeCode.nHours = static_cast<uint8_t>(nSeconds / 3600);
+	nSeconds -= g_ltc_LtcTimeCode.nHours * 3600;
+	g_ltc_LtcTimeCode.nMinutes = static_cast<uint8_t>(nSeconds / 60);
+	nSeconds -= g_ltc_LtcTimeCode.nMinutes * 60;
 	g_ltc_LtcTimeCode.nSeconds = static_cast<uint8_t>(nSeconds);
 }
 
@@ -798,18 +788,5 @@ void LtcGenerator::Update() {
 				}
 			}
 		}
-	}
-}
-
-void LtcGenerator::Run() {
-	Update();
-
-	HandleButtons();
-	HandleUdpRequest();
-
-	if (m_State == STARTED) {
-		Hardware::Get()->SetMode(hardware::ledblink::Mode::DATA);
-	} else {
-		Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
 	}
 }

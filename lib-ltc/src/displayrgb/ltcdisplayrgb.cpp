@@ -333,7 +333,7 @@ void LtcDisplayRgb::Run() {
 
 	if (memcmp(&s_pUdpBuffer[5], showmsg::PATH, showmsg::LENGTH) == 0) {
 		const uint32_t nMsgLength = nBytesReceived - (5 + showmsg::LENGTH + 1);
-		DEBUG_PRINTF("m_nBytesReceived=%d, nMsgLength=%d [%.*s]", nBytesReceived, nMsgLength, nMsgLength, &m_Buffer[(5 + showmsg::LENGTH + 1)]);
+		DEBUG_PRINTF("m_nBytesReceived=%d, nMsgLength=%d [%.*s]", nBytesReceived, nMsgLength, nMsgLength, &s_pUdpBuffer[(5 + showmsg::LENGTH + 1)]);
 
 		if (((nMsgLength > 0) && (nMsgLength <= MAX_MESSAGE_SIZE)) && (s_pUdpBuffer[5 + showmsg::LENGTH] == '#')) {
 			SetMessage(&s_pUdpBuffer[(5 + showmsg::LENGTH + 1)], nMsgLength);

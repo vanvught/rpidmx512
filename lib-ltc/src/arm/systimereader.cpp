@@ -31,41 +31,34 @@
 #include <cstring>
 #include <cassert>
 
-#include "systimereader.h"
-
+#include "arm/systimereader.h"
 #include "ltc.h"
 #include "timecodeconst.h"
 
 #include "hardware.h"
 #include "network.h"
-
 // Output
 #include "artnetnode.h"
 #include "rtpmidi.h"
 #include "ltcetc.h"
 #include "ltcsender.h"
 #include "display.h"
-#include "ltcoutputs.h"
+#include "arm/ltcoutputs.h"
 
-#include "platform_ltc.h"
+#include "arm/platform_ltc.h"
 
 #include "debug.h"
 
-namespace cmd {
-static constexpr char START[] = "start";
-static constexpr char STOP[] = "stop";
-static constexpr char RATE[] = "rate#";
-}
+static constexpr char CMD_START[] = "start";
+static constexpr auto START_LENGTH = sizeof(CMD_START) - 1;
 
-namespace length {
-static constexpr auto START = sizeof(cmd::START) - 1;
-static constexpr auto STOP = sizeof(cmd::STOP) - 1;
-static constexpr auto RATE = sizeof(cmd::RATE) - 1;
-}
+static constexpr char CMD_STOP[] = "stop";
+static constexpr auto STOP_LENGTH = sizeof(CMD_STOP) - 1;
 
-namespace udp {
-static constexpr auto PORT = 0x5443;
-}
+static constexpr char CMD_RATE[] = "rate#";
+static constexpr auto RATE_LENGTH = sizeof(CMD_RATE) - 1;
+
+static constexpr uint16_t UDP_PORT = 0x5443;
 
 #if defined (H3)
 static void irq_timer0_handler([[maybe_unused]] uint32_t clo) {
@@ -75,9 +68,6 @@ static void irq_timer0_handler([[maybe_unused]] uint32_t clo) {
 	// Defined in platform_ltc.cpp
 #endif
 
-char *SystimeReader::s_pUdpBuffer;
-SystimeReader *SystimeReader::s_pThis;
-
 SystimeReader::SystimeReader(uint8_t nFps) : m_nFps(nFps) {
 	assert(s_pThis == nullptr);
 	s_pThis = this;
@@ -85,18 +75,20 @@ SystimeReader::SystimeReader(uint8_t nFps) : m_nFps(nFps) {
 }
 
 void SystimeReader::Start(bool bAutoStart) {
-	m_nHandle = Network::Get()->Begin(udp::PORT);
+	m_nHandle = Network::Get()->Begin(UDP_PORT);
 	assert(m_nHandle != -1);
 
 	const auto nTimerInterval = TimeCodeConst::TMR_INTV[static_cast<uint8_t>(ltc::g_Type)];
 
 #if defined (H3)
 	// System Time -> Frames
-	irq_timer_init();
 	irq_timer_set(IRQ_TIMER_0, static_cast<thunk_irq_timer_t>(irq_timer0_handler));
 
 	H3_TIMER->TMR0_INTV = nTimerInterval;
 	H3_TIMER->TMR0_CTRL &= ~(TIMER_CTRL_SINGLE_MODE);
+
+	__enable_irq();
+	__DMB();
 #elif defined (GD32)
 	platform::ltc::timer11_config();
 	TIMER_CAR(TIMER11) = nTimerInterval;
@@ -111,9 +103,6 @@ void SystimeReader::Start(bool bAutoStart) {
 	if (bAutoStart) {
 		ActionStart();
 	}
-}
-
-void SystimeReader::Print() {
 }
 
 void SystimeReader::ActionStart() {
@@ -212,8 +201,8 @@ void SystimeReader::HandleRequest(char *pBuffer, uint16_t nBufferLength) {
 
 	debug_dump(s_pUdpBuffer, m_nBytesReceived);
 
-	if (m_nBytesReceived == (4 + length::START)) {
-		if (memcmp(&s_pUdpBuffer[4], cmd::START, length::START) == 0) {
+	if (m_nBytesReceived == (4 + START_LENGTH)) {
+		if (memcmp(&s_pUdpBuffer[4], CMD_START, START_LENGTH) == 0) {
 			ActionStart();
 			return;
 		}
@@ -221,8 +210,8 @@ void SystimeReader::HandleRequest(char *pBuffer, uint16_t nBufferLength) {
 		DEBUG_PUTS("Invalid !start command");
 	}
 
-	if (m_nBytesReceived == (4 + length::STOP)) {
-		if (memcmp(&s_pUdpBuffer[4], cmd::STOP, length::STOP) == 0) {
+	if (m_nBytesReceived == (4 + STOP_LENGTH)) {
+		if (memcmp(&s_pUdpBuffer[4], CMD_STOP, STOP_LENGTH) == 0) {
 			ActionStop();
 			return;
 		}
@@ -230,9 +219,9 @@ void SystimeReader::HandleRequest(char *pBuffer, uint16_t nBufferLength) {
 		DEBUG_PUTS("Invalid !stop command");
 	}
 
-	if (m_nBytesReceived == (4 + length::RATE  + ltc::timecode::RATE_MAX_LENGTH)) {
-		if (memcmp(&s_pUdpBuffer[4], cmd::RATE, length::RATE) == 0) {
-			ActionSetRate(&s_pUdpBuffer[(4 + length::RATE)]);
+	if (m_nBytesReceived == (4 + RATE_LENGTH  + ltc::timecode::RATE_MAX_LENGTH)) {
+		if (memcmp(&s_pUdpBuffer[4], CMD_RATE, RATE_LENGTH) == 0) {
+			ActionSetRate(&s_pUdpBuffer[(4 + RATE_LENGTH)]);
 			return;
 		}
 	}
@@ -263,11 +252,11 @@ void SystimeReader::Run() {
 			m_nTimePrevious = nTime;
 
 			m_tMidiTimeCode.nFrames = 0;
-			m_tMidiTimeCode.nSeconds = static_cast<uint8_t>(nTime % 60);
-			nTime /= 60;
-			m_tMidiTimeCode.nMinutes = static_cast<uint8_t>(nTime % 60);
-			nTime /= 60;
-			m_tMidiTimeCode.nHours = static_cast<uint8_t>(nTime % 24);
+			m_tMidiTimeCode.nSeconds = static_cast<uint8_t>(nTime % 60U);
+			nTime /= 60U;
+			m_tMidiTimeCode.nMinutes = static_cast<uint8_t>(nTime % 60U);
+			nTime /= 60U;
+			m_tMidiTimeCode.nHours = static_cast<uint8_t>(nTime % 24U);
 
 #if defined (H3)
 			H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);

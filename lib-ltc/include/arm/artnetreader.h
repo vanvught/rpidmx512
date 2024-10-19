@@ -1,5 +1,5 @@
 /**
- * @file rtpmidireader.h
+ * @file artnetreader.h
  *
  */
 /* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
@@ -23,36 +23,41 @@
  * THE SOFTWARE.
  */
 
-#ifndef RTPMIDIREADER_H_
-#define RTPMIDIREADER_H_
+#ifndef ARM_ARTNETREADER_H_
+#define ARM_ARTNETREADER_H_
 
 #include <cstdint>
 
-#include "rtpmidihandler.h"
-#include "ltc.h"
+#include "artnettimecode.h"
+#include "midi.h"
 
-#include "midibpm.h"
+#include "ltcoutputs.h"
 
-class RtpMidiReader final : public RtpMidiHandler {
+#include "hardware.h"
+
+#include "arm/platform_ltc.h"
+
+class ArtNetReader final : public ArtNetTimeCode {
 public:
 	void Start();
 	void Stop();
-	void Run();
 
-	void MidiMessage(const struct midi::Message *ptMidiMessage) override;
+	void Run() {
+		LtcOutputs::Get()->UpdateMidiQuarterFrameMessage(reinterpret_cast<const struct ltc::TimeCode*>(&m_MidiTimeCode));
+
+		__DMB();
+		if (gv_ltc_nUpdatesPerSecond != 0) {
+			Hardware::Get()->SetMode(hardware::ledblink::Mode::DATA);
+		} else {
+			LtcOutputs::Get()->ShowSysTime();
+			Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
+		}
+	}
+
+	void Handler(const struct artnet::TimeCode *) override;
 
 private:
-	void HandleMtc(const struct midi::Message *ptMidiMessage);
-	void HandleMtcQf(const struct midi::Message *ptMidiMessage);
-	void Update();
-
-private:
-	struct ltc::TimeCode m_LtcTimeCode;
-	uint8_t m_nPartPrevious { 0 };
-	bool m_bDirection { true };
-	uint32_t m_nMtcQfFramePrevious { 0 };
-	uint32_t m_nMtcQfFramesDelta { 0 };
-	MidiBPM m_MidiBPM;
+	midi::Timecode m_MidiTimeCode;
 };
 
-#endif /* RTPMIDIREADER_H_ */
+#endif /* ARM_ARTNETREADER_H_ */

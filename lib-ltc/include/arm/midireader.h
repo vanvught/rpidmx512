@@ -1,8 +1,8 @@
 /**
- * @file ltcreader.h
+ * @file midireader.h
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,18 +23,32 @@
  * THE SOFTWARE.
  */
 
-#ifndef LTC_READER_H_
-#define LTC_READER_H_
+#ifndef ARM_MIDIREADER_H_
+#define ARM_MIDIREADER_H_
 
 #include "ltc.h"
 
-class LtcReader {
+#include "midi.h"
+#include "midibpm.h"
+
+class MidiReader {
 public:
 	void Start();
 	void Run();
 
 private:
-	ltc::Type m_nTypePrevious { ltc::Type::INVALID };
+	void HandleMtc();
+	void HandleMtcQf();
+	void Update();
+
+private:
+	midi::Timecode m_MidiTimeCode;
+	midi::TimecodeType m_TimeCodeType { midi::TimecodeType::UNKNOWN };
+	uint8_t m_nPartPrevious { 0 };
+	bool m_bDirection { true };
+	uint32_t m_nMtcQfFramePrevious { 0 };
+	uint32_t m_nMtcQfFramesDelta { 0 };
+	MidiBPM m_MidiBPM;
 };
 
-#endif /* LTC_READER_H_ */
+#endif /* ARM_MIDIREADER_H_ */

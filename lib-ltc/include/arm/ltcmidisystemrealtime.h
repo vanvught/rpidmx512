@@ -1,8 +1,8 @@
 /**
- * @file tcnetreader.h
+ * @file ltcmidisystemrealtime.h
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,31 +23,67 @@
  * THE SOFTWARE.
  */
 
-#ifndef TCNETREADER_H_
-#define TCNETREADER_H_
+#ifndef ARM_LTCMIDISYSTEMREALTIME_H_
+#define ARM_LTCMIDISYSTEMREALTIME_H_
 
-#include "tcnettimecode.h"
+#include <cassert>
 
 #include "midi.h"
-#include "ltc.h"
+#include "rtpmidi.h"
 
-class TCNetReader final : public TCNetTimeCode {
+#include "arm/ltcoutputs.h"
+
+class LtcMidiSystemRealtime {
 public:
+	LtcMidiSystemRealtime() {
+		assert(s_pThis == nullptr);
+		s_pThis = this;
+	}
+
 	void Start();
 	void Stop();
 	void Run();
 
-	void Handler(const struct TTCNetTimeCode *pTimeCode) override;
+
+	void SendStart() {
+		Send(midi::Types::START);
+	}
+
+	void SendStop() {
+		Send(midi::Types::STOP);
+	}
+
+	void SendContinue() {
+		Send(midi::Types::CONTINUE);
+	}
+
+	void SetBPM(uint32_t nBPM);
+
+	static LtcMidiSystemRealtime *Get() {
+		return s_pThis;
+	}
 
 private:
-	void HandleUdpRequest();
+	void Send(const midi::Types type) {
+		if (!ltc::g_DisabledOutputs.bRtpMidi) {
+			RtpMidi::Get()->SendRaw(type);
+		}
+
+		if (!ltc::g_DisabledOutputs.bMidi) {
+			Midi::Get()->SendRaw(type);
+		}
+	}
+
+	void ShowBPM(const uint32_t nBPM) {
+		LtcOutputs::Get()->ShowBPM(nBPM);
+	}
 
 private:
-	struct midi::Timecode m_tMidiTimeCode;
-	uint32_t m_nTimeCodePrevious { 0xFF };
-	int m_nHandle { -1 };
+	int32_t m_nHandle { -1 };
+	uint32_t m_nBPMPrevious { 999 };
 
-	static char *s_pUdpBuffer;
+	static inline char *s_pUdpBuffer;
+	static inline LtcMidiSystemRealtime *s_pThis;
 };
 
-#endif /* TCNETREADER_H_ */
+#endif /* ARM_LTCMIDISYSTEMREALTIME_H_ */

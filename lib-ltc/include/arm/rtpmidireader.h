@@ -1,8 +1,8 @@
 /**
- * @file ltcetcreader.h
+ * @file rtpmidireader.h
  *
  */
-/* Copyright (C) 2022 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,22 +23,36 @@
  * THE SOFTWARE.
  */
 
-#ifndef LTCETCREADER_H_
-#define LTCETCREADER_H_
+#ifndef ARM_RTPMIDIREADER_H_
+#define ARM_RTPMIDIREADER_H_
 
-#include "ltcetc.h"
+#include <cstdint>
+
+#include "rtpmidihandler.h"
 #include "ltc.h"
 
-class LtcEtcReader final : public LtcEtcHandler {
+#include "midibpm.h"
+
+class RtpMidiReader final : public RtpMidiHandler {
 public:
 	void Start();
 	void Stop();
 	void Run();
 
-	void Handler(const midi::Timecode *pTimeCode) override;
+	void MidiMessage(const struct midi::Message *ptMidiMessage) override;
 
 private:
-	struct midi::Timecode m_MidiTimeCode;
+	void HandleMtc(const struct midi::Message *ptMidiMessage);
+	void HandleMtcQf(const struct midi::Message *ptMidiMessage);
+	void Update();
+
+private:
+	struct ltc::TimeCode m_LtcTimeCode;
+	uint8_t m_nPartPrevious { 0 };
+	bool m_bDirection { true };
+	uint32_t m_nMtcQfFramePrevious { 0 };
+	uint32_t m_nMtcQfFramesDelta { 0 };
+	MidiBPM m_MidiBPM;
 };
 
-#endif /* LTCETCREADER_H_ */
+#endif /* ARM_RTPMIDIREADER_H_ */

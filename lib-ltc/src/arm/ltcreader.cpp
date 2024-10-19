@@ -34,7 +34,7 @@
 #endif
 #include <cassert>
 
-#include "ltcreader.h"
+#include "arm/ltcreader.h"
 #include "ltc.h"
 #include "timecodeconst.h"
 
@@ -45,9 +45,9 @@
 #include "rtpmidi.h"
 #include "midi.h"
 #include "ltcetc.h"
-#include "ltcoutputs.h"
+#include "arm/ltcoutputs.h"
 
-#include "platform_ltc.h"
+#include "arm/platform_ltc.h"
 
 #if defined (H3)
 # if __GNUC__ > 8
@@ -205,7 +205,7 @@ void LtcReader::Start() {
 	 * IRQ Timer
 	 */
 	irq_timer_arm_physical_set(static_cast<thunk_irq_timer_arm_t>(arm_timer_handler));
-	irq_timer_init();
+	irq_handler_init();
 
 	/**
 	 * FIQ GPIO

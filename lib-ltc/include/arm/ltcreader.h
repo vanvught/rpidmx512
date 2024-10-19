@@ -1,5 +1,5 @@
 /**
- * @file systimereader.h
+ * @file ltcreader.h
  *
  */
 /* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
@@ -23,47 +23,18 @@
  * THE SOFTWARE.
  */
 
-#ifndef SYSTIMEREADER_H_
-#define SYSTIMEREADER_H_
-
-#include <cstdint>
-#include <time.h>
+#ifndef ARM_LTCREADER_H_
+#define ARM_LTCREADER_H_
 
 #include "ltc.h"
-#include "midi.h"
 
-class SystimeReader {
+class LtcReader {
 public:
-	SystimeReader(uint8_t nFps);
-
-	void Start(bool bAutoStart = false);
+	void Start();
 	void Run();
 
-	void Print();
-
-	void HandleRequest(char *pBuffer = nullptr, uint16_t nBufferLength = 0);
-
-	void ActionStart();
-	void ActionStop();
-	void ActionSetRate(const char *pTimeCodeRate);
-
-	static SystimeReader *Get() {
-		return s_pThis;
-	}
-
 private:
-	void HandleUdpRequest();
-
-private:
-	uint8_t m_nFps;
-	time_t m_nTimePrevious { 0 };
-	struct midi::Timecode m_tMidiTimeCode;
-	int32_t m_nHandle { -1 };
-	uint16_t m_nBytesReceived { 0 };
-	bool m_bIsStarted { false };
-
-	static char *s_pUdpBuffer;
-	static SystimeReader *s_pThis;
+	ltc::Type m_nTypePrevious { ltc::Type::INVALID };
 };
 
-#endif /* SYSTIMEREADER_H_ */
+#endif /* ARM_LTCREADER_H_ */

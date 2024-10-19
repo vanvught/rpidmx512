@@ -1,5 +1,5 @@
 /**
- * @file artnetreader.h
+ * @file tcnetreader.h
  *
  */
 /* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
@@ -23,24 +23,49 @@
  * THE SOFTWARE.
  */
 
-#ifndef ARTNETREADER_H_
-#define ARTNETREADER_H_
+#ifndef ARM_TCNETREADER_H_
+#define ARM_TCNETREADER_H_
 
-#include <cstdint>
+#include "tcnettimecode.h"
 
-#include "artnettimecode.h"
 #include "midi.h"
+#include "ltc.h"
 
-class ArtNetReader final : public ArtNetTimeCode {
+#include "ltcoutputs.h"
+
+#include "hardware.h"
+
+class TCNetReader final : public TCNetTimeCode {
 public:
 	void Start();
 	void Stop();
-	void Run();
 
-	void Handler(const struct artnet::TimeCode *) override;
+	void Run() {
+		LtcOutputs::Get()->UpdateMidiQuarterFrameMessage(reinterpret_cast<const struct ltc::TimeCode*>(&m_tMidiTimeCode));
+
+		__DMB();
+		if (gv_ltc_nUpdatesPerSecond != 0) {
+			Hardware::Get()->SetMode(hardware::ledblink::Mode::DATA);
+		} else {
+			LtcOutputs::Get()->ShowSysTime();
+			Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
+			m_nTimeCodePrevious = static_cast<uint32_t>(~0);
+		}
+
+		HandleUdpRequest();
+	}
+
+	void Handler(const struct TTCNetTimeCode *pTimeCode) override;
 
 private:
-	struct midi::Timecode m_MidiTimeCode;
+	void HandleUdpRequest();
+
+private:
+	midi::Timecode m_tMidiTimeCode;
+	uint32_t m_nTimeCodePrevious { 0xFF };
+	int32_t m_nHandle { -1 };
+
+	static inline char *s_pUdpBuffer;
 };
 
-#endif /* ARTNETREADER_H_ */
+#endif /* ARM_TCNETREADER_H_ */

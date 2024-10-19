@@ -23,12 +23,14 @@
  * THE SOFTWARE.
  */
 
-#ifndef H3_LTCGENERATOR_H_
-#define H3_LTCGENERATOR_H_
+#ifndef ARM_LTCGENERATOR_H_
+#define ARM_LTCGENERATOR_H_
 
 #include <cstdint>
 
 #include "ltc.h"
+
+#include "hardware.h"
 
 enum TLtcGeneratorDirection {
 	LTC_GENERATOR_FORWARD, LTC_GENERATOR_BACKWARD
@@ -49,7 +51,18 @@ public:
 	void Start();
 	void Stop();
 
-	void Run();
+	void Run() {
+		Update();
+
+		HandleButtons();
+		HandleUdpRequest();
+
+		if (m_State == STARTED) {
+			Hardware::Get()->SetMode(hardware::ledblink::Mode::DATA);
+		} else {
+			Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
+		}
+	}
 
 	void Print();
 
@@ -107,13 +120,13 @@ private:
 	TLtcGeneratorPitch m_tPitch { LTC_GENERATOR_FASTER };
 	uint32_t m_nButtons { 0 };
 	int m_nHandle { -1 };
-	uint16_t m_nBytesReceived { 0 };
+	uint32_t m_nBytesReceived { 0 };
 	enum {
 		STOPPED, STARTED, LIMIT
 	} m_State { STOPPED };
 
-	static char *s_pUdpBuffer;
-	static LtcGenerator *s_pThis;
+	static inline char *s_pUdpBuffer;
+	static inline LtcGenerator *s_pThis;
 };
 
-#endif /* H3_LTCGENERATOR_H_ */
+#endif /* ARM_LTCGENERATOR_H_ */

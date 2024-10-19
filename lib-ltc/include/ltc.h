@@ -115,7 +115,7 @@ bool parse_timecode_rate(const char *pTimeCodeRate, uint8_t &nFPS);
 }  // namespace ltc
 
 
-#include "platform_ltc.h"
+#include "arm/platform_ltc.h"
 
 namespace ltc {
 extern struct DisabledOutputs g_DisabledOutputs;

@@ -1,8 +1,8 @@
 /**
- * @file platform_ltc.h
+ * @file ltcetcreader.h
  *
  */
-/* Copyright (C) 2022-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2022 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,26 +23,39 @@
  * THE SOFTWARE.
  */
 
-#ifndef PLATFORM_LTC_H_
-#define PLATFORM_LTC_H_
+#ifndef ARM_LTCETCREADER_H_
+#define ARM_LTCETCREADER_H_
 
-#include <cstdint>
+#include "ltcetc.h"
+#include "midi.h"
 
-extern volatile uint32_t gv_ltc_nUpdatesPerSecond;
-extern volatile uint32_t gv_ltc_nUpdatesPrevious;
-extern volatile uint32_t gv_ltc_nUpdates;
+#include "ltcoutputs.h"
 
-extern volatile bool gv_ltc_bTimeCodeAvailable;
-extern volatile uint32_t gv_ltc_nTimeCodeCounter;
+#include "hardware.h"
 
-extern struct ltc::TimeCode g_ltc_LtcTimeCode;
+#include "arm/platform_ltc.h"
 
-#if defined (H3)
-# define PLATFORM_LTC_ARM
-# include "../src/arm/h3/h3_platform_ltc.h"
-#elif  defined (GD32)
-# define PLATFORM_LTC_ARM
-# include "../src/arm/gd32/gd32_platform_ltc.h"
-#endif
+class LtcEtcReader final : public LtcEtcHandler {
+public:
+	void Start();
+	void Stop();
 
-#endif /* PLATFORM_LTC_H_ */
+	void Run() {
+		LtcOutputs::Get()->UpdateMidiQuarterFrameMessage(reinterpret_cast<const struct ltc::TimeCode *>(&m_MidiTimeCode));
+
+		__DMB();
+		if (gv_ltc_nUpdatesPerSecond != 0) {
+			Hardware::Get()->SetMode(hardware::ledblink::Mode::DATA);
+		} else {
+			LtcOutputs::Get()->ShowSysTime();
+			Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
+		}
+	}
+
+	void Handler(const midi::Timecode *pTimeCode) override;
+
+private:
+	struct midi::Timecode m_MidiTimeCode;
+};
+
+#endif /* ARM_LTCETCREADER_H_ */
