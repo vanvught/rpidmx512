@@ -2,7 +2,7 @@
  * @file modeparamsconst.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,13 +27,12 @@
 #define MODEPARAMSCONST_H_
 
 struct ModeParamsConst {
-	static const char DMX_MODE[];
-
-	static const char MAX_STEPS[];
-	static const char SWITCH_ACT[];
-	static const char SWITCH_DIR[];
-	static const char SWITCH_SPS[];
-	static const char SWITCH[];
+	static inline const char DMX_MODE[] = "dmx_mode";
+	static inline const char MAX_STEPS[] = "mode_max_steps";
+	static inline const char SWITCH_ACT[] = "mode_switch_act";
+	static inline const char SWITCH_DIR[] = "mode_switch_dir";
+	static inline const char SWITCH_SPS[] = "mode_switch_sps";
+	static inline const char SWITCH[] = "mode_switch";
 };
 
 #endif /* MODEPARAMSCONST_H_ */

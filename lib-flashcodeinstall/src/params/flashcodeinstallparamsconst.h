@@ -2,7 +2,7 @@
  * @file flashcodeinstallparamsconst.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,10 +27,9 @@
 #define FLASHCODEINSTALLPARAMSCONST_H_
 
 struct FlashCodeInstallParamsConst {
-	static const char FILE_NAME[];
-
-	static const char INSTALL_UBOOT[];
-	static const char INSTALL_UIMAGE[];
+	static inline const char FILE_NAME[] = "spiflash.txt";
+	static inline const char INSTALL_UBOOT[] = "install_uboot";
+	static inline const char INSTALL_UIMAGE[] = "install_uimage";
 };
 
 #endif /* FLASHCODEINSTALLPARAMSCONST_H_ */

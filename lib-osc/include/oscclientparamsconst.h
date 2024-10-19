@@ -2,7 +2,7 @@
  * @file oscclientparamsconst.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,18 +26,13 @@
 #ifndef OSCCLIENTPARAMSCONST_H_
 #define OSCCLIENTPARAMSCONST_H_
 
-#include <cstdint>
-
 struct OscClientParamsConst {
-	static const char FILE_NAME[];
-
-	static const char SERVER_IP[];
-
-	static const char PING_DISABLE[];
-	static const char PING_DELAY[];
-
-	static const char CMD[];
-	static const char LED[];
+	static inline const char FILE_NAME[] = "oscclnt.txt";
+	static inline const char SERVER_IP[] = "server_ip";
+	static inline const char PING_DISABLE[] = "ping_disable";
+	static inline const char PING_DELAY[] = "ping_delay";
+	static inline const char CMD[] = "cmd?";
+	static inline const char LED[] = "led?";
 };
 
 #endif /* OSCCLIENTPARAMSCONST_H_ */

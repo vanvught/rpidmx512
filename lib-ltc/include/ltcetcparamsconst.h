@@ -2,7 +2,7 @@
  * @file ltcetcparamsconst.h
  *
  */
-/* Copyright (C) 2022 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2022-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,15 +28,12 @@
 #define LTCETCPARAMSCONST_H_
 
 struct LtcEtcParamsConst {
-	static const char FILE_NAME[];
-
-	static const char DESTINATION_IP[];
-	static const char DESTINATION_PORT[];
-
-	static const char SOURCE_MULTICAST_IP[];
-	static const char SOURCE_PORT[];
-
-	static const char UDP_TERMINATOR[];
+	static inline const char FILE_NAME[] = "etc.txt";
+	static inline const char DESTINATION_IP[] = "destination_ip";
+	static inline const char DESTINATION_PORT[] = "destination_port";
+	static inline const char SOURCE_MULTICAST_IP[] = "source_multicast_ip";
+	static inline const char SOURCE_PORT[] = "source_port";
+	static inline const char UDP_TERMINATOR[] = "udp_terminator";
 };
 
 #endif /* LTCETCPARAMSCONST_H_ */

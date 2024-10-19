@@ -2,7 +2,7 @@
  * @file tcnetparamsconst.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,12 +27,11 @@
 #define TCNETPARAMSCONST_H_
 
 struct TCNetParamsConst {
-	static const char FILE_NAME[];
-
-	static const char NODE_NAME[];
-	static const char LAYER[];
-	static const char TIMECODE_TYPE[];
-	static const char USE_TIMECODE[];
+	static inline const char FILE_NAME[] = "tcnet.txt";
+	static inline const char NODE_NAME[] = "node_name";
+	static inline const char LAYER[] = "layer";
+	static inline const char TIMECODE_TYPE[] = "timecode_type";
+	static inline const char USE_TIMECODE[] = "use_timecode";
 };
 
 #endif /* TCNETPARAMSCONST_H_ */

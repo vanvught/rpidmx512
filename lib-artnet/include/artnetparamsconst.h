@@ -2,7 +2,7 @@
  * @file artnetparamsconst.h
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,18 +30,37 @@
 #include "artnet.h"
 
 struct ArtNetParamsConst {
-	static const char FILE_NAME[];
+	static inline const char FILE_NAME[] = "artnet.txt";
 
-	static const char ENABLE_RDM[];
-	static const char DESTINATION_IP_PORT[artnet::PORTS][24];
-	static const char RDM_ENABLE_PORT[artnet::PORTS][18];
+	static inline const char ENABLE_RDM[] = "enable_rdm";
+
+	static inline const char DESTINATION_IP_PORT[artnet::PORTS][24] = {
+			"destination_ip_port_a",
+			"destination_ip_port_b",
+			"destination_ip_port_c",
+			"destination_ip_port_d"
+	};
+
+
+	static inline const char RDM_ENABLE_PORT[artnet::PORTS][18] = {
+			"rdm_enable_port_a",
+			"rdm_enable_port_b",
+			"rdm_enable_port_c",
+			"rdm_enable_port_d"
+	};
 
 	/**
 	 * Art-Net 4
 	 */
 
-	static const char PROTOCOL_PORT[artnet::PORTS][16];
-	static const char MAP_UNIVERSE0[];
+	static inline const char PROTOCOL_PORT[artnet::PORTS][16] = {
+			"protocol_port_a",
+			"protocol_port_b",
+			"protocol_port_c",
+			"protocol_port_d"
+	};
+
+	static inline const char MAP_UNIVERSE0[] = "map_universe0";
 };
 
 #endif /* ARTNETPARAMSCONST_H_ */

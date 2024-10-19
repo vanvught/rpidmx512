@@ -28,9 +28,9 @@
 
 class ArtNetMsgConst {
 public:
-	static const char START[];
-	static const char STARTED[];
-	static const char RDM_RUN[];
+	static inline const char START[] = "Starting Art-Net";
+	static inline const char STARTED[] = "Art-Net started";
+	static inline const char RDM_RUN[] = "Running RDM Discovery";
 };
 
 #endif /* ARTNETMSGCONST_H_ */

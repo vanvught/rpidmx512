@@ -2,7 +2,7 @@
  * @file gpsparamsconst.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,11 +25,10 @@
 #define GPSPARAMSCONST_H_
 
 struct GPSParamsConst {
-	static const char FILE_NAME[];
-
-	static const char MODULE[];
-	static const char ENABLE[];
-	static const char UTC_OFFSET[];
+	static inline const char FILE_NAME[] = "gps.txt";
+	static inline const char MODULE[] = "module";
+	static inline const char ENABLE[] = "enable";
+	static inline const char UTC_OFFSET[] = "utc_offset";
 };
 
 #endif /* GPSPARAMSCONST_H_ */

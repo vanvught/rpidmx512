@@ -28,8 +28,14 @@
 #include <cstdint>
 
 struct TimeCodeConst {
-	static const uint8_t FPS[4];
-	static const uint32_t TMR_INTV[4];
+	static constexpr uint8_t FPS[4] = { 24, 25, 30, 30 };
+#if defined (H3)
+	static constexpr uint32_t TMR_INTV[4] = {12000000 / 24, 12000000 / 25, 12000000 / 30, 12000000 / 30};
+#elif defined (GD32)
+	static constexpr uint32_t TMR_INTV[4] = {(FREQUENCY_EFFECTIVE / 24), (FREQUENCY_EFFECTIVE / 25) - 1, (FREQUENCY_EFFECTIVE / 30) - 1, (FREQUENCY_EFFECTIVE / 30) - 1};
+	static_assert((FREQUENCY_EFFECTIVE / 24) <= UINT16_MAX);
+#endif
+
 };
 
 #if defined (GD32)

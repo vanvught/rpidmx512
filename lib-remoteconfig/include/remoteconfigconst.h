@@ -2,7 +2,7 @@
  * @file remoteconfigconst.h
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,16 +27,16 @@
 #define REMOTECONFIGCONST_H_
 
 struct RemoteConfigConst {
-	static const char PARAMS_FILE_NAME[];
+	static inline const char PARAMS_FILE_NAME[] = "rconfig.txt";
 
-	static const char PARAMS_DISABLE[];
+	static inline const char PARAMS_DISABLE[] = "disable";
 
-	static const char PARAMS_DISABLE_WRITE[];
-	static const char PARAMS_ENABLE_REBOOT[];
-	static const char PARAMS_ENABLE_UPTIME[];
-	static const char PARAMS_ENABLE_FACTORY[];
+	static inline const char PARAMS_DISABLE_WRITE[] = "disable_write";
+	static inline const char PARAMS_ENABLE_REBOOT[] = "enable_reboot";
+	static inline const char PARAMS_ENABLE_UPTIME[] = "enable_uptime";
+	static inline const char PARAMS_ENABLE_FACTORY[] = "enable_factory";
 
-	static const char PARAMS_DISPLAY_NAME[];
+	static inline const char PARAMS_DISPLAY_NAME[] = "display_name";
 };
 
 #endif /* REMOTECONFIGCONST_H_ */

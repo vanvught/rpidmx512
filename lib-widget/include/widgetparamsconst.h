@@ -2,7 +2,7 @@
  * @file widgetparamsconst.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,14 +27,12 @@
 #define WIDGETPARAMSCONST_H_
 
 struct WidgetParamsConst {
-	static const char FILE_NAME[];
-
-	static const char DMXUSBPRO_BREAK_TIME[];
-	static const char DMXUSBPRO_MAB_TIME[];
-	static const char DMXUSBPRO_REFRESH_RATE[];
-
-	static const char WIDGET_MODE[];
-	static const char DMX_SEND_TO_HOST_THROTTLE[];
+	 static inline const char FILE_NAME[] = "params.txt";
+	 static inline const char DMXUSBPRO_BREAK_TIME[] = "dmxusbpro_break_time";
+	 static inline const char DMXUSBPRO_MAB_TIME[] = "dmxusbpro_mab_time";
+	 static inline const char DMXUSBPRO_REFRESH_RATE[] = "dmxusbpro_refresh_rate";
+	 static inline const char WIDGET_MODE[] = "widget_mode";
+	 static inline const char DMX_SEND_TO_HOST_THROTTLE[] = "dmx_send_to_host_throttle";
 };
 
 #endif /* WIDGETPARAMSCONST_H_ */

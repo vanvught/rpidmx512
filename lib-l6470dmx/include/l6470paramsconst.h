@@ -2,7 +2,7 @@
  * @file l6470paramsconst.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,15 +27,15 @@
 #define L6470PARAMSCONST_H_
 
 struct L6470ParamsConst {
-	static const char MIN_SPEED[];
-	static const char MAX_SPEED[];
-	static const char ACC[];
-	static const char DEC[];
-	static const char KVAL_HOLD[];
-	static const char KVAL_RUN[];
-	static const char KVAL_ACC[];
-	static const char KVAL_DEC[];
-	static const char MICRO_STEPS[];
+	static inline const char MIN_SPEED[] = "l6470_min_speed";
+	static inline const char MAX_SPEED[] = "l6470_max_speed";
+	static inline const char ACC[] = "l6470_acc";
+	static inline const char DEC[] = "l6470_dec";
+	static inline const char KVAL_HOLD[] = "l6470_kval_hold";
+	static inline const char KVAL_RUN[] = "l6470_kval_run";
+	static inline const char KVAL_ACC[] = "l6470_kval_acc";
+	static inline const char KVAL_DEC[] = "l6470_kval_dec";
+	static inline const char MICRO_STEPS[] = "l6470_micro_steps";
 };
 
 #endif /* L6470PARAMSCONST_H_ */

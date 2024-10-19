@@ -448,12 +448,19 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="jbc|src|src/h3|src/patterns|src/pixel" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="jbc"/>
-						<entry excluding="h3|patterns|pixel" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/h3"/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/patterns"/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/pixel"/>
+						<entry excluding="src|src/controller|src/node|src/node/4|src/node/dmxin|src/node/failsafe|src/node/rdm|src/node/failsafe/file|src/node/failsafe/rom|src/node/failsafe/spi|src/node/rdm/controller|src/node/rdm/responder" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="controller|node|node/4|node/dmxin|node/failsafe|node/failsafe/file|node/failsafe/rom|node/failsafe/spi|node/rdm|node/rdm/controller|node/rdm/responder" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/controller"/>
+						<entry excluding="4|dmxin|failsafe|failsafe/file|failsafe/rom|failsafe/spi|rdm|rdm/controller|rdm/responder" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/node"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/node/4"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/node/dmxin"/>
+						<entry excluding="file|rom|spi" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/node/failsafe"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/node/failsafe/file"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/node/failsafe/rom"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/node/failsafe/spi"/>
+						<entry excluding="controller|responder" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/node/rdm"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/node/rdm/controller"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/node/rdm/responder"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

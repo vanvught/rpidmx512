@@ -2,7 +2,7 @@
  * @file oscserverparamsconst.h
  *
  */
-/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,13 +27,11 @@
 #define OSCSERVERPARAMSCONST_H_
 
 struct OscServerParamsConst {
-	static const char FILE_NAME[];
-
-	static const char PATH[];
-	static const char PATH_INFO[];
-	static const char PATH_BLACKOUT[];
-
-	static const char TRANSMISSION[];
+	static inline const char FILE_NAME[] = "osc.txt";
+	static inline const char PATH[] = "path";
+	static inline const char PATH_INFO[] = "path_info";
+	static inline const char PATH_BLACKOUT[] = "path_blackout";
+	static inline const char TRANSMISSION[] = "partial_transmission";
 };
 
 #endif /* OSCSERVERPARAMSCONST_H_ */

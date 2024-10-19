@@ -143,7 +143,7 @@ DisplayUdfParams::DisplayUdfParams() {
 	DEBUG_ENTRY
 
 	memset(&m_Params, 0, sizeof(struct displayudfparams::Params));
-	m_Params.nSleepTimeout = display::Defaults::SEEP_TIMEOUT;
+	m_Params.nSleepTimeout = display::Defaults::SLEEP_TIMEOUT;
 	m_Params.nIntensity = defaults::INTENSITY;
 
 	DEBUG_EXIT
@@ -207,7 +207,7 @@ void DisplayUdfParams::callbackFunction(const char *pLine) {
 	if (Sscan::Uint8(pLine, DisplayUdfParamsConst::SLEEP_TIMEOUT, value8) == Sscan::OK) {
 		m_Params.nSleepTimeout = value8;
 
-		if (value8 != display::Defaults::SEEP_TIMEOUT) {
+		if (value8 != display::Defaults::SLEEP_TIMEOUT) {
 			m_Params.nSetList |= displayudfparams::Mask::SLEEP_TIMEOUT;
 		} else {
 			m_Params.nSetList &= ~displayudfparams::Mask::SLEEP_TIMEOUT;

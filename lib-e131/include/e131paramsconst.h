@@ -2,7 +2,7 @@
  * @file e131paramsconst.h
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,10 +28,27 @@
 
 #include "e131params.h"
 
-struct E131ParamsConst {
-	static const char FILE_NAME[];
+#if LIGHTSET_PORTS > 4
+# define MAX_ARRAY 4
+#else
+# define MAX_ARRAY LIGHTSET_PORTS
+#endif
 
-	static const char PRIORITY[e131params::MAX_PORTS][18];
+struct E131ParamsConst {
+	static inline const char FILE_NAME[] = "e131.txt";
+
+	static inline const char PRIORITY[e131params::MAX_PORTS][18] {
+		"priority_port_a",
+#if MAX_ARRAY >= 2
+		"priority_port_b",
+	#endif
+#if MAX_ARRAY >= 3
+		"priority_port_c",
+	#endif
+#if MAX_ARRAY == 4
+		"priority_port_d"
+	#endif
+	};
 };
 
 #endif /* E131PARAMSCONST_H_ */

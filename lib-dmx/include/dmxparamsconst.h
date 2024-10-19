@@ -3,7 +3,7 @@
  *
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,12 +28,11 @@
 #define DMXPARAMSCONST_H_
 
 struct DmxParamsConst {
-	static const char FILE_NAME[];
-
-	static const char BREAK_TIME[];
-	static const char MAB_TIME[];
-	static const char REFRESH_RATE[];
-	static const char SLOTS_COUNT[];
+	static inline const char FILE_NAME[] = "params.txt";
+	static inline const char BREAK_TIME[] = "break_time";
+	static inline const char MAB_TIME[] = "mab_time";
+	static inline const char REFRESH_RATE[] = "refresh_rate";
+	static inline const char SLOTS_COUNT[] = "slots_count";
 };
 
 #endif /* DMXPARAMSCONST_H_ */

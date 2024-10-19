@@ -2,7 +2,7 @@
  * @file l6470dmxconst.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,7 @@
 #define L6470DMXCONST_H_
 
 struct L6470DmxConst {
-	static const char FILE_NAME_MOTOR[];
+	static inline const char FILE_NAME_MOTOR[] = "motor?.txt";
 };
 
 #endif /* L6470DMXCONST_H_ */
