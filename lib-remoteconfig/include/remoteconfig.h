@@ -205,20 +205,22 @@ public:
 	uint32_t HandleGet(void *pBuffer, uint32_t nBufferLength);
 	void HandleSet(void *pBuffer, uint32_t nBufferLength);
 
+	void Input(const uint8_t *, uint32_t, uint32_t, uint16_t);
+
 	void Run() {
+#if defined (ENABLE_HTTPD)
+		m_pHttpDaemon->Run();
+#endif
+
 		if (__builtin_expect((m_bDisable), 1)) {
 			return;
 		}
 
-#if defined (ENABLE_TFTP_SERVER)
-		if (__builtin_expect((m_pTFTPFileServer != nullptr), 0)) {
-			m_pTFTPFileServer->Run();
-		}
-#endif
-
-#if defined (ENABLE_HTTPD)
-		m_pHttpDaemon->Run();
-#endif
+//#if defined (ENABLE_TFTP_SERVER)
+//		if (__builtin_expect((m_pTFTPFileServer != nullptr), 0)) {
+//			m_pTFTPFileServer->Run();
+//		}
+//#endif
 
 		uint16_t nForeignPort;
 		m_nBytesReceived = Network::Get()->RecvFrom(m_nHandle, const_cast<const void **>(reinterpret_cast<void **>(&s_pUdpBuffer)), &m_nIPAddressFrom, &nForeignPort);
@@ -227,7 +229,7 @@ public:
 			return;
 		}
 
-		HandleRequest();
+		Input(nullptr, 0, m_nIPAddressFrom, nForeignPort);
 	}
 
 	static RemoteConfig *Get() {
@@ -535,6 +537,9 @@ private:
 
 	static char *s_pUdpBuffer;
 
+	void static staticCallbackFunction(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
+		RemoteConfig::Get()->Input(pBuffer, nSize, nFromIp, nFromPort);
+	}
 	static RemoteConfig *s_pThis;
 };
 

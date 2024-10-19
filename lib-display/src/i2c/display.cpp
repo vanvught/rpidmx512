@@ -23,6 +23,10 @@
  * THE SOFTWARE.
  */
 
+#if defined (DEBUG_DISPLAY)
+# undef NDEBUG
+#endif
+
 #include <cstdint>
 #include <cassert>
 
@@ -40,20 +44,20 @@
 #include "hal_i2c.h"
 #include "hal_gpio.h"
 
-namespace display {
-namespace timeout {
+namespace display::timeout {
+void irq_init();
 static void gpio_init() {
 #if defined (DISPLAYTIMEOUT_GPIO)
 	FUNC_PREFIX(gpio_fsel(DISPLAYTIMEOUT_GPIO, GPIO_FSEL_INPUT));
 	FUNC_PREFIX(gpio_set_pud(DISPLAYTIMEOUT_GPIO, GPIO_PULL_UP));
+	irq_init();
 #endif
 }
-}  // namespace timeout
-}  // namespace display
+}  // namespace display::timeout
 
 Display *Display::s_pThis;
 
-Display::Display() : m_nMillis(Hardware::Get()->Millis()), m_I2C(display::segment7::I2C_ADDRESS) {
+Display::Display() : m_I2C(display::segment7::I2C_ADDRESS) {
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 
@@ -72,7 +76,7 @@ Display::Display() : m_nMillis(Hardware::Get()->Millis()), m_I2C(display::segmen
 	PrintInfo();
 }
 
-Display::Display(uint32_t nRows) : m_nMillis(Hardware::Get()->Millis()), m_I2C(display::segment7::I2C_ADDRESS) {
+Display::Display(uint32_t nRows) : m_I2C(display::segment7::I2C_ADDRESS) {
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 
@@ -85,7 +89,7 @@ Display::Display(uint32_t nRows) : m_nMillis(Hardware::Get()->Millis()), m_I2C(d
 	PrintInfo();
 }
 
-Display::Display(display::Type type): m_tType(type), m_nMillis(Hardware::Get()->Millis()), m_I2C(display::segment7::I2C_ADDRESS) {
+Display::Display(display::Type type): m_tType(type), m_I2C(display::segment7::I2C_ADDRESS) {
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 

@@ -59,36 +59,4 @@ void __attribute__((cold)) ip_init() {
 
 	DEBUG_EXIT
 }
-
-__attribute__((hot)) void ip_handle(struct t_ip4 *p_ip4) {
-	if  (__builtin_expect((p_ip4->ip4.ver_ihl != 0x45), 0)) {
-		if (p_ip4->ip4.proto == IPv4_PROTO_IGMP) {
-			igmp_handle(reinterpret_cast<struct t_igmp *>(p_ip4));
-		} else {
-			DEBUG_PRINTF("p_ip4->ip4.ver_ihl=0x%x", p_ip4->ip4.ver_ihl);
-		}
-		return;
-	}
-
-	switch (p_ip4->ip4.proto) {
-	case IPv4_PROTO_UDP:
-		udp_handle(reinterpret_cast<struct t_udp *>(p_ip4));
-		break;
-	case IPv4_PROTO_IGMP:
-		igmp_handle(reinterpret_cast<struct t_igmp *>(p_ip4));
-		break;
-	case IPv4_PROTO_ICMP:
-		icmp_handle(reinterpret_cast<struct t_icmp *>(p_ip4));
-		break;
-#if defined (ENABLE_HTTPD)
-	case IPv4_PROTO_TCP:
-		tcp_handle(reinterpret_cast<struct t_tcp *>(p_ip4));
-		tcp_run();
-		break;
-#endif
-	default:
-		DEBUG_PRINTF("proto %d not implemented", p_ip4->ip4.proto);
-		break;
-	}
-}
 }  // namespace net

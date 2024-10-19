@@ -55,7 +55,7 @@
 #include "net/protocol/udp.h"
 #include "netif.h"
 
-#include "hardware.h"
+#include "timers.h"
 
 #include "debug.h"
 
@@ -280,7 +280,7 @@ static void arp_send_request_unicast(const uint32_t nIp, const uint8_t *pMacAddr
 	memset(s_arp_request.ether.dst, 0xFF , ETH_ADDR_LEN);
 }
 
-static void arp_timer() {
+static void arp_timer([[maybe_unused]] TimerHandle_t nHandle) {
 	for (auto &record : s_ArpRecords) {
 		const auto state = record.state;
 		if (state != net::arp::State::STATE_EMPTY) {
@@ -372,7 +372,7 @@ void __attribute__((cold)) arp_init() {
 
 	std::memcpy(s_arp_reply.arp.sender_mac, net::globals::netif_default.hwaddr, ETH_ADDR_LEN);
 
-	Hardware::Get()->SoftwareTimerAdd(net::arp::TIMER_INTERVAL, arp_timer);
+	SoftwareTimerAdd(net::arp::TIMER_INTERVAL, arp_timer);
 
 	DEBUG_EXIT
 }

@@ -47,14 +47,12 @@
 #include "netif.h"
 #include "net/autoip.h"
 #include "net/dhcp.h"
-
+#if !defined(CONFIG_NET_APPS_NO_MDNS)
+# include "net/apps/mdns.h"
+#endif
 #include "../../config/net_config.h"
 
 #include "debug.h"
-
-namespace network {
-void __attribute__((weak)) mdns_announcement() {}
-}  // namespace network
 
 static constexpr char TO_HEX(const char i) {
 	return static_cast<char>(((i) < 10) ? '0' + i : 'A' + (i - 10));
@@ -69,8 +67,9 @@ static void netif_ext_callback(const uint16_t reason, [[maybe_unused]] const net
 
 	if ((reason & net::NetifReason::NSC_IPV4_ADDRESS_CHANGED) == net::NetifReason::NSC_IPV4_ADDRESS_CHANGED) {
 		net::display_ip();
-		network::mdns_announcement();
-
+#if !defined(CONFIG_NET_APPS_NO_MDNS)
+		mdns_start();
+#endif
 		printf("ip: " IPSTR " -> " IPSTR "\n", IP2STR(args->ipv4_changed.old_address.addr), IP2STR(net::netif_ipaddr()));
 	}
 
@@ -93,6 +92,9 @@ static void netif_ext_callback(const uint16_t reason, [[maybe_unused]] const net
 			DEBUG_EXIT
 			return;
 		}
+#if !defined(CONFIG_NET_APPS_NO_MDNS)
+		mdns_start();
+#endif
 	}
 
 	DEBUG_EXIT
@@ -173,6 +175,9 @@ Network::Network() {
 #elif defined (ENET_LINK_CHECK_REG_POLL)
 	net::link_status_read();
 #endif
+#if !defined(CONFIG_NET_APPS_NO_MDNS)
+	mdns_init();
+#endif
 	DEBUG_EXIT
 }
 
@@ -237,8 +242,9 @@ void Network::SetHostName(const char *pHostName) {
 	m_aHostName[network::HOSTNAME_SIZE - 1] = '\0';
 
 	NetworkStore::SaveHostName(m_aHostName, static_cast<uint32_t>(strlen(m_aHostName)));
-
-	network::mdns_announcement();
+#if !defined(CONFIG_NET_APPS_NO_MDNS)
+	mdns_send_announcement(mdns::MDNS_RESPONSE_TTL);
+#endif
 	net::display_hostname();
 
 	DEBUG_EXIT

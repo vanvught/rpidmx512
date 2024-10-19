@@ -34,7 +34,6 @@
 namespace networkparams {
 namespace defaults {
 static constexpr auto IS_DHCP_USED = true;
-static constexpr auto DHCP_RETRY_TIME = 0;
 }  // namespace defaults
 
 struct Params {
@@ -47,7 +46,7 @@ struct Params {
 	char aHostName[network::HOSTNAME_SIZE];
 	uint32_t nNtpServerIp;
 	float fNtpUtcOffset;
-	uint8_t nDhcpRetryTime;
+	uint8_t nNotUsed;
 #if defined (ESP8266)
 	char aSsid[34];
 	char aPassword[34];
@@ -67,7 +66,6 @@ struct Mask {
 	static constexpr auto HOSTNAME = (1U << 5);
 	static constexpr auto NTP_SERVER = (1U << 6);
 	static constexpr auto NTP_UTC_OFFSET = (1U << 7);
-	static constexpr auto DHCP_RETRY_TIME = (1U << 8);
 	static constexpr auto PTP_ENABLE = (1U << 9);
 	static constexpr auto PTP_DOMAIN = (1U << 10);
 #if defined (ESP8266)
@@ -103,10 +101,6 @@ public:
 
 	bool isDhcpUsed() const {
 		return m_Params.bIsDhcpUsed;
-	}
-
-	uint8_t GetDhcpRetryTime() const {
-		return m_Params.nDhcpRetryTime;
 	}
 
 	uint32_t GetIpAddress() const {

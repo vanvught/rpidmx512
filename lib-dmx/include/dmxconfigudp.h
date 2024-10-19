@@ -42,101 +42,147 @@
  */
 
 namespace dmxconfigudp {
-static constexpr uint32_t MIN_SIZE = 10U;
-static constexpr uint32_t MAX_SIZE = 16U;
-static constexpr uint16_t UDP_PORT = 5120U;
+static constexpr uint32_t MIN_SIZE = 10;
+static constexpr uint32_t MAX_SIZE = 16;
+static constexpr uint16_t UDP_PORT = 5120;
+
+static constexpr const char CMD_BREAK[] = "break#";
+static constexpr uint32_t CMD_BREAK_LENGTH = sizeof(CMD_BREAK) - 1U; // Exclude null terminator
+
+static constexpr const char CMD_MAB[] = "mab#";
+static constexpr uint32_t CMD_MAB_LENGTH = sizeof(CMD_MAB) - 1U;
+
+static constexpr const char CMD_REFRESH[] = "refresh#";
+static constexpr uint32_t CMD_REFRESH_LENGTH = sizeof(CMD_REFRESH) - 1U;
+
+static constexpr const char CMD_SLOTS[] = "slots#";
+static constexpr uint32_t CMD_SLOTS_LENGTH = sizeof(CMD_SLOTS) - 1U;
+
 template<class T>
 static constexpr bool validate(const T& n, const T& min, const T& max) {
 	return (n >= min) && (n <= max);
 }
-static uint32_t atoi(const char *pBuffer, uint32_t nSize) {
-	assert(pBuffer != nullptr);
-	assert(nSize <= 7); // 1000000
 
-	const char *p = pBuffer;
-	uint32_t res = 0;
-
-	for (; (nSize > 0) && (*p >= '0' && *p <= '9'); nSize--) {
-		res = res * 10 + static_cast<uint32_t>(*p - '0');
-		p++;
-	}
-
-	return res;
+inline uint32_t atoi(const char *pBuffer, const uint32_t nSize) {
+    uint32_t nResult = 0;
+    for (uint32_t i = 0; i < nSize && pBuffer[i] >= '0' && pBuffer[i] <= '9'; ++i) {
+        nResult = nResult * 10 + static_cast<uint32_t>(pBuffer[i] - '0');
+    }
+    return nResult;
 }
 }  // namespace dmxconfigudp
 
 class DmxConfigUdp {
 public:
 	DmxConfigUdp() {
+		DEBUG_ENTRY
+
+		assert(s_pThis == nullptr);
+		s_pThis = this;
+
 		assert(s_nHandle == -1);
-		s_nHandle = Network::Get()->Begin(dmxconfigudp::UDP_PORT);
+		s_nHandle = Network::Get()->Begin(dmxconfigudp::UDP_PORT, DmxConfigUdp::staticCallbackFunction);
+
+		DEBUG_EXIT
 	}
 
 	~DmxConfigUdp() {
 		assert(s_nHandle != -1);
 		Network::Get()->End(dmxconfigudp::UDP_PORT);
 		s_nHandle = -1;
+
+		s_pThis = nullptr;
+
+		DEBUG_EXIT
 	}
 
-	void Run() {
-		uint32_t nIPAddressFrom;
-		uint16_t nForeignPort;
-		auto nBytesReceived = Network::Get()->RecvFrom(s_nHandle, const_cast<const void **>(reinterpret_cast<void **>(&s_pUdpBuffer)), &nIPAddressFrom, &nForeignPort);
+	void Input(const uint8_t *pBuffer, uint32_t nSize, [[maybe_unused]] uint32_t nFromIp, [[maybe_unused]] uint16_t nFromPort) {
+		DEBUG_ENTRY
 
-		if (__builtin_expect((!dmxconfigudp::validate(nBytesReceived, dmxconfigudp::MIN_SIZE, dmxconfigudp::MAX_SIZE)), 1)) {
+		if (!dmxconfigudp::validate(nSize, dmxconfigudp::MIN_SIZE, dmxconfigudp::MAX_SIZE)) {
+			DEBUG_EXIT
 			return;
 		}
 
-		if (memcmp("dmx!", s_pUdpBuffer, 4) != 0) {
+		if (memcmp("dmx!", pBuffer, 4) != 0) {
+			DEBUG_EXIT
 			return;
 		}
 
-		if (s_pUdpBuffer[nBytesReceived - 1] == '\n') {
-			nBytesReceived--;
+		if (pBuffer[nSize - 1] == '\n') {
+			nSize--;
 		}
 
-		DEBUG_PRINTF("nBytesReceived=%u", nBytesReceived);
+		DEBUG_PRINTF("nSize=%u", nSize);
 
-		const auto *pCmd = &s_pUdpBuffer[4];
+		struct CommandHandler {
+		    const char *command;
+		    const uint32_t commandLength;
+		    void (DmxConfigUdp::*handler)(const uint8_t *, const uint32_t);
+		};
 
-		if (dmxconfigudp::validate(nBytesReceived, static_cast<uint32_t>(12), static_cast<uint32_t>(13)) && (memcmp("break#", pCmd, 6) == 0)) {
-			const auto nBreakTime = dmxconfigudp::atoi(reinterpret_cast<const char*>(&s_pUdpBuffer[10]), nBytesReceived - 10U);
-			if (nBreakTime >= dmx::transmit::BREAK_TIME_MIN) {
-				Dmx::Get()->SetDmxBreakTime(nBreakTime);
-			}
-			return;
-		}
+        constexpr CommandHandler commandHandlers[] = {
+            {dmxconfigudp::CMD_BREAK, dmxconfigudp::CMD_BREAK_LENGTH, &DmxConfigUdp::HandleBreak},
+            {dmxconfigudp::CMD_MAB, dmxconfigudp::CMD_MAB_LENGTH, &DmxConfigUdp::HandleMab},
+            {dmxconfigudp::CMD_REFRESH, dmxconfigudp::CMD_REFRESH_LENGTH, &DmxConfigUdp::HandleRefresh},
+            {dmxconfigudp::CMD_SLOTS, dmxconfigudp::CMD_SLOTS_LENGTH, &DmxConfigUdp::HandleSlots}
+        };
 
-		if (dmxconfigudp::validate(nBytesReceived, static_cast<uint32_t>(10), static_cast<uint32_t>(16)) && (memcmp("mab#", pCmd, 4) == 0)) {
-			const auto nMapTime = dmxconfigudp::atoi(reinterpret_cast<const char*>(&s_pUdpBuffer[8]), nBytesReceived - 8U);
-			if (dmxconfigudp::validate(nMapTime, dmx::transmit::MAB_TIME_MIN, dmx::transmit::MAB_TIME_MAX)) {
-				Dmx::Get()->SetDmxMabTime(nMapTime);
-			}
-			return;
-		}
+        for (const auto& handler : commandHandlers) {
+            if (memcmp(handler.command, &pBuffer[4], handler.commandLength) == 0) {
+                (this->*handler.handler)(pBuffer, nSize);
 
-		if (dmxconfigudp::validate(nBytesReceived, static_cast<uint32_t>(13), static_cast<uint32_t>(14)) && (memcmp("refresh#", pCmd, 8) == 0)) {
-			const auto nRefreshRate = dmxconfigudp::atoi(reinterpret_cast<const char*>(&s_pUdpBuffer[12]), nBytesReceived - 12U);
-			uint32_t nPeriodTime = 0;
-			if (nRefreshRate != 0) {
-				nPeriodTime = 1000000U / nRefreshRate;
-			}
-			Dmx::Get()->SetDmxPeriodTime(nPeriodTime);
-			return;
-		}
+                DEBUG_EXIT
+                return;
+            }
+        }
 
-		if (dmxconfigudp::validate(nBytesReceived, static_cast<uint32_t>(11), static_cast<uint32_t>(13)) && (memcmp("slots#", pCmd, 6) == 0)) {
-			const auto nSlots = dmxconfigudp::atoi(reinterpret_cast<const char*>(&s_pUdpBuffer[10]), nBytesReceived - 10U);
-				if (dmxconfigudp::validate(nSlots, dmx::min::CHANNELS, dmx::max::CHANNELS)) {
-				Dmx::Get()->SetDmxSlots(static_cast<uint16_t>(nSlots));
-			}
-			return;
-		}
+        DEBUG_EXIT
+	}
+
+private:
+    void HandleBreak(const uint8_t *pBuffer, const uint32_t nSize) {
+    	static constexpr auto nOffset = dmxconfigudp::CMD_BREAK_LENGTH + 4;
+        const auto nBreakTime = dmxconfigudp::atoi(reinterpret_cast<const char*>(&pBuffer[nOffset]), nSize - nOffset);
+        if (nBreakTime >= dmx::transmit::BREAK_TIME_MIN) {
+            Dmx::Get()->SetDmxBreakTime(nBreakTime);
+            DEBUG_PRINTF("nBreakTime=%u", nBreakTime);
+        }
+    }
+
+    void HandleMab(const uint8_t *pBuffer, const uint32_t nSize) {
+    	static constexpr auto nOffset = dmxconfigudp::CMD_MAB_LENGTH + 4;
+        const auto nMabTime = dmxconfigudp::atoi(reinterpret_cast<const char*>(&pBuffer[nOffset]), nSize - nOffset);
+        if (dmxconfigudp::validate(nMabTime, dmx::transmit::MAB_TIME_MIN, dmx::transmit::MAB_TIME_MAX)) {
+            Dmx::Get()->SetDmxMabTime(nMabTime);
+            DEBUG_PRINTF("nMabTime=%u", nMabTime);
+        }
+    }
+
+    void HandleRefresh(const uint8_t *pBuffer, const uint32_t nSize) {
+    	static constexpr auto nOffset = dmxconfigudp::CMD_REFRESH_LENGTH + 4;
+        const auto nRefreshRate = dmxconfigudp::atoi(reinterpret_cast<const char*>(&pBuffer[nOffset]), nSize - nOffset);
+        uint32_t nPeriodTime = (nRefreshRate != 0) ? 1000000U / nRefreshRate : 0;
+        Dmx::Get()->SetDmxPeriodTime(nPeriodTime);
+        DEBUG_PRINTF("nPeriodTime=%u", nPeriodTime);
+    }
+
+    void HandleSlots(const uint8_t *pBuffer, const uint32_t nSize) {
+    	static constexpr auto nOffset = dmxconfigudp::CMD_SLOTS_LENGTH + 4;
+        const auto nSlots = dmxconfigudp::atoi(reinterpret_cast<const char*>(&pBuffer[nOffset]), nSize - nOffset);
+        if (dmxconfigudp::validate(nSlots, dmx::min::CHANNELS, dmx::max::CHANNELS)) {
+            Dmx::Get()->SetDmxSlots(static_cast<uint16_t>(nSlots));
+            DEBUG_PRINTF("nSlots=%u", nSlots);
+        }
+    }
+
+	void static staticCallbackFunction(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
+		s_pThis->Input(pBuffer, nSize, nFromIp, nFromPort);
 	}
 
 private:
 	int32_t s_nHandle { -1 };
-	char *s_pUdpBuffer { nullptr };
+	static inline DmxConfigUdp *s_pThis;
 };
 
 #endif /* DMXCONFIGUDP_H_ */

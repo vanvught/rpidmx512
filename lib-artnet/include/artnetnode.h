@@ -246,10 +246,6 @@ public:
 #endif
 			}
 		}
-
-#if defined (DMXCONFIGUDP_H)
-		m_DmxConfigUdp.Run();
-#endif
 	}
 
 #if defined (ARTNET_SHOWFILE)
@@ -461,12 +457,6 @@ public:
 #if defined (ARTNET_HAVE_TIMECODE)
 	void SendTimeCode(const struct artnet::TimeCode *pArtNetTimeCode) {
 		assert(pArtNetTimeCode != nullptr);
-		assert(pArtNetTimeCode->Frames < 30);
-		assert(pArtNetTimeCode->Hours < 60);
-		assert(pArtNetTimeCode->Minutes < 60);
-		assert(pArtNetTimeCode->Seconds < 60);
-		assert(pArtNetTimeCode->Type < 4);
-
 		memcpy(&m_ArtTimeCode.Frames, pArtNetTimeCode, sizeof(struct artnet::TimeCode));
 		Network::Get()->SendTo(m_nHandle, &m_ArtTimeCode, sizeof(struct artnet::ArtTimeCode), m_Node.IPAddressTimeCode, artnet::UDP_PORT);
 	}

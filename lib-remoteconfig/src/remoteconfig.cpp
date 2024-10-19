@@ -263,15 +263,18 @@ RemoteConfig::RemoteConfig(const remoteconfig::Node node, const remoteconfig::Ou
 	s_RemoteConfigListBin.nActiveOutputs = static_cast<uint8_t>(nActiveOutputs);
 	s_RemoteConfigListBin.aDisplayName[0] = '\0';
 
+//	m_nHandle = Network::Get()->Begin(remoteconfig::udp::PORT, RemoteConfig::staticCallbackFunction);
 	m_nHandle = Network::Get()->Begin(remoteconfig::udp::PORT);
 	assert(m_nHandle != -1);
 
 #if !defined (CONFIG_REMOTECONFIG_MINIMUM)
-	assert(MDNS::Get() != nullptr);
-	MDNS::Get()->ServiceRecordAdd(nullptr, mdns::Services::CONFIG);
+//	assert(MDNS::Get() != nullptr);
+//	MDNS::Get()->ServiceRecordAdd(nullptr, mdns::Services::CONFIG);
+	mdns_service_record_add(nullptr, mdns::Services::CONFIG);
 
 # if defined(ENABLE_TFTP_SERVER)
-	MDNS::Get()->ServiceRecordAdd(nullptr, mdns::Services::TFTP);
+//	MDNS::Get()->ServiceRecordAdd(nullptr, mdns::Services::TFTP);
+	mdns_service_record_add(nullptr, mdns::Services::TFTP);
 # endif
 
 # if defined (ENABLE_HTTPD)
@@ -293,7 +296,8 @@ RemoteConfig::~RemoteConfig() {
 	}
 # endif
 
-	MDNS::Get()->ServiceRecordDelete(mdns::Services::CONFIG);
+//	MDNS::Get()->ServiceRecordDelete(mdns::Services::CONFIG);
+	mdns_service_record_delete(mdns::Services::CONFIG);
 #endif
 
 	Network::Get()->End(remoteconfig::udp::PORT);
@@ -317,14 +321,17 @@ void RemoteConfig::SetDisable(bool bDisable) {
 		Network::Get()->End(remoteconfig::udp::PORT);
 		m_nHandle = -1;
 #if !defined (CONFIG_REMOTECONFIG_MINIMUM)
-		MDNS::Get()->ServiceRecordDelete(mdns::Services::CONFIG);
+//		MDNS::Get()->ServiceRecordDelete(mdns::Services::CONFIG);
+		mdns_service_record_delete(mdns::Services::CONFIG);
 #endif
 		m_bDisable = true;
 	} else if (!bDisable && m_bDisable) {
+//		m_nHandle = Network::Get()->Begin(remoteconfig::udp::PORT, RemoteConfig::staticCallbackFunction);
 		m_nHandle = Network::Get()->Begin(remoteconfig::udp::PORT);
 		assert(m_nHandle != -1);
 #if !defined (CONFIG_REMOTECONFIG_MINIMUM)
-		MDNS::Get()->ServiceRecordAdd(nullptr, mdns::Services::CONFIG);
+//		MDNS::Get()->ServiceRecordAdd(nullptr, mdns::Services::CONFIG);
+		mdns_service_record_add(nullptr, mdns::Services::CONFIG);
 #endif
 		m_bDisable = false;
 	}
@@ -346,9 +353,15 @@ void RemoteConfig::SetDisplayName(const char *pDisplayName) {
 	DEBUG_EXIT
 }
 
-void RemoteConfig::HandleRequest() {
+void RemoteConfig::Input(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, [[maybe_unused]] uint16_t nFromPort) {
+	if (pBuffer != nullptr) {
+		s_pUdpBuffer = const_cast<char *>(reinterpret_cast<const char *>(pBuffer));
+		m_nBytesReceived = nSize;
+		m_nIPAddressFrom = nFromIp;
+	}
+
 #ifndef NDEBUG
-	debug_dump(s_pUdpBuffer, static_cast<uint16_t>(m_nBytesReceived));
+	debug_dump(s_pUdpBuffer, m_nBytesReceived);
 #endif
 
 	if (s_pUdpBuffer[m_nBytesReceived - 1] == '\n') {

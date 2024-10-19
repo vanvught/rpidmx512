@@ -423,7 +423,7 @@ void Shell::CmdHwClock() {
 
 #if defined (DEBUG_I2C)
 void Shell::CmdI2cDetect() {
-	I2cDetect i2cdetect;
+	i2c_detect();
 }
 #endif
 

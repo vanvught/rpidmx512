@@ -68,7 +68,7 @@ void link_pin_poll() {
 
 #if defined (ENET_LINK_CHECK_USE_INT)
 extern "C" {
-void LINK_CHECK_IRQ_HANDLE(void) {
+void LINK_CHECK_IRQ_HANDLE() {
 	if (RESET != exti_interrupt_flag_get(LINK_CHECK_EXTI_LINE)) {
 		exti_interrupt_flag_clear(LINK_CHECK_EXTI_LINE);
 		net::link_pin_recovery();

@@ -27,48 +27,48 @@
  * https://tools.ietf.org/html/rfc1350
  */
 
+#if defined (DEBUG_NET_APPS_TFTP)
+# undef NDEBUG
+#endif
+
 #include <cstdint>
 #include <cstring>
 #include <cassert>
 
+#include "net.h"
 #include "net/apps/tftpdaemon.h"
+#include "net/protocol/iana.h"
 
 #include "network.h"
 
 #include "debug.h"
 
-enum TOpCode {
-	OP_CODE_RRQ = 1,			///< Read request (RRQ)
-	OP_CODE_WRQ = 2,			///< Write request (WRQ)
-	OP_CODE_DATA = 3,			///< Data (DATA)
-	OP_CODE_ACK = 4,			///< Acknowledgment (ACK)
-	OP_CODE_ERROR = 5			///< Error (ERROR)
-};
+static constexpr uint16_t OP_CODE_RRQ   = 1;	///< Read request (RRQ)
+static constexpr uint16_t OP_CODE_WRQ   = 2;	///< Write request (WRQ)
+static constexpr uint16_t OP_CODE_DATA  = 3;	///< Data (DATA)
+static constexpr uint16_t OP_CODE_ACK   = 4;	///< Acknowledgment (ACK)
+static constexpr uint16_t OP_CODE_ERROR = 5;	///< Error (ERROR)
 
-enum TErrorCode {
-	ERROR_CODE_OTHER = 0,		///< Not defined, see error message (if any).
-	ERROR_CODE_NO_FILE = 1,		///< File not found.
-	ERROR_CODE_ACCESS = 2,		///< Access violation.
-	ERROR_CODE_DISK_FULL = 3,	///< Disk full or allocation exceeded.
-	ERROR_CODE_ILL_OPER = 4,	///< Illegal TFTP operation.
-	ERROR_CODE_INV_ID = 5,		///< Unknown transfer ID.
-	ERROR_CODE_EXISTS = 6,		///< File already exists.
-	ERROR_CODE_INV_USER = 7		///< No such user.
-};
+static constexpr uint16_t ERROR_CODE_OTHER     = 0;	///< Not defined, see error message (if any).
+static constexpr uint16_t ERROR_CODE_NO_FILE   = 1;	///< File not found.
+static constexpr uint16_t ERROR_CODE_ACCESS    = 2;	///< Access violation.
+static constexpr uint16_t ERROR_CODE_DISK_FULL = 3;	///< Disk full or allocation exceeded.
+static constexpr uint16_t ERROR_CODE_ILL_OPER  = 4;	///< Illegal TFTP operation.
+//static constexpr uint16_t ERROR_CODE_INV_ID  = 5;	///< Unknown transfer ID.
+//static constexpr uint16_t ERROR_CODE_EXISTS  = 6;	///< File already exists.
+//static constexpr uint16_t ERROR_CODE_INV_USER = 7;///< No such user.
 
 namespace tftp {
-static constexpr uint16_t UDP_PORT = 69;
-
 namespace min {
-	static constexpr auto FILENAME_MODE_LEN = (1 + 1 + 1 + 1);
+static constexpr uint32_t FILENAME_MODE_LEN = (1 + 1 + 1 + 1);
 }
 
 namespace max {
-	static constexpr auto FILENAME_LEN = 128;
-	static constexpr auto MODE_LEN = 16;
-	static constexpr auto FILENAME_MODE_LEN = (FILENAME_LEN + 1 + MODE_LEN + 1);
-	static constexpr auto DATA_LEN = 512;
-	static constexpr auto ERRMSG_LEN = 128;
+static constexpr uint32_t FILENAME_LEN = 128;
+static constexpr uint32_t MODE_LEN = 16;
+static constexpr uint32_t FILENAME_MODE_LEN = (FILENAME_LEN + 1 + MODE_LEN + 1);
+static constexpr uint32_t DATA_LEN = 512;
+static constexpr uint32_t ERRMSG_LEN = 128;
 }
 
 #if  !defined (PACKED)
@@ -98,8 +98,6 @@ struct DataPacket {
 } PACKED;
 }  // namespace tftp
 
-TFTPDaemon *TFTPDaemon::s_pThis;
-
 TFTPDaemon::TFTPDaemon() {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("s_pThis=%p", reinterpret_cast<void *>(s_pThis));
@@ -109,6 +107,8 @@ TFTPDaemon::TFTPDaemon() {
 	}
 
 	s_pThis = this;
+
+	Init();
 
 	DEBUG_PRINTF("s_pThis=%p", reinterpret_cast<void *>(s_pThis));
 	DEBUG_EXIT
@@ -125,48 +125,68 @@ TFTPDaemon::~TFTPDaemon() {
 	DEBUG_EXIT
 }
 
-void TFTPDaemon::Run() {
-	if (m_nState == TFTPState::INIT) {
-		if (m_nFromPort != 0) {
-			Network::Get()->End(m_nFromPort);
-			m_nIdx = -1;
-		}
+void TFTPDaemon::Init() {
+	DEBUG_ENTRY
+	assert(m_nState == TFTPState::INIT);
 
-		m_nIdx = Network::Get()->Begin(tftp::UDP_PORT);
-		DEBUG_PRINTF("m_nIdx=%d", m_nIdx);
-
-		m_nFromPort = tftp::UDP_PORT;
-		m_nBlockNumber = 0;
-		m_nState = TFTPState::WAITING_RQ;
-		m_bIsLastBlock = false;
-	} else {
-		m_nLength = Network::Get()->RecvFrom(m_nIdx, const_cast<const void **>(reinterpret_cast<void **>(&m_pBuffer)), &m_nFromIp, &m_nFromPort);
-
-		switch (m_nState) {
-		case TFTPState::WAITING_RQ:
-			if (m_nLength > tftp::min::FILENAME_MODE_LEN) {
-				HandleRequest();
-			}
-			break;
-		case TFTPState::RRQ_SEND_PACKET:
-			DoRead();
-			break;
-		case TFTPState::RRQ_RECV_ACK:
-			if (m_nLength == sizeof(struct tftp::AckPacket)) {
-				HandleRecvAck();
-			}
-			break;
-		case TFTPState::WRQ_RECV_PACKET:
-			if (m_nLength <= sizeof(struct tftp::DataPacket)) {
-				HandleRecvData();
-			}
-			break;
-		default:
-			assert(0);
-			__builtin_unreachable();
-			break;
-		}
+	if (m_nFromPort != 0) {
+		Network::Get()->End(m_nFromPort);
+		m_nIdx = -1;
 	}
+
+	m_nIdx = Network::Get()->Begin(net::iana::IANA_PORT_TFTP, TFTPDaemon::staticCallbackFunction);
+	DEBUG_PRINTF("m_nIdx=%d", m_nIdx);
+
+	m_nFromPort = net::iana::IANA_PORT_TFTP;
+	m_nBlockNumber = 0;
+	m_nState = TFTPState::WAITING_RQ;
+	m_bIsLastBlock = false;
+
+	DEBUG_EXIT
+}
+
+void TFTPDaemon::Input(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
+	if (pBuffer != nullptr) {
+		m_pBuffer = const_cast<uint8_t *>(pBuffer);
+		m_nLength = nSize;
+		m_nFromIp = nFromIp;
+		m_nFromPort = nFromPort;
+	}
+
+	switch (m_nState) {
+	case TFTPState::WAITING_RQ:
+		if (m_nLength > tftp::min::FILENAME_MODE_LEN) {
+			HandleRequest();
+		}
+		break;
+	case TFTPState::RRQ_SEND_PACKET:
+		DoRead();
+		break;
+	case TFTPState::RRQ_RECV_ACK:
+		if (m_nLength == sizeof(struct tftp::AckPacket)) {
+			HandleRecvAck();
+		}
+		break;
+	case TFTPState::WRQ_RECV_PACKET:
+		if (m_nLength <= sizeof(struct tftp::DataPacket)) {
+			HandleRecvData();
+		}
+		break;
+	default:
+		assert(0);
+		__builtin_unreachable();
+		break;
+	}
+}
+
+void TFTPDaemon::Run() {
+	m_nLength = Network::Get()->RecvFrom(m_nIdx, const_cast<const void **>(reinterpret_cast<void **>(&m_pBuffer)), &m_nFromIp, &m_nFromPort);
+
+	if (__builtin_expect((m_nLength <= tftp::min::FILENAME_MODE_LEN), 1)) {
+		return;
+	}
+
+	Input(nullptr, 0, 0, 0);
 }
 
 void TFTPDaemon::HandleRequest() {
@@ -208,8 +228,8 @@ void TFTPDaemon::HandleRequest() {
 				SendError(ERROR_CODE_NO_FILE, "File not found");
 				m_nState = TFTPState::WAITING_RQ;
 			} else {
-				Network::Get()->End(tftp::UDP_PORT);
-				m_nIdx = Network::Get()->Begin(m_nFromPort);
+				Network::Get()->End(net::iana::IANA_PORT_TFTP);
+				m_nIdx = Network::Get()->Begin(m_nFromPort, TFTPDaemon::staticCallbackFunction);
 				m_nState = TFTPState::RRQ_SEND_PACKET;
 				DoRead();
 			}
@@ -219,8 +239,8 @@ void TFTPDaemon::HandleRequest() {
 				SendError(ERROR_CODE_ACCESS, "Access violation");
 				m_nState = TFTPState::WAITING_RQ;
 			} else {
-				Network::Get()->End(tftp::UDP_PORT);
-				m_nIdx = Network::Get()->Begin(m_nFromPort);
+				Network::Get()->End(net::iana::IANA_PORT_TFTP);
+				m_nIdx = Network::Get()->Begin(m_nFromPort, TFTPDaemon::staticCallbackFunction);
 				m_nState = TFTPState::WRQ_SEND_ACK;
 				DoWriteAck();
 			}
@@ -252,7 +272,7 @@ void TFTPDaemon::DoRead() {
 		pDataPacket->OpCode = __builtin_bswap16(OP_CODE_DATA);
 		pDataPacket->BlockNumber = __builtin_bswap16(m_nBlockNumber);
 
-		m_nPacketLength = static_cast<uint16_t>(sizeof pDataPacket->OpCode + sizeof pDataPacket->BlockNumber + m_nDataLength);
+		m_nPacketLength = sizeof pDataPacket->OpCode + sizeof pDataPacket->BlockNumber + m_nDataLength;
 		m_bIsLastBlock = m_nDataLength < tftp::max::DATA_LEN;
 
 		if (m_bIsLastBlock) {
@@ -294,6 +314,10 @@ void TFTPDaemon::DoWriteAck() {
 	DEBUG_PRINTF("Sending to " IPSTR ":%d, m_nState=%d", IP2STR(m_nFromIp), m_nFromPort, static_cast<int>(m_nState));
 
 	Network::Get()->SendTo(m_nIdx, m_pBuffer, sizeof(struct tftp::AckPacket), m_nFromIp, m_nFromPort);
+
+	if (m_nState == TFTPState::INIT) {
+		Init();
+	}
 }
 
 void TFTPDaemon::HandleRecvData() {
@@ -317,6 +341,7 @@ void TFTPDaemon::HandleRecvData() {
 		} else {
 			SendError(ERROR_CODE_DISK_FULL, "Write failed");
 			m_nState = TFTPState::INIT;
+			Init();
 		}
 	}
 }

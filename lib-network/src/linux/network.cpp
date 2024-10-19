@@ -156,7 +156,7 @@ Network::~Network() {
 	}
 }
 
-int32_t Network::Begin(uint16_t nPort) {
+int32_t Network::Begin(uint16_t nPort, [[maybe_unused]] net::UdpCallbackFunctionPtr callback) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("port = %d", nPort);
 

@@ -51,7 +51,6 @@ NetworkParams::NetworkParams() {
 
 	memset(&m_Params, 0, sizeof(struct networkparams::Params));
 	m_Params.bIsDhcpUsed = defaults::IS_DHCP_USED;
-	m_Params.nDhcpRetryTime = defaults::DHCP_RETRY_TIME;
 
 	DEBUG_EXIT
 }
@@ -108,16 +107,6 @@ void NetworkParams::callbackFunction(const char *pLine) {
 		}
 		m_Params.bIsDhcpUsed = !(nValue8 == 0);
 		return;
-	}
-
-	if (Sscan::Uint8(pLine, NetworkParamsConst::DHCP_RETRY_TIME, nValue8) == Sscan::OK) {
-		if ((nValue8 != defaults::DHCP_RETRY_TIME) && (nValue8 <= 5)) {
-			m_Params.nSetList |= networkparams::Mask::DHCP_RETRY_TIME;
-			m_Params.nDhcpRetryTime = nValue8;
-		} else {
-			m_Params.nSetList &= ~networkparams::Mask::DHCP_RETRY_TIME;
-			m_Params.nDhcpRetryTime = defaults::DHCP_RETRY_TIME;
-		}
 	}
 
 	uint32_t nValue32;
@@ -233,7 +222,6 @@ void NetworkParams::Builder(const struct networkparams::Params *ptNetworkParams,
 	}
 
 	builder.Add(NetworkParamsConst::USE_DHCP, m_Params.bIsDhcpUsed, isMaskSet(networkparams::Mask::DHCP));
-	builder.Add(NetworkParamsConst::DHCP_RETRY_TIME, m_Params.nDhcpRetryTime, isMaskSet(networkparams::Mask::DHCP_RETRY_TIME));
 
 	builder.AddComment("Static IP");
 	builder.AddIpAddress(NetworkParamsConst::IP_ADDRESS, m_Params.nLocalIp, isMaskSet(networkparams::Mask::IP_ADDRESS));

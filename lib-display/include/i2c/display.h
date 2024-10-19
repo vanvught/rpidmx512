@@ -211,14 +211,6 @@ public:
 		m_LcdDisplay->SetCursorPos(nCol, nRow);
 	}
 
-	void SetSleepTimeout(uint32_t nSleepTimeout = display::Defaults::SEEP_TIMEOUT) {
-		m_nSleepTimeout = 1000U * 60U * nSleepTimeout;
-	}
-
-	uint32_t GetSleepTimeout() const {
-		return m_nSleepTimeout / 1000U / 60U;
-	}
-
 	void SetContrast(uint8_t nContrast) {
 		m_nContrast = nContrast;
 
@@ -293,7 +285,7 @@ public:
 		m_LcdDisplay->SetSleep(bSleep);
 
 		if (!bSleep) {
-			m_nMillis = Hardware::Get()->Millis();
+			SetSleepTimer(m_nSleepTimeout != 0);
 		}
 	}
 
@@ -301,16 +293,21 @@ public:
 		return m_bIsSleep;
 	}
 
+	void SetSleepTimeout(uint32_t nSleepTimeout = display::Defaults::SLEEP_TIMEOUT) {
+		m_nSleepTimeout = 1000U * 60U * nSleepTimeout;
+		SetSleepTimer(m_nSleepTimeout != 0);
+	}
+
+	uint32_t GetSleepTimeout() const {
+		return m_nSleepTimeout / 1000U / 60U;
+	}
+
 	void Run() {
 		if (m_nSleepTimeout == 0) {
 			return;
 		}
 
-		if (!m_bIsSleep) {
-			if (__builtin_expect(((Hardware::Get()->Millis() - m_nMillis) > m_nSleepTimeout), 0)) {
-				SetSleep(true);
-			}
-		} else {
+		if (m_bIsSleep) {
 #if defined (DISPLAYTIMEOUT_GPIO)
 			if (__builtin_expect(((FUNC_PREFIX(gpio_lev(DISPLAYTIMEOUT_GPIO)) == LOW)), 0)) {
 				SetSleep(false);
@@ -319,19 +316,19 @@ public:
 		}
 	}
 
-	static Display* Get() {
+	static Display *Get() {
 		return s_pThis;
 	}
 
 private:
 	void Detect(display::Type tDisplayType);
 	void Detect(uint32_t nRows);
+	void SetSleepTimer(const bool bActive);
 
 private:
 	display::Type m_tType { display::Type::UNKNOWN };
-	uint32_t m_nMillis { 0 };
 	HAL_I2C m_I2C;
-	uint32_t m_nSleepTimeout { 1000 * 60 * display::Defaults::SEEP_TIMEOUT };
+	uint32_t m_nSleepTimeout { 1000 * 60 * display::Defaults::SLEEP_TIMEOUT };
 	uint8_t m_nContrast { 0x7F };
 
 	bool m_bIsSleep { false };

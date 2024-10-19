@@ -57,6 +57,4 @@ struct t_tcp {
 	struct t_tcp_packet tcp;
 } PACKED;
 
-#define IPv4_UDP_HEADERS_SIZE 			(sizeof(struct ip4_header) + UDP_HEADER_SIZE)			/* IP | UDP */
-
 #endif /* NET_PROTOCOL_TCP_H_ */

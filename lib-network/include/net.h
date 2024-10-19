@@ -32,12 +32,11 @@
 #include "emac/phy.h"
 #include "net/dhcp.h"
 #include "net/protocol/dhcp.h"
+#if !defined(CONFIG_NET_APPS_NO_MDNS)
+# include "net/apps/mdns.h"
+#endif
 
 #include "debug.h"
-
-namespace network {
-void mdns_shutdown();
-}  // namespace network
 
 namespace net {
 void tcp_shutdown();
@@ -51,7 +50,9 @@ void net_set_secondary_ip();
 void net_handle();
 
 inline void net_link_down() {
-	network::mdns_shutdown();
+#if !defined(CONFIG_NET_APPS_NO_MDNS)
+	mdns_send_announcement(0);
+#endif
 #if defined (ENABLE_HTTPD)
 	tcp_shutdown();
 #endif
@@ -59,7 +60,9 @@ inline void net_link_down() {
 	dhcp_release_and_stop();
 }
 
-int udp_begin(uint16_t);
+typedef void (*UdpCallbackFunctionPtr)(const uint8_t *, uint32_t, uint32_t, uint16_t);
+
+int udp_begin(uint16_t, UdpCallbackFunctionPtr callback = nullptr);
 int udp_end(uint16_t);
 uint32_t udp_recv1(int, uint8_t *, uint32_t, uint32_t *, uint16_t *);
 uint32_t udp_recv2(int, const uint8_t **, uint32_t *, uint16_t *);

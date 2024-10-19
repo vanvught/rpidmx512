@@ -174,13 +174,13 @@ void HttpDeamonHandleRequest::HandleRequest(const uint32_t nBytesReceived, char 
 				"</html>\n", static_cast<unsigned int>(m_Status), pStatusMsg, pStatusMsg));
 	}
 
-	const auto nHeaderLength = snprintf(m_RequestHeaderResponse, sizeof(m_DynamicContent) - 1U,
+	const auto nHeaderLength = static_cast<uint32_t>(snprintf(m_RequestHeaderResponse, sizeof(m_DynamicContent) - 1U,
 			"HTTP/1.1 %u %s\r\n"
 			"Server: %s\r\n"
 			"Content-Type: %s\r\n"
 			"Content-Length: %u\r\n"
 			"Connection: close\r\n"
-			"\r\n", static_cast<unsigned int>(m_Status), pStatusMsg, Network::Get()->GetHostName(), s_contentType[static_cast<uint32_t>(m_ContentType)], static_cast<unsigned int>(m_nContentSize));
+			"\r\n", static_cast<unsigned int>(m_Status), pStatusMsg, Network::Get()->GetHostName(), s_contentType[static_cast<uint32_t>(m_ContentType)], static_cast<unsigned int>(m_nContentSize)));
 
 	Network::Get()->TcpWrite(m_nHandle, reinterpret_cast<uint8_t *>(m_RequestHeaderResponse), nHeaderLength, m_nConnectionHandle);
 	Network::Get()->TcpWrite(m_nHandle, reinterpret_cast<const uint8_t *>(m_pContent), m_nContentSize, m_nConnectionHandle);
@@ -651,11 +651,11 @@ http::Status HttpDeamonHandleRequest::HandlePost(const bool hasDataOnly) {
 			}
 			DEBUG_PRINTF("identify=%d", value8 != 0);
 		} else if (memcmp(m_pFileData, "date=", 5) == 0) {
-			remoteconfig::timedate::json_set_timeofday(m_pFileData, nJsonLength);
+			remoteconfig::timedate::json_set_timeofday(m_pFileData, static_cast<uint32_t>(nJsonLength));
 		}
 #if !defined (DISABLE_RTC)
 		else if (memcmp(m_pFileData, "rtc=", 4) == 0) {
-			remoteconfig::rtc::json_set_rtc(m_pFileData, nJsonLength);
+			remoteconfig::rtc::json_set_rtc(m_pFileData, static_cast<uint32_t>(nJsonLength));
 		}
 #endif
 #if defined (RDM_CONTROLLER)

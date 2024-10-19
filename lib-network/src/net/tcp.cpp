@@ -100,7 +100,7 @@ struct tcb {
 
 	struct {
 		uint8_t *data;
-		uint16_t size;
+		uint32_t size;
 	} TX;
 
 	/* Receive Sequence Variables */
@@ -449,7 +449,7 @@ static void send_package(const struct tcb *pTcb, const struct SendInfo &sendInfo
 	DEBUG_PRINTF("SEQ=%u, ACK=%u, tcplen=%u, data_offset=%u, p_tcb->TX.size=%u", s_tcp.tcp.seqnum, s_tcp.tcp.acknum, tcplen, nDataOffset, pTcb->TX.size);
 
 	if (pTcb->TX.data != nullptr) {
-		for (auto i = 0; i < pTcb->TX.size; i++) {
+		for (uint32_t i = 0; i < pTcb->TX.size; i++) {
 			*pData++ = pTcb->TX.data[i];
 		}
 	}
@@ -462,7 +462,7 @@ static void send_package(const struct tcb *pTcb, const struct SendInfo &sendInfo
 
 	s_tcp.tcp.checksum = _chksum(&s_tcp, pTcb, static_cast<uint16_t>(tcplen));
 
-	emac_eth_send(reinterpret_cast<void *>(&s_tcp), static_cast<int>(tcplen + sizeof(struct ip4_header) + sizeof(struct ether_header)));
+	emac_eth_send(reinterpret_cast<void *>(&s_tcp), tcplen + sizeof(struct ip4_header) + sizeof(struct ether_header));
 }
 
 static void send_reset(struct t_tcp *pTcp, const struct tcb *pTcb) {

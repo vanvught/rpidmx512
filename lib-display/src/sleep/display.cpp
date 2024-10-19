@@ -1,8 +1,8 @@
 /**
- * @file net_chksum.cpp
+ * @file display.cpp
  *
  */
-/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,35 +23,41 @@
  * THE SOFTWARE.
  */
 
-#if !defined (CONFIG_REMOTECONFIG_MINIMUM)
-# pragma GCC push_options
-# pragma GCC optimize ("O2")
-# pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#if defined (DEBUG_DISPLAY)
+# undef NDEBUG
 #endif
 
 #include <cstdint>
+#include <cassert>
 
-namespace net {
-uint16_t net_chksum(const void *data, uint32_t len) {
-	auto *ptr = reinterpret_cast<const uint16_t *>(data);
-	uint32_t sum = 0;
+#include "display.h"
 
-	while (len > 1) {
-		sum += *ptr;
-		ptr++;
-		len -= 2;
-	}
+#include "timers.h"
 
-	/* Add left-over byte, if any */
-	if (len > 0) {
-		sum += __builtin_bswap16(static_cast<uint16_t>(*(reinterpret_cast<const uint8_t *>(ptr)) << 8));
-	}
+#include "debug.h"
 
-	/* Fold 32-bit sum into 16 bits */
-	while (sum >> 16) {
-		sum = (sum >> 16) + (sum & 0xFFFF);
-	}
+static int32_t s_nTimerId = -1;
 
-	return static_cast<uint16_t>(~sum);
+static void sleep_timer([[maybe_unused]] TimerHandle_t nHandle) {
+	Display::Get()->SetSleep(true);
+	SoftwareTimerDelete(s_nTimerId);
 }
-}  // namespace net
+
+void Display::SetSleepTimer(const bool bActive) {
+	DEBUG_ENTRY
+
+	if (!bActive) {
+		SoftwareTimerDelete(s_nTimerId);
+		DEBUG_EXIT
+		return;
+	}
+
+	if (s_nTimerId < 0) {
+		s_nTimerId = SoftwareTimerAdd(m_nSleepTimeout, sleep_timer);
+		DEBUG_EXIT
+		return;
+	}
+
+	SoftwareTimerChange(s_nTimerId, m_nSleepTimeout);
+	DEBUG_EXIT
+}

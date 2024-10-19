@@ -180,16 +180,12 @@ public:
 	 * UDP/IP
 	 */
 
-	int32_t Begin(uint16_t nPort) {
-		const auto nIndex = net::udp_begin(nPort);
-		assert(nIndex != -1);
-		return nIndex;
+	int32_t Begin(uint16_t nPort, net::UdpCallbackFunctionPtr callback = nullptr) {
+		return net::udp_begin(nPort, callback);
 	}
 
 	int32_t End(uint16_t nPort) {
-		const auto nIndex = net::udp_end(nPort);
-		assert(nIndex == 0);
-		return nIndex;
+		return net::udp_end(nPort);
 	}
 
 	uint32_t RecvFrom(int32_t nHandle, void *pBuffer, uint32_t nLength, uint32_t *from_ip, uint16_t *from_port) {
@@ -289,7 +285,6 @@ public:
 			net::link_handle_change(link_state);
 		}
 #endif
-		net::dhcp_run();
 	}
 
 	static Network *Get() {

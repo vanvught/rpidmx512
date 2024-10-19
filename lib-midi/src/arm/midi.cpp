@@ -28,6 +28,7 @@
 
 #include <cstdint>
 #include <cstring>
+#include <cassert>
 
 #include "midi.h"
 
@@ -88,50 +89,41 @@ void Midi::SetIrqTimer1(midi::thunk_irq_timer1_t pFunc) {
 	}
 }
 
-static void __attribute__((interrupt("IRQ"))) irq_midi_in_handler() {
-	__DMB();
+void TIMER0_IRQHandler() {	// 100ms Tick
+	H3_TIMER->IRQ_STA = TIMER_IRQ_PEND_TMR0;	/* Clear Timer 0 Pending bit */
 
-	const auto irq = H3_GIC_CPUIF->AIA;
+	if (sv_nTick100ms == 10) {
+		sv_nTick100ms = 0;
+		sv_nUpdatesPerSecond = sv_nUpdates - sv_nUpdatesPrevious;
+		sv_nUpdatesPrevious = sv_nUpdates;
+	} else {
+		sv_nTick100ms++;
+	}
 
+	if (sv_ActiveSenseState == midi::ActiveSenseState::ENABLED) {
+		sv_nActiveSenseTimeout++;
+		if (sv_nActiveSenseTimeout > 3) { // > 300 ms
+			sv_ActiveSenseState = midi::ActiveSenseState::FAILED;	// Turn All Notes Off
+		}
+	}
+}
+
+void TIMER1_IRQHandler() {
+	H3_TIMER->IRQ_STA = TIMER_IRQ_PEND_TMR1;	/* Clear Timer 1 Pending bit */
+
+	assert(irq_handler_timer1_func != nullptr);
+
+	if (__builtin_expect((irq_handler_timer1_func != nullptr), 1)) {
+		irq_handler_timer1_func();
+	}
+}
+
+void USART2_IRQHandler() {
 	if (H3_UART2->O08.IIR & UART_IIR_IID_RD) {
-
 		sv_RxBuffer.midi[sv_RxBuffer.nIndexHead].nData = (H3_UART2->O00.RBR & 0xFF);
 		sv_RxBuffer.midi[sv_RxBuffer.nIndexHead].nTimestamp = H3_TIMER->AVS_CNT0;
 		sv_RxBuffer.nIndexHead = (sv_RxBuffer.nIndexHead + 1) & midi::RX_BUFFER_INDEX_MASK;
-
-		H3_GIC_CPUIF->AEOI = H3_UART2_IRQn;
-		gic_unpend(H3_UART2_IRQn);
-	} else if (irq == H3_TIMER0_IRQn) {		// 100ms Tick
-		H3_TIMER->IRQ_STA = TIMER_IRQ_PEND_TMR0;	// Clear Timer 0 Pending bit
-
-		if (sv_nTick100ms == 10) {
-			sv_nTick100ms = 0;
-			sv_nUpdatesPerSecond = sv_nUpdates - sv_nUpdatesPrevious;
-			sv_nUpdatesPrevious = sv_nUpdates;
-		} else {
-			sv_nTick100ms++;
-		}
-
-		if (sv_ActiveSenseState == midi::ActiveSenseState::ENABLED) {
-			sv_nActiveSenseTimeout++;
-			if (sv_nActiveSenseTimeout > 3) { // > 300 ms
-				sv_ActiveSenseState = midi::ActiveSenseState::FAILED;	// Turn All Notes Off
-			}
-		}
-
-		H3_GIC_CPUIF->AEOI = H3_TIMER0_IRQn;
-		gic_unpend(H3_TIMER0_IRQn);
-	} else if (irq == H3_TIMER1_IRQn) {
-		H3_TIMER->IRQ_STA = TIMER_IRQ_PEND_TMR1;
-
-		if (irq_handler_timer1_func != nullptr) {
-			irq_handler_timer1_func();
-		}
-		H3_GIC_CPUIF->AEOI = H3_TIMER1_IRQn;
-		gic_unpend(H3_TIMER1_IRQn);
 	}
-
-	__DMB();
 }
 #elif defined (GD32)
 #if defined(GD32H7XX)
@@ -243,9 +235,13 @@ void Midi::Init(midi::Direction direction) {
 		H3_UART2->O08.FCR = 0;
 		H3_UART2->O04.IER = UART_IER_ERBFI;
 
-		arm_install_handler(reinterpret_cast<unsigned>(irq_midi_in_handler), ARM_VECTOR(ARM_VECTOR_IRQ));
-
+		IRQ_SetHandler(H3_TIMER0_IRQn, TIMER0_IRQHandler);
 		gic_irq_config(H3_TIMER0_IRQn, GIC_CORE0);
+
+		IRQ_SetHandler(H3_TIMER1_IRQn, TIMER1_IRQHandler);
+		gic_irq_config(H3_TIMER1_IRQn, GIC_CORE0);
+
+		IRQ_SetHandler(H3_UART2_IRQn, USART2_IRQHandler);
 		gic_irq_config(H3_UART2_IRQn, GIC_CORE0);
 
 		__enable_irq();
@@ -269,6 +265,7 @@ void Midi::Init(midi::Direction direction) {
 #if defined (H3)
 		H3_UART2->O08.FCR = UART_FCR_EFIFO | UART_FCR_TRESET;
 		H3_UART2->O04.IER = 0;
+		IRQ_SetHandler(H3_UART2_IRQn, nullptr);
 #elif defined (GD32)
 		NVIC_DisableIRQ(USART5_IRQn);
 #endif

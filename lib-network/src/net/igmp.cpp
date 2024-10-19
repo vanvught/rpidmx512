@@ -48,7 +48,7 @@
 #include "net_memcpy.h"
 #include "net_private.h"
 
-#include "hardware.h"
+#include "timers.h"
 
 #include "debug.h"
 
@@ -120,7 +120,7 @@ static void igmp_send_report(const uint32_t nGroupAddress) {
 }
 
 static void igmp_start_timer(struct t_group_info &group, const uint32_t max_time) {
-	group.nTimer = (max_time > 2 ? (random() % max_time) : 1);
+	group.nTimer = static_cast<uint16_t>((max_time > 2U ? (static_cast<uint32_t>(random()) % max_time) : 1U));
 
 	if (group.nTimer == 0) {
 		group.nTimer = 1;
@@ -134,7 +134,7 @@ static void igmp_timeout(struct t_group_info &group) {
 	}
 }
 
-static void igmp_timer() {
+static void igmp_timer([[maybe_unused]] TimerHandle_t nHandle) {
 	for (auto &group : s_groups) {
 		if (group.nTimer > 0) {
 			group.nTimer--;
@@ -198,7 +198,7 @@ void __attribute__((cold)) igmp_init() {
 	s_leave.igmp.report.igmp.type = IGMP_TYPE_LEAVE;
 	s_leave.igmp.report.igmp.max_resp_time = 0;
 
-	nTimerId = Hardware::Get()->SoftwareTimerAdd(IGMP_TMR_INTERVAL, igmp_timer);
+	nTimerId = SoftwareTimerAdd(IGMP_TMR_INTERVAL, igmp_timer);
 	assert(nTimerId >= 0);
 }
 

@@ -23,6 +23,10 @@
  * THE SOFTWARE.
  */
 
+#if defined (DEBUG_DISPLAY)
+# undef NDEBUG
+#endif
+
 #include <cstdint>
 #include <cassert>
 
@@ -47,7 +51,7 @@ static constexpr auto COLOR_FOREGROUND = 0xFFE0;
 
 Display *Display::s_pThis;
 
-Display::Display() : m_nMillis(Hardware::Get()->Millis()) {
+Display::Display() {
 	DEBUG_ENTRY
 
 	assert(s_pThis == nullptr);
