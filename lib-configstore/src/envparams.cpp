@@ -96,13 +96,6 @@ void EnvParams::callbackFunction(const char *pLine) {
 	}
 }
 
-void EnvParams::staticCallbackFunction(void *p, const char *s) {
-	assert(p != nullptr);
-	assert(s != nullptr);
-
-	(static_cast<EnvParams *>(p))->callbackFunction(s);
-}
-
 void EnvParams::Builder(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 

@@ -36,7 +36,7 @@
 #include "pixeltype.h"
 
 namespace pixel {
-const char TYPES[static_cast<uint32_t>(pixel::Type::UNDEFINED)][pixel::TYPES_MAX_NAME_LENGTH] =
+static constexpr char TYPES[static_cast<uint32_t>(pixel::Type::UNDEFINED)][pixel::TYPES_MAX_NAME_LENGTH] =
 		{ "WS2801\0", 																// 1
 		  "WS2811\0", "WS2812\0", "WS2812B", "WS2813\0", "WS2815\0",				// 5
 		  "SK6812\0", "SK6812W",													// 2
@@ -46,7 +46,7 @@ const char TYPES[static_cast<uint32_t>(pixel::Type::UNDEFINED)][pixel::TYPES_MAX
 		  "P9813",																	// 1
 		};																			// = 14
 
-const char MAPS[static_cast<uint32_t>(pixel::Map::UNDEFINED)][4] = { "RGB", "RBG", "GRB", "GBR", "BRG", "BGR"};
+static constexpr char MAPS[static_cast<uint32_t>(pixel::Map::UNDEFINED)][4] = { "RGB", "RBG", "GRB", "GBR", "BRG", "BGR"};
 
 const char *pixel_get_type(pixel::Type type) {
 	if (type < pixel::Type::UNDEFINED) {

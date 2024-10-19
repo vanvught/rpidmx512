@@ -2,7 +2,7 @@
  * @file oscstring.h
  *
  */
-/* Copyright (C) 2016-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,7 @@
 #define OSCSTRING_H_
 
 #include <cstring>
+#include <cstdint>
 
 #include "osc.h"
 
@@ -37,11 +38,11 @@
  */
 
 namespace osc {
-inline static int string_validate(void *pData, unsigned nSize) {
-	unsigned nLength = 0;
-	char *pSrc = reinterpret_cast<char*>(pData);
+inline static int string_validate(const void *pData, uint32_t nSize) {
+	uint32_t nLength = 0;
+	auto *pSrc = reinterpret_cast<const char *>(pData);
 
-	unsigned i = 0;
+	uint32_t i = 0;
 
 	for (i = 0; i < nSize; ++i) {
 		if (pSrc[i] == '\0') {

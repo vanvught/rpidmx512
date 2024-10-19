@@ -351,9 +351,6 @@ public:
 			}
 		}
 #endif
-#if defined (DMXCONFIGUDP_H)
-		m_DmxConfigUdp.Run();
-#endif
 	}
 
 #if defined (NODE_SHOWFILE) && defined (CONFIG_SHOWFILE_PROTOCOL_NODE_E131)

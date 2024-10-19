@@ -2,7 +2,7 @@
  * @file oscblob.h
  *
  */
-/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,17 +36,14 @@
 
 class OSCBlob {
 public:
-	OSCBlob(const uint8_t *pData, uint32_t nSize) :
-			m_pData(const_cast<uint8_t*>(pData)), m_nSize(nSize) {
-	}
-	~OSCBlob() {
+	OSCBlob(const uint8_t *pData, uint32_t nSize) : m_pData(pData), m_nSize(nSize) {
 	}
 
-	uint32_t GetDataSize() {
+	uint32_t GetDataSize() const {
 		return m_nSize;
 	}
 
-	const uint8_t* GetDataPtr() {
+	const uint8_t* GetDataPtr() const {
 		return m_pData;
 	}
 
@@ -55,7 +52,7 @@ public:
 		return (4 * ((nBlobSize + 3) / 4));
 	}
 
-	uint8_t GetByte(uint32_t nIndex) {
+	uint8_t GetByte(const uint32_t nIndex) {
 		if (nIndex < m_nSize) {
 			return m_pData[nIndex];
 		}
@@ -63,7 +60,7 @@ public:
 	}
 
 private:
-	uint8_t *m_pData;
+	const uint8_t *m_pData;
 	uint32_t m_nSize;
 };
 

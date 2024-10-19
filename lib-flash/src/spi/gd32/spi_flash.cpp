@@ -55,7 +55,7 @@ int spi_init() {
 	return 0;
 }
 
-inline static void spi_transfern(char *pBuffer, uint32_t nLength) {
+inline static void spi_transfern(char *pBuffer, const uint32_t nLength) {
 	gd32_spi_transfernb(pBuffer, pBuffer, nLength);
 }
 

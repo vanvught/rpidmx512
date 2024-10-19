@@ -2,7 +2,7 @@
  * @file oscclient.h
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,15 @@
 #include <cstdint>
 #include <cassert>
 
+#include "osc.h"
+#include "oscsimplesend.h"
 #include "oscclientled.h"
+
+#include "hardware.h"
+#include "network.h"
+#include "display.h"
+
+#include "debug.h"
 
 namespace oscclient {
 static constexpr auto STORE = 944;				///< Configuration store in bytes
@@ -54,15 +62,92 @@ static constexpr uint32_t LED = oscclient::max::LED_COUNT * oscclient::max::LED_
 
 class OscClient {
 public:
-	OscClient();
-	~OscClient() {
-		Stop();
+	OscClient() :
+		m_nPortOutgoing(oscclient::defaults::PORT_OUTGOING),
+		m_nPortIncoming(oscclient::defaults::PORT_INCOMING),
+		m_nPingDelayMillis(oscclient::defaults::PING_DELAY_SECONDS * 1000)
+	{
+		DEBUG_ENTRY
+
+		DEBUG_EXIT
 	}
 
-	void Start();
-	void Stop();
+	void Start() {
+		DEBUG_ENTRY
 
-	void Run();
+		assert(m_nHandle == -1);
+		m_nHandle = Network::Get()->Begin(m_nPortIncoming);
+		assert(m_nHandle != -1);
+
+		DEBUG_EXIT
+	}
+
+	void Stop() {
+		DEBUG_ENTRY
+
+		assert(m_nHandle != -1);
+		Network::Get()->End(m_nPortIncoming);
+		m_nHandle = -1;
+
+		DEBUG_EXIT
+	}
+
+	void Run() {
+		if (!m_bPingDisable) {
+			m_nCurrenMillis = Hardware::Get()->Millis();
+
+			if ((m_nCurrenMillis - m_nPreviousMillis) >= m_nPingDelayMillis) {
+				OscSimpleSend MsgSend(m_nHandle, m_nServerIP, m_nPortOutgoing, "/ping", nullptr);
+				m_bPingSent = true;
+				m_nPreviousMillis = m_nCurrenMillis;
+				m_nPingTimeMillis = m_nCurrenMillis;
+				DEBUG_PUTS("Ping sent");
+			}
+		}
+
+		uint32_t nRemoteIp;
+		uint16_t nRemotePort;
+
+		const auto nBytesReceived = Network::Get()->RecvFrom(m_nHandle, reinterpret_cast<const void **>(&m_pBuffer), &nRemoteIp, &nRemotePort);
+
+		if (__builtin_expect((nBytesReceived == 0), 1)) {
+			if (m_bPingSent && ((m_nCurrenMillis - m_nPingTimeMillis) >= 1000)) {
+				if (m_bPongReceived) {
+					m_bPongReceived = false;
+					Display::Get()->TextStatus("No /Pong");
+					DEBUG_PUTS("No /Pong");
+				}
+			}
+			return;
+		}
+
+		if (nRemoteIp != m_nServerIP) {
+			DEBUG_PRINTF("Data not received from server " IPSTR , IP2STR(nRemoteIp));
+			return;
+		}
+
+		if ((m_pOscClientLed != nullptr) && (HandleLedMessage(nBytesReceived))) {
+			DEBUG_EXIT
+			return;
+		}
+
+
+		if (!m_bPingDisable) {
+			if (!osc::is_match(m_pBuffer, "/pong")) {
+				DEBUG_PUTS(m_pBuffer);
+				return;
+			}
+
+
+			if (!m_bPongReceived) {
+				Display::Get()->TextStatus("Ping-Pong");
+				DEBUG_PUTS("Ping-Pong");
+			}
+
+			m_bPongReceived = true;
+			m_bPingSent = false;
+		}
+	}
 
 	void Send(const char *pPath);
 	void SendCmd(uint32_t nCmd);
@@ -125,23 +210,23 @@ private:
 	bool HandleLedMessage(const uint16_t nBytesReceived);
 
 private:
-	uint32_t m_nServerIP { 0 };
 	uint16_t m_nPortOutgoing;
 	uint16_t m_nPortIncoming;
-	int32_t m_nHandle { -1 };
-	bool m_bPingDisable { false };
 	uint32_t m_nPingDelayMillis;
-	bool m_bPingSent { false };
-	bool m_bPongReceived { false };
-	char *m_pBuffer { nullptr };
+	uint32_t m_nServerIP { 0 };
+	int32_t m_nHandle { -1 };
 	uint32_t m_nCurrenMillis { 0 };
 	uint32_t m_nPreviousMillis { 0 };
 	uint32_t m_nPingTimeMillis { 0 };
+	const char *m_pBuffer { nullptr };
+	bool m_bPingDisable { false };
+	bool m_bPingSent { false };
+	bool m_bPongReceived { false };
 
 	OscClientLed *m_pOscClientLed { nullptr };
 
-	static char m_pCmds[oscclient::buffer::size::CMD];
-	static char m_pLeds[oscclient::buffer::size::LED];
+	static inline char m_pCmds[oscclient::buffer::size::CMD];
+	static inline char m_pLeds[oscclient::buffer::size::LED];
 };
 
 #endif /* OSCCLIENT_H_ */
