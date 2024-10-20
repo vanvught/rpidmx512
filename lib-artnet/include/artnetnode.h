@@ -622,8 +622,8 @@ private:
 	void UpdateMergeStatus(const uint32_t nPortIndex);
 	void CheckMergeTimeouts(const uint32_t nPortIndex);
 
-	void ProcessPollRelply(const uint32_t nPortIndex, uint32_t& NumPortsInput, uint32_t& NumPortsOutput);
-	void SendPollRelply(const uint32_t nBindIndex, const uint32_t nDestinationIp, artnet::ArtPollQueue *pQueue = nullptr);
+	void ProcessPollReply(const uint32_t nPortIndex, uint32_t& NumPortsInput, uint32_t& NumPortsOutput);
+	void SendPollReply(const uint32_t nBindIndex, const uint32_t nDestinationIp, artnet::ArtPollQueue *pQueue = nullptr);
 
 	void SendTod(uint32_t nPortIndex);
 	void SendTodRequest(uint32_t nPortIndex);

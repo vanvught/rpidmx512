@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -490,7 +490,7 @@ void ArtNetNode::Process(const uint32_t nBytesReceived) {
 			if (entry.ArtPollMillis != 0) {
 				if ((m_nCurrentPacketMillis - entry.ArtPollMillis) > m_State.ArtPollReplyDelayMillis) {
 					entry.ArtPollMillis = 0;
-					SendPollRelply(0, entry.ArtPollReplyIpAddress, &entry);
+					SendPollReply(0, entry.ArtPollReplyIpAddress, &entry);
 				}
 			}
 		}
@@ -640,7 +640,7 @@ void ArtNetNode::Process(const uint32_t nBytesReceived) {
 		if (entry.ArtPollMillis != 0) {
 			if ((m_nCurrentPacketMillis - entry.ArtPollMillis) > m_State.ArtPollReplyDelayMillis) {
 				entry.ArtPollMillis = 0;
-				SendPollRelply(0, entry.ArtPollReplyIpAddress, &entry);
+				SendPollReply(0, entry.ArtPollReplyIpAddress, &entry);
 			}
 		}
 	}

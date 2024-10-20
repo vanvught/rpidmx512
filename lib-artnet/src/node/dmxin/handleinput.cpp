@@ -65,7 +65,7 @@ void ArtNetNode::HandleInput() {
 	}
 
 	if (m_State.SendArtPollReplyOnChange) {
-		SendPollRelply(0, m_nIpAddressFrom);
+		SendPollReply(0, m_nIpAddressFrom);
 	}
 
 	DEBUG_EXIT

@@ -114,7 +114,7 @@ void ArtNetNode::HandleIpProg() {
 		memcpy(m_ArtPollReply.BindIp, &pArtIpProgReply->ProgIpHi, artnet::IP_SIZE);
 #endif
 		if (m_State.SendArtPollReplyOnChange) {
-			SendPollRelply(0, m_nIpAddressFrom);
+			SendPollReply(0, m_nIpAddressFrom);
 		}
 
 #ifndef NDEBUG
