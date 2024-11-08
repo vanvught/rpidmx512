@@ -329,6 +329,10 @@
 									<listOptionValue builtIn="false" value="CONFIG_SHELL_GPS"/>
 									<listOptionValue builtIn="false" value="ENABLE_NTP_CLIENT"/>
 									<listOptionValue builtIn="false" value="PHY_TYPE=PHY_GENERIC"/>
+									<listOptionValue builtIn="false" value="DISPLAY_UDF"/>
+									<listOptionValue builtIn="false" value="NODE_ARTNET"/>
+									<listOptionValue builtIn="false" value="NODE_E131"/>
+									<listOptionValue builtIn="false" value="NODE_NODE"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.1650114521" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/include}&quot;"/>
@@ -349,6 +353,10 @@
 									<listOptionValue builtIn="false" value="CONFIG_SHELL_GPS"/>
 									<listOptionValue builtIn="false" value="ENABLE_NTP_CLIENT"/>
 									<listOptionValue builtIn="false" value="PHY_TYPE=PHY_GENERIC"/>
+									<listOptionValue builtIn="false" value="DISPLAY_UDF"/>
+									<listOptionValue builtIn="false" value="NODE_ARTNET"/>
+									<listOptionValue builtIn="false" value="NODE_E131"/>
+									<listOptionValue builtIn="false" value="NODE_NODE"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths.1916263486" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/include}&quot;"/>
@@ -372,6 +380,10 @@
 									<listOptionValue builtIn="false" value="HAVE_DMX"/>
 									<listOptionValue builtIn="false" value="HAVE_PIXEL"/>
 									<listOptionValue builtIn="false" value="ARTNET_CONTROLLER"/>
+									<listOptionValue builtIn="false" value="DISPLAY_UDF"/>
+									<listOptionValue builtIn="false" value="NODE_ARTNET"/>
+									<listOptionValue builtIn="false" value="NODE_E131"/>
+									<listOptionValue builtIn="false" value="NODE_NODE"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths.390972526" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/include}&quot;"/>

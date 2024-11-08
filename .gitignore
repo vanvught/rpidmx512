@@ -113,3 +113,7 @@ software_version_id.h
 /lib-node
 /lib-showfile/Doxygen
 /opi_emac_eve_example
+*._h
+*._cpp
+/opi_emac_debug_lcd_udp
+/lib-dmxnode
