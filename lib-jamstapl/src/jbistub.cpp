@@ -2,7 +2,7 @@
  * @file jbistub.cpp
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,14 +31,13 @@
 
 #include "hal_gpio.h"
 
-#if defined (H3)
 extern "C" {
  void uart0_puts(const char *s);
  int uart0_printf(const char* fmt, ...);
 }
-# define  puts  	uart0_puts
-# define  printf	uart0_printf
-#endif
+
+#define  puts  	uart0_puts
+#define  printf	uart0_printf
 
 #define GPIO_TDO		GPIO_EXT_7	// GPIO_EXT_12
 #define GPIO_TDI		GPIO_EXT_10	// GPIO_EXT_16

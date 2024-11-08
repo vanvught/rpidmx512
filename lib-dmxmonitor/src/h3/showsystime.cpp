@@ -2,7 +2,7 @@
  * @file showsystime.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,17 +35,17 @@ static constexpr auto COLUMN = 80;
 
 static char systime[] __attribute__ ((aligned (4))) = "--:--:-- --/--/--";
 
-static void itoa_base10(int nArg, char *pBuffer) {
+static void itoa(const int nValue, char *pBuffer) {
 	auto *p = pBuffer;
 
-	if (nArg == 0) {
+	if (nValue == 0) {
 		*p++ = '0';
 		*p = '0';
 		return;
 	}
 
-	*p++ = static_cast<char>('0' + (nArg / 10));
-	*p = static_cast<char>('0' + static_cast<char>(nArg % 10));
+	*p++ = static_cast<char>('0' + (nValue / 10));
+	*p = static_cast<char>('0' + static_cast<char>(nValue % 10));
 }
 
 void ShowSystime::Run() {
@@ -58,13 +58,13 @@ void ShowSystime::Run() {
 
 	m_nSecondsPrevious = pLocalTime->tm_sec;
 
-	itoa_base10(pLocalTime->tm_hour, &systime[0]);
-	itoa_base10(pLocalTime->tm_min, &systime[3]);
-	itoa_base10(pLocalTime->tm_sec, &systime[6]);
+	itoa(pLocalTime->tm_hour, &systime[0]);
+	itoa(pLocalTime->tm_min, &systime[3]);
+	itoa(pLocalTime->tm_sec, &systime[6]);
 
-	itoa_base10(pLocalTime->tm_year - 100, &systime[9]);
-	itoa_base10(pLocalTime->tm_mon + 1, &systime[12]);
-	itoa_base10(pLocalTime->tm_mday, &systime[15]);
+	itoa(pLocalTime->tm_year - 100, &systime[9]);
+	itoa(pLocalTime->tm_mon + 1, &systime[12]);
+	itoa(pLocalTime->tm_mday, &systime[15]);
 
 	console_save_cursor();
 	console_set_cursor(COLUMN, ROW);

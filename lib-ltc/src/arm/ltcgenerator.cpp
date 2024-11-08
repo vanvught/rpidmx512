@@ -303,9 +303,9 @@ void LtcGenerator::ActionSetDirection(const char *pTimeCodeDirection) {
 	DEBUG_ENTRY
 
 	if (memcmp("forward", pTimeCodeDirection, 7) == 0) {
-		m_tDirection = LTC_GENERATOR_FORWARD;
+		m_tDirection = ltcgenerator::Direction::DIRECTION_FORWARD;
 	} else if (memcmp("backward", pTimeCodeDirection, 8) == 0) {
-		m_tDirection = LTC_GENERATOR_BACKWARD;
+		m_tDirection = ltcgenerator::Direction::DIRECTION_BACKWARD;
 	}
 
 	DEBUG_PRINTF("m_tDirection=%d", m_tDirection);
@@ -321,13 +321,13 @@ void LtcGenerator::ActionSetPitch(float fTimeCodePitch) {
 	}
 
 	if (fTimeCodePitch < 0) {
-		m_tPitch = LTC_GENERATOR_SLOWER;
+		m_tPitch = ltcgenerator::Pitch::PITCH_SLOWER;
 		m_fPitchControl = -fTimeCodePitch;
 	} else if (fTimeCodePitch == 0) {
-		m_tPitch = LTC_GENERATOR_NORMAL;
+		m_tPitch = ltcgenerator::Pitch::PITCH_NORMAL;
 		return;
 	} else {
-		m_tPitch = LTC_GENERATOR_FASTER;
+		m_tPitch = ltcgenerator::Pitch::PITCH_FASTER;
 		m_fPitchControl = fTimeCodePitch;
 	}
 
@@ -465,7 +465,7 @@ void LtcGenerator::SetPitch(const char *pTimeCodePitch, uint32_t nSize) {
 	DEBUG_EXIT
 }
 
-void LtcGenerator::SetSkip(const char *pSeconds, uint32_t nSize, TLtcGeneratorDirection tDirection) {
+void LtcGenerator::SetSkip(const char *pSeconds, uint32_t nSize, ltcgenerator::Direction direction) {
 	DEBUG_ENTRY
 	debug_dump(const_cast<char*>(pSeconds), static_cast<uint16_t>(nSize));
 
@@ -473,7 +473,7 @@ void LtcGenerator::SetSkip(const char *pSeconds, uint32_t nSize, TLtcGeneratorDi
 
 	DEBUG_PRINTF("nSeconds=%d", nSeconds);
 
-	if (tDirection == LTC_GENERATOR_FORWARD) {
+	if (direction == ltcgenerator::Direction::DIRECTION_FORWARD) {
 		ActionForward(nSeconds);
 	} else {
 		ActionBackward(nSeconds);
@@ -572,14 +572,14 @@ void LtcGenerator::HandleRequest(char *pBuffer, uint16_t nBufferLength) {
 
 	if (m_nBytesReceived <= (4 + FORWARD_LENGTH + 2)) {
 		if (memcmp(&s_pUdpBuffer[4], CMD_FORWARD, FORWARD_LENGTH) == 0) {
-			SetSkip(&s_pUdpBuffer[(4 + FORWARD_LENGTH)], m_nBytesReceived - (4 + FORWARD_LENGTH), LTC_GENERATOR_FORWARD);
+			SetSkip(&s_pUdpBuffer[(4 + FORWARD_LENGTH)], m_nBytesReceived - (4 + FORWARD_LENGTH), ltcgenerator::Direction::DIRECTION_FORWARD);
 			return;
 		}
 	}
 
 	if (m_nBytesReceived <= (4 + BACKWARD_LENGTH + 2)) {
 		if (memcmp(&s_pUdpBuffer[4], CMD_BACKWARD, BACKWARD_LENGTH) == 0) {
-			SetSkip(&s_pUdpBuffer[(4 + BACKWARD_LENGTH)], m_nBytesReceived - (4 + BACKWARD_LENGTH), LTC_GENERATOR_BACKWARD);
+			SetSkip(&s_pUdpBuffer[(4 + BACKWARD_LENGTH)], m_nBytesReceived - (4 + BACKWARD_LENGTH), ltcgenerator::Direction::DIRECTION_BACKWARD);
 			return;
 		}
 	}
@@ -757,11 +757,11 @@ void LtcGenerator::Update() {
 
 		LtcOutputs::Get()->Update(static_cast<const struct ltc::TimeCode*>(&g_ltc_LtcTimeCode));
 
-		if (__builtin_expect((m_tDirection == LTC_GENERATOR_FORWARD), 1)) {
-			if (__builtin_expect((m_tPitch == LTC_GENERATOR_NORMAL), 1)) {
+		if (__builtin_expect((m_tDirection == ltcgenerator::Direction::DIRECTION_FORWARD), 1)) {
+			if (__builtin_expect((m_tPitch == ltcgenerator::Pitch::PITCH_NORMAL), 1)) {
 				Increment();
 			} else {
-				if (m_tPitch == LTC_GENERATOR_FASTER) {
+				if (m_tPitch == ltcgenerator::Pitch::PITCH_FASTER) {
 					Increment();
 					if (PitchControl()) {
 						Increment();
@@ -773,10 +773,10 @@ void LtcGenerator::Update() {
 				}
 			}
 		} else { // LTC_GENERATOR_BACKWARD
-			if (__builtin_expect((m_tPitch == LTC_GENERATOR_NORMAL), 1)) {
+			if (__builtin_expect((m_tPitch == ltcgenerator::Pitch::PITCH_NORMAL), 1)) {
 				Decrement();
 			} else {
-				if (m_tPitch == LTC_GENERATOR_FASTER) {
+				if (m_tPitch == ltcgenerator::Pitch::PITCH_FASTER) {
 					Decrement();
 					if (PitchControl()) {
 						Decrement();

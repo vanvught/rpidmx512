@@ -103,6 +103,7 @@ private:
 	uint32_t m_nFilesCount { 0 };
 	int32_t m_aFileIndex[DmxSerialFile::MAX_NUMBER];
 	int32_t m_nHandle { -1 };
+	uint8_t *m_pReceiveBuffer { nullptr };
 	DmxSerialChannelData *m_pDmxSerialChannelData[DmxSerialFile::MAX_NUMBER];
 	uint16_t m_nDmxLastSlot { lightset::dmx::UNIVERSE_SIZE };
 	uint8_t m_DmxData[lightset::dmx::UNIVERSE_SIZE];
@@ -114,7 +115,7 @@ private:
 	bool m_bEnableTFTP { false };
 	DmxSerialTFTP *m_pDmxSerialTFTP { nullptr };
 
-	static DmxSerial *s_pThis;
+	static inline DmxSerial *s_pThis;
 };
 
 #endif /* DMXSERIAL_H_ */

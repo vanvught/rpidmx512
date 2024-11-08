@@ -824,19 +824,20 @@ void Dmx::SetDmxMabTime(uint32_t nMabTime) {
 
 void Dmx::SetDmxPeriodTime(uint32_t nPeriod) {
 	DEBUG_ENTRY
-	DEBUG_PRINTF("nPeriod=%u", nPeriod);
 
 	m_nDmxTransmitPeriodRequested = nPeriod;
 
 	auto nLengthMax = m_nDmxTransmissionLength[0];
 
-	DEBUG_PRINTF("nLengthMax=%u", nLengthMax);
+	DEBUG_PRINTF("nPeriod=%u, nLengthMax=%u", nPeriod, nLengthMax);
 
 	for (uint32_t i = 1; i < config::max::PORTS; i++) {
 		if (m_nDmxTransmissionLength[i] > nLengthMax) {
 			nLengthMax = m_nDmxTransmissionLength[i];
 		}
 	}
+
+	DEBUG_PRINTF("nLengthMax=%u", nLengthMax);
 
 	const auto nPackageLengthMicroSeconds = m_nDmxTransmitBreakTime + m_nDmxTransmitMabTime + (nLengthMax * 44) + 44;
 

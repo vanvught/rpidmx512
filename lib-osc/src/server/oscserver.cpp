@@ -204,7 +204,7 @@ void OscServer::Run() {
 
 	auto *pUdpBuffer = reinterpret_cast<const char *>(s_pUdpBuffer);
 
-	DEBUG_PRINTF("[%d] path : %s", nBytesReceived, osc::get_path(pUdpBuffer, nBytesReceived));
+	DEBUG_PRINTF("[%d] path : %s", nBytesReceived, osc::get_path(const_cast<char *>(pUdpBuffer), nBytesReceived));
 
 	if (osc::is_match(pUdpBuffer, s_aPath)) {
 		const auto nArgc = Msg.GetArgc();

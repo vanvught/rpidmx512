@@ -40,8 +40,6 @@
 
 #include "debug.h"
 
-DmxSerial *DmxSerial::s_pThis = nullptr;
-
 DmxSerial::DmxSerial() {
 	assert(s_pThis == nullptr);
 	s_pThis = this;

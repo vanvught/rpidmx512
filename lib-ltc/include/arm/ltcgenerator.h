@@ -2,7 +2,7 @@
  * @file ltcgenerator.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,13 +32,15 @@
 
 #include "hardware.h"
 
-enum TLtcGeneratorDirection {
-	LTC_GENERATOR_FORWARD, LTC_GENERATOR_BACKWARD
+namespace ltcgenerator {
+enum class Direction {
+	DIRECTION_FORWARD, DIRECTION_BACKWARD
 };
 
-enum TLtcGeneratorPitch {
-	LTC_GENERATOR_NORMAL, LTC_GENERATOR_FASTER, LTC_GENERATOR_SLOWER
+enum class Pitch {
+	PITCH_NORMAL, PITCH_FASTER, PITCH_SLOWER
 };
+}  // namespace ltcgenerator
 
 class LtcGenerator {
 public:
@@ -93,14 +95,14 @@ private:
 	void Decrement();
 	bool PitchControl();
 	void SetPitch(const char *pTimeCodePitch, uint32_t nSize);
-	void SetSkip(const char *pSeconds, uint32_t nSize, TLtcGeneratorDirection tDirection);
+	void SetSkip(const char *pSeconds, uint32_t nSize, const ltcgenerator::Direction direction);
 	void SetTimeCode(int32_t nSeconds);
 
 	int32_t GetSeconds(const struct ltc::TimeCode& timecode) {
 		int32_t nSeconds = timecode.nHours;
-		nSeconds *= 60;
+		nSeconds *= 60U;
 		nSeconds += timecode.nMinutes;
-		nSeconds *= 60;
+		nSeconds *= 60U;
 		nSeconds += timecode.nSeconds;
 
 		return nSeconds;
@@ -113,11 +115,11 @@ private:
 	int32_t m_nStartSeconds;
 	int32_t m_nStopSeconds;
 	uint8_t m_nFps { 0 };
-	TLtcGeneratorDirection m_tDirection { LTC_GENERATOR_FORWARD };
+	ltcgenerator::Direction m_tDirection { ltcgenerator::Direction::DIRECTION_FORWARD };
 	float m_fPitchControl { 0 };
 	uint32_t m_nPitchTicker { 1 };
 	uint32_t m_nPitchPrevious { 0 };
-	TLtcGeneratorPitch m_tPitch { LTC_GENERATOR_FASTER };
+	ltcgenerator::Pitch m_tPitch { ltcgenerator::Pitch::PITCH_FASTER };
 	uint32_t m_nButtons { 0 };
 	int m_nHandle { -1 };
 	uint32_t m_nBytesReceived { 0 };

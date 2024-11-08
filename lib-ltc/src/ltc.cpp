@@ -98,36 +98,36 @@ void init_systemtime(char *pSystemTime) {
 	pSystemTime[ltc::systemtime::index::COLON_2] = ':';
 }
 
-static void itoa_base10(int arg, char *pBuffer) {
+static void itoa(const uint32_t nValue, char *pBuffer) {
 	auto *p = pBuffer;
 
-	if (arg == 0) {
+	if (nValue == 0) {
 		*p++ = '0';
 		*p = '0';
 		return;
 	}
 
-	*p++ = static_cast<char>('0' + (arg / 10));
-	*p = static_cast<char>('0' + (arg % 10));
+	*p++ = static_cast<char>('0' + (nValue / 10U));
+	*p = static_cast<char>('0' + (nValue % 10U));
 }
 
 void itoa_base10(const struct ltc::TimeCode *ptLtcTimeCode, char *pTimeCode) {
 	assert(ptLtcTimeCode != nullptr);
 	assert(pTimeCode != nullptr);
 
-	itoa_base10(ptLtcTimeCode->nHours, &pTimeCode[ltc::timecode::index::HOURS]);
-	itoa_base10(ptLtcTimeCode->nMinutes, &pTimeCode[ltc::timecode::index::MINUTES]);
-	itoa_base10(ptLtcTimeCode->nSeconds, &pTimeCode[ltc::timecode::index::SECONDS]);
-	itoa_base10(ptLtcTimeCode->nFrames, &pTimeCode[ltc::timecode::index::FRAMES]);
+	itoa(ptLtcTimeCode->nHours, &pTimeCode[ltc::timecode::index::HOURS]);
+	itoa(ptLtcTimeCode->nMinutes, &pTimeCode[ltc::timecode::index::MINUTES]);
+	itoa(ptLtcTimeCode->nSeconds, &pTimeCode[ltc::timecode::index::SECONDS]);
+	itoa(ptLtcTimeCode->nFrames, &pTimeCode[ltc::timecode::index::FRAMES]);
 }
 
 void itoa_base10(const struct tm *pLocalTime, char *pSystemTime) {
 	assert(pLocalTime != nullptr);
 	assert(pSystemTime != nullptr);
 
-	itoa_base10(pLocalTime->tm_hour, &pSystemTime[ltc::systemtime::index::HOURS]);
-	itoa_base10(pLocalTime->tm_min, &pSystemTime[ltc::systemtime::index::MINUTES]);
-	itoa_base10(pLocalTime->tm_sec, &pSystemTime[ltc::systemtime::index::SECONDS]);
+	itoa(pLocalTime->tm_hour, &pSystemTime[ltc::systemtime::index::HOURS]);
+	itoa(pLocalTime->tm_min, &pSystemTime[ltc::systemtime::index::MINUTES]);
+	itoa(pLocalTime->tm_sec, &pSystemTime[ltc::systemtime::index::SECONDS]);
 }
 
 #define DIGIT(x)	((x) - '0')
