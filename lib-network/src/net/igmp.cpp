@@ -31,6 +31,7 @@
 # pragma GCC push_options
 # pragma GCC optimize ("O2")
 # pragma GCC optimize ("no-tree-loop-distribute-patterns")
+# pragma GCC optimize ("-fprefetch-loop-arrays")
 #endif
 
 #include <cstdint>
@@ -48,7 +49,7 @@
 #include "net_memcpy.h"
 #include "net_private.h"
 
-#include "timers.h"
+#include "softwaretimers.h"
 
 #include "debug.h"
 
@@ -81,7 +82,7 @@ static struct t_igmp s_leave SECTION_NETWORK ALIGNED;
 static uint8_t s_multicast_mac[ETH_ADDR_LEN] SECTION_NETWORK ALIGNED;
 static struct t_group_info s_groups[IGMP_MAX_JOINS_ALLOWED] SECTION_NETWORK ALIGNED;
 static uint16_t s_id SECTION_NETWORK ALIGNED;
-static int32_t nTimerId;
+static TimerHandle_t nTimerId;
 
 void igmp_set_ip() {
 	net::memcpy_ip(s_report.ip4.src, net::globals::netif_default.ip.addr);

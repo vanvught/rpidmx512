@@ -41,6 +41,7 @@
 #pragma GCC push_options
 #pragma GCC optimize ("O2")
 #pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#pragma GCC optimize ("-fprefetch-loop-arrays")
 
 #include <cstdint>
 #include <cstring>
@@ -1132,10 +1133,10 @@ __attribute__((hot)) void tcp_handle(struct t_tcp *pTcp) {
 
 // --> Public API's
 
-int tcp_begin(const uint16_t nLocalPort) {
+int32_t tcp_begin(const uint16_t nLocalPort) {
 	DEBUG_PRINTF("nLocalPort=%u", nLocalPort);
 
-	for (int i = 0; i < TCP_MAX_PORTS_ALLOWED; i++) {
+	for (int32_t i = 0; i < TCP_MAX_PORTS_ALLOWED; i++) {
 		if (s_Port[i].nLocalPort == nLocalPort) {
 			return i;
 		}
@@ -1163,7 +1164,11 @@ int tcp_begin(const uint16_t nLocalPort) {
 
 }
 
-uint16_t tcp_read(const int32_t nHandleListen, const uint8_t **pData, uint32_t &nHandleConnection) {
+int32_t tcp_end([[maybe_unused]] const int32_t nHandle) {
+	return 0;
+}
+
+uint32_t tcp_read(const int32_t nHandleListen, const uint8_t **pData, uint32_t &nHandleConnection) {
 	assert(nHandleListen >= 0);
 	assert(nHandleListen < TCP_MAX_PORTS_ALLOWED);
 
