@@ -30,6 +30,17 @@
 # error
 #endif
 
+#if defined (CONFIG_SPI_LCD_OPTIMIZE_O2) || defined (CONFIG_SPI_LCD_OPTIMIZE_O3)
+# pragma GCC push_options
+# if defined (CONFIG_SPI_LCD_OPTIMIZE_O2)
+#  pragma GCC optimize ("O2")
+# else
+#  pragma GCC optimize ("O3")
+# endif
+# pragma GCC optimize ("no-tree-loop-distribute-patterns")
+# pragma GCC optimize ("-fprefetch-loop-arrays")
+#endif
+
 #include <cstdarg>
 #include <cstdint>
 #include <cstdio>
@@ -37,22 +48,54 @@
 
 #if defined (CONFIG_USE_ILI9341)
 # include "spi/ili9341.h"
+  typedef ILI9341 LcdDriver;
+#elif defined (CONFIG_USE_ST7735S)
+# include "spi/st7735s.h"
+  typedef ST7735S LcdDriver;
 #else
 # include "spi/st7789.h"
+  typedef ST7789 LcdDriver;
 #endif
+
+#include "spi/lcd_font.h"
+#include "spi/spilcd.h"
 
 #if defined (DISPLAYTIMEOUT_GPIO)
 # include "hal_gpio.h"
 #endif
 
-#include "hardware.h"
+#if defined(SPI_LCD_HAVE_CS_GPIO)
+ static constexpr uint32_t CS_GPIO = SPI_LCD_CS_GPIO;
+#else
+ static constexpr uint32_t CS_GPIO = 0;
+#endif
 
-class Display {
+#include "debug.h"
+
+class Display : public LcdDriver {
 public:
-	Display();
-	~Display() {
-		s_pThis = nullptr;
+	Display(uint32_t nCS = CS_GPIO) : LcdDriver(nCS) {
+		DEBUG_ENTRY
+
+		s_pThis = this;
+
+		SetBackLight(1);
+		SetFlipVertically(false);
+		FillColour(COLOR_BACKGROUND);
+
+		m_nCols = (GetWidth() / s_pFONT->Width);
+		m_nRows = (GetHeight() / s_pFONT->Height);
+
+#if defined (DISPLAYTIMEOUT_GPIO)
+		FUNC_PREFIX(gpio_fsel(DISPLAYTIMEOUT_GPIO, GPIO_FSEL_INPUT));
+		FUNC_PREFIX(gpio_set_pud(DISPLAYTIMEOUT_GPIO, GPIO_PULL_UP));
+#endif
+
+		PrintInfo();
+		DEBUG_EXIT
 	}
+
+	~Display() {}
 
 	bool isDetected() const {
 		return true;
@@ -61,15 +104,38 @@ public:
 	void PrintInfo() {
 #if defined (CONFIG_USE_ILI9341)
 		printf("ILI9341 ");
+#elif defined (CONFIG_USE_ST7735S)
+		printf("ST7735S ");
 #else
 		printf("ST7789 ");
 #endif
 		printf("(%d,%d)\n", m_nRows, m_nCols);
 	}
 
-	void Cls();
-	void SetCursorPos(uint32_t nCol, uint32_t nRow);
-	void PutChar(int c);
+	void Cls() {
+		FillColour(COLOR_BACKGROUND);
+	}
+
+	void SetCursorPos(const uint32_t nCol, const uint32_t nRow) {
+		m_nCursorX = nCol * s_pFONT->Width;
+		m_nCursorY = nRow * s_pFONT->Height;
+	}
+
+	void PutChar(const int c) {
+		DrawChar(m_nCursorX, m_nCursorY, static_cast<char>(c), s_pFONT, COLOR_BACKGROUND, COLOR_FOREGROUND);
+
+		m_nCursorX += s_pFONT->Width;
+
+		if (m_nCursorX >= GetWidth()) {
+			m_nCursorX = 0;
+
+			m_nCursorY += s_pFONT->Height;
+
+			if (m_nCursorY >= GetHeight()) {
+				m_nCursorY = 0;
+			}
+		}
+	}
 
 	void PutString(const char *p) {
 		for (uint32_t i = 0; *p != '\0'; i++) {
@@ -78,7 +144,7 @@ public:
 		}
 	}
 
-	void ClearLine(uint32_t nLine) {
+	void ClearLine(const uint32_t nLine) {
 		if (__builtin_expect((!(nLine <= m_nRows)), 0)) {
 			return;
 		}
@@ -92,7 +158,7 @@ public:
 		SetCursorPos(0, (nLine - 1U));
 	}
 
-	void TextLine(uint32_t nLine, const char *pText, uint32_t nLength) {
+	void TextLine(const uint32_t nLine, const char *pText, const uint32_t nLength) {
 		if (__builtin_expect((!(nLine <= m_nRows)), 0)) {
 			return;
 		}
@@ -115,7 +181,7 @@ public:
 		}
 	}
 
-	int Write(uint32_t nLine, const char *pText) {
+	int Write(const uint32_t nLine, const char *pText) {
 		const auto *p = pText;
 		int nCount = 0;
 
@@ -130,7 +196,7 @@ public:
 		return nCount;
 	}
 
-	int Printf(uint8_t nLine, const char *format, ...) {
+	int Printf(const uint8_t nLine, const char *format, ...) {
 		char buffer[32];
 
 		va_list arp;
@@ -149,7 +215,7 @@ public:
 	void TextStatus(const char *pText) {
 		SetCursorPos(0, static_cast<uint8_t>(m_nRows - 1));
 
-		for (uint32_t i = 0; i < static_cast<uint32_t>(m_nCols - 1); i++) {
+		for (uint32_t i = 0; i < (m_nCols - 1); i++) {
 			PutChar(' ');
 		}
 
@@ -172,22 +238,22 @@ public:
 		static constexpr char SYMBOLS[] = { '/' , '-', '\\' , '|' };
 		static uint32_t nSymbolsIndex;
 
-		Display::Get()->SetCursorPos(Display::Get()->GetColumns() - 1U, Display::Get()->GetRows() - 1U);
-		Display::Get()->PutChar(SYMBOLS[nSymbolsIndex++]);
+		SetCursorPos(GetColumns() - 1U, GetRows() - 1U);
+		PutChar(SYMBOLS[nSymbolsIndex++]);
 
 		if (nSymbolsIndex >= sizeof(SYMBOLS)) {
 			nSymbolsIndex = 0;
 		}
 	}
 
-	void SetContrast(uint8_t nContrast) {
-		SpiLcd.SetBackLight(nContrast);
+	void SetContrast(const uint8_t nContrast) {
+		SetBackLight(nContrast);
 	}
 
-	void SetSleep(bool bSleep) {
+	void SetSleep(const bool bSleep) {
 		m_bIsSleep = bSleep;
 
-		SpiLcd.EnableSleep(bSleep);
+		EnableSleep(bSleep);
 
 		if (!bSleep) {
 			SetSleepTimer(m_nSleepTimeout != 0);
@@ -208,7 +274,7 @@ public:
 	}
 
 	void SetFlipVertically(bool doFlipVertically) {
-		SpiLcd.SetRotation(doFlipVertically ? 3 : 1);
+		SetRotation(doFlipVertically ? 3 : 1);
 	}
 
 	uint32_t GetColumns() const {
@@ -234,7 +300,7 @@ public:
 
 		if (m_bIsSleep) {
 #if defined (DISPLAYTIMEOUT_GPIO)
-			if (__builtin_expect(((FUNC_PREFIX(gpio_lev(DISPLAYTIMEOUT_GPIO)) == LOW)), 0)) {
+			if (__builtin_expect(((FUNC_PREFIX(gpio_lev(DISPLAYTIMEOUT_GPIO)) == 0)), 0)) {
 				SetSleep(false);
 			}
 #endif
@@ -249,25 +315,34 @@ private:
 	void SetSleepTimer(const bool bActive);
 
 private:
-#if defined (CONFIG_USE_ILI9341)
-	ILI9341 SpiLcd;
-#else
-	ST7789	SpiLcd;
-#endif
 	uint32_t m_nCols;
 	uint32_t m_nRows;
 	uint32_t m_nSleepTimeout { 1000U * 60U * display::Defaults::SLEEP_TIMEOUT };
+	uint32_t m_nCursorX { 0 };
+	uint32_t m_nCursorY { 0 };
+
+	uint8_t m_nContrast { 0x7F };
 
 	bool m_bIsFlippedVertically { false };
 	bool m_bIsSleep { false };
 	bool m_bClearEndOfLine { false };
 
-	uint16_t m_nCursorX { 0 };
-	uint16_t m_nCursorY { 0 };
+	static inline Display *s_pThis;
 
-	uint8_t m_nContrast { 0x7F };
-
-	static Display *s_pThis;
+#if defined (SPI_LCD_240X320)
+	static constexpr sFONT *s_pFONT = &Font16x24;
+#elif defined (SPI_LCD_128X128)
+	static constexpr sFONT *s_pFONT = &Font8x8;
+#elif defined (SPI_LCD_160X80)
+	static constexpr sFONT *s_pFONT = &Font8x8;
+#else
+	static constexpr sFONT *s_pFONT = &Font12x12;
+#endif
+	static constexpr uint16_t COLOR_BACKGROUND = 0x001F;
+	static constexpr uint16_t COLOR_FOREGROUND = 0xFFE0;
 };
 
+#if defined (CONFIG_SPI_LCD_OPTIMIZE)
+# pragma GCC pop_options
+#endif
 #endif /* SPI_DISPLAY_H_ */

@@ -31,6 +31,7 @@
 									<listOptionValue builtIn="false" value="CONFIG_DISPLAY_ENABLE_SSD1311"/>
 									<listOptionValue builtIn="false" value="CONFIG_DISPLAY_FIX_FLIP_VERTICALLY"/>
 									<listOptionValue builtIn="false" value="DISPLAYTIMEOUT_GPIO"/>
+									<listOptionValue builtIn="false" value="SPI_LCD_160X80"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.258966306" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -46,6 +47,7 @@
 									<listOptionValue builtIn="false" value="CONFIG_DISPLAY_ENABLE_SSD1311"/>
 									<listOptionValue builtIn="false" value="CONFIG_DISPLAY_FIX_FLIP_VERTICALLY"/>
 									<listOptionValue builtIn="false" value="DISPLAYTIMEOUT_GPIO"/>
+									<listOptionValue builtIn="false" value="SPI_LCD_160X80"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1157907807" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -110,6 +112,7 @@
 									<listOptionValue builtIn="false" value="CONFIG_DISPLAY_ENABLE_SSD1311"/>
 									<listOptionValue builtIn="false" value="CONFIG_DISPLAY_FIX_FLIP_VERTICALLY"/>
 									<listOptionValue builtIn="false" value="DISPLAYTIMEOUT_GPIO"/>
+									<listOptionValue builtIn="false" value="SPI_LCD_160X80"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.772314880" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -124,6 +127,7 @@
 									<listOptionValue builtIn="false" value="CONFIG_DISPLAY_ENABLE_SSD1311"/>
 									<listOptionValue builtIn="false" value="CONFIG_DISPLAY_FIX_FLIP_VERTICALLY"/>
 									<listOptionValue builtIn="false" value="DISPLAYTIMEOUT_GPIO"/>
+									<listOptionValue builtIn="false" value="SPI_LCD_160X80"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.220843750" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -264,11 +268,13 @@
 									<listOptionValue builtIn="false" value="__GIC_PRESENT=1"/>
 									<listOptionValue builtIn="false" value="__FPU_PRESENT"/>
 									<listOptionValue builtIn="false" value="BARE_METAL"/>
+									<listOptionValue builtIn="false" value="SPI_LCD_160X80"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.1467055736" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-h3/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-arm/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-h3/CMSIS/Core_A/Include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.1920157809" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
 							</tool>
@@ -280,11 +286,13 @@
 									<listOptionValue builtIn="false" value="__GIC_PRESENT=1"/>
 									<listOptionValue builtIn="false" value="__FPU_PRESENT"/>
 									<listOptionValue builtIn="false" value="BARE_METAL"/>
+									<listOptionValue builtIn="false" value="SPI_LCD_160X80"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths.1597126145" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-h3/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-arm/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-h3/CMSIS/Core_A/Include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1019281998" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input"/>
 							</tool>
@@ -296,6 +304,10 @@
 									<listOptionValue builtIn="false" value="__GIC_PRESENT=1"/>
 									<listOptionValue builtIn="false" value="__FPU_PRESENT"/>
 									<listOptionValue builtIn="false" value="BARE_METAL"/>
+									<listOptionValue builtIn="false" value="CONFIG_DISPLAY_USE_SPI"/>
+									<listOptionValue builtIn="false" value="CONFIG_USE_ST7789"/>
+									<listOptionValue builtIn="false" value="SPI_LCD_240X320"/>
+									<listOptionValue builtIn="false" value="SPI_LCD_160X80"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths.1987120279" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/include}&quot;"/>

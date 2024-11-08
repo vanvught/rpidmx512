@@ -32,11 +32,11 @@
 
 #include "display.h"
 
-#include "timers.h"
+#include "softwaretimers.h"
 
 #include "debug.h"
 
-static int32_t s_nTimerId = -1;
+static TimerHandle_t s_nTimerId = TIMER_ID_NONE;
 
 static void sleep_timer([[maybe_unused]] TimerHandle_t nHandle) {
 	Display::Get()->SetSleep(true);
@@ -52,7 +52,7 @@ void Display::SetSleepTimer(const bool bActive) {
 		return;
 	}
 
-	if (s_nTimerId < 0) {
+	if (s_nTimerId != TIMER_ID_NONE) {
 		s_nTimerId = SoftwareTimerAdd(m_nSleepTimeout, sleep_timer);
 		DEBUG_EXIT
 		return;

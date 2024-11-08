@@ -30,6 +30,17 @@
 # error
 #endif
 
+#if defined (CONFIG_I2C_LCD_OPTIMIZE_O2) || defined (CONFIG_I2C_LCD_OPTIMIZE_O3)
+# pragma GCC push_options
+# if defined (CONFIG_I2C_LCD_OPTIMIZE_O2)
+#  pragma GCC optimize ("O2")
+# else
+#  pragma GCC optimize ("O3")
+# endif
+# pragma GCC optimize ("no-tree-loop-distribute-patterns")
+# pragma GCC optimize ("-fprefetch-loop-arrays")
+#endif
+
 #include <cstdarg>
 #include <cstdint>
 #include <cstdio>
@@ -267,8 +278,8 @@ public:
 		static constexpr char SYMBOLS[] = { '/' , '-', '\\' , '|' };
 		static uint32_t nSymbolsIndex;
 
-		Display::Get()->SetCursorPos(Display::Get()->GetColumns() - 1U, Display::Get()->GetRows() - 1U);
-		Display::Get()->PutChar(SYMBOLS[nSymbolsIndex++]);
+		SetCursorPos(GetColumns() - 1U, GetRows() - 1U);
+		PutChar(SYMBOLS[nSymbolsIndex++]);
 
 		if (nSymbolsIndex >= sizeof(SYMBOLS)) {
 			nSymbolsIndex = 0;
@@ -309,7 +320,7 @@ public:
 
 		if (m_bIsSleep) {
 #if defined (DISPLAYTIMEOUT_GPIO)
-			if (__builtin_expect(((FUNC_PREFIX(gpio_lev(DISPLAYTIMEOUT_GPIO)) == LOW)), 0)) {
+			if (__builtin_expect(((FUNC_PREFIX(gpio_lev(DISPLAYTIMEOUT_GPIO)) == 0)), 0)) {
 				SetSleep(false);
 			}
 #endif
@@ -338,7 +349,10 @@ private:
 #endif
 
 	DisplaySet *m_LcdDisplay { nullptr };
-	static Display *s_pThis;
+	static inline Display *s_pThis;
 };
 
+#if defined (CONFIG_I2C_LCD_OPTIMIZE)
+# pragma GCC pop_options
+#endif
 #endif /* I2C_DISPLAY_H_ */

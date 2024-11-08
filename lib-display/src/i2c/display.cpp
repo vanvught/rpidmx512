@@ -55,8 +55,6 @@ static void gpio_init() {
 }
 }  // namespace display::timeout
 
-Display *Display::s_pThis;
-
 Display::Display() : m_I2C(display::segment7::I2C_ADDRESS) {
 	assert(s_pThis == nullptr);
 	s_pThis = this;
