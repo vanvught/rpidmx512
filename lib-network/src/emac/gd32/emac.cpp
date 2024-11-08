@@ -23,6 +23,10 @@
  * THE SOFTWARE.
  */
 
+#if defined (DEBUG_EMAC)
+# undef NDEBUG
+#endif
+
 #include <cstdint>
 #include <cstdio>
 

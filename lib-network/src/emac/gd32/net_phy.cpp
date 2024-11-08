@@ -23,6 +23,10 @@
  * THE SOFTWARE.
  */
 
+#if defined (DEBUG_NET_PHY)
+# undef NDEBUG
+#endif
+
 #include <cstdint>
 
 #include "emac/phy.h"
@@ -58,13 +62,13 @@ bool phy_config(const uint32_t nAddress) {
 	DEBUG_ENTRY
 
 #if defined (GD32H7XX)
-	uint32_t reg = ENET_MAC_PHY_CTL(ENETx);
+	auto reg = ENET_MAC_PHY_CTL(ENETx);
 #else
-	uint32_t reg = ENET_MAC_PHY_CTL;
+	auto reg = ENET_MAC_PHY_CTL;
 #endif
 	reg &= ~ENET_MAC_PHY_CTL_CLR;
 
-	const uint32_t ahbclk = rcu_clock_freq_get(CK_AHB);
+	const auto ahbclk = rcu_clock_freq_get(CK_AHB);
 
 	DEBUG_PRINTF("ahbclk=%u", ahbclk);
 
@@ -78,6 +82,7 @@ bool phy_config(const uint32_t nAddress) {
 	} else if ((ENET_RANGE(ahbclk, 90000000U, 108000000U)) || (108000000U == ahbclk)) {
 		reg |= ENET_MDC_HCLK_DIV62;
 	} else {
+		DEBUG_EXIT
 		return false;
 	}
 #elif defined GD32F20X
@@ -90,6 +95,7 @@ bool phy_config(const uint32_t nAddress) {
 	} else if ((ENET_RANGE(ahbclk, 100000000U, 120000000U)) || (120000000U == ahbclk)) {
 		reg |= ENET_MDC_HCLK_DIV62;
 	} else {
+		DEBUG_EXIT
 		return false;
 	}
 #elif defined GD32F4XX
@@ -104,6 +110,7 @@ bool phy_config(const uint32_t nAddress) {
 	} else if ((ENET_RANGE(ahbclk, 150000000U, 240000000U)) || (240000000U == ahbclk)) {
 		reg |= ENET_MDC_HCLK_DIV102;
 	} else {
+		DEBUG_EXIT
 		return false;
 	}
 #elif defined GD32H7XX
@@ -124,8 +131,11 @@ bool phy_config(const uint32_t nAddress) {
 	} else if ((ENET_RANGE(ahbclk, 350000000U, 400000000U)) || (400000000U == ahbclk)) {
 		reg |= ENET_MDC_HCLK_DIV162;
 	} else {
+		DEBUG_EXIT
 		return false;
 	}
+#else
+# error
 #endif
 
 #if defined (GD32H7XX)
@@ -136,6 +146,7 @@ bool phy_config(const uint32_t nAddress) {
 
 	if (!phy_write(nAddress, mmi::REG_BMCR, mmi::BMCR_RESET)) {
 		DEBUG_PUTS("PHY reset failed");
+		DEBUG_EXIT
 		return false;
 	}
 
@@ -148,9 +159,10 @@ bool phy_config(const uint32_t nAddress) {
 	const auto nMillis = Hardware::Get()->Millis();
 	uint16_t nValue;
 
-	while (Hardware::Get()->Millis() - nMillis < 500) {
+	while (Hardware::Get()->Millis() - nMillis < 500U) {
 		if (!phy_read(nAddress, mmi::REG_BMCR, nValue)) {
 			DEBUG_PUTS("PHY status read failed");
+			DEBUG_EXIT
 			return false;
 		}
 
@@ -163,6 +175,7 @@ bool phy_config(const uint32_t nAddress) {
 
 	if (nValue & mmi::BMCR_RESET) {
 		DEBUG_PUTS("PHY reset timed out");
+		DEBUG_EXIT
 		return false;
 	}
 

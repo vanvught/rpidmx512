@@ -23,6 +23,10 @@
  * THE SOFTWARE.
  */
 
+#if defined (DEBUG_NET_PHY)
+# undef NDEBUG
+#endif
+
 #include <cstdint>
 #include <cassert>
 #include <cstdio>
