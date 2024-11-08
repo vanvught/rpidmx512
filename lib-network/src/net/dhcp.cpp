@@ -40,7 +40,7 @@
 #include "net_memcpy.h"
 #include "net_private.h"
 
-#include "timers.h"
+#include "softwaretimers.h"
 #include "network.h"
 
 #include "../../config/net_config.h"
@@ -54,7 +54,7 @@
 
 #define REBOOT_TRIES                2
 
-static int32_t nTimerId;
+static TimerHandle_t nTimerId;
 
 // https://tools.ietf.org/html/rfc1541
 namespace net {

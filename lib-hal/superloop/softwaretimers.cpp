@@ -1,5 +1,5 @@
 /**
- * @file timers.cpp
+ * @file softwaretimers.cpp
  *
  */
 /* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
@@ -34,7 +34,7 @@
 
 #include <cstdint>
 
-#include "superloop/timers.h"
+#include "superloop/softwaretimers.h"
 #include "hardware.h"
 
 extern "C" void console_error(const char *);

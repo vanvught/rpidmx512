@@ -1,5 +1,5 @@
 /**
- * @file timers.h
+ * @file softwaretimers.h
  *
  */
 /* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
@@ -23,13 +23,18 @@
  * THE SOFTWARE.
  */
 
-#ifndef HAL_TIMERS_H_
-#define HAL_TIMERS_H_
+#ifndef HAL_SUPERLOOP_TIMERS_H_
+#define HAL_SUPERLOOP_TIMERS_H_
 
-#if defined(USE_FREE_RTOS)
-# include "../FreeRTOS/FreeRTOS-Kernel/include/timers.h"
-#else
-# include "superloop/timers.h"
-#endif
+#include <cstdint>
 
-#endif /* HAL_TIMERS_H_ */
+typedef int32_t TimerHandle_t;
+typedef void (*TimerCallbackFunction_t)(TimerHandle_t);
+
+TimerHandle_t SoftwareTimerAdd(const uint32_t nIntervalMillis, const TimerCallbackFunction_t callback);
+bool SoftwareTimerDelete(TimerHandle_t& nId);
+bool SoftwareTimerChange(const TimerHandle_t nId, const uint32_t nIntervalMillis);
+
+void SoftwareTimerRun();
+
+#endif /* HAL_SUPERLOOP_TIMERS_H_ */

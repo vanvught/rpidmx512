@@ -49,7 +49,7 @@
 #include "net/protocol/arp.h"
 #include "net_memcpy.h"
 
-#include "timers.h"
+#include "softwaretimers.h"
 #include "debug.h"
 
 namespace net {
@@ -58,7 +58,7 @@ static constexpr uint32_t ACD_TMR_INTERVAL = 100;
 static constexpr uint32_t ACD_TICKS_PER_SECOND = (1000U / ACD_TMR_INTERVAL);
 }  // namespace acd
 
-static int32_t nTimerId;
+static TimerHandle_t nTimerId;
 
 static void acd_timer([[maybe_unused]] TimerHandle_t nHandle) {
 	auto *acd = reinterpret_cast<struct acd::Acd *>(globals::netif_default.acd);
@@ -209,7 +209,7 @@ void acd_start(struct acd::Acd *acd, const ip4_addr_t ipaddr) {
 	acd->ttw = static_cast<uint16_t>(static_cast<uint32_t>(random()) % (PROBE_WAIT * acd::ACD_TICKS_PER_SECOND));
 
 	nTimerId = SoftwareTimerAdd(acd::ACD_TMR_INTERVAL, acd_timer);
-	assert(nTimerId >= 0);
+	assert( != TIMER_ID_NONE);
 
 	DEBUG_EXIT
 }
@@ -220,9 +220,9 @@ void acd_stop(struct acd::Acd *acd) {
 
 	acd->state = acd::State::ACD_STATE_OFF;
 
-	assert(nTimerId >= 0);
+	assert(nTimerId != TIMER_ID_NONE);
 	SoftwareTimerDelete(nTimerId);
-	nTimerId = -1;
+	nTimerId = TIMER_ID_NONE;
 
 	DEBUG_EXIT
 }

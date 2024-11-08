@@ -44,7 +44,7 @@
 
 #include "linux/hal_api.h"
 
-#include "superloop/timers.h"
+#include "superloop/softwaretimers.h"
 
 namespace hardware {
 enum class LedStatus {

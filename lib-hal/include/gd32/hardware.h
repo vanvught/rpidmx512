@@ -62,9 +62,7 @@ extern "C" {
  extern "C" void console_error(const char *);
 #endif
 
-#if !defined(USE_FREE_RTOS)
-# include "superloop/timers.h"
-#endif
+#include "softwaretimers.h"
 
 #include "panel_led.h"
 
@@ -86,6 +84,8 @@ public:
 #if defined (CONFIG_HAL_USE_SYSTICK)
 		extern volatile uint32_t gv_nSysTickMillis;
 		return gv_nSysTickMillis;
+#elif defined (USE_FREE_RTOS)
+		return xTaskGetTickCount();
 #else
 		extern uint32_t timer6_get_elapsed_milliseconds();
 		return timer6_get_elapsed_milliseconds();
@@ -255,7 +255,7 @@ private:
 		DEBUG_ENTRY
 		DEBUG_PRINTF("m_nTimerId=%d, nFreqHz=%u", m_nTimerId, nFreqHz);
 
-		if (m_nTimerId < 0) {
+		if (m_nTimerId == TIMER_ID_NONE) {
 			m_nTimerId = SoftwareTimerAdd((1000U / nFreqHz), ledblink);
 			DEBUG_EXIT
 			return;
@@ -308,7 +308,7 @@ private:
 	bool m_bIsWatchdog { false };
 	hardware::ledblink::Mode m_Mode { hardware::ledblink::Mode::UNKNOWN };
 	bool m_doLock { false };
-	int32_t m_nTimerId { -1 };
+	TimerHandle_t m_nTimerId { TIMER_ID_NONE };
 
 #if !defined(HAL_HAVE_PORT_BIT_TOGGLE)
 	static inline int32_t m_nToggleLed { 1 };

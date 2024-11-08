@@ -39,7 +39,7 @@
 #include "h3_watchdog.h"
 #include "h3_thermal.h"
 
-#include "superloop/timers.h"
+#include "superloop/softwaretimers.h"
 
 #include "debug.h"
 
