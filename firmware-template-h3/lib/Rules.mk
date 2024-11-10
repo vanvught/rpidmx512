@@ -63,8 +63,8 @@ $(info $$MAKE_FLAGS [${MAKE_FLAGS}])
 
 COPS=-DBARE_METAL -DH3 $(DEFINES) $(MAKE_FLAGS) $(INCLUDES)
 COPS+=-mfpu=neon-vfpv4 -mcpu=cortex-a7 -mfloat-abi=hard -mhard-float
-COPS+=-nostartfiles -ffreestanding -nostdlib -fprefetch-loop-arrays
-COPS+=-O2 -Wall -Werror -Wextra -Wpedantic -Wunused -Wsign-conversion -Wconversion 
+COPS+=-nostartfiles -ffreestanding -nostdlib 
+COPS+=-Os -Wall -Werror -Wextra -Wpedantic -Wunused -Wsign-conversion -Wconversion 
 COPS+=-Wduplicated-cond -Wlogical-op -Wduplicated-branches
 COPS+=-ffunction-sections -fdata-sections
 

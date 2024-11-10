@@ -117,3 +117,4 @@ software_version_id.h
 *._cpp
 /opi_emac_debug_lcd_udp
 /lib-dmxnode
+opi_emac_llrp_tftpd/do-tftp-bad.sh
