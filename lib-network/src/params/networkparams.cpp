@@ -23,9 +23,8 @@
  * THE SOFTWARE.
  */
 
-#if !defined(__clang__)	// Needed for compiling on MacOS
-# pragma GCC push_options
-# pragma GCC optimize ("Os")
+#ifdef DEBUG_NETWORK
+# undef NDEBUG
 #endif
 
 #include <cstdint>
@@ -35,7 +34,6 @@
 #include "network.h"
 #include "networkparams.h"
 #include "networkparamsconst.h"
-
 
 #include "readconfigfile.h"
 #include "sscan.h"
@@ -190,13 +188,13 @@ void NetworkParams::staticCallbackFunction(void *p, const char *s) {
 	(static_cast<NetworkParams*>(p))->callbackFunction(s);
 }
 
-void NetworkParams::Builder(const struct networkparams::Params *ptNetworkParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
+void NetworkParams::Builder(const struct networkparams::Params *pParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	assert(pBuffer != nullptr);
 
-	if (ptNetworkParams != nullptr) {
-		memcpy(&m_Params, ptNetworkParams, sizeof(struct networkparams::Params));
+	if (pParams != nullptr) {
+		memcpy(&m_Params, pParams, sizeof(struct networkparams::Params));
 	} else {
 		NetworkParamsStore::Copy(&m_Params);
 	}

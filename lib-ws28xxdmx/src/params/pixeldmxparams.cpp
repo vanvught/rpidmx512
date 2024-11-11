@@ -2,7 +2,7 @@
  * @file pixeldmxparams.cpp
  *
  */
-/* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,13 +27,11 @@
 # undef NDEBUG
 #endif
 
-#if !defined(__clang__)	// Needed for compiling on MacOS
-# pragma GCC push_options
-# pragma GCC optimize ("Os")
-#endif
-
 #include <cstdint>
 #include <cstring>
+#ifndef NDEBUG
+# include <cstdio>
+#endif
 #include <algorithm>
 #include <cassert>
 

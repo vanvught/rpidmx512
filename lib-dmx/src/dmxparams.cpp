@@ -2,7 +2,7 @@
  * @file dmxparams.cpp
  *
  */
-/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,11 +22,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-#if !defined(__clang__)	// Needed for compiling on MacOS
-# pragma GCC push_options
-# pragma GCC optimize ("Os")
-#endif
 
 #include <cstdint>
 #include <cstring>
@@ -52,8 +47,6 @@ DmxParams::DmxParams() {
 	m_Params.nMabTime = dmx::transmit::MAB_TIME_MIN;
 	m_Params.nRefreshRate = dmx::transmit::REFRESH_RATE_DEFAULT;
 	m_Params.nSlotsCount = dmxsendparams::rounddown_slots(dmx::max::CHANNELS);
-
-	DEBUG_PRINTF("m_Params.nSlotsCount=%d", m_Params.nSlotsCount);
 }
 
 void DmxParams::Load() {
@@ -205,20 +198,8 @@ void DmxParams::staticCallbackFunction(void *p, const char *s) {
 
 void DmxParams::Dump() {
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, DmxParamsConst::FILE_NAME);
-
-	if (isMaskSet(dmxsendparams::Mask::BREAK_TIME)) {
-		printf(" %s=%d\n", DmxParamsConst::BREAK_TIME, m_Params.nBreakTime);
-	}
-
-	if (isMaskSet(dmxsendparams::Mask::MAB_TIME)) {
-		printf(" %s=%d\n", DmxParamsConst::MAB_TIME, m_Params.nMabTime);
-	}
-
-	if (isMaskSet(dmxsendparams::Mask::REFRESH_RATE)) {
-		printf(" %s=%d\n", DmxParamsConst::REFRESH_RATE, m_Params.nRefreshRate);
-	}
-
-	if (isMaskSet(dmxsendparams::Mask::SLOTS_COUNT)) {
-		printf(" %s=%d [%d]\n", DmxParamsConst::SLOTS_COUNT, m_Params.nSlotsCount, dmxsendparams::roundup_slots(m_Params.nSlotsCount));
-	}
+	printf(" %s=%d\n", DmxParamsConst::BREAK_TIME, m_Params.nBreakTime);
+	printf(" %s=%d\n", DmxParamsConst::MAB_TIME, m_Params.nMabTime);
+	printf(" %s=%d\n", DmxParamsConst::REFRESH_RATE, m_Params.nRefreshRate);
+	printf(" %s=%d [%d]\n", DmxParamsConst::SLOTS_COUNT, m_Params.nSlotsCount, dmxsendparams::roundup_slots(m_Params.nSlotsCount));
 }

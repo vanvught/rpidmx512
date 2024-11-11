@@ -27,9 +27,6 @@
 # undef NDEBUG
 #endif
 
-#pragma GCC push_options
-#pragma GCC optimize ("Os")
-
 #include <cstring>
 
 #include "netif.h"
