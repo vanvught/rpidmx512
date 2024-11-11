@@ -44,4 +44,9 @@
 # error Board is not supported
 #endif
 
+namespace pixel {
+static constexpr auto PORT_COUNT = __builtin_popcount(GPIO_PINx);
+static_assert(PORT_COUNT <= 16, "Too many ports");
+}  // namespace pixel
+
 #endif /* GPIO_PIXELMULTI_CONFIG_H_ */

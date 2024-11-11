@@ -27,7 +27,7 @@
 
 #include "hardware.h"
 #include "network.h"
-#include "networkconst.h"
+
 
 #include "net/apps/mdns.h"
 
@@ -70,12 +70,6 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
-namespace artnetnode {
-namespace configstore {
-uint32_t DMXPORT_OFFSET = 4;
-}  // namespace configstore
-}  // namespace artnetnode
-
 void Hardware::RebootHandler() {
 	WS28xx::Get()->Blackout();
 	ArtNetNode::Get()->Stop();
@@ -85,9 +79,7 @@ int main() {
 	Hardware hw;
 	DisplayUdf display;
 	ConfigStore configStore;
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, CONSOLE_YELLOW);
 	Network nw;
-	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, CONSOLE_GREEN);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	FlashCodeInstall spiFlashInstall;
 

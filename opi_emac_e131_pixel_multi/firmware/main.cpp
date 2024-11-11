@@ -27,7 +27,7 @@
 
 #include "hardware.h"
 #include "network.h"
-#include "networkconst.h"
+
 
 #include "net/apps/mdns.h"
 
@@ -72,12 +72,6 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
-namespace e131bridge {
-namespace configstore {
-uint32_t DMXPORT_OFFSET = 32;
-}  // namespace configstore
-}  // namespace e131bridge
-
 void Hardware::RebootHandler() {
 	WS28xxMulti::Get()->Blackout();
 	E131Bridge::Get()->Stop();
@@ -87,9 +81,7 @@ int main() {
 	Hardware hw;
 	DisplayUdf display;
 	ConfigStore configStore;
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, CONSOLE_YELLOW);
 	Network nw;
-	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, CONSOLE_GREEN);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	FlashCodeInstall spiFlashInstall;
 

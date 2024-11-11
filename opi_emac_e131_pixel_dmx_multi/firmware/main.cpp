@@ -28,7 +28,7 @@
 
 #include "hardware.h"
 #include "network.h"
-#include "networkconst.h"
+
 
 #include "net/apps/mdns.h"
 
@@ -78,12 +78,6 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
-namespace e131bridge {
-namespace configstore {
-uint32_t DMXPORT_OFFSET = 32;
-}  // namespace configstore
-}  // namespace e131bridge
-
 void Hardware::RebootHandler() {
 	WS28xxMulti::Get()->Blackout();
 	Dmx::Get()->Blackout();
@@ -94,9 +88,7 @@ int main() {
 	Hardware hw;
 	DisplayUdf display;
 	ConfigStore configStore;
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, CONSOLE_YELLOW);
 	Network nw;
-	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, CONSOLE_GREEN);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	FlashCodeInstall spiFlashInstall;
 
@@ -148,7 +140,7 @@ int main() {
 	auto direction = e131params.GetDirection(0);
 
 	if (direction == lightset::PortDir::OUTPUT) {
-		bridge.SetUniverse(e131bridge::configstore::DMXPORT_OFFSET, lightset::PortDir::OUTPUT, nUniverse);
+		bridge.SetUniverse(dmxsend::DMXPORT_OFFSET, lightset::PortDir::OUTPUT, nUniverse);
 		nDmxUniverses++;
 	}
 
@@ -156,7 +148,7 @@ int main() {
 	direction = e131params.GetDirection(1);
 
 	if (direction == lightset::PortDir::OUTPUT) {
-		bridge.SetUniverse(e131bridge::configstore::DMXPORT_OFFSET + 1U, lightset::PortDir::OUTPUT, nUniverse);
+		bridge.SetUniverse(dmxsend::DMXPORT_OFFSET + 1U, lightset::PortDir::OUTPUT, nUniverse);
 		nDmxUniverses++;
 	}
 
@@ -166,9 +158,9 @@ int main() {
 	dmxparams.Load();
 	dmxparams.Set(&dmx);
 
-	for (uint32_t nPortIndex = e131bridge::configstore::DMXPORT_OFFSET; nPortIndex < e131bridge::MAX_PORTS; nPortIndex++) {
+	for (uint32_t nPortIndex = dmxsend::DMXPORT_OFFSET; nPortIndex < e131bridge::MAX_PORTS; nPortIndex++) {
 		uint16_t nUniverse;
-		const auto nDmxPortIndex = nPortIndex - e131bridge::configstore::DMXPORT_OFFSET;
+		const auto nDmxPortIndex = nPortIndex - dmxsend::DMXPORT_OFFSET;
 
 		if (bridge.GetUniverse(nPortIndex, nUniverse, lightset::PortDir::OUTPUT)) {
 			dmx.SetPortDirection(nDmxPortIndex, dmx::PortDirection::OUTP, false);

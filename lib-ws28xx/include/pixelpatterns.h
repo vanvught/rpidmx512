@@ -69,10 +69,6 @@ public:
 	void None(const uint32_t nPortIndex) {
 		s_PortConfig[nPortIndex].ActivePattern = pixelpatterns::Pattern::NONE;
 		Clear(nPortIndex);
-		while (s_pOutput->IsUpdating()) {
-
-		}
-		s_pOutput->Update();
 	}
 
 	void Run() {

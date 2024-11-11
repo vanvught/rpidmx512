@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2016-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,14 +26,11 @@
  * THE SOFTWARE.
  */
 
-#if !defined(__clang__)	// Needed for compiling on MacOS
-# pragma GCC push_options
-# pragma GCC optimize ("Os")
-#endif
-
 #include <cstring>
 #include <cstdint>
-#include <cstdio>
+#ifndef NDEBUG
+# include <cstdio>
+#endif
 #include <climits>
 #include <cassert>
 #include <algorithm>
@@ -59,15 +56,14 @@
 
 #include "debug.h"
 
-namespace artnetnode {
-namespace configstore {
-extern uint32_t DMXPORT_OFFSET;
-}  // namespace configstore
-}  // namespace artnetnode
-
 static uint32_t s_nPortsMax;
 
 namespace artnetparams {
+#if !defined(CONFIG_DMX_PORT_OFFSET)
+ static constexpr uint32_t DMXPORT_OFFSET = 0;
+#else
+ static constexpr uint32_t DMXPORT_OFFSET = CONFIG_DMX_PORT_OFFSET;
+#endif
 #if defined (RDM_CONTROLLER)
 static constexpr bool is_set(const uint16_t nValue, const uint32_t i) {
 	return (nValue & static_cast<uint16_t>(1U << (i + 8))) == static_cast<uint16_t>(1U << (i + 8));
@@ -366,7 +362,7 @@ void ArtNetParams::Builder(const struct Params *pParams, char *pBuffer, uint32_t
 	builder.Add(LightSetParamsConst::FAILSAFE, lightset::get_failsafe(static_cast<lightset::FailSafe>(m_Params.nFailSafe)), isMaskSet(Mask::FAILSAFE));
 
 	for (uint32_t nPortIndex = 0; nPortIndex < s_nPortsMax; nPortIndex++) {
-		const auto nOffset = nPortIndex + artnetnode::configstore::DMXPORT_OFFSET;
+		const auto nOffset = nPortIndex + artnetparams::DMXPORT_OFFSET;
 
 		if (nOffset >= artnetnode::MAX_PORTS) {
 			DEBUG_PUTS("break");
@@ -437,11 +433,11 @@ void ArtNetParams::Builder(const struct Params *pParams, char *pBuffer, uint32_t
 void ArtNetParams::Set() {
 	DEBUG_ENTRY
 
-	if (artnetnode::configstore::DMXPORT_OFFSET <= artnetnode::MAX_PORTS) {
-		s_nPortsMax = std::min(artnet::PORTS, artnetnode::MAX_PORTS - artnetnode::configstore::DMXPORT_OFFSET);
+	if (artnetparams::DMXPORT_OFFSET <= artnetnode::MAX_PORTS) {
+		s_nPortsMax = std::min(artnet::PORTS, artnetnode::MAX_PORTS - artnetparams::DMXPORT_OFFSET);
 	}
 
-	DEBUG_PRINTF("artnetnode::MAX_PORTS=%u, artnetnode::configstore::DMXPORT_OFFSET=%u, s_nPortsMax=%u", artnetnode::MAX_PORTS, artnetnode::configstore::DMXPORT_OFFSET, s_nPortsMax);
+	DEBUG_PRINTF("artnetnode::MAX_PORTS=%u, artnetparams::DMXPORT_OFFSET=%u, s_nPortsMax=%u", artnetnode::MAX_PORTS, artnetparams::DMXPORT_OFFSET, s_nPortsMax);
 
 	auto *const p = ArtNetNode::Get();
 	assert(p != nullptr);
@@ -451,7 +447,7 @@ void ArtNetParams::Set() {
 	}
 
 	for (uint32_t nPortIndex = 0; nPortIndex < s_nPortsMax; nPortIndex++) {
-		const auto nOffset = nPortIndex + artnetnode::configstore::DMXPORT_OFFSET;
+		const auto nOffset = nPortIndex + artnetparams::DMXPORT_OFFSET;
 
 		if (nOffset >= artnetnode::MAX_PORTS) {
 			DEBUG_PUTS("break");
@@ -459,20 +455,20 @@ void ArtNetParams::Set() {
 		}
 
 		if (isMaskSet(Mask::LABEL_A << nPortIndex)) {
-			p->SetShortName(nOffset, reinterpret_cast<const char *>(m_Params.aLabel[nPortIndex]));
+			p->SetShortName(nPortIndex, reinterpret_cast<const char *>(m_Params.aLabel[nPortIndex]));
 		} else {
-			p->SetShortName(nOffset, nullptr);
+			p->SetShortName(nPortIndex, nullptr);
 		}
 
-		p->SetMergeMode(nOffset, mergemode_get(nPortIndex));
+		p->SetMergeMode(nPortIndex, mergemode_get(nPortIndex));
 
 #if (ARTNET_VERSION >= 4)
-		p->SetPortProtocol4(nOffset, protocol_get(nPortIndex));
+		p->SetPortProtocol4(nPortIndex, protocol_get(nPortIndex));
 #endif
 
 #if defined (ARTNET_HAVE_DMXIN)
 		if (isMaskSet(Mask::DESTINATION_IP_A << nPortIndex)) {
-			p->SetDestinationIp(nOffset, m_Params.nDestinationIp[nPortIndex]);
+			p->SetDestinationIp(nPortIndex, m_Params.nDestinationIp[nPortIndex]);
 		}
 #endif
 
@@ -488,7 +484,7 @@ void ArtNetParams::Set() {
 
 #if (ARTNET_VERSION >= 4)
 		if (isMaskSet(Mask::PRIORITY_A << nPortIndex)) {
-			p->SetPriority4(m_Params.nPriority[nOffset]);
+			p->SetPriority4(m_Params.nPriority[nPortIndex]);
 		}
 #endif
 	}

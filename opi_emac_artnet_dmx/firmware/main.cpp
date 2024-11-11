@@ -28,7 +28,7 @@
 
 #include "hardware.h"
 #include "network.h"
-#include "networkconst.h"
+
 
 #include "net/apps/mdns.h"
 
@@ -60,12 +60,6 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
-namespace artnetnode {
-namespace configstore {
-uint32_t DMXPORT_OFFSET = 0;
-}  // namespace configstore
-}  // namespace artnetnode
-
 void Hardware::RebootHandler() {
 	Dmx::Get()->Blackout();
 	ArtNetNode::Get()->Stop();
@@ -75,9 +69,7 @@ int main() {
 	Hardware hw;
 	DisplayUdf display;
 	ConfigStore configStore;
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, CONSOLE_YELLOW);
 	Network nw;
-	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, CONSOLE_GREEN);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	FlashCodeInstall spiFlashInstall;
 
@@ -98,9 +90,8 @@ int main() {
 	dmxparams.Load();
 	dmxparams.Set(&dmx);
 
-	const auto nDmxPortIndex = nPortIndex - artnetnode::configstore::DMXPORT_OFFSET;
 	const auto portDirection = (node.GetPortDirection(nPortIndex) == lightset::PortDir::OUTPUT ? dmx::PortDirection::OUTP : dmx::PortDirection::INP);
-	dmx.SetPortDirection(nDmxPortIndex, portDirection , false);
+	dmx.SetPortDirection(nPortIndex, portDirection , false);
 
 	DmxSend dmxSend;
 	dmxSend.Print();
@@ -157,7 +148,7 @@ int main() {
 	while (configStore.Flash())
 		;
 
-	mdns_print(); //	mDns.Print();
+	mdns_print();
 
 	display.TextStatus(ArtNetMsgConst::START, CONSOLE_YELLOW);
 
@@ -176,7 +167,6 @@ int main() {
 #endif
 		remoteConfig.Run();
 		configStore.Flash();
-//		mdns_run(); //	mDns.Run(); //	mDns.Run();
 		display.Run();
 		hw.Run();
 	}

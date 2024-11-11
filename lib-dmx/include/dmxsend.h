@@ -2,7 +2,7 @@
  * @file dmxsend.h
  *
  */
-/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,6 +38,14 @@
 #include "hardware.h"
 
 #include "debug.h"
+
+namespace dmxsend {
+#if !defined(CONFIG_DMX_PORT_OFFSET)
+ static constexpr uint32_t DMXPORT_OFFSET = 0;
+#else
+ static constexpr uint32_t DMXPORT_OFFSET = CONFIG_DMX_PORT_OFFSET;
+#endif
+}  // namespace dmxsend
 
 class DmxSend final: public LightSet  {
 public:
@@ -95,17 +103,19 @@ public:
 		}
 	}
 
-	void Sync(uint32_t const nPortIndex) override {
-		assert(lightset::Data::GetLength(nPortIndex) != 0);
-		Dmx::Get()->SetSendDataWithoutSC(nPortIndex, lightset::Data::Backup(nPortIndex), lightset::Data::GetLength(nPortIndex));
+	void Sync(const uint32_t nPortIndex) override {
+		const auto nLightsetOffset = nPortIndex + dmxsend::DMXPORT_OFFSET;
+		assert(lightset::Data::GetLength(nLightsetOffset) != 0);
+		Dmx::Get()->SetSendDataWithoutSC(nPortIndex, lightset::Data::Backup(nLightsetOffset), lightset::Data::GetLength(nLightsetOffset));
 	}
 
 	void Sync() override {
 		Dmx::Get()->Sync();
 
 		for (uint32_t nPortIndex = 0; nPortIndex < dmx::config::max::PORTS; nPortIndex++) {
-			if (lightset::Data::GetLength(nPortIndex) != 0) {
-				lightset::Data::ClearLength(nPortIndex);
+			const auto nLightsetOffset = nPortIndex + dmxsend::DMXPORT_OFFSET;
+			if (lightset::Data::GetLength(nLightsetOffset) != 0) {
+				lightset::Data::ClearLength(nLightsetOffset);
 				hal::panel_led_on(hal::panelled::PORT_A_TX << nPortIndex);
 				if (!is_started(m_nStarted, nPortIndex)) {
 					Start(nPortIndex);

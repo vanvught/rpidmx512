@@ -2,7 +2,7 @@
  * @file logic_analyzer.h
  *
  */
-/* Copyright (C) 2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2023-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -76,97 +76,97 @@ inline void init() {
 }
 
 inline void ch0_clear() {
-#if defined (LOGIC_ANALYZER_CH0_GPIO_PINx)
+#if defined (LOGIC_ANALYZER_CH0_GPIO_PINx) && defined (LOGIC_ANALYZER)
 	h3_gpio_clr(LOGIC_ANALYZER_CH0_GPIO_PINx);
 #endif
 }
 
 inline void ch0_set() {
-#if defined (LOGIC_ANALYZER_CH0_GPIO_PINx)
+#if defined (LOGIC_ANALYZER_CH0_GPIO_PINx) && defined (LOGIC_ANALYZER)
 	h3_gpio_set(LOGIC_ANALYZER_CH0_GPIO_PINx);
 #endif
 }
 
 inline void ch1_clear() {
-#if defined (LOGIC_ANALYZER_CH1_GPIO_PINx)
+#if defined (LOGIC_ANALYZER_CH1_GPIO_PINx) && defined (LOGIC_ANALYZER)
 	h3_gpio_clr(LOGIC_ANALYZER_CH1_GPIO_PINx);
 #endif
 }
 
 inline void ch1_set() {
-#if defined (LOGIC_ANALYZER_CH1_GPIO_PINx)
+#if defined (LOGIC_ANALYZER_CH1_GPIO_PINx) && defined (LOGIC_ANALYZER)
 	h3_gpio_set(LOGIC_ANALYZER_CH1_GPIO_PINx);
 #endif
 }
 
 inline void ch2_clear() {
-#if defined (LOGIC_ANALYZER_CH2_GPIO_PINx)
+#if defined (LOGIC_ANALYZER_CH2_GPIO_PINx) && defined (LOGIC_ANALYZER)
 	h3_gpio_clr(LOGIC_ANALYZER_CH2_GPIO_PINx);
 #endif
 }
 
 inline void ch2_set() {
-#if defined (LOGIC_ANALYZER_CH2_GPIO_PINx)
+#if defined (LOGIC_ANALYZER_CH2_GPIO_PINx) && defined (LOGIC_ANALYZER)
 	h3_gpio_set(LOGIC_ANALYZER_CH2_GPIO_PINx);
 #endif
 }
 
 inline void ch3_clear() {
-#if defined (LOGIC_ANALYZER_CH3_GPIO_PINx)
+#if defined (LOGIC_ANALYZER_CH3_GPIO_PINx) && defined (LOGIC_ANALYZER)
 	h3_gpio_clr(LOGIC_ANALYZER_CH3_GPIO_PINx);
 #endif
 }
 
 inline void ch3_set() {
-#if defined (LOGIC_ANALYZER_CH3_GPIO_PINx)
+#if defined (LOGIC_ANALYZER_CH3_GPIO_PINx) && defined (LOGIC_ANALYZER)
 	h3_gpio_set(LOGIC_ANALYZER_CH3_GPIO_PINx);
 #endif
 }
 
 inline void ch4_clear() {
-#if defined (LOGIC_ANALYZER_CH4_GPIO_PINx)
+#if defined (LOGIC_ANALYZER_CH4_GPIO_PINx) && defined (LOGIC_ANALYZER)
 	h3_gpio_clr(LOGIC_ANALYZER_CH4_GPIO_PINx);
 #endif
 }
 
 inline void ch4_set() {
-#if defined (LOGIC_ANALYZER_CH4_GPIO_PINx)
+#if defined (LOGIC_ANALYZER_CH4_GPIO_PINx) && defined (LOGIC_ANALYZER)
 	h3_gpio_set(LOGIC_ANALYZER_CH4_GPIO_PINx);
 #endif
 }
 
 inline void ch5_clear() {
-#if defined (LOGIC_ANALYZER_CH5_GPIO_PINx)
+#if defined (LOGIC_ANALYZER_CH5_GPIO_PINx) && defined (LOGIC_ANALYZER)
 	h3_gpio_clr(LOGIC_ANALYZER_CH5_GPIO_PINx);
 #endif
 }
 
 inline void ch5_set() {
-#if defined (LOGIC_ANALYZER_CH5_GPIO_PINx)
+#if defined (LOGIC_ANALYZER_CH5_GPIO_PINx) && defined (LOGIC_ANALYZER)
 	h3_gpio_set(LOGIC_ANALYZER_CH5_GPIO_PINx);
 #endif
 }
 
 inline void ch6_clear() {
-#if defined (LOGIC_ANALYZER_CH6_GPIO_PINx)
+#if defined (LOGIC_ANALYZER_CH6_GPIO_PINx) && defined (LOGIC_ANALYZER)
 	h3_gpio_clr(LOGIC_ANALYZER_CH6_GPIO_PINx);
 #endif
 }
 
 inline void ch6_set() {
-#if defined (LOGIC_ANALYZER_CH6_GPIO_PINx)
+#if defined (LOGIC_ANALYZER_CH6_GPIO_PINx) && defined (LOGIC_ANALYZER)
 	h3_gpio_set(LOGIC_ANALYZER_CH6_GPIO_PINx);
 #endif
 }
 
 inline void ch7_clear() {
-#if defined (LOGIC_ANALYZER_CH7_GPIO_PINx)
+#if defined (LOGIC_ANALYZER_CH7_GPIO_PINx) && defined (LOGIC_ANALYZER)
 	h3_gpio_clr(LOGIC_ANALYZER_CH7_GPIO_PINx);
 #endif
 }
 
 inline void ch7_set() {
-#if defined (LOGIC_ANALYZER_CH7_GPIO_PINx)
+#if defined (LOGIC_ANALYZER_CH7_GPIO_PINx) && defined (LOGIC_ANALYZER)
 	h3_gpio_set(LOGIC_ANALYZER_CH7_GPIO_PINx);
 #endif
 }

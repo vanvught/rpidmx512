@@ -23,11 +23,6 @@
  * THE SOFTWARE.
  */
 
-#if defined(__GNUC__) && !defined(__clang__) ///< Needed for macOS
-# pragma GCC push_options
-# pragma GCC optimize ("Os")
-#endif
-
 #include <cstdint>
 #include <cstring>
 #include <cstdio>
