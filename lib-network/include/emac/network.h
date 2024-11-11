@@ -214,9 +214,11 @@ public:
 		return net::tcp_begin(nLocalPort);
 	}
 
-	int32_t TcpEnd(const int32_t nHandle);
+	int32_t TcpEnd(const int32_t nHandle) {
+		return net::tcp_end(nHandle);
+	}
 
-	uint16_t TcpRead(const int32_t nHandleListen, const uint8_t **ppBuffer, uint32_t &HandleConnection) {
+	uint32_t TcpRead(const int32_t nHandleListen, const uint8_t **ppBuffer, uint32_t &HandleConnection) {
 		return net::tcp_read(nHandleListen, ppBuffer, HandleConnection);
 	}
 

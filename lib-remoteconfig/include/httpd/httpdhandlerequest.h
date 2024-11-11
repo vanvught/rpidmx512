@@ -48,7 +48,7 @@ public:
 		DEBUG_EXIT
 	}
 
-	void HandleRequest(const uint32_t nBytesReceived, char *pRequestHeaderResponse);
+	void HandleRequest(const uint32_t nBytesReceived, char *m_pReceiveBuffer);
 
 private:
 	http::Status ParseRequest();
@@ -64,17 +64,17 @@ private:
 	int32_t m_nHandle;
 	uint32_t m_nContentSize { 0 };
 	uint32_t m_nFileDataLength { 0 };
-	uint32_t m_nRequestContentSize { 0 };
+	uint32_t m_nRequestContentLength { 0 };
 	uint32_t m_nBytesReceived { 0 };
 
 	char *m_pUri { nullptr };
 	char *m_pFileData { nullptr };
 	const char *m_pContent { nullptr };
-	char *m_RequestHeaderResponse { nullptr };
+	char *m_pReceiveBuffer { nullptr };
 
 	http::Status m_Status { http::Status::UNKNOWN_ERROR };
 	http::RequestMethod m_RequestMethod { http::RequestMethod::UNKNOWN };
-	http::contentTypes m_ContentType { http::contentTypes::NOT_DEFINED };
+	http::contentTypes m_RequestContentType { http::contentTypes::NOT_DEFINED };
 
 	bool m_IsAction { false };
 

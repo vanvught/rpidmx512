@@ -45,6 +45,7 @@ static void sleep_timer([[maybe_unused]] TimerHandle_t nHandle) {
 
 void Display::SetSleepTimer(const bool bActive) {
 	DEBUG_ENTRY
+	DEBUG_PRINTF("bActive=%d, m_nSleepTimeout=%u, s_nTimerId=%d", bActive, m_nSleepTimeout, s_nTimerId);
 
 	if (!bActive) {
 		SoftwareTimerDelete(s_nTimerId);
@@ -52,7 +53,7 @@ void Display::SetSleepTimer(const bool bActive) {
 		return;
 	}
 
-	if (s_nTimerId != TIMER_ID_NONE) {
+	if (s_nTimerId == TIMER_ID_NONE) {
 		s_nTimerId = SoftwareTimerAdd(m_nSleepTimeout, sleep_timer);
 		DEBUG_EXIT
 		return;

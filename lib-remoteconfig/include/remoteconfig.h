@@ -216,12 +216,6 @@ public:
 			return;
 		}
 
-//#if defined (ENABLE_TFTP_SERVER)
-//		if (__builtin_expect((m_pTFTPFileServer != nullptr), 0)) {
-//			m_pTFTPFileServer->Run();
-//		}
-//#endif
-
 		uint16_t nForeignPort;
 		m_nBytesReceived = Network::Get()->RecvFrom(m_nHandle, const_cast<const void **>(reinterpret_cast<void **>(&s_pUdpBuffer)), &m_nIPAddressFrom, &nForeignPort);
 
@@ -481,9 +475,14 @@ private:
 	void PlatformHandleTftpGet();
 
 private:
-	remoteconfig::Node m_tNode;
-	remoteconfig::Output m_tOutput;
+	remoteconfig::Node m_Node;
+	remoteconfig::Output m_Output;
 	uint32_t m_nActiveOutputs;
+
+	char *s_pUdpBuffer { nullptr };
+	int32_t m_nHandle { -1 };
+	uint32_t m_nIPAddressFrom { 0 };
+	uint32_t m_nBytesReceived { 0 };
 
 	struct Commands {
 		void (RemoteConfig::*pHandler)();
@@ -512,8 +511,6 @@ private:
 		char aDisplayName[remoteconfig::DISPLAY_NAME_LENGTH];
 	};
 
-	static ListBin s_RemoteConfigListBin;
-
 	bool m_bDisable { false };
 	bool m_bDisableWrite { false };
 	bool m_bEnableReboot { false };
@@ -521,10 +518,6 @@ private:
 	bool m_bEnableFactory { false };
 
 	bool m_bIsReboot { false };
-
-	int32_t m_nHandle { -1 };
-	uint32_t m_nIPAddressFrom { 0 };
-	uint32_t m_nBytesReceived { 0 };
 
 #if defined(ENABLE_TFTP_SERVER)
 	TFTPFileServer *m_pTFTPFileServer { nullptr };
@@ -535,12 +528,13 @@ private:
 	HttpDaemon *m_pHttpDaemon { nullptr };
 #endif
 
-	static char *s_pUdpBuffer;
 
 	void static staticCallbackFunction(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
 		RemoteConfig::Get()->Input(pBuffer, nSize, nFromIp, nFromPort);
 	}
-	static RemoteConfig *s_pThis;
+
+	static inline ListBin s_RemoteConfigListBin;
+	static inline RemoteConfig *s_pThis;
 };
 
 #endif /* REMOTECONFIG_H_ */

@@ -26,16 +26,12 @@
 #ifndef TCNET_H_
 #define TCNET_H_
 
-#pragma GCC push_options
-#pragma GCC optimize ("O2")
-#pragma GCC optimize ("no-tree-loop-distribute-patterns")
-
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
+#include <cstddef>
 #include <cassert>
 
-#include "tcnet.h"
 #include "tcnetconst.h"
 #include "tcnetpackets.h"
 #include "tcnettimecode.h"
@@ -422,7 +418,5 @@ private:
 
 	static inline TCNet *s_pThis;
 };
-
-#pragma GCC pop_options
 
 #endif /* TCNET_H_ */

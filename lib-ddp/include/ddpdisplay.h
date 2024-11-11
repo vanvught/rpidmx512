@@ -2,7 +2,7 @@
  * @file ddpdisplay.h
  *
  */
-/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -99,7 +99,7 @@ public:
 		return m_pLightSet;
 	}
 
-	static DdpDisplay* Get() {
+	static DdpDisplay *Get() {
 		return s_pThis;
 	}
 
@@ -109,8 +109,8 @@ private:
 	void HandleData();
 
 private:
-	uint8_t m_macAddress[network::MAC_SIZE];
 	int32_t m_nHandle { -1 };
+	uint8_t *m_pReceiveBuffer { nullptr };
 	uint32_t m_nFromIp { 0 };
 	uint32_t m_nCount { 0 };
 	uint32_t m_nStripDataLength { 0 };
@@ -119,12 +119,11 @@ private:
 
 	LightSet *m_pLightSet { nullptr };
 
-	ddp::Packet m_Packet;
+	uint8_t m_macAddress[network::MAC_SIZE];
 
-	static uint32_t s_nLightsetPortLength[ddpdisplay::lightset::MAX_PORTS];
-	static uint32_t s_nOffsetCompare[ddpdisplay::configuration::MAX_PORTS];
-
-	static DdpDisplay *s_pThis;
+	static inline uint32_t s_nLightsetPortLength[ddpdisplay::lightset::MAX_PORTS];
+	static inline uint32_t s_nOffsetCompare[ddpdisplay::configuration::MAX_PORTS];
+	static inline DdpDisplay *s_pThis;
 };
 
 #endif /* DDPDISPLAY_H_ */

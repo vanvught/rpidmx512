@@ -62,22 +62,23 @@ inline void net_link_down() {
 
 typedef void (*UdpCallbackFunctionPtr)(const uint8_t *, uint32_t, uint32_t, uint16_t);
 
-int udp_begin(uint16_t, UdpCallbackFunctionPtr callback = nullptr);
-int udp_end(uint16_t);
-uint32_t udp_recv1(int, uint8_t *, uint32_t, uint32_t *, uint16_t *);
-uint32_t udp_recv2(int, const uint8_t **, uint32_t *, uint16_t *);
-void udp_send(int, const uint8_t *, uint32_t, uint32_t, uint16_t);
-void udp_send_timestamp(int, const uint8_t *, uint32_t, uint32_t, uint16_t);
+int32_t udp_begin(uint16_t, UdpCallbackFunctionPtr callback = nullptr);
+int32_t udp_end(uint16_t);
+uint32_t udp_recv1(const int32_t, uint8_t *, uint32_t, uint32_t *, uint16_t *);
+uint32_t udp_recv2(const int32_t, const uint8_t **, uint32_t *, uint16_t *);
+void udp_send(int32_t, const uint8_t *, uint32_t, uint32_t, uint16_t);
+void udp_send_timestamp(int32_t, const uint8_t *, uint32_t, uint32_t, uint16_t);
 
 void igmp_join(uint32_t);
 void igmp_leave(uint32_t);
 
-int tcp_begin(const uint16_t);
-uint16_t tcp_read(const int32_t, const uint8_t **, uint32_t &);
+int32_t tcp_begin(const uint16_t);
+int32_t tcp_end(const int32_t);
+uint32_t tcp_read(const int32_t, const uint8_t **, uint32_t &);
 void tcp_write(const int32_t, const uint8_t *, uint32_t, const uint32_t);
 
 /**
- * Must be provided by the application
+ * Must be provided by the user application
  */
 void display_emac_config();
 void display_emac_start();
@@ -88,6 +89,6 @@ void display_netmask();
 void display_gateway();
 void display_hostname();
 void display_dhcp_status(net::dhcp::State);
-}  // namespace het
+}  // namespace net
 
 #endif /* NET_H_ */

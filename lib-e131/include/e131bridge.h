@@ -37,7 +37,11 @@
 #include "lightset.h"
 #include "lightsetdata.h"
 
-#if !(ARTNET_VERSION >= 4)
+#if defined(ARTNET_VERSION) && (ARTNET_VERSION >= 4)
+# define E131_HAVE_ARTNET
+#endif
+
+#if !defined(E131_HAVE_ARTNET)
 # if defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI)
 #  if !defined(E131_DISABLE_DMX_CONFIG_UDP)
 #   include "dmxconfigudp.h"
@@ -48,6 +52,8 @@
 #include "network.h"
 #include "hardware.h"
 #include "panel_led.h"
+
+#include "softwaretimers.h"
 
 #include "debug.h"
 
@@ -72,7 +78,6 @@ namespace e131bridge {
 
 struct State {
 	uint32_t SynchronizationTime;
-	uint32_t DiscoveryTime;
 	uint16_t DiscoveryPacketLength;
 	uint16_t nSynchronizationAddressSourceA;
 	uint16_t nSynchronizationAddressSourceB;
@@ -312,14 +317,13 @@ public:
 					}
 				}
 
-				if ((m_nCurrentPacketMillis - m_nPreviousPacketMillis) >= 1000) {
+				if ((m_nCurrentPacketMillis - m_nPreviousPacketMillis) >= 1000U) {
 					m_State.nReceivingDmx &= static_cast<uint8_t>(~(1U << static_cast<uint8_t>(lightset::PortDir::OUTPUT)));
 				}
 			}
 
 #if defined (E131_HAVE_DMXIN)
 			HandleDmxIn();
-			SendDiscoveryPacket();
 #endif
 
 			// The hardware::ledblink::Mode::FAST is for RDM Identify (Art-Net 4)
@@ -339,18 +343,6 @@ public:
 		}
 
 		Process();
-
-#if !(ARTNET_VERSION >= 4)
-		if ((m_nCurrentPacketMillis - m_nPreviousLedpanelMillis) > 200) {
-			m_nPreviousLedpanelMillis = m_nCurrentPacketMillis;
-			for (uint32_t nPortIndex = 0; nPortIndex < e131bridge::MAX_PORTS; nPortIndex++) {
-				hal::panel_led_off(hal::panelled::PORT_A_TX << nPortIndex);
-#if defined (E131_HAVE_DMXIN)
-				hal::panel_led_off(hal::panelled::PORT_A_RX << nPortIndex);
-#endif
-			}
-		}
-#endif
 	}
 
 #if defined (NODE_SHOWFILE) && defined (CONFIG_SHOWFILE_PROTOCOL_NODE_E131)
@@ -364,7 +356,7 @@ public:
 
 	void Print();
 
-	static E131Bridge* Get() {
+	static E131Bridge *Get() {
 		return s_pThis;
 	}
 
@@ -392,13 +384,31 @@ private:
 	void FillDiscoveryPacket();
 	void SendDiscoveryPacket();
 
+	void static staticCallbackFunctionSendDiscoveryPacket([[maybe_unused]] TimerHandle_t timerHandle) {
+		s_pThis->SendDiscoveryPacket();
+	}
+
+#if !defined(E131_HAVE_ARTNET)
+	void LedPanelOff() {
+		for (uint32_t nPortIndex = 0; nPortIndex < e131bridge::MAX_PORTS; nPortIndex++) {
+			hal::panel_led_off(hal::panelled::PORT_A_TX << nPortIndex);
+#if defined (E131_HAVE_DMXIN)
+			hal::panel_led_off(hal::panelled::PORT_A_RX << nPortIndex);
+#endif
+		}
+	}
+
+	void static staticCallbackFunctionLedPanelOff([[maybe_unused]] TimerHandle_t timerHandle) {
+		s_pThis->LedPanelOff();
+	}
+#endif
+
 	void Process();
 private:
 	int32_t m_nHandle { -1 };
 
 	uint32_t m_nCurrentPacketMillis { 0 };
 	uint32_t m_nPreviousPacketMillis { 0 };
-	uint32_t m_nPreviousLedpanelMillis { 0 };
 
 	e131bridge::State m_State;
 	e131bridge::Bridge m_Bridge;
@@ -407,8 +417,8 @@ private:
 
 	bool m_bEnableDataIndicator { true };
 
-	uint8_t *m_pReceiveBuffer;
-	uint32_t m_nIpAddressFrom;
+	uint8_t *m_pReceiveBuffer { nullptr };
+	uint32_t m_nIpAddressFrom { 0 };
 	LightSet *m_pLightSet { nullptr };
 
 	// Synchronization handler
@@ -422,7 +432,8 @@ private:
 #if defined (E131_HAVE_DMXIN)
 	TE131DataPacket m_E131DataPacket;
 	TE131DiscoveryPacket m_E131DiscoveryPacket;
-	uint32_t m_DiscoveryIpAddress { 0 };
+	uint32_t m_nDiscoveryIpAddress { 0 };
+	TimerHandle_t m_timerHandleSendDiscoveryPacket { -1 };
 #endif
 
 #if defined (DMXCONFIGUDP_H_)
@@ -432,7 +443,7 @@ private:
 	DmxConfigUdp m_DmxConfigUdp;
 #endif
 
-	static E131Bridge *s_pThis;
+	static inline E131Bridge *s_pThis;
 };
 
 #endif /* E131BRIDGE_H_ */

@@ -45,8 +45,8 @@
 // Firmware specific BEGIN
 #if defined (LTC_READER)
 # include "ltc.h"
-# include "ltcgenerator.h"
-# include "systimereader.h"
+# include "arm/ltcgenerator.h"
+# include "arm/systimereader.h"
 #endif
 // Firmware specific BEGIN
 

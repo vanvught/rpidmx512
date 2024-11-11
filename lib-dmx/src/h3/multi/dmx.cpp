@@ -23,6 +23,10 @@
  * THE SOFTWARE.
  */
 
+#if defined (DEBUG_DMX)
+# undef NDEBUG
+#endif
+
 #if __GNUC__ > 8
 # pragma GCC target ("general-regs-only")
 #endif

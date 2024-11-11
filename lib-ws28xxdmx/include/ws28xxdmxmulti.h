@@ -26,6 +26,11 @@
 #ifndef WS28XXDMXMULTI_H_
 #define WS28XXDMXMULTI_H_
 
+#pragma GCC push_options
+#pragma GCC optimize ("O3")
+#pragma GCC optimize ("-funroll-loops")
+#pragma GCC optimize ("-fprefetch-loop-arrays")
+
 #include <cstdint>
 #include <cassert>
 
@@ -35,7 +40,6 @@
 #include "ws28xxmulti.h"
 
 #include "pixeldmxconfiguration.h"
-#include "pixelpatterns.h"
 
 #include "logic_analyzer.h"
 
@@ -152,4 +156,5 @@ private:
 	bool m_bBlackout { false };
 };
 
+#pragma GCC pop_options
 #endif /* WS28XXDMXMULTI_H_ */

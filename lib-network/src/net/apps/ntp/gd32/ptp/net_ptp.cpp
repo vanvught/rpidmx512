@@ -47,13 +47,15 @@ T3 - remote transmit timestamp from the latest response (t3)
 T4 - local receive timestamp of the previous response (t4)
  */
 
-#undef NDEBUG
-
 #if !defined (CONFIG_ENET_ENABLE_PTP)
 # error
 #endif
 #if defined (ENABLE_NTP_CLIENT)
 # error
+#endif
+
+#if defined (DEBUG_NTP_PTP_CLIENT)
+# undef NDEBUG
 #endif
 
 #pragma GCC push_options
@@ -124,7 +126,7 @@ static ntpClient s_ntpClient;
 static uint16_t s_id;
 static constexpr uint16_t REQUEST_SIZE = sizeof s_ntpClient.Request;
 
-static void print(const char *pText, const struct ntp::TimeStamp *pNtpTime) {
+static void print([[maybe_unused]] const char *pText, [[maybe_unused]] const struct ntp::TimeStamp *pNtpTime) {
 #ifndef NDEBUG
 	const auto nSeconds = static_cast<time_t>(pNtpTime->nSeconds - ntp::JAN_1970);
 	const auto *pTm = localtime(&nSeconds);

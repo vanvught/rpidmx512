@@ -85,11 +85,11 @@ static constexpr char s_request_method[][8] = {"GET", "POST", "DELETE", "UNKNOWN
 static constexpr char s_contentType[static_cast<uint32_t>(http::contentTypes::NOT_DEFINED)][32] =
 { "text/html", "text/css", "text/javascript", "application/json", "application/octet-stream" };
 
-void HttpDeamonHandleRequest::HandleRequest(const uint32_t nBytesReceived, char *pRequestHeaderResponse) {
+void HttpDeamonHandleRequest::HandleRequest(const uint32_t nBytesReceived, char *pReceiveBuffer) {
 	DEBUG_ENTRY
 
 	m_nBytesReceived = nBytesReceived;
-	m_RequestHeaderResponse = pRequestHeaderResponse;
+	m_pReceiveBuffer = pReceiveBuffer;
 
 	const char *pStatusMsg = "OK";
 
@@ -99,7 +99,9 @@ void HttpDeamonHandleRequest::HandleRequest(const uint32_t nBytesReceived, char 
 		// This is an initial incoming HTTP request
 		m_Status = ParseRequest();
 
-		DEBUG_PRINTF("%s %s", s_request_method[static_cast<uint32_t>(m_RequestMethod)], m_ContentType < http::contentTypes::NOT_DEFINED ? s_contentType[static_cast<uint32_t>(m_ContentType)] : "Unknown");
+#ifndef NDEBUG
+		DEBUG_PRINTF("%s %s", s_request_method[static_cast<uint32_t>(m_RequestMethod)], m_RequestContentType < http::contentTypes::NOT_DEFINED ? s_contentType[static_cast<uint32_t>(m_RequestContentType)] : "Unknown");
+#endif
 
 		if (m_Status == http::Status::OK) {
 			// It is a supported request
@@ -164,7 +166,7 @@ void HttpDeamonHandleRequest::HandleRequest(const uint32_t nBytesReceived, char 
 			break;
 		}
 
-		m_ContentType = http::contentTypes::TEXT_HTML;
+		m_RequestContentType = http::contentTypes::TEXT_HTML;
 		m_pContent = m_DynamicContent;
 		m_nContentSize = static_cast<uint32_t>(snprintf(m_DynamicContent, sizeof(m_DynamicContent) - 1U,
 				"<!DOCTYPE html>\n"
@@ -174,15 +176,15 @@ void HttpDeamonHandleRequest::HandleRequest(const uint32_t nBytesReceived, char 
 				"</html>\n", static_cast<unsigned int>(m_Status), pStatusMsg, pStatusMsg));
 	}
 
-	const auto nHeaderLength = static_cast<uint32_t>(snprintf(m_RequestHeaderResponse, sizeof(m_DynamicContent) - 1U,
+	const auto nHeaderLength = static_cast<uint32_t>(snprintf(m_pReceiveBuffer, sizeof(m_DynamicContent) - 1U,
 			"HTTP/1.1 %u %s\r\n"
 			"Server: %s\r\n"
 			"Content-Type: %s\r\n"
 			"Content-Length: %u\r\n"
 			"Connection: close\r\n"
-			"\r\n", static_cast<unsigned int>(m_Status), pStatusMsg, Network::Get()->GetHostName(), s_contentType[static_cast<uint32_t>(m_ContentType)], static_cast<unsigned int>(m_nContentSize)));
+			"\r\n", static_cast<unsigned int>(m_Status), pStatusMsg, Network::Get()->GetHostName(), s_contentType[static_cast<uint32_t>(m_RequestContentType)], static_cast<unsigned int>(m_nContentSize)));
 
-	Network::Get()->TcpWrite(m_nHandle, reinterpret_cast<uint8_t *>(m_RequestHeaderResponse), nHeaderLength, m_nConnectionHandle);
+	Network::Get()->TcpWrite(m_nHandle, reinterpret_cast<uint8_t *>(m_pReceiveBuffer), nHeaderLength, m_nConnectionHandle);
 	Network::Get()->TcpWrite(m_nHandle, reinterpret_cast<const uint8_t *>(m_pContent), m_nContentSize, m_nConnectionHandle);
 	DEBUG_PRINTF("m_nContentLength=%u", m_nContentSize);
 
@@ -193,17 +195,17 @@ void HttpDeamonHandleRequest::HandleRequest(const uint32_t nBytesReceived, char 
 }
 
 http::Status HttpDeamonHandleRequest::ParseRequest() {
-	char *pLine = m_RequestHeaderResponse;
+	char *pLine = m_pReceiveBuffer;
 	uint32_t nLine = 0;
 	http::Status status = http::Status::UNKNOWN_ERROR;
-	m_ContentType = http::contentTypes::NOT_DEFINED;
-	m_nRequestContentSize = 0;
+	m_RequestContentType = http::contentTypes::NOT_DEFINED;
+	m_nRequestContentLength = 0;
 	m_nFileDataLength = 0;
 
 	for (uint32_t i = 0; i < m_nBytesReceived; i++) {
-		if (m_RequestHeaderResponse[i] == '\n') {
+		if (m_pReceiveBuffer[i] == '\n') {
 			assert(i > 1);
-			m_RequestHeaderResponse[i - 1] = '\0';
+			m_pReceiveBuffer[i - 1] = '\0';
 
 			if (nLine++ == 0) {
 				status = ParseMethod(pLine);
@@ -211,10 +213,12 @@ http::Status HttpDeamonHandleRequest::ParseRequest() {
 				if (pLine[0] == '\0') {
 					assert((i + 1) <= m_nBytesReceived);
 					m_nFileDataLength = static_cast<uint16_t>(m_nBytesReceived - 1 - i);
+
 					if (m_nFileDataLength > 0) {
-						m_pFileData = &m_RequestHeaderResponse[i + 1];
+						m_pFileData = &m_pReceiveBuffer[i + 1];
 						m_pFileData[m_nFileDataLength] = '\0';
 					}
+
 					return http::Status::OK;
 				}
 				status = ParseHeaderField(pLine);
@@ -224,7 +228,7 @@ http::Status HttpDeamonHandleRequest::ParseRequest() {
 				return status;
 			}
 
-			pLine = &m_RequestHeaderResponse[++i];
+			pLine = &m_pReceiveBuffer[++i];
 		}
 	}
 
@@ -300,12 +304,12 @@ http::Status HttpDeamonHandleRequest::ParseHeaderField(char *pLine) {
 		}
 		if (memcmp(pToken, "application/", 12) == 0) {
 			if (strcmp(&pToken[12], "json") == 0) {
-				m_ContentType = http::contentTypes::APPLICATION_JSON;
+				m_RequestContentType = http::contentTypes::APPLICATION_JSON;
 				DEBUG_ENTRY
 				return http::Status::OK;
 			}
 			if (strcmp(&pToken[12], "octet-stream") == 0) {
-				m_ContentType = http::contentTypes::APPLICATION_OCTET_STREAM;
+				m_RequestContentType = http::contentTypes::APPLICATION_OCTET_STREAM;
 				DEBUG_ENTRY
 				return http::Status::OK;
 			}
@@ -326,7 +330,7 @@ http::Status HttpDeamonHandleRequest::ParseHeaderField(char *pLine) {
 			nTmp += nDigit;
 		}
 
-		m_nRequestContentSize = nTmp;
+		m_nRequestContentLength = nTmp;
 	}
 
 	DEBUG_EXIT
@@ -344,7 +348,7 @@ http::Status HttpDeamonHandleRequest::HandleGet() {
 	m_pContent = &m_DynamicContent[0];
 
 	if (memcmp(m_pUri, "/json/", 6) == 0) {
-		m_ContentType = http::contentTypes::APPLICATION_JSON;
+		m_RequestContentType = http::contentTypes::APPLICATION_JSON;
 		const auto *pGet = &m_pUri[6];
 		switch (http::get_uint(pGet)) {
 		case http::json::get::LIST:
@@ -507,40 +511,40 @@ http::Status HttpDeamonHandleRequest::HandleGet() {
 	}
 #if defined (ENABLE_CONTENT)
 	else if (strcmp(m_pUri, "/") == 0) {
-		m_pContent = get_file_content("index.html", nLength, m_ContentType);
+		m_pContent = get_file_content("index.html", nLength, m_RequestContentType);
 	}
 #if defined (HAVE_DMX)
 	else if (strcmp(m_pUri, "/dmx") == 0) {
-		m_pContent = get_file_content("dmx.html", nLength, m_ContentType);
+		m_pContent = get_file_content("dmx.html", nLength, m_RequestContentType);
 	}
 #endif
 #if defined (RDM_CONTROLLER) && !defined (CONFIG_HTTP_HTML_NO_RDM)
 	else if (strcmp(m_pUri, "/rdm") == 0) {
-		m_pContent = get_file_content("rdm.html", nLength, m_ContentType);
+		m_pContent = get_file_content("rdm.html", nLength, m_RequestContentType);
 	}
 #endif
 #if defined (NODE_SHOWFILE)
 	else if (strcmp(m_pUri, "/showfile") == 0) {
-		m_pContent = get_file_content("showfile.html", nLength, m_ContentType);
+		m_pContent = get_file_content("showfile.html", nLength, m_RequestContentType);
 	}
 #endif
 #if defined (ENABLE_PHY_SWITCH)
 	else if (strcmp(m_pUri, "/dsa") == 0) {
-		m_pContent = get_file_content("dsa.html", nLength, m_ContentType);
+		m_pContent = get_file_content("dsa.html", nLength, m_RequestContentType);
 	}
 #endif
 #if !defined (CONFIG_HTTP_HTML_NO_TIME)
 	else if (strcmp(m_pUri, "/time") == 0) {
-		m_pContent = get_file_content("time.html", nLength, m_ContentType);
+		m_pContent = get_file_content("time.html", nLength, m_RequestContentType);
 	}
 #endif
 #if !defined (CONFIG_HTTP_HTML_NO_RTC) && !defined (DISABLE_RTC)
 	else if (strcmp(m_pUri, "/rtc") == 0) {
-		m_pContent = get_file_content("rtc.html", nLength, m_ContentType);
+		m_pContent = get_file_content("rtc.html", nLength, m_RequestContentType);
 	}
 #endif
 	else {
-		m_pContent = get_file_content(&m_pUri[1], nLength, m_ContentType);
+		m_pContent = get_file_content(&m_pUri[1], nLength, m_RequestContentType);
 	}
 #endif
 
@@ -584,10 +588,10 @@ http::Status HttpDeamonHandleRequest::HandleGetTxt() {
 
 http::Status HttpDeamonHandleRequest::HandlePost(const bool hasDataOnly) {
 	DEBUG_ENTRY
-	DEBUG_PRINTF("m_nBytesReceived=%d, m_nFileDataLength=%u, m_nRequestContentLength=%u -> hasDataOnly=%c", m_nBytesReceived, m_nFileDataLength, m_nRequestContentSize, hasDataOnly ? 'Y' : 'N');
+	DEBUG_PRINTF("m_nBytesReceived=%d, m_nFileDataLength=%u, m_nRequestContentLength=%u -> hasDataOnly=%c", m_nBytesReceived, m_nFileDataLength, m_nRequestContentLength, hasDataOnly ? 'Y' : 'N');
 
 	if (!hasDataOnly) {
-		if (m_ContentType != http::contentTypes::APPLICATION_JSON) {
+		if (m_RequestContentType != http::contentTypes::APPLICATION_JSON) {
 			DEBUG_EXIT
 			return http::Status::BAD_REQUEST;
 		}
@@ -600,7 +604,7 @@ http::Status HttpDeamonHandleRequest::HandlePost(const bool hasDataOnly) {
 		}
 	}
 
-	const auto hasHeadersOnly = (!hasDataOnly && ((m_nBytesReceived < m_nRequestContentSize) || m_nFileDataLength == 0));
+	const auto hasHeadersOnly = (!hasDataOnly && ((m_nBytesReceived < m_nRequestContentLength) || m_nFileDataLength == 0));
 
 	if (hasHeadersOnly) {
 		DEBUG_PUTS("hasHeadersOnly");
@@ -609,7 +613,7 @@ http::Status HttpDeamonHandleRequest::HandlePost(const bool hasDataOnly) {
 	}
 
 	if (hasDataOnly) {
-		m_pFileData = m_RequestHeaderResponse;
+		m_pFileData = m_pReceiveBuffer;
 		m_nFileDataLength = static_cast<uint16_t>(m_nBytesReceived);
 	}
 
@@ -682,7 +686,7 @@ http::Status HttpDeamonHandleRequest::HandlePost(const bool hasDataOnly) {
 		PropertiesConfig::EnableJSON(bIsJSON);
 	}
 
-	m_ContentType = http::contentTypes::TEXT_HTML;
+	m_RequestContentType = http::contentTypes::TEXT_HTML;
 	m_nContentSize = static_cast<uint32_t>(snprintf(m_DynamicContent, sizeof(m_DynamicContent) - 1U,
 			"<!DOCTYPE html>\n"
 			"<html>\n"
@@ -694,11 +698,15 @@ http::Status HttpDeamonHandleRequest::HandlePost(const bool hasDataOnly) {
 	return http::Status::OK;
 }
 
+/**
+ * DELETE
+ */
+
 http::Status HttpDeamonHandleRequest::HandleDelete(const bool hasDataOnly) {
-	DEBUG_PRINTF("m_nBytesReceived=%d, m_nFileDataLength=%u, m_nRequestContentLength=%u -> hasDataOnly=%c", m_nBytesReceived, m_nFileDataLength, m_nRequestContentSize, hasDataOnly ? 'Y' : 'N');
+	DEBUG_PRINTF("m_nBytesReceived=%d, m_nFileDataLength=%u, m_nRequestContentLength=%u -> hasDataOnly=%c", m_nBytesReceived, m_nFileDataLength, m_nRequestContentLength, hasDataOnly ? 'Y' : 'N');
 
 	if (!hasDataOnly) {
-		if (m_ContentType != http::contentTypes::APPLICATION_JSON) {
+		if (m_RequestContentType != http::contentTypes::APPLICATION_JSON) {
 			DEBUG_EXIT
 			return http::Status::BAD_REQUEST;
 		}
@@ -711,7 +719,7 @@ http::Status HttpDeamonHandleRequest::HandleDelete(const bool hasDataOnly) {
 		}
 	}
 
-	const auto hasHeadersOnly = (!hasDataOnly && ((m_nBytesReceived < m_nRequestContentSize) || m_nFileDataLength == 0));
+	const auto hasHeadersOnly = (!hasDataOnly && ((m_nBytesReceived < m_nRequestContentLength) || m_nFileDataLength == 0));
 
 	if (hasHeadersOnly) {
 		DEBUG_PUTS("hasHeadersOnly");
@@ -720,7 +728,7 @@ http::Status HttpDeamonHandleRequest::HandleDelete(const bool hasDataOnly) {
 	}
 
 	if (hasDataOnly) {
-		m_pFileData = m_RequestHeaderResponse;
+		m_pFileData = m_pReceiveBuffer;
 		m_nFileDataLength = static_cast<uint16_t>(m_nBytesReceived);
 	}
 
@@ -748,7 +756,7 @@ http::Status HttpDeamonHandleRequest::HandleDelete(const bool hasDataOnly) {
 		return http::Status::BAD_REQUEST;
 	}
 
-	m_ContentType = http::contentTypes::TEXT_HTML;
+	m_RequestContentType = http::contentTypes::TEXT_HTML;
 	m_nContentSize = static_cast<uint32_t>(snprintf(m_DynamicContent, sizeof(m_DynamicContent) - 1U,
 			"<!DOCTYPE html>\n"
 			"<html>\n"

@@ -71,7 +71,7 @@ private:
 		WRQ_RECV_PACKET
 	};
 	TFTPState m_nState { TFTPState::INIT };
-	int m_nIdx { -1 };
+	int32_t m_nIdx { -1 };
 	uint8_t *m_pBuffer { nullptr };
 	uint32_t m_nFromIp { 0 };
 	uint32_t m_nLength { 0 };

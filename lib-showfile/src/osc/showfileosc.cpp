@@ -78,7 +78,7 @@ namespace length {
 }
 
 void ShowFileOSC::Process() {
-	DEBUG_PRINTF("[%s] %d,%d %s", m_pBuffer, static_cast<int>(strlen(m_pBuffer)), static_cast<int>(showfileosc::PATH_LENGTH), &m_pBuffer[showfileosc::PATH_LENGTH]);
+	DEBUG_PRINTF("[%s] %d,%d %s", m_pBuffer, static_cast<int>(strlen(reinterpret_cast<const char *>(m_pBuffer))), static_cast<int>(showfileosc::PATH_LENGTH), &m_pBuffer[showfileosc::PATH_LENGTH]);
 
 	if (memcmp(&m_pBuffer[showfileosc::PATH_LENGTH], cmd::START, length::START) == 0) {
 		ShowFile::Get()->Play();

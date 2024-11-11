@@ -37,6 +37,9 @@
 #include <cassert>
 
 #include "network.h"
+#if !defined(CONFIG_NET_APPS_NO_MDNS)
+# include "net/apps/mdns.h"
+#endif
 
 #include "debug.h"
 
@@ -146,6 +149,10 @@ Network::Network(int argc, char **argv) {
 	}
 
 	m_aDomainName[j]  = '\0';
+
+#if !defined(CONFIG_NET_APPS_NO_MDNS)
+	mdns_init();
+#endif
 }
 
 Network::~Network() {
