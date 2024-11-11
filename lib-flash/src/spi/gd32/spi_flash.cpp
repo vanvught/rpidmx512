@@ -33,7 +33,7 @@
 
 #include "debug.h"
 
-int spi_init() {
+void spi_init() {
 	gd32_spi_begin();
 	gd32_spi_chipSelect(GD32_SPI_CS_NONE);
 	gd32_spi_set_speed_hz(SPI_XFER_SPEED_HZ);
@@ -51,16 +51,13 @@ int spi_init() {
 	gpio_fsel(SPI_GPIOx, SPI_FLASH_HOLD_GPIO_PINx, GPIO_FSEL_OUTPUT);
 	gpio_bit_set(SPI_GPIOx, SPI_FLASH_HOLD_GPIO_PINx);
 #endif
-
-	return 0;
 }
 
 inline static void spi_transfern(char *pBuffer, const uint32_t nLength) {
 	gd32_spi_transfernb(pBuffer, pBuffer, nLength);
 }
 
-int spi_xfer(uint32_t nLength, const uint8_t *pOut, uint8_t *pIn, uint32_t nFlags) {
-
+void spi_xfer(uint32_t nLength, const uint8_t *pOut, uint8_t *pIn, uint32_t nFlags) {
 	if (nFlags & SPI_XFER_BEGIN) {
 		gpio_bit_reset(SPI_FLASH_CS_GPIOx, SPI_FLASH_CS_GPIO_PINx);
 	}
@@ -78,6 +75,4 @@ int spi_xfer(uint32_t nLength, const uint8_t *pOut, uint8_t *pIn, uint32_t nFlag
 	if (nFlags & SPI_XFER_END) {
 		gpio_bit_set(SPI_FLASH_CS_GPIOx, SPI_FLASH_CS_GPIO_PINx);
 	}
-
-	return 0;
 }

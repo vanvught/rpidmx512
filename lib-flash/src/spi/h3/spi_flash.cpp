@@ -32,15 +32,15 @@
 #endif
 #include <cassert>
 
-#include "debug.h"
-
-#include "./../../spi/spi_flash_internal.h"
+#include "../spi_flash_internal.h"
 
 #include "h3.h"
 #include "h3_spi.h"
 #include "h3_spi_internal.h"
 #include "h3_gpio.h"
 #include "h3_ccu.h"
+
+#include "debug.h"
 
 struct spi0_status {
 	bool		transfer_active;
@@ -295,7 +295,7 @@ static void spi0_setup_clock(uint32_t pll_clock, uint32_t spi_clock) {
 #endif
 }
 
-int spi_init(void) {
+void spi_init(void) {
 	spi0_begin();
 
 	spi0_set_chip_select(); // H3_SPI_CS_NONE
@@ -304,29 +304,24 @@ int spi_init(void) {
 
 	h3_gpio_fsel(H3_PORT_TO_GPIO(H3_GPIO_PORTC, 3), GPIO_FSEL_OUTPUT);
 	h3_gpio_set(H3_PORT_TO_GPIO(H3_GPIO_PORTC, 3));
-
-	return 0;
 }
 
-int spi_xfer(uint32_t len, const uint8_t *dout, uint8_t *din, uint32_t flags) {
-
-	if (flags & SPI_XFER_BEGIN) {
+void spi_xfer(const uint32_t nLength, const uint8_t *pOut, uint8_t *pIn, uint32_t nFlags) {
+	if (nFlags & SPI_XFER_BEGIN) {
 		h3_gpio_clr(H3_PORT_TO_GPIO(H3_GPIO_PORTC, 3));
 	}
 
-	if (len != 0) {
-		if (din == 0) {
-			spi0_writenb((char *) dout, len);
-		} else if (dout == 0) {
-			spi0_transfern(reinterpret_cast<char *>(din), len);
+	if (nLength != 0) {
+		if (pIn == nullptr) {
+			spi0_writenb((char *) pOut, nLength);
+		} else if (pOut == nullptr) {
+			spi0_transfern(reinterpret_cast<char *>(pIn), nLength);
 		} else {
-			spi0_transfernb((char *) dout, (char *) din, len);
+			spi0_transfernb((char *) pOut, (char *) pIn, nLength);
 		}
 	}
 
-	if (flags & SPI_XFER_END) {
+	if (nFlags & SPI_XFER_END) {
 		h3_gpio_set(H3_PORT_TO_GPIO(H3_GPIO_PORTC, 3));
 	}
-
-	return 0;
 }

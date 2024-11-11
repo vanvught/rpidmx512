@@ -26,380 +26,294 @@
  * THE SOFTWARE.
  */
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpointer-arith" // FIXME ignored "-Wpointer-arith"
-
-#include <stddef.h>
-#include <stdint.h>
-#include <stdbool.h>
-#include <stdio.h>
+#include <cstdint>
+#include <cstdio>
+#include <algorithm>
 #include <time.h>
 
 #include "spi/spi_flash.h"
-
 #include "spi_flash_internal.h"
 
 #include "debug.h"
 
-static struct spi_flash s_flash = { "", 0, 0, 0, CMD_READ_STATUS };
+static struct SpiFlashInfo s_flash = { "", 0, CMD_READ_STATUS };
 
-#define IDCODE_CONT_LEN 0
 #define IDCODE_PART_LEN 5
 
-static const struct {
-	const uint8_t shift;
+static constexpr struct {
 	const uint8_t idcode;
-	int(*probe) (struct spi_flash *flash, uint8_t *idcode);
+	bool(*probe) (struct SpiFlashInfo *flash, uint8_t *idcode);
 } flashes[] = {
 	/* Keep it sorted by define name */
-#ifdef CONFIG_SPI_FLASH_ATMEL
-	{ 0, 0x1f, spi_flash_probe_atmel, },
-#endif
-#ifdef CONFIG_SPI_FLASH_EON
-	{ 0, 0x1c, spi_flash_probe_eon, },
-#endif
 #ifdef CONFIG_SPI_FLASH_GIGADEVICE
-	{ 0, 0xc8, spi_flash_probe_gigadevice, },
+	{ 0xc8, spi_flash_probe_gigadevice, },
 #endif
 #ifdef CONFIG_SPI_FLASH_MACRONIX
-	{ 0, 0xc2, spi_flash_probe_macronix, },
-#endif
-#ifdef CONFIG_SPI_FLASH_SPANSION
-	{ 0, 0x01, spi_flash_probe_spansion, },
-#endif
-#ifdef CONFIG_SPI_FLASH_SST
-	{ 0, 0xbf, spi_flash_probe_sst, },
-#endif
-#ifdef CONFIG_SPI_FLASH_STMICRO
-	{ 0, 0x20, spi_flash_probe_stmicro, },
+	{ 0xc2, spi_flash_probe_macronix, },
 #endif
 #ifdef CONFIG_SPI_FLASH_WINBOND
-	{ 0, 0xef, spi_flash_probe_winbond, },
-#endif
-#ifdef CONFIG_SPI_FRAM_RAMTRON
-	{ 6, 0xc2, spi_fram_probe_ramtron, },
-# undef IDCODE_CONT_LEN
-# define IDCODE_CONT_LEN 6
-#endif
-	/* Keep it sorted by best detection */
-#ifdef CONFIG_SPI_FLASH_STMICRO
-	{ 0, 0xff, spi_flash_probe_stmicro, },
-#endif
-#ifdef CONFIG_SPI_FRAM_RAMTRON_NON_JEDEC
-	{ 0, 0xff, spi_fram_probe_ramtron, },
+	{ 0xef, spi_flash_probe_winbond, },
 #endif
 };
-#define IDCODE_LEN (IDCODE_CONT_LEN + IDCODE_PART_LEN)
 
-static uint32_t get_timer(uint32_t base) {
-	if (0 == base) {
+#define IDCODE_LEN IDCODE_PART_LEN
+
+static uint32_t get_timer(const uint32_t nBase) {
+	if (0 == nBase) {
 		return static_cast<uint32_t>(time(nullptr));
 	}
 
-	return static_cast<uint32_t>(time(nullptr)) - base;
+	return static_cast<uint32_t>(time(nullptr)) - nBase;
 }
 
 uint32_t spi_flash_get_size() {
 	return s_flash.size;
 }
 
-uint32_t spi_flash_get_sector_size() {
-	return s_flash.sector_size;
-}
-
 const char *spi_flash_get_name() {
 	return s_flash.name;
 }
 
-static void spi_flash_addr(uint32_t addr, uint8_t *cmd) {
+static void spi_flash_addr(const uint32_t nAddress, uint8_t *pCommand) {
 	/* cmd[0] is actual command */
-	cmd[1] = static_cast<uint8_t>(addr >> 16);
-	cmd[2] = static_cast<uint8_t>(addr >> 8);
-	cmd[3] = static_cast<uint8_t>(addr >> 0);
+	pCommand[1] = static_cast<uint8_t>(nAddress >> 16);
+	pCommand[2] = static_cast<uint8_t>(nAddress >> 8);
+	pCommand[3] = static_cast<uint8_t>(nAddress >> 0);
 }
 
-static int spi_flash_read_write(const uint8_t *cmd, size_t cmd_len, const uint8_t *data_out, uint8_t *data_in, size_t data_len) {
-	unsigned long flags = SPI_XFER_BEGIN;
-	int ret;
+static void spi_flash_read_write(const uint8_t *pCommand, const uint32_t nCommandLength, const uint8_t *pDataOut, uint8_t *pDataIn, const uint32_t nDataLength) {
+	uint32_t nFlags = SPI_XFER_BEGIN;
 
-	if (data_len == 0) {
-		flags |= SPI_XFER_END;
+	if (nDataLength == 0) {
+		nFlags |= SPI_XFER_END;
 	}
 
-	ret = spi_xfer(cmd_len, cmd, nullptr, flags);
+	spi_xfer(nCommandLength, pCommand, nullptr, nFlags);
 
-	if (data_len != 0) {
-		ret = spi_xfer(data_len, data_out, data_in, SPI_XFER_END);
+	if (nDataLength != 0) {
+		spi_xfer(nDataLength, pDataOut, pDataIn, SPI_XFER_END);
 	}
-
-	return ret;
 }
 
-static inline int spi_flash_cmd_read(const uint8_t *cmd, size_t cmd_len, uint8_t *data, size_t data_len) {
-	return spi_flash_read_write(cmd, cmd_len, nullptr, data, data_len);
+static inline void spi_flash_cmd_read(const uint8_t *pCommand, const uint32_t nCommandLength, uint8_t *pData, const uint32_t nDataLength) {
+	return spi_flash_read_write(pCommand, nCommandLength, nullptr, pData, nDataLength);
 }
 
-static inline int spi_flash_cmd(uint8_t cmd, uint8_t *response, size_t len) {
-	return spi_flash_cmd_read(&cmd, 1, response, len);
+static inline void spi_flash_cmd(uint8_t nCommand, uint8_t *pResponse, const uint32_t nLength) {
+	return spi_flash_cmd_read(&nCommand, 1, pResponse, nLength);
 }
 
-static inline int spi_flash_cmd_write(const uint8_t *cmd, size_t cmd_len, const uint8_t *data, size_t data_len) {
-	return spi_flash_read_write(cmd, cmd_len, data, nullptr, data_len);
+static inline void spi_flash_cmd_write(const uint8_t *pCommand, const uint32_t nCommandLength, const uint8_t *pData, const uint32_t nDataLength) {
+	return spi_flash_read_write(pCommand, nCommandLength, pData, nullptr, nDataLength);
 }
 
-static inline int spi_flash_cmd_write_enable() {
+static inline void spi_flash_cmd_write_enable() {
 	return spi_flash_cmd(CMD_WRITE_ENABLE, nullptr, 0);
 }
 
-static int spi_flash_cmd_wait_ready(unsigned long timeout) {
-	unsigned long timebase;
-	uint8_t status;
-	uint8_t check_status = 0x0;
-	uint8_t poll_bit = STATUS_WIP;
-	uint8_t cmd = s_flash.poll_cmd;
-
-	if (cmd == CMD_FLAG_STATUS) {
-		poll_bit = STATUS_PEC;
-		check_status = poll_bit;
-	}
+static bool spi_flash_cmd_wait_ready(const uint32_t nTimeout) {
+	uint8_t cmd = CMD_READ_STATUS;
 
 	spi_xfer(1, &cmd, nullptr, SPI_XFER_BEGIN);
 
-	timebase = get_timer(0);
+	const auto nTimebase = get_timer(0);
+	uint8_t status;
 
 	do {
 		spi_xfer(1, nullptr, &status, 0);
 
-		if ((status & poll_bit) == check_status) {
+		if ((status & STATUS_WIP) == 0) {
 			break;
 		}
 
-	} while (get_timer(timebase) < timeout);
+	} while (get_timer(nTimebase) < nTimeout);
 
 	spi_xfer(0, nullptr, nullptr, SPI_XFER_END);
 
-	if ((status & poll_bit) == check_status) {
-		return 0;
+	if ((status & STATUS_WIP) == 0) {
+		DEBUG_PRINTF("get_timer(nTimebase)=%u", get_timer(nTimebase));
+		DEBUG_EXIT
+		return true;
 	}
 
 	DEBUG_PUTS("time out");
-	return -1;
+	DEBUG_EXIT
+	return false;
 }
 
-static int spi_flash_write_common(const uint8_t *cmd, size_t cmd_len, const uint8_t *buf, size_t buf_len, bool wait_ready) {
-	unsigned long timeout = SPI_FLASH_PROG_TIMEOUT;
-	int ret;
+static bool spi_flash_write_common(const uint8_t *pCommand, const uint32_t nCommandLength, const uint8_t *pData, const uint32_t nDataLength, const bool bWaitReady) {
+	uint32_t nTimeout;
 
-	if (buf == nullptr) {
-		timeout = SPI_FLASH_PAGE_ERASE_TIMEOUT;
+	if (pData == nullptr) {
+		nTimeout = SPI_FLASH_PAGE_ERASE_TIMEOUT;
+	} else {
+		nTimeout = SPI_FLASH_PROG_TIMEOUT;
 	}
 
-	ret = spi_flash_cmd_write_enable();
+	spi_flash_cmd_write_enable();
+	spi_flash_cmd_write(pCommand, nCommandLength, pData, nDataLength);
 
-	if (ret < 0) {
-		DEBUG_PUTS("enabling write failed");
-		return ret;
-	}
+	if (bWaitReady) {
+		const auto ret = spi_flash_cmd_wait_ready(nTimeout);
 
-	ret = spi_flash_cmd_write(cmd, cmd_len, buf, buf_len);
-
-	if (ret < 0) {
-		DEBUG_PUTS("write cmd failed");
-		return ret;
-	}
-
-	if (wait_ready) {
-		ret = spi_flash_cmd_wait_ready(timeout);
-
-		if (ret < 0) {
-			DEBUG_PRINTF("write %s timed out", timeout == SPI_FLASH_PROG_TIMEOUT ? "program" : "page erase");
-			return ret;
+		if (!ret) {
+			DEBUG_PRINTF("write %s timed out", nTimeout == SPI_FLASH_PROG_TIMEOUT ? "program" : "page erase");
+			return false;
 		}
 	}
 
-	return ret;
+	return true;
 }
 
-int spi_flash_cmd_write_multi(uint32_t offset, size_t len, const uint8_t *buf) {
+bool spi_flash_cmd_write_multi(uint32_t nOffset, const uint32_t nLength, const uint8_t *pData) {
 	DEBUG_ENTRY
 
-	unsigned long byte_addr, page_size;
-	size_t chunk_len, actual;
+	if (!spi_flash_cmd_wait_ready(SPI_FLASH_SECTOR_ERASE_TIMEOUT)) {
+		DEBUG_EXIT
+		return false;
+	}
+
+	uint32_t nChunkLength;
 	uint8_t cmd[4];
-	int ret = -1;
-
-	page_size = s_flash.page_size;
-
 	cmd[0] = CMD_PAGE_PROGRAM;
 
-	spi_flash_cmd_wait_ready(SPI_FLASH_SECTOR_ERASE_TIMEOUT);
+	for (uint32_t nActualLength = 0; nActualLength < nLength; nActualLength += nChunkLength) {
+		const auto nByteAddress = nOffset % spi_flash::PAGE_SIZE;
+		nChunkLength = std::min((nLength - nActualLength), (spi_flash::PAGE_SIZE - nByteAddress));
 
-	for (actual = 0; actual < len; actual += chunk_len) {
-		byte_addr = offset % page_size;
-		chunk_len = min(len - actual, page_size - byte_addr);
+		spi_flash_addr(nOffset, cmd);
 
-		spi_flash_addr(offset, cmd);
+		DEBUG_PRINTF("0x%p => cmd = { 0x%02x 0x%02x%02x%02x } nActualLength=%d, nChunkLength=%d", pData + nActualLength, cmd[0], cmd[1], cmd[2], cmd[3], static_cast<int>(nActualLength),static_cast<int>(nChunkLength));
 
-		DEBUG_PRINTF("0x%p => cmd = { 0x%02x 0x%02x%02x%02x } actual=%d, chunk_len=%d", buf + actual, cmd[0], cmd[1], cmd[2], cmd[3], static_cast<int>(actual),static_cast<int>(chunk_len));
+		const auto ret = spi_flash_write_common(cmd, sizeof(cmd), pData + nActualLength, nChunkLength, ((nActualLength + nChunkLength) != nLength));
 
-		ret = spi_flash_write_common(cmd, sizeof(cmd), buf + actual, chunk_len, ((actual + chunk_len) != len));
-
-		if (ret < 0) {
+		if (!ret) {
 			DEBUG_PUTS("write failed");
+			DEBUG_EXIT
+			return false;
 			break;
 		}
 
-		offset += chunk_len;
+		nOffset += nChunkLength;
 	}
 
 	DEBUG_EXIT
-	return ret;
+	return true;
 }
 
-
-int spi_flash_read_common(const uint8_t *cmd, size_t cmd_len, uint8_t *data, size_t data_len) {
-	int ret;
-
-	ret = spi_flash_cmd_read(cmd, cmd_len, data, data_len);
-
-	return ret;
+void spi_flash_read_common(const uint8_t *pCommand, const uint32_t nCommandLength, uint8_t *pData, const uint32_t nDataLength) {
+	return spi_flash_cmd_read(pCommand, nCommandLength, pData, nDataLength);
 }
 
-int spi_flash_cmd_read_fast(uint32_t offset, size_t len, uint8_t *data) {
+bool spi_flash_cmd_read_fast(uint32_t nOffset, uint32_t nLength, uint8_t *pData) {
 	DEBUG_ENTRY
 
-	uint8_t cmd[5], bank_sel = 0;
-	uint32_t remain_len, read_len;
-	int ret = -1;
+	if (!spi_flash_cmd_wait_ready(SPI_FLASH_PROG_TIMEOUT)) {
+		DEBUG_EXIT
+		return false;
+	}
 
+	uint8_t cmd[5];
 	cmd[0] = CMD_READ_ARRAY_FAST;
 	cmd[4] = 0x00;
 
-	spi_flash_cmd_wait_ready(SPI_FLASH_PROG_TIMEOUT);
+	while (nLength) {
+		const auto nRemainLength = SPI_FLASH_16MB_BOUN - nOffset;
+		uint32_t nReadLength;
 
-	while (len) {
-		remain_len = (SPI_FLASH_16MB_BOUN * static_cast<uint32_t>(bank_sel + 1) - offset);
-
-		if (len < remain_len) {
-			read_len = len;
-		}
-		else {
-			read_len = remain_len;
+		if (nLength < nRemainLength) {
+			nReadLength = nLength;
+		} else {
+			nReadLength = nRemainLength;
 		}
 
-		spi_flash_addr(offset, cmd);
+		spi_flash_addr(nOffset, cmd);
+		spi_flash_read_common(cmd, sizeof(cmd), pData, nReadLength);
 
-		ret = spi_flash_read_common(cmd, sizeof(cmd), data, read_len);
-
-		if (ret < 0) {
-			DEBUG_PUTS("Read failed");
-			DEBUG_EXIT
-			break;
-		}
-
-		offset += read_len;
-		len -= read_len;
-		data += read_len;
+		nOffset += nReadLength;
+		nLength -= nReadLength;
+		pData += nReadLength;
 	}
 
 	DEBUG_EXIT
-	return ret;
+	return true;
 }
 
-int spi_flash_cmd_erase(uint32_t offset, size_t len) {
+bool spi_flash_cmd_erase(uint32_t nOffset, uint32_t nLength) {
 	DEBUG_ENTRY
 
-	uint32_t erase_size;
-	uint8_t cmd[4];
-	int ret = -1;
-
-	erase_size = s_flash.sector_size;
-
-	if (offset % erase_size || len % erase_size) {
+	if ((nOffset % spi_flash::SECTOR_SIZE) || (nLength % spi_flash::SECTOR_SIZE)) {
 		DEBUG_PUTS("Erase offset/length not multiple of erase size");
 		DEBUG_EXIT
-		return -1;
+		return false;
 	}
 
-	if (erase_size == 4096) {
-		cmd[0] = CMD_ERASE_4K;
-	} else {
-		cmd[0] = CMD_ERASE_64K;
+	if (!spi_flash_cmd_wait_ready(SPI_FLASH_PROG_TIMEOUT)) {
+		DEBUG_EXIT
+		return false;
 	}
 
-	spi_flash_cmd_wait_ready(SPI_FLASH_PROG_TIMEOUT);
+	static_assert(spi_flash::SECTOR_SIZE == 4096);
+	uint8_t cmd[4];
+	cmd[0] = CMD_ERASE_4K;
 
-	while (len) {
-		spi_flash_addr(offset, cmd);
+	while (nLength) {
+		spi_flash_addr(nOffset, cmd);
 
-		DEBUG_PRINTF("erase %2x %2x %2x %2x (%x)", cmd[0], cmd[1], cmd[2], cmd[3], offset);
+		DEBUG_PRINTF("erase %2x %2x %2x %2x (%x)", cmd[0], cmd[1], cmd[2], cmd[3], nOffset);
 
-		ret = spi_flash_write_common(cmd, sizeof(cmd), nullptr, 0, (len != erase_size));
+		const auto ret = spi_flash_write_common(cmd, sizeof(cmd), nullptr, 0, (nLength != spi_flash::SECTOR_SIZE));
 
-		if (ret < 0) {
+		if (!ret) {
 			DEBUG_PUTS("Erase failed");
 			DEBUG_EXIT
-			break;
+			return false;
 		}
 
-		offset += erase_size;
-		len -= erase_size;
+		nOffset += spi_flash::SECTOR_SIZE;
+		nLength -= spi_flash::SECTOR_SIZE;
 	}
 
 	DEBUG_EXIT
-	return ret;
+	return true;
 }
 
-int spi_flash_cmd_write_status(uint8_t sr) {
-	uint8_t cmd;
-	int ret;
+bool spi_flash_cmd_write_status(uint8_t sr) {
+	uint8_t cmd = CMD_WRITE_STATUS;
+	const auto ret = spi_flash_write_common(&cmd, 1, &sr, 1, false);
 
-	cmd = CMD_WRITE_STATUS;
-	ret = spi_flash_write_common(&cmd, 1, &sr, 1, false);
-
-	if (ret < 0) {
+	if (!ret) {
 		DEBUG_PUTS("Fail to write status register");
-		return ret;
+		return false;
 	}
 
-	return 0;
+	return true;
 }
 
-int spi_flash_probe([[maybe_unused]] unsigned int cs, [[maybe_unused]] unsigned int max_hz, [[maybe_unused]] unsigned int spi_mode) {
-	int shift;
-	unsigned i;
-	uint8_t idcode[IDCODE_LEN] = {0, };
-	uint8_t *idp;
+bool spi_flash_probe() {
+	spi_init();
 
-	if (spi_init() < 0) {
-		DEBUG_PUTS("spi_init() failed!");
-		return -1;
-	}
-
-	/* Read the ID codes */
+	uint8_t idcode[IDCODE_LEN];
 	spi_flash_cmd(CMD_READ_ID, idcode, sizeof(idcode));
 
-	/* count the number of continuation bytes */
-	for (shift = 0, idp = idcode; shift < IDCODE_CONT_LEN && *idp == 0x7f; ++shift, ++idp) {
-		continue;
-	}
+	debug_dump(idcode, sizeof(idcode));
 
-	/* search the table for matches in shift and id */
+	uint32_t i;
+
 	for (i = 0; i < ARRAY_SIZE(flashes); ++i) {
-		if (flashes[i].shift == shift && flashes[i].idcode == *idp) {
-			/* we have a match, call probe */
-			if (0 == flashes[i].probe(&s_flash, idp)) {
+		if (flashes[i].idcode == idcode[0]) {
+			if (flashes[i].probe(&s_flash, idcode)) {
 				break;
 			}
 		}
 	}
 
 	if (i == ARRAY_SIZE(flashes)) {
-		DEBUG_PRINTF("Unsupported manufacturer %02x", *idp);
-		return -1;
+		DEBUG_PRINTF("Unsupported manufacturer %02x", idcode[0]);
+		return false;
 	}
 
-	DEBUG_PRINTF("Detected %s with sector size %d total %d bytes", s_flash.name, s_flash.sector_size, s_flash.size);
+	DEBUG_PRINTF("Detected %s total %d bytes", s_flash.name, s_flash.size);
 
-	return 0;
+	return true;
 }
