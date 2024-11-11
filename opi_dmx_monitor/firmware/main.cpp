@@ -61,10 +61,7 @@ int main() {
 	DisplayUdf display;
 #if !defined(NO_EMAC)
 	ConfigStore configStore;
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, CONSOLE_YELLOW);
 	Network nw;
-	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, CONSOLE_GREEN);
-	
 #endif
 
 	console_clear();

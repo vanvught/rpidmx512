@@ -28,7 +28,7 @@
 
 #include "hardware.h"
 #include "network.h"
-#include "networkconst.h"
+
 
 #include "display.h"
 
@@ -61,14 +61,11 @@ int main() {
 	Hardware hw;
 	Display display;
 	ConfigStore configStore;
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, CONSOLE_YELLOW);
 	Network nw;
-	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, CONSOLE_GREEN);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	FlashCodeInstall spiFlashInstall;
 
 	fw.Print("OSC Server DMX");
-	
 
 	OSCServerParams params;
 	OscServer server;
@@ -129,7 +126,7 @@ int main() {
 		server.Run();
 		remoteConfig.Run();
 		configStore.Flash();
-//		mdns_run(); //	mDns.Run(); //	mDns.Run();
+
 		display.Run();
 		hw.Run();
 	}

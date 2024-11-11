@@ -2,7 +2,7 @@
  * @file timecode.cpp
  *
  */
-/* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,17 +39,17 @@ static constexpr auto COLUMN = 80;
 static constexpr auto TC_LENGTH = sizeof(s_aTimecode) - 1;
 static constexpr char TC_TYPES[4][8] __attribute__ ((aligned (4))) = { "Film ", "EBU  ", "DF   ", "SMPTE" };
 
-inline static void itoa_base10(uint32_t nArg, char *pBuffer) {
+static void itoa(const uint32_t nValue, char *pBuffer) {
 	auto *nDst = pBuffer;
 
-	if (nArg == 0) {
+	if (nValue == 0) {
 		*nDst++ = '0';
 		*nDst = '0';
 		return;
 	}
 
-	*nDst++ = static_cast<char>('0' + (nArg / 10));
-	*nDst = static_cast<char>('0' + (nArg % 10));
+	*nDst++ = static_cast<char>('0' + (nValue / 10));
+	*nDst = static_cast<char>('0' + (nValue % 10));
 }
 
 void TimeCode::Start() {
@@ -66,10 +66,10 @@ void TimeCode::Stop() {
 }
 
 void TimeCode::Handler(const struct artnet::TimeCode *ArtNetTimeCode) {
-	itoa_base10(ArtNetTimeCode->Hours, &s_aTimecode[0]);
-	itoa_base10(ArtNetTimeCode->Minutes, &s_aTimecode[3]);
-	itoa_base10(ArtNetTimeCode->Seconds, &s_aTimecode[6]);
-	itoa_base10(ArtNetTimeCode->Frames, &s_aTimecode[9]);
+	itoa(ArtNetTimeCode->Hours, &s_aTimecode[0]);
+	itoa(ArtNetTimeCode->Minutes, &s_aTimecode[3]);
+	itoa(ArtNetTimeCode->Seconds, &s_aTimecode[6]);
+	itoa(ArtNetTimeCode->Frames, &s_aTimecode[9]);
 
 	if ((nTypePrevious != ArtNetTimeCode->Type) && (ArtNetTimeCode->Type < 4)) {
 		memcpy(&s_aTimecode[12], TC_TYPES[ArtNetTimeCode->Type], 5);
