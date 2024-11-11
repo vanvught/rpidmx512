@@ -28,7 +28,7 @@
 
 #include "hardware.h"
 #include "network.h"
-#include "networkconst.h"
+
 
 #include "net/apps/mdns.h"
 
@@ -75,15 +75,12 @@ int main() {
 	Hardware hw;
 	DisplayUdf display;
 	ConfigStore configStore;
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, CONSOLE_YELLOW);
 	Network nw;
-	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, CONSOLE_GREEN);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	FlashCodeInstall spiFlashInstall;
 
 	fw.Print("Showfile player");
 	
-
 	ShowFile showFile;
 
 	ShowFileParams showFileParams;
@@ -128,7 +125,6 @@ int main() {
 	showFile.Print();
 
 	// Fixed row 5, 6, 7
-
 
 	if (showFileParams.IsArtNetBroadcast()) {
 		Display::Get()->PutString(" <Broadcast>");

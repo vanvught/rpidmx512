@@ -47,7 +47,7 @@
 #include "artnetmsgconst.h"
 
 #include "artnetconst.h"
-#include "networkconst.h"
+
 
 #include "midi.h"
 #include "rtpmidi.h"
@@ -103,12 +103,6 @@
 # include "shell/shell.h"
 #endif
 
-namespace artnetnode {
-namespace configstore {
-uint32_t DMXPORT_OFFSET = 0;
-}  // namespace configstore
-}  // namespace artnetnode
-
 void Hardware::RebootHandler() {
 //	switch (m_tSource) {
 //	case ltc::source::TCNET:
@@ -145,23 +139,18 @@ int main() {
 	Hardware hw;
 	Display display(4);
 	ConfigStore configStore;
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, CONSOLE_YELLOW);
 	Network nw;
-	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, CONSOLE_GREEN);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	FlashCodeInstall spiFlashInstall;
 
 	fw.Print("LTC SMPTE");
 	
-
 #if defined(ENABLE_SHELL)
 	Shell shell;
 #endif
 
 	display.ClearLine(1);
 	display.ClearLine(2);
-
-//	MDNS mdns;
 
 	NtpClient ntpClient;
 	ntpClient.Start();

@@ -74,22 +74,13 @@ int main() {
 	Hardware hw;
 	DisplayUdf display;
 	ConfigStore configStore;
-#if !defined(NO_EMAC)
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, CONSOLE_YELLOW);
 	Network nw;
-	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, CONSOLE_GREEN);
-#else
-	Network nw;
-#endif
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	FlashCodeInstall spiFlashInstall;
 
 	const auto isConfigMode = is_config_mode();
 
 	fw.Print("RDM Responder");
-#if !defined(NO_EMAC)
-	
-#endif
 
 	PixelDmxConfiguration pixelDmxConfiguration;
 
@@ -203,7 +194,7 @@ int main() {
 #if !defined(NO_EMAC)
 		nw.Run();
 		remoteConfig.Run();
-//		mdns_run(); //	mDns.Run(); //	mDns.Run();
+
 #endif
 		pixelTestPattern.Run();
 		display.Run();

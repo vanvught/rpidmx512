@@ -31,7 +31,7 @@
 
 #include "hardware.h"
 #include "network.h"
-#include "networkconst.h"
+
 
 #include "display.h"
 #include "displayudfparams.h"
@@ -64,6 +64,7 @@
 
 #include "firmwareversion.h"
 #include "software_version.h"
+#include "software_version_id.h"
 
 static bool keepRunning = true;
 
@@ -93,8 +94,7 @@ int main(int argc, char **argv) {
 	Display display;
 	ConfigStore configStore;
 	Network nw(argc, argv);
-//	MDNS mDns;
-	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__, DEVICE_SOFTWARE_VERSION_ID);
 
 	hw.Print();
 	fw.Print();

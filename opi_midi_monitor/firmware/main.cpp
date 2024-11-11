@@ -51,9 +51,7 @@ int main() {
 	Display display;
 #if !defined(NO_EMAC)
 	ConfigStore configStore;
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, CONSOLE_YELLOW);
 	Network nw;
-	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, CONSOLE_GREEN);
 #endif
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	FlashCodeInstall spiFlashInstall;
@@ -66,8 +64,6 @@ int main() {
 	midi.Init(midi::Direction::INPUT);
 
 #if !defined(NO_EMAC)
-	
-
 	RemoteConfigParams remoteConfigParams;
 	remoteConfigParams.Load();
 	remoteConfigParams.Set(&remoteConfig);

@@ -31,7 +31,7 @@
 
 #include "hardware.h"
 #include "network.h"
-#include "networkconst.h"
+
 
 #include "display.h"
 
@@ -65,35 +65,28 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
+namespace artnetnode {
+#if !defined(CONFIG_DMX_PORT_OFFSET)
+ static constexpr uint32_t DMXPORT_OFFSET = 0;
+#else
+ static constexpr uint32_t DMXPORT_OFFSET = CONFIG_DMX_PORT_OFFSET;
+#endif
+}  // namespace artnetnode
+
 static bool keepRunning = true;
 
 void intHandler(int) {
     keepRunning = false;
 }
 
-namespace artnetnode {
-namespace configstore {
-uint32_t DMXPORT_OFFSET = 0;
-}  // namespace configstore
-}  // namespace artnetnode
-
 int main(int argc, char **argv) {
     struct sigaction act;
     act.sa_handler = intHandler;
     sigaction(SIGINT, &act, nullptr);
-#ifndef NDEBUG
-	if (argc > 2) {
-		const int c = argv[2][0];
-		if (isdigit(c)){
-			artnetnode::configstore::DMXPORT_OFFSET = c - '0';
-		}
-	}
-#endif
 	Hardware hw;
 	Display display;
 	ConfigStore configStore;
 	Network nw(argc, argv);
-//	MDNS mDns;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
 	hw.Print();
@@ -129,8 +122,8 @@ int main(int argc, char **argv) {
 
 	for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
 		uint32_t nOffset = nPortIndex;
-		if (nPortIndex >= artnetnode::configstore::DMXPORT_OFFSET) {
-			nOffset = nPortIndex - artnetnode::configstore::DMXPORT_OFFSET;
+		if (nPortIndex >= artnetnode::DMXPORT_OFFSET) {
+			nOffset = nPortIndex - artnetnode::DMXPORT_OFFSET;
 		} else {
 			continue;
 		}

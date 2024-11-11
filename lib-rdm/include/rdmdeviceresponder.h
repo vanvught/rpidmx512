@@ -2,7 +2,7 @@
  * @file rdmdeviceresponder.h
  *
  */
-/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,6 +37,8 @@
 #include "rdmsubdevices.h"
 
 #include "lightset.h"
+
+#include "firmwareversion.h"
 
 namespace rdm {
 namespace device {
@@ -175,11 +177,12 @@ public:
 	}
 
 	// E120_SOFTWARE_VERSION_LABEL	0x00C0
-	const char* GetSoftwareVersion() const {
-		return m_pSoftwareVersion;
+	const char *GetSoftwareVersion() const {
+		return FirmwareVersion::Get()->GetSoftwareVersion();
 	}
-	uint8_t GetSoftwareVersionLength() const {
-		return m_nSoftwareVersionLength;
+
+	uint32_t GetSoftwareVersionLength() const {
+		return firmwareversion::length::SOFTWARE_VERSION;
 	}
 
 	// E120_DMX_START_ADDRESS		0x00F0
@@ -295,7 +298,7 @@ public:
 		return m_DeviceInfo.current_personality;
 	}
 
-	static RDMDeviceResponder* Get() {
+	static RDMDeviceResponder *Get() {
 		return s_pThis;
 	}
 
@@ -314,17 +317,14 @@ private:
 	RDMSensors m_RDMSensors;
 	RDMSubDevices m_RDMSubDevices;
 	RDMPersonality **m_pRDMPersonalities;
-	char *m_pSoftwareVersion;
-	uint8_t m_nSoftwareVersionLength;
 	rdm::device::responder::DeviceInfo m_DeviceInfo;
 	rdm::device::responder::DeviceInfo m_SubDeviceInfo;
 	char m_aLanguage[2];
-	//
 	bool m_IsFactoryDefaults { true };
 	uint16_t m_nCheckSum { 0 };
 	uint16_t m_nDmxStartAddressFactoryDefault { lightset::dmx::START_ADDRESS_DEFAULT };
 
-	static RDMDeviceResponder *s_pThis;
+	static inline RDMDeviceResponder *s_pThis;
 };
 
 #endif /* RDMDEVICERESPONDER_H_ */
