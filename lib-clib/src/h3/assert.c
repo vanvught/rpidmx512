@@ -62,8 +62,11 @@ void __assert_func(const char *file, int line, const char *func, const char *fai
 
 	console_set_fg_color(CONSOLE_WHITE);
 
+#if !defined(CONFIG_CLIB_ASSERT_REBOOT)
 	H3_TIMER->WDOG0_MODE = 0;
+#endif
 
 	for (;;)
 		;
+
 }
