@@ -2,7 +2,7 @@
  * @file h3_spi.c
  *
  */
-/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -535,14 +535,8 @@ uint8_t h3_spi_transfer(uint8_t data) {
  * DMA support
  */
 
-#if 0
-# define SPI_DMA_COHERENT_REGION_SIZE	(MEGABYTE/8)
-# define SPI_DMA_COHERENT_REGION		(H3_MEM_COHERENT_REGION + MEGABYTE/2 + MEGABYTE/4)
-#else
-# define SPI_DMA_COHERENT_REGION_SIZE	(H3_SRAM_A2_SIZE)
-# define SPI_DMA_COHERENT_REGION		(H3_SRAM_A2_BASE)
-#endif
-
+#define SPI_DMA_COHERENT_REGION_SIZE	(MEGABYTE/8)
+#define SPI_DMA_COHERENT_REGION			(H3_MEM_COHERENT_REGION + MEGABYTE/2 + MEGABYTE/4)
 #define SPI_DMA_TX_BUFFER_SIZE			(SPI_DMA_COHERENT_REGION_SIZE - sizeof(struct sunxi_dma_lli))
 
 struct dma_spi {
@@ -589,14 +583,14 @@ const uint8_t *h3_spi_dma_tx_prepare(uint32_t *size) {
 	return reinterpret_cast<const uint8_t *>(&p_dma_tx->tx_buffer);
 }
 
-void h3_spi_dma_tx_start(const uint8_t *tx_buffer, uint32_t data_length) {
+void h3_spi_dma_tx_start(const uint8_t *pTxBuffer, uint32_t nLength) {
 	assert(!is_running);
-	assert(tx_buffer != 0);	// TODO Not valid when SRAM is used
-	assert(data_length <= static_cast<uint32_t>(sizeof(p_dma_tx->tx_buffer)) - (reinterpret_cast<uint32_t>(tx_buffer)) - reinterpret_cast<uint32_t>(&p_dma_tx->tx_buffer));
-//	assert(((uint32_t) tx_buffer & H3_MEM_COHERENT_REGION) == H3_MEM_COHERENT_REGION);
+	assert(pTxBuffer != 0);
+	assert(nLength <= static_cast<uint32_t>(sizeof(p_dma_tx->tx_buffer)) - (reinterpret_cast<uint32_t>(pTxBuffer)) - reinterpret_cast<uint32_t>(&p_dma_tx->tx_buffer));
+	assert(((uint32_t) pTxBuffer & H3_MEM_COHERENT_REGION) == H3_MEM_COHERENT_REGION);
 
-	p_dma_tx->lli.src = reinterpret_cast<uint32_t>(tx_buffer);
-	p_dma_tx->lli.len = data_length;
+	p_dma_tx->lli.src = reinterpret_cast<uint32_t>(pTxBuffer);
+	p_dma_tx->lli.len = nLength;
 	dmb();
 
 	EXT_SPI->GC &= static_cast<uint32_t>(~(1U << 7));
@@ -605,9 +599,9 @@ void h3_spi_dma_tx_start(const uint8_t *tx_buffer, uint32_t data_length) {
 	EXT_SPI->IS = static_cast<uint32_t>(~0);
 	EXT_SPI->IE = IE_TC;
 
-	EXT_SPI->MBC = data_length;
-	EXT_SPI->MTC = data_length;
-	EXT_SPI->BCC = data_length;
+	EXT_SPI->MBC = nLength;
+	EXT_SPI->MTC = nLength;
+	EXT_SPI->BCC = nLength;
 
 	EXT_SPI->TC |= (1U << 31);
 	EXT_SPI->FC |= (1 << 24);
@@ -616,4 +610,46 @@ void h3_spi_dma_tx_start(const uint8_t *tx_buffer, uint32_t data_length) {
 	H3_DMA_CHL4->EN = DMA_CHAN_ENABLE_START;
 
 	is_running = true;
+}
+
+/*
+ * bitbang support
+ */
+
+void __attribute__((cold)) h3_bitbang_spi_begin() {
+	h3_gpio_fsel(EXT_SPI_CS, GPIO_FSEL_OUTPUT);
+	h3_gpio_fsel(EXT_SPI_CLK, GPIO_FSEL_OUTPUT);
+	h3_gpio_fsel(EXT_SPI_MOSI, GPIO_FSEL_OUTPUT);
+	h3_gpio_fsel(EXT_SPI_MISO, GPIO_FSEL_INPUT);
+}
+
+void __attribute__((cold)) h3_bitbang_spi_chipSelect([[maybe_unused]] const uint8_t chip_select) {
+
+}
+
+void __attribute__((cold)) h3_bitbang_spi_set_speed_hz([[maybe_unused]] const uint32_t speed_hz) {
+
+}
+
+void __attribute__((cold)) h3_bitbang_spi_setDataMode([[maybe_unused]] const uint8_t mode) {
+
+}
+
+static inline void bitbang_spi_write(const char c) {
+	for (uint32_t nMask = (1U << 7); nMask != 0; nMask = (nMask >> 1U)) {
+		if (c & nMask) {
+			h3_gpio_set(EXT_SPI_MOSI);
+		} else {
+			h3_gpio_clr(EXT_SPI_MOSI);
+		}
+
+		h3_gpio_set(EXT_SPI_CLK);
+		h3_gpio_clr(EXT_SPI_CLK);
+	}
+}
+
+void h3_bitbang_spi_writenb(const char *pTxBuffer, uint32_t nLength) {
+	for (uint32_t i = 0; i < nLength; i++) {
+		bitbang_spi_write(pTxBuffer[i]);
+	}
 }
