@@ -23,6 +23,10 @@
  * THE SOFTWARE.
  */
 
+#pragma GCC push_options
+#pragma GCC optimize ("O2")
+#pragma GCC optimize ("no-tree-loop-distribute-patterns")
+
 #include <cstdio>
 #include <cstdint>
 #include <cstring>
@@ -47,7 +51,6 @@
 #include "artnetmsgconst.h"
 
 #include "artnetconst.h"
-
 
 #include "midi.h"
 #include "rtpmidi.h"

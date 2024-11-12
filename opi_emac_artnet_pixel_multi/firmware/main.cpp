@@ -23,11 +23,14 @@
  * THE SOFTWARE.
  */
 
+#pragma GCC push_options
+#pragma GCC optimize ("O2")
+#pragma GCC optimize ("no-tree-loop-distribute-patterns")
+
 #include <cstdint>
 
 #include "hardware.h"
 #include "network.h"
-
 
 #include "net/apps/mdns.h"
 
@@ -47,7 +50,6 @@
 #include "ws28xxmulti.h"
 #include "pixeldmxparams.h"
 #include "ws28xxdmxmulti.h"
-
 
 #if defined (NODE_RDMNET_LLRP_ONLY)
 # include "rdmdeviceparams.h"
