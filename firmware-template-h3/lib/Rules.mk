@@ -25,7 +25,8 @@ SRCDIR+=src/debug
 
 $(info [${SRCDIR}])
 
-INCLUDES:=-I./include -I../include -I../lib-device/include -I../lib-flash/include -I../lib-configstore/include -I../lib-hal/include -I../lib-debug/include -I../lib-h3/include -I../lib-arm/include 
+INCLUDES:=-I./include -I../include -I../lib-device/include -I../lib-configstore/include -I../lib-hal/include -I../lib-debug/include -I../lib-h3/include -I../lib-arm/include 
+INCLUDES+=-I../lib-flash/include -I../lib-flashcodeinstall/include
 INCLUDES+=-I../lib-h3/CMSIS/Core_A/Include
 INCLUDES+=$(addprefix -I,$(EXTRA_INCLUDES))
 

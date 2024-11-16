@@ -27,10 +27,6 @@ ifeq ($(findstring ORANGE_PI,$(PLATFORM)),ORANGE_PI)
 	COND=1
 endif
 
-include ../firmware-template/libs.mk
-
-LIBS+=h3 clib arm
-
 # Output 
 TARGET=$(SUFFIX).img
 LIST=$(SUFFIX).list
@@ -64,8 +60,12 @@ ifeq ($(findstring ARTNET_VERSION=4,$(DEFINES)),ARTNET_VERSION=4)
 	endif
 endif
 
+include ../firmware-template/libs.mk
+
+LIBS+=h3 clib arm
+
 # The variable for the firmware include directories
-INCDIRS+=../include $(wildcard ./include) $(wildcard ./*/include)  ../firmware-template-h3/include ../lib-h3/CMSIS/Core_A/Include
+INCDIRS+=../include $(wildcard ./include) $(wildcard ./*/include)  ../firmware-template-h3/include ../lib-h3/CMSIS/Core_A/Include -I../lib-flashcodeinstall/include
 INCDIRS:=$(addprefix -I,$(INCDIRS))
 
 # The variable for the libraries include directory
