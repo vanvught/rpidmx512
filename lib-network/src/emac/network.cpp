@@ -100,8 +100,6 @@ static void netif_ext_callback(const uint16_t reason, [[maybe_unused]] const net
 	DEBUG_EXIT
 }
 
-Network *Network::s_pThis;
-
 Network::Network() {
 	DEBUG_ENTRY
 	assert(s_pThis == nullptr);
@@ -242,6 +240,7 @@ void Network::SetHostName(const char *pHostName) {
 	m_aHostName[network::HOSTNAME_SIZE - 1] = '\0';
 
 	NetworkStore::SaveHostName(m_aHostName, static_cast<uint32_t>(strlen(m_aHostName)));
+
 #if !defined(CONFIG_NET_APPS_NO_MDNS)
 	mdns_send_announcement(mdns::MDNS_RESPONSE_TTL);
 #endif
@@ -268,93 +267,6 @@ void Network::EnableDhcp() {
 	NetworkStore::SaveDhcp(true);
 
 	DEBUG_EXIT
-}
-
-void Network::SetQueuedStaticIp(const uint32_t nStaticIp, const uint32_t nNetmask) {
-	DEBUG_ENTRY
-	DEBUG_PRINTF(IPSTR ", nNetmask=" IPSTR, IP2STR(nStaticIp), IP2STR(nNetmask));
-
-	if (nStaticIp != 0) {
-		m_QueuedConfig.nStaticIp = nStaticIp;
-	} else {
-		m_QueuedConfig.nStaticIp = GetIp();
-	}
-
-	if (nNetmask != 0) {
-		m_QueuedConfig.nNetmask = nNetmask;
-	} else {
-		m_QueuedConfig.nNetmask = GetNetmask();
-	}
-
-	m_QueuedConfig.nMask |= QueuedConfig::STATIC_IP;
-	m_QueuedConfig.nMask |= QueuedConfig::NETMASK;
-
-	DEBUG_EXIT
-}
-
-void Network::SetQueuedDefaultRoute(const uint32_t nGatewayIp) {
-	if (nGatewayIp != 0) {
-		m_QueuedConfig.nGateway = nGatewayIp;
-	} else {
-		m_QueuedConfig.nGateway = GetGatewayIp();
-	}
-
-	m_QueuedConfig.nMask |= QueuedConfig::GW;
-}
-
-bool Network::ApplyQueuedConfig() {
-	DEBUG_ENTRY
-	DEBUG_PRINTF("m_QueuedConfig.nMask=%x, " IPSTR ", " IPSTR, m_QueuedConfig.nMask, IP2STR(m_QueuedConfig.nStaticIp), IP2STR(m_QueuedConfig.nNetmask));
-
-	if (m_QueuedConfig.nMask == QueuedConfig::NONE) {
-		DEBUG_EXIT
-		return false;
-	}
-
-	if ((isQueuedMaskSet(QueuedConfig::STATIC_IP)) || (isQueuedMaskSet(QueuedConfig::NETMASK)) || (isQueuedMaskSet(QueuedConfig::GW))) {
-		// After SetIp all ip address might be zero.
-		if (isQueuedMaskSet(QueuedConfig::STATIC_IP)) {
-			SetIp(m_QueuedConfig.nStaticIp);
-		}
-
-		if (isQueuedMaskSet(QueuedConfig::NETMASK)) {
-			SetNetmask(m_QueuedConfig.nNetmask);
-		}
-
-		if (isQueuedMaskSet(QueuedConfig::GW)) {
-			SetGatewayIp(m_QueuedConfig.nGateway);
-		}
-
-		m_QueuedConfig.nMask = QueuedConfig::NONE;
-
-		DEBUG_EXIT
-		return true;
-	}
-
-	if (isQueuedMaskSet(QueuedConfig::DHCP)) {
-		if (m_QueuedConfig.mode == network::dhcp::Mode::ACTIVE) {
-			EnableDhcp();
-		} else if (m_QueuedConfig.mode == network::dhcp::Mode::INACTIVE) {
-
-		}
-
-		m_QueuedConfig.mode = network::dhcp::Mode::UNKNOWN;
-		m_QueuedConfig.nMask = QueuedConfig::NONE;
-
-		DEBUG_EXIT
-		return true;
-	}
-
-	if (isQueuedMaskSet(QueuedConfig::ZEROCONF)) {
-		SetZeroconf();
-		m_QueuedConfig.nMask = QueuedConfig::NONE;
-
-		DEBUG_EXIT
-		return true;
-	}
-
-	DEBUG_EXIT
-	return false;
 }
 
 void Network::Print() {

@@ -102,20 +102,11 @@ public:
 	void EnableDhcp();
 
 	bool IsDhcpUsed() {
-		const auto b = net::netif_dhcp();
-		return b;
+		return net::netif_dhcp();
 	}
 
 	bool IsDhcpKnown() const {
 		return true;
-	}
-
-	network::dhcp::Mode GetDhcpMode() {
-		if (IsDhcpUsed()) {
-			return network::dhcp::Mode::ACTIVE;
-		}
-
-		return network::dhcp::Mode::INACTIVE;
 	}
 
 	/*
@@ -197,7 +188,7 @@ public:
 	}
 
 	void SendTo(int32_t nHandle, const void *pBuffer, uint32_t nLength, uint32_t to_ip, uint16_t remote_port) {
-		if (__builtin_expect((GetIp() != 0), 1)) {
+		if (__builtin_expect((GetIp() != 0), 1)) { //FIXME
 			net::udp_send(nHandle, reinterpret_cast<const uint8_t *>(pBuffer), nLength, to_ip, remote_port);
 		}
 	}
@@ -237,18 +228,6 @@ public:
 	void LeaveGroup([[maybe_unused]] int32_t nHandle, uint32_t nIp) {
 		net::igmp_leave(nIp);
 	}
-
-	void SetQueuedStaticIp(const uint32_t nStaticIp, const uint32_t nNetmask);
-	void SetQueuedDefaultRoute(const uint32_t nGatewayIp);
-	void SetQueuedDhcp(const network::dhcp::Mode mode) {
-		m_QueuedConfig.mode = mode;
-		m_QueuedConfig.nMask |= QueuedConfig::DHCP;
-	}
-	void SetQueuedZeroconf() {
-		m_QueuedConfig.nMask |= QueuedConfig::ZEROCONF;
-	}
-
-	bool ApplyQueuedConfig();
 
 	uint32_t GetNetmaskCIDR() {
 		return static_cast<uint32_t>(__builtin_popcount(GetNetmask()));
@@ -303,27 +282,7 @@ private:
 	char m_aDomainName[network::DOMAINNAME_SIZE];
 	uint32_t m_nNameservers[network::NAMESERVERS_COUNT];
 
-	struct QueuedConfig {
-		static constexpr uint32_t NONE = 0;
-		static constexpr uint32_t STATIC_IP = (1U << 0);
-		static constexpr uint32_t NETMASK   = (1U << 1);
-		static constexpr uint32_t GW        = (1U << 2);
-		static constexpr uint32_t DHCP      = (1U << 3);
-		static constexpr uint32_t ZEROCONF  = (1U << 4);
-		uint32_t nMask = QueuedConfig::NONE;
-		uint32_t nStaticIp;
-		uint32_t nNetmask;
-		uint32_t nGateway;
-		network::dhcp::Mode mode;
-	};
-
-	QueuedConfig m_QueuedConfig;
-
-    bool isQueuedMaskSet(const uint32_t nMask) {
-    	return (m_QueuedConfig.nMask & nMask) == nMask;
-    }
-
-	static Network *s_pThis;
+	static inline Network *s_pThis;
 };
 
 #endif /* EMAC_NETWORK_H_ */
