@@ -29,7 +29,7 @@
 
 #include "hardware.h"
 #include "network.h"
-#include "networkconst.h"
+
 
 #include "net/apps/mdns.h"
 
@@ -72,12 +72,6 @@
 
 #include "displayhandler.h"
 
-namespace artnetnode {
-namespace configstore {
-uint32_t DMXPORT_OFFSET = 0;
-}  // namespace configstore
-}  // namespace artnetnode
-
 void Hardware::RebootHandler() {
 	ArtNetNode::Get()->Stop();
 }
@@ -86,15 +80,11 @@ int main() {
 	Hardware hw;
 	DisplayUdf display;
 	ConfigStore configStore;
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, CONSOLE_YELLOW);
 	Network nw;
-	MDNS mDns;
-	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, CONSOLE_GREEN);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	FlashCodeInstall spiFlashInstall;
 
 	fw.Print("Art-Net 4 PCA9685");
-	
 
 	NtpClient ntpClient;
 	ntpClient.Start();
@@ -184,7 +174,7 @@ int main() {
 	while (configStore.Flash())
 		;
 
-	mDns.Print();
+	mdns_print(); //	mDns.Print();
 
 	display.TextStatus(ArtNetMsgConst::START, CONSOLE_YELLOW);
 
@@ -204,7 +194,7 @@ int main() {
 		ntpClient.Run();
 		remoteConfig.Run();
 		configStore.Flash();
-		mDns.Run();
+
 		display.Run();
 		hw.Run();
 	}

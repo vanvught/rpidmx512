@@ -2,7 +2,7 @@
  * @file rgbpanelconst.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,10 +51,14 @@ static constexpr auto MAX_NAME_LENGTH = 7 + 1;  	// + '\0'
 }  // namespace rgbpanel
 
 struct RgbPanelConst {
-	static const char TYPE[static_cast<unsigned>(rgbpanel::Types::UNDEFINED)][rgbpanel::type::MAX_NAME_LENGTH];
+	static inline const char TYPE[static_cast<unsigned>(rgbpanel::Types::UNDEFINED)][rgbpanel::type::MAX_NAME_LENGTH] = {
+			"HUB75",
+			"FM6126A",
+			"FM6127"
+	};
 
-	static const uint32_t COLS[rgbpanel::config::COLS];
-	static const uint32_t ROWS[rgbpanel::config::ROWS];
+	static constexpr uint32_t COLS[rgbpanel::config::COLS] = { 32, 64 };
+	static constexpr uint32_t ROWS[rgbpanel::config::ROWS] = { 8, 16, 32, 64 };
 };
 
 #endif /* RGBPANELCONST_H_ */

@@ -29,9 +29,6 @@
 # undef NDEBUG
 #endif
 
-#pragma GCC push_options
-#pragma GCC optimize ("Os")
-
 #include <cstdint>
 #include <cstring>
 #include <cassert>
@@ -40,7 +37,7 @@
 #include "net_memcpy.h"
 #include "net_private.h"
 
-#include "hardware.h"
+#include "softwaretimers.h"
 #include "network.h"
 
 #include "../../config/net_config.h"
@@ -54,7 +51,7 @@
 
 #define REBOOT_TRIES                2
 
-static int32_t nTimerId;
+static TimerHandle_t nTimerId;
 
 // https://tools.ietf.org/html/rfc1541
 namespace net {
@@ -212,6 +209,29 @@ static void dhcp_send_release(const uint32_t nDestinationIp) {
 	s_dhcp_message.options[k++] = dhcp::Options::OPTION_END;
 
 	udp_send(dhcp->nHandle, reinterpret_cast<uint8_t *>(&s_dhcp_message), static_cast<uint16_t>(k + sizeof(dhcp::Message) - dhcp::OPT_SIZE), nDestinationIp, net::iana::IANA_PORT_DHCP_SERVER);
+
+	DEBUG_EXIT
+}
+
+void dhcp_input(const uint8_t *pBuffer, uint32_t nSize, [[maybe_unused]] uint32_t nFromIp, uint16_t nFromPort) {
+	DEBUG_ENTRY
+
+	if (nFromPort == net::iana::IANA_PORT_DHCP_SERVER) {
+		auto *dhcp = reinterpret_cast<struct dhcp::Dhcp *>(globals::netif_default.dhcp);
+		assert(dhcp != nullptr);
+
+		const auto *const p = reinterpret_cast<const dhcp::Message *>(pBuffer);
+
+		if (p->xid != dhcp->xid) {
+			DEBUG_PRINTF("pDhcpMessage->xid=%u, dhcp->xid=%u", p->xid, dhcp->xid);
+			return;
+		}
+
+		dhcp_process(p, nSize);
+
+		DEBUG_EXIT
+		return;
+	}
 
 	DEBUG_EXIT
 }
@@ -552,7 +572,7 @@ static void dhcp_t2_timeout() {
 	}
 }
 
-void dhcp_coarse_tmr() {
+void dhcp_coarse_tmr([[maybe_unused]] TimerHandle_t nHandle) {
 	auto *dhcp = reinterpret_cast<struct dhcp::Dhcp *>(globals::netif_default.dhcp);
 
     if ((dhcp != nullptr) && (dhcp->state != dhcp::State::STATE_OFF)) {
@@ -573,7 +593,7 @@ void dhcp_coarse_tmr() {
     }
 }
 
-static void dhcp_fine_tmr() {
+static void dhcp_fine_tmr([[maybe_unused]] TimerHandle_t nHandle) {
 	auto *dhcp = reinterpret_cast<struct dhcp::Dhcp *>(globals::netif_default.dhcp);
 
 	if (dhcp != nullptr) {
@@ -625,7 +645,7 @@ static void dhcp_handle_ack(const dhcp::Message *const pResponse) {
 	if (dhcp->offered.offered_sn_mask.addr != 0) {
 		dhcp->flags |= DHCP_FLAG_SUBNET_MASK_GIVEN;
 	} else {
-		dhcp->flags &= ~DHCP_FLAG_SUBNET_MASK_GIVEN;
+		dhcp->flags &= static_cast<uint8_t>(~DHCP_FLAG_SUBNET_MASK_GIVEN);
 	}
 
 	DEBUG_PRINTF("t0=%u, t1=%u, t2=%u", dhcp->offered.offered_t0_lease, dhcp->offered.offered_t1_renew, dhcp->offered.offered_t2_rebind);
@@ -658,12 +678,12 @@ bool dhcp_start() {
 		assert(dhcp != nullptr);
         globals::netif_default.dhcp = dhcp;
 
-    	nTimerId = Hardware::Get()->SoftwareTimerAdd(dhcp::DHCP_FINE_TIMER_MSECS, dhcp_fine_tmr);
+    	nTimerId = SoftwareTimerAdd(dhcp::DHCP_FINE_TIMER_MSECS, dhcp_fine_tmr);
     	assert(nTimerId >= 0);
 	}
 
 	memset(dhcp, 0, sizeof(struct dhcp::Dhcp));
-	dhcp->nHandle = udp_begin(net::iana::IANA_PORT_DHCP_CLIENT);
+	dhcp->nHandle = udp_begin(net::iana::IANA_PORT_DHCP_CLIENT, dhcp_input);
 
 #ifndef NDEBUG
 	if (dhcp->nHandle < 0) {

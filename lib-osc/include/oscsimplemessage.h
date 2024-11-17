@@ -2,7 +2,7 @@
  * @file oscsimplemessage.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,13 +33,13 @@
 
 class OscSimpleMessage {
 public:
-	OscSimpleMessage(void *pData, unsigned nLength);
+	OscSimpleMessage(const uint8_t *pOscMessage, uint32_t nLength);
 
-	bool IsValid() {
+	bool IsValid() const {
 		return m_bIsValid;
 	}
 
-	int GetArgc() {
+	int GetArgc() const {
 		if (m_bIsValid) {
 			return static_cast<int>(m_nArgc);
 		}
@@ -47,7 +47,7 @@ public:
 		return -1;
 	}
 
-	char GetType(unsigned argc) {
+	char GetType(unsigned argc) const {
 		if (argc < m_nArgc) {
 			return static_cast<char>(m_pArg[argc]);
 		}
@@ -55,19 +55,19 @@ public:
 		return osc::type::UNKNOWN;
 	}
 
-	float GetFloat(unsigned argc);
-	int GetInt(unsigned argc);
-	char* GetString(unsigned argc);
-	OSCBlob GetBlob(unsigned argc);
+	float GetFloat(const unsigned argc);
+	int GetInt(const unsigned argc);
+	const char *GetString(const unsigned argc);
+	OSCBlob GetBlob(const unsigned argc);
 
 private:
-	uint8_t *m_pOscMessage;
+	const uint8_t *m_pOscMessage;
 	uint32_t m_nLength;
-	bool m_bIsValid = false;
-	uint8_t *m_pArg;
-	uint32_t m_nArgc = 0;
-	uint8_t *m_pOscMessageData = nullptr;
-	uint32_t m_nOscMessageDataLength = 0;
+	const uint8_t *m_pArg;
+	uint32_t m_nArgc { 0 };
+	const uint8_t *m_pOscMessageData { nullptr };
+	uint32_t m_nOscMessageDataLength { 0 };
+	bool m_bIsValid { false };
 };
 
 #endif /* OSCSIMPLEMESSAGE_H_ */

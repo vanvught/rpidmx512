@@ -2,7 +2,7 @@
  * @file httpd.h
  *
  */
-/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,7 +42,7 @@ public:
 
 	void Run() {
 		uint32_t nConnectionHandle;
-		const auto nBytesReceived = Network::Get()->TcpRead(m_nHandle, const_cast<const uint8_t **>(reinterpret_cast<uint8_t **>(&m_RequestHeaderResponse)), nConnectionHandle);
+		const auto nBytesReceived = Network::Get()->TcpRead(m_nHandle, const_cast<const uint8_t **>(reinterpret_cast<uint8_t **>(&m_pReceiveBuffer)), nConnectionHandle);
 
 		if (__builtin_expect((nBytesReceived == 0), 1)) {
 			return;
@@ -50,13 +50,13 @@ public:
 
 		DEBUG_PRINTF("nConnectionHandle=%u", nConnectionHandle);
 
-		pHandleRequest[nConnectionHandle]->HandleRequest(nBytesReceived, m_RequestHeaderResponse);
+		pHandleRequest[nConnectionHandle]->HandleRequest(nBytesReceived, m_pReceiveBuffer);
 	}
 
 private:
 	HttpDeamonHandleRequest *pHandleRequest[TCP_MAX_TCBS_ALLOWED];
 	int32_t m_nHandle { -1 };
-	char *m_RequestHeaderResponse { nullptr };
+	char *m_pReceiveBuffer { nullptr };
 };
 
 #endif /* HTTPD_HTTPD_H_ */

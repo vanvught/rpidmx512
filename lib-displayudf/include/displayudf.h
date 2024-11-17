@@ -65,6 +65,12 @@
 #endif
 
 namespace displayudf {
+#if !defined(CONFIG_DMX_PORT_OFFSET)
+ static constexpr uint32_t DMXPORT_OFFSET = 0;
+#else
+ static constexpr uint32_t DMXPORT_OFFSET = CONFIG_DMX_PORT_OFFSET;
+#endif
+
 static constexpr auto LABEL_MAX_ROWS = 6U;
 
 #if !defined(NODE_NODE)

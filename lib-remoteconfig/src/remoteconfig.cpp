@@ -23,10 +23,7 @@
  * THE SOFTWARE.
  */
 
-#if !defined(__clang__)	// Needed for compiling on MacOS
-# pragma GCC push_options
-# pragma GCC optimize ("Os")
-#endif
+#define USE_UDP_CALLBACK
 
 #include <algorithm>
 #include <cstdint>
@@ -240,13 +237,9 @@ constexpr struct RemoteConfig::Commands RemoteConfig::s_SET[] = {
 static constexpr char s_Node[static_cast<uint32_t>(remoteconfig::Node::LAST)][18] = { "Art-Net", "sACN E1.31", "OSC Server", "LTC", "OSC Client", "RDMNet LLRP Only", "Showfile", "MIDI", "DDP", "PixelPusher", "Node", "Bootloader TFTP", "RDM Responder" };
 static constexpr char s_Output[static_cast<uint32_t>(remoteconfig::Output::LAST)][12] = { "DMX", "RDM", "Monitor", "Pixel", "TimeCode", "OSC", "Config", "Stepper", "Player", "Art-Net", "Serial", "RGB Panel", "PWM" };
 
-RemoteConfig *RemoteConfig::s_pThis;
-RemoteConfig::ListBin RemoteConfig::s_RemoteConfigListBin;
-char *RemoteConfig::s_pUdpBuffer;
-
 RemoteConfig::RemoteConfig(const remoteconfig::Node node, const remoteconfig::Output output, const uint32_t nActiveOutputs):
-	m_tNode(node),
-	m_tOutput(output),
+	m_Node(node),
+	m_Output(output),
 	m_nActiveOutputs(nActiveOutputs)
 {
 	DEBUG_ENTRY
@@ -263,15 +256,18 @@ RemoteConfig::RemoteConfig(const remoteconfig::Node node, const remoteconfig::Ou
 	s_RemoteConfigListBin.nActiveOutputs = static_cast<uint8_t>(nActiveOutputs);
 	s_RemoteConfigListBin.aDisplayName[0] = '\0';
 
+#if defined (USE_UDP_CALLBACK)
+	m_nHandle = Network::Get()->Begin(remoteconfig::udp::PORT, RemoteConfig::staticCallbackFunction);
+#else
 	m_nHandle = Network::Get()->Begin(remoteconfig::udp::PORT);
+#endif
 	assert(m_nHandle != -1);
 
 #if !defined (CONFIG_REMOTECONFIG_MINIMUM)
-	assert(MDNS::Get() != nullptr);
-	MDNS::Get()->ServiceRecordAdd(nullptr, mdns::Services::CONFIG);
+	mdns_service_record_add(nullptr, mdns::Services::CONFIG);
 
 # if defined(ENABLE_TFTP_SERVER)
-	MDNS::Get()->ServiceRecordAdd(nullptr, mdns::Services::TFTP);
+	mdns_service_record_add(nullptr, mdns::Services::TFTP);
 # endif
 
 # if defined (ENABLE_HTTPD)
@@ -293,7 +289,7 @@ RemoteConfig::~RemoteConfig() {
 	}
 # endif
 
-	MDNS::Get()->ServiceRecordDelete(mdns::Services::CONFIG);
+	mdns_service_record_delete(mdns::Services::CONFIG);
 #endif
 
 	Network::Get()->End(remoteconfig::udp::PORT);
@@ -317,14 +313,18 @@ void RemoteConfig::SetDisable(bool bDisable) {
 		Network::Get()->End(remoteconfig::udp::PORT);
 		m_nHandle = -1;
 #if !defined (CONFIG_REMOTECONFIG_MINIMUM)
-		MDNS::Get()->ServiceRecordDelete(mdns::Services::CONFIG);
+		mdns_service_record_delete(mdns::Services::CONFIG);
 #endif
 		m_bDisable = true;
 	} else if (!bDisable && m_bDisable) {
+#if defined (USE_UDP_CALLBACK)
+		m_nHandle = Network::Get()->Begin(remoteconfig::udp::PORT, RemoteConfig::staticCallbackFunction);
+#else
 		m_nHandle = Network::Get()->Begin(remoteconfig::udp::PORT);
+#endif
 		assert(m_nHandle != -1);
 #if !defined (CONFIG_REMOTECONFIG_MINIMUM)
-		MDNS::Get()->ServiceRecordAdd(nullptr, mdns::Services::CONFIG);
+		mdns_service_record_add(nullptr, mdns::Services::CONFIG);
 #endif
 		m_bDisable = false;
 	}
@@ -346,9 +346,15 @@ void RemoteConfig::SetDisplayName(const char *pDisplayName) {
 	DEBUG_EXIT
 }
 
-void RemoteConfig::HandleRequest() {
+void RemoteConfig::Input(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, [[maybe_unused]] uint16_t nFromPort) {
+	if (pBuffer != nullptr) {
+		s_pUdpBuffer = const_cast<char *>(reinterpret_cast<const char *>(pBuffer));
+		m_nBytesReceived = nSize;
+		m_nIPAddressFrom = nFromIp;
+	}
+
 #ifndef NDEBUG
-	debug_dump(s_pUdpBuffer, static_cast<uint16_t>(m_nBytesReceived));
+	debug_dump(s_pUdpBuffer, m_nBytesReceived);
 #endif
 
 	if (s_pUdpBuffer[m_nBytesReceived - 1] == '\n') {
@@ -435,7 +441,7 @@ void RemoteConfig::HandleVersion() {
 	DEBUG_ENTRY
 
 	const auto *p = FirmwareVersion::Get()->GetPrint();
-	const auto nLength = snprintf(s_pUdpBuffer, remoteconfig::udp::BUFFER_SIZE - 1, "version:%s", p);
+	const auto nLength = snprintf(s_pUdpBuffer, remoteconfig::udp::BUFFER_SIZE - 1, "version:%s\n", p);
 	Network::Get()->SendTo(m_nHandle, s_pUdpBuffer, static_cast<uint32_t>(nLength), m_nIPAddressFrom, remoteconfig::udp::PORT);
 
 	DEBUG_EXIT
@@ -452,15 +458,15 @@ void RemoteConfig::HandleList() {
 	if (s_RemoteConfigListBin.aDisplayName[0] != '\0') {
 		nListLength = snprintf(pListResponse, nListResponseBufferLength - 1, "" IPSTR ",%s,%s,%u,%s\n",
 				IP2STR(Network::Get()->GetIp()),
-				s_Node[static_cast<uint32_t>(m_tNode)],
-				s_Output[static_cast<uint32_t>(m_tOutput)],
+				s_Node[static_cast<uint32_t>(m_Node)],
+				s_Output[static_cast<uint32_t>(m_Output)],
 				static_cast<unsigned int>(m_nActiveOutputs),
 				s_RemoteConfigListBin.aDisplayName);
 	} else {
 		nListLength = snprintf(pListResponse, nListResponseBufferLength - 1, "" IPSTR ",%s,%s,%u\n",
 				IP2STR(Network::Get()->GetIp()),
-				s_Node[static_cast<uint32_t>(m_tNode)],
-				s_Output[static_cast<uint32_t>(m_tOutput)],
+				s_Node[static_cast<uint32_t>(m_Node)],
+				s_Output[static_cast<uint32_t>(m_Output)],
 				static_cast<unsigned int>(m_nActiveOutputs));
 	}
 

@@ -33,6 +33,7 @@
 # pragma GCC push_options
 # pragma GCC optimize ("O2")
 # pragma GCC optimize ("no-tree-loop-distribute-patterns")
+# pragma GCC optimize ("-fprefetch-loop-arrays")
 #endif
 
 #include <cstdint>
@@ -50,10 +51,6 @@
 #include "debug.h"
 
 static struct net::acd::Acd s_acd;
-
-namespace network {
-__attribute__((weak)) void mdns_shutdown() {}
-}  // namespace network
 
 namespace net {
 namespace globals {
@@ -169,7 +166,37 @@ __attribute__((hot)) void net_handle() {
 		} else
 #endif
 			if (eth->type == __builtin_bswap16(ETHER_TYPE_IPv4)) {
-				ip_handle(reinterpret_cast<struct t_ip4 *>(s_p));
+				auto *p_ip4 = reinterpret_cast<struct t_ip4 *>(s_p);
+				if  (__builtin_expect((p_ip4->ip4.ver_ihl != 0x45), 0)) {
+					if (p_ip4->ip4.proto == IPv4_PROTO_IGMP) {
+						igmp_handle(reinterpret_cast<struct t_igmp *>(p_ip4));
+					} else {
+						DEBUG_PRINTF("p_ip4->ip4.ver_ihl=0x%x", p_ip4->ip4.ver_ihl);
+					}
+				} else {
+					switch (p_ip4->ip4.proto) {
+					case IPv4_PROTO_UDP:
+						udp_handle(reinterpret_cast<struct t_udp *>(p_ip4));
+						// NOTE: emac_free_pkt(); is done in udp_handle
+						return;
+						break;
+					case IPv4_PROTO_IGMP:
+						igmp_handle(reinterpret_cast<struct t_igmp *>(p_ip4));
+						break;
+					case IPv4_PROTO_ICMP:
+						icmp_handle(reinterpret_cast<struct t_icmp *>(p_ip4));
+						break;
+#if defined (ENABLE_HTTPD)
+					case IPv4_PROTO_TCP:
+						tcp_handle(reinterpret_cast<struct t_tcp *>(p_ip4));
+						tcp_run();
+						break;
+#endif
+					default:
+						DEBUG_PRINTF("proto %d not implemented", p_ip4->ip4.proto);
+						break;
+					}
+				}
 			} else if (eth->type == __builtin_bswap16(ETHER_TYPE_ARP)) {
 				net::arp_handle(reinterpret_cast<struct t_arp *>(s_p));
 			} else {

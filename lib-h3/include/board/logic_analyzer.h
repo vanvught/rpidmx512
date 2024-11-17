@@ -2,7 +2,7 @@
  * @file logic_analyzer.h
  *
  */
-/* Copyright (C) 2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2023-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,10 +30,10 @@
 
 #if defined(ORANGE_PI_ONE)
 #else
-# define LOGIC_ANALYZER_CH0_GPIO_PINx	GPIO_EXT_26
-# define LOGIC_ANALYZER_CH1_GPIO_PINx	GPIO_EXT_24
-# define LOGIC_ANALYZER_CH2_GPIO_PINx	GPIO_EXT_18
-# define LOGIC_ANALYZER_CH3_GPIO_PINx	GPIO_EXT_16
+//# define LOGIC_ANALYZER_CH0_GPIO_PINx	GPIO_EXT_26
+//# define LOGIC_ANALYZER_CH1_GPIO_PINx	GPIO_EXT_24
+//# define LOGIC_ANALYZER_CH2_GPIO_PINx	GPIO_EXT_18
+//# define LOGIC_ANALYZER_CH3_GPIO_PINx	GPIO_EXT_16
 #endif
 
 #endif /* BOARD_LOGIC_ANALYZER_H_ */

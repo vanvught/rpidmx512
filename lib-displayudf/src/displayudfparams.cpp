@@ -2,7 +2,7 @@
  * @file displayudfparams.cpp
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +23,8 @@
  * THE SOFTWARE.
  */
 
-#if !defined(__clang__)	// Needed for compiling on MacOS
-# pragma GCC push_options
-# pragma GCC optimize ("Os")
+#if defined (DEBUG_DISPLAYUDF)
+# undef NDEBUG
 #endif
 
 #include <cstdint>
@@ -143,7 +142,7 @@ DisplayUdfParams::DisplayUdfParams() {
 	DEBUG_ENTRY
 
 	memset(&m_Params, 0, sizeof(struct displayudfparams::Params));
-	m_Params.nSleepTimeout = display::Defaults::SEEP_TIMEOUT;
+	m_Params.nSleepTimeout = display::Defaults::SLEEP_TIMEOUT;
 	m_Params.nIntensity = defaults::INTENSITY;
 
 	DEBUG_EXIT
@@ -207,7 +206,7 @@ void DisplayUdfParams::callbackFunction(const char *pLine) {
 	if (Sscan::Uint8(pLine, DisplayUdfParamsConst::SLEEP_TIMEOUT, value8) == Sscan::OK) {
 		m_Params.nSleepTimeout = value8;
 
-		if (value8 != display::Defaults::SEEP_TIMEOUT) {
+		if (value8 != display::Defaults::SLEEP_TIMEOUT) {
 			m_Params.nSetList |= displayudfparams::Mask::SLEEP_TIMEOUT;
 		} else {
 			m_Params.nSetList &= ~displayudfparams::Mask::SLEEP_TIMEOUT;
@@ -238,13 +237,12 @@ void DisplayUdfParams::callbackFunction(const char *pLine) {
 	}
 }
 
-void DisplayUdfParams::Builder(const struct displayudfparams::Params *ptDisplayUdfParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
+void DisplayUdfParams::Builder(const struct displayudfparams::Params *pParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	assert(pBuffer != nullptr);
 
-	if (ptDisplayUdfParams != nullptr) {
-		memcpy(&m_Params, ptDisplayUdfParams, sizeof(struct displayudfparams::Params));
+	if (pParams != nullptr) {
+		memcpy(&m_Params, pParams, sizeof(struct displayudfparams::Params));
 	} else {
-		assert(m_pDisplayUdfParamsStore != nullptr);
 		DisplayUdfParamsStore::Copy(&m_Params);
 	}
 
@@ -270,10 +268,7 @@ void DisplayUdfParams::Set(DisplayUdf *pDisplayUdf) {
 		pDisplayUdf->SetContrast(m_Params.nIntensity);
 	}
 
-	if (isMaskSet(displayudfparams::Mask::SLEEP_TIMEOUT)) {
-		pDisplayUdf->SetSleepTimeout(m_Params.nSleepTimeout);
-	}
-
+	pDisplayUdf->SetSleepTimeout(m_Params.nSleepTimeout);
 	pDisplayUdf->SetFlipVertically(isMaskSet(displayudfparams::Mask::FLIP_VERTICALLY));
 
 	for (uint32_t i = 0; i < static_cast<uint32_t>(Labels::UNKNOWN); i++) {
@@ -293,13 +288,8 @@ void DisplayUdfParams::staticCallbackFunction(void *p, const char *s) {
 void DisplayUdfParams::Dump() {
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, DisplayUdfParamsConst::FILE_NAME);
 
-	if (isMaskSet(displayudfparams::Mask::INTENSITY)) {
-		printf(" %s=%d\n", DisplayUdfParamsConst::INTENSITY, m_Params.nIntensity);
-	}
-
-	if (isMaskSet(displayudfparams::Mask::SLEEP_TIMEOUT)) {
-		printf(" %s=%d\n", DisplayUdfParamsConst::SLEEP_TIMEOUT, m_Params.nSleepTimeout);
-	}
+	printf(" %s=%d\n", DisplayUdfParamsConst::INTENSITY, m_Params.nIntensity);
+	printf(" %s=%d\n", DisplayUdfParamsConst::SLEEP_TIMEOUT, m_Params.nSleepTimeout);
 
 	if (isMaskSet(displayudfparams::Mask::FLIP_VERTICALLY)) {
 		printf(" Flip vertically\n");

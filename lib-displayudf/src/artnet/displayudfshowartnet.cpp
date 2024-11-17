@@ -2,7 +2,7 @@
  * @file displayudfshowartnet.cpp
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,10 @@
  * THE SOFTWARE.
  */
 
+#if defined (DEBUG_DISPLAYUDF)
+# undef NDEBUG
+#endif
+
 #include <cstdint>
 #include <algorithm>
 
@@ -35,15 +39,9 @@
 
 #include "debug.h"
 
-namespace artnetnode {
-namespace configstore {
-extern uint32_t DMXPORT_OFFSET;
-}  // namespace configstore
-}  // namespace artnetnode
-
 void DisplayUdf::ShowArtNetNode() {
 	DEBUG_ENTRY
-	DEBUG_PRINTF("artnetnode::configstore::DMXPORT_OFFSET=%u", artnetnode::configstore::DMXPORT_OFFSET);
+	DEBUG_PRINTF("displayudf::DMXPORT_OFFSET=%u", displayudf::DMXPORT_OFFSET);
 
 	auto *pArtNetNode = ArtNetNode::Get();
 
@@ -65,7 +63,7 @@ void DisplayUdf::ShowUniverseArtNetNode() {
 	uint16_t nUniverse;
 
 	for (uint32_t nArtNetPortIndex = 0; nArtNetPortIndex < std::min(artnet::PORTS, artnetnode::MAX_PORTS); nArtNetPortIndex++) {
-		const auto nPortIndex = nArtNetPortIndex + artnetnode::configstore::DMXPORT_OFFSET;
+		const auto nPortIndex = nArtNetPortIndex + displayudf::DMXPORT_OFFSET;
 
 		if (nPortIndex >= std::min(artnet::PORTS, artnetnode::MAX_PORTS)) {
 			break;

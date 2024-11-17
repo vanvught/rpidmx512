@@ -2,6 +2,7 @@
 
 EXTRA_INCLUDES=src/linux/minimum
 EXTRA_SRCDIR=src/linux/minimum
+EXTRA_SRCDIR+=superloop
 
 EXTRA_SRCDIR+=debug
 

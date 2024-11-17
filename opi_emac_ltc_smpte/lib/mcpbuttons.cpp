@@ -2,7 +2,7 @@
  * @file mcpbuttons.cpp
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,8 +51,8 @@
 #include "ltcsource.h"
 #include "ltcstore.h"
 
-#include "ltcgenerator.h"
-#include "systimereader.h"
+#include "arm/ltcgenerator.h"
+#include "arm/systimereader.h"
 
 // Interrupt
 #include "board/h3_opi_zero.h"

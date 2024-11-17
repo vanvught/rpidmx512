@@ -2,7 +2,7 @@
  * @file network.h
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,6 +38,8 @@
 
 #define MAX_SEGMENT_LENGTH		1400
 
+typedef void (*UdpCallbackFunctionPtr)(const uint8_t *, uint32_t, uint32_t, uint16_t);
+
 class Network {
 public:
 	static Network *Get() {
@@ -49,7 +51,8 @@ public:
 		return m_aHostName;
 	}
 
-	int32_t Begin(const uint16_t nPort) {
+	int32_t Begin(const uint16_t nPort, [[maybe_unused]] UdpCallbackFunctionPtr callback = nullptr) {
+		assert(func == nullptr);
 		int nSocket;
 
 		if ((nSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {

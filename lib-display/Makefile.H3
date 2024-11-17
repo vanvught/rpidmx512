@@ -2,5 +2,17 @@ DEFINES=NDEBUG
 
 EXTRA_INCLUDES=
 
+ifneq ($(MAKE_FLAGS),)
+	ifneq (,$(findstring CONFIG_DISPLAY_USE_SPI,$(MAKE_FLAGS)))
+	else
+		ifneq (,$(findstring CONFIG_DISPLAY_USE_CUSTOM,$(MAKE_FLAGS)))
+		else
+			EXTRA_SRCDIR+=src/arm/h3
+		endif
+	endif
+else
+	EXTRA_SRCDIR+=src/arm/h3
+endif
+
 include Rules.mk
 include ../firmware-template-h3/lib/Rules.mk

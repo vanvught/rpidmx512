@@ -55,7 +55,7 @@ void emac_eth_send(void *, uint32_t);
 #if defined CONFIG_ENET_ENABLE_PTP
 void emac_eth_send_timestamp(void *, uint32_t);
 #endif
-int emac_eth_recv(uint8_t **);
+uint32_t emac_eth_recv(uint8_t **);
 void emac_free_pkt();
 
 namespace net {

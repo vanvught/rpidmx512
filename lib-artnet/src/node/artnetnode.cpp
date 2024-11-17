@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -56,6 +56,7 @@ void record(const struct artnet::ArtSync *pArtSync, const uint32_t nMillis);
 
 #include "hardware.h"
 #include "network.h"
+#include "softwaretimers.h"
 
 #include "panel_led.h"
 
@@ -64,8 +65,6 @@ void record(const struct artnet::ArtSync *pArtSync, const uint32_t nMillis);
 #include "debug.h"
 
 static constexpr auto ARTNET_MIN_HEADER_SIZE = 12;
-
-ArtNetNode *ArtNetNode::s_pThis;
 
 ArtNetNode::ArtNetNode() {
 	DEBUG_ENTRY
@@ -140,12 +139,6 @@ ArtNetNode::ArtNetNode() {
 	m_DiagData.OpCode = static_cast<uint16_t>(artnet::OpCodes::OP_DIAGDATA);
 	m_DiagData.ProtVerLo = artnet::PROTOCOL_REVISION;
 #endif
-
-	DEBUG_EXIT
-}
-
-ArtNetNode::~ArtNetNode() {
-	DEBUG_ENTRY
 
 	DEBUG_EXIT
 }
@@ -234,6 +227,8 @@ void ArtNetNode::Start() {
 #if (ARTNET_VERSION >= 4)
 	E131Bridge::Start();
 #endif
+
+	SoftwareTimerAdd(200, staticCallbackFunctionLedPanelOff);
 
 	m_State.status = artnet::Status::ON;
 	Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
@@ -445,6 +440,12 @@ static artnet::OpCodes get_op_code(const uint32_t nBytesReceived, const uint8_t 
 	return artnet::OpCodes::OP_NOT_DEFINED;
 }
 
+#if !defined(__clang__)
+# pragma GCC push_options
+# pragma GCC optimize ("O2")
+# pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#endif
+
 void ArtNetNode::Process(const uint32_t nBytesReceived) {
 	if (__builtin_expect((nBytesReceived == 0), 1)) {
 		const auto nDeltaMillis = m_nCurrentPacketMillis - m_nPreviousPacketMillis;
@@ -490,7 +491,7 @@ void ArtNetNode::Process(const uint32_t nBytesReceived) {
 			if (entry.ArtPollMillis != 0) {
 				if ((m_nCurrentPacketMillis - entry.ArtPollMillis) > m_State.ArtPollReplyDelayMillis) {
 					entry.ArtPollMillis = 0;
-					SendPollRelply(0, entry.ArtPollReplyIpAddress, &entry);
+					SendPollReply(0, entry.ArtPollReplyIpAddress, &entry);
 				}
 			}
 		}
@@ -640,7 +641,7 @@ void ArtNetNode::Process(const uint32_t nBytesReceived) {
 		if (entry.ArtPollMillis != 0) {
 			if ((m_nCurrentPacketMillis - entry.ArtPollMillis) > m_State.ArtPollReplyDelayMillis) {
 				entry.ArtPollMillis = 0;
-				SendPollRelply(0, entry.ArtPollReplyIpAddress, &entry);
+				SendPollReply(0, entry.ArtPollReplyIpAddress, &entry);
 			}
 		}
 	}

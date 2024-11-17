@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -72,8 +72,8 @@ ArtNetPollTable::ArtNetPollTable() {
 	m_PollTableClean.nUniverseIndex = 0;
 	m_PollTableClean.bOffLine = true;
 
-	DEBUG_PRINTF("NodeEntry[%d] = %u bytes [%u Kb]", artnet::POLL_TABLE_SIZE_ENRIES, (sizeof(artnet::NodeEntry[artnet::POLL_TABLE_SIZE_ENRIES])), (sizeof(artnet::NodeEntry[artnet::POLL_TABLE_SIZE_ENRIES])) / 1024U);
-	DEBUG_PRINTF("PollTableUniverses[%d] = %u bytes [%u Kb]", artnet::POLL_TABLE_SIZE_UNIVERSES, (sizeof(artnet::PollTableUniverses[artnet::POLL_TABLE_SIZE_UNIVERSES])), (sizeof(artnet::PollTableUniverses[artnet::POLL_TABLE_SIZE_UNIVERSES])) / 1024U);
+	DEBUG_PRINTF("NodeEntry[%d] = %u bytes [%u Kb]", artnet::POLL_TABLE_SIZE_ENRIES, static_cast<unsigned int>(sizeof(artnet::NodeEntry[artnet::POLL_TABLE_SIZE_ENRIES])), static_cast<unsigned int>(sizeof(artnet::NodeEntry[artnet::POLL_TABLE_SIZE_ENRIES])) / 1024U);
+	DEBUG_PRINTF("PollTableUniverses[%d] = %u bytes [%u Kb]", artnet::POLL_TABLE_SIZE_UNIVERSES, static_cast<unsigned int>(sizeof(artnet::PollTableUniverses[artnet::POLL_TABLE_SIZE_UNIVERSES])), static_cast<unsigned int>(sizeof(artnet::PollTableUniverses[artnet::POLL_TABLE_SIZE_UNIVERSES])) / 1024U);
 	DEBUG_EXIT
 }
 

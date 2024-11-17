@@ -2,7 +2,7 @@
  * @file sparkfundmxparamsconst.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,13 +27,13 @@
 #define SPARKFUNDMXPARAMSCONST_H_
 
 struct SparkFunDmxParamsConst {
-	static const char FILE_NAME[];
-	static const char POSITION[];
+	static inline const char FILE_NAME[] = "sparkfun.txt";
+	static inline const char POSITION[] = "sparkfun_position";
 #if !defined (H3)
-	static const char SPI_CS[];
+	static inline const char SPI_CS[] = "sparkfun_spi_cs";
 #endif
-	static const char RESET_PIN[];
-	static const char BUSY_PIN[];
+	static inline const char RESET_PIN[] = "sparkfun_reset_pin";
+	static inline const char BUSY_PIN[] = "sparkfun_busy_pin";
 };
 
 #endif /* SPARKFUNDMXPARAMSCONST_H_ */

@@ -2,7 +2,7 @@
  * @file showfileparamsconst.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,18 +27,14 @@
 #define SHOWFILEPARAMSCONST_H_
 
 struct ShowFileParamsConst {
-	static  const char FILE_NAME[];
-
-	static  const char SHOW[];
-
-	static  const char DMX_MASTER[];
-
-	static  const char OPTION_AUTO_PLAY[];
-	static  const char OPTION_LOOP[];
-	static  const char OPTION_DISABLE_SYNC[];
-
-	static  const char SACN_SYNC_UNIVERSE[];
-	static  const char ARTNET_DISABLE_UNICAST[];
+	static inline const char FILE_NAME[] = "show.txt";
+	static inline const char SHOW[] = "show";
+	static inline const char DMX_MASTER[] = "dmx_master";
+	static inline const char OPTION_AUTO_PLAY[] = "auto_play";
+	static inline const char OPTION_LOOP[] = "loop";
+	static inline const char OPTION_DISABLE_SYNC[] = "disable_sync";
+	static inline const char SACN_SYNC_UNIVERSE[] = "sync_universe";
+	static inline const char ARTNET_DISABLE_UNICAST[] = "disable_unicast";
 };
 
 #endif /* SHOWFILEPARAMSCONST_H_ */

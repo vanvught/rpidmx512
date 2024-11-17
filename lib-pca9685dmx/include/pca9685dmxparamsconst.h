@@ -2,7 +2,7 @@
  * @file pca9685dmxparamsconst.h
  *
  */
-/* Copyright (C) 2023-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2023-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,21 +25,17 @@
 #define PCA9685DMXPARAMSCONST_H_
 
 struct PCA9685DmxParamsConst {
-	static const char FILE_NAME[];
-
-	static const char I2C_ADDRESS[];
-
-	static const char MODE[];
-	static const char CHANNEL_COUNT[];
-	static const char USE_8BIT[];
-
-	static const char LED_PWM_FREQUENCY[];
-	static const char LED_OUTPUT_INVERT[];
-	static const char LED_OUTPUT_OPENDRAIN[];
-
-	static const char SERVO_LEFT_US[];
-	static const char SERVO_CENTER_US[];
-	static const char SERVO_RIGHT_US[];
+	static inline const char FILE_NAME[]= "pca9685.txt";
+	static inline const char I2C_ADDRESS[] = "i2c_address";
+	static inline const char MODE[] = "mode";
+	static inline const char CHANNEL_COUNT[] = "channel_count";
+	static inline const char USE_8BIT[] = "use_8bit";
+	static inline const char LED_PWM_FREQUENCY[] = "led_pwm_frequency";
+	static inline const char LED_OUTPUT_INVERT[] = "led_output_invert";
+	static inline const char LED_OUTPUT_OPENDRAIN[] = "led_output_opendrain";
+	static inline const char SERVO_LEFT_US[] = "servo_left_us";
+	static inline const char SERVO_CENTER_US[] = "servo_center_us";
+	static inline const char SERVO_RIGHT_US[] = "servo_right_us";
 };
 
 #endif /* _PCA9685DMXPARAMSCONST_H_ */

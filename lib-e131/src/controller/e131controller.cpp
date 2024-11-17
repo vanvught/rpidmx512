@@ -2,7 +2,7 @@
  * @file e131controller.cpp
  *
  */
-/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,10 +40,11 @@
 
 #include "debug.h"
 
+#include "softwaretimers.h"
+
 using namespace e131;
 
-
-static const uint8_t DEVICE_SOFTWARE_VERSION[] = { 1, 0 };
+static constexpr uint8_t DEVICE_SOFTWARE_VERSION[] = { 1, 0 };
 
 struct TSequenceNumbers {
 	uint16_t nUniverse;
@@ -52,8 +53,6 @@ struct TSequenceNumbers {
 };
 
 static struct TSequenceNumbers s_SequenceNumbers[512] __attribute__ ((aligned (8)));
-
-E131Controller *E131Controller::s_pThis = nullptr;
 
 E131Controller::E131Controller() {
 	DEBUG_ENTRY
@@ -128,20 +127,14 @@ void E131Controller::Start() {
 	FillDiscoveryPacket();
 	FillSynchronizationPacket();
 
-	m_State.bIsRunning = true;
+	m_timerHandleSendDiscoveryPacket = SoftwareTimerAdd(e131::UNIVERSE_DISCOVERY_INTERVAL_SECONDS * 1000U, staticCallbackFunctionSendDiscoveryPacket);
+	assert(m_timerHandleSendDiscoveryPacket >= 0);
 
 	DEBUG_EXIT
 }
 
 void E131Controller::Stop() {
-	m_State.bIsRunning = false;
-}
-
-void E131Controller::Run() {
-	if (__builtin_expect((m_State.bIsRunning), 1)) {
-		m_nCurrentPacketMillis = Hardware::Get()->Millis();
-		SendDiscoveryPacket();
-	}
+	SoftwareTimerDelete(m_timerHandleSendDiscoveryPacket);
 }
 
 void E131Controller::FillDataPacket() {
@@ -269,17 +262,8 @@ const uint8_t *E131Controller::GetSoftwareVersion() {
 
 void E131Controller::SetSourceName(const char *pSourceName) {
 	assert(pSourceName != nullptr);
-
-	//TODO https://gcc.gnu.org/bugzilla/show_bug.cgi?id=88780
-#if (__GNUC__ > 8)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wstringop-truncation"
-#endif
 	strncpy(m_SourceName, pSourceName, e131::SOURCE_NAME_LENGTH - 1);
 	m_SourceName[e131::SOURCE_NAME_LENGTH - 1] = '\0';
-#if (__GNUC__ > 8)
-#pragma GCC diagnostic pop
-#endif
 }
 
 void E131Controller::SetPriority(uint8_t nPriority) { //TODO SetPriority
@@ -289,21 +273,17 @@ void E131Controller::SetPriority(uint8_t nPriority) { //TODO SetPriority
 void E131Controller::SendDiscoveryPacket() {
 	assert(m_DiscoveryIpAddress != 0);
 
-	if (m_nCurrentPacketMillis - m_State.DiscoveryTime >= (UNIVERSE_DISCOVERY_INTERVAL_SECONDS * 1000)) {
-		m_State.DiscoveryTime = m_nCurrentPacketMillis;
+	m_pE131DiscoveryPacket->RootLayer.FlagsLength = __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | (DISCOVERY_ROOT_LAYER_LENGTH(m_State.nActiveUniverses))));
+	m_pE131DiscoveryPacket->FrameLayer.FLagsLength = __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | (DISCOVERY_FRAME_LAYER_LENGTH(m_State.nActiveUniverses))));
+	m_pE131DiscoveryPacket->UniverseDiscoveryLayer.FlagsLength = __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | DISCOVERY_LAYER_LENGTH(m_State.nActiveUniverses)));
 
-		m_pE131DiscoveryPacket->RootLayer.FlagsLength = __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | (DISCOVERY_ROOT_LAYER_LENGTH(m_State.nActiveUniverses))));
-		m_pE131DiscoveryPacket->FrameLayer.FLagsLength = __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | (DISCOVERY_FRAME_LAYER_LENGTH(m_State.nActiveUniverses))));
-		m_pE131DiscoveryPacket->UniverseDiscoveryLayer.FlagsLength = __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | DISCOVERY_LAYER_LENGTH(m_State.nActiveUniverses)));
-
-		for (uint32_t i = 0; i < m_State.nActiveUniverses; i++) {
-			m_pE131DiscoveryPacket->UniverseDiscoveryLayer.ListOfUniverses[i] = __builtin_bswap16(s_SequenceNumbers[i].nUniverse);
-		}
-
-		Network::Get()->SendTo(m_nHandle, m_pE131DiscoveryPacket, static_cast<uint16_t>(DISCOVERY_PACKET_SIZE(m_State.nActiveUniverses)), m_DiscoveryIpAddress, e131::UDP_PORT);
-
-		DEBUG_PUTS("Discovery sent");
+	for (uint32_t i = 0; i < m_State.nActiveUniverses; i++) {
+		m_pE131DiscoveryPacket->UniverseDiscoveryLayer.ListOfUniverses[i] = __builtin_bswap16(s_SequenceNumbers[i].nUniverse);
 	}
+
+	Network::Get()->SendTo(m_nHandle, m_pE131DiscoveryPacket, static_cast<uint16_t>(DISCOVERY_PACKET_SIZE(m_State.nActiveUniverses)), m_DiscoveryIpAddress, e131::UDP_PORT);
+
+	DEBUG_PUTS("Discovery sent");
 }
 
 uint8_t E131Controller::GetSequenceNumber(uint16_t nUniverse, uint32_t &nMulticastIpAddress) {

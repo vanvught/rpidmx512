@@ -31,12 +31,11 @@
 #include <cstring>
 #include <cassert>
 
-#include "midireader.h"
+#include "arm/midireader.h"
 #include "ltc.h"
 #include "timecodeconst.h"
 
 #include "hardware.h"
-
 // Input
 #include "midi.h"
 // Output
@@ -44,12 +43,10 @@
 #include "artnetnode.h"
 #include "rtpmidi.h"
 #include "ltcetc.h"
-#include "ltcmidisystemrealtime.h"
-#include "ltcoutputs.h"
+#include "arm/ltcmidisystemrealtime.h"
+#include "arm/ltcoutputs.h"
 
-#include "platform_ltc.h"
-
-using namespace midi;
+#include "arm/platform_ltc.h"
 
 static uint8_t s_qf[8] __attribute__ ((aligned (4))) = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
@@ -63,6 +60,8 @@ static void irq_timer1_handler(void) {
 #endif
 
 void MidiReader::Start() {
+	DEBUG_ENTRY
+
 #if defined (H3)
 	Midi::Get()->SetIrqTimer1(irq_timer1_handler);
 #elif defined (GD32)
@@ -70,6 +69,8 @@ void MidiReader::Start() {
 	TIMER_CNT(TIMER11) = 0;
 #endif
 	Midi::Get()->Init(midi::Direction::INPUT);
+
+	DEBUG_EXIT
 }
 
 void MidiReader::HandleMtc() {
@@ -160,13 +161,13 @@ void MidiReader::Update() {
 }
 
 void MidiReader::Run() {
-	if (Midi::Get()->Read(static_cast<uint8_t>(Channel::OMNI))) {
+	if (Midi::Get()->Read(static_cast<uint8_t>(midi::Channel::OMNI))) {
 		if (Midi::Get()->GetChannel() == 0) {
 			switch (Midi::Get()->GetMessageType()) {
-			case Types::TIME_CODE_QUARTER_FRAME:
+			case midi::Types::TIME_CODE_QUARTER_FRAME:
 				HandleMtcQf();
 				break;
-			case Types::SYSTEM_EXCLUSIVE: {
+			case midi::Types::SYSTEM_EXCLUSIVE: {
 				uint8_t nSystemExclusiveLength;
 				const auto *pSystemExclusive = Midi::Get()->GetSystemExclusive(nSystemExclusiveLength);
 				if ((pSystemExclusive[1] == 0x7F) && (pSystemExclusive[2] == 0x7F) && (pSystemExclusive[3] == 0x01)) {
@@ -174,7 +175,7 @@ void MidiReader::Run() {
 				}
 			}
 				break;
-			case Types::CLOCK:
+			case midi::Types::CLOCK:
 				uint32_t nBPM;
 				if (m_MidiBPM.Get(Midi::Get()->GetMessageTimeStamp() * 10, nBPM)) {
 					LtcOutputs::Get()->ShowBPM(nBPM);

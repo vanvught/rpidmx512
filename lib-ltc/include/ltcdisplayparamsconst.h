@@ -31,46 +31,53 @@
 #include "ltcdisplayrgb.h"
 
 struct LtcDisplayParamsConst {
-	static const char FILE_NAME[];
+	static inline const char FILE_NAME[] = "ldisplay.txt";
 
 	/**
 	 * OLED SSD1306 / SSD1311
 	 */
 
-	static const char OLED_INTENSITY[];
+	static inline const char OLED_INTENSITY[] = "oled_intensity";
 
 	/**
 	 * Rotary control
 	 */
 
-	static const char ROTARY_FULLSTEP[];
+	static inline const char ROTARY_FULLSTEP[] = "rotary_fullstep";
 
 	/**
 	 * MAX7219 7-segment / matrix
 	 */
 
-	static const char MAX7219_TYPE[];
-	static const char MAX7219_INTENSITY[];
+	static inline const char MAX7219_TYPE[] = "max7219_type";
+	static inline const char MAX7219_INTENSITY[] = "max7219_intensity";
 
 	/**
 	 * RGB Display generic
 	 */
 
-	static const char INTENSITY[];
-	static const char COLON_BLINK_MODE[];
-	static const char COLOUR[static_cast<uint32_t>(ltcdisplayrgb::ColourIndex::LAST)][24];
+	static inline const char INTENSITY[] = "intensity";
+	static inline const char COLON_BLINK_MODE[] = "colon_blink_mode";
+	static inline const char COLOUR[static_cast<uint32_t>(ltcdisplayrgb::ColourIndex::LAST)][24] =
+		{ "colour_time",
+		  "colour_colon",
+		  "colour_message",
+		  "colour_fps",		// RGB panel specific
+		  "colour_info",	// RGB panel specific
+		  "colour_source"	// RGB panel specific
+		};
 
 	/**
 	 * WS28xx specific
 	 */
 
-	static const char WS28XX_TYPE[];
+	static inline const char WS28XX_TYPE[] = "ws28xx_type";
 
 	/**
 	 * RGB panel specific
 	 */
 
-	static const char INFO_MSG[];
+	static inline const char INFO_MSG[] = "info_msg";
 };
 
 #endif /* LTCDISPLAYPARAMSCONST_H_ */

@@ -23,12 +23,14 @@
  * THE SOFTWARE.
  */
 
-#ifndef ILI9341_H_
-#define ILI9341_H_
+#ifndef SPI_ILI9341_H_
+#define SPI_ILI9341_H_
 
 #include <cstdint>
+#include <cassert>
 
 #include "spi/config.h"
+#include "spi/spilcd.h"
 
 namespace ili9341 {
 namespace cmd {
@@ -86,24 +88,160 @@ static constexpr uint16_t YELLOW 	= 0xFFE0;
 
 class ILI9341 : public Paint {
 public:
-	ILI9341();
-	~ILI9341() override;
+	ILI9341(uint32_t nCS) : Paint(nCS) {
+		DEBUG_ENTRY
 
-	void Init();
+#if defined(SPI_LCD_RST_GPIO)
+		HardwareReset();
+#endif
 
-	void SetRotation(uint32_t nRotation);
-	void SetBackLight(uint32_t nValue);
+		WriteCommand(0xC0);    //Power control
+		WriteDataByte(0x23);   //VRH[5:0]
 
-	void EnableDisplay(bool bEnable);
-	void EnableSleep(bool bEnable);
-	void EnableColourInversion(bool bEnable);
+		WriteCommand(0xC1);    //Power control
+		WriteDataByte(0x10);   //SAP[2:0];BT[3:0]
+
+		WriteCommand(0xC5);    //VCM control
+		WriteDataByte(0x3e); //
+		WriteDataByte(0x28);
+
+		WriteCommand(0xC7);    //VCM control2
+		WriteDataByte(0x86);  //--
+
+		WriteCommand(0x3A);
+		WriteDataByte(0x55);
+
+		WriteCommand(0xB1);
+		WriteDataByte(0x00);
+		WriteDataByte(0x18);
+
+		WriteCommand(0xB6);    // Display Function Control
+		WriteDataByte(0x08);
+		WriteDataByte(0xA2);
+		WriteDataByte(0x27);
+
+		WriteCommand(0xF2);    // 3Gamma Function Disable
+		WriteDataByte(0x00);
+
+		WriteCommand(0x26);    //Gamma curve selected
+		WriteDataByte(0x01);
+
+		WriteCommand(0xE0);    //Set Gamma
+		WriteDataByte(0x0F);
+		WriteDataByte(0x31);
+		WriteDataByte(0x2B);
+		WriteDataByte(0x0C);
+		WriteDataByte(0x0E);
+		WriteDataByte(0x08);
+		WriteDataByte(0x4E);
+		WriteDataByte(0xF1);
+		WriteDataByte(0x37);
+		WriteDataByte(0x07);
+		WriteDataByte(0x10);
+		WriteDataByte(0x03);
+		WriteDataByte(0x0E);
+		WriteDataByte(0x09);
+		WriteDataByte(0x00);
+
+		WriteCommand(0XE1);    //Set Gamma
+		WriteDataByte(0x00);
+		WriteDataByte(0x0E);
+		WriteDataByte(0x14);
+		WriteDataByte(0x03);
+		WriteDataByte(0x11);
+		WriteDataByte(0x07);
+		WriteDataByte(0x31);
+		WriteDataByte(0xC1);
+		WriteDataByte(0x48);
+		WriteDataByte(0x08);
+		WriteDataByte(0x0F);
+		WriteDataByte(0x0C);
+		WriteDataByte(0x31);
+		WriteDataByte(0x36);
+		WriteDataByte(0x0F);
+
+		SetRotation(0);
+
+		WriteCommand(0x11);    //Exit Sleep
+		WriteCommand(0x29);    //Display on
+
+		DEBUG_EXIT
+	}
+
+	~ILI9341() override {
+		DEBUG_ENTRY
+		DEBUG_EXIT
+	}
+
+	void SetRotation(const uint32_t nRotation) {
+		WriteCommand(ili9341::cmd::MADCTL);
+
+		switch (nRotation) {
+		case 0:
+			WriteDataByte(ili9341::data::MADCTL_BGR);
+			m_nWidth = config::WIDTH;
+			m_nHeight = config::HEIGHT;
+			break;
+		case 1:
+			WriteDataByte(ili9341::data::MADCTL_MX | ili9341::data::MADCTL_MV | ili9341::data::MADCTL_BGR);
+			m_nWidth = config::HEIGHT;
+			m_nHeight = config::WIDTH;
+			break;
+		case 2:
+			WriteDataByte(ili9341::data::MADCTL_MX | ili9341::data::MADCTL_MY | ili9341::data::MADCTL_BGR);
+			m_nWidth = config::WIDTH;
+			m_nHeight = config::HEIGHT;
+			break;
+		case 3:
+			WriteDataByte(ili9341::data::MADCTL_MY | ili9341::data::MADCTL_MV | ili9341::data::MADCTL_BGR);
+			m_nWidth = config::HEIGHT;
+			m_nHeight = config::WIDTH;
+			break;
+		default:
+			assert(0);
+			__builtin_unreachable();
+			break;
+		}
+
+		m_nRotate = nRotation;
+	}
+
+	void SetBackLight(uint32_t nValue) {
+		FUNC_PREFIX(gpio_write(SPI_LCD_BL_GPIO, nValue == 0 ? LOW : HIGH));
+	}
+
+	void EnableDisplay(bool bEnable) {
+		WriteCommand(bEnable ? ili9341::cmd::DISPON : ili9341::cmd::DISPOFF);
+	}
+
+	void EnableSleep(bool bEnable) {
+		WriteCommand(bEnable ? ili9341::cmd::SLPIN : ili9341::cmd::SLPOUT);
+	}
+
+	void EnableColourInversion(bool bEnable) {
+		WriteCommand(bEnable ? ili9341::cmd::INVON : ili9341::cmd::INVOFF);
+	}
 
 private:
-	void SetAddressWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) override;
+	void SetAddressWindow(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1) override {
+		WriteCommand(ili9341::cmd::CASET);
+		{
+			uint8_t data[] = { static_cast<uint8_t>(x0 >> 8), static_cast<uint8_t>(x0), static_cast<uint8_t>(x1 >> 8), static_cast<uint8_t>(x1) };
+			write_data(data, sizeof(data));
+		}
+
+		WriteCommand(ili9341::cmd::RASET);
+		{
+			uint8_t data[] = { static_cast<uint8_t>(y0 >> 8), static_cast<uint8_t>(y0), static_cast<uint8_t>(y1 >> 8), static_cast<uint8_t>(y1) };
+			write_data(data, sizeof(data));
+		}
+
+		WriteCommand(ili9341::cmd::RAMWR);
+	}
 
 protected:
 	uint32_t m_nShiftX { 0 };
 	uint32_t m_nShiftY { 0 };
 };
 
-#endif /* ILI9341_H_ */
+#endif /* SPI_ILI9341_H_ */

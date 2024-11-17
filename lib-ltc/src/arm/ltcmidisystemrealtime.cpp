@@ -28,16 +28,37 @@
 #pragma GCC optimize ("no-tree-loop-distribute-patterns")
 
 #include <cstdint>
+#include <cstring>
+#include <cctype>
 #include <cassert>
 
-#include "ltcmidisystemrealtime.h"
+#include "arm/ltcmidisystemrealtime.h"
+
+#include "ltc.h"
 
 #include "midi.h"
-#include "rtpmidi.h"
 
-#include "ltcoutputs.h"
+#include "network.h"
 
-#include "platform_ltc.h"
+#include "debug.h"
+
+namespace cmd {
+static constexpr char START[] = "start";
+static constexpr char STOP[] = "stop";
+static constexpr char CONTINUE[] = "continue";
+static constexpr char BPM[] = "bpm#";
+}
+
+namespace length {
+static constexpr auto START = sizeof(cmd::START) - 1;
+static constexpr auto STOP = sizeof(cmd::STOP) - 1;
+static constexpr auto CONTINUE = sizeof(cmd::CONTINUE) - 1;
+static constexpr auto BPM = sizeof(cmd::BPM) - 1;
+}
+
+namespace udp {
+static constexpr auto PORT = 0x4444;
+}
 
 #if defined (H3)
 static void timer_handler() {
@@ -52,22 +73,14 @@ static void timer_handler() {
 #elif defined (GD32)
 #endif
 
-char *LtcMidiSystemRealtime::s_pUdpBuffer;
-LtcMidiSystemRealtime *LtcMidiSystemRealtime::s_pThis;
-
-LtcMidiSystemRealtime::LtcMidiSystemRealtime() {
-	assert(s_pThis == nullptr);
-	s_pThis = this;
+void LtcMidiSystemRealtime::Start() {
+	m_nHandle = Network::Get()->Begin(udp::PORT);
+	assert(m_nHandle != -1);
 }
 
-void LtcMidiSystemRealtime::Send(midi::Types tType) {
-	if (!ltc::g_DisabledOutputs.bRtpMidi) {
-		RtpMidi::Get()->SendRaw(tType);
-	}
-
-	if (!ltc::g_DisabledOutputs.bMidi) {
-		Midi::Get()->SendRaw(tType);
-	}
+void LtcMidiSystemRealtime::Stop() {
+	m_nHandle = Network::Get()->End(udp::PORT);
+	assert(m_nHandle == -1);
 }
 
 void LtcMidiSystemRealtime::SetBPM(uint32_t nBPM) {
@@ -91,6 +104,68 @@ void LtcMidiSystemRealtime::SetBPM(uint32_t nBPM) {
 	}
 }
 
-void LtcMidiSystemRealtime::ShowBPM(uint32_t nBPM) {
-	LtcOutputs::Get()->ShowBPM(nBPM);
+void LtcMidiSystemRealtime::Run() {
+	uint32_t nIPAddressFrom;
+	uint16_t nForeignPort;
+
+	auto nBytesReceived = Network::Get()->RecvFrom(m_nHandle, const_cast<const void **>(reinterpret_cast<void **>(&s_pUdpBuffer)), &nIPAddressFrom, &nForeignPort);
+
+	if (__builtin_expect((nBytesReceived < 9), 1)) {
+		return;
+	}
+
+	if (__builtin_expect((memcmp("midi!", s_pUdpBuffer, 5) != 0), 0)) {
+		return;
+	}
+
+	if (s_pUdpBuffer[nBytesReceived - 1] == '\n') {
+		nBytesReceived--;
+	}
+
+	debug_dump(s_pUdpBuffer, nBytesReceived);
+
+	if (nBytesReceived == (5 + length::START)) {
+		if (memcmp(&s_pUdpBuffer[5], cmd::START, length::START) == 0) {
+			SendStart();
+			DEBUG_PUTS("Start");
+			return;
+		}
+	}
+
+	if (nBytesReceived == (5 + length::STOP)) {
+		if (memcmp(&s_pUdpBuffer[5], cmd::STOP, length::STOP) == 0) {
+			SendStop();
+			DEBUG_PUTS("Stop");
+			return;
+		}
+	}
+
+	if (nBytesReceived == (5 + length::CONTINUE)) {
+		if (memcmp(&s_pUdpBuffer[5], cmd::CONTINUE, length::CONTINUE) == 0) {
+			SendContinue();
+			DEBUG_PUTS("Continue");
+			return;
+		}
+	}
+
+	if (nBytesReceived == (5 + length::BPM + 3)) {
+		if (memcmp(&s_pUdpBuffer[5], cmd::BPM, length::BPM) == 0) {
+			uint32_t nOfffset = 5 + length::BPM;
+			uint32_t nBPM;
+
+			if (isdigit(s_pUdpBuffer[nOfffset])) {
+				nBPM = 100U * static_cast<uint32_t>(s_pUdpBuffer[nOfffset++] - '0');
+				if (isdigit(s_pUdpBuffer[nOfffset])) {
+					nBPM += 10U * static_cast<uint32_t>(s_pUdpBuffer[nOfffset++] - '0');
+					if (isdigit(s_pUdpBuffer[nOfffset])) {
+						nBPM += static_cast<uint32_t>(s_pUdpBuffer[nOfffset++] - '0');
+						SetBPM(nBPM);
+						ShowBPM(nBPM);
+						DEBUG_PRINTF("BPM: %u", nBPM);
+					}
+				}
+			}
+			return;
+		}
+	}
 }

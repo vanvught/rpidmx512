@@ -23,11 +23,6 @@
  * THE SOFTWARE.
  */
 
-#if !defined(__clang__)	// Needed for compiling on MacOS
-# pragma GCC push_options
-# pragma GCC optimize ("Os")
-#endif
-
 #include <cstdint>
 #include <cstring>
 #include <cassert>
@@ -94,13 +89,6 @@ void EnvParams::callbackFunction(const char *pLine) {
 		ConfigStore::Get()->SetEnvUtcOffset(nHours, nMinutes);
 		return;
 	}
-}
-
-void EnvParams::staticCallbackFunction(void *p, const char *s) {
-	assert(p != nullptr);
-	assert(s != nullptr);
-
-	(static_cast<EnvParams *>(p))->callbackFunction(s);
 }
 
 void EnvParams::Builder(char *pBuffer, uint32_t nLength, uint32_t& nSize) {

@@ -98,7 +98,7 @@ NtpClient::NtpClient() {
 void NtpClient::GetTimeNtpFormat(uint32_t &nSeconds, uint32_t &nFraction) {
 	struct timeval now;
 	gettimeofday(&now, nullptr);
-	nSeconds = now.tv_sec + ntp::JAN_1970;
+	nSeconds = static_cast<uint32_t>(now.tv_sec) + ntp::JAN_1970;
 	nFraction = NTPFRAC(now.tv_usec);
 }
 
@@ -165,8 +165,8 @@ void NtpClient::SetTimeOfDay() {
 	auto nOffsetSeconds = static_cast<int64_t>(nDiffSeconds1) + static_cast<int64_t>(nDiffSeconds2);
 	auto nOffsetMicroSeconds =  static_cast<int64_t>(nDiffMicroSeconds1) + static_cast<int64_t>(nDiffMicroSeconds2);
 
-	const int32_t nOffsetSecondsAverage = nOffsetSeconds / 2;
-	const int32_t nOffsetMicrosAverage  = nOffsetMicroSeconds / 2;
+	const auto nOffsetSecondsAverage = static_cast<int32_t>(nOffsetSeconds / 2);
+	const auto nOffsetMicrosAverage  = static_cast<int32_t>(nOffsetMicroSeconds / 2);
 
 	ntp::time_t ptpOffset = {.tv_sec = nOffsetSecondsAverage, .tv_usec = nOffsetMicrosAverage};
 	ntp::normalize_time(&ptpOffset);

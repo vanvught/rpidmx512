@@ -420,7 +420,7 @@ Dmx::Dmx() {
 	sv_DmxTransmitState = IDLE;
 	sv_doDmxTransmitAlways = false;
 
-	irq_timer_init();
+	irq_handler_init();
 
 	irq_timer_set(IRQ_TIMER_3, irq_timer3_dmx_receive);
 	BCM2835_ST->C3 = BCM2835_ST->CLO + (uint32_t) 1000000;

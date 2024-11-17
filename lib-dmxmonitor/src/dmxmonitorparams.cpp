@@ -2,7 +2,7 @@
  * @file dmxmonitorparams.cpp
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,14 +23,11 @@
  * THE SOFTWARE.
  */
 
-#if !defined(__clang__)	// Needed for compiling on MacOS
- #pragma GCC push_options
- #pragma GCC optimize ("Os")
-#endif
-
 #include <cstdint>
 #include <cstring>
-#include <cstdio>
+#ifndef NDEBUG
+# include <cstdio>
+#endif
 #include <cassert>
 
 #include "dmxmonitor.h"
@@ -190,16 +187,7 @@ void DMXMonitorParams::staticCallbackFunction(void *p, const char *s) {
 
 void DMXMonitorParams::Dump() {
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, DMXMonitorParamsConst::FILE_NAME);
-
-	if (isMaskSet(DMXMonitorParamsMask::START_ADDRESS)) {
-		printf(" %s=%d\n", LightSetParamsConst::DMX_START_ADDRESS, m_Params.nDmxStartAddress);
-	}
-
-	if (isMaskSet(DMXMonitorParamsMask::MAX_CHANNELS)) {
-		printf(" %s=%d\n", DMXMonitorParamsConst::DMX_MAX_CHANNELS, m_Params.nDmxMaxChannels);
-	}
-
-	if (isMaskSet(DMXMonitorParamsMask::FORMAT)) {
-		printf(" %s=%d [%s]\n", DMXMonitorParamsConst::FORMAT, static_cast<int>(m_Params.tFormat), m_Params.tFormat == static_cast<uint8_t>(Format::PCT) ? "pct" : (m_Params.tFormat == static_cast<uint8_t>(Format::DEC) ? "dec" : "hex"));
-	}
+	printf(" %s=%d\n", LightSetParamsConst::DMX_START_ADDRESS, m_Params.nDmxStartAddress);
+	printf(" %s=%d\n", DMXMonitorParamsConst::DMX_MAX_CHANNELS, m_Params.nDmxMaxChannels);
+	printf(" %s=%d [%s]\n", DMXMonitorParamsConst::FORMAT, static_cast<int>(m_Params.tFormat), m_Params.tFormat == static_cast<uint8_t>(Format::PCT) ? "pct" : (m_Params.tFormat == static_cast<uint8_t>(Format::DEC) ? "dec" : "hex"));
 }

@@ -2,7 +2,7 @@
  * @file oscserver.h
  *
  */
-/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,9 +27,17 @@
 #define OSCSERVER_H_
 
 #include <cstdint>
+#include <cstdio>
 #include <cassert>
 
+#include "oscsimplesend.h"
+
+#include "hardware.h"
+#include "network.h"
+
 #include "lightset.h"
+
+#include "debug.h"
 
 namespace osc {
 namespace server {
@@ -55,7 +63,45 @@ public:
 class OscServer {
 public:
 	OscServer();
-	~OscServer();
+
+	void Start() {
+		DEBUG_ENTRY
+
+		assert(m_nHandle == -1);
+		m_nHandle = Network::Get()->Begin(m_nPortIncoming);
+		assert(m_nHandle != -1);
+
+		OscSimpleSend MsgSend(m_nHandle, Network::Get()->GetIp() | ~(Network::Get()->GetNetmask()), m_nPortIncoming, "/ping", nullptr);
+
+		Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
+
+		DEBUG_EXIT
+	}
+
+	void Stop() {
+		DEBUG_ENTRY
+
+		if (m_pLightSet != nullptr) {
+			m_pLightSet->Stop(0);
+		}
+
+		assert(m_nHandle != -1);
+		Network::Get()->End(m_nPortIncoming);
+		m_nHandle = -1;
+
+		DEBUG_EXIT
+	}
+
+	void Print() {
+		puts("OSC Server");
+		printf(" Incoming Port        : %d\n", m_nPortIncoming);
+		printf(" Outgoing Port        : %d\n", m_nPortOutgoing);
+		printf(" DMX Path             : [%s][%s]\n", s_aPath, s_aPathSecond);
+		printf("  Blackout Path       : [%s]\n", s_aPathBlackOut);
+		printf(" Partial Transmission : %s\n", m_bPartialTransmission ? "Yes" : "No");
+	}
+
+	void Run();
 
 	void SetOutput(LightSet *pLightSet) {
 		assert(pLightSet != nullptr);
@@ -67,7 +113,7 @@ public:
 		m_pOscServerHandler = pOscServerHandler;
 	}
 
-	void SetPortIncoming(uint16_t nPortIncoming = osc::server::DefaultPort::INCOMING) {
+	void SetPortIncoming(const uint16_t nPortIncoming = osc::server::DefaultPort::INCOMING) {
 		assert(nPortIncoming > 1023);
 		m_nPortIncoming = nPortIncoming;
 	}
@@ -76,7 +122,7 @@ public:
 		return m_nPortIncoming;
 	}
 
-	void SetPortOutgoing(uint16_t nPortOutgoing) {
+	void SetPortOutgoing(const uint16_t nPortOutgoing) {
 		assert(nPortOutgoing > 1023);
 		m_nPortOutgoing = nPortOutgoing;
 	}
@@ -118,14 +164,7 @@ public:
 		return m_bEnableNoChangeUpdate;
 	}
 
-	void Print();
-
-	void Start();
-	void Stop();
-
-	void Run();
-
-	static OscServer* Get() {
+	static OscServer *Get() {
 		return s_pThis;
 	}
 
@@ -137,7 +176,7 @@ private:
 	uint16_t m_nPortIncoming { osc::server::DefaultPort::INCOMING };
 	uint16_t m_nPortOutgoing { osc::server::DefaultPort::OUTGOING };
 	int32_t m_nHandle { -1 };
-	uint16_t m_nLastChannel { 0 };
+	uint32_t m_nLastChannel { 0 };
 
 	bool m_bPartialTransmission { false };
 	bool m_bEnableNoChangeUpdate { false };
@@ -150,16 +189,16 @@ private:
 	const char *m_pModel;
 	const char *m_pSoC;
 
-	static char s_aPath[osc::server::Max::PATH_LENGTH];
-	static char s_aPathSecond[osc::server::Max::PATH_LENGTH];
-	static char s_aPathInfo[osc::server::Max::PATH_LENGTH];
-	static char s_aPathBlackOut[osc::server::Max::PATH_LENGTH];
+	static inline char s_aPath[osc::server::Max::PATH_LENGTH];
+	static inline char s_aPathSecond[osc::server::Max::PATH_LENGTH];
+	static inline char s_aPathInfo[osc::server::Max::PATH_LENGTH];
+	static inline char s_aPathBlackOut[osc::server::Max::PATH_LENGTH];
 
-	static uint8_t s_pData[lightset::dmx::UNIVERSE_SIZE];
-	static uint8_t s_pOsc[lightset::dmx::UNIVERSE_SIZE];
+	static inline uint8_t s_pData[lightset::dmx::UNIVERSE_SIZE];
+	static inline uint8_t s_pOsc[lightset::dmx::UNIVERSE_SIZE];
 
-	static char *s_pUdpBuffer;
-	static OscServer *s_pThis;
+	static inline const uint8_t *s_pUdpBuffer;
+	static inline OscServer *s_pThis;
 };
 
 #endif /* OSCSERVER_H_ */

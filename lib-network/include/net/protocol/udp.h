@@ -51,6 +51,7 @@ struct t_udp {
 	struct t_udp_packet udp;
 } PACKED;
 
+#define IPv4_UDP_HEADERS_SIZE 			(sizeof(struct ip4_header) + UDP_HEADER_SIZE)			/* IP | UDP */
 #define UDP_PACKET_HEADERS_SIZE			(sizeof(struct ether_header) + IPv4_UDP_HEADERS_SIZE)	/* ETH | IP | UDP */
 
 #endif /* NET_PROTOCOL_UDP_H_ */

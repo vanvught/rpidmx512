@@ -2,7 +2,7 @@
  * @file applemidi.h
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -82,8 +82,9 @@ public:
 
 	void Start() {
 		DEBUG_ENTRY
-		assert(MDNS::Get() != nullptr);
-		MDNS::Get()->ServiceRecordAdd(nullptr, mdns::Services::MIDI, nullptr, m_nPort);
+//		assert(MDNS::Get() != nullptr);
+//		MDNS::Get()->ServiceRecordAdd(nullptr, mdns::Services::MIDI, nullptr, m_nPort);
+		mdns_service_record_add(nullptr, mdns::Services::MIDI, nullptr, m_nPort);
 
 		m_nHandleControl = Network::Get()->Begin(m_nPort);
 		assert(m_nHandleControl != -1);
@@ -162,10 +163,10 @@ private:
 	int32_t m_nHandleControl { -1 };
 	int32_t m_nHandleMidi { -1 };
 	uint32_t m_nRemoteIp { 0 };
+	uint32_t m_nBytesReceived { 0 };
 	uint16_t m_nExchangePacketReplySize;
 	uint16_t m_nPort { applemidi::UPD_PORT_CONTROL_DEFAULT };
 	uint16_t m_nRemotePort { 0 };
-	uint16_t m_nBytesReceived { 0 };
 	applemidi::ExchangePacket m_ExchangePacketReply;
 	applemidi::SessionStatus m_SessionStatus;
 	uint8_t *m_pBuffer { nullptr };

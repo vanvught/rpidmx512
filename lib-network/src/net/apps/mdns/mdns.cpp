@@ -24,9 +24,7 @@
  */
 
 #if defined (DEBUG_NET_APPS_MDNS)
-# if defined (NDEBUG)
-#  undef NDEBUG
-# endif
+# undef NDEBUG
 #endif
 
 #include <cstdint>
@@ -36,6 +34,7 @@
 #include <cassert>
 
 #include "net/apps/mdns.h"
+#include "net/protocol/dns.h"
 #include "net/protocol/ip4.h"
 #include "net/protocol/iana.h"
 
@@ -50,8 +49,6 @@ static constexpr auto SERVICE_RECORDS_MAX = 8;
 #else
 static constexpr auto SERVICE_RECORDS_MAX = MDNS_SERVICE_RECORDS_MAX;
 #endif
-
-static constexpr uint32_t MDNS_RESPONSE_TTL = 3600;		///< (in seconds)
 
 static constexpr size_t DOMAIN_MAXLEN = 256;
 static constexpr size_t LABEL_MAXLEN = 63;
@@ -214,34 +211,13 @@ static constexpr mdns::ServiceReply operator& (mdns::ServiceReply a, mdns::Servi
 	return static_cast<mdns::ServiceReply>((static_cast<uint32_t>(a) & static_cast<uint32_t>(b)));
 }
 
-int32_t MDNS::s_nHandle;
-uint32_t MDNS::s_nRemoteIp;
-uint16_t MDNS::s_nRemotePort;
-uint32_t MDNS::s_nBytesReceived;
-uint8_t *MDNS::s_pReceiveBuffer;
-MDNS *MDNS::s_pThis;
+int32_t s_nHandle;
+uint32_t s_nRemoteIp;
+uint16_t s_nRemotePort;
+uint32_t s_nBytesReceived;
+uint8_t *s_pReceiveBuffer;
 
 using namespace mdns;
-
-namespace network {
-void mdns_announcement() {
-	DEBUG_ENTRY
-
-	assert(MDNS::Get() != nullptr);
-	MDNS::Get()->SendAnnouncement(MDNS_RESPONSE_TTL);
-
-	DEBUG_ENTRY
-}
-
-void mdns_shutdown() {
-	DEBUG_ENTRY
-
-	assert(MDNS::Get() != nullptr);
-	MDNS::Get()->SendAnnouncement(0);
-
-	DEBUG_ENTRY
-}
-}  // namespace network
 
 static void create_service_domain(Domain& domain, ServiceRecord const& serviceRecord, const bool bIncludeName) {
 	DEBUG_ENTRY
@@ -649,7 +625,49 @@ const uint8_t *get_domain_name(const uint8_t *const msg, const uint8_t *ptr, con
 		return (ptr);
 }
 
-void MDNS::SendAnswerLocalIpAddress(const uint16_t nTransActionID, const uint32_t nTTL) {
+void mdns_start() {
+	DEBUG_ENTRY
+
+	Network::Get()->JoinGroup(s_nHandle, net::dns::MULTICAST_ADDRESS);
+	Network::Get()->SetDomainName(&DOMAIN_LOCAL[1]);
+
+	mdns_send_announcement(MDNS_RESPONSE_TTL);
+
+	DEBUG_EXIT
+}
+
+void mdns_stop() {
+	DEBUG_ENTRY
+
+	mdns_send_announcement(0);
+
+	for (auto &record : s_ServiceRecords) {
+		if (record.pName != nullptr) {
+			delete[] record.pName;
+		}
+
+		if (record.pTextContent != nullptr) {
+			delete[] record.pTextContent;
+		}
+	}
+
+	Network::Get()->LeaveGroup(s_nHandle, net::dns::MULTICAST_ADDRESS);
+	Network::Get()->End(net::iana::IANA_PORT_MDNS);
+	s_nHandle = -1;
+
+	DEBUG_EXIT
+}
+
+static void mdns_sendto(const uint32_t nLength) {
+	if (!s_isUnicast) {
+		Network::Get()->SendTo(s_nHandle, s_RecordsData, nLength, net::dns::MULTICAST_ADDRESS, net::iana::IANA_PORT_MDNS);
+		return;
+	}
+
+	Network::Get()->SendTo(s_nHandle, s_RecordsData, nLength, s_nRemoteIp, s_nRemotePort);
+}
+
+void mdns_send_answer_local_ip_address(const uint16_t nTransActionID, const uint32_t nTTL) {
 	DEBUG_ENTRY
 
 	uint32_t nAnswers = 0;
@@ -691,53 +709,62 @@ void MDNS::SendAnswerLocalIpAddress(const uint16_t nTransActionID, const uint32_
 	pHeader->nAdditionalCount = 0;
 
 	const auto nSize = static_cast<uint16_t>(pDst - reinterpret_cast<uint8_t *>(pHeader));
-	SendTo(nSize);
+	mdns_sendto(nSize);
 
 	DEBUG_EXIT
 }
 
-MDNS::MDNS() {
-	assert(s_pThis == nullptr);
-	s_pThis = this;
+static void mdns_send_message(mdns::ServiceRecord const& serviceRecord, const uint16_t nTransActionID, const uint32_t nTT) {
+	DEBUG_ENTRY
 
-	for (auto &record : s_ServiceRecords) {
-		record.services = Services::LAST_NOT_USED;
+	uint32_t nAnswers = 0;
+	auto *pDst = reinterpret_cast<uint8_t *>(&s_RecordsData) + sizeof(struct net::dns::Header);
+
+	if ((s_ServiceReplies & ServiceReply::TYPE_PTR) == ServiceReply::TYPE_PTR) {
+		nAnswers++;
+		pDst += add_answer_dnsd_ptr(serviceRecord, pDst, nTT);
 	}
 
-	s_nHandle = Network::Get()->Begin(net::iana::IANA_PORT_MDNS);
-	assert(s_nHandle != -1);
-
-	Network::Get()->JoinGroup(s_nHandle, net::dns::MULTICAST_ADDRESS);
-	Network::Get()->SetDomainName(&DOMAIN_LOCAL[1]);
-
-	SendAnnouncement(MDNS_RESPONSE_TTL);
-}
-
-MDNS::~MDNS() {
-	SendAnnouncement(0);
-
-	for (auto &record : s_ServiceRecords) {
-		if (record.pName != nullptr) {
-			delete[] record.pName;
-		}
-
-		if (record.pTextContent != nullptr) {
-			delete[] record.pTextContent;
-		}
+	if ((s_ServiceReplies & ServiceReply::NAME_PTR) == ServiceReply::NAME_PTR) {
+		nAnswers++;
+		pDst += add_answer_ptr(serviceRecord, pDst, nTT);
 	}
 
-	Network::Get()->LeaveGroup(s_nHandle, net::dns::MULTICAST_ADDRESS);
-	Network::Get()->End(net::iana::IANA_PORT_MDNS);
-	s_nHandle = -1;
+	if ((s_ServiceReplies & ServiceReply::SRV) == ServiceReply::SRV) {
+		nAnswers++;
+		pDst += add_answer_srv(serviceRecord, pDst, nTT);
+	}
+
+	if ((s_ServiceReplies & ServiceReply::TXT) == ServiceReply::TXT) {
+		nAnswers++;
+		pDst += add_answer_txt(serviceRecord, pDst, nTT);
+	}
+
+	pDst += add_answer_a(pDst, nTT);
+
+	auto *pHeader = reinterpret_cast<net::dns::Header *>(&s_RecordsData);
+
+	pHeader->xid = nTransActionID;
+	pHeader->nFlag1 = net::dns::Flag1::FLAG1_RESPONSE | net::dns::Flag1::FLAG1_AUTHORATIVE;
+	pHeader->nFlag2 = 0;
+	pHeader->nQueryCount = 0;
+	pHeader->nAnswerCount = __builtin_bswap16(static_cast<uint16_t>(nAnswers));
+	pHeader->nAuthorityCount = __builtin_bswap16(1);
+	pHeader->nAdditionalCount = __builtin_bswap16(0);
+
+	const auto nSize = static_cast<uint16_t>(pDst - reinterpret_cast<uint8_t*>(pHeader));
+	mdns_sendto(nSize);
+
+	DEBUG_EXIT
 }
 
-void MDNS::SendAnnouncement(const uint32_t nTTL) {
+void mdns_send_announcement(const uint32_t nTTL) {
 	DEBUG_ENTRY
 
 	s_nRemotePort = net::iana::IANA_PORT_MDNS; //FIXME Hack ;-)
 	s_HostReplies = HostReply::A;
 
-	SendAnswerLocalIpAddress(0, nTTL);
+	mdns_send_answer_local_ip_address(0, nTTL);
 
 	for (auto &record : s_ServiceRecords) {
 		if (record.services < Services::LAST_NOT_USED) {
@@ -745,14 +772,14 @@ void MDNS::SendAnnouncement(const uint32_t nTTL) {
 							 | ServiceReply::NAME_PTR
 							 | ServiceReply::SRV
 							 | ServiceReply::TXT;
-			SendMessage(record, 0, nTTL);
+			mdns_send_message(record, 0, nTTL);
 		}
 	}
 
 	DEBUG_EXIT
 }
 
-bool MDNS::ServiceRecordAdd(const char *pName, const mdns::Services services, const char *pTextContent, const uint16_t nPort) {
+bool mdns_service_record_add(const char *pName, const mdns::Services services, const char *pTextContent, const uint16_t nPort) {
 	DEBUG_ENTRY
 	assert(services < mdns::Services::LAST_NOT_USED);
 
@@ -797,7 +824,7 @@ bool MDNS::ServiceRecordAdd(const char *pName, const mdns::Services services, co
 					| ServiceReply::SRV
 					| ServiceReply::TXT;
 
-			SendMessage(record, 0, MDNS_RESPONSE_TTL);
+			mdns_send_message(record, 0, MDNS_RESPONSE_TTL);
 			return true;
 		}
 	}
@@ -806,13 +833,13 @@ bool MDNS::ServiceRecordAdd(const char *pName, const mdns::Services services, co
 	return false;
 }
 
-bool MDNS::ServiceRecordDelete(const mdns::Services service) {
+bool mdns_service_record_delete(const mdns::Services service) {
 	DEBUG_ENTRY
 	assert(service < mdns::Services::LAST_NOT_USED);
 
 	for (auto &record : s_ServiceRecords) {
 		if (record.services == service) {
-			SendMessage(record, 0, 0);
+			mdns_send_message(record, 0, 0);
 
 			if (record.pName != nullptr) {
 				delete[] record.pName;
@@ -831,60 +858,7 @@ bool MDNS::ServiceRecordDelete(const mdns::Services service) {
 	return false;
 }
 
-void MDNS::SendTo(const uint32_t nLength) {
-	if (!s_isUnicast) {
-		Network::Get()->SendTo(s_nHandle, s_RecordsData, nLength, net::dns::MULTICAST_ADDRESS, net::iana::IANA_PORT_MDNS);
-		return;
-	}
-
-	Network::Get()->SendTo(s_nHandle, s_RecordsData, nLength, s_nRemoteIp, s_nRemotePort);
-}
-
-void MDNS::SendMessage(mdns::ServiceRecord const& serviceRecord, const uint16_t nTransActionID, const uint32_t nTT) {
-	DEBUG_ENTRY
-
-	uint32_t nAnswers = 0;
-	auto *pDst = reinterpret_cast<uint8_t *>(&s_RecordsData) + sizeof(struct net::dns::Header);
-
-	if ((s_ServiceReplies & ServiceReply::TYPE_PTR) == ServiceReply::TYPE_PTR) {
-		nAnswers++;
-		pDst += add_answer_dnsd_ptr(serviceRecord, pDst, nTT);
-	}
-
-	if ((s_ServiceReplies & ServiceReply::NAME_PTR) == ServiceReply::NAME_PTR) {
-		nAnswers++;
-		pDst += add_answer_ptr(serviceRecord, pDst, nTT);
-	}
-
-	if ((s_ServiceReplies & ServiceReply::SRV) == ServiceReply::SRV) {
-		nAnswers++;
-		pDst += add_answer_srv(serviceRecord, pDst, nTT);
-	}
-
-	if ((s_ServiceReplies & ServiceReply::TXT) == ServiceReply::TXT) {
-		nAnswers++;
-		pDst += add_answer_txt(serviceRecord, pDst, nTT);
-	}
-
-	pDst += add_answer_a(pDst, nTT);
-
-	auto *pHeader = reinterpret_cast<net::dns::Header *>(&s_RecordsData);
-
-	pHeader->xid = nTransActionID;
-	pHeader->nFlag1 = net::dns::Flag1::FLAG1_RESPONSE | net::dns::Flag1::FLAG1_AUTHORATIVE;
-	pHeader->nFlag2 = 0;
-	pHeader->nQueryCount = 0;
-	pHeader->nAnswerCount = __builtin_bswap16(static_cast<uint16_t>(nAnswers));
-	pHeader->nAuthorityCount = __builtin_bswap16(1);
-	pHeader->nAdditionalCount = __builtin_bswap16(0);
-
-	const auto nSize = static_cast<uint16_t>(pDst - reinterpret_cast<uint8_t*>(pHeader));
-	SendTo(nSize);
-
-	DEBUG_EXIT
-}
-
-void MDNS::HandleQuestions(const uint32_t nQuestions) {
+void mdns_handle_questions(const uint32_t nQuestions) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("nQuestions=%u", nQuestions);
 
@@ -984,7 +958,7 @@ void MDNS::HandleQuestions(const uint32_t nQuestions) {
 				}
 
 				if (s_ServiceReplies != static_cast<mdns::ServiceReply>(0)) {
-					SendMessage(record, nTransactionID, MDNS_RESPONSE_TTL);
+					mdns_send_message(record, nTransactionID, MDNS_RESPONSE_TTL);
 				}
 			}
 		}
@@ -992,13 +966,54 @@ void MDNS::HandleQuestions(const uint32_t nQuestions) {
 
 	if (s_HostReplies != static_cast<mdns::HostReply>(0)) {
 		DEBUG_PUTS("");
-		SendAnswerLocalIpAddress(nTransactionID, MDNS_RESPONSE_TTL);
+		mdns_send_answer_local_ip_address(nTransactionID, MDNS_RESPONSE_TTL);
 	}
 
 	DEBUG_EXIT
 }
 
-void MDNS::Print() {
+static void mdns_input(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
+	if (pBuffer != nullptr) {
+		s_pReceiveBuffer = const_cast<uint8_t *>(pBuffer);
+		s_nBytesReceived = nSize;
+		s_nRemoteIp = nFromIp;
+		s_nRemotePort = nFromPort;
+	}
+
+	const auto *const pHeader = reinterpret_cast<net::dns::Header *>(s_pReceiveBuffer);
+	const auto nFlag1 = pHeader->nFlag1;
+
+	if ((nFlag1 >> 3) & 0xF) {
+		return;
+	}
+
+	mdns_handle_questions(static_cast<uint32_t>(__builtin_bswap16(pHeader->nQueryCount)));
+}
+
+void mdns_init() {
+	DEBUG_ENTRY
+
+	for (auto &record : s_ServiceRecords) {
+		record.services = Services::LAST_NOT_USED;
+	}
+
+	s_nHandle = Network::Get()->Begin(net::iana::IANA_PORT_MDNS, mdns_input);
+	assert(s_nHandle != -1);
+
+	DEBUG_EXIT
+}
+
+void mdns_run() {
+	s_nBytesReceived = Network::Get()->RecvFrom(s_nHandle, const_cast<const void **>(reinterpret_cast<void **>(&s_pReceiveBuffer)), &s_nRemoteIp, &s_nRemotePort);
+
+	if (__builtin_expect((s_nBytesReceived < sizeof(struct net::dns::Header)), 1)) {
+		return;
+	}
+
+	mdns_input(nullptr, 0, 0, 0);
+}
+
+void mdns_print() {
 	printf("mDNS\n");
 
 	Domain domain;
@@ -1014,3 +1029,4 @@ void MDNS::Print() {
 		}
 	}
 }
+

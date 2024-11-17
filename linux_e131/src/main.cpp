@@ -31,7 +31,7 @@
 
 #include "hardware.h"
 #include "network.h"
-#include "networkconst.h"
+
 
 #include "display.h"
 #include "displayudfparams.h"
@@ -64,6 +64,7 @@
 
 #include "firmwareversion.h"
 #include "software_version.h"
+#include "software_version_id.h"
 
 static bool keepRunning = true;
 
@@ -93,8 +94,7 @@ int main(int argc, char **argv) {
 	Display display;
 	ConfigStore configStore;
 	Network nw(argc, argv);
-	MDNS mDns;
-	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__, DEVICE_SOFTWARE_VERSION_ID);
 
 	hw.Print();
 	fw.Print();
@@ -160,7 +160,7 @@ int main(int argc, char **argv) {
 
 	llrpOnlyDevice.Print();
 
-	mDns.ServiceRecordAdd(nullptr, mdns::Services::RDMNET_LLRP, "node=RDMNet LLRP Only");
+	mdns_service_record_add(nullptr, mdns::Services::RDMNET_LLRP, "node=RDMNet LLRP Only");
 
 	bridge.Print();
 
@@ -187,7 +187,7 @@ int main(int argc, char **argv) {
 	while (configStore.Flash())
 		;
 
-	mDns.Print();
+	mdns_print(); //	mDns.Print();
 	bridge.Start();
 
 	while (keepRunning) {
@@ -195,7 +195,7 @@ int main(int argc, char **argv) {
 #if defined (NODE_SHOWFILE)
 		showFile.Run();
 #endif
-		mDns.Run();
+		mdns_run(); //	mDns.Run();
 		remoteConfig.Run();
 		llrpOnlyDevice.Run();
 		configStore.Flash();

@@ -154,10 +154,6 @@ else
 	LIBS+=flashcodeinstall flashcode flash
 endif	
 
-ifeq ($(findstring NODE_LTC_SMPTE,$(DEFINES)),NODE_LTC_SMPTE)
-	DEFINES+=CONFIG_DISPLAY_ENABLE_SSD1311 CONFIG_DISPLAY_ENABLE_HD44780 CONFIG_DISPLAY_ENABLE_CURSOR_MODE
-endif
-
 ifneq ($(findstring network,$(LIBS)),network)
 	LIBS+=network
 endif

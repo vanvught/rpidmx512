@@ -31,19 +31,18 @@
 #include <cstring>
 #include <cassert>
 
-#include "rtpmidireader.h"
+#include "arm/rtpmidireader.h"
 
 #include "timecodeconst.h"
 #include "hardware.h"
-
 // Output
 #include "artnetnode.h"
 #include "midi.h"
 #include "ltcetc.h"
 #include "ltcsender.h"
-#include "ltcoutputs.h"
+#include "arm/ltcoutputs.h"
 
-#include "platform_ltc.h"
+#include "arm/platform_ltc.h"
 
 static uint8_t s_qf[8] __attribute__ ((aligned (4))) = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
@@ -65,7 +64,7 @@ void RtpMidiReader::Start() {
 #if defined (H3)
 	irq_timer_set(IRQ_TIMER_0, static_cast<thunk_irq_timer_t>(irq_timer0_handler));
 	irq_timer_arm_physical_set(static_cast<thunk_irq_timer_arm_t>(arm_timer_handler));
-	irq_timer_init();
+	irq_handler_init();
 #elif defined (GD32)
 	platform::ltc::timer11_config();
 	TIMER_CNT(TIMER11) = 0;

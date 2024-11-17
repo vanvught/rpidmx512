@@ -28,7 +28,7 @@
 
 #include "hardware.h"
 #include "network.h"
-#include "networkconst.h"
+
 
 #include "display.h"
 
@@ -60,23 +60,19 @@ int main() {
 	Hardware hw;
 	Display display;
 	ConfigStore configStore;
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, CONSOLE_YELLOW);
 	Network nw;
-	MDNS mDns;
-	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, CONSOLE_GREEN);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	FlashCodeInstall spiFlashInstall;
 
 	fw.Print("OSC Client");
 	
-
 	OscClientParams params;
 	OscClient client;
 
 	params.Load();
 	params.Set(&client);
 
-	mDns.ServiceRecordAdd(nullptr, mdns::Services::OSC, "type=client", client.GetPortIncoming());
+	mdns_service_record_add(nullptr, mdns::Services::OSC, "type=client", client.GetPortIncoming());
 
 	display.TextStatus(OscClientMsgConst::PARAMS, CONSOLE_YELLOW);
 
@@ -111,7 +107,7 @@ int main() {
 	while (configStore.Flash())
 		;
 
-	mDns.Print();
+	mdns_print(); //	mDns.Print();
 
 	for (uint32_t i = 1; i < 7 ; i++) {
 		display.ClearLine(i);
@@ -140,7 +136,7 @@ int main() {
 		pButtonsSet->Run();
 		remoteConfig.Run();
 		configStore.Flash();
-		mDns.Run();
+
 		display.Run();
 		hw.Run();
 	}

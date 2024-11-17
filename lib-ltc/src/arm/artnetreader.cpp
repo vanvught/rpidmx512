@@ -31,21 +31,18 @@
 #include <cstring>
 #include <cassert>
 
-#include "artnetreader.h"
-
+#include "arm/artnetreader.h"
 #include "ltc.h"
-#include "timecodeconst.h"
 #include "hardware.h"
-
 // Input
 #include "artnettimecode.h"
 // Output
 #include "rtpmidi.h"
 #include "ltcetc.h"
 #include "ltcsender.h"
-#include "ltcoutputs.h"
+#include "arm/ltcoutputs.h"
 
-#include "platform_ltc.h"
+#include "arm/platform_ltc.h"
 
 #if defined (H3)
 static void arm_timer_handler() {
@@ -59,7 +56,7 @@ static void arm_timer_handler() {
 void ArtNetReader::Start() {
 #if defined (H3)
 	irq_timer_arm_physical_set(static_cast<thunk_irq_timer_arm_t>(arm_timer_handler));
-	irq_timer_init();
+	irq_handler_init();
 #elif defined (GD32)
 #endif
 
@@ -92,16 +89,4 @@ void ArtNetReader::Handler(const struct artnet::TimeCode *ArtNetTimeCode) {
 	memcpy(&m_MidiTimeCode, ArtNetTimeCode, sizeof(struct midi::Timecode));
 
 	LtcOutputs::Get()->Update(reinterpret_cast<const struct ltc::TimeCode*>(ArtNetTimeCode));
-}
-
-void ArtNetReader::Run() {
-	LtcOutputs::Get()->UpdateMidiQuarterFrameMessage(reinterpret_cast<const struct ltc::TimeCode*>(&m_MidiTimeCode));
-
-	__DMB();
-	if (gv_ltc_nUpdatesPerSecond != 0) {
-		Hardware::Get()->SetMode(hardware::ledblink::Mode::DATA);
-	} else {
-		LtcOutputs::Get()->ShowSysTime();
-		Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
-	}
 }

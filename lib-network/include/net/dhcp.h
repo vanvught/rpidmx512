@@ -101,6 +101,8 @@ void dhcp_network_changed_link_up();
 uint32_t udp_recv2(int, const uint8_t **, uint32_t *, uint16_t *);
 void dhcp_process(const dhcp::Message *const, const uint32_t nSize);
 
+void dhcp_input(const uint8_t *, uint32_t, uint32_t, uint16_t);
+
 inline void dhcp_run() {
 	auto *dhcp = reinterpret_cast<struct dhcp::Dhcp *>(globals::netif_default.dhcp);
 	if (dhcp == nullptr) {
@@ -114,16 +116,7 @@ inline void dhcp_run() {
 	const auto nSize = udp_recv2(dhcp->nHandle, const_cast<const uint8_t **>(&pResponse), &nFromIp, &nFromPort);
 
 	if (__builtin_expect((nSize > 0), 0)) {
-		if (nFromPort == net::iana::IANA_PORT_DHCP_SERVER) {
-			const auto *const p = reinterpret_cast<dhcp::Message *>(pResponse);
-
-			if (p->xid != dhcp->xid) {
-				DEBUG_PRINTF("pDhcpMessage->xid=%u, dhcp->xid=%u", p->xid, dhcp->xid);
-				return;
-			}
-
-			dhcp_process(p, nSize);
-		}
+		dhcp_input(pResponse, nSize, nFromIp, nFromPort);
 	}
 }
 

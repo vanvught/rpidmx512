@@ -33,6 +33,8 @@
 
 #include "network.h"
 
+#include "softwaretimers.h"
+
 void E131Bridge::FillDiscoveryPacket() {
 	m_State.DiscoveryPacketLength = static_cast<uint16_t>(DISCOVERY_PACKET_SIZE(m_State.nEnabledInputPorts));
 
@@ -56,22 +58,17 @@ void E131Bridge::FillDiscoveryPacket() {
 }
 
 void E131Bridge::SendDiscoveryPacket() {
-	assert(m_DiscoveryIpAddress != 0);
+	uint32_t nListOfUniverses = 0;
 
-	if (m_nCurrentPacketMillis - m_State.DiscoveryTime >= (e131::UNIVERSE_DISCOVERY_INTERVAL_SECONDS * 1000)) {
-		m_State.DiscoveryTime = m_nCurrentPacketMillis;
-
-		uint32_t nListOfUniverses = 0;
-
-		if (m_State.nEnabledInputPorts != 0) {
-			for (uint32_t i = 0; i < e131bridge::MAX_PORTS; i++) {
-				uint16_t nUniverse;
-				if (GetUniverse(i, nUniverse, lightset::PortDir::INPUT)) {
-					m_E131DiscoveryPacket.UniverseDiscoveryLayer.ListOfUniverses[nListOfUniverses++] = __builtin_bswap16(nUniverse);
-				}
+	if (m_State.nEnabledInputPorts != 0) {
+		for (uint32_t i = 0; i < e131bridge::MAX_PORTS; i++) {
+			uint16_t nUniverse;
+			if (GetUniverse(i, nUniverse, lightset::PortDir::INPUT)) {
+				m_E131DiscoveryPacket.UniverseDiscoveryLayer.ListOfUniverses[nListOfUniverses++] = __builtin_bswap16(nUniverse);
 			}
-
-			Network::Get()->SendTo(m_nHandle, &m_E131DiscoveryPacket, m_State.DiscoveryPacketLength, m_DiscoveryIpAddress, e131::UDP_PORT);
 		}
+
+		Network::Get()->SendTo(m_nHandle, &m_E131DiscoveryPacket, m_State.DiscoveryPacketLength, m_nDiscoveryIpAddress, e131::UDP_PORT);
 	}
+
 }

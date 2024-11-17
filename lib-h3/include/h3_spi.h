@@ -2,7 +2,7 @@
  * @file h3_spi.h
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -79,4 +79,14 @@ const uint8_t *h3_spi_dma_tx_prepare(uint32_t *data_length);
 void h3_spi_dma_tx_start(const uint8_t *tx_buffer, uint32_t length);
 bool h3_spi_dma_tx_is_active();
 
+/*
+ * bitbang support
+ */
+
+void h3_bitbang_spi_begin();
+void h3_bitbang_spi_chipSelect(const uint8_t chip_select);
+void h3_bitbang_spi_set_speed_hz(const uint32_t speed_hz);
+void h3_bitbang_spi_setDataMode(const uint8_t mode);
+void h3_bitbang_spi_writenb(const char *tx_buffer, uint32_t data_length);
+void h3_bitbang_spi_write(uint16_t data);
 #endif /* H3_SPI_H_ */

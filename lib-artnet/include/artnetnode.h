@@ -29,6 +29,10 @@
 #ifndef ARTNETNODE_H_
 #define ARTNETNODE_H_
 
+#if defined(DEBUG_ARTNETNODE)
+# undef NDEBUG
+#endif
+
 #include <cstdint>
 #include <cstdarg>
 #include <cstring>
@@ -73,6 +77,7 @@
 #include "lightset.h"
 #include "hardware.h"
 #include "network.h"
+#include "softwaretimers.h"
 
 #include "panel_led.h"
 
@@ -182,7 +187,6 @@ class ArtNetNode {
 #endif
 public:
 	ArtNetNode();
-	~ArtNetNode();
 
 	void Start();
 	void Stop();
@@ -231,24 +235,6 @@ public:
 				}
 			}
 		}
-#endif
-		if ((m_nCurrentPacketMillis - m_nPreviousLedpanelMillis) > 200) {
-			m_nPreviousLedpanelMillis = m_nCurrentPacketMillis;
-			for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
-				hal::panel_led_off(hal::panelled::PORT_A_TX << nPortIndex);
-#if defined (ARTNET_HAVE_DMXIN)
-				hal::panel_led_off(hal::panelled::PORT_A_RX << nPortIndex);
-#endif
-#if defined(CONFIG_PANELLED_RDM_PORT)
-				hal::panel_led_off(hal::panelled::PORT_A_RDM << nPortIndex);
-#elif defined(CONFIG_PANELLED_RDM_NO_PORT)
-				hal::panel_led_off(hal::panelled::RDM << nPortIndex);
-#endif
-			}
-		}
-
-#if defined (DMXCONFIGUDP_H)
-		m_DmxConfigUdp.Run();
 #endif
 	}
 
@@ -461,12 +447,6 @@ public:
 #if defined (ARTNET_HAVE_TIMECODE)
 	void SendTimeCode(const struct artnet::TimeCode *pArtNetTimeCode) {
 		assert(pArtNetTimeCode != nullptr);
-		assert(pArtNetTimeCode->Frames < 30);
-		assert(pArtNetTimeCode->Hours < 60);
-		assert(pArtNetTimeCode->Minutes < 60);
-		assert(pArtNetTimeCode->Seconds < 60);
-		assert(pArtNetTimeCode->Type < 4);
-
 		memcpy(&m_ArtTimeCode.Frames, pArtNetTimeCode, sizeof(struct artnet::TimeCode));
 		Network::Get()->SendTo(m_nHandle, &m_ArtTimeCode, sizeof(struct artnet::ArtTimeCode), m_Node.IPAddressTimeCode, artnet::UDP_PORT);
 	}
@@ -632,8 +612,8 @@ private:
 	void UpdateMergeStatus(const uint32_t nPortIndex);
 	void CheckMergeTimeouts(const uint32_t nPortIndex);
 
-	void ProcessPollRelply(const uint32_t nPortIndex, uint32_t& NumPortsInput, uint32_t& NumPortsOutput);
-	void SendPollRelply(const uint32_t nBindIndex, const uint32_t nDestinationIp, artnet::ArtPollQueue *pQueue = nullptr);
+	void ProcessPollReply(const uint32_t nPortIndex, uint32_t& NumPortsInput, uint32_t& NumPortsOutput);
+	void SendPollReply(const uint32_t nBindIndex, const uint32_t nDestinationIp, artnet::ArtPollQueue *pQueue = nullptr);
 
 	void SendTod(uint32_t nPortIndex);
 	void SendTodRequest(uint32_t nPortIndex);
@@ -644,6 +624,24 @@ private:
 	void FailSafePlayback();
 
 	void Process(const uint32_t);
+
+	void LedPanelOff() {
+		for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
+			hal::panel_led_off(hal::panelled::PORT_A_TX << nPortIndex);
+#if defined (ARTNET_HAVE_DMXIN)
+			hal::panel_led_off(hal::panelled::PORT_A_RX << nPortIndex);
+#endif
+#if defined(CONFIG_PANELLED_RDM_PORT)
+			hal::panel_led_off(hal::panelled::PORT_A_RDM << nPortIndex);
+#elif defined(CONFIG_PANELLED_RDM_NO_PORT)
+			hal::panel_led_off(hal::panelled::RDM << nPortIndex);
+#endif
+		}
+	}
+
+	void static staticCallbackFunctionLedPanelOff([[maybe_unused]] TimerHandle_t timerHandle) {
+		s_pThis->LedPanelOff();
+	}
 
 #if defined (RDM_CONTROLLER)
 	bool RdmDiscoveryRun() {
@@ -693,7 +691,6 @@ private:
 	uint32_t m_nIpAddressFrom;
 	uint32_t m_nCurrentPacketMillis { 0 };
 	uint32_t m_nPreviousPacketMillis { 0 };
-	uint32_t m_nPreviousLedpanelMillis { 0 };
 
 	LightSet *m_pLightSet { nullptr };
 
@@ -733,7 +730,7 @@ private:
 	DmxConfigUdp m_DmxConfigUdp;
 #endif
 
-	static ArtNetNode *s_pThis;
+	static inline ArtNetNode *s_pThis;
 };
 
 #endif /* ARTNETNODE_H_ */

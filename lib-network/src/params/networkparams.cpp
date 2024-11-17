@@ -23,9 +23,8 @@
  * THE SOFTWARE.
  */
 
-#if !defined(__clang__)	// Needed for compiling on MacOS
-# pragma GCC push_options
-# pragma GCC optimize ("Os")
+#ifdef DEBUG_NETWORK
+# undef NDEBUG
 #endif
 
 #include <cstdint>
@@ -35,7 +34,6 @@
 #include "network.h"
 #include "networkparams.h"
 #include "networkparamsconst.h"
-
 
 #include "readconfigfile.h"
 #include "sscan.h"
@@ -51,7 +49,6 @@ NetworkParams::NetworkParams() {
 
 	memset(&m_Params, 0, sizeof(struct networkparams::Params));
 	m_Params.bIsDhcpUsed = defaults::IS_DHCP_USED;
-	m_Params.nDhcpRetryTime = defaults::DHCP_RETRY_TIME;
 
 	DEBUG_EXIT
 }
@@ -108,16 +105,6 @@ void NetworkParams::callbackFunction(const char *pLine) {
 		}
 		m_Params.bIsDhcpUsed = !(nValue8 == 0);
 		return;
-	}
-
-	if (Sscan::Uint8(pLine, NetworkParamsConst::DHCP_RETRY_TIME, nValue8) == Sscan::OK) {
-		if ((nValue8 != defaults::DHCP_RETRY_TIME) && (nValue8 <= 5)) {
-			m_Params.nSetList |= networkparams::Mask::DHCP_RETRY_TIME;
-			m_Params.nDhcpRetryTime = nValue8;
-		} else {
-			m_Params.nSetList &= ~networkparams::Mask::DHCP_RETRY_TIME;
-			m_Params.nDhcpRetryTime = defaults::DHCP_RETRY_TIME;
-		}
 	}
 
 	uint32_t nValue32;
@@ -201,13 +188,13 @@ void NetworkParams::staticCallbackFunction(void *p, const char *s) {
 	(static_cast<NetworkParams*>(p))->callbackFunction(s);
 }
 
-void NetworkParams::Builder(const struct networkparams::Params *ptNetworkParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
+void NetworkParams::Builder(const struct networkparams::Params *pParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	assert(pBuffer != nullptr);
 
-	if (ptNetworkParams != nullptr) {
-		memcpy(&m_Params, ptNetworkParams, sizeof(struct networkparams::Params));
+	if (pParams != nullptr) {
+		memcpy(&m_Params, pParams, sizeof(struct networkparams::Params));
 	} else {
 		NetworkParamsStore::Copy(&m_Params);
 	}
@@ -233,7 +220,6 @@ void NetworkParams::Builder(const struct networkparams::Params *ptNetworkParams,
 	}
 
 	builder.Add(NetworkParamsConst::USE_DHCP, m_Params.bIsDhcpUsed, isMaskSet(networkparams::Mask::DHCP));
-	builder.Add(NetworkParamsConst::DHCP_RETRY_TIME, m_Params.nDhcpRetryTime, isMaskSet(networkparams::Mask::DHCP_RETRY_TIME));
 
 	builder.AddComment("Static IP");
 	builder.AddIpAddress(NetworkParamsConst::IP_ADDRESS, m_Params.nLocalIp, isMaskSet(networkparams::Mask::IP_ADDRESS));

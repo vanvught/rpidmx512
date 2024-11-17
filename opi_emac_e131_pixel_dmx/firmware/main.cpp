@@ -23,11 +23,14 @@
  * THE SOFTWARE.
  */
 
+#pragma GCC push_options
+#pragma GCC optimize ("O2")
+#pragma GCC optimize ("no-tree-loop-distribute-patterns")
+
 #include <cstdint>
 
 #include "hardware.h"
 #include "network.h"
-#include "networkconst.h"
 
 #include "net/apps/mdns.h"
 
@@ -74,12 +77,6 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
-namespace e131bridge {
-namespace configstore {
-uint32_t DMXPORT_OFFSET = 4;
-}  // namespace configstore
-}  // namespace e131bridge
-
 void Hardware::RebootHandler() {
 	WS28xx::Get()->Blackout();
 	Dmx::Get()->Blackout();
@@ -90,10 +87,7 @@ int main() {
 	Hardware hw;
 	DisplayUdf display;
 	ConfigStore configStore;
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, CONSOLE_YELLOW);
 	Network nw;
-	MDNS mDns;
-	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, CONSOLE_GREEN);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	FlashCodeInstall spiFlashInstall;
 
@@ -135,7 +129,7 @@ int main() {
 	const auto portDirection = e131params.GetDirection(0);
 
 	if (portDirection == lightset::PortDir::OUTPUT) {
-		bridge.SetUniverse(e131bridge::configstore::DMXPORT_OFFSET, lightset::PortDir::OUTPUT, e131params.GetUniverse(0, isDmxUniverseSet));
+		bridge.SetUniverse(dmxsend::DMXPORT_OFFSET, lightset::PortDir::OUTPUT, e131params.GetUniverse(0, isDmxUniverseSet));
 	}
 
 	Dmx dmx;
@@ -146,7 +140,7 @@ int main() {
 
 	uint16_t nUniverse;
 
-	if (bridge.GetUniverse(e131bridge::configstore::DMXPORT_OFFSET, nUniverse, lightset::PortDir::OUTPUT)) {
+	if (bridge.GetUniverse(dmxsend::DMXPORT_OFFSET, nUniverse, lightset::PortDir::OUTPUT)) {
 		dmx.SetPortDirection(0, dmx::PortDirection::OUTP, false);
 	} else {
 		dmx.SetPortDirection(0, dmx::PortDirection::INP, false);
@@ -237,7 +231,7 @@ int main() {
 	while (configStore.Flash())
 		;
 
-	mDns.Print();
+	mdns_print(); //	mDns.Print();
 
 	display.TextStatus(E131MsgConst::START, CONSOLE_YELLOW);
 
@@ -255,12 +249,8 @@ int main() {
 		showFile.Run();
 #endif
 		remoteConfig.Run();
-#if defined (NODE_RDMNET_LLRP_ONLY)
-		llrpOnlyDevice.Run();
-#endif
 		configStore.Flash();
 		pixelTestPattern.Run();
-		mDns.Run();
 		display.Run();
 		hw.Run();
 	}

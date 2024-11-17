@@ -37,6 +37,7 @@
 # pragma GCC push_options
 # pragma GCC optimize ("O2")
 # pragma GCC optimize ("no-tree-loop-distribute-patterns")
+# pragma GCC optimize ("-fprefetch-loop-arrays")
 #endif
 
 #include <cstdint>
@@ -55,7 +56,7 @@
 #include "net/protocol/udp.h"
 #include "netif.h"
 
-#include "hardware.h"
+#include "softwaretimers.h"
 
 #include "debug.h"
 
@@ -98,9 +99,8 @@ struct Record {
 }  // namespace arp
 
 static net::arp::Record s_ArpRecords[MAX_RECORDS] SECTION_NETWORK ALIGNED;
-
-static struct t_arp s_arp_request ALIGNED ;
-static struct t_arp s_arp_reply ALIGNED;
+static struct t_arp s_arp_request SECTION_NETWORK ALIGNED ;
+static struct t_arp s_arp_reply SECTION_NETWORK ALIGNED;
 
 #ifndef NDEBUG
 static constexpr char STATE[4][12] = { "EMPTY", "PROBE", "REACHABLE", "STALE", };
@@ -280,7 +280,7 @@ static void arp_send_request_unicast(const uint32_t nIp, const uint8_t *pMacAddr
 	memset(s_arp_request.ether.dst, 0xFF , ETH_ADDR_LEN);
 }
 
-static void arp_timer() {
+static void arp_timer([[maybe_unused]] TimerHandle_t nHandle) {
 	for (auto &record : s_ArpRecords) {
 		const auto state = record.state;
 		if (state != net::arp::State::STATE_EMPTY) {
@@ -372,7 +372,7 @@ void __attribute__((cold)) arp_init() {
 
 	std::memcpy(s_arp_reply.arp.sender_mac, net::globals::netif_default.hwaddr, ETH_ADDR_LEN);
 
-	Hardware::Get()->SoftwareTimerAdd(net::arp::TIMER_INTERVAL, arp_timer);
+	SoftwareTimerAdd(net::arp::TIMER_INTERVAL, arp_timer);
 
 	DEBUG_EXIT
 }
@@ -430,6 +430,14 @@ static void arp_send_implementation(struct t_udp *pPacket, const uint32_t nSize,
 	DEBUG_ENTRY
 	DEBUG_PRINTF(IPSTR, IP2STR(nRemoteIp));
 
+	const auto &netif = net::globals::netif_default;
+
+	DEBUG_PRINTF(IPSTR, IP2STR(netif.ip.addr));
+
+	if (__builtin_expect((netif.ip.addr == 0), 0)) {
+		return;
+	}
+
 	net::memcpy_ip(pPacket->ip4.dst, nRemoteIp);
 	pPacket->ip4.chksum = 0;
 #if !defined (CHECKSUM_BY_HARDWARE)
@@ -444,7 +452,7 @@ static void arp_send_implementation(struct t_udp *pPacket, const uint32_t nSize,
 	         on the same physical link. The host MUST NOT send the packet to any
 	         router for forwarding". */
 		if (!network::is_linklocal_ip(nRemoteIp)) {
-			nDestinationIp = net::globals::netif_default.gw.addr;
+			nDestinationIp = netif.gw.addr;
 			DEBUG_PUTS("");
 		}
 	}
@@ -454,11 +462,11 @@ static void arp_send_implementation(struct t_udp *pPacket, const uint32_t nSize,
 			if (record.nIp == nDestinationIp) {
 				std::memcpy(pPacket->ether.dst, record.mac_address, ETH_ADDR_LEN);
 
-				if (S == net::arp::EthSend::IS_NORMAL) {
+				if constexpr (S == net::arp::EthSend::IS_NORMAL) {
 					emac_eth_send(reinterpret_cast<void *>(pPacket), nSize);
 				}
 #if defined CONFIG_ENET_ENABLE_PTP
-				else if (S == net::arp::EthSend::IS_TIMESTAMP) {
+				else if constexpr (S == net::arp::EthSend::IS_TIMESTAMP) {
 					emac_eth_send_timestamp(reinterpret_cast<void *>(pPacket), nSize);
 				}
 #endif

@@ -23,12 +23,15 @@
  * THE SOFTWARE.
  */
 
+#pragma GCC push_options
+#pragma GCC optimize ("O2")
+#pragma GCC optimize ("no-tree-loop-distribute-patterns")
+
 #include <cstdint>
 #include <cstdio>
 
 #include "hardware.h"
 #include "network.h"
-#include "networkconst.h"
 
 #include "net/apps/mdns.h"
 
@@ -79,12 +82,6 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
-namespace artnetnode {
-namespace configstore {
-uint32_t DMXPORT_OFFSET = 32;
-}  // namespace configstore
-}  // namespace artnetnode
-
 void Hardware::RebootHandler() {
 	WS28xxMulti::Get()->Blackout();
 	Dmx::Get()->Blackout();
@@ -95,10 +92,7 @@ int main() {
 	Hardware hw;
 	DisplayUdf display;
 	ConfigStore configStore;
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, CONSOLE_YELLOW);
 	Network nw;
-	MDNS mDns;
-	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, CONSOLE_GREEN);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	FlashCodeInstall spiFlashInstall;
 
@@ -148,8 +142,8 @@ int main() {
 
 	uint32_t nDmxUniverses = 0;
 
-	for (uint32_t nPortIndex = artnetnode::configstore::DMXPORT_OFFSET; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
-		const auto nDmxPortIndex = nPortIndex - artnetnode::configstore::DMXPORT_OFFSET;
+	for (uint32_t nPortIndex = dmxsend::DMXPORT_OFFSET; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
+		const auto nDmxPortIndex = nPortIndex - dmxsend::DMXPORT_OFFSET;
 		const auto portDirection = artnetParams.GetDirection(nDmxPortIndex);
 
 		if (portDirection == lightset::PortDir::OUTPUT) {
@@ -165,8 +159,8 @@ int main() {
 	dmxparams.Load();
 	dmxparams.Set(&dmx);
 
-	for (uint32_t nPortIndex = artnetnode::configstore::DMXPORT_OFFSET; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
-		const auto nDmxPortIndex = nPortIndex - artnetnode::configstore::DMXPORT_OFFSET;
+	for (uint32_t nPortIndex = dmxsend::DMXPORT_OFFSET; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
+		const auto nDmxPortIndex = nPortIndex - dmxsend::DMXPORT_OFFSET;
 
 		if (node.GetPortDirection(nPortIndex) == lightset::PortDir::OUTPUT) {
 			dmx.SetPortDirection(nDmxPortIndex, dmx::PortDirection::OUTP, false);
@@ -260,7 +254,7 @@ int main() {
 	while (configStore.Flash())
 		;
 
-	mDns.Print();
+	mdns_print(); //	mDns.Print();
 
 	display.TextStatus(ArtNetMsgConst::START, CONSOLE_YELLOW);
 
@@ -278,12 +272,8 @@ int main() {
 		showFile.Run();
 #endif
 		remoteConfig.Run();
-#if defined (NODE_RDMNET_LLRP_ONLY)
-		llrpOnlyDevice.Run();
-#endif
 		configStore.Flash();
 		pixelTestPattern.Run();
-		mDns.Run();
 		display.Run();
 		hw.Run();
 	}

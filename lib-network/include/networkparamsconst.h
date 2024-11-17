@@ -27,23 +27,22 @@
 #define NETWORKPARAMSCONST_H_
 
 struct NetworkParamsConst {
-	static const char FILE_NAME[];
+	static inline const char FILE_NAME[] = "network.txt";
 
-	static const char USE_DHCP[];
-	static const char DHCP_RETRY_TIME[];
+	static inline const char USE_DHCP[] = "use_dhcp";
 
-	static const char IP_ADDRESS[];
-	static const char NET_MASK[];
-	static const char DEFAULT_GATEWAY[];
-	static const char HOSTNAME[];
+	static inline const char IP_ADDRESS[] = "ip_address";
+	static inline const char NET_MASK[] = "net_mask";
+	static inline const char DEFAULT_GATEWAY[] = "default_gateway";
+	static inline const char HOSTNAME[] = "hostname";
 
-	static const char NTP_SERVER[];
+	static inline const char NTP_SERVER[] = "ntp_server";
 
 #if defined (ESP8266)
-	static const char NAME_SERVER[];
+	static inline const char NAME_SERVER[] = "name_server";
 
-	static const char SSID[];
-	static const char PASSWORD[];
+	static inline const char SSID[] = "ssid";
+	static inline const char PASSWORD[] = "password";
 #endif
 };
 

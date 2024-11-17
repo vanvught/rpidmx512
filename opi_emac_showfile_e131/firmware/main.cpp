@@ -28,7 +28,7 @@
 
 #include "hardware.h"
 #include "network.h"
-#include "networkconst.h"
+
 
 #include "net/apps/mdns.h"
 
@@ -40,9 +40,11 @@
 #include "showfiledisplay.h"
 #include "showfileparams.h"
 
-#include "rdmnetllrponly.h"
-#include "rdm_e120.h"
-#include "factorydefaults.h"
+#if defined (NODE_RDMNET_LLRP_ONLY)
+# include "rdmnetllrponly.h"
+# include "rdm_e120.h"
+# include "factorydefaults.h"
+#endif
 
 #include "remoteconfig.h"
 #include "remoteconfigparams.h"
@@ -73,15 +75,11 @@ int main() {
 	Hardware hw;
 	DisplayUdf display;
 	ConfigStore configStore;
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, CONSOLE_YELLOW);
 	Network nw;
-	MDNS mDns;
-	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, CONSOLE_GREEN);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	FlashCodeInstall spiFlashInstall;
 
 	fw.Print("Showfile player");
-	
 
 	ShowFile showFile;
 
@@ -111,7 +109,7 @@ int main() {
 	while (configStore.Flash())
 		;
 
-	mDns.Print();
+	mdns_print(); //	mDns.Print();
 
 	display.SetTitle("Showfile player");
 	display.Set(2, displayudf::Labels::HOSTNAME);
@@ -142,10 +140,6 @@ int main() {
 		showFile.Run();
 		remoteConfig.Run();
 		configStore.Flash();
-		mDns.Run();
-#if defined (NODE_RDMNET_LLRP_ONLY)
-		rdmNetLLRPOnly.Run();
-#endif
 		display.Run();
 		hw.Run();
 	}

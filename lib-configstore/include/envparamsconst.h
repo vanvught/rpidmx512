@@ -27,9 +27,8 @@
 #define ENVPARAMSCONST_H_
 
 struct EnvParamsConst {
-	static const char FILE_NAME[];
-
-	static const char UTC_OFFSET[];
+	static inline const char FILE_NAME[] = "env.txt";
+	static inline const char UTC_OFFSET[]= "utc_offset";
 };
 
 #endif /* ENVPARAMSCONST_H_ */

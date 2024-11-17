@@ -34,9 +34,6 @@
 # undef NDEBUG
 #endif
 
-#pragma GCC push_options
-#pragma GCC optimize ("Os")
-
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
@@ -49,7 +46,7 @@
 #include "net/protocol/arp.h"
 #include "net_memcpy.h"
 
-#include "hardware.h"
+#include "softwaretimers.h"
 #include "debug.h"
 
 namespace net {
@@ -58,9 +55,9 @@ static constexpr uint32_t ACD_TMR_INTERVAL = 100;
 static constexpr uint32_t ACD_TICKS_PER_SECOND = (1000U / ACD_TMR_INTERVAL);
 }  // namespace acd
 
-static int32_t nTimerId;
+static TimerHandle_t nTimerId;
 
-static void acd_timer() {
+static void acd_timer([[maybe_unused]] TimerHandle_t nHandle) {
 	auto *acd = reinterpret_cast<struct acd::Acd *>(globals::netif_default.acd);
 	assert(acd != nullptr);
 
@@ -87,7 +84,7 @@ static void acd_timer() {
 				acd->sent_num = 0;
 				acd->ttw = static_cast<uint16_t>(ANNOUNCE_WAIT * acd::ACD_TICKS_PER_SECOND);
 			} else {
-				acd->ttw = static_cast<uint16_t>(random() % (((PROBE_MAX - PROBE_MIN) * acd::ACD_TICKS_PER_SECOND)) + (PROBE_MIN * acd::ACD_TICKS_PER_SECOND));
+				acd->ttw = static_cast<uint16_t>(static_cast<uint32_t>(random()) % (((PROBE_MAX - PROBE_MIN) * acd::ACD_TICKS_PER_SECOND)) + (PROBE_MIN * acd::ACD_TICKS_PER_SECOND));
 			}
 		}
 		break;
@@ -206,10 +203,10 @@ void acd_start(struct acd::Acd *acd, const ip4_addr_t ipaddr) {
 
 	acd->ipaddr.addr = ipaddr.addr;
 	acd->state = acd::State::ACD_STATE_PROBE_WAIT;
-	acd->ttw = static_cast<uint16_t>(random() % (PROBE_WAIT * acd::ACD_TICKS_PER_SECOND));
+	acd->ttw = static_cast<uint16_t>(static_cast<uint32_t>(random()) % (PROBE_WAIT * acd::ACD_TICKS_PER_SECOND));
 
-	nTimerId = Hardware::Get()->SoftwareTimerAdd(acd::ACD_TMR_INTERVAL, acd_timer);
-	assert(nTimerId >= 0);
+	nTimerId = SoftwareTimerAdd(acd::ACD_TMR_INTERVAL, acd_timer);
+	assert( != TIMER_ID_NONE);
 
 	DEBUG_EXIT
 }
@@ -220,9 +217,9 @@ void acd_stop(struct acd::Acd *acd) {
 
 	acd->state = acd::State::ACD_STATE_OFF;
 
-	assert(nTimerId >= 0);
-	Hardware::Get()->SoftwareTimerDelete(nTimerId);
-	nTimerId = -1;
+	assert(nTimerId != TIMER_ID_NONE);
+	SoftwareTimerDelete(nTimerId);
+	nTimerId = TIMER_ID_NONE;
 
 	DEBUG_EXIT
 }
@@ -231,14 +228,28 @@ void acd_network_changed_link_down() {
 	DEBUG_ENTRY
 
 	auto *acd = reinterpret_cast<struct acd::Acd *>(globals::netif_default.acd);
-    acd_stop(acd);
+
+	if (acd == nullptr) {
+		DEBUG_EXIT
+		return;
+	}
+
+	acd_stop(acd);
 
 	DEBUG_EXIT
 }
 
+/**
+ *  Handles every incoming ARP Packet, called by arp_handle
+ */
 void acd_arp_reply(struct t_arp *pArp) {
 	DEBUG_ENTRY
 	auto *acd = reinterpret_cast<struct acd::Acd *>(globals::netif_default.acd);
+
+	if (acd == nullptr) {
+		DEBUG_EXIT
+		return;
+	}
 
 	switch (acd->state) {
 	case acd::State::ACD_STATE_OFF:

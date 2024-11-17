@@ -30,16 +30,6 @@
 
 #include "ip4_address.h"
 
-namespace network {
-namespace dhcp {
-enum class Mode: uint8_t {
-	INACTIVE = 0x00,	///< The IP address was not obtained via DHCP
-	ACTIVE = 0x01,		///< The IP address was obtained via DHCP
-	UNKNOWN = 0x02		///< The system cannot determine if the address was obtained via DHCP
-};
-}  // namespace dhcp
-}  // namespace network
-
 #if defined(__linux__) || defined (__APPLE__)
 # if defined (CONFIG_NETWORK_USE_MINIMUM)
 #  include "linux/minimum/network.h"

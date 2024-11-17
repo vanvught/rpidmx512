@@ -23,6 +23,10 @@
  * THE SOFTWARE.
  */
 
+#pragma GCC push_options
+#pragma GCC optimize ("O2")
+#pragma GCC optimize ("no-tree-loop-distribute-patterns")
+
 #include <cstdio>
 #include <cstdint>
 #include <cstring>
@@ -39,7 +43,6 @@
 #include "ltcdisplayparams.h"
 #include "ltcdisplayrgb.h"
 #include "ltcdisplaymax7219.h"
-#include "ltcmidisystemrealtime.h"
 #include "ltcetc.h"
 #include "ltcetcparams.h"
 
@@ -48,7 +51,6 @@
 #include "artnetmsgconst.h"
 
 #include "artnetconst.h"
-#include "networkconst.h"
 
 #include "midi.h"
 #include "rtpmidi.h"
@@ -62,21 +64,22 @@
 #include "ntpserver.h"
 
 #include "mcpbuttons.h"
-#include "ltcoscserver.h"
 
+#include "ltcoscserver.h"
 #include "ltcsourceconst.h"
 #include "ltcsource.h"
-
-#include "artnetreader.h"
-#include "ltcreader.h"
 #include "ltcsender.h"
-#include "midireader.h"
-#include "tcnetreader.h"
-#include "ltcgenerator.h"
-#include "rtpmidireader.h"
-#include "systimereader.h"
-#include "ltcetcreader.h"
-#include "ltcoutputs.h"
+
+#include "arm/artnetreader.h"
+#include "arm/ltcreader.h"
+#include "arm/midireader.h"
+#include "arm/systimereader.h"
+#include "arm/tcnetreader.h"
+#include "arm/ltcgenerator.h"
+#include "arm/ltcmidisystemrealtime.h"
+#include "arm/rtpmidireader.h"
+#include "arm/ltcetcreader.h"
+#include "arm/ltcoutputs.h"
 
 #include "flashcodeinstall.h"
 
@@ -102,12 +105,6 @@
 #if defined(ENABLE_SHELL)
 # include "shell/shell.h"
 #endif
-
-namespace artnetnode {
-namespace configstore {
-uint32_t DMXPORT_OFFSET = 0;
-}  // namespace configstore
-}  // namespace artnetnode
 
 void Hardware::RebootHandler() {
 //	switch (m_tSource) {
@@ -145,23 +142,18 @@ int main() {
 	Hardware hw;
 	Display display(4);
 	ConfigStore configStore;
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, CONSOLE_YELLOW);
 	Network nw;
-	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, CONSOLE_GREEN);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	FlashCodeInstall spiFlashInstall;
 
 	fw.Print("LTC SMPTE");
 	
-
 #if defined(ENABLE_SHELL)
 	Shell shell;
 #endif
 
 	display.ClearLine(1);
 	display.ClearLine(2);
-
-	MDNS mdns;
 
 	NtpClient ntpClient;
 	ntpClient.Start();
@@ -390,7 +382,8 @@ int main() {
 		oscServer.Start();
 		oscServer.Print();
 
-		mdns.ServiceRecordAdd(nullptr, mdns::Services::OSC, "type=server", oscServer.GetPortIncoming());
+//		mdns.ServiceRecordAdd(nullptr, mdns::Services::OSC, "type=server", oscServer.GetPortIncoming());
+		mdns_service_record_add(nullptr, mdns::Services::OSC, "type=server", oscServer.GetPortIncoming());
 	}
 
 	/**
@@ -431,8 +424,8 @@ int main() {
 		ntpServer.Start();
 		ntpServer.Print();
 
-		mdns.ServiceRecordAdd(nullptr, mdns::Services::NTP, "type=server");
-
+//		mdns.ServiceRecordAdd(nullptr, mdns::Services::NTP, "type=server");
+		mdns_service_record_add(nullptr, mdns::Services::NTP, "type=server");
 	}
 
 	/**
@@ -490,7 +483,7 @@ int main() {
 		break;
 	}
 
-	mdns.Print();
+	mdns_print();
 
 	RemoteConfig remoteConfig(remoteconfig::Node::LTC, remoteconfig::Output::TIMECODE, 1U + static_cast<uint32_t>(ltcSource));
 
@@ -609,14 +602,10 @@ int main() {
 			sourceSelect.Run();
 		}
 
-#if defined (NODE_RDMNET_LLRP_ONLY)
-		rdmNetLLRPOnly.Run();
-#endif
 		remoteConfig.Run();
 		configStore.Flash();
 #if defined(ENABLE_SHELL)
 		shell.Run();
 #endif
-		mdns.Run();
 	}
 }

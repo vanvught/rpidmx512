@@ -2,7 +2,7 @@
  * @file e131params.cpp
  *
  */
-/* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,14 +23,12 @@
  * THE SOFTWARE.
  */
 
-#if !defined(__clang__)	// Needed for compiling on MacOS
-# pragma GCC push_options
-# pragma GCC optimize ("Os")
-#endif
-
 #include <cstdint>
 #include <cstring>
 #include <climits>
+#ifndef NDEBUG
+# include <cstdio>
+#endif
 #include <algorithm>
 #include <cassert>
 
@@ -48,15 +46,15 @@
 
 #include "debug.h"
 
-namespace e131bridge {
-namespace configstore {
-extern uint32_t DMXPORT_OFFSET;
-}  // namespace configstore
-}  // namespace e131bridge
-
 static uint32_t s_nPortsMax;
 
 namespace e131params {
+#if !defined(CONFIG_DMX_PORT_OFFSET)
+ static constexpr uint32_t DMXPORT_OFFSET = 0;
+#else
+ static constexpr uint32_t DMXPORT_OFFSET = CONFIG_DMX_PORT_OFFSET;
+#endif
+
 static constexpr uint16_t portdir_shift_left(const lightset::PortDir portDir, const uint32_t i) {
 	return static_cast<uint16_t>((static_cast<uint32_t>(portDir) & 0x3) << (i * 2));
 }
@@ -309,11 +307,11 @@ void E131Params::Builder(const struct Params *pParams, char *pBuffer, uint32_t n
 void E131Params::Set() {
 	DEBUG_ENTRY
 
-	if (e131bridge::configstore::DMXPORT_OFFSET <= e131bridge::MAX_PORTS) {
-		s_nPortsMax = std::min(e131params::MAX_PORTS, e131bridge::MAX_PORTS - e131bridge::configstore::DMXPORT_OFFSET);
+	if (e131params::DMXPORT_OFFSET <= e131bridge::MAX_PORTS) {
+		s_nPortsMax = std::min(e131params::MAX_PORTS, e131bridge::MAX_PORTS - e131params::DMXPORT_OFFSET);
 	}
 
-	DEBUG_PRINTF("e131bridge::MAX_PORTS=%u, e131bridge::configstore::DMXPORT_OFFSET=%u, s_nPortsMax=%u", e131bridge::MAX_PORTS, e131bridge::configstore::DMXPORT_OFFSET, s_nPortsMax);
+	DEBUG_PRINTF("e131bridge::MAX_PORTS=%u, e131params::DMXPORT_OFFSET=%u, s_nPortsMax=%u", e131bridge::MAX_PORTS, e131params::DMXPORT_OFFSET, s_nPortsMax);
 
 	if (m_Params.nSetList == 0) {
 		return;
@@ -323,7 +321,7 @@ void E131Params::Set() {
 	assert(p != nullptr);
 
 	for (uint32_t nPortIndex = 0; nPortIndex < s_nPortsMax; nPortIndex++) {
-		const auto nOffset = nPortIndex + e131bridge::configstore::DMXPORT_OFFSET;
+		const auto nOffset = nPortIndex + e131params::DMXPORT_OFFSET;
 
 		if (nOffset >= e131bridge::MAX_PORTS) {
 			DEBUG_EXIT
@@ -360,9 +358,7 @@ void E131Params::staticCallbackFunction(void *p, const char *s) {
 void E131Params::Dump() {
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, E131ParamsConst::FILE_NAME);
 
-	if (isMaskSet(e131params::Mask::FAILSAFE)) {
-		printf(" %s=%d [%s]\n", LightSetParamsConst::FAILSAFE, m_Params.nFailSafe, lightset::get_failsafe(static_cast<lightset::FailSafe>(m_Params.nFailSafe)));
-	}
+	printf(" %s=%d [%s]\n", LightSetParamsConst::FAILSAFE, m_Params.nFailSafe, lightset::get_failsafe(static_cast<lightset::FailSafe>(m_Params.nFailSafe)));
 
 	for (uint32_t i = 0; i < e131params::MAX_PORTS; i++) {
 		if (isMaskSet(e131params::Mask::UNIVERSE_A << i)) {
@@ -380,9 +376,7 @@ void E131Params::Dump() {
 	}
 
 	for (uint32_t i = 0; i < e131params::MAX_PORTS; i++) {
-		if (isMaskSet(e131params::Mask::PRIORITY_A << i)) {
-			printf(" %s=%d\n", E131ParamsConst::PRIORITY[i], m_Params.nPriority[i]);
-		}
+		printf(" %s=%d\n", E131ParamsConst::PRIORITY[i], m_Params.nPriority[i]);
 	}
 
 	for (uint32_t i = 0; i < e131params::MAX_PORTS; i++) {

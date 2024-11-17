@@ -12,7 +12,7 @@
 /*
  * Original code : https://github.com/martinezjavier/u-boot/blob/master/drivers/mtd/spi/gigadevice.c
  */
-/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,13 +35,15 @@
 
 #include <cstdint>
 
-#include "debug.h"
+#include "spi/spi_flash.h"
 #include "spi_flash_internal.h"
 
+#include "debug.h"
+
 struct gigadevice_spi_flash_params {
-	uint16_t	id;
-	uint16_t	nr_blocks;
-	const char	*name;
+	const uint16_t id;
+	const uint16_t nr_blocks;
+	const char *name;
 };
 
 static constexpr struct gigadevice_spi_flash_params gigadevice_spi_flash_table[] = {
@@ -62,7 +64,7 @@ static constexpr struct gigadevice_spi_flash_params gigadevice_spi_flash_table[]
 	},
 };
 
-int spi_flash_probe_gigadevice(struct spi_flash *flash, uint8_t *idcode) {
+bool spi_flash_probe_gigadevice(struct SpiFlashInfo *flash, uint8_t *idcode) {
 	const struct gigadevice_spi_flash_params *params;
 	unsigned int i;
 
@@ -74,13 +76,11 @@ int spi_flash_probe_gigadevice(struct spi_flash *flash, uint8_t *idcode) {
 
 	if (i == ARRAY_SIZE(gigadevice_spi_flash_table)) {
 		DEBUG_PRINTF("SF: Unsupported GigaDevice ID %02x%02x", idcode[1], idcode[2]);
-		return -1;
+		return false;
 	}
 
 	flash->name = params->name;
-	flash->page_size = 256;
-	flash->sector_size = flash->page_size * 16;
-	flash->size = flash->sector_size * 16 * params->nr_blocks;
+	flash->size = 16U * spi_flash::SECTOR_SIZE * params->nr_blocks;
 
-	return 0;
+	return true;
 }

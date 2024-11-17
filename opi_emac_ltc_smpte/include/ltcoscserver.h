@@ -2,7 +2,7 @@
  * @file ltcoscserver.h
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,13 +23,23 @@
  * THE SOFTWARE.
  */
 
-#ifndef OSCSERVER_H_
-#define OSCSERVER_H_
+#ifndef LTCOSCSERVER_H_
+#define LTCOSCSERVER_H_
 
-#include <stdint.h>
+#include <cstdint>
+#include <cstdio>
 
-#include "ltcdisplayrgb.h"
+#if !(defined(CONFIG_LTC_DISABLE_RGB_PANEL) && defined (CONFIG_LTC_DISABLE_WS28XX))
+# include "ltcdisplayrgb.h"
+#else
+# define LTC_NO_DISPLAY_RGB
+#endif
+
+#include "osc.h"
+
 #include "network.h"
+
+#include "debug.h"
 
 namespace ltcoscserver {
 static constexpr auto PATH_LENGTH_MAX =128;
@@ -37,13 +47,28 @@ static constexpr auto PATH_LENGTH_MAX =128;
 
 class LtcOscServer {
 public:
-	LtcOscServer();
+	LtcOscServer(): m_nPortIncoming(osc::port::DEFAULT_INCOMING) {
+		DEBUG_ENTRY
 
-	void Start();
-	void Stop();
-	void Print();
+		m_nPathLength = static_cast<uint32_t>(snprintf(m_aPath, sizeof(m_aPath) - 1, "/%s/tc/*", Network::Get()->GetHostName()) - 1);
 
-	void SetPortIncoming(uint16_t nPortIncoming) {
+		DEBUG_PRINTF("%d [%s]", m_nPathLength, m_aPath);
+		DEBUG_EXIT
+	}
+
+	void Start() {
+		assert(m_nHandle == -1);
+		m_nHandle = Network::Get()->Begin(m_nPortIncoming);
+		assert(m_nHandle != -1);
+	}
+
+	void Print() {
+		puts("OSC Server");
+		printf(" Port : %u\n", m_nPortIncoming);
+		printf(" Path : [%s]\n", m_aPath);
+	}
+
+	void SetPortIncoming(const uint16_t nPortIncoming) {
 		m_nPortIncoming = nPortIncoming;
 	}
 
@@ -52,7 +77,7 @@ public:
 	}
 
 	void Run() {
-		const auto nBytesReceived = Network::Get()->RecvFrom(m_nHandle, const_cast<const void **>(reinterpret_cast<void **>(&m_pBuffer)), &m_nRemoteIp, &m_nRemotePort);
+		const auto nBytesReceived = Network::Get()->RecvFrom(m_nHandle, reinterpret_cast<const void **>(&m_pBuffer), &m_nRemoteIp, &m_nRemotePort);
 
 		if (__builtin_expect((nBytesReceived <= 4), 1)) {
 			return;
@@ -62,17 +87,19 @@ public:
 	}
 
 private:
-	void HandleOscRequest(const uint16_t nBytesReceived);
-	void SetWS28xxRGB(uint32_t nSize, ltcdisplayrgb::ColourIndex tIndex);
+	void HandleOscRequest(const uint32_t nBytesReceived);
+#if !defined(LTC_NO_DISPLAY_RGB)
+	void SetWS28xxRGB(uint32_t nSize, ltcdisplayrgb::ColourIndex index);
+#endif
 
 private:
 	uint16_t m_nPortIncoming;
+	uint16_t m_nRemotePort { 0 };
 	int32_t m_nHandle { -1 };
 	uint32_t m_nRemoteIp { 0 };
-	uint16_t m_nRemotePort { 0 };
 	char m_aPath[ltcoscserver::PATH_LENGTH_MAX];
 	uint32_t m_nPathLength { 0 };
-	char *m_pBuffer;
+	const uint8_t *m_pBuffer { nullptr };
 };
 
-#endif /* OSCSERVER_H_ */
+#endif /* LTCOSCSERVER_H_ */

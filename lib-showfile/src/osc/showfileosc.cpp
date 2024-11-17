@@ -23,6 +23,10 @@
  * THE SOFTWARE.
  */
 
+#if defined (DEBUG_SHOWFILEOSC)
+# undef NDEBUG
+#endif
+
 #include <cstdint>
 #include <cstring>
 #include <cstdio>
@@ -73,48 +77,31 @@ namespace length {
 	static constexpr uint32_t INDEX = sizeof(cmd::INDEX) - 1;
 }
 
-ShowFileOSC::ShowFileOSC(uint16_t nPortIncoming, uint16_t nPortOutgoing) : m_nPortIncoming(nPortIncoming), m_nPortOutgoing(nPortOutgoing) {
-	DEBUG_ENTRY
-
-	m_nHandle = Network::Get()->Begin(m_nPortIncoming);
-	assert(m_nHandle != -1);
-
-	DEBUG_EXIT
-}
-
-ShowFileOSC::~ShowFileOSC() {
-	DEBUG_ENTRY
-
-	Network::Get()->End(m_nPortIncoming);
-
-	DEBUG_EXIT
-}
-
 void ShowFileOSC::Process() {
-	DEBUG_PRINTF("[%s] %d,%d %s", m_pBuffer, static_cast<int>(strlen(m_pBuffer)), static_cast<int>(length::PATH), &m_pBuffer[length::PATH]);
+	DEBUG_PRINTF("[%s] %d,%d %s", m_pBuffer, static_cast<int>(strlen(reinterpret_cast<const char *>(m_pBuffer))), static_cast<int>(showfileosc::PATH_LENGTH), &m_pBuffer[showfileosc::PATH_LENGTH]);
 
-	if (memcmp(&m_pBuffer[length::PATH], cmd::START, length::START) == 0) {
+	if (memcmp(&m_pBuffer[showfileosc::PATH_LENGTH], cmd::START, length::START) == 0) {
 		ShowFile::Get()->Play();
 		SendStatus();
 		DEBUG_PUTS("ActionStart");
 		return;
 	}
 
-	if (memcmp(&m_pBuffer[length::PATH], cmd::STOP, length::STOP) == 0){
+	if (memcmp(&m_pBuffer[showfileosc::PATH_LENGTH], cmd::STOP, length::STOP) == 0){
 		ShowFile::Get()->Stop();
 		SendStatus();
 		DEBUG_PUTS("ActionStop");
 		return;
 	}
 
-	if (memcmp(&m_pBuffer[length::PATH], cmd::RESUME, length::RESUME) == 0) {
+	if (memcmp(&m_pBuffer[showfileosc::PATH_LENGTH], cmd::RESUME, length::RESUME) == 0) {
 		ShowFile::Get()->Resume();
 		SendStatus();
 		DEBUG_PUTS("ActionResume");
 		return;
 	}
 
-	if (memcmp(&m_pBuffer[length::PATH], cmd::SHOW, length::SHOW) == 0) {
+	if (memcmp(&m_pBuffer[showfileosc::PATH_LENGTH], cmd::SHOW, length::SHOW) == 0) {
 		OscSimpleMessage Msg(m_pBuffer, m_nBytesReceived);
 
 		const auto nValue = static_cast<uint32_t>(Msg.GetInt(0));
@@ -128,7 +115,7 @@ void ShowFileOSC::Process() {
 		return;
 	}
 
-	if (memcmp(&m_pBuffer[length::PATH], cmd::LOOP, length::LOOP) == 0) {
+	if (memcmp(&m_pBuffer[showfileosc::PATH_LENGTH], cmd::LOOP, length::LOOP) == 0) {
 		OscSimpleMessage Msg(m_pBuffer, m_nBytesReceived);
 
 		int nValue;
@@ -149,7 +136,7 @@ void ShowFileOSC::Process() {
 		return;
 	}
 
-	if (memcmp(&m_pBuffer[length::PATH], cmd::BO, length::BO) == 0) {
+	if (memcmp(&m_pBuffer[showfileosc::PATH_LENGTH], cmd::BO, length::BO) == 0) {
 		ShowFile::Get()->BlackOut();
 		SendStatus();
 		DEBUG_PUTS("Blackout");
@@ -157,7 +144,7 @@ void ShowFileOSC::Process() {
 	}
 
 #if defined (CONFIG_SHOWFILE_ENABLE_MASTER)
-	if (memcmp(&m_pBuffer[length::PATH], cmd::MASTER, length::MASTER) == 0) {
+	if (memcmp(&m_pBuffer[showfileosc::PATH_LENGTH], cmd::MASTER, length::MASTER) == 0) {
 		OscSimpleMessage Msg(m_pBuffer, m_nBytesReceived);
 
 		int nValue;
@@ -179,7 +166,7 @@ void ShowFileOSC::Process() {
 	}
 #endif
 
-	if (memcmp(&m_pBuffer[length::PATH], cmd::TFTP, length::TFTP) == 0) {
+	if (memcmp(&m_pBuffer[showfileosc::PATH_LENGTH], cmd::TFTP, length::TFTP) == 0) {
 		OscSimpleMessage Msg(m_pBuffer, m_nBytesReceived);
 
 		int nValue;
@@ -200,7 +187,7 @@ void ShowFileOSC::Process() {
 	}
 
 
-	if (memcmp(&m_pBuffer[length::PATH], cmd::DELETE, length::DELETE) == 0) {
+	if (memcmp(&m_pBuffer[showfileosc::PATH_LENGTH], cmd::DELETE, length::DELETE) == 0) {
 		OscSimpleMessage Msg(m_pBuffer, m_nBytesReceived);
 
 		uint32_t nValue = 255;
@@ -231,7 +218,7 @@ void ShowFileOSC::Process() {
 		return;
 	}
 
-	if (memcmp(&m_pBuffer[length::PATH], cmd::INDEX, length::INDEX) == 0) {
+	if (memcmp(&m_pBuffer[showfileosc::PATH_LENGTH], cmd::INDEX, length::INDEX) == 0) {
 		OscSimpleMessage Msg(m_pBuffer, m_nBytesReceived);
 
 		if (Msg.GetType(0) != osc::type::FLOAT){
@@ -257,7 +244,7 @@ void ShowFileOSC::Process() {
 	}
 
 	// TouchOSC
-	if (memcmp(&m_pBuffer[length::PATH], cmd::RELOAD, length::RELOAD) == 0) {
+	if (memcmp(&m_pBuffer[showfileosc::PATH_LENGTH], cmd::RELOAD, length::RELOAD) == 0) {
 		ShowFiles();
 		DEBUG_PUTS("Reload");
 		return;
@@ -287,7 +274,7 @@ void ShowFileOSC::ShowFiles() {
     	OscSimpleSend MsgStatus(m_nHandle, m_nRemoteIp, m_nPortOutgoing, aPath, "s", aValue);
     }
 
-	for (; i < ShowFileOSCMax::FILES_ENTRIES; i++) {
+	for (; i < showfileosc::MAX_FILES_ENTRIES; i++) {
 		snprintf(aPath, sizeof(aPath) - 1, "/showfile/%u/show", static_cast<unsigned int>(i));
 		OscSimpleSend MsgStatus(m_nHandle, m_nRemoteIp, m_nPortOutgoing, aPath, "s", "  ");
 	}

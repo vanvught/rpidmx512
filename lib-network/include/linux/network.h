@@ -2,7 +2,7 @@
  * @file network.h
  *
  */
-/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,6 +37,10 @@
 
 #include "networkparams.h"
 
+namespace net {
+typedef void (*UdpCallbackFunctionPtr)(const uint8_t *, uint32_t, uint32_t, uint16_t);
+}  // namespace net
+
 class Network {
 public:
 	Network(int argc, char **argv);
@@ -46,7 +50,7 @@ public:
 
 	void Shutdown() {}
 
-	int32_t Begin(uint16_t nPort);
+	int32_t Begin(uint16_t nPort, net::UdpCallbackFunctionPtr callback = nullptr);
 	int32_t End(uint16_t nPort);
 
 	void MacAddressCopyTo(uint8_t *pMacAddress);
@@ -104,18 +108,6 @@ public:
 		return false;
 	}
 
-	void SetQueuedStaticIp(const uint32_t nStaticIp, const uint32_t nNetmask);
-	void SetQueuedDefaultRoute(const uint32_t nGatewayIp);
-	void SetQueuedDhcp(const network::dhcp::Mode mode) {
-		m_QueuedConfig.mode = mode;
-		m_QueuedConfig.nMask |= QueuedConfig::DHCP;
-	}
-	void SetQueuedZeroconf() {
-		m_QueuedConfig.nMask |= QueuedConfig::ZEROCONF;
-	}
-
-	bool ApplyQueuedConfig();
-
 	uint32_t GetGatewayIp() const {
 		return m_nGatewayIp;
 	}
@@ -168,18 +160,6 @@ public:
 #else
 		return true;
 #endif
-	}
-
-	network::dhcp::Mode GetDhcpMode() const {
-		if (IsDhcpKnown()) {
-			if (m_IsDhcpUsed) {
-				return network::dhcp::Mode::ACTIVE;
-			}
-
-			return network::dhcp::Mode::INACTIVE;
-		}
-
-		return network::dhcp::Mode::UNKNOWN;
 	}
 
 	const char *GetIfName() const {
@@ -242,26 +222,6 @@ private:
 	uint32_t m_nNameservers[network::NAMESERVERS_COUNT];
 	uint8_t m_aNetMacaddr[network::MAC_SIZE];
 	char m_aIfName[IFNAMSIZ];
-
-	struct QueuedConfig {
-		static constexpr uint32_t NONE = 0;
-		static constexpr uint32_t STATIC_IP = (1U << 0);
-		static constexpr uint32_t NETMASK   = (1U << 1);
-		static constexpr uint32_t GW        = (1U << 2);
-		static constexpr uint32_t DHCP      = (1U << 3);
-		static constexpr uint32_t ZEROCONF  = (1U << 4);
-		uint32_t nMask = QueuedConfig::NONE;
-		uint32_t nStaticIp;
-		uint32_t nNetmask;
-		uint32_t nGateway;
-		network::dhcp::Mode mode;
-	};
-
-	QueuedConfig m_QueuedConfig;
-
-    bool isQueuedMaskSet(uint32_t nMask) {
-    	return (m_QueuedConfig.nMask & nMask) == nMask;
-    }
 
 	static Network *s_pThis;
 };

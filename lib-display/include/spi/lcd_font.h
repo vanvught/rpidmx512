@@ -35,16 +35,15 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
 OF SUCH DAMAGE.
 */
 
-#ifndef LCD_FONT_H
-#define LCD_FONT_H
+#ifndef SPI_LCD_FONT_H
+#define SPI_LCD_FONT_H
 
-#include <stdint.h>
+#include <cstdint>
 
-typedef struct _tFont
-{
-    const uint16_t *table;
-    uint16_t Width;
-    uint16_t Height;
+typedef struct _tFont {
+	const uint16_t *table;
+	const uint16_t Width;
+	const uint16_t Height;
 } sFONT;
 
 extern sFONT Font16x24;
@@ -55,5 +54,5 @@ extern sFONT Font8x8;
 
 #define LINE(x) ((x) * (((sFONT *)lcd_font_get())->Height))
 
-#endif /* LCD_FONT_H */
+#endif /* SPI_LCD_FONT_H */
 

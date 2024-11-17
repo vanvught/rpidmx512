@@ -2,7 +2,7 @@
  * @file flashcode.cpp
  *
  */
-/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,7 +41,7 @@ FlashCode::FlashCode() {
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 
-	if (spi_flash_probe(0, 0, 0) < 0) {
+	if (!spi_flash_probe()) {
 		DEBUG_PUTS("No SPI flash chip");
 	} else {
 		printf("Detected %s with sector size %d total %d bytes\n",
@@ -75,8 +75,7 @@ uint32_t FlashCode::GetSectorSize() const {
 bool FlashCode::Read(uint32_t nOffset, uint32_t nLength, uint8_t *pBuffer, flashcode::result& nResult) {
 	DEBUG_ENTRY
 
-	const int nReturn = spi_flash_cmd_read_fast(nOffset, nLength, pBuffer);
-	nResult = (nReturn < 0) ? result::ERROR : result::OK;
+	nResult = spi_flash_cmd_read_fast(nOffset, nLength, pBuffer) ? result::OK : result::ERROR;
 
 	DEBUG_PRINTF("nResult=%d", static_cast<int>(nResult));
 	DEBUG_EXIT
@@ -86,8 +85,7 @@ bool FlashCode::Read(uint32_t nOffset, uint32_t nLength, uint8_t *pBuffer, flash
 bool FlashCode::Erase(uint32_t nOffset, uint32_t nLength, flashcode::result& nResult) {
 	DEBUG_ENTRY
 
-	const auto nReturn = spi_flash_cmd_erase(nOffset, nLength);
-	nResult = (nReturn < 0) ? result::ERROR : result::OK;
+	nResult = spi_flash_cmd_erase(nOffset, nLength) ? result::OK : result::ERROR;
 
 	DEBUG_PRINTF("nResult=%d", static_cast<int>(nResult));
 	DEBUG_EXIT
@@ -97,8 +95,7 @@ bool FlashCode::Erase(uint32_t nOffset, uint32_t nLength, flashcode::result& nRe
 bool FlashCode::Write(uint32_t nOffset, uint32_t nLength, const uint8_t *pBuffer, flashcode::result& nResult) {
 	DEBUG_ENTRY
 
-	const auto nReturn = spi_flash_cmd_write_multi(nOffset, nLength, pBuffer);
-	nResult = (nReturn < 0) ? result::ERROR : result::OK;
+	nResult = spi_flash_cmd_write_multi(nOffset, nLength, pBuffer) ? result::OK : result::ERROR;
 
 	DEBUG_PRINTF("nResult=%d", static_cast<int>(nResult));
 	DEBUG_EXIT

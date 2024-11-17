@@ -2,7 +2,7 @@
  * @file ddpdisplay.h
  *
  */
-/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +34,7 @@
 
 #include "hardware.h"
 #include "network.h"
+#include "net/protocol/udp.h"
 
 #include "debug.h"
 
@@ -73,10 +74,6 @@ namespace size {
 static constexpr auto START = sizeof(json::START) - 1U;
 }  // namespace size
 }  // namespace json
-
-uint32_t DdpDisplay::s_nLightsetPortLength[ddpdisplay::lightset::MAX_PORTS];
-uint32_t DdpDisplay::s_nOffsetCompare[ddpdisplay::configuration::MAX_PORTS];
-DdpDisplay *DdpDisplay::s_pThis;
 
 DdpDisplay::DdpDisplay() {
 	DEBUG_ENTRY
@@ -133,15 +130,17 @@ void DdpDisplay::Start() {
 	m_nHandle = Network::Get()->Begin(ddp::UDP_PORT);
 	assert(m_nHandle != -1);
 
-	memset(&m_Packet.header, 0, HEADER_LEN);
-	m_Packet.header.flags1 = flags1::VER1 | flags1::REPLY;
-	m_Packet.header.id = id::STATUS;
-	m_Packet.header.len[1] = json::size::START;
-	memcpy(m_Packet.data, json::START, json::size::START);
+	ddp::Packet packet;
 
-	Network::Get()->SendTo(m_nHandle, &m_Packet, HEADER_LEN + json::size::START, Network::Get()->GetIp() | ~(Network::Get()->GetNetmask()), ddp::UDP_PORT);
+	memset(&packet.header, 0, HEADER_LEN);
+	packet.header.flags1 = flags1::VER1 | flags1::REPLY;
+	packet.header.id = id::STATUS;
+	packet.header.len[1] = json::size::START;
+	memcpy(packet.data, json::START, json::size::START);
 
-	debug_dump(&m_Packet, HEADER_LEN + json::size::START);
+	Network::Get()->SendTo(m_nHandle, &packet, HEADER_LEN + json::size::START, Network::Get()->GetIp() | ~(Network::Get()->GetNetmask()), ddp::UDP_PORT);
+
+	debug_dump(&packet, HEADER_LEN + json::size::START);
 
 	CalculateOffsets();
 	DEBUG_EXIT
@@ -159,23 +158,25 @@ void DdpDisplay::Stop() {
 void DdpDisplay::HandleQuery() {
 	DEBUG_ENTRY
 
-	if ((m_Packet.header.id & id::STATUS) == id::STATUS) {
+	auto *pPacket = reinterpret_cast<ddp::Packet *>(m_pReceiveBuffer);
+
+	if ((pPacket->header.id & id::STATUS) == id::STATUS) {
 		DEBUG_PUTS("id::STATUS");
 
-		const auto nLength = snprintf(reinterpret_cast<char *>(m_Packet.data), sizeof(m_Packet.data),
+		const auto nLength = snprintf(reinterpret_cast<char *>(pPacket->data), UDP_DATA_SIZE - 1,
 				json::DISCOVER_REPLY, Hardware::Get()->GetWebsiteUrl(), MAC2STR(m_macAddress) );
 
-		m_Packet.header.flags1 = flags1::VER1 | flags1::REPLY | flags1::PUSH;
-		m_Packet.header.len[0] = static_cast<uint8_t>(nLength >> 8);
-		m_Packet.header.len[1] = static_cast<uint8_t>(nLength);
+		pPacket->header.flags1 = flags1::VER1 | flags1::REPLY | flags1::PUSH;
+		pPacket->header.len[0] = static_cast<uint8_t>(nLength >> 8);
+		pPacket->header.len[1] = static_cast<uint8_t>(nLength);
 
-		Network::Get()->SendTo(m_nHandle, &m_Packet, (HEADER_LEN + static_cast<uint16_t>(nLength)), Network::Get()->GetIp() | ~(Network::Get()->GetNetmask()), ddp::UDP_PORT);
+		Network::Get()->SendTo(m_nHandle, &pPacket, (HEADER_LEN + static_cast<uint16_t>(nLength)), Network::Get()->GetIp() | ~(Network::Get()->GetNetmask()), ddp::UDP_PORT);
 	}
 
-	if ((m_Packet.header.id & id::STATUS) == id::CONFIG) {
+	if ((pPacket->header.id & id::STATUS) == id::CONFIG) {
 		DEBUG_PUTS("id::CONFIG");
 
-		const auto nLength = snprintf(reinterpret_cast<char *>(m_Packet.data), sizeof(m_Packet.data),
+		const auto nLength = snprintf(reinterpret_cast<char *>(pPacket->data), UDP_DATA_SIZE - 1,
 				json::CONFIG_REPLY,
 				IP2STR(Network::Get()->GetIp()), IP2STR(Network::Get()->GetNetmask()), IP2STR(Network::Get()->GetGatewayIp()),
 				m_nActivePorts > 0 ? m_nCount : 0,
@@ -202,27 +203,29 @@ void DdpDisplay::HandleQuery() {
 				ddpdisplay::configuration::dmx::MAX_PORTS == 0 ? 0 : lightset::dmx::UNIVERSE_SIZE
 				);
 
-		m_Packet.header.flags1 = flags1::VER1 | flags1::REPLY | flags1::PUSH;
-		m_Packet.header.len[0] = static_cast<uint8_t>(nLength >> 8);
-		m_Packet.header.len[1] = static_cast<uint8_t>(nLength);
+		pPacket->header.flags1 = flags1::VER1 | flags1::REPLY | flags1::PUSH;
+		pPacket->header.len[0] = static_cast<uint8_t>(nLength >> 8);
+		pPacket->header.len[1] = static_cast<uint8_t>(nLength);
 
-		Network::Get()->SendTo(m_nHandle, &m_Packet, HEADER_LEN + nLength, m_nFromIp, ddp::UDP_PORT);
+		Network::Get()->SendTo(m_nHandle, &pPacket, HEADER_LEN + nLength, m_nFromIp, ddp::UDP_PORT);
 
-		debug_dump(&m_Packet, HEADER_LEN + nLength);
+		debug_dump(&pPacket, HEADER_LEN + nLength);
 	}
 
 	DEBUG_EXIT
 }
 
 void DdpDisplay::HandleData() {
-	auto nOffset = static_cast<uint32_t>(
-			  (m_Packet.header.offset[0] << 24)
-			| (m_Packet.header.offset[1] << 16)
-			| (m_Packet.header.offset[2] << 8)
-			|  m_Packet.header.offset[3]);
+	const auto *pPacket = reinterpret_cast<ddp::Packet *>(m_pReceiveBuffer);
 
-	auto nLength = ((static_cast<uint32_t>(m_Packet.header.len[0]) << 8) | m_Packet.header.len[1]);
-	const auto *receiveBuffer = m_Packet.data;
+	auto nOffset = static_cast<uint32_t>(
+			  (pPacket->header.offset[0] << 24)
+			| (pPacket->header.offset[1] << 16)
+			| (pPacket->header.offset[2] << 8)
+			|  pPacket->header.offset[3]);
+
+	auto nLength = ((static_cast<uint32_t>(pPacket->header.len[0]) << 8) | pPacket->header.len[1]);
+	const auto *receiveBuffer = pPacket->data;
 
 //	DEBUG_PRINTF("nOffset=%u, nLength=%u, s_nOffsetCompare[0]=%u", nOffset, nLength, s_nOffsetCompare[0]);
 
@@ -279,7 +282,7 @@ void DdpDisplay::HandleData() {
 		}
 	}
 
-	if ((m_Packet.header.flags1 & flags1::PUSH) == flags1::PUSH) {
+	if ((pPacket->header.flags1 & flags1::PUSH) == flags1::PUSH) {
 		for (uint32_t nLightSetPortIndex = 0; nLightSetPortIndex < ddpdisplay::lightset::MAX_PORTS; nLightSetPortIndex++) {
 			lightset::Data::Output(m_pLightSet, nLightSetPortIndex);
 			lightset::Data::ClearLength(nLightSetPortIndex);
@@ -290,7 +293,7 @@ void DdpDisplay::HandleData() {
 void DdpDisplay::Run() {
 	uint16_t nFromPort;
 
-	const auto nBytesReceived = Network::Get()->RecvFrom(m_nHandle, &m_Packet, sizeof(m_Packet), &m_nFromIp, &nFromPort);
+	const auto nBytesReceived = Network::Get()->RecvFrom(m_nHandle, const_cast<const void **>(reinterpret_cast<void **>(&m_pReceiveBuffer)), &m_nFromIp, &nFromPort);
 
 	if (__builtin_expect((nBytesReceived < HEADER_LEN), 1)) {
 		return;
@@ -301,17 +304,19 @@ void DdpDisplay::Run() {
 		return;
 	}
 
-	if ((m_Packet.header.flags1 & flags1::VER_MASK) != flags1::VER1) {
+	const auto *pPacket = reinterpret_cast<ddp::Packet *>(m_pReceiveBuffer);
+
+	if ((pPacket->header.flags1 & flags1::VER_MASK) != flags1::VER1) {
 		DEBUG_PUTS("Invalid version");
 		return;
 	}
 
-	if (m_Packet.header.id == id::DISPLAY) {
+	if (pPacket->header.id == id::DISPLAY) {
 		HandleData();
 		return;
 	}
 
-	if ((m_Packet.header.flags1 & flags1::QUERY) == flags1::QUERY) {
+	if ((pPacket->header.flags1 & flags1::QUERY) == flags1::QUERY) {
 		HandleQuery();
 		return;
 	}

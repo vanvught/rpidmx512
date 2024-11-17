@@ -485,5 +485,5 @@ void ArtNetNode::HandleAddress() {
 		break;
 	}
 
-	SendPollRelply(pArtAddress->BindIndex, m_nIpAddressFrom);
+	SendPollReply(pArtAddress->BindIndex, m_nIpAddressFrom);
 }

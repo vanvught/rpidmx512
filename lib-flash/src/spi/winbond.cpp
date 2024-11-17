@@ -10,7 +10,7 @@
 /*
  * Original code : https://github.com/martinezjavier/u-boot/blob/master/drivers/mtd/spi/winbond.c
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,33 +31,20 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <cstdint>
 
-#include "debug.h"
+#include "spi/spi_flash.h"
 #include "spi_flash_internal.h"
 
+#include "debug.h"
+
 struct winbond_spi_flash_params {
-	uint16_t	id;
-	uint16_t	nr_blocks;
+	const uint16_t	id;
+	const uint16_t	nr_blocks;
 	const char	*name;
 };
 
-static const struct winbond_spi_flash_params winbond_spi_flash_table[] = {
-	{
-		0x2014,
-		16,
-		"W25P80",
-	},
-	{
-		0x2015,
-		32,
-		"W25P16",
-	},
-	{
-		0x2016,
-		64,
-		"W25P32",
-	},
+static constexpr struct winbond_spi_flash_params winbond_spi_flash_table[] = {
 	{
 		0x3013,
 		8,
@@ -81,27 +68,27 @@ static const struct winbond_spi_flash_params winbond_spi_flash_table[] = {
 	{
 		0x4014,
 		16,
-		"W25Q80BL/W25Q80BV",
+		"W25Q80BL",
 	},
 	{
 		0x4015,
 		32,
-		"W25Q16CL/W25Q16DV",
+		"W25Q16CL",
 	},
 	{
 		0x4016,
 		64,
-		"W25Q32BV/W25Q32FV_SPI",
+		"W25Q32BV",
 	},
 	{
 		0x4017,
 		128,
-		"W25Q64CV/W25Q64FV_SPI",
+		"W25Q64CV",
 	},
 	{
 		0x4018,
 		256,
-		"W25Q128BV/W25Q128FV_SPI",
+		"W25Q128BV",
 	},
 	{
 		0x4019,
@@ -117,25 +104,10 @@ static const struct winbond_spi_flash_params winbond_spi_flash_table[] = {
 		0x6015,
 		32,
 		"W25Q16DW",
-	},
-	{
-		0x6016,
-		64,
-		"W25Q32DW/W25Q32FV_QPI",
-	},
-	{
-		0x6017,
-		128,
-		"W25Q64DW/W25Q64FV_QPI",
-	},
-	{
-		0x6018,
-		256,
-		"W25Q128FW/W25Q128FV_QPI",
-	},
+	}
 };
 
-int spi_flash_probe_winbond(struct spi_flash *flash, uint8_t *idcode) {
+bool spi_flash_probe_winbond(struct SpiFlashInfo *flash, uint8_t *idcode) {
 	const struct winbond_spi_flash_params *params;
 	unsigned int i;
 
@@ -148,13 +120,11 @@ int spi_flash_probe_winbond(struct spi_flash *flash, uint8_t *idcode) {
 
 	if (i == ARRAY_SIZE(winbond_spi_flash_table)) {
 		DEBUG_PRINTF("Unsupported Winbond ID %02x%02x", idcode[1], idcode[2]);
-		return -1;
+		return false;
 	}
 
 	flash->name = params->name;
-	flash->page_size = 256;
-	flash->sector_size = (idcode[1] == 0x20) ? 65536 : 4096;
-	flash->size = 4096U * 16U * params->nr_blocks;
+	flash->size = 16U * spi_flash::SECTOR_SIZE * params->nr_blocks;
 
-	return 0;
+	return true;
 }

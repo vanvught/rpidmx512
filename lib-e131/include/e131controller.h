@@ -2,7 +2,7 @@
  * @file e131controller.h
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,8 @@
 #include "e131.h"
 #include "e131packets.h"
 
+#include "softwaretimers.h"
+
 enum {
 	DEFAULT_SYNCHRONIZATION_ADDRESS = 5000
 };
@@ -40,7 +42,6 @@ enum {
 #endif
 
 struct TE131ControllerState {
-	bool bIsRunning;
 	uint16_t nActiveUniverses;
 	uint32_t DiscoveryTime;
 	uint8_t nPriority;
@@ -58,7 +59,6 @@ public:
 
 	void Start();
 	void Stop();
-	void Run();
 
 	void Print();
 
@@ -98,12 +98,16 @@ private:
 	void FillDataPacket();
 	void FillDiscoveryPacket();
 	void FillSynchronizationPacket();
-	void SendDiscoveryPacket();
 	uint8_t GetSequenceNumber(uint16_t nUniverse, uint32_t &nMulticastIpAddress);
+
+	void SendDiscoveryPacket();
+
+	void static staticCallbackFunctionSendDiscoveryPacket([[maybe_unused]] TimerHandle_t timerHandle) {
+		s_pThis->SendDiscoveryPacket();
+	}
 
 private:
 	int32_t m_nHandle { -1 };
-	uint32_t m_nCurrentPacketMillis { 0 };
 	struct TE131ControllerState m_State;
 	TE131DataPacket *m_pE131DataPacket { nullptr };
 	TE131DiscoveryPacket *m_pE131DiscoveryPacket { nullptr };
@@ -112,8 +116,9 @@ private:
 	uint8_t m_Cid[e131::CID_LENGTH];
 	char m_SourceName[e131::SOURCE_NAME_LENGTH];
 	uint32_t m_nMaster { DMX_MAX_VALUE };
+	TimerHandle_t m_timerHandleSendDiscoveryPacket { -1 };
 
-	static E131Controller *s_pThis;
+	static inline E131Controller *s_pThis;
 };
 
 #endif /* E131CONTROLLER_H_ */

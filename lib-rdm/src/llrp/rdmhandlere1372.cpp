@@ -36,10 +36,137 @@
 
 #include "debug.h"
 
-enum {
-	IPV4_UNCONFIGURED = 0x00000000,
-	NO_DEFAULT_ROUTE = 0x00000000
+namespace dhcp {
+enum class Mode: uint8_t {
+	INACTIVE = 0x00,	///< The IP address was not obtained via DHCP
+	ACTIVE = 0x01,		///< The IP address was obtained via DHCP
+	UNKNOWN = 0x02		///< The system cannot determine if the address was obtained via DHCP
 };
+}  // namespace dhcp
+
+static dhcp::Mode get_dhcp_mode() {
+	if (Network::Get()->IsDhcpUsed()) {
+		return dhcp::Mode::ACTIVE;
+	}
+
+	return dhcp::Mode::INACTIVE;
+}
+
+struct QueuedConfig {
+	static constexpr uint32_t NONE = 0;
+	static constexpr uint32_t STATIC_IP = (1U << 0);
+	static constexpr uint32_t NETMASK   = (1U << 1);
+	static constexpr uint32_t GW        = (1U << 2);
+	static constexpr uint32_t DHCP      = (1U << 3);
+	static constexpr uint32_t ZEROCONF  = (1U << 4);
+	uint32_t nMask = QueuedConfig::NONE;
+	uint32_t nStaticIp;
+	uint32_t nNetmask;
+	uint32_t nGateway;
+	dhcp::Mode mode;
+};
+
+static QueuedConfig s_QueuedConfig;
+
+static bool is_queued_mask_set(const uint32_t nMask) {
+	return (s_QueuedConfig.nMask & nMask) == nMask;
+}
+
+static void set_queued_static_ip(const uint32_t nStaticIp, const uint32_t nNetmask) {
+	DEBUG_ENTRY
+	DEBUG_PRINTF(IPSTR ", nNetmask=" IPSTR, IP2STR(nStaticIp), IP2STR(nNetmask));
+
+	if (nStaticIp != 0) {
+		s_QueuedConfig.nStaticIp = nStaticIp;
+	} else {
+		s_QueuedConfig.nStaticIp = Network::Get()->GetIp();
+	}
+
+	if (nNetmask != 0) {
+		s_QueuedConfig.nNetmask = nNetmask;
+	} else {
+		s_QueuedConfig.nNetmask = Network::Get()->GetNetmask();
+	}
+
+	s_QueuedConfig.nMask |= QueuedConfig::STATIC_IP;
+	s_QueuedConfig.nMask |= QueuedConfig::NETMASK;
+
+	DEBUG_EXIT
+}
+
+static void set_queued_default_route(const uint32_t nGatewayIp) {
+	if (nGatewayIp != 0) {
+		s_QueuedConfig.nGateway = nGatewayIp;
+	} else {
+		s_QueuedConfig.nGateway = Network::Get()->GetGatewayIp();
+	}
+
+	s_QueuedConfig.nMask |= QueuedConfig::GW;
+}
+
+static void set_queued_dhcp(const dhcp::Mode mode) {
+	s_QueuedConfig.mode = mode;
+	s_QueuedConfig.nMask |= QueuedConfig::DHCP;
+}
+
+static void set_queued_zeroconf() {
+	s_QueuedConfig.nMask |= QueuedConfig::ZEROCONF;
+}
+
+static bool apply_queued_config() {
+	DEBUG_ENTRY
+	DEBUG_PRINTF("s_QueuedConfig.nMask=%x, " IPSTR ", " IPSTR, s_QueuedConfig.nMask, IP2STR(s_QueuedConfig.nStaticIp), IP2STR(s_QueuedConfig.nNetmask));
+
+	if (s_QueuedConfig.nMask == QueuedConfig::NONE) {
+		DEBUG_EXIT
+		return false;
+	}
+
+	if ((is_queued_mask_set(QueuedConfig::STATIC_IP)) || (is_queued_mask_set(QueuedConfig::NETMASK)) || (is_queued_mask_set(QueuedConfig::GW))) {
+		// After SetIp all ip address might be zero.
+		if (is_queued_mask_set(QueuedConfig::STATIC_IP)) {
+			Network::Get()->SetIp(s_QueuedConfig.nStaticIp);
+		}
+
+		if (is_queued_mask_set(QueuedConfig::NETMASK)) {
+			Network::Get()->SetNetmask(s_QueuedConfig.nNetmask);
+		}
+
+		if (is_queued_mask_set(QueuedConfig::GW)) {
+			Network::Get()->SetGatewayIp(s_QueuedConfig.nGateway);
+		}
+
+		s_QueuedConfig.nMask = QueuedConfig::NONE;
+
+		DEBUG_EXIT
+		return true;
+	}
+
+	if (is_queued_mask_set(QueuedConfig::DHCP)) {
+		if (s_QueuedConfig.mode == dhcp::Mode::ACTIVE) {
+			Network::Get()->EnableDhcp();
+		} else if (s_QueuedConfig.mode == dhcp::Mode::INACTIVE) {
+
+		}
+
+		s_QueuedConfig.mode = dhcp::Mode::UNKNOWN;
+		s_QueuedConfig.nMask = QueuedConfig::NONE;
+
+		DEBUG_EXIT
+		return true;
+	}
+
+	if (is_queued_mask_set(QueuedConfig::ZEROCONF)) {
+		Network::Get()->SetZeroconf();
+		s_QueuedConfig.nMask = QueuedConfig::NONE;
+
+		DEBUG_EXIT
+		return true;
+	}
+
+	DEBUG_EXIT
+	return false;
+}
 
 /*
  * ANSI E1.37-2
@@ -169,10 +296,10 @@ void RDMHandler::SetDHCPMode([[maybe_unused]] bool IsBroadcast, [[maybe_unused]]
 		return;
 	}
 
-	const auto mode = static_cast<network::dhcp::Mode>(pRdmDataIn->param_data[4]);
+	const auto mode = static_cast<dhcp::Mode>(pRdmDataIn->param_data[4]);
 
-	if ((mode == network::dhcp::Mode::ACTIVE) || mode == network::dhcp::Mode::INACTIVE) {
-		Network::Get()->SetQueuedDhcp(mode);
+	if ((mode == dhcp::Mode::ACTIVE) || mode == dhcp::Mode::INACTIVE) {
+		set_queued_dhcp(mode);
 		RespondMessageAck();
 
 		DEBUG_EXIT
@@ -254,7 +381,7 @@ void RDMHandler::SetZeroconf([[maybe_unused]] bool IsBroadcast, [[maybe_unused]]
 	}
 
 	if (pRdmDataIn->param_data[4] == 1) {
-		Network::Get()->SetQueuedZeroconf();
+		set_queued_zeroconf();
 		RespondMessageAck();
 
 		DEBUG_EXIT
@@ -262,7 +389,7 @@ void RDMHandler::SetZeroconf([[maybe_unused]] bool IsBroadcast, [[maybe_unused]]
 	}
 
 	if (pRdmDataIn->param_data[4] == 0) {
-		Network::Get()->SetQueuedStaticIp(0, 0);
+		set_queued_static_ip(0, 0);
 		RespondMessageAck();
 
 		DEBUG_EXIT
@@ -325,7 +452,7 @@ void RDMHandler::GetAddressNetmask([[maybe_unused]] uint16_t nSubDevice) {
 	memcpy(&pRdmDataOut->param_data[0], &pRdmDataIn->param_data[0], 4);
 	memcpy(&pRdmDataOut->param_data[4], p, 4);
 	pRdmDataOut->param_data[8] = static_cast<uint8_t>(Network::Get()->GetNetmaskCIDR());
-	pRdmDataOut->param_data[9] = static_cast<uint8_t>(Network::Get()->GetDhcpMode());
+	pRdmDataOut->param_data[9] = static_cast<uint8_t>(get_dhcp_mode());
 
 	pRdmDataOut->param_data_length = 10;
 
@@ -383,7 +510,7 @@ void RDMHandler::SetStaticAddress([[maybe_unused]] bool IsBroadcast, [[maybe_unu
 	auto *p = reinterpret_cast<uint8_t*>(&nIpAddress);
 	memcpy(p, &pRdmDataIn->param_data[4], 4);
 
-	Network::Get()->SetQueuedStaticIp(nIpAddress, network::cidr_to_netmask(pRdmDataIn->param_data[8]));
+	set_queued_static_ip(nIpAddress, network::cidr_to_netmask(pRdmDataIn->param_data[8]));
 
 	RespondMessageAck();
 
@@ -401,7 +528,7 @@ void RDMHandler::ApplyConfiguration([[maybe_unused]] bool IsBroadcast, [[maybe_u
 		return;
 	}
 
-	if (Network::Get()->ApplyQueuedConfig()) { // Not Queuing -> Apply
+	if (apply_queued_config()) { // Not Queuing -> Apply
 		RespondMessageAck();
 
 		DEBUG_EXIT
@@ -461,7 +588,7 @@ void RDMHandler::SetDefaultRoute([[maybe_unused]] bool IsBroadcast, [[maybe_unus
 	auto *p = reinterpret_cast<uint8_t *>(&nIpAddress);
 	memcpy(p, &pRdmDataIn->param_data[4], 4);
 
-	Network::Get()->SetQueuedDefaultRoute(nIpAddress);
+	set_queued_default_route(nIpAddress);
 
 	RespondMessageAck();
 

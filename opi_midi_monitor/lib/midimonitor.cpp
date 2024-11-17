@@ -1,7 +1,7 @@
 /**
  * @file midimonitor.h
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,17 +44,17 @@ static uint8_t s_Qf[8] __attribute__ ((aligned (4))) = { 0, 0, 0, 0, 0, 0, 0, 0 
 static constexpr auto TC_LENGTH = sizeof(s_aTimecode) - 1;
 static constexpr char TC_TYPES[4][8] __attribute__ ((aligned (4))) = {"Film " , "EBU  " , "DF   " , "SMPTE" };
 
-inline static void itoa_base10(int nArg, char *pBuffer) {
+static void itoa(const uint32_t nValue, char *pBuffer) {
 	auto *p = pBuffer;
 
-	if (nArg == 0) {
+	if (nValue == 0) {
 		*p++ = '0';
 		*p = '0';
 		return;
 	}
 
-	*p++ = static_cast<char>('0' + (nArg / 10));
-	*p = static_cast<char>('0' + (nArg % 10));
+	*p++ = static_cast<char>('0' + (nValue / 10U));
+	*p = static_cast<char>('0' + (nValue % 10U));
 }
 
 MidiMonitor::MidiMonitor() :
@@ -99,10 +99,10 @@ void MidiMonitor::UpdateTimecode(uint8_t nType) {
 }
 
 void MidiMonitor::HandleMtc() {
-	itoa_base10((m_pMidiMessage->aSystemExclusive[5] & 0x1F), &s_aTimecode[0]);
-	itoa_base10(m_pMidiMessage->aSystemExclusive[6], &s_aTimecode[3]);
-	itoa_base10(m_pMidiMessage->aSystemExclusive[7], &s_aTimecode[6]);
-	itoa_base10(m_pMidiMessage->aSystemExclusive[8], &s_aTimecode[9]);
+	itoa((m_pMidiMessage->aSystemExclusive[5] & 0x1F), &s_aTimecode[0]);
+	itoa(m_pMidiMessage->aSystemExclusive[6], &s_aTimecode[3]);
+	itoa(m_pMidiMessage->aSystemExclusive[7], &s_aTimecode[6]);
+	itoa(m_pMidiMessage->aSystemExclusive[8], &s_aTimecode[9]);
 
 	UpdateTimecode(static_cast<uint8_t>(m_pMidiMessage->aSystemExclusive[5] >> 5));
 }
@@ -119,10 +119,10 @@ void MidiMonitor::HandleQf() {
 	}
 
 	if ((m_bDirection && (nPart == 7)) || (!m_bDirection && (nPart == 0))) {
-		itoa_base10(s_Qf[6] | ((s_Qf[7] & 0x1) << 4) , &s_aTimecode[0]);
-		itoa_base10(s_Qf[4] | (s_Qf[5] << 4) , &s_aTimecode[3]);
-		itoa_base10(s_Qf[2] | (s_Qf[3] << 4) , &s_aTimecode[6]);
-		itoa_base10(s_Qf[0] | (s_Qf[1] << 4) , &s_aTimecode[9]);
+		itoa(s_Qf[6] | ((s_Qf[7] & 0x1) << 4) , &s_aTimecode[0]);
+		itoa(s_Qf[4] | (s_Qf[5] << 4) , &s_aTimecode[3]);
+		itoa(s_Qf[2] | (s_Qf[3] << 4) , &s_aTimecode[6]);
+		itoa(s_Qf[0] | (s_Qf[1] << 4) , &s_aTimecode[9]);
 
 		const auto nType = static_cast<uint8_t>(s_Qf[7] >> 1);
 

@@ -23,11 +23,14 @@
  * THE SOFTWARE.
  */
 
+#pragma GCC push_options
+#pragma GCC optimize ("O2")
+#pragma GCC optimize ("no-tree-loop-distribute-patterns")
+
 #include <cstdint>
 
 #include "hardware.h"
 #include "network.h"
-#include "networkconst.h"
 
 #include "net/apps/mdns.h"
 
@@ -75,12 +78,6 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
-namespace artnetnode {
-namespace configstore {
-uint32_t DMXPORT_OFFSET = 4;
-}  // namespace configstore
-}  // namespace artnetnode
-
 void Hardware::RebootHandler() {
 	WS28xx::Get()->Blackout();
 	Dmx::Get()->Blackout();
@@ -91,10 +88,7 @@ int main() {
 	Hardware hw;
 	DisplayUdf display;
 	ConfigStore configStore;
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, CONSOLE_YELLOW);
 	Network nw;
-	MDNS mDns;
-	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, CONSOLE_GREEN);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	FlashCodeInstall spiFlashInstall;
 
@@ -138,7 +132,7 @@ int main() {
 	uint32_t nDmxUniverses = 0;
 
 	if (artnetParams.GetDirection(0) == lightset::PortDir::OUTPUT) {
-		node.SetUniverse(artnetnode::configstore::DMXPORT_OFFSET, lightset::PortDir::OUTPUT, artnetParams.GetUniverse(0));
+		node.SetUniverse(dmxsend::DMXPORT_OFFSET, lightset::PortDir::OUTPUT, artnetParams.GetUniverse(0));
 		nDmxUniverses = 1;
 	}
 
@@ -148,7 +142,7 @@ int main() {
 	dmxparams.Load();
 	dmxparams.Set(&dmx);
 
-	if (node.GetPortDirection(artnetnode::configstore::DMXPORT_OFFSET) == lightset::PortDir::OUTPUT) {
+	if (node.GetPortDirection(dmxsend::DMXPORT_OFFSET) == lightset::PortDir::OUTPUT) {
 		dmx.SetPortDirection(0, dmx::PortDirection::OUTP, false);
 	}
 
@@ -239,7 +233,7 @@ int main() {
 	while (configStore.Flash())
 		;
 
-	mDns.Print();
+	mdns_print(); //	mDns.Print();
 
 	display.TextStatus(ArtNetMsgConst::START, CONSOLE_YELLOW);
 
@@ -257,12 +251,8 @@ int main() {
 		showFile.Run();
 #endif
 		remoteConfig.Run();
-#if defined (NODE_RDMNET_LLRP_ONLY)
-		llrpOnlyDevice.Run();
-#endif
 		configStore.Flash();
 		pixelTestPattern.Run();
-		mDns.Run();
 		display.Run();
 		hw.Run();
 	}

@@ -31,6 +31,7 @@
 # pragma GCC push_options
 # pragma GCC optimize ("O2")
 # pragma GCC optimize ("no-tree-loop-distribute-patterns")
+# pragma GCC optimize ("-fprefetch-loop-arrays")
 #endif
 
 #include <cstdint>
@@ -53,16 +54,25 @@ namespace globals {
 extern uint32_t nBroadcastMask;
 }  // namespace globals
 
-struct data_entry {
-	uint32_t from_ip;
-	uint32_t size;
-	uint16_t from_port;
+struct PortInfo {
+	UdpCallbackFunctionPtr callback;
+	uint16_t nPort;
+};
+
+struct Data {
+	uint32_t nFromIp;
+	uint32_t nSize;
 	uint8_t data[UDP_DATA_SIZE];
+	uint16_t nFromPort;
+};
+
+struct Port {
+	PortInfo info;
+	Data data ALIGNED;
 } ALIGNED;
 
-static uint16_t s_Port[UDP_MAX_PORTS_ALLOWED] SECTION_NETWORK ALIGNED;
-static struct data_entry s_data[UDP_MAX_PORTS_ALLOWED] SECTION_NETWORK ALIGNED;
-static struct t_udp s_send_packet SECTION_NETWORK ALIGNED;
+static Port s_Ports[UDP_MAX_PORTS_ALLOWED] SECTION_NETWORK ALIGNED;
+static t_udp s_send_packet SECTION_NETWORK ALIGNED;
 static uint16_t s_id SECTION_NETWORK ALIGNED;
 static uint8_t s_multicast_mac[ETH_ADDR_LEN] SECTION_NETWORK ALIGNED;
 
@@ -99,24 +109,34 @@ __attribute__((hot)) void udp_handle(struct t_udp *pUdp) {
 	const auto nDestinationPort = __builtin_bswap16(pUdp->udp.destination_port);
 
 	for (uint32_t nPortIndex = 0; nPortIndex < UDP_MAX_PORTS_ALLOWED; nPortIndex++) {
-		if (s_Port[nPortIndex] == nDestinationPort) {
-			if (__builtin_expect ((s_data[nPortIndex].size != 0), 0)) {
+		const auto& portInfo = s_Ports[nPortIndex].info;
+		auto& data = s_Ports[nPortIndex].data;
+
+		if (portInfo.nPort == nDestinationPort) {
+			if (__builtin_expect ((data.nSize != 0), 0)) {
 				DEBUG_PRINTF(IPSTR ":%d[%x]", pUdp->ip4.src[0],pUdp->ip4.src[1],pUdp->ip4.src[2],pUdp->ip4.src[3], nDestinationPort, nDestinationPort);
 			}
 
-			auto *p_queue_entry = &s_data[nPortIndex];
-			const auto nDataLength = static_cast<uint16_t>(__builtin_bswap16(pUdp->udp.len) - UDP_HEADER_SIZE);
-			const auto i = std::min(static_cast<uint16_t>(UDP_DATA_SIZE), nDataLength);
+			const auto nDataLength = static_cast<uint32_t>(__builtin_bswap16(pUdp->udp.len) - UDP_HEADER_SIZE);
+			const auto i = std::min(static_cast<uint32_t>(UDP_DATA_SIZE), nDataLength);
 
-			net::memcpy(p_queue_entry->data, pUdp->udp.data, i);
+			net::memcpy(data.data, pUdp->udp.data, i);
 
-			p_queue_entry->from_ip = net::memcpy_ip(pUdp->ip4.src);
-			p_queue_entry->from_port = __builtin_bswap16(pUdp->udp.source_port);
-			p_queue_entry->size = static_cast<uint16_t>(i);
+			data.nFromIp = net::memcpy_ip(pUdp->ip4.src);
+			data.nFromPort = __builtin_bswap16(pUdp->udp.source_port);
+			data.nSize = i;
+
+			emac_free_pkt();
+
+			if (portInfo.callback != nullptr) {
+				portInfo.callback(data.data, nDataLength, data.nFromIp, data.nFromPort);
+			}
 
 			return;
 		}
 	}
+
+	emac_free_pkt();
 
 	DEBUG_PRINTF(IPSTR ":%d[%x] " MACSTR, pUdp->ip4.src[0],pUdp->ip4.src[1],pUdp->ip4.src[2],pUdp->ip4.src[3], nDestinationPort, nDestinationPort, MAC2STR(pUdp->ether.dst));
 }
@@ -125,7 +145,7 @@ template<net::arp::EthSend S>
 static void udp_send_implementation(int nIndex, const uint8_t *pData, uint32_t nSize, uint32_t nRemoteIp, uint16_t nRemotePort) {
 	assert(nIndex >= 0);
 	assert(nIndex < UDP_MAX_PORTS_ALLOWED);
-	assert(s_Port[nIndex] != 0);
+	assert(s_Ports[nIndex].info.nPort != 0);
 
 	//IPv4
 	s_send_packet.ip4.id = s_id++;
@@ -133,7 +153,7 @@ static void udp_send_implementation(int nIndex, const uint8_t *pData, uint32_t n
 	s_send_packet.ip4.chksum = 0;
 
 	//UDP
-	s_send_packet.udp.source_port = __builtin_bswap16( s_Port[nIndex]);
+	s_send_packet.udp.source_port = __builtin_bswap16(s_Ports[nIndex].info.nPort);
 	s_send_packet.udp.destination_port = __builtin_bswap16(nRemotePort);
 	s_send_packet.udp.len = __builtin_bswap16(static_cast<uint16_t>(nSize + UDP_HEADER_SIZE));
 
@@ -163,11 +183,11 @@ static void udp_send_implementation(int nIndex, const uint8_t *pData, uint32_t n
 			std::memcpy(s_send_packet.ether.dst, s_multicast_mac, ETH_ADDR_LEN);
 			net::memcpy_ip(s_send_packet.ip4.dst, nRemoteIp);
 		} else {
-			if (S == net::arp::EthSend::IS_NORMAL) {
+			if constexpr (S == net::arp::EthSend::IS_NORMAL) {
 				net::arp_send(&s_send_packet, nSize + UDP_PACKET_HEADERS_SIZE, nRemoteIp);
 			}
 #if defined CONFIG_ENET_ENABLE_PTP
-			else if (S == net::arp::EthSend::IS_TIMESTAMP) {
+			else if constexpr (S == net::arp::EthSend::IS_TIMESTAMP) {
 				net::arp_send_timestamp(&s_send_packet, nSize + UDP_PACKET_HEADERS_SIZE, nRemoteIp);
 			}
 #endif
@@ -179,11 +199,11 @@ static void udp_send_implementation(int nIndex, const uint8_t *pData, uint32_t n
 	s_send_packet.ip4.chksum = net_chksum(reinterpret_cast<void *>(&s_send_packet.ip4), sizeof(s_send_packet.ip4));
 #endif
 
-	if (S == net::arp::EthSend::IS_NORMAL) {
+	if constexpr (S == net::arp::EthSend::IS_NORMAL) {
 		emac_eth_send(reinterpret_cast<void *>(&s_send_packet), nSize + UDP_PACKET_HEADERS_SIZE);
 	}
 #if defined CONFIG_ENET_ENABLE_PTP
-	else if (S == net::arp::EthSend::IS_TIMESTAMP) {
+	else if constexpr (S == net::arp::EthSend::IS_TIMESTAMP) {
 		emac_eth_send_timestamp(reinterpret_cast<void *>(&s_send_packet), nSize);
 	}
 #endif
@@ -192,18 +212,21 @@ static void udp_send_implementation(int nIndex, const uint8_t *pData, uint32_t n
 
 // -->
 
-int udp_begin(uint16_t nLocalPort) {
+int32_t udp_begin(uint16_t nLocalPort, UdpCallbackFunctionPtr callback) {
 	DEBUG_PRINTF("nLocalPort=%u", nLocalPort);
 
-	for (int i = 0; i < UDP_MAX_PORTS_ALLOWED; i++) {
-		if (s_Port[i] == nLocalPort) {
+	for (auto i = 0; i < UDP_MAX_PORTS_ALLOWED; i++) {
+		auto& portInfo = s_Ports[i].info;
+
+		if (portInfo.nPort == nLocalPort) {
 			return i;
 		}
 
-		if (s_Port[i] == 0) {
-			s_Port[i] = nLocalPort;
+		if (portInfo.nPort == 0) {
+			portInfo.callback = callback;
+			portInfo.nPort = nLocalPort;
 
-			DEBUG_PRINTF("i=%d, local_port=%d[%x]", i, nLocalPort, nLocalPort);
+			DEBUG_PRINTF("i=%d, local_port=%d[%x], callback=%p", i, nLocalPort, nLocalPort, callback);
 			return i;
 		}
 	}
@@ -214,13 +237,18 @@ int udp_begin(uint16_t nLocalPort) {
 	return -1;
 }
 
-int udp_end(uint16_t nLocalPort) {
+int32_t udp_end(uint16_t nLocalPort) {
 	DEBUG_PRINTF("nLocalPort=%u[%x]", nLocalPort, nLocalPort);
 
 	for (auto i = 0; i < UDP_MAX_PORTS_ALLOWED; i++) {
-		if (s_Port[i] == nLocalPort) {
-			s_Port[i] = 0;
-			s_data[i].size = 0;
+		auto& portInfo = s_Ports[i].info;
+
+		if (portInfo.nPort == nLocalPort) {
+			portInfo.callback = nullptr;
+			portInfo.nPort = 0;
+
+			auto& data = s_Ports[i].data;
+			data.nSize = 0;
 			return 0;
 		}
 	}
@@ -229,54 +257,61 @@ int udp_end(uint16_t nLocalPort) {
 	return -1;
 }
 
-uint32_t udp_recv1(int nIndex, uint8_t *pData, uint32_t nSize, uint32_t *pFromIp, uint16_t *FromPort) {
+uint32_t udp_recv1(const int32_t nIndex, uint8_t *pData, uint32_t nSize, uint32_t *pFromIp, uint16_t *FromPort) {
 	assert(nIndex >= 0);
 	assert(nIndex < UDP_MAX_PORTS_ALLOWED);
 
-	if (__builtin_expect((s_data[nIndex].size == 0), 1)) {
+	auto& data = s_Ports[nIndex].data;
+
+	if (__builtin_expect((data.nSize == 0), 1)) {
 		return 0;
 	}
 
-	auto *p_data = &s_data[nIndex];
-	const auto i = std::min(nSize, p_data->size);
+	const auto i = std::min(nSize, data.nSize);
 
-	net::memcpy(pData, p_data->data, i);
+	net::memcpy(pData, data.data, i);
 
-	*pFromIp = p_data->from_ip;
-	*FromPort = p_data->from_port;
+	*pFromIp = data.nFromIp;
+	*FromPort = data.nFromPort;
 
-	p_data->size = 0;
+	data.nSize = 0;
 
 	return i;
 }
 
-uint32_t udp_recv2(int nIndex, const uint8_t **pData, uint32_t *pFromIp, uint16_t *pFromPort) {
+uint32_t udp_recv2(const int32_t nIndex, const uint8_t **pData, uint32_t *pFromIp, uint16_t *pFromPort) {
 	assert(nIndex >= 0);
 	assert(nIndex < UDP_MAX_PORTS_ALLOWED);
 
-	auto &p_data = s_data[nIndex];
+	const auto& portInfo = s_Ports[nIndex].info;
 
-	if (__builtin_expect((p_data.size == 0), 1)) {
+	if (__builtin_expect(portInfo.callback != nullptr, 0)) {
 		return 0;
 	}
 
-	*pData = p_data.data;
-	*pFromIp = p_data.from_ip;
-	*pFromPort = p_data.from_port;
+	auto& data = s_Ports[nIndex].data;
 
-	const auto nSize = p_data.size;
+	if (__builtin_expect((data.nSize == 0), 1)) {
+		return 0;
+	}
 
-	p_data.size = 0;
+	*pData = data.data;
+	*pFromIp = data.nFromIp;
+	*pFromPort = data.nFromPort;
+
+	const auto nSize = data.nSize;
+
+	data.nSize = 0;
 
 	return nSize;
 }
 
-void udp_send(int nIndex, const uint8_t *pData, uint32_t nSize, uint32_t nRemoteIp, uint16_t nRemotePort) {
+void udp_send(const int32_t nIndex, const uint8_t *pData, uint32_t nSize, uint32_t nRemoteIp, uint16_t nRemotePort) {
 	udp_send_implementation<net::arp::EthSend::IS_NORMAL>(nIndex, pData, nSize, nRemoteIp, nRemotePort);
 }
 
 #if defined CONFIG_ENET_ENABLE_PTP
-void udp_send_timestamp(int nIndex, const uint8_t *pData, uint32_t nSize, uint32_t nRemoteIp, uint16_t nRemotePort) {
+void udp_send_timestamp(const int32_t nIndex, const uint8_t *pData, uint32_t nSize, uint32_t nRemoteIp, uint16_t nRemotePort) {
 	udp_send_implementation<net::arp::EthSend::IS_TIMESTAMP>(nIndex, pData, nSize, nRemoteIp, nRemotePort);
 }
 #endif

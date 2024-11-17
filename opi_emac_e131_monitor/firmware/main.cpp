@@ -28,7 +28,7 @@
 
 #include "hardware.h"
 #include "network.h"
-#include "networkconst.h"
+
 
 #include "net/apps/mdns.h"
 
@@ -67,23 +67,13 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
-namespace e131bridge {
-namespace configstore {
-uint32_t DMXPORT_OFFSET = 0;
-}  // namespace configstore
-}  // namespace e131bridge
-
-void Hardware::RebootHandler() {
-}
+void Hardware::RebootHandler() {}
 
 int main() {
 	Hardware hw;
 	DisplayUdf display;
 	ConfigStore configStore;
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, CONSOLE_YELLOW);
 	Network nw;
-	MDNS mDns;
-	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, CONSOLE_GREEN);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	FlashCodeInstall spiFlashInstall;
 
@@ -96,8 +86,6 @@ int main() {
 	console_puts("Real-time DMX Monitor");
 	console_set_fg_color(CONSOLE_WHITE);
 	console_set_top_row(2);
-
-	
 
 	NtpClient ntpClient;
 	ntpClient.Start();
@@ -179,7 +167,7 @@ int main() {
 	while (configStore.Flash())
 		;
 
-	mDns.Print();
+	mdns_print(); //	mDns.Print();
 
 	display.TextStatus(E131MsgConst::START, CONSOLE_YELLOW);
 
@@ -201,7 +189,7 @@ int main() {
 		configStore.Flash();
 		ntpClient.Run();
 		showSystime.Run();
-		mDns.Run();
+
 		display.Run();
 		hw.Run();
 	}

@@ -2,7 +2,7 @@
  * @file rdmdeviceresponder.cpp
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,24 +30,19 @@
 
 #include "rdmdeviceresponder.h"
 #include "rdmdevice.h"
-
 #include "rdmsensors.h"
 #include "rdmsubdevices.h"
-
-#include "rdmsoftwareversion.h"
 #include "rdmpersonality.h"
 
-#include "lightset.h"
-
-#include "hardware.h"
-
 #include "rdm_e120.h"
+
+#include "lightset.h"
+#include "firmwareversion.h"
+#include "hardware.h"
 
 #include "debug.h"
 
 static constexpr char LANGUAGE[2] = { 'e', 'n' };
-
-RDMDeviceResponder *RDMDeviceResponder::s_pThis;
 
 RDMDeviceResponder::RDMDeviceResponder(RDMPersonality **pRDMPersonalities, const uint32_t nPersonalityCount, const uint32_t nCurrentPersonality) :
 	m_pRDMPersonalities(pRDMPersonalities)
@@ -66,9 +61,6 @@ RDMDeviceResponder::RDMDeviceResponder(RDMPersonality **pRDMPersonalities, const
 	m_DeviceInfo.personality_count = static_cast<uint8_t>(nPersonalityCount);
 	m_DeviceInfo.current_personality =  static_cast<uint8_t>(nCurrentPersonality);
 
-	m_pSoftwareVersion = const_cast<char*>(RDMSoftwareVersion::GetVersion());
-	m_nSoftwareVersionLength = static_cast<uint8_t>(RDMSoftwareVersion::GetVersionLength());
-
 	assert(nCurrentPersonality != 0);
 
 	const auto *pLightSet = m_pRDMPersonalities[nCurrentPersonality - 1]->GetLightSet();
@@ -85,7 +77,7 @@ void RDMDeviceResponder::Init() {
 
 	RDMDevice::Init();
 
-	const auto nSoftwareVersionId = RDMSoftwareVersion::GetVersionId();
+	const auto nSoftwareVersionId = FirmwareVersion::Get()->GetVersionId();
 	const auto nDeviceModel = Hardware::Get()->GetBoardId();
 	const auto nProductCategory = RDMDevice::GetProductCategory();
 	const auto nSubDevices = m_RDMSubDevices.GetCount();

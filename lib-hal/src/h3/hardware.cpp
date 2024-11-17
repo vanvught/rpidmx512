@@ -23,6 +23,10 @@
  * THE SOFTWARE.
  */
 
+#if defined (DEBUG_HAL)
+# undef NDEBUG
+#endif
+
 #include <cstdint>
 #include <cstddef>
 #include <cstdio>
@@ -32,10 +36,14 @@
 
 #include "hardware.h"
 
+#include "h3.h"
 #include "h3_watchdog.h"
 #include "h3_gpio.h"
 #include "h3_board.h"
+#include "irq_timer.h"
 
+#include "arm/arm.h"
+#include "arm/gic.h"
 #include "arm/synchronize.h"
 
 #if defined (DEBUG_I2C)
@@ -48,9 +56,52 @@
 
 #include "logic_analyzer.h"
 
+#pragma GCC push_options
+#pragma GCC optimize ("O2")
+
+#if __GNUC__ > 8
+# pragma GCC target ("general-regs-only")
+#endif
+
+static void EXTIA_IRQHandler() {
+	DEBUG_PUTS("EXTIA_IRQHandler");
+
+	H3_PIO_PA_INT->STA = ~0;
+}
+
+static void EXTIG_IRQHandler() {
+	DEBUG_PUTS("EXTIG_IRQHandler");
+
+	H3_PIO_PG_INT->STA = ~0;
+}
+
+static void __attribute__((interrupt("IRQ"))) IRQ_Handler() {
+	__DMB();
+
+	const auto nIRQ = GICInterface->AIAR;
+	IRQHandler_t const handler = IRQ_GetHandler(nIRQ);
+
+	if (handler != nullptr) {
+		handler();
+	}
+
+	GICInterface->AEOIR = nIRQ;
+	const auto nIndex = nIRQ / 32;
+	const auto nMask = 1U << (nIRQ % 32);
+	GICDistributor->ICPENDR[nIndex] = nMask;
+
+	__DMB();
+}
+
+#pragma GCC pop_options
+
 namespace net {
 void net_shutdown();
 }  // namespace net
+
+namespace hal {
+void uuid_init(uuid_t);
+}  // namespace hardware
 
 namespace soc {
 #if defined (ORANGE_PI)
@@ -79,10 +130,6 @@ namespace sysname {
 	static constexpr auto NAME_LENGTH = sizeof(NAME) - 1;
 }
 
-namespace hal {
-void uuid_init(uuid_t);
-}  // namespace hardware
-
 Hardware *Hardware::s_pThis;
 
 void hardware_init();
@@ -95,7 +142,7 @@ Hardware::Hardware() {
 	hal::uuid_init(m_uuid);
 
 #if defined (DEBUG_I2C)
-	I2cDetect i2cdetect;
+	i2c_detect();
 #endif
 
 #if !defined(DISABLE_RTC)
@@ -107,6 +154,14 @@ Hardware::Hardware() {
 	hardware_led_set(1);
 
 	logic_analyzer::init();
+
+	IRQ_SetHandler(H3_PA_EINT_IRQn, EXTIA_IRQHandler);
+//	gic_irq_config(H3_PA_EINT_IRQn, GIC_CORE0);
+//
+	IRQ_SetHandler(H3_PG_EINT_IRQn, EXTIG_IRQHandler);
+//	gic_irq_config(H3_PG_EINT_IRQn, GIC_CORE0);
+
+	arm_install_handler((unsigned) IRQ_Handler, ARM_VECTOR(ARM_VECTOR_IRQ));
 }
 
 const char *Hardware::GetMachine(uint8_t &nLength) {

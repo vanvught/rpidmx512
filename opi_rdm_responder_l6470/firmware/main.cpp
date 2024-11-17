@@ -62,28 +62,17 @@
 
 #include "factorydefaults.h"
 
-void Hardware::RebootHandler() {
-
-}
+void Hardware::RebootHandler() {}
 
 int main() {
 	Hardware hw;
 	Display display;
 	ConfigStore configStore;
-#if !defined(NO_EMAC)
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, CONSOLE_YELLOW);
 	Network nw;
-	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, CONSOLE_GREEN);
-#else
-	Network nw;
-#endif
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	FlashCodeInstall spiFlashInstall;
 
 	fw.Print();
-#if !defined(NO_EMAC)
-	
-#endif
 
 	LightSet *pBoard;
 

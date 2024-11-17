@@ -23,12 +23,16 @@
  * THE SOFTWARE.
  */
 
+#if !defined (NODE_RDMNET_LLRP_ONLY)
+# error
+#endif
+
 #include <cstdio>
 #include <cstring>
 
 #include "hardware.h"
 #include "network.h"
-#include "networkconst.h"
+
 
 #include "displayudf.h"
 #include "displayudfparams.h"
@@ -37,12 +41,9 @@
 #include "remoteconfig.h"
 #include "remoteconfigparams.h"
 
-#if defined (NODE_RDMNET_LLRP_ONLY)
-# include "rdmnetllrponly.h"
-#endif
+#include "rdmnetllrponly.h"
 
 #include "net/apps/mdns.h"
-
 #include "net/apps/ntpclient.h"
 
 #include "factorydefaults.h"
@@ -68,10 +69,7 @@ int main() {
 	Hardware hw;
 	DisplayUdf display;
 	ConfigStore configStore;
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, CONSOLE_YELLOW);
 	Network nw;
-	MDNS mDns;
-	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, CONSOLE_GREEN);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	FlashCodeInstall spiFlashInstall;
 
@@ -81,11 +79,9 @@ int main() {
 	ntpClient.Start();
 	ntpClient.Print();
 
-#if defined (NODE_RDMNET_LLRP_ONLY)
 	RDMNetLLRPOnly device;
 	device.Init();
 	device.Print();
-#endif
 
 	RemoteConfig remoteConfig(remoteconfig::Node::RDMNET_LLRP_ONLY, remoteconfig::Output::CONFIG, 0);
 
@@ -93,12 +89,10 @@ int main() {
 	remoteConfigParams.Load();
 	remoteConfigParams.Set(&remoteConfig);
 
-	DEBUG_PUTS("");
-
 	while (configStore.Flash())
 		;
 
-	mDns.Print();
+	mdns_print();
 
 	display.SetTitle("LLRP Only - TFTP");
 	display.Set(2, displayudf::Labels::HOSTNAME);
@@ -121,14 +115,8 @@ int main() {
 	struct tm tmHwClock;
 	memset(&tmHwClock, 0, sizeof(struct tm));
 
-	DEBUG_PUTS("");
-
 	for (;;) {
 		nw.Run();
-		mDns.Run();
-#if defined (NODE_RDMNET_LLRP_ONLY)
-		device.Run();
-#endif
 		remoteConfig.Run();
 		ntpClient.Run();
 		configStore.Flash();

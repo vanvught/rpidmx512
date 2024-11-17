@@ -49,11 +49,10 @@
 #include "hardware.h"
 #include "network.h"
 
+#include "softwaretimers.h"
 #include "panel_led.h"
 
 #include "debug.h"
-
-E131Bridge *E131Bridge::s_pThis = nullptr;
 
 E131Bridge::E131Bridge() {
 	DEBUG_ENTRY
@@ -101,7 +100,7 @@ E131Bridge::~E131Bridge() {
 void E131Bridge::Start() {
 #if defined (E131_HAVE_DMXIN)
 	const auto nIpMulticast = network::convert_to_uint(239, 255, 0, 0);
-	m_DiscoveryIpAddress = nIpMulticast | ((e131::universe::DISCOVERY & static_cast<uint32_t>(0xFF)) << 24) | ((e131::universe::DISCOVERY & 0xFF00) << 8);
+	m_nDiscoveryIpAddress = nIpMulticast | ((e131::universe::DISCOVERY & static_cast<uint32_t>(0xFF)) << 24) | ((e131::universe::DISCOVERY & 0xFF00) << 8);
 	FillDataPacket();
 	FillDiscoveryPacket();
 
@@ -112,6 +111,9 @@ void E131Bridge::Start() {
 	}
 
 	SetLocalMerging();
+
+	m_timerHandleSendDiscoveryPacket = SoftwareTimerAdd(e131::UNIVERSE_DISCOVERY_INTERVAL_SECONDS * 1000U, staticCallbackFunctionSendDiscoveryPacket);
+	assert(m_timerHandleSendDiscoveryPacket >= 0);
 #endif
 
 #if defined (OUTPUT_HAVE_STYLESWITCH)
@@ -125,6 +127,10 @@ void E131Bridge::Start() {
 			}
 		}
 	}
+#endif
+
+#if !defined(E131_HAVE_ARTNET)
+	SoftwareTimerAdd(200, staticCallbackFunctionLedPanelOff);
 #endif
 
 	m_State.status = e131bridge::Status::ON;
@@ -142,6 +148,8 @@ void E131Bridge::Stop() {
 	}
 
 #if defined (E131_HAVE_DMXIN)
+	SoftwareTimerDelete(m_timerHandleSendDiscoveryPacket);
+
 	for (uint32_t nPortIndex = 0; nPortIndex < e131bridge::MAX_PORTS; nPortIndex++) {
 		if (m_Bridge.Port[nPortIndex].direction == lightset::PortDir::INPUT) {
 			Dmx::Get()->SetPortDirection(nPortIndex, dmx::PortDirection::INP, false);
@@ -708,6 +716,12 @@ bool E131Bridge::IsValidDataPacket() {
 	return true;
 }
 
+#if !defined(__clang__)
+# pragma GCC push_options
+# pragma GCC optimize ("O2")
+# pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#endif
+
 void E131Bridge::Process() {
 	m_State.IsNetworkDataLoss = false;
 	m_nPreviousPacketMillis = m_nCurrentPacketMillis;
@@ -742,7 +756,6 @@ void E131Bridge::Process() {
 
 #if defined (E131_HAVE_DMXIN)
 	HandleDmxIn();
-	SendDiscoveryPacket();
 #endif
 
 	// The hardware::ledblink::Mode::FAST is for RDM Identify (Art-Net 4)

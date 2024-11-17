@@ -33,49 +33,76 @@
 #include <cstdint>
 #include <cstring>
 #include <cstdio>
+#include <cassert>
 
 #include "showfiledisplay.h"
 #include "osc.h"
 
 #include "network.h"
 
-namespace cmd {
-static constexpr char PATH[] = "/showfile/";
-}
-namespace length {
-static constexpr uint32_t PATH = sizeof(cmd::PATH) - 1;
-}  // namespace length
+#include "debug.h"
 
-struct ShowFileOSCMax {
-	static constexpr auto CMD_LENGTH = 128;
-	static constexpr auto FILES_ENTRIES = 10;
-};
+namespace showfileosc {
+static constexpr char CMD_PATH[] = "/showfile/";
+static constexpr uint32_t PATH_LENGTH = sizeof(CMD_PATH) - 1;
+static constexpr uint32_t MAX_CMD_LENGTH = 128;
+static constexpr uint32_t MAX_FILES_ENTRIES = 10;
+}  // namespace showfileosc
 
 class ShowFileOSC {
 public:
-	ShowFileOSC(uint16_t nPortIncoming = osc::port::DEFAULT_INCOMING, uint16_t nPortOutgoing = osc::port::DEFAULT_OUTGOING);
-	~ShowFileOSC();
+	ShowFileOSC(uint16_t nPortIncoming = osc::port::DEFAULT_INCOMING, uint16_t nPortOutgoing = osc::port::DEFAULT_OUTGOING) : m_nPortIncoming(nPortIncoming), m_nPortOutgoing(nPortOutgoing) {
+		DEBUG_ENTRY
 
-	void Run() {
-		m_nBytesReceived = Network::Get()->RecvFrom(m_nHandle, const_cast<const void **>(reinterpret_cast<void **>(&m_pBuffer)), &m_nRemoteIp, &m_nRemotePort);
+		assert(s_pThis == nullptr);
+		s_pThis = this;
 
-		if (__builtin_expect((m_nBytesReceived <= length::PATH), 1)) {
-			return;
+		m_nHandle = Network::Get()->Begin(m_nPortIncoming);
+		assert(m_nHandle != -1);
+
+		DEBUG_EXIT
+	}
+
+	~ShowFileOSC() {
+		DEBUG_ENTRY
+
+		Network::Get()->End(m_nPortIncoming);
+
+		DEBUG_EXIT
+	}
+
+	void Input(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
+		if (pBuffer != nullptr) {
+			m_pBuffer = pBuffer;
+			m_nRemoteIp = nFromIp;
+			m_nBytesReceived = nSize;
+			m_nRemotePort = nFromPort;
 		}
 
-		if (memcmp(m_pBuffer, cmd::PATH, length::PATH) == 0) {
+		if (memcmp(m_pBuffer, showfileosc::CMD_PATH, showfileosc::PATH_LENGTH) == 0) {
 			Process();
 		}
 	}
 
+	void Run() {
+		m_nBytesReceived = Network::Get()->RecvFrom(m_nHandle, reinterpret_cast<const void **>(&m_pBuffer), &m_nRemoteIp, &m_nRemotePort);
+
+		if (__builtin_expect((m_nBytesReceived <= showfileosc::PATH_LENGTH), 1)) {
+			return;
+		}
+
+		Input(nullptr, 0, 0, 0);
+	}
+
 	void Print() {
 		puts("OSC Server");
-		printf(" Path : [%s]\n", cmd::PATH);
+		printf(" Path : [%s]\n", showfileosc::CMD_PATH);
 		printf(" Incoming port : %u\n", m_nPortIncoming);
 		printf(" Outgoing port : %u\n", m_nPortOutgoing);
 	}
 
 	void SetPortIncoming(const uint16_t nPortIncoming) {
+		assert(m_nHandle == -1);
 		m_nPortIncoming = nPortIncoming;
 	}
 	uint16_t GetPortIncoming() const {
@@ -95,14 +122,19 @@ private:
 	void SendStatus();
 	void ShowFiles();
 
+	void static staticCallbackFunction(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
+		s_pThis->Input(pBuffer, nSize, nFromIp, nFromPort);
+	}
+
 private:
-	int32_t m_nHandle { -1 };
-	char *m_pBuffer { nullptr };
-	uint32_t m_nRemoteIp { 0 };
-	uint32_t m_nBytesReceived;
-	uint16_t m_nRemotePort { 0 };
 	uint16_t m_nPortIncoming;
 	uint16_t m_nPortOutgoing;
+	int32_t m_nHandle { -1 };
+	const uint8_t *m_pBuffer { nullptr };
+	uint32_t m_nRemoteIp { 0 };
+	uint32_t m_nBytesReceived { 0 };
+	uint16_t m_nRemotePort { 0 };
+	static inline ShowFileOSC *s_pThis;
 };
 
 #endif /* SHOWFILEOSC_H_ */

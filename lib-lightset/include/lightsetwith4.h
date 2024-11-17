@@ -83,11 +83,11 @@ public:
 	}
 
 	void Sync(const uint32_t nPortIndex) override {
-		if (m_pA != nullptr) {
-			m_pA->Sync(nPortIndex);
+		if ((nPortIndex < nMaxPorts) && (m_pA != nullptr)) {
+			return m_pA->Sync(nPortIndex);
 		}
 		if (m_pB != nullptr) {
-			m_pB->Sync(nPortIndex);
+			return m_pB->Sync(nPortIndex & 0x3);
 		}
 	}
 
@@ -106,7 +106,7 @@ public:
 			return m_pA->SetOutputStyle(nPortIndex, outputStyle);
 		}
 		if (m_pB != nullptr) {
-			return m_pB->SetOutputStyle(nPortIndex, outputStyle);
+			return m_pB->SetOutputStyle(nPortIndex & 0x3, outputStyle);
 		}
 	}
 
@@ -115,7 +115,7 @@ public:
 			return m_pA->GetOutputStyle(nPortIndex);
 		}
 		if (m_pB != nullptr) {
-			return m_pB->GetOutputStyle(nPortIndex);
+			return m_pB->GetOutputStyle(nPortIndex & 0x3);
 		}
 
 		return lightset::OutputStyle::DELTA;

@@ -2,7 +2,7 @@
  * @file config.h
  *
  */
-/* Copyright (C) 2022-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2022-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,18 +23,24 @@
  * THE SOFTWARE.
  */
 
-#ifndef CONFIG_H
-#define CONFIG_H
+#ifndef SPI_CONFIG_H
+#define SPI_CONFIG_H
 
 #include <cstdint>
 
 namespace config {
 #if defined (SPI_LCD_240X240)
-static constexpr uint32_t WIDTH = 240;
-static constexpr uint32_t HEIGHT = 240;
+ static constexpr uint32_t WIDTH  = 240;
+ static constexpr uint32_t HEIGHT = 240;
 #elif defined (SPI_LCD_240X320)
-static constexpr uint32_t WIDTH = 240;
-static constexpr uint32_t HEIGHT = 320;
+ static constexpr uint32_t WIDTH  = 240;
+ static constexpr uint32_t HEIGHT = 320;
+#elif defined (SPI_LCD_128X128)
+ static constexpr uint32_t WIDTH  = 128;
+ static constexpr uint32_t HEIGHT = 128;
+#elif defined (SPI_LCD_160X80)
+ static constexpr uint32_t WIDTH  = 80;
+ static constexpr uint32_t HEIGHT = 160;
 #else
 # error lib-display spi config
 #endif
@@ -47,7 +53,7 @@ static constexpr uint32_t HEIGHT = 320;
 # if defined(SPI_LCD_HAVE_CS_GPIO)
 #  define SPI_LCD_CS_GPIO		GPIO_EXT_24			// GPIO13 / SPI CS0
 # endif
-#elif defined (GD32)								//See board file
+#elif defined (GD32)								// See board file
 #else
 # include "bcm2835.h"
 # define SPI_LCD_RST_GPIO		RPI_V2_GPIO_P1_07	// GPIO4
@@ -58,4 +64,4 @@ static constexpr uint32_t HEIGHT = 320;
 # endif
 #endif
 
-#endif /* CONFIG_H */
+#endif /* SPI_CONFIG_H */

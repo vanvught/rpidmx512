@@ -2,7 +2,7 @@
  * @file oscserver.cpp
  *
  */
-/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,10 @@
  * THE SOFTWARE.
  */
 
+#if defined (DEBUG_OSCSERVER)
+# undef NDEBUG
+#endif
+
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
@@ -35,7 +39,6 @@
 #include "oscblob.h"
 
 #include "lightset.h"
-#include "network.h"
 
 #include "hardware.h"
 
@@ -48,19 +51,9 @@
 
 #define SOFTWARE_VERSION "1.0"
 
-char OscServer::s_aPath[osc::server::Max::PATH_LENGTH];
-char OscServer::s_aPathSecond[osc::server::Max::PATH_LENGTH];
-char OscServer::s_aPathInfo[osc::server::Max::PATH_LENGTH];
-char OscServer::s_aPathBlackOut[osc::server::Max::PATH_LENGTH];
-
-char *OscServer::s_pUdpBuffer;
-uint8_t OscServer::s_pData[lightset::dmx::UNIVERSE_SIZE];
-uint8_t OscServer::s_pOsc[lightset::dmx::UNIVERSE_SIZE];
-
-OscServer *OscServer::s_pThis;
-
 OscServer::OscServer() {
 	DEBUG_ENTRY
+
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 
@@ -87,31 +80,6 @@ OscServer::OscServer() {
 	}
 
 	DEBUG_EXIT
-}
-
-OscServer::~OscServer() {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
-void OscServer::Start() {
-	DEBUG_ENTRY
-
-	m_nHandle = Network::Get()->Begin(m_nPortIncoming);
-	assert(m_nHandle != -1);
-
-	OscSimpleSend MsgSend(m_nHandle, Network::Get()->GetIp() | ~(Network::Get()->GetNetmask()), m_nPortIncoming, "/ping", nullptr);
-
-	Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
-
-	DEBUG_EXIT
-}
-
-void OscServer::Stop() {
-	if (m_pLightSet != nullptr) {
-		m_pLightSet->Stop(0);
-	}
 }
 
 void OscServer::SetPath(const char* pPath) {
@@ -222,7 +190,7 @@ void OscServer::Run() {
 	uint32_t nRemoteIp;
 	uint16_t nRemotePort;
 
-	const auto nBytesReceived = Network::Get()->RecvFrom(m_nHandle, const_cast<const void **>(reinterpret_cast<void **>(&s_pUdpBuffer)), &nRemoteIp, &nRemotePort);
+	const auto nBytesReceived = Network::Get()->RecvFrom(m_nHandle, reinterpret_cast<const void **>(&s_pUdpBuffer), &nRemoteIp, &nRemotePort);
 
 	if (__builtin_expect((nBytesReceived == 0), 1)) {
 		return;
@@ -234,9 +202,11 @@ void OscServer::Run() {
 
 	debug_dump(s_pUdpBuffer, nBytesReceived);
 
-	DEBUG_PRINTF("[%d] path : %s", nBytesReceived, osc::get_path(s_pUdpBuffer, nBytesReceived));
+	auto *pUdpBuffer = reinterpret_cast<const char *>(s_pUdpBuffer);
 
-	if (osc::is_match(s_pUdpBuffer, s_aPath)) {
+	DEBUG_PRINTF("[%d] path : %s", nBytesReceived, osc::get_path(const_cast<char *>(pUdpBuffer), nBytesReceived));
+
+	if (osc::is_match(pUdpBuffer, s_aPath)) {
 		const auto nArgc = Msg.GetArgc();
 
 		if ((nArgc == 1) && (Msg.GetType(0) == osc::type::BLOB)) {
@@ -254,7 +224,7 @@ void OscServer::Run() {
 					if ((!m_bPartialTransmission) || (size == lightset::dmx::UNIVERSE_SIZE)) {
 						m_pLightSet->SetData(0, s_pData, lightset::dmx::UNIVERSE_SIZE);
 					} else {
-						m_nLastChannel = static_cast<uint16_t>(size > m_nLastChannel ? size : m_nLastChannel);
+						m_nLastChannel = (size > m_nLastChannel ? size : m_nLastChannel);
 						m_pLightSet->SetData(0, s_pData, m_nLastChannel);
 					}
 
@@ -309,7 +279,7 @@ void OscServer::Run() {
 		return;
 	}
 
-	if ((m_pOscServerHandler != nullptr) && (osc::is_match(s_pUdpBuffer, s_aPathBlackOut))) {
+	if ((m_pOscServerHandler != nullptr) && (osc::is_match(pUdpBuffer, s_aPathBlackOut))) {
 		OscSimpleMessage Msg(s_pUdpBuffer, nBytesReceived);
 
 		if (Msg.GetType(0) != osc::type::FLOAT) {
@@ -328,11 +298,11 @@ void OscServer::Run() {
 		return;
 	}
 
-	if (osc::is_match(s_pUdpBuffer, s_aPathSecond)) {
+	if (osc::is_match(pUdpBuffer, s_aPathSecond)) {
 		const auto nArgc = Msg.GetArgc();
 
 		if (nArgc == 1) { // /path/N 'i' or 'f'
-			const auto nChannel = static_cast<uint16_t>(GetChannel(s_pUdpBuffer));
+			const auto nChannel = static_cast<uint16_t>(GetChannel(pUdpBuffer));
 
 			if (nChannel >= 1 && nChannel <= lightset::dmx::UNIVERSE_SIZE) {
 				uint8_t nData;
@@ -370,14 +340,14 @@ void OscServer::Run() {
 		return;
 	}
 
-	if (osc::is_match(s_pUdpBuffer, "/ping")) {
+	if (osc::is_match(pUdpBuffer, "/ping")) {
 		DEBUG_PUTS("ping received");
 		OscSimpleSend MsgSend(m_nHandle, nRemoteIp, m_nPortOutgoing, "/pong", nullptr);
 
 		return;
 	}
 
-	if (osc::is_match(s_pUdpBuffer, s_aPathInfo)) {
+	if (osc::is_match(pUdpBuffer, s_aPathInfo)) {
 		OscSimpleSend MsgSendInfo(m_nHandle, nRemoteIp, m_nPortOutgoing, "/info/os", "s", m_Os);
 		OscSimpleSend MsgSendModel(m_nHandle, nRemoteIp, m_nPortOutgoing, "/info/model", "s", m_pModel);
 		OscSimpleSend MsgSendSoc(m_nHandle, nRemoteIp, m_nPortOutgoing, "/info/soc", "s", m_pSoC);
@@ -388,13 +358,4 @@ void OscServer::Run() {
 
 		return;
 	}
-}
-
-void OscServer::Print() {
-	puts("OSC Server");
-	printf(" Incoming Port        : %d\n", m_nPortIncoming);
-	printf(" Outgoing Port        : %d\n", m_nPortOutgoing);
-	printf(" DMX Path             : [%s][%s]\n", s_aPath, s_aPathSecond);
-	printf("  Blackout Path       : [%s]\n", s_aPathBlackOut);
-	printf(" Partial Transmission : %s\n", m_bPartialTransmission ? "Yes" : "No");
 }

@@ -33,7 +33,7 @@
 #include <time.h>
 #include <cassert>
 
-#include "ltcoutputs.h"
+#include "arm/ltcoutputs.h"
 
 #include "ltc.h"
 #include "timecodeconst.h"
@@ -51,7 +51,7 @@
 # define LTC_NO_DISPLAY_RGB
 #endif
 
-#include "platform_ltc.h"
+#include "arm/platform_ltc.h"
 
 static volatile bool sv_isMidiQuarterFrameMessage;
 

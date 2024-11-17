@@ -31,12 +31,10 @@
 #include <cstring>
 #include <cassert>
 
-#include "tcnetreader.h"
-
-#include "timecodeconst.h"
+#include "arm/tcnetreader.h"
+#include "ltc.h"
 #include "network.h"
 #include "hardware.h"
-
 // Input
 #include "tcnet.h"
 // Output
@@ -45,27 +43,22 @@
 #include "ltcetc.h"
 #include "ltcsender.h"
 #include "tcnetdisplay.h"
-#include "ltcoutputs.h"
+#include "arm/ltcoutputs.h"
 
-#include "platform_ltc.h"
+#include "arm/platform_ltc.h"
 
 #include "debug.h"
 
-namespace cmd {
-static constexpr char LAYER[] = "layer#";
-static constexpr char TYPE[] = "type#";
-static constexpr char TIMECODE[] = "timecode#";
-}
+static constexpr char CMD_LAYER[] = "layer#";
+static constexpr auto LAYER_LENGTH = sizeof(CMD_LAYER) - 1U;
 
-namespace length {
-static constexpr auto LAYER = sizeof(cmd::LAYER) - 1;
-static constexpr auto TYPE = sizeof(cmd::TYPE) - 1;
-static constexpr auto TIMECODE = sizeof(cmd::TIMECODE) - 1;
-}
+static constexpr char CMD_TYPE[] = "type#";
+static constexpr auto TYPE_LENGTH = sizeof(CMD_TYPE) - 1U;
 
-namespace udp {
-static constexpr auto PORT = 0x0ACA;
-}
+static constexpr char CMD_TIMECODE[] = "timecode#";
+static constexpr auto TIMECODE_LENGTH = sizeof(CMD_TIMECODE) - 1U;
+
+static constexpr auto UDP_PORT = 0x0ACA;
 
 #if defined (H3)
 static void arm_timer_handler() {
@@ -76,12 +69,10 @@ static void arm_timer_handler() {
 	// Defined in platform_ltc.cpp
 #endif
 
-char *TCNetReader::s_pUdpBuffer;
-
 void TCNetReader::Start() {
 #if defined (H3)
 	irq_timer_arm_physical_set(static_cast<thunk_irq_timer_arm_t>(arm_timer_handler));
-	irq_timer_init();
+	irq_handler_init();
 #elif defined (GD32)
 #endif
 
@@ -89,7 +80,7 @@ void TCNetReader::Start() {
 
 	Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
 
-	m_nHandle = Network::Get()->Begin(udp::PORT);
+	m_nHandle = Network::Get()->Begin(UDP_PORT);
 	assert(m_nHandle != -1);
 }
 
@@ -158,20 +149,20 @@ void TCNetReader::HandleUdpRequest() {
 
 	debug_dump(s_pUdpBuffer, nBytesReceived);
 
-	if ((nBytesReceived == (6 + length::LAYER + 1)) && (memcmp(&s_pUdpBuffer[6], cmd::LAYER, length::LAYER) == 0)) {
-		const auto tLayer = TCNet::GetLayer(s_pUdpBuffer[6 + length::LAYER]);
+	if ((nBytesReceived == (6 + LAYER_LENGTH + 1)) && (memcmp(&s_pUdpBuffer[6], CMD_LAYER, LAYER_LENGTH) == 0)) {
+		const auto tLayer = TCNet::GetLayer(s_pUdpBuffer[6 + LAYER_LENGTH]);
 
 		TCNet::Get()->SetLayer(tLayer);
 		tcnet::display::show();
 
-		DEBUG_PRINTF("tcnet!layer#%c -> %d", s_pUdpBuffer[6 + length::LAYER + 1], tLayer);
+		DEBUG_PRINTF("tcnet!layer#%c -> %d", s_pUdpBuffer[6 + LAYER_LENGTH + 1], tLayer);
 		return;
 	}
 
-	if ((nBytesReceived == (6 + length::TYPE + 2)) && (memcmp(&s_pUdpBuffer[6], cmd::TYPE, length::TYPE) == 0)) {
-		if (s_pUdpBuffer[6 + length::TYPE] == '2') {
+	if ((nBytesReceived == (6 + TYPE_LENGTH + 2)) && (memcmp(&s_pUdpBuffer[6], CMD_TYPE, TYPE_LENGTH) == 0)) {
+		if (s_pUdpBuffer[6 + TYPE_LENGTH] == '2') {
 
-			const auto nValue = 20U + s_pUdpBuffer[6 + length::TYPE + 1] - '0';
+			const auto nValue = 20U + s_pUdpBuffer[6 + TYPE_LENGTH + 1] - '0';
 
 			switch (nValue) {
 			case 24:
@@ -193,7 +184,7 @@ void TCNetReader::HandleUdpRequest() {
 			return;
 		}
 
-		if ((s_pUdpBuffer[6 + length::TYPE] == '3') && (s_pUdpBuffer[6 + length::TYPE + 1] == '0')) {
+		if ((s_pUdpBuffer[6 + TYPE_LENGTH] == '3') && (s_pUdpBuffer[6 + TYPE_LENGTH + 1] == '0')) {
 			TCNet::Get()->SetTimeCodeType(TCNET_TIMECODE_TYPE_SMPTE_30FPS);
 			tcnet::display::show();
 
@@ -205,8 +196,8 @@ void TCNetReader::HandleUdpRequest() {
 		return;
 	}
 
-	if ((nBytesReceived == (6 + length::TIMECODE + 1)) && (memcmp(&s_pUdpBuffer[6], cmd::TIMECODE, length::TIMECODE) == 0)) {
-		const auto nChar = s_pUdpBuffer[6 + length::TIMECODE];
+	if ((nBytesReceived == (6 + TIMECODE_LENGTH + 1)) && (memcmp(&s_pUdpBuffer[6], CMD_TIMECODE, TIMECODE_LENGTH) == 0)) {
+		const auto nChar = s_pUdpBuffer[6 + TIMECODE_LENGTH];
 		const auto bUseTimeCode = ((nChar == 'y') || (nChar == 'Y'));
 
 		TCNet::Get()->SetUseTimeCode(bUseTimeCode);
@@ -217,19 +208,4 @@ void TCNetReader::HandleUdpRequest() {
 	}
 
 	DEBUG_PUTS("Invalid command");
-}
-
-void TCNetReader::Run() {
-	LtcOutputs::Get()->UpdateMidiQuarterFrameMessage(reinterpret_cast<const struct ltc::TimeCode*>(&m_tMidiTimeCode));
-
-	__DMB();
-	if (gv_ltc_nUpdatesPerSecond != 0) {
-		Hardware::Get()->SetMode(hardware::ledblink::Mode::DATA);
-	} else {
-		LtcOutputs::Get()->ShowSysTime();
-		Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
-		m_nTimeCodePrevious = static_cast<uint32_t>(~0);
-	}
-
-	HandleUdpRequest();
 }

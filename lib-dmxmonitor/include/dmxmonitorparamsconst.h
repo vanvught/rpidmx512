@@ -2,7 +2,7 @@
  * @file dmxmonitorparamsconst.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,10 +27,9 @@
 #define DMXMONITORPARAMSCONST_H_
 
 struct DMXMonitorParamsConst {
-	static const char FILE_NAME[];
-
-	static const char DMX_MAX_CHANNELS[];
-	static const char FORMAT[];
+	static inline const char FILE_NAME[] = "mon.txt";
+	static inline const char DMX_MAX_CHANNELS[] = "dmx_max_channels";
+	static inline const char FORMAT[] = "format";
 };
 
 #endif /* DMXMONITORPARAMSCONST_H_ */

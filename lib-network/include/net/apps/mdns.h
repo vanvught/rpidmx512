@@ -28,12 +28,11 @@
 
 #include <cstdint>
 
-#include "network.h"
-#include "net/protocol/dns.h"
-
 #include "../config/apps_config.h"
 
 namespace mdns {
+static constexpr uint32_t MDNS_RESPONSE_TTL = 3600;		///< (in seconds)
+
 enum class Services {
 	CONFIG, TFTP, HTTP, RDMNET_LLRP, NTP, MIDI, OSC, DDP, PP, LAST_NOT_USED
 };
@@ -47,54 +46,17 @@ struct ServiceRecord {
 };
 }  // namespace mdns
 
-class MDNS {
-public:
-	MDNS();
-	~MDNS();
+void mdns_init();
+void mdns_start();
+void mdns_stop();
 
-	bool ServiceRecordAdd(const char *pName, const mdns::Services service, const char *pTextContent = nullptr, const uint16_t nPort = 0);
-	bool ServiceRecordDelete(const mdns::Services service);
+bool mdns_service_record_add(const char *pName, const mdns::Services service, const char *pTextContent = nullptr, const uint16_t nPort = 0);
+bool mdns_service_record_delete(const mdns::Services service);
 
-	void Print();
+void mdns_print();
 
-	void SendAnnouncement(const uint32_t nTTL);
+void mdns_send_announcement(const uint32_t nTTL);
 
-	void Run() {
-		s_nBytesReceived = Network::Get()->RecvFrom(s_nHandle, const_cast<const void **>(reinterpret_cast<void **>(&s_pReceiveBuffer)), &s_nRemoteIp, &s_nRemotePort);
-
-		if (__builtin_expect((s_nBytesReceived < sizeof(struct net::dns::Header)), 1)) {
-			return;
-		}
-
-		const auto *const pHeader = reinterpret_cast<net::dns::Header *>(s_pReceiveBuffer);
-		const auto nFlag1 = pHeader->nFlag1;
-
-		if ((nFlag1 >> 3) & 0xF) {
-			return;
-		}
-
-		HandleQuestions(static_cast<uint32_t>(__builtin_bswap16(pHeader->nQueryCount)));
-	}
-
-	static MDNS *Get() {
-		return s_pThis;
-	}
-
-private:
-	void Parse();
-	void HandleQuestions(const uint32_t nQuestions);
-	void SendAnswerLocalIpAddress(const uint16_t nTransActionID, const uint32_t nTTL);
-	void SendMessage(mdns::ServiceRecord const& serviceRecord, const uint16_t nTransActionID, const uint32_t nTTL);
-	void SendTo(const uint32_t nLength);
-
-private:
-	static int32_t s_nHandle;
-	static uint32_t s_nRemoteIp;
-	static uint32_t s_nBytesReceived;
-	static uint8_t *s_pReceiveBuffer;
-	static uint16_t s_nRemotePort;
-
-	static MDNS *s_pThis;
-};
+void mdns_run();
 
 #endif /* NET_APPS_MDNS_H_ */

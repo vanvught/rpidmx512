@@ -2,7 +2,7 @@
  * @file rgbpanelparamsconst.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,12 +27,11 @@
 #define RGBPANELPARAMSCONST_H_
 
 struct RgbPanelParamsConst {
-	static const char FILE_NAME[];
-
-	static const char COLS[];
-	static const char ROWS[];
-	static const char CHAIN[];
-	static const char TYPE[];
+	static inline const char FILE_NAME[] = "rgbpanel.txt";
+	static inline const char COLS[] = "cols";
+	static inline const char ROWS[] = "rows";
+	static inline const char CHAIN[] = "chain";
+	static inline const char TYPE[] = "type";
 };
 
 #endif /* RGBPANELPARAMSCONST_H_ */

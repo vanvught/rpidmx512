@@ -87,7 +87,7 @@ public:
 	}
 
 	void Run() {
-		m_E131Controller.Run();
+		// Nothing todo here
 	}
 
 	bool IsSyncDisabled() {

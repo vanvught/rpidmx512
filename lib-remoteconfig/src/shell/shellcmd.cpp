@@ -45,8 +45,8 @@
 // Firmware specific BEGIN
 #if defined (LTC_READER)
 # include "ltc.h"
-# include "ltcgenerator.h"
-# include "systimereader.h"
+# include "arm/ltcgenerator.h"
+# include "arm/systimereader.h"
 #endif
 // Firmware specific BEGIN
 
@@ -423,7 +423,7 @@ void Shell::CmdHwClock() {
 
 #if defined (DEBUG_I2C)
 void Shell::CmdI2cDetect() {
-	I2cDetect i2cdetect;
+	i2c_detect();
 }
 #endif
 

@@ -44,6 +44,8 @@
 
 #include "linux/hal_api.h"
 
+#include "superloop/softwaretimers.h"
+
 namespace hardware {
 enum class LedStatus {
 	OFF, ON, HEARTBEAT, FLASH
@@ -118,71 +120,8 @@ public:
 		return m_Mode;
 	}
 
-	struct Timer {
-	    uint32_t nExpireTime;
-	    uint32_t nIntervalMillis;
-	    int32_t nId;
-	    hal::TimerCallback callback;
-	};
-
-	int32_t SoftwareTimerAdd(const uint32_t nIntervalMillis, const hal::TimerCallback callback) {
-	    if (m_nTimersCount >= hal::SOFTWARE_TIMERS_MAX) {
-#ifdef NDEBUG
-            fprintf(stderr, "SoftwareTimerAdd\n");
-#endif
-	        return -1;
-	    }
-
-	    const auto nCurrentTime = Hardware::Millis();
-
-	    Timer newTimer = {
-	        .nExpireTime = nCurrentTime + nIntervalMillis,
-	        .nIntervalMillis = nIntervalMillis,
-			.nId = m_nNextId++,
-	        .callback = callback,
-	    };
-
-	    m_Timers[m_nTimersCount++] = newTimer;
-
-	    return newTimer.nId;
-	}
-
-    bool SoftwareTimerDelete(int32_t& nId) {
-        for (uint32_t i = 0; i < m_nTimersCount; ++i) {
-            if (m_Timers[i].nId == nId) {
-                for (uint32_t j = i; j < m_nTimersCount - 1; ++j) {
-                    m_Timers[j] = m_Timers[j + 1];
-                }
-                --m_nTimersCount;
-                nId = -1;
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    bool SoftwareTimerChange(const int32_t nId, const uint32_t nIntervalMillis) {
-        for (uint32_t i = 0; i < m_nTimersCount; ++i) {
-            if (m_Timers[i].nId == nId) {
-            	m_Timers[i].nExpireTime = Hardware::Millis() + nIntervalMillis;
-            	m_Timers[i].nIntervalMillis = nIntervalMillis;
-            	return true;
-            }
-        }
-
-        return false;
-    }
-
 	void Run() {
-	    const auto nCurrentTime = Hardware::Get()->Millis();
-
-	    for (uint32_t i = 0; i < m_nTimersCount; i++) {
-	        if (m_Timers[i].nExpireTime <= nCurrentTime) {
-	        	m_Timers[i].callback();
-	            m_Timers[i].nExpireTime = nCurrentTime + m_Timers[i].nIntervalMillis;
-	        }
-	    }
+		SoftwareTimerRun();
 	}
 
 	 static Hardware *Get() {
@@ -229,10 +168,6 @@ private:
 
 	hardware::ledblink::Mode m_Mode { hardware::ledblink::Mode::UNKNOWN };
 	bool m_doLock { false };
-
-	Timer m_Timers[hal::SOFTWARE_TIMERS_MAX];
-	uint32_t m_nTimersCount { 0 };
-	int32_t m_nNextId { 0 };
 
 	static Hardware *s_pThis;
 };

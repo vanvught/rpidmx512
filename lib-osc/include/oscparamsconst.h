@@ -2,7 +2,7 @@
  * @file oscconst.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,8 +27,8 @@
 #define OSCPARAMSCONST_H_
 
 struct OscParamsConst {
-	static const char INCOMING_PORT[];
-	static const char OUTGOING_PORT[];
+	static inline const char INCOMING_PORT[] = "incoming_port";
+	static inline const char OUTGOING_PORT[] = "outgoing_port";
 };
 
 #endif /* OSCPARAMSCONST_H_ */

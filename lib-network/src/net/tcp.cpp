@@ -41,6 +41,7 @@
 #pragma GCC push_options
 #pragma GCC optimize ("O2")
 #pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#pragma GCC optimize ("-fprefetch-loop-arrays")
 
 #include <cstdint>
 #include <cstring>
@@ -100,7 +101,7 @@ struct tcb {
 
 	struct {
 		uint8_t *data;
-		uint16_t size;
+		uint32_t size;
 	} TX;
 
 	/* Receive Sequence Variables */
@@ -449,7 +450,7 @@ static void send_package(const struct tcb *pTcb, const struct SendInfo &sendInfo
 	DEBUG_PRINTF("SEQ=%u, ACK=%u, tcplen=%u, data_offset=%u, p_tcb->TX.size=%u", s_tcp.tcp.seqnum, s_tcp.tcp.acknum, tcplen, nDataOffset, pTcb->TX.size);
 
 	if (pTcb->TX.data != nullptr) {
-		for (auto i = 0; i < pTcb->TX.size; i++) {
+		for (uint32_t i = 0; i < pTcb->TX.size; i++) {
 			*pData++ = pTcb->TX.data[i];
 		}
 	}
@@ -462,7 +463,7 @@ static void send_package(const struct tcb *pTcb, const struct SendInfo &sendInfo
 
 	s_tcp.tcp.checksum = _chksum(&s_tcp, pTcb, static_cast<uint16_t>(tcplen));
 
-	emac_eth_send(reinterpret_cast<void *>(&s_tcp), static_cast<int>(tcplen + sizeof(struct ip4_header) + sizeof(struct ether_header)));
+	emac_eth_send(reinterpret_cast<void *>(&s_tcp), tcplen + sizeof(struct ip4_header) + sizeof(struct ether_header));
 }
 
 static void send_reset(struct t_tcp *pTcp, const struct tcb *pTcb) {
@@ -1132,10 +1133,10 @@ __attribute__((hot)) void tcp_handle(struct t_tcp *pTcp) {
 
 // --> Public API's
 
-int tcp_begin(const uint16_t nLocalPort) {
+int32_t tcp_begin(const uint16_t nLocalPort) {
 	DEBUG_PRINTF("nLocalPort=%u", nLocalPort);
 
-	for (int i = 0; i < TCP_MAX_PORTS_ALLOWED; i++) {
+	for (int32_t i = 0; i < TCP_MAX_PORTS_ALLOWED; i++) {
 		if (s_Port[i].nLocalPort == nLocalPort) {
 			return i;
 		}
@@ -1163,7 +1164,11 @@ int tcp_begin(const uint16_t nLocalPort) {
 
 }
 
-uint16_t tcp_read(const int32_t nHandleListen, const uint8_t **pData, uint32_t &nHandleConnection) {
+int32_t tcp_end([[maybe_unused]] const int32_t nHandle) {
+	return 0;
+}
+
+uint32_t tcp_read(const int32_t nHandleListen, const uint8_t **pData, uint32_t &nHandleConnection) {
 	assert(nHandleListen >= 0);
 	assert(nHandleListen < TCP_MAX_PORTS_ALLOWED);
 

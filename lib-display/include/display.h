@@ -32,7 +32,7 @@
 
 namespace display {
 struct Defaults {
-	static constexpr uint32_t SEEP_TIMEOUT = 5;
+	static constexpr uint32_t SLEEP_TIMEOUT = 5;
 };
 }  // namespace display
 

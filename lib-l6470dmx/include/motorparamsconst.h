@@ -2,7 +2,7 @@
  * @file motorparamsconst.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,11 +27,11 @@
 #define MOTORPARAMSCONST_H_
 
 struct MotorParamsConst {
-	static const char STEP_ANGEL[];
-	static const char VOLTAGE[];
-	static const char CURRENT[];
-	static const char RESISTANCE[];
-	static const char INDUCTANCE[];
+	static inline const char STEP_ANGEL[] = "motor_step_angel";
+	static inline const char VOLTAGE[] = "motor_voltage";
+	static inline const char CURRENT[] = "motor_current";
+	static inline const char RESISTANCE[] = "motor_resistance";
+	static inline const char INDUCTANCE[] = "motor_inductance";
 };
 
 #endif /* MOTORPARAMSCONST_H_ */

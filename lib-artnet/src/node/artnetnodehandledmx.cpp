@@ -26,10 +26,11 @@
  * THE SOFTWARE.
  */
 
-#if !defined(__clang__)
+#ifdef __GNUC__
 # pragma GCC push_options
 # pragma GCC optimize ("O2")
 # pragma GCC optimize ("no-tree-loop-distribute-patterns")
+# pragma GCC optimize ("-fprefetch-loop-arrays")
 #endif
 
 #include <cstdint>

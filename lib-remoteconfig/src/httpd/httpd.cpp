@@ -51,8 +51,7 @@ HttpDaemon::HttpDaemon() {
 		assert(pHandleRequest[nIndex] != nullptr);
 	}
 
-	assert(MDNS::Get() != nullptr);
-	MDNS::Get()->ServiceRecordAdd(nullptr, mdns::Services::HTTP);
+	mdns_service_record_add(nullptr, mdns::Services::HTTP);
 
 	DEBUG_EXIT
 }
@@ -60,7 +59,7 @@ HttpDaemon::HttpDaemon() {
 HttpDaemon::~HttpDaemon() {
 	DEBUG_ENTRY
 
-	MDNS::Get()->ServiceRecordDelete(mdns::Services::HTTP);
+	mdns_service_record_delete(mdns::Services::HTTP);
 
 	for (uint32_t nIndex = 0; nIndex < TCP_MAX_TCBS_ALLOWED; nIndex++) {
 		if (pHandleRequest[nIndex] != nullptr) {

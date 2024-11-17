@@ -1,7 +1,7 @@
 /**
  * @file ltcparamsconst.h
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,51 +26,51 @@
 #define LTCPARAMSCONST_H_
 
 struct LtcParamsConst {
-	static const char FILE_NAME[];
+	static inline const char FILE_NAME[] = "ltc.txt";
 
-	static const char SOURCE[];
+	static inline const char SOURCE[] = "source";
 	// System time
-	static const char AUTO_START[];
-	static const char GPS_START[];
+	static inline const char AUTO_START[] = "auto_start";
+	static inline const char GPS_START[] = "gps_start";
 	// Output options
-	static const char DISABLE_DISPLAY[];
-	static const char DISABLE_MAX7219[];
-	static const char DISABLE_MIDI[];
-	static const char DISABLE_ARTNET[];
-	static const char DISABLE_LTC[];
-	static const char DISABLE_ETC[];
-	static const char DISABLE_RTPMIDI[];
-	static const char SHOW_SYSTIME[];
-	static const char DISABLE_TIMESYNC[];
+	static inline const char DISABLE_DISPLAY[] = "disable_display";
+	static inline const char DISABLE_MAX7219[] = "disable_max7219";
+	static inline const char DISABLE_MIDI[] = "disable_midi";
+	static inline const char DISABLE_ARTNET[] = "disable_artnet";
+	static inline const char DISABLE_LTC[] = "disable_ltc";
+	static inline const char DISABLE_RTPMIDI[] = "disable_rtp-midi";
+	static inline const char DISABLE_ETC[] = "disable_etc";
+	static inline const char SHOW_SYSTIME[] = "show_systime";
+	static inline const char DISABLE_TIMESYNC[] = "disable_timesync";
 	// NTP
-	static const char YEAR[];
-	static const char MONTH[];
-	static const char DAY[];
-	static const char NTP_ENABLE[];
+	static inline const char YEAR[] = "year";
+	static inline const char MONTH[] = "month";
+	static inline const char DAY[] = "day";
+	static inline const char NTP_ENABLE[] = "ntp_enable";
 	// LTC
-	static const char VOLUME[];
+	static inline const char VOLUME[] = "volume";
 	// Art-Net
-	static const char TIMECODE_IP[];
+	static inline const char TIMECODE_IP[] = "timecode_ip";
 	// Generator
-	static const char FPS[];
-	static const char START_FRAME[];
-	static const char START_SECOND[];
-	static const char START_MINUTE[];
-	static const char START_HOUR[];
-	static const char STOP_FRAME[];
-	static const char STOP_SECOND[];
-	static const char STOP_MINUTE[];
-	static const char STOP_HOUR[];
-	static const char ALT_FUNCTION[];
-	static const char SKIP_SECONDS[];
-	static const char SKIP_FREE[];
+	static inline const char FPS[] = "fps";
+	static inline const char START_FRAME[] = "start_frame";
+	static inline const char START_SECOND[] = "start_second";
+	static inline const char START_MINUTE[] = "start_minute";
+	static inline const char START_HOUR[] = "start_hour";
+	static inline const char STOP_FRAME[] = "stop_frame";
+	static inline const char STOP_SECOND[] = "stop_second";
+	static inline const char STOP_MINUTE[] = "stop_minute";
+	static inline const char STOP_HOUR[] = "stop_hour";
+	static inline const char ALT_FUNCTION[] = "alt_function";
+	static inline const char SKIP_SECONDS[] = "skip_seconds";
+	static inline const char SKIP_FREE[] = "skip_free";
 	// OSC
-	static const char OSC_ENABLE[];
-	static const char OSC_PORT[];
+	static inline const char OSC_ENABLE[] = "osc_enable";
+	static inline const char OSC_PORT[] = "osc_port";
 	// WS28xx Display
-	static const char WS28XX_ENABLE[];
+	static inline const char WS28XX_ENABLE[] = "ws28xx_enable";
 	// RGB led panel
-	static const char RGBPANEL_ENABLE[];
+	static inline const char RGBPANEL_ENABLE[] = "rgbpanel_enable";
 };
 
 #endif /* LTCPARAMSCONST_H_ */

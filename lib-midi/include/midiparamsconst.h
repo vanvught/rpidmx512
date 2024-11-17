@@ -1,7 +1,7 @@
 /**
  * @file midiparamsconst.h
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,10 +26,9 @@
 #define MIDIPARAMSCONST_H_
 
 struct MidiParamsConst {
-	static const char FILE_NAME[];
-
-	static const char BAUDRATE[];
-	static const char ACTIVE_SENSE[];
+	static inline const char FILE_NAME[] = "midi.txt";
+	static inline const char BAUDRATE[] = "baudrate";
+	static inline const char ACTIVE_SENSE[] = "active_sense";
 };
 
 #endif /* INCLUDE_MIDIPARAMSCONST_H_ */

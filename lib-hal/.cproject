@@ -88,7 +88,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="device|posix|rtc|ff14b|debug|src|console" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="superloop|device|posix|rtc|ff14b|debug|src|console" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 						<entry excluding="h3|uart0|i2c|null" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="console"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="console/h3"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="console/i2c"/>
@@ -98,7 +98,6 @@
 						<entry excluding="h3|gd32" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="debug/emac"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="debug/emac/gd32"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="debug/emac/h3"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="debug/h3"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="debug/i2c"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="debug/stack"/>
 						<entry excluding="source" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="ff14b"/>
@@ -106,12 +105,13 @@
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="posix"/>
 						<entry excluding="i2c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="rtc"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="rtc/i2c"/>
-						<entry excluding="console/null|ff14b/source|rpi|h3/uart0|linux/minimum|uart0|linux/i2c|h3/fb|h3/sdcard" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
+						<entry excluding="superloop|console/null|ff14b/source|rpi|h3/uart0|linux/minimum|uart0|linux/i2c|h3/fb|h3/sdcard" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/h3/sdcard"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/linux/i2c"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/linux/minimum"/>
 						<entry excluding="sdcard" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/rpi"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/rpi/sdcard"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="superloop"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -199,7 +199,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="src/uart0|device|src/h3/uart0|device/linux|src/linux|rtc|ff14b|debug|console|src/console/null|src/h3/fb|src/ff14b/source" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="superloop|src/superloop|src/uart0|device|src/h3/uart0|device/linux|src/linux|rtc|ff14b|debug|console|src/console/null|src/h3/fb|src/ff14b/source" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 						<entry excluding="h3|uart0|i2c|null" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="console"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="console/h3"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="console/i2c"/>
@@ -209,7 +209,6 @@
 						<entry excluding="h3|gd32" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="debug/emac"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="debug/emac/gd32"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="debug/emac/h3"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="debug/h3"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="debug/i2c"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="debug/stack"/>
 						<entry excluding="source" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="ff14b"/>
@@ -219,6 +218,7 @@
 						<entry excluding="minimum|i2c" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/linux"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/linux/i2c"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/linux/minimum"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="superloop"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -335,6 +335,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-arm/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-h3/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-h3/CMSIS/Core_A/Include}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.1929503244" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
 							</tool>
@@ -352,6 +353,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-arm/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-h3/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-h3/CMSIS/Core_A/Include}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1490982703" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input"/>
 							</tool>
@@ -368,6 +370,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-arm/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-h3/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-h3/CMSIS/Core_A/Include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/include}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input.738657610" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input"/>
@@ -397,7 +400,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="ff14b|debug|debug/emac|debug/h3|debug/i2c|debug/stack|console|console/h3|console/i2c|console/null|console/uart0|ff14b/source|posix|rtc|rtc/gd32|rtc/i2c|src|src/h3|src/h3/sdcard" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="superloop|ff14b|debug|debug/emac|debug/h3|debug/i2c|debug/stack|console|console/h3|console/i2c|console/null|console/uart0|ff14b/source|posix|rtc|rtc/gd32|rtc/i2c|src|src/h3|src/h3/sdcard" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 						<entry excluding="h3|i2c|null|uart0" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="console"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="console/h3"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="console/i2c"/>
@@ -405,7 +408,6 @@
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="console/uart0"/>
 						<entry excluding="emac|h3|i2c|stack" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="debug"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="debug/emac"/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="debug/h3"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="debug/i2c"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="debug/stack"/>
 						<entry excluding="source" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="ff14b"/>
@@ -414,9 +416,10 @@
 						<entry excluding="gd32|i2c" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="rtc"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="rtc/gd32"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="rtc/i2c"/>
-						<entry excluding="h3|h3/sdcard" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
+						<entry excluding="superloop|h3|h3/sdcard" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
 						<entry excluding="sdcard" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/h3"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/h3/sdcard"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="superloop"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

@@ -71,7 +71,7 @@ int main(int argc, char **argv) {
 	Display display;
 	ConfigStore configStore;
 	Network nw(argc, argv);
-	MDNS mDns;
+//	MDNS mDns;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
 	hw.Print();
@@ -116,7 +116,7 @@ int main(int argc, char **argv) {
 
 	llrpOnlyDevice.Print();
 
-	mDns.ServiceRecordAdd(nullptr, mdns::Services::RDMNET_LLRP, "node=RDMNet LLRP Only");
+	mdns_service_record_add(nullptr, mdns::Services::RDMNET_LLRP, "node=RDMNet LLRP Only");
 
 	ddpDisplay.Print();
 
@@ -129,12 +129,12 @@ int main(int argc, char **argv) {
 	while (configStore.Flash())
 		;
 
-	mDns.Print();
+	mdns_print(); //	mDns.Print();
 	ddpDisplay.Start();
 
 	while (keepRunning) {
 		ddpDisplay.Run();
-		mDns.Run();
+		mdns_run(); //	mDns.Run();
 		remoteConfig.Run();
 		llrpOnlyDevice.Run();
 		configStore.Flash();

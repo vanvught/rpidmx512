@@ -23,12 +23,15 @@
  * THE SOFTWARE.
  */
 
+#pragma GCC push_options
+#pragma GCC optimize ("O2")
+#pragma GCC optimize ("no-tree-loop-distribute-patterns")
+
 #include <cstdint>
 #include <cstdio>
 
 #include "hardware.h"
 #include "network.h"
-#include "networkconst.h"
 
 #include "net/apps/mdns.h"
 
@@ -62,8 +65,6 @@
 #include "flashcodeinstall.h"
 #include "configstore.h"
 
-
-
 #include "firmwareversion.h"
 #include "software_version.h"
 
@@ -76,16 +77,13 @@ int main() {
 	Hardware hw;
 	DisplayUdf display;
 	ConfigStore configStore;
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, CONSOLE_YELLOW);
 	Network nw;
-	MDNS mDns;
-	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, CONSOLE_GREEN);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	FlashCodeInstall spiFlashInstall;
 
 	fw.Print("DDP Pixel controller 8x 4U");
 	
-	mDns.ServiceRecordAdd(nullptr, mdns::Services::DDP, "type=display");
+	mdns_service_record_add(nullptr, mdns::Services::DDP, "type=display");
 
 	PixelDmxConfiguration pixelDmxConfiguration;
 
@@ -166,7 +164,7 @@ int main() {
 	while (configStore.Flash())
 		;
 
-	mDns.Print();
+	mdns_print(); //	mDns.Print();
 
 	display.TextStatus("DDP Display Start", CONSOLE_YELLOW);
 
@@ -183,10 +181,6 @@ int main() {
 		remoteConfig.Run();
 		configStore.Flash();
 		pixelTestPattern.Run();
-		mDns.Run();
-#if defined (NODE_RDMNET_LLRP_ONLY)
-		llrpOnlyDevice.Run();
-#endif
 		display.Run();
 		hw.Run();
 	}

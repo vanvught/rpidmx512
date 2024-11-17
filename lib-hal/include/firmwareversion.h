@@ -2,7 +2,7 @@
  * @file firmwareversion.h
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -48,7 +48,7 @@ struct Info {
 
 class FirmwareVersion {
 public:
-	FirmwareVersion(const char *pVersion, const char *pDate, const char *pTime);
+	FirmwareVersion(const char *pSoftwareVersion, const char *pDate, const char *pTime, const uint32_t nSoftwareVersionId = 0);
 
 	void Print(const char *pTitle = nullptr) {
 		puts(s_Print);
@@ -70,14 +70,19 @@ public:
 		return s_FirmwareVersion.SoftwareVersion;
 	}
 
+	uint32_t GetVersionId() const {
+		return s_nSoftwareVersionId;
+	}
+
 	static FirmwareVersion *Get() {
 		return s_pThis;
 	}
 
 private:
-	static firmwareversion::Info s_FirmwareVersion;
-	static char s_Print[64];
-	static FirmwareVersion *s_pThis;
+	const uint32_t s_nSoftwareVersionId;
+	static inline firmwareversion::Info s_FirmwareVersion;
+	static inline char s_Print[64];
+	static inline FirmwareVersion *s_pThis;
 };
 
 #endif /* FIRMWAREVERSION_H_ */

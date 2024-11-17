@@ -23,6 +23,10 @@
  * THE SOFTWARE.
  */
 
+#if defined (DEBUG_DMX)
+# undef NDEBUG
+#endif
+
 #if __GNUC__ > 8
 # pragma GCC target ("general-regs-only")
 #endif
@@ -153,9 +157,6 @@ static volatile uint32_t s_nRdmDataWriteIndex[dmx::config::max::PORTS];
 static volatile uint32_t s_nRdmDataReadIndex[dmx::config::max::PORTS];
 
 static volatile PortState sv_PortState[dmx::config::max::PORTS] ALIGNED;
-
-static char CONSOLE_ERROR[] ALIGNED = "DMXDATA %\n";
-static constexpr auto CONSOLE_ERROR_LENGTH = (sizeof(CONSOLE_ERROR) / sizeof(CONSOLE_ERROR[0]));
 
 static void irq_timer0_dmx_multi_sender([[maybe_unused]]uint32_t clo) {
 	logic_analyzer::ch0_set();
@@ -413,21 +414,21 @@ static void __attribute__((interrupt("FIQ"))) fiq_dmx_multi(void) {
 	if (nIIR & UART_IIR_IID_RD) {
 		fiq_in_handler(0, reinterpret_cast<H3_UART_TypeDef *>(H3_UART1_BASE), nIIR);
 		H3_GIC_CPUIF->EOI = H3_UART1_IRQn;
-		gic_unpend(H3_UART1_IRQn);
+		gic_unpend<H3_UART1_IRQn>();
 	}
 
 	nIIR = H3_UART2->O08.IIR;
 	if (nIIR & UART_IIR_IID_RD) {
 		fiq_in_handler(1, reinterpret_cast<H3_UART_TypeDef *>(H3_UART2_BASE), nIIR);
 		H3_GIC_CPUIF->EOI = H3_UART2_IRQn;
-		gic_unpend(H3_UART2_IRQn);
+		gic_unpend<H3_UART2_IRQn>();
 	}
 #if defined (ORANGE_PI_ONE)
 	nIIR = H3_UART3->O08.IIR;
 	if (nIIR & UART_IIR_IID_RD) {
 		fiq_in_handler(2, reinterpret_cast<H3_UART_TypeDef *>(H3_UART3_BASE), nIIR);
 		H3_GIC_CPUIF->EOI = H3_UART3_IRQn;
-		gic_unpend(H3_UART3_IRQn);
+		gic_unpend<H3_UART3_IRQn>();
 	}
 
 # ifndef DO_NOT_USE_UART0
@@ -435,7 +436,7 @@ static void __attribute__((interrupt("FIQ"))) fiq_dmx_multi(void) {
 	if (nIIR & UART_IIR_IID_RD) {
 		fiq_in_handler(3, reinterpret_cast<H3_UART_TypeDef *>(H3_UART0_BASE), nIIR);
 		H3_GIC_CPUIF->EOI = H3_UART0_IRQn;
-		gic_unpend(H3_UART0_IRQn);
+		gic_unpend<H3_UART0_IRQn>();
 	}
 # endif
 #endif
@@ -656,7 +657,7 @@ Dmx::Dmx() {
 # endif
 #endif
 
-	irq_timer_init();
+	irq_handler_init();
 	irq_timer_set(IRQ_TIMER_0, irq_timer0_dmx_multi_sender);
 	irq_timer_set(IRQ_TIMER_1, irq_timer1_dmx_receive);
 
@@ -827,19 +828,20 @@ void Dmx::SetDmxMabTime(uint32_t nMabTime) {
 
 void Dmx::SetDmxPeriodTime(uint32_t nPeriod) {
 	DEBUG_ENTRY
-	DEBUG_PRINTF("nPeriod=%u", nPeriod);
 
 	m_nDmxTransmitPeriodRequested = nPeriod;
 
 	auto nLengthMax = m_nDmxTransmissionLength[0];
 
-	DEBUG_PRINTF("nLengthMax=%u", nLengthMax);
+	DEBUG_PRINTF("nPeriod=%u, nLengthMax=%u", nPeriod, nLengthMax);
 
 	for (uint32_t i = 1; i < config::max::PORTS; i++) {
 		if (m_nDmxTransmissionLength[i] > nLengthMax) {
 			nLengthMax = m_nDmxTransmissionLength[i];
 		}
 	}
+
+	DEBUG_PRINTF("nLengthMax=%u", nLengthMax);
 
 	const auto nPackageLengthMicroSeconds = m_nDmxTransmitBreakTime + m_nDmxTransmitMabTime + (nLengthMax * 44) + 44;
 
