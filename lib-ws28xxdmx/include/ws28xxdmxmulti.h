@@ -100,11 +100,16 @@ public:
 		logic_analyzer::ch2_set();
 
 		SetData(nPortIndex, lightset::Data::Backup(nPortIndex), lightset::Data::GetLength(nPortIndex));
+		m_bNeedSync = true;
 
 		logic_analyzer::ch2_clear();
 	}
 
 	void Sync() override {
+		if (!m_bNeedSync) {
+			return;
+		}
+
 		logic_analyzer::ch1_set();
 		logic_analyzer::ch3_set();
 
@@ -115,6 +120,8 @@ public:
 		logic_analyzer::ch3_clear();
 
 		m_pWS28xxMulti->Update();
+
+		m_bNeedSync = false;
 
 		logic_analyzer::ch1_clear();
 	}
@@ -154,6 +161,7 @@ private:
 
 	uint32_t m_bIsStarted { 0 };
 	bool m_bBlackout { false };
+	bool m_bNeedSync { false };
 };
 
 #pragma GCC pop_options
