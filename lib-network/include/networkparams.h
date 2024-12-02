@@ -2,7 +2,7 @@
  * @file networkparams.h
  *
  */
-/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -74,18 +74,16 @@ struct Mask {
 #endif
 };
 
+namespace store {
+inline void update(const struct networkparams::Params *pParams) {
+	ConfigStore::Get()->Update(configstore::Store::NETWORK, pParams, sizeof(struct networkparams::Params));
+}
+
+inline void copy(struct networkparams::Params *pParams) {
+	ConfigStore::Get()->Copy(configstore::Store::NETWORK, pParams, sizeof(struct networkparams::Params));
+}
+}  // namespace store
 }  // namespace networkparams
-
-class NetworkParamsStore {
-public:
-	static void Update(const struct networkparams::Params *pParams) {
-		ConfigStore::Get()->Update(configstore::Store::NETWORK, pParams, sizeof(struct networkparams::Params));
-	}
-
-	static void Copy(struct networkparams::Params *pParams) {
-		ConfigStore::Get()->Copy(configstore::Store::NETWORK, pParams, sizeof(struct networkparams::Params));
-	}
-};
 
 class NetworkParams {
 public:

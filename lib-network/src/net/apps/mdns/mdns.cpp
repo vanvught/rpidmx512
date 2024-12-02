@@ -93,7 +93,7 @@ struct Service {
 	const uint16_t nPortDefault;
 };
 
-static Service s_Services[] {
+static constexpr Service s_Services[] {
 		{DOMAIN_CONFIG		, sizeof(DOMAIN_CONFIG)		, Protocols::UDP, 0x2905 },
 		{DOMAIN_TFTP		, sizeof(DOMAIN_TFTP)		, Protocols::UDP, 69 },
 		{DOMAIN_HTTP		, sizeof(DOMAIN_HTTP)		, Protocols::TCP, 80 },

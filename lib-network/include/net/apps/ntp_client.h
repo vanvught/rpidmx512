@@ -1,8 +1,8 @@
 /**
- * @file arp_private.h
+ * @file ntp_client.h
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,29 +23,31 @@
  * THE SOFTWARE.
  */
 
-#ifndef ARP_PRIVATE_H_
-#define ARP_PRIVATE_H_
+#ifndef NET_APPS_NTP_CLIENT_H_
+#define NET_APPS_NTP_CLIENT_H_
 
-#include "netif.h"
-#include "net/protocol/ip4.h"
-#include "net/protocol/arp.h"
-#include "net/protocol/udp.h"
+#include <cstdint>
 
-namespace net {
-namespace arp {
-enum class Flags {
-	FLAG_INSERT, FLAG_UPDATE
-};
-}  // namespace arp
+#include "net/protocol/ntp.h"
 
-void arp_init();
-void arp_handle(struct t_arp *);
-void arp_send(struct t_udp *, const uint32_t, const uint32_t);
-#if defined CONFIG_NET_ENABLE_PTP
-void arp_send_timestamp(struct t_udp *, const uint32_t, const uint32_t);
+#if !defined(CONFIG_NTP_CLIENT_POLL_POWER)
+# define CONFIG_NTP_CLIENT_POLL_POWER 10
 #endif
-void arp_acd_probe(const ip4_addr_t ipaddr);
-void arp_acd_send_announcement(const ip4_addr_t ipaddr);
-}  // namespace net
 
-#endif /* ARP_PRIVATE_H_ */
+namespace ntpclient {
+static constexpr uint32_t TIMEOUT_SECONDS = 3;
+static constexpr uint32_t TIMEOUT_MILLIS = TIMEOUT_SECONDS * 1000;
+static constexpr uint8_t POLL_POWER = CONFIG_NTP_CLIENT_POLL_POWER;
+static constexpr uint32_t POLL_SECONDS = (1U << POLL_POWER);
+
+void display_status(const ::ntp::Status status);
+}  // namespace ntpclient
+
+void ntp_client_init();
+void ntp_client_start();
+void ntp_client_stop(const bool doDisable = false);
+
+void ntp_client_set_server_ip(const uint32_t nServerIp);
+uint32_t ntp_client_get_server_ip();
+
+#endif /* NET_APPS_NTP_CLIENT_H_ */

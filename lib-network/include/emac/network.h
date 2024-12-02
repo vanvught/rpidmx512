@@ -36,7 +36,7 @@
 
 namespace net {
 void dhcp_run();
-#if defined (CONFIG_ENET_ENABLE_PTP)
+#if defined (CONFIG_NET_ENABLE_PTP)
 void ptp_run();
 #endif
 }  // namespace net
@@ -253,7 +253,7 @@ public:
 
 	void Run() {
 		net::net_handle();
-#if defined (CONFIG_ENET_ENABLE_PTP)
+#if defined (CONFIG_NET_ENABLE_PTP)
 		net::ptp_run();
 #endif
 #if defined (ENET_LINK_CHECK_USE_PIN_POLL)

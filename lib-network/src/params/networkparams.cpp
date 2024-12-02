@@ -42,13 +42,11 @@
 
 #include "debug.h"
 
-using namespace networkparams;
-
 NetworkParams::NetworkParams() {
 	DEBUG_ENTRY
 
 	memset(&m_Params, 0, sizeof(struct networkparams::Params));
-	m_Params.bIsDhcpUsed = defaults::IS_DHCP_USED;
+	m_Params.bIsDhcpUsed = networkparams::defaults::IS_DHCP_USED;
 
 	DEBUG_EXIT
 }
@@ -61,10 +59,10 @@ void NetworkParams::Load() {
 	ReadConfigFile configfile(NetworkParams::staticCallbackFunction, this);
 
 	if (configfile.Read(NetworkParamsConst::FILE_NAME)) {
-		NetworkParamsStore::Update(&m_Params);
+		networkparams::store::update(&m_Params);
 	} else
 #endif
-		NetworkParamsStore::Copy(&m_Params);
+		networkparams::store::copy(&m_Params);
 
 #ifndef NDEBUG
 	Dump();
@@ -84,7 +82,7 @@ void NetworkParams::Load(const char *pBuffer, uint32_t nLength) {
 
 	config.Read(pBuffer, nLength);
 
-	NetworkParamsStore::Update(&m_Params);
+	networkparams::store::update(&m_Params);
 
 #ifndef NDEBUG
 	Dump();
@@ -196,10 +194,12 @@ void NetworkParams::Builder(const struct networkparams::Params *pParams, char *p
 	if (pParams != nullptr) {
 		memcpy(&m_Params, pParams, sizeof(struct networkparams::Params));
 	} else {
-		NetworkParamsStore::Copy(&m_Params);
+		networkparams::store::copy(&m_Params);
 	}
 
 	PropertiesBuilder builder(NetworkParamsConst::FILE_NAME, pBuffer, nLength);
+
+	// Fixed
 	builder.AddIpAddress("secondary_ip", Network::Get()->GetSecondaryIp(), false);
 
 	if (!isMaskSet(networkparams::Mask::IP_ADDRESS)) {

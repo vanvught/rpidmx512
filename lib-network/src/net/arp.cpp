@@ -84,7 +84,7 @@ enum class State {
 struct Packet {
 	uint8_t *p;
 	uint32_t nSize;
-#if defined CONFIG_ENET_ENABLE_PTP
+#if defined CONFIG_NET_ENABLE_PTP
 	bool isTimestamp;
 #endif
 };
@@ -204,11 +204,11 @@ static void arp_cache_update(const uint8_t *pMacAddress, const uint32_t nIp, con
 #if !defined (CHECKSUM_BY_HARDWARE)
 		udp->ip4.chksum = net_chksum(reinterpret_cast<void *>(&udp->ip4), sizeof(udp->ip4));
 #endif
-#if defined CONFIG_ENET_ENABLE_PTP
+#if defined CONFIG_NET_ENABLE_PTP
 		if (!record->packet.isTimestamp) {
 #endif
 			emac_eth_send(record->packet.p, record->packet.nSize);
-#if defined CONFIG_ENET_ENABLE_PTP
+#if defined CONFIG_NET_ENABLE_PTP
 		} else {
 			emac_eth_send_timestamp(record->packet.p, record->packet.nSize);
 		}
@@ -254,7 +254,7 @@ static void arp_query(const uint32_t nDestinationIp, struct t_udp *pPacket, cons
 
 		net::memcpy(recordFound->packet.p, pPacket, nSize);
 		recordFound->packet.nSize = nSize;
-#if defined CONFIG_ENET_ENABLE_PTP
+#if defined CONFIG_NET_ENABLE_PTP
 		recordFound->packet.isTimestamp = (S != net::arp::EthSend::IS_NORMAL);
 #endif
 	}
@@ -465,7 +465,7 @@ static void arp_send_implementation(struct t_udp *pPacket, const uint32_t nSize,
 				if constexpr (S == net::arp::EthSend::IS_NORMAL) {
 					emac_eth_send(reinterpret_cast<void *>(pPacket), nSize);
 				}
-#if defined CONFIG_ENET_ENABLE_PTP
+#if defined CONFIG_NET_ENABLE_PTP
 				else if constexpr (S == net::arp::EthSend::IS_TIMESTAMP) {
 					emac_eth_send_timestamp(reinterpret_cast<void *>(pPacket), nSize);
 				}
@@ -486,7 +486,7 @@ void arp_send(struct t_udp *pPacket, const uint32_t nSize, const uint32_t nRemot
 	arp_send_implementation<net::arp::EthSend::IS_NORMAL>(pPacket, nSize, nRemoteIp);
 }
 
-#if defined CONFIG_ENET_ENABLE_PTP
+#if defined CONFIG_NET_ENABLE_PTP
 void arp_send_timestamp(struct t_udp *pPacket, const uint32_t nSize, const uint32_t nRemoteIp) {
 	arp_send_implementation<net::arp::EthSend::IS_TIMESTAMP>(pPacket, nSize, nRemoteIp);
 }

@@ -47,7 +47,7 @@ T3 - remote transmit timestamp from the latest response (t3)
 T4 - local receive timestamp of the previous response (t4)
  */
 
-#if !defined (CONFIG_ENET_ENABLE_PTP)
+#if !defined (CONFIG_NET_ENABLE_PTP)
 # error
 #endif
 #if defined (ENABLE_NTP_CLIENT)

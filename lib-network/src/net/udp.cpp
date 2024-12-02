@@ -186,7 +186,7 @@ static void udp_send_implementation(int nIndex, const uint8_t *pData, uint32_t n
 			if constexpr (S == net::arp::EthSend::IS_NORMAL) {
 				net::arp_send(&s_send_packet, nSize + UDP_PACKET_HEADERS_SIZE, nRemoteIp);
 			}
-#if defined CONFIG_ENET_ENABLE_PTP
+#if defined CONFIG_NET_ENABLE_PTP
 			else if constexpr (S == net::arp::EthSend::IS_TIMESTAMP) {
 				net::arp_send_timestamp(&s_send_packet, nSize + UDP_PACKET_HEADERS_SIZE, nRemoteIp);
 			}
@@ -202,7 +202,7 @@ static void udp_send_implementation(int nIndex, const uint8_t *pData, uint32_t n
 	if constexpr (S == net::arp::EthSend::IS_NORMAL) {
 		emac_eth_send(reinterpret_cast<void *>(&s_send_packet), nSize + UDP_PACKET_HEADERS_SIZE);
 	}
-#if defined CONFIG_ENET_ENABLE_PTP
+#if defined CONFIG_NET_ENABLE_PTP
 	else if constexpr (S == net::arp::EthSend::IS_TIMESTAMP) {
 		emac_eth_send_timestamp(reinterpret_cast<void *>(&s_send_packet), nSize);
 	}
@@ -310,7 +310,7 @@ void udp_send(const int32_t nIndex, const uint8_t *pData, uint32_t nSize, uint32
 	udp_send_implementation<net::arp::EthSend::IS_NORMAL>(nIndex, pData, nSize, nRemoteIp, nRemotePort);
 }
 
-#if defined CONFIG_ENET_ENABLE_PTP
+#if defined CONFIG_NET_ENABLE_PTP
 void udp_send_timestamp(const int32_t nIndex, const uint8_t *pData, uint32_t nSize, uint32_t nRemoteIp, uint16_t nRemotePort) {
 	udp_send_implementation<net::arp::EthSend::IS_TIMESTAMP>(nIndex, pData, nSize, nRemoteIp, nRemotePort);
 }

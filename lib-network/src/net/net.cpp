@@ -57,7 +57,7 @@ namespace globals {
 uint32_t nBroadcastMask;
 uint32_t nOnNetworkMask;
 }  // namespace globals
-#if defined (CONFIG_ENET_ENABLE_PTP)
+#if defined (CONFIG_NET_ENABLE_PTP)
 void ptp_init();
 void ptp_handle(const uint8_t *, const uint32_t);
 #endif
@@ -117,7 +117,7 @@ void net_set_secondary_ip() {
 void __attribute__((cold)) net_init(const net::Link link, ip4_addr_t ipaddr, ip4_addr_t netmask, ip4_addr_t gw, bool &bUseDhcp) {
 	DEBUG_ENTRY
 	globals::netif_default.secondary_ip.addr = 2
-			+ ((static_cast<uint32_t>(globals::netif_default.hwaddr[3])) << 8)
+			+ ((static_cast<uint32_t>(static_cast<uint8_t>(globals::netif_default.hwaddr[3] + 0xFF + 0xFF))) << 8)
 			+ ((static_cast<uint32_t>(globals::netif_default.hwaddr[4])) << 16)
 			+ ((static_cast<uint32_t>(globals::netif_default.hwaddr[5])) << 24);
 
@@ -130,12 +130,6 @@ void __attribute__((cold)) net_init(const net::Link link, ip4_addr_t ipaddr, ip4
 		if (bUseDhcp) {
 			dhcp_start();
 		} else {
-//			if (ipaddr.addr == 0) {
-//				net_set_secondary_ip();
-//			} else {
-//				net::netif_set_addr(ipaddr, netmask, gw);
-//			}
-//			dhcp_inform();
 			if (ipaddr.addr != 0) {
 				net::netif_set_netmask(netmask);
 				net::netif_set_gw(gw);
@@ -146,7 +140,7 @@ void __attribute__((cold)) net_init(const net::Link link, ip4_addr_t ipaddr, ip4
 		net::netif_clear_flags(net::netif::NETIF_FLAG_LINK_UP);
 	}
 
-#if defined (CONFIG_ENET_ENABLE_PTP)
+#if defined (CONFIG_NET_ENABLE_PTP)
 	net::ptp_init();
 #endif
 
@@ -160,7 +154,7 @@ __attribute__((hot)) void net_handle() {
 	if (__builtin_expect((nLength > 0), 0)) {
 		const auto *const eth = reinterpret_cast<struct ether_header *>(s_p);
 
-#if defined (CONFIG_ENET_ENABLE_PTP)
+#if defined (CONFIG_NET_ENABLE_PTP)
 		if (eth->type == __builtin_bswap16(ETHER_TYPE_PTP)) {
 			net::ptp_handle(const_cast<const uint8_t *>(s_p), nLength);
 		} else
