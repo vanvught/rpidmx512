@@ -342,7 +342,7 @@ private:
 	static constexpr uint16_t COLOR_FOREGROUND = 0xFFE0;
 };
 
-#if defined (CONFIG_SPI_LCD_OPTIMIZE)
+#if defined (CONFIG_SPI_LCD_OPTIMIZE_O2) || defined (CONFIG_SPI_LCD_OPTIMIZE_O3)
 # pragma GCC pop_options
 #endif
 #endif /* SPI_DISPLAY_H_ */
