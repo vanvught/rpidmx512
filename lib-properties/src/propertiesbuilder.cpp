@@ -113,7 +113,7 @@ bool PropertiesBuilder::AddUtcOffset(const char *pProperty, const int8_t nHours,
 	if (m_bJson) {
 		i = snprintf(p, nSize, "\"%s\":\"%s%.2d:%.2u\",", pProperty, nHours > 0 ? "+" : "", nHours, nMinutes);
 	} else {
-		i = snprintf(p, nSize, "%s=%s%.2d:%.2u", pProperty, nHours > 0 ? "+" : "", nHours, nMinutes);
+		i = snprintf(p, nSize, "%s=%s%.2d:%.2u\n", pProperty, nHours > 0 ? "+" : "", nHours, nMinutes);
 	}
 
 	if (i > static_cast<int>(nSize)) {
