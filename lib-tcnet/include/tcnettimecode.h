@@ -2,7 +2,7 @@
  * @file tcnettimecode.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,27 +28,24 @@
 
 #include <cstdint>
 
-enum TTCNetTimeCodeType {
-	TCNET_TIMECODE_TYPE_FILM,
-	TCNET_TIMECODE_TYPE_EBU_25FPS,
-	TCNET_TIMECODE_TYPE_DF,
-	TCNET_TIMECODE_TYPE_SMPTE_30FPS,
-	TCNET_TIMECODE_TYPE_INVALID = 0xFF
+namespace tcnet {
+enum class TimeCodeType: uint8_t {
+	TIMECODE_TYPE_FILM,
+	TIMECODE_TYPE_EBU_25FPS,
+	TIMECODE_TYPE_DF,
+	TIMECODE_TYPE_SMPTE_30FPS,
+	TIMECODE_TYPE_INVALID = 0xFF
 };
 
-struct TTCNetTimeCode {
+struct TimeCode {
 	uint8_t nFrames;		///< Frames time. 0 – 29 depending on mode.
 	uint8_t nSeconds;		///< Seconds. 0 - 59.
 	uint8_t nMinutes;		///< Minutes. 0 - 59.
 	uint8_t nHours;			///< Hours. 0 - 59.
 	uint8_t nType;			///< 0 = Film (24fps) , 1 = EBU (25fps), 2 = DF (29.97fps), 3 = SMPTE (30fps)
 } __attribute__((packed));
+}  // namespace tcnet
 
-class TCNetTimeCode {
-public:
-	virtual ~TCNetTimeCode() {}
-
-	virtual void Handler(const struct TTCNetTimeCode *)= 0;
-};
+typedef void (*TCNetTimeCodeCallbackFunctionPtr)(const struct tcnet::TimeCode *);
 
 #endif /* TCNETTIMECODE_H_ */

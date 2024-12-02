@@ -33,6 +33,7 @@
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.compiler.option.preprocessor.def.symbols.674839821" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="_TIME_STAMP_YEAR_=0"/>
+									<listOptionValue builtIn="false" value="TCNET_HAVE_TIMECODE"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.622181192" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -51,6 +52,7 @@
 									<listOptionValue builtIn="false" value="_TIME_STAMP_YEAR_=0"/>
 									<listOptionValue builtIn="false" value="_TIME_STAMP_MONTH_=1"/>
 									<listOptionValue builtIn="false" value="_TIME_STAMP_DAY_=1"/>
+									<listOptionValue builtIn="false" value="TCNET_HAVE_TIMECODE"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.2016622534" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -190,6 +192,7 @@
 									<listOptionValue builtIn="false" value="__GIC_PRESENT=1"/>
 									<listOptionValue builtIn="false" value="__FPU_PRESENT"/>
 									<listOptionValue builtIn="false" value="BARE_METAL"/>
+									<listOptionValue builtIn="false" value="TCNET_HAVE_TIMECODE"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.621574705" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/include}&quot;"/>
@@ -204,6 +207,7 @@
 									<listOptionValue builtIn="false" value="__GIC_PRESENT=1"/>
 									<listOptionValue builtIn="false" value="__FPU_PRESENT"/>
 									<listOptionValue builtIn="false" value="BARE_METAL"/>
+									<listOptionValue builtIn="false" value="TCNET_HAVE_TIMECODE"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths.1244601440" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/include}&quot;"/>
@@ -221,6 +225,7 @@
 									<listOptionValue builtIn="false" value="_TIME_STAMP_YEAR_=2024"/>
 									<listOptionValue builtIn="false" value="_TIME_STAMP_MONTH_=1"/>
 									<listOptionValue builtIn="false" value="_TIME_STAMP_DAY_=1"/>
+									<listOptionValue builtIn="false" value="TCNET_HAVE_TIMECODE"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths.611680046" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/include}&quot;"/>
