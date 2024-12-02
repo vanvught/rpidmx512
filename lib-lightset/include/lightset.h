@@ -198,7 +198,8 @@ public:
 	virtual lightset::OutputStyle GetOutputStyle(const uint32_t nPortIndex) const=0;
 #endif
 	// Optional
-	virtual uint32_t GetRefreshRate() { return 0; }
+	virtual uint32_t GetUserData() { return 0; }		///< Art-Net ArtPollReply
+	virtual uint32_t GetRefreshRate() { return 0; }		///< Art-Net ArtPollReply
 	virtual void Blackout([[maybe_unused]] bool bBlackout) {}
 	virtual void FullOn() {}
 	virtual void Print() {}
