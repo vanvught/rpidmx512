@@ -23,6 +23,10 @@
  * THE SOFTWARE.
  */
 
+#if defined (DEBUG_ARM_LTCETCREADER)
+# undef NDEBUG
+#endif
+
 #pragma GCC push_options
 #pragma GCC optimize ("O2")
 #pragma GCC optimize ("no-tree-loop-distribute-patterns")

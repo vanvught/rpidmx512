@@ -27,7 +27,9 @@
 #define LTCOSCSERVER_H_
 
 #include <cstdint>
+#include <cstring>
 #include <cstdio>
+#include <cassert>
 
 #if !(defined(CONFIG_LTC_DISABLE_RGB_PANEL) && defined (CONFIG_LTC_DISABLE_WS28XX))
 # include "ltcdisplayrgb.h"
@@ -42,13 +44,16 @@
 #include "debug.h"
 
 namespace ltcoscserver {
-static constexpr auto PATH_LENGTH_MAX =128;
+static constexpr uint32_t PATH_LENGTH_MAX =128;
 }  // namespace ltcoscserver
 
 class LtcOscServer {
 public:
 	LtcOscServer(): m_nPortIncoming(osc::port::DEFAULT_INCOMING) {
 		DEBUG_ENTRY
+
+		assert(s_pThis == nullptr);
+		s_pThis = this;
 
 		m_nPathLength = static_cast<uint32_t>(snprintf(m_aPath, sizeof(m_aPath) - 1, "/%s/tc/*", Network::Get()->GetHostName()) - 1);
 
@@ -57,9 +62,13 @@ public:
 	}
 
 	void Start() {
+		DEBUG_ENTRY
+
 		assert(m_nHandle == -1);
-		m_nHandle = Network::Get()->Begin(m_nPortIncoming);
+		m_nHandle = Network::Get()->Begin(m_nPortIncoming, staticCallbackFunction);
 		assert(m_nHandle != -1);
+
+		DEBUG_EXIT
 	}
 
 	void Print() {
@@ -76,30 +85,26 @@ public:
 		return m_nPortIncoming;
 	}
 
-	void Run() {
-		const auto nBytesReceived = Network::Get()->RecvFrom(m_nHandle, reinterpret_cast<const void **>(&m_pBuffer), &m_nRemoteIp, &m_nRemotePort);
-
-		if (__builtin_expect((nBytesReceived <= 4), 1)) {
-			return;
-		}
-
-		HandleOscRequest(nBytesReceived);
-	}
+	void Input(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort);
 
 private:
-	void HandleOscRequest(const uint32_t nBytesReceived);
 #if !defined(LTC_NO_DISPLAY_RGB)
-	void SetWS28xxRGB(uint32_t nSize, ltcdisplayrgb::ColourIndex index);
+	void SetWS28xxRGB(const uint8_t *, uint32_t, ltcdisplayrgb::ColourIndex);
 #endif
+
+	void static staticCallbackFunction(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
+		s_pThis->Input(pBuffer, nSize, nFromIp, nFromPort);
+	}
 
 private:
 	uint16_t m_nPortIncoming;
 	uint16_t m_nRemotePort { 0 };
 	int32_t m_nHandle { -1 };
 	uint32_t m_nRemoteIp { 0 };
-	char m_aPath[ltcoscserver::PATH_LENGTH_MAX];
 	uint32_t m_nPathLength { 0 };
-	const uint8_t *m_pBuffer { nullptr };
+	char m_aPath[ltcoscserver::PATH_LENGTH_MAX];
+
+	static inline LtcOscServer *s_pThis;
 };
 
 #endif /* LTCOSCSERVER_H_ */

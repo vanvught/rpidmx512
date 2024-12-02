@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -106,14 +106,15 @@
 # include "shell/shell.h"
 #endif
 
-void Hardware::RebootHandler() {
-//	switch (m_tSource) {
-//	case ltc::source::TCNET:
-//		TCNet::Get()->Stop();
-//		break;
-//	default:
-//		break;
-//	}
+namespace hal {
+void reboot_handler() {
+	//	switch (m_tSource) {
+	//	case ltc::source::TCNET:
+	//		TCNet::Get()->Stop();
+	//		break;
+	//	default:
+	//		break;
+	//	}
 
 	if (!ltc::g_DisabledOutputs.bMax7219) {
 		LtcDisplayMax7219::Get()->Init(2); // TODO WriteChar
@@ -133,6 +134,7 @@ void Hardware::RebootHandler() {
 		Display::Get()->TextStatus("Rebooting ...");
 	}
 }
+}  // namespace hal
 
 extern "C" {
 void h3_cpu_off(uint32_t);
@@ -147,7 +149,7 @@ int main() {
 	FlashCodeInstall spiFlashInstall;
 
 	fw.Print("LTC SMPTE");
-	
+
 #if defined(ENABLE_SHELL)
 	Shell shell;
 #endif
@@ -172,7 +174,7 @@ int main() {
 	ArtNetReader artnetReader;
 	TCNetReader tcnetReader;
 	RtpMidiReader rtpMidiReader;
-	SystimeReader sysTimeReader(ltcParams.GetFps());
+	SystimeReader sysTimeReader(ltcParams.GetFps(), ltcParams.GetUtcOffset());
 	LtcEtcReader ltcEtcReader;
 
 	ltc::Source ltcSource = ltcParams.GetSource();
@@ -267,7 +269,7 @@ int main() {
 		node.SetShortName(0, "LTC SMPTE Node");
 
 		if (ltcSource == ltc::Source::ARTNET) {
-			node.SetTimeCodeHandler(&artnetReader);
+			node.SetArtTimeCodeCallbackFunction(ArtNetReader::staticCallbackFunction);
 		}
 
 		node.SetTimeCodeIp(ltcParams.GetTimecodeIp());
@@ -295,7 +297,7 @@ int main() {
 		tcnetparams.Load();
 		tcnetparams.Set(&tcnet);
 
-		tcnet.SetTimeCodeHandler(&tcnetReader);
+		tcnet.SetArtTimeCodeCallbackFunction(TCNetReader::staticCallbackFunctionHandler);
 		tcnet.Start();
 		tcnet.Print();
 	}
@@ -382,7 +384,6 @@ int main() {
 		oscServer.Start();
 		oscServer.Print();
 
-//		mdns.ServiceRecordAdd(nullptr, mdns::Services::OSC, "type=server", oscServer.GetPortIncoming());
 		mdns_service_record_add(nullptr, mdns::Services::OSC, "type=server", oscServer.GetPortIncoming());
 	}
 
@@ -424,7 +425,6 @@ int main() {
 		ntpServer.Start();
 		ntpServer.Print();
 
-//		mdns.ServiceRecordAdd(nullptr, mdns::Services::NTP, "type=server");
 		mdns_service_record_add(nullptr, mdns::Services::NTP, "type=server");
 	}
 
@@ -490,9 +490,6 @@ int main() {
 	RemoteConfigParams remoteConfigParams;
 	remoteConfigParams.Load();
 	remoteConfigParams.Set(&remoteConfig);
-
-	while (configStore.Flash())
-		;
 
 	printf("Source : %s\n", LtcSourceConst::NAME[static_cast<uint32_t>(ltcSource)]);
 
@@ -570,10 +567,6 @@ int main() {
 
 		if (bRunLtcEtc) {
 			ltcEtc.Run();
-		}
-
-		if (bRunOSCServer) {
-			oscServer.Run();
 		}
 
 		if (bRunNtpServer) {

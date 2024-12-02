@@ -55,9 +55,7 @@ public:
 
 	void Run() {
 		Update();
-
 		HandleButtons();
-		HandleUdpRequest();
 
 		if (m_State == STARTED) {
 			Hardware::Get()->SetMode(hardware::ledblink::Mode::DATA);
@@ -83,13 +81,14 @@ public:
 	void ActionForward(int32_t nSeconds);
 	void ActionBackward(int32_t nSeconds);
 
-	static LtcGenerator* Get() {
+	void Input(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort);
+
+	static LtcGenerator *Get() {
 		return s_pThis;
 	}
 
 private:
 	void HandleButtons();
-	void HandleUdpRequest();
 	void Update();
 	void Increment();
 	void Decrement();
@@ -108,9 +107,13 @@ private:
 		return nSeconds;
 	}
 
+	void static staticCallbackFunction(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
+		s_pThis->Input(pBuffer, nSize, nFromIp, nFromPort);
+	}
+
 private:
-	struct ltc::TimeCode *m_pStartLtcTimeCode;
-	struct ltc::TimeCode *m_pStopLtcTimeCode;
+	ltc::TimeCode *m_pStartLtcTimeCode;
+	ltc::TimeCode *m_pStopLtcTimeCode;
 	bool m_bSkipFree;
 	int32_t m_nStartSeconds;
 	int32_t m_nStopSeconds;
@@ -123,11 +126,11 @@ private:
 	uint32_t m_nButtons { 0 };
 	int m_nHandle { -1 };
 	uint32_t m_nBytesReceived { 0 };
+	char *m_pUdpBuffer { nullptr };
 	enum {
 		STOPPED, STARTED, LIMIT
 	} m_State { STOPPED };
 
-	static inline char *s_pUdpBuffer;
 	static inline LtcGenerator *s_pThis;
 };
 

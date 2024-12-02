@@ -2,7 +2,7 @@
  * @file tcnetdisplay.cpp
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,14 +40,13 @@ static constexpr char sFps[4][6] = { " T24", " T25", " T29", " T30" };
 
 void show() {
 	Display::Get()->SetCursorPos(6,3);
-
 	Display::Get()->PutChar('L');
 	Display::Get()->PutChar(TCNet::GetLayerName(TCNet::Get()->GetLayer()));
 
 	if (TCNet::Get()->GetUseTimeCode()) {
 		Display::Get()->PutString(" TC ");
 	} else {
-		Display::Get()->PutString(sFps[TCNet::Get()->GetTimeCodeType()]);
+		Display::Get()->PutString(sFps[static_cast<uint32_t>(TCNet::Get()->GetTimeCodeType())]);
 	}
 
 #if !defined(LTC_NO_DISPLAY_RGB)

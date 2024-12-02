@@ -26,6 +26,8 @@
 #ifndef ARM_TCNETREADER_H_
 #define ARM_TCNETREADER_H_
 
+#include <cassert>
+
 #include "tcnettimecode.h"
 
 #include "midi.h"
@@ -35,13 +37,20 @@
 
 #include "hardware.h"
 
-class TCNetReader final : public TCNetTimeCode {
+class TCNetReader {
 public:
+	TCNetReader() {
+		assert(s_pThis == nullptr);
+		s_pThis = this;
+	}
+
+	~TCNetReader() = default;
+
 	void Start();
 	void Stop();
 
 	void Run() {
-		LtcOutputs::Get()->UpdateMidiQuarterFrameMessage(reinterpret_cast<const struct ltc::TimeCode*>(&m_tMidiTimeCode));
+		LtcOutputs::Get()->UpdateMidiQuarterFrameMessage(reinterpret_cast<const struct ltc::TimeCode*>(&m_MidiTimeCode));
 
 		__DMB();
 		if (gv_ltc_nUpdatesPerSecond != 0) {
@@ -51,21 +60,28 @@ public:
 			Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
 			m_nTimeCodePrevious = static_cast<uint32_t>(~0);
 		}
-
-		HandleUdpRequest();
 	}
 
-	void Handler(const struct TTCNetTimeCode *pTimeCode) override;
+	void Input(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort);
+
+	void static staticCallbackFunctionHandler(const struct tcnet::TimeCode *pTimeCode) {
+		assert(s_pThis != nullptr);
+		s_pThis->Handler(pTimeCode);
+	}
 
 private:
-	void HandleUdpRequest();
+	void static staticCallbackFunctionInput(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
+		s_pThis->Input(pBuffer, nSize, nFromIp, nFromPort);
+	}
+
+	void Handler(const struct tcnet::TimeCode *pTimeCode);
 
 private:
-	midi::Timecode m_tMidiTimeCode;
+	midi::Timecode m_MidiTimeCode;
 	uint32_t m_nTimeCodePrevious { 0xFF };
 	int32_t m_nHandle { -1 };
 
-	static inline char *s_pUdpBuffer;
+	static inline TCNetReader *s_pThis;
 };
 
 #endif /* ARM_TCNETREADER_H_ */

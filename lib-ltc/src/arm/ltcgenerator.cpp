@@ -22,6 +22,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#if defined (DEBUG_ARM_LTCGENERATOR)
+# undef NDEBUG
+#endif
 
 #pragma GCC push_options
 #pragma GCC optimize ("O2")
@@ -171,7 +174,7 @@ void LtcGenerator::Start() {
 # endif
 #endif
 
-	m_nHandle = Network::Get()->Begin(UDP_PORT);
+	m_nHandle = Network::Get()->Begin(UDP_PORT, staticCallbackFunction);
 	assert(m_nHandle != -1);
 
 	const auto nType = static_cast<uint32_t>(ltc::g_Type);
@@ -485,42 +488,46 @@ void LtcGenerator::SetSkip(const char *pSeconds, uint32_t nSize, ltcgenerator::D
 void LtcGenerator::HandleRequest(char *pBuffer, uint16_t nBufferLength) {
 	if (pBuffer != nullptr) {
 		assert(nBufferLength >= 8);
-		s_pUdpBuffer = pBuffer;
+		m_pUdpBuffer = pBuffer;
 		m_nBytesReceived = nBufferLength;
 	}
 
-	if (__builtin_expect((memcmp("ltc!", s_pUdpBuffer, 4) != 0), 0)) {
+	if (m_nBytesReceived < 8) {
 		return;
 	}
 
-	if (s_pUdpBuffer[m_nBytesReceived - 1] == '\n') {
+	if (__builtin_expect((memcmp("ltc!", m_pUdpBuffer, 4) != 0), 0)) {
+		return;
+	}
+
+	if (m_pUdpBuffer[m_nBytesReceived - 1] == '\n') {
 		DEBUG_PUTS("\'\\n\'");
 		m_nBytesReceived--;
 	}
 
-	debug_dump(s_pUdpBuffer, m_nBytesReceived);
+	debug_dump(m_pUdpBuffer, m_nBytesReceived);
 
-	if (memcmp(&s_pUdpBuffer[4], CMD_START, START_LENGTH) == 0) {
+	if (memcmp(&m_pUdpBuffer[4], CMD_START, START_LENGTH) == 0) {
 		if (m_nBytesReceived == (4 + START_LENGTH)) {
 			ActionStart();
 			return;
 		}
 
 		if (m_nBytesReceived == (4 + START_LENGTH + 1 + ltc::timecode::CODE_MAX_LENGTH)) {
-			if (s_pUdpBuffer[4 + START_LENGTH] == '#') {
-				ActionSetStart(&s_pUdpBuffer[(4 + START_LENGTH + 1)]);
+			if (m_pUdpBuffer[4 + START_LENGTH] == '#') {
+				ActionSetStart(&m_pUdpBuffer[(4 + START_LENGTH + 1)]);
 				return;
 			}
 
-			if (s_pUdpBuffer[4 + START_LENGTH] == '!') {
-				ActionSetStart(&s_pUdpBuffer[(4 + START_LENGTH + 1)]);
+			if (m_pUdpBuffer[4 + START_LENGTH] == '!') {
+				ActionSetStart(&m_pUdpBuffer[(4 + START_LENGTH + 1)]);
 				ActionStop();
 				ActionStart();
 				return;
 			}
 
-			if (s_pUdpBuffer[4 + START_LENGTH] == '@') {
-				ActionGoto(&s_pUdpBuffer[(4 + START_LENGTH + 1)]);
+			if (m_pUdpBuffer[4 + START_LENGTH] == '@') {
+				ActionGoto(&m_pUdpBuffer[(4 + START_LENGTH + 1)]);
 				return;
 			}
 		}
@@ -529,14 +536,14 @@ void LtcGenerator::HandleRequest(char *pBuffer, uint16_t nBufferLength) {
 		return;
 	}
 
-	if (memcmp(&s_pUdpBuffer[4], CMD_STOP, STOP_LENGTH) == 0) {
+	if (memcmp(&m_pUdpBuffer[4], CMD_STOP, STOP_LENGTH) == 0) {
 		if (m_nBytesReceived == (4 + STOP_LENGTH)) {
 			ActionStop();
 			return;
 		}
 
-		if ((m_nBytesReceived == (4 + STOP_LENGTH + 1 + ltc::timecode::CODE_MAX_LENGTH))  && (s_pUdpBuffer[4 + STOP_LENGTH] == '#')) {
-			ActionSetStop(&s_pUdpBuffer[(4 + STOP_LENGTH + 1)]);
+		if ((m_nBytesReceived == (4 + STOP_LENGTH + 1 + ltc::timecode::CODE_MAX_LENGTH))  && (m_pUdpBuffer[4 + STOP_LENGTH] == '#')) {
+			ActionSetStop(&m_pUdpBuffer[(4 + STOP_LENGTH + 1)]);
 			return;
 		}
 
@@ -544,42 +551,42 @@ void LtcGenerator::HandleRequest(char *pBuffer, uint16_t nBufferLength) {
 		return;
 	}
 
-	if (memcmp(&s_pUdpBuffer[4], CMD_RESUME, RESUME_LENGTH) == 0) {
+	if (memcmp(&m_pUdpBuffer[4], CMD_RESUME, RESUME_LENGTH) == 0) {
 		ActionResume();
 		return;
 	}
 
 	if (m_nBytesReceived == (4 + RATE_LENGTH + ltc::timecode::RATE_MAX_LENGTH)) {
-		if (memcmp(&s_pUdpBuffer[4], CMD_RATE, RATE_LENGTH) == 0) {
-			ActionSetRate(&s_pUdpBuffer[(4 + RATE_LENGTH)]);
+		if (memcmp(&m_pUdpBuffer[4], CMD_RATE, RATE_LENGTH) == 0) {
+			ActionSetRate(&m_pUdpBuffer[(4 + RATE_LENGTH)]);
 			return;
 		}
 	}
 
 	if (m_nBytesReceived <= (4 + DIRECTION_LENGTH + 8)) {
-		if (memcmp(&s_pUdpBuffer[4], CMD_DIRECTION, DIRECTION_LENGTH) == 0) {
-			ActionSetDirection(&s_pUdpBuffer[(4 + DIRECTION_LENGTH)]);
+		if (memcmp(&m_pUdpBuffer[4], CMD_DIRECTION, DIRECTION_LENGTH) == 0) {
+			ActionSetDirection(&m_pUdpBuffer[(4 + DIRECTION_LENGTH)]);
 			return;
 		}
 	}
 
 	if (m_nBytesReceived <= (4 + PITCH_LENGTH + 4)) {
-		if (memcmp(&s_pUdpBuffer[4], CMD_PITCH, PITCH_LENGTH) == 0) {
-			SetPitch(&s_pUdpBuffer[(4 + PITCH_LENGTH)], m_nBytesReceived - (4 + PITCH_LENGTH));
+		if (memcmp(&m_pUdpBuffer[4], CMD_PITCH, PITCH_LENGTH) == 0) {
+			SetPitch(&m_pUdpBuffer[(4 + PITCH_LENGTH)], m_nBytesReceived - (4 + PITCH_LENGTH));
 			return;
 		}
 	}
 
 	if (m_nBytesReceived <= (4 + FORWARD_LENGTH + 2)) {
-		if (memcmp(&s_pUdpBuffer[4], CMD_FORWARD, FORWARD_LENGTH) == 0) {
-			SetSkip(&s_pUdpBuffer[(4 + FORWARD_LENGTH)], m_nBytesReceived - (4 + FORWARD_LENGTH), ltcgenerator::Direction::DIRECTION_FORWARD);
+		if (memcmp(&m_pUdpBuffer[4], CMD_FORWARD, FORWARD_LENGTH) == 0) {
+			SetSkip(&m_pUdpBuffer[(4 + FORWARD_LENGTH)], m_nBytesReceived - (4 + FORWARD_LENGTH), ltcgenerator::Direction::DIRECTION_FORWARD);
 			return;
 		}
 	}
 
 	if (m_nBytesReceived <= (4 + BACKWARD_LENGTH + 2)) {
-		if (memcmp(&s_pUdpBuffer[4], CMD_BACKWARD, BACKWARD_LENGTH) == 0) {
-			SetSkip(&s_pUdpBuffer[(4 + BACKWARD_LENGTH)], m_nBytesReceived - (4 + BACKWARD_LENGTH), ltcgenerator::Direction::DIRECTION_BACKWARD);
+		if (memcmp(&m_pUdpBuffer[4], CMD_BACKWARD, BACKWARD_LENGTH) == 0) {
+			SetSkip(&m_pUdpBuffer[(4 + BACKWARD_LENGTH)], m_nBytesReceived - (4 + BACKWARD_LENGTH), ltcgenerator::Direction::DIRECTION_BACKWARD);
 			return;
 		}
 	}
@@ -587,15 +594,9 @@ void LtcGenerator::HandleRequest(char *pBuffer, uint16_t nBufferLength) {
 	DEBUG_PUTS("Invalid command");
 }
 
-void LtcGenerator::HandleUdpRequest() {
-	uint32_t nIPAddressFrom;
-	uint16_t nForeignPort;
-
-	m_nBytesReceived = Network::Get()->RecvFrom(m_nHandle, const_cast<const void **>(reinterpret_cast<void **>(&s_pUdpBuffer)), &nIPAddressFrom, &nForeignPort);
-
-	if (__builtin_expect((m_nBytesReceived < 8), 1)) {
-		return;
-	}
+void LtcGenerator::Input(const uint8_t *pBuffer, uint32_t nSize, [[maybe_unused]] uint32_t nFromIp, [[maybe_unused]] uint16_t nFromPort) {
+	m_pUdpBuffer = reinterpret_cast<char *>(const_cast<uint8_t *>(pBuffer));
+	m_nBytesReceived = nSize;
 
 	HandleRequest();
 }

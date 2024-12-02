@@ -37,8 +37,15 @@
 
 #include "arm/platform_ltc.h"
 
-class ArtNetReader final : public ArtNetTimeCode {
+class ArtNetReader {
 public:
+	ArtNetReader() {
+		assert(s_pThis == nullptr);
+		s_pThis = this;
+	}
+
+	~ArtNetReader() = default;
+
 	void Start();
 	void Stop();
 
@@ -54,10 +61,18 @@ public:
 		}
 	}
 
-	void Handler(const struct artnet::TimeCode *) override;
+	void static staticCallbackFunction(const struct artnet::TimeCode *pTimeCode) {
+		assert(s_pThis != nullptr);
+		s_pThis->Handler(pTimeCode);
+	}
+
+private:
+	void Handler(const struct artnet::TimeCode *);
 
 private:
 	midi::Timecode m_MidiTimeCode;
+
+	static inline ArtNetReader *s_pThis;
 };
 
 #endif /* ARM_ARTNETREADER_H_ */

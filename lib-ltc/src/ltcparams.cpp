@@ -37,6 +37,7 @@
 
 #include "configstore.h"
 
+#include "hardware.h"
 #include "network.h"
 
 #include "readconfigfile.h"
@@ -85,10 +86,10 @@ void LtcParams::Load() {
 	ReadConfigFile configfile(LtcParams::staticCallbackFunction, this);
 
 	if (configfile.Read(LtcParamsConst::FILE_NAME)) {
-		LtcParamsStore::Update(&m_Params);
+		ltcparams::store::update(&m_Params);
 	} else
 #endif
-		LtcParamsStore::Copy(&m_Params);
+		ltcparams::store::copy(&m_Params);
 
 #ifndef NDEBUG
 	Dump();
@@ -108,7 +109,7 @@ void LtcParams::Load(const char* pBuffer, uint32_t nLength) {
 
 	config.Read(pBuffer, nLength);
 
-	LtcParamsStore::Update(&m_Params);
+	ltcparams::store::update(&m_Params);
 
 #ifndef NDEBUG
 	Dump();
@@ -179,8 +180,21 @@ void LtcParams::callbackFunction(const char* pLine) {
 		return;
 	}
 
+	if (Sscan::Uint8(pLine, LtcParamsConst::SHOW_SYSTIME, nValue8) == Sscan::OK) {
+		if (nValue8 != 0) {
+			m_Params.nSetList |= ltcparams::Mask::SHOW_SYSTIME;
+		} else {
+			m_Params.nSetList &= ~ltcparams::Mask::SHOW_SYSTIME;
+		}
+		return;
+	}
+
 	if (Sscan::Uint8(pLine, LtcParamsConst::AUTO_START, nValue8) == Sscan::OK) {
-		SetBool(nValue8, m_Params.nAutoStart, ltcparams::Mask::AUTO_START);
+		if (nValue8 != 0) {
+			m_Params.nSetList |= ltcparams::Mask::AUTO_START;
+		} else {
+			m_Params.nSetList &= ~ltcparams::Mask::AUTO_START;
+		}
 		return;
 	}
 
@@ -190,7 +204,39 @@ void LtcParams::callbackFunction(const char* pLine) {
 		} else {
 			m_Params.nSetList &= ~ltcparams::Mask::GPS_START;
 		}
+		return;
 	}
+
+	if (Sscan::UtcOffset(pLine, LtcParamsConst::UTC_OFFSET, m_Params.nUtcOffsetHours, m_Params.nUtcOffsetMinutes) == Sscan::OK) {
+		int32_t nUtcOffset;
+		if (hal::utc_validate(m_Params.nUtcOffsetHours, m_Params.nUtcOffsetMinutes, nUtcOffset)) {
+			DEBUG_PUTS("UtcOffset OK.");
+		} else {
+			m_Params.nUtcOffsetHours = 0;
+			m_Params.nUtcOffsetMinutes = 0;
+			DEBUG_PUTS("UtcOffset failed.");
+		}
+		return;
+	}
+
+	if (Sscan::Uint8(pLine, LtcParamsConst::DISABLE_TIMESYNC, nValue8) == Sscan::OK) {
+		if (nValue8 != 0) {
+			m_Params.nSetList |= ltcparams::Mask::DISABLE_TIMESYNC;
+		} else {
+			m_Params.nSetList &= ~ltcparams::Mask::DISABLE_TIMESYNC;
+		}
+		return;
+	}
+
+	if (Sscan::Uint8(pLine, LtcParamsConst::NTP_ENABLE, nValue8) == Sscan::OK) {
+		if (nValue8 != 0) {
+			m_Params.nSetList |= ltcparams::Mask::NTP_ENABLE;
+		} else {
+			m_Params.nSetList &= ~ltcparams::Mask::NTP_ENABLE;
+		}
+		return;
+	}
+
 
 	HandleDisabledOutput(pLine, LtcParamsConst::DISABLE_DISPLAY, LtcParamsMaskDisabledOutputs::DISPLAY);
 	HandleDisabledOutput(pLine, LtcParamsConst::DISABLE_MAX7219, LtcParamsMaskDisabledOutputs::MAX7219);
@@ -199,16 +245,6 @@ void LtcParams::callbackFunction(const char* pLine) {
 	HandleDisabledOutput(pLine, LtcParamsConst::DISABLE_ARTNET, LtcParamsMaskDisabledOutputs::ARTNET);
 	HandleDisabledOutput(pLine, LtcParamsConst::DISABLE_RTPMIDI, LtcParamsMaskDisabledOutputs::RTPMIDI);
 	HandleDisabledOutput(pLine, LtcParamsConst::DISABLE_ETC, LtcParamsMaskDisabledOutputs::ETC);
-
-	if (Sscan::Uint8(pLine, LtcParamsConst::SHOW_SYSTIME, nValue8) == Sscan::OK) {
-		SetBool(nValue8, m_Params.nShowSysTime, ltcparams::Mask::SHOW_SYSTIME);
-		return;
-	}
-
-	if (Sscan::Uint8(pLine, LtcParamsConst::DISABLE_TIMESYNC, nValue8) == Sscan::OK) {
-		SetBool(nValue8, m_Params.nDisableTimeSync, ltcparams::Mask::DISABLE_TIMESYNC);
-		return;
-	}
 
 	if (Sscan::Uint8(pLine, LtcParamsConst::YEAR, nValue8) == Sscan::OK) {
 		SetValue((nValue8 >= 19), nValue8, m_Params.nYear, ltcparams::Mask::YEAR);
@@ -222,11 +258,6 @@ void LtcParams::callbackFunction(const char* pLine) {
 
 	if (Sscan::Uint8(pLine, LtcParamsConst::DAY, nValue8) == Sscan::OK) {
 		SetValue((nValue8 >= 1) && (nValue8 <= 31), nValue8, m_Params.nDay, ltcparams::Mask::DAY);
-		return;
-	}
-
-	if (Sscan::Uint8(pLine, LtcParamsConst::NTP_ENABLE, nValue8) == Sscan::OK) {
-		SetBool(nValue8, m_Params.nEnableNtp, ltcparams::Mask::ENABLE_NTP);
 		return;
 	}
 
@@ -298,7 +329,11 @@ void LtcParams::callbackFunction(const char* pLine) {
 	}
 
 	if (Sscan::Uint8(pLine, LtcParamsConst::OSC_ENABLE, nValue8) == Sscan::OK) {
-		SetBool(nValue8, m_Params.nEnableOsc, ltcparams::Mask::ENABLE_OSC);
+		if (nValue8 != 0) {
+			m_Params.nSetList |= ltcparams::Mask::OSC_ENABLE;
+		} else {
+			m_Params.nSetList &= ~ltcparams::Mask::OSC_ENABLE;
+		}
 		return;
 	}
 
@@ -364,7 +399,7 @@ void LtcParams::Set(struct ltc::TimeCode *ptStartTimeCode, struct ltc::TimeCode 
 	ltc::g_DisabledOutputs.bArtNet = isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::ARTNET);
 	ltc::g_DisabledOutputs.bLtc = isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::LTC);
 	ltc::g_DisabledOutputs.bEtc = isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::ETC);
-	ltc::g_DisabledOutputs.bNtp = (m_Params.nEnableNtp == 0);
+	ltc::g_DisabledOutputs.bNtp = !isMaskSet(ltcparams::Mask::NTP_ENABLE);
 	ltc::g_DisabledOutputs.bRtpMidi = isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::RTPMIDI);
 #if !defined (CONFIG_LTC_DISABLE_WS28XX)
 	ltc::g_DisabledOutputs.bWS28xx = (m_Params.nRgbLedType != ltcparams::RgbLedType::WS28XX);
@@ -451,7 +486,7 @@ void LtcParams::Builder(const struct ltcparams::Params *ptLtcParams, char *pBuff
 	if (ptLtcParams != nullptr) {
 		memcpy(&m_Params, ptLtcParams, sizeof(struct ltcparams::Params));
 	} else {
-		LtcParamsStore::Copy(&m_Params);
+		ltcparams::store::copy(&m_Params);
 	}
 
 	PropertiesBuilder builder(LtcParamsConst::FILE_NAME, pBuffer, nLength);
@@ -474,6 +509,7 @@ void LtcParams::Builder(const struct ltcparams::Params *ptLtcParams, char *pBuff
 	builder.AddComment("source=systime");
 	builder.Add(LtcParamsConst::AUTO_START, isMaskSet(ltcparams::Mask::AUTO_START));
 	builder.Add(LtcParamsConst::GPS_START, isMaskSet(ltcparams::Mask::GPS_START));
+	builder.AddUtcOffset(LtcParamsConst::UTC_OFFSET, m_Params.nUtcOffsetHours, m_Params.nUtcOffsetMinutes);
 
 	builder.AddComment("source=internal");
 	builder.Add(LtcParamsConst::FPS, m_Params.nFps, isMaskSet(ltcparams::Mask::FPS));
@@ -497,13 +533,13 @@ void LtcParams::Builder(const struct ltcparams::Params *ptLtcParams, char *pBuff
 	builder.Add(LtcParamsConst::VOLUME, m_Params.nVolume, isMaskSet(ltcparams::Mask::VOLUME));
 
 	builder.AddComment("NTP Server");
-	builder.Add(LtcParamsConst::NTP_ENABLE, isMaskSet(ltcparams::Mask::ENABLE_NTP));
+	builder.Add(LtcParamsConst::NTP_ENABLE, isMaskSet(ltcparams::Mask::NTP_ENABLE));
 	builder.Add(LtcParamsConst::YEAR, m_Params.nYear, isMaskSet(ltcparams::Mask::YEAR));
 	builder.Add(LtcParamsConst::MONTH, m_Params.nMonth, isMaskSet(ltcparams::Mask::MONTH));
 	builder.Add(LtcParamsConst::DAY, m_Params.nDay, isMaskSet(ltcparams::Mask::DAY));
 
 	builder.AddComment("OSC Server");
-	builder.Add(LtcParamsConst::OSC_ENABLE, isMaskSet(ltcparams::Mask::ENABLE_OSC));
+	builder.Add(LtcParamsConst::OSC_ENABLE, isMaskSet(ltcparams::Mask::OSC_ENABLE));
 	builder.Add(LtcParamsConst::OSC_PORT, m_Params.nOscPort, isMaskSet(ltcparams::Mask::OSC_PORT));
 
 	builder.AddComment("WS28xx display");
@@ -531,13 +567,8 @@ void LtcParams::Dump() {
 		printf(" %s=%d\n", LtcParamsConst::VOLUME, m_Params.nVolume);
 	}
 
-	if (isMaskSet(ltcparams::Mask::AUTO_START)) {
-		printf(" %s=%d\n", LtcParamsConst::AUTO_START, m_Params.nAutoStart);
-	}
-
-	if (isMaskSet(ltcparams::Mask::GPS_START)) {
-		printf(" %s=1\n", LtcParamsConst::AUTO_START);
-	}
+	printf(" %s=%d\n", LtcParamsConst::AUTO_START, isMaskSet(ltcparams::Mask::AUTO_START));
+	printf(" %s=%d\n", LtcParamsConst::GPS_START, isMaskSet(ltcparams::Mask::GPS_START));
 
 	if (isMaskSet(ltcparams::Mask::DISABLED_OUTPUTS)) {
 		printf(" Disabled outputs %.2x:\n", m_Params.nDisabledOutputs);
@@ -587,9 +618,7 @@ void LtcParams::Dump() {
 		printf(" %s=%d\n", LtcParamsConst::DAY, m_Params.nDay);
 	}
 
-	if (isMaskSet(ltcparams::Mask::ENABLE_NTP)) {
-		printf(" NTP is enabled\n");
-	}
+	printf(" %s=%d\n", LtcParamsConst::NTP_ENABLE, isMaskSet(ltcparams::Mask::NTP_ENABLE));
 
 	if (isMaskSet(ltcparams::Mask::FPS)) {
 		printf(" %s=%d\n", LtcParamsConst::FPS, m_Params.nFps);
@@ -641,7 +670,7 @@ void LtcParams::Dump() {
 	}
 #endif
 
-	if (isMaskSet(ltcparams::Mask::ENABLE_OSC)) {
+	if (isMaskSet(ltcparams::Mask::OSC_ENABLE)) {
 		printf(" OSC is enabled\n");
 
 		if (isMaskSet(ltcparams::Mask::OSC_PORT)) {
