@@ -451,8 +451,8 @@ public:
 		Network::Get()->SendTo(m_nHandle, &m_ArtTimeCode, sizeof(struct artnet::ArtTimeCode), m_Node.IPAddressTimeCode, artnet::UDP_PORT);
 	}
 
-	void SetTimeCodeHandler(ArtNetTimeCode *pArtNetTimeCode) {
-		m_pArtNetTimeCode = pArtNetTimeCode;
+	void SetArtTimeCodeCallbackFunction(ArtTimeCodeCallbackFunctionPtr artTimeCodeCallbackFunctionPtr) {
+		m_ArtTimeCodeCallbackFunctionPtr = artTimeCodeCallbackFunctionPtr;
 	}
 
 	void SetTimeCodeIp(const uint32_t nDestinationIp) {
@@ -460,9 +460,11 @@ public:
 	}
 #endif
 
-	void SetArtNetTrigger(ArtNetTrigger *pArtNetTrigger) {
-		m_pArtNetTrigger = pArtNetTrigger;
+#if defined (ARTNET_HAVE_TRIGGER)
+	void SetArtTriggerCallbackFunctionPtr(ArtTriggerCallbackFunctionPtr artTriggerCallbackFunctionPtr) {
+		m_ArtTriggerCallbackFunctionPtr = artTriggerCallbackFunctionPtr;
 	}
+#endif
 
 	void SetDestinationIp(const uint32_t nPortIndex, const uint32_t nDestinationIp) {
 		if (nPortIndex < artnetnode::MAX_PORTS) {
@@ -694,8 +696,8 @@ private:
 
 	LightSet *m_pLightSet { nullptr };
 
-	ArtNetTimeCode *m_pArtNetTimeCode { nullptr };
-	ArtNetTrigger *m_pArtNetTrigger { nullptr };
+	ArtTimeCodeCallbackFunctionPtr m_ArtTimeCodeCallbackFunctionPtr { nullptr };
+	ArtTriggerCallbackFunctionPtr m_ArtTriggerCallbackFunctionPtr { nullptr };
 
 	artnetnode::Node m_Node;
 	artnetnode::State m_State;
