@@ -2,7 +2,7 @@
  * @file dmxparams.h
  *
  */
-/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -55,18 +55,16 @@ static constexpr uint8_t rounddown_slots(uint16_t n) {
 static constexpr uint16_t roundup_slots(uint8_t n) {
 	return static_cast<uint16_t>((n + 1U) * 2U);
 }
-}  // namespace dmxsendparams]
+namespace store {
+inline void update(const struct dmxsendparams::Params *pParams) {
+	ConfigStore::Get()->Update(configstore::Store::DMXSEND, pParams, sizeof(struct dmxsendparams::Params));
+}
 
-class StoreDmxSend {
-public:
-	static void Update(const struct dmxsendparams::Params *pParams) {
-		ConfigStore::Get()->Update(configstore::Store::DMXSEND, pParams, sizeof(struct dmxsendparams::Params));
-	}
-
-	static void Copy(struct dmxsendparams::Params *pParams) {
-		ConfigStore::Get()->Copy(configstore::Store::DMXSEND, pParams, sizeof(struct dmxsendparams::Params));
-	}
-};
+inline void copy(struct dmxsendparams::Params *pParams) {
+	ConfigStore::Get()->Copy(configstore::Store::DMXSEND, pParams, sizeof(struct dmxsendparams::Params));
+}
+}  // namespace store
+}  // namespace dmxsendparams
 
 class DmxParams {
 public:
