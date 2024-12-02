@@ -29,7 +29,6 @@
 #include "hardware.h"
 #include "network.h"
 
-
 #include "net/apps/mdns.h"
 
 #include "net/apps/ntpclient.h"
@@ -62,8 +61,6 @@
 
 #include "firmwareversion.h"
 #include "software_version.h"
-
-void Hardware::RebootHandler() { }
 
 int main() {
 	Hardware hw;
@@ -99,7 +96,7 @@ int main() {
 
 	TimeCode timecode;
 	timecode.Start();
-	node.SetTimeCodeHandler(&timecode);
+	node.SetArtTimeCodeCallbackFunction(TimeCode::staticCallbackFunction);
 
 #if defined (NODE_SHOWFILE)
 	ShowFile showFile;
@@ -142,10 +139,7 @@ int main() {
 	remoteConfigParams.Load();
 	remoteConfigParams.Set(&remoteConfig);
 
-	while (configStore.Flash())
-		;
-
-	mdns_print(); //	mDns.Print();
+	mdns_print();
 
 	display.TextStatus(ArtNetMsgConst::START, CONSOLE_YELLOW);
 

@@ -29,7 +29,6 @@
 #include "hardware.h"
 #include "network.h"
 
-
 #include "display.h"
 
 #include "net/apps/mdns.h"
@@ -47,15 +46,16 @@
 #include "remoteconfig.h"
 #include "remoteconfigparams.h"
 
-
 #include "firmwareversion.h"
 #include "software_version.h"
 
 #include "displayhandler.h"
 
-void Hardware::RebootHandler() {
+namespace hal {
+void reboot_handler() {
 	Dmx::Get()->Blackout();
 }
+}  // namespace hal
 
 int main() {
 	Hardware hw;

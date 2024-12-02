@@ -2,7 +2,7 @@
  * @file hal_i2c.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@
 
 #include "h3_i2c.h"
 
-inline static void h3_i2c_set_address(uint8_t address) {
+inline static void h3_i2c_set_address(const uint8_t address) {
 	h3_i2c_set_slave_address(address);
 }
 

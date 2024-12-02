@@ -2,7 +2,7 @@
  * @file hardware_init.cpp
  *
  */
-/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,15 +25,16 @@
 #include <cstdio>
 #include <cassert>
 
-#include "h3_board.h"
-#include "h3_gpio.h"
-#include "h3_sid.h"
-#include "h3_thermal.h"
 #include "h3.h"
+#include "h3_ccu.h"
 #include "h3_cpu.h"
 #include "h3_watchdog.h"
 #include "h3_i2c.h"
 #include "h3_spi.h"
+#include "h3_board.h"
+#include "h3_gpio.h"
+#include "h3_sid.h"
+#include "h3_thermal.h"
 
 #include "arm/gic.h"
 #include "arm/synchronize.h"
@@ -167,6 +168,10 @@ void __attribute__((cold)) hardware_init(void) {
 	H3_PIO_PORTL->CFG0 = value;
 	s_is_pwr_button_pressed = (H3_PIO_PORTL->DAT & (1 << 3)) == 0;
 #endif
+
+	///< Enable DMA support
+	H3_CCU->BUS_SOFT_RESET0 |= CCU_BUS_SOFT_RESET0_DMA;
+	H3_CCU->BUS_CLK_GATING0 |= CCU_BUS_CLK_GATING0_DMA;
 
 	hardware_led_init();
 	hardware_led_set(1);

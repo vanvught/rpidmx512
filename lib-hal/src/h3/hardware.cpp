@@ -100,6 +100,7 @@ void net_shutdown();
 }  // namespace net
 
 namespace hal {
+void reboot_handler();
 void uuid_init(uuid_t);
 }  // namespace hardware
 
@@ -129,8 +130,6 @@ namespace sysname {
 	static constexpr char NAME[] = "Baremetal";
 	static constexpr auto NAME_LENGTH = sizeof(NAME) - 1;
 }
-
-Hardware *Hardware::s_pThis;
 
 void hardware_init();
 
@@ -198,8 +197,7 @@ bool Hardware::Reboot() {
 	m_HwClock.SysToHc();
 #endif
 
-	RebootHandler();
-
+	hal::reboot_handler();
 	net::net_shutdown();
 
 	clean_data_cache();

@@ -24,8 +24,9 @@
  */
 
 #pragma GCC push_options
-#pragma GCC optimize ("O2")
+#pragma GCC optimize ("O3")
 #pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#pragma GCC optimize ("-fprefetch-loop-arrays")
 
 #include <cstdint>
 #include <cstdio>
@@ -82,11 +83,13 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
-void Hardware::RebootHandler() {
+namespace hal {
+void reboot_handler() {
 	WS28xxMulti::Get()->Blackout();
 	Dmx::Get()->Blackout();
 	ArtNetNode::Get()->Stop();
 }
+}  // namespace hal
 
 int main() {
 	Hardware hw;
@@ -168,7 +171,6 @@ int main() {
 	}
 
 	DmxSend dmxSend;
-	dmxSend.Print();
 
 	display.SetDmxInfo(displayudf::dmx::PortDir::OUTPUT, nDmxUniverses);
 
@@ -177,7 +179,7 @@ int main() {
 	LightSetWith4<32> lightSet((PixelTestPattern::Get()->GetPattern() != pixelpatterns::Pattern::NONE) ? nullptr : &pixelDmxMulti, (nDmxUniverses != 0) ? &dmxSend : nullptr);
 	lightSet.Print();
 
-	ArtNetTriggerHandler triggerHandler(&lightSet, &pixelDmxMulti);
+	ArtNetTriggerHandler artnetTriggerHandler(&lightSet, &pixelDmxMulti);
 
 	node.SetOutput(&lightSet);
 	node.Print();
@@ -251,10 +253,7 @@ int main() {
 	remoteConfigParams.Load();
 	remoteConfigParams.Set(&remoteConfig);
 
-	while (configStore.Flash())
-		;
-
-	mdns_print(); //	mDns.Print();
+	mdns_print();
 
 	display.TextStatus(ArtNetMsgConst::START, CONSOLE_YELLOW);
 

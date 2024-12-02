@@ -72,10 +72,12 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
-void Hardware::RebootHandler() {
+namespace hal {
+void reboot_handler() {
 	WS28xx::Get()->Blackout();
 	ArtNetNode::Get()->Stop();
 }
+}  // namespace hal
 
 int main() {
 	Hardware hw;
@@ -127,7 +129,7 @@ int main() {
 		node.SetOutput(&pixelDmx);
 	}
 
-	ArtNetTriggerHandler triggerHandler(&pixelDmx);
+	ArtNetTriggerHandler artnetTriggerHandler(&pixelDmx);
 
 #if defined (NODE_RDMNET_LLRP_ONLY)
 	display.TextStatus(RDMNetConst::MSG_CONFIG, CONSOLE_YELLOW);

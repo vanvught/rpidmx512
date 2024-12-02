@@ -29,8 +29,6 @@
 #include "hardware.h"
 #include "network.h"
 
-
-
 #include "console.h"
 #include "h3/showsystime.h"
 
@@ -55,10 +53,6 @@
 
 #include "remoteconfig.h"
 #include "remoteconfigparams.h"
-
-
-void Hardware::RebootHandler() {
-}
 
 int main() {
 	Hardware hw;

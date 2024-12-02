@@ -67,10 +67,12 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
-void Hardware::RebootHandler() {
+namespace hal {
+void reboot_handler() {
 	WS28xxMulti::Get()->Blackout();
 	PixelPusher::Get()->Stop();
 }
+}  // namespace hal
 
 int main() {
 	Hardware hw;

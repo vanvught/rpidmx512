@@ -67,7 +67,7 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
-void Hardware::RebootHandler() {}
+
 
 int main() {
 	Hardware hw;

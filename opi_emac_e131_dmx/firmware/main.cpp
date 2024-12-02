@@ -67,10 +67,12 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
-void Hardware::RebootHandler() {
+namespace hal {
+void reboot_handler() {
 	Dmx::Get()->Blackout();
 	E131Bridge::Get()->Stop();
 }
+}  // namespace hal
 
 int main() {
 	Hardware hw;

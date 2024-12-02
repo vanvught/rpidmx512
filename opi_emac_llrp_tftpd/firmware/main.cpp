@@ -51,7 +51,8 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
-void Hardware::RebootHandler() {
+namespace hal {
+void reboot_handler() {
 	if (!RemoteConfig::Get()->IsReboot()) {
 		Display::Get()->SetSleep(false);
 
@@ -64,6 +65,7 @@ void Hardware::RebootHandler() {
 		Display::Get()->TextStatus("Rebooting ...");
 	}
 }
+}  // namespace hal
 
 int main() {
 	Hardware hw;

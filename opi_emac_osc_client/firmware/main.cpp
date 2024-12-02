@@ -54,8 +54,6 @@
 
 #include "displayhandler.h"
 
-void Hardware::RebootHandler() { }
-
 int main() {
 	Hardware hw;
 	Display display;

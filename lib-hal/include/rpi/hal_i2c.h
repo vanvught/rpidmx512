@@ -2,7 +2,7 @@
  * @file hal_i2c.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,10 +26,14 @@
 #ifndef RPI_HAL_I2C_H_
 #define RPI_HAL_I2C_H_
 
+#include <cstdint>
+
 #include "bcm2835_i2c.h"
 
 inline static void bcm2835_i2c_set_address(uint8_t address) {
 	bcm2835_i2c_setSlaveAddress(address);
 }
+
+bool bcm2835_i2c_is_connected(const uint8_t nAddress, const uint32_t nBaudrate);
 
 #endif /* RPI_HAL_I2C_H_ */

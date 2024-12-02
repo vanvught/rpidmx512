@@ -65,9 +65,11 @@
 
 #include "is_config_mode.h"
 
-void Hardware::RebootHandler() {
+namespace hal {
+void reboot_handler() {
 	WS28xx::Get()->Blackout();
 }
+}  // namespace hal
 
 int main() {
 	config_mode_init();

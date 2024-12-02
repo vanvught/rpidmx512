@@ -1,5 +1,5 @@
 /**
- * @file timecode.cpp
+ * @file artnettriggerhandler.cpp
  *
  */
 /* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
@@ -23,35 +23,47 @@
  * THE SOFTWARE.
  */
 
-#ifndef TIMECODE_H_
-#define TIMECODE_H_
-
+#include <cstdint>
 #include <cassert>
 
-#include "artnettimecode.h"
+#include "artnettrigger.h"
+#include "artnetnode.h"
 
-class TimeCode {
-public:
-	TimeCode() {
-		assert(s_pThis == nullptr);
-		s_pThis = this;
+#include "lightset.h"
+
+#include "pixeltestpattern.h"
+
+#include "display.h"
+#include "displayudf.h"
+
+namespace artnet {
+static LightSet *s_pLightSet;
+
+void triggerhandler_set_lightset(LightSet *pLightSet) {
+	s_pLightSet = pLightSet;
+}
+
+void triggerhandler(const ArtNetTrigger *pArtNetTrigger) {
+	if (pArtNetTrigger->Key == ArtTriggerKey::ART_TRIGGER_KEY_SHOW) {
+		const auto nShow = static_cast<pixelpatterns::Pattern>(pArtNetTrigger->SubKey);
+		if (nShow == PixelTestPattern::Get()->GetPattern()) {
+			return;
+		}
+		const auto isSet = PixelTestPattern::Get()->SetPattern(nShow);
+
+		if(!isSet) {
+			return;
+		}
+
+		if (static_cast<pixelpatterns::Pattern>(nShow) != pixelpatterns::Pattern::NONE) {
+			ArtNetNode::Get()->SetOutput(nullptr);
+			Display::Get()->ClearLine(6);
+			Display::Get()->Printf(6, "%s:%u", PixelPatterns::GetName(nShow), static_cast<uint32_t>(nShow));
+		} else {
+			s_pLightSet->Blackout(true);
+			ArtNetNode::Get()->SetOutput(s_pLightSet);
+			DisplayUdf::Get()->Show();
+		}
 	}
-
-	~TimeCode() = default;
-
-	void Start();
-	void Stop();
-
-	void static staticCallbackFunction(const struct artnet::TimeCode *pTimeCode) {
-		assert(s_pThis != nullptr);
-		s_pThis->Handler(pTimeCode);
-	}
-
-private:
-	void Handler(const struct artnet::TimeCode *);
-
-private:
-	static inline TimeCode *s_pThis;
-};
-
-#endif /* TIMECODE_H_ */
+}
+}  // namespace artnet
