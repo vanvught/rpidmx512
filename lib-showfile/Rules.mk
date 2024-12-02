@@ -32,7 +32,7 @@ ifneq ($(MAKE_FLAGS),)
 		EXTRA_INCLUDES+=../lib-dmx/include
 	endif
 	ifdef ARTNET
-		EXTRA_SRCDIR+=src/protocols/artnet
+		EXTRA_INCLUDES+=../lib-dmx/include
 		EXTRA_INCLUDES+=../lib-artnet/include ../lib-e131/include
 		ifneq (,$(findstring RDM,$(MAKE_FLAGS)))
 			EXTRA_INCLUDES+=../lib-rdm/include ../lib-dmx/include
