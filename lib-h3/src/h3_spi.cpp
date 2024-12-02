@@ -535,8 +535,13 @@ uint8_t h3_spi_transfer(uint8_t data) {
  * DMA support
  */
 
-#define SPI_DMA_COHERENT_REGION_SIZE	(MEGABYTE/8)
-#define SPI_DMA_COHERENT_REGION			(H3_MEM_COHERENT_REGION + MEGABYTE/2 + MEGABYTE/4)
+#if 0
+# define SPI_DMA_COHERENT_REGION_SIZE	(H3_SRAM_A2_SIZE)
+# define SPI_DMA_COHERENT_REGION		(H3_SRAM_A2_BASE)
+#else
+# define SPI_DMA_COHERENT_REGION_SIZE	(MEGABYTE/8)
+# define SPI_DMA_COHERENT_REGION		(H3_MEM_COHERENT_REGION + MEGABYTE/2 + MEGABYTE/4)
+#endif
 #define SPI_DMA_TX_BUFFER_SIZE			(SPI_DMA_COHERENT_REGION_SIZE - sizeof(struct sunxi_dma_lli))
 
 struct dma_spi {
@@ -563,14 +568,14 @@ bool h3_spi_dma_tx_is_active(void) {
 	return true;
 }
 
-const uint8_t *h3_spi_dma_tx_prepare(uint32_t *size) {
-	assert(size != 0);
+const uint8_t *h3_spi_dma_tx_prepare(uint32_t *nSize) {
+	assert(nSize != 0);
 
 	H3_CCU->BUS_SOFT_RESET0 |= CCU_BUS_SOFT_RESET0_DMA;
 	H3_CCU->BUS_CLK_GATING0 |= CCU_BUS_CLK_GATING0_DMA;
 
-	p_dma_tx->lli.cfg = DMA_CHAN_CFG_SRC_LINEAR_MODE | DMA_CHAN_CFG_SRC_DRQ(DRQSRC_SDRAM) | DMA_CHAN_CFG_SRC_WIDTH(0) | DMA_CHAN_CFG_SRC_BURST(0)
-						  | DMA_CHAN_CFG_DST_IO_MODE  | DMA_CHAN_CFG_DST_DRQ(DRQDST_SPIO1) | DMA_CHAN_CFG_DST_WIDTH(0) | DMA_CHAN_CFG_DST_BURST(0);
+	p_dma_tx->lli.cfg = DMA_CHAN_CFG_SRC_LINEAR_MODE | DMA_CHAN_CFG_SRC_DRQ(DRQSRC_SDRAM)  | DMA_CHAN_CFG_SRC_WIDTH(0) | DMA_CHAN_CFG_SRC_BURST(0)
+					  | DMA_CHAN_CFG_DST_IO_MODE     | DMA_CHAN_CFG_DST_DRQ(DRQDST_SPIO1) | DMA_CHAN_CFG_DST_WIDTH(0) | DMA_CHAN_CFG_DST_BURST(0);
 	p_dma_tx->lli.src = reinterpret_cast<uint32_t>(&p_dma_tx->tx_buffer);
 	p_dma_tx->lli.dst = reinterpret_cast<uint32_t>(&EXT_SPI->TX.byte);
 	p_dma_tx->lli.para = DMA_NORMAL_WAIT;
@@ -578,7 +583,7 @@ const uint8_t *h3_spi_dma_tx_prepare(uint32_t *size) {
 #ifndef NDEBUG
 	h3_dma_dump_lli(&p_dma_tx->lli);
 #endif
-	*size = sizeof(p_dma_tx->tx_buffer);
+	*nSize = sizeof(p_dma_tx->tx_buffer);
 
 	return reinterpret_cast<const uint8_t *>(&p_dma_tx->tx_buffer);
 }

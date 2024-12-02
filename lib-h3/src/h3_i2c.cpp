@@ -2,7 +2,7 @@
  * @file h3_i2c.cpp
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,11 +23,21 @@
  * THE SOFTWARE.
  */
 
+#if defined (CONFIG_I2C_OPTIMIZE_O2) || defined (CONFIG_I2C_OPTIMIZE_O3)
+# pragma GCC push_options
+# if defined (CONFIG_I2C_OPTIMIZE_O2)
+#  pragma GCC optimize ("O2")
+# else
+#  pragma GCC optimize ("O3")
+# endif
+#endif
+
 #include <cstdint>
 #include <cassert>
 #ifndef NDEBUG
- #include <cstdio>
+ #include<cstdio>
 #endif
+
 #include "debug.h"
 
 #include "h3.h"
@@ -425,15 +435,52 @@ uint8_t h3_i2c_read(char *buffer, uint32_t data_length) {
 	return static_cast<uint8_t>(-ret);
 }
 
-void h3_i2c_set_baudrate(uint32_t baudrate) {
-	assert(baudrate <= H3_I2C_FULL_SPEED);
+void h3_i2c_set_baudrate(const uint32_t nBaudrate) {
+	assert(nBaudrate <= H3_I2C_FULL_SPEED);
 
-	if (__builtin_expect((s_current_baudrate != baudrate),0)) {
-		s_current_baudrate = baudrate;
-		_set_clock(H3_F_24M, baudrate);
+	if (__builtin_expect((s_current_baudrate != nBaudrate), 0)) {
+		s_current_baudrate = nBaudrate;
+		_set_clock(H3_F_24M, nBaudrate);
 	}
 }
 
-void h3_i2c_set_slave_address(uint8_t address) {
-	s_slave_address = address;
+void h3_i2c_set_slave_address(const uint8_t nAddress) {
+	s_slave_address = nAddress;
+}
+
+bool h3_i2c_is_connected(const uint8_t nAddress, const uint32_t nBaudrate) {
+	h3_i2c_set_slave_address(nAddress);
+	h3_i2c_set_baudrate(nBaudrate);
+
+	uint8_t nResult;
+	char buffer;
+
+	if ((nAddress >= 0x30 && nAddress <= 0x37) || (nAddress >= 0x50 && nAddress <= 0x5F)) {
+		nResult = h3_i2c_read(&buffer, 1);
+	} else {
+		/* This is known to corrupt the Atmel AT24RF08 EEPROM */
+		nResult = h3_i2c_write(nullptr, 0);
+	}
+
+	return (nResult == 0) ? true : false;
+}
+
+void h3_i2c_write_register(const uint8_t nRegister, const uint8_t nValue) {
+	char buffer[2];
+
+	buffer[0] = static_cast<char>(nRegister);
+	buffer[1] = static_cast<char>(nValue);
+
+	h3_i2c_write(buffer, 2);
+}
+
+void h3_i2c_read_register(const uint8_t nRegister, uint8_t& nValue) {
+	char buffer[1];
+
+	buffer[0] = static_cast<char>(nRegister);
+
+	h3_i2c_write(buffer, 1);
+	h3_i2c_read(buffer, 1);
+
+	nValue = buffer[0];
 }
