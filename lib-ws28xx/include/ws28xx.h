@@ -54,6 +54,10 @@ public:
 	void Blackout();
 	void FullOn();
 
+	uint32_t GetUserData() { //TODO implement GetUserData
+		return 0;
+	}
+
 	static WS28xx *Get() {
 		return s_pThis;
 	}

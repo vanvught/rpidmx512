@@ -151,10 +151,10 @@ public:
 		DEBUG_ENTRY
 
 		if (m_type == pixel::Type::SK6812W) {
-			m_nCount = m_nCount <= static_cast<uint16_t>(pixel::max::ledcount::RGBW) ? m_nCount : static_cast<uint16_t>(pixel::max::ledcount::RGBW);
+			m_nCount = m_nCount <= pixel::max::ledcount::RGBW ? m_nCount : pixel::max::ledcount::RGBW;
 			m_nLedsPerPixel = 4;
 		} else {
-			m_nCount = m_nCount <= static_cast<uint16_t>(pixel::max::ledcount::RGB) ? m_nCount : static_cast<uint16_t>(pixel::max::ledcount::RGB);
+			m_nCount = m_nCount <= pixel::max::ledcount::RGB ? m_nCount : pixel::max::ledcount::RGB;
 			m_nLedsPerPixel = 3;
 		}
 

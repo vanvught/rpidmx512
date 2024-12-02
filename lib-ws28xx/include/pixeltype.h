@@ -53,13 +53,13 @@ enum class Map {
 static constexpr auto TYPES_MAX_NAME_LENGTH  = 8;
 namespace max {
 namespace ledcount {
-static constexpr auto RGB = (4 * 170);
-static constexpr auto RGBW = (4 * 128);
+static constexpr uint32_t RGB = (4 * 170);
+static constexpr uint32_t RGBW = (4 * 128);
 }  // namespace ledcount
 }  // namespace max
 namespace single {
-static constexpr auto RGB = 24;
-static constexpr auto RGBW = 32;
+static constexpr uint32_t RGB = 24;
+static constexpr uint32_t RGBW = 32;
 }  // namespace single
 namespace spi {
 namespace speed {

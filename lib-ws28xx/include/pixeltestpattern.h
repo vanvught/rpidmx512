@@ -2,7 +2,7 @@
  * @file pixeltestpattern.h
  *
  */
-/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,9 +29,10 @@
 #include <cstdint>
 #include <cassert>
 
+#include "pixel.h"
 #include "pixelpatterns.h"
 
-class PixelTestPattern: PixelPatterns {
+class PixelTestPattern final: PixelPatterns {
 public:
 	PixelTestPattern(const pixelpatterns::Pattern Pattern, const uint32_t OutputPorts) : PixelPatterns(OutputPorts) {
 		assert(s_pThis == nullptr);
@@ -46,8 +47,8 @@ public:
 
 		m_Pattern = Pattern;
 
-		const auto nColour1 = PixelPatterns::Colour(0, 0, 0);
-		const auto nColour2 = PixelPatterns::Colour(100, 100, 100);
+		const auto nColour1 = pixel::get_colour(0, 0, 0);
+		const auto nColour2 = pixel::get_colour(100, 100, 100);
 		constexpr auto nInterval = 100;
 		constexpr auto nSteps = 10;
 
@@ -61,9 +62,6 @@ public:
 				break;
 			case pixelpatterns::Pattern::COLOR_WIPE:
 				PixelPatterns::ColourWipe(i, nColour2, nInterval);
-				break;
-			case pixelpatterns::Pattern::SCANNER:
-				PixelPatterns::Scanner(i, PixelPatterns::Colour(255, 255, 255), nInterval);
 				break;
 			case pixelpatterns::Pattern::FADE:
 				PixelPatterns::Fade(i, nColour1, nColour2, nSteps, nInterval);
@@ -86,7 +84,7 @@ public:
 		}
 	}
 
-	pixelpatterns::Pattern GetPattern() {
+	pixelpatterns::Pattern GetPattern() const {
 		return m_Pattern;
 	}
 
@@ -96,7 +94,7 @@ public:
 
 private:
 	pixelpatterns::Pattern m_Pattern;
-	static PixelTestPattern *s_pThis;
+	static inline PixelTestPattern *s_pThis;
 };
 
 #endif /* PIXELTESTPATTERN_H_ */

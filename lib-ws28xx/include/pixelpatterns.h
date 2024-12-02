@@ -22,19 +22,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+/**
+ * Based on https://learn.adafruit.com/multi-tasking-the-arduino-part-3?view=all
+ */
 
 #ifndef PIXELPATTERNS_H_
 #define PIXELPATTERNS_H_
 
 #include <cstdint>
+#include <algorithm>
+#include <cassert>
 
-#if defined (PIXELPATTERNS_MULTI)
-# include "ws28xxmulti.h"
-#else
-# include "ws28xx.h"
-#endif
+#include "pixel.h"
+#include "pixelconfiguration.h"
 
 #include "hardware.h"
+#include "debug.h"
 
 namespace pixelpatterns {
 #if defined (PIXELPATTERNS_MULTI)
@@ -47,8 +50,11 @@ namespace pixelpatterns {
 #endif
 
 enum class Pattern {
-	NONE, RAINBOW_CYCLE, THEATER_CHASE, COLOR_WIPE, SCANNER, FADE, LAST
+	NONE, RAINBOW_CYCLE, THEATER_CHASE, COLOR_WIPE, FADE, LAST
 };
+
+static constexpr char PATTERN_NAME[static_cast<uint32_t>(pixelpatterns::Pattern::LAST)][14] = { "None", "Rainbow cycle", "Theater chase", "Colour wipe", "Fade" };
+
 enum class Direction {
 	FORWARD, REVERSE
 };
@@ -56,23 +62,78 @@ enum class Direction {
 
 class PixelPatterns {
 public:
-	PixelPatterns(const uint32_t nActivePorts);
+	PixelPatterns(const uint32_t nActivePorts) {
+		DEBUG_ENTRY
+		DEBUG_PRINTF("nActivePorts=%u", nActivePorts);
+
+		s_nActivePorts = std::min(pixelpatterns::MAX_PORTS, nActivePorts);
+
+		DEBUG_EXIT
+	}
+
 	~PixelPatterns() = default;
 
-	static const char* GetName(pixelpatterns::Pattern pattern);
+	static const char *GetName(const pixelpatterns::Pattern pattern) {
+		if (pattern < pixelpatterns::Pattern::LAST) {
+			return pixelpatterns::PATTERN_NAME[static_cast<uint32_t>(pattern)];
+		}
 
-	void RainbowCycle(uint32_t nPortIndex, uint32_t nInterval, pixelpatterns::Direction dir = pixelpatterns::Direction::FORWARD);
-	void TheaterChase(uint32_t nPortIndex, uint32_t nColour1, uint32_t nColour2, uint32_t nInterval, pixelpatterns::Direction dir = pixelpatterns::Direction::FORWARD);
-	void ColourWipe(uint32_t nPortIndex, uint32_t nColour, uint32_t nInterval, pixelpatterns::Direction dir = pixelpatterns::Direction::FORWARD);
-	void Scanner(uint32_t nPortIndex, uint32_t nColour1, uint32_t nInterval) ;
-	void Fade(uint32_t nPortIndex, uint32_t nColour1, uint32_t nColour2, uint32_t nSteps, uint32_t nInterval, pixelpatterns::Direction dir = pixelpatterns::Direction::FORWARD);
-	void None(const uint32_t nPortIndex) {
-		s_PortConfig[nPortIndex].ActivePattern = pixelpatterns::Pattern::NONE;
+		return "Unknown";
+	}
+
+	void RainbowCycle(const uint32_t nPortIndex, const uint32_t nInterval, const pixelpatterns::Direction Direction = pixelpatterns::Direction::FORWARD) {
 		Clear(nPortIndex);
+
+		s_PortConfig[nPortIndex].ActivePattern = pixelpatterns::Pattern::RAINBOW_CYCLE;
+		s_PortConfig[nPortIndex].nInterval = nInterval;
+		s_PortConfig[nPortIndex].nTotalSteps= 255;
+		s_PortConfig[nPortIndex].nPixelIndex = 0;
+		s_PortConfig[nPortIndex].Direction = Direction;
+	}
+
+	void TheaterChase(const uint32_t nPortIndex, const uint32_t nColour1, const uint32_t nColour2, const uint32_t nInterval, pixelpatterns::Direction Direction = pixelpatterns::Direction::FORWARD) {
+		Clear(nPortIndex);
+
+		s_PortConfig[nPortIndex].ActivePattern = pixelpatterns::Pattern::THEATER_CHASE;
+		s_PortConfig[nPortIndex].nInterval = nInterval;
+		s_PortConfig[nPortIndex].nTotalSteps= PixelConfiguration::Get().GetCount();
+		s_PortConfig[nPortIndex].nColour1 = nColour1;
+		s_PortConfig[nPortIndex].nColour2 = nColour2;
+	    s_PortConfig[nPortIndex].nPixelIndex = 0;
+	    s_PortConfig[nPortIndex].Direction = Direction;
+	}
+
+	void ColourWipe(const uint32_t nPortIndex, const uint32_t nColour, const uint32_t nInterval, pixelpatterns::Direction Direction = pixelpatterns::Direction::FORWARD) {
+		Clear(nPortIndex);
+
+		s_PortConfig[nPortIndex].ActivePattern = pixelpatterns::Pattern::COLOR_WIPE;
+		s_PortConfig[nPortIndex].nInterval = nInterval;
+		s_PortConfig[nPortIndex].nTotalSteps= PixelConfiguration::Get().GetCount();
+	    s_PortConfig[nPortIndex].nColour1 = nColour;
+	    s_PortConfig[nPortIndex].nPixelIndex = 0;
+	    s_PortConfig[nPortIndex].Direction = Direction;
+	}
+
+	void Fade(const uint32_t nPortIndex, const uint32_t nColour1, const uint32_t nColour2, const uint32_t nSteps, const uint32_t nInterval, pixelpatterns::Direction Direction = pixelpatterns::Direction::FORWARD) {
+		Clear(nPortIndex);
+
+		s_PortConfig[nPortIndex].ActivePattern = pixelpatterns::Pattern::FADE;
+		s_PortConfig[nPortIndex].nInterval = nInterval;
+		s_PortConfig[nPortIndex].nTotalSteps= nSteps;
+		s_PortConfig[nPortIndex].nColour1 = nColour1;
+		s_PortConfig[nPortIndex].nColour2 = nColour2;
+	    s_PortConfig[nPortIndex].nPixelIndex = 0;
+	    s_PortConfig[nPortIndex].Direction = Direction;
+	}
+
+	void None(const uint32_t nPortIndex) {
+		Clear(nPortIndex);
+
+		s_PortConfig[nPortIndex].ActivePattern = pixelpatterns::Pattern::NONE;
 	}
 
 	void Run() {
-		if (s_pOutput->IsUpdating()) {
+		if (pixel::is_updating()) {
 			return;
 		}
 
@@ -84,105 +145,136 @@ public:
 		}
 
 		if (bIsUpdated) {
-			s_pOutput->Update();
+			pixel::update();
 		}
 	}
-
-	uint32_t Colour(uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
-		return static_cast<uint32_t>(nRed << 16) | static_cast<uint32_t>(nGreen << 8) | nBlue;
-	}
-
 private:
-	void RainbowCycleUpdate(uint32_t nPortIndex);
-	void TheaterChaseUpdate(uint32_t nPortIndex);
-	void ColourWipeUpdate(uint32_t nPortIndex);
-	void ScannerUpdate(uint32_t nPortIndex);
-	void FadeUpdate(uint32_t nPortIndex);
+	void RainbowCycleUpdate(const uint32_t nPortIndex) {
+		const auto nIndex = s_PortConfig[nPortIndex].nPixelIndex;
 
-	bool PortUpdate(uint32_t nPortIndex, uint32_t nMillis);
-
-	uint32_t Wheel(uint8_t nWheelPos);
-	void Increment(uint32_t nPortIndex);
-	void Reverse(uint32_t nPortIndex);
-
-	void SetPixelColour([[maybe_unused]] uint32_t nPortIndex, const uint32_t nPixelIndex, const uint32_t nColour) {
-		const auto nRed = Red(nColour);
-		const auto nGreen = Green(nColour);
-		const auto nBlue = Blue(nColour);
-#if defined (PIXELPATTERNS_MULTI)
-		switch (PixelConfiguration::Get().GetType()) {
-		case pixel::Type::WS2801:
-			s_pOutput->SetColourWS2801(nPortIndex, nPixelIndex, nRed, nGreen, nBlue);
-			break;
-		case pixel::Type::APA102:
-		case pixel::Type::SK9822:
-			s_pOutput->SetPixel4Bytes(nPortIndex, nPixelIndex, 0xFF, nRed, nGreen, nBlue);
-			break;
-		case pixel::Type::P9813: {
-			const auto nFlag = static_cast<uint8_t>(0xC0 | ((~nBlue & 0xC0) >> 2) | ((~nRed & 0xC0) >> 4) | ((~nRed & 0xC0) >> 6));
-			s_pOutput->SetPixel4Bytes(nPortIndex, nPixelIndex, nFlag, nBlue, nGreen, nRed);
+		for (uint32_t i = 0; i < PixelConfiguration::Get().GetCount(); i++) {
+			pixel::set_pixel_colour(nPortIndex, i, Wheel(((i * 256U / PixelConfiguration::Get().GetCount()) + nIndex) & 0xFF));
 		}
-			break;
-		case pixel::Type::SK6812W:
-			if ((nRed == nGreen) && (nGreen == nBlue)) {
-				s_pOutput->SetColourRTZ(nPortIndex, nPixelIndex, 0x00, 0x00, 0x00, nRed);
+
+		Increment(nPortIndex);
+	}
+
+	void TheaterChaseUpdate(const uint32_t nPortIndex) {
+		const auto nColour1 = s_PortConfig[nPortIndex].nColour1;
+		const auto nColour2 = s_PortConfig[nPortIndex].nColour2;
+		const auto nPixelIndex = s_PortConfig[nPortIndex].nPixelIndex;
+
+		for (uint32_t i = 0; i < PixelConfiguration::Get().GetCount(); i++) {
+			if ((i + nPixelIndex) % 3 == 0) {
+				pixel::set_pixel_colour(nPortIndex, i, nColour1);
 			} else {
-				s_pOutput->SetColourRTZ(nPortIndex, nPixelIndex, nRed, nGreen, nBlue, 0x00);
+				pixel::set_pixel_colour(nPortIndex, i, nColour2);
 			}
+		}
+
+		Increment(nPortIndex);
+	}
+
+	void ColourWipeUpdate(const uint32_t nPortIndex) {
+		const auto nColour1 = s_PortConfig[nPortIndex].nColour1;
+		const auto nIndex = s_PortConfig[nPortIndex].nPixelIndex;
+
+		pixel::set_pixel_colour(nPortIndex, nIndex, nColour1);
+		Increment(nPortIndex);
+	}
+
+	void FadeUpdate(const uint32_t nPortIndex) {
+		const auto nColour1 = s_PortConfig[nPortIndex].nColour1;
+		const auto nColour2 = s_PortConfig[nPortIndex].nColour2;
+		const auto nTotalSteps = s_PortConfig[nPortIndex].nTotalSteps;
+		const auto nIndex =  s_PortConfig[nPortIndex].nPixelIndex;
+
+		const auto nRed = static_cast<uint8_t>(((pixel::get_red(nColour1) * (nTotalSteps - nIndex)) + (pixel::get_red(nColour2) * nIndex)) / nTotalSteps);
+		const auto nGreen = static_cast<uint8_t>(((pixel::get_green(nColour1) * (nTotalSteps - nIndex)) + (pixel::get_green(nColour2) * nIndex)) / nTotalSteps);
+		const auto nBlue = static_cast<uint8_t>(((pixel::get_blue(nColour1) * (nTotalSteps - nIndex)) + (pixel::get_blue(nColour2) * nIndex)) / nTotalSteps);
+
+		pixel::set_pixel_colour(nPortIndex, pixel::get_colour(nRed, nGreen, nBlue));
+		Increment(nPortIndex);
+	}
+
+	bool PortUpdate(const uint32_t nPortIndex, const uint32_t nMillis) {
+		if ((nMillis - s_PortConfig[nPortIndex].nLastUpdate) < s_PortConfig[nPortIndex].nInterval) {
+			return false;
+		}
+
+		s_PortConfig[nPortIndex].nLastUpdate = nMillis;
+
+		switch (s_PortConfig[nPortIndex].ActivePattern) {
+		case pixelpatterns::Pattern::RAINBOW_CYCLE:
+			RainbowCycleUpdate(nPortIndex);
+			break;
+		case pixelpatterns::Pattern::THEATER_CHASE:
+			TheaterChaseUpdate(nPortIndex);
+			break;
+		case pixelpatterns::Pattern::COLOR_WIPE:
+			ColourWipeUpdate(nPortIndex);
+			break;
+		case pixelpatterns::Pattern::FADE:
+			FadeUpdate(nPortIndex);
 			break;
 		default:
-			s_pOutput->SetColourRTZ(nPortIndex, nPixelIndex, nRed, nGreen, nBlue);
+			return false;
 			break;
 		}
-#else
-		auto& pixelConfiguration = PixelConfiguration::Get();
-		const auto type = pixelConfiguration.GetType();
 
-		if (type != pixel::Type::SK6812W) {
-			s_pOutput->SetPixel(nPixelIndex, nRed, nGreen, nBlue);
-		} else {
-			if ((nRed == nGreen) && (nGreen == nBlue)) {
-				s_pOutput->SetPixel(nPixelIndex, 0x00, 0x00, 0x00, nRed);
-			} else {
-				s_pOutput->SetPixel(nPixelIndex, nRed, nGreen, nBlue, 0x00);
-			}
-		}
-#endif
+		return true;
 	}
 
-	void ColourSet(const uint32_t nPortIndex, const uint32_t nColour) {
-		for (uint32_t i = 0; i < PixelConfiguration::Get().GetCount(); i++) {
-			SetPixelColour(nPortIndex, i, nColour);
+	uint32_t Wheel(uint8_t nWheelPos) {
+		nWheelPos = static_cast<uint8_t>(255U - nWheelPos);
+
+		if (nWheelPos < 85) {
+			return pixel::get_colour(static_cast<uint8_t>(255U - nWheelPos * 3), 0, static_cast<uint8_t>(nWheelPos * 3));
+		} else if (nWheelPos < 170U) {
+			nWheelPos = static_cast<uint8_t>(nWheelPos - 85U);
+			return pixel::get_colour(0, static_cast<uint8_t>(nWheelPos * 3), static_cast<uint8_t>(255U - nWheelPos * 3));
+		} else {
+			nWheelPos = static_cast<uint8_t>(nWheelPos - 170U);
+			return pixel::get_colour(static_cast<uint8_t>(nWheelPos * 3), static_cast<uint8_t>(255U - nWheelPos * 3), 0);
+		}
+	}
+
+	void Increment(const uint32_t nPortIndex) {
+		if (s_PortConfig[nPortIndex].Direction == pixelpatterns::Direction::FORWARD) {
+			s_PortConfig[nPortIndex].nPixelIndex++;
+			if (s_PortConfig[nPortIndex].nPixelIndex == s_PortConfig[nPortIndex].nTotalSteps) {
+				s_PortConfig[nPortIndex].nPixelIndex = 0;
+			}
+		} else {
+			if (s_PortConfig[nPortIndex].nPixelIndex > 0) {
+				s_PortConfig[nPortIndex].nPixelIndex--;
+			}
+			if (s_PortConfig[nPortIndex].nPixelIndex == 0) {
+				s_PortConfig[nPortIndex].nPixelIndex = s_PortConfig[nPortIndex].nTotalSteps - 1;
+			}
+		}
+	}
+
+	void Reverse(const uint32_t nPortIndex) {
+		if (s_PortConfig[nPortIndex].Direction == pixelpatterns::Direction::FORWARD) {
+			s_PortConfig[nPortIndex].Direction = pixelpatterns::Direction::REVERSE;
+			s_PortConfig[nPortIndex].nPixelIndex = s_PortConfig[nPortIndex].nTotalSteps - 1;
+		} else {
+			s_PortConfig[nPortIndex].Direction = pixelpatterns::Direction::FORWARD;
+			s_PortConfig[nPortIndex].nPixelIndex = 0;
 		}
 	}
 
     uint32_t DimColour(const uint32_t nColour) {
-        return Colour(static_cast<uint8_t>(Red(nColour) >> 1), static_cast<uint8_t>(Green(nColour) >> 1), static_cast<uint8_t>(Blue(nColour) >> 1));
+        return pixel::get_colour(static_cast<uint8_t>(pixel::get_red(nColour) >> 1), static_cast<uint8_t>(pixel::get_green(nColour) >> 1), static_cast<uint8_t>(pixel::get_blue(nColour) >> 1));
     }
 
-    uint8_t Red(const uint32_t nColour) {
-		return (nColour >> 16) & 0xFF;
-	}
-
-	uint8_t Green(const uint32_t nColour) {
-		return (nColour >> 8) & 0xFF;
-	}
-
-	uint8_t Blue(const uint32_t nColour) {
-		return nColour & 0xFF;
-	}
-
 	void Clear(const uint32_t nPortIndex) {
-		ColourSet(nPortIndex, 0);
+		pixel::set_pixel_colour(nPortIndex, 0);
 	}
 
 private:
-#if defined (PIXELPATTERNS_MULTI)
-	static WS28xxMulti *s_pOutput;
-#else
-	static WS28xx *s_pOutput;
-#endif
-	static uint32_t s_nActivePorts;
+	static inline uint32_t s_nActivePorts;
 
 	struct PortConfig {
 		uint32_t nLastUpdate;
@@ -195,9 +287,7 @@ private:
 		pixelpatterns::Pattern ActivePattern;
 	};
 
-	static PortConfig s_PortConfig[pixelpatterns::MAX_PORTS];
-
-	static uint32_t *s_pScannerColours;
+	static inline PortConfig s_PortConfig[pixelpatterns::MAX_PORTS];
 };
 
 #endif /* PIXELPATTERNS_H_ */
