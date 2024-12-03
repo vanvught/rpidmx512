@@ -41,6 +41,8 @@
 #include "display.h"
 #include "displayudf.h"
 
+#include "debug.h"
+
 class ArtNetTriggerHandler {
 public:
 	ArtNetTriggerHandler(LightSetWith4<32> *pLightSet32with4, LightSet *pLightSetA): m_pLightSet32with4(pLightSet32with4), m_pLightSetA(pLightSetA) {
@@ -59,16 +61,26 @@ public:
 
 private:
 	void Handler(const ArtNetTrigger *pArtNetTrigger) {
+		DEBUG_ENTRY
+
 		if (pArtNetTrigger->Key == ArtTriggerKey::ART_TRIGGER_KEY_SHOW) {
+			m_pLightSet32with4->SetLightSetA(m_pLightSetA);
+
 			const auto nShow = static_cast<pixelpatterns::Pattern>(pArtNetTrigger->SubKey);
 
+			DEBUG_PRINTF("nShow=%u", static_cast<uint32_t>(nShow));
+
 			if (nShow == PixelTestPattern::Get()->GetPattern()) {
+				DEBUG_EXIT
 				return;
 			}
 
 			const auto isSet = PixelTestPattern::Get()->SetPattern(nShow);
 
+			DEBUG_PRINTF("isSet=%u", static_cast<uint32_t>(isSet));
+
 			if (!isSet) {
+				DEBUG_EXIT
 				return;
 			}
 
@@ -78,10 +90,10 @@ private:
 				Display::Get()->Printf(6, "%s:%u", PixelPatterns::GetName(nShow), static_cast<uint32_t>(nShow));
 			} else {
 				m_pLightSetA->Blackout(true);
-				m_pLightSet32with4->SetLightSetA(m_pLightSetA);
 				DisplayUdf::Get()->Show();
 			}
 
+			DEBUG_EXIT
 			return;
 		}
 
@@ -89,11 +101,14 @@ private:
 			if (pArtNetTrigger->SubKey == 0) {
 				const auto isSet = PixelTestPattern::Get()->SetPattern(pixelpatterns::Pattern::NONE);
 
+				DEBUG_PRINTF("isSet=%u", static_cast<uint32_t>(isSet));
+
 				if (!isSet) {
+					DEBUG_EXIT
 					return;
 				}
 
-				ArtNetNode::Get()->SetOutput(nullptr);
+				m_pLightSet32with4->SetLightSetA(nullptr);
 
 				auto& pixelDmxConfiguration = PixelDmxConfiguration::Get();
 				const auto *pData = &pArtNetTrigger->Data[0];

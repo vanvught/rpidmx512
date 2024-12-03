@@ -56,9 +56,11 @@ public:
 	}
 
 private:
-	void Handler(const ArtNetTrigger *ptArtNetTrigger) {
-		if (ptArtNetTrigger->Key == ArtTriggerKey::ART_TRIGGER_KEY_SHOW) {
-			const auto nShow = static_cast<pixelpatterns::Pattern>(ptArtNetTrigger->SubKey);
+	void Handler(const ArtNetTrigger *pArtNetTrigger) {
+		if (pArtNetTrigger->Key == ArtTriggerKey::ART_TRIGGER_KEY_SHOW) {
+			m_pLightSet4with4->SetLightSetA(m_pLightSetA);
+
+			const auto nShow = static_cast<pixelpatterns::Pattern>(pArtNetTrigger->SubKey);
 
 			if (nShow == PixelTestPattern::Get()->GetPattern()) {
 				return;
@@ -76,8 +78,27 @@ private:
 				Display::Get()->Printf(6, "%s:%u", PixelPatterns::GetName(nShow), static_cast<uint32_t>(nShow));
 			} else {
 				m_pLightSetA->Blackout(true);
-				m_pLightSet4with4->SetLightSetA(m_pLightSetA);
 				DisplayUdf::Get()->Show();
+			}
+
+			return;
+		}
+
+		if (pArtNetTrigger->Key == ArtTriggerKey::ART_TRIGGER_UNDEFINED) {
+			if (pArtNetTrigger->SubKey == 0) {
+				const auto isSet = PixelTestPattern::Get()->SetPattern(pixelpatterns::Pattern::NONE);
+
+				if (!isSet) {
+					return;
+				}
+
+				m_pLightSet4with4->SetLightSetA(nullptr);
+
+				const auto *pData = &pArtNetTrigger->Data[0];
+				const uint32_t nColour = pData[0] | (static_cast<uint32_t>(pData[1]) << 8) | (static_cast<uint32_t>(pData[2]) << 16) | (static_cast<uint32_t>(pData[3]) << 24);
+
+				pixel::set_pixel_colour(0, nColour);
+				pixel::update();
 			}
 		}
 	}

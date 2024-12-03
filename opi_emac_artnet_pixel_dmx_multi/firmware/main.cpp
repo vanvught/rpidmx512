@@ -83,6 +83,8 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
+#include "debug.h"
+
 namespace hal {
 void reboot_handler() {
 	WS28xxMulti::Get()->Blackout();
@@ -138,8 +140,12 @@ int main() {
 		}
 	}
 
+	DEBUG_PUTS("");
+
 	const auto nTestPattern = static_cast<pixelpatterns::Pattern>(pixelDmxParams.GetTestPattern());
 	PixelTestPattern pixelTestPattern(nTestPattern, nPixelActivePorts);
+
+	DEBUG_PUTS("");
 
 	// LightSet B - DMX - 2 Universes
 
