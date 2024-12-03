@@ -81,6 +81,10 @@ public:
 		return "Unknown";
 	}
 
+	inline uint32_t GetActivePorts() const {
+		return s_nActivePorts;
+	}
+
 	void RainbowCycle(const uint32_t nPortIndex, const uint32_t nInterval, const pixelpatterns::Direction Direction = pixelpatterns::Direction::FORWARD) {
 		Clear(nPortIndex);
 
@@ -127,9 +131,14 @@ public:
 	}
 
 	void None(const uint32_t nPortIndex) {
+		DEBUG_ENTRY
+		DEBUG_PRINTF("nPortIndex=%u", nPortIndex);
+
 		Clear(nPortIndex);
 
 		s_PortConfig[nPortIndex].ActivePattern = pixelpatterns::Pattern::NONE;
+
+		DEBUG_EXIT
 	}
 
 	void Run() {

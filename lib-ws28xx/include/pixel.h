@@ -26,6 +26,11 @@
 #ifndef PIXEL_H_
 #define PIXEL_H_
 
+#pragma GCC push_options
+#pragma GCC optimize ("O3")
+#pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#pragma GCC optimize ("-fprefetch-loop-arrays")
+
 #include <cstdint>
 #include <cassert>
 
@@ -110,7 +115,9 @@ inline void set_pixel_colour([[maybe_unused]] uint32_t nPortIndex, const uint32_
 }
 
 inline void set_pixel_colour(const uint32_t nPortIndex, const uint32_t nColour) {
-	for (uint32_t i = 0; i < PixelConfiguration::Get().GetCount(); i++) {
+	const auto nCount = PixelConfiguration::Get().GetCount();
+
+	for (uint32_t i = 0; i < nCount; i++) {
 		set_pixel_colour(nPortIndex, i, nColour);
 	}
 }
@@ -128,4 +135,5 @@ inline void update() {
 }
 }  // namespace pixel
 
+#pragma GCC pop_options
 #endif /* PIXEL_H_ */

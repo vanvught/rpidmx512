@@ -47,6 +47,8 @@
 
 #include "logic_analyzer.h"
 
+#include "debug.h"
+
 struct JamSTAPLDisplay;
 
 class WS28xxMulti {
@@ -62,7 +64,7 @@ public:
 #define BIT_CLEAR(a,b) 	((a) &= static_cast<uint8_t>(~(1<<(b))))
 
 	inline void SetColourRTZ(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite) {
-	    uint32_t localBuffer[32] __attribute__((aligned(32)));
+		uint32_t localBuffer[32] __attribute__((aligned(32)));
 		const auto k = nPixelIndex * pixel::single::RGBW;
 
 	    for (uint32_t i = 0; i < 32; i++) {
@@ -74,27 +76,27 @@ public:
 		for (uint8_t mask = 0x80; mask != 0; mask = static_cast<uint8_t>(mask >> 1)) {
 			// GRBW
 			if (mask & nGreen) {
-				BIT_SET(localBuffer[k + j], nPortIndex);
+				BIT_SET(localBuffer[j], nPortIndex);
 			} else {
-				BIT_CLEAR(localBuffer[k + j], nPortIndex);
+				BIT_CLEAR(localBuffer[j], nPortIndex);
 			}
 
 			if (mask & nRed) {
-				BIT_SET(localBuffer[8 + k + j], nPortIndex);
+				BIT_SET(localBuffer[8 + j], nPortIndex);
 			} else {
-				BIT_CLEAR(localBuffer[8 + k + j], nPortIndex);
+				BIT_CLEAR(localBuffer[8 + j], nPortIndex);
 			}
 
 			if (mask & nBlue) {
-				BIT_SET(localBuffer[16 + k + j], nPortIndex);
+				BIT_SET(localBuffer[16 + j], nPortIndex);
 			} else {
-				BIT_CLEAR(localBuffer[16 + k + j], nPortIndex);
+				BIT_CLEAR(localBuffer[16 + j], nPortIndex);
 			}
 
 			if (mask & nWhite) {
-				BIT_SET(localBuffer[24 + k + j], nPortIndex);
+				BIT_SET(localBuffer[24 + j], nPortIndex);
 			} else {
-				BIT_CLEAR(localBuffer[24 + k + j], nPortIndex);
+				BIT_CLEAR(localBuffer[24 + j], nPortIndex);
 			}
 
 			j++;
@@ -123,27 +125,27 @@ public:
 		for (uint8_t mask = 0x80; mask != 0; mask = static_cast<uint8_t>(mask >> 1)) {
 			// GRBW
 			if (mask & nGreen) {
-				BIT_SET(localBuffer[k + j], nPortIndex);
+				BIT_SET(localBuffer[j], nPortIndex);
 			} else {
-				BIT_CLEAR(localBuffer[k + j], nPortIndex);
+				BIT_CLEAR(localBuffer[j], nPortIndex);
 			}
 
 			if (mask & nRed) {
-				BIT_SET(localBuffer[8 + k + j], nPortIndex);
+				BIT_SET(localBuffer[8 + j], nPortIndex);
 			} else {
-				BIT_CLEAR(localBuffer[8 + k + j], nPortIndex);
+				BIT_CLEAR(localBuffer[8 + j], nPortIndex);
 			}
 
 			if (mask & nBlue) {
-				BIT_SET(localBuffer[16 + k + j], nPortIndex);
+				BIT_SET(localBuffer[16 + j], nPortIndex);
 			} else {
-				BIT_CLEAR(localBuffer[16 + k + j], nPortIndex);
+				BIT_CLEAR(localBuffer[16 + j], nPortIndex);
 			}
 
 			if (mask & nWhite) {
-				BIT_SET(localBuffer[24 + k + j], nPortIndex);
+				BIT_SET(localBuffer[24 + j], nPortIndex);
 			} else {
-				BIT_CLEAR(localBuffer[24 + k + j], nPortIndex);
+				BIT_CLEAR(localBuffer[24 + j], nPortIndex);
 			}
 
 			j++;
@@ -219,7 +221,7 @@ private:
 private:
 	uint32_t m_nBufSize { 0 };
 
-	uint8_t *const m_pPixelDataBuffer { reinterpret_cast<uint8_t *>(H3_SRAM_A1_BASE + 1024) };
+	uint8_t *const m_pPixelDataBuffer { reinterpret_cast<uint8_t *>(H3_SRAM_A1_BASE + 512) };
 	uint8_t *m_pDmaBuffer { nullptr };
 
 	JamSTAPLDisplay *m_pJamSTAPLDisplay { nullptr };

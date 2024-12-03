@@ -32,12 +32,19 @@
 #include "pixel.h"
 #include "pixelpatterns.h"
 
+#include "debug.h"
+
 class PixelTestPattern final: PixelPatterns {
 public:
 	PixelTestPattern(const pixelpatterns::Pattern Pattern, const uint32_t OutputPorts) : PixelPatterns(OutputPorts) {
+		DEBUG_ENTRY
+
 		assert(s_pThis == nullptr);
 		s_pThis = this;
+
 		SetPattern(Pattern);
+
+		DEBUG_EXIT
 	}
 
 	bool SetPattern(const pixelpatterns::Pattern Pattern) {
@@ -52,7 +59,9 @@ public:
 		constexpr auto nInterval = 100;
 		constexpr auto nSteps = 10;
 
-		for (uint32_t i = 0; i < pixelpatterns::MAX_PORTS; i++) {
+		for (uint32_t i = 0; i < PixelPatterns::GetActivePorts(); i++) {
+			DEBUG_PRINTF("i=%u",i);
+
 			switch (Pattern) {
 			case pixelpatterns::Pattern::RAINBOW_CYCLE:
 				PixelPatterns::RainbowCycle(i, nInterval);
