@@ -96,7 +96,7 @@ public:
 		}
 	}
 
-	void SetColourRTZ(const uint32_t nPortIndex, const uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite) {
+	void SetColourRTZ(const uint32_t nPortIndex, const uint32_t nPixelIndex, const uint8_t nRed, const uint8_t nGreen, const uint8_t nBlue, const uint8_t nWhite) {
 		assert(nPortIndex < pixel::PORT_COUNT);
 
 		const auto k = nPixelIndex * pixel::single::RGBW;

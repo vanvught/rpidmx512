@@ -47,6 +47,12 @@
 #include "netif.h"
 #include "net/acd.h"
 #include "net/dhcp.h"
+#if defined (CONFIG_NET_ENABLE_NTP_CLIENT)
+# include "net/apps/ntp_client.h"
+#endif
+#if !defined(CONFIG_NET_APPS_NO_MDNS)
+# include "net/apps/mdns.h"
+#endif
 
 #include "debug.h"
 
@@ -57,9 +63,10 @@ namespace globals {
 uint32_t nBroadcastMask;
 uint32_t nOnNetworkMask;
 }  // namespace globals
+
 #if defined (CONFIG_NET_ENABLE_PTP)
-void ptp_init();
-void ptp_handle(const uint8_t *, const uint32_t);
+ void ptp_init();
+ void ptp_handle(const uint8_t *, const uint32_t);
 #endif
 
 void net_shutdown() {
@@ -143,7 +150,12 @@ void __attribute__((cold)) net_init(const net::Link link, ip4_addr_t ipaddr, ip4
 #if defined (CONFIG_NET_ENABLE_PTP)
 	net::ptp_init();
 #endif
-
+#if defined (CONFIG_NET_ENABLE_NTP_CLIENT)
+	ntp_client_init();
+#endif
+#if !defined(CONFIG_NET_APPS_NO_MDNS)
+	mdns_init();
+#endif
 	DEBUG_EXIT
 }
 
