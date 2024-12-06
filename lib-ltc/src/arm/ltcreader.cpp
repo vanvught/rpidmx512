@@ -108,18 +108,18 @@ void EXTI10_15_IRQHandler() {
 	__DMB();
 
 #if defined (H3)
-	nFiqUsCurrent = h3_hs_timer_lo_us();
+	nFiqUsCurrent = H3_TIMER->AVS_CNT1;
 
 	H3_PIO_PA_INT->STA = static_cast<uint32_t>(~0x0);
 
-	if (nFiqUsPrevious >= nFiqUsCurrent) {
-		nBitTime = nFiqUsPrevious - nFiqUsCurrent;
-		nBitTime = 42949672 - nBitTime;
-	} else {
+	if (nFiqUsCurrent >= nFiqUsPrevious) {
 		nBitTime = nFiqUsCurrent - nFiqUsPrevious;
+	} else {
+		nBitTime = UINT32_MAX - (nFiqUsPrevious - nFiqUsCurrent);
 	}
 #elif defined (GD32)
 	nFiqUsCurrent = TIMER_CNT(TIMER5);
+
 	if (nFiqUsCurrent >= nFiqUsPrevious) {
 		nBitTime = nFiqUsCurrent - nFiqUsPrevious;
 	} else {

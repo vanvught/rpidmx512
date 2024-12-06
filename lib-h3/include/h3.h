@@ -167,7 +167,8 @@ typedef enum T_H3_IRQn {
 	H3_TIMER0_IRQn = 50,
 	H3_TIMER1_IRQn = 51,
 	H3_AUDIO_CODEC_IRQn = 61,
-	H3_DMA_IRQn = 82
+	H3_DMA_IRQn = 82,
+	H3_HSTIMER_IRQn = 83
 } H3_IRQn_TypeDef;
 
 #ifdef __ASSEMBLY__

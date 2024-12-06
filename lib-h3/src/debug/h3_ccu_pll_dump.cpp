@@ -1,8 +1,8 @@
 /**
- * @file h3_ccu.c
+ * @file h3_ccu_pll_dump.cpp
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,13 +23,13 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "h3_ccu.h"
 
-extern int uart0_printf(const char* fmt, ...);
+extern "C" int uart0_printf(const char* fmt, ...);
 
-void __attribute__((cold)) h3_ccu_pll_dump(void) {
+void __attribute__((cold)) h3_ccu_pll_dump() {
 	uart0_printf("PLL (Hz)\n");
 	uart0_printf("CPUX=%u\n", h3_ccu_get_pll_rate(CCU_PLL_CPUX));
 	uart0_printf("AUDIO=%u\n", h3_ccu_get_pll_rate(CCU_PLL_AUDIO));
