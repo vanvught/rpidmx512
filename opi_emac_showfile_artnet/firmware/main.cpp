@@ -107,11 +107,6 @@ int main() {
 	remoteConfigParams.Load();
 	remoteConfigParams.Set(&remoteConfig);
 
-	while (configStore.Flash())
-		;
-
-	mdns_print(); //	mDns.Print();
-
 	display.SetTitle("Showfile player");
 	display.Set(2, displayudf::Labels::HOSTNAME);
 	display.Set(3, displayudf::Labels::IP);

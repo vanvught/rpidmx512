@@ -32,7 +32,6 @@
 #include "hardware.h"
 #include "network.h"
 
-
 #include "display.h"
 
 #include "net/apps/mdns.h"
@@ -173,7 +172,6 @@ int main(int argc, char **argv) {
 	while (configStore.Flash())
 		;
 
-	mdns_print(); //	mDns.Print();
 	node.Start();
 
 	while (keepRunning) {

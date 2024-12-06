@@ -91,11 +91,6 @@ int main() {
 	remoteConfigParams.Load();
 	remoteConfigParams.Set(&remoteConfig);
 
-	while (configStore.Flash())
-		;
-
-	mdns_print();
-
 	display.SetTitle("LLRP Only - TFTP");
 	display.Set(2, displayudf::Labels::HOSTNAME);
 	display.Set(3, displayudf::Labels::IP);

@@ -102,11 +102,6 @@ int main() {
 	remoteConfigParams.Load();
 	remoteConfigParams.Set(&remoteConfig);
 
-	while (configStore.Flash())
-		;
-
-	mdns_print(); //	mDns.Print();
-
 	for (uint32_t i = 1; i < 7 ; i++) {
 		display.ClearLine(i);
 	}

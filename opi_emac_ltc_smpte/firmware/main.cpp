@@ -486,8 +486,6 @@ int main() {
 		break;
 	}
 
-	mdns_print();
-
 	RemoteConfig remoteConfig(remoteconfig::Node::LTC, remoteconfig::Output::TIMECODE, 1U + static_cast<uint32_t>(ltcSource));
 
 	RemoteConfigParams remoteConfigParams;

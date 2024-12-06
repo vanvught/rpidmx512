@@ -111,11 +111,6 @@ int main() {
 	remoteConfigParams.Load();
 	remoteConfigParams.Set(&remoteConfig);
 
-	while (configStore.Flash())
-		;
-
-	mdns_print(); //	mDns.Print();
-
 	display.TextStatus(OscServerMsgConst::START, CONSOLE_YELLOW);
 
 	server.Start();

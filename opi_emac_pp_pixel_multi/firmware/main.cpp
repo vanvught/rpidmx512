@@ -163,11 +163,6 @@ int main() {
 	remoteConfigParams.Load();
 	remoteConfigParams.Set(&remoteConfig);
 
-	while (configStore.Flash())
-		;
-
-	mdns_print(); //	mDns.Print();
-
 	display.TextStatus("PixelPusher Start", CONSOLE_YELLOW);
 
 	pp.Start();

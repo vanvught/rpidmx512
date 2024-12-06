@@ -156,11 +156,6 @@ int main() {
 
 	llrpOnlyDevice.Print();
 
-	while (configStore.Flash())
-		;
-
-	mdns_print(); //	mDns.Print();
-
 	display.TextStatus(ArtNetMsgConst::START, CONSOLE_YELLOW);
 
 	node.Start();

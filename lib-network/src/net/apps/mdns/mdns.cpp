@@ -138,7 +138,6 @@ struct Domain {
 	}
 
 	void Print(const bool bNewLine = false) {
-		putchar(' ');
 		auto const *pName = aName;
 		while (*pName && (pName < &aName[nLength])) {
 			auto nLength = static_cast<size_t>(*pName);
@@ -633,6 +632,11 @@ void mdns_start() {
 
 	mdns_send_announcement(MDNS_RESPONSE_TTL);
 
+	Domain domain;
+
+	create_host_domain(domain);
+	domain.Print(true);
+
 	DEBUG_EXIT
 }
 
@@ -825,6 +829,12 @@ bool mdns_service_record_add(const char *pName, const mdns::Services services, c
 					| ServiceReply::TXT;
 
 			mdns_send_message(record, 0, MDNS_RESPONSE_TTL);
+
+			Domain domain;
+			create_service_domain(domain, record, false);
+			domain.Print();
+			printf(" %d %.*s\n", __builtin_bswap16(record.nPort), record.nTextContentLength, record.pTextContent == nullptr ? "" : record.pTextContent);
+
 			return true;
 		}
 	}
@@ -1012,21 +1022,3 @@ void mdns_run() {
 
 	mdns_input(nullptr, 0, 0, 0);
 }
-
-void mdns_print() {
-	printf("mDNS\n");
-
-	Domain domain;
-
-	create_host_domain(domain);
-	domain.Print(true);
-
-	for (auto &record : s_ServiceRecords) {
-		if (record.services < Services::LAST_NOT_USED) {
-			create_service_domain(domain, record, false);
-			domain.Print();
-			printf(" %d %.*s\n", __builtin_bswap16(record.nPort), record.nTextContentLength, record.pTextContent == nullptr ? "" : record.pTextContent);
-		}
-	}
-}
-

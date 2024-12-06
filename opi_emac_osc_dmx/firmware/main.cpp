@@ -113,11 +113,6 @@ int main() {
 
 	display.TextStatus(OscServerMsgConst::STARTED, CONSOLE_GREEN);
 
-	while (configStore.Flash())
-		;
-
-	mdns_print(); //	mDns.Print();
-
 	hw.WatchdogInit();
 
 	for (;;) {

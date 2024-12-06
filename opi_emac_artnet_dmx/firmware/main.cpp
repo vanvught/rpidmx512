@@ -146,11 +146,6 @@ int main() {
 	remoteConfigParams.Load();
 	remoteConfigParams.Set(&remoteConfig);
 
-	while (configStore.Flash())
-		;
-
-	mdns_print();
-
 	display.TextStatus(ArtNetMsgConst::START, CONSOLE_YELLOW);
 
 	node.Start();

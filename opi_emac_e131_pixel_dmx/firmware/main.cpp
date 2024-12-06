@@ -229,11 +229,6 @@ int main() {
 	remoteConfigParams.Load();
 	remoteConfigParams.Set(&remoteConfig);
 
-	while (configStore.Flash())
-		;
-
-	mdns_print(); //	mDns.Print();
-
 	display.TextStatus(E131MsgConst::START, CONSOLE_YELLOW);
 
 	bridge.Start();

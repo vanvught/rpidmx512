@@ -163,11 +163,6 @@ int main() {
 	remoteConfigParams.Load();
 	remoteConfigParams.Set(&remoteConfig);
 
-	while (configStore.Flash())
-		;
-
-	mdns_print(); //	mDns.Print();
-
 	display.TextStatus("DDP Display Start", CONSOLE_YELLOW);
 
 	ddpDisplay.Start();
