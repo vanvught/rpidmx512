@@ -31,7 +31,7 @@
 #include "net/protocol/dhcp.h"
 
 namespace net {
-static constexpr auto LINE_IP = 2U;
+static constexpr auto LINE_IP = 3U;
 
 void display_emac_config() {
 	Display::Get()->ClearLine(LINE_IP);

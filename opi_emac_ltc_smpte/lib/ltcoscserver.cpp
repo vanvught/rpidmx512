@@ -194,13 +194,13 @@ void LtcOscServer::Input(const uint8_t *pData, uint32_t nSize, [[maybe_unused]] 
 
 					timeCode[2] = ':';
 					timeCode[5] = ':';
-					timeCode[8] = '.';
+					timeCode[8] = ':';
 
 					LtcGenerator::Get()->ActionSetStart(timeCode);
 					LtcGenerator::Get()->ActionStop();
 					LtcGenerator::Get()->ActionStart();
 
-					DEBUG_PUTS(timeCode);
+					DEBUG_PRINTF("%.*s", VALUE_LENGTH, timeCode);
 				}
 			} else if ((nCommandLength == (m_nPathLength + length::START + length::SET + VALUE_LENGTH))) {
 				if (memcmp(&pDataChar[m_nPathLength + length::START], cmd::SET, length::SET) == 0) {
@@ -211,11 +211,11 @@ void LtcOscServer::Input(const uint8_t *pData, uint32_t nSize, [[maybe_unused]] 
 
 					timeCode[2] = ':';
 					timeCode[5] = ':';
-					timeCode[8] = '.';
+					timeCode[8] = ':';
 
 					LtcGenerator::Get()->ActionSetStart(timeCode);
 
-					DEBUG_PUTS(timeCode);
+					DEBUG_PRINTF("%.*s", VALUE_LENGTH, timeCode);
 				}
 			}
 			return;
@@ -237,11 +237,11 @@ void LtcOscServer::Input(const uint8_t *pData, uint32_t nSize, [[maybe_unused]] 
 
 					timeCode[2] = ':';
 					timeCode[5] = ':';
-					timeCode[8] = '.';
+					timeCode[8] = ':';
 
 					LtcGenerator::Get()->ActionSetStop(timeCode);
 
-					DEBUG_PUTS(timeCode);
+					DEBUG_PRINTF("%.*s", VALUE_LENGTH, timeCode);
 				}
 			}
 
@@ -307,7 +307,7 @@ void LtcOscServer::Input(const uint8_t *pData, uint32_t nSize, [[maybe_unused]] 
 
 				timeCode[2] = ':';
 				timeCode[5] = ':';
-				timeCode[8] = '.';
+				timeCode[8] = ':';
 
 				LtcGenerator::Get()->ActionGoto(timeCode);
 

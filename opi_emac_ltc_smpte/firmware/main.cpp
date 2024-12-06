@@ -140,6 +140,8 @@ extern "C" {
 void h3_cpu_off(uint32_t);
 }
 
+void static staticCallbackFunction([[maybe_unused]] const struct artnet::TimeCode *pTimeCode) {}
+
 int main() {
 	Hardware hw;
 	Display display(4);
@@ -260,6 +262,7 @@ int main() {
 	const auto bRunArtNet = ((ltcSource == ltc::Source::ARTNET) || (!ltc::g_DisabledOutputs.bArtNet));
 
 	ArtNetNode node;
+	node.SetArtTimeCodeCallbackFunction(staticCallbackFunction);
 
 	if (bRunArtNet) {
 		ArtNetParams artnetparams;
