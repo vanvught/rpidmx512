@@ -124,7 +124,7 @@ int main() {
 #ifndef H3
 	if (outputType == lightset::OutputType::MONITOR) {
 		timecode.Start();
-		node.SetTimeCodeHandler(&timecode);
+		node.SetArtTimeCodeCallbackFunction(TimeCode::staticCallbackFunction);
 	}
 #endif
 

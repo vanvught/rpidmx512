@@ -29,7 +29,6 @@
 #include "hardware.h"
 #include "network.h"
 #if !defined(NO_EMAC)
-# include "networkconst.h"
 # include "net/apps/mdns.h"
 #endif
 
