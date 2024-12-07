@@ -1,8 +1,8 @@
 /**
- * @file h3_timer.c
+ * @file msdelay.c
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,30 +23,14 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-
 #include "h3.h"
 
-void __msdelay(uint32_t ms) {
-	uint32_t t1, t2;
+void __msdelay(const uint32_t ms)  {
+	const uint32_t t1 = H3_TIMER->AVS_CNT0;
 
-	t1 = H3_TIMER->AVS_CNT0;
-	t2 = t1 + ms;
 	do {
-		t1 = H3_TIMER->AVS_CNT0;
-	} while (t2 >= t1);
-
-	return;
-}
-
-void __usdelay(uint32_t us) {
-	uint32_t t1, t2;
-
-	t1 = H3_TIMER->AVS_CNT1;
-	t2 = t1 + us;
-	do {
-		t1 = H3_TIMER->AVS_CNT1;
-	} while (t2 >= t1);
+		__DMB();
+	} while ((H3_TIMER->AVS_CNT0 - t1) < ms);
 
 	return;
 }

@@ -1,8 +1,8 @@
 /**
- * @file h3_h3_timer_init.cpp
+ * @file h3_timer_avs.cpp
  *
  */
-/* Copyright (C) 2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2023-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,7 +36,7 @@
 #define DIV_N_CNT0	0x2EE0	// 24MHz / 2 / 12000 = 1KHz, period 1ms
 #define DIV_N_CNT1	0xC		// 24MHz / 2 / 12 = 1MHz, period 1us
 
-void __attribute__((cold)) h3_timer_init() {
+void __attribute__((cold)) h3_timer_avs_init() {
 	H3_CCU->AVS_CLK_CFG |= SCLK_GATING;
 
 	H3_TIMER->AVS_CTRL = AVS_CNT1_EN |AVS_CNT0_EN;

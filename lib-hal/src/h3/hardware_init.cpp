@@ -62,7 +62,7 @@ static uint32_t s_hardware_init_startup_seconds = 0;
 
 extern void emac_init(void);
 extern void sys_time_init(void);
-extern void h3_timer_init(void);
+extern void h3_timer_avs_init(void);
 extern void h3_hs_timer_init(void);
 extern void h3_usb_end(void);
 
@@ -120,7 +120,7 @@ void __attribute__((cold)) hardware_init(void) {
 
 	h3_watchdog_disable();
 	h3_usb_end();
-	h3_timer_init();
+	h3_timer_avs_init();
 	h3_hs_timer_init();
 	sys_time_init();
 	console_init();
