@@ -1,10 +1,8 @@
-#pragma GCC push_options
-#pragma GCC optimize ("Os")
 /**
  * @file h3_hdmi.cpp
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,15 +38,16 @@
 
 #include <cstdint>
 #include <cstring>
+#include <cstddef>
 #include <cstdio>
 
 extern "C" {
 void uart0_puts(const char *);
+int uart0_printf(const char *fmt, ...);
 }
 
 #include "h3.h"
 #include "h3_ccu.h"
-#include "h3_hs_timer.h"
 
 #include "display_timing.h"
 
@@ -104,9 +103,6 @@ static uint32_t hdmi_get_divider(uint32_t clock) {
 }
 
 static void hdmi_phy_init(void) {
-	uint32_t tmo;
-	uint32_t tmp;
-
 	/*
 	 * HDMI PHY settings are taken as-is from Allwinner BSP code.
 	 * There is no documentation.
@@ -134,11 +130,11 @@ static void hdmi_phy_init(void) {
 	H3_HDMI_PHY->CTRL |= (7U << 4);
 
 	/* Note that Allwinner code doesn't fail in case of timeout */
-	tmo = h3_hs_timer_lo_us() + 2000;
+	const auto t1 = H3_TIMER->AVS_CNT1;
 
 	while ((H3_HDMI_PHY->STATUS & 0x80) == 0) {
-		if (h3_hs_timer_lo_us() > tmo) {
-			printf("Warning: HDMI PHY init timeout!\n");
+		if (H3_TIMER->AVS_CNT1 - t1 > 20000) {
+			uart0_puts("Warning: HDMI PHY init timeout!\n");
 			break;
 		}
 	}
@@ -154,7 +150,7 @@ static void hdmi_phy_init(void) {
 	H3_HDMI_PHY->PLL |= BIT(25);
 	udelay(100000);
 
-	tmp = (H3_HDMI_PHY->STATUS & 0x1f800) >> 11;
+	auto tmp = (H3_HDMI_PHY->STATUS & 0x1f800) >> 11;
 
 	H3_HDMI_PHY->PLL |= (BIT(31) | BIT(30));
 	H3_HDMI_PHY->PLL |= tmp;
@@ -174,16 +170,14 @@ static int hdmi_get_plug_in_status() {
 }
 
 static int hdmi_wait_for_hpd() {
-	uint32_t start;
-
-	start = h3_hs_timer_lo_us();
+	const auto nStart = H3_TIMER->AVS_CNT1;
 
 	do {
 		if (hdmi_get_plug_in_status()) {
 			return 0;
 		}
-		udelay(100);
-	} while ((h3_hs_timer_lo_us() - start) < 300);
+		__DMB();
+	} while ((H3_TIMER->AVS_CNT1- nStart) < 300);
 
 	return -1;
 }
@@ -316,18 +310,16 @@ static void hdmi_pll_set(const uint32_t clk_khz) {
 
 	clock_set_pll_video_factors(best_m, best_n);
 
-	printf("dotclock: %dkHz = %dkHz: (24MHz * %d) / %d / %d\n", clk_khz, (clock_get_pll_video() / 1000) / div, best_n, best_m, div);
+	uart0_printf("dotclock: %dkHz = %dkHz: (24MHz * %d) / %d / %d\n", clk_khz, (clock_get_pll_video() / 1000) / div, best_n, best_m, div);
 }
 
 /*
  * The LCD0 module is used for HDMI
  */
 
-extern "C" {
 void h3_lcdc_init();
-void h3_lcdc_tcon1_mode_set(const struct display_timing *mode);
-void h3_lcdc_enable(uint32_t depth);
-}
+void h3_lcdc_tcon1_mode_set(const struct display_timing *);
+void h3_lcdc_enable(const uint32_t);
 
 static void hdmi_lcdc_init(const struct display_timing *edid, uint32_t bpp) {
 	uint32_t div = hdmi_get_divider(edid->pixelclock.typ);
@@ -383,14 +375,14 @@ __attribute__((cold)) int h3_hdmi_enable(uint32_t panel_bpp, const struct displa
 	return 0;
 }
 
-static void clock_set_pll_video(uint32_t clk) {
-	if (clk == 0) {
+static void clock_set_pll_video(const uint32_t nClock) {
+	if (nClock == 0) {
 		H3_CCU->PLL_VIDEO_CTRL &= (~CCU_PLL_VIDEO_CTRL_EN);
 		return;
 	}
 
 	/* VIDEO rate = 3000000 * m */
-	H3_CCU->PLL_VIDEO_CTRL = CCU_PLL_VIDEO_CTRL_EN | CCU_PLL_VIDEO_CTRL_INTEGER_MODE | CCU_PLL_VIDEO_CTRL_M(clk / 3000000);
+	H3_CCU->PLL_VIDEO_CTRL = CCU_PLL_VIDEO_CTRL_EN | CCU_PLL_VIDEO_CTRL_INTEGER_MODE | CCU_PLL_VIDEO_CTRL_M(nClock / 3000000);
 }
 
 /*
@@ -399,8 +391,6 @@ static void clock_set_pll_video(uint32_t clk) {
 
 int __attribute__((cold)) h3_hdmi_probe() {
 	struct sunxi_dw_hdmi_priv *priv = &_sunxi_dw_hdmi_priv;
-	int ret;
-
 	clock_set_pll_video(297000000);
 
 	H3_CCU->HDMI_CLK = ((H3_CCU->HDMI_CLK & (~CCU_HDMI_CTRL_PLL_MASK)) | CCU_HDMI_CTRL_PLL_VIDEO);
@@ -414,7 +404,7 @@ int __attribute__((cold)) h3_hdmi_probe() {
 
 	hdmi_phy_init();
 
-	ret = hdmi_wait_for_hpd();
+	const auto ret = hdmi_wait_for_hpd();
 
 	if (ret < 0) {
 		uart0_puts("hdmi can not get hpd signal\n");

@@ -1,10 +1,8 @@
-#pragma GCC push_options
-#pragma GCC optimize ("Os")
 /**
- * @file h3_lcdc.c
+ * @file h3_lcdc.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,8 +38,7 @@
  * (C) Copyright 2017 Jernej Skrabec <jernej.skrabec@siol.net>
  */
 
-#include <stdint.h>
-#include <stdbool.h>
+#include <cstdint>
 
 #include "h3.h"
 #include "h3_ccu.h"
@@ -66,7 +63,7 @@
  * The LCD0 module is used for HDMI
  */
 
-void h3_lcdc_enable(__attribute__((unused)) int depth) {
+void h3_lcdc_enable(__attribute__((unused)) const uint32_t depth) {
 	H3_LCD0->GCTL |= LCDC_CTRL_TCON_ENABLE;
 }
 
@@ -85,13 +82,11 @@ static uint32_t lcdc_get_clk_delay(const struct display_timing *mode, const uint
 }
 
 void h3_lcdc_tcon1_mode_set(const struct display_timing *mode) {
-	uint32_t bp, clk_delay, total, yres;
-
-	clk_delay = lcdc_get_clk_delay(mode, 1);
+	const auto clk_delay = lcdc_get_clk_delay(mode, 1);
 
 	H3_LCD0->TCON1_CTL = LCDC_TCON1_CTRL_ENABLE | ((mode->flags & DISPLAY_FLAGS_INTERLACED) ? LCDC_TCON1_CTRL_INTERLACE_ENABLE : 0) | LCDC_TCON1_CTRL_CLK_DELAY(clk_delay);
 
-	yres = mode->vactive.typ;
+	auto yres = mode->vactive.typ;
 
 	if (mode->flags & DISPLAY_FLAGS_INTERLACED) {
 		yres /= 2;
@@ -101,8 +96,8 @@ void h3_lcdc_tcon1_mode_set(const struct display_timing *mode) {
 	H3_LCD0->TCON1_BASIC1 = LCDC_X(mode->hactive.typ) | LCDC_Y(yres);
 	H3_LCD0->TCON1_BASIC2 = LCDC_X(mode->hactive.typ) | LCDC_Y(yres);
 
-	bp = mode->hsync_len.typ + mode->hback_porch.typ;
-	total = mode->hactive.typ + mode->hfront_porch.typ + bp;
+	auto bp = mode->hsync_len.typ + mode->hback_porch.typ;
+	auto total = mode->hactive.typ + mode->hfront_porch.typ + bp;
 
 	H3_LCD0->TCON1_BASIC3 = LCDC_TCON1_TIMING_H_TOTAL(total) | LCDC_TCON1_TIMING_H_BP(bp);
 
@@ -117,7 +112,7 @@ void h3_lcdc_tcon1_mode_set(const struct display_timing *mode) {
 	H3_LCD0->TCON1_BASIC5 = LCDC_X(mode->hsync_len.typ) | LCDC_Y(mode->vsync_len.typ);
 }
 
-void __attribute__((cold)) h3_lcdc_init(void) {
+void __attribute__((cold)) h3_lcdc_init() {
 	H3_LCD0->GCTL = 0;
 	H3_LCD0->GINT0 = 0;
 	H3_LCD0->TCON0_DCLK &= (~LCDC_TCON0_DCLK_ENABLE);
