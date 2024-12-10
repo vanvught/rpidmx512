@@ -2,7 +2,8 @@ DEFINES =NDEBUG
 
 EXTRA_INCLUDES=
 
-EXTRA_SRCDIR=src/h3/time_timer_avs
+EXTRA_SRCDIR=src/h3/time_timer_arm_generic
+#EXTRA_SRCDIR=src/h3/time_timer_avs
 
 include Rules.mk
 include ../firmware-template-h3/lib/Rules.mk

@@ -170,14 +170,14 @@
 					</folderInfo>
 					<sourceEntries>
 						<entry excluding="src|src/rdm" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
-						<entry excluding="c++|gd32|gd32/time_ptp|gd32/time_systick|gd32/time_timer|h3|h3/time_hs_timer|libc|nostdlib" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
+						<entry excluding="h3|gd32|gd32/time_ptp|libc|gd32/time_timer|gd32/time_systick|h3/time_hs_timer|c++|nostdlib" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/c++"/>
-						<entry excluding="time_ptp|time_systick|time_timer" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/gd32"/>
+						<entry excluding="time_timer|time_ptp|time_systick" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/gd32"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/gd32/time_ptp"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/gd32/time_systick"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/gd32/time_timer"/>
-						<entry excluding="time_timer_avs|time_hs_timer" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/h3"/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/h3/time_hs_timer"/>
+						<entry excluding="time_timer_arm_generic|time_timer_avs" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/h3"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/h3/time_timer_arm_generic"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/h3/time_timer_avs"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/libc"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/nostdlib"/>

@@ -52,8 +52,8 @@
 /**
  * H3 Timers
  */
-static thunk_irq_timer_t h3_timer0_func = NULL;
-static thunk_irq_timer_t h3_timer1_func = NULL;
+static thunk_irq_timer_t h3_timer0_func;
+static thunk_irq_timer_t h3_timer1_func;
 
 static void TIMER0_IRQHandler() {
 	H3_TIMER->IRQ_STA = TIMER_IRQ_PEND_TMR0;	/* Clear Timer 0 Pending bit */
@@ -78,8 +78,8 @@ static void TIMER1_IRQHandler() {
 /**
  * Generic ARM Timer
  */
-static volatile thunk_irq_timer_arm_t arm_physical_timer_func = nullptr;
-static volatile thunk_irq_timer_arm_t arm_virtual_timer_func = nullptr;
+static volatile thunk_irq_timer_arm_t arm_physical_timer_func;
+static volatile thunk_irq_timer_arm_t arm_virtual_timer_func;
 
 static volatile uint32_t timer_value;
 
