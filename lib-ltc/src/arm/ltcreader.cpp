@@ -292,18 +292,12 @@ void LtcReader::Run() {
 			ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct artnet::TimeCode*>(&ltcTimeCode));
 		}
 
-		if (!ltc::g_DisabledOutputs.bRtpMidi) {
-			RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(const_cast<struct midi::Timecode *>(&s_midiTimeCode)));
-		}
-
 		if (!ltc::g_DisabledOutputs.bEtc) {
 			LtcEtc::Get()->Send(reinterpret_cast<const struct midi::Timecode *>(const_cast<struct midi::Timecode *>(&s_midiTimeCode)));
 		}
 
 		if (m_nTypePrevious != TimeCodeType) {
 			m_nTypePrevious = TimeCodeType;
-
-			Midi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(const_cast<struct midi::Timecode *>(&s_midiTimeCode)));
 
 #if defined (H3)
 			H3_TIMER->TMR1_INTV = TimeCodeConst::TMR_INTV[static_cast<uint32_t>(TimeCodeType)] / 4;
@@ -314,7 +308,7 @@ void LtcReader::Run() {
 #endif
 		}
 
-		LtcOutputs::Get()->Update(reinterpret_cast<const struct ltc::TimeCode*>(&ltcTimeCode));
+		LtcOutputs::Get()->Update(reinterpret_cast<const struct ltc::TimeCode *>(&ltcTimeCode));
 	}
 
 	__DMB();

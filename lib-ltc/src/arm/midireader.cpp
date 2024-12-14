@@ -153,10 +153,6 @@ void MidiReader::Update() {
 		ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct artnet::TimeCode*>(&m_MidiTimeCode));
 	}
 
-	if (!ltc::g_DisabledOutputs.bRtpMidi) {
-		RtpMidi::Get()->SendTimeCode(&m_MidiTimeCode);
-	}
-
 	if (!ltc::g_DisabledOutputs.bEtc) {
 		LtcEtc::Get()->Send(&m_MidiTimeCode);
 	}

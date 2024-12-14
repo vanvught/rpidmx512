@@ -103,7 +103,7 @@ LtcOutputs::LtcOutputs(const ltc::Source source, const bool bShowSysTime): m_bSh
 }
 
 void LtcOutputs::Init() {
-	if (!ltc::g_DisabledOutputs.bMidi) {
+	if ((!ltc::g_DisabledOutputs.bMidi) || (!ltc::g_DisabledOutputs.bRtpMidi)) {
 #if defined (H3)
 		irq_timer_set(IRQ_TIMER_1, static_cast<thunk_irq_timer_t>(irq_timer1_midi_handler));
 #elif defined (GD32)
@@ -119,12 +119,12 @@ void LtcOutputs::Init() {
 void LtcOutputs::Update(const struct ltc::TimeCode *ptLtcTimeCode) {
 	assert(ptLtcTimeCode != nullptr);
 
-	if (!ltc::g_DisabledOutputs.bNtp) {
-		NtpServer::Get()->SetTimeCode(ptLtcTimeCode);
-	}
-
 	if (ptLtcTimeCode->nType != static_cast<uint8_t>(m_TypePrevious)) {
 		m_TypePrevious = static_cast<ltc::Type>(ptLtcTimeCode->nType);
+
+		if (!ltc::g_DisabledOutputs.bRtpMidi) {
+			RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(ptLtcTimeCode));
+		}
 
 		if (!ltc::g_DisabledOutputs.bMidi) {
 			Midi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(ptLtcTimeCode));
@@ -140,6 +140,7 @@ void LtcOutputs::Update(const struct ltc::TimeCode *ptLtcTimeCode) {
 #endif
 
 		m_nMidiQuarterFramePiece = 0;
+		m_nRtpMidiQuarterFramePiece = 0;
 
 		if (!ltc::g_DisabledOutputs.bOled) {
 			Display::Get()->TextLine(2, ltc::get_type(static_cast<ltc::Type>(ptLtcTimeCode->nType)), ltc::timecode::TYPE_MAX_LENGTH);
@@ -152,6 +153,10 @@ void LtcOutputs::Update(const struct ltc::TimeCode *ptLtcTimeCode) {
 #endif
 
 		m_aTimeCode[ltc::timecode::index::COLON_3] = (ptLtcTimeCode->nType != static_cast<uint8_t>(ltc::Type::DF) ? ':' : ';');
+	}
+
+	if (!ltc::g_DisabledOutputs.bNtp) {
+		NtpServer::Get()->SetTimeCode(ptLtcTimeCode);
 	}
 
 	ltc::itoa_base10(ptLtcTimeCode, m_aTimeCode);
@@ -176,7 +181,14 @@ void LtcOutputs::UpdateMidiQuarterFrameMessage(const struct ltc::TimeCode *pltcT
 
 	if (__builtin_expect((sv_isMidiQuarterFrameMessage), 0)) {
 		sv_isMidiQuarterFrameMessage = false;
-		Midi::Get()->SendQf(reinterpret_cast<const struct midi::Timecode *>(pltcTimeCode), m_nMidiQuarterFramePiece);
+
+		if (!ltc::g_DisabledOutputs.bRtpMidi) {
+			RtpMidi::Get()->SendQf(reinterpret_cast<const struct midi::Timecode *>(pltcTimeCode), m_nRtpMidiQuarterFramePiece);
+		}
+
+		if (!ltc::g_DisabledOutputs.bMidi) {
+			Midi::Get()->SendQf(reinterpret_cast<const struct midi::Timecode *>(pltcTimeCode), m_nMidiQuarterFramePiece);
+		}
 	}
 }
 

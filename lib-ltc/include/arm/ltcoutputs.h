@@ -53,6 +53,7 @@ private:
 	bool m_bShowSysTime;
 	ltc::Type m_TypePrevious { ltc::Type::INVALID };
 	uint32_t m_nMidiQuarterFramePiece { 0 };
+	uint32_t m_nRtpMidiQuarterFramePiece { 0 };
 	char m_aTimeCode[ltc::timecode::CODE_MAX_LENGTH];
 	char m_aSystemTime[ltc::timecode::SYSTIME_MAX_LENGTH];
 	int32_t m_nSecondsPrevious { 60 };

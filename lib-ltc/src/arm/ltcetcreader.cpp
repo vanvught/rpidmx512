@@ -84,10 +84,6 @@ void LtcEtcReader::Handler(const midi::Timecode *pTimeCode) {
 		ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct artnet::TimeCode *>(pTimeCode));
 	}
 
-	if (!ltc::g_DisabledOutputs.bRtpMidi) {
-		RtpMidi::Get()->SendTimeCode(pTimeCode);
-	}
-
 	memcpy(&m_MidiTimeCode, pTimeCode, sizeof(struct midi::Timecode));
 
 	LtcOutputs::Get()->Update(reinterpret_cast<const struct ltc::TimeCode*>(pTimeCode));

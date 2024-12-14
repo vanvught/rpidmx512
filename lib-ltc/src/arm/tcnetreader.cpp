@@ -119,10 +119,6 @@ void TCNetReader::Handler(const struct tcnet::TimeCode *pTimeCode) {
 			ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct artnet::TimeCode*>(pTimeCode));
 		}
 
-		if (!ltc::g_DisabledOutputs.bRtpMidi) {
-			RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(pTimeCode));
-		}
-
 		if (!ltc::g_DisabledOutputs.bEtc) {
 			LtcEtc::Get()->Send(&m_MidiTimeCode);
 		}

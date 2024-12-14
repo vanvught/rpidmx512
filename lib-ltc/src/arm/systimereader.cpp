@@ -175,10 +175,6 @@ void SystimeReader::ActionSetRate(const char *pTimeCodeRate) {
 				ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct artnet::TimeCode*>(&m_MidiTimeCode));
 			}
 
-			if (!ltc::g_DisabledOutputs.bRtpMidi) {
-				RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(&m_MidiTimeCode));
-			}
-
 			if (!ltc::g_DisabledOutputs.bEtc) {
 				LtcEtc::Get()->Send(&m_MidiTimeCode);
 			}
@@ -283,10 +279,6 @@ void SystimeReader::Run() {
 
 				if (!ltc::g_DisabledOutputs.bArtNet) {
 					ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct artnet::TimeCode *>(&m_MidiTimeCode));
-				}
-
-				if (!ltc::g_DisabledOutputs.bRtpMidi) {
-					RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(&m_MidiTimeCode));
 				}
 
 				if (!ltc::g_DisabledOutputs.bEtc) {

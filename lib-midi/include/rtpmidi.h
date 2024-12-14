@@ -2,7 +2,7 @@
  * @file rtpmidi.h
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -86,14 +86,14 @@ public:
 		AppleMidi::Run();
 	}
 
-	void SendRaw(uint8_t nByte) {
+	void SendRaw(const uint8_t nByte) {
 		auto *data = &m_pSendBuffer[rtpmidi::COMMAND_OFFSET + 1];
 		data[0] = nByte;
 		Send(1);
 	}
 
-	void SendRaw(midi::Types tType) {
-		SendRaw(static_cast<uint8_t>(tType));
+	void SendRaw(const midi::Types type) {
+		SendRaw(static_cast<uint8_t>(type));
 	}
 
 	void SendTimeCode(const midi::Timecode *tTimeCode) {
@@ -113,6 +113,52 @@ public:
 		Send(10);
 	}
 
+	void SendQf(const uint8_t nValue) {
+		auto *data = &m_pSendBuffer[rtpmidi::COMMAND_OFFSET + 1];
+
+		data[0] = 0xF1;
+		data[1] = nValue;
+
+		Send(2);
+	}
+
+	void SendQf(const struct midi::Timecode *timeCode, uint32_t& nMidiQuarterFramePiece) {
+		auto data = static_cast<uint8_t>(nMidiQuarterFramePiece << 4);
+
+		switch (nMidiQuarterFramePiece) {
+		case 0:
+			data = data | (timeCode->nFrames & 0x0F);
+			break;
+		case 1:
+			data = data | static_cast<uint8_t>((timeCode->nFrames & 0x10) >> 4);
+			break;
+		case 2:
+			data = data | (timeCode->nSeconds & 0x0F);
+			break;
+		case 3:
+			data = data | static_cast<uint8_t>((timeCode->nSeconds & 0x30) >> 4);
+			break;
+		case 4:
+			data = data | (timeCode->nMinutes & 0x0F);
+			break;
+		case 5:
+			data = data | static_cast<uint8_t>((timeCode->nMinutes & 0x30) >> 4);
+			break;
+		case 6:
+			data = data | (timeCode->nHours & 0x0F);
+			break;
+		case 7:
+			data = static_cast<uint8_t>(data | (timeCode->nType << 1) | ((timeCode->nHours & 0x10) >> 4));
+			break;
+		default:
+			break;
+		}
+
+		SendQf(data);
+
+		nMidiQuarterFramePiece = (nMidiQuarterFramePiece + 1) & 0x07;
+	}
+
 	void SetHandler(RtpMidiHandler *pRtpMidiHandler) {
 		m_pRtpMidiHandler = pRtpMidiHandler;
 	}
@@ -121,7 +167,7 @@ public:
 		AppleMidi::Print();
 	}
 
-	static RtpMidi* Get() {
+	static RtpMidi *Get() {
 		return s_pThis;
 	}
 
@@ -131,7 +177,7 @@ private:
 	int32_t DecodeTime(uint32_t nCommandLength, uint32_t nOffset);
 	int32_t DecodeMidi(uint32_t nCommandLength, uint32_t nOffset);
 
-	midi::Types GetTypeFromStatusByte(uint8_t nStatusByte) {
+	midi::Types GetTypeFromStatusByte(const uint8_t nStatusByte) {
 		if ((nStatusByte < 0x80) || (nStatusByte == 0xf4) || (nStatusByte == 0xf5) || (nStatusByte == 0xf9) || (nStatusByte == 0xfD)) {
 			return midi::Types::INVALIDE_TYPE;
 		}
@@ -143,7 +189,7 @@ private:
 		return static_cast<midi::Types>(nStatusByte);
 	}
 
-	uint8_t GetChannelFromStatusByte(uint8_t nStatusByte) {
+	uint8_t GetChannelFromStatusByte(const uint8_t nStatusByte) {
 		return static_cast<uint8_t>((nStatusByte & 0x0F) + 1);
 	}
 
@@ -165,7 +211,7 @@ private:
 	uint8_t *m_pSendBuffer { nullptr };
 	uint16_t m_nSequenceNumber { 0 };
 
-	static RtpMidi *s_pThis;
+	static inline RtpMidi *s_pThis;
 };
 
 #endif /* RTPMIDI_H_ */

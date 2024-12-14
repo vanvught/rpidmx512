@@ -82,10 +82,6 @@ void ArtNetReader::Handler(const struct artnet::TimeCode *ArtNetTimeCode) {
 		LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct ltc::TimeCode *>(ArtNetTimeCode));
 	}
 
-	if (!ltc::g_DisabledOutputs.bRtpMidi) {
-		RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(ArtNetTimeCode));
-	}
-
 	if (!ltc::g_DisabledOutputs.bEtc) {
 		LtcEtc::Get()->Send(reinterpret_cast<const struct midi::Timecode *>(ArtNetTimeCode));
 	}

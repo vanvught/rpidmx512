@@ -44,8 +44,6 @@
 #include "debug.h"
 
 namespace applemidi {
-static constexpr auto UPD_PORT_CONTROL_DEFAULT = 5004U;
-static constexpr auto UPD_PORT_MIDI_DEFAULT = UPD_PORT_CONTROL_DEFAULT + 1U;
 static constexpr auto SESSION_NAME_LENGTH_MAX = 24;
 static constexpr auto VERSION = 2;
 
@@ -73,6 +71,9 @@ static constexpr auto EXCHANGE_PACKET_MIN_LENGTH = sizeof(struct applemidi::Exch
 }  // namespace applemidi
 
 class AppleMidi {
+	static constexpr uint16_t UPD_PORT_CONTROL_DEFAULT = 5004;
+	static constexpr uint16_t UPD_PORT_MIDI_DEFAULT = UPD_PORT_CONTROL_DEFAULT + 1;
+	static constexpr uint16_t SIGNATURE = 0xffff;
 public:
 	AppleMidi();
 
@@ -82,8 +83,6 @@ public:
 
 	void Start() {
 		DEBUG_ENTRY
-//		assert(MDNS::Get() != nullptr);
-//		MDNS::Get()->ServiceRecordAdd(nullptr, mdns::Services::MIDI, nullptr, m_nPort);
 		mdns_service_record_add(nullptr, mdns::Services::MIDI, nullptr, m_nPort);
 
 		m_nHandleControl = Network::Get()->Begin(m_nPort);
@@ -108,9 +107,33 @@ public:
 		DEBUG_EXIT
 	}
 
-	void Run();
+	void Run() {
+		m_nBytesReceived = Network::Get()->RecvFrom(m_nHandleMidi, const_cast<const void **>(reinterpret_cast<void **>(&m_pBuffer)), &m_nRemoteIp, &m_nRemotePort);
 
-	void SetPort(uint16_t nPort) {
+		if (__builtin_expect((m_nBytesReceived >= 12), 0)) {
+			if (m_SessionStatus.nRemoteIp == m_nRemoteIp) {
+				HandleMidiMessage();
+			}
+		}
+
+		m_nBytesReceived = Network::Get()->RecvFrom(m_nHandleControl, const_cast<const void **>(reinterpret_cast<void **>(&m_pBuffer)), &m_nRemoteIp, &m_nRemotePort);
+
+		if (__builtin_expect((m_nBytesReceived >= applemidi::EXCHANGE_PACKET_MIN_LENGTH), 0)) {
+			if (*reinterpret_cast<uint16_t *>(m_pBuffer) == SIGNATURE) {
+				HandleControlMessage();
+			}
+		}
+
+		if (m_SessionStatus.sessionState == applemidi::SessionState::ESTABLISHED) {
+			if (__builtin_expect((Hardware::Get()->Millis() - m_SessionStatus.nSynchronizationTimestamp > (90 * 1000)), 0)) {
+				m_SessionStatus.sessionState = applemidi::SessionState::WAITING_IN_CONTROL;
+				m_SessionStatus.nRemoteIp = 0;
+				DEBUG_PUTS("End Session {time-out}");
+			}
+		}
+	}
+
+	void SetPort(const uint16_t nPort) {
 		assert(nPort > 1024);
 		m_nPort = nPort;
 	}
@@ -165,7 +188,7 @@ private:
 	uint32_t m_nRemoteIp { 0 };
 	uint32_t m_nBytesReceived { 0 };
 	uint16_t m_nExchangePacketReplySize;
-	uint16_t m_nPort { applemidi::UPD_PORT_CONTROL_DEFAULT };
+	uint16_t m_nPort { UPD_PORT_CONTROL_DEFAULT };
 	uint16_t m_nRemotePort { 0 };
 	applemidi::ExchangePacket m_ExchangePacketReply;
 	applemidi::SessionStatus m_SessionStatus;

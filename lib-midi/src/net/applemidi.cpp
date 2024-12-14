@@ -46,7 +46,7 @@
 #include "debug.h"
 
 namespace applemidi {
-static constexpr uint16_t SIGNATURE = 0xffff;
+
 }  // namespace applemidi
 
 enum TAppleMidiCommand {
@@ -71,7 +71,7 @@ struct TTimestampSynchronization {
 AppleMidi::AppleMidi() : m_nSSRC(Network::Get()->GetIp()), m_nExchangePacketReplySize(applemidi::EXCHANGE_PACKET_MIN_LENGTH) {
 	DEBUG_ENTRY
 
-	m_ExchangePacketReply.nSignature = applemidi::SIGNATURE;
+	m_ExchangePacketReply.nSignature = SIGNATURE;
 	m_ExchangePacketReply.nProtocolVersion = __builtin_bswap32(applemidi::VERSION);
 	m_ExchangePacketReply.nSSRC = m_nSSRC;
 
@@ -148,14 +148,14 @@ void AppleMidi::HandleMidiMessage() {
 
 	debug_dump(m_pBuffer, m_nBytesReceived);
 
-	if (*reinterpret_cast<uint16_t*>(m_pBuffer) == 0x6180) {
+	if (*reinterpret_cast<uint16_t *>(m_pBuffer) == 0x6180) {
 		HandleRtpMidi(m_pBuffer);
 		return;
 	}
 
 	if (m_nBytesReceived >= applemidi::EXCHANGE_PACKET_MIN_LENGTH) {
 
-		if (*reinterpret_cast<uint16_t *>(m_pBuffer) == applemidi::SIGNATURE) {
+		if (*reinterpret_cast<uint16_t *>(m_pBuffer) == SIGNATURE) {
 
 			if (m_SessionStatus.sessionState == applemidi::SessionState::WAITING_IN_MIDI) {
 				DEBUG_PUTS("SESSION_STATE_WAITING_IN_MIDI");
@@ -218,30 +218,4 @@ void AppleMidi::HandleMidiMessage() {
 	}
 
 	DEBUG_EXIT
-}
-
-void AppleMidi::Run() {
-	m_nBytesReceived = Network::Get()->RecvFrom(m_nHandleMidi, const_cast<const void **>(reinterpret_cast<void **>(&m_pBuffer)), &m_nRemoteIp, &m_nRemotePort);
-
-	if (__builtin_expect((m_nBytesReceived >= 12), 0)) {
-		if (m_SessionStatus.nRemoteIp == m_nRemoteIp) {
-			HandleMidiMessage();
-		}
-	}
-
-	m_nBytesReceived = Network::Get()->RecvFrom(m_nHandleControl, const_cast<const void **>(reinterpret_cast<void **>(&m_pBuffer)), &m_nRemoteIp, &m_nRemotePort);
-
-	if (__builtin_expect((m_nBytesReceived >= applemidi::EXCHANGE_PACKET_MIN_LENGTH), 0)) {
-		if (*reinterpret_cast<uint16_t *>(m_pBuffer) == applemidi::SIGNATURE) {
-			HandleControlMessage();
-		}
-	}
-
-	if (m_SessionStatus.sessionState == applemidi::SessionState::ESTABLISHED) {
-		if (__builtin_expect((Hardware::Get()->Millis() - m_SessionStatus.nSynchronizationTimestamp > (90 * 1000)), 0)) {
-			m_SessionStatus.sessionState = applemidi::SessionState::WAITING_IN_CONTROL;
-			m_SessionStatus.nRemoteIp = 0;
-			DEBUG_PUTS("End Session {time-out}");
-		}
-	}
 }

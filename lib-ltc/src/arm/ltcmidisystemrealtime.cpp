@@ -23,6 +23,10 @@
  * THE SOFTWARE.
  */
 
+#if defined (DEBUG_ARM_LTCMIDISYSTEMREALTIME)
+# undef NDEBUG
+#endif
+
 #pragma GCC push_options
 #pragma GCC optimize ("O2")
 #pragma GCC optimize ("no-tree-loop-distribute-patterns")
@@ -74,7 +78,7 @@ static void timer_handler() {
 #endif
 
 void LtcMidiSystemRealtime::Start() {
-	m_nHandle = Network::Get()->Begin(udp::PORT);
+	m_nHandle = Network::Get()->Begin(udp::PORT, staticCallbackFunctionInput);
 	assert(m_nHandle != -1);
 }
 
@@ -104,67 +108,61 @@ void LtcMidiSystemRealtime::SetBPM(uint32_t nBPM) {
 	}
 }
 
-void LtcMidiSystemRealtime::Run() {
-	uint32_t nIPAddressFrom;
-	uint16_t nForeignPort;
-
-	auto nBytesReceived = Network::Get()->RecvFrom(m_nHandle, const_cast<const void **>(reinterpret_cast<void **>(&s_pUdpBuffer)), &nIPAddressFrom, &nForeignPort);
-
-	if (__builtin_expect((nBytesReceived < 9), 1)) {
+void LtcMidiSystemRealtime::Input(const uint8_t *pBuffer, uint32_t nSize, [[maybe_unused]] uint32_t nFromIp, [[maybe_unused]] uint16_t nFromPort) {
+	if (__builtin_expect((memcmp("midi!", pBuffer, 5) != 0), 0)) {
 		return;
 	}
 
-	if (__builtin_expect((memcmp("midi!", s_pUdpBuffer, 5) != 0), 0)) {
-		return;
+	if (pBuffer[nSize - 1] == '\n') {
+		nSize--;
 	}
 
-	if (s_pUdpBuffer[nBytesReceived - 1] == '\n') {
-		nBytesReceived--;
-	}
+	debug_dump(pBuffer, nSize);
 
-	debug_dump(s_pUdpBuffer, nBytesReceived);
-
-	if (nBytesReceived == (5 + length::START)) {
-		if (memcmp(&s_pUdpBuffer[5], cmd::START, length::START) == 0) {
+	if (nSize == (5 + length::START)) {
+		if (memcmp(&pBuffer[5], cmd::START, length::START) == 0) {
 			SendStart();
 			DEBUG_PUTS("Start");
 			return;
 		}
 	}
 
-	if (nBytesReceived == (5 + length::STOP)) {
-		if (memcmp(&s_pUdpBuffer[5], cmd::STOP, length::STOP) == 0) {
+	if (nSize == (5 + length::STOP)) {
+		if (memcmp(&pBuffer[5], cmd::STOP, length::STOP) == 0) {
 			SendStop();
 			DEBUG_PUTS("Stop");
 			return;
 		}
 	}
 
-	if (nBytesReceived == (5 + length::CONTINUE)) {
-		if (memcmp(&s_pUdpBuffer[5], cmd::CONTINUE, length::CONTINUE) == 0) {
+	if (nSize == (5 + length::CONTINUE)) {
+		if (memcmp(&pBuffer[5], cmd::CONTINUE, length::CONTINUE) == 0) {
 			SendContinue();
 			DEBUG_PUTS("Continue");
 			return;
 		}
 	}
 
-	if (nBytesReceived == (5 + length::BPM + 3)) {
-		if (memcmp(&s_pUdpBuffer[5], cmd::BPM, length::BPM) == 0) {
+	if (nSize == (5 + length::BPM + 3)) {
+		if (memcmp(&pBuffer[5], cmd::BPM, length::BPM) == 0) {
 			uint32_t nOfffset = 5 + length::BPM;
 			uint32_t nBPM;
 
-			if (isdigit(s_pUdpBuffer[nOfffset])) {
-				nBPM = 100U * static_cast<uint32_t>(s_pUdpBuffer[nOfffset++] - '0');
-				if (isdigit(s_pUdpBuffer[nOfffset])) {
-					nBPM += 10U * static_cast<uint32_t>(s_pUdpBuffer[nOfffset++] - '0');
-					if (isdigit(s_pUdpBuffer[nOfffset])) {
-						nBPM += static_cast<uint32_t>(s_pUdpBuffer[nOfffset++] - '0');
+			if (isdigit(pBuffer[nOfffset])) {
+				nBPM = 100U * static_cast<uint32_t>(pBuffer[nOfffset++] - '0');
+
+				if (isdigit(pBuffer[nOfffset])) {
+					nBPM += 10U * static_cast<uint32_t>(pBuffer[nOfffset++] - '0');
+
+					if (isdigit(pBuffer[nOfffset])) {
+						nBPM += static_cast<uint32_t>(pBuffer[nOfffset++] - '0');
 						SetBPM(nBPM);
 						ShowBPM(nBPM);
 						DEBUG_PRINTF("BPM: %u", nBPM);
 					}
 				}
 			}
+
 			return;
 		}
 	}

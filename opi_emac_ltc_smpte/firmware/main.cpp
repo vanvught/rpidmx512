@@ -140,7 +140,9 @@ extern "C" {
 void h3_cpu_off(uint32_t);
 }
 
-void static staticCallbackFunction([[maybe_unused]] const struct artnet::TimeCode *pTimeCode) {}
+void static staticCallbackFunction([[maybe_unused]] const struct artnet::TimeCode *pTimeCode) {
+
+}
 
 int main() {
 	Hardware hw;
@@ -574,10 +576,6 @@ int main() {
 			ntpServer.Run();
 		} else {
 			ntpClient.Run();	// We could check for GPS Time client running. But not really needed.
-		}
-
-		if (bRunMidiSystemRealtime) {
-			ltcMidiSystemRealtime.Run();	// UDP requests
 		}
 
 		if (ltc::g_DisabledOutputs.bOled) {
