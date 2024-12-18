@@ -39,17 +39,17 @@ void spi_init() {
 	gd32_spi_set_speed_hz(SPI_XFER_SPEED_HZ);
 	gd32_spi_setDataMode(GD32_SPI_MODE0);
 
-	gpio_fsel(SPI_FLASH_CS_GPIOx, SPI_FLASH_CS_GPIO_PINx, GPIO_FSEL_OUTPUT);
-	gpio_bit_set(SPI_FLASH_CS_GPIOx, SPI_FLASH_CS_GPIO_PINx);
+	gd32_gpio_fsel(SPI_FLASH_CS_GPIOx, SPI_FLASH_CS_GPIO_PINx, GPIO_FSEL_OUTPUT);
+	GPIO_BOP(SPI_FLASH_CS_GPIOx) = SPI_FLASH_CS_GPIO_PINx;
 
 #if defined (SPI_FLASH_WP_GPIO_PINx)
-	gpio_fsel(SPI_GPIOx, SPI_FLASH_WP_GPIO_PINx, GPIO_FSEL_OUTPUT);
-	gpio_bit_set(SPI_GPIOx, SPI_FLASH_WP_GPIO_PINx);
+	gd32_gpio_fsel(SPI_GPIOx, SPI_FLASH_WP_GPIO_PINx, GPIO_FSEL_OUTPUT);
+	GPIO_BOP(SPI_GPIOx) = SPI_FLASH_WP_GPIO_PINx;
 #endif
 
 #if defined (SPI_FLASH_HOLD_GPIO_PINx)
-	gpio_fsel(SPI_GPIOx, SPI_FLASH_HOLD_GPIO_PINx, GPIO_FSEL_OUTPUT);
-	gpio_bit_set(SPI_GPIOx, SPI_FLASH_HOLD_GPIO_PINx);
+	gd32_gpio_fsel(SPI_GPIOx, SPI_FLASH_HOLD_GPIO_PINx, GPIO_FSEL_OUTPUT);
+	GPIO_BOP(SPI_GPIOx) = SPI_FLASH_HOLD_GPIO_PINx;
 #endif
 }
 
@@ -59,7 +59,7 @@ inline static void spi_transfern(char *pBuffer, const uint32_t nLength) {
 
 void spi_xfer(uint32_t nLength, const uint8_t *pOut, uint8_t *pIn, uint32_t nFlags) {
 	if (nFlags & SPI_XFER_BEGIN) {
-		gpio_bit_reset(SPI_FLASH_CS_GPIOx, SPI_FLASH_CS_GPIO_PINx);
+		GPIO_BC(SPI_FLASH_CS_GPIOx) = SPI_FLASH_CS_GPIO_PINx;
 	}
 
 	if (nLength != 0) {
@@ -73,6 +73,6 @@ void spi_xfer(uint32_t nLength, const uint8_t *pOut, uint8_t *pIn, uint32_t nFla
 	}
 
 	if (nFlags & SPI_XFER_END) {
-		gpio_bit_set(SPI_FLASH_CS_GPIOx, SPI_FLASH_CS_GPIO_PINx);
+		GPIO_BOP(SPI_FLASH_CS_GPIOx) = SPI_FLASH_CS_GPIO_PINx;
 	}
 }

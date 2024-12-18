@@ -72,7 +72,10 @@ public:
 		DEBUG_ENTRY
 
 #if defined(SPI_LCD_RST_GPIO)
-		HardwareReset();
+		if (m_nInstance == 0) {
+			HardwareReset();
+		}
+		m_nInstance++;
 #endif
 
 		WriteCommand(st77xx::cmd::SWRESET);
@@ -154,6 +157,11 @@ public:
 
 		m_nRotate = nRotation;
 	}
+
+private:
+#if defined(SPI_LCD_RST_GPIO)
+	static inline uint32_t m_nInstance;
+#endif
 };
 
 #endif /* SPI_ST7789_H */

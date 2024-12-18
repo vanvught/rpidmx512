@@ -117,7 +117,7 @@ public:
 		WriteCommand(bEnable ? st77xx::cmd::SLPIN : st77xx::cmd::SLPOUT);
 	}
 
-	void SetBackLight(uint32_t nValue) {
+	void SetBackLight(const uint32_t nValue) {
 		FUNC_PREFIX(gpio_write(SPI_LCD_BL_GPIO, nValue == 0 ? 0 : 1));
 	}
 

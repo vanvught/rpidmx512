@@ -80,6 +80,7 @@ NtpServer::~NtpServer() {
 void NtpServer::Start() {
 	DEBUG_ENTRY
 
+	assert(m_nHandle == -1);
 	m_nHandle = Network::Get()->Begin(ntp::UDP_PORT);
 	assert(m_nHandle != -1);
 
@@ -97,7 +98,9 @@ void NtpServer::Start() {
 void NtpServer::Stop() {
 	DEBUG_ENTRY
 
-	m_nHandle = Network::Get()->End(ntp::UDP_PORT);
+	assert(m_nHandle != -1);
+	Network::Get()->End(ntp::UDP_PORT);
+	m_nHandle = -1;
 
 	DEBUG_EXIT
 }

@@ -23,8 +23,6 @@
  * THE SOFTWARE.
  */
 
-#define USE_UDP_CALLBACK
-
 #include <algorithm>
 #include <cstdint>
 #include <cstdio>
@@ -256,11 +254,7 @@ RemoteConfig::RemoteConfig(const remoteconfig::Node node, const remoteconfig::Ou
 	s_RemoteConfigListBin.nActiveOutputs = static_cast<uint8_t>(nActiveOutputs);
 	s_RemoteConfigListBin.aDisplayName[0] = '\0';
 
-#if defined (USE_UDP_CALLBACK)
 	m_nHandle = Network::Get()->Begin(remoteconfig::udp::PORT, RemoteConfig::staticCallbackFunction);
-#else
-	m_nHandle = Network::Get()->Begin(remoteconfig::udp::PORT);
-#endif
 	assert(m_nHandle != -1);
 
 #if !defined (CONFIG_REMOTECONFIG_MINIMUM)
@@ -317,11 +311,7 @@ void RemoteConfig::SetDisable(bool bDisable) {
 #endif
 		m_bDisable = true;
 	} else if (!bDisable && m_bDisable) {
-#if defined (USE_UDP_CALLBACK)
 		m_nHandle = Network::Get()->Begin(remoteconfig::udp::PORT, RemoteConfig::staticCallbackFunction);
-#else
-		m_nHandle = Network::Get()->Begin(remoteconfig::udp::PORT);
-#endif
 		assert(m_nHandle != -1);
 #if !defined (CONFIG_REMOTECONFIG_MINIMUM)
 		mdns_service_record_add(nullptr, mdns::Services::CONFIG);
@@ -347,12 +337,9 @@ void RemoteConfig::SetDisplayName(const char *pDisplayName) {
 }
 
 void RemoteConfig::Input(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, [[maybe_unused]] uint16_t nFromPort) {
-	if (pBuffer != nullptr) {
-		s_pUdpBuffer = const_cast<char *>(reinterpret_cast<const char *>(pBuffer));
-		m_nBytesReceived = nSize;
-		m_nIPAddressFrom = nFromIp;
-	}
-
+	s_pUdpBuffer = const_cast<char *>(reinterpret_cast<const char *>(pBuffer));
+	m_nBytesReceived = nSize;
+	m_nIPAddressFrom = nFromIp;
 #ifndef NDEBUG
 	debug_dump(s_pUdpBuffer, m_nBytesReceived);
 #endif

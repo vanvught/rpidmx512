@@ -1012,13 +1012,3 @@ void mdns_init() {
 
 	DEBUG_EXIT
 }
-
-void mdns_run() {
-	s_nBytesReceived = Network::Get()->RecvFrom(s_nHandle, const_cast<const void **>(reinterpret_cast<void **>(&s_pReceiveBuffer)), &s_nRemoteIp, &s_nRemotePort);
-
-	if (__builtin_expect((s_nBytesReceived < sizeof(struct net::dns::Header)), 1)) {
-		return;
-	}
-
-	mdns_input(nullptr, 0, 0, 0);
-}

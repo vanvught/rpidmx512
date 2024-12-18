@@ -211,19 +211,6 @@ public:
 #if defined (ENABLE_HTTPD)
 		m_pHttpDaemon->Run();
 #endif
-
-		if (__builtin_expect((m_bDisable), 1)) {
-			return;
-		}
-
-		uint16_t nForeignPort;
-		m_nBytesReceived = Network::Get()->RecvFrom(m_nHandle, const_cast<const void **>(reinterpret_cast<void **>(&s_pUdpBuffer)), &m_nIPAddressFrom, &nForeignPort);
-
-		if (__builtin_expect((m_nBytesReceived < 4), 1)) {
-			return;
-		}
-
-		Input(nullptr, 0, m_nIPAddressFrom, nForeignPort);
 	}
 
 	static RemoteConfig *Get() {

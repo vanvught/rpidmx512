@@ -85,9 +85,11 @@ public:
 		DEBUG_ENTRY
 		mdns_service_record_add(nullptr, mdns::Services::MIDI, nullptr, m_nPort);
 
+		assert(m_nHandleControl == -1);
 		m_nHandleControl = Network::Get()->Begin(m_nPort);
 		assert(m_nHandleControl != -1);
 
+		assert(m_nHandleMidi == -1);
 		m_nHandleMidi = Network::Get()->Begin(static_cast<uint16_t>(m_nPort + 1));
 		assert(m_nHandleMidi != -1);
 
@@ -103,6 +105,9 @@ public:
 
 		Network::Get()->End(static_cast<uint16_t>(m_nPort + 1U));
 		Network::Get()->End(m_nPort);
+
+		m_nHandleControl = -1;
+		m_nHandleMidi = -1;
 
 		DEBUG_EXIT
 	}

@@ -36,6 +36,17 @@
 
 #include "debug.h"
 
+#if defined (GD32)
+# include "gd32.h"
+# if defined (CONFIG_STORE_USE_RAM)
+#  define SECTION_CONFIGSTORE __attribute__ ((section (".configstore")))
+# else
+#  define SECTION_CONFIGSTORE
+#endif
+#else
+# define SECTION_CONFIGSTORE
+#endif
+
 namespace configstore {
 enum class Store {
 	NETWORK,
@@ -111,7 +122,7 @@ public:
 		DEBUG_PRINTF("nHours=%d, nMinutes =%u", nHours, nMinutes);
 
 		if (hal::utc_validate(nHours, nMinutes, nUtcOffset)) {
-			auto *p = reinterpret_cast<struct Env *>(&s_SpiFlashData[FlashStore::SIGNATURE_SIZE]);
+			auto *p = reinterpret_cast<struct Env *>(&s_ConfigStoreData[StoreConfiguration::SIGNATURE_SIZE]);
 
 			if (p->nUtcOffset != nUtcOffset) {
 				p->nUtcOffset = nUtcOffset;
@@ -127,7 +138,7 @@ public:
 	}
 
 	void GetEnvUtcOffset(int8_t& nHours, uint8_t& nMinutes) {
-		const auto *p = reinterpret_cast<struct Env *>(&s_SpiFlashData[FlashStore::SIGNATURE_SIZE]);
+		const auto *p = reinterpret_cast<struct Env *>(&s_ConfigStoreData[StoreConfiguration::SIGNATURE_SIZE]);
 
 		DEBUG_PRINTF("p->nUtcOffset=%d", p->nUtcOffset);
 
@@ -144,7 +155,7 @@ public:
 	}
 
 	int32_t GetEnvUtcOffset() const {
-		const auto *p = reinterpret_cast<struct Env *>(&s_SpiFlashData[FlashStore::SIGNATURE_SIZE]);
+		const auto *p = reinterpret_cast<struct Env *>(&s_ConfigStoreData[StoreConfiguration::SIGNATURE_SIZE]);
 		return p->nUtcOffset;
 	}
 
@@ -161,26 +172,26 @@ private:
 		uint8_t filler[12];
 	};
 
-	struct FlashStore {
+	struct StoreConfiguration {
 		static constexpr uint32_t SIGNATURE_SIZE = 16;
 		static constexpr uint32_t ENV_SIZE = 16;
 		static constexpr uint32_t OFFSET_STORES = SIGNATURE_SIZE + ENV_SIZE;
 		static constexpr uint32_t SIZE = 4096;
 	};
 
-	static_assert(sizeof(struct Env) == FlashStore::ENV_SIZE, "");
+	static_assert(sizeof(struct Env) == StoreConfiguration::ENV_SIZE, "");
 
-	static bool s_bHaveFlashChip;
+	static inline bool s_bHaveDevice;
 
-	static configstore::State s_State;
-	static uint32_t s_nStartAddress;
+	static inline configstore::State s_State;
 
-	static uint32_t s_nSpiFlashStoreSize;
-	static uint8_t s_SpiFlashData[FlashStore::SIZE];
+	static inline uint32_t s_nStartAddress;
+	static inline uint32_t s_nWaitMillis;
+	static inline uint32_t s_nStoresSize;
 
-	static uint32_t s_nWaitMillis;
+	static inline uint8_t s_ConfigStoreData[StoreConfiguration::SIZE] SECTION_CONFIGSTORE;
 
-	static ConfigStore *s_pThis;
+	static inline ConfigStore *s_pThis;
 };
 
 #endif /* CONFIGSTORE_H_ */
