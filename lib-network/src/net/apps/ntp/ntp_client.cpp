@@ -28,7 +28,7 @@
 #endif
 
 #pragma GCC push_options
-#pragma GCC optimize ("O2")
+#pragma GCC optimize ("O3")
 #pragma GCC optimize ("no-tree-loop-distribute-patterns")
 
 #include <cstdint>
@@ -48,14 +48,16 @@
 
 #include "debug.h"
 
-/* How to multiply by 4294.967296 quickly (and not quite exactly)
+/*
+ * How to multiply by 4294.967296 quickly (and not quite exactly)
  * without using floating point or greater than 32-bit integers.
  * If you want to fix the last 12 microseconds of error, add in
  * (2911*(x))>>28)
  */
 #define NTPFRAC(x) ( 4294U*static_cast<uint32_t>(x) + ( (1981U*static_cast<uint32_t>(x))>>11 ) +  ((2911U*static_cast<uint32_t>(x))>>28) )
 
-/* The reverse of the above, needed if we want to set our microsecond
+/*
+ * The reverse of the above, needed if we want to set our microsecond
  * clock (via clock_settime) based on the incoming time in NTP format.
  * Basically exact.
  */
@@ -75,7 +77,8 @@ struct ntpClient {
 	int32_t nHandle;
 	TimerHandle_t nTimerId;
 	uint32_t nRequestTimeout;
-	uint32_t nPollTimeout;
+	uint32_t nPollSeconds;
+	uint32_t nLockedCount;
 	ntp::Status status;
 	ntp::Packet Request;
 	uint8_t LiVnMode;
@@ -86,12 +89,13 @@ struct ntpClient {
 };
 
 static ntpClient s_ntpClient;
-static constexpr uint16_t REQUEST_SIZE = sizeof s_ntpClient.Request;
+static constexpr uint32_t REQUEST_SIZE = sizeof s_ntpClient.Request;
 
 static void send();
 
 static void ntp_client_timer([[maybe_unused]] TimerHandle_t nHandle) {
 	assert(s_ntpClient.status != ntp::Status::STOPPED);
+	assert(s_ntpClient.status != ntp::Status::DISABLED);
 
 	if (s_ntpClient.status == ntp::Status::WAITING) {
 		if (s_ntpClient.nRequestTimeout > 1) {
@@ -102,18 +106,18 @@ static void ntp_client_timer([[maybe_unused]] TimerHandle_t nHandle) {
 		if (s_ntpClient.nRequestTimeout == 1) {
 			s_ntpClient.status = ntp::Status::FAILED;
 			ntpclient::display_status(ntp::Status::FAILED);
-			s_ntpClient.nPollTimeout = ntpclient::POLL_SECONDS;
+			s_ntpClient.nPollSeconds = ntpclient::POLL_SECONDS_MIN;
 			return;
 		}
 		return;
 	}
 
-	if (s_ntpClient.nPollTimeout > 1) {
-		s_ntpClient.nPollTimeout--;
+	if (s_ntpClient.nPollSeconds > 1) {
+		s_ntpClient.nPollSeconds--;
 		return;
 	}
 
-	if (s_ntpClient.nPollTimeout == 1) {
+	if (s_ntpClient.nPollSeconds == 1) {
 		send();
 	}
 }
@@ -129,8 +133,6 @@ static void get_time_ntp_format(uint32_t &nSeconds, uint32_t &nFraction) {
 }
 
 static void send() {
-	DEBUG_ENTRY
-
 	get_time_ntp_format(s_ntpClient.T1.nSeconds, s_ntpClient.T1.nFraction);
 
 	s_ntpClient.Request.OriginTimestamp_s = __builtin_bswap32(s_ntpClient.T1.nSeconds);
@@ -141,16 +143,6 @@ static void send() {
 	s_ntpClient.nRequestTimeout = ntpclient::TIMEOUT_SECONDS;
 	s_ntpClient.status = ntp::Status::WAITING;
 	ntpclient::display_status(ntp::Status::WAITING);
-
-	DEBUG_EXIT
-}
-
-static void print_ntp_time([[maybe_unused]] const char *pText, [[maybe_unused]] const struct ntp::TimeStamp *pNtpTime) {
-#ifndef NDEBUG
-	const auto nSeconds = static_cast<time_t>(pNtpTime->nSeconds - ntp::JAN_1970);
-	const auto *pTm = localtime(&nSeconds);
-	printf("%s %02d:%02d:%02d.%06d %04d [%u]\n", pText, pTm->tm_hour, pTm->tm_min,  pTm->tm_sec, USEC(pNtpTime->nFraction), pTm->tm_year + 1900, pNtpTime->nSeconds);
-#endif
 }
 
 static void difference(const struct ntp::TimeStamp& Start, const struct ntp::TimeStamp& Stop, int32_t &nDiffSeconds, int32_t &nDiffMicroSeconds) {
@@ -161,6 +153,14 @@ static void difference(const struct ntp::TimeStamp& Start, const struct ntp::Tim
 
 	nDiffSeconds = r.tv_sec;
 	nDiffMicroSeconds = r.tv_usec;
+}
+
+static void print_ntp_time([[maybe_unused]] const char *pText, [[maybe_unused]] const struct ntp::TimeStamp *pNtpTime) {
+#ifndef NDEBUG
+	const auto nSeconds = static_cast<time_t>(pNtpTime->nSeconds - ntp::JAN_1970);
+	const auto *pTm = localtime(&nSeconds);
+	printf("%s %02d:%02d:%02d.%06d %04d [%u]\n", pText, pTm->tm_hour, pTm->tm_min,  pTm->tm_sec, USEC(pNtpTime->nFraction), pTm->tm_year + 1900, pNtpTime->nSeconds);
+#endif
 }
 
 static void set_time_of_day() {
@@ -176,8 +176,8 @@ static void set_time_of_day() {
 	const auto nOffsetSecondsAverage = static_cast<int32_t>(nOffsetSeconds / 2);
 	const auto nOffsetMicrosAverage  = static_cast<int32_t>(nOffsetMicroSeconds / 2);
 
-	ntp::time_t ptpOffset = {.tv_sec = nOffsetSecondsAverage, .tv_usec = nOffsetMicrosAverage};
-	ntp::normalize_time(&ptpOffset);
+	ntp::time_t ntpOffset = {.tv_sec = nOffsetSecondsAverage, .tv_usec = nOffsetMicrosAverage};
+	ntp::normalize_time(&ntpOffset);
 
 	struct timeval tv;
 
@@ -186,6 +186,28 @@ static void set_time_of_day() {
 
 	settimeofday(&tv, nullptr);
 
+	if ((ntpOffset.tv_sec == 0) && (ntpOffset.tv_usec > -999)  && (ntpOffset.tv_usec < 999)) {
+		s_ntpClient.status = ntp::Status::LOCKED;
+		ntpclient::display_status(ntp::Status::LOCKED);
+		if (++s_ntpClient.nLockedCount == 4) {
+			s_ntpClient.nPollSeconds = ntpclient::POLL_SECONDS_MAX;
+		}
+	} else {
+		s_ntpClient.status = ntp::Status::IDLE;
+		ntpclient::display_status(ntp::Status::IDLE);
+		s_ntpClient.nPollSeconds = ntpclient::POLL_SECONDS_MIN;
+		s_ntpClient.nLockedCount = 0;
+	}
+
+#ifndef NDEBUG
+	const auto nTime = time(nullptr);
+	const auto *pLocalTime = localtime(&nTime);
+	DEBUG_PRINTF("localtime: %.4d/%.2d/%.2d %.2d:%.2d:%.2d", pLocalTime->tm_year + 1900, pLocalTime->tm_mon + 1, pLocalTime->tm_mday, pLocalTime->tm_hour, pLocalTime->tm_min, pLocalTime->tm_sec);
+#endif
+	print_ntp_time("T1: ", &s_ntpClient.T1);
+	print_ntp_time("T2: ", &s_ntpClient.T2);
+	print_ntp_time("T3: ", &s_ntpClient.T3);
+	print_ntp_time("T4: ", &s_ntpClient.T4);
 #ifndef NDEBUG
 	/* delay */
 	ntp::time_t diff1;
@@ -199,23 +221,21 @@ static void set_time_of_day() {
 
 	char sign = '+';
 
-	if (ptpOffset.tv_sec < 0) {
-		ptpOffset.tv_sec = -ptpOffset.tv_sec;
+	if (ntpOffset.tv_sec < 0) {
+		ntpOffset.tv_sec = -ntpOffset.tv_sec;
 		sign = '-';
 	}
 
-	if (ptpOffset.tv_usec < 0) {
-		ptpOffset.tv_usec = -ptpOffset.tv_usec;
+	if (ntpOffset.tv_usec < 0) {
+		ntpOffset.tv_usec = -ntpOffset.tv_usec;
 		sign = '-';
 	}
 
-	printf(" offset=%c%d.%06d delay=%d.%06d\n", sign, ptpOffset.tv_sec, ptpOffset.tv_usec, ntpDelay.tv_sec, ntpDelay.tv_usec);
+	printf(" offset=%c%d.%06d delay=%d.%06d\n", sign, ntpOffset.tv_sec, ntpOffset.tv_usec, ntpDelay.tv_sec, ntpDelay.tv_usec);
 #endif
 }
 
 void input(const uint8_t *pBuffer, [[maybe_unused]] uint32_t nSize, [[maybe_unused]] uint32_t nFromIp, [[maybe_unused]] uint16_t nFromPort) {
-	DEBUG_ENTRY
-
 	const auto *pReply = reinterpret_cast<const ntp::Packet *>(pBuffer);
 
 	get_time_ntp_format(s_ntpClient.T4.nSeconds, s_ntpClient.T4.nFraction);
@@ -224,7 +244,6 @@ void input(const uint8_t *pBuffer, [[maybe_unused]] uint32_t nSize, [[maybe_unus
 		s_ntpClient.status = ntp::Status::FAILED;
 		ntpclient::display_status(ntp::Status::FAILED);
 		DEBUG_PUTS("ntp::Status::FAILED");
-		DEBUG_PUTS("nFromIp != m_nServerIp");
 		return;
 	}
 
@@ -236,21 +255,6 @@ void input(const uint8_t *pBuffer, [[maybe_unused]] uint32_t nSize, [[maybe_unus
 
 	if (__builtin_expect(((pReply->LiVnMode & ntp::MODE_SERVER) == ntp::MODE_SERVER), 1)) {
 		set_time_of_day();
-
-		s_ntpClient.nPollTimeout = ntpclient::POLL_SECONDS;
-
-		s_ntpClient.status = ntp::Status::IDLE;
-		ntpclient::display_status(ntp::Status::IDLE);
-
-#ifndef NDEBUG
-		const auto nTime = time(nullptr);
-		const auto *pLocalTime = localtime(&nTime);
-		DEBUG_PRINTF("localtime: %.4d/%.2d/%.2d %.2d:%.2d:%.2d", pLocalTime->tm_year + 1900, pLocalTime->tm_mon + 1, pLocalTime->tm_mday, pLocalTime->tm_hour, pLocalTime->tm_min, pLocalTime->tm_sec);
-#endif
-		print_ntp_time("T1: ", &s_ntpClient.T1);
-		print_ntp_time("T2: ", &s_ntpClient.T2);
-		print_ntp_time("T3: ", &s_ntpClient.T3);
-		print_ntp_time("T4: ", &s_ntpClient.T4);
 	}
 }
 
@@ -262,7 +266,7 @@ void ntp_client_init() {
 	s_ntpClient.nHandle = -1;
 
 	s_ntpClient.Request.LiVnMode = ntp::VERSION | ntp::MODE_CLIENT;
-	s_ntpClient.Request.Poll = ntpclient::POLL_POWER;
+	s_ntpClient.Request.Poll = ntpclient::POLL_POWER_MIN;
 	s_ntpClient.Request.ReferenceID = ('A' << 0) | ('V' << 8) | ('S' << 16);
 
 	NetworkParams networkParams;
@@ -274,7 +278,6 @@ void ntp_client_init() {
 		s_ntpClient.status = ntp::Status::STOPPED;
 	}
 
-	DEBUG_PRINTF("Poll: %u", ntpclient::POLL_SECONDS);
 	DEBUG_EXIT
 }
 

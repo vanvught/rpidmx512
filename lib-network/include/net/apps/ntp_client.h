@@ -30,16 +30,21 @@
 
 #include "net/protocol/ntp.h"
 
-#if !defined(CONFIG_NTP_CLIENT_POLL_POWER)
-# define CONFIG_NTP_CLIENT_POLL_POWER 10
+#if !defined(CONFIG_NTP_CLIENT_POLL_POWER_MIN)
+# define CONFIG_NTP_CLIENT_POLL_POWER_MIN 3
+#endif
+#if !defined(CONFIG_NTP_CLIENT_POLL_POWER_MAX)
+# define CONFIG_NTP_CLIENT_POLL_POWER_MAX 10
 #endif
 
 namespace ntpclient {
 static constexpr uint32_t TIMEOUT_SECONDS = 3;
 static constexpr uint32_t TIMEOUT_MILLIS = TIMEOUT_SECONDS * 1000;
-static constexpr uint8_t POLL_POWER = CONFIG_NTP_CLIENT_POLL_POWER;
-static constexpr uint32_t POLL_SECONDS = (1U << POLL_POWER);
-
+static constexpr uint8_t POLL_POWER_MIN = CONFIG_NTP_CLIENT_POLL_POWER_MIN;
+static constexpr uint8_t POLL_POWER_MAX = CONFIG_NTP_CLIENT_POLL_POWER_MAX;
+static constexpr uint32_t POLL_SECONDS_MIN = (1U << POLL_POWER_MIN);
+static_assert(POLL_SECONDS_MIN >= ntp::MINPOLL);
+static constexpr uint32_t POLL_SECONDS_MAX = (1U << POLL_POWER_MAX);
 void display_status(const ::ntp::Status status);
 }  // namespace ntpclient
 
@@ -49,5 +54,7 @@ void ntp_client_stop(const bool doDisable = false);
 
 void ntp_client_set_server_ip(const uint32_t nServerIp);
 uint32_t ntp_client_get_server_ip();
+
+ntp::Status ntp_client_get_status();
 
 #endif /* NET_APPS_NTP_CLIENT_H_ */

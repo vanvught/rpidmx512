@@ -95,7 +95,7 @@
 #endif
 
 // System Time
-#include "net/apps/ntpclient.h"
+#include "net/apps/ntp_client.h"
 #include "gpstimeclient.h"
 #include "gpsparams.h"
 
@@ -108,8 +108,8 @@
 
 namespace hal {
 void reboot_handler() {
-	//	switch (m_tSource) {
-	//	case ltc::source::TCNET:
+	//	switch (ltcSource) {
+	//	case ::ltc::Source::TCNET:
 	//		TCNet::Get()->Stop();
 	//		break;
 	//	default:
@@ -160,10 +160,6 @@ int main() {
 
 	display.ClearLine(1);
 	display.ClearLine(2);
-
-	NtpClient ntpClient;
-	ntpClient.Start();
-	ntpClient.Print();
 
 	LtcParams ltcParams;
 
@@ -409,8 +405,7 @@ int main() {
 	GPSTimeClient gpsTimeClient(gpsParams.GetUtcOffset(), gpsParams.GetModule());
 
 	if (bRunGpsTimeClient) {
-		ntpClient.Stop();
-
+		ntp_client_stop(true);
 		gpsTimeClient.Start();
 		gpsTimeClient.Print();
 	}
@@ -424,7 +419,7 @@ int main() {
 	NtpServer ntpServer(ltcParams.GetYear(), ltcParams.GetMonth(), ltcParams.GetDay());
 
 	if (bRunNtpServer) {
-		ntpClient.Stop();
+		ntp_client_stop(true);
 
 		ntpServer.SetTimeCode(&tStartTimeCode);
 		ntpServer.Start();
@@ -519,7 +514,7 @@ int main() {
 			artnetReader.Run();		// Handles MIDI Quarter Frame output messages
 			break;
 		case ltc::Source::MIDI:
-			midiReader.Run();
+			midiReader.Run();		// Handles MIDI Quarter Frame output messages
 			break;
 		case ltc::Source::TCNET:
 			tcnetReader.Run();		// Handles MIDI Quarter Frame output messages
@@ -539,7 +534,7 @@ int main() {
 				if (bRunNtpServer) {
 					HwClock::Get()->Run(true);
 				} else {
-					HwClock::Get()->Run(NtpClient::Get()->GetStatus() == ::ntp::Status::FAILED); // No need to check for STOPPED
+					HwClock::Get()->Run(ntp_client_get_status() == ::ntp::Status::FAILED); // No need to check for STOPPED
 				}
 			} else {
 				gpsTimeClient.Run();
@@ -574,8 +569,6 @@ int main() {
 
 		if (bRunNtpServer) {
 			ntpServer.Run();
-		} else {
-			ntpClient.Run();	// We could check for GPS Time client running. But not really needed.
 		}
 
 		if (ltc::g_DisabledOutputs.bOled) {

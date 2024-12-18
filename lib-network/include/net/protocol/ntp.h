@@ -68,10 +68,10 @@ struct time_t {
 };
 
 enum class Status {
-	STOPPED, IDLE, WAITING, FAILED, DISABLED
+	STOPPED, IDLE, WAITING, LOCKED, FAILED, DISABLED
 };
 
-static constexpr char STATUS[4][8] = { "Stopped", "Idle", "Waiting", "Failed" };
+static constexpr char STATUS[][9] = { "Stopped", "Idle", "Waiting", "Locked", "Failed", "Disabled" };
 
 enum class Modes {
 	BASIC, INTERLEAVED, UNKNOWN
