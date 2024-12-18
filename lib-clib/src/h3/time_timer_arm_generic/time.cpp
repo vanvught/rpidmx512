@@ -25,7 +25,8 @@
 
 #ifdef __GNUC__
 # pragma GCC push_options
-# pragma GCC optimize ("O2")
+# pragma GCC optimize ("O3")
+# pragma GCC optimize ("no-tree-loop-distribute-patterns")
 #endif
 
 #include <cstdint>
@@ -35,7 +36,7 @@
 
 #include "h3.h"
 
-static uint32_t set_timer = 0;
+static uint64_t set_timer = 0;
 static struct timeval s_tv;
 
 static inline uint64_t read_cntpct(void) {
@@ -46,14 +47,14 @@ static inline uint64_t read_cntpct(void) {
 
 extern "C" {
 int gettimeofday(struct timeval *tv, __attribute__((unused)) struct timezone *tz) {
-    assert(tv != NULL);
+    assert(tv != nullpt);
 
     const uint64_t current_cntvct = read_cntpct();
-    const uint64_t elapsed_ticks = current_cntvct - set_timer;
+    const uint64_t elapsed_ticks = current_cntvct - set_timer; // No roll-over issues with 64-bit arithmetic
 
     // Convert ticks to microseconds
-    const uint64_t elapsed_usec = elapsed_ticks / 24;//(elapsed_ticks * 1000000ULL) / H3_F_24M;
-    const time_t elapsed_sec = elapsed_usec / 1000000ULL;
+    const uint64_t elapsed_usec = elapsed_ticks / 24U;	// Adjust for 24MHz clock H3_F_24M;
+    const time_t elapsed_sec = elapsed_usec / 1000000ULL ;
     const suseconds_t elapsed_subsec = elapsed_usec % 1000000ULL;
 
     // Compute the current time
