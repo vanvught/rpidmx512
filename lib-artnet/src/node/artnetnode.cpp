@@ -148,13 +148,13 @@ ArtNetNode::ArtNetNode() {
 void ArtNetNode::Start() {
 	DEBUG_ENTRY
 
-#if (LIGHTSET_PORTS > 0)
-	assert(m_pLightSet != nullptr);
-#endif	
-
 #if defined (ARTNET_HAVE_TRIGGER)
-	assert(m_pArtNetTrigger != nullptr);
-#endif	
+	assert(m_ArtTriggerCallbackFunctionPtr != nullptr);
+#endif
+
+#if defined (ARTNET_HAVE_TIMECODE)
+	assert(m_ArtTimeCodeCallbackFunctionPtr != nullptr);
+#endif
 
 	/*
 	 * Status 1

@@ -34,21 +34,21 @@
 #include "lightsetdata.h"
 
 #include "dmx.h"
+#if !defined (CONFIG_DMXSEND_DISABLE_CONFIGUDP)
+# include "dmxconfigudp.h"
+#endif
 #include "panel_led.h"
 #include "hardware.h"
 
 #include "debug.h"
 
-namespace dmxsend {
-#if !defined(CONFIG_DMX_PORT_OFFSET)
- static constexpr uint32_t DMXPORT_OFFSET = 0;
-#else
- static constexpr uint32_t DMXPORT_OFFSET = CONFIG_DMX_PORT_OFFSET;
-#endif
-}  // namespace dmxsend
-
 class DmxSend final: public LightSet  {
 public:
+#if !defined(CONFIG_DMX_PORT_OFFSET)
+	static constexpr uint32_t DMXPORT_OFFSET = 0;
+#else
+	static constexpr uint32_t DMXPORT_OFFSET = CONFIG_DMX_PORT_OFFSET;
+#endif
 	void Start(const uint32_t nPortIndex) override {
 		DEBUG_ENTRY
 		DEBUG_PRINTF("nPortIndex=%d", nPortIndex);
@@ -104,7 +104,7 @@ public:
 	}
 
 	void Sync(const uint32_t nPortIndex) override {
-		const auto nLightsetOffset = nPortIndex + dmxsend::DMXPORT_OFFSET;
+		const auto nLightsetOffset = nPortIndex + DMXPORT_OFFSET;
 		assert(lightset::Data::GetLength(nLightsetOffset) != 0);
 		Dmx::Get()->SetSendDataWithoutSC(nPortIndex, lightset::Data::Backup(nLightsetOffset), lightset::Data::GetLength(nLightsetOffset));
 	}
@@ -113,7 +113,7 @@ public:
 		Dmx::Get()->Sync();
 
 		for (uint32_t nPortIndex = 0; nPortIndex < dmx::config::max::PORTS; nPortIndex++) {
-			const auto nLightsetOffset = nPortIndex + dmxsend::DMXPORT_OFFSET;
+			const auto nLightsetOffset = nPortIndex + DMXPORT_OFFSET;
 			if (lightset::Data::GetLength(nLightsetOffset) != 0) {
 				lightset::Data::ClearLength(nLightsetOffset);
 				hal::panel_led_on(hal::panelled::PORT_A_TX << nPortIndex);
@@ -160,6 +160,9 @@ private:
 	}
 
 private:
+#if !defined (CONFIG_DMXSEND_DISABLE_CONFIGUDP)
+	DmxConfigUdp m_DmxConfigUdp;
+#endif
 	uint8_t m_nStarted { 0 };
 };
 

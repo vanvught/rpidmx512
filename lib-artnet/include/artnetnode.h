@@ -68,12 +68,6 @@
 # include "e131bridge.h"
 #endif
 
-#if defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI)
-# if !defined(ARTNET_DISABLE_DMX_CONFIG_UDP)
-#  include "dmxconfigudp.h"
-# endif
-#endif
-
 #include "lightset.h"
 #include "hardware.h"
 #include "network.h"
@@ -727,9 +721,6 @@ private:
 #endif
 #if defined (ARTNET_ENABLE_SENDDIAG)
 	artnet::ArtDiagData m_DiagData;
-#endif
-#if defined (DMXCONFIGUDP_H_)
-	DmxConfigUdp m_DmxConfigUdp;
 #endif
 
 	static inline ArtNetNode *s_pThis;

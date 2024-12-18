@@ -41,14 +41,6 @@
 # define E131_HAVE_ARTNET
 #endif
 
-#if !defined(E131_HAVE_ARTNET)
-# if defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI)
-#  if !defined(E131_DISABLE_DMX_CONFIG_UDP)
-#   include "dmxconfigudp.h"
-#  endif
-# endif
-#endif
-
 #include "network.h"
 #include "hardware.h"
 #include "panel_led.h"
@@ -434,13 +426,6 @@ private:
 	TE131DiscoveryPacket m_E131DiscoveryPacket;
 	uint32_t m_nDiscoveryIpAddress { 0 };
 	TimerHandle_t m_timerHandleSendDiscoveryPacket { -1 };
-#endif
-
-#if defined (DMXCONFIGUDP_H_)
-# if defined (ARTNET_VERSION)
-#  error
-# endif
-	DmxConfigUdp m_DmxConfigUdp;
 #endif
 
 	static inline E131Bridge *s_pThis;
