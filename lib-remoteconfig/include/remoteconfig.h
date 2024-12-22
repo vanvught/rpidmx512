@@ -466,7 +466,7 @@ private:
 	remoteconfig::Output m_Output;
 	uint32_t m_nActiveOutputs;
 
-	char *s_pUdpBuffer { nullptr };
+	char *m_pUdpBuffer { nullptr };
 	int32_t m_nHandle { -1 };
 	uint32_t m_nIPAddressFrom { 0 };
 	uint32_t m_nBytesReceived { 0 };
