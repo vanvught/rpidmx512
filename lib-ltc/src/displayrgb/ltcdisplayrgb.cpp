@@ -24,9 +24,14 @@
  * THE SOFTWARE.
  */
 
+#if defined (DEBUG_LTCDISPLAYRGB)
+# undef NDEBUG
+#endif
+
 #include <cstdint>
 #include <cstring>
 #include <cstdio>
+#include <algorithm>
 #include <cassert>
 
 #include "ltcdisplayrgb.h"
@@ -35,13 +40,17 @@
 
 #include "hardware.h"
 #include "network.h"
-//
+
 #include "ltcdisplayws28xx7segment.h"
 #include "ltcdisplayws28xxmatrix.h"
-//
+
 #include "ltcdisplayrgbpanel.h"
 
-#include "pixeltype.h"
+#if !defined (CONFIG_LTC_DISABLE_WS28XX)
+# include "pixeltype.h"
+#endif
+
+#include "softwaretimers.h"
 
 #include "debug.h"
 
@@ -66,6 +75,14 @@ static constexpr auto PORT = 0x2812;
 }  // namespace ltcdisplayrgb
 
 using namespace ltcdisplayrgb;
+
+static TimerHandle_t s_nTimerId = TIMER_ID_NONE;
+static bool m_bShowMsg;
+
+static void message_timer([[maybe_unused]] TimerHandle_t nHandle) {
+	m_bShowMsg = false;
+	SoftwareTimerDelete(s_nTimerId);
+}
 
 LtcDisplayRgb::LtcDisplayRgb(Type tRgbType, WS28xxType tWS28xxType) : m_tDisplayRgbType(tRgbType), m_tDisplayRgbWS28xxType(tWS28xxType) {
 	DEBUG_ENTRY
@@ -95,7 +112,7 @@ LtcDisplayRgb::~LtcDisplayRgb() {
 void LtcDisplayRgb::Init(pixel::Type type) {
 	DEBUG_ENTRY
 
-	m_tLedType = type;
+	m_PixelType = type;
 
 	if (m_tDisplayRgbType == Type::RGBPANEL) {
 		m_pLtcDisplayRgbSet = new LtcDisplayRgbPanel;
@@ -105,9 +122,9 @@ void LtcDisplayRgb::Init(pixel::Type type) {
 	} else {
 
 		if (m_tDisplayRgbWS28xxType == WS28xxType::SEGMENT) {
-			m_pLtcDisplayRgbSet = new LtcDisplayWS28xx7Segment(type, m_tMapping);
+			m_pLtcDisplayRgbSet = new LtcDisplayWS28xx7Segment(type, m_PixelMap);
 		} else {
-			m_pLtcDisplayRgbSet = new LtcDisplayWS28xxMatrix(type, m_tMapping);
+			m_pLtcDisplayRgbSet = new LtcDisplayWS28xxMatrix(type, m_PixelMap);
 		}
 
 		assert(m_pLtcDisplayRgbSet != nullptr);
@@ -241,7 +258,7 @@ void LtcDisplayRgb::SetMessage(const char *pMessage, uint32_t nSize) {
 	const char *pSrc = pMessage;
 	char *pDst = m_aMessage;
 
-	for (i = 0; i < nSize; i++) {
+	for (i = 0; i < std::min(nSize, static_cast<uint32_t>(sizeof(m_aMessage))); i++) {
 		*pDst++ = *pSrc++;
 	}
 
@@ -250,6 +267,13 @@ void LtcDisplayRgb::SetMessage(const char *pMessage, uint32_t nSize) {
 	}
 
 	m_nMsgTimer = Hardware::Get()->Millis();
+
+	if (s_nTimerId == TIMER_ID_NONE) {
+		s_nTimerId = SoftwareTimerAdd(MESSAGE_TIME_MS, message_timer);
+	} else {
+		SoftwareTimerChange(s_nTimerId, MESSAGE_TIME_MS);
+	}
+
 	m_bShowMsg = true;
 }
 
@@ -357,17 +381,26 @@ void LtcDisplayRgb::Input(const uint8_t *pBuffer, uint32_t nSize, [[maybe_unused
 
 void LtcDisplayRgb::Print() {
 	if (m_tDisplayRgbType == Type::RGBPANEL) {
-		printf("Display RGB panel\n");
+#if !defined (CONFIG_LTC_DISABLE_RGB_PANEL)
+		puts("Display RGB panel");
+#else
+		puts("Display RGB panel disabled");
+#endif
 	} else {
-		printf("Display WS28xx\n");
-		printf(" Type    : %s [%d]\n", pixel::pixel_get_type(m_tLedType), static_cast<int>(m_tLedType));
-		printf(" Mapping : %s [%d]\n", pixel::pixel_get_map(m_tMapping), static_cast<int>(m_tMapping));
+#if !defined (CONFIG_LTC_DISABLE_WS28XX)
+		puts("Display WS28xx");
+		printf(" Type    : %s [%d]\n", pixel::pixel_get_type(m_PixelType), static_cast<int>(m_PixelType));
+		printf(" Mapping : %s [%d]\n", pixel::pixel_get_map(m_PixelMap), static_cast<int>(m_PixelMap));
+#else
+		puts("Display WS28xx disabled");
+#endif
 	}
+
 	printf(" Master  : %d\n", m_nMaster);
 	printf(" RGB     : Character 0x%.6X, Colon 0x%.6X, Message 0x%.6X\n", m_aColour[static_cast<uint32_t>(ColourIndex::TIME)], m_aColour[static_cast<uint32_t>(ColourIndex::COLON)], m_aColour[static_cast<uint32_t>(ColourIndex::MESSAGE)]);
 
 	if (m_pLtcDisplayRgbSet == nullptr) {
-		printf(" No Init()!\n");
+		puts(" No Init()!");
 	} else {
 		m_pLtcDisplayRgbSet->Print();
 	}

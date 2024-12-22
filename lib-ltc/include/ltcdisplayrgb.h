@@ -35,6 +35,8 @@
 # include "pixeltype.h"
 #endif
 
+#include "softwaretimers.h"
+
 #include "hardware.h"
 
 namespace ltcdisplayrgb {
@@ -78,7 +80,7 @@ public:
 
 #if !defined (CONFIG_LTC_DISABLE_WS28XX)
 	void SetMapping(pixel::Map map) {
-		m_tMapping = map;
+		m_PixelMap = map;
 	}
 #endif
 
@@ -103,14 +105,6 @@ public:
 	void Init();
 #endif
 	void Print();
-
-	void Run() {
-		if (__builtin_expect((m_bShowMsg), 0)) {
-			if (Hardware::Get()->Millis() - m_nMsgTimer >= MESSAGE_TIME_MS) {
-				m_bShowMsg = false;
-			}
-		}
-	}
 
 	void Input(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort);
 
@@ -153,14 +147,13 @@ private:
 	uint8_t m_nIntensity { ltcdisplayrgb::Defaults::GLOBAL_BRIGHTNESS };
 	int32_t m_nHandle { -1 };
 #if !defined (CONFIG_LTC_DISABLE_WS28XX)
-	pixel::Map m_tMapping { pixel::Map::UNDEFINED };
-	pixel::Type m_tLedType { pixel::Type::UNDEFINED };
+	pixel::Map m_PixelMap { pixel::Map::UNDEFINED };
+	pixel::Type m_PixelType { pixel::Type::UNDEFINED };
 #endif
 	uint32_t m_aColour[static_cast<uint32_t>(ltcdisplayrgb::ColourIndex::LAST)];
 	uint32_t m_nMaster { ltcdisplayrgb::Defaults::MASTER };
 	uint32_t m_nMsgTimer { 0 };
 	uint32_t m_nColonBlinkMillis { 0 };
-	bool m_bShowMsg { false };
 	char m_aMessage[ltcdisplayrgb::MAX_MESSAGE_SIZE];
 	char m_nSecondsPrevious { 60 };
 	ltcdisplayrgb::ColonBlinkMode m_tColonBlinkMode { ltcdisplayrgb::Defaults::COLON_BLINK_MODE };
