@@ -133,9 +133,6 @@ public:
 
 	void Run() {
 		ShowFileFormat::ShowFileRun(m_Status == showfile::Status::PLAYING);
-#if defined (CONFIG_SHOWFILE_ENABLE_OSC)
-		m_showFileOSC.Run();
-#endif
 #if !defined(CONFIG_SHOWFILE_DISABLE_TFTP)
 		if (m_pShowFileTFTP != nullptr) {
 			m_pShowFileTFTP->Run();
