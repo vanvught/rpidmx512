@@ -34,7 +34,7 @@
 # define CONFIG_NTP_CLIENT_POLL_POWER_MIN 3
 #endif
 #if !defined(CONFIG_NTP_CLIENT_POLL_POWER_MAX)
-# define CONFIG_NTP_CLIENT_POLL_POWER_MAX 10
+# define CONFIG_NTP_CLIENT_POLL_POWER_MAX 12
 #endif
 
 namespace ntpclient {

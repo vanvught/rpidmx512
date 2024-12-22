@@ -274,12 +274,3 @@ void Network::EnableDhcp() {
 
 	DEBUG_EXIT
 }
-
-void Network::Print() {
-	printf("Network [%c]\n", GetAddressingMode());
-	printf(" Hostname  : %s\n", m_aHostName);
-	printf(" IfName    : %u: %s " MACSTR "\n", static_cast<unsigned int>(GetIfIndex()), m_aIfName, MAC2STR(net::netif_hwaddr()));
-	printf(" Primary   : " IPSTR "/%u (HTTP only " IPSTR ")\n", IP2STR(net::netif_ipaddr()), static_cast<unsigned int>(GetNetmaskCIDR()), IP2STR(net::netif_secondary_ipaddr()));
-	printf(" Gateway   : " IPSTR "\n", IP2STR(net::netif_gw()));
-	printf(" Broadcast : " IPSTR "\n", IP2STR(GetBroadcastIp()));
-}
