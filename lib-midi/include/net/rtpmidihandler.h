@@ -1,5 +1,5 @@
 /**
- * @file rtpmidireader.h
+ * @file rtpmidihandler.h
  *
  */
 /* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
@@ -23,36 +23,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef ARM_RTPMIDIREADER_H_
-#define ARM_RTPMIDIREADER_H_
+#ifndef NET_RTPMIDIHANDLER_H_
+#define NET_RTPMIDIHANDLER_H_
 
-#include <cstdint>
+#include "midi.h"
 
-#include "net/rtpmidihandler.h"
-#include "ltc.h"
-
-#include "midibpm.h"
-
-class RtpMidiReader final : public RtpMidiHandler {
+class RtpMidiHandler {
 public:
-	void Start();
-	void Stop();
-	void Run();
+	virtual ~RtpMidiHandler() = default;
 
-	void MidiMessage(const struct midi::Message *ptMidiMessage) override;
-
-private:
-	void HandleMtc(const struct midi::Message *ptMidiMessage);
-	void HandleMtcQf(const struct midi::Message *ptMidiMessage);
-	void Update();
-
-private:
-	struct ltc::TimeCode m_LtcTimeCode;
-	uint8_t m_nPartPrevious { 0 };
-	bool m_bDirection { true };
-	uint32_t m_nMtcQfFramePrevious { 0 };
-	uint32_t m_nMtcQfFramesDelta { 0 };
-	MidiBPM m_MidiBPM;
+	virtual void MidiMessage(const struct midi::Message *pMidiMessage)=0;
 };
 
-#endif /* ARM_RTPMIDIREADER_H_ */
+#endif /* NET_RTPMIDIHANDLER_H_ */

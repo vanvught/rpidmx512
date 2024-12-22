@@ -23,15 +23,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef RTPMIDI_H_
-#define RTPMIDI_H_
+#ifndef NET_RTPMIDI_H_
+#define NET_RTPMIDI_H_
 
 #include <cstdint>
+#include <cassert>
 
-#include "applemidi.h"
+#include "net/applemidi.h"
+#include "net/rtpmidihandler.h"
+
 #include "midi.h"
-
-#include "rtpmidihandler.h"
 
 #include "debug.h"
 
@@ -214,4 +215,4 @@ private:
 	static inline RtpMidi *s_pThis;
 };
 
-#endif /* RTPMIDI_H_ */
+#endif /* NET_RTPMIDI_H_ */

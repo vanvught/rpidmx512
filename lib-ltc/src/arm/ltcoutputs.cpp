@@ -40,7 +40,7 @@
 
 // Outputs
 #include "ltcsender.h"
-#include "rtpmidi.h"
+#include "net/rtpmidi.h"
 #include "midi.h"
 #include "ntpserver.h"
 #include "display.h"

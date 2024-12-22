@@ -23,14 +23,13 @@
  * THE SOFTWARE.
  */
 
+#if defined (DEBUG_NTPSERVER)
+# undef NDEBUG
+#endif
+
 /*
  * https://tools.ietf.org/html/rfc5905
  */
-
-#if !defined(__clang__)	// Needed for compiling on MacOS
-# pragma GCC push_options
-# pragma GCC optimize ("Os")
-#endif
 
 #include <cstdint>
 #include <cstdio>
@@ -44,9 +43,6 @@
 #include "network.h"
 
 #include "debug.h"
-
-ntp::Packet NtpServer::s_Reply;
-NtpServer *NtpServer::s_pThis;
 
 NtpServer::NtpServer(const uint32_t nYear, const uint32_t nMonth, const uint32_t nDay) {
 	DEBUG_ENTRY
@@ -81,16 +77,15 @@ void NtpServer::Start() {
 	DEBUG_ENTRY
 
 	assert(m_nHandle == -1);
-	m_nHandle = Network::Get()->Begin(ntp::UDP_PORT);
+	m_nHandle = Network::Get()->Begin(ntp::UDP_PORT, staticCallbackFunction);
 	assert(m_nHandle != -1);
 
-	s_Reply.LiVnMode = ntp::VERSION | ntp::MODE_SERVER;
-	s_Reply.Stratum = ntp::STRATUM;
-	s_Reply.Poll = ntp::MINPOLL;
-	s_Reply.Precision = static_cast<uint8_t>(-10);	// -9.9 = LOG2(0.0001) -> milliseconds
-	s_Reply.RootDelay = 0;
-	s_Reply.RootDispersion = 0;
-	s_Reply.ReferenceID = Network::Get()->GetIp();
+	m_Reply.LiVnMode = ntp::VERSION | ntp::MODE_SERVER;
+	m_Reply.Stratum = ntp::STRATUM;
+	m_Reply.Poll = ntp::MINPOLL;
+	m_Reply.Precision = static_cast<uint8_t>(-10);	// -9.9 = LOG2(0.0001) -> milliseconds
+	m_Reply.RootDelay = 0;
+	m_Reply.RootDispersion = 0;
 
 	DEBUG_EXIT
 }
@@ -103,32 +98,6 @@ void NtpServer::Stop() {
 	m_nHandle = -1;
 
 	DEBUG_EXIT
-}
-
-void NtpServer::SetTimeCode(const struct ltc::TimeCode *pLtcTimeCode) {
-	m_tTimeDate = m_Time;
-	m_tTimeDate += pLtcTimeCode->nSeconds;
-	m_tTimeDate += pLtcTimeCode->nMinutes * 60;
-	m_tTimeDate += pLtcTimeCode->nHours * 60 * 60;
-
-	const auto type = static_cast<ltc::Type>(pLtcTimeCode->nType);
-
-	if (type == ltc::Type::FILM) {
-		m_nFraction = static_cast<uint32_t>((178956970.625 * pLtcTimeCode->nFrames));
-	} else if (type == ltc::Type::EBU) {
-		m_nFraction = static_cast<uint32_t>((171798691.8 * pLtcTimeCode->nFrames));
-	} else if ((type == ltc::Type::DF) || (type == ltc::Type::SMPTE)) {
-		m_nFraction = static_cast<uint32_t>((143165576.5 * pLtcTimeCode->nFrames));
-	} else {
-		assert(0);
-	}
-
-	s_Reply.ReferenceTimestamp_s = __builtin_bswap32(static_cast<uint32_t>(m_tTimeDate));
-	s_Reply.ReferenceTimestamp_f = __builtin_bswap32(m_nFraction);
-	s_Reply.ReceiveTimestamp_s = __builtin_bswap32(static_cast<uint32_t>(m_tTimeDate));
-	s_Reply.ReceiveTimestamp_f = __builtin_bswap32(m_nFraction);
-	s_Reply.TransmitTimestamp_s = __builtin_bswap32(static_cast<uint32_t>(m_tTimeDate));
-	s_Reply.TransmitTimestamp_f = __builtin_bswap32(m_nFraction);
 }
 
 void NtpServer::Print() {

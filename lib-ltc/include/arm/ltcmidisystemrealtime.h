@@ -29,7 +29,7 @@
 #include <cassert>
 
 #include "midi.h"
-#include "rtpmidi.h"
+#include "net/rtpmidi.h"
 
 #include "arm/ltcoutputs.h"
 

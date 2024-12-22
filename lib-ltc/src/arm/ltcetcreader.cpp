@@ -39,7 +39,6 @@
 #include "hardware.h"
 // Output
 #include "artnetnode.h"
-#include "rtpmidi.h"
 #include "ltcsender.h"
 #include "tcnetdisplay.h"
 #include "arm/ltcoutputs.h"

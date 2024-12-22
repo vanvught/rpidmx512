@@ -41,7 +41,7 @@
 #include "ltc.h"
 
 #include "midi.h"
-
+#include "net/rtpmidi.h"
 #include "network.h"
 
 #include "debug.h"

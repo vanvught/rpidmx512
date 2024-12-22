@@ -27,8 +27,8 @@
  * https://developer.apple.com/library/archive/documentation/Audio/Conceptual/MIDINetworkDriverProtocol/MIDI/MIDI.html
  */
 
-#ifndef APPLEMIDI_H_
-#define APPLEMIDI_H_
+#ifndef NET_APPLEMIDI_H_
+#define NET_APPLEMIDI_H_
 
 #include <cstdint>
 #include <cstdio>
@@ -90,7 +90,7 @@ public:
 		assert(m_nHandleControl != -1);
 
 		assert(m_nHandleMidi == -1);
-		m_nHandleMidi = Network::Get()->Begin(static_cast<uint16_t>(m_nPort + 1));
+		m_nHandleMidi = Network::Get()->Begin(static_cast<uint16_t>(m_nPort + 1U));
 		assert(m_nHandleMidi != -1);
 
 		DEBUG_PRINTF("Session name: [%s]", m_ExchangePacketReply.aName);
@@ -103,11 +103,13 @@ public:
 	void Stop() {
 		DEBUG_ENTRY
 
+		assert(m_nHandleMidi != -1);
 		Network::Get()->End(static_cast<uint16_t>(m_nPort + 1U));
-		Network::Get()->End(m_nPort);
-
-		m_nHandleControl = -1;
 		m_nHandleMidi = -1;
+
+		assert(m_nHandleControl != -1);
+		Network::Get()->End(m_nPort);
+		m_nHandleControl = -1;
 
 		DEBUG_EXIT
 	}
@@ -150,13 +152,17 @@ public:
 		m_nExchangePacketReplySize = static_cast<uint16_t>(applemidi::EXCHANGE_PACKET_MIN_LENGTH + 1 + nLength);
 	}
 
+	void SetSSRC(const uint32_t nSSRC) {
+		m_nSSRC = nSSRC;
+	}
+
 	uint32_t GetSSRC() const {
 		return m_nSSRC;
 	}
 
 	void Print() {
 		const auto nSSRC = __builtin_bswap32(m_nSSRC);
-		printf("AppleMIDI\n");
+		puts("AppleMIDI");
 		printf(" SSRC    : %x (%u)\n", nSSRC, nSSRC);
 		printf(" Session : %s\n", m_ExchangePacketReply.aName);
 	}
@@ -167,7 +173,7 @@ protected:
 		return (nElapsed * 10U);
 	}
 
-	bool Send(const uint8_t *pBuffer, uint32_t nLength) {
+	bool Send(const uint8_t *pBuffer, const uint32_t nLength) {
 		if (m_SessionStatus.sessionState != applemidi::SessionState::ESTABLISHED) {
 			return false;
 		}
@@ -186,13 +192,13 @@ private:
 	virtual void HandleRtpMidi(const uint8_t *pBuffer)=0;
 
 private:
-	uint32_t m_nStartTime { 0 };
 	uint32_t m_nSSRC;
+	uint32_t m_nStartTime { 0 };
 	int32_t m_nHandleControl { -1 };
 	int32_t m_nHandleMidi { -1 };
 	uint32_t m_nRemoteIp { 0 };
 	uint32_t m_nBytesReceived { 0 };
-	uint16_t m_nExchangePacketReplySize;
+	uint16_t m_nExchangePacketReplySize { applemidi::EXCHANGE_PACKET_MIN_LENGTH };
 	uint16_t m_nPort { UPD_PORT_CONTROL_DEFAULT };
 	uint16_t m_nRemotePort { 0 };
 	applemidi::ExchangePacket m_ExchangePacketReply;
@@ -200,4 +206,4 @@ private:
 	uint8_t *m_pBuffer { nullptr };
 };
 
-#endif /* APPLEMIDI_H_ */
+#endif /* NET_APPLEMIDI_H_ */

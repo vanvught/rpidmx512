@@ -46,7 +46,6 @@
 
 // Output
 #include "artnetnode.h"
-#include "rtpmidi.h"
 #include "midi.h"
 #include "ltcetc.h"
 #include "arm/ltcoutputs.h"

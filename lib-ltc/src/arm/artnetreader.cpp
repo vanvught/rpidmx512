@@ -41,7 +41,6 @@
 // Input
 #include "artnettimecode.h"
 // Output
-#include "rtpmidi.h"
 #include "ltcetc.h"
 #include "ltcsender.h"
 #include "arm/ltcoutputs.h"

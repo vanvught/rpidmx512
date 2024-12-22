@@ -26,10 +26,9 @@
 #include <cstdio>
 #include <cassert>
 
-#include "rtpmidi.h"
-#include "applemidi.h"
-
-#include "rtpmidihandler.h"
+#include "net/rtpmidi.h"
+#include "net/applemidi.h"
+#include "net/rtpmidihandler.h"
 
 #include "hardware.h"
 
@@ -170,7 +169,7 @@ void RtpMidi::HandleRtpMidi(const uint8_t *pBuffer) {
 	while (nCommandLength != 0) {
 
 		if ((nCommandCount != 0) || (nFlags & RTP_MIDI_CS_FLAG_Z)) {
-			int32_t nSize = DecodeTime(static_cast<uint32_t>(nCommandLength), static_cast<uint32_t>(nOffset));
+			auto nSize = DecodeTime(static_cast<uint32_t>(nCommandLength), static_cast<uint32_t>(nOffset));
 
 			if (nSize < 0) {
 				return;
@@ -181,7 +180,7 @@ void RtpMidi::HandleRtpMidi(const uint8_t *pBuffer) {
 		}
 
 		if (nCommandLength != 0) {
-			int32_t nSize = DecodeMidi(static_cast<uint32_t>(nCommandLength), static_cast<uint32_t>(nOffset));
+			auto nSize = DecodeMidi(static_cast<uint32_t>(nCommandLength), static_cast<uint32_t>(nOffset));
 
 			if (nSize < 0) {
 				return;

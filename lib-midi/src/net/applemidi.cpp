@@ -36,7 +36,7 @@
  #define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
-#include "applemidi.h"
+#include "net/applemidi.h"
 
 #include "midi.h"
 
@@ -68,7 +68,7 @@ struct TTimestampSynchronization {
 	uint64_t nTimestamps[3];
 }__attribute__((packed));
 
-AppleMidi::AppleMidi() : m_nSSRC(Network::Get()->GetIp()), m_nExchangePacketReplySize(applemidi::EXCHANGE_PACKET_MIN_LENGTH) {
+AppleMidi::AppleMidi() : m_nSSRC(Network::Get()->GetIp()) {
 	DEBUG_ENTRY
 
 	m_ExchangePacketReply.nSignature = SIGNATURE;

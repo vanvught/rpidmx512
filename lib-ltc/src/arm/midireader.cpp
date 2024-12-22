@@ -45,7 +45,6 @@
 // Output
 #include "ltcsender.h"
 #include "artnetnode.h"
-#include "rtpmidi.h"
 #include "ltcetc.h"
 #include "arm/ltcmidisystemrealtime.h"
 #include "arm/ltcoutputs.h"

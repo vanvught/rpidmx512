@@ -3,7 +3,7 @@
  */
 /*
  * Copyright (C) 2019-2020 by hippy mailto:dmxout@gmail.com
- * Copyright (C) 2019-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+ * Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +34,8 @@
 #if !defined (CONFIG_LTC_DISABLE_WS28XX)
 # include "pixeltype.h"
 #endif
+
+#include "hardware.h"
 
 namespace ltcdisplayrgb {
 enum class Type {
@@ -69,6 +71,7 @@ struct Defaults {
 }  // namespace ltcdisplayrgb
 
 class LtcDisplayRgb {
+	static constexpr auto MESSAGE_TIME_MS = 3000;
 public:
 	LtcDisplayRgb(ltcdisplayrgb::Type type, ltcdisplayrgb::WS28xxType WS28xxType);
 	~LtcDisplayRgb();
@@ -79,15 +82,15 @@ public:
 	}
 #endif
 
-	void SetMaster(uint8_t nValue) {
+	void SetMaster(const uint8_t nValue) {
 		m_nMaster = nValue;
 	}
 
-	void SetColonBlinkMode(ltcdisplayrgb::ColonBlinkMode colonBlinkMode) {
-		m_tColonBlinkMode = colonBlinkMode	;
+	void SetColonBlinkMode(const ltcdisplayrgb::ColonBlinkMode colonBlinkMode) {
+		m_tColonBlinkMode = colonBlinkMode;
 	}
 
-	void SetColour(uint32_t nRGB, ltcdisplayrgb::ColourIndex colourIndex) {
+	void SetColour(const uint32_t nRGB, const ltcdisplayrgb::ColourIndex colourIndex) {
 		if (colourIndex >= ltcdisplayrgb::ColourIndex::LAST) {
 			return;
 		}
@@ -101,7 +104,15 @@ public:
 #endif
 	void Print();
 
-	void Run();
+	void Run() {
+		if (__builtin_expect((m_bShowMsg), 0)) {
+			if (Hardware::Get()->Millis() - m_nMsgTimer >= MESSAGE_TIME_MS) {
+				m_bShowMsg = false;
+			}
+		}
+	}
+
+	void Input(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort);
 
 	void Show(const char *pTimecode);
 	void ShowSysTime(const char *pSystemTime);
@@ -123,6 +134,18 @@ private:
 	void SetRGB(const char *pHexString);
 	uint32_t hexadecimalToDecimal(const char *pHexValue, uint32_t nLength = 6);
 	void ShowMessage();
+
+	/**
+	 * @brief Static callback function for receiving UDP packets.
+	 *
+	 * @param pBuffer Pointer to the packet buffer.
+	 * @param nSize Size of the packet buffer.
+	 * @param nFromIp IP address of the sender.
+	 * @param nFromPort Port number of the sender.
+	 */
+	void static staticCallbackFunction(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
+		s_pThis->Input(pBuffer, nSize, nFromIp, nFromPort);
+	}
 
 private:
 	ltcdisplayrgb::Type m_tDisplayRgbType;
@@ -151,8 +174,7 @@ private:
 	struct ltcdisplayrgb::Colours m_tColoursInfo;
 	struct ltcdisplayrgb::Colours m_tColoursSource;
 
-	static char *s_pUdpBuffer;
-	static LtcDisplayRgb *s_pThis;
+	static inline LtcDisplayRgb *s_pThis;
 };
 
 #endif /* LTCDISPLAYRGB_H_ */

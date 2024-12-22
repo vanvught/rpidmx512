@@ -2,7 +2,7 @@
  * @file ntpserver.h
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,45 +43,85 @@ public:
 	void Start();
 	void Stop();
 
-	void SetTimeCode(const struct ltc::TimeCode *pLtcTimeCode);
+	void SetTimeCode(const struct ltc::TimeCode *pLtcTimeCode) {
+		m_TimeDate = m_Time;
+		m_TimeDate += pLtcTimeCode->nSeconds;
+		m_TimeDate += pLtcTimeCode->nMinutes * 60U;
+		m_TimeDate += pLtcTimeCode->nHours * 60U * 60U;
 
-	void Run() {
-		uint32_t nIPAddressFrom;
-		uint16_t nForeignPort;
-		ntp::Packet *pRequest;
+		const auto type = static_cast<ltc::Type>(pLtcTimeCode->nType);
 
-		const auto nBytesReceived = Network::Get()->RecvFrom(m_nHandle, const_cast<const void **>(reinterpret_cast<void **>(&pRequest)), &nIPAddressFrom, &nForeignPort);
+		if (type == ltc::Type::FILM) {
+			m_nFraction = static_cast<uint32_t>((178956970.625 * pLtcTimeCode->nFrames));
+		} else if (type == ltc::Type::EBU) {
+			m_nFraction = static_cast<uint32_t>((171798691.8 * pLtcTimeCode->nFrames));
+		} else if ((type == ltc::Type::DF) || (type == ltc::Type::SMPTE)) {
+			m_nFraction = static_cast<uint32_t>((143165576.5 * pLtcTimeCode->nFrames));
+		} else {
+			assert(0);
+		}
 
-		if (__builtin_expect((nBytesReceived < sizeof(struct ntp::Packet)), 1)) {
-			DEBUG_PUTS("");
+		m_Reply.ReferenceTimestamp_s = __builtin_bswap32(static_cast<uint32_t>(m_TimeDate));
+		m_Reply.ReferenceTimestamp_f = __builtin_bswap32(m_nFraction);
+		m_Reply.ReceiveTimestamp_s = __builtin_bswap32(static_cast<uint32_t>(m_TimeDate));
+		m_Reply.ReceiveTimestamp_f = __builtin_bswap32(m_nFraction);
+		m_Reply.TransmitTimestamp_s = __builtin_bswap32(static_cast<uint32_t>(m_TimeDate));
+		m_Reply.TransmitTimestamp_f = __builtin_bswap32(m_nFraction);
+	}
+
+	/**
+	 * @brief Processes an incoming UDP packet.
+	 *
+	 * @param pBuffer Pointer to the packet buffer.
+	 * @param nSize Size of the packet buffer.
+	 * @param nFromIp IP address of the sender.
+	 * @param nFromPort Port number of the sender.
+	 */
+	void Input(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
+		if (__builtin_expect((nSize != sizeof(struct ntp::Packet)), 0)) {
 			return;
 		}
+
+		auto *pRequest = reinterpret_cast<const ntp::Packet *>(pBuffer);
 
 		if (__builtin_expect(((pRequest->LiVnMode & ntp::MODE_CLIENT) != ntp::MODE_CLIENT), 0)) {
-			DEBUG_PUTS("");
 			return;
 		}
 
-		s_Reply.OriginTimestamp_s = pRequest->TransmitTimestamp_s;
-		s_Reply.OriginTimestamp_f = pRequest->TransmitTimestamp_f;
+		m_Reply.ReferenceID = Network::Get()->GetIp();
+		m_Reply.OriginTimestamp_s = pRequest->TransmitTimestamp_s;
+		m_Reply.OriginTimestamp_f = pRequest->TransmitTimestamp_f;
 
-		Network::Get()->SendTo(m_nHandle, &s_Reply, sizeof(struct ntp::Packet), nIPAddressFrom, nForeignPort);
+		Network::Get()->SendTo(m_nHandle, &m_Reply, sizeof(struct ntp::Packet), nFromIp, nFromPort);
 	}
 
 	void Print();
 
-	static NtpServer* Get() {
+	static NtpServer *Get() {
 		return s_pThis;
 	}
 
 private:
+	/**
+	 * @brief Static callback function for receiving UDP packets.
+	 *
+	 * @param pBuffer Pointer to the packet buffer.
+	 * @param nSize Size of the packet buffer.
+	 * @param nFromIp IP address of the sender.
+	 * @param nFromPort Port number of the sender.
+	 */
+	void static staticCallbackFunction(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
+		s_pThis->Input(pBuffer, nSize, nFromIp, nFromPort);
+	}
+
+private:
 	time_t m_Time { 0 };
-	time_t m_tTimeDate { 0 };
+	time_t m_TimeDate { 0 };
 	uint32_t m_nFraction { 0 };
 	int32_t m_nHandle { -1 };
+	ntp::Packet m_Reply;
 
-	static ntp::Packet s_Reply;
-	static NtpServer *s_pThis;
+	static inline NtpServer *s_pThis;
 };
 
 #endif /* NTPSERVER_H_ */
