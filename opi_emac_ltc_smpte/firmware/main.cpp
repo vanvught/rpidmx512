@@ -53,7 +53,7 @@
 #include "artnetconst.h"
 
 #include "midi.h"
-#include "rtpmidi.h"
+#include "net/rtpmidi.h"
 #include "midiparams.h"
 
 #include "tcnet.h"
@@ -64,8 +64,8 @@
 #include "ntpserver.h"
 
 #include "mcpbuttons.h"
-
 #include "ltcoscserver.h"
+
 #include "ltcsourceconst.h"
 #include "ltcsource.h"
 #include "ltcsender.h"
@@ -73,13 +73,13 @@
 #include "arm/artnetreader.h"
 #include "arm/ltcreader.h"
 #include "arm/midireader.h"
-#include "arm/systimereader.h"
 #include "arm/tcnetreader.h"
 #include "arm/ltcgenerator.h"
-#include "arm/ltcmidisystemrealtime.h"
 #include "arm/rtpmidireader.h"
+#include "arm/systimereader.h"
 #include "arm/ltcetcreader.h"
 #include "arm/ltcoutputs.h"
+#include "arm/ltcmidisystemrealtime.h"
 
 #include "flashcodeinstall.h"
 
@@ -94,7 +94,6 @@
 # include "factorydefaults.h"
 #endif
 
-// System Time
 #include "net/apps/ntp_client.h"
 #include "gpstimeclient.h"
 #include "gpsparams.h"
@@ -119,11 +118,11 @@ void reboot_handler() {
 	if (!ltc::g_DisabledOutputs.bMax7219) {
 		LtcDisplayMax7219::Get()->Init(2); // TODO WriteChar
 	}
-
+#if !defined (CONFIG_LTC_DISABLE_WS28XX)
 	if ((!ltc::g_DisabledOutputs.bWS28xx) || (!ltc::g_DisabledOutputs.bRgbPanel)) {
 		LtcDisplayRgb::Get()->WriteChar('-');
 	}
-
+#endif
 	if (!RemoteConfig::Get()->IsReboot()) {
 		Display::Get()->SetSleep(false);
 
@@ -136,13 +135,13 @@ void reboot_handler() {
 }
 }  // namespace hal
 
+#if !defined (CONFIG_LTC_DISABLE_RGB_PANEL)
 extern "C" {
 void h3_cpu_off(uint32_t);
 }
+#endif
 
-void static staticCallbackFunction([[maybe_unused]] const struct artnet::TimeCode *pTimeCode) {
-
-}
+void static staticCallbackFunction([[maybe_unused]] const struct artnet::TimeCode *pTimeCode) {}
 
 int main() {
 	Hardware hw;
@@ -185,8 +184,9 @@ int main() {
 	display.SetContrast(ltcDisplayParams.GetOledIntensity());
 
 	LtcDisplayMax7219 ltcDdisplayMax7219(ltcDisplayParams.GetMax7219Type());
+#if !defined (CONFIG_LTC_DISABLE_WS28XX)
 	LtcDisplayRgb ltcDisplayRgb(ltcParams.IsRgbPanelEnabled() ? ltcdisplayrgb::Type::RGBPANEL : ltcdisplayrgb::Type::WS28XX, ltcDisplayParams.GetWS28xxDisplayType());
-
+#endif
 	/**
 	 * Select the source using buttons/rotary
 	 */
@@ -217,6 +217,7 @@ int main() {
 		ltcDdisplayMax7219.Print();
 	}
 
+#if !defined (CONFIG_LTC_DISABLE_WS28XX)
 	if ((!ltc::g_DisabledOutputs.bWS28xx) || (!ltc::g_DisabledOutputs.bRgbPanel)) {
 		ltcDisplayParams.Set(&ltcDisplayRgb);
 
@@ -237,12 +238,15 @@ int main() {
 
 		ltcDisplayRgb.Print();
 	}
+#endif
 
+#if !defined (CONFIG_LTC_DISABLE_RGB_PANEL)
 	if (ltc::g_DisabledOutputs.bRgbPanel) {
 		for (uint32_t nCpuNumber = 1; nCpuNumber < 4; nCpuNumber++) {
 			h3_cpu_off(nCpuNumber);
 		}
 	}
+#endif
 
 #if defined (NODE_RDMNET_LLRP_ONLY)
 	RDMNetLLRPOnly rdmNetLLRPOnly("LTC SMPTE");
@@ -432,7 +436,7 @@ int main() {
 	 * LTC Generator
 	 */
 
-	LtcGenerator ltcGenerator(&tStartTimeCode, &tStopTimeCode, ltcParams.GetSkipFree());
+	LtcGenerator ltcGenerator(&tStartTimeCode, &tStopTimeCode, ltcParams.GetSkipFree(), ltcParams.IsIgnoreStart(), ltcParams.IsIgnoreStop());
 
 	/**
 	 * MIDI output System Real Time
@@ -493,9 +497,11 @@ int main() {
 
 	ltc::source::show(ltcSource, bRunGpsTimeClient);
 
+#if !defined (CONFIG_LTC_DISABLE_RGB_PANEL)
 	if (!ltc::g_DisabledOutputs.bRgbPanel) {
 		ltcDisplayRgb.ShowSource(ltcSource);
 	}
+#endif
 
 	ltcOutputs.Print();
 
@@ -504,7 +510,6 @@ int main() {
 	for (;;) {
 		hw.WatchdogFeed();
 		nw.Run();
-
 		// Run the reader
 		switch (ltcSource) {
 		case ltc::Source::LTC:
@@ -567,26 +572,19 @@ int main() {
 			ltcEtc.Run();
 		}
 
-		if (bRunNtpServer) {
-			ntpServer.Run();
-		}
-
 		if (ltc::g_DisabledOutputs.bOled) {
 			display.Run();
 		}
-
+#if !defined (CONFIG_LTC_DISABLE_RGB_PANEL)
 		if ((!ltc::g_DisabledOutputs.bWS28xx) || (!ltc::g_DisabledOutputs.bRgbPanel)) {
 			ltcDisplayRgb.Run();
 		}
-
-		if (ltc::g_DisabledOutputs.bRgbPanel) {
-			hw.Run();
-		}
-
+#endif
 		if (sourceSelect.IsConnected()) {
 			sourceSelect.Run();
 		}
 
+		hw.Run();
 		remoteConfig.Run();
 		configStore.Flash();
 #if defined(ENABLE_SHELL)
