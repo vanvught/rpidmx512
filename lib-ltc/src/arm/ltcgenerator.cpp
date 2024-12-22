@@ -44,7 +44,6 @@
 
 // Output
 #include "artnetnode.h"
-#include "rtpmidi.h"
 #include "ltcetc.h"
 #include "ltcsender.h"
 #include "arm/ltcoutputs.h"
@@ -122,10 +121,12 @@ static int32_t atoi(const char *pBuffer, uint32_t nSize) {
 	return sign * res;
 }
 
-LtcGenerator::LtcGenerator(const struct ltc::TimeCode* pStartLtcTimeCode, const struct ltc::TimeCode* pStopLtcTimeCode, bool bSkipFree):
+LtcGenerator::LtcGenerator(const struct ltc::TimeCode* pStartLtcTimeCode, const struct ltc::TimeCode* pStopLtcTimeCode, bool bSkipFree, bool bIgnoreStart, bool bIgnoreStop):
 	m_pStartLtcTimeCode(const_cast<struct ltc::TimeCode*>(pStartLtcTimeCode)),
 	m_pStopLtcTimeCode(const_cast<struct ltc::TimeCode*>(pStopLtcTimeCode)),
 	m_bSkipFree(bSkipFree),
+	m_bIgnoreStart(bIgnoreStart),
+	m_bIgnoreStop(bIgnoreStop),
 	m_nStartSeconds(GetSeconds(*m_pStartLtcTimeCode)),
 	m_nStopSeconds(GetSeconds(*m_pStopLtcTimeCode))
 {
@@ -202,10 +203,6 @@ void LtcGenerator::Start() {
 
 	if (!ltc::g_DisabledOutputs.bArtNet) {
 		ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct artnet::TimeCode*>(&g_ltc_LtcTimeCode));
-	}
-
-	if (!ltc::g_DisabledOutputs.bRtpMidi) {
-		RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(&g_ltc_LtcTimeCode));
 	}
 
 	if (!ltc::g_DisabledOutputs.bEtc) {
@@ -360,19 +357,22 @@ void LtcGenerator::ActionSetRate(const char *pTimeCodeRate) {
 	if ((m_State == STOPPED) && (ltc::parse_timecode_rate(pTimeCodeRate, nFps))) {
 		if (nFps != m_nFps) {
 			m_nFps = nFps;
-			//
+
 			const auto nType = static_cast<uint8_t>(ltc::g_Type);
 			g_ltc_LtcTimeCode.nType = nType;
-			//
+
 			m_pStartLtcTimeCode->nType = nType;
+
 			if (m_pStartLtcTimeCode->nFrames >= m_nFps) {
 				m_pStartLtcTimeCode->nFrames = static_cast<uint8_t>(m_nFps - 1);
 			}
+
 			m_pStopLtcTimeCode->nType = nType;
+
 			if (m_pStopLtcTimeCode->nFrames >= m_nFps) {
 				m_pStopLtcTimeCode->nFrames = static_cast<uint8_t>(m_nFps - 1);
 			}
-			//
+
 			const auto nTimerInterval = TimeCodeConst::TMR_INTV[nType];
 #if defined (H3)
 			H3_TIMER->TMR0_INTV = nTimerInterval;
@@ -389,10 +389,6 @@ void LtcGenerator::ActionSetRate(const char *pTimeCodeRate) {
 
 			if (!ltc::g_DisabledOutputs.bArtNet) {
 				ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct artnet::TimeCode*>(&g_ltc_LtcTimeCode));
-			}
-
-			if (!ltc::g_DisabledOutputs.bRtpMidi) {
-				RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(&g_ltc_LtcTimeCode));
 			}
 
 			if (!ltc::g_DisabledOutputs.bEtc) {
@@ -634,7 +630,7 @@ void LtcGenerator::Print() {
 }
 
 void LtcGenerator::Increment() {
-	if (__builtin_expect((memcmp(&g_ltc_LtcTimeCode, m_pStopLtcTimeCode, sizeof(struct ltc::TimeCode)) == 0), 0)) {
+	if ((!m_bIgnoreStop) && (__builtin_expect((memcmp(&g_ltc_LtcTimeCode, m_pStopLtcTimeCode, sizeof(struct ltc::TimeCode)) == 0), 0))) {
 		if (m_State == STARTED) {
 			m_State = LIMIT;
 		}
@@ -669,7 +665,7 @@ void LtcGenerator::Increment() {
 }
 
 void LtcGenerator::Decrement() {
-	if (__builtin_expect((memcmp(&g_ltc_LtcTimeCode, m_pStartLtcTimeCode, sizeof(struct ltc::TimeCode)) == 0), 0)) {
+	if ((!m_bIgnoreStart) && (__builtin_expect((memcmp(&g_ltc_LtcTimeCode, m_pStartLtcTimeCode, sizeof(struct ltc::TimeCode)) == 0), 0))) {
 		if (m_State == STARTED) {
 			m_State = LIMIT;
 		}

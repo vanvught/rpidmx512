@@ -58,10 +58,12 @@ struct LtcParamsConst {
 	static inline const char START_SECOND[] = "start_second";
 	static inline const char START_MINUTE[] = "start_minute";
 	static inline const char START_HOUR[] = "start_hour";
+	static inline const char IGNORE_START[] = "ignore_start";
 	static inline const char STOP_FRAME[] = "stop_frame";
 	static inline const char STOP_SECOND[] = "stop_second";
 	static inline const char STOP_MINUTE[] = "stop_minute";
 	static inline const char STOP_HOUR[] = "stop_hour";
+	static inline const char IGNORE_STOP[] = "ignore_stop";
 	static inline const char ALT_FUNCTION[] = "alt_function";
 	static inline const char SKIP_SECONDS[] = "skip_seconds";
 	static inline const char SKIP_FREE[] = "skip_free";

@@ -22,9 +22,8 @@
  * THE SOFTWARE.
  */
 
-#if !defined(__clang__)	// Needed for compiling on MacOS
-# pragma GCC push_options
-# pragma GCC optimize ("Os")
+#if defined (DEBUG_LTCPARAMS)
+# undef NDEBUG
 #endif
 
 #include <cstdint>
@@ -328,6 +327,24 @@ void LtcParams::callbackFunction(const char* pLine) {
 		return;
 	}
 
+	if (Sscan::Uint8(pLine, LtcParamsConst::IGNORE_START, nValue8) == Sscan::OK) {
+		if (nValue8 != 0) {
+			m_Params.nSetList |= ltcparams::Mask::IGNORE_START;
+		} else {
+			m_Params.nSetList &= ~ltcparams::Mask::IGNORE_START;
+		}
+		return;
+	}
+
+	if (Sscan::Uint8(pLine, LtcParamsConst::IGNORE_STOP, nValue8) == Sscan::OK) {
+		if (nValue8 != 0) {
+			m_Params.nSetList |= ltcparams::Mask::IGNORE_STOP;
+		} else {
+			m_Params.nSetList &= ~ltcparams::Mask::IGNORE_STOP;
+		}
+		return;
+	}
+
 	if (Sscan::Uint8(pLine, LtcParamsConst::OSC_ENABLE, nValue8) == Sscan::OK) {
 		if (nValue8 != 0) {
 			m_Params.nSetList |= ltcparams::Mask::OSC_ENABLE;
@@ -392,7 +409,7 @@ void LtcParams::callbackFunction(const char* pLine) {
 	}
 }
 
-void LtcParams::Set(struct ltc::TimeCode *ptStartTimeCode, struct ltc::TimeCode *ptStopTimeCode) {
+void LtcParams::Set(struct ltc::TimeCode *pStartTimeCode, struct ltc::TimeCode *pStopTimeCode) {
 	ltc::g_DisabledOutputs.bOled = isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::DISPLAY);
 	ltc::g_DisabledOutputs.bMax7219 = isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::MAX7219);
 	ltc::g_DisabledOutputs.bMidi = isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::MIDI);
@@ -412,63 +429,63 @@ void LtcParams::Set(struct ltc::TimeCode *ptStartTimeCode, struct ltc::TimeCode 
 	ltc::g_DisabledOutputs.bRgbPanel = true;
 #endif
 
-	assert(ptStartTimeCode != nullptr);
+	assert(pStartTimeCode != nullptr);
 
 	if ((isMaskSet(ltcparams::Mask::START_FRAME)) || (isMaskSet(ltcparams::Mask::START_SECOND)) || (isMaskSet(ltcparams::Mask::START_MINUTE)) || (isMaskSet(ltcparams::Mask::START_HOUR)) ) {
-		memset(ptStartTimeCode, 0, sizeof(struct ltc::TimeCode));
+		memset(pStartTimeCode, 0, sizeof(struct ltc::TimeCode));
 
 		if (isMaskSet(ltcparams::Mask::START_FRAME)) {
-			ptStartTimeCode->nFrames = m_Params.nStartFrame;
+			pStartTimeCode->nFrames = m_Params.nStartFrame;
 		}
 
 		if (isMaskSet(ltcparams::Mask::START_SECOND)) {
-			ptStartTimeCode->nSeconds = m_Params.nStartSecond;
+			pStartTimeCode->nSeconds = m_Params.nStartSecond;
 		}
 
 		if (isMaskSet(ltcparams::Mask::START_MINUTE)) {
-			ptStartTimeCode->nMinutes = m_Params.nStartMinute;
+			pStartTimeCode->nMinutes = m_Params.nStartMinute;
 		}
 
 		if (isMaskSet(ltcparams::Mask::START_HOUR)) {
-			ptStartTimeCode->nHours = m_Params.nStartHour;
+			pStartTimeCode->nHours = m_Params.nStartHour;
 		}
 	} else {
-		ptStartTimeCode->nFrames = m_Params.nStartFrame;
-		ptStartTimeCode->nSeconds = m_Params.nStartSecond;
-		ptStartTimeCode->nMinutes = m_Params.nStartMinute;
-		ptStartTimeCode->nHours = m_Params.nStartHour;
+		pStartTimeCode->nFrames = m_Params.nStartFrame;
+		pStartTimeCode->nSeconds = m_Params.nStartSecond;
+		pStartTimeCode->nMinutes = m_Params.nStartMinute;
+		pStartTimeCode->nHours = m_Params.nStartHour;
 	}
 
-	ptStartTimeCode->nType = static_cast<uint8_t>(ltc::g_Type);
+	pStartTimeCode->nType = static_cast<uint8_t>(ltc::g_Type);
 
-	assert(ptStopTimeCode != nullptr);
+	assert(pStopTimeCode != nullptr);
 
 	if ((isMaskSet(ltcparams::Mask::STOP_FRAME)) || (isMaskSet(ltcparams::Mask::STOP_SECOND)) || (isMaskSet(ltcparams::Mask::STOP_MINUTE)) || (isMaskSet(ltcparams::Mask::STOP_HOUR)) ) {
-		memset(ptStopTimeCode, 0, sizeof(struct ltc::TimeCode));
+		memset(pStopTimeCode, 0, sizeof(struct ltc::TimeCode));
 
 		if (isMaskSet(ltcparams::Mask::STOP_FRAME)) {
-			ptStopTimeCode->nFrames = m_Params.nStopFrame;
+			pStopTimeCode->nFrames = m_Params.nStopFrame;
 		}
 
 		if (isMaskSet(ltcparams::Mask::STOP_SECOND)) {
-			ptStopTimeCode->nSeconds = m_Params.nStopSecond;
+			pStopTimeCode->nSeconds = m_Params.nStopSecond;
 		}
 
 		if (isMaskSet(ltcparams::Mask::STOP_MINUTE)) {
-			ptStopTimeCode->nMinutes = m_Params.nStopMinute;
+			pStopTimeCode->nMinutes = m_Params.nStopMinute;
 		}
 
 		if (isMaskSet(ltcparams::Mask::STOP_HOUR)) {
-			ptStopTimeCode->nHours = m_Params.nStopHour;
+			pStopTimeCode->nHours = m_Params.nStopHour;
 		}
 	} else {
-		ptStopTimeCode->nFrames = m_Params.nStopFrame;
-		ptStopTimeCode->nSeconds = m_Params.nStopSecond;
-		ptStopTimeCode->nMinutes = m_Params.nStopMinute;
-		ptStopTimeCode->nHours = m_Params.nStopHour;
+		pStopTimeCode->nFrames = m_Params.nStopFrame;
+		pStopTimeCode->nSeconds = m_Params.nStopSecond;
+		pStopTimeCode->nMinutes = m_Params.nStopMinute;
+		pStopTimeCode->nHours = m_Params.nStopHour;
 	}
 
-	ptStopTimeCode->nType = static_cast<uint8_t>(ltc::g_Type);
+	pStopTimeCode->nType = static_cast<uint8_t>(ltc::g_Type);
 }
 
 void LtcParams::staticCallbackFunction(void *p, const char *s) {
@@ -522,6 +539,8 @@ void LtcParams::Builder(const struct ltcparams::Params *ptLtcParams, char *pBuff
 	builder.Add(LtcParamsConst::STOP_SECOND, m_Params.nStopSecond, isMaskSet(ltcparams::Mask::STOP_SECOND));
 	builder.Add(LtcParamsConst::STOP_FRAME, m_Params.nStopFrame, isMaskSet(ltcparams::Mask::STOP_FRAME));
 	builder.Add(LtcParamsConst::SKIP_FREE, m_Params.nSkipFree, isMaskSet(ltcparams::Mask::SKIP_FREE));
+	builder.Add(LtcParamsConst::IGNORE_START, isMaskSet(ltcparams::Mask::IGNORE_START));
+	builder.Add(LtcParamsConst::IGNORE_STOP, isMaskSet(ltcparams::Mask::IGNORE_STOP));
 	builder.AddComment("MCP buttons");
 	builder.Add(LtcParamsConst::ALT_FUNCTION, isMaskSet(ltcparams::Mask::ALT_FUNCTION));
 	builder.Add(LtcParamsConst::SKIP_SECONDS, m_Params.nSkipSeconds, isMaskSet(ltcparams::Mask::SKIP_SECONDS));
@@ -663,6 +682,9 @@ void LtcParams::Dump() {
 	if (isMaskSet(ltcparams::Mask::SKIP_SECONDS)) {
 		printf(" %s=%d\n", LtcParamsConst::SKIP_SECONDS, m_Params.nSkipSeconds);
 	}
+
+	printf(" %s=%d\n", LtcParamsConst::IGNORE_START, isMaskSet(ltcparams::Mask::IGNORE_START));
+	printf(" %s=%d\n", LtcParamsConst::IGNORE_STOP, isMaskSet(ltcparams::Mask::IGNORE_STOP));
 
 #if 0
 	if (isMaskSet(ltcparams::Mask::SET_DATE)) {

@@ -44,7 +44,7 @@ enum class Pitch {
 
 class LtcGenerator {
 public:
-	LtcGenerator(const struct ltc::TimeCode *pStartLtcTimeCode, const struct ltc::TimeCode *pStopLtcTimeCode, bool bSkipFree = false);
+	LtcGenerator(const struct ltc::TimeCode *pStartLtcTimeCode, const struct ltc::TimeCode *pStopLtcTimeCode, bool bSkipFree = false, bool bIgnoreStart = false, bool bIgnoreStop = false);
 
 	~LtcGenerator() {
 		Stop();
@@ -115,18 +115,25 @@ private:
 	ltc::TimeCode *m_pStartLtcTimeCode;
 	ltc::TimeCode *m_pStopLtcTimeCode;
 	bool m_bSkipFree;
+	bool m_bIgnoreStart;
+	bool m_bIgnoreStop;
 	int32_t m_nStartSeconds;
 	int32_t m_nStopSeconds;
-	uint8_t m_nFps { 0 };
-	ltcgenerator::Direction m_tDirection { ltcgenerator::Direction::DIRECTION_FORWARD };
-	float m_fPitchControl { 0 };
+
 	uint32_t m_nPitchTicker { 1 };
 	uint32_t m_nPitchPrevious { 0 };
-	ltcgenerator::Pitch m_tPitch { ltcgenerator::Pitch::PITCH_FASTER };
+	float m_fPitchControl { 0 };
 	uint32_t m_nButtons { 0 };
-	int m_nHandle { -1 };
+	int32_t m_nHandle { -1 };
 	uint32_t m_nBytesReceived { 0 };
+
 	char *m_pUdpBuffer { nullptr };
+
+	uint8_t m_nFps { 0 };
+
+	ltcgenerator::Direction m_tDirection { ltcgenerator::Direction::DIRECTION_FORWARD };
+	ltcgenerator::Pitch m_tPitch { ltcgenerator::Pitch::PITCH_FASTER };
+
 	enum {
 		STOPPED, STARTED, LIMIT
 	} m_State { STOPPED };

@@ -97,6 +97,8 @@ struct Mask {
 	static constexpr auto SKIP_FREE = (1U << 25);
 	static constexpr auto TIMECODE_IP = (1U << 26);
 	static constexpr auto GPS_START = (1U << 27);
+	static constexpr auto IGNORE_START = (1U << 28);
+	static constexpr auto IGNORE_STOP = (1U << 29);
 };
 
 struct RgbLedType {
@@ -174,6 +176,14 @@ public:
 
 	bool IsSetDate() const {
 		return isMaskSet(ltcparams::Mask::SET_DATE);
+	}
+
+	bool IsIgnoreStart() const {
+		return isMaskSet(ltcparams::Mask::IGNORE_START);
+	}
+
+	bool IsIgnoreStop() const {
+		return isMaskSet(ltcparams::Mask::IGNORE_STOP);
 	}
 
 	uint16_t GetOscPort(bool &bIsSet) {
