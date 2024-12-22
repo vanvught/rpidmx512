@@ -568,18 +568,10 @@ int main() {
 			rtpMidi.Run();
 		}
 
-		if (bRunLtcEtc) {
-			ltcEtc.Run();
-		}
-
 		if (ltc::g_DisabledOutputs.bOled) {
 			display.Run();
 		}
-#if !defined (CONFIG_LTC_DISABLE_RGB_PANEL)
-		if ((!ltc::g_DisabledOutputs.bWS28xx) || (!ltc::g_DisabledOutputs.bRgbPanel)) {
-			ltcDisplayRgb.Run();
-		}
-#endif
+
 		if (sourceSelect.IsConnected()) {
 			sourceSelect.Run();
 		}
