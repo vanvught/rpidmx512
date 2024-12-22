@@ -33,7 +33,6 @@
 #include "hardware.h"
 #include "network.h"
 
-
 #include "displayudf.h"
 #include "displayudfparams.h"
 #include "flashcodeinstall.h"
@@ -42,9 +41,6 @@
 #include "remoteconfigparams.h"
 
 #include "rdmnetllrponly.h"
-
-#include "net/apps/mdns.h"
-#include "net/apps/ntpclient.h"
 
 #include "factorydefaults.h"
 
@@ -76,10 +72,6 @@ int main() {
 	FlashCodeInstall spiFlashInstall;
 
 	fw.Print("RDMNet LLRP device only");
-
-	NtpClient ntpClient;
-	ntpClient.Start();
-	ntpClient.Print();
 
 	RDMNetLLRPOnly device;
 	device.Init();
@@ -115,10 +107,10 @@ int main() {
 	for (;;) {
 		nw.Run();
 		remoteConfig.Run();
-		ntpClient.Run();
 		configStore.Flash();
 		display.Run();
 		hw.Run();
+
 		time_t ltime;
 		auto t2 = time(&ltime);
 		if (t1 != t2) {
@@ -134,5 +126,6 @@ int main() {
 					tmlocal.tm_hour, tmlocal.tm_min, tmlocal.tm_sec,
 					tmHwClock.tm_hour, tmHwClock.tm_min, tmHwClock.tm_sec);
 		}
+
 	}
 }

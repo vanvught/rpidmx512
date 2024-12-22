@@ -29,10 +29,6 @@
 #include "hardware.h"
 #include "network.h"
 
-#include "net/apps/mdns.h"
-
-#include "net/apps/ntpclient.h"
-
 #include "console.h"
 #include "h3/showsystime.h"
 
@@ -79,10 +75,6 @@ int main() {
 	console_puts("Real-time DMX Monitor");
 	console_set_fg_color(CONSOLE_WHITE);
 	console_set_top_row(2);
-
-	NtpClient ntpClient;
-	ntpClient.Start();
-	ntpClient.Print();
 
 	ShowSystime showSystime;
 
@@ -156,9 +148,7 @@ int main() {
 #endif
 		remoteConfig.Run();
 		configStore.Flash();
-		ntpClient.Run();
 		showSystime.Run();
-
 		display.Run();
 		hw.Run();
 	}

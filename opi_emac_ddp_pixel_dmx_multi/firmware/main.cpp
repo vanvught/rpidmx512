@@ -53,7 +53,6 @@
 
 #include "dmxparams.h"
 #include "dmxsend.h"
-#include "dmxconfigudp.h"
 
 #include "lightsetwith4.h"
 

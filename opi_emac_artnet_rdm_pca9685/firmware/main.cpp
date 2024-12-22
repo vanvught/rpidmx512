@@ -30,11 +30,6 @@
 #include "hardware.h"
 #include "network.h"
 
-
-#include "net/apps/mdns.h"
-
-#include "net/apps/ntpclient.h"
-
 #include "displayudf.h"
 #include "displayudfparams.h"
 
@@ -87,10 +82,6 @@ int main() {
 	FlashCodeInstall spiFlashInstall;
 
 	fw.Print("Art-Net 4 PCA9685");
-
-	NtpClient ntpClient;
-	ntpClient.Start();
-	ntpClient.Print();
 
 	PCA9685Dmx pca9685Dmx;
 
@@ -188,10 +179,8 @@ int main() {
 #if defined (NODE_SHOWFILE)
 		showFile.Run();
 #endif
-		ntpClient.Run();
 		remoteConfig.Run();
 		configStore.Flash();
-
 		display.Run();
 		hw.Run();
 	}

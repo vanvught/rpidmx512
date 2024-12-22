@@ -51,7 +51,6 @@
 
 #include "dmxparams.h"
 #include "dmxsend.h"
-#include "dmxconfigudp.h"
 
 #include "lightsetwith4.h"
 
@@ -134,7 +133,7 @@ int main() {
 	uint32_t nDmxUniverses = 0;
 
 	if (artnetParams.GetDirection(0) == lightset::PortDir::OUTPUT) {
-		node.SetUniverse(dmxsend::DMXPORT_OFFSET, lightset::PortDir::OUTPUT, artnetParams.GetUniverse(0));
+		node.SetUniverse(DmxSend::DMXPORT_OFFSET, lightset::PortDir::OUTPUT, artnetParams.GetUniverse(0));
 		nDmxUniverses = 1;
 	}
 
@@ -144,7 +143,7 @@ int main() {
 	dmxparams.Load();
 	dmxparams.Set(&dmx);
 
-	if (node.GetPortDirection(dmxsend::DMXPORT_OFFSET) == lightset::PortDir::OUTPUT) {
+	if (node.GetPortDirection(DmxSend::DMXPORT_OFFSET) == lightset::PortDir::OUTPUT) {
 		dmx.SetPortDirection(0, dmx::PortDirection::OUTP, false);
 	}
 

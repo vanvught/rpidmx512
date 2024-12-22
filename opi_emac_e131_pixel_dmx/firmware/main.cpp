@@ -50,7 +50,6 @@
 
 #include "dmxparams.h"
 #include "dmxsend.h"
-#include "dmxconfigudp.h"
 
 #include "lightsetwith4.h"
 
@@ -131,7 +130,7 @@ int main() {
 	const auto portDirection = e131params.GetDirection(0);
 
 	if (portDirection == lightset::PortDir::OUTPUT) {
-		bridge.SetUniverse(dmxsend::DMXPORT_OFFSET, lightset::PortDir::OUTPUT, e131params.GetUniverse(0, isDmxUniverseSet));
+		bridge.SetUniverse(DmxSend::DMXPORT_OFFSET, lightset::PortDir::OUTPUT, e131params.GetUniverse(0, isDmxUniverseSet));
 	}
 
 	Dmx dmx;
@@ -142,7 +141,7 @@ int main() {
 
 	uint16_t nUniverse;
 
-	if (bridge.GetUniverse(dmxsend::DMXPORT_OFFSET, nUniverse, lightset::PortDir::OUTPUT)) {
+	if (bridge.GetUniverse(DmxSend::DMXPORT_OFFSET, nUniverse, lightset::PortDir::OUTPUT)) {
 		dmx.SetPortDirection(0, dmx::PortDirection::OUTP, false);
 	} else {
 		dmx.SetPortDirection(0, dmx::PortDirection::INP, false);

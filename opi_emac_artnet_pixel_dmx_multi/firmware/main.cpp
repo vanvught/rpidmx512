@@ -56,7 +56,6 @@
 
 #include "dmxparams.h"
 #include "dmxsend.h"
-#include "dmxconfigudp.h"
 
 #include "lightsetwith4.h"
 
@@ -151,8 +150,8 @@ int main() {
 
 	uint32_t nDmxUniverses = 0;
 
-	for (uint32_t nPortIndex = dmxsend::DMXPORT_OFFSET; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
-		const auto nDmxPortIndex = nPortIndex - dmxsend::DMXPORT_OFFSET;
+	for (uint32_t nPortIndex = DmxSend::DMXPORT_OFFSET; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
+		const auto nDmxPortIndex = nPortIndex - DmxSend::DMXPORT_OFFSET;
 		const auto portDirection = artnetParams.GetDirection(nDmxPortIndex);
 
 		if (portDirection == lightset::PortDir::OUTPUT) {
@@ -168,8 +167,8 @@ int main() {
 	dmxparams.Load();
 	dmxparams.Set(&dmx);
 
-	for (uint32_t nPortIndex = dmxsend::DMXPORT_OFFSET; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
-		const auto nDmxPortIndex = nPortIndex - dmxsend::DMXPORT_OFFSET;
+	for (uint32_t nPortIndex = DmxSend::DMXPORT_OFFSET; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
+		const auto nDmxPortIndex = nPortIndex - DmxSend::DMXPORT_OFFSET;
 
 		if (node.GetPortDirection(nPortIndex) == lightset::PortDir::OUTPUT) {
 			dmx.SetPortDirection(nDmxPortIndex, dmx::PortDirection::OUTP, false);

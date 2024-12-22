@@ -44,7 +44,6 @@
 #include "dmxparams.h"
 #include "dmxsend.h"
 #include "rdmdeviceparams.h"
-#include "dmxconfigudp.h"
 
 #if defined (NODE_SHOWFILE)
 # include "showfile.h"

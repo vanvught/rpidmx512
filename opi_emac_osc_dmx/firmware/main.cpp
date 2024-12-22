@@ -36,10 +36,9 @@
 #include "oscserver.h"
 #include "oscserverparams.h"
 #include "oscservermsgconst.h"
-// DMX Out
+
 #include "dmxparams.h"
 #include "dmxsend.h"
-#include "dmxconfigudp.h"
 
 #include "flashcodeinstall.h"
 #include "configstore.h"

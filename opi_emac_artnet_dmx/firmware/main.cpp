@@ -29,8 +29,6 @@
 #include "hardware.h"
 #include "network.h"
 
-#include "net/apps/mdns.h"
-
 #include "displayudf.h"
 #include "displayudfparams.h"
 #include "displayhandler.h"
@@ -43,7 +41,6 @@
 #include "dmxparams.h"
 #include "dmxsend.h"
 #include "rdmdeviceparams.h"
-#include "dmxconfigudp.h"
 
 #if defined (NODE_SHOWFILE)
 # include "showfile.h"

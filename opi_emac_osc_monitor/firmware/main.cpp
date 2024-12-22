@@ -32,8 +32,6 @@
 #include "console.h"
 #include "h3/showsystime.h"
 
-#include "net/apps/ntpclient.h"
-
 #include "net/apps/mdns.h"
 
 #include "display.h"
@@ -84,10 +82,6 @@ int main() {
 
 	mdns_service_record_add(nullptr, mdns::Services::OSC, "type=monitor", server.GetPortIncoming());
 
-	NtpClient ntpClient;
-	ntpClient.Start();
-	ntpClient.Print();
-
 	DMXMonitor monitor;
 	// There is support for HEX output only
 	server.SetOutput(&monitor);
@@ -125,9 +119,7 @@ int main() {
 		server.Run();
 		remoteConfig.Run();
 		configStore.Flash();
-		ntpClient.Run();
 		showSystime.Run();
-
 		display.Run();
 		hw.Run();
 	}
