@@ -26,6 +26,7 @@
 #ifndef LTCETC_H_
 #define LTCETC_H_
 
+#include <cstdint>
 #include <cassert>
 
 #include "midi.h"
@@ -55,7 +56,7 @@ public:
 		s_pThis = this;
 	}
 
-	void SetDestinationIp(uint32_t nDestinationIp) {
+	void SetDestinationIp(const uint32_t nDestinationIp) {
 		if ((network::is_private_ip(nDestinationIp) || network::is_multicast_ip(nDestinationIp))) {
 			m_Config.nDestinationIp = nDestinationIp;
 		} else {
@@ -63,7 +64,7 @@ public:
 		}
 	}
 
-	void SetDestinationPort(uint16_t nDestinationPort) {
+	void SetDestinationPort(const uint16_t nDestinationPort) {
 		if (nDestinationPort > 1023) {
 			m_Config.nDestinationPort = nDestinationPort;
 		} else {
@@ -71,7 +72,7 @@ public:
 		}
 	}
 
-	void SetSourceMulticastIp(uint32_t nSourceMulticastIp) {
+	void SetSourceMulticastIp(const uint32_t nSourceMulticastIp) {
 		if (network::is_multicast_ip(nSourceMulticastIp)) {
 			m_Config.nSourceMulticastIp = nSourceMulticastIp;
 		} else {
@@ -79,7 +80,7 @@ public:
 		}
 	}
 
-	void SetSourcePort(uint16_t nSourcePort) {
+	void SetSourcePort(const uint16_t nSourcePort) {
 		if (nSourcePort > 1023) {
 			m_Config.nSourcePort = nSourcePort;
 		} else {
@@ -87,7 +88,7 @@ public:
 		}
 	}
 
-	void SetUdpTerminator(ltcetc::UdpTerminator terminator) {
+	void SetUdpTerminator(const ltcetc::UdpTerminator terminator) {
 		if (terminator < ltcetc::UdpTerminator::UNDEFINED) {
 			m_Config.terminator = terminator;
 		}
@@ -105,7 +106,7 @@ public:
 
 	void Print();
 
-	static LtcEtc* Get() {
+	static LtcEtc *Get() {
 		return s_pThis;
 	}
 
@@ -135,7 +136,7 @@ private:
 		ltcetc::UdpTerminator terminator;
 	};
 
-	Config m_Config;
+	Config m_Config = { 0, 0, 0, 0, ltcetc::UdpTerminator::NONE };
 
 	struct Handle {
 		int Destination;
