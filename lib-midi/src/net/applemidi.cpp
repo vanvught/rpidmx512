@@ -27,14 +27,14 @@
  * https://developer.apple.com/library/archive/documentation/Audio/Conceptual/MIDINetworkDriverProtocol/MIDI/MIDI.html
  */
 
+#if defined (DEBUG_NET_APPLEMIDI)
+# undef NDEBUG
+#endif
+
 #include <cstdint>
 #include <cstring>
 #include <cstdio>
 #include <cassert>
-
-#ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
-#endif
 
 #include "net/applemidi.h"
 
@@ -66,10 +66,12 @@ struct TTimestampSynchronization {
 	uint8_t nCount;
 	uint8_t padding[3];
 	uint64_t nTimestamps[3];
-}__attribute__((packed));
+} __attribute__((packed));
 
 AppleMidi::AppleMidi() : m_nSSRC(Network::Get()->GetIp()) {
 	DEBUG_ENTRY
+	assert(s_pThis == nullptr);
+	s_pThis = this;
 
 	m_ExchangePacketReply.nSignature = SIGNATURE;
 	m_ExchangePacketReply.nProtocolVersion = __builtin_bswap32(applemidi::VERSION);
@@ -83,14 +85,20 @@ AppleMidi::AppleMidi() : m_nSSRC(Network::Get()->GetIp()) {
 	DEBUG_EXIT
 }
 
-void AppleMidi::HandleControlMessage() {
+void AppleMidi::InputControlMessage(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
 	DEBUG_ENTRY
-	assert(m_pBuffer != nullptr);
 
-	auto *pPacket = reinterpret_cast<struct applemidi::ExchangePacket*>(m_pBuffer);
+	if (__builtin_expect((nSize >= applemidi::EXCHANGE_PACKET_MIN_LENGTH), 1)) {
+		if (*reinterpret_cast<const uint16_t *>(pBuffer) != SIGNATURE) {
 
-	debug_dump(m_pBuffer, m_nBytesReceived);
-	DEBUG_PRINTF("Command: %.4x, m_nSessionState=%u", pPacket->nCommand, static_cast<uint32_t>(m_SessionStatus.sessionState));
+			DEBUG_EXIT
+			return;
+		}
+	}
+
+	auto *pPacket = reinterpret_cast<const applemidi::ExchangePacket *>(pBuffer);
+
+	DEBUG_PRINTF("Command: %.4x, m_SessionStatus.sessionState=%u", pPacket->nCommand, static_cast<uint32_t>(m_SessionStatus.sessionState));
 
 	if (m_SessionStatus.sessionState == applemidi::SessionState::WAITING_IN_CONTROL) {
 		DEBUG_PUTS("SESSION_STATE_WAITING_IN_CONTROL");
@@ -101,15 +109,17 @@ void AppleMidi::HandleControlMessage() {
 			m_ExchangePacketReply.nCommand = APPLEMIDI_COMMAND_INVITATION_ACCEPTED;
 			m_ExchangePacketReply.nInitiatorToken = pPacket->nInitiatorToken;
 
-			Network::Get()->SendTo(m_nHandleControl, &m_ExchangePacketReply, m_nExchangePacketReplySize, m_nRemoteIp, m_nRemotePort);
+			Network::Get()->SendTo(m_nHandleControl, &m_ExchangePacketReply, m_nExchangePacketReplySize, nFromIp, nFromPort);
 
 			debug_dump(&m_ExchangePacketReply, m_nExchangePacketReplySize);
 
 			m_SessionStatus.sessionState = applemidi::SessionState::WAITING_IN_MIDI;
-			m_SessionStatus.nRemoteIp = m_nRemoteIp;
+			m_SessionStatus.nRemoteIp = nFromIp;
 
+			DEBUG_EXIT
 			return;
 		} else {
+			DEBUG_EXIT
 			return;
 		}
 	}
@@ -117,11 +127,12 @@ void AppleMidi::HandleControlMessage() {
 	if (m_SessionStatus.sessionState == applemidi::SessionState::ESTABLISHED) {
 		DEBUG_PUTS("SESSION_STATE_ESTABLISHED");
 
-		if ((m_SessionStatus.nRemoteIp == m_nRemoteIp) && (pPacket->nCommand == APPLEMIDI_COMMAND_ENDSESSION)) {
+		if ((m_SessionStatus.nRemoteIp == nFromIp) && (pPacket->nCommand == APPLEMIDI_COMMAND_ENDSESSION)) {
 			m_SessionStatus.sessionState = applemidi::SessionState::WAITING_IN_CONTROL;
 			m_SessionStatus.nRemoteIp = 0;
-			DEBUG_PUTS("End Session");
 
+			DEBUG_PUTS("End Session");
+			DEBUG_EXIT
 			return;
 		}
 
@@ -131,10 +142,10 @@ void AppleMidi::HandleControlMessage() {
 			m_ExchangePacketReply.nCommand = APPLEMIDI_COMMAND_INVITATION_REJECTED;
 			m_ExchangePacketReply.nInitiatorToken = pPacket->nInitiatorToken;
 
-			Network::Get()->SendTo(m_nHandleControl, &m_ExchangePacketReply, m_nExchangePacketReplySize, m_nRemoteIp, m_nRemotePort);
+			Network::Get()->SendTo(m_nHandleControl, &m_ExchangePacketReply, m_nExchangePacketReplySize, nFromIp, nFromPort);
 
 			debug_dump(&m_ExchangePacketReply, m_nExchangePacketReplySize);
-
+			DEBUG_EXIT
 			return;
 		}
 	}
@@ -142,25 +153,32 @@ void AppleMidi::HandleControlMessage() {
 	DEBUG_EXIT
 }
 
-void AppleMidi::HandleMidiMessage() {
+void AppleMidi::InputMidiMessage(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
 	DEBUG_ENTRY
-	assert(m_pBuffer != nullptr);
 
-	debug_dump(m_pBuffer, m_nBytesReceived);
+	if (__builtin_expect((nSize >= 12), 0)) {
+		if (m_SessionStatus.nRemoteIp != nFromIp) {
 
-	if (*reinterpret_cast<uint16_t *>(m_pBuffer) == 0x6180) {
-		HandleRtpMidi(m_pBuffer);
+			DEBUG_EXIT
+			return;
+		}
+	}
+
+	if (*reinterpret_cast<const uint16_t *>(pBuffer) == 0x6180) {
+		HandleRtpMidi(pBuffer);
+
+		DEBUG_EXIT
 		return;
 	}
 
-	if (m_nBytesReceived >= applemidi::EXCHANGE_PACKET_MIN_LENGTH) {
+	if (nSize >= applemidi::EXCHANGE_PACKET_MIN_LENGTH) {
 
-		if (*reinterpret_cast<uint16_t *>(m_pBuffer) == SIGNATURE) {
+		if (*reinterpret_cast<const uint16_t *>(pBuffer) == SIGNATURE) {
 
 			if (m_SessionStatus.sessionState == applemidi::SessionState::WAITING_IN_MIDI) {
 				DEBUG_PUTS("SESSION_STATE_WAITING_IN_MIDI");
 
-				auto *pPacket = reinterpret_cast<struct applemidi::ExchangePacket*>(m_pBuffer);
+				auto *pPacket = reinterpret_cast<const applemidi::ExchangePacket*>(pBuffer);
 
 				DEBUG_PRINTF("Command: %.4x", pPacket->nCommand);
 
@@ -170,24 +188,25 @@ void AppleMidi::HandleMidiMessage() {
 					m_ExchangePacketReply.nCommand = APPLEMIDI_COMMAND_INVITATION_ACCEPTED;
 					m_ExchangePacketReply.nInitiatorToken = pPacket->nInitiatorToken;
 
-					Network::Get()->SendTo(m_nHandleMidi, &m_ExchangePacketReply, m_nExchangePacketReplySize, m_nRemoteIp, m_nRemotePort);
+					Network::Get()->SendTo(m_nHandleMidi, &m_ExchangePacketReply, m_nExchangePacketReplySize, nFromIp, nFromPort);
 
 					m_SessionStatus.sessionState = applemidi::SessionState::ESTABLISHED;
-					m_SessionStatus.nRemotePortMidi = m_nRemotePort;
+					m_SessionStatus.nRemotePortMidi = nFromPort;
 					m_SessionStatus.nSynchronizationTimestamp = Hardware::Get()->Millis();
 				}
 
+				DEBUG_EXIT
 				return;
 			}
 
 			if (m_SessionStatus.sessionState == applemidi::SessionState::ESTABLISHED) {
 				DEBUG_PUTS("SESSION_STATE_ESTABLISHED");
 
-				auto *pPacket = reinterpret_cast<struct applemidi::ExchangePacket*>(m_pBuffer);
+				auto *pPacket = reinterpret_cast<const applemidi::ExchangePacket *>(pBuffer);
 
 				if (pPacket->nCommand == APPLEMIDI_COMMAND_SYNCHRONIZATION) {
 					DEBUG_PUTS("Timestamp Synchronization");
-					auto *t = reinterpret_cast<struct TTimestampSynchronization*>(m_pBuffer);
+					auto *t = reinterpret_cast<TTimestampSynchronization *>(const_cast<uint8_t *>(pBuffer));
 
 					m_SessionStatus.nSynchronizationTimestamp = Hardware::Get()->Millis();
 
@@ -196,13 +215,13 @@ void AppleMidi::HandleMidiMessage() {
 						t->nCount = 1;
 						t->nTimestamps[1] = __builtin_bswap64(Now());
 
-						Network::Get()->SendTo(m_nHandleMidi, m_pBuffer, sizeof(struct TTimestampSynchronization), m_nRemoteIp, m_nRemotePort);
+						Network::Get()->SendTo(m_nHandleMidi, pBuffer, sizeof(struct TTimestampSynchronization), nFromIp, nFromPort);
 					} else if (t->nCount == 1) {
 						t->nSSRC = m_nSSRC;
 						t->nCount = 2;
 						t->nTimestamps[2] = __builtin_bswap64(Now());
 
-						Network::Get()->SendTo(m_nHandleMidi, m_pBuffer, sizeof(struct TTimestampSynchronization), m_nRemoteIp, m_nRemotePort);
+						Network::Get()->SendTo(m_nHandleMidi, pBuffer, sizeof(struct TTimestampSynchronization), nFromIp, nFromPort);
 					} else if (t->nCount == 2) {
 						t->nSSRC = m_nSSRC;
 						t->nCount = 0;
@@ -210,7 +229,7 @@ void AppleMidi::HandleMidiMessage() {
 						t->nTimestamps[1] = 0;
 						t->nTimestamps[2] = 0;
 
-						Network::Get()->SendTo(m_nHandleMidi, m_pBuffer, sizeof(struct TTimestampSynchronization), m_nRemoteIp, m_nRemotePort);
+						Network::Get()->SendTo(m_nHandleMidi, pBuffer, sizeof(struct TTimestampSynchronization), nFromIp, nFromPort);
 					}
 				}
 			}
