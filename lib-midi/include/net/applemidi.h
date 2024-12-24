@@ -44,8 +44,8 @@
 #include "debug.h"
 
 namespace applemidi {
-static constexpr auto SESSION_NAME_LENGTH_MAX = 24;
-static constexpr auto VERSION = 2;
+static constexpr size_t SESSION_NAME_LENGTH_MAX = 24;
+static constexpr uint32_t VERSION = 2;
 
 struct ExchangePacket {
 	uint16_t nSignature;
@@ -64,7 +64,6 @@ struct SessionStatus {
 	SessionState sessionState;
 	uint32_t nRemoteIp;
 	uint16_t nRemotePortMidi;
-	uint32_t nSynchronizationTimestamp;
 };
 
 static constexpr auto EXCHANGE_PACKET_MIN_LENGTH = sizeof(struct applemidi::ExchangePacket) - applemidi::SESSION_NAME_LENGTH_MAX - 1;
@@ -134,16 +133,6 @@ public:
 	 */
 	void InputControlMessage(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort);
 
-	void Run() {
-		if (m_SessionStatus.sessionState == applemidi::SessionState::ESTABLISHED) {
-			if (__builtin_expect((Hardware::Get()->Millis() - m_SessionStatus.nSynchronizationTimestamp > (90 * 1000)), 0)) {
-				m_SessionStatus.sessionState = applemidi::SessionState::WAITING_IN_CONTROL;
-				m_SessionStatus.nRemoteIp = 0;
-				DEBUG_PUTS("End Session {time-out}");
-			}
-		}
-	}
-
 	void SetPort(const uint16_t nPort) {
 		assert(nPort > 1024);
 		m_nPort = nPort;
@@ -156,19 +145,24 @@ public:
 		m_nExchangePacketReplySize = static_cast<uint16_t>(applemidi::EXCHANGE_PACKET_MIN_LENGTH + 1 + nLength);
 	}
 
-	void SetSSRC(const uint32_t nSSRC) {
-		m_nSSRC = nSSRC;
-	}
-
-	uint32_t GetSSRC() const {
-		return m_nSSRC;
+	inline uint32_t GetSSRC() {
+		return 0;
 	}
 
 	void Print() {
-		const auto nSSRC = __builtin_bswap32(m_nSSRC);
 		puts("AppleMIDI");
-		printf(" SSRC    : %x (%u)\n", nSSRC, nSSRC);
 		printf(" Session : %s\n", m_ExchangePacketReply.aName);
+	}
+
+	static auto GetSessionState() {
+		assert(s_pThis != nullptr);
+		return s_pThis->m_SessionStatus.sessionState;
+	}
+
+	static void ResetSession() {
+		assert(s_pThis != nullptr);
+		s_pThis->m_SessionStatus.sessionState = applemidi::SessionState::WAITING_IN_CONTROL;
+		s_pThis->m_SessionStatus.nRemoteIp = 0;
 	}
 
 protected:
@@ -217,7 +211,6 @@ private:
 	virtual void HandleRtpMidi(const uint8_t *pBuffer)=0;
 
 private:
-	uint32_t m_nSSRC;
 	uint32_t m_nStartTime { 0 };
 	int32_t m_nHandleControl { -1 };
 	int32_t m_nHandleMidi { -1 };

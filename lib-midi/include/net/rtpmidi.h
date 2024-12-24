@@ -83,10 +83,6 @@ public:
 		DEBUG_EXIT
 	}
 
-	void Run() {
-		AppleMidi::Run();
-	}
-
 	void SendRaw(const uint8_t nByte) {
 		auto *data = &m_pSendBuffer[rtpmidi::COMMAND_OFFSET + 1];
 		data[0] = nByte;
@@ -194,7 +190,7 @@ private:
 		return static_cast<uint8_t>((nStatusByte & 0x0F) + 1);
 	}
 
-	void  Send(uint32_t nLength) {
+	void Send(const uint32_t nLength) {
 		auto *pHeader = reinterpret_cast<rtpmidi::Header*>(m_pSendBuffer);
 
 		pHeader->nSequenceNumber = __builtin_bswap16(m_nSequenceNumber++);
@@ -206,7 +202,7 @@ private:
 	}
 
 private:
-	midi::Message m_tMidiMessage;
+	midi::Message m_midiMessage;
 	RtpMidiHandler *m_pRtpMidiHandler { nullptr };
 	uint8_t *m_pReceiveBuffer { nullptr };
 	uint8_t *m_pSendBuffer { nullptr };

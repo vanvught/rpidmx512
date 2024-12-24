@@ -31,6 +31,12 @@
 # undef NDEBUG
 #endif
 
+#ifdef __GNUC__
+# pragma GCC push_options
+# pragma GCC optimize ("O2")
+# pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#endif
+
 #include <cstdint>
 #include <cstring>
 #include <cstdio>
@@ -42,6 +48,8 @@
 
 #include "hardware.h"
 #include "network.h"
+
+#include "softwaretimers.h"
 
 #include "debug.h"
 
@@ -68,14 +76,25 @@ struct TTimestampSynchronization {
 	uint64_t nTimestamps[3];
 } __attribute__((packed));
 
-AppleMidi::AppleMidi() : m_nSSRC(Network::Get()->GetIp()) {
+static constexpr uint32_t TIMEOUT = 90 * 1000;
+
+static TimerHandle_t s_nTimerId = TIMER_ID_NONE;
+
+static void timeout_timer([[maybe_unused]] TimerHandle_t nHandle) {
+	if (AppleMidi::GetSessionState() == applemidi::SessionState::ESTABLISHED) {
+		AppleMidi::ResetSession();
+		SoftwareTimerDelete(s_nTimerId);
+		DEBUG_PUTS("End Session {time-out}");
+	}
+}
+
+AppleMidi::AppleMidi() {
 	DEBUG_ENTRY
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	m_ExchangePacketReply.nSignature = SIGNATURE;
 	m_ExchangePacketReply.nProtocolVersion = __builtin_bswap32(applemidi::VERSION);
-	m_ExchangePacketReply.nSSRC = m_nSSRC;
 
 	SetSessionName(Network::Get()->GetHostName());
 
@@ -106,6 +125,7 @@ void AppleMidi::InputControlMessage(const uint8_t *pBuffer, uint32_t nSize, uint
 		if ((m_SessionStatus.nRemoteIp == 0) && (pPacket->nCommand == APPLEMIDI_COMMAND_INVITATION)) {
  			DEBUG_PUTS("Invitation");
 
+ 			m_ExchangePacketReply.nSSRC = GetSSRC();
 			m_ExchangePacketReply.nCommand = APPLEMIDI_COMMAND_INVITATION_ACCEPTED;
 			m_ExchangePacketReply.nInitiatorToken = pPacket->nInitiatorToken;
 
@@ -139,6 +159,7 @@ void AppleMidi::InputControlMessage(const uint8_t *pBuffer, uint32_t nSize, uint
 		if (pPacket->nCommand == APPLEMIDI_COMMAND_INVITATION) {
 		 	DEBUG_PUTS("Invitation rejected");
 
+		 	m_ExchangePacketReply.nSSRC = GetSSRC();
 			m_ExchangePacketReply.nCommand = APPLEMIDI_COMMAND_INVITATION_REJECTED;
 			m_ExchangePacketReply.nInitiatorToken = pPacket->nInitiatorToken;
 
@@ -185,6 +206,7 @@ void AppleMidi::InputMidiMessage(const uint8_t *pBuffer, uint32_t nSize, uint32_
 				if (pPacket->nCommand == APPLEMIDI_COMMAND_INVITATION) {
 					DEBUG_PUTS("Invitation");
 
+					m_ExchangePacketReply.nSSRC = GetSSRC();
 					m_ExchangePacketReply.nCommand = APPLEMIDI_COMMAND_INVITATION_ACCEPTED;
 					m_ExchangePacketReply.nInitiatorToken = pPacket->nInitiatorToken;
 
@@ -192,7 +214,8 @@ void AppleMidi::InputMidiMessage(const uint8_t *pBuffer, uint32_t nSize, uint32_
 
 					m_SessionStatus.sessionState = applemidi::SessionState::ESTABLISHED;
 					m_SessionStatus.nRemotePortMidi = nFromPort;
-					m_SessionStatus.nSynchronizationTimestamp = Hardware::Get()->Millis();
+
+					s_nTimerId = SoftwareTimerAdd(TIMEOUT, timeout_timer);
 				}
 
 				DEBUG_EXIT
@@ -208,28 +231,29 @@ void AppleMidi::InputMidiMessage(const uint8_t *pBuffer, uint32_t nSize, uint32_
 					DEBUG_PUTS("Timestamp Synchronization");
 					auto *t = reinterpret_cast<TTimestampSynchronization *>(const_cast<uint8_t *>(pBuffer));
 
-					m_SessionStatus.nSynchronizationTimestamp = Hardware::Get()->Millis();
-
 					if (t->nCount == 0) {
-						t->nSSRC = m_nSSRC;
+						t->nSSRC = GetSSRC();
 						t->nCount = 1;
 						t->nTimestamps[1] = __builtin_bswap64(Now());
 
 						Network::Get()->SendTo(m_nHandleMidi, pBuffer, sizeof(struct TTimestampSynchronization), nFromIp, nFromPort);
+						SoftwareTimerChange(s_nTimerId, TIMEOUT);
 					} else if (t->nCount == 1) {
-						t->nSSRC = m_nSSRC;
+						t->nSSRC = GetSSRC();
 						t->nCount = 2;
 						t->nTimestamps[2] = __builtin_bswap64(Now());
 
 						Network::Get()->SendTo(m_nHandleMidi, pBuffer, sizeof(struct TTimestampSynchronization), nFromIp, nFromPort);
+						SoftwareTimerChange(s_nTimerId, TIMEOUT);
 					} else if (t->nCount == 2) {
-						t->nSSRC = m_nSSRC;
+						t->nSSRC = GetSSRC();
 						t->nCount = 0;
 						t->nTimestamps[0] = __builtin_bswap64(Now());
 						t->nTimestamps[1] = 0;
 						t->nTimestamps[2] = 0;
 
 						Network::Get()->SendTo(m_nHandleMidi, pBuffer, sizeof(struct TTimestampSynchronization), nFromIp, nFromPort);
+						SoftwareTimerChange(s_nTimerId, TIMEOUT);
 					}
 				}
 			}

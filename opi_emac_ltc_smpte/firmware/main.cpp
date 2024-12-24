@@ -564,10 +564,6 @@ int main() {
 			tcnet.Run();
 		}
 
-		if (bRunRtpMidi) {
-			rtpMidi.Run();
-		}
-
 		if (ltc::g_DisabledOutputs.bOled) {
 			display.Run();
 		}
