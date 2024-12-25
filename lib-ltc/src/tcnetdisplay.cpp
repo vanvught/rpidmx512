@@ -34,8 +34,8 @@
 # define LTC_NO_DISPLAY_RGB
 #endif
 
-namespace tcnet {
-namespace display {
+
+namespace tcnet::display {
 static constexpr char sFps[4][6] = { " T24", " T25", " T29", " T30" };
 
 void show() {
@@ -55,5 +55,5 @@ void show() {
 	LtcDisplayRgb::Get()->ShowInfo(Info);
 #endif
 }
-}  // namespace display
-}  // namespace tcnet
+} // namespace tcnet::display
+

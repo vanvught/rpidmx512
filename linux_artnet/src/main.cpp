@@ -34,8 +34,6 @@
 
 #include "display.h"
 
-#include "net/apps/mdns.h"
-
 #include "artnetnode.h"
 #include "artnetparams.h"
 
@@ -169,17 +167,14 @@ int main(int argc, char **argv) {
 	remoteConfigParams.Load();
 	remoteConfigParams.Set(&remoteConfig);
 
-	while (configStore.Flash())
-		;
-
 	node.Start();
 
 	while (keepRunning) {
+		nw.Run();
 		node.Run();
 #if defined (NODE_SHOWFILE)
 		showFile.Run();
 #endif
-		mdns_run(); //	mDns.Run();
 		remoteConfig.Run();
 		configStore.Flash();
 	}

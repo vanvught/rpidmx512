@@ -68,11 +68,11 @@ namespace rtc {
 uint32_t json_get_rtc(char *pOutBuffer, const uint32_t nOutBufferSize);
 void json_set_rtc(const char *pBuffer, const uint32_t nBufferSize);
 }  // namespace rtc
-namespace artnet {
-namespace controller {
+
+namespace artnet::controller {
 uint32_t json_get_polltable(char *pOutBuffer, const uint32_t nOutBufferSize);
-}  // namespace controller
-}  // namespace artnet
+} // namespace artnet::controller
+
 namespace pixel {
 uint32_t json_get_types(char *pOutBuffer, const uint32_t nOutBufferSize);
 uint32_t json_get_status(char *pOutBuffer, const uint32_t nOutBufferSize);

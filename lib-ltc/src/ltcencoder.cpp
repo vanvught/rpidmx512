@@ -22,8 +22,10 @@
  * THE SOFTWARE.
  */
 
-#pragma GCC push_options
-#pragma GCC optimize ("O3")
+#if !defined(__clang__)
+# pragma GCC push_options
+# pragma GCC optimize ("O3")
+#endif
 
 #include <cstdint>
 #include <cstdio>
@@ -34,8 +36,8 @@
 
 #include "debug.h"
 
-namespace ltc {
-namespace encoder {
+
+namespace ltc::encoder {
 #if defined (CONFIG_LTC_USE_DAC)
 struct TTable {
 	uint32_t nSize;
@@ -72,7 +74,7 @@ struct TTable {
 # include "arm/gd32/ltc_gpio.h"
 #endif
 }  // namespace encode
-}  // namespace ltc
+
 
 #if defined (CONFIG_LTC_USE_DAC)
 	int16_t LtcEncoder::s_Buffer[ltc::encoder::BUFFER_SIZE];

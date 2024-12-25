@@ -114,22 +114,27 @@ public:
 	}
 
 	/**
-	 * @brief Processes an incoming UDP packet.
+	 * @brief Processes incoming Apple MIDI MIDI messages.
 	 *
-	 * @param pBuffer Pointer to the packet buffer.
-	 * @param nSize Size of the packet buffer.
-	 * @param nFromIp IP address of the sender.
-	 * @param nFromPort Port number of the sender.
+	 * Handles MIDI messages such as RTP-MIDI data and timestamp synchronization commands.
+	 *
+	 * @param pBuffer Pointer to the received data buffer.
+	 * @param nSize Size of the received data.
+	 * @param nFromIp Source IP address.
+	 * @param nFromPort Source port.
 	 */
 	void InputMidiMessage(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort);
 
 	/**
-	 * @brief Processes an incoming UDP packet.
+	 * @brief Processes incoming Apple MIDI control messages.
 	 *
-	 * @param pBuffer Pointer to the packet buffer.
-	 * @param nSize Size of the packet buffer.
-	 * @param nFromIp IP address of the sender.
-	 * @param nFromPort Port number of the sender.
+	 * Handles control messages such as session invitations, session end commands,
+	 * and synchronization requests.
+	 *
+	 * @param pBuffer Pointer to the received data buffer.
+	 * @param nSize Size of the received data.
+	 * @param nFromIp Source IP address.
+	 * @param nFromPort Source port.
 	 */
 	void InputControlMessage(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort);
 

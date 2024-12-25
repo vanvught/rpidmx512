@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#ifdef __GNUC__
+#if !defined(__clang__)
 # pragma GCC push_options
 # pragma GCC optimize ("O3")
 # pragma GCC optimize ("no-tree-loop-distribute-patterns")
@@ -39,7 +39,7 @@
 static uint64_t set_timer = 0;
 static struct timeval s_tv;
 
-static inline uint64_t read_cntpct(void) {
+static inline uint64_t read_cntpct() {
     uint32_t lo, hi;
     asm volatile ("mrrc p15, 0, %0, %1, c14" : "=r" (lo), "=r" (hi));
     return ((uint64_t)hi << 32) | lo;
@@ -89,7 +89,7 @@ int settimeofday(const struct timeval *tv, __attribute__((unused)) const struct 
  */
 time_t time(time_t *__timer) {
 	struct timeval tv;
-	gettimeofday(&tv, 0);
+	gettimeofday(&tv, nullptr);
 
 	if (__timer != nullptr) {
 		*__timer = tv.tv_sec;

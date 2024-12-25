@@ -119,7 +119,7 @@ static int32_t phy_config_advertise(const uint32_t nAddress, const uint16_t nAdv
 
 static bool phy_restart_autonegotiation(const uint32_t nAddress) {
 	uint16_t nValue;
-	auto nResult = phy_read(nAddress, mmi::REG_BMCR, nValue);
+	[[maybe_unused]] auto nResult = phy_read(nAddress, mmi::REG_BMCR, nValue);
 
 	nValue |= (mmi::BMCR_AUTONEGOTIATION | mmi::BMCR_RESTART_AUTONEGOTIATION);
 	/* Don't isolate the PHY if we're negotiating */
@@ -274,8 +274,8 @@ bool phy_start(const uint32_t nAddress, PhyStatus& phyStatus) {
 
 	DEBUG_PRINTF("Link %s, %d, %s",
 			phyStatus.link == net::Link::STATE_UP ? "Up" : "Down",
-			phyStatus.speed == net::Speed::SPEED10 ? 10 : 100,
-			phyStatus.duplex == net::Duplex::DUPLEX_HALF ? "HALF" : "FULL");
+					phyStatus.speed == net::Speed::SPEED10 ? 10 : 100,
+							phyStatus.duplex == net::Duplex::DUPLEX_HALF ? "HALF" : "FULL");
 
 	DEBUG_EXIT
 	return true;

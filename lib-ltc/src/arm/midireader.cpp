@@ -27,9 +27,11 @@
 # undef NDEBUG
 #endif
 
-#pragma GCC push_options
-#pragma GCC optimize ("O2")
-#pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#if !defined(__clang__)
+# pragma GCC push_options
+# pragma GCC optimize ("O2")
+# pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#endif
 
 #include <cstdint>
 #include <cstring>
@@ -54,9 +56,9 @@
 static uint8_t s_qf[8] __attribute__ ((aligned (4))) = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
 #if defined (H3)
-static void irq_timer1_handler(void) {
+static void irq_timer1_handler() {
 	gv_ltc_bTimeCodeAvailable = true;
-	gv_ltc_nTimeCodeCounter++;
+	gv_ltc_nTimeCodeCounter = gv_ltc_nTimeCodeCounter + 1;
 }
 #elif defined (GD32)
 	// Defined in platform_ltc.cpp

@@ -30,8 +30,8 @@
 
 #include "hal_i2c.h"
 
-namespace adc {
-namespace mcp3424 {
+
+namespace adc::mcp3424 {
 enum class Gain {
 	PGA_X1,			///< Default
 	PGA_X2,
@@ -50,8 +50,8 @@ enum class Conversion {
 	ONE_SHOT,
 	CONTINUOUS		///< Default
 };
-}  // namespace mcp3424
-}  // namespace adc
+} // namespace adc::mcp3424
+
 
 class MCP3424: HAL_I2C {
 public:

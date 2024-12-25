@@ -27,7 +27,7 @@
 # undef NDEBUG
 #endif
 
-#ifdef __GNUC__
+#if !defined(__clang__)
 # pragma GCC push_options
 # pragma GCC optimize ("O3")
 # pragma GCC optimize ("no-tree-loop-distribute-patterns")
@@ -86,7 +86,7 @@ void WS28xxMulti::Update() {
 
 	FUNC_PREFIX(spi_dma_tx_start(m_pDmaBuffer, m_nBufSize));
 
-	sv_nUpdates++;
+	sv_nUpdates = sv_nUpdates + 1;
 }
 
 void WS28xxMulti::Blackout() {

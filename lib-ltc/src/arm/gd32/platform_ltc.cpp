@@ -88,8 +88,8 @@ void TIMER7_BRK_TIMER11_IRQHandler() {
 }
 }
 
-namespace platform {
-namespace ltc {
+
+namespace platform::ltc {
 
 /**
  * Timer 11 is Master -> TIMER3_TRGO
@@ -211,5 +211,5 @@ void timer13_config() {
 
 }
 
-}  // namespace ltc
-}  // namespace platform
+} // namespace platform::ltc
+

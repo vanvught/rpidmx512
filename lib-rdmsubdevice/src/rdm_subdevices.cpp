@@ -29,8 +29,8 @@
 
 #include "rdm _subdevices.h"
 
-namespace rdm {
-namespace subdevices {
+
+namespace rdm::subdevices {
 static constexpr char TYPE[static_cast<uint32_t>(rdm::subdevices::Types::UNDEFINED)][9] = {
 		"bw7fets", "bwdimmer", "bwdio", "bwlcd", "bwrelay",
 		"mcp23s08", "mcp23s17",
@@ -56,6 +56,6 @@ rdm::subdevices::Types get_type_string(const char *pValue) {
 
 	return rdm::subdevices::Types::UNDEFINED;
 }
-}  // namespace subdevices
-}  // namespace rdm
+} // namespace rdm::subdevices
+
 

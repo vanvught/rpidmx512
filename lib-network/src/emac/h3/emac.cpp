@@ -23,16 +23,10 @@
  * THE SOFTWARE.
  */
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wold-style-cast"
-#pragma GCC diagnostic ignored "-Wuseless-cast"
-
 #include <cstdint>
 #include <stdbool.h>
 #include <cstring>
-//#ifndef NDEBUG
-# include <cstdio>
-//#endif
+#include <cstdio>
 #include <cassert>
 
 #include "emac.h"
@@ -181,7 +175,7 @@ void __attribute__((cold)) emac_start(uint8_t macAddress[], net::Link& link) {
 	debug_print_bits(H3_EMAC->CTL0);
 #endif
 
-	assert(p_coherent_region == 0);
+	assert(p_coherent_region == nullptr);
 	assert(sizeof(struct coherent_region) < MEGABYTE/2);
 
 	p_coherent_region = (struct coherent_region *)H3_MEM_COHERENT_REGION;

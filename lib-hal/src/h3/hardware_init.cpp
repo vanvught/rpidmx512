@@ -60,17 +60,17 @@
 
 static uint32_t s_hardware_init_startup_seconds = 0;
 
-extern void emac_init(void);
-extern void sys_time_init(void);
-extern void h3_timer_avs_init(void);
-extern void h3_hs_timer_init(void);
-extern void h3_usb_end(void);
+extern void emac_init();
+extern void sys_time_init();
+extern void h3_timer_avs_init();
+extern void h3_hs_timer_init();
+extern void h3_usb_end();
 
-uint32_t hardware_uptime_seconds(void) {
+uint32_t hardware_uptime_seconds() {
 	return (H3_TIMER->AVS_CNT0 / 1000) - s_hardware_init_startup_seconds;
 }
 
-void hardware_led_init(void) {
+void hardware_led_init() {
 	h3_gpio_fsel(H3_BOARD_STATUS_LED, GPIO_FSEL_OUTPUT);
 #if !defined(DO_NOT_USE_EXTERNAL_LED)
 	h3_gpio_fsel(EXTERNAL_LED, GPIO_FSEL_OUTPUT);
@@ -110,7 +110,7 @@ void hardware_led_set(int state) {
 #endif
 }
 
-void __attribute__((cold)) hardware_init(void) {
+void __attribute__((cold)) hardware_init() {
 	h3_gpio_fsel(EXT_SPI_MOSI, GPIO_FSEL_INPUT);
 	h3_gpio_set_pud(EXT_SPI_MOSI, GPIO_PULL_DOWN);
 	h3_gpio_fsel(EXT_SPI_CLK, GPIO_FSEL_INPUT);

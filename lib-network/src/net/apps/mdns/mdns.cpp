@@ -70,12 +70,16 @@ static constexpr char DOMAIN_OSC[]			= { 4 , '_','o','s','c'};
 static constexpr char DOMAIN_DDP[]			= { 4 , '_','d','d','p'};
 static constexpr char DOMAIN_PP[]			= { 3 , '_','p','p'};
 
-enum class HostReply : uint32_t {
-	A = 0x01, PTR = 0x02
+struct HostReply {
+	static constexpr uint32_t A   = 0x01;
+	static constexpr uint32_t PTR = 0x02;
 };
 
-enum class ServiceReply : uint32_t {
-	TYPE_PTR = 0x10, NAME_PTR = 0x20, SRV = 0x40, TXT = 0x80
+struct ServiceReply {
+	static constexpr uint32_t TYPE_PTR = 0x10;
+	static constexpr uint32_t NAME_PTR = 0x20;
+	static constexpr uint32_t SRV      = 0x40;
+	static constexpr uint32_t TXT      = 0x80;
 };
 
 enum class OpCodes {
@@ -186,29 +190,13 @@ static constexpr Domain DOMAIN_DNSSD {
 };
 
 static ServiceRecord s_ServiceRecords[mdns::SERVICE_RECORDS_MAX];
-static HostReply s_HostReplies;
-static ServiceReply s_ServiceReplies;
+static uint32_t s_HostReplies;
+static uint32_t s_ServiceReplies;
 static uint8_t s_RecordsData[net::dns::MULTICAST_MESSAGE_SIZE];
 static bool s_isUnicast;
 static bool s_bLegacyQuery;
 
 }  // namespace mdns
-
-static constexpr mdns::HostReply operator| (mdns::HostReply a, mdns::HostReply b) {
-	return static_cast<mdns::HostReply>((static_cast<uint32_t>(a) | static_cast<uint32_t>(b)));
-}
-
-static constexpr mdns::HostReply operator& (mdns::HostReply a, mdns::HostReply b) {
-	return static_cast<mdns::HostReply>((static_cast<uint32_t>(a) & static_cast<uint32_t>(b)));
-}
-
-static constexpr mdns::ServiceReply operator| (mdns::ServiceReply a, mdns::ServiceReply b) {
-	return static_cast<mdns::ServiceReply>((static_cast<uint8_t>(a) | static_cast<uint8_t>(b)));
-}
-
-static constexpr mdns::ServiceReply operator& (mdns::ServiceReply a, mdns::ServiceReply b) {
-	return static_cast<mdns::ServiceReply>((static_cast<uint32_t>(a) & static_cast<uint32_t>(b)));
-}
 
 int32_t s_nHandle;
 uint32_t s_nRemoteIp;
@@ -397,7 +385,7 @@ static uint8_t *add_question(uint8_t *pDestination, const Domain& domain, const 
 
 	*reinterpret_cast<volatile uint16_t*>(pDst) = __builtin_bswap16(static_cast<uint16_t>(type));
 	pDst += 2;
-	*reinterpret_cast<uint16_t*>(pDst) = __builtin_bswap16((bFlush ? net::dns::RRClass::RRCLASS_FLUSH : static_cast<net::dns::RRClass>(0)) | net::dns::RRClass::RRCLASS_INTERNET);
+	*reinterpret_cast<uint16_t*>(pDst) = __builtin_bswap16((bFlush ? net::dns::RRClass::RRCLASS_FLUSH : 0) | net::dns::RRClass::RRCLASS_INTERNET);
 	pDst += 2;
 
 	return pDst;
@@ -872,7 +860,7 @@ void mdns_handle_questions(const uint32_t nQuestions) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("nQuestions=%u", nQuestions);
 
-	s_HostReplies = static_cast<mdns::HostReply>(0);
+	s_HostReplies = 0;
 	s_isUnicast = (s_nRemotePort != net::iana::IANA_PORT_MDNS);
 	s_bLegacyQuery = s_isUnicast && (nQuestions == 1);
 
@@ -895,7 +883,7 @@ void mdns_handle_questions(const uint32_t nQuestions) {
 		const auto nType = static_cast<net::dns::RRType>(__builtin_bswap16(*reinterpret_cast<uint16_t*>(&s_pReceiveBuffer[nOffset])));
 		nOffset += 2;
 
-		const auto nClass = static_cast<net::dns::RRClass>(__builtin_bswap16(*reinterpret_cast<uint16_t *>(&s_pReceiveBuffer[nOffset])) & 0x7F);
+		const auto nClass = __builtin_bswap16(*reinterpret_cast<uint16_t *>(&s_pReceiveBuffer[nOffset])) & 0x7F;
 		nOffset += 2;
 
 #ifndef NDEBUG
@@ -940,7 +928,7 @@ void mdns_handle_questions(const uint32_t nQuestions) {
 				 * Check service
 				 */
 
-				s_ServiceReplies = static_cast<mdns::ServiceReply>(0);
+				s_ServiceReplies = 0;
 				Domain serviceDomain;
 
 				if (nType == net::dns::RRType::RRTYPE_PTR || nType == net::dns::RRType::RRTYPE_ALL) {
@@ -967,14 +955,14 @@ void mdns_handle_questions(const uint32_t nQuestions) {
 					}
 				}
 
-				if (s_ServiceReplies != static_cast<mdns::ServiceReply>(0)) {
+				if (s_ServiceReplies != 0) {
 					mdns_send_message(record, nTransactionID, MDNS_RESPONSE_TTL);
 				}
 			}
 		}
 	}
 
-	if (s_HostReplies != static_cast<mdns::HostReply>(0)) {
+	if (s_HostReplies != 0) {
 		DEBUG_PUTS("");
 		mdns_send_answer_local_ip_address(nTransactionID, MDNS_RESPONSE_TTL);
 	}

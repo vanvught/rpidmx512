@@ -58,8 +58,8 @@ struct DisabledOutputs {
 	bool bRgbPanel;
 };
 
-namespace systemtime {
-namespace index {
+
+namespace systemtime::index {
 static constexpr auto HOURS = 0;
 static constexpr auto HOURS_TENS = 0;
 static constexpr auto HOURS_UNITS = 1;
@@ -71,8 +71,8 @@ static constexpr auto COLON_2 = 5;
 static constexpr auto SECONDS = 6;
 static constexpr auto SECONDS_TENS = 6;
 static constexpr auto SECONDS_UNITS = 7;
-}  // namespace index
-}  // namespace systemtime
+} // namespace systemtime::index
+
 
 namespace timecode {
 static constexpr auto CODE_MAX_LENGTH = 11;

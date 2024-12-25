@@ -29,8 +29,8 @@
 
 #include "rdm_sensors.h"
 
-namespace rdm {
-namespace sensors {
+
+namespace rdm::sensors {
 static constexpr char TYPE[static_cast<uint32_t>(rdm::sensors::Types::UNDEFINED)][8] = {
 		"bh1750", "htu21d", "ina219", "mcp9808", "si7021", "mcp3424" };
 
@@ -53,6 +53,6 @@ rdm::sensors::Types get_type_string(const char *pValue) {
 
 	return rdm::sensors::Types::UNDEFINED;
 }
-}  // namespace sensors
-}  // namespace rdm
+} // namespace rdm::sensors
+
 

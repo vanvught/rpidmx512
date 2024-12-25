@@ -25,11 +25,12 @@
 
 #define CONFIG_SYSTEM_CMSIS_IRQ_HANDLER
 
-#pragma GCC push_options
-#pragma GCC optimize ("O2")
-
-#if __GNUC__ > 8
-# pragma GCC target ("general-regs-only")
+#if !defined(__clang__)
+# pragma GCC push_options
+# pragma GCC optimize ("O2")
+# if __GNUC__ > 8
+#  pragma GCC target ("general-regs-only")
+# endif
 #endif
 
 #include <cstdint>

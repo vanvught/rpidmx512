@@ -28,8 +28,8 @@
 
 #include "gd32.h"
 
-namespace dmx {
-namespace config {
+
+namespace dmx::config {
 #if defined (BOARD_GD32F103RC)
 # include "board_gd32f103rc.h"
 #elif defined (BOARD_GD32F107RC)
@@ -63,14 +63,14 @@ namespace config {
 #else
 # error
 #endif
-}  // namespace config
-}  // namespace dmx
+} // namespace dmx::config
 
-namespace dmx {
-namespace buffer {
+
+
+namespace dmx::buffer {
 static constexpr auto SIZE = 516;	// multiple of uint32_t
-}  // namespace buffer
-}  // namespace dmx
+} // namespace dmx::buffer
+
 
 #if defined(GD32F10X_HD) || defined (GD32F10X_CL)
  static_assert(DMX_MAX_PORTS <= 4, "Too many ports defined");

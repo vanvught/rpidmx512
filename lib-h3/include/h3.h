@@ -26,11 +26,13 @@
 #ifndef H3_H_
 #define H3_H_
 
-#ifdef __cplusplus
-# pragma GCC diagnostic push
-# if __cplusplus > 201402
+#if !defined(__clang__)
+# ifdef __cplusplus
+#  if __cplusplus > 201402
+#   pragma GCC diagnostic push
 // error: compound assignment with 'volatile'-qualified left operand is deprecated
-#  pragma GCC diagnostic ignored "-Wvolatile"
+#   pragma GCC diagnostic ignored "-Wvolatile"
+#  endif
 # endif
 #endif
 
@@ -825,11 +827,12 @@ extern void h3_dump_memory_mapping(void);
 #define GIC_INTERFACE_BASE		H3_GIC_CPUIF_BASE
 #define IRQn_Type				H3_IRQn_TypeDef
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wconversion"
-#pragma GCC diagnostic ignored "-Wsign-conversion"
-#ifdef __cplusplus
-#pragma GCC diagnostic ignored "-Wold-style-cast"
+#if !defined(__clang__)
+# pragma GCC diagnostic ignored "-Wconversion"
+# pragma GCC diagnostic ignored "-Wsign-conversion"
+# ifdef __cplusplus
+#  pragma GCC diagnostic ignored "-Wold-style-cast"
+# endif
 #endif
 #include "core_ca.h"
 #ifdef __cplusplus

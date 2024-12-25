@@ -267,14 +267,14 @@ bool HwClock::RtcSet(const struct tm *pTime) {
 	char data[8];
 	auto registers = &data[1];
 
-	registers[reg::SECONDS] = DEC2BCD(pTime->tm_sec          & 0x7f);
-	registers[reg::MINUTES] = DEC2BCD(pTime->tm_min          & 0x7f);
-	registers[reg::HOURS]   = DEC2BCD(pTime->tm_hour         & 0x1f);
+	registers[reg::SECONDS] = DEC2BCD(pTime->tm_sec  & 0x7f);
+	registers[reg::MINUTES] = DEC2BCD(pTime->tm_min  & 0x7f);
+	registers[reg::HOURS]   = DEC2BCD(pTime->tm_hour & 0x1f);
 
 #if !defined (CONFIG_RTC_DISABLE_PCF8563)
 	if (m_Type == Type::PCF8563) {
-		registers[pcf8563::reg::WDAY - pcf8563::reg::SECONDS] = DEC2BCD(pTime->tm_wday         & 0x07);
-		registers[pcf8563::reg::MDAY - pcf8563::reg::SECONDS] = DEC2BCD(pTime->tm_mday         & 0x3f);
+		registers[pcf8563::reg::WDAY - pcf8563::reg::SECONDS] = DEC2BCD(pTime->tm_wday & 0x07);
+		registers[pcf8563::reg::MDAY - pcf8563::reg::SECONDS] = DEC2BCD(pTime->tm_mday & 0x3f);
 	} else
 #endif
 	{

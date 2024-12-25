@@ -63,9 +63,9 @@ void spi_xfer(uint32_t nLength, const uint8_t *pOut, uint8_t *pIn, uint32_t nFla
 	}
 
 	if (nLength != 0) {
-		if (pIn == 0) {
+		if (pIn == nullptr) {
 			gd32_spi_writenb(reinterpret_cast<const char *>(pOut), nLength);
-		} else if (pOut == 0) {
+		} else if (pOut == nullptr) {
 			spi_transfern(reinterpret_cast<char *>(pIn), nLength);
 		} else {
 			gd32_spi_transfernb(reinterpret_cast<const char *>(pOut), reinterpret_cast<char *>(pIn), nLength);

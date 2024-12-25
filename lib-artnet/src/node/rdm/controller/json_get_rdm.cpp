@@ -28,11 +28,11 @@
 
 #include "artnetnode.h"
 
-namespace remoteconfig {
-namespace rdm {
+
+namespace remoteconfig::rdm {
 uint32_t json_get_rdm(char *pOutBuffer, const uint32_t nOutBufferSize) {
 	auto nLength = static_cast<uint32_t>(snprintf(pOutBuffer, nOutBufferSize, "{\"rdm\":\"%u\"}", ArtNetNode::Get()->GetRdm()));
 	return nLength;
 }
-}  // namespace rdm
-}  // namespace remoteconfig
+} // namespace remoteconfig::rdm
+

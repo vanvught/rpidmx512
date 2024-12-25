@@ -31,7 +31,7 @@
 # undef NDEBUG
 #endif
 
-#ifdef __GNUC__
+#if !defined(__clang__)
 # pragma GCC push_options
 # pragma GCC optimize ("O2")
 # pragma GCC optimize ("no-tree-loop-distribute-patterns")
@@ -57,6 +57,10 @@ namespace applemidi {
 
 }  // namespace applemidi
 
+/**
+ * @enum TAppleMidiCommand
+ * @brief Defines the Apple MIDI command identifiers with network byte order.
+ */
 enum TAppleMidiCommand {
 	APPLEMIDI_COMMAND_INVITATION = __builtin_bswap16(0x494e),			///< Invitation 'IN'
 	APPLEMIDI_COMMAND_INVITATION_ACCEPTED = __builtin_bswap16(0x4f4b),	///< Invitation accepted 'OK'
@@ -67,19 +71,40 @@ enum TAppleMidiCommand {
 	APPLEMIDI_COMMAND_BITRATE_RECEIVE_LIMIT = __builtin_bswap16(0x524c)	///< Bitrate 'RL'
 };
 
+/**
+ * @struct TTimestampSynchronization
+ * @brief Represents the structure for timestamp synchronization in Apple MIDI.
+ *
+ * This structure is used to handle the synchronization of timestamps between devices
+ * in an Apple MIDI session.
+ */
 struct TTimestampSynchronization {
-	uint16_t nSignature;
-	uint16_t nCommand;
-	uint32_t nSSRC;
-	uint8_t nCount;
-	uint8_t padding[3];
-	uint64_t nTimestamps[3];
+	uint16_t nSignature;	///< Packet signature for Apple MIDI.
+	uint16_t nCommand;		///< Command identifier.
+	uint32_t nSSRC;			///< Synchronization source identifier.
+	uint8_t nCount;			///< Count of synchronization steps.
+	uint8_t padding[3];		///< Padding to align the structure.
+	uint64_t nTimestamps[3];///< Array of timestamps for synchronization.
 } __attribute__((packed));
 
+/**
+ * @brief Timeout value in milliseconds for an Apple MIDI session.
+ */
 static constexpr uint32_t TIMEOUT = 90 * 1000;
 
+/**
+ * @brief Timer handle for session timeout management.
+ */
 static TimerHandle_t s_nTimerId = TIMER_ID_NONE;
 
+/**
+ * @brief Timer callback function to handle session timeout.
+ *
+ * This function is called when the session times out, and it resets the session
+ * and deletes the timer.
+ *
+ * @param nHandle Handle of the expired timer (unused).
+ */
 static void timeout_timer([[maybe_unused]] TimerHandle_t nHandle) {
 	if (AppleMidi::GetSessionState() == applemidi::SessionState::ESTABLISHED) {
 		AppleMidi::ResetSession();

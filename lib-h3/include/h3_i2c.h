@@ -41,8 +41,8 @@ typedef enum H3_I2C_RC {
 	H3_I2C_NOK_TOUT = 4
 } h3_i2c_rc_t;
 
-void h3_i2c_begin(void);
-void h3_i2c_end(void);
+void h3_i2c_begin();
+void h3_i2c_end();
 void h3_i2c_set_baudrate(const uint32_t nBaudrate);
 void h3_i2c_set_slave_address(const uint8_t nAddress);
 uint8_t h3_i2c_write(const char *, uint32_t);

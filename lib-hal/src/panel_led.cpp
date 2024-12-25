@@ -25,9 +25,9 @@
 
 #include <cstdint>
 
-namespace hal {
-namespace panelled {
+
+namespace hal::panelled {
 uint32_t g_nData;
 uint32_t g_nDataPrevious;
-}  // namespace panelled
-}  // namespace hal
+} // namespace hal::panelled
+

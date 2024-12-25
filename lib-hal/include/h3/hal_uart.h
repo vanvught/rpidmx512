@@ -28,8 +28,8 @@
 
 #include "h3_uart.h"
 
-namespace hal {
-namespace uart {
+
+namespace hal::uart {
 static constexpr auto BITS_5 = H3_UART_BITS_5;
 static constexpr auto BITS_6 = H3_UART_BITS_6;
 static constexpr auto BITS_7 = H3_UART_BITS_7;
@@ -41,7 +41,7 @@ static constexpr auto PARITY_EVEN = H3_UART_PARITY_EVEN;
 
 static constexpr auto STOP_1BIT = H3_UART_STOP_1BIT;
 static constexpr auto STOP_2BITS = H3_UART_STOP_2BITS;
-}  // namespace uart
-}  // namespace hal
+} // namespace hal::uart
+
 
 #endif /* H3_HAL_UART_H_ */

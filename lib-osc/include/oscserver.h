@@ -39,8 +39,8 @@
 
 #include "debug.h"
 
-namespace osc {
-namespace server {
+
+namespace osc::server {
 struct DefaultPort {
 	static constexpr auto INCOMING = 8000U;
 	static constexpr auto OUTGOING = 9000U;
@@ -49,8 +49,8 @@ struct DefaultPort {
 struct Max {
 	static constexpr auto PATH_LENGTH = 128U;
 };
-}  // namespace server
-}  // namespace osc
+} // namespace osc::server
+
 
 class OscServerHandler {
 public:

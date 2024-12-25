@@ -32,13 +32,13 @@
 
 #include "hal_i2c.h"
 
-namespace hd44780 {
-namespace pcf8574t {
+
+namespace hd44780::pcf8574t {
 static constexpr uint8_t DEFAULT_ADDRESS = 0x27;
 static constexpr uint8_t TC2004_ADDRESS = DEFAULT_ADDRESS;
 static constexpr uint8_t TC1602_ADDRESS = 0x26;
-}  // namespace pcf8574t
-}  // namespace hd44780
+} // namespace hd44780::pcf8574t
+
 
 class Hd44780 final: public DisplaySet {
 public:

@@ -28,6 +28,7 @@
 #endif
 
 #include <cstring>
+#include <algorithm>
 
 #include "rdmhandler.h"
 #include "rdmconst.h"
@@ -220,12 +221,15 @@ void RDMHandler::GetInterfaceName([[maybe_unused]] uint16_t nSubDevice) {
 		return;
 	}
 
-	auto *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
+	auto *pRdmDataOut = reinterpret_cast<struct TRdmMessage *>(m_pRdmDataOut);
 
 	memcpy(&pRdmDataOut->param_data[0], &pRdmDataIn->param_data[0], 4);
-	strcpy(reinterpret_cast<char*>(&pRdmDataOut->param_data[4]), Network::Get()->GetIfName());
 
-	pRdmDataOut->param_data_length = static_cast<uint8_t>(4 + strlen(Network::Get()->GetIfName()));
+	static const auto nLength = std::min(strlen(Network::Get()->GetIfName()), static_cast<size_t>(32));
+
+	memcpy(reinterpret_cast<char *>(&pRdmDataOut->param_data[4]), Network::Get()->GetIfName(), nLength);
+
+	pRdmDataOut->param_data_length = static_cast<uint8_t>(4 + nLength);
 
 	RespondMessageAck();
 

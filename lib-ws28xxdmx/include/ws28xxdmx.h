@@ -33,10 +33,12 @@
 # endif
 #endif
 
-#pragma GCC push_options
-#pragma GCC optimize ("O3")
-#pragma GCC optimize ("no-tree-loop-distribute-patterns")
-#pragma GCC optimize ("-fprefetch-loop-arrays")
+#if !defined(__clang__)
+# pragma GCC push_options
+# pragma GCC optimize ("O3")
+# pragma GCC optimize ("no-tree-loop-distribute-patterns")
+# pragma GCC optimize ("-fprefetch-loop-arrays")
+#endif
 
 #include <cstdint>
 #include <algorithm>
@@ -84,7 +86,7 @@ public:
 #endif
 	}
 
-	void SetData([[maybe_unused]] uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate = true) {
+	void SetData([[maybe_unused]] uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate = true) override {
 		assert(pData != nullptr);
 		assert(nLength <= lightset::dmx::UNIVERSE_SIZE);
 
@@ -108,7 +110,8 @@ public:
 		const auto beginIndex = portInfo.nBeginIndexPort[nSwitch];
 #endif
 		const auto nChannelsPerPixel = pixelDmxConfiguration.GetLedsPerPixel();
-		const auto endIndex = std::min(nGroups, (beginIndex + (nLength / nChannelsPerPixel)));
+		const auto endIndex = std::min(nGroups,
+				(beginIndex + (nLength / nChannelsPerPixel)));
 
 		if ((nSwitch == 0) && (nGroups < portInfo.nBeginIndexPort[1])) {
 			d = (pixelDmxConfiguration.GetDmxStartAddress() - 1U);
@@ -119,55 +122,67 @@ public:
 		if (nChannelsPerPixel == 3) {
 			switch (pixelDmxConfiguration.GetMap()) {
 			case pixel::Map::RGB:
-				for (uint32_t j = beginIndex; (j < endIndex) && (d < nLength); j++) {
+				for (uint32_t j = beginIndex; (j < endIndex) && (d < nLength);
+						j++) {
 					auto const nPixelIndexStart = (j * nGroupingCount);
 					for (uint32_t k = 0; k < nGroupingCount; k++) {
-						m_pWS28xx->SetPixel(nPixelIndexStart + k, pData[d + 0], pData[d + 1], pData[d + 2]);
+						m_pWS28xx->SetPixel(nPixelIndexStart + k, pData[d + 0],
+								pData[d + 1], pData[d + 2]);
 					}
 					d = d + 3;
 				}
 				break;
 			case pixel::Map::RBG:
-				for (uint32_t j = beginIndex; (j < endIndex) && (d < nLength); j++) {
+				for (uint32_t j = beginIndex; (j < endIndex) && (d < nLength);
+						j++) {
 					auto const nPixelIndexStart = (j * nGroupingCount);
 					for (uint32_t k = 0; k < nGroupingCount; k++) {
-						m_pWS28xx->SetPixel(nPixelIndexStart + k, pData[d + 0], pData[d + 2], pData[d + 1]);
+						m_pWS28xx->SetPixel(nPixelIndexStart + k, pData[d + 0],
+								pData[d + 2], pData[d + 1]);
 					}
 					d = d + 3;
 				}
 				break;
 			case pixel::Map::GRB:
-				for (uint32_t j = beginIndex; (j < endIndex) && (d < nLength); j++) {
+				for (uint32_t j = beginIndex; (j < endIndex) && (d < nLength);
+						j++) {
 					auto const nPixelIndexStart = (j * nGroupingCount);
 					for (uint32_t k = 0; k < nGroupingCount; k++) {
-						m_pWS28xx->SetPixel(nPixelIndexStart + k, pData[d + 1], pData[d + 0], pData[d + 2]);
+						m_pWS28xx->SetPixel(nPixelIndexStart + k, pData[d + 1],
+								pData[d + 0], pData[d + 2]);
 					}
 					d = d + 3;
 				}
 				break;
 			case pixel::Map::GBR:
-				for (uint32_t j = beginIndex; (j < endIndex) && (d < nLength); j++) {
+				for (uint32_t j = beginIndex; (j < endIndex) && (d < nLength);
+						j++) {
 					auto const nPixelIndexStart = (j * nGroupingCount);
 					for (uint32_t k = 0; k < nGroupingCount; k++) {
-						m_pWS28xx->SetPixel(nPixelIndexStart + k, pData[d + 2], pData[d + 0], pData[d + 1]);
+						m_pWS28xx->SetPixel(nPixelIndexStart + k, pData[d + 2],
+								pData[d + 0], pData[d + 1]);
 					}
 					d = d + 3;
 				}
 				break;
 			case pixel::Map::BRG:
-				for (uint32_t j = beginIndex; (j < endIndex) && (d < nLength); j++) {
+				for (uint32_t j = beginIndex; (j < endIndex) && (d < nLength);
+						j++) {
 					auto const nPixelIndexStart = (j * nGroupingCount);
 					for (uint32_t k = 0; k < nGroupingCount; k++) {
-						m_pWS28xx->SetPixel(nPixelIndexStart + k, pData[d + 1], pData[d + 2], pData[d + 0]);
+						m_pWS28xx->SetPixel(nPixelIndexStart + k, pData[d + 1],
+								pData[d + 2], pData[d + 0]);
 					}
 					d = d + 3;
 				}
 				break;
 			case pixel::Map::BGR:
-				for (uint32_t j = beginIndex; (j < endIndex) && (d < nLength); j++) {
+				for (uint32_t j = beginIndex; (j < endIndex) && (d < nLength);
+						j++) {
 					auto const nPixelIndexStart = (j * nGroupingCount);
 					for (uint32_t k = 0; k < nGroupingCount; k++) {
-						m_pWS28xx->SetPixel(nPixelIndexStart + k, pData[d + 2], pData[d + 1], pData[d + 0]);
+						m_pWS28xx->SetPixel(nPixelIndexStart + k, pData[d + 2],
+								pData[d + 1], pData[d + 0]);
 					}
 					d = d + 3;
 				}
@@ -182,7 +197,8 @@ public:
 			for (auto j = beginIndex; (j < endIndex) && (d < nLength); j++) {
 				auto const nPixelIndexStart = (j * nGroupingCount);
 				for (uint32_t k = 0; k < nGroupingCount; k++) {
-					m_pWS28xx->SetPixel(nPixelIndexStart + k, pData[d], pData[d + 1], pData[d + 2], pData[d + 3]);
+					m_pWS28xx->SetPixel(nPixelIndexStart + k, pData[d],
+							pData[d + 1], pData[d + 2], pData[d + 3]);
 				}
 				d = d + 4;
 			}
@@ -193,17 +209,18 @@ public:
 #else
 			if ((doUpdate) && (nPortIndex == portInfo.nProtocolPortIndexLast)) {
 #endif
-				if (__builtin_expect((m_bBlackout), 0)) {
-					return;
-				}
-				m_pWS28xx->Update();
+			if (__builtin_expect((m_bBlackout), 0)) {
+				return;
 			}
-		}
-		void Sync([[maybe_unused]] const uint32_t nPortIndex) override {}
-		void Sync() override {
-			assert(m_pWS28xx != nullptr);
 			m_pWS28xx->Update();
 		}
+	}
+	void Sync([[maybe_unused]] const uint32_t nPortIndex) override {
+	}
+	void Sync() override {
+		assert(m_pWS28xx != nullptr);
+		m_pWS28xx->Update();
+	}
 
 #if defined (OUTPUT_HAVE_STYLESWITCH)
 		void SetOutputStyle([[maybe_unused]] const uint32_t nPortIndex, [[maybe_unused]] const lightset::OutputStyle outputStyle) override {}
@@ -212,107 +229,112 @@ public:
 		}
 #endif
 
-		void Blackout(bool bBlackout) override {
-			m_bBlackout = bBlackout;
+	void Blackout(bool bBlackout) override {
+		m_bBlackout = bBlackout;
 
-			while (m_pWS28xx->IsUpdating()) {
-				// wait for completion
-			}
-
-			if (bBlackout) {
-				m_pWS28xx->Blackout();
-			} else {
-				m_pWS28xx->Update();
-			}
+		while (m_pWS28xx->IsUpdating()) {
+			// wait for completion
 		}
 
-		void FullOn() override {
-			while (m_pWS28xx->IsUpdating()) {
-				// wait for completion
-			}
+		if (bBlackout) {
+			m_pWS28xx->Blackout();
+		} else {
+			m_pWS28xx->Update();
+		}
+	}
 
-			m_pWS28xx->FullOn();
+	void FullOn() override {
+		while (m_pWS28xx->IsUpdating()) {
+			// wait for completion
 		}
 
-		void Print() override {
-			PixelDmxConfiguration::Get().Print();
-		}
+		m_pWS28xx->FullOn();
+	}
 
-		// RDM
-		bool SetDmxStartAddress(uint16_t nDmxStartAddress) override {
-			assert((nDmxStartAddress != 0) && (nDmxStartAddress <= lightset::dmx::UNIVERSE_SIZE));
+	void Print() override {
+		PixelDmxConfiguration::Get().Print();
+	}
 
-			auto &pixelDmxConfiguration = PixelDmxConfiguration::Get();
+	// RDM
+	bool SetDmxStartAddress(uint16_t nDmxStartAddress) override {
+		assert(
+				(nDmxStartAddress != 0) && (nDmxStartAddress <= lightset::dmx::UNIVERSE_SIZE));
 
-			if (nDmxStartAddress == pixelDmxConfiguration.GetDmxStartAddress()) {
-				return true;
-			}
+		auto &pixelDmxConfiguration = PixelDmxConfiguration::Get();
 
-			if ((nDmxStartAddress + pixelDmxConfiguration.GetDmxFootprint()) > lightset::dmx::UNIVERSE_SIZE) {
-				return false;
-			}
-
-			if ((nDmxStartAddress != 0) && (nDmxStartAddress <= lightset::dmx::UNIVERSE_SIZE)) {
-				pixelDmxConfiguration.SetDmxStartAddress(nDmxStartAddress);
-				PixelDmxStore::SaveDmxStartAddress(nDmxStartAddress);
-				return true;
-			}
-
-			return false;
-		}
-
-		uint16_t GetDmxStartAddress() override {
-			return PixelDmxConfiguration::Get().GetDmxStartAddress();
-		}
-
-		uint16_t GetDmxFootprint() override {
-			return PixelDmxConfiguration::Get().GetDmxFootprint();
-		}
-
-		bool GetSlotInfo(uint16_t nSlotOffset, lightset::SlotInfo &slotInfo) override {
-			auto &pixelDmxConfiguration = PixelDmxConfiguration::Get();
-
-			if (nSlotOffset > pixelDmxConfiguration.GetDmxFootprint()) {
-				return false;
-			}
-
-			slotInfo.nType = 0x00;	// ST_PRIMARY
-
-			switch (nSlotOffset % pixelDmxConfiguration.GetLedsPerPixel()) {
-			case 0:
-				slotInfo.nCategory = 0x0205; // SD_COLOR_ADD_RED
-				break;
-			case 1:
-				slotInfo.nCategory = 0x0206; // SD_COLOR_ADD_GREEN
-				break;
-			case 2:
-				slotInfo.nCategory = 0x0207; // SD_COLOR_ADD_BLUE
-				break;
-			case 3:
-				slotInfo.nCategory = 0x0212; // SD_COLOR_ADD_WHITE
-				break;
-			default:
-				__builtin_unreachable();
-				break;
-			}
-
+		if (nDmxStartAddress == pixelDmxConfiguration.GetDmxStartAddress()) {
 			return true;
 		}
 
-		static WS28xxDmx *Get() {
-			return s_pThis;
+		if ((nDmxStartAddress + pixelDmxConfiguration.GetDmxFootprint())
+				> lightset::dmx::UNIVERSE_SIZE) {
+			return false;
 		}
 
-	private:
-		WS28xx *m_pWS28xx { nullptr };
+		if ((nDmxStartAddress != 0) && (nDmxStartAddress <= lightset::dmx::UNIVERSE_SIZE)) {
+			pixelDmxConfiguration.SetDmxStartAddress(nDmxStartAddress);
+			PixelDmxStore::SaveDmxStartAddress(nDmxStartAddress);
+			return true;
+		}
 
-		bool m_bIsStarted { false };
-		bool m_bBlackout { false };
+		return false;
+	}
 
-		static inline WS28xxDmx *s_pThis;
-	};
+	uint16_t GetDmxStartAddress() override {
+		return PixelDmxConfiguration::Get().GetDmxStartAddress();
+	}
 
-#pragma GCC pop_options
+	uint16_t GetDmxFootprint() override {
+		return PixelDmxConfiguration::Get().GetDmxFootprint();
+	}
+
+	bool GetSlotInfo(uint16_t nSlotOffset, lightset::SlotInfo &slotInfo)
+			override {
+		auto &pixelDmxConfiguration = PixelDmxConfiguration::Get();
+
+		if (nSlotOffset > pixelDmxConfiguration.GetDmxFootprint()) {
+			return false;
+		}
+
+		slotInfo.nType = 0x00;	// ST_PRIMARY
+
+		switch (nSlotOffset % pixelDmxConfiguration.GetLedsPerPixel()) {
+		case 0:
+			slotInfo.nCategory = 0x0205; // SD_COLOR_ADD_RED
+			break;
+		case 1:
+			slotInfo.nCategory = 0x0206; // SD_COLOR_ADD_GREEN
+			break;
+		case 2:
+			slotInfo.nCategory = 0x0207; // SD_COLOR_ADD_BLUE
+			break;
+		case 3:
+			slotInfo.nCategory = 0x0212; // SD_COLOR_ADD_WHITE
+			break;
+		default:
+			__builtin_unreachable();
+			break;
+		}
+
+		return true;
+	}
+
+	static WS28xxDmx* Get() {
+		return s_pThis;
+	}
+
+private:
+	WS28xx *m_pWS28xx { nullptr };
+
+	bool m_bIsStarted { false };
+	bool m_bBlackout { false };
+
+	static inline WS28xxDmx *s_pThis;
+};
+
+#if !defined(__clang__)
+# pragma GCC pop_options
+#endif
 #if defined (_NDEBUG)
 # undef _NDEBUG
 # define NDEBUG

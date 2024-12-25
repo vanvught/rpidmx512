@@ -32,11 +32,8 @@
 #include "hardware.h"
 #include "network.h"
 
-
 #include "display.h"
 #include "displayudfparams.h"
-
-#include "net/apps/mdns.h"
 
 #include "e131bridge.h"
 #include "e131params.h"
@@ -160,8 +157,6 @@ int main(int argc, char **argv) {
 
 	llrpOnlyDevice.Print();
 
-	mdns_service_record_add(nullptr, mdns::Services::RDMNET_LLRP, "node=RDMNet LLRP Only");
-
 	bridge.Print();
 
 #if defined (NODE_SHOWFILE)
@@ -184,18 +179,14 @@ int main(int argc, char **argv) {
 	remoteConfigParams.Load();
 	remoteConfigParams.Set(&remoteConfig);
 
-	while (configStore.Flash())
-		;
-
-	mdns_print(); //	mDns.Print();
 	bridge.Start();
 
 	while (keepRunning) {
+		nw.Run();
 		bridge.Run();
 #if defined (NODE_SHOWFILE)
 		showFile.Run();
 #endif
-		mdns_run(); //	mDns.Run();
 		remoteConfig.Run();
 		llrpOnlyDevice.Run();
 		configStore.Flash();

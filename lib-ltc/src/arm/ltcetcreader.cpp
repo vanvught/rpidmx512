@@ -27,9 +27,11 @@
 # undef NDEBUG
 #endif
 
-#pragma GCC push_options
-#pragma GCC optimize ("O2")
-#pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#if !defined(__clang__)
+# pragma GCC push_options
+# pragma GCC optimize ("O2")
+# pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#endif
 
 #include <cstdint>
 #include <cassert>
@@ -73,7 +75,7 @@ void LtcEtcReader::Stop() {
 }
 
 void LtcEtcReader::Handler(const midi::Timecode *pTimeCode) {
-	gv_ltc_nUpdates++;
+	gv_ltc_nUpdates = gv_ltc_nUpdates + 1;
 
 	if (!ltc::g_DisabledOutputs.bLtc) {
 		LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct ltc::TimeCode *>(pTimeCode));

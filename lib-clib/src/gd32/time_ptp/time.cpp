@@ -88,7 +88,7 @@ int settimeofday(const struct timeval *tv, [[maybe_unused]] const struct timezon
  */
 time_t time(time_t *__timer) {
 	struct timeval tv;
-	gettimeofday(&tv, 0);
+	gettimeofday(&tv, nullptr);
 
 	if (__timer != nullptr) {
 		*__timer = tv.tv_sec;

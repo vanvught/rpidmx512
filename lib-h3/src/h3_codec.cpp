@@ -27,13 +27,14 @@
  * THE SOFTWARE.
  */
 
-#if __GNUC__ > 8
-# pragma GCC target ("general-regs-only")
+#if !defined(__clang__)
+# if __GNUC__ > 8
+#  pragma GCC target ("general-regs-only")
+# endif
 #endif
 
-#include <stdint.h>
-#include <stdbool.h>
-#include <assert.h>
+#include <cstdint>
+#include <cassert>
 
 #include "arm/arm.h"
 #include "arm/synchronize.h"
@@ -259,7 +260,7 @@ static void clk_set_rate_codec(uint32_t rate) {
 	} while (!(value & PLL_LOCK));
 }
 
-static void clk_set_rate_codec_module(void) {
+static void clk_set_rate_codec_module() {
 	H3_CCU->AC_DIG_CLK = SCLK_1X_GATING;
 
 	H3_CCU->BUS_SOFT_RESET3 |= CCU_BUS_SOFT_RESET3_AC;
@@ -398,7 +399,7 @@ static void codec_hw_params(uint32_t rate, uint32_t channels) {
 extern void uart0_putc(int c);
 #endif
 
-static void __attribute__((interrupt("FIQ"))) codec_fiq_handler(void) {
+static void __attribute__((interrupt("FIQ"))) codec_fiq_handler() {
 	dmb();
 
 #ifdef LOGIC_ANALYZER
@@ -439,7 +440,7 @@ void h3_codec_set_volume(uint8_t volume) {
 	s_volume = volume;
 }
 
-void h3_codec_begin(void) {
+void h3_codec_begin() {
 	__disable_fiq();
 
 	/*
@@ -515,7 +516,7 @@ void h3_codec_begin(void) {
 	WR_CONTROL(H3_AC->DAC_FIFOC, 0x3, DAC_DRQ_CLR_CNT, 0x3);
 }
 
-void __attribute__((cold)) h3_codec_start(void) {
+void __attribute__((cold)) h3_codec_start() {
 	H3_AC->DAC_DAP_CTR = 0;
 
 #ifndef NDEBUG
@@ -592,8 +593,10 @@ void h3_codec_set_buffer_length(uint32_t length) {
 	__enable_fiq();
 }
 
-#pragma GCC push_options
-#pragma GCC optimize ("O3")
+#if !defined(__clang__)
+# pragma GCC push_options
+# pragma GCC optimize ("O3")
+#endif
 
 void h3_codec_push_data(const int16_t *src) {
 	__disable_fiq();

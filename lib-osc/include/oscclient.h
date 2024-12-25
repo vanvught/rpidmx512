@@ -52,12 +52,12 @@ static constexpr uint32_t CMD_PATH_LENGTH = 64;
 static constexpr uint32_t LED_COUNT = 8;
 static constexpr uint32_t LED_PATH_LENGTH = 48;
 }  // namespace max
-namespace buffer {
-namespace size {
+
+namespace buffer::size {
 static constexpr uint32_t CMD = oscclient::max::CMD_COUNT * oscclient::max::CMD_PATH_LENGTH;
 static constexpr uint32_t LED = oscclient::max::LED_COUNT * oscclient::max::LED_PATH_LENGTH;
-}  // namespace size
-}  // namespace buffer
+} // namespace buffer::size
+
 }  // namespace oscclient
 
 class OscClient {

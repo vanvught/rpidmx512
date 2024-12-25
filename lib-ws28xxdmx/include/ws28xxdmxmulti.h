@@ -33,10 +33,12 @@
 # endif
 #endif
 
-#pragma GCC push_options
-#pragma GCC optimize ("O3")
-#pragma GCC optimize ("no-tree-loop-distribute-patterns")
-#pragma GCC optimize ("-fprefetch-loop-arrays")
+#if !defined(__clang__)
+# pragma GCC push_options
+# pragma GCC optimize ("O3")
+# pragma GCC optimize ("no-tree-loop-distribute-patterns")
+# pragma GCC optimize ("-fprefetch-loop-arrays")
+#endif
 
 #include <cstdint>
 #include <algorithm>
@@ -330,7 +332,9 @@ private:
 	bool m_bNeedSync { false };
 };
 
-#pragma GCC pop_options
+#if !defined(__clang__)
+# pragma GCC pop_options
+#endif
 #if defined (_NDEBUG)
 # undef _NDEBUG
 # define NDEBUG

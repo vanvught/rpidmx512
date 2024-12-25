@@ -28,8 +28,8 @@
 
 #include <cmath>
 
-namespace sensor {
-namespace thermistor {
+
+namespace sensor::thermistor {
 // https://www.adafruit.com/product/372
 static constexpr auto THERMISTOR_NOMINAL  = 10000U;		// 10K Ohm
 static constexpr auto TEMPERATURE_NOMINAL = 25.0f; 		// 25 degrees Celcius
@@ -50,7 +50,7 @@ inline static float temperature(const uint32_t resistor) {
 	return steinhart;
 }
 
-}  // namespace thermistor
-}  // namespace sensor
+} // namespace sensor::thermistor
+
 
 #endif /* INCLUDE_THERMISTOR_H_ */

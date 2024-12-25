@@ -116,7 +116,7 @@ void *malloc(size_t size) {
 
 	struct block_header *header;
 
-	if (bucket->size > 0 && (header = bucket->free_list) != 0) {
+	if (bucket->size > 0 && (header = bucket->free_list) != nullptr) {
 		assert(header->magic == BLOCK_MAGIC);
 		bucket->free_list = header->next;
 	} else {

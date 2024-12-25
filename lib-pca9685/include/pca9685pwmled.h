@@ -30,11 +30,11 @@
 
 #include "pca9685.h"
 
-namespace pca9685 {
-namespace pwmled {
+
+namespace pca9685::pwmled {
 static constexpr uint32_t DEFAULT_FREQUENCY = 120;
-}  // namespace pwmled
-}  // namespace pca9685
+} // namespace pca9685::pwmled
+
 
 class PCA9685PWMLed: public PCA9685 {
 public:

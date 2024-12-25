@@ -41,12 +41,12 @@ namespace id_string {
 static constexpr size_t length = 0;
 }  // namespace id_string
 
-namespace spi {
-namespace speed {
+
+namespace spi::speed {
 static constexpr uint32_t max_hz = 50000;		///< 50 kHz
 static constexpr uint32_t default_hz = 50000;	///< 50 kHz
-}  // namespace speed
-}  // namespace spi
+} // namespace spi::speed
+
 
 namespace lcd {
 static constexpr uint8_t address = 0x82;

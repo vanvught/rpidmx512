@@ -27,9 +27,11 @@
 # undef NDEBUG
 #endif
 
-#pragma GCC push_options
-#pragma GCC optimize ("O2")
-#pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#if !defined(__clang__)
+# pragma GCC push_options
+# pragma GCC optimize ("O2")
+# pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#endif
 
 #include <cstdint>
 #include <cstring>
@@ -95,7 +97,7 @@ void TCNetReader::Stop() {
 }
 
 void TCNetReader::Handler(const struct tcnet::TimeCode *pTimeCode) {
-	gv_ltc_nUpdates++;
+	gv_ltc_nUpdates = gv_ltc_nUpdates + 1;
 
 	assert((reinterpret_cast<uint32_t>(pTimeCode) & 0x3) == 0); // Check if we can do 4-byte compare
 #if __GNUC__ > 8

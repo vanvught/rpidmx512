@@ -76,12 +76,12 @@ static uint32_t to_reg(const int val) {
 	return static_cast<uint32_t>((TEMP_MINUS - (val * TEMP_DIV)) / TEMP_MUL);
 }
 
-int h3_thermal_gettemp(void) {
+int h3_thermal_gettemp() {
 	const uint32_t value = H3_THS->DATA & DATA_MASK;
 	return (value == 0 ? -1 : to_temp(value));
 }
 
-int h3_thermal_getshut(void) {
+int h3_thermal_getshut() {
 	const uint32_t value = (H3_THS->SHUTDOWN_CTRL >> SHUTDOWN_CTRL_T_HOT_SHIFT) & SHUTDOWN_CTRL_T_HOT_MASK;
 	return (to_temp(value));
 }
@@ -93,7 +93,7 @@ void h3_thermal_setshut(int temp) {
 	H3_THS->SHUTDOWN_CTRL = value;
 }
 
-int h3_thermal_getalarm(void) {
+int h3_thermal_getalarm() {
 	const uint32_t value = (H3_THS->ALARM_CTRL >> ALARM_CTRL_T_HOT_SHIFT) & ALARM_CTRL_T_HOT_MASK;
 	return (to_temp(value));
 }
@@ -105,7 +105,7 @@ void h3_thermal_setalarm(int temp) {
 	H3_THS->ALARM_CTRL = value;
 }
 
-void __attribute__((cold)) h3_thermal_init(void) {
+void __attribute__((cold)) h3_thermal_init() {
 	uint32_t value = H3_CCU->THS_CLK;
 	value &= ~(CCU_THS_CLK_SRC_MASK);
 	value |= (CCU_THS_CLK_SRC_OSC24M << CCU_THS_CLK_SRC_SHIFT);

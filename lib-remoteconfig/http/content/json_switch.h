@@ -3,9 +3,9 @@
 
 #include <cstdint>
 
-namespace http {
-namespace json {
-namespace get {
+
+
+namespace http::json::get {
 static constexpr uint16_t LIST        = 0x1661;
 static constexpr uint16_t VERSION     = 0x6c4b;
 static constexpr uint16_t UPTIME      = 0xb7d9;
@@ -23,8 +23,8 @@ static constexpr uint16_t RTCALARM    = 0x817b;
 static constexpr uint16_t POLLTABLE   = 0x0864;
 static constexpr uint16_t TYPES       = 0x5e5a;
 }
-}
-}
+
+
 
 namespace http {
 inline uint16_t get_uint(const char *pString) {					/* djb2 */

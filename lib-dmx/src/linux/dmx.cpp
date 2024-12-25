@@ -45,7 +45,7 @@
 #include <time.h>
 #include <sys/time.h>
 
-static uint32_t micros(void) {
+static uint32_t micros() {
 	struct timeval tv;
 	gettimeofday(&tv, nullptr);
 	return static_cast<uint32_t>((tv.tv_sec * 1000000) + tv.tv_usec);
@@ -152,7 +152,7 @@ void Dmx::SetDmxSlots([[maybe_unused]] uint16_t nSlots) {
 
 void Dmx::SetSendDataWithoutSC(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
 	assert(nPortIndex < dmx::config::max::PORTS);
-	assert(pData != 0);
+	assert(pData != nullptr);
 	assert(nLength != 0);
 	assert(nLength <= 512);
 

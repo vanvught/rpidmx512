@@ -32,15 +32,15 @@
 
 #include "max7219matrix.h"
 
-namespace ltc {
-namespace display {
-namespace max7219 {
-namespace maxtrix {
+
+
+
+namespace ltc::display::max7219::maxtrix {
 static constexpr auto SEGMENTS	= 8;
-}  // namespace maxtrix
-}  // namespace max7219
-}  // namespace display
-}  // namespace ltc
+} // namespace ltc::display::max7219::maxtrix
+
+
+
 
 class LtcDisplayMax7219Matrix final: public LtcDisplayMax7219Set, public Max7219Matrix {
 public:

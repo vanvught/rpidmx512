@@ -23,12 +23,14 @@
  * THE SOFTWARE.
  */
 
-#if defined (CONFIG_I2C_OPTIMIZE_O2) || defined (CONFIG_I2C_OPTIMIZE_O3)
-# pragma GCC push_options
-# if defined (CONFIG_I2C_OPTIMIZE_O2)
-#  pragma GCC optimize ("O2")
-# else
-#  pragma GCC optimize ("O3")
+#if !defined(__clang__)
+# if defined (CONFIG_I2C_OPTIMIZE_O2) || defined (CONFIG_I2C_OPTIMIZE_O3)
+#  pragma GCC push_options
+#  if defined (CONFIG_I2C_OPTIMIZE_O2)
+#   pragma GCC optimize ("O2")
+#  else
+#   pragma GCC optimize ("O3")
+#  endif
 # endif
 #endif
 

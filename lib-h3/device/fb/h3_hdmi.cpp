@@ -102,7 +102,7 @@ static uint32_t hdmi_get_divider(uint32_t clock) {
 	return 1;
 }
 
-static void hdmi_phy_init(void) {
+static void hdmi_phy_init() {
 	/*
 	 * HDMI PHY settings are taken as-is from Allwinner BSP code.
 	 * There is no documentation.

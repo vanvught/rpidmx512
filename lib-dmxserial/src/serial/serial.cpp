@@ -36,7 +36,7 @@ using namespace serial;
 Serial::Serial()  {
 	DEBUG_ENTRY
 
-	assert(s_pThis == 0);
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	m_UartConfiguration.nBaud = 115200;

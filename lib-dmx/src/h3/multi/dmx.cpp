@@ -403,7 +403,7 @@ static void fiq_in_handler(const uint32_t nPortIndex, const H3_UART_TypeDef *pUa
 	}
 }
 
-static void __attribute__((interrupt("FIQ"))) fiq_dmx_multi(void) {
+static void __attribute__((interrupt("FIQ"))) fiq_dmx_multi() {
 	__DMB();
 
 	auto nIIR = H3_UART1->O08.IIR;

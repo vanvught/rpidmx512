@@ -29,8 +29,8 @@
 #include "artnetnode.h"
 #include "lightset.h"
 
-namespace remoteconfig {
-namespace rdm {
+
+namespace remoteconfig::rdm {
 static uint32_t get_portstatus(const uint32_t nPortIndex, char *pOutBuffer, const uint32_t nOutBufferSize) {
 	const auto direction = ArtNetNode::Get()->GetPortDirection(nPortIndex);
 	const char *status;
@@ -85,5 +85,5 @@ uint32_t json_get_portstatus(char *pOutBuffer, const uint32_t nOutBufferSize) {
 
 	return nLength;
 }
-}  // namespace rdm
-}  // namespace remoteconfig
+} // namespace remoteconfig::rdm
+

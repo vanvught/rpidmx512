@@ -33,14 +33,14 @@
 
 #include "debug.h"
 
-namespace pixeldmx {
-namespace paramsdmx {
+
+namespace pixeldmx::paramsdmx {
 enum class SlotInfo {
 	TYPE, COUNT, GROUPING_COUNT, MAP, TEST_PATTERN, PROGRAM, LAST
 };
 static constexpr auto DMX_FOOTPRINT = static_cast<uint16_t>(SlotInfo::LAST);
-}  // namespace paramsdmx
-}  // namespace pixeldmx
+} // namespace pixeldmx::paramsdmx
+
 
 class PixelDmxParamsRdm final: public LightSet {
 public:

@@ -39,13 +39,13 @@
 
 #include "debug.h"
 
-namespace llrp {
-namespace device {
+
+namespace llrp::device {
 static constexpr auto IPV4_LLRP_REQUEST = network::convert_to_uint(239, 255, 250, 133);
 static constexpr auto IPV4_LLRP_RESPONSE = network::convert_to_uint(239, 255, 250, 134);
 static constexpr uint16_t LLRP_PORT = 5569;
-}  // namespace device
-}  // namespace llrp
+} // namespace llrp::device
+
 
 class LLRPDevice {
 public:
@@ -73,7 +73,7 @@ public:
 	}
 
 	void Input(const uint8_t *pBuffer, [[maybe_unused]] uint32_t nSize, uint32_t nFromIp, [[maybe_unused]] uint16_t nFromPort) {
-		if (pBuffer != 0) {
+		if (pBuffer != nullptr) {
 			s_pLLRP = const_cast<uint8_t *>(pBuffer);
 			s_nIpAddressFrom = nFromIp;
 		}

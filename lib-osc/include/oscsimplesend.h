@@ -28,13 +28,13 @@
 
 #include <cstdint>
 
-namespace osc {
-namespace simple {
-namespace send {
+
+
+namespace osc::simple::send {
 static constexpr auto BUFFER_SIZE = 512U;
-}  // namespace send
-}  // namespace simple
-}  // namespace osc
+} // namespace osc::simple::send
+
+
 
 class OscSimpleSend {
 public:

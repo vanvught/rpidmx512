@@ -33,11 +33,11 @@
 
 #include "debug.h"
 
-namespace rdm {
-namespace personality {
+
+namespace rdm::personality {
 static constexpr auto DESCRIPTION_MAX_LENGTH = 32U;
-}  // namespace personality
-}  // namespace rdm
+} // namespace rdm::personality
+
 
 class RDMPersonality {
 public:

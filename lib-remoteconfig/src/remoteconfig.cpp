@@ -172,8 +172,8 @@
 
 #include "debug.h"
 
-namespace remoteconfig {
-namespace udp {
+
+namespace remoteconfig::udp {
 static constexpr auto PORT = 0x2905;
 namespace get {
 enum class Command {
@@ -203,8 +203,8 @@ enum class Command {
 	DISPLAY
 };
 }  // namespace set
-}  // namespace udp
-}  // namespace remoteconfig
+} // namespace remoteconfig::udp
+
 
 constexpr struct RemoteConfig::Commands RemoteConfig::s_GET[] = {
 		{ &RemoteConfig::HandleReboot,      "reboot##",  8, false },

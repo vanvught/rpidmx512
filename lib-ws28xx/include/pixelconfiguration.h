@@ -189,7 +189,12 @@ public:
 
 			const auto nLedTime = (8U * 1000000U) / m_nClockSpeedHz;
 			const auto nLedsTime = nLedTime * m_nCount * m_nLedsPerPixel;
-			m_nRefreshRate = 1000000U / nLedsTime;
+			if (nLedsTime > 0) {
+			    m_nRefreshRate = 1000000U / nLedsTime;
+			} else {
+			    m_nRefreshRate = 0;
+			    assert(0);
+			}
 		} else {
 			m_bIsRTZProtocol = true;
 

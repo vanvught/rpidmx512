@@ -32,8 +32,8 @@
 #include "configstore.h"
 #include "lightset.h"
 
-namespace osc {
-namespace server {
+
+namespace osc::server {
 struct Params {
 	uint32_t nSetList;
 	uint16_t nIncomingPort;
@@ -54,8 +54,8 @@ struct ParamsMask {
 	static constexpr uint32_t PATH_INFO = (1U << 5);
 	static constexpr uint32_t PATH_BLACKOUT = (1U << 6);
 };
-}  // namespace server
-}  // namespace osc
+} // namespace osc::server
+
 
 class StoreOscServer {
 public:

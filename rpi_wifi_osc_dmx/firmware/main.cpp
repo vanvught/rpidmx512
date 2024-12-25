@@ -40,8 +40,6 @@
 #include "dmxparams.h"
 #include "dmxsend.h"
 
-#include "handler.h"
-
 #if defined(ORANGE_PI)
 # include "flashcodeinstall.h"
 # include "configstore.h"
@@ -140,11 +138,6 @@ int main() {
 
 	console_status(CONSOLE_GREEN, BRIDGE_STARTED);
 	display.TextStatus(BRIDGE_STARTED);
-
-#if defined (ORANGE_PI)
-	while (configStore.Flash())
-		;
-#endif
 
 	hw.WatchdogInit();
 

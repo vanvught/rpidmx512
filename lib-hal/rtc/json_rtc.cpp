@@ -82,8 +82,8 @@ static void staticCallbackFunction([[maybe_unused]] void *p, const char *s) {
 	}
 }
 
-namespace remoteconfig {
-namespace rtc {
+
+namespace remoteconfig::rtc {
 static int atoi(const char *pBuffer, uint32_t nSize) {
 	assert(pBuffer != nullptr);
 	assert(nSize <= 4);
@@ -157,5 +157,5 @@ void json_set_rtc(const char *pBuffer, const uint32_t nBufferSize) {
 
 	DEBUG_EXIT
 }
-}  // namespace rtc
-}  // namespace remoteconfig
+} // namespace remoteconfig::rtc
+

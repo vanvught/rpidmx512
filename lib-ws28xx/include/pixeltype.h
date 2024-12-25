@@ -51,18 +51,18 @@ enum class Map {
 	RGB, RBG, GRB, GBR, BRG, BGR, UNDEFINED
 };
 static constexpr auto TYPES_MAX_NAME_LENGTH  = 8;
-namespace max {
-namespace ledcount {
+
+namespace max::ledcount {
 static constexpr uint32_t RGB = (4 * 170);
 static constexpr uint32_t RGBW = (4 * 128);
-}  // namespace ledcount
-}  // namespace max
+} // namespace max::ledcount
+
 namespace single {
 static constexpr uint32_t RGB = 24;
 static constexpr uint32_t RGBW = 32;
 }  // namespace single
-namespace spi {
-namespace speed {
+
+namespace spi::speed {
 namespace ws2801 {
 static constexpr uint32_t max_hz = 25000000;	///< 25 MHz
 static constexpr uint32_t default_hz = 4000000;	///< 4 MHz
@@ -71,8 +71,8 @@ namespace p9813 {
 static constexpr uint32_t max_hz = 15000000;	///< 15 MHz
 static constexpr uint32_t default_hz = 4000000;	///< 4 MHz
 }  // namespace p9813
-}  // namespace speed
-}  // namespace spi
+} // namespace spi::speed
+
 namespace defaults {
 static constexpr auto TYPE = Type::WS2812B;
 static constexpr auto COUNT = 170;

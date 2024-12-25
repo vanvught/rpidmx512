@@ -97,7 +97,7 @@ void emac_eth_send(void *packet, uint32_t len) {
 	H3_EMAC->TX_CTL1 = value;
 }
 
-void emac_free_pkt(void) {
+void emac_free_pkt() {
 	auto desc_num = p_coherent_region->rx_currdescnum;
 	auto *desc_p = &p_coherent_region->rx_chain[desc_num];
 

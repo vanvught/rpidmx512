@@ -27,8 +27,8 @@
 
 #include "emac/phy.h"
 
-namespace remoteconfig {
-namespace net {
+
+namespace remoteconfig::net {
 uint32_t json_get_phystatus(char *pOutBuffer, const uint32_t nOutBufferSize) {
 	::net::PhyStatus phyStatus;
 	::net::phy_customized_status(phyStatus);
@@ -41,5 +41,5 @@ uint32_t json_get_phystatus(char *pOutBuffer, const uint32_t nOutBufferSize) {
 						::net::phy_string_get_autonegotiation(phyStatus.bAutonegotiation)));
 	return nLength;
 }
-}  // namespace net
-}  // namespace remoteconfig
+} // namespace remoteconfig::net
+

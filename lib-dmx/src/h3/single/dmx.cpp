@@ -250,7 +250,7 @@ static void irq_timer1_dmx_receive([[maybe_unused]] uint32_t clo) {
 /**
  * Interrupt handler for continues receiving DMX512 data.
  */
-static void fiq_dmx_in_handler(void) {
+static void fiq_dmx_in_handler() {
 	sv_nFiqMicrosCurrent = H3_HS_TIMER->CURNT_LO;
 
 	if (EXT_UART->LSR & UART_LSR_BI) {
@@ -377,7 +377,7 @@ static void fiq_dmx_in_handler(void) {
 /**
  * EXT_UART TX interrupt
  */
-static void fiq_dmx_out_handler(void) {
+static void fiq_dmx_out_handler() {
 	h3_gpio_set(GPIO_ANALYZER_CH5);
 
 	uint32_t fifo_cnt = 16;
@@ -405,7 +405,7 @@ static void fiq_dmx_out_handler(void) {
 	h3_gpio_clr(GPIO_ANALYZER_CH5);
 }
 
-static void __attribute__((interrupt("FIQ"))) fiq_dmx(void) {
+static void __attribute__((interrupt("FIQ"))) fiq_dmx() {
 	dmb();
 
 	if (gic_get_active_fiq() == UART_IRQN) {

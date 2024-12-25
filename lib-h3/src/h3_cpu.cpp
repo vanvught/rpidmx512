@@ -2,7 +2,7 @@
  * @file h3_cpu.cpp
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -126,7 +126,7 @@ void h3_cpu_on(h3_cpu_t cpuid) {
 
 	udelay(10);
 
-	volatile uint32_t *p = 0;
+	volatile uint32_t *p = nullptr;
 
 	switch (cpu) {
 	case H3_CPU0:
@@ -142,10 +142,11 @@ void h3_cpu_on(h3_cpu_t cpuid) {
 		p = reinterpret_cast<uint32_t *>(H3_PRCM->CPU3_PWR_CLAMP);
 		break;
 	default:
+		return;
 		break;
 	}
 
-	assert(p != 0);
+	assert(p != nullptr);
 
 	*p = 0xFE;
 	udelay(20);
