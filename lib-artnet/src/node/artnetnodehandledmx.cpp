@@ -42,6 +42,7 @@
 #include "artnet.h"
 
 #include "lightsetdata.h"
+#include "lightset_data.h"
 
 void ArtNetNode::UpdateMergeStatus(const uint32_t nPortIndex) {
 	if (!m_State.IsMergeMode) {
@@ -207,11 +208,11 @@ void ArtNetNode::HandleDmx() {
 			}
 
 			if ((m_State.IsSynchronousMode) && ((m_OutputPort[nPortIndex].GoodOutput & artnet::GoodOutput::OUTPUT_IS_MERGING) != artnet::GoodOutput::OUTPUT_IS_MERGING)) {
-				lightset::Data::Set(m_pLightSet, nPortIndex);
+				lightset::data_set(m_pLightSet, nPortIndex);
 				m_OutputPort[nPortIndex].IsDataPending = true;
 				SendDiag(artnet::PriorityCodes::DIAG_LOW, "%u: Buffering data", nPortIndex);
 			} else {
-				lightset::Data::Output(m_pLightSet, nPortIndex);
+				lightset::data_output(m_pLightSet, nPortIndex);
 
 				if (!m_OutputPort[nPortIndex].IsTransmitting) {
 					m_pLightSet->Start(nPortIndex);

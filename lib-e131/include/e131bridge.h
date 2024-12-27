@@ -2,7 +2,7 @@
  * @file e131bridge.h
  *
  */
-/* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,6 +36,7 @@
 
 #include "lightset.h"
 #include "lightsetdata.h"
+#include "lightset_data.h"
 
 #if defined(ARTNET_VERSION) && (ARTNET_VERSION >= 4)
 # define E131_HAVE_ARTNET
@@ -266,7 +267,8 @@ public:
 	void Clear(const uint32_t nPortIndex) {
 		assert(nPortIndex < e131bridge::MAX_PORTS);
 
-		lightset::Data::OutputClear(m_pLightSet, nPortIndex);
+		lightset::Data::Clear(nPortIndex);
+		lightset::data_output(m_pLightSet, nPortIndex);
 
 		if ((m_Bridge.Port[nPortIndex].direction == lightset::PortDir::OUTPUT) && !m_OutputPort[nPortIndex].IsTransmitting) {
 			m_pLightSet->Start(nPortIndex);

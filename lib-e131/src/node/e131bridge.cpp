@@ -45,6 +45,7 @@
 
 #include "lightset.h"
 #include "lightsetdata.h"
+#include "lightset_data.h"
 
 #include "hardware.h"
 #include "network.h"
@@ -577,7 +578,7 @@ void E131Bridge::HandleDmx() {
 			const auto doUpdate = ((!m_State.IsSynchronized) || (m_State.bDisableSynchronize));
 
 			if (doUpdate) {
-				lightset::Data::Output(m_pLightSet, nPortIndex);
+				lightset::data_output(m_pLightSet, nPortIndex);
 
 				if (!m_OutputPort[nPortIndex].IsTransmitting) {
 					m_pLightSet->Start(nPortIndex);
@@ -585,7 +586,7 @@ void E131Bridge::HandleDmx() {
 					m_State.IsChanged = true;
 				}
 			} else {
-				lightset::Data::Set(m_pLightSet, nPortIndex);
+				lightset::data_set(m_pLightSet, nPortIndex);
 				m_OutputPort[nPortIndex].IsDataPending = true;
 			}
 

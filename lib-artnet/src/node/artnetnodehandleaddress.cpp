@@ -33,6 +33,7 @@
 #include "artnetstore.h"
 
 #include "lightsetdata.h"
+#include "lightset_data.h"
 #include "hardware.h"
 
 #include "debug.h"
@@ -451,7 +452,8 @@ void ArtNetNode::HandleAddress() {
 	case artnet::PortCommand::CLR_3:
 #endif
 		if (m_Node.Port[nPage].protocol == artnet::PortProtocol::ARTNET) {
-			lightset::Data::OutputClear(m_pLightSet, nPage);
+			lightset::Data::Clear(nPage);
+			lightset::data_output(m_pLightSet, nPage);
 		}
 #if (ARTNET_VERSION >= 4)
 		if (m_Node.Port[nPage].protocol == artnet::PortProtocol::SACN) {

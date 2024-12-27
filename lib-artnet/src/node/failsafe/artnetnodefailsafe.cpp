@@ -2,7 +2,7 @@
  * @file artnetnodefailsafe.cpp
  *
  */
-/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,7 @@
 #include "artnetnode.h"
 #include "artnetnodefailsafe.h"
 #include "lightsetdata.h"
+#include "lightset_data.h"
 
 #include "debug.h"
 
@@ -56,7 +57,7 @@ void ArtNetNode::FailSafePlayback() {
 	for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
 		if (m_Node.Port[nPortIndex].direction == lightset::PortDir::OUTPUT) {
 			artnetnode::failsafe_read(nPortIndex, const_cast<uint8_t *>(lightset::Data::Backup(nPortIndex)));
-			lightset::Data::Output(m_pLightSet, nPortIndex);
+			lightset::data_output(m_pLightSet, nPortIndex);
 
 			if (!m_OutputPort[nPortIndex].IsTransmitting) {
 				m_pLightSet->Start(nPortIndex);

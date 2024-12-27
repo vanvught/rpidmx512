@@ -73,16 +73,8 @@ public:
 		 Get().IMergeSourceB(nPortIndex, pData, nLength, mergeMode);
 	}
 
-	static void Set(LightSet *const pLightSet, uint32_t nPortIndex) {
-		Get().ISet(pLightSet, nPortIndex);
-	}
-
-	static void Output(LightSet *const pLightSet, uint32_t nPortIndex) {
-		Get().IOutput(pLightSet, nPortIndex);
-	}
-
-	static void OutputClear(LightSet *const pLightSet, uint32_t nPortIndex) {
-		Get().IOutputClear(pLightSet, nPortIndex);
+	static void Clear(uint32_t nPortIndex) {
+		Get().IClear(nPortIndex);
 	}
 
 	static void ClearLength(const uint32_t nPortIndex) {
@@ -144,27 +136,34 @@ private:
 		memcpy(m_OutputPort[nPortIndex].data, pData, nLength);
 	}
 
-	void ISet(LightSet *const pLightSet, const uint32_t nPortIndex) const {
-		assert(pLightSet != nullptr);
-		assert(nPortIndex < PORTS);
+//	void ISet(LightSet *const pLightSet, const uint32_t nPortIndex) const {
+//		assert(pLightSet != nullptr);
+//		assert(nPortIndex < PORTS);
+//
+//		pLightSet->SetData(nPortIndex, m_OutputPort[nPortIndex].data, m_OutputPort[nPortIndex].nLength, false);
+//	}
+//
+//	void IOutput(LightSet *const pLightSet, const uint32_t nPortIndex) const {
+//		assert(pLightSet != nullptr);
+//		assert(nPortIndex < PORTS);
+//
+//		pLightSet->SetData(nPortIndex, m_OutputPort[nPortIndex].data, m_OutputPort[nPortIndex].nLength, true);
+//	}
+//
+//	void IOutputClear(LightSet *const pLightSet, const uint32_t nPortIndex) {
+//		assert(pLightSet != nullptr);
+//		assert(nPortIndex < PORTS);
+//
+//		memset(m_OutputPort[nPortIndex].data, 0, dmx::UNIVERSE_SIZE);
+//		m_OutputPort[nPortIndex].nLength = dmx::UNIVERSE_SIZE;
+//		IOutput(pLightSet, nPortIndex);
+//	}
 
-		pLightSet->SetData(nPortIndex, m_OutputPort[nPortIndex].data, m_OutputPort[nPortIndex].nLength, false);
-	}
-
-	void IOutput(LightSet *const pLightSet, const uint32_t nPortIndex) const {
-		assert(pLightSet != nullptr);
-		assert(nPortIndex < PORTS);
-
-		pLightSet->SetData(nPortIndex, m_OutputPort[nPortIndex].data, m_OutputPort[nPortIndex].nLength, true);
-	}
-
-	void IOutputClear(LightSet *const pLightSet, const uint32_t nPortIndex) {
-		assert(pLightSet != nullptr);
+	void IClear(const uint32_t nPortIndex) {
 		assert(nPortIndex < PORTS);
 
 		memset(m_OutputPort[nPortIndex].data, 0, dmx::UNIVERSE_SIZE);
 		m_OutputPort[nPortIndex].nLength = dmx::UNIVERSE_SIZE;
-		IOutput(pLightSet, nPortIndex);
 	}
 
 	void IClearLength(const uint32_t nPortIndex) {
