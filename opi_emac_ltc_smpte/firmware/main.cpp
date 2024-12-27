@@ -511,27 +511,28 @@ int main() {
 		hw.WatchdogFeed();
 		nw.Run();
 		// Run the reader
+		// Handles MIDI Quarter Frame output messages
 		switch (ltcSource) {
 		case ltc::Source::LTC:
 			ltcReader.Run();
 			break;
 		case ltc::Source::ARTNET:
-			artnetReader.Run();		// Handles MIDI Quarter Frame output messages
+			artnetReader.Run();
 			break;
 		case ltc::Source::MIDI:
-			midiReader.Run();		// Handles MIDI Quarter Frame output messages
+			midiReader.Run();
 			break;
 		case ltc::Source::TCNET:
-			tcnetReader.Run();		// Handles MIDI Quarter Frame output messages
+			tcnetReader.Run();
 			break;
 		case ltc::Source::INTERNAL:
-			ltcGenerator.Run();		// Handles MIDI Quarter Frame output messages
+			ltcGenerator.Run();
 			break;
 		case ltc::Source::APPLEMIDI:
-			rtpMidiReader.Run();	// Handles status led
+			rtpMidiReader.Run();
 			break;
 		case ltc::Source::ETC:
-			ltcEtcReader.Run();		// Handles MIDI Quarter Frame output messages
+			ltcEtcReader.Run();
 			break;
 		case ltc::Source::SYSTIME:
 			sysTimeReader.Run();
