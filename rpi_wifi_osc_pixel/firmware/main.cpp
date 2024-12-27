@@ -171,7 +171,7 @@ int main() {
 
 	for (;;) {
 		hw.WatchdogFeed();
-		server.Run();
+		nw.Run();
 		hw.Run();
 	}
 }

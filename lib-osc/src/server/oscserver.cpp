@@ -186,25 +186,16 @@ bool OscServer::IsDmxDataChanged(const uint8_t* pData, uint16_t nStartChannel, u
 	return isChanged;
 }
 
-void OscServer::Run() {
-	uint32_t nRemoteIp;
-	uint16_t nRemotePort;
-
-	const auto nBytesReceived = Network::Get()->RecvFrom(m_nHandle, reinterpret_cast<const void **>(&s_pUdpBuffer), &nRemoteIp, &nRemotePort);
-
-	if (__builtin_expect((nBytesReceived == 0), 1)) {
-		return;
-	}
-
+void OscServer::Input(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, [[maybe_unused]] uint16_t nFromPort) {
 	auto bIsDmxDataChanged = false;
 
-	OscSimpleMessage Msg(s_pUdpBuffer, nBytesReceived);
+	OscSimpleMessage Msg(pBuffer, nSize);
 
-	debug_dump(s_pUdpBuffer, nBytesReceived);
+	auto *pUdpBuffer = reinterpret_cast<const char *>(pBuffer);
 
-	auto *pUdpBuffer = reinterpret_cast<const char *>(s_pUdpBuffer);
+	debug_dump(pUdpBuffer, nSize);
 
-	DEBUG_PRINTF("[%d] path : %s", nBytesReceived, osc::get_path(const_cast<char *>(pUdpBuffer), nBytesReceived));
+	DEBUG_PRINTF("[%d] path : %s", nSize, osc::get_path(const_cast<char *>(pUdpBuffer), nSize));
 
 	if (osc::is_match(pUdpBuffer, s_aPath)) {
 		const auto nArgc = Msg.GetArgc();
@@ -280,8 +271,6 @@ void OscServer::Run() {
 	}
 
 	if ((m_pOscServerHandler != nullptr) && (osc::is_match(pUdpBuffer, s_aPathBlackOut))) {
-		OscSimpleMessage Msg(s_pUdpBuffer, nBytesReceived);
-
 		if (Msg.GetType(0) != osc::type::FLOAT) {
 			DEBUG_PUTS("No float");
 			return;
@@ -341,19 +330,19 @@ void OscServer::Run() {
 	}
 
 	if (osc::is_match(pUdpBuffer, "/ping")) {
-		DEBUG_PUTS("ping received");
-		OscSimpleSend MsgSend(m_nHandle, nRemoteIp, m_nPortOutgoing, "/pong", nullptr);
+		OscSimpleSend MsgSend(m_nHandle, nFromIp, m_nPortOutgoing, "/pong", nullptr);
 
+		DEBUG_PUTS("ping received, pong sent");
 		return;
 	}
 
 	if (osc::is_match(pUdpBuffer, s_aPathInfo)) {
-		OscSimpleSend MsgSendInfo(m_nHandle, nRemoteIp, m_nPortOutgoing, "/info/os", "s", m_Os);
-		OscSimpleSend MsgSendModel(m_nHandle, nRemoteIp, m_nPortOutgoing, "/info/model", "s", m_pModel);
-		OscSimpleSend MsgSendSoc(m_nHandle, nRemoteIp, m_nPortOutgoing, "/info/soc", "s", m_pSoC);
+		OscSimpleSend MsgSendInfo(m_nHandle, nFromIp, m_nPortOutgoing, "/info/os", "s", m_Os);
+		OscSimpleSend MsgSendModel(m_nHandle, nFromIp, m_nPortOutgoing, "/info/model", "s", m_pModel);
+		OscSimpleSend MsgSendSoc(m_nHandle, nFromIp, m_nPortOutgoing, "/info/soc", "s", m_pSoC);
 
 		if (m_pOscServerHandler != nullptr) {
-			m_pOscServerHandler->Info(m_nHandle, nRemoteIp, m_nPortOutgoing);
+			m_pOscServerHandler->Info(m_nHandle, nFromIp, m_nPortOutgoing);
 		}
 
 		return;

@@ -117,7 +117,6 @@ int main() {
 	for (;;) {
 		hw.WatchdogFeed();
 		nw.Run();
-		server.Run();
 		remoteConfig.Run();
 		configStore.Flash();
 

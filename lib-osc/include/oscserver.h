@@ -68,10 +68,8 @@ public:
 		DEBUG_ENTRY
 
 		assert(m_nHandle == -1);
-		m_nHandle = Network::Get()->Begin(m_nPortIncoming);
+		m_nHandle = Network::Get()->Begin(m_nPortIncoming, staticCallbackFunction);
 		assert(m_nHandle != -1);
-
-		OscSimpleSend MsgSend(m_nHandle, Network::Get()->GetIp() | ~(Network::Get()->GetNetmask()), m_nPortIncoming, "/ping", nullptr);
 
 		Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
 
@@ -101,7 +99,7 @@ public:
 		printf(" Partial Transmission : %s\n", m_bPartialTransmission ? "Yes" : "No");
 	}
 
-	void Run();
+	void Input(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort);
 
 	void SetOutput(LightSet *pLightSet) {
 		assert(pLightSet != nullptr);
@@ -172,6 +170,18 @@ private:
 	int GetChannel(const char *p);
 	bool IsDmxDataChanged(const uint8_t *pData, uint16_t nStartChannel, uint32_t nLength);
 
+	/**
+	 * @brief Static callback function for receiving UDP packets.
+	 *
+	 * @param pBuffer Pointer to the packet buffer.
+	 * @param nSize Size of the packet buffer.
+	 * @param nFromIp IP address of the sender.
+	 * @param nFromPort Port number of the sender.
+	 */
+	void static staticCallbackFunction(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
+		s_pThis->Input(pBuffer, nSize, nFromIp, nFromPort);
+	}
+
 private:
 	uint16_t m_nPortIncoming { osc::server::DefaultPort::INCOMING };
 	uint16_t m_nPortOutgoing { osc::server::DefaultPort::OUTGOING };
@@ -197,7 +207,6 @@ private:
 	static inline uint8_t s_pData[lightset::dmx::UNIVERSE_SIZE];
 	static inline uint8_t s_pOsc[lightset::dmx::UNIVERSE_SIZE];
 
-	static inline const uint8_t *s_pUdpBuffer;
 	static inline OscServer *s_pThis;
 };
 
