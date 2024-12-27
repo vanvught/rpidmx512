@@ -67,7 +67,7 @@ DmxSerial::~DmxSerial() {
 
 void DmxSerial::Init() {
 	assert(m_nHandle == -1);
-	m_nHandle = Network::Get()->Begin(UDP::PORT);
+	m_nHandle = Network::Get()->Begin(UDP::PORT, staticCallbackFunction);
 	assert(m_nHandle != -1);
 
 	ScanDirectory();
@@ -253,16 +253,6 @@ void DmxSerial::EnableTFTP(bool bEnableTFTP) {
 	}
 
 	DEBUG_EXIT
-}
-
-void DmxSerial::Run() {
-	HandleUdp();
-
-	if (m_pDmxSerialTFTP == nullptr) {
-		return;
-	}
-
-	m_pDmxSerialTFTP->Run();
 }
 
 bool DmxSerial::DeleteFile(int32_t nFileNumber) {
