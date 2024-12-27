@@ -182,9 +182,6 @@ protected:
 		}
 
 		Network::Get()->SendTo(m_nHandleMidi, pBuffer, nLength, m_SessionStatus.nRemoteIp, m_SessionStatus.nRemotePortMidi);
-
-		debug_dump(&pBuffer, nLength);
-
 		return true;
 	}
 

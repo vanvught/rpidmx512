@@ -30,7 +30,6 @@
 
 #include "hardware.h"
 #include "network.h"
-#include "networkconst.h"
 
 #include "display.h"
 #include "displayudfparams.h"

@@ -2,7 +2,7 @@
  * @file showfile.h
  *
  */
-/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -133,11 +133,6 @@ public:
 
 	void Run() {
 		ShowFileFormat::ShowFileRun(m_Status == showfile::Status::PLAYING);
-#if !defined(CONFIG_SHOWFILE_DISABLE_TFTP)
-		if (m_pShowFileTFTP != nullptr) {
-			m_pShowFileTFTP->Run();
-		}
-#endif
 	}
 
 	void Print() {

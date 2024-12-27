@@ -30,12 +30,7 @@
 # error This file should not be included
 #endif
 
-#if !defined (HAVE_NET_HANDLE)
-# define HAVE_NET_HANDLE
-#endif
-
 namespace net {
-void dhcp_run();
 #if defined (CONFIG_NET_ENABLE_PTP)
 void ptp_run();
 #endif
@@ -55,14 +50,10 @@ void ptp_run();
 
 #include "emac/net_link_check.h"
 
-#define HAVE_NET_HANDLE
-
 class Network {
 public:
 	Network();
 	~Network() = default;
-
-	void Print();
 
 	void MacAddressCopyTo(uint8_t *pMacAddress) {
 		memcpy(pMacAddress, net::netif_hwaddr(), NETIF_MAX_HWADDR_LEN);
@@ -96,7 +87,7 @@ public:
 	 */
 
 	bool IsDhcpCapable() const {
-		return m_IsDhcpCapable;
+		return true;
 	}
 
 	void EnableDhcp();
@@ -119,7 +110,7 @@ public:
 	}
 
 	bool IsZeroconfCapable() const {
-		return m_IsZeroconfCapable;
+		return true;
 	}
 
 	/*
@@ -274,8 +265,6 @@ public:
 
 private:
 	net::Link s_lastState { net::Link::STATE_DOWN };
-	bool m_IsDhcpCapable { true };
-	bool m_IsZeroconfCapable { true };
 
 	char m_aIfName[IFNAMSIZ];
 	char m_aHostName[network::HOSTNAME_SIZE];

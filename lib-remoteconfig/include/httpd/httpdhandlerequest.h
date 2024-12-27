@@ -63,7 +63,7 @@ private:
 	uint32_t m_nConnectionHandle;
 	int32_t m_nHandle;
 	uint32_t m_nContentSize { 0 };
-	uint32_t m_nFileDataLength { 0 };
+	uint32_t m_nRequestDataLength { 0 };
 	uint32_t m_nRequestContentLength { 0 };
 	uint32_t m_nBytesReceived { 0 };
 

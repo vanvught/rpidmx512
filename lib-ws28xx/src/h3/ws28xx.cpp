@@ -45,8 +45,6 @@
 
 #include "debug.h"
 
-WS28xx *WS28xx::s_pThis;
-
 WS28xx::WS28xx()  {
 	DEBUG_ENTRY
 

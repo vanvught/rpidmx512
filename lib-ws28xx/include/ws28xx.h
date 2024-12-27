@@ -2,7 +2,7 @@
  * @file ws28xx.h
  *
  */
-/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -71,7 +71,7 @@ private:
 	uint8_t *m_pBuffer { nullptr };
 	uint8_t *m_pBlackoutBuffer { nullptr };
 
-	static WS28xx *s_pThis;
+	static inline WS28xx *s_pThis;
 };
 
 #endif /* WS28XX_H_ */

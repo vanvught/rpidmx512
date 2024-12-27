@@ -24,6 +24,10 @@
  * THE SOFTWARE.
  */
 
+#ifdef DEBUG_NETWORK
+# undef NDEBUG
+#endif
+
 #include <cstdio>
 #include <cstdint>
 #include <unistd.h>

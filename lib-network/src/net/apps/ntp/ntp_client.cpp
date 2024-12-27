@@ -122,6 +122,14 @@ static void ntp_client_timer([[maybe_unused]] TimerHandle_t nHandle) {
 	}
 }
 
+static void print_ntp_time([[maybe_unused]] const char *pText, [[maybe_unused]] const struct ntp::TimeStamp *pNtpTime) {
+#ifndef NDEBUG
+	const auto nSeconds = static_cast<time_t>(pNtpTime->nSeconds - ntp::JAN_1970);
+	const auto *pTm = localtime(&nSeconds);
+	printf("%s %02d:%02d:%02d.%06d %04d [%u]\n", pText, pTm->tm_hour, pTm->tm_min,  pTm->tm_sec, USEC(pNtpTime->nFraction), pTm->tm_year + 1900, pNtpTime->nSeconds);
+#endif
+}
+
 /*
  * Seconds and Fractions since 01.01.1900
  */
@@ -135,8 +143,8 @@ static void get_time_ntp_format(uint32_t &nSeconds, uint32_t &nFraction) {
 static void send() {
 	get_time_ntp_format(s_ntpClient.T1.nSeconds, s_ntpClient.T1.nFraction);
 
-	s_ntpClient.Request.OriginTimestamp_s = __builtin_bswap32(s_ntpClient.T1.nSeconds);
-	s_ntpClient.Request.OriginTimestamp_f = __builtin_bswap32(s_ntpClient.T1.nFraction);
+	s_ntpClient.Request.TransmitTimestamp_s = __builtin_bswap32(s_ntpClient.T1.nSeconds);
+	s_ntpClient.Request.TransmitTimestamp_f = __builtin_bswap32(s_ntpClient.T1.nFraction);
 
 	Network::Get()->SendTo(s_ntpClient.nHandle, &s_ntpClient.Request, REQUEST_SIZE, s_ntpClient.nServerIp, ntp::UDP_PORT);
 
@@ -153,14 +161,6 @@ static void difference(const struct ntp::TimeStamp& Start, const struct ntp::Tim
 
 	nDiffSeconds = r.tv_sec;
 	nDiffMicroSeconds = r.tv_usec;
-}
-
-static void print_ntp_time([[maybe_unused]] const char *pText, [[maybe_unused]] const struct ntp::TimeStamp *pNtpTime) {
-#ifndef NDEBUG
-	const auto nSeconds = static_cast<time_t>(pNtpTime->nSeconds - ntp::JAN_1970);
-	const auto *pTm = localtime(&nSeconds);
-	printf("%s %02d:%02d:%02d.%06d %04d [%u]\n", pText, pTm->tm_hour, pTm->tm_min,  pTm->tm_sec, USEC(pNtpTime->nFraction), pTm->tm_year + 1900, pNtpTime->nSeconds);
-#endif
 }
 
 static void set_time_of_day() {
