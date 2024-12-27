@@ -54,8 +54,6 @@
 
 #include "displayhandler.h"
 
-void Hardware::RebootHandler() { }
-
 int main() {
 	Hardware hw;
 	Display display;
@@ -103,11 +101,6 @@ int main() {
 	RemoteConfigParams remoteConfigParams;
 	remoteConfigParams.Load();
 	remoteConfigParams.Set(&remoteConfig);
-
-	while (configStore.Flash())
-		;
-
-	mdns_print(); //	mDns.Print();
 
 	for (uint32_t i = 1; i < 7 ; i++) {
 		display.ClearLine(i);

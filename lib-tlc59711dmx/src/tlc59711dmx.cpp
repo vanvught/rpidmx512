@@ -66,6 +66,7 @@ TLC59711Dmx::~TLC59711Dmx() {
 
 void TLC59711Dmx::Start([[maybe_unused]] uint32_t nPortIndex) {
 	if (m_bIsStarted) {
+		assert(m_pTLC59711 != nullptr);
 		return;
 	}
 
@@ -169,7 +170,7 @@ void TLC59711Dmx::SetData([[maybe_unused]] uint32_t nPortIndex, const uint8_t *p
 			nValue = m_ArrayMaxValue[i];
 		}
 #endif
-		m_pTLC59711->Set(i, nValue);
+		m_pTLC59711->Set(i, nValue);// NOLINT(clang-analyzer-core.CallAndMessage): Start() ensures m_pTLC59711 is not nullptr
 
 		p++;
 		nDmxAddress++;

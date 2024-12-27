@@ -62,7 +62,7 @@
 
 #include "factorydefaults.h"
 
-void Hardware::RebootHandler() {}
+
 
 int main() {
 	Hardware hw;

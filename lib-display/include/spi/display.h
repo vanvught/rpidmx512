@@ -30,15 +30,17 @@
 # error
 #endif
 
-#if defined (CONFIG_SPI_LCD_OPTIMIZE_O2) || defined (CONFIG_SPI_LCD_OPTIMIZE_O3)
-# pragma GCC push_options
-# if defined (CONFIG_SPI_LCD_OPTIMIZE_O2)
-#  pragma GCC optimize ("O2")
-# else
-#  pragma GCC optimize ("O3")
+#if !defined(__clang__)
+# if defined (CONFIG_SPI_LCD_OPTIMIZE_O2) || defined (CONFIG_SPI_LCD_OPTIMIZE_O3)
+#  pragma GCC push_options
+#  if defined (CONFIG_SPI_LCD_OPTIMIZE_O2)
+#   pragma GCC optimize ("O2")
+#  else
+#   pragma GCC optimize ("O3")
+#  endif
+#  pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#  pragma GCC optimize ("-fprefetch-loop-arrays")
 # endif
-# pragma GCC optimize ("no-tree-loop-distribute-patterns")
-# pragma GCC optimize ("-fprefetch-loop-arrays")
 #endif
 
 #include <cstdarg>
@@ -342,7 +344,9 @@ private:
 	static constexpr uint16_t COLOR_FOREGROUND = 0xFFE0;
 };
 
-#if defined (CONFIG_SPI_LCD_OPTIMIZE)
-# pragma GCC pop_options
+#if !defined(__clang__)
+# if defined (CONFIG_SPI_LCD_OPTIMIZE_O2) || defined (CONFIG_SPI_LCD_OPTIMIZE_O3)
+#  pragma GCC pop_options
+# endif
 #endif
 #endif /* SPI_DISPLAY_H_ */

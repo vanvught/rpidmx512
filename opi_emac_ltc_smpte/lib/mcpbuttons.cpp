@@ -27,11 +27,10 @@
 #include <cstdio>
 #include <cassert>
 
-#include "mcpbuttons.h"
 #include "hardware.h"
 #include "network.h"
 
-#include "arm/synchronize.h"
+#include "mcpbuttons.h"
 
 #include "ltcdisplayrgb.h"
 #include "ltcparams.h"
@@ -41,6 +40,7 @@
 #include "rotaryencoder.h"
 
 #include "hal_i2c.h"
+#include "hal_gpio.h"
 #include "mcp23x17.h"
 
 #include "displayedittimecode.h"
@@ -53,10 +53,6 @@
 
 #include "arm/ltcgenerator.h"
 #include "arm/systimereader.h"
-
-// Interrupt
-#include "board/h3_opi_zero.h"
-#include "h3_gpio.h"
 
 #include "configstore.h"
 
@@ -177,16 +173,18 @@ void McpButtons::UpdateDisplays(const ltc::Source ltcSource) {
 		LtcDisplayMax7219::Get()->WriteChar(nSource);
 		return;
 	}
-
+#if !defined (CONFIG_LTC_DISABLE_WS28XX)
 	if (!ltc::g_DisabledOutputs.bWS28xx){
 		LtcDisplayRgb::Get()->WriteChar(nSource);
 		return;
 	}
-
+#endif
+#if !defined (CONFIG_LTC_DISABLE_RGB_PANEL)
 	if (!ltc::g_DisabledOutputs.bRgbPanel) {
 		LtcDisplayRgb::Get()->ShowSource(ltcSource);
 		return;
 	}
+#endif
 }
 
 bool McpButtons::Check() {
@@ -212,8 +210,8 @@ bool McpButtons::Check() {
 
 	UpdateDisplays(m_tLtcReaderSource);
 
-	h3_gpio_fsel(gpio::INTA, GPIO_FSEL_INPUT); // PA7
-	h3_gpio_set_pud(gpio::INTA, GPIO_PULL_UP);
+	FUNC_PREFIX(gpio_fsel(gpio::INTA, GPIO_FSEL_INPUT));
+	FUNC_PREFIX(gpio_set_pud(gpio::INTA, GPIO_PULL_UP));
 
 	DEBUG_EXIT
 	return true;
@@ -227,7 +225,7 @@ bool McpButtons::Wait(ltc::Source& ltcSource, struct ltc::TimeCode& StartTimeCod
 		return false;
 	}
 
-	if (__builtin_expect(h3_gpio_lev(gpio::INTA) == LOW, 0)) {
+	if (__builtin_expect(FUNC_PREFIX(gpio_lev(gpio::INTA)) == 0, 0)) {
 		m_nLedTickerMax = UINT32_MAX;
 
 		const auto nPortA = m_I2C.ReadRegister(mcp23x17::REG_GPIOA);
@@ -407,7 +405,7 @@ void McpButtons::Run() {
 		return;
 	}
 
-	if (__builtin_expect(h3_gpio_lev(gpio::INTA) == LOW, 0)) {
+	if (__builtin_expect(FUNC_PREFIX(gpio_lev(gpio::INTA)) == 0, 0)) {
 
 		const auto nPortA = m_I2C.ReadRegister(mcp23x17::REG_GPIOA);
 		const uint8_t nButtonsChanged = (nPortA ^ m_nPortAPrevious) & nPortA;

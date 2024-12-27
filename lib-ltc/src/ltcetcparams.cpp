@@ -2,7 +2,7 @@
  * @file ltcetcparams.cpp
  *
  */
-/* Copyright (C) 2022-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2022-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,12 +23,8 @@
  * THE SOFTWARE.
  */
 
-#if !defined(__clang__)	// Needed for compiling on MacOS
-# pragma GCC push_options
-# pragma GCC optimize ("Os")
-#endif
-
 #include <cstdint>
+#include <cstdio>
 #include <cstring>
 #include <cassert>
 
@@ -147,9 +143,9 @@ void LtcEtcParams::callbackFunction(const char *pLine) {
 
 	if (Sscan::Char(pLine, LtcEtcParamsConst::UDP_TERMINATOR, aTerminator, nLength) == Sscan::OK) {
 		aTerminator[nLength] = '\0';
-		const auto terminator = ltc::etc::get_udp_terminator(aTerminator);
+		const auto terminator = ltcetc::get_udp_terminator(aTerminator);
 
-		if ((terminator == ltc::etc::UdpTerminator::NONE) || (terminator == ltc::etc::UdpTerminator::UNDEFINED)) {
+		if ((terminator == ltcetc::UdpTerminator::NONE) || (terminator == ltcetc::UdpTerminator::UNDEFINED)) {
 			m_Params.nUdpTerminator = 0;
 			m_Params.nSetList &= ~ltcetcparams::Mask::UDP_TERMINATOR;
 		} else {
@@ -181,7 +177,7 @@ void LtcEtcParams::Builder(const struct ltcetcparams::Params *ptLtcEtcParams, ch
 	builder.Add(LtcEtcParamsConst::SOURCE_PORT, m_Params.nSourcePort, isMaskSet(ltcetcparams::Mask::SOURCE_PORT));
 
 	builder.AddComment("UDP Terminator: None/CR/LF/CRLF");
-	builder.Add(LtcEtcParamsConst::UDP_TERMINATOR, ltc::etc::get_udp_terminator(static_cast<ltc::etc::UdpTerminator>(m_Params.nUdpTerminator)), isMaskSet(ltcetcparams::Mask::UDP_TERMINATOR));
+	builder.Add(LtcEtcParamsConst::UDP_TERMINATOR, ltcetc::get_udp_terminator(static_cast<ltcetc::UdpTerminator>(m_Params.nUdpTerminator)), isMaskSet(ltcetcparams::Mask::UDP_TERMINATOR));
 
 	nSize = builder.GetSize();
 }
@@ -206,7 +202,7 @@ void LtcEtcParams::Set() {
 	}
 
 	if (isMaskSet(ltcetcparams::Mask::UDP_TERMINATOR)) {
-		p->SetUdpTerminator(static_cast<ltc::etc::UdpTerminator>(m_Params.nUdpTerminator));
+		p->SetUdpTerminator(static_cast<ltcetc::UdpTerminator>(m_Params.nUdpTerminator));
 	}
 }
 
@@ -216,10 +212,6 @@ void LtcEtcParams::staticCallbackFunction(void *p, const char *s) {
 
 	(static_cast<LtcEtcParams *>(p))->callbackFunction(s);
 }
-
-#include <cstdio>
-
-#include "network.h"
 
 void LtcEtcParams::Dump() {
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, LtcEtcParamsConst::FILE_NAME);
@@ -241,6 +233,6 @@ void LtcEtcParams::Dump() {
 	}
 
 	if (isMaskSet(ltcetcparams::Mask::UDP_TERMINATOR)) {
-		printf(" %s=%s [%u]\n", LtcEtcParamsConst::UDP_TERMINATOR, ltc::etc::get_udp_terminator(static_cast<ltc::etc::UdpTerminator>(m_Params.nUdpTerminator)) , m_Params.nUdpTerminator);
+		printf(" %s=%s [%u]\n", LtcEtcParamsConst::UDP_TERMINATOR, ltcetc::get_udp_terminator(static_cast<ltcetc::UdpTerminator>(m_Params.nUdpTerminator)) , m_Params.nUdpTerminator);
 	}
 }

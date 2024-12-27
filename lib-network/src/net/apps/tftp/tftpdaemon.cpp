@@ -146,12 +146,10 @@ void TFTPDaemon::Init() {
 }
 
 void TFTPDaemon::Input(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
-	if (pBuffer != nullptr) {
-		m_pBuffer = const_cast<uint8_t *>(pBuffer);
-		m_nLength = nSize;
-		m_nFromIp = nFromIp;
-		m_nFromPort = nFromPort;
-	}
+	m_pBuffer = const_cast<uint8_t *>(pBuffer);
+	m_nLength = nSize;
+	m_nFromIp = nFromIp;
+	m_nFromPort = nFromPort;
 
 	switch (m_nState) {
 	case TFTPState::WAITING_RQ:
@@ -177,16 +175,6 @@ void TFTPDaemon::Input(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp,
 		__builtin_unreachable();
 		break;
 	}
-}
-
-void TFTPDaemon::Run() {
-	m_nLength = Network::Get()->RecvFrom(m_nIdx, const_cast<const void **>(reinterpret_cast<void **>(&m_pBuffer)), &m_nFromIp, &m_nFromPort);
-
-	if (__builtin_expect((m_nLength <= tftp::min::FILENAME_MODE_LEN), 1)) {
-		return;
-	}
-
-	Input(nullptr, 0, 0, 0);
 }
 
 void TFTPDaemon::HandleRequest() {

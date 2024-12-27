@@ -45,14 +45,14 @@
 # error "Cannot be both RDMNet Device and RDM Responder"
 #endif
 
-namespace rdm {
-namespace responder {
+
+namespace rdm::responder {
 static constexpr int NO_DATA = 0;
 static constexpr int DISCOVERY_RESPONSE = -1;
 static constexpr int INVALID_DATA_RECEIVED = -2;
 static constexpr int INVALID_RESPONSE = -3;
-}  // namespace responder
-}  // namespace rdm
+} // namespace rdm::responder
+
 
 namespace configstore {
 void delay();

@@ -2,10 +2,7 @@
  * @file artnetnodehandleaddress.cpp
  *
  */
-/**
- * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
- */
-/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,6 +33,7 @@
 #include "artnetstore.h"
 
 #include "lightsetdata.h"
+#include "lightset_data.h"
 #include "hardware.h"
 
 #include "debug.h"
@@ -64,7 +62,7 @@ void ArtNetNode::SetLocalMerging() {
 					m_Node.Port[nOutputPortIndex].PortAddress);
 
 			if ((m_Node.Port[nInputPortIndex].protocol == m_Node.Port[nOutputPortIndex].protocol) &&
-				(m_Node.Port[nInputPortIndex].PortAddress == m_Node.Port[nOutputPortIndex].PortAddress)) {
+					(m_Node.Port[nInputPortIndex].PortAddress == m_Node.Port[nOutputPortIndex].PortAddress)) {
 
 				if (!m_Node.Port[nOutputPortIndex].bLocalMerge) {
 					m_OutputPort[nOutputPortIndex].SourceA.nIp = Network::Get()->GetIp();
@@ -383,9 +381,11 @@ void ArtNetNode::HandleAddress() {
 		break;
 
 	case artnet::PortCommand::MERGE_LTP_O:
+#if (ARTNET_VERSION < 4)
 	case artnet::PortCommand::MERGE_LTP_1:
 	case artnet::PortCommand::MERGE_LTP_2:
 	case artnet::PortCommand::MERGE_LTP_3:
+#endif
 		SetMergeMode(nPage, lightset::MergeMode::LTP);
 #if (ARTNET_VERSION >= 4)
 		E131Bridge::SetMergeMode(nPage, lightset::MergeMode::LTP);
@@ -394,23 +394,29 @@ void ArtNetNode::HandleAddress() {
 
 #if defined (ARTNET_HAVE_DMXIN)
 	case artnet::PortCommand::DIRECTION_TX_O:
+#if (ARTNET_VERSION < 4)
 	case artnet::PortCommand::DIRECTION_TX_1:
 	case artnet::PortCommand::DIRECTION_TX_2:
 	case artnet::PortCommand::DIRECTION_TX_3:
+#endif
 		DEBUG_PUTS("ToDo: PortCommand::DIRECTION_TX");
 		break;
 
 	case artnet::PortCommand::DIRECTION_RX_O:
+#if (ARTNET_VERSION < 4)
 	case artnet::PortCommand::DIRECTION_RX_1:
 	case artnet::PortCommand::DIRECTION_RX_2:
 	case artnet::PortCommand::DIRECTION_RX_3:
+#endif
 		DEBUG_PUTS("ToDo: PortCommand::DIRECTION_RX");
 		break;
 #endif
 	case artnet::PortCommand::MERGE_HTP_0:
+#if (ARTNET_VERSION < 4)
 	case artnet::PortCommand::MERGE_HTP_1:
 	case artnet::PortCommand::MERGE_HTP_2:
 	case artnet::PortCommand::MERGE_HTP_3:
+#endif
 		SetMergeMode(nPage, lightset::MergeMode::HTP);
 #if (ARTNET_VERSION >= 4)
 		E131Bridge::SetMergeMode(nPage, lightset::MergeMode::HTP);
@@ -419,28 +425,35 @@ void ArtNetNode::HandleAddress() {
 
 #if (ARTNET_VERSION >= 4)
 	case artnet::PortCommand::ARTNET_SEL0:
+#if 0	// Deprecated in Art-Net 4
 	case artnet::PortCommand::ARTNET_SEL1:
 	case artnet::PortCommand::ARTNET_SEL2:
 	case artnet::PortCommand::ARTNET_SEL3:
+#endif
 		SetPortProtocol4(nPage, artnet::PortProtocol::ARTNET);
 		SetUniverse4(nPage, lightset::PortDir::DISABLE);
 		break;
 
 	case artnet::PortCommand::ACN_SEL0:
+#if 0	// Deprecated in Art-Net 4
 	case artnet::PortCommand::ACN_SEL1:
 	case artnet::PortCommand::ACN_SEL2:
 	case artnet::PortCommand::ACN_SEL3:
+#endif
 		SetPortProtocol4(nPage, artnet::PortProtocol::SACN);
 		SetUniverse4(nPage, lightset::PortDir::OUTPUT);
 		break;
 #endif
 
 	case artnet::PortCommand::CLR_0:
+#if 0	// Deprecated in Art-Net 4
 	case artnet::PortCommand::CLR_1:
 	case artnet::PortCommand::CLR_2:
 	case artnet::PortCommand::CLR_3:
+#endif
 		if (m_Node.Port[nPage].protocol == artnet::PortProtocol::ARTNET) {
-			lightset::Data::OutputClear(m_pLightSet, nPage);
+			lightset::Data::Clear(nPage);
+			lightset::data_output(m_pLightSet, nPage);
 		}
 #if (ARTNET_VERSION >= 4)
 		if (m_Node.Port[nPage].protocol == artnet::PortProtocol::SACN) {
@@ -451,32 +464,40 @@ void ArtNetNode::HandleAddress() {
 
 #if defined (OUTPUT_HAVE_STYLESWITCH)
 	case artnet::PortCommand::STYLE_DELTA0:
+#if 0	// Deprecated in Art-Net 4
 	case artnet::PortCommand::STYLE_DELTA1:
 	case artnet::PortCommand::STYLE_DELTA2:
 	case artnet::PortCommand::STYLE_DELTA3:
+#endif
 		SetOutputStyle(nPage, lightset::OutputStyle::DELTA);
 		break;
 
 	case artnet::PortCommand::STYLE_CONSTANT0:
+#if 0	// Deprecated in Art-Net 4
 	case artnet::PortCommand::STYLE_CONSTANT1:
 	case artnet::PortCommand::STYLE_CONSTANT2:
 	case artnet::PortCommand::STYLE_CONSTANT3:
+#endif
 		SetOutputStyle(nPage, lightset::OutputStyle::CONSTANT);
 		break;
 #endif
 
 #if defined (RDM_CONTROLLER) || defined (RDM_RESPONDER)
 	case artnet::PortCommand::RDM_ENABLE0:
+#if 0	// Deprecated in Art-Net 4
 	case artnet::PortCommand::RDM_ENABLE1:
 	case artnet::PortCommand::RDM_ENABLE2:
 	case artnet::PortCommand::RDM_ENABLE3:
+#endif
 		SetRdm(nPage, true);
 		break;
 
 	case artnet::PortCommand::RDM_DISABLE0:
+#if 0	// Deprecated in Art-Net 4
 	case artnet::PortCommand::RDM_DISABLE1:
 	case artnet::PortCommand::RDM_DISABLE2:
 	case artnet::PortCommand::RDM_DISABLE3:
+#endif
 		SetRdm(nPage, false);
 		break;
 #endif

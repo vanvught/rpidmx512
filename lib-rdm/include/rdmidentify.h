@@ -30,13 +30,13 @@
 
 #include "hardware.h"
 
-namespace rdm {
-namespace identify {
+
+namespace rdm::identify {
 enum class Mode : uint8_t {
 	QUIET = 0x00, LOUD = 0xFF,
 };
-}  // namespace identify
-}  // namespace rdm
+} // namespace rdm::identify
+
 
 class RDMIdentify {
 public:

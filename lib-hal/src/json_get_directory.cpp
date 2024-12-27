@@ -31,8 +31,8 @@
 # include <errno.h>
 #endif
 
-namespace remoteconfig {
-namespace storage {
+
+namespace remoteconfig::storage {
 static bool filter(const char *pName) {
 	return *pName == '.';
 }
@@ -92,5 +92,5 @@ uint32_t json_get_directory(char *pOutBuffer, const uint32_t nOutBufferSize) {
 	assert(nLength <= nOutBufferSize);
 	return nLength;
 }
-}  // namespace storage
-}  // namespace remoteconfig
+} // namespace remoteconfig::storage
+

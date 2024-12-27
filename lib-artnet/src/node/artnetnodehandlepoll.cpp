@@ -30,7 +30,7 @@
 # undef NDEBUG
 #endif
 
-#ifdef __GNUC__
+#if !defined(__clang__)
 # pragma GCC push_options
 # pragma GCC optimize ("O2")
 # pragma GCC optimize ("no-tree-loop-distribute-patterns")
@@ -213,6 +213,9 @@ void ArtNetNode::SendPollReply(const uint32_t nBindIndex, const uint32_t nDestin
 			const auto nRefreshRate = m_pLightSet->GetRefreshRate();
 			m_ArtPollReply.RefreshRateLo = static_cast<uint8_t>(nRefreshRate);
 			m_ArtPollReply.RefreshRateHi = static_cast<uint8_t>(nRefreshRate >> 8);
+			const auto nUserData = m_pLightSet->GetUserData();
+			m_ArtPollReply.UserLo = static_cast<uint8_t>(nUserData);
+			m_ArtPollReply.UserHi = static_cast<uint8_t>(nUserData >> 8);
 		}
 
 		m_State.ArtPollReplyCount++;

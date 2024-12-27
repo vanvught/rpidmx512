@@ -28,9 +28,23 @@
 
 #include "pixelconfiguration.h"
 
+#if defined (OUTPUT_DMX_PIXEL_MULTI)
+# include "ws28xxmulti.h"
+#else
+# include "ws28xx.h"
+#endif
+
 namespace remoteconfig::pixel {
 uint32_t json_get_status(char *pOutBuffer, const uint32_t nOutBufferSize) {
 	auto& pixelConfiguration = PixelConfiguration::Get();
-	return static_cast<uint32_t>(snprintf(pOutBuffer, nOutBufferSize, "{\"refresh_rate\":\"%u\"}", pixelConfiguration.GetRefreshRate()));
+#if defined (OUTPUT_DMX_PIXEL_MULTI)
+ 	const auto nUserData = WS28xxMulti::Get()->GetUserData();
+#else
+ 	const auto nUserData = WS28xx::Get()->GetUserData();
+#endif
+ 	return static_cast<uint32_t>(snprintf(pOutBuffer, nOutBufferSize,
+ 			"{\"refresh_rate\":\"%u\",\"frame_rate\":\"%u\"}",
+			pixelConfiguration.GetRefreshRate(),
+			nUserData));
 }
 }  // namespace remoteconfig::pixel

@@ -1,8 +1,8 @@
 /**
- * @file h3_board.c
+ * @file h3_board.cpp
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,17 +23,17 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
+#include <cstdio>
 
 #include "h3_board.h"
 
-extern int uart0_printf(const char* fmt, ...);
+int uart0_printf(const char* fmt, ...);
 
 #define PORT_LETTER(gpio) 	('A' + H3_GPIO_TO_PORT(gpio))
 #define OUT_L(g)			g, PORT_LETTER(g), H3_GPIO_TO_NUMBER(g)
 #define OUT_R(g)			PORT_LETTER(g), H3_GPIO_TO_NUMBER(g), g
 
-void __attribute__((cold)) h3_board_dump(void) {
+void __attribute__((cold)) h3_board_dump() {
 	uart0_printf("%s\n", H3_BOARD_NAME);
 	uart0_printf("              3V3 PWR   1 :  2 5V PWR\n");
 	uart0_printf("I2C%d SDA  GPIO%-3d P%c%-2d  3 :  4 5V PWR\n", EXT_I2C_NUMBER, OUT_L(GPIO_EXT_3));

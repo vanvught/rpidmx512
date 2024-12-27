@@ -42,8 +42,8 @@
 
 // Maximum sentence length, including the $ and <CR><LF> is 82 bytes.
 
-namespace gps {
-namespace nmea{
+
+namespace gps::nmea{
 namespace length {
 static constexpr uint32_t TALKER_ID = 2;
 static constexpr uint32_t TAG = 3;
@@ -54,8 +54,8 @@ enum {
 	ZDA,
 	UNDEFINED
 };
-}  // namespace nmea
-}  // namespace gps
+} // namespace gps::nmea
+
 
 using namespace gps;
 

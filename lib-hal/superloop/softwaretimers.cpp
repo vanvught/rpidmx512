@@ -27,9 +27,11 @@
 # undef NDEBUG
 #endif
 
-#if !defined (CONFIG_REMOTECONFIG_MINIMUM)
-# pragma GCC push_options
-# pragma GCC optimize ("O2")
+#if !defined(__clang__)
+# if !defined (CONFIG_REMOTECONFIG_MINIMUM)
+#  pragma GCC push_options
+#  pragma GCC optimize ("O2")
+# endif
 #endif
 
 #include <cstdint>

@@ -23,9 +23,15 @@
  * THE SOFTWARE.
  */
 
-#pragma GCC push_options
-#pragma GCC optimize ("O2")
-#pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#if defined (DEBUG_ARM_RTPMIDIREADER)
+# undef NDEBUG
+#endif
+
+#if !defined(__clang__)
+# pragma GCC push_options
+# pragma GCC optimize ("O2")
+# pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#endif
 
 #include <cstdint>
 #include <cstring>
@@ -54,7 +60,7 @@ static void arm_timer_handler() {
 
 static void irq_timer0_handler([[maybe_unused]] uint32_t clo) {
 	gv_ltc_bTimeCodeAvailable = true;
-	gv_ltc_nTimeCodeCounter++;
+	gv_ltc_nTimeCodeCounter = gv_ltc_nTimeCodeCounter + 1;
 }
 #elif defined (GD32)
 	// Defined in platform_ltc.cpp
@@ -186,7 +192,7 @@ void RtpMidiReader::Update() {
 
 	LtcOutputs::Get()->Update(reinterpret_cast<const struct ltc::TimeCode*>(&m_LtcTimeCode));
 
-	gv_ltc_nUpdates++;
+	gv_ltc_nUpdates = gv_ltc_nUpdates + 1;
 }
 
 void RtpMidiReader::Run() {

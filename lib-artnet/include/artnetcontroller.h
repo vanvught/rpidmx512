@@ -2,10 +2,7 @@
  * @file artnetcontroller.h
  *
  */
-/**
- * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
- */
-/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -113,15 +110,13 @@ public:
 	}
 #endif
 
-	// Handler
-	void SetArtNetTrigger(ArtNetTrigger *pArtNetTrigger) {
-		m_pArtNetTrigger = pArtNetTrigger;
-	}
-	ArtNetTrigger *GetArtNetTrigger() const {
-		return m_pArtNetTrigger;
-	}
-
 	const uint8_t *GetSoftwareVersion();
+
+#if defined (ARTNET_HAVE_TRIGGER)
+	void SetArtTriggerCallbackFunctionPtr(ArtTriggerCallbackFunctionPtr artTriggerCallbackFunctionPtr) {
+		m_ArtTriggerCallbackFunctionPtr = artTriggerCallbackFunctionPtr;
+	}
+#endif
 
 	static ArtNetController *Get() {
 		return s_pThis;
@@ -153,7 +148,8 @@ private:
 
 	artnet::ArtDmx *m_pArtDmx;
 	artnet::ArtSync *m_pArtSync;
-	ArtNetTrigger *m_pArtNetTrigger { nullptr }; // Trigger handler
+
+	ArtTriggerCallbackFunctionPtr m_ArtTriggerCallbackFunctionPtr { nullptr };
 
 	bool m_bSynchronization { true };
 	bool m_bUnicast { true };

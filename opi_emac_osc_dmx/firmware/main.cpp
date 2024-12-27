@@ -29,7 +29,6 @@
 #include "hardware.h"
 #include "network.h"
 
-
 #include "display.h"
 
 #include "net/apps/mdns.h"
@@ -37,25 +36,25 @@
 #include "oscserver.h"
 #include "oscserverparams.h"
 #include "oscservermsgconst.h"
-// DMX Out
+
 #include "dmxparams.h"
 #include "dmxsend.h"
-#include "dmxconfigudp.h"
 
 #include "flashcodeinstall.h"
 #include "configstore.h"
 #include "remoteconfig.h"
 #include "remoteconfigparams.h"
 
-
 #include "firmwareversion.h"
 #include "software_version.h"
 
 #include "displayhandler.h"
 
-void Hardware::RebootHandler() {
+namespace hal {
+void reboot_handler() {
 	Dmx::Get()->Blackout();
 }
+}  // namespace hal
 
 int main() {
 	Hardware hw;
@@ -113,17 +112,11 @@ int main() {
 
 	display.TextStatus(OscServerMsgConst::STARTED, CONSOLE_GREEN);
 
-	while (configStore.Flash())
-		;
-
-	mdns_print(); //	mDns.Print();
-
 	hw.WatchdogInit();
 
 	for (;;) {
 		hw.WatchdogFeed();
 		nw.Run();
-		server.Run();
 		remoteConfig.Run();
 		configStore.Flash();
 

@@ -91,7 +91,7 @@ void gic_fiq_config(H3_IRQn_TypeDef nIRQ, GIC_CORE_TypeDef nCPU) {
 	int_config(nIRQ, nCPU, GIC_GROUP0);
 }
 
-void gic_init_dump(void) {
+void gic_init_dump() {
 #ifndef NDEBUG
 	unsigned i;
 

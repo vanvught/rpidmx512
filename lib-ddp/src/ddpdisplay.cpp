@@ -29,8 +29,9 @@
 
 #include "ddpdisplay.h"
 
-#include "lightsetdata.h"
 #include "lightset.h"
+#include "lightsetdata.h"
+#include "lightset_data.h"
 
 #include "hardware.h"
 #include "network.h"
@@ -284,7 +285,7 @@ void DdpDisplay::HandleData() {
 
 	if ((pPacket->header.flags1 & flags1::PUSH) == flags1::PUSH) {
 		for (uint32_t nLightSetPortIndex = 0; nLightSetPortIndex < ddpdisplay::lightset::MAX_PORTS; nLightSetPortIndex++) {
-			lightset::Data::Output(m_pLightSet, nLightSetPortIndex);
+			lightset::data_output(m_pLightSet, nLightSetPortIndex);
 			lightset::Data::ClearLength(nLightSetPortIndex);
 		}
 	}

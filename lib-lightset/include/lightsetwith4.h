@@ -56,8 +56,11 @@ public:
 	}
 
 	void Start(const uint32_t nPortIndex) override {
-		if ((nPortIndex < nMaxPorts) && (m_pA != nullptr)) {
-			return m_pA->Start(nPortIndex);
+		if (nPortIndex < nMaxPorts) {
+			if (m_pA != nullptr) {
+				return m_pA->Start(nPortIndex);
+			}
+			return;
 		}
 		if (m_pB != nullptr) {
 			m_pB->Start(nPortIndex & 0x3);
@@ -65,8 +68,11 @@ public:
 	}
 
 	void Stop(const uint32_t nPortIndex) override {
-		if ((nPortIndex < nMaxPorts) && (m_pA != nullptr)) {
-			return m_pA->Stop(nPortIndex);
+		if (nPortIndex < nMaxPorts) {
+			if (m_pA != nullptr) {
+				return m_pA->Stop(nPortIndex);
+			}
+			return;
 		}
 		if (m_pB != nullptr) {
 			m_pB->Stop(nPortIndex & 0x3);
@@ -74,8 +80,11 @@ public:
 	}
 
 	void SetData(const uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate) override {
-		if ((nPortIndex < nMaxPorts) && (m_pA != nullptr)) {
-			return m_pA->SetData(nPortIndex, pData, nLength, doUpdate);
+		if (nPortIndex < nMaxPorts) {
+			if (m_pA != nullptr) {
+				return m_pA->SetData(nPortIndex, pData, nLength, doUpdate);
+			}
+			return;
 		}
 		if (m_pB != nullptr) {
 			return m_pB->SetData(nPortIndex & 0x3, pData, nLength, doUpdate);
@@ -83,8 +92,11 @@ public:
 	}
 
 	void Sync(const uint32_t nPortIndex) override {
-		if ((nPortIndex < nMaxPorts) && (m_pA != nullptr)) {
-			return m_pA->Sync(nPortIndex);
+		if (nPortIndex < nMaxPorts) {
+			if (m_pA != nullptr) {
+				return m_pA->Sync(nPortIndex);
+			}
+			return;
 		}
 		if (m_pB != nullptr) {
 			return m_pB->Sync(nPortIndex & 0x3);
@@ -102,17 +114,23 @@ public:
 
 #if defined (OUTPUT_HAVE_STYLESWITCH)
 	void SetOutputStyle(const uint32_t nPortIndex, const lightset::OutputStyle outputStyle) override {
-		if ((nPortIndex < nMaxPorts) && (m_pA != nullptr)) {
-			return m_pA->SetOutputStyle(nPortIndex, outputStyle);
+		if (nPortIndex < nMaxPorts) {
+			if (m_pA != nullptr) {
+				return m_pA->SetOutputStyle(nPortIndex, outputStyle);
+			}
+			return;
 		}
 		if (m_pB != nullptr) {
 			return m_pB->SetOutputStyle(nPortIndex & 0x3, outputStyle);
 		}
 	}
 
-	lightset::OutputStyle GetOutputStyle(const uint32_t nPortIndex) const override{
-		if ((nPortIndex < nMaxPorts) && (m_pA != nullptr)) {
-			return m_pA->GetOutputStyle(nPortIndex);
+	lightset::OutputStyle GetOutputStyle(const uint32_t nPortIndex) const override {
+		if (nPortIndex < nMaxPorts) {
+			if (m_pA != nullptr) {
+				return m_pA->GetOutputStyle(nPortIndex);
+			}
+			return lightset::OutputStyle::DELTA;
 		}
 		if (m_pB != nullptr) {
 			return m_pB->GetOutputStyle(nPortIndex & 0x3);
@@ -138,6 +156,20 @@ public:
 		if (m_pB != nullptr) {
 			m_pB->Print();
 		}
+	}
+
+	uint32_t GetUserData() override {
+		if (m_pA != nullptr) {
+			return m_pA->GetUserData();
+		}
+		return 0;
+	}
+
+	uint32_t GetRefreshRate() override {
+		if (m_pA != nullptr) {
+			return m_pA->GetRefreshRate();
+		}
+		return 0;
 	}
 
 	bool SetDmxStartAddress([[maybe_unused]] uint16_t nDmxStartAddress) override {

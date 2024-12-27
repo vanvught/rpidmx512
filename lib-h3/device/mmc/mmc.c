@@ -5,7 +5,7 @@
  * @file mmc.c
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -57,9 +57,9 @@
 
 #include "mmc_internal.h"
 
-#include "h3_timer.h"
-
 #include "debug.h"
+
+extern void __msdelay(const uint32_t ms);
 
 #define __be32_to_cpu(x)	((0x000000ff&((x)>>24)) | (0x0000ff00&((x)>>8)) | 			\
 							 (0x00ff0000&((x)<< 8)) | (0xff000000&((x)<<24)))

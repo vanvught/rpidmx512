@@ -26,12 +26,13 @@
 #ifndef GD32_BOARD_DMX4_H_
 #define GD32_BOARD_DMX4_H_
 
+#include <cstdint>
 #include "gd32_board.h"
 
 #define DMX_MAX_PORTS  4
 
 namespace max {
-	static const uint32_t PORTS = DMX_MAX_PORTS;
+	static constexpr uint32_t PORTS = DMX_MAX_PORTS;
 }  // namespace max
 
 #define DMX_USE_USART0

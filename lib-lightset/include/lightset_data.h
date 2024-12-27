@@ -1,8 +1,8 @@
 /**
- * @file showfileprotocolartnettrigger.cpp
+ * @file lightset_data.h
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,37 +23,27 @@
  * THE SOFTWARE.
  */
 
-#include "protocols/showfileprotocolartnettrigger.h"
-#include "showfile.h"
+#ifndef LIGHTSET_DATA_H_
+#define LIGHTSET_DATA_H_
 
-#include "debug.h"
+#include <cstdint>
 
-void ShowFileProtocolArtNetTrigger::Handler(const struct TArtNetTrigger *ptArtNetTrigger)  {
-	DEBUG_ENTRY
-	DEBUG_PRINTF("Key=%d, SubKey=%d", ptArtNetTrigger->Key, ptArtNetTrigger->SubKey);
+#include "lightset.h"
+#include "lightsetdata.h"
 
-	if (ptArtNetTrigger->Key == ART_TRIGGER_KEY_SOFT) {
-		switch (ptArtNetTrigger->SubKey) {
-		case 'B':
-			ShowFile::Get()->BlackOut();
-			break;
-		case 'G':
-			ShowFile::Get()->Play();
-			break;
-		case 'R':
-			ShowFile::Get()->Resume();
-			break;
-		case 'S':
-			ShowFile::Get()->Stop();
-			break;
-		default:
-			break;
-		}
-	}
+namespace lightset {
+inline void data_set(LightSet *const pLightSet, const uint32_t nPortIndex) {
+	assert(pLightSet != nullptr);
 
-	if (ptArtNetTrigger->Key == ART_TRIGGER_KEY_SHOW) {
-		ShowFile::Get()->SetPlayerShowFileCurrent(ptArtNetTrigger->SubKey);
-	}
+	pLightSet->SetData(nPortIndex, lightset::Data::Backup(nPortIndex), lightset::Data::GetLength(nPortIndex), false);
 
-	DEBUG_EXIT
 }
+
+inline void data_output(LightSet *const pLightSet, uint32_t nPortIndex) {
+	assert(pLightSet != nullptr);
+
+	pLightSet->SetData(nPortIndex, lightset::Data::Backup(nPortIndex), lightset::Data::GetLength(nPortIndex), true);
+}
+}  // namespace lightset
+
+#endif /* LIGHTSET_DATA_H_ */

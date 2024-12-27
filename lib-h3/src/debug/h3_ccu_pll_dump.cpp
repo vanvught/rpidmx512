@@ -1,8 +1,8 @@
 /**
- * @file handler.h
+ * @file h3_ccu_pll_dump.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,33 +23,21 @@
  * THE SOFTWARE.
  */
 
-#ifndef HANDLER_H_
-#define HANDLER_H_
-
 #include <cstdint>
 
-#include "oscserver.h"
+#include "h3_ccu.h"
 
-#include "ws28xxdmx.h"
+extern "C" int uart0_printf(const char* fmt, ...);
 
-class Handler: public OscServerHandler  {
-public:
-	Handler(WS28xxDmx *pWS28xxDmx);
-
-	void Blackout() {
-		m_pWS28xxDmx->Blackout(true);
-	}
-
-	void Update() {
-		m_pWS28xxDmx->Blackout(false);
-	}
-
-	void Info(int32_t nHandle, uint32_t nRemoteIp, uint16_t nPortOutgoing);
-
-private:
-	WS28xxDmx *m_pWS28xxDmx;
-	uint32_t m_nCount;
-	char *m_TypeString;
-};
-
-#endif /* HANDLER_H_ */
+void __attribute__((cold)) h3_ccu_pll_dump() {
+	uart0_printf("PLL (Hz)\n");
+	uart0_printf("CPUX=%u\n", h3_ccu_get_pll_rate(CCU_PLL_CPUX));
+	uart0_printf("AUDIO=%u\n", h3_ccu_get_pll_rate(CCU_PLL_AUDIO));
+	uart0_printf("VIDEO=%u\n", h3_ccu_get_pll_rate(CCU_PLL_VIDEO));
+	uart0_printf("VE=%u\n", h3_ccu_get_pll_rate(CCU_PLL_VE));
+	uart0_printf("DDR=%u\n", h3_ccu_get_pll_rate(CCU_PLL_DDR));
+	uart0_printf("PERIPH0=%u\n", h3_ccu_get_pll_rate(CCU_PLL_PERIPH0));
+	uart0_printf("GPU=%u\n", h3_ccu_get_pll_rate(CCU_PLL_GPU));
+	uart0_printf("PERIPH1=%u\n", h3_ccu_get_pll_rate(CCU_PLL_PERIPH1));
+	uart0_printf("DE=%u\n", h3_ccu_get_pll_rate(CCU_PLL_DE));
+}

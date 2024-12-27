@@ -135,7 +135,7 @@ static void data_gpio_fsel_input() {
  * Set RD#, WR to output, TXE#, RXF# to input.
  * Set RD# to high, set WR to low
  */
-void FT245RL_init(void) {
+void FT245RL_init() {
 	// RD#, WR output
 	uint32_t value = H3_PIO_PORTA->CFG0;
 	value &= (uint32_t) ~(GPIO_SELECT_MASK << PA3_SELECT_CFG0_SHIFT);	// WR
@@ -224,13 +224,13 @@ uint8_t FT245RL_read_data() {
 /**
  * Read RXF#
  */
-bool FT245RL_data_available(void) {
+bool FT245RL_data_available() {
 	return (!(H3_PIO_PORTA->DAT & (1 << _RXF)));
 }
 
 /**
  * Read TXE#
  */
-bool FT245RL_can_write(void) {
+bool FT245RL_can_write() {
 	return (!(H3_PIO_PORTA->DAT & (1 << _TXE)));
 }

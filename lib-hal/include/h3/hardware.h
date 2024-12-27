@@ -173,8 +173,6 @@ public:
 	}
 
 private:
-	void RebootHandler();
-
 	static void ledblink([[maybe_unused]] TimerHandle_t nHandle) {
 		m_nToggleLed ^= 0x1;
 		hardware_led_set(m_nToggleLed);
@@ -215,7 +213,7 @@ private:
 	int32_t m_nTimerId { -1 };
 
 	static inline int32_t m_nToggleLed { 0 };
-	static Hardware *s_pThis;
+	static inline Hardware *s_pThis;
 };
 
 #endif /* H3_HARDWARE_H_ */

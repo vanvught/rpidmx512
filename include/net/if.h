@@ -2,7 +2,7 @@
  * @file if.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,13 +23,21 @@
  * THE SOFTWARE.
  */
 
-#ifndef IF_H_
-#define IF_H_
+#ifndef NET_IF_H_
+#define NET_IF_H_
 
-#define IF_NAMESIZE     16
+/**
+ * https://pubs.opengroup.org/onlinepubs/009695399/basedefs/net/if.h.html
+ *
+ * The <net/if.h> header shall define the following symbolic constant for the length of a buffer containing
+ * an interface name (including the terminating NULL character):
+ * IF_NAMESIZE Interface name length.
+ */
+
+#define IF_NAMESIZE		16	///< Length of interface name (including the terminating NULL character).
 
 #ifndef IFNAMSIZ
-#define IFNAMSIZ        IF_NAMESIZE
+# define IFNAMSIZ		IF_NAMESIZE
 #endif
 
-#endif /* IF_H_ */
+#endif /* NET_IF_H_ */

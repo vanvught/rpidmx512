@@ -33,7 +33,6 @@
 #include "hardware.h"
 #include "network.h"
 
-
 #include "displayudf.h"
 #include "displayudfparams.h"
 #include "flashcodeinstall.h"
@@ -43,15 +42,13 @@
 
 #include "rdmnetllrponly.h"
 
-#include "net/apps/mdns.h"
-#include "net/apps/ntpclient.h"
-
 #include "factorydefaults.h"
 
 #include "firmwareversion.h"
 #include "software_version.h"
 
-void Hardware::RebootHandler() {
+namespace hal {
+void reboot_handler() {
 	if (!RemoteConfig::Get()->IsReboot()) {
 		Display::Get()->SetSleep(false);
 
@@ -64,6 +61,7 @@ void Hardware::RebootHandler() {
 		Display::Get()->TextStatus("Rebooting ...");
 	}
 }
+}  // namespace hal
 
 int main() {
 	Hardware hw;
@@ -75,10 +73,6 @@ int main() {
 
 	fw.Print("RDMNet LLRP device only");
 
-	NtpClient ntpClient;
-	ntpClient.Start();
-	ntpClient.Print();
-
 	RDMNetLLRPOnly device;
 	device.Init();
 	device.Print();
@@ -88,11 +82,6 @@ int main() {
 	RemoteConfigParams remoteConfigParams;
 	remoteConfigParams.Load();
 	remoteConfigParams.Set(&remoteConfig);
-
-	while (configStore.Flash())
-		;
-
-	mdns_print();
 
 	display.SetTitle("LLRP Only - TFTP");
 	display.Set(2, displayudf::Labels::HOSTNAME);
@@ -118,10 +107,10 @@ int main() {
 	for (;;) {
 		nw.Run();
 		remoteConfig.Run();
-		ntpClient.Run();
 		configStore.Flash();
 		display.Run();
 		hw.Run();
+
 		time_t ltime;
 		auto t2 = time(&ltime);
 		if (t1 != t2) {
@@ -137,5 +126,6 @@ int main() {
 					tmlocal.tm_hour, tmlocal.tm_min, tmlocal.tm_sec,
 					tmHwClock.tm_hour, tmHwClock.tm_min, tmHwClock.tm_sec);
 		}
+
 	}
 }

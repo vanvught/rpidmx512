@@ -34,15 +34,15 @@
 #include "ltcdisplaymax72197segment.h"
 #include "ltcdisplaymax7219matrix.h"
 
-namespace ltc {
-namespace display {
-namespace max7219 {
+
+
+namespace ltc::display::max7219 {
 enum class Types {
 	MATRIX, SEGMENT
 };
-}  // namespace max7219
-}  // namespace display
-}  // namespace ltc
+} // namespace ltc::display::max7219
+
+
 
 class LtcDisplayMax7219 {
 public:

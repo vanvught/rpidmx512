@@ -46,13 +46,13 @@
 # define DEBUG_TIMER11_GPIO_PINx	GPIO_PIN_14
 #endif
 
-namespace platform {
-namespace ltc {
+
+namespace platform::ltc {
 void timer3_config();
 void timer10_config();
 void timer11_config();
 void timer13_config();
-}  // namespace ltc
-}  // namespace platform
+} // namespace platform::ltc
+
 
 #endif /* GD32_PLATFORM_LTC_H_ */

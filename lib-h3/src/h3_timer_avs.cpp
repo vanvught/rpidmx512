@@ -1,8 +1,8 @@
 /**
- * @file h3_ccu.c
+ * @file h3_timer_avs.cpp
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2023-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,21 +23,25 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include "h3.h"
 
-#include "h3_ccu.h"
+#define SCLK_GATING		(1U << 31)
 
-extern int uart0_printf(const char* fmt, ...);
+#define AVS_CNT0_EN		(1 << 0)
+#define AVS_CNT1_EN		(1 << 1)
 
-void __attribute__((cold)) h3_ccu_pll_dump(void) {
-	uart0_printf("PLL (Hz)\n");
-	uart0_printf("CPUX=%u\n", h3_ccu_get_pll_rate(CCU_PLL_CPUX));
-	uart0_printf("AUDIO=%u\n", h3_ccu_get_pll_rate(CCU_PLL_AUDIO));
-	uart0_printf("VIDEO=%u\n", h3_ccu_get_pll_rate(CCU_PLL_VIDEO));
-	uart0_printf("VE=%u\n", h3_ccu_get_pll_rate(CCU_PLL_VE));
-	uart0_printf("DDR=%u\n", h3_ccu_get_pll_rate(CCU_PLL_DDR));
-	uart0_printf("PERIPH0=%u\n", h3_ccu_get_pll_rate(CCU_PLL_PERIPH0));
-	uart0_printf("GPU=%u\n", h3_ccu_get_pll_rate(CCU_PLL_GPU));
-	uart0_printf("PERIPH1=%u\n", h3_ccu_get_pll_rate(CCU_PLL_PERIPH1));
-	uart0_printf("DE=%u\n", h3_ccu_get_pll_rate(CCU_PLL_DE));
+#define AVS_CNT0_D_SHIFT	0
+#define AVS_CNT1_D_SHIFT	16
+
+#define DIV_N_CNT0	0x2EE0	// 24MHz / 2 / 12000 = 1KHz, period 1ms
+#define DIV_N_CNT1	0xC		// 24MHz / 2 / 12 = 1MHz, period 1us
+
+void __attribute__((cold)) h3_timer_avs_init() {
+	H3_CCU->AVS_CLK_CFG |= SCLK_GATING;
+
+	H3_TIMER->AVS_CTRL = AVS_CNT1_EN |AVS_CNT0_EN;
+	H3_TIMER->AVS_DIV = (DIV_N_CNT1 << AVS_CNT1_D_SHIFT) | DIV_N_CNT0;
+
+	H3_TIMER->AVS_CNT0 = 0;
+	H3_TIMER->AVS_CNT1 = 0;
 }

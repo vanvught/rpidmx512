@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef H3_LTCOUTPUTS_H_
-#define H3_LTCOUTPUTS_H_
+#ifndef ARM_LTCOUTPUTS_H_
+#define ARM_LTCOUTPUTS_H_
 
 #include "ltc.h"
 
@@ -53,12 +53,13 @@ private:
 	bool m_bShowSysTime;
 	ltc::Type m_TypePrevious { ltc::Type::INVALID };
 	uint32_t m_nMidiQuarterFramePiece { 0 };
+	uint32_t m_nRtpMidiQuarterFramePiece { 0 };
 	char m_aTimeCode[ltc::timecode::CODE_MAX_LENGTH];
 	char m_aSystemTime[ltc::timecode::SYSTIME_MAX_LENGTH];
 	int32_t m_nSecondsPrevious { 60 };
 	char m_cBPM[9];
 
-	static LtcOutputs *s_pThis;
+	static inline LtcOutputs *s_pThis;
 };
 
-#endif /* H3_LTCOUTPUTS_H_ */
+#endif /* ARM_LTCOUTPUTS_H_ */

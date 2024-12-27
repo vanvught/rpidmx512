@@ -53,10 +53,6 @@ void mdns_stop();
 bool mdns_service_record_add(const char *pName, const mdns::Services service, const char *pTextContent = nullptr, const uint16_t nPort = 0);
 bool mdns_service_record_delete(const mdns::Services service);
 
-void mdns_print();
-
 void mdns_send_announcement(const uint32_t nTTL);
-
-void mdns_run();
 
 #endif /* NET_APPS_MDNS_H_ */

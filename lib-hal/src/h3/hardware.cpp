@@ -56,11 +56,12 @@
 
 #include "logic_analyzer.h"
 
-#pragma GCC push_options
-#pragma GCC optimize ("O2")
-
-#if __GNUC__ > 8
-# pragma GCC target ("general-regs-only")
+#if !defined(__clang__)
+# pragma GCC push_options
+# pragma GCC optimize ("O2")
+# if __GNUC__ > 8
+#  pragma GCC target ("general-regs-only")
+# endif
 #endif
 
 static void EXTIA_IRQHandler() {
@@ -100,6 +101,7 @@ void net_shutdown();
 }  // namespace net
 
 namespace hal {
+void reboot_handler();
 void uuid_init(uuid_t);
 }  // namespace hardware
 
@@ -129,8 +131,6 @@ namespace sysname {
 	static constexpr char NAME[] = "Baremetal";
 	static constexpr auto NAME_LENGTH = sizeof(NAME) - 1;
 }
-
-Hardware *Hardware::s_pThis;
 
 void hardware_init();
 
@@ -198,8 +198,7 @@ bool Hardware::Reboot() {
 	m_HwClock.SysToHc();
 #endif
 
-	RebootHandler();
-
+	hal::reboot_handler();
 	net::net_shutdown();
 
 	clean_data_cache();

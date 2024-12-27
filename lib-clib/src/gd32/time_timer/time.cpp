@@ -50,7 +50,7 @@
 extern struct HwTimersSeconds g_Seconds;
 
 extern "C" {
-#if !defined (CONFIG_ENET_ENABLE_PTP)
+#if !defined (CONFIG_NET_ENABLE_PTP)
 # if defined (CONFIG_TIME_USE_TIMER)
 #  if defined(GD32H7XX)
 void TIMER16_IRQHandler() {

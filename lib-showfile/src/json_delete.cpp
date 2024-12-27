@@ -35,8 +35,8 @@
 
 #include "debug.h"
 
-namespace remoteconfig {
-namespace showfile {
+
+namespace remoteconfig::showfile {
 void json_delete(const char *pBuffer, const uint32_t nBufferSize) {
 	DEBUG_ENTRY
 
@@ -61,5 +61,5 @@ void json_delete(const char *pBuffer, const uint32_t nBufferSize) {
 
 	DEBUG_EXIT
 }
-}  // namespace showfile
-}  // namespace remoteconfig
+} // namespace remoteconfig::showfile
+

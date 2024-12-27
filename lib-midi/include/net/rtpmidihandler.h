@@ -1,8 +1,8 @@
 /**
- * @file platform_configstore.h
+ * @file rtpmidihandler.h
  *
  */
-/* Copyright (C) 2022-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,18 +23,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef PLATFORM_CONFIGSTORE_H_
-#define PLATFORM_CONFIGSTORE_H_
+#ifndef NET_RTPMIDIHANDLER_H_
+#define NET_RTPMIDIHANDLER_H_
 
-#if defined (GD32)
-# include "gd32.h"
-# if defined (CONFIG_STORE_USE_RAM)
-#  define SECTION_CONFIGSTORE __attribute__ ((section (".configstore")))
-# else
-#  define SECTION_CONFIGSTORE
-#endif
-#else
-# define SECTION_CONFIGSTORE
-#endif
+#include "midi.h"
 
-#endif /* PLATFORM_CONFIGSTORE_H_ */
+class RtpMidiHandler {
+public:
+	virtual ~RtpMidiHandler() = default;
+
+	virtual void MidiMessage(const struct midi::Message *pMidiMessage)=0;
+};
+
+#endif /* NET_RTPMIDIHANDLER_H_ */

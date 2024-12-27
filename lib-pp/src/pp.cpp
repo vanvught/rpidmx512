@@ -13,7 +13,7 @@
  *
  *	pusher command stuff added by Christopher Schardt 2017
  */
-/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,6 +43,7 @@
 #include "hardware.h"
 
 #include "lightsetdata.h"
+#include "lightset_data.h"
 
 #include "debug.h"
 
@@ -184,9 +185,8 @@ void PixelPusher::Run() {
 //		DEBUG_PRINTF("nPortIndex=%u, m_nPortIndexLast=%u", nPortIndex, m_nPortIndexLast);
 
 		if (nPortIndex == m_nPortIndexLast) {
-//			DEBUG_PUTS("Output");
 			for (uint32_t nLightSetPortIndex = 0; nLightSetPortIndex < m_nPortIndexLast; nLightSetPortIndex++) {
-				lightset::Data::Output(m_pLightSet, nLightSetPortIndex);
+				lightset::data_output(m_pLightSet, nLightSetPortIndex);
 				lightset::Data::ClearLength(nLightSetPortIndex);
 			}
 		}

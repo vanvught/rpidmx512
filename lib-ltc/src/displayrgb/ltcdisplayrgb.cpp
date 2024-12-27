@@ -3,7 +3,7 @@
  */
 /*
  * Copyright (C) 2019-2020 by hippy mailto:dmxout@gmail.com
- * Copyright (C) 2019-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+ * Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,9 +24,14 @@
  * THE SOFTWARE.
  */
 
+#if defined (DEBUG_LTCDISPLAYRGB)
+# undef NDEBUG
+#endif
+
 #include <cstdint>
 #include <cstring>
 #include <cstdio>
+#include <algorithm>
 #include <cassert>
 
 #include "ltcdisplayrgb.h"
@@ -35,13 +40,17 @@
 
 #include "hardware.h"
 #include "network.h"
-//
+
 #include "ltcdisplayws28xx7segment.h"
 #include "ltcdisplayws28xxmatrix.h"
-//
+
 #include "ltcdisplayrgbpanel.h"
 
-#include "pixeltype.h"
+#if !defined (CONFIG_LTC_DISABLE_WS28XX)
+# include "pixeltype.h"
+#endif
+
+#include "softwaretimers.h"
 
 #include "debug.h"
 
@@ -65,12 +74,15 @@ static constexpr auto PORT = 0x2812;
 }
 }  // namespace ltcdisplayrgb
 
-static constexpr auto MESSAGE_TIME_MS = 3000;
-
 using namespace ltcdisplayrgb;
 
-char *LtcDisplayRgb::s_pUdpBuffer;
-LtcDisplayRgb *LtcDisplayRgb::s_pThis;
+static TimerHandle_t s_nTimerId = TIMER_ID_NONE;
+static bool m_bShowMsg;
+
+static void message_timer([[maybe_unused]] TimerHandle_t nHandle) {
+	m_bShowMsg = false;
+	SoftwareTimerDelete(s_nTimerId);
+}
 
 LtcDisplayRgb::LtcDisplayRgb(Type tRgbType, WS28xxType tWS28xxType) : m_tDisplayRgbType(tRgbType), m_tDisplayRgbWS28xxType(tWS28xxType) {
 	DEBUG_ENTRY
@@ -90,8 +102,7 @@ LtcDisplayRgb::LtcDisplayRgb(Type tRgbType, WS28xxType tWS28xxType) : m_tDisplay
 LtcDisplayRgb::~LtcDisplayRgb() {
 	DEBUG_ENTRY
 
-	assert(m_pLtcDisplayRgbSet == nullptr);
-
+	assert(m_pLtcDisplayRgbSet != nullptr);
 	delete m_pLtcDisplayRgbSet;
 	m_pLtcDisplayRgbSet = nullptr;
 
@@ -101,7 +112,7 @@ LtcDisplayRgb::~LtcDisplayRgb() {
 void LtcDisplayRgb::Init(pixel::Type type) {
 	DEBUG_ENTRY
 
-	m_tLedType = type;
+	m_PixelType = type;
 
 	if (m_tDisplayRgbType == Type::RGBPANEL) {
 		m_pLtcDisplayRgbSet = new LtcDisplayRgbPanel;
@@ -111,9 +122,9 @@ void LtcDisplayRgb::Init(pixel::Type type) {
 	} else {
 
 		if (m_tDisplayRgbWS28xxType == WS28xxType::SEGMENT) {
-			m_pLtcDisplayRgbSet = new LtcDisplayWS28xx7Segment(type, m_tMapping);
+			m_pLtcDisplayRgbSet = new LtcDisplayWS28xx7Segment(type, m_PixelMap);
 		} else {
-			m_pLtcDisplayRgbSet = new LtcDisplayWS28xxMatrix(type, m_tMapping);
+			m_pLtcDisplayRgbSet = new LtcDisplayWS28xxMatrix(type, m_PixelMap);
 		}
 
 		assert(m_pLtcDisplayRgbSet != nullptr);
@@ -123,7 +134,8 @@ void LtcDisplayRgb::Init(pixel::Type type) {
 		SetRGB(m_aColour[nIndex], static_cast<ColourIndex>(nIndex));
 	}
 
-	m_nHandle = Network::Get()->Begin(udp::PORT);
+	assert(m_nHandle == -1);
+	m_nHandle = Network::Get()->Begin(udp::PORT, staticCallbackFunction);
 	assert(m_nHandle != -1);
 
 	DEBUG_EXIT
@@ -246,7 +258,7 @@ void LtcDisplayRgb::SetMessage(const char *pMessage, uint32_t nSize) {
 	const char *pSrc = pMessage;
 	char *pDst = m_aMessage;
 
-	for (i = 0; i < nSize; i++) {
+	for (i = 0; i < std::min(nSize, static_cast<uint32_t>(sizeof(m_aMessage))); i++) {
 		*pDst++ = *pSrc++;
 	}
 
@@ -255,6 +267,13 @@ void LtcDisplayRgb::SetMessage(const char *pMessage, uint32_t nSize) {
 	}
 
 	m_nMsgTimer = Hardware::Get()->Millis();
+
+	if (s_nTimerId == TIMER_ID_NONE) {
+		s_nTimerId = SoftwareTimerAdd(MESSAGE_TIME_MS, message_timer);
+	} else {
+		SoftwareTimerChange(s_nTimerId, MESSAGE_TIME_MS);
+	}
+
 	m_bShowMsg = true;
 }
 
@@ -306,37 +325,30 @@ void LtcDisplayRgb::WriteChar(uint8_t nChar, uint8_t nPos) {
 	m_pLtcDisplayRgbSet->WriteChar(nChar, nPos, m_tColoursInfo);
 }
 
-void LtcDisplayRgb::Run() {
-	if (__builtin_expect((m_bShowMsg), 0)) {
-		if (Hardware::Get()->Millis() - m_nMsgTimer >= MESSAGE_TIME_MS) {
-			m_bShowMsg = false;
-		}
-	}
-
-	uint32_t nIPAddressFrom;
-	uint16_t nForeignPort;
-
-	auto nBytesReceived = Network::Get()->RecvFrom(m_nHandle, const_cast<const void **>(reinterpret_cast<void **>(&s_pUdpBuffer)), &nIPAddressFrom, &nForeignPort);
-
-	if (__builtin_expect((nBytesReceived < 8), 1)) {
+/**
+ * @brief Processes an incoming UDP packet.
+ *
+ * @param pBuffer Pointer to the packet buffer.
+ * @param nSize Size of the packet buffer.
+ * @param nFromIp IP address of the sender.
+ * @param nFromPort Port number of the sender.
+ */
+void LtcDisplayRgb::Input(const uint8_t *pBuffer, uint32_t nSize, [[maybe_unused]] uint32_t nFromIp, [[maybe_unused]] uint16_t nFromPort) {
+	if (__builtin_expect((memcmp("7seg!", pBuffer, 5) != 0), 0)) {
 		return;
 	}
 
-	if (__builtin_expect((memcmp("7seg!", s_pUdpBuffer, 5) != 0), 0)) {
-		return;
-	}
-
-	if (s_pUdpBuffer[nBytesReceived - 1] == '\n') {
+	if (pBuffer[nSize - 1] == '\n') {
 		DEBUG_PUTS("\'\\n\'");
-		nBytesReceived--;
+		nSize--;
 	}
 
-	if (memcmp(&s_pUdpBuffer[5], showmsg::PATH, showmsg::LENGTH) == 0) {
-		const uint32_t nMsgLength = nBytesReceived - (5 + showmsg::LENGTH + 1);
-		DEBUG_PRINTF("m_nBytesReceived=%d, nMsgLength=%d [%.*s]", nBytesReceived, nMsgLength, nMsgLength, &s_pUdpBuffer[(5 + showmsg::LENGTH + 1)]);
+	if (memcmp(&pBuffer[5], showmsg::PATH, showmsg::LENGTH) == 0) {
+		const uint32_t nMsgLength = nSize - (5 + showmsg::LENGTH + 1);
+		DEBUG_PRINTF("m_nBytesReceived=%d, nMsgLength=%d [%.*s]", nBytesReceived, nMsgLength, nMsgLength, &m_pUdpBuffer[(5 + showmsg::LENGTH + 1)]);
 
-		if (((nMsgLength > 0) && (nMsgLength <= MAX_MESSAGE_SIZE)) && (s_pUdpBuffer[5 + showmsg::LENGTH] == '#')) {
-			SetMessage(&s_pUdpBuffer[(5 + showmsg::LENGTH + 1)], nMsgLength);
+		if (((nMsgLength > 0) && (nMsgLength <= MAX_MESSAGE_SIZE)) && (pBuffer[5 + showmsg::LENGTH] == '#')) {
+			SetMessage(reinterpret_cast<const char *>(&pBuffer[(5 + showmsg::LENGTH + 1)]), nMsgLength);
 			return;
 		}
 
@@ -344,9 +356,9 @@ void LtcDisplayRgb::Run() {
 		return;
 	}
 
-	if (memcmp(&s_pUdpBuffer[5], rgb::PATH, rgb::LENGTH) == 0) {
-		if ((nBytesReceived == (5 + rgb::LENGTH + 1 + rgb::HEX_SIZE)) && (s_pUdpBuffer[5 + rgb::LENGTH] == '#')) {
-			SetRGB(&s_pUdpBuffer[(5 + rgb::LENGTH + 1)]);
+	if (memcmp(&pBuffer[5], rgb::PATH, rgb::LENGTH) == 0) {
+		if ((nSize == (5 + rgb::LENGTH + 1 + rgb::HEX_SIZE)) && (pBuffer[5 + rgb::LENGTH] == '#')) {
+			SetRGB(reinterpret_cast<const char *>(&pBuffer[(5 + rgb::LENGTH + 1)]));
 			return;
 		}
 
@@ -354,9 +366,9 @@ void LtcDisplayRgb::Run() {
 		return;
 	}
 
-	if (memcmp(&s_pUdpBuffer[5], master::PATH, master::LENGTH) == 0) {
-		if ((nBytesReceived == (5 + master::LENGTH + 1 + master::HEX_SIZE)) && (s_pUdpBuffer[5 + master::LENGTH] == '#')) {
-			m_nMaster = hexadecimalToDecimal(&s_pUdpBuffer[(5 + master::LENGTH + 1)], master::HEX_SIZE);
+	if (memcmp(&pBuffer[5], master::PATH, master::LENGTH) == 0) {
+		if ((nSize == (5 + master::LENGTH + 1 + master::HEX_SIZE)) && (pBuffer[5 + master::LENGTH] == '#')) {
+			m_nMaster = hexadecimalToDecimal(reinterpret_cast<const char *>(&pBuffer[(5 + master::LENGTH + 1)]), master::HEX_SIZE);
 			return;
 		}
 
@@ -369,17 +381,26 @@ void LtcDisplayRgb::Run() {
 
 void LtcDisplayRgb::Print() {
 	if (m_tDisplayRgbType == Type::RGBPANEL) {
-		printf("Display RGB panel\n");
+#if !defined (CONFIG_LTC_DISABLE_RGB_PANEL)
+		puts("Display RGB panel");
+#else
+		puts("Display RGB panel disabled");
+#endif
 	} else {
-		printf("Display WS28xx\n");
-		printf(" Type    : %s [%d]\n", pixel::pixel_get_type(m_tLedType), static_cast<int>(m_tLedType));
-		printf(" Mapping : %s [%d]\n", pixel::pixel_get_map(m_tMapping), static_cast<int>(m_tMapping));
+#if !defined (CONFIG_LTC_DISABLE_WS28XX)
+		puts("Display WS28xx");
+		printf(" Type    : %s [%d]\n", pixel::pixel_get_type(m_PixelType), static_cast<int>(m_PixelType));
+		printf(" Mapping : %s [%d]\n", pixel::pixel_get_map(m_PixelMap), static_cast<int>(m_PixelMap));
+#else
+		puts("Display WS28xx disabled");
+#endif
 	}
+
 	printf(" Master  : %d\n", m_nMaster);
 	printf(" RGB     : Character 0x%.6X, Colon 0x%.6X, Message 0x%.6X\n", m_aColour[static_cast<uint32_t>(ColourIndex::TIME)], m_aColour[static_cast<uint32_t>(ColourIndex::COLON)], m_aColour[static_cast<uint32_t>(ColourIndex::MESSAGE)]);
 
 	if (m_pLtcDisplayRgbSet == nullptr) {
-		printf(" No Init()!\n");
+		puts(" No Init()!");
 	} else {
 		m_pLtcDisplayRgbSet->Print();
 	}

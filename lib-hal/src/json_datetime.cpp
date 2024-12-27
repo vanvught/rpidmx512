@@ -33,8 +33,8 @@
 
 #include "debug.h"
 
-namespace remoteconfig {
-namespace timedate {
+
+namespace remoteconfig::timedate {
 static int atoi(const char *pBuffer, uint32_t nSize) {
 	assert(pBuffer != nullptr);
 	assert(nSize <= 4);
@@ -121,5 +121,5 @@ void json_set_timeofday(const char *pBuffer, const uint32_t nBufferSize) {
 
 	DEBUG_EXIT
 }
-}  // namespace timedate
-}  // namespace remoteconfig
+} // namespace remoteconfig::timedate
+

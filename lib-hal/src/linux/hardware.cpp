@@ -211,7 +211,7 @@ Hardware::Hardware():
 	FUNC_PREFIX(spi_begin());
 
 #if defined (DEBUG_I2C)
-	I2cDetect i2cdetect;
+	i2c_detect();
 #endif
 
 #if !defined(DISABLE_RTC)

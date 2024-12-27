@@ -151,10 +151,10 @@ public:
 		DEBUG_ENTRY
 
 		if (m_type == pixel::Type::SK6812W) {
-			m_nCount = m_nCount <= static_cast<uint16_t>(pixel::max::ledcount::RGBW) ? m_nCount : static_cast<uint16_t>(pixel::max::ledcount::RGBW);
+			m_nCount = m_nCount <= pixel::max::ledcount::RGBW ? m_nCount : pixel::max::ledcount::RGBW;
 			m_nLedsPerPixel = 4;
 		} else {
-			m_nCount = m_nCount <= static_cast<uint16_t>(pixel::max::ledcount::RGB) ? m_nCount : static_cast<uint16_t>(pixel::max::ledcount::RGB);
+			m_nCount = m_nCount <= pixel::max::ledcount::RGB ? m_nCount : pixel::max::ledcount::RGB;
 			m_nLedsPerPixel = 3;
 		}
 
@@ -189,7 +189,12 @@ public:
 
 			const auto nLedTime = (8U * 1000000U) / m_nClockSpeedHz;
 			const auto nLedsTime = nLedTime * m_nCount * m_nLedsPerPixel;
-			m_nRefreshRate = 1000000U / nLedsTime;
+			if (nLedsTime > 0) {
+			    m_nRefreshRate = 1000000U / nLedsTime;
+			} else {
+			    m_nRefreshRate = 0;
+			    assert(0);
+			}
 		} else {
 			m_bIsRTZProtocol = true;
 

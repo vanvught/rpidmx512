@@ -2,7 +2,7 @@
  * @file ssd1306.cpp
  *
  */
-/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -63,13 +63,13 @@ static constexpr auto SET_PRECHARGE = 0xD9;
 static constexpr auto SET_COMPINS = 0xDA;
 static constexpr auto SET_VCOMDETECT = 0xDB;
 }  // namespace cmd
-namespace oled {
-namespace font8x6 {
+
+namespace oled::font8x6 {
 static constexpr auto CHAR_H = 8;
 static constexpr auto CHAR_W = 6;
 static constexpr auto COLS = (SSD1306_LCD_WIDTH / CHAR_W);
-}  // namespace font8x6
-}  // namespace oled
+} // namespace oled::font8x6
+
 }  // namespace ssd1306
 
 static const uint8_t _OledFont8x6[] __attribute__((aligned(4))) = {
@@ -208,8 +208,6 @@ static const uint8_t oled_128x32_init[] __attribute__((aligned(4))) = {
 		cmd::DISPLAY_NORMAL };
 
 static uint8_t _ClearBuffer[133 + 1] __attribute__((aligned(4)));
-
-Ssd1306 *Ssd1306::s_pThis = nullptr;
 
 Ssd1306::Ssd1306() : m_I2C(OLED_I2C_SLAVE_ADDRESS_DEFAULT) {
 	assert(s_pThis == nullptr);

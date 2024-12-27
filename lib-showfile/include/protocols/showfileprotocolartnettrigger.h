@@ -2,7 +2,7 @@
  * @file showfileprotocolartnettrigger.h
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,17 +34,52 @@
 
 #include "debug.h"
 
-class ShowFileProtocolArtNetTrigger: public ArtNetTrigger {
+class ShowFileProtocolArtNetTrigger {
 public:
 	ShowFileProtocolArtNetTrigger() {
 		DEBUG_ENTRY
 
-		ArtNetController::Get()->SetArtNetTrigger(this);
+		assert(s_pThis == nullptr);
+		s_pThis = this;
+
+		ArtNetController::Get()->SetArtTriggerCallbackFunctionPtr(staticCallbackFunction);
 
 		DEBUG_EXIT
 	}
 
-	void Handler(const struct TArtNetTrigger *ptArtNetTrigger) override;
+private:
+	void Handler(const struct ArtNetTrigger *pArtNetTrigger)  {
+		DEBUG_ENTRY
+		DEBUG_PRINTF("Key=%d, SubKey=%d", pArtNetTrigger->Key, pArtNetTrigger->SubKey);
+
+		if (pArtNetTrigger->Key == ArtTriggerKey::ART_TRIGGER_KEY_SOFT) {
+			switch (pArtNetTrigger->SubKey) {
+			case 'B':
+				ShowFile::Get()->BlackOut();
+				break;
+			case 'G':
+				ShowFile::Get()->Play();
+				break;
+			case 'R':
+				ShowFile::Get()->Resume();
+				break;
+			case 'S':
+				ShowFile::Get()->Stop();
+				break;
+			default:
+				break;
+			}
+		}
+
+		if (pArtNetTrigger->Key == ArtTriggerKey::ART_TRIGGER_KEY_SHOW) {
+			ShowFile::Get()->SetPlayerShowFileCurrent(pArtNetTrigger->SubKey);
+		}
+
+		DEBUG_EXIT
+	}
+
+private:
+	static inline ShowFileProtocolArtNetTrigger *s_pThis;
 };
 
 #endif /* PROTOCOLS_SHOWFILEPROTOCOLARTNETTRIGGER_H_ */

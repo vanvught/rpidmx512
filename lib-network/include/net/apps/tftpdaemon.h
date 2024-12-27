@@ -42,8 +42,6 @@ public:
 
 	void Input(const uint8_t *, uint32_t, uint32_t, uint16_t);
 
-	void Run();
-
 	virtual bool FileOpen(const char *pFileName, tftp::Mode mode)=0;
 	virtual bool FileCreate(const char *pFileName, tftp::Mode mode)=0;
 	virtual bool FileClose()=0;
@@ -81,13 +79,13 @@ private:
 	uint16_t m_nBlockNumber { 0 };
 	bool m_bIsLastBlock { false };
 
-	static TFTPDaemon* Get() {
+	static TFTPDaemon *Get() {
 		return s_pThis;
 	}
 
 private:
 	void static staticCallbackFunction(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
-		TFTPDaemon::Get()->Input(pBuffer, nSize, nFromIp, nFromPort);
+		s_pThis->Input(pBuffer, nSize, nFromIp, nFromPort);
 	}
 	static inline TFTPDaemon *s_pThis;
 };

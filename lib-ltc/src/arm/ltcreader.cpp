@@ -23,9 +23,15 @@
  * THE SOFTWARE.
  */
 
-#pragma GCC push_options
-#pragma GCC optimize ("O2")
-#pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#if defined (DEBUG_ARM_LTCREADER)
+# undef NDEBUG
+#endif
+
+#if !defined(__clang__)
+# pragma GCC push_options
+# pragma GCC optimize ("O2")
+# pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#endif
 
 #include <cstdint>
 #include <cstring>
@@ -42,7 +48,6 @@
 
 // Output
 #include "artnetnode.h"
-#include "rtpmidi.h"
 #include "midi.h"
 #include "ltcetc.h"
 #include "arm/ltcoutputs.h"
@@ -71,11 +76,11 @@
 static volatile uint32_t nFiqUsPrevious = 0;
 static volatile uint32_t nFiqUsCurrent = 0;
 
-static volatile uint32_t nBitTime = 0;
-static volatile uint32_t nTotalBits = 0;
-static volatile bool bOnesBitCount = false;
+static volatile uint32_t sv_nBitTime;
+static volatile uint32_t sv_nTotalBits;
 static volatile uint32_t nCurrentBit = 0;
 static volatile uint32_t nSyncCount = 0;
+static volatile bool bOnesBitCount = false;
 static volatile bool bTimeCodeSync = false;
 static volatile bool bTimeCodeValid = false;
 
@@ -86,7 +91,7 @@ static volatile bool bTimeCodeAvailable;
 static volatile struct midi::Timecode s_midiTimeCode = { 0, 0, 0, 0, static_cast<uint8_t>(midi::TimecodeType::EBU) };
 
 #if defined (H3)
-static void arm_timer_handler(void) {
+static void arm_timer_handler() {
 	gv_ltc_nUpdatesPerSecond = gv_ltc_nUpdates - gv_ltc_nUpdatesPrevious;
 	gv_ltc_nUpdatesPrevious = gv_ltc_nUpdates;
 }
@@ -109,44 +114,44 @@ void EXTI10_15_IRQHandler() {
 	H3_PIO_PA_INT->STA = static_cast<uint32_t>(~0x0);
 
 	if (nFiqUsPrevious >= nFiqUsCurrent) {
-		nBitTime = nFiqUsPrevious - nFiqUsCurrent;
-		nBitTime = 42949672 - nBitTime;
+		sv_nBitTime = nFiqUsPrevious - nFiqUsCurrent;
+		sv_nBitTime = 42949672 - sv_nBitTime;
 	} else {
-		nBitTime = nFiqUsCurrent - nFiqUsPrevious;
+		sv_nBitTime = nFiqUsCurrent - nFiqUsPrevious;
 	}
 #elif defined (GD32)
 	nFiqUsCurrent = TIMER_CNT(TIMER5);
 	if (nFiqUsCurrent >= nFiqUsPrevious) {
-		nBitTime = nFiqUsCurrent - nFiqUsPrevious;
+		sv_nBitTime = nFiqUsCurrent - nFiqUsPrevious;
 	} else {
-		nBitTime = UINT16_MAX - (nFiqUsPrevious - nFiqUsCurrent);
+		sv_nBitTime = UINT16_MAX - (nFiqUsPrevious - nFiqUsCurrent);
 	}
 #endif
 
 	nFiqUsPrevious = nFiqUsCurrent;
 
-	if ((nBitTime < ONE_TIME_MIN) || (nBitTime > ZERO_TIME_MAX)) {
-		nTotalBits = 0;
+	if ((sv_nBitTime < ONE_TIME_MIN) || (sv_nBitTime > ZERO_TIME_MAX)) {
+		sv_nTotalBits = 0;
 	} else {
 		if (bOnesBitCount) {
 			bOnesBitCount = false;
 		} else {
-			if (nBitTime > ZERO_TIME_MIN) {
+			if (sv_nBitTime > ZERO_TIME_MIN) {
 				nCurrentBit = 0;
 				nSyncCount = 0;
 			} else {
 				nCurrentBit = 1;
 				bOnesBitCount = true;
-				nSyncCount++;
+				nSyncCount = nSyncCount + 1;
 
 				if (nSyncCount == 12) {
 					nSyncCount = 0;
 					bTimeCodeSync = true;
-					nTotalBits = END_SYNC_POSITION;
+					sv_nTotalBits = END_SYNC_POSITION;
 				}
 			}
 
-			if (nTotalBits <= END_DATA_POSITION) {
+			if (sv_nTotalBits <= END_DATA_POSITION) {
 				aTimeCodeBits[0] = static_cast<uint8_t>(aTimeCodeBits[0] >> 1);
 				for (uint32_t n = 1; n < 8; n++) {
 					if (aTimeCodeBits[n] & 1) {
@@ -160,12 +165,12 @@ void EXTI10_15_IRQHandler() {
 				}
 			}
 
-			nTotalBits++;
+			sv_nTotalBits = sv_nTotalBits + 1;
 		}
 
-		if (nTotalBits == END_SMPTE_POSITION) {
+		if (sv_nTotalBits == END_SMPTE_POSITION) {
 
-			nTotalBits = 0;
+			sv_nTotalBits = 0;
 
 			if (bTimeCodeSync) {
 				bTimeCodeSync = false;
@@ -174,7 +179,7 @@ void EXTI10_15_IRQHandler() {
 		}
 
 		if (bTimeCodeValid) {
-			gv_ltc_nUpdates++;
+			gv_ltc_nUpdates = gv_ltc_nUpdates + 1;
 
 			bTimeCodeValid = false;
 
@@ -249,16 +254,17 @@ void LtcReader::Start() {
 	GPIO_BOP(GPIOA) = GPIO_PIN_4;
 # endif
 #endif
+
+	LtcOutputs::Get()->Init();
+	Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
 }
 
 void LtcReader::Run() {
-	ltc::Type TimeCodeType;
-
 	__DMB();
 	if (bTimeCodeAvailable) {
 		__DMB();
 		bTimeCodeAvailable = false;
-		TimeCodeType = ltc::Type::UNKNOWN;
+		[[maybe_unused]] auto TimeCodeType = ltc::Type::UNKNOWN;
 
 		__DMB();
 		if (bIsDropFrameFlagSet) {
@@ -271,6 +277,7 @@ void LtcReader::Run() {
 			} else if (gv_ltc_nUpdatesPerSecond >= 28) {
 				TimeCodeType = ltc::Type::SMPTE;
 			} else {
+				return;
 			}
 		}
 
@@ -288,18 +295,12 @@ void LtcReader::Run() {
 			ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct artnet::TimeCode*>(&ltcTimeCode));
 		}
 
-		if (!ltc::g_DisabledOutputs.bRtpMidi) {
-			RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(const_cast<struct midi::Timecode *>(&s_midiTimeCode)));
-		}
-
 		if (!ltc::g_DisabledOutputs.bEtc) {
 			LtcEtc::Get()->Send(reinterpret_cast<const struct midi::Timecode *>(const_cast<struct midi::Timecode *>(&s_midiTimeCode)));
 		}
 
 		if (m_nTypePrevious != TimeCodeType) {
 			m_nTypePrevious = TimeCodeType;
-
-			Midi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(const_cast<struct midi::Timecode *>(&s_midiTimeCode)));
 
 #if defined (H3)
 			H3_TIMER->TMR1_INTV = TimeCodeConst::TMR_INTV[static_cast<uint32_t>(TimeCodeType)] / 4;
@@ -310,7 +311,7 @@ void LtcReader::Run() {
 #endif
 		}
 
-		LtcOutputs::Get()->Update(reinterpret_cast<const struct ltc::TimeCode*>(&ltcTimeCode));
+		LtcOutputs::Get()->Update(reinterpret_cast<const struct ltc::TimeCode *>(&ltcTimeCode));
 	}
 
 	__DMB();

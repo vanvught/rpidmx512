@@ -1,6 +1,8 @@
 MEMORY
 {
-    ram : ORIGIN = 0x40000000, LENGTH = 16M  
+	SRAMA1 : ORIGIN = 0x00000000, LENGTH = 64K
+	SRAMA2 : ORIGIN = 0x00044000, LENGTH = 32K
+    ram    : ORIGIN = 0x40000000, LENGTH = 16M  
 }
 
 __ram_start = ORIGIN(ram);
@@ -21,6 +23,20 @@ __svc_cpus_stack_size = 0x10000;
 
 SECTIONS
 {
+  .srama1 :
+  {
+	. = ALIGN(4);
+    *(.srama1)
+    *(.srama1*)
+  } >SRAMA1 
+  
+  .srama2 :
+  {
+	. = ALIGN(4);
+    *(.srama2)
+    *(.srama2*)
+  } >SRAMA2 
+
     .init : 
     {
     . = ALIGN(4);

@@ -67,12 +67,12 @@ enum class CmdIndex: uint32_t {
 static constexpr auto BUFLEN = 196;
 static constexpr auto MAXARG = 4;
 
-namespace msg {
-namespace error {
+
+namespace msg::error {
 static constexpr char INVALID[] = "Invalid command.\n";
 static constexpr char INTERNAL[] = "Internal error.\n";
-}  // namespace error
-}  // namespace msg
+} // namespace msg::error
+
 }  // namespace shell
 
 class Shell {

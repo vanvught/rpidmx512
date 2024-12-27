@@ -61,7 +61,7 @@ void netif_init() {
 	netif.gw.addr = 0;
 	netif.broadcast_ip.addr = 0;
 	netif.secondary_ip.addr = 2
-			+ ((static_cast<uint32_t>(netif.hwaddr[3])) << 8)
+			+ ((static_cast<uint32_t>(static_cast<uint8_t>(netif.hwaddr[3] + 0xFF + 0xFF))) << 8)
 			+ ((static_cast<uint32_t>(netif.hwaddr[4])) << 16)
 			+ ((static_cast<uint32_t>(netif.hwaddr[5])) << 24);
 	netif.flags = 0;

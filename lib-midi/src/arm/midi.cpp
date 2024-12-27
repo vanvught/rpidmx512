@@ -97,11 +97,11 @@ void TIMER0_IRQHandler() {	// 100ms Tick
 		sv_nUpdatesPerSecond = sv_nUpdates - sv_nUpdatesPrevious;
 		sv_nUpdatesPrevious = sv_nUpdates;
 	} else {
-		sv_nTick100ms++;
+		sv_nTick100ms = sv_nTick100ms + 1;
 	}
 
 	if (sv_ActiveSenseState == midi::ActiveSenseState::ENABLED) {
-		sv_nActiveSenseTimeout++;
+		sv_nActiveSenseTimeout = sv_nActiveSenseTimeout + 1;
 		if (sv_nActiveSenseTimeout > 3) { // > 300 ms
 			sv_ActiveSenseState = midi::ActiveSenseState::FAILED;	// Turn All Notes Off
 		}
@@ -158,11 +158,11 @@ void TIMER0_BRK_TIMER8_IRQHandler() {
 			sv_nUpdatesPerSecond = sv_nUpdates - sv_nUpdatesPrevious;
 			sv_nUpdatesPrevious = sv_nUpdates;
 		} else {
-			sv_nTick100ms++;
+			sv_nTick100ms = sv_nTick100ms + 1;
 		}
 
 		if (sv_ActiveSenseState == midi::ActiveSenseState::ENABLED) {
-			sv_nActiveSenseTimeout++;
+			sv_nActiveSenseTimeout = sv_nActiveSenseTimeout + 1;
 			if (sv_nActiveSenseTimeout > 3) { // > 300 ms
 				sv_ActiveSenseState = midi::ActiveSenseState::FAILED;	// Turn All Notes Off
 			}
@@ -355,7 +355,7 @@ bool Midi::Parse() {
 			// We still need to reset these
 			m_nPendingMessageIndex = 0;
 			m_nPendingMessageExpectedLenght = 0;
-			sv_nUpdates++;
+			sv_nUpdates = sv_nUpdates + 1;
 			return true;
 			__builtin_unreachable();
 			break;
@@ -411,7 +411,7 @@ bool Midi::Parse() {
 			m_nPendingMessageIndex = 0;
 			m_nPendingMessageExpectedLenght = 0;
 
-			sv_nUpdates++;
+			sv_nUpdates = sv_nUpdates + 1;
 			return true;
 		} else {
 			// Waiting for more data
@@ -469,7 +469,7 @@ bool Midi::Parse() {
 					m_Message.nChannel = 0;
 					m_Message.nBytesCount = m_nPendingMessageIndex;
 
-					sv_nUpdates++;
+					sv_nUpdates = sv_nUpdates + 1;
 
 					ResetInput();
 					return true;
@@ -526,7 +526,7 @@ bool Midi::Parse() {
 			m_nPendingMessageIndex = 0;
 			m_nPendingMessageExpectedLenght = 0;
 
-			sv_nUpdates++;
+			sv_nUpdates = sv_nUpdates + 1;
 
 			// Activate running status (if enabled for the received type)
 			switch (m_Message.tType) {

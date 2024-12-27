@@ -2,7 +2,7 @@
  * @file ssd1311.cpp
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,10 +23,10 @@
  * THE SOFTWARE.
  */
 
-#include <cassert>
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
+#include <cassert>
 
 #include "i2c/ssd1311.h"
 
@@ -56,8 +56,6 @@ using namespace ssd1311;
 
 static uint8_t _ClearBuffer[1 + MAX_COLUMNS] __attribute__((aligned(4)));
 static uint8_t _TextBuffer[1 + MAX_COLUMNS] __attribute__((aligned(4)));
-
-Ssd1311 *Ssd1311::s_pThis = nullptr;
 
 Ssd1311::Ssd1311(): m_I2C(DEFAULT_I2C_ADDRESS) {
 	assert(s_pThis == nullptr);

@@ -47,6 +47,9 @@
 #include "netif.h"
 #include "net/autoip.h"
 #include "net/dhcp.h"
+#if defined (CONFIG_NET_ENABLE_NTP_CLIENT)
+# include "net/apps/ntp_client.h"
+#endif
 #if !defined(CONFIG_NET_APPS_NO_MDNS)
 # include "net/apps/mdns.h"
 #endif
@@ -67,6 +70,9 @@ static void netif_ext_callback(const uint16_t reason, [[maybe_unused]] const net
 
 	if ((reason & net::NetifReason::NSC_IPV4_ADDRESS_CHANGED) == net::NetifReason::NSC_IPV4_ADDRESS_CHANGED) {
 		net::display_ip();
+#if defined (CONFIG_NET_ENABLE_NTP_CLIENT)
+		ntp_client_start();
+#endif
 #if !defined(CONFIG_NET_APPS_NO_MDNS)
 		mdns_start();
 #endif
@@ -92,6 +98,9 @@ static void netif_ext_callback(const uint16_t reason, [[maybe_unused]] const net
 			DEBUG_EXIT
 			return;
 		}
+#if defined (CONFIG_NET_ENABLE_NTP_CLIENT)
+		ntp_client_start();
+#endif
 #if !defined(CONFIG_NET_APPS_NO_MDNS)
 		mdns_start();
 #endif
@@ -172,9 +181,6 @@ Network::Network() {
 	net::link_pin_poll_init();
 #elif defined (ENET_LINK_CHECK_REG_POLL)
 	net::link_status_read();
-#endif
-#if !defined(CONFIG_NET_APPS_NO_MDNS)
-	mdns_init();
 #endif
 	DEBUG_EXIT
 }
@@ -267,13 +273,4 @@ void Network::EnableDhcp() {
 	NetworkStore::SaveDhcp(true);
 
 	DEBUG_EXIT
-}
-
-void Network::Print() {
-	printf("Network [%c]\n", GetAddressingMode());
-	printf(" Hostname  : %s\n", m_aHostName);
-	printf(" IfName    : %u: %s " MACSTR "\n", static_cast<unsigned int>(GetIfIndex()), m_aIfName, MAC2STR(net::netif_hwaddr()));
-	printf(" Primary   : " IPSTR "/%u (HTTP only " IPSTR ")\n", IP2STR(net::netif_ipaddr()), static_cast<unsigned int>(GetNetmaskCIDR()), IP2STR(net::netif_secondary_ipaddr()));
-	printf(" Gateway   : " IPSTR "\n", IP2STR(net::netif_gw()));
-	printf(" Broadcast : " IPSTR "\n", IP2STR(GetBroadcastIp()));
 }

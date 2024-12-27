@@ -24,7 +24,12 @@
  * THE SOFTWARE.
  */
 
+#ifdef DEBUG_NETWORK
+# undef NDEBUG
+#endif
+
 #include <cstdio>
+#include <cstdint>
 #include <unistd.h>
 #include <stdlib.h>
 #include <cstring>
@@ -41,6 +46,8 @@
 # include "net/apps/mdns.h"
 #endif
 
+#include "../../config/net_config.h"
+
 #include "debug.h"
 
 /**
@@ -53,13 +60,21 @@
 static uint8_t s_ReadBuffer[MAX_SEGMENT_LENGTH];
 
 namespace max {
-	static constexpr auto PORTS_ALLOWED = 32;
 	static constexpr auto ENTRIES = (1 << 2); // Must always be a power of 2
 	static constexpr auto ENTRIES_MASK [[maybe_unused]] = (ENTRIES - 1);
 }
 
-static int s_ports_allowed[max::PORTS_ALLOWED];
-static int snHandles[max::PORTS_ALLOWED];
+struct PortInfo {
+	net::UdpCallbackFunctionPtr callback;
+	uint16_t nPort;
+};
+
+struct Port {
+	PortInfo info;
+	int nSocket;
+};
+
+static Port s_Ports[UDP_MAX_PORTS_ALLOWED];
 
 /**
  * END
@@ -85,17 +100,13 @@ Network::Network(int argc, char **argv) {
 /**
  * BEGIN - needed H3 code compatibility
  */
-	uint32_t i;
-
-	for (i = 0; i < max::PORTS_ALLOWED; i++) {
-		s_ports_allowed[i] = 0;
-		snHandles[i] = -1;
+	for (uint32_t i = 0; i < UDP_MAX_PORTS_ALLOWED; i++) {
+		s_Ports[i].nSocket = -1;
 	}
 
 	NetworkParams params;
 	params.Load();
 
-	m_nNtpServerIp = params.GetNtpServer();
 /**
  * END
  */
@@ -121,12 +132,10 @@ Network::Network(int argc, char **argv) {
 
 	m_nIfIndex = if_nametoindex(const_cast<char*>(m_aIfName));
 
-#if !defined ( __CYGWIN__ )
 	if (m_nIfIndex == 0) {
 		perror("if_nametoindex");
 		exit(EXIT_FAILURE);
 	}
-#endif
 
 	memset(m_aHostName, 0, sizeof(m_aHostName));
 
@@ -134,7 +143,7 @@ Network::Network(int argc, char **argv) {
 		perror("gethostname");
 	}
 
-	i = 0;
+	uint32_t i = 0;
 
 	while((m_aHostName[i] != '\0') && (i < network::HOSTNAME_SIZE) && (m_aHostName[i] != '.') ) {
 		i++;
@@ -156,9 +165,9 @@ Network::Network(int argc, char **argv) {
 }
 
 Network::~Network() {
-	for (unsigned i = 0; i < max::PORTS_ALLOWED; i++) {
-		if (s_ports_allowed[i] != 0) {
-			Network::End(s_ports_allowed[i]);
+	for (uint32_t i = 0; i < UDP_MAX_PORTS_ALLOWED; i++) {
+		if (s_Ports[i].info.nPort != 0) {
+			Network::End(s_Ports[i].info.nPort);
 		}
 	}
 }
@@ -177,20 +186,25 @@ int32_t Network::Begin(uint16_t nPort, [[maybe_unused]] net::UdpCallbackFunction
  * BEGIN - needed H3 code compatibility
  */
 
-	for (i = 0; i < max::PORTS_ALLOWED; i++) {
-		if (s_ports_allowed[i] == nPort) {
+	for (i = 0; i < UDP_MAX_PORTS_ALLOWED; i++) {
+		auto& portInfo = s_Ports[i].info;
+
+		if (portInfo.nPort == nPort) {
 			return i;
 		}
 
-		if (s_ports_allowed[i] == 0) {
+		if (portInfo.nPort == 0) {
+			portInfo.callback = callback;
+			portInfo.nPort = nPort;
+
+			DEBUG_PRINTF("i=%d, local_port=%d[%x], callback=%p", i, nPort, nPort, reinterpret_cast<void *>(callback));
 			break;
 		}
 	}
 
-	if (i == max::PORTS_ALLOWED) {
-		perror("i == max::PORTS_ALLOWED");
+	if (i == UDP_MAX_PORTS_ALLOWED) {
+		perror("i == UDP_MAX_PORTS_ALLOWED");
 		exit(EXIT_FAILURE);
-		//return -1;
 	}
 
 	DEBUG_PRINTF("i=%d, nPort=%d", i, nPort);
@@ -245,16 +259,14 @@ int32_t Network::Begin(uint16_t nPort, [[maybe_unused]] net::UdpCallbackFunction
 /**
  * BEGIN - needed H3 code compatibility
  */
-	s_ports_allowed[i] = nPort;
-
-	for (uint32_t i = 0; i < max::PORTS_ALLOWED; i++) {
-		DEBUG_PRINTF("s_ports_allowed[%2u]=%4u", i, s_ports_allowed[i]);
+	for (uint32_t i = 0; i < UDP_MAX_PORTS_ALLOWED; i++) {
+		DEBUG_PRINTF("s_Ports[%2u].info.nPort=%4u", i, s_Ports[i].info.nPort);
 	}
 /**
  * END
  */
 
-	snHandles[i] = nSocket;
+	s_Ports[i].nSocket = nSocket;
 
 	DEBUG_PRINTF("nSocket=%d", nSocket);
 	DEBUG_EXIT
@@ -274,23 +286,18 @@ int32_t Network::End(uint16_t nPort) {
  * BEGIN - needed H3 code compatibility
  */
 
-	for (uint32_t i = 0; i < max::PORTS_ALLOWED; i++) {
-		DEBUG_PRINTF("s_ports_allowed[%2u]=%4u", i, s_ports_allowed[i]);
+	for (uint32_t i = 0; i < UDP_MAX_PORTS_ALLOWED; i++) {
+		DEBUG_PRINTF("s_Ports[%2u].info.nPort=%4u", i, s_Ports[i].info.nPort);
 	}
 
-	uint32_t i;
+	for (auto i = 0; i < UDP_MAX_PORTS_ALLOWED; i++) {
+		auto& portInfo = s_Ports[i].info;
 
-	for (i = 0; i < max::PORTS_ALLOWED; i++) {
-		if (s_ports_allowed[i] == nPort) {
-			s_ports_allowed[i] = 0;
-			puts("close");
+		if (portInfo.nPort == nPort) {
+			portInfo.callback = nullptr;
+			portInfo.nPort = 0;
 
-			if (close(snHandles[i]) == -1) {
-				perror("unbind");
-				exit(EXIT_FAILURE);
-			}
-
-			snHandles[i] = -1;
+			s_Ports[i].nSocket = -1;
 			return 0;
 		}
 	}
@@ -592,5 +599,22 @@ void Network::Print() {
 	printf(" Broadcast : " IPSTR "\n", IP2STR(GetBroadcastIp()));
 	printf(" Mac       : " MACSTR "\n", MAC2STR(m_aNetMacaddr));
 	printf(" Mode      : %c\n", GetAddressingMode());
+}
+
+void Network::Run() {
+	for (uint32_t nPortIndex = 0; nPortIndex < UDP_MAX_PORTS_ALLOWED; nPortIndex++) {
+		struct sockaddr_in si_other;
+		socklen_t slen = sizeof(si_other);
+
+		const auto& portInfo = s_Ports[nPortIndex].info;
+
+		if (portInfo.callback != nullptr) {
+			uint8_t data[MAX_SEGMENT_LENGTH];
+			int nDataLength;
+			if ((nDataLength = recvfrom(s_Ports[nPortIndex].nSocket, data, MAX_SEGMENT_LENGTH, 0, reinterpret_cast<struct sockaddr*>(&si_other), &slen)) > 0) {
+				portInfo.callback(data, nDataLength, si_other.sin_addr.s_addr, ntohs(si_other.sin_port));
+			}
+		}
+	}
 }
 #endif

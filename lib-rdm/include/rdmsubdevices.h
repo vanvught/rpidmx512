@@ -43,12 +43,12 @@
 # undef CONFIG_RDM_ENABLE_SUBDEVICES
 #endif
 
-namespace rdm {
-namespace subdevices {
+
+namespace rdm::subdevices {
 static constexpr auto MAX = 8;
 static constexpr auto STORE = 96;	///< Configuration store in bytes
-}  // namespace subdevices
-}  // namespace rdm
+} // namespace rdm::subdevices
+
 
 class RDMSubDevices {
 public:

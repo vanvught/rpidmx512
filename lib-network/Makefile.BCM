@@ -1,6 +1,8 @@
 DEFINES=NDEBUG
 
-EXTRA_INCLUDES=../lib-display/include ../lib-properties/include
+EXTRA_INCLUDES=
+
+EXTRA_SRCDIR=
 
 ifeq ($(findstring ESP8266,$(MAKE_FLAGS)), ESP8266)
 	EXTRA_SRCDIR+=src/esp8266 src/esp8266/rpi src/params

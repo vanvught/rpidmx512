@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -53,7 +53,7 @@
 #include "artnetconst.h"
 
 #include "midi.h"
-#include "rtpmidi.h"
+#include "net/rtpmidi.h"
 #include "midiparams.h"
 
 #include "tcnet.h"
@@ -64,8 +64,8 @@
 #include "ntpserver.h"
 
 #include "mcpbuttons.h"
-
 #include "ltcoscserver.h"
+
 #include "ltcsourceconst.h"
 #include "ltcsource.h"
 #include "ltcsender.h"
@@ -73,13 +73,13 @@
 #include "arm/artnetreader.h"
 #include "arm/ltcreader.h"
 #include "arm/midireader.h"
-#include "arm/systimereader.h"
 #include "arm/tcnetreader.h"
 #include "arm/ltcgenerator.h"
-#include "arm/ltcmidisystemrealtime.h"
 #include "arm/rtpmidireader.h"
+#include "arm/systimereader.h"
 #include "arm/ltcetcreader.h"
 #include "arm/ltcoutputs.h"
+#include "arm/ltcmidisystemrealtime.h"
 
 #include "flashcodeinstall.h"
 
@@ -94,8 +94,7 @@
 # include "factorydefaults.h"
 #endif
 
-// System Time
-#include "net/apps/ntpclient.h"
+#include "net/apps/ntp_client.h"
 #include "gpstimeclient.h"
 #include "gpsparams.h"
 
@@ -106,23 +105,24 @@
 # include "shell/shell.h"
 #endif
 
-void Hardware::RebootHandler() {
-//	switch (m_tSource) {
-//	case ltc::source::TCNET:
-//		TCNet::Get()->Stop();
-//		break;
-//	default:
-//		break;
-//	}
+namespace hal {
+void reboot_handler() {
+	//	switch (ltcSource) {
+	//	case ::ltc::Source::TCNET:
+	//		TCNet::Get()->Stop();
+	//		break;
+	//	default:
+	//		break;
+	//	}
 
 	if (!ltc::g_DisabledOutputs.bMax7219) {
 		LtcDisplayMax7219::Get()->Init(2); // TODO WriteChar
 	}
-
+#if !defined (CONFIG_LTC_DISABLE_WS28XX)
 	if ((!ltc::g_DisabledOutputs.bWS28xx) || (!ltc::g_DisabledOutputs.bRgbPanel)) {
 		LtcDisplayRgb::Get()->WriteChar('-');
 	}
-
+#endif
 	if (!RemoteConfig::Get()->IsReboot()) {
 		Display::Get()->SetSleep(false);
 
@@ -133,10 +133,15 @@ void Hardware::RebootHandler() {
 		Display::Get()->TextStatus("Rebooting ...");
 	}
 }
+}  // namespace hal
 
+#if !defined (CONFIG_LTC_DISABLE_RGB_PANEL)
 extern "C" {
 void h3_cpu_off(uint32_t);
 }
+#endif
+
+void static staticCallbackFunction([[maybe_unused]] const struct artnet::TimeCode *pTimeCode) {}
 
 int main() {
 	Hardware hw;
@@ -147,17 +152,13 @@ int main() {
 	FlashCodeInstall spiFlashInstall;
 
 	fw.Print("LTC SMPTE");
-	
+
 #if defined(ENABLE_SHELL)
 	Shell shell;
 #endif
 
 	display.ClearLine(1);
 	display.ClearLine(2);
-
-	NtpClient ntpClient;
-	ntpClient.Start();
-	ntpClient.Print();
 
 	LtcParams ltcParams;
 
@@ -172,7 +173,7 @@ int main() {
 	ArtNetReader artnetReader;
 	TCNetReader tcnetReader;
 	RtpMidiReader rtpMidiReader;
-	SystimeReader sysTimeReader(ltcParams.GetFps());
+	SystimeReader sysTimeReader(ltcParams.GetFps(), ltcParams.GetUtcOffset());
 	LtcEtcReader ltcEtcReader;
 
 	ltc::Source ltcSource = ltcParams.GetSource();
@@ -183,8 +184,9 @@ int main() {
 	display.SetContrast(ltcDisplayParams.GetOledIntensity());
 
 	LtcDisplayMax7219 ltcDdisplayMax7219(ltcDisplayParams.GetMax7219Type());
+#if !defined (CONFIG_LTC_DISABLE_WS28XX)
 	LtcDisplayRgb ltcDisplayRgb(ltcParams.IsRgbPanelEnabled() ? ltcdisplayrgb::Type::RGBPANEL : ltcdisplayrgb::Type::WS28XX, ltcDisplayParams.GetWS28xxDisplayType());
-
+#endif
 	/**
 	 * Select the source using buttons/rotary
 	 */
@@ -215,6 +217,7 @@ int main() {
 		ltcDdisplayMax7219.Print();
 	}
 
+#if !defined (CONFIG_LTC_DISABLE_WS28XX)
 	if ((!ltc::g_DisabledOutputs.bWS28xx) || (!ltc::g_DisabledOutputs.bRgbPanel)) {
 		ltcDisplayParams.Set(&ltcDisplayRgb);
 
@@ -235,12 +238,15 @@ int main() {
 
 		ltcDisplayRgb.Print();
 	}
+#endif
 
+#if !defined (CONFIG_LTC_DISABLE_RGB_PANEL)
 	if (ltc::g_DisabledOutputs.bRgbPanel) {
 		for (uint32_t nCpuNumber = 1; nCpuNumber < 4; nCpuNumber++) {
 			h3_cpu_off(nCpuNumber);
 		}
 	}
+#endif
 
 #if defined (NODE_RDMNET_LLRP_ONLY)
 	RDMNetLLRPOnly rdmNetLLRPOnly("LTC SMPTE");
@@ -258,6 +264,7 @@ int main() {
 	const auto bRunArtNet = ((ltcSource == ltc::Source::ARTNET) || (!ltc::g_DisabledOutputs.bArtNet));
 
 	ArtNetNode node;
+	node.SetArtTimeCodeCallbackFunction(staticCallbackFunction);
 
 	if (bRunArtNet) {
 		ArtNetParams artnetparams;
@@ -267,7 +274,7 @@ int main() {
 		node.SetShortName(0, "LTC SMPTE Node");
 
 		if (ltcSource == ltc::Source::ARTNET) {
-			node.SetTimeCodeHandler(&artnetReader);
+			node.SetArtTimeCodeCallbackFunction(ArtNetReader::staticCallbackFunction);
 		}
 
 		node.SetTimeCodeIp(ltcParams.GetTimecodeIp());
@@ -295,7 +302,7 @@ int main() {
 		tcnetparams.Load();
 		tcnetparams.Set(&tcnet);
 
-		tcnet.SetTimeCodeHandler(&tcnetReader);
+		tcnet.SetArtTimeCodeCallbackFunction(TCNetReader::staticCallbackFunctionHandler);
 		tcnet.Start();
 		tcnet.Print();
 	}
@@ -382,7 +389,6 @@ int main() {
 		oscServer.Start();
 		oscServer.Print();
 
-//		mdns.ServiceRecordAdd(nullptr, mdns::Services::OSC, "type=server", oscServer.GetPortIncoming());
 		mdns_service_record_add(nullptr, mdns::Services::OSC, "type=server", oscServer.GetPortIncoming());
 	}
 
@@ -403,8 +409,7 @@ int main() {
 	GPSTimeClient gpsTimeClient(gpsParams.GetUtcOffset(), gpsParams.GetModule());
 
 	if (bRunGpsTimeClient) {
-		ntpClient.Stop();
-
+		ntp_client_stop(true);
 		gpsTimeClient.Start();
 		gpsTimeClient.Print();
 	}
@@ -418,13 +423,12 @@ int main() {
 	NtpServer ntpServer(ltcParams.GetYear(), ltcParams.GetMonth(), ltcParams.GetDay());
 
 	if (bRunNtpServer) {
-		ntpClient.Stop();
+		ntp_client_stop(true);
 
 		ntpServer.SetTimeCode(&tStartTimeCode);
 		ntpServer.Start();
 		ntpServer.Print();
 
-//		mdns.ServiceRecordAdd(nullptr, mdns::Services::NTP, "type=server");
 		mdns_service_record_add(nullptr, mdns::Services::NTP, "type=server");
 	}
 
@@ -432,7 +436,7 @@ int main() {
 	 * LTC Generator
 	 */
 
-	LtcGenerator ltcGenerator(&tStartTimeCode, &tStopTimeCode, ltcParams.GetSkipFree());
+	LtcGenerator ltcGenerator(&tStartTimeCode, &tStopTimeCode, ltcParams.GetSkipFree(), ltcParams.IsIgnoreStart(), ltcParams.IsIgnoreStop());
 
 	/**
 	 * MIDI output System Real Time
@@ -483,24 +487,21 @@ int main() {
 		break;
 	}
 
-	mdns_print();
-
 	RemoteConfig remoteConfig(remoteconfig::Node::LTC, remoteconfig::Output::TIMECODE, 1U + static_cast<uint32_t>(ltcSource));
 
 	RemoteConfigParams remoteConfigParams;
 	remoteConfigParams.Load();
 	remoteConfigParams.Set(&remoteConfig);
 
-	while (configStore.Flash())
-		;
-
 	printf("Source : %s\n", LtcSourceConst::NAME[static_cast<uint32_t>(ltcSource)]);
 
 	ltc::source::show(ltcSource, bRunGpsTimeClient);
 
+#if !defined (CONFIG_LTC_DISABLE_RGB_PANEL)
 	if (!ltc::g_DisabledOutputs.bRgbPanel) {
 		ltcDisplayRgb.ShowSource(ltcSource);
 	}
+#endif
 
 	ltcOutputs.Print();
 
@@ -509,29 +510,29 @@ int main() {
 	for (;;) {
 		hw.WatchdogFeed();
 		nw.Run();
-
 		// Run the reader
+		// Handles MIDI Quarter Frame output messages
 		switch (ltcSource) {
 		case ltc::Source::LTC:
 			ltcReader.Run();
 			break;
 		case ltc::Source::ARTNET:
-			artnetReader.Run();		// Handles MIDI Quarter Frame output messages
+			artnetReader.Run();
 			break;
 		case ltc::Source::MIDI:
 			midiReader.Run();
 			break;
 		case ltc::Source::TCNET:
-			tcnetReader.Run();		// Handles MIDI Quarter Frame output messages
+			tcnetReader.Run();
 			break;
 		case ltc::Source::INTERNAL:
-			ltcGenerator.Run();		// Handles MIDI Quarter Frame output messages
+			ltcGenerator.Run();
 			break;
 		case ltc::Source::APPLEMIDI:
-			rtpMidiReader.Run();	// Handles status led
+			rtpMidiReader.Run();
 			break;
 		case ltc::Source::ETC:
-			ltcEtcReader.Run();		// Handles MIDI Quarter Frame output messages
+			ltcEtcReader.Run();
 			break;
 		case ltc::Source::SYSTIME:
 			sysTimeReader.Run();
@@ -539,7 +540,7 @@ int main() {
 				if (bRunNtpServer) {
 					HwClock::Get()->Run(true);
 				} else {
-					HwClock::Get()->Run(NtpClient::Get()->GetStatus() == ::ntp::Status::FAILED); // No need to check for STOPPED
+					HwClock::Get()->Run(ntp_client_get_status() == ::ntp::Status::FAILED); // No need to check for STOPPED
 				}
 			} else {
 				gpsTimeClient.Run();
@@ -564,44 +565,15 @@ int main() {
 			tcnet.Run();
 		}
 
-		if (bRunRtpMidi) {
-			rtpMidi.Run();
-		}
-
-		if (bRunLtcEtc) {
-			ltcEtc.Run();
-		}
-
-		if (bRunOSCServer) {
-			oscServer.Run();
-		}
-
-		if (bRunNtpServer) {
-			ntpServer.Run();
-		} else {
-			ntpClient.Run();	// We could check for GPS Time client running. But not really needed.
-		}
-
-		if (bRunMidiSystemRealtime) {
-			ltcMidiSystemRealtime.Run();	// UDP requests
-		}
-
 		if (ltc::g_DisabledOutputs.bOled) {
 			display.Run();
-		}
-
-		if ((!ltc::g_DisabledOutputs.bWS28xx) || (!ltc::g_DisabledOutputs.bRgbPanel)) {
-			ltcDisplayRgb.Run();
-		}
-
-		if (ltc::g_DisabledOutputs.bRgbPanel) {
-			hw.Run();
 		}
 
 		if (sourceSelect.IsConnected()) {
 			sourceSelect.Run();
 		}
 
+		hw.Run();
 		remoteConfig.Run();
 		configStore.Flash();
 #if defined(ENABLE_SHELL)

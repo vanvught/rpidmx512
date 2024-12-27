@@ -38,18 +38,18 @@
 # endif
 #endif
 
-namespace dmx {
-namespace config {
-namespace max {
-	static const uint32_t PORTS = DMX_MAX_PORTS;
-}  // namespace max
-}  // namespace config
-}  // namespace dmx
 
-namespace dmx {
-namespace buffer {
+
+namespace dmx::config::max {
+	static const uint32_t PORTS = DMX_MAX_PORTS;
+} // namespace dmx::config::max
+
+
+
+
+namespace dmx::buffer {
 static constexpr auto SIZE = 516;
-}  // namespace buffer
-}  // namespace dmx
+} // namespace dmx::buffer
+
 
 #endif /* LINUX_DMX_CONFIG_H_ */

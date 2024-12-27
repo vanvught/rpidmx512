@@ -39,8 +39,8 @@ void arm_dump_memmap(void);
 void arm_dump_page_table(void);
 }
 
-namespace shell {
-namespace dump {
+
+namespace shell::dump {
 namespace arg {
 static constexpr char BOARD[] = "board";
 static constexpr char MMAP[] = "mmap";
@@ -53,8 +53,8 @@ static constexpr auto MMAP = sizeof(arg::MMAP) - 1;
 static constexpr auto PLL = sizeof(arg::PLL) - 1;
 static constexpr auto LINKER = sizeof(arg::LINKER) - 1;
 }  // namespace length
-}  // namespace dump
-}  // namespace shell
+} // namespace shell::dump
+
 
 using namespace shell;
 

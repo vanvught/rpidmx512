@@ -53,7 +53,7 @@ public:
 		DEBUG_EXIT
 	}
 
-	~ArtNetRdmResponder() {
+	~ArtNetRdmResponder() override {
 		DEBUG_ENTRY
 		DEBUG_EXIT
 	}

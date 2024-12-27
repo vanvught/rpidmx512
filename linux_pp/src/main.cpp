@@ -30,7 +30,6 @@
 
 #include "hardware.h"
 #include "network.h"
-#include "networkconst.h"
 
 #include "display.h"
 #include "displayudfparams.h"
@@ -124,15 +123,10 @@ int main(int argc, char **argv) {
 	remoteConfigParams.Load();
 	remoteConfigParams.Set(&remoteConfig);
 
-	while (configStore.Flash())
-		;
-
-	mdns_print(); //	mDns.Print();
 	pp.Start();
 
 	while (keepRunning) {
 		pp.Run();
-		mdns_run(); //	mDns.Run();
 		remoteConfig.Run();
 		llrpOnlyDevice.Run();
 		configStore.Flash();

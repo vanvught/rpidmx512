@@ -67,10 +67,12 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
-void Hardware::RebootHandler() {
+namespace hal {
+void reboot_handler() {
 	WS28xxMulti::Get()->Blackout();
 	PixelPusher::Get()->Stop();
 }
+}  // namespace hal
 
 int main() {
 	Hardware hw;
@@ -160,11 +162,6 @@ int main() {
 	RemoteConfigParams remoteConfigParams;
 	remoteConfigParams.Load();
 	remoteConfigParams.Set(&remoteConfig);
-
-	while (configStore.Flash())
-		;
-
-	mdns_print(); //	mDns.Print();
 
 	display.TextStatus("PixelPusher Start", CONSOLE_YELLOW);
 

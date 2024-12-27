@@ -2,7 +2,7 @@
  * @file network.cpp
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -54,7 +54,7 @@ static char firmware_version[FIRMWARE_VERSION_MAX + 1] __attribute__((aligned(4)
 
 void mac_address_get(uint8_t paddr[]);
 
-Network *Network::s_pThis = nullptr;
+static net::UdpCallbackFunctionPtr s_callback;
 
 Network::Network() {
 	assert(s_pThis == nullptr);
@@ -78,7 +78,9 @@ void Network::Init() {
 	m_IsInitDone = true;
 }
 
-int32_t Network::Begin(uint16_t nPort) {
+int32_t Network::Begin(uint16_t nPort, net::UdpCallbackFunctionPtr callback) {
+	s_callback = callback;
+
 	esp8266_write_4bits(CMD_WIFI_UDP_BEGIN);
 
 	esp8266_write_halfword(nPort);
@@ -134,6 +136,17 @@ static uint8_t s_ReadBuffer[MAX_SEGMENT_LENGTH];
 uint32_t  Network::RecvFrom(int32_t nHandle, const void **ppBuffer, uint32_t *pFromIp, uint16_t *pFromPort) {
 	*ppBuffer = &s_ReadBuffer;
 	return RecvFrom(nHandle, s_ReadBuffer, MAX_SEGMENT_LENGTH, pFromIp, pFromPort);
+}
+
+void Network::Run() {
+	if (s_callback != nullptr) {
+		uint32_t nFromIp;
+		uint16_t nFromPort;
+		auto nSize = RecvFrom(0, s_ReadBuffer, MAX_SEGMENT_LENGTH, &nFromIp, &nFromPort);
+		if (nSize > 0) {
+			s_callback(s_ReadBuffer, nSize, nFromIp, nFromPort);
+		}
+	}
 }
 
 void Network::SendTo([[maybe_unused]] int32_t nHandle, const void *pBuffer, uint32_t nLength, uint32_t to_ip, uint16_t remote_port) {

@@ -40,9 +40,9 @@
 
 #include "firmwareversion.h"
 
-namespace rdm {
-namespace device {
-namespace responder {
+
+
+namespace rdm::device::responder {
 static constexpr uint8_t DEFAULT_CURRENT_PERSONALITY = 1;
 
 ///< http://rdm.openlighting.org/pid/display?manufacturer=0&pid=96
@@ -61,9 +61,9 @@ struct DeviceInfo {
 };
 
 void factorydefaults();
-}  // namespace responder
-}  // namespace device
-}  // namespace rdm
+} // namespace rdm::device::responder
+
+
 
 class RDMDeviceResponder: public RDMDevice {
 public:

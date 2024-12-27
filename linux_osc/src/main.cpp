@@ -30,7 +30,6 @@
 
 #include "hardware.h"
 #include "network.h"
-#include "networkconst.h"
 
 #include "display.h"
 #include "displayudfparams.h"
@@ -74,7 +73,6 @@ int main(int argc, char **argv) {
 	Display display;
 	ConfigStore configStore;
 	Network nw(argc, argv);
-//	MDNS mDns;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
 	hw.Print();
@@ -129,15 +127,10 @@ int main(int argc, char **argv) {
 	remoteConfigParams.Load();
 	remoteConfigParams.Set(&remoteConfig);
 
-	while (configStore.Flash())
-		;
-
-	mdns_print(); //	mDns.Print();
 	server.Start();
 
 	while (keepRunning) {
-		server.Run();
-		mdns_run(); //	mDns.Run();
+		nw.Run();
 		remoteConfig.Run();
 		llrpOnlyDevice.Run();
 		configStore.Flash();

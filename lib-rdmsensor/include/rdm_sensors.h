@@ -26,15 +26,15 @@
 #ifndef RDM_SENSORS_H_
 #define RDM_SENSORS_H_
 
-namespace rdm {
-namespace sensors {
+
+namespace rdm::sensors {
 enum class Types {
 	BH170, HTU21D, INA219, MCP9808, SI7021, MCP3424, UNDEFINED
 };
 
 const char *get_type_string(rdm::sensors::Types type);
 rdm::sensors::Types get_type_string(const char *pValue);
-}  // namespace sensors
-}  // namespace rdm
+} // namespace rdm::sensors
+
 
 #endif /* RDM_SENSORS_H_ */

@@ -2,7 +2,7 @@
  * @file dmxserial.cpp
  *
  */
-/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -60,13 +60,14 @@ DmxSerial::~DmxSerial() {
 	}
 
 	Network::Get()->End(UDP::PORT);
+	m_nHandle = -1;
 
 	s_pThis = nullptr;
 }
 
 void DmxSerial::Init() {
-	// UDP Request
-	m_nHandle = Network::Get()->Begin(UDP::PORT);
+	assert(m_nHandle == -1);
+	m_nHandle = Network::Get()->Begin(UDP::PORT, staticCallbackFunction);
 	assert(m_nHandle != -1);
 
 	ScanDirectory();
@@ -252,16 +253,6 @@ void DmxSerial::EnableTFTP(bool bEnableTFTP) {
 	}
 
 	DEBUG_EXIT
-}
-
-void DmxSerial::Run() {
-	HandleUdp();
-
-	if (m_pDmxSerialTFTP == nullptr) {
-		return;
-	}
-
-	m_pDmxSerialTFTP->Run();
 }
 
 bool DmxSerial::DeleteFile(int32_t nFileNumber) {

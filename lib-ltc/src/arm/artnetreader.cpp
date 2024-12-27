@@ -2,7 +2,7 @@
  * @file artnetreader.cpp
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +23,15 @@
  * THE SOFTWARE.
  */
 
-#pragma GCC push_options
-#pragma GCC optimize ("O2")
-#pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#if defined (DEBUG_ARM_ARTNETREADER)
+# undef NDEBUG
+#endif
+
+#if !defined(__clang__)
+# pragma GCC push_options
+# pragma GCC optimize ("O2")
+# pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#endif
 
 #include <cstdint>
 #include <cstring>
@@ -37,12 +43,13 @@
 // Input
 #include "artnettimecode.h"
 // Output
-#include "rtpmidi.h"
 #include "ltcetc.h"
 #include "ltcsender.h"
 #include "arm/ltcoutputs.h"
 
 #include "arm/platform_ltc.h"
+
+#include "debug.h"
 
 #if defined (H3)
 static void arm_timer_handler() {
@@ -54,6 +61,8 @@ static void arm_timer_handler() {
 #endif
 
 void ArtNetReader::Start() {
+	DEBUG_ENTRY
+
 #if defined (H3)
 	irq_timer_arm_physical_set(static_cast<thunk_irq_timer_arm_t>(arm_timer_handler));
 	irq_handler_init();
@@ -62,24 +71,26 @@ void ArtNetReader::Start() {
 
 	LtcOutputs::Get()->Init();
 	Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
+
+	DEBUG_EXIT
 }
 
 void ArtNetReader::Stop() {
+	DEBUG_ENTRY
+
 #if defined (H3)
 	irq_timer_arm_physical_set(static_cast<thunk_irq_timer_arm_t>(nullptr));
 #elif defined (GD32)
 #endif
+
+	DEBUG_EXIT
 }
 
 void ArtNetReader::Handler(const struct artnet::TimeCode *ArtNetTimeCode) {
-	gv_ltc_nUpdates++;
+	gv_ltc_nUpdates = gv_ltc_nUpdates + 1;
 
 	if (!ltc::g_DisabledOutputs.bLtc) {
-		LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct ltc::TimeCode*>(ArtNetTimeCode));
-	}
-
-	if (!ltc::g_DisabledOutputs.bRtpMidi) {
-		RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(ArtNetTimeCode));
+		LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct ltc::TimeCode *>(ArtNetTimeCode));
 	}
 
 	if (!ltc::g_DisabledOutputs.bEtc) {
@@ -88,5 +99,5 @@ void ArtNetReader::Handler(const struct artnet::TimeCode *ArtNetTimeCode) {
 
 	memcpy(&m_MidiTimeCode, ArtNetTimeCode, sizeof(struct midi::Timecode));
 
-	LtcOutputs::Get()->Update(reinterpret_cast<const struct ltc::TimeCode*>(ArtNetTimeCode));
+	LtcOutputs::Get()->Update(reinterpret_cast<const struct ltc::TimeCode *>(ArtNetTimeCode));
 }

@@ -92,8 +92,8 @@ static void staticCallbackFunction([[maybe_unused]] void *p, const char *s) {
 	}
 }
 
-namespace remoteconfig {
-namespace showfile {
+
+namespace remoteconfig::showfile {
 uint32_t json_get_status(char *pOutBuffer, const uint32_t nOutBufferSize) {
 	const auto status = ShowFile::Get()->GetStatus();
 	assert(status != ::showfile::Status::UNDEFINED);
@@ -114,5 +114,5 @@ void json_set_status(const char *pBuffer, const uint32_t nBufferSize) {
 	config.Read(pBuffer, nBufferSize);
 	::showfile::display_status();
 }
-}  // namespace showfile
-}  // namespace remoteconfig
+} // namespace remoteconfig::showfile
+

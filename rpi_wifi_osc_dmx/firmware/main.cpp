@@ -40,8 +40,6 @@
 #include "dmxparams.h"
 #include "dmxsend.h"
 
-#include "handler.h"
-
 #if defined(ORANGE_PI)
 # include "flashcodeinstall.h"
 # include "configstore.h"
@@ -150,7 +148,7 @@ int main() {
 
 	for (;;) {
 		hw.WatchdogFeed();
-		server.Run();
+		nw.Run();
 		hw.Run();
 	}
 }

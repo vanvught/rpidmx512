@@ -51,7 +51,6 @@
 
 #include "dmxparams.h"
 #include "dmxsend.h"
-#include "dmxconfigudp.h"
 
 #include "lightsetwith4.h"
 
@@ -78,11 +77,13 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
-void Hardware::RebootHandler() {
+namespace hal {
+void reboot_handler() {
 	WS28xx::Get()->Blackout();
 	Dmx::Get()->Blackout();
 	ArtNetNode::Get()->Stop();
 }
+}  // namespace hal
 
 int main() {
 	Hardware hw;
@@ -132,7 +133,7 @@ int main() {
 	uint32_t nDmxUniverses = 0;
 
 	if (artnetParams.GetDirection(0) == lightset::PortDir::OUTPUT) {
-		node.SetUniverse(dmxsend::DMXPORT_OFFSET, lightset::PortDir::OUTPUT, artnetParams.GetUniverse(0));
+		node.SetUniverse(DmxSend::DMXPORT_OFFSET, lightset::PortDir::OUTPUT, artnetParams.GetUniverse(0));
 		nDmxUniverses = 1;
 	}
 
@@ -142,12 +143,11 @@ int main() {
 	dmxparams.Load();
 	dmxparams.Set(&dmx);
 
-	if (node.GetPortDirection(dmxsend::DMXPORT_OFFSET) == lightset::PortDir::OUTPUT) {
+	if (node.GetPortDirection(DmxSend::DMXPORT_OFFSET) == lightset::PortDir::OUTPUT) {
 		dmx.SetPortDirection(0, dmx::PortDirection::OUTP, false);
 	}
 
 	DmxSend dmxSend;
-	dmxSend.Print();
 
 	display.SetDmxInfo(displayudf::dmx::PortDir::OUTPUT, nDmxUniverses);
 
@@ -156,7 +156,7 @@ int main() {
 	LightSetWith4<4> lightSet((PixelTestPattern::Get()->GetPattern() != pixelpatterns::Pattern::NONE) ? nullptr : &pixelDmx, (nDmxUniverses != 0) ? &dmxSend : nullptr);
 	lightSet.Print();
 
-	ArtNetTriggerHandler triggerHandler(&lightSet, &pixelDmx);
+	ArtNetTriggerHandler artnetTriggerHandler(&lightSet, &pixelDmx);
 
 	node.SetOutput(&lightSet);
 	node.Print();
@@ -229,11 +229,6 @@ int main() {
 	RemoteConfigParams remoteConfigParams;
 	remoteConfigParams.Load();
 	remoteConfigParams.Set(&remoteConfig);
-
-	while (configStore.Flash())
-		;
-
-	mdns_print(); //	mDns.Print();
 
 	display.TextStatus(ArtNetMsgConst::START, CONSOLE_YELLOW);
 

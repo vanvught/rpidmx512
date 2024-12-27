@@ -22,10 +22,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#if defined (DEBUG_ARM_LTCGENERATOR)
+# undef NDEBUG
+#endif
 
-#pragma GCC push_options
-#pragma GCC optimize ("O2")
-#pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#if !defined(__clang__)
+# pragma GCC push_options
+# pragma GCC optimize ("O2")
+# pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#endif
 
 #include <cstdint>
 #include <cstring>
@@ -41,7 +46,6 @@
 
 // Output
 #include "artnetnode.h"
-#include "rtpmidi.h"
 #include "ltcetc.h"
 #include "ltcsender.h"
 #include "arm/ltcoutputs.h"
@@ -119,10 +123,12 @@ static int32_t atoi(const char *pBuffer, uint32_t nSize) {
 	return sign * res;
 }
 
-LtcGenerator::LtcGenerator(const struct ltc::TimeCode* pStartLtcTimeCode, const struct ltc::TimeCode* pStopLtcTimeCode, bool bSkipFree):
+LtcGenerator::LtcGenerator(const struct ltc::TimeCode* pStartLtcTimeCode, const struct ltc::TimeCode* pStopLtcTimeCode, bool bSkipFree, bool bIgnoreStart, bool bIgnoreStop):
 	m_pStartLtcTimeCode(const_cast<struct ltc::TimeCode*>(pStartLtcTimeCode)),
 	m_pStopLtcTimeCode(const_cast<struct ltc::TimeCode*>(pStopLtcTimeCode)),
 	m_bSkipFree(bSkipFree),
+	m_bIgnoreStart(bIgnoreStart),
+	m_bIgnoreStop(bIgnoreStop),
 	m_nStartSeconds(GetSeconds(*m_pStartLtcTimeCode)),
 	m_nStopSeconds(GetSeconds(*m_pStopLtcTimeCode))
 {
@@ -171,9 +177,6 @@ void LtcGenerator::Start() {
 # endif
 #endif
 
-	m_nHandle = Network::Get()->Begin(UDP_PORT);
-	assert(m_nHandle != -1);
-
 	const auto nType = static_cast<uint32_t>(ltc::g_Type);
 	const auto nTimerInterval = TimeCodeConst::TMR_INTV[nType];
 
@@ -191,6 +194,9 @@ void LtcGenerator::Start() {
 	TIMER_CTL0(TIMER11) |= TIMER_CTL0_CEN;
 #endif
 
+	m_nHandle = Network::Get()->Begin(UDP_PORT, staticCallbackFunction);
+	assert(m_nHandle != -1);
+
 	LtcOutputs::Get()->Init();
 
 	if (!ltc::g_DisabledOutputs.bLtc) {
@@ -201,16 +207,11 @@ void LtcGenerator::Start() {
 		ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct artnet::TimeCode*>(&g_ltc_LtcTimeCode));
 	}
 
-	if (!ltc::g_DisabledOutputs.bRtpMidi) {
-		RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(&g_ltc_LtcTimeCode));
-	}
-
 	if (!ltc::g_DisabledOutputs.bEtc) {
 		LtcEtc::Get()->Send(reinterpret_cast<const struct midi::Timecode *>(&g_ltc_LtcTimeCode));
 	}
 
 	LtcOutputs::Get()->Update(const_cast<const struct ltc::TimeCode*>(&g_ltc_LtcTimeCode));
-
 	Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
 
 	DEBUG_EXIT
@@ -357,19 +358,22 @@ void LtcGenerator::ActionSetRate(const char *pTimeCodeRate) {
 	if ((m_State == STOPPED) && (ltc::parse_timecode_rate(pTimeCodeRate, nFps))) {
 		if (nFps != m_nFps) {
 			m_nFps = nFps;
-			//
+
 			const auto nType = static_cast<uint8_t>(ltc::g_Type);
 			g_ltc_LtcTimeCode.nType = nType;
-			//
+
 			m_pStartLtcTimeCode->nType = nType;
+
 			if (m_pStartLtcTimeCode->nFrames >= m_nFps) {
 				m_pStartLtcTimeCode->nFrames = static_cast<uint8_t>(m_nFps - 1);
 			}
+
 			m_pStopLtcTimeCode->nType = nType;
+
 			if (m_pStopLtcTimeCode->nFrames >= m_nFps) {
 				m_pStopLtcTimeCode->nFrames = static_cast<uint8_t>(m_nFps - 1);
 			}
-			//
+
 			const auto nTimerInterval = TimeCodeConst::TMR_INTV[nType];
 #if defined (H3)
 			H3_TIMER->TMR0_INTV = nTimerInterval;
@@ -386,10 +390,6 @@ void LtcGenerator::ActionSetRate(const char *pTimeCodeRate) {
 
 			if (!ltc::g_DisabledOutputs.bArtNet) {
 				ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct artnet::TimeCode*>(&g_ltc_LtcTimeCode));
-			}
-
-			if (!ltc::g_DisabledOutputs.bRtpMidi) {
-				RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(&g_ltc_LtcTimeCode));
 			}
 
 			if (!ltc::g_DisabledOutputs.bEtc) {
@@ -485,42 +485,46 @@ void LtcGenerator::SetSkip(const char *pSeconds, uint32_t nSize, ltcgenerator::D
 void LtcGenerator::HandleRequest(char *pBuffer, uint16_t nBufferLength) {
 	if (pBuffer != nullptr) {
 		assert(nBufferLength >= 8);
-		s_pUdpBuffer = pBuffer;
+		m_pUdpBuffer = pBuffer;
 		m_nBytesReceived = nBufferLength;
 	}
 
-	if (__builtin_expect((memcmp("ltc!", s_pUdpBuffer, 4) != 0), 0)) {
+	if (m_nBytesReceived < 8) {
 		return;
 	}
 
-	if (s_pUdpBuffer[m_nBytesReceived - 1] == '\n') {
+	if (__builtin_expect((memcmp("ltc!", m_pUdpBuffer, 4) != 0), 0)) {
+		return;
+	}
+
+	if (m_pUdpBuffer[m_nBytesReceived - 1] == '\n') {
 		DEBUG_PUTS("\'\\n\'");
 		m_nBytesReceived--;
 	}
 
-	debug_dump(s_pUdpBuffer, m_nBytesReceived);
+	debug_dump(m_pUdpBuffer, m_nBytesReceived);
 
-	if (memcmp(&s_pUdpBuffer[4], CMD_START, START_LENGTH) == 0) {
+	if (memcmp(&m_pUdpBuffer[4], CMD_START, START_LENGTH) == 0) {
 		if (m_nBytesReceived == (4 + START_LENGTH)) {
 			ActionStart();
 			return;
 		}
 
 		if (m_nBytesReceived == (4 + START_LENGTH + 1 + ltc::timecode::CODE_MAX_LENGTH)) {
-			if (s_pUdpBuffer[4 + START_LENGTH] == '#') {
-				ActionSetStart(&s_pUdpBuffer[(4 + START_LENGTH + 1)]);
+			if (m_pUdpBuffer[4 + START_LENGTH] == '#') {
+				ActionSetStart(&m_pUdpBuffer[(4 + START_LENGTH + 1)]);
 				return;
 			}
 
-			if (s_pUdpBuffer[4 + START_LENGTH] == '!') {
-				ActionSetStart(&s_pUdpBuffer[(4 + START_LENGTH + 1)]);
+			if (m_pUdpBuffer[4 + START_LENGTH] == '!') {
+				ActionSetStart(&m_pUdpBuffer[(4 + START_LENGTH + 1)]);
 				ActionStop();
 				ActionStart();
 				return;
 			}
 
-			if (s_pUdpBuffer[4 + START_LENGTH] == '@') {
-				ActionGoto(&s_pUdpBuffer[(4 + START_LENGTH + 1)]);
+			if (m_pUdpBuffer[4 + START_LENGTH] == '@') {
+				ActionGoto(&m_pUdpBuffer[(4 + START_LENGTH + 1)]);
 				return;
 			}
 		}
@@ -529,14 +533,14 @@ void LtcGenerator::HandleRequest(char *pBuffer, uint16_t nBufferLength) {
 		return;
 	}
 
-	if (memcmp(&s_pUdpBuffer[4], CMD_STOP, STOP_LENGTH) == 0) {
+	if (memcmp(&m_pUdpBuffer[4], CMD_STOP, STOP_LENGTH) == 0) {
 		if (m_nBytesReceived == (4 + STOP_LENGTH)) {
 			ActionStop();
 			return;
 		}
 
-		if ((m_nBytesReceived == (4 + STOP_LENGTH + 1 + ltc::timecode::CODE_MAX_LENGTH))  && (s_pUdpBuffer[4 + STOP_LENGTH] == '#')) {
-			ActionSetStop(&s_pUdpBuffer[(4 + STOP_LENGTH + 1)]);
+		if ((m_nBytesReceived == (4 + STOP_LENGTH + 1 + ltc::timecode::CODE_MAX_LENGTH))  && (m_pUdpBuffer[4 + STOP_LENGTH] == '#')) {
+			ActionSetStop(&m_pUdpBuffer[(4 + STOP_LENGTH + 1)]);
 			return;
 		}
 
@@ -544,42 +548,42 @@ void LtcGenerator::HandleRequest(char *pBuffer, uint16_t nBufferLength) {
 		return;
 	}
 
-	if (memcmp(&s_pUdpBuffer[4], CMD_RESUME, RESUME_LENGTH) == 0) {
+	if (memcmp(&m_pUdpBuffer[4], CMD_RESUME, RESUME_LENGTH) == 0) {
 		ActionResume();
 		return;
 	}
 
 	if (m_nBytesReceived == (4 + RATE_LENGTH + ltc::timecode::RATE_MAX_LENGTH)) {
-		if (memcmp(&s_pUdpBuffer[4], CMD_RATE, RATE_LENGTH) == 0) {
-			ActionSetRate(&s_pUdpBuffer[(4 + RATE_LENGTH)]);
+		if (memcmp(&m_pUdpBuffer[4], CMD_RATE, RATE_LENGTH) == 0) {
+			ActionSetRate(&m_pUdpBuffer[(4 + RATE_LENGTH)]);
 			return;
 		}
 	}
 
 	if (m_nBytesReceived <= (4 + DIRECTION_LENGTH + 8)) {
-		if (memcmp(&s_pUdpBuffer[4], CMD_DIRECTION, DIRECTION_LENGTH) == 0) {
-			ActionSetDirection(&s_pUdpBuffer[(4 + DIRECTION_LENGTH)]);
+		if (memcmp(&m_pUdpBuffer[4], CMD_DIRECTION, DIRECTION_LENGTH) == 0) {
+			ActionSetDirection(&m_pUdpBuffer[(4 + DIRECTION_LENGTH)]);
 			return;
 		}
 	}
 
 	if (m_nBytesReceived <= (4 + PITCH_LENGTH + 4)) {
-		if (memcmp(&s_pUdpBuffer[4], CMD_PITCH, PITCH_LENGTH) == 0) {
-			SetPitch(&s_pUdpBuffer[(4 + PITCH_LENGTH)], m_nBytesReceived - (4 + PITCH_LENGTH));
+		if (memcmp(&m_pUdpBuffer[4], CMD_PITCH, PITCH_LENGTH) == 0) {
+			SetPitch(&m_pUdpBuffer[(4 + PITCH_LENGTH)], m_nBytesReceived - (4 + PITCH_LENGTH));
 			return;
 		}
 	}
 
 	if (m_nBytesReceived <= (4 + FORWARD_LENGTH + 2)) {
-		if (memcmp(&s_pUdpBuffer[4], CMD_FORWARD, FORWARD_LENGTH) == 0) {
-			SetSkip(&s_pUdpBuffer[(4 + FORWARD_LENGTH)], m_nBytesReceived - (4 + FORWARD_LENGTH), ltcgenerator::Direction::DIRECTION_FORWARD);
+		if (memcmp(&m_pUdpBuffer[4], CMD_FORWARD, FORWARD_LENGTH) == 0) {
+			SetSkip(&m_pUdpBuffer[(4 + FORWARD_LENGTH)], m_nBytesReceived - (4 + FORWARD_LENGTH), ltcgenerator::Direction::DIRECTION_FORWARD);
 			return;
 		}
 	}
 
 	if (m_nBytesReceived <= (4 + BACKWARD_LENGTH + 2)) {
-		if (memcmp(&s_pUdpBuffer[4], CMD_BACKWARD, BACKWARD_LENGTH) == 0) {
-			SetSkip(&s_pUdpBuffer[(4 + BACKWARD_LENGTH)], m_nBytesReceived - (4 + BACKWARD_LENGTH), ltcgenerator::Direction::DIRECTION_BACKWARD);
+		if (memcmp(&m_pUdpBuffer[4], CMD_BACKWARD, BACKWARD_LENGTH) == 0) {
+			SetSkip(&m_pUdpBuffer[(4 + BACKWARD_LENGTH)], m_nBytesReceived - (4 + BACKWARD_LENGTH), ltcgenerator::Direction::DIRECTION_BACKWARD);
 			return;
 		}
 	}
@@ -587,15 +591,9 @@ void LtcGenerator::HandleRequest(char *pBuffer, uint16_t nBufferLength) {
 	DEBUG_PUTS("Invalid command");
 }
 
-void LtcGenerator::HandleUdpRequest() {
-	uint32_t nIPAddressFrom;
-	uint16_t nForeignPort;
-
-	m_nBytesReceived = Network::Get()->RecvFrom(m_nHandle, const_cast<const void **>(reinterpret_cast<void **>(&s_pUdpBuffer)), &nIPAddressFrom, &nForeignPort);
-
-	if (__builtin_expect((m_nBytesReceived < 8), 1)) {
-		return;
-	}
+void LtcGenerator::Input(const uint8_t *pBuffer, uint32_t nSize, [[maybe_unused]] uint32_t nFromIp, [[maybe_unused]] uint16_t nFromPort) {
+	m_pUdpBuffer = reinterpret_cast<char *>(const_cast<uint8_t *>(pBuffer));
+	m_nBytesReceived = nSize;
 
 	HandleRequest();
 }
@@ -633,7 +631,7 @@ void LtcGenerator::Print() {
 }
 
 void LtcGenerator::Increment() {
-	if (__builtin_expect((memcmp(&g_ltc_LtcTimeCode, m_pStopLtcTimeCode, sizeof(struct ltc::TimeCode)) == 0), 0)) {
+	if ((!m_bIgnoreStop) && (__builtin_expect((memcmp(&g_ltc_LtcTimeCode, m_pStopLtcTimeCode, sizeof(struct ltc::TimeCode)) == 0), 0))) {
 		if (m_State == STARTED) {
 			m_State = LIMIT;
 		}
@@ -668,7 +666,7 @@ void LtcGenerator::Increment() {
 }
 
 void LtcGenerator::Decrement() {
-	if (__builtin_expect((memcmp(&g_ltc_LtcTimeCode, m_pStartLtcTimeCode, sizeof(struct ltc::TimeCode)) == 0), 0)) {
+	if ((!m_bIgnoreStart) && (__builtin_expect((memcmp(&g_ltc_LtcTimeCode, m_pStartLtcTimeCode, sizeof(struct ltc::TimeCode)) == 0), 0))) {
 		if (m_State == STARTED) {
 			m_State = LIMIT;
 		}
@@ -745,10 +743,6 @@ void LtcGenerator::Update() {
 
 		if (!ltc::g_DisabledOutputs.bArtNet) {
 			ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct artnet::TimeCode*>(&g_ltc_LtcTimeCode));
-		}
-
-		if (!ltc::g_DisabledOutputs.bRtpMidi) {
-			RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(&g_ltc_LtcTimeCode));
 		}
 
 		if (!ltc::g_DisabledOutputs.bEtc) {

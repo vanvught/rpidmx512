@@ -28,7 +28,7 @@
 
 #include <cstdint>
 
-#include "rtpmidihandler.h"
+#include "net/rtpmidihandler.h"
 #include "ltc.h"
 
 #include "midibpm.h"

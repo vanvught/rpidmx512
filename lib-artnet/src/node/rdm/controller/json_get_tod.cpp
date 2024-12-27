@@ -29,8 +29,8 @@
 
 #include "artnetnode.h"
 
-namespace remoteconfig {
-namespace rdm {
+
+namespace remoteconfig::rdm {
 uint32_t json_get_tod(const char cPort, char *pOutBuffer, const uint32_t nOutBufferSize) {
 	const uint32_t nPortIndex = (cPort | 0x20) - 'a';
 
@@ -49,5 +49,5 @@ uint32_t json_get_tod(const char cPort, char *pOutBuffer, const uint32_t nOutBuf
 
 	return 0;
 }
-}  // namespace rdm
-}  // namespace remoteconfig
+} // namespace remoteconfig::rdm
+

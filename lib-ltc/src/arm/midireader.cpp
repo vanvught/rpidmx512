@@ -23,9 +23,15 @@
  * THE SOFTWARE.
  */
 
-#pragma GCC push_options
-#pragma GCC optimize ("O2")
-#pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#if defined (DEBUG_ARM_MIDIREADER)
+# undef NDEBUG
+#endif
+
+#if !defined(__clang__)
+# pragma GCC push_options
+# pragma GCC optimize ("O2")
+# pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#endif
 
 #include <cstdint>
 #include <cstring>
@@ -41,7 +47,6 @@
 // Output
 #include "ltcsender.h"
 #include "artnetnode.h"
-#include "rtpmidi.h"
 #include "ltcetc.h"
 #include "arm/ltcmidisystemrealtime.h"
 #include "arm/ltcoutputs.h"
@@ -51,9 +56,9 @@
 static uint8_t s_qf[8] __attribute__ ((aligned (4))) = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
 #if defined (H3)
-static void irq_timer1_handler(void) {
+static void irq_timer1_handler() {
 	gv_ltc_bTimeCodeAvailable = true;
-	gv_ltc_nTimeCodeCounter++;
+	gv_ltc_nTimeCodeCounter = gv_ltc_nTimeCodeCounter + 1;
 }
 #elif defined (GD32)
 	// Defined in platform_ltc.cpp
@@ -142,22 +147,18 @@ void MidiReader::HandleMtcQf() {
 
 void MidiReader::Update() {
 	if (!ltc::g_DisabledOutputs.bLtc) {
-		LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct ltc::TimeCode*>(&m_MidiTimeCode));
+		LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct ltc::TimeCode *>(&m_MidiTimeCode));
 	}
 
 	if (!ltc::g_DisabledOutputs.bArtNet) {
-		ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct artnet::TimeCode*>(&m_MidiTimeCode));
-	}
-
-	if (!ltc::g_DisabledOutputs.bRtpMidi) {
-		RtpMidi::Get()->SendTimeCode(&m_MidiTimeCode);
+		ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct artnet::TimeCode *>(&m_MidiTimeCode));
 	}
 
 	if (!ltc::g_DisabledOutputs.bEtc) {
 		LtcEtc::Get()->Send(&m_MidiTimeCode);
 	}
 
-	LtcOutputs::Get()->Update(reinterpret_cast<const struct ltc::TimeCode*>(&m_MidiTimeCode));
+	LtcOutputs::Get()->Update(reinterpret_cast<const struct ltc::TimeCode *>(&m_MidiTimeCode));
 }
 
 void MidiReader::Run() {

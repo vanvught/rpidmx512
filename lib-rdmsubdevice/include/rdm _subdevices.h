@@ -26,8 +26,8 @@
 #ifndef RDM_SUBDEVICES_H_
 #define RDM_SUBDEVICES_H_
 
-namespace rdm {
-namespace subdevices {
+
+namespace rdm::subdevices {
 enum class Types {
 	BW7FETS, BWDIMMER, BWDIO, BWLCD, BWRELAY,	// BitWizard
 	MCP23S08, MCP23S17, 						// GPIO
@@ -37,7 +37,7 @@ enum class Types {
 
 const char* get_type_string(rdm::subdevices::Types type);
 rdm::subdevices::Types get_type_string(const char *pValue);
-}  // namespace subdevices
-}  // namespace rdm
+} // namespace rdm::subdevices
+
 
 #endif /* RDM_SUBDEVICES_H_ */

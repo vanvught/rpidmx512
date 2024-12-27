@@ -29,9 +29,6 @@
 
 #include "hardware.h"
 #include "network.h"
-#if !defined(NO_EMAC)
-# include "networkconst.h"
-#endif
 
 #include "displayudf.h"
 
@@ -53,8 +50,6 @@
 #include "software_version.h"
 
 static constexpr auto TOP_ROW_STATS = 26;
-
-void Hardware::RebootHandler() {}
 
 int main() {
 	Hardware hw;

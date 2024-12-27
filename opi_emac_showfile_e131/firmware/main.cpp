@@ -55,7 +55,8 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
-void Hardware::RebootHandler() {
+namespace hal {
+void reboot_handler() {
 	ShowFile::Get()->Stop();
 
 	if (!RemoteConfig::Get()->IsReboot()) {
@@ -70,6 +71,7 @@ void Hardware::RebootHandler() {
 		Display::Get()->TextStatus("Rebooting ...");
 	}
 }
+}  // namespace hal
 
 int main() {
 	Hardware hw;
@@ -105,11 +107,6 @@ int main() {
 	RemoteConfigParams remoteConfigParams;
 	remoteConfigParams.Load();
 	remoteConfigParams.Set(&remoteConfig);
-
-	while (configStore.Flash())
-		;
-
-	mdns_print(); //	mDns.Print();
 
 	display.SetTitle("Showfile player");
 	display.Set(2, displayudf::Labels::HOSTNAME);

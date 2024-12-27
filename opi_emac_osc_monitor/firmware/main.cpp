@@ -29,12 +29,8 @@
 #include "hardware.h"
 #include "network.h"
 
-
-
 #include "console.h"
 #include "h3/showsystime.h"
-
-#include "net/apps/ntpclient.h"
 
 #include "net/apps/mdns.h"
 
@@ -55,10 +51,6 @@
 
 #include "remoteconfig.h"
 #include "remoteconfigparams.h"
-
-
-void Hardware::RebootHandler() {
-}
 
 int main() {
 	Hardware hw;
@@ -90,10 +82,6 @@ int main() {
 
 	mdns_service_record_add(nullptr, mdns::Services::OSC, "type=monitor", server.GetPortIncoming());
 
-	NtpClient ntpClient;
-	ntpClient.Start();
-	ntpClient.Print();
-
 	DMXMonitor monitor;
 	// There is support for HEX output only
 	server.SetOutput(&monitor);
@@ -117,11 +105,6 @@ int main() {
 	remoteConfigParams.Load();
 	remoteConfigParams.Set(&remoteConfig);
 
-	while (configStore.Flash())
-		;
-
-	mdns_print(); //	mDns.Print();
-
 	display.TextStatus(OscServerMsgConst::START, CONSOLE_YELLOW);
 
 	server.Start();
@@ -133,12 +116,9 @@ int main() {
 	for (;;) {
 		hw.WatchdogFeed();
 		nw.Run();
-		server.Run();
 		remoteConfig.Run();
 		configStore.Flash();
-		ntpClient.Run();
 		showSystime.Run();
-
 		display.Run();
 		hw.Run();
 	}

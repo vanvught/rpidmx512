@@ -1,8 +1,8 @@
 /**
- * @file timecode.h
+ * @file timecode.cpp
  *
  */
-/* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,16 +26,32 @@
 #ifndef TIMECODE_H_
 #define TIMECODE_H_
 
+#include <cassert>
+
 #include "artnettimecode.h"
 
-class TimeCode final: public ArtNetTimeCode {
+class TimeCode {
 public:
-	TimeCode() {}
+	TimeCode() {
+		assert(s_pThis == nullptr);
+		s_pThis = this;
+	}
+
+	~TimeCode() = default;
 
 	void Start();
 	void Stop();
 
-	void Handler(const struct artnet::TimeCode *) override;
+	void static staticCallbackFunction(const struct artnet::TimeCode *pTimeCode) {
+		assert(s_pThis != nullptr);
+		s_pThis->Handler(pTimeCode);
+	}
+
+private:
+	void Handler(const struct artnet::TimeCode *);
+
+private:
+	static inline TimeCode *s_pThis;
 };
 
 #endif /* TIMECODE_H_ */

@@ -31,8 +31,8 @@
 #include "rdmsubdevices.h"
 #include "configstore.h"
 
-namespace rdm {
-namespace subdevicesparams {
+
+namespace rdm::subdevicesparams {
 struct Params {
 	uint32_t nCount;
 	struct {
@@ -46,8 +46,8 @@ struct Params {
 
 static_assert(sizeof(struct Params) <= rdm::subdevices::STORE, "struct Params is too large");
 
-}  // namespace subdevicesparams
-}  // namespace rdm
+} // namespace rdm::subdevicesparams
+
 
 class RDMSubDevicesParamsStore {
 public:

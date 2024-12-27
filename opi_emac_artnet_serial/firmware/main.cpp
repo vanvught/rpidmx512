@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,6 @@
 
 #include "hardware.h"
 #include "network.h"
-
 
 #include "net/apps/mdns.h"
 
@@ -62,9 +61,11 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
-void Hardware::RebootHandler() {
+namespace hal {
+void reboot_handler() {
 	ArtNetNode::Get()->Stop();
 }
+}  // namespace hal
 
 int main() {
 	Hardware hw;
@@ -154,11 +155,6 @@ int main() {
 
 	llrpOnlyDevice.Print();
 
-	while (configStore.Flash())
-		;
-
-	mdns_print(); //	mDns.Print();
-
 	display.TextStatus(ArtNetMsgConst::START, CONSOLE_YELLOW);
 
 	node.Start();
@@ -174,7 +170,6 @@ int main() {
 #if defined (NODE_SHOWFILE)
 		showFile.Run();
 #endif
-		dmxSerial.Run();
 		llrpOnlyDevice.Run();
 		remoteConfig.Run();
 		configStore.Flash();

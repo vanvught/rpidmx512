@@ -26,10 +26,10 @@
 #ifndef TCNETDISPLAY_H_
 #define TCNETDISPLAY_H_
 
-namespace tcnet {
-namespace display {
+
+namespace tcnet::display {
 void show();
-}  // namespace display
-}  // namespace tcnet
+} // namespace tcnet::display
+
 
 #endif /* TCNETDISPLAY_H_ */

@@ -28,8 +28,8 @@
 
 #include <cstdint>
 
-namespace net {
-namespace mmi {
+
+namespace net::mmi {
 
 /* Generic MII registers. */
 static constexpr uint32_t REG_BMCR      = 0x00;	/* Basic mode control register    */
@@ -95,7 +95,7 @@ static constexpr uint16_t LPA_RFAULT     				= 0x2000; /* Link partner faulted  
 static constexpr uint16_t LPA_LPACK      				= 0x4000; /* Link partner acked us       */
 static constexpr uint16_t LPA_NPAGE      				= 0x8000; /* Next page bit               */
 
-}  // namespace mmi
-}  // namespace net
+} // namespace net::mmi
+
 
 #endif /* EMAC_MMI_H_ */

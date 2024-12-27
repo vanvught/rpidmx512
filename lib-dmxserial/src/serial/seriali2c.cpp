@@ -2,7 +2,7 @@
  * @file seriali2c.cpp
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,9 +45,9 @@ void Serial::SetI2cSpeedMode(i2c::speed tSpeedMode) {
 	DEBUG_PRINTF("tSpeedMode=%.x", tSpeedMode);
 
 	if (tSpeedMode == i2c::speed::NORMAL) {
-		m_I2cConfiguration.nSpeed = hal::i2c::NORMAL_SPEED;
+		m_I2cConfiguration.nSpeed = HAL_I2C::NORMAL_SPEED;
 	} else {
-		m_I2cConfiguration.nSpeed = hal::i2c::FULL_SPEED;
+		m_I2cConfiguration.nSpeed = HAL_I2C::FULL_SPEED;
 	}
 }
 

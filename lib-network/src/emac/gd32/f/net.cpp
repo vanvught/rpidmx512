@@ -38,7 +38,7 @@
 
 #include "debug.h"
 
-#if defined (CONFIG_ENET_ENABLE_PTP)
+#if defined (CONFIG_NET_ENABLE_PTP)
 #include "gd32_ptp.h"
 
 extern enet_descriptors_struct *dma_current_ptp_rxdesc;
@@ -56,7 +56,7 @@ uint32_t emac_eth_recv(uint8_t **ppPacket) {
 	const auto nLength = gd32_enet_desc_information_get<RXDESC_FRAME_LENGTH>(dma_current_rxdesc);
 
 	if (nLength > 0) {
-#if defined (CONFIG_ENET_ENABLE_PTP)
+#if defined (CONFIG_NET_ENABLE_PTP)
 		*ppPacket = reinterpret_cast<uint8_t *>(dma_current_ptp_rxdesc->buffer1_addr);
 #else
 		*ppPacket = reinterpret_cast<uint8_t *>(dma_current_rxdesc->buffer1_addr);
@@ -67,7 +67,7 @@ uint32_t emac_eth_recv(uint8_t **ppPacket) {
 	return 0;
 }
 
-#if defined (CONFIG_ENET_ENABLE_PTP)
+#if defined (CONFIG_NET_ENABLE_PTP)
 static void ptpframe_receive_normal_mode() {
 	net::globals::ptpTimestamp[0] = dma_current_rxdesc->buffer1_addr;
 	net::globals::ptpTimestamp[1] = dma_current_rxdesc->buffer2_next_desc_addr;
@@ -120,14 +120,14 @@ void emac_free_pkt() {
         __DMB();
     }
 
-#if defined (CONFIG_ENET_ENABLE_PTP)
+#if defined (CONFIG_NET_ENABLE_PTP)
     ptpframe_receive_normal_mode();
 #else
 	frame_receive();
 #endif
 }
 
-#if defined (CONFIG_ENET_ENABLE_PTP)
+#if defined (CONFIG_NET_ENABLE_PTP)
 inline static void ptpframe_transmit(const void *pBuffer, const uint32_t nLength, const bool bCaptureTimestamp) {
 	assert (nullptr != pBuffer);
 	assert(nLength <= ENET_MAX_FRAME_SIZE);

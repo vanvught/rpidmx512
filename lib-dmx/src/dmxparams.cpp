@@ -58,10 +58,10 @@ void DmxParams::Load() {
 	ReadConfigFile configfile(DmxParams::staticCallbackFunction, this);
 
 	if (configfile.Read(DmxParamsConst::FILE_NAME)) {
-		StoreDmxSend::Update(&m_Params);
+		dmxsendparams::store::update(&m_Params);
 	} else
 #endif
-		StoreDmxSend::Copy(&m_Params);
+		dmxsendparams::store::copy(&m_Params);
 
 #ifndef NDEBUG
 	Dump();
@@ -81,7 +81,7 @@ void DmxParams::Load(const char* pBuffer, uint32_t nLength) {
 
 	config.Read(pBuffer, nLength);
 
-	StoreDmxSend::Update(&m_Params);
+	dmxsendparams::store::update(&m_Params);
 
 #ifndef NDEBUG
 	Dump();
@@ -149,7 +149,7 @@ void DmxParams::Builder(const struct dmxsendparams::Params *ptDMXParams, char *p
 	if (ptDMXParams != nullptr) {
 		memcpy(&m_Params, ptDMXParams, sizeof(struct dmxsendparams::Params));
 	} else {
-		StoreDmxSend::Copy(&m_Params);
+		dmxsendparams::store::copy(&m_Params);
 	}
 
 	PropertiesBuilder builder(DmxParamsConst::FILE_NAME, pBuffer, nLength);
@@ -193,7 +193,7 @@ void DmxParams::staticCallbackFunction(void *p, const char *s) {
 	assert(p != nullptr);
 	assert(s != nullptr);
 
-	(static_cast<DmxParams*>(p))->callbackFunction(s);
+	(static_cast<DmxParams *>(p))->callbackFunction(s);
 }
 
 void DmxParams::Dump() {

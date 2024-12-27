@@ -2,7 +2,7 @@
  * @file ltcmidisystemrealtime.h
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,7 @@
 #include <cassert>
 
 #include "midi.h"
-#include "rtpmidi.h"
+#include "net/rtpmidi.h"
 
 #include "arm/ltcoutputs.h"
 
@@ -42,8 +42,6 @@ public:
 
 	void Start();
 	void Stop();
-	void Run();
-
 
 	void SendStart() {
 		Send(midi::Types::START);
@@ -58,6 +56,8 @@ public:
 	}
 
 	void SetBPM(uint32_t nBPM);
+
+	void Input(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort);
 
 	static LtcMidiSystemRealtime *Get() {
 		return s_pThis;
@@ -78,11 +78,14 @@ private:
 		LtcOutputs::Get()->ShowBPM(nBPM);
 	}
 
+	void static staticCallbackFunctionInput(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
+		s_pThis->Input(pBuffer, nSize, nFromIp, nFromPort);
+	}
+
 private:
 	int32_t m_nHandle { -1 };
 	uint32_t m_nBPMPrevious { 999 };
 
-	static inline char *s_pUdpBuffer;
 	static inline LtcMidiSystemRealtime *s_pThis;
 };
 

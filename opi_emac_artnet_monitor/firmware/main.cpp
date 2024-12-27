@@ -29,11 +29,6 @@
 #include "hardware.h"
 #include "network.h"
 
-
-#include "net/apps/mdns.h"
-
-#include "net/apps/ntpclient.h"
-
 #include "console.h"
 #include "h3/showsystime.h"
 
@@ -63,8 +58,6 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
-void Hardware::RebootHandler() { }
-
 int main() {
 	Hardware hw;
 	DisplayUdf display;
@@ -83,10 +76,6 @@ int main() {
 	console_set_fg_color(CONSOLE_WHITE);
 	console_set_top_row(2);
 
-	NtpClient ntpClient;
-	ntpClient.Start();
-	ntpClient.Print();
-
 	ShowSystime showSystime;
 
 	ArtNetNode node;
@@ -99,7 +88,7 @@ int main() {
 
 	TimeCode timecode;
 	timecode.Start();
-	node.SetTimeCodeHandler(&timecode);
+	node.SetArtTimeCodeCallbackFunction(TimeCode::staticCallbackFunction);
 
 #if defined (NODE_SHOWFILE)
 	ShowFile showFile;
@@ -142,11 +131,6 @@ int main() {
 	remoteConfigParams.Load();
 	remoteConfigParams.Set(&remoteConfig);
 
-	while (configStore.Flash())
-		;
-
-	mdns_print(); //	mDns.Print();
-
 	display.TextStatus(ArtNetMsgConst::START, CONSOLE_YELLOW);
 
 	node.Start();
@@ -164,9 +148,7 @@ int main() {
 #endif
 		remoteConfig.Run();
 		configStore.Flash();
-		ntpClient.Run();
 		showSystime.Run();
-
 		display.Run();
 		hw.Run();
 	}

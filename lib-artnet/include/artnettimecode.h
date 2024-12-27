@@ -2,9 +2,6 @@
  * @file artnettimecode.h
  *
  */
-/**
- * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
- */
 /* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@gd332-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -41,10 +38,6 @@ struct TimeCode {
 } __attribute__((packed));
 }  // namespace artnet
 
-class ArtNetTimeCode {
-public:
-	virtual ~ArtNetTimeCode() = default;
-	virtual void Handler(const struct artnet::TimeCode *)= 0;
-};
+typedef void (*ArtTimeCodeCallbackFunctionPtr)(const struct artnet::TimeCode *);
 
 #endif /* ARTNETTIMECODE_H_ */

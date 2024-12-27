@@ -33,8 +33,8 @@
 
 #include "ltc.h"
 
-namespace ltc {
-namespace encoder {
+
+namespace ltc::encoder {
 #define LTCENCODER_CEILING(x,y)		(((x) + (y) - 1) / (y))
 static constexpr uint32_t FORMAT_SIZE_BITS 		= 80;
 static constexpr uint32_t FORMAT_SIZE_BYTES 	= LTCENCODER_CEILING(FORMAT_SIZE_BITS, 8);
@@ -66,8 +66,8 @@ struct FormatTemplate {
 		uint64_t data;
 	} Format;
 };
-}  // namespace encoder
-}  // namespace ltc
+} // namespace ltc::encoder
+
 
 class LtcEncoder {
 public:

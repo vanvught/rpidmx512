@@ -31,9 +31,9 @@
 #include "artnet.h"
 #include "network.h"
 
-namespace remoteconfig {
-namespace artnet {
-namespace controller {
+
+
+namespace remoteconfig::artnet::controller {
 static uint32_t get_port(const struct ::artnet::NodeEntryUniverse *pArtNetNodeEntryUniverse, char *pOutBuffer, const uint32_t nOutBufferSize) {
 	const auto nLength = static_cast<uint32_t>(snprintf(pOutBuffer, nOutBufferSize,
 			"{\"name\":\"%s\",\"universe\":%u},",
@@ -88,6 +88,6 @@ uint32_t json_get_polltable(char *pOutBuffer, const uint32_t nOutBufferSize) {
 	assert(nLength <= nOutBufferSize);
 	return nLength;
 }
-}  // namespace controller
-}  // namespace artnet
-}  // namespace remoteconfig
+} // namespace remoteconfig::artnet::controller
+
+

@@ -57,7 +57,7 @@ public:
 		assert(s_pThis == nullptr);
 		s_pThis = this;
 
-		m_nHandle = Network::Get()->Begin(m_nPortIncoming);
+		m_nHandle = Network::Get()->Begin(m_nPortIncoming, staticCallbackFunction);
 		assert(m_nHandle != -1);
 
 		DEBUG_EXIT
@@ -72,26 +72,16 @@ public:
 	}
 
 	void Input(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
-		if (pBuffer != nullptr) {
-			m_pBuffer = pBuffer;
-			m_nRemoteIp = nFromIp;
-			m_nBytesReceived = nSize;
-			m_nRemotePort = nFromPort;
-		}
+		assert(pBuffer != nullptr);
+
+		m_pBuffer = pBuffer;
+		m_nRemoteIp = nFromIp;
+		m_nBytesReceived = nSize;
+		m_nRemotePort = nFromPort;
 
 		if (memcmp(m_pBuffer, showfileosc::CMD_PATH, showfileosc::PATH_LENGTH) == 0) {
 			Process();
 		}
-	}
-
-	void Run() {
-		m_nBytesReceived = Network::Get()->RecvFrom(m_nHandle, reinterpret_cast<const void **>(&m_pBuffer), &m_nRemoteIp, &m_nRemotePort);
-
-		if (__builtin_expect((m_nBytesReceived <= showfileosc::PATH_LENGTH), 1)) {
-			return;
-		}
-
-		Input(nullptr, 0, 0, 0);
 	}
 
 	void Print() {

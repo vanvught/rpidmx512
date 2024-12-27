@@ -29,8 +29,8 @@
 
 #include "artnetnode.h"
 
-namespace remoteconfig {
-namespace rdm {
+
+namespace remoteconfig::rdm {
 uint32_t json_get_queue(char *pOutBuffer, const uint32_t nOutBufferSize) {
 	const auto nBufferSize = nOutBufferSize - 2U;
 	auto nLength = static_cast<uint32_t>(snprintf(pOutBuffer, nBufferSize, "{\"uid\":[" ));
@@ -43,7 +43,7 @@ uint32_t json_get_queue(char *pOutBuffer, const uint32_t nOutBufferSize) {
 	assert(nLength <= nOutBufferSize);
 	return nLength;
 }
-}  // namespace rdm
-}  // namespace remoteconfig
+} // namespace remoteconfig::rdm
+
 
 

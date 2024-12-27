@@ -195,6 +195,8 @@ public:
 	void TcpWrite(const int32_t nHandle, const uint8_t *pBuffer, uint32_t nLength, const uint32_t HandleConnection);
 	int32_t TcpEnd(const int32_t nHandle);
 
+	void Run();
+
 private:
 	uint32_t GetDefaultGateway();
 	bool IsDhclient(const char *pIfName);

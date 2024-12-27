@@ -2,7 +2,7 @@
  * @file serialstatic.cpp
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -93,11 +93,11 @@ i2c::speed Serial::GetI2cSpeedMode(const char *pSpeed) {
 }
 
 const char* Serial::GetI2cSpeedMode(uint32_t nSpeed) {
-	if (nSpeed == hal::i2c::NORMAL_SPEED) {
+	if (nSpeed == HAL_I2C::NORMAL_SPEED) {
 		return aI2cSpeed[0];
 	}
 
-	if (nSpeed == hal::i2c::FULL_SPEED) {
+	if (nSpeed == HAL_I2C::FULL_SPEED) {
 		return aI2cSpeed[1];
 	}
 

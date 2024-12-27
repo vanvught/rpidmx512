@@ -30,7 +30,7 @@
 
 #include "ip4_address.h"
 
-namespace net { namespace dns {
+namespace net::dns {
 static constexpr uint32_t SIZEOF_DNS_HDR = 12;
 
 enum class Flag1 : uint8_t {
@@ -57,15 +57,11 @@ enum class RRType : uint16_t {
 };
 
 ///< DNS field CLASS used for "Resource Records"
-enum class RRClass : uint16_t {
-	RRCLASS_INTERNET = 1,		///< Internet
-	RRCLASS_ANY      = 255, 	///< Any class
-	RRCLASS_FLUSH    = 0x8000	///< Flush bit
+struct RRClass {
+	static constexpr uint16_t RRCLASS_INTERNET = 1;		///< Internet
+	static constexpr uint16_t RRCLASS_ANY      = 255;	///< Any class
+	static constexpr uint16_t RRCLASS_FLUSH    = 0x8000;///< Flush bit
 };
-
-static constexpr uint16_t operator| (RRClass a, RRClass b) {
-	return static_cast<uint16_t>((static_cast<uint16_t>(a) | static_cast<uint16_t>(b)));
-}
 
 struct Header {
 	uint16_t xid;
@@ -88,6 +84,6 @@ inline uint8_t dns_header_get_opcode(const Header *const header) {
 static constexpr uint32_t MULTICAST_MESSAGE_SIZE = 512;	///< The 1987 DNS specification [RFC1035] restricts DNS messages carried by UDP to no more than 512 bytes
 static constexpr uint32_t MULTICAST_ADDRESS = network::convert_to_uint(224, 0, 0, 251);
 
-} }  // namespace net::dns
+}  // namespace net::dns
 
 #endif /* NET_PROTOCOL_DNS_H_ */

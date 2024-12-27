@@ -2,7 +2,7 @@
  * @file ltcetc.h
  *
  */
-/* Copyright (C) 2022 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2022-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,7 @@
 #ifndef LTCETC_H_
 #define LTCETC_H_
 
+#include <cstdint>
 #include <cassert>
 
 #include "midi.h"
@@ -33,16 +34,13 @@
 
 #include "debug.h"
 
-namespace ltc {
-namespace etc {
-
+namespace ltcetc {
 enum class UdpTerminator {
 	NONE, CR, LF, CRLF, UNDEFINED
 };
 UdpTerminator get_udp_terminator(const char *pString);
 const char* get_udp_terminator(const UdpTerminator updTerminator);
-}  // namespace etc
-}  // namespace ltc
+}  // namespace ltcetc
 
 class LtcEtcHandler {
 public:
@@ -56,46 +54,43 @@ public:
 	LtcEtc() {
 		assert(s_pThis == nullptr);
 		s_pThis = this;
-
-		s_Handle.Destination = -1;
-		s_Handle.Source = -1;
 	}
 
-	void SetDestinationIp(uint32_t nDestinationIp) {
+	void SetDestinationIp(const uint32_t nDestinationIp) {
 		if ((network::is_private_ip(nDestinationIp) || network::is_multicast_ip(nDestinationIp))) {
-			s_Config.nDestinationIp = nDestinationIp;
+			m_Config.nDestinationIp = nDestinationIp;
 		} else {
-			s_Config.nDestinationIp =  0;
+			m_Config.nDestinationIp =  0;
 		}
 	}
 
-	void SetDestinationPort(uint16_t nDestinationPort) {
+	void SetDestinationPort(const uint16_t nDestinationPort) {
 		if (nDestinationPort > 1023) {
-			s_Config.nDestinationPort = nDestinationPort;
+			m_Config.nDestinationPort = nDestinationPort;
 		} else {
-			s_Config.nDestinationPort = 0;
+			m_Config.nDestinationPort = 0;
 		}
 	}
 
-	void SetSourceMulticastIp(uint32_t nSourceMulticastIp) {
+	void SetSourceMulticastIp(const uint32_t nSourceMulticastIp) {
 		if (network::is_multicast_ip(nSourceMulticastIp)) {
-			s_Config.nSourceMulticastIp = nSourceMulticastIp;
+			m_Config.nSourceMulticastIp = nSourceMulticastIp;
 		} else {
-			s_Config.nSourceMulticastIp =  0;
+			m_Config.nSourceMulticastIp =  0;
 		}
 	}
 
-	void SetSourcePort(uint16_t nSourcePort) {
+	void SetSourcePort(const uint16_t nSourcePort) {
 		if (nSourcePort > 1023) {
-			s_Config.nSourcePort = nSourcePort;
+			m_Config.nSourcePort = nSourcePort;
 		} else {
-			s_Config.nSourcePort = 0;
+			m_Config.nSourcePort = 0;
 		}
 	}
 
-	void SetUdpTerminator(ltc::etc::UdpTerminator terminator) {
-		if (terminator < ltc::etc::UdpTerminator::UNDEFINED) {
-			s_Config.terminator = terminator;
+	void SetUdpTerminator(const ltcetc::UdpTerminator terminator) {
+		if (terminator < ltcetc::UdpTerminator::UNDEFINED) {
+			m_Config.terminator = terminator;
 		}
 	}
 
@@ -107,36 +102,61 @@ public:
 
 	void Send(const midi::Timecode *pTimeCode);
 
-	void Run();
+	void Input(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort);
 
 	void Print();
 
-	static LtcEtc* Get() {
+	static LtcEtc *Get() {
 		return s_pThis;
 	}
 
 private:
 	void ParseTimeCode();
 
+	/**
+	 * @brief Static callback function for receiving UDP packets.
+	 *
+	 * @param pBuffer Pointer to the packet buffer.
+	 * @param nSize Size of the packet buffer.
+	 * @param nFromIp IP address of the sender.
+	 * @param nFromPort Port number of the sender.
+	 */
+	void static staticCallbackFunction(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
+		s_pThis->Input(pBuffer, nSize, nFromIp, nFromPort);
+	}
+
 private:
+	const char *m_pUdpBuffer { nullptr };
+
 	struct Config {
 		uint32_t nDestinationIp;
 		uint32_t nSourceMulticastIp;
 		uint16_t nDestinationPort;
 		uint16_t nSourcePort;
-		ltc::etc::UdpTerminator terminator;
+		ltcetc::UdpTerminator terminator;
 	};
-	static Config s_Config;
+
+	Config m_Config = { 0, 0, 0, 0, ltcetc::UdpTerminator::NONE };
 
 	struct Handle {
 		int Destination;
 		int Source;
 	};
-	static Handle s_Handle;
 
-	static LtcEtcHandler *s_pLtcEtcHandler;
-	static char *s_pUdpBuffer;
-	static LtcEtc *s_pThis;
+	Handle m_Handle { -1, -1 };
+
+	LtcEtcHandler *s_pLtcEtcHandler { nullptr };
+
+	struct Udp {
+		static constexpr char PREFIX[] = { 'M', 'I', 'D', 'I', ' ' };
+		static constexpr char HEADER[] = { 'F', '0', ' ', '7', 'F', ' ', '7', 'F', ' ', '0', '1', ' ', '0', '1', ' ' };
+		static constexpr char TIMECODE[] = { 'H', 'H', ' ', 'M', 'M', ' ', 'S', 'S', ' ', 'F', 'F', ' ' };
+		static constexpr char END[] = { 'F', '7' };
+		static constexpr auto MIN_MSG_LENGTH = sizeof(PREFIX) + sizeof(HEADER) + sizeof(TIMECODE) + sizeof(END);
+	};
+
+	static inline char s_SendBuffer[Udp::MIN_MSG_LENGTH + 2];
+	static inline LtcEtc *s_pThis;
 };
 
 #endif /* LTCETC_H_ */

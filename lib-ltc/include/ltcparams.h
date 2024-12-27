@@ -1,7 +1,7 @@
 /**
  * @file ltcparams.h
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,20 +32,22 @@
 
 #include "configstore.h"
 
+#include "hardware.h"
+
 namespace ltcparams {
 struct Params {
 	uint32_t nSetList;			///< 4	4
 	uint8_t nSource;			///< 1	5
-	uint8_t nAutoStart;			///< 1	6
+	uint8_t nFiller1;			///< 1	6
 	uint8_t nVolume;			///< 1	7
 	uint8_t nDisabledOutputs;	///< 1	8
-	uint8_t nShowSysTime;		///< 1	9
-	uint8_t nDisableTimeSync;	///< 1	10
+	int8_t  nUtcOffsetHours;	///< 1	9
+	uint8_t nUtcOffsetMinutes;	///< 1	10
 	uint8_t nYear;				///< 1	11
 	uint8_t nMonth;				///< 1	12
 	uint8_t nDay;				///< 1	13
-	uint8_t nEnableNtp;			///< 1	14
-	uint8_t nSetDate;			///< 1	15
+	uint8_t nFiller4;			///< 1	14
+	uint8_t nFiller5;			///< 1	15
 	uint8_t nFps;				///< 1	16
 	uint8_t nStartFrame;		///< 1	17
 	uint8_t nStartSecond;		///< 1	18
@@ -55,7 +57,7 @@ struct Params {
 	uint8_t nStopSecond;		///< 1	22
 	uint8_t nStopMinute;		///< 1	23
 	uint8_t nStopHour;			///< 1	24
-	uint8_t nEnableOsc;			///< 1	25
+	uint8_t nFiller6;			///< 1	25
 	uint16_t nOscPort;			///< 2	27
 	uint8_t nRgbLedType;		///< 1	28
 	uint8_t nAltFunction;		///< 1	29
@@ -76,7 +78,7 @@ struct Mask {
 	static constexpr auto YEAR = (1U << 6);
 	static constexpr auto MONTH = (1U << 7);
 	static constexpr auto DAY = (1U << 8);
-	static constexpr auto ENABLE_NTP = (1U << 9);
+	static constexpr auto NTP_ENABLE = (1U << 9);
 	static constexpr auto SET_DATE = (1U << 10);
 	static constexpr auto FPS = (1U << 11);
 	static constexpr auto START_FRAME = (1U << 12);
@@ -87,7 +89,7 @@ struct Mask {
 	static constexpr auto STOP_SECOND = (1U << 17);
 	static constexpr auto STOP_MINUTE = (1U << 18);
 	static constexpr auto STOP_HOUR = (1U << 19);
-	static constexpr auto ENABLE_OSC = (1U << 20);
+	static constexpr auto OSC_ENABLE = (1U << 20);
 	static constexpr auto OSC_PORT = (1U << 21);
 	static constexpr auto RGBLEDTYPE = (1U << 22);
 	static constexpr auto ALT_FUNCTION = (1U << 23);
@@ -95,6 +97,8 @@ struct Mask {
 	static constexpr auto SKIP_FREE = (1U << 25);
 	static constexpr auto TIMECODE_IP = (1U << 26);
 	static constexpr auto GPS_START = (1U << 27);
+	static constexpr auto IGNORE_START = (1U << 28);
+	static constexpr auto IGNORE_STOP = (1U << 29);
 };
 
 struct RgbLedType {
@@ -102,18 +106,16 @@ struct RgbLedType {
 	static constexpr auto RGBPANEL = (1U << 1);
 };
 
+namespace store {
+inline void update(const struct ltcparams::Params *pParams) {
+	ConfigStore::Get()->Update(configstore::Store::LTC, pParams, sizeof(struct ltcparams::Params));
+}
+
+inline void copy(struct ltcparams::Params *pParams) {
+	ConfigStore::Get()->Copy(configstore::Store::LTC, pParams, sizeof(struct ltcparams::Params));
+}
+}  // namespace store
 }  // namespace ltcparams
-
-class LtcParamsStore {
-public:
-	static void Update(const struct ltcparams::Params *pParams) {
-		ConfigStore::Get()->Update(configstore::Store::LTC, pParams, sizeof(struct ltcparams::Params));
-	}
-
-	static void Copy(struct ltcparams::Params *pParams) {
-		ConfigStore::Get()->Copy(configstore::Store::LTC, pParams, sizeof(struct ltcparams::Params));
-	}
-};
 
 class LtcParams {
 public:
@@ -141,19 +143,52 @@ public:
 	}
 
 	bool IsAutoStart() const {
-		return ((m_Params.nAutoStart != 0) && isMaskSet(ltcparams::Mask::AUTO_START));
+		return isMaskSet(ltcparams::Mask::AUTO_START);
 	}
 
 	bool IsGpsStart() const {
 		return isMaskSet(ltcparams::Mask::GPS_START);
 	}
 
+	int32_t GetUtcOffset() {
+		int32_t nUtcOffset;
+		if (hal::utc_validate(m_Params.nUtcOffsetHours, m_Params.nUtcOffsetMinutes, nUtcOffset)) {
+			return nUtcOffset;
+		}
+		return 0;
+	}
+
 	bool IsShowSysTime() const {
-		return (m_Params.nShowSysTime != 0);
+		return isMaskSet(ltcparams::Mask::SHOW_SYSTIME);
 	}
 
 	bool IsTimeSyncDisabled() const {
-		return (m_Params.nDisableTimeSync == 1);
+		return isMaskSet(ltcparams::Mask::DISABLE_TIMESYNC);
+	}
+
+	bool IsNtpEnabled() const {
+		return isMaskSet(ltcparams::Mask::NTP_ENABLE);
+	}
+
+	bool IsOscEnabled() const {
+		return isMaskSet(ltcparams::Mask::OSC_ENABLE);
+	}
+
+	bool IsSetDate() const {
+		return isMaskSet(ltcparams::Mask::SET_DATE);
+	}
+
+	bool IsIgnoreStart() const {
+		return isMaskSet(ltcparams::Mask::IGNORE_START);
+	}
+
+	bool IsIgnoreStop() const {
+		return isMaskSet(ltcparams::Mask::IGNORE_STOP);
+	}
+
+	uint16_t GetOscPort(bool &bIsSet) {
+		bIsSet = isMaskSet(ltcparams::Mask::OSC_PORT);
+		return m_Params.nOscPort;
 	}
 
 	uint8_t GetYear() const {
@@ -168,25 +203,8 @@ public:
 		return m_Params.nDay;
 	}
 
-	bool IsNtpEnabled() const {
-		return (m_Params.nEnableNtp == 1);
-	}
-
-	bool IsSetDate() const {
-		return (m_Params.nSetDate == 1);
-	}
-
 	uint8_t GetFps() const {
 		return m_Params.nFps;
-	}
-
-	bool IsOscEnabled() const {
-		return (m_Params.nEnableOsc == 1);
-	}
-
-	uint16_t GetOscPort(bool &bIsSet) {
-		bIsSet = isMaskSet(ltcparams::Mask::OSC_PORT);
-		return m_Params.nOscPort;
 	}
 
 	bool IsWS28xxEnabled() const {

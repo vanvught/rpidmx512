@@ -29,8 +29,8 @@
 #include "dmx.h"
 #include "dmxconst.h"
 
-namespace remoteconfig {
-namespace dmx {
+
+namespace remoteconfig::dmx {
 uint32_t json_get_portstatus(const char cPort, char *pOutBuffer, const uint32_t nOutBufferSize) {
 	const uint32_t nPortIndex = (cPort | 0x20) - 'a';
 
@@ -54,5 +54,5 @@ uint32_t json_get_portstatus(const char cPort, char *pOutBuffer, const uint32_t 
 
 	return 0;
 }
-}  // namespace dmx
-}  // namespace remoteconfig
+} // namespace remoteconfig::dmx
+

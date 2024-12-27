@@ -35,6 +35,7 @@
 
 #include "gd32.h"
 #include "gd32_adc.h"
+#include "gd32_millis.h"
 
 #if !defined (CONFIG_LEDBLINK_USE_PANELLED) && (defined (GD32F4XX) || defined(GD32H7XX))
 # define HAL_HAVE_PORT_BIT_TOGGLE
@@ -227,8 +228,6 @@ public:
 	}
 
 private:
-	void RebootHandler();
-
 	static void ledblink([[maybe_unused]] TimerHandle_t nHandle) {
 #if defined(HAL_HAVE_PORT_BIT_TOGGLE)
 		GPIO_TG(LED_BLINK_GPIO_PORT) = LED_BLINK_PIN;
@@ -313,7 +312,7 @@ private:
 #if !defined(HAL_HAVE_PORT_BIT_TOGGLE)
 	static inline int32_t m_nToggleLed { 1 };
 #endif
-	static Hardware *s_pThis;
+	static inline Hardware *s_pThis;
 };
 
 #endif /* GD32_HARDWARE_H_ */

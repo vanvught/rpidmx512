@@ -28,7 +28,6 @@
 #include "hardware.h"
 #include "network.h"
 
-
 #include "net/apps/mdns.h"
 
 #include "display.h"
@@ -55,9 +54,11 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
-void Hardware::RebootHandler() {
+namespace hal {
+void reboot_handler() {
 	WS28xx::Get()->Blackout();
 }
+}  // namespace hal
 
 int main() {
 	Hardware hw;
@@ -116,11 +117,6 @@ int main() {
 	remoteConfigParams.Load();
 	remoteConfigParams.Set(&remoteConfig);
 
-	while (configStore.Flash())
-		;
-
-	mdns_print(); //	mDns.Print();
-
 	display.TextStatus(OscServerMsgConst::START, CONSOLE_YELLOW);
 
 	server.Start();
@@ -132,7 +128,6 @@ int main() {
 	for (;;) {
 		hw.WatchdogFeed();
 		nw.Run();
-		server.Run();
 		remoteConfig.Run();
 		configStore.Flash();
 		pixelTestPattern.Run();

@@ -2,7 +2,7 @@
  * @file i2c.cpp
  *
  */
-/* Copyright (C) 2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2023-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -100,4 +100,40 @@ uint8_t i2c_read(char *buf, uint32_t len) {
 	}
 
 	return 0;
+}
+
+bool i2c_is_connected(const uint8_t nAddress, const uint32_t nBaudrate) {
+	i2c_set_address(nAddress);
+
+	uint8_t nResult;
+	char buffer;
+
+	if ((nAddress >= 0x30 && nAddress <= 0x37) || (nAddress >= 0x50 && nAddress <= 0x5F)) {
+		nResult = i2c_read(&buffer, 1);
+	} else {
+		/* This is known to corrupt the Atmel AT24RF08 EEPROM */
+		nResult = i2c_write(nullptr, 0);
+	}
+
+	return (nResult == 0) ? true : false;
+}
+
+void i2c_write_register(const uint8_t nRegister, const uint8_t nValue) {
+	char buffer[2];
+
+	buffer[0] = static_cast<char>(nRegister);
+	buffer[1] = static_cast<char>(nValue);
+
+	i2c_write(buffer, 2);
+}
+
+void i2c_read_register(const uint8_t nRegister, uint8_t& nValue) {
+	char buffer[1];
+
+	buffer[0] = static_cast<char>(nRegister);
+
+	i2c_write(buffer, 1);
+	i2c_read(buffer, 1);
+
+	nValue = buffer[0];
 }

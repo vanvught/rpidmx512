@@ -30,8 +30,8 @@
 #include "dmxconst.h"
 #include "lightset.h"
 
-namespace remoteconfig {
-namespace dmx {
+
+namespace remoteconfig::dmx {
 static uint32_t get_portstatus(const uint32_t nPortIndex, char *pOutBuffer, const uint32_t nOutBufferSize) {
 	const auto direction = Dmx::Get()->GetPortDirection(nPortIndex) == ::dmx::PortDirection::INP ? ::lightset::PortDir::INPUT : ::lightset::PortDir::OUTPUT;
 	auto nLength = static_cast<uint32_t>(snprintf(pOutBuffer, nOutBufferSize,
@@ -54,5 +54,5 @@ uint32_t json_get_ports(char *pOutBuffer, const uint32_t nOutBufferSize) {
 
 	return nLength;
 }
-}  // namespace dmx
-}  // namespace remoteconfig
+} // namespace remoteconfig::dmx
+

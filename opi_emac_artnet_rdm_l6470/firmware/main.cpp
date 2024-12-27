@@ -30,11 +30,6 @@
 #include "hardware.h"
 #include "network.h"
 
-
-#include "net/apps/mdns.h"
-
-#include "net/apps/ntpclient.h"
-
 #include "displayudf.h"
 #include "displayudfparams.h"
 
@@ -77,9 +72,11 @@
 
 #include "displayhandler.h"
 
-void Hardware::RebootHandler() {
+namespace hal {
+void reboot_handler() {
 	ArtNetNode::Get()->Stop();
 }
+}  // namespace hal
 
 int main() {
 	Hardware hw;
@@ -90,10 +87,6 @@ int main() {
 	FlashCodeInstall spiFlashInstall;
 
 	fw.Print("Art-Net 4 Stepper L6470");
-
-	NtpClient ntpClient;
-	ntpClient.Start();
-	ntpClient.Print();
 
 	LightSet *pBoard;
 	uint32_t nMotorsConnected = 0;
@@ -214,11 +207,6 @@ int main() {
 	remoteConfigParams.Load();
 	remoteConfigParams.Set(&remoteConfig);
 
-	while (configStore.Flash())
-		;
-
-	mdns_print(); //	mDns.Print();
-
 	display.TextStatus(ArtNetMsgConst::START, CONSOLE_YELLOW);
 
 	node.Start();
@@ -234,10 +222,8 @@ int main() {
 #if defined (NODE_SHOWFILE)
 		showFile.Run();
 #endif
-		ntpClient.Run();
 		remoteConfig.Run();
 		configStore.Flash();
-
 		display.Run();
 		hw.Run();
 	}

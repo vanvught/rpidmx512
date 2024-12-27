@@ -51,15 +51,15 @@
 # include "sensor/cputemperature.h"
 #endif
 
-namespace rdm {
-namespace sensors {
+
+namespace rdm::sensors {
 static constexpr auto MAX = 16;
 static constexpr auto STORE = 64;	///< Configuration store in bytes
 namespace devices {
 static constexpr auto MAX = 8;
 }  // namespace devices
-}  // namespace sensors
-}  // namespace rdm
+} // namespace rdm::sensors
+
 
 class RDMSensors {
 public:

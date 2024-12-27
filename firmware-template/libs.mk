@@ -33,10 +33,6 @@ ifeq ($(findstring E131_CONTROLLER,$(DEFINES)),E131_CONTROLLER)
 	endif
 endif
 
-ifeq ($(findstring NODE_SHOWFILE,$(DEFINES)),NODE_SHOWFILE)
-	LIBS+=showfile osc
-endif
-
 ifeq ($(findstring NODE_LTC_SMPTE,$(DEFINES)),NODE_LTC_SMPTE)
 	LIBS+=ltc tcnet midi input osc ws28xxdisplay ws28xx rgbpanel gps
 endif
@@ -61,6 +57,10 @@ ifeq ($(findstring ARTNET_CONTROLLER,$(DEFINES)),ARTNET_CONTROLLER)
 	ifneq ($(findstring artnet,$(LIBS)),artnet)
 		LIBS+=artnet
 	endif
+endif
+
+ifeq ($(findstring NODE_SHOWFILE,$(DEFINES)),NODE_SHOWFILE)
+	LIBS+=showfile osc
 endif
 
 ifeq ($(findstring RDM_CONTROLLER,$(DEFINES)),RDM_CONTROLLER)

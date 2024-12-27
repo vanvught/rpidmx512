@@ -2,7 +2,7 @@
  * @file rtpmidi.cpp
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,13 +23,18 @@
  * THE SOFTWARE.
  */
 
+#if !defined(__clang__)
+# pragma GCC push_options
+# pragma GCC optimize ("O2")
+# pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#endif
+
 #include <cstdio>
 #include <cassert>
 
-#include "rtpmidi.h"
-#include "applemidi.h"
-
-#include "rtpmidihandler.h"
+#include "net/rtpmidi.h"
+#include "net/applemidi.h"
+#include "net/rtpmidihandler.h"
 
 #include "hardware.h"
 
@@ -46,8 +51,6 @@
 #define RTP_MIDI_CS_FLAG_P 				0x10
 #define RTP_MIDI_CS_MASK_SHORTLEN 		0x0f
 #define RTP_MIDI_CS_MASK_LONGLEN 		0x0fff
-
-RtpMidi *RtpMidi::s_pThis = nullptr;
 
 int32_t RtpMidi::DecodeTime([[maybe_unused]] uint32_t nCommandLength, uint32_t nOffset) {
 	DEBUG_ENTRY
@@ -79,11 +82,11 @@ int32_t RtpMidi::DecodeMidi(uint32_t nCommandLength, uint32_t nOffset) {
 	const auto nStatusByte = m_pReceiveBuffer[nOffset];
 	const auto nType = GetTypeFromStatusByte(nStatusByte);
 
-	m_tMidiMessage.nTimestamp = __builtin_bswap32(*reinterpret_cast<uint32_t *>(&m_pReceiveBuffer[4]));
-	m_tMidiMessage.tType = nType;
-	m_tMidiMessage.nChannel = 0;
-	m_tMidiMessage.nData1 = 0;
-	m_tMidiMessage.nData2 = 0;
+	m_midiMessage.nTimestamp = __builtin_bswap32(*reinterpret_cast<uint32_t *>(&m_pReceiveBuffer[4]));
+	m_midiMessage.tType = nType;
+	m_midiMessage.nChannel = 0;
+	m_midiMessage.nData1 = 0;
+	m_midiMessage.nData2 = 0;
 
 	switch (static_cast<midi::Types>(nType)) {
 	case midi::Types::ACTIVE_SENSING:
@@ -93,16 +96,16 @@ int32_t RtpMidi::DecodeMidi(uint32_t nCommandLength, uint32_t nOffset) {
 	case midi::Types::CLOCK:
 	case midi::Types::TUNE_REQUEST:
 	case midi::Types::SYSTEM_RESET:
-		m_tMidiMessage.nBytesCount = 1;
+		m_midiMessage.nBytesCount = 1;
 		nSize = 1;
 		break;
 	case midi::Types::PROGRAM_CHANGE:
 	case midi::Types::AFTER_TOUCH_CHANNEL:
 	case midi::Types::TIME_CODE_QUARTER_FRAME:
 	case midi::Types::SONG_SELECT:
-		m_tMidiMessage.nChannel = GetChannelFromStatusByte(nStatusByte);
-		m_tMidiMessage.nData1 = m_pReceiveBuffer[++nOffset];
-		m_tMidiMessage.nBytesCount = 2;
+		m_midiMessage.nChannel = GetChannelFromStatusByte(nStatusByte);
+		m_midiMessage.nData1 = m_pReceiveBuffer[++nOffset];
+		m_midiMessage.nBytesCount = 2;
 		nSize = 2;
 		break;
 	case midi::Types::NOTE_ON:
@@ -111,23 +114,23 @@ int32_t RtpMidi::DecodeMidi(uint32_t nCommandLength, uint32_t nOffset) {
 	case midi::Types::PITCH_BEND:
 	case midi::Types::AFTER_TOUCH_POLY:
 	case midi::Types::SONG_POSITION:
-		m_tMidiMessage.nChannel = GetChannelFromStatusByte(nStatusByte);
-		m_tMidiMessage.nData1 = m_pReceiveBuffer[++nOffset];
-		m_tMidiMessage.nData2 = m_pReceiveBuffer[++nOffset];
-		m_tMidiMessage.nBytesCount = 3;
+		m_midiMessage.nChannel = GetChannelFromStatusByte(nStatusByte);
+		m_midiMessage.nData1 = m_pReceiveBuffer[++nOffset];
+		m_midiMessage.nData2 = m_pReceiveBuffer[++nOffset];
+		m_midiMessage.nBytesCount = 3;
 		nSize = 3;
 		break;
 	case midi::Types::SYSTEM_EXCLUSIVE: {
 		for (nSize = 0; (static_cast<uint32_t>(nSize) < nCommandLength) && (static_cast<uint32_t>(nSize) < MIDI_SYSTEM_EXCLUSIVE_INDEX_ENTRIES); nSize++) {
-			m_tMidiMessage.aSystemExclusive[nSize] = m_pReceiveBuffer[nOffset++];
-			if (m_tMidiMessage.aSystemExclusive[nSize] == 0xF7) {
+			m_midiMessage.aSystemExclusive[nSize] = m_pReceiveBuffer[nOffset++];
+			if (m_midiMessage.aSystemExclusive[nSize] == 0xF7) {
 				break;
 			}
 		}
 		nSize++;
-		m_tMidiMessage.nData1 = static_cast<uint8_t>(nSize & 0xFF); // LSB
-		m_tMidiMessage.nData2 = static_cast<uint8_t>(nSize >> 8);   // MSB
-		m_tMidiMessage.nBytesCount = static_cast<uint8_t>(nSize);
+		m_midiMessage.nData1 = static_cast<uint8_t>(nSize & 0xFF); // LSB
+		m_midiMessage.nData2 = static_cast<uint8_t>(nSize >> 8);   // MSB
+		m_midiMessage.nBytesCount = static_cast<uint8_t>(nSize);
 	}
 		break;
 	default:
@@ -137,7 +140,7 @@ int32_t RtpMidi::DecodeMidi(uint32_t nCommandLength, uint32_t nOffset) {
 	DEBUG_PRINTF("nSize=%d", nSize);
 
 	if (m_pRtpMidiHandler != nullptr) {
-		m_pRtpMidiHandler->MidiMessage(&m_tMidiMessage);
+		m_pRtpMidiHandler->MidiMessage(&m_midiMessage);
 		DEBUG_PUTS("");
 	}
 
@@ -172,7 +175,7 @@ void RtpMidi::HandleRtpMidi(const uint8_t *pBuffer) {
 	while (nCommandLength != 0) {
 
 		if ((nCommandCount != 0) || (nFlags & RTP_MIDI_CS_FLAG_Z)) {
-			int32_t nSize = DecodeTime(static_cast<uint32_t>(nCommandLength), static_cast<uint32_t>(nOffset));
+			auto nSize = DecodeTime(static_cast<uint32_t>(nCommandLength), static_cast<uint32_t>(nOffset));
 
 			if (nSize < 0) {
 				return;
@@ -183,7 +186,7 @@ void RtpMidi::HandleRtpMidi(const uint8_t *pBuffer) {
 		}
 
 		if (nCommandLength != 0) {
-			int32_t nSize = DecodeMidi(static_cast<uint32_t>(nCommandLength), static_cast<uint32_t>(nOffset));
+			auto nSize = DecodeMidi(static_cast<uint32_t>(nCommandLength), static_cast<uint32_t>(nOffset));
 
 			if (nSize < 0) {
 				return;

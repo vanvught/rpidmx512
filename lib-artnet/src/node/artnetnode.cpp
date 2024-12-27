@@ -2,9 +2,7 @@
  * @file artnetnode.cpp
  *
  */
-/**
- * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
- */
+
 /* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -35,6 +33,10 @@
 #include "artnetconst.h"
 #include "artnet.h"
 #include "artnetstore.h"
+
+#if defined (ARTNET_HAVE_TRIGGER)
+# include "artnettrigger.h"
+#endif
 
 #if defined (ARTNET_HAVE_DMXIN)
 # include "dmx.h"
@@ -146,13 +148,13 @@ ArtNetNode::ArtNetNode() {
 void ArtNetNode::Start() {
 	DEBUG_ENTRY
 
-#if (LIGHTSET_PORTS > 0)
-	assert(m_pLightSet != nullptr);
-#endif	
-
 #if defined (ARTNET_HAVE_TRIGGER)
-	assert(m_pArtNetTrigger != nullptr);
-#endif	
+	assert(m_ArtTriggerCallbackFunctionPtr != nullptr);
+#endif
+
+#if defined (ARTNET_HAVE_TIMECODE)
+	assert(m_ArtTimeCodeCallbackFunctionPtr != nullptr);
+#endif
 
 	/*
 	 * Status 1
@@ -548,10 +550,9 @@ void ArtNetNode::Process(const uint32_t nBytesReceived) {
 		HandleAddress();
 		break;
 #if defined (ARTNET_HAVE_TIMECODE)		
-	case artnet::OpCodes::OP_TIMECODE:
-		if (m_pArtNetTimeCode != nullptr) {
+	case artnet::OpCodes::OP_TIMECODE: {
 			const auto *const pArtTimeCode = reinterpret_cast<artnet::ArtTimeCode *>(m_pReceiveBuffer);
-			m_pArtNetTimeCode->Handler(reinterpret_cast<const struct artnet::TimeCode *>(&pArtTimeCode->Frames));
+			m_ArtTimeCodeCallbackFunctionPtr(reinterpret_cast<const struct artnet::TimeCode *>(&pArtTimeCode->Frames));
 		}
 		break;
 #endif		
@@ -589,8 +590,13 @@ void ArtNetNode::Process(const uint32_t nBytesReceived) {
 		HandleIpProg();
 		break;
 #if defined (ARTNET_HAVE_TRIGGER)		
-	case artnet::OpCodes::OP_TRIGGER:
-		HandleTrigger();
+	case artnet::OpCodes::OP_TRIGGER: {
+		const auto *const pArtTrigger = reinterpret_cast<artnet::ArtTrigger* >(m_pReceiveBuffer);
+		if ((pArtTrigger->OemCodeHi == 0xFF && pArtTrigger->OemCodeLo == 0xFF) || (pArtTrigger->OemCodeHi == ArtNetConst::OEM_ID[0] && pArtTrigger->OemCodeLo == ArtNetConst::OEM_ID[1])) {
+			DEBUG_PRINTF("Key=%d, SubKey=%d, Data[0]=%d", pArtTrigger->Key, pArtTrigger->SubKey, pArtTrigger->Data[0]);
+			m_ArtTriggerCallbackFunctionPtr(reinterpret_cast<const struct ArtNetTrigger *>(&pArtTrigger->Key));
+		}
+	}
 		break;
 #endif
 #if defined (ARTNET_HAVE_DMXIN)

@@ -43,7 +43,7 @@
 namespace net::arp {
 enum class EthSend {
 	IS_NORMAL
-#if defined CONFIG_ENET_ENABLE_PTP
+#if defined CONFIG_NET_ENABLE_PTP
 	, IS_TIMESTAMP
 #endif
 };
@@ -52,7 +52,7 @@ enum class EthSend {
 extern "C" void console_error(const char *);
 
 void emac_eth_send(void *, uint32_t);
-#if defined CONFIG_ENET_ENABLE_PTP
+#if defined CONFIG_NET_ENABLE_PTP
 void emac_eth_send_timestamp(void *, uint32_t);
 #endif
 uint32_t emac_eth_recv(uint8_t **);

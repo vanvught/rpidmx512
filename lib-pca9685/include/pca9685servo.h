@@ -30,13 +30,13 @@
 
 #include "pca9685.h"
 
-namespace pca9685 {
-namespace servo {
+
+namespace pca9685::servo {
 static constexpr uint32_t LEFT_DEFAULT_US 	= 1000;
 static constexpr uint32_t CENTER_DEFAULT_US = 1500;
 static constexpr uint32_t RIGHT_DEFAULT_US 	= 2000;
-}  // namespace servo
-}  // namespace pca9685
+} // namespace pca9685::servo
+
 
 class PCA9685Servo: public PCA9685 {
 public:

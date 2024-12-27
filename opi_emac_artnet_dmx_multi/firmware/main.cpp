@@ -44,7 +44,6 @@
 #include "dmxparams.h"
 #include "dmxsend.h"
 #include "rdmdeviceparams.h"
-#include "dmxconfigudp.h"
 
 #if defined (NODE_SHOWFILE)
 # include "showfile.h"
@@ -60,10 +59,12 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
-void Hardware::RebootHandler() {
+namespace hal {
+void reboot_handler() {
 	Dmx::Get()->Blackout();
 	ArtNetNode::Get()->Stop();
 }
+}  // namespace hal
 
 int main() {
 	Hardware hw;
@@ -148,11 +149,6 @@ int main() {
 	RemoteConfigParams remoteConfigParams;
 	remoteConfigParams.Load();
 	remoteConfigParams.Set(&remoteConfig);
-
-	while (configStore.Flash())
-		;
-
-	mdns_print();
 
 	display.TextStatus(ArtNetMsgConst::START, CONSOLE_YELLOW);
 

@@ -2,7 +2,7 @@
  * @file dmxserial.h
  *
  */
-/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -69,8 +69,6 @@ public:
 	void Sync(const uint32_t nPortIndex) override;
 	void Sync() override;
 
-	void Run();
-
 	void Print() override;
 
 	const char *GetSerialType() {
@@ -86,6 +84,8 @@ public:
 	bool DeleteFile(int32_t nFileNumber);
 	bool DeleteFile(const char *pFileNumber);
 
+	void Input(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort);
+
 	static bool FileNameCopyTo(char *pFileName, uint32_t nLength, int32_t nFileNumber);
 	static bool CheckFileName(const char *pFileName, int32_t &nFileNumber);
 
@@ -96,14 +96,16 @@ public:
 private:
 	void ScanDirectory();
 	void Update(const uint8_t *pData, const uint32_t nLength);
-	void HandleUdp();
+
+	void static staticCallbackFunction(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
+		s_pThis->Input(pBuffer, nSize, nFromIp, nFromPort);
+	}
 
 private:
 	Serial m_Serial;
 	uint32_t m_nFilesCount { 0 };
 	int32_t m_aFileIndex[DmxSerialFile::MAX_NUMBER];
 	int32_t m_nHandle { -1 };
-	uint8_t *m_pReceiveBuffer { nullptr };
 	DmxSerialChannelData *m_pDmxSerialChannelData[DmxSerialFile::MAX_NUMBER];
 	uint16_t m_nDmxLastSlot { lightset::dmx::UNIVERSE_SIZE };
 	uint8_t m_DmxData[lightset::dmx::UNIVERSE_SIZE];

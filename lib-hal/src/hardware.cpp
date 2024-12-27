@@ -28,6 +28,10 @@
 #include "hardware.h"
 #include "debug.h"
 
+namespace hal {
+void __attribute__((weak)) reboot_handler() {}
+}  // namespace hal
+
 namespace hardware::ledblink {
 void __attribute__((weak)) display([[maybe_unused]] const uint32_t nState) {}
 }  // namespace hardware::ledblink

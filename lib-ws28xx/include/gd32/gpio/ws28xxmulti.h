@@ -26,6 +26,18 @@
 #ifndef GD32_GPIO_WS28XXMULTI_H_
 #define GD32_GPIO_WS28XXMULTI_H_
 
+#if defined (DEBUG_PIXEL)
+# if defined (NDEBUG)
+#  undef NDEBUG
+#  define _NDEBUG
+# endif
+#endif
+
+#pragma GCC push_options
+#pragma GCC optimize ("O3")
+#pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#pragma GCC optimize ("-fprefetch-loop-arrays")
+
 #include <cstdint>
 
 #include "pixelconfiguration.h"
@@ -57,7 +69,7 @@ public:
 		uint32_t j = 0;
 		const auto k = nPixelIndex * pixel::single::RGB;
 		const auto nBit = nPortIndex + GPIO_PIN_OFFSET;
-		auto *p = &s_pBuffer1[k];
+		auto *p = &s_pPixelBufferData[k];
 
 		for (uint8_t mask = 0x80; mask != 0; mask = static_cast<uint8_t>(mask >> 1)) {
 			auto &p1 = p[j];
@@ -84,23 +96,13 @@ public:
 		}
 	}
 
-	void SetColourRTZ(const uint32_t nPortIndex, const uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite) {
-		assert(nPortIndex < 16);
-		assert(nPixelIndex < m_nBufSize / 8);	//FIXME 8
-
-#if defined(CONFIG_PIXELDMX_ENABLE_GAMMATABLE)
-		const auto pGammaTable = pixelConfiguration.GetGammaTable();
-
-		nRed = pGammaTable[nRed];
-		nGreen = pGammaTable[nGreen];
-		nBlue = pGammaTable[nBlue];
-		nWhite = pGammaTable[nWhite];
-#endif
+	void SetColourRTZ(const uint32_t nPortIndex, const uint32_t nPixelIndex, const uint8_t nRed, const uint8_t nGreen, const uint8_t nBlue, const uint8_t nWhite) {
+		assert(nPortIndex < pixel::PORT_COUNT);
 
 		const auto k = nPixelIndex * pixel::single::RGBW;
 		const auto nBit = nPortIndex + GPIO_PIN_OFFSET;
 
-		auto *p = &s_pBuffer1[k];
+		auto *p = &s_pPixelBufferData[k];
 		uint32_t j = 0;
 
 		for (uint8_t mask = 0x80; mask != 0; mask = static_cast<uint8_t>(mask >> 1)) {
@@ -139,13 +141,12 @@ public:
 	}
 
 	void SetColourWS2801(const uint32_t nPortIndex, const uint32_t nPixelIndex, const uint8_t nColour1, const uint8_t nColour2, const uint8_t nColour3) {
-		assert(nPortIndex < 16);
-		assert(nPixelIndex < m_nBufSize / 8);		//FIXME 8
+		assert(nPortIndex < pixel::PORT_COUNT);
 
 		uint32_t j = 0;
 		const auto k = nPixelIndex * pixel::single::RGB;
 		const auto nBit = nPortIndex + GPIO_PIN_OFFSET;
-		auto *p = &s_pBuffer1[k];
+		auto *p = &s_pPixelBufferData[k];
 
 		for (uint8_t mask = 0x80; mask != 0; mask = static_cast<uint8_t>(mask >> 1)) {
 			auto& p1 = p[j];
@@ -173,13 +174,12 @@ public:
 	}
 
 	void SetPixel4Bytes(const uint32_t nPortIndex, const uint32_t nPixelIndex, const uint8_t nCtrl, const uint8_t nColour1, const uint8_t nColour2, const uint8_t nColour3) {
-		assert(nPortIndex < 16);
-		assert(nPixelIndex < m_nBufSize / 8);	//FIXME 8
+		assert(nPortIndex < pixel::PORT_COUNT);
 
 		uint32_t j = 0;
 		const auto k = nPixelIndex * pixel::single::RGBW;
 		const auto nBit = nPortIndex + GPIO_PIN_OFFSET;
-		auto *p = &s_pBuffer1[k];
+		auto *p = &s_pPixelBufferData[k];
 
 		for (uint8_t mask = 0x80; mask != 0; mask = static_cast<uint8_t>(mask >> 1)) {
 			if (mask & nCtrl) {
@@ -216,7 +216,7 @@ public:
 	void Blackout();
 	void FullOn();
 
-	void Print();
+	uint32_t GetUserData();
 
 	static WS28xxMulti *Get() {
 		return s_pThis;
@@ -233,18 +233,23 @@ private:
 	 * https://www.gd32-dmx.org/memory.html
 	 */
 #if defined (GD32F20X) || defined (GD32F4XX)
-# define SECTION_DMA_BUFFER					__attribute__ ((section (".pixel")))
+# define SECTION_PIXEL	__attribute__ ((section (".pixel")))
 #else
-# define SECTION_DMA_BUFFER
+# define SECTION_PIXEL
 #endif
 
-	static inline uint16_t DmaBuffer[2 * 1024 * 16] __attribute__ ((aligned (4))) SECTION_DMA_BUFFER;
-	static inline constexpr auto DMA_BUFFER_SIZE = sizeof(DmaBuffer) / sizeof(DmaBuffer[0]);
-	static inline auto *s_pBuffer1 = reinterpret_cast<uint16_t *>(DmaBuffer);
-	static inline auto *s_pBuffer2 = reinterpret_cast<uint16_t *>(DmaBuffer + DMA_BUFFER_SIZE / 2);
-	static inline constexpr auto MAX_APA102 = ((DMA_BUFFER_SIZE / 8) - 8 ) / 4;
+	static inline uint16_t PixelBuffer[2 * 1024 * 16] __attribute__ ((aligned (4))) SECTION_PIXEL;
+	static inline constexpr auto PIXEL_BUFFER_SIZE = sizeof(PixelBuffer) / sizeof(PixelBuffer[0]);
+	static inline auto *s_pPixelBufferData = reinterpret_cast<uint16_t *>(PixelBuffer);
+	static inline auto *s_PixelBufferDma = reinterpret_cast<uint16_t *>(PixelBuffer + PIXEL_BUFFER_SIZE / 2);
+	static inline constexpr auto MAX_APA102 = ((PIXEL_BUFFER_SIZE / 8) - 8 ) / 4;
 
 	static inline WS28xxMulti *s_pThis;
 };
 
+#pragma GCC pop_options
+#if defined (_NDEBUG)
+# undef _NDEBUG
+# define NDEBUG
+#endif
 #endif /* GD32_GPIO_WS28XXMULTI_H_ */

@@ -1,6 +1,6 @@
 DEFINES=NDEBUG
 
-EXTRA_INCLUDES=../lib-display/include ../lib-properties/include
+EXTRA_INCLUDES=
 
 EXTRA_SRCDIR=
 

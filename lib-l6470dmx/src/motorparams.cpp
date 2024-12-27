@@ -2,7 +2,7 @@
  * @file motorparams.cpp
  *
  */
-/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,13 +23,11 @@
  * THE SOFTWARE.
  */
 
-#if !defined(__clang__)	// Needed for compiling on MacOS
+#if !defined(__clang__)
 # if __GNUC__ < 9
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wuseless-cast"	//FIXME GCC 8.0.3 Raspbian GNU/Linux 10 (buster)
 # endif
-# pragma GCC push_options
-# pragma GCC optimize ("Os")
 #endif
 
 #include <cstdint>

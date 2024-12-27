@@ -30,8 +30,8 @@
 
 #include "showfile.h"
 
-namespace remoteconfig {
-namespace showfile {
+
+namespace remoteconfig::showfile {
 
 uint32_t json_get_directory(char *pOutBuffer, const uint32_t nOutBufferSize) {
 	const auto nBufferSize = nOutBufferSize - 2U;
@@ -68,5 +68,5 @@ uint32_t json_get_directory(char *pOutBuffer, const uint32_t nOutBufferSize) {
 	assert(nLength <= nOutBufferSize);
 	return nLength;
 }
-}  // namespace showfile
-}  // namespace remoteconfig
+} // namespace remoteconfig::showfile
+

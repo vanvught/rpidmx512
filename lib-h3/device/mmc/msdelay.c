@@ -1,8 +1,8 @@
 /**
- * @file pixeltestpattern.cpp
+ * @file msdelay.c
  *
  */
-/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,14 @@
  * THE SOFTWARE.
  */
 
-#include "pixeltestpattern.h"
+#include "h3.h"
 
-PixelTestPattern *PixelTestPattern::s_pThis;
+void __msdelay(const uint32_t ms)  {
+	const uint32_t t1 = H3_TIMER->AVS_CNT0;
+
+	do {
+		__DMB();
+	} while ((H3_TIMER->AVS_CNT0 - t1) < ms);
+
+	return;
+}

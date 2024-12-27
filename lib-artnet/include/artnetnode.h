@@ -68,12 +68,6 @@
 # include "e131bridge.h"
 #endif
 
-#if defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI)
-# if !defined(ARTNET_DISABLE_DMX_CONFIG_UDP)
-#  include "dmxconfigudp.h"
-# endif
-#endif
-
 #include "lightset.h"
 #include "hardware.h"
 #include "network.h"
@@ -451,8 +445,8 @@ public:
 		Network::Get()->SendTo(m_nHandle, &m_ArtTimeCode, sizeof(struct artnet::ArtTimeCode), m_Node.IPAddressTimeCode, artnet::UDP_PORT);
 	}
 
-	void SetTimeCodeHandler(ArtNetTimeCode *pArtNetTimeCode) {
-		m_pArtNetTimeCode = pArtNetTimeCode;
+	void SetArtTimeCodeCallbackFunction(ArtTimeCodeCallbackFunctionPtr artTimeCodeCallbackFunctionPtr) {
+		m_ArtTimeCodeCallbackFunctionPtr = artTimeCodeCallbackFunctionPtr;
 	}
 
 	void SetTimeCodeIp(const uint32_t nDestinationIp) {
@@ -460,9 +454,11 @@ public:
 	}
 #endif
 
-	void SetArtNetTrigger(ArtNetTrigger *pArtNetTrigger) {
-		m_pArtNetTrigger = pArtNetTrigger;
+#if defined (ARTNET_HAVE_TRIGGER)
+	void SetArtTriggerCallbackFunctionPtr(ArtTriggerCallbackFunctionPtr artTriggerCallbackFunctionPtr) {
+		m_ArtTriggerCallbackFunctionPtr = artTriggerCallbackFunctionPtr;
 	}
+#endif
 
 	void SetDestinationIp(const uint32_t nPortIndex, const uint32_t nDestinationIp) {
 		if (nPortIndex < artnetnode::MAX_PORTS) {
@@ -694,8 +690,8 @@ private:
 
 	LightSet *m_pLightSet { nullptr };
 
-	ArtNetTimeCode *m_pArtNetTimeCode { nullptr };
-	ArtNetTrigger *m_pArtNetTrigger { nullptr };
+	ArtTimeCodeCallbackFunctionPtr m_ArtTimeCodeCallbackFunctionPtr { nullptr };
+	ArtTriggerCallbackFunctionPtr m_ArtTriggerCallbackFunctionPtr { nullptr };
 
 	artnetnode::Node m_Node;
 	artnetnode::State m_State;
@@ -725,9 +721,6 @@ private:
 #endif
 #if defined (ARTNET_ENABLE_SENDDIAG)
 	artnet::ArtDiagData m_DiagData;
-#endif
-#if defined (DMXCONFIGUDP_H_)
-	DmxConfigUdp m_DmxConfigUdp;
 #endif
 
 	static inline ArtNetNode *s_pThis;

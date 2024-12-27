@@ -42,7 +42,6 @@
 
 #include "dmxparams.h"
 #include "dmxsend.h"
-#include "dmxconfigudp.h"
 
 #if defined (NODE_RDMNET_LLRP_ONLY)
 # include "rdmdeviceparams.h"
@@ -67,10 +66,12 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
-void Hardware::RebootHandler() {
+namespace hal {
+void reboot_handler() {
 	Dmx::Get()->Blackout();
 	E131Bridge::Get()->Stop();
 }
+}  // namespace hal
 
 int main() {
 	Hardware hw;
@@ -101,9 +102,9 @@ int main() {
 	dmxparams.Load();
 	dmxparams.Set(&dmx);
 
-	for (uint32_t nPortIndex = dmxsend::DMXPORT_OFFSET; nPortIndex < e131bridge::MAX_PORTS; nPortIndex++) {
+	for (uint32_t nPortIndex = DmxSend::DMXPORT_OFFSET; nPortIndex < e131bridge::MAX_PORTS; nPortIndex++) {
 		uint16_t nUniverse;
-		const auto nDmxPortIndex = nPortIndex - dmxsend::DMXPORT_OFFSET;
+		const auto nDmxPortIndex = nPortIndex - DmxSend::DMXPORT_OFFSET;
 
 		if (bridge.GetUniverse(nPortIndex, nUniverse, lightset::PortDir::OUTPUT)) {
 			dmx.SetPortDirection(nDmxPortIndex, dmx::PortDirection::OUTP, false);
@@ -176,11 +177,6 @@ int main() {
 	RemoteConfigParams remoteConfigParams;
 	remoteConfigParams.Load();
 	remoteConfigParams.Set(&remoteConfig);
-
-	while (configStore.Flash())
-		;
-
-	mdns_print(); //	mDns.Print();
 
 	display.TextStatus(E131MsgConst::START, CONSOLE_YELLOW);
 

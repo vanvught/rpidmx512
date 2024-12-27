@@ -34,7 +34,7 @@
 
 class SystimeReader {
 public:
-	SystimeReader(uint8_t nFps);
+	SystimeReader(uint8_t nFps, int32_t nUtcOffset);
 
 	void Start(bool bAutoStart = false);
 	void Run();
@@ -45,22 +45,27 @@ public:
 	void ActionStop();
 	void ActionSetRate(const char *pTimeCodeRate);
 
+	void Input(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort);
+
 	static SystimeReader *Get() {
 		return s_pThis;
 	}
 
 private:
-	void HandleUdpRequest();
+	void static staticCallbackFunction(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
+		s_pThis->Input(pBuffer, nSize, nFromIp, nFromPort);
+	}
 
 private:
 	uint8_t m_nFps;
-	time_t m_nTimePrevious { 0 };
-	midi::Timecode m_tMidiTimeCode;
+	int32_t m_nUtcOffset { 0 };
 	int32_t m_nHandle { -1 };
 	uint32_t m_nBytesReceived { 0 };
+	char *m_pUdpBuffer { nullptr };
+	time_t m_nTimePrevious { 0 };
+	midi::Timecode m_MidiTimeCode;
 	bool m_bIsStarted { false };
 
-	static inline char *s_pUdpBuffer;
 	static inline SystimeReader *s_pThis;
 };
 

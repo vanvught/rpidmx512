@@ -1,5 +1,3 @@
-#pragma GCC push_options
-#pragma GCC optimize ("Os")
 /*
  In file included from device/fb/h3_de2.c:44:
 In function 'memset',
@@ -16,8 +14,11 @@ In function 'memset',
    95 |                 *dp++ = (char) c;
       |                 ~~~~~~^~~~~~~~~~
  */
-#pragma GCC diagnostic ignored "-Warray-bounds"
-#pragma GCC diagnostic ignored "-Wstringop-overflow"
+#if !defined(__clang__)
+# pragma GCC push_options
+# pragma GCC diagnostic ignored "-Warray-bounds"
+# pragma GCC diagnostic ignored "-Wstringop-overflow"
+#endif
 /**
  * @file h3_de2.cpp
  *
@@ -111,7 +112,7 @@ static void clock_set_pll_de(const uint32_t clk) {
 		;
 }
 
-void de2_composer_init(void) {
+void de2_composer_init() {
 	clock_set_pll_de(432000000);
 
 	H3_CCU->BUS_CLK_GATING1 |= CCU_BUS_CLK_GATING1_DE;

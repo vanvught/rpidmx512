@@ -28,8 +28,8 @@
 
 #include "gd32_uart.h"
 
-namespace hal {
-namespace uart {
+
+namespace hal::uart {
 static constexpr auto BITS_8 = GD32_UART_BITS_8;
 static constexpr auto BITS_9 = GD32_UART_BITS_9;
 
@@ -39,7 +39,7 @@ static constexpr auto PARITY_EVEN = GD32_UART_PARITY_EVEN;
 
 static constexpr auto STOP_1BIT = GD32_UART_STOP_1BIT;
 static constexpr auto STOP_2BITS = GD32_UART_STOP_2BITS;
-}  // namespace uart
-}  // namespace hal
+} // namespace hal::uart
+
 
 #endif /* GD32_HAL_UART_H_ */

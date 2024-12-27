@@ -1,5 +1,7 @@
-#pragma GCC push_options
-#pragma GCC diagnostic ignored "-Wsign-conversion"
+#if !defined(__clang__)
+# pragma GCC push_options
+# pragma GCC diagnostic ignored "-Wsign-conversion"
+#endif
 /*-
  * SPDX-License-Identifier: BSD-3-Clause
  *

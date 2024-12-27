@@ -85,7 +85,7 @@ public:
 
 		SetNodeName(tcnet::NODE_NAME_DEFAULT);
 		SetLayer(tcnet::Layer::LAYER_M);
-		SetTimeCodeType(TCNET_TIMECODE_TYPE_SMPTE_30FPS);
+		SetTimeCodeType(tcnet::TimeCodeType::TIMECODE_TYPE_SMPTE_30FPS);
 
 		DEBUG_EXIT
 	}
@@ -169,7 +169,7 @@ public:
 		if (m_bUseTimeCode) {
 			puts(" TC");
 		} else {
-			printf(" T%u\n", TCNetConst::FPS[m_tTimeCodeType]);
+			printf(" T%u\n", TCNetConst::FPS[static_cast<uint32_t>(m_TimeCodeType)]);
 		}
 
 		printf("%u:%u:%u\n", static_cast<unsigned>(m_Layer), m_nLxTimeOffset, m_nLxTimeCodeOffset);
@@ -205,18 +205,18 @@ public:
 		return m_bUseTimeCode;
 	}
 
-	void SetTimeCodeType(const TTCNetTimeCodeType type) {
+	void SetTimeCodeType(const tcnet::TimeCodeType type) {
 		switch (type) {
-		case TCNET_TIMECODE_TYPE_FILM:
+		case tcnet::TimeCodeType::TIMECODE_TYPE_FILM:
 			m_fTypeDivider = 1000.0f / 24;
 			break;
-		case TCNET_TIMECODE_TYPE_EBU_25FPS:
+		case tcnet::TimeCodeType::TIMECODE_TYPE_EBU_25FPS:
 			m_fTypeDivider = 1000.0f / 25;
 			break;
-		case TCNET_TIMECODE_TYPE_DF:
+		case tcnet::TimeCodeType::TIMECODE_TYPE_DF:
 			m_fTypeDivider = 1000.0f / 29.97f;
 			break;
-		case TCNET_TIMECODE_TYPE_SMPTE_30FPS:
+		case tcnet::TimeCodeType::TIMECODE_TYPE_SMPTE_30FPS:
 			m_fTypeDivider = 1000.0f / 30;
 			break;
 		default:
@@ -224,16 +224,18 @@ public:
 			break;
 		}
 
-		m_tTimeCodeType = type;
+		m_TimeCodeType = type;
 	}
 
-	TTCNetTimeCodeType GetTimeCodeType() const {
-		return m_tTimeCodeType;
+	tcnet::TimeCodeType GetTimeCodeType() const {
+		return m_TimeCodeType;
 	}
 
-	void SetTimeCodeHandler(TCNetTimeCode *pTCNetTimeCode) {
-		m_pTCNetTimeCode = pTCNetTimeCode;
+#if defined (TCNET_HAVE_TIMECODE)
+	void SetArtTimeCodeCallbackFunction(TCNetTimeCodeCallbackFunctionPtr tcnetTimeCodeCallbackFunctionPtr) {
+		m_TCNetTimeCodeCallbackFunctionPtr = tcnetTimeCodeCallbackFunctionPtr;
 	}
+#endif
 
 public:
 	static char GetLayerName(const tcnet::Layer layer) {
@@ -310,56 +312,58 @@ private:
 	}
 
 	void HandlePort60001Incoming() {
-		if (__builtin_expect((m_pTCNetTimeCode != nullptr), 1)) {
-			const auto *pPacketTime = reinterpret_cast<struct TTCNetPacketTime *>(m_pReceiveBuffer);
-			if (static_cast<TTCNetMessageType>(pPacketTime->ManagementHeader.MessageType) == TCNET_MESSAGE_TYPE_TIME) {
-				struct TTCNetTimeCode TimeCode;
+#if defined (TCNET_HAVE_TIMECODE)
+		const auto *pPacketTime = reinterpret_cast<struct TTCNetPacketTime *>(m_pReceiveBuffer);
 
-				if (!m_bUseTimeCode) {
-					auto nTime = *reinterpret_cast<uint32_t *>(m_pReceiveBuffer + m_nLxTimeOffset);
+		if (static_cast<TTCNetMessageType>(pPacketTime->ManagementHeader.MessageType) == TCNET_MESSAGE_TYPE_TIME) {
+			tcnet::TimeCode TimeCode;
 
-					const auto nHours = nTime / 3600000U;
-					nTime -= nHours * 3600000U;
-					const auto nMinutes = nTime / 60000U;
-					nTime -= nMinutes * 60000U;
-					const auto nSeconds = nTime / 1000U;
-					const auto nMillis = nTime - nSeconds * 1000U;
-					const auto nFrames = static_cast<uint32_t>(static_cast<float>(nMillis) / m_fTypeDivider);
+			if (!m_bUseTimeCode) {
+				auto nTime = *reinterpret_cast<uint32_t *>(m_pReceiveBuffer + m_nLxTimeOffset);
 
-					TimeCode.nFrames = static_cast<uint8_t>(nFrames);
-					TimeCode.nSeconds = static_cast<uint8_t>(nSeconds);
-					TimeCode.nMinutes = static_cast<uint8_t>(nMinutes);
-					TimeCode.nHours = static_cast<uint8_t>(nHours);
-					TimeCode.nType = m_tTimeCodeType;
-				} else {
-					const auto *pTC =  reinterpret_cast<TTCNetPacketTimeTimeCode *>(m_pReceiveBuffer + m_nLxTimeCodeOffset);
-					TimeCode.nFrames = pTC->Frames;
-					TimeCode.nSeconds = pTC->Seconds;
-					TimeCode.nMinutes = pTC->Minutes;
-					TimeCode.nHours = pTC->Hours;
+				const auto nHours = nTime / 3600000U;
+				nTime -= nHours * 3600000U;
+				const auto nMinutes = nTime / 60000U;
+				nTime -= nMinutes * 60000U;
+				const auto nSeconds = nTime / 1000U;
+				const auto nMillis = nTime - nSeconds * 1000U;
+				const auto nFrames = static_cast<uint32_t>(static_cast<float>(nMillis) / m_fTypeDivider);
 
-					auto nSMPTEMode = pTC->SMPTEMode;
+				TimeCode.nFrames = static_cast<uint8_t>(nFrames);
+				TimeCode.nSeconds = static_cast<uint8_t>(nSeconds);
+				TimeCode.nMinutes = static_cast<uint8_t>(nMinutes);
+				TimeCode.nHours = static_cast<uint8_t>(nHours);
+				TimeCode.nType = static_cast<uint8_t>(m_TimeCodeType);
+			} else {
+				const auto *pTC =  reinterpret_cast<TTCNetPacketTimeTimeCode *>(m_pReceiveBuffer + m_nLxTimeCodeOffset);
+				TimeCode.nFrames = pTC->Frames;
+				TimeCode.nSeconds = pTC->Seconds;
+				TimeCode.nMinutes = pTC->Minutes;
+				TimeCode.nHours = pTC->Hours;
 
-					if (nSMPTEMode < 24) {
-						nSMPTEMode = pPacketTime->SMPTEMode;
-					}
+				auto nSMPTEMode = pTC->SMPTEMode;
 
-					if (nSMPTEMode == 24) {
-						TimeCode.nType = TCNET_TIMECODE_TYPE_FILM;
-					} else if (nSMPTEMode == 25) {
-						TimeCode.nType = TCNET_TIMECODE_TYPE_EBU_25FPS;
-					} else if (nSMPTEMode == 29) {
-						TimeCode.nType = TCNET_TIMECODE_TYPE_DF;
-					} else if (nSMPTEMode == 30) {
-						TimeCode.nType = TCNET_TIMECODE_TYPE_SMPTE_30FPS;
-					} else {
-						TimeCode.nType = TCNET_TIMECODE_TYPE_EBU_25FPS;
-					}
+				if (nSMPTEMode < 24) {
+					nSMPTEMode = pPacketTime->SMPTEMode;
 				}
 
-				m_pTCNetTimeCode->Handler(&TimeCode);
+				if (nSMPTEMode == 24) {
+					TimeCode.nType = static_cast<uint8_t>(tcnet::TimeCodeType::TIMECODE_TYPE_FILM);
+				} else if (nSMPTEMode == 25) {
+					TimeCode.nType = static_cast<uint8_t>(tcnet::TimeCodeType::TIMECODE_TYPE_EBU_25FPS);
+				} else if (nSMPTEMode == 29) {
+					TimeCode.nType = static_cast<uint8_t>(tcnet::TimeCodeType::TIMECODE_TYPE_DF);
+				} else if (nSMPTEMode == 30) {
+					TimeCode.nType = static_cast<uint8_t>(tcnet::TimeCodeType::TIMECODE_TYPE_SMPTE_30FPS);
+				} else {
+					TimeCode.nType = static_cast<uint8_t>(tcnet::TimeCodeType::TIMECODE_TYPE_EBU_25FPS);
+				}
 			}
+
+			assert(m_TCNetTimeCodeCallbackFunctionPtr != nullptr);
+			m_TCNetTimeCodeCallbackFunctionPtr(&TimeCode);
 		}
+#endif
 	}
 
 	void HandlePort60002Incoming() {
@@ -406,11 +410,12 @@ private:
 	uint32_t m_nPreviousMillis { 0 };
 	uint32_t m_nLxTimeOffset { 0 };
 	uint32_t m_nLxTimeCodeOffset { 0 };
-	TCNetTimeCode *m_pTCNetTimeCode { nullptr };
+
+	TCNetTimeCodeCallbackFunctionPtr m_TCNetTimeCodeCallbackFunctionPtr { nullptr };
 
 	float m_fTypeDivider { 1000.0F / 30 };
 	tcnet::Layer m_Layer { tcnet::Layer::LAYER_M };
-	TTCNetTimeCodeType m_tTimeCodeType;
+	tcnet::TimeCodeType m_TimeCodeType;
 	bool m_bUseTimeCode { false };
 	uint8_t m_nSeqTimeMessage { 0 };
 

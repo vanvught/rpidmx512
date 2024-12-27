@@ -2,7 +2,7 @@
  * @file network.h
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -72,6 +72,10 @@ typedef enum wifiphy_phy_mode {
 
 #define HOST_NAME_MAX			255
 
+namespace net {
+typedef void (*UdpCallbackFunctionPtr)(const uint8_t *, uint32_t, uint32_t, uint16_t);
+}  // namespace net
+
 class Network {
 public:
 	Network();
@@ -79,7 +83,7 @@ public:
 
 	void Init();
 
-	int32_t Begin(uint16_t nPort) ;
+	int32_t Begin(uint16_t nPort, net::UdpCallbackFunctionPtr callback = nullptr) ;
 	int32_t End(uint16_t nPort) ;
 
 	void MacAddressCopyTo(uint8_t *pMacAddress);
@@ -89,7 +93,6 @@ public:
 		// Not supported
 	}
 
-	uint32_t RecvFrom(int32_t nHandle, void *pBuffer, uint32_t nLength, uint32_t *pFromIp, uint16_t *pFromPort);
 	uint32_t RecvFrom(int32_t nHandle, const void **ppBuffer, uint32_t *pFromIp, uint16_t *pFromPort);
 	void SendTo(int32_t nHandle, const void *pBuffer, uint32_t nLength, uint32_t nToIp, uint16_t nRemotePort) ;
 
@@ -166,6 +169,8 @@ public:
 		return false;
 	}
 
+	void Run();
+
 	static Network *Get() {
 		return s_pThis;
 	}
@@ -179,6 +184,8 @@ private:
 	void StationCreate(const char *pSsid, const char *pPassword, const struct IpInfo *pInfo);
 	_wifi_station_status StationGetConnectStatus();
 	const char *StationStatus(_wifi_station_status status);
+
+	uint32_t RecvFrom(int32_t nHandle, void *pBuffer, uint32_t nLength, uint32_t *from_ip, uint16_t* from_port);
 
 private:
 	bool m_IsInitDone { false };
@@ -195,7 +202,7 @@ private:
 	bool m_isApOpen { true };
 	char *m_pSSID { nullptr };
 
-	static Network *s_pThis;
+	static inline Network *s_pThis;
 };
 
 #endif /* ESP8266_NETWORK_H_ */

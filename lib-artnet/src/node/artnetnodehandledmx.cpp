@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@
  * THE SOFTWARE.
  */
 
-#ifdef __GNUC__
+#if !defined(__clang__)
 # pragma GCC push_options
 # pragma GCC optimize ("O2")
 # pragma GCC optimize ("no-tree-loop-distribute-patterns")
@@ -42,6 +42,7 @@
 #include "artnet.h"
 
 #include "lightsetdata.h"
+#include "lightset_data.h"
 
 void ArtNetNode::UpdateMergeStatus(const uint32_t nPortIndex) {
 	if (!m_State.IsMergeMode) {
@@ -207,11 +208,11 @@ void ArtNetNode::HandleDmx() {
 			}
 
 			if ((m_State.IsSynchronousMode) && ((m_OutputPort[nPortIndex].GoodOutput & artnet::GoodOutput::OUTPUT_IS_MERGING) != artnet::GoodOutput::OUTPUT_IS_MERGING)) {
-				lightset::Data::Set(m_pLightSet, nPortIndex);
+				lightset::data_set(m_pLightSet, nPortIndex);
 				m_OutputPort[nPortIndex].IsDataPending = true;
 				SendDiag(artnet::PriorityCodes::DIAG_LOW, "%u: Buffering data", nPortIndex);
 			} else {
-				lightset::Data::Output(m_pLightSet, nPortIndex);
+				lightset::data_output(m_pLightSet, nPortIndex);
 
 				if (!m_OutputPort[nPortIndex].IsTransmitting) {
 					m_pLightSet->Start(nPortIndex);

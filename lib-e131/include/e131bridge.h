@@ -2,7 +2,7 @@
  * @file e131bridge.h
  *
  */
-/* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,17 +36,10 @@
 
 #include "lightset.h"
 #include "lightsetdata.h"
+#include "lightset_data.h"
 
 #if defined(ARTNET_VERSION) && (ARTNET_VERSION >= 4)
 # define E131_HAVE_ARTNET
-#endif
-
-#if !defined(E131_HAVE_ARTNET)
-# if defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI)
-#  if !defined(E131_DISABLE_DMX_CONFIG_UDP)
-#   include "dmxconfigudp.h"
-#  endif
-# endif
 #endif
 
 #include "network.h"
@@ -274,7 +267,8 @@ public:
 	void Clear(const uint32_t nPortIndex) {
 		assert(nPortIndex < e131bridge::MAX_PORTS);
 
-		lightset::Data::OutputClear(m_pLightSet, nPortIndex);
+		lightset::Data::Clear(nPortIndex);
+		lightset::data_output(m_pLightSet, nPortIndex);
 
 		if ((m_Bridge.Port[nPortIndex].direction == lightset::PortDir::OUTPUT) && !m_OutputPort[nPortIndex].IsTransmitting) {
 			m_pLightSet->Start(nPortIndex);
@@ -434,13 +428,6 @@ private:
 	TE131DiscoveryPacket m_E131DiscoveryPacket;
 	uint32_t m_nDiscoveryIpAddress { 0 };
 	TimerHandle_t m_timerHandleSendDiscoveryPacket { -1 };
-#endif
-
-#if defined (DMXCONFIGUDP_H_)
-# if defined (ARTNET_VERSION)
-#  error
-# endif
-	DmxConfigUdp m_DmxConfigUdp;
 #endif
 
 	static inline E131Bridge *s_pThis;

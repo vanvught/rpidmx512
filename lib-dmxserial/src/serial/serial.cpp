@@ -2,7 +2,7 @@
  * @file serial.cpp
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,14 +31,12 @@
 
 #include "debug.h"
 
-Serial *Serial::s_pThis = nullptr;
-
 using namespace serial;
 
 Serial::Serial()  {
 	DEBUG_ENTRY
 
-	assert(s_pThis == 0);
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	m_UartConfiguration.nBaud = 115200;
@@ -50,7 +48,7 @@ Serial::Serial()  {
 	m_SpiConfiguration.nMode = 0;
 
 	m_I2cConfiguration.nAddress = 0x30;
-	m_I2cConfiguration.nSpeed = hal::i2c::FULL_SPEED;
+	m_I2cConfiguration.nSpeed = HAL_I2C::FULL_SPEED;
 
 	DEBUG_EXIT
 }

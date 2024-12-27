@@ -1,8 +1,8 @@
 /**
- * @file networkconst.cpp
+ * @file ws28xxdmxmulti.cpp
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,10 +23,46 @@
  * THE SOFTWARE.
  */
 
-#include "networkconst.h"
+#if defined (DEBUG_PIXELDMX)
+# undef NDEBUG
+#endif
 
-const char NetworkConst::MSG_NETWORK_INIT[] = "Network init";
-const char NetworkConst::MSG_NETWORK_STARTED[] = "Network started";
+#include <cassert>
 
-const char NetworkConst::MSG_MDNS_CONFIG[] = "Configuring MDNS";
-const char NetworkConst::MSG_MDNS_STARTED[] = "MDNS started";
+#include "ws28xxdmxmulti.h"
+#include "pixeldmxconfiguration.h"
+
+#if defined (PIXELDMXSTARTSTOP_GPIO)
+# include "hal_gpio.h"
+#endif
+
+#include "debug.h"
+
+WS28xxDmxMulti::WS28xxDmxMulti() {
+	DEBUG_ENTRY
+
+	m_bIsStarted[0] = 0;
+	m_bIsStarted[1] = 0;
+
+	PixelDmxConfiguration::Get().Validate(ws28xxdmxmulti::MAX_PORTS);
+
+	m_pWS28xxMulti = new WS28xxMulti();
+	assert(m_pWS28xxMulti != nullptr);
+	m_pWS28xxMulti->Blackout();
+
+#if defined (PIXELDMXSTARTSTOP_GPIO)
+	FUNC_PREFIX(gpio_fsel(PIXELDMXSTARTSTOP_GPIO, GPIO_FSEL_OUTPUT));
+	FUNC_PREFIX(gpio_clr(PIXELDMXSTARTSTOP_GPIO));
+#endif
+
+	DEBUG_EXIT
+}
+
+WS28xxDmxMulti::~WS28xxDmxMulti() {
+	DEBUG_ENTRY
+
+	delete m_pWS28xxMulti;
+	m_pWS28xxMulti = nullptr;
+
+	DEBUG_EXIT
+}

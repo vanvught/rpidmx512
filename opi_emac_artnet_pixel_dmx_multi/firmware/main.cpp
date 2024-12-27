@@ -24,8 +24,9 @@
  */
 
 #pragma GCC push_options
-#pragma GCC optimize ("O2")
+#pragma GCC optimize ("O3")
 #pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#pragma GCC optimize ("-fprefetch-loop-arrays")
 
 #include <cstdint>
 #include <cstdio>
@@ -55,7 +56,6 @@
 
 #include "dmxparams.h"
 #include "dmxsend.h"
-#include "dmxconfigudp.h"
 
 #include "lightsetwith4.h"
 
@@ -82,11 +82,15 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
-void Hardware::RebootHandler() {
+#include "debug.h"
+
+namespace hal {
+void reboot_handler() {
 	WS28xxMulti::Get()->Blackout();
 	Dmx::Get()->Blackout();
 	ArtNetNode::Get()->Stop();
 }
+}  // namespace hal
 
 int main() {
 	Hardware hw;
@@ -135,15 +139,19 @@ int main() {
 		}
 	}
 
+	DEBUG_PUTS("");
+
 	const auto nTestPattern = static_cast<pixelpatterns::Pattern>(pixelDmxParams.GetTestPattern());
 	PixelTestPattern pixelTestPattern(nTestPattern, nPixelActivePorts);
+
+	DEBUG_PUTS("");
 
 	// LightSet B - DMX - 2 Universes
 
 	uint32_t nDmxUniverses = 0;
 
-	for (uint32_t nPortIndex = dmxsend::DMXPORT_OFFSET; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
-		const auto nDmxPortIndex = nPortIndex - dmxsend::DMXPORT_OFFSET;
+	for (uint32_t nPortIndex = DmxSend::DMXPORT_OFFSET; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
+		const auto nDmxPortIndex = nPortIndex - DmxSend::DMXPORT_OFFSET;
 		const auto portDirection = artnetParams.GetDirection(nDmxPortIndex);
 
 		if (portDirection == lightset::PortDir::OUTPUT) {
@@ -159,8 +167,8 @@ int main() {
 	dmxparams.Load();
 	dmxparams.Set(&dmx);
 
-	for (uint32_t nPortIndex = dmxsend::DMXPORT_OFFSET; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
-		const auto nDmxPortIndex = nPortIndex - dmxsend::DMXPORT_OFFSET;
+	for (uint32_t nPortIndex = DmxSend::DMXPORT_OFFSET; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
+		const auto nDmxPortIndex = nPortIndex - DmxSend::DMXPORT_OFFSET;
 
 		if (node.GetPortDirection(nPortIndex) == lightset::PortDir::OUTPUT) {
 			dmx.SetPortDirection(nDmxPortIndex, dmx::PortDirection::OUTP, false);
@@ -168,7 +176,6 @@ int main() {
 	}
 
 	DmxSend dmxSend;
-	dmxSend.Print();
 
 	display.SetDmxInfo(displayudf::dmx::PortDir::OUTPUT, nDmxUniverses);
 
@@ -177,7 +184,7 @@ int main() {
 	LightSetWith4<32> lightSet((PixelTestPattern::Get()->GetPattern() != pixelpatterns::Pattern::NONE) ? nullptr : &pixelDmxMulti, (nDmxUniverses != 0) ? &dmxSend : nullptr);
 	lightSet.Print();
 
-	ArtNetTriggerHandler triggerHandler(&lightSet, &pixelDmxMulti);
+	ArtNetTriggerHandler artnetTriggerHandler(&lightSet, &pixelDmxMulti);
 
 	node.SetOutput(&lightSet);
 	node.Print();
@@ -250,11 +257,6 @@ int main() {
 	RemoteConfigParams remoteConfigParams;
 	remoteConfigParams.Load();
 	remoteConfigParams.Set(&remoteConfig);
-
-	while (configStore.Flash())
-		;
-
-	mdns_print(); //	mDns.Print();
 
 	display.TextStatus(ArtNetMsgConst::START, CONSOLE_YELLOW);
 

@@ -2,10 +2,10 @@
 # error
 #endif
 /**
- * @file esp8266.c
+ * @file esp8266.cpp
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,11 +31,8 @@
 
 #include <cstdint>
 
-#include "arm/synchronize.h"
-
 #include "h3.h"
 #include "h3_gpio.h"
-#include "h3_hs_timer.h"
 #include "h3_board.h"
 
 /*
@@ -69,8 +66,8 @@ typedef union pcast32 {
 	uint8_t u8[4];
 } esp8266_pcast32;
 
-static void data_gpio_fsel_output(void) {
-	isb();
+static void data_gpio_fsel_output() {
+	__ISB();
 
 	uint32_t value = H3_PIO_PORTA->CFG0;
 	value &= (uint32_t) ~(GPIO_SELECT_MASK << PA2_SELECT_CFG0_SHIFT);
@@ -86,11 +83,11 @@ static void data_gpio_fsel_output(void) {
 	value |= (GPIO_FSEL_OUTPUT << PA19_SELECT_CFG2_SHIFT);
 	H3_PIO_PORTA->CFG2 = value;
 
-	dmb();
+	__DMB();
 }
 
-static void data_gpio_fsel_input(void) {
-	isb();
+static void data_gpio_fsel_input() {
+	__ISB();
 
 	uint32_t value = H3_PIO_PORTA->CFG0;
 	value &= (uint32_t) ~(GPIO_SELECT_MASK << PA2_SELECT_CFG0_SHIFT);
@@ -106,10 +103,10 @@ static void data_gpio_fsel_input(void) {
 	value |= (GPIO_FSEL_INPUT << PA19_SELECT_CFG2_SHIFT);
 	H3_PIO_PORTA->CFG2 = value;
 
-	dmb();
+	__DMB();
 }
 
-void __attribute__((cold)) esp8266_init(void) {
+void __attribute__((cold)) esp8266_init() {
 	h3_gpio_fsel(GPIO_EXT_13, GPIO_FSEL_INPUT);
 	h3_gpio_fsel(GPIO_EXT_11, GPIO_FSEL_OUTPUT);
 
@@ -140,7 +137,7 @@ void esp8266_write_4bits(const uint8_t data) {
 	h3_gpio_clr(GPIO_EXT_11); // we acknowledge, and wait for zero
 	while (H3_PIO_PORTA->DAT & (1 << CIN));
 
-	dmb();
+	__DMB();
 }
 
 inline static void _write_byte(const uint8_t data) {
@@ -180,14 +177,14 @@ inline static void _write_byte(const uint8_t data) {
 void esp8266_write_byte(const uint8_t byte) {
 	data_gpio_fsel_output();
 	_write_byte(byte);
-	dmb();
+	__DMB();
 }
 
 void esp8266_write_halfword(const uint16_t half_word) {
 	data_gpio_fsel_output();
 	_write_byte((uint8_t)(half_word & (uint16_t)0xFF));
 	_write_byte((uint8_t)((half_word >> 8) & (uint16_t)0xFF));
-	dmb();
+	__DMB();
 }
 
 void esp8266_write_word(const uint32_t word) {
@@ -202,7 +199,7 @@ void esp8266_write_word(const uint32_t word) {
 	_write_byte(u32.u8[2]);
 	_write_byte(u32.u8[3]);
 
-	dmb();
+	__DMB();
 }
 
 void esp8266_write_bytes(const uint8_t *data, const uint32_t len) {
@@ -218,7 +215,7 @@ void esp8266_write_bytes(const uint8_t *data, const uint32_t len) {
 		p++;
 	}
 
-	dmb();
+	__DMB();
 }
 
 void esp8266_write_str(const char *data) {
@@ -235,10 +232,10 @@ void esp8266_write_str(const char *data) {
 
 	_write_byte(0);
 
-	dmb();
+	__DMB();
 }
 
-inline static uint8_t _read_byte(void) {
+inline static uint8_t _read_byte() {
 	uint8_t data;
 
 	h3_gpio_set(GPIO_EXT_11);
@@ -275,14 +272,14 @@ inline static uint8_t _read_byte(void) {
 	return data;
 }
 
-uint8_t esp8266_read_byte(void) {
+uint8_t esp8266_read_byte() {
 	uint8_t data;
 
 	data_gpio_fsel_input();
 
 	data = _read_byte();
 
-	dmb();
+	__DMB();
 
 	return data;
 }
@@ -298,10 +295,10 @@ void esp8266_read_bytes(const uint8_t *data, const uint32_t len){
 		p++;
 	}
 
-	dmb();
+	__DMB();
 }
 
-uint16_t esp8266_read_halfword(void) {
+uint16_t esp8266_read_halfword() {
 	uint16_t data;
 
 	data_gpio_fsel_input();
@@ -309,12 +306,12 @@ uint16_t esp8266_read_halfword(void) {
 	data = _read_byte();
 	data |= (uint16_t) (_read_byte() << 8);
 
-	dmb();
+	__DMB();
 
 	return data;
 }
 
-uint32_t esp8266_read_word(void) {
+uint32_t esp8266_read_word() {
 	esp8266_pcast32 u32  __attribute__((aligned(4)));
 
 	data_gpio_fsel_input();
@@ -324,7 +321,7 @@ uint32_t esp8266_read_word(void) {
 	u32.u8[2] = _read_byte();
 	u32.u8[3] = _read_byte();
 
-	dmb();
+	__DMB();
 
 	return u32.u32;
 }
@@ -350,10 +347,10 @@ void esp8266_read_str(char *s, uint32_t *len) {
 		--n;
 	}
 
-	dmb();
+	__DMB();
 }
 
-bool esp8266_detect(void) {
+bool esp8266_detect() {
 	esp8266_init();
 
 	data_gpio_fsel_output();
@@ -364,15 +361,14 @@ bool esp8266_detect(void) {
 
 	h3_gpio_set(GPIO_EXT_11);// Tell that we have data available. Wait for ack, wait for 0 -> 1
 
-	uint32_t micros_now = h3_hs_timer_lo_us();
+	const auto micros_now = H3_TIMER->AVS_CNT1;
 
 	// wait 0.5 second for the ESP8266 to respond
-	while ((!(PORT_CIN->DAT & (1 << CIN))) && (h3_hs_timer_lo_us() - micros_now < (uint32_t) 500000))
+	while ((!(PORT_CIN->DAT & (1 << CIN))) && (H3_TIMER->AVS_CNT1 - micros_now < 500000U))
 		;
 
 	if (!(PORT_CIN->DAT & (1 << CIN))) {
-
-	h3_gpio_clr(GPIO_EXT_11);
+		h3_gpio_clr(GPIO_EXT_11);
 		return false;
 	}
 
@@ -380,7 +376,7 @@ bool esp8266_detect(void) {
 
 	while (PORT_CIN->DAT & (1 << CIN));
 
-	dmb();
+	__DMB();
 
 	return true;
 }

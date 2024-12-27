@@ -1,6 +1,6 @@
-DEFINES=NDEBUG
+#DEFINES=NDEBUG
 
-EXTRA_INCLUDES=../lib-properties/include
+EXTRA_INCLUDES=
 
 EXTRA_SRCDIR=src/net/apps/tftp
 

@@ -54,7 +54,6 @@
 
 #include "dmxparams.h"
 #include "dmxsend.h"
-#include "dmxconfigudp.h"
 
 #include "lightsetwith4.h"
 
@@ -81,11 +80,13 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
-void Hardware::RebootHandler() {
+namespace hal {
+void reboot_handler() {
 	WS28xxMulti::Get()->Blackout();
 	Dmx::Get()->Blackout();
 	E131Bridge::Get()->Stop();
 }
+}  // namespace hal
 
 int main() {
 	Hardware hw;
@@ -143,7 +144,7 @@ int main() {
 	auto direction = e131params.GetDirection(0);
 
 	if (direction == lightset::PortDir::OUTPUT) {
-		bridge.SetUniverse(dmxsend::DMXPORT_OFFSET, lightset::PortDir::OUTPUT, nUniverse);
+		bridge.SetUniverse(DmxSend::DMXPORT_OFFSET, lightset::PortDir::OUTPUT, nUniverse);
 		nDmxUniverses++;
 	}
 
@@ -151,7 +152,7 @@ int main() {
 	direction = e131params.GetDirection(1);
 
 	if (direction == lightset::PortDir::OUTPUT) {
-		bridge.SetUniverse(dmxsend::DMXPORT_OFFSET + 1U, lightset::PortDir::OUTPUT, nUniverse);
+		bridge.SetUniverse(DmxSend::DMXPORT_OFFSET + 1U, lightset::PortDir::OUTPUT, nUniverse);
 		nDmxUniverses++;
 	}
 
@@ -161,9 +162,9 @@ int main() {
 	dmxparams.Load();
 	dmxparams.Set(&dmx);
 
-	for (uint32_t nPortIndex = dmxsend::DMXPORT_OFFSET; nPortIndex < e131bridge::MAX_PORTS; nPortIndex++) {
+	for (uint32_t nPortIndex = DmxSend::DMXPORT_OFFSET; nPortIndex < e131bridge::MAX_PORTS; nPortIndex++) {
 		uint16_t nUniverse;
-		const auto nDmxPortIndex = nPortIndex - dmxsend::DMXPORT_OFFSET;
+		const auto nDmxPortIndex = nPortIndex - DmxSend::DMXPORT_OFFSET;
 
 		if (bridge.GetUniverse(nPortIndex, nUniverse, lightset::PortDir::OUTPUT)) {
 			dmx.SetPortDirection(nDmxPortIndex, dmx::PortDirection::OUTP, false);
@@ -173,7 +174,6 @@ int main() {
 	}
 
 	DmxSend dmxSend;
-	dmxSend.Print();
 
 	display.SetDmxInfo(displayudf::dmx::PortDir::OUTPUT, nDmxUniverses);
 
@@ -251,11 +251,6 @@ int main() {
 	RemoteConfigParams remoteConfigParams;
 	remoteConfigParams.Load();
 	remoteConfigParams.Set(&remoteConfig);
-
-	while (configStore.Flash())
-		;
-
-	mdns_print(); //	mDns.Print();
 
 	display.TextStatus(E131MsgConst::START, CONSOLE_YELLOW);
 

@@ -332,7 +332,7 @@ void core1_task() {
 			}
 		}
 
-		s_nUpdatesCounter++;
+		s_nUpdatesCounter = s_nUpdatesCounter + 1;
 
 		if (s_bDoSwap) {
 			auto pTmp = s_pFramebuffer1;

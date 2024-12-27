@@ -29,11 +29,6 @@
 #include "hardware.h"
 #include "network.h"
 
-
-#include "net/apps/mdns.h"
-
-#include "net/apps/ntpclient.h"
-
 #include "console.h"
 #include "h3/showsystime.h"
 
@@ -67,8 +62,6 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
-void Hardware::RebootHandler() {}
-
 int main() {
 	Hardware hw;
 	DisplayUdf display;
@@ -86,10 +79,6 @@ int main() {
 	console_puts("Real-time DMX Monitor");
 	console_set_fg_color(CONSOLE_WHITE);
 	console_set_top_row(2);
-
-	NtpClient ntpClient;
-	ntpClient.Start();
-	ntpClient.Print();
 
 	ShowSystime showSystime;
 
@@ -164,11 +153,6 @@ int main() {
 	remoteConfigParams.Load();
 	remoteConfigParams.Set(&remoteConfig);
 
-	while (configStore.Flash())
-		;
-
-	mdns_print(); //	mDns.Print();
-
 	display.TextStatus(E131MsgConst::START, CONSOLE_YELLOW);
 
 	bridge.Start();
@@ -187,9 +171,7 @@ int main() {
 		remoteConfig.Run();
 		llrpOnlyDevice.Run();
 		configStore.Flash();
-		ntpClient.Run();
 		showSystime.Run();
-
 		display.Run();
 		hw.Run();
 	}

@@ -34,8 +34,8 @@
 
 #include "debug.h"
 
-namespace adc {
-namespace mcp3424 {
+
+namespace adc::mcp3424 {
 static constexpr uint8_t I2C_ADDRESS = 0x68;
 
 static constexpr uint8_t GAIN(const Gain gain) {
@@ -53,8 +53,8 @@ static constexpr uint8_t CONVERSION(const Conversion conversion) {
 static constexpr uint8_t CHANNEL(const uint32_t nChannel) {
 	return (nChannel & 0x03) << 5;
 }
-}  // namespace mcp3424
-}  // namespace adc
+} // namespace adc::mcp3424
+
 
 MCP3424::MCP3424(uint8_t nAddress) : HAL_I2C(nAddress == 0  ? adc::mcp3424::I2C_ADDRESS : nAddress) {
 	DEBUG_ENTRY

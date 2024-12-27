@@ -27,8 +27,8 @@
  * https://developer.apple.com/library/archive/documentation/Audio/Conceptual/MIDINetworkDriverProtocol/MIDI/MIDI.html
  */
 
-#ifndef APPLEMIDI_H_
-#define APPLEMIDI_H_
+#ifndef NET_APPLEMIDI_H_
+#define NET_APPLEMIDI_H_
 
 #include <cstdint>
 #include <cstdio>
@@ -44,10 +44,8 @@
 #include "debug.h"
 
 namespace applemidi {
-static constexpr auto UPD_PORT_CONTROL_DEFAULT = 5004U;
-static constexpr auto UPD_PORT_MIDI_DEFAULT = UPD_PORT_CONTROL_DEFAULT + 1U;
-static constexpr auto SESSION_NAME_LENGTH_MAX = 24;
-static constexpr auto VERSION = 2;
+static constexpr size_t SESSION_NAME_LENGTH_MAX = 24;
+static constexpr uint32_t VERSION = 2;
 
 struct ExchangePacket {
 	uint16_t nSignature;
@@ -66,13 +64,15 @@ struct SessionStatus {
 	SessionState sessionState;
 	uint32_t nRemoteIp;
 	uint16_t nRemotePortMidi;
-	uint32_t nSynchronizationTimestamp;
 };
 
 static constexpr auto EXCHANGE_PACKET_MIN_LENGTH = sizeof(struct applemidi::ExchangePacket) - applemidi::SESSION_NAME_LENGTH_MAX - 1;
 }  // namespace applemidi
 
 class AppleMidi {
+	static constexpr uint16_t UPD_PORT_CONTROL_DEFAULT = 5004;
+	static constexpr uint16_t UPD_PORT_MIDI_DEFAULT = UPD_PORT_CONTROL_DEFAULT + 1;
+	static constexpr uint16_t SIGNATURE = 0xffff;
 public:
 	AppleMidi();
 
@@ -82,14 +82,14 @@ public:
 
 	void Start() {
 		DEBUG_ENTRY
-//		assert(MDNS::Get() != nullptr);
-//		MDNS::Get()->ServiceRecordAdd(nullptr, mdns::Services::MIDI, nullptr, m_nPort);
 		mdns_service_record_add(nullptr, mdns::Services::MIDI, nullptr, m_nPort);
 
-		m_nHandleControl = Network::Get()->Begin(m_nPort);
+		assert(m_nHandleControl == -1);
+		m_nHandleControl = Network::Get()->Begin(m_nPort, staticCallbackFunctionControlMessage);
 		assert(m_nHandleControl != -1);
 
-		m_nHandleMidi = Network::Get()->Begin(static_cast<uint16_t>(m_nPort + 1));
+		assert(m_nHandleMidi == -1);
+		m_nHandleMidi = Network::Get()->Begin((m_nPort + 1U), staticCallbackFunctionMidiMessage);
 		assert(m_nHandleMidi != -1);
 
 		DEBUG_PRINTF("Session name: [%s]", m_ExchangePacketReply.aName);
@@ -102,15 +102,43 @@ public:
 	void Stop() {
 		DEBUG_ENTRY
 
+		assert(m_nHandleMidi != -1);
 		Network::Get()->End(static_cast<uint16_t>(m_nPort + 1U));
+		m_nHandleMidi = -1;
+
+		assert(m_nHandleControl != -1);
 		Network::Get()->End(m_nPort);
+		m_nHandleControl = -1;
 
 		DEBUG_EXIT
 	}
 
-	void Run();
+	/**
+	 * @brief Processes incoming Apple MIDI MIDI messages.
+	 *
+	 * Handles MIDI messages such as RTP-MIDI data and timestamp synchronization commands.
+	 *
+	 * @param pBuffer Pointer to the received data buffer.
+	 * @param nSize Size of the received data.
+	 * @param nFromIp Source IP address.
+	 * @param nFromPort Source port.
+	 */
+	void InputMidiMessage(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort);
 
-	void SetPort(uint16_t nPort) {
+	/**
+	 * @brief Processes incoming Apple MIDI control messages.
+	 *
+	 * Handles control messages such as session invitations, session end commands,
+	 * and synchronization requests.
+	 *
+	 * @param pBuffer Pointer to the received data buffer.
+	 * @param nSize Size of the received data.
+	 * @param nFromIp Source IP address.
+	 * @param nFromPort Source port.
+	 */
+	void InputControlMessage(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort);
+
+	void SetPort(const uint16_t nPort) {
 		assert(nPort > 1024);
 		m_nPort = nPort;
 	}
@@ -122,15 +150,24 @@ public:
 		m_nExchangePacketReplySize = static_cast<uint16_t>(applemidi::EXCHANGE_PACKET_MIN_LENGTH + 1 + nLength);
 	}
 
-	uint32_t GetSSRC() const {
-		return m_nSSRC;
+	inline uint32_t GetSSRC() {
+		return 0;
 	}
 
 	void Print() {
-		const auto nSSRC = __builtin_bswap32(m_nSSRC);
-		printf("AppleMIDI\n");
-		printf(" SSRC    : %x (%u)\n", nSSRC, nSSRC);
+		puts("AppleMIDI");
 		printf(" Session : %s\n", m_ExchangePacketReply.aName);
+	}
+
+	static auto GetSessionState() {
+		assert(s_pThis != nullptr);
+		return s_pThis->m_SessionStatus.sessionState;
+	}
+
+	static void ResetSession() {
+		assert(s_pThis != nullptr);
+		s_pThis->m_SessionStatus.sessionState = applemidi::SessionState::WAITING_IN_CONTROL;
+		s_pThis->m_SessionStatus.nRemoteIp = 0;
 	}
 
 protected:
@@ -139,37 +176,52 @@ protected:
 		return (nElapsed * 10U);
 	}
 
-	bool Send(const uint8_t *pBuffer, uint32_t nLength) {
+	bool Send(const uint8_t *pBuffer, const uint32_t nLength) {
 		if (m_SessionStatus.sessionState != applemidi::SessionState::ESTABLISHED) {
 			return false;
 		}
 
-		Network::Get()->SendTo(m_nHandleMidi, pBuffer, static_cast<uint16_t>(nLength), m_SessionStatus.nRemoteIp, m_SessionStatus.nRemotePortMidi);
-
-		debug_dump(&pBuffer, static_cast<uint16_t>(nLength));
-
+		Network::Get()->SendTo(m_nHandleMidi, pBuffer, nLength, m_SessionStatus.nRemoteIp, m_SessionStatus.nRemotePortMidi);
 		return true;
 	}
 
 private:
-	void HandleControlMessage();
-	void HandleMidiMessage();
+	/**
+	 * @brief Static callback function for receiving UDP packets.
+	 *
+	 * @param pBuffer Pointer to the packet buffer.
+	 * @param nSize Size of the packet buffer.
+	 * @param nFromIp IP address of the sender.
+	 * @param nFromPort Port number of the sender.
+	 */
+	void static staticCallbackFunctionControlMessage(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
+		s_pThis->InputControlMessage(pBuffer, nSize, nFromIp, nFromPort);
+	}
+
+	/**
+	 * @brief Static callback function for receiving UDP packets.
+	 *
+	 * @param pBuffer Pointer to the packet buffer.
+	 * @param nSize Size of the packet buffer.
+	 * @param nFromIp IP address of the sender.
+	 * @param nFromPort Port number of the sender.
+	 */
+	void static staticCallbackFunctionMidiMessage(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
+		s_pThis->InputMidiMessage(pBuffer, nSize, nFromIp, nFromPort);
+	}
 
 	virtual void HandleRtpMidi(const uint8_t *pBuffer)=0;
 
 private:
 	uint32_t m_nStartTime { 0 };
-	uint32_t m_nSSRC;
 	int32_t m_nHandleControl { -1 };
 	int32_t m_nHandleMidi { -1 };
-	uint32_t m_nRemoteIp { 0 };
-	uint32_t m_nBytesReceived { 0 };
-	uint16_t m_nExchangePacketReplySize;
-	uint16_t m_nPort { applemidi::UPD_PORT_CONTROL_DEFAULT };
-	uint16_t m_nRemotePort { 0 };
+	uint16_t m_nExchangePacketReplySize { applemidi::EXCHANGE_PACKET_MIN_LENGTH };
+	uint16_t m_nPort { UPD_PORT_CONTROL_DEFAULT };
 	applemidi::ExchangePacket m_ExchangePacketReply;
 	applemidi::SessionStatus m_SessionStatus;
-	uint8_t *m_pBuffer { nullptr };
+
+	static inline AppleMidi *s_pThis;	///< Static instance pointer for the callback function.
 };
 
-#endif /* APPLEMIDI_H_ */
+#endif /* NET_APPLEMIDI_H_ */

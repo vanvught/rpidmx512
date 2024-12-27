@@ -27,11 +27,12 @@
 # undef NDEBUG
 #endif
 
-#if !defined(__clang__)	// Needed for compiling on MacOS
+#if !defined(__clang__)
 # pragma GCC push_options
 # pragma GCC optimize ("O3")
-# pragma GCC optimize ("-funroll-loops")
+# pragma GCC optimize ("no-tree-loop-distribute-patterns")
 # pragma GCC optimize ("-fprefetch-loop-arrays")
+# pragma GCC optimize ("-funroll-loops")
 #endif
 
 #include <cstdint>
@@ -48,9 +49,135 @@
 
 #include "jamstapl.h"
 
+#include "irq_timer.h"
+#include "h3_dma_memcpy32.h"
+
+#include "logic_analyzer.h"
 #include "debug.h"
 
-using namespace pixel;
+static volatile uint32_t sv_nUpdatesPerSecond;
+static volatile uint32_t sv_nUpdatesPrevious;
+static volatile uint32_t sv_nUpdates;
+
+static void arm_timer_handler() {
+	sv_nUpdatesPerSecond = sv_nUpdates - sv_nUpdatesPrevious;
+	sv_nUpdatesPrevious = sv_nUpdates;
+}
+
+uint8_t WS28xxMulti::ReverseBits(uint8_t nBits) {
+	const uint32_t input = nBits;
+	uint32_t output;
+	asm("rbit %0, %1" : "=r"(output) : "r"(input));
+	return static_cast<uint8_t>((output >> 24));
+}
+
+void WS28xxMulti::Update() {
+	do { // https://github.com/vanvught/rpidmx512/issues/281
+		__ISB();
+	} while (FUNC_PREFIX(spi_dma_tx_is_active()));
+
+	logic_analyzer::ch2_set();
+
+	dma::memcpy32(m_pDmaBuffer, m_pPixelDataBuffer, m_nBufSize);
+
+	while (dma::memcpy32_is_active());
+
+	logic_analyzer::ch2_clear();
+
+	FUNC_PREFIX(spi_dma_tx_start(m_pDmaBuffer, m_nBufSize));
+
+	sv_nUpdates = sv_nUpdates + 1;
+}
+
+void WS28xxMulti::Blackout() {
+	DEBUG_ENTRY
+
+	auto& pixelConfiguration = PixelConfiguration::Get();
+
+	const auto type = pixelConfiguration.GetType();
+	const auto nCount = pixelConfiguration.GetCount();
+
+	if ((type == pixel::Type::APA102) || (type == pixel::Type::SK9822) || (type == pixel::Type::P9813)) {
+		for (uint32_t nPortIndex = 0; nPortIndex < 8; nPortIndex++) {
+			SetPixel4Bytes(nPortIndex, 0, 0, 0, 0, 0);
+
+			for (uint32_t nPixelIndex = 1; nPixelIndex <= nCount; nPixelIndex++) {
+				SetPixel4Bytes(nPortIndex, nPixelIndex, 0, 0xE0, 0, 0);
+			}
+
+			if ((type == pixel::Type::APA102) || (type == pixel::Type::SK9822)) {
+				SetPixel4Bytes(nPortIndex, 1U + nCount, 0xFF, 0xFF, 0xFF, 0xFF);
+			} else {
+				SetPixel4Bytes(nPortIndex, 1U + nCount, 0, 0, 0, 0);
+			}
+		}
+	} else {
+		memset(m_pPixelDataBuffer, 0, m_nBufSize);
+	}
+
+	// Can be called any time.
+	do {
+		asm volatile ("isb" ::: "memory");
+	} while (FUNC_PREFIX(spi_dma_tx_is_active()));
+
+	Update();
+
+	// May not be interrupted.
+	do {
+		asm volatile ("isb" ::: "memory");
+	} while (FUNC_PREFIX(spi_dma_tx_is_active()));
+
+	DEBUG_EXIT
+}
+
+void WS28xxMulti::FullOn() {
+	DEBUG_ENTRY
+
+	auto& pixelConfiguration = PixelConfiguration::Get();
+
+	const auto type = pixelConfiguration.GetType();
+	const auto nCount = pixelConfiguration.GetCount();
+
+	if ((type == pixel::Type::APA102) || (type == pixel::Type::SK9822) || (type == pixel::Type::P9813)) {
+		for (uint32_t nPortIndex = 0; nPortIndex < 8; nPortIndex++) {
+			SetPixel4Bytes(nPortIndex, 0, 0, 0, 0, 0);
+
+			for (uint32_t nPixelIndex = 1; nPixelIndex <= nCount; nPixelIndex++) {
+				SetPixel4Bytes(nPortIndex, nPixelIndex, 0xFF, 0xE0, 0xFF, 0xFF);
+			}
+
+			if ((type == pixel::Type::APA102) || (type == pixel::Type::SK9822)) {
+				SetPixel4Bytes(nPortIndex, 1U + nCount, 0xFF, 0xFF, 0xFF, 0xFF);
+			} else {
+				SetPixel4Bytes(nPortIndex, 1U + nCount, 0, 0, 0, 0);
+			}
+		}
+	} else {
+		memset(m_pPixelDataBuffer, 0xFF, m_nBufSize);
+	}
+
+	// Can be called any time.
+	do {
+		asm volatile ("isb" ::: "memory");
+	} while (FUNC_PREFIX(spi_dma_tx_is_active()));
+
+	Update();
+
+	// May not be interrupted.
+	do {
+		asm volatile ("isb" ::: "memory");
+	} while (FUNC_PREFIX(spi_dma_tx_is_active()));
+
+	DEBUG_EXIT
+}
+
+uint32_t  WS28xxMulti::GetUserData() {
+	return sv_nUpdatesPerSecond;
+}
+
+#pragma GCC pop_options
+#pragma GCC push_options
+#pragma GCC optimize ("Os")
 
 WS28xxMulti::WS28xxMulti() {
 	DEBUG_ENTRY
@@ -67,7 +194,7 @@ WS28xxMulti::WS28xxMulti() {
 
 	const auto type = pixelConfiguration.GetType();
 
-	if ((type == Type::APA102) || (type == Type::SK9822) || (type == Type::P9813)) {
+	if ((type == pixel::Type::APA102) || (type == pixel::Type::SK9822) || (type == pixel::Type::P9813)) {
 		m_nBufSize += nCount;
 		m_nBufSize += 8;
 	}
@@ -97,13 +224,20 @@ WS28xxMulti::WS28xxMulti() {
 
 	SetupBuffers();
 
+	sv_nUpdatesPerSecond = 0;
+	sv_nUpdatesPrevious = 0;
+	sv_nUpdates = 0;
+
+	irq_timer_arm_physical_set(static_cast<thunk_irq_timer_arm_t>(arm_timer_handler));
+	irq_handler_init();
+
+	dma::memcpy32_init();
+
 	printf("Board: %s\n", m_hasCPLD ? "CPLD" : "74-logic");
 }
 
 WS28xxMulti::~WS28xxMulti() {
-	m_pBuffer1 = nullptr;
-	m_pBuffer2 = nullptr;
-
+	m_pDmaBuffer = nullptr;
 	s_pThis = nullptr;
 }
 
@@ -112,17 +246,12 @@ void WS28xxMulti::SetupBuffers() {
 
 	uint32_t nSize;
 
-	m_pBuffer1 = const_cast<uint8_t*>(FUNC_PREFIX(spi_dma_tx_prepare(&nSize)));
-	assert(m_pBuffer1 != nullptr);
+	m_pDmaBuffer = const_cast<uint8_t*>(FUNC_PREFIX(spi_dma_tx_prepare(&nSize)));
+	assert(m_pDmaBuffer != nullptr);
 
-	memset(m_pBuffer1, 0, nSize);
+	memset(m_pDmaBuffer, 0, nSize);
 
-	const auto nSizeHalf = nSize / 2;
-	assert(m_nBufSize <= nSizeHalf);
-
-	m_pBuffer2 = m_pBuffer1 + (nSizeHalf & static_cast<uint32_t>(~3));
-
-	DEBUG_PRINTF("nSize=%x, m_pBuffer1=%p, m_pBuffer2=%p", nSize, m_pBuffer1, m_pBuffer2);
+	DEBUG_PRINTF("nSize=%x, m_pBuffer1=%p, m_pDmaBuffer=%p", nSize, m_pPixelDataBuffer, m_pDmaBuffer);
 	DEBUG_EXIT
 }
 
@@ -191,106 +320,3 @@ bool WS28xxMulti::SetupCPLD() {
 	return false;
 }
 
-uint8_t WS28xxMulti::ReverseBits(uint8_t nBits) {
-	const uint32_t input = nBits;
-	uint32_t output;
-	asm("rbit %0, %1" : "=r"(output) : "r"(input));
-	return static_cast<uint8_t>((output >> 24));
-}
-
-void WS28xxMulti::Update() {
-	assert(!FUNC_PREFIX(spi_dma_tx_is_active()));
-
-	do { // https://github.com/vanvught/rpidmx512/issues/281
-		asm volatile ("isb" ::: "memory");
-	} while (FUNC_PREFIX(spi_dma_tx_is_active()));
-
-	auto *pTmp = m_pBuffer1;
-	m_pBuffer1 = m_pBuffer2;
-	m_pBuffer2 = pTmp;
-	__DMB();
-
-	FUNC_PREFIX(spi_dma_tx_start(m_pBuffer2, m_nBufSize));
-}
-
-void WS28xxMulti::Blackout() {
-	DEBUG_ENTRY
-
-	auto& pixelConfiguration = PixelConfiguration::Get();
-
-	const auto type = pixelConfiguration.GetType();
-	const auto nCount = pixelConfiguration.GetCount();
-
-	if ((type == Type::APA102) || (type == Type::SK9822) || (type == Type::P9813)) {
-		for (uint32_t nPortIndex = 0; nPortIndex < 8; nPortIndex++) {
-			SetPixel4Bytes(nPortIndex, 0, 0, 0, 0, 0);
-
-			for (uint32_t nPixelIndex = 1; nPixelIndex <= nCount; nPixelIndex++) {
-				SetPixel4Bytes(nPortIndex, nPixelIndex, 0, 0xE0, 0, 0);
-			}
-
-			if ((type == Type::APA102) || (type == Type::SK9822)) {
-				SetPixel4Bytes(nPortIndex, 1U + nCount, 0xFF, 0xFF, 0xFF, 0xFF);
-			} else {
-				SetPixel4Bytes(nPortIndex, 1U + nCount, 0, 0, 0, 0);
-			}
-		}
-	} else {
-		memset(m_pBuffer1, 0, m_nBufSize);
-	}
-
-	// Can be called any time.
-	do {
-		asm volatile ("isb" ::: "memory");
-	} while (FUNC_PREFIX(spi_dma_tx_is_active()));
-
-	Update();
-
-	// May not be interrupted.
-	do {
-		asm volatile ("isb" ::: "memory");
-	} while (FUNC_PREFIX(spi_dma_tx_is_active()));
-
-	DEBUG_EXIT
-}
-
-void WS28xxMulti::FullOn() {
-	DEBUG_ENTRY
-
-	auto& pixelConfiguration = PixelConfiguration::Get();
-
-	const auto type = pixelConfiguration.GetType();
-	const auto nCount = pixelConfiguration.GetCount();
-
-	if ((type == Type::APA102) || (type == Type::SK9822) || (type == Type::P9813)) {
-		for (uint32_t nPortIndex = 0; nPortIndex < 8; nPortIndex++) {
-			SetPixel4Bytes(nPortIndex, 0, 0, 0, 0, 0);
-
-			for (uint32_t nPixelIndex = 1; nPixelIndex <= nCount; nPixelIndex++) {
-				SetPixel4Bytes(nPortIndex, nPixelIndex, 0xFF, 0xE0, 0xFF, 0xFF);
-			}
-
-			if ((type == Type::APA102) || (type == Type::SK9822)) {
-				SetPixel4Bytes(nPortIndex, 1U + nCount, 0xFF, 0xFF, 0xFF, 0xFF);
-			} else {
-				SetPixel4Bytes(nPortIndex, 1U + nCount, 0, 0, 0, 0);
-			}
-		}
-	} else {
-		memset(m_pBuffer1, 0xFF, m_nBufSize);
-	}
-
-	// Can be called any time.
-	do {
-		asm volatile ("isb" ::: "memory");
-	} while (FUNC_PREFIX(spi_dma_tx_is_active()));
-
-	Update();
-
-	// May not be interrupted.
-	do {
-		asm volatile ("isb" ::: "memory");
-	} while (FUNC_PREFIX(spi_dma_tx_is_active()));
-
-	DEBUG_EXIT
-}

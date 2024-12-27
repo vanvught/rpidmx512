@@ -2,7 +2,7 @@
  * @file rdmsensor.h
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,10 +31,11 @@
 #include <cassert>
 #include <algorithm>
 
+#include "rdm_e120.h"
+
 #include "debug.h"
 
-namespace rdm {
-namespace sensor {
+namespace rdm::sensor {
 struct Defintion {
 	uint8_t sensor;
 	uint8_t type;
@@ -77,21 +78,30 @@ constexpr int16_t safe_range_min(const T &a) {
 	static_assert(sizeof(int16_t) <= sizeof(T), "T");
 	return (a < static_cast<T>(INT16_MIN)) ? INT16_MIN : static_cast<int16_t>(a);
 }
-}  // namespace rdm
-}  // namespace sensor
-
+}  // namespace rdm::sensor
 
 class RDMSensor {
 public:
 	RDMSensor(const uint8_t nSensor) : m_nSensor(nSensor) {
 		DEBUG_ENTRY
 
-		m_tRDMSensorDefintion.sensor = m_nSensor;
-		m_tRDMSensorDefintion.recorded_supported = rdm::sensor::RECORDED_SUPPORTED | rdm::sensor::LOW_HIGH_DETECT;
+		m_rdmSensorDefintion.sensor = m_nSensor;
+		m_rdmSensorDefintion.type = E120_SENS_OTHER;
+		m_rdmSensorDefintion.unit = E120_UNITS_NONE;
+		m_rdmSensorDefintion.prefix = E120_PREFIX_NONE;
+		m_rdmSensorDefintion.range_min = rdm::sensor::RANGE_MIN;
+		m_rdmSensorDefintion.range_max = rdm::sensor::RANGE_MAX;
+		m_rdmSensorDefintion.normal_min = rdm::sensor::RANGE_MIN;
+		m_rdmSensorDefintion.normal_max = rdm::sensor::RANGE_MAX;
+		m_rdmSensorDefintion.description[0] = '\0';
+		m_rdmSensorDefintion.nLength = 0;
+		m_rdmSensorDefintion.recorded_supported = rdm::sensor::RECORDED_SUPPORTED | rdm::sensor::LOW_HIGH_DETECT;
 
-		m_tRDMSensorValues.sensor_requested = m_nSensor;
-		m_tRDMSensorValues.lowest_detected = rdm::sensor::RANGE_MAX;
-		m_tRDMSensorValues.highest_detected = rdm::sensor::RANGE_MIN;
+		m_rdmSensorValues.present = 0;
+		m_rdmSensorValues.lowest_detected = rdm::sensor::RANGE_MAX;
+		m_rdmSensorValues.highest_detected = rdm::sensor::RANGE_MIN;
+		m_rdmSensorValues.recorded = 0;
+		m_rdmSensorValues.sensor_requested = m_nSensor;
 
 		DEBUG_EXIT
 	}
@@ -100,31 +110,31 @@ public:
 
 public:
 	void SetType(const uint8_t nType) {
-		m_tRDMSensorDefintion.type = nType;
+		m_rdmSensorDefintion.type = nType;
 	}
 
 	void SetUnit(const uint8_t nUnit) {
-		m_tRDMSensorDefintion.unit = nUnit;
+		m_rdmSensorDefintion.unit = nUnit;
 	}
 
 	void SetPrefix(const uint8_t nPrefix) {
-		m_tRDMSensorDefintion.prefix = nPrefix;
+		m_rdmSensorDefintion.prefix = nPrefix;
 	}
 
 	void SetRangeMin(const int16_t nRangeMin) {
-		m_tRDMSensorDefintion.range_min = nRangeMin;
+		m_rdmSensorDefintion.range_min = nRangeMin;
 	}
 
 	void SetRangeMax(const int16_t nRangeMax) {
-		m_tRDMSensorDefintion.range_max = nRangeMax;
+		m_rdmSensorDefintion.range_max = nRangeMax;
 	}
 
 	void SetNormalMin(const int16_t nNormalMin) {
-		m_tRDMSensorDefintion.normal_min = nNormalMin;
+		m_rdmSensorDefintion.normal_min = nNormalMin;
 	}
 
 	void SetNormalMax(const int16_t nNormalMax) {
-		m_tRDMSensorDefintion.normal_max = nNormalMax;
+		m_rdmSensorDefintion.normal_max = nNormalMax;
 	}
 
 	void SetDescription(const char *pDescription) {
@@ -134,20 +144,20 @@ public:
 		uint32_t i;
 
 		for (i = 0; i < 32 && pDescription[i] != 0; i++) {
-			m_tRDMSensorDefintion.description[i] = pDescription[i];
+			m_rdmSensorDefintion.description[i] = pDescription[i];
 		}
 
-		m_tRDMSensorDefintion.nLength = static_cast<uint8_t>(i);
+		m_rdmSensorDefintion.nLength = static_cast<uint8_t>(i);
 
 		DEBUG_EXIT
 	}
 
 	void Print() {
-		printf("%d [%.*s]\n", m_tRDMSensorDefintion.sensor, m_tRDMSensorDefintion.nLength, m_tRDMSensorDefintion.description);
-		printf(" RangeMin  %d\n", m_tRDMSensorDefintion.range_min);
-		printf(" RangeMax  %d\n", m_tRDMSensorDefintion.range_max);
-		printf(" NormalMin %d\n", m_tRDMSensorDefintion.normal_min);
-		printf(" NormalMax %d\n", m_tRDMSensorDefintion.normal_max);
+		printf("%d [%.*s]\n", m_rdmSensorDefintion.sensor, m_rdmSensorDefintion.nLength, m_rdmSensorDefintion.description);
+		printf(" RangeMin  %d\n", m_rdmSensorDefintion.range_min);
+		printf(" RangeMax  %d\n", m_rdmSensorDefintion.range_max);
+		printf(" NormalMin %d\n", m_rdmSensorDefintion.normal_min);
+		printf(" NormalMax %d\n", m_rdmSensorDefintion.normal_max);
 	}
 
 	uint8_t GetSensor() const {
@@ -155,29 +165,29 @@ public:
 	}
 
 	const struct rdm::sensor::Defintion* GetDefintion() {
-		return &m_tRDMSensorDefintion;
+		return &m_rdmSensorDefintion;
 	}
 
 	const struct rdm::sensor::Values *GetValues() {
 		DEBUG_ENTRY
 		const auto nValue = this->GetValue();
 
-		m_tRDMSensorValues.present = nValue;
-		m_tRDMSensorValues.lowest_detected = std::min(m_tRDMSensorValues.lowest_detected, nValue);
-		m_tRDMSensorValues.highest_detected = std::max(m_tRDMSensorValues.highest_detected, nValue);
+		m_rdmSensorValues.present = nValue;
+		m_rdmSensorValues.lowest_detected = std::min(m_rdmSensorValues.lowest_detected, nValue);
+		m_rdmSensorValues.highest_detected = std::max(m_rdmSensorValues.highest_detected, nValue);
 
 		DEBUG_EXIT
-		return &m_tRDMSensorValues;
+		return &m_rdmSensorValues;
 	}
 
 	void SetValues() {
 		DEBUG_ENTRY
 		const auto nValue = this->GetValue();
 
-		m_tRDMSensorValues.present = nValue;
-		m_tRDMSensorValues.lowest_detected = nValue;
-		m_tRDMSensorValues.highest_detected = nValue;
-		m_tRDMSensorValues.recorded = nValue;
+		m_rdmSensorValues.present = nValue;
+		m_rdmSensorValues.lowest_detected = nValue;
+		m_rdmSensorValues.highest_detected = nValue;
+		m_rdmSensorValues.recorded = nValue;
 
 		DEBUG_EXIT
 	}
@@ -186,10 +196,10 @@ public:
 		DEBUG_ENTRY
 		const auto nValue = this->GetValue();
 
-		m_tRDMSensorValues.present = nValue;
-		m_tRDMSensorValues.recorded = nValue;
-		m_tRDMSensorValues.lowest_detected = std::min(m_tRDMSensorValues.lowest_detected, nValue);
-		m_tRDMSensorValues.highest_detected = std::max(m_tRDMSensorValues.highest_detected, nValue);
+		m_rdmSensorValues.present = nValue;
+		m_rdmSensorValues.recorded = nValue;
+		m_rdmSensorValues.lowest_detected = std::min(m_rdmSensorValues.lowest_detected, nValue);
+		m_rdmSensorValues.highest_detected = std::max(m_rdmSensorValues.highest_detected, nValue);
 
 		DEBUG_EXIT
 	}
@@ -199,8 +209,8 @@ public:
 
 private:
 	uint8_t m_nSensor;
-	rdm::sensor::Defintion m_tRDMSensorDefintion;
-	rdm::sensor::Values m_tRDMSensorValues;
+	rdm::sensor::Defintion m_rdmSensorDefintion;
+	rdm::sensor::Values m_rdmSensorValues;
 };
 
 #endif /* RDMSENSOR_H_ */

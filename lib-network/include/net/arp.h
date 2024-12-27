@@ -41,7 +41,7 @@ enum class Flags {
 void arp_init();
 void arp_handle(struct t_arp *);
 void arp_send(struct t_udp *, const uint32_t, const uint32_t);
-#if defined CONFIG_ENET_ENABLE_PTP
+#if defined CONFIG_NET_ENABLE_PTP
 void arp_send_timestamp(struct t_udp *, const uint32_t, const uint32_t);
 #endif
 void arp_acd_probe(const ip4_addr_t ipaddr);

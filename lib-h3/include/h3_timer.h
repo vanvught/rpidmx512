@@ -2,7 +2,7 @@
  * @file h3_timer.h
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,16 +49,5 @@
 #define TIMER_CTRL_SINGLE_MODE		(1U << 7)	///< When interval reached , the timer will disable automatically
 
 #define TIMER_INTV_1SECOND			(0xB71B00)	///< 12.000.000 ticks with TIMER_CTRL_CLK_PRES_2 and TIMER_CTRL_CLK_SRC_OSC24M
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-extern void __msdelay(uint32_t);
-extern void __usdelay(uint32_t);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* H3_TIMER_H_ */

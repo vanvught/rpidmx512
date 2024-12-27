@@ -23,9 +23,15 @@
  * THE SOFTWARE.
  */
 
-#pragma GCC push_options
-#pragma GCC optimize ("O2")
-#pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#if defined (DEBUG_ARM_LTCETCREADER)
+# undef NDEBUG
+#endif
+
+#if !defined(__clang__)
+# pragma GCC push_options
+# pragma GCC optimize ("O2")
+# pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#endif
 
 #include <cstdint>
 #include <cassert>
@@ -35,12 +41,13 @@
 #include "hardware.h"
 // Output
 #include "artnetnode.h"
-#include "rtpmidi.h"
 #include "ltcsender.h"
 #include "tcnetdisplay.h"
 #include "arm/ltcoutputs.h"
 
 #include "arm/platform_ltc.h"
+
+#include "debug.h"
 
 #if defined (H3)
 static void arm_timer_handler() {
@@ -52,6 +59,8 @@ static void arm_timer_handler() {
 #endif
 
 void LtcEtcReader::Start() {
+	DEBUG_ENTRY
+
 #if defined (H3)
 	irq_timer_arm_physical_set(static_cast<thunk_irq_timer_arm_t>(arm_timer_handler));
 	irq_handler_init();
@@ -60,17 +69,23 @@ void LtcEtcReader::Start() {
 
 	LtcOutputs::Get()->Init();
 	Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
+
+	DEBUG_EXIT
 }
 
 void LtcEtcReader::Stop() {
+	DEBUG_ENTRY
+
 #if defined (H3)
 	irq_timer_arm_physical_set(static_cast<thunk_irq_timer_arm_t>(nullptr));
 #elif defined (GD32)
 #endif
+
+	DEBUG_EXIT
 }
 
 void LtcEtcReader::Handler(const midi::Timecode *pTimeCode) {
-	gv_ltc_nUpdates++;
+	gv_ltc_nUpdates = gv_ltc_nUpdates + 1;
 
 	if (!ltc::g_DisabledOutputs.bLtc) {
 		LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct ltc::TimeCode *>(pTimeCode));
@@ -78,10 +93,6 @@ void LtcEtcReader::Handler(const midi::Timecode *pTimeCode) {
 
 	if (!ltc::g_DisabledOutputs.bArtNet) {
 		ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct artnet::TimeCode *>(pTimeCode));
-	}
-
-	if (!ltc::g_DisabledOutputs.bRtpMidi) {
-		RtpMidi::Get()->SendTimeCode(pTimeCode);
 	}
 
 	memcpy(&m_MidiTimeCode, pTimeCode, sizeof(struct midi::Timecode));

@@ -2,7 +2,7 @@
  * @file tcnetparams.cpp
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -54,7 +54,7 @@ TCNetParams::TCNetParams() {
 
 	memset(m_Params.aNodeName, '\0', TCNET_NODE_NAME_LENGTH);
 	m_Params.nLayer = static_cast<uint8_t>(tcnet::Layer::LAYER_M);
-	m_Params.nTimeCodeType = TCNET_TIMECODE_TYPE_SMPTE_30FPS;
+	m_Params.nTimeCodeType = static_cast<uint8_t>(tcnet::TimeCodeType::TIMECODE_TYPE_SMPTE_30FPS);
 
 	DEBUG_EXIT
 }
@@ -129,19 +129,19 @@ void TCNetParams::callbackFunction(const char *pLine) {
 	if (Sscan::Uint8(pLine, TCNetParamsConst::TIMECODE_TYPE, nValue8) == Sscan::OK) {
 		switch (nValue8) {
 		case 24:
-			m_Params.nTimeCodeType = TCNET_TIMECODE_TYPE_FILM;
+			m_Params.nTimeCodeType = static_cast<uint8_t>(tcnet::TimeCodeType::TIMECODE_TYPE_FILM);
 			m_Params.nSetList |= Mask::TIMECODE_TYPE;
 			break;
 		case 25:
-			m_Params.nTimeCodeType = TCNET_TIMECODE_TYPE_EBU_25FPS;
+			m_Params.nTimeCodeType = static_cast<uint8_t>(tcnet::TimeCodeType::TIMECODE_TYPE_EBU_25FPS);
 			m_Params.nSetList |= Mask::TIMECODE_TYPE;
 			break;
 		case 29:
-			m_Params.nTimeCodeType = TCNET_TIMECODE_TYPE_DF;
+			m_Params.nTimeCodeType = static_cast<uint8_t>(tcnet::TimeCodeType::TIMECODE_TYPE_DF);
 			m_Params.nSetList |= Mask::TIMECODE_TYPE;
 			break;
 		case 30:
-			m_Params.nTimeCodeType = TCNET_TIMECODE_TYPE_SMPTE_30FPS;
+			m_Params.nTimeCodeType = static_cast<uint8_t>(tcnet::TimeCodeType::TIMECODE_TYPE_SMPTE_30FPS);
 			m_Params.nSetList &= ~Mask::TIMECODE_TYPE;
 			break;
 		default:
@@ -214,7 +214,7 @@ void TCNetParams::Set(TCNet *pTCNet) {
 	}
 
 	if (isMaskSet(Mask::TIMECODE_TYPE)) {
-		pTCNet->SetTimeCodeType(static_cast<TTCNetTimeCodeType>(m_Params.nTimeCodeType));
+		pTCNet->SetTimeCodeType(static_cast<tcnet::TimeCodeType>(m_Params.nTimeCodeType));
 	}
 
 	pTCNet->SetUseTimeCode(isMaskSet(Mask::USE_TIMECODE));

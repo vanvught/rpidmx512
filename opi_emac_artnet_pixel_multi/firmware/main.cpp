@@ -74,10 +74,12 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
-void Hardware::RebootHandler() {
+namespace hal {
+void reboot_handler() {
 	WS28xxMulti::Get()->Blackout();
 	ArtNetNode::Get()->Stop();
 }
+}  // namespace hal
 
 int main() {
 	Hardware hw;
@@ -133,7 +135,7 @@ int main() {
 		node.SetOutput(&pixelDmxMulti);
 	}
 
-	ArtNetTriggerHandler triggerHandler(&pixelDmxMulti);
+	ArtNetTriggerHandler artnetTriggerHandler(&pixelDmxMulti);
 
 #if defined (NODE_RDMNET_LLRP_ONLY)
 	display.TextStatus(RDMNetConst::MSG_CONFIG, CONSOLE_YELLOW);
@@ -205,11 +207,6 @@ int main() {
 	RemoteConfigParams remoteConfigParams;
 	remoteConfigParams.Load();
 	remoteConfigParams.Set(&remoteConfig);
-
-	while (configStore.Flash())
-		;
-
-	mdns_print(); //	mDns.Print();
 
 	display.TextStatus(ArtNetMsgConst::START, CONSOLE_YELLOW);
 

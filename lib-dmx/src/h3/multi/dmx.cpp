@@ -159,8 +159,6 @@ static volatile uint32_t s_nRdmDataReadIndex[dmx::config::max::PORTS];
 static volatile PortState sv_PortState[dmx::config::max::PORTS] ALIGNED;
 
 static void irq_timer0_dmx_multi_sender([[maybe_unused]]uint32_t clo) {
-	logic_analyzer::ch0_set();
-
 	switch (sv_DmxSendState) {
 	case TxRxState::IDLE:
 	case TxRxState::DMXINTER:
@@ -277,8 +275,6 @@ static void irq_timer0_dmx_multi_sender([[maybe_unused]]uint32_t clo) {
 		__builtin_unreachable();
 		break;
 	}
-
-	logic_analyzer::ch0_clear();
 }
 
 #include <cstdio>
@@ -407,7 +403,7 @@ static void fiq_in_handler(const uint32_t nPortIndex, const H3_UART_TypeDef *pUa
 	}
 }
 
-static void __attribute__((interrupt("FIQ"))) fiq_dmx_multi(void) {
+static void __attribute__((interrupt("FIQ"))) fiq_dmx_multi() {
 	__DMB();
 
 	auto nIIR = H3_UART1->O08.IIR;

@@ -2,9 +2,6 @@
  * @file artnetcontroller.cpp
  *
  */
-/**
- * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
- */
 /* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -383,13 +380,7 @@ void ArtNetController::HandleBlackout() {
 
 void ArtNetController::HandleTrigger() {
 	DEBUG_ENTRY
-	const ArtTrigger *pArtTrigger = &m_pArtNetPacket->ArtPacket.ArtTrigger;
 
-	if ((pArtTrigger->OemCodeHi == 0xFF && pArtTrigger->OemCodeLo == 0xFF) || (pArtTrigger->OemCodeHi == m_ArtNetController.Oem[0] && pArtTrigger->OemCodeLo == m_ArtNetController.Oem[1])) {
-		DEBUG_PRINTF("Key=%d, SubKey=%d, Data[0]=%d", pArtTrigger->Key, pArtTrigger->SubKey, pArtTrigger->Data[0]);
-
-		m_pArtNetTrigger->Handler(reinterpret_cast<const struct TArtNetTrigger*>(&pArtTrigger->Key));
-	}
 
 	DEBUG_EXIT
 }
@@ -464,11 +455,16 @@ void ArtNetController::Run() {
 	case artnet::OpCodes::OP_POLL:
 		HandlePoll();
 		break;
-	case artnet::OpCodes::OP_TRIGGER:
-		if (m_pArtNetTrigger != nullptr) {
-			HandleTrigger();
+#if defined (ARTNET_HAVE_TRIGGER)
+	case artnet::OpCodes::OP_TRIGGER: {
+		const ArtTrigger *pArtTrigger = &m_pArtNetPacket->ArtPacket.ArtTrigger;
+		if ((pArtTrigger->OemCodeHi == 0xFF && pArtTrigger->OemCodeLo == 0xFF) || (pArtTrigger->OemCodeHi == m_ArtNetController.Oem[0] && pArtTrigger->OemCodeLo == m_ArtNetController.Oem[1])) {
+			DEBUG_PRINTF("Key=%d, SubKey=%d, Data[0]=%d", pArtTrigger->Key, pArtTrigger->SubKey, pArtTrigger->Data[0]);
+			m_ArtTriggerCallbackFunctionPtr(reinterpret_cast<const struct ArtNetTrigger*>(&pArtTrigger->Key));
 		}
+	}
 		break;
+#endif
 	default:
 		break;
 	}

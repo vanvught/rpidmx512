@@ -1,6 +1,8 @@
 $(info $$MAKE_FLAGS [${MAKE_FLAGS}])
 $(info $$DEFINES [${DEFINES}])
 
+EXTRA_INCLUDES+=../lib-properties/include ../lib-display/include
+
 COND=
 
 ifneq ($(MAKE_FLAGS),)

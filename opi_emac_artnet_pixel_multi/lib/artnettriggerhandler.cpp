@@ -1,11 +1,8 @@
 /**
- * @file artnettrigger.cpp
+ * @file artnettriggerhandler.cpp
  *
  */
-/**
- * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
- */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,22 +24,46 @@
  */
 
 #include <cstdint>
+#include <cassert>
 
 #include "artnettrigger.h"
 #include "artnetnode.h"
-#include "artnetconst.h"
 
-#include "debug.h"
+#include "lightset.h"
 
-void ArtNetNode::HandleTrigger() {
-	DEBUG_ENTRY
-	const auto *const pArtTrigger = reinterpret_cast<artnet::ArtTrigger *>(m_pReceiveBuffer);
+#include "pixeltestpattern.h"
 
-	if ((pArtTrigger->OemCodeHi == 0xFF && pArtTrigger->OemCodeLo == 0xFF) || (pArtTrigger->OemCodeHi == ArtNetConst::OEM_ID[0] && pArtTrigger->OemCodeLo == ArtNetConst::OEM_ID[1])) {
-		DEBUG_PRINTF("Key=%d, SubKey=%d, Data[0]=%d", pArtTrigger->Key, pArtTrigger->SubKey, pArtTrigger->Data[0]);
+#include "display.h"
+#include "displayudf.h"
 
-		m_pArtNetTrigger->Handler(reinterpret_cast<const TArtNetTrigger *>(&pArtTrigger->Key));
-	}
+namespace artnet {
+static LightSet *s_pLightSet;
 
-	DEBUG_EXIT
+void triggerhandler_set_lightset(LightSet *pLightSet) {
+	s_pLightSet = pLightSet;
 }
+
+void triggerhandler(const ArtNetTrigger *pArtNetTrigger) {
+	if (pArtNetTrigger->Key == ArtTriggerKey::ART_TRIGGER_KEY_SHOW) {
+		const auto nShow = static_cast<pixelpatterns::Pattern>(pArtNetTrigger->SubKey);
+		if (nShow == PixelTestPattern::Get()->GetPattern()) {
+			return;
+		}
+		const auto isSet = PixelTestPattern::Get()->SetPattern(nShow);
+
+		if(!isSet) {
+			return;
+		}
+
+		if (static_cast<pixelpatterns::Pattern>(nShow) != pixelpatterns::Pattern::NONE) {
+			ArtNetNode::Get()->SetOutput(nullptr);
+			Display::Get()->ClearLine(6);
+			Display::Get()->Printf(6, "%s:%u", PixelPatterns::GetName(nShow), static_cast<uint32_t>(nShow));
+		} else {
+			s_pLightSet->Blackout(true);
+			ArtNetNode::Get()->SetOutput(s_pLightSet);
+			DisplayUdf::Get()->Show();
+		}
+	}
+}
+}  // namespace artnet

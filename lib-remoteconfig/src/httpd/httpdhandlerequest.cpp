@@ -111,7 +111,7 @@ void HttpDeamonHandleRequest::HandleRequest(const uint32_t nBytesReceived, char 
 			} else if (m_RequestMethod == http::RequestMethod::POST) {
 				m_Status = HandlePost(false);
 
-				if ((m_Status == http::Status::OK) && (m_nFileDataLength == 0)) {
+				if ((m_Status == http::Status::OK) && (m_nRequestDataLength == 0)) {
 					DEBUG_PUTS("There is a POST header only -> no data");
 					DEBUG_EXIT
 					return;
@@ -121,7 +121,7 @@ void HttpDeamonHandleRequest::HandleRequest(const uint32_t nBytesReceived, char 
 			else if (m_RequestMethod == http::RequestMethod::DELETE) {
 				m_Status = HandleDelete(false);
 
-				if ((m_Status == http::Status::OK) && (m_nFileDataLength == 0)) {
+				if ((m_Status == http::Status::OK) && (m_nRequestDataLength == 0)) {
 					DEBUG_PUTS("There is a DELETE header only -> no data");
 					DEBUG_EXIT
 					return;
@@ -200,7 +200,7 @@ http::Status HttpDeamonHandleRequest::ParseRequest() {
 	http::Status status = http::Status::UNKNOWN_ERROR;
 	m_RequestContentType = http::contentTypes::NOT_DEFINED;
 	m_nRequestContentLength = 0;
-	m_nFileDataLength = 0;
+	m_nRequestDataLength = 0;
 
 	for (uint32_t i = 0; i < m_nBytesReceived; i++) {
 		if (m_pReceiveBuffer[i] == '\n') {
@@ -212,11 +212,11 @@ http::Status HttpDeamonHandleRequest::ParseRequest() {
 			} else {
 				if (pLine[0] == '\0') {
 					assert((i + 1) <= m_nBytesReceived);
-					m_nFileDataLength = static_cast<uint16_t>(m_nBytesReceived - 1 - i);
+					m_nRequestDataLength = static_cast<uint16_t>(m_nBytesReceived - 1 - i);
 
-					if (m_nFileDataLength > 0) {
+					if (m_nRequestDataLength > 0) {
 						m_pFileData = &m_pReceiveBuffer[i + 1];
-						m_pFileData[m_nFileDataLength] = '\0';
+						m_pFileData[m_nRequestDataLength] = '\0';
 					}
 
 					return http::Status::OK;
@@ -588,7 +588,7 @@ http::Status HttpDeamonHandleRequest::HandleGetTxt() {
 
 http::Status HttpDeamonHandleRequest::HandlePost(const bool hasDataOnly) {
 	DEBUG_ENTRY
-	DEBUG_PRINTF("m_nBytesReceived=%d, m_nFileDataLength=%u, m_nRequestContentLength=%u -> hasDataOnly=%c", m_nBytesReceived, m_nFileDataLength, m_nRequestContentLength, hasDataOnly ? 'Y' : 'N');
+	DEBUG_PRINTF("m_nBytesReceived=%d, m_nFileDataLength=%u, m_nRequestContentLength=%u -> hasDataOnly=%c", m_nBytesReceived, m_nRequestDataLength, m_nRequestContentLength, hasDataOnly ? 'Y' : 'N');
 
 	if (!hasDataOnly) {
 		if (m_RequestContentType != http::contentTypes::APPLICATION_JSON) {
@@ -604,7 +604,7 @@ http::Status HttpDeamonHandleRequest::HandlePost(const bool hasDataOnly) {
 		}
 	}
 
-	const auto hasHeadersOnly = (!hasDataOnly && ((m_nBytesReceived < m_nRequestContentLength) || m_nFileDataLength == 0));
+	const auto hasHeadersOnly = (!hasDataOnly && ((m_nBytesReceived < m_nRequestContentLength) || m_nRequestDataLength == 0));
 
 	if (hasHeadersOnly) {
 		DEBUG_PUTS("hasHeadersOnly");
@@ -614,13 +614,13 @@ http::Status HttpDeamonHandleRequest::HandlePost(const bool hasDataOnly) {
 
 	if (hasDataOnly) {
 		m_pFileData = m_pReceiveBuffer;
-		m_nFileDataLength = static_cast<uint16_t>(m_nBytesReceived);
+		m_nRequestDataLength = static_cast<uint16_t>(m_nBytesReceived);
 	}
 
-	DEBUG_PRINTF("%d|%.*s|->%c", m_nFileDataLength, m_nFileDataLength, m_pFileData, m_IsAction ? 'Y' : 'N');
+	DEBUG_PRINTF("%d|%.*s|->%c", m_nRequestDataLength, m_nRequestDataLength, m_pFileData, m_IsAction ? 'Y' : 'N');
 
 	if (m_IsAction) {
-		auto const nJsonLength = properties::convert_json_file(m_pFileData, m_nFileDataLength, true);
+		auto const nJsonLength = properties::convert_json_file(m_pFileData, m_nRequestDataLength, true);
 
 		if (nJsonLength <= 0) {
 			DEBUG_PUTS("Status::BAD_REQUEST");
@@ -682,7 +682,7 @@ http::Status HttpDeamonHandleRequest::HandlePost(const bool hasDataOnly) {
 		const auto bIsJSON = PropertiesConfig::IsJSON();
 
 		PropertiesConfig::EnableJSON(true);
-		RemoteConfig::Get()->HandleSet(m_pFileData, m_nFileDataLength);
+		RemoteConfig::Get()->HandleSet(m_pFileData, m_nRequestDataLength);
 		PropertiesConfig::EnableJSON(bIsJSON);
 	}
 
@@ -703,7 +703,7 @@ http::Status HttpDeamonHandleRequest::HandlePost(const bool hasDataOnly) {
  */
 
 http::Status HttpDeamonHandleRequest::HandleDelete(const bool hasDataOnly) {
-	DEBUG_PRINTF("m_nBytesReceived=%d, m_nFileDataLength=%u, m_nRequestContentLength=%u -> hasDataOnly=%c", m_nBytesReceived, m_nFileDataLength, m_nRequestContentLength, hasDataOnly ? 'Y' : 'N');
+	DEBUG_PRINTF("hasDataOnly=%c -> m_nBytesReceived=%d, m_nRequestDataLength=%u, m_nRequestContentLength=%u", hasDataOnly ? 'Y' : 'N', m_nBytesReceived, m_nRequestDataLength, m_nRequestContentLength);
 
 	if (!hasDataOnly) {
 		if (m_RequestContentType != http::contentTypes::APPLICATION_JSON) {
@@ -719,7 +719,7 @@ http::Status HttpDeamonHandleRequest::HandleDelete(const bool hasDataOnly) {
 		}
 	}
 
-	const auto hasHeadersOnly = (!hasDataOnly && ((m_nBytesReceived < m_nRequestContentLength) || m_nFileDataLength == 0));
+	const auto hasHeadersOnly = (!hasDataOnly && ((m_nBytesReceived < m_nRequestContentLength) || m_nRequestDataLength == 0));
 
 	if (hasHeadersOnly) {
 		DEBUG_PUTS("hasHeadersOnly");
@@ -729,12 +729,12 @@ http::Status HttpDeamonHandleRequest::HandleDelete(const bool hasDataOnly) {
 
 	if (hasDataOnly) {
 		m_pFileData = m_pReceiveBuffer;
-		m_nFileDataLength = static_cast<uint16_t>(m_nBytesReceived);
+		m_nRequestDataLength = static_cast<uint16_t>(m_nBytesReceived);
 	}
 
-	DEBUG_PRINTF("%d|%.*s|->%d", m_nFileDataLength, m_nFileDataLength, m_pFileData, m_IsAction);
+	DEBUG_PRINTF("%d|%.*s|->%d", m_nRequestDataLength, m_nRequestDataLength, m_pFileData, m_IsAction);
 
-	auto const nJsonLength = properties::convert_json_file(m_pFileData, m_nFileDataLength, true);
+	auto const nJsonLength = properties::convert_json_file(m_pFileData, m_nRequestDataLength, true);
 
 	if (nJsonLength <= 0) {
 		DEBUG_PUTS("Status::BAD_REQUEST");

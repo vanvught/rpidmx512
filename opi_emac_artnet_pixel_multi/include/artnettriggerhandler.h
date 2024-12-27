@@ -2,7 +2,7 @@
  * @file artnettriggerhandler.h
  *
  */
-/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,32 +26,51 @@
 #ifndef ARTNETTRIGGERHANDLER_H_
 #define ARTNETTRIGGERHANDLER_H_
 
-#include "artnettrigger.h"
+#include <cassert>
 
-#include "pixelpatterns.h"
-#include "pixeltestpattern.h"
-#include "displayudf.h"
+#include "artnettrigger.h"
 #include "artnetnode.h"
+
 #include "lightset.h"
-#include "lightsetdata.h"
+#include "lightsetwith4.h"
+
+#include "pixeltestpattern.h"
+#include "pixel.h"
+#include "pixeldmxconfiguration.h"
+
+#include "display.h"
+#include "displayudf.h"
 
 class ArtNetTriggerHandler: ArtNetTrigger {
 public:
 	ArtNetTriggerHandler(LightSet *pLightSet): m_pLightSet(pLightSet) {
-		ArtNetNode::Get()->SetArtNetTrigger(this);
+		assert(s_pThis == nullptr);
+		s_pThis = this;
+
+		ArtNetNode::Get()->SetArtTriggerCallbackFunctionPtr(staticCallbackFunction);
 	}
 
 	~ArtNetTriggerHandler() = default;
 
-	void Handler(const TArtNetTrigger *ptArtNetTrigger) override {
-		if (ptArtNetTrigger->Key == ART_TRIGGER_KEY_SHOW) {
-			const auto nShow = static_cast<pixelpatterns::Pattern>(ptArtNetTrigger->SubKey);
+	void static staticCallbackFunction(const ArtNetTrigger *pArtNetTrigger) {
+		assert(s_pThis != nullptr);
+		s_pThis->Handler(pArtNetTrigger);
+	}
+
+private:
+	void Handler(const ArtNetTrigger *pArtNetTrigger) {
+		if (pArtNetTrigger->Key == ArtTriggerKey::ART_TRIGGER_KEY_SHOW) {
+			ArtNetNode::Get()->SetOutput(m_pLightSet);
+
+			const auto nShow = static_cast<pixelpatterns::Pattern>(pArtNetTrigger->SubKey);
+
 			if (nShow == PixelTestPattern::Get()->GetPattern()) {
 				return;
 			}
+
 			const auto isSet = PixelTestPattern::Get()->SetPattern(nShow);
 
-			if(!isSet) {
+			if (!isSet) {
 				return;
 			}
 
@@ -61,14 +80,39 @@ public:
 				Display::Get()->Printf(6, "%s:%u", PixelPatterns::GetName(nShow), static_cast<uint32_t>(nShow));
 			} else {
 				m_pLightSet->Blackout(true);
-				ArtNetNode::Get()->SetOutput(m_pLightSet);
 				DisplayUdf::Get()->Show();
+			}
+
+			return;
+		}
+
+		if (pArtNetTrigger->Key == ArtTriggerKey::ART_TRIGGER_UNDEFINED) {
+			if (pArtNetTrigger->SubKey == 0) {
+				const auto isSet = PixelTestPattern::Get()->SetPattern(pixelpatterns::Pattern::NONE);
+
+				if (!isSet) {
+					return;
+				}
+
+				ArtNetNode::Get()->SetOutput(nullptr);
+
+				auto& pixelDmxConfiguration = PixelDmxConfiguration::Get();
+				const auto *pData = &pArtNetTrigger->Data[0];
+				const uint32_t nColour = pData[0] | (static_cast<uint32_t>(pData[1]) << 8) | (static_cast<uint32_t>(pData[2]) << 16) | (static_cast<uint32_t>(pData[3]) << 24);
+
+				for (uint32_t nPort = 0; nPort < pixelDmxConfiguration.GetOutputPorts(); nPort++) {
+					pixel::set_pixel_colour(nPort, nColour);
+				}
+
+				pixel::update();
 			}
 		}
 	}
 
 private:
 	LightSet *m_pLightSet;
+
+	static inline ArtNetTriggerHandler *s_pThis;
 };
 
 #endif /* ARTNETTRIGGERHANDLER_H_ */

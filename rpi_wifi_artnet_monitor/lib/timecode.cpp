@@ -67,15 +67,15 @@ void TimeCode::Stop() {
 	console_puts("                 ");
 }
 
-void TimeCode::Handler(const struct TArtNetTimeCode *ArtNetTimeCode) {
-	itoa_base10(ArtNetTimeCode->Hours, &timecode[0]);
-	itoa_base10(ArtNetTimeCode->Minutes, &timecode[3]);
-	itoa_base10(ArtNetTimeCode->Seconds, &timecode[6]);
-	itoa_base10(ArtNetTimeCode->Frames, &timecode[9]);
+void TimeCode::Handler(const struct artnet::TimeCode *pTimeCode) {
+	itoa_base10(pTimeCode->Hours, &timecode[0]);
+	itoa_base10(pTimeCode->Minutes, &timecode[3]);
+	itoa_base10(pTimeCode->Seconds, &timecode[6]);
+	itoa_base10(pTimeCode->Frames, &timecode[9]);
 
-	if ((prev_type != ArtNetTimeCode->Type) && (ArtNetTimeCode->Type < 4)) {
-		memcpy(&timecode[12], types[ArtNetTimeCode->Type], 5);
-		prev_type = ArtNetTimeCode->Type;
+	if ((prev_type != pTimeCode->Type) && (pTimeCode->Type < 4)) {
+		memcpy(&timecode[12], types[pTimeCode->Type], 5);
+		prev_type = pTimeCode->Type;
 	}
 
 	console_save_cursor();

@@ -2,7 +2,7 @@
  * @file hardware_init.cpp
  *
  */
-/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,15 +25,16 @@
 #include <cstdio>
 #include <cassert>
 
-#include "h3_board.h"
-#include "h3_gpio.h"
-#include "h3_sid.h"
-#include "h3_thermal.h"
 #include "h3.h"
+#include "h3_ccu.h"
 #include "h3_cpu.h"
 #include "h3_watchdog.h"
 #include "h3_i2c.h"
 #include "h3_spi.h"
+#include "h3_board.h"
+#include "h3_gpio.h"
+#include "h3_sid.h"
+#include "h3_thermal.h"
 
 #include "arm/gic.h"
 #include "arm/synchronize.h"
@@ -59,17 +60,17 @@
 
 static uint32_t s_hardware_init_startup_seconds = 0;
 
-extern void emac_init(void);
-extern void sys_time_init(void);
-extern void h3_timer_init(void);
-extern void h3_hs_timer_init(void);
-extern void h3_usb_end(void);
+extern void emac_init();
+extern void sys_time_init();
+extern void h3_timer_avs_init();
+extern void h3_hs_timer_init();
+extern void h3_usb_end();
 
-uint32_t hardware_uptime_seconds(void) {
+uint32_t hardware_uptime_seconds() {
 	return (H3_TIMER->AVS_CNT0 / 1000) - s_hardware_init_startup_seconds;
 }
 
-void hardware_led_init(void) {
+void hardware_led_init() {
 	h3_gpio_fsel(H3_BOARD_STATUS_LED, GPIO_FSEL_OUTPUT);
 #if !defined(DO_NOT_USE_EXTERNAL_LED)
 	h3_gpio_fsel(EXTERNAL_LED, GPIO_FSEL_OUTPUT);
@@ -109,7 +110,7 @@ void hardware_led_set(int state) {
 #endif
 }
 
-void __attribute__((cold)) hardware_init(void) {
+void __attribute__((cold)) hardware_init() {
 	h3_gpio_fsel(EXT_SPI_MOSI, GPIO_FSEL_INPUT);
 	h3_gpio_set_pud(EXT_SPI_MOSI, GPIO_PULL_DOWN);
 	h3_gpio_fsel(EXT_SPI_CLK, GPIO_FSEL_INPUT);
@@ -119,7 +120,7 @@ void __attribute__((cold)) hardware_init(void) {
 
 	h3_watchdog_disable();
 	h3_usb_end();
-	h3_timer_init();
+	h3_timer_avs_init();
 	h3_hs_timer_init();
 	sys_time_init();
 	console_init();
@@ -167,6 +168,10 @@ void __attribute__((cold)) hardware_init(void) {
 	H3_PIO_PORTL->CFG0 = value;
 	s_is_pwr_button_pressed = (H3_PIO_PORTL->DAT & (1 << 3)) == 0;
 #endif
+
+	///< Enable DMA support
+	H3_CCU->BUS_SOFT_RESET0 |= CCU_BUS_SOFT_RESET0_DMA;
+	H3_CCU->BUS_CLK_GATING0 |= CCU_BUS_CLK_GATING0_DMA;
 
 	hardware_led_init();
 	hardware_led_set(1);
