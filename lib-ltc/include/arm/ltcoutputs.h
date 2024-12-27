@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef H3_LTCOUTPUTS_H_
-#define H3_LTCOUTPUTS_H_
+#ifndef ARM_LTCOUTPUTS_H_
+#define ARM_LTCOUTPUTS_H_
 
 #include "ltc.h"
 
@@ -59,7 +59,7 @@ private:
 	int32_t m_nSecondsPrevious { 60 };
 	char m_cBPM[9];
 
-	static LtcOutputs *s_pThis;
+	static inline LtcOutputs *s_pThis;
 };
 
-#endif /* H3_LTCOUTPUTS_H_ */
+#endif /* ARM_LTCOUTPUTS_H_ */

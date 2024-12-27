@@ -85,8 +85,7 @@ SystimeReader::SystimeReader(uint8_t nFps, int32_t nUtcOffset) : m_nFps(nFps), m
 }
 
 void SystimeReader::Start(bool bAutoStart) {
-	m_nHandle = Network::Get()->Begin(UDP_PORT, staticCallbackFunction);
-	assert(m_nHandle != -1);
+	DEBUG_ENTRY
 
 	const auto nTimerInterval = TimeCodeConst::TMR_INTV[static_cast<uint8_t>(ltc::g_Type)];
 
@@ -106,13 +105,17 @@ void SystimeReader::Start(bool bAutoStart) {
 	TIMER_CTL0(TIMER11) |= TIMER_CTL0_CEN;
 #endif
 
-	LtcOutputs::Get()->Init();
+	m_nHandle = Network::Get()->Begin(UDP_PORT, staticCallbackFunction);
+	assert(m_nHandle != -1);
 
+	LtcOutputs::Get()->Init();
 	Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
 
 	if (bAutoStart) {
 		ActionStart();
 	}
+
+	DEBUG_EXIT
 }
 
 void SystimeReader::ActionStart() {

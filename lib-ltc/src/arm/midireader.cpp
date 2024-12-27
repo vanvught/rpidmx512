@@ -147,18 +147,18 @@ void MidiReader::HandleMtcQf() {
 
 void MidiReader::Update() {
 	if (!ltc::g_DisabledOutputs.bLtc) {
-		LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct ltc::TimeCode*>(&m_MidiTimeCode));
+		LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct ltc::TimeCode *>(&m_MidiTimeCode));
 	}
 
 	if (!ltc::g_DisabledOutputs.bArtNet) {
-		ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct artnet::TimeCode*>(&m_MidiTimeCode));
+		ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct artnet::TimeCode *>(&m_MidiTimeCode));
 	}
 
 	if (!ltc::g_DisabledOutputs.bEtc) {
 		LtcEtc::Get()->Send(&m_MidiTimeCode);
 	}
 
-	LtcOutputs::Get()->Update(reinterpret_cast<const struct ltc::TimeCode*>(&m_MidiTimeCode));
+	LtcOutputs::Get()->Update(reinterpret_cast<const struct ltc::TimeCode *>(&m_MidiTimeCode));
 }
 
 void MidiReader::Run() {

@@ -49,6 +49,8 @@
 
 #include "arm/platform_ltc.h"
 
+#include "debug.h"
+
 #if defined (H3)
 static void arm_timer_handler() {
 	gv_ltc_nUpdatesPerSecond = gv_ltc_nUpdates - gv_ltc_nUpdatesPrevious;
@@ -59,6 +61,8 @@ static void arm_timer_handler() {
 #endif
 
 void ArtNetReader::Start() {
+	DEBUG_ENTRY
+
 #if defined (H3)
 	irq_timer_arm_physical_set(static_cast<thunk_irq_timer_arm_t>(arm_timer_handler));
 	irq_handler_init();
@@ -67,13 +71,19 @@ void ArtNetReader::Start() {
 
 	LtcOutputs::Get()->Init();
 	Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
+
+	DEBUG_EXIT
 }
 
 void ArtNetReader::Stop() {
+	DEBUG_ENTRY
+
 #if defined (H3)
 	irq_timer_arm_physical_set(static_cast<thunk_irq_timer_arm_t>(nullptr));
 #elif defined (GD32)
 #endif
+
+	DEBUG_EXIT
 }
 
 void ArtNetReader::Handler(const struct artnet::TimeCode *ArtNetTimeCode) {

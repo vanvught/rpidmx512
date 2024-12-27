@@ -75,25 +75,32 @@ static void arm_timer_handler() {
 #endif
 
 void TCNetReader::Start() {
+	DEBUG_ENTRY
+
 #if defined (H3)
 	irq_timer_arm_physical_set(static_cast<thunk_irq_timer_arm_t>(arm_timer_handler));
 	irq_handler_init();
 #elif defined (GD32)
 #endif
 
-	LtcOutputs::Get()->Init();
-
-	Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
-
 	m_nHandle = Network::Get()->Begin(UDP_PORT, staticCallbackFunctionInput);
 	assert(m_nHandle != -1);
+
+	LtcOutputs::Get()->Init();
+	Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
+
+	DEBUG_EXIT
 }
 
 void TCNetReader::Stop() {
+	DEBUG_ENTRY
+
 #if defined (H3)
 	irq_timer_arm_physical_set(static_cast<thunk_irq_timer_arm_t>(nullptr));
 #elif defined (GD32)
 #endif
+
+	DEBUG_EXIT
 }
 
 void TCNetReader::Handler(const struct tcnet::TimeCode *pTimeCode) {

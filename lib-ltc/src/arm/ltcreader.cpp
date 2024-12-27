@@ -254,6 +254,9 @@ void LtcReader::Start() {
 	GPIO_BOP(GPIOA) = GPIO_PIN_4;
 # endif
 #endif
+
+	LtcOutputs::Get()->Init();
+	Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
 }
 
 void LtcReader::Run() {

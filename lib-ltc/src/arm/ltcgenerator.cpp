@@ -177,9 +177,6 @@ void LtcGenerator::Start() {
 # endif
 #endif
 
-	m_nHandle = Network::Get()->Begin(UDP_PORT, staticCallbackFunction);
-	assert(m_nHandle != -1);
-
 	const auto nType = static_cast<uint32_t>(ltc::g_Type);
 	const auto nTimerInterval = TimeCodeConst::TMR_INTV[nType];
 
@@ -197,6 +194,9 @@ void LtcGenerator::Start() {
 	TIMER_CTL0(TIMER11) |= TIMER_CTL0_CEN;
 #endif
 
+	m_nHandle = Network::Get()->Begin(UDP_PORT, staticCallbackFunction);
+	assert(m_nHandle != -1);
+
 	LtcOutputs::Get()->Init();
 
 	if (!ltc::g_DisabledOutputs.bLtc) {
@@ -212,7 +212,6 @@ void LtcGenerator::Start() {
 	}
 
 	LtcOutputs::Get()->Update(const_cast<const struct ltc::TimeCode*>(&g_ltc_LtcTimeCode));
-
 	Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
 
 	DEBUG_EXIT

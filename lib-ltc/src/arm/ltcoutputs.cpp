@@ -23,6 +23,10 @@
  * THE SOFTWARE.
  */
 
+#if defined(DEBUG_ARM_LTCOUTPUTS)
+# undef NDEBUG
+#endif
+
 #if !defined(__clang__)
 # pragma GCC push_options
 # pragma GCC optimize ("O2")
@@ -55,6 +59,8 @@
 
 #include "arm/platform_ltc.h"
 
+#include "debug.h"
+
 static volatile bool sv_isMidiQuarterFrameMessage;
 
 #if defined (H3)
@@ -78,9 +84,9 @@ void TIMER0_TRG_CMT_TIMER10_IRQHandler() {
 }
 #endif
 
-LtcOutputs *LtcOutputs::s_pThis;
-
 LtcOutputs::LtcOutputs(const ltc::Source source, const bool bShowSysTime): m_bShowSysTime(bShowSysTime) {
+	DEBUG_ENTRY
+
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 
@@ -102,9 +108,13 @@ LtcOutputs::LtcOutputs(const ltc::Source source, const bool bShowSysTime): m_bSh
 
 	ltc::init_timecode(m_aTimeCode);
 	ltc::init_systemtime(m_aSystemTime);
+
+	DEBUG_EXIT
 }
 
 void LtcOutputs::Init() {
+	DEBUG_ENTRY
+
 	if ((!ltc::g_DisabledOutputs.bMidi) || (!ltc::g_DisabledOutputs.bRtpMidi)) {
 #if defined (H3)
 		irq_timer_set(IRQ_TIMER_1, static_cast<thunk_irq_timer_t>(irq_timer1_midi_handler));
@@ -116,6 +126,8 @@ void LtcOutputs::Init() {
 	if (!ltc::g_DisabledOutputs.bOled) {
 		Display::Get()->TextLine(2, ltc::get_type(ltc::Type::UNKNOWN), ltc::timecode::TYPE_MAX_LENGTH);
 	}
+
+	DEBUG_EXIT
 }
 
 void LtcOutputs::Update(const struct ltc::TimeCode *ptLtcTimeCode) {
