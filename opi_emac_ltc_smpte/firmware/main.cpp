@@ -105,15 +105,45 @@
 # include "shell/shell.h"
 #endif
 
+#include "net/protocol/ntp.h"
+
+static ltc::Source ltcSource;
+
+namespace ntpclient {
+void display_status(const ::ntp::Status status) {
+	if (ltcSource != ltc::Source::SYSTIME) {
+		return;
+	}
+
+	switch (status) {
+	case ::ntp::Status::STOPPED:
+		Display::Get()->TextStatus("No NTP Client");
+		break;
+	case ::ntp::Status::IDLE:
+		LtcOutputs::Get()->ResetTimeCodeTypePrevious();
+		Display::Get()->TextStatus("NTP Client");
+		break;
+	case ::ntp::Status::LOCKED:
+		Display::Get()->TextStatus("NTP Client LOCKED");
+		break;
+	case ::ntp::Status::FAILED:
+		Display::Get()->TextStatus("Error: NTP");
+		break;
+	default:
+		break;
+	}
+}
+}  // namespace ntpclient
+
 namespace hal {
 void reboot_handler() {
-	//	switch (ltcSource) {
-	//	case ::ltc::Source::TCNET:
-	//		TCNet::Get()->Stop();
-	//		break;
-	//	default:
-	//		break;
-	//	}
+	switch (ltcSource) {
+	case ::ltc::Source::TCNET:
+		TCNet::Get()->Stop();
+		break;
+	default:
+		break;
+	}
 
 	if (!ltc::g_DisabledOutputs.bMax7219) {
 		LtcDisplayMax7219::Get()->Init(2); // TODO WriteChar
@@ -176,7 +206,7 @@ int main() {
 	SystimeReader sysTimeReader(ltcParams.GetFps(), ltcParams.GetUtcOffset());
 	LtcEtcReader ltcEtcReader;
 
-	ltc::Source ltcSource = ltcParams.GetSource();
+	ltcSource = ltcParams.GetSource();
 
 	LtcDisplayParams ltcDisplayParams;
 
