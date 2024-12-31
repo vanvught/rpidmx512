@@ -62,9 +62,61 @@
 #include "debug.h"
 
 static volatile bool sv_isMidiQuarterFrameMessage;
+static uint32_t volatile sv_nMidiQuarterFramePiece;
+
+static uint8_t create_quarter_frame(const struct midi::Timecode *timeCode) {
+	auto data = static_cast<uint8_t>(sv_nMidiQuarterFramePiece << 4);
+
+	switch (sv_nMidiQuarterFramePiece) {
+	case 0:
+		data = data | (timeCode->nFrames & 0x0F);
+		break;
+	case 1:
+		data = data | static_cast<uint8_t>((timeCode->nFrames & 0x10) >> 4);
+		break;
+	case 2:
+		data = data | (timeCode->nSeconds & 0x0F);
+		break;
+	case 3:
+		data = data | static_cast<uint8_t>((timeCode->nSeconds & 0x30) >> 4);
+		break;
+	case 4:
+		data = data | (timeCode->nMinutes & 0x0F);
+		break;
+	case 5:
+		data = data | static_cast<uint8_t>((timeCode->nMinutes & 0x30) >> 4);
+		break;
+	case 6:
+		data = data | (timeCode->nHours & 0x0F);
+		break;
+	case 7:
+		data = static_cast<uint8_t>(data | (timeCode->nType << 1) | ((timeCode->nHours & 0x10) >> 4));
+		break;
+	default:
+		break;
+	}
+
+	sv_nMidiQuarterFramePiece = (sv_nMidiQuarterFramePiece + 1) & 0x07;
+
+	return data;
+}
 
 #if defined (H3)
 static void irq_timer1_midi_handler([[maybe_unused]] uint32_t clo) {
+	if ((sv_nMidiQuarterFramePiece == 0) || (sv_nMidiQuarterFramePiece == 4)) {
+		return;
+	}
+
+	const auto data = create_quarter_frame(reinterpret_cast<const struct midi::Timecode *>(&g_ltc_LtcTimeCode));
+
+	if (!ltc::g_DisabledOutputs.bRtpMidi) {
+		RtpMidi::Get()->SendQf(data);
+	}
+
+	if (!ltc::g_DisabledOutputs.bMidi) {
+		Midi::Get()->SendQf(data);
+	}
+
 	sv_isMidiQuarterFrameMessage = true;
 }
 #elif defined (GD32)
@@ -74,6 +126,17 @@ void TIMER0_TRG_CMT_TIMER10_IRQHandler() {
 
 	if ((nIntFlag & TIMER_INT_FLAG_UP) == TIMER_INT_FLAG_UP) {
 		sv_isMidiQuarterFrameMessage = true;
+
+		const auto data = create_quarter_frame(reinterpret_cast<const struct midi::Timecode *>(&g_ltc_LtcTimeCode));
+
+		if (!ltc::g_DisabledOutputs.bRtpMidi) {
+			RtpMidi::Get()->SendQf(data);
+		}
+
+		if (!ltc::g_DisabledOutputs.bMidi) {
+			Midi::Get()->SendQf(data);
+		}
+
 #if defined (DEBUG_LTC_TIMER10)
 		GPIO_TG(DEBUG_TIMER10_GPIOx) = DEBUG_TIMER10_GPIO_PINx;
 #endif
@@ -115,6 +178,10 @@ LtcOutputs::LtcOutputs(const ltc::Source source, const bool bShowSysTime): m_bSh
 void LtcOutputs::Init() {
 	DEBUG_ENTRY
 
+	m_TypePrevious = ltc::Type::INVALID;
+	m_bMidiQuarterFramePieceRunning = false;
+	sv_nMidiQuarterFramePiece = 0;
+
 	if ((!ltc::g_DisabledOutputs.bMidi) || (!ltc::g_DisabledOutputs.bRtpMidi)) {
 #if defined (H3)
 		irq_timer_set(IRQ_TIMER_1, static_cast<thunk_irq_timer_t>(irq_timer1_midi_handler));
@@ -130,50 +197,86 @@ void LtcOutputs::Init() {
 	DEBUG_EXIT
 }
 
-void LtcOutputs::Update(const struct ltc::TimeCode *ptLtcTimeCode) {
-	assert(ptLtcTimeCode != nullptr);
+void LtcOutputs::Update(const struct ltc::TimeCode *pLtcTimeCode) {
+	assert(pLtcTimeCode != nullptr);
 
-	if (ptLtcTimeCode->nType != static_cast<uint8_t>(m_TypePrevious)) {
-		m_TypePrevious = static_cast<ltc::Type>(ptLtcTimeCode->nType);
+	if (pLtcTimeCode->nType != static_cast<uint8_t>(m_TypePrevious)) {
+		DEBUG_PRINTF("pLtcTimeCode->nType=%u, m_TypePrevious=%u", pLtcTimeCode->nType, m_TypePrevious);
+		m_TypePrevious = static_cast<ltc::Type>(pLtcTimeCode->nType);
+
+#if defined (H3)
+		H3_TIMER->TMR1_CTRL &= ~TIMER_CTRL_EN_START;
+#elif defined (GD32)
+		TIMER_CTL0(TIMER10) &= ~TIMER_CTL0_CEN;
+#endif
+
+		sv_isMidiQuarterFrameMessage = false;
+		m_bMidiQuarterFramePieceRunning = false;
+		sv_nMidiQuarterFramePiece = 0;
 
 		if (!ltc::g_DisabledOutputs.bRtpMidi) {
-			RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(ptLtcTimeCode));
+			RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(pLtcTimeCode));
 		}
 
 		if (!ltc::g_DisabledOutputs.bMidi) {
-			Midi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(ptLtcTimeCode));
+			Midi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(pLtcTimeCode));
 		}
 
-#if defined (H3)
-		H3_TIMER->TMR1_INTV = TimeCodeConst::TMR_INTV[ptLtcTimeCode->nType] / 4;
-		H3_TIMER->TMR1_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
-#elif defined (GD32)
-		TIMER_CAR(TIMER10) = TimeCodeConst::TMR_INTV[ptLtcTimeCode->nType] / 4;
-		TIMER_CNT(TIMER10) = 0;
-		TIMER_CTL0(TIMER10) |= TIMER_CTL0_CEN;
-#endif
-
-		m_nMidiQuarterFramePiece = 0;
-		m_nRtpMidiQuarterFramePiece = 0;
-
 		if (!ltc::g_DisabledOutputs.bOled) {
-			Display::Get()->TextLine(2, ltc::get_type(static_cast<ltc::Type>(ptLtcTimeCode->nType)), ltc::timecode::TYPE_MAX_LENGTH);
+			Display::Get()->TextLine(2, ltc::get_type(static_cast<ltc::Type>(pLtcTimeCode->nType)), ltc::timecode::TYPE_MAX_LENGTH);
 		}
 
 #if !defined(CONFIG_LTC_DISABLE_RGB_PANEL)
 		if (!ltc::g_DisabledOutputs.bRgbPanel) {
-			LtcDisplayRgb::Get()->ShowFPS(static_cast<ltc::Type>(ptLtcTimeCode->nType));
+			LtcDisplayRgb::Get()->ShowFPS(static_cast<ltc::Type>(pLtcTimeCode->nType));
 		}
 #endif
 
-		m_aTimeCode[ltc::timecode::index::COLON_3] = (ptLtcTimeCode->nType != static_cast<uint8_t>(ltc::Type::DF) ? ':' : ';');
+		m_aTimeCode[ltc::timecode::index::COLON_3] = (pLtcTimeCode->nType != static_cast<uint8_t>(ltc::Type::DF) ? ':' : ';');
 	}
+
+	if (m_bMidiQuarterFramePieceRunning) {
+#if defined (H3)
+		H3_TIMER->TMR1_CTRL &= ~TIMER_CTRL_EN_START;
+		H3_TIMER->TMR1_INTV = TimeCodeConst::TMR_INTV[pLtcTimeCode->nType] / 4;
+#elif defined (GD32)
+		TIMER_CTL0(TIMER10) &= ~TIMER_CTL0_CEN;
+		TIMER_CAR(TIMER10) = TimeCodeConst::TMR_INTV[pLtcTimeCode->nType] / 4;
+#endif
+
+		__DMB();
+		if (!((sv_nMidiQuarterFramePiece == 0) || (sv_nMidiQuarterFramePiece == 4))) {
+			sv_nMidiQuarterFramePiece = 0;
+		}
+
+		const auto data = create_quarter_frame(reinterpret_cast<const struct midi::Timecode *>(pLtcTimeCode));
+
+		if (!ltc::g_DisabledOutputs.bRtpMidi) {
+			RtpMidi::Get()->SendQf(data);
+		}
+
+		if (!ltc::g_DisabledOutputs.bMidi) {
+			Midi::Get()->SendQf(data);
+		}
+
+#if defined (H3)
+		H3_TIMER->TMR1_CUR = 0;
+		H3_TIMER->TMR1_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
+#elif defined (GD32)
+		TIMER_CNT(TIMER10) = 0;
+		TIMER_CTL0(TIMER10) |= TIMER_CTL0_CEN;
+#endif
+		sv_isMidiQuarterFrameMessage = false;
+		__DMB();
+	}
+
+	m_bMidiQuarterFramePieceRunning = true;
 
 	if (!ltc::g_DisabledOutputs.bNtp) {
-		NtpServer::Get()->SetTimeCode(ptLtcTimeCode);
+		NtpServer::Get()->SetTimeCode(pLtcTimeCode);
 	}
 
-	ltc::itoa_base10(ptLtcTimeCode, m_aTimeCode);
+	ltc::itoa_base10(pLtcTimeCode, m_aTimeCode);
 
 	if (!ltc::g_DisabledOutputs.bOled) {
 		Display::Get()->TextLine(1, m_aTimeCode, ltc::timecode::CODE_MAX_LENGTH);
@@ -188,22 +291,6 @@ void LtcOutputs::Update(const struct ltc::TimeCode *ptLtcTimeCode) {
 		LtcDisplayRgb::Get()->Show(m_aTimeCode);
 	}
 #endif
-}
-
-void LtcOutputs::UpdateMidiQuarterFrameMessage(const struct ltc::TimeCode *pltcTimeCode) {
-	__DMB();
-
-	if (__builtin_expect((sv_isMidiQuarterFrameMessage), 0)) {
-		sv_isMidiQuarterFrameMessage = false;
-
-		if (!ltc::g_DisabledOutputs.bRtpMidi) {
-			RtpMidi::Get()->SendQf(reinterpret_cast<const struct midi::Timecode *>(pltcTimeCode), m_nRtpMidiQuarterFramePiece);
-		}
-
-		if (!ltc::g_DisabledOutputs.bMidi) {
-			Midi::Get()->SendQf(reinterpret_cast<const struct midi::Timecode *>(pltcTimeCode), m_nMidiQuarterFramePiece);
-		}
-	}
 }
 
 void LtcOutputs::ShowSysTime() {

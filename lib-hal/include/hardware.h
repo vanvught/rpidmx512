@@ -49,7 +49,7 @@ enum class Mode {
 
 namespace hal {
 #if !defined (CONFIG_HAL_TIMERS_COUNT)
-# define CONFIG_HAL_TIMERS_COUNT 8
+# define CONFIG_HAL_TIMERS_COUNT 12
 #endif
 
 static constexpr uint32_t SOFTWARE_TIMERS_MAX = CONFIG_HAL_TIMERS_COUNT;

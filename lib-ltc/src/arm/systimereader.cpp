@@ -35,6 +35,7 @@
 
 #include <cstdint>
 #include <cstring>
+#include <cstdio>
 #include <cassert>
 
 #include "arm/systimereader.h"
@@ -79,7 +80,7 @@ SystimeReader::SystimeReader(uint8_t nFps, int32_t nUtcOffset) : m_nFps(nFps), m
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 
-	m_MidiTimeCode.nType = static_cast<uint8_t>(ltc::g_Type);
+	g_ltc_LtcTimeCode.nType = static_cast<uint8_t>(ltc::g_Type);
 
 	DEBUG_EXIT
 }
@@ -90,11 +91,11 @@ void SystimeReader::Start(bool bAutoStart) {
 	const auto nTimerInterval = TimeCodeConst::TMR_INTV[static_cast<uint8_t>(ltc::g_Type)];
 
 #if defined (H3)
-	// System Time -> Frames
 	irq_timer_set(IRQ_TIMER_0, static_cast<thunk_irq_timer_t>(irq_timer0_handler));
 
+	H3_TIMER->TMR0_CUR = 0;
 	H3_TIMER->TMR0_INTV = nTimerInterval;
-	H3_TIMER->TMR0_CTRL &= ~(TIMER_CTRL_SINGLE_MODE);
+	H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
 
 	__enable_irq();
 	__DMB();
@@ -116,6 +117,44 @@ void SystimeReader::Start(bool bAutoStart) {
 	}
 
 	DEBUG_EXIT
+}
+
+void SystimeReader::SetFps(uint8_t nFps) {
+	if (nFps != m_nFps) {
+		m_nFps = nFps;
+
+		if (g_ltc_LtcTimeCode.nFrames >= m_nFps) {
+			g_ltc_LtcTimeCode.nFrames = static_cast<uint8_t>(m_nFps - 1);
+		}
+
+		const auto nType = static_cast<uint8_t>(ltc::g_Type);
+
+		g_ltc_LtcTimeCode.nType = nType;
+		const auto nTimerInterval = TimeCodeConst::TMR_INTV[nType];
+		//
+#if defined (H3)
+		H3_TIMER->TMR0_CUR = 0;
+		H3_TIMER->TMR0_INTV = nTimerInterval;
+		H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
+#elif defined (GD32)
+		TIMER_CAR(TIMER11) = nTimerInterval;
+		TIMER_CNT(TIMER11) = 0;
+#endif
+
+		if (!ltc::g_DisabledOutputs.bLtc) {
+			LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct ltc::TimeCode *>(&g_ltc_LtcTimeCode), false);
+		}
+
+		if (!ltc::g_DisabledOutputs.bArtNet) {
+			ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct artnet::TimeCode *>(&g_ltc_LtcTimeCode));
+		}
+
+		if (!ltc::g_DisabledOutputs.bEtc) {
+			LtcEtc::Get()->Send(reinterpret_cast<const struct midi::Timecode *>(&g_ltc_LtcTimeCode));
+		}
+
+		LtcOutputs::Get()->Update(reinterpret_cast<const struct ltc::TimeCode *>(&g_ltc_LtcTimeCode));
+	}
 }
 
 void SystimeReader::ActionStart() {
@@ -151,42 +190,7 @@ void SystimeReader::ActionSetRate(const char *pTimeCodeRate) {
 	uint8_t nFps;
 
 	if (ltc::parse_timecode_rate(pTimeCodeRate, nFps)) {
-		if (nFps != m_nFps) {
-			m_nFps = nFps;
-			//
-			if (m_MidiTimeCode.nFrames >= m_nFps) {
-				m_MidiTimeCode.nFrames = static_cast<uint8_t>(m_nFps - 1);
-			}
-
-			const auto nType = static_cast<uint8_t>(ltc::g_Type);
-
-			m_MidiTimeCode.nType = nType;
-			const auto nTimerInterval = TimeCodeConst::TMR_INTV[nType];
-			//
-#if defined (H3)
-			H3_TIMER->TMR0_INTV = nTimerInterval;
-			H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
-#elif defined (GD32)
-			TIMER_CAR(TIMER11) = nTimerInterval;
-			TIMER_CNT(TIMER11) = 0;
-#endif
-
-			if (!ltc::g_DisabledOutputs.bLtc) {
-				LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct ltc::TimeCode*>(&m_MidiTimeCode), false);
-			}
-
-			if (!ltc::g_DisabledOutputs.bArtNet) {
-				ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct artnet::TimeCode*>(&m_MidiTimeCode));
-			}
-
-			if (!ltc::g_DisabledOutputs.bEtc) {
-				LtcEtc::Get()->Send(&m_MidiTimeCode);
-			}
-
-			LtcOutputs::Get()->Update(reinterpret_cast<const struct ltc::TimeCode*>(&m_MidiTimeCode));
-
-			DEBUG_PRINTF("nFps=%d", nFps);
-		}
+		SetFps(nFps);
 	}
 
 	DEBUG_EXIT
@@ -245,54 +249,58 @@ void SystimeReader::Input(const uint8_t *pBuffer, uint32_t nSize, [[maybe_unused
 	HandleRequest();
 }
 
+#if !defined(__clang__)
+# pragma GCC push_options
+# pragma GCC optimize ("O3")
+# pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#endif
+
 void SystimeReader::Run() {
-	if (m_bIsStarted) {
-		LtcOutputs::Get()->UpdateMidiQuarterFrameMessage(reinterpret_cast<const struct ltc::TimeCode*>(&m_MidiTimeCode));
+	struct timeval tv;
+	gettimeofday(&tv, 0);
+	auto nTime = tv.tv_sec + m_nUtcOffset;
 
-		struct timeval tv;
-		gettimeofday(&tv, 0);
-		auto nTime = tv.tv_sec + m_nUtcOffset;
+	g_ltc_LtcTimeCode.nFrames = (tv.tv_usec * TimeCodeConst::FPS[g_ltc_LtcTimeCode.nType]) / 1000000U;
 
-		if (__builtin_expect((m_nTimePrevious != nTime), 0)) {
-			m_nTimePrevious = nTime;
+	if (__builtin_expect((m_nTimePrevious != nTime), 0)) {
+		m_nTimePrevious = nTime;
 
-			m_MidiTimeCode.nFrames = 0;
-			m_MidiTimeCode.nSeconds = static_cast<uint8_t>(nTime % 60U);
-			nTime /= 60U;
-			m_MidiTimeCode.nMinutes = static_cast<uint8_t>(nTime % 60U);
-			nTime /= 60U;
-			m_MidiTimeCode.nHours = static_cast<uint8_t>(nTime % 24U);
+		g_ltc_LtcTimeCode.nSeconds = static_cast<uint8_t>(nTime % 60U);
+		nTime /= 60U;
+		g_ltc_LtcTimeCode.nMinutes = static_cast<uint8_t>(nTime % 60U);
+		nTime /= 60U;
+		g_ltc_LtcTimeCode.nHours = static_cast<uint8_t>(nTime % 24U);
 
+		if (tv.tv_usec == 0) {
 #if defined (H3)
+			H3_TIMER->TMR0_CUR = 0;
 			H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
 #elif defined (GD32)
 			TIMER_CNT(TIMER11) = 0;
+			TIMER_CTL0(TIMER11) |= TIMER_CTL0_CEN;
 #endif
 			gv_ltc_bTimeCodeAvailable = true;
 		}
+	}
 
+	if (m_bIsStarted) {
 		__DMB();
 		if (__builtin_expect((gv_ltc_bTimeCodeAvailable), 0)) {
-			gv_ltc_bTimeCodeAvailable = false;
-
-			if (__builtin_expect((m_nFps != m_MidiTimeCode.nFrames), 0)) {
-
-				if (!ltc::g_DisabledOutputs.bLtc) {
-					LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct ltc::TimeCode *>(&m_MidiTimeCode), false);
-				}
-
-				if (!ltc::g_DisabledOutputs.bArtNet) {
-					ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct artnet::TimeCode *>(&m_MidiTimeCode));
-				}
-
-				if (!ltc::g_DisabledOutputs.bEtc) {
-					LtcEtc::Get()->Send(&m_MidiTimeCode);
-				}
-
-				LtcOutputs::Get()->Update(reinterpret_cast<const struct ltc::TimeCode *>(&m_MidiTimeCode));
-
-				m_MidiTimeCode.nFrames++;
+			if (!ltc::g_DisabledOutputs.bLtc) {
+				LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct ltc::TimeCode *>(&g_ltc_LtcTimeCode), false);
 			}
+
+			if (!ltc::g_DisabledOutputs.bArtNet) {
+				ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct artnet::TimeCode *>(&g_ltc_LtcTimeCode));
+			}
+
+			if (!ltc::g_DisabledOutputs.bEtc) {
+				LtcEtc::Get()->Send(reinterpret_cast<const struct midi::Timecode *>(&g_ltc_LtcTimeCode));
+			}
+
+			LtcOutputs::Get()->Update(reinterpret_cast<const struct ltc::TimeCode *>(&g_ltc_LtcTimeCode));
+
+			gv_ltc_bTimeCodeAvailable = false;
 		}
 	}
 }

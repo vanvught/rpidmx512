@@ -190,10 +190,18 @@ void RtpMidiReader::Update() {
 		LtcEtc::Get()->Send(reinterpret_cast<const midi::Timecode *>(&m_LtcTimeCode));
 	}
 
+	memcpy(&g_ltc_LtcTimeCode, &m_LtcTimeCode, sizeof(struct midi::Timecode));
+
 	LtcOutputs::Get()->Update(reinterpret_cast<const struct ltc::TimeCode*>(&m_LtcTimeCode));
 
 	gv_ltc_nUpdates = gv_ltc_nUpdates + 1;
 }
+
+#if !defined(__clang__)
+# pragma GCC push_options
+# pragma GCC optimize ("O3")
+# pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#endif
 
 void RtpMidiReader::Run() {
 	__DMB();
@@ -262,8 +270,6 @@ void RtpMidiReader::Run() {
 #endif
  		}
 	}
-
-	LtcOutputs::Get()->UpdateMidiQuarterFrameMessage(reinterpret_cast<const struct ltc::TimeCode*>(&m_LtcTimeCode));
 
 	__DMB();
 	if (gv_ltc_nUpdatesPerSecond != 0) {

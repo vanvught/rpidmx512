@@ -34,7 +34,6 @@ public:
 
 	void Init();
 	void Update(const struct ltc::TimeCode *ptLtcTimeCode);
-	void UpdateMidiQuarterFrameMessage(const struct ltc::TimeCode *ptLtcTimeCode);
 
 	void ShowSysTime();
 	void ShowBPM(uint32_t nBPM);
@@ -45,18 +44,19 @@ public:
 
 	void Print();
 
-	static LtcOutputs* Get() {
+	static LtcOutputs *Get() {
 		return s_pThis;
 	}
 
 private:
 	bool m_bShowSysTime;
+	bool m_bMidiQuarterFramePieceRunning { false };
+
 	ltc::Type m_TypePrevious { ltc::Type::INVALID };
-	uint32_t m_nMidiQuarterFramePiece { 0 };
-	uint32_t m_nRtpMidiQuarterFramePiece { 0 };
+	int32_t m_nSecondsPrevious { 60 };
+
 	char m_aTimeCode[ltc::timecode::CODE_MAX_LENGTH];
 	char m_aSystemTime[ltc::timecode::SYSTIME_MAX_LENGTH];
-	int32_t m_nSecondsPrevious { 60 };
 	char m_cBPM[9];
 
 	static inline LtcOutputs *s_pThis;

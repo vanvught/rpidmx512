@@ -42,7 +42,6 @@ private:
 	void Update();
 
 private:
-	midi::Timecode m_MidiTimeCode;
 	midi::TimecodeType m_TimeCodeType { midi::TimecodeType::UNKNOWN };
 	uint8_t m_nPartPrevious { 0 };
 	bool m_bDirection { true };

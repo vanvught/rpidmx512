@@ -50,8 +50,6 @@ public:
 	void Stop();
 
 	void Run() {
-		LtcOutputs::Get()->UpdateMidiQuarterFrameMessage(reinterpret_cast<const struct ltc::TimeCode*>(&m_MidiTimeCode));
-
 		__DMB();
 		if (gv_ltc_nUpdatesPerSecond != 0) {
 			Hardware::Get()->SetMode(hardware::ledblink::Mode::DATA);
@@ -70,8 +68,6 @@ private:
 	void Handler(const struct artnet::TimeCode *);
 
 private:
-	midi::Timecode m_MidiTimeCode;
-
 	static inline ArtNetReader *s_pThis;
 };
 

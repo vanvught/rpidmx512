@@ -86,18 +86,19 @@ void ArtNetReader::Stop() {
 	DEBUG_EXIT
 }
 
-void ArtNetReader::Handler(const struct artnet::TimeCode *ArtNetTimeCode) {
-	gv_ltc_nUpdates = gv_ltc_nUpdates + 1;
+void ArtNetReader::Handler(const struct artnet::TimeCode *pArtNetTimeCode) {
 
 	if (!ltc::g_DisabledOutputs.bLtc) {
-		LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct ltc::TimeCode *>(ArtNetTimeCode));
+		LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct ltc::TimeCode *>(pArtNetTimeCode));
 	}
 
 	if (!ltc::g_DisabledOutputs.bEtc) {
-		LtcEtc::Get()->Send(reinterpret_cast<const struct midi::Timecode *>(ArtNetTimeCode));
+		LtcEtc::Get()->Send(reinterpret_cast<const struct midi::Timecode *>(pArtNetTimeCode));
 	}
 
-	memcpy(&m_MidiTimeCode, ArtNetTimeCode, sizeof(struct midi::Timecode));
+	memcpy(&g_ltc_LtcTimeCode, pArtNetTimeCode, sizeof(struct midi::Timecode));
 
-	LtcOutputs::Get()->Update(reinterpret_cast<const struct ltc::TimeCode *>(ArtNetTimeCode));
+	LtcOutputs::Get()->Update(reinterpret_cast<const struct ltc::TimeCode *>(pArtNetTimeCode));
+
+	gv_ltc_nUpdates = gv_ltc_nUpdates + 1;
 }

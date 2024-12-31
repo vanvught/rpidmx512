@@ -54,7 +54,7 @@ static int32_t m_nNextId;
 
 TimerHandle_t SoftwareTimerAdd(const uint32_t nIntervalMillis, const TimerCallbackFunction_t pCallbackFunction) {
 	if (m_nTimersCount >= hal::SOFTWARE_TIMERS_MAX) {
-#ifdef NDEBUG
+#ifndef NDEBUG
 		console_error("SoftwareTimerAdd: Max timer limit reached\n");
 #endif
 		return -1;

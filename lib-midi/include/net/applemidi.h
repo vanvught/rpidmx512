@@ -151,7 +151,7 @@ public:
 	}
 
 	inline uint32_t GetSSRC() {
-		return 0;
+		return m_nSSRC;
 	}
 
 	void Print() {
@@ -216,6 +216,7 @@ private:
 	uint32_t m_nStartTime { 0 };
 	int32_t m_nHandleControl { -1 };
 	int32_t m_nHandleMidi { -1 };
+	uint32_t m_nSSRC { 0 };
 	uint16_t m_nExchangePacketReplySize { applemidi::EXCHANGE_PACKET_MIN_LENGTH };
 	uint16_t m_nPort { UPD_PORT_CONTROL_DEFAULT };
 	applemidi::ExchangePacket m_ExchangePacketReply;
