@@ -130,11 +130,12 @@ static void print_ntp_time([[maybe_unused]] const char *pText, [[maybe_unused]] 
 #endif
 }
 
+static struct timeval now;
+
 /*
  * Seconds and Fractions since 01.01.1900
  */
 static void get_time_ntp_format(uint32_t &nSeconds, uint32_t &nFraction) {
-	struct timeval now;
 	gettimeofday(&now, nullptr);
 	nSeconds = static_cast<uint32_t>(now.tv_sec) + ntp::JAN_1970;
 	nFraction = NTPFRAC(now.tv_usec);
@@ -181,8 +182,16 @@ static void set_time_of_day() {
 
 	struct timeval tv;
 
-	tv.tv_sec =	static_cast<time_t>(s_ntpClient.T4.nSeconds - ntp::JAN_1970) + nOffsetSecondsAverage;
-	tv.tv_usec = (static_cast<int32_t>(USEC(s_ntpClient.T4.nFraction)) + static_cast<int32_t>(nOffsetMicrosAverage));
+	tv.tv_sec =	now.tv_sec + nOffsetSecondsAverage;
+	tv.tv_usec = now.tv_usec + nOffsetMicrosAverage;
+
+	if (tv.tv_usec >= 1000000) {
+	    tv.tv_sec += tv.tv_usec / 1000000;  // Add extra seconds
+	    tv.tv_usec %= 1000000;              // Keep only the remainder microseconds
+	} else if (tv.tv_usec < 0) {
+	    tv.tv_sec -= 1 + (-tv.tv_usec / 1000000); // Subtract extra seconds
+	    tv.tv_usec = 1000000 - (-tv.tv_usec % 1000000); // Adjust microseconds
+	}
 
 	settimeofday(&tv, nullptr);
 
