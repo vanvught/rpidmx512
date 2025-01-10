@@ -2,7 +2,7 @@
  * @file flashcodeinstall.cpp
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,7 @@
 #include <cassert>
 
 #include "flashcodeinstall.h"
+#include "firmware.h"
 
 #include "display.h"
 #include "hardware.h"
@@ -42,7 +43,7 @@ bool FlashCodeInstall::WriteFirmware(const uint8_t *pBuffer, uint32_t nSize) {
 	DEBUG_PRINTF("(%p + %p)=%p, m_nFlashSize=%u", OFFSET_UIMAGE, nSize, (OFFSET_UIMAGE + nSize), static_cast<unsigned int>(m_nFlashSize));
 
 	if ((OFFSET_UIMAGE + nSize) > m_nFlashSize) {
-		printf("error: flash size %u > %u\n", static_cast<unsigned int>(OFFSET_UIMAGE + nSize), static_cast<unsigned int>(m_nFlashSize));
+		printf("Error: (OFFSET_UIMAGE + nSize) %u > m_nFlashSize %u\n", static_cast<unsigned int>(OFFSET_UIMAGE + nSize), static_cast<unsigned int>(m_nFlashSize));
 		DEBUG_EXIT
 		return false;
 	}
@@ -67,7 +68,7 @@ bool FlashCodeInstall::WriteFirmware(const uint8_t *pBuffer, uint32_t nSize) {
 	while(!FlashCode::Erase(OFFSET_UIMAGE, nEraseSize, nResult));
 
 	if (flashcode::result::ERROR == nResult) {
-		puts("error: flash erase");
+		puts("Error: flash erase");
 		return false;
 	}
 
@@ -76,7 +77,7 @@ bool FlashCodeInstall::WriteFirmware(const uint8_t *pBuffer, uint32_t nSize) {
 	while(!FlashCode::Write(OFFSET_UIMAGE, nSize, pBuffer, nResult));
 
 	if (flashcode::result::ERROR == nResult) {
-		puts("error: flash write");
+		puts("Error: flash write");
 		return false;
 	}
 
