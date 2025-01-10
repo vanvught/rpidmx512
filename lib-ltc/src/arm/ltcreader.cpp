@@ -2,7 +2,7 @@
  * @file ltcreader.cpp
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -295,11 +295,11 @@ void LtcReader::Run() {
 		g_ltc_LtcTimeCode.nHours = s_midiTimeCode.nHours;
 		g_ltc_LtcTimeCode.nType = s_midiTimeCode.nType;
 
-		if (!ltc::g_DisabledOutputs.bArtNet) {
+		if (ltc::Destination::IsEnabled(ltc::Destination::Output::ARTNET)) {
 			ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct artnet::TimeCode*>(&g_ltc_LtcTimeCode));
 		}
 
-		if (!ltc::g_DisabledOutputs.bEtc) {
+		if (ltc::Destination::IsEnabled(ltc::Destination::Output::ETC)) {
 			LtcEtc::Get()->Send(reinterpret_cast<const struct midi::Timecode *>(const_cast<struct midi::Timecode *>(&s_midiTimeCode)));
 		}
 

@@ -2,7 +2,7 @@
  * @file ltc.cpp
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,7 @@
 #include "ltc.h"
 
 namespace ltc {
-struct ltc::DisabledOutputs g_DisabledOutputs;
+uint32_t g_nDisabledOutputs;
 ltc::Type g_Type;
 
 static constexpr char aTypes[5][ltc::timecode::TYPE_MAX_LENGTH + 1] =
@@ -231,7 +231,7 @@ bool parse_timecode(const char *pTimeCode, uint8_t nFps, struct ltc::TimeCode *p
 	return true;
 }
 
-bool parse_timecode_rate(const char *pTimeCodeRate, uint8_t &nFPS) {
+bool parse_timecode_rate(const char *pTimeCodeRate, uint8_t& nFPS) {
 	assert(pTimeCodeRate != nullptr);
 
 	const auto nTenths = DIGIT(pTimeCodeRate[0]);
@@ -250,23 +250,25 @@ bool parse_timecode_rate(const char *pTimeCodeRate, uint8_t &nFPS) {
 
 	switch (nValue) {
 	case 24:
+		nFPS = 24;
 		ltc::g_Type = ltc::Type::FILM;
 		break;
 	case 25:
+		nFPS = 25;
 		ltc::g_Type = ltc::Type::EBU;
 		break;
 	case 29:
+		nFPS = 30;
 		ltc::g_Type = ltc::Type::DF;
 		break;
 	case 30:
+		nFPS = 30;
 		ltc::g_Type = ltc::Type::SMPTE;
 		break;
 	default:
 		return false;
 		break;
 	}
-
-	nFPS = nValue;
 
 	return true;
 }

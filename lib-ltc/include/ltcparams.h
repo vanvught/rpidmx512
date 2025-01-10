@@ -1,7 +1,7 @@
 /**
  * @file ltcparams.h
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -234,18 +234,7 @@ public:
     static void staticCallbackFunction(void *p, const char *s);
 
 private:
-    struct LtcParamsMaskDisabledOutputs {
-    	static constexpr auto DISPLAY = (1U << 0);
-    	static constexpr auto MAX7219 = (1U << 1);
-    	static constexpr auto MIDI = (1U << 2);
-    	static constexpr auto ARTNET = (1U << 3);
-    	static constexpr auto TCNET = (1U << 4);
-    	static constexpr auto LTC = (1U << 5);
-    	static constexpr auto ETC = (1U << 6);
-    	static constexpr auto RTPMIDI = (1U << 7);
-    };
-
-	void HandleDisabledOutput(const char *pLine, const char *pKeyword, uint8_t nMaskDisabledOutputs);
+	void HandleDisabledOutput(const char *pLine, const char *pKeyword, const ltc::Destination::Output);
 	void SetBool(const uint8_t nValue, uint8_t& nProperty, const uint32_t nMask);
 	void SetValue(const bool bEvaluate, const uint8_t nValue, uint8_t& nProperty, const uint32_t nMask);
 
@@ -254,8 +243,8 @@ private:
 	bool isMaskSet(uint32_t nMask) const {
 		return (m_Params.nSetList & nMask) == nMask;
 	}
-	bool isDisabledOutputMaskSet(uint8_t nMask) const {
-		return (m_Params.nDisabledOutputs & nMask) == nMask;
+	bool isDisabledOutputMaskSet(const ltc::Destination::Output nOutput) const {
+		 return (m_Params.nDisabledOutputs & static_cast<uint32_t>(nOutput)) == static_cast<uint32_t>(nOutput);
 	}
 
 private:

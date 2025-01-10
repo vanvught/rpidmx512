@@ -2,7 +2,7 @@
  * @file midireader.cpp
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -71,7 +71,6 @@ void MidiReader::Start() {
 	Midi::Get()->SetIrqTimer1(irq_timer1_handler);
 #elif defined (GD32)
 	platform::ltc::timer11_config();
-	TIMER_CNT(TIMER11) = 0;
 #endif
 	Midi::Get()->Init(midi::Direction::INPUT);
 
@@ -141,8 +140,7 @@ void MidiReader::HandleMtcQf() {
 		H3_TIMER->TMR1_INTV = TimeCodeConst::TMR_INTV[g_ltc_LtcTimeCode.nType];
 		H3_TIMER->TMR1_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
 #elif defined (GD32)
-		TIMER_CAR(TIMER11) = TimeCodeConst::TMR_INTV[g_ltc_LtcTimeCode.nType];
-		TIMER_CNT(TIMER11) = 0;
+		platform::ltc::timer11_set_type(g_ltc_LtcTimeCode.nType);
 #endif
 		gv_ltc_bTimeCodeAvailable = false;
 		gv_ltc_nTimeCodeCounter = 0;
@@ -152,15 +150,15 @@ void MidiReader::HandleMtcQf() {
 }
 
 void MidiReader::Update() {
-	if (!ltc::g_DisabledOutputs.bLtc) {
+	if (ltc::Destination::IsEnabled(ltc::Destination::Output::LTC)) {
 		LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct ltc::TimeCode *>(&g_ltc_LtcTimeCode));
 	}
 
-	if (!ltc::g_DisabledOutputs.bArtNet) {
+	if (ltc::Destination::IsEnabled(ltc::Destination::Output::ARTNET)) {
 		ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct artnet::TimeCode *>(&g_ltc_LtcTimeCode));
 	}
 
-	if (!ltc::g_DisabledOutputs.bEtc) {
+	if (ltc::Destination::IsEnabled(ltc::Destination::Output::ETC)) {
 		LtcEtc::Get()->Send(reinterpret_cast<const struct midi::Timecode *>(&g_ltc_LtcTimeCode));
 	}
 
@@ -255,8 +253,7 @@ void MidiReader::Run() {
  			H3_TIMER->TMR1_INTV = TimeCodeConst::TMR_INTV[g_ltc_LtcTimeCode.nType];
  			H3_TIMER->TMR1_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
 #elif defined (GD32)
- 			TIMER_CAR(TIMER11) = TimeCodeConst::TMR_INTV[g_ltc_LtcTimeCode.nType];
- 			TIMER_CNT(TIMER11) = 0;
+ 			platform::ltc::timer11_set_type(g_ltc_LtcTimeCode.nType);
 #endif
  		}
 	}

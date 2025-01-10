@@ -34,7 +34,7 @@ struct LtcParamsConst {
 	static inline const char GPS_START[] = "gps_start";
 	static inline const char UTC_OFFSET[]= "utc_offset";
 	// Output options
-	static inline const char DISABLE_DISPLAY[] = "disable_display";
+	static inline const char DISABLE_DISPLAY_OLED[] = "disable_display";
 	static inline const char DISABLE_MAX7219[] = "disable_max7219";
 	static inline const char DISABLE_MIDI[] = "disable_midi";
 	static inline const char DISABLE_ARTNET[] = "disable_artnet";

@@ -2,7 +2,7 @@
  * @file ltcgenerator.cpp
  *
  */
-/* Copyright (C) 2022-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2022-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 #if defined (DEBUG_ARM_LTCGENERATOR)
 # undef NDEBUG
 #endif
@@ -178,27 +179,23 @@ void LtcGenerator::Start() {
 #endif
 
 	const auto nType = static_cast<uint32_t>(ltc::g_Type);
-	const auto nTimerInterval = TimeCodeConst::TMR_INTV[nType];
 
 #if defined (H3)
 	irq_handler_init();
 	irq_timer_set(IRQ_TIMER_0, static_cast<thunk_irq_timer_t>(irq_timer0_handler));
 
-	H3_TIMER->TMR0_INTV = nTimerInterval;
+	H3_TIMER->TMR0_INTV = TimeCodeConst::TMR_INTV[nType];
 	H3_TIMER->TMR0_CTRL &= ~(TIMER_CTRL_SINGLE_MODE);
 	H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
 #elif defined (GD32)
 	platform::ltc::timer11_config();
-	TIMER_CAR(TIMER11) = nTimerInterval;
-	TIMER_CNT(TIMER11) = 0;
-	TIMER_CTL0(TIMER11) |= TIMER_CTL0_CEN;
+	platform::ltc::timer11_set_type(nType);
 #endif
 
 	m_nHandle = Network::Get()->Begin(UDP_PORT, staticCallbackFunction);
 	assert(m_nHandle != -1);
 
 	LtcOutputs::Get()->Init();
-	LtcOutputs::Get()->Update(static_cast<const struct ltc::TimeCode *>(&g_ltc_LtcTimeCode));
 
 	Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
 
@@ -362,25 +359,23 @@ void LtcGenerator::ActionSetRate(const char *pTimeCodeRate) {
 				m_pStopLtcTimeCode->nFrames = static_cast<uint8_t>(m_nFps - 1);
 			}
 
-			const auto nTimerInterval = TimeCodeConst::TMR_INTV[nType];
 #if defined (H3)
-			H3_TIMER->TMR0_INTV = nTimerInterval;
+			H3_TIMER->TMR0_INTV = TimeCodeConst::TMR_INTV[nType];
 			H3_TIMER->TMR0_CTRL &= ~(TIMER_CTRL_SINGLE_MODE);
 			H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
 #elif defined (GD32)
-			TIMER_CAR(TIMER11) = nTimerInterval;
-			TIMER_CNT(TIMER11) = 0;
+			platform::ltc::timer11_set_type(nType);
 #endif
-			//
-			if (!ltc::g_DisabledOutputs.bLtc) {
+
+			if (ltc::Destination::IsEnabled(ltc::Destination::Output::LTC)) {
 				LtcSender::Get()->SetTimeCode(const_cast<const struct ltc::TimeCode *>(&g_ltc_LtcTimeCode), false);
 			}
 
-			if (!ltc::g_DisabledOutputs.bArtNet) {
+			if (ltc::Destination::IsEnabled(ltc::Destination::Output::ARTNET)) {
 				ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct artnet::TimeCode *>(&g_ltc_LtcTimeCode));
 			}
 
-			if (!ltc::g_DisabledOutputs.bEtc) {
+			if (ltc::Destination::IsEnabled(ltc::Destination::Output::ETC)) {
 				LtcEtc::Get()->Send(reinterpret_cast<const struct midi::Timecode *>(&g_ltc_LtcTimeCode));
 			}
 
@@ -442,7 +437,7 @@ void LtcGenerator::ActionBackward(int32_t nSeconds) {
 
 void LtcGenerator::SetPitch(const char *pTimeCodePitch, uint32_t nSize) {
 	DEBUG_ENTRY
-	debug_dump(const_cast<char*>(pTimeCodePitch), static_cast<uint16_t>(nSize));
+	debug_dump(pTimeCodePitch, nSize);
 
 	const auto f = static_cast<float>(atoi(pTimeCodePitch, nSize)) / 100;
 
@@ -455,7 +450,7 @@ void LtcGenerator::SetPitch(const char *pTimeCodePitch, uint32_t nSize) {
 
 void LtcGenerator::SetSkip(const char *pSeconds, uint32_t nSize, ltcgenerator::Direction direction) {
 	DEBUG_ENTRY
-	debug_dump(const_cast<char*>(pSeconds), static_cast<uint16_t>(nSize));
+	debug_dump(pSeconds, nSize);
 
 	const auto nSeconds = atoi(pSeconds, nSize);
 
@@ -470,7 +465,7 @@ void LtcGenerator::SetSkip(const char *pSeconds, uint32_t nSize, ltcgenerator::D
 	DEBUG_EXIT
 }
 
-void LtcGenerator::HandleRequest(char *pBuffer, uint16_t nBufferLength) {
+void LtcGenerator::HandleRequest(char *pBuffer, uint32_t nBufferLength) {
 	if (pBuffer != nullptr) {
 		assert(nBufferLength >= 8);
 		m_pUdpBuffer = pBuffer;
@@ -632,31 +627,36 @@ void LtcGenerator::Increment() {
 		return;
 	}
 
-	if (__builtin_expect((m_State == STOPPED), 0)) {
-		return;
+	// Increment frames
+	g_ltc_LtcTimeCode.nFrames++;
+
+    // Drop-frame timecode handling BEFORE rolling to the next second
+	if (ltc::g_Type == ltc::Type::DF) {
+		// Skip frames 00 and 01 except every 10th minute
+		if ((g_ltc_LtcTimeCode.nMinutes % 10 != 0) && (g_ltc_LtcTimeCode.nSeconds == 0) && (g_ltc_LtcTimeCode.nFrames < 2)) {
+			g_ltc_LtcTimeCode.nFrames = 2;
+		}
 	}
 
-	g_ltc_LtcTimeCode.nFrames++;
-	if (m_nFps == g_ltc_LtcTimeCode.nFrames) {
+	// Handle frame rollover
+	if (g_ltc_LtcTimeCode.nFrames >= m_nFps) {
 		g_ltc_LtcTimeCode.nFrames = 0;
 
-		g_ltc_LtcTimeCode.nSeconds++;
-		if (g_ltc_LtcTimeCode.nSeconds == 60) {
+		// Increment seconds
+		if (++g_ltc_LtcTimeCode.nSeconds >= 60) {
 			g_ltc_LtcTimeCode.nSeconds = 0;
 
-			g_ltc_LtcTimeCode.nMinutes++;
-			if (g_ltc_LtcTimeCode.nMinutes == 60) {
+			// Increment minutes
+			if (++g_ltc_LtcTimeCode.nMinutes >= 60) {
 				g_ltc_LtcTimeCode.nMinutes = 0;
 
-				g_ltc_LtcTimeCode.nHours++;
-				if (g_ltc_LtcTimeCode.nHours == 24) {
+				// Increment hours
+				if (++g_ltc_LtcTimeCode.nHours >= 24) {
 					g_ltc_LtcTimeCode.nHours = 0;
 				}
 			}
 		}
 	}
-
-	//FIXME Add support for DF
 }
 
 void LtcGenerator::Decrement() {
@@ -667,16 +667,21 @@ void LtcGenerator::Decrement() {
 		return;
 	}
 
-	if (__builtin_expect((m_State == STOPPED), 0)) {
-		return;
-	}
-
+	// Decrement frames
 	if (g_ltc_LtcTimeCode.nFrames > 0) {
 		g_ltc_LtcTimeCode.nFrames--;
 	} else {
 		g_ltc_LtcTimeCode.nFrames = static_cast<uint8_t>(m_nFps - 1);
 	}
 
+	// Handle drop-frame logic after frames decrement
+	if (ltc::g_Type == ltc::Type::DF) {
+		if ((g_ltc_LtcTimeCode.nMinutes % 10 != 0) &&  (g_ltc_LtcTimeCode.nSeconds == 0) &&  (g_ltc_LtcTimeCode.nFrames == m_nFps - 1)) {
+			g_ltc_LtcTimeCode.nFrames = 1; // Skip to frame 01
+		}
+	}
+
+	// Handle seconds rollover
 	if (g_ltc_LtcTimeCode.nFrames == m_nFps - 1) {
 		if (g_ltc_LtcTimeCode.nSeconds > 0) {
 			g_ltc_LtcTimeCode.nSeconds--;
@@ -684,24 +689,20 @@ void LtcGenerator::Decrement() {
 			g_ltc_LtcTimeCode.nSeconds = 59;
 		}
 
-		if (g_ltc_LtcTimeCode.nSeconds == 59) {
-			if (g_ltc_LtcTimeCode.nMinutes > 0) {
-				g_ltc_LtcTimeCode.nMinutes--;
-			} else {
-				g_ltc_LtcTimeCode.nMinutes = 59;
-			}
+		// Handle minutes rollover
+		if (g_ltc_LtcTimeCode.nMinutes > 0) {
+			g_ltc_LtcTimeCode.nMinutes--;
+		} else {
+			g_ltc_LtcTimeCode.nMinutes = 59;
+		}
 
-			if (g_ltc_LtcTimeCode.nMinutes == 59) {
-				if (g_ltc_LtcTimeCode.nHours > 0) {
-					g_ltc_LtcTimeCode.nHours--;
-				} else {
-					g_ltc_LtcTimeCode.nHours = 23;
-				}
-			}
+		// Handle hours rollover
+		if (g_ltc_LtcTimeCode.nHours > 0) {
+			g_ltc_LtcTimeCode.nHours--;
+		} else {
+			g_ltc_LtcTimeCode.nHours = 23;
 		}
 	}
-
-	//FIXME Add support for DF
 }
 
 bool LtcGenerator::PitchControl() {
@@ -715,32 +716,30 @@ bool LtcGenerator::PitchControl() {
 }
 
 void LtcGenerator::SetTimeCode(int32_t nSeconds) {
-	g_ltc_LtcTimeCode.nHours = static_cast<uint8_t>(nSeconds / 3600);
+	g_ltc_LtcTimeCode.nHours = static_cast<uint8_t>(nSeconds / 3600U);
 	nSeconds -= g_ltc_LtcTimeCode.nHours * 3600;
-	g_ltc_LtcTimeCode.nMinutes = static_cast<uint8_t>(nSeconds / 60);
+	g_ltc_LtcTimeCode.nMinutes = static_cast<uint8_t>(nSeconds / 60U);
 	nSeconds -= g_ltc_LtcTimeCode.nMinutes * 60;
 	g_ltc_LtcTimeCode.nSeconds = static_cast<uint8_t>(nSeconds);
 }
 
 void LtcGenerator::Update() {
-	__DMB();
+	if (__builtin_expect((m_State == STOPPED), 0)) {
+		__DMB();  // Data memory barrier to ensure memory consistency
+		if (gv_ltc_bTimeCodeAvailable) {
+			gv_ltc_bTimeCodeAvailable = false;
+
+			if (ltc::Destination::IsEnabled(ltc::Destination::Output::LTC)) {
+				LtcSender::Get()->SetTimeCode(static_cast<const struct ltc::TimeCode *>(&g_ltc_LtcTimeCode), false);
+			}
+		}
+
+		return;
+	}
+
+	__DMB();  // Data memory barrier to ensure memory consistency
 	if (gv_ltc_bTimeCodeAvailable) {
 		gv_ltc_bTimeCodeAvailable = false;
-
-		if (!ltc::g_DisabledOutputs.bLtc) {
-			LtcSender::Get()->SetTimeCode(static_cast<const struct ltc::TimeCode *>(&g_ltc_LtcTimeCode), false);
-		}
-
-		if (!ltc::g_DisabledOutputs.bArtNet) {
-			ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct artnet::TimeCode *>(&g_ltc_LtcTimeCode));
-		}
-
-		if (!ltc::g_DisabledOutputs.bEtc) {
-			LtcEtc::Get()->Send(reinterpret_cast<const struct midi::Timecode *>(&g_ltc_LtcTimeCode));
-		}
-
-		LtcOutputs::Get()->Update(static_cast<const struct ltc::TimeCode *>(&g_ltc_LtcTimeCode));
-
 		if (__builtin_expect((m_tDirection == ltcgenerator::Direction::DIRECTION_FORWARD), 1)) {
 			if (__builtin_expect((m_tPitch == ltcgenerator::Pitch::PITCH_NORMAL), 1)) {
 				Increment();
@@ -772,5 +771,19 @@ void LtcGenerator::Update() {
 				}
 			}
 		}
+
+		if (ltc::Destination::IsEnabled(ltc::Destination::Output::LTC)) {
+			LtcSender::Get()->SetTimeCode(static_cast<const struct ltc::TimeCode *>(&g_ltc_LtcTimeCode), false);
+		}
+
+		if (ltc::Destination::IsEnabled(ltc::Destination::Output::ARTNET)) {
+			ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct artnet::TimeCode *>(&g_ltc_LtcTimeCode));
+		}
+
+		if (ltc::Destination::IsEnabled(ltc::Destination::Output::ETC)) {
+			LtcEtc::Get()->Send(reinterpret_cast<const struct midi::Timecode *>(&g_ltc_LtcTimeCode));
+		}
+
+		LtcOutputs::Get()->Update(static_cast<const struct ltc::TimeCode *>(&g_ltc_LtcTimeCode));
 	}
 }

@@ -49,16 +49,7 @@ public:
 	void Start();
 	void Stop();
 
-	void Run() {
-		__DMB();
-		if (gv_ltc_nUpdatesPerSecond != 0) {
-			Hardware::Get()->SetMode(hardware::ledblink::Mode::DATA);
-		} else {
-			LtcOutputs::Get()->ShowSysTime();
-			Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
-			m_nTimeCodePrevious = static_cast<uint32_t>(~0);
-		}
-	}
+	void Run();
 
 	void Input(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort);
 
@@ -74,10 +65,27 @@ private:
 
 	void Handler(const struct tcnet::TimeCode *pTimeCode);
 
+	void Reset(const bool doReset) {
+		if (m_doResetTimeCode != doReset) {
+			m_doResetTimeCode = doReset;
+			if (m_doResetTimeCode) {
+				LtcOutputs::Get()->ResetTimeCodeTypePrevious();
+			}
+		}
+	}
+
+	void ResetTimer(const bool doReset, const struct tcnet::TimeCode *pTimeCode);
+
 private:
-	midi::Timecode m_MidiTimeCode;
-	uint32_t m_nTimeCodePrevious { 0xFF };
 	int32_t m_nHandle { -1 };
+
+	tcnet::TimeCode m_timeCode;
+
+	uint8_t m_nTypePrevious { UINT8_MAX };
+	uint8_t m_nFramePrevious { UINT8_MAX };
+
+	bool m_doResetTimeCode { true };
+	bool m_doResetTimer { true };
 
 	static inline TCNetReader *s_pThis;
 };
