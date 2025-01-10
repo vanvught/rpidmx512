@@ -76,6 +76,7 @@ int32_t tcp_begin(const uint16_t);
 int32_t tcp_end(const int32_t);
 uint32_t tcp_read(const int32_t, const uint8_t **, uint32_t &);
 void tcp_write(const int32_t, const uint8_t *, uint32_t, const uint32_t);
+void tcp_abort(const int32_t, const uint32_t);
 
 /**
  * Must be provided by the user application

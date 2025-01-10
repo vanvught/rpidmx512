@@ -38,9 +38,7 @@
 
 #include "debug.h"
 
-extern "C"  {
 void console_error(const char *);
-}
 
 extern void enet_gpio_config();
 extern enet_descriptors_struct txdesc_tab[ENET_TXBUF_NUM];

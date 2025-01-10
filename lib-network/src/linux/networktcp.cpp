@@ -3,7 +3,7 @@
  * @file networktcp.cpp
  *
  */
-/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,7 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <poll.h>
+#include <signal.h>
 #include <cassert>
 
 #include "network.h"
@@ -194,10 +195,26 @@ void Network::TcpWrite(const int32_t nHandle, const uint8_t *pBuffer, uint32_t n
 
 	DEBUG_PRINTF("Write client on fd %d [%u]", poll_set[nHandle][HandleConnectionIndex].fd, HandleConnectionIndex);
 
+    // Ignore SIGPIPE for this process
+    signal(SIGPIPE, SIG_IGN);
+
 	const int c = write(poll_set[nHandle][HandleConnectionIndex].fd, pBuffer, nLength);
 
 	if (c < 0) {
 		perror("write");
 	}
+}
+
+static void close_with_rst(int socket_fd) {
+    struct linger linger_option = {1, 0}; // Enable linger, zero timeout
+    setsockopt(socket_fd, SOL_SOCKET, SO_LINGER, &linger_option, sizeof(linger_option));
+
+    // Close the socket; this sends a TCP RST
+    close(socket_fd);
+}
+
+
+void Network::TcpAbort(const int32_t nHandle, const uint32_t HandleConnectionIndex) {
+	close_with_rst(poll_set[nHandle][HandleConnectionIndex].fd);
 }
 #endif

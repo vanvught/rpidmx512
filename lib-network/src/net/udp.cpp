@@ -161,7 +161,7 @@ static void udp_send_implementation(int nIndex, const uint8_t *pData, uint32_t n
 
 	net::memcpy(s_send_packet.udp.data, pData, nSize);
 
-	if (nRemoteIp == network::IP4_BROADCAST) {
+	if (nRemoteIp == network::IPADDR_BROADCAST) {
 		memset(s_send_packet.ether.dst, 0xFF, ETH_ADDR_LEN);
 		memset(s_send_packet.ip4.dst, 0xFF, IPv4_ADDR_LEN);
 	} else if ((nRemoteIp & net::globals::nBroadcastMask) == net::globals::nBroadcastMask) {

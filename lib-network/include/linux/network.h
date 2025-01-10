@@ -186,13 +186,10 @@ public:
 		return s_pThis;
 	}
 
-	/*
-	 * Experimental TCP
-	 */
-
 	int32_t TcpBegin(uint16_t nLocalPort);
 	uint16_t TcpRead(const int32_t nHandle, const uint8_t **ppBuffer, uint32_t &HandleConnection);
 	void TcpWrite(const int32_t nHandle, const uint8_t *pBuffer, uint32_t nLength, const uint32_t HandleConnection);
+	void TcpAbort(const int32_t nHandle, const uint32_t HandleConnection);
 	int32_t TcpEnd(const int32_t nHandle);
 
 	void Run();

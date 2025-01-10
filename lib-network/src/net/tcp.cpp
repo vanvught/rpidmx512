@@ -2,7 +2,7 @@
  * @file tcp.cpp
  *
  */
-/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -1235,5 +1235,22 @@ void tcp_write(const int32_t nHandleListen, const uint8_t *pBuffer, uint32_t nLe
 #endif
 	}
 }
+
+void tcp_abort(const int32_t nHandleListen, const uint32_t nHandleConnection) {
+	assert(nHandleListen >= 0);
+	assert(nHandleListen < TCP_MAX_PORTS_ALLOWED);
+	assert(nHandleConnection < TCP_MAX_TCBS_ALLOWED);
+
+	auto *pTCB = &s_Port[nHandleListen].TCB[nHandleConnection];
+	assert(pTCB != nullptr);
+
+	struct SendInfo info;
+	info.CTL = Control::RST;
+	info.SEQ = pTCB->SND.NXT;
+	info.ACK = pTCB->RCV.NXT;
+
+	send_package(pTCB, info);
+}
+
 }  // namespace net
 // <---

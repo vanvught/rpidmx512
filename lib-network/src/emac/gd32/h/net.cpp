@@ -2,7 +2,7 @@
  * net.cpp
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -133,7 +133,7 @@ inline static void ptpframe_transmit(const void *pBuffer, const uint32_t nLength
 	assert (nullptr != pBuffer);
 	assert(nLength <= ENET_MAX_FRAME_SIZE);
 
-	auto *pDst = reinterpret_cast<uint8_t *>(dma_current_txdesc->buffer1_addr);
+	auto *pDst = reinterpret_cast<uint8_t *>(dma_current_ptp_txdesc->buffer1_addr);
 	net::memcpy(pDst, pBuffer, nLength);
 
     dma_current_txdesc->control_buffer_size = (nLength & 0x00001FFFU);

@@ -208,6 +208,10 @@ public:
 		net::tcp_write(nHandleListen, pBuffer, nLength, HandleConnection);
 	}
 
+	void TcpAbort(const int32_t nHandleListen, const uint32_t HandleConnection) {
+		net::tcp_abort(nHandleListen, HandleConnection);
+	}
+
 	/*
 	 * IGMP
 	 */

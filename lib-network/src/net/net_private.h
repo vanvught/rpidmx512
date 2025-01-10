@@ -49,7 +49,7 @@ enum class EthSend {
 };
 } // namespace net::arp
 
-extern "C" void console_error(const char *);
+void console_error(const char *);
 
 void emac_eth_send(void *, uint32_t);
 #if defined CONFIG_NET_ENABLE_PTP

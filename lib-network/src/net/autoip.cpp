@@ -82,7 +82,7 @@ static void autoip_conflict_callback(net::acd::Callback state) {
 		break;
 	case net::acd::Callback::ACD_DECLINE:
 		/* "delete" conflicting address so a new one will be selected in autoip_start() */
-		autoip->llipaddr.addr = network::IP4_ANY;
+		autoip->llipaddr.addr = network::IPADDR_ANY;
 		autoip_stop();
 		netif_clear_flags(netif::NETIF_FLAG_AUTOIP_OK);
 		break;
@@ -160,7 +160,7 @@ void autoip_stop() {
 		autoip->state = autoip::State::AUTOIP_STATE_OFF;
 
 		ip4_addr_t any;
-		any.addr = network::IP4_ANY;
+		any.addr = network::IPADDR_ANY;
 
 		if (network::is_linklocal_ip(globals::netif_default.ip.addr)) {
 			netif_set_addr(any, any, any);

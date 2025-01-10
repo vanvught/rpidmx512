@@ -75,6 +75,9 @@ static void ptpframe_receive_normal_mode() {
 	dma_current_rxdesc->buffer1_addr = dma_current_ptp_rxdesc->buffer1_addr;
 	dma_current_rxdesc->buffer2_next_desc_addr = dma_current_ptp_rxdesc->buffer2_next_desc_addr;
 	dma_current_rxdesc->status = ENET_RDES0_DAV;
+#if defined (GD32H7XX)
+    __DMB();
+#endif
 
 	/* check Rx buffer unavailable flag status */
 	if (0 != (ENET_DMA_STAT & ENET_DMA_STAT_RBU)) {
@@ -140,6 +143,9 @@ inline static void ptpframe_transmit(const void *pBuffer, const uint32_t nLength
     dma_current_txdesc->status |= ENET_TDES0_LSG | ENET_TDES0_FSG;
     /* enable the DMA transmission */
     dma_current_txdesc->status |= ENET_TDES0_DAV;
+#if defined (GD32H7XX)
+    __DMB();
+#endif
 
     /* check Tx buffer unavailable flag status */
     const auto dma_tbu_flag = (ENET_DMA_STAT & ENET_DMA_STAT_TBU);
@@ -198,6 +204,9 @@ void emac_eth_send(void *pBuffer, uint32_t nLength) {
 	auto nStatus = dma_current_txdesc->status;
 	nStatus &= ~ENET_TDES0_TTSEN;
 	dma_current_txdesc->status = nStatus;
+#if defined (GD32H7XX)
+	__DMB();
+#endif
 
 	ptpframe_transmit(pBuffer, nLength, false);
 }
@@ -213,6 +222,9 @@ void emac_eth_send_timestamp(void *pBuffer, uint32_t nLength) {
 	auto nStatus = dma_current_txdesc->status;
 	nStatus |= ENET_TDES0_TTSEN;
 	dma_current_txdesc->status = nStatus;
+#if defined (GD32H7XX)
+	__DMB();
+#endif
 
 	ptpframe_transmit(pBuffer, nLength, true);
 }
@@ -234,6 +246,9 @@ void emac_eth_send(void *pBuffer, uint32_t nLength) {
 	dma_current_txdesc->status |= ENET_TDES0_LSG | ENET_TDES0_FSG;
 	/* enable the DMA transmission */
 	dma_current_txdesc->status |= ENET_TDES0_DAV;
+#if defined (GD32H7XX)
+	__DMB();
+#endif
 
 	/* check Tx buffer unavailable flag status */
 	const auto dma_tbu_flag = (ENET_DMA_STAT & ENET_DMA_STAT_TBU);

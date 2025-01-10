@@ -19,8 +19,6 @@ static constexpr uint32_t MAC_SIZE = 6;
 static constexpr uint32_t HOSTNAME_SIZE = 64;	///< Including a terminating null byte.
 static constexpr uint32_t DOMAINNAME_SIZE = 64;	///< Including a terminating null byte.
 static constexpr uint32_t NAMESERVERS_COUNT = 3;
-static constexpr uint32_t IP4_ANY = 0x00000000;
-static constexpr uint32_t IP4_BROADCAST = 0xffffffff;
 
 static constexpr uint32_t convert_to_uint(const uint8_t a, const uint8_t b, const uint8_t c, const uint8_t d) {
 	return static_cast<uint32_t>(a)       |
@@ -28,6 +26,11 @@ static constexpr uint32_t convert_to_uint(const uint8_t a, const uint8_t b, cons
 		   static_cast<uint32_t>(c) << 16 |
 		   static_cast<uint32_t>(d) << 24;
 }
+
+static constexpr uint32_t IPADDR_NONE = convert_to_uint(255, 255, 255, 255);
+static constexpr uint32_t IPADDR_LOOPBACK = convert_to_uint(127, 0, 0, 1);
+static constexpr uint32_t IPADDR_ANY = convert_to_uint(0, 0, 0, 0);
+static constexpr uint32_t IPADDR_BROADCAST  = convert_to_uint(255, 255, 255, 255);
 
 inline bool is_netmask_valid(uint32_t nNetMask) {
 	if (nNetMask == 0) {
