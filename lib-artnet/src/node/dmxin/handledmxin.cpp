@@ -2,10 +2,7 @@
  * @file handledmxin.cpp
  *
  */
-/**
- * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
- */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -83,7 +80,7 @@ void ArtNetNode::HandleDmxIn() {
 
 				if (m_Node.Port[nPortIndex].bLocalMerge) {
 					m_pReceiveBuffer = reinterpret_cast<uint8_t *>(&m_ArtDmx);
-					m_nIpAddressFrom = Network::Get()->GetIp();
+					m_nIpAddressFrom = network::IPADDR_LOOPBACK;
 					HandleDmx();
 
 					SendDiag(artnet::PriorityCodes::DIAG_LOW, "%u: Input DMX local merge", nPortIndex);
@@ -149,7 +146,7 @@ void ArtNetNode::HandleDmxIn() {
 
 					if (m_Node.Port[nPortIndex].bLocalMerge) {
 						m_pReceiveBuffer = reinterpret_cast<uint8_t *>(&m_ArtDmx);
-						m_nIpAddressFrom = Network::Get()->GetIp();
+						m_nIpAddressFrom = network::IPADDR_LOOPBACK;
 						HandleDmx();
 
 						SendDiag(artnet::PriorityCodes::DIAG_LOW, "%u: Input DMX local merge", nPortIndex);

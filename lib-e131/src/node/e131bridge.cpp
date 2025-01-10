@@ -2,7 +2,7 @@
  * @file e131bridge.cpp
  *
  */
-/* Copyright (C) 2016-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -83,7 +83,7 @@ E131Bridge::E131Bridge() {
 	snprintf(aSourceName, e131::SOURCE_NAME_LENGTH, "%.48s %s", Network::Get()->GetHostName(), Hardware::Get()->GetBoardName(nLength));
 	SetSourceName(aSourceName);
 
-	Hardware::Get()->GetUuid(m_Cid);
+	hal::uuid_copy(m_Cid);
 #endif
 
 	m_nHandle = Network::Get()->Begin(e131::UDP_PORT);
@@ -245,10 +245,10 @@ void E131Bridge::SetLocalMerging() {
 			if (m_Bridge.Port[nInputPortIndex].nUniverse == m_Bridge.Port[nOutputPortIndex].nUniverse) {
 
 				if (!m_Bridge.Port[nOutputPortIndex].bLocalMerge) {
-					m_OutputPort[nOutputPortIndex].sourceA.nIp = Network::Get()->GetIp();
+					m_OutputPort[nOutputPortIndex].sourceA.nIp = network::IPADDR_LOOPBACK;
 					DEBUG_PUTS("Local merge Source A");
 				} else {
-					m_OutputPort[nOutputPortIndex].sourceB.nIp = Network::Get()->GetIp();
+					m_OutputPort[nOutputPortIndex].sourceB.nIp = network::IPADDR_LOOPBACK;
 					DEBUG_PUTS("Local merge Source B");
 				}
 

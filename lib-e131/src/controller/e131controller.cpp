@@ -68,7 +68,7 @@ E131Controller::E131Controller() {
 	snprintf(aSourceName, e131::SOURCE_NAME_LENGTH, "%.48s %s", Network::Get()->GetHostName(), Hardware::Get()->GetBoardName(nLength));
 	SetSourceName(aSourceName);
 
-	Hardware::Get()->GetUuid(m_Cid);
+	hal::uuid_copy(m_Cid);
 
 	for (uint32_t nIndex = 0; nIndex < sizeof(s_SequenceNumbers) / sizeof(s_SequenceNumbers[0]); nIndex++) {
 		memset(&s_SequenceNumbers[nIndex], 0, sizeof(s_SequenceNumbers[0]));
