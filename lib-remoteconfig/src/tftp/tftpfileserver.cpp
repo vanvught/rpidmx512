@@ -35,12 +35,11 @@
 #include "tftp/tftpfileserver.h"
 #include "remoteconfig.h"
 #include "display.h"
+#include "firmware.h"
 
 #include "debug.h"
 
 using namespace tftpfileserver;
-
-static constexpr auto FILE_NAME_LENGTH = sizeof(FILE_NAME) - 1;
 
 TFTPFileServer::TFTPFileServer(uint8_t *pBuffer, uint32_t nSize): m_pBuffer(pBuffer), m_nSize(nSize) {
 	DEBUG_ENTRY
@@ -77,7 +76,7 @@ bool TFTPFileServer::FileCreate(const char* pFileName, tftp::Mode mode) {
 		return false;
 	}
 
-	if (strncmp(FILE_NAME, pFileName, FILE_NAME_LENGTH) != 0) {
+	if (strncmp(firmware::FILE_NAME, pFileName, firmware::FILE_NAME_LENGTH) != 0) {
 		DEBUG_EXIT
 		return false;
 	}

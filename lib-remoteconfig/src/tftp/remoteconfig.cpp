@@ -37,6 +37,7 @@
 
 #include "tftp/tftpfileserver.h"
 #include "flashcodeinstall.h"
+#include "firmware.h"
 
 #include "display.h"
 

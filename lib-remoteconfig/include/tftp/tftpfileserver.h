@@ -2,7 +2,7 @@
  * @file tftpfileserver.h
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,28 +37,6 @@
 
 namespace tftpfileserver {
 	bool is_valid(const void *pBuffer);
-#if defined(__linux__) || defined (__APPLE__)
-#else
-# if defined (H3)
-#  if defined(ORANGE_PI)
-	static constexpr char FILE_NAME[] = "orangepi_zero.uImage";
-#  else
-	static constexpr char FILE_NAME[] = "orangepi_one.uImage";
-#  endif
-# elif defined (GD32)
-#  if defined (GD32F10X)
-    static constexpr char FILE_NAME[] = "gd32f107.bin";
-#  elif defined (GD32F20X)
-    static constexpr char FILE_NAME[] = "gd32f207.bin";
-#  elif defined (GD32F4XX)
-    static constexpr char FILE_NAME[] = "gd32f4xx.bin";
-#  elif defined (GD32H7XX)
-    static constexpr char FILE_NAME[] = "gd32h7xx.bin";
-#  else
-#   error FAMILY is not defined
-#  endif
-# endif
-#endif
 }  // namespace tftpfileserver
 
 class TFTPFileServer final: public TFTPDaemon {

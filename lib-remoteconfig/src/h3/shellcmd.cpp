@@ -3,7 +3,7 @@
  *
  */
 /* Copyright (C) 2020 by hippy mailto:dmxout@gmail.com
- * Copyright (C) 2020-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+ * Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,14 +31,14 @@
 
 #include "debug.h"
 
+void h3_board_dump();
+
 extern "C" {
-void h3_board_dump(void);
 void h3_dump_memory_mapping(void);
 void h3_ccu_pll_dump(void);
 void arm_dump_memmap(void);
 void arm_dump_page_table(void);
 }
-
 
 namespace shell::dump {
 namespace arg {

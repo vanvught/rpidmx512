@@ -1,8 +1,8 @@
 /**
- * @file tftpfileserver.cpp
+ * @file http_status_messages.h
  *
  */
-/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,21 +23,15 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cassert>
 
-#include "ubootheader.h"
-#include "remoteconfig.h"
+#ifndef HTTP_STATUS_MESSAGES_H_
+#define HTTP_STATUS_MESSAGES_H_
 
-#include "debug.h"
+namespace httpd {
+static constexpr const char STATUS_400[] = "{\"code\":400,\"status\":\"Bad Request\",\"message\":\"%s\"}\n";
+static constexpr auto STATUS_400_LENGTH = sizeof(STATUS_400) - 1;
+static constexpr const char STATUS_404[] = "{\"code\":404,\"status\":\"Not found\",\"message\":\"%s\"}\n";
+static constexpr auto STATUS_404_LENGTH = sizeof(STATUS_404) - 1;
+}  // namespace httpd
 
-namespace tftpfileserver {
-bool is_valid(const void *pBuffer) {
-	UBootHeader uImage(reinterpret_cast<uint8_t *>(const_cast<void*>(pBuffer)));
-	if (!uImage.IsValid()) {
-		DEBUG_PUTS("uImage is not valid");
-		return false;
-	}
-	return true;
-}
-}  // namespace tftpfileserver
+#endif /* HTTP_STATUS_MESSAGES_H_ */
