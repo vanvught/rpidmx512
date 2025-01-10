@@ -67,7 +67,7 @@ public:
 		uuid_str[UUID_STRING_LENGTH] = '\0';
 
 		uint8_t s_Cid[e131::CID_LENGTH];
-		Hardware::Get()->GetUuid(s_Cid);
+		hal::uuid_copy(s_Cid);
 		uuid_unparse(s_Cid, uuid_str);
 
 		printf("RDMNet\n");
