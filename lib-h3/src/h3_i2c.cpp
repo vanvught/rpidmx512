@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#if !defined(__clang__)
+#if defined(__GNUC__) && !defined(__clang__)
 # if defined (CONFIG_I2C_OPTIMIZE_O2) || defined (CONFIG_I2C_OPTIMIZE_O3)
 #  pragma GCC push_options
 #  if defined (CONFIG_I2C_OPTIMIZE_O2)

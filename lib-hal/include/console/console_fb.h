@@ -30,6 +30,10 @@
 # error File should not be included
 #endif
 
-
+# if defined (H3)
+#  include "h3/console_fb.h"
+# else
+#  include "rpi/console_fb.h"
+# endif
 
 #endif /* CONSOLE_CONSOLE_FB_H_ */

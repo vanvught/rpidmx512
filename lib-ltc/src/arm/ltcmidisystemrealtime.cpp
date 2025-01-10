@@ -27,7 +27,7 @@
 # undef NDEBUG
 #endif
 
-#if !defined(__clang__)
+#if defined(__GNUC__) && !defined(__clang__)
 # pragma GCC push_options
 # pragma GCC optimize ("O2")
 # pragma GCC optimize ("no-tree-loop-distribute-patterns")

@@ -26,7 +26,7 @@
 #ifndef H3_H_
 #define H3_H_
 
-#if !defined(__clang__)
+#if defined(__GNUC__) && !defined(__clang__)
 # ifdef __cplusplus
 #  if __cplusplus > 201402
 #   pragma GCC diagnostic push
@@ -827,7 +827,7 @@ extern void h3_dump_memory_mapping(void);
 #define GIC_INTERFACE_BASE		H3_GIC_CPUIF_BASE
 #define IRQn_Type				H3_IRQn_TypeDef
 
-#if !defined(__clang__)
+#if defined(__GNUC__) && !defined(__clang__)
 # pragma GCC diagnostic ignored "-Wconversion"
 # pragma GCC diagnostic ignored "-Wsign-conversion"
 # ifdef __cplusplus

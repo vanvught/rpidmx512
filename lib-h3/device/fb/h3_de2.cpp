@@ -14,7 +14,7 @@ In function 'memset',
    95 |                 *dp++ = (char) c;
       |                 ~~~~~~^~~~~~~~~~
  */
-#if !defined(__clang__)
+#if defined(__GNUC__) && !defined(__clang__)
 # pragma GCC push_options
 # pragma GCC diagnostic ignored "-Warray-bounds"
 # pragma GCC diagnostic ignored "-Wstringop-overflow"

@@ -1,4 +1,4 @@
-#if !defined(__clang__)
+#if defined(__GNUC__) && !defined(__clang__)
 # pragma GCC push_options
 # pragma GCC diagnostic ignored "-Wsign-conversion"
 #endif

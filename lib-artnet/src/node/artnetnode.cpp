@@ -442,7 +442,7 @@ static artnet::OpCodes get_op_code(const uint32_t nBytesReceived, const uint8_t 
 	return artnet::OpCodes::OP_NOT_DEFINED;
 }
 
-#if !defined(__clang__)
+#if defined(__GNUC__) && !defined(__clang__)
 # pragma GCC push_options
 # pragma GCC optimize ("O2")
 # pragma GCC optimize ("no-tree-loop-distribute-patterns")

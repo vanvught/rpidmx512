@@ -1,4 +1,4 @@
-#if !defined(__clang__)	// Needed for compiling on MacOS
+#if defined(__GNUC__) && !defined(__clang__)	
 //FIXME Remove #pragma GCC push_options
 # pragma GCC push_options
 # pragma GCC diagnostic push

@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#if !defined(__clang__)
+#if defined(__GNUC__) && !defined(__clang__)
 # if __GNUC__ < 9
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wuseless-cast"	//FIXME GCC 8.0.3 Raspbian GNU/Linux 10 (buster)

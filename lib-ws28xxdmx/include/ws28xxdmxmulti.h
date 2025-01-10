@@ -33,7 +33,7 @@
 # endif
 #endif
 
-#if !defined(__clang__)
+#if defined(__GNUC__) && !defined(__clang__)
 # pragma GCC push_options
 # pragma GCC optimize ("O3")
 # pragma GCC optimize ("no-tree-loop-distribute-patterns")
@@ -332,7 +332,7 @@ private:
 	bool m_bNeedSync { false };
 };
 
-#if !defined(__clang__)
+#if defined(__GNUC__) && !defined(__clang__)
 # pragma GCC pop_options
 #endif
 #if defined (_NDEBUG)

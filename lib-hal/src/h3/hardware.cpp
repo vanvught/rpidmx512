@@ -56,7 +56,7 @@
 
 #include "logic_analyzer.h"
 
-#if !defined(__clang__)
+#if defined(__GNUC__) && !defined(__clang__)
 # pragma GCC push_options
 # pragma GCC optimize ("O2")
 # if __GNUC__ > 8
