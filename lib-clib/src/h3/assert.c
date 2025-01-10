@@ -2,7 +2,7 @@
  * @file assert.c
  *
  */
-/* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2016-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,10 +25,7 @@
 
 #include <stdio.h>
 
-#include "console.h"
 #include "h3.h"
-
-void h3_watchdog_disable(void);
 
 /*
  * Description is taken from newlib https://sourceware.org/newlib/
@@ -56,11 +53,7 @@ void h3_watchdog_disable(void);
  */
 
 void __assert_func(const char *file, int line, const char *func, const char *failedexpr) {
-	console_set_fg_color(CONSOLE_RED);
-
 	printf("assertion \"%s\" failed: file \"%s\", line %d%s%s\n", failedexpr, file, line, func ? ", function: " : "", func ? func : "");
-
-	console_set_fg_color(CONSOLE_WHITE);
 
 #if !defined(CONFIG_CLIB_ASSERT_REBOOT)
 	H3_TIMER->WDOG0_MODE = 0;

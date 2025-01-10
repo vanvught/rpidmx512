@@ -32,7 +32,6 @@
 #include <uuid/uuid.h>
 
 namespace hal {
-void uuid_init(uuid_t);
 uint32_t get_uptime();
 }  // namespace hal
 
@@ -41,10 +40,6 @@ public:
 	static Hardware *Get() {
 		static Hardware instance;
 		return &instance;
-	}
-
-	void GetUuid(uuid_t out) {
-		memcpy(out, m_uuid, sizeof(uuid_t));
 	}
 
 	uint32_t GetUpTime() {
@@ -75,9 +70,7 @@ public:
 	}
 
 private:
-	Hardware() {
-		hal::uuid_init(m_uuid);
-	}
+	Hardware() {}
 
 private:
 	uuid_t m_uuid;

@@ -62,10 +62,6 @@
 
 using namespace dmx;
 
-extern "C" {
-int console_error(const char*);
-}
-
 #ifndef ALIGNED
 # define ALIGNED __attribute__ ((aligned (4)))
 #endif

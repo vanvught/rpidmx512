@@ -41,10 +41,8 @@
 #include <cstddef>
 #include <cstdio>
 
-extern "C" {
 void uart0_puts(const char *);
 int uart0_printf(const char *fmt, ...);
-}
 
 #include "h3.h"
 #include "h3_ccu.h"

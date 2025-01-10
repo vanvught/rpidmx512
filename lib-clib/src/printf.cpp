@@ -1,8 +1,8 @@
 /**
- * @file printf.c
+ * @file printf.cpp
  *
  */
-/* Copyright (C) 2016-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2016-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,14 +23,17 @@
  * THE SOFTWARE.
  */
 
-#include <stdarg.h>
-#include <stddef.h>
-#include <stdbool.h>
-#include <ctype.h>
-#include <string.h>
-#include <limits.h>
+#pragma GCC push_options
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast" //TODO remove old-style-cast
 
-extern int console_putc(int);
+#include <cstdarg>
+#include <cstddef>
+#include <cctype>
+#include <cstring>
+#include <climits>
+
+void console_putc(int);
 
 struct context {
 	int flag;
@@ -79,12 +82,11 @@ static int _pow10(int n) {
 
 static int _itostr(int x, char *s, int d) {
 	char buffer[64];
-	char *p = buffer + (sizeof(buffer) / sizeof(buffer[0])) - 1;
-	char *o = p;
-	char *t = (char *) s;
-	int i;
+	auto *p = buffer + (sizeof(buffer) / sizeof(buffer[0])) - 1;
+	auto *o = p;
+	auto *t = s;
 
-	const bool is_neg = x < 0 ? true : false;
+	const auto is_neg = x < 0 ? true : false;
 
 	if (is_neg) {
 		x = -x;
@@ -113,7 +115,7 @@ static int _itostr(int x, char *s, int d) {
 
 	p++;
 
-	i = (int) (o - p);
+	auto i = (o - p);
 
 	while (p < buffer + (sizeof(buffer) / sizeof(buffer[0]))) {
 		*t++ = *p++;
@@ -124,8 +126,8 @@ static int _itostr(int x, char *s, int d) {
 
 static void _round_float(char *dest, int *size) {
 	int i = *size - 1;
-	char *q = (char *) dest + i;
-	bool round_int = false;
+	auto *q = dest + i;
+	auto round_int = false;
 
 	if (*q >= '5') {
 
@@ -185,7 +187,7 @@ static void _format_hex(struct context *ctx, unsigned int arg) {
 		*p = '0';
 		p--;
 	} else {
-		alpha = ((ctx->flag & FLAG_UPPERCASE) != 0) ? ((char) 'A' - (char) 10) : ((char) 'a' - (char) 10);
+		alpha = ((ctx->flag & FLAG_UPPERCASE) != 0) ? ('A' - (char) 10) : ('a' - (char) 10);
 
 		do {
 			u = (char) arg & (char) 0x0F;
@@ -394,7 +396,7 @@ static int _vprintf(const int size, const char *fmt, va_list va) {
 		}
 
 		while (isdigit((int) *fmt) != 0) {
-			ctx.width = ctx.width * 10 + (int) (*fmt - '0');
+			ctx.width = ctx.width * 10 + (*fmt - '0');
 			fmt++;
 		}
 
@@ -406,13 +408,13 @@ static int _vprintf(const int size, const char *fmt, va_list va) {
 			fmt++;
 			if (*fmt == '*') {
 				fmt++;
-				ctx.prec = (int) va_arg(va, int);
+				ctx.prec = va_arg(va, int);
 				if (ctx.prec < 0) {
 					ctx.prec = -ctx.prec;
 				}
 			} else {
 				while (isdigit((int) *fmt) != 0) {
-					ctx.prec = ctx.prec * 10 + (int) (*fmt - '0');
+					ctx.prec = ctx.prec * 10 + (*fmt - '0');
 					fmt++;
 				}
 			}
@@ -474,6 +476,7 @@ static int _vprintf(const int size, const char *fmt, va_list va) {
 	return ctx.total;
 }
 
+extern "C" {
 int printf(const char* fmt, ...) {
 	int i;
 	va_list arp;
@@ -554,4 +557,5 @@ int vsnprintf(char *str, size_t size, const char *fmt, va_list ap) {
 	outptr = NULL;
 
 	return i;
+}
 }

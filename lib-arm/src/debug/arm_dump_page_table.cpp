@@ -1,5 +1,5 @@
 /**
- * @file arm_dump_page_table.c
+ * @file arm_dump_page_table.cpp
  *
  */
 /* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -23,10 +23,14 @@
  * THE SOFTWARE.
  */
 
+#pragma GCC push_options
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast" //TODO remove old-style-cast
+
 #include <stdint.h>
 #include <stdio.h>
 
-extern int uart0_printf(const char* fmt, ...);
+int uart0_printf(const char* fmt, ...);
 #define printf uart0_printf
 
 #include "arm/synchronize.h"
@@ -51,7 +55,7 @@ static void _dump_page_table(const uint32_t *p) {
 	uint32_t prev = 0;
 
 	for (i = 0; i < 4096; i++) {
-		uint32_t data =  (uint32_t) (*p & 0xFFFFF);
+		auto data =  (*p & 0xFFFFF);
 		if (data != prev) {
 			printf(" %.4d : %p : 0x%.8x : %.5x -> bits ", i, p, i * MEGABYTE, data);
 			_print_bits(data);
@@ -67,8 +71,8 @@ static void _dump_page_table(const uint32_t *p) {
 }
 
 
-void arm_dump_page_table(void) {
-	register uint32_t page_table;
+void arm_dump_page_table() {
+	uint32_t page_table;
 
 	asm volatile ("mrc p15, 0, %0, c2, c0, 0" : "=r" (page_table));
 	isb();

@@ -1,8 +1,8 @@
 /**
- * @file debug_print_bits.cpp
+ * @file console_i2c.h
  *
  */
-/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,26 +23,14 @@
  * THE SOFTWARE.
  */
 
-#include <cstdio>
-#include <cstdint>
+#ifndef CONSOLE_CONSOLE_I2C_H_
+#define CONSOLE_CONSOLE_I2C_H_
 
-#if defined (H3)
-int uart0_printf(const char* fmt, ...);
-# define printf uart0_printf
+#if !defined (CONSOLE_I2C)
+# error File should not be included
 #endif
 
-void debug_print_bits(uint32_t u) {
-	uint32_t i;
 
-	uint32_t b = 1U << 31;
 
-	for (i = 0; i < 32; i++) {
-		if ((b & u) == b) {
-			uint32_t bit_number = 31 - i;
-			printf("%-2d ", bit_number);
-		}
-		b = b >> 1;
-	}
 
-	puts("");
-}
+#endif /* CONSOLE_CONSOLE_I2C_H_ */

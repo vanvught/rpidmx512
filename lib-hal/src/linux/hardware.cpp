@@ -106,7 +106,6 @@ static constexpr char RASPBIAN_LED_FLASH[] = "echo timer | sudo tee /sys/class/l
 static constexpr char UNKNOWN[] = "Unknown";
 
 namespace hal {
-void uuid_init(uuid_t);
 uint32_t get_uptime();
 }  // namespace hal
 
@@ -122,8 +121,6 @@ Hardware::Hardware():
 #endif
 {
 	s_pThis = this;
-
-    hal::uuid_init(m_uuid);
 
 	memset(&m_TOsInfo, 0, sizeof(struct utsname));
 
@@ -429,7 +426,7 @@ void Hardware::Print() {
 	uuid_str[UUID_STRING_LENGTH] = '\0';
 
 	uuid_t out;
-	Hardware::Get()->GetUuid(out);
+	hal::uuid_copy(out);
 
 	uuid_unparse(out, uuid_str);
 

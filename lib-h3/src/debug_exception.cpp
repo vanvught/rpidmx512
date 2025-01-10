@@ -1,5 +1,5 @@
 /**
- * @file debug_print_bits.cpp
+ * @file debug_exception.cpp
  *
  */
 /* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
@@ -24,25 +24,43 @@
  */
 
 #include <cstdio>
-#include <cstdint>
 
-#if defined (H3)
-int uart0_printf(const char* fmt, ...);
-# define printf uart0_printf
-#endif
+#include "h3.h"
 
-void debug_print_bits(uint32_t u) {
-	uint32_t i;
+void console_set_fg_color(uint32_t);
 
-	uint32_t b = 1U << 31;
+typedef enum {
+	CONSOLE_BLACK = 0,
+	CONSOLE_RED = 1,
+	CONSOLE_GREEN = 2,
+	CONSOLE_YELLOW = 3,
+	CONSOLE_BLUE = 4,
+	CONSOLE_MAGENTA = 5
+,	CONSOLE_CYAN = 6,
+	CONSOLE_WHITE = 7,
+	CONSOLE_DEFAULT = 9
+} _console_colors;
 
-	for (i = 0; i < 32; i++) {
-		if ((b & u) == b) {
-			uint32_t bit_number = 31 - i;
-			printf("%-2d ", bit_number);
-		}
-		b = b >> 1;
+extern "C" void debug_exception(unsigned int type, unsigned int address) {
+	__sync_synchronize();
+
+	console_set_fg_color(CONSOLE_RED);
+
+	if (type == 0) {
+		printf("\nUndefined exception at address: %p\n", (void *)address);
+	} else if (type == 1) {
+		printf("\nPrefetch abort at address: %p\n", (void *)address);
+	} else if (type == 2) {
+		volatile unsigned int datafaultaddr;
+		asm volatile ("mrc p15, 0, %[dfa], c6, c0, 0\n\t" : [dfa] "=r" (datafaultaddr));
+		printf("\nData abort at address: %p -> %p\n", (void *)address, (void *)datafaultaddr);
+	} else {
+		printf("\nUnknown exception! [%u]\n", type);
 	}
 
-	puts("");
+	console_set_fg_color(CONSOLE_WHITE);
+
+	H3_TIMER->WDOG0_MODE = 0;
+
+	for(;;);
 }

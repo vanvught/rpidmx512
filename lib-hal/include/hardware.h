@@ -53,6 +53,8 @@ namespace hal {
 #endif
 
 static constexpr uint32_t SOFTWARE_TIMERS_MAX = CONFIG_HAL_TIMERS_COUNT;
+
+void uuid_copy(uuid_t out);
 }  // namespace hal
 
 #if defined(__linux__) || defined (__APPLE__)

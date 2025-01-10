@@ -57,9 +57,7 @@
 #define GPIO_ANALYZER_CH4 GPIO_EXT_18
 #define GPIO_ANALYZER_CH5 GPIO_EXT_16
 
-extern "C" {
 void console_error(const char*);
-}
 
 #if (EXT_UART_NUMBER == 1)
 # define UART_IRQN 		H3_UART1_IRQn

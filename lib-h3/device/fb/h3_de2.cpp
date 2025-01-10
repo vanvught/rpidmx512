@@ -60,11 +60,6 @@ In function 'memset',
 #include <cstdint>
 #include <cstring>
 
-extern "C" {
-int uart0_printf(const char* fmt, ...);
-#define printf uart0_printf
-}
-
 #include "h3_de2.h"
 
 #include "h3.h"

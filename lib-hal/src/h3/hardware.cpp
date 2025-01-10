@@ -102,7 +102,6 @@ void net_shutdown();
 
 namespace hal {
 void reboot_handler();
-void uuid_init(uuid_t);
 }  // namespace hardware
 
 namespace soc {
@@ -139,7 +138,6 @@ Hardware::Hardware() {
 	s_pThis = this;
 
 	hardware_init();
-	hal::uuid_init(m_uuid);
 
 #if defined (DEBUG_I2C)
 	i2c_detect();

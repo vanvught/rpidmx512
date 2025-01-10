@@ -32,7 +32,7 @@
 namespace hal {
 static constexpr auto UUID_STRING_LENGTH = 36;
 
-void uuid_init(uuid_t out) {
+void uuid_copy(uuid_t out) {
 	char uuid_str[hal::UUID_STRING_LENGTH + 2];
 
 #if defined (__APPLE__)

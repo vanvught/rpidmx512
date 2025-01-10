@@ -2,7 +2,7 @@
  * @file console.cpp
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,12 @@
  * THE SOFTWARE.
  */
 
-#include <stdarg.h>
-#include <stdint.h>
+#pragma GCC push_options
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast" //TODO remove old-style-cast
+
+#include <cstdarg>
+#include <cstdint>
 
 #include "console.h"
 
@@ -71,7 +75,6 @@ void __attribute__((cold)) console_init(void) {
 	}
 }
 
-extern "C" {
 uint32_t console_get_line_width(void) {
 	return FB_WIDTH / FB_CHAR_W;
 }
@@ -379,5 +382,3 @@ void console_clear_top_row(void) {
 void console_putpixel(uint32_t x, uint32_t y, uint32_t color) {
 	draw_pixel(x, y, color);
 }
-}
-

@@ -30,8 +30,6 @@
 #include <time.h>
 #include <uuid/uuid.h>
 
-//#include "c/hardware.h"
-
 #include "bcm2835.h"
 #include "bcm2835_vc.h"
 #include "bcm2835_wdog.h"
@@ -53,9 +51,8 @@ class Hardware {
 public:
 	Hardware();
 
-	void GetUuid(uuid_t out);
-	const char* GetMachine(uint8_t &nLength);
-	const char* GetSysName(uint8_t &nLength);
+	const char *GetMachine(uint8_t &nLength);
+	const char *GetSysName(uint8_t &nLength);
 
 	uint32_t GetReleaseId() {
 		return static_cast<uint32_t>(bcm2835_vc_get_get_firmware_revision());
@@ -67,8 +64,8 @@ public:
 		return m_nBoardRevision;
 	}
 
-	const char* GetCpuName(uint8_t &nLength);
-	const char* GetSocName(uint8_t &nLength);
+	const char *GetCpuName(uint8_t &nLength);
+	const char *GetSocName(uint8_t &nLength);
 
 	float GetCoreTemperature() {
 		return static_cast<float>(bcm2835_vc_get_temperature()) / 1000;

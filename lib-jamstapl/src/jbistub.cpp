@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <cstdio>
 
 #include "jbiport.h"
@@ -31,10 +31,8 @@
 
 #include "hal_gpio.h"
 
-extern "C" {
- void uart0_puts(const char *s);
- int uart0_printf(const char* fmt, ...);
-}
+void uart0_puts(const char *s);
+int uart0_printf(const char* fmt, ...);
 
 #define  puts  	uart0_puts
 #define  printf	uart0_printf

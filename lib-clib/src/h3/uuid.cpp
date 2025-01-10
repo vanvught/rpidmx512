@@ -2,7 +2,7 @@
  * @file uuid.cpp
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,13 @@
  * THE SOFTWARE.
  */
 
+#if !defined(__clang__)
+# pragma GCC push_options
+# pragma GCC optimize ("O2")
+# pragma GCC optimize ("no-tree-loop-distribute-patterns")
+# pragma GCC optimize ("-funroll-loops")
+#endif
+
 #include <cstdint>
 #include <cstring>
 #include <uuid/uuid.h>
@@ -35,7 +42,7 @@ typedef union pcast32 {
 	uint8_t u8[16];
 } _pcast32;
 
-void uuid_init(uuid_t out) {
+void uuid_copy(uuid_t out) {
 	_pcast32 cast;
 
 	h3_sid_get_rootkey(&cast.u8[0]);

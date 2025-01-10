@@ -1,8 +1,8 @@
 /**
- * @file puts.c
+ * @file putchar.cpp
  *
  */
-/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,11 +23,9 @@
  * THE SOFTWARE.
  */
 
-extern int console_puts(const char *);
-extern int console_putc(int);
+void console_putc(int);
 
-int puts(const char *s) {
-	console_puts(s);
-	console_putc('\n');
+extern "C" int putchar(int c) {
+	console_putc(c);
 	return 1;
 }

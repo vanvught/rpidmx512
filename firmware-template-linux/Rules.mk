@@ -163,7 +163,7 @@ $(BUILD_DIRS) :
 		
 $(CURR_DIR) : Makefile $(LINKER) $(OBJECTS) $(LIBDEP)
 	$(info $$TARGET [${TARGET}])
-	$(CPP) $(OBJECTS) -o $(CURR_DIR) $(LIB) $(LDLIBS) -luuid -lpthread
+	$(CPP) $(OBJECTS) -o $(CURR_DIR) $(LIB) $(LDLIBS) -luuid -lpthread -lz
 	$(PREFIX)objdump -d $(TARGET) | $(PREFIX)c++filt > linux.lst
 
 $(foreach bdir,$(SRCDIR),$(eval $(call compile-objects,$(bdir))))

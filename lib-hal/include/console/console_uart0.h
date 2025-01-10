@@ -1,8 +1,8 @@
 /**
- * @file debug_exception.c
+ * @file console_uart0.h
  *
  */
-/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,11 +23,14 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
+#ifndef CONSOLE_CONSOLE_UART0_H_
+#define CONSOLE_CONSOLE_UART0_H_
 
-#include "h3.h"
+#if defined (CONSOLE_FB) || defined (CONSOLE_NULL) || defined (CONSOLE_I2C)
+# error File should not be included
+#endif
 
-void console_set_fg_color(int);
+#include <cstdint>
 
 typedef enum {
 	CONSOLE_BLACK = 0,
@@ -41,27 +44,13 @@ typedef enum {
 	CONSOLE_DEFAULT = 9
 } _console_colors;
 
-void debug_exception(unsigned int type, unsigned int address) {
-	__sync_synchronize();
+void console_init();
+void console_putc(int);
+void console_puts(const char *);
+void console_write(const char *, unsigned int);
+void console_status(uint32_t, const char *);
+void console_set_fg_color(uint32_t);
+void console_set_bg_color(uint32_t);
+void console_error(const char *);
 
-	console_set_fg_color(CONSOLE_RED);
-
-	if (type == 0) {
-		printf("\nUndefined exception at address: %p\n", (void *)address);
-	} else if (type == 1) {
-		printf("\nPrefetch abort at address: %p\n", (void *)address);
-	} else if (type == 2) {
-		volatile unsigned int datafaultaddr;
-		asm volatile ("mrc p15, 0, %[dfa], c6, c0, 0\n\t" : [dfa] "=r" (datafaultaddr));
-		printf("\nData abort at address: %p -> %p\n", (void *)address, (void *)datafaultaddr);
-	} else {
-		printf("\nUnknown exception! [%u]\n", type);
-	}
-
-	console_set_fg_color(CONSOLE_WHITE);
-
-	H3_TIMER->WDOG0_MODE = 0;
-
-	for(;;);
-}
-
+#endif /* CONSOLE_CONSOLE_UART0_H_ */

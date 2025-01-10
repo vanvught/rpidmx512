@@ -2,7 +2,7 @@
  * @file mac_address.cpp
  *
  */
-/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,9 @@
 
 #include "h3.h"
 
-extern int uart0_printf(const char* fmt, ...);
+#ifndef NDEBUG
+int uart0_printf(const char* fmt, ...);
+#endif
 
 void mac_address_get(uint8_t paddr[]) {
 	assert(mac_addr == ENET_MAC_ADDRESS0);

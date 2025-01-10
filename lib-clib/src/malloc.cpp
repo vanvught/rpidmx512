@@ -8,7 +8,7 @@
  * Copyright (C) 2014-2016  R. Stange <rsta2@o2online.de>
  * https://github.com/rsta2/circle
  */
-/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,7 +43,7 @@
 #endif
 #include <cassert>
 
-extern "C" void console_error(const char *);
+void console_error(const char *);
 void debug_heap();
 
 struct block_header {

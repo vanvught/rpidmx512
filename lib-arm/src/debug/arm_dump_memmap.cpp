@@ -1,8 +1,8 @@
 /**
- * @file arm_dump_memmap.c
+ * @file arm_dump_memmap.cpp
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,10 +23,10 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <stdio.h>
+#include <cstdint>
+#include <cstdio>
 
-extern int uart0_printf(const char* fmt, ...);
+int uart0_printf(const char* fmt, ...);
 #define printf uart0_printf
 
 /* Defined by the linker */
@@ -50,7 +50,7 @@ extern uint32_t __svc_stack_top_core1;
 extern uint32_t __svc_stack_top_core2;
 extern uint32_t __svc_stack_top_core3;
 
-void __attribute__((cold)) arm_dump_memmap(void) {
+void __attribute__((cold)) arm_dump_memmap() {
 	printf("memmap\n");
 	printf("__ram_start = %p\n", &__ram_start);
 	printf("  __data_start = %p\n", &__data_start);

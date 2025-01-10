@@ -1,8 +1,8 @@
 /**
- * @file putchar.c
+ * @file console_null.h
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +23,32 @@
  * THE SOFTWARE.
  */
 
-extern int console_putc(int);
+#ifndef CONSOLE_CONSOLE_NULL_H_
+#define CONSOLE_CONSOLE_NULL_H_
 
-int putchar(int c) {
-	console_putc(c);
-	return 1;
-}
+#if !defined (CONSOLE_NULL)
+# error File should not be included
+#endif
+
+#include <cstdint>
+
+typedef enum {
+	CONSOLE_BLACK = 0,
+	CONSOLE_RED = 1,
+	CONSOLE_GREEN = 2,
+	CONSOLE_YELLOW = 3,
+	CONSOLE_BLUE = 4,
+	CONSOLE_MAGENTA = 5
+,	CONSOLE_CYAN = 6,
+	CONSOLE_WHITE = 7,
+	CONSOLE_DEFAULT = 9
+} _console_colors;
+
+inline void console_init() {}
+inline void console_putc([[maybe_unused]] int i) {}
+inline void console_puts([[maybe_unused]] const char *p) {}
+inline void console_write([[maybe_unused]] const char *p, [[maybe_unused]] unsigned int i) {}
+inline void console_status([[maybe_unused]] uint32_t i, [[maybe_unused]] const char *p) {}
+inline void console_error([[maybe_unused]] const char *p) {}
+
+#endif /* INCLUDE_CONSOLE_CONSOLE_NULL_H_ */

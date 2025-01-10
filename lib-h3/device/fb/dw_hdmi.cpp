@@ -2,6 +2,7 @@
 #pragma GCC diagnostic ignored "-Wsign-conversion"
 #pragma GCC diagnostic ignored "-Wconversion"
 #pragma GCC diagnostic ignored "-Wpedantic"
+#pragma GCC diagnostic ignored "-Wold-style-cast"
 // SPDX-License-Identifier: GPL-2.0+
 /*
  * Copyright (c) 2015 Google, Inc
@@ -15,11 +16,10 @@
  *
  */
 
-#include <stdint.h>
-#include <stdio.h>
-#include <stdbool.h>
+#include <cstdint>
+#include <cstdio>
 
-extern int uart0_printf(const char* fmt, ...);
+int uart0_printf(const char* fmt, ...);
 #define debug	uart0_printf
 #define printf	uart0_printf
 

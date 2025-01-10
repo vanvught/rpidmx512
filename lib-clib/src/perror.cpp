@@ -1,8 +1,8 @@
 /**
- * @file perror.c
+ * @file perror.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,9 +26,9 @@
 #include <stddef.h>
 #include <errno.h>
 
-extern void console_error(const char *);
-extern int console_putc(int);
-extern int console_puts(const char *);
+void console_error(const char *);
+int console_putc(int);
+int console_puts(const char *);
 
 /*
 errno -l | cut -f3- -d ' ' | sort -V -u | awk '$0="\""$0"\","'
@@ -78,16 +78,17 @@ const char * const sys_errlist[] = {
  "Bad message"
 };
 
+extern "C" {
 char *strerror(int errnum) {
 	if (errnum <= ELAST) {
-		return (char *)sys_errlist[errnum];
+		return const_cast<char *>(sys_errlist[errnum]);
 	}
 
-	return (char *)sys_errlist[EBADMSG];
+	return const_cast<char *>(sys_errlist[EBADMSG]);
 }
 
 void perror(const char *s) {
-	const char *ptr = NULL;
+	const char *ptr = nullptr;
 
 	if (errno >= 0 && errno < ELAST) {
 		ptr = sys_errlist[errno];
@@ -102,4 +103,5 @@ void perror(const char *s) {
 
 	console_error(ptr);
 	console_putc('\n');
+}
 }
