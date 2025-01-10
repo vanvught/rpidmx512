@@ -46,7 +46,7 @@ public:
 		m_E131DataPacket.RootLayer.PostAmbleSize = __builtin_bswap16(0x0000);
 		memcpy(m_E131DataPacket.RootLayer.ACNPacketIdentifier, E117Const::ACN_PACKET_IDENTIFIER, e117::PACKET_IDENTIFIER_LENGTH);
 		m_E131DataPacket.RootLayer.Vector = __builtin_bswap32(e131::vector::root::DATA);
-		Hardware::Get()->GetUuid(m_E131DataPacket.RootLayer.Cid);
+		hal::uuid_copy(m_E131DataPacket.RootLayer.Cid);
 		// E1.31 Framing Layer (See Section 6)
 		m_E131DataPacket.FrameLayer.Vector = __builtin_bswap32(e131::vector::data::PACKET);
 		memcpy(m_E131DataPacket.FrameLayer.SourceName, E131Bridge::Get()->GetSourceName(), e131::SOURCE_NAME_LENGTH);
