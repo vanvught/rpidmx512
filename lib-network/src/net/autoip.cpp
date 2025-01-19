@@ -37,7 +37,7 @@
 #include <cstring>
 #include <cassert>
 
-#include "netif.h"
+#include "net/netif.h"
 #include "net/autoip.h"
 #include "net/protocol/autoip.h"
 #include "net/acd.h"
@@ -54,7 +54,7 @@ static void autoip_bind(){
 
 	ip4_addr_t sn_mask, gw_addr;
 
-	sn_mask.addr = network::convert_to_uint(255,255,0,0);
+	sn_mask.addr = net::convert_to_uint(255,255,0,0);
 	gw_addr.addr = 0;
 
 	netif_set_addr(autoip->llipaddr, sn_mask, gw_addr);
@@ -82,7 +82,7 @@ static void autoip_conflict_callback(net::acd::Callback state) {
 		break;
 	case net::acd::Callback::ACD_DECLINE:
 		/* "delete" conflicting address so a new one will be selected in autoip_start() */
-		autoip->llipaddr.addr = network::IPADDR_ANY;
+		autoip->llipaddr.addr = net::IPADDR_ANY;
 		autoip_stop();
 		netif_clear_flags(netif::NETIF_FLAG_AUTOIP_OK);
 		break;
@@ -139,7 +139,7 @@ void autoip_start() {
 		 * Keep using the same link local address as much as possible.
 		 * Only when there is none or when there was a conflict, select a new one.
 		 */
-		if (!network::is_linklocal_ip(autoip->llipaddr.addr)) {
+		if (!net::is_linklocal_ip(autoip->llipaddr.addr)) {
 			autoip_create_addr(autoip->llipaddr.addr);
 		}
 
@@ -160,9 +160,9 @@ void autoip_stop() {
 		autoip->state = autoip::State::AUTOIP_STATE_OFF;
 
 		ip4_addr_t any;
-		any.addr = network::IPADDR_ANY;
+		any.addr = net::IPADDR_ANY;
 
-		if (network::is_linklocal_ip(globals::netif_default.ip.addr)) {
+		if (net::is_linklocal_ip(globals::netif_default.ip.addr)) {
 			netif_set_addr(any, any, any);
 		}
 	}

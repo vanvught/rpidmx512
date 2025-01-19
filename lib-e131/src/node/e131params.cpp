@@ -93,7 +93,7 @@ bool E131Params::Load() {
 	m_Params.nSetList = 0;
 
 #if !defined(DISABLE_FS)
-	ReadConfigFile configfile(E131Params::staticCallbackFunction, this);
+	ReadConfigFile configfile(E131Params::StaticCallbackFunction, this);
 
 	if (configfile.Read(E131ParamsConst::FILE_NAME)) {
 		E131ParamsStore::Update(&m_Params);
@@ -116,7 +116,7 @@ void E131Params::Load(const char* pBuffer, uint32_t nLength) {
 
 	m_Params.nSetList = 0;
 
-	ReadConfigFile config(E131Params::staticCallbackFunction, this);
+	ReadConfigFile config(E131Params::StaticCallbackFunction, this);
 
 	config.Read(pBuffer, nLength);
 
@@ -348,7 +348,7 @@ void E131Params::Set() {
 	}
 }
 
-void E131Params::staticCallbackFunction(void *p, const char *s) {
+void E131Params::StaticCallbackFunction(void *p, const char *s) {
 	assert(p != nullptr);
 	assert(s != nullptr);
 

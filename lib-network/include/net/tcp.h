@@ -1,8 +1,8 @@
 /**
- * link_handle_change.cpp
+ * @file tcp.h
  *
  */
-/* Copyright (C) 2022-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,41 +23,20 @@
  * THE SOFTWARE.
  */
 
-#include "hardware.h"
-#include "network.h"
-#include "netif.h"
+#ifndef NET_TCP_H_
+#define NET_TCP_H_
 
-#include "debug.h"
-
-#if !defined(PHY_ADDRESS)
-# define PHY_ADDRESS	1
-#endif
-
-extern void emac_adjust_link(const net::PhyStatus);
+#include <cstdint>
 
 namespace net {
-void link_handle_change(const net::Link state) {
-	DEBUG_PRINTF("net::Link %s", state == net::Link::STATE_UP ? "UP" : "DOWN");
+typedef void (*TcpCallbackFunctionPtr)(const int32_t, const uint8_t *, const uint32_t);
 
-	if (Link::STATE_UP == state) {
-		const bool isWatchdog = Hardware::Get()->IsWatchdog();
-		if (isWatchdog) {
-			Hardware::Get()->WatchdogStop();
-		}
+void tcp_shutdown();
 
-		PhyStatus phyStatus;
-		phy_start(PHY_ADDRESS, phyStatus);
-
-		emac_adjust_link(phyStatus);
-
-		if (isWatchdog) {
-			Hardware::Get()->WatchdogInit();
-		}
-
-		netif_set_link_up();
-		return;
-	}
-
-	netif_set_link_down();
-}
+int32_t tcp_begin(const uint16_t, TcpCallbackFunctionPtr callback);
+int32_t tcp_end(const int32_t);
+void tcp_write(const int32_t, const uint8_t *, uint32_t, const uint32_t);
+void tcp_abort(const int32_t, const uint32_t);
 }  // namespace net
+
+#endif /* NET_TCP_H_ */

@@ -65,10 +65,10 @@ void ArtNetNode::SetLocalMerging() {
 					(m_Node.Port[nInputPortIndex].PortAddress == m_Node.Port[nOutputPortIndex].PortAddress)) {
 
 				if (!m_Node.Port[nOutputPortIndex].bLocalMerge) {
-					m_OutputPort[nOutputPortIndex].SourceA.nIp = network::IPADDR_LOOPBACK;
+					m_OutputPort[nOutputPortIndex].SourceA.nIp = net::IPADDR_LOOPBACK;
 					DEBUG_PUTS("Local merge Source A");
 				} else {
-					m_OutputPort[nOutputPortIndex].SourceB.nIp = network::IPADDR_LOOPBACK;
+					m_OutputPort[nOutputPortIndex].SourceB.nIp = net::IPADDR_LOOPBACK;
 					DEBUG_PUTS("Local merge Source B");
 				}
 
@@ -216,6 +216,34 @@ void ArtNetNode::SetMergeMode(const uint32_t nPortIndex, const lightset::MergeMo
 	}
 }
 
+void ArtNetNode::SetFailSafe(const lightset::FailSafe lightset_failsafe) {
+	artnetnode::FailSafe failsafe;
+
+	switch (lightset_failsafe) {
+	case lightset::FailSafe::HOLD:
+		failsafe = artnetnode::FailSafe::LAST;
+		break;
+	case lightset::FailSafe::OFF:
+		failsafe = artnetnode::FailSafe::OFF;
+		break;
+	case lightset::FailSafe::ON:
+		failsafe = artnetnode::FailSafe::ON;
+		break;
+	case lightset::FailSafe::PLAYBACK:
+		failsafe = artnetnode::FailSafe::PLAYBACK;
+		break;
+	case lightset::FailSafe::RECORD:
+		failsafe = artnetnode::FailSafe::RECORD;
+		break;
+	default:
+		assert(0);
+		__builtin_unreachable();
+		break;
+	}
+
+	SetFailSafe(failsafe);
+}
+
 void ArtNetNode::SetFailSafe(const artnetnode::FailSafe failsafe) {
 	DEBUG_PRINTF("failsafe=%u", static_cast<uint32_t>(failsafe));
 
@@ -271,6 +299,31 @@ void ArtNetNode::SetFailSafe(const artnetnode::FailSafe failsafe) {
 	}
 
 	DEBUG_EXIT
+}
+
+lightset::FailSafe ArtNetNode::GetFailSafe() {
+	const auto networkloss = (m_ArtPollReply.Status3 & artnet::Status3::NETWORKLOSS_MASK);
+	switch (networkloss) {
+	case artnet::Status3::NETWORKLOSS_LAST_STATE:
+		return lightset::FailSafe::HOLD;
+		break;
+	case artnet::Status3::NETWORKLOSS_OFF_STATE:
+		return lightset::FailSafe::OFF;
+		break;
+	case artnet::Status3::NETWORKLOSS_ON_STATE:
+		return lightset::FailSafe::ON;
+		break;
+	case artnet::Status3::NETWORKLOSS_PLAYBACK:
+		return lightset::FailSafe::PLAYBACK;
+		break;
+	default:
+		assert(0);
+		__builtin_unreachable();
+		break;
+	}
+
+	__builtin_unreachable();
+	return lightset::FailSafe::OFF;
 }
 
 void ArtNetNode::HandleAddress() {

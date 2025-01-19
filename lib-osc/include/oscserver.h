@@ -68,7 +68,7 @@ public:
 		DEBUG_ENTRY
 
 		assert(m_nHandle == -1);
-		m_nHandle = Network::Get()->Begin(m_nPortIncoming, staticCallbackFunction);
+		m_nHandle = Network::Get()->Begin(m_nPortIncoming, StaticCallbackFunction);
 		assert(m_nHandle != -1);
 
 		Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
@@ -178,7 +178,7 @@ private:
 	 * @param nFromIp IP address of the sender.
 	 * @param nFromPort Port number of the sender.
 	 */
-	void static staticCallbackFunction(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
+	void static StaticCallbackFunction(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
 		s_pThis->Input(pBuffer, nSize, nFromIp, nFromPort);
 	}
 

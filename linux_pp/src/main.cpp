@@ -126,10 +126,10 @@ int main(int argc, char **argv) {
 	pp.Start();
 
 	while (keepRunning) {
+		nw.Run();
 		pp.Run();
-		remoteConfig.Run();
-		llrpOnlyDevice.Run();
 		configStore.Flash();
+		hw.Run();
 	}
 
 	return 0;

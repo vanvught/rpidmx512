@@ -39,10 +39,12 @@ void console_puts(const char *s) {
 	uart0_puts(s);
 }
 
+// https://github.com/shiena/ansicolor/blob/master/README.md
+
 void console_error(const char *s) {
 	uart0_puts("\x1b[31m");
 	uart0_puts(s);
-	uart0_puts("\x1b[37m");
+	uart0_puts("\x1b[39m");
 }
 
 void console_set_fg_color(uint32_t fg) {
@@ -95,12 +97,9 @@ void console_write(const char *s, unsigned int n) {
 
 void console_status(uint32_t nColour, const char *s) {
 	console_set_fg_color(nColour);
-	console_set_bg_color(CONSOLE_BLACK);
-
 	uart0_puts(s);
 	console_putc('\n');
-
-	console_set_fg_color(CONSOLE_WHITE);
+	console_set_fg_color(CONSOLE_DEFAULT);
 }
 
 void __attribute__((cold)) console_init() {

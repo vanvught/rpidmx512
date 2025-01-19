@@ -219,7 +219,6 @@ int main() {
 #if defined (NODE_SHOWFILE)
 		showFile.Run();
 #endif
-		remoteConfig.Run();
 		configStore.Flash();
 		if (__builtin_expect((pPixelTestPattern != nullptr), 0)) {
 			pPixelTestPattern->Run();

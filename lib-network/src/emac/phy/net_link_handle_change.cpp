@@ -1,8 +1,8 @@
 /**
- * @file propertiesconfig.cpp
+ * net_link_handle_change.cpp
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,41 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
+#include "hardware.h"
+#include "network.h"
+#include "net/netif.h"
 
-#include "propertiesconfig.h"
+#include "debug.h"
 
-uint8_t PropertiesConfig::s_Config = 0;
+#if !defined(PHY_ADDRESS)
+# define PHY_ADDRESS	1
+#endif
+
+extern void emac_adjust_link(const net::PhyStatus);
+
+namespace net {
+void link_handle_change(const net::Link state) {
+	DEBUG_PRINTF("net::Link %s", state == net::Link::STATE_UP ? "UP" : "DOWN");
+
+	if (Link::STATE_UP == state) {
+		const bool isWatchdog = Hardware::Get()->IsWatchdog();
+		if (isWatchdog) {
+			Hardware::Get()->WatchdogStop();
+		}
+
+		PhyStatus phyStatus;
+		phy_start(PHY_ADDRESS, phyStatus);
+
+		emac_adjust_link(phyStatus);
+
+		if (isWatchdog) {
+			Hardware::Get()->WatchdogInit();
+		}
+
+		netif_set_link_up();
+		return;
+	}
+
+	netif_set_link_down();
+}
+}  // namespace net

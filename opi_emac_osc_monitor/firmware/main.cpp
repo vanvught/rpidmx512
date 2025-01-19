@@ -116,7 +116,6 @@ int main() {
 	for (;;) {
 		hw.WatchdogFeed();
 		nw.Run();
-		remoteConfig.Run();
 		configStore.Flash();
 		showSystime.Run();
 		display.Run();

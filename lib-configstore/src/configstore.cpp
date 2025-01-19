@@ -2,7 +2,7 @@
  * @file configstore.cpp
  *
  */
-/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,10 +41,6 @@ extern int32_t *gp_nUtcOffset;
 using namespace configstore;
 
 static constexpr uint8_t s_aSignature[] = {'A', 'v', 'V', 0x01};
-static constexpr uint32_t s_aStorSize[static_cast<uint32_t>(Store::LAST)]  = {96,        32,    64,      64,    32,     32,        480,          64,         32,        96,           48,        32,      944,          48,        64,            32,        96,         32,      1024,     32,     32,       64,            96,               32,    32,          320,    32};
-#ifndef NDEBUG
-static constexpr char s_aStoreName[static_cast<uint32_t>(Store::LAST)][16] = {"Network", "DMX", "Pixel", "LTC", "MIDI", "LTC ETC", "OSC Server", "TLC59711", "USB Pro", "RDM Device", "RConfig", "TCNet", "OSC Client", "Display", "LTC Display", "Monitor", "SparkFun", "Slush", "Motors", "Show", "Serial", "RDM Sensors", "RDM SubDevices", "GPS", "RGB Panel", "Node", "PCA9685"};
-#endif
 
 ConfigStore::ConfigStore() {
 	DEBUG_ENTRY
@@ -97,7 +93,7 @@ ConfigStore::ConfigStore() {
 	s_nStoresSize = StoreConfiguration::OFFSET_STORES;
 
 	for (uint32_t j = 0; j < static_cast<uint32_t>(Store::LAST); j++) {
-		s_nStoresSize += s_aStorSize[j];
+		s_nStoresSize += STORE_SIZE[j];
 	}
 
 	DEBUG_PRINTF("FlashStore::OFFSET_STORES=%d, m_nSpiFlashStoreSize=%d", static_cast<int>(StoreConfiguration::OFFSET_STORES), s_nStoresSize);
@@ -128,7 +124,7 @@ uint32_t ConfigStore::GetStoreOffset(Store store) {
 	uint32_t nOffset = StoreConfiguration::OFFSET_STORES;
 
 	for (uint32_t i = 0; i < static_cast<uint32_t>(store); i++) {
-		nOffset += s_aStorSize[i];
+		nOffset += STORE_SIZE[i];
 	}
 
 	DEBUG_PRINTF("nOffset=%d", nOffset);
@@ -151,11 +147,11 @@ void ConfigStore::ResetSetList(Store store) {
 
 void ConfigStore::Update(Store store, uint32_t nOffset, const void *pData, uint32_t nDataLength, uint32_t nSetList, uint32_t nOffsetSetList) {
 	DEBUG_ENTRY
-	DEBUG_PRINTF("[%s]:%u:%p, nOffset=%d, nDataLength=%d-%u, bSetList=0x%x, nOffsetSetList=%d", s_aStoreName[static_cast<uint32_t>(store)], static_cast<uint32_t>(store), pData, nOffset, nDataLength, static_cast<uint32_t>(s_State), nSetList, nOffsetSetList);
+	DEBUG_PRINTF("[%s]:%u:%p, nOffset=%d, nDataLength=%d-%u, bSetList=0x%x, nOffsetSetList=%d", STORE_NAME[static_cast<uint32_t>(store)], static_cast<uint32_t>(store), pData, nOffset, nDataLength, static_cast<uint32_t>(s_State), nSetList, nOffsetSetList);
 
 	assert(store < Store::LAST);
 	assert(pData != nullptr);
-	assert((nOffset + nDataLength) <= s_aStorSize[static_cast<uint32_t>(store)]);
+	assert((nOffset + nDataLength) <= STORE_SIZE[static_cast<uint32_t>(store)]);
 
 	auto bIsChanged = false;
 	const auto nBase = nOffset + GetStoreOffset(store);
@@ -164,11 +160,6 @@ void ConfigStore::Update(Store store, uint32_t nOffset, const void *pData, uint3
 	auto *pDst = &s_ConfigStoreData[nBase];
 
 	DEBUG_PRINTF("pSrc=%p [pData], pDst=%p", reinterpret_cast<const void *>(pSrc), reinterpret_cast<void *>(pDst));
-
-#if defined(__linux__) || defined (__APPLE__)
-//	debug_dump(pSrc, nDataLength);
-//	debug_dump(pDst, nDataLength);
-#endif
 
 	for (uint32_t i = 0; i < nDataLength; i++) {
 		if (*pSrc != *pDst) {
@@ -194,11 +185,11 @@ void ConfigStore::Update(Store store, uint32_t nOffset, const void *pData, uint3
 
 void ConfigStore::Copy(const Store store, void *pData, uint32_t nDataLength, uint32_t nOffset, const bool doUpdate) {
 	DEBUG_ENTRY
-	DEBUG_PRINTF("[%s]:%u pData=%p, nDataLength=%u, nOffset=%u, doUpdate=%u", s_aStoreName[static_cast<uint32_t>(store)], static_cast<uint32_t>(store), pData, nDataLength, nOffset, doUpdate);
+	DEBUG_PRINTF("[%s]:%u pData=%p, nDataLength=%u, nOffset=%u, doUpdate=%u", STORE_NAME[static_cast<uint32_t>(store)], static_cast<uint32_t>(store), pData, nDataLength, nOffset, doUpdate);
 
 	assert(store < Store::LAST);
 	assert(pData != nullptr);
-	assert((nDataLength + nOffset) <= s_aStorSize[static_cast<uint32_t>(store)]);
+	assert((nDataLength + nOffset) <= STORE_SIZE[static_cast<uint32_t>(store)]);
 
 	const auto *pSrc = const_cast<const uint8_t *>(&s_ConfigStoreData[GetStoreOffset(store)]) + nOffset;
 	auto *pDst = static_cast<uint8_t *>(pData);
@@ -307,10 +298,10 @@ void ConfigStore::Dump() {
 	puts("");
 
 	for (uint32_t j = 0; j < static_cast<uint32_t>(Store::LAST); j++) {
-		printf("Store [%s]:%d\n", s_aStoreName[j], j);
+		printf("Store [%s]:%d\n", STORE_NAME[j], j);
 
 		auto *p = &s_ConfigStoreData[GetStoreOffset(static_cast<Store>(j))];
-		debug_dump(p, static_cast<uint16_t>(s_aStorSize[j]));
+		debug_dump(p, static_cast<uint16_t>(STORE_SIZE[j]));
 
 		puts("");
 	}

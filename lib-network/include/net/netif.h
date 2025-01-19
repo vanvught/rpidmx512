@@ -2,7 +2,7 @@
  * @file netif.h
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,13 +23,13 @@
  * THE SOFTWARE.
  */
 
-#ifndef NETIF_H_
-#define NETIF_H_
+#ifndef NET_NETIF_H_
+#define NET_NETIF_H_
 
 #include <cstdint>
 
 #include "netif.h"
-#include "ip4_address.h"
+#include "net/ip4_address.h"
 
 #include "debug.h"
 
@@ -38,12 +38,6 @@
 #endif
 
 namespace net {
-struct ip_addr {
-	uint32_t addr;
-};
-
-typedef struct ip_addr ip4_addr_t;
-
 struct netif {
 	static constexpr uint8_t NETIF_FLAG_LINK_UP = (1U << 0);
 	static constexpr uint8_t NETIF_FLAG_DHCP_OK = (1U << 1);
@@ -130,6 +124,10 @@ inline void netif_set_hostname(const char *hostname) {
 	globals::netif_default.hostname = hostname;
 }
 
+inline const char *netif_get_hostname() {
+	return globals::netif_default.hostname;
+}
+
 inline const char *netif_hostname() {
 	return globals::netif_default.hostname;
 }
@@ -165,4 +163,4 @@ inline bool netif_is_link_up() {
 }
 }  // namespace net
 
-#endif /* NETIF_H_ */
+#endif /* NET_NETIF_H_ */

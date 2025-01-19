@@ -173,7 +173,7 @@ void h3_cpu_off(uint32_t);
 }
 #endif
 
-void static staticCallbackFunction([[maybe_unused]] const struct artnet::TimeCode *pTimeCode) {}
+void static StaticCallbackFunction([[maybe_unused]] const struct artnet::TimeCode *pTimeCode) {}
 
 int main() {
 	Hardware hw;
@@ -298,7 +298,7 @@ int main() {
 	const auto bRunArtNet = ((ltcSource == ltc::Source::ARTNET) || ltc::Destination::IsEnabled(ltc::Destination::Output::ARTNET));
 
 	ArtNetNode node;
-	node.SetArtTimeCodeCallbackFunction(staticCallbackFunction);
+	node.SetArtTimeCodeCallbackFunction(StaticCallbackFunction);
 
 	if (bRunArtNet) {
 		ArtNetParams artnetparams;
@@ -308,7 +308,7 @@ int main() {
 		node.SetShortName(0, "LTC SMPTE Node");
 
 		if (ltcSource == ltc::Source::ARTNET) {
-			node.SetArtTimeCodeCallbackFunction(ArtNetReader::staticCallbackFunction);
+			node.SetArtTimeCodeCallbackFunction(ArtNetReader::StaticCallbackFunction);
 		}
 
 		node.SetTimeCodeIp(ltcParams.GetTimecodeIp());
@@ -336,7 +336,7 @@ int main() {
 		tcnetparams.Load();
 		tcnetparams.Set(&tcnet);
 
-		tcnet.SetArtTimeCodeCallbackFunction(TCNetReader::staticCallbackFunctionHandler);
+		tcnet.SetArtTimeCodeCallbackFunction(TCNetReader::StaticCallbackFunctionHandler);
 		tcnet.Start();
 		tcnet.Print();
 	}
@@ -604,7 +604,6 @@ int main() {
 		}
 
 		hw.Run();
-		remoteConfig.Run();
 		configStore.Flash();
 #if defined(ENABLE_SHELL)
 		shell.Run();

@@ -80,7 +80,7 @@ void ArtNetNode::HandleDmxIn() {
 
 				if (m_Node.Port[nPortIndex].bLocalMerge) {
 					m_pReceiveBuffer = reinterpret_cast<uint8_t *>(&m_ArtDmx);
-					m_nIpAddressFrom = network::IPADDR_LOOPBACK;
+					m_nIpAddressFrom = net::IPADDR_LOOPBACK;
 					HandleDmx();
 
 					SendDiag(artnet::PriorityCodes::DIAG_LOW, "%u: Input DMX local merge", nPortIndex);
@@ -146,7 +146,7 @@ void ArtNetNode::HandleDmxIn() {
 
 					if (m_Node.Port[nPortIndex].bLocalMerge) {
 						m_pReceiveBuffer = reinterpret_cast<uint8_t *>(&m_ArtDmx);
-						m_nIpAddressFrom = network::IPADDR_LOOPBACK;
+						m_nIpAddressFrom = net::IPADDR_LOOPBACK;
 						HandleDmx();
 
 						SendDiag(artnet::PriorityCodes::DIAG_LOW, "%u: Input DMX local merge", nPortIndex);

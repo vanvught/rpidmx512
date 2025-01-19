@@ -231,7 +231,7 @@ public:
 		return m_Params.nTimeCodeIp;
 	}
 
-    static void staticCallbackFunction(void *p, const char *s);
+    static void StaticCallbackFunction(void *p, const char *s);
 
 private:
 	void HandleDisabledOutput(const char *pLine, const char *pKeyword, const ltc::Destination::Output);

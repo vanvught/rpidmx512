@@ -2,7 +2,7 @@
  * @file arp.cpp
  *
  */
-/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,11 +50,11 @@
 #include "net_memcpy.h"
 #include "net_private.h"
 
+#include "net/netif.h"
 #include "net/arp.h"
 #include "net/acd.h"
 #include "net/protocol/arp.h"
 #include "net/protocol/udp.h"
-#include "netif.h"
 
 #include "softwaretimers.h"
 
@@ -239,12 +239,6 @@ static void arp_query(const uint32_t nDestinationIp, struct t_udp *pPacket, cons
 	arp_cache_record_dump(recordFound);
 
 	if (recordFound->state == net::arp::State::STATE_EMPTY) {
-		recordFound->state = net::arp::State::STATE_PROBE;
-		recordFound->nAge = 0;
-		arp_send_request(nDestinationIp);
-	}
-
-	if (recordFound->state == net::arp::State::STATE_PROBE) {
 		if (recordFound->packet.p != nullptr) {
 			delete[] recordFound->packet.p;
 		}
@@ -257,6 +251,9 @@ static void arp_query(const uint32_t nDestinationIp, struct t_udp *pPacket, cons
 #if defined CONFIG_NET_ENABLE_PTP
 		recordFound->packet.isTimestamp = (S != net::arp::EthSend::IS_NORMAL);
 #endif
+		recordFound->state = net::arp::State::STATE_PROBE;
+		recordFound->nAge = 0;
+		arp_send_request(nDestinationIp);
 	}
 
 	DEBUG_EXIT
@@ -451,7 +448,7 @@ static void arp_send_implementation(struct t_udp *pPacket, const uint32_t nSize,
 	         a link-local source address must always be "directly to its destination
 	         on the same physical link. The host MUST NOT send the packet to any
 	         router for forwarding". */
-		if (!network::is_linklocal_ip(nRemoteIp)) {
+		if (!net::is_linklocal_ip(nRemoteIp)) {
 			nDestinationIp = netif.gw.addr;
 			DEBUG_PUTS("");
 		}

@@ -48,7 +48,7 @@ public:
 	}
 
 	static void SaveHostName(const char *pHostName, uint32_t nLength) {
-		nLength = std::min(nLength,static_cast<uint32_t>(network::HOSTNAME_SIZE));
+		nLength = std::min(nLength,static_cast<uint32_t>(net::HOSTNAME_SIZE));
 		ConfigStore::Get()->Update(configstore::Store::NETWORK, offsetof(struct networkparams::Params, aHostName), pHostName, nLength, networkparams::Mask::HOSTNAME);
 	}
 

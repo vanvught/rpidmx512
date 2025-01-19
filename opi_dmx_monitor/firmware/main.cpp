@@ -158,7 +158,6 @@ int main() {
 
 #if !defined(NO_EMAC)
 		nw.Run();
-		remoteConfig.Run();
 #endif
 		hw.Run();
 	}

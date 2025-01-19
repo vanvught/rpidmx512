@@ -29,7 +29,6 @@
 #include "hardware.h"
 #include "network.h"
 
-
 #include "display.h"
 
 #include "net/apps/mdns.h"
@@ -127,7 +126,6 @@ int main() {
 		nw.Run();
 		client.Run();
 		pButtonsSet->Run();
-		remoteConfig.Run();
 		configStore.Flash();
 
 		display.Run();

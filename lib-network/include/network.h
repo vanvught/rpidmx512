@@ -28,8 +28,6 @@
 
 #include <cstdint>
 
-#include "ip4_address.h"
-
 #if defined(__linux__) || defined (__APPLE__)
 # if defined (CONFIG_NETWORK_USE_MINIMUM)
 #  include "linux/minimum/network.h"

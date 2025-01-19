@@ -30,7 +30,7 @@
 #include "net/protocol/ip4.h"
 
 namespace net {
-inline void* memcpy(void *__restrict__ dest, void const *__restrict__ src, size_t n) {
+inline void *memcpy(void *__restrict__ dest, void const *__restrict__ src, size_t n) {
 	auto *plDst = reinterpret_cast<uintptr_t*>(dest);
 	auto const *plSrc = reinterpret_cast<uintptr_t const*>(src);
 

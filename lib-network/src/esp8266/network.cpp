@@ -96,7 +96,7 @@ void Network::MacAddressCopyTo(uint8_t* pMacAddress) {
 	assert(pMacAddress != 0);
 
 	if (m_IsInitDone) {
-		memcpy(pMacAddress, m_aNetMacaddr , network::MAC_SIZE);
+		memcpy(pMacAddress, m_aNetMacaddr , net::MAC_SIZE);
 	} else {
 		mac_address_get(pMacAddress);
 	}
@@ -210,7 +210,7 @@ bool Network::Start() {
 	}
 
 	esp8266_write_4bits(CMD_WIFI_MAC_ADDRESS);
-	esp8266_read_bytes(m_aNetMacaddr, network::MAC_SIZE);
+	esp8266_read_bytes(m_aNetMacaddr, net::MAC_SIZE);
 
 	printf(" MAC address : " MACSTR "\n", MAC2STR(m_aNetMacaddr));
 

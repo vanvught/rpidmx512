@@ -82,7 +82,7 @@ void PixelDmxParams::Load() {
 	m_Params.nSetList = 0;
 
 #if !defined(DISABLE_FS)
-	ReadConfigFile configfile(PixelDmxParams::staticCallbackFunction, this);
+	ReadConfigFile configfile(PixelDmxParams::StaticCallbackFunction, this);
 
 	if (configfile.Read(DevicesParamsConst::FILE_NAME)) {
 		PixelDmxParamsStore::Update(&m_Params);
@@ -104,7 +104,7 @@ void PixelDmxParams::Load(const char *pBuffer, uint32_t nLength) {
 
 	m_Params.nSetList = 0;
 
-	ReadConfigFile config(PixelDmxParams::staticCallbackFunction, this);
+	ReadConfigFile config(PixelDmxParams::StaticCallbackFunction, this);
 
 	config.Read(pBuffer, nLength);
 
@@ -431,7 +431,7 @@ void PixelDmxParams::Set() {
 #endif
 }
 
-void PixelDmxParams::staticCallbackFunction(void *p, const char *s) {
+void PixelDmxParams::StaticCallbackFunction(void *p, const char *s) {
 	assert(p != nullptr);
 	assert(s != nullptr);
 

@@ -81,7 +81,7 @@ bool ModeParams::Load(uint32_t nMotorIndex) {
 
 	m_Params.nSetList = 0;
 
-	ReadConfigFile configfile(ModeParams::staticCallbackFunction, this);
+	ReadConfigFile configfile(ModeParams::StaticCallbackFunction, this);
 
 	if (configfile.Read(m_aFileName)) {
 		ModeParamsStore::Update(nMotorIndex, &m_Params);
@@ -104,7 +104,7 @@ void ModeParams::Load(uint32_t nMotorIndex, const char *pBuffer, uint32_t nLengt
 
 	m_Params.nSetList = 0;
 
-	ReadConfigFile config(ModeParams::staticCallbackFunction, this);
+	ReadConfigFile config(ModeParams::StaticCallbackFunction, this);
 
 	config.Read(pBuffer, nLength);
 
@@ -293,7 +293,7 @@ void ModeParams::GetSlotInfo(uint32_t nOffset, SlotInfo &tLightSetSlotInfo) {
 	tLightSetSlotInfo.nCategory = 0xFFFF;	// SD_UNDEFINED
 }
 
-void ModeParams::staticCallbackFunction(void *p, const char *s) {
+void ModeParams::StaticCallbackFunction(void *p, const char *s) {
 	assert(p != nullptr);
 	assert(s != nullptr);
 

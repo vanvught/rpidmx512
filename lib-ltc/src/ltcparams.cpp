@@ -82,7 +82,7 @@ void LtcParams::Load() {
 	m_Params.nSetList = 0;
 
 #if !defined(DISABLE_FS)
-	ReadConfigFile configfile(LtcParams::staticCallbackFunction, this);
+	ReadConfigFile configfile(LtcParams::StaticCallbackFunction, this);
 
 	if (configfile.Read(LtcParamsConst::FILE_NAME)) {
 		ltcparams::store::update(&m_Params);
@@ -104,7 +104,7 @@ void LtcParams::Load(const char* pBuffer, uint32_t nLength) {
 
 	m_Params.nSetList = 0;
 
-	ReadConfigFile config(LtcParams::staticCallbackFunction, this);
+	ReadConfigFile config(LtcParams::StaticCallbackFunction, this);
 
 	config.Read(pBuffer, nLength);
 
@@ -509,7 +509,7 @@ void LtcParams::Set(struct ltc::TimeCode *pStartTimeCode, struct ltc::TimeCode *
 	pStopTimeCode->nType = static_cast<uint8_t>(ltc::g_Type);
 }
 
-void LtcParams::staticCallbackFunction(void *p, const char *s) {
+void LtcParams::StaticCallbackFunction(void *p, const char *s) {
 	assert(p != nullptr);
 	assert(s != nullptr);
 

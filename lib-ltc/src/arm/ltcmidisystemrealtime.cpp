@@ -80,7 +80,7 @@ static void timer_handler() {
 #endif
 
 void LtcMidiSystemRealtime::Start() {
-	m_nHandle = Network::Get()->Begin(udp::PORT, staticCallbackFunctionInput);
+	m_nHandle = Network::Get()->Begin(udp::PORT, StaticCallbackFunctionInput);
 	assert(m_nHandle != -1);
 }
 

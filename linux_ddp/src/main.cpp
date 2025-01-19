@@ -130,9 +130,8 @@ int main(int argc, char **argv) {
 	while (keepRunning) {
 		nw.Run();
 		ddpDisplay.Run();
-		remoteConfig.Run();
-		llrpOnlyDevice.Run();
 		configStore.Flash();
+		hw.Run();
 	}
 
 	return 0;

@@ -44,9 +44,11 @@
 #include "net.h"
 #include "net_private.h"
 
-#include "netif.h"
+#include "net/netif.h"
 #include "net/acd.h"
 #include "net/dhcp.h"
+#include "net/tcp.h"
+#include "net/igmp.h"
 #if defined (CONFIG_NET_ENABLE_NTP_CLIENT)
 # include "net/apps/ntp_client.h"
 #endif
@@ -68,6 +70,17 @@ uint32_t nOnNetworkMask;
  void ptp_init();
  void ptp_handle(const uint8_t *, const uint32_t);
 #endif
+
+void net_link_down() {
+#if !defined(CONFIG_NET_APPS_NO_MDNS)
+	mdns_send_announcement(0);
+#endif
+#if defined (ENABLE_HTTPD)
+ 	tcp_shutdown();
+ #endif
+	igmp_shutdown();
+	dhcp_release_and_stop();
+}
 
 void net_shutdown() {
 	DEBUG_ENTRY

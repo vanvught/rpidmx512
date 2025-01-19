@@ -73,7 +73,7 @@ static constexpr auto DISCOVERY_UNIVERSE_LIST = 0x00000001;
 }  // namespace vector
 
 static constexpr uint32_t universe_to_multicast_ip(const uint16_t nUniverse) {
-	return network::convert_to_uint(239, 255, 0, 0) | (static_cast<uint32_t>(nUniverse & 0xFF) << 24) | (static_cast<uint32_t>((nUniverse & 0xFF00) << 8));
+	return net::convert_to_uint(239, 255, 0, 0) | (static_cast<uint32_t>(nUniverse & 0xFF) << 24) | (static_cast<uint32_t>((nUniverse & 0xFF00) << 8));
 }
 
 static constexpr auto UDP_PORT = 5568;

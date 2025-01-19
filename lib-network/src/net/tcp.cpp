@@ -50,7 +50,7 @@
 
 #include "../config/net_config.h"
 
-#include "net.h"
+#include "net/tcp.h"
 #include "net/protocol/tcp.h"
 
 #include "net_memcpy.h"
@@ -122,33 +122,21 @@ struct SendInfo {
 	uint8_t CTL;
 };
 
-struct QueueEntry {
-	uint8_t data[TCP_RX_MSS];
-	uint16_t nSize;
-	uint16_t nHandleConnection;
-};
-
-struct ReceiveQueue {
-	uint16_t nHead;
-	uint16_t nTail;
-	QueueEntry Entries[TCP_RX_MAX_ENTRIES];
-};
-
 struct TransmissionQueue {
 	tcb *pTcb;
 	DataSegmentQueue dataSegmentQueue;
 };
 
-struct Port {
+struct PortInfo {
 	tcb TCB[TCP_MAX_TCBS_ALLOWED];
-	ReceiveQueue receiveQueue;
 #if defined(TCP_TX_QUEUE_SIZE)
 	TransmissionQueue transmissionQueue;
 #endif
+	TcpCallbackFunctionPtr callback;
 	uint16_t nLocalPort;
 };
 
-static struct Port s_Port[TCP_MAX_PORTS_ALLOWED] SECTION_NETWORK ALIGNED;
+static struct PortInfo s_Ports[TCP_MAX_PORTS_ALLOWED] SECTION_NETWORK ALIGNED;
 static uint16_t s_id SECTION_NETWORK ALIGNED;
 static struct t_tcp s_tcp SECTION_NETWORK ALIGNED;
 
@@ -197,11 +185,11 @@ static void NEW_STATE(struct tcb *pTcb, const uint8_t state) {
 
 enum Control: uint8_t {
 	URG = 0x20,	///< Urgent Pointer field significant
-	ACK = 0x10,	///< Acknowledgment field significant
-	PSH = 0x08,	///< Acknowledgment
-	RST = 0x04,	///< Reset the connection
-	SYN = 0x02,	///< Synchronize sequence numbers
-	FIN = 0x01 	///< No more data from sender
+			ACK = 0x10,	///< Acknowledgment field significant
+			PSH = 0x08,	///< Acknowledgment
+			RST = 0x04,	///< Reset the connection
+			SYN = 0x02,	///< Synchronize sequence numbers
+			FIN = 0x01 	///< No more data from sender
 };
 
 /**
@@ -276,11 +264,11 @@ static constexpr bool SEQ_GT(const uint32_t x, const uint32_t y) {
 //	return SEQ_LT(l, x) && SEQ_LT(x, h);
 //}
 
-static constexpr bool  SEQ_BETWEEN_L(const uint32_t l, const uint32_t x, const uint32_t h)	{
+static constexpr bool SEQ_BETWEEN_L(const uint32_t l, const uint32_t x, const uint32_t h)	{
 	return SEQ_LEQ(l, x) && SEQ_LT(x, h);	// low border inclusive
 }
 
-static constexpr bool  SEQ_BETWEEN_H(const uint32_t l, const uint32_t x, const uint32_t h) {
+static constexpr bool SEQ_BETWEEN_H(const uint32_t l, const uint32_t x, const uint32_t h) {
 	return SEQ_LT(l, x) && SEQ_LEQ(x, h);	// high border inclusive
 }
 
@@ -293,31 +281,29 @@ typedef union pcast32 {
 	uint8_t u8[4];
 } _pcast32;
 
-static uint32_t _get_seqnum(struct t_tcp *const p_tcp) {
+static uint32_t tcp_get_seqnum(struct t_tcp *const p_tcp) {
 	_pcast32 src;
 	memcpy(src.u8, &p_tcp->tcp.seqnum, 4);
 	return src.u32;
 }
 
-static uint32_t _get_acknum(struct t_tcp *const p_tcp) {
+static uint32_t tcp_get_acknum(struct t_tcp *const p_tcp) {
 	_pcast32 src;
 	memcpy(src.u8, &p_tcp->tcp.acknum, 4);
 	return src.u32;
 }
 
-static void _bswap32(struct t_tcp *p_tcp) {
+static void tcp_bswap32_acknum_seqnum(struct t_tcp *p_tcp) {
 	_pcast32 src;
 
-	memcpy(src.u8, &p_tcp->tcp.acknum, 4);
-	src.u32 = __builtin_bswap32(src.u32);
+	src.u32 = __builtin_bswap32(tcp_get_acknum(p_tcp));
 	memcpy(&p_tcp->tcp.acknum, src.u8, 4);
 
-	memcpy(src.u8, &p_tcp->tcp.seqnum, 4);
-	src.u32 = __builtin_bswap32(src.u32);
+	src.u32 = __builtin_bswap32(tcp_get_seqnum(p_tcp));
 	memcpy(&p_tcp->tcp.seqnum, src.u8, 4);
 }
 
-static void _init_tcb(struct tcb *pTcb, const uint16_t nLocalPort) {
+static void tcp_init_tcb(struct tcb *pTcb, const uint16_t nLocalPort) {
 	memset(pTcb, 0, sizeof(struct tcb));
 
 	pTcb->nLocalPort = nLocalPort;
@@ -364,12 +350,10 @@ struct tcpPseudo {
 	uint16_t length;
 };
 
-static constexpr auto TCP_PSEUDO_LEN = 12;
+static constexpr uint32_t TCP_PSEUDO_LEN = 12;
 
-static uint16_t _chksum(struct t_tcp *pTcp, const struct tcb *pTcb, uint16_t nLength) {
+static uint16_t tcp_checksum_pseudo_header(struct t_tcp *pTcp, const struct tcb *pTcb, uint16_t nLength) {
 	uint8_t buf[TCP_PSEUDO_LEN];
-	uint16_t nSum;
-
 	// Store current data before TCP header in temporary buffer
 	auto *pseu = reinterpret_cast<struct tcpPseudo *>(reinterpret_cast<uint8_t *>(&pTcp->tcp) - TCP_PSEUDO_LEN);
 	memcpy(buf, pseu, TCP_PSEUDO_LEN);
@@ -381,7 +365,7 @@ static uint16_t _chksum(struct t_tcp *pTcp, const struct tcb *pTcb, uint16_t nLe
 	pseu->proto = IPv4_PROTO_TCP;
 	pseu->length = __builtin_bswap16(nLength);
 
-	nSum = net_chksum(pseu, static_cast<uint32_t>(nLength + TCP_PSEUDO_LEN));
+	const auto nSum = net_chksum(pseu, nLength + TCP_PSEUDO_LEN);
 
 	// Restore data before TCP header from temporary buffer
 	memcpy(pseu, buf, TCP_PSEUDO_LEN);
@@ -389,7 +373,7 @@ static uint16_t _chksum(struct t_tcp *pTcp, const struct tcb *pTcb, uint16_t nLe
 	return nSum;
 }
 
-static void send_package(const struct tcb *pTcb, const struct SendInfo &sendInfo) {
+static void tcp_send_segment(const struct tcb *pTcb, const struct SendInfo &sendInfo) {
 	uint32_t nDataOffset = 5; /*  Data Offset:  4 bits
 	The number of 32 bit words in the TCP Header.  This indicates where
     the data begins.  The TCP header (even one including options) is an
@@ -433,7 +417,7 @@ static void send_package(const struct tcb *pTcb, const struct SendInfo &sendInfo
 	if (sendInfo.CTL & Control::SYN) {
 		*pData++ = Option::KIND_MSS;
 		*pData++ = OPTION_MSS_LENGTH;
-		*(reinterpret_cast<uint16_t*>(pData)) = __builtin_bswap16(TCP_RX_MSS);
+		*(reinterpret_cast<uint16_t *>(pData)) = __builtin_bswap16(TCP_RX_MSS);
 		pData += 2;
 	}
 
@@ -457,11 +441,11 @@ static void send_package(const struct tcb *pTcb, const struct SendInfo &sendInfo
 
 	s_tcp.tcp.srcpt = __builtin_bswap16(s_tcp.tcp.srcpt);
 	s_tcp.tcp.dstpt = __builtin_bswap16(s_tcp.tcp.dstpt);
-	_bswap32(&s_tcp);
+	tcp_bswap32_acknum_seqnum(&s_tcp);
 	s_tcp.tcp.window = __builtin_bswap16(s_tcp.tcp.window);
 	s_tcp.tcp.urgent = __builtin_bswap16(s_tcp.tcp.urgent);
 
-	s_tcp.tcp.checksum = _chksum(&s_tcp, pTcb, static_cast<uint16_t>(tcplen));
+	s_tcp.tcp.checksum = tcp_checksum_pseudo_header(&s_tcp, pTcb, static_cast<uint16_t>(tcplen));
 
 	emac_eth_send(reinterpret_cast<void *>(&s_tcp), tcplen + sizeof(struct ip4_header) + sizeof(struct ether_header));
 }
@@ -477,7 +461,7 @@ static void send_reset(struct t_tcp *pTcp, const struct tcb *pTcb) {
 	info.CTL = Control::RST;
 
 	if (pTcp->tcp.control & Control::ACK) {
-		info.SEQ = _get_acknum(pTcp);
+		info.SEQ = tcp_get_acknum(pTcp);
 	} else {
 		info.SEQ = 0;
 		info.CTL |= Control::ACK;
@@ -493,14 +477,14 @@ static void send_reset(struct t_tcp *pTcp, const struct tcb *pTcb) {
 		nDataLength++;
 	}
 
-	info.ACK = _get_seqnum(pTcp) + nDataLength;
+	info.ACK = tcp_get_seqnum(pTcp) + nDataLength;
 
-	send_package(pTcb, info);
+	tcp_send_segment(pTcb, info);
 
 	DEBUG_EXIT
 }
 
-static bool send_data(struct tcb *pTCB, const uint8_t *pBuffer, const uint32_t nLength, const bool isLastSegment) {
+static bool tcp_send_data(struct tcb *pTCB, const uint8_t *pBuffer, const uint32_t nLength, const bool isLastSegment) {
 	assert(nLength != 0);
 	assert(nLength <= static_cast<uint32_t>(TCP_DATA_SIZE));
 	assert(nLength <= pTCB->SND.WND);
@@ -518,15 +502,15 @@ static bool send_data(struct tcb *pTCB, const uint8_t *pBuffer, const uint32_t n
 		info.CTL |= Control::PSH;
 	}
 
-	send_package(pTCB, info);
+	tcp_send_segment(pTCB, info);
 
 	pTCB->TX.data = nullptr;
 	pTCB->TX.size = 0;
 
-    pTCB->SND.NXT += nLength;
-    pTCB->SND.WND -= nLength;
+	pTCB->SND.NXT += nLength;
+	pTCB->SND.WND -= nLength;
 
-    return false;
+	return false;
 }
 
 struct Options {
@@ -535,7 +519,7 @@ struct Options {
 	uint8_t Data;
 };
 
-static void scan_options(struct t_tcp *pTcp, struct tcb *pTcb, const int32_t nDataOffset) {
+static void tcp_scan_options(struct t_tcp *pTcp, struct tcb *pTcb, const int32_t nDataOffset) {
 	const auto *pTcpHeaderEnd = reinterpret_cast<uint8_t *>(&pTcp->tcp) +  nDataOffset;
 
 	auto *pOptions = reinterpret_cast<struct Options *>(pTcp->tcp.data);
@@ -589,7 +573,7 @@ static void scan_options(struct t_tcp *pTcp, struct tcb *pTcb, const int32_t nDa
 }
 
 __attribute__((hot)) void tcp_run() {
-	for (auto& port : s_Port) {
+	for (auto& port : s_Ports) {
 		for (auto& tcb : port.TCB) {
 			if (tcb.state == STATE_CLOSE_WAIT) {
 				SendInfo info;
@@ -597,7 +581,7 @@ __attribute__((hot)) void tcp_run() {
 				info.ACK = tcb.RCV.NXT;
 				info.CTL = Control::FIN | Control::ACK;
 
-				send_package(&tcb, info);
+				tcp_send_segment(&tcb, info);
 
 				NEW_STATE(&tcb, STATE_LAST_ACK);
 
@@ -605,87 +589,92 @@ __attribute__((hot)) void tcp_run() {
 			}
 		}
 #if defined(TCP_TX_QUEUE_SIZE)
-			auto& transmissionQueue = port.transmissionQueue;
-			auto& dataSegmentQueue = transmissionQueue.dataSegmentQueue;
+		auto& transmissionQueue = port.transmissionQueue;
+		auto& dataSegmentQueue = transmissionQueue.dataSegmentQueue;
 
-			while (!dataSegmentQueue.IsEmpty() && dataSegmentQueue.GetFront().nLength <= transmissionQueue.pTcb->SND.WND) {
-			      const auto &segment = dataSegmentQueue.GetFront();
-			      send_data(transmissionQueue.pTcb, segment.buffer, segment.nLength, segment.isLastSegment);
-			      dataSegmentQueue.Pop();
-			}
+		while (!dataSegmentQueue.IsEmpty() && dataSegmentQueue.GetFront().nLength <= transmissionQueue.pTcb->SND.WND) {
+			const auto &segment = dataSegmentQueue.GetFront();
+			tcp_send_data(transmissionQueue.pTcb, segment.buffer, segment.nLength, segment.isLastSegment);
+			dataSegmentQueue.Pop();
+		}
 #endif
 	}
 }
 
-static bool find_matching_tcb(const t_tcp *pTcp, const uint32_t nIndexPort, uint32_t& nIndexTCB) {
-    for (nIndexTCB = 0; nIndexTCB < TCP_MAX_TCBS_ALLOWED; nIndexTCB++) {
-        const auto *pTCB = &s_Port[nIndexPort].TCB[nIndexTCB];
+static bool find_active_tcb(const t_tcp *pTcp, const uint32_t nIndexPort, uint32_t& nIndexTCB) {
+	for (nIndexTCB = 0; nIndexTCB < TCP_MAX_TCBS_ALLOWED; nIndexTCB++) {
+		const auto *pTCB = &s_Ports[nIndexPort].TCB[nIndexTCB];
 
-        if (pTCB->state == STATE_LISTEN) {
-            continue;
-        }
+		if (pTCB->state == STATE_LISTEN) {
+			continue;
+		}
 
-        if (pTCB->nRemotePort == pTcp->tcp.srcpt && memcmp(pTCB->remoteIp, pTcp->ip4.src, IPv4_ADDR_LEN) == 0) {
-            return true;
-        }
-    }
+		if (pTCB->nRemotePort == pTcp->tcp.srcpt && memcmp(pTCB->remoteIp, pTcp->ip4.src, IPv4_ADDR_LEN) == 0) {
+			return true;
+		}
+	}
 
-    return false;
+	return false;
 }
 
-static bool find_available_tcb(const uint32_t nIndexPort, uint32_t& nIndexTCB) {
-    for (nIndexTCB = 0; nIndexTCB < TCP_MAX_TCBS_ALLOWED; nIndexTCB++) {
-        auto *pTCB = &s_Port[nIndexPort].TCB[nIndexTCB];
+static bool find_listening_tcb(const uint32_t nIndexPort, uint32_t& nIndexTCB) {
+	for (nIndexTCB = 0; nIndexTCB < TCP_MAX_TCBS_ALLOWED; nIndexTCB++) {
+		auto *pTCB = &s_Ports[nIndexPort].TCB[nIndexTCB];
 
-        if (pTCB->state == STATE_LISTEN) {
-            DEBUG_PUTS("pTCB->state == STATE_LISTEN");
-            return true;
-        }
-    }
+		if (pTCB->state == STATE_LISTEN) {
+			DEBUG_PUTS("pTCB->state == STATE_LISTEN");
+			return true;
+		}
+	}
 
-    return false;
+	return false;
 }
 
 static void find_tcb(const t_tcp *pTcp, uint32_t& nIndexPort, uint32_t& nIndexTCB) {
-    // Search each port for a match with the destination port
-    for (nIndexPort = 0; nIndexPort < TCP_MAX_PORTS_ALLOWED; nIndexPort++) {
-        if (s_Port[nIndexPort].nLocalPort != pTcp->tcp.dstpt) {
-            continue;
-        }
+	// Search each port for a match with the destination port
+	for (nIndexPort = 0; nIndexPort < TCP_MAX_PORTS_ALLOWED; nIndexPort++) {
+		// Search for an existing active TCB matching the source IP and port
+		if (find_active_tcb(pTcp, nIndexPort, nIndexTCB)) {
+			DEBUG_EXIT
+			return;
+		}
 
-        // Search for an existing active TCB matching the source IP and port
-        if (find_matching_tcb(pTcp, nIndexPort, nIndexTCB)) {
-            DEBUG_EXIT
-            return;
-        }
+		// If no matching TCB, find an available TCB in listening state
+		if (find_listening_tcb(nIndexPort, nIndexTCB)) {
+			DEBUG_EXIT
+			return;
+		}
 
-        // If no matching TCB, find an available TCB in listening state
-        if (find_available_tcb(nIndexPort, nIndexTCB)) {
-            DEBUG_EXIT
-            return;
-        }
-
-        // If no available TCB, trigger retransmission
-        DEBUG_PUTS("MAX_TCB_ALLOWED -> Force retransmission");
-        DEBUG_EXIT
-        return;
-    }
+		// If no available TCB, trigger retransmission
+		DEBUG_PUTS("MAX_TCB_ALLOWED -> Force retransmission");
+		DEBUG_EXIT
+		return;
+	}
 }
 
 /**
  * https://www.rfc-editor.org/rfc/rfc9293.html#name-segment-arrives
  */
 __attribute__((hot)) void tcp_handle(struct t_tcp *pTcp) {
-	const auto tcplen = static_cast<uint16_t>(__builtin_bswap16(pTcp->ip4.len) - sizeof(struct ip4_header));
-
 	pTcp->tcp.srcpt = __builtin_bswap16(pTcp->tcp.srcpt);
 	pTcp->tcp.dstpt = __builtin_bswap16(pTcp->tcp.dstpt);
 
-	DEBUG_PRINTF(IPSTR ":%d[%d] -> %d", pTcp->ip4.src[0], pTcp->ip4.src[1], pTcp->ip4.src[2], pTcp->ip4.src[3], pTcp->tcp.dstpt, pTcp->tcp.srcpt, tcplen);
+	DEBUG_PRINTF(IPSTR ":%d[%d]", pTcp->ip4.src[0], pTcp->ip4.src[1], pTcp->ip4.src[2], pTcp->ip4.src[3], pTcp->tcp.dstpt, pTcp->tcp.srcpt);
 
 	uint32_t nIndexPort = 0;
+
+	for (nIndexPort = 0; nIndexPort < TCP_MAX_PORTS_ALLOWED; nIndexPort++) {
+		if (s_Ports[nIndexPort].nLocalPort == pTcp->tcp.dstpt) {
+			break;
+		}
+	}
+
 	uint32_t nIndexTCB = 0;
-	find_tcb(pTcp, nIndexPort, nIndexTCB);
+
+	if (nIndexPort != TCP_MAX_PORTS_ALLOWED) {
+		find_tcb(pTcp, nIndexPort, nIndexTCB);
+	}
+
 	DEBUG_PRINTF("nIndexPort=%u, nIndexTCB=%u", nIndexPort, nIndexTCB);
 
 	const auto nDataOffset = offset2octets(pTcp->tcp.offset);
@@ -704,9 +693,9 @@ __attribute__((hot)) void tcp_handle(struct t_tcp *pTcp) {
 		std::memcpy(TCB.remoteIp, pTcp->ip4.src, IPv4_ADDR_LEN);
 		std::memcpy(TCB.remoteEthAddr, pTcp->ether.src, ETH_ADDR_LEN);
 
-		_bswap32(pTcp);
+		tcp_bswap32_acknum_seqnum(pTcp);
 
-		scan_options(pTcp, &TCB, nDataOffset);
+		tcp_scan_options(pTcp, &TCB, nDataOffset);
 		send_reset(pTcp, &TCB);
 
 		DEBUG_PUTS("TCP_MAX_PORTS_ALLOWED");
@@ -714,38 +703,32 @@ __attribute__((hot)) void tcp_handle(struct t_tcp *pTcp) {
 		return;
 	}
 
+	const auto tcplen = static_cast<uint16_t>(__builtin_bswap16(pTcp->ip4.len) - sizeof(struct ip4_header));
 	const auto nDataLength = static_cast<uint16_t>(tcplen - nDataOffset);
 
-	_bswap32(pTcp);
+	tcp_bswap32_acknum_seqnum(pTcp);
 	pTcp->tcp.window = __builtin_bswap16(pTcp->tcp.window);
 	pTcp->tcp.urgent = __builtin_bswap16(pTcp->tcp.urgent);
 
-	SendInfo sendInfo;
-
 	const auto SEG_LEN = nDataLength;
-	const auto SEG_ACK = _get_acknum(pTcp);
-	const auto SEG_SEQ = _get_seqnum(pTcp);
+	const auto SEG_ACK = tcp_get_acknum(pTcp);
+	const auto SEG_SEQ = tcp_get_seqnum(pTcp);
 	const auto SEG_WND = pTcp->tcp.window;
 
-	auto *pTCB = &s_Port[nIndexPort].TCB[nIndexTCB];
+	auto *pTCB = &s_Ports[nIndexPort].TCB[nIndexTCB];
 
-	DEBUG_PRINTF("%u:%u:[%s] %c%c%c%c%c%c SEQ=%u, ACK=%u, tcplen=%u, data_offset=%u, data_length=%u",
-			nIndexPort,
-			nIndexTCB,
-			s_aStateName[pTCB->state],
+	DEBUG_PRINTF(
+			"%u:%u:[%s] %c%c%c%c%c%c SEQ=%u, ACK=%u, tcplen=%u, data_offset=%u, data_length=%u",
+			nIndexPort, nIndexTCB, s_aStateName[pTCB->state],
 			pTcp->tcp.control & Control::URG ? 'U' : '-',
 			pTcp->tcp.control & Control::ACK ? 'A' : '-',
 			pTcp->tcp.control & Control::PSH ? 'P' : '-',
 			pTcp->tcp.control & Control::RST ? 'R' : '-',
 			pTcp->tcp.control & Control::SYN ? 'S' : '-',
-			pTcp->tcp.control & Control::FIN ? 'F' : '-',
-			_get_seqnum(pTcp),
-			_get_acknum(pTcp),
-			tcplen,
-			nDataOffset,
-			nDataLength);
+			pTcp->tcp.control & Control::FIN ? 'F' : '-', tcp_get_seqnum(pTcp),
+			tcp_get_acknum(pTcp), tcplen, nDataOffset, nDataLength);
 
-	scan_options(pTcp, pTCB, nDataOffset);
+	tcp_scan_options(pTcp, pTCB, nDataOffset);
 
 	// https://www.rfc-editor.org/rfc/rfc9293.html#name-listen-state
 	if (pTCB->state == STATE_LISTEN) {
@@ -782,10 +765,11 @@ __attribute__((hot)) void tcp_handle(struct t_tcp *pTcp) {
 			pTCB->IRS = SEG_SEQ;
 
 			// <SEQ=ISS><ACK=RCV.NXT><CTL=SYN,ACK>
+			SendInfo sendInfo;
 			sendInfo.SEQ = pTCB->ISS;
 			sendInfo.ACK = pTCB->RCV.NXT;
 			sendInfo.CTL = Control::SYN | Control::ACK;
-			send_package(pTCB, sendInfo);
+			tcp_send_segment(pTCB, sendInfo);
 
 			// SND.NXT is set to ISS+1 and SND.UNA to ISS. The connection state should be changed to SYN-RECEIVED.
 			pTCB->SND.NXT = pTCB->ISS + 1;
@@ -814,7 +798,21 @@ __attribute__((hot)) void tcp_handle(struct t_tcp *pTcp) {
 	case STATE_CLOSING:
 	case STATE_LAST_ACK:
 	case STATE_TIME_WAIT: {
-		// There are four cases for the acceptability test for an incoming segment
+		// There are four cases for the acceptability test for an incoming segment.
+		/*
+		 * RCV.WND:
+		 * - The receiver’s window size, representing how many more bytes of data it is willing to accept.
+		 * - A window size of 0 means the receiver cannot currently accept more data (e.g., due to buffer constraints).
+		 *
+		 * RCV.NXT:
+		 * - The sequence number of the next expected byte of data from the sender.
+		 *
+		 * SEG_SEQ:
+		 * - The sequence number of the first byte in the received segment.
+		 *
+		 * SEG_LEN:
+		 * - The length of the data in the received segment (payload size).
+		 */
 		auto isAcceptable = false;
 
 		DEBUG_PRINTF("RCV.WND=%u, SEG_LEN=%u, RCV.NXT=%u, SEG_SEQ=%u", pTCB->RCV.WND, SEG_LEN, pTCB->RCV.NXT, SEG_SEQ);
@@ -822,6 +820,14 @@ __attribute__((hot)) void tcp_handle(struct t_tcp *pTcp) {
 		if (pTCB->RCV.WND > 0) {
 			if (SEG_LEN == 0) {
 				// Case 2: SEG_LEN = 0 RCV.WND > 0 -> RCV.NXT =< SEG.SEQ < RCV.NXT+RCV.WND
+				/*
+				 * Condition:
+				 * - The received segment is empty (SEG_LEN = 0).
+				 * - The receiver's window size is greater than 0.
+				 *
+				 * Even though the segment contains no data, it might carry control flags (e.g., SYN, FIN) that need to be processed.
+				 * It must lie within the allowable sequence range dictated by the receiver’s window.
+				 */
 				if (SEQ_BETWEEN_L(pTCB->RCV.NXT, SEG_SEQ, pTCB->RCV.NXT + pTCB->RCV.WND)) {
 					isAcceptable = true;
 				}
@@ -830,19 +836,43 @@ __attribute__((hot)) void tcp_handle(struct t_tcp *pTcp) {
 				// RCV.NXT =< SEG.SEQ < RCV.NXT+RCV.WND
 				// or
 				// RCV.NXT =< SEG.SEQ+SEG.LEN-1 < RCV.NXT+RCV.WND
+				/*
+				 * Condition:
+				 * - The received segment contains data (SEG_LEN > 0).
+				 * - The receiver’s window size is greater than 0.
+				 *
+				 * Segments can be partially within the window,
+				 * so either the start or the end of the segment must fall within the acceptable range.
+				 */
 				if ( SEQ_BETWEEN_L(pTCB->RCV.NXT, SEG_SEQ, pTCB->RCV.NXT + pTCB->RCV.WND)
-				  || SEQ_BETWEEN_L(pTCB->RCV.NXT, SEG_SEQ + SEG_LEN-1, pTCB->RCV.NXT+pTCB->RCV.WND)) {
+						|| SEQ_BETWEEN_L(pTCB->RCV.NXT, SEG_SEQ + SEG_LEN-1, pTCB->RCV.NXT+pTCB->RCV.WND)) {
 					isAcceptable = true;
 				}
 			}
 		} else {
 			// Case 1: SEG_LEN = 0 RCV.WND = 0 -> SEG.SEQ = RCV.NXT
+			/*
+			 * Condition:
+			 *  - The received segment is empty (SEG_LEN = 0).
+			 *  - The receiver's window size is 0.
+			 *
+			 *  Even though the window is closed,
+			 *  the receiver still acknowledges control packets (e.g., ACKs or FIN) that match RCV.NXT.
+			 */
 			if (SEG_LEN == 0) {
 				if (SEG_SEQ == pTCB->RCV.NXT) {
 					isAcceptable = true;
 				}
 			}
-			// Case 3: SEG_LEN > 0 RCV.WND =0 -> not acceptable
+			// Case 3: SEG_LEN > 0 RCV.WND = 0 -> not acceptable
+			/*
+			 * Condition:
+			 * - The received segment contains data (SEG_LEN > 0).
+			 * - The receiver's window size is 0.
+			 *
+			 * The receiver has no buffer space available, so it cannot accept any data.
+			 * The sender should wait until the window opens (indicated by an updated ACK from the receiver).
+			 */
 		}
 
 		DEBUG_PRINTF("isAcceptable=%d", isAcceptable);
@@ -852,15 +882,16 @@ __attribute__((hot)) void tcp_handle(struct t_tcp *pTcp) {
 			// (unless the RST bit is set, if so drop the segment and return)
 			// <SEQ=SND.NXT><ACK=RCV.NXT><CTL=ACK>
 			if (pTcp->tcp.control & Control::RST) {
-				_init_tcb(pTCB, pTCB->nLocalPort);
+				tcp_init_tcb(pTCB, pTCB->nLocalPort);
 				DEBUG_EXIT
 				return;
 			}
 
+			SendInfo sendInfo;
 			sendInfo.SEQ = pTCB->SND.NXT;
 			sendInfo.ACK = pTCB->RCV.NXT;
 			sendInfo.CTL = Control::ACK;
-			send_package(pTCB, sendInfo);
+			tcp_send_segment(pTCB, sendInfo);
 
 			DEBUG_EXIT
 			return;
@@ -870,7 +901,7 @@ __attribute__((hot)) void tcp_handle(struct t_tcp *pTcp) {
 		if (pTcp->tcp.control & Control::RST) {
 			switch (pTCB->state) {
 			case STATE_SYN_RECEIVED:
-				_init_tcb(pTCB, pTCB->nLocalPort);
+				tcp_init_tcb(pTCB, pTCB->nLocalPort);
 				break;
 			case STATE_ESTABLISHED:
 			case STATE_FIN_WAIT_1:
@@ -881,14 +912,14 @@ __attribute__((hot)) void tcp_handle(struct t_tcp *pTcp) {
 				 * flushed.  Users should also receive an unsolicited general
 				 * "connection reset" signal.  Enter the CLOSED state, delete the
 				 * TCB, and return. */
-				_init_tcb(pTCB, pTCB->nLocalPort);
+				tcp_init_tcb(pTCB, pTCB->nLocalPort);
 				break;
 			case STATE_CLOSING:
 			case STATE_LAST_ACK:
 			case STATE_TIME_WAIT:
 				/* If the RST bit is set then, enter the CLOSED state, delete the
 				 * TCB, and return. */
-				_init_tcb(pTCB, pTCB->nLocalPort);
+				tcp_init_tcb(pTCB, pTCB->nLocalPort);
 				break;
 			default:
 				assert(0);
@@ -903,7 +934,7 @@ __attribute__((hot)) void tcp_handle(struct t_tcp *pTcp) {
 		if (pTcp->tcp.control & Control::SYN) {
 			// RFC 1122 section 4.2.2.20 (e)
 			if (pTCB->state == STATE_SYN_RECEIVED) {
-				_init_tcb(pTCB, pTCB->nLocalPort);
+				tcp_init_tcb(pTCB, pTCB->nLocalPort);
 				return;
 			}
 
@@ -983,26 +1014,28 @@ __attribute__((hot)) void tcp_handle(struct t_tcp *pTcp) {
 			} else if (SEQ_GT(SEG_ACK, pTCB->SND.NXT)) {
 				DEBUG_PRINTF("SEG_ACK=%u, SND.NXT=%u", SEG_ACK,pTCB->SND.NXT);
 
+				SendInfo sendInfo;
 				sendInfo.SEQ = pTCB->SND.NXT;
 				sendInfo.ACK = pTCB->RCV.NXT;
 				sendInfo.CTL = Control::ACK;
 
-				send_package(pTCB, sendInfo);
+				tcp_send_segment(pTCB, sendInfo);
 				return;
 			}
 			break;
 		case STATE_LAST_ACK:
 			if (SEG_ACK == pTCB->SND.NXT) { 	// if our FIN is now acknowledged
-				_init_tcb(pTCB, pTCB->nLocalPort);
+				tcp_init_tcb(pTCB, pTCB->nLocalPort);
 			}
 			break;
 		case STATE_TIME_WAIT:
 			if (SEG_ACK == pTCB->SND.NXT) {		// if our FIN is now acknowledged
+				SendInfo sendInfo;
 				sendInfo.SEQ = pTCB->SND.NXT;
 				sendInfo.ACK = pTCB->RCV.NXT;
 				sendInfo.CTL = Control::ACK;
 
-				send_package(pTCB, sendInfo);
+				tcp_send_segment(pTCB, sendInfo);
 				CLIENT_NOT_IMPLEMENTED;
 			}
 			break;
@@ -1020,29 +1053,26 @@ __attribute__((hot)) void tcp_handle(struct t_tcp *pTcp) {
 		case STATE_FIN_WAIT_2:
 			if (nDataLength > 0) {
 				if (SEG_SEQ == pTCB->RCV.NXT) {
-					auto *pQueue = &s_Port[nIndexPort].receiveQueue;
-					auto *pQueueEntry = &pQueue->Entries[pQueue->nHead];
-
-					pQueueEntry->nHandleConnection = static_cast<uint16_t>(nIndexTCB);
-					memcpy(pQueueEntry->data, reinterpret_cast<uint8_t *>(&pTcp->tcp) + nDataOffset, nDataLength);
-					pQueueEntry->nSize = nDataLength;
-
+					assert(s_Ports[nIndexPort].callback != nullptr);
+					// Update sequence and window
 					pTCB->RCV.NXT += nDataLength;
-					pTCB->RCV.WND -= static_cast<uint16_t>(TCP_DATA_SIZE);
+					pTCB->RCV.WND -= nDataLength;
 
+					s_Ports[nIndexPort].callback(nIndexTCB, reinterpret_cast<uint8_t *>(&pTcp->tcp) + nDataOffset, nDataLength);
+
+					// Send acknowledgment
+					SendInfo sendInfo;
 					sendInfo.SEQ = pTCB->SND.NXT;
 					sendInfo.ACK = pTCB->RCV.NXT;
 					sendInfo.CTL = Control::ACK;
-
-					send_package(pTCB, sendInfo);
-
-					pQueue->nHead = (pQueue->nHead + 1) & TCP_RX_MAX_ENTRIES_MASK;
+					tcp_send_segment(pTCB, sendInfo);
 				} else {
+					SendInfo sendInfo;
 					sendInfo.SEQ = pTCB->SND.NXT;
 					sendInfo.ACK = pTCB->RCV.NXT;
 					sendInfo.CTL = Control::ACK;
 
-					send_package(pTCB, sendInfo);
+					tcp_send_segment(pTCB, sendInfo);
 
 					DEBUG_PUTS("Out of order");
 					DEBUG_EXIT
@@ -1079,11 +1109,13 @@ __attribute__((hot)) void tcp_handle(struct t_tcp *pTcp) {
 		 */
 
 		pTCB->RCV.NXT = pTCB->RCV.NXT + 1;
+
+		SendInfo sendInfo;
 		sendInfo.SEQ = pTCB->SND.NXT;
 		sendInfo.ACK = pTCB->RCV.NXT;
 		sendInfo.CTL = Control::ACK;
 
-		send_package(pTCB, sendInfo);
+		tcp_send_segment(pTCB, sendInfo);
 
 		switch (pTCB->state) {
 		case STATE_SYN_RECEIVED:
@@ -1133,24 +1165,25 @@ __attribute__((hot)) void tcp_handle(struct t_tcp *pTcp) {
 
 // --> Public API's
 
-int32_t tcp_begin(const uint16_t nLocalPort) {
+int32_t tcp_begin(const uint16_t nLocalPort, TcpCallbackFunctionPtr callback) {
 	DEBUG_PRINTF("nLocalPort=%u", nLocalPort);
 
 	for (int32_t i = 0; i < TCP_MAX_PORTS_ALLOWED; i++) {
-		if (s_Port[i].nLocalPort == nLocalPort) {
+		if (s_Ports[i].nLocalPort == nLocalPort) {
 			return i;
 		}
 
-		if (s_Port[i].nLocalPort == 0) {
-			s_Port[i].nLocalPort = nLocalPort;
+		if (s_Ports[i].nLocalPort == 0) {
+			s_Ports[i].callback = callback;
+			s_Ports[i].nLocalPort = nLocalPort;
 
 			for (uint32_t nIndexTCB = 0; nIndexTCB < TCP_MAX_TCBS_ALLOWED; nIndexTCB++) {
 				// create transmission control block's (TCB)
-				_init_tcb(&s_Port[i].TCB[nIndexTCB], nLocalPort);
+				tcp_init_tcb(&s_Ports[i].TCB[nIndexTCB], nLocalPort);
 			}
 
 #if defined(TCP_TX_QUEUE_SIZE)
-			s_Port[i].transmissionQueue.pTcb = nullptr;
+			s_Ports[i].transmissionQueue.pTcb = nullptr;
 #endif
 			DEBUG_PRINTF("i=%d, nLocalPort=%d[%x]", i, nLocalPort, nLocalPort);
 			return i;
@@ -1165,32 +1198,8 @@ int32_t tcp_begin(const uint16_t nLocalPort) {
 }
 
 int32_t tcp_end([[maybe_unused]] const int32_t nHandle) {
+	assert(0);
 	return 0;
-}
-
-uint32_t tcp_read(const int32_t nHandleListen, const uint8_t **pData, uint32_t &nHandleConnection) {
-	assert(nHandleListen >= 0);
-	assert(nHandleListen < TCP_MAX_PORTS_ALLOWED);
-
-	auto *pQueue = &s_Port[nHandleListen].receiveQueue;
-
-	if (__builtin_expect((pQueue->nHead == pQueue->nTail), 1)) {
-		return 0;
-	}
-
-	const auto nEntry = pQueue->nTail;
-	const auto *const pQueueEntry = &pQueue->Entries[nEntry];
-
-	nHandleConnection = pQueueEntry->nHandleConnection;
-	*pData = pQueueEntry->data;
-
-	auto *pTCB = &s_Port[nHandleListen].TCB[nHandleConnection];
-
-	pTCB->RCV.WND += TCP_DATA_SIZE;
-
-	pQueue->nTail = (pQueue->nTail + 1) & TCP_RX_MAX_ENTRIES_MASK;
-
-	return pQueueEntry->nSize;
 }
 
 void tcp_write(const int32_t nHandleListen, const uint8_t *pBuffer, uint32_t nLength, uint32_t nHandleConnection) {
@@ -1199,7 +1208,7 @@ void tcp_write(const int32_t nHandleListen, const uint8_t *pBuffer, uint32_t nLe
 	assert(pBuffer != nullptr);
 	assert(nHandleConnection < TCP_MAX_TCBS_ALLOWED);
 
-	auto *pTCB = &s_Port[nHandleListen].TCB[nHandleConnection];
+	auto *pTCB = &s_Ports[nHandleListen].TCB[nHandleConnection];
 	assert(pTCB != nullptr);
 
 	const auto *p = pBuffer;
@@ -1208,7 +1217,7 @@ void tcp_write(const int32_t nHandleListen, const uint8_t *pBuffer, uint32_t nLe
 		const auto nWriteLength = (nLength > TCP_DATA_SIZE) ? TCP_DATA_SIZE : nLength;
 		const bool isLastSegment = (nLength < TCP_DATA_SIZE);
 
-		send_data(pTCB, p, nWriteLength, isLastSegment);
+		tcp_send_data(pTCB, p, nWriteLength, isLastSegment);
 
 		p += nWriteLength;
 		nLength -= nWriteLength;
@@ -1216,7 +1225,7 @@ void tcp_write(const int32_t nHandleListen, const uint8_t *pBuffer, uint32_t nLe
 
 	if (nLength > 0) {
 #if defined(TCP_TX_QUEUE_SIZE)
-		auto& transmissionQueue = s_Port[nHandleListen].transmissionQueue;
+		auto& transmissionQueue = s_Ports[nHandleListen].transmissionQueue;
 		auto& dataSegmentQueue = transmissionQueue.dataSegmentQueue;
 		assert(dataSegmentQueue.IsEmpty());
 
@@ -1241,7 +1250,7 @@ void tcp_abort(const int32_t nHandleListen, const uint32_t nHandleConnection) {
 	assert(nHandleListen < TCP_MAX_PORTS_ALLOWED);
 	assert(nHandleConnection < TCP_MAX_TCBS_ALLOWED);
 
-	auto *pTCB = &s_Port[nHandleListen].TCB[nHandleConnection];
+	auto *pTCB = &s_Ports[nHandleListen].TCB[nHandleConnection];
 	assert(pTCB != nullptr);
 
 	struct SendInfo info;
@@ -1249,7 +1258,7 @@ void tcp_abort(const int32_t nHandleListen, const uint32_t nHandleConnection) {
 	info.SEQ = pTCB->SND.NXT;
 	info.ACK = pTCB->RCV.NXT;
 
-	send_package(pTCB, info);
+	tcp_send_segment(pTCB, info);
 }
 
 }  // namespace net

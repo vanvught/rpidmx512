@@ -192,7 +192,7 @@ void LtcGenerator::Start() {
 	platform::ltc::timer11_set_type(nType);
 #endif
 
-	m_nHandle = Network::Get()->Begin(UDP_PORT, staticCallbackFunction);
+	m_nHandle = Network::Get()->Begin(UDP_PORT, StaticCallbackFunction);
 	assert(m_nHandle != -1);
 
 	LtcOutputs::Get()->Init();

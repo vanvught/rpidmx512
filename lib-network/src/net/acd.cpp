@@ -330,7 +330,7 @@ void acd_netif_ip_addr_changed(const ip4_addr_t old_addr, const ip4_addr_t new_a
 
 	if (acd->ipaddr.addr == old_addr.addr) {
 		/* Did we change from a LL address to a routable address? */
-		if (network::is_linklocal_ip(old_addr.addr) && !network::is_linklocal_ip(new_addr.addr)) {
+		if (net::is_linklocal_ip(old_addr.addr) && !net::is_linklocal_ip(new_addr.addr)) {
 			/* Put the module in passive conflict detection mode */
 			acd_put_in_passive_mode();
 		}

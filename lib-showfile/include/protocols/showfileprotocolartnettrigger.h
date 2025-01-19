@@ -42,7 +42,7 @@ public:
 		assert(s_pThis == nullptr);
 		s_pThis = this;
 
-		ArtNetController::Get()->SetArtTriggerCallbackFunctionPtr(staticCallbackFunction);
+		ArtNetController::Get()->SetArtTriggerCallbackFunctionPtr(StaticCallbackFunction);
 
 		DEBUG_EXIT
 	}

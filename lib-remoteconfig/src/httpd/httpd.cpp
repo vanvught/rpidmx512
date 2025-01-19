@@ -43,7 +43,7 @@ HttpDaemon::HttpDaemon() {
 	DEBUG_ENTRY
 
 	assert(m_nHandle == -1);
-	m_nHandle = Network::Get()->TcpBegin(80);
+	m_nHandle = Network::Get()->TcpBegin(80, Input);
 	assert(m_nHandle != -1);
 
 	for (uint32_t nIndex = 0; nIndex < TCP_MAX_TCBS_ALLOWED; nIndex++) {

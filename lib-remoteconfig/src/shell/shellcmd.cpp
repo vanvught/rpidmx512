@@ -220,7 +220,7 @@ void Shell::CmdSet() {
 	if ((nArgv0Length == set::length::HOSTNAME) && (memcmp(m_Argv[0], set::arg::HOSTNAME, set::length::HOSTNAME) == 0)) {
 		const auto nArgv1Length = m_nArgvLength[1];
 
-		if ((nArgv1Length != 0) && (nArgv1Length <= network::HOSTNAME_SIZE)) {
+		if ((nArgv1Length != 0) && (nArgv1Length <= net::HOSTNAME_SIZE)) {
 			Network::Get()->SetHostName(m_Argv[1]);
 		} else {
 			Puts(msg::usage::HOSTNAME);

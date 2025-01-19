@@ -99,7 +99,7 @@ void TCNetReader::Start() {
 #elif defined (GD32)
 #endif
 
-	m_nHandle = Network::Get()->Begin(UDP_PORT, staticCallbackFunctionInput);
+	m_nHandle = Network::Get()->Begin(UDP_PORT, StaticCallbackFunctionInput);
 	assert(m_nHandle != -1);
 
 	LtcOutputs::Get()->Init();

@@ -61,7 +61,7 @@ void OSCServerParams::Load() {
 	m_Params.nSetList = 0;
 
 #if !defined(DISABLE_FS)
-	ReadConfigFile configfile(OSCServerParams::staticCallbackFunction, this);
+	ReadConfigFile configfile(OSCServerParams::StaticCallbackFunction, this);
 
 	if (configfile.Read(OscServerParamsConst::FILE_NAME)) {
 		StoreOscServer::Update(&m_Params);
@@ -83,7 +83,7 @@ void OSCServerParams::Load(const char* pBuffer, uint32_t nLength) {
 
 	m_Params.nSetList = 0;
 
-	ReadConfigFile config(OSCServerParams::staticCallbackFunction, this);
+	ReadConfigFile config(OSCServerParams::StaticCallbackFunction, this);
 
 	config.Read(pBuffer, nLength);
 
@@ -218,7 +218,7 @@ void OSCServerParams::Builder(const osc::server::Params *ptOSCServerParams, char
 	DEBUG_EXIT
 }
 
-void OSCServerParams::staticCallbackFunction(void *p, const char *s) {
+void OSCServerParams::StaticCallbackFunction(void *p, const char *s) {
 	assert(p != nullptr);
 	assert(s != nullptr);
 

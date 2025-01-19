@@ -175,7 +175,6 @@ int main() {
 		hw.WatchdogFeed();
 		nw.Run();
 		pp.Run();
-		remoteConfig.Run();
 		configStore.Flash();
 		pixelTestPattern.Run();
 		display.Run();

@@ -65,26 +65,11 @@ public:
 	 */
 	~HttpDaemon();
 
-	/**
-	 * @brief Main loop function to handle HTTP requests.
-	 *
-	 * Reads incoming TCP data, determines the connection handle,
-	 * and dispatches the request to the appropriate handler.
-	 */
-	void Run() {
-		uint32_t nConnectionHandle;
-		const auto nBytesReceived = Network::Get()->TcpRead(m_nHandle, const_cast<const uint8_t **>(reinterpret_cast<uint8_t **>(&m_pReceiveBuffer)), nConnectionHandle);
-
-		if (__builtin_expect((nBytesReceived == 0), 1)) {
-			return;
-		}
-
-		DEBUG_PRINTF("nConnectionHandle=%u", nConnectionHandle);
-
-		handleRequest[nConnectionHandle].HandleRequest(nBytesReceived, m_pReceiveBuffer);
+private:
+	static void Input(const int32_t nConnectionHandle, const uint8_t *pBuffer, const uint32_t nSize) {
+		handleRequest[nConnectionHandle].HandleRequest(nSize, const_cast<char *>(reinterpret_cast<const char *>(pBuffer)));
 	}
 
-private:
 	/**
 	 * https://www.gd32-dmx.org/memory.html
 	 */
@@ -99,7 +84,6 @@ private:
 	 */
 	static inline HttpDeamonHandleRequest handleRequest[TCP_MAX_TCBS_ALLOWED] __attribute__ ((aligned (4))) SECTION_HTTPD;
 	int32_t m_nHandle { -1 };
-	char *m_pReceiveBuffer { nullptr };
 };
 
 #endif /* HTTPD_HTTPD_H_ */

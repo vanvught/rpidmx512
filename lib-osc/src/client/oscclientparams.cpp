@@ -65,7 +65,7 @@ void OscClientParams::Load() {
 	m_Params.nSetList = 0;
 
 #if !defined(DISABLE_FS)
-	ReadConfigFile configfile(OscClientParams::staticCallbackFunction, this);
+	ReadConfigFile configfile(OscClientParams::StaticCallbackFunction, this);
 
 	if (configfile.Read(OscClientParamsConst::FILE_NAME)) {
 		OscClientParamsStore::Update(&m_Params);
@@ -87,7 +87,7 @@ void OscClientParams::Load(const char *pBuffer, uint32_t nLength) {
 
 	m_Params.nSetList = 0;
 
-	ReadConfigFile config(OscClientParams::staticCallbackFunction, this);
+	ReadConfigFile config(OscClientParams::StaticCallbackFunction, this);
 
 	config.Read(pBuffer, nLength);
 
@@ -241,7 +241,7 @@ void OscClientParams::Set(OscClient* pOscClient) {
 	}
 }
 
-void OscClientParams::staticCallbackFunction(void* p, const char* s) {
+void OscClientParams::StaticCallbackFunction(void* p, const char* s) {
 	assert(p != nullptr);
 	assert(s != nullptr);
 

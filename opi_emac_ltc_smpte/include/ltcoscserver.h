@@ -65,7 +65,7 @@ public:
 		DEBUG_ENTRY
 
 		assert(m_nHandle == -1);
-		m_nHandle = Network::Get()->Begin(m_nPortIncoming, staticCallbackFunction);
+		m_nHandle = Network::Get()->Begin(m_nPortIncoming, StaticCallbackFunction);
 		assert(m_nHandle != -1);
 
 		DEBUG_EXIT
@@ -92,7 +92,7 @@ private:
 	void SetWS28xxRGB(const uint8_t *, uint32_t, ltcdisplayrgb::ColourIndex);
 #endif
 
-	void static staticCallbackFunction(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
+	void static StaticCallbackFunction(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
 		s_pThis->Input(pBuffer, nSize, nFromIp, nFromPort);
 	}
 

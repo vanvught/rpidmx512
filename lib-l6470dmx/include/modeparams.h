@@ -151,7 +151,7 @@ public:
 
 	void GetSlotInfo(uint32_t nOffset, lightset::SlotInfo &tLightSetSlotInfo);
 
-    static void staticCallbackFunction(void *p, const char *s);
+    static void StaticCallbackFunction(void *p, const char *s);
 
 private:
 	void Dump();

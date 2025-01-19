@@ -86,7 +86,7 @@ void E131Bridge::HandleDmxIn() {
 
 				if (m_Bridge.Port[nPortIndex].bLocalMerge) {
 					m_pReceiveBuffer = reinterpret_cast<uint8_t *>(&m_E131DataPacket);
-					m_nIpAddressFrom = network::IPADDR_LOOPBACK;
+					m_nIpAddressFrom = net::IPADDR_LOOPBACK;
 					HandleDmx();
 				}
 
@@ -138,7 +138,7 @@ void E131Bridge::HandleDmxIn() {
 
 					if (m_Bridge.Port[nPortIndex].bLocalMerge) {
 						m_pReceiveBuffer = reinterpret_cast<uint8_t *>(&m_E131DataPacket);
-						m_nIpAddressFrom = network::IPADDR_LOOPBACK;
+						m_nIpAddressFrom = net::IPADDR_LOOPBACK;
 						HandleDmx();
 					}
 				}

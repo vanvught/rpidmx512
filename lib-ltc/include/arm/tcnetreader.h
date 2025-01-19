@@ -53,13 +53,13 @@ public:
 
 	void Input(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort);
 
-	void static staticCallbackFunctionHandler(const struct tcnet::TimeCode *pTimeCode) {
+	void static StaticCallbackFunctionHandler(const struct tcnet::TimeCode *pTimeCode) {
 		assert(s_pThis != nullptr);
 		s_pThis->Handler(pTimeCode);
 	}
 
 private:
-	void static staticCallbackFunctionInput(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
+	void static StaticCallbackFunctionInput(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
 		s_pThis->Input(pBuffer, nSize, nFromIp, nFromPort);
 	}
 

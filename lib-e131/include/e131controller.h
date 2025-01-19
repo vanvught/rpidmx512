@@ -102,7 +102,7 @@ private:
 
 	void SendDiscoveryPacket();
 
-	void static staticCallbackFunctionSendDiscoveryPacket([[maybe_unused]] TimerHandle_t timerHandle) {
+	void static StaticCallbackFunctionSendDiscoveryPacket([[maybe_unused]] TimerHandle_t timerHandle) {
 		s_pThis->SendDiscoveryPacket();
 	}
 

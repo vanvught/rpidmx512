@@ -126,7 +126,7 @@ AppleMidi::AppleMidi() {
 	m_ExchangePacketReply.nSignature = SIGNATURE;
 	m_ExchangePacketReply.nProtocolVersion = __builtin_bswap32(applemidi::VERSION);
 
-	uint8_t macAddress[network::MAC_SIZE];
+	uint8_t macAddress[net::MAC_SIZE];
 	Network::Get()->MacAddressCopyTo(macAddress);
 	_pcast32 cast32;
 	memcpy(cast32.u8, &macAddress[2], 4);

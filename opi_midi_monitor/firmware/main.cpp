@@ -83,7 +83,6 @@ int main() {
 		monitor.Run();
 #if !defined(NO_EMAC)
 		nw.Run();
-		remoteConfig.Run();
 #endif
 		hw.Run();
 	}

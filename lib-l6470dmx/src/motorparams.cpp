@@ -69,7 +69,7 @@ bool MotorParams::Load(uint32_t nMotorIndex) {
 
 	m_Params.nSetList = 0;
 
-	ReadConfigFile configfile(MotorParams::staticCallbackFunction, this);
+	ReadConfigFile configfile(MotorParams::StaticCallbackFunction, this);
 
 	if (configfile.Read(m_aFileName)) {
 		MotorParamsStore::Update(nMotorIndex, &m_Params);
@@ -92,7 +92,7 @@ void MotorParams::Load(uint32_t nMotorIndex, const char *pBuffer, uint32_t nLeng
 
 	m_Params.nSetList = 0;
 
-	ReadConfigFile config(MotorParams::staticCallbackFunction, this);
+	ReadConfigFile config(MotorParams::StaticCallbackFunction, this);
 
 	config.Read(pBuffer, nLength);
 
@@ -221,7 +221,7 @@ uint32_t MotorParams::calcIntersectSpeedReg(float f) const {
 	return static_cast<uint32_t>(f * (TICK_S * (1U << 26)));
 }
 
-void MotorParams::staticCallbackFunction(void *p, const char *s) {
+void MotorParams::StaticCallbackFunction(void *p, const char *s) {
 	assert(p != nullptr);
 	assert(s != nullptr);
 

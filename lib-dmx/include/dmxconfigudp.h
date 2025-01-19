@@ -104,7 +104,7 @@ public:
 		s_pThis = this;
 
 		assert(s_nHandle == -1);
-		s_nHandle = Network::Get()->Begin(UDP_PORT, DmxConfigUdp::staticCallbackFunction);
+		s_nHandle = Network::Get()->Begin(UDP_PORT, DmxConfigUdp::StaticCallbackFunction);
 
 		DEBUG_EXIT
 	}
@@ -244,7 +244,7 @@ private:
 	 * @param nFromIp IP address of the sender.
 	 * @param nFromPort Port number of the sender.
 	 */
-	void static staticCallbackFunction(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
+	void static StaticCallbackFunction(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
 		s_pThis->Input(pBuffer, nSize, nFromIp, nFromPort);
 	}
 

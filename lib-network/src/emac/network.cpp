@@ -44,7 +44,7 @@
 #include "emac/mmi.h"
 #include "emac/net_link_check.h"
 
-#include "netif.h"
+#include "net/netif.h"
 #include "net/autoip.h"
 #include "net/dhcp.h"
 #if defined (CONFIG_NET_ENABLE_NTP_CLIENT)
@@ -69,6 +69,8 @@ static void netif_ext_callback(const uint16_t reason, [[maybe_unused]] const net
 	DEBUG_ENTRY
 
 	if ((reason & net::NetifReason::NSC_IPV4_ADDRESS_CHANGED) == net::NetifReason::NSC_IPV4_ADDRESS_CHANGED) {
+		printf("ip: " IPSTR " -> " IPSTR "\n", IP2STR(args->ipv4_changed.old_address.addr), IP2STR(net::netif_ipaddr()));
+
 		net::display_ip();
 #if defined (CONFIG_NET_ENABLE_NTP_CLIENT)
 		ntp_client_start();
@@ -76,19 +78,18 @@ static void netif_ext_callback(const uint16_t reason, [[maybe_unused]] const net
 #if !defined(CONFIG_NET_APPS_NO_MDNS)
 		mdns_start();
 #endif
-		printf("ip: " IPSTR " -> " IPSTR "\n", IP2STR(args->ipv4_changed.old_address.addr), IP2STR(net::netif_ipaddr()));
 	}
 
 	if ((reason & net::NetifReason::NSC_IPV4_NETMASK_CHANGED) == net::NetifReason::NSC_IPV4_NETMASK_CHANGED) {
-		net::display_netmask();
-
 		printf("netmask: " IPSTR " -> " IPSTR "\n", IP2STR(args->ipv4_changed.old_netmask.addr), IP2STR(net::netif_netmask()));
+
+		net::display_netmask();
 	}
 
 	if ((reason & net::NetifReason::NSC_IPV4_GATEWAY_CHANGED) == net::NetifReason::NSC_IPV4_GATEWAY_CHANGED) {
-		net::display_gateway();
-
 		printf("gw: " IPSTR " -> " IPSTR "\n", IP2STR(args->ipv4_changed.old_gw.addr), IP2STR(net::netif_gw()));
+
+		net::display_gateway();
 	}
 
 	if ((reason & net::NetifReason::NSC_LINK_CHANGED) == net::NetifReason::NSC_LINK_CHANGED) {
@@ -142,7 +143,7 @@ Network::Network() {
 	if (*p == '\0') {
 		uint32_t k = 0;
 
-		for (uint32_t i = 0; (i < (sizeof(HOST_NAME_PREFIX) - 1)) && (i < network::HOSTNAME_SIZE - 7); i++) {
+		for (uint32_t i = 0; (i < (sizeof(HOST_NAME_PREFIX) - 1)) && (i < net::HOSTNAME_SIZE - 7); i++) {
 			m_aHostName[k++] = HOST_NAME_PREFIX[i];
 		}
 
@@ -242,8 +243,8 @@ void Network::SetGatewayIp(uint32_t nGatewayIp) {
 void Network::SetHostName(const char *pHostName) {
 	DEBUG_ENTRY
 
-	strncpy(m_aHostName, pHostName, network::HOSTNAME_SIZE - 1);
-	m_aHostName[network::HOSTNAME_SIZE - 1] = '\0';
+	strncpy(m_aHostName, pHostName, net::HOSTNAME_SIZE - 1);
+	m_aHostName[net::HOSTNAME_SIZE - 1] = '\0';
 
 	NetworkStore::SaveHostName(m_aHostName, static_cast<uint32_t>(strlen(m_aHostName)));
 

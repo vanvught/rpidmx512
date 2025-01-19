@@ -1,8 +1,8 @@
 /**
- * @file console.c
+ * @file udp.h
  *
  */
-/* Copyright (C) 2022-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,13 +23,20 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdint.h>
+#ifndef NET_UDP_H_
+#define NET_UDP_H_
 
-void console_status(__attribute__((unused)) uint32_t color, const char *s) {
-	puts(s);
-}
+#include <cstdint>
 
-void console_error(const char *s) {
-	fprintf(stderr, "%s", s);
-}
+namespace net {
+typedef void (*UdpCallbackFunctionPtr)(const uint8_t *, uint32_t, uint32_t, uint16_t);
+
+int32_t udp_begin(uint16_t, UdpCallbackFunctionPtr callback = nullptr);
+int32_t udp_end(uint16_t);
+uint32_t udp_recv1(const int32_t, uint8_t *, uint32_t, uint32_t *, uint16_t *);
+uint32_t udp_recv2(const int32_t, const uint8_t **, uint32_t *, uint16_t *);
+void udp_send(int32_t, const uint8_t *, uint32_t, uint32_t, uint16_t);
+void udp_send_timestamp(int32_t, const uint8_t *, uint32_t, uint32_t, uint16_t);
+}  // namespace net
+
+#endif /* NET_UDP_H_ */

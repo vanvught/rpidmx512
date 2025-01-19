@@ -2,7 +2,7 @@
  * @file net.cpp
  *
  */
-/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
+#if defined (DEBUG_EMAC)
+# undef NDEBUG
+#endif
+
+#if defined(__GNUC__) && !defined(__clang__)
+# pragma GCC push_options
+# pragma GCC optimize ("O2")
+# pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#endif
 
 #include <cstdint>
 
@@ -62,25 +72,43 @@ __attribute__((hot)) uint32_t emac_eth_recv(uint8_t **packetp) {
 	return 0;
 }
 
-void emac_eth_send(void *packet, uint32_t len) {
-	auto desc_num = p_coherent_region->tx_currdescnum;
-	auto *desc_p = &p_coherent_region->tx_chain[desc_num];
-	auto data_start = static_cast<uintptr_t>(desc_p->buf_addr);
+void emac_free_pkt() {
+	auto desc_num = p_coherent_region->rx_currdescnum;
+	auto *desc_p = &p_coherent_region->rx_chain[desc_num];
 
-	desc_p->st = len;
+	/* Make the current descriptor valid again */
+	desc_p->status |= (1U << 31);
+
+	/* Move to next desc and wrap-around condition. */
+	if (++desc_num >= CONFIG_RX_DESCR_NUM) {
+		desc_num = 0;
+	}
+
+	p_coherent_region->rx_currdescnum = desc_num;
+}
+
+uint8_t *emac_eth_send_get_dma_buffer() {
+	const auto desc_num = p_coherent_region->tx_currdescnum;
+	auto *desc_p = &p_coherent_region->tx_chain[desc_num];
+
 	/* Mandatory undocumented bit */
 	desc_p->st |= (1U << 24);
 
-	h3_memcpy(reinterpret_cast<void *>(data_start), packet, static_cast<size_t>(len));
-#ifdef DEBUG_DUMP
-	debug_dump(reinterpret_cast<void *>(data_start), static_cast<uint16_t>(len));
-#endif
+	return reinterpret_cast<uint8_t *>(desc_p->buf_addr);
+}
+
+void emac_eth_send(const uint32_t nLength) {
+	auto desc_num = p_coherent_region->tx_currdescnum;
+	auto *desc_p = &p_coherent_region->tx_chain[desc_num];
+
+	desc_p->st = nLength;
+
 	/* frame end */
 	desc_p->st |= (1U << 30);
 	desc_p->st |= (1U << 31);
 
 	/*frame begin */
-	desc_p->st |= (1 << 29);
+	desc_p->st |= (1U << 29);
 	desc_p->status = (1U << 31);
 
 	/* Move to next Descriptor and wrap around */
@@ -97,17 +125,13 @@ void emac_eth_send(void *packet, uint32_t len) {
 	H3_EMAC->TX_CTL1 = value;
 }
 
-void emac_free_pkt() {
-	auto desc_num = p_coherent_region->rx_currdescnum;
-	auto *desc_p = &p_coherent_region->rx_chain[desc_num];
+void emac_eth_send(void *pBuffer, const uint32_t nLength) {
+	auto *pDst = emac_eth_send_get_dma_buffer();
 
-	/* Make the current descriptor valid again */
-	desc_p->status |= (1U << 31);
+	h3_memcpy(pDst, pBuffer, nLength);
+#ifdef DEBUG_DUMP
+	debug_dump(pDst, nLength);
+#endif
 
-	/* Move to next desc and wrap-around condition. */
-	if (++desc_num >= CONFIG_RX_DESCR_NUM) {
-		desc_num = 0;
-	}
-
-	p_coherent_region->rx_currdescnum = desc_num;
+	emac_eth_send(nLength);
 }

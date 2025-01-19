@@ -65,7 +65,7 @@ void TLC59711DmxParams::Load() {
 	m_Params.nSetList = 0;
 
 #if !defined(DISABLE_FS)
-	ReadConfigFile configfile(TLC59711DmxParams::staticCallbackFunction, this);
+	ReadConfigFile configfile(TLC59711DmxParams::StaticCallbackFunction, this);
 
 	if (configfile.Read(DevicesParamsConst::FILE_NAME)) {
 		TLC59711DmxParamsStore::Update(&m_Params);
@@ -87,7 +87,7 @@ void TLC59711DmxParams::Load(const char *pBuffer, uint32_t nLength) {
 
 	m_Params.nSetList = 0;
 
-	ReadConfigFile config(TLC59711DmxParams::staticCallbackFunction, this);
+	ReadConfigFile config(TLC59711DmxParams::StaticCallbackFunction, this);
 
 	config.Read(pBuffer, nLength);
 
@@ -160,7 +160,7 @@ void TLC59711DmxParams::callbackFunction(const char* pLine) {
 	}
 }
 
-void TLC59711DmxParams::staticCallbackFunction(void *p, const char *s) {
+void TLC59711DmxParams::StaticCallbackFunction(void *p, const char *s) {
 	assert(p != nullptr);
 	assert(s != nullptr);
 

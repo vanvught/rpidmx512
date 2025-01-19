@@ -107,7 +107,7 @@ private:
 		return nSeconds;
 	}
 
-	void static staticCallbackFunction(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
+	void static StaticCallbackFunction(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
 		s_pThis->Input(pBuffer, nSize, nFromIp, nFromPort);
 	}
 

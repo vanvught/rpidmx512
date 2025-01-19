@@ -42,7 +42,7 @@
 #include "../../config/net_config.h"
 
 #include "net.h"
-#include "netif.h"
+#include "net/netif.h"
 #include "net/igmp.h"
 #include "net/protocol/igmp.h"
 
@@ -84,11 +84,6 @@ static struct t_group_info s_groups[IGMP_MAX_JOINS_ALLOWED] SECTION_NETWORK ALIG
 static uint16_t s_id SECTION_NETWORK ALIGNED;
 static TimerHandle_t nTimerId;
 
-void igmp_set_ip() {
-	net::memcpy_ip(s_report.ip4.src, net::globals::netif_default.ip.addr);
-	net::memcpy_ip(s_leave.ip4.src, net::globals::netif_default.ip.addr);
-}
-
 static void igmp_send_report(const uint32_t nGroupAddress) {
 	DEBUG_ENTRY
 	_pcast32 multicast_ip;
@@ -104,18 +99,19 @@ static void igmp_send_report(const uint32_t nGroupAddress) {
 	// Ethernet
 	std::memcpy(s_report.ether.dst, s_multicast_mac, ETH_ADDR_LEN);
 	// IPv4
-	s_report.ip4.id = s_id;
+	s_report.ip4.id = ++s_id;
+	net::memcpy_ip(s_report.ip4.src, net::globals::netif_default.ip.addr);
 	std::memcpy(s_report.ip4.dst, multicast_ip.u8, IPv4_ADDR_LEN);
 	s_report.ip4.chksum = 0;
+#if !defined (CHECKSUM_BY_HARDWARE)
 	s_report.ip4.chksum = net_chksum(reinterpret_cast<void *>(&s_report.ip4), 24); //TODO
+#endif
 	// IGMP
 	std::memcpy(s_report.igmp.report.igmp.group_address, multicast_ip.u8, IPv4_ADDR_LEN);
 	s_report.igmp.report.igmp.checksum = 0;
 	s_report.igmp.report.igmp.checksum = net_chksum(reinterpret_cast<void *>(&s_report.ip4), IPv4_IGMP_REPORT_HEADERS_SIZE);
 
 	emac_eth_send(reinterpret_cast<void *>(&s_report), IGMP_REPORT_PACKET_SIZE);
-
-	s_id++;
 
 	DEBUG_EXIT
 }
@@ -147,8 +143,6 @@ static void igmp_timer([[maybe_unused]] TimerHandle_t nHandle) {
 }
 
 void __attribute__((cold)) igmp_init() {
-	igmp_set_ip();
-
 	s_multicast_mac[0] = 0x01;
 	s_multicast_mac[1] = 0x00;
 	s_multicast_mac[2] = 0x5E;
@@ -227,6 +221,7 @@ static void igmp_send_leave(const uint32_t nGroupAddress) {
 #if !defined (CHECKSUM_BY_HARDWARE)
 	s_leave.ip4.chksum = net_chksum(reinterpret_cast<void *>(&s_leave.ip4), 24); //TODO
 #endif
+	net::memcpy_ip(s_leave.ip4.src, net::globals::netif_default.ip.addr);
 	// IGMP
 	net::memcpy_ip(s_leave.igmp.report.igmp.group_address, nGroupAddress);
 	s_leave.igmp.report.igmp.checksum = 0;

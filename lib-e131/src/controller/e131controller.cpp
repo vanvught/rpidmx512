@@ -76,7 +76,7 @@ E131Controller::E131Controller() {
 
 	SetSynchronizationAddress();
 
-	const auto nIpMulticast = network::convert_to_uint(239, 255, 0, 0);
+	const auto nIpMulticast = net::convert_to_uint(239, 255, 0, 0);
 	m_DiscoveryIpAddress = nIpMulticast | ((universe::DISCOVERY & static_cast<uint32_t>(0xFF)) << 24) | ((universe::DISCOVERY & 0xFF00) << 8);
 
 	// TE131DataPacket
@@ -127,7 +127,7 @@ void E131Controller::Start() {
 	FillDiscoveryPacket();
 	FillSynchronizationPacket();
 
-	m_timerHandleSendDiscoveryPacket = SoftwareTimerAdd(e131::UNIVERSE_DISCOVERY_INTERVAL_SECONDS * 1000U, staticCallbackFunctionSendDiscoveryPacket);
+	m_timerHandleSendDiscoveryPacket = SoftwareTimerAdd(e131::UNIVERSE_DISCOVERY_INTERVAL_SECONDS * 1000U, StaticCallbackFunctionSendDiscoveryPacket);
 	assert(m_timerHandleSendDiscoveryPacket >= 0);
 
 	DEBUG_EXIT

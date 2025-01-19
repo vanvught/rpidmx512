@@ -89,7 +89,7 @@ public:
 		return static_cast<rgbpanel::Types>(m_Params.nType);
 	}
 
-    static void staticCallbackFunction(void *p, const char *s);
+    static void StaticCallbackFunction(void *p, const char *s);
 
 private:
 	void Dump();

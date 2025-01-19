@@ -94,7 +94,7 @@ public:
 		return m_Params.bPartialTransmission;
 	}
 
-    static void staticCallbackFunction(void *p, const char *s);
+    static void StaticCallbackFunction(void *p, const char *s);
 
 private:
 	void Dump();

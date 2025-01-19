@@ -44,11 +44,6 @@
 #include "debug.h"
 
 namespace net {
-void ip_set_ip() {
-	udp_set_ip();
-	igmp_set_ip();
-}
-
 void __attribute__((cold)) ip_init() {
 	DEBUG_ENTRY
 

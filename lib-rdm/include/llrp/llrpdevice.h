@@ -2,7 +2,7 @@
  * @file llrpdevice.h
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,10 +39,9 @@
 
 #include "debug.h"
 
-
 namespace llrp::device {
-static constexpr auto IPV4_LLRP_REQUEST = network::convert_to_uint(239, 255, 250, 133);
-static constexpr auto IPV4_LLRP_RESPONSE = network::convert_to_uint(239, 255, 250, 134);
+static constexpr auto IPV4_LLRP_REQUEST = net::convert_to_uint(239, 255, 250, 133);
+static constexpr auto IPV4_LLRP_RESPONSE = net::convert_to_uint(239, 255, 250, 134);
 static constexpr uint16_t LLRP_PORT = 5569;
 } // namespace llrp::device
 
@@ -54,7 +53,7 @@ public:
 		assert(s_pThis == nullptr);
 		s_pThis = this;
 
-		s_nHandleLLRP = Network::Get()->Begin(llrp::device::LLRP_PORT, LLRPDevice::staticCallbackFunction);
+		s_nHandleLLRP = Network::Get()->Begin(llrp::device::LLRP_PORT, LLRPDevice::StaticCallbackFunction);
 		assert(s_nHandleLLRP != -1);
 		Network::Get()->JoinGroup(s_nHandleLLRP, llrp::device::IPV4_LLRP_REQUEST);
 
@@ -73,10 +72,8 @@ public:
 	}
 
 	void Input(const uint8_t *pBuffer, [[maybe_unused]] uint32_t nSize, uint32_t nFromIp, [[maybe_unused]] uint16_t nFromPort) {
-		if (pBuffer != nullptr) {
-			s_pLLRP = const_cast<uint8_t *>(pBuffer);
-			s_nIpAddressFrom = nFromIp;
-		}
+		s_pLLRP = const_cast<uint8_t *>(pBuffer);
+		s_nIpAddressFrom = nFromIp;
 
 #ifndef NDEBUG
 		DumpCommon();
@@ -108,20 +105,8 @@ public:
 		}
 	}
 
-	void Run() {
-		uint16_t nForeignPort;
-
-		const auto nBytesReceived = Network::Get()->RecvFrom(s_nHandleLLRP, const_cast<const void **>(reinterpret_cast<void **>(&s_pLLRP)), &s_nIpAddressFrom, &nForeignPort) ;
-
-		if (__builtin_expect((nBytesReceived < sizeof(struct TLLRPCommonPacket)), 1)) {
-			return;
-		}
-
-		Input(nullptr, 0, 0, 0);
-	}
-
 	void Print() {
-		printf("LLRP Device\n");
+		puts("LLRP Device");
 		printf(" Port UDP           : %d\n", llrp::device::LLRP_PORT);
 		printf(" Join Request       : " IPSTR "\n", IP2STR(llrp::device::IPV4_LLRP_REQUEST));
 		printf(" Multicast Response : " IPSTR "\n", IP2STR(llrp::device::IPV4_LLRP_RESPONSE));
@@ -140,7 +125,7 @@ private:
 	void DumpLLRP();
 	void DumpRdmMessageInNoSc();
 
-	void static staticCallbackFunction(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
+	void static StaticCallbackFunction(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
 		s_pThis->Input(pBuffer, nSize, nFromIp, nFromPort);
 	}
 private:

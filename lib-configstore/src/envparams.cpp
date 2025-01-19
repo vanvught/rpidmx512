@@ -51,7 +51,7 @@ void EnvParams::LoadAndSet() {
 	assert(ConfigStore::Get() != nullptr);
 
 #if !defined(DISABLE_FS)
-	ReadConfigFile configfile(EnvParams::staticCallbackFunction, this);
+	ReadConfigFile configfile(EnvParams::StaticCallbackFunction, this);
 	configfile.Read(EnvParamsConst::FILE_NAME);
 #endif
 
@@ -70,7 +70,7 @@ void EnvParams::LoadAndSet(const char *pBuffer, uint32_t nLength) {
 	assert(pBuffer != nullptr);
 	assert(nLength != 0);
 
-	ReadConfigFile config(EnvParams::staticCallbackFunction, this);
+	ReadConfigFile config(EnvParams::StaticCallbackFunction, this);
 	config.Read(pBuffer, nLength);
 
 #ifndef NDEBUG

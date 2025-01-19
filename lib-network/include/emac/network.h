@@ -2,7 +2,7 @@
  * @file network.h
  *
  */
-/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,8 +44,11 @@ void ptp_run();
 #include "networkparams.h"
 
 #include "net.h"
-#include "netif.h"
-#include "ip4_address.h"
+#include "net/ip4_address.h"
+#include "net/netif.h"
+#include "net/igmp.h"
+#include "net/udp.h"
+#include "net/tcp.h"
 #include "net/dhcp.h"
 
 #include "emac/net_link_check.h"
@@ -119,7 +122,7 @@ public:
 
 	void SetHostName(const char *pHostName);
 	const char *GetHostName() const {
-		return m_aHostName;
+		return net::netif_get_hostname();
 	}
 
 	/*
@@ -127,8 +130,8 @@ public:
 	 */
 
 	void SetDomainName(const char *pDomainName) {
-		strncpy(m_aDomainName, pDomainName, network::DOMAINNAME_SIZE - 1);
-		m_aDomainName[network::DOMAINNAME_SIZE - 1] = '\0';
+		strncpy(m_aDomainName, pDomainName, net::DOMAINNAME_SIZE - 1);
+		m_aDomainName[net::DOMAINNAME_SIZE - 1] = '\0';
 	}
 	const char *GetDomainName() const {
 		return m_aDomainName;
@@ -139,7 +142,7 @@ public:
 	 */
 
 	uint32_t GetNameServer(const uint32_t nIndex) const {
-		if (nIndex < network::NAMESERVERS_COUNT) {
+		if (nIndex < net::NAMESERVERS_COUNT) {
 			return m_nNameservers[nIndex];
 		}
 
@@ -147,7 +150,7 @@ public:
 	}
 
 	uint32_t GetNameServers() const {
-		return network::NAMESERVERS_COUNT;
+		return net::NAMESERVERS_COUNT;
 	}
 
 	const char *GetIfName() const {
@@ -192,16 +195,12 @@ public:
 	 * TCP/IP
 	 */
 
-	int32_t TcpBegin(const uint16_t nLocalPort) {
-		return net::tcp_begin(nLocalPort);
+	int32_t TcpBegin(const uint16_t nLocalPort, net::TcpCallbackFunctionPtr callback) {
+		return net::tcp_begin(nLocalPort, callback);
 	}
 
 	int32_t TcpEnd(const int32_t nHandle) {
 		return net::tcp_end(nHandle);
-	}
-
-	uint32_t TcpRead(const int32_t nHandleListen, const uint8_t **ppBuffer, uint32_t &HandleConnection) {
-		return net::tcp_read(nHandleListen, ppBuffer, HandleConnection);
 	}
 
 	void TcpWrite(const int32_t nHandleListen, const uint8_t *pBuffer, uint32_t nLength, const uint32_t HandleConnection) {
@@ -271,9 +270,9 @@ private:
 	net::Link s_lastState { net::Link::STATE_DOWN };
 
 	char m_aIfName[IFNAMSIZ];
-	char m_aHostName[network::HOSTNAME_SIZE];
-	char m_aDomainName[network::DOMAINNAME_SIZE];
-	uint32_t m_nNameservers[network::NAMESERVERS_COUNT];
+	char m_aHostName[net::HOSTNAME_SIZE];
+	char m_aDomainName[net::DOMAINNAME_SIZE];
+	uint32_t m_nNameservers[net::NAMESERVERS_COUNT];
 
 	static inline Network *s_pThis;
 };

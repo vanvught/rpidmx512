@@ -90,7 +90,7 @@ void LtcDisplayParams::Load() {
 	m_Params.nSetList = 0;
 
 #if !defined(DISABLE_FS)
-	ReadConfigFile configfile(LtcDisplayParams::staticCallbackFunction, this);
+	ReadConfigFile configfile(LtcDisplayParams::StaticCallbackFunction, this);
 
 	if (configfile.Read(LtcDisplayParamsConst::FILE_NAME)) {
 		LtcDisplayParamsStore::Update(&m_Params);
@@ -112,7 +112,7 @@ void LtcDisplayParams::Load(const char *pBuffer, uint32_t nLength) {
 
 	m_Params.nSetList = 0;
 
-	ReadConfigFile config(LtcDisplayParams::staticCallbackFunction, this);
+	ReadConfigFile config(LtcDisplayParams::StaticCallbackFunction, this);
 
 	config.Read(pBuffer, nLength);
 
@@ -336,7 +336,7 @@ void LtcDisplayParams::Set(LtcDisplayRgb *pLtcDisplayRgb) {
 	}
 }
 
-void LtcDisplayParams::staticCallbackFunction(void *p, const char *s) {
+void LtcDisplayParams::StaticCallbackFunction(void *p, const char *s) {
 	assert(p != nullptr);
 	assert(s != nullptr);
 

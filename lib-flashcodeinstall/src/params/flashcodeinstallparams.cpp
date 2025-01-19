@@ -40,7 +40,7 @@ bool FlashCodeInstallParams::Load() {
 
 	m_nSetList = 0;
 
-	ReadConfigFile configfile(FlashCodeInstallParams::staticCallbackFunction, this);
+	ReadConfigFile configfile(FlashCodeInstallParams::StaticCallbackFunction, this);
 	const auto b = configfile.Read(FlashCodeInstallParamsConst::FILE_NAME);
 
 #ifndef NDEBUG
@@ -74,7 +74,7 @@ void FlashCodeInstallParams::callbackFunction(const char *pLine) {
 	}
 }
 
-void FlashCodeInstallParams::staticCallbackFunction(void *p, const char *s) {
+void FlashCodeInstallParams::StaticCallbackFunction(void *p, const char *s) {
 	assert(p != nullptr);
 	assert(s != nullptr);
 

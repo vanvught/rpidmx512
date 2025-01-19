@@ -60,7 +60,7 @@ void DMXMonitorParams::Load() {
 	m_Params.nSetList = 0;
 
 #if !defined(DISABLE_FS)
-	ReadConfigFile configfile(DMXMonitorParams::staticCallbackFunction, this);
+	ReadConfigFile configfile(DMXMonitorParams::StaticCallbackFunction, this);
 
 	if (configfile.Read(DMXMonitorParamsConst::FILE_NAME)) {
 		DEBUG_PUTS("");
@@ -87,7 +87,7 @@ void DMXMonitorParams::Load(const char *pBuffer, uint32_t nLength) {
 
 	m_Params.nSetList = 0;
 
-	ReadConfigFile config(DMXMonitorParams::staticCallbackFunction, this);
+	ReadConfigFile config(DMXMonitorParams::StaticCallbackFunction, this);
 
 	config.Read(pBuffer, nLength);
 
@@ -178,7 +178,7 @@ void DMXMonitorParams::callbackFunction(const char* pLine) {
 	}
 }
 
-void DMXMonitorParams::staticCallbackFunction(void *p, const char *s) {
+void DMXMonitorParams::StaticCallbackFunction(void *p, const char *s) {
 	assert(p != nullptr);
 	assert(s != nullptr);
 

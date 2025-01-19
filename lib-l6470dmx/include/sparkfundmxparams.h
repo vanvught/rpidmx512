@@ -153,7 +153,7 @@ public:
 	void SetGlobal(SparkFunDmx *pSparkFunDmx);
 	void SetLocal(SparkFunDmx *pSparkFunDmx);
 
-    static void staticCallbackFunction(void *p, const char *s);
+    static void StaticCallbackFunction(void *p, const char *s);
 
 private:
 	void Dump(uint32_t nMotorIndex = 0xFF);

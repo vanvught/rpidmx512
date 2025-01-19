@@ -3,7 +3,7 @@
  *
  */
 
-/* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2016-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -182,7 +182,7 @@ void ArtNetNode::Start() {
 	/*
 	 * Status 3
 	 */
-	m_ArtPollReply.Status3 = artnet::Status3::NETWORKLOSS_LAST_STATE | artnet::Status3::FAILSAFE_CONTROL | artnet::Status3::SUPPORTS_BACKGROUNDDISCOVERY;
+	m_ArtPollReply.Status3 |= artnet::Status3::FAILSAFE_CONTROL | artnet::Status3::SUPPORTS_BACKGROUNDDISCOVERY;
 #if defined (ARTNET_HAVE_DMXIN)
 	m_ArtPollReply.Status3 |= artnet::Status3::OUTPUT_SWITCH;
 #endif
@@ -230,7 +230,7 @@ void ArtNetNode::Start() {
 	E131Bridge::Start();
 #endif
 
-	SoftwareTimerAdd(200, staticCallbackFunctionLedPanelOff);
+	SoftwareTimerAdd(200, StaticCallbackFunctionLedPanelOff);
 
 	m_State.status = artnet::Status::ON;
 	Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);

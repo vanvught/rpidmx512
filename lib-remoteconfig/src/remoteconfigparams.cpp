@@ -66,7 +66,7 @@ void RemoteConfigParams::Load() {
 	m_Params.nSetList = 0;
 
 #if !defined(DISABLE_FS)
-	ReadConfigFile configfile(RemoteConfigParams::staticCallbackFunction, this);
+	ReadConfigFile configfile(RemoteConfigParams::StaticCallbackFunction, this);
 
 	if (configfile.Read(RemoteConfigConst::PARAMS_FILE_NAME)) {
 		RemoteConfigParamsStore::Update(&m_Params);
@@ -88,7 +88,7 @@ void RemoteConfigParams::Load(const char *pBuffer, uint32_t nLength) {
 
 	m_Params.nSetList = 0;
 
-	ReadConfigFile config(RemoteConfigParams::staticCallbackFunction, this);
+	ReadConfigFile config(RemoteConfigParams::StaticCallbackFunction, this);
 
 	config.Read(pBuffer, nLength);
 
@@ -177,7 +177,7 @@ void RemoteConfigParams::Set(RemoteConfig *pRemoteConfig) {
 	}
 }
 
-void RemoteConfigParams::staticCallbackFunction(void *p, const char *s) {
+void RemoteConfigParams::StaticCallbackFunction(void *p, const char *s) {
 	assert(p != nullptr);
 	assert(s != nullptr);
 

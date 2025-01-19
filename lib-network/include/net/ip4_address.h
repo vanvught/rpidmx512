@@ -1,5 +1,26 @@
-/*
- * ip4_address.h
+/**
+ * @file ip4_address.h
+ *
+ */
+/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 
 #ifndef IP4_ADDRESS_H_
@@ -7,14 +28,19 @@
 
 #include <cstdint>
 
-#define IP2STR(addr)  static_cast<int>(addr & 0xFF),  static_cast<int>((addr >> 8) & 0xFF),  static_cast<int>((addr >> 16) & 0xFF),  static_cast<int>((addr >> 24) & 0xFF)
-#define IPSTR "%d.%d.%d.%d"
+namespace net {
+struct ip_addr {
+	uint32_t addr;
+};
 
-#define MAC2STR(mac) static_cast<int>(mac[0]),static_cast<int>(mac[1]),static_cast<int>(mac[2]),static_cast<int>(mac[3]), static_cast<int>(mac[4]), static_cast<int>(mac[5])
-#define MACSTR "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x"
+typedef struct ip_addr ip4_addr_t;
 
-namespace network {
-static constexpr uint32_t STORE = 96;			///< Configuration store in bytes
+#define IP2STR(addr)	static_cast<int>(addr & 0xFF), static_cast<int>((addr >> 8) & 0xFF), static_cast<int>((addr >> 16) & 0xFF), static_cast<int>((addr >> 24) & 0xFF)
+#define IPSTR 			"%d.%d.%d.%d"
+
+#define MAC2STR(mac)	static_cast<int>(mac[0]),static_cast<int>(mac[1]),static_cast<int>(mac[2]),static_cast<int>(mac[3]), static_cast<int>(mac[4]), static_cast<int>(mac[5])
+#define MACSTR 			"%.2x:%.2x:%.2x:%.2x:%.2x:%.2x"
+
 static constexpr uint32_t MAC_SIZE = 6;
 static constexpr uint32_t HOSTNAME_SIZE = 64;	///< Including a terminating null byte.
 static constexpr uint32_t DOMAINNAME_SIZE = 64;	///< Including a terminating null byte.
@@ -77,6 +103,6 @@ inline uint32_t cidr_to_netmask(const uint8_t nCIDR) {
 
 	return 0;
 }
-}  // namespace network
+}  // namespace net
 
 #endif /* IP4_ADDRESS_H_ */

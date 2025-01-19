@@ -57,10 +57,6 @@ public:
 		m_RDMNetDevice.Init();
 	}
 
-	void Run() {
-		m_RDMNetDevice.Run();
-	}
-
 	void Print() {
 		m_RDMNetDevice.Print();
 	}

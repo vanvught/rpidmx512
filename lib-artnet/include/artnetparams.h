@@ -163,7 +163,7 @@ public:
 		return lightset::PortDir::DISABLE;
 	}
 
-	static void staticCallbackFunction(void *p, const char *s);
+	static void StaticCallbackFunction(void *p, const char *s);
 
 private:
 	lightset::PortDir portdir_get(const uint32_t nPortIndex) const {

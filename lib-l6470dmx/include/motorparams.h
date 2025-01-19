@@ -137,7 +137,7 @@ private:
 	float calcIntersectSpeed();
 	uint32_t calcIntersectSpeedReg(float) const;
 
-    static void staticCallbackFunction(void *p, const char *s);
+    static void StaticCallbackFunction(void *p, const char *s);
 
 private:
     motorparams::Params m_Params;

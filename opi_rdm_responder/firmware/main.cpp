@@ -194,8 +194,6 @@ int main() {
 		configStore.Flash();
 #if !defined(NO_EMAC)
 		nw.Run();
-		remoteConfig.Run();
-
 #endif
 		pixelTestPattern.Run();
 		display.Run();

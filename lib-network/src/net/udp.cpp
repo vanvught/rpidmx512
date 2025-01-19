@@ -2,7 +2,7 @@
  * @file udp.cpp
  *
  */
-/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,7 +43,7 @@
 
 #include "net/protocol/udp.h"
 
-#include "net.h"
+#include "net/udp.h"
 #include "net_private.h"
 #include "net_memcpy.h"
 
@@ -72,31 +72,14 @@ struct Port {
 } ALIGNED;
 
 static Port s_Ports[UDP_MAX_PORTS_ALLOWED] SECTION_NETWORK ALIGNED;
-static t_udp s_send_packet SECTION_NETWORK ALIGNED;
 static uint16_t s_id SECTION_NETWORK ALIGNED;
 static uint8_t s_multicast_mac[ETH_ADDR_LEN] SECTION_NETWORK ALIGNED;
-
-void udp_set_ip() {
-	net::memcpy_ip(s_send_packet.ip4.src, net::globals::netif_default.ip.addr);
-}
 
 void __attribute__((cold)) udp_init() {
 	// Multicast fixed part
 	s_multicast_mac[0] = 0x01;
 	s_multicast_mac[1] = 0x00;
 	s_multicast_mac[2] = 0x5E;
-	// Ethernet
-	std::memcpy(s_send_packet.ether.src, net::globals::netif_default.hwaddr, ETH_ADDR_LEN);
-	s_send_packet.ether.type = __builtin_bswap16(ETHER_TYPE_IPv4);
-	// IPv4
-	s_send_packet.ip4.ver_ihl = 0x45;
-	s_send_packet.ip4.tos = 0;
-	s_send_packet.ip4.flags_froff = __builtin_bswap16(IPv4_FLAG_DF);
-	s_send_packet.ip4.ttl = 64;
-	s_send_packet.ip4.proto = IPv4_PROTO_UDP;
-	udp_set_ip();
-	// UDP
-	s_send_packet.udp.checksum = 0;
 }
 
 void __attribute__((cold)) udp_shutdown() {
@@ -147,26 +130,39 @@ static void udp_send_implementation(int nIndex, const uint8_t *pData, uint32_t n
 	assert(nIndex < UDP_MAX_PORTS_ALLOWED);
 	assert(s_Ports[nIndex].info.nPort != 0);
 
+	auto *pOutBuffer = reinterpret_cast<t_udp *>(emac_eth_send_get_dma_buffer());
+
+	// Ethernet
+	std::memcpy(pOutBuffer->ether.src, net::globals::netif_default.hwaddr, ETH_ADDR_LEN);
+	pOutBuffer->ether.type = __builtin_bswap16(ETHER_TYPE_IPv4);
+
 	//IPv4
-	s_send_packet.ip4.id = s_id++;
-	s_send_packet.ip4.len = __builtin_bswap16(static_cast<uint16_t>(nSize + IPv4_UDP_HEADERS_SIZE));
-	s_send_packet.ip4.chksum = 0;
+	pOutBuffer->ip4.ver_ihl = 0x45;
+	pOutBuffer->ip4.tos = 0;
+	pOutBuffer->ip4.flags_froff = __builtin_bswap16(IPv4_FLAG_DF);
+	pOutBuffer->ip4.ttl = 64;
+	pOutBuffer->ip4.proto = IPv4_PROTO_UDP;
+	pOutBuffer->ip4.id = ++s_id;
+	pOutBuffer->ip4.len = __builtin_bswap16(static_cast<uint16_t>(nSize + IPv4_UDP_HEADERS_SIZE));
+	pOutBuffer->ip4.chksum = 0;
+	net::memcpy_ip(pOutBuffer->ip4.src, net::globals::netif_default.ip.addr);
 
 	//UDP
-	s_send_packet.udp.source_port = __builtin_bswap16(s_Ports[nIndex].info.nPort);
-	s_send_packet.udp.destination_port = __builtin_bswap16(nRemotePort);
-	s_send_packet.udp.len = __builtin_bswap16(static_cast<uint16_t>(nSize + UDP_HEADER_SIZE));
+	pOutBuffer->udp.source_port = __builtin_bswap16(s_Ports[nIndex].info.nPort);
+	pOutBuffer->udp.destination_port = __builtin_bswap16(nRemotePort);
+	pOutBuffer->udp.len = __builtin_bswap16(static_cast<uint16_t>(nSize + UDP_HEADER_SIZE));
+	pOutBuffer->udp.checksum = 0;
 
 	nSize = std::min(static_cast<uint32_t>(UDP_DATA_SIZE), nSize);
 
-	net::memcpy(s_send_packet.udp.data, pData, nSize);
+	net::memcpy(pOutBuffer->udp.data, pData, nSize);
 
-	if (nRemoteIp == network::IPADDR_BROADCAST) {
-		memset(s_send_packet.ether.dst, 0xFF, ETH_ADDR_LEN);
-		memset(s_send_packet.ip4.dst, 0xFF, IPv4_ADDR_LEN);
+	if (nRemoteIp == net::IPADDR_BROADCAST) {
+		memset(pOutBuffer->ether.dst, 0xFF, ETH_ADDR_LEN);
+		memset(pOutBuffer->ip4.dst, 0xFF, IPv4_ADDR_LEN);
 	} else if ((nRemoteIp & net::globals::nBroadcastMask) == net::globals::nBroadcastMask) {
-		memset(s_send_packet.ether.dst, 0xFF, ETH_ADDR_LEN);
-		net::memcpy_ip(s_send_packet.ip4.dst, nRemoteIp);
+		memset(pOutBuffer->ether.dst, 0xFF, ETH_ADDR_LEN);
+		net::memcpy_ip(pOutBuffer->ip4.dst, nRemoteIp);
 	} else {
 		if ((nRemoteIp & 0xF0) == 0xE0) { // Multicast, we know the MAC Address
 			typedef union pcast32 {
@@ -180,15 +176,15 @@ static void udp_send_implementation(int nIndex, const uint8_t *pData, uint32_t n
 			s_multicast_mac[4] = multicast_ip.u8[2];
 			s_multicast_mac[5] = multicast_ip.u8[3];
 
-			std::memcpy(s_send_packet.ether.dst, s_multicast_mac, ETH_ADDR_LEN);
-			net::memcpy_ip(s_send_packet.ip4.dst, nRemoteIp);
+			std::memcpy(pOutBuffer->ether.dst, s_multicast_mac, ETH_ADDR_LEN);
+			net::memcpy_ip(pOutBuffer->ip4.dst, nRemoteIp);
 		} else {
 			if constexpr (S == net::arp::EthSend::IS_NORMAL) {
-				net::arp_send(&s_send_packet, nSize + UDP_PACKET_HEADERS_SIZE, nRemoteIp);
+				net::arp_send(pOutBuffer, nSize + UDP_PACKET_HEADERS_SIZE, nRemoteIp);
 			}
 #if defined CONFIG_NET_ENABLE_PTP
 			else if constexpr (S == net::arp::EthSend::IS_TIMESTAMP) {
-				net::arp_send_timestamp(&s_send_packet, nSize + UDP_PACKET_HEADERS_SIZE, nRemoteIp);
+				net::arp_send_timestamp(pOutBuffer, nSize + UDP_PACKET_HEADERS_SIZE, nRemoteIp);
 			}
 #endif
 			return;
@@ -196,15 +192,15 @@ static void udp_send_implementation(int nIndex, const uint8_t *pData, uint32_t n
 	}
 
 #if !defined (CHECKSUM_BY_HARDWARE)
-	s_send_packet.ip4.chksum = net_chksum(reinterpret_cast<void *>(&s_send_packet.ip4), sizeof(s_send_packet.ip4));
+	pOutBuffer->ip4.chksum = net_chksum(reinterpret_cast<void *>(&pOutBuffer->ip4), sizeof(pOutBuffer->ip4));
 #endif
 
 	if constexpr (S == net::arp::EthSend::IS_NORMAL) {
-		emac_eth_send(reinterpret_cast<void *>(&s_send_packet), nSize + UDP_PACKET_HEADERS_SIZE);
+		emac_eth_send(nSize + UDP_PACKET_HEADERS_SIZE);
 	}
 #if defined CONFIG_NET_ENABLE_PTP
 	else if constexpr (S == net::arp::EthSend::IS_TIMESTAMP) {
-		emac_eth_send_timestamp(reinterpret_cast<void *>(&s_send_packet), nSize);
+		emac_eth_send_timestamp(nSize);
 	}
 #endif
 	return;

@@ -80,7 +80,7 @@ void PCA9685DmxParams::Load() {
 	m_Params.nSetList = 0;
 
 #if !defined(DISABLE_FS)
-	ReadConfigFile configfile(PCA9685DmxParams::staticCallbackFunction, this);
+	ReadConfigFile configfile(PCA9685DmxParams::StaticCallbackFunction, this);
 
 	if (configfile.Read(PCA9685DmxParamsConst::FILE_NAME)) {
 		PCA9685DmxParamsStore::Update(&m_Params);
@@ -102,7 +102,7 @@ void PCA9685DmxParams::Load(const char *pBuffer, uint32_t nLength) {
 
 	m_Params.nSetList = 0;
 
-	ReadConfigFile config(PCA9685DmxParams::staticCallbackFunction, this);
+	ReadConfigFile config(PCA9685DmxParams::StaticCallbackFunction, this);
 
 	config.Read(pBuffer, nLength);
 
@@ -241,7 +241,7 @@ void PCA9685DmxParams::callbackFunction(const char *pLine) {
 	}
 }
 
-void PCA9685DmxParams::staticCallbackFunction(void *p, const char *s) {
+void PCA9685DmxParams::StaticCallbackFunction(void *p, const char *s) {
 	assert(p != nullptr);
 	assert(s != nullptr);
 

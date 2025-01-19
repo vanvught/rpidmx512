@@ -167,10 +167,7 @@ int main() {
 		nw.Run();
 		bridge.Run();
 		controller.Run();
-		remoteConfig.Run();
-		llrpOnlyDevice.Run();
 		configStore.Flash();
-
 		display.Run();
 		hw.Run();
 	}

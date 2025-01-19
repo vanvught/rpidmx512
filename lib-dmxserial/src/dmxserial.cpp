@@ -67,7 +67,7 @@ DmxSerial::~DmxSerial() {
 
 void DmxSerial::Init() {
 	assert(m_nHandle == -1);
-	m_nHandle = Network::Get()->Begin(UDP::PORT, staticCallbackFunction);
+	m_nHandle = Network::Get()->Begin(UDP::PORT, StaticCallbackFunction);
 	assert(m_nHandle != -1);
 
 	ScanDirectory();

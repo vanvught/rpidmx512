@@ -54,7 +54,7 @@ void L6470Params::Load(uint32_t nMotorIndex) {
 
 	m_Params.nSetList = 0;
 
-	ReadConfigFile configfile(L6470Params::staticCallbackFunction, this);
+	ReadConfigFile configfile(L6470Params::StaticCallbackFunction, this);
 
 	if (configfile.Read(m_aFileName)) {
 		L6470ParamsStore::Update(nMotorIndex, &m_Params);
@@ -76,7 +76,7 @@ void L6470Params::Load(uint32_t nMotorIndex, const char *pBuffer, uint32_t nLeng
 
 	m_Params.nSetList = 0;
 
-	ReadConfigFile config(L6470Params::staticCallbackFunction, this);
+	ReadConfigFile config(L6470Params::StaticCallbackFunction, this);
 
 	config.Read(pBuffer, nLength);
 
@@ -261,7 +261,7 @@ void L6470Params::Dump() {
 	}
 }
 
-void L6470Params::staticCallbackFunction(void *p, const char *s) {
+void L6470Params::StaticCallbackFunction(void *p, const char *s) {
 	assert(p != nullptr);
 	assert(s != nullptr);
 

@@ -2,7 +2,7 @@
  * @file netif.cpp
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,7 @@
 
 #include <cstring>
 
-#include "netif.h"
+#include "net/netif.h"
 #include "net/acd.h"
 #include "net/autoip.h"
 #include "net/dhcp.h"
@@ -45,7 +45,6 @@ extern uint32_t nOnNetworkMask;
 }  // namespace globals
 
 extern void arp_init();
-extern void ip_set_ip();
 
 static netif_ext_callback_fn callback_fn;
 
@@ -80,14 +79,11 @@ static void netif_do_update_globals() {
 
 	globals::nBroadcastMask = ~(netif.netmask.addr);
 	globals::nOnNetworkMask =netif.ip.addr & netif.netmask.addr;
-
-	ip_set_ip();
 }
 
 static void netif_do_ip_addr_changed([[maybe_unused]] const ip4_addr_t old_addr,[[maybe_unused]] const ip4_addr_t new_addr) {
 //  tcp_netif_ip_addr_changed(old_addr, new_addr);
 //  udp_netif_ip_addr_changed(old_addr, new_addr);
-	ip_set_ip();
 }
 
 static void netif_issue_reports() {

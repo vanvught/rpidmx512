@@ -135,7 +135,6 @@ int main() {
 		hw.WatchdogFeed();
 		nw.Run();
 		showFile.Run();
-		remoteConfig.Run();
 		configStore.Flash();
 		display.Run();
 		hw.Run();

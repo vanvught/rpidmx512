@@ -47,7 +47,7 @@
 #include "net/protocol/iana.h"
 #include "net/acd.h"
 #include "net/autoip.h"
-#include "netif.h"
+#include "net/netif.h"
 
 #define REBOOT_TRIES                2
 
@@ -62,8 +62,8 @@ static void message_init() {
 
 	s_dhcp_message.op = dhcp::OpCode::BOOTREQUEST;
 	s_dhcp_message.htype = dhcp::HardwareType::HTYPE_10MB;	// This is the current default
-	s_dhcp_message.hlen = network::MAC_SIZE;
-	memcpy(s_dhcp_message.chaddr, net::globals::netif_default.hwaddr, network::MAC_SIZE);
+	s_dhcp_message.hlen = net::MAC_SIZE;
+	memcpy(s_dhcp_message.chaddr, net::globals::netif_default.hwaddr, net::MAC_SIZE);
 
 	s_dhcp_message.options[0] = static_cast<uint8_t>((dhcp::MAGIC_COOKIE & 0xFF000000) >> 24);
 	s_dhcp_message.options[1] = static_cast<uint8_t>((dhcp::MAGIC_COOKIE & 0x00FF0000) >> 16);
@@ -133,7 +133,7 @@ static void send_discover() {
 	s_dhcp_message.options[k++] = dhcp::Options::OPTION_DHCP_T2_VALUE;
 	s_dhcp_message.options[k++] = dhcp::Options::OPTION_END;
 
-	udp_send(dhcp->nHandle, reinterpret_cast<uint8_t *>(&s_dhcp_message), static_cast<uint16_t>(k + sizeof(dhcp::Message) - dhcp::OPT_SIZE), network::IPADDR_BROADCAST, net::iana::IANA_PORT_DHCP_SERVER);
+	udp_send(dhcp->nHandle, reinterpret_cast<uint8_t *>(&s_dhcp_message), static_cast<uint16_t>(k + sizeof(dhcp::Message) - dhcp::OPT_SIZE), net::IPADDR_BROADCAST, net::iana::IANA_PORT_DHCP_SERVER);
 
 	DEBUG_EXIT
 }
@@ -185,7 +185,7 @@ static void send_request() {
 	s_dhcp_message.options[k++] = dhcp::Options::OPTION_DHCP_T2_VALUE;
 	s_dhcp_message.options[k++] = dhcp::Options::OPTION_END;
 
-	udp_send(dhcp->nHandle, reinterpret_cast<uint8_t *>(&s_dhcp_message), static_cast<uint16_t>(k + sizeof(dhcp::Message) - dhcp::OPT_SIZE), network::IPADDR_BROADCAST, net::iana::IANA_PORT_DHCP_SERVER);
+	udp_send(dhcp->nHandle, reinterpret_cast<uint8_t *>(&s_dhcp_message), static_cast<uint16_t>(k + sizeof(dhcp::Message) - dhcp::OPT_SIZE), net::IPADDR_BROADCAST, net::iana::IANA_PORT_DHCP_SERVER);
 
 	DEBUG_EXIT
 }
@@ -266,7 +266,7 @@ void dhcp_inform() {
 
 	s_dhcp_message.options[k++] = dhcp::Options::OPTION_END;
 
-	udp_send(nHandle, reinterpret_cast<uint8_t *>(&s_dhcp_message), static_cast<uint16_t>(k + sizeof(dhcp::Message) - dhcp::OPT_SIZE), network::IPADDR_BROADCAST, net::iana::IANA_PORT_DHCP_SERVER);
+	udp_send(nHandle, reinterpret_cast<uint8_t *>(&s_dhcp_message), static_cast<uint16_t>(k + sizeof(dhcp::Message) - dhcp::OPT_SIZE), net::IPADDR_BROADCAST, net::iana::IANA_PORT_DHCP_SERVER);
 	udp_end(net::iana::IANA_PORT_DHCP_CLIENT);
 
 	DEBUG_EXIT
@@ -383,7 +383,7 @@ static void dhcp_send_decline() {
 	k = k + 4;
 	s_dhcp_message.options[k++] = dhcp::Options::OPTION_END;
 
-	udp_send(dhcp->nHandle, reinterpret_cast<uint8_t *>(&s_dhcp_message), static_cast<uint16_t>(k + sizeof(dhcp::Message) - dhcp::OPT_SIZE), network::IPADDR_BROADCAST, net::iana::IANA_PORT_DHCP_SERVER);
+	udp_send(dhcp->nHandle, reinterpret_cast<uint8_t *>(&s_dhcp_message), static_cast<uint16_t>(k + sizeof(dhcp::Message) - dhcp::OPT_SIZE), net::IPADDR_BROADCAST, net::iana::IANA_PORT_DHCP_SERVER);
 
 	DEBUG_EXIT
 }

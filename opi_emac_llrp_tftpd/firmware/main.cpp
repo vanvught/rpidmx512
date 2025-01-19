@@ -106,7 +106,6 @@ int main() {
 
 	for (;;) {
 		nw.Run();
-		remoteConfig.Run();
 		configStore.Flash();
 		display.Run();
 		hw.Run();

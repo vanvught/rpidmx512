@@ -53,7 +53,7 @@ void LtcEtcParams::Load() {
 	m_Params.nSetList = 0;
 
 #if !defined(DISABLE_FS)
-	ReadConfigFile configfile(LtcEtcParams::staticCallbackFunction, this);
+	ReadConfigFile configfile(LtcEtcParams::StaticCallbackFunction, this);
 
 	if (configfile.Read(LtcEtcParamsConst::FILE_NAME)) {
 		LtcEtcParamsStore::Update(&m_Params);
@@ -75,7 +75,7 @@ void LtcEtcParams::Load(const char *pBuffer, uint32_t nLength) {
 
 	m_Params.nSetList = 0;
 
-	ReadConfigFile config(LtcEtcParams::staticCallbackFunction, this);
+	ReadConfigFile config(LtcEtcParams::StaticCallbackFunction, this);
 
 	config.Read(pBuffer, nLength);
 
@@ -93,7 +93,7 @@ void LtcEtcParams::callbackFunction(const char *pLine) {
 	uint32_t nValue32;
 
 	if (Sscan::IpAddress(pLine, LtcEtcParamsConst::DESTINATION_IP, nValue32) == Sscan::OK) {
-		if ((network::is_private_ip(nValue32)) || network::is_multicast_ip(nValue32)) {
+		if ((net::is_private_ip(nValue32)) || net::is_multicast_ip(nValue32)) {
 			m_Params.nDestinationIp = nValue32;
 			m_Params.nSetList |= ltcetcparams::Mask::DESTINATION_IP;
 		} else {
@@ -104,7 +104,7 @@ void LtcEtcParams::callbackFunction(const char *pLine) {
 	}
 
 	if (Sscan::IpAddress(pLine, LtcEtcParamsConst::SOURCE_MULTICAST_IP, nValue32) == Sscan::OK) {
-		if (network::is_multicast_ip(nValue32)) {
+		if (net::is_multicast_ip(nValue32)) {
 			m_Params.nSourceMulticastIp = nValue32;
 			m_Params.nSetList |= ltcetcparams::Mask::SOURCE_MULTICAST_IP;
 		} else {
@@ -206,7 +206,7 @@ void LtcEtcParams::Set() {
 	}
 }
 
-void LtcEtcParams::staticCallbackFunction(void *p, const char *s) {
+void LtcEtcParams::StaticCallbackFunction(void *p, const char *s) {
 	assert(p != nullptr);
 	assert(s != nullptr);
 

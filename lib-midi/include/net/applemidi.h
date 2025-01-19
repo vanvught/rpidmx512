@@ -85,11 +85,11 @@ public:
 		mdns_service_record_add(nullptr, mdns::Services::MIDI, nullptr, m_nPort);
 
 		assert(m_nHandleControl == -1);
-		m_nHandleControl = Network::Get()->Begin(m_nPort, staticCallbackFunctionControlMessage);
+		m_nHandleControl = Network::Get()->Begin(m_nPort, StaticCallbackFunctionControlMessage);
 		assert(m_nHandleControl != -1);
 
 		assert(m_nHandleMidi == -1);
-		m_nHandleMidi = Network::Get()->Begin((m_nPort + 1U), staticCallbackFunctionMidiMessage);
+		m_nHandleMidi = Network::Get()->Begin((m_nPort + 1U), StaticCallbackFunctionMidiMessage);
 		assert(m_nHandleMidi != -1);
 
 		DEBUG_PRINTF("Session name: [%s]", m_ExchangePacketReply.aName);
@@ -194,7 +194,7 @@ private:
 	 * @param nFromIp IP address of the sender.
 	 * @param nFromPort Port number of the sender.
 	 */
-	void static staticCallbackFunctionControlMessage(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
+	void static StaticCallbackFunctionControlMessage(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
 		s_pThis->InputControlMessage(pBuffer, nSize, nFromIp, nFromPort);
 	}
 
@@ -206,7 +206,7 @@ private:
 	 * @param nFromIp IP address of the sender.
 	 * @param nFromPort Port number of the sender.
 	 */
-	void static staticCallbackFunctionMidiMessage(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
+	void static StaticCallbackFunctionMidiMessage(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
 		s_pThis->InputMidiMessage(pBuffer, nSize, nFromIp, nFromPort);
 	}
 

@@ -93,7 +93,7 @@ public:
 
 	static const char *GetType(tlc59711::Type type);
 	static tlc59711::Type GetType(const char *pValue);
-    static void staticCallbackFunction(void *p, const char *s);
+    static void StaticCallbackFunction(void *p, const char *s);
 
 private:
 	void Dump();
