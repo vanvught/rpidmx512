@@ -619,7 +619,7 @@ static bool find_active_tcb(const t_tcp *pTcp, const uint32_t nIndexPort, uint32
 
 static bool find_listening_tcb(const uint32_t nIndexPort, uint32_t& nIndexTCB) {
 	for (nIndexTCB = 0; nIndexTCB < TCP_MAX_TCBS_ALLOWED; nIndexTCB++) {
-		auto *pTCB = &s_Ports[nIndexPort].TCB[nIndexTCB];
+		const auto *pTCB = &s_Ports[nIndexPort].TCB[nIndexTCB];
 
 		if (pTCB->state == STATE_LISTEN) {
 			DEBUG_PUTS("pTCB->state == STATE_LISTEN");
@@ -645,8 +645,7 @@ static void find_tcb(const t_tcp *pTcp, uint32_t& nIndexPort, uint32_t& nIndexTC
 			return;
 		}
 
-		// If no available TCB, trigger retransmission
-		DEBUG_PUTS("MAX_TCB_ALLOWED -> Force retransmission");
+		DEBUG_PUTS("If no available TCB, trigger retransmission");
 		DEBUG_EXIT
 		return;
 	}
@@ -655,7 +654,7 @@ static void find_tcb(const t_tcp *pTcp, uint32_t& nIndexPort, uint32_t& nIndexTC
 /**
  * https://www.rfc-editor.org/rfc/rfc9293.html#name-segment-arrives
  */
-__attribute__((hot)) void tcp_handle(struct t_tcp *pTcp) {
+__attribute__((hot)) void tcp_input(struct t_tcp *pTcp) {
 	pTcp->tcp.srcpt = __builtin_bswap16(pTcp->tcp.srcpt);
 	pTcp->tcp.dstpt = __builtin_bswap16(pTcp->tcp.dstpt);
 

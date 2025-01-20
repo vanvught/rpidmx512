@@ -53,7 +53,7 @@
 #include "net/apps/mdns.h"
 #include "display.h"
 
-#if defined(RDM_CONTROLLER)
+#if defined (NODE_ARTNET) && defined(RDM_CONTROLLER)
 # include "artnetnode.h"
 #endif
 
@@ -857,7 +857,7 @@ http::Status HttpDeamonHandleRequest::HandlePostJSON() {
 			remoteconfig::rtc::json_set_rtc(m_pFileData, static_cast<uint32_t>(nJsonLength));
 		}
 #endif
-#if defined (RDM_CONTROLLER)
+#if defined (NODE_ARTNET) && defined(RDM_CONTROLLER)
 		else if (Sscan::Uint8(m_pFileData, "rdm", value8) == Sscan::OK) {
 			ArtNetNode::Get()->SetRdm(!(value8 != 1));
 			DEBUG_PRINTF("rdm=%d", ArtNetNode::Get()->GetRdm());

@@ -28,7 +28,6 @@
 
 #include <cstdint>
 
-#include "netif.h"
 #include "net/ip4_address.h"
 
 #include "debug.h"

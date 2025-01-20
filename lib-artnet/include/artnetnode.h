@@ -192,6 +192,18 @@ public:
 		return m_pLightSet;
 	}
 
+	void SetLongName(const char *);
+	const char *GetLongName() const {
+		return reinterpret_cast<const char * >(m_ArtPollReply.LongName);
+	}
+	void GetLongNameDefault(char *);
+
+	void SetShortName(const uint32_t nPortIndex, const char *);
+	const char *GetShortName(const uint32_t nPortIndex) const {
+		assert(nPortIndex < artnetnode::MAX_PORTS);
+		return m_Node.Port[nPortIndex].ShortName;
+	}
+
 	void SetDisableMergeTimeout(const bool bDisable) {
 		m_State.bDisableMergeTimeout = bDisable;
 #if (ARTNET_VERSION >= 4)
@@ -353,19 +365,6 @@ public:
 	uint32_t GetActiveOutputPorts() const {
 		return m_State.nEnabledOutputPorts;
 	}
-
-	void SetShortName(const uint32_t nPortIndex, const char *);
-	const char *GetShortName(const uint32_t nPortIndex) const {
-		assert(nPortIndex < artnetnode::MAX_PORTS);
-		return m_Node.Port[nPortIndex].ShortName;
-	}
-
-	void SetLongName(const char *);
-	const char *GetLongName() const {
-		return reinterpret_cast<const char * >(m_ArtPollReply.LongName);
-	}
-
-	void GetLongNameDefault(char *);
 
 	lightset::PortDir GetPortDirection(const uint32_t nPortIndex) const {
 		assert(nPortIndex < artnetnode::MAX_PORTS);

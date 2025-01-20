@@ -35,7 +35,7 @@
 
 #include <cstdint>
 
-#include "netif.h"
+#include "net/netif.h"
 #include "net/acd.h"
 #include "net/protocol/autoip.h"
 

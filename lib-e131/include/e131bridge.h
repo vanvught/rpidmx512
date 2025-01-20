@@ -134,6 +134,13 @@ public:
 		return m_pLightSet;
 	}
 
+	void SetLongName([[maybe_unused]] const char *) {}
+	const char *GetLongName() const { return "Long name"; }
+	void GetLongNameDefault(char *);
+
+	void SetShortName([[maybe_unused]] const uint32_t nPortIndex, [[maybe_unused]] const char *) {};
+	const char *GetShortName([[maybe_unused]]const uint32_t nPortIndex) const { return "Short name"; }
+
 	void SetDisableMergeTimeout(const bool bDisable) {
 		m_State.bDisableMergeTimeout = bDisable;
 	}

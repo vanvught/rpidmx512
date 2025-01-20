@@ -1,6 +1,12 @@
 /**
  * @file ntp_client.cpp
+ * @brief Implementation of an NTP client for time synchronization in a standalone embedded environment.
  *
+ * This file implements the functionality to synchronize system time using the Network Time Protocol (NTP).
+ * It uses UDP to communicate with an NTP server and adjusts the system clock based on received timestamps.
+ *
+ * @note This implementation is optimized for Cortex-M3/M4/M7 processors and assumes a standalone environment
+ *       without a standard library.
  */
 /* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
@@ -54,12 +60,21 @@
  * If you want to fix the last 12 microseconds of error, add in
  * (2911*(x))>>28)
  */
+/**
+ * @brief Macro to convert microseconds to NTP fraction.
+ *
+ * This is an optimized approximation for multiplying by 4294.967296 without
+ * using floating point or 64-bit integers.
+ */
 #define NTPFRAC(x) ( 4294U*static_cast<uint32_t>(x) + ( (1981U*static_cast<uint32_t>(x))>>11 ) +  ((2911U*static_cast<uint32_t>(x))>>28) )
 
 /*
  * The reverse of the above, needed if we want to set our microsecond
  * clock (via clock_settime) based on the incoming time in NTP format.
  * Basically exact.
+ */
+/**
+ * @brief Macro to convert NTP fraction back to microseconds.
  */
 #define USEC(x) ( ( (x) >> 12 ) - 759 * ( ( ( (x) >> 10 ) + 32768 ) >> 16 ) )
 
@@ -72,27 +87,39 @@ Transmit Timestamp    T3   time reply sent by server
 Destination Timestamp T4   time reply received by client
  */
 
+/**
+ * @struct ntpClient
+ * @brief Structure representing the state and configuration of the NTP client.
+ */
 struct ntpClient {
-	uint32_t nServerIp;
-	int32_t nHandle;
-	TimerHandle_t nTimerId;
-	uint32_t nRequestTimeout;
-	uint32_t nPollSeconds;
-	uint32_t nLockedCount;
-	ntp::Status status;
-	ntp::Packet Request;
-	uint8_t LiVnMode;
-	ntp::TimeStamp T1;	// time request sent by client
-	ntp::TimeStamp T2;	// time request received by server
-	ntp::TimeStamp T3;	// time reply sent by server
-	ntp::TimeStamp T4;	// time reply received by client
+    uint32_t nServerIp;           ///< IP address of the NTP server.
+    int32_t nHandle;              ///< Handle for UDP socket communication.
+    TimerHandle_t nTimerId;       ///< Timer ID for periodic tasks.
+    uint32_t nRequestTimeout;     ///< Timeout for NTP requests.
+    uint32_t nPollSeconds;        ///< Polling interval in seconds.
+    uint32_t nLockedCount;        ///< Counter for locked status.
+    ntp::Status status;           ///< Current status of the NTP client.
+    ntp::Packet Request;          ///< NTP request packet.
+    uint8_t LiVnMode;             ///< Leap Indicator, Version, and Mode combined.
+    ntp::TimeStamp T1;            ///< Originate timestamp.
+    ntp::TimeStamp T2;            ///< Receive timestamp.
+    ntp::TimeStamp T3;            ///< Transmit timestamp.
+    ntp::TimeStamp T4;            ///< Destination timestamp.
 };
 
+// Local instance of the NTP client structure.
 static ntpClient s_ntpClient;
 static constexpr uint32_t REQUEST_SIZE = sizeof s_ntpClient.Request;
 
 static void send();
 
+/**
+ * @brief Timer callback function for handling periodic tasks.
+ *
+ * This function manages polling intervals and request timeouts.
+ *
+ * @param nHandle Timer handle for the callback (unused).
+ */
 static void ntp_client_timer([[maybe_unused]] TimerHandle_t nHandle) {
 	assert(s_ntpClient.status != ntp::Status::STOPPED);
 	assert(s_ntpClient.status != ntp::Status::DISABLED);
@@ -132,8 +159,14 @@ static void print_ntp_time([[maybe_unused]] const char *pText, [[maybe_unused]] 
 
 static struct timeval now;
 
-/*
- * Seconds and Fractions since 01.01.1900
+/**
+ * @brief Converts the current time to NTP format.
+ *
+ * This function retrieves the current system time and converts it to the
+ * NTP timestamp format, including both seconds and fractional seconds.
+ *
+ * @param[out] nSeconds Number of seconds since 01/01/1900.
+ * @param[out] nFraction Fractional part of a second in NTP format.
  */
 static void get_time_ntp_format(uint32_t &nSeconds, uint32_t &nFraction) {
 	gettimeofday(&now, nullptr);
@@ -141,6 +174,12 @@ static void get_time_ntp_format(uint32_t &nSeconds, uint32_t &nFraction) {
 	nFraction = NTPFRAC(now.tv_usec);
 }
 
+/**
+ * @brief Sends an NTP request to the configured server.
+ *
+ * This function prepares an NTP request packet and sends it to the server
+ * specified in the configuration using the UDP protocol.
+ */
 static void send() {
 	get_time_ntp_format(s_ntpClient.T1.nSeconds, s_ntpClient.T1.nFraction);
 
@@ -154,6 +193,14 @@ static void send() {
 	ntpclient::display_status(ntp::Status::WAITING);
 }
 
+/**
+ * @brief Computes the time difference between two NTP timestamps.
+ *
+ * @param Start Start timestamp.
+ * @param Stop Stop timestamp.
+ * @param[out] nDiffSeconds Difference in seconds.
+ * @param[out] nDiffMicroSeconds Difference in microseconds.
+ */
 static void difference(const struct ntp::TimeStamp& Start, const struct ntp::TimeStamp& Stop, int32_t &nDiffSeconds, int32_t &nDiffMicroSeconds) {
 	ntp::time_t r;
 	const ntp::time_t x = {.tv_sec = static_cast<int32_t>(Stop.nSeconds), .tv_usec = static_cast<int32_t>(USEC(Stop.nFraction))};
@@ -164,6 +211,12 @@ static void difference(const struct ntp::TimeStamp& Start, const struct ntp::Tim
 	nDiffMicroSeconds = r.tv_usec;
 }
 
+/**
+ * @brief Updates the system time based on NTP timestamps.
+ *
+ * This function calculates the time offset using NTP timestamps and adjusts
+ * the system time accordingly.
+ */
 static void set_time_of_day() {
 	int32_t nDiffSeconds1, nDiffSeconds2 ;
 	int32_t nDiffMicroSeconds1, nDiffMicroSeconds2;
@@ -244,6 +297,22 @@ static void set_time_of_day() {
 #endif
 }
 
+/**
+ * @brief Processes an incoming NTP response.
+ *
+ * This function is called when an NTP response packet is received. It validates
+ * the response, extracts the timestamps, and updates the system time if the
+ * response is valid.
+ *
+ * @param[in] pBuffer Pointer to the buffer containing the NTP response packet.
+ * @param[in] nSize Size of the received packet in bytes (unused).
+ * @param[in] nFromIp IP address of the sender.
+ * @param[in] nFromPort Port number of the sender (unused).
+ *
+ * @note This function verifies that the response is from the expected server and
+ *       that it has a valid mode. If valid, it updates the system time using
+ *       the extracted timestamps.
+ */
 void input(const uint8_t *pBuffer, [[maybe_unused]] uint32_t nSize, [[maybe_unused]] uint32_t nFromIp, [[maybe_unused]] uint16_t nFromPort) {
 	const auto *pReply = reinterpret_cast<const ntp::Packet *>(pBuffer);
 
@@ -267,6 +336,22 @@ void input(const uint8_t *pBuffer, [[maybe_unused]] uint32_t nSize, [[maybe_unus
 	}
 }
 
+/**
+ * @brief Initializes the Precision Time Protocol (PTP) NTP client.
+ *
+ * This function performs the initial setup for the NTP client, including
+ * clearing its state, setting default values, and loading network parameters
+ * such as the NTP server's IP address.
+ *
+ * The initialization includes:
+ * - Resetting all state variables to their default values.
+ * - Configuring the initial NTP request packet parameters.
+ * - Setting the client status to `IDLE`.
+ * - Initializing the random number generator using the current system time.
+ * - Loading network parameters to retrieve the configured NTP server IP address.
+ *
+ * @note This function must be called before starting the NTP client.
+ */
 void ntp_client_init() {
 	DEBUG_ENTRY
 
@@ -290,6 +375,15 @@ void ntp_client_init() {
 	DEBUG_EXIT
 }
 
+/**
+ * @brief Starts the NTP client.
+ *
+ * This function initializes the UDP socket for NTP communication, starts a software
+ * timer for periodic tasks, and sends the first NTP request to the server.
+ *
+ * @note The function will not start the client if it is disabled or if the server
+ *       IP address is not configured.
+ */
 void ntp_client_start() {
 	DEBUG_ENTRY
 
@@ -318,6 +412,14 @@ void ntp_client_start() {
 	DEBUG_EXIT
 }
 
+/**
+ * @brief Stops the NTP client.
+ *
+ * This function stops the software timer and closes the UDP socket. It optionally
+ * disables the client if the `doDisable` parameter is set to `true`.
+ *
+ * @param[in] doDisable Set to `true` to disable the client after stopping.
+ */
 void ntp_client_stop(const bool doDisable) {
 	DEBUG_ENTRY
 
@@ -343,14 +445,33 @@ void ntp_client_stop(const bool doDisable) {
 	DEBUG_EXIT
 }
 
+/**
+ * @brief Sets the IP address of the NTP server.
+ *
+ * This function updates the server IP address used by the NTP client.
+ *
+ * @param[in] nServerIp The IP address of the NTP server.
+ */
 void ntp_client_set_server_ip(const uint32_t nServerIp) {
 	s_ntpClient.nServerIp = nServerIp;
 }
 
+/**
+ * @brief Retrieves the IP address of the configured NTP server.
+ *
+ * @return The IP address of the NTP server.
+ */
 uint32_t ntp_client_get_server_ip() {
 	return s_ntpClient.nServerIp;
 }
 
+/**
+ * @brief Retrieves the current status of the NTP client.
+ *
+ * This function returns the current operational status of the NTP client.
+ *
+ * @return The status of the NTP client as an `ntp::Status` enum.
+ */
 ntp::Status ntp_client_get_status() {
 	return s_ntpClient.status;
 }

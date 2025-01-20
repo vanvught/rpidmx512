@@ -84,7 +84,7 @@ void icmp_shutdown();
 
 void tcp_init();
 void tcp_run();
-void tcp_handle(struct t_tcp *);
+void tcp_input(struct t_tcp *);
 void tcp_shutdown();
 }  // namespace net
 

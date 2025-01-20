@@ -2,7 +2,7 @@
  * @file net.cpp
  *
  */
-/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,7 +49,7 @@
 #include "net/dhcp.h"
 #include "net/tcp.h"
 #include "net/igmp.h"
-#if defined (CONFIG_NET_ENABLE_NTP_CLIENT)
+#if defined (CONFIG_NET_ENABLE_NTP_CLIENT) || defined (CONFIG_NET_ENABLE_PTP_NTP_CLIENT)
 # include "net/apps/ntp_client.h"
 #endif
 #if !defined(CONFIG_NET_APPS_NO_MDNS)
@@ -67,8 +67,9 @@ uint32_t nOnNetworkMask;
 }  // namespace globals
 
 #if defined (CONFIG_NET_ENABLE_PTP)
- void ptp_init();
- void ptp_handle(const uint8_t *, const uint32_t);
+ __attribute__((weak)) void ptp_init() {}
+ /* Can only be used for PTP level 2 messages */
+ __attribute__((weak)) void ptp_handle([[maybe_unused]] const uint8_t *, [[maybe_unused]] const uint32_t) {}
 #endif
 
 void net_link_down() {
@@ -166,6 +167,9 @@ void __attribute__((cold)) net_init(const net::Link link, ip4_addr_t ipaddr, ip4
 #if defined (CONFIG_NET_ENABLE_NTP_CLIENT)
 	ntp_client_init();
 #endif
+#if defined (CONFIG_NET_ENABLE_PTP_NTP_CLIENT)
+	ptp_ntp_init();
+#endif
 #if !defined(CONFIG_NET_APPS_NO_MDNS)
 	mdns_init();
 #endif
@@ -207,7 +211,7 @@ __attribute__((hot)) void net_handle() {
 						break;
 #if defined (ENABLE_HTTPD)
 					case IPv4_PROTO_TCP:
-						tcp_handle(reinterpret_cast<struct t_tcp *>(p_ip4));
+						tcp_input(reinterpret_cast<struct t_tcp *>(p_ip4));
 						tcp_run();
 						break;
 #endif

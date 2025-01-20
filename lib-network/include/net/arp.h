@@ -26,7 +26,7 @@
 #ifndef ARP_PRIVATE_H_
 #define ARP_PRIVATE_H_
 
-#include "netif.h"
+#include "net/netif.h"
 #include "net/protocol/ip4.h"
 #include "net/protocol/arp.h"
 #include "net/protocol/udp.h"

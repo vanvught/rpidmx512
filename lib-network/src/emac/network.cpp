@@ -2,7 +2,7 @@
  * network.cpp
  *
  */
-/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,7 +47,7 @@
 #include "net/netif.h"
 #include "net/autoip.h"
 #include "net/dhcp.h"
-#if defined (CONFIG_NET_ENABLE_NTP_CLIENT)
+#if defined (CONFIG_NET_ENABLE_NTP_CLIENT) || defined (CONFIG_NET_ENABLE_PTP_NTP_CLIENT)
 # include "net/apps/ntp_client.h"
 #endif
 #if !defined(CONFIG_NET_APPS_NO_MDNS)
@@ -61,10 +61,6 @@ static constexpr char TO_HEX(const char i) {
 	return static_cast<char>(((i) < 10) ? '0' + i : 'A' + (i - 10));
 }
 
-#if !defined PHY_ADDRESS
-# define PHY_ADDRESS	1
-#endif
-
 static void netif_ext_callback(const uint16_t reason, [[maybe_unused]] const net::netif_ext_callback_args_t *args) {
 	DEBUG_ENTRY
 
@@ -74,6 +70,9 @@ static void netif_ext_callback(const uint16_t reason, [[maybe_unused]] const net
 		net::display_ip();
 #if defined (CONFIG_NET_ENABLE_NTP_CLIENT)
 		ntp_client_start();
+#endif
+#if defined (CONFIG_NET_ENABLE_PTP_NTP_CLIENT)
+		ptp_ntp_start();
 #endif
 #if !defined(CONFIG_NET_APPS_NO_MDNS)
 		mdns_start();
@@ -101,6 +100,9 @@ static void netif_ext_callback(const uint16_t reason, [[maybe_unused]] const net
 		}
 #if defined (CONFIG_NET_ENABLE_NTP_CLIENT)
 		ntp_client_start();
+#endif
+#if defined (CONFIG_NET_ENABLE_PTP_NTP_CLIENT)
+		ptp_ntp_start();
 #endif
 #if !defined(CONFIG_NET_APPS_NO_MDNS)
 		mdns_start();
