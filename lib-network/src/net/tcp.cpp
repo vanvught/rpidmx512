@@ -304,7 +304,7 @@ static void tcp_bswap32_acknum_seqnum(struct t_tcp *p_tcp) {
 }
 
 static void tcp_init_tcb(struct tcb *pTcb, const uint16_t nLocalPort) {
-	memset(pTcb, 0, sizeof(struct tcb));
+	std::memset(pTcb, 0, sizeof(struct tcb));
 
 	pTcb->nLocalPort = nLocalPort;
 

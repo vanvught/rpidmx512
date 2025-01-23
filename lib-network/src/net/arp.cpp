@@ -263,7 +263,7 @@ static void arp_cache_clean_record(net::arp::Record& record) {
 	if (record.packet.p != nullptr) {
 		delete[] record.packet.p;
 	}
-	memset(&record, 0, sizeof(struct net::arp::Record));
+	std::memset(&record, 0, sizeof(struct net::arp::Record));
 }
 
 static void arp_send_request_unicast(const uint32_t nIp, const uint8_t *pMacAddress) {

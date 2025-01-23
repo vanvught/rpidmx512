@@ -58,7 +58,7 @@ namespace net {
 static dhcp::Message s_dhcp_message SECTION_NETWORK ALIGNED;
 
 static void message_init() {
-	memset(&s_dhcp_message, 0, sizeof(dhcp::Message));
+	std::memset(&s_dhcp_message, 0, sizeof(dhcp::Message));
 
 	s_dhcp_message.op = dhcp::OpCode::BOOTREQUEST;
 	s_dhcp_message.htype = dhcp::HardwareType::HTYPE_10MB;	// This is the current default
@@ -682,7 +682,7 @@ bool dhcp_start() {
     	assert(nTimerId >= 0);
 	}
 
-	memset(dhcp, 0, sizeof(struct dhcp::Dhcp));
+	std::memset(dhcp, 0, sizeof(struct dhcp::Dhcp));
 	dhcp->nHandle = udp_begin(net::iana::IANA_PORT_DHCP_CLIENT, dhcp_input);
 
 #ifndef NDEBUG
@@ -729,7 +729,7 @@ void dhcp_release_and_stop() {
 
 	/* clean old DHCP offer */
 	dhcp->server_ip_addr.addr = 0;
-	memset(&dhcp->offered, 0, sizeof(struct dhcp::Dhcp::Offered));
+	std::memset(&dhcp->offered, 0, sizeof(struct dhcp::Dhcp::Offered));
 	dhcp->t1_renew_time = dhcp->t2_rebind_time = dhcp->lease_used = dhcp->t0_timeout = 0;
 
 	if (dhcp_supplied_address()) {
@@ -790,7 +790,7 @@ void dhcp_process(const dhcp::Message *const pResponse, const uint32_t nSize) {
 	auto *dhcp = reinterpret_cast<struct dhcp::Dhcp *>(globals::netif_default.dhcp);
 	assert(dhcp != nullptr);
 
-	memset(&dhcp->offered, 0, sizeof(struct dhcp::Dhcp::Offered));
+	std::memset(&dhcp->offered, 0, sizeof(struct dhcp::Dhcp::Offered));
 
 	dhcp->server_ip_addr.addr = 0;
 

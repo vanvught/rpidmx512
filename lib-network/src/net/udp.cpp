@@ -35,7 +35,6 @@
 #endif
 
 #include <cstdint>
-#include <cstring>
 #include <algorithm>
 #include <cassert>
 
@@ -158,10 +157,10 @@ static void udp_send_implementation(int nIndex, const uint8_t *pData, uint32_t n
 	net::memcpy(pOutBuffer->udp.data, pData, nSize);
 
 	if (nRemoteIp == net::IPADDR_BROADCAST) {
-		memset(pOutBuffer->ether.dst, 0xFF, ETH_ADDR_LEN);
-		memset(pOutBuffer->ip4.dst, 0xFF, IPv4_ADDR_LEN);
+		net::memset<0xFF, ETH_ADDR_LEN>(pOutBuffer->ether.dst);
+		net::memset<0xFF, IPv4_ADDR_LEN>(pOutBuffer->ip4.dst);
 	} else if ((nRemoteIp & net::globals::nBroadcastMask) == net::globals::nBroadcastMask) {
-		memset(pOutBuffer->ether.dst, 0xFF, ETH_ADDR_LEN);
+		net::memset<0xFF, ETH_ADDR_LEN>(pOutBuffer->ether.dst);
 		net::memcpy_ip(pOutBuffer->ip4.dst, nRemoteIp);
 	} else {
 		if ((nRemoteIp & 0xF0) == 0xE0) { // Multicast, we know the MAC Address
