@@ -48,10 +48,13 @@
 #include "ltcsender.h"
 #include "artnetnode.h"
 #include "ltcetc.h"
+#include "net/rtpmidi.h"
 #include "arm/ltcmidisystemrealtime.h"
 #include "arm/ltcoutputs.h"
 
 #include "arm/platform_ltc.h"
+
+#include "debug.h"
 
 static uint8_t s_qf[8] __attribute__ ((aligned (4))) = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
@@ -74,6 +77,9 @@ void MidiReader::Start() {
 #endif
 	Midi::Get()->Init(midi::Direction::INPUT);
 
+	LtcOutputs::Get()->Init(true);
+	Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
+
 	DEBUG_EXIT
 }
 
@@ -93,6 +99,10 @@ void MidiReader::HandleMtc() {
 	g_ltc_LtcTimeCode.nFrames = pSystemExclusive[8];
 	g_ltc_LtcTimeCode.nType = static_cast<uint8_t>(pSystemExclusive[5] >> 5);
 
+	if (ltc::Destination::IsEnabled(ltc::Destination::Output::RTPMIDI)) {
+		RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(&g_ltc_LtcTimeCode));
+	}
+
 	Update();
 
 	gv_ltc_bTimeCodeAvailable = false;
@@ -101,6 +111,11 @@ void MidiReader::HandleMtc() {
 void MidiReader::HandleMtcQf() {
 	uint8_t nData1, nData2;
 	Midi::Get()->GetMessageData(nData1, nData2);
+
+	if (ltc::Destination::IsEnabled(ltc::Destination::Output::RTPMIDI)) {
+		RtpMidi::Get()->SendQf(nData1);
+	}
+
 	const auto nPart = static_cast<uint8_t>((nData1 & 0x70) >> 4);
 
 	s_qf[nPart] = nData1 & 0x0F;
@@ -138,7 +153,7 @@ void MidiReader::HandleMtcQf() {
 #if defined (H3)
 		H3_TIMER->TMR1_CTRL |= TIMER_CTRL_SINGLE_MODE;
 		H3_TIMER->TMR1_INTV = TimeCodeConst::TMR_INTV[g_ltc_LtcTimeCode.nType];
-		H3_TIMER->TMR1_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
+		H3_TIMER->TMR1_CTRL |= (TIMER_CTRL_EN_START);
 #elif defined (GD32)
 		platform::ltc::timer11_set_type(g_ltc_LtcTimeCode.nType);
 #endif
@@ -245,17 +260,6 @@ void MidiReader::Run() {
 		}
 
 		Update();
-
- 		if (m_nMtcQfFramesDelta == 2) {
- 			m_nMtcQfFramesDelta = 0;
-#if defined (H3)
- 			H3_TIMER->TMR1_CTRL |= TIMER_CTRL_SINGLE_MODE;
- 			H3_TIMER->TMR1_INTV = TimeCodeConst::TMR_INTV[g_ltc_LtcTimeCode.nType];
- 			H3_TIMER->TMR1_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
-#elif defined (GD32)
- 			platform::ltc::timer11_set_type(g_ltc_LtcTimeCode.nType);
-#endif
- 		}
 	}
 
 	if (Midi::Get()->GetUpdatesPerSecond() != 0)  {

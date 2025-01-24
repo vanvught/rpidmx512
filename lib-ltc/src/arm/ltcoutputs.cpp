@@ -162,14 +162,15 @@ LtcOutputs::LtcOutputs(const ltc::Source source, const bool bShowSysTime): m_bSh
 	DEBUG_EXIT
 }
 
-void LtcOutputs::Init() {
+void LtcOutputs::Init(const bool bDisableRtpMidi) {
 	DEBUG_ENTRY
 
+	m_bEnableRtpMidi = ltc::Destination::IsEnabled(ltc::Destination::Output::RTPMIDI) && !bDisableRtpMidi;
 	m_TypePrevious = ltc::Type::INVALID;
 	m_bMidiQuarterFramePieceRunning = false;
 	sv_nMidiQuarterFramePiece = 0;
 
-	if (ltc::Destination::IsEnabled(ltc::Destination::Output::RTPMIDI) || ltc::Destination::IsEnabled(ltc::Destination::Output::MIDI)) {
+	if (m_bEnableRtpMidi || ltc::Destination::IsEnabled(ltc::Destination::Output::MIDI)) {
 #if defined (H3)
 		irq_timer_set(IRQ_TIMER_1, static_cast<thunk_irq_timer_t>(irq_timer1_midi_handler));
 #elif defined (GD32)
@@ -201,7 +202,7 @@ void LtcOutputs::Update(const struct ltc::TimeCode *pLtcTimeCode) {
 		m_bMidiQuarterFramePieceRunning = false;
 		sv_nMidiQuarterFramePiece = 0;
 
-		if (ltc::Destination::IsEnabled(ltc::Destination::Output::RTPMIDI)) {
+		if (m_bEnableRtpMidi) {
 			RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(pLtcTimeCode));
 		}
 
@@ -238,7 +239,7 @@ void LtcOutputs::Update(const struct ltc::TimeCode *pLtcTimeCode) {
 
 		const auto data = create_quarter_frame(reinterpret_cast<const struct midi::Timecode *>(pLtcTimeCode));
 
-		if (ltc::Destination::IsEnabled(ltc::Destination::Output::RTPMIDI)) {
+		if (m_bEnableRtpMidi) {
 			RtpMidi::Get()->SendQf(data);
 		}
 
@@ -257,7 +258,7 @@ void LtcOutputs::Update(const struct ltc::TimeCode *pLtcTimeCode) {
 		__DMB();
 	}
 
-	m_bMidiQuarterFramePieceRunning = true;
+	m_bMidiQuarterFramePieceRunning = (m_bEnableRtpMidi || ltc::Destination::IsEnabled(ltc::Destination::Output::MIDI));
 
 	if (ltc::Destination::IsEnabled(ltc::Destination::Output::NTP_SERVER)) {
 		NtpServer::Get()->SetTimeCode(pLtcTimeCode);

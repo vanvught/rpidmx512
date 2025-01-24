@@ -32,7 +32,7 @@ class LtcOutputs {
 public:
 	LtcOutputs(const ltc::Source source, const bool bShowSysTime);
 
-	void Init();
+	void Init(const bool bDisableRtpMidi = false);
 	void Update(const struct ltc::TimeCode *ptLtcTimeCode);
 
 	void ShowSysTime();
@@ -51,6 +51,7 @@ public:
 private:
 	bool m_bShowSysTime;
 	bool m_bMidiQuarterFramePieceRunning { false };
+	bool m_bEnableRtpMidi { false };
 
 	ltc::Type m_TypePrevious { ltc::Type::INVALID };
 	int32_t m_nSecondsPrevious { 60 };
