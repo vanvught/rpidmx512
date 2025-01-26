@@ -165,6 +165,8 @@ int main() {
 #if defined (NODE_SHOWFILE)
 		showFile.Run();
 #endif
+		configStore.Flash();
+
 		display.Run();
 		hw.Run();
 	}

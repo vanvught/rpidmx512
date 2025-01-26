@@ -47,6 +47,10 @@ void RemoteConfig::HandleReboot() {
 	m_bIsReboot = true;
 
 	Display::Get()->SetSleep(false);
+
+	while (ConfigStore::Get()->Flash())
+		;
+
 	Display::Get()->Cls();
 	Display::Get()->TextStatus("Rebooting ...");
 

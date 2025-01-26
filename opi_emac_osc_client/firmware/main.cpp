@@ -126,6 +126,8 @@ int main() {
 		nw.Run();
 		client.Run();
 		pButtonsSet->Run();
+		configStore.Flash();
+
 		display.Run();
 		hw.Run();
 	}

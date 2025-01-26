@@ -116,6 +116,7 @@ int main() {
 	for (;;) {
 		hw.WatchdogFeed();
 		nw.Run();
+		configStore.Flash();
 		showSystime.Run();
 		display.Run();
 		hw.Run();

@@ -111,10 +111,10 @@ public:
 		}
 	}
 
+	bool Flash();
+
 	void Dump();
-	bool Commit() {
-		return Flash();
-	}
+
 	void Delay();
 
 	/*
@@ -169,8 +169,7 @@ public:
 	}
 
 private:
-	uint32_t GetStoreOffset(configstore::Store store);
-	bool Flash();
+	uint32_t GetStoreOffset(configstore::Store tStore);
 
 private:
 	struct Env {

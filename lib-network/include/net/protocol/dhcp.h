@@ -28,8 +28,6 @@
 
 #include <cstdint>
 
-#include "net/protocol/ip4.h"
-
 namespace net::dhcp {
 static constexpr uint32_t OPT_SIZE = 312;
 static constexpr uint32_t MAGIC_COOKIE = 0x63825363; ///< You should not modify it number.

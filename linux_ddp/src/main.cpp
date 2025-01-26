@@ -130,6 +130,7 @@ int main(int argc, char **argv) {
 	while (keepRunning) {
 		nw.Run();
 		ddpDisplay.Run();
+		configStore.Flash();
 		hw.Run();
 	}
 

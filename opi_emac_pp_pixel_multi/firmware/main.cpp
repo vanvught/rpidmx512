@@ -175,6 +175,7 @@ int main() {
 		hw.WatchdogFeed();
 		nw.Run();
 		pp.Run();
+		configStore.Flash();
 		pixelTestPattern.Run();
 		display.Run();
 		hw.Run();

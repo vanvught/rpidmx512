@@ -128,6 +128,7 @@ int main(int argc, char **argv) {
 	while (keepRunning) {
 		nw.Run();
 		pp.Run();
+		configStore.Flash();
 		hw.Run();
 	}
 

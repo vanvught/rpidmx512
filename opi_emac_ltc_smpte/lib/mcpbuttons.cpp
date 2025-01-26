@@ -381,14 +381,18 @@ void McpButtons::HandleRunActionSelect() {
 	}
 
 	if (m_tRunStatus == RunStatus::REBOOT) {
+		while (ConfigStore::Get()->Flash())
+			;
+
+		printf("Reboot ...\n");
+
 		m_I2C.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(0xFF));
 
-		Display::Get()->SetSleep(false);
 		Display::Get()->Cls();
 		Display::Get()->TextStatus("Reboot ...");
 
 		Hardware::Get()->Reboot();
-		__builtin_unreachable() ;
+
 		return;
 	}
 

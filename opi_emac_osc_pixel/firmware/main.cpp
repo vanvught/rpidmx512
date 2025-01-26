@@ -128,6 +128,7 @@ int main() {
 	for (;;) {
 		hw.WatchdogFeed();
 		nw.Run();
+		configStore.Flash();
 		pixelTestPattern.Run();
 		display.Run();
 		hw.Run();

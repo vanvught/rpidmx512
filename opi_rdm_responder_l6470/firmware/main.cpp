@@ -125,6 +125,7 @@ int main() {
 
 	rdmResponder.Init();
 
+
 	RDMDeviceParams rdmDeviceParams;
 	rdmDeviceParams.Load();
 	rdmDeviceParams.Set(&rdmResponder);
@@ -138,6 +139,7 @@ int main() {
 	for(;;) {
 		hw.WatchdogFeed();
 		rdmResponder.Run();
+		configStore.Flash();
 		hw.Run();
 	}
 }

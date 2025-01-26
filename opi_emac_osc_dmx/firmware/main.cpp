@@ -117,6 +117,7 @@ int main() {
 	for (;;) {
 		hw.WatchdogFeed();
 		nw.Run();
+		configStore.Flash();
 		display.Run();
 		hw.Run();
 	}

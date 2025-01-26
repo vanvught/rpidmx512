@@ -31,37 +31,12 @@
 #include "configstore.h"
 
 #include "hardware.h"
-#include "softwaretimers.h"
 
 #include "debug.h"
 
 namespace global {
 extern int32_t *gp_nUtcOffset;
 }  // namespace global
-
-void configstore_commit() {
-	while (ConfigStore::Get()->Commit())
-		;
-}
-
-static TimerHandle_t s_nTimerId = TIMER_ID_NONE;
-static void timer_stop();
-
-static void timer([[maybe_unused]] TimerHandle_t nHandle) {
-	if (!ConfigStore::Get()->Commit()) {
-		timer_stop();
-	}
-}
-
-static void timer_start() {
-	assert(s_nTimerId == TIMER_ID_NONE);
-	s_nTimerId = SoftwareTimerAdd(100, timer);
-}
-
-static void timer_stop() {
-	assert(s_nTimerId != TIMER_ID_NONE);
-	SoftwareTimerDelete(s_nTimerId);
-}
 
 using namespace configstore;
 
@@ -113,7 +88,6 @@ ConfigStore::ConfigStore() {
 		DEBUG_PUTS("No signature");
 		memset(&s_ConfigStoreData[StoreConfiguration::SIGNATURE_SIZE], 0, StoreConfiguration::SIZE - StoreConfiguration::SIGNATURE_SIZE);
 		s_State = State::CHANGED;
-		timer_start();
 	}
 
 	s_nStoresSize = StoreConfiguration::OFFSET_STORES;
@@ -169,7 +143,6 @@ void ConfigStore::ResetSetList(Store store) {
 	*pbSetList = 0x00;
 
 	s_State = State::CHANGED;
-	timer_start();
 }
 
 void ConfigStore::Update(Store store, uint32_t nOffset, const void *pData, uint32_t nDataLength, uint32_t nSetList, uint32_t nOffsetSetList) {
@@ -204,7 +177,6 @@ void ConfigStore::Update(Store store, uint32_t nOffset, const void *pData, uint3
 
 	if (bIsChanged) {
 		s_State = State::CHANGED;
-		timer_start();
 	}
 
 	debug_dump(&s_ConfigStoreData[GetStoreOffset(store)] + nOffsetSetList, 8);
@@ -251,22 +223,26 @@ void ConfigStore::Delay() {
 }
 
 bool ConfigStore::Flash() {
-	DEBUG_PRINTF("s_State=%u", static_cast<unsigned int>(s_State));
 	if (__builtin_expect((s_State == State::IDLE), 1)) {
 		return false;
 	}
 
 	switch (s_State) {
 	case State::CHANGED:
+		s_nWaitMillis = Hardware::Get()->Millis();
 		s_State = State::CHANGED_WAITING;
 		return true;
 	case State::CHANGED_WAITING:
+		if ((Hardware::Get()->Millis() - s_nWaitMillis) < 100) {
+			return true;
+		}
 		s_State = State::ERASING;
 		return true;
 		break;
 	case State::ERASING: {
 		storedevice::result result;
 		if (StoreDevice::Erase(s_nStartAddress, StoreConfiguration::SIZE, result)) {
+			s_nWaitMillis = Hardware::Get()->Millis();
 			s_State = State::ERASED_WAITING;
 		}
 		assert(result == storedevice::result::OK);
@@ -275,6 +251,9 @@ bool ConfigStore::Flash() {
 	}
 		break;
 	case State::ERASED_WAITING:
+		if ((Hardware::Get()->Millis() - s_nWaitMillis) < 100) {
+			return true;
+		}
 		s_State = State::ERASED;
 		return true;
 		break;
