@@ -167,7 +167,6 @@ int main() {
 		nw.Run();
 		bridge.Run();
 		controller.Run();
-		configStore.Flash();
 		display.Run();
 		hw.Run();
 	}

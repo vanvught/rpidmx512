@@ -93,7 +93,6 @@ int main() {
 	for (;;) {
 		hw.WatchdogFeed();
 		widget.Run();
-		configStore.Flash();
 		hw.Run();
 	}
 }

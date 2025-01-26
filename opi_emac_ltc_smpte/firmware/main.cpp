@@ -157,10 +157,6 @@ void reboot_handler() {
 #endif
 	if (!RemoteConfig::Get()->IsReboot()) {
 		Display::Get()->SetSleep(false);
-
-		while (ConfigStore::Get()->Flash())
-			;
-
 		Display::Get()->Cls();
 		Display::Get()->TextStatus("Rebooting ...");
 	}
@@ -604,7 +600,6 @@ int main() {
 		}
 
 		hw.Run();
-		configStore.Flash();
 #if defined(ENABLE_SHELL)
 		shell.Run();
 #endif

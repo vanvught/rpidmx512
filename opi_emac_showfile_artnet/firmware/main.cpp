@@ -60,12 +60,6 @@ void reboot_handler() {
 
 	if (!RemoteConfig::Get()->IsReboot()) {
 		Display::Get()->SetSleep(false);
-
-		while (ConfigStore::Get()->Flash())
-			;
-
-		printf("Rebooting ...\n");
-
 		Display::Get()->Cls();
 		Display::Get()->TextStatus("Rebooting ...");
 	}
@@ -139,7 +133,6 @@ int main() {
 		hw.WatchdogFeed();
 		nw.Run();
 		showFile.Run();
-		configStore.Flash();
 		display.Run();
 		hw.Run();
 	}

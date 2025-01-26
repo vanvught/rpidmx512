@@ -187,10 +187,14 @@ const char *Hardware::GetSocName(uint8_t &nLength) {
 	return soc::NAME;
 }
 
+void configstore_commit();
+
 bool Hardware::Reboot() {
 	puts("Rebooting ...");
 	
 	h3_watchdog_disable();
+
+	configstore_commit();
 
 #if !defined(DISABLE_RTC)
 	m_HwClock.SysToHc();
