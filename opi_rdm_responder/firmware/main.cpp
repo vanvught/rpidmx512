@@ -154,9 +154,6 @@ int main() {
 	RemoteConfigParams remoteConfigParams;
 	remoteConfigParams.Load();
 	remoteConfigParams.Set(&remoteConfig);
-
-	while (configStore.Flash())
-		;
 #endif
 
 	display.SetTitle("RDM Responder Pixel 1");
@@ -191,7 +188,6 @@ int main() {
 	for (;;) {
 		hw.WatchdogFeed();
 		rdmResponder.Run();
-		configStore.Flash();
 #if !defined(NO_EMAC)
 		nw.Run();
 #endif

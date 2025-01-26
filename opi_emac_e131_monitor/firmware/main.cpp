@@ -168,7 +168,6 @@ int main() {
 #if defined (NODE_SHOWFILE)
 		showFile.Run();
 #endif
-		configStore.Flash();
 		showSystime.Run();
 		display.Run();
 		hw.Run();

@@ -252,9 +252,6 @@ int main() {
 	for (;;) {
 		hw.WatchdogFeed();
 		node.Run();
-#if defined (ORANGE_PI)
-		configStore.Flash();
-#endif
 		hw.Run();
 	}
 }

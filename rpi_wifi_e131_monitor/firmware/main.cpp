@@ -157,11 +157,6 @@ int main() {
 	console_status(CONSOLE_GREEN, BRIDGE_STARTED);
 	display.TextStatus(BRIDGE_STARTED);
 
-#if defined (ORANGE_PI)
-	while (configStore.Flash())
-		;
-#endif
-
 	hw.WatchdogInit();
 
 	for (;;) {
