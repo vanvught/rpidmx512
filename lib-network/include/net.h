@@ -28,30 +28,45 @@
 
 #include <cstdint>
 
-#include "emac/phy.h"
 #include "net/netif.h"
-#include "net/dhcp.h"
-#include "net/protocol/dhcp.h"
 
 namespace net {
-void net_init(Link link, ip4_addr_t ipaddr, ip4_addr_t netmask, ip4_addr_t gw, bool &bUseDhcp);
-void net_set_primary_ip(const ip4_addr_t ipaddr);
-void net_set_secondary_ip();
-void net_handle();
-void net_link_down();
+void net_set_primary_ip(const uint32_t nIp);
+inline uint32_t net_get_primary_ip() { return net::netif_ipaddr(); }
 
-/**
- * Must be provided by the user application
- */
-void display_emac_config();
-void display_emac_start();
-void display_emac_status(const bool);
-void display_emac_shutdown();
-void display_ip();
-void display_netmask();
-void display_gateway();
-void display_hostname();
-void display_dhcp_status(net::dhcp::State);
+void net_set_secondary_ip();
+
+void net_set_netmask(const uint32_t nNetmask);
+inline uint32_t net_get_netmask() { return net::netif_netmask(); }
+
+void net_set_gateway_ip(const uint32_t nNetmask);
+inline uint32_t net_get_gateway_ip() { return net::netif_gw(); }
+
+inline bool net_is_dhcp_capable() { return true; }
+inline bool net_is_dhcp_known() { return true; }
+void net_enable_dhcp();
+
+inline bool net_is_zeroconf_capable() { return true; }
+inline bool net_is_zeroconf_used() { return net::netif_autoip(); };
+void net_set_zeroconf();
+
+inline char net_get_addressing_mode() {
+	if (net::netif_autoip()) {
+		return  'Z';
+	} else if (net_is_dhcp_known()) {
+		if (net::netif_dhcp()) {
+			return 'D';
+		} else {
+			return 'S';
+		}
+	}
+
+	return 'U';
+}
+
+inline bool net_is_valid_ip(const uint32_t nIp) {
+	return (net::netif_ipaddr() & net::netif_netmask()) == (nIp & net::netif_netmask());
+}
 }  // namespace net
 
 #endif /* NET_H_ */

@@ -34,8 +34,8 @@
 #include "ws28xxdmx.h"
 #include "rdmresponder.h"
 
-namespace rdm {
-namespace selftest {
+
+namespace rdm::selftest {
 
 uint8_t Get() {
 	return static_cast<uint8_t>(PixelTestPattern::Get()->GetPattern());
@@ -71,6 +71,6 @@ const char* GetDescription(uint8_t nSelfTest, uint32_t& nLength) {
 	return pText;
 }
 
-}  // namespace selftest
-}  // namespace rdm
+} // namespace rdm::selftest
+
 

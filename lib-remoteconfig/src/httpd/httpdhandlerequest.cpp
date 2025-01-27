@@ -50,6 +50,7 @@
 
 #include "hardware.h"
 #include "network.h"
+#include "net/tcp.h"
 #include "net/apps/mdns.h"
 #include "display.h"
 
@@ -175,7 +176,7 @@ void HttpDeamonHandleRequest::HandleRequest(const uint32_t nBytesReceived, char 
 			 __attribute__ ((fallthrough));
 			/* no break */
 		default:
-			Network::Get()->TcpAbort(m_nHandle, m_nConnectionHandle);
+			net::tcp_abort(m_nHandle, m_nConnectionHandle);
 			m_Status = http::Status::UNKNOWN_ERROR;
 			m_RequestMethod = http::RequestMethod::UNKNOWN;
 			DEBUG_EXIT
@@ -201,8 +202,8 @@ void HttpDeamonHandleRequest::HandleRequest(const uint32_t nBytesReceived, char 
 			"Connection: close\r\n"
 			"\r\n", static_cast<unsigned int>(m_Status), pStatusMsg, Network::Get()->GetHostName(), s_contentType[static_cast<uint32_t>(m_RequestContentType)], static_cast<unsigned int>(m_nContentSize)));
 
-	Network::Get()->TcpWrite(m_nHandle, reinterpret_cast<uint8_t *>(m_pReceiveBuffer), nHeaderLength, m_nConnectionHandle);
-	Network::Get()->TcpWrite(m_nHandle, reinterpret_cast<const uint8_t *>(m_pContent), m_nContentSize, m_nConnectionHandle);
+	net::tcp_write(m_nHandle, reinterpret_cast<uint8_t *>(m_pReceiveBuffer), nHeaderLength, m_nConnectionHandle);
+	net::tcp_write(m_nHandle, reinterpret_cast<const uint8_t *>(m_pContent), m_nContentSize, m_nConnectionHandle);
 
 	DEBUG_PRINTF("m_nContentLength=%u", m_nContentSize);
 

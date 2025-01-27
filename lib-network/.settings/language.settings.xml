@@ -2,7 +2,7 @@
 <project>
 	<configuration id="cdt.managedbuild.toolchain.gnu.cross.base.563973127" name="rpi">
 		<extension point="org.eclipse.cdt.core.LanguageSettingsProvider">
-			<provider class="org.eclipse.cdt.managedbuilder.language.settings.providers.GCCBuiltinSpecsDetector" console="false" env-hash="-1621778804544586894" id="org.eclipse.embedcdt.managedbuild.cross.arm.core.GCCBuiltinSpecsDetector" keep-relative-paths="false" name="CDT Arm Cross GCC Built-in Compiler Settings" parameter="${COMMAND} ${FLAGS} ${cross_toolchain_flags} -E -P -v -dD &quot;${INPUTS}&quot;" prefer-non-shared="true">
+			<provider class="org.eclipse.cdt.managedbuilder.language.settings.providers.GCCBuiltinSpecsDetector" console="false" env-hash="-1621778395022259434" id="org.eclipse.embedcdt.managedbuild.cross.arm.core.GCCBuiltinSpecsDetector" keep-relative-paths="false" name="CDT Arm Cross GCC Built-in Compiler Settings" parameter="${COMMAND} ${FLAGS} ${cross_toolchain_flags} -E -P -v -dD &quot;${INPUTS}&quot;" prefer-non-shared="true">
 				<language-scope id="org.eclipse.cdt.core.gcc"/>
 				<language-scope id="org.eclipse.cdt.core.g++"/>
 			</provider>
@@ -26,7 +26,7 @@
 	</configuration>
 	<configuration id="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.309283989.303033930" name="H3">
 		<extension point="org.eclipse.cdt.core.LanguageSettingsProvider">
-			<provider class="org.eclipse.cdt.managedbuilder.language.settings.providers.GCCBuiltinSpecsDetector" console="true" env-hash="1352335747619580462" id="org.eclipse.embedcdt.managedbuild.cross.arm.core.GCCBuiltinSpecsDetector" keep-relative-paths="false" name="CDT Arm Cross GCC Built-in Compiler Settings" parameter="${COMMAND} ${FLAGS} ${cross_toolchain_flags} -E -P -v -dD &quot;${INPUTS}&quot;" prefer-non-shared="true">
+			<provider class="org.eclipse.cdt.managedbuilder.language.settings.providers.GCCBuiltinSpecsDetector" console="true" env-hash="1352334674813548076" id="org.eclipse.embedcdt.managedbuild.cross.arm.core.GCCBuiltinSpecsDetector" keep-relative-paths="false" name="CDT Arm Cross GCC Built-in Compiler Settings" parameter="${COMMAND} ${FLAGS} ${cross_toolchain_flags} -E -P -v -dD &quot;${INPUTS}&quot;" prefer-non-shared="true">
 				<language-scope id="org.eclipse.cdt.core.gcc"/>
 				<language-scope id="org.eclipse.cdt.core.g++"/>
 			</provider>

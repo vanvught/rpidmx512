@@ -1,8 +1,8 @@
 /**
- * @file httpd.cpp
+ * @file network_display.h
  *
  */
-/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,50 +23,19 @@
  * THE SOFTWARE.
  */
 
-#if defined (DEBUG_HTTPD)
-# undef NDEBUG
-#endif
+#ifndef NETWORK_DISPLAY_H_
+#define NETWORK_DISPLAY_H_
 
-#include <cstring>
-#include <cstdio>
-#include <ctype.h>
-#include <cassert>
+#include "net/protocol/dhcp.h"
 
-#include "httpd/httpd.h"
+void network_display_emac_config();
+void network_display_emac_start();
+void network_display_emac_status(const bool);
+void network_display_emac_shutdown();
+void network_display_ip();
+void network_display_netmask();
+void network_display_gateway();
+void network_display_hostname();
+void network_display_dhcp_status(net::dhcp::State);
 
-#include "network.h"
-#include "net/tcp.h"
-#include "net/apps/mdns.h"
-
-#include "../../lib-network/config/net_config.h"
-
-HttpDaemon::HttpDaemon() {
-	DEBUG_ENTRY
-
-	assert(m_nHandle == -1);
-	m_nHandle = net::tcp_begin(80, Input);
-	assert(m_nHandle != -1);
-
-	for (uint32_t nIndex = 0; nIndex < TCP_MAX_TCBS_ALLOWED; nIndex++) {
-		new (&handleRequest[nIndex]) HttpDeamonHandleRequest(nIndex, m_nHandle);
-	}
-
-	mdns_service_record_add(nullptr, mdns::Services::HTTP);
-
-	DEBUG_EXIT
-}
-
-HttpDaemon::~HttpDaemon() {
-	DEBUG_ENTRY
-
-	mdns_service_record_delete(mdns::Services::HTTP);
-
-	for (uint32_t nIndex = 0; nIndex < TCP_MAX_TCBS_ALLOWED; nIndex++) {
-		// Explicitly calling the destructor because objects were constructed with placement new.
-		handleRequest[nIndex].~HttpDeamonHandleRequest();
-	}
-
-	net::tcp_end(m_nHandle);
-
-	DEBUG_EXIT
-}
+#endif /* NETWORK_DISPLAY_H_ */

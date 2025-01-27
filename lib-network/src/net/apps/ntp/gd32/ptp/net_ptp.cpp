@@ -83,11 +83,11 @@ __attribute__((weak)) void display_status([[maybe_unused]] const ::ntp::Status s
 }
 }  // namespace ntpclient
 
-namespace net {
-namespace globals {
+
+namespace net::globals {
 extern uint32_t ptpTimestamp[2];
-}  // namespace globals
-}  // namespace net
+} // namespace net::globals
+
 
 #define _NTPFRAC_(x) ( 4294U*static_cast<uint32_t>(x) + ( (1981U*static_cast<uint32_t>(x))>>11 ) +  ((2911U*static_cast<uint32_t>(x))>>28) )
 #define NTPFRAC(x)	_NTPFRAC_(x / 1000)

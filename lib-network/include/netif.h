@@ -1,8 +1,8 @@
 /**
- * @file httpd.cpp
+ * @file netif.h
  *
  */
-/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,50 +23,25 @@
  * THE SOFTWARE.
  */
 
-#if defined (DEBUG_HTTPD)
-# undef NDEBUG
-#endif
+#ifndef NETIF_H_
+#define NETIF_H_
 
-#include <cstring>
-#include <cstdio>
-#include <ctype.h>
-#include <cassert>
+#include <cstdint>
 
-#include "httpd/httpd.h"
+#include "net/netif.h"
+#include "net/ip4_address.h"
 
-#include "network.h"
-#include "net/tcp.h"
-#include "net/apps/mdns.h"
+namespace net {
+void netif_set_hostname(const char *);
 
-#include "../../lib-network/config/net_config.h"
+const char *netif_get_ifname();
+inline uint32_t netif_get_ifindex() { return 1; }
 
-HttpDaemon::HttpDaemon() {
-	DEBUG_ENTRY
+void netif_set_domainname(const char *);
+const char *netif_get_domainname();
 
-	assert(m_nHandle == -1);
-	m_nHandle = net::tcp_begin(80, Input);
-	assert(m_nHandle != -1);
+uint32_t netif_get_nameserver(const uint32_t nIndex);
+inline uint32_t netif_get_nameservers() { return net::NAMESERVERS_COUNT; };
+}  // namespace net
 
-	for (uint32_t nIndex = 0; nIndex < TCP_MAX_TCBS_ALLOWED; nIndex++) {
-		new (&handleRequest[nIndex]) HttpDeamonHandleRequest(nIndex, m_nHandle);
-	}
-
-	mdns_service_record_add(nullptr, mdns::Services::HTTP);
-
-	DEBUG_EXIT
-}
-
-HttpDaemon::~HttpDaemon() {
-	DEBUG_ENTRY
-
-	mdns_service_record_delete(mdns::Services::HTTP);
-
-	for (uint32_t nIndex = 0; nIndex < TCP_MAX_TCBS_ALLOWED; nIndex++) {
-		// Explicitly calling the destructor because objects were constructed with placement new.
-		handleRequest[nIndex].~HttpDeamonHandleRequest();
-	}
-
-	net::tcp_end(m_nHandle);
-
-	DEBUG_EXIT
-}
+#endif /* NETIF_H_ */

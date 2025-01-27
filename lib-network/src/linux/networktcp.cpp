@@ -43,6 +43,7 @@
 
 #include "debug.h"
 
+namespace net {
 // https://cboard.cprogramming.com/c-programming/158125-sockets-using-poll.html
 
 #define MAX_PORTS_ALLOWED		2
@@ -58,7 +59,7 @@ static struct pollfd poll_set[MAX_PORTS_ALLOWED][TCP_MAX_TCBS_ALLOWED];
 static int server_sockfd[MAX_PORTS_ALLOWED];
 static uint8_t s_ReadBuffer[MAX_SEGMENT_LENGTH];
 
-int32_t Network::TcpBegin(uint16_t nLocalPort, [[maybe_unused]] net::TcpCallbackFunctionPtr callback) {
+int32_t tcp_begin(uint16_t nLocalPort, [[maybe_unused]] net::TcpCallbackFunctionPtr callback) {
 	int32_t i;
 
 	for (i = 0; i < MAX_PORTS_ALLOWED; i++) {
@@ -115,7 +116,7 @@ int32_t Network::TcpBegin(uint16_t nLocalPort, [[maybe_unused]] net::TcpCallback
 	return i;
 }
 
-int32_t Network::TcpEnd(const int32_t nHandle) {
+int32_t tcp_end(const int32_t nHandle) {
 	assert(nHandle < MAX_PORTS_ALLOWED);
 
 	close(poll_set[nHandle][0].fd);
@@ -124,7 +125,7 @@ int32_t Network::TcpEnd(const int32_t nHandle) {
 	return -1;
 }
 
-uint16_t Network::TcpRead(const int32_t nHandle, const uint8_t **ppBuffer, uint32_t &HandleConnectionIndex) {
+uint16_t tcp_read(const int32_t nHandle, const uint8_t **ppBuffer, uint32_t &HandleConnectionIndex) {
 	assert(nHandle < MAX_PORTS_ALLOWED);
 
 	const int poll_result = poll(poll_set[nHandle], TCP_MAX_TCBS_ALLOWED, 0);
@@ -170,7 +171,7 @@ uint16_t Network::TcpRead(const int32_t nHandle, const uint8_t **ppBuffer, uint3
 	return 0;
 }
 
-void Network::TcpWrite(const int32_t nHandle, const uint8_t *pBuffer, uint32_t nLength, const uint32_t HandleConnectionIndex) {
+void tcp_write(const int32_t nHandle, const uint8_t *pBuffer, uint32_t nLength, const uint32_t HandleConnectionIndex) {
 	assert(nHandle < MAX_PORTS_ALLOWED);
 
 	DEBUG_PRINTF("Write client on fd %d [%u]", poll_set[nHandle][HandleConnectionIndex].fd, HandleConnectionIndex);
@@ -194,11 +195,11 @@ static void close_with_rst(int socket_fd) {
 }
 
 
-void Network::TcpAbort(const int32_t nHandle, const uint32_t HandleConnectionIndex) {
+void tcp_abort(const int32_t nHandle, const uint32_t HandleConnectionIndex) {
 	close_with_rst(poll_set[nHandle][HandleConnectionIndex].fd);
 }
 
-void Network::TcpRun() {
+void tcp_run() {
 	for (int32_t nHandle = 0; nHandle < MAX_PORTS_ALLOWED; nHandle++) {
 		const int poll_result = poll(poll_set[nHandle], TCP_MAX_TCBS_ALLOWED, 0);
 
@@ -271,3 +272,4 @@ void Network::TcpRun() {
 	}
 }
 #endif
+}  // namespace net

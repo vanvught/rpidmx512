@@ -28,22 +28,16 @@
 
 #include "remoteconfig.h"
 #include "configstore.h"
-#include "networkstore.h"
+#include "net.h"
 
-namespace rdm {
-namespace device {
-namespace responder {
 
+namespace rdm::device::responder {
 void factorydefaults() {
 	RemoteConfig::Get()->SetDisable(false);
 	ConfigStore::Get()->ResetSetList(configstore::Store::RDMDEVICE);
 	ConfigStore::Get()->ResetSetList(configstore::Store::NODE);
-	NetworkStore::SaveDhcp(true);
+	net::net_enable_dhcp();
 }
-
-}  // namespace responder
-}  // namespace device
-}  // namespace rdm
-
+} // namespace rdm::device::responder
 
 #endif /* FACTORYDEFAULTS_H_ */

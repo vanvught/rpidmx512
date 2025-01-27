@@ -44,6 +44,8 @@ void ptp_run();
 #include "networkparams.h"
 
 #include "net.h"
+#include "netif.h"
+#include "net/net.h"
 #include "net/ip4_address.h"
 #include "net/netif.h"
 #include "net/igmp.h"
@@ -53,9 +55,23 @@ void ptp_run();
 
 #include "emac/net_link_check.h"
 
+void network_init();
+
+namespace global::network {
+extern net::Link linkState;
+}  // namespace global::network
+
 class Network {
 public:
-	Network();
+	Network() {
+		DEBUG_ENTRY
+		assert(s_pThis == nullptr);
+		s_pThis = this;
+
+		network_init();
+
+		DEBUG_EXIT
+	}
 	~Network() = default;
 
 	void MacAddressCopyTo(uint8_t *pMacAddress) {
@@ -66,19 +82,25 @@ public:
 		return net::netif_secondary_ipaddr();
 	}
 
-	void SetIp(uint32_t nIp);
+	void SetIp(const uint32_t nIp) {
+		net::net_set_primary_ip(nIp);
+	}
 	uint32_t GetIp() {
-		return net::netif_ipaddr();
+		return net::net_get_primary_ip();
 	}
 
-	void SetNetmask(uint32_t nNetmask);
+	void SetNetmask(const uint32_t nNetmask) {
+		net::net_set_netmask(nNetmask);
+	}
 	uint32_t GetNetmask() {
-		return net::netif_netmask();
+		return net::net_get_netmask();
 	}
 
-	void SetGatewayIp(uint32_t nGatewayIp);
+	void SetGatewayIp(const uint32_t nGatewayIp) {
+		net::net_set_gateway_ip(nGatewayIp);
+	}
 	uint32_t GetGatewayIp()  {
-		return net::netif_gw();
+		return net::net_get_gateway_ip();
 	}
 
 	uint32_t GetBroadcastIp()  {
@@ -90,37 +112,42 @@ public:
 	 */
 
 	bool IsDhcpCapable() const {
-		return true;
+		return net::net_is_dhcp_capable();
 	}
 
-	void EnableDhcp();
+	void EnableDhcp() {
+		net::net_enable_dhcp();
+	}
 
 	bool IsDhcpUsed() {
 		return net::netif_dhcp();
 	}
 
 	bool IsDhcpKnown() const {
-		return true;
+		return net::net_is_dhcp_known();
 	}
 
 	/*
 	 * Zeroconf / autoip
 	 */
 
-	void SetZeroconf();
-	bool IsZeroconfUsed() const {
-		return net::netif_autoip();
+	void SetZeroconf() {
+		net::net_set_zeroconf();
 	}
-
+	bool IsZeroconfUsed() const {
+		return net::net_is_zeroconf_used();
+	}
 	bool IsZeroconfCapable() const {
-		return true;
+		return net::net_is_zeroconf_capable();
 	}
 
 	/*
 	 * Host name
 	 */
 
-	void SetHostName(const char *pHostName);
+	void SetHostName(const char *pHostName) {
+		net::netif_set_hostname(pHostName);
+	}
 	const char *GetHostName() const {
 		return net::netif_get_hostname();
 	}
@@ -130,35 +157,30 @@ public:
 	 */
 
 	void SetDomainName(const char *pDomainName) {
-		strncpy(m_aDomainName, pDomainName, net::DOMAINNAME_SIZE - 1);
-		m_aDomainName[net::DOMAINNAME_SIZE - 1] = '\0';
+		net::netif_set_domainname(pDomainName);
 	}
 	const char *GetDomainName() const {
-		return m_aDomainName;
+		return net::netif_get_domainname();
 	}
 
 	/*
 	 * Name servers
 	 */
 
-	uint32_t GetNameServer(const uint32_t nIndex) const {
-		if (nIndex < net::NAMESERVERS_COUNT) {
-			return m_nNameservers[nIndex];
-		}
-
-		return 0;
+	uint32_t GetNameServer(const uint32_t nIndex) {
+		return net::netif_get_nameserver(nIndex);
 	}
 
 	uint32_t GetNameServers() const {
-		return net::NAMESERVERS_COUNT;
+		return net::netif_get_nameservers();
 	}
 
-	const char *GetIfName() const {
-		return m_aIfName;
+	const char *GetIfName() {
+		return net::netif_get_ifname();
 	}
 
 	uint32_t GetIfIndex() const {
-		return 1;
+		return net::netif_get_ifindex();
 	}
 
 	/*
@@ -192,26 +214,6 @@ public:
 	}
 
 	/*
-	 * TCP/IP
-	 */
-
-	int32_t TcpBegin(const uint16_t nLocalPort, net::TcpCallbackFunctionPtr callback) {
-		return net::tcp_begin(nLocalPort, callback);
-	}
-
-	int32_t TcpEnd(const int32_t nHandle) {
-		return net::tcp_end(nHandle);
-	}
-
-	void TcpWrite(const int32_t nHandleListen, const uint8_t *pBuffer, uint32_t nLength, const uint32_t HandleConnection) {
-		net::tcp_write(nHandleListen, pBuffer, nLength, HandleConnection);
-	}
-
-	void TcpAbort(const int32_t nHandleListen, const uint32_t HandleConnection) {
-		net::tcp_abort(nHandleListen, HandleConnection);
-	}
-
-	/*
 	 * IGMP
 	 */
 
@@ -228,21 +230,11 @@ public:
 	}
 
 	char GetAddressingMode() {
-		if (IsZeroconfUsed()) {
-			return  'Z';
-		} else if (IsDhcpKnown()) {
-			if (IsDhcpUsed()) {
-				return 'D';
-			} else {
-				return 'S';
-			}
-		}
-
-		return 'U';
+		return net::net_get_addressing_mode();
 	}
 
 	bool IsValidIp(const uint32_t nIp) {
-		return (GetIp() & GetNetmask()) == (nIp & GetNetmask());
+		return net::net_is_valid_ip(nIp);
 	}
 
 	void Run() {
@@ -254,9 +246,8 @@ public:
 		net::link_pin_poll();
 #elif defined (ENET_LINK_CHECK_REG_POLL)
 		const net::Link link_state = net::link_status_read();
-
-		if (link_state != s_lastState) {
-			s_lastState = link_state;
+		if (link_state != global::network::linkState) {
+			global::network::linkState = link_state;
 			net::link_handle_change(link_state);
 		}
 #endif
@@ -267,13 +258,6 @@ public:
 	}
 
 private:
-	net::Link s_lastState { net::Link::STATE_DOWN };
-
-	char m_aIfName[IFNAMSIZ];
-	char m_aHostName[net::HOSTNAME_SIZE];
-	char m_aDomainName[net::DOMAINNAME_SIZE];
-	uint32_t m_nNameservers[net::NAMESERVERS_COUNT];
-
 	static inline Network *s_pThis;
 };
 

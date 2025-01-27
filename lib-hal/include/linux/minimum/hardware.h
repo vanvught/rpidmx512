@@ -69,6 +69,11 @@ public:
 		return "";
 	}
 
+	bool IsWatchdog() { return false;}
+	void WatchdogInit() { }
+	void WatchdogFeed() { }
+	void WatchdogStop() { }
+
 private:
 	Hardware() {}
 

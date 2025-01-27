@@ -2,7 +2,7 @@
  * @file network.h
  *
  */
-/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -187,14 +187,7 @@ public:
 		return s_pThis;
 	}
 
-	int32_t TcpBegin(const uint16_t nLocalPort, net::TcpCallbackFunctionPtr callback = nullptr);
-	uint16_t TcpRead(const int32_t nHandle, const uint8_t **ppBuffer, uint32_t &HandleConnection);
-	void TcpWrite(const int32_t nHandle, const uint8_t *pBuffer, uint32_t nLength, const uint32_t HandleConnection);
-	void TcpAbort(const int32_t nHandle, const uint32_t HandleConnection);
-	int32_t TcpEnd(const int32_t nHandle);
-
 	void Run();
-	void TcpRun();
 
 private:
 	uint32_t GetDefaultGateway();

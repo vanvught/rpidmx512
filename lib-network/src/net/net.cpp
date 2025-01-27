@@ -44,8 +44,8 @@
 #include "net.h"
 #include "net_private.h"
 
+#include "net/net.h"
 #include "net/netif.h"
-#include "net/acd.h"
 #include "net/dhcp.h"
 #include "net/tcp.h"
 #include "net/igmp.h"
@@ -57,8 +57,6 @@
 #endif
 
 #include "debug.h"
-
-static struct net::acd::Acd s_acd;
 
 namespace net {
 namespace globals {
@@ -91,50 +89,6 @@ void net_shutdown() {
 	DEBUG_EXIT
 }
 
-static void primary_ip_conflict_callback(net::acd::Callback callback) {
-	auto &netif = net::globals::netif_default;
-
-	switch (callback) {
-	case net::acd::Callback::ACD_IP_OK:
-		if (s_acd.ipaddr.addr == netif.secondary_ip.addr) {
-			net_set_secondary_ip();
-		} else {
-			net::netif_set_ipaddr(s_acd.ipaddr);
-		}
-		dhcp_inform();
-		netif_set_flags(netif::NETIF_FLAG_STATICIP_OK);
-		break;
-	case net::acd::Callback::ACD_RESTART_CLIENT:
-		break;
-	case net::acd::Callback::ACD_DECLINE:
-		netif_clear_flags(netif::NETIF_FLAG_STATICIP_OK);
-		break;
-	default:
-		break;
-	}
-}
-
-void net_set_primary_ip(const ip4_addr_t ipaddr) {
-	auto &netif = net::globals::netif_default;
-
-	net::dhcp_release_and_stop();
-
-	acd_add(&s_acd, primary_ip_conflict_callback);
-
-	if (ipaddr.addr  == 0) {
-		acd_start(&s_acd, netif.secondary_ip);
-	} else {
-		acd_start(&s_acd, ipaddr);
-	}
-}
-
-void net_set_secondary_ip() {
-	auto &netif = net::globals::netif_default;
-	ip4_addr_t netmask;
-	netmask.addr = 255;
-	net::netif_set_addr(netif.secondary_ip, netmask, netif.secondary_ip);
-}
-
 void __attribute__((cold)) net_init(const net::Link link, ip4_addr_t ipaddr, ip4_addr_t netmask, ip4_addr_t gw, bool &bUseDhcp) {
 	DEBUG_ENTRY
 	globals::netif_default.secondary_ip.addr = 2
@@ -155,7 +109,7 @@ void __attribute__((cold)) net_init(const net::Link link, ip4_addr_t ipaddr, ip4
 				net::netif_set_netmask(netmask);
 				net::netif_set_gw(gw);
 			}
-			net_set_primary_ip(ipaddr);
+			net_set_primary_ip(ipaddr.addr);
 		}
 	} else {
 		net::netif_clear_flags(net::netif::NETIF_FLAG_LINK_UP);

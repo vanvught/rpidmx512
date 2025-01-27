@@ -751,6 +751,7 @@ void dhcp_release_and_stop() {
 
 	delete reinterpret_cast<struct dhcp::Dhcp *>(globals::netif_default.dhcp);
 	globals::netif_default.dhcp = nullptr;
+	netif_clear_flags(netif::NETIF_FLAG_DHCP_OK);
 }
 
 void dhcp_network_changed_link_up() {

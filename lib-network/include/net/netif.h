@@ -119,15 +119,7 @@ inline uint32_t netif_gw() {
 	return globals::netif_default.gw.addr;
 }
 
-inline void netif_set_hostname(const char *hostname) {
-	globals::netif_default.hostname = hostname;
-}
-
 inline const char *netif_get_hostname() {
-	return globals::netif_default.hostname;
-}
-
-inline const char *netif_hostname() {
 	return globals::netif_default.hostname;
 }
 

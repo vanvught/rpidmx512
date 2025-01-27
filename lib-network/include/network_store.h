@@ -1,8 +1,8 @@
 /**
- * @file httpd.cpp
+ * @file network_store.h
  *
  */
-/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,50 +23,15 @@
  * THE SOFTWARE.
  */
 
-#if defined (DEBUG_HTTPD)
-# undef NDEBUG
-#endif
+#ifndef NETWORK_STORE_H_
+#define NETWORK_STORE_H_
 
-#include <cstring>
-#include <cstdio>
-#include <ctype.h>
-#include <cassert>
+#include <cstdint>
 
-#include "httpd/httpd.h"
+void network_store_save_ip(const uint32_t nIp);
+void network_store_save_netmask(const uint32_t nNetMask);
+void network_store_save_gatewayip(const uint32_t nGatewayIp);
+void network_store_save_hostname(const char *pHostName, uint32_t nLength);
+void network_store_save_dhcp(bool bIsDhcpUsed);
 
-#include "network.h"
-#include "net/tcp.h"
-#include "net/apps/mdns.h"
-
-#include "../../lib-network/config/net_config.h"
-
-HttpDaemon::HttpDaemon() {
-	DEBUG_ENTRY
-
-	assert(m_nHandle == -1);
-	m_nHandle = net::tcp_begin(80, Input);
-	assert(m_nHandle != -1);
-
-	for (uint32_t nIndex = 0; nIndex < TCP_MAX_TCBS_ALLOWED; nIndex++) {
-		new (&handleRequest[nIndex]) HttpDeamonHandleRequest(nIndex, m_nHandle);
-	}
-
-	mdns_service_record_add(nullptr, mdns::Services::HTTP);
-
-	DEBUG_EXIT
-}
-
-HttpDaemon::~HttpDaemon() {
-	DEBUG_ENTRY
-
-	mdns_service_record_delete(mdns::Services::HTTP);
-
-	for (uint32_t nIndex = 0; nIndex < TCP_MAX_TCBS_ALLOWED; nIndex++) {
-		// Explicitly calling the destructor because objects were constructed with placement new.
-		handleRequest[nIndex].~HttpDeamonHandleRequest();
-	}
-
-	net::tcp_end(m_nHandle);
-
-	DEBUG_EXIT
-}
+#endif /* NETWORK_STORE_H_ */

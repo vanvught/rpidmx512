@@ -601,6 +601,10 @@ void Network::Print() {
 	printf(" Mode      : %c\n", GetAddressingMode());
 }
 
+namespace net {
+void tcp_run();
+}  // namespace net
+
 void Network::Run() {
 	for (uint32_t nPortIndex = 0; nPortIndex < UDP_MAX_PORTS_ALLOWED; nPortIndex++) {
 		struct sockaddr_in si_other;
@@ -617,6 +621,6 @@ void Network::Run() {
 		}
 	}
 
-	TcpRun();
+	net::tcp_run();
 }
 #endif

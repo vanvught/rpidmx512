@@ -1,8 +1,8 @@
 /**
- * @file httpd.cpp
+ * @file net.h
  *
  */
-/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,50 +23,17 @@
  * THE SOFTWARE.
  */
 
-#if defined (DEBUG_HTTPD)
-# undef NDEBUG
-#endif
 
-#include <cstring>
-#include <cstdio>
-#include <ctype.h>
-#include <cassert>
+#ifndef NET_NET_H_
+#define NET_NET_H_
 
-#include "httpd/httpd.h"
+#include "emac/phy.h"
+#include "net/netif.h"
 
-#include "network.h"
-#include "net/tcp.h"
-#include "net/apps/mdns.h"
+namespace net {
+void net_init(Link link, ip4_addr_t ipaddr, ip4_addr_t netmask, ip4_addr_t gw, bool &bUseDhcp);
+void net_handle();
+void net_link_down();
+}  // namespace net
 
-#include "../../lib-network/config/net_config.h"
-
-HttpDaemon::HttpDaemon() {
-	DEBUG_ENTRY
-
-	assert(m_nHandle == -1);
-	m_nHandle = net::tcp_begin(80, Input);
-	assert(m_nHandle != -1);
-
-	for (uint32_t nIndex = 0; nIndex < TCP_MAX_TCBS_ALLOWED; nIndex++) {
-		new (&handleRequest[nIndex]) HttpDeamonHandleRequest(nIndex, m_nHandle);
-	}
-
-	mdns_service_record_add(nullptr, mdns::Services::HTTP);
-
-	DEBUG_EXIT
-}
-
-HttpDaemon::~HttpDaemon() {
-	DEBUG_ENTRY
-
-	mdns_service_record_delete(mdns::Services::HTTP);
-
-	for (uint32_t nIndex = 0; nIndex < TCP_MAX_TCBS_ALLOWED; nIndex++) {
-		// Explicitly calling the destructor because objects were constructed with placement new.
-		handleRequest[nIndex].~HttpDeamonHandleRequest();
-	}
-
-	net::tcp_end(m_nHandle);
-
-	DEBUG_EXIT
-}
+#endif /* INCLUDE_NET_NET_H_ */
