@@ -48,6 +48,10 @@
 
 #include "../../config/net_config.h"
 
+namespace net {
+void net_init();
+}  // namespace net
+
 #include "debug.h"
 
 static void netif_ext_callback(const uint16_t reason, [[maybe_unused]] const net::netif_ext_callback_args_t *args) {
@@ -82,20 +86,13 @@ static void netif_ext_callback(const uint16_t reason, [[maybe_unused]] const net
 
 	if ((reason & net::NetifReason::NSC_LINK_CHANGED) == net::NetifReason::NSC_LINK_CHANGED) {
 		if (args->link_changed.state == 0) {	// Link down
-			net::net_link_down();
-
+			network_display_netif_down();
 			DEBUG_EXIT
 			return;
 		}
-#if defined (CONFIG_NET_ENABLE_NTP_CLIENT)
-		ntp_client_start();
-#endif
-#if defined (CONFIG_NET_ENABLE_PTP_NTP_CLIENT)
-		ptp_ntp_start();
-#endif
-#if !defined(CONFIG_NET_APPS_NO_MDNS)
-		mdns_start();
-#endif
+
+		network_display_netif_up();
+		DEBUG_EXIT
 	}
 
 	DEBUG_EXIT
@@ -117,15 +114,18 @@ void network_init() {
 	emac_start(net::globals::netif_default.hwaddr, global::network::linkState);
 	printf(MACSTR "\n", MAC2STR(net::globals::netif_default.hwaddr));
 
+	network_display_emac_status(net::Link::STATE_UP == global::network::linkState);
+
 	net::phy_customized_timing();
 	net::phy_customized_led();
-
-	net::netif_init();
-	net::netif_add_ext_callback(netif_ext_callback);
 
 	NetworkParams params;
 	params.Load();
 
+	net::net_init();
+
+	net::netif_init();
+	net::netif_add_ext_callback(netif_ext_callback);
 	net::netif_set_hostname(params.GetHostName());
 
 	net::ip4_addr_t ipaddr;
@@ -136,10 +136,7 @@ void network_init() {
 	netmask.addr = params.GetNetMask();
 	gw.addr = params.GetDefaultGateway();
 
-	bool isDhcpUsed = params.isDhcpUsed();
-
-	network_display_emac_status(net::Link::STATE_UP == global::network::linkState);
-	net::net_init(global::network::linkState, ipaddr, netmask, gw, isDhcpUsed);
+	net::netif_set(global::network::linkState, ipaddr, netmask, gw, params.isDhcpUsed());
 
 #if defined (ENET_LINK_CHECK_USE_INT)
 	net::link_interrupt_init();

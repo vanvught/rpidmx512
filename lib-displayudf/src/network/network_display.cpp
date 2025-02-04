@@ -1,8 +1,8 @@
 /**
- * @file displayhandler.h
+ * @file network.cpp
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,49 +23,51 @@
  * THE SOFTWARE.
  */
 
-#ifndef DISPLAYHANDLER_H_
-#define DISPLAYHANDLER_H_
+#undef NDEBUG
 
-#include <cstdint>
+#include "displayudf.h"
+#include "net/protocol/dhcp.h"
 
-#include "display.h"
-
-#include "hardware.h"
-
-
-namespace hardware::ledblink {
-void display(const uint32_t nMode) {
-	if (Display::Get()->isDetected() ) {
-		char c;
-		switch (static_cast<hardware::ledblink::Mode>(nMode)) {
-		case ledblink::Mode::OFF_OFF:
-			c = 'O';
-			break;
-		case ledblink::Mode::OFF_ON:
-			c = 'O';
-			break;
-		case ledblink::Mode::NORMAL:
-			c = 'N';
-			break;
-		case ledblink::Mode::DATA:
-			c = 'D';
-			break;
-		case ledblink::Mode::FAST:
-			c = 'F';
-			break;
-		case ledblink::Mode::REBOOT:
-			c = 'R';
-			break;
-		default:
-			c = 'U';
-			break;
-		}
-
-		Display::Get()->SetCursorPos(Display::Get()->GetColumns() - 1U, Display::Get()->GetRows() - 1U);
-		Display::Get()->PutChar(c);
-	}
+void network_display_emac_config() {
+	DisplayUdf::Get()->ShowEmacInit();
 }
-} // namespace hardware::ledblink
 
+void network_display_emac_start() {
+	DisplayUdf::Get()->ShowEmacStart();
+}
 
-#endif /* DISPLAYHANDLER_H_ */
+void network_display_emac_status(const bool isLinkUp) {
+	DisplayUdf::Get()->ShowEmacStatus(isLinkUp);
+}
+
+void network_display_netif_up() {
+	DisplayUdf::Get()->ShowIpAddress();
+}
+
+void network_display_netif_down() {
+	DisplayUdf::Get()->ShowEmacStatus(false);
+}
+
+void network_display_ip() {
+	DisplayUdf::Get()->ShowIpAddress();
+}
+
+void network_display_netmask() {
+	DisplayUdf::Get()->ShowNetmask();
+}
+
+void network_display_gateway() {
+	DisplayUdf::Get()->ShowGatewayIp();
+}
+
+void network_display_hostname() {
+	DisplayUdf::Get()->ShowHostName();
+}
+
+void network_display_emac_shutdown() {
+	DisplayUdf::Get()->ShowShutdown();
+}
+
+void network_display_dhcp_status(net::dhcp::State state) {
+	DisplayUdf::Get()->ShowDhcpStatus(state);
+}

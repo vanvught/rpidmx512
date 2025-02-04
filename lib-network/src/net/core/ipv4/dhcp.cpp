@@ -33,15 +33,13 @@
 #include <cstring>
 #include <cassert>
 
-#include "net.h"
-#include "net_memcpy.h"
-#include "net_private.h"
-
 #include "softwaretimers.h"
 #include "network.h"
 
-#include "../../config/net_config.h"
-
+#include "net.h"
+#include "net_memcpy.h"
+#include "net_private.h"
+#include "net_config.h"
 #include "net/dhcp.h"
 #include "net/protocol/dhcp.h"
 #include "net/protocol/iana.h"

@@ -1,8 +1,8 @@
 /**
- * @file network.cpp
+ * @file ip.cpp
  *
  */
-/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,45 +23,35 @@
  * THE SOFTWARE.
  */
 
-#undef NDEBUG
+#if defined (DEBUG_NET_IP)
+# undef NDEBUG
+#endif
 
-#include "displayudf.h"
-#include "net/protocol/dhcp.h"
+#if !defined (CONFIG_REMOTECONFIG_MINIMUM)
+# pragma GCC push_options
+# pragma GCC optimize ("O2")
+# pragma GCC optimize ("no-tree-loop-distribute-patterns")
+# pragma GCC optimize ("-fprefetch-loop-arrays")
+#endif
+
+#include <cstdint>
+
+#include "net_config.h"
+#include "net.h"
+#include "net_private.h"
+
+#include "debug.h"
 
 namespace net {
-void display_emac_config() {
-	DisplayUdf::Get()->ShowEmacInit();
-}
+void __attribute__((cold)) ip_init() {
+	DEBUG_ENTRY
 
-void display_emac_start() {
-	DisplayUdf::Get()->ShowEmacStart();
-}
+	udp_init();
+	igmp_init();
+#if defined (ENABLE_HTTPD)
+	tcp_init();
+#endif
 
-void display_emac_status(const bool isLinkUp) {
-	DisplayUdf::Get()->ShowEmacStatus(isLinkUp);
+	DEBUG_EXIT
 }
-
-void display_ip() {
-	DisplayUdf::Get()->ShowIpAddress();
-}
-
-void display_netmask() {
-	DisplayUdf::Get()->ShowNetmask();
-}
-
-void display_gateway() {
-	DisplayUdf::Get()->ShowGatewayIp();
-}
-
-void display_hostname() {
-	DisplayUdf::Get()->ShowHostName();
-}
-
-void display_emac_shutdown() {
-	DisplayUdf::Get()->ShowShutdown();
-}
-
-void display_dhcp_status(net::dhcp::State state) {
-	DisplayUdf::Get()->ShowDhcpStatus(state);
-}
-}  // namespace network
+}  // namespace net

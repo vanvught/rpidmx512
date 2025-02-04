@@ -39,7 +39,7 @@ enum class Flags {
 }  // namespace arp
 
 void arp_init();
-void arp_handle(struct t_arp *);
+void etharp_input(const struct t_arp *);
 void arp_send(struct t_udp *, const uint32_t, const uint32_t);
 #if defined CONFIG_NET_ENABLE_PTP
 void arp_send_timestamp(struct t_udp *, const uint32_t, const uint32_t);

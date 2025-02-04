@@ -2,7 +2,7 @@
  * @file igmp.cpp
  *
  */
-/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,17 +39,16 @@
 #include <cstring>
 #include <cassert>
 
-#include "../../config/net_config.h"
-
+#include "net_config.h"
 #include "net.h"
+#include "net_memcpy.h"
+#include "net_private.h"
 #include "net/netif.h"
 #include "net/igmp.h"
 #include "net/protocol/igmp.h"
 
-#include "net_memcpy.h"
-#include "net_private.h"
-
 #include "softwaretimers.h"
+
 
 #include "debug.h"
 
@@ -195,6 +194,10 @@ void __attribute__((cold)) igmp_init() {
 
 	nTimerId = SoftwareTimerAdd(IGMP_TMR_INTERVAL, igmp_timer);
 	assert(nTimerId >= 0);
+
+#if defined (CONFIG_EMAC_HASH_MULTICAST_FILTER)
+	emac_multicast_enable_hash_filter();
+#endif
 }
 
 void __attribute__((cold)) igmp_shutdown() {
@@ -207,6 +210,10 @@ void __attribute__((cold)) igmp_shutdown() {
 			igmp_leave(group.nGroupAddress);
 		}
 	}
+
+#if defined (CONFIG_EMAC_HASH_MULTICAST_FILTER)
+	emac_multicast_disable_hash_filter();
+#endif
 
 	DEBUG_EXIT
 }
@@ -236,7 +243,7 @@ static void igmp_send_leave(const uint32_t nGroupAddress) {
 	DEBUG_EXIT
 }
 
-__attribute__((hot)) void igmp_handle(struct t_igmp *p_igmp) {
+__attribute__((hot)) void igmp_input(const struct t_igmp *p_igmp) {
 	DEBUG_ENTRY
 
 	if ((p_igmp->ip4.ver_ihl == 0x45) && (p_igmp->igmp.igmp.type == IGMP_TYPE_QUERY)) {
@@ -285,7 +292,7 @@ static void igmp_delaying_member(struct t_group_info &group, const uint32_t maxr
 
 // --> Public
 
-void igmp_join(uint32_t nGroupAddress) {
+void igmp_join(const uint32_t nGroupAddress) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF(IPSTR, IP2STR(nGroupAddress));
 
@@ -305,6 +312,16 @@ void igmp_join(uint32_t nGroupAddress) {
 			s_groups[i].state = DELAYING_MEMBER;
 			s_groups[i].nTimer = 2; // TODO
 
+#if defined (CONFIG_EMAC_HASH_MULTICAST_FILTER)
+			_pcast32 multicast_ip;
+			multicast_ip.u32 = nGroupAddress;
+			const uint8_t mac_addr[6] = {0x01, 0x00, 0x5E,
+					static_cast<uint8_t>(multicast_ip.u8[1] & 0x7F),
+					multicast_ip.u8[2],
+					multicast_ip.u8[3]};
+            DEBUG_PRINTF(MACSTR, MAC2STR(mac_addr));
+            emac_multicast_set_hash(mac_addr);
+#endif
 			igmp_send_report(nGroupAddress);
 
 			DEBUG_EXIT
@@ -312,14 +329,32 @@ void igmp_join(uint32_t nGroupAddress) {
 		}
 	}
 
-
 #ifndef NDEBUG
 	console_error("igmp_join\n");
 #endif
 	DEBUG_ENTRY
 }
 
-void igmp_leave(uint32_t nGroupAddress) {
+#if defined (CONFIG_EMAC_HASH_MULTICAST_FILTER)
+static void reset_hash() {
+	emac_multicast_reset_hash();
+
+	for (auto &group : s_groups) {
+		if (group.nGroupAddress != 0) {
+			_pcast32 multicast_ip;
+			multicast_ip.u32 = group.nGroupAddress;
+			const uint8_t mac_addr[6] = {0x01, 0x00, 0x5E,
+					static_cast<uint8_t>(multicast_ip.u8[1] & 0x7F),
+					multicast_ip.u8[2],
+					multicast_ip.u8[3]};
+
+            emac_multicast_set_hash(mac_addr);
+		}
+	}
+}
+#endif
+
+void igmp_leave(const uint32_t nGroupAddress) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF(IPSTR, IP2STR(nGroupAddress));
 
@@ -331,6 +366,9 @@ void igmp_leave(uint32_t nGroupAddress) {
 			group.state = NON_MEMBER;
 			group.nTimer = 0;
 
+#if defined (CONFIG_EMAC_HASH_MULTICAST_FILTER)
+			reset_hash();
+#endif
 			DEBUG_EXIT
 			return;
 		}
@@ -341,6 +379,21 @@ void igmp_leave(uint32_t nGroupAddress) {
 	printf(IPSTR "\n", IP2STR(nGroupAddress));
 #endif
 	DEBUG_EXIT
+}
+
+bool igmp_lookup_group(const uint32_t nGroupAddress) {
+	DEBUG_ENTRY
+	DEBUG_PRINTF(IPSTR, IP2STR(nGroupAddress));
+
+	for (auto& group : s_groups) {
+		if (group.nGroupAddress == nGroupAddress) {
+			DEBUG_EXIT
+			return true;
+		}
+	}
+
+	DEBUG_EXIT
+	return (nGroupAddress == net::convert_to_uint(224,0,0,1));
 }
 
 void igmp_report_groups() {

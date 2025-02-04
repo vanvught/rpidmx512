@@ -31,7 +31,7 @@
 #include "net/netif.h"
 
 namespace net {
-void net_init(Link link, ip4_addr_t ipaddr, ip4_addr_t netmask, ip4_addr_t gw, bool &bUseDhcp);
+void netif_set(Link link, ip4_addr_t ipaddr, ip4_addr_t netmask, ip4_addr_t gw, bool bUseDhcp);
 void net_handle();
 void net_link_down();
 }  // namespace net

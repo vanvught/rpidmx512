@@ -55,7 +55,12 @@ void ptp_run();
 
 #include "emac/net_link_check.h"
 
+namespace net {
+void ethernet_input(const uint8_t *pBuffer, const uint32_t nLength);
+}  // namespace net
+
 void network_init();
+uint32_t emac_eth_recv(uint8_t **ppPacket);
 
 namespace global::network {
 extern net::Link linkState;
@@ -238,7 +243,12 @@ public:
 	}
 
 	void Run() {
-		net::net_handle();
+		uint8_t *pEthernetBuffer;
+		const auto nLength = emac_eth_recv(&pEthernetBuffer);
+
+		if (__builtin_expect((nLength > 0), 0)) {
+			net::ethernet_input(pEthernetBuffer, nLength);
+		}
 #if defined (CONFIG_NET_ENABLE_PTP)
 		net::ptp_run();
 #endif

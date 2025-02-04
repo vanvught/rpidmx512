@@ -2,7 +2,7 @@
  * @file emac.h
  *
  */
-/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022-2025 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,12 +36,13 @@
 	#define CTL0_SPEED_MASK		3
 
 #define TX_CTL0_TX_EN				(1U << 31)
-#define TX_CTL1_TX_DMA_EN			(1 << 30)
+#define TX_CTL1_TX_DMA_EN			(1U << 30)
 
 #define RX_CTL0_RX_EN				(1U << 31)
-#define RX_CTL1_RX_DMA_EN			(1 << 30)
+#define RX_CTL1_RX_DMA_EN			(1U << 30)
 
-#define RX_FRM_FLT_RX_ALL_MULTICAST	(1 << 16)
+#define RX_FRM_FLT_HASH_MULTICAST	(1U << 9)
+#define RX_FRM_FLT_RX_ALL_MULTICAST	(1U << 16)
 
 #define PHY_ADDR		1
 

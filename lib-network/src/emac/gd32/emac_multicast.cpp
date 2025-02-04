@@ -1,8 +1,8 @@
 /**
- * @file acd.h
+ * @file emac_multicast.cpp
  *
  */
-/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,50 +22,56 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-/* This code is inspired by: lwIP
- * https://savannah.nongnu.org/projects/lwip/
- */
 
-#ifndef NET_ACD_H_
-#define NET_ACD_H_
+#if defined (DEBUG_EMAC_IGMP)
+# undef NDEBUG
+#endif
 
 #include <cstdint>
+#include <cstddef>
 
-#include "net/netif.h"
-#include "net/arp.h"
-#include "net/protocol/acd.h"
+#include "gd32.h"
+#include "gd32_enet.h"
 #include "net/ip4_address.h"
 
-/**
- * https://datatracker.ietf.org/doc/html/rfc5227.html
- * IPv4 Address Conflict Detection
- */
+#include "debug.h"
 
-namespace net {
-typedef void (*acd_conflict_callback_t)(acd::Callback callback);
+uint32_t ethcrc(const uint8_t *data, const size_t length);
 
-namespace acd {
-struct Acd {
-	ip4_addr_t ipaddr;
-	State state;
-	uint8_t sent_num;
-	uint8_t lastconflict;
-	uint8_t num_conflicts;
-	acd_conflict_callback_t acd_conflict_callback;
-	uint16_t ttw;
-};
-}  // namespace acd
+void emac_multicast_enable_hash_filter() {
+	DEBUG_ENTRY
 
-void acd_add(struct acd::Acd *, acd_conflict_callback_t);
-void acd_remove(struct acd::Acd *);
+	gd32_enet_reset_hash();
+	gd32_enet_filter_feature_disable<ENET_MULTICAST_FILTER_PASS>();
+	gd32_enet_filter_feature_enable<ENET_MULTICAST_FILTER_HASH_MODE>();
 
-void acd_start(struct acd::Acd *, const ip4_addr_t ipaddr);
-void acd_stop(struct acd::Acd *);
+	DEBUG_EXIT
+}
+void emac_multicast_disable_hash_filter() {
+	DEBUG_ENTRY
 
-void acd_arp_reply(const struct t_arp *);
+	gd32_enet_filter_feature_disable<ENET_MULTICAST_FILTER_HASH_MODE>();
+	gd32_enet_filter_feature_enable<ENET_MULTICAST_FILTER_PASS>();
 
-void acd_network_changed_link_down();
-void acd_netif_ip_addr_changed(const ip4_addr_t nOldIpAddress, const ip4_addr_t nNewIpAddress);
-}  // namespace net
+	DEBUG_EXIT
+}
 
-#endif /* NET_ACD_H_ */
+void emac_multicast_set_hash(const uint8_t *mac_addr) {
+	DEBUG_ENTRY
+
+	const auto crc = ethcrc(mac_addr, 6);
+	const auto hash = (crc >> 26) & 0x3F;
+
+	gd32_enet_filter_set_hash(hash);
+
+	DEBUG_PRINTF("MAC: " MACSTR " -> CRC32: 0x%08X -> Hash Index: %d", MAC2STR(mac_addr), crc, hash);
+	DEBUG_EXIT
+}
+
+void emac_multicast_reset_hash() {
+	DEBUG_ENTRY
+
+	gd32_enet_reset_hash();
+
+	DEBUG_EXIT
+}

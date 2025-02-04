@@ -1,5 +1,5 @@
 /**
- * @file arp.cpp
+ * @file etharp.cpp
  *
  */
 /* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
@@ -45,11 +45,9 @@
 #include <cstdlib>
 #include <cassert>
 
-#include "../../config/net_config.h"
-
 #include "net_memcpy.h"
 #include "net_private.h"
-
+#include "net_config.h"
 #include "net/netif.h"
 #include "net/arp.h"
 #include "net/acd.h"
@@ -374,7 +372,7 @@ void __attribute__((cold)) arp_init() {
 	DEBUG_EXIT
 }
 
-__attribute__((hot)) void arp_handle(struct t_arp *pArp) {
+__attribute__((hot)) void etharp_input(const struct t_arp *pArp) {
 	/*
 	 * RFC 826 Packet Reception:
 	 */

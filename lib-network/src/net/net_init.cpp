@@ -1,8 +1,8 @@
 /**
- * @file displayhandler.h
+ * @file net_init.cpp
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,49 +23,48 @@
  * THE SOFTWARE.
  */
 
-#ifndef DISPLAYHANDLER_H_
-#define DISPLAYHANDLER_H_
+#if defined (DEBUG_NET_NET)
+# if defined (NDEBUG)
+#  undef NDEBUG
+# endif
+#endif
 
-#include <cstdint>
+#if defined (CONFIG_NET_ENABLE_NTP_CLIENT) || defined (CONFIG_NET_ENABLE_PTP_NTP_CLIENT)
+# include "net/apps/ntp_client.h"
+#endif
+#if !defined(CONFIG_NET_APPS_NO_MDNS)
+# include "net/apps/mdns.h"
+#endif
 
-#include "display.h"
+#include "debug.h"
 
-#include "hardware.h"
+namespace net {
+void arp_init();
+void ip_init();
 
+#if defined (CONFIG_NET_ENABLE_PTP)
+__attribute__((weak)) void ptp_init() {}
+#endif
 
-namespace hardware::ledblink {
-void display(const uint32_t nMode) {
-	if (Display::Get()->isDetected() ) {
-		char c;
-		switch (static_cast<hardware::ledblink::Mode>(nMode)) {
-		case ledblink::Mode::OFF_OFF:
-			c = 'O';
-			break;
-		case ledblink::Mode::OFF_ON:
-			c = 'O';
-			break;
-		case ledblink::Mode::NORMAL:
-			c = 'N';
-			break;
-		case ledblink::Mode::DATA:
-			c = 'D';
-			break;
-		case ledblink::Mode::FAST:
-			c = 'F';
-			break;
-		case ledblink::Mode::REBOOT:
-			c = 'R';
-			break;
-		default:
-			c = 'U';
-			break;
-		}
+void net_init() {
+	DEBUG_ENTRY
 
-		Display::Get()->SetCursorPos(Display::Get()->GetColumns() - 1U, Display::Get()->GetRows() - 1U);
-		Display::Get()->PutChar(c);
-	}
+	net::arp_init();
+	net::ip_init();
+
+#if defined (CONFIG_NET_ENABLE_PTP)
+	net::ptp_init();
+#endif
+#if defined (CONFIG_NET_ENABLE_NTP_CLIENT)
+	ntp_client_init();
+#endif
+#if defined (CONFIG_NET_ENABLE_PTP_NTP_CLIENT)
+	ptp_ntp_init();
+#endif
+#if !defined(CONFIG_NET_APPS_NO_MDNS)
+	mdns_init();
+#endif
+
+	DEBUG_EXIT
 }
-} // namespace hardware::ledblink
-
-
-#endif /* DISPLAYHANDLER_H_ */
+}  // namespace net

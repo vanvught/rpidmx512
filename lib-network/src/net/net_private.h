@@ -72,14 +72,14 @@ void ip_shutdown();
 void ip_handle(struct t_ip4 *);
 
 void udp_init();
-void udp_handle(struct t_udp *);
+void udp_input(const struct t_udp *);
 void udp_shutdown();
 
 void igmp_init();
-void igmp_handle(struct t_igmp *);
+void igmp_input(const struct t_igmp *);
 void igmp_shutdown();
 
-void icmp_handle(struct t_icmp *);
+void icmp_input(struct t_icmp *);
 void icmp_shutdown();
 
 void tcp_init();

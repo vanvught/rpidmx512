@@ -38,10 +38,8 @@
 #include <algorithm>
 #include <cassert>
 
-#include "../../config/net_config.h"
-
+#include "net_config.h"
 #include "net/protocol/udp.h"
-
 #include "net/udp.h"
 #include "net_private.h"
 #include "net_memcpy.h"
@@ -87,7 +85,7 @@ void __attribute__((cold)) udp_shutdown() {
 	DEBUG_EXIT
 }
 
-__attribute__((hot)) void udp_handle(struct t_udp *pUdp) {
+__attribute__((hot)) void udp_input(const struct t_udp *pUdp) {
 	const auto nDestinationPort = __builtin_bswap16(pUdp->udp.destination_port);
 
 	for (uint32_t nPortIndex = 0; nPortIndex < UDP_MAX_PORTS_ALLOWED; nPortIndex++) {
@@ -96,7 +94,7 @@ __attribute__((hot)) void udp_handle(struct t_udp *pUdp) {
 
 		if (portInfo.nPort == nDestinationPort) {
 			if (__builtin_expect ((data.nSize != 0), 0)) {
-				DEBUG_PRINTF(IPSTR ":%d[%x]", pUdp->ip4.src[0],pUdp->ip4.src[1],pUdp->ip4.src[2],pUdp->ip4.src[3], nDestinationPort, nDestinationPort);
+				DEBUG_PRINTF("%d[%x]", nDestinationPort, nDestinationPort);
 			}
 
 			const auto nDataLength = static_cast<uint32_t>(__builtin_bswap16(pUdp->udp.len) - UDP_HEADER_SIZE);

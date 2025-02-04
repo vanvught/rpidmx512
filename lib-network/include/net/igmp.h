@@ -26,12 +26,21 @@
 #ifndef NET_IGMP_H_
 #define NET_IGMP_H_
 
+#include <cstdint>
+
 namespace net {
 void igmp_shutdown();
-void igmp_join(uint32_t);
-void igmp_leave(uint32_t);
-//TODO implement
+void igmp_join(const uint32_t);
+void igmp_leave(const uint32_t);
 void igmp_report_groups();
+bool igmp_lookup_group(const uint32_t);
 }  // namespace net
+
+#if defined (CONFIG_EMAC_HASH_MULTICAST_FILTER)
+void emac_multicast_enable_hash_filter();
+void emac_multicast_disable_hash_filter();
+void emac_multicast_set_hash(const uint8_t *);
+void emac_multicast_reset_hash();
+#endif
 
 #endif /* NET_IGMP_H_ */

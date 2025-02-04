@@ -1,7 +1,7 @@
 /**
  * @file acd.cpp
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,12 +39,11 @@
 #include <cstring>
 #include <cassert>
 
-#include "../../config/net_config.h"
-
+#include "net_memcpy.h"
+#include "net_config.h"
 #include "net/acd.h"
 #include "net/protocol/acd.h"
 #include "net/protocol/arp.h"
-#include "net_memcpy.h"
 
 #include "softwaretimers.h"
 #include "debug.h"
@@ -58,6 +57,10 @@ static constexpr uint32_t ACD_TICKS_PER_SECOND = (1000U / ACD_TMR_INTERVAL);
 static TimerHandle_t nTimerId;
 
 static void acd_timer([[maybe_unused]] TimerHandle_t nHandle) {
+	if (!netif_is_link_up()) {
+		return;
+	}
+
 	auto *acd = reinterpret_cast<struct acd::Acd *>(globals::netif_default.acd);
 	assert(acd != nullptr);
 
@@ -104,6 +107,7 @@ static void acd_timer([[maybe_unused]] TimerHandle_t nHandle) {
 				acd->state = acd::State::ACD_STATE_ONGOING;
 				acd->sent_num = 0;
 				acd->ttw = 0;
+				acd_stop(acd);
 				acd->acd_conflict_callback(acd::Callback::ACD_IP_OK);
 			}
 		}
@@ -206,7 +210,7 @@ void acd_start(struct acd::Acd *acd, const ip4_addr_t ipaddr) {
 	acd->ttw = static_cast<uint16_t>(static_cast<uint32_t>(random()) % (PROBE_WAIT * acd::ACD_TICKS_PER_SECOND));
 
 	nTimerId = SoftwareTimerAdd(acd::ACD_TMR_INTERVAL, acd_timer);
-	assert( != TIMER_ID_NONE);
+	assert(nTimerId != TIMER_ID_NONE);
 
 	DEBUG_EXIT
 }
@@ -217,9 +221,10 @@ void acd_stop(struct acd::Acd *acd) {
 
 	acd->state = acd::State::ACD_STATE_OFF;
 
-	assert(nTimerId != TIMER_ID_NONE);
-	SoftwareTimerDelete(nTimerId);
-	nTimerId = TIMER_ID_NONE;
+	if (nTimerId != TIMER_ID_NONE) {
+		SoftwareTimerDelete(nTimerId);
+		nTimerId = TIMER_ID_NONE;
+	}
 
 	DEBUG_EXIT
 }
@@ -242,7 +247,7 @@ void acd_network_changed_link_down() {
 /**
  *  Handles every incoming ARP Packet, called by arp_handle
  */
-void acd_arp_reply(struct t_arp *pArp) {
+void acd_arp_reply(const struct t_arp *pArp) {
 	DEBUG_ENTRY
 	auto *acd = reinterpret_cast<struct acd::Acd *>(globals::netif_default.acd);
 

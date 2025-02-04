@@ -48,18 +48,14 @@
 #include <algorithm>
 #include <cassert>
 
-#include "../config/net_config.h"
-
+#include "net_config.h"
 #include "net/tcp.h"
 #include "net/protocol/tcp.h"
-
 #include "net_memcpy.h"
 #include "net_private.h"
-
 #include "datasegmentqueue.h"
 
 #include "hardware.h"
-
 #include "debug.h"
 
 namespace net {

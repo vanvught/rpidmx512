@@ -30,12 +30,14 @@
 
 void network_display_emac_config();
 void network_display_emac_start();
-void network_display_emac_status(const bool);
+void network_display_emac_status(const bool); //TODO subject for removal
 void network_display_emac_shutdown();
 void network_display_ip();
 void network_display_netmask();
 void network_display_gateway();
 void network_display_hostname();
 void network_display_dhcp_status(net::dhcp::State);
+void network_display_netif_up();
+void network_display_netif_down();
 
 #endif /* NETWORK_DISPLAY_H_ */

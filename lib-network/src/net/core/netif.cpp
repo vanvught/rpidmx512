@@ -44,8 +44,6 @@ extern uint32_t nBroadcastMask;
 extern uint32_t nOnNetworkMask;
 }  // namespace globals
 
-extern void arp_init();
-
 static netif_ext_callback_fn callback_fn;
 
 static void default_callback([[maybe_unused]] const uint16_t reason, [[maybe_unused]] const netif_ext_callback_args_t* args) {
@@ -69,8 +67,6 @@ void netif_init() {
 	netif.autoip = nullptr;
 
 	callback_fn = &default_callback;
-
-	net::arp_init();
 }
 
 static void netif_do_update_globals() {

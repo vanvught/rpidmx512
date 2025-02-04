@@ -1,8 +1,8 @@
 /**
- * @file ip.cpp
+ * @file ethcrc.cpp
  *
  */
-/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,10 +23,6 @@
  * THE SOFTWARE.
  */
 
-#if defined (DEBUG_NET_IP)
-# undef NDEBUG
-#endif
-
 #if !defined (CONFIG_REMOTECONFIG_MINIMUM)
 # pragma GCC push_options
 # pragma GCC optimize ("O2")
@@ -35,24 +31,21 @@
 #endif
 
 #include <cstdint>
+#include <cstddef>
 
-#include "../../config/net_config.h"
+uint32_t ethcrc(const uint8_t *data, const size_t length) {
+	uint32_t crc = 0xffffffff;
 
-#include "net.h"
-#include "net_private.h"
+	for (size_t i = 0; i < length; i++) {
+		for (int j = 0; j < 8; j++) {
+			if (((crc >> 31) ^ (data[i] >> j)) & 0x01) {
+				/* x^26+x^23+x^22+x^16+x^12+x^11+x^10+x^8+x^7+x^5+x^4+x^2+x+1 */
+				crc = (crc << 1) ^ 0x04C11DB7;
+			} else {
+				crc = crc << 1;
+			}
+		}
+	}
 
-#include "debug.h"
-
-namespace net {
-void __attribute__((cold)) ip_init() {
-	DEBUG_ENTRY
-
-	udp_init();
-	igmp_init();
-#if defined (ENABLE_HTTPD)
-	tcp_init();
-#endif
-
-	DEBUG_EXIT
+	return ~crc;
 }
-}  // namespace net

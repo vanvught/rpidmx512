@@ -1,3 +1,4 @@
+#if !defined(DISPLAY_UDF)
 /**
  * @file network_display.cpp
  *
@@ -35,21 +36,21 @@ static constexpr uint32_t LINE_IP = 2;
 static constexpr uint32_t LINE_IP = CONFIG_DISPLAY_LINE_IP;
 #endif
 
-__attribute__((weak)) void network_display_emac_config() {
+void __attribute__((weak)) network_display_emac_config() {
 #if !defined (NO_EMAC)
 	Display::Get()->ClearLine(LINE_IP);
 	Display::Get()->PutString("Ethernet config");
 #endif
 }
 
-__attribute__((weak)) void network_display_emac_start() {
+void __attribute__((weak)) network_display_emac_start() {
 #if !defined (NO_EMAC)
 	Display::Get()->ClearLine(LINE_IP);
 	Display::Get()->PutString("Ethernet start");
 #endif
 }
 
-__attribute__((weak)) void network_display_emac_status([[maybe_unused]] const bool isLinkUp) {
+void __attribute__((weak)) network_display_emac_status([[maybe_unused]] const bool isLinkUp) {
 #if !defined (NO_EMAC)
 	Display::Get()->ClearLine(LINE_IP);
 	Display::Get()->PutString("Ethernet Link ");
@@ -61,31 +62,43 @@ __attribute__((weak)) void network_display_emac_status([[maybe_unused]] const bo
 #endif
 }
 
-__attribute__((weak)) void network_display_ip() {
+void __attribute__((weak)) network_display_ip() {
 #if !defined (NO_EMAC)
 	Display::Get()->ClearLine(LINE_IP);
 	Display::Get()->Printf(LINE_IP, "" IPSTR "/%d %c", IP2STR(Network::Get()->GetIp()), Network::Get()->GetNetmaskCIDR(), Network::Get()->GetAddressingMode());
 #endif
 }
 
-__attribute__((weak)) void network_display_netmask() {
+void __attribute__((weak)) network_display_netmask() {
 #if !defined (NO_EMAC)
 	network_display_ip();
 #endif
 }
 
-__attribute__((weak)) void network_display_gateway() {}
+void __attribute__((weak)) network_display_gateway() {}
 
-__attribute__((weak)) void network_display_hostname() {}
+void __attribute__((weak)) network_display_netif_up() {
+#if !defined (NO_EMAC)
+	network_display_emac_status(true);
+#endif
+}
 
-__attribute__((weak)) void network_display_emac_shutdown() {
+void __attribute__((weak)) network_display_netif_down() {
+#if !defined (NO_EMAC)
+	network_display_emac_status(false);
+#endif
+}
+
+void __attribute__((weak)) network_display_hostname() {}
+
+void __attribute__((weak)) network_display_emac_shutdown() {
 #if !defined (NO_EMAC)
 	Display::Get()->ClearLine(LINE_IP);
 	Display::Get()->PutString("Ethernet shutdown");
 #endif
 }
 
-__attribute__((weak)) void network_display_dhcp_status([[maybe_unused]] net::dhcp::State state) {
+void __attribute__((weak)) network_display_dhcp_status([[maybe_unused]] net::dhcp::State state) {
 #if !defined (NO_EMAC)
 	Display::Get()->ClearLine(LINE_IP);
 
@@ -109,3 +122,4 @@ __attribute__((weak)) void network_display_dhcp_status([[maybe_unused]] net::dhc
 	}
 #endif
 }
+#endif

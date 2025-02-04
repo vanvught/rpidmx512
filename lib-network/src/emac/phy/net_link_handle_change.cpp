@@ -23,6 +23,8 @@
  * THE SOFTWARE.
  */
 
+#undef NDEBUG
+
 #include "hardware.h"
 #include "network.h"
 #include "net/netif.h"

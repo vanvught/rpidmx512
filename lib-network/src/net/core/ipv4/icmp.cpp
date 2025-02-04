@@ -47,7 +47,7 @@
 #include "debug.h"
 
 namespace net {
-__attribute__((hot)) void icmp_handle(struct t_icmp *p_icmp) {
+__attribute__((hot)) void icmp_input(struct t_icmp *p_icmp) {
 	if (p_icmp->icmp.type == ICMP_TYPE_ECHO) {
 		if (p_icmp->icmp.code == ICMP_CODE_ECHO) {
 			// Ethernet
