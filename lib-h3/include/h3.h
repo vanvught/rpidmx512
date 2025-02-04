@@ -594,7 +594,9 @@ typedef struct T_H3_EMAC {
 	__I uint32_t RES2[2];			///< 0x2C, 0x30
 	__IO uint32_t RX_DMA_DESC;		///< 0x34
 	__IO uint32_t RX_FRM_FLT;		///< 0x38
-	__I uint32_t RES3[3];			///< 0x3C, 0x40, 0x44
+	__I uint32_t RES3;				///< 0x3C
+	__IO uint32_t RX_HASH_0;	 	///< 0x40
+	__IO uint32_t RX_HASH_1;	 	///< 0x44
 	__IO uint32_t MII_CMD;			///< 0x48
 	__IO uint32_t MII_DATA;			///< 0x4C
 	struct {
