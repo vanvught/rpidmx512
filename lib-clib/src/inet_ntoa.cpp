@@ -1,8 +1,8 @@
 /**
- * @file in.h
+ * @file inet_ntoa.cpp
  *
  */
-/* Copyright (C) 2016-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,26 +23,14 @@
  * THE SOFTWARE.
  */
 
-#ifndef IN_H_
-#define IN_H_
+#include <cstdio>
+#include <cstdlib>
+#include <netinet/in.h>
 
-#include <stdint.h>
+static char buffer[18];
 
-typedef uint32_t in_addr_t;
-
-struct in_addr {
-    in_addr_t s_addr;
-};
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-extern int inet_aton(const char *, struct in_addr *);
-extern char *inet_ntoa(struct in_addr in);
-
-#ifdef __cplusplus
+extern "C" char *inet_ntoa(struct in_addr in) {
+	unsigned char *bytes = (unsigned char *)&in;
+	snprintf(buffer, sizeof(buffer), "%d.%d.%d.%d", bytes[0], bytes[1], bytes[2], bytes[3]);
+	return buffer;
 }
-#endif
-
-#endif /* IN_H_ */

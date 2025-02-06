@@ -1,8 +1,8 @@
 /**
- * @file inet_aton.c
+ * @file inet_aton.cpp
  *
  */
-/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <ctype.h>
+#include <cstdint>
+#include <cctype>
 #include <netinet/in.h>
 
 typedef union pcast32 {
@@ -32,7 +32,7 @@ typedef union pcast32 {
 	uint8_t u8[4];
 } _pcast32;
 
-int inet_aton(const char *cp, struct in_addr *ip_address) {
+extern "C" int inet_aton(const char *cp, struct in_addr *ip_address) {
 	const char *b = cp;
 	int i, j, k;
 	_pcast32 cast32;
