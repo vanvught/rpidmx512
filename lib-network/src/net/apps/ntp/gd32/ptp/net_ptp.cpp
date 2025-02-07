@@ -85,9 +85,8 @@ __attribute__((weak)) void display_status([[maybe_unused]] const ::ntp::Status s
 
 
 namespace net::globals {
-extern uint32_t ptpTimestamp[2];
+	extern uint32_t ptpTimestamp[2];
 } // namespace net::globals
-
 
 #define _NTPFRAC_(x) ( 4294U*static_cast<uint32_t>(x) + ( (1981U*static_cast<uint32_t>(x))>>11 ) +  ((2911U*static_cast<uint32_t>(x))>>28) )
 #define NTPFRAC(x)	_NTPFRAC_(x / 1000)
@@ -254,9 +253,9 @@ static void send() {
 
 #ifndef NDEBUG
 	printf("Request:  org=%.8x%.8x rx=%.8x%.8x tx=%.8x%.8x\n",
-			 __builtin_bswap32(s_ntpClient.Request.OriginTimestamp_s),  __builtin_bswap32(s_ntpClient.Request.OriginTimestamp_f),
-			 __builtin_bswap32(s_ntpClient.Request.ReceiveTimestamp_s),  __builtin_bswap32(s_ntpClient.Request.ReceiveTimestamp_f),
-			 __builtin_bswap32(s_ntpClient.Request.TransmitTimestamp_s),  __builtin_bswap32(s_ntpClient.Request.TransmitTimestamp_f));
+			__builtin_bswap32(s_ntpClient.Request.OriginTimestamp_s),  __builtin_bswap32(s_ntpClient.Request.OriginTimestamp_f),
+			__builtin_bswap32(s_ntpClient.Request.ReceiveTimestamp_s),  __builtin_bswap32(s_ntpClient.Request.ReceiveTimestamp_f),
+			__builtin_bswap32(s_ntpClient.Request.TransmitTimestamp_s),  __builtin_bswap32(s_ntpClient.Request.TransmitTimestamp_f));
 #endif
 
 	if (s_ntpClient.state.x > 0) {
@@ -276,13 +275,17 @@ static void send() {
 }
 
 static void difference(const ntp::TimeStamp& Start, const ntp::TimeStamp& Stop, int32_t& nDiffSeconds, int32_t& nDiffNanoSeconds) {
-    gd32::ptp::time_t r;
+	gd32::ptp::time_t r;
 	const gd32::ptp::time_t x = {.tv_sec = static_cast<int32_t>(Stop.nSeconds), .tv_nsec = static_cast<int32_t>(USEC(Stop.nFraction) * 1000)};
 	const gd32::ptp::time_t y = {.tv_sec = static_cast<int32_t>(Start.nSeconds), .tv_nsec = static_cast<int32_t>(USEC(Start.nFraction) * 1000)};
-    gd32::sub_time(&r, &x, &y);
+	gd32::sub_time(&r, &x, &y);
 
-    nDiffSeconds = r.tv_sec;
-    nDiffNanoSeconds = r.tv_nsec;
+	nDiffSeconds = r.tv_sec;
+	nDiffNanoSeconds = r.tv_nsec;
+}
+
+static inline int32_t abs_int32(const int32_t x) {
+    return (x < 0) ? -x : x;
 }
 
 static void update_ptp_time() {
@@ -304,6 +307,16 @@ static void update_ptp_time() {
 
 	gd32::ptp::ptptime ptp_get;
 	gd32_ptp_get_time(&ptp_get);
+
+	const auto offset_ns = (static_cast<int64_t>(ptpOffset.tv_sec) * 1000000000LL) + static_cast<int64_t>(ptpOffset.tv_nsec);
+	int32_t adjust_ppb = -(offset_ns / s_ntpClient.nPollSeconds);
+
+	if (abs_int32(adjust_ppb) > 1) {
+		gd32_adj_frequency(adjust_ppb);
+#ifndef NDEBUG
+		printf("Applied frequency adjustment: %d ppb\n", adjust_ppb);
+#endif
+	}
 
 	s_ntpClient.Request.ReferenceTimestamp_s = __builtin_bswap32(static_cast<uint32_t>(ptp_get.tv_sec) + ntp::JAN_1970);
 	s_ntpClient.Request.ReferenceTimestamp_f  = __builtin_bswap32(NTPFRAC(ptp_get.tv_nsec));
@@ -365,8 +378,8 @@ static void update_ptp_time() {
 
 	printf(" %s : offset=%c%d.%09d delay=%d.%09d\n",
 			s_ntpClient.state.mode == ntp::Modes::BASIC ? "Basic" : "Interleaved",
-			sign, ptpOffset.tv_sec, ptpOffset.tv_nsec,
-			ptpDelay.tv_sec, ptpDelay.tv_nsec);
+					sign, ptpOffset.tv_sec, ptpOffset.tv_nsec,
+					ptpDelay.tv_sec, ptpDelay.tv_nsec);
 #endif
 }
 
@@ -386,9 +399,9 @@ static void process() {
 	const auto *const pReply = s_ntpClient.pReply;
 #ifndef NDEBUG
 	printf("Response: org=%.8x%.8x rx=%.8x%.8x tx=%.8x%.8x\n",
-			 __builtin_bswap32(pReply->OriginTimestamp_s),  __builtin_bswap32(pReply->OriginTimestamp_f),
-			 __builtin_bswap32(pReply->ReceiveTimestamp_s),  __builtin_bswap32(pReply->ReceiveTimestamp_f),
-			 __builtin_bswap32(pReply->TransmitTimestamp_s),  __builtin_bswap32(pReply->TransmitTimestamp_f));
+			__builtin_bswap32(pReply->OriginTimestamp_s),  __builtin_bswap32(pReply->OriginTimestamp_f),
+			__builtin_bswap32(pReply->ReceiveTimestamp_s),  __builtin_bswap32(pReply->ReceiveTimestamp_f),
+			__builtin_bswap32(pReply->TransmitTimestamp_s),  __builtin_bswap32(pReply->TransmitTimestamp_f));
 #endif
 	/**
 	 * If the origin timestamp is equal to the transmit timestamp,
@@ -409,28 +422,28 @@ static void process() {
 		s_ntpClient.state.mode = ntp::Modes::BASIC;
 #endif
 	} else
-	/**
-	 * If the origin timestamp is equal to the receive timestamp,
-	 * the response is in the interleaved mode.
-	 */
-	if ((pReply->OriginTimestamp_s == s_ntpClient.Request.ReceiveTimestamp_s) && (pReply->OriginTimestamp_f == s_ntpClient.Request.ReceiveTimestamp_f)) {
-		if (s_ntpClient.state.x > 0) {
-			s_ntpClient.T1.nSeconds = s_ntpClient.state.sentB.nSeconds;
-			s_ntpClient.T1.nFraction = s_ntpClient.state.sentB.nFraction;
-		} else {
-			s_ntpClient.T1.nSeconds = s_ntpClient.state.sentA.nSeconds;
-			s_ntpClient.T1.nFraction = s_ntpClient.state.sentA.nFraction;
-		}
+		/**
+		 * If the origin timestamp is equal to the receive timestamp,
+		 * the response is in the interleaved mode.
+		 */
+		if ((pReply->OriginTimestamp_s == s_ntpClient.Request.ReceiveTimestamp_s) && (pReply->OriginTimestamp_f == s_ntpClient.Request.ReceiveTimestamp_f)) {
+			if (s_ntpClient.state.x > 0) {
+				s_ntpClient.T1.nSeconds = s_ntpClient.state.sentB.nSeconds;
+				s_ntpClient.T1.nFraction = s_ntpClient.state.sentB.nFraction;
+			} else {
+				s_ntpClient.T1.nSeconds = s_ntpClient.state.sentA.nSeconds;
+				s_ntpClient.T1.nFraction = s_ntpClient.state.sentA.nFraction;
+			}
 
-		s_ntpClient.T4.nSeconds = s_ntpClient.state.previousReceive.nSeconds;
-		s_ntpClient.T4.nFraction = s_ntpClient.state.previousReceive.nFraction;
+			s_ntpClient.T4.nSeconds = s_ntpClient.state.previousReceive.nSeconds;
+			s_ntpClient.T4.nFraction = s_ntpClient.state.previousReceive.nFraction;
 #ifndef NDEBUG
-		s_ntpClient.state.mode = ntp::Modes::INTERLEAVED;
+			s_ntpClient.state.mode = ntp::Modes::INTERLEAVED;
 #endif
-	} else {
-		DEBUG_PUTS("INVALID RESPONSE");
-		return;
-	}
+		} else {
+			DEBUG_PUTS("INVALID RESPONSE");
+			return;
+		}
 
 	s_ntpClient.T2.nSeconds = __builtin_bswap32(pReply->ReceiveTimestamp_s);
 	s_ntpClient.T2.nFraction = __builtin_bswap32(pReply->ReceiveTimestamp_f);
