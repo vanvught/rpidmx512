@@ -154,7 +154,7 @@ void DisplayUdfParams::Load() {
 	m_Params.nSetList = 0;
 
 #if !defined(DISABLE_FS)
-	ReadConfigFile configfile(DisplayUdfParams::staticCallbackFunction, this);
+	ReadConfigFile configfile(DisplayUdfParams::StaticCallbackFunction, this);
 
 	if (configfile.Read(DisplayUdfParamsConst::FILE_NAME)) {
 		DisplayUdfParamsStore::Update(&m_Params);
@@ -176,7 +176,7 @@ void DisplayUdfParams::Load(const char *pBuffer, uint32_t nLength) {
 
 	m_Params.nSetList = 0;
 
-	ReadConfigFile config(DisplayUdfParams::staticCallbackFunction, this);
+	ReadConfigFile config(DisplayUdfParams::StaticCallbackFunction, this);
 
 	config.Read(pBuffer, nLength);
 
@@ -278,7 +278,7 @@ void DisplayUdfParams::Set(DisplayUdf *pDisplayUdf) {
 	}
 }
 
-void DisplayUdfParams::staticCallbackFunction(void *p, const char *s) {
+void DisplayUdfParams::StaticCallbackFunction(void *p, const char *s) {
 	assert(p != nullptr);
 	assert(s != nullptr);
 

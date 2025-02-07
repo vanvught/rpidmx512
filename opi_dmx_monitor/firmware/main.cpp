@@ -86,9 +86,6 @@ int main() {
 	RemoteConfigParams remoteConfigParams;
 	remoteConfigParams.Load();
 	remoteConfigParams.Set(&remoteConfig);
-
-	while (configStore.Flash())
-		;
 #endif
 
 	dmxMonitor.Cls();
@@ -158,7 +155,6 @@ int main() {
 
 #if !defined(NO_EMAC)
 		nw.Run();
-		remoteConfig.Run();
 #endif
 		hw.Run();
 	}

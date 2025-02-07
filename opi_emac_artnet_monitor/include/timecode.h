@@ -42,7 +42,7 @@ public:
 	void Start();
 	void Stop();
 
-	void static staticCallbackFunction(const struct artnet::TimeCode *pTimeCode) {
+	void static StaticCallbackFunction(const struct artnet::TimeCode *pTimeCode) {
 		assert(s_pThis != nullptr);
 		s_pThis->Handler(pTimeCode);
 	}

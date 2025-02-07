@@ -2,7 +2,7 @@
  * @file in.h
  *
  */
-/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,6 +39,7 @@ extern "C" {
 #endif
 
 extern int inet_aton(const char *, struct in_addr *);
+extern char *inet_ntoa(struct in_addr in);
 
 #ifdef __cplusplus
 }

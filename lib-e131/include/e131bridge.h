@@ -2,7 +2,7 @@
  * @file e131bridge.h
  *
  */
-/* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2016-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,6 @@
 
 #include "e131.h"
 #include "e131packets.h"
-// Handlers
 #include "e131sync.h"
 
 #include "lightset.h"
@@ -128,13 +127,6 @@ public:
 	E131Bridge();
 	~E131Bridge();
 
-	void SetFailSafe(const lightset::FailSafe failsafe) {
-		m_State.failsafe = failsafe;
-	}
-	lightset::FailSafe GetFailSafe() const {
-		return m_State.failsafe;
-	}
-
 	void SetOutput(LightSet *pLightSet) {
 		m_pLightSet = pLightSet;
 	}
@@ -142,8 +134,29 @@ public:
 		return m_pLightSet;
 	}
 
+	void SetLongName([[maybe_unused]] const char *) {}
+	const char *GetLongName() const { return "Long name"; }
+	void GetLongNameDefault(char *);
+
+	void SetShortName([[maybe_unused]] const uint32_t nPortIndex, [[maybe_unused]] const char *) {};
+	const char *GetShortName([[maybe_unused]]const uint32_t nPortIndex) const { return "Short name"; }
+
+	void SetDisableMergeTimeout(const bool bDisable) {
+		m_State.bDisableMergeTimeout = bDisable;
+	}
+	bool GetDisableMergeTimeout() const {
+		return m_State.bDisableMergeTimeout;
+	}
+
+	void SetFailSafe(const lightset::FailSafe failsafe) {
+		m_State.failsafe = failsafe;
+	}
+	lightset::FailSafe GetFailSafe() const {
+		return m_State.failsafe;
+	}
+
 	void SetUniverse(const uint32_t nPortIndex, const lightset::PortDir portDir, const uint16_t nUniverse);
-	bool GetUniverse(const uint32_t nPortIndex, uint16_t &nUniverse, lightset::PortDir portDir) const {
+	bool GetUniverse(const uint32_t nPortIndex, uint16_t &nUniverse, const lightset::PortDir portDir) const {
 		assert(nPortIndex < e131bridge::MAX_PORTS);
 
 		if (portDir == lightset::PortDir::DISABLE) {
@@ -153,6 +166,49 @@ public:
 		nUniverse = m_Bridge.Port[nPortIndex].nUniverse;
 		return m_Bridge.Port[nPortIndex].direction == portDir;
 	}
+
+	void SetMergeMode(const uint32_t nPortIndex, const lightset::MergeMode mergeMode) {
+		assert(nPortIndex < e131bridge::MAX_PORTS);
+		m_OutputPort[nPortIndex].mergeMode = mergeMode;
+	}
+	lightset::MergeMode GetMergeMode(const uint32_t nPortIndex) const {
+		assert(nPortIndex < e131bridge::MAX_PORTS);
+		return m_OutputPort[nPortIndex].mergeMode;
+	}
+
+#if defined (OUTPUT_HAVE_STYLESWITCH)
+	void SetOutputStyle(const uint32_t nPortIndex, lightset::OutputStyle outputStyle) {
+		assert(nPortIndex < e131bridge::MAX_PORTS);
+
+		if (m_pLightSet != nullptr) {
+			m_pLightSet->SetOutputStyle(nPortIndex, outputStyle);
+			outputStyle = m_pLightSet->GetOutputStyle(nPortIndex);
+		}
+
+		m_OutputPort[nPortIndex].outputStyle = outputStyle;
+	}
+
+	lightset::OutputStyle GetOutputStyle(const uint32_t nPortIndex) const {
+		assert(nPortIndex < e131bridge::MAX_PORTS);
+		return m_OutputPort[nPortIndex].outputStyle;
+	}
+#endif
+
+	void SetPriority(const uint32_t nPortIndex, const uint8_t nPriority) {
+		assert(nPortIndex < e131bridge::MAX_PORTS);
+		if ((nPriority >= e131::priority::LOWEST) && (nPriority <= e131::priority::HIGHEST)) {
+			m_InputPort[nPortIndex].nPriority = nPriority;
+		}
+	}
+	uint8_t GetPriority(const uint32_t nPortIndex) const {
+		assert(nPortIndex < e131bridge::MAX_PORTS);
+		return m_InputPort[nPortIndex].nPriority;
+	}
+
+	void Print();
+
+	void Start();
+	void Stop();
 
 	bool GetOutputPort(const uint16_t nUniverse, uint32_t& nPortIndex) {
 		for (nPortIndex = 0; nPortIndex < e131bridge::MAX_PORTS; nPortIndex++) {
@@ -164,15 +220,6 @@ public:
 			}
 		}
 		return false;
-	}
-
-	void SetMergeMode(uint32_t nPortIndex, lightset::MergeMode mergeMode) {
-		assert(nPortIndex < e131bridge::MAX_PORTS);
-		m_OutputPort[nPortIndex].mergeMode = mergeMode;
-	}
-	lightset::MergeMode GetMergeMode(uint32_t nPortIndex) const {
-		assert(nPortIndex < e131bridge::MAX_PORTS);
-		return m_OutputPort[nPortIndex].mergeMode;
 	}
 
 	uint32_t GetActiveOutputPorts() const {
@@ -202,13 +249,6 @@ public:
 		return false;
 	}
 
-	void SetDisableMergeTimeout(bool bDisable) {
-		m_State.bDisableMergeTimeout = bDisable;
-	}
-	bool GetDisableMergeTimeout() const {
-		return m_State.bDisableMergeTimeout;
-	}
-
 	void SetEnableDataIndicator(bool bEnable) {
 		m_bEnableDataIndicator = bEnable;
 	}
@@ -227,17 +267,6 @@ public:
 		m_pE131Sync = pE131Sync;
 	}
 
-	void SetPriority(const uint32_t nPortIndex, uint8_t nPriority) {
-		assert(nPortIndex < e131bridge::MAX_PORTS);
-		if ((nPriority >= e131::priority::LOWEST) && (nPriority <= e131::priority::HIGHEST)) {
-			m_InputPort[nPortIndex].nPriority = nPriority;
-		}
-	}
-	uint8_t GetPriority(const uint32_t nPortIndex) const {
-		assert(nPortIndex < e131bridge::MAX_PORTS);
-		return m_InputPort[nPortIndex].nPriority;
-	}
-
 	void SetInputDisabled(const uint32_t nPortIndex, const bool bDisable) {
 		assert(nPortIndex < e131bridge::MAX_PORTS);
 		m_InputPort[nPortIndex].IsDisabled = bDisable;
@@ -245,24 +274,6 @@ public:
 	bool GetInputDisabled(const uint32_t nPortIndex) const {
 		return m_InputPort[nPortIndex].IsDisabled;
 	}
-
-#if defined (OUTPUT_HAVE_STYLESWITCH)
-	void SetOutputStyle(const uint32_t nPortIndex, lightset::OutputStyle outputStyle) {
-		assert(nPortIndex < e131bridge::MAX_PORTS);
-
-		if (m_pLightSet != nullptr) {
-			m_pLightSet->SetOutputStyle(nPortIndex, outputStyle);
-			outputStyle = m_pLightSet->GetOutputStyle(nPortIndex);
-		}
-
-		m_OutputPort[nPortIndex].outputStyle = outputStyle;
-	}
-
-	lightset::OutputStyle GetOutputStyle(const uint32_t nPortIndex) const {
-		assert(nPortIndex < e131bridge::MAX_PORTS);
-		return m_OutputPort[nPortIndex].outputStyle;
-	}
-#endif
 
 	void Clear(const uint32_t nPortIndex) {
 		assert(nPortIndex < e131bridge::MAX_PORTS);
@@ -292,9 +303,6 @@ public:
 		return m_Cid;
 	}
 #endif
-
-	void Start();
-	void Stop();
 
 	void Run() {
 		uint16_t nForeignPort;
@@ -348,8 +356,6 @@ public:
 	}
 #endif
 
-	void Print();
-
 	static E131Bridge *Get() {
 		return s_pThis;
 	}
@@ -378,7 +384,7 @@ private:
 	void FillDiscoveryPacket();
 	void SendDiscoveryPacket();
 
-	void static staticCallbackFunctionSendDiscoveryPacket([[maybe_unused]] TimerHandle_t timerHandle) {
+	void static StaticCallbackFunctionSendDiscoveryPacket([[maybe_unused]] TimerHandle_t timerHandle) {
 		s_pThis->SendDiscoveryPacket();
 	}
 
@@ -392,7 +398,7 @@ private:
 		}
 	}
 
-	void static staticCallbackFunctionLedPanelOff([[maybe_unused]] TimerHandle_t timerHandle) {
+	void static StaticCallbackFunctionLedPanelOff([[maybe_unused]] TimerHandle_t timerHandle) {
 		s_pThis->LedPanelOff();
 	}
 #endif

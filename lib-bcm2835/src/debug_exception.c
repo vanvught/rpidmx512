@@ -37,8 +37,8 @@ typedef enum {
 	CONSOLE_DEFAULT = 9
 } _console_colors;
 
-void console_set_fg_color(int);
-void bcm2835_watchdog_stop(void);
+void console_set_fg_color(uint32_t);
+void bcm2835_watchdog_stop();
 
 void debug_exception(unsigned int type, unsigned int address) {
 	__sync_synchronize();

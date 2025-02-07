@@ -2,7 +2,7 @@
  * @file debug_print_bits.cpp
  *
  */
-/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,11 +23,11 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdint.h>
+#include <cstdio>
+#include <cstdint>
 
 #if defined (H3)
-extern "C" int uart0_printf(const char* fmt, ...);
+int uart0_printf(const char* fmt, ...);
 # define printf uart0_printf
 #endif
 

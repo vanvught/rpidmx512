@@ -2,7 +2,7 @@
  * @file tcnetreader.cpp
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,7 @@
 # undef NDEBUG
 #endif
 
-#if !defined(__clang__)
+#if defined(__GNUC__) && !defined(__clang__)
 # pragma GCC push_options
 # pragma GCC optimize ("O2")
 # pragma GCC optimize ("no-tree-loop-distribute-patterns")
@@ -39,6 +39,7 @@
 
 #include "arm/tcnetreader.h"
 #include "ltc.h"
+#include "timecodeconst.h"
 #include "network.h"
 #include "hardware.h"
 // Input
@@ -66,6 +67,14 @@ static constexpr auto TIMECODE_LENGTH = sizeof(CMD_TIMECODE) - 1U;
 static constexpr auto UDP_PORT = 0x0ACA;
 
 #if defined (H3)
+static void irq_timer0_handler([[maybe_unused]] uint32_t clo) {
+	gv_ltc_bTimeCodeAvailable = true;
+}
+#elif defined (GD32)
+// Defined in platform_ltc.cpp
+#endif
+
+#if defined (H3)
 static void arm_timer_handler() {
 	gv_ltc_nUpdatesPerSecond = gv_ltc_nUpdates - gv_ltc_nUpdatesPrevious;
 	gv_ltc_nUpdatesPrevious = gv_ltc_nUpdates;
@@ -78,12 +87,19 @@ void TCNetReader::Start() {
 	DEBUG_ENTRY
 
 #if defined (H3)
+	irq_timer_set(IRQ_TIMER_0, static_cast<thunk_irq_timer_t>(irq_timer0_handler));
+	H3_TIMER->TMR0_CUR = 0;
+#elif defined (GD32)
+	platform::ltc::timer11_config();
+#endif
+
+#if defined (H3)
 	irq_timer_arm_physical_set(static_cast<thunk_irq_timer_arm_t>(arm_timer_handler));
 	irq_handler_init();
 #elif defined (GD32)
 #endif
 
-	m_nHandle = Network::Get()->Begin(UDP_PORT, staticCallbackFunctionInput);
+	m_nHandle = Network::Get()->Begin(UDP_PORT, StaticCallbackFunctionInput);
 	assert(m_nHandle != -1);
 
 	LtcOutputs::Get()->Init();
@@ -103,40 +119,6 @@ void TCNetReader::Stop() {
 	DEBUG_EXIT
 }
 
-void TCNetReader::Handler(const struct tcnet::TimeCode *pTimeCode) {
-	gv_ltc_nUpdates = gv_ltc_nUpdates + 1;
-
-	assert((reinterpret_cast<uint32_t>(pTimeCode) & 0x3) == 0); // Check if we can do 4-byte compare
-#if __GNUC__ > 8
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Waddress-of-packed-member"	// FIXME ignored "-Waddress-of-packed-member"
-#endif
-	const auto *p = reinterpret_cast<const uint32_t*>(pTimeCode);
-#if __GNUC__ > 8
-#pragma GCC diagnostic pop
-#endif
-
-	if (m_nTimeCodePrevious != *p) {
-		m_nTimeCodePrevious = *p;
-
-		if (!ltc::g_DisabledOutputs.bLtc) {
-			LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct ltc::TimeCode*>(pTimeCode));
-		}
-
-		if (!ltc::g_DisabledOutputs.bArtNet) {
-			ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct artnet::TimeCode*>(pTimeCode));
-		}
-
-		if (!ltc::g_DisabledOutputs.bEtc) {
-			LtcEtc::Get()->Send(&m_MidiTimeCode);
-		}
-
-		memcpy(&m_MidiTimeCode, pTimeCode, sizeof(struct midi::Timecode));
-
-		LtcOutputs::Get()->Update(reinterpret_cast<const struct ltc::TimeCode*>(pTimeCode));
-	}
-}
-
 void TCNetReader::Input(const uint8_t *pBuffer, uint32_t nSize, [[maybe_unused]] uint32_t nFromIp, [[maybe_unused]] uint16_t nFromPort) {
 	if (__builtin_expect((memcmp("tcnet!", pBuffer, 6) != 0), 0)) {
 		return;
@@ -146,7 +128,7 @@ void TCNetReader::Input(const uint8_t *pBuffer, uint32_t nSize, [[maybe_unused]]
 		nSize--;
 	}
 
-	debug_dump(s_pUdpBuffer, nBytesReceived);
+	debug_dump(pBuffer, nSize);
 
 	if ((nSize == (6 + LAYER_LENGTH + 1)) && (memcmp(&pBuffer[6], CMD_LAYER, LAYER_LENGTH) == 0)) {
 		const auto tLayer = TCNet::GetLayer(pBuffer[6 + LAYER_LENGTH]);
@@ -154,7 +136,7 @@ void TCNetReader::Input(const uint8_t *pBuffer, uint32_t nSize, [[maybe_unused]]
 		TCNet::Get()->SetLayer(tLayer);
 		tcnet::display::show();
 
-		DEBUG_PRINTF("tcnet!layer#%c -> %d", s_pUdpBuffer[6 + LAYER_LENGTH + 1], tLayer);
+		DEBUG_PRINTF("tcnet!layer#%c -> %d", pBuffer[6 + LAYER_LENGTH + 1], tLayer);
 		return;
 	}
 
@@ -207,4 +189,85 @@ void TCNetReader::Input(const uint8_t *pBuffer, uint32_t nSize, [[maybe_unused]]
 	}
 
 	DEBUG_PUTS("Invalid command");
+}
+
+#if defined(__GNUC__) && !defined(__clang__)
+# pragma GCC push_options
+# pragma GCC optimize ("O3")
+# pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#endif
+
+void TCNetReader::ResetTimer(const bool doReset, const struct tcnet::TimeCode *pTimeCode) {
+	if (m_doResetTimer != doReset) {
+		m_doResetTimer = doReset;
+
+		if (m_doResetTimer) {
+			memcpy(&m_timeCode, pTimeCode, sizeof(struct tcnet::TimeCode));
+
+#if defined (H3)
+			H3_TIMER->TMR0_CUR = 0;
+			H3_TIMER->TMR0_INTV = TimeCodeConst::TMR_INTV[pTimeCode->nType];
+			H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
+#elif defined (GD32)
+			platform::ltc::timer11_set_type(pTimeCode->nType);
+#endif
+			gv_ltc_bTimeCodeAvailable = true;
+		}
+	}
+}
+
+void TCNetReader::Handler(const struct tcnet::TimeCode *pTimeCode) {
+	if (__builtin_expect((pTimeCode->nType != m_nTypePrevious), 0)) {
+		m_nTypePrevious = pTimeCode->nType;
+		m_doResetTimer = false;
+	}
+
+	ResetTimer(!(pTimeCode->nFrames != 0), pTimeCode);
+
+	gv_ltc_nUpdates = gv_ltc_nUpdates + 1;
+}
+
+void TCNetReader::Run() {
+	// Update timecode outputs if available
+	__DMB();  // Data memory barrier to ensure memory consistency
+	if (__builtin_expect((gv_ltc_bTimeCodeAvailable), 0)) {
+		if (ltc::Destination::IsEnabled(ltc::Destination::Output::LTC)) {
+			LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct ltc::TimeCode *>(&m_timeCode));
+		}
+
+		if (ltc::Destination::IsEnabled(ltc::Destination::Output::ARTNET)) {
+			ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct artnet::TimeCode *>(&m_timeCode));
+		}
+
+		if (ltc::Destination::IsEnabled(ltc::Destination::Output::ETC)) {
+			LtcEtc::Get()->Send(reinterpret_cast<const struct midi::Timecode *>(&m_timeCode));
+		}
+
+		memcpy(&g_ltc_LtcTimeCode, &m_timeCode, sizeof(struct midi::Timecode));
+
+		LtcOutputs::Get()->Update(const_cast<const struct ltc::TimeCode *>(&g_ltc_LtcTimeCode));
+
+		m_timeCode.nFrames++;
+
+		if (m_timeCode.nFrames >= TimeCodeConst::FPS[m_timeCode.nType]) {
+#if defined (H3)
+			H3_TIMER->TMR0_CTRL &= ~TIMER_CTRL_EN_START;
+#elif defined (GD32)
+			TIMER_CTL0(TIMER11) &= ~TIMER_CTL0_CEN;
+#endif
+			m_timeCode.nFrames = 0;
+		}
+
+		gv_ltc_bTimeCodeAvailable = false;
+	}
+
+	__DMB();
+	if (gv_ltc_nUpdatesPerSecond != 0) {
+		Hardware::Get()->SetMode(hardware::ledblink::Mode::DATA);
+		Reset(false);
+	} else {
+		LtcOutputs::Get()->ShowSysTime();
+		Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
+		Reset(true);
+	}
 }

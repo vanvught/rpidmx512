@@ -29,7 +29,6 @@
 #include <cstdint>
 #include <cstring>
 #include <time.h>
-#include <uuid/uuid.h>
 
 #include "hwclock.h"
 
@@ -60,7 +59,7 @@ extern "C" {
 #endif
 
 #ifdef NDEBUG
- extern "C" void console_error(const char *);
+ void console_error(const char *);
 #endif
 
 #include "softwaretimers.h"
@@ -75,10 +74,6 @@ public:
 
 	uint32_t GetReleaseId() const {
 		return 0;	// FIXME GetReleaseId
-	}
-
-	void GetUuid(uuid_t out) {
-		memcpy(out, m_uuid, sizeof(uuid_t));
 	}
 
 	uint32_t Millis() {
@@ -303,7 +298,6 @@ private:
 #if !defined(DISABLE_RTC)
 	HwClock m_HwClock;
 #endif
-	uuid_t m_uuid;
 	bool m_bIsWatchdog { false };
 	hardware::ledblink::Mode m_Mode { hardware::ledblink::Mode::UNKNOWN };
 	bool m_doLock { false };

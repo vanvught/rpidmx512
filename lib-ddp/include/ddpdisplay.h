@@ -119,7 +119,7 @@ private:
 
 	LightSet *m_pLightSet { nullptr };
 
-	uint8_t m_macAddress[network::MAC_SIZE];
+	uint8_t m_macAddress[net::MAC_SIZE];
 
 	static inline uint32_t s_nLightsetPortLength[ddpdisplay::lightset::MAX_PORTS];
 	static inline uint32_t s_nOffsetCompare[ddpdisplay::configuration::MAX_PORTS];

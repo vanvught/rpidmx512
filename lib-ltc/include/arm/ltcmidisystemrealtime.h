@@ -65,11 +65,13 @@ public:
 
 private:
 	void Send(const midi::Types type) {
-		if (!ltc::g_DisabledOutputs.bRtpMidi) {
+//		if (!ltc::g_DisabledOutputs.bRtpMidi) {
+		if (ltc::Destination::IsEnabled(ltc::Destination::Output::RTPMIDI)) {
 			RtpMidi::Get()->SendRaw(type);
 		}
 
-		if (!ltc::g_DisabledOutputs.bMidi) {
+//		if (!ltc::g_DisabledOutputs.bMidi) {
+		if (ltc::Destination::IsEnabled(ltc::Destination::Output::MIDI)) {
 			Midi::Get()->SendRaw(type);
 		}
 	}
@@ -78,7 +80,7 @@ private:
 		LtcOutputs::Get()->ShowBPM(nBPM);
 	}
 
-	void static staticCallbackFunctionInput(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
+	void static StaticCallbackFunctionInput(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
 		s_pThis->Input(pBuffer, nSize, nFromIp, nFromPort);
 	}
 

@@ -78,7 +78,7 @@ void RDMSensorsParams::Load() {
 	m_Params.nDevices = 0;
 
 #if !defined(DISABLE_FS)
-	ReadConfigFile configfile(RDMSensorsParams::staticCallbackFunction, this);
+	ReadConfigFile configfile(RDMSensorsParams::StaticCallbackFunction, this);
 
 	if (configfile.Read(RDMSensorsConst::PARAMS_FILE_NAME)) {
 		RDMSensorsParamsStore::Update(&m_Params);
@@ -105,7 +105,7 @@ void RDMSensorsParams::Load(const char *pBuffer, uint32_t nLength) {
 
 	m_Params.nDevices = 0;
 
-	ReadConfigFile config(RDMSensorsParams::staticCallbackFunction, this);
+	ReadConfigFile config(RDMSensorsParams::StaticCallbackFunction, this);
 
 	config.Read(pBuffer, nLength);
 
@@ -277,7 +277,7 @@ void RDMSensorsParams::callbackFunction(const char *pLine) {
 	}
 }
 
-void RDMSensorsParams::staticCallbackFunction(void *p, const char *s) {
+void RDMSensorsParams::StaticCallbackFunction(void *p, const char *s) {
 	assert(p != nullptr);
 	assert(s != nullptr);
 

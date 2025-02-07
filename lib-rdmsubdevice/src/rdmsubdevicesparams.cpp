@@ -71,7 +71,7 @@ void RDMSubDevicesParams::Load() {
 	m_Params.nCount = 0;
 
 #if !defined(DISABLE_FS)
-	ReadConfigFile configfile(RDMSubDevicesParams::staticCallbackFunction, this);
+	ReadConfigFile configfile(RDMSubDevicesParams::StaticCallbackFunction, this);
 
 	if (configfile.Read(RDMSubDevicesConst::PARAMS_FILE_NAME)) {
 		RDMSubDevicesParamsStore::Update(&m_Params);
@@ -101,7 +101,7 @@ void RDMSubDevicesParams::Load(const char *pBuffer, uint32_t nLength) {
 
 	m_Params.nCount = 0;
 
-	ReadConfigFile config(RDMSubDevicesParams::staticCallbackFunction, this);
+	ReadConfigFile config(RDMSubDevicesParams::StaticCallbackFunction, this);
 
 	config.Read(pBuffer, nLength);
 
@@ -252,7 +252,7 @@ void RDMSubDevicesParams::callbackFunction(const char *pLine) {
 	}
 }
 
-void RDMSubDevicesParams::staticCallbackFunction(void *p, const char *s) {
+void RDMSubDevicesParams::StaticCallbackFunction(void *p, const char *s) {
 	assert(p != nullptr);
 	assert(s != nullptr);
 

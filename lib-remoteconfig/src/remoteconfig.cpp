@@ -254,7 +254,7 @@ RemoteConfig::RemoteConfig(const remoteconfig::Node node, const remoteconfig::Ou
 	s_RemoteConfigListBin.nActiveOutputs = static_cast<uint8_t>(nActiveOutputs);
 	s_RemoteConfigListBin.aDisplayName[0] = '\0';
 
-	m_nHandle = Network::Get()->Begin(remoteconfig::udp::PORT, RemoteConfig::staticCallbackFunction);
+	m_nHandle = Network::Get()->Begin(remoteconfig::udp::PORT, RemoteConfig::StaticCallbackFunction);
 	assert(m_nHandle != -1);
 
 #if !defined (CONFIG_REMOTECONFIG_MINIMUM)
@@ -311,7 +311,7 @@ void RemoteConfig::SetDisable(bool bDisable) {
 #endif
 		m_bDisable = true;
 	} else if (!bDisable && m_bDisable) {
-		m_nHandle = Network::Get()->Begin(remoteconfig::udp::PORT, RemoteConfig::staticCallbackFunction);
+		m_nHandle = Network::Get()->Begin(remoteconfig::udp::PORT, RemoteConfig::StaticCallbackFunction);
 		assert(m_nHandle != -1);
 #if !defined (CONFIG_REMOTECONFIG_MINIMUM)
 		mdns_service_record_add(nullptr, mdns::Services::CONFIG);

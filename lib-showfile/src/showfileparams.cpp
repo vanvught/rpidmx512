@@ -82,7 +82,7 @@ void ShowFileParams::Load() {
 	m_Params.nSetList = 0;
 
 #if !defined(DISABLE_FS)
-	ReadConfigFile configfile(ShowFileParams::staticCallbackFunction, this);
+	ReadConfigFile configfile(ShowFileParams::StaticCallbackFunction, this);
 
 	if (configfile.Read(ShowFileParamsConst::FILE_NAME)) {
 		ShowFileParamsStore::Update(&m_Params);
@@ -104,7 +104,7 @@ void ShowFileParams::Load(const char *pBuffer, uint32_t nLength) {
 
 	m_Params.nSetList = 0;
 
-	ReadConfigFile config(ShowFileParams::staticCallbackFunction, this);
+	ReadConfigFile config(ShowFileParams::StaticCallbackFunction, this);
 
 	config.Read(pBuffer, nLength);
 
@@ -337,7 +337,7 @@ void ShowFileParams::Set() {
 	DEBUG_EXIT
 }
 
-void ShowFileParams::staticCallbackFunction(void *p, const char *s) {
+void ShowFileParams::StaticCallbackFunction(void *p, const char *s) {
 	assert(p != nullptr);
 	assert(s != nullptr);
 

@@ -28,6 +28,9 @@
 
 #include "gd32.h"
 
+extern volatile uint32_t gv_ltc_nCurrentCAR;
+extern uint32_t g_ltc_nCAR1;
+
 #if defined DEBUG_LTC_TIMER3
 # define DEBUG_TIMER3_RCU_GPIOx		RCU_GPIOA
 # define DEBUG_TIMER3_GPIOx			GPIOA
@@ -51,8 +54,8 @@ namespace platform::ltc {
 void timer3_config();
 void timer10_config();
 void timer11_config();
+void timer11_set_type(const uint32_t nType);
 void timer13_config();
 } // namespace platform::ltc
-
 
 #endif /* GD32_PLATFORM_LTC_H_ */

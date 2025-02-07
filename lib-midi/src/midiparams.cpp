@@ -50,7 +50,7 @@ void MidiParams::Load() {
 	m_Params.nSetList = midiparams::Mask::ACTIVE_SENSE;
 
 #if !defined(DISABLE_FS)
-	ReadConfigFile configfile(MidiParams::staticCallbackFunction, this);
+	ReadConfigFile configfile(MidiParams::StaticCallbackFunction, this);
 
 	if (configfile.Read(MidiParamsConst::FILE_NAME)) {
 		MidiParamsStore::Update(&m_Params);
@@ -72,7 +72,7 @@ void MidiParams::Load(const char* pBuffer, uint32_t nLength) {
 
 	m_Params.nSetList = midiparams::Mask::ACTIVE_SENSE;
 
-	ReadConfigFile config(MidiParams::staticCallbackFunction, this);
+	ReadConfigFile config(MidiParams::StaticCallbackFunction, this);
 
 	config.Read(pBuffer, nLength);
 
@@ -122,7 +122,7 @@ void MidiParams::Set() {
 	}
 }
 
-void MidiParams::staticCallbackFunction(void *p, const char *s) {
+void MidiParams::StaticCallbackFunction(void *p, const char *s) {
 	assert(p != nullptr);
 	assert(s != nullptr);
 

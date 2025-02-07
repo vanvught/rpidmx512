@@ -26,7 +26,7 @@
 #ifndef H3_H_
 #define H3_H_
 
-#if !defined(__clang__)
+#if defined(__GNUC__) && !defined(__clang__)
 # ifdef __cplusplus
 #  if __cplusplus > 201402
 #   pragma GCC diagnostic push
@@ -594,7 +594,9 @@ typedef struct T_H3_EMAC {
 	__I uint32_t RES2[2];			///< 0x2C, 0x30
 	__IO uint32_t RX_DMA_DESC;		///< 0x34
 	__IO uint32_t RX_FRM_FLT;		///< 0x38
-	__I uint32_t RES3[3];			///< 0x3C, 0x40, 0x44
+	__I uint32_t RES3;				///< 0x3C
+	__IO uint32_t RX_HASH_0;	 	///< 0x40
+	__IO uint32_t RX_HASH_1;	 	///< 0x44
 	__IO uint32_t MII_CMD;			///< 0x48
 	__IO uint32_t MII_DATA;			///< 0x4C
 	struct {
@@ -827,7 +829,7 @@ extern void h3_dump_memory_mapping(void);
 #define GIC_INTERFACE_BASE		H3_GIC_CPUIF_BASE
 #define IRQn_Type				H3_IRQn_TypeDef
 
-#if !defined(__clang__)
+#if defined(__GNUC__) && !defined(__clang__)
 # pragma GCC diagnostic ignored "-Wconversion"
 # pragma GCC diagnostic ignored "-Wsign-conversion"
 # ifdef __cplusplus

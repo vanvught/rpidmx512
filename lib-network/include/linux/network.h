@@ -2,7 +2,7 @@
  * @file network.h
  *
  */
-/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,6 +39,7 @@
 
 namespace net {
 typedef void (*UdpCallbackFunctionPtr)(const uint8_t *, uint32_t, uint32_t, uint16_t);
+typedef void (*TcpCallbackFunctionPtr)(const int32_t, const uint8_t *, const uint32_t);
 }  // namespace net
 
 class Network {
@@ -69,12 +70,12 @@ public:
 	void SetHostName(const char *pHostName);
 
 	void SetDomainName(const char *pDomainName) {
-		strncpy(m_aDomainName, pDomainName, network::DOMAINNAME_SIZE - 1);
-		m_aDomainName[network::DOMAINNAME_SIZE - 1] = '\0';
+		strncpy(m_aDomainName, pDomainName, net::DOMAINNAME_SIZE - 1);
+		m_aDomainName[net::DOMAINNAME_SIZE - 1] = '\0';
 	}
 
 	uint32_t GetNameServer(const uint32_t nIndex) const {
-		if (nIndex < network::NAMESERVERS_COUNT) {
+		if (nIndex < net::NAMESERVERS_COUNT) {
 			return m_nNameservers[nIndex];
 		}
 
@@ -82,7 +83,7 @@ public:
 	}
 
 	uint32_t GetNameServers() const {
-		return network::NAMESERVERS_COUNT;
+		return net::NAMESERVERS_COUNT;
 	}
 
 	uint32_t GetSecondaryIp() const {
@@ -186,15 +187,6 @@ public:
 		return s_pThis;
 	}
 
-	/*
-	 * Experimental TCP
-	 */
-
-	int32_t TcpBegin(uint16_t nLocalPort);
-	uint16_t TcpRead(const int32_t nHandle, const uint8_t **ppBuffer, uint32_t &HandleConnection);
-	void TcpWrite(const int32_t nHandle, const uint8_t *pBuffer, uint32_t nLength, const uint32_t HandleConnection);
-	int32_t TcpEnd(const int32_t nHandle);
-
 	void Run();
 
 private:
@@ -219,10 +211,10 @@ private:
 	uint32_t m_nGatewayIp { 0 };
 	uint32_t m_nNetmask { 0 };
 
-	char m_aHostName[network::HOSTNAME_SIZE];
-	char m_aDomainName[network::DOMAINNAME_SIZE];
-	uint32_t m_nNameservers[network::NAMESERVERS_COUNT];
-	uint8_t m_aNetMacaddr[network::MAC_SIZE];
+	char m_aHostName[net::HOSTNAME_SIZE];
+	char m_aDomainName[net::DOMAINNAME_SIZE];
+	uint32_t m_nNameservers[net::NAMESERVERS_COUNT];
+	uint8_t m_aNetMacaddr[net::MAC_SIZE];
 	char m_aIfName[IFNAMSIZ];
 
 	static Network *s_pThis;

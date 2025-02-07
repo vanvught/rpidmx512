@@ -165,9 +165,6 @@ int main() {
 #if defined (NODE_SHOWFILE)
 		showFile.Run();
 #endif
-		remoteConfig.Run();
-		configStore.Flash();
-
 		display.Run();
 		hw.Run();
 	}

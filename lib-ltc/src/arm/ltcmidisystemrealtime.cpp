@@ -2,7 +2,7 @@
  * @file ltcmidisystemrealtime.cpp
  *
  */
-/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,7 @@
 # undef NDEBUG
 #endif
 
-#if !defined(__clang__)
+#if defined(__GNUC__) && !defined(__clang__)
 # pragma GCC push_options
 # pragma GCC optimize ("O2")
 # pragma GCC optimize ("no-tree-loop-distribute-patterns")
@@ -68,11 +68,11 @@ static constexpr auto PORT = 0x4444;
 
 #if defined (H3)
 static void timer_handler() {
-	if (!ltc::g_DisabledOutputs.bRtpMidi) {
+	if (ltc::Destination::IsEnabled(ltc::Destination::Output::RTPMIDI)) {
 		RtpMidi::Get()->SendRaw(midi::Types::CLOCK);
 	}
 
-	if (!ltc::g_DisabledOutputs.bMidi) {
+	if (ltc::Destination::IsEnabled(ltc::Destination::Output::MIDI)) {
 		Midi::Get()->SendRaw(midi::Types::CLOCK);
 	}
 }
@@ -80,7 +80,7 @@ static void timer_handler() {
 #endif
 
 void LtcMidiSystemRealtime::Start() {
-	m_nHandle = Network::Get()->Begin(udp::PORT, staticCallbackFunctionInput);
+	m_nHandle = Network::Get()->Begin(udp::PORT, StaticCallbackFunctionInput);
 	assert(m_nHandle != -1);
 }
 
@@ -90,7 +90,7 @@ void LtcMidiSystemRealtime::Stop() {
 }
 
 void LtcMidiSystemRealtime::SetBPM(uint32_t nBPM) {
-	if ((!ltc::g_DisabledOutputs.bRtpMidi) || (!ltc::g_DisabledOutputs.bMidi)) {
+	if (ltc::Destination::IsEnabled(ltc::Destination::Output::RTPMIDI) || ltc::Destination::IsEnabled(ltc::Destination::Output::MIDI)) {
 		if (nBPM != m_nBPMPrevious) {
 			m_nBPMPrevious = nBPM;
 

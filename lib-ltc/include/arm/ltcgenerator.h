@@ -2,7 +2,7 @@
  * @file ltcgenerator.h
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -66,7 +66,7 @@ public:
 
 	void Print();
 
-	void HandleRequest(char *pBuffer = nullptr, uint16_t nBufferLength = 0);
+	void HandleRequest(char *pBuffer = nullptr, uint32_t nBufferLength = 0);
 
 	void ActionStart(bool bDoReset = true);
 	void ActionStop();
@@ -107,7 +107,7 @@ private:
 		return nSeconds;
 	}
 
-	void static staticCallbackFunction(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
+	void static StaticCallbackFunction(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
 		s_pThis->Input(pBuffer, nSize, nFromIp, nFromPort);
 	}
 
@@ -117,6 +117,7 @@ private:
 	bool m_bSkipFree;
 	bool m_bIgnoreStart;
 	bool m_bIgnoreStop;
+	bool m_bDropFrame;
 	int32_t m_nStartSeconds;
 	int32_t m_nStopSeconds;
 

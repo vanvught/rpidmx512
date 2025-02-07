@@ -2,7 +2,7 @@
  * @file console.h
  *
  */
-/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,67 +26,18 @@
 #ifndef CONSOLE_H_
 #define CONSOLE_H_
 
-#ifdef __cplusplus
-# include <cstdint>
-# define RGB(r, g, b) static_cast<uint16_t>(((((r) & 0xFF) << 16) | (((g) & 0xFF) << 8) | (((b) & 0xFF))))
-#else
-# include <stdint.h>
-# define RGB(r, g, b) ((((uint32_t)(r) & 0xFF) << 16) | (((uint32_t)(g) & 0xFF) << 8) | (((uint32_t)(b) & 0xFF)))
-#endif
+#include <cstdint>
 
-#if defined (CONSOLE_NULL) || !defined (CONSOLE_FB)
-typedef enum {
-	CONSOLE_BLACK = 0,
-	CONSOLE_RED = 1,
-	CONSOLE_GREEN = 2,
-	CONSOLE_YELLOW = 3,
-	CONSOLE_BLUE = 4,
-	CONSOLE_MAGENTA = 5
-,	CONSOLE_CYAN = 6,
-	CONSOLE_WHITE = 7,
-	CONSOLE_DEFAULT = 9
-} _console_colors;
-#endif
+#define RGB(r, g, b) static_cast<uint16_t>(((((r) & 0xFF) << 16) | (((g) & 0xFF) << 8) | (((b) & 0xFF))))
 
 #if defined (CONSOLE_FB)
-# if defined (H3)
-#  include "h3/console_fb.h"
-# else
-#  include "rpi/console_fb.h"
-# endif
+# include "console/console_fb.h"
 #elif defined (CONSOLE_NULL)
-inline void console_init(void) {}
-inline void console_putc([[maybe_unused]] int i) {}
-inline void console_puts([[maybe_unused]] const char *p) {}
-inline void console_write([[maybe_unused]] const char *p, [[maybe_unused]] unsigned int i) {}
-inline void console_status([[maybe_unused]] uint32_t i, [[maybe_unused]] const char *p) {}
-extern "C" inline void console_error([[maybe_unused]] const char *p) {}
+# include "console/console_null.h"
+#elif defined (CONSOLE_I2C)
+# include "console/console_i2c.h"
 #else
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-extern void console_set_fg_color(uint16_t);
-extern void console_set_bg_color(uint16_t);
-
-#ifdef __cplusplus
-}
-#endif
-#endif
-
-#if !defined (CONSOLE_NULL)
-extern void console_init();
-#ifdef __cplusplus
-extern "C" {
-#endif
-extern void console_putc(int);
-extern void console_puts(const char*);
-extern void console_write(const char*, unsigned int);
-extern void console_status(uint32_t, const char *);
-extern void console_error(const char*);
-#ifdef __cplusplus
-}
-#endif
+# include "console/console_uart0.h"
 #endif
 
 #endif /* CONSOLE_H_ */

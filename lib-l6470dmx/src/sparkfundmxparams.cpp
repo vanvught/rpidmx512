@@ -64,7 +64,7 @@ void SparkFunDmxParams::Load() {
 	m_Params.nSetList = 0;
 
 #if !defined(DISABLE_FS)
-	ReadConfigFile configfile(SparkFunDmxParams::staticCallbackFunction, this);
+	ReadConfigFile configfile(SparkFunDmxParams::StaticCallbackFunction, this);
 
 	if (configfile.Read(SparkFunDmxParamsConst::FILE_NAME)) {
 		SparkFunDmxParamsStore::Update(&m_Params);
@@ -86,7 +86,7 @@ void SparkFunDmxParams::Load(const char *pBuffer, uint32_t nLength) {
 
 	m_Params.nSetList = 0;
 
-	ReadConfigFile config(SparkFunDmxParams::staticCallbackFunction, this);
+	ReadConfigFile config(SparkFunDmxParams::StaticCallbackFunction, this);
 
 	config.Read(pBuffer, nLength);
 
@@ -106,7 +106,7 @@ void SparkFunDmxParams::Load(uint32_t nMotorIndex) {
 
 	m_Params.nSetList = 0;
 
-	ReadConfigFile configfile(SparkFunDmxParams::staticCallbackFunction, this);
+	ReadConfigFile configfile(SparkFunDmxParams::StaticCallbackFunction, this);
 
 #if !defined(DISABLE_FS)
 	if (configfile.Read(m_aFileName)) {
@@ -129,7 +129,7 @@ void SparkFunDmxParams::Load(uint32_t nMotorIndex, const char *pBuffer, uint32_t
 
 	m_Params.nSetList = 0;
 
-	ReadConfigFile config(SparkFunDmxParams::staticCallbackFunction, this);
+	ReadConfigFile config(SparkFunDmxParams::StaticCallbackFunction, this);
 
 	config.Read(pBuffer, nLength);
 
@@ -280,7 +280,7 @@ void SparkFunDmxParams::Dump([[maybe_unused]] uint32_t nMotorIndex) {
 	printf(" %s=%d [%u]\n", SparkFunDmxParamsConst::BUSY_PIN, m_Params.nBusyPin, isMaskSet(sparkfundmxparams::Mask::BUSY_PIN));
 }
 
-void SparkFunDmxParams::staticCallbackFunction(void *p, const char *s) {
+void SparkFunDmxParams::StaticCallbackFunction(void *p, const char *s) {
 	assert(p != nullptr);
 	assert(s != nullptr);
 

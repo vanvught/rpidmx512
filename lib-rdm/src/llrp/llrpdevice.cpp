@@ -88,7 +88,7 @@ void LLRPDevice::HandleRequestMessage() {
 
 	// Root Layer PDU
 	pReply->Common.RootLayerPDU.FlagsLength[2] = 67;
-	Hardware::Get()->GetUuid(pReply->Common.RootLayerPDU.SenderCid);
+	hal::uuid_copy(pReply->Common.RootLayerPDU.SenderCid);
 	// LLRP PDU
 	pReply->Common.LlrpPDU.FlagsLength[2] = 44;
 	pReply->Common.LlrpPDU.Vector = __builtin_bswap32(VECTOR_LLRP_PROBE_REPLY);
@@ -136,7 +136,7 @@ void LLRPDevice::HandleRdmCommand() {
 
 	// Root Layer PDU
 	pRDMCommand->Common.RootLayerPDU.FlagsLength[2] = RDM_ROOT_LAYER_LENGTH(nMessageLength);
-	Hardware::Get()->GetUuid(pRDMCommand->Common.RootLayerPDU.SenderCid);
+	hal::uuid_copy(pRDMCommand->Common.RootLayerPDU.SenderCid);
 	// LLRP PDU
 	pRDMCommand->Common.LlrpPDU.FlagsLength[2] = RDM_LLRP_PDU_LENGHT(nMessageLength);
 	memcpy(pRDMCommand->Common.LlrpPDU.DestinationCid, DestinationCid, 16);

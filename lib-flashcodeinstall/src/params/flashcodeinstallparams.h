@@ -45,7 +45,7 @@ public:
 		return isMaskSet(FlashCodeInstallParamsMask::INSTALL_UIMAGE);
 	}
 
-	static void staticCallbackFunction(void *p, const char *s);
+	static void StaticCallbackFunction(void *p, const char *s);
 
 private:
 	void Dump();

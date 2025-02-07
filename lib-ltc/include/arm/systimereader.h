@@ -52,7 +52,8 @@ public:
 	}
 
 private:
-	void static staticCallbackFunction(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
+	void SetFps(uint8_t nFps);
+	void static StaticCallbackFunction(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
 		s_pThis->Input(pBuffer, nSize, nFromIp, nFromPort);
 	}
 
@@ -63,7 +64,6 @@ private:
 	uint32_t m_nBytesReceived { 0 };
 	char *m_pUdpBuffer { nullptr };
 	time_t m_nTimePrevious { 0 };
-	midi::Timecode m_MidiTimeCode;
 	bool m_bIsStarted { false };
 
 	static inline SystimeReader *s_pThis;

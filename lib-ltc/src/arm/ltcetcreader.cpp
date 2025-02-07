@@ -2,7 +2,7 @@
  * @file ltcetcreader.cpp
  *
  */
-/* Copyright (C) 2022-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2022-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,7 @@
 # undef NDEBUG
 #endif
 
-#if !defined(__clang__)
+#if defined(__GNUC__) && !defined(__clang__)
 # pragma GCC push_options
 # pragma GCC optimize ("O2")
 # pragma GCC optimize ("no-tree-loop-distribute-patterns")
@@ -84,18 +84,39 @@ void LtcEtcReader::Stop() {
 	DEBUG_EXIT
 }
 
-void LtcEtcReader::Handler(const midi::Timecode *pTimeCode) {
-	gv_ltc_nUpdates = gv_ltc_nUpdates + 1;
+#if defined(__GNUC__) && !defined(__clang__)
+# pragma GCC push_options
+# pragma GCC optimize ("O3")
+# pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#endif
 
-	if (!ltc::g_DisabledOutputs.bLtc) {
+static inline bool timecode_is_equal(const struct ltc::TimeCode *pLtcTimeCode) {
+	auto isEqual = false;
+	const auto *pSrc = reinterpret_cast<const uint8_t *>(pLtcTimeCode);
+	auto *pDst = reinterpret_cast<uint8_t *>(&g_ltc_LtcTimeCode);
+
+	for (uint32_t i = 0; i < sizeof (struct ltc::TimeCode); i++) {
+		isEqual |= (*pSrc == *pDst);
+		*pDst++ = *pSrc++;
+	}
+
+	return !isEqual;
+}
+
+void LtcEtcReader::Handler(const midi::Timecode *pTimeCode) {
+	m_nTimestamp = Hardware::Get()->Millis();
+
+	if (ltc::Destination::IsEnabled(ltc::Destination::Output::LTC)) {
 		LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct ltc::TimeCode *>(pTimeCode));
 	}
 
-	if (!ltc::g_DisabledOutputs.bArtNet) {
+	if (ltc::Destination::IsEnabled(ltc::Destination::Output::ARTNET)) {
 		ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct artnet::TimeCode *>(pTimeCode));
 	}
 
-	memcpy(&m_MidiTimeCode, pTimeCode, sizeof(struct midi::Timecode));
+	if (!timecode_is_equal(reinterpret_cast<const struct ltc::TimeCode *>(pTimeCode))) {
+		LtcOutputs::Get()->Update(const_cast<const struct ltc::TimeCode *>(&g_ltc_LtcTimeCode));
+	}
 
-	LtcOutputs::Get()->Update(reinterpret_cast<const struct ltc::TimeCode*>(pTimeCode));
+	gv_ltc_nUpdates = gv_ltc_nUpdates + 1;
 }

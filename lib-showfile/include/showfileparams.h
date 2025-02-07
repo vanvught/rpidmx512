@@ -85,7 +85,7 @@ public:
 		return isMaskSet(showfileparams::Mask::ARTNET_UNICAST_DISABLED);
 	}
 
-    static void staticCallbackFunction(void *p, const char *s);
+    static void StaticCallbackFunction(void *p, const char *s);
 
 private:
 	void Dump();

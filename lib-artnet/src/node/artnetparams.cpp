@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2016-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -101,7 +101,7 @@ bool ArtNetParams::Load() {
 	m_Params.nSetList = 0;
 
 #if !defined(DISABLE_FS)
-	ReadConfigFile configfile(ArtNetParams::staticCallbackFunction, this);
+	ReadConfigFile configfile(ArtNetParams::StaticCallbackFunction, this);
 
 	if (configfile.Read(ArtNetParamsConst::FILE_NAME)) {
 		ArtNetParamsStore::Update(&m_Params);
@@ -123,7 +123,7 @@ void ArtNetParams::Load(const char *pBuffer, uint32_t nLength) {
 
 	m_Params.nSetList = 0;
 
-	ReadConfigFile config(ArtNetParams::staticCallbackFunction, this);
+	ReadConfigFile config(ArtNetParams::StaticCallbackFunction, this);
 
 	config.Read(pBuffer, nLength);
 
@@ -508,7 +508,7 @@ void ArtNetParams::Set() {
 	DEBUG_EXIT
 }
 
-void ArtNetParams::staticCallbackFunction(void *p, const char *s) {
+void ArtNetParams::StaticCallbackFunction(void *p, const char *s) {
 	assert(p != nullptr);
 	assert(s != nullptr);
 

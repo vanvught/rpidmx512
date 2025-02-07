@@ -2,7 +2,7 @@
  * @file board_gd32f207c_eval.h
  *
  */
-/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,12 +28,12 @@
 
 #include "gd32.h"
 
-#define RCU_GPIOx			RCU_GPIOC
-#define GPIOx				GPIOC
-#define GPIO_PINx			(GPIO_PIN_6 | GPIO_PIN_7)
-#define GPIO_PIN_OFFSET		6U
+#define RCU_GPIOx				RCU_GPIOC
+#define GPIOx					GPIOC
+#define GPIO_PINx				(GPIO_PIN_6 | GPIO_PIN_7)
+#define GPIO_PIN_OFFSET			6U
 
-#define MASTER_TIMER_CLOCK	(APB2_CLOCK_FREQ)
+#define MASTER_TIMER_CLOCK		(APB2_CLOCK_FREQ)
 
 #define DEBUG_CS_RCU_GPIOx		RCU_GPIOC
 #define DEBUG_CS_GPIOx			GPIOC

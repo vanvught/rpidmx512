@@ -30,7 +30,7 @@
 # error
 #endif
 
-#if !defined(__clang__)
+#if defined(__GNUC__) && !defined(__clang__)
 # if defined (CONFIG_SPI_LCD_OPTIMIZE_O2) || defined (CONFIG_SPI_LCD_OPTIMIZE_O3)
 #  pragma GCC push_options
 #  if defined (CONFIG_SPI_LCD_OPTIMIZE_O2)
@@ -344,7 +344,7 @@ private:
 	static constexpr uint16_t COLOR_FOREGROUND = 0xFFE0;
 };
 
-#if !defined(__clang__)
+#if defined(__GNUC__) && !defined(__clang__)
 # if defined (CONFIG_SPI_LCD_OPTIMIZE_O2) || defined (CONFIG_SPI_LCD_OPTIMIZE_O3)
 #  pragma GCC pop_options
 # endif

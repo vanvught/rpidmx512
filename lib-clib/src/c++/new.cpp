@@ -2,7 +2,7 @@
  * @file new.cpp
  *
  */
-/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,11 +24,31 @@
  */
 
 #include <cstdlib>
+#include <cstddef>
 
-void *operator new(unsigned size) {
+/*
+ * Pre-C++14 and onward:
+ * These are the global operator new overloads for single objects (new) and arrays (new[]).
+ * They allocate memory from the heap using malloc.
+ * This implementation does NOT throw std::bad_alloc if malloc returns nullptr,
+ * which is common in embedded or standalone environments.
+ */
+
+void *operator new(std::size_t size) {
 	return malloc(size);
 }
 
-void *operator new[](unsigned size) {
+void *operator new[](std::size_t size) {
 	return malloc(size);
+}
+
+/*
+ * Introduced in C++17:
+ * Placement new overload allows constructing objects at a specific memory location.
+ * This overload simply returns the provided memory address (ptr).
+ * Placement new does not allocate memory.
+ */
+
+void *operator new([[maybe_unused]] std::size_t, void *ptr) noexcept {
+    return ptr;
 }

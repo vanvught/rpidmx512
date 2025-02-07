@@ -3,7 +3,7 @@
  * @file fb.cpp
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,10 +36,8 @@
 void h3_de2_init(struct display_timing *timing, uint32_t fbbase);
 #endif
 
-extern "C" {
 int uart0_printf(const char* fmt, ...);
 #define printf uart0_printf
-}
 
 volatile uint32_t fb_width;
 volatile uint32_t fb_height;

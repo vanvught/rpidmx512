@@ -26,7 +26,7 @@
 #ifndef FORMATS_SHOWFILEFORMATOLA_H_
 #define FORMATS_SHOWFILEFORMATOLA_H_
 
-#if !defined(__clang__)
+#if defined(__GNUC__) && !defined(__clang__)
 # pragma GCC push_options
 # pragma GCC optimize ("O2")
 #endif
@@ -304,7 +304,7 @@ private:
 	static ShowFileFormat *s_pThis;
 };
 
-#if !defined(__clang__)
+#if defined(__GNUC__) && !defined(__clang__)
 # pragma GCC pop_options
 #endif
 

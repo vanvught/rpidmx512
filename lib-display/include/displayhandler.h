@@ -32,8 +32,8 @@
 
 #include "hardware.h"
 
-namespace hardware {
-namespace ledblink {
+
+namespace hardware::ledblink {
 void display(const uint32_t nMode) {
 	if (Display::Get()->isDetected() ) {
 		char c;
@@ -65,7 +65,7 @@ void display(const uint32_t nMode) {
 		Display::Get()->PutChar(c);
 	}
 }
-}  // namespace ledblink
-}  // namespace hardware
+} // namespace hardware::ledblink
+
 
 #endif /* DISPLAYHANDLER_H_ */

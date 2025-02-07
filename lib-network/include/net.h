@@ -2,7 +2,7 @@
  * @file net.h
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,67 +28,45 @@
 
 #include <cstdint>
 
-#include "netif.h"
-#include "emac/phy.h"
-#include "net/dhcp.h"
-#include "net/protocol/dhcp.h"
-#if !defined(CONFIG_NET_APPS_NO_MDNS)
-# include "net/apps/mdns.h"
-#endif
-
-#include "debug.h"
+#include "net/netif.h"
 
 namespace net {
-void tcp_shutdown();
-void igmp_shutdown();
-}
+void net_set_primary_ip(const uint32_t nIp);
+inline uint32_t net_get_primary_ip() { return net::netif_ipaddr(); }
 
-namespace net {
-void net_init(net::Link link, ip4_addr_t ipaddr, ip4_addr_t netmask, ip4_addr_t gw, bool &bUseDhcp);
-void net_set_primary_ip(const ip4_addr_t ipaddr);
 void net_set_secondary_ip();
-void net_handle();
 
-inline void net_link_down() {
-#if !defined(CONFIG_NET_APPS_NO_MDNS)
-	mdns_send_announcement(0);
-#endif
-#if defined (ENABLE_HTTPD)
-	tcp_shutdown();
-#endif
-	igmp_shutdown();
-	dhcp_release_and_stop();
+void net_set_netmask(const uint32_t nNetmask);
+inline uint32_t net_get_netmask() { return net::netif_netmask(); }
+
+void net_set_gateway_ip(const uint32_t nNetmask);
+inline uint32_t net_get_gateway_ip() { return net::netif_gw(); }
+
+inline bool net_is_dhcp_capable() { return true; }
+inline bool net_is_dhcp_known() { return true; }
+void net_enable_dhcp();
+
+inline bool net_is_zeroconf_capable() { return true; }
+inline bool net_is_zeroconf_used() { return net::netif_autoip(); };
+void net_set_zeroconf();
+
+inline char net_get_addressing_mode() {
+	if (net::netif_autoip()) {
+		return  'Z';
+	} else if (net_is_dhcp_known()) {
+		if (net::netif_dhcp()) {
+			return 'D';
+		} else {
+			return 'S';
+		}
+	}
+
+	return 'U';
 }
 
-typedef void (*UdpCallbackFunctionPtr)(const uint8_t *, uint32_t, uint32_t, uint16_t);
-
-int32_t udp_begin(uint16_t, UdpCallbackFunctionPtr callback = nullptr);
-int32_t udp_end(uint16_t);
-uint32_t udp_recv1(const int32_t, uint8_t *, uint32_t, uint32_t *, uint16_t *);
-uint32_t udp_recv2(const int32_t, const uint8_t **, uint32_t *, uint16_t *);
-void udp_send(int32_t, const uint8_t *, uint32_t, uint32_t, uint16_t);
-void udp_send_timestamp(int32_t, const uint8_t *, uint32_t, uint32_t, uint16_t);
-
-void igmp_join(uint32_t);
-void igmp_leave(uint32_t);
-
-int32_t tcp_begin(const uint16_t);
-int32_t tcp_end(const int32_t);
-uint32_t tcp_read(const int32_t, const uint8_t **, uint32_t &);
-void tcp_write(const int32_t, const uint8_t *, uint32_t, const uint32_t);
-
-/**
- * Must be provided by the user application
- */
-void display_emac_config();
-void display_emac_start();
-void display_emac_status(const bool);
-void display_emac_shutdown();
-void display_ip();
-void display_netmask();
-void display_gateway();
-void display_hostname();
-void display_dhcp_status(net::dhcp::State);
+inline bool net_is_valid_ip(const uint32_t nIp) {
+	return (net::netif_ipaddr() & net::netif_netmask()) == (nIp & net::netif_netmask());
+}
 }  // namespace net
 
 #endif /* NET_H_ */

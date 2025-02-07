@@ -2,7 +2,7 @@
  * @file rdmdevice.cpp
  *
  */
-/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,7 @@
 #include "rdmconst.h"
 #include "rdm_e120.h"
 
+#include "net/ip4_address.h"
 #include "network.h"
 #include "hardware.h"
 
@@ -71,7 +72,7 @@ RDMDevice::RDMDevice() {
 	m_aUID[1] = RDMConst::MANUFACTURER_ID[1];
 
 #if defined (NO_EMAC) || !defined(CONFIG_RDMDEVICE_UUID_IP)
-	uint8_t aMacAddress[network::MAC_SIZE];
+	uint8_t aMacAddress[net::MAC_SIZE];
 	Network::Get()->MacAddressCopyTo(aMacAddress);
 
 	m_aUID[2] = aMacAddress[2];

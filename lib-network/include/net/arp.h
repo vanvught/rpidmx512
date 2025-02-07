@@ -1,8 +1,8 @@
 /**
- * @file arp_private.h
+ * @file arp.h
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@
 #ifndef ARP_PRIVATE_H_
 #define ARP_PRIVATE_H_
 
-#include "netif.h"
+#include "net/netif.h"
 #include "net/protocol/ip4.h"
 #include "net/protocol/arp.h"
 #include "net/protocol/udp.h"
@@ -39,7 +39,7 @@ enum class Flags {
 }  // namespace arp
 
 void arp_init();
-void arp_handle(struct t_arp *);
+void etharp_input(const struct t_arp *);
 void arp_send(struct t_udp *, const uint32_t, const uint32_t);
 #if defined CONFIG_NET_ENABLE_PTP
 void arp_send_timestamp(struct t_udp *, const uint32_t, const uint32_t);

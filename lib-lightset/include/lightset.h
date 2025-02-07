@@ -56,7 +56,7 @@ enum class PortDir {
 };
 
 enum class FailSafe {
-	HOLD, OFF, ON, PLAYBACK
+	HOLD, OFF, ON, PLAYBACK, RECORD
 };
 
 enum class OutputStyle {

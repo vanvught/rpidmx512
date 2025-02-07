@@ -169,18 +169,21 @@ void McpButtons::UpdateDisplays(const ltc::Source ltcSource) {
 
 	Display::Get()->TextStatus(LtcSourceConst::NAME[nSource]);
 
-	if (!ltc::g_DisabledOutputs.bMax7219) {
+//	if (!ltc::g_DisabledOutputs.bMax7219) {
+	if (ltc::Destination::IsEnabled(ltc::Destination::Output::MAX7219)) {
 		LtcDisplayMax7219::Get()->WriteChar(nSource);
 		return;
 	}
 #if !defined (CONFIG_LTC_DISABLE_WS28XX)
-	if (!ltc::g_DisabledOutputs.bWS28xx){
+//	if (!ltc::g_DisabledOutputs.bWS28xx){
+	if (ltc::Destination::IsEnabled(ltc::Destination::Output::WS28XX)) {
 		LtcDisplayRgb::Get()->WriteChar(nSource);
 		return;
 	}
 #endif
 #if !defined (CONFIG_LTC_DISABLE_RGB_PANEL)
-	if (!ltc::g_DisabledOutputs.bRgbPanel) {
+//	if (!ltc::g_DisabledOutputs.bRgbPanel) {
+	if (ltc::Destination::IsEnabled(ltc::Destination::Output::RGBPANEL)) {
 		LtcDisplayRgb::Get()->ShowSource(ltcSource);
 		return;
 	}
@@ -378,18 +381,14 @@ void McpButtons::HandleRunActionSelect() {
 	}
 
 	if (m_tRunStatus == RunStatus::REBOOT) {
-		while (ConfigStore::Get()->Flash())
-			;
-
-		printf("Reboot ...\n");
-
 		m_I2C.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(0xFF));
 
+		Display::Get()->SetSleep(false);
 		Display::Get()->Cls();
 		Display::Get()->TextStatus("Reboot ...");
 
 		Hardware::Get()->Reboot();
-
+		__builtin_unreachable() ;
 		return;
 	}
 

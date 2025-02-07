@@ -2,7 +2,7 @@
  * @file rtpmidireader.cpp
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,7 @@
 # undef NDEBUG
 #endif
 
-#if !defined(__clang__)
+#if defined(__GNUC__) && !defined(__clang__)
 # pragma GCC push_options
 # pragma GCC optimize ("O2")
 # pragma GCC optimize ("no-tree-loop-distribute-patterns")
@@ -73,7 +73,6 @@ void RtpMidiReader::Start() {
 	irq_handler_init();
 #elif defined (GD32)
 	platform::ltc::timer11_config();
-	TIMER_CNT(TIMER11) = 0;
 #endif
 
 	LtcOutputs::Get()->Init();
@@ -87,6 +86,12 @@ void RtpMidiReader::Stop() {
 #elif defined (GD32)
 #endif
 }
+
+#if defined(__GNUC__) && !defined(__clang__)
+# pragma GCC push_options
+# pragma GCC optimize ("O3")
+# pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#endif
 
 void RtpMidiReader::MidiMessage(const struct midi::Message *ptMidiMessage) {
 	switch (static_cast<midi::Types>(ptMidiMessage->tType)) {
@@ -168,7 +173,7 @@ void RtpMidiReader::HandleMtcQf(const struct midi::Message *ptMidiMessage) {
 		H3_TIMER->TMR0_INTV = TimeCodeConst::TMR_INTV[m_LtcTimeCode.nType];
 		H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
 #elif defined (GD32)
-		TIMER_CNT(TIMER11) = 0;
+		platform::ltc::timer11_set_type(m_LtcTimeCode.nType);
 #endif
 		gv_ltc_bTimeCodeAvailable = false;
 		gv_ltc_nTimeCodeCounter = 0;
@@ -178,19 +183,21 @@ void RtpMidiReader::HandleMtcQf(const struct midi::Message *ptMidiMessage) {
 }
 
 void RtpMidiReader::Update() {
-	if (!ltc::g_DisabledOutputs.bLtc) {
+	if (ltc::Destination::IsEnabled(ltc::Destination::Output::LTC)) {
 		LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct ltc::TimeCode*>(&m_LtcTimeCode));
 	}
 
-	if (!ltc::g_DisabledOutputs.bArtNet) {
+	if (ltc::Destination::IsEnabled(ltc::Destination::Output::ARTNET)) {
 		ArtNetNode::Get()->SendTimeCode(reinterpret_cast<struct artnet::TimeCode*>(&m_LtcTimeCode));
 	}
 
-	if (!ltc::g_DisabledOutputs.bEtc) {
+	if (ltc::Destination::IsEnabled(ltc::Destination::Output::ETC)) {
 		LtcEtc::Get()->Send(reinterpret_cast<const midi::Timecode *>(&m_LtcTimeCode));
 	}
 
-	LtcOutputs::Get()->Update(reinterpret_cast<const struct ltc::TimeCode*>(&m_LtcTimeCode));
+	memcpy(&g_ltc_LtcTimeCode, &m_LtcTimeCode, sizeof(struct midi::Timecode));
+
+	LtcOutputs::Get()->Update(reinterpret_cast<const struct ltc::TimeCode*>(&g_ltc_LtcTimeCode));
 
 	gv_ltc_nUpdates = gv_ltc_nUpdates + 1;
 }
@@ -258,12 +265,10 @@ void RtpMidiReader::Run() {
  			H3_TIMER->TMR0_INTV = TimeCodeConst::TMR_INTV[m_LtcTimeCode.nType];
  			H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
 #elif defined (GD32)
- 			TIMER_CNT(TIMER11) = 0;
+ 			platform::ltc::timer11_set_type(m_LtcTimeCode.nType);
 #endif
  		}
 	}
-
-	LtcOutputs::Get()->UpdateMidiQuarterFrameMessage(reinterpret_cast<const struct ltc::TimeCode*>(&m_LtcTimeCode));
 
 	__DMB();
 	if (gv_ltc_nUpdatesPerSecond != 0) {

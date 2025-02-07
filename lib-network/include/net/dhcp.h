@@ -2,7 +2,7 @@
  * @file dhcp.h
  *
  */
-/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,9 +31,9 @@
 
 #include <cstdio>
 
-#include "netif.h"
-#include "acd.h"
-#include "ip4_address.h"
+#include "net/netif.h"
+#include "net/acd.h"
+#include "net/ip4_address.h"
 #include "net/protocol/dhcp.h"
 #include "net/protocol/iana.h"
 
@@ -98,27 +98,8 @@ void dhcp_release_and_stop();
 void dhcp_inform();
 void dhcp_network_changed_link_up();
 
-uint32_t udp_recv2(int, const uint8_t **, uint32_t *, uint16_t *);
 void dhcp_process(const dhcp::Message *const, const uint32_t nSize);
-
 void dhcp_input(const uint8_t *, uint32_t, uint32_t, uint16_t);
-
-inline void dhcp_run() {
-	auto *dhcp = reinterpret_cast<struct dhcp::Dhcp *>(globals::netif_default.dhcp);
-	if (dhcp == nullptr) {
-		return;
-	}
-
-	uint8_t *pResponse;
-	uint32_t nFromIp;
-	uint16_t nFromPort;
-
-	const auto nSize = udp_recv2(dhcp->nHandle, const_cast<const uint8_t **>(&pResponse), &nFromIp, &nFromPort);
-
-	if (__builtin_expect((nSize > 0), 0)) {
-		dhcp_input(pResponse, nSize, nFromIp, nFromPort);
-	}
-}
 
 inline bool dhcp_supplied_address() {
 	const auto *dhcp = reinterpret_cast<struct dhcp::Dhcp *>(globals::netif_default.dhcp);

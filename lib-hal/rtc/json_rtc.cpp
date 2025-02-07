@@ -40,7 +40,7 @@
 static constexpr auto iso8601FormatSize = sizeof("YYYY-MM-DDTHH:MM:SS");
 static char iso8601Format[iso8601FormatSize];
 
-static void staticCallbackFunction([[maybe_unused]] void *p, const char *s) {
+static void StaticCallbackFunction([[maybe_unused]] void *p, const char *s) {
 	assert(p == nullptr);
 	assert(s != nullptr);
 
@@ -136,7 +136,7 @@ void json_set_rtc(const char *pBuffer, const uint32_t nBufferSize) {
 
 	iso8601Format[0] = 0;
 
-	ReadConfigFile config(staticCallbackFunction, nullptr);
+	ReadConfigFile config(StaticCallbackFunction, nullptr);
 	config.Read(pBuffer, nBufferSize);
 
 	debug_dump(iso8601Format, static_cast<uint16_t>(sizeof(iso8601Format)));

@@ -27,6 +27,7 @@
 #define HTTPD_HTTPDHANDLEREQUEST_H_
 
 #include <cstdint>
+#include <new>
 
 #include "http.h"
 #include "net/protocol/tcp.h"
@@ -42,7 +43,13 @@ static constexpr uint32_t BUFSIZE = HTTPD_CONTENT_SIZE;
 
 class HttpDeamonHandleRequest {
 public:
-	HttpDeamonHandleRequest(uint32_t nConnectionHandle, int32_t nHandle) : m_nConnectionHandle(nConnectionHandle), m_nHandle(nHandle) {
+    HttpDeamonHandleRequest() : m_nConnectionHandle(0), m_nHandle(-1) {
+		DEBUG_ENTRY
+		DEBUG_EXIT
+
+    }
+
+    HttpDeamonHandleRequest(uint32_t nConnectionHandle, int32_t nHandle) : m_nConnectionHandle(nConnectionHandle), m_nHandle(nHandle) {
 		DEBUG_ENTRY
 		DEBUG_PRINTF("[%u] m_nConnectionHandle=%u, m_nHandle=%d", httpd::BUFSIZE, m_nConnectionHandle, m_nHandle);
 		DEBUG_EXIT
@@ -58,6 +65,7 @@ private:
 	http::Status HandleGetTxt();
 	http::Status HandlePost(const bool hasDataOnly);
 	http::Status HandleDelete(const bool hasDataOnly);
+	http::Status HandlePostJSON();
 
 private:
 	uint32_t m_nConnectionHandle;
@@ -69,16 +77,18 @@ private:
 
 	char *m_pUri { nullptr };
 	char *m_pFileData { nullptr };
-	const char *m_pContent { nullptr };
+	char *m_pFirmwareFilename { nullptr };
 	char *m_pReceiveBuffer { nullptr };
+	const char *m_pContent { nullptr };
 
 	http::Status m_Status { http::Status::UNKNOWN_ERROR };
 	http::RequestMethod m_RequestMethod { http::RequestMethod::UNKNOWN };
 	http::contentTypes m_RequestContentType { http::contentTypes::NOT_DEFINED };
 
-	bool m_IsAction { false };
+	bool m_isAction { false };
 
-	static char m_DynamicContent[httpd::BUFSIZE];
+
+	char m_DynamicContent[httpd::BUFSIZE];
 };
 
 

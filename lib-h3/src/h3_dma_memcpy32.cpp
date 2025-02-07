@@ -7,7 +7,7 @@
  * using the DMA hardware on the Allwinner H3 platform.
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,10 +28,10 @@
  * THE SOFTWARE.
  */
 
-#if !defined(__clang__)
+#if defined(__GNUC__) && !defined(__clang__)
 # pragma GCC push_options
 # pragma GCC optimize ("O2")
-# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Warray-bounds"
 #endif
 
 #include <cstdint>
@@ -77,6 +77,8 @@ static struct dma_memory *p_dma = reinterpret_cast<struct dma_memory *>(H3_SRAM_
  * @note The configuration is stored in the `lli` structure.
  */
 void memcpy32_init() {
+	assert(p_dma != nullptr);
+
 	p_dma->lli.cfg = DMA_CHAN_CFG_SRC_LINEAR_MODE | DMA_CHAN_CFG_SRC_DRQ(DRQSRC_SRAM) | DMA_CHAN_CFG_SRC_WIDTH(0x10) | DMA_CHAN_CFG_SRC_BURST(3)
 				   | DMA_CHAN_CFG_DST_LINEAR_MODE | DMA_CHAN_CFG_DST_DRQ(DRQDST_SDRAM) | DMA_CHAN_CFG_DST_WIDTH(0x10) | DMA_CHAN_CFG_DST_BURST(3);
 	p_dma->lli.para = DMA_NORMAL_WAIT;

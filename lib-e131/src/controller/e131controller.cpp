@@ -68,7 +68,7 @@ E131Controller::E131Controller() {
 	snprintf(aSourceName, e131::SOURCE_NAME_LENGTH, "%.48s %s", Network::Get()->GetHostName(), Hardware::Get()->GetBoardName(nLength));
 	SetSourceName(aSourceName);
 
-	Hardware::Get()->GetUuid(m_Cid);
+	hal::uuid_copy(m_Cid);
 
 	for (uint32_t nIndex = 0; nIndex < sizeof(s_SequenceNumbers) / sizeof(s_SequenceNumbers[0]); nIndex++) {
 		memset(&s_SequenceNumbers[nIndex], 0, sizeof(s_SequenceNumbers[0]));
@@ -76,7 +76,7 @@ E131Controller::E131Controller() {
 
 	SetSynchronizationAddress();
 
-	const auto nIpMulticast = network::convert_to_uint(239, 255, 0, 0);
+	const auto nIpMulticast = net::convert_to_uint(239, 255, 0, 0);
 	m_DiscoveryIpAddress = nIpMulticast | ((universe::DISCOVERY & static_cast<uint32_t>(0xFF)) << 24) | ((universe::DISCOVERY & 0xFF00) << 8);
 
 	// TE131DataPacket
@@ -127,7 +127,7 @@ void E131Controller::Start() {
 	FillDiscoveryPacket();
 	FillSynchronizationPacket();
 
-	m_timerHandleSendDiscoveryPacket = SoftwareTimerAdd(e131::UNIVERSE_DISCOVERY_INTERVAL_SECONDS * 1000U, staticCallbackFunctionSendDiscoveryPacket);
+	m_timerHandleSendDiscoveryPacket = SoftwareTimerAdd(e131::UNIVERSE_DISCOVERY_INTERVAL_SECONDS * 1000U, StaticCallbackFunctionSendDiscoveryPacket);
 	assert(m_timerHandleSendDiscoveryPacket >= 0);
 
 	DEBUG_EXIT

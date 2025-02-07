@@ -31,7 +31,7 @@
 # undef NDEBUG
 #endif
 
-#if !defined(__clang__)
+#if defined(__GNUC__) && !defined(__clang__)
 # pragma GCC push_options
 # pragma GCC optimize ("O2")
 # pragma GCC optimize ("no-tree-loop-distribute-patterns")
@@ -113,6 +113,11 @@ static void timeout_timer([[maybe_unused]] TimerHandle_t nHandle) {
 	}
 }
 
+typedef union pcast32 {
+	uint32_t u32;
+	uint8_t u8[4];
+} _pcast32;
+
 AppleMidi::AppleMidi() {
 	DEBUG_ENTRY
 	assert(s_pThis == nullptr);
@@ -120,6 +125,12 @@ AppleMidi::AppleMidi() {
 
 	m_ExchangePacketReply.nSignature = SIGNATURE;
 	m_ExchangePacketReply.nProtocolVersion = __builtin_bswap32(applemidi::VERSION);
+
+	uint8_t macAddress[net::MAC_SIZE];
+	Network::Get()->MacAddressCopyTo(macAddress);
+	_pcast32 cast32;
+	memcpy(cast32.u8, &macAddress[2], 4);
+	m_nSSRC = cast32.u32;
 
 	SetSessionName(Network::Get()->GetHostName());
 

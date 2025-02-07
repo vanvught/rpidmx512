@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -105,30 +105,58 @@
 # include "shell/shell.h"
 #endif
 
+#include "net/protocol/ntp.h"
+
+static ltc::Source ltcSource;
+
+namespace ntpclient {
+void display_status(const ::ntp::Status status) {
+	if (ltcSource != ltc::Source::SYSTIME) {
+		return;
+	}
+
+	switch (status) {
+	case ::ntp::Status::STOPPED:
+		Display::Get()->TextStatus("No NTP Client");
+		break;
+	case ::ntp::Status::IDLE:
+		LtcOutputs::Get()->ResetTimeCodeTypePrevious();
+		Display::Get()->TextStatus("NTP Client");
+		break;
+	case ::ntp::Status::LOCKED:
+		Display::Get()->TextStatus("NTP Client LOCKED");
+		break;
+	case ::ntp::Status::FAILED:
+		Display::Get()->TextStatus("Error: NTP");
+		break;
+	default:
+		break;
+	}
+}
+}  // namespace ntpclient
+
 namespace hal {
 void reboot_handler() {
-	//	switch (ltcSource) {
-	//	case ::ltc::Source::TCNET:
-	//		TCNet::Get()->Stop();
-	//		break;
-	//	default:
-	//		break;
-	//	}
+	switch (ltcSource) {
+	case ::ltc::Source::TCNET:
+		TCNet::Get()->Stop();
+		break;
+	default:
+		break;
+	}
 
-	if (!ltc::g_DisabledOutputs.bMax7219) {
+//	if (!ltc::g_DisabledOutputs.bMax7219) {
+	if (ltc::Destination::IsEnabled(ltc::Destination::Output::MAX7219)) {
 		LtcDisplayMax7219::Get()->Init(2); // TODO WriteChar
 	}
 #if !defined (CONFIG_LTC_DISABLE_WS28XX)
-	if ((!ltc::g_DisabledOutputs.bWS28xx) || (!ltc::g_DisabledOutputs.bRgbPanel)) {
+//	if ((!ltc::g_DisabledOutputs.bWS28xx) || (!ltc::g_DisabledOutputs.bRgbPanel)) {
+	if (ltc::Destination::IsEnabled(ltc::Destination::Output::WS28XX) || ltc::Destination::IsEnabled(ltc::Destination::Output::RGBPANEL)) {
 		LtcDisplayRgb::Get()->WriteChar('-');
 	}
 #endif
 	if (!RemoteConfig::Get()->IsReboot()) {
 		Display::Get()->SetSleep(false);
-
-		while (ConfigStore::Get()->Flash())
-			;
-
 		Display::Get()->Cls();
 		Display::Get()->TextStatus("Rebooting ...");
 	}
@@ -141,7 +169,7 @@ void h3_cpu_off(uint32_t);
 }
 #endif
 
-void static staticCallbackFunction([[maybe_unused]] const struct artnet::TimeCode *pTimeCode) {}
+void static StaticCallbackFunction([[maybe_unused]] const struct artnet::TimeCode *pTimeCode) {}
 
 int main() {
 	Hardware hw;
@@ -176,7 +204,7 @@ int main() {
 	SystimeReader sysTimeReader(ltcParams.GetFps(), ltcParams.GetUtcOffset());
 	LtcEtcReader ltcEtcReader;
 
-	ltc::Source ltcSource = ltcParams.GetSource();
+	ltcSource = ltcParams.GetSource();
 
 	LtcDisplayParams ltcDisplayParams;
 
@@ -211,17 +239,18 @@ int main() {
 
 	LtcOutputs ltcOutputs(ltcSource, ltcParams.IsShowSysTime());
 
-	if (!ltc::g_DisabledOutputs.bMax7219) {
-		DEBUG_PUTS("");
+//	if (!ltc::g_DisabledOutputs.bMax7219) {
+	if (ltc::Destination::IsEnabled(ltc::Destination::Output::MAX7219)) {
 		ltcDdisplayMax7219.Init(ltcDisplayParams.GetMax7219Intensity());
 		ltcDdisplayMax7219.Print();
 	}
 
 #if !defined (CONFIG_LTC_DISABLE_WS28XX)
-	if ((!ltc::g_DisabledOutputs.bWS28xx) || (!ltc::g_DisabledOutputs.bRgbPanel)) {
+	if (ltc::Destination::IsEnabled(ltc::Destination::Output::WS28XX) || ltc::Destination::IsEnabled(ltc::Destination::Output::RGBPANEL)) {
 		ltcDisplayParams.Set(&ltcDisplayRgb);
 
-		if (!ltc::g_DisabledOutputs.bRgbPanel) {
+//		if (!ltc::g_DisabledOutputs.bRgbPanel) {
+		if (ltc::Destination::IsEnabled(ltc::Destination::Output::RGBPANEL)) {
 			ltcDisplayRgb.Init();
 
 			char aInfoMessage[8 + 1];
@@ -241,7 +270,8 @@ int main() {
 #endif
 
 #if !defined (CONFIG_LTC_DISABLE_RGB_PANEL)
-	if (ltc::g_DisabledOutputs.bRgbPanel) {
+//	if (ltc::g_DisabledOutputs.bRgbPanel) {
+	if (ltc::Destination::IsEnabled(ltc::Destination::Output::RGBPANEL)) {
 		for (uint32_t nCpuNumber = 1; nCpuNumber < 4; nCpuNumber++) {
 			h3_cpu_off(nCpuNumber);
 		}
@@ -261,10 +291,10 @@ int main() {
 	 * Art-Net
 	 */
 
-	const auto bRunArtNet = ((ltcSource == ltc::Source::ARTNET) || (!ltc::g_DisabledOutputs.bArtNet));
+	const auto bRunArtNet = ((ltcSource == ltc::Source::ARTNET) || ltc::Destination::IsEnabled(ltc::Destination::Output::ARTNET));
 
 	ArtNetNode node;
-	node.SetArtTimeCodeCallbackFunction(staticCallbackFunction);
+	node.SetArtTimeCodeCallbackFunction(StaticCallbackFunction);
 
 	if (bRunArtNet) {
 		ArtNetParams artnetparams;
@@ -274,7 +304,7 @@ int main() {
 		node.SetShortName(0, "LTC SMPTE Node");
 
 		if (ltcSource == ltc::Source::ARTNET) {
-			node.SetArtTimeCodeCallbackFunction(ArtNetReader::staticCallbackFunction);
+			node.SetArtTimeCodeCallbackFunction(ArtNetReader::StaticCallbackFunction);
 		}
 
 		node.SetTimeCodeIp(ltcParams.GetTimecodeIp());
@@ -302,7 +332,7 @@ int main() {
 		tcnetparams.Load();
 		tcnetparams.Set(&tcnet);
 
-		tcnet.SetArtTimeCodeCallbackFunction(TCNetReader::staticCallbackFunctionHandler);
+		tcnet.SetArtTimeCodeCallbackFunction(TCNetReader::StaticCallbackFunctionHandler);
 		tcnet.Start();
 		tcnet.Print();
 	}
@@ -313,11 +343,11 @@ int main() {
 
 	Midi midi;
 
-	if ((ltcSource != ltc::Source::MIDI) && (!ltc::g_DisabledOutputs.bMidi)) {
+	if ((ltcSource != ltc::Source::MIDI) && ltc::Destination::IsEnabled(ltc::Destination::Output::MIDI)) {
 		midi.Init(midi::Direction::OUTPUT);
 	}
 
-	if ((ltcSource == ltc::Source::MIDI) || (!ltc::g_DisabledOutputs.bMidi)) {
+	if ((ltcSource == ltc::Source::MIDI) || ltc::Destination::IsEnabled(ltc::Destination::Output::MIDI)) {
 		midi.Print();
 	}
 
@@ -325,11 +355,9 @@ int main() {
 	 * RTP-MIDI
 	 */
 
-	const auto bRunRtpMidi = ((ltcSource == ltc::Source::APPLEMIDI) || (!ltc::g_DisabledOutputs.bRtpMidi));
-
 	RtpMidi rtpMidi;
 
-	if (bRunRtpMidi) {
+	if ((ltcSource == ltc::Source::APPLEMIDI) || ltc::Destination::IsEnabled(ltc::Destination::Output::RTPMIDI)) {
 		if (ltcSource == ltc::Source::APPLEMIDI) {
 			rtpMidi.SetHandler(&rtpMidiReader);
 		}
@@ -342,11 +370,9 @@ int main() {
 	 * ETC
 	 */
 
-	const auto bRunLtcEtc = (ltcSource == ltc::Source::ETC);
-
 	LtcEtc ltcEtc;
 
-	if (bRunLtcEtc || (!ltc::g_DisabledOutputs.bEtc)) {
+	if ((ltcSource == ltc::Source::ETC) || ltc::Destination::IsEnabled(ltc::Destination::Output::ETC)) {
 		LtcEtcParams ltcEtcParams;
 
 		ltcEtcParams.Load();
@@ -366,7 +392,7 @@ int main() {
 
 	LtcSender ltcSender(ltcParams.GetVolume());
 
-	if ((ltcSource != ltc::Source::LTC) && (!ltc::g_DisabledOutputs.bLtc)) {
+	if ((ltcSource != ltc::Source::LTC) && ltc::Destination::IsEnabled(ltc::Destination::Output::LTC)) {
 		ltcSender.Start();
 	}
 
@@ -403,7 +429,7 @@ int main() {
 		gpsParams.Load();
 	}
 
-	const auto bRunGpsTimeClient = (gpsParams.IsEnabled() && (ltcSource == ltc::Source::SYSTIME) && ltc::g_DisabledOutputs.bRgbPanel);
+	const auto bRunGpsTimeClient = (gpsParams.IsEnabled() && (ltcSource == ltc::Source::SYSTIME) && ltc::Destination::IsDisabled(ltc::Destination::Output::RGBPANEL));
 	const auto bGpsStart = bRunGpsTimeClient && ltcParams.IsGpsStart();
 
 	GPSTimeClient gpsTimeClient(gpsParams.GetUtcOffset(), gpsParams.GetModule());
@@ -449,7 +475,7 @@ int main() {
 	 * AND when MIDI output is NOT disabled OR the RTP-MIDI is NOT disabled.
 	 */
 
-	const auto bRunMidiSystemRealtime = (ltcSource != ltc::Source::MIDI) && (ltcSource != ltc::Source::APPLEMIDI) && ((!ltc::g_DisabledOutputs.bRtpMidi) || (!ltc::g_DisabledOutputs.bMidi));
+	const auto bRunMidiSystemRealtime = (ltcSource != ltc::Source::MIDI) && (ltcSource != ltc::Source::APPLEMIDI) && (ltc::Destination::IsEnabled(ltc::Destination::Output::RTPMIDI) || ltc::Destination::IsEnabled(ltc::Destination::Output::MIDI));
 
 	if (bRunMidiSystemRealtime) {
 		ltcMidiSystemRealtime.Start();
@@ -498,7 +524,7 @@ int main() {
 	ltc::source::show(ltcSource, bRunGpsTimeClient);
 
 #if !defined (CONFIG_LTC_DISABLE_RGB_PANEL)
-	if (!ltc::g_DisabledOutputs.bRgbPanel) {
+	if (ltc::Destination::IsEnabled(ltc::Destination::Output::RGBPANEL)) {
 		ltcDisplayRgb.ShowSource(ltcSource);
 	}
 #endif
@@ -565,7 +591,7 @@ int main() {
 			tcnet.Run();
 		}
 
-		if (ltc::g_DisabledOutputs.bOled) {
+		if (ltc::Destination::IsEnabled(ltc::Destination::Output::DISPLAY_OLED)) {
 			display.Run();
 		}
 
@@ -574,8 +600,6 @@ int main() {
 		}
 
 		hw.Run();
-		remoteConfig.Run();
-		configStore.Flash();
 #if defined(ENABLE_SHELL)
 		shell.Run();
 #endif

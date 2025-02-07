@@ -88,7 +88,7 @@ int main() {
 
 	TimeCode timecode;
 	timecode.Start();
-	node.SetArtTimeCodeCallbackFunction(TimeCode::staticCallbackFunction);
+	node.SetArtTimeCodeCallbackFunction(TimeCode::StaticCallbackFunction);
 
 #if defined (NODE_SHOWFILE)
 	ShowFile showFile;
@@ -146,8 +146,6 @@ int main() {
 #if defined (NODE_SHOWFILE)
 		showFile.Run();
 #endif
-		remoteConfig.Run();
-		configStore.Flash();
 		showSystime.Run();
 		display.Run();
 		hw.Run();

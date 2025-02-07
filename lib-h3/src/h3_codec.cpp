@@ -27,7 +27,7 @@
  * THE SOFTWARE.
  */
 
-#if !defined(__clang__)
+#if defined(__GNUC__) && !defined(__clang__)
 # if __GNUC__ > 8
 #  pragma GCC target ("general-regs-only")
 # endif
@@ -593,7 +593,7 @@ void h3_codec_set_buffer_length(uint32_t length) {
 	__enable_fiq();
 }
 
-#if !defined(__clang__)
+#if defined(__GNUC__) && !defined(__clang__)
 # pragma GCC push_options
 # pragma GCC optimize ("O3")
 #endif

@@ -28,8 +28,8 @@
 #include "h3_dma.h"
 #include "h3.h"
 
-extern void uart0_puts(const char *);
-extern int uart0_printf(const char* fmt, ...);
+void uart0_puts(const char *);
+int uart0_printf(const char* fmt, ...);
 
 void __attribute__((cold)) h3_dma_dump_lli(const struct sunxi_dma_lli *lli) {
 	uart0_printf("DMA lli %p:\n", (void *)lli);

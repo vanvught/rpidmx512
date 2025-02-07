@@ -2,7 +2,7 @@
  * @file storedevice.cpp
  *
  */
-/* Copyright (C) 2022-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -179,7 +179,7 @@ bool StoreDevice::Erase(uint32_t nOffset, uint32_t nLength, storedevice::result&
 
 bool StoreDevice::Write(uint32_t nOffset, uint32_t nLength, const uint8_t *pBuffer, storedevice::result& nResult) {
 	DEBUG_ENTRY
-	DEBUG_PRINTF("nOffset=%u, nLength=%u", nOffset, nLength);
+	DEBUG_PRINTF("s_State=%u, nOffset=%u, nLength=%u [%u]", static_cast<unsigned int>(s_State), nOffset, nLength, s_nIndex);
 	assert(s_State != State::ERROR);
 	assert(pFile != nullptr);
 
@@ -221,7 +221,6 @@ bool StoreDevice::Write(uint32_t nOffset, uint32_t nLength, const uint8_t *pBuff
 				perror("fflush");
 			}
 
-			sync();
 			DEBUG_EXIT
 			return true;
 		}

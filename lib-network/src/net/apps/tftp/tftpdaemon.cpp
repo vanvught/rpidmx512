@@ -134,7 +134,7 @@ void TFTPDaemon::Init() {
 		m_nIdx = -1;
 	}
 
-	m_nIdx = Network::Get()->Begin(net::iana::IANA_PORT_TFTP, TFTPDaemon::staticCallbackFunction);
+	m_nIdx = Network::Get()->Begin(net::iana::IANA_PORT_TFTP, TFTPDaemon::StaticCallbackFunction);
 	DEBUG_PRINTF("m_nIdx=%d", m_nIdx);
 
 	m_nFromPort = net::iana::IANA_PORT_TFTP;
@@ -217,7 +217,7 @@ void TFTPDaemon::HandleRequest() {
 				m_nState = TFTPState::WAITING_RQ;
 			} else {
 				Network::Get()->End(net::iana::IANA_PORT_TFTP);
-				m_nIdx = Network::Get()->Begin(m_nFromPort, TFTPDaemon::staticCallbackFunction);
+				m_nIdx = Network::Get()->Begin(m_nFromPort, TFTPDaemon::StaticCallbackFunction);
 				m_nState = TFTPState::RRQ_SEND_PACKET;
 				DoRead();
 			}
@@ -228,7 +228,7 @@ void TFTPDaemon::HandleRequest() {
 				m_nState = TFTPState::WAITING_RQ;
 			} else {
 				Network::Get()->End(net::iana::IANA_PORT_TFTP);
-				m_nIdx = Network::Get()->Begin(m_nFromPort, TFTPDaemon::staticCallbackFunction);
+				m_nIdx = Network::Get()->Begin(m_nFromPort, TFTPDaemon::StaticCallbackFunction);
 				m_nState = TFTPState::WRQ_SEND_ACK;
 				DoWriteAck();
 			}

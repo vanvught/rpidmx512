@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#if !defined(__clang__)	// Needed for compiling on MacOS
+#if defined(__GNUC__) && !defined(__clang__)	
 # pragma GCC push_options
 # pragma GCC optimize ("Os")
 #endif
@@ -50,7 +50,7 @@ FotaParams::FotaParams(FotaParamsStore *pFotaParamsStore): m_pFotaParamsStore(pF
 bool FotaParams::Load() {
 	m_tFotaParams.nSetList = 0;
 
-	ReadConfigFile configfile(FotaParams::staticCallbackFunction, this);
+	ReadConfigFile configfile(FotaParams::StaticCallbackFunction, this);
 
 	if (configfile.Read(PARAMS_FILE_NAME)) {
 		// There is a configuration file
@@ -77,7 +77,7 @@ void FotaParams::Load(const char *pBuffer, uint32_t nLength) {
 
 	m_tFotaParams.nSetList = 0;
 
-	ReadConfigFile config(FotaParams::staticCallbackFunction, this);
+	ReadConfigFile config(FotaParams::StaticCallbackFunction, this);
 
 	config.Read(pBuffer, nLength);
 
@@ -96,7 +96,7 @@ void FotaParams::callbackFunction(const char *pLine) {
 	}
 }
 
-void FotaParams::staticCallbackFunction(void *p, const char *s) {
+void FotaParams::StaticCallbackFunction(void *p, const char *s) {
 	assert(p != nullptr);
 	assert(s != nullptr);
 

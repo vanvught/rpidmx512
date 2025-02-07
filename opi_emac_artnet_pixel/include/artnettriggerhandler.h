@@ -44,12 +44,12 @@ public:
 		assert(s_pThis == nullptr);
 		s_pThis = this;
 
-		ArtNetNode::Get()->SetArtTriggerCallbackFunctionPtr(staticCallbackFunction);
+		ArtNetNode::Get()->SetArtTriggerCallbackFunctionPtr(StaticCallbackFunction);
 	}
 
 	~ArtNetTriggerHandler() = default;
 
-	void static staticCallbackFunction(const ArtNetTrigger *pArtNetTrigger) {
+	void static StaticCallbackFunction(const ArtNetTrigger *pArtNetTrigger) {
 		assert(s_pThis != nullptr);
 		s_pThis->Handler(pArtNetTrigger);
 	}

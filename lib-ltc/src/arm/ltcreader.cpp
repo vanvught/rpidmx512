@@ -2,7 +2,7 @@
  * @file ltcreader.cpp
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,7 @@
 # undef NDEBUG
 #endif
 
-#if !defined(__clang__)
+#if defined(__GNUC__) && !defined(__clang__)
 # pragma GCC push_options
 # pragma GCC optimize ("O2")
 # pragma GCC optimize ("no-tree-loop-distribute-patterns")
@@ -259,6 +259,12 @@ void LtcReader::Start() {
 	Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
 }
 
+#if defined(__GNUC__) && !defined(__clang__)
+# pragma GCC push_options
+# pragma GCC optimize ("O3")
+# pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#endif
+
 void LtcReader::Run() {
 	__DMB();
 	if (bTimeCodeAvailable) {
@@ -283,40 +289,25 @@ void LtcReader::Run() {
 
 		s_midiTimeCode.nType = static_cast<uint8_t>(TimeCodeType);
 
-		struct ltc::TimeCode ltcTimeCode;
+		g_ltc_LtcTimeCode.nFrames = s_midiTimeCode.nFrames;
+		g_ltc_LtcTimeCode.nSeconds = s_midiTimeCode.nSeconds;
+		g_ltc_LtcTimeCode.nMinutes = s_midiTimeCode.nMinutes;
+		g_ltc_LtcTimeCode.nHours = s_midiTimeCode.nHours;
+		g_ltc_LtcTimeCode.nType = s_midiTimeCode.nType;
 
-		ltcTimeCode.nFrames = s_midiTimeCode.nFrames;
-		ltcTimeCode.nSeconds = s_midiTimeCode.nSeconds;
-		ltcTimeCode.nMinutes = s_midiTimeCode.nMinutes;
-		ltcTimeCode.nHours = s_midiTimeCode.nHours;
-		ltcTimeCode.nType = s_midiTimeCode.nType;
-
-		if (!ltc::g_DisabledOutputs.bArtNet) {
-			ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct artnet::TimeCode*>(&ltcTimeCode));
+		if (ltc::Destination::IsEnabled(ltc::Destination::Output::ARTNET)) {
+			ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct artnet::TimeCode*>(&g_ltc_LtcTimeCode));
 		}
 
-		if (!ltc::g_DisabledOutputs.bEtc) {
+		if (ltc::Destination::IsEnabled(ltc::Destination::Output::ETC)) {
 			LtcEtc::Get()->Send(reinterpret_cast<const struct midi::Timecode *>(const_cast<struct midi::Timecode *>(&s_midiTimeCode)));
 		}
 
-		if (m_nTypePrevious != TimeCodeType) {
-			m_nTypePrevious = TimeCodeType;
-
-#if defined (H3)
-			H3_TIMER->TMR1_INTV = TimeCodeConst::TMR_INTV[static_cast<uint32_t>(TimeCodeType)] / 4;
-			H3_TIMER->TMR1_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
-#elif defined (GD32)
-			TIMER_CNT(TIMER11) = 0;
-			TIMER_CH0CV(TIMER11) = TimeCodeConst::TMR_INTV[static_cast<uint32_t>(TimeCodeType)] / 4;
-#endif
-		}
-
-		LtcOutputs::Get()->Update(reinterpret_cast<const struct ltc::TimeCode *>(&ltcTimeCode));
+		LtcOutputs::Get()->Update(reinterpret_cast<const struct ltc::TimeCode *>(&g_ltc_LtcTimeCode));
 	}
 
 	__DMB();
 	if ((gv_ltc_nUpdatesPerSecond >= 24) && (gv_ltc_nUpdatesPerSecond <= 30)) {
-		LtcOutputs::Get()->UpdateMidiQuarterFrameMessage(reinterpret_cast<struct ltc::TimeCode *>(const_cast<struct midi::Timecode *>(&s_midiTimeCode)));
 		Hardware::Get()->SetMode(hardware::ledblink::Mode::DATA);
 	} else {
 		Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);

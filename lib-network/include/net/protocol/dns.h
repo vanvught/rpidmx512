@@ -2,7 +2,7 @@
  * @file dns.h
  *
  */
-/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@
 
 #include <cstdint>
 
-#include "ip4_address.h"
+#include "net/ip4_address.h"
 
 namespace net::dns {
 static constexpr uint32_t SIZEOF_DNS_HDR = 12;
@@ -82,8 +82,7 @@ inline uint8_t dns_header_get_opcode(const Header *const header) {
  */
 
 static constexpr uint32_t MULTICAST_MESSAGE_SIZE = 512;	///< The 1987 DNS specification [RFC1035] restricts DNS messages carried by UDP to no more than 512 bytes
-static constexpr uint32_t MULTICAST_ADDRESS = network::convert_to_uint(224, 0, 0, 251);
-
+static constexpr uint32_t MULTICAST_ADDRESS = net::convert_to_uint(224, 0, 0, 251);
 }  // namespace net::dns
 
 #endif /* NET_PROTOCOL_DNS_H_ */

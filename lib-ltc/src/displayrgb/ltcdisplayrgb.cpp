@@ -135,7 +135,7 @@ void LtcDisplayRgb::Init(pixel::Type type) {
 	}
 
 	assert(m_nHandle == -1);
-	m_nHandle = Network::Get()->Begin(udp::PORT, staticCallbackFunction);
+	m_nHandle = Network::Get()->Begin(udp::PORT, StaticCallbackFunction);
 	assert(m_nHandle != -1);
 
 	DEBUG_EXIT

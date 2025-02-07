@@ -2,7 +2,7 @@
  * @file net_private.h
  *
  */
-/* Copyright (C) 2023-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2023-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,11 +49,14 @@ enum class EthSend {
 };
 } // namespace net::arp
 
-extern "C" void console_error(const char *);
+void console_error(const char *);
 
-void emac_eth_send(void *, uint32_t);
+uint8_t *emac_eth_send_get_dma_buffer();
+void emac_eth_send(const uint32_t);
+void emac_eth_send(void *, const uint32_t);
 #if defined CONFIG_NET_ENABLE_PTP
-void emac_eth_send_timestamp(void *, uint32_t);
+void emac_eth_send_timestamp(const uint32_t);
+void emac_eth_send_timestamp(void *, const uint32_t);
 #endif
 uint32_t emac_eth_recv(uint8_t **);
 void emac_free_pkt();
@@ -65,26 +68,23 @@ uint16_t net_chksum(const void *, uint32_t);
 void net_timers_run();
 
 void ip_init();
-void ip_set_ip();
 void ip_shutdown();
 void ip_handle(struct t_ip4 *);
 
 void udp_init();
-void udp_set_ip();
-void udp_handle(struct t_udp *);
+void udp_input(const struct t_udp *);
 void udp_shutdown();
 
 void igmp_init();
-void igmp_set_ip();
-void igmp_handle(struct t_igmp *);
+void igmp_input(const struct t_igmp *);
 void igmp_shutdown();
 
-void icmp_handle(struct t_icmp *);
+void icmp_input(struct t_icmp *);
 void icmp_shutdown();
 
 void tcp_init();
 void tcp_run();
-void tcp_handle(struct t_tcp *);
+void tcp_input(struct t_tcp *);
 void tcp_shutdown();
 }  // namespace net
 

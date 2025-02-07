@@ -2,7 +2,7 @@
  * @file networkparams.h
  *
  */
-/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,7 @@
 
 #include <cstdint>
 
+#include "net/ip4_address.h"
 #include "network.h"
 #include "configstore.h"
 
@@ -43,7 +44,7 @@ struct Params {
 	uint32_t nGatewayIp;
 	uint32_t nNameServerIp;
 	bool bIsDhcpUsed;
-	char aHostName[network::HOSTNAME_SIZE];
+	char aHostName[net::HOSTNAME_SIZE];
 	uint32_t nNtpServerIp;
 	float fNtpUtcOffset;
 	uint8_t nNotUsed;
@@ -54,7 +55,7 @@ struct Params {
 }__attribute__((packed));
 
 #if !defined (ESP8266)
- static_assert(sizeof(struct Params) <= network::STORE, "struct Params is too large");
+ static_assert(sizeof(struct Params) <= configstore::STORE_SIZE[static_cast<uint32_t>(configstore::Store::NETWORK)], "struct Params is too large");
 #endif
 
 struct Mask {
@@ -118,14 +119,14 @@ public:
 	}
 
 	uint32_t GetNtpServer() const {
-		if (!isMaskSet(networkparams::Mask::NTP_SERVER)) {
+		if (!IsMaskSet(networkparams::Mask::NTP_SERVER)) {
 			return 0;
 		}
 		return m_Params.nNtpServerIp;
 	}
 
 	float GetNtpUtcOffset() const {
-		if (!isMaskSet(networkparams::Mask::NTP_UTC_OFFSET)) {
+		if (!IsMaskSet(networkparams::Mask::NTP_UTC_OFFSET)) {
 			return 0;
 		}
 		return m_Params.fNtpUtcOffset;
@@ -146,12 +147,12 @@ public:
 #endif
 
 public:
-    static void staticCallbackFunction(void *p, const char *s);
+    static void StaticCallbackFunction(void *p, const char *s);
 
 private:
 	void Dump();
-    void callbackFunction(const char *s);
-    bool isMaskSet(uint32_t nMask) const {
+    void CallbackFunction(const char *s);
+    bool IsMaskSet(uint32_t nMask) const {
     	return (m_Params.nSetList & nMask) == nMask;
     }
 

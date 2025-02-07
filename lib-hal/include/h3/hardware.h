@@ -2,7 +2,7 @@
  * @file hardware.h
  *
  */
-/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,7 +49,7 @@
 
 uint32_t hardware_uptime_seconds();
 void hardware_led_set(int);
-extern "C" void console_error(const char *);
+void console_error(const char *);
 
 class Hardware {
 public:
@@ -57,10 +57,6 @@ public:
 
 	uint32_t GetReleaseId() const {
 		return 0;
-	}
-
-	void GetUuid(uuid_t out) {
-		memcpy(out, m_uuid, sizeof(uuid_t));
 	}
 
 	const char *GetMachine(uint8_t &nLength);
@@ -205,7 +201,6 @@ private:
 #if !defined(DISABLE_RTC)
 	HwClock m_HwClock;
 #endif
-	uuid_t m_uuid;
 	bool m_bIsWatchdog { false };
 
 	hardware::ledblink::Mode m_Mode { hardware::ledblink::Mode::UNKNOWN };

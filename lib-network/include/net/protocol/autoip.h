@@ -26,12 +26,12 @@
 #ifndef NET_PROTOCOL_AUTOIP_H_
 #define NET_PROTOCOL_AUTOIP_H_
 
-#include "ip4_address.h"
+#include "net/ip4_address.h"
 
 namespace net::autoip {
-static constexpr auto AUTOIP_NET = network::convert_to_uint(169,254,0,0);
-static constexpr auto AUTOIP_RANGE_START = network::convert_to_uint(169,254,1,0);
-static constexpr auto AUTOIP_RANGE_END = network::convert_to_uint(169,254,254,255);
+static constexpr auto AUTOIP_NET = net::convert_to_uint(169,254,0,0);
+static constexpr auto AUTOIP_RANGE_START = net::convert_to_uint(169,254,1,0);
+static constexpr auto AUTOIP_RANGE_END = net::convert_to_uint(169,254,254,255);
 
 enum class State {
   AUTOIP_STATE_OFF,

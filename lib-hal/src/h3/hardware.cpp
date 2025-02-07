@@ -56,7 +56,7 @@
 
 #include "logic_analyzer.h"
 
-#if !defined(__clang__)
+#if defined(__GNUC__) && !defined(__clang__)
 # pragma GCC push_options
 # pragma GCC optimize ("O2")
 # if __GNUC__ > 8
@@ -102,7 +102,6 @@ void net_shutdown();
 
 namespace hal {
 void reboot_handler();
-void uuid_init(uuid_t);
 }  // namespace hardware
 
 namespace soc {
@@ -139,7 +138,6 @@ Hardware::Hardware() {
 	s_pThis = this;
 
 	hardware_init();
-	hal::uuid_init(m_uuid);
 
 #if defined (DEBUG_I2C)
 	i2c_detect();
@@ -189,10 +187,14 @@ const char *Hardware::GetSocName(uint8_t &nLength) {
 	return soc::NAME;
 }
 
+void configstore_commit();
+
 bool Hardware::Reboot() {
 	puts("Rebooting ...");
 	
 	h3_watchdog_disable();
+
+	configstore_commit();
 
 #if !defined(DISABLE_RTC)
 	m_HwClock.SysToHc();

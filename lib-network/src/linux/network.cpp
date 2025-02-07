@@ -145,7 +145,7 @@ Network::Network(int argc, char **argv) {
 
 	uint32_t i = 0;
 
-	while((m_aHostName[i] != '\0') && (i < network::HOSTNAME_SIZE) && (m_aHostName[i] != '.') ) {
+	while((m_aHostName[i] != '\0') && (i < net::HOSTNAME_SIZE) && (m_aHostName[i] != '.') ) {
 		i++;
 	}
 
@@ -153,7 +153,7 @@ Network::Network(int argc, char **argv) {
 
 	uint32_t j = 0;
 
-	while (j < network::DOMAINNAME_SIZE && i < network::HOSTNAME_SIZE && m_aHostName[i] != '\0') {
+	while (j < net::DOMAINNAME_SIZE && i < net::HOSTNAME_SIZE && m_aHostName[i] != '\0') {
 		m_aDomainName[j++] = m_aHostName[i++];
 	}
 
@@ -274,7 +274,7 @@ int32_t Network::Begin(uint16_t nPort, [[maybe_unused]] net::UdpCallbackFunction
 }
 
 void Network::MacAddressCopyTo(uint8_t* pMacAddress) {
-	for (unsigned i =  0; i < network::MAC_SIZE; i++) {
+	for (unsigned i =  0; i < net::MAC_SIZE; i++) {
 		pMacAddress[i] = m_aNetMacaddr[i];
 	}
 }
@@ -567,7 +567,7 @@ int Network::IfDetails(const char *pIfInterface) {
     }
 
 	const uint8_t* mac = reinterpret_cast<uint8_t*>(ifr.ifr_ifru.ifru_hwaddr.sa_data);
-	memcpy(m_aNetMacaddr, mac, network::MAC_SIZE);
+	memcpy(m_aNetMacaddr, mac, net::MAC_SIZE);
 #endif
 
     close(fd);
@@ -584,7 +584,7 @@ void Network::SetHostName(const char *pHostName) {
 		perror("gethostname");
 	}
 
-	m_aHostName[network::HOSTNAME_SIZE - 1] = '\0';
+	m_aHostName[net::HOSTNAME_SIZE - 1] = '\0';
 
 }
 
@@ -601,6 +601,10 @@ void Network::Print() {
 	printf(" Mode      : %c\n", GetAddressingMode());
 }
 
+namespace net {
+void tcp_run();
+}  // namespace net
+
 void Network::Run() {
 	for (uint32_t nPortIndex = 0; nPortIndex < UDP_MAX_PORTS_ALLOWED; nPortIndex++) {
 		struct sockaddr_in si_other;
@@ -616,5 +620,7 @@ void Network::Run() {
 			}
 		}
 	}
+
+	net::tcp_run();
 }
 #endif

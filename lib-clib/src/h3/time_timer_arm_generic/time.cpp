@@ -23,13 +23,14 @@
  * THE SOFTWARE.
  */
 
-#if !defined(__clang__)
+#if defined(__GNUC__) && !defined(__clang__)
 # pragma GCC push_options
 # pragma GCC optimize ("O3")
 # pragma GCC optimize ("no-tree-loop-distribute-patterns")
 #endif
 
 #include <cstdint>
+#include <cstdio>
 #include <time.h>
 #include <sys/time.h>
 #include <cassert>
@@ -47,38 +48,68 @@ static inline uint64_t read_cntpct() {
 
 extern "C" {
 int gettimeofday(struct timeval *tv, __attribute__((unused)) struct timezone *tz) {
-    assert(tv != nullpt);
+	assert(tv != nullptr);
 
-    const uint64_t current_cntvct = read_cntpct();
-    const uint64_t elapsed_ticks = current_cntvct - set_timer; // No roll-over issues with 64-bit arithmetic
+	const uint64_t current_cntvct = read_cntpct();
+	const uint64_t elapsed_ticks = current_cntvct - set_timer; // No roll-over issues with 64-bit arithmetic
 
-    // Convert ticks to microseconds
-    const uint64_t elapsed_usec = elapsed_ticks / 24U;	// Adjust for 24MHz clock H3_F_24M;
-    const time_t elapsed_sec = elapsed_usec / 1000000ULL ;
-    const suseconds_t elapsed_subsec = elapsed_usec % 1000000ULL;
+	// Convert ticks to microseconds with fractional correction
+	static uint64_t fractional_ticks = 0; // Persistent fractional part
+	const uint64_t total_usec = elapsed_ticks * 1000000ULL + fractional_ticks; // Scaled to microseconds
+	const uint64_t elapsed_usec = total_usec / 24000000ULL; // Correctly divide by clock frequency
+	fractional_ticks = total_usec % 24000000ULL; // Keep the fractional remainder
 
-    // Compute the current time
-    tv->tv_sec = s_tv.tv_sec + elapsed_sec;
-    tv->tv_usec = s_tv.tv_usec + elapsed_subsec;
+	const time_t elapsed_sec = elapsed_usec / 1000000ULL;
+	const suseconds_t elapsed_subsec = elapsed_usec % 1000000ULL;
 
-    // Handle microsecond overflow
-    if (tv->tv_usec >= 1000000) {
-        tv->tv_sec++;
-        tv->tv_usec -= 1000000;
-    }
+	// Compute the current time
+	tv->tv_sec = s_tv.tv_sec + elapsed_sec;
+	tv->tv_usec = s_tv.tv_usec + elapsed_subsec;
 
-    return 0;
+	// Handle microsecond overflow
+	if (tv->tv_usec >= 1000000) {
+		tv->tv_sec++;
+		tv->tv_usec -= 1000000;
+	} else if (tv->tv_usec < 0) {
+		tv->tv_sec--;
+		tv->tv_usec += 1000000;
+	}
+
+	return 0;
 }
 
 int settimeofday(const struct timeval *tv, __attribute__((unused)) const struct timezone *tz) {
     assert(tv != nullptr);
 
-    // Capture the current virtual counter value as the reference
-    set_timer = read_cntpct();
+    // Capture the current counter value as the reference point
+    const uint64_t current_cntvct = read_cntpct();
+
+    // Calculate the elapsed microseconds since the last set_timer
+    const uint64_t elapsed_ticks = current_cntvct - set_timer;
+    static uint64_t fractional_ticks = 0;
+    const uint64_t total_usec = elapsed_ticks * 1000000ULL + fractional_ticks;
+    const uint64_t elapsed_usec = total_usec / 24000000ULL;
+    fractional_ticks = total_usec % 24000000ULL;
+
+    // Adjust s_tv based on the elapsed time
+    s_tv.tv_sec += elapsed_usec / 1000000ULL;
+    s_tv.tv_usec += elapsed_usec % 1000000ULL;
+
+    // Normalize s_tv to ensure tv_usec is valid
+    if (s_tv.tv_usec >= 1000000) {
+        s_tv.tv_sec++;
+        s_tv.tv_usec -= 1000000;
+    } else if (s_tv.tv_usec < 0) {
+        s_tv.tv_sec--;
+        s_tv.tv_usec += 1000000;
+    }
 
     // Set the new time
     s_tv.tv_sec = tv->tv_sec;
     s_tv.tv_usec = tv->tv_usec;
+
+    // Update the reference timer
+    set_timer = current_cntvct;
 
     return 0;
 }
@@ -97,5 +128,4 @@ time_t time(time_t *__timer) {
 
 	return tv.tv_sec;
 }
-
 }

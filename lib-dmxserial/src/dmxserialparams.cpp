@@ -68,7 +68,7 @@ void DmxSerialParams::Load() {
 	m_Params.nSetList = 0;
 
 #if !defined(DISABLE_FS)
-	ReadConfigFile configfile(DmxSerialParams::staticCallbackFunction, this);
+	ReadConfigFile configfile(DmxSerialParams::StaticCallbackFunction, this);
 
 	if (configfile.Read(DmxSerialParamsConst::FILE_NAME)) {
 		DmxSerialStore::Update(&m_Params);
@@ -90,7 +90,7 @@ void DmxSerialParams::Load(const char *pBuffer, uint32_t nLength) {
 
 	m_Params.nSetList = 0;
 
-	ReadConfigFile config(DmxSerialParams::staticCallbackFunction, this);
+	ReadConfigFile config(DmxSerialParams::StaticCallbackFunction, this);
 
 	config.Read(pBuffer, nLength);
 
@@ -297,7 +297,7 @@ void DmxSerialParams::Set() {
 	}
 }
 
-void DmxSerialParams::staticCallbackFunction(void *p, const char *s) {
+void DmxSerialParams::StaticCallbackFunction(void *p, const char *s) {
 	assert(p != nullptr);
 	assert(s != nullptr);
 

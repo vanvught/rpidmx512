@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#if !defined(__clang__)	// Needed for compiling on MacOS
+#if defined(__GNUC__) && !defined(__clang__)	
 # pragma GCC push_options
 # pragma GCC optimize ("Os")
 #endif
@@ -48,7 +48,7 @@ ApParams::ApParams(ApParamsStore *pApParamsStore): m_pApParamsStore(pApParamsSto
 bool ApParams::Load() {
 	m_tApParams.nSetList = 0;
 
-	ReadConfigFile configfile(ApParams::staticCallbackFunction, this);
+	ReadConfigFile configfile(ApParams::StaticCallbackFunction, this);
 
 	if (configfile.Read(PARAMS_FILE_NAME)) {
 		// There is a configuration file
@@ -75,7 +75,7 @@ void ApParams::Load(const char *pBuffer, uint32_t nLength) {
 
 	m_tApParams.nSetList = 0;
 
-	ReadConfigFile config(ApParams::staticCallbackFunction, this);
+	ReadConfigFile config(ApParams::StaticCallbackFunction, this);
 
 	config.Read(pBuffer, nLength);
 
@@ -93,7 +93,7 @@ void ApParams::callbackFunction(const char *pLine) {
 	}
 }
 
-void ApParams::staticCallbackFunction(void *p, const char *s) {
+void ApParams::StaticCallbackFunction(void *p, const char *s) {
 	assert(p != nullptr);
 	assert(s != nullptr);
 

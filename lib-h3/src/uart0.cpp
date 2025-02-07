@@ -1,8 +1,8 @@
 /**
- * @file h3_uart0.c
+ * @file h3_uart0.cpp
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,8 +30,7 @@
 #include "h3.h"
 #include "h3_uart.h"
 
-extern "C" {
-void __attribute__((cold)) uart0_init(void) {
+void __attribute__((cold)) uart0_init() {
 	h3_uart_begin(H3_UART0_BASE, 115200, H3_UART_BITS_8, H3_UART_PARITY_NONE, H3_UART_STOP_1BIT);
 
 	while ((H3_UART0->USR & UART_USR_BUSY) == UART_USR_BUSY) {
@@ -52,7 +51,7 @@ void uart0_putc(int c) {
 	H3_UART0->O00.THR = static_cast<uint32_t>(c);
 }
 
-void uart0_puts(char *s) {
+void uart0_puts(const char *s) {
 	while (*s != '\0') {
 		if (*s == '\n') {
 			uart0_putc('\r');
@@ -63,7 +62,7 @@ void uart0_puts(char *s) {
 //	uart0_putc('\n'); //TODO Add '\n'
 }
 
-int uart0_getc(void) {
+int uart0_getc() {
 	if (__builtin_expect(((H3_UART0->LSR & UART_LSR_DR) != UART_LSR_DR), 1)) {
 		return EOF;
 	}
@@ -98,5 +97,4 @@ int uart0_printf(const char *fmt, ...) {
 	}
 
 	return i;
-}
 }

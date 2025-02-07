@@ -2,7 +2,7 @@
  * @file e131bridge.cpp
  *
  */
-/* Copyright (C) 2016-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#if !defined(__clang__)
+#if defined(__GNUC__) && !defined(__clang__)
 # pragma GCC push_options
 # pragma GCC optimize ("O2")
 # pragma GCC optimize ("no-tree-loop-distribute-patterns")
@@ -83,7 +83,7 @@ E131Bridge::E131Bridge() {
 	snprintf(aSourceName, e131::SOURCE_NAME_LENGTH, "%.48s %s", Network::Get()->GetHostName(), Hardware::Get()->GetBoardName(nLength));
 	SetSourceName(aSourceName);
 
-	Hardware::Get()->GetUuid(m_Cid);
+	hal::uuid_copy(m_Cid);
 #endif
 
 	m_nHandle = Network::Get()->Begin(e131::UDP_PORT);
@@ -100,7 +100,7 @@ E131Bridge::~E131Bridge() {
 
 void E131Bridge::Start() {
 #if defined (E131_HAVE_DMXIN)
-	const auto nIpMulticast = network::convert_to_uint(239, 255, 0, 0);
+	const auto nIpMulticast = net::convert_to_uint(239, 255, 0, 0);
 	m_nDiscoveryIpAddress = nIpMulticast | ((e131::universe::DISCOVERY & static_cast<uint32_t>(0xFF)) << 24) | ((e131::universe::DISCOVERY & 0xFF00) << 8);
 	FillDataPacket();
 	FillDiscoveryPacket();
@@ -113,7 +113,7 @@ void E131Bridge::Start() {
 
 	SetLocalMerging();
 
-	m_timerHandleSendDiscoveryPacket = SoftwareTimerAdd(e131::UNIVERSE_DISCOVERY_INTERVAL_SECONDS * 1000U, staticCallbackFunctionSendDiscoveryPacket);
+	m_timerHandleSendDiscoveryPacket = SoftwareTimerAdd(e131::UNIVERSE_DISCOVERY_INTERVAL_SECONDS * 1000U, StaticCallbackFunctionSendDiscoveryPacket);
 	assert(m_timerHandleSendDiscoveryPacket >= 0);
 #endif
 
@@ -131,7 +131,7 @@ void E131Bridge::Start() {
 #endif
 
 #if !defined(E131_HAVE_ARTNET)
-	SoftwareTimerAdd(200, staticCallbackFunctionLedPanelOff);
+	SoftwareTimerAdd(200, StaticCallbackFunctionLedPanelOff);
 #endif
 
 	m_State.status = e131bridge::Status::ON;
@@ -245,10 +245,10 @@ void E131Bridge::SetLocalMerging() {
 			if (m_Bridge.Port[nInputPortIndex].nUniverse == m_Bridge.Port[nOutputPortIndex].nUniverse) {
 
 				if (!m_Bridge.Port[nOutputPortIndex].bLocalMerge) {
-					m_OutputPort[nOutputPortIndex].sourceA.nIp = Network::Get()->GetIp();
+					m_OutputPort[nOutputPortIndex].sourceA.nIp = net::IPADDR_LOOPBACK;
 					DEBUG_PUTS("Local merge Source A");
 				} else {
-					m_OutputPort[nOutputPortIndex].sourceB.nIp = Network::Get()->GetIp();
+					m_OutputPort[nOutputPortIndex].sourceB.nIp = net::IPADDR_LOOPBACK;
 					DEBUG_PUTS("Local merge Source B");
 				}
 
@@ -717,7 +717,7 @@ bool E131Bridge::IsValidDataPacket() {
 	return true;
 }
 
-#if !defined(__clang__)
+#if defined(__GNUC__) && !defined(__clang__)
 # pragma GCC push_options
 # pragma GCC optimize ("O2")
 # pragma GCC optimize ("no-tree-loop-distribute-patterns")

@@ -30,7 +30,7 @@
 # error
 #endif
 
-#if !defined(__clang__)
+#if defined(__GNUC__) && !defined(__clang__)
 # if defined (CONFIG_I2C_LCD_OPTIMIZE_O2) || defined (CONFIG_I2C_LCD_OPTIMIZE_O3)
 #  pragma GCC push_options
 #  if defined (CONFIG_I2C_LCD_OPTIMIZE_O2)
@@ -354,7 +354,7 @@ private:
 	static inline Display *s_pThis;
 };
 
-#if !defined(__clang__)
+#if defined(__GNUC__) && !defined(__clang__)
 # if defined (CONFIG_I2C_LCD_OPTIMIZE)
 #  pragma GCC pop_options
 # endif

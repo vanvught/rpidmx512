@@ -55,7 +55,7 @@ void GPSParams::Load() {
 	m_Params.nSetList = 0;
 
 #if !defined(DISABLE_FS)
-	ReadConfigFile configfile(GPSParams::staticCallbackFunction, this);
+	ReadConfigFile configfile(GPSParams::StaticCallbackFunction, this);
 
 	if (configfile.Read(GPSParamsConst::FILE_NAME)) {
 		GPSParamsStore::Update(&m_Params);
@@ -77,7 +77,7 @@ void GPSParams::Load(const char *pBuffer, uint32_t nLength) {
 
 	m_Params.nSetList = 0;
 
-	ReadConfigFile config(GPSParams::staticCallbackFunction, this);
+	ReadConfigFile config(GPSParams::StaticCallbackFunction, this);
 
 	config.Read(pBuffer, nLength);
 
@@ -151,7 +151,7 @@ void GPSParams::Builder(const struct gpsparams::Params *pGPSParams, char *pBuffe
 	nSize = builder.GetSize();
 }
 
-void GPSParams::staticCallbackFunction(void *p, const char *s) {
+void GPSParams::StaticCallbackFunction(void *p, const char *s) {
 	assert(p != nullptr);
 	assert(s != nullptr);
 

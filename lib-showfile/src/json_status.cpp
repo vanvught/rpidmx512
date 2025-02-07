@@ -35,7 +35,7 @@
 #include "readconfigfile.h"
 #include "sscan.h"
 
-static void staticCallbackFunction([[maybe_unused]] void *p, const char *s) {
+static void StaticCallbackFunction([[maybe_unused]] void *p, const char *s) {
 	assert(p == nullptr);
 	assert(s != nullptr);
 
@@ -110,7 +110,7 @@ uint32_t json_get_status(char *pOutBuffer, const uint32_t nOutBufferSize) {
 }
 
 void json_set_status(const char *pBuffer, const uint32_t nBufferSize) {
-	ReadConfigFile config(staticCallbackFunction, nullptr);
+	ReadConfigFile config(StaticCallbackFunction, nullptr);
 	config.Read(pBuffer, nBufferSize);
 	::showfile::display_status();
 }

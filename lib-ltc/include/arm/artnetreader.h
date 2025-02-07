@@ -2,7 +2,7 @@
  * @file artnetreader.h
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,18 +50,19 @@ public:
 	void Stop();
 
 	void Run() {
-		LtcOutputs::Get()->UpdateMidiQuarterFrameMessage(reinterpret_cast<const struct ltc::TimeCode*>(&m_MidiTimeCode));
+		const auto nTimeStamp = Hardware::Get()->Millis();
 
-		__DMB();
-		if (gv_ltc_nUpdatesPerSecond != 0) {
-			Hardware::Get()->SetMode(hardware::ledblink::Mode::DATA);
-		} else {
+		if ((nTimeStamp - m_nTimestamp) >= 50U) {
 			LtcOutputs::Get()->ShowSysTime();
 			Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
+			Reset(true);
+		} else {
+			Hardware::Get()->SetMode(hardware::ledblink::Mode::DATA);
+			Reset(false);
 		}
 	}
 
-	void static staticCallbackFunction(const struct artnet::TimeCode *pTimeCode) {
+	void static StaticCallbackFunction(const struct artnet::TimeCode *pTimeCode) {
 		assert(s_pThis != nullptr);
 		s_pThis->Handler(pTimeCode);
 	}
@@ -69,9 +70,18 @@ public:
 private:
 	void Handler(const struct artnet::TimeCode *);
 
-private:
-	midi::Timecode m_MidiTimeCode;
+	void Reset(const bool doReset) {
+		if (m_doResetTimeCode != doReset) {
+			m_doResetTimeCode = doReset;
+			if (m_doResetTimeCode) {
+				LtcOutputs::Get()->ResetTimeCodeTypePrevious();
+			}
+		}
+	}
 
+private:
+	uint32_t m_nTimestamp { 0 };
+	bool m_doResetTimeCode { true };
 	static inline ArtNetReader *s_pThis;
 };
 

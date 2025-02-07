@@ -66,7 +66,7 @@ void LtcEtc::Start() {
 	}
 
 	if (m_Config.nSourcePort != 0) {
-		m_Handle.Source = Network::Get()->Begin(m_Config.nSourcePort, staticCallbackFunction);
+		m_Handle.Source = Network::Get()->Begin(m_Config.nSourcePort, StaticCallbackFunction);
 
 		if ((m_Handle.Source >= 0) && (m_Config.nSourceMulticastIp != 0)) {
 			Network::Get()->JoinGroup(m_Handle.Source, m_Config.nSourceMulticastIp);

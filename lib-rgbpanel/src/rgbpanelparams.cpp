@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#if !defined(__clang__)	// Needed for compiling on MacOS
+#if defined(__GNUC__) && !defined(__clang__)	
 # pragma GCC push_options
 # pragma GCC optimize ("Os")
 #endif
@@ -63,7 +63,7 @@ void RgbPanelParams::Load() {
 	m_Params.nSetList = 0;
 
 #if !defined(DISABLE_FS)
-	ReadConfigFile configfile(RgbPanelParams::staticCallbackFunction, this);
+	ReadConfigFile configfile(RgbPanelParams::StaticCallbackFunction, this);
 
 	if (configfile.Read(RgbPanelParamsConst::FILE_NAME)) {
 		RgbPanelParamsStore::Update(&m_Params);
@@ -85,7 +85,7 @@ void RgbPanelParams::Load(const char *pBuffer, uint32_t nLength) {
 
 	m_Params.nSetList = 0;
 
-	ReadConfigFile config(RgbPanelParams::staticCallbackFunction, this);
+	ReadConfigFile config(RgbPanelParams::StaticCallbackFunction, this);
 
 	config.Read(pBuffer, nLength);
 
@@ -165,7 +165,7 @@ void RgbPanelParams::Builder(const struct rgbpanelparams::Params *pRgbPanelParam
 	nSize = builder.GetSize();
 }
 
-void RgbPanelParams::staticCallbackFunction(void *p, const char *s) {
+void RgbPanelParams::StaticCallbackFunction(void *p, const char *s) {
 	assert(p != nullptr);
 	assert(s != nullptr);
 

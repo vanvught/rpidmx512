@@ -170,10 +170,6 @@ int main() {
 #if defined (NODE_SHOWFILE)
 		showFile.Run();
 #endif
-		llrpOnlyDevice.Run();
-		remoteConfig.Run();
-		configStore.Flash();
-
 		display.Run();
 		hw.Run();
 	}

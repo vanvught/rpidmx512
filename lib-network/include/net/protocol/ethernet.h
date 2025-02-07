@@ -48,7 +48,10 @@ struct ether_header {
 
 namespace net {
 static constexpr uint32_t ETH_HWADDR_LEN = 6;
-
+/** The 24-bit IANA IPv4-multicast OUI is 01-00-5e: */
+static constexpr uint8_t ETH_IP4_MULTICAST_ADDR_0 = 0x01;
+static constexpr uint8_t ETH_IP4_MULTICAST_ADDR_1 = 0x00;
+static constexpr uint8_t ETH_IP4_MULTICAST_ADDR_2 = 0x5e;
 
 }  // namespace net
 

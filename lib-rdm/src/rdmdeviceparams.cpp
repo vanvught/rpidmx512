@@ -60,7 +60,7 @@ void RDMDeviceParams::Load() {
 #if !defined(DISABLE_FS)
 	m_Params.nSetList = 0;
 
-	ReadConfigFile configfile(RDMDeviceParams::staticCallbackFunction, this);
+	ReadConfigFile configfile(RDMDeviceParams::StaticCallbackFunction, this);
 
 	if (configfile.Read(RDMDeviceParamsConst::FILE_NAME)) {
 		RDMDeviceParamsStore::Update(&m_Params);
@@ -82,7 +82,7 @@ void RDMDeviceParams::Load(const char *pBuffer, uint32_t nLength) {
 
 	m_Params.nSetList = 0;
 
-	ReadConfigFile config(RDMDeviceParams::staticCallbackFunction, this);
+	ReadConfigFile config(RDMDeviceParams::StaticCallbackFunction, this);
 
 	config.Read(pBuffer, nLength);
 
@@ -188,7 +188,7 @@ void RDMDeviceParams::Builder(const struct rdm::deviceparams::Params *pParams, c
 	DEBUG_EXIT
 }
 
-void RDMDeviceParams::staticCallbackFunction(void *p, const char *s) {
+void RDMDeviceParams::StaticCallbackFunction(void *p, const char *s) {
 	assert(p != nullptr);
 	assert(s != nullptr);
 

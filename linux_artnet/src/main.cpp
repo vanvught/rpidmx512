@@ -175,8 +175,7 @@ int main(int argc, char **argv) {
 #if defined (NODE_SHOWFILE)
 		showFile.Run();
 #endif
-		remoteConfig.Run();
-		configStore.Flash();
+		hw.Run();
 	}
 
 	return 0;

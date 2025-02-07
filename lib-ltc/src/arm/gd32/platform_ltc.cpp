@@ -2,7 +2,7 @@
  * @file platform_ltc.cpp
  *
  */
-/* Copyright (C) 2022-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2022-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,9 @@
 #endif
 
 #include <cstdint>
+#if defined DEBUG_LTC_TIMER11
+# include <cstdio>
+#endif
 #include <cassert>
 
 #include "gd32_platform_ltc.h"
@@ -39,6 +42,16 @@
 #include "timecodeconst.h"
 
 extern struct HwTimersSeconds g_Seconds;
+
+volatile uint32_t gv_ltc_nCurrentCAR;
+uint32_t g_ltc_nCAR1;
+
+template <uint32_t N>
+bool constexpr is_adjustment_needed() {
+	static_assert(N < sizeof(TimeCodeConst::TMR_INTV) / sizeof(TimeCodeConst::TMR_INTV[0]), "Index out of bounds for TMR_INTV.");
+	static_assert(N < sizeof(TimeCodeConst::FPS) / sizeof(TimeCodeConst::FPS[0]), "Index out of bounds for FPS.");
+	return ((TimeCodeConst::TMR_INTV[N] + 1) * TimeCodeConst::FPS[N]) != FREQUENCY_EFFECTIVE;
+}
 
 extern "C" {
 /**
@@ -72,12 +85,23 @@ void TIMER6_IRQHandler() {
 /**
  * Timer 11
  */
+
 void TIMER7_BRK_TIMER11_IRQHandler() {
 	const auto nIntFlag = TIMER_INTF(TIMER11);
 
 	if ((nIntFlag & TIMER_INT_FLAG_UP) == TIMER_INT_FLAG_UP) {
 		gv_ltc_bTimeCodeAvailable = true;
 		gv_ltc_nTimeCodeCounter++;
+
+		if constexpr (is_adjustment_needed<0>() || is_adjustment_needed<1>() || is_adjustment_needed<2>() || is_adjustment_needed<3>()) {
+			if (ltc::g_Type != ltc::Type::EBU) {
+				// Switch CAR value every two interrupts
+				if (gv_ltc_nTimeCodeCounter % 2 == 0) {
+					gv_ltc_nCurrentCAR = (gv_ltc_nCurrentCAR == g_ltc_nCAR1) ? (g_ltc_nCAR1 + 1) : g_ltc_nCAR1;
+					TIMER_CAR (TIMER11) = gv_ltc_nCurrentCAR;
+				}
+			}
+		}
 
 #if defined DEBUG_LTC_TIMER11
 		GPIO_TG(DEBUG_TIMER11_GPIOx) = DEBUG_TIMER11_GPIO_PINx;
@@ -194,21 +218,57 @@ void timer11_config() {
 
 #if defined DEBUG_LTC_TIMER11
 	rcu_periph_clock_enable(DEBUG_TIMER11_RCU_GPIOx);
-#if !defined (GD32F4XX)
+# if !defined (GD32F4XX)
 	gpio_init(DEBUG_TIMER11_GPIOx, GPIO_MODE_OUT_PP, GPIO_OSPEED_50MHZ, DEBUG_TIMER11_GPIO_PINx);
-#else
+# else
     gpio_mode_set(DEBUG_TIMER11_GPIOx, GPIO_MODE_OUTPUT, GPIO_PUPD_PULLDOWN, DEBUG_TIMER11_GPIO_PINx);
     gpio_output_options_set(DEBUG_TIMER11_GPIOx, GPIO_OTYPE_PP, GPIO_OSPEED_50MHZ, DEBUG_TIMER11_GPIO_PINx);
-#endif
+# endif
 	GPIO_BOP(DEBUG_TIMER11_GPIOx) = DEBUG_TIMER11_GPIO_PINx;
 #endif
+
+#if defined DEBUG_LTC_TIMER11
+	printf("MASTER_TIMER_CLOCK  : %u Hz\n", MASTER_TIMER_CLOCK);
+	printf("FREQUENCY_EFFECTIVE : %u Hz\n", FREQUENCY_EFFECTIVE);
+
+	auto isNeeded = false;
+
+	for (uint32_t nIndex = 0; nIndex < sizeof(TimeCodeConst::TMR_INTV) / sizeof(TimeCodeConst::TMR_INTV[0]; nIndex++) {
+		switch (nIndex) {
+		case 0:
+			isNeeded = is_adjustment_needed<0>();
+			break;
+		case 1:
+			isNeeded = is_adjustment_needed<1>();
+			break;
+		case 2:
+			isNeeded = is_adjustment_needed<2>();
+			break;
+		case 3:
+			isNeeded = is_adjustment_needed<3>();
+			break;
+		default:
+			break;
+		}
+
+		const auto nCAR = TMR_INTV[nIndex];
+		printf("FPS = %u, CAR1 = %u, CAR2 = %u [%s]\n", FPS[nIndex], nCAR, nCAR + 1, isNeeded ? "Adjustment" : "Ok");
+	}
+#endif
+}
+
+void timer11_set_type(const uint32_t nType) {
+	TIMER_CTL0(TIMER11) &= ~TIMER_CTL0_CEN;
+	TIMER_CAR(TIMER11) = gv_ltc_nCurrentCAR = g_ltc_nCAR1 = TimeCodeConst::TMR_INTV[nType];
+	TIMER_CNT(TIMER11) = 0;
+	TIMER_CTL0(TIMER11) |= TIMER_CTL0_CEN;
 }
 
 /*
  * BPM
  */
 void timer13_config() {
-
+	//TODO Implement timer13_config()
 }
 
 } // namespace platform::ltc

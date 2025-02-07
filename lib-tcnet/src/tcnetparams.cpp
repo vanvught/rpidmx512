@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#if !defined(__clang__)	// Needed for compiling on MacOS
+#if defined(__GNUC__) && !defined(__clang__)	
 # pragma GCC push_options
 # pragma GCC optimize ("Os")
 #endif
@@ -65,7 +65,7 @@ void TCNetParams::Load() {
 	m_Params.nSetList = 0;
 
 #if !defined(DISABLE_FS)
-	ReadConfigFile configfile(TCNetParams::staticCallbackFunction, this);
+	ReadConfigFile configfile(TCNetParams::StaticCallbackFunction, this);
 
 	if (configfile.Read(TCNetParamsConst::FILE_NAME)) {
 		TCNetParamsStore::Update(&m_Params);
@@ -87,7 +87,7 @@ void TCNetParams::Load(const char *pBuffer, uint32_t nLength) {
 
 	m_Params.nSetList = 0;
 
-	ReadConfigFile config(TCNetParams::staticCallbackFunction, this);
+	ReadConfigFile config(TCNetParams::StaticCallbackFunction, this);
 
 	config.Read(pBuffer, nLength);
 
@@ -220,7 +220,7 @@ void TCNetParams::Set(TCNet *pTCNet) {
 	pTCNet->SetUseTimeCode(isMaskSet(Mask::USE_TIMECODE));
 }
 
-void TCNetParams::staticCallbackFunction(void *p, const char *s) {
+void TCNetParams::StaticCallbackFunction(void *p, const char *s) {
 	assert(p != nullptr);
 	assert(s != nullptr);
 

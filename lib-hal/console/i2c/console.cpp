@@ -2,7 +2,7 @@
  * @file console.cpp
  *
  */
-/* Copyright (C) 2022-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2022-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -197,7 +197,6 @@ void __attribute__((cold)) console_init() {
 	write_register(SC16IS7X0_FCR, FCR_ENABLE_FIFO);
 }
 
-extern "C" {
 void console_putc(int c) {
 	if (!s_isConnected) {
 		return;
@@ -263,7 +262,7 @@ void console_error(const char *s) {
 	console_puts("\x1b[37m");
 }
 
-void console_set_fg_color(uint16_t fg) {
+void console_set_fg_color(uint32_t fg) {
 	switch (fg) {
 	case CONSOLE_BLACK:
 		console_puts("\x1b[30m");
@@ -286,7 +285,7 @@ void console_set_fg_color(uint16_t fg) {
 	}
 }
 
-void console_set_bg_color(uint16_t bg) {
+void console_set_bg_color(uint32_t bg) {
 	switch (bg) {
 	case CONSOLE_BLACK:
 		console_puts("\x1b[40m");
@@ -308,10 +307,9 @@ void console_status(uint32_t nColour, const char *s) {
 		return;
 	}
 
-	console_set_fg_color(static_cast<uint16_t>(nColour));
+	console_set_fg_color(nColour);
 	console_set_bg_color(CONSOLE_BLACK);
 	console_puts(s);
 	console_putc('\n');
 	console_set_fg_color(CONSOLE_WHITE);
-}
 }

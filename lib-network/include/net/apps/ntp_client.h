@@ -2,7 +2,7 @@
  * @file ntp_client.h
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,10 +51,18 @@ void display_status(const ::ntp::Status status);
 void ntp_client_init();
 void ntp_client_start();
 void ntp_client_stop(const bool doDisable = false);
-
 void ntp_client_set_server_ip(const uint32_t nServerIp);
 uint32_t ntp_client_get_server_ip();
-
 ntp::Status ntp_client_get_status();
+
+/*
+ * PTP
+ */
+void ptp_ntp_init();
+void ptp_ntp_start();
+void ptp_ntp_stop(const bool doDisable = false);
+void ptp_ntp_set_server_ip(const uint32_t nServerIp);
+uint32_t ptp_ntp_get_server_ip();
+ntp::Status ptp_ntp_get_status();
 
 #endif /* NET_APPS_NTP_CLIENT_H_ */

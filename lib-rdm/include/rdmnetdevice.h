@@ -2,7 +2,7 @@
  * @file rdmnetdevice.h
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -57,17 +57,13 @@ public:
 		DEBUG_EXIT
 	};
 
-	void Run() {
-		LLRPDevice::Run();
-	}
-
 	void Print() {
 		static constexpr auto UUID_STRING_LENGTH = 36;
 		char uuid_str[UUID_STRING_LENGTH + 1];
 		uuid_str[UUID_STRING_LENGTH] = '\0';
 
 		uint8_t s_Cid[e131::CID_LENGTH];
-		Hardware::Get()->GetUuid(s_Cid);
+		hal::uuid_copy(s_Cid);
 		uuid_unparse(s_Cid, uuid_str);
 
 		printf("RDMNet\n");

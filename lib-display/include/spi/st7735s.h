@@ -80,9 +80,11 @@ public:
 	ST7735S(uint32_t nCS) : ST77XX(nCS) {
 		DEBUG_ENTRY
 
-#if defined(SPI_LCD_RST_GPIO)
+		if (m_nInstance == 0) {
 		HardwareReset();
-#endif
+		}
+
+		m_nInstance++;
 
 		WriteCommand(st77xx::cmd::SWRESET);
 		udelay(1000 * 150);
@@ -163,6 +165,9 @@ public:
 
 		DEBUG_EXIT
 	}
+
+private:
+	static inline uint32_t m_nInstance;
 };
 
 #endif /* SPI_ST7735S_H_ */

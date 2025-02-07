@@ -2,7 +2,7 @@
  * @file softwaretimers.cpp
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,10 +27,11 @@
 # undef NDEBUG
 #endif
 
-#if !defined(__clang__)
+#if defined(__GNUC__) && !defined(__clang__)
 # if !defined (CONFIG_REMOTECONFIG_MINIMUM)
 #  pragma GCC push_options
 #  pragma GCC optimize ("O2")
+#  pragma GCC optimize ("no-tree-loop-distribute-patterns")
 # endif
 #endif
 
@@ -39,7 +40,7 @@
 #include "superloop/softwaretimers.h"
 #include "hardware.h"
 
-extern "C" void console_error(const char *);
+void console_error(const char *);
 
 struct Timer {
 	uint32_t nExpireTime;
@@ -54,7 +55,7 @@ static int32_t m_nNextId;
 
 TimerHandle_t SoftwareTimerAdd(const uint32_t nIntervalMillis, const TimerCallbackFunction_t pCallbackFunction) {
 	if (m_nTimersCount >= hal::SOFTWARE_TIMERS_MAX) {
-#ifdef NDEBUG
+#ifndef NDEBUG
 		console_error("SoftwareTimerAdd: Max timer limit reached\n");
 #endif
 		return -1;

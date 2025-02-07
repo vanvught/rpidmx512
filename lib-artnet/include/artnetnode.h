@@ -182,6 +182,112 @@ class ArtNetNode {
 public:
 	ArtNetNode();
 
+	void SetOutput(LightSet *pLightSet) {
+		m_pLightSet = pLightSet;
+#if (ARTNET_VERSION >= 4)
+		E131Bridge::SetOutput(pLightSet);
+#endif
+	}
+	LightSet *GetOutput() const {
+		return m_pLightSet;
+	}
+
+	void SetLongName(const char *);
+	const char *GetLongName() const {
+		return reinterpret_cast<const char * >(m_ArtPollReply.LongName);
+	}
+	void GetLongNameDefault(char *);
+
+	void SetShortName(const uint32_t nPortIndex, const char *);
+	const char *GetShortName(const uint32_t nPortIndex) const {
+		assert(nPortIndex < artnetnode::MAX_PORTS);
+		return m_Node.Port[nPortIndex].ShortName;
+	}
+
+	void SetDisableMergeTimeout(const bool bDisable) {
+		m_State.bDisableMergeTimeout = bDisable;
+#if (ARTNET_VERSION >= 4)
+		E131Bridge::SetDisableMergeTimeout(bDisable);
+#endif
+	}
+	bool GetDisableMergeTimeout() const {
+		return m_State.bDisableMergeTimeout;
+	}
+
+	void SetFailSafe(const artnetnode::FailSafe failsafe);	/// TODO Subject for deletion
+	void SetFailSafe(const lightset::FailSafe failsafe);
+	lightset::FailSafe GetFailSafe();
+
+	void SetUniverse(const uint32_t nPortIndex, const lightset::PortDir dir, const uint16_t nUniverse);
+	bool GetUniverse(const uint32_t nPortIndex, uint16_t &nUniverse, const lightset::PortDir portDirection) {
+		if (m_Node.Port[nPortIndex].protocol == artnet::PortProtocol::ARTNET) {
+			return ArtNetNode::GetPortAddress(nPortIndex, nUniverse, portDirection);
+		}
+#if (ARTNET_VERSION >= 4)
+		if (m_Node.Port[nPortIndex].protocol == artnet::PortProtocol::SACN) {
+			return E131Bridge::GetUniverse(nPortIndex, nUniverse, portDirection);
+		}
+#endif
+		return false;
+	}
+
+	void SetMergeMode(const uint32_t nPortIndex, const lightset::MergeMode mergeMode);
+	lightset::MergeMode GetMergeMode(const uint32_t nPortIndex) const {
+		assert(nPortIndex < artnetnode::MAX_PORTS);
+		if ((m_OutputPort[nPortIndex].GoodOutput & artnet::GoodOutput::MERGE_MODE_LTP) == artnet::GoodOutput::MERGE_MODE_LTP) {
+			return lightset::MergeMode::LTP;
+		}
+		return lightset::MergeMode::HTP;
+	}
+
+#if defined (OUTPUT_HAVE_STYLESWITCH)
+	void SetOutputStyle(const uint32_t nPortIndex, lightset::OutputStyle outputStyle);
+	lightset::OutputStyle GetOutputStyle(const uint32_t nPortIndex) const;
+#endif
+
+	void SetRdm(const bool doEnable);
+	bool GetRdm() const {
+		return m_State.rdm.IsEnabled;
+	}
+
+	void SetRdm(const uint32_t nPortIndex, const bool bEnable);
+	bool GetRdm(const uint32_t nPortIndex) const {
+		assert(nPortIndex < artnetnode::MAX_PORTS);
+		return !((m_OutputPort[nPortIndex].GoodOutputB & artnet::GoodOutputB::RDM_DISABLED) == artnet::GoodOutputB::RDM_DISABLED);
+	}
+
+#if (ARTNET_VERSION >= 4)
+	void SetPortProtocol4(const uint32_t nPortIndex, const artnet::PortProtocol portProtocol);
+	artnet::PortProtocol GetPortProtocol4(const uint32_t nPortIndex) const {
+		assert(nPortIndex < artnetnode::MAX_PORTS);
+		return m_Node.Port[nPortIndex].protocol;
+	}
+
+	void SetMapUniverse0(const bool bMapUniverse0 = false) {
+		m_Node.bMapUniverse0 = bMapUniverse0;
+	}
+	bool IsMapUniverse0() const {
+		return m_Node.bMapUniverse0;
+	}
+
+	void SetPriority4(const uint32_t nPriority) {
+		m_ArtPollReply.AcnPriority = static_cast<uint8_t>(nPriority);
+
+		for (uint32_t nPortIndex = 0; nPortIndex < e131bridge::MAX_PORTS; nPortIndex++) {
+			E131Bridge::SetPriority(nPortIndex, static_cast<uint8_t>(nPriority));
+		}
+	}
+
+	void SetPriority(const uint32_t nPortIndex, const uint8_t nPriority) {
+		E131Bridge::SetPriority(nPortIndex, nPriority);
+	}
+	uint8_t GetPriority(const uint32_t nPortIndex) const {
+		return E131Bridge::GetPriority(nPortIndex);
+	}
+#endif
+
+	void Print();
+
 	void Start();
 	void Stop();
 
@@ -252,47 +358,6 @@ public:
 		return artnet::VERSION;
 	}
 
-	void SetOutputStyle(const uint32_t nPortIndex, lightset::OutputStyle outputStyle);
-	lightset::OutputStyle GetOutputStyle(const uint32_t nPortIndex) const;
-
-	void SetFailSafe(const artnetnode::FailSafe failsafe);
-
-	artnetnode::FailSafe GetFailSafe() {
-		const auto networkloss = (m_ArtPollReply.Status3 & artnet::Status3::NETWORKLOSS_MASK);
-		switch (networkloss) {
-			case artnet::Status3::NETWORKLOSS_LAST_STATE:
-				return artnetnode::FailSafe::LAST;
-				break;
-			case artnet::Status3::NETWORKLOSS_OFF_STATE:
-				return artnetnode::FailSafe::OFF;
-				break;
-			case artnet::Status3::NETWORKLOSS_ON_STATE:
-				return artnetnode::FailSafe::ON;
-				break;
-			case artnet::Status3::NETWORKLOSS_PLAYBACK:
-				return artnetnode::FailSafe::PLAYBACK;
-				break;
-			default:
-				assert(0);
-				__builtin_unreachable();
-				break;
-		}
-
-		__builtin_unreachable();
-		return artnetnode::FailSafe::OFF;
-	}
-
-	void SetOutput(LightSet *pLightSet) {
-		m_pLightSet = pLightSet;
-#if (ARTNET_VERSION >= 4)
-		E131Bridge::SetOutput(pLightSet);
-#endif
-	}
-
-	LightSet *GetOutput() const {
-		return m_pLightSet;
-	}
-
 	uint32_t GetActiveInputPorts() const {
 		return m_State.nEnabledInputPorts;
 	}
@@ -300,21 +365,6 @@ public:
 	uint32_t GetActiveOutputPorts() const {
 		return m_State.nEnabledOutputPorts;
 	}
-
-	void SetShortName(const uint32_t nPortIndex, const char *);
-	const char *GetShortName(const uint32_t nPortIndex) const {
-		assert(nPortIndex < artnetnode::MAX_PORTS);
-		return m_Node.Port[nPortIndex].ShortName;
-	}
-
-	void SetLongName(const char *);
-	const char *GetLongName() const {
-		return reinterpret_cast<const char * >(m_ArtPollReply.LongName);
-	}
-
-	void GetLongNameDefault(char *);
-
-	void SetUniverse(const uint32_t nPortIndex, const lightset::PortDir dir, const uint16_t nUniverse);
 
 	lightset::PortDir GetPortDirection(const uint32_t nPortIndex) const {
 		assert(nPortIndex < artnetnode::MAX_PORTS);
@@ -353,26 +403,6 @@ public:
 			}
 		}
 		return false;
-	}
-
-	void SetMergeMode(const uint32_t nPortIndex, const lightset::MergeMode mergeMode);
-	lightset::MergeMode GetMergeMode(const uint32_t nPortIndex) const {
-		assert(nPortIndex < artnetnode::MAX_PORTS);
-		if ((m_OutputPort[nPortIndex].GoodOutput & artnet::GoodOutput::MERGE_MODE_LTP) == artnet::GoodOutput::MERGE_MODE_LTP) {
-			return lightset::MergeMode::LTP;
-		}
-		return lightset::MergeMode::HTP;
-	}
-
-	void SetRdm(const bool doEnable);
-	bool GetRdm() const {
-		return m_State.rdm.IsEnabled;
-	}
-
-	void SetRdm(const uint32_t nPortIndex, const bool bEnable);
-	bool GetRdm(const uint32_t nPortIndex) const {
-		assert(nPortIndex < artnetnode::MAX_PORTS);
-		return !((m_OutputPort[nPortIndex].GoodOutputB & artnet::GoodOutputB::RDM_DISABLED) == artnet::GoodOutputB::RDM_DISABLED);
 	}
 
 	void SetRdmDiscovery(const uint32_t nPortIndex, const bool bEnable);
@@ -427,17 +457,6 @@ public:
 	void SetRdmResponder(ArtNetRdmResponder *pArtNetRdmResponder, const bool doEnable = true);
 #endif
 
-	void SetDisableMergeTimeout(bool bDisable) {
-		m_State.bDisableMergeTimeout = bDisable;
-#if (ARTNET_VERSION >= 4)
-		E131Bridge::SetDisableMergeTimeout(bDisable);
-#endif
-	}
-
-	bool GetDisableMergeTimeout() const {
-		return m_State.bDisableMergeTimeout;
-	}
-
 #if defined (ARTNET_HAVE_TIMECODE)
 	void SendTimeCode(const struct artnet::TimeCode *pArtNetTimeCode) {
 		assert(pArtNetTimeCode != nullptr);
@@ -488,8 +507,6 @@ public:
 		}
 	}
 
-	void Print();
-
 	static ArtNetNode* Get() {
 		return s_pThis;
 	}
@@ -505,37 +522,6 @@ public:
 	/**
 	 * Art-Net 4
 	 */
-	void SetMapUniverse0(const bool bMapUniverse0 = false) {
-		m_Node.bMapUniverse0 = bMapUniverse0;
-	}
-	bool IsMapUniverse0() const {
-		return m_Node.bMapUniverse0;
-	}
-
-	void SetPriority4(const uint32_t nPriority) {
-		m_ArtPollReply.AcnPriority = static_cast<uint8_t>(nPriority);
-
-		for (uint32_t nPortIndex = 0; nPortIndex < e131bridge::MAX_PORTS; nPortIndex++) {
-			E131Bridge::SetPriority(nPortIndex, static_cast<uint8_t>(nPriority));
-		}
-	}
-
-	void SetPortProtocol4(const uint32_t nPortIndex, const artnet::PortProtocol portProtocol);
-	artnet::PortProtocol GetPortProtocol4(const uint32_t nPortIndex) const {
-		assert(nPortIndex < artnetnode::MAX_PORTS);
-		return m_Node.Port[nPortIndex].protocol;
-	}
-
-	/**
-	 * sACN E1.131
-	 */
-	void SetPriority4(uint32_t nPortIndex, uint8_t nPriority) {
-		E131Bridge::SetPriority(nPortIndex, nPriority);
-	}
-	uint8_t GetPriority4(uint32_t nPortIndex) const {
-		return E131Bridge::GetPriority(nPortIndex);
-	}
-
 	bool GetUniverse4(uint32_t nPortIndex, uint16_t &nUniverse, lightset::PortDir portDir) const {
 		return E131Bridge::GetUniverse(nPortIndex, nUniverse, portDir);
 	}
@@ -553,7 +539,6 @@ private:
 	void SetUniverseSwitch(const uint32_t nPortIndex, const lightset::PortDir dir, const uint8_t nAddress);
 	void SetNetSwitch(const uint32_t nPortIndex, const uint8_t nNetSwitch);
 	void SetSubnetSwitch(const uint32_t nPortIndex, const uint8_t nSubnetSwitch);
-
 	void SendDiag([[maybe_unused]] const artnet::PriorityCodes priorityCode, [[maybe_unused]] const char *format, ...) {
 #if defined (ARTNET_ENABLE_SENDDIAG)
 		if (!m_State.SendArtDiagData) {
@@ -635,7 +620,7 @@ private:
 		}
 	}
 
-	void static staticCallbackFunctionLedPanelOff([[maybe_unused]] TimerHandle_t timerHandle) {
+	void static StaticCallbackFunctionLedPanelOff([[maybe_unused]] TimerHandle_t timerHandle) {
 		s_pThis->LedPanelOff();
 	}
 

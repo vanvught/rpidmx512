@@ -2,7 +2,7 @@
  * @file acd.h
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,10 +31,10 @@
 
 #include <cstdint>
 
-#include "netif.h"
-#include "arp.h"
+#include "net/netif.h"
+#include "net/arp.h"
 #include "net/protocol/acd.h"
-#include "ip4_address.h"
+#include "net/ip4_address.h"
 
 /**
  * https://datatracker.ietf.org/doc/html/rfc5227.html
@@ -62,7 +62,7 @@ void acd_remove(struct acd::Acd *);
 void acd_start(struct acd::Acd *, const ip4_addr_t ipaddr);
 void acd_stop(struct acd::Acd *);
 
-void acd_arp_reply(struct t_arp *);
+void acd_arp_reply(const struct t_arp *);
 
 void acd_network_changed_link_down();
 void acd_netif_ip_addr_changed(const ip4_addr_t nOldIpAddress, const ip4_addr_t nNewIpAddress);

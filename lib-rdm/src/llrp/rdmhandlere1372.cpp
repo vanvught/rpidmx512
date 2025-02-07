@@ -514,7 +514,7 @@ void RDMHandler::SetStaticAddress([[maybe_unused]] bool IsBroadcast, [[maybe_unu
 	auto *p = reinterpret_cast<uint8_t*>(&nIpAddress);
 	memcpy(p, &pRdmDataIn->param_data[4], 4);
 
-	set_queued_static_ip(nIpAddress, network::cidr_to_netmask(pRdmDataIn->param_data[8]));
+	set_queued_static_ip(nIpAddress, net::cidr_to_netmask(pRdmDataIn->param_data[8]));
 
 	RespondMessageAck();
 

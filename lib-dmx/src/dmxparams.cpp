@@ -55,7 +55,7 @@ void DmxParams::Load() {
 	m_Params.nSetList = 0;
 
 #if !defined(DISABLE_FS)
-	ReadConfigFile configfile(DmxParams::staticCallbackFunction, this);
+	ReadConfigFile configfile(DmxParams::StaticCallbackFunction, this);
 
 	if (configfile.Read(DmxParamsConst::FILE_NAME)) {
 		dmxsendparams::store::update(&m_Params);
@@ -77,7 +77,7 @@ void DmxParams::Load(const char* pBuffer, uint32_t nLength) {
 
 	m_Params.nSetList = 0;
 
-	ReadConfigFile config(DmxParams::staticCallbackFunction, this);
+	ReadConfigFile config(DmxParams::StaticCallbackFunction, this);
 
 	config.Read(pBuffer, nLength);
 
@@ -189,7 +189,7 @@ void DmxParams::Set(Dmx *p) {
 	}
 }
 
-void DmxParams::staticCallbackFunction(void *p, const char *s) {
+void DmxParams::StaticCallbackFunction(void *p, const char *s) {
 	assert(p != nullptr);
 	assert(s != nullptr);
 

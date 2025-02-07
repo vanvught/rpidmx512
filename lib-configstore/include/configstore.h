@@ -2,7 +2,7 @@
  * @file configstore.h
  *
  */
-/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -79,6 +79,11 @@ enum class Store {
 	LAST
 };
 
+static constexpr uint32_t STORE_SIZE[static_cast<uint32_t>(Store::LAST)] = { 96,        32,    64,      64,    32,     32,        480,          64,         32,        96,           48,        32,      944,          48,        64,            32,        96,         32,      1024,     32,     32,       64,            96,               32,    32,          320,    32};
+#ifndef NDEBUG
+static constexpr char STORE_NAME[static_cast<uint32_t>(Store::LAST)][16] = {"Network", "DMX", "Pixel", "LTC", "MIDI", "LTC ETC", "OSC Server", "TLC59711", "USB Pro", "RDM Device", "RConfig", "TCNet", "OSC Client", "Display", "LTC Display", "Monitor", "SparkFun", "Slush", "Motors", "Show", "Serial", "RDM Sensors", "RDM SubDevices", "GPS", "RGB Panel", "Node", "PCA9685"};
+#endif
+
 enum class State {
 	IDLE, CHANGED, CHANGED_WAITING, ERASING, ERASED, ERASED_WAITING, WRITING
 };
@@ -106,10 +111,10 @@ public:
 		}
 	}
 
-	bool Flash();
-
 	void Dump();
-
+	bool Commit() {
+		return Flash();
+	}
 	void Delay();
 
 	/*
@@ -164,7 +169,8 @@ public:
 	}
 
 private:
-	uint32_t GetStoreOffset(configstore::Store tStore);
+	uint32_t GetStoreOffset(configstore::Store store);
+	bool Flash();
 
 private:
 	struct Env {

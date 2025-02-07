@@ -58,10 +58,6 @@ public:
 
 	uint32_t GetReleaseId();
 
-	void GetUuid(uuid_t out) {
-		memcpy(out, m_uuid, sizeof(uuid_t));
-	}
-
 	void Print();
 
 	const char *GetMachine(uint8_t &nLength);

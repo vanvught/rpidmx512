@@ -33,15 +33,15 @@ struct HandlerOled: public JamSTAPLDisplay  {
 		s_pThis = this;
 	}
 
-	~HandlerOled() = default;
+	~HandlerOled() override = default;
 
 	// JamSTAPL
-	void JamShowInfo(const char *pInfo) {
+	void JamShowInfo(const char *pInfo) override {
 		Display::Get()->ClearLine(1);
 		Display::Get()->Write(1, pInfo);
 	}
 
-	void JamShowStatus(const char *pStatus, int ExitCode) {
+	void JamShowStatus(const char *pStatus, int ExitCode) override {
 		Display::Get()->TextStatus(pStatus, ExitCode == 0 ? CONSOLE_GREEN : CONSOLE_RED);
 	}
 

@@ -57,7 +57,7 @@ public:
 	}
 
 	void SetDestinationIp(const uint32_t nDestinationIp) {
-		if ((network::is_private_ip(nDestinationIp) || network::is_multicast_ip(nDestinationIp))) {
+		if ((net::is_private_ip(nDestinationIp) || net::is_multicast_ip(nDestinationIp))) {
 			m_Config.nDestinationIp = nDestinationIp;
 		} else {
 			m_Config.nDestinationIp =  0;
@@ -73,7 +73,7 @@ public:
 	}
 
 	void SetSourceMulticastIp(const uint32_t nSourceMulticastIp) {
-		if (network::is_multicast_ip(nSourceMulticastIp)) {
+		if (net::is_multicast_ip(nSourceMulticastIp)) {
 			m_Config.nSourceMulticastIp = nSourceMulticastIp;
 		} else {
 			m_Config.nSourceMulticastIp =  0;
@@ -121,7 +121,7 @@ private:
 	 * @param nFromIp IP address of the sender.
 	 * @param nFromPort Port number of the sender.
 	 */
-	void static staticCallbackFunction(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
+	void static StaticCallbackFunction(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
 		s_pThis->Input(pBuffer, nSize, nFromIp, nFromPort);
 	}
 

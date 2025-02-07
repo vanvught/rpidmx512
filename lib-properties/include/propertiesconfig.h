@@ -60,7 +60,7 @@ private:
     	return (s_Config & nMask) == nMask;
     }
 
-    static uint8_t s_Config;
+    static inline uint8_t s_Config;
 };
 
 #endif /* PROPERTIESCONFIG_H_ */

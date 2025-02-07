@@ -2,7 +2,7 @@
  * @file propertiesbuilder.cpp
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,11 +23,6 @@
  * THE SOFTWARE.
  */
 
-#if !defined(__clang__)	// Needed for compiling on MacOS
-# pragma GCC push_options
-# pragma GCC optimize ("Os")
-#endif
-
 #include <cstring>
 #include <cstdio>
 #include <cassert>
@@ -35,7 +30,7 @@
 #include "propertiesbuilder.h"
 #include "propertiesconfig.h"
 
-#include "network.h"
+#include "net/ip4_address.h"
 
 #include "debug.h"
 

@@ -207,12 +207,6 @@ public:
 
 	void Input(const uint8_t *, uint32_t, uint32_t, uint16_t);
 
-	void Run() {
-#if defined (ENABLE_HTTPD)
-		m_pHttpDaemon->Run();
-#endif
-	}
-
 	static RemoteConfig *Get() {
 		return s_pThis;
 	}
@@ -491,7 +485,7 @@ private:
 	static const Txt s_TXT[];
 
 	struct ListBin {
-		uint8_t aMacAddress[network::MAC_SIZE];
+		uint8_t aMacAddress[net::MAC_SIZE];
 		uint8_t nNode;
 		uint8_t nOutput;
 		uint8_t nActiveOutputs;
@@ -516,7 +510,7 @@ private:
 #endif
 
 
-	void static staticCallbackFunction(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
+	void static StaticCallbackFunction(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
 		RemoteConfig::Get()->Input(pBuffer, nSize, nFromIp, nFromPort);
 	}
 
