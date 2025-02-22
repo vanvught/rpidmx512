@@ -25,7 +25,6 @@
 
 #include <cstdint>
 #include <cstdio>
-#include <cassert>
 
 #include "hardware.h"
 #include "network.h"
@@ -33,13 +32,10 @@
 #include "displayudf.h"
 #include "displayudfparams.h"
 
-#include "artnetnode.h"
-#include "artnetparams.h"
-
-#include "artnetmsgconst.h"
+#include "dmxnodenode.h"
+#include "dmxnodemsgconst.h"
 
 #include "rdmdeviceresponder.h"
-#include "factorydefaults.h"
 #include "rdmpersonality.h"
 #include "rdmdeviceparams.h"
 #include "rdmsensorsparams.h"
@@ -89,20 +85,14 @@ int main() {
 	pca9685DmxParams.Load();
 	pca9685DmxParams.Set(&pca9685Dmx);
 
-	ArtNetNode node;
-
-	ArtNetParams artnetParams;
-	artnetParams.Load();
-	artnetParams.Set();
-
-	node.SetRdm(static_cast<uint32_t>(0), true);
-	node.SetOutput(pca9685Dmx.GetLightSet());
-	node.SetUniverse(0, lightset::PortDir::OUTPUT, artnetParams.GetUniverse(0));
+	DmxNodeNode dmxNodeNode;
+	dmxNodeNode.SetRdm(static_cast<uint32_t>(0), true);
+	dmxNodeNode.SetOutput(pca9685Dmx.GetPCA9685DmxSet());
 
 	char aDescription[64];
 	snprintf(aDescription, sizeof(aDescription) - 1, "PCA9685");
 
-	RDMPersonality *pRDMPersonalities[1] = { new  RDMPersonality(aDescription, pca9685Dmx.GetLightSet())};
+	RDMPersonality *pRDMPersonalities[1] = { new RDMPersonality(aDescription, pca9685Dmx.GetPCA9685DmxSet())};
 
 	ArtNetRdmResponder rdmResponder(pRDMPersonalities, 1);
 
@@ -127,8 +117,8 @@ int main() {
 
 	rdmResponder.Print();
 
-	node.SetRdmResponder(&rdmResponder);
-	node.Print();
+	dmxNodeNode.SetRdmResponder(&rdmResponder);
+	dmxNodeNode.Print();
 
 	pca9685Dmx.Print();
 
@@ -149,7 +139,7 @@ int main() {
 	display.SetTitle("Art-Net 4 PCA9685");
 	display.Set(2, displayudf::Labels::IP);
 	display.Set(3, displayudf::Labels::VERSION);
-	display.Set(4, displayudf::Labels::UNIVERSE_PORT_A);
+	display.Set(4, displayudf::Labels::HOSTNAME);
 	display.Set(5, displayudf::Labels::DMX_START_ADDRESS);
 
 	DisplayUdfParams displayUdfParams;
@@ -158,24 +148,24 @@ int main() {
 
 	display.Show();
 
-	RemoteConfig remoteConfig(remoteconfig::Node::ARTNET, remoteconfig::Output::PWM, node.GetActiveOutputPorts());
+	RemoteConfig remoteConfig(remoteconfig::NodeType::ARTNET, remoteconfig::Output::PWM, dmxNodeNode.GetActiveOutputPorts());
 
 	RemoteConfigParams remoteConfigParams;
 	remoteConfigParams.Load();
 	remoteConfigParams.Set(&remoteConfig);
 
-	display.TextStatus(ArtNetMsgConst::START, CONSOLE_YELLOW);
+	display.TextStatus(DmxNodeMsgConst::START, CONSOLE_YELLOW);
 
-	node.Start();
+	dmxNodeNode.Start();
 
-	display.TextStatus(ArtNetMsgConst::STARTED, CONSOLE_GREEN);
+	display.TextStatus(DmxNodeMsgConst::STARTED, CONSOLE_GREEN);
 
 	hw.WatchdogInit();
 
 	for (;;) {
 		hw.WatchdogFeed();
 		nw.Run();
-		node.Run();
+		dmxNodeNode.Run();
 #if defined (NODE_SHOWFILE)
 		showFile.Run();
 #endif
@@ -183,4 +173,3 @@ int main() {
 		hw.Run();
 	}
 }
-

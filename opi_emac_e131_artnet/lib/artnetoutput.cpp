@@ -2,7 +2,7 @@
  * @file artnetoutput.cpp
  *
  */
-/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,9 +26,10 @@
 #include <cstdint>
 
 #include "artnetoutput.h"
-
-#include "e131bridge.h"
 #include "artnetcontroller.h"
+#include "e131bridge.h"
+
+#include "dmxnode.h"
 
 #include "debug.h"
 
@@ -57,7 +58,7 @@ void ArtNetOutput::Start(const uint32_t nPortIndex) {
 	if (nPortIndex < e131bridge::MAX_PORTS) {
 		uint16_t nUniverse;
 
-		if (E131Bridge::Get()->GetUniverse(static_cast<uint8_t>(nPortIndex), nUniverse, lightset::PortDir::OUTPUT)) {
+		if (E131Bridge::Get()->GetUniverse(static_cast<uint8_t>(nPortIndex), nUniverse, dmxnode::PortDirection::OUTPUT)) {
 			m_nUniverse[nPortIndex] = nUniverse;
 			DEBUG_PRINTF("m_nUniverse[%u]=%d", nPortIndex, static_cast<int>(m_nUniverse[nPortIndex]));
 		}
@@ -72,7 +73,7 @@ void ArtNetOutput::Stop(const uint32_t nPortIndex) {
 	if (nPortIndex < e131bridge::MAX_PORTS) {
 		uint16_t nUniverse;
 
-		if (E131Bridge::Get()->GetUniverse(static_cast<uint8_t>(nPortIndex), nUniverse, lightset::PortDir::OUTPUT)) {
+		if (E131Bridge::Get()->GetUniverse(static_cast<uint8_t>(nPortIndex), nUniverse, dmxnode::PortDirection::OUTPUT)) {
 			m_nUniverse[nPortIndex] = 0;
 			DEBUG_PRINTF("m_nUniverse[%d]=0", static_cast<int>(nPortIndex));
 		}

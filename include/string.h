@@ -189,6 +189,27 @@ inline int strncasecmp(const char *s1, const char *s2, size_t n) {
 	return 0;
 }
 
+inline char *strcat(char *s1, const char *s2) {
+	strcpy(s1 + strlen(s1), s2);
+	return s1;
+}
+
+inline char *strncat(char *dst, const char *src, size_t n) {
+	if (n != 0) {
+		char *d = dst;
+		const char *s = src;
+		while (*d != 0)
+			d++;
+		do {
+			if ((*d = *s++) == 0)
+				break;
+			d++;
+		} while (--n != 0);
+		*d = 0;
+	}
+	return (dst);
+}
+
 inline char *strchr(const char *p, int ch) {
 	char c = (char) ch;
 

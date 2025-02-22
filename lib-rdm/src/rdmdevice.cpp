@@ -34,6 +34,7 @@
 #include "rdm_e120.h"
 
 #include "net/ip4_address.h"
+
 #include "network.h"
 #include "hardware.h"
 
@@ -50,8 +51,6 @@
    static constexpr char DEVICE_LABEL[] = GD32_BOARD_NAME " RDM Device";
 # elif defined (RASPPI)
    static constexpr char DEVICE_LABEL[] = "Raspberry Pi RDM Device";
-# elif defined (__CYGWIN__)
-   static constexpr char DEVICE_LABEL[] = "Cygwin RDM Device";
 # elif defined (__linux__)
    static constexpr char DEVICE_LABEL[] = "Linux RDM Device";
 # elif defined (__APPLE__)
@@ -60,8 +59,6 @@
    static constexpr char DEVICE_LABEL[] = "RDM Device";
 # endif
 #endif
-
-RDMDevice *RDMDevice::s_pThis;
 
 RDMDevice::RDMDevice() {
 	DEBUG_ENTRY

@@ -46,23 +46,21 @@ NetworkParams::NetworkParams() {
 	DEBUG_ENTRY
 
 	memset(&m_Params, 0, sizeof(struct networkparams::Params));
-	m_Params.bIsDhcpUsed = networkparams::defaults::IS_DHCP_USED;
 
 	DEBUG_EXIT
 }
 
 void NetworkParams::Load() {
 	DEBUG_ENTRY
-	m_Params.nSetList = 0;
 
 #if !defined(DISABLE_FS)
 	ReadConfigFile configfile(NetworkParams::StaticCallbackFunction, this);
 
 	if (configfile.Read(NetworkParamsConst::FILE_NAME)) {
-		networkparams::store::update(&m_Params);
+		networkparams::store::Update(&m_Params);
 	} else
 #endif
-		networkparams::store::copy(&m_Params);
+		networkparams::store::Copy(&m_Params);
 
 #ifndef NDEBUG
 	Dump();
@@ -76,13 +74,11 @@ void NetworkParams::Load(const char *pBuffer, uint32_t nLength) {
 	assert(pBuffer != nullptr);
 	assert(nLength != 0);
 
-	m_Params.nSetList = 0;
-
 	ReadConfigFile config(NetworkParams::StaticCallbackFunction, this);
 
 	config.Read(pBuffer, nLength);
 
-	networkparams::store::update(&m_Params);
+	networkparams::store::Update(&m_Params);
 
 #ifndef NDEBUG
 	Dump();
@@ -95,13 +91,8 @@ void NetworkParams::CallbackFunction(const char *pLine) {
 
 	uint8_t nValue8;
 
-	if (Sscan::Uint8(pLine, NetworkParamsConst::USE_DHCP, nValue8) == Sscan::OK) {
-		if (nValue8 != 0) {	// Default
-			m_Params.nSetList &= ~networkparams::Mask::DHCP;
-		} else {
-			m_Params.nSetList |= networkparams::Mask::DHCP;
-		}
-		m_Params.bIsDhcpUsed = !(nValue8 == 0);
+	if (Sscan::Uint8(pLine, NetworkParamsConst::USE_STATIC_IP, nValue8) == Sscan::OK) {
+		m_Params.bUseStaticIp = (nValue8 != 0);
 		return;
 	}
 
@@ -110,9 +101,6 @@ void NetworkParams::CallbackFunction(const char *pLine) {
 	if (Sscan::IpAddress(pLine, NetworkParamsConst::IP_ADDRESS, nValue32) == Sscan::OK) {
 		if ((net::is_private_ip(nValue32)) || ((nValue32 & 0xFF) == 2U) || (nValue32 == 0)) {
 			m_Params.nLocalIp = nValue32;
-			m_Params.nSetList |= networkparams::Mask::IP_ADDRESS;
-		} else {
-			m_Params.nSetList &= ~networkparams::Mask::IP_ADDRESS;
 		}
 		return;
 	}
@@ -120,19 +108,13 @@ void NetworkParams::CallbackFunction(const char *pLine) {
 	if (Sscan::IpAddress(pLine, NetworkParamsConst::NET_MASK, nValue32) == Sscan::OK) {
 		if (net::is_netmask_valid(nValue32)) {
 			m_Params.nNetmask = nValue32;
-			m_Params.nSetList |= networkparams::Mask::NET_MASK;
-		} else {
-			m_Params.nSetList &= ~networkparams::Mask::NET_MASK;
 		}
 		return;
 	}
 
 	if (Sscan::IpAddress(pLine, NetworkParamsConst::DEFAULT_GATEWAY, nValue32) == Sscan::OK) {
 		if (nValue32 != 0) {
-			m_Params.nSetList |= networkparams::Mask::DEFAULT_GATEWAY;
 			m_Params.nGatewayIp = nValue32;
-		} else {
-			m_Params.nSetList &= ~networkparams::Mask::DEFAULT_GATEWAY;
 		}
 
 		return;
@@ -142,17 +124,16 @@ void NetworkParams::CallbackFunction(const char *pLine) {
 
 	if (Sscan::Char(pLine, NetworkParamsConst::HOSTNAME, m_Params.aHostName, nLength) == Sscan::OK) {
 		m_Params.aHostName[nLength] = '\0';
-		m_Params.nSetList |= networkparams::Mask::HOSTNAME;
 		return;
 	}
 
 	if (Sscan::IpAddress(pLine, NetworkParamsConst::NTP_SERVER, nValue32) == Sscan::OK) {
+		m_Params.nNtpServerIp = nValue32;
 		if (nValue32 != 0) {
 			m_Params.nSetList |= networkparams::Mask::NTP_SERVER;
 		} else {
 			m_Params.nSetList &= ~networkparams::Mask::NTP_SERVER;
 		}
-		m_Params.nNtpServerIp = nValue32;
 		return;
 	}
 
@@ -166,14 +147,12 @@ void NetworkParams::CallbackFunction(const char *pLine) {
 	nLength = 34 - 1;
 	if (Sscan::Char(pLine, NetworkParamsConst::SSID, m_Params.aSsid, nLength) == Sscan::OK) {
 		m_Params.aSsid[nLength] = '\0';
-		m_Params.nSetList |= networkparams::Mask::SSID;
 		return;
 	}
 
 	nLength = 34 - 1;
 	if (Sscan::Char(pLine, NetworkParamsConst::PASSWORD, m_Params.aPassword, nLength) == Sscan::OK) {
 		m_Params.aPassword[nLength] = '\0';
-		m_Params.nSetList |= networkparams::Mask::PASSWORD;
 		return;
 	}
 #endif
@@ -194,7 +173,7 @@ void NetworkParams::Builder(const struct networkparams::Params *pParams, char *p
 	if (pParams != nullptr) {
 		memcpy(&m_Params, pParams, sizeof(struct networkparams::Params));
 	} else {
-		networkparams::store::copy(&m_Params);
+		networkparams::store::Copy(&m_Params);
 	}
 
 	PropertiesBuilder builder(NetworkParamsConst::FILE_NAME, pBuffer, nLength);
@@ -202,33 +181,33 @@ void NetworkParams::Builder(const struct networkparams::Params *pParams, char *p
 	// Fixed
 	builder.AddIpAddress("secondary_ip", Network::Get()->GetSecondaryIp(), false);
 
-	if (!IsMaskSet(networkparams::Mask::IP_ADDRESS)) {
+	if (m_Params.nLocalIp == 0) {
 		m_Params.nLocalIp = Network::Get()->GetIp();
 	}
 
-	if (!IsMaskSet(networkparams::Mask::NET_MASK)) {
+	if (m_Params.nNetmask == 0) {
 		m_Params.nNetmask = Network::Get()->GetNetmask();
 	}
 
-	if (!IsMaskSet(networkparams::Mask::DEFAULT_GATEWAY)) {
+	if (m_Params.nGatewayIp == 0) {
 		m_Params.nGatewayIp = Network::Get()->GetGatewayIp();
 	}
 
-	if (!IsMaskSet(networkparams::Mask::HOSTNAME)) {
+	if (m_Params.aHostName[0] == '\0') {
 		strncpy(m_Params.aHostName, Network::Get()->GetHostName(), net::HOSTNAME_SIZE - 1);
 		m_Params.aHostName[net::HOSTNAME_SIZE - 1] = '\0';
 	}
 
-	builder.Add(NetworkParamsConst::USE_DHCP, m_Params.bIsDhcpUsed, IsMaskSet(networkparams::Mask::DHCP));
+	builder.Add(NetworkParamsConst::USE_STATIC_IP, m_Params.bUseStaticIp, true);
 
 	builder.AddComment("Static IP");
-	builder.AddIpAddress(NetworkParamsConst::IP_ADDRESS, m_Params.nLocalIp, IsMaskSet(networkparams::Mask::IP_ADDRESS));
-	builder.AddIpAddress(NetworkParamsConst::NET_MASK, m_Params.nNetmask, IsMaskSet(networkparams::Mask::NET_MASK));
-	builder.AddIpAddress(NetworkParamsConst::DEFAULT_GATEWAY, m_Params.nGatewayIp, IsMaskSet(networkparams::Mask::DEFAULT_GATEWAY));
+	builder.AddIpAddress(NetworkParamsConst::IP_ADDRESS, m_Params.nLocalIp);
+	builder.AddIpAddress(NetworkParamsConst::NET_MASK, m_Params.nNetmask);
+	builder.AddIpAddress(NetworkParamsConst::DEFAULT_GATEWAY, m_Params.nGatewayIp);
 #if defined(ESP8266)
-	builder.AddIpAddress(NetworkParamsConst::NAME_SERVER, m_Params.nNameServerIp, IsMaskSet(networkparams::Mask::NAME_SERVER));
+	builder.AddIpAddress(NetworkParamsConst::NAME_SERVER, m_Params.nNameServerIp);
 #endif
-	builder.Add(NetworkParamsConst::HOSTNAME, m_Params.aHostName, IsMaskSet(networkparams::Mask::HOSTNAME));
+	builder.Add(NetworkParamsConst::HOSTNAME, m_Params.aHostName);
 
 	builder.AddComment("NTP Server");
 	builder.AddIpAddress(NetworkParamsConst::NTP_SERVER, m_Params.nNtpServerIp, IsMaskSet(networkparams::Mask::NTP_SERVER));
@@ -242,7 +221,7 @@ void NetworkParams::Builder(const struct networkparams::Params *pParams, char *p
 void NetworkParams::Dump() {
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, NetworkParamsConst::FILE_NAME);
 
-	printf(" %s=%d [%s]\n", NetworkParamsConst::USE_DHCP, static_cast<int>(m_Params.bIsDhcpUsed), m_Params.bIsDhcpUsed != 0 ? "Yes" : "No");
+	printf(" %s=%d [%s]\n", NetworkParamsConst::USE_STATIC_IP, m_Params.bUseStaticIp, m_Params.bUseStaticIp ? "Yes" : "No");
 	printf(" %s=" IPSTR "\n", NetworkParamsConst::IP_ADDRESS, IP2STR(m_Params.nLocalIp));
 	printf(" %s=" IPSTR "\n", NetworkParamsConst::NET_MASK, IP2STR(m_Params.nNetmask));
 	printf(" %s=" IPSTR "\n", NetworkParamsConst::DEFAULT_GATEWAY, IP2STR(m_Params.nGatewayIp));

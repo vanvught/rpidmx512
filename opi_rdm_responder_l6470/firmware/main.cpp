@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,16 +23,17 @@
  * THE SOFTWARE.
  */
 
-#include <cstdio>
 #include <cstdint>
+#include <cstdio>
 #include <cassert>
 
 #include "hardware.h"
-#include "display.h"
 #include "network.h"
 #if !defined(NO_EMAC)
 # include "networkconst.h"
 #endif
+
+#include "display.h"
 
 #include "rdmresponder.h"
 #include "rdmpersonality.h"
@@ -45,7 +46,7 @@
 #include "tlc59711dmxparams.h"
 #include "tlc59711dmx.h"
 
-#include "lightsetchain.h"
+#include "dmxnodechain.h"
 
 #if !defined(NO_EMAC)
 # include "remoteconfig.h"
@@ -60,10 +61,6 @@
 
 #include "sparkfundmx.h"
 
-#include "factorydefaults.h"
-
-
-
 int main() {
 	Hardware hw;
 	Display display;
@@ -74,39 +71,34 @@ int main() {
 
 	fw.Print();
 
-	LightSet *pBoard;
+	DmxNodeChain dmxNodeChain;
 
-	auto *pSparkFunDmx = new SparkFunDmx;
-	assert(pSparkFunDmx != nullptr);
-	pSparkFunDmx->ReadConfigFiles();
+	SparkFunDmx sparkFunDmx;
+	dmxNodeChain.SetSparkfunDmx(&sparkFunDmx);
 
-	pBoard = pSparkFunDmx;
-	bool isLedTypeSet = false;
+	sparkFunDmx.ReadConfigFiles();
+
+	auto nMotorsConnected = sparkFunDmx.GetMotorsConnected();
+	auto isLedTypeSet = false;
 
 	TLC59711DmxParams pwmledparms;
 	pwmledparms.Load();
 
-	if ((isLedTypeSet = pwmledparms.IsSetLedType()) == true) {
-		auto *pTLC59711Dmx = new TLC59711Dmx;
-		assert(pTLC59711Dmx != nullptr);
-		pwmledparms.Set(pTLC59711Dmx);
+	TLC59711Dmx tlc59711Dmx;
 
+	if ((isLedTypeSet = pwmledparms.IsSetLedType())) {
+		dmxNodeChain.SetTLC59711Dmx(&tlc59711Dmx);
 		display.Printf(7, "%s:%d", pwmledparms.GetType(pwmledparms.GetLedType()), pwmledparms.GetLedCount());
-
-		auto *pChain = new LightSetChain;
-		assert(pChain != nullptr);
-
-		pChain->Add(pBoard, 0);
-		pChain->Add(pTLC59711Dmx, 1);
-		pChain->Dump();
-
-		pBoard = pChain;
 	}
 
 	char aDescription[64];
-	snprintf(aDescription, sizeof(aDescription) - 1, "Sparkfun%s", isLedTypeSet ? " with TLC59711" : "");
-
-	RDMPersonality *pRDMPersonalities[1] = { new  RDMPersonality(aDescription, pBoard)};
+	if (isLedTypeSet) {
+		snprintf(aDescription, sizeof(aDescription) - 1, "Sparkfun [%d] with %s [%d]", nMotorsConnected, pwmledparms.GetType(pwmledparms.GetLedType()), pwmledparms.GetLedCount());
+	} else {
+		snprintf(aDescription, sizeof(aDescription) - 1, "Sparkfun [%d]", nMotorsConnected);
+	}
+	
+	RDMPersonality *pRDMPersonalities[1] = { new  RDMPersonality(aDescription, &dmxNodeChain)};
 
 	RDMResponder rdmResponder(pRDMPersonalities, 1);
 
@@ -135,7 +127,7 @@ int main() {
 	hw.SetMode(hardware::ledblink::Mode::NORMAL);
 	hw.WatchdogInit();
 
-	for(;;) {
+	for (;;) {
 		hw.WatchdogFeed();
 		rdmResponder.Run();
 		hw.Run();

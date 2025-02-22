@@ -28,7 +28,6 @@
 #include <cassert>
 
 #include "pca9685dmxled.h"
-#include "lightset.h"
 
 #include "debug.h"
 
@@ -41,8 +40,8 @@ PCA9685DmxLed::PCA9685DmxLed(const pca9685dmx::Configuration& configuration) {
 	if (m_bUse8Bit) {
 		m_nDmxFootprint = m_nChannelCount;
 	} else {
-		if (m_nChannelCount > lightset::dmx::UNIVERSE_SIZE / 2) {
-			m_nChannelCount = lightset::dmx::UNIVERSE_SIZE / 2;
+		if (m_nChannelCount > dmxnode::UNIVERSE_SIZE / 2) {
+			m_nChannelCount = dmxnode::UNIVERSE_SIZE / 2;
 		}
 		m_nDmxFootprint = 2 * m_nChannelCount;
 	}
@@ -104,7 +103,7 @@ void PCA9685DmxLed::Stop([[maybe_unused]] const uint32_t nPortIndex) {
 
 void PCA9685DmxLed::SetData([[maybe_unused]] uint32_t nPortIndex, const uint8_t *pDmxData, uint32_t nLength, [[maybe_unused]] const bool doUpdate) {
 	assert(pDmxData != nullptr);
-	assert(nLength <= lightset::dmx::UNIVERSE_SIZE);
+	assert(nLength <= dmxnode::UNIVERSE_SIZE);
 
 	auto nDmxAddress = m_nDmxStartAddress;
 
@@ -159,7 +158,7 @@ void PCA9685DmxLed::SetData([[maybe_unused]] uint32_t nPortIndex, const uint8_t 
 	}
 }
 
-bool PCA9685DmxLed::GetSlotInfo(uint16_t nSlotOffset, lightset::SlotInfo& tSlotInfo) {
+bool PCA9685DmxLed::GetSlotInfo(uint16_t nSlotOffset, dmxnode::SlotInfo& tSlotInfo) {
 	if (nSlotOffset >  m_nDmxFootprint) {
 		return false;
 	}

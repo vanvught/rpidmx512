@@ -2,10 +2,7 @@
  * @file artnetnodehandlesync.cpp
  *
  */
-/**
- * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
- */
-/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +28,7 @@
 #include "artnetnode.h"
 #include "artnet.h"
 
-#include "lightsetdata.h"
+#include "dmxnodedata.h"
 
 /**
  * When a node receives an ArtSync packet it should transfer to synchronous operation.
@@ -46,12 +43,12 @@ void ArtNetNode::HandleSync() {
 
 	for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
 		if (m_OutputPort[nPortIndex].IsDataPending) {
-			m_pLightSet->Sync(nPortIndex);
+			m_pDmxNodeOutputType->Sync(nPortIndex);
 			SendDiag(artnet::PriorityCodes::DIAG_LOW, "Sync individual %u", nPortIndex);
 		}
 	}
 
-	m_pLightSet->Sync();
+	m_pDmxNodeOutputType->Sync();
 
 	SendDiag(artnet::PriorityCodes::DIAG_LOW, "Sync all");
 

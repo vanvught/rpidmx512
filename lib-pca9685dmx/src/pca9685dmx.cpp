@@ -30,9 +30,9 @@
 #include "pca9685dmxled.h"
 #include "pca9685dmxservo.h"
 
-#include "debug.h"
+#include "pca9685dmxset.h"
 
-PCA9685Dmx *PCA9685Dmx::s_pThis;
+#include "debug.h"
 
 PCA9685Dmx::PCA9685Dmx () {
 	DEBUG_EXIT
@@ -42,7 +42,7 @@ PCA9685Dmx::PCA9685Dmx () {
 	m_Configuration.nMode = 0;
 	m_Configuration.nAddress = pca9685::I2C_ADDRESS_DEFAULT;
 	m_Configuration.nChannelCount = pca9685::PWM_CHANNELS;
-	m_Configuration.nDmxStartAddress = lightset::dmx::START_ADDRESS_DEFAULT;
+	m_Configuration.nDmxStartAddress = dmxnode::START_ADDRESS_DEFAULT;
 	m_Configuration.bUse8Bit = false;
 
 	m_Configuration.led.nLedPwmFrequency = pca9685::pwmled::DEFAULT_FREQUENCY;
@@ -58,20 +58,14 @@ PCA9685Dmx::PCA9685Dmx () {
 PCA9685Dmx::~PCA9685Dmx() {
 	DEBUG_ENTRY
 
-	if (m_pLightSet == nullptr) {
+	if (m_pPCA9685DmxSet == nullptr) {
 		DEBUG_EXIT
 		return;
 	}
 
-	if (m_Configuration.nMode != 0) {	// Servo
-		m_pLightSet->Stop(0);
-		delete m_pLightSet;
-		m_pLightSet = nullptr;
-	} else {							// Led
-		m_pLightSet->Stop(0);
-		delete m_pLightSet;
-		m_pLightSet = nullptr;
-	}
+	m_pPCA9685DmxSet->Stop(0);
+	delete m_pPCA9685DmxSet;
+	m_pPCA9685DmxSet = nullptr;
 
 	DEBUG_EXIT
 }
@@ -79,23 +73,20 @@ PCA9685Dmx::~PCA9685Dmx() {
 void PCA9685Dmx::Start () {
 	DEBUG_EXIT
 
-	assert(m_pLightSet == nullptr);
+	assert(m_pPCA9685DmxSet == nullptr);
 
-	if ((!m_Configuration.bUse8Bit) && (m_Configuration.nChannelCount > lightset::dmx::UNIVERSE_SIZE / 2)) {
-		m_Configuration.nChannelCount = lightset::dmx::UNIVERSE_SIZE / 2;
+	if ((!m_Configuration.bUse8Bit) && (m_Configuration.nChannelCount > dmxnode::UNIVERSE_SIZE / 2)) {
+		m_Configuration.nChannelCount = dmxnode::UNIVERSE_SIZE / 2;
 	}
 
 	if (m_Configuration.nMode != 0) {	// Servo
-		auto *pServo = new PCA9685DmxServo(m_Configuration);
-		assert(pServo != nullptr);
-		m_pLightSet = pServo;
-		pServo->Start(0);
+		m_pPCA9685DmxSet = new PCA9685DmxServo(m_Configuration);
 	} else {							// Led
-		auto *pLed = new PCA9685DmxLed(m_Configuration);
-		assert(pLed != nullptr);
-		m_pLightSet = pLed;
-		pLed->Start(0);
+		m_pPCA9685DmxSet = new PCA9685DmxLed(m_Configuration);
 	}
+
+	assert(m_pPCA9685DmxSet != nullptr);
+	m_pPCA9685DmxSet->Start(0);
 
 	DEBUG_EXIT
 }

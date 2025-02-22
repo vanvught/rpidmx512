@@ -2,7 +2,7 @@
  * @file e131bridgehandlesynchronization.cpp
  *
  */
-/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,7 @@
 
 #include "e131bridge.h"
 
-#include "lightsetdata.h"
+#include "dmxnodedata.h"
 #include "hardware.h"
 
 #include "debug.h"
@@ -53,11 +53,11 @@ void E131Bridge::HandleSynchronization() {
 
 	for (uint32_t nPortIndex = 0; nPortIndex < e131bridge::MAX_PORTS; nPortIndex++) {
 		if (m_OutputPort[nPortIndex].IsDataPending) {
-			m_pLightSet->Sync(nPortIndex);
+			m_pDmxNodeOutputType->Sync(nPortIndex);
 		}
 	}
 
-	m_pLightSet->Sync();
+	m_pDmxNodeOutputType->Sync();
 
 	for (auto &outputPort : m_OutputPort) {
 		if (outputPort.IsDataPending) {

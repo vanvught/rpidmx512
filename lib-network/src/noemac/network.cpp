@@ -2,7 +2,7 @@
  * @file network.cpp
  *
  */
-/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,8 +35,6 @@ void net_shutdown() {}
 
 void mac_address_get(uint8_t paddr[]);
 
-Network *Network::s_pThis = nullptr;
-
 Network::Network() {
 	assert(s_pThis == nullptr);
 	s_pThis = this;
@@ -46,6 +44,5 @@ Network::Network() {
 
 void Network::MacAddressCopyTo(uint8_t *pMacAddress) {
 	assert(pMacAddress != nullptr);
-
 	mac_address_get(pMacAddress);
 }

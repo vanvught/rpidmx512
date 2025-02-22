@@ -43,11 +43,9 @@ struct Params {
 	uint32_t nNetmask;
 	uint32_t nGatewayIp;
 	uint32_t nNameServerIp;
-	bool bIsDhcpUsed;
+	bool bUseStaticIp;
 	char aHostName[net::HOSTNAME_SIZE];
 	uint32_t nNtpServerIp;
-	float fNtpUtcOffset;
-	uint8_t nNotUsed;
 #if defined (ESP8266)
 	char aSsid[34];
 	char aPassword[34];
@@ -55,32 +53,19 @@ struct Params {
 }__attribute__((packed));
 
 #if !defined (ESP8266)
- static_assert(sizeof(struct Params) <= configstore::STORE_SIZE[static_cast<uint32_t>(configstore::Store::NETWORK)], "struct Params is too large");
+ static_assert(sizeof(struct Params) <= configstore::STORE_SIZE[static_cast<uint32_t>(configstore::Store::NETWORK)]);
 #endif
 
 struct Mask {
-	static constexpr auto DHCP = (1U << 0);
-	static constexpr auto IP_ADDRESS = (1U << 1);
-	static constexpr auto NET_MASK = (1U << 2);
-	static constexpr auto DEFAULT_GATEWAY = (1U << 3);
-	static constexpr auto NAME_SERVER = (1U << 4);
-	static constexpr auto HOSTNAME = (1U << 5);
 	static constexpr auto NTP_SERVER = (1U << 6);
-	static constexpr auto NTP_UTC_OFFSET = (1U << 7);
-	static constexpr auto PTP_ENABLE = (1U << 9);
-	static constexpr auto PTP_DOMAIN = (1U << 10);
-#if defined (ESP8266)
-	static constexpr auto SSID = (1U << 30);
-	static constexpr auto PASSWORD = (1U << 31);
-#endif
 };
 
 namespace store {
-inline void update(const struct networkparams::Params *pParams) {
+inline void Update(const struct networkparams::Params *pParams) {
 	ConfigStore::Get()->Update(configstore::Store::NETWORK, pParams, sizeof(struct networkparams::Params));
 }
 
-inline void copy(struct networkparams::Params *pParams) {
+inline void Copy(struct networkparams::Params *pParams) {
 	ConfigStore::Get()->Copy(configstore::Store::NETWORK, pParams, sizeof(struct networkparams::Params));
 }
 }  // namespace store
@@ -99,7 +84,7 @@ public:
 	}
 
 	bool isDhcpUsed() const {
-		return m_Params.bIsDhcpUsed;
+		return !m_Params.bUseStaticIp;
 	}
 
 	uint32_t GetIpAddress() const {
@@ -123,13 +108,6 @@ public:
 			return 0;
 		}
 		return m_Params.nNtpServerIp;
-	}
-
-	float GetNtpUtcOffset() const {
-		if (!IsMaskSet(networkparams::Mask::NTP_UTC_OFFSET)) {
-			return 0;
-		}
-		return m_Params.fNtpUtcOffset;
 	}
 
 #if defined (ESP8266)

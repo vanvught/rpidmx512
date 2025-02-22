@@ -2,7 +2,7 @@
  * @file artnetdisplay.cpp
  *
  */
-/* Copyright (C) 2022-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2022-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,7 @@
 
 #include "displayudf.h"
 #include "artnet.h"
-#include "lightset.h"
+#include "dmxnode.h"
 
 namespace artnet {
 void display_longname([[maybe_unused]] const char *pLongName) {
@@ -49,11 +49,11 @@ void display_subnet_switch([[maybe_unused]]  uint8_t nAddress) {
 	DisplayUdf::Get()->ShowUniverseArtNetNode();
 }
 
-void display_merge_mode([[maybe_unused]]  uint32_t nPortIndex, [[maybe_unused]]  lightset::MergeMode mergeMode) {
+void display_merge_mode([[maybe_unused]]  uint32_t nPortIndex, [[maybe_unused]]  dmxnode::MergeMode mergeMode) {
 	DisplayUdf::Get()->ShowUniverseArtNetNode();
 }
 
-void display_outputstyle([[maybe_unused]] const uint32_t nPortIndex, [[maybe_unused]] const lightset::OutputStyle outputStyle) {
+void display_outputstyle([[maybe_unused]] const uint32_t nPortIndex, [[maybe_unused]] const dmxnode::OutputStyle outputStyle) {
 	DisplayUdf::Get()->ShowUniverseArtNetNode();
 }
 

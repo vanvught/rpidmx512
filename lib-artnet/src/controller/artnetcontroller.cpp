@@ -270,7 +270,7 @@ void ArtNetController::HandleDmxOut(uint16_t nUniverse, const uint8_t *pDmxData,
 	}
 
 #if defined(CONFIG_ARTNET_CONTROLLER_ENABLE_MASTER)
-	if (__builtin_expect((m_nMaster == DMX_MAX_VALUE), 1)) {
+	if (__builtin_expect((m_nMaster == dmxnode::DMX_MAX_VALUE), 1)) {
 #endif
 		memcpy(m_pArtDmx->Data, pDmxData, nLength);
 #if defined(CONFIG_ARTNET_CONTROLLER_ENABLE_MASTER)
@@ -278,7 +278,7 @@ void ArtNetController::HandleDmxOut(uint16_t nUniverse, const uint8_t *pDmxData,
 		memset(m_pArtDmx->Data, 0, nLength);
 	} else {
 		for (uint32_t i = 0; i < nLength; i++) {
-			m_pArtDmx->Data[i] = ((m_nMaster * static_cast<uint32_t>(pDmxData[i])) / DMX_MAX_VALUE) & 0xFF;
+			m_pArtDmx->Data[i] = ((m_nMaster * static_cast<uint32_t>(pDmxData[i])) / dmxnode::DMX_MAX_VALUE) & 0xFF;
 		}
 	}
 #endif

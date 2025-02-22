@@ -28,20 +28,15 @@
 #include "hardware.h"
 #include "network.h"
 
-
-#include "net/apps/mdns.h"
-
 #include "displayudf.h"
 #include "displayudfparams.h"
 #include "displayhandler.h"
 
-#include "e131.h"
-#include "e131bridge.h"
-#include "e131params.h"
-#include "e131msgconst.h"
-
 #include "dmxparams.h"
 #include "dmxsend.h"
+
+#include "dmxnodenode.h"
+#include "dmxnodemsgconst.h"
 
 #if defined (NODE_RDMNET_LLRP_ONLY)
 # include "rdmdeviceparams.h"
@@ -49,7 +44,6 @@
 # include "rdmnetconst.h"
 # include "rdmpersonality.h"
 # include "rdm_e120.h"
-# include "factorydefaults.h"
 #endif
 
 #if defined (NODE_SHOWFILE)
@@ -73,6 +67,8 @@ void reboot_handler() {
 }
 }  // namespace hal
 
+static constexpr uint32_t PORT_INDEX = 0;
+
 int main() {
 	Hardware hw;
 	DisplayUdf display;
@@ -81,17 +77,7 @@ int main() {
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	FlashCodeInstall spiFlashInstall;
 
-	fw.Print("sACN E1.31 DMX");
-	
-	E131Bridge bridge;
-
-	E131Params e131params;
-	e131params.Load();
-	e131params.Set();
-
-	const auto portDirection = e131params.GetDirection(0);
-	bool bIsSet;
-	bridge.SetUniverse(0, portDirection, e131params.GetUniverse(0, bIsSet));
+	fw.Print("sACN E1.31 DMX {1 Universe}");
 
 	Dmx dmx;
 
@@ -99,20 +85,16 @@ int main() {
 	dmxparams.Load();
 	dmxparams.Set(&dmx);
 
-	uint16_t nUniverse;
-
-	if (bridge.GetUniverse(0, nUniverse, lightset::PortDir::OUTPUT)) {
-		dmx.SetPortDirection(0, dmx::PortDirection::OUTP, false);
-	} else {
-		dmx.SetPortDirection(0, dmx::PortDirection::INP, false);
-	}
-
 	DmxSend dmxSend;
 	dmxSend.Print();
 
-	bridge.SetOutput(&dmxSend);
+	DmxNodeNode dmxNodeNode;
+	dmxNodeNode.SetOutput(&dmxSend);
+	
+	const auto portDirection = (dmxNodeNode.GetPortDirection(PORT_INDEX) == dmxnode::PortDirection::OUTPUT ? dmx::PortDirection::OUTP : dmx::PortDirection::INP);
+	dmx.SetPortDirection(PORT_INDEX, portDirection , false);
 
-	const auto nActivePorts = bridge.GetActiveInputPorts() + bridge.GetActiveOutputPorts();
+	const auto nActivePorts = dmxNodeNode.GetActiveInputPorts() + dmxNodeNode.GetActiveOutputPorts();
 
 #if defined (NODE_RDMNET_LLRP_ONLY)
 	display.TextStatus(RDMNetConst::MSG_CONFIG, CONSOLE_YELLOW);
@@ -137,8 +119,6 @@ int main() {
 	llrpOnlyDevice.Print();
 #endif
 
-	bridge.Print();
-
 #if defined (NODE_SHOWFILE)
 	ShowFile showFile;
 
@@ -153,12 +133,13 @@ int main() {
 	showFile.Print();
 #endif
 
-	display.SetTitle("sACN E1.31 DMX %s", portDirection == lightset::PortDir::INPUT ? "Input" : "Output");
+	dmxNodeNode.Print();
+
+	display.SetTitle("sACN E1.31 DMX %s", portDirection == dmx::PortDirection::INP ? "Input" : "Output");
 	display.Set(2, displayudf::Labels::IP);
-	display.Set(3, displayudf::Labels::HOSTNAME);
-	display.Set(4, displayudf::Labels::VERSION);
+	display.Set(3, displayudf::Labels::VERSION);
+	display.Set(4, displayudf::Labels::HOSTNAME);
 	display.Set(5, displayudf::Labels::UNIVERSE_PORT_A);
-	display.Set(6, displayudf::Labels::AP);
 
 	DisplayUdfParams displayUdfParams;
 	displayUdfParams.Load();
@@ -166,24 +147,24 @@ int main() {
 
 	display.Show();
 
-	RemoteConfig remoteConfig(remoteconfig::Node::E131, remoteconfig::Output::DMX, nActivePorts);
+	RemoteConfig remoteConfig(remoteconfig::NodeType::E131, remoteconfig::Output::DMX, nActivePorts);
 
 	RemoteConfigParams remoteConfigParams;
 	remoteConfigParams.Load();
 	remoteConfigParams.Set(&remoteConfig);
 
-	display.TextStatus(E131MsgConst::START, CONSOLE_YELLOW);
+	display.TextStatus(DmxNodeMsgConst::START, CONSOLE_YELLOW);
 
-	bridge.Start();
+	dmxNodeNode.Start();
 
-	display.TextStatus(E131MsgConst::STARTED, CONSOLE_GREEN);
+	display.TextStatus(DmxNodeMsgConst::STARTED, CONSOLE_GREEN);
 
 	hw.WatchdogInit();
 
 	for (;;) {
 		hw.WatchdogFeed();
 		nw.Run();
-		bridge.Run();
+		dmxNodeNode.Run();
 #if defined (NODE_SHOWFILE)
 		showFile.Run();
 #endif

@@ -2,7 +2,7 @@
  * @file dmxsend.h
  *
  */
-/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,11 +27,12 @@
 #define DMXSEND_H_
 
 #include <cstdint>
+#include <climits>
 #include <cstdio>
 #include <cassert>
 
-#include "lightset.h"
-#include "lightsetdata.h"
+#include "dmxnode.h"
+#include "dmxnodedata.h"
 
 #include "dmx.h"
 #if !defined (CONFIG_DMXSEND_DISABLE_CONFIGUDP)
@@ -42,14 +43,9 @@
 
 #include "debug.h"
 
-class DmxSend final: public LightSet  {
+class DmxSend {
 public:
-#if !defined(CONFIG_DMX_PORT_OFFSET)
-	static constexpr uint32_t DMXPORT_OFFSET = 0;
-#else
-	static constexpr uint32_t DMXPORT_OFFSET = CONFIG_DMX_PORT_OFFSET;
-#endif
-	void Start(const uint32_t nPortIndex) override {
+	void Start(const uint32_t nPortIndex)  {
 		DEBUG_ENTRY
 		DEBUG_PRINTF("nPortIndex=%d", nPortIndex);
 
@@ -71,7 +67,7 @@ public:
 		DEBUG_EXIT
 	}
 
-	void Stop(const uint32_t nPortIndex) override {
+	void Stop(const uint32_t nPortIndex)  {
 		DEBUG_ENTRY
 		DEBUG_PRINTF("nPortIndex=%d -> %u", nPortIndex,	is_started(m_nStarted, static_cast<uint8_t>(nPortIndex)));
 
@@ -91,7 +87,7 @@ public:
 		DEBUG_EXIT
 	}
 
-	void SetData(const uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate) override {
+	void SetData(const uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate = true)  {
 		assert(nPortIndex < CHAR_BIT);
 		assert(pData != nullptr);
 		assert(nLength != 0);
@@ -103,19 +99,19 @@ public:
 		}
 	}
 
-	void Sync(const uint32_t nPortIndex) override {
-		const auto nLightsetOffset = nPortIndex + DMXPORT_OFFSET;
-		assert(lightset::Data::GetLength(nLightsetOffset) != 0);
-		Dmx::Get()->SetSendDataWithoutSC(nPortIndex, lightset::Data::Backup(nLightsetOffset), lightset::Data::GetLength(nLightsetOffset));
+	void Sync(const uint32_t nPortIndex)  {
+		const auto nLightsetOffset = nPortIndex + dmxnode::DMXPORT_OFFSET;
+		assert(dmxnode::Data::GetLength(nLightsetOffset) != 0);
+		Dmx::Get()->SetSendDataWithoutSC(nPortIndex, dmxnode::Data::Backup(nLightsetOffset), dmxnode::Data::GetLength(nLightsetOffset));
 	}
 
-	void Sync() override {
+	void Sync()  {
 		Dmx::Get()->Sync();
 
 		for (uint32_t nPortIndex = 0; nPortIndex < dmx::config::max::PORTS; nPortIndex++) {
-			const auto nLightsetOffset = nPortIndex + DMXPORT_OFFSET;
-			if (lightset::Data::GetLength(nLightsetOffset) != 0) {
-				lightset::Data::ClearLength(nLightsetOffset);
+			const auto nLightsetOffset = nPortIndex + dmxnode::DMXPORT_OFFSET;
+			if (dmxnode::Data::GetLength(nLightsetOffset) != 0) {
+				dmxnode::Data::ClearLength(nLightsetOffset);
 				hal::panel_led_on(hal::panelled::PORT_A_TX << nPortIndex);
 				if (!is_started(m_nStarted, nPortIndex)) {
 					Start(nPortIndex);
@@ -125,33 +121,50 @@ public:
 	}
 
 #if defined (OUTPUT_HAVE_STYLESWITCH)
-	void SetOutputStyle(const uint32_t nPortIndex, const lightset::OutputStyle outputStyle) override {
-		Dmx::Get()->SetOutputStyle(nPortIndex, outputStyle == lightset::OutputStyle::CONSTANT ? dmx::OutputStyle::CONTINOUS : dmx::OutputStyle::DELTA);
+	void SetOutputStyle(const uint32_t nPortIndex, const dmxnode::OutputStyle outputStyle)  {
+		Dmx::Get()->SetOutputStyle(nPortIndex, outputStyle == dmxnode::OutputStyle::CONSTANT ? dmx::OutputStyle::CONTINOUS : dmx::OutputStyle::DELTA);
 	}
 
-	lightset::OutputStyle GetOutputStyle(const uint32_t nPortIndex) const override {
-		return Dmx::Get()->GetOutputStyle(nPortIndex) == dmx::OutputStyle::CONTINOUS ? lightset::OutputStyle::CONSTANT : lightset::OutputStyle::DELTA;
+	dmxnode::OutputStyle GetOutputStyle(const uint32_t nPortIndex) const  {
+		return Dmx::Get()->GetOutputStyle(nPortIndex) == dmx::OutputStyle::CONTINOUS ? dmxnode::OutputStyle::CONSTANT : dmxnode::OutputStyle::DELTA;
 	}
 #endif
 
-	uint32_t GetRefreshRate() override {
-		return 1000000U / Dmx::Get()->GetDmxPeriodTime();
-	}
-
-	void Blackout([[maybe_unused]] bool bBlackout) override {
+	void Blackout([[maybe_unused]] bool bBlackout)  {
 		Dmx::Get()->Blackout();
 	}
 
-	void FullOn() override {
+	void FullOn()  {
 		Dmx::Get()->FullOn();
 	}
 
-	void Print() override {
+	void Print()  {
 		puts("DMX Send");
 		printf(" Break time   : %u\n", static_cast<unsigned int>(Dmx::Get()->GetDmxBreakTime()));
 		printf(" MAB time     : %u\n", static_cast<unsigned int>(Dmx::Get()->GetDmxMabTime()));
 		printf(" Refresh rate : %u\n", static_cast<unsigned int>(1000000U / Dmx::Get()->GetDmxPeriodTime()));
 		printf(" Slots        : %u\n", Dmx::Get()->GetDmxSlots());
+	}
+
+	/*
+	 * Art-Net ArtPollReply
+	 */
+	uint32_t GetUserData() { return 0; }
+	uint32_t GetRefreshRate()  {
+		return 1000000U / Dmx::Get()->GetDmxPeriodTime();
+	}
+
+	/*
+	 *
+	 */
+
+	uint16_t GetDmxStartAddress() {	return dmxnode::START_ADDRESS_DEFAULT; }
+	bool SetDmxStartAddress([[maybe_unused]] const uint16_t nDmxStartAddress) { return false; }
+	uint16_t GetDmxFootprint() { return dmxnode::UNIVERSE_SIZE; }
+	bool GetSlotInfo([[maybe_unused]] const uint16_t nSlotOffset, dmxnode::SlotInfo &slotInfo) {
+		slotInfo.nType = 0x00; // ST_PRIMARY
+		slotInfo.nCategory = 0x0001; // SD_INTENSITY
+		return true;
 	}
 
 private:

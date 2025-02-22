@@ -2,7 +2,7 @@
  * @file remoteconfig.cpp
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
+#if defined (DEBUG_REMOTECONFIG)
+# undef NDEBUG
+#endif
 
 #include <algorithm>
 #include <cstdint>
@@ -59,19 +63,17 @@
 # include "displayudfparams.h"
 #endif
 
+#if !defined (CONFIG_REMOTECONFIG_MINIMUM)
+# include "dmxnode_nodetype.h"
+# include "dmxnode_outputtype.h"
+#endif
+
 /**
  * NODE_
  */
 
-#if defined (NODE_ARTNET)
-/* artnet.txt */
-# include "artnetnode.h"
-# include "artnetparams.h"
-#endif
-
-#if defined (NODE_E131)
-/* e131.txt */
-# include "e131params.h"
+#if defined (DMXNODE_TYPE_ARTNETNODE) ||  defined (DMXNODE_TYPE_E131BRIDGE)
+# include "dmxnodeparams.h"
 #endif
 
 #if defined (NODE_OSC_CLIENT)
@@ -102,22 +104,16 @@
 # include "showfileparams.h"
 #endif
 
-#if defined(NODE_NODE)
-/* node.txt */
-# include "node.h"
-# include "nodeparams.h"
-#endif
-
 /**
  * OUTPUT_
  */
 
-#if defined (OUTPUT_DMX_SEND)
+#if defined (DMXNODE_OUTPUT_DMX)
 /* params.txt */
 # include "dmxparams.h"
 #endif
 
-#if defined (OUTPUT_DMX_PIXEL)
+#if defined (DMXNODE_OUTPUT_PIXEL)
 /* devices.txt */
 # include "pixeldmxparams.h"
 #endif
@@ -172,7 +168,6 @@
 
 #include "debug.h"
 
-
 namespace remoteconfig::udp {
 static constexpr auto PORT = 0x2905;
 namespace get {
@@ -183,7 +178,7 @@ enum class Command {
 	DISPLAY,
 #if !defined (CONFIG_REMOTECONFIG_MINIMUM)
 	UPTIME,
-# if (defined (NODE_ARTNET) || defined (NODE_NODE)) && (defined (RDM_CONTROLLER) || defined (RDM_RESPONDER))
+# if (defined (DMXNODE_TYPE_ARTNETNODE) || defined (NODE_NODE)) && (defined (RDM_CONTROLLER) || defined (RDM_RESPONDER))
 	RDM,
 # endif
 	GET,
@@ -195,7 +190,7 @@ enum class Command {
 namespace set {
 enum class Command {
 #if !defined (CONFIG_REMOTECONFIG_MINIMUM)
-# if (defined (NODE_ARTNET) || defined (NODE_NODE)) && (defined (RDM_CONTROLLER) || defined (RDM_RESPONDER))
+# if (defined (DMXNODE_TYPE_ARTNETNODE) || defined (NODE_NODE)) && (defined (RDM_CONTROLLER) || defined (RDM_RESPONDER))
 	RDM,
 # endif
 #endif
@@ -205,7 +200,6 @@ enum class Command {
 }  // namespace set
 } // namespace remoteconfig::udp
 
-
 constexpr struct RemoteConfig::Commands RemoteConfig::s_GET[] = {
 		{ &RemoteConfig::HandleReboot,      "reboot##",  8, false },
 		{ &RemoteConfig::HandleList,        "list#",     5, false },
@@ -213,7 +207,7 @@ constexpr struct RemoteConfig::Commands RemoteConfig::s_GET[] = {
 		{ &RemoteConfig::HandleDisplayGet,  "display#",  8, false },
 #if !defined (CONFIG_REMOTECONFIG_MINIMUM)
 		{ &RemoteConfig::HandleUptime,      "uptime#",   7, false },
-# if (defined (NODE_ARTNET) || defined (NODE_NODE)) && (defined (RDM_CONTROLLER) || defined (RDM_RESPONDER))
+# if (defined (DMXNODE_TYPE_ARTNETNODE) || defined (NODE_NODE)) && (defined (RDM_CONTROLLER) || defined (RDM_RESPONDER))
 		{ &RemoteConfig::HandleRdmGet,  	"rdm#",  	 4, false },
 # endif
 		{ &RemoteConfig::HandleGetNoParams, "get#",      4, true },
@@ -224,7 +218,7 @@ constexpr struct RemoteConfig::Commands RemoteConfig::s_GET[] = {
 
 constexpr struct RemoteConfig::Commands RemoteConfig::s_SET[] = {
 #if !defined (CONFIG_REMOTECONFIG_MINIMUM)
-# if (defined (NODE_ARTNET) || defined (NODE_NODE)) && (defined (RDM_CONTROLLER) || defined (RDM_RESPONDER))
+# if (defined (DMXNODE_TYPE_ARTNETNODE) || defined (NODE_NODE)) && (defined (RDM_CONTROLLER) || defined (RDM_RESPONDER))
 		{ &RemoteConfig::HandleRdmSet,  	"rdm#",     4, true },
 # endif
 #endif
@@ -232,17 +226,17 @@ constexpr struct RemoteConfig::Commands RemoteConfig::s_SET[] = {
 		{ &RemoteConfig::HandleDisplaySet, "display#",  8, true }
 };
 
-static constexpr char s_Node[static_cast<uint32_t>(remoteconfig::Node::LAST)][18] = { "Art-Net", "sACN E1.31", "OSC Server", "LTC", "OSC Client", "RDMNet LLRP Only", "Showfile", "MIDI", "DDP", "PixelPusher", "Node", "Bootloader TFTP", "RDM Responder" };
+static constexpr char s_Node[static_cast<uint32_t>(remoteconfig::NodeType::LAST)][18] = { "Art-Net", "sACN E1.31", "OSC Server", "LTC", "OSC Client", "RDMNet LLRP Only", "Showfile", "MIDI", "DDP", "PixelPusher", "Bootloader TFTP", "RDM Responder" };
 static constexpr char s_Output[static_cast<uint32_t>(remoteconfig::Output::LAST)][12] = { "DMX", "RDM", "Monitor", "Pixel", "TimeCode", "OSC", "Config", "Stepper", "Player", "Art-Net", "Serial", "RGB Panel", "PWM" };
 
-RemoteConfig::RemoteConfig(const remoteconfig::Node node, const remoteconfig::Output output, const uint32_t nActiveOutputs):
+RemoteConfig::RemoteConfig(const remoteconfig::NodeType node, const remoteconfig::Output output, const uint32_t nActiveOutputs):
 	m_Node(node),
 	m_Output(output),
 	m_nActiveOutputs(nActiveOutputs)
 {
 	DEBUG_ENTRY
 
-	assert(node < remoteconfig::Node::LAST);
+	assert(node < remoteconfig::NodeType::LAST);
 	assert(output < remoteconfig::Output::LAST);
 
 	assert(s_pThis == nullptr);
@@ -334,6 +328,14 @@ void RemoteConfig::SetDisplayName(const char *pDisplayName) {
 #endif
 
 	DEBUG_EXIT
+}
+
+namespace configstore {
+void set_factory_defaults();
+}
+
+void RemoteConfig::HandleFactory() {
+	configstore::set_factory_defaults();
 }
 
 void RemoteConfig::Input(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, [[maybe_unused]] uint16_t nFromPort) {
@@ -490,7 +492,7 @@ void RemoteConfig::HandleDisplayGet() {
 }
 
 #if !defined (CONFIG_REMOTECONFIG_MINIMUM)
-#if (defined (NODE_ARTNET) || defined (NODE_NODE)) && (defined (RDM_CONTROLLER) || defined (RDM_RESPONDER))
+#if (defined (DMXNODE_TYPE_ARTNETNODE) || defined (NODE_NODE)) && (defined (RDM_CONTROLLER) || defined (RDM_RESPONDER))
 void RemoteConfig::HandleRdmSet() {
 	DEBUG_ENTRY
 
@@ -591,23 +593,12 @@ void RemoteConfig::HandleGetNetworkTxt(uint32_t& nSize) {
 	DEBUG_EXIT
 }
 
-#if defined (NODE_ARTNET)
-void RemoteConfig::HandleGetArtnetTxt(uint32_t& nSize) {
+#if defined (DMXNODE_TYPE_ARTNETNODE) || defined (DMXNODE_TYPE_E131BRIDGE)
+void RemoteConfig::HandleGetDmxNodeTxt(const dmxnode::Personality personality, uint32_t& nSize) {
 	DEBUG_ENTRY
 
-	ArtNetParams artnetParams;
-	artnetParams.Save(m_pUdpBuffer, remoteconfig::udp::BUFFER_SIZE, nSize);
-
-	DEBUG_EXIT
-}
-#endif
-
-#if defined (NODE_E131)
-void RemoteConfig::HandleGetE131Txt(uint32_t& nSize) {
-	DEBUG_ENTRY
-
-	E131Params e131params;
-	e131params.Save(m_pUdpBuffer, remoteconfig::udp::BUFFER_SIZE, nSize);
+	DmxNodeParams dmxNodeParams(personality);
+	dmxNodeParams.Save(m_pUdpBuffer, remoteconfig::udp::BUFFER_SIZE, nSize);
 
 	DEBUG_EXIT
 }
@@ -666,7 +657,7 @@ void RemoteConfig::HandleGetRdmSubdevTxt(uint32_t& nSize) {
 # endif
 #endif
 
-#if defined (OUTPUT_DMX_SEND)
+#if defined (DMXNODE_OUTPUT_DMX)
 void RemoteConfig::HandleGetParamsTxt(uint32_t& nSize) {
 	DEBUG_ENTRY
 
@@ -677,7 +668,7 @@ void RemoteConfig::HandleGetParamsTxt(uint32_t& nSize) {
 }
 #endif
 
-#if defined (OUTPUT_DMX_PIXEL) || defined (OUTPUT_DMX_TLC59711)
+#if defined (DMXNODE_OUTPUT_PIXEL) || defined (OUTPUT_DMX_TLC59711)
 void RemoteConfig::HandleGetDevicesTxt(uint32_t& nSize) {
 	DEBUG_ENTRY
 
@@ -686,17 +677,17 @@ void RemoteConfig::HandleGetDevicesTxt(uint32_t& nSize) {
 
 	TLC59711DmxParams tlc5911params;
 	tlc5911params.Load();
-#  if defined (OUTPUT_DMX_PIXEL)
+#  if defined (DMXNODE_OUTPUT_PIXEL)
 	if ((bIsSetLedType = tlc5911params.IsSetLedType()) == true) {
 #  endif
 		tlc5911params.Save(m_pUdpBuffer, remoteconfig::udp::BUFFER_SIZE, nSize);
-#  if defined (OUTPUT_DMX_PIXEL)
+#  if defined (DMXNODE_OUTPUT_PIXEL)
 	}
 #  endif
 
 	if (!bIsSetLedType) {
 # endif
-#if defined (OUTPUT_DMX_PIXEL)
+#if defined (DMXNODE_OUTPUT_PIXEL)
 		PixelDmxParams pixelDmxParams;
 		pixelDmxParams.Save(m_pUdpBuffer, remoteconfig::udp::BUFFER_SIZE, nSize);
 #endif
@@ -836,17 +827,6 @@ void RemoteConfig::HandleGetShowTxt(uint32_t& nSize) {
 }
 #endif
 
-#if defined(NODE_NODE)
-void RemoteConfig::HandleGetNodeTxt(const node::Personality personality, uint32_t& nSize) {
-	DEBUG_ENTRY
-
-	NodeParams nodeParams(personality);
-	nodeParams.Save(m_pUdpBuffer, remoteconfig::udp::BUFFER_SIZE, nSize);
-
-	DEBUG_EXIT
-}
-#endif
-
 #if defined (OUTPUT_DMX_SERIAL)
 void RemoteConfig::HandleGetSerialTxt(uint32_t& nSize) {
 	DEBUG_ENTRY
@@ -953,26 +933,16 @@ void RemoteConfig::HandleSetNetworkTxt() {
 	DEBUG_EXIT
 }
 
-#if defined (NODE_ARTNET)
-void RemoteConfig::HandleSetArtnetTxt() {
+#if defined (DMXNODE_TYPE_ARTNETNODE) || defined (DMXNODE_TYPE_E131BRIDGE)
+void RemoteConfig::HandleSetDmxNodeTxt(const dmxnode::Personality personality) {
 	DEBUG_ENTRY
 
-	ArtNetParams artnetParams;
-	artnetParams.Load(m_pUdpBuffer, m_nBytesReceived);
+	DmxNodeParams dmxNodeParams(personality);
+	dmxNodeParams.Load(m_pUdpBuffer, m_nBytesReceived);
 
 	DEBUG_EXIT
 }
-#endif
 
-#if defined (NODE_E131)
-void RemoteConfig::HandleSetE131Txt() {
-	DEBUG_ENTRY
-
-	E131Params e131params;
-	e131params.Load(m_pUdpBuffer, m_nBytesReceived);
-
-	DEBUG_EXIT
-}
 #endif
 
 #if defined (NODE_OSC_SERVER)
@@ -997,7 +967,7 @@ void RemoteConfig::HandleSetOscClientTxt() {
 }
 #endif
 
-#if defined (OUTPUT_DMX_SEND)
+#if defined (DMXNODE_OUTPUT_DMX)
 void RemoteConfig::HandleSetParamsTxt() {
 	DEBUG_ENTRY
 
@@ -1008,7 +978,7 @@ void RemoteConfig::HandleSetParamsTxt() {
 }
 #endif
 
-#if defined (OUTPUT_DMX_PIXEL) || defined (OUTPUT_DMX_TLC59711)
+#if defined (DMXNODE_OUTPUT_PIXEL) || defined (OUTPUT_DMX_TLC59711)
 void RemoteConfig::HandleSetDevicesTxt() {
 	DEBUG_ENTRY
 
@@ -1020,7 +990,7 @@ void RemoteConfig::HandleSetDevicesTxt() {
 
 	if (!tlc59711params.IsSetLedType()) {
 # endif
-#if defined (OUTPUT_DMX_PIXEL)
+#if defined (DMXNODE_OUTPUT_PIXEL)
 		PixelDmxParams pixelDmxParams;
 		pixelDmxParams.Load(m_pUdpBuffer, m_nBytesReceived);
 # endif
@@ -1137,17 +1107,6 @@ void RemoteConfig::HandleSetShowTxt() {
 
 	ShowFileParams showFileParams;
 	showFileParams.Load(m_pUdpBuffer, m_nBytesReceived);
-
-	DEBUG_EXIT
-}
-#endif
-
-#if defined (NODE_NODE)
-void RemoteConfig::HandleSetNodeTxt(const node::Personality personality) {
-	DEBUG_ENTRY
-
-	NodeParams nodeParams(personality);
-	nodeParams.Load(m_pUdpBuffer, m_nBytesReceived);
 
 	DEBUG_EXIT
 }

@@ -95,7 +95,7 @@ int main() {
 		client.SetLedHandler(pButtonsGpio);
 	}
 
-	RemoteConfig remoteConfig(remoteconfig::Node::OSC_CLIENT, remoteconfig::Output::OSC, pButtonsSet->GetButtonsCount());
+	RemoteConfig remoteConfig(remoteconfig::NodeType::OSC_CLIENT, remoteconfig::Output::OSC, pButtonsSet->GetButtonsCount());
 
 	RemoteConfigParams remoteConfigParams;
 	remoteConfigParams.Load();

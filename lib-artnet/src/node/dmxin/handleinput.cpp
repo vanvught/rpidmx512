@@ -52,7 +52,7 @@ void ArtNetNode::HandleInput() {
 	const auto nPortIndex = static_cast<uint32_t>(pArtInput->BindIndex > 0 ? pArtInput->BindIndex - 1 : 0);
 
 	if (pArtInput->NumPortsLo == 1) {
-		if (m_Node.Port[nPortIndex].direction == lightset::PortDir::INPUT) {
+		if (m_Node.Port[nPortIndex].direction == dmxnode::PortDirection::INPUT) {
 			if (pArtInput->Input[0] & 0x01) {
 				m_InputPort[nPortIndex].GoodInput |= static_cast<uint8_t>(artnet::GoodInput::DISABLED);		
 			} else {

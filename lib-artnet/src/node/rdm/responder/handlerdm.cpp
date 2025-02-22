@@ -50,7 +50,7 @@ void ArtNetNode::HandleRdm() {
 			continue;
 		}
 
-		if ((portAddress == m_Node.Port[nPortIndex].PortAddress) && (m_Node.Port[nPortIndex].direction == lightset::PortDir::OUTPUT)) {
+		if ((portAddress == m_Node.Port[nPortIndex].PortAddress) && (m_Node.Port[nPortIndex].direction == dmxnode::PortDirection::OUTPUT)) {
 			const auto *pRdmResponse = const_cast<uint8_t*>(m_pArtNetRdmResponder->Handler(nPortIndex, pArtRdm->RdmPacket));
 
 			if (pRdmResponse != nullptr) {
@@ -82,7 +82,7 @@ void ArtNetNode::HandleTodControl() {
 		return;
 	}
 
-	if ((portAddress == m_Node.Port[nPortIndex].PortAddress) && (m_Node.Port[nPortIndex].direction == lightset::PortDir::OUTPUT)) {
+	if ((portAddress == m_Node.Port[nPortIndex].PortAddress) && (m_Node.Port[nPortIndex].direction == dmxnode::PortDirection::OUTPUT)) {
 		if (pArtTodControl->Command == 0x01) {	// AtcFlush
 			SendTod(nPortIndex);
 		}

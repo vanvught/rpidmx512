@@ -23,6 +23,10 @@
  * THE SOFTWARE.
  */
 
+#if defined (DEBUG_REMOTECONFIG)
+# undef NDEBUG
+#endif
+
 #include <cstdio>
 #include <cassert>
 

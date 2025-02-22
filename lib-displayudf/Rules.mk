@@ -13,12 +13,10 @@ ifneq ($(MAKE_FLAGS),)
 		ifeq ($(findstring ARTNET_VERSION=4,$(MAKE_FLAGS)), ARTNET_VERSION=4)
 			EXTRA_INCLUDES+=../lib-e131/include
 		endif	
-		EXTRA_INCLUDES+=../lib-dmx/include
 	endif
 	
 	ifneq (,$(findstring NODE_E131,$(MAKE_FLAGS)))
 		EXTRA_INCLUDES+=../lib-e131/include
-		EXTRA_INCLUDES+=../lib-dmx/include
 		EXTRA_SRCDIR+=src/e131
 	endif
 	
@@ -54,7 +52,7 @@ else
 	endif
 	
 	DEFINES+=RDM_RESPONDER
-	DEFINES+=LIGHTSET_PORTS=4
+	DEFINES+=DMXNODE_PORTS=4
 	
 	EXTRA_INCLUDES+=../lib-dmxreceiver/include ../lib-dmx/include
 	EXTRA_INCLUDES+=../lib-rdmdiscovery/include

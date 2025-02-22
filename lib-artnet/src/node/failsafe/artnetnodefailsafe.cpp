@@ -2,7 +2,7 @@
  * @file artnetnodefailsafe.cpp
  *
  */
-/* Copyright (C) 2022-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2022-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,8 +28,8 @@
 
 #include "artnetnode.h"
 #include "artnetnodefailsafe.h"
-#include "lightsetdata.h"
-#include "lightset_data.h"
+#include "dmxnodedata.h"
+#include "dmxnode_data.h"
 
 #include "debug.h"
 
@@ -39,8 +39,8 @@ void ArtNetNode::FailSafeRecord() {
 	artnetnode::failsafe_write_start();
 
 	for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
-		if (m_Node.Port[nPortIndex].direction == lightset::PortDir::OUTPUT) {
-			artnetnode::failsafe_write(nPortIndex, lightset::Data::Backup(nPortIndex));
+		if (m_Node.Port[nPortIndex].direction == dmxnode::PortDirection::OUTPUT) {
+			artnetnode::failsafe_write(nPortIndex, dmxnode::Data::Backup(nPortIndex));
 		}
 	}
 
@@ -55,16 +55,16 @@ void ArtNetNode::FailSafePlayback() {
 	artnetnode::failsafe_read_start();
 
 	for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
-		if (m_Node.Port[nPortIndex].direction == lightset::PortDir::OUTPUT) {
-			artnetnode::failsafe_read(nPortIndex, const_cast<uint8_t *>(lightset::Data::Backup(nPortIndex)));
-			lightset::data_output(m_pLightSet, nPortIndex);
+		if (m_Node.Port[nPortIndex].direction == dmxnode::PortDirection::OUTPUT) {
+			artnetnode::failsafe_read(nPortIndex, const_cast<uint8_t *>(dmxnode::Data::Backup(nPortIndex)));
+			dmxnode::data_output(m_pDmxNodeOutputType, nPortIndex);
 
 			if (!m_OutputPort[nPortIndex].IsTransmitting) {
-				m_pLightSet->Start(nPortIndex);
+				m_pDmxNodeOutputType->Start(nPortIndex);
 				m_OutputPort[nPortIndex].IsTransmitting = true;
 			}
 
-			lightset::Data::ClearLength(nPortIndex);
+			dmxnode::Data::ClearLength(nPortIndex);
 		}
 	}
 

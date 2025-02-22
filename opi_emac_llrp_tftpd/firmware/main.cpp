@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,8 +42,6 @@
 
 #include "rdmnetllrponly.h"
 
-#include "factorydefaults.h"
-
 #include "firmwareversion.h"
 #include "software_version.h"
 
@@ -71,7 +69,7 @@ int main() {
 	device.Init();
 	device.Print();
 
-	RemoteConfig remoteConfig(remoteconfig::Node::RDMNET_LLRP_ONLY, remoteconfig::Output::CONFIG, 0);
+	RemoteConfig remoteConfig(remoteconfig::NodeType::RDMNET_LLRP_ONLY, remoteconfig::Output::CONFIG, 0);
 
 	RemoteConfigParams remoteConfigParams;
 	remoteConfigParams.Load();

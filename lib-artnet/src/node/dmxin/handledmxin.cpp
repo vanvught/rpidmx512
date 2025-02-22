@@ -49,7 +49,7 @@ static uint32_t s_ReceivingMask = 0;
 
 void ArtNetNode::HandleDmxIn() {
 	for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
-		if  ((m_Node.Port[nPortIndex].direction == lightset::PortDir::INPUT)
+		if  ((m_Node.Port[nPortIndex].direction == dmxnode::PortDirection::INPUT)
 		 &&  (m_Node.Port[nPortIndex].protocol == artnet::PortProtocol::ARTNET)
 		 && ((m_InputPort[nPortIndex].GoodInput & artnet::GoodInput::DISABLED) != artnet::GoodInput::DISABLED)) {
 
@@ -88,7 +88,7 @@ void ArtNetNode::HandleDmxIn() {
 
 				if ((s_ReceivingMask & (1U << nPortIndex)) != (1U << nPortIndex)) {
 					s_ReceivingMask |= (1U << nPortIndex);
-					m_State.nReceivingDmx |= (1U << static_cast<uint8_t>(lightset::PortDir::INPUT));
+					m_State.nReceivingDmx |= (1U << static_cast<uint8_t>(dmxnode::PortDirection::INPUT));
 					hal::panel_led_on(hal::panelled::PORT_A_RX << nPortIndex);
 				}
 
@@ -107,7 +107,7 @@ void ArtNetNode::HandleDmxIn() {
 					hal::panel_led_off(hal::panelled::PORT_A_RX << nPortIndex);
 
 					if (s_ReceivingMask == 0) {
-						m_State.nReceivingDmx &= static_cast<uint8_t>(~(1U << static_cast<uint8_t>(lightset::PortDir::INPUT)));
+						m_State.nReceivingDmx &= static_cast<uint8_t>(~(1U << static_cast<uint8_t>(dmxnode::PortDirection::INPUT)));
 					}
 
 					SendDiag(artnet::PriorityCodes::DIAG_LOW, "%u: Input DMX updates per second is 0", nPortIndex);

@@ -38,7 +38,7 @@ public:
 	}
 
 	template<typename T>
-	bool Add(const char *pProperty, const T x, bool bIsSet, int nPrecision = 1) {
+	bool Add(const char *pProperty, const T x, bool bIsSet = true, int nPrecision = 1) {
 		if (m_nSize >= m_nLength) {
 			return false;
 		}

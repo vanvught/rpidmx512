@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,25 +24,21 @@
  */
 
 #include <cstdint>
-#include <cassert>
 
 #include "hardware.h"
 #include "network.h"
-
-
-#include "net/apps/mdns.h"
 
 #include "displayudf.h"
 #include "displayudfparams.h"
 #include "displayhandler.h"
 
-#include "artnetnode.h"
-#include "artnetparams.h"
-#include "artnetmsgconst.h"
-#include "artnetrdmcontroller.h"
-
-#include "dmxparams.h"
 #include "dmxsend.h"
+#include "dmxparams.h"
+
+#include "dmxnodenode.h"
+#include "dmxnodemsgconst.h"
+
+#include "artnetrdmcontroller.h"
 #include "rdmdeviceparams.h"
 
 #if defined (NODE_SHOWFILE)
@@ -74,17 +70,7 @@ int main() {
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	FlashCodeInstall spiFlashInstall;
 
-	fw.Print("Art-Net " STR(LIGHTSET_PORTS) " Node DMX/RDM");
-
-	ArtNetNode node;
-
-	ArtNetParams artnetParams;
-	artnetParams.Load();
-	artnetParams.Set();
-
-	for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
-		node.SetUniverse(nPortIndex, artnetParams.GetDirection(nPortIndex), artnetParams.GetUniverse(nPortIndex));
-	}
+	fw.Print("Art-Net 4, Universes: " STR(DMXNODE_PORTS) " DMX/RDM");
 
 	Dmx dmx;
 
@@ -92,28 +78,29 @@ int main() {
 	dmxparams.Load();
 	dmxparams.Set(&dmx);
 
-	for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
-		const auto portDirection = (node.GetPortDirection(nPortIndex) == lightset::PortDir::OUTPUT ? dmx::PortDirection::OUTP : dmx::PortDirection::INP);
-		dmx.SetPortDirection(nPortIndex, portDirection , false);
-	}
-
 	DmxSend dmxSend;
 	dmxSend.Print();
 
-	node.SetOutput(&dmxSend);
+	DmxNodeNode dmxNodeNode;
+	dmxNodeNode.SetOutput(&dmxSend);
+		
+	for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
+		const auto portDirection = (dmxNodeNode.GetPortDirection(nPortIndex) == dmxnode::PortDirection::OUTPUT ? dmx::PortDirection::OUTP : dmx::PortDirection::INP);
+		dmx.SetPortDirection(nPortIndex, portDirection , false);
+	}
 
-	RDMDeviceParams rdmDeviceParams;
 	ArtNetRdmController artNetRdmController;
 
+	RDMDeviceParams rdmDeviceParams;
 	rdmDeviceParams.Load();
 	rdmDeviceParams.Set(&artNetRdmController);
 
 	artNetRdmController.Init();
 	artNetRdmController.Print();
 
-	node.SetRdmController(&artNetRdmController, artnetParams.IsRdm());
+	const auto isRdmEnabled = dmxNodeNode.GetRdm();
 
-	node.Print();
+	dmxNodeNode.SetRdmController(&artNetRdmController, isRdmEnabled);
 
 #if defined (NODE_SHOWFILE)
 	ShowFile showFile;
@@ -129,39 +116,40 @@ int main() {
 	showFile.Print();
 #endif
 
-	const auto nActivePorts = node.GetActiveInputPorts() + node.GetActiveOutputPorts();
+	dmxNodeNode.Print();
+
+	const auto nActivePorts = dmxNodeNode.GetActiveInputPorts() + dmxNodeNode.GetActiveOutputPorts();
 
 	display.SetTitle("Art-Net 4 %u", nActivePorts);
-	display.Set(2, displayudf::Labels::IP);
-	display.Set(3, displayudf::Labels::VERSION);
+	display.Set(2, displayudf::Labels::VERSION);
+	display.Set(3, displayudf::Labels::IP);
 	display.Set(4, displayudf::Labels::UNIVERSE_PORT_A);
 	display.Set(5, displayudf::Labels::UNIVERSE_PORT_B);
 
 	DisplayUdfParams displayUdfParams;
-
 	displayUdfParams.Load();
 	displayUdfParams.Set(&display);
 
 	display.Show();
 
-	RemoteConfig remoteConfig(remoteconfig::Node::ARTNET, artnetParams.IsRdm() ? remoteconfig::Output::RDM : remoteconfig::Output::DMX, nActivePorts);
+	RemoteConfig remoteConfig(remoteconfig::NodeType::ARTNET, isRdmEnabled ? remoteconfig::Output::RDM : remoteconfig::Output::DMX, nActivePorts);
 
 	RemoteConfigParams remoteConfigParams;
 	remoteConfigParams.Load();
 	remoteConfigParams.Set(&remoteConfig);
 
-	display.TextStatus(ArtNetMsgConst::START, CONSOLE_YELLOW);
+	display.TextStatus(DmxNodeMsgConst::START, CONSOLE_YELLOW);
 
-	node.Start();
+	dmxNodeNode.Start();
 
-	display.TextStatus(ArtNetMsgConst::STARTED, CONSOLE_GREEN);
+	display.TextStatus(DmxNodeMsgConst::STARTED, CONSOLE_GREEN);
 
 	hw.WatchdogInit();
 
 	for (;;) {
 		hw.WatchdogFeed();
 		nw.Run();
-		node.Run();
+		dmxNodeNode.Run();
 #if defined (NODE_SHOWFILE)
 		showFile.Run();
 #endif

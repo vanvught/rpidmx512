@@ -36,9 +36,8 @@
 #include "displayudfparams.h"
 #include "displayhandler.h"
 
-#include "artnetnode.h"
-#include "artnetparams.h"
-#include "artnetmsgconst.h"
+#include "dmxnodenode.h"
+#include "dmxnodemsgconst.h"
 
 #include "timecode.h"
 
@@ -78,17 +77,8 @@ int main() {
 
 	ShowSystime showSystime;
 
-	ArtNetNode node;
-
-	ArtNetParams artnetParams;
-	artnetParams.Load();
-	artnetParams.Set();
-
-	node.SetUniverse(0, lightset::PortDir::OUTPUT, artnetParams.GetUniverse(0));
-
 	TimeCode timecode;
 	timecode.Start();
-	node.SetArtTimeCodeCallbackFunction(TimeCode::StaticCallbackFunction);
 
 #if defined (NODE_SHOWFILE)
 	ShowFile showFile;
@@ -106,17 +96,20 @@ int main() {
 
 	DMXMonitor monitor;
 	// There is support for HEX output only
-	node.SetOutput(&monitor);
+
+	DmxNodeNode dmxNodeNode;
+	dmxNodeNode.SetArtTimeCodeCallbackFunction(TimeCode::StaticCallbackFunction);
+	dmxNodeNode.SetOutput(&monitor);
+
 	monitor.Cls();
 	console_set_top_row(20);
 	console_clear_top_row();
 
-	node.Print();
+	dmxNodeNode.Print();
 
-	display.SetTitle("Eth Art-Net 4 Monitor");
+	display.SetTitle("Art-Net 4 Monitor");
 	display.Set(2, displayudf::Labels::IP);
 	display.Set(3, displayudf::Labels::VERSION);
-	display.Set(4, displayudf::Labels::UNIVERSE_PORT_A);
 	display.Set(5, displayudf::Labels::AP);
 
 	DisplayUdfParams displayUdfParams;
@@ -125,24 +118,24 @@ int main() {
 
 	display.Show();
 
-	RemoteConfig remoteConfig(remoteconfig::Node::ARTNET, remoteconfig::Output::MONITOR, 1);
+	RemoteConfig remoteConfig(remoteconfig::NodeType::ARTNET, remoteconfig::Output::MONITOR, 1);
 
 	RemoteConfigParams remoteConfigParams;
 	remoteConfigParams.Load();
 	remoteConfigParams.Set(&remoteConfig);
 
-	display.TextStatus(ArtNetMsgConst::START, CONSOLE_YELLOW);
+	display.TextStatus(DmxNodeMsgConst::START, CONSOLE_YELLOW);
 
-	node.Start();
+	dmxNodeNode.Start();
 
-	display.TextStatus(ArtNetMsgConst::STARTED, CONSOLE_GREEN);
+	display.TextStatus(DmxNodeMsgConst::STARTED, CONSOLE_GREEN);
 
 	hw.WatchdogInit();
 
 	for (;;) {
 		hw.WatchdogFeed();
 		nw.Run();
-		node.Run();
+		dmxNodeNode.Run();
 #if defined (NODE_SHOWFILE)
 		showFile.Run();
 #endif

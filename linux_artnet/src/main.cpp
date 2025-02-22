@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,17 +34,15 @@
 
 #include "display.h"
 
-#include "artnetnode.h"
-#include "artnetparams.h"
-
-#include "artnetmsgconst.h"
+#include "dmxnodenode.h"
+#include "dmxnodemsgconst.h"
 #include "artnetrdmresponder.h"
+
+#include "dmxnodeparams.h"
 
 #include "rdmdeviceresponder.h"
 #include "rdmpersonality.h"
 #include "rdmdeviceparams.h"
-
-#include "factorydefaults.h"
 
 #include "dmxmonitor.h"
 #include "dmxmonitorparams.h"
@@ -61,14 +59,6 @@
 
 #include "firmwareversion.h"
 #include "software_version.h"
-
-namespace artnetnode {
-#if !defined(CONFIG_DMX_PORT_OFFSET)
- static constexpr uint32_t DMXPORT_OFFSET = 0;
-#else
- static constexpr uint32_t DMXPORT_OFFSET = CONFIG_DMX_PORT_OFFSET;
-#endif
-}  // namespace artnetnode
 
 static bool keepRunning = true;
 
@@ -90,20 +80,10 @@ int main(int argc, char **argv) {
 	fw.Print();
 	nw.Print();
 
-	ArtNetNode node;
-
-	ArtNetParams artnetParams;
-	artnetParams.Load();
-	artnetParams.Set();
-
-	printf("Art-Net %d Node - Real-time DMX Monitor {4 Universes}\n", node.GetVersion());
-
 	DMXMonitor monitor;
 
 	DMXMonitorParams monitorParams;
 	monitorParams.Load();
-
-	node.SetOutput(&monitor);
 
 	RDMPersonality *pRDMPersonalities[1] = { new  RDMPersonality("Real-time DMX Monitor", &monitor)};
 
@@ -111,41 +91,18 @@ int main(int argc, char **argv) {
 	RdmResponder.Init();
 
 	RDMDeviceParams rdmDeviceParams;
-
 	rdmDeviceParams.Load();
 	rdmDeviceParams.Set(&RdmResponder);
 
 	RdmResponder.Print();
 
-	for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
-		uint32_t nOffset = nPortIndex;
-		if (nPortIndex >= artnetnode::DMXPORT_OFFSET) {
-			nOffset = nPortIndex - artnetnode::DMXPORT_OFFSET;
-		} else {
-			continue;
-		}
+	DmxNodeNode dmxNodeNode;
+	dmxNodeNode.SetOutput(&monitor);
+	dmxNodeNode.SetRdmUID(RdmResponder.GetUID());
+	dmxNodeNode.SetRdmResponder(&RdmResponder, true);
+	dmxNodeNode.SetRdm(0, true);
 
-		printf(">> nPortIndex=%u, nOffset=%u\n", nPortIndex, nOffset);
-
-		const auto nAddress = artnetParams.GetUniverse(nOffset);
-		const auto portDirection = artnetParams.GetDirection(nOffset);
-
-		if (portDirection == lightset::PortDir::OUTPUT) {
-			node.SetUniverse(nPortIndex, lightset::PortDir::OUTPUT, nAddress);
-			if (nPortIndex == 0) {
-				node.SetRdm(static_cast<uint32_t>(0), true);
-			}
-		} else {
-			node.SetUniverse(nPortIndex, lightset::PortDir::DISABLE, nAddress);
-		}
-	}
-
-	const auto nActivePorts = node.GetActiveOutputPorts();
-
-	node.SetRdmUID(RdmResponder.GetUID());
-	node.SetRdmResponder(&RdmResponder);
-	node.SetRdm(static_cast<uint32_t>(0), true);
-	node.Print();
+	dmxNodeNode.Print();
 
 #if defined (NODE_SHOWFILE)
 	ShowFile showFile;
@@ -161,17 +118,17 @@ int main(int argc, char **argv) {
 	showFile.Print();
 #endif
 
-	RemoteConfig remoteConfig(remoteconfig::Node::ARTNET, remoteconfig::Output::MONITOR, nActivePorts);
+	RemoteConfig remoteConfig(remoteconfig::NodeType::ARTNET, remoteconfig::Output::MONITOR, dmxNodeNode.GetActiveOutputPorts());
 
 	RemoteConfigParams remoteConfigParams;
 	remoteConfigParams.Load();
 	remoteConfigParams.Set(&remoteConfig);
 
-	node.Start();
+	dmxNodeNode.Start();
 
 	while (keepRunning) {
 		nw.Run();
-		node.Run();
+		dmxNodeNode.Run();
 #if defined (NODE_SHOWFILE)
 		showFile.Run();
 #endif

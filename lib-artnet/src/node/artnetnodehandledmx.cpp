@@ -2,10 +2,7 @@
  * @file artnetnodehandledmx.cpp
  *
  */
-/**
- * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
- */
-/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,8 +38,8 @@
 #include "artnetnode.h"
 #include "artnet.h"
 
-#include "lightsetdata.h"
-#include "lightset_data.h"
+#include "dmxnodedata.h"
+#include "dmxnode_data.h"
 
 void ArtNetNode::UpdateMergeStatus(const uint32_t nPortIndex) {
 	if (!m_State.IsMergeMode) {
@@ -86,7 +83,7 @@ void ArtNetNode::HandleDmx() {
 	const auto nDmxSlots = std::min(static_cast<uint32_t>(((pArtDmx->LengthHi << 8) & 0xff00) | pArtDmx->Length), artnet::DMX_LENGTH);
 
 	for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
-		if ((m_Node.Port[nPortIndex].direction == lightset::PortDir::OUTPUT)
+		if ((m_Node.Port[nPortIndex].direction == dmxnode::PortDirection::OUTPUT)
 		 && (m_Node.Port[nPortIndex].protocol == artnet::PortProtocol::ARTNET)
 		 && (m_Node.Port[nPortIndex].PortAddress == pArtDmx->PortAddress)) {
 
@@ -100,25 +97,25 @@ void ArtNetNode::HandleDmx() {
 
 			const auto ipA = m_OutputPort[nPortIndex].SourceA.nIp;
 			const auto ipB = m_OutputPort[nPortIndex].SourceB.nIp;
-			const auto mergeMode = ((m_OutputPort[nPortIndex].GoodOutput & artnet::GoodOutput::MERGE_MODE_LTP) == artnet::GoodOutput::MERGE_MODE_LTP) ? lightset::MergeMode::LTP : lightset::MergeMode::HTP;
+			const auto mergeMode = ((m_OutputPort[nPortIndex].GoodOutput & artnet::GoodOutput::MERGE_MODE_LTP) == artnet::GoodOutput::MERGE_MODE_LTP) ? dmxnode::MergeMode::LTP : dmxnode::MergeMode::HTP;
 
 			if (__builtin_expect((ipA == 0 && ipB == 0), 0)) {							// Case 1.
 				m_OutputPort[nPortIndex].SourceA.nIp = m_nIpAddressFrom;
 				m_OutputPort[nPortIndex].SourceA.nMillis = m_nCurrentPacketMillis;
 				m_OutputPort[nPortIndex].SourceA.nPhysical = pArtDmx->Physical;
-				lightset::Data::SetSourceA(nPortIndex, pArtDmx->Data, nDmxSlots);
+				dmxnode::Data::SetSourceA(nPortIndex, pArtDmx->Data, nDmxSlots);
 				SendDiag(artnet::PriorityCodes::DIAG_LOW, "%u:%u 1. First packet", nPortIndex, pArtDmx->Physical);
 			} else if (ipA == m_nIpAddressFrom && ipB == 0) {							// Case 2.
 				if (m_OutputPort[nPortIndex].SourceA.nPhysical == pArtDmx->Physical) {
 					m_OutputPort[nPortIndex].SourceA.nMillis = m_nCurrentPacketMillis;
-					lightset::Data::SetSourceA(nPortIndex, pArtDmx->Data, nDmxSlots);
+					dmxnode::Data::SetSourceA(nPortIndex, pArtDmx->Data, nDmxSlots);
 					SendDiag(artnet::PriorityCodes::DIAG_LOW, "%u:%u 2. continued transmission from the same ip (source A)", nPortIndex, pArtDmx->Physical);
 				} else if (m_OutputPort[nPortIndex].SourceB.nPhysical != pArtDmx->Physical) {
 					m_OutputPort[nPortIndex].SourceB.nIp = m_nIpAddressFrom;
 					m_OutputPort[nPortIndex].SourceB.nMillis = m_nCurrentPacketMillis;
 					m_OutputPort[nPortIndex].SourceB.nPhysical = pArtDmx->Physical;
 					UpdateMergeStatus(nPortIndex);
-					lightset::Data::MergeSourceB(nPortIndex, pArtDmx->Data, nDmxSlots, mergeMode);
+					dmxnode::Data::MergeSourceB(nPortIndex, pArtDmx->Data, nDmxSlots, mergeMode);
 					SendDiag(artnet::PriorityCodes::DIAG_LOW, "%u:%u 2. New source from same ip (source B), start the merge", nPortIndex, pArtDmx->Physical);
 				} else {
 					SendDiag(artnet::PriorityCodes::DIAG_LOW, "%u:%u 2. More than two sources, discarding data", nPortIndex, pArtDmx->Physical);
@@ -127,14 +124,14 @@ void ArtNetNode::HandleDmx() {
 			} else if (ipA == 0 && ipB == m_nIpAddressFrom) {							// Case 3.
 				if (m_OutputPort[nPortIndex].SourceB.nPhysical == pArtDmx->Physical) {
 					m_OutputPort[nPortIndex].SourceB.nMillis = m_nCurrentPacketMillis;
-					lightset::Data::SetSourceB(nPortIndex, pArtDmx->Data, nDmxSlots);
+					dmxnode::Data::SetSourceB(nPortIndex, pArtDmx->Data, nDmxSlots);
 					SendDiag(artnet::PriorityCodes::DIAG_LOW, "%u:%u 3. continued transmission from the same ip (source B)", nPortIndex, pArtDmx->Physical);
 				} else if (m_OutputPort[nPortIndex].SourceA.nPhysical != pArtDmx->Physical) {
 					m_OutputPort[nPortIndex].SourceA.nIp = m_nIpAddressFrom;
 					m_OutputPort[nPortIndex].SourceA.nMillis = m_nCurrentPacketMillis;
 					m_OutputPort[nPortIndex].SourceA.nPhysical = pArtDmx->Physical;
 					UpdateMergeStatus(nPortIndex);
-					lightset::Data::MergeSourceA(nPortIndex, pArtDmx->Data, nDmxSlots, mergeMode);
+					dmxnode::Data::MergeSourceA(nPortIndex, pArtDmx->Data, nDmxSlots, mergeMode);
 					SendDiag(artnet::PriorityCodes::DIAG_LOW, "%u:%u 3. New source from same ip (source A), start the merge", nPortIndex, pArtDmx->Physical);
 				} else {
 					SendDiag(artnet::PriorityCodes::DIAG_LOW, "%u:%u 3. More than two sources, discarding data", nPortIndex, pArtDmx->Physical);
@@ -145,20 +142,20 @@ void ArtNetNode::HandleDmx() {
 				m_OutputPort[nPortIndex].SourceB.nMillis = m_nCurrentPacketMillis;
 				m_OutputPort[nPortIndex].SourceB.nPhysical = pArtDmx->Physical;
 				UpdateMergeStatus(nPortIndex);
-				lightset::Data::MergeSourceB(nPortIndex, pArtDmx->Data, nDmxSlots, mergeMode);
+				dmxnode::Data::MergeSourceB(nPortIndex, pArtDmx->Data, nDmxSlots, mergeMode);
 				SendDiag(artnet::PriorityCodes::DIAG_LOW, "%u:%u 4. new source, start the merge", nPortIndex, pArtDmx->Physical);
 			} else if (ipA == 0 && ipB != m_nIpAddressFrom) {							// Case 5.
 				m_OutputPort[nPortIndex].SourceA.nIp = m_nIpAddressFrom;
 				m_OutputPort[nPortIndex].SourceA.nMillis = m_nCurrentPacketMillis;
 				m_OutputPort[nPortIndex].SourceA.nPhysical = pArtDmx->Physical;
 				UpdateMergeStatus(nPortIndex);
-				lightset::Data::MergeSourceA(nPortIndex, pArtDmx->Data, nDmxSlots, mergeMode);
+				dmxnode::Data::MergeSourceA(nPortIndex, pArtDmx->Data, nDmxSlots, mergeMode);
 				SendDiag(artnet::PriorityCodes::DIAG_LOW, "%u:%u 5. new source, start the merge", nPortIndex, pArtDmx->Physical);
 			} else if (ipA == m_nIpAddressFrom && ipB != m_nIpAddressFrom) {			// Case 6.
 				if (m_OutputPort[nPortIndex].SourceA.nPhysical == pArtDmx->Physical) {
 					m_OutputPort[nPortIndex].SourceA.nMillis = m_nCurrentPacketMillis;
 					UpdateMergeStatus(nPortIndex);
-					lightset::Data::MergeSourceA(nPortIndex, pArtDmx->Data, nDmxSlots, mergeMode);
+					dmxnode::Data::MergeSourceA(nPortIndex, pArtDmx->Data, nDmxSlots, mergeMode);
 					SendDiag(artnet::PriorityCodes::DIAG_LOW, "%u:%u 6. continue merge (Source A)", nPortIndex, pArtDmx->Physical);
 				} else {
 					SendDiag(artnet::PriorityCodes::DIAG_MED, "%u:%u 6. More than two sources, discarding data", nPortIndex, pArtDmx->Physical);
@@ -168,7 +165,7 @@ void ArtNetNode::HandleDmx() {
 				if (m_OutputPort[nPortIndex].SourceB.nPhysical == pArtDmx->Physical) {
 					m_OutputPort[nPortIndex].SourceB.nMillis = m_nCurrentPacketMillis;
 					UpdateMergeStatus(nPortIndex);
-					lightset::Data::MergeSourceB(nPortIndex, pArtDmx->Data, nDmxSlots, mergeMode);
+					dmxnode::Data::MergeSourceB(nPortIndex, pArtDmx->Data, nDmxSlots, mergeMode);
 					SendDiag(artnet::PriorityCodes::DIAG_LOW, "%u:%u 7. continue merge (Source B)", nPortIndex, pArtDmx->Physical);
 				} else {
 					SendDiag(artnet::PriorityCodes::DIAG_MED, "%u:%u 7. More than two sources, discarding data", nPortIndex, pArtDmx->Physical);
@@ -179,12 +176,12 @@ void ArtNetNode::HandleDmx() {
 				if (m_OutputPort[nPortIndex].SourceA.nPhysical == pArtDmx->Physical) {
 					m_OutputPort[nPortIndex].SourceA.nMillis = m_nCurrentPacketMillis;
 					UpdateMergeStatus(nPortIndex);
-					lightset::Data::MergeSourceA(nPortIndex, pArtDmx->Data, nDmxSlots, mergeMode);
+					dmxnode::Data::MergeSourceA(nPortIndex, pArtDmx->Data, nDmxSlots, mergeMode);
 					SendDiag(artnet::PriorityCodes::DIAG_LOW, "%u:%u 8. Source matches both ip, merging Physical (SourceA)", nPortIndex, pArtDmx->Physical);
 				} else if (m_OutputPort[nPortIndex].SourceB.nPhysical == pArtDmx->Physical) {
 					m_OutputPort[nPortIndex].SourceB.nMillis = m_nCurrentPacketMillis;
 					UpdateMergeStatus(nPortIndex);
-					lightset::Data::MergeSourceB(nPortIndex, pArtDmx->Data, nDmxSlots, mergeMode);
+					dmxnode::Data::MergeSourceB(nPortIndex, pArtDmx->Data, nDmxSlots, mergeMode);
 					SendDiag(artnet::PriorityCodes::DIAG_LOW, "%u:%u 8. Source matches both ip, merging Physical (SourceB)", nPortIndex, pArtDmx->Physical);
 				} else {
 					SendDiag(artnet::PriorityCodes::DIAG_LOW, "%u:%u 8. Source matches both ip, more than two sources, discarding data", nPortIndex, pArtDmx->Physical);
@@ -208,14 +205,14 @@ void ArtNetNode::HandleDmx() {
 			}
 
 			if ((m_State.IsSynchronousMode) && ((m_OutputPort[nPortIndex].GoodOutput & artnet::GoodOutput::OUTPUT_IS_MERGING) != artnet::GoodOutput::OUTPUT_IS_MERGING)) {
-				lightset::data_set(m_pLightSet, nPortIndex);
+				dmxnode::data_set(m_pDmxNodeOutputType, nPortIndex);
 				m_OutputPort[nPortIndex].IsDataPending = true;
 				SendDiag(artnet::PriorityCodes::DIAG_LOW, "%u: Buffering data", nPortIndex);
 			} else {
-				lightset::data_output(m_pLightSet, nPortIndex);
+				dmxnode::data_output(m_pDmxNodeOutputType, nPortIndex);
 
 				if (!m_OutputPort[nPortIndex].IsTransmitting) {
-					m_pLightSet->Start(nPortIndex);
+					m_pDmxNodeOutputType->Start(nPortIndex);
 					m_State.IsChanged = true;
 					m_OutputPort[nPortIndex].IsTransmitting = true;
 				}
@@ -223,7 +220,7 @@ void ArtNetNode::HandleDmx() {
 				SendDiag(artnet::PriorityCodes::DIAG_LOW, "%u: Send data", nPortIndex);
 			}
 
-			m_State.nReceivingDmx |= (1U << static_cast<uint8_t>(lightset::PortDir::OUTPUT));
+			m_State.nReceivingDmx |= (1U << static_cast<uint8_t>(dmxnode::PortDirection::OUTPUT));
 		}
 	}
 }

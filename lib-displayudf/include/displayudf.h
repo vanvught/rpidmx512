@@ -2,7 +2,7 @@
  * @file displayudf.h
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -64,44 +64,54 @@
 # include "rdmdeviceresponder.h"
 #endif
 
-namespace displayudf {
-#if !defined(CONFIG_DMX_PORT_OFFSET)
- static constexpr uint32_t DMXPORT_OFFSET = 0;
-#else
- static constexpr uint32_t DMXPORT_OFFSET = CONFIG_DMX_PORT_OFFSET;
+#if defined (OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI)
+# include "dmx.h"
 #endif
 
+namespace displayudf {
 static constexpr auto LABEL_MAX_ROWS = 6U;
 
 #if !defined(NODE_NODE)
 enum class Labels {
 	TITLE,
 	BOARDNAME,
-	IP,
 	VERSION,
-	NOT_USED1,
-	AP,
-	NOT_USED2,
 	HOSTNAME,
-	UNIVERSE_PORT_A,
-	UNIVERSE_PORT_B,
-	UNIVERSE_PORT_C,
-	UNIVERSE_PORT_D,
+	IP,
 	NETMASK,
-	DMX_START_ADDRESS,
-	DESTINATION_IP_PORT_A,
-	DESTINATION_IP_PORT_B,
-	DESTINATION_IP_PORT_C,
-	DESTINATION_IP_PORT_D,
 	DEFAULT_GATEWAY,
+	AP,
 	DMX_DIRECTION,
+	DMX_START_ADDRESS,
+	UNIVERSE_PORT_A,
+# if (DMX_MAX_PORTS > 1)
+	UNIVERSE_PORT_B,
+# endif
+# if (DMX_MAX_PORTS > 2)
+	UNIVERSE_PORT_C,
+# endif
+# if (DMX_MAX_PORTS == 4)
+	UNIVERSE_PORT_D,
+# endif
+#if defined (NODE_ARTNET) && defined (ARTNET_HAVE_DMXIN)
+	DESTINATION_IP_PORT_A,
+# if DMX_MAX_PORTS >= 2
+	DESTINATION_IP_PORT_B,
+# endif
+# if DMX_MAX_PORTS >= 3
+	DESTINATION_IP_PORT_C,
+# endif
+# if DMX_MAX_PORTS == 4
+	DESTINATION_IP_PORT_D,
+# endif
+#endif
 	UNKNOWN
 };
 #else
-# if LIGHTSET_PORTS > 8
+# if DMXNODE_PORTS > 8
 #  define MAX_ARRAY 4
 # else
-#  define MAX_ARRAY LIGHTSET_PORTS
+#  define MAX_ARRAY DMXNODE_PORTS
 # endif
 enum class Labels {
 	TITLE,

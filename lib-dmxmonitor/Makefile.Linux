@@ -1,5 +1,5 @@
 #DEFINES=NDEBUG
 
-EXTRA_INCLUDES=../lib-lightset/include ../lib-properties/include
+EXTRA_INCLUDES=../lib-properties/include
 
 include ../firmware-template-linux/lib/Rules.mk

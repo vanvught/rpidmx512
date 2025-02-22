@@ -1,6 +1,6 @@
 $(info $$MAKE_FLAGS [${MAKE_FLAGS}])
 
-EXTRA_INCLUDES=../lib-network/include ../lib-properties/include ../lib-display/include ../lib-lightset/include
+EXTRA_INCLUDES=../lib-network/include ../lib-properties/include ../lib-display/include 
 EXTRA_INCLUDES+=../lib-flashcode/include ../lib-flashcodeinstall/include
 
 ifneq ($(MAKE_FLAGS),)
@@ -65,29 +65,6 @@ ifneq ($(MAKE_FLAGS),)
 	
 	ifeq ($(findstring WIDGET_HAVE_FLASHROM,$(MAKE_FLAGS)), WIDGET_HAVE_FLASHROM)
 		EXTRA_INCLUDES+=../lib-widget/include
-	endif
-	
-	ifeq ($(findstring OUTPUT_DMX_SEND,$(MAKE_FLAGS)),OUTPUT_DMX_SEND)
-		EXTRA_INCLUDES+=../lib-dmxsend/include ../lib-dmx/include
-	endif
-	ifeq ($(findstring OUTPUT_DMX_PIXEL,$(MAKE_FLAGS)), OUTPUT_DMX_PIXEL)
-		EXTRA_INCLUDES+=../lib-ws28xxdmx/include ../lib-ws28xx/include
-	endif
-	ifeq ($(findstring OUTPUT_DMX_MONITOR,$(MAKE_FLAGS)), OUTPUT_DMX_MONITOR)
-		EXTRA_INCLUDES+=../lib-dmxmonitor/include
-	endif
-	ifeq ($(findstring OUTPUT_DMX_SERIAL,$(MAKE_FLAGS)), OUTPUT_DMX_SERIAL)
-		EXTRA_INCLUDES+=../lib-dmxserial/include
-	endif
-	ifeq ($(findstring OUTPUT_DMX_STEPPER,$(MAKE_FLAGS)), OUTPUT_DMX_STEPPER)
-		EXTRA_INCLUDES+=../lib-l6470dmx/include ../lib-l6470/include
-		EXTRA_INCLUDES+=../lib-tlc59711dmx/include ../lib-tlc59711/include
-	endif
-	ifeq ($(findstring OUTPUT_DMX_SHOWFILE,$(MAKE_FLAGS)), OUTPUT_DMX_SHOWFILE)
-		EXTRA_INCLUDES+=../lib-showfile/include
-	endif
-	ifeq ($(findstring OUTPUT_DMX_PCA9685,$(MAKE_FLAGS)), OUTPUT_DMX_PCA9685)
-		EXTRA_INCLUDES+=../lib-pca9685dmx/include ../lib-pca9685/include
 	endif
 else
 	EXTRA_SRCDIR+=src/httpd

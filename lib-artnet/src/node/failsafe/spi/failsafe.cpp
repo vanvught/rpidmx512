@@ -90,11 +90,11 @@ void failsafe_write(uint32_t nPortIndex, const uint8_t *pData) {
 		return;
 	}
 
-	const auto nOffset = nOffsetBase + (nPortIndex * lightset::dmx::UNIVERSE_SIZE);
+	const auto nOffset = nOffsetBase + (nPortIndex * dmxnode::UNIVERSE_SIZE);
 
 	DEBUG_PRINTF("nOffsetBase=%p, nOffset=%p", nOffsetBase, nOffset);
 
-	spi_flash_cmd_write_multi(nOffset, lightset::dmx::UNIVERSE_SIZE, pData);
+	spi_flash_cmd_write_multi(nOffset, dmxnode::UNIVERSE_SIZE, pData);
 
 	DEBUG_EXIT
 }
@@ -132,11 +132,11 @@ void failsafe_read(uint32_t nPortIndex, uint8_t *pData) {
 		return;
 	}
 
-	const auto nOffset = nOffsetBase + (nPortIndex * lightset::dmx::UNIVERSE_SIZE);
+	const auto nOffset = nOffsetBase + (nPortIndex * dmxnode::UNIVERSE_SIZE);
 
 	DEBUG_PRINTF("nOffsetBase=%p, nOffset=%p", nOffsetBase, nOffset);
 
-	spi_flash_cmd_read_fast(nOffset, lightset::dmx::UNIVERSE_SIZE, pData);
+	spi_flash_cmd_read_fast(nOffset, dmxnode::UNIVERSE_SIZE, pData);
 
 	DEBUG_EXIT
 }

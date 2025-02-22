@@ -23,6 +23,10 @@
  * THE SOFTWARE.
  */
 
+#if defined(DEBUG_CONFIGSTORE)
+# undef NDEBUG
+#endif
+
 #include <cstdint>
 #include <cstring>
 #include <cstdio>
@@ -48,19 +52,42 @@ static TimerHandle_t s_nTimerId = TIMER_ID_NONE;
 static void timer_stop();
 
 static void timer([[maybe_unused]] TimerHandle_t nHandle) {
+	DEBUG_ENTRY
+
 	if (!ConfigStore::Get()->Commit()) {
 		timer_stop();
+
+		DEBUG_EXIT
+		return;
 	}
+
+	DEBUG_EXIT
 }
 
 static void timer_start() {
-	assert(s_nTimerId == TIMER_ID_NONE);
+	DEBUG_ENTRY
+
+	if (s_nTimerId != TIMER_ID_NONE) {
+		return;
+		DEBUG_EXIT
+	}
+
 	s_nTimerId = SoftwareTimerAdd(100, timer);
+
+	DEBUG_EXIT
 }
 
 static void timer_stop() {
-	assert(s_nTimerId != TIMER_ID_NONE);
+	DEBUG_ENTRY
+
+	if (s_nTimerId == TIMER_ID_NONE) {
+		return;
+		DEBUG_EXIT
+	}
+
 	SoftwareTimerDelete(s_nTimerId);
+
+	DEBUG_EXIT
 }
 
 using namespace configstore;
@@ -158,18 +185,16 @@ uint32_t ConfigStore::GetStoreOffset(Store store) {
 	return nOffset;
 }
 
-void ConfigStore::ResetSetList(Store store) {
+void ConfigStore::ResetStore(const Store store) {
+	DEBUG_ENTRY
 	assert(store < Store::LAST);
 
-	auto *pbSetList = &s_ConfigStoreData[GetStoreOffset(store)];
-
-	*pbSetList++ = 0x00;
-	*pbSetList++ = 0x00;
-	*pbSetList++ = 0x00;
-	*pbSetList = 0x00;
+	memset(&s_ConfigStoreData[GetStoreOffset(store)], 0, STORE_SIZE[static_cast<uint32_t>(store)]);
 
 	s_State = State::CHANGED;
 	timer_start();
+
+	DEBUG_EXIT
 }
 
 void ConfigStore::Update(Store store, uint32_t nOffset, const void *pData, uint32_t nDataLength, uint32_t nSetList, uint32_t nOffsetSetList) {
@@ -211,9 +236,9 @@ void ConfigStore::Update(Store store, uint32_t nOffset, const void *pData, uint3
 	DEBUG_EXIT
 }
 
-void ConfigStore::Copy(const Store store, void *pData, uint32_t nDataLength, uint32_t nOffset, const bool doUpdate) {
+void ConfigStore::Copy(const Store store, void *pData, uint32_t nDataLength, uint32_t nOffset) {
 	DEBUG_ENTRY
-	DEBUG_PRINTF("[%s]:%u pData=%p, nDataLength=%u, nOffset=%u, doUpdate=%u", STORE_NAME[static_cast<uint32_t>(store)], static_cast<uint32_t>(store), pData, nDataLength, nOffset, doUpdate);
+	DEBUG_PRINTF("[%s]:%u pData=%p, nDataLength=%u, nOffset=%u", STORE_NAME[static_cast<uint32_t>(store)], static_cast<uint32_t>(store), pData, nDataLength, nOffset);
 
 	assert(store < Store::LAST);
 	assert(pData != nullptr);
@@ -222,24 +247,7 @@ void ConfigStore::Copy(const Store store, void *pData, uint32_t nDataLength, uin
 	const auto *pSrc = const_cast<const uint8_t *>(&s_ConfigStoreData[GetStoreOffset(store)]) + nOffset;
 	auto *pDst = static_cast<uint8_t *>(pData);
 
-	auto isEmpty = true;
-
-	for (uint32_t nIndex = 0; nIndex < nDataLength; nIndex++) {
-		if (pSrc[nIndex] != 0) {
-			isEmpty = false;
-			break;
-		}
-	}
-
-	if (!isEmpty) {
-		memcpy(pDst, pSrc, nDataLength);
-		DEBUG_EXIT
-		return;
-	}
-
-	if (doUpdate) {
-		Update(store, pData, nDataLength);
-	}
+	memcpy(pDst, pSrc, nDataLength);
 
 	DEBUG_EXIT
 }

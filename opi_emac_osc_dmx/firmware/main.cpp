@@ -88,7 +88,7 @@ int main() {
 	server.SetOutput(&dmxSend);
 	server.Print();
 
-	RemoteConfig remoteConfig(remoteconfig::Node::OSC, remoteconfig::Output::DMX, 1);
+	RemoteConfig remoteConfig(remoteconfig::NodeType::OSC, remoteconfig::Output::DMX, 1);
 
 	RemoteConfigParams remoteConfigParams;
 	remoteConfigParams.Load();

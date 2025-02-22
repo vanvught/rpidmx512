@@ -2,7 +2,7 @@
  * @file l6470dmxmodes.cpp
  *
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,14 +43,12 @@
 #include "motorparams.h"
 #include "modeparams.h"
 
-#include "lightset.h"
-
 #include "debug.h"
 
 L6470DmxModes::L6470DmxModes(TL6470DmxModes tMode, uint16_t nDmxStartAddress, L6470 *pL6470, MotorParams *pMotorParams, ModeParams *pModeParams) {
 	DEBUG_ENTRY;
 
-	assert(nDmxStartAddress <= lightset::dmx::UNIVERSE_SIZE);
+	assert(nDmxStartAddress <= dmxnode::UNIVERSE_SIZE);
 	assert(pL6470 != nullptr);
 	assert(pMotorParams != nullptr);
 	assert(pModeParams != nullptr);
@@ -279,4 +277,3 @@ void L6470DmxModes::DmxData(const uint8_t *pDmxData, uint32_t nLength) {
 
 	DEBUG_EXIT;
 }
-

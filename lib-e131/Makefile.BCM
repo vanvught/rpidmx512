@@ -1,6 +1,6 @@
 DEFINES=NDEBUG
 
-EXTRA_INCLUDES=../lib-lightset/include ../lib-properties/include ../lib-network/include
+EXTRA_INCLUDES=../lib-properties/include ../lib-network/include
 
 
 include ../firmware-template-bcm/lib/Rules.mk

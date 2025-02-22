@@ -63,7 +63,7 @@ void E131Bridge::SendDiscoveryPacket() {
 	if (m_State.nEnabledInputPorts != 0) {
 		for (uint32_t i = 0; i < e131bridge::MAX_PORTS; i++) {
 			uint16_t nUniverse;
-			if (GetUniverse(i, nUniverse, lightset::PortDir::INPUT)) {
+			if (GetUniverse(i, nUniverse, dmxnode::PortDirection::INPUT)) {
 				m_E131DiscoveryPacket.UniverseDiscoveryLayer.ListOfUniverses[nListOfUniverses++] = __builtin_bswap16(nUniverse);
 			}
 		}

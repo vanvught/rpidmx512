@@ -43,9 +43,9 @@
 # include "dmx.h"
 #endif
 
-#include "lightset.h"
-#include "lightsetdata.h"
-#include "lightset_data.h"
+#include "dmxnode.h"
+#include "dmxnodedata.h"
+#include "dmxnode_data.h"
 
 #include "hardware.h"
 #include "network.h"
@@ -64,12 +64,12 @@ E131Bridge::E131Bridge() {
 	memset(&m_Bridge, 0, sizeof(struct e131bridge::Bridge));
 
 	for (auto& port : m_Bridge.Port) {
-		port.direction = lightset::PortDir::DISABLE;
+		port.direction = dmxnode::PortDirection::DISABLE;
 	}
 
 	memset(&m_State, 0, sizeof(e131bridge::State));
 	m_State.nPriority = e131::priority::LOWEST;
-	m_State.failsafe = lightset::FailSafe::HOLD;
+	m_State.failsafe = dmxnode::FailSafe::HOLD;
 
 	for (uint32_t i = 0; i < e131bridge::MAX_PORTS; i++) {
 		memset(&m_OutputPort[i], 0, sizeof(e131bridge::OutputPort));
@@ -106,7 +106,7 @@ void E131Bridge::Start() {
 	FillDiscoveryPacket();
 
 	for (uint32_t nPortIndex = 0; nPortIndex < e131bridge::MAX_PORTS; nPortIndex++) {
-		if (m_Bridge.Port[nPortIndex].direction == lightset::PortDir::INPUT) {
+		if (m_Bridge.Port[nPortIndex].direction == dmxnode::PortDirection::INPUT) {
 			Dmx::Get()->SetPortDirection(nPortIndex, dmx::PortDirection::INP, true);
 		}
 	}
@@ -121,9 +121,9 @@ void E131Bridge::Start() {
 	/*
 	 * Make sure that the supported LightSet OutputSyle is correctly set
 	 */
-	if (m_pLightSet != nullptr) {
+	if (m_pDmxNodeOutputType != nullptr) {
 		for (uint32_t nPortIndex = 0; nPortIndex < e131bridge::MAX_PORTS; nPortIndex++) {
-			if (m_Bridge.Port[nPortIndex].direction == lightset::PortDir::OUTPUT) {
+			if (m_Bridge.Port[nPortIndex].direction == dmxnode::PortDirection::OUTPUT) {
 				SetOutputStyle(nPortIndex, GetOutputStyle(nPortIndex));
 			}
 		}
@@ -142,17 +142,17 @@ void E131Bridge::Stop() {
 	m_State.IsNetworkDataLoss = true;
 
 	for (uint32_t nPortIndex = 0; nPortIndex < e131bridge::MAX_PORTS; nPortIndex++) {
-		if (m_pLightSet != nullptr) {
-			m_pLightSet->Stop(nPortIndex);
+		if (m_pDmxNodeOutputType != nullptr) {
+			m_pDmxNodeOutputType->Stop(nPortIndex);
 		}
-		lightset::Data::ClearLength(nPortIndex);
+		dmxnode::Data::ClearLength(nPortIndex);
 	}
 
 #if defined (E131_HAVE_DMXIN)
 	SoftwareTimerDelete(m_timerHandleSendDiscoveryPacket);
 
 	for (uint32_t nPortIndex = 0; nPortIndex < e131bridge::MAX_PORTS; nPortIndex++) {
-		if (m_Bridge.Port[nPortIndex].direction == lightset::PortDir::INPUT) {
+		if (m_Bridge.Port[nPortIndex].direction == dmxnode::PortDirection::INPUT) {
 			Dmx::Get()->SetPortDirection(nPortIndex, dmx::PortDirection::INP, false);
 		}
 	}
@@ -225,14 +225,14 @@ void E131Bridge::SetLocalMerging() {
 	DEBUG_ENTRY
 
 	for (uint32_t nInputPortIndex = 0; nInputPortIndex < e131bridge::MAX_PORTS; nInputPortIndex++) {
-		if ((m_Bridge.Port[nInputPortIndex].direction == lightset::PortDir::OUTPUT) || (m_Bridge.Port[nInputPortIndex].nUniverse == 0))  {
+		if ((m_Bridge.Port[nInputPortIndex].direction == dmxnode::PortDirection::OUTPUT) || (m_Bridge.Port[nInputPortIndex].nUniverse == 0))  {
 			continue;
 		}
 
 		m_Bridge.Port[nInputPortIndex].bLocalMerge = false;
 
 		for (uint32_t nOutputPortIndex = 0; nOutputPortIndex < e131bridge::MAX_PORTS; nOutputPortIndex++) {
-			if (m_Bridge.Port[nOutputPortIndex].direction == lightset::PortDir::INPUT) {
+			if (m_Bridge.Port[nOutputPortIndex].direction == dmxnode::PortDirection::INPUT) {
 				continue;
 			}
 
@@ -266,37 +266,37 @@ void E131Bridge::SetLocalMerging() {
 	DEBUG_EXIT
 }
 
-void E131Bridge::SetUniverse(const uint32_t nPortIndex, const lightset::PortDir portDir, const uint16_t nUniverse) {
+void E131Bridge::SetUniverse(const uint32_t nPortIndex, const dmxnode::PortDirection portDir, const uint16_t nUniverse) {
 	DEBUG_ENTRY
-	DEBUG_PRINTF("nPortIndex=%u, dir=%s, nUniverse=%u", nPortIndex, lightset::get_direction(portDir), nUniverse);
+	DEBUG_PRINTF("nPortIndex=%u, dir=%s, nUniverse=%u", nPortIndex, dmxnode::get_port_direction(portDir), nUniverse);
 
 	assert(nPortIndex < e131bridge::MAX_PORTS);
-	assert(portDir <= lightset::PortDir::DISABLE);
+	assert(portDir <= dmxnode::PortDirection::DISABLE);
 	assert((nUniverse >= e131::universe::DEFAULT) && (nUniverse <= e131::universe::MAX));
 
-	if (portDir == lightset::PortDir::DISABLE) {
-		if (m_Bridge.Port[nPortIndex].direction == lightset::PortDir::OUTPUT) {
+	if (portDir == dmxnode::PortDirection::DISABLE) {
+		if (m_Bridge.Port[nPortIndex].direction == dmxnode::PortDirection::OUTPUT) {
 			assert(m_State.nEnableOutputPorts > 1);
 			m_State.nEnableOutputPorts = static_cast<uint8_t>(m_State.nEnableOutputPorts - 1);
 			LeaveUniverse(nPortIndex, nUniverse);
 		}
 
 #if defined (E131_HAVE_DMXIN)
-		if (m_Bridge.Port[nPortIndex].direction == lightset::PortDir::INPUT) {
+		if (m_Bridge.Port[nPortIndex].direction == dmxnode::PortDirection::INPUT) {
 			assert(m_State.nEnabledInputPorts > 1);
 			m_State.nEnabledInputPorts = static_cast<uint8_t>(m_State.nEnabledInputPorts - 1);
 		}
 #endif
 
-		m_Bridge.Port[nPortIndex].direction = lightset::PortDir::DISABLE;
+		m_Bridge.Port[nPortIndex].direction = dmxnode::PortDirection::DISABLE;
 
 		DEBUG_EXIT
 		return;
 	}
 
 #if defined (E131_HAVE_DMXIN)
-	if (portDir == lightset::PortDir::INPUT) {
-		if (m_Bridge.Port[nPortIndex].direction == lightset::PortDir::INPUT) {
+	if (portDir == dmxnode::PortDirection::INPUT) {
+		if (m_Bridge.Port[nPortIndex].direction == dmxnode::PortDirection::INPUT) {
 			if (m_Bridge.Port[nPortIndex].nUniverse == nUniverse) {
 				DEBUG_EXIT
 				return;
@@ -306,7 +306,7 @@ void E131Bridge::SetUniverse(const uint32_t nPortIndex, const lightset::PortDir 
 			assert(m_State.nEnabledInputPorts <= e131bridge::MAX_PORTS);
 		}
 
-		m_Bridge.Port[nPortIndex].direction = lightset::PortDir::INPUT;
+		m_Bridge.Port[nPortIndex].direction = dmxnode::PortDirection::INPUT;
 		m_Bridge.Port[nPortIndex].nUniverse = nUniverse;
 		m_InputPort[nPortIndex].nMulticastIp = e131::universe_to_multicast_ip(nUniverse);
 
@@ -315,8 +315,8 @@ void E131Bridge::SetUniverse(const uint32_t nPortIndex, const lightset::PortDir 
 	}
 #endif
 
-	if (portDir == lightset::PortDir::OUTPUT) {
-		if (m_Bridge.Port[nPortIndex].direction == lightset::PortDir::OUTPUT) {
+	if (portDir == dmxnode::PortDirection::OUTPUT) {
+		if (m_Bridge.Port[nPortIndex].direction == dmxnode::PortDirection::OUTPUT) {
 			if (m_Bridge.Port[nPortIndex].nUniverse == nUniverse) {
 				DEBUG_EXIT
 				return;
@@ -330,7 +330,7 @@ void E131Bridge::SetUniverse(const uint32_t nPortIndex, const lightset::PortDir 
 
 		Network::Get()->JoinGroup(m_nHandle, e131::universe_to_multicast_ip(nUniverse));
 
-		m_Bridge.Port[nPortIndex].direction = lightset::PortDir::OUTPUT;
+		m_Bridge.Port[nPortIndex].direction = dmxnode::PortDirection::OUTPUT;
 		m_Bridge.Port[nPortIndex].nUniverse = nUniverse;
 
 	}
@@ -421,7 +421,7 @@ void E131Bridge::HandleDmx() {
 	const auto nDmxSlots = __builtin_bswap16(pData->DMPLayer.PropertyValueCount) - 1U;
 
 	for (uint32_t nPortIndex = 0; nPortIndex < e131bridge::MAX_PORTS; nPortIndex++) {
-		if (m_Bridge.Port[nPortIndex].direction == lightset::PortDir::OUTPUT) {
+		if (m_Bridge.Port[nPortIndex].direction == dmxnode::PortDirection::OUTPUT) {
 			// Frame layer
 			// 8.2 Association of Multicast Addresses and Universe
 			// Note: The identity of the universe shall be determined by the universe number in the
@@ -496,17 +496,17 @@ void E131Bridge::HandleDmx() {
 				pSourceA->nSequenceNumberData = pData->FrameLayer.SequenceNumber;
 				memcpy(pSourceA->cid, pData->RootLayer.Cid, 16);
 				pSourceA->nMillis = m_nCurrentPacketMillis;
-				lightset::Data::SetSourceA(nPortIndex, pDmxData, nDmxSlots);
+				dmxnode::Data::SetSourceA(nPortIndex, pDmxData, nDmxSlots);
 			} else if (isSourceA && (ipB == 0)) {
 //				printf("2. Continue package from SourceA\n");
 				pSourceA->nSequenceNumberData = pData->FrameLayer.SequenceNumber;
 				pSourceA->nMillis = m_nCurrentPacketMillis;
-				lightset::Data::SetSourceA(nPortIndex, pDmxData, nDmxSlots);
+				dmxnode::Data::SetSourceA(nPortIndex, pDmxData, nDmxSlots);
 			} else if ((ipA == 0) && isSourceB) {
 //				printf("3. Continue package from SourceB\n");
 				pSourceB->nSequenceNumberData = pData->FrameLayer.SequenceNumber;
 				pSourceB->nMillis = m_nCurrentPacketMillis;
-				lightset::Data::SetSourceB(nPortIndex, pDmxData, nDmxSlots);
+				dmxnode::Data::SetSourceB(nPortIndex, pDmxData, nDmxSlots);
 			} else if (!isSourceA && (ipB == 0)) {
 //				printf("4. New ip, start merging\n");
 				pSourceB->nIp = m_nIpAddressFrom;
@@ -514,7 +514,7 @@ void E131Bridge::HandleDmx() {
 				memcpy(pSourceB->cid, pData->RootLayer.Cid, 16);
 				pSourceB->nMillis = m_nCurrentPacketMillis;
 				UpdateMergeStatus(nPortIndex);
-				lightset::Data::MergeSourceB(nPortIndex, pDmxData, nDmxSlots, m_OutputPort[nPortIndex].mergeMode);
+				dmxnode::Data::MergeSourceB(nPortIndex, pDmxData, nDmxSlots, m_OutputPort[nPortIndex].mergeMode);
 			} else if ((ipA == 0) && !isSourceB) {
 //				printf("5. New ip, start merging\n");
 				pSourceA->nIp = m_nIpAddressFrom;
@@ -522,19 +522,19 @@ void E131Bridge::HandleDmx() {
 				memcpy(pSourceA->cid, pData->RootLayer.Cid, 16);
 				pSourceA->nMillis = m_nCurrentPacketMillis;
 				UpdateMergeStatus(nPortIndex);
-				lightset::Data::MergeSourceA(nPortIndex, pDmxData, nDmxSlots, m_OutputPort[nPortIndex].mergeMode);
+				dmxnode::Data::MergeSourceA(nPortIndex, pDmxData, nDmxSlots, m_OutputPort[nPortIndex].mergeMode);
 			} else if (isSourceA && !isSourceB) {
 //				printf("6. Continue merging\n");
 				pSourceA->nSequenceNumberData = pData->FrameLayer.SequenceNumber;
 				pSourceA->nMillis = m_nCurrentPacketMillis;
 				UpdateMergeStatus(nPortIndex);
-				lightset::Data::MergeSourceA(nPortIndex, pDmxData, nDmxSlots, m_OutputPort[nPortIndex].mergeMode);
+				dmxnode::Data::MergeSourceA(nPortIndex, pDmxData, nDmxSlots, m_OutputPort[nPortIndex].mergeMode);
 			} else if (!isSourceA && isSourceB) {
 //				printf("7. Continue merging\n");
 				pSourceB->nSequenceNumberData = pData->FrameLayer.SequenceNumber;
 				pSourceB->nMillis = m_nCurrentPacketMillis;
 				UpdateMergeStatus(nPortIndex);
-				lightset::Data::MergeSourceB(nPortIndex, pDmxData, nDmxSlots, m_OutputPort[nPortIndex].mergeMode);
+				dmxnode::Data::MergeSourceB(nPortIndex, pDmxData, nDmxSlots, m_OutputPort[nPortIndex].mergeMode);
 			}
 #ifndef NDEBUG
 			else if (isSourceA && isSourceB) {
@@ -578,19 +578,19 @@ void E131Bridge::HandleDmx() {
 			const auto doUpdate = ((!m_State.IsSynchronized) || (m_State.bDisableSynchronize));
 
 			if (doUpdate) {
-				lightset::data_output(m_pLightSet, nPortIndex);
+				dmxnode::data_output(m_pDmxNodeOutputType, nPortIndex);
 
 				if (!m_OutputPort[nPortIndex].IsTransmitting) {
-					m_pLightSet->Start(nPortIndex);
+					m_pDmxNodeOutputType->Start(nPortIndex);
 					m_OutputPort[nPortIndex].IsTransmitting = true;
 					m_State.IsChanged = true;
 				}
 			} else {
-				lightset::data_set(m_pLightSet, nPortIndex);
+				dmxnode::data_set(m_pDmxNodeOutputType, nPortIndex);
 				m_OutputPort[nPortIndex].IsDataPending = true;
 			}
 
-			m_State.nReceivingDmx |= (1U << static_cast<uint8_t>(lightset::PortDir::OUTPUT));
+			m_State.nReceivingDmx |= (1U << static_cast<uint8_t>(dmxnode::PortDirection::OUTPUT));
 		}
 	}
 }
@@ -616,7 +616,7 @@ void E131Bridge::SetNetworkDataLossCondition(bool bSourceA, bool bSourceB) {
 				memset(m_OutputPort[i].sourceA.cid, 0, e131::CID_LENGTH);
 				m_OutputPort[i].sourceB.nIp = 0;
 				memset(m_OutputPort[i].sourceB.cid, 0, e131::CID_LENGTH);
-				lightset::Data::ClearLength(i);
+				dmxnode::Data::ClearLength(i);
 				m_OutputPort[i].IsTransmitting = false;
 				m_OutputPort[i].IsMerging = false;
 			}
@@ -638,7 +638,7 @@ void E131Bridge::SetNetworkDataLossCondition(bool bSourceA, bool bSourceB) {
 
 				if (!m_State.IsMergeMode) {
 					doFailsafe = true;
-					lightset::Data::ClearLength(i);
+					dmxnode::Data::ClearLength(i);
 					m_OutputPort[i].IsTransmitting = false;
 				}
 			}
@@ -647,13 +647,13 @@ void E131Bridge::SetNetworkDataLossCondition(bool bSourceA, bool bSourceB) {
 
 	if (doFailsafe) {
 		switch (m_State.failsafe) {
-		case lightset::FailSafe::HOLD:
+		case dmxnode::FailSafe::HOLD:
 			break;
-		case lightset::FailSafe::OFF:
-			m_pLightSet->Blackout(true);
+		case dmxnode::FailSafe::OFF:
+			m_pDmxNodeOutputType->Blackout(true);
 			break;
-		case lightset::FailSafe::ON:
-			m_pLightSet->FullOn();
+		case dmxnode::FailSafe::ON:
+			m_pDmxNodeOutputType->FullOn();
 			break;
 		default:
 			DEBUG_PRINTF("m_State.failsafe=%u", static_cast<uint32_t>(m_State.failsafe));
@@ -666,7 +666,7 @@ void E131Bridge::SetNetworkDataLossCondition(bool bSourceA, bool bSourceB) {
 	Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
 	hal::panel_led_off(hal::panelled::SACN);
 
-	m_State.nReceivingDmx &= static_cast<uint8_t>(~(1U << static_cast<uint8_t>(lightset::PortDir::OUTPUT)));
+	m_State.nReceivingDmx &= static_cast<uint8_t>(~(1U << static_cast<uint8_t>(dmxnode::PortDirection::OUTPUT)));
 
 #if defined (E131_HAVE_DMXIN)
 	SetLocalMerging();
@@ -735,7 +735,7 @@ void E131Bridge::Process() {
 
 	bool isActive = false;
 
-	if (m_pLightSet != nullptr) {
+	if (m_pDmxNodeOutputType != nullptr) {
 		const auto *const pRaw = reinterpret_cast<TE131RawPacket *>(m_pReceiveBuffer);
 		const auto nRootVector = __builtin_bswap32(pRaw->RootLayer.Vector);
 

@@ -207,13 +207,13 @@ void E131Controller::HandleDmxOut(uint16_t nUniverse, const uint8_t *pDmxData, u
 	// Data Layer
 	m_pE131DataPacket->DMPLayer.FlagsLength = __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | (DATA_LAYER_LENGTH(1U + nLength))));
 
-	if (__builtin_expect((m_nMaster == DMX_MAX_VALUE), 1)) {
+	if (__builtin_expect((m_nMaster == dmxnode::DMX_MAX_VALUE), 1)) {
 		memcpy(&m_pE131DataPacket->DMPLayer.PropertyValues[1], pDmxData, nLength);
 	} else if (m_nMaster == 0) {
 		memset(&m_pE131DataPacket->DMPLayer.PropertyValues[1], 0, nLength);
 	} else {
 		for (uint32_t i = 0; i < nLength; i++) {
-			m_pE131DataPacket->DMPLayer.PropertyValues[1 + i] = static_cast<uint8_t>((m_nMaster * pDmxData[i]) / DMX_MAX_VALUE);
+			m_pE131DataPacket->DMPLayer.PropertyValues[1 + i] = static_cast<uint8_t>((m_nMaster * pDmxData[i]) / dmxnode::DMX_MAX_VALUE);
 		}
 	}
 

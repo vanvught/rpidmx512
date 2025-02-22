@@ -41,10 +41,10 @@
 
 namespace pixelpatterns {
 #if defined (PIXELPATTERNS_MULTI)
-# if !defined (CONFIG_PIXELDMX_MAX_PORTS)
-#  define CONFIG_PIXELDMX_MAX_PORTS	8U
+# if !defined (CONFIG_DMXNODE_PIXEL_MAX_PORTS)
+#  define CONFIG_DMXNODE_PIXEL_MAX_PORTS	8U
 # endif
- static constexpr uint32_t MAX_PORTS = CONFIG_PIXELDMX_MAX_PORTS;
+ static constexpr uint32_t MAX_PORTS = CONFIG_DMXNODE_PIXEL_MAX_PORTS;
 #else
  static constexpr uint32_t MAX_PORTS = 1;
 #endif

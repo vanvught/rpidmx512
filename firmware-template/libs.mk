@@ -8,23 +8,32 @@ else
 	endif
 endif
 
-ifeq ($(findstring NODE_NODE,$(DEFINES)),NODE_NODE)
-	LIBS+=node artnet e131
-	ARTNET=1
-endif
-
 ifeq ($(findstring NODE_ARTNET,$(DEFINES)),NODE_ARTNET)
+	ARTNET=1
+	DMXNODE=1
 	ifeq ($(findstring ARTNET_VERSION=3,$(DEFINES)),ARTNET_VERSION=3)
-		LIBS+=artnet
 	else
-		LIBS+=artnet e131
+		E131=1
 	endif
 endif
 
 ifeq ($(findstring NODE_E131,$(DEFINES)),NODE_E131)
 	ifneq ($(findstring e131,$(LIBS)),e131)
-		LIBS+=e131
+		E131=1
+		DMXNODE=1
 	endif
+endif
+
+ifdef DMXNODE
+	LIBS+=dmxnode
+endif
+
+ifdef ARTNET
+	LIBS+=artnet
+endif
+
+ifdef E131
+	LIBS+=e131
 endif
 
 ifeq ($(findstring E131_CONTROLLER,$(DEFINES)),E131_CONTROLLER)
@@ -172,7 +181,7 @@ ifneq ($(findstring properties,$(LIBS)),properties)
 	LIBS+=properties
 endif
 
-LIBS+=lightset device hal
+LIBS+=device hal
 
 $(info $$LIBS [${LIBS}])
 $(info $$DEFINES [${DEFINES}])

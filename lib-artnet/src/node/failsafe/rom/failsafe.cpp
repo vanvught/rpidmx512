@@ -97,14 +97,14 @@ void failsafe_write(uint32_t nPortIndex, const uint8_t *pData) {
 		return;
 	}
 
-	const auto nOffset = nOffsetBase + (nPortIndex * lightset::dmx::UNIVERSE_SIZE);
+	const auto nOffset = nOffsetBase + (nPortIndex * dmxnode::UNIVERSE_SIZE);
 
 	DEBUG_PRINTF("nOffsetBase=%p, nOffset=%p", nOffsetBase, nOffset);
 
 	flashcode::result nResult;
 	uint32_t nTimeout = 0;
 
-	while (!FlashCode::Get()->Write(nOffset, lightset::dmx::UNIVERSE_SIZE, pData, nResult)) {
+	while (!FlashCode::Get()->Write(nOffset, dmxnode::UNIVERSE_SIZE, pData, nResult)) {
 		nTimeout++;
 	}
 
@@ -148,14 +148,14 @@ void failsafe_read(uint32_t nPortIndex, uint8_t *pData) {
 		return;
 	}
 
-	const auto nOffset = nOffsetBase + (nPortIndex * lightset::dmx::UNIVERSE_SIZE);
+	const auto nOffset = nOffsetBase + (nPortIndex * dmxnode::UNIVERSE_SIZE);
 
 	DEBUG_PRINTF("nOffsetBase=%p, nOffset=%p", nOffsetBase, nOffset);
 
 	flashcode::result nResult;
 	uint32_t nTimeout = 0;
 
-	while (!FlashCode::Get()->Read(nOffset, lightset::dmx::UNIVERSE_SIZE, pData, nResult)) {
+	while (!FlashCode::Get()->Read(nOffset, dmxnode::UNIVERSE_SIZE, pData, nResult)) {
 		nTimeout++;
 	}
 

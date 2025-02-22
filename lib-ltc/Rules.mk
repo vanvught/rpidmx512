@@ -1,6 +1,6 @@
 $(info $$MAKE_FLAGS [${MAKE_FLAGS}])
 
-EXTRA_INCLUDES+=../lib-display/include ../lib-artnet/include ../lib-tcnet/include  ../lib-midi/include ../lib-network/include ../lib-properties/include ../lib-lightset/include
+EXTRA_INCLUDES+=../lib-display/include ../lib-artnet/include ../lib-tcnet/include  ../lib-midi/include ../lib-network/include ../lib-properties/include 
 
 ifneq ($(MAKE_FLAGS),)
 	COND=
@@ -22,6 +22,6 @@ ifneq ($(MAKE_FLAGS),)
 	endif
 else
 	DEFINES+=ARTNET_VERSION=3
-	DEFINES+=LIGHTSET_PORTS=1
+	DEFINES+=DMXNODE_PORTS=1
 	DEFINES+=ARTNET_HAVE_TIMECODE
 endif

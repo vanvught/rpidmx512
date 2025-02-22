@@ -2,7 +2,7 @@
  * @file json_get_portstatus.cpp
  *
  */
-/* Copyright (C) 2023-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2023-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,7 @@
 #include <cstdio>
 
 #include "artnetnode.h"
-#include "lightset.h"
+#include "dmxnode.h"
 
 
 namespace remoteconfig::rdm {
@@ -35,7 +35,7 @@ static uint32_t get_portstatus(const uint32_t nPortIndex, char *pOutBuffer, cons
 	const auto direction = ArtNetNode::Get()->GetPortDirection(nPortIndex);
 	const char *status;
 
-	if (direction == lightset::PortDir::OUTPUT) {
+	if (direction == dmxnode::PortDirection::OUTPUT) {
 		if (ArtNetNode::Get()->GetRdm(nPortIndex)) {
 			if (ArtNetNode::Get()->GetRdmDiscovery(nPortIndex)) {
 				bool bIsIncremental;
@@ -50,7 +50,7 @@ static uint32_t get_portstatus(const uint32_t nPortIndex, char *pOutBuffer, cons
 		} else {
 			return 0;
 		}
-	} else if (direction == lightset::PortDir::INPUT) {
+	} else if (direction == dmxnode::PortDirection::INPUT) {
 		if (ArtNetNode::Get()->RdmGetUidCount(nPortIndex) != 0) {
 			status = "TOD";
 		} else {
@@ -63,7 +63,7 @@ static uint32_t get_portstatus(const uint32_t nPortIndex, char *pOutBuffer, cons
 	auto nLength = static_cast<uint32_t>(snprintf(pOutBuffer, nOutBufferSize,
 			"{\"port\":\"%c\",\"direction\":\"%s\",\"status\":\"%s\"},",
 			static_cast<char>('A' + nPortIndex),
-			lightset::get_direction(direction),
+			dmxnode::get_port_direction(direction),
 			status));
 
 	return nLength;

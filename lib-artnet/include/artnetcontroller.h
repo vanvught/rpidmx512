@@ -34,9 +34,7 @@
 
 #include "artnetpolltable.h"
 
-#ifndef DMX_MAX_VALUE
-#define DMX_MAX_VALUE 255
-#endif
+#include "dmxnode.h"
 
 struct State {
 	uint32_t ArtPollIpAddress;
@@ -98,11 +96,11 @@ public:
 	}
 
 #ifdef CONFIG_ARTNET_CONTROLLER_ENABLE_MASTER
-	void SetMaster(uint32_t nMaster = DMX_MAX_VALUE) {
-		if (nMaster < DMX_MAX_VALUE) {
+	void SetMaster(uint32_t nMaster = dmxnode::DMX_MAX_VALUE) {
+		if (nMaster < dmxnode::DMX_MAX_VALUE) {
 			m_nMaster = nMaster;
 		} else {
-			m_nMaster = DMX_MAX_VALUE;
+			m_nMaster = dmxnode::DMX_MAX_VALUE;
 		}
 	}
 	uint32_t GetMaster() const {
@@ -161,7 +159,7 @@ private:
 	uint32_t m_nLastPollMillis { 0 };
 	uint32_t m_nActiveUniverses { 0 };
 #ifdef CONFIG_ARTNET_CONTROLLER_ENABLE_MASTER
-	uint32_t m_nMaster { DMX_MAX_VALUE };
+	uint32_t m_nMaster { dmxnode::DMX_MAX_VALUE };
 #endif
 	static ArtNetController *s_pThis;
 };

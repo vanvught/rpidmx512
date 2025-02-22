@@ -2,7 +2,7 @@
  * @file displayudfparams.cpp
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,11 +42,12 @@
 # define NODE_E131
 #endif
 
+#include "displayudf.h"
 #include "displayudfparams.h"
 #include "displayudfparamsconst.h"
 
 #include "networkparamsconst.h"
-#include "lightsetparamsconst.h"
+#include "dmxnodeparamsconst.h"
 
 #include "readconfigfile.h"
 #include "sscan.h"
@@ -60,7 +61,6 @@
 #endif
 #if defined (NODE_ARTNET)
 # include "artnetnode.h"
-# include "artnetparamsconst.h"
 #endif
 #if defined (NODE_E131)
 # include "e131bridge.h"
@@ -70,73 +70,40 @@
 
 using namespace displayudf;
 
-#if !defined (NODE_NODE)
-static constexpr const char *pArray[static_cast<uint32_t>(Labels::UNKNOWN)] = {
+static const char *pArray[static_cast<uint32_t>(Labels::UNKNOWN)] = {
 		DisplayUdfParamsConst::TITLE,
 		DisplayUdfParamsConst::BOARD_NAME,
-		NetworkParamsConst::IP_ADDRESS,
 		DisplayUdfParamsConst::VERSION,
-		"",
+		NetworkParamsConst::HOSTNAME,
+		NetworkParamsConst::IP_ADDRESS,
+		NetworkParamsConst::NET_MASK,
+		NetworkParamsConst::DEFAULT_GATEWAY,
 		DisplayUdfParamsConst::ACTIVE_PORTS,
-		"",
-		NetworkParamsConst::HOSTNAME,
-		LightSetParamsConst::UNIVERSE_PORT[0],
-		LightSetParamsConst::UNIVERSE_PORT[1],
-		LightSetParamsConst::UNIVERSE_PORT[2],
-		LightSetParamsConst::UNIVERSE_PORT[3],
-		NetworkParamsConst::NET_MASK,
-		LightSetParamsConst::DMX_START_ADDRESS,
-#if defined (NODE_ARTNET)
-		ArtNetParamsConst::DESTINATION_IP_PORT[0],
-		ArtNetParamsConst::DESTINATION_IP_PORT[1],
-		ArtNetParamsConst::DESTINATION_IP_PORT[2],
-		ArtNetParamsConst::DESTINATION_IP_PORT[3],
-#else
-		"",
-		"",
-		"",
-		"",
+		DisplayUdfParamsConst::DMX_DIRECTION,
+		DmxNodeParamsConst::DMX_START_ADDRESS,
+		DmxNodeParamsConst::UNIVERSE_PORT[0],
+# if (DMX_MAX_PORTS > 1)
+		DmxNodeParamsConst::UNIVERSE_PORT[1],
+# endif
+# if (DMX_MAX_PORTS > 2)
+		DmxNodeParamsConst::UNIVERSE_PORT[2],
+# endif
+# if (DMX_MAX_PORTS == 4)
+		DmxNodeParamsConst::UNIVERSE_PORT[3],
+# endif
+#if defined (NODE_ARTNET) && defined (ARTNET_HAVE_DMXIN)
+		DmxNodeParamsConst::DESTINATION_IP_PORT[0],
+# if DMX_MAX_PORTS >= 2
+		DmxNodeParamsConst::DESTINATION_IP_PORT[1],
+# endif
+# if DMX_MAX_PORTS >= 3
+		DmxNodeParamsConst::DESTINATION_IP_PORT[2],
+# endif
+# if DMX_MAX_PORTS == 4
+		DmxNodeParamsConst::DESTINATION_IP_PORT[3],
+# endif
 #endif
-		NetworkParamsConst::DEFAULT_GATEWAY,
-		DisplayUdfParamsConst::DMX_DIRECTION
 };
-#else
-# if LIGHTSET_PORTS > 8
-#  define MAX_ARRAY 4
-# else
-#  define MAX_ARRAY LIGHTSET_PORTS
-# endif
-static constexpr const char *pArray[static_cast<uint32_t>(Labels::UNKNOWN)] = {
-		DisplayUdfParamsConst::TITLE,
-		DisplayUdfParamsConst::BOARD_NAME,
-		DisplayUdfParamsConst::VERSION,
-		NetworkParamsConst::HOSTNAME,
-		NetworkParamsConst::IP_ADDRESS,
-		NetworkParamsConst::NET_MASK,
-		NetworkParamsConst::DEFAULT_GATEWAY,
-		NodeParamsConst::UNIVERSE_PORT[0],
-# if MAX_ARRAY >= 2
-		NodeParamsConst::UNIVERSE_PORT[1],
-# endif
-# if MAX_ARRAY >= 3
-		NodeParamsConst::UNIVERSE_PORT[2],
-# endif
-# if MAX_ARRAY == 4
-		NodeParamsConst::UNIVERSE_PORT[3],
-# endif
-		NodeParamsConst::DESTINATION_IP_PORT[0],
-# if MAX_ARRAY >= 2
-		NodeParamsConst::DESTINATION_IP_PORT[1],
-# endif
-# if MAX_ARRAY >= 3
-		NodeParamsConst::DESTINATION_IP_PORT[2],
-# endif
-# if MAX_ARRAY == 4
-		NodeParamsConst::DESTINATION_IP_PORT[3]
-# endif
-};
-# undef MAX_ARRAY
-#endif
 
 DisplayUdfParams::DisplayUdfParams() {
 	DEBUG_ENTRY

@@ -55,7 +55,6 @@
 # include "rdmnetconst.h"
 # include "rdmpersonality.h"
 # include "rdm_e120.h"
-# include "factorydefaults.h"
 #endif
 
 #include "remoteconfig.h"
@@ -157,7 +156,7 @@ int main() {
 		display.Printf(6, "%s:%u", PixelPatterns::GetName(nTestPattern), static_cast<uint32_t>(nTestPattern));
 	}
 
-	RemoteConfig remoteConfig(remoteconfig::Node::PP, remoteconfig::Output::PIXEL, nActivePorts);
+	RemoteConfig remoteConfig(remoteconfig::NodeType::PP, remoteconfig::Output::PIXEL, nActivePorts);
 
 	RemoteConfigParams remoteConfigParams;
 	remoteConfigParams.Load();

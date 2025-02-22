@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -54,7 +54,7 @@
 #include "dmxparams.h"
 #include "dmxsend.h"
 
-#include "lightsetwith4.h"
+#include "dmxnodewith4.h"
 
 #if defined (NODE_RDMNET_LLRP_ONLY)
 # include "rdmdeviceparams.h"
@@ -62,7 +62,6 @@
 # include "rdmnetconst.h"
 # include "rdmpersonality.h"
 # include "rdm_e120.h"
-# include "factorydefaults.h"
 #endif
 
 #include "remoteconfig.h"
@@ -125,12 +124,12 @@ int main() {
 	DmxSend dmxSend;
 	dmxSend.Print();
 
-	// LightSet 32with4
+	// DmxNodeWith4
 
-	LightSetWith4<32> lightSet((PixelTestPattern::Get()->GetPattern() != pixelpatterns::Pattern::NONE) ? nullptr : &pixelDmxMulti, &dmxSend);
-	lightSet.Print();
+	DmxNodeWith4<CONFIG_DMXNODE_DMX_PORT_OFFSET> dmxNode((PixelTestPattern::Get()->GetPattern() != pixelpatterns::Pattern::NONE) ? nullptr : &pixelDmxMulti, &dmxSend);
+	dmxNode.Print();
 
-	ddpDisplay.SetOutput(&lightSet);
+	ddpDisplay.SetOutput(&dmxNode);
 	ddpDisplay.Print();
 
 #if defined (NODE_RDMNET_LLRP_ONLY)
@@ -181,7 +180,7 @@ int main() {
 		display.Printf(6, "%s:%u", PixelPatterns::GetName(nTestPattern), static_cast<uint32_t>(nTestPattern));
 	}
 
-	RemoteConfig remoteConfig(remoteconfig::Node::DDP, remoteconfig::Output::PIXEL, nActivePorts);
+	RemoteConfig remoteConfig(remoteconfig::NodeType::DDP, remoteconfig::Output::PIXEL, nActivePorts);
 
 	RemoteConfigParams remoteConfigParams;
 	remoteConfigParams.Load();

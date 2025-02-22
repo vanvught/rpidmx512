@@ -2,7 +2,7 @@
  * @file ws28xxdmxmulti.h
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,8 +44,7 @@
 #include <algorithm>
 #include <cassert>
 
-#include "lightset.h"
-#include "lightsetdata.h"
+#include "dmxnodedata.h"
 
 #include "ws28xxmulti.h"
 
@@ -59,18 +58,18 @@
 #include "debug.h"
 
 namespace ws28xxdmxmulti {
-#if !defined (CONFIG_PIXELDMX_MAX_PORTS)
+#if !defined (CONFIG_DMXNODE_PIXEL_MAX_PORTS)
 # error
 #endif
-static constexpr auto MAX_PORTS = CONFIG_PIXELDMX_MAX_PORTS;
+static constexpr auto MAX_PORTS = CONFIG_DMXNODE_PIXEL_MAX_PORTS;
 }  // namespace ws28xxdmxmulti
 
-class WS28xxDmxMulti final: public LightSet {
+class WS28xxDmxMulti {
 public:
 	WS28xxDmxMulti();
-	~WS28xxDmxMulti() override;
+	~WS28xxDmxMulti() ;
 
-	void Start(const uint32_t nPortIndex) override {
+	void Start(const uint32_t nPortIndex)  {
 		const auto nIndex = (nPortIndex <= 31) ? 0 : 1;
 		DEBUG_PRINTF("%u [%u]", nPortIndex, nIndex);
 
@@ -87,7 +86,7 @@ public:
 		}
 	}
 
-	void Stop(const uint32_t nPortIndex) override {
+	void Stop(const uint32_t nPortIndex)  {
 		const auto nIndex = (nPortIndex <= 31) ? 0 : 1;
 		DEBUG_PRINTF("%u [%u]", nPortIndex, nIndex);
 
@@ -108,7 +107,7 @@ public:
 		}
 	}
 
-	inline void SetData(const uint32_t nPortIndex, const uint8_t *pData, const uint32_t nLength, const bool doUpdate) override {
+	inline void SetData(const uint32_t nPortIndex, const uint8_t *pData, const uint32_t nLength, const bool doUpdate)  {
 		logic_analyzer::ch0_set();
 
 		SetData(nPortIndex, pData, nLength);
@@ -121,7 +120,7 @@ public:
 
 			for (uint32_t nIndex = 0 ; nIndex <= portInfo.nProtocolPortIndexLast;nIndex++) {
 				logic_analyzer::ch2_set();
-				SetData(nIndex, lightset::Data::Backup(nIndex), lightset::Data::GetLength(nIndex));
+				SetData(nIndex, dmxnode::Data::Backup(nIndex), dmxnode::Data::GetLength(nIndex));
 				logic_analyzer::ch2_clear();
 			}
 
@@ -133,7 +132,7 @@ public:
 		logic_analyzer::ch0_clear();
 	}
 
-	inline void Sync([[maybe_unused]] const uint32_t nPortIndex) override {
+	inline void Sync([[maybe_unused]] const uint32_t nPortIndex)  {
 		logic_analyzer::ch2_set();
 
 		m_bNeedSync = true;
@@ -141,7 +140,7 @@ public:
 		logic_analyzer::ch2_clear();
 	}
 
-	inline void Sync() override {
+	inline void Sync()  {
 		if (!m_bNeedSync) {
 			return;
 		}
@@ -156,14 +155,14 @@ public:
 	}
 
 #if defined (OUTPUT_HAVE_STYLESWITCH)
-	void SetOutputStyle([[maybe_unused]] const uint32_t nPortIndex, [[maybe_unused]] const lightset::OutputStyle outputStyle) override {}
-	lightset::OutputStyle GetOutputStyle([[maybe_unused]] const uint32_t nPortIndex) const override {
-		return lightset::OutputStyle::DELTA;
+	void SetOutputStyle([[maybe_unused]] const uint32_t nPortIndex, [[maybe_unused]] const dmxnode::OutputStyle outputStyle)  {}
+	dmxnode::OutputStyle GetOutputStyle([[maybe_unused]] const uint32_t nPortIndex) const  {
+		return dmxnode::OutputStyle::DELTA;
 	}
 #endif
 
 
-	void Blackout(const bool bBlackout) override {
+	void Blackout(const bool bBlackout)  {
 		m_bBlackout = bBlackout;
 
 		while (m_pWS28xxMulti->IsUpdating()) {
@@ -177,7 +176,7 @@ public:
 		}
 	}
 
-	void FullOn() override {
+	void FullOn()  {
 		while (m_pWS28xxMulti->IsUpdating()) {
 			// wait for completion
 		}
@@ -185,37 +184,43 @@ public:
 		m_pWS28xxMulti->FullOn();
 	}
 
-	void Print() override {
+	void Print()  {
 		PixelDmxConfiguration::Get().Print();
 	}
 
-	// Optional
-	inline uint32_t GetUserData() override {
+	// Art-Net PollReply
+	inline uint32_t GetUserData()  {
 		return m_pWS28xxMulti->GetUserData();
 	}
 
-	inline uint32_t GetRefreshRate() override {
+	inline uint32_t GetRefreshRate()  {
 		auto& pixelConfiguration = PixelConfiguration::Get();
 		return pixelConfiguration.GetRefreshRate();
 	}
 
 	// RDMNet LLRP Device Only
-	bool SetDmxStartAddress([[maybe_unused]] uint16_t nDmxStartAddress) override {
+	bool SetDmxStartAddress([[maybe_unused]] uint16_t nDmxStartAddress)  {
 		return false;
 	}
 
-	uint16_t GetDmxStartAddress() override {
-		return lightset::dmx::ADDRESS_INVALID;
+	uint16_t GetDmxStartAddress()  {
+		return dmxnode::ADDRESS_INVALID;
 	}
 
-	uint16_t GetDmxFootprint() override {
+	uint16_t GetDmxFootprint()  {
 		return 0;
+	}
+
+	bool GetSlotInfo([[maybe_unused]] const uint16_t nSlotOffset, dmxnode::SlotInfo &slotInfo) {
+		slotInfo.nType = 0x00; // ST_PRIMARY
+		slotInfo.nCategory = 0x0001; // SD_INTENSITY
+		return true;
 	}
 
 private:
 	void SetData(const uint32_t nPortIndex, const uint8_t* pData, const uint32_t nLength) {
 		assert(pData != nullptr);
-		assert(nLength <= lightset::dmx::UNIVERSE_SIZE);
+		assert(nLength <= dmxnode::UNIVERSE_SIZE);
 
 		auto &pixelDmxConfiguration = PixelDmxConfiguration::Get();
 

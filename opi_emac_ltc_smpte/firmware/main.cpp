@@ -46,10 +46,8 @@
 #include "ltcetc.h"
 #include "ltcetcparams.h"
 
-#include "artnetnode.h"
-#include "artnetparams.h"
-#include "artnetmsgconst.h"
-
+#include "dmxnodenode.h"
+#include "dmxnodemsgconst.h"
 #include "artnetconst.h"
 
 #include "midi.h"
@@ -91,7 +89,6 @@
 #if defined (NODE_RDMNET_LLRP_ONLY)
 # include "rdmnetllrponly.h"
 # include "rdm_e120.h"
-# include "factorydefaults.h"
 #endif
 
 #include "net/apps/ntp_client.h"
@@ -239,7 +236,6 @@ int main() {
 
 	LtcOutputs ltcOutputs(ltcSource, ltcParams.IsShowSysTime());
 
-//	if (!ltc::g_DisabledOutputs.bMax7219) {
 	if (ltc::Destination::IsEnabled(ltc::Destination::Output::MAX7219)) {
 		ltcDdisplayMax7219.Init(ltcDisplayParams.GetMax7219Intensity());
 		ltcDdisplayMax7219.Print();
@@ -249,7 +245,6 @@ int main() {
 	if (ltc::Destination::IsEnabled(ltc::Destination::Output::WS28XX) || ltc::Destination::IsEnabled(ltc::Destination::Output::RGBPANEL)) {
 		ltcDisplayParams.Set(&ltcDisplayRgb);
 
-//		if (!ltc::g_DisabledOutputs.bRgbPanel) {
 		if (ltc::Destination::IsEnabled(ltc::Destination::Output::RGBPANEL)) {
 			ltcDisplayRgb.Init();
 
@@ -270,7 +265,6 @@ int main() {
 #endif
 
 #if !defined (CONFIG_LTC_DISABLE_RGB_PANEL)
-//	if (ltc::g_DisabledOutputs.bRgbPanel) {
 	if (ltc::Destination::IsEnabled(ltc::Destination::Output::RGBPANEL)) {
 		for (uint32_t nCpuNumber = 1; nCpuNumber < 4; nCpuNumber++) {
 			h3_cpu_off(nCpuNumber);
@@ -293,30 +287,29 @@ int main() {
 
 	const auto bRunArtNet = ((ltcSource == ltc::Source::ARTNET) || ltc::Destination::IsEnabled(ltc::Destination::Output::ARTNET));
 
-	ArtNetNode node;
-	node.SetArtTimeCodeCallbackFunction(StaticCallbackFunction);
+	DmxNodeNode dmxNodeNode;
+
+	dmxNodeNode.SetArtTimeCodeCallbackFunction(StaticCallbackFunction);
 
 	if (bRunArtNet) {
-		ArtNetParams artnetparams;
-		artnetparams.Load();
-		artnetparams.Set();
-
-		node.SetShortName(0, "LTC SMPTE Node");
+		dmxNodeNode.SetShortName(0, "LTC SMPTE Node");
+		dmxNodeNode.SetUniverse(0, dmxnode::PortDirection::OUTPUT, 1);
+		dmxNodeNode.SetShortName(0, "Not used");
 
 		if (ltcSource == ltc::Source::ARTNET) {
-			node.SetArtTimeCodeCallbackFunction(ArtNetReader::StaticCallbackFunction);
+			dmxNodeNode.SetArtTimeCodeCallbackFunction(ArtNetReader::StaticCallbackFunction);
 		}
 
-		node.SetTimeCodeIp(ltcParams.GetTimecodeIp());
+		dmxNodeNode.SetTimeCodeIp(ltcParams.GetTimecodeIp());
 
 		if (!ltcParams.IsTimeSyncDisabled()) {
 			//TODO Send ArtTimeSync
 		}
 #if defined (NODE_RDMNET_LLRP_ONLY)
-		node.SetRdmUID(rdmNetLLRPOnly.GetRDMNetDevice()->GetUID(), true);
+		dmxNodeNode.SetRdmUID(rdmNetLLRPOnly.GetRDMNetDevice()->GetUID(), true);
 #endif
-		node.Start();
-		node.Print();
+		dmxNodeNode.Start();
+		dmxNodeNode.Print();
 	}
 
 	/**
@@ -513,7 +506,7 @@ int main() {
 		break;
 	}
 
-	RemoteConfig remoteConfig(remoteconfig::Node::LTC, remoteconfig::Output::TIMECODE, 1U + static_cast<uint32_t>(ltcSource));
+	RemoteConfig remoteConfig(remoteconfig::NodeType::LTC, remoteconfig::Output::TIMECODE, 1U + static_cast<uint32_t>(ltcSource));
 
 	RemoteConfigParams remoteConfigParams;
 	remoteConfigParams.Load();
@@ -584,7 +577,7 @@ int main() {
 		}
 
 		if (bRunArtNet) {
-			node.Run();
+			dmxNodeNode.Run();
 		}
 
 		if (bRunTCNet) {

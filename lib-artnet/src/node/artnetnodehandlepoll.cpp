@@ -131,7 +131,7 @@ union uip {
 } static ip;
 
 void ArtNetNode::ProcessPollReply(const uint32_t nPortIndex, [[maybe_unused]] uint32_t& NumPortsInput, uint32_t& NumPortsOutput) {
-	if (m_Node.Port[nPortIndex].direction == lightset::PortDir::OUTPUT) {
+	if (m_Node.Port[nPortIndex].direction == dmxnode::PortDirection::OUTPUT) {
 #if (ARTNET_VERSION >= 4)
 		if (m_Node.Port[nPortIndex].protocol == PortProtocol::SACN) {
 			constexpr auto MASK = GoodOutput::OUTPUT_IS_MERGING | GoodOutput::DATA_IS_BEING_TRANSMITTED | GoodOutput::OUTPUT_IS_SACN;
@@ -152,7 +152,7 @@ void ArtNetNode::ProcessPollReply(const uint32_t nPortIndex, [[maybe_unused]] ui
 	}
 
 #if defined (ARTNET_HAVE_DMXIN)
-	if (m_Node.Port[nPortIndex].direction == lightset::PortDir::INPUT) {
+	if (m_Node.Port[nPortIndex].direction == dmxnode::PortDirection::INPUT) {
 #if (ARTNET_VERSION >= 4)
 		if (m_Node.Port[nPortIndex].protocol == PortProtocol::SACN) {
 
@@ -209,11 +209,11 @@ void ArtNetNode::SendPollReply(const uint32_t nBindIndex, const uint32_t nDestin
 
 		memcpy(m_ArtPollReply.ShortName, m_Node.Port[nPortIndex].ShortName, SHORT_NAME_LENGTH);
 
-		if (__builtin_expect((m_pLightSet != nullptr), 1)) {
-			const auto nRefreshRate = m_pLightSet->GetRefreshRate();
+		if (__builtin_expect((m_pDmxNodeOutputType != nullptr), 1)) {
+			const auto nRefreshRate = m_pDmxNodeOutputType->GetRefreshRate();
 			m_ArtPollReply.RefreshRateLo = static_cast<uint8_t>(nRefreshRate);
 			m_ArtPollReply.RefreshRateHi = static_cast<uint8_t>(nRefreshRate >> 8);
-			const auto nUserData = m_pLightSet->GetUserData();
+			const auto nUserData = m_pDmxNodeOutputType->GetUserData();
 			m_ArtPollReply.UserLo = static_cast<uint8_t>(nUserData);
 			m_ArtPollReply.UserHi = static_cast<uint8_t>(nUserData >> 8);
 		}

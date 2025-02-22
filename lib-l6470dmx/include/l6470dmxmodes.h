@@ -2,7 +2,7 @@
  * @file l6470dmxmodes.h
  *
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -81,11 +81,11 @@ private:
 	bool m_bIsStarted{false};
 
 private:
-	uint8_t m_nMotorNumber{0};
-	TL6470DmxModes m_nMode{L6470DMXMODE_UNDEFINED};
+	uint8_t m_nMotorNumber { 0 };
+	TL6470DmxModes m_nMode { L6470DMXMODE_UNDEFINED };
 	uint16_t m_nDmxStartAddress;
-	L6470DmxMode *m_pDmxMode{nullptr};
-	uint16_t m_DmxFootPrint{0};
+	L6470DmxMode *m_pDmxMode { nullptr };
+	uint16_t m_DmxFootPrint { 0 };
 	uint8_t *m_pDmxData;
 };
 

@@ -25,8 +25,8 @@
 
 #include <cstdint>
 
-#include "lightset.h"
 #include "artnet.h"
+#include "dmxnode.h"
 
 #include "debug.h"
 
@@ -51,12 +51,12 @@ void display_subnet_switch([[maybe_unused]]  uint8_t nAddress) {
 	DEBUG_EXIT
 }
 
-void display_merge_mode([[maybe_unused]]  uint32_t nPortIndex, [[maybe_unused]]  lightset::MergeMode mergeMode) {
+void display_merge_mode([[maybe_unused]]  uint32_t nPortIndex, [[maybe_unused]]  dmxnode::MergeMode mergeMode) {
 	DEBUG_ENTRY
 	DEBUG_EXIT
 }
 
-void display_outputstyle([[maybe_unused]] const uint32_t nPortIndex, [[maybe_unused]] const lightset::OutputStyle outputStyle) {
+void display_outputstyle([[maybe_unused]] const uint32_t nPortIndex, [[maybe_unused]] const dmxnode::OutputStyle outputStyle) {
 	DEBUG_ENTRY
 	DEBUG_EXIT
 }

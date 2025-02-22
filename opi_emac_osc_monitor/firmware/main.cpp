@@ -99,7 +99,7 @@ int main() {
 	display.Printf(4, "In: %d", server.GetPortIncoming());
 	display.Printf(5, "Out: %d", server.GetPortOutgoing());
 
-	RemoteConfig remoteConfig(remoteconfig::Node::OSC, remoteconfig::Output::MONITOR, 1);
+	RemoteConfig remoteConfig(remoteconfig::NodeType::OSC, remoteconfig::Output::MONITOR, 1);
 
 	RemoteConfigParams remoteConfigParams;
 	remoteConfigParams.Load();

@@ -49,7 +49,6 @@
 #include "rdmnetconst.h"
 #include "rdmpersonality.h"
 #include "rdm_e120.h"
-#include "factorydefaults.h"
 
 #include "remoteconfig.h"
 #include "remoteconfigparams.h"
@@ -121,7 +120,7 @@ int main(int argc, char **argv) {
 
 	server.Print();
 
-	RemoteConfig remoteConfig(remoteconfig::Node::OSC, remoteconfig::Output::MONITOR, 1);
+	RemoteConfig remoteConfig(remoteconfig::NodeType::OSC, remoteconfig::Output::MONITOR, 1);
 
 	RemoteConfigParams remoteConfigParams;
 	remoteConfigParams.Load();

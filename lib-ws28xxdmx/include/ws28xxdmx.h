@@ -2,7 +2,7 @@
  * @file ws28xxdmx.h
  *
  */
-/* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,8 +44,6 @@
 #include <algorithm>
 #include <cassert>
 
-#include "lightset.h"
-
 #include "ws28xx.h"
 
 #include "pixeldmxconfiguration.h"
@@ -55,14 +53,23 @@
 # include "hal_gpio.h"
 #endif
 
+#include "dmxnode.h"
+
 #include "debug.h"
 
-class WS28xxDmx final: public LightSet {
+#if defined (OUTPUT_DMX_PIXEL) && defined(RDM_RESPONDER) && !defined(NODE_ARTNET)
+# include "dmxnodeoutputrdmpixel.h"
+# define OVERRIDE override
+class WS28xxDmx final : public DmxNodeOutputRdmPixel {
+#else
+# define OVERRIDE
+class WS28xxDmx {
+#endif
 public:
 	WS28xxDmx();
-	~WS28xxDmx() override;
+	~WS28xxDmx() OVERRIDE ;
 
-	void Start([[maybe_unused]] uint32_t nPortIndex) override {
+	void Start([[maybe_unused]] uint32_t nPortIndex) OVERRIDE  {
 		if (m_bIsStarted) {
 			return;
 		}
@@ -74,7 +81,7 @@ public:
 #endif
 	}
 
-	void Stop([[maybe_unused]] uint32_t nPortIndex) override {
+	void Stop([[maybe_unused]] uint32_t nPortIndex) OVERRIDE  {
 		if (!m_bIsStarted) {
 			return;
 		}
@@ -86,9 +93,9 @@ public:
 #endif
 	}
 
-	void SetData([[maybe_unused]] uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate = true) override {
+	void SetData([[maybe_unused]] uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate = true) OVERRIDE  {
 		assert(pData != nullptr);
-		assert(nLength <= lightset::dmx::UNIVERSE_SIZE);
+		assert(nLength <= dmxnode::UNIVERSE_SIZE);
 
 		if (m_pWS28xx->IsUpdating()) {
 			return;
@@ -98,13 +105,13 @@ public:
 		auto &portInfo = pixelDmxConfiguration.GetPortInfo();
 		uint32_t d = 0;
 
-#if !defined(LIGHTSET_PORTS)
+#if !defined(DMXNODE_PORTS)
 		static constexpr uint32_t nSwitch = 0;
 #else
 		const auto nSwitch = nPortIndex & 0x03;
 #endif
 		const auto nGroups = pixelDmxConfiguration.GetGroups();
-#if !defined(LIGHTSET_PORTS)
+#if !defined(DMXNODE_PORTS)
 		static constexpr uint32_t beginIndex = 0;
 #else
 		const auto beginIndex = portInfo.nBeginIndexPort[nSwitch];
@@ -204,7 +211,7 @@ public:
 			}
 		}
 
-#if !defined(LIGHTSET_PORTS)
+#if !defined(DMXNODE_PORTS)
 		if (doUpdate) {
 #else
 			if ((doUpdate) && (nPortIndex == portInfo.nProtocolPortIndexLast)) {
@@ -215,21 +222,22 @@ public:
 			m_pWS28xx->Update();
 		}
 	}
-	void Sync([[maybe_unused]] const uint32_t nPortIndex) override {
-	}
-	void Sync() override {
+
+	void Sync([[maybe_unused]] const uint32_t nPortIndex)  {}
+
+	void Sync()  {
 		assert(m_pWS28xx != nullptr);
 		m_pWS28xx->Update();
 	}
 
 #if defined (OUTPUT_HAVE_STYLESWITCH)
-		void SetOutputStyle([[maybe_unused]] const uint32_t nPortIndex, [[maybe_unused]] const lightset::OutputStyle outputStyle) override {}
-		lightset::OutputStyle GetOutputStyle([[maybe_unused]] const uint32_t nPortIndex) const override {
-			return lightset::OutputStyle::DELTA;
+		void SetOutputStyle([[maybe_unused]] const uint32_t nPortIndex, [[maybe_unused]] const dmxnode::OutputStyle outputStyle)  {}
+		dmxnode::OutputStyle GetOutputStyle([[maybe_unused]] const uint32_t nPortIndex) const  {
+			return dmxnode::OutputStyle::DELTA;
 		}
 #endif
 
-	void Blackout(bool bBlackout) override {
+	void Blackout(bool bBlackout)  {
 		m_bBlackout = bBlackout;
 
 		while (m_pWS28xx->IsUpdating()) {
@@ -243,7 +251,7 @@ public:
 		}
 	}
 
-	void FullOn() override {
+	void FullOn()  {
 		while (m_pWS28xx->IsUpdating()) {
 			// wait for completion
 		}
@@ -251,14 +259,14 @@ public:
 		m_pWS28xx->FullOn();
 	}
 
-	void Print() override {
+	void Print() OVERRIDE  {
 		PixelDmxConfiguration::Get().Print();
 	}
 
 	// RDM
-	bool SetDmxStartAddress(uint16_t nDmxStartAddress) override {
+	bool SetDmxStartAddress(uint16_t nDmxStartAddress) OVERRIDE  {
 		assert(
-				(nDmxStartAddress != 0) && (nDmxStartAddress <= lightset::dmx::UNIVERSE_SIZE));
+				(nDmxStartAddress != 0) && (nDmxStartAddress <= dmxnode::UNIVERSE_SIZE));
 
 		auto &pixelDmxConfiguration = PixelDmxConfiguration::Get();
 
@@ -267,11 +275,11 @@ public:
 		}
 
 		if ((nDmxStartAddress + pixelDmxConfiguration.GetDmxFootprint())
-				> lightset::dmx::UNIVERSE_SIZE) {
+				> dmxnode::UNIVERSE_SIZE) {
 			return false;
 		}
 
-		if ((nDmxStartAddress != 0) && (nDmxStartAddress <= lightset::dmx::UNIVERSE_SIZE)) {
+		if ((nDmxStartAddress != 0) && (nDmxStartAddress <= dmxnode::UNIVERSE_SIZE)) {
 			pixelDmxConfiguration.SetDmxStartAddress(nDmxStartAddress);
 			PixelDmxStore::SaveDmxStartAddress(nDmxStartAddress);
 			return true;
@@ -280,16 +288,16 @@ public:
 		return false;
 	}
 
-	uint16_t GetDmxStartAddress() override {
+	uint16_t GetDmxStartAddress() OVERRIDE  {
 		return PixelDmxConfiguration::Get().GetDmxStartAddress();
 	}
 
-	uint16_t GetDmxFootprint() override {
+	uint16_t GetDmxFootprint() OVERRIDE  {
 		return PixelDmxConfiguration::Get().GetDmxFootprint();
 	}
 
-	bool GetSlotInfo(uint16_t nSlotOffset, lightset::SlotInfo &slotInfo)
-			override {
+	bool GetSlotInfo(uint16_t nSlotOffset, dmxnode::SlotInfo &slotInfo) OVERRIDE
+			 {
 		auto &pixelDmxConfiguration = PixelDmxConfiguration::Get();
 
 		if (nSlotOffset > pixelDmxConfiguration.GetDmxFootprint()) {
@@ -319,7 +327,13 @@ public:
 		return true;
 	}
 
-	static WS28xxDmx* Get() {
+	/*
+	 * Art-Net ArtPollReply
+	 */
+	uint32_t GetUserData() { return 0; }
+	uint32_t GetRefreshRate() { return 0; }
+
+	static WS28xxDmx *Get() {
 		return s_pThis;
 	}
 
@@ -332,6 +346,7 @@ private:
 	static inline WS28xxDmx *s_pThis;
 };
 
+#undef OVERRIDE
 #if defined(__GNUC__) && !defined(__clang__)
 # pragma GCC pop_options
 #endif

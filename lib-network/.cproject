@@ -607,7 +607,7 @@
 		</cconfiguration>
 	</storageModule>
 	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-		<project id="lib-lightset.null.992029651" name="lib-lightset"/>
+		<project id="lib-dmxnode.null.992029651" name="lib-dmxnode"/>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
 	<storageModule moduleId="refreshScope" versionNumber="2">

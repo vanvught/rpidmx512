@@ -2,7 +2,7 @@
  * @file modeparams.h
  *
  */
-/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +34,6 @@
 
 #include "configstore.h"
 
-#include "lightset.h"
 #include "dmxslotinfo.h"
 
 #include "debug.h"
@@ -149,7 +148,7 @@ public:
 		return m_Params.bSwitch;
 	}
 
-	void GetSlotInfo(uint32_t nOffset, lightset::SlotInfo &tLightSetSlotInfo);
+	void GetSlotInfo(uint32_t nOffset, dmxnode::SlotInfo &tLightSetSlotInfo);
 
     static void StaticCallbackFunction(void *p, const char *s);
 

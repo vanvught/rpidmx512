@@ -174,7 +174,7 @@ private:
 
 	bool m_IsInit { false };
 
-	static RDMDevice *s_pThis;
+	static inline RDMDevice *s_pThis;
 };
 
 #endif /* RDMDEVICE_H_ */

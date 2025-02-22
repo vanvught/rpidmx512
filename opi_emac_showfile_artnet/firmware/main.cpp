@@ -29,8 +29,6 @@
 #include "hardware.h"
 #include "network.h"
 
-#include "net/apps/mdns.h"
-
 #include "displayudf.h"
 #include "displayudfparams.h"
 #include "displayhandler.h"
@@ -42,7 +40,6 @@
 #if defined (NODE_RDMNET_LLRP_ONLY)
 # include "rdmnetllrponly.h"
 # include "rdm_e120.h"
-# include "factorydefaults.h"
 #endif
 
 #include "remoteconfig.h"
@@ -95,7 +92,7 @@ int main() {
 	rdmNetLLRPOnly.Print();
 #endif
 
-	RemoteConfig remoteConfig(remoteconfig::Node::SHOWFILE, remoteconfig::Output::PLAYER, 0);
+	RemoteConfig remoteConfig(remoteconfig::NodeType::SHOWFILE, remoteconfig::Output::PLAYER, 0);
 
 	RemoteConfigParams remoteConfigParams;
 	remoteConfigParams.Load();

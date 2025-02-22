@@ -2,7 +2,7 @@
  * @file artnettriggerhandler.h
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,8 +31,8 @@
 #include "artnettrigger.h"
 #include "artnetnode.h"
 
-#include "lightset.h"
-#include "lightsetwith4.h"
+#include "dmxnode_outputtype.h"
+#include "dmxnodewith4.h"
 
 #include "pixeltestpattern.h"
 #include "pixel.h"
@@ -45,7 +45,7 @@
 
 class ArtNetTriggerHandler {
 public:
-	ArtNetTriggerHandler(LightSetWith4<32> *pLightSet32with4, LightSet *pLightSetA): m_pLightSet32with4(pLightSet32with4), m_pLightSetA(pLightSetA) {
+	ArtNetTriggerHandler(DmxNodeWith4<CONFIG_DMXNODE_DMX_PORT_OFFSET> *pLightSet32with4, DmxPixelOutputType *pLightSetA): m_pLightSet32with4(pLightSet32with4), m_pLightSetA(pLightSetA) {
 		assert(s_pThis == nullptr);
 		s_pThis = this;
 
@@ -64,7 +64,7 @@ private:
 		DEBUG_ENTRY
 
 		if (pArtNetTrigger->Key == ArtTriggerKey::ART_TRIGGER_KEY_SHOW) {
-			m_pLightSet32with4->SetLightSetA(m_pLightSetA);
+			m_pLightSet32with4->SetDmxPixel(m_pLightSetA);
 
 			const auto nShow = static_cast<pixelpatterns::Pattern>(pArtNetTrigger->SubKey);
 
@@ -85,7 +85,7 @@ private:
 			}
 
 			if (static_cast<pixelpatterns::Pattern>(nShow) != pixelpatterns::Pattern::NONE) {
-				m_pLightSet32with4->SetLightSetA(nullptr);
+				m_pLightSet32with4->SetDmxPixel(nullptr);
 				Display::Get()->ClearLine(6);
 				Display::Get()->Printf(6, "%s:%u", PixelPatterns::GetName(nShow), static_cast<uint32_t>(nShow));
 			} else {
@@ -108,7 +108,7 @@ private:
 					return;
 				}
 
-				m_pLightSet32with4->SetLightSetA(nullptr);
+				m_pLightSet32with4->SetDmxPixel(nullptr);
 
 				auto& pixelDmxConfiguration = PixelDmxConfiguration::Get();
 				const auto *pData = &pArtNetTrigger->Data[0];
@@ -124,8 +124,8 @@ private:
 	}
 
 private:
-	LightSetWith4<32> *m_pLightSet32with4;
-	LightSet *m_pLightSetA;
+	DmxNodeWith4<CONFIG_DMXNODE_DMX_PORT_OFFSET> *m_pLightSet32with4;
+	DmxPixelOutputType *m_pLightSetA;
 
 	static inline ArtNetTriggerHandler *s_pThis;
 };

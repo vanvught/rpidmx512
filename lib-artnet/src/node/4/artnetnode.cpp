@@ -66,19 +66,19 @@ void ArtNetNode::SetPortProtocol4(const uint32_t nPortIndex, const artnet::PortP
 	DEBUG_EXIT
 }
 
-void ArtNetNode::SetUniverse4(const uint32_t nPortIndex, const lightset::PortDir portDirection) {
+void ArtNetNode::SetUniverse4(const uint32_t nPortIndex, const dmxnode::PortDirection portDirection) {
 	DEBUG_ENTRY
 
 	uint16_t nUniverse = 0;
 	const bool isActive = ArtNetNode::GetPortAddress(nPortIndex, nUniverse, portDirection);
 	const auto portProtocol = m_Node.Port[nPortIndex].protocol;
 
-	DEBUG_PRINTF("Port %u, Active %c, Universe %d, Protocol %s [%s]", nPortIndex, isActive ? 'Y' : 'N', nUniverse, artnet::get_protocol_mode(portProtocol), portDirection == lightset::PortDir::OUTPUT ? "Output" : "Input");
+	DEBUG_PRINTF("Port %u, Active %c, Universe %d, Protocol %s [%s]", nPortIndex, isActive ? 'Y' : 'N', nUniverse, artnet::get_protocol_mode(portProtocol), portDirection == dmxnode::PortDirection::OUTPUT ? "Output" : "Input");
 
 	if (portProtocol == artnet::PortProtocol::SACN) {
 		if (!isActive) {
-			if (E131Bridge::GetUniverse(nPortIndex, nUniverse, lightset::PortDir::INPUT) || E131Bridge::GetUniverse(nPortIndex, nUniverse, lightset::PortDir::OUTPUT)) {
-				E131Bridge::SetUniverse(nPortIndex, lightset::PortDir::DISABLE, nUniverse);
+			if (E131Bridge::GetUniverse(nPortIndex, nUniverse, dmxnode::PortDirection::INPUT) || E131Bridge::GetUniverse(nPortIndex, nUniverse, dmxnode::PortDirection::OUTPUT)) {
+				E131Bridge::SetUniverse(nPortIndex, dmxnode::PortDirection::DISABLE, nUniverse);
 
 				DEBUG_EXIT
 				return;
@@ -129,9 +129,9 @@ uint8_t ArtNetNode::GetGoodOutput4(const uint32_t nPortIndex) {
 	assert(nPortIndex < e131bridge::MAX_PORTS);
 
 	uint16_t nUniverse;
-	const auto isActive = E131Bridge::GetUniverse(nPortIndex, nUniverse, lightset::PortDir::OUTPUT);
+	const auto isActive = E131Bridge::GetUniverse(nPortIndex, nUniverse, dmxnode::PortDirection::OUTPUT);
 
-	DEBUG_PRINTF("Port %u, Active %c, Universe %d, %s", nPortIndex, isActive ? 'Y' : 'N', nUniverse, lightset::get_merge_mode(E131Bridge::GetMergeMode(nPortIndex), true));
+	DEBUG_PRINTF("Port %u, Active %c, Universe %d, %s", nPortIndex, isActive ? 'Y' : 'N', nUniverse, dmxnode::get_merge_mode(E131Bridge::GetMergeMode(nPortIndex), true));
 
 	if (isActive) {
 		uint8_t nStatus = artnet::GoodOutput::OUTPUT_IS_SACN;

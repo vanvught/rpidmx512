@@ -46,7 +46,6 @@
 #include "rdmnetconst.h"
 #include "rdmpersonality.h"
 #include "rdm_e120.h"
-#include "factorydefaults.h"
 
 #include "remoteconfig.h"
 #include "remoteconfigparams.h"
@@ -117,7 +116,7 @@ int main(int argc, char **argv) {
 
 	pp.Print();
 
-	RemoteConfig remoteConfig(remoteconfig::Node::PP, remoteconfig::Output::MONITOR, nActivePorts);
+	RemoteConfig remoteConfig(remoteconfig::NodeType::PP, remoteconfig::Output::MONITOR, nActivePorts);
 
 	RemoteConfigParams remoteConfigParams;
 	remoteConfigParams.Load();

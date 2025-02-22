@@ -50,8 +50,8 @@ void E131Bridge::Print() {
 
 		for (uint32_t nPortIndex = 0; nPortIndex < e131bridge::MAX_PORTS; nPortIndex++) {
 			uint16_t nUniverse;
-			if (GetUniverse(nPortIndex, nUniverse, lightset::PortDir::OUTPUT)) {
-				printf("  Port %-2u %-4u %s\n", static_cast<unsigned int>(nPortIndex), static_cast<unsigned int>(nUniverse), lightset::get_merge_mode(m_OutputPort[nPortIndex].mergeMode, true));
+			if (GetUniverse(nPortIndex, nUniverse, dmxnode::PortDirection::OUTPUT)) {
+				printf("  Port %-2u %-4u %s\n", static_cast<unsigned int>(nPortIndex), static_cast<unsigned int>(nUniverse), dmxnode::get_merge_mode(m_OutputPort[nPortIndex].mergeMode, true));
 			}
 		}
 	}
@@ -62,7 +62,7 @@ void E131Bridge::Print() {
 
 		for (uint32_t nPortIndex = 0; nPortIndex < e131bridge::MAX_PORTS; nPortIndex++) {
 			uint16_t nUniverse;
-			if (GetUniverse(nPortIndex, nUniverse, lightset::PortDir::INPUT)) {
+			if (GetUniverse(nPortIndex, nUniverse, dmxnode::PortDirection::INPUT)) {
 				printf("  Port %-2u %-4u %-3u\n", static_cast<unsigned int>(nPortIndex), static_cast<unsigned int>(nUniverse), GetPriority(nPortIndex));
 			}
 		}

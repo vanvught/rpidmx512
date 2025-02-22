@@ -54,11 +54,11 @@ void ArtNetNode::Print() {
 
 		for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
 			uint16_t nUniverse;
-			if (GetPortAddress(nPortIndex, nUniverse, lightset::PortDir::OUTPUT)) {
-				const auto mergeMode = ((m_OutputPort[nPortIndex].GoodOutput & artnet::GoodOutput::MERGE_MODE_LTP) == artnet::GoodOutput::MERGE_MODE_LTP) ? lightset::MergeMode::LTP : lightset::MergeMode::HTP;
-				printf("  Port %-2u %-4u %s", static_cast<unsigned int>(nPortIndex), static_cast<unsigned int>(nUniverse), lightset::get_merge_mode(mergeMode, true));
+			if (GetPortAddress(nPortIndex, nUniverse, dmxnode::PortDirection::OUTPUT)) {
+				const auto mergeMode = ((m_OutputPort[nPortIndex].GoodOutput & artnet::GoodOutput::MERGE_MODE_LTP) == artnet::GoodOutput::MERGE_MODE_LTP) ? dmxnode::MergeMode::LTP : dmxnode::MergeMode::HTP;
+				printf("  Port %-2u %-4u %s", static_cast<unsigned int>(nPortIndex), static_cast<unsigned int>(nUniverse), dmxnode::get_merge_mode(mergeMode, true));
 #if defined (OUTPUT_HAVE_STYLESWITCH)
-				printf(" %s", lightset::get_output_style(GetOutputStyle(nPortIndex), true));
+				printf(" %s", dmxnode::get_output_style(GetOutputStyle(nPortIndex), true));
 #endif
 #if (ARTNET_VERSION >= 4)
 				printf(" %s", artnet::get_protocol_mode(m_Node.Port[nPortIndex].protocol, true));
@@ -75,7 +75,7 @@ void ArtNetNode::Print() {
 		for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
 
 			uint16_t nUniverse;
-			if (GetPortAddress(nPortIndex, nUniverse, lightset::PortDir::INPUT)) {
+			if (GetPortAddress(nPortIndex, nUniverse, dmxnode::PortDirection::INPUT)) {
 				printf("  Port %-2u %-4u", static_cast<unsigned int>(nPortIndex), static_cast<unsigned int>(nUniverse));
 				if (m_Node.Port[nPortIndex].protocol == artnet::PortProtocol::ARTNET) {
 					const auto nDestinationIp = (m_InputPort[nPortIndex].nDestinationIp == 0 ? Network::Get()->GetBroadcastIp() : m_InputPort[nPortIndex].nDestinationIp);

@@ -34,40 +34,38 @@
 #include "e131bridge.h"
 #include "e131.h"
 
-#include "debug.h"
+#include "dmxnode.h"
 
-namespace e131bridge {
-namespace configstore {
-extern uint32_t DMXPORT_OFFSET;
-}  // namespace configstore
-}  // namespace e131bridge
+#include "debug.h"
 
 void DisplayUdf::ShowE131Bridge() {
 	DEBUG_ENTRY
-	DEBUG_PRINTF("displayudf::DMXPORT_OFFSET=%u", displayudf::DMXPORT_OFFSET);
+	DEBUG_PRINTF("dmxnode::DMXPORT_OFFSET=%u", dmxnode::DMXPORT_OFFSET);
 
-	auto *pE131Bridge = E131Bridge::Get();
+	if constexpr (dmxnode::CONFIG_PORT_COUNT != 0) {
+		auto *pE131Bridge = E131Bridge::Get();
 
-	Printf(m_aLabels[static_cast<uint32_t>(displayudf::Labels::AP)], "AP: %d", pE131Bridge->GetActiveOutputPorts() + pE131Bridge->GetActiveInputPorts());
+		Printf(m_aLabels[static_cast<uint32_t>(displayudf::Labels::AP)], "AP: %d", pE131Bridge->GetActiveOutputPorts() + pE131Bridge->GetActiveInputPorts());
 
-	for (uint32_t nBridgePortIndex = 0; nBridgePortIndex < std::min(static_cast<uint32_t>(4), e131bridge::MAX_PORTS); nBridgePortIndex++) {
-		const auto nPortIndex = nBridgePortIndex + displayudf::DMXPORT_OFFSET;
+		for (uint32_t nBridgePortIndex = 0; nBridgePortIndex < std::min(static_cast<uint32_t>(4), e131bridge::MAX_PORTS); nBridgePortIndex++) {
+			const auto nPortIndex = nBridgePortIndex + dmxnode::DMXPORT_OFFSET;
 
-		if (nPortIndex >= std::min(static_cast<uint32_t>(4), e131bridge::MAX_PORTS)) {
-			break;
-		}
+			if (nPortIndex >= std::min(static_cast<uint32_t>(4), e131bridge::MAX_PORTS)) {
+				break;
+			}
 
-		const auto nLabelIndex = static_cast<uint32_t>(displayudf::Labels::UNIVERSE_PORT_A) + nBridgePortIndex;
+			const auto nLabelIndex = static_cast<uint32_t>(displayudf::Labels::UNIVERSE_PORT_A) + nBridgePortIndex;
 
-		if (nLabelIndex != 0xFF) {
-			uint16_t nUniverse;
-			if (pE131Bridge->GetUniverse(nPortIndex, nUniverse, lightset::PortDir::OUTPUT)) {
-				Printf(m_aLabels[nLabelIndex], "Port %c: %d %s", ('A' + nBridgePortIndex), nUniverse, lightset::get_merge_mode(pE131Bridge->GetMergeMode(nPortIndex), true));
+			if (nLabelIndex != 0xFF) {
+				uint16_t nUniverse;
+				if (pE131Bridge->GetUniverse(nPortIndex, nUniverse, dmxnode::PortDirection::OUTPUT)) {
+					Printf(m_aLabels[nLabelIndex], "Port %c: %d %s", ('A' + nBridgePortIndex), nUniverse, dmxnode::get_merge_mode(pE131Bridge->GetMergeMode(nPortIndex), true));
+				}
 			}
 		}
-	}
 
-	ShowDmxInfo();
+		ShowDmxInfo();
+	}
 
 	DEBUG_EXIT
 }

@@ -2,7 +2,7 @@
  * @file rdmresponder.h
  *
  */
-/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,7 +37,7 @@
 
 #include "dmxreceiver.h"
 
-#include "lightset.h"
+#include "dmxnode_outputtype.h"
 
 #include "debug.h"
 
@@ -61,7 +61,7 @@ void delay();
 class RDMResponder final : DMXReceiver, public RDMDeviceResponder, RDMHandler {
 public:
 	RDMResponder(RDMPersonality **pRDMPersonalities, uint32_t nPersonalityCount, const uint32_t nCurrentPersonality = rdm::device::responder::DEFAULT_CURRENT_PERSONALITY) :
-		DMXReceiver(pRDMPersonalities[nCurrentPersonality - 1]->GetLightSet()),
+		DMXReceiver(pRDMPersonalities[nCurrentPersonality - 1]->GetDmxNodeOutputType()),
 		RDMDeviceResponder(pRDMPersonalities, nPersonalityCount, nCurrentPersonality)
 	{
 		assert(s_pThis == nullptr);
@@ -174,8 +174,8 @@ private:
 		return nLength;
 	}
 
-	void PersonalityUpdate(LightSet *pLightSet) override {
-		DMXReceiver::SetLightSet(pLightSet);
+	void PersonalityUpdate(DmxNodeOutputType *pDmxNodeOutputType) override {
+		DMXReceiver::SetDmxNodeOutputType(pDmxNodeOutputType);
 		PersonalityUpdate(static_cast<uint32_t>(RDMDeviceResponder::GetPersonalityCurrent(RDM_ROOT_DEVICE)));
 	}
 
@@ -184,9 +184,9 @@ private:
 	}
 
 private:
-	static RDMResponder *s_pThis;
-	static TRdmMessage s_RdmCommand;
-	static bool m_IsSubDeviceActive;
+	static inline RDMResponder *s_pThis;
+	static inline TRdmMessage s_RdmCommand;
+	static inline bool m_IsSubDeviceActive;
 };
 
 #endif /* RDMRESPONDER_H_ */

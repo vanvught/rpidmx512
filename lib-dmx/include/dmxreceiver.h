@@ -31,15 +31,15 @@
 
 #include "dmx.h"
 
-#include "lightset.h"
+#include "dmxnode_outputtype.h"
 #include "hardware.h"
 
 #include "debug.h"
 
 class DMXReceiver: Dmx {
 public:
-	DMXReceiver(LightSet *pLightSet) {
-		m_pLightSet = pLightSet;
+	DMXReceiver(DmxNodeOutputType *pDmxNodeOutputType) {
+		m_pDmxNodeOutputType = pDmxNodeOutputType;
 	}
 
 	~DMXReceiver() {
@@ -53,13 +53,13 @@ public:
 
 	void Stop() {
 		Dmx::SetPortDirection(0, dmx::PortDirection::INP, false);
-		m_pLightSet->Stop(0);
+		m_pDmxNodeOutputType->Stop(0);
 	}
 
-	void SetLightSet(LightSet *pLightSet) {
-		if (pLightSet != m_pLightSet) {
-			m_pLightSet->Stop(0);
-			m_pLightSet = pLightSet;
+	void SetDmxNodeOutputType(DmxNodeOutputType *pDmxNodeOutputType) {
+		if (pDmxNodeOutputType != m_pDmxNodeOutputType) {
+			m_pDmxNodeOutputType->Stop(0);
+			m_pDmxNodeOutputType = pDmxNodeOutputType;
 			m_IsActive = false;
 		}
 
@@ -73,7 +73,7 @@ public:
 
 		if (Dmx::GetDmxUpdatesPerSecond(0) == 0) {
 			if (m_IsActive) {
-				m_pLightSet->Stop(0);
+				m_pDmxNodeOutputType->Stop(0);
 				m_IsActive = false;
 				Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
 			}
@@ -89,10 +89,10 @@ public:
 
 				++pDmx;
 
-				m_pLightSet->SetData(0, pDmx, static_cast<uint16_t>(nLength));
+				m_pDmxNodeOutputType->SetData(0, pDmx, static_cast<uint16_t>(nLength));
 
 				if (!m_IsActive) {
-					m_pLightSet->Start(0);
+					m_pDmxNodeOutputType->Start(0);
 					m_IsActive = true;
 					Hardware::Get()->SetMode(hardware::ledblink::Mode::DATA);
 				}
@@ -122,7 +122,7 @@ public:
 	}
 
 private:
-	LightSet *m_pLightSet { nullptr };
+	DmxNodeOutputType *m_pDmxNodeOutputType { nullptr };
 	bool m_IsActive { false };
 	bool m_bDisableOutput { false };
 };

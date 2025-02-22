@@ -46,13 +46,13 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-flashcodeinstall/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-display/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-ws28xx/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-lightset/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-dmxnode/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-ddp/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-ws28xxdmx/include}&quot;"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.preprocessor.def.1649047051" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="H3"/>
-									<listOptionValue builtIn="false" value="NODE_RDMNET_LLRP_ONLY"/>
+									<listOptionValue builtIn="false" value="ENABLE_RDMNET_LLRP_ONLY"/>
 									<listOptionValue builtIn="false" value="ENABLE_HTTPD"/>
 									<listOptionValue builtIn="false" value="NODE_DDP_DISPLAY"/>
 									<listOptionValue builtIn="false" value="OUTPUT_DMX_PIXEL_MULTI"/>

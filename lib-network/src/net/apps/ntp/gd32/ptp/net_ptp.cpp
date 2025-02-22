@@ -308,16 +308,6 @@ static void update_ptp_time() {
 	gd32::ptp::ptptime ptp_get;
 	gd32_ptp_get_time(&ptp_get);
 
-	const auto offset_ns = (static_cast<int64_t>(ptpOffset.tv_sec) * 1000000000LL) + static_cast<int64_t>(ptpOffset.tv_nsec);
-	int32_t adjust_ppb = -(offset_ns / s_ntpClient.nPollSeconds);
-
-	if (abs_int32(adjust_ppb) > 1) {
-		gd32_adj_frequency(adjust_ppb);
-#ifndef NDEBUG
-		printf("Applied frequency adjustment: %d ppb\n", adjust_ppb);
-#endif
-	}
-
 	s_ntpClient.Request.ReferenceTimestamp_s = __builtin_bswap32(static_cast<uint32_t>(ptp_get.tv_sec) + ntp::JAN_1970);
 	s_ntpClient.Request.ReferenceTimestamp_f  = __builtin_bswap32(NTPFRAC(ptp_get.tv_nsec));
 

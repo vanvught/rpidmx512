@@ -1,7 +1,7 @@
 $(info [${CURDIR}])
 $(info $$MAKE_FLAGS [${MAKE_FLAGS}])
 
-EXTRA_INCLUDES+=../lib-display/include ../lib-properties/include ../lib-lightset/include ../lib-network/include
+EXTRA_INCLUDES+=../lib-display/include ../lib-properties/include ../lib-network/include
 
 ifneq ($(MAKE_FLAGS),)
 	ifneq (,$(findstring NODE_OSC_CLIENT,$(MAKE_FLAGS)))
@@ -10,7 +10,7 @@ ifneq ($(MAKE_FLAGS),)
 	endif
 	ifneq (,$(findstring NODE_OSC_SERVER,$(MAKE_FLAGS)))
 		EXTRA_SRCDIR+=src/server
-		EXTRA_INCLUDES+=../lib-lightset/include
+		EXTRA_INCLUDES+=
 		DO_INCLUDE=1
 	endif
 else

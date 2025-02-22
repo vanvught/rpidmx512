@@ -31,7 +31,6 @@
 #include "console.h"
 
 using namespace dmxmonitor;
-using namespace lightset;
 
 static constexpr uint32_t TOP_ROW = 2;
 static constexpr uint32_t HEX_COLUMNS = 32;
@@ -44,7 +43,7 @@ DMXMonitor::DMXMonitor(void) {
 }
 
 bool DMXMonitor::SetDmxStartAddress(uint16_t nDmxStartAddress)  {
-	if (nDmxStartAddress != lightset::dmx::START_ADDRESS_DEFAULT) {
+	if (nDmxStartAddress != dmxnode::START_ADDRESS_DEFAULT) {
 		return false;
 	}
 

@@ -28,7 +28,6 @@
 #include <cassert>
 
 #include "pca9685dmxservo.h"
-#include "lightset.h"
 
 #include "debug.h"
 
@@ -90,7 +89,7 @@ PCA9685DmxServo::~PCA9685DmxServo() {
 
 void PCA9685DmxServo::SetData([[maybe_unused]] uint32_t nPortIndex, const uint8_t* pDmxData, uint32_t nLength, [[maybe_unused]] const bool doUpdate) {
 	assert(pDmxData != nullptr);
-	assert(nLength <= lightset::dmx::UNIVERSE_SIZE);
+	assert(nLength <= dmxnode::UNIVERSE_SIZE);
 
 	auto nDmxAddress = m_nDmxStartAddress;
 

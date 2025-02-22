@@ -2,10 +2,7 @@
  * @file handlerdm.cpp
  *
  */
-/**
- * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
- */
-/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -58,7 +55,7 @@ void ArtNetNode::HandleTodControl() {
 			continue;
 		}
 
-		if ((m_Node.Port[nPortIndex].direction == lightset::PortDir::OUTPUT) &&
+		if ((m_Node.Port[nPortIndex].direction == dmxnode::PortDirection::OUTPUT) &&
 				((m_OutputPort[nPortIndex].GoodOutputB & artnet::GoodOutputB::RDM_DISABLED) != artnet::GoodOutputB::RDM_DISABLED)) {
 			switch (pArtTodControl->Command) {
 			case artnet::TodControlCommand::ATC_FLUSH:
@@ -78,7 +75,7 @@ void ArtNetNode::HandleTodControl() {
 			default:
 				break;
 			}
-		} else if (m_Node.Port[nPortIndex].direction == lightset::PortDir::INPUT) {
+		} else if (m_Node.Port[nPortIndex].direction == dmxnode::PortDirection::INPUT) {
 			if (pArtTodControl->Command == artnet::TodControlCommand::ATC_FLUSH) {
 				m_pArtNetRdmController->TodReset(nPortIndex);
 			}
@@ -101,7 +98,7 @@ void ArtNetNode::HandleTodData() {
 	const auto portAddress = static_cast<uint16_t>((pArtTodData->Net << 8)) | static_cast<uint16_t>((pArtTodData->Address));
 
 	for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
-		if (m_Node.Port[nPortIndex].direction != lightset::PortDir::INPUT) {
+		if (m_Node.Port[nPortIndex].direction != dmxnode::PortDirection::INPUT) {
 			continue;
 		}
 
@@ -214,7 +211,7 @@ void ArtNetNode::HandleRdm() {
 			continue;
 		}
 
-		if ((m_Node.Port[nPortIndex].direction == lightset::PortDir::OUTPUT) &&
+		if ((m_Node.Port[nPortIndex].direction == dmxnode::PortDirection::OUTPUT) &&
 		   ((m_OutputPort[nPortIndex].GoodOutputB & artnet::GoodOutputB::RDM_DISABLED) != artnet::GoodOutputB::RDM_DISABLED)) {
 # if (ARTNET_VERSION >= 4)
 			if (m_Node.Port[nPortIndex].protocol == artnet::PortProtocol::SACN) {
@@ -224,7 +221,7 @@ void ArtNetNode::HandleRdm() {
 # endif
 			if (m_OutputPort[nPortIndex].IsTransmitting) {
 				m_OutputPort[nPortIndex].IsTransmitting = false;
-				m_pLightSet->Stop(nPortIndex); // Stop DMX if was running
+				m_pDmxNodeOutputType->Stop(nPortIndex); // Stop DMX if was running
 			}
 
 			m_OutputPort[nPortIndex].nIpRdm = m_nIpAddressFrom;
@@ -243,7 +240,7 @@ void ArtNetNode::HandleRdm() {
 #elif defined(CONFIG_PANELLED_RDM_NO_PORT)
 			hal::panel_led_on(hal::panelled::RDM << nPortIndex);
 #endif
-		} else if (m_Node.Port[nPortIndex].direction == lightset::PortDir::INPUT) {
+		} else if (m_Node.Port[nPortIndex].direction == dmxnode::PortDirection::INPUT) {
 			auto *pRdmMessage = reinterpret_cast<const TRdmMessage *>(&pArtRdm->Address);
 
 			if ((pRdmMessage->command_class == E120_GET_COMMAND_RESPONSE) || (pRdmMessage->command_class == E120_SET_COMMAND_RESPONSE)) {

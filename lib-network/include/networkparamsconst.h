@@ -29,7 +29,7 @@
 struct NetworkParamsConst {
 	static inline const char FILE_NAME[] = "network.txt";
 
-	static inline const char USE_DHCP[] = "use_dhcp";
+	static inline const char USE_STATIC_IP[] = "use_static_ip";
 
 	static inline const char IP_ADDRESS[] = "ip_address";
 	static inline const char NET_MASK[] = "net_mask";

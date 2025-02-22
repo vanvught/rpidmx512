@@ -34,8 +34,8 @@
 #include "console.h"
 #include "display.h"
 
-#include "e131bridge.h"
-#include "e131params.h"
+#include "dmxnodenode.h"
+#include "dmxnodeparams.h"
 
 // DMX output
 #include "dmx.h"
@@ -49,7 +49,6 @@
 #include "ws28xxdmx.h"
 #include "pixeldmxconfiguration.h"
 #include "pixeltype.h"
-#include "lightset.h"
 #include "pixeldmxparams.h"
 
 #if defined(ORANGE_PI)
@@ -114,7 +113,7 @@ int main() {
 	bool IsSet;
 	const auto nStartUniverse = e131params.GetUniverse(0, IsSet);
 
-	bridge.SetUniverse(0, lightset::PortDir::OUTPUT, nStartUniverse);
+	bridge.SetUniverse(0, dmxnode::PortDirection::OUTPUT, nStartUniverse);
 
 	// There is support for HEX output only
 	bridge.SetOutput(&monitor);

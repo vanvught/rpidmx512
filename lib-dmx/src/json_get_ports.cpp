@@ -2,7 +2,7 @@
  * @file json_get_ports.cpp
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,16 +28,15 @@
 
 #include "dmx.h"
 #include "dmxconst.h"
-#include "lightset.h"
-
+#include "dmxnode.h"
 
 namespace remoteconfig::dmx {
 static uint32_t get_portstatus(const uint32_t nPortIndex, char *pOutBuffer, const uint32_t nOutBufferSize) {
-	const auto direction = Dmx::Get()->GetPortDirection(nPortIndex) == ::dmx::PortDirection::INP ? ::lightset::PortDir::INPUT : ::lightset::PortDir::OUTPUT;
+	const auto direction = Dmx::Get()->GetPortDirection(nPortIndex) == ::dmx::PortDirection::INP ? ::dmxnode::PortDirection::INPUT : ::dmxnode::PortDirection::OUTPUT;
 	auto nLength = static_cast<uint32_t>(snprintf(pOutBuffer, nOutBufferSize,
 			"{\"port\":\"%c\",\"direction\":\"%s\"},",
 			static_cast<char>('A' + nPortIndex),
-			lightset::get_direction(direction)));
+			dmxnode::get_port_direction(direction)));
 
 	return nLength;
 }

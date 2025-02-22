@@ -2,7 +2,7 @@
  * @file artnettriggerhandler.h
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,7 @@
 #include "artnettrigger.h"
 #include "artnetnode.h"
 
-#include "lightset.h"
+#include "dmxnode_outputtype.h"
 
 #include "pixeltestpattern.h"
 
@@ -40,7 +40,7 @@
 
 class ArtNetTriggerHandler {
 public:
-	ArtNetTriggerHandler(LightSet *pLightSet): m_pLightSet(pLightSet) {
+	ArtNetTriggerHandler(DmxNodeOutputType *pDmxNodeOutputType): m_pDmxNodeOutputType(pDmxNodeOutputType) {
 		assert(s_pThis == nullptr);
 		s_pThis = this;
 
@@ -57,7 +57,7 @@ public:
 private:
 	void Handler(const ArtNetTrigger *pArtNetTrigger) {
 		if (pArtNetTrigger->Key == ArtTriggerKey::ART_TRIGGER_KEY_SHOW) {
-			ArtNetNode::Get()->SetOutput(m_pLightSet);
+			ArtNetNode::Get()->SetOutput(m_pDmxNodeOutputType);
 
 			const auto nShow = static_cast<pixelpatterns::Pattern>(pArtNetTrigger->SubKey);
 
@@ -76,7 +76,7 @@ private:
 				Display::Get()->ClearLine(6);
 				Display::Get()->Printf(6, "%s:%u", PixelPatterns::GetName(nShow), static_cast<uint32_t>(nShow));
 			} else {
-				m_pLightSet->Blackout(true);
+				m_pDmxNodeOutputType->Blackout(true);
 				DisplayUdf::Get()->Show();
 			}
 
@@ -103,7 +103,7 @@ private:
 	}
 
 private:
-	LightSet *m_pLightSet;
+	DmxNodeOutputType *m_pDmxNodeOutputType;
 
 	static inline ArtNetTriggerHandler *s_pThis;
 };

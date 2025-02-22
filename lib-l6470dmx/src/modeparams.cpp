@@ -2,7 +2,7 @@
  * @file modeparams.cpp
  *
  */
-/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +34,7 @@
 #include "l6470dmxmode.h"
 #include "l6470dmxconst.h"
 
-#include "lightsetparamsconst.h"
+#include "dmxnodeparamsconst.h"
 
 #include "dmxslotinfo.h"
 
@@ -45,19 +45,17 @@
 
 #include "debug.h"
 
-using namespace lightset;
-
 ModeParams::ModeParams() {
 	DEBUG_ENTRY
 
 	memset(&m_Params, 0, sizeof(struct modeparams::Params));
 	m_Params.nDmxMode = L6470DMXMODE_UNDEFINED;
-	m_Params.nDmxStartAddress = dmx::ADDRESS_INVALID;
+	m_Params.nDmxStartAddress = dmxnode::ADDRESS_INVALID;
 	m_Params.tSwitchAction = L6470_ABSPOS_RESET;
 	m_Params.tSwitchDir = L6470_DIR_REV;
 	m_Params.bSwitch = true;
 
-	auto *pSlotInfo = new SlotInfo[modeparams::MODE_PARAMS_MAX_DMX_FOOTPRINT];
+	auto *pSlotInfo = new dmxnode::SlotInfo[modeparams::MODE_PARAMS_MAX_DMX_FOOTPRINT];
 	memcpy(pSlotInfo, m_Params.tLightSetSlotInfo, sizeof(m_Params.tLightSetSlotInfo));
 
 	m_pDmxSlotInfo = new DmxSlotInfo(pSlotInfo, modeparams::MODE_PARAMS_MAX_DMX_FOOTPRINT);
@@ -134,8 +132,8 @@ void ModeParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	if (Sscan::Uint16(pLine, LightSetParamsConst::DMX_START_ADDRESS, nValue16) == Sscan::OK) {
-		if ((nValue16 != 0) && (nValue16 <= dmx::UNIVERSE_SIZE)) {
+	if (Sscan::Uint16(pLine, DmxNodeParamsConst::DMX_START_ADDRESS, nValue16) == Sscan::OK) {
+		if ((nValue16 != 0) && (nValue16 <= dmxnode::UNIVERSE_SIZE)) {
 			m_Params.nDmxStartAddress = nValue16;
 			m_Params.nSetList |= modeparams::Mask::DMX_START_ADDRESS;
 		}
@@ -143,7 +141,7 @@ void ModeParams::callbackFunction(const char *pLine) {
 	}
 
 	nLength = sizeof(value) - 1;
-	if (Sscan::Char(pLine, LightSetParamsConst::DMX_SLOT_INFO, value, nLength) == Sscan::OK) {
+	if (Sscan::Char(pLine, DmxNodeParamsConst::DMX_SLOT_INFO, value, nLength) == Sscan::OK) {
 		value[nLength] = '\0';
 		uint32_t nMask = 0;
 		m_pDmxSlotInfo->FromString(value, nMask);
@@ -223,10 +221,10 @@ void ModeParams::Builder(uint32_t nMotorIndex, const struct modeparams::Params *
 	PropertiesBuilder builder(m_aFileName, pBuffer, nLength);
 
 	builder.Add(ModeParamsConst::DMX_MODE, m_Params.nDmxMode, isMaskSet(modeparams::Mask::DMX_MODE));
-	builder.Add(LightSetParamsConst::DMX_START_ADDRESS, m_Params.nDmxStartAddress, isMaskSet(modeparams::Mask::DMX_START_ADDRESS));
+	builder.Add(DmxNodeParamsConst::DMX_START_ADDRESS, m_Params.nDmxStartAddress, isMaskSet(modeparams::Mask::DMX_START_ADDRESS));
 
 	const uint32_t nMask = (m_Params.nSetList >> modeparams::Mask::SLOT_INFO_SHIFT);
-	builder.Add(LightSetParamsConst::DMX_SLOT_INFO, m_pDmxSlotInfo->ToString(nMask), nMask != 0);
+	builder.Add(DmxNodeParamsConst::DMX_SLOT_INFO, m_pDmxSlotInfo->ToString(nMask), nMask != 0);
 
 	builder.Add(ModeParamsConst::MAX_STEPS, m_Params.nMaxSteps, isMaskSet(modeparams::Mask::MAX_STEPS));
 
@@ -252,7 +250,7 @@ void ModeParams::Dump() {
 	}
 
 	if (isMaskSet(modeparams::Mask::DMX_START_ADDRESS)) {
-		printf(" %s=%d\n", LightSetParamsConst::DMX_START_ADDRESS, m_Params.nDmxStartAddress);
+		printf(" %s=%d\n", DmxNodeParamsConst::DMX_START_ADDRESS, m_Params.nDmxStartAddress);
 	}
 
 	for (uint32_t i = 0; i < modeparams::MODE_PARAMS_MAX_DMX_FOOTPRINT; i++) {
@@ -282,7 +280,7 @@ void ModeParams::Dump() {
 	}
 }
 
-void ModeParams::GetSlotInfo(uint32_t nOffset, SlotInfo &tLightSetSlotInfo) {
+void ModeParams::GetSlotInfo(uint32_t nOffset, dmxnode::SlotInfo &tLightSetSlotInfo) {
 	if (nOffset < modeparams::MODE_PARAMS_MAX_DMX_FOOTPRINT) {
 		tLightSetSlotInfo.nType = m_Params.tLightSetSlotInfo[nOffset].nType;
 		tLightSetSlotInfo.nCategory = m_Params.tLightSetSlotInfo[nOffset].nCategory;

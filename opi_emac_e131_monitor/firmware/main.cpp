@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,17 +36,21 @@
 #include "displayudfparams.h"
 #include "displayhandler.h"
 
-#include "e131bridge.h"
-#include "e131params.h"
-#include "e131msgconst.h"
+#include "dmxnodenode.h"
+#include "dmxnodeparams.h"
+#include "dmxnodemsgconst.h"
 
 #include "dmxmonitor.h"
 
-#include "rdmdeviceparams.h"
-#include "rdmnetdevice.h"
-#include "rdmpersonality.h"
-#include "rdm_e120.h"
-#include "factorydefaults.h"
+#include "dmxnode.h"
+
+#if defined (NODE_RDMNET_LLRP_ONLY)
+# include "rdmdeviceparams.h"
+# include "rdmnetdevice.h"
+# include "rdmnetconst.h"
+# include "rdmpersonality.h"
+# include "rdm_e120.h"
+#endif
 
 #if defined (NODE_SHOWFILE)
 # include "showfile.h"
@@ -82,6 +86,7 @@ int main() {
 
 	ShowSystime showSystime;
 
+#if defined (NODE_RDMNET_LLRP_ONLY)
 	char aDescription[rdm::personality::DESCRIPTION_MAX_LENGTH + 1];
 	snprintf(aDescription, sizeof(aDescription) - 1, "sACN E1.31 Real-time DMX Monitor");
 
@@ -101,15 +106,9 @@ int main() {
 	rdmDeviceParams.Set(&llrpOnlyDevice);
 
 	llrpOnlyDevice.Print();
+#endif
 
-	E131Bridge bridge;
-
-	E131Params e131params;
-	e131params.Load();
-	e131params.Set();
-
-	bool IsSet;
-	bridge.SetUniverse(0, lightset::PortDir::OUTPUT, e131params.GetUniverse(0, IsSet));
+	DmxNodeNode dmxNodeNode;
 
 #if defined (NODE_SHOWFILE)
 	ShowFile showFile;
@@ -127,19 +126,17 @@ int main() {
 
 	DMXMonitor monitor;
 	// There is support for HEX output only
-	bridge.SetOutput(&monitor);
+	dmxNodeNode.SetOutput(&monitor);
 	monitor.Cls();
 	console_set_top_row(20);
 	console_clear_top_row();
 
-	bridge.Print();
+	dmxNodeNode.Print();
 
 	display.SetTitle("sACN E1.31 Monitor");
 	display.Set(2, displayudf::Labels::IP);
 	display.Set(3, displayudf::Labels::HOSTNAME);
 	display.Set(4, displayudf::Labels::VERSION);
-	display.Set(5, displayudf::Labels::UNIVERSE_PORT_A);
-	display.Set(6, displayudf::Labels::AP);
 
 	DisplayUdfParams displayUdfParams;
 	displayUdfParams.Load();
@@ -147,24 +144,24 @@ int main() {
 
 	display.Show();
 
-	RemoteConfig remoteConfig(remoteconfig::Node::E131, remoteconfig::Output::MONITOR, 0);
+	RemoteConfig remoteConfig(remoteconfig::NodeType::E131, remoteconfig::Output::MONITOR, 0);
 
 	RemoteConfigParams remoteConfigParams;
 	remoteConfigParams.Load();
 	remoteConfigParams.Set(&remoteConfig);
 
-	display.TextStatus(E131MsgConst::START, CONSOLE_YELLOW);
+	display.TextStatus(DmxNodeMsgConst::START, CONSOLE_YELLOW);
 
-	bridge.Start();
+	dmxNodeNode.Start();
 
-	display.TextStatus(E131MsgConst::STARTED, CONSOLE_GREEN);
+	display.TextStatus(DmxNodeMsgConst::STARTED, CONSOLE_GREEN);
 
 	hw.WatchdogInit();
 
 	for (;;) {
 		hw.WatchdogFeed();
 		nw.Run();
-		bridge.Run();
+		dmxNodeNode.Run();
 #if defined (NODE_SHOWFILE)
 		showFile.Run();
 #endif

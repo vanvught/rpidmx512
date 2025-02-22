@@ -2,7 +2,7 @@
  * @file ddpdisplay.h
  *
  */
-/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,25 +31,25 @@
 
 #include "ddp.h"
 
-#include "lightset.h"
+#include "dmxnode_outputtype.h"
 
 #include "network.h"
 
-#if !defined(LIGHTSET_PORTS)
-# error LIGHTSET_PORTS is not defined
+#if !defined(DMXNODE_PORTS)
+# error DMXNODE_PORTS is not defined
 #endif
 
-#if !defined (CONFIG_PIXELDMX_MAX_PORTS)
-# error CONFIG_PIXELDMX_MAX_PORTS is not defined
+#if !defined (CONFIG_DMXNODE_PIXEL_MAX_PORTS)
+# error CONFIG_DMXNODE_PIXEL_MAX_PORTS is not defined
 #endif
 
 namespace ddpdisplay {
 namespace lightset {
-static constexpr uint32_t MAX_PORTS = LIGHTSET_PORTS;
+static constexpr uint32_t MAX_PORTS = DMXNODE_PORTS;
 }  // namespace lightset
 namespace configuration {
 namespace pixel {
-static constexpr uint32_t MAX_PORTS = CONFIG_PIXELDMX_MAX_PORTS;
+static constexpr uint32_t MAX_PORTS = CONFIG_DMXNODE_PIXEL_MAX_PORTS;
 }  // namespace pixel
 namespace dmx {
 #if defined OUTPUT_DMX_SEND_MULTI
@@ -79,7 +79,7 @@ public:
 	void SetCount(uint32_t nCount, uint32_t nChannelsPerPixel, uint32_t nActivePorts) {
 		m_nCount = nCount;
 		m_nStripDataLength = nCount * nChannelsPerPixel;
-		m_nLightSetDataMaxLength = (nChannelsPerPixel == 4 ? 512U : 510U);
+		m_nDmxNodeOutputTypeDataMaxLength = (nChannelsPerPixel == 4 ? 512U : 510U);
 		m_nActivePorts = std::min(nActivePorts, ddpdisplay::configuration::pixel::MAX_PORTS);
 	}
 
@@ -91,12 +91,12 @@ public:
 		return m_nStripDataLength / m_nCount;
 	}
 
-	void SetOutput(LightSet *pLightSet) {
-		m_pLightSet = pLightSet;
+	void SetOutput(DmxNodeOutputType *pDmxNodeOutputType) {
+		m_pDmxNodeOutputType = pDmxNodeOutputType;
 	}
 
-	LightSet *GetOutput() const {
-		return m_pLightSet;
+	DmxNodeOutputType *GetOutput() const {
+		return m_pDmxNodeOutputType;
 	}
 
 	static DdpDisplay *Get() {
@@ -114,10 +114,10 @@ private:
 	uint32_t m_nFromIp { 0 };
 	uint32_t m_nCount { 0 };
 	uint32_t m_nStripDataLength { 0 };
-	uint32_t m_nLightSetDataMaxLength { 0 };
+	uint32_t m_nDmxNodeOutputTypeDataMaxLength { 0 };
 	uint32_t m_nActivePorts { 0 };
 
-	LightSet *m_pLightSet { nullptr };
+	DmxNodeOutputType *m_pDmxNodeOutputType { nullptr };
 
 	uint8_t m_macAddress[net::MAC_SIZE];
 

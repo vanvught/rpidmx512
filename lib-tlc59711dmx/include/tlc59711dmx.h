@@ -28,9 +28,8 @@
 
 #include <cstdint>
 
-#include "lightset.h"
-
 #include "tlc59711.h"
+#include "dmxnode.h"
 
 namespace tlc59711 {
 enum class Type {
@@ -38,24 +37,24 @@ enum class Type {
 };
 }  // namespace tlc59711
 
-class TLC59711Dmx final: public LightSet {
+class TLC59711Dmx {
 public:
 	TLC59711Dmx();
-	~TLC59711Dmx() override;
+	~TLC59711Dmx() ;
 
-	void Start(uint32_t nPortIndex = 0) override;
-	void Stop(uint32_t nPortIndex = 0) override;
+	void Start(uint32_t nPortIndex = 0) ;
+	void Stop(uint32_t nPortIndex = 0) ;
 
-	void SetData(const uint32_t nPortIndex, const uint8_t *pDmxData, uint32_t nLength, const bool doUpdate = true) override;
-	void Sync(const uint32_t nPortIndex) override;
-	void Sync() override;
+	void SetData(const uint32_t nPortIndex, const uint8_t *pDmxData, uint32_t nLength, const bool doUpdate = true) ;
+	void Sync(const uint32_t nPortIndex) ;
+	void Sync() ;
 
 #if defined (CONFIG_TLC59711DMX_ENABLE_PCT)
 	void SetMaxPct(uint32_t nIndexLed, uint32_t nPct);
 #endif
-	void Blackout(bool bBlackout) override;
+	void Blackout(bool bBlackout) ;
 
-	void Print() override;
+	void Print() ;
 
 	void SetType(tlc59711::Type type);
 	tlc59711::Type GetType() {
@@ -73,17 +72,17 @@ public:
 	}
 
 public: // RDM
-	bool SetDmxStartAddress(uint16_t nDmxStartAddress) override;
+	bool SetDmxStartAddress(uint16_t nDmxStartAddress) ;
 
-	uint16_t GetDmxStartAddress() override {
+	uint16_t GetDmxStartAddress()  {
 		return m_nDmxStartAddress;
 	}
 
-	uint16_t GetDmxFootprint() override {
+	uint16_t GetDmxFootprint()  {
 		return m_nDmxFootprint;
 	}
 
-	bool GetSlotInfo(uint16_t nSlotOffset, lightset::SlotInfo &tSlotInfo) override;
+	bool GetSlotInfo(uint16_t nSlotOffset, dmxnode::SlotInfo &tSlotInfo) ;
 
 	static TLC59711Dmx *Get() {
 		return s_pThis;

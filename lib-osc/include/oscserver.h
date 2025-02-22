@@ -2,7 +2,7 @@
  * @file oscserver.h
  *
  */
-/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,10 +35,10 @@
 #include "hardware.h"
 #include "network.h"
 
-#include "lightset.h"
+#include "dmxnode.h"
+#include "dmxnode_outputtype.h"
 
 #include "debug.h"
-
 
 namespace osc::server {
 struct DefaultPort {
@@ -79,8 +79,8 @@ public:
 	void Stop() {
 		DEBUG_ENTRY
 
-		if (m_pLightSet != nullptr) {
-			m_pLightSet->Stop(0);
+		if (m_pDmxNodeOutputType != nullptr) {
+			m_pDmxNodeOutputType->Stop(0);
 		}
 
 		assert(m_nHandle != -1);
@@ -101,9 +101,9 @@ public:
 
 	void Input(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort);
 
-	void SetOutput(LightSet *pLightSet) {
-		assert(pLightSet != nullptr);
-		m_pLightSet = pLightSet;
+	void SetOutput(DmxNodeOutputType *pDmxNodeOutputType) {
+		assert(pDmxNodeOutputType != nullptr);
+		m_pDmxNodeOutputType = pDmxNodeOutputType;
 	}
 
 	void SetOscServerHandler(OscServerHandler *pOscServerHandler) {
@@ -194,7 +194,7 @@ private:
 	char m_Os[32];
 
 	OscServerHandler *m_pOscServerHandler { nullptr };
-	LightSet *m_pLightSet { nullptr };
+	DmxNodeOutputType *m_pDmxNodeOutputType { nullptr };
 
 	const char *m_pModel;
 	const char *m_pSoC;
@@ -204,8 +204,8 @@ private:
 	static inline char s_aPathInfo[osc::server::Max::PATH_LENGTH];
 	static inline char s_aPathBlackOut[osc::server::Max::PATH_LENGTH];
 
-	static inline uint8_t s_pData[lightset::dmx::UNIVERSE_SIZE];
-	static inline uint8_t s_pOsc[lightset::dmx::UNIVERSE_SIZE];
+	static inline uint8_t s_pData[dmxnode::UNIVERSE_SIZE];
+	static inline uint8_t s_pOsc[dmxnode::UNIVERSE_SIZE];
 
 	static inline OscServer *s_pThis;
 };

@@ -34,18 +34,19 @@
 #include "displayudfparams.h"
 #include "displayhandler.h"
 
-#include "artnetnode.h"
-#include "artnetparams.h"
-#include "artnetmsgconst.h"
+#include "dmxnodenode.h"
+#include "dmxnodemsgconst.h"
 
 #include "dmxserial.h"
 #include "dmxserialparams.h"
 
-#include "rdmdeviceparams.h"
-#include "rdmnetdevice.h"
-#include "rdmpersonality.h"
-#include "rdm_e120.h"
-#include "factorydefaults.h"
+#if defined (NODE_RDMNET_LLRP_ONLY)
+# include "rdmdeviceparams.h"
+# include "rdmnetdevice.h"
+# include "rdmnetconst.h"
+# include "rdmpersonality.h"
+# include "rdm_e120.h"
+#endif
 
 #if defined (NODE_SHOWFILE)
 # include "showfile.h"
@@ -77,25 +78,15 @@ int main() {
 
 	fw.Print("Art-Net 4 Node Serial [UART/SPI/I2C] {1 Universe}");
 
-	ArtNetNode node;
-	
-	ArtNetParams artnetParams;
-	artnetParams.Load();
-	artnetParams.Set();
-
-	const auto portDirection = artnetParams.GetDirection(0);
-
-	if (portDirection == lightset::PortDir::OUTPUT) {
-		node.SetUniverse(0, lightset::PortDir::OUTPUT, artnetParams.GetUniverse(0));
-	}
-
 	DmxSerial dmxSerial;
+
 	DmxSerialParams dmxSerialParams;
 	dmxSerialParams.Load();
 	dmxSerialParams.Set();
 
-	node.SetOutput(&dmxSerial);
-	node.Print();
+	DmxNodeNode dmxNodeNode;
+	dmxNodeNode.SetOutput(&dmxSerial);
+	dmxNodeNode.Print();
 
 	dmxSerial.Init();
 	dmxSerial.Print();
@@ -117,8 +108,7 @@ int main() {
 	display.SetTitle("Art-Net 4 %s", dmxSerial.GetSerialType());
 	display.Set(2, displayudf::Labels::IP);
 	display.Set(3, displayudf::Labels::VERSION);
-	display.Set(4, displayudf::Labels::UNIVERSE_PORT_A);
-	display.Set(5, displayudf::Labels::HOSTNAME);
+	display.Set(4, displayudf::Labels::HOSTNAME);
 
 	DisplayUdfParams displayUdfParams;
 	displayUdfParams.Load();
@@ -133,12 +123,13 @@ int main() {
 		display.Printf(7, "Channel%s: %d", nFilesCount == 1 ?  "" : "s", nFilesCount);
 	}
 
-	RemoteConfig remoteConfig(remoteconfig::Node::ARTNET, remoteconfig::Output::SERIAL, node.GetActiveOutputPorts());
+	RemoteConfig remoteConfig(remoteconfig::NodeType::ARTNET, remoteconfig::Output::SERIAL, dmxNodeNode.GetActiveOutputPorts());
 
 	RemoteConfigParams remoteConfigParams;
 	remoteConfigParams.Load();
 	remoteConfigParams.Set(&remoteConfig);
 
+#if defined (NODE_RDMNET_LLRP_ONLY)
 	RDMPersonality *pPersonalities[1] = { new RDMPersonality("RDMNet LLRP device only", static_cast<uint16_t>(0)) };
 	RDMNetDevice llrpOnlyDevice(pPersonalities, 1);
 
@@ -154,19 +145,20 @@ int main() {
 	rdmDeviceParams.Set(&llrpOnlyDevice);
 
 	llrpOnlyDevice.Print();
+#endif
 
-	display.TextStatus(ArtNetMsgConst::START, CONSOLE_YELLOW);
+	display.TextStatus(DmxNodeMsgConst::START, CONSOLE_YELLOW);
 
-	node.Start();
+	dmxNodeNode.Start();
 
-	display.TextStatus(ArtNetMsgConst::STARTED, CONSOLE_GREEN);
+	display.TextStatus(DmxNodeMsgConst::STARTED, CONSOLE_GREEN);
 
 	hw.WatchdogInit();
 
 	for (;;) {
 		hw.WatchdogFeed();
 		nw.Run();
-		node.Run();
+		dmxNodeNode.Run();
 #if defined (NODE_SHOWFILE)
 		showFile.Run();
 #endif

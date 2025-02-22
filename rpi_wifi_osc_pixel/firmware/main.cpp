@@ -38,7 +38,6 @@
 
 #include "pixeldmxconfiguration.h"
 #include "pixeltype.h"
-#include "lightset.h"
 #include "pixeldmxparams.h"
 #include "ws28xxdmx.h"
 
@@ -98,8 +97,6 @@ int main() {
 	console_status(CONSOLE_YELLOW, BRIDGE_PARMAS);
 	display.TextStatus(BRIDGE_PARMAS);
 
-	LightSet *pSpi = nullptr;
-
 	PixelDmxConfiguration pixelDmxConfiguration;
 
 	PixelDmxParams pixelDmxParams;
@@ -117,17 +114,15 @@ int main() {
 		}
 	}
 
-	auto *pPixelDmx = new WS28xxDmx();
-	assert(pPixelDmx != nullptr);
-	pSpi = pPixelDmx;
+	WS28xxDmx pixelDmx;
 
 	display.Printf(7, "%s:%d G%d", pixel::pixel_get_type(pixelDmxConfiguration.GetType()), pixelDmxConfiguration.GetCount(), pixelDmxConfiguration.GetGroupingCount());
 
-	server.SetOutput(pSpi);
-	server.SetOscServerHandler(new Handler(pPixelDmx));
+	server.SetOutput(&pixelDmx);
+	server.SetOscServerHandler(new Handler(&pixelDmx));
 	server.Print();
 
-	pSpi->Print();
+	pixelDmx.Print();
 
 	for (uint32_t i = 0; i < 7 ; i++) {
 		display.ClearLine(i);

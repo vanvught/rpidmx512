@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,21 +26,20 @@
 #pragma GCC push_options
 #pragma GCC optimize ("O2")
 #pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#pragma GCC optimize ("-fprefetch-loop-arrays")
 
 #include <cstdint>
 
 #include "hardware.h"
 #include "network.h"
 
-#include "net/apps/mdns.h"
-
 #include "displayudf.h"
 #include "displayudfparams.h"
 #include "displayhandler.h"
 
-#include "artnetnode.h"
-#include "artnetparams.h"
-#include "artnetmsgconst.h"
+#include "dmxnodenode.h"
+#include "dmxnodemsgconst.h"
+
 #include "artnettriggerhandler.h"
 
 #include "pixeldmxconfiguration.h"
@@ -52,7 +51,7 @@
 #include "dmxparams.h"
 #include "dmxsend.h"
 
-#include "lightsetwith4.h"
+#include "dmxnodewith4.h"
 
 #if defined (NODE_RDMNET_LLRP_ONLY)
 # include "rdmdeviceparams.h"
@@ -60,7 +59,6 @@
 # include "rdmnetconst.h"
 # include "rdmpersonality.h"
 # include "rdm_e120.h"
-# include "factorydefaults.h"
 #endif
 
 #if defined (NODE_SHOWFILE)
@@ -95,13 +93,7 @@ int main() {
 
 	fw.Print("Art-Net 4 Pixel controller {1x 4 Universes} / DMX");
 	
-	ArtNetNode node;
-
-	ArtNetParams artnetParams;
-	artnetParams.Load();
-	artnetParams.Set();
-
-	// LightSet A - Pixel - 4 Universes
+	// Pixel - 4 Universes
 
 	PixelDmxConfiguration pixelDmxConfiguration;
 
@@ -114,28 +106,23 @@ int main() {
 	auto isPixelUniverseSet = false;
 	const auto nStartPixelUniverse = pixelDmxParams.GetStartUniversePort(0, isPixelUniverseSet);
 
+	DmxNodeNode dmxNodeNode;
+
 	if (isPixelUniverseSet) {
 		const auto nUniverses = pixelDmxConfiguration.GetUniverses();
 
 		for (uint32_t nPortIndex = 0; nPortIndex < nUniverses; nPortIndex++) {
-			node.SetUniverse(nPortIndex, lightset::PortDir::OUTPUT, static_cast<uint16_t>(nStartPixelUniverse + nPortIndex));
+			dmxNodeNode.SetUniverse(nPortIndex, dmxnode::PortDirection::OUTPUT, static_cast<uint16_t>(nStartPixelUniverse + nPortIndex));
 			char label[artnet::SHORT_NAME_LENGTH];
 			snprintf(label, artnet::SHORT_NAME_LENGTH - 1, "Pixel Port U:%u", nStartPixelUniverse + nPortIndex);
-			node.SetShortName(nPortIndex, label);
+			dmxNodeNode.SetShortName(nPortIndex, label);
 		}
 	}
 
 	const auto nTestPattern = static_cast<pixelpatterns::Pattern>(pixelDmxParams.GetTestPattern());
 	PixelTestPattern pixelTestPattern(nTestPattern, 1);
 
-	// LightSet B - DMX - 1 Universe
-
-	uint32_t nDmxUniverses = 0;
-
-	if (artnetParams.GetDirection(0) == lightset::PortDir::OUTPUT) {
-		node.SetUniverse(DmxSend::DMXPORT_OFFSET, lightset::PortDir::OUTPUT, artnetParams.GetUniverse(0));
-		nDmxUniverses = 1;
-	}
+	// DMX - 1 Universe
 
 	Dmx dmx;
 
@@ -143,29 +130,32 @@ int main() {
 	dmxparams.Load();
 	dmxparams.Set(&dmx);
 
-	if (node.GetPortDirection(DmxSend::DMXPORT_OFFSET) == lightset::PortDir::OUTPUT) {
+	uint32_t nDmxUniverses = 0;
+
+	if (dmxNodeNode.GetPortDirection(dmxnode::DMXPORT_OFFSET) == dmxnode::PortDirection::OUTPUT) {
 		dmx.SetPortDirection(0, dmx::PortDirection::OUTP, false);
+		nDmxUniverses = 1;
 	}
 
 	DmxSend dmxSend;
 
 	display.SetDmxInfo(displayudf::dmx::PortDir::OUTPUT, nDmxUniverses);
 
-	// LightSet 4with4
+	// DmxNodeWith4
 
-	LightSetWith4<4> lightSet((PixelTestPattern::Get()->GetPattern() != pixelpatterns::Pattern::NONE) ? nullptr : &pixelDmx, (nDmxUniverses != 0) ? &dmxSend : nullptr);
-	lightSet.Print();
+	DmxNodeWith4<CONFIG_DMXNODE_DMX_PORT_OFFSET> dmxNodeWith4((PixelTestPattern::Get()->GetPattern() != pixelpatterns::Pattern::NONE) ? nullptr : &pixelDmx, (nDmxUniverses != 0) ? &dmxSend : nullptr);
+	dmxNodeWith4.Print();
 
-	ArtNetTriggerHandler artnetTriggerHandler(&lightSet, &pixelDmx);
+	ArtNetTriggerHandler artnetTriggerHandler(&dmxNodeWith4, &pixelDmx);
 
-	node.SetOutput(&lightSet);
-	node.Print();
+	dmxNodeNode.SetOutput(&dmxNodeWith4);
+	dmxNodeNode.Print();
 
 #if defined (NODE_RDMNET_LLRP_ONLY)
 	display.TextStatus(RDMNetConst::MSG_CONFIG, CONSOLE_YELLOW);
 
 	char aDescription[rdm::personality::DESCRIPTION_MAX_LENGTH + 1];
-	snprintf(aDescription, sizeof(aDescription) - 1, "Art-Net Pixel 1-%s:%d", pixel::pixel_get_type(pixelDmxConfiguration.GetType()), pixelDmxConfiguration.GetCount());
+	snprintf(aDescription, sizeof(aDescription) - 1, "Art-Net 4 Pixel 1-%s:%d %d", pixel::pixel_get_type(pixelDmxConfiguration.GetType()), pixelDmxConfiguration.GetCount(), nDmxUniverses);
 
 	char aLabel[RDM_DEVICE_LABEL_MAX_LENGTH + 1];
 	const auto nLength = snprintf(aLabel, sizeof(aLabel) - 1, "Orange Pi Zero Pixel-DMX");
@@ -177,7 +167,7 @@ int main() {
 	llrpOnlyDevice.SetProductCategory(E120_PRODUCT_CATEGORY_FIXTURE);
 	llrpOnlyDevice.SetProductDetail(E120_PRODUCT_DETAIL_LED);
 
-	node.SetRdmUID(llrpOnlyDevice.GetUID(), true);
+	dmxNodeNode.SetRdmUID(llrpOnlyDevice.GetUID(), true);
 
 	llrpOnlyDevice.Init();
 
@@ -204,9 +194,9 @@ int main() {
 
 	display.SetTitle("Art-Net 4 Pixel 1 - DMX");
 	display.Set(2, displayudf::Labels::VERSION);
-	display.Set(3, displayudf::Labels::IP);
-	display.Set(4, displayudf::Labels::DEFAULT_GATEWAY);
-	display.Set(5, displayudf::Labels::DMX_DIRECTION);
+	display.Set(3, displayudf::Labels::HOSTNAME);
+	display.Set(4, displayudf::Labels::IP);
+	display.Set(5, displayudf::Labels::DEFAULT_GATEWAY);
 
 	DisplayUdfParams displayUdfParams;
 	displayUdfParams.Load();
@@ -224,24 +214,24 @@ int main() {
 		display.Printf(6, "%s:%u", PixelPatterns::GetName(nTestPattern), static_cast<uint32_t>(nTestPattern));
 	}
 
-	RemoteConfig remoteConfig(remoteconfig::Node::ARTNET, remoteconfig::Output::PIXEL, node.GetActiveOutputPorts());
+	RemoteConfig remoteConfig(remoteconfig::NodeType::ARTNET, remoteconfig::Output::PIXEL, dmxNodeNode.GetActiveOutputPorts());
 
 	RemoteConfigParams remoteConfigParams;
 	remoteConfigParams.Load();
 	remoteConfigParams.Set(&remoteConfig);
 
-	display.TextStatus(ArtNetMsgConst::START, CONSOLE_YELLOW);
+	display.TextStatus(DmxNodeMsgConst::START, CONSOLE_YELLOW);
 
-	node.Start();
+	dmxNodeNode.Start();
 
-	display.TextStatus(ArtNetMsgConst::STARTED, CONSOLE_GREEN);
+	display.TextStatus(DmxNodeMsgConst::STARTED, CONSOLE_GREEN);
 
 	hw.WatchdogInit();
 
 	for (;;) {
 		hw.WatchdogFeed();
 		nw.Run();
-		node.Run();
+		dmxNodeNode.Run();
 #if defined (NODE_SHOWFILE)
 		showFile.Run();
 #endif

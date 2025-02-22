@@ -31,15 +31,13 @@
 #include "e131.h"
 #include "e131packets.h"
 
+#include "dmxnode.h"
+
 #include "softwaretimers.h"
 
 enum {
 	DEFAULT_SYNCHRONIZATION_ADDRESS = 5000
 };
-
-#ifndef DMX_MAX_VALUE
-#define DMX_MAX_VALUE 255
-#endif
 
 struct TE131ControllerState {
 	uint16_t nActiveUniverses;
@@ -74,11 +72,11 @@ public:
 		return m_State.SynchronizationPacket.nUniverseNumber;
 	}
 
-	void SetMaster(uint32_t nMaster = DMX_MAX_VALUE) {
-		if (nMaster < DMX_MAX_VALUE) {
+	void SetMaster(uint32_t nMaster = dmxnode::DMX_MAX_VALUE) {
+		if (nMaster < dmxnode::DMX_MAX_VALUE) {
 			m_nMaster = nMaster;
 		} else {
-			m_nMaster = DMX_MAX_VALUE;
+			m_nMaster = dmxnode::DMX_MAX_VALUE;
 		}
 	}
 	uint32_t GetMaster() const {
@@ -115,7 +113,7 @@ private:
 	uint32_t m_DiscoveryIpAddress { 0 };
 	uint8_t m_Cid[e131::CID_LENGTH];
 	char m_SourceName[e131::SOURCE_NAME_LENGTH];
-	uint32_t m_nMaster { DMX_MAX_VALUE };
+	uint32_t m_nMaster { dmxnode::DMX_MAX_VALUE };
 	TimerHandle_t m_timerHandleSendDiscoveryPacket { -1 };
 
 	static inline E131Controller *s_pThis;

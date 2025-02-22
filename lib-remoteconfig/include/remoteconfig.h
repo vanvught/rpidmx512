@@ -2,7 +2,7 @@
  * @file remoteconfig.h
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,20 +29,9 @@
 #include <cstdint>
 #include <cassert>
 
-#if defined (NODE_ARTNET_MULTI)
-# define NODE_ARTNET
-#endif
-
-#if defined (NODE_E131_MULTI) && !defined (NODE_ARTNET_MULTI)
-# define NODE_E131
-#endif
-
-#if defined (OUTPUT_DMX_PIXEL_MULTI)
-# define OUTPUT_DMX_PIXEL
-#endif
-
-#if defined (OUTPUT_DMX_SEND_MULTI)
-# define OUTPUT_DMX_SEND
+#if !defined (CONFIG_REMOTECONFIG_MINIMUM)
+# include "dmxnode_nodetype.h"
+# include "dmxnode_outputtype.h"
 #endif
 
 #if defined (NODE_NODE)
@@ -65,7 +54,7 @@ namespace udp {
 static constexpr auto BUFFER_SIZE = 1420;
 } // namespace udp
 
-enum class Node {
+enum class NodeType {
 	ARTNET,
 	E131,
 	OSC,
@@ -76,7 +65,6 @@ enum class Node {
 	MIDI,
 	DDP,
 	PP,
-	NODE,
 	BOOTLOADER_TFTP,
 	RDMRESPONDER,
 	LAST
@@ -140,7 +128,7 @@ enum {
 
 class RemoteConfig {
 public:
-	RemoteConfig(const remoteconfig::Node node, const remoteconfig::Output output, const uint32_t nActiveOutputs = 0);
+	RemoteConfig(const remoteconfig::NodeType node, const remoteconfig::Output output, const uint32_t nActiveOutputs = 0);
 	~RemoteConfig();
 
 	const char *GetStringNode() const;
@@ -233,12 +221,17 @@ private:
 	void HandleGetDisplayTxt(uint32_t& nSize);
 #endif
 
-#if defined (NODE_ARTNET)
-	void HandleGetArtnetTxt(uint32_t& nSize);
-#endif
-
-#if defined (NODE_E131)
-	void HandleGetE131Txt(uint32_t& nSize);
+#if defined (DMXNODE_TYPE_ARTNETNODE) || defined (DMXNODE_TYPE_E131BRIDGE)
+	void HandleGetDmxNodeTxt(const dmxnode::Personality personality, uint32_t& nSize);
+	void HandleGetDmxNodeNodeTxt(uint32_t& nSize) {
+		HandleGetDmxNodeTxt(dmxnode::Personality::NODE, nSize);
+	}
+	void HandleGetDmxNodeArtNetTxt(uint32_t& nSize) {
+		HandleGetDmxNodeTxt(dmxnode::Personality::ARTNET, nSize);
+	}
+	void HandleGetDmxNodeE131Txt(uint32_t& nSize) {
+		HandleGetDmxNodeTxt(dmxnode::Personality::SACN, nSize);
+	}
 #endif
 
 #if defined (NODE_OSC_SERVER)
@@ -261,19 +254,6 @@ private:
 	void HandleGetShowTxt(uint32_t& nSize);
 #endif
 
-#if defined (NODE_NODE)
-	void HandleGetNodeTxt(const node::Personality personality, uint32_t& nSize);
-	void HandleGetNodeNodeTxt(uint32_t& nSize) {
-		HandleGetNodeTxt(node::Personality::NODE, nSize);
-	}
-	void HandleGetNodeArtNetTxt(uint32_t& nSize) {
-		HandleGetNodeTxt(node::Personality::ARTNET, nSize);
-	}
-	void HandleGetNodeE131Txt(uint32_t& nSize) {
-		HandleGetNodeTxt(node::Personality::E131, nSize);
-	}
-#endif
-
 #if defined (RDM_RESPONDER)
 	void HandleGetRdmDeviceTxt(uint32_t& nSize);
 	void HandleGetRdmSensorsTxt(uint32_t& nSize);
@@ -282,11 +262,11 @@ private:
 # endif
 #endif
 
-#if defined (OUTPUT_DMX_SEND)
+#if defined (DMXNODE_OUTPUT_DMX)
 	void HandleGetParamsTxt(uint32_t& nSize);
 #endif
 
-#if defined (OUTPUT_DMX_PIXEL) || defined (OUTPUT_DMX_TLC59711)
+#if defined (DMXNODE_OUTPUT_PIXEL) || defined (OUTPUT_DMX_TLC59711)
 	void HandleGetDevicesTxt(uint32_t& nSize);
 #endif
 
@@ -343,12 +323,17 @@ private:
 	void HandleSetDisplayTxt();
 #endif
 
-#if defined (NODE_ARTNET)
-	void HandleSetArtnetTxt();
-#endif
-
-#if defined (NODE_E131)
-	void HandleSetE131Txt();
+#if defined (DMXNODE_TYPE_ARTNETNODE) || defined (DMXNODE_TYPE_E131BRIDGE)
+	void HandleSetDmxNodeTxt(const dmxnode::Personality personality);
+	void HandleSetDmxNodeNodeTxt() {
+		HandleSetDmxNodeTxt(dmxnode::Personality::NODE);
+	}
+	void HandleSetDmxNodeArtNetTxt() {
+		HandleSetDmxNodeTxt(dmxnode::Personality::ARTNET);
+	}
+	void HandleSetDmxNodeE131Txt() {
+		HandleSetDmxNodeTxt(dmxnode::Personality::SACN);
+	}
 #endif
 
 #if defined (NODE_OSC_SERVER)
@@ -371,19 +356,6 @@ private:
 	void HandleSetShowTxt();
 #endif
 
-#if defined(NODE_NODE)
-	void HandleSetNodeTxt(const node::Personality personality);
-	void HandleSetNodeNodeTxt() {
-		HandleSetNodeTxt(node::Personality::NODE);
-	}
-	void HandleSetNodeArtNetTxt() {
-		HandleSetNodeTxt(node::Personality::ARTNET);
-	}
-	void HandleSetNodeE131Txt() {
-		HandleSetNodeTxt(node::Personality::E131);
-	}
-#endif
-
 #if defined (RDM_RESPONDER)
 	void HandleSetRdmDeviceTxt();
 	void HandleSetRdmSensorsTxt();
@@ -392,11 +364,11 @@ private:
 # endif
 #endif
 
-#if defined (OUTPUT_DMX_SEND)
+#if defined (DMXNODE_OUTPUT_DMX)
 	void HandleSetParamsTxt();
 #endif
 
-#if defined (OUTPUT_DMX_PIXEL) || defined (OUTPUT_DMX_TLC59711)
+#if defined (DMXNODE_OUTPUT_PIXEL) || defined (OUTPUT_DMX_TLC59711)
 	void HandleSetDevicesTxt();
 #endif
 
@@ -456,7 +428,7 @@ private:
 	void PlatformHandleTftpGet();
 
 private:
-	remoteconfig::Node m_Node;
+	remoteconfig::NodeType m_Node;
 	remoteconfig::Output m_Output;
 	uint32_t m_nActiveOutputs;
 

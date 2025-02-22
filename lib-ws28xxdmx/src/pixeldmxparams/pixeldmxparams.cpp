@@ -2,7 +2,7 @@
  * @file pixeldmxparams.cpp
  *
  */
-/* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2016-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,14 +36,15 @@
 #include <cassert>
 
 #include "pixeldmxparams.h"
+#include "pixeldmxparamsconst.h"
 #include "pixeltype.h"
 #include "pixelpatterns.h"
 #include "pixelconfiguration.h"
 
 #include "gamma/gamma_tables.h"
 
-#include "lightset.h"
-#include "lightsetparamsconst.h"
+#include "dmxnode.h"
+#include "dmxnodeparamsconst.h"
 
 #include "readconfigfile.h"
 #include "sscan.h"
@@ -54,13 +55,12 @@
 #include "debug.h"
 
 using namespace pixel;
-using namespace lightset;
 
 PixelDmxParams::PixelDmxParams() {
 	m_Params.nSetList = 0;
 	m_Params.nType = static_cast<uint8_t>(pixel::defaults::TYPE);
 	m_Params.nCount = defaults::COUNT;
-	m_Params.nDmxStartAddress = dmx::START_ADDRESS_DEFAULT;
+	m_Params.nDmxStartAddress = dmxnode::START_ADDRESS_DEFAULT;
 	m_Params.nSpiSpeedHz = spi::speed::ws2801::default_hz;
 	m_Params.nGlobalBrightness = 0xFF;
 	m_Params.nActiveOutputs = defaults::OUTPUT_PORTS;
@@ -224,12 +224,12 @@ void PixelDmxParams::callbackFunction(const char *pLine) {
 	}
 
 #if !defined(OUTPUT_DMX_PIXEL_MULTI)
-	if (Sscan::Uint16(pLine, LightSetParamsConst::DMX_START_ADDRESS, nValue16) == Sscan::OK) {
-		if ((nValue16 != 0) && nValue16 <= (dmx::UNIVERSE_SIZE) && (nValue16 != dmx::START_ADDRESS_DEFAULT)) {
+	if (Sscan::Uint16(pLine, DmxNodeParamsConst::DMX_START_ADDRESS, nValue16) == Sscan::OK) {
+		if ((nValue16 != 0) && nValue16 <= (dmxnode::UNIVERSE_SIZE) && (nValue16 != dmxnode::START_ADDRESS_DEFAULT)) {
 			m_Params.nDmxStartAddress = nValue16;
 			m_Params.nSetList |= pixeldmxparams::Mask::DMX_START_ADDRESS;
 		} else {
-			m_Params.nDmxStartAddress = dmx::START_ADDRESS_DEFAULT;
+			m_Params.nDmxStartAddress = dmxnode::START_ADDRESS_DEFAULT;
 			m_Params.nSetList &= ~pixeldmxparams::Mask::DMX_START_ADDRESS;
 		}
 		return;
@@ -237,7 +237,7 @@ void PixelDmxParams::callbackFunction(const char *pLine) {
 #endif
 
 	for (uint32_t i = 0; i < pixeldmxparams::MAX_PORTS; i++) {
-		if (Sscan::Uint16(pLine, LightSetParamsConst::START_UNI_PORT[i], nValue16) == Sscan::OK) {
+		if (Sscan::Uint16(pLine, PixelDmxParamsConst::START_UNI_PORT[i], nValue16) == Sscan::OK) {
 			if (nValue16 > 0) {
 				m_Params.nStartUniverse[i] = nValue16;
 				m_Params.nSetList |= (pixeldmxparams::Mask::START_UNI_PORT_1 << i);
@@ -354,11 +354,11 @@ void PixelDmxParams::Builder(const struct pixeldmxparams::Params *ptWS28xxParams
 
 #if !defined(OUTPUT_DMX_PIXEL_MULTI)
 	builder.AddComment("DMX");
-	builder.Add(LightSetParamsConst::DMX_START_ADDRESS, m_Params.nDmxStartAddress, isMaskSet(pixeldmxparams::Mask::DMX_START_ADDRESS));
+	builder.Add(DmxNodeParamsConst::DMX_START_ADDRESS, m_Params.nDmxStartAddress, isMaskSet(pixeldmxparams::Mask::DMX_START_ADDRESS));
 #endif
 
 	for (uint32_t i = 0; i < pixeldmxparams::MAX_PORTS; i++) {
-		builder.Add(LightSetParamsConst::START_UNI_PORT[i],m_Params.nStartUniverse[i], isMaskSet(pixeldmxparams::Mask::START_UNI_PORT_1 << i));
+		builder.Add(PixelDmxParamsConst::START_UNI_PORT[i],m_Params.nStartUniverse[i], isMaskSet(pixeldmxparams::Mask::START_UNI_PORT_1 << i));
 	}
 #if defined(OUTPUT_DMX_PIXEL_MULTI)
 	builder.Add(DevicesParamsConst::ACTIVE_OUT, m_Params.nActiveOutputs, isMaskSet(pixeldmxparams::Mask::ACTIVE_OUT));
@@ -446,15 +446,15 @@ void PixelDmxParams::Dump() {
 	printf(" %s=%.2f [0x%X]\n", DevicesParamsConst::LED_T1H, pixel::pixel_convert_TxH(m_Params.nHighCode), m_Params.nHighCode);
 	printf(" %s=%d\n", DevicesParamsConst::COUNT, m_Params.nCount);
 
-	for (uint32_t i = 0; i < std::min(static_cast<size_t>(pixelpatterns::MAX_PORTS), sizeof(LightSetParamsConst::START_UNI_PORT) / sizeof(LightSetParamsConst::START_UNI_PORT[0])); i++) {
-		printf(" %s=%d\n", LightSetParamsConst::START_UNI_PORT[i], m_Params.nStartUniverse[i]);
+	for (uint32_t i = 0; i < std::min(static_cast<size_t>(pixelpatterns::MAX_PORTS), sizeof(PixelDmxParamsConst::START_UNI_PORT) / sizeof(PixelDmxParamsConst::START_UNI_PORT[0])); i++) {
+		printf(" %s=%d\n", PixelDmxParamsConst::START_UNI_PORT[i], m_Params.nStartUniverse[i]);
 	}
 
 	printf(" %s=%d\n", DevicesParamsConst::ACTIVE_OUT, m_Params.nActiveOutputs);
 	printf(" %s=%d\n", DevicesParamsConst::GROUPING_COUNT, m_Params.nGroupingCount);
 	printf(" %s=%u\n", DevicesParamsConst::SPI_SPEED_HZ, static_cast<unsigned int>(m_Params.nSpiSpeedHz));
 	printf(" %s=%d\n", DevicesParamsConst::GLOBAL_BRIGHTNESS, m_Params.nGlobalBrightness);
-	printf(" %s=%d\n", LightSetParamsConst::DMX_START_ADDRESS, m_Params.nDmxStartAddress);
+	printf(" %s=%d\n", DmxNodeParamsConst::DMX_START_ADDRESS, m_Params.nDmxStartAddress);
 	printf(" %s=%d\n", DevicesParamsConst::TEST_PATTERN, m_Params.nTestPattern);
 #if defined(CONFIG_PIXELDMX_ENABLE_GAMMATABLE)
 	printf(" %s=%d\n", DevicesParamsConst::GAMMA_CORRECTION, isMaskSet(pixeldmxparams::Mask::GAMMA_CORRECTION));

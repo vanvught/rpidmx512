@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,21 +26,19 @@
 #pragma GCC push_options
 #pragma GCC optimize ("O2")
 #pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#pragma GCC optimize ("-fprefetch-loop-arrays")
 
 #include <cstdint>
 
 #include "hardware.h"
 #include "network.h"
 
-#include "net/apps/mdns.h"
-
 #include "displayudf.h"
 #include "displayudfparams.h"
 #include "displayhandler.h"
 
-#include "e131bridge.h"
-#include "e131params.h"
-#include "e131msgconst.h"
+#include "dmxnodenode.h"
+#include "dmxnodemsgconst.h"
 
 #include "pixeldmxconfiguration.h"
 #include "pixeltype.h"
@@ -51,7 +49,7 @@
 #include "dmxparams.h"
 #include "dmxsend.h"
 
-#include "lightsetwith4.h"
+#include "dmxnodewith4.h"
 
 #if defined (NODE_RDMNET_LLRP_ONLY)
 # include "rdmdeviceparams.h"
@@ -59,7 +57,6 @@
 # include "rdmnetconst.h"
 # include "rdmpersonality.h"
 # include "rdm_e120.h"
-# include "factorydefaults.h"
 #endif
 
 #if defined (NODE_SHOWFILE)
@@ -93,14 +90,8 @@ int main() {
 	FlashCodeInstall spiFlashInstall;
 
 	fw.Print("sACN E1.31 Pixel controller {1x 4 Universes} / DMX");
-	
-	E131Bridge bridge;
 
-	E131Params e131params;
-	e131params.Load();
-	e131params.Set();
-
-	// LightSet A - Pixel - 4 Universes
+	// Pixel - 4 Universes
 
 	PixelDmxConfiguration pixelDmxConfiguration;
 
@@ -113,25 +104,20 @@ int main() {
 	auto isPixelUniverseSet = false;
 	const auto nStartPixelUniverse = pixelDmxParams.GetStartUniversePort(0, isPixelUniverseSet);
 
+	DmxNodeNode dmxNodeNode;
+
 	if (isPixelUniverseSet) {
 		const auto nUniverses = pixelDmxConfiguration.GetUniverses();
 
 		for (uint32_t nPortIndex = 0; nPortIndex < nUniverses; nPortIndex++) {
-			bridge.SetUniverse(nPortIndex, lightset::PortDir::OUTPUT, static_cast<uint16_t>(nStartPixelUniverse + nPortIndex));
+			dmxNodeNode.SetUniverse(nPortIndex, dmxnode::PortDirection::OUTPUT, static_cast<uint16_t>(nStartPixelUniverse + nPortIndex));
 		}
 	}
 
 	const auto nTestPattern = static_cast<pixelpatterns::Pattern>(pixelDmxParams.GetTestPattern());
 	PixelTestPattern pixelTestPattern(nTestPattern, 1);
 
-	// LightSet B - DMX - 1 Universe
-
-	auto isDmxUniverseSet = false;
-	const auto portDirection = e131params.GetDirection(0);
-
-	if (portDirection == lightset::PortDir::OUTPUT) {
-		bridge.SetUniverse(DmxSend::DMXPORT_OFFSET, lightset::PortDir::OUTPUT, e131params.GetUniverse(0, isDmxUniverseSet));
-	}
+	// DMX - 1 Universe
 
 	Dmx dmx;
 
@@ -139,31 +125,29 @@ int main() {
 	dmxparams.Load();
 	dmxparams.Set(&dmx);
 
-	uint16_t nUniverse;
+	uint32_t nDmxUniverses = 0;
 
-	if (bridge.GetUniverse(DmxSend::DMXPORT_OFFSET, nUniverse, lightset::PortDir::OUTPUT)) {
+	if (dmxNodeNode.GetPortDirection(dmxnode::DMXPORT_OFFSET) == dmxnode::PortDirection::OUTPUT) {
 		dmx.SetPortDirection(0, dmx::PortDirection::OUTP, false);
-	} else {
-		dmx.SetPortDirection(0, dmx::PortDirection::INP, false);
+		nDmxUniverses = 1;
 	}
 
 	DmxSend dmxSend;
 
-	display.SetDmxInfo(displayudf::dmx::PortDir::OUTPUT, isDmxUniverseSet ? 1 : 0);
+	display.SetDmxInfo(displayudf::dmx::PortDir::OUTPUT, nDmxUniverses);
 
-	// LightSet 4with4
+	// DmxNodeWith4
 
-	LightSetWith4<4> lightSet((PixelTestPattern::Get()->GetPattern() != pixelpatterns::Pattern::NONE) ? nullptr : &pixelDmx, isDmxUniverseSet ? &dmxSend : nullptr);
-	lightSet.Print();
+	DmxNodeWith4<CONFIG_DMXNODE_DMX_PORT_OFFSET> dmxNodeWith4((PixelTestPattern::Get()->GetPattern() != pixelpatterns::Pattern::NONE) ? nullptr : &pixelDmx, (nDmxUniverses != 0) ? &dmxSend : nullptr);
+	dmxNodeWith4.Print();
 
-	bridge.SetOutput(&lightSet);
-	bridge.Print();
+	dmxNodeNode.SetOutput(&dmxNodeWith4);
 
 #if defined (NODE_RDMNET_LLRP_ONLY)
 	display.TextStatus(RDMNetConst::MSG_CONFIG, CONSOLE_YELLOW);
 
 	char aDescription[rdm::personality::DESCRIPTION_MAX_LENGTH + 1];
-	snprintf(aDescription, sizeof(aDescription) - 1, "sACN Pixel %d-%s:%d DMX %d", isPixelUniverseSet, pixel::pixel_get_type(pixelDmxConfiguration.GetType()), pixelDmxConfiguration.GetCount(), isDmxUniverseSet);
+	snprintf(aDescription, sizeof(aDescription) - 1, "sACN Pixel %d-%s:%d DMX %d", isPixelUniverseSet, pixel::pixel_get_type(pixelDmxConfiguration.GetType()), pixelDmxConfiguration.GetCount(), nDmxUniverses);
 
 	char aLabel[RDM_DEVICE_LABEL_MAX_LENGTH + 1];
 	const auto nLength = snprintf(aLabel, sizeof(aLabel) - 1, "Orange Pi Zero Pixel-DMX");
@@ -177,7 +161,6 @@ int main() {
 	llrpOnlyDevice.Init();
 
 	RDMDeviceParams rdmDeviceParams;
-
 	rdmDeviceParams.Load();
 	rdmDeviceParams.Set(&llrpOnlyDevice);
 
@@ -198,19 +181,19 @@ int main() {
 	showFile.Print();
 #endif
 
+	dmxNodeNode.Print();
+
 	display.SetTitle("sACN E1.31 Pixel 1 - DMX");
 	display.Set(2, displayudf::Labels::VERSION);
 	display.Set(3, displayudf::Labels::HOSTNAME);
 	display.Set(4, displayudf::Labels::IP);
 	display.Set(5, displayudf::Labels::DEFAULT_GATEWAY);
-	display.Set(6, displayudf::Labels::DMX_DIRECTION);
 
 	DisplayUdfParams displayUdfParams;
 	displayUdfParams.Load();
 	displayUdfParams.Set(&display);
 
 	display.Show();
-
 	display.Printf(7, "%s:%d G%d %s",
 		pixel::pixel_get_type(pixelDmxConfiguration.GetType()),
 		pixelDmxConfiguration.GetCount(),
@@ -222,24 +205,24 @@ int main() {
 		display.Printf(6, "%s:%u", PixelPatterns::GetName(nTestPattern), static_cast<uint32_t>(nTestPattern));
 	}
 
-	RemoteConfig remoteConfig(remoteconfig::Node::E131, remoteconfig::Output::PIXEL, bridge.GetActiveOutputPorts());
+	RemoteConfig remoteConfig(remoteconfig::NodeType::E131, remoteconfig::Output::PIXEL, dmxNodeNode.GetActiveOutputPorts());
 
 	RemoteConfigParams remoteConfigParams;
 	remoteConfigParams.Load();
 	remoteConfigParams.Set(&remoteConfig);
 
-	display.TextStatus(E131MsgConst::START, CONSOLE_YELLOW);
+	display.TextStatus(DmxNodeMsgConst::START, CONSOLE_YELLOW);
 
-	bridge.Start();
+	dmxNodeNode.Start();
 
-	display.TextStatus(E131MsgConst::STARTED, CONSOLE_GREEN);
+	display.TextStatus(DmxNodeMsgConst::STARTED, CONSOLE_GREEN);
 
 	hw.WatchdogInit();
 
 	for (;;) {
 		hw.WatchdogFeed();
 		nw.Run();
-		bridge.Run();
+		dmxNodeNode.Run();
 #if defined (NODE_SHOWFILE)
 		showFile.Run();
 #endif

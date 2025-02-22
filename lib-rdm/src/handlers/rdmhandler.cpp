@@ -917,7 +917,7 @@ void RDMHandler::SetDmxStartAddress(bool IsBroadcast, uint16_t nSubDevice) {
 
 	const auto nDmxStartAddress = static_cast<uint16_t>((pRdmDataIn->param_data[0] << 8) + pRdmDataIn->param_data[1]);
 
-	if ((nDmxStartAddress == 0) || (nDmxStartAddress > lightset::dmx::UNIVERSE_SIZE)) {
+	if ((nDmxStartAddress == 0) || (nDmxStartAddress > dmxnode::UNIVERSE_SIZE)) {
 		RespondMessageNack(E120_NR_DATA_OUT_OF_RANGE);
 		return;
 	}
@@ -1398,7 +1398,7 @@ void RDMHandler::SetPresetPlayback([[maybe_unused]] bool IsBroadcast, [[maybe_un
 void RDMHandler::GetSlotInfo(uint16_t nSubDevice) {
     auto *pRdmDataOut = reinterpret_cast<struct TRdmMessage *>(m_pRdmDataOut);
 	const auto nDmxFootPrint = RDMDeviceResponder::Get()->GetDmxFootPrint(nSubDevice);
-	lightset::SlotInfo slotInfo;
+	dmxnode::SlotInfo slotInfo;
 
 	uint32_t j = 0;
 
@@ -1422,7 +1422,7 @@ void RDMHandler::GetSlotInfo(uint16_t nSubDevice) {
 void RDMHandler::GetSlotDescription(uint16_t nSubDevice) {
 	auto *pRdmDataIn = reinterpret_cast<struct TRdmMessageNoSc *>(m_pRdmDataIn);
 	const auto nSlotOffset = static_cast<uint16_t>((pRdmDataIn->param_data[0] << 8) + pRdmDataIn->param_data[1]);
-	lightset::SlotInfo tSlotInfo;
+	dmxnode::SlotInfo tSlotInfo;
 
 	if(!RDMDeviceResponder::Get()->GetSlotInfo(nSubDevice, nSlotOffset, tSlotInfo)) {
 		RespondMessageNack(E120_NR_DATA_OUT_OF_RANGE);

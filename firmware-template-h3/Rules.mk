@@ -61,6 +61,8 @@ ifeq ($(findstring ARTNET_VERSION=4,$(DEFINES)),ARTNET_VERSION=4)
 endif
 
 include ../firmware-template/libs.mk
+include ../firmware-template/DmxNodeNodeType.mk
+include ../firmware-template/DmxNodeOutputType.mk
 
 LIBS+=h3 clib arm
 

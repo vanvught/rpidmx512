@@ -68,7 +68,10 @@
 # include "e131bridge.h"
 #endif
 
-#include "lightset.h"
+#include "dmxnodedata.h"
+#include "dmxnode_data.h"
+#include "dmxnode_outputtype.h"
+
 #include "hardware.h"
 #include "network.h"
 #include "softwaretimers.h"
@@ -122,7 +125,7 @@ struct Node {
 		uint8_t DefaultAddress;
 		uint8_t NetSwitch;									///< Bits 14-8 of the 15 bit Port-Address are encoded into the bottom 7 bits of this field.
 		uint8_t SubSwitch;									///< Bits 7-4 of the 15 bit Port-Address are encoded into the bottom 4 bits of this field.
-		lightset::PortDir direction;
+		dmxnode::PortDirection direction;
 		artnet::PortProtocol protocol;						///< Art-Net 4
 		bool bLocalMerge;
 		char ShortName[artnet::SHORT_NAME_LENGTH] ALIGNED;
@@ -157,20 +160,20 @@ struct InputPort {
 	uint8_t nPollReplyIndex;
 };
 
-inline artnetnode::FailSafe convert_failsafe(const lightset::FailSafe failsafe) {
-	if (failsafe > lightset::FailSafe::PLAYBACK) {
+inline artnetnode::FailSafe convert_failsafe(const dmxnode::FailSafe failsafe) {
+	if (failsafe > dmxnode::FailSafe::PLAYBACK) {
 		return artnetnode::FailSafe::LAST;
 	}
 
 	return static_cast<artnetnode::FailSafe>(static_cast<uint32_t>(failsafe) + static_cast<uint32_t>(artnetnode::FailSafe::LAST));
 }
 
-inline lightset::FailSafe convert_failsafe(const artnetnode::FailSafe failsafe) {
+inline dmxnode::FailSafe convert_failsafe(const artnetnode::FailSafe failsafe) {
 	if (failsafe > artnetnode::FailSafe::RECORD) {
-		return lightset::FailSafe::HOLD;
+		return dmxnode::FailSafe::HOLD;
 	}
 
-	return  static_cast<lightset::FailSafe>(static_cast<uint32_t>(failsafe) - static_cast<uint32_t>(artnetnode::FailSafe::LAST));
+	return  static_cast<dmxnode::FailSafe>(static_cast<uint32_t>(failsafe) - static_cast<uint32_t>(artnetnode::FailSafe::LAST));
 }
 }  // namespace artnetnode
 
@@ -182,14 +185,14 @@ class ArtNetNode {
 public:
 	ArtNetNode();
 
-	void SetOutput(LightSet *pLightSet) {
-		m_pLightSet = pLightSet;
+	void SetOutput(DmxNodeOutputType *pDmxNodeOutputType) {
+		m_pDmxNodeOutputType = pDmxNodeOutputType;
 #if (ARTNET_VERSION >= 4)
-		E131Bridge::SetOutput(pLightSet);
+		E131Bridge::SetOutput(pDmxNodeOutputType);
 #endif
 	}
-	LightSet *GetOutput() const {
-		return m_pLightSet;
+	DmxNodeOutputType *GetOutput() const {
+		return m_pDmxNodeOutputType;
 	}
 
 	void SetLongName(const char *);
@@ -215,11 +218,11 @@ public:
 	}
 
 	void SetFailSafe(const artnetnode::FailSafe failsafe);	/// TODO Subject for deletion
-	void SetFailSafe(const lightset::FailSafe failsafe);
-	lightset::FailSafe GetFailSafe();
+	void SetFailSafe(const dmxnode::FailSafe failsafe);
+	dmxnode::FailSafe GetFailSafe();
 
-	void SetUniverse(const uint32_t nPortIndex, const lightset::PortDir dir, const uint16_t nUniverse);
-	bool GetUniverse(const uint32_t nPortIndex, uint16_t &nUniverse, const lightset::PortDir portDirection) {
+	void SetUniverse(const uint32_t nPortIndex, const dmxnode::PortDirection dir, const uint16_t nUniverse);
+	bool GetUniverse(const uint32_t nPortIndex, uint16_t &nUniverse, const dmxnode::PortDirection portDirection) {
 		if (m_Node.Port[nPortIndex].protocol == artnet::PortProtocol::ARTNET) {
 			return ArtNetNode::GetPortAddress(nPortIndex, nUniverse, portDirection);
 		}
@@ -231,18 +234,18 @@ public:
 		return false;
 	}
 
-	void SetMergeMode(const uint32_t nPortIndex, const lightset::MergeMode mergeMode);
-	lightset::MergeMode GetMergeMode(const uint32_t nPortIndex) const {
+	void SetMergeMode(const uint32_t nPortIndex, const dmxnode::MergeMode mergeMode);
+	dmxnode::MergeMode GetMergeMode(const uint32_t nPortIndex) const {
 		assert(nPortIndex < artnetnode::MAX_PORTS);
 		if ((m_OutputPort[nPortIndex].GoodOutput & artnet::GoodOutput::MERGE_MODE_LTP) == artnet::GoodOutput::MERGE_MODE_LTP) {
-			return lightset::MergeMode::LTP;
+			return dmxnode::MergeMode::LTP;
 		}
-		return lightset::MergeMode::HTP;
+		return dmxnode::MergeMode::HTP;
 	}
 
 #if defined (OUTPUT_HAVE_STYLESWITCH)
-	void SetOutputStyle(const uint32_t nPortIndex, lightset::OutputStyle outputStyle);
-	lightset::OutputStyle GetOutputStyle(const uint32_t nPortIndex) const;
+	void SetOutputStyle(const uint32_t nPortIndex, dmxnode::OutputStyle outputStyle);
+	dmxnode::OutputStyle GetOutputStyle(const uint32_t nPortIndex) const;
 #endif
 
 	void SetRdm(const bool doEnable);
@@ -328,9 +331,9 @@ public:
 					DEBUG_PRINTF("TOD sent -> %u", static_cast<unsigned int>(nPortIndex));
 
 					if (m_OutputPort[nPortIndex].IsTransmitting) {
-						DEBUG_PUTS("m_pLightSet->Stop/Start");
-						m_pLightSet->Stop(nPortIndex);
-						m_pLightSet->Start(nPortIndex);
+						DEBUG_PUTS("m_pDmxNodeOutputType->Stop/Start");
+						m_pDmxNodeOutputType->Stop(nPortIndex);
+						m_pDmxNodeOutputType->Start(nPortIndex);
 					}
 				}
 			}
@@ -366,7 +369,7 @@ public:
 		return m_State.nEnabledOutputPorts;
 	}
 
-	lightset::PortDir GetPortDirection(const uint32_t nPortIndex) const {
+	dmxnode::PortDirection GetPortDirection(const uint32_t nPortIndex) const {
 		assert(nPortIndex < artnetnode::MAX_PORTS);
 		return m_Node.Port[nPortIndex].direction;
 	}
@@ -374,7 +377,7 @@ public:
 	bool GetPortAddress(uint32_t nPortIndex, uint16_t& nAddress) const {
 		assert(nPortIndex < artnetnode::MAX_PORTS);
 
-		if (m_Node.Port[nPortIndex].direction == lightset::PortDir::DISABLE) {
+		if (m_Node.Port[nPortIndex].direction == dmxnode::PortDirection::DISABLE) {
 			return false;
 		}
 
@@ -382,10 +385,10 @@ public:
 		return true;
 	}
 
-	bool GetPortAddress(const uint32_t nPortIndex, uint16_t& nAddress, lightset::PortDir portDir) const {
+	bool GetPortAddress(const uint32_t nPortIndex, uint16_t& nAddress, dmxnode::PortDirection portDir) const {
 		assert(nPortIndex < artnetnode::MAX_PORTS);
 
-		if (portDir == lightset::PortDir::DISABLE) {
+		if (portDir == dmxnode::PortDirection::DISABLE) {
 			return false;
 		}
 
@@ -395,7 +398,7 @@ public:
 
 	bool GetOutputPort(const uint16_t nUniverse, uint32_t& nPortIndex) {
 		for (nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
-			if (m_Node.Port[nPortIndex].direction != lightset::PortDir::OUTPUT) {
+			if (m_Node.Port[nPortIndex].direction != dmxnode::PortDirection::OUTPUT) {
 				continue;
 			}
 			if ((m_Node.Port[nPortIndex].protocol == artnet::PortProtocol::ARTNET) && (nUniverse == m_Node.Port[nPortIndex].PortAddress)) {
@@ -513,7 +516,7 @@ public:
 
 #if (ARTNET_VERSION >= 4)
 private:
-	void SetUniverse4(const uint32_t nPortIndex, const lightset::PortDir portDir);
+	void SetUniverse4(const uint32_t nPortIndex, const dmxnode::PortDirection portDir);
 	void SetLedBlinkMode4(hardware::ledblink::Mode mode);
 	void HandleAddress4(const uint8_t nCommand, const uint32_t nPortIndex);
 	uint8_t GetGoodOutput4(const uint32_t nPortIndex);
@@ -522,7 +525,7 @@ public:
 	/**
 	 * Art-Net 4
 	 */
-	bool GetUniverse4(uint32_t nPortIndex, uint16_t &nUniverse, lightset::PortDir portDir) const {
+	bool GetUniverse4(uint32_t nPortIndex, uint16_t &nUniverse, dmxnode::PortDirection portDir) const {
 		return E131Bridge::GetUniverse(nPortIndex, nUniverse, portDir);
 	}
 
@@ -536,7 +539,7 @@ public:
 #endif
 
 private:
-	void SetUniverseSwitch(const uint32_t nPortIndex, const lightset::PortDir dir, const uint8_t nAddress);
+	void SetUniverseSwitch(const uint32_t nPortIndex, const dmxnode::PortDirection dir, const uint8_t nAddress);
 	void SetNetSwitch(const uint32_t nPortIndex, const uint8_t nNetSwitch);
 	void SetSubnetSwitch(const uint32_t nPortIndex, const uint8_t nSubnetSwitch);
 	void SendDiag([[maybe_unused]] const artnet::PriorityCodes priorityCode, [[maybe_unused]] const char *format, ...) {
@@ -626,7 +629,7 @@ private:
 
 #if defined (RDM_CONTROLLER)
 	bool RdmDiscoveryRun() {
-		if ((GetPortDirection(m_State.rdm.nDiscoveryPortIndex) == lightset::PortDir::OUTPUT)
+		if ((GetPortDirection(m_State.rdm.nDiscoveryPortIndex) == dmxnode::PortDirection::OUTPUT)
 				&& (GetRdm(m_State.rdm.nDiscoveryPortIndex))
 				&& (GetRdmDiscovery(m_State.rdm.nDiscoveryPortIndex)))
 		{
@@ -641,9 +644,9 @@ private:
 				DEBUG_PUTS("TOD sent");
 
 				if (m_OutputPort[nPortIndex].IsTransmitting) {
-					DEBUG_PUTS("m_pLightSet->Stop/Start");
-					m_pLightSet->Stop(nPortIndex);
-					m_pLightSet->Start(nPortIndex);
+					DEBUG_PUTS("m_pDmxNodeOutputType->Stop/Start");
+					m_pDmxNodeOutputType->Stop(nPortIndex);
+					m_pDmxNodeOutputType->Start(nPortIndex);
 				}
 
 				m_OutputPort[m_State.rdm.nDiscoveryPortIndex].GoodOutputB |= artnet::GoodOutputB::DISCOVERY_NOT_RUNNING;
@@ -673,7 +676,7 @@ private:
 	uint32_t m_nCurrentPacketMillis { 0 };
 	uint32_t m_nPreviousPacketMillis { 0 };
 
-	LightSet *m_pLightSet { nullptr };
+	DmxNodeOutputType *m_pDmxNodeOutputType { nullptr };
 
 	ArtTimeCodeCallbackFunctionPtr m_ArtTimeCodeCallbackFunctionPtr { nullptr };
 	ArtTriggerCallbackFunctionPtr m_ArtTriggerCallbackFunctionPtr { nullptr };

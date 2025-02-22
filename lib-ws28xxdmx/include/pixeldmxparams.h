@@ -31,12 +31,12 @@
 #include "pixeldmxconfiguration.h"
 #include "configstore.h"
 
-#if !defined (CONFIG_PIXELDMX_MAX_PORTS)
-# error CONFIG_PIXELDMX_MAX_PORTS is not defined
+#if !defined (CONFIG_DMXNODE_PIXEL_MAX_PORTS)
+# error CONFIG_DMXNODE_PIXEL_MAX_PORTS is not defined
 #endif
 
 namespace pixeldmxparams {
-static constexpr auto MAX_PORTS = CONFIG_PIXELDMX_MAX_PORTS;
+static constexpr auto MAX_PORTS = CONFIG_DMXNODE_PIXEL_MAX_PORTS;
 
 struct Params {
     uint32_t nSetList;										///< 4	   4

@@ -33,8 +33,7 @@
 #include "console.h"
 #include "display.h"
 
-#include "artnetnode.h"
-#include "artnetparams.h"
+#include "dmxnodenode.h"
 
 #include "dmxmonitor.h"
 #include "timecode.h"
@@ -69,11 +68,8 @@ int main() {
 	ConfigStore configStore;
 #endif
 
-	ArtNetNode node;
+	DmxNodeNode dmxNodeNode;
 	
-	ArtNetParams artnetParams;
-	artnetParams.Load();
-
 	const auto outputType = artnetParams.GetOutputType();
 
 	uint8_t nHwTextLength;
@@ -124,13 +120,9 @@ int main() {
 #ifndef H3
 	if (outputType == lightset::OutputType::MONITOR) {
 		timecode.Start();
-		node.SetArtTimeCodeCallbackFunction(TimeCode::staticCallbackFunction);
+		dmxNodeNode.SetArtTimeCodeCallbackFunction(TimeCode::staticCallbackFunction);
 	}
 #endif
-
-	const auto nStartUniverse = artnetParams.GetUniverse(0);
-
-	node.SetUniverse(0, lightset::PortDir::OUTPUT, nStartUniverse);
 
 	Dmx	dmx;
 	DmxSend dmxSend;
@@ -152,15 +144,15 @@ int main() {
 		const auto nUniverses = pWS28xxDmx->GetUniverses();
 
 		for (uint32_t nPortIndex = 1; nPortIndex < nUniverses; nPortIndex++) {
-			node.SetUniverse(nPortIndex, lightset::PortDir::OUTPUT, static_cast<uint8_t>(nStartUniverse + nPortIndex));
+			dmxNodeNode.SetUniverse(nPortIndex, dmxnode::PortDirection::OUTPUT, static_cast<uint8_t>(nStartUniverse + nPortIndex));
 		}
 
-		node.SetOutput(pSpi);
+		dmxNodeNode.SetOutput(pSpi);
 	}
 #ifndef H3
 	else if (outputType == lightset::OutputType::MONITOR) {
 		// There is support for HEX output only
-		node.SetOutput(&monitor);
+		dmxNodeNode.SetOutput(&monitor);
 		monitor.Cls();
 		console_set_top_row(20);
 	}
@@ -172,7 +164,7 @@ int main() {
 		dmxparams.Load();
 		dmxparams.Set(&dmx);
 
-		node.SetOutput(&dmxSend);
+		dmxNodeNode.SetOutput(&dmxSend);
 
 		if (artnetParams.IsRdm()) {
 			RDMDeviceParams rdmDeviceParams;
@@ -182,11 +174,11 @@ int main() {
 			artNetRdmController.Init();
 			artNetRdmController.Print();
 
-			node.SetRdmController(&artNetRdmController);
+			dmxNodeNode.SetRdmController(&artNetRdmController);
 		}
 	}
 
-	node.Print();
+	dmxNodeNode.Print();
 
 	if (outputType == lightset::OutputType::SPI) {
 		assert(pSpi != 0);
@@ -237,12 +229,12 @@ int main() {
 
 	display.Printf(4, "N: " IPSTR "", IP2STR(Network::Get()->GetNetmask()));
 	display.Printf(5, "U: %d", nStartUniverse);
-	display.Printf(6, "Active ports: %d", node.GetActiveOutputPorts());
+	display.Printf(6, "Active ports: %d", dmxNodeNode.GetActiveOutputPorts());
 
 	console_status(CONSOLE_YELLOW, START_NODE);
 	display.TextStatus(START_NODE);
 
-	node.Start();
+	dmxNodeNode.Start();
 
 	console_status(CONSOLE_GREEN, NODE_STARTED);
 	display.TextStatus(NODE_STARTED);
@@ -251,7 +243,7 @@ int main() {
 
 	for (;;) {
 		hw.WatchdogFeed();
-		node.Run();
+		dmxNodeNode.Run();
 		hw.Run();
 	}
 }

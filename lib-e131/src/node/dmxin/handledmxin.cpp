@@ -64,7 +64,7 @@ static uint32_t s_ReceivingMask = 0;
 
 void E131Bridge::HandleDmxIn() {
 	for (uint32_t nPortIndex = 0 ; nPortIndex < e131bridge::MAX_PORTS; nPortIndex++) {
-		if ((m_Bridge.Port[nPortIndex].direction == lightset::PortDir::INPUT) && (!m_InputPort[nPortIndex].IsDisabled)) {
+		if ((m_Bridge.Port[nPortIndex].direction == dmxnode::PortDirection::INPUT) && (!m_InputPort[nPortIndex].IsDisabled)) {
 
 			const auto *const pDmxData = reinterpret_cast<const struct Data *>(Dmx::Get()->GetDmxChanged(nPortIndex));
 
@@ -92,7 +92,7 @@ void E131Bridge::HandleDmxIn() {
 
 				if ((s_ReceivingMask & (1U << nPortIndex)) != (1U << nPortIndex)) {
 					s_ReceivingMask |= (1U << nPortIndex);
-					m_State.nReceivingDmx |= (1U << static_cast<uint8_t>(lightset::PortDir::INPUT));
+					m_State.nReceivingDmx |= (1U << static_cast<uint8_t>(dmxnode::PortDirection::INPUT));
 					hal::panel_led_on(hal::panelled::PORT_A_RX << nPortIndex);
 				}
 
@@ -109,7 +109,7 @@ void E131Bridge::HandleDmxIn() {
 					hal::panel_led_off(hal::panelled::PORT_A_RX << nPortIndex);
 
 					if (s_ReceivingMask == 0) {
-						m_State.nReceivingDmx &= static_cast<uint8_t>(~(1U << static_cast<uint8_t>(lightset::PortDir::INPUT)));
+						m_State.nReceivingDmx &= static_cast<uint8_t>(~(1U << static_cast<uint8_t>(dmxnode::PortDirection::INPUT)));
 					}
 				} else if (m_InputPort[nPortIndex].nMillis != 0) {
 					const auto nMillis = Hardware::Get()->Millis();

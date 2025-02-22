@@ -2,7 +2,7 @@
  * @file ddpdisplay.h
  *
  */
-/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,9 +29,8 @@
 
 #include "ddpdisplay.h"
 
-#include "lightset.h"
-#include "lightsetdata.h"
-#include "lightset_data.h"
+#include "dmxnodedata.h"
+#include "dmxnode_data.h"
 
 #include "hardware.h"
 #include "network.h"
@@ -49,7 +48,7 @@ static constexpr char CONFIG_REPLY[] = "{\"config\":{\"ip\":\"%d.%d.%d.%d\",\"nm
 		"{\"port\":\"1\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
 		"{\"port\":\"2\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
 		"{\"port\":\"3\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
-#if CONFIG_PIXELDMX_MAX_PORTS > 2
+#if CONFIG_DMXNODE_PIXEL_MAX_PORTS > 2
 		"{\"port\":\"4\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
 		"{\"port\":\"5\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
 		"{\"port\":\"6\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
@@ -57,7 +56,7 @@ static constexpr char CONFIG_REPLY[] = "{\"config\":{\"ip\":\"%d.%d.%d.%d\",\"nm
 		"{\"port\":\"8\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
 		"{\"port\":\"9\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"}"
 #endif
-#if CONFIG_PIXELDMX_MAX_PORTS == 16
+#if CONFIG_DMXNODE_PIXEL_MAX_PORTS == 16
 		","
 		"{\"port\":\"10\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
 		"{\"port\":\"11\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
@@ -113,7 +112,7 @@ void DdpDisplay::CalculateOffsets() {
 #endif
 
 	for (uint32_t nDmxPortIndex = 0; nDmxPortIndex < ddpdisplay::configuration::dmx::MAX_PORTS; nDmxPortIndex++) {
-		nSum = nSum + lightset::dmx::UNIVERSE_SIZE;
+		nSum = nSum + dmxnode::UNIVERSE_SIZE;
 		const auto nIndexOffset = nDmxPortIndex + ddpdisplay::configuration::pixel::MAX_PORTS;
 		s_nOffsetCompare[nIndexOffset] = nSum;
 	}
@@ -126,7 +125,7 @@ void DdpDisplay::CalculateOffsets() {
 
 void DdpDisplay::Start() {
 	DEBUG_ENTRY
-	assert(m_pLightSet != nullptr);
+	assert(m_pDmxNodeOutputType != nullptr);
 
 	m_nHandle = Network::Get()->Begin(ddp::UDP_PORT);
 	assert(m_nHandle != -1);
@@ -182,7 +181,7 @@ void DdpDisplay::HandleQuery() {
 				IP2STR(Network::Get()->GetIp()), IP2STR(Network::Get()->GetNetmask()), IP2STR(Network::Get()->GetGatewayIp()),
 				m_nActivePorts > 0 ? m_nCount : 0,
 				m_nActivePorts > 1 ? m_nCount : 0,
-#if CONFIG_PIXELDMX_MAX_PORTS > 2
+#if CONFIG_DMXNODE_PIXEL_MAX_PORTS > 2
 				m_nActivePorts > 2 ? m_nCount : 0,
 				m_nActivePorts > 3 ? m_nCount : 0,
 				m_nActivePorts > 4 ? m_nCount : 0,
@@ -190,7 +189,7 @@ void DdpDisplay::HandleQuery() {
 				m_nActivePorts > 6 ? m_nCount : 0,
 				m_nActivePorts > 7 ? m_nCount : 0,
 #endif
-#if CONFIG_PIXELDMX_MAX_PORTS == 16
+#if CONFIG_DMXNODE_PIXEL_MAX_PORTS == 16
 				m_nActivePorts >  8 ? m_nCount : 0,
 				m_nActivePorts >  9 ? m_nCount : 0,
 				m_nActivePorts > 10 ? m_nCount : 0,
@@ -200,8 +199,8 @@ void DdpDisplay::HandleQuery() {
 				m_nActivePorts > 14 ? m_nCount : 0,
 				m_nActivePorts > 15 ? m_nCount : 0,
 #endif
-				ddpdisplay::configuration::dmx::MAX_PORTS == 0 ? 0 : lightset::dmx::UNIVERSE_SIZE,
-				ddpdisplay::configuration::dmx::MAX_PORTS == 0 ? 0 : lightset::dmx::UNIVERSE_SIZE
+				ddpdisplay::configuration::dmx::MAX_PORTS == 0 ? 0 : dmxnode::UNIVERSE_SIZE,
+				ddpdisplay::configuration::dmx::MAX_PORTS == 0 ? 0 : dmxnode::UNIVERSE_SIZE
 				);
 
 		pPacket->header.flags1 = flags1::VER1 | flags1::REPLY | flags1::PUSH;
@@ -241,11 +240,11 @@ void DdpDisplay::HandleData() {
 //		DEBUG_PRINTF("nOffset=%u, nLength=%u, s_nOffsetCompare[%u]=%u", nOffset, nLength, nPortIndex, s_nOffsetCompare[nPortIndex]);
 
 		while ((nOffset < s_nOffsetCompare[nPortIndex]) && (nLightSetPortIndex < nLightSetPortIndexEnd)) {
-			const auto nLightSetLength = std::min(std::min(nLength, m_nLightSetDataMaxLength), m_nStripDataLength);
+			const auto nLightSetLength = std::min(std::min(nLength, m_nDmxNodeOutputTypeDataMaxLength), m_nStripDataLength);
 
 //			DEBUG_PRINTF("==> nOffset=%u, nLength=%u, nLightSetLength=%u, nLightSetPortIndex=%u", nOffset, nLength, nLightSetLength, nLightSetPortIndex);
 
-			lightset::Data::SetSourceA(nLightSetPortIndex, &receiveBuffer[nReceiverBufferIndex], nLightSetLength);
+			dmxnode::Data::SetSourceA(nLightSetPortIndex, &receiveBuffer[nReceiverBufferIndex], nLightSetLength);
 			s_nLightsetPortLength[nLightSetPortIndex] = nLightSetLength;
 
 			nReceiverBufferIndex += nLightSetLength;
@@ -267,11 +266,11 @@ void DdpDisplay::HandleData() {
 
 	for (uint32_t nPortIndex = ddpdisplay::configuration::pixel::MAX_PORTS; (nPortIndex < ddpdisplay::configuration::MAX_PORTS) && (nLength != 0); nPortIndex++) {
 		if (nOffset < s_nOffsetCompare[nPortIndex]) {
-			const auto nLightSetLength = std::min(nLength,lightset::dmx::UNIVERSE_SIZE);
+			const auto nLightSetLength = std::min(nLength,dmxnode::UNIVERSE_SIZE);
 
 //			DEBUG_PRINTF("==> nPortIndex=%u, nOffset=%u, nLength=%u, nLightSetLength=%u, nLightSetPortIndex=%u", nPortIndex, nOffset, nLength, nLightSetLength, nLightSetPortIndex);
 
-			lightset::Data::SetSourceA(nLightSetPortIndex, &receiveBuffer[nReceiverBufferIndex], nLightSetLength);
+			dmxnode::Data::SetSourceA(nLightSetPortIndex, &receiveBuffer[nReceiverBufferIndex], nLightSetLength);
 			s_nLightsetPortLength[nLightSetPortIndex] = nLightSetLength;
 
 			nReceiverBufferIndex += nLightSetLength;
@@ -285,8 +284,8 @@ void DdpDisplay::HandleData() {
 
 	if ((pPacket->header.flags1 & flags1::PUSH) == flags1::PUSH) {
 		for (uint32_t nLightSetPortIndex = 0; nLightSetPortIndex < ddpdisplay::lightset::MAX_PORTS; nLightSetPortIndex++) {
-			lightset::data_output(m_pLightSet, nLightSetPortIndex);
-			lightset::Data::ClearLength(nLightSetPortIndex);
+			dmxnode::data_output(m_pDmxNodeOutputType, nLightSetPortIndex);
+			dmxnode::Data::ClearLength(nLightSetPortIndex);
 		}
 	}
 }

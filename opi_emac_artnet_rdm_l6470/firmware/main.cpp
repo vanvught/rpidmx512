@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,13 +33,10 @@
 #include "displayudf.h"
 #include "displayudfparams.h"
 
-#include "artnetnode.h"
-#include "artnetparams.h"
-
-#include "artnetmsgconst.h"
+#include "dmxnodenode.h"
+#include "dmxnodemsgconst.h"
 
 #include "rdmdeviceresponder.h"
-#include "factorydefaults.h"
 #include "rdmpersonality.h"
 #include "rdmdeviceparams.h"
 #include "rdmsensorsparams.h"
@@ -52,7 +49,7 @@
 #include "tlc59711dmxparams.h"
 #include "tlc59711dmx.h"
 
-#include "lightsetchain.h"
+#include "dmxnodechain.h"
 
 #include "flashcodeinstall.h"
 #include "configstore.h"
@@ -88,37 +85,25 @@ int main() {
 
 	fw.Print("Art-Net 4 Stepper L6470");
 
-	LightSet *pBoard;
-	uint32_t nMotorsConnected = 0;
-
 	display.TextStatus(SparkFunDmxConst::MSG_INIT, CONSOLE_YELLOW);
 
-	auto *pSparkFunDmx = new SparkFunDmx;
-	assert(pSparkFunDmx != nullptr);
-	pSparkFunDmx->ReadConfigFiles();
+	DmxNodeChain dmxNodeChain;
 
-	nMotorsConnected = pSparkFunDmx->GetMotorsConnected();
+	SparkFunDmx sparkFunDmx;
+	dmxNodeChain.SetSparkfunDmx(&sparkFunDmx);
 
-	pBoard = pSparkFunDmx;
+	sparkFunDmx.ReadConfigFiles();
 
-	bool isLedTypeSet = false;
+	auto nMotorsConnected = sparkFunDmx.GetMotorsConnected();
+	auto isLedTypeSet = false;
 
 	TLC59711DmxParams pwmledparms;
 	pwmledparms.Load();
 
-	if ((isLedTypeSet = pwmledparms.IsSetLedType()) == true) {
-		auto *pTLC59711Dmx = new TLC59711Dmx;
-		assert(pTLC59711Dmx != nullptr);
-		pwmledparms.Set(pTLC59711Dmx);
+	TLC59711Dmx tlc59711Dmx;
 
-		auto *pChain = new LightSetChain;
-		assert(pChain != nullptr);
-
-		pChain->Add(pBoard, 0);
-		pChain->Add(pTLC59711Dmx, 1);
-		pChain->Dump();
-
-		pBoard = pChain;
+	if ((isLedTypeSet = pwmledparms.IsSetLedType())) {
+		dmxNodeChain.SetTLC59711Dmx(&tlc59711Dmx);
 	}
 
 	char aDescription[64];
@@ -128,19 +113,12 @@ int main() {
 		snprintf(aDescription, sizeof(aDescription) - 1, "Sparkfun [%d]", nMotorsConnected);
 	}
 
-	ArtNetNode node;
+	DmxNodeNode dmxNodeNode;
 	
-	ArtNetParams artnetParams;
-	
-	node.SetLongName(aDescription);
+	dmxNodeNode.SetLongName(aDescription);
+	dmxNodeNode.SetOutput(&dmxNodeChain);
 
-	artnetParams.Load();
-	artnetParams.Set();
-
-	node.SetOutput(pBoard);
-	node.SetUniverse(0, lightset::PortDir::OUTPUT, artnetParams.GetUniverse(0));
-
-	RDMPersonality *pRDMPersonalities[1] = { new  RDMPersonality(aDescription, pBoard)};
+	RDMPersonality *pRDMPersonalities[1] = { new  RDMPersonality(aDescription, &dmxNodeChain)};
 
 	ArtNetRdmResponder rdmResponder(pRDMPersonalities, 1);
 
@@ -153,7 +131,6 @@ int main() {
 
 #if defined (CONFIG_RDM_ENABLE_SUBDEVICES)
 	RDMSubDevicesParams rdmSubDevicesParams;
-
 	rdmSubDevicesParams.Load();
 	rdmSubDevicesParams.Set();
 #endif
@@ -166,10 +143,10 @@ int main() {
 
 	rdmResponder.Print();
 
-	node.SetRdmResponder(&rdmResponder);
-	node.Print();
+	dmxNodeNode.SetRdmResponder(&rdmResponder);
+	dmxNodeNode.Print();
 
-	pBoard->Print();
+	dmxNodeChain.Print();
 
 #if defined (NODE_SHOWFILE)
 	ShowFile showFile;
@@ -188,7 +165,7 @@ int main() {
 	display.SetTitle("Art-Net 4 L6470");
 	display.Set(2, displayudf::Labels::IP);
 	display.Set(3, displayudf::Labels::VERSION);
-	display.Set(4, displayudf::Labels::UNIVERSE_PORT_A);
+	display.Set(4, displayudf::Labels::HOSTNAME);
 	display.Set(5, displayudf::Labels::DMX_START_ADDRESS);
 
 	DisplayUdfParams displayUdfParams;
@@ -201,24 +178,24 @@ int main() {
 		display.Printf(7, "%s:%d", pwmledparms.GetType(pwmledparms.GetLedType()), pwmledparms.GetLedCount());
 	}
 
-	RemoteConfig remoteConfig(remoteconfig::Node::ARTNET, remoteconfig::Output::STEPPER, node.GetActiveOutputPorts());
+	RemoteConfig remoteConfig(remoteconfig::NodeType::ARTNET, remoteconfig::Output::STEPPER, dmxNodeNode.GetActiveOutputPorts());
 
 	RemoteConfigParams remoteConfigParams;
 	remoteConfigParams.Load();
 	remoteConfigParams.Set(&remoteConfig);
 
-	display.TextStatus(ArtNetMsgConst::START, CONSOLE_YELLOW);
+	display.TextStatus(DmxNodeMsgConst::START, CONSOLE_YELLOW);
 
-	node.Start();
+	dmxNodeNode.Start();
 
-	display.TextStatus(ArtNetMsgConst::STARTED, CONSOLE_GREEN);
+	display.TextStatus(DmxNodeMsgConst::STARTED, CONSOLE_GREEN);
 
 	hw.WatchdogInit();
 
 	for (;;) {
 		hw.WatchdogFeed();
 		nw.Run();
-		node.Run();
+		dmxNodeNode.Run();
 #if defined (NODE_SHOWFILE)
 		showFile.Run();
 #endif
@@ -226,4 +203,3 @@ int main() {
 		hw.Run();
 	}
 }
-

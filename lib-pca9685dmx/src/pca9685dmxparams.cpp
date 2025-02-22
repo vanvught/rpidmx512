@@ -2,7 +2,7 @@
  * @file pca9685dmxparams.cpp
  *
  */
-/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,8 +33,7 @@
 #include "pca9685.h"
 #include "pca9685dmx.h"
 
-#include "lightset.h"
-#include "lightsetparamsconst.h"
+#include "dmxnodeparamsconst.h"
 
 #include "readconfigfile.h"
 #include "sscan.h"
@@ -65,7 +64,7 @@ PCA9685DmxParams::PCA9685DmxParams() {
 	m_Params.nSetList = 0;
 	m_Params.nAddress = pca9685::I2C_ADDRESS_DEFAULT;
 	m_Params.nChannelCount = pca9685::PWM_CHANNELS;
-	m_Params.nDmxStartAddress = lightset::dmx::START_ADDRESS_DEFAULT;
+	m_Params.nDmxStartAddress = dmxnode::START_ADDRESS_DEFAULT;
 	m_Params.nLedPwmFrequency = pca9685::pwmled::DEFAULT_FREQUENCY;
 	m_Params.nServoLeftUs = pca9685::servo::LEFT_DEFAULT_US;
 	m_Params.nServoCenterUs = pca9685::servo::CENTER_DEFAULT_US;
@@ -151,7 +150,7 @@ void PCA9685DmxParams::callbackFunction(const char *pLine) {
 	uint16_t nValue16;
 
 	if (Sscan::Uint16(pLine, PCA9685DmxParamsConst::CHANNEL_COUNT, nValue16) == Sscan::OK) {
-		if ((nValue16 != 0) && (nValue16 != pca9685::PWM_CHANNELS) && (nValue16 <= lightset::dmx::UNIVERSE_SIZE)) {
+		if ((nValue16 != 0) && (nValue16 != pca9685::PWM_CHANNELS) && (nValue16 <= dmxnode::UNIVERSE_SIZE)) {
 			m_Params.nChannelCount = nValue16;
 			m_Params.nSetList |= pca9685dmxparams::Mask::CHANNEL_COUNT;
 		} else {
@@ -161,12 +160,12 @@ void PCA9685DmxParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	if (Sscan::Uint16(pLine, LightSetParamsConst::DMX_START_ADDRESS, nValue16) == Sscan::OK) {
-		if ((nValue16 != 0) && nValue16 <= (lightset::dmx::UNIVERSE_SIZE) && (nValue16 != lightset::dmx::START_ADDRESS_DEFAULT)) {
+	if (Sscan::Uint16(pLine, DmxNodeParamsConst::DMX_START_ADDRESS, nValue16) == Sscan::OK) {
+		if ((nValue16 != 0) && nValue16 <= (dmxnode::UNIVERSE_SIZE) && (nValue16 != dmxnode::START_ADDRESS_DEFAULT)) {
 			m_Params.nDmxStartAddress = nValue16;
 			m_Params.nSetList |= pca9685dmxparams::Mask::DMX_START_ADDRESS;
 		} else {
-			m_Params.nDmxStartAddress = lightset::dmx::START_ADDRESS_DEFAULT;
+			m_Params.nDmxStartAddress = dmxnode::START_ADDRESS_DEFAULT;
 			m_Params.nSetList &= ~pca9685dmxparams::Mask::DMX_START_ADDRESS;
 		}
 		return;
@@ -262,7 +261,7 @@ void PCA9685DmxParams::Builder(const struct pca9685dmxparams::Params *pParams, c
 
 	builder.Add(PCA9685DmxParamsConst::MODE, pca9685dmxparams::get_mode(isMaskSet(pca9685dmxparams::Mask::MODE)), isMaskSet(pca9685dmxparams::Mask::MODE));
 	builder.Add(PCA9685DmxParamsConst::CHANNEL_COUNT, m_Params.nChannelCount, isMaskSet(pca9685dmxparams::Mask::CHANNEL_COUNT));
-	builder.Add(LightSetParamsConst::DMX_START_ADDRESS, m_Params.nDmxStartAddress, isMaskSet(pca9685dmxparams::Mask::DMX_START_ADDRESS));
+	builder.Add(DmxNodeParamsConst::DMX_START_ADDRESS, m_Params.nDmxStartAddress, isMaskSet(pca9685dmxparams::Mask::DMX_START_ADDRESS));
 	builder.Add(PCA9685DmxParamsConst::USE_8BIT, isMaskSet(pca9685dmxparams::Mask::USE_8BIT), isMaskSet(pca9685dmxparams::Mask::USE_8BIT));
 
 	builder.AddComment("mode=led");
@@ -323,7 +322,7 @@ void PCA9685DmxParams::Dump() {
 	printf(" %s=%s [%d]\n", PCA9685DmxParamsConst::MODE, pca9685dmxparams::get_mode(IsModeSet), IsModeSet);
 
 	printf(" %s=%d\n", PCA9685DmxParamsConst::CHANNEL_COUNT, m_Params.nChannelCount);
-	printf(" %s=%d\n", LightSetParamsConst::DMX_START_ADDRESS, m_Params.nDmxStartAddress);
+	printf(" %s=%d\n", DmxNodeParamsConst::DMX_START_ADDRESS, m_Params.nDmxStartAddress);
 
 	/*
 	 * LED specific

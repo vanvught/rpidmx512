@@ -33,12 +33,10 @@
 #include "console.h"
 #include "display.h"
 
-#include "artnetnode.h"
-#include "artnetparams.h"
+#include "dmxnodenode.h"
 
 #include "pixeldmxconfiguration.h"
 #include "pixeltype.h"
-#include "lightset.h"
 #include "pixeldmxparams.h"
 #include "ws28xxdmx.h"
 
@@ -72,11 +70,6 @@ int main() {
 	ConfigStore configStore;
 #endif
 
-	ArtNetNode node;
-	
-	ArtNetParams artnetParams;
-	artnetParams.Load();
-
 	uint8_t nHwTextLength;
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
 
@@ -99,36 +92,29 @@ int main() {
 	console_status(CONSOLE_YELLOW, NODE_PARMAS);
 	display.TextStatus(NODE_PARMAS);
 
-	artnetParams.Set();
-
-	const auto nStartUniverse = artnetParams.GetUniverse(0);
-
-	node.SetUniverse(0, lightset::PortDir::OUTPUT, nStartUniverse);
-
-	LightSet *pSpi = nullptr;
-
 	PixelDmxConfiguration pixelDmxConfiguration;
 
 	PixelDmxParams pixelDmxParams;
 	pixelDmxParams.Load();
 	pixelDmxParams.Set();
 
-	auto *pWS28xxDmx = new WS28xxDmx();
-	assert(pWS28xxDmx != nullptr);
-	pSpi = pWS28xxDmx;
+	WS28xxDmx pixelDmx;
 
 	display.Printf(7, "%s:%d G%d", pixel::pixel_get_type(pixelDmxConfiguration.GetType()), pixelDmxConfiguration.GetCount(), pixelDmxConfiguration.GetGroupingCount());
 
 	const auto nUniverses = pixelDmxConfiguration.GetUniverses();
+	bool isPixelUniverseSet;
+	const auto nStartUniverse = pixelDmxParams.GetStartUniversePort(0, isPixelUniverseSet);
+
+	DmxNodeNode dmxNodeNode;
 
 	for (uint32_t nPortIndex = 1; nPortIndex < nUniverses; nPortIndex++) {
-		node.SetUniverse(nPortIndex, lightset::PortDir::OUTPUT, static_cast<uint8_t>(nStartUniverse + nPortIndex));
+		dmxNodeNode.SetUniverse(nPortIndex, dmxnode::PortDirection::OUTPUT, static_cast<uint8_t>(nStartUniverse + nPortIndex));
 	}
 
-	node.SetOutput(pSpi);
-	node.Print();
-
-	pSpi->Print();
+	dmxNodeNode.SetOutput(&pixelDmx);
+	dmxNodeNode.Print();
+	pixelDmx.Print();
 
 	for (uint32_t i = 0; i < 7; i++) {
 		display.ClearLine(i);
@@ -154,12 +140,12 @@ int main() {
 
 	display.Printf(4, "N: " IPSTR "", IP2STR(Network::Get()->GetNetmask()));
 	display.Printf(5, "U: %d", nStartUniverse);
-	display.Printf(6, "Active ports: %d", node.GetActiveOutputPorts());
+	display.Printf(6, "Active ports: %d", dmxNodeNode.GetActiveOutputPorts());
 
 	console_status(CONSOLE_YELLOW, START_NODE);
 	display.TextStatus(START_NODE);
 
-	node.Start();
+	dmxNodeNode.Start();
 
 	console_status(CONSOLE_GREEN, NODE_STARTED);
 	display.TextStatus(NODE_STARTED);
@@ -168,7 +154,7 @@ int main() {
 
 	for (;;) {
 		hw.WatchdogFeed();
-		node.Run();
+		dmxNodeNode.Run();
 		hw.Run();
 	}
 }

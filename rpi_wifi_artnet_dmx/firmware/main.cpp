@@ -33,8 +33,7 @@
 #include "console.h"
 #include "display.h"
 
-#include "artnetnode.h"
-#include "artnetparams.h"
+#include "dmxnodenode.h"
 
 #include "dmx.h"
 #include "dmxparams.h"
@@ -71,11 +70,7 @@ int main() {
 	FlashCodeInstall spiFlashInstall;
 	ConfigStore configStore;
 #endif
-
-	ArtNetNode node;
-	
-	ArtNetParams artnetParams;
-	artnetParams.Load();
+	DmxNodeNode dmxNodeNode;
 
 	uint8_t nHwTextLength;
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
@@ -85,7 +80,7 @@ int main() {
 	console_puts("DMX Output");
 	console_set_fg_color(CONSOLE_WHITE);
 	console_puts(" / ");
-	console_set_fg_color(artnetParams.IsRdm() ? CONSOLE_GREEN : CONSOLE_WHITE);
+	console_set_fg_color(dmxNodeNode.GetRdm() ? CONSOLE_GREEN : CONSOLE_WHITE);
 	console_puts("RDM");
 	console_set_fg_color(CONSOLE_WHITE);
 #ifdef H3
@@ -103,12 +98,6 @@ int main() {
 	console_status(CONSOLE_YELLOW, NODE_PARMAS);
 	display.TextStatus(NODE_PARMAS);
 
-	artnetParams.Set();
-
-	const auto nStartUniverse = artnetParams.GetUniverse(0);
-
-	node.SetUniverse(0, lightset::PortDir::OUTPUT, nStartUniverse);
-
 	Dmx	dmx;
 	DmxSend dmxSend;
 
@@ -116,7 +105,7 @@ int main() {
 	dmxparams.Load();
 	dmxparams.Set(&dmx);
 
-	node.SetOutput(&dmxSend);
+	dmxNodeNode.SetOutput(&dmxSend);
 
 	ArtNetRdmController artNetRdmController;
 
@@ -127,9 +116,9 @@ int main() {
 	artNetRdmController.Init();
 	artNetRdmController.Print();
 
-	node.SetRdmController(&artNetRdmController);
+	dmxNodeNode.SetRdmController(&artNetRdmController);
 
-	node.Print();
+	dmxNodeNode.Print();
 	dmxSend.Print();
 
 	for (uint32_t i = 0; i < 7; i++) {
@@ -138,7 +127,7 @@ int main() {
 
 	display.Write(1, "WiFi Art-Net 3 ");
 
-	if (artnetParams.IsRdm()) {
+	if (dmxNodeNode.GetRdm()) {
 		display.PutString("RDM");
 	} else {
 		display.PutString("DMX");
@@ -161,13 +150,15 @@ int main() {
 	}
 
 	display.Printf(4, "N: " IPSTR "", IP2STR(Network::Get()->GetNetmask()));
-	display.Printf(5, "U: %d", nStartUniverse);
-	display.Printf(6, "Active ports: %d", node.GetActiveOutputPorts());
+	uint16_t nUniverse = 0;
+	dmxNodeNode.GetUniverse(0, nUniverse, dmxnode::PortDirection::OUTPUT);
+	display.Printf(5, "U: %d", nUniverse);
+	display.Printf(6, "Active ports: %d", dmxNodeNode.GetActiveOutputPorts());
 
 	console_status(CONSOLE_YELLOW, START_NODE);
 	display.TextStatus(START_NODE);
 
-	node.Start();
+	dmxNodeNode.Start();
 
 	console_status(CONSOLE_GREEN, NODE_STARTED);
 	display.TextStatus(NODE_STARTED);
@@ -176,7 +167,7 @@ int main() {
 
 	for (;;) {
 		hw.WatchdogFeed();
-		node.Run();
+		dmxNodeNode.Run();
 		hw.Run();
 	}
 }

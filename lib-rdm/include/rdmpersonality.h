@@ -2,7 +2,7 @@
  * @file rdmpersonality.h
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,10 +29,9 @@
 #include <cstdint>
 #include <cassert>
 
-#include "lightset.h"
+#include "dmxnode_outputtype.h"
 
 #include "debug.h"
-
 
 namespace rdm::personality {
 static constexpr auto DESCRIPTION_MAX_LENGTH = 32U;
@@ -41,14 +40,14 @@ static constexpr auto DESCRIPTION_MAX_LENGTH = 32U;
 
 class RDMPersonality {
 public:
-	RDMPersonality(const char* pDescription, LightSet *pLightSet) {
+	RDMPersonality(const char *pDescription, DmxNodeOutputType *pDmxNodeOutputType) {
 		assert(pDescription != nullptr);
 
-		if (pLightSet == nullptr) {
+		if (pDmxNodeOutputType == nullptr) {
 			m_nSlots = 0;
 		} else {
-			m_nSlots = pLightSet->GetDmxFootprint();
-			m_pLightSet = pLightSet;
+			m_nSlots = pDmxNodeOutputType->GetDmxFootprint();
+			m_pDmxNodeOutputType = pDmxNodeOutputType;
 		}
 
 		SetDescription(pDescription);
@@ -67,8 +66,8 @@ public:
 		return m_nSlots;
 	}
 
-	LightSet *GetLightSet() const {
-		return m_pLightSet;
+	DmxNodeOutputType *GetDmxNodeOutputType() const {
+		return m_pDmxNodeOutputType;
 	}
 
 	void SetDescription(const char *pDescription) {
@@ -113,7 +112,7 @@ public:
 
 private:
 	uint16_t m_nSlots;
-	LightSet *m_pLightSet { nullptr };
+	DmxNodeOutputType *m_pDmxNodeOutputType { nullptr };
 	char m_aDescription[rdm::personality::DESCRIPTION_MAX_LENGTH];
 	uint32_t m_nDescriptionLength { 0 };
 };

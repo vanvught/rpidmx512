@@ -2,7 +2,7 @@
  * @file artnet.cpp
  *
  */
-/* Copyright (C) 2022-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,8 +25,8 @@
 
 #include <cstdint>
 
-#include "lightset.h"
 #include "artnet.h"
+#include "dmxnode.h"
 
 #include "debug.h"
 
@@ -51,12 +51,12 @@ void display_subnet_switch([[maybe_unused]]  uint8_t nAddress) {
 	DEBUG_EXIT
 }
 
-void display_merge_mode([[maybe_unused]]  uint32_t nPortIndex, [[maybe_unused]]  lightset::MergeMode mergeMode) {
+void display_merge_mode([[maybe_unused]]  uint32_t nPortIndex, [[maybe_unused]]  dmxnode::MergeMode mergeMode) {
 	DEBUG_ENTRY
 	DEBUG_EXIT
 }
 
-void display_outputstyle([[maybe_unused]] const uint32_t nPortIndex, [[maybe_unused]] const lightset::OutputStyle outputStyle) {
+void display_outputstyle([[maybe_unused]] const uint32_t nPortIndex, [[maybe_unused]] const dmxnode::OutputStyle outputStyle) {
 	DEBUG_ENTRY
 	DEBUG_EXIT
 }

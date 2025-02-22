@@ -53,8 +53,8 @@ void record(const struct artnet::ArtSync *pArtSync, const uint32_t nMillis);
 }  // namespace showfile
 #endif
 
-#include "lightset.h"
-#include "lightsetdata.h"
+#include "dmxnode.h"
+#include "dmxnodedata.h"
 
 #include "hardware.h"
 #include "network.h"
@@ -103,7 +103,7 @@ ArtNetNode::ArtNetNode() {
 	m_Node.IPAddressTimeCode = Network::Get()->GetBroadcastIp();
 
 	for (auto& port : m_Node.Port) {
-		port.direction = lightset::PortDir::DISABLE;
+		port.direction = dmxnode::PortDirection::DISABLE;
 	}
 
 	for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
@@ -193,7 +193,7 @@ void ArtNetNode::Start() {
 #if defined (ARTNET_HAVE_DMXIN)
 	for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
 		if ((m_Node.Port[nPortIndex].protocol == artnet::PortProtocol::ARTNET)
-		 && (m_Node.Port[nPortIndex].direction == lightset::PortDir::INPUT)) {
+		 && (m_Node.Port[nPortIndex].direction == dmxnode::PortDirection::INPUT)) {
 			Dmx::Get()->SetPortDirection(nPortIndex, dmx::PortDirection::INP, true);
 		}
 	}
@@ -205,9 +205,9 @@ void ArtNetNode::Start() {
 	/*
 	 * Make sure that the supported LightSet OutputSyle is correctly set
 	 */
-	if (m_pLightSet != nullptr) {
+	if (m_pDmxNodeOutputType != nullptr) {
 		for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
-			if (m_Node.Port[nPortIndex].direction == lightset::PortDir::OUTPUT) {
+			if (m_Node.Port[nPortIndex].direction == dmxnode::PortDirection::OUTPUT) {
 				SetOutputStyle(nPortIndex, GetOutputStyle(nPortIndex));
 			}
 		}
@@ -219,7 +219,7 @@ void ArtNetNode::Start() {
 		m_State.rdm.IsDiscoveryRunning = true;
 
 		for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
-			if (m_Node.Port[nPortIndex].direction == lightset::PortDir::INPUT) {
+			if (m_Node.Port[nPortIndex].direction == dmxnode::PortDirection::INPUT) {
 				SendTodRequest(nPortIndex);
 			}
 		}
@@ -247,17 +247,17 @@ void ArtNetNode::Stop() {
 
 	for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
 		if (m_Node.Port[nPortIndex].protocol == artnet::PortProtocol::ARTNET) {
-			if (m_pLightSet != nullptr) {
-				m_pLightSet->Stop(nPortIndex);
+			if (m_pDmxNodeOutputType != nullptr) {
+				m_pDmxNodeOutputType->Stop(nPortIndex);
 			}
-			lightset::Data::ClearLength(nPortIndex);
+			dmxnode::Data::ClearLength(nPortIndex);
 			m_OutputPort[nPortIndex].IsTransmitting = false;
 		}
 	}
 
 #if defined (ARTNET_HAVE_DMXIN)
 	for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
-		if (m_Node.Port[nPortIndex].direction == lightset::PortDir::INPUT) {
+		if (m_Node.Port[nPortIndex].direction == dmxnode::PortDirection::INPUT) {
 			Dmx::Get()->SetPortDirection(nPortIndex, dmx::PortDirection::INP, false);
 		}
 	}
@@ -278,7 +278,7 @@ void ArtNetNode::SetShortName(const uint32_t nPortIndex, const char *pShortName)
 	assert(nPortIndex < artnetnode::MAX_PORTS);
 
 	if (pShortName == nullptr) {
-		lightset::node::get_short_name_default(nPortIndex, m_Node.Port[nPortIndex].ShortName);
+		dmxnode::get_short_name_default(nPortIndex, m_Node.Port[nPortIndex].ShortName);
 	} else {
 		strncpy(m_Node.Port[nPortIndex].ShortName, pShortName, artnet::SHORT_NAME_LENGTH - 1);
 	}
@@ -335,19 +335,19 @@ void ArtNetNode::SetLongName(const char *pLongName) {
 }
 
 #if defined (OUTPUT_HAVE_STYLESWITCH)
-void ArtNetNode::SetOutputStyle(const uint32_t nPortIndex, lightset::OutputStyle outputStyle) {
+void ArtNetNode::SetOutputStyle(const uint32_t nPortIndex, dmxnode::OutputStyle outputStyle) {
 	assert(nPortIndex < artnetnode::MAX_PORTS);
 
 	if ((outputStyle == GetOutputStyle(nPortIndex)) && (m_State.status == artnet::Status::ON)) {
 		return;
 	}
 
-	if (m_pLightSet != nullptr) {
-		m_pLightSet->SetOutputStyle(nPortIndex, outputStyle);
-		outputStyle = m_pLightSet->GetOutputStyle(nPortIndex);
+	if (m_pDmxNodeOutputType != nullptr) {
+		m_pDmxNodeOutputType->SetOutputStyle(nPortIndex, outputStyle);
+		outputStyle = m_pDmxNodeOutputType->GetOutputStyle(nPortIndex);
 	}
 
-	if (outputStyle == lightset::OutputStyle::CONSTANT) {
+	if (outputStyle == dmxnode::OutputStyle::CONSTANT) {
 		m_OutputPort[nPortIndex].GoodOutputB |= artnet::GoodOutputB::STYLE_CONSTANT;
 	} else {
 		m_OutputPort[nPortIndex].GoodOutputB &= static_cast<uint8_t>(~artnet::GoodOutputB::STYLE_CONSTANT);
@@ -361,11 +361,11 @@ void ArtNetNode::SetOutputStyle(const uint32_t nPortIndex, lightset::OutputStyle
 	}
 }
 
-lightset::OutputStyle ArtNetNode::GetOutputStyle(const uint32_t nPortIndex) const {
+dmxnode::OutputStyle ArtNetNode::GetOutputStyle(const uint32_t nPortIndex) const {
 	assert(nPortIndex < artnetnode::MAX_PORTS);
 
 	const auto isStyleConstant = (m_OutputPort[nPortIndex].GoodOutputB & artnet::GoodOutputB::STYLE_CONSTANT) == artnet::GoodOutputB::STYLE_CONSTANT;
-	return isStyleConstant ? lightset::OutputStyle::CONSTANT : lightset::OutputStyle::DELTA;
+	return isStyleConstant ? dmxnode::OutputStyle::CONSTANT : dmxnode::OutputStyle::DELTA;
 }
 #endif
 
@@ -399,10 +399,10 @@ void ArtNetNode::SetNetworkDataLossCondition() {
 	case artnet::Status3::NETWORKLOSS_LAST_STATE:
 		break;
 	case artnet::Status3::NETWORKLOSS_OFF_STATE:
-		m_pLightSet->Blackout(true);
+		m_pDmxNodeOutputType->Blackout(true);
 		break;
 	case artnet::Status3::NETWORKLOSS_ON_STATE:
-		m_pLightSet->FullOn();
+		m_pDmxNodeOutputType->FullOn();
 		break;
 	case artnet::Status3::NETWORKLOSS_PLAYBACK:
 #if defined(ARTNET_HAVE_FAILSAFE_RECORD)
@@ -418,7 +418,7 @@ void ArtNetNode::SetNetworkDataLossCondition() {
 	for (uint32_t i = 0; i < artnetnode::MAX_PORTS; i++) {
 		m_OutputPort[i].SourceA.nIp = 0;
 		m_OutputPort[i].SourceB.nIp = 0;
-		lightset::Data::ClearLength(i);
+		dmxnode::Data::ClearLength(i);
 	}
 
 #if defined (ARTNET_HAVE_DMXIN)
@@ -458,7 +458,7 @@ void ArtNetNode::Process(const uint32_t nBytesReceived) {
 		}
 
 		if (nDeltaMillis >= (1U * 1000U)) {
-			m_State.nReceivingDmx &= static_cast<uint8_t>(~(1U << static_cast<uint8_t>(lightset::PortDir::OUTPUT)));
+			m_State.nReceivingDmx &= static_cast<uint8_t>(~(1U << static_cast<uint8_t>(dmxnode::PortDirection::OUTPUT)));
 		}
 
 #if defined (ARTNET_HAVE_DMXIN)
@@ -471,7 +471,7 @@ void ArtNetNode::Process(const uint32_t nBytesReceived) {
 		}
 #endif
 
-#if (LIGHTSET_PORTS > 0)
+#if (DMXNODE_PORTS > 0)
 		if ((((m_ArtPollReply.Status1 & artnet::Status1::INDICATOR_MASK) == artnet::Status1::INDICATOR_NORMAL_MODE)) && (Hardware::Get()->GetMode() != hardware::ledblink::Mode::FAST)) {
 #if (ARTNET_VERSION >= 4)
 			if (m_State.nReceivingDmx != 0) {
@@ -510,9 +510,9 @@ void ArtNetNode::Process(const uint32_t nBytesReceived) {
 	}
 
 	switch (get_op_code(nBytesReceived, m_pReceiveBuffer)) {
-#if (LIGHTSET_PORTS > 0)		
+#if (DMXNODE_PORTS > 0)		
 	case artnet::OpCodes::OP_DMX:
-		if (m_pLightSet != nullptr) {
+		if (m_pDmxNodeOutputType != nullptr) {
 			HandleDmx();
 			m_State.ArtDmxIpAddress = m_nIpAddressFrom;
 #if defined (ARTNET_SHOWFILE)
@@ -523,7 +523,7 @@ void ArtNetNode::Process(const uint32_t nBytesReceived) {
 		}
 		break;
 	case artnet::OpCodes::OP_SYNC:
-		if (m_pLightSet != nullptr) {
+		if (m_pDmxNodeOutputType != nullptr) {
 			/*
 			 * In order to allow for multiple controllers on a network,
 			 * a node shall compare the source IP of the ArtSync to the source IP
@@ -623,7 +623,7 @@ void ArtNetNode::Process(const uint32_t nBytesReceived) {
 	}
 #endif
 
-#if (LIGHTSET_PORTS > 0)
+#if (DMXNODE_PORTS > 0)
 	if ((((m_ArtPollReply.Status1 & artnet::Status1::INDICATOR_MASK) == artnet::Status1::INDICATOR_NORMAL_MODE)) && (Hardware::Get()->GetMode() != hardware::ledblink::Mode::FAST)) {
 #if (ARTNET_VERSION >= 4)
 		if (m_State.nReceivingDmx != 0) {

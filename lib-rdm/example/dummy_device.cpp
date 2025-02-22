@@ -43,7 +43,7 @@ namespace rdm {
 namespace device {
 namespace responder {
 
-void factorydefaults() {
+void set_factory_defaults() {
 
 }
 

@@ -33,7 +33,7 @@
 
 #include "debug.h"
 
-static constexpr auto MAX_PORTS = LIGHTSET_PORTS > 4U ? 4U : LIGHTSET_PORTS;
+static constexpr auto MAX_PORTS = DMXNODE_PORTS > 4U ? 4U : DMXNODE_PORTS;
 
 void DisplayUdf::ShowNode() {
 	DEBUG_ENTRY

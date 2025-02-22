@@ -2,7 +2,7 @@
  * @file pixeldmxparamsrdm.h
  *
  */
-/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,10 +29,10 @@
 #include <cstdint>
 #include <cassert>
 
-#include "lightset.h"
+#include "dmxnode.h"
+#include "dmxnodeoutputrdmpixel.h"
 
 #include "debug.h"
-
 
 namespace pixeldmx::paramsdmx {
 enum class SlotInfo {
@@ -42,43 +42,23 @@ static constexpr auto DMX_FOOTPRINT = static_cast<uint16_t>(SlotInfo::LAST);
 } // namespace pixeldmx::paramsdmx
 
 
-class PixelDmxParamsRdm final: public LightSet {
+class PixelDmxParamsRdm final : public DmxNodeOutputRdmPixel {
 public:
 	PixelDmxParamsRdm() {
 		DEBUG_ENTRY
 		DEBUG_EXIT
 	}
 
-	void Start([[maybe_unused]] uint32_t nPortIndex) override {
-		DEBUG_ENTRY
-		assert(nPortIndex == 0);
-		DEBUG_EXIT
-	}
-
-	void Stop([[maybe_unused]] uint32_t nPortIndex) override {
-		DEBUG_ENTRY
-		assert(nPortIndex == 0);
-		DEBUG_EXIT
-	}
+	void Start([[maybe_unused]] const uint32_t nPortIndex) {}
+	void Stop([[maybe_unused]] const uint32_t nPortIndex) {}
 
 	void SetData(const uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate = true) override;
-
-	void Sync([[maybe_unused]] const uint32_t nPortIndex) override {}
-	void Sync() override {}
-
-	bool SetDmxStartAddress([[maybe_unused]] uint16_t nDmxStartAddress) override {
-		return false;
-	}
-
-	uint16_t GetDmxStartAddress() override {
-		return 1;
-	}
 
 	uint16_t GetDmxFootprint() override {
 		return pixeldmx::paramsdmx::DMX_FOOTPRINT;
 	}
 
-	bool GetSlotInfo(uint16_t nSlotOffset, lightset::SlotInfo &slotInfo) override {
+	bool GetSlotInfo(uint16_t nSlotOffset, dmxnode::SlotInfo &slotInfo) override {
 		if (nSlotOffset >= pixeldmx::paramsdmx::DMX_FOOTPRINT) {
 			return false;
 		}

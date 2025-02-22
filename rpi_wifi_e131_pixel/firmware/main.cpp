@@ -34,13 +34,12 @@
 #include "console.h"
 #include "display.h"
 
-#include "e131bridge.h"
-#include "e131params.h"
+#include "dmxnodenode.h"
+#include "dmxnodeparams.h"
 
 #include "ws28xxdmx.h"
 #include "pixeldmxconfiguration.h"
 #include "pixeltype.h"
-#include "lightset.h"
 #include "pixeldmxparams.h"
 
 #if defined(ORANGE_PI)
@@ -70,11 +69,6 @@ int main() {
 	ConfigStore configStore;
 #endif
 
-	E131Bridge bridge;
-
-	E131Params e131params;
-	e131params.Load();
-
 	uint8_t nHwTextLength;
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
 
@@ -94,39 +88,28 @@ int main() {
 	console_status(CONSOLE_YELLOW, BRIDGE_PARMAS);
 	display.TextStatus(BRIDGE_PARMAS);
 
-	e131params.Set();
-
-	bool IsSet;
-	const auto nStartUniverse = e131params.GetUniverse(0, IsSet);
-
-	bridge.SetUniverse(0, lightset::PortDir::OUTPUT, nStartUniverse);
-
-	LightSet *pSpi = nullptr;
-
 	PixelDmxConfiguration pixelDmxConfiguration;
 
 	PixelDmxParams pixelDmxParams;
 	pixelDmxParams.Load();
 	pixelDmxParams.Set();
 
-	auto *pWS28xxDmx = new WS28xxDmx();
-	assert(pWS28xxDmx != nullptr);
-	pSpi = pWS28xxDmx;
+	WS28xxDmx pixelDmx;
 
 	display.Printf(7, "%s:%d G%d", pixel::pixel_get_type(pixelDmxConfiguration.GetType()), pixelDmxConfiguration.GetCount(), pixelDmxConfiguration.GetGroupingCount());
+
+	DmxNodeNode dmxNodeNode;
 
 	const auto nUniverses = pixelDmxConfiguration.GetUniverses();
 
 	for (uint32_t nPortIndex = 1; nPortIndex < nUniverses; nPortIndex++) {
-		bridge.SetUniverse(nPortIndex, lightset::PortDir::OUTPUT, static_cast<uint16_t>(nStartUniverse + nPortIndex));
+		dmxNodeNode.SetUniverse(nPortIndex, dmxnode::PortDirection::OUTPUT, static_cast<uint16_t>(nStartUniverse + nPortIndex));
 	}
 
-	bridge.SetOutput(pSpi);
+	dmxNodeNode.SetOutput(&pixelDmx);
+	dmxNodeNode.Print();
 
-
-	bridge.Print();
-
-	pSpi->Print();
+	pixelDmx.Print();
 
 	for (uint32_t i = 0; i < 7 ; i++) {
 		display.ClearLine(i);
@@ -151,13 +134,15 @@ int main() {
 	}
 
 	display.Printf(4, "N: " IPSTR "", IP2STR(Network::Get()->GetNetmask()));
-	display.Printf(5, "U: %d", nStartUniverse);
-	display.Printf(6, "Active ports: %d", bridge.GetActiveOutputPorts());
+	uint16_t nUniverse = 0;
+	dmxNodeNode.GetUniverse(0, nUniverse, dmxnode::PortDirection::OUTPUT);
+	display.Printf(5, "U: %d", nUniverse);
+	display.Printf(6, "Active ports: %d", dmxNodeNode.GetActiveOutputPorts());
 
 	console_status(CONSOLE_YELLOW, START_BRIDGE);
 	display.TextStatus(START_BRIDGE);
 
-	bridge.Start();
+	dmxNodeNode.Start();
 
 	console_status(CONSOLE_GREEN, BRIDGE_STARTED);
 	display.TextStatus(BRIDGE_STARTED);
@@ -166,7 +151,7 @@ int main() {
 
 	for (;;) {
 		hw.WatchdogFeed();
-		bridge.Run();
+		dmxNodeNode.Run();
 		hw.Run();
 	}
 }

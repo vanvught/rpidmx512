@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,26 +28,27 @@
 #include "hardware.h"
 #include "network.h"
 
-
-#include "net/apps/mdns.h"
-
 #include "displayudf.h"
 #include "displayudfparams.h"
 #include "displayhandler.h"
 
-#include "e131bridge.h"
-#include "e131params.h"
-#include "e131msgconst.h"
+#include "dmxnodenode.h"
+#include "dmxnodemsgconst.h"
+
 #include "e131sync.h"
 
 #include "artnetcontroller.h"
 #include "artnetoutput.h"
 
-#include "rdmdeviceparams.h"
-#include "rdmnetdevice.h"
-#include "rdmpersonality.h"
-#include "rdm_e120.h"
-#include "factorydefaults.h"
+#include "dmxnode.h"
+
+#if defined (NODE_RDMNET_LLRP_ONLY)
+# include "rdmdeviceparams.h"
+# include "rdmnetdevice.h"
+# include "rdmnetconst.h"
+# include "rdmpersonality.h"
+# include "rdm_e120.h"
+#endif
 
 #include "remoteconfig.h"
 #include "remoteconfigparams.h"
@@ -74,56 +75,21 @@ int main() {
 
 	fw.Print("sACN E1.31 -> Art-Net");
 
-	E131Bridge bridge;
+	DmxNodeNode dmxNodeNode;
 
-	E131Params e131params;
-	e131params.Load();
-	e131params.Set();
-
-	bridge.SetDisableSynchronize(true);
+	dmxNodeNode.SetDisableSynchronize(true);
 
 	ArtNetController controller;
 	ArtNetOutput artnetOutput;
 
-	bridge.SetOutput(&artnetOutput);
-	bridge.SetE131Sync(&artnetOutput);
-	
-	bool bIsSetIndividual = false;
-	uint16_t nUniverse[e131params::MAX_PORTS];
+	dmxNodeNode.SetOutput(&artnetOutput);
+	dmxNodeNode.SetE131Sync(&artnetOutput);
+	dmxNodeNode.Print();
 
-	for (uint32_t nPortIndex = 0; nPortIndex < e131params::MAX_PORTS; nPortIndex++) {
-		bool bIsSet;
-		nUniverse[nPortIndex] = e131params.GetUniverse(nPortIndex, bIsSet);
-
-		for (uint32_t j = 0; j < nPortIndex; j++) {
-			if (nUniverse[nPortIndex] == nUniverse[j]) {
-				bIsSet = false;
-				break;
-			}
-		}
-
-		if (bIsSet) {
-			bridge.SetUniverse(nPortIndex, lightset::PortDir::OUTPUT, nUniverse[nPortIndex]);
-			bIsSetIndividual = true;
-		}
-	}
-
-	if (!bIsSetIndividual) {
-		for (uint32_t nPortIndex = 0; nPortIndex < e131bridge::MAX_PORTS; nPortIndex++) {
-			bridge.SetUniverse(nPortIndex, lightset::PortDir::OUTPUT, static_cast<uint16_t>(nPortIndex + 1));
-		}
-	}
-	
-	bridge.Print();
-	artnetOutput.Print();
 	controller.Print();
 
-	display.SetTitle("sACN E1.31 Art-Net %d", bridge.GetActiveOutputPorts());
+	display.SetTitle("sACN E1.31 Art-Net %d", dmxNodeNode.GetActiveOutputPorts());
 	display.Set(2, displayudf::Labels::IP);
-	display.Set(3, displayudf::Labels::UNIVERSE_PORT_A);
-	display.Set(4, displayudf::Labels::UNIVERSE_PORT_B);
-	display.Set(5, displayudf::Labels::UNIVERSE_PORT_C);
-	display.Set(6, displayudf::Labels::UNIVERSE_PORT_D);
 
 	DisplayUdfParams displayUdfParams;
 	displayUdfParams.Load();
@@ -131,12 +97,13 @@ int main() {
 
 	display.Show();
 
-	RemoteConfig remoteConfig(remoteconfig::Node::E131, remoteconfig::Output::ARTNET, bridge.GetActiveOutputPorts());
+	RemoteConfig remoteConfig(remoteconfig::NodeType::E131, remoteconfig::Output::ARTNET, dmxNodeNode.GetActiveOutputPorts());
 
 	RemoteConfigParams remoteConfigParams;
 	remoteConfigParams.Load();
 	remoteConfigParams.Set(&remoteConfig);
 
+#if defined (NODE_RDMNET_LLRP_ONLY)
 	RDMPersonality *pPersonalities[1] = { new RDMPersonality("RDMNet LLRP device only", static_cast<uint16_t>(0)) };
 	RDMNetDevice llrpOnlyDevice(pPersonalities, 1);
 
@@ -152,20 +119,21 @@ int main() {
 	rdmDeviceParams.Set(&llrpOnlyDevice);
 
 	llrpOnlyDevice.Print();
+#endif
 
-	display.TextStatus(E131MsgConst::START, CONSOLE_YELLOW);
+	display.TextStatus(DmxNodeMsgConst::START, CONSOLE_YELLOW);
 
-	bridge.Start();
+	dmxNodeNode.Start();
 	controller.Start();
 
-	display.TextStatus(E131MsgConst::STARTED, CONSOLE_GREEN);
+	display.TextStatus(DmxNodeMsgConst::STARTED, CONSOLE_GREEN);
 
 	hw.WatchdogInit();
 
 	for (;;) {
 		hw.WatchdogFeed();
 		nw.Run();
-		bridge.Run();
+		dmxNodeNode.Run();
 		controller.Run();
 		display.Run();
 		hw.Run();

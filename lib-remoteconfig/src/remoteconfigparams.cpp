@@ -2,7 +2,7 @@
  * @file remoteconfigparams.cpp
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
+#if defined (DEBUG_REMOTECONFIG)
+# undef NDEBUG
+#endif
 
 #include <cstdint>
 #include <cstring>
@@ -63,16 +67,14 @@ RemoteConfigParams::RemoteConfigParams() {
 void RemoteConfigParams::Load() {
 	DEBUG_ENTRY
 
-	m_Params.nSetList = 0;
-
 #if !defined(DISABLE_FS)
 	ReadConfigFile configfile(RemoteConfigParams::StaticCallbackFunction, this);
 
 	if (configfile.Read(RemoteConfigConst::PARAMS_FILE_NAME)) {
-		RemoteConfigParamsStore::Update(&m_Params);
+		remoteconfigparams::store::Update(&m_Params);
 	} else
 #endif
-		RemoteConfigParamsStore::Copy(&m_Params);
+		remoteconfigparams::store::Copy(&m_Params);
 
 #ifndef NDEBUG
 	Dump();
@@ -86,13 +88,11 @@ void RemoteConfigParams::Load(const char *pBuffer, uint32_t nLength) {
 	assert(pBuffer != nullptr);
 	assert(nLength != 0);
 
-	m_Params.nSetList = 0;
-
 	ReadConfigFile config(RemoteConfigParams::StaticCallbackFunction, this);
 
 	config.Read(pBuffer, nLength);
 
-	RemoteConfigParamsStore::Update(&m_Params);
+	remoteconfigparams::store::Update(&m_Params);
 
 #ifndef NDEBUG
 	Dump();
@@ -111,17 +111,15 @@ void RemoteConfigParams::SetBool(const uint8_t nValue, const uint32_t nMask) {
 void RemoteConfigParams::callbackFunction(const char *pLine) {
 	assert(pLine != nullptr);
 
-    // Helper lambda for setting masks
-    auto trySetMask = [&](const char* param, const uint32_t mask) {
+    auto trySetMask = [&](const char *pParam, const uint32_t nMask) {
         uint8_t nValue8;
-        if (Sscan::Uint8(pLine, param, nValue8) == Sscan::OK) {
-            SetBool(nValue8, mask);
+        if (Sscan::Uint8(pLine, pParam, nValue8) == Sscan::OK) {
+            SetBool(nValue8, nMask);
             return true;
         }
         return false;
     };
 
-    // Loop through parameters and masks
     for (const auto& paramMask : paramMasks) {
         if (trySetMask(paramMask.pParam, paramMask.nMask)) {
             return;
@@ -145,13 +143,12 @@ void RemoteConfigParams::Builder(const struct remoteconfigparams::Params *pRemot
 	if (pRemoteConfigParams != nullptr) {
 		memcpy(&m_Params, pRemoteConfigParams, sizeof(struct remoteconfigparams::Params));
 	} else {
-		RemoteConfigParamsStore::Copy(&m_Params);
+		remoteconfigparams::store::Copy(&m_Params);
 	}
 
 	PropertiesBuilder builder(RemoteConfigConst::PARAMS_FILE_NAME, pBuffer, nLength);
 
-    // Loop through parameters and masks for building properties
-    for (const auto& paramMask : paramMasks) {
+	for (const auto& paramMask : paramMasks) {
         builder.Add(paramMask.pParam, isMaskSet(paramMask.nMask));
     }
 
@@ -191,5 +188,5 @@ void RemoteConfigParams::Dump() {
     	printf(" %s=%d\n", paramMask.pParam, isMaskSet(paramMask.nMask));
     }
 
-	printf(" %s=%s\n", RemoteConfigConst::PARAMS_DISPLAY_NAME, m_Params.aDisplayName);
+	printf(" %s=[%s]\n", RemoteConfigConst::PARAMS_DISPLAY_NAME, m_Params.aDisplayName);
 }

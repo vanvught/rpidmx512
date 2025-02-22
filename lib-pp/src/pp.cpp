@@ -42,8 +42,8 @@
 #include "network.h"
 #include "hardware.h"
 
-#include "lightsetdata.h"
-#include "lightset_data.h"
+#include "dmxnodedata.h"
+#include "dmxnode_data.h"
 
 #include "debug.h"
 
@@ -85,7 +85,7 @@ PixelPusher::PixelPusher(): m_nMillis(Hardware::Get()->Millis()) {
 
 void PixelPusher::Start() {
 	DEBUG_ENTRY
-	assert(m_pLightSet != nullptr);
+	assert(m_pDmxNodeOutputType != nullptr);
 
 	m_nHandleDiscovery = Network::Get()->Begin(pp::UDP_PORT_DISCOVERY);
 	assert(m_nHandleDiscovery != -1);
@@ -170,14 +170,14 @@ void PixelPusher::Run() {
 		const auto nPortIndexStart = pData[0] * m_nUniverses;
 		uint32_t nPortIndex;
 		for (nPortIndex = nPortIndexStart; nPortIndex < (nPortIndexStart + m_nUniverses) && (m_nBytesReceived > 0); nPortIndex++) {
-			const auto nLightSetLength = std::min(std::min(m_nBytesReceived, pp::configuration::UNIVERSE_MAX_LENGTH), m_nStripDataLength - 1);
+			const auto nDmxNodeOutputTypeLength = std::min(std::min(m_nBytesReceived, pp::configuration::UNIVERSE_MAX_LENGTH), m_nStripDataLength - 1);
 
-//			DEBUG_PRINTF("i=%u, nPortIndex=%u, m_nBytesReceived=%u, nLightSetLength=%u", i, nPortIndex, m_nBytesReceived, nLightSetLength);
+//			DEBUG_PRINTF("i=%u, nPortIndex=%u, m_nBytesReceived=%u, nDmxNodeOutputTypeLength=%u", i, nPortIndex, m_nBytesReceived, nDmxNodeOutputTypeLength);
 
-			lightset::Data::SetSourceA(nPortIndex, &pData[1], nLightSetLength);
+			dmxnode::Data::SetSourceA(nPortIndex, &pData[1], nDmxNodeOutputTypeLength);
 
-			m_nBytesReceived-=nLightSetLength;
-			pData+=nLightSetLength;
+			m_nBytesReceived-=nDmxNodeOutputTypeLength;
+			pData+=nDmxNodeOutputTypeLength;
 		}
 
 		pData+=m_nStripDataLength;
@@ -185,9 +185,9 @@ void PixelPusher::Run() {
 //		DEBUG_PRINTF("nPortIndex=%u, m_nPortIndexLast=%u", nPortIndex, m_nPortIndexLast);
 
 		if (nPortIndex == m_nPortIndexLast) {
-			for (uint32_t nLightSetPortIndex = 0; nLightSetPortIndex < m_nPortIndexLast; nLightSetPortIndex++) {
-				lightset::data_output(m_pLightSet, nLightSetPortIndex);
-				lightset::Data::ClearLength(nLightSetPortIndex);
+			for (uint32_t nDmxNodeOutputTypePortIndex = 0; nDmxNodeOutputTypePortIndex < m_nPortIndexLast; nDmxNodeOutputTypePortIndex++) {
+				dmxnode::data_output(m_pDmxNodeOutputType, nDmxNodeOutputTypePortIndex);
+				dmxnode::Data::ClearLength(nDmxNodeOutputTypePortIndex);
 			}
 		}
 	}

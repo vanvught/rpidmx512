@@ -2,7 +2,7 @@
  * @file dmxserial.h
  *
  */
-/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,9 +30,9 @@
 
 #include "dmxserialchanneldata.h"
 #include "dmxserialtftp.h"
-
-#include "lightset.h"
 #include "../src/serial/serial.h"
+
+#include "dmxnode.h"
 
 namespace DmxSerialDefaults {
 	static constexpr auto TYPE = serial::type::UART;
@@ -52,24 +52,48 @@ namespace DmxSerialDefaults {
 namespace DmxSerialFile {
 	static constexpr auto NAME_LENGTH = sizeof(DMXSERIAL_FILE_PREFIX "NNN" DMXSERIAL_FILE_SUFFIX) - 1;
 	static constexpr auto MIN_NUMBER = 1;
-	static constexpr auto MAX_NUMBER = lightset::dmx::UNIVERSE_SIZE;
+	static constexpr auto MAX_NUMBER = dmxnode::UNIVERSE_SIZE;
 }
 
-class DmxSerial: public LightSet {
+class DmxSerial {
 public:
 	DmxSerial();
-	~DmxSerial() override;
+	~DmxSerial();
 
 	void Init();
 
-	void Start(const uint32_t nPortIndex) override;
-	void Stop(const uint32_t nPortIndex) override;
+	void Start(const uint32_t nPortIndex);
+	void Stop(const uint32_t nPortIndex);
 
-	void SetData(const uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate = true) override;
-	void Sync(const uint32_t nPortIndex) override;
-	void Sync() override;
+	void SetData(const uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate = true);
+	void Sync(const uint32_t nPortIndex);
+	void Sync();
 
-	void Print() override;
+	uint32_t GetUserData() { return 0; }		///< Art-Net ArtPollReply
+	uint32_t GetRefreshRate() { return 0; }		///< Art-Net ArtPollReply
+
+	void Blackout([[maybe_unused]] bool bBlackout) {}
+	void FullOn() {}
+
+	bool SetDmxStartAddress([[maybe_unused]] const uint16_t nDmxStartAddress) {
+		return false;
+	}
+
+	uint16_t GetDmxStartAddress() {
+		return dmxnode::START_ADDRESS_DEFAULT;
+	}
+
+	uint16_t GetDmxFootprint() {
+		return dmxnode::UNIVERSE_SIZE;
+	}
+
+	bool GetSlotInfo([[maybe_unused]] const uint16_t nSlotOffset, dmxnode::SlotInfo &slotInfo) {
+		slotInfo.nType = 0x00; // ST_PRIMARY
+		slotInfo.nCategory = 0x0001; // SD_INTENSITY
+		return true;
+	}
+
+	void Print();
 
 	const char *GetSerialType() {
 		return Serial::GetType(m_Serial.GetType());
@@ -107,10 +131,10 @@ private:
 	int32_t m_aFileIndex[DmxSerialFile::MAX_NUMBER];
 	int32_t m_nHandle { -1 };
 	DmxSerialChannelData *m_pDmxSerialChannelData[DmxSerialFile::MAX_NUMBER];
-	uint16_t m_nDmxLastSlot { lightset::dmx::UNIVERSE_SIZE };
-	uint8_t m_DmxData[lightset::dmx::UNIVERSE_SIZE];
+	uint16_t m_nDmxLastSlot { dmxnode::UNIVERSE_SIZE };
+	uint8_t m_DmxData[dmxnode::UNIVERSE_SIZE];
 	struct SyncData {
-		uint8_t data[lightset::dmx::UNIVERSE_SIZE];
+		uint8_t data[dmxnode::UNIVERSE_SIZE];
 		uint32_t nLength;
 	};
 	SyncData m_SyncData;

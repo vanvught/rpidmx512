@@ -33,7 +33,7 @@
 
 namespace artnetnode {
 namespace failsafe {
-static constexpr auto BYTES_NEEDED = artnetnode::MAX_PORTS * lightset::dmx::UNIVERSE_SIZE;
+static constexpr auto BYTES_NEEDED = artnetnode::MAX_PORTS * dmxnode::UNIVERSE_SIZE;
 }  // namespace failsafe
 
 void failsafe_write_start();

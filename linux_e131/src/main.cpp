@@ -35,9 +35,10 @@
 #include "display.h"
 #include "displayudfparams.h"
 
-#include "e131bridge.h"
-#include "e131params.h"
-#include "e131msgconst.h"
+#include "dmxnodenode.h"
+#include "dmxnodemsgconst.h"
+
+#include "dmxnodeparams.h"
 
 #include "dmxmonitor.h"
 #include "dmxmonitorparams.h"
@@ -47,7 +48,6 @@
 #include "rdmnetconst.h"
 #include "rdmpersonality.h"
 #include "rdm_e120.h"
-#include "factorydefaults.h"
 
 #include "configstore.h"
 
@@ -99,41 +99,16 @@ int main(int argc, char **argv) {
 
 	DisplayUdfParams displayUdfParams;
 
-	E131Bridge bridge;
-
-	E131Params e131Params;
-	e131Params.Load();
-	e131Params.Set();
-
 	DMXMonitor monitor;
 
 	DMXMonitorParams monitorParams;
 	monitorParams.Load();
 
-	bridge.SetOutput(&monitor);
+	DmxNodeNode dmxNodeNode;
+	dmxNodeNode.SetOutput(&monitor);
+	dmxNodeNode.Print();
 
-	for (uint32_t nPortIndex = 0; nPortIndex < e131params::MAX_PORTS; nPortIndex++) {
-		uint32_t nOffset = nPortIndex;
-		if (nPortIndex >= e131bridge::configstore::DMXPORT_OFFSET) {
-			nOffset = nPortIndex - e131bridge::configstore::DMXPORT_OFFSET;
-		} else {
-			continue;
-		}
-
-		printf(">> nPortIndex=%u, nOffset=%u\n", nPortIndex, nOffset);
-
-		bool bIsSet;
-		const auto nUniverse = e131Params.GetUniverse(nOffset, bIsSet);
-		const auto portDirection = e131Params.GetDirection(nPortIndex);
-
-		if (portDirection == lightset::PortDir::OUTPUT) {
-			bridge.SetUniverse(nPortIndex,lightset::PortDir::OUTPUT, nUniverse);
-		} else {
-			bridge.SetUniverse(nPortIndex,lightset::PortDir::DISABLE	, nUniverse);
-		}
-	}
-
-	const auto nActivePorts = bridge.GetActiveOutputPorts();
+	const auto nActivePorts = dmxNodeNode.GetActiveOutputPorts();
 
 	char aDescription[rdm::personality::DESCRIPTION_MAX_LENGTH + 1];
 	snprintf(aDescription, sizeof(aDescription) - 1, "sACN E1.31 DMX %d", nActivePorts);
@@ -157,7 +132,7 @@ int main(int argc, char **argv) {
 
 	llrpOnlyDevice.Print();
 
-	bridge.Print();
+	dmxNodeNode.Print();
 
 #if defined (NODE_SHOWFILE)
 	ShowFile showFile;
@@ -173,17 +148,17 @@ int main(int argc, char **argv) {
 	showFile.Print();
 #endif
 
-	RemoteConfig remoteConfig(remoteconfig::Node::E131, remoteconfig::Output::MONITOR, bridge.GetActiveOutputPorts());
+	RemoteConfig remoteConfig(remoteconfig::NodeType::E131, remoteconfig::Output::MONITOR, dmxNodeNode.GetActiveOutputPorts());
 
 	RemoteConfigParams remoteConfigParams;
 	remoteConfigParams.Load();
 	remoteConfigParams.Set(&remoteConfig);
 
-	bridge.Start();
+	dmxNodeNode.Start();
 
 	while (keepRunning) {
 		nw.Run();
-		bridge.Run();
+		dmxNodeNode.Run();
 #if defined (NODE_SHOWFILE)
 		showFile.Run();
 #endif

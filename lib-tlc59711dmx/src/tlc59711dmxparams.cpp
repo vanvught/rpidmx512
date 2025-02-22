@@ -2,7 +2,7 @@
  * @file tlc59711dmxparams.cpp
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,14 +33,13 @@
 #include "tlc59711dmxparams.h"
 #include "tlc59711dmx.h"
 
-#include "lightset.h"
+#include "dmxnodeparamsconst.h"
 
 #include "readconfigfile.h"
 #include "sscan.h"
 #include "propertiesbuilder.h"
 
 #include "devicesparamsconst.h"
-#include "lightsetparamsconst.h"
 
 #include "debug.h"
 
@@ -53,7 +52,7 @@ TLC59711DmxParams::TLC59711DmxParams() {
 	m_Params.nSetList = 0;
 	m_Params.nType = static_cast<uint8_t>(tlc59711::Type::RGB);
 	m_Params.nCount = 4;
-	m_Params.nDmxStartAddress = lightset::dmx::START_ADDRESS_DEFAULT;
+	m_Params.nDmxStartAddress = dmxnode::START_ADDRESS_DEFAULT;
 	m_Params.nSpiSpeedHz = 0;
 
 	DEBUG_EXIT
@@ -135,12 +134,12 @@ void TLC59711DmxParams::callbackFunction(const char* pLine) {
 
 	uint16_t nValue16;
 
-	if (Sscan::Uint16(pLine, LightSetParamsConst::DMX_START_ADDRESS, nValue16) == Sscan::OK) {
-		if ((nValue16 != 0) && nValue16 <= (lightset::dmx::UNIVERSE_SIZE) && (nValue16 != lightset::dmx::START_ADDRESS_DEFAULT)) {
+	if (Sscan::Uint16(pLine, DmxNodeParamsConst::DMX_START_ADDRESS, nValue16) == Sscan::OK) {
+		if ((nValue16 != 0) && nValue16 <= (dmxnode::UNIVERSE_SIZE) && (nValue16 != dmxnode::START_ADDRESS_DEFAULT)) {
 			m_Params.nDmxStartAddress = nValue16;
 			m_Params.nSetList |= tlc59711dmxparams::Mask::DMX_START_ADDRESS;
 		} else {
-			m_Params.nDmxStartAddress = lightset::dmx::START_ADDRESS_DEFAULT;
+			m_Params.nDmxStartAddress = dmxnode::START_ADDRESS_DEFAULT;
 			m_Params.nSetList &= ~tlc59711dmxparams::Mask::DMX_START_ADDRESS;
 		}
 		return;
@@ -182,7 +181,7 @@ void TLC59711DmxParams::Builder(const struct tlc59711dmxparams::Params *pParams,
 
 	builder.Add(DevicesParamsConst::TYPE, GetType(static_cast<tlc59711::Type>(m_Params.nType)), isMaskSet(tlc59711dmxparams::Mask::TYPE));
 	builder.Add(DevicesParamsConst::COUNT, m_Params.nCount, isMaskSet(tlc59711dmxparams::Mask::COUNT));
-	builder.Add(LightSetParamsConst::DMX_START_ADDRESS, m_Params.nDmxStartAddress, isMaskSet(tlc59711dmxparams::Mask::DMX_START_ADDRESS));
+	builder.Add(DmxNodeParamsConst::DMX_START_ADDRESS, m_Params.nDmxStartAddress, isMaskSet(tlc59711dmxparams::Mask::DMX_START_ADDRESS));
 	builder.Add(DevicesParamsConst::SPI_SPEED_HZ, m_Params.nSpiSpeedHz, isMaskSet(tlc59711dmxparams::Mask::SPI_SPEED));
 
 	nSize = builder.GetSize();
@@ -223,7 +222,7 @@ void TLC59711DmxParams::Dump() {
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, DevicesParamsConst::FILE_NAME);
 	printf(" %s=%s [%d]\n", DevicesParamsConst::TYPE, sLedTypes[m_Params.nType], static_cast<int>(m_Params.nType));
 	printf(" %s=%d\n", DevicesParamsConst::COUNT, m_Params.nCount);
-	printf(" %s=%d\n", LightSetParamsConst::DMX_START_ADDRESS, m_Params.nDmxStartAddress);
+	printf(" %s=%d\n", DmxNodeParamsConst::DMX_START_ADDRESS, m_Params.nDmxStartAddress);
 	printf(" %s=%d Hz\n", DevicesParamsConst::SPI_SPEED_HZ, m_Params.nSpiSpeedHz);
 }
 

@@ -66,7 +66,6 @@ enum class Store {
 	LTCDISPLAY,
 	MONITOR,
 	SPARKFUN,
-	SLUSH,
 	MOTORS,
 	SHOW,
 	SERIAL,
@@ -79,9 +78,9 @@ enum class Store {
 	LAST
 };
 
-static constexpr uint32_t STORE_SIZE[static_cast<uint32_t>(Store::LAST)] = { 96,        32,    64,      64,    32,     32,        480,          64,         32,        96,           48,        32,      944,          48,        64,            32,        96,         32,      1024,     32,     32,       64,            96,               32,    32,          320,    32};
+static constexpr uint32_t STORE_SIZE[static_cast<uint32_t>(Store::LAST)] = { 96,        32,    64,      64,    32,     32,        480,          64,         32,        96,           48,        32,      944,          48,        64,            32,        128,        1024,     32,     32,       64,            96,               32,    32,          320,    32};
 #ifndef NDEBUG
-static constexpr char STORE_NAME[static_cast<uint32_t>(Store::LAST)][16] = {"Network", "DMX", "Pixel", "LTC", "MIDI", "LTC ETC", "OSC Server", "TLC59711", "USB Pro", "RDM Device", "RConfig", "TCNet", "OSC Client", "Display", "LTC Display", "Monitor", "SparkFun", "Slush", "Motors", "Show", "Serial", "RDM Sensors", "RDM SubDevices", "GPS", "RGB Panel", "Node", "PCA9685"};
+static constexpr char STORE_NAME[static_cast<uint32_t>(Store::LAST)][16] = {"Network", "DMX", "Pixel", "LTC", "MIDI", "LTC ETC", "OSC Server", "TLC59711", "USB Pro", "RDM Device", "RConfig", "TCNet", "OSC Client", "Display", "LTC Display", "Monitor", "SparkFun", "Motors", "Show", "Serial", "RDM Sensors", "RDM SubDevices", "GPS", "RGB Panel", "Node", "PCA9685"};
 #endif
 
 enum class State {
@@ -102,14 +101,9 @@ public:
 		Update(store, 0, pData, nDataLength);
 	}
 
-	void Copy(const configstore::Store store, void *pData, uint32_t nDataLength, uint32_t nOffset = 0, const bool doUpdate = true);
+	void Copy(const configstore::Store store, void *pData, uint32_t nDataLength, uint32_t nOffset = 0);
 
-	void ResetSetList(configstore::Store store);
-	void ResetSetListAll() {
-		for (uint32_t i = 0; i < static_cast<uint32_t>(configstore::Store::LAST); i++) {
-			ResetSetList(static_cast<configstore::Store>(i));
-		}
-	}
+	void ResetStore(const configstore::Store store);
 
 	void Dump();
 	bool Commit() {

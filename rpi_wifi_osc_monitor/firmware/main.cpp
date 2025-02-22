@@ -47,7 +47,6 @@
 // Pixel Controller
 #include "pixeldmxconfiguration.h"
 #include "pixeltype.h"
-#include "lightset.h"
 #include "pixeldmxparams.h"
 #include "ws28xxdmx.h"
 

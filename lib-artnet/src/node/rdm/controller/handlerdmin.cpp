@@ -51,7 +51,7 @@ void ArtNetNode::HandleRdmIn() {
 	for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
 		auto *const pArtRdm = &m_ArtTodPacket.ArtRdm;
 
-		if (m_Node.Port[nPortIndex].direction == lightset::PortDir::INPUT) {
+		if (m_Node.Port[nPortIndex].direction == dmxnode::PortDirection::INPUT) {
 			const auto *pRdmData = Rdm::Receive(nPortIndex);
 			if (pRdmData != nullptr) {
 				if (m_pArtNetRdmController->RdmReceive(nPortIndex, pRdmData)) {
@@ -75,7 +75,7 @@ void ArtNetNode::HandleRdmIn() {
 #endif
 				}
 			}
-		} else if (m_Node.Port[nPortIndex].direction == lightset::PortDir::OUTPUT) {
+		} else if (m_Node.Port[nPortIndex].direction == dmxnode::PortDirection::OUTPUT) {
 			if (m_OutputPort[nPortIndex].nIpRdm != 0) {
 				const auto *pRdmData = Rdm::Receive(nPortIndex);
 				if (pRdmData != nullptr) {

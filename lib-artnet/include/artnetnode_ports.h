@@ -27,14 +27,14 @@
 #define ARTNETNODE_PORTS_H_
 
 namespace artnetnode {
-#if !defined(LIGHTSET_PORTS)
-# define LIGHTSET_PORTS	0
+#if !defined(DMXNODE_PORTS)
+# define DMXNODE_PORTS	0
 #endif
 
-#if (LIGHTSET_PORTS == 0)
+#if (DMXNODE_PORTS == 0)
  static constexpr uint32_t MAX_PORTS = 1;	// ISO C++ forbids zero-size array
 #else
- static constexpr uint32_t MAX_PORTS = LIGHTSET_PORTS;
+ static constexpr uint32_t MAX_PORTS = DMXNODE_PORTS;
 #endif
 }  // namespace artnetnode
 

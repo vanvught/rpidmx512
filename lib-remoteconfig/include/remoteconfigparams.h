@@ -33,7 +33,7 @@
 
 namespace remoteconfigparams {
 struct Params {
-    uint32_t nSetList;
+	uint32_t nSetList;
 	uint8_t NotUsed0;
 	uint8_t NotUsed1;
 	uint8_t NotUsed2;
@@ -41,7 +41,7 @@ struct Params {
 	char aDisplayName[remoteconfig::DISPLAY_NAME_LENGTH];
 } __attribute__((packed));
 
-static_assert(sizeof(struct Params) <= 48, "struct Params is too large");
+static_assert(sizeof(struct Params) <= configstore::STORE_SIZE[static_cast<uint32_t>(configstore::Store::RCONFIG)]);
 
 struct Mask {
 	static constexpr uint32_t DISABLE = (1U << 0);
@@ -51,18 +51,16 @@ struct Mask {
 	static constexpr uint32_t DISPLAY_NAME = (1U << 4);
 	static constexpr uint32_t ENABLE_FACTORY = (1U << 5);
 };
+namespace store {
+inline void Update(const struct remoteconfigparams::Params *pParams) {
+	ConfigStore::Get()->Update(configstore::Store::RCONFIG, pParams, sizeof(struct remoteconfigparams::Params));
+}
+
+inline void Copy(struct remoteconfigparams::Params *pParams) {
+	ConfigStore::Get()->Copy(configstore::Store::RCONFIG, pParams, sizeof(struct remoteconfigparams::Params));
+}
+}  // namespace store
 }  // namespace remoteconfigparams
-
-class RemoteConfigParamsStore {
-public:
-	static void Update(const struct remoteconfigparams::Params *pParams) {
-		ConfigStore::Get()->Update(configstore::Store::RCONFIG, pParams, sizeof(struct remoteconfigparams::Params));
-	}
-
-	static void Copy(struct remoteconfigparams::Params *pParams) {
-		ConfigStore::Get()->Copy(configstore::Store::RCONFIG, pParams, sizeof(struct remoteconfigparams::Params));
-	}
-};
 
 class RemoteConfigParams {
 public:
@@ -82,7 +80,7 @@ public:
 		return m_Params.aDisplayName;
 	}
 
-    static void StaticCallbackFunction(void *p, const char *s);
+	static void StaticCallbackFunction(void *p, const char *s);
 
 private:
 	void Dump();

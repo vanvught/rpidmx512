@@ -2,7 +2,7 @@
  * @file sparkfundmx.h
  *
  */
-/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,6 @@
 
 #include <cstdint>
 
-#include "lightset.h"
 #include "l6470dmxmodes.h"
 
 #include "modeparams.h"
@@ -47,35 +46,35 @@ struct TSparkFunStores {
 	L6470ParamsStore *pL6470ParamsStore;
 };
 
-class SparkFunDmx: public LightSet {
+class SparkFunDmx {
 public:
 	SparkFunDmx();
-	~SparkFunDmx() override;
+	~SparkFunDmx() ;
 
-	void Start(const uint32_t nPortIndex) override;
-	void Stop(const uint32_t nPortIndex) override;
+	void Start(const uint32_t nPortIndex) ;
+	void Stop(const uint32_t nPortIndex) ;
 
-	void SetData(const uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate = true) override;
-	void Sync(const uint32_t nPortIndex) override;
-	void Sync() override;
+	void SetData(const uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate = true) ;
+	void Sync(const uint32_t nPortIndex) ;
+	void Sync() ;
 
-	void Print() override;
+	void Print() ;
 
 	uint32_t GetMotorsConnected() {
 		return AutoDriver::getNumBoards();
 	}
 
 // RDM
-	bool SetDmxStartAddress(uint16_t nDmxStartAddress) override;
-	uint16_t GetDmxStartAddress() override {
+	bool SetDmxStartAddress(uint16_t nDmxStartAddress) ;
+	uint16_t GetDmxStartAddress()  {
 		return m_nDmxStartAddress;
 	}
 
-	uint16_t GetDmxFootprint() override {
+	uint16_t GetDmxFootprint()  {
 		return m_nDmxFootprint;
 	}
 
-	bool GetSlotInfo(uint16_t nSlotOffset, lightset::SlotInfo &tSlotInfo) override;
+	bool GetSlotInfo(uint16_t nSlotOffset, dmxnode::SlotInfo &tSlotInfo) ;
 
 //
 	void SetGlobalSpiCs(uint8_t nSpiCs) {
@@ -120,7 +119,7 @@ private:
 	MotorParams *m_pMotorParams[SPARKFUN_DMX_MAX_MOTORS];
 	ModeParams *m_pModeParams[SPARKFUN_DMX_MAX_MOTORS];
 	L6470DmxModes *m_pL6470DmxModes[SPARKFUN_DMX_MAX_MOTORS];
-	lightset::SlotInfo *m_pSlotInfo[SPARKFUN_DMX_MAX_MOTORS];
+	dmxnode::SlotInfo *m_pSlotInfo[SPARKFUN_DMX_MAX_MOTORS];
 
 	uint8_t m_nGlobalSpiCs;
 	uint8_t m_nGlobalResetPin;

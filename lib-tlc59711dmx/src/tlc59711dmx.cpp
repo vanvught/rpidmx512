@@ -2,7 +2,7 @@
  * @file tlc59711dmx.cpp
  *
  */
-/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,7 @@
 #include "tlc59711dmxstore.h"
 #include "tlc59711.h"
 
-#include "lightset.h"
+#include "dmxnode.h"
 
 #include "debug.h"
 
@@ -149,7 +149,7 @@ void TLC59711Dmx::SetMaxPct(uint32_t nIndexLed, uint32_t nPct) {
 
 void TLC59711Dmx::SetData([[maybe_unused]] uint32_t nPortIndex, const uint8_t *pDmxData, uint32_t nLength, const bool doUpdate) {
 	assert(pDmxData != nullptr);
-	assert(nLength <= lightset::dmx::UNIVERSE_SIZE);
+	assert(nLength <= dmxnode::UNIVERSE_SIZE);
 
 	if (__builtin_expect((m_pTLC59711 == nullptr), 0)) {
 		Start();
@@ -230,9 +230,9 @@ void TLC59711Dmx::Blackout(bool bBlackout) {
 // DMX
 
 bool TLC59711Dmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
-	assert((nDmxStartAddress != 0) && (nDmxStartAddress <= (lightset::dmx::UNIVERSE_SIZE - m_nDmxFootprint)));
+	assert((nDmxStartAddress != 0) && (nDmxStartAddress <= (dmxnode::UNIVERSE_SIZE - m_nDmxFootprint)));
 
-	if ((nDmxStartAddress != 0) && (nDmxStartAddress <= (lightset::dmx::UNIVERSE_SIZE - m_nDmxFootprint))) {
+	if ((nDmxStartAddress != 0) && (nDmxStartAddress <= (dmxnode::UNIVERSE_SIZE - m_nDmxFootprint))) {
 		m_nDmxStartAddress = nDmxStartAddress;
 		TLC59711DmxStore::SaveDmxStartAddress(m_nDmxStartAddress);
 		return true;
@@ -243,7 +243,7 @@ bool TLC59711Dmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 
 // RDM
 
-bool TLC59711Dmx::GetSlotInfo(uint16_t nSlotOffset, lightset::SlotInfo& slotInfo) {
+bool TLC59711Dmx::GetSlotInfo(uint16_t nSlotOffset, dmxnode::SlotInfo& slotInfo) {
 	if (nSlotOffset >  m_nDmxFootprint) {
 		return false;
 	}

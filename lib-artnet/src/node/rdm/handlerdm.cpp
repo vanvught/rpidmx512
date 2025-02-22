@@ -48,7 +48,7 @@ void ArtNetNode::HandleTodRequest() {
 				continue;
 			}
 
-			if ((portAddress == m_Node.Port[nPortIndex].PortAddress) && (m_Node.Port[nPortIndex].direction == lightset::PortDir::OUTPUT)) {
+			if ((portAddress == m_Node.Port[nPortIndex].PortAddress) && (m_Node.Port[nPortIndex].direction == dmxnode::PortDirection::OUTPUT)) {
 				SendTod(nPortIndex);
 			}
 		}

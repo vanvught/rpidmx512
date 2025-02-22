@@ -31,22 +31,23 @@
 #include "configstore.h"
 
 __attribute__((weak)) void network_store_save_ip(const uint32_t nIp) {
-	ConfigStore::Get()->Update(configstore::Store::NETWORK, offsetof(struct networkparams::Params, nLocalIp), &nIp, sizeof(uint32_t), networkparams::Mask::IP_ADDRESS);
+	ConfigStore::Get()->Update(configstore::Store::NETWORK, offsetof(struct networkparams::Params, nLocalIp), &nIp, sizeof(uint32_t));
 }
 
 __attribute__((weak)) void network_store_save_netmask(const uint32_t nNetMask) {
-	ConfigStore::Get()->Update(configstore::Store::NETWORK, offsetof(struct networkparams::Params, nNetmask), &nNetMask, sizeof(uint32_t), networkparams::Mask::NET_MASK);
+	ConfigStore::Get()->Update(configstore::Store::NETWORK, offsetof(struct networkparams::Params, nNetmask), &nNetMask, sizeof(uint32_t));
 }
 
 __attribute__((weak)) void network_store_save_gatewayip(const uint32_t nGatewayIp) {
-	ConfigStore::Get()->Update(configstore::Store::NETWORK, offsetof(struct networkparams::Params, nGatewayIp), &nGatewayIp, sizeof(uint32_t), networkparams::Mask::DEFAULT_GATEWAY);
+	ConfigStore::Get()->Update(configstore::Store::NETWORK, offsetof(struct networkparams::Params, nGatewayIp), &nGatewayIp, sizeof(uint32_t));
 }
 
 __attribute__((weak)) void network_store_save_hostname(const char *pHostName, uint32_t nLength) {
 	nLength = std::min(nLength,static_cast<uint32_t>(net::HOSTNAME_SIZE));
-	ConfigStore::Get()->Update(configstore::Store::NETWORK, offsetof(struct networkparams::Params, aHostName), pHostName, nLength, networkparams::Mask::HOSTNAME);
+	ConfigStore::Get()->Update(configstore::Store::NETWORK, offsetof(struct networkparams::Params, aHostName), pHostName, nLength);
 }
 
 __attribute__((weak)) void network_store_save_dhcp(bool bIsDhcpUsed) {
-	ConfigStore::Get()->Update(configstore::Store::NETWORK, offsetof(struct networkparams::Params, bIsDhcpUsed), &bIsDhcpUsed, sizeof(bool), networkparams::Mask::DHCP);
+	auto bIsStaticIp = !bIsDhcpUsed;
+	ConfigStore::Get()->Update(configstore::Store::NETWORK, offsetof(struct networkparams::Params, bUseStaticIp), &bIsStaticIp, sizeof(bool));
 }

@@ -2,7 +2,7 @@
  * @file pca9685dmxservo.h
  *
  */
-/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,13 +28,13 @@
 
 #include <cstdint>
 
-#include "lightset.h"
-
-#include "pca9685dmx.h"
 #include "pca9685dmxstore.h"
 #include "pca9685servo.h"
+#include "pca9685dmxset.h"
 
-class PCA9685DmxServo final: public LightSet {
+#include "dmxnode.h"
+
+class PCA9685DmxServo : public PCA9685DmxSet {
 public:
 	PCA9685DmxServo(const pca9685dmx::Configuration &configuration);
 	~PCA9685DmxServo() override;
@@ -47,9 +47,9 @@ public:
 	void Sync() override {};
 
 	bool SetDmxStartAddress(const uint16_t nDmxStartAddress) override {
-		assert((nDmxStartAddress != 0) && (nDmxStartAddress <= lightset::dmx::UNIVERSE_SIZE));
+		assert((nDmxStartAddress != 0) && (nDmxStartAddress <= dmxnode::UNIVERSE_SIZE));
 
-		if ((nDmxStartAddress != 0) && (nDmxStartAddress <= lightset::dmx::UNIVERSE_SIZE)) {
+		if ((nDmxStartAddress != 0) && (nDmxStartAddress <= dmxnode::UNIVERSE_SIZE)) {
 			m_nDmxStartAddress = nDmxStartAddress;
 			PCA9685DmxStore::SaveDmxStartAddress(m_nDmxStartAddress);
 			return true;
@@ -74,7 +74,7 @@ private:
 	uint16_t m_nDmxStartAddress;
 	uint16_t m_nChannelCount;
 	bool m_bUse8Bit;
-	uint8_t m_DmxData[lightset::dmx::UNIVERSE_SIZE];
+	uint8_t m_DmxData[dmxnode::UNIVERSE_SIZE];
 	PCA9685Servo **m_pServo;
 };
 

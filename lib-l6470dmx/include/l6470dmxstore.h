@@ -2,7 +2,7 @@
  * @file l6470dmxstore.h
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,7 @@
 #include <cstdint>
 
 #include "l6470.h"
-#include "lightset.h"
+#include "dmxnode.h"
 
 namespace modeparams {
 static constexpr uint16_t MODE_PARAMS_MAX_DMX_FOOTPRINT = 4;
@@ -44,7 +44,7 @@ struct Params {
 	float fSwitchStepsPerSec;
 	bool bSwitch;
 	//
-	lightset::SlotInfo tLightSetSlotInfo[MODE_PARAMS_MAX_DMX_FOOTPRINT];
+	dmxnode::SlotInfo tLightSetSlotInfo[MODE_PARAMS_MAX_DMX_FOOTPRINT];
 } __attribute__((packed));
 }  // namespace modeparams
 

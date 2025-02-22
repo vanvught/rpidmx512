@@ -2,7 +2,7 @@
  * @file artnettriggerhandler.h
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,8 +31,8 @@
 #include "artnettrigger.h"
 #include "artnetnode.h"
 
-#include "lightset.h"
-#include "lightsetwith4.h"
+#include "dmxnode_outputtype.h"
+#include "dmxnodewith4.h"
 
 #include "pixeltestpattern.h"
 
@@ -41,7 +41,10 @@
 
 class ArtNetTriggerHandler {
 public:
-	ArtNetTriggerHandler(LightSetWith4<4> *pLightSet4with4, LightSet *pLightSetA): m_pLightSet4with4(pLightSet4with4), m_pLightSetA(pLightSetA) {
+	ArtNetTriggerHandler(DmxNodeWith4<CONFIG_DMXNODE_DMX_PORT_OFFSET> *pDmxNodeWith4, DmxPixelOutputType *pDmxPixelOutputType):
+		m_pDmxNodeWith4(pDmxNodeWith4),
+		m_pDmxPixelOutputType(pDmxPixelOutputType)
+	{
 		assert(s_pThis == nullptr);
 		s_pThis = this;
 
@@ -58,7 +61,7 @@ public:
 private:
 	void Handler(const ArtNetTrigger *pArtNetTrigger) {
 		if (pArtNetTrigger->Key == ArtTriggerKey::ART_TRIGGER_KEY_SHOW) {
-			m_pLightSet4with4->SetLightSetA(m_pLightSetA);
+			m_pDmxNodeWith4->SetDmxPixel(m_pDmxPixelOutputType);
 
 			const auto nShow = static_cast<pixelpatterns::Pattern>(pArtNetTrigger->SubKey);
 
@@ -73,11 +76,11 @@ private:
 			}
 
 			if (static_cast<pixelpatterns::Pattern>(nShow) != pixelpatterns::Pattern::NONE) {
-				m_pLightSet4with4->SetLightSetA(nullptr);
+				m_pDmxNodeWith4->SetDmxPixel(nullptr);
 				Display::Get()->ClearLine(6);
 				Display::Get()->Printf(6, "%s:%u", PixelPatterns::GetName(nShow), static_cast<uint32_t>(nShow));
 			} else {
-				m_pLightSetA->Blackout(true);
+				m_pDmxPixelOutputType->Blackout(true);
 				DisplayUdf::Get()->Show();
 			}
 
@@ -92,7 +95,7 @@ private:
 					return;
 				}
 
-				m_pLightSet4with4->SetLightSetA(nullptr);
+				m_pDmxNodeWith4->SetDmxPixel(nullptr);
 
 				const auto *pData = &pArtNetTrigger->Data[0];
 				const uint32_t nColour = pData[0] | (static_cast<uint32_t>(pData[1]) << 8) | (static_cast<uint32_t>(pData[2]) << 16) | (static_cast<uint32_t>(pData[3]) << 24);
@@ -104,8 +107,8 @@ private:
 	}
 
 private:
-	LightSetWith4<4> *m_pLightSet4with4;
-	LightSet *m_pLightSetA;
+	DmxNodeWith4<CONFIG_DMXNODE_DMX_PORT_OFFSET> *m_pDmxNodeWith4;
+	DmxPixelOutputType *m_pDmxPixelOutputType;
 
 	static inline ArtNetTriggerHandler *s_pThis;
 };

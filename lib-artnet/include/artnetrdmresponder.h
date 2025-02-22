@@ -2,7 +2,7 @@
  * @file artnetrdmresponder.h
  *
  */
-/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,10 @@
 #ifndef ARTNETRDMRESPONDER_H_
 #define ARTNETRDMRESPONDER_H_
 
+#if defined (DEBUG_ARTNETRDMRESPONDER)
+# undef NDEBUG
+#endif
+
 #include <cstdint>
 #include <cstring>
 #include <cassert>
@@ -35,8 +39,6 @@
 #include "rdmhandler.h"
 #include "rdmconst.h"
 #include "rdm_message_print.h"
-
-#include "lightset.h"
 
 #include "debug.h"
 
@@ -101,7 +103,7 @@ public:
 	}
 
 private:
-	static TRdmMessage s_RdmCommand;
+	static inline TRdmMessage s_RdmCommand;
 };
 
 #endif /* ARTNETRDMRESPONDER_H_ */

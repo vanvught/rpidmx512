@@ -32,17 +32,15 @@
 #include "hardware.h"
 #include "network.h"
 
-#include "net/apps/mdns.h"
-
 #include "displayudf.h"
 #include "displayudfparams.h"
 #include "displayhandler.h"
 #include "handleroled.h"
 
 #include "e131.h"
-#include "e131bridge.h"
-#include "e131params.h"
-#include "e131msgconst.h"
+#include "dmxnodenode.h"
+#include "dmxnodeparams.h"
+#include "dmxnodemsgconst.h"
 
 #include "pixeldmxconfiguration.h"
 #include "pixeltype.h"
@@ -57,7 +55,6 @@
 # include "rdmnetconst.h"
 # include "rdmpersonality.h"
 # include "rdm_e120.h"
-# include "factorydefaults.h"
 #endif
 
 #if defined (NODE_SHOWFILE)
@@ -91,11 +88,7 @@ int main() {
 
 	fw.Print("sACN E1.31 Pixel controller {8x 4 Universes}");
 	
-	E131Bridge bridge;
-
-	E131Params e131params;
-	e131params.Load();
-	e131params.Set();
+	DmxNodeNode dmxNodeNode;
 
 	PixelDmxConfiguration pixelDmxConfiguration;
 
@@ -117,7 +110,7 @@ int main() {
 		const auto nStartUniversePort = pixelDmxParams.GetStartUniversePort(nOutportIndex, isSet);
 		for (uint32_t u = 0; u < nUniverses; u++) {
 			if (isSet) {
-				bridge.SetUniverse(nPortProtocolIndex, lightset::PortDir::OUTPUT, static_cast<uint16_t>(nStartUniversePort + u));
+				dmxNodeNode.SetUniverse(nPortProtocolIndex, dmxnode::PortDirection::OUTPUT, static_cast<uint16_t>(nStartUniversePort + u));
 			}
 			nPortProtocolIndex++;
 		}
@@ -128,9 +121,9 @@ int main() {
 
 	if (nTestPattern != pixelpatterns::Pattern::NONE) {
 		pPixelTestPattern = new PixelTestPattern(nTestPattern, nActivePorts);
-		bridge.SetOutput(nullptr);
+		dmxNodeNode.SetOutput(nullptr);
 	} else {
-		bridge.SetOutput(&pixelDmxMulti);
+		dmxNodeNode.SetOutput(&pixelDmxMulti);
 	}
 
 #if defined (NODE_RDMNET_LLRP_ONLY)
@@ -171,15 +164,13 @@ int main() {
 	showFile.Print();
 #endif
 
-	bridge.Print();
+	dmxNodeNode.Print();
 	pixelDmxMulti.Print();
 
 	display.SetTitle("sACN Pixel 8:%dx%d", nActivePorts, pixelDmxConfiguration.GetCount());
 	display.Set(2, displayudf::Labels::IP);
 	display.Set(3, displayudf::Labels::HOSTNAME);
 	display.Set(4, displayudf::Labels::VERSION);
-	display.Set(5, displayudf::Labels::UNIVERSE_PORT_A);
-	display.Set(6, displayudf::Labels::BOARDNAME);
 
 	DisplayUdfParams displayUdfParams;
 	displayUdfParams.Load();
@@ -198,24 +189,24 @@ int main() {
 		display.Printf(6, "%s:%u", PixelPatterns::GetName(nTestPattern), static_cast<uint32_t>(nTestPattern));
 	}
 
-	RemoteConfig remoteConfig(remoteconfig::Node::E131, remoteconfig::Output::PIXEL, bridge.GetActiveOutputPorts());
+	RemoteConfig remoteConfig(remoteconfig::NodeType::E131, remoteconfig::Output::PIXEL, dmxNodeNode.GetActiveOutputPorts());
 
 	RemoteConfigParams remoteConfigParams;
 	remoteConfigParams.Load();
 	remoteConfigParams.Set(&remoteConfig);
 
-	display.TextStatus(E131MsgConst::START, CONSOLE_YELLOW);
+	display.TextStatus(DmxNodeMsgConst::START, CONSOLE_YELLOW);
 
-	bridge.Start();
+	dmxNodeNode.Start();
 
-	display.TextStatus(E131MsgConst::STARTED, CONSOLE_GREEN);
+	display.TextStatus(DmxNodeMsgConst::STARTED, CONSOLE_GREEN);
 
 	hw.WatchdogInit();
 
 	for (;;) {
 		hw.WatchdogFeed();
 		nw.Run();
-		bridge.Run();
+		dmxNodeNode.Run();
 #if defined (NODE_SHOWFILE)
 		showFile.Run();
 #endif

@@ -2,7 +2,7 @@
  * @file remoteconfigjson.cpp
  *
  */
-/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,10 @@
  * THE SOFTWARE.
  */
 
+#if defined (DEBUG_REMOTECONFIG)
+# undef NDEBUG
+#endif
+
 #include <cstdint>
 #include <cstdio>
 
@@ -31,6 +35,11 @@
 #include "network.h"
 #include "display.h"
 #include "firmwareversion.h"
+
+#if !defined (CONFIG_REMOTECONFIG_MINIMUM)
+# include "dmxnode_nodetype.h"
+# include "dmxnode_outputtype.h"
+#endif
 
 namespace remoteconfig {
 
@@ -74,10 +83,13 @@ uint32_t json_get_display(char *pOutBuffer, const uint32_t nOutBufferSize) {
 uint32_t json_get_directory(char *pOutBuffer, const uint32_t nOutBufferSize) {
 	const auto nLength = static_cast<uint32_t>(snprintf(pOutBuffer, nOutBufferSize,
 			"{\"files\":{"
-#if defined (NODE_ARTNET)
+#if defined (DMXNODE_TYPE_ARTNETNODE)
+			"\"dmxnode.txt\":\"DMX Node\","
 			"\"artnet.txt\":\"Art-Net\","
+			"\"e131.txt\":\"sACN E1.31\","
 #endif
-#if defined (NODE_E131)
+#if defined (DMXNODE_TYPE_E131BRIDGE)
+			"\"dmxnode.txt\":\"DMX Node\","
 			"\"e131.txt\":\"sACN E1.31\","
 #endif
 #if defined (NODE_OSC_CLIENT)
@@ -96,15 +108,10 @@ uint32_t json_get_directory(char *pOutBuffer, const uint32_t nOutBufferSize) {
 #if defined(NODE_SHOWFILE)
 			"\"show.txt\":\"Showfile\","
 #endif
-#if defined(NODE_NODE)
-			"\"node.txt\":\"Node\","
-			"\"artnet.txt\":\"Art-Net\","
-			"\"e131.txt\":\"sACN E1.31\","
-#endif
-#if defined (OUTPUT_DMX_SEND)
+#if defined (DMXNODE_OUTPUT_DMX)
 			"\"params.txt\":\"DMX Transmit\","
 #endif
-#if defined (OUTPUT_DMX_PIXEL)
+#if defined (DMXNODE_OUTPUT_PIXEL)
 			"\"devices.txt\":\"DMX Pixel\","
 #endif
 #if defined (OUTPUT_DMX_TLC59711)

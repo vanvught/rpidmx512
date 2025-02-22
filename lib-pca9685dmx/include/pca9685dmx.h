@@ -2,7 +2,7 @@
  * @file pca9685dmx.h
  *
  */
-/* Copyright (C) 2023-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2023-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,8 +32,7 @@
 #include "pca9685.h"
 #include "pca9685pwmled.h"
 #include "pca9685servo.h"
-
-#include "lightset.h"
+#include "pca9685dmxset.h"
 
 namespace pca9685dmx {
 static constexpr uint8_t BOARD_INSTANCES_DEFAULT 	= 1;
@@ -110,16 +109,16 @@ public:
 		m_Configuration.servo.nRightUs = nRightUs;
 	}
 
-	LightSet *GetLightSet() {
-		if (m_pLightSet == nullptr) {
+	PCA9685DmxSet *GetPCA9685DmxSet() {
+		if (m_pPCA9685DmxSet == nullptr) {
 			Start();
 		}
-		return m_pLightSet;
+		return m_pPCA9685DmxSet;
 	}
 
 	void Print() {
-		if (m_pLightSet != nullptr) {
-			m_pLightSet->Print();
+		if (m_pPCA9685DmxSet != nullptr) {
+			m_pPCA9685DmxSet->Print();
 		} else {
 			assert(0);
 		}
@@ -135,9 +134,9 @@ private:
 private:
 	pca9685dmx::Configuration m_Configuration;
 
-	LightSet *m_pLightSet { nullptr };
+	PCA9685DmxSet *m_pPCA9685DmxSet { nullptr };
 
-	static PCA9685Dmx *s_pThis;
+	static inline PCA9685Dmx *s_pThis;
 };
 
 #endif /* PCA9685DMX_H_ */

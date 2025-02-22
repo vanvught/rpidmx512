@@ -2,7 +2,7 @@
  * @file remoteconfigstatic.cpp
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,10 @@
  * THE SOFTWARE.
  */
 
+#if defined (DEBUG_REMOTECONFIG)
+# undef NDEBUG
+#endif
+
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
@@ -30,6 +34,11 @@
 
 #include "remoteconfig.h"
 #include "configstore.h"
+
+#if !defined (CONFIG_REMOTECONFIG_MINIMUM)
+# include "dmxnode_nodetype.h"
+# include "dmxnode_outputtype.h"
+#endif
 
 #include "debug.h"
 
@@ -45,11 +54,10 @@ constexpr RemoteConfig::Txt RemoteConfig::s_TXT[] = {
 #if defined (DISPLAY_UDF)
 		{ &RemoteConfig::HandleGetDisplayTxt,    &RemoteConfig::HandleSetDisplayTxt,    "display.txt",  11},
 #endif
-#if defined (NODE_ARTNET)
-		{ &RemoteConfig::HandleGetArtnetTxt,     &RemoteConfig::HandleSetArtnetTxt,     "artnet.txt",   10},
-#endif
-#if defined (NODE_E131)
-		{ &RemoteConfig::HandleGetE131Txt,       &RemoteConfig::HandleSetE131Txt,       "e131.txt",     8 },
+#if defined (DMXNODE_TYPE_ARTNETNODE) ||  defined (DMXNODE_TYPE_E131BRIDGE)
+		{ &RemoteConfig::HandleGetDmxNodeNodeTxt,   &RemoteConfig::HandleSetDmxNodeNodeTxt,   "dmxnode.txt",  11},
+		{ &RemoteConfig::HandleGetDmxNodeArtNetTxt, &RemoteConfig::HandleSetDmxNodeArtNetTxt, "artnet.txt",   10},
+		{ &RemoteConfig::HandleGetDmxNodeE131Txt,   &RemoteConfig::HandleSetDmxNodeE131Txt,   "e131.txt",     8 },
 #endif
 #if defined (NODE_LTC_SMPTE)
 		{ &RemoteConfig::HandleGetLtcTxt,        &RemoteConfig::HandleSetLtcTxt,        "ltc.txt",      7 },
@@ -67,11 +75,6 @@ constexpr RemoteConfig::Txt RemoteConfig::s_TXT[] = {
 #if defined (NODE_SHOWFILE)
 		{ &RemoteConfig::HandleGetShowTxt,       &RemoteConfig::HandleSetShowTxt,       "show.txt",     8 },
 #endif
-#if defined (NODE_NODE)
-		{ &RemoteConfig::HandleGetNodeNodeTxt,   &RemoteConfig::HandleSetNodeNodeTxt,   "node.txt",     8 },
-		{ &RemoteConfig::HandleGetNodeArtNetTxt, &RemoteConfig::HandleSetNodeArtNetTxt, "artnet.txt",   10},
-		{ &RemoteConfig::HandleGetNodeE131Txt,   &RemoteConfig::HandleSetNodeE131Txt,   "e131.txt",     8 },
-#endif
 #if defined (RDM_RESPONDER)
 		{ &RemoteConfig::HandleGetRdmDeviceTxt,  &RemoteConfig::HandleSetRdmDeviceTxt,  "rdm_device.txt", 14},
 		{ &RemoteConfig::HandleGetRdmSensorsTxt, &RemoteConfig::HandleSetRdmSensorsTxt, "sensors.txt",    11},
@@ -79,10 +82,10 @@ constexpr RemoteConfig::Txt RemoteConfig::s_TXT[] = {
 		{ &RemoteConfig::HandleGetRdmSubdevTxt,  &RemoteConfig::HandleSetRdmSubdevTxt,  "subdev.txt",     10},
 # endif
 #endif
-#if defined (OUTPUT_DMX_SEND)
+#if defined (DMXNODE_OUTPUT_DMX)
 		{ &RemoteConfig::HandleGetParamsTxt,     &RemoteConfig::HandleSetParamsTxt,     "params.txt",   10},
 #endif
-#if defined (OUTPUT_DMX_PIXEL) || defined(OUTPUT_DMX_TLC59711)
+#if defined (DMXNODE_OUTPUT_PIXEL) || defined(OUTPUT_DMX_TLC59711)
 		{ &RemoteConfig::HandleGetDevicesTxt,    &RemoteConfig::HandleSetDevicesTxt,    "devices.txt",  11},
 #endif
 #if defined (OUTPUT_DMX_MONITOR)
@@ -115,7 +118,7 @@ int32_t RemoteConfig::GetIndex(const void *p, uint32_t& nLength) {
 	DEBUG_PRINTF("nLength=%d", nLength);
 
 #ifndef NDEBUG
-	debug_dump(const_cast<void*>(p), 16);
+	debug_dump(const_cast<void *>(p), 16);
 #endif
 
 	int32_t i;

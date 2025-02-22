@@ -106,7 +106,7 @@
 									<listOptionValue builtIn="false" value="__GIC_PRESENT=1"/>
 									<listOptionValue builtIn="false" value="__FPU_PRESENT"/>
 									<listOptionValue builtIn="false" value="BARE_METAL"/>
-									<listOptionValue builtIn="false" value="NODE_RDMNET_LLRP_ONLY"/>
+									<listOptionValue builtIn="false" value="ENABLE_RDMNET_LLRP_ONLY"/>
 									<listOptionValue builtIn="false" value="ARTNET_HAVE_TRIGGER"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.1373964590" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" valueType="includePath">
@@ -122,7 +122,7 @@
 									<listOptionValue builtIn="false" value="__GIC_PRESENT=1"/>
 									<listOptionValue builtIn="false" value="__FPU_PRESENT"/>
 									<listOptionValue builtIn="false" value="BARE_METAL"/>
-									<listOptionValue builtIn="false" value="NODE_RDMNET_LLRP_ONLY"/>
+									<listOptionValue builtIn="false" value="ENABLE_RDMNET_LLRP_ONLY"/>
 									<listOptionValue builtIn="false" value="ARTNET_HAVE_TRIGGER"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths.413108142" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
@@ -138,7 +138,7 @@
 									<listOptionValue builtIn="false" value="__GIC_PRESENT=1"/>
 									<listOptionValue builtIn="false" value="__FPU_PRESENT"/>
 									<listOptionValue builtIn="false" value="BARE_METAL"/>
-									<listOptionValue builtIn="false" value="NODE_RDMNET_LLRP_ONLY"/>
+									<listOptionValue builtIn="false" value="ENABLE_RDMNET_LLRP_ONLY"/>
 									<listOptionValue builtIn="false" value="ARTNET_HAVE_TRIGGER"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths.1905393694" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
@@ -153,7 +153,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-displayudf/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-flashcodeinstall/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-lightset/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-dmxnode/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-network/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-rdm/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-remoteconfig/include}&quot;"/>

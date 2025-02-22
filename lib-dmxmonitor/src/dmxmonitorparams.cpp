@@ -2,7 +2,7 @@
  * @file dmxmonitorparams.cpp
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,8 +34,7 @@
 #include "dmxmonitorparams.h"
 #include "dmxmonitorparamsconst.h"
 
-#include "lightset.h"
-#include "lightsetparamsconst.h"
+#include "dmxnodeparamsconst.h"
 
 #include "readconfigfile.h"
 #include "sscan.h"
@@ -45,12 +44,11 @@
 #include "debug.h"
 
 using namespace dmxmonitor;
-using namespace lightset;
 
 DMXMonitorParams::DMXMonitorParams() {
 	m_Params.nSetList = 0;
-	m_Params.nDmxStartAddress = dmx::START_ADDRESS_DEFAULT;
-	m_Params.nDmxMaxChannels = dmx::UNIVERSE_SIZE;
+	m_Params.nDmxStartAddress = dmxnode::START_ADDRESS_DEFAULT;
+	m_Params.nDmxMaxChannels = dmxnode::UNIVERSE_SIZE;
 	m_Params.tFormat = static_cast<uint8_t>(Format::HEX);
 }
 
@@ -114,7 +112,7 @@ void DMXMonitorParams::Builder(const struct TDMXMonitorParams *ptDMXMonitorParam
 	builder.Add(DMXMonitorParamsConst::FORMAT, m_Params.tFormat == static_cast<uint8_t>(Format::PCT) ? "pct" : (m_Params.tFormat == static_cast<uint8_t>(Format::DEC) ? "dec" : "hex"), isMaskSet(DMXMonitorParamsMask::FORMAT));
 
 	builder.AddComment("DMX");
-	builder.Add(LightSetParamsConst::DMX_START_ADDRESS, m_Params.nDmxStartAddress, isMaskSet(DMXMonitorParamsMask::START_ADDRESS));
+	builder.Add(DmxNodeParamsConst::DMX_START_ADDRESS, m_Params.nDmxStartAddress, isMaskSet(DMXMonitorParamsMask::START_ADDRESS));
 	builder.Add(DMXMonitorParamsConst::DMX_MAX_CHANNELS, m_Params.nDmxMaxChannels, isMaskSet(DMXMonitorParamsMask::MAX_CHANNELS));
 
 	nSize = builder.GetSize();
@@ -146,7 +144,7 @@ void DMXMonitorParams::callbackFunction(const char* pLine) {
 	char value[8];
 	uint32_t nLength;
 
-	if (Sscan::Uint16(pLine, LightSetParamsConst::DMX_START_ADDRESS, value16) == Sscan::OK) {
+	if (Sscan::Uint16(pLine, DmxNodeParamsConst::DMX_START_ADDRESS, value16) == Sscan::OK) {
 		if (value16 != 0 && value16 <= 512) {
 			m_Params.nDmxStartAddress = value16;
 			m_Params.nSetList |= DMXMonitorParamsMask::START_ADDRESS;
@@ -187,7 +185,7 @@ void DMXMonitorParams::StaticCallbackFunction(void *p, const char *s) {
 
 void DMXMonitorParams::Dump() {
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, DMXMonitorParamsConst::FILE_NAME);
-	printf(" %s=%d\n", LightSetParamsConst::DMX_START_ADDRESS, m_Params.nDmxStartAddress);
+	printf(" %s=%d\n", DmxNodeParamsConst::DMX_START_ADDRESS, m_Params.nDmxStartAddress);
 	printf(" %s=%d\n", DMXMonitorParamsConst::DMX_MAX_CHANNELS, m_Params.nDmxMaxChannels);
 	printf(" %s=%d [%s]\n", DMXMonitorParamsConst::FORMAT, static_cast<int>(m_Params.tFormat), m_Params.tFormat == static_cast<uint8_t>(Format::PCT) ? "pct" : (m_Params.tFormat == static_cast<uint8_t>(Format::DEC) ? "dec" : "hex"));
 }

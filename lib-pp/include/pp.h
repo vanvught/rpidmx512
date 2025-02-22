@@ -13,7 +13,7 @@
  *
  *	pusher command stuff added by Christopher Schardt 2017
  */
-/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,15 +40,15 @@
 #include <cstdint>
 #include <algorithm>
 
-#include "lightset.h"
+#include "dmxnode_outputtype.h"
 
-#if !defined(LIGHTSET_PORTS)
-# error LIGHTSET_PORTS is not defined
+#if !defined(DMXNODE_PORTS)
+# error DMXNODE_PORTS is not defined
 #endif
 
 namespace pp {
 namespace lightset {
-static constexpr uint32_t MAX_PORTS = LIGHTSET_PORTS;
+static constexpr uint32_t MAX_PORTS = DMXNODE_PORTS;
 }  // namespace lightset
 namespace configuration {
 static constexpr uint32_t CHANNELS_PER_PIXEL = 3;
@@ -175,12 +175,12 @@ public:
 	~PixelPusher() {
 	}
 
-	void SetOutput(LightSet *pLightSet) {
-		m_pLightSet = pLightSet;
+	void SetOutput(DmxNodeOutputType *pDmxNodeOutputType) {
+		m_pDmxNodeOutputType = pDmxNodeOutputType;
 	}
 
-	LightSet *GetOutput() const {
-		return m_pLightSet;
+	DmxNodeOutputType *GetOutput() const {
+		return m_pDmxNodeOutputType;
 	}
 
 	void SetCount(const uint32_t nCount, const uint32_t nActivePorts, const bool hasGlobalBrightness) {
@@ -216,7 +216,7 @@ private:
 	uint32_t m_nActivePorts { 0 };
 	bool m_hasGlobalBrightness { false };
 
-	LightSet *m_pLightSet { nullptr };
+	DmxNodeOutputType *m_pDmxNodeOutputType { nullptr };
 
 	pp::DiscoveryPacket m_DiscoveryPacket;
 	uint8_t *m_pDataPacket { nullptr };

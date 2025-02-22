@@ -239,7 +239,7 @@ private:
 	RDMSubDevice **m_pRDMSubDevice { nullptr };
 	uint16_t m_nCount { 0 };
 
-	static RDMSubDevices *s_pThis;
+	static inline RDMSubDevices *s_pThis;
 };
 
 #if defined (UNUSED)

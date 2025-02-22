@@ -2,7 +2,7 @@
  * @file sparkfundmx.cpp
  *
  */
-/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,8 +33,6 @@
 #include "sparkfundmxparams.h"
 #include "sparkfundmxparamsconst.h"
 
-#include "lightset.h"
-
 #include "readconfigfile.h"
 #include "sscan.h"
 
@@ -52,9 +50,7 @@
 
 #include "debug.h"
 
-using namespace lightset;
-
-SparkFunDmx::SparkFunDmx(): m_nDmxStartAddress(dmx::ADDRESS_INVALID) {
+SparkFunDmx::SparkFunDmx(): m_nDmxStartAddress(dmxnode::ADDRESS_INVALID) {
 	DEBUG_ENTRY;
 
 	m_nGlobalSpiCs = SPI_CS0;
@@ -231,7 +227,7 @@ void SparkFunDmx::ReadConfigFiles() {
 				printf("\t=============================\n");
 #endif
 
-				if ((m_nDmxStartAddressMode <= dmx::UNIVERSE_SIZE) && (L6470DmxModes::GetDmxFootPrintMode(m_nDmxMode) != 0)) {
+				if ((m_nDmxStartAddressMode <= dmxnode::UNIVERSE_SIZE) && (L6470DmxModes::GetDmxFootPrintMode(m_nDmxMode) != 0)) {
 					if (m_pAutoDriver[i]->IsConnected()) {
 						printf("Motor %d is connected\n", i);
 
@@ -252,7 +248,7 @@ void SparkFunDmx::ReadConfigFiles() {
 						m_pL6470DmxModes[i] = new L6470DmxModes(static_cast<TL6470DmxModes>(m_nDmxMode), m_nDmxStartAddressMode, m_pAutoDriver[i], m_pMotorParams[i], m_pModeParams[i]);
 						assert(m_pL6470DmxModes[i] != nullptr);
 
-						if (m_nDmxStartAddress == dmx::ADDRESS_INVALID) {
+						if (m_nDmxStartAddress == dmxnode::ADDRESS_INVALID) {
 							m_nDmxStartAddress = m_pL6470DmxModes[i]->GetDmxStartAddress();
 							m_nDmxFootprint = m_pL6470DmxModes[i]->GetDmxFootPrint();
 						} else {
@@ -270,7 +266,7 @@ void SparkFunDmx::ReadConfigFiles() {
 #ifndef NDEBUG
 						printf("SlotInfo slots: %d\n", static_cast<int>(nMaxSlots));
 #endif
-						m_pSlotInfo[i] = new SlotInfo[nMaxSlots];
+						m_pSlotInfo[i] = new dmxnode::SlotInfo[nMaxSlots];
 						assert(m_pSlotInfo[i] != nullptr);
 
 						for (uint32_t j = 0; j < nMaxSlots; j++) {
@@ -333,7 +329,7 @@ void SparkFunDmx::ReadConfigFiles() {
 void SparkFunDmx::SetData([[maybe_unused]] uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, [[maybe_unused]] const bool doUpdate) {
 	DEBUG_ENTRY;
 	assert(pData != nullptr);
-	assert(nLength <= lightset::dmx::UNIVERSE_SIZE);
+	assert(nLength <= dmxnode::UNIVERSE_SIZE);
 
 	bool bIsDmxDataChanged[SPARKFUN_DMX_MAX_MOTORS];
 
@@ -401,7 +397,7 @@ bool SparkFunDmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 	return true;
 }
 
-bool SparkFunDmx::GetSlotInfo(uint16_t nSlotOffset, SlotInfo& tSlotInfo) {
+bool SparkFunDmx::GetSlotInfo(uint16_t nSlotOffset, dmxnode::SlotInfo& slotInfo) {
 	DEBUG_ENTRY;
 
 	if (nSlotOffset > m_nDmxFootprint) {
@@ -417,8 +413,8 @@ bool SparkFunDmx::GetSlotInfo(uint16_t nSlotOffset, SlotInfo& tSlotInfo) {
 
 			if ((nDmxAddress >= m_pL6470DmxModes[i]->GetDmxStartAddress()) && (nOffset < m_pL6470DmxModes[i]->GetDmxFootPrint())) {
 
-				tSlotInfo.nType = m_pSlotInfo[i][nOffset].nType;
-				tSlotInfo.nCategory = m_pSlotInfo[i][nOffset].nCategory;
+				slotInfo.nType = m_pSlotInfo[i][nOffset].nType;
+				slotInfo.nCategory = m_pSlotInfo[i][nOffset].nCategory;
 
 				DEBUG_EXIT
 				return true;

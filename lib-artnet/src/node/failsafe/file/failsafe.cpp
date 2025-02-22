@@ -84,13 +84,13 @@ void failsafe_write(uint32_t nPortIndex, const uint8_t *pData) {
 	assert(nPortIndex < artnetnode::MAX_PORTS);
 	assert(pData != nullptr);
 
-	if (fseek(pFile, static_cast<long int>(nPortIndex * lightset::dmx::UNIVERSE_SIZE), SEEK_SET) != 0) {
+	if (fseek(pFile, static_cast<long int>(nPortIndex * dmxnode::UNIVERSE_SIZE), SEEK_SET) != 0) {
 		perror("fseek");
 		DEBUG_EXIT
 		return;
 	}
 
-	if (fwrite(pData, 1, lightset::dmx::UNIVERSE_SIZE, pFile) != lightset::dmx::UNIVERSE_SIZE) {
+	if (fwrite(pData, 1, dmxnode::UNIVERSE_SIZE, pFile) != dmxnode::UNIVERSE_SIZE) {
 		perror("fwrite");
 		DEBUG_EXIT
 		return;
@@ -134,13 +134,13 @@ void failsafe_read(uint32_t nPortIndex, uint8_t *pData) {
 		return;
 	}
 
-	if (fseek(pFile, static_cast<long int>(nPortIndex * lightset::dmx::UNIVERSE_SIZE), SEEK_SET) != 0) {
+	if (fseek(pFile, static_cast<long int>(nPortIndex * dmxnode::UNIVERSE_SIZE), SEEK_SET) != 0) {
 		perror("fseek");
 		DEBUG_EXIT
 		return;
 	}
 
-	if (fread(pData, 1, lightset::dmx::UNIVERSE_SIZE, pFile) != lightset::dmx::UNIVERSE_SIZE) {
+	if (fread(pData, 1, dmxnode::UNIVERSE_SIZE, pFile) != dmxnode::UNIVERSE_SIZE) {
 		perror("fread");
 		DEBUG_EXIT
 		return;
