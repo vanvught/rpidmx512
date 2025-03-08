@@ -47,7 +47,7 @@ static struct timeval tvT2;
 
 void HwClock::Process() {
 	if (Status == Status::WAITING) {
-		if (__builtin_expect(((Hardware::Get()->Millis() - m_nLastHcToSysMillis) > 7200 * 1000), 0)) {
+		if (__builtin_expect(((hal::millis() - m_nLastHcToSysMillis) > 7200 * 1000), 0)) {
 			Status = Status::SAMPLING;
 
 			RtcGet(&rtcT1);
@@ -83,7 +83,7 @@ void HwClock::Process() {
 
 			settimeofday(&tv, nullptr);
 
-			m_nLastHcToSysMillis = Hardware::Get()->Millis();
+			m_nLastHcToSysMillis =hal::millis();
 			Status = Status::WAITING;
 
 			DEBUG_PRINTF("%d:%d (%d %d) (%d %d) -> %d", nSecondsT1, nSeconds2, static_cast<int>(tvT1.tv_sec), static_cast<int>(tvT1.tv_usec), static_cast<int>(tvT2.tv_sec), static_cast<int>(tvT2.tv_usec), static_cast<int>(tv.tv_usec));

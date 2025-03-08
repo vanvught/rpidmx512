@@ -108,7 +108,7 @@ void DisplayUdf::Show() {
 	Write(m_aLabels[static_cast<uint32_t>(Labels::TITLE)], m_aTitle);
 	uint8_t nHwTextLength;
 	ClearEndOfLine();
-	Write(m_aLabels[static_cast<uint32_t>(Labels::BOARDNAME)], Hardware::Get()->GetBoardName(nHwTextLength));
+	Write(m_aLabels[static_cast<uint32_t>(Labels::BOARDNAME)], hal::board_name(nHwTextLength));
 	ClearEndOfLine();
 	Printf(m_aLabels[static_cast<uint32_t>(Labels::VERSION)], "Firmware V%.*s", firmwareversion::length::SOFTWARE_VERSION, FirmwareVersion::Get()->GetVersion()->SoftwareVersion);
 

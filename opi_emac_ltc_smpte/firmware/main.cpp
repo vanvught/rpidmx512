@@ -524,10 +524,10 @@ int main() {
 
 	ltcOutputs.Print();
 
-	hw.WatchdogInit();
+	hal::watchdog_init();
 
 	for (;;) {
-		hw.WatchdogFeed();
+		hal::watchdog_feed();
 		nw.Run();
 		// Run the reader
 		// Handles MIDI Quarter Frame output messages
@@ -592,7 +592,7 @@ int main() {
 			sourceSelect.Run();
 		}
 
-		hw.Run();
+		hal::run();
 #if defined(ENABLE_SHELL)
 		shell.Run();
 #endif

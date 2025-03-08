@@ -317,10 +317,10 @@ void ConfigStore::Dump() {
 		return;
 	}
 
-	const auto IsWatchDog = Hardware::Get()->IsWatchdog();
+	const auto IsWatchDog = hal::watchdog();
 
 	if (IsWatchDog) {
-		Hardware::Get()->WatchdogStop();
+		hal::watchdog_stop();
 	}
 
 	debug_dump(s_ConfigStoreData, StoreConfiguration::OFFSET_STORES);
@@ -336,7 +336,7 @@ void ConfigStore::Dump() {
 	}
 
 	if (IsWatchDog) {
-		Hardware::Get()->WatchdogInit();
+		hal::watchdog_init();
 	}
 
 	printf("m_tState=%d\n", static_cast<uint32_t>(s_State));

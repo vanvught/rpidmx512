@@ -190,16 +190,16 @@ int main() {
 
 	display.TextStatus(DmxNodeMsgConst::STARTED, CONSOLE_GREEN);
 
-	hw.WatchdogInit();
+	hal::watchdog_init();
 
 	for (;;) {
-		hw.WatchdogFeed();
+		hal::watchdog_feed();
 		nw.Run();
 		dmxNodeNode.Run();
 #if defined (NODE_SHOWFILE)
 		showFile.Run();
 #endif
 		display.Run();
-		hw.Run();
+		hal::run();
 	}
 }

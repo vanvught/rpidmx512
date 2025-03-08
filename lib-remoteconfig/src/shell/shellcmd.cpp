@@ -198,7 +198,7 @@ void Shell::CmdReboot() {
 void Shell::CmdInfo() {
 	Printf("%s\n", FirmwareVersion::Get()->GetPrint());
 	Printf("Core Temperature: %.0f <%.0f>\n",Hardware::Get()->GetCoreTemperature(), Hardware::Get()->GetCoreTemperatureMax());
-	Printf("Uptime: %d\n", Hardware::Get()->GetUpTime());
+	Printf("Uptime: %d\n", hal::uptime());
 	Printf("Hostname: %s\n", Network::Get()->GetHostName());
 	Printf("IP " IPSTR "/%d %c\n", IP2STR(Network::Get()->GetIp()), Network::Get()->GetNetmaskCIDR(), Network::Get()->GetAddressingMode());
 }

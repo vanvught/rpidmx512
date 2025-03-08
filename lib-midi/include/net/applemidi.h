@@ -94,7 +94,7 @@ public:
 
 		DEBUG_PRINTF("Session name: [%s]", m_ExchangePacketReply.aName);
 
-		m_nStartTime = Hardware::Get()->Millis();
+		m_nStartTime =hal::millis();
 
 		DEBUG_EXIT
 	}
@@ -172,7 +172,7 @@ public:
 
 protected:
 	uint32_t Now() {
-		const auto nElapsed = Hardware::Get()->Millis() - m_nStartTime;
+		const auto nElapsed =hal::millis() - m_nStartTime;
 		return (nElapsed * 10U);
 	}
 

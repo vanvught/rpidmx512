@@ -93,7 +93,7 @@ int main(int argc, char **argv) {
 	Network nw(argc, argv);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__, DEVICE_SOFTWARE_VERSION_ID);
 
-	hw.Print();
+	hal::print();
 	fw.Print();
 	nw.Print();
 
@@ -114,7 +114,7 @@ int main(int argc, char **argv) {
 	snprintf(aDescription, sizeof(aDescription) - 1, "sACN E1.31 DMX %d", nActivePorts);
 
 	uint8_t nLength;
-	const auto *aLabel = hw.GetBoardName(nLength);
+	const auto *aLabel = hal::board_name(nLength);
 
 	RDMPersonality *pPersonalities[1] = { new RDMPersonality(aDescription, nullptr) };
 	RDMNetDevice llrpOnlyDevice(pPersonalities, 1);
@@ -162,7 +162,7 @@ int main(int argc, char **argv) {
 #if defined (NODE_SHOWFILE)
 		showFile.Run();
 #endif
-		hw.Run();
+		hal::run();
 	}
 
 	return 0;

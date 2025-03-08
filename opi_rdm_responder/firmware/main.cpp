@@ -181,16 +181,16 @@ int main() {
 	}
 
 	hw.SetMode(hardware::ledblink::Mode::NORMAL);
-	hw.WatchdogInit();
+	hal::watchdog_init();
 
 	for (;;) {
-		hw.WatchdogFeed();
+		hal::watchdog_feed();
 		rdmResponder.Run();
 #if !defined(NO_EMAC)
 		nw.Run();
 #endif
 		pixelTestPattern.Run();
 		display.Run();
-		hw.Run();
+		hal::run();
 	}
 }

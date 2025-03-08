@@ -1,8 +1,8 @@
 /**
- * @file sys_time.cpp
+ * @file hal.h
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -10,8 +10,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
+
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
+
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,27 +23,35 @@
  * THE SOFTWARE.
  */
 
-#include <time.h>
-#include <sys/time.h>
+#ifndef HAL_H_
+#define HAL_H_
 
-#include "debug.h"
+namespace hal {
+enum class BootDevice {
+	UNKOWN,
+	FEL,	// H3 Only
+	MMC0,
+	SPI,	// H3 Only
+	HDD,
+	FLASH,
+	RAM
+};
+}  // namespace hal
 
-void __attribute__((cold)) sys_time_init() {
-	struct tm tmbuf;
+#if defined(__linux__) || defined (__APPLE__)
+# if defined (CONFIG_HAL_USE_MINIMUM)
+#  include "linux/minimum/hal.h"
+# else
+#  include "linux/hal.h"
+# endif
+#else
+# if defined (H3)
+#  include "h3/hal.h"
+# elif defined (GD32)
+#  include "gd32/hal.h"
+# else
+#  include "rpi/hal.h"
+# endif
+#endif
 
-	tmbuf.tm_hour = 0;
-	tmbuf.tm_min = 0;
-	tmbuf.tm_sec = 0;
-	tmbuf.tm_mday = _TIME_STAMP_DAY_;			// The day of the month, in the range 1 to 31.
-	tmbuf.tm_mon = _TIME_STAMP_MONTH_ - 1;		// The number of months since January, in the range 0 to 11.
-	tmbuf.tm_year = _TIME_STAMP_YEAR_ - 1900;	// The number of years since 1900.
-	tmbuf.tm_isdst = 0; 						// 0 (DST not in effect, just take RTC time)
-
-	const time_t seconds = mktime(&tmbuf);
-	const struct timeval tv = { seconds, 0 };
-
-	settimeofday(&tv, nullptr);
-
-	DEBUG_PRINTF("%.4d/%.2d/%.2d %.2d:%.2d:%.2d", 1900 + tmbuf.tm_year, tmbuf.tm_mon, tmbuf.tm_mday, tmbuf.tm_hour, tmbuf.tm_min, tmbuf.tm_sec);
-//	DEBUG_PRINTF("%s", asctime(localtime((const time_t* ) &seconds)));
-}
+#endif /* HAL_H_ */

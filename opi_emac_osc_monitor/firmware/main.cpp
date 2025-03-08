@@ -94,7 +94,7 @@ int main() {
 	uint8_t nHwTextLength;
 
 	display.Printf(1, "OSC Monitor");
-	display.Write(2, hw.GetBoardName(nHwTextLength));
+	display.Write(2, hal::board_name(nHwTextLength));
 	display.Printf(3, "IP: " IPSTR " %c", IP2STR(Network::Get()->GetIp()), nw.IsDhcpKnown() ? (nw.IsDhcpUsed() ? 'D' : 'S') : ' ');
 	display.Printf(4, "In: %d", server.GetPortIncoming());
 	display.Printf(5, "Out: %d", server.GetPortOutgoing());
@@ -111,13 +111,13 @@ int main() {
 
 	display.TextStatus(OscServerMsgConst::STARTED, CONSOLE_GREEN);
 
-	hw.WatchdogInit();
+	hal::watchdog_init();
 
 	for (;;) {
-		hw.WatchdogFeed();
+		hal::watchdog_feed();
 		nw.Run();
 		showSystime.Run();
 		display.Run();
-		hw.Run();
+		hal::run();
 	}
 }

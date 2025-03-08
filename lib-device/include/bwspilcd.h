@@ -36,11 +36,11 @@ class BwSpiLcd: BwSpi {
 	void SpiWrite(const char *pData, uint32_t nLength) {
 		do {
 
-		} while ((Hardware::Get()->Micros() - m_nSpiWriteUs) < bw::lcd::spi::write_delay_us);
+		} while ((hal::micros() - m_nSpiWriteUs) < bw::lcd::spi::write_delay_us);
 
 		HAL_SPI::Write(pData, nLength);
 
-		m_nSpiWriteUs = Hardware::Get()->Micros();
+		m_nSpiWriteUs = hal::micros();
 	}
 public:
 	BwSpiLcd(uint8_t nChipSelect = 0, uint8_t nAddress = bw::lcd::address): BwSpi(nChipSelect, nAddress, bw::lcd::id_string) {}
@@ -104,7 +104,7 @@ public:
 	}
 
 private:
-	uint32_t m_nSpiWriteUs = Hardware::Get()->Micros();
+	uint32_t m_nSpiWriteUs = hal::micros();
 };
 
 #endif /* BWSPILCD_H_ */

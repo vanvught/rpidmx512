@@ -2,7 +2,7 @@
  * @file cputemperature.h
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,7 @@
 
 #include "rdmsensor.h"
 #include "rdm_e120.h"
-#include "hardware.h"
+#include "hal.h"
 
 #include "debug.h"
 
@@ -40,26 +40,26 @@ public:
 		SetType(E120_SENS_TEMPERATURE);
 		SetUnit(E120_UNITS_CENTIGRADE);
 		SetPrefix(E120_PREFIX_NONE);
-		SetRangeMin(static_cast<int16_t>(Hardware::Get()->GetCoreTemperatureMin()));
-		SetRangeMax(static_cast<int16_t>(Hardware::Get()->GetCoreTemperatureMax()));
-		SetNormalMin(static_cast<int16_t>(Hardware::Get()->GetCoreTemperatureMin()));
-		SetNormalMax(static_cast<int16_t>(Hardware::Get()->GetCoreTemperatureMax()));
+		SetRangeMin(static_cast<int16_t>(hal::CORE_TEMPERATURE_MIN));
+		SetRangeMax(static_cast<int16_t>(hal::CORE_TEMPERATURE_MAX));
+		SetNormalMin(static_cast<int16_t>(hal::CORE_TEMPERATURE_MIN));
+		SetNormalMax(static_cast<int16_t>(hal::CORE_TEMPERATURE_MAX));
 		SetDescription("CPU");
 	}
 
 	bool Initialize() override {
 		DEBUG_ENTRY
-	#if defined (__APPLE__)
+#if defined (__APPLE__)
 		DEBUG_EXIT
 		return false;
-	#else
+#else
 		DEBUG_EXIT
 		return true;
-	#endif
+#endif
 	}
 
 	int16_t GetValue() override {
-		const auto nValue = static_cast<int16_t>(Hardware::Get()->GetCoreTemperature());
+		const auto nValue = static_cast<int16_t>(hal::core_temperature_current());
 		DEBUG_PRINTF("nValue=%d", nValue);
 		return nValue;
 	}

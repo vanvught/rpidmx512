@@ -119,14 +119,14 @@ int main() {
 	display.TextStatus(OscClientMsgConst::STARTED, CONSOLE_GREEN);
 
 	hw.SetMode(hardware::ledblink::Mode::NORMAL);
-	hw.WatchdogInit();
+	hal::watchdog_init();
 
 	for (;;) {
-		hw.WatchdogFeed();
+		hal::watchdog_feed();
 		nw.Run();
 		client.Run();
 		pButtonsSet->Run();
 		display.Run();
-		hw.Run();
+		hal::run();
 	}
 }

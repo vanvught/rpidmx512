@@ -41,7 +41,7 @@ public:
 	void Stop();
 
 	void Run() {
-		const auto nTimeStamp = Hardware::Get()->Millis();
+		const auto nTimeStamp =hal::millis();
 
 		if ((nTimeStamp - m_nTimestamp) >= 50U) {
 			LtcOutputs::Get()->ShowSysTime();

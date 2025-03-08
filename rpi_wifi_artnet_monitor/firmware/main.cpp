@@ -73,7 +73,7 @@ int main() {
 	const auto outputType = artnetParams.GetOutputType();
 
 	uint8_t nHwTextLength;
-	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
+	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hal::board_name(nHwTextLength), __DATE__, __TIME__);
 
 	console_puts("WiFi Art-Net 3 Node ");
 	console_set_fg_color(outputType == lightset::OutputType::DMX ? CONSOLE_GREEN : CONSOLE_WHITE);
@@ -239,11 +239,11 @@ int main() {
 	console_status(CONSOLE_GREEN, NODE_STARTED);
 	display.TextStatus(NODE_STARTED);
 
-	hw.WatchdogFeed();
+	hal::watchdog_feed();
 
 	for (;;) {
-		hw.WatchdogFeed();
+		hal::watchdog_feed();
 		dmxNodeNode.Run();
-		hw.Run();
+		hal::run();
 	}
 }

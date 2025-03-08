@@ -49,7 +49,7 @@ FirmwareVersion::FirmwareVersion(const char *pSoftwareVersion, const char *pDate
 
 	snprintf(s_Print, sizeof(s_Print) - 1, "[V%.*s] %s Compiled on %.*s at %.*s",
 			firmwareversion::length::SOFTWARE_VERSION, s_FirmwareVersion.SoftwareVersion,
-			Hardware::Get()->GetBoardName(nHwTextLength),
+			hal::board_name(nHwTextLength),
 			firmwareversion::length::GCC_DATE, s_FirmwareVersion.BuildDate,
 			firmwareversion::length::GCC_TIME, s_FirmwareVersion.BuildTime);
 }

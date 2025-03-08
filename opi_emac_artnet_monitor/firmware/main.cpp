@@ -130,10 +130,10 @@ int main() {
 
 	display.TextStatus(DmxNodeMsgConst::STARTED, CONSOLE_GREEN);
 
-	hw.WatchdogInit();
+	hal::watchdog_init();
 
 	for (;;) {
-		hw.WatchdogFeed();
+		hal::watchdog_feed();
 		nw.Run();
 		dmxNodeNode.Run();
 #if defined (NODE_SHOWFILE)
@@ -141,6 +141,6 @@ int main() {
 #endif
 		showSystime.Run();
 		display.Run();
-		hw.Run();
+		hal::run();
 	}
 }

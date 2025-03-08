@@ -147,7 +147,7 @@ public:
 		}
 
 		auto bIsUpdated = false;
-		const auto nMillis = Hardware::Get()->Millis();
+		const auto nMillis =hal::millis();
 
 		for (uint32_t i = 0; i < s_nActivePorts; i++) {
 			bIsUpdated |= PortUpdate(i, nMillis);

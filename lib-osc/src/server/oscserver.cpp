@@ -72,11 +72,11 @@ OscServer::OscServer() {
 	snprintf(m_Os, sizeof(m_Os) - 1, "[V%s] %s", SOFTWARE_VERSION, __DATE__);
 
 	uint8_t nHwTextLength;
-	m_pModel = Hardware::Get()->GetBoardName(nHwTextLength);
-	m_pSoC = Hardware::Get()->GetSocName(nHwTextLength);
+	m_pModel = hal::board_name(nHwTextLength);
+	m_pSoC = hal::soc_name(nHwTextLength);
 
 	if (m_pSoC[0] == '\0') {
-		m_pSoC = Hardware::Get()->GetCpuName(nHwTextLength);
+		m_pSoC = hal::cpu_name(nHwTextLength);
 	}
 
 	DEBUG_EXIT

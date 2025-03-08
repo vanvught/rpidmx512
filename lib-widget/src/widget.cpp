@@ -116,7 +116,7 @@ void Widget::SetParams() {
 
 	SetPortDirection(0, PortDirection::INP, true);
 
-	m_nReceivedDmxPacketStartMillis = Hardware::Get()->Millis();
+	m_nReceivedDmxPacketStartMillis =hal::millis();
 }
 
 /**
@@ -145,7 +145,7 @@ void Widget::ReceivedDmxPacket() {
 		return;
 	}
 
-	const auto nMillis = Hardware::Get()->Millis();
+	const auto nMillis =hal::millis();
 
 	if (nMillis - m_nReceivedDmxPacketStartMillis < m_nReceivedDmxPacketPeriodMillis) {
 		return;
@@ -274,7 +274,7 @@ void Widget::SendRdmPacketRequest(uint16_t nDataLength) {
 
 	Rdm::SendRaw(0, m_aData, nDataLength);
 
-	m_nSendRdmPacketStartMillis = Hardware::Get()->Millis();
+	m_nSendRdmPacketStartMillis =hal::millis();
 
 	WidgetMonitor::RdmData(MonitorLine::RDM_DATA, nDataLength, m_aData, true);
 }
@@ -293,7 +293,7 @@ void Widget::RdmTimeout() {
 		return;
 	}
 
-	if (Hardware::Get()->Millis() - m_nSendRdmPacketStartMillis < 1000U) {	// 1 second
+	if (hal::millis() - m_nSendRdmPacketStartMillis < 1000U) {	// 1 second
 		return;
 	}
 
@@ -325,7 +325,7 @@ void Widget::ReceiveDmxOnChange() {
 	Dmx::ClearData(0);
 	Dmx::SetPortDirection(0, PortDirection::INP, true);
 
-	m_nReceivedDmxPacketStartMillis = Hardware::Get()->Millis();
+	m_nReceivedDmxPacketStartMillis =hal::millis();
 }
 
 /**
@@ -370,7 +370,7 @@ void Widget::GetSnReply() {
 
 	Dmx::SetPortDirection(0, PortDirection::INP, true);
 
-	m_nReceivedDmxPacketStartMillis = Hardware::Get()->Millis();
+	m_nReceivedDmxPacketStartMillis =hal::millis();
 }
 
 /**
@@ -387,7 +387,7 @@ void Widget::SendRdmDiscoveryRequest(uint16_t nDataLength) {
 	Rdm::SendRaw(0, m_aData, nDataLength);
 
 	m_isRdmDiscoveryRunning = true;
-	m_nSendRdmPacketStartMillis = Hardware::Get()->Millis();
+	m_nSendRdmPacketStartMillis =hal::millis();
 
 	WidgetMonitor::RdmData(MonitorLine::RDM_DATA, nDataLength, m_aData, true);
 }
@@ -437,7 +437,7 @@ void Widget::GetManufacturerReply() {
 
 	Dmx::SetPortDirection(0, PortDirection::INP, true);
 
-	m_nReceivedDmxPacketStartMillis = Hardware::Get()->Millis();
+	m_nReceivedDmxPacketStartMillis =hal::millis();
 }
 
 /**
@@ -465,7 +465,7 @@ void Widget::GetNameReply() {
 
 	Dmx::SetPortDirection(0, PortDirection::INP, true);
 
-	m_nReceivedDmxPacketStartMillis = Hardware::Get()->Millis();
+	m_nReceivedDmxPacketStartMillis =hal::millis();
 }
 
 /**

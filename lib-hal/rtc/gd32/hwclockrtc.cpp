@@ -149,7 +149,7 @@ void HwClock::RtcProbe() {
 
 	m_Type = rtc::Type::SOC_INTERNAL;
 	m_bIsConnected = true;
-	m_nLastHcToSysMillis = Hardware::Get()->Millis();
+	m_nLastHcToSysMillis = millis();
 
 	DEBUG_EXIT
 }

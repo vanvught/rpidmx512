@@ -99,7 +99,7 @@ int main() {
 	for (;;) {
 		nw.Run();
 		display.Run();
-		hw.Run();
+		hal::run();
 
 		time_t ltime;
 		auto t2 = time(&ltime);

@@ -2,7 +2,7 @@
  * @file hal_uart.h
  *
  */
-/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef LINUX_HAL_H_
-#define LINUX_HAL_H_
+#ifndef LINUX_HAL_UART_H_
+#define LINUX_HAL_UART_H_
 
 namespace hal {
 namespace uart {
@@ -92,4 +92,4 @@ uint32_t uart_get_rx(const uint32_t uart_base, char *pData, uint32_t nLength);
 }
 #endif
 
-#endif /* LINUX_HAL_H_ */
+#endif /* LINUX_HAL_UART_H_ */

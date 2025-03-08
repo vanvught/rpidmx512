@@ -76,15 +76,15 @@ int main() {
 	MidiMonitor monitor;
 	monitor.Init();
 
-	hw.WatchdogInit();
+	hal::watchdog_init();
 
 	for (;;) {
-		hw.WatchdogFeed();
+		hal::watchdog_feed();
 		monitor.Run();
 #if !defined(NO_EMAC)
 		nw.Run();
 #endif
-		hw.Run();
+		hal::run();
 	}
 }
 

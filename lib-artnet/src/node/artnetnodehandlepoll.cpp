@@ -278,7 +278,7 @@ void ArtNetNode::HandlePoll() {
 
 	for (auto& entry : m_State.ArtPollReplyQueue) {
 		if (entry.ArtPollMillis == 0) {
-			entry.ArtPollMillis = Hardware::Get()->Millis();
+			entry.ArtPollMillis =hal::millis();
 			entry.ArtPollReplyIpAddress = m_nIpAddressFrom;
 			entry.ArtPollReply.TargetPortAddressTop = TargetPortAddressTop;
 			entry.ArtPollReply.TargetPortAddressBottom = TargetPortAddressBottom;

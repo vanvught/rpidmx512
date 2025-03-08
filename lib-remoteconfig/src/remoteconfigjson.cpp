@@ -62,14 +62,14 @@ uint32_t json_get_version(char *pOutBuffer, const uint32_t nOutBufferSize) {
 	const auto nLength = static_cast<uint32_t>(snprintf(pOutBuffer, nOutBufferSize,
 					"{\"version\":\"%.*s\",\"board\":\"%s\",\"build\":{\"date\":\"%.*s\",\"time\":\"%.*s\"}}",
 					firmwareversion::length::SOFTWARE_VERSION, pVersion->SoftwareVersion,
-					Hardware::Get()->GetBoardName(nHwTextLength),
+					hal::board_name(nHwTextLength),
 					firmwareversion::length::GCC_DATE, pVersion->BuildDate,
 					firmwareversion::length::GCC_TIME, pVersion->BuildTime));
 	return nLength;
 }
 
 uint32_t json_get_uptime(char *pOutBuffer, const uint32_t nOutBufferSize) {
-	const auto nUptime = Hardware::Get()->GetUpTime();
+	const auto nUptime = hal::uptime();
 	const auto nLength = static_cast<uint32_t>(snprintf(pOutBuffer, nOutBufferSize, "{\"uptime\":%u}\n", static_cast<unsigned int>(nUptime)));
 	return nLength;
 }

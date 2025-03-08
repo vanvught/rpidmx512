@@ -305,9 +305,9 @@ void SparkFunDmx::ReadConfigFiles() {
 	for (uint32_t i = 0; i < SPARKFUN_DMX_MAX_MOTORS; i++) {
 		if (m_pAutoDriver[i] != nullptr) {
 			printf(" Motor %d\n", i);
-			const uint32_t nMillis = Hardware::Get()->Millis();
+			const uint32_t nMillis =hal::millis();
 			while (m_pAutoDriver[i]->busyCheck()) {
-				if ((Hardware::Get()->Millis() - nMillis) > 1000) {
+				if ((hal::millis() - nMillis) > 1000) {
 					printf("  Time-out!\n");
 					break;
 				}

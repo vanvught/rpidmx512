@@ -24,10 +24,12 @@
  */
 
 #if !defined (CONFIG_REMOTECONFIG_MINIMUM)
-# pragma GCC push_options
-# pragma GCC optimize ("O2")
-# pragma GCC optimize ("no-tree-loop-distribute-patterns")
-# pragma GCC optimize ("-fprefetch-loop-arrays")
+# if defined(__GNUC__) && !defined(__clang__)
+#  pragma GCC push_options
+#  pragma GCC optimize ("O2")
+#  pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#  pragma GCC optimize ("-fprefetch-loop-arrays")
+# endif
 #endif
 
 #include <cstdint>

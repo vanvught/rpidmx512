@@ -21,9 +21,15 @@
  * THE SOFTWARE.
  */
 
+#if defined (DEBUG_HAL)
+# undef NDEBUG
+#endif
+
 #include <cstdint>
 #include <cstdio>
 #include <cassert>
+#include <time.h>
+#include <sys/time.h>
 
 #include "h3.h"
 #include "h3_ccu.h"
@@ -43,6 +49,22 @@
 
 #include "../ff14b/source/ff.h"
 
+#if defined (DEBUG_I2C)
+# include "i2cdetect.h"
+#endif
+
+#if !defined(DISABLE_RTC)
+# include "hwclock.h"
+#endif
+
+#include "logic_analyzer.h"
+
+#include "debug.h"
+
+namespace hal {
+extern bool g_bWatchdog;
+}  // namespace hal
+
 #define WIFI_EN_PIO		7	// PL7
 #define POWER_LED_PIO	10	// PL10
 #define EXTERNAL_LED 	GPIO_EXT_16
@@ -54,30 +76,18 @@
 # error Not a recognized/tested FatFs version
 #endif
 
-#if defined (ORANGE_PI_ONE) && defined(ENABLE_PWR_BUTTON)
- static bool s_is_pwr_button_pressed = false;
-#endif
-
 static uint32_t s_hardware_init_startup_seconds = 0;
 
-extern void emac_init();
-extern void sys_time_init();
-extern void h3_timer_avs_init();
-extern void h3_hs_timer_init();
-extern void h3_usb_end();
+void emac_init();
+void h3_timer_avs_init();
+void h3_hs_timer_init();
+void h3_usb_end();
 
-uint32_t hardware_uptime_seconds() {
+uint32_t h3_uptime() {
 	return (H3_TIMER->AVS_CNT0 / 1000) - s_hardware_init_startup_seconds;
 }
 
-void hardware_led_init() {
-	h3_gpio_fsel(H3_BOARD_STATUS_LED, GPIO_FSEL_OUTPUT);
-#if !defined(DO_NOT_USE_EXTERNAL_LED)
-	h3_gpio_fsel(EXTERNAL_LED, GPIO_FSEL_OUTPUT);
-#endif
-}
-
-void hardware_led_set(int state) {
+void h3_status_led_set(int state) {
 #if defined(ORANGE_PI_ONE)
 	if (state == 0) {
 		h3_gpio_clr(H3_BOARD_STATUS_LED);
@@ -110,7 +120,7 @@ void hardware_led_set(int state) {
 #endif
 }
 
-void __attribute__((cold)) hardware_init() {
+void __attribute__((cold)) hal_init() {
 	h3_gpio_fsel(EXT_SPI_MOSI, GPIO_FSEL_INPUT);
 	h3_gpio_set_pud(EXT_SPI_MOSI, GPIO_PULL_DOWN);
 	h3_gpio_fsel(EXT_SPI_CLK, GPIO_FSEL_INPUT);
@@ -122,15 +132,32 @@ void __attribute__((cold)) hardware_init() {
 	h3_usb_end();
 	h3_timer_avs_init();
 	h3_hs_timer_init();
-	sys_time_init();
 	console_init();
 	gic_init();
 	h3_thermal_init();
 	emac_init();
 	h3_i2c_begin();
+
 	console_puts("Starting ...\n");
 
 	s_hardware_init_startup_seconds = H3_TIMER->AVS_CNT0 / 1000U;
+
+	struct tm tmbuf;
+
+	tmbuf.tm_hour = 0;
+	tmbuf.tm_min = 0;
+	tmbuf.tm_sec = 0;
+	tmbuf.tm_mday = _TIME_STAMP_DAY_;			// The day of the month, in the range 1 to 31.
+	tmbuf.tm_mon = _TIME_STAMP_MONTH_ - 1;		// The number of months since January, in the range 0 to 11.
+	tmbuf.tm_year = _TIME_STAMP_YEAR_ - 1900;	// The number of years since 1900.
+	tmbuf.tm_isdst = 0; 						// 0 (DST not in effect, just take RTC time)
+
+	const time_t seconds = mktime(&tmbuf);
+	const struct timeval tv = { seconds, 0 };
+
+	settimeofday(&tv, nullptr);
+
+	DEBUG_PRINTF("%.4d/%.2d/%.2d %.2d:%.2d:%.2d", 1900 + tmbuf.tm_year, tmbuf.tm_mon, tmbuf.tm_mday, tmbuf.tm_hour, tmbuf.tm_min, tmbuf.tm_sec);
 
 #ifndef ARM_ALLOW_MULTI_CORE
 	for (uint32_t cpu_number = 1 ; cpu_number < H3_CPU_COUNT; cpu_number ++) {
@@ -160,21 +187,32 @@ void __attribute__((cold)) hardware_init() {
 	value |= (1U << POWER_LED_PIO);
 	H3_PIO_PORTL->DAT = value;
 
-#if defined (ORANGE_PI_ONE) && defined(ENABLE_PWR_BUTTON)
-	// PWR-KEY
-	value = H3_PIO_PORTL->CFG0;
-	value &= (uint32_t)~(GPIO_SELECT_MASK << PL3_SELECT_CFG0_SHIFT);
-	value |= (GPIO_FSEL_INPUT << PL3_SELECT_CFG0_SHIFT);
-	H3_PIO_PORTL->CFG0 = value;
-	s_is_pwr_button_pressed = (H3_PIO_PORTL->DAT & (1 << 3)) == 0;
-#endif
-
 	///< Enable DMA support
 	H3_CCU->BUS_SOFT_RESET0 |= CCU_BUS_SOFT_RESET0_DMA;
 	H3_CCU->BUS_CLK_GATING0 |= CCU_BUS_CLK_GATING0_DMA;
 
-	hardware_led_init();
-	hardware_led_set(1);
+	h3_gpio_fsel(H3_BOARD_STATUS_LED, GPIO_FSEL_OUTPUT);
+#if !defined(DO_NOT_USE_EXTERNAL_LED)
+	h3_gpio_fsel(EXTERNAL_LED, GPIO_FSEL_OUTPUT);
+#endif
+
+	h3_status_led_set(0);
 
 	h3_cpu_set_clock(0); // default
+
+	hal::g_bWatchdog = false;
+
+#if defined (DEBUG_I2C)
+	i2c_detect();
+#endif
+
+#if !defined(DISABLE_RTC)
+	HwClock::Get()->RtcProbe();
+	HwClock::Get()->Print();
+	HwClock::Get()->HcToSys();
+#endif
+
+	h3_status_led_set(1);
+
+	logic_analyzer::init();
 }

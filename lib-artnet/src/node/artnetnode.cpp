@@ -296,9 +296,8 @@ void ArtNetNode::SetShortName(const uint32_t nPortIndex, const char *pShortName)
 void ArtNetNode::GetLongNameDefault(char *pLongName) {
 #if !defined (ARTNET_LONG_NAME)
 	uint8_t nBoardNameLength;
-	const auto *const pBoardName = Hardware::Get()->GetBoardName(nBoardNameLength);
-	const auto *const pWebsiteUrl = Hardware::Get()->GetWebsiteUrl();
-	snprintf(pLongName, artnet::LONG_NAME_LENGTH - 1, "%s %s %u %s", pBoardName, artnet::NODE_ID, static_cast<unsigned int>(artnet::VERSION), pWebsiteUrl);
+	const auto *const pBoardName = hal::board_name(nBoardNameLength);
+	snprintf(pLongName, artnet::LONG_NAME_LENGTH - 1, "%s %s %u %s", pBoardName, artnet::NODE_ID, static_cast<unsigned int>(artnet::VERSION), hal::WEBSITE);
 #else
 	uint32_t i;
 
@@ -535,7 +534,7 @@ void ArtNetNode::Process(const uint32_t nBytesReceived) {
 			 * ArtSync packets shall be ignored.
 			 */
 			if ((m_State.ArtDmxIpAddress == m_nIpAddressFrom) && (!m_State.IsMergeMode)) {
-				m_State.ArtSyncMillis = Hardware::Get()->Millis();
+				m_State.ArtSyncMillis =hal::millis();
 				HandleSync();
 			}
 #if defined (ARTNET_SHOWFILE)

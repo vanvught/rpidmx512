@@ -94,7 +94,7 @@ public:
 
 	void Run() {
 		if (!m_bPingDisable) {
-			m_nCurrenMillis = Hardware::Get()->Millis();
+			m_nCurrenMillis =hal::millis();
 
 			if ((m_nCurrenMillis - m_nPreviousMillis) >= m_nPingDelayMillis) {
 				OscSimpleSend MsgSend(m_nHandle, m_nServerIP, m_nPortOutgoing, "/ping", nullptr);

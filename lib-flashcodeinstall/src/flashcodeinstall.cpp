@@ -48,10 +48,10 @@ bool FlashCodeInstall::WriteFirmware(const uint8_t *pBuffer, uint32_t nSize) {
 		return false;
 	}
 
-	const auto bWatchdog = Hardware::Get()->IsWatchdog();
+	const auto bWatchdog = hal::watchdog();
 
 	if (bWatchdog) {
-		Hardware::Get()->WatchdogStop();
+		hal::watchdog_stop();
 	}
 
 	puts("Write firmware");
@@ -82,7 +82,7 @@ bool FlashCodeInstall::WriteFirmware(const uint8_t *pBuffer, uint32_t nSize) {
 	}
 
 	if (bWatchdog) {
-		Hardware::Get()->WatchdogInit();
+		hal::watchdog_init();
 	}
 
 	Display::Get()->TextStatus("Done", CONSOLE_GREEN);

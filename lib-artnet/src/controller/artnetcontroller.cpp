@@ -155,9 +155,8 @@ ArtNetController::~ArtNetController() {
 void ArtNetController::GetShortNameDefault(char *ShortName) {
 #if !defined (ARTNET_SHORT_NAME)
 	uint8_t nBoardNameLength;
-	const auto *const pBoardName = Hardware::Get()->GetBoardName(nBoardNameLength);
-	const auto *const pWebsiteUrl = Hardware::Get()->GetWebsiteUrl();
-	snprintf(ShortName, artnet::LONG_NAME_LENGTH - 1, "%s %s %u %s", pBoardName, artnet::NODE_ID, static_cast<unsigned int>(artnet::VERSION), pWebsiteUrl);
+	const auto *const pBoardName = hal::board_name(nBoardNameLength);
+	snprintf(ShortName, artnet::LONG_NAME_LENGTH - 1, "%s %s %u %s", pBoardName, artnet::NODE_ID, static_cast<unsigned int>(artnet::VERSION), hal::WEBSITE);
 #else
 	uint32_t i;
 
@@ -191,9 +190,8 @@ void ArtNetController::SetShortName(const char *ShortName) {
 void ArtNetController::GetLongNameDefault(char *pLongName) {
 #if !defined (ARTNET_LONG_NAME)
 	uint8_t nBoardNameLength;
-	const auto *const pBoardName = Hardware::Get()->GetBoardName(nBoardNameLength);
-	const auto *const pWebsiteUrl = Hardware::Get()->GetWebsiteUrl();
-	snprintf(pLongName, artnet::LONG_NAME_LENGTH - 1, "%s %s %u %s", pBoardName, artnet::NODE_ID, static_cast<unsigned int>(artnet::VERSION), pWebsiteUrl);
+	const auto *const pBoardName = hal::board_name(nBoardNameLength);
+	snprintf(pLongName, artnet::LONG_NAME_LENGTH - 1, "%s %s %u %s", pBoardName, artnet::NODE_ID, static_cast<unsigned int>(artnet::VERSION), hal::WEBSITE);
 #else
 	uint32_t i;
 
@@ -386,7 +384,7 @@ void ArtNetController::HandleTrigger() {
 }
 
 void ArtNetController::ProcessPoll() {
-	const auto nCurrentMillis = Hardware::Get()->Millis();
+	const auto nCurrentMillis =hal::millis();
 
 	if (__builtin_expect((nCurrentMillis - m_nLastPollMillis > POLL_INTERVAL_MILLIS), 0)) {
 		Network::Get()->SendTo(m_nHandle, &m_ArtNetPoll, sizeof(struct ArtPoll), Network::Get()->GetBroadcastIp(), artnet::UDP_PORT);

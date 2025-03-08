@@ -243,7 +243,7 @@ void RDMDiscovery::NewState(const rdmdiscovery::State state, const bool doStateL
 		assert(static_cast<uint32_t>(state) < sizeof(rdmdiscovery::StateName) / sizeof(rdmdiscovery::StateName[0]));
 		printf("State %s->%s [%s] at line %u\n", rdmdiscovery::StateName[static_cast<uint32_t>(m_State)], rdmdiscovery::StateName[static_cast<uint32_t>(rdmdiscovery::State::LATE_RESPONSE)], rdmdiscovery::StateName[static_cast<uint32_t>(state)],  nLine);
 #endif
-		m_LateResponse.nMicros = Hardware::Get()->Micros();
+		m_LateResponse.nMicros = hal::micros();
 		m_SavedState = state;
 		m_State = rdmdiscovery::State::LATE_RESPONSE;
 	} else {
@@ -259,7 +259,7 @@ void RDMDiscovery::Process() {
 	case rdmdiscovery::State::LATE_RESPONSE:  ///< LATE_RESPONSE
 		m_Message.Receive(m_nPortIndex);
 
-		if ((Hardware::Get()->Micros() - m_LateResponse.nMicros) > rdmdiscovery::LATE_RESPONSE_TIME_OUT) {
+		if ((hal::micros() - m_LateResponse.nMicros) > rdmdiscovery::LATE_RESPONSE_TIME_OUT) {
 			SAVED_STATE();
 		}
 
@@ -287,14 +287,14 @@ void RDMDiscovery::Process() {
 			m_Message.SetPd(nullptr, 0);
 			m_Message.Send(m_nPortIndex);
 
-			m_UnMute.nMicros = Hardware::Get()->Micros();
+			m_UnMute.nMicros = hal::micros();
 			m_UnMute.bCommandRunning = true;
 			return;
 		}
 
 		m_Message.Receive(m_nPortIndex);
 
-		if ((Hardware::Get()->Micros() - m_UnMute.nMicros) > rdmdiscovery::RECEIVE_TIME_OUT) {
+		if ((hal::micros() - m_UnMute.nMicros) > rdmdiscovery::RECEIVE_TIME_OUT) {
 			assert(m_UnMute.nCounter > 0);
 			m_UnMute.nCounter--;
 			m_UnMute.bCommandRunning = false;
@@ -335,7 +335,7 @@ void RDMDiscovery::Process() {
 			m_Message.SetPd(nullptr, 0);
 			m_Message.Send(m_nPortIndex);
 
-			m_Mute.nMicros = Hardware::Get()->Micros();
+			m_Mute.nMicros = hal::micros();
 			m_Mute.bCommandRunning = true;
 			return;
 		}
@@ -349,11 +349,11 @@ void RDMDiscovery::Process() {
 			return;
 		}
 
-		if ((Hardware::Get()->Micros() - m_Mute.nMicros) > rdmdiscovery::RECEIVE_TIME_OUT) {
+		if ((hal::micros() - m_Mute.nMicros) > rdmdiscovery::RECEIVE_TIME_OUT) {
 			assert(m_Mute.nCounter > 0);
 			m_Mute.nCounter--;
 			m_Message.Send(m_nPortIndex);
-			m_Mute.nMicros = Hardware::Get()->Micros();
+			m_Mute.nMicros = hal::micros();
 		}
 
 		return;
@@ -368,11 +368,11 @@ void RDMDiscovery::Process() {
 				return;
 			}
 
-			if ((Hardware::Get()->Micros() - m_Discovery.nMicros) > rdmdiscovery::RECEIVE_TIME_OUT) {
+			if ((hal::micros() - m_Discovery.nMicros) > rdmdiscovery::RECEIVE_TIME_OUT) {
 				assert(m_Discovery.nCounter > 0);
 				m_Discovery.nCounter--;
 				m_Message.Send(m_nPortIndex);
-				m_Discovery.nMicros = Hardware::Get()->Micros();
+				m_Discovery.nMicros = hal::micros();
 			}
 
 			return;
@@ -409,7 +409,7 @@ void RDMDiscovery::Process() {
 		m_Message.Send(m_nPortIndex);
 
 		m_Discovery.nCounter = rdmdiscovery::DISCOVERY_COUNTER;
-		m_Discovery.nMicros = Hardware::Get()->Micros();
+		m_Discovery.nMicros = hal::micros();
 		m_Discovery.bCommandRunning = true;
 
 		return;
@@ -431,7 +431,7 @@ void RDMDiscovery::Process() {
 			m_Message.SetPd(nullptr, 0);
 			m_Message.Send(m_nPortIndex);
 
-			m_DiscoverySingleDevice.nMicros = Hardware::Get()->Micros();
+			m_DiscoverySingleDevice.nMicros = hal::micros();
 			m_DiscoverySingleDevice.bCommandRunning = true;
 			return;
 		}
@@ -457,11 +457,11 @@ void RDMDiscovery::Process() {
 			return;
 		}
 
-		if ((Hardware::Get()->Micros() - m_DiscoverySingleDevice.nMicros) > rdmdiscovery::RECEIVE_TIME_OUT) {
+		if ((hal::micros() - m_DiscoverySingleDevice.nMicros) > rdmdiscovery::RECEIVE_TIME_OUT) {
 			assert(m_Mute.nCounter > 0);
 			m_DiscoverySingleDevice.nCounter--;
 			m_Message.Send(m_nPortIndex);
-			m_DiscoverySingleDevice.nMicros = Hardware::Get()->Micros();
+			m_DiscoverySingleDevice.nMicros = hal::micros();
 		}
 
 		return;
@@ -511,7 +511,7 @@ void RDMDiscovery::Process() {
 			m_Message.Send(m_nPortIndex);
 
 			m_QuikFind.nCounter = rdmdiscovery::QUIKFIND_COUNTER;
-			m_QuikFind.nMicros = Hardware::Get()->Micros();
+			m_QuikFind.nMicros = hal::micros();
 			m_QuikFind.bCommandRunning = true;
 			return;
 		}
@@ -542,7 +542,7 @@ void RDMDiscovery::Process() {
 			return;
 		}
 
-		if ((Hardware::Get()->Micros() - m_QuikFind.nMicros) > rdmdiscovery::RECEIVE_TIME_OUT) {
+		if ((hal::micros() - m_QuikFind.nMicros) > rdmdiscovery::RECEIVE_TIME_OUT) {
 			assert(m_QuikFind.nCounter > 0);
 			m_QuikFind.nCounter--;
 			m_QuikFind.bCommandRunning = false;
@@ -565,7 +565,7 @@ void RDMDiscovery::Process() {
 			m_Message.SetPd(reinterpret_cast<const uint8_t*>(m_Discovery.pdl), 2 * RDM_UID_SIZE);
 			m_Message.Send(m_nPortIndex);
 
-			m_QuikFindDiscovery.nMicros = Hardware::Get()->Micros();
+			m_QuikFindDiscovery.nMicros = hal::micros();
 			m_QuikFindDiscovery.bCommandRunning = true;
 			return;
 		}
@@ -586,7 +586,7 @@ void RDMDiscovery::Process() {
 			return;
 		}
 
-		if ((Hardware::Get()->Micros() - m_QuikFindDiscovery.nMicros) > rdmdiscovery::RECEIVE_TIME_OUT) {
+		if ((hal::micros() - m_QuikFindDiscovery.nMicros) > rdmdiscovery::RECEIVE_TIME_OUT) {
 			assert(m_QuikFind.nCounter > 0);
 			m_QuikFindDiscovery.nCounter--;
 			m_QuikFindDiscovery.bCommandRunning = false;

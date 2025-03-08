@@ -33,7 +33,7 @@
 
 GPSTimeClient::GPSTimeClient(float fUtcOffset, GPSModule module) :
 		GPS(fUtcOffset, module),
-		m_nWaitPPSMillis(Hardware::Get()->Millis())
+		m_nWaitPPSMillis(hal::millis())
 {
 	DEBUG_ENTRY
 
@@ -63,13 +63,13 @@ void GPSTimeClient::Run() {
 		tv.tv_usec = 0;
 		settimeofday(&tv, nullptr);
 
-		m_nWaitPPSMillis = Hardware::Get()->Millis();
+		m_nWaitPPSMillis =hal::millis();
 
 		DEBUG_PUTS("PPS handled");
 		return;
 	}
 
-	const auto nMillis = Hardware::Get()->Millis();
+	const auto nMillis =hal::millis();
 
 	if (__builtin_expect(((nMillis - m_nWaitPPSMillis) > (10 * 1000)), 0)) {
 		m_nWaitPPSMillis = nMillis;

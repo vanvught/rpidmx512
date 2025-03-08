@@ -304,7 +304,7 @@ static void tcp_init_tcb(struct tcb *pTcb, const uint16_t nLocalPort) {
 
 	pTcb->nLocalPort = nLocalPort;
 
-	pTcb->ISS = Hardware::Get()->Millis();
+	pTcb->ISS =hal::millis();
 
 	pTcb->RCV.WND = TCP_MAX_RX_WND;
 
@@ -421,7 +421,7 @@ static void tcp_send_segment(const struct tcb *pTcb, const struct SendInfo &send
 	*pData++ = Option::KIND_NOP;
 	*pData++ = Option::KIND_TIMESTAMP;
 	*pData++ = 10;
-	auto nMillis = __builtin_bswap32(Hardware::Get()->Millis());
+	auto nMillis = __builtin_bswap32(hal::millis());
 	memcpy(pData, &nMillis, 4);
 	pData += 4;
 	memcpy(pData, &pTcb->TS.Recent, 4);

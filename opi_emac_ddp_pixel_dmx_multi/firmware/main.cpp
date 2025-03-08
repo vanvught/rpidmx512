@@ -192,14 +192,14 @@ int main() {
 
 	display.TextStatus("DDP Display Started", CONSOLE_GREEN);
 
-	hw.WatchdogInit();
+	hal::watchdog_init();
 
 	for (;;) {
-		hw.WatchdogFeed();
+		hal::watchdog_feed();
 		nw.Run();
 		ddpDisplay.Run();
 		pixelTestPattern.Run();
 		display.Run();
-		hw.Run();
+		hal::run();
 	}
 }

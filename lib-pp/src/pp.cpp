@@ -58,7 +58,7 @@ typedef union pcast32 {
 
 PixelPusher *PixelPusher::s_pThis;
 
-PixelPusher::PixelPusher(): m_nMillis(Hardware::Get()->Millis()) {
+PixelPusher::PixelPusher(): m_nMillis(hal::millis()) {
 	DEBUG_ENTRY
 	assert(s_pThis == nullptr);
 	s_pThis = this;
@@ -133,7 +133,7 @@ void PixelPusher::Run() {
 	m_nBytesReceived = Network::Get()->RecvFrom(m_nHandleData, const_cast<const void **>(reinterpret_cast<void **>(&m_pDataPacket)), &nRemoteIP, &nRemotePort);
 
 	if (__builtin_expect((m_nBytesReceived < 4), 1)) {
-		const auto nMillis = Hardware::Get()->Millis();
+		const auto nMillis =hal::millis();
 		if (__builtin_expect((nMillis - m_nMillis < 1000), 1)) {
 			return;
 		}

@@ -168,14 +168,14 @@ int main() {
 
 	display.TextStatus("PixelPusher Started", CONSOLE_GREEN);
 
-	hw.WatchdogInit();
+	hal::watchdog_init();
 
 	for (;;) {
-		hw.WatchdogFeed();
+		hal::watchdog_feed();
 		nw.Run();
 		pp.Run();
 		pixelTestPattern.Run();
 		display.Run();
-		hw.Run();
+		hal::run();
 	}
 }

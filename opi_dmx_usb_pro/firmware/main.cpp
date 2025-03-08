@@ -78,12 +78,12 @@ int main() {
 //	const auto tWidgetMode = widgetParams.GetMode();
 
 	uint8_t nHwTextLength;
-	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
+	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hal::board_name(nHwTextLength), __DATE__, __TIME__);
 	printf("RDM Controller with USB [Compatible with Enttec USB Pro protocol], Widget mode : %d (%s)\n", tWidgetMode, widget_mode_names[static_cast<uint32_t>(tWidgetMode)]);
 	printf("Device UUID : %.2x%.2x:%.2x%.2x%.2x%.2x, ", pRdmDeviceUid[0], pRdmDeviceUid[1], pRdmDeviceUid[2], pRdmDeviceUid[3], pRdmDeviceUid[4], pRdmDeviceUid[5]);
 	printf("Label : %.*s\n", static_cast<int>(tRdmDeviceLabel.length), reinterpret_cast<const char*>(tRdmDeviceLabel.data));
 
-	hw.WatchdogInit();
+	hal::watchdog_init();
 
 	if (tWidgetMode == widget::Mode::RDM_SNIFFER) {
 		widget.SetPortDirection(0, dmx::PortDirection::INP, true);
@@ -91,8 +91,8 @@ int main() {
 	}
 
 	for (;;) {
-		hw.WatchdogFeed();
+		hal::watchdog_feed();
 		widget.Run();
-		hw.Run();
+		hal::run();
 	}
 }

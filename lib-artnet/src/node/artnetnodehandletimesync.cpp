@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,11 +27,10 @@
  */
 
 #include <cassert>
+#include <time.h>
 
 #include "artnetnode.h"
-
-#include "hardware.h"
-
+#include "hal.h"
 #include "debug.h"
 
 void ArtNetNode::HandleTimeSync() {
@@ -45,7 +44,7 @@ void ArtNetNode::HandleTimeSync() {
 	tmTime.tm_mon = pArtTimeSync->tm_mon;
 	tmTime.tm_year = ((pArtTimeSync->tm_year_hi) << 8) + pArtTimeSync->tm_year_lo;
 
-	Hardware::Get()->SetTime(&tmTime);
+	hal::set_rtc(&tmTime);
 
 	DEBUG_PRINTF("%.4d/%.2d/%.2d %.2d:%.2d:%.2d", 1900 + tmTime.tm_year, 1 + tmTime.tm_mon, tmTime.tm_mday, tmTime.tm_hour, tmTime.tm_min, tmTime.tm_sec);
 }

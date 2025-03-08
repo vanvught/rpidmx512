@@ -112,7 +112,7 @@ void E131Bridge::HandleDmxIn() {
 						m_State.nReceivingDmx &= static_cast<uint8_t>(~(1U << static_cast<uint8_t>(dmxnode::PortDirection::INPUT)));
 					}
 				} else if (m_InputPort[nPortIndex].nMillis != 0) {
-					const auto nMillis = Hardware::Get()->Millis();
+					const auto nMillis =hal::millis();
 					if ((nMillis - m_InputPort[nPortIndex].nMillis) > 1000) {
 						m_InputPort[nPortIndex].nMillis = nMillis;
 						sendArtDmx = true;

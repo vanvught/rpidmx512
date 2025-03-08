@@ -42,9 +42,9 @@ void link_handle_change(const net::Link state) {
 	DEBUG_PRINTF("net::Link %s", state == net::Link::STATE_UP ? "UP" : "DOWN");
 
 	if (Link::STATE_UP == state) {
-		const bool isWatchdog = Hardware::Get()->IsWatchdog();
+		const bool isWatchdog = hal::watchdog();
 		if (isWatchdog) {
-			Hardware::Get()->WatchdogStop();
+			hal::watchdog_stop();
 		}
 
 		PhyStatus phyStatus;
@@ -53,7 +53,7 @@ void link_handle_change(const net::Link state) {
 		emac_adjust_link(phyStatus);
 
 		if (isWatchdog) {
-			Hardware::Get()->WatchdogInit();
+			hal::watchdog_init();
 		}
 
 		netif_set_link_up();

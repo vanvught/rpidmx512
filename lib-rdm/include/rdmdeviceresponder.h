@@ -102,7 +102,7 @@ public:
 		RDMDevice::Init();
 
 		const auto nSoftwareVersionId = FirmwareVersion::Get()->GetVersionId();
-		const auto nDeviceModel = Hardware::Get()->GetBoardId();
+		const auto nDeviceModel = hal::BOARD_ID;
 		const auto nProductCategory = RDMDevice::GetProductCategory();
 		const auto nSubDevices = m_RDMSubDevices.GetCount();
 

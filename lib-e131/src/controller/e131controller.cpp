@@ -65,7 +65,7 @@ E131Controller::E131Controller() {
 
 	char aSourceName[e131::SOURCE_NAME_LENGTH];
 	uint8_t nLength;
-	snprintf(aSourceName, e131::SOURCE_NAME_LENGTH, "%.48s %s", Network::Get()->GetHostName(), Hardware::Get()->GetBoardName(nLength));
+	snprintf(aSourceName, e131::SOURCE_NAME_LENGTH, "%.48s %s", Network::Get()->GetHostName(), hal::board_name(nLength));
 	SetSourceName(aSourceName);
 
 	hal::uuid_copy(m_Cid);

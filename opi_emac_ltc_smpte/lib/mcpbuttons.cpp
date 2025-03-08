@@ -89,7 +89,7 @@ McpButtons::McpButtons(ltc::Source tLtcReaderSource, bool bUseAltFunction, int32
 }
 
 uint32_t McpButtons::LedBlink(uint8_t nPortB) {
-	const auto nMillisNow = Hardware::Get()->Millis();
+	const auto nMillisNow =hal::millis();
 
 	if (__builtin_expect(((nMillisNow - m_nMillisPrevious) < 500), 1)) {
 		return m_nLedTicker;
@@ -362,7 +362,7 @@ void McpButtons::HandleRunActionSelect() {
 		Display::Get()->SetSleep(false);
 	}
 
-	const auto nMillisNow = Hardware::Get()->Millis();
+	const auto nMillisNow =hal::millis();
 
 	if ((nMillisNow - m_nSelectMillis) < 300) {
 		return;
@@ -387,7 +387,7 @@ void McpButtons::HandleRunActionSelect() {
 		Display::Get()->Cls();
 		Display::Get()->TextStatus("Reboot ...");
 
-		Hardware::Get()->Reboot();
+		hal::reboot();
 		__builtin_unreachable() ;
 		return;
 	}

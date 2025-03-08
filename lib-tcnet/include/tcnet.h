@@ -161,7 +161,7 @@ public:
 		}
 #endif
 
-		m_nCurrentMillis = Hardware::Get()->Millis();
+		m_nCurrentMillis =hal::millis();
 
 		if (__builtin_expect(((m_nCurrentMillis - m_nPreviousMillis) >= 1000), 0)) {
 			m_nPreviousMillis = m_nCurrentMillis;
@@ -408,8 +408,8 @@ private:
 
 	void HandleOptInOutgoing() {
 		m_PacketOptIn.ManagementHeader.SEQ++;
-		m_PacketOptIn.ManagementHeader.TimeStamp = Hardware::Get()->Micros();
-		m_PacketOptIn.Uptime = static_cast<uint16_t>(Hardware::Get()->GetUpTime());
+		m_PacketOptIn.ManagementHeader.TimeStamp = hal::micros();
+		m_PacketOptIn.Uptime = static_cast<uint16_t>(hal::uptime());
 
 		Network::Get()->SendTo(m_aHandles[0], &m_PacketOptIn, sizeof(struct TTCNetPacketOptIn), Network::Get()->GetBroadcastIp(), TCNetBroadcast::PORT_0);
 	}

@@ -154,7 +154,7 @@ void LtcDisplayRgb::Show(const char *pTimecode) {
 	struct Colours tColoursColons;
 
 	if (m_tColonBlinkMode != ColonBlinkMode::OFF) {
-		const uint32_t nMillis = Hardware::Get()->Millis();
+		const uint32_t nMillis =hal::millis();
 
 		if (m_nSecondsPrevious != pTimecode[ltc::timecode::index::SECONDS_UNITS]) { // seconds have changed
 			m_nSecondsPrevious = pTimecode[ltc::timecode::index::SECONDS_UNITS];
@@ -266,7 +266,7 @@ void LtcDisplayRgb::SetMessage(const char *pMessage, uint32_t nSize) {
 		*pDst++ = ' ';
 	}
 
-	m_nMsgTimer = Hardware::Get()->Millis();
+	m_nMsgTimer =hal::millis();
 
 	if (s_nTimerId == TIMER_ID_NONE) {
 		s_nTimerId = SoftwareTimerAdd(MESSAGE_TIME_MS, message_timer);
@@ -284,7 +284,7 @@ void LtcDisplayRgb::ShowMessage() {
 
 	struct Colours tColours;
 
-	const auto nMillis = Hardware::Get()->Millis();
+	const auto nMillis =hal::millis();
 
 	tColours.nRed = static_cast<uint8_t>(((nMillis - m_nMsgTimer) * m_tColoursMessage.nRed) / MESSAGE_TIME_MS);
 	tColours.nGreen = static_cast<uint8_t>(((nMillis - m_nMsgTimer) * m_tColoursMessage.nGreen) / MESSAGE_TIME_MS);

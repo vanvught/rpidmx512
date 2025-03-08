@@ -72,7 +72,7 @@ int main(int argc, char **argv) {
 //	MDNS mDns;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
-	hw.Print();
+	hal::print();
 	fw.Print();
 	nw.Print();
 
@@ -95,7 +95,7 @@ int main(int argc, char **argv) {
 	snprintf(aDescription, sizeof(aDescription) - 1, "PixelPusher");
 
 	uint8_t nLength;
-	const auto *aLabel = hw.GetBoardName(nLength);
+	const auto *aLabel = hal::board_name(nLength);
 
 	RDMPersonality *pPersonalities[1] = { new RDMPersonality(aDescription, nullptr) };
 	RDMNetDevice llrpOnlyDevice(pPersonalities, 1);
@@ -127,7 +127,7 @@ int main(int argc, char **argv) {
 	while (keepRunning) {
 		nw.Run();
 		pp.Run();
-		hw.Run();
+		hal::run();
 	}
 
 	return 0;

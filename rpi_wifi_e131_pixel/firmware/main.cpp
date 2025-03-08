@@ -70,7 +70,7 @@ int main() {
 #endif
 
 	uint8_t nHwTextLength;
-	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
+	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hal::board_name(nHwTextLength), __DATE__, __TIME__);
 
 	console_puts("WiFi sACN E1.31 ");
 	console_set_fg_color(CONSOLE_GREEN);
@@ -99,12 +99,6 @@ int main() {
 	display.Printf(7, "%s:%d G%d", pixel::pixel_get_type(pixelDmxConfiguration.GetType()), pixelDmxConfiguration.GetCount(), pixelDmxConfiguration.GetGroupingCount());
 
 	DmxNodeNode dmxNodeNode;
-
-	const auto nUniverses = pixelDmxConfiguration.GetUniverses();
-
-	for (uint32_t nPortIndex = 1; nPortIndex < nUniverses; nPortIndex++) {
-		dmxNodeNode.SetUniverse(nPortIndex, dmxnode::PortDirection::OUTPUT, static_cast<uint16_t>(nStartUniverse + nPortIndex));
-	}
 
 	dmxNodeNode.SetOutput(&pixelDmx);
 	dmxNodeNode.Print();
@@ -147,11 +141,11 @@ int main() {
 	console_status(CONSOLE_GREEN, BRIDGE_STARTED);
 	display.TextStatus(BRIDGE_STARTED);
 
-	hw.WatchdogInit();
+	hal::watchdog_init();
 
 	for (;;) {
-		hw.WatchdogFeed();
+		hal::watchdog_feed();
 		dmxNodeNode.Run();
-		hw.Run();
+		hal::run();
 	}
 }

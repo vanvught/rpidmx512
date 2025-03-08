@@ -122,13 +122,13 @@ int main() {
 	showfile::display_status();
 
 	hw.SetMode(hardware::ledblink::Mode::NORMAL);
-	hw.WatchdogInit();
+	hal::watchdog_init();
 
 	for (;;) {
-		hw.WatchdogFeed();
+		hal::watchdog_feed();
 		nw.Run();
 		showFile.Run();
 		display.Run();
-		hw.Run();
+		hal::run();
 	}
 }

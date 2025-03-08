@@ -99,14 +99,14 @@ int main() {
 	DMXReceiver dmxreceiver(&dmxMonitor);
 	dmxreceiver.Start();
 
-	hw.WatchdogInit();
+	hal::watchdog_init();
 
 	for(;;) {
-		hw.WatchdogFeed();
+		hal::watchdog_feed();
 
 		dmxreceiver.Run(nLength);
 
-		const auto nMicrosNow = hw.Micros();
+		const auto nMicrosNow = hal::micros();
 
 		if (nMicrosNow - nMicrosPrevious > (1000000 / 2)) {
 			nMicrosPrevious = nMicrosNow;
@@ -156,6 +156,6 @@ int main() {
 #if !defined(NO_EMAC)
 		nw.Run();
 #endif
-		hw.Run();
+		hal::run();
 	}
 }

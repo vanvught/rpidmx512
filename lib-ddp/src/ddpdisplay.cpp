@@ -164,7 +164,7 @@ void DdpDisplay::HandleQuery() {
 		DEBUG_PUTS("id::STATUS");
 
 		const auto nLength = snprintf(reinterpret_cast<char *>(pPacket->data), UDP_DATA_SIZE - 1,
-				json::DISCOVER_REPLY, Hardware::Get()->GetWebsiteUrl(), MAC2STR(m_macAddress) );
+				json::DISCOVER_REPLY, hal::WEBSITE, MAC2STR(m_macAddress) );
 
 		pPacket->header.flags1 = flags1::VER1 | flags1::REPLY | flags1::PUSH;
 		pPacket->header.len[0] = static_cast<uint8_t>(nLength >> 8);

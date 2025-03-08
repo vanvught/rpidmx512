@@ -31,15 +31,6 @@
 #include <uuid/uuid.h>
 
 namespace hardware {
-enum class BootDevice {
-	UNKOWN,
-	FEL,	// H3 Only
-	MMC0,
-	SPI,	// H3 Only
-	HDD,
-	FLASH,
-	RAM
-};
 namespace ledblink {
 enum class Mode {
 	OFF_OFF, OFF_ON, NORMAL, DATA, FAST, REBOOT, UNKNOWN
@@ -56,6 +47,8 @@ static constexpr uint32_t SOFTWARE_TIMERS_MAX = CONFIG_HAL_TIMERS_COUNT;
 
 void uuid_copy(uuid_t out);
 }  // namespace hal
+
+#include "hal.h"
 
 #if defined(__linux__) || defined (__APPLE__)
 # if defined (CONFIG_HAL_USE_MINIMUM)

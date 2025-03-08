@@ -2,7 +2,7 @@
  * @file hardware.h
  *
  */
-/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -72,150 +72,10 @@ class Hardware {
 public:
 	Hardware();
 
-	uint32_t GetReleaseId() const {
-		return 0;	// FIXME GetReleaseId
-	}
-
-	uint32_t Millis() {
-#if defined (CONFIG_HAL_USE_SYSTICK)
-		extern volatile uint32_t gv_nSysTickMillis;
-		return gv_nSysTickMillis;
-#elif defined (USE_FREE_RTOS)
-		return xTaskGetTickCount();
-#else
-		extern uint32_t timer6_get_elapsed_milliseconds();
-		return timer6_get_elapsed_milliseconds();
-#endif
-	}
-
-	uint32_t Micros() {
-		static uint32_t nMicrosPrevious;
-		static uint32_t nResult;
-		const auto nMicros = DWT->CYCCNT / (MCU_CLOCK_FREQ / 1000000U);
-
-		if (nMicros > nMicrosPrevious) {
-			nResult += (nMicros - nMicrosPrevious);
-		} else {
-			nResult += ((UINT32_MAX / (MCU_CLOCK_FREQ / 1000000U)) - nMicrosPrevious + nMicros);
-		}
-
-		nMicrosPrevious = nMicros;
-
-		return nResult;
-	}
-
-	uint32_t GetUpTime() const {
-		extern struct HwTimersSeconds g_Seconds;
-		return g_Seconds.nUptime;
-	}
-
-	bool SetTime(__attribute__((unused)) const struct tm *pTime) {
-#if !defined(DISABLE_RTC)
-		m_HwClock.Set(pTime);
-		return true;
-#else
-		return false;
-#endif
-	}
-
-#if !defined(DISABLE_RTC)
-	bool SetAlarm(const struct tm *pTime) {
-		const auto b = m_HwClock.AlarmSet(pTime);
-		return b;
-	}
-
-	void GetAlarm(struct tm *pTime) {
-		m_HwClock.AlarmGet(pTime);
-	}
-#endif
-
-	const char *GetBoardName(uint8_t& nLength) {
-		nLength = sizeof(GD32_BOARD_NAME) - 1U;
-		return GD32_BOARD_NAME;
-	}
-
-	const char* GetSysName(uint8_t& nLength) {
-		nLength = 8;
-		return "Embedded";
-	}
-
-	const char* GetSocName(uint8_t& nLength) {
-		nLength = 4;
-		return "GD32";
-	}
-
-	const char *GetCpuName(uint8_t& nLength) {
-		nLength = sizeof(GD32_MCU_NAME) - 1U;
-		return GD32_MCU_NAME;
-	}
-
-	uint32_t GetBoardId() {
-		return 0;
-	}
-
-	const char *GetWebsiteUrl() {
-		return "https://gd32-dmx.org";
-	}
-
-	void WatchdogInit() {
-		m_bIsWatchdog = (SUCCESS == fwdgt_config(0xFFFF, FWDGT_PSC_DIV16));
-
-		if (m_bIsWatchdog) {
-			fwdgt_enable();
-		}
-	}
-
-	void WatchdogFeed() {
-		fwdgt_counter_reload();
-	}
-
-	void WatchdogStop() {
-		m_bIsWatchdog = false;
-		fwdgt_config(0xFFFF, FWDGT_PSC_DIV64);
-	}
-
-	bool IsWatchdog() const {
-		return m_bIsWatchdog;
-	}
-
-	bool Reboot();
-
-	float GetCoreTemperature() {
-		return gd32_adc_gettemp();
-	}
-
-	float GetCoreTemperatureMin() const {
-		return -40.0f;
-	}
-
-	float GetCoreTemperatureMax() const {
-		return 85.0f;
-	}
-
 	void SetModeWithLock(hardware::ledblink::Mode mode, bool doLock);
 	void SetMode(hardware::ledblink::Mode mode);
 	hardware::ledblink::Mode GetMode() const {
 		return m_Mode;
-	}
-
-	void Run() {
-#if defined (ENABLE_USB_HOST) && defined (CONFIG_USB_HOST_MSC)
-# if defined (GD32H7XX) || defined (GD32F4XX)
-		usbh_core_task(&usb_host_msc);
-# else
-		usbh_core_task(&usb_host);
-# endif
-#endif
-#if !defined(USE_FREE_RTOS)
-		SoftwareTimerRun();
-#endif
-		hal::panel_led_run();
-#if defined (DEBUG_STACK)
-		stack_debug_run();
-#endif
-#if defined (DEBUG_EMAC)
-		emac_debug_run();
-#endif
 	}
 
 	static Hardware *Get() {
@@ -298,7 +158,6 @@ private:
 #if !defined(DISABLE_RTC)
 	HwClock m_HwClock;
 #endif
-	bool m_bIsWatchdog { false };
 	hardware::ledblink::Mode m_Mode { hardware::ledblink::Mode::UNKNOWN };
 	bool m_doLock { false };
 	TimerHandle_t m_nTimerId { TIMER_ID_NONE };

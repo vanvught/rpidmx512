@@ -297,7 +297,7 @@ public:
 	void Run() {
 		uint16_t nForeignPort;
 		const auto nBytesReceived = Network::Get()->RecvFrom(m_nHandle, const_cast<const void **>(reinterpret_cast<void **>(&m_pReceiveBuffer)), &m_nIpAddressFrom, &nForeignPort);
-		m_nCurrentPacketMillis = Hardware::Get()->Millis();
+		m_nCurrentPacketMillis =hal::millis();
 
 		Process(nBytesReceived);
 
@@ -343,7 +343,7 @@ public:
 
 #if defined (ARTNET_SHOWFILE)
 	void HandleShowFile(const artnet::ArtDmx *pArtDmx) {
-		m_nCurrentPacketMillis = Hardware::Get()->Millis();
+		m_nCurrentPacketMillis =hal::millis();
 		m_nIpAddressFrom = Network::Get()->GetIp();
 		m_pReceiveBuffer = reinterpret_cast<uint8_t *>(const_cast<artnet::ArtDmx *>(pArtDmx));
 		HandleDmx();

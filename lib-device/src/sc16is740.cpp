@@ -190,11 +190,11 @@ void SC16IS740::ReadBytes(uint8_t *pBytes, uint32_t& nSize, uint32_t nTimeOut) {
 	uint32_t nRemaining = nSize;
 
 	while (nRemaining > 0) {
-		const uint32_t nMillis = Hardware::Get()->Millis();
+		const uint32_t nMillis =hal::millis();
 		uint32_t nAvailable;
 
 		while ((nAvailable = ReadRegister(SC16IS7X0_RXLVL)) == 0) {
-			if ((Hardware::Get()->Millis() - nTimeOut) > nMillis) {
+			if ((hal::millis() - nTimeOut) > nMillis) {
 				nRemaining = 0;
 				break;
 			}
@@ -218,11 +218,11 @@ void SC16IS740::FlushRead(uint32_t nTimeOut) {
 	bool bIsRemaining = true;
 
 	while (bIsRemaining) {
-		const auto nMillis = Hardware::Get()->Millis();
+		const auto nMillis =hal::millis();
 		uint32_t nAvailable;
 
 		while ((nAvailable = ReadRegister(SC16IS7X0_RXLVL)) == 0) {
-			if ((Hardware::Get()->Millis() - nTimeOut) > nMillis) {
+			if ((hal::millis() - nTimeOut) > nMillis) {
 				bIsRemaining = false;
 				break;
 			}

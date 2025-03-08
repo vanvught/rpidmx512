@@ -97,7 +97,7 @@ void DmxSerial::Input(const uint8_t *p, uint32_t nSize, uint32_t nFromIp, [[mayb
 	}
 
 	if (memcmp(pBuffer, cmd::REQUEST_RELOAD, length::REQUEST_RELOAD) == 0) {
-		Hardware::Get()->Reboot();
+		hal::reboot();
 		return;
 	}
 

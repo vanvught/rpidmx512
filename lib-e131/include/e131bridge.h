@@ -313,7 +313,7 @@ public:
 
 		const auto nBytesReceived = Network::Get()->RecvFrom(m_nHandle, const_cast<const void **>(reinterpret_cast<void **>(&m_pReceiveBuffer)), &m_nIpAddressFrom, &nForeignPort) ;
 
-		m_nCurrentPacketMillis = Hardware::Get()->Millis();
+		m_nCurrentPacketMillis =hal::millis();
 
 		if (__builtin_expect((nBytesReceived == 0), 1)) {
 			if (m_State.nEnableOutputPorts != 0) {
@@ -353,7 +353,7 @@ public:
 
 #if defined (NODE_SHOWFILE) && defined (CONFIG_SHOWFILE_PROTOCOL_NODE_E131)
 	void HandleShowFile(const TE131DataPacket *pE131DataPacket) {
-		m_nCurrentPacketMillis = Hardware::Get()->Millis();
+		m_nCurrentPacketMillis =hal::millis();
 		m_nIpAddressFrom = Network::Get()->GetIp();
 		m_pReceiveBuffer = reinterpret_cast<uint8_t *>(const_cast<TE131DataPacket *>(pE131DataPacket));
 		HandleDmx();

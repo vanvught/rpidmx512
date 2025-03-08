@@ -100,7 +100,7 @@ void ArtNetNode::HandleDmxIn() {
 
 				if ((m_InputPort[nPortIndex].GoodInput & artnet::GoodInput::DATA_RECIEVED) == artnet::GoodInput::DATA_RECIEVED) {
 					m_InputPort[nPortIndex].GoodInput = static_cast<uint8_t>(m_InputPort[nPortIndex].GoodInput & ~artnet::GoodInput::DATA_RECIEVED);
-					m_InputPort[nPortIndex].nMillis = Hardware::Get()->Millis();
+					m_InputPort[nPortIndex].nMillis =hal::millis();
 					sendArtDmx = true;
 
 					s_ReceivingMask &= ~(1U << nPortIndex);
@@ -112,7 +112,7 @@ void ArtNetNode::HandleDmxIn() {
 
 					SendDiag(artnet::PriorityCodes::DIAG_LOW, "%u: Input DMX updates per second is 0", nPortIndex);
 				} else if (m_InputPort[nPortIndex].nMillis != 0) {
-					const auto nMillis = Hardware::Get()->Millis();
+					const auto nMillis =hal::millis();
 					if ((nMillis - m_InputPort[nPortIndex].nMillis) > 1000) {
 						m_InputPort[nPortIndex].nMillis = nMillis;
 						sendArtDmx = true;

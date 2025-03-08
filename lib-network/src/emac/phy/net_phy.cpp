@@ -202,9 +202,9 @@ static bool phy_update_link(const uint32_t nAddress, PhyStatus& phyStatus) {
 	if (!(nBMSR & mmi::BMSR_AUTONEGO_COMPLETE)) {
 		puts("Waiting for PHY auto negotiation to complete");
 
-		const auto nMillis = Hardware::Get()->Millis();
+		const auto nMillis =hal::millis();
 		while (!(nBMSR & mmi::BMSR_AUTONEGO_COMPLETE)) {
-			if ((Hardware::Get()->Millis() - nMillis) > 5000) {
+			if ((hal::millis() - nMillis) > 5000) {
 				DEBUG_EXIT
 				return false;
 			}
@@ -213,7 +213,7 @@ static bool phy_update_link(const uint32_t nAddress, PhyStatus& phyStatus) {
 
 		phyStatus.link = Link::STATE_UP;
 
-		DEBUG_PRINTF("%u", Hardware::Get()->Millis() - nMillis);
+		DEBUG_PRINTF("%u",hal::millis() - nMillis);
 		DEBUG_EXIT
 		return true;
 	} else {

@@ -76,7 +76,7 @@ int main(int argc, char **argv) {
 	Network nw(argc, argv);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
-	hw.Print();
+	hal::print();
 	fw.Print();
 	nw.Print();
 
@@ -132,7 +132,7 @@ int main(int argc, char **argv) {
 #if defined (NODE_SHOWFILE)
 		showFile.Run();
 #endif
-		hw.Run();
+		hal::run();
 	}
 
 	return 0;

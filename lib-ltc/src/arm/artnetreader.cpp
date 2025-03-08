@@ -106,7 +106,7 @@ static inline bool timecode_is_equal(const struct ltc::TimeCode *pLtcTimeCode) {
 }
 
 void ArtNetReader::Handler(const struct artnet::TimeCode *pArtNetTimeCode) {
-	m_nTimestamp = Hardware::Get()->Millis();
+	m_nTimestamp =hal::millis();
 
 	if (ltc::Destination::IsEnabled(ltc::Destination::Output::LTC)) {
 		LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct ltc::TimeCode *>(pArtNetTimeCode));

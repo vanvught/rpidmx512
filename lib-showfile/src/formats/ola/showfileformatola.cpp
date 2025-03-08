@@ -61,7 +61,7 @@ void ShowFileFormat::Run() {
 		}
 	}
 
-	const auto nMillis = Hardware::Get()->Millis();
+	const auto nMillis =hal::millis();
 
 	if ((nMillis - m_nLastMillis) >= m_nDelayMillis) {
 		m_nLastMillis = nMillis;

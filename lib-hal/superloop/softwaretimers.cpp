@@ -61,7 +61,7 @@ TimerHandle_t SoftwareTimerAdd(const uint32_t nIntervalMillis, const TimerCallba
 		return -1;
 	}
 
-	const auto nCurrentTime = Hardware::Get()->Millis();
+	const auto nCurrentTime =hal::millis();
 	// TODO Prevent potential overflow when calculating expiration time.
 
 	Timer newTimer = {
@@ -97,7 +97,7 @@ bool SoftwareTimerDelete(TimerHandle_t& nId) {
 bool SoftwareTimerChange(const TimerHandle_t nId, const uint32_t nIntervalMillis) {
 	for (uint32_t i = 0; i < m_nTimersCount; ++i) {
 		if (m_Timers[i].nId == nId) {
-			const auto nCurrentTime = Hardware::Get()->Millis();
+			const auto nCurrentTime =hal::millis();
 			m_Timers[i].nExpireTime = nCurrentTime + nIntervalMillis;
 			m_Timers[i].nIntervalMillis = nIntervalMillis;
 			return true;
@@ -112,7 +112,7 @@ bool SoftwareTimerChange(const TimerHandle_t nId, const uint32_t nIntervalMillis
 }
 
 void SoftwareTimerRun() {
-    const auto nCurrentTime = Hardware::Get()->Millis();
+    const auto nCurrentTime =hal::millis();
 
     for (uint32_t i = 0; i < m_nTimersCount; i++) {
         if (m_Timers[i].nExpireTime <= nCurrentTime) {

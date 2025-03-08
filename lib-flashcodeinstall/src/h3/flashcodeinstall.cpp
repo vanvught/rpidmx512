@@ -67,7 +67,7 @@ FlashCodeInstall::FlashCodeInstall() {
 		Display::Get()->Write(1, FlashCode::GetName());
 	}
 
-	if (Hardware::Get()->GetBootDevice() == hardware::BootDevice::MMC0) {
+	if (hal::boot_device() == hal::BootDevice::MMC0) {
 		DEBUG_PUTS("BOOT_DEVICE_MMC0");
 
 		FlashCodeInstallParams params;

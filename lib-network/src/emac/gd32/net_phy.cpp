@@ -156,10 +156,10 @@ bool phy_config(const uint32_t nAddress) {
 	 * IEEE spec.
 	 */
 
-	const auto nMillis = Hardware::Get()->Millis();
+	const auto nMillis = millis();
 	uint16_t nValue;
 
-	while (Hardware::Get()->Millis() - nMillis < 500U) {
+	while (millis() - nMillis < 500U) {
 		if (!phy_read(nAddress, mmi::REG_BMCR, nValue)) {
 			DEBUG_PUTS("PHY status read failed");
 			DEBUG_EXIT
@@ -167,7 +167,7 @@ bool phy_config(const uint32_t nAddress) {
 		}
 
 		if (!(nValue & mmi::BMCR_RESET)) {
-			DEBUG_PRINTF("%u", Hardware::Get()->Millis() - nMillis);
+			DEBUG_PRINTF("%u", millis() - nMillis);
 			DEBUG_EXIT
 			return true;
 		}
@@ -179,7 +179,7 @@ bool phy_config(const uint32_t nAddress) {
 		return false;
 	}
 
-	DEBUG_PRINTF("%u", Hardware::Get()->Millis() - nMillis);
+	DEBUG_PRINTF("%u", millis() - nMillis);
 	DEBUG_EXIT
 	return true;
 }

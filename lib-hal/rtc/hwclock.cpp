@@ -23,6 +23,10 @@
  * THE SOFTWARE.
  */
 
+#if defined (DEBUG_HWCLOCK)
+# undef NDEBUG
+#endif
+
 #include <cassert>
 #include <cstdint>
 #include <cstdio>
@@ -33,8 +37,6 @@
 #include "hardware.h"
 
 #include "debug.h"
-
-HwClock *HwClock::s_pThis;
 
 HwClock::HwClock() {
 	assert(s_pThis == nullptr);
@@ -81,10 +83,10 @@ void HwClock::HcToSys() {
 		return;
 	}
 
-	const auto bIsWatchdog = Hardware::Get()->IsWatchdog();
+	const auto bIsWatchdog = hal::watchdog();
 
 	if (bIsWatchdog) {
-		Hardware::Get()->WatchdogStop();
+		hal::watchdog_stop();
 	}
 
 	struct tm rtcT1;
@@ -125,10 +127,10 @@ void HwClock::HcToSys() {
 
 	settimeofday(&tv, nullptr);
 
-	m_nLastHcToSysMillis = Hardware::Get()->Millis();
+	m_nLastHcToSysMillis =hal::millis();
 
 	if (bIsWatchdog) {
-		Hardware::Get()->WatchdogInit();
+		hal::watchdog_init();
 	}
 
 	DEBUG_EXIT
@@ -144,10 +146,10 @@ void HwClock::SysToHc() {
 		return;
 	}
 
-	const auto bIsWatchdog = Hardware::Get()->IsWatchdog();
+	const auto bIsWatchdog = hal::watchdog();
 
 	if (bIsWatchdog) {
-		Hardware::Get()->WatchdogStop();
+		hal::watchdog_stop();
 	}
 
 	struct timeval tv1;
@@ -165,7 +167,7 @@ void HwClock::SysToHc() {
 	}
 
 	if (bIsWatchdog) {
-		Hardware::Get()->WatchdogInit();
+		hal::watchdog_init();
 	}
 
 	DEBUG_EXIT

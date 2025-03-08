@@ -115,7 +115,7 @@ int32_t GPS::ParseDecimal(const char *p, uint32_t& nLength) {
 
 void GPS::SetTime(int32_t nTime) {
 	if (nTime != 0) {
-		m_nTimeTimestampMillis = Hardware::Get()->Millis();
+		m_nTimeTimestampMillis =hal::millis();
 		m_IsTimeUpdated = true;
 
 		nTime /= 100;
@@ -128,7 +128,7 @@ void GPS::SetTime(int32_t nTime) {
 
 void GPS::SetDate(int32_t nDate) {
 	if (nDate != 0) {
-		m_nDateTimestampMillis = Hardware::Get()->Millis();
+		m_nDateTimestampMillis =hal::millis();
 		m_IsDateUpdated = true;
 
 		m_Tm.tm_year = 100 + (nDate % 100);	// The number of years since 1900.
@@ -149,15 +149,15 @@ void GPS::Start() {
 		UartSetBaud(115200);
 		UartSend(GPSConst::BAUD_115200[static_cast<unsigned>(m_tModule)]);
 
-		const auto nMillis = Hardware::Get()->Millis();
+		const auto nMillis =hal::millis();
 
-		while ((Hardware::Get()->Millis() - nMillis) < 1000) {
+		while ((hal::millis() - nMillis) < 1000) {
 			m_pSentence = const_cast<char *>(UartGetSentence());
 
 			if (m_pSentence != nullptr) {
 				DumpSentence(m_pSentence);
 #ifndef NDEBUG
-				printf("[%u]\n", Hardware::Get()->Millis() - nMillis);
+				printf("[%u]\n",hal::millis() - nMillis);
 #endif
 				break;
 			}

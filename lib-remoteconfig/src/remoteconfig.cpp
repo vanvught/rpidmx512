@@ -417,7 +417,7 @@ void RemoteConfig::HandleUptime() {
 		return;
 	}
 
-	const auto nUptime = Hardware::Get()->GetUpTime();
+	const auto nUptime = hal::uptime();
 	const auto nLength = snprintf(m_pUdpBuffer, remoteconfig::udp::BUFFER_SIZE - 1, "uptime: %us\n", static_cast<unsigned int>(nUptime));
 
 	Network::Get()->SendTo(m_nHandle, m_pUdpBuffer, static_cast<uint32_t>(nLength), m_nIPAddressFrom, remoteconfig::udp::PORT);

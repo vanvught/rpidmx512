@@ -31,7 +31,7 @@
 #include "dmxserialchanneldata.h"
 #include "dmxserialtftp.h"
 #include "../src/serial/serial.h"
-
+#include "hal_uart.h"
 #include "dmxnode.h"
 
 namespace DmxSerialDefaults {

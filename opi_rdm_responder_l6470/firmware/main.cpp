@@ -125,11 +125,11 @@ int main() {
 	rdmResponder.Print();
 
 	hw.SetMode(hardware::ledblink::Mode::NORMAL);
-	hw.WatchdogInit();
+	hal::watchdog_init();
 
 	for (;;) {
-		hw.WatchdogFeed();
+		hal::watchdog_feed();
 		rdmResponder.Run();
-		hw.Run();
+		hal::run();
 	}
 }

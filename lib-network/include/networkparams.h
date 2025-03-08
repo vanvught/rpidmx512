@@ -57,6 +57,7 @@ struct Params {
 #endif
 
 struct Mask {
+	static constexpr auto NAME_SERVER = (1U << 4);
 	static constexpr auto NTP_SERVER = (1U << 6);
 };
 

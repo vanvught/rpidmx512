@@ -124,12 +124,12 @@ private:
 	}
 
 	bool IsReadable(uint32_t nTimeOut) {
-		const auto nMillis = Hardware::Get()->Millis();
+		const auto nMillis =hal::millis();
 		do {
 			if (IsReadable()) {
 				return true;
 			}
-		} while ((Hardware::Get()->Millis() - nTimeOut) < nMillis);
+		} while ((hal::millis() - nTimeOut) < nMillis);
 
 		return false;
 	}

@@ -84,9 +84,9 @@ void Widget::UsbSendPackage(const uint8_t *pData, uint16_t Start, uint16_t nData
 }
 
 bool Widget::UsbCanSend() {
-	const auto nMicros = Hardware::Get()->Micros();
+	const auto nMicros = hal::micros();
 
-	while (!usb_can_write() && (Hardware::Get()->Micros() - nMicros < 1000)) {
+	while (!usb_can_write() && (hal::micros() - nMicros < 1000)) {
 	}
 
 	if (!usb_can_write()) {

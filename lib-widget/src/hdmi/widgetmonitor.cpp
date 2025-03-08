@@ -61,7 +61,7 @@ using namespace dmxsingle;
 using namespace dmx;
 
 void WidgetMonitor::Uptime(uint8_t nLine) {
-	auto nUptime = Hardware::Get()->GetUpTime();
+	auto nUptime = hal::uptime();
 	auto ltime = time(nullptr);
 	auto *pLocalTime = localtime(&ltime);
 

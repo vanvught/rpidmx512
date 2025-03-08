@@ -650,7 +650,7 @@ void RDMHandler::GetProductDetailIdList([[maybe_unused]] uint16_t nSubDevice) {
 
 void RDMHandler::GetDeviceModelDescription([[maybe_unused]] uint16_t nSubDevice) {
 	uint8_t nBoardNameLength;
-	const char *pBoardModel = Hardware::Get()->GetBoardName(nBoardNameLength);
+	const char *pBoardModel = hal::board_name(nBoardNameLength);
 
 	HandleString(pBoardModel, nBoardNameLength);
 	RespondMessageAck();
@@ -724,7 +724,7 @@ void RDMHandler::SetResetDevice([[maybe_unused]] bool IsBroadcast, [[maybe_unuse
 		return;
 	}
 
-	if(!Hardware::Get()->Reboot()) {
+	if(!hal::reboot()) {
 		RespondMessageNack(E120_NR_WRITE_PROTECT);
 	}
 }
@@ -809,7 +809,7 @@ void RDMHandler::GetBootSoftwareVersionId([[maybe_unused]] uint16_t nSubDevice) 
 		return;
 	}
 
-	uint32_t boot_software_version_id = Hardware::Get()->GetReleaseId();
+	uint32_t boot_software_version_id = hal::RELEASE_ID;
 
 	auto *pRdmDataOut = reinterpret_cast<struct TRdmMessage *>(m_pRdmDataOut);
 
@@ -824,7 +824,7 @@ void RDMHandler::GetBootSoftwareVersionId([[maybe_unused]] uint16_t nSubDevice) 
 
 void RDMHandler::GetBootSoftwareVersionLabel([[maybe_unused]] uint16_t nSubDevice) {
 	uint8_t nSysNameLength;
-	const auto *pSysName = Hardware::Get()->GetSysName(nSysNameLength);
+	const auto *pSysName = hal::sys_name(nSysNameLength);
 
 	HandleString(pSysName, std::min(static_cast<uint8_t>(RDM_BOOT_SOFTWARE_VERSION_LABEL_MAX_LENGTH), nSysNameLength));
 	RespondMessageAck();
@@ -1105,7 +1105,7 @@ void RDMHandler::SetRecordSensors(bool IsBroadcast, [[maybe_unused]] uint16_t nS
 }
 
 void RDMHandler::GetDeviceHours([[maybe_unused]] uint16_t nSubDevice) {
-	uint64_t device_hours = Hardware::Get()->GetUpTime() / 3600;
+	uint64_t device_hours = hal::uptime() / 3600U;
 	// The value for the Device Hours field shall be unsigned and not roll over when maximum value is reached.
 	if (device_hours > UINT32_MAX) {
 		device_hours = UINT32_MAX;
@@ -1235,7 +1235,7 @@ void RDMHandler::SetRealTimeClock(bool IsBroadcast, [[maybe_unused]] uint16_t nS
 	tTime.tm_min = pRdmDataIn->param_data[5];
 	tTime.tm_sec = pRdmDataIn->param_data[6];
 
-	if ((!IsBroadcast) && (!Hardware::Get()->SetTime(&tTime))) {
+	if ((!IsBroadcast) && (!hal::set_rtc(&tTime))) {
 		RespondMessageNack(E120_NR_WRITE_PROTECT);
 	}
 

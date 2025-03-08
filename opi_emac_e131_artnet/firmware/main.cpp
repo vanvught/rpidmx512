@@ -128,14 +128,14 @@ int main() {
 
 	display.TextStatus(DmxNodeMsgConst::STARTED, CONSOLE_GREEN);
 
-	hw.WatchdogInit();
+	hal::watchdog_init();
 
 	for (;;) {
-		hw.WatchdogFeed();
+		hal::watchdog_feed();
 		nw.Run();
 		dmxNodeNode.Run();
 		controller.Run();
 		display.Run();
-		hw.Run();
+		hal::run();
 	}
 }

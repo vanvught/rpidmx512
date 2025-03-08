@@ -98,7 +98,7 @@ private:
 	bool m_bRtcAlarmEnabled { false };
 	bool m_bRtcAlarmPending { false };
 
-	static HwClock *s_pThis;
+	static inline HwClock *s_pThis;
 };
 
 #endif /* HWCLOCK_H_ */
