@@ -52,6 +52,11 @@
 #include "remoteconfig.h"
 #include "remoteconfigparams.h"
 
+namespace hal {
+void reboot_handler() {
+}
+}  // namespace hal
+
 int main() {
 	Hardware hw;
 	Display display;

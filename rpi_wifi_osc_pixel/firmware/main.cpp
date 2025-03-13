@@ -78,7 +78,7 @@ int main() {
 
 	OSCServerParams oscServerParams;
 	oscServerParams.Load();
-	oscServerParams.Set(&oscServer);
+	oscServerParams.Set();
 
 	uint8_t nHwTextLength;
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hal::board_name(nHwTextLength), __DATE__, __TIME__);
