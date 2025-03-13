@@ -1,0 +1,18 @@
+EXTRA_INCLUDES+=../lib-properties/include
+	
+ifneq ($(MAKE_FLAGS),)
+	ifeq ($(findstring NODE_ARTNET,$(MAKE_FLAGS)), NODE_ARTNET)
+		EXTRA_SRCDIR+=src/params
+	endif
+	
+	ifeq ($(findstring NODE_E131,$(MAKE_FLAGS)), NODE_E131)
+		EXTRA_SRCDIR+=src/params	
+	endif
+else
+	DEFINES+=NODE_ARTNET
+	DEFINES+=ARTNET_VERSION=4
+	DEFINES+=DMXNODE_PORTS=4
+	DEFINES+=OUTPUT_DMX_PIXEL
+	DEFINES+=CONFIG_DMXNODE_PIXEL_MAX_PORTS=4
+	EXTRA_SRCDIR+=src/params
+endif
