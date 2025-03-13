@@ -2,7 +2,7 @@
  * @file pca9685dmxparams.h
  *
  */
-/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,33 +42,16 @@ struct Params {
 	uint16_t nServoRightUs;		///< 2	18
 } __attribute__((packed));
 
-static_assert(sizeof(struct Params) <= 32, "struct Params is too large");
+static_assert(sizeof(struct Params) <= configstore::STORE_SIZE[static_cast<uint32_t>(configstore::Store::PCA9685)]);
 
 struct Mask {
-	static constexpr uint32_t ADDRESS			   = (1U << 0);
-	static constexpr uint32_t MODE 				   = (1U << 1);
-	static constexpr uint32_t CHANNEL_COUNT		   = (1U << 2);
-	static constexpr uint32_t DMX_START_ADDRESS    = (1U << 3);
-	static constexpr uint32_t USE_8BIT	       	   = (1U << 4);
-	static constexpr uint32_t LED_PWM_FREQUENCY    = (1U << 5);
-	static constexpr uint32_t LED_OUTPUT_INVERT    = (1U << 6);
-	static constexpr uint32_t LED_OUTPUT_OPENDRAIN = (1U << 7);
-	static constexpr uint32_t SERVO_LEFT_US 	   = (1U << 8);
-	static constexpr uint32_t SERVO_CENTER_US 	   = (1U << 9);
-	static constexpr uint32_t SERVO_RIGHT_US 	   = (1U << 10);
+	static constexpr uint32_t MODE		       	   = (1U << 0);
+	static constexpr uint32_t USE_8BIT	       	   = (1U << 1);
+	static constexpr uint32_t LED_OUTPUT_INVERT    = (1U << 2);
+	static constexpr uint32_t LED_OUTPUT_OPENDRAIN = (1U << 3);
+
 };
 }  // namespace pca9685dmxparams
-
-class PCA9685DmxParamsStore {
-public:
-	static void Update(const struct pca9685dmxparams::Params *pParams) {
-		ConfigStore::Get()->Update(configstore::Store::PCA9685, pParams, sizeof(struct pca9685dmxparams::Params));
-	}
-
-	static void Copy(struct pca9685dmxparams::Params *pParams) {
-		ConfigStore::Get()->Copy(configstore::Store::PCA9685, pParams, sizeof(struct pca9685dmxparams::Params));
-	}
-};
 
 class PCA9685DmxParams {
 public:
@@ -82,15 +65,15 @@ public:
 		Builder(nullptr, pBuffer, nLength, nSize);
 	}
 
-	void Set(PCA9685Dmx *pPCA9685Dmx);
+	void Set();
 
 	static void StaticCallbackFunction(void *p, const char *s);
 
 private:
 	void Dump();
-    void callbackFunction(const char *pLine);
+    void CallbackFunction(const char *pLine);
     void SetBool(const uint8_t nValue, const uint32_t nMask);
-    bool isMaskSet(uint32_t nMask) const {
+    bool IsMaskSet(const uint32_t nMask) const {
     	return (m_Params.nSetList & nMask) == nMask;
     }
 

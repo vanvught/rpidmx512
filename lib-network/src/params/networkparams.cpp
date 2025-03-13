@@ -42,10 +42,18 @@
 
 #include "debug.h"
 
+namespace networkparams::store {
+	static void Update(const struct networkparams::Params *pParams) {
+		ConfigStore::Get()->Update(configstore::Store::NETWORK, pParams, sizeof(struct networkparams::Params));
+	}
+
+	static void Copy(struct networkparams::Params *pParams) {
+		ConfigStore::Get()->Copy(configstore::Store::NETWORK, pParams, sizeof(struct networkparams::Params));
+	}
+}  // namespace networkparams::store
+
 NetworkParams::NetworkParams() {
 	DEBUG_ENTRY
-
-	memset(&m_Params, 0, sizeof(struct networkparams::Params));
 
 	DEBUG_EXIT
 }
@@ -73,6 +81,8 @@ void NetworkParams::Load(const char *pBuffer, uint32_t nLength) {
 
 	assert(pBuffer != nullptr);
 	assert(nLength != 0);
+
+	memset(&m_Params, 0, sizeof(m_Params));
 
 	ReadConfigFile config(NetworkParams::StaticCallbackFunction, this);
 
@@ -167,6 +177,7 @@ void NetworkParams::StaticCallbackFunction(void *p, const char *s) {
 
 void NetworkParams::Builder(const struct networkparams::Params *pParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
+	DEBUG_PRINTF("pParams=%p", pParams);
 
 	assert(pBuffer != nullptr);
 
@@ -180,34 +191,40 @@ void NetworkParams::Builder(const struct networkparams::Params *pParams, char *p
 
 	// Fixed
 	builder.AddIpAddress("secondary_ip", Network::Get()->GetSecondaryIp(), false);
+	builder.Add(NetworkParamsConst::USE_STATIC_IP, m_Params.bUseStaticIp, true);
+
+	builder.AddComment("Static IP");
 
 	if (m_Params.nLocalIp == 0) {
 		m_Params.nLocalIp = Network::Get()->GetIp();
 	}
 
+	builder.AddIpAddress(NetworkParamsConst::IP_ADDRESS, m_Params.nLocalIp);
+
 	if (m_Params.nNetmask == 0) {
 		m_Params.nNetmask = Network::Get()->GetNetmask();
 	}
+
+	builder.AddIpAddress(NetworkParamsConst::NET_MASK, m_Params.nNetmask);
+
 
 	if (m_Params.nGatewayIp == 0) {
 		m_Params.nGatewayIp = Network::Get()->GetGatewayIp();
 	}
 
-	if (m_Params.aHostName[0] == '\0') {
-		strncpy(m_Params.aHostName, Network::Get()->GetHostName(), net::HOSTNAME_SIZE - 1);
-		m_Params.aHostName[net::HOSTNAME_SIZE - 1] = '\0';
-	}
-
-	builder.Add(NetworkParamsConst::USE_STATIC_IP, m_Params.bUseStaticIp, true);
-
-	builder.AddComment("Static IP");
-	builder.AddIpAddress(NetworkParamsConst::IP_ADDRESS, m_Params.nLocalIp);
-	builder.AddIpAddress(NetworkParamsConst::NET_MASK, m_Params.nNetmask);
 	builder.AddIpAddress(NetworkParamsConst::DEFAULT_GATEWAY, m_Params.nGatewayIp);
 #if defined(ESP8266)
 	builder.AddIpAddress(NetworkParamsConst::NAME_SERVER, m_Params.nNameServerIp);
 #endif
-	builder.Add(NetworkParamsConst::HOSTNAME, m_Params.aHostName);
+
+	const auto isHostNameSet = (m_Params.aHostName[0] != '\0');
+
+	if (!isHostNameSet) {
+		strncpy(m_Params.aHostName, Network::Get()->GetHostName(), net::HOSTNAME_SIZE - 1);
+		m_Params.aHostName[net::HOSTNAME_SIZE - 1] = '\0';
+	}
+
+	builder.Add(NetworkParamsConst::HOSTNAME, m_Params.aHostName, isHostNameSet);
 
 	builder.AddComment("NTP Server");
 	builder.AddIpAddress(NetworkParamsConst::NTP_SERVER, m_Params.nNtpServerIp, IsMaskSet(networkparams::Mask::NTP_SERVER));

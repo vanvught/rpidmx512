@@ -76,7 +76,7 @@ void RtpMidiReader::Start() {
 #endif
 
 	LtcOutputs::Get()->Init();
-	Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
+	hal::statusled_set_mode(hal::StatusLedMode::NORMAL);
 }
 
 void RtpMidiReader::Stop() {
@@ -272,9 +272,9 @@ void RtpMidiReader::Run() {
 
 	__DMB();
 	if (gv_ltc_nUpdatesPerSecond != 0) {
-		Hardware::Get()->SetMode(hardware::ledblink::Mode::DATA);
+		hal::statusled_set_mode(hal::StatusLedMode::DATA);
 	} else {
 		LtcOutputs::Get()->ShowSysTime();
-		Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
+		hal::statusled_set_mode(hal::StatusLedMode::NORMAL);
 	}
 }

@@ -130,12 +130,8 @@ void E131Bridge::Start() {
 	}
 #endif
 
-#if !defined(E131_HAVE_ARTNET)
-	SoftwareTimerAdd(200, StaticCallbackFunctionLedPanelOff);
-#endif
-
 	m_State.status = e131bridge::Status::ON;
-	Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
+	hal::statusled_set_mode(hal::StatusLedMode::NORMAL);
 }
 
 void E131Bridge::Stop() {
@@ -159,7 +155,7 @@ void E131Bridge::Stop() {
 #endif
 
 	m_State.status = e131bridge::Status::OFF;
-	Hardware::Get()->SetMode(hardware::ledblink::Mode::OFF_OFF);
+	hal::statusled_set_mode(hal::StatusLedMode::OFF_OFF);
 }
 
 void E131Bridge::SetSynchronizationAddress(bool bSourceA, bool bSourceB, uint16_t nSynchronizationAddress) {
@@ -663,7 +659,7 @@ void E131Bridge::SetNetworkDataLossCondition(bool bSourceA, bool bSourceB) {
 		}
 	}
 
-	Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
+	hal::statusled_set_mode(hal::StatusLedMode::NORMAL);
 	hal::panel_led_off(hal::panelled::SACN);
 
 	m_State.nReceivingDmx &= static_cast<uint8_t>(~(1U << static_cast<uint8_t>(dmxnode::PortDirection::OUTPUT)));
@@ -759,12 +755,12 @@ void E131Bridge::Process() {
 	HandleDmxIn();
 #endif
 
-	// The hardware::ledblink::Mode::FAST is for RDM Identify (Art-Net 4)
-	if (m_bEnableDataIndicator && (Hardware::Get()->GetMode() != hardware::ledblink::Mode::FAST)) {
+	// The hal::StatusLedMode::FAST is for RDM Identify (Art-Net 4)
+	if (m_bEnableDataIndicator && (hal::statusled_get_mode() != hal::StatusLedMode::FAST)) {
 		if (m_State.nReceivingDmx != 0) {
-			Hardware::Get()->SetMode(hardware::ledblink::Mode::DATA);
+			hal::statusled_set_mode(hal::StatusLedMode::DATA);
 		} else {
-			Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
+			hal::statusled_set_mode(hal::StatusLedMode::NORMAL);
 		}
 	}
 

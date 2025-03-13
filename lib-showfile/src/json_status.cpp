@@ -2,7 +2,7 @@
  * @file json_status.cpp
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,7 +43,7 @@ static void StaticCallbackFunction([[maybe_unused]] void *p, const char *s) {
 
 	if (Sscan::Uint8(s, ShowFileParamsConst::SHOW, nValue8) == Sscan::OK) {
 		if (nValue8 <= showfile::FILE_MAX_NUMBER) {
-			ShowFile::Get()->SetPlayerShowFileCurrent(nValue8);
+			ShowFile::Get().SetPlayerShowFileCurrent(nValue8);
 		}
 		return;
 	}
@@ -51,14 +51,14 @@ static void StaticCallbackFunction([[maybe_unused]] void *p, const char *s) {
 #if !defined (CONFIG_SHOWFILE_DISABLE_RECORD)
 	if (Sscan::Uint8(s, "recorder", nValue8) == Sscan::OK) {
 		if (nValue8 <= showfile::FILE_MAX_NUMBER) {
-			ShowFile::Get()->SetRecorderShowFileCurrent(nValue8);
+			ShowFile::Get().SetRecorderShowFileCurrent(nValue8);
 		}
 		return;
 	}
 #endif
 
 	if (Sscan::Uint8(s, ShowFileParamsConst::OPTION_LOOP, nValue8) == Sscan::OK) {
-		ShowFile::Get()->DoLoop(nValue8 != 0);
+		ShowFile::Get().DoLoop(nValue8 != 0);
 		return;
 	}
 
@@ -67,23 +67,23 @@ static void StaticCallbackFunction([[maybe_unused]] void *p, const char *s) {
 
 	if (Sscan::Char(s, "status" , action, nLength) == Sscan::OK) {
 		if (strncmp(action, "play", nLength) == 0) {
-			ShowFile::Get()->Play();
+			ShowFile::Get().Play();
 			return;
 		}
 
 		if (strncmp(action, "stop", nLength) == 0) {
-			ShowFile::Get()->Stop();
+			ShowFile::Get().Stop();
 			return;
 		}
 
 		if (strncmp(action, "resume", nLength) == 0) {
-			ShowFile::Get()->Resume();
+			ShowFile::Get().Resume();
 			return;
 		}
 
 #if !defined (CONFIG_SHOWFILE_DISABLE_RECORD)
 		if (strncmp(action, "record", nLength) == 0) {
-			ShowFile::Get()->Record();
+			ShowFile::Get().Record();
 			return;
 		}
 #endif
@@ -95,17 +95,17 @@ static void StaticCallbackFunction([[maybe_unused]] void *p, const char *s) {
 
 namespace remoteconfig::showfile {
 uint32_t json_get_status(char *pOutBuffer, const uint32_t nOutBufferSize) {
-	const auto status = ShowFile::Get()->GetStatus();
+	const auto status = ShowFile::Get().GetStatus();
 	assert(status != ::showfile::Status::UNDEFINED);
 
 	const auto nLength = static_cast<uint32_t>(snprintf(pOutBuffer, nOutBufferSize,
 						"{\"mode\":\"%s\",\"%s\":\"%u\",\"status\":\"%s\",\"%s\":\"%s\"}",
-						ShowFile::Get()->GetMode() == ::showfile::Mode::RECORDER ? "Recorder" : "Player",
+						ShowFile::Get().GetMode() == ::showfile::Mode::RECORDER ? "Recorder" : "Player",
 						ShowFileParamsConst::SHOW,
-						static_cast<unsigned int>(ShowFile::Get()->GetShowFileCurrent()),
+						static_cast<unsigned int>(ShowFile::Get().GetShowFileCurrent()),
 						::showfile::STATUS[static_cast<int>(status)],
 						ShowFileParamsConst::OPTION_LOOP,
-						ShowFile::Get()->GetDoLoop() ? "1" : "0"));
+						ShowFile::Get().GetDoLoop() ? "1" : "0"));
 	return nLength;
 }
 
@@ -115,4 +115,3 @@ void json_set_status(const char *pBuffer, const uint32_t nBufferSize) {
 	::showfile::display_status();
 }
 } // namespace remoteconfig::showfile
-

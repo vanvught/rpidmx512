@@ -230,10 +230,8 @@ void ArtNetNode::Start() {
 	E131Bridge::Start();
 #endif
 
-	SoftwareTimerAdd(200, StaticCallbackFunctionLedPanelOff);
-
 	m_State.status = artnet::Status::ON;
-	Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
+	hal::statusled_set_mode(hal::StatusLedMode::NORMAL);
 
 	DEBUG_EXIT
 }
@@ -263,7 +261,7 @@ void ArtNetNode::Stop() {
 	}
 #endif
 
-	Hardware::Get()->SetMode(hardware::ledblink::Mode::OFF_OFF);
+	hal::statusled_set_mode(hal::StatusLedMode::OFF_OFF);
 	hal::panel_led_off(hal::panelled::ARTNET);
 
 	m_ArtPollReply.Status1 = static_cast<uint8_t>((m_ArtPollReply.Status1 & ~artnet::Status1::INDICATOR_MASK) | artnet::Status1::INDICATOR_MUTE_MODE);
@@ -471,18 +469,18 @@ void ArtNetNode::Process(const uint32_t nBytesReceived) {
 #endif
 
 #if (DMXNODE_PORTS > 0)
-		if ((((m_ArtPollReply.Status1 & artnet::Status1::INDICATOR_MASK) == artnet::Status1::INDICATOR_NORMAL_MODE)) && (Hardware::Get()->GetMode() != hardware::ledblink::Mode::FAST)) {
+		if ((((m_ArtPollReply.Status1 & artnet::Status1::INDICATOR_MASK) == artnet::Status1::INDICATOR_NORMAL_MODE)) && (hal::statusled_get_mode() != hal::StatusLedMode::FAST)) {
 #if (ARTNET_VERSION >= 4)
 			if (m_State.nReceivingDmx != 0) {
-				SetLedBlinkMode4(hardware::ledblink::Mode::DATA);
+				SetLedBlinkMode4(hal::StatusLedMode::DATA);
 			} else {
-				SetLedBlinkMode4(hardware::ledblink::Mode::NORMAL);
+				SetLedBlinkMode4(hal::StatusLedMode::NORMAL);
 			}
 #else
 			if (m_State.nReceivingDmx != 0) {
-				Hardware::Get()->SetMode(hardware::ledblink::Mode::DATA);
+				hal::statusled_set_mode(hal::StatusLedMode::DATA);
 			} else {
-				Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
+				hal::statusled_set_mode(hal::StatusLedMode::NORMAL);
 			}
 #endif
 		}
@@ -623,18 +621,18 @@ void ArtNetNode::Process(const uint32_t nBytesReceived) {
 #endif
 
 #if (DMXNODE_PORTS > 0)
-	if ((((m_ArtPollReply.Status1 & artnet::Status1::INDICATOR_MASK) == artnet::Status1::INDICATOR_NORMAL_MODE)) && (Hardware::Get()->GetMode() != hardware::ledblink::Mode::FAST)) {
+	if ((((m_ArtPollReply.Status1 & artnet::Status1::INDICATOR_MASK) == artnet::Status1::INDICATOR_NORMAL_MODE)) && (hal::statusled_get_mode() != hal::StatusLedMode::FAST)) {
 #if (ARTNET_VERSION >= 4)
 		if (m_State.nReceivingDmx != 0) {
-			SetLedBlinkMode4(hardware::ledblink::Mode::DATA);
+			SetLedBlinkMode4(hal::StatusLedMode::DATA);
 		} else {
-			SetLedBlinkMode4(hardware::ledblink::Mode::NORMAL);
+			SetLedBlinkMode4(hal::StatusLedMode::NORMAL);
 		}
 #else
 		if (m_State.nReceivingDmx != 0) {
-			Hardware::Get()->SetMode(hardware::ledblink::Mode::DATA);
+			hal::statusled_set_mode(hal::StatusLedMode::DATA);
 		} else {
-			Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
+			hal::statusled_set_mode(hal::StatusLedMode::NORMAL);
 		}
 #endif
 	}

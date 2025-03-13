@@ -64,6 +64,16 @@
 
 #include "debug.h"
 
+namespace rdm::sensorsparams::store {
+static void Update(const rdm::sensorsparams::Params *pParams) {
+	ConfigStore::Get()->Update(configstore::Store::RDMSENSORS, pParams, sizeof(struct rdm::sensorsparams::Params));
+}
+
+static void Copy(rdm::sensorsparams::Params *pParams) {
+	ConfigStore::Get()->Copy(configstore::Store::RDMSENSORS, pParams, sizeof(struct rdm::sensorsparams::Params));
+}
+}  // namespace rdm::sensorsparams::store
+
 RDMSensorsParams::RDMSensorsParams() {
 	DEBUG_ENTRY
 
@@ -75,16 +85,14 @@ RDMSensorsParams::RDMSensorsParams() {
 void RDMSensorsParams::Load() {
 	DEBUG_ENTRY
 
-	m_Params.nDevices = 0;
-
 #if !defined(DISABLE_FS)
 	ReadConfigFile configfile(RDMSensorsParams::StaticCallbackFunction, this);
 
 	if (configfile.Read(RDMSensorsConst::PARAMS_FILE_NAME)) {
-		RDMSensorsParamsStore::Update(&m_Params);
+		rdm::sensorsparams::store::Update(&m_Params);
 	} else
 #endif
-		RDMSensorsParamsStore::Copy(&m_Params);
+		rdm::sensorsparams::store::Copy(&m_Params);
 
 	// Sanity check
 	if (m_Params.nDevices >= rdm::sensors::devices::MAX) {
@@ -103,13 +111,11 @@ void RDMSensorsParams::Load(const char *pBuffer, uint32_t nLength) {
 	assert(pBuffer != nullptr);
 	assert(nLength != 0);
 
-	m_Params.nDevices = 0;
-
 	ReadConfigFile config(RDMSensorsParams::StaticCallbackFunction, this);
 
 	config.Read(pBuffer, nLength);
 
-	RDMSensorsParamsStore::Update(&m_Params);
+	rdm::sensorsparams::store::Update(&m_Params);
 
 #ifndef NDEBUG
 	Dump();
@@ -125,7 +131,7 @@ void RDMSensorsParams::Builder(const rdm::sensorsparams::Params *pParams, char *
 	if (pParams != nullptr) {
 		memcpy(&m_Params, pParams, sizeof(struct rdm::sensorsparams::Params));
 	} else {
-		RDMSensorsParamsStore::Copy(&m_Params);
+		rdm::sensorsparams::store::Copy(&m_Params);
 	}
 
 	PropertiesBuilder builder(RDMSensorsConst::PARAMS_FILE_NAME, pBuffer, nLength);

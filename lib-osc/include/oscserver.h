@@ -64,6 +64,11 @@ class OscServer {
 public:
 	OscServer();
 
+	OscServer(const OscServer&) = delete;
+	OscServer& operator=(const OscServer&) = delete;
+
+	~OscServer() = default;
+
 	void Start() {
 		DEBUG_ENTRY
 
@@ -71,7 +76,7 @@ public:
 		m_nHandle = Network::Get()->Begin(m_nPortIncoming, StaticCallbackFunction);
 		assert(m_nHandle != -1);
 
-		Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
+		hal::statusled_set_mode(hal::StatusLedMode::NORMAL);
 
 		DEBUG_EXIT
 	}
@@ -111,9 +116,12 @@ public:
 		m_pOscServerHandler = pOscServerHandler;
 	}
 
-	void SetPortIncoming(const uint16_t nPortIncoming = osc::server::DefaultPort::INCOMING) {
-		assert(nPortIncoming > 1023);
-		m_nPortIncoming = nPortIncoming;
+	void SetPortIncoming(const uint16_t nPortIncoming) {
+		if (nPortIncoming > 1023) {
+			m_nPortIncoming = nPortIncoming;
+		} else {
+			m_nPortIncoming = osc::server::DefaultPort::INCOMING;
+		}
 	}
 
 	uint16_t GetPortIncoming() const {
@@ -121,8 +129,11 @@ public:
 	}
 
 	void SetPortOutgoing(const uint16_t nPortOutgoing) {
-		assert(nPortOutgoing > 1023);
-		m_nPortOutgoing = nPortOutgoing;
+		if (nPortOutgoing > 1023) {
+			m_nPortOutgoing = nPortOutgoing;
+		} else {
+			m_nPortOutgoing = osc::server::DefaultPort::OUTGOING;
+		}
 	}
 
 	uint16_t GetPortOutgoing() const {
@@ -131,13 +142,13 @@ public:
 
 	void SetPath(const char *pPath);
 
-	const char*GetPath() {
+	const char *GetPath() {
 		return s_aPath;
 	}
 
 	void SetPathInfo(const char *pPathInfo);
 
-	const char*GetPathInfo() {
+	const char *GetPathInfo() {
 		return s_aPathInfo;
 	}
 
@@ -162,8 +173,9 @@ public:
 		return m_bEnableNoChangeUpdate;
 	}
 
-	static OscServer *Get() {
-		return s_pThis;
+	static OscServer& Get() {
+		assert(s_pThis != nullptr); // Ensure that s_pThis is valid
+		return *s_pThis;
 	}
 
 private:

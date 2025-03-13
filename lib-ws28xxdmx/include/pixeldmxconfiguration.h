@@ -59,6 +59,11 @@ public:
     	DEBUG_EXIT
 	}
 
+	~PixelDmxConfiguration() = default;
+
+	PixelDmxConfiguration(const PixelDmxConfiguration&) = delete;
+	PixelDmxConfiguration& operator=(const PixelDmxConfiguration&) = delete;
+
 	void SetOutputPorts(const uint16_t nOutputPorts) {
 		m_nOutputPorts = nOutputPorts;
 	}

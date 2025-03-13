@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -55,6 +55,11 @@ constexpr char BRIDGE_PARMAS[] = "Setting Bridge parameters ...";
 constexpr char START_BRIDGE[] = "Starting the Bridge ...";
 constexpr char BRIDGE_STARTED[] = "Bridge started";
 
+namespace hal {
+void reboot_handler() {
+}
+}  // namespace hal
+
 int main() {
 	Hardware hw;
 	Network nw;
@@ -68,11 +73,12 @@ int main() {
 	FlashCodeInstall spiFlashInstall;
 	ConfigStore configStore;
 #endif
-	OSCServerParams params;
-	OscServer server;
 
-	params.Load();
-	params.Set(&server);
+	OscServer oscServer;
+
+	OSCServerParams oscServerParams;
+	oscServerParams.Load();
+	oscServerParams.Set(&oscServer);
 
 	uint8_t nHwTextLength;
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hal::board_name(nHwTextLength), __DATE__, __TIME__);
@@ -118,9 +124,9 @@ int main() {
 
 	display.Printf(7, "%s:%d G%d", pixel::pixel_get_type(pixelDmxConfiguration.GetType()), pixelDmxConfiguration.GetCount(), pixelDmxConfiguration.GetGroupingCount());
 
-	server.SetOutput(&pixelDmx);
-	server.SetOscServerHandler(new Handler(&pixelDmx));
-	server.Print();
+	oscServer.SetOutput(&pixelDmx);
+	oscServer.SetOscServerHandler(new Handler(&pixelDmx));
+	oscServer.Print();
 
 	pixelDmx.Print();
 
@@ -146,13 +152,13 @@ int main() {
 		}
 	}
 
-	display.Printf(4, "In: %d", server.GetPortIncoming());
-	display.Printf(5, "Out: %d", server.GetPortOutgoing());
+	display.Printf(4, "In: %d", oscServer.GetPortIncoming());
+	display.Printf(5, "Out: %d", oscServer.GetPortOutgoing());
 
 	console_status(CONSOLE_YELLOW, START_BRIDGE);
 	display.TextStatus(START_BRIDGE);
 
-	server.Start();
+	oscServer.Start();
 
 	console_status(CONSOLE_GREEN, BRIDGE_STARTED);
 	display.TextStatus(BRIDGE_STARTED);

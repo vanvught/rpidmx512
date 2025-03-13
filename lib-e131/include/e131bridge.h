@@ -332,12 +332,12 @@ public:
 			HandleDmxIn();
 #endif
 
-			// The hardware::ledblink::Mode::FAST is for RDM Identify (Art-Net 4)
-			if (m_bEnableDataIndicator && (Hardware::Get()->GetMode() != hardware::ledblink::Mode::FAST)) {
+			// The hal::StatusLedMode::FAST is for RDM Identify (Art-Net 4)
+			if (m_bEnableDataIndicator && (hal::statusled_get_mode() != hal::StatusLedMode::FAST)) {
 				if (m_State.nReceivingDmx != 0) {
-					Hardware::Get()->SetMode(hardware::ledblink::Mode::DATA);
+					hal::statusled_set_mode(hal::StatusLedMode::DATA);
 				} else {
-					Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
+					hal::statusled_set_mode(hal::StatusLedMode::NORMAL);
 				}
 			}
 
@@ -391,21 +391,6 @@ private:
 	void static StaticCallbackFunctionSendDiscoveryPacket([[maybe_unused]] TimerHandle_t timerHandle) {
 		s_pThis->SendDiscoveryPacket();
 	}
-
-#if !defined(E131_HAVE_ARTNET)
-	void LedPanelOff() {
-		for (uint32_t nPortIndex = 0; nPortIndex < e131bridge::MAX_PORTS; nPortIndex++) {
-			hal::panel_led_off(hal::panelled::PORT_A_TX << nPortIndex);
-#if defined (E131_HAVE_DMXIN)
-			hal::panel_led_off(hal::panelled::PORT_A_RX << nPortIndex);
-#endif
-		}
-	}
-
-	void static StaticCallbackFunctionLedPanelOff([[maybe_unused]] TimerHandle_t timerHandle) {
-		s_pThis->LedPanelOff();
-	}
-#endif
 
 	void Process();
 private:

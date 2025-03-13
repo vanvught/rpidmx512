@@ -55,7 +55,7 @@ struct Params {
 	uint16_t nStartUniverse[pixeldmxparams::MAX_PORTS];		///< 16   38
 }__attribute__((packed));
 
-static_assert(sizeof(struct Params) <= 64, "struct Params is too large");
+static_assert(sizeof(struct Params) <= configstore::STORE_SIZE[static_cast<uint32_t>(configstore::Store::WS28XXDMX)]);
 
 struct Mask {
 	static constexpr auto TYPE = (1U << 0);
@@ -73,17 +73,6 @@ struct Mask {
 	static constexpr auto START_UNI_PORT_1 = (1U << 12);
 };
 }  // pixeldmxparams
-
-class PixelDmxParamsStore {
-public:
-	static void Update(const struct pixeldmxparams::Params *pParams) {
-		ConfigStore::Get()->Update(configstore::Store::WS28XXDMX, pParams, sizeof(struct pixeldmxparams::Params));
-	}
-
-	static void Copy(struct pixeldmxparams::Params *pParams) {
-		ConfigStore::Get()->Copy(configstore::Store::WS28XXDMX, pParams, sizeof(struct pixeldmxparams::Params));
-	}
-};
 
 class PixelDmxParams {
 public:

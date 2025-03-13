@@ -2,7 +2,7 @@
  * @file dmxparams.h
  *
  */
-/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,30 +40,11 @@ struct Params {
 	uint8_t nSlotsCount;
 }__attribute__((packed));
 
-static_assert(sizeof(struct Params) <= 32, "struct Params is too large");
+static_assert(sizeof(struct Params) <= configstore::STORE_SIZE[static_cast<uint32_t>(configstore::Store::DMXSEND)]);
 
 struct Mask {
-	static constexpr uint32_t BREAK_TIME = (1U << 0);
-	static constexpr uint32_t MAB_TIME = (1U << 1);
 	static constexpr uint32_t REFRESH_RATE = (1U << 2);
-	static constexpr uint32_t SLOTS_COUNT = (1U << 3);
 };
-
-static constexpr uint8_t rounddown_slots(uint16_t n) {
-	return static_cast<uint8_t>((n / 2U) - 1);
-}
-static constexpr uint16_t roundup_slots(uint8_t n) {
-	return static_cast<uint16_t>((n + 1U) * 2U);
-}
-namespace store {
-inline void update(const struct dmxsendparams::Params *pParams) {
-	ConfigStore::Get()->Update(configstore::Store::DMXSEND, pParams, sizeof(struct dmxsendparams::Params));
-}
-
-inline void copy(struct dmxsendparams::Params *pParams) {
-	ConfigStore::Get()->Copy(configstore::Store::DMXSEND, pParams, sizeof(struct dmxsendparams::Params));
-}
-}  // namespace store
 }  // namespace dmxsendparams
 
 class DmxParams {
@@ -73,7 +54,7 @@ public:
 	void Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct dmxsendparams::Params *pTDmxParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Builder(const struct dmxsendparams::Params *pParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
 	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 		Builder(nullptr, pBuffer, nLength, nSize);
 	}
@@ -84,8 +65,8 @@ public:
 
 private:
 	void Dump();
-    void callbackFunction(const char *s);
-    bool isMaskSet(uint32_t nMask) const  {
+    void CallbackFunction(const char *s);
+    bool IsMaskSet(const uint32_t nMask) const  {
     	return (m_Params.nSetList & nMask) == nMask;
     }
 

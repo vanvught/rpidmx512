@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -53,11 +53,10 @@ constexpr char RUN_RDM[] = "Running RDM Discovery ...";
 constexpr char START_NODE[] = "Starting the Node ...";
 constexpr char NODE_STARTED[] = "Node started";
 
-namespace artnetnode {
-namespace configstore {
-uint32_t DMXPORT_OFFSET = 0;
-}  // namespace configstore
-}  // namespace artnetnode
+namespace hal {
+void reboot_handler() {
+}
+}  // namespace hal
 
 int main() {
 	Hardware hw;

@@ -56,6 +56,9 @@ public:
 	ShowFile();
 #endif
 
+	ShowFile(const ShowFile&) = delete;
+	ShowFile& operator=(const ShowFile&) = delete;
+
 	void Play() {
 		DEBUG_ENTRY
 
@@ -276,8 +279,9 @@ public:
 	}
 #endif
 
-	static ShowFile *Get() {
-		return s_pThis;
+	static ShowFile& Get() {
+		assert(s_pThis != nullptr); // Ensure that s_pThis is valid
+		return *s_pThis;
 	}
 
 private:
@@ -298,7 +302,7 @@ private:
 	bool m_bEnableTFTP { false };
 	ShowFileTFTP *m_pShowFileTFTP { nullptr };
 #endif
-	static ShowFile *s_pThis;
+	static inline ShowFile *s_pThis;
 };
 
 #endif /* SHOWFILE_H_ */

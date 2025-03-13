@@ -2,10 +2,7 @@
  * @file artnetnode.h
  *
  */
-/**
- * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
- */
-/* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2016-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -517,7 +514,7 @@ public:
 #if (ARTNET_VERSION >= 4)
 private:
 	void SetUniverse4(const uint32_t nPortIndex, const dmxnode::PortDirection portDir);
-	void SetLedBlinkMode4(hardware::ledblink::Mode mode);
+	void SetLedBlinkMode4(hal::StatusLedMode mode);
 	void HandleAddress4(const uint8_t nCommand, const uint32_t nPortIndex);
 	uint8_t GetGoodOutput4(const uint32_t nPortIndex);
 
@@ -608,24 +605,6 @@ private:
 	void FailSafePlayback();
 
 	void Process(const uint32_t);
-
-	void LedPanelOff() {
-		for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
-			hal::panel_led_off(hal::panelled::PORT_A_TX << nPortIndex);
-#if defined (ARTNET_HAVE_DMXIN)
-			hal::panel_led_off(hal::panelled::PORT_A_RX << nPortIndex);
-#endif
-#if defined(CONFIG_PANELLED_RDM_PORT)
-			hal::panel_led_off(hal::panelled::PORT_A_RDM << nPortIndex);
-#elif defined(CONFIG_PANELLED_RDM_NO_PORT)
-			hal::panel_led_off(hal::panelled::RDM << nPortIndex);
-#endif
-		}
-	}
-
-	void static StaticCallbackFunctionLedPanelOff([[maybe_unused]] TimerHandle_t timerHandle) {
-		s_pThis->LedPanelOff();
-	}
 
 #if defined (RDM_CONTROLLER)
 	bool RdmDiscoveryRun() {

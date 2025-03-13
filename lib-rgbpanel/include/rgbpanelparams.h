@@ -2,7 +2,7 @@
  * @file rgbpanelparams.h
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,7 +40,7 @@ struct Params {
 	uint8_t nType;
 } __attribute__((packed));
 
-static_assert(sizeof(struct Params) <= 32, "struct Params is too large");
+static_assert(sizeof(struct Params) <= configstore::STORE_SIZE[static_cast<uint32_t>(configstore::Store::RGBPANEL)]);
 
 struct Mask {
 	static constexpr auto COLS = (1U << 0);
@@ -49,17 +49,6 @@ struct Mask {
 	static constexpr auto TYPE = (1U << 3);
 };
 }  // namespace rgbpanelparams
-
-class RgbPanelParamsStore {
-public:
-	static void Update(const struct rgbpanelparams::Params *pParams) {
-		ConfigStore::Get()->Update(configstore::Store::RGBPANEL, pParams, sizeof(struct rgbpanelparams::Params));
-	}
-
-	static void Copy(struct rgbpanelparams::Params *pRgbPanelParamss) {
-		ConfigStore::Get()->Copy(configstore::Store::RGBPANEL, pRgbPanelParamss, sizeof(struct rgbpanelparams::Params));
-	}
-};
 
 class RgbPanelParams {
 public:
@@ -93,8 +82,8 @@ public:
 
 private:
 	void Dump();
-	void callbackFunction(const char *pLine);
-	bool isMaskSet(uint32_t nMask) const {
+	void CallbackFunction(const char *pLine);
+	bool IsMaskSet(const uint32_t nMask) const {
 		return (m_Params.nSetList & nMask) == nMask;
 	}
 

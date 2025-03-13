@@ -2,7 +2,7 @@
  * @file displayhandler.h
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,31 +29,29 @@
 #include <cstdint>
 
 #include "display.h"
+#include "hal_statusled.h"
 
-#include "hardware.h"
-
-
-namespace hardware::ledblink {
-void display(const uint32_t nMode) {
+namespace hal {
+void display_statusled(const hal::StatusLedMode statusLedMode) {
 	if (Display::Get()->isDetected() ) {
 		char c;
-		switch (static_cast<hardware::ledblink::Mode>(nMode)) {
-		case ledblink::Mode::OFF_OFF:
+		switch (statusLedMode) {
+		case hal::StatusLedMode::OFF_OFF:
 			c = 'O';
 			break;
-		case ledblink::Mode::OFF_ON:
+		case hal::StatusLedMode::OFF_ON:
 			c = 'O';
 			break;
-		case ledblink::Mode::NORMAL:
+		case hal::StatusLedMode::NORMAL:
 			c = 'N';
 			break;
-		case ledblink::Mode::DATA:
+		case hal::StatusLedMode::DATA:
 			c = 'D';
 			break;
-		case ledblink::Mode::FAST:
+		case hal::StatusLedMode::FAST:
 			c = 'F';
 			break;
-		case ledblink::Mode::REBOOT:
+		case hal::StatusLedMode::REBOOT:
 			c = 'R';
 			break;
 		default:
@@ -65,7 +63,6 @@ void display(const uint32_t nMode) {
 		Display::Get()->PutChar(c);
 	}
 }
-} // namespace hardware::ledblink
-
+} // namespace hal
 
 #endif /* DISPLAYHANDLER_H_ */

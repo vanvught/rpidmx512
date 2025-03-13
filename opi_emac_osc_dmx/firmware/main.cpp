@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -66,13 +66,13 @@ int main() {
 
 	fw.Print("OSC Server DMX");
 
-	OSCServerParams params;
-	OscServer server;
+	OscServer oscServer;
 
-	params.Load();
-	params.Set(&server);
+	OSCServerParams oscServerParams;
+	oscServerParams.Load();
+	oscServerParams.Set();
 
-	mdns_service_record_add(nullptr, mdns::Services::OSC, "type=server", server.GetPortIncoming());
+	mdns_service_record_add(nullptr, mdns::Services::OSC, "type=server", oscServer.GetPortIncoming());
 
 	display.TextStatus(OscServerMsgConst::PARAMS, CONSOLE_YELLOW);
 
@@ -85,8 +85,8 @@ int main() {
 	DmxSend dmxSend;
 	dmxSend.Print();
 
-	server.SetOutput(&dmxSend);
-	server.Print();
+	oscServer.SetOutput(&dmxSend);
+	oscServer.Print();
 
 	RemoteConfig remoteConfig(remoteconfig::NodeType::OSC, remoteconfig::Output::DMX, 1);
 
@@ -103,12 +103,12 @@ int main() {
 	display.Printf(1, "OSC DMX 1");
 	display.Write(2, hal::board_name(nHwTextLength));
 	display.Printf(3, "IP: " IPSTR " %c", IP2STR(Network::Get()->GetIp()), nw.IsDhcpKnown() ? (nw.IsDhcpUsed() ? 'D' : 'S') : ' ');
-	display.Printf(4, "In: %d", server.GetPortIncoming());
-	display.Printf(5, "Out: %d", server.GetPortOutgoing());
+	display.Printf(4, "In: %d", oscServer.GetPortIncoming());
+	display.Printf(5, "Out: %d", oscServer.GetPortOutgoing());
 
 	display.TextStatus(OscServerMsgConst::START, CONSOLE_YELLOW);
 
-	server.Start();
+	oscServer.Start();
 
 	display.TextStatus(OscServerMsgConst::STARTED, CONSOLE_GREEN);
 

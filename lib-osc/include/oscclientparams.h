@@ -2,7 +2,7 @@
  * @file oscclientparams.h
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -63,17 +63,6 @@ struct Mask {
 };
 }  // namespace oscclientparams
 
-class OscClientParamsStore {
-public:
-	static void Update(const struct oscclientparams::Params *pParams) {
-		ConfigStore::Get()->Update(configstore::Store::OSC_CLIENT, pParams, sizeof(struct oscclientparams::Params));
-	}
-
-	static void Copy(struct oscclientparams::Params *pParams) {
-		ConfigStore::Get()->Copy(configstore::Store::OSC_CLIENT, pParams, sizeof(struct oscclientparams::Params));
-	}
-};
-
 class OscClientParams {
 public:
 	OscClientParams();
@@ -86,7 +75,7 @@ public:
 		Builder(nullptr, pBuffer, nLength, nSize);
 	}
 
-	void Set(OscClient *pOscClient);
+	void Set();
 
 	uint32_t GetServerIP() {
 		return m_Params.nServerIp;
@@ -105,8 +94,8 @@ public:
 
 private:
 	void Dump();
-    void callbackFunction(const char *s);
-    bool isMaskSet(uint32_t nMask) const {
+    void CallbackFunction(const char *s);
+    bool IsMaskSet(const uint32_t nMask) const {
     	return (m_Params.nSetList & nMask) == nMask;
     }
 

@@ -2,7 +2,7 @@
  * @file rdmsubdevicesparams.h
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,6 @@
 #include "rdmsubdevices.h"
 #include "configstore.h"
 
-
 namespace rdm::subdevicesparams {
 struct Params {
 	uint32_t nCount;
@@ -44,21 +43,9 @@ struct Params {
 	} __attribute__((packed)) Entry[rdm::subdevices::MAX];
 } __attribute__((packed));
 
-static_assert(sizeof(struct Params) <= rdm::subdevices::STORE, "struct Params is too large");
+static_assert(sizeof(struct Params) <= configstore::STORE_SIZE[static_cast<uint32_t>(configstore::Store::RDMSUBDEVICES)]);
 
 } // namespace rdm::subdevicesparams
-
-
-class RDMSubDevicesParamsStore {
-public:
-	static void Update(const rdm::subdevicesparams::Params *pParams)  {
-		ConfigStore::Get()->Update(configstore::Store::RDMSUBDEVICES, pParams, sizeof(struct rdm::subdevicesparams::Params));
-	}
-
-	static void Copy(rdm::subdevicesparams::Params *pParams) {
-		ConfigStore::Get()->Copy(configstore::Store::RDMSUBDEVICES, pParams, sizeof(struct rdm::subdevicesparams::Params));
-	}
-};
 
 class RDMSubDevicesParams {
 public:
@@ -78,7 +65,7 @@ public:
 
 private:
 	void Dump();
-    void callbackFunction(const char *pLine);
+    void CallbackFunction(const char *pLine);
     bool Add(RDMSubDevice *pRDMSubDevice);
 
 private:

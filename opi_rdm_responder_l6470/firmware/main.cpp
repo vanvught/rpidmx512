@@ -61,6 +61,11 @@
 
 #include "sparkfundmx.h"
 
+namespace hal {
+void reboot_handler() {
+}
+}  // namespace hal
+
 int main() {
 	Hardware hw;
 	Display display;
@@ -124,7 +129,7 @@ int main() {
 	rdmResponder.Start();
 	rdmResponder.Print();
 
-	hw.SetMode(hardware::ledblink::Mode::NORMAL);
+	hal::statusled_set_mode(hal::StatusLedMode::NORMAL);
 	hal::watchdog_init();
 
 	for (;;) {

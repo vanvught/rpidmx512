@@ -40,7 +40,7 @@ struct Params {
     uint32_t nSpiSpeedHz;
 } __attribute__((packed));
 
-static_assert(sizeof(struct Params) <= 64, "struct Params is too large");
+static_assert(sizeof(struct Params) <= configstore::STORE_SIZE[static_cast<uint32_t>(configstore::Store::TLC5711DMX)]);
 
 struct Mask {
 	static constexpr auto TYPE = (1U << 0);
@@ -49,17 +49,6 @@ struct Mask {
 	static constexpr auto SPI_SPEED = (1U << 3);
 };
 }  // namespace tlc59711dmxparams
-
-class TLC59711DmxParamsStore {
-public:
-	static void Update(const struct tlc59711dmxparams::Params *pParams) {
-		ConfigStore::Get()->Update(configstore::Store::TLC5711DMX, pParams, sizeof(struct tlc59711dmxparams::Params));
-	}
-
-	static void Copy(struct tlc59711dmxparams::Params *pParams) {
-		ConfigStore::Get()->Copy(configstore::Store::TLC5711DMX, pParams, sizeof(struct tlc59711dmxparams::Params));
-	}
-};
 
 class TLC59711DmxParams {
 public:
@@ -84,11 +73,11 @@ public:
 	}
 
 	bool IsSetLedType() {
-		return isMaskSet(tlc59711dmxparams::Mask::TYPE);
+		return IsMaskSet(tlc59711dmxparams::Mask::TYPE);
 	}
 
 	bool IsSetLedCount() {
-		return isMaskSet(tlc59711dmxparams::Mask::COUNT);
+		return IsMaskSet(tlc59711dmxparams::Mask::COUNT);
 	}
 
 	static const char *GetType(tlc59711::Type type);
@@ -97,8 +86,8 @@ public:
 
 private:
 	void Dump();
-    void callbackFunction(const char *pLine);
-    bool isMaskSet(uint32_t nMask) {
+    void CallbackFunction(const char *pLine);
+    bool IsMaskSet(const uint32_t nMask) {
     	return (m_Params.nSetList & nMask) == nMask;
     }
 

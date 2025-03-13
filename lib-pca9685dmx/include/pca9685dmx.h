@@ -63,6 +63,9 @@ struct Configuration {
 class PCA9685Dmx {
 public:
 	PCA9685Dmx();
+	PCA9685Dmx(const PCA9685Dmx&) = delete;
+	PCA9685Dmx& operator=(const PCA9685Dmx&) = delete;
+
 	~PCA9685Dmx();
 
 	void SetMode(const uint32_t nMode) {
@@ -70,15 +73,39 @@ public:
 	}
 
 	void SetAddress(const uint8_t nAddress) {
-		m_Configuration.nAddress = nAddress;
+		if ((nAddress >= 0x03) && (nAddress <= 0x77)) {
+			m_Configuration.nAddress = nAddress;
+		} else {
+			m_Configuration.nAddress = pca9685::I2C_ADDRESS_DEFAULT;
+		}
+	}
+
+	uint8_t GetAddress() const {
+		return m_Configuration.nAddress;
 	}
 
 	void SetChannelCount(const uint16_t nChannelCount) {
-		m_Configuration.nChannelCount = nChannelCount;
+		if ((nChannelCount != 0) && (nChannelCount <= dmxnode::UNIVERSE_SIZE)) {
+			m_Configuration.nChannelCount = nChannelCount;
+		} else {
+			m_Configuration.nChannelCount = pca9685::PWM_CHANNELS;
+		}
+	}
+
+	uint16_t GetChannelCount() const {
+		return m_Configuration.nChannelCount;
 	}
 
 	void SetDmxStartAddress(const uint16_t nDmxStartAddress) {
-		m_Configuration.nDmxStartAddress = nDmxStartAddress;
+		if ((nDmxStartAddress != 0) && (nDmxStartAddress <= dmxnode::UNIVERSE_SIZE)) {
+			m_Configuration.nDmxStartAddress = nDmxStartAddress;
+		} else {
+			m_Configuration.nDmxStartAddress = dmxnode::START_ADDRESS_DEFAULT;
+		}
+	}
+
+	uint16_t GetDmxStartAddress() const {
+		return m_Configuration.nDmxStartAddress;
 	}
 
 	void SetUse8Bit(const bool bUse8Bit) {
@@ -86,7 +113,15 @@ public:
 	}
 
 	void SetLedPwmFrequency(const uint16_t nLedPwmFrequency) {
-		m_Configuration.led.nLedPwmFrequency = nLedPwmFrequency;
+		if ((nLedPwmFrequency >= pca9685::Frequency::RANGE_MIN) && (nLedPwmFrequency <= pca9685::Frequency::RANGE_MAX)) {
+			m_Configuration.led.nLedPwmFrequency = nLedPwmFrequency;
+		} else {
+			m_Configuration.led.nLedPwmFrequency = pca9685::pwmled::DEFAULT_FREQUENCY;
+		}
+	}
+
+	uint16_t GetLedPwmFrequency() const {
+		return m_Configuration.led.nLedPwmFrequency;
 	}
 
 	void SetLedOutputInvert(const pca9685::Invert invert) {
@@ -98,15 +133,27 @@ public:
 	}
 
 	void SetServoLeftUs(const uint16_t nLeftUs) {
-		m_Configuration.servo.nLeftUs = nLeftUs;
+		m_Configuration.servo.nLeftUs = (nLeftUs == 0 ? pca9685::servo::LEFT_DEFAULT_US : nLeftUs);
+	}
+
+	uint16_t GetServoLeftUs() const {
+		return m_Configuration.servo.nLeftUs;
 	}
 
 	void SetServoCenterUs(const uint16_t nCenterUs) {
-		m_Configuration.servo.nCenterUs = nCenterUs;
+		m_Configuration.servo.nCenterUs = (nCenterUs == 0 ? pca9685::servo::CENTER_DEFAULT_US : nCenterUs);
+	}
+
+	uint16_t GetServoCenterUs() const {
+		return m_Configuration.servo.nCenterUs;
 	}
 
 	void SetServoRightUs(const uint16_t nRightUs) {
-		m_Configuration.servo.nRightUs = nRightUs;
+		m_Configuration.servo.nRightUs = (nRightUs == 0 ? pca9685::servo::RIGHT_DEFAULT_US : nRightUs);;
+	}
+
+	uint16_t GetServoRightUs() const {
+		return m_Configuration.servo.nRightUs;
 	}
 
 	PCA9685DmxSet *GetPCA9685DmxSet() {
@@ -124,8 +171,9 @@ public:
 		}
 	}
 
-	static PCA9685Dmx *Get() {
-		return s_pThis;
+	static PCA9685Dmx& Get() {
+		assert(s_pThis != nullptr); // Ensure that s_pThis is valid
+		return *s_pThis;
 	}
 
 private:

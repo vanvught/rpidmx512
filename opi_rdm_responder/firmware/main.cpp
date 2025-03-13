@@ -180,7 +180,7 @@ int main() {
 		display.Printf(6, "%s:%u", PixelPatterns::GetName(nTestPattern), static_cast<uint32_t>(nTestPattern));
 	}
 
-	hw.SetMode(hardware::ledblink::Mode::NORMAL);
+	hal::statusled_set_mode(hal::StatusLedMode::NORMAL);
 	hal::watchdog_init();
 
 	for (;;) {

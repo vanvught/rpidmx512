@@ -2,7 +2,7 @@
  * @file showfileparams.h
  *
  */
-/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,9 +43,6 @@ struct Params {
 } __attribute__((packed));
 
 struct Mask {
-	static constexpr uint32_t SHOW = (1U << 0);
-	static constexpr uint32_t OSC_PORT_INCOMING = (1U << 1);
-	static constexpr uint32_t OSC_PORT_OUTGOING = (1U << 2);
 	static constexpr uint32_t PROTOCOL = (1U << 3);
 	static constexpr uint32_t SACN_UNIVERSE = (1U << 4);
 	static constexpr uint32_t ARTNET_UNICAST_DISABLED = (1U << 5);
@@ -55,17 +52,6 @@ struct Mask {
 	static constexpr uint32_t OPTION_DISABLE_SYNC = (1U << 9);
 };
 }  // namespace showfileparams
-
-class ShowFileParamsStore {
-public:
-	static void Update(const struct showfileparams::Params *ptShowFileParams) {
-		ConfigStore::Get()->Update(configstore::Store::SHOW, ptShowFileParams, sizeof(struct showfileparams::Params));
-	}
-
-	static void Copy(struct showfileparams::Params *ptShowFileParams) {
-		ConfigStore::Get()->Copy(configstore::Store::SHOW, ptShowFileParams, sizeof(struct showfileparams::Params));
-	}
-};
 
 class ShowFileParams {
 public:
@@ -82,7 +68,7 @@ public:
 	void Set();
 
 	bool IsArtNetBroadcast() const {
-		return isMaskSet(showfileparams::Mask::ARTNET_UNICAST_DISABLED);
+		return IsMaskSet(showfileparams::Mask::ARTNET_UNICAST_DISABLED);
 	}
 
     static void StaticCallbackFunction(void *p, const char *s);
@@ -90,8 +76,8 @@ public:
 private:
 	void Dump();
     void HandleOptions(const char *pLine, const char *pKeyword, uint16_t nMask);
-    void callbackFunction(const char *s);
-    bool isMaskSet(uint32_t nMask) const {
+    void CallbackFunction(const char *s);
+    bool IsMaskSet(uint32_t nMask) const {
     	return (m_Params.nSetList & nMask) == nMask;
     }
     void SetBool(const uint8_t nValue, const uint32_t nMask);

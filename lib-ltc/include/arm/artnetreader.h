@@ -54,10 +54,10 @@ public:
 
 		if ((nTimeStamp - m_nTimestamp) >= 50U) {
 			LtcOutputs::Get()->ShowSysTime();
-			Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
+			hal::statusled_set_mode(hal::StatusLedMode::NORMAL);
 			Reset(true);
 		} else {
-			Hardware::Get()->SetMode(hardware::ledblink::Mode::DATA);
+			hal::statusled_set_mode(hal::StatusLedMode::DATA);
 			Reset(false);
 		}
 	}

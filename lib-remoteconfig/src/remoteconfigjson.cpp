@@ -109,7 +109,7 @@ uint32_t json_get_directory(char *pOutBuffer, const uint32_t nOutBufferSize) {
 			"\"show.txt\":\"Showfile\","
 #endif
 #if defined (DMXNODE_OUTPUT_DMX)
-			"\"params.txt\":\"DMX Transmit\","
+			"\"dmxsend.txt\":\"DMX Transmit\","
 #endif
 #if defined (DMXNODE_OUTPUT_PIXEL)
 			"\"devices.txt\":\"DMX Pixel\","

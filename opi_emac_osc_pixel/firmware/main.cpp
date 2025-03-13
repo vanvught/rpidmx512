@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -69,14 +69,14 @@ int main() {
 	FlashCodeInstall spiFlashInstall;
 
 	fw.Print("OSC Server Pixel controller {1x Universe}");
+
+	OscServer oscServer;
 	
-	OSCServerParams params;
-	OscServer server;
+	OSCServerParams oscServerParams;
+	oscServerParams.Load();
+	oscServerParams.Set();
 
-	params.Load();
-	params.Set(&server);
-
-	mdns_service_record_add(nullptr, mdns::Services::OSC, "type=server", server.GetPortIncoming());
+	mdns_service_record_add(nullptr, mdns::Services::OSC, "type=server", oscServer.GetPortIncoming());
 
 	display.TextStatus(OscServerMsgConst::PARAMS, CONSOLE_YELLOW);
 
@@ -93,10 +93,10 @@ int main() {
 
 	display.Printf(7, "%s:%d G%d", pixel::pixel_get_type(pixelDmxConfiguration.GetType()), pixelDmxConfiguration.GetCount(), pixelDmxConfiguration.GetGroupingCount());
 
-	server.SetOutput(&pixelDmx);
-	server.SetOscServerHandler(new Handler(&pixelDmx));
+	oscServer.SetOutput(&pixelDmx);
+	oscServer.SetOscServerHandler(new Handler(&pixelDmx));
 	
-	server.Print();
+	oscServer.Print();
 	pixelDmx.Print();
 
 	for (uint32_t i = 1; i < 7 ; i++) {
@@ -108,8 +108,8 @@ int main() {
 	display.Printf(1, "OSC Pixel 1");
 	display.Write(2, hal::board_name(nHwTextLength));
 	display.Printf(3, "IP: " IPSTR " %c", IP2STR(Network::Get()->GetIp()), nw.IsDhcpKnown() ? (nw.IsDhcpUsed() ? 'D' : 'S') : ' ');
-	display.Printf(4, "In: %d", server.GetPortIncoming());
-	display.Printf(5, "Out: %d", server.GetPortOutgoing());
+	display.Printf(4, "In: %d", oscServer.GetPortIncoming());
+	display.Printf(5, "Out: %d", oscServer.GetPortOutgoing());
 
 	RemoteConfig remoteConfig(remoteconfig::NodeType::OSC,  remoteconfig::Output::PIXEL, 1);
 
@@ -119,7 +119,7 @@ int main() {
 
 	display.TextStatus(OscServerMsgConst::START, CONSOLE_YELLOW);
 
-	server.Start();
+	oscServer.Start();
 
 	display.TextStatus(OscServerMsgConst::STARTED, CONSOLE_GREEN);
 

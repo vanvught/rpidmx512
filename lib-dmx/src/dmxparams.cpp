@@ -2,7 +2,7 @@
  * @file dmxparams.cpp
  *
  */
-/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,10 @@
  * THE SOFTWARE.
  */
 
+#if defined(DEBUG_DMX)
+# undef NDEBUG
+#endif
+
 #include <cstdint>
 #include <cstring>
 #ifndef NDEBUG
@@ -41,18 +45,33 @@
 
 #include "debug.h"
 
+namespace dmxsendparams {
+static constexpr uint8_t rounddown_slots(const uint16_t n) {
+	return static_cast<uint8_t>((n / 2U) - 1);
+}
+static constexpr uint16_t roundup_slots(const uint8_t n) {
+	return static_cast<uint16_t>((n + 1U) * 2U);
+}
+
+namespace store {
+static void update(const struct dmxsendparams::Params *pParams) {
+	ConfigStore::Get()->Update(configstore::Store::DMXSEND, pParams, sizeof(struct dmxsendparams::Params));
+}
+
+static void copy(struct dmxsendparams::Params *pParams) {
+	ConfigStore::Get()->Copy(configstore::Store::DMXSEND, pParams, sizeof(struct dmxsendparams::Params));
+}
+}  // namespace store
+}  // namespace dmxsendparams
+
 DmxParams::DmxParams() {
-	m_Params.nSetList = 0;
-	m_Params.nBreakTime = dmx::transmit::BREAK_TIME_TYPICAL;
-	m_Params.nMabTime = dmx::transmit::MAB_TIME_MIN;
-	m_Params.nRefreshRate = dmx::transmit::REFRESH_RATE_DEFAULT;
-	m_Params.nSlotsCount = dmxsendparams::rounddown_slots(dmx::max::CHANNELS);
+	DEBUG_ENTRY
+
+	DEBUG_EXIT
 }
 
 void DmxParams::Load() {
 	DEBUG_ENTRY
-
-	m_Params.nSetList = 0;
 
 #if !defined(DISABLE_FS)
 	ReadConfigFile configfile(DmxParams::StaticCallbackFunction, this);
@@ -75,7 +94,7 @@ void DmxParams::Load(const char* pBuffer, uint32_t nLength) {
 	assert(pBuffer != nullptr);
 	assert(nLength != 0);
 
-	m_Params.nSetList = 0;
+	memset(&m_Params, 0, sizeof(m_Params));
 
 	ReadConfigFile config(DmxParams::StaticCallbackFunction, this);
 
@@ -89,29 +108,21 @@ void DmxParams::Load(const char* pBuffer, uint32_t nLength) {
 	DEBUG_EXIT
 }
 
-void DmxParams::callbackFunction(const char *pLine) {
+void DmxParams::CallbackFunction(const char *pLine) {
 	assert(pLine != nullptr);
 
 	uint16_t nValue16;
 
 	if (Sscan::Uint16(pLine, DmxParamsConst::BREAK_TIME, nValue16) == Sscan::OK) {
-		if ((nValue16 >= dmx::transmit::BREAK_TIME_MIN) && (nValue16 != dmx::transmit::BREAK_TIME_TYPICAL)) {
+		if (nValue16 >= dmx::transmit::BREAK_TIME_MIN) {
 			m_Params.nBreakTime = nValue16;
-			m_Params.nSetList |= dmxsendparams::Mask::BREAK_TIME;
-		} else {
-			m_Params.nBreakTime = dmx::transmit::BREAK_TIME_TYPICAL;
-			m_Params.nSetList &= ~dmxsendparams::Mask::BREAK_TIME;
 		}
 		return;
 	}
 
 	if (Sscan::Uint16(pLine, DmxParamsConst::MAB_TIME, nValue16) == Sscan::OK) {
-		if (nValue16 > dmx::transmit::MAB_TIME_MIN)  { // && (nValue32 <= dmx::transmit::MAB_TIME_MAX)) {
+		if (nValue16 > dmx::transmit::MAB_TIME_MIN)  {
 			m_Params.nMabTime = nValue16;
-			m_Params.nSetList |= dmxsendparams::Mask::MAB_TIME;
-		} else {
-			m_Params.nMabTime = dmx::transmit::MAB_TIME_MIN;
-			m_Params.nSetList &= ~dmxsendparams::Mask::MAB_TIME;
 		}
 		return;
 	}
@@ -130,34 +141,49 @@ void DmxParams::callbackFunction(const char *pLine) {
 	}
 
 	if (Sscan::Uint16(pLine, DmxParamsConst::SLOTS_COUNT, nValue16) == Sscan::OK) {
-		if ((nValue16 >= 2) && (nValue16 < dmx::max::CHANNELS)) {
+		if ((nValue16 >= 2) && (nValue16 <= dmx::max::CHANNELS)) {
 			m_Params.nSlotsCount = dmxsendparams::rounddown_slots(nValue16);
-			m_Params.nSetList |= dmxsendparams::Mask::SLOTS_COUNT;
-		} else {
-			m_Params.nSlotsCount = dmxsendparams::rounddown_slots(dmx::max::CHANNELS);
-			m_Params.nSetList &= ~dmxsendparams::Mask::SLOTS_COUNT;
 		}
 		return;
 	}
 }
 
-void DmxParams::Builder(const struct dmxsendparams::Params *ptDMXParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
+void DmxParams::Builder(const struct dmxsendparams::Params *pParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	assert(pBuffer != nullptr);
 
-	if (ptDMXParams != nullptr) {
-		memcpy(&m_Params, ptDMXParams, sizeof(struct dmxsendparams::Params));
+	if (pParams != nullptr) {
+		memcpy(&m_Params, pParams, sizeof(struct dmxsendparams::Params));
 	} else {
 		dmxsendparams::store::copy(&m_Params);
 	}
 
 	PropertiesBuilder builder(DmxParamsConst::FILE_NAME, pBuffer, nLength);
 
-	builder.Add(DmxParamsConst::BREAK_TIME, m_Params.nBreakTime, isMaskSet(dmxsendparams::Mask::BREAK_TIME));
-	builder.Add(DmxParamsConst::MAB_TIME, m_Params.nMabTime, isMaskSet(dmxsendparams::Mask::MAB_TIME));
-	builder.Add(DmxParamsConst::REFRESH_RATE, m_Params.nRefreshRate, isMaskSet(dmxsendparams::Mask::REFRESH_RATE));
-	builder.Add(DmxParamsConst::SLOTS_COUNT, dmxsendparams::roundup_slots(m_Params.nSlotsCount), isMaskSet(dmxsendparams::Mask::SLOTS_COUNT));
+	if (m_Params.nBreakTime == 0) {
+		m_Params.nBreakTime = Dmx::Get()->GetDmxBreakTime();
+	}
+
+	builder.Add(DmxParamsConst::BREAK_TIME, m_Params.nBreakTime);
+
+	if (m_Params.nMabTime == 0) {
+		m_Params.nMabTime = Dmx::Get()->GetDmxMabTime();
+	}
+
+	builder.Add(DmxParamsConst::MAB_TIME, m_Params.nMabTime);
+
+	if(!IsMaskSet(dmxsendparams::Mask::REFRESH_RATE)) {
+		m_Params.nRefreshRate = static_cast<uint8_t>(1000000U / Dmx::Get()->GetDmxPeriodTime());
+	}
+
+	builder.Add(DmxParamsConst::REFRESH_RATE, m_Params.nRefreshRate, IsMaskSet(dmxsendparams::Mask::REFRESH_RATE));
+
+	if (m_Params.nSlotsCount == 0) {
+		m_Params.nSlotsCount = dmxsendparams::rounddown_slots(Dmx::Get()->GetDmxSlots());
+	}
+
+	builder.Add(DmxParamsConst::SLOTS_COUNT, dmxsendparams::roundup_slots(m_Params.nSlotsCount));
 
 	nSize = builder.GetSize();
 
@@ -168,15 +194,10 @@ void DmxParams::Builder(const struct dmxsendparams::Params *ptDMXParams, char *p
 void DmxParams::Set(Dmx *p) {
 	assert(p != nullptr);
 
-	if (isMaskSet(dmxsendparams::Mask::BREAK_TIME)) {
-		p->SetDmxBreakTime(m_Params.nBreakTime);
-	}
+	p->SetDmxBreakTime(m_Params.nBreakTime);
+	p->SetDmxMabTime(m_Params.nMabTime);
 
-	if (isMaskSet(dmxsendparams::Mask::MAB_TIME)) {
-		p->SetDmxMabTime(m_Params.nMabTime);
-	}
-
-	if (isMaskSet(dmxsendparams::Mask::REFRESH_RATE)) {
+	if (IsMaskSet(dmxsendparams::Mask::REFRESH_RATE)) {
 		uint32_t period = 0;
 		if (m_Params.nRefreshRate != 0) {
 			period = 1000000U / m_Params.nRefreshRate;
@@ -184,7 +205,7 @@ void DmxParams::Set(Dmx *p) {
 		p->SetDmxPeriodTime(period);
 	}
 
-	if (isMaskSet(dmxsendparams::Mask::SLOTS_COUNT)) {
+	if (m_Params.nSlotsCount != 0) {
 		p->SetDmxSlots(dmxsendparams::roundup_slots(m_Params.nSlotsCount));
 	}
 }
@@ -193,7 +214,7 @@ void DmxParams::StaticCallbackFunction(void *p, const char *s) {
 	assert(p != nullptr);
 	assert(s != nullptr);
 
-	(static_cast<DmxParams *>(p))->callbackFunction(s);
+	(static_cast<DmxParams *>(p))->CallbackFunction(s);
 }
 
 void DmxParams::Dump() {

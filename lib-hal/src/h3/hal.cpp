@@ -77,7 +77,7 @@ bool reboot() {
 	h3_gpio_fsel(EXT_SPI_CS, GPIO_FSEL_INPUT);
 	h3_gpio_set_pud(EXT_SPI_CS, GPIO_PULL_DOWN);
 
-	Hardware::Get()->SetMode(hardware::ledblink::Mode::REBOOT);
+	hal::statusled_set_mode(hal::StatusLedMode::REBOOT);
 
 	h3_watchdog_enable();
 

@@ -41,7 +41,7 @@ struct Params {
 	uint8_t nTimeCodeType;
 } __attribute__((packed));
 
-static_assert(sizeof(struct Params) <= 32, "struct Params is too large");
+static_assert(sizeof(struct Params) <= configstore::STORE_SIZE[static_cast<uint32_t>(configstore::Store::TCNET)]);
 
 struct Mask {
 	static constexpr auto NODE_NAME = (1U << 0);

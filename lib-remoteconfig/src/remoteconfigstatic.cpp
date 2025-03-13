@@ -83,7 +83,7 @@ constexpr RemoteConfig::Txt RemoteConfig::s_TXT[] = {
 # endif
 #endif
 #if defined (DMXNODE_OUTPUT_DMX)
-		{ &RemoteConfig::HandleGetParamsTxt,     &RemoteConfig::HandleSetParamsTxt,     "params.txt",   10},
+		{ &RemoteConfig::HandleGetDmxsendTxt,     &RemoteConfig::HandleSetDmxsendTxt,   "dmxsend.txt",  11},
 #endif
 #if defined (DMXNODE_OUTPUT_PIXEL) || defined(OUTPUT_DMX_TLC59711)
 		{ &RemoteConfig::HandleGetDevicesTxt,    &RemoteConfig::HandleSetDevicesTxt,    "devices.txt",  11},

@@ -56,12 +56,12 @@ void ShowFileFormat::Run() {
 			if (m_bDoLoop) {
 				fseek(m_pShowFile, 0L, SEEK_SET);
 			} else {
-				ShowFile::Get()->SetStatus(showfile::Status::ENDED);
+				ShowFile::Get().SetStatus(showfile::Status::ENDED);
 			}
 		}
 	}
 
-	const auto nMillis =hal::millis();
+	const auto nMillis = hal::millis();
 
 	if ((nMillis - m_nLastMillis) >= m_nDelayMillis) {
 		m_nLastMillis = nMillis;

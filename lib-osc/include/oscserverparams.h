@@ -36,35 +36,18 @@ struct Params {
 	uint32_t nSetList;
 	uint16_t nIncomingPort;
 	uint16_t nOutgoingPort;
-	uint8_t tOutputType;
-	bool bPartialTransmission;
+	uint8_t nOutputType;
+	bool bNotUsed;
 	char aPath[osc::server::Max::PATH_LENGTH];
 	char aPathInfo[osc::server::Max::PATH_LENGTH];
 	char aPathBlackOut[osc::server::Max::PATH_LENGTH];
 } __attribute__((packed));
 
 struct ParamsMask {
-	static constexpr uint32_t INCOMING_PORT = (1U << 0);
-	static constexpr uint32_t OUTGOING_PORT = (1U << 1);
-	static constexpr uint32_t PATH = (1U << 2);
-	static constexpr uint32_t TRANSMISSION = (1U << 3);
+	static constexpr uint32_t PARTIAL_TRANSMISSION = (1U << 3);
 	static constexpr uint32_t OUTPUT = (1U << 4);
-	static constexpr uint32_t PATH_INFO = (1U << 5);
-	static constexpr uint32_t PATH_BLACKOUT = (1U << 6);
 };
 } // namespace osc::server
-
-
-class StoreOscServer {
-public:
-	static void Update(const struct osc::server::Params *pParams) {
-		ConfigStore::Get()->Update(configstore::Store::OSC, pParams, sizeof(struct osc::server::Params));
-	}
-
-	static void Copy(struct osc::server::Params *pParams) {
-		ConfigStore::Get()->Copy(configstore::Store::OSC, pParams, sizeof(struct osc::server::Params));
-	}
-};
 
 class OSCServerParams {
 public:
@@ -78,7 +61,7 @@ public:
 		Builder(nullptr, pBuffer, nLength, nSize);
 	}
 
-	void Set(OscServer *pOscServer);
+	void Set();
 
 	uint16_t GetIncomingPort() const {
 		return m_Params.nIncomingPort;
@@ -89,15 +72,15 @@ public:
 	}
 
 	bool GetPartialTransmission() const {
-		return m_Params.bPartialTransmission;
+		return IsMaskSet(osc::server::ParamsMask::PARTIAL_TRANSMISSION);
 	}
 
     static void StaticCallbackFunction(void *p, const char *s);
 
 private:
 	void Dump();
-    void callbackFunction(const char *s);
-    bool isMaskSet(uint32_t nMask) const {
+    void CallbackFunction(const char *s);
+    bool IsMaskSet(const uint32_t nMask) const {
     	return (m_Params.nSetList & nMask) == nMask;
     }
 

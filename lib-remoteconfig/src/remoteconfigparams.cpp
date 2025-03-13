@@ -49,17 +49,26 @@ struct ParamMask {
 
 // Array of structs: parameter and corresponding mask
 constexpr ParamMask paramMasks[] = {
-	{ RemoteConfigConst::PARAMS_DISABLE,        remoteconfigparams::Mask::DISABLE        },
-	{ RemoteConfigConst::PARAMS_DISABLE_WRITE,  remoteconfigparams::Mask::DISABLE_WRITE  },
-	{ RemoteConfigConst::PARAMS_ENABLE_REBOOT,  remoteconfigparams::Mask::ENABLE_REBOOT  },
-	{ RemoteConfigConst::PARAMS_ENABLE_UPTIME,  remoteconfigparams::Mask::ENABLE_UPTIME  },
-	{ RemoteConfigConst::PARAMS_ENABLE_FACTORY, remoteconfigparams::Mask::ENABLE_FACTORY },
+		{ RemoteConfigConst::PARAMS_DISABLE,        remoteconfigparams::Mask::DISABLE        },
+		{ RemoteConfigConst::PARAMS_DISABLE_WRITE,  remoteconfigparams::Mask::DISABLE_WRITE  },
+		{ RemoteConfigConst::PARAMS_ENABLE_REBOOT,  remoteconfigparams::Mask::ENABLE_REBOOT  },
+		{ RemoteConfigConst::PARAMS_ENABLE_UPTIME,  remoteconfigparams::Mask::ENABLE_UPTIME  },
+		{ RemoteConfigConst::PARAMS_ENABLE_FACTORY, remoteconfigparams::Mask::ENABLE_FACTORY },
 };
+
+namespace remoteconfigparams::store {
+	static void Update(const struct remoteconfigparams::Params *pParams) {
+		ConfigStore::Get()->Update(configstore::Store::RCONFIG, pParams, sizeof(struct remoteconfigparams::Params));
+	}
+
+	static void Copy(struct remoteconfigparams::Params *pParams) {
+		ConfigStore::Get()->Copy(configstore::Store::RCONFIG, pParams, sizeof(struct remoteconfigparams::Params));
+	}
+}  // namespace remoteconfigparams::store
+
 
 RemoteConfigParams::RemoteConfigParams() {
 	DEBUG_ENTRY
-
-	memset(&m_Params, 0, sizeof(struct remoteconfigparams::Params));
 
 	DEBUG_EXIT
 }
@@ -88,6 +97,8 @@ void RemoteConfigParams::Load(const char *pBuffer, uint32_t nLength) {
 	assert(pBuffer != nullptr);
 	assert(nLength != 0);
 
+	memset(&m_Params, 0, sizeof(m_Params));
+
 	ReadConfigFile config(RemoteConfigParams::StaticCallbackFunction, this);
 
 	config.Read(pBuffer, nLength);
@@ -111,26 +122,25 @@ void RemoteConfigParams::SetBool(const uint8_t nValue, const uint32_t nMask) {
 void RemoteConfigParams::callbackFunction(const char *pLine) {
 	assert(pLine != nullptr);
 
-    auto trySetMask = [&](const char *pParam, const uint32_t nMask) {
-        uint8_t nValue8;
-        if (Sscan::Uint8(pLine, pParam, nValue8) == Sscan::OK) {
-            SetBool(nValue8, nMask);
-            return true;
-        }
-        return false;
-    };
+	auto trySetMask = [&](const char *pParam, const uint32_t nMask) {
+		uint8_t nValue8;
+		if (Sscan::Uint8(pLine, pParam, nValue8) == Sscan::OK) {
+			SetBool(nValue8, nMask);
+			return true;
+		}
+		return false;
+	};
 
-    for (const auto& paramMask : paramMasks) {
-        if (trySetMask(paramMask.pParam, paramMask.nMask)) {
-            return;
-        }
-    }
+	for (const auto& paramMask : paramMasks) {
+		if (trySetMask(paramMask.pParam, paramMask.nMask)) {
+			return;
+		}
+	}
 
 	uint32_t nLength = remoteconfig::DISPLAY_NAME_LENGTH - 1;
 
 	if (Sscan::Char(pLine, RemoteConfigConst::PARAMS_DISPLAY_NAME, m_Params.aDisplayName, nLength) == Sscan::OK) {
 		m_Params.aDisplayName[nLength] = '\0';
-		m_Params.nSetList |= remoteconfigparams::Mask::DISPLAY_NAME;
 		return;
 	}
 }
@@ -149,10 +159,10 @@ void RemoteConfigParams::Builder(const struct remoteconfigparams::Params *pRemot
 	PropertiesBuilder builder(RemoteConfigConst::PARAMS_FILE_NAME, pBuffer, nLength);
 
 	for (const auto& paramMask : paramMasks) {
-        builder.Add(paramMask.pParam, isMaskSet(paramMask.nMask));
-    }
+		builder.Add(paramMask.pParam, isMaskSet(paramMask.nMask));
+	}
 
-	builder.Add(RemoteConfigConst::PARAMS_DISPLAY_NAME, m_Params.aDisplayName, isMaskSet(remoteconfigparams::Mask::DISPLAY_NAME));
+	builder.Add(RemoteConfigConst::PARAMS_DISPLAY_NAME, m_Params.aDisplayName);
 
 	nSize = builder.GetSize();
 
@@ -168,10 +178,7 @@ void RemoteConfigParams::Set(RemoteConfig *pRemoteConfig) {
 	pRemoteConfig->SetEnableReboot(isMaskSet(remoteconfigparams::Mask::ENABLE_REBOOT));
 	pRemoteConfig->SetEnableUptime(isMaskSet(remoteconfigparams::Mask::ENABLE_UPTIME));
 	pRemoteConfig->SetEnableFactory(isMaskSet(remoteconfigparams::Mask::ENABLE_FACTORY));
-
-	if (isMaskSet(remoteconfigparams::Mask::DISPLAY_NAME)) {
-		pRemoteConfig->SetDisplayName(m_Params.aDisplayName);
-	}
+	pRemoteConfig->SetDisplayName(m_Params.aDisplayName);
 }
 
 void RemoteConfigParams::StaticCallbackFunction(void *p, const char *s) {
@@ -184,9 +191,9 @@ void RemoteConfigParams::StaticCallbackFunction(void *p, const char *s) {
 void RemoteConfigParams::Dump() {
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, RemoteConfigConst::PARAMS_FILE_NAME);
 
-    for (const auto& paramMask : paramMasks) {
-    	printf(" %s=%d\n", paramMask.pParam, isMaskSet(paramMask.nMask));
-    }
+	for (const auto& paramMask : paramMasks) {
+		printf(" %s=%d\n", paramMask.pParam, isMaskSet(paramMask.nMask));
+	}
 
 	printf(" %s=[%s]\n", RemoteConfigConst::PARAMS_DISPLAY_NAME, m_Params.aDisplayName);
 }

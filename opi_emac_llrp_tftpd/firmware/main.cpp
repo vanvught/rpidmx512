@@ -90,7 +90,7 @@ int main() {
 	display.Write(6, "mDNS enabled");
 	display.TextStatus("Device running", CONSOLE_GREEN);
 
-	hw.SetMode(hardware::ledblink::Mode::NORMAL);
+	hal::statusled_set_mode(hal::StatusLedMode::NORMAL);
 
 	auto t1 = time(nullptr);
 	struct tm tmHwClock;

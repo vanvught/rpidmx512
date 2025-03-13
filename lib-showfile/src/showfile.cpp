@@ -40,8 +40,6 @@
 
 #include "debug.h"
 
-ShowFile *ShowFile::s_pThis;
-
 #if defined (CONFIG_SHOWFILE_ENABLE_OSC)
 ShowFile::ShowFile(uint16_t nPortIncoming, uint16_t nPortOutgoing): m_showFileOSC(nPortIncoming, nPortOutgoing) {
 #else
@@ -316,17 +314,17 @@ void ShowFile::SetStatus(const showfile::Status Status) {
 	switch (m_Status) {
 		case showfile::Status::IDLE:
 			ShowFileFormat::DoRunCleanupProcess(true);
-			Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
+			hal::statusled_set_mode(hal::StatusLedMode::NORMAL);
 			break;
 		case showfile::Status::PLAYING:
 		case showfile::Status::RECORDING:
 			ShowFileFormat::DoRunCleanupProcess(false);
-			Hardware::Get()->SetMode(hardware::ledblink::Mode::DATA);
+			hal::statusled_set_mode(hal::StatusLedMode::DATA);
 			break;
 		case showfile::Status::STOPPED:
 		case showfile::Status::ENDED:
 			ShowFileFormat::DoRunCleanupProcess(true);
-			Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
+			hal::statusled_set_mode(hal::StatusLedMode::NORMAL);
 			break;
 		default:
 			break;

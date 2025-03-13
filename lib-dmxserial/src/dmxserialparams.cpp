@@ -42,11 +42,20 @@
 
 #include "debug.h"
 
+namespace dmxserialparams::store {
+static void Update(const struct dmxserialparams::Params *pParams) {
+	ConfigStore::Get()->Update(configstore::Store::SERIAL, pParams, sizeof(struct dmxserialparams::Params));
+}
+
+static void Copy(struct dmxserialparams::Params *pParams) {
+	ConfigStore::Get()->Copy(configstore::Store::SERIAL, pParams, sizeof(struct dmxserialparams::Params));
+}
+}  // namespace dmxserialparams::store
+
 using namespace serial;
 
 DmxSerialParams::DmxSerialParams() {
 	DEBUG_ENTRY
-	DEBUG_PRINTF("sizeof(struct dmxserialparams::Params) = %d", static_cast<int>(sizeof(struct dmxserialparams::Params)));
 
 	m_Params.nSetList = 0;
 	m_Params.nType = static_cast<uint8_t>(DmxSerialDefaults::TYPE);
@@ -71,10 +80,10 @@ void DmxSerialParams::Load() {
 	ReadConfigFile configfile(DmxSerialParams::StaticCallbackFunction, this);
 
 	if (configfile.Read(DmxSerialParamsConst::FILE_NAME)) {
-		DmxSerialStore::Update(&m_Params);
+		dmxserialparams::store::Update(&m_Params);
 	} else
 #endif
-		DmxSerialStore::Copy(&m_Params);
+		dmxserialparams::store::Copy(&m_Params);
 
 #ifndef NDEBUG
 	Dump();
@@ -94,7 +103,7 @@ void DmxSerialParams::Load(const char *pBuffer, uint32_t nLength) {
 
 	config.Read(pBuffer, nLength);
 
-	DmxSerialStore::Update(&m_Params);
+	dmxserialparams::store::Update(&m_Params);
 
 #ifndef NDEBUG
 	Dump();
@@ -102,7 +111,7 @@ void DmxSerialParams::Load(const char *pBuffer, uint32_t nLength) {
 	DEBUG_EXIT
 }
 
-void DmxSerialParams::callbackFunction(const char *pLine) {
+void DmxSerialParams::CallbackFunction(const char *pLine) {
 	assert(pLine != nullptr);
 
 	uint8_t nValue8;
@@ -229,70 +238,70 @@ void DmxSerialParams::callbackFunction(const char *pLine) {
 	}
 }
 
-void DmxSerialParams::Builder(const struct dmxserialparams::Params *pDmxSerialParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
+void DmxSerialParams::Builder(const struct dmxserialparams::Params *pParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	assert(pBuffer != nullptr);
 
-	if (pDmxSerialParams != nullptr) {
-		memcpy(&m_Params, pDmxSerialParams, sizeof(struct dmxserialparams::Params));
+	if (pParams != nullptr) {
+		memcpy(&m_Params, pParams, sizeof(struct dmxserialparams::Params));
 	} else {
-		DmxSerialStore::Copy(&m_Params);
+		dmxserialparams::store::Copy(&m_Params);
 	}
 
 	PropertiesBuilder builder(DmxSerialParamsConst::FILE_NAME, pBuffer, nLength);
 
-	builder.Add(DmxSerialParamsConst::TYPE, Serial::GetType(static_cast<type>(m_Params.nType)), isMaskSet(dmxserialparams::Mask::TYPE));
+	builder.Add(DmxSerialParamsConst::TYPE, Serial::GetType(static_cast<type>(m_Params.nType)), IsMaskSet(dmxserialparams::Mask::TYPE));
 
 	builder.AddComment("UART");
-	builder.Add(DmxSerialParamsConst::UART_BAUD, m_Params.nBaud, isMaskSet(dmxserialparams::Mask::BAUD));
-	builder.Add(DmxSerialParamsConst::UART_BITS, m_Params.nBits, isMaskSet(dmxserialparams::Mask::BITS));
-	builder.Add(DmxSerialParamsConst::UART_PARITY, Serial::GetUartParity(static_cast<uart::parity>(m_Params.nParity)), isMaskSet(dmxserialparams::Mask::PARTITY));
-	builder.Add(DmxSerialParamsConst::UART_STOPBITS, m_Params.nStopBits, isMaskSet(dmxserialparams::Mask::STOPBITS));
+	builder.Add(DmxSerialParamsConst::UART_BAUD, m_Params.nBaud, IsMaskSet(dmxserialparams::Mask::BAUD));
+	builder.Add(DmxSerialParamsConst::UART_BITS, m_Params.nBits, IsMaskSet(dmxserialparams::Mask::BITS));
+	builder.Add(DmxSerialParamsConst::UART_PARITY, Serial::GetUartParity(static_cast<uart::parity>(m_Params.nParity)), IsMaskSet(dmxserialparams::Mask::PARTITY));
+	builder.Add(DmxSerialParamsConst::UART_STOPBITS, m_Params.nStopBits, IsMaskSet(dmxserialparams::Mask::STOPBITS));
 
 	builder.AddComment("SPI");
-	builder.Add(DmxSerialParamsConst::SPI_SPEED_HZ, m_Params.nSpiSpeedHz, isMaskSet(dmxserialparams::Mask::SPI_SPEED_HZ));
-	builder.Add(DmxSerialParamsConst::SPI_MODE, m_Params.nSpiMode, isMaskSet(dmxserialparams::Mask::SPI_MODE));
+	builder.Add(DmxSerialParamsConst::SPI_SPEED_HZ, m_Params.nSpiSpeedHz, IsMaskSet(dmxserialparams::Mask::SPI_SPEED_HZ));
+	builder.Add(DmxSerialParamsConst::SPI_MODE, m_Params.nSpiMode, IsMaskSet(dmxserialparams::Mask::SPI_MODE));
 
 	builder.AddComment("I2C");
-	builder.AddHex8(DmxSerialParamsConst::I2C_ADDRESS, m_Params.nI2cAddress, isMaskSet(dmxserialparams::Mask::I2C_ADDRESS));
-	builder.Add(DmxSerialParamsConst::I2C_SPEED_MODE, Serial::GetI2cSpeedMode(static_cast<i2c::speed>(m_Params.nI2cSpeedMode)), isMaskSet(dmxserialparams::Mask::I2C_SPEED_MODE));
+	builder.AddHex8(DmxSerialParamsConst::I2C_ADDRESS, m_Params.nI2cAddress, IsMaskSet(dmxserialparams::Mask::I2C_ADDRESS));
+	builder.Add(DmxSerialParamsConst::I2C_SPEED_MODE, Serial::GetI2cSpeedMode(static_cast<i2c::speed>(m_Params.nI2cSpeedMode)), IsMaskSet(dmxserialparams::Mask::I2C_SPEED_MODE));
 
 	nSize = builder.GetSize();
 }
 
 void DmxSerialParams::Set() {
-	if (isMaskSet(dmxserialparams::Mask::TYPE)) {
+	if (IsMaskSet(dmxserialparams::Mask::TYPE)) {
 		Serial::Get()->SetType(static_cast<type>(m_Params.nType));
 	}
 
-	if (isMaskSet(dmxserialparams::Mask::BAUD)) {
+	if (IsMaskSet(dmxserialparams::Mask::BAUD)) {
 		Serial::Get()->SetUartBaud(m_Params.nBaud);
 	}
 
-	if (isMaskSet(dmxserialparams::Mask::BITS)) {
+	if (IsMaskSet(dmxserialparams::Mask::BITS)) {
 		Serial::Get()->SetUartBits(m_Params.nBits);
 	}
 
-	if (isMaskSet(dmxserialparams::Mask::PARTITY)) {
+	if (IsMaskSet(dmxserialparams::Mask::PARTITY)) {
 		Serial::Get()->SetUartParity(static_cast<uart::parity>(m_Params.nParity));
 	}
 
-	if (isMaskSet(dmxserialparams::Mask::STOPBITS)) {
+	if (IsMaskSet(dmxserialparams::Mask::STOPBITS)) {
 		Serial::Get()->SetUartStopBits(m_Params.nStopBits);
 	}
 
-	if (isMaskSet(dmxserialparams::Mask::SPI_SPEED_HZ)) {
+	if (IsMaskSet(dmxserialparams::Mask::SPI_SPEED_HZ)) {
 		Serial::Get()->SetSpiSpeedHz(m_Params.nSpiSpeedHz);
 	}
 
-	if (isMaskSet(dmxserialparams::Mask::SPI_MODE)) {
+	if (IsMaskSet(dmxserialparams::Mask::SPI_MODE)) {
 		Serial::Get()->SetSpiMode(m_Params.nSpiMode);
 	}
 
-	if (isMaskSet(dmxserialparams::Mask::I2C_ADDRESS)) {
+	if (IsMaskSet(dmxserialparams::Mask::I2C_ADDRESS)) {
 		Serial::Get()->SetI2cAddress(m_Params.nI2cAddress);
 	}
 
-	if (isMaskSet(dmxserialparams::Mask::I2C_SPEED_MODE)) {
+	if (IsMaskSet(dmxserialparams::Mask::I2C_SPEED_MODE)) {
 		Serial::Get()->SetI2cSpeedMode(static_cast<i2c::speed>(m_Params.nI2cSpeedMode));
 	}
 }
@@ -301,45 +310,45 @@ void DmxSerialParams::StaticCallbackFunction(void *p, const char *s) {
 	assert(p != nullptr);
 	assert(s != nullptr);
 
-	(static_cast<DmxSerialParams *>(p))->callbackFunction(s);
+	(static_cast<DmxSerialParams *>(p))->CallbackFunction(s);
 }
 
 void DmxSerialParams::Dump() {
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, DmxSerialParamsConst::FILE_NAME);
 
-	if (isMaskSet(dmxserialparams::Mask::TYPE)) {
+	if (IsMaskSet(dmxserialparams::Mask::TYPE)) {
 		printf(" %s=%d [%s]\n", DmxSerialParamsConst::TYPE, m_Params.nType, Serial::GetType(static_cast<type>(m_Params.nType)));
 	}
 
-	if (isMaskSet(dmxserialparams::Mask::BAUD)) {
+	if (IsMaskSet(dmxserialparams::Mask::BAUD)) {
 		printf(" %s=%d\n", DmxSerialParamsConst::UART_BAUD, m_Params.nBaud);
 	}
 
-	if (isMaskSet(dmxserialparams::Mask::BITS)) {
+	if (IsMaskSet(dmxserialparams::Mask::BITS)) {
 		printf(" %s=%d\n", DmxSerialParamsConst::UART_BITS, m_Params.nBits);
 	}
 
-	if (isMaskSet(dmxserialparams::Mask::PARTITY)) {
+	if (IsMaskSet(dmxserialparams::Mask::PARTITY)) {
 		printf(" %s=%s [%d]\n", DmxSerialParamsConst::UART_PARITY, Serial::GetUartParity(static_cast<uart::parity>(m_Params.nParity)), m_Params.nParity);
 	}
 
-	if (isMaskSet(dmxserialparams::Mask::STOPBITS)) {
+	if (IsMaskSet(dmxserialparams::Mask::STOPBITS)) {
 		printf(" %s=%d\n", DmxSerialParamsConst::UART_STOPBITS, m_Params.nStopBits);
 	}
 
-	if (isMaskSet(dmxserialparams::Mask::SPI_SPEED_HZ)) {
+	if (IsMaskSet(dmxserialparams::Mask::SPI_SPEED_HZ)) {
 		printf(" %s=%d\n", DmxSerialParamsConst::SPI_SPEED_HZ, m_Params.nSpiSpeedHz);
 	}
 
-	if (isMaskSet(dmxserialparams::Mask::SPI_MODE)) {
+	if (IsMaskSet(dmxserialparams::Mask::SPI_MODE)) {
 		printf(" %s=%d\n", DmxSerialParamsConst::SPI_MODE, m_Params.nSpiMode);
 	}
 
-	if (isMaskSet(dmxserialparams::Mask::I2C_ADDRESS)) {
+	if (IsMaskSet(dmxserialparams::Mask::I2C_ADDRESS)) {
 		printf(" %s=%.2x\n", DmxSerialParamsConst::I2C_ADDRESS, m_Params.nI2cAddress);
 	}
 
-	if (isMaskSet(dmxserialparams::Mask::I2C_SPEED_MODE)) {
+	if (IsMaskSet(dmxserialparams::Mask::I2C_SPEED_MODE)) {
 		printf(" %s=%s [%d]\n", DmxSerialParamsConst::I2C_SPEED_MODE, Serial::GetI2cSpeedMode(static_cast<i2c::speed>(m_Params.nI2cSpeedMode)), m_Params.nI2cSpeedMode);
 	}
 }

@@ -28,6 +28,24 @@
 
 #include "sscan.h"
 
+static const char *check_name(const char *pBuffer, const char *pName) {
+		while ((*pName != 0) && (*pBuffer != 0)) {
+			if (*pName++ != *pBuffer++) {
+				return nullptr;
+			}
+		}
+
+		if (*pName != 0) {
+			return nullptr;
+		}
+
+		if (*pBuffer++ != '=') {
+			return nullptr;
+		}
+
+		return pBuffer;
+}
+
 Sscan::ReturnCode Sscan::Char(const char *pBuffer, const char *pName, char *pValue, uint32_t& nLength) {
 	assert(pBuffer != nullptr);
 	assert(pName != nullptr);
@@ -35,11 +53,16 @@ Sscan::ReturnCode Sscan::Char(const char *pBuffer, const char *pName, char *pVal
 
 	const char *p;
 
-	if ((p = Sscan::checkName(pBuffer, pName)) == nullptr) {
+	if ((p = check_name(pBuffer, pName)) == nullptr) {
 		return Sscan::NAME_ERROR;
 	}
 
-	uint16_t k = 0;
+	if ((*p == ' ') || (*p == '\0') || (*p == '\n')) {
+		nLength = 0;
+		return Sscan::OK;
+	}
+
+	uint32_t k = 0;
 
 	while ((*p != 0) && (k < nLength)) {
 		*pValue++ = *p++;
@@ -53,4 +76,3 @@ Sscan::ReturnCode Sscan::Char(const char *pBuffer, const char *pName, char *pVal
 
 	return Sscan::VALUE_ERROR;
 }
-

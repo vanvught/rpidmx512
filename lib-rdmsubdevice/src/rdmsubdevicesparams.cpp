@@ -2,7 +2,7 @@
  * @file rdmsubdevicesparams.cpp
  *
  */
-/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,7 @@
 #include "rdmsubdevicesconst.h"
 #include "rdm _subdevices.h"
 
+#include "configstore.h"
 #include "readconfigfile.h"
 #include "sscan.h"
 #include "propertiesbuilder.h"
@@ -57,6 +58,16 @@
 
 using namespace rdm::subdevices;
 
+namespace rmd::subdevices::store {
+static void Update(const rdm::subdevicesparams::Params *pParams)  {
+	ConfigStore::Get()->Update(configstore::Store::RDMSUBDEVICES, pParams, sizeof(struct rdm::subdevicesparams::Params));
+}
+
+static void Copy(rdm::subdevicesparams::Params *pParams) {
+	ConfigStore::Get()->Copy(configstore::Store::RDMSUBDEVICES, pParams, sizeof(struct rdm::subdevicesparams::Params));
+}
+}  // namespace rmd::subdevices::store
+
 RDMSubDevicesParams::RDMSubDevicesParams() {
 	DEBUG_ENTRY
 
@@ -68,17 +79,15 @@ RDMSubDevicesParams::RDMSubDevicesParams() {
 void RDMSubDevicesParams::Load() {
 	DEBUG_ENTRY
 
-	m_Params.nCount = 0;
-
 #if !defined(DISABLE_FS)
 	ReadConfigFile configfile(RDMSubDevicesParams::StaticCallbackFunction, this);
 
 	if (configfile.Read(RDMSubDevicesConst::PARAMS_FILE_NAME)) {
-		RDMSubDevicesParamsStore::Update(&m_Params);
+		rmd::subdevices::store::Update(&m_Params);
 
 	} else
 #endif
-		RDMSubDevicesParamsStore::Copy(&m_Params);
+		rmd::subdevices::store::Copy(&m_Params);
 
 	// Sanity check
 	if (m_Params.nCount >= rdm::subdevices::MAX) {
@@ -97,15 +106,11 @@ void RDMSubDevicesParams::Load(const char *pBuffer, uint32_t nLength) {
 	assert(pBuffer != nullptr);
 	assert(nLength != 0);
 
-	debug_dump(pBuffer, nLength);
-
-	m_Params.nCount = 0;
-
 	ReadConfigFile config(RDMSubDevicesParams::StaticCallbackFunction, this);
 
 	config.Read(pBuffer, nLength);
 
-	RDMSubDevicesParamsStore::Update(&m_Params);
+	rmd::subdevices::store::Update(&m_Params);
 
 #ifndef NDEBUG
 	Dump();
@@ -121,7 +126,7 @@ void RDMSubDevicesParams::Builder(const rdm::subdevicesparams::Params *pParams, 
 	if (pParams != nullptr) {
 		memcpy(&m_Params, pParams, sizeof(struct rdm::subdevicesparams::Params));
 	} else {
-		RDMSubDevicesParamsStore::Copy(&m_Params);
+		rmd::subdevices::store::Copy(&m_Params);
 	}
 
 	PropertiesBuilder builder(RDMSubDevicesConst::PARAMS_FILE_NAME, pBuffer, nLength);
@@ -202,7 +207,7 @@ void RDMSubDevicesParams::Set() {
 #endif
 }
 
-void RDMSubDevicesParams::callbackFunction(const char *pLine) {
+void RDMSubDevicesParams::CallbackFunction(const char *pLine) {
 	assert(pLine != nullptr);
 
 	DEBUG_PUTS(pLine);
@@ -256,7 +261,7 @@ void RDMSubDevicesParams::StaticCallbackFunction(void *p, const char *s) {
 	assert(p != nullptr);
 	assert(s != nullptr);
 
-	(static_cast<RDMSubDevicesParams*>(p))->callbackFunction(s);
+	(static_cast<RDMSubDevicesParams*>(p))->CallbackFunction(s);
 }
 
 void RDMSubDevicesParams::Dump() {

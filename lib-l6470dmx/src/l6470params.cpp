@@ -101,15 +101,15 @@ void L6470Params::Builder(uint32_t nMotorIndex, const struct l6470params::Params
 
 	PropertiesBuilder builder(m_aFileName, pBuffer, nLength);
 
-	builder.Add(L6470ParamsConst::MIN_SPEED, m_Params.fMinSpeed, isMaskSet(l6470params::Mask::MIN_SPEED));
-	builder.Add(L6470ParamsConst::MAX_SPEED, m_Params.fMaxSpeed, isMaskSet(l6470params::Mask::MAX_SPEED));
-	builder.Add(L6470ParamsConst::ACC, m_Params.fAcc, isMaskSet(l6470params::Mask::ACC));
-	builder.Add(L6470ParamsConst::DEC, m_Params.fDec, isMaskSet(l6470params::Mask::DEC));
-	builder.Add(L6470ParamsConst::KVAL_HOLD, m_Params.nKvalHold, isMaskSet(l6470params::Mask::KVAL_HOLD));
-	builder.Add(L6470ParamsConst::KVAL_RUN, m_Params.nKvalRun, isMaskSet(l6470params::Mask::KVAL_RUN));
-	builder.Add(L6470ParamsConst::KVAL_ACC, m_Params.nKvalAcc, isMaskSet(l6470params::Mask::KVAL_ACC));
-	builder.Add(L6470ParamsConst::KVAL_DEC, m_Params.nKvalDec, isMaskSet(l6470params::Mask::KVAL_DEC));
-	builder.Add(L6470ParamsConst::MICRO_STEPS, m_Params.nMicroSteps, isMaskSet(l6470params::Mask::MICRO_STEPS));
+	builder.Add(L6470ParamsConst::MIN_SPEED, m_Params.fMinSpeed, IsMaskSet(l6470params::Mask::MIN_SPEED));
+	builder.Add(L6470ParamsConst::MAX_SPEED, m_Params.fMaxSpeed, IsMaskSet(l6470params::Mask::MAX_SPEED));
+	builder.Add(L6470ParamsConst::ACC, m_Params.fAcc, IsMaskSet(l6470params::Mask::ACC));
+	builder.Add(L6470ParamsConst::DEC, m_Params.fDec, IsMaskSet(l6470params::Mask::DEC));
+	builder.Add(L6470ParamsConst::KVAL_HOLD, m_Params.nKvalHold, IsMaskSet(l6470params::Mask::KVAL_HOLD));
+	builder.Add(L6470ParamsConst::KVAL_RUN, m_Params.nKvalRun, IsMaskSet(l6470params::Mask::KVAL_RUN));
+	builder.Add(L6470ParamsConst::KVAL_ACC, m_Params.nKvalAcc, IsMaskSet(l6470params::Mask::KVAL_ACC));
+	builder.Add(L6470ParamsConst::KVAL_DEC, m_Params.nKvalDec, IsMaskSet(l6470params::Mask::KVAL_DEC));
+	builder.Add(L6470ParamsConst::MICRO_STEPS, m_Params.nMicroSteps, IsMaskSet(l6470params::Mask::MICRO_STEPS));
 
 	nSize = builder.GetSize();
 
@@ -122,7 +122,7 @@ void L6470Params::Save(uint32_t nMotorIndex, char *pBuffer, uint32_t nLength, ui
 	DEBUG_EXIT
 }
 
-void L6470Params::callbackFunction(const char *pLine) {
+void L6470Params::CallbackFunction(const char *pLine) {
 	assert(pLine != nullptr);
 
 	uint8_t nValue8;
@@ -186,77 +186,77 @@ void L6470Params::callbackFunction(const char *pLine) {
 void L6470Params::Set(L6470 *pL6470) {
 	assert(pL6470 != nullptr);
 
-	if (isMaskSet(l6470params::Mask::MIN_SPEED)) {
+	if (IsMaskSet(l6470params::Mask::MIN_SPEED)) {
 		pL6470->setMinSpeed(m_Params.fMinSpeed);
 	}
 
-	if (isMaskSet(l6470params::Mask::MAX_SPEED)) {
+	if (IsMaskSet(l6470params::Mask::MAX_SPEED)) {
 		pL6470->setMaxSpeed(m_Params.fMaxSpeed);
 	}
 
-	if (isMaskSet(l6470params::Mask::ACC)) {
+	if (IsMaskSet(l6470params::Mask::ACC)) {
 		pL6470->setAcc(m_Params.fAcc);
 	}
 
-	if (isMaskSet(l6470params::Mask::DEC)) {
+	if (IsMaskSet(l6470params::Mask::DEC)) {
 		pL6470->setDec(m_Params.fDec);
 	}
 
-	if (isMaskSet(l6470params::Mask::KVAL_HOLD)) {
+	if (IsMaskSet(l6470params::Mask::KVAL_HOLD)) {
 		pL6470->setHoldKVAL(m_Params.nKvalHold);
 	}
 
-	if (isMaskSet(l6470params::Mask::KVAL_RUN)) {
+	if (IsMaskSet(l6470params::Mask::KVAL_RUN)) {
 		pL6470->setRunKVAL(m_Params.nKvalRun);
 	}
 
-	if (isMaskSet(l6470params::Mask::KVAL_ACC)) {
+	if (IsMaskSet(l6470params::Mask::KVAL_ACC)) {
 		pL6470->setAccKVAL(m_Params.nKvalAcc);
 	}
 
-	if (isMaskSet(l6470params::Mask::KVAL_DEC)) {
+	if (IsMaskSet(l6470params::Mask::KVAL_DEC)) {
 		pL6470->setDecKVAL(m_Params.nKvalDec);
 	}
 
-	if (isMaskSet(l6470params::Mask::MICRO_STEPS)) {
+	if (IsMaskSet(l6470params::Mask::MICRO_STEPS)) {
 		pL6470->setMicroSteps(m_Params.nMicroSteps);
 	}
 }
 
 void L6470Params::Dump() {
-	if (isMaskSet(l6470params::Mask::MIN_SPEED)) {
+	if (IsMaskSet(l6470params::Mask::MIN_SPEED)) {
 		printf(" %s=%f\n", L6470ParamsConst::MIN_SPEED, m_Params.fMinSpeed);
 	}
 
-	if (isMaskSet(l6470params::Mask::MAX_SPEED)) {
+	if (IsMaskSet(l6470params::Mask::MAX_SPEED)) {
 		printf(" %s=%f\n", L6470ParamsConst::MAX_SPEED, m_Params.fMaxSpeed);
 	}
 
-	if (isMaskSet(l6470params::Mask::ACC)) {
+	if (IsMaskSet(l6470params::Mask::ACC)) {
 		printf(" %s=%f\n", L6470ParamsConst::ACC, m_Params.fAcc);
 	}
 
-	if (isMaskSet(l6470params::Mask::DEC)) {
+	if (IsMaskSet(l6470params::Mask::DEC)) {
 		printf(" %s=%f\n", L6470ParamsConst::DEC, m_Params.fDec);
 	}
 
-	if (isMaskSet(l6470params::Mask::KVAL_HOLD)) {
+	if (IsMaskSet(l6470params::Mask::KVAL_HOLD)) {
 		printf(" %s=%d\n", L6470ParamsConst::KVAL_HOLD, m_Params.nKvalHold);
 	}
 
-	if (isMaskSet(l6470params::Mask::KVAL_RUN)) {
+	if (IsMaskSet(l6470params::Mask::KVAL_RUN)) {
 		printf(" %s=%d\n", L6470ParamsConst::KVAL_RUN, m_Params.nKvalRun);
 	}
 
-	if (isMaskSet(l6470params::Mask::KVAL_ACC)) {
+	if (IsMaskSet(l6470params::Mask::KVAL_ACC)) {
 		printf(" %s=%d\n", L6470ParamsConst::KVAL_ACC, m_Params.nKvalAcc);
 	}
 
-	if (isMaskSet(l6470params::Mask::KVAL_DEC)) {
+	if (IsMaskSet(l6470params::Mask::KVAL_DEC)) {
 		printf(" %s=%d\n", L6470ParamsConst::KVAL_DEC, m_Params.nKvalDec);
 	}
 
-	if (isMaskSet(l6470params::Mask::MICRO_STEPS)) {
+	if (IsMaskSet(l6470params::Mask::MICRO_STEPS)) {
 		printf(" %s=%d\n", L6470ParamsConst::MICRO_STEPS, static_cast<int>(m_Params.nMicroSteps));
 	}
 }
@@ -265,5 +265,5 @@ void L6470Params::StaticCallbackFunction(void *p, const char *s) {
 	assert(p != nullptr);
 	assert(s != nullptr);
 
-	(static_cast<L6470Params*>(p))->callbackFunction(s);
+	(static_cast<L6470Params*>(p))->CallbackFunction(s);
 }

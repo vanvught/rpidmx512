@@ -51,6 +51,11 @@
 
 static constexpr auto TOP_ROW_STATS = 26;
 
+namespace hal {
+void reboot_handler() {
+}
+}  // namespace hal
+
 int main() {
 	Hardware hw;
 	DisplayUdf display;

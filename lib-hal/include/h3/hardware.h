@@ -26,69 +26,15 @@
 #ifndef H3_HARDWARE_H_
 #define H3_HARDWARE_H_
 
-#include <cstdint>
-#include <time.h>
-
-#if !defined(DISABLE_RTC)
-# include "hwclock.h"
-#endif
-
-#include "h3.h"
-#include "superloop/softwaretimers.h"
-
-#include "debug.h"
-
-void h3_status_led_set(int);
-
 class Hardware {
 public:
 	Hardware();
-
-	void SetModeWithLock(hardware::ledblink::Mode mode, bool doLock);
-	void SetMode(hardware::ledblink::Mode mode);
-	hardware::ledblink::Mode GetMode() const {
-		return m_Mode;
-	}
 
 	static Hardware *Get() {
 		return s_pThis;
 	}
 
 private:
-	static void ledblink([[maybe_unused]] TimerHandle_t nHandle) {
-		m_nToggleLed ^= 0x1;
-		h3_status_led_set(m_nToggleLed);
-	}
-
-	void SetFrequency(const uint32_t nFreqHz) {
-		if (nFreqHz == 0) {
-			SoftwareTimerDelete(m_nTimerId);
-			h3_status_led_set(0);
-			return;
-		}
-
-		if (nFreqHz == 255) {
-			SoftwareTimerDelete(m_nTimerId);
-			h3_status_led_set(1);
-			return;
-		}
-
-		if (m_nTimerId < 0) {
-			m_nTimerId = SoftwareTimerAdd((1000U / nFreqHz),ledblink);
-			DEBUG_PRINTF("m_nTimerId=%d", m_nTimerId);
-			return;
-		}
-
-		DEBUG_PRINTF("m_nTimerId=%d", m_nTimerId);
-		SoftwareTimerChange(m_nTimerId, (1000U / nFreqHz));
-	}
-
-private:
-	hardware::ledblink::Mode m_Mode { hardware::ledblink::Mode::UNKNOWN };
-	bool m_doLock { false };
-	int32_t m_nTimerId { -1 };
-
-	static inline int32_t m_nToggleLed { 0 };
 	static inline Hardware *s_pThis;
 };
 

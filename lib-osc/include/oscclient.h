@@ -2,7 +2,7 @@
  * @file oscclient.h
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -69,8 +69,16 @@ public:
 	{
 		DEBUG_ENTRY
 
+    	assert(s_pThis == nullptr);
+    	s_pThis = this;
+
 		DEBUG_EXIT
 	}
+
+	OscClient(const OscClient&) = delete;
+	OscClient& operator=(const OscClient&) = delete;
+
+	~OscClient() = default;
 
 	void Start() {
 		DEBUG_ENTRY
@@ -94,7 +102,7 @@ public:
 
 	void Run() {
 		if (!m_bPingDisable) {
-			m_nCurrenMillis =hal::millis();
+			m_nCurrenMillis = hal::millis();
 
 			if ((m_nCurrenMillis - m_nPreviousMillis) >= m_nPingDelayMillis) {
 				OscSimpleSend MsgSend(m_nHandle, m_nServerIP, m_nPortOutgoing, "/ping", nullptr);
@@ -154,7 +162,7 @@ public:
 
 	void Print();
 
-	void SetServerIP(uint32_t nServerIP) {
+	void SetServerIP(const uint32_t nServerIP) {
 		m_nServerIP = nServerIP;
 	}
 
@@ -162,25 +170,31 @@ public:
 		return m_nServerIP;
 	}
 
-	void SetPortOutgoing(uint16_t nPortOutgoing) {
-		assert(nPortOutgoing > 1023);
-		m_nPortOutgoing = nPortOutgoing;
+	void SetPortOutgoing(const uint16_t nPortOutgoing) {
+		if (nPortOutgoing > 1023) {
+			m_nPortOutgoing = nPortOutgoing;
+		} else {
+			m_nPortOutgoing = oscclient::defaults::PORT_OUTGOING;
+		}
 	}
 
 	uint16_t GetPortOutgoing() const {
 		return m_nPortOutgoing;
 	}
 
-	void SetPortIncoming(uint16_t nPortIncoming) {
-		assert(nPortIncoming > 1023);
-		m_nPortIncoming = nPortIncoming;
+	void SetPortIncoming(const uint16_t nPortIncoming) {
+		if (nPortIncoming > 1023) {
+			m_nPortIncoming = nPortIncoming;
+		} else {
+			m_nPortIncoming = oscclient::defaults::PORT_INCOMING;
+		}
 	}
 
 	uint16_t GetPortIncoming() const {
 		return m_nPortIncoming;
 	}
 
-	void SetPingDisable(bool nPingDisable = true) {
+	void SetPingDisable(const bool nPingDisable = true) {
 		m_bPingDisable = nPingDisable;
 	}
 
@@ -188,13 +202,15 @@ public:
 		return m_bPingDisable;
 	}
 
-	void SetPingDelay(uint32_t nPingDelay = oscclient::defaults::PING_DELAY_SECONDS) {
+	void SetPingDelaySeconds(const uint32_t nPingDelay) {
 		if ((nPingDelay >=2) && (nPingDelay <= 60)) {
 			m_nPingDelayMillis = nPingDelay * 1000;
+		} else {
+			m_nPingDelayMillis = oscclient::defaults::PING_DELAY_SECONDS * 1000;
 		}
 	}
 
-	uint32_t GetPingDelay() const {
+	uint32_t GetPingDelaySeconds() const {
 		return m_nPingDelayMillis / 1000U;
 	}
 
@@ -204,6 +220,11 @@ public:
 	void SetLedHandler(OscClientLed *pOscClientLed) {
 		assert(pOscClientLed != nullptr);
 		m_pOscClientLed = pOscClientLed;
+	}
+
+	static OscClient& Get() {
+		assert(s_pThis != nullptr); // Ensure that s_pThis is valid
+		return *s_pThis;
 	}
 
 private:
@@ -227,6 +248,8 @@ private:
 
 	static inline char m_pCmds[oscclient::buffer::size::CMD];
 	static inline char m_pLeds[oscclient::buffer::size::LED];
+
+	static inline OscClient *s_pThis { nullptr };
 };
 
 #endif /* OSCCLIENT_H_ */

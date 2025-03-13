@@ -2,7 +2,7 @@
  * @file json_delete.cpp
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,6 @@
 
 #include "debug.h"
 
-
 namespace remoteconfig::showfile {
 void json_delete(const char *pBuffer, const uint32_t nBufferSize) {
 	DEBUG_ENTRY
@@ -49,7 +48,7 @@ void json_delete(const char *pBuffer, const uint32_t nBufferSize) {
 
 	if (Sscan::Uint8(pBuffer, ShowFileParamsConst::SHOW, nValue8) == Sscan::OK) {
 		if (nValue8 <= ::showfile::FILE_MAX_NUMBER) {
-			ShowFile::Get()->DeleteShowFile(nValue8);
+			ShowFile::Get().DeleteShowFile(nValue8);
 
 			DEBUG_EXIT
 			return;
@@ -62,4 +61,3 @@ void json_delete(const char *pBuffer, const uint32_t nBufferSize) {
 	DEBUG_EXIT
 }
 } // namespace remoteconfig::showfile
-

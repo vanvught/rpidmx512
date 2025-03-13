@@ -44,7 +44,7 @@ void E131Bridge::HandleSynchronization() {
 	const auto nSynchronizationAddress = __builtin_bswap16(pSynchronizationPacket->FrameLayer.UniverseNumber);
 
 	if ((nSynchronizationAddress != m_State.nSynchronizationAddressSourceA) && (nSynchronizationAddress != m_State.nSynchronizationAddressSourceB)) {
-		Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
+		hal::statusled_set_mode(hal::StatusLedMode::NORMAL);
 		DEBUG_PUTS("");
 		return;
 	}

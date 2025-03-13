@@ -2,7 +2,7 @@
  * @file pixelconfiguration.h
  *
  */
-/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -54,6 +54,11 @@ public:
 
     	DEBUG_EXIT
     }
+
+    ~PixelConfiguration() = default;
+
+    PixelConfiguration(const PixelConfiguration&) = delete;
+    PixelConfiguration& operator=(const PixelConfiguration&) = delete;
 
 	void SetType(const pixel::Type Type) {
 		m_type = Type;

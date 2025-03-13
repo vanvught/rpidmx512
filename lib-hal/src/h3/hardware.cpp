@@ -44,6 +44,8 @@
 #include "arm/gic.h"
 #include "arm/synchronize.h"
 
+#include "debug.h"
+
 #if defined(__GNUC__) && !defined(__clang__)
 # pragma GCC push_options
 # pragma GCC optimize ("O2")

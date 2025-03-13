@@ -197,7 +197,7 @@ void LtcGenerator::Start() {
 
 	LtcOutputs::Get()->Init();
 
-	Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
+	hal::statusled_set_mode(hal::StatusLedMode::NORMAL);
 
 	DEBUG_EXIT
 }

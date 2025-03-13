@@ -141,7 +141,7 @@ void SparkFunDmxParams::Load(uint32_t nMotorIndex, const char *pBuffer, uint32_t
 	DEBUG_EXIT
 }
 
-void SparkFunDmxParams::callbackFunction(const char *pLine) {
+void SparkFunDmxParams::CallbackFunction(const char *pLine) {
 	assert(pLine != nullptr);
 
 	uint8_t nValue8;
@@ -196,14 +196,14 @@ void SparkFunDmxParams::Builder(const struct sparkfundmxparams::Params *pParams,
 	PropertiesBuilder builder(pFileName, pBuffer, nLength);
 
 	if (nMotorIndex < SPARKFUN_DMX_MAX_MOTORS) {
-		builder.Add(SparkFunDmxParamsConst::POSITION, m_Params.nPosition, isMaskSet(sparkfundmxparams::Mask::POSITION));
+		builder.Add(SparkFunDmxParamsConst::POSITION, m_Params.nPosition, IsMaskSet(sparkfundmxparams::Mask::POSITION));
 	}
 
-	builder.Add(SparkFunDmxParamsConst::RESET_PIN, m_Params.nResetPin, isMaskSet(sparkfundmxparams::Mask::RESET_PIN));
-	builder.Add(SparkFunDmxParamsConst::BUSY_PIN, m_Params.nBusyPin, isMaskSet(sparkfundmxparams::Mask::BUSY_PIN));
+	builder.Add(SparkFunDmxParamsConst::RESET_PIN, m_Params.nResetPin, IsMaskSet(sparkfundmxparams::Mask::RESET_PIN));
+	builder.Add(SparkFunDmxParamsConst::BUSY_PIN, m_Params.nBusyPin, IsMaskSet(sparkfundmxparams::Mask::BUSY_PIN));
 
 #if !defined (H3)
-	builder.Add(SparkFunDmxParamsConst::SPI_CS, m_Params.nSpiCs, isMaskSet(sparkfundmxparams::Mask::SPI_CS));
+	builder.Add(SparkFunDmxParamsConst::SPI_CS, m_Params.nSpiCs, IsMaskSet(sparkfundmxparams::Mask::SPI_CS));
 #endif
 
 	nSize = builder.GetSize();
@@ -223,16 +223,16 @@ void SparkFunDmxParams::SetGlobal(SparkFunDmx *pSparkFunDmx) {
 	assert(pSparkFunDmx != nullptr);
 
 #if !defined (H3)
-	if (isMaskSet(sparkfundmxparams::Mask::SPI_CS)) {
+	if (IsMaskSet(sparkfundmxparams::Mask::SPI_CS)) {
 		pSparkFunDmx->SetGlobalSpiCs(m_Params.nSpiCs);
 	}
 #endif
 
-	if (isMaskSet(sparkfundmxparams::Mask::RESET_PIN)) {
+	if (IsMaskSet(sparkfundmxparams::Mask::RESET_PIN)) {
 		pSparkFunDmx->SetGlobalResetPin(m_Params.nResetPin);
 	}
 
-	if (isMaskSet(sparkfundmxparams::Mask::BUSY_PIN)) {
+	if (IsMaskSet(sparkfundmxparams::Mask::BUSY_PIN)) {
 		pSparkFunDmx->SetGlobalBusyPin(m_Params.nBusyPin);
 	}
 }
@@ -240,21 +240,21 @@ void SparkFunDmxParams::SetGlobal(SparkFunDmx *pSparkFunDmx) {
 void SparkFunDmxParams::SetLocal(SparkFunDmx *pSparkFunDmx) {
 	assert(pSparkFunDmx != nullptr);
 
-	if (isMaskSet(sparkfundmxparams::Mask::POSITION)) {
+	if (IsMaskSet(sparkfundmxparams::Mask::POSITION)) {
 		pSparkFunDmx->SetLocalPosition(m_Params.nPosition);
 	}
 
 #if !defined (H3)
-	if (isMaskSet(sparkfundmxparams::Mask::SPI_CS)) {
+	if (IsMaskSet(sparkfundmxparams::Mask::SPI_CS)) {
 		pSparkFunDmx->SetLocalSpiCs(m_Params.nSpiCs);
 	}
 #endif
 
-	if (isMaskSet(sparkfundmxparams::Mask::RESET_PIN)) {
+	if (IsMaskSet(sparkfundmxparams::Mask::RESET_PIN)) {
 		pSparkFunDmx->SetLocalResetPin(m_Params.nResetPin);
 	}
 
-	if (isMaskSet(sparkfundmxparams::Mask::BUSY_PIN)) {
+	if (IsMaskSet(sparkfundmxparams::Mask::BUSY_PIN)) {
 		pSparkFunDmx->SetLocalBusyPin(m_Params.nBusyPin);
 	}
 }
@@ -267,23 +267,23 @@ void SparkFunDmxParams::Dump([[maybe_unused]] uint32_t nMotorIndex) {
 	} else {
 		m_aFileName[5] = nMotorIndex + '0';
 		printf("%s::%s \'%s\' :\n", __FILE__, __FUNCTION__, m_aFileName);
-		printf(" %s=%d [%u]\n", SparkFunDmxParamsConst::POSITION, m_Params.nPosition, isMaskSet(sparkfundmxparams::Mask::POSITION));
+		printf(" %s=%d [%u]\n", SparkFunDmxParamsConst::POSITION, m_Params.nPosition, IsMaskSet(sparkfundmxparams::Mask::POSITION));
 	}
 
 #if !defined (H3)
-	if (isMaskSet(sparkfundmxparams::Mask::SPI_CS)) {
+	if (IsMaskSet(sparkfundmxparams::Mask::SPI_CS)) {
 		printf(" %s=%d\n", SparkFunDmxParamsConst::SPI_CS, m_Params.nSpiCs);
 	}
 #endif
 
-	printf(" %s=%d [%u]\n", SparkFunDmxParamsConst::RESET_PIN, m_Params.nResetPin, isMaskSet(sparkfundmxparams::Mask::RESET_PIN));
-	printf(" %s=%d [%u]\n", SparkFunDmxParamsConst::BUSY_PIN, m_Params.nBusyPin, isMaskSet(sparkfundmxparams::Mask::BUSY_PIN));
+	printf(" %s=%d [%u]\n", SparkFunDmxParamsConst::RESET_PIN, m_Params.nResetPin, IsMaskSet(sparkfundmxparams::Mask::RESET_PIN));
+	printf(" %s=%d [%u]\n", SparkFunDmxParamsConst::BUSY_PIN, m_Params.nBusyPin, IsMaskSet(sparkfundmxparams::Mask::BUSY_PIN));
 }
 
 void SparkFunDmxParams::StaticCallbackFunction(void *p, const char *s) {
 	assert(p != nullptr);
 	assert(s != nullptr);
 
-	(static_cast<SparkFunDmxParams*>(p))->callbackFunction(s);
+	(static_cast<SparkFunDmxParams*>(p))->CallbackFunction(s);
 }
 

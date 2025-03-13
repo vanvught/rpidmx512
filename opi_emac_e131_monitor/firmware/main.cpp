@@ -66,6 +66,11 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
+namespace hal {
+void reboot_handler() {
+}
+}  // namespace hal
+
 int main() {
 	Hardware hw;
 	DisplayUdf display;

@@ -48,18 +48,8 @@ struct Mask {
 	static constexpr uint32_t DISABLE_WRITE = (1U << 1);
 	static constexpr uint32_t ENABLE_REBOOT = (1U << 2);
 	static constexpr uint32_t ENABLE_UPTIME = (1U << 3);
-	static constexpr uint32_t DISPLAY_NAME = (1U << 4);
 	static constexpr uint32_t ENABLE_FACTORY = (1U << 5);
 };
-namespace store {
-inline void Update(const struct remoteconfigparams::Params *pParams) {
-	ConfigStore::Get()->Update(configstore::Store::RCONFIG, pParams, sizeof(struct remoteconfigparams::Params));
-}
-
-inline void Copy(struct remoteconfigparams::Params *pParams) {
-	ConfigStore::Get()->Copy(configstore::Store::RCONFIG, pParams, sizeof(struct remoteconfigparams::Params));
-}
-}  // namespace store
 }  // namespace remoteconfigparams
 
 class RemoteConfigParams {

@@ -658,7 +658,7 @@ void RemoteConfig::HandleGetRdmSubdevTxt(uint32_t& nSize) {
 #endif
 
 #if defined (DMXNODE_OUTPUT_DMX)
-void RemoteConfig::HandleGetParamsTxt(uint32_t& nSize) {
+void RemoteConfig::HandleGetDmxsendTxt(uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	DmxParams dmxparams;
@@ -968,7 +968,7 @@ void RemoteConfig::HandleSetOscClientTxt() {
 #endif
 
 #if defined (DMXNODE_OUTPUT_DMX)
-void RemoteConfig::HandleSetParamsTxt() {
+void RemoteConfig::HandleSetDmxsendTxt() {
 	DEBUG_ENTRY
 
 	DmxParams dmxparams;

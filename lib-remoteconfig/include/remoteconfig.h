@@ -263,7 +263,7 @@ private:
 #endif
 
 #if defined (DMXNODE_OUTPUT_DMX)
-	void HandleGetParamsTxt(uint32_t& nSize);
+	void HandleGetDmxsendTxt(uint32_t& nSize);
 #endif
 
 #if defined (DMXNODE_OUTPUT_PIXEL) || defined (OUTPUT_DMX_TLC59711)
@@ -365,7 +365,7 @@ private:
 #endif
 
 #if defined (DMXNODE_OUTPUT_DMX)
-	void HandleSetParamsTxt();
+	void HandleSetDmxsendTxt();
 #endif
 
 #if defined (DMXNODE_OUTPUT_PIXEL) || defined (OUTPUT_DMX_TLC59711)

@@ -2,7 +2,7 @@
  * @file json_get_directory.cpp
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,18 +30,17 @@
 
 #include "showfile.h"
 
-
 namespace remoteconfig::showfile {
 
 uint32_t json_get_directory(char *pOutBuffer, const uint32_t nOutBufferSize) {
 	const auto nBufferSize = nOutBufferSize - 2U;
 	auto nLength = static_cast<uint32_t>(snprintf(pOutBuffer, nBufferSize, "{\"shows\":["));
 
-	for (uint32_t nShowIndex = 0; nShowIndex < ShowFile::Get()->GetShows(); nShowIndex++) {
-		const auto nShow = ShowFile::Get()->GetPlayerShowFile(nShowIndex);
+	for (uint32_t nShowIndex = 0; nShowIndex < ShowFile::Get().GetShows(); nShowIndex++) {
+		const auto nShow = ShowFile::Get().GetPlayerShowFile(nShowIndex);
 		if (nShow >= 0) {
 			uint32_t nFileSize;
-			if (ShowFile::Get()->GetShowFileSize(static_cast<uint32_t>(nShow), nFileSize)) {
+			if (ShowFile::Get().GetShowFileSize(static_cast<uint32_t>(nShow), nFileSize)) {
 				const auto nSize = nBufferSize - nLength;
 				const auto nCharacters = static_cast<uint32_t>(snprintf(&pOutBuffer[nLength], nSize, "{\"show\":%d,\"size\":%u},", nShow, nFileSize));
 
@@ -69,4 +68,3 @@ uint32_t json_get_directory(char *pOutBuffer, const uint32_t nOutBufferSize) {
 	return nLength;
 }
 } // namespace remoteconfig::showfile
-

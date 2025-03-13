@@ -154,8 +154,8 @@ public:
 
 private:
 	void Dump();
-    void callbackFunction(const char *s);
-    bool isMaskSet(uint32_t nMask) const {
+    void CallbackFunction(const char *s);
+    bool IsMaskSet(const uint32_t nMask) const {
     	return (m_Params.nSetList & nMask) == nMask;
     }
 

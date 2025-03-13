@@ -32,12 +32,23 @@
 #include "ltcetcparamsconst.h"
 #include "ltcetc.h"
 
+#include "configstore.h"
 #include "readconfigfile.h"
 #include "sscan.h"
 
 #include "propertiesbuilder.h"
 
 #include "debug.h"
+
+namespace ltcetcparams::store {
+static void Update(const ltcetcparams::Params *pLtcEtcParams) {
+		ConfigStore::Get()->Update(configstore::Store::LTCETC, pLtcEtcParams, sizeof(struct ltcetcparams::Params));
+}
+
+static void Copy(struct ltcetcparams::Params *pLtcEtcParams) {
+		ConfigStore::Get()->Copy(configstore::Store::LTCETC, pLtcEtcParams, sizeof(struct ltcetcparams::Params));
+}
+}  // namespace ltcetcparams::store
 
 LtcEtcParams::LtcEtcParams() {
 	DEBUG_ENTRY
@@ -56,10 +67,10 @@ void LtcEtcParams::Load() {
 	ReadConfigFile configfile(LtcEtcParams::StaticCallbackFunction, this);
 
 	if (configfile.Read(LtcEtcParamsConst::FILE_NAME)) {
-		LtcEtcParamsStore::Update(&m_Params);
+		ltcetcparams::store::Update(&m_Params);
 	} else
 #endif
-		LtcEtcParamsStore::Copy(&m_Params);
+		ltcetcparams::store::Copy(&m_Params);
 
 #ifndef NDEBUG
 	Dump();
@@ -79,7 +90,7 @@ void LtcEtcParams::Load(const char *pBuffer, uint32_t nLength) {
 
 	config.Read(pBuffer, nLength);
 
-	LtcEtcParamsStore::Update(&m_Params);
+	ltcetcparams::store::Update(&m_Params);
 
 #ifndef NDEBUG
 	Dump();
@@ -163,7 +174,7 @@ void LtcEtcParams::Builder(const struct ltcetcparams::Params *ptLtcEtcParams, ch
 	if (ptLtcEtcParams != nullptr) {
 		memcpy(&m_Params, ptLtcEtcParams, sizeof(struct ltcetcparams::Params));
 	} else {
-		LtcEtcParamsStore::Copy(&m_Params);
+		ltcetcparams::store::Copy(&m_Params);
 	}
 
 	PropertiesBuilder builder(LtcEtcParamsConst::FILE_NAME, pBuffer, nLength);

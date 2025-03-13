@@ -129,13 +129,13 @@ public:
 
 private:
 	void Dump();
-    void callbackFunction(const char *s);
-    bool isMaskSet(uint32_t nMask) const {
+    void CallbackFunction(const char *s);
+    bool IsMaskSet(const uint32_t nMask) const {
     	return (m_Params.nSetList & nMask) == nMask;
     }
 
-	float calcIntersectSpeed();
-	uint32_t calcIntersectSpeedReg(float) const;
+	float CalcIntersectSpeed();
+	uint32_t CalcIntersectSpeedReg(float) const;
 
     static void StaticCallbackFunction(void *p, const char *s);
 

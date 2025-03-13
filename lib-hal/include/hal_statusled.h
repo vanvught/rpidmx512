@@ -1,8 +1,8 @@
 /**
- * @file oscclientconst.h
+ * @file hal_statusled.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,27 @@
  * THE SOFTWARE.
  */
 
-#include "oscservermsgconst.h"
+#ifndef HAL_STATUSLED_H_
+#define HAL_STATUSLED_H_
 
-const char OscServerMsgConst::PARAMS[] = "Configuring OSC Server";
-const char OscServerMsgConst::START[] = "Starting the OSC Server";
-const char OscServerMsgConst::STARTED[] = "OSC Server started";
+#include <cstdint>
+
+namespace hal {
+enum class StatusLedMode {
+	OFF_OFF, OFF_ON, NORMAL, DATA, FAST, REBOOT, UNKNOWN
+};
+
+namespace global {
+extern StatusLedMode g_statusLedMode;
+}  // namespace global
+
+void statusled_set_mode_with_lock(const StatusLedMode mode, const bool doLock);
+void statusled_set_mode(const StatusLedMode mode);
+inline StatusLedMode statusled_get_mode() {
+	return global::g_statusLedMode;
+}
+void statusled_set_frequency(const uint32_t nFrequencyHz);
+void display_statusled(const StatusLedMode mode);
+}  // namespace hal
+
+#endif /* HAL_STATUSLED_H_ */

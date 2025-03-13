@@ -31,53 +31,15 @@
 # error
 #endif
 
-#include <cstdint>
-
-#include "superloop/softwaretimers.h"
-
-namespace hardware {
-enum class LedStatus {
-	OFF, ON, HEARTBEAT, FLASH
-};
-}  // namespace hardware
-
 class Hardware {
 public:
 	Hardware();
-
-	void SetLed(hardware::LedStatus tLedStatus);
-
-	void SetModeWithLock(hardware::ledblink::Mode mode, bool doLock);
-
-	void SetMode(hardware::ledblink::Mode mode);
-
-	hardware::ledblink::Mode GetMode() {
-		return m_Mode;
-	}
 
 	 static Hardware *Get() {
 		return s_pThis;
 	}
 
 private:
-	void SetFrequency(uint32_t nFreqHz) {
-		if (nFreqHz == 0) {
-			SetLed(hardware::LedStatus::OFF);
-		} else if (nFreqHz > 20) {
-			SetLed(hardware::LedStatus::ON);
-		} else {
-			if (nFreqHz > 1) {
-				SetLed(hardware::LedStatus::HEARTBEAT);
-			} else {
-				SetLed(hardware::LedStatus::FLASH);
-			}
-		}
-	}
-
-private:
-	hardware::ledblink::Mode m_Mode { hardware::ledblink::Mode::UNKNOWN };
-	bool m_doLock { false };
-
 	static inline Hardware *s_pThis;
 };
 

@@ -256,7 +256,7 @@ void LtcReader::Start() {
 #endif
 
 	LtcOutputs::Get()->Init();
-	Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
+	hal::statusled_set_mode(hal::StatusLedMode::NORMAL);
 }
 
 #if defined(__GNUC__) && !defined(__clang__)
@@ -308,8 +308,8 @@ void LtcReader::Run() {
 
 	__DMB();
 	if ((gv_ltc_nUpdatesPerSecond >= 24) && (gv_ltc_nUpdatesPerSecond <= 30)) {
-		Hardware::Get()->SetMode(hardware::ledblink::Mode::DATA);
+		hal::statusled_set_mode(hal::StatusLedMode::DATA);
 	} else {
-		Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
+		hal::statusled_set_mode(hal::StatusLedMode::NORMAL);
 	}
 }

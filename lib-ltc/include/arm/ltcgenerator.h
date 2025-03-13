@@ -58,9 +58,9 @@ public:
 		HandleButtons();
 
 		if (m_State == STARTED) {
-			Hardware::Get()->SetMode(hardware::ledblink::Mode::DATA);
+			hal::statusled_set_mode(hal::StatusLedMode::DATA);
 		} else {
-			Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
+			hal::statusled_set_mode(hal::StatusLedMode::NORMAL);
 		}
 	}
 

@@ -845,9 +845,9 @@ http::Status HttpDeamonHandleRequest::HandlePostJSON() {
 			DEBUG_PRINTF("Display::Get()->SetSleep(%d)", value8 == 0);
 		} else if (Sscan::Uint8(m_pFileData, "identify", value8) == Sscan::OK) {
 			if (value8 != 0) {
-				Hardware::Get()->SetMode(hardware::ledblink::Mode::FAST);
+				hal::statusled_set_mode(hal::StatusLedMode::FAST);
 			} else {
-				Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
+				hal::statusled_set_mode(hal::StatusLedMode::NORMAL);
 			}
 			DEBUG_PRINTF("identify=%d", value8 != 0);
 		} else if (memcmp(m_pFileData, "date=", 5) == 0) {

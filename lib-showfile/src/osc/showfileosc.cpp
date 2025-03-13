@@ -2,7 +2,7 @@
  * @file showfileosc.cpp
  *
  */
-/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -81,21 +81,21 @@ void ShowFileOSC::Process() {
 	DEBUG_PRINTF("[%s] %d,%d %s", m_pBuffer, static_cast<int>(strlen(reinterpret_cast<const char *>(m_pBuffer))), static_cast<int>(showfileosc::PATH_LENGTH), &m_pBuffer[showfileosc::PATH_LENGTH]);
 
 	if (memcmp(&m_pBuffer[showfileosc::PATH_LENGTH], cmd::START, length::START) == 0) {
-		ShowFile::Get()->Play();
+		ShowFile::Get().Play();
 		SendStatus();
 		DEBUG_PUTS("ActionStart");
 		return;
 	}
 
 	if (memcmp(&m_pBuffer[showfileosc::PATH_LENGTH], cmd::STOP, length::STOP) == 0){
-		ShowFile::Get()->Stop();
+		ShowFile::Get().Stop();
 		SendStatus();
 		DEBUG_PUTS("ActionStop");
 		return;
 	}
 
 	if (memcmp(&m_pBuffer[showfileosc::PATH_LENGTH], cmd::RESUME, length::RESUME) == 0) {
-		ShowFile::Get()->Resume();
+		ShowFile::Get().Resume();
 		SendStatus();
 		DEBUG_PUTS("ActionResume");
 		return;
@@ -107,7 +107,7 @@ void ShowFileOSC::Process() {
 		const auto nValue = static_cast<uint32_t>(Msg.GetInt(0));
 
 		if (nValue <= showfile::FILE_MAX_NUMBER) {
-			ShowFile::Get()->SetPlayerShowFileCurrent(nValue);
+			ShowFile::Get().SetPlayerShowFileCurrent(nValue);
 			SendStatus();
 		}
 
@@ -128,7 +128,7 @@ void ShowFileOSC::Process() {
 			return;
 		}
 
-		ShowFile::Get()->DoLoop(nValue != 0);
+		ShowFile::Get().DoLoop(nValue != 0);
 		SendStatus();
 		showfile::display_status();
 
@@ -137,7 +137,7 @@ void ShowFileOSC::Process() {
 	}
 
 	if (memcmp(&m_pBuffer[showfileosc::PATH_LENGTH], cmd::BO, length::BO) == 0) {
-		ShowFile::Get()->BlackOut();
+		ShowFile::Get().BlackOut();
 		SendStatus();
 		DEBUG_PUTS("Blackout");
 		return;
@@ -158,7 +158,7 @@ void ShowFileOSC::Process() {
 		}
 
 		if ((nValue >= 0) &&  (nValue <= 255)) {
-			ShowFile::Get()->SetMaster(static_cast<uint32_t>(nValue));
+			ShowFile::Get().SetMaster(static_cast<uint32_t>(nValue));
 		}
 
 		DEBUG_PRINTF("Master %d", nValue);
@@ -179,7 +179,7 @@ void ShowFileOSC::Process() {
 			return;
 		}
 
-		ShowFile::Get()->EnableTFTP(nValue != 0);
+		ShowFile::Get().EnableTFTP(nValue != 0);
 		SendStatus();
 
 		DEBUG_PRINTF("TFTP %d", nValue != 0);
@@ -207,7 +207,7 @@ void ShowFileOSC::Process() {
 
 			OscSimpleSend MsgName(m_nHandle, m_nRemoteIp, m_nPortOutgoing, "/showfile/name", "s", aShowFileName);
 
-			if (ShowFile::Get()->DeleteShowFile(nValue)) {
+			if (ShowFile::Get().DeleteShowFile(nValue)) {
 				OscSimpleSend MsgStatus(m_nHandle, m_nRemoteIp, m_nPortOutgoing, "/showfile/status", "s", "Deleted");
 			} else {
 				OscSimpleSend MsgStatus(m_nHandle, m_nRemoteIp, m_nPortOutgoing, "/showfile/status", "s", "Not deleted");
@@ -229,7 +229,7 @@ void ShowFileOSC::Process() {
 
 		DEBUG_PRINTF("Index %u", nIndex);
 
-		const auto nShow = ShowFile::Get()->GetPlayerShowFile(nIndex);
+		const auto nShow = ShowFile::Get().GetPlayerShowFile(nIndex);
 
 		if (nShow < 0) {
 			return;
@@ -237,7 +237,7 @@ void ShowFileOSC::Process() {
 
 		DEBUG_PRINTF("nShow %d", nShow);
 
-		ShowFile::Get()->SetPlayerShowFileCurrent(static_cast<uint32_t>(nShow));
+		ShowFile::Get().SetPlayerShowFileCurrent(static_cast<uint32_t>(nShow));
 		SendStatus();
 
 		return;
@@ -253,9 +253,9 @@ void ShowFileOSC::Process() {
 
 // TouchOSC
 void ShowFileOSC::SendStatus() {
-	OscSimpleSend MsgName(m_nHandle, m_nRemoteIp, m_nPortOutgoing, "/showfile/name", "s", ShowFile::Get()->GetShowFileNameCurrent());
+	OscSimpleSend MsgName(m_nHandle, m_nRemoteIp, m_nPortOutgoing, "/showfile/name", "s", ShowFile::Get().GetShowFileNameCurrent());
 
-	const auto status = ShowFile::Get()->GetStatus();
+	const auto status = ShowFile::Get().GetStatus();
 	assert(status != showfile::Status::UNDEFINED);
 
 	OscSimpleSend MsgStatus(m_nHandle, m_nRemoteIp, m_nPortOutgoing, "/showfile/status", "s", showfile::STATUS[static_cast<int>(status)]);
@@ -268,9 +268,9 @@ void ShowFileOSC::ShowFiles() {
 
 	uint32_t i;
 
-    for (i = 0; i < ShowFile::Get()->GetShows(); i++) {
+    for (i = 0; i < ShowFile::Get().GetShows(); i++) {
     	snprintf(aPath, sizeof(aPath) - 1, "/showfile/%u/show", static_cast<unsigned int>(i));
-    	snprintf(aValue, sizeof(aValue) - 1, "%.2u", static_cast<unsigned int>(ShowFile::Get()->GetPlayerShowFile(i)));
+    	snprintf(aValue, sizeof(aValue) - 1, "%.2u", static_cast<unsigned int>(ShowFile::Get().GetPlayerShowFile(i)));
     	OscSimpleSend MsgStatus(m_nHandle, m_nRemoteIp, m_nPortOutgoing, aPath, "s", aValue);
     }
 

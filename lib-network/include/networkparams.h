@@ -60,16 +60,6 @@ struct Mask {
 	static constexpr auto NAME_SERVER = (1U << 4);
 	static constexpr auto NTP_SERVER = (1U << 6);
 };
-
-namespace store {
-inline void Update(const struct networkparams::Params *pParams) {
-	ConfigStore::Get()->Update(configstore::Store::NETWORK, pParams, sizeof(struct networkparams::Params));
-}
-
-inline void Copy(struct networkparams::Params *pParams) {
-	ConfigStore::Get()->Copy(configstore::Store::NETWORK, pParams, sizeof(struct networkparams::Params));
-}
-}  // namespace store
 }  // namespace networkparams
 
 class NetworkParams {
@@ -85,7 +75,7 @@ public:
 	}
 
 	bool isDhcpUsed() const {
-		return !m_Params.bUseStaticIp;
+		return !(m_Params.bUseStaticIp);
 	}
 
 	uint32_t GetIpAddress() const {
@@ -131,7 +121,7 @@ public:
 private:
 	void Dump();
     void CallbackFunction(const char *s);
-    bool IsMaskSet(uint32_t nMask) const {
+    bool IsMaskSet(const uint32_t nMask) const {
     	return (m_Params.nSetList & nMask) == nMask;
     }
 

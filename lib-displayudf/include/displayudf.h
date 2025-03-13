@@ -162,6 +162,9 @@ enum class PortDir {
 class DisplayUdf final: public Display {
 public:
 	DisplayUdf();
+	DisplayUdf(const DisplayUdf&) = delete;
+	DisplayUdf& operator=(const DisplayUdf&) = delete;
+	~DisplayUdf() = default;
 
 	void SetTitle(const char *format, ...);
 

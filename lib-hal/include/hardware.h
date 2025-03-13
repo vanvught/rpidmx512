@@ -30,13 +30,13 @@
 #include <cstring>
 #include <uuid/uuid.h>
 
-namespace hardware {
-namespace ledblink {
+
+namespace hardware::ledblink {
 enum class Mode {
 	OFF_OFF, OFF_ON, NORMAL, DATA, FAST, REBOOT, UNKNOWN
 };
-}  // namespace ledblink
-}  // namespace hardware
+} // namespace hardware::ledblink
+
 
 namespace hal {
 #if !defined (CONFIG_HAL_TIMERS_COUNT)
@@ -49,6 +49,7 @@ void uuid_copy(uuid_t out);
 }  // namespace hal
 
 #include "hal.h"
+#include "hal_statusled.h"
 
 #if defined(__linux__) || defined (__APPLE__)
 # if defined (CONFIG_HAL_USE_MINIMUM)

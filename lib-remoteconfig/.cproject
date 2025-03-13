@@ -86,6 +86,8 @@
 									<listOptionValue builtIn="false" value="ENABLE_NTP_CLIENT"/>
 									<listOptionValue builtIn="false" value="PHY_TYPE=PHY_GENERIC"/>
 									<listOptionValue builtIn="false" value="ENABLE_FIRMWARE_UPLOAD"/>
+									<listOptionValue builtIn="false" value="DMXNODE_OUTPUT_DMX"/>
+									<listOptionValue builtIn="false" value="DMXNODE_OUTPUT_PIXEL"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1810325769" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -187,6 +189,8 @@
 									<listOptionValue builtIn="false" value="ENABLE_NTP_CLIENT"/>
 									<listOptionValue builtIn="false" value="PHY_TYPE=PHY_GENERIC"/>
 									<listOptionValue builtIn="false" value="ENABLE_FIRMWARE_UPLOAD"/>
+									<listOptionValue builtIn="false" value="DMXNODE_OUTPUT_DMX"/>
+									<listOptionValue builtIn="false" value="DMXNODE_OUTPUT_PIXEL"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1213842804" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -338,6 +342,8 @@
 									<listOptionValue builtIn="false" value="NODE_E131"/>
 									<listOptionValue builtIn="false" value="NODE_NODE"/>
 									<listOptionValue builtIn="false" value="ENABLE_FIRMWARE_UPLOAD"/>
+									<listOptionValue builtIn="false" value="DMXNODE_OUTPUT_DMX"/>
+									<listOptionValue builtIn="false" value="DMXNODE_OUTPUT_PIXEL"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.1650114521" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/include}&quot;"/>
@@ -364,6 +370,8 @@
 									<listOptionValue builtIn="false" value="NODE_E131"/>
 									<listOptionValue builtIn="false" value="NODE_NODE"/>
 									<listOptionValue builtIn="false" value="ENABLE_FIRMWARE_UPLOAD"/>
+									<listOptionValue builtIn="false" value="DMXNODE_OUTPUT_DMX"/>
+									<listOptionValue builtIn="false" value="DMXNODE_OUTPUT_PIXEL"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths.1916263486" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/include}&quot;"/>
@@ -393,6 +401,8 @@
 									<listOptionValue builtIn="false" value="NODE_E131"/>
 									<listOptionValue builtIn="false" value="NODE_NODE"/>
 									<listOptionValue builtIn="false" value="ENABLE_FIRMWARE_UPLOAD"/>
+									<listOptionValue builtIn="false" value="DMXNODE_OUTPUT_DMX"/>
+									<listOptionValue builtIn="false" value="DMXNODE_OUTPUT_PIXEL"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths.390972526" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/include}&quot;"/>

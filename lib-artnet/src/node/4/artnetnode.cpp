@@ -2,9 +2,6 @@
  * @file artnetnode.cpp
  *
  */
-/**
- * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
- */
 /* Copyright (C) 2023-2025 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -37,6 +34,8 @@
 #include "artnetstore.h"
 
 #include "e131bridge.h"
+
+#include "hal_statusled.h"
 
 #if (ARTNET_VERSION < 4)
 # error ARTNET_VERSION is not 4
@@ -106,15 +105,15 @@ void ArtNetNode::SetUniverse4(const uint32_t nPortIndex, const dmxnode::PortDire
 	DEBUG_EXIT
 }
 
-static hardware::ledblink::Mode s_mode;
+static hal::StatusLedMode s_mode;
 
-void ArtNetNode::SetLedBlinkMode4(hardware::ledblink::Mode mode) {
+void ArtNetNode::SetLedBlinkMode4(hal::StatusLedMode mode) {
 	if (s_mode != mode) {
 		s_mode = mode;
 		DEBUG_PRINTF("mode=%u", static_cast<uint32_t>(mode));
 	}
 
-	E131Bridge::SetEnableDataIndicator(mode == hardware::ledblink::Mode::NORMAL);
+	E131Bridge::SetEnableDataIndicator(mode == hal::StatusLedMode::NORMAL);
 
 	for (uint32_t nPortIndex = 0; nPortIndex < e131bridge::MAX_PORTS; nPortIndex++) {
 		if (E131Bridge::IsTransmitting(nPortIndex)) {
@@ -122,7 +121,7 @@ void ArtNetNode::SetLedBlinkMode4(hardware::ledblink::Mode mode) {
 		}
 	}
 
-	Hardware::Get()->SetMode(mode);
+	hal::statusled_set_mode(mode);
 }
 
 uint8_t ArtNetNode::GetGoodOutput4(const uint32_t nPortIndex) {

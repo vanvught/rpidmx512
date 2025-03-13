@@ -2,7 +2,7 @@
  * @file rdmsensorsparams.h
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,6 @@
 #include "rdmsensors.h"
 #include "configstore.h"
 
-
 namespace rdm::sensorsparams {
 struct Params {
 	uint32_t nDevices;
@@ -43,21 +42,9 @@ struct Params {
 	int16_t nCalibrate[rdm::sensors::MAX];
 } __attribute__((packed));
 
-static_assert(sizeof(struct Params) <= rdm::sensors::STORE, "struct Params is too large");
+static_assert(sizeof(struct Params) <= configstore::STORE_SIZE[static_cast<uint32_t>(configstore::Store::RDMSENSORS)]);
 
 } // namespace rdm::sensorsparams
-
-
-class RDMSensorsParamsStore {
-public:
-	static void Update(const rdm::sensorsparams::Params *pParams) {
-		ConfigStore::Get()->Update(configstore::Store::RDMSENSORS, pParams, sizeof(struct rdm::sensorsparams::Params));
-	}
-
-	static void Copy(rdm::sensorsparams::Params *pParams) {
-		ConfigStore::Get()->Copy(configstore::Store::RDMSENSORS, pParams, sizeof(struct rdm::sensorsparams::Params));
-	}
-};
 
 class RDMSensorsParams {
 public:

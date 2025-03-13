@@ -35,6 +35,7 @@
 
 #include "dmxnodeparamsconst.h"
 
+#include "configstore.h"
 #include "readconfigfile.h"
 #include "sscan.h"
 #include "propertiesbuilder.h"
@@ -45,6 +46,16 @@
 
 static constexpr auto TLC59711_TYPES_MAX_NAME_LENGTH = 10U;
 static constexpr char sLedTypes[static_cast<uint32_t>(tlc59711::Type::UNDEFINED)][TLC59711_TYPES_MAX_NAME_LENGTH] = { "TLC59711\0", "TLC59711W" };
+
+namespace tlc59711dmxparams::store {
+static void Update(const struct tlc59711dmxparams::Params *pParams) {
+	ConfigStore::Get()->Update(configstore::Store::TLC5711DMX, pParams, sizeof(struct tlc59711dmxparams::Params));
+}
+
+static void Copy(struct tlc59711dmxparams::Params *pParams) {
+	ConfigStore::Get()->Copy(configstore::Store::TLC5711DMX, pParams, sizeof(struct tlc59711dmxparams::Params));
+}
+}  // namespace tlc59711dmxparams::store
 
 TLC59711DmxParams::TLC59711DmxParams() {
 	DEBUG_ENTRY
@@ -61,16 +72,14 @@ TLC59711DmxParams::TLC59711DmxParams() {
 void TLC59711DmxParams::Load() {
 	DEBUG_ENTRY
 
-	m_Params.nSetList = 0;
-
 #if !defined(DISABLE_FS)
 	ReadConfigFile configfile(TLC59711DmxParams::StaticCallbackFunction, this);
 
 	if (configfile.Read(DevicesParamsConst::FILE_NAME)) {
-		TLC59711DmxParamsStore::Update(&m_Params);
+		tlc59711dmxparams::store::Update(&m_Params);
 	} else
 #endif
-		TLC59711DmxParamsStore::Copy(&m_Params);
+		tlc59711dmxparams::store::Copy(&m_Params);
 
 #ifndef NDEBUG
 	Dump();
@@ -84,13 +93,11 @@ void TLC59711DmxParams::Load(const char *pBuffer, uint32_t nLength) {
 	assert(pBuffer != nullptr);
 	assert(nLength != 0);
 
-	m_Params.nSetList = 0;
-
 	ReadConfigFile config(TLC59711DmxParams::StaticCallbackFunction, this);
 
 	config.Read(pBuffer, nLength);
 
-	TLC59711DmxParamsStore::Update(&m_Params);
+	tlc59711dmxparams::store::Update(&m_Params);
 
 #ifndef NDEBUG
 	Dump();
@@ -98,7 +105,7 @@ void TLC59711DmxParams::Load(const char *pBuffer, uint32_t nLength) {
 	DEBUG_EXIT
 }
 
-void TLC59711DmxParams::callbackFunction(const char* pLine) {
+void TLC59711DmxParams::CallbackFunction(const char* pLine) {
 	assert(pLine != nullptr);
 
 	char buffer[12];
@@ -163,7 +170,7 @@ void TLC59711DmxParams::StaticCallbackFunction(void *p, const char *s) {
 	assert(p != nullptr);
 	assert(s != nullptr);
 
-	(static_cast<TLC59711DmxParams*>(p))->callbackFunction(s);
+	(static_cast<TLC59711DmxParams*>(p))->CallbackFunction(s);
 }
 
 void TLC59711DmxParams::Builder(const struct tlc59711dmxparams::Params *pParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
@@ -174,15 +181,15 @@ void TLC59711DmxParams::Builder(const struct tlc59711dmxparams::Params *pParams,
 	if (pParams != nullptr) {
 		memcpy(&m_Params, pParams, sizeof(struct tlc59711dmxparams::Params));
 	} else {
-		TLC59711DmxParamsStore::Copy(&m_Params);
+		tlc59711dmxparams::store::Copy(&m_Params);
 	}
 
 	PropertiesBuilder builder(DevicesParamsConst::FILE_NAME, pBuffer, nLength);
 
-	builder.Add(DevicesParamsConst::TYPE, GetType(static_cast<tlc59711::Type>(m_Params.nType)), isMaskSet(tlc59711dmxparams::Mask::TYPE));
-	builder.Add(DevicesParamsConst::COUNT, m_Params.nCount, isMaskSet(tlc59711dmxparams::Mask::COUNT));
-	builder.Add(DmxNodeParamsConst::DMX_START_ADDRESS, m_Params.nDmxStartAddress, isMaskSet(tlc59711dmxparams::Mask::DMX_START_ADDRESS));
-	builder.Add(DevicesParamsConst::SPI_SPEED_HZ, m_Params.nSpiSpeedHz, isMaskSet(tlc59711dmxparams::Mask::SPI_SPEED));
+	builder.Add(DevicesParamsConst::TYPE, GetType(static_cast<tlc59711::Type>(m_Params.nType)), IsMaskSet(tlc59711dmxparams::Mask::TYPE));
+	builder.Add(DevicesParamsConst::COUNT, m_Params.nCount, IsMaskSet(tlc59711dmxparams::Mask::COUNT));
+	builder.Add(DmxNodeParamsConst::DMX_START_ADDRESS, m_Params.nDmxStartAddress, IsMaskSet(tlc59711dmxparams::Mask::DMX_START_ADDRESS));
+	builder.Add(DevicesParamsConst::SPI_SPEED_HZ, m_Params.nSpiSpeedHz, IsMaskSet(tlc59711dmxparams::Mask::SPI_SPEED));
 
 	nSize = builder.GetSize();
 
@@ -193,19 +200,19 @@ void TLC59711DmxParams::Builder(const struct tlc59711dmxparams::Params *pParams,
 void TLC59711DmxParams::Set(TLC59711Dmx *pTLC59711Dmx) {
 	assert(pTLC59711Dmx != nullptr);
 
-	if (isMaskSet(tlc59711dmxparams::Mask::TYPE)) {
+	if (IsMaskSet(tlc59711dmxparams::Mask::TYPE)) {
 		pTLC59711Dmx->SetType(static_cast<tlc59711::Type>(m_Params.nType));
 	}
 
-	if (isMaskSet(tlc59711dmxparams::Mask::COUNT)) {
+	if (IsMaskSet(tlc59711dmxparams::Mask::COUNT)) {
 		pTLC59711Dmx->SetCount(m_Params.nCount);
 	}
 
-	if (isMaskSet(tlc59711dmxparams::Mask::DMX_START_ADDRESS)) {
+	if (IsMaskSet(tlc59711dmxparams::Mask::DMX_START_ADDRESS)) {
 		pTLC59711Dmx->SetDmxStartAddress(m_Params.nDmxStartAddress);
 	}
 
-	if (isMaskSet(tlc59711dmxparams::Mask::SPI_SPEED)) {
+	if (IsMaskSet(tlc59711dmxparams::Mask::SPI_SPEED)) {
 		pTLC59711Dmx->SetSpiSpeedHz(m_Params.nSpiSpeedHz);
 	}
 }

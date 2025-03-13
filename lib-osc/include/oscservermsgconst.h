@@ -2,7 +2,7 @@
  * @file oscservermsgconst.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,9 +27,9 @@
 #define OSCSERVERMSGCONST_H_
 
 struct OscServerMsgConst {
-	static const char PARAMS[];
-	static const char START[];
-	static const char STARTED[];
+	static inline const char PARAMS[] = "Configuring OSC Server";
+	static inline const char START[] = "Starting the OSC Server";
+	static inline const char STARTED[]= "OSC Server started";
 };
 
 #endif /* OSCSERVERMSGCONST_H_ */

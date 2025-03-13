@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -74,30 +74,30 @@ int main() {
 
 	display.TextStatus(OscServerMsgConst::PARAMS, CONSOLE_YELLOW);
 
-	OSCServerParams params;
-	OscServer server;
+	OscServer oscServer;
 
-	params.Load();
-	params.Set(&server);
+	OSCServerParams oscServerParams;
+	oscServerParams.Load();
+	oscServerParams.Set();
 
-	mdns_service_record_add(nullptr, mdns::Services::OSC, "type=monitor", server.GetPortIncoming());
+	mdns_service_record_add(nullptr, mdns::Services::OSC, "type=monitor", oscServer.GetPortIncoming());
 
 	DMXMonitor monitor;
 	// There is support for HEX output only
-	server.SetOutput(&monitor);
+	oscServer.SetOutput(&monitor);
 	monitor.Cls();
 	console_set_top_row(20);
 	console_clear_top_row();
 
-	server.Print();
+	oscServer.Print();
 
 	uint8_t nHwTextLength;
 
 	display.Printf(1, "OSC Monitor");
 	display.Write(2, hal::board_name(nHwTextLength));
 	display.Printf(3, "IP: " IPSTR " %c", IP2STR(Network::Get()->GetIp()), nw.IsDhcpKnown() ? (nw.IsDhcpUsed() ? 'D' : 'S') : ' ');
-	display.Printf(4, "In: %d", server.GetPortIncoming());
-	display.Printf(5, "Out: %d", server.GetPortOutgoing());
+	display.Printf(4, "In: %d", oscServer.GetPortIncoming());
+	display.Printf(5, "Out: %d", oscServer.GetPortOutgoing());
 
 	RemoteConfig remoteConfig(remoteconfig::NodeType::OSC, remoteconfig::Output::MONITOR, 1);
 
@@ -107,7 +107,7 @@ int main() {
 
 	display.TextStatus(OscServerMsgConst::START, CONSOLE_YELLOW);
 
-	server.Start();
+	oscServer.Start();
 
 	display.TextStatus(OscServerMsgConst::STARTED, CONSOLE_GREEN);
 

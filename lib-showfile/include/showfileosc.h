@@ -93,14 +93,24 @@ public:
 
 	void SetPortIncoming(const uint16_t nPortIncoming) {
 		assert(m_nHandle == -1);
-		m_nPortIncoming = nPortIncoming;
+		if (nPortIncoming > 1023) {
+			m_nPortIncoming = nPortIncoming;
+		} else {
+			m_nPortIncoming = osc::port::DEFAULT_INCOMING;
+		}
+
 	}
+
 	uint16_t GetPortIncoming() const {
 		return m_nPortIncoming;
 	}
 
 	void SetPortOutgoing(const uint16_t nPortOutgoing) {
-		m_nPortOutgoing = nPortOutgoing;
+		if (nPortOutgoing > 1023) {
+			m_nPortOutgoing = nPortOutgoing;
+		} else {
+			m_nPortOutgoing = osc::port::DEFAULT_OUTGOING;
+		}
 	}
 
 	uint16_t GetPortOutgoing() const {
@@ -124,6 +134,7 @@ private:
 	uint32_t m_nRemoteIp { 0 };
 	uint32_t m_nBytesReceived { 0 };
 	uint16_t m_nRemotePort { 0 };
+
 	static inline ShowFileOSC *s_pThis;
 };
 

@@ -23,6 +23,10 @@
  * THE SOFTWARE.
  */
 
+#if defined (DEBUG_OSCSERVER)
+# undef NDEBUG
+#endif
+
 #include <cstdint>
 #include <cstring>
 #ifndef NDEBUG
@@ -43,14 +47,18 @@
 
 #include "debug.h"
 
-using namespace osc::server;
+namespace osc::serverparams::store {
+static void Update(const struct osc::server::Params *pParams) {
+	ConfigStore::Get()->Update(configstore::Store::OSC, pParams, sizeof(struct osc::server::Params));
+}
+
+static void Copy(struct osc::server::Params *pParams) {
+	ConfigStore::Get()->Copy(configstore::Store::OSC, pParams, sizeof(struct osc::server::Params));
+}
+}  // namespace osc::serverparams::store
 
 OSCServerParams::OSCServerParams() {
 	DEBUG_ENTRY
-
-	memset(&m_Params, 0, sizeof(struct Params));
-	m_Params.nIncomingPort = osc::port::DEFAULT_INCOMING;
-	m_Params.nOutgoingPort = osc::port::DEFAULT_OUTGOING;
 
 	DEBUG_EXIT
 }
@@ -58,16 +66,14 @@ OSCServerParams::OSCServerParams() {
 void OSCServerParams::Load() {
 	DEBUG_ENTRY
 
-	m_Params.nSetList = 0;
-
 #if !defined(DISABLE_FS)
 	ReadConfigFile configfile(OSCServerParams::StaticCallbackFunction, this);
 
 	if (configfile.Read(OscServerParamsConst::FILE_NAME)) {
-		StoreOscServer::Update(&m_Params);
+		osc::serverparams::store::Update(&m_Params);
 	} else
 #endif
-		StoreOscServer::Copy(&m_Params);
+		osc::serverparams::store::Copy(&m_Params);
 
 #ifndef NDEBUG
 	Dump();
@@ -75,19 +81,19 @@ void OSCServerParams::Load() {
 	DEBUG_EXIT
 }
 
-void OSCServerParams::Load(const char* pBuffer, uint32_t nLength) {
+void OSCServerParams::Load(const char *pBuffer, uint32_t nLength) {
 	DEBUG_ENTRY
 
 	assert(pBuffer != nullptr);
 	assert(nLength != 0);
 
-	m_Params.nSetList = 0;
+	memset(&m_Params, 0, sizeof(struct osc::server::Params));
 
 	ReadConfigFile config(OSCServerParams::StaticCallbackFunction, this);
 
 	config.Read(pBuffer, nLength);
 
-	StoreOscServer::Update(&m_Params);
+	osc::serverparams::store::Update(&m_Params);
 
 #ifndef NDEBUG
 	Dump();
@@ -95,7 +101,7 @@ void OSCServerParams::Load(const char* pBuffer, uint32_t nLength) {
 	DEBUG_EXIT
 }
 
-void OSCServerParams::callbackFunction(const char *pLine) {
+void OSCServerParams::CallbackFunction(const char *pLine) {
 	assert(pLine != nullptr);
 
 	uint16_t nValue16;
@@ -103,10 +109,6 @@ void OSCServerParams::callbackFunction(const char *pLine) {
 	if (Sscan::Uint16(pLine, OscParamsConst::INCOMING_PORT, nValue16) == Sscan::OK) {
 		if (nValue16 > 1023) {
 			m_Params.nIncomingPort = nValue16;
-			m_Params.nSetList |= ParamsMask::INCOMING_PORT;
-		} else {
-			m_Params.nIncomingPort = osc::port::DEFAULT_INCOMING;
-			m_Params.nSetList &= ~ParamsMask::INCOMING_PORT;
 		}
 		return;
 	}
@@ -114,10 +116,6 @@ void OSCServerParams::callbackFunction(const char *pLine) {
 	if (Sscan::Uint16(pLine, OscParamsConst::OUTGOING_PORT, nValue16) == Sscan::OK) {
 		if (nValue16 > 1023) {
 			m_Params.nOutgoingPort = nValue16;
-			m_Params.nSetList |= ParamsMask::OUTGOING_PORT;
-		} else {
-			m_Params.nOutgoingPort = osc::port::DEFAULT_OUTGOING;
-			m_Params.nSetList &= ~ParamsMask::OUTGOING_PORT;
 		}
 		return;
 	}
@@ -126,59 +124,42 @@ void OSCServerParams::callbackFunction(const char *pLine) {
 
 	if (Sscan::Uint8(pLine, OscServerParamsConst::TRANSMISSION, nValue8) == Sscan::OK) {
 		if (nValue8 != 0) {
-			m_Params.nSetList |= ParamsMask::TRANSMISSION;
-		} else {
-			m_Params.nSetList &= ~ParamsMask::TRANSMISSION;
+			m_Params.nSetList |= osc::server::ParamsMask::PARTIAL_TRANSMISSION;
 		}
-		m_Params.bPartialTransmission = (nValue8 != 0);
 		return;
 	}
 
 	uint32_t nLength = sizeof(m_Params.aPath) - 1;
+
 	if (Sscan::Char(pLine, OscServerParamsConst::PATH, m_Params.aPath, nLength) == Sscan::OK) {
-		m_Params.nSetList |= ParamsMask::PATH;
+		m_Params.aPath[nLength] = '\0';
 		return;
 	}
 
 	nLength = sizeof(m_Params.aPathInfo) - 1;
+
 	if (Sscan::Char(pLine, OscServerParamsConst::PATH_INFO, m_Params.aPathInfo, nLength) == Sscan::OK) {
-		m_Params.nSetList |= ParamsMask::PATH_INFO;
+		m_Params.aPathInfo[nLength] = '\0';
 		return;
 	}
 
 	nLength = sizeof(m_Params.aPathBlackOut) - 1;
+
 	if (Sscan::Char(pLine, OscServerParamsConst::PATH_INFO, m_Params.aPathBlackOut, nLength) == Sscan::OK) {
-		m_Params.nSetList |= ParamsMask::PATH_BLACKOUT;
+		m_Params.aPathBlackOut[nLength] = '\0';
 		return;
 	}
 }
 
-void OSCServerParams::Set(OscServer *pOscServer) {
-	assert(pOscServer != nullptr);
+void OSCServerParams::Set() {
+	auto& oscServer = OscServer::Get();
 
-	if (isMaskSet(ParamsMask::INCOMING_PORT)) {
-		pOscServer->SetPortIncoming(m_Params.nIncomingPort);
-	}
-
-	if (isMaskSet(ParamsMask::OUTGOING_PORT)) {
-		pOscServer->SetPortOutgoing(m_Params.nOutgoingPort);
-	}
-
-	if (isMaskSet(ParamsMask::PATH)) {
-		pOscServer->SetPath(m_Params.aPath);
-	}
-
-	if (isMaskSet(ParamsMask::PATH_INFO)) {
-		pOscServer->SetPathInfo(m_Params.aPathInfo);
-	}
-
-	if (isMaskSet(ParamsMask::PATH_BLACKOUT)) {
-		pOscServer->SetPathBlackOut(m_Params.aPathBlackOut);
-	}
-
-	if (isMaskSet(ParamsMask::TRANSMISSION)) {
-		pOscServer->SetPartialTransmission(m_Params.bPartialTransmission);
-	}
+	oscServer.SetPortIncoming(m_Params.nIncomingPort);
+	oscServer.SetPortOutgoing(m_Params.nOutgoingPort);
+	oscServer.SetPath(m_Params.aPath);
+	oscServer.SetPathInfo(m_Params.aPathInfo);
+	oscServer.SetPathBlackOut(m_Params.aPathBlackOut);
+	oscServer.SetPartialTransmission(IsMaskSet(osc::server::ParamsMask::PARTIAL_TRANSMISSION));
 }
 
 void OSCServerParams::Builder(const osc::server::Params *ptOSCServerParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
@@ -189,29 +170,50 @@ void OSCServerParams::Builder(const osc::server::Params *ptOSCServerParams, char
 	if (ptOSCServerParams != nullptr) {
 		memcpy(&m_Params, ptOSCServerParams, sizeof(osc::server::Params));
 	} else {
-		StoreOscServer::Copy(&m_Params);
+		osc::serverparams::store::Copy(&m_Params);
 	}
 
 	PropertiesBuilder builder(OscServerParamsConst::FILE_NAME, pBuffer, nLength);
 
-	if (!isMaskSet(ParamsMask::PATH)) {
-		strncpy(m_Params.aPath, OscServer::Get()->GetPath(), sizeof(m_Params.aPath) - 1);
+	auto& oscServer = OscServer::Get();
+
+	if (m_Params.nIncomingPort == 0) {
+		m_Params.nIncomingPort = oscServer.GetPortIncoming();
 	}
 
-	if (!isMaskSet(ParamsMask::PATH_INFO)) {
-		strncpy(m_Params.aPathInfo, OscServer::Get()->GetPathInfo(), sizeof(m_Params.aPathInfo) - 1);
+	builder.Add(OscParamsConst::INCOMING_PORT, m_Params.nIncomingPort);
+
+	if (m_Params.nOutgoingPort == 0) {
+		m_Params.nOutgoingPort = oscServer.GetPortOutgoing();
 	}
 
-	if (!isMaskSet(ParamsMask::PATH_BLACKOUT)) {
-		strncpy(m_Params.aPathBlackOut, OscServer::Get()->GetPathBlackOut(), sizeof(m_Params.aPathBlackOut) - 1);
+	builder.Add(OscParamsConst::OUTGOING_PORT, m_Params.nOutgoingPort);
+
+	const auto isPathSet = (m_Params.aPath[0] != 0);
+
+	if (!isPathSet) {
+		strncpy(m_Params.aPath, oscServer.GetPath(), sizeof(m_Params.aPath) - 1);
 	}
 
-	builder.Add(OscParamsConst::INCOMING_PORT, m_Params.nIncomingPort, isMaskSet(ParamsMask::INCOMING_PORT));
-	builder.Add(OscParamsConst::OUTGOING_PORT, m_Params.nOutgoingPort, isMaskSet(ParamsMask::OUTGOING_PORT));
-	builder.Add(OscServerParamsConst::PATH, m_Params.aPath, isMaskSet(ParamsMask::PATH));
-	builder.Add(OscServerParamsConst::PATH_INFO, m_Params.aPathInfo, isMaskSet(ParamsMask::PATH_INFO));
-	builder.Add(OscServerParamsConst::PATH_BLACKOUT, m_Params.aPathBlackOut, isMaskSet(ParamsMask::PATH_BLACKOUT));
-	builder.Add(OscServerParamsConst::TRANSMISSION, m_Params.bPartialTransmission, isMaskSet(ParamsMask::TRANSMISSION));
+	builder.Add(OscServerParamsConst::PATH, m_Params.aPath, isPathSet);
+
+	const auto isPathInfoSet = (m_Params.aPathInfo[0] != 0);
+
+	if (!isPathInfoSet) {
+		strncpy(m_Params.aPathInfo, oscServer.GetPathInfo(), sizeof(m_Params.aPathInfo) - 1);
+	}
+
+	builder.Add(OscServerParamsConst::PATH_INFO, m_Params.aPathInfo, isPathInfoSet);
+
+	const auto isPathBlackOutSet = (m_Params.aPathBlackOut[0] != 0);
+
+	if (!isPathBlackOutSet) {
+		strncpy(m_Params.aPathBlackOut, oscServer.GetPathBlackOut(), sizeof(m_Params.aPathBlackOut) - 1);
+	}
+
+	builder.Add(OscServerParamsConst::PATH_BLACKOUT, m_Params.aPathBlackOut, isPathBlackOutSet);
+
+	builder.Add(OscServerParamsConst::TRANSMISSION, IsMaskSet(osc::server::ParamsMask::PARTIAL_TRANSMISSION), IsMaskSet(osc::server::ParamsMask::PARTIAL_TRANSMISSION));
 
 	nSize = builder.GetSize();
 
@@ -222,7 +224,7 @@ void OSCServerParams::StaticCallbackFunction(void *p, const char *s) {
 	assert(p != nullptr);
 	assert(s != nullptr);
 
-	(static_cast<OSCServerParams*>(p))->callbackFunction(s);
+	(static_cast<OSCServerParams*>(p))->CallbackFunction(s);
 }
 
 void OSCServerParams::Dump() {
@@ -232,5 +234,5 @@ void OSCServerParams::Dump() {
 	printf(" %s=%s\n", OscServerParamsConst::PATH, m_Params.aPath);
 	printf(" %s=%s\n", OscServerParamsConst::PATH_INFO, m_Params.aPathInfo);
 	printf(" %s=%s\n", OscServerParamsConst::PATH_BLACKOUT, m_Params.aPathBlackOut);
-	printf(" %s=%d\n", OscServerParamsConst::TRANSMISSION, m_Params.bPartialTransmission);
+	printf(" %s=%d\n", OscServerParamsConst::TRANSMISSION, IsMaskSet(osc::server::ParamsMask::PARTIAL_TRANSMISSION));
 }

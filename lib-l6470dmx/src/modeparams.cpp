@@ -114,7 +114,7 @@ void ModeParams::Load(uint32_t nMotorIndex, const char *pBuffer, uint32_t nLengt
 	DEBUG_EXIT
 }
 
-void ModeParams::callbackFunction(const char *pLine) {
+void ModeParams::CallbackFunction(const char *pLine) {
 	assert(pLine != nullptr);
 
 	float fValue;
@@ -220,18 +220,18 @@ void ModeParams::Builder(uint32_t nMotorIndex, const struct modeparams::Params *
 
 	PropertiesBuilder builder(m_aFileName, pBuffer, nLength);
 
-	builder.Add(ModeParamsConst::DMX_MODE, m_Params.nDmxMode, isMaskSet(modeparams::Mask::DMX_MODE));
-	builder.Add(DmxNodeParamsConst::DMX_START_ADDRESS, m_Params.nDmxStartAddress, isMaskSet(modeparams::Mask::DMX_START_ADDRESS));
+	builder.Add(ModeParamsConst::DMX_MODE, m_Params.nDmxMode, IsMaskSet(modeparams::Mask::DMX_MODE));
+	builder.Add(DmxNodeParamsConst::DMX_START_ADDRESS, m_Params.nDmxStartAddress, IsMaskSet(modeparams::Mask::DMX_START_ADDRESS));
 
 	const uint32_t nMask = (m_Params.nSetList >> modeparams::Mask::SLOT_INFO_SHIFT);
 	builder.Add(DmxNodeParamsConst::DMX_SLOT_INFO, m_pDmxSlotInfo->ToString(nMask), nMask != 0);
 
-	builder.Add(ModeParamsConst::MAX_STEPS, m_Params.nMaxSteps, isMaskSet(modeparams::Mask::MAX_STEPS));
+	builder.Add(ModeParamsConst::MAX_STEPS, m_Params.nMaxSteps, IsMaskSet(modeparams::Mask::MAX_STEPS));
 
-	builder.Add(ModeParamsConst::SWITCH_ACT, m_Params.tSwitchAction == L6470_ABSPOS_COPY ? "copy" : "reset", isMaskSet(modeparams::Mask::SWITCH_ACT));
-	builder.Add(ModeParamsConst::SWITCH_DIR, m_Params.tSwitchDir == L6470_DIR_FWD ? "forward" : "reverse", isMaskSet(modeparams::Mask::SWITCH_DIR));
-	builder.Add(ModeParamsConst::SWITCH_SPS, m_Params.fSwitchStepsPerSec, isMaskSet(modeparams::Mask::SWITCH_SPS));
-	builder.Add(ModeParamsConst::SWITCH, m_Params.bSwitch, isMaskSet(modeparams::Mask::SWITCH));
+	builder.Add(ModeParamsConst::SWITCH_ACT, m_Params.tSwitchAction == L6470_ABSPOS_COPY ? "copy" : "reset", IsMaskSet(modeparams::Mask::SWITCH_ACT));
+	builder.Add(ModeParamsConst::SWITCH_DIR, m_Params.tSwitchDir == L6470_DIR_FWD ? "forward" : "reverse", IsMaskSet(modeparams::Mask::SWITCH_DIR));
+	builder.Add(ModeParamsConst::SWITCH_SPS, m_Params.fSwitchStepsPerSec, IsMaskSet(modeparams::Mask::SWITCH_SPS));
+	builder.Add(ModeParamsConst::SWITCH, m_Params.bSwitch, IsMaskSet(modeparams::Mask::SWITCH));
 
 	nSize = builder.GetSize();
 
@@ -245,11 +245,11 @@ void ModeParams::Save(uint32_t nMotorIndex, char *pBuffer, uint32_t nLength, uin
 }
 
 void ModeParams::Dump() {
-	if (isMaskSet(modeparams::Mask::DMX_MODE)) {
+	if (IsMaskSet(modeparams::Mask::DMX_MODE)) {
 		printf(" %s=%d\n", ModeParamsConst::DMX_MODE, m_Params.nDmxMode);
 	}
 
-	if (isMaskSet(modeparams::Mask::DMX_START_ADDRESS)) {
+	if (IsMaskSet(modeparams::Mask::DMX_START_ADDRESS)) {
 		printf(" %s=%d\n", DmxNodeParamsConst::DMX_START_ADDRESS, m_Params.nDmxStartAddress);
 	}
 
@@ -258,24 +258,24 @@ void ModeParams::Dump() {
 		printf("  Slot:%d %2x:%4x\n", i, m_Params.tLightSetSlotInfo[i].nType, m_Params.tLightSetSlotInfo[i].nCategory);
 	}
 
-	if (isMaskSet(modeparams::Mask::MAX_STEPS)) {
+	if (IsMaskSet(modeparams::Mask::MAX_STEPS)) {
 		printf(" %s=%d steps\n", ModeParamsConst::MAX_STEPS, m_Params.nMaxSteps);
 	}
 
-	if(isMaskSet(modeparams::Mask::SWITCH_ACT)) {
+	if(IsMaskSet(modeparams::Mask::SWITCH_ACT)) {
 		printf(" %s=%s\n", ModeParamsConst::SWITCH_ACT, m_Params.tSwitchAction == L6470_ABSPOS_RESET ? "reset" : "copy");
 
 	}
 
-	if(isMaskSet(modeparams::Mask::SWITCH_DIR)) {
+	if(IsMaskSet(modeparams::Mask::SWITCH_DIR)) {
 		printf(" %s=%s\n", ModeParamsConst::SWITCH_DIR, m_Params.tSwitchDir == L6470_DIR_REV ? "reverse" : "forward");
 	}
 
-	if(isMaskSet(modeparams::Mask::SWITCH_SPS)) {
+	if(IsMaskSet(modeparams::Mask::SWITCH_SPS)) {
 		printf(" %s=%f step/s\n", ModeParamsConst::SWITCH_SPS, m_Params.fSwitchStepsPerSec);
 	}
 
-	if(isMaskSet(modeparams::Mask::SWITCH)) {
+	if(IsMaskSet(modeparams::Mask::SWITCH)) {
 		printf(" %s={%s}\n", ModeParamsConst::SWITCH, m_Params.bSwitch ? "Yes": "No");
 	}
 }
@@ -295,5 +295,5 @@ void ModeParams::StaticCallbackFunction(void *p, const char *s) {
 	assert(p != nullptr);
 	assert(s != nullptr);
 
-	(static_cast<ModeParams*>(p))->callbackFunction(s);
+	(static_cast<ModeParams*>(p))->CallbackFunction(s);
 }

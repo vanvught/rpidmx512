@@ -75,7 +75,7 @@ public:
 			if (m_IsActive) {
 				m_pDmxNodeOutputType->Stop(0);
 				m_IsActive = false;
-				Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
+				hal::statusled_set_mode(hal::StatusLedMode::NORMAL);
 			}
 
 			nLength = -1;
@@ -94,7 +94,7 @@ public:
 				if (!m_IsActive) {
 					m_pDmxNodeOutputType->Start(0);
 					m_IsActive = true;
-					Hardware::Get()->SetMode(hardware::ledblink::Mode::DATA);
+					hal::statusled_set_mode(hal::StatusLedMode::DATA);
 				}
 
 				return const_cast<uint8_t *>(pDmx);

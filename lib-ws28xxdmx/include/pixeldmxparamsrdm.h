@@ -49,8 +49,8 @@ public:
 		DEBUG_EXIT
 	}
 
-	void Start([[maybe_unused]] const uint32_t nPortIndex) {}
-	void Stop([[maybe_unused]] const uint32_t nPortIndex) {}
+	void Start([[maybe_unused]] const uint32_t nPortIndex) override {}
+	void Stop([[maybe_unused]] const uint32_t nPortIndex) override {}
 
 	void SetData(const uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate = true) override;
 

@@ -45,7 +45,7 @@ public:
 
 	void On() {
 		m_bIsEnabled = true;
-		Hardware::Get()->SetModeWithLock(hardware::ledblink::Mode::FAST, true);
+		hal::statusled_set_mode_with_lock(hal::StatusLedMode::FAST, true);
 
 		if (m_nMode != rdm::identify::Mode::QUIET) {
 			On(m_nMode);
@@ -54,7 +54,7 @@ public:
 
 	void Off() {
 		m_bIsEnabled = false;
-		Hardware::Get()->SetModeWithLock(hardware::ledblink::Mode::NORMAL, false);
+		hal::statusled_set_mode_with_lock(hal::StatusLedMode::NORMAL, false);
 
 		if (m_nMode != rdm::identify::Mode::QUIET) {
 			Off(m_nMode);

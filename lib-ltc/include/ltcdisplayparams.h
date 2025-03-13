@@ -2,7 +2,7 @@
  * @file ltcdisplayparams.h
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,7 +49,7 @@ struct Params {
 	uint8_t nRotaryFullStep;			// 46
 } __attribute__((packed));
 
-static_assert(sizeof(struct ltcdisplayparams::Params) <= 64, "struct ltcdisplayparams::Params is too large");
+static_assert(sizeof(struct Params) <= configstore::STORE_SIZE[static_cast<uint32_t>(configstore::Store::LTCDISPLAY)]);
 
 struct Mask {
 	static constexpr auto MAX7219_TYPE = (1U << 0);
@@ -67,17 +67,6 @@ struct Mask {
 };
 }  // namespace ltcdisplayparams
 
-class LtcDisplayParamsStore {
-public:
-	static void Update(const struct ltcdisplayparams::Params *ptLtcDisplayParams) {
-		ConfigStore::Get()->Update(configstore::Store::LTCDISPLAY, ptLtcDisplayParams, sizeof(struct ltcdisplayparams::Params));
-	}
-
-	static void Copy(struct ltcdisplayparams::Params *ptLtcDisplayParams) {
-		ConfigStore::Get()->Copy(configstore::Store::LTCDISPLAY, ptLtcDisplayParams, sizeof(struct ltcdisplayparams::Params));
-	}
-};
-
 class LtcDisplayParams {
 public:
 	LtcDisplayParams();
@@ -85,7 +74,7 @@ public:
 	void Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct ltcdisplayparams::Params *ptLtcDisplayParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Builder(const struct ltcdisplayparams::Params *pParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
 	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 		Builder(nullptr, pBuffer, nLength, nSize);
 	}
@@ -127,8 +116,8 @@ public:
 
 private:
 	void Dump();
-    void callbackFunction(const char *pLine);
-    bool isMaskSet(uint32_t nMask) const {
+    void CallbackFunction(const char *pLine);
+    bool IsMaskSet(const uint32_t nMask) const {
     	return (m_Params.nSetList & nMask) == nMask;
     }
 

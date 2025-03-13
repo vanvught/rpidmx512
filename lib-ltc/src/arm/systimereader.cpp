@@ -106,7 +106,7 @@ void SystimeReader::Start(bool bAutoStart) {
 	assert(m_nHandle != -1);
 
 	LtcOutputs::Get()->Init();
-	Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
+	hal::statusled_set_mode(hal::StatusLedMode::NORMAL);
 
 	if (bAutoStart) {
 		ActionStart();
@@ -162,7 +162,7 @@ void SystimeReader::ActionStart() {
 
 	LtcOutputs::Get()->ResetTimeCodeTypePrevious();
 
-	Hardware::Get()->SetMode(hardware::ledblink::Mode::DATA);
+	hal::statusled_set_mode(hal::StatusLedMode::DATA);
 
 	DEBUG_EXIT
 }
@@ -172,7 +172,7 @@ void SystimeReader::ActionStop() {
 
 	m_bIsStarted = false;
 
-	Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
+	hal::statusled_set_mode(hal::StatusLedMode::NORMAL);
 
 	DEBUG_EXIT
 }

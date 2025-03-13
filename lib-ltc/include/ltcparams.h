@@ -66,7 +66,7 @@ struct Params {
 	uint32_t nTimeCodeIp;		///< 4  35
 }__attribute__((packed));
 
-static_assert(sizeof(struct ltcparams::Params) <= 64, "struct ltcparams::Params is too large");
+static_assert(sizeof(struct Params) <= configstore::STORE_SIZE[static_cast<uint32_t>(configstore::Store::LTC)]);
 
 struct Mask {
 	static constexpr auto SOURCE = (1U << 0);
@@ -105,16 +105,6 @@ struct RgbLedType {
 	static constexpr auto WS28XX = (1U << 0);
 	static constexpr auto RGBPANEL = (1U << 1);
 };
-
-namespace store {
-inline void update(const struct ltcparams::Params *pParams) {
-	ConfigStore::Get()->Update(configstore::Store::LTC, pParams, sizeof(struct ltcparams::Params));
-}
-
-inline void copy(struct ltcparams::Params *pParams) {
-	ConfigStore::Get()->Copy(configstore::Store::LTC, pParams, sizeof(struct ltcparams::Params));
-}
-}  // namespace store
 }  // namespace ltcparams
 
 class LtcParams {
@@ -143,11 +133,11 @@ public:
 	}
 
 	bool IsAutoStart() const {
-		return isMaskSet(ltcparams::Mask::AUTO_START);
+		return IsMaskSet(ltcparams::Mask::AUTO_START);
 	}
 
 	bool IsGpsStart() const {
-		return isMaskSet(ltcparams::Mask::GPS_START);
+		return IsMaskSet(ltcparams::Mask::GPS_START);
 	}
 
 	int32_t GetUtcOffset() {
@@ -159,35 +149,35 @@ public:
 	}
 
 	bool IsShowSysTime() const {
-		return isMaskSet(ltcparams::Mask::SHOW_SYSTIME);
+		return IsMaskSet(ltcparams::Mask::SHOW_SYSTIME);
 	}
 
 	bool IsTimeSyncDisabled() const {
-		return isMaskSet(ltcparams::Mask::DISABLE_TIMESYNC);
+		return IsMaskSet(ltcparams::Mask::DISABLE_TIMESYNC);
 	}
 
 	bool IsNtpEnabled() const {
-		return isMaskSet(ltcparams::Mask::NTP_ENABLE);
+		return IsMaskSet(ltcparams::Mask::NTP_ENABLE);
 	}
 
 	bool IsOscEnabled() const {
-		return isMaskSet(ltcparams::Mask::OSC_ENABLE);
+		return IsMaskSet(ltcparams::Mask::OSC_ENABLE);
 	}
 
 	bool IsSetDate() const {
-		return isMaskSet(ltcparams::Mask::SET_DATE);
+		return IsMaskSet(ltcparams::Mask::SET_DATE);
 	}
 
 	bool IsIgnoreStart() const {
-		return isMaskSet(ltcparams::Mask::IGNORE_START);
+		return IsMaskSet(ltcparams::Mask::IGNORE_START);
 	}
 
 	bool IsIgnoreStop() const {
-		return isMaskSet(ltcparams::Mask::IGNORE_STOP);
+		return IsMaskSet(ltcparams::Mask::IGNORE_STOP);
 	}
 
 	uint16_t GetOscPort(bool &bIsSet) {
-		bIsSet = isMaskSet(ltcparams::Mask::OSC_PORT);
+		bIsSet = IsMaskSet(ltcparams::Mask::OSC_PORT);
 		return m_Params.nOscPort;
 	}
 
@@ -239,11 +229,11 @@ private:
 	void SetValue(const bool bEvaluate, const uint8_t nValue, uint8_t& nProperty, const uint32_t nMask);
 
 	void Dump();
-	void callbackFunction(const char *pLine);
-	bool isMaskSet(uint32_t nMask) const {
+	void CallbackFunction(const char *pLine);
+	bool IsMaskSet(const uint32_t nMask) const {
 		return (m_Params.nSetList & nMask) == nMask;
 	}
-	bool isDisabledOutputMaskSet(const ltc::Destination::Output nOutput) const {
+	bool IsDisabledOutputMaskSet(const ltc::Destination::Output nOutput) const {
 		 return (m_Params.nDisabledOutputs & static_cast<uint32_t>(nOutput)) == static_cast<uint32_t>(nOutput);
 	}
 

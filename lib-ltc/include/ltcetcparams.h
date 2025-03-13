@@ -2,7 +2,7 @@
  * @file ltcetcparams.h
  *
  */
-/* Copyright (C) 2022-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2022-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,7 +40,7 @@ struct Params {
     uint8_t nUdpTerminator;			///< 1	17
 }__attribute__((packed));
 
-static_assert(sizeof(struct ltcetcparams::Params) <= 32, "struct Params is too large");
+static_assert(sizeof(struct Params) <= configstore::STORE_SIZE[static_cast<uint32_t>(configstore::Store::LTCETC)]);
 
 struct Mask {
 	static constexpr auto DESTINATION_IP = (1U << 0);
@@ -50,17 +50,6 @@ struct Mask {
 	static constexpr auto UDP_TERMINATOR = (1U << 4);
 };
 }  // namespace ltcetcparams
-
-class LtcEtcParamsStore {
-public:
-	static void Update(const ltcetcparams::Params *pLtcEtcParams) {
-		ConfigStore::Get()->Update(configstore::Store::LTCETC, pLtcEtcParams, sizeof(struct ltcetcparams::Params));
-	}
-
-	static void Copy(struct ltcetcparams::Params *pLtcEtcParams) {
-		ConfigStore::Get()->Copy(configstore::Store::LTCETC, pLtcEtcParams, sizeof(struct ltcetcparams::Params));
-	}
-};
 
 class LtcEtcParams {
 public:

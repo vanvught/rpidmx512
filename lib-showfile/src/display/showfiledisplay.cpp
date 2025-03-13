@@ -2,7 +2,7 @@
  * @file showfiledisplay.cpp
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,7 +45,7 @@ void display_filename(const char *pFileName, const uint32_t nShow) {
 void  display_status() {
 	Display::Get()->SetCursorPos(0, 6);
 
-	switch (ShowFile::Get()->GetStatus()) {
+	switch (ShowFile::Get().GetStatus()) {
 		case showfile::Status::IDLE:
 			Display::Get()->PutString("Idle     ");
 			break;
@@ -69,20 +69,12 @@ void  display_status() {
 
 	Display::Get()->SetCursorPos(11, 7);
 
-	if (ShowFile::Get()->IsTFTPEnabled()) {
+	if (ShowFile::Get().IsTFTPEnabled()) {
 		Display::Get()->PutString("[TFTP On]");
-	} else if (ShowFile::Get()->GetDoLoop()) {
+	} else if (ShowFile::Get().GetDoLoop()) {
 		Display::Get()->PutString("[Looping]");
 	} else {
 		Display::Get()->PutString("         ");
 	}
 }
 }  // namespace showfile
-
-
-
-
-
-
-
-

@@ -2,7 +2,7 @@
  * @file rgbpanelparams.cpp
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,6 +45,16 @@
 
 using namespace rgbpanel;
 
+namespace rgbpanelparams::store {
+static void Update(const struct rgbpanelparams::Params *pParams) {
+	ConfigStore::Get()->Update(configstore::Store::RGBPANEL, pParams, sizeof(struct rgbpanelparams::Params));
+}
+
+static void Copy(struct rgbpanelparams::Params *pRgbPanelParamss) {
+	ConfigStore::Get()->Copy(configstore::Store::RGBPANEL, pRgbPanelParamss, sizeof(struct rgbpanelparams::Params));
+}
+}  // namespace rgbpanelparams::store
+
 RgbPanelParams::RgbPanelParams() {
 	DEBUG_ENTRY
 
@@ -66,10 +76,10 @@ void RgbPanelParams::Load() {
 	ReadConfigFile configfile(RgbPanelParams::StaticCallbackFunction, this);
 
 	if (configfile.Read(RgbPanelParamsConst::FILE_NAME)) {
-		RgbPanelParamsStore::Update(&m_Params);
+		rgbpanelparams::store::Update(&m_Params);
 	} else
 #endif
-		RgbPanelParamsStore::Copy(&m_Params);
+		rgbpanelparams::store::Copy(&m_Params);
 
 #ifndef NDEBUG
 	Dump();
@@ -89,7 +99,7 @@ void RgbPanelParams::Load(const char *pBuffer, uint32_t nLength) {
 
 	config.Read(pBuffer, nLength);
 
-	RgbPanelParamsStore::Update(&m_Params);
+	rgbpanelparams::store::Update(&m_Params);
 
 #ifndef NDEBUG
 	Dump();
@@ -97,7 +107,7 @@ void RgbPanelParams::Load(const char *pBuffer, uint32_t nLength) {
 	DEBUG_EXIT
 }
 
-void RgbPanelParams::callbackFunction(const char *pLine) {
+void RgbPanelParams::CallbackFunction(const char *pLine) {
 	assert(pLine != nullptr);
 
 	uint8_t nValue8;
@@ -152,15 +162,15 @@ void RgbPanelParams::Builder(const struct rgbpanelparams::Params *pRgbPanelParam
 	if (pRgbPanelParams != nullptr) {
 		memcpy(&m_Params, pRgbPanelParams, sizeof(struct rgbpanelparams::Params));
 	} else {
-		RgbPanelParamsStore::Copy(&m_Params);
+		rgbpanelparams::store::Copy(&m_Params);
 	}
 
 	PropertiesBuilder builder(RgbPanelParamsConst::FILE_NAME, pBuffer, nLength);
 
-	builder.Add(RgbPanelParamsConst::COLS, m_Params.nCols, isMaskSet(rgbpanelparams::Mask::COLS));
-	builder.Add(RgbPanelParamsConst::ROWS, m_Params.nRows, isMaskSet(rgbpanelparams::Mask::ROWS));
-	builder.Add(RgbPanelParamsConst::CHAIN, m_Params.nChain, isMaskSet(rgbpanelparams::Mask::CHAIN));
-	builder.Add(RgbPanelParamsConst::TYPE, RgbPanel::GetType(static_cast<Types>(m_Params.nType)), isMaskSet(rgbpanelparams::Mask::TYPE));
+	builder.Add(RgbPanelParamsConst::COLS, m_Params.nCols, IsMaskSet(rgbpanelparams::Mask::COLS));
+	builder.Add(RgbPanelParamsConst::ROWS, m_Params.nRows, IsMaskSet(rgbpanelparams::Mask::ROWS));
+	builder.Add(RgbPanelParamsConst::CHAIN, m_Params.nChain, IsMaskSet(rgbpanelparams::Mask::CHAIN));
+	builder.Add(RgbPanelParamsConst::TYPE, RgbPanel::GetType(static_cast<Types>(m_Params.nType)), IsMaskSet(rgbpanelparams::Mask::TYPE));
 
 	nSize = builder.GetSize();
 }
@@ -169,25 +179,25 @@ void RgbPanelParams::StaticCallbackFunction(void *p, const char *s) {
 	assert(p != nullptr);
 	assert(s != nullptr);
 
-	(static_cast<RgbPanelParams *>(p))->callbackFunction(s);
+	(static_cast<RgbPanelParams *>(p))->CallbackFunction(s);
 }
 
 void RgbPanelParams::Dump() {
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, RgbPanelParamsConst::FILE_NAME);
 
-	if (isMaskSet(rgbpanelparams::Mask::COLS)) {
+	if (IsMaskSet(rgbpanelparams::Mask::COLS)) {
 		printf(" %s=%d\n", RgbPanelParamsConst::COLS, m_Params.nCols);
 	}
 
-	if (isMaskSet(rgbpanelparams::Mask::ROWS)) {
+	if (IsMaskSet(rgbpanelparams::Mask::ROWS)) {
 		printf(" %s=%d\n", RgbPanelParamsConst::ROWS, m_Params.nRows);
 	}
 
-	if (isMaskSet(rgbpanelparams::Mask::CHAIN)) {
+	if (IsMaskSet(rgbpanelparams::Mask::CHAIN)) {
 		printf(" %s=%d\n", RgbPanelParamsConst::CHAIN, m_Params.nChain);
 	}
 
-	if (isMaskSet(rgbpanelparams::Mask::TYPE)) {
+	if (IsMaskSet(rgbpanelparams::Mask::TYPE)) {
 		printf(" %s=%d [%s]\n", RgbPanelParamsConst::TYPE, m_Params.nType, RgbPanel::GetType(static_cast<Types>(m_Params.nType)));
 	}
 }

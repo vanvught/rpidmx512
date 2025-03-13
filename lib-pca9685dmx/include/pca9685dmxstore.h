@@ -2,7 +2,7 @@
  * @file pca9685dmxstore.h
  *
  */
-/* Copyright (C) 2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,7 @@
 class PCA9685DmxStore {
 public:
 	static void SaveDmxStartAddress(uint16_t nDmxStartAddress) {
-		ConfigStore::Get()->Update(configstore::Store::PCA9685, offsetof(struct pca9685dmxparams::Params, nDmxStartAddress), &nDmxStartAddress, sizeof(uint32_t), pca9685dmxparams::Mask::DMX_START_ADDRESS);
+		ConfigStore::Get()->Update(configstore::Store::PCA9685, offsetof(struct pca9685dmxparams::Params, nDmxStartAddress), &nDmxStartAddress, sizeof(uint16_t));
 	}
 };
 
