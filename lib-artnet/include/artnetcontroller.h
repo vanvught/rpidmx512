@@ -2,7 +2,7 @@
  * @file artnetcontroller.h
  *
  */
-/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -161,7 +161,7 @@ private:
 #ifdef CONFIG_ARTNET_CONTROLLER_ENABLE_MASTER
 	uint32_t m_nMaster { dmxnode::DMX_MAX_VALUE };
 #endif
-	static ArtNetController *s_pThis;
+	static inline ArtNetController *s_pThis;
 };
 
 #endif /* ARTNETCONTROLLER_H_ */

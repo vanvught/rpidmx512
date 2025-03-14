@@ -27,7 +27,7 @@
 #include <cstdio>
 #include <cassert>
 
-#include "hardware.h"
+#include "hal.h"
 #include "network.h"
 #if !defined(NO_EMAC)
 # include "networkconst.h"
@@ -67,7 +67,7 @@ void reboot_handler() {
 }  // namespace hal
 
 int main() {
-	Hardware hw;
+	hal_init();
 	Display display;
 	ConfigStore configStore;
 	Network nw;

@@ -26,7 +26,7 @@
 #include <cstdio>
 #include <cstdint>
 
-#include "hardware.h"
+#include "hal.h"
 #include "noemac/network.h"
 
 #include "display.h"
@@ -53,7 +53,7 @@ void reboot_handler() {
 }  // namespace hal
 
 int main() {
-	Hardware hw;
+	hal_init();
 	Display display; 	// Display is not supported. We just need a pointer to object
 	ConfigStore configStore;
 	Network nw;

@@ -1,6 +1,5 @@
 /**
  * @file remoteconfigjson.cpp
- *
  */
 /* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
@@ -31,7 +30,7 @@
 #include <cstdio>
 
 #include "remoteconfig.h"
-#include "hardware.h"
+#include "hal.h"
 #include "network.h"
 #include "display.h"
 #include "firmwareversion.h"

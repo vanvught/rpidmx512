@@ -37,7 +37,7 @@
 
 #include "firmwareversion.h"
 
-#include "hardware.h"
+#include "hal.h"
 #include "network.h"
 #if !defined (CONFIG_REMOTECONFIG_MINIMUM)
 # include "net/apps/mdns.h"

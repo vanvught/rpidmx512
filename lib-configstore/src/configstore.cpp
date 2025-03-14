@@ -1,6 +1,5 @@
 /**
  * @file configstore.cpp
- *
  */
 /* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
@@ -34,7 +33,7 @@
 
 #include "configstore.h"
 
-#include "hardware.h"
+#include "hal.h"
 #include "softwaretimers.h"
 
 #include "debug.h"

@@ -1,6 +1,5 @@
 /**
  * @file softwaretimers.cpp
- *
  */
 /* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
@@ -38,7 +37,7 @@
 #include <cstdint>
 
 #include "superloop/softwaretimers.h"
-#include "hardware.h"
+#include "hal.h"
 
 void console_error(const char *);
 
@@ -97,7 +96,7 @@ bool SoftwareTimerDelete(TimerHandle_t& nId) {
 bool SoftwareTimerChange(const TimerHandle_t nId, const uint32_t nIntervalMillis) {
 	for (uint32_t i = 0; i < m_nTimersCount; ++i) {
 		if (m_Timers[i].nId == nId) {
-			const auto nCurrentTime =hal::millis();
+			const auto nCurrentTime = hal::millis();
 			m_Timers[i].nExpireTime = nCurrentTime + nIntervalMillis;
 			m_Timers[i].nIntervalMillis = nIntervalMillis;
 			return true;
@@ -112,7 +111,7 @@ bool SoftwareTimerChange(const TimerHandle_t nId, const uint32_t nIntervalMillis
 }
 
 void SoftwareTimerRun() {
-    const auto nCurrentTime =hal::millis();
+    const auto nCurrentTime = hal::millis();
 
     for (uint32_t i = 0; i < m_nTimersCount; i++) {
         if (m_Timers[i].nExpireTime <= nCurrentTime) {

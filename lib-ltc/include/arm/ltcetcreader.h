@@ -1,6 +1,5 @@
 /**
  * @file ltcetcreader.h
- *
  */
 /* Copyright (C) 2022-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
@@ -31,7 +30,8 @@
 
 #include "ltcoutputs.h"
 
-#include "hardware.h"
+#include "hal.h"
+#include "hal_statusled.h"
 
 #include "arm/platform_ltc.h"
 

@@ -53,16 +53,16 @@ void record(const struct artnet::ArtSync *pArtSync, const uint32_t nMillis);
 }  // namespace showfile
 #endif
 
+#include "artnetnode_internal.h"
+
 #include "dmxnode.h"
 #include "dmxnodedata.h"
 
-#include "hardware.h"
 #include "network.h"
 #include "softwaretimers.h"
 
+#include "hal_statusled.h"
 #include "panel_led.h"
-
-#include "artnetnode_internal.h"
 
 #include "debug.h"
 

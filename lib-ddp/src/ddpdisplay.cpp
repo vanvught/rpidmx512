@@ -1,6 +1,5 @@
 /**
  * @file ddpdisplay.h
- *
  */
 /* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
@@ -32,7 +31,7 @@
 #include "dmxnodedata.h"
 #include "dmxnode_data.h"
 
-#include "hardware.h"
+#include "hal.h"
 #include "network.h"
 #include "net/protocol/udp.h"
 

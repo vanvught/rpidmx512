@@ -1,8 +1,7 @@
 /**
  * @file gpstimeclient.cpp
- *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,9 +24,9 @@
 #include <sys/time.h>
 
 #include "gpstimeclient.h"
-
 #include "platform_gpio.h"
-#include "hardware.h"
+
+#include "hal.h"
 
 #include "debug.h"
 
@@ -63,7 +62,7 @@ void GPSTimeClient::Run() {
 		tv.tv_usec = 0;
 		settimeofday(&tv, nullptr);
 
-		m_nWaitPPSMillis =hal::millis();
+		m_nWaitPPSMillis = hal::millis();
 
 		DEBUG_PUTS("PPS handled");
 		return;

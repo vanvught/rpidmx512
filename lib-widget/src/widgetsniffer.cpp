@@ -1,8 +1,7 @@
 /**
  * @file widgetsniffer.cpp
- *
  */
-/* Copyright (C) 2015-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2015-2025 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +29,7 @@
 #include "widget.h"
 #include "widgetmonitor.h"
 
-#include "hardware.h"
+#include "hal.h"
 
 #include "dmx.h"
 #include "rdm.h"

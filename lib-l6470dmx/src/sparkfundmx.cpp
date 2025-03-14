@@ -1,6 +1,5 @@
 /**
  * @file sparkfundmx.cpp
- *
  */
 /* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
@@ -42,11 +41,10 @@
 #include "motorparams.h"
 #include "modeparams.h"
 
+#include "hal.h"
 #include "hal_api.h"
 #include "hal_spi.h"
 #include "hal_gpio.h"
-
-#include "hardware.h"
 
 #include "debug.h"
 
@@ -305,7 +303,7 @@ void SparkFunDmx::ReadConfigFiles() {
 	for (uint32_t i = 0; i < SPARKFUN_DMX_MAX_MOTORS; i++) {
 		if (m_pAutoDriver[i] != nullptr) {
 			printf(" Motor %d\n", i);
-			const uint32_t nMillis =hal::millis();
+			const uint32_t nMillis = hal::millis();
 			while (m_pAutoDriver[i]->busyCheck()) {
 				if ((hal::millis() - nMillis) > 1000) {
 					printf("  Time-out!\n");

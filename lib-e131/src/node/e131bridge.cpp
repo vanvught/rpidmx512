@@ -47,10 +47,12 @@
 #include "dmxnodedata.h"
 #include "dmxnode_data.h"
 
-#include "hardware.h"
+#include "hal.h"
 #include "network.h"
 
 #include "softwaretimers.h"
+
+#include "hal_statusled.h"
 #include "panel_led.h"
 
 #include "debug.h"

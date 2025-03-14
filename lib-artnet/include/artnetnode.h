@@ -69,7 +69,7 @@
 #include "dmxnode_data.h"
 #include "dmxnode_outputtype.h"
 
-#include "hardware.h"
+#include "hal.h"
 #include "network.h"
 #include "softwaretimers.h"
 

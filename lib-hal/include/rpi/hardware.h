@@ -1,5 +1,5 @@
 /**
- * @file hardware.h
+ * @file hal.h
  *
  */
 /* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl

@@ -1,6 +1,5 @@
 /**
  * @file rdmdevice.cpp
- *
  */
 /* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
@@ -34,9 +33,7 @@
 #include "rdm_e120.h"
 
 #include "net/ip4_address.h"
-
 #include "network.h"
-#include "hardware.h"
 
 #include "debug.h"
 

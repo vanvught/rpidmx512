@@ -1,6 +1,5 @@
 /**
  * @file e131bridgehandlesynchronization.cpp
- *
  */
 /* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
@@ -28,7 +27,7 @@
 #include "e131bridge.h"
 
 #include "dmxnodedata.h"
-#include "hardware.h"
+#include "hal_statusled.h"
 
 #include "debug.h"
 

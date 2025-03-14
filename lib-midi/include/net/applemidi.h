@@ -38,7 +38,7 @@
 #include "midi.h"
 #include "net/apps/mdns.h"
 
-#include "hardware.h"
+#include "hal.h"
 #include "network.h"
 
 #include "debug.h"

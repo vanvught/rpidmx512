@@ -1,6 +1,5 @@
 /**
  * @file net_ptp.cpp
- *
  */
 /* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
@@ -63,8 +62,9 @@ T4 - local receive timestamp of the previous response (t4)
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
+#include <ctime>
+#include <sys/time.h>
 
-#include "hardware.h"
 #include "network.h"
 #include "networkparams.h"
 

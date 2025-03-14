@@ -36,7 +36,7 @@
 #include "pixel.h"
 #include "pixelconfiguration.h"
 
-#include "hardware.h"
+#include "hal.h"
 #include "debug.h"
 
 namespace pixelpatterns {

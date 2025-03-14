@@ -29,7 +29,7 @@
 #include <time.h>
 #include <cassert>
 
-#include "hardware.h"
+#include "hal.h"
 
 #include "bcm2835_vc.h"
 #include "bcm2835_wdog.h"

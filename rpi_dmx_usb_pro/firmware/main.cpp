@@ -1,8 +1,7 @@
 /**
  * @file main.cpp
- *
  */
-/* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2025 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +25,7 @@
 #include <cstdio>
 #include <cstdint>
 
-#include "hardware.h"
+#include "hal.h"
 #include "noemac/network.h"
 
 #include "display.h"
@@ -48,7 +47,7 @@ static char widget_mode_names[4][12] ALIGNED = {"DMX_RDM", "DMX", "RDM" , "RDM_S
 static const struct TRDMDeviceInfoData deviceLabel ALIGNED = { const_cast<char*>("Raspberry Pi DMX USB Pro"), 26 };
 
 void main(void) {
-	Hardware hw;
+	hal_init();
 	Display display(display::Type::UNKNOWN); 	// Display is not supported. We just need a pointer to object
 	Network nw;
 

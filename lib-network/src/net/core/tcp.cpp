@@ -1,6 +1,5 @@
 /**
  * @file tcp.cpp
- *
  */
 /* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
@@ -55,7 +54,7 @@
 #include "net_private.h"
 #include "datasegmentqueue.h"
 
-#include "hardware.h"
+#include "hal.h"
 #include "debug.h"
 
 namespace net {
@@ -304,7 +303,7 @@ static void tcp_init_tcb(struct tcb *pTcb, const uint16_t nLocalPort) {
 
 	pTcb->nLocalPort = nLocalPort;
 
-	pTcb->ISS =hal::millis();
+	pTcb->ISS = hal::millis();
 
 	pTcb->RCV.WND = TCP_MAX_RX_WND;
 

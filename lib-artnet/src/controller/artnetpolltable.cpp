@@ -1,11 +1,7 @@
 /**
  * @file artnetpolltable.cpp
- *
  */
-/**
- * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
- */
-/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,7 +36,7 @@
 
 #include "artnetpolltable.h"
 
-#include "hardware.h"
+#include "hal.h"
 #include "network.h"
 
 #include "debug.h"
@@ -78,6 +74,8 @@ ArtNetPollTable::ArtNetPollTable() {
 }
 
 ArtNetPollTable::~ArtNetPollTable() {
+	DEBUG_ENTRY
+
 	for (uint32_t nIndex = 0; nIndex < artnet::POLL_TABLE_SIZE_UNIVERSES; nIndex++) {
 		delete[] m_pTableUniverses[nIndex].pIpAddresses;
 		m_pTableUniverses[nIndex].pIpAddresses = nullptr;
@@ -88,6 +86,8 @@ ArtNetPollTable::~ArtNetPollTable() {
 
 	delete[] m_pPollTable;
 	m_pPollTable = nullptr;
+
+	DEBUG_EXIT
 }
 
 const struct artnet::PollTableUniverses *ArtNetPollTable::GetIpAddress(uint16_t nUniverse) const {

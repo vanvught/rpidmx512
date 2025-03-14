@@ -1,6 +1,5 @@
 /**
  * net_link_handle_change.cpp
- *
  */
 /* Copyright (C) 2022-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
@@ -23,9 +22,11 @@
  * THE SOFTWARE.
  */
 
-#undef NDEBUG
+#if defined (DEBUG_NET_PHY)
+# undef NDEBUG
+#endif
 
-#include "hardware.h"
+#include "hal.h"
 #include "network.h"
 #include "net/netif.h"
 

@@ -1,6 +1,5 @@
 /**
  * @file httpdhandlerequest.cpp
- *
  */
 /* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
@@ -48,7 +47,7 @@
 #include "sscan.h"
 #include "propertiesconfig.h"
 
-#include "hardware.h"
+#include "hal_statusled.h"
 #include "network.h"
 #include "net/tcp.h"
 #include "net/apps/mdns.h"

@@ -416,9 +416,12 @@
 						<entry excluding="gd32|i2c" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="rtc"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="rtc/gd32"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="rtc/i2c"/>
-						<entry excluding="superloop|h3|h3/sdcard" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
+						<entry excluding="h3|h3/sdcard|linux|linux/i2c|linux/minimum" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
 						<entry excluding="sdcard" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/h3"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/h3/sdcard"/>
+						<entry excluding="i2c|minimum" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/linux"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/linux/i2c"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/linux/minimum"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="superloop"/>
 					</sourceEntries>
 				</configuration>

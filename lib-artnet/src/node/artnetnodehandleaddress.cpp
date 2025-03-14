@@ -34,7 +34,8 @@
 
 #include "dmxnodedata.h"
 #include "dmxnode_data.h"
-#include "hardware.h"
+
+#include "hal_statusled.h"
 
 #include "debug.h"
 

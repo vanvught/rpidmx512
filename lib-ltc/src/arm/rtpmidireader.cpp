@@ -1,6 +1,5 @@
 /**
  * @file rtpmidireader.cpp
- *
  */
 /* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
@@ -40,7 +39,9 @@
 #include "arm/rtpmidireader.h"
 
 #include "timecodeconst.h"
-#include "hardware.h"
+#include "hal.h"
+#include "hal_statusled.h"
+
 // Output
 #include "artnetnode.h"
 #include "midi.h"

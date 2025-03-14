@@ -1,6 +1,5 @@
 /**
  * @file handledmxin.cpp
- *
  */
 /* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
@@ -39,7 +38,7 @@
 #include "dmx.h"
 
 #include "network.h"
-#include "hardware.h"
+#include "hal.h"
 
 #include "panel_led.h"
 

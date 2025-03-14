@@ -39,7 +39,7 @@
 # include "dmxconfigudp.h"
 #endif
 #include "panel_led.h"
-#include "hardware.h"
+#include "hal.h"
 
 #include "debug.h"
 

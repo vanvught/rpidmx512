@@ -1,6 +1,5 @@
 /**
  * @file displayudf.cpp
- *
  */
 /* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
@@ -35,9 +34,9 @@
 #include "displayudf.h"
 #include "display.h"
 
+#include "hal.h"
 #include "network.h"
 
-#include "hardware.h"
 #include "firmwareversion.h"
 
 #include "debug.h"

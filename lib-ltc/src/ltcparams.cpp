@@ -36,7 +36,7 @@
 
 #include "configstore.h"
 
-#include "hardware.h"
+#include "utc.h"
 #include "network.h"
 
 #include "readconfigfile.h"

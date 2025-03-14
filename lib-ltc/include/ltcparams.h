@@ -32,7 +32,7 @@
 
 #include "configstore.h"
 
-#include "hardware.h"
+#include "hal.h"
 
 namespace ltcparams {
 struct Params {

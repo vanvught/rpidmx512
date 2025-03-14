@@ -29,7 +29,7 @@
 
 #include <cstdint>
 
-#include "hardware.h"
+#include "hal.h"
 #include "network.h"
 
 #include "displayudf.h"
@@ -75,7 +75,7 @@ void reboot_handler() {
 }  // namespace hal
 
 int main() {
-	Hardware hw;
+	hal_init();
 	DisplayUdf display;
 	ConfigStore configStore;
 	Network nw;

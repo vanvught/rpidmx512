@@ -33,7 +33,7 @@
 #include "oscsimplesend.h"
 #include "oscclientled.h"
 
-#include "hardware.h"
+#include "hal.h"
 #include "network.h"
 #include "display.h"
 

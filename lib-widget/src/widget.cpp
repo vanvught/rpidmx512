@@ -6,7 +6,7 @@
  * https://wiki.openlighting.org/index.php/USB_Protocol_Extensions
  *
  */
-/* Copyright (C) 2015-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2015-2025 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,7 @@
 #include "widgetconfiguration.h"
 #include "widgetmonitor.h"
 
-#include "hardware.h"
+#include "hal.h"
 
 #include "dmx.h"
 #include "rdm.h"

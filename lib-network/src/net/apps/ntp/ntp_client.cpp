@@ -8,7 +8,7 @@
  * @note This implementation is optimized for Cortex-M3/M4/M7 processors and assumes a standalone environment
  *       without a standard library.
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,7 +43,7 @@
 #include <cstring>
 #include <sys/time.h>
 
-#include "hardware.h"
+#include "hal.h"
 #include "network.h"
 #include "networkparams.h"
 

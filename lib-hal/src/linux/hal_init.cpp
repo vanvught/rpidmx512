@@ -1,6 +1,6 @@
 #if !defined (CONFIG_HAL_USE_MINIMUM)
 /**
- * @file linux.cpp
+ * @file hal_init.cpp
  *
  */
 /* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
@@ -125,7 +125,7 @@ static char *str_find_replace(char *str, const char *find, const char *replace) 
 	return str;
 }
 
-void linux_init() {
+void hal_init() {
 	DEBUG_ENTRY
 
 	memset(&m_TOsInfo, 0, sizeof(struct utsname));

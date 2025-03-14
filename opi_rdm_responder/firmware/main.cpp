@@ -26,7 +26,7 @@
 #include <cstdio>
 #include <cstdint>
 
-#include "hardware.h"
+#include "hal.h"
 #include "network.h"
 #if !defined(NO_EMAC)
 # include "net/apps/mdns.h"
@@ -70,7 +70,7 @@ void reboot_handler() {
 
 int main() {
 	config_mode_init();
-	Hardware hw;
+	hal_init();
 	DisplayUdf display;
 	ConfigStore configStore;
 	Network nw;

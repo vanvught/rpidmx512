@@ -1,6 +1,5 @@
 /**
  * @file oscserver.cpp
- *
  */
 /* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
@@ -40,7 +39,7 @@
 
 #include "dmxnode.h"
 
-#include "hardware.h"
+#include "hal.h"
 
 #include "debug.h"
 

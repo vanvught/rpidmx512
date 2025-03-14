@@ -32,7 +32,7 @@
 #include <cstring>
 #include <cassert>
 
-#include "hardware.h"
+#include "hal.h"
 #include "network.h"
 
 #include "net/apps/mdns.h"
@@ -169,7 +169,7 @@ void h3_cpu_off(uint32_t);
 void static StaticCallbackFunction([[maybe_unused]] const struct artnet::TimeCode *pTimeCode) {}
 
 int main() {
-	Hardware hw;
+	hal_init();
 	Display display(4);
 	ConfigStore configStore;
 	Network nw;

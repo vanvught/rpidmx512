@@ -1,6 +1,5 @@
 /**
  * @file ltcgenerator.cpp
- *
  */
 /* Copyright (C) 2022-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
@@ -43,7 +42,8 @@
 #include "timecodeconst.h"
 
 #include "network.h"
-#include "hardware.h"
+#include "hal.h"
+#include "hal_statusled.h"
 
 // Output
 #include "artnetnode.h"

@@ -1,6 +1,5 @@
 /**
  * @file oscserver.h
- *
  */
 /* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
@@ -32,7 +31,7 @@
 
 #include "oscsimplesend.h"
 
-#include "hardware.h"
+#include "hal_statusled.h"
 #include "network.h"
 
 #include "dmxnode.h"

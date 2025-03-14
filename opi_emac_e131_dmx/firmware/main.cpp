@@ -25,7 +25,7 @@
 
 #include <cstdint>
 
-#include "hardware.h"
+#include "hal.h"
 #include "network.h"
 
 #include "displayudf.h"
@@ -70,7 +70,7 @@ void reboot_handler() {
 static constexpr uint32_t PORT_INDEX = 0;
 
 int main() {
-	Hardware hw;
+	hal_init();
 	DisplayUdf display;
 	ConfigStore configStore;
 	Network nw;

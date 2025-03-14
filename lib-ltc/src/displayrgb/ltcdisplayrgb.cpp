@@ -3,7 +3,7 @@
  */
 /*
  * Copyright (C) 2019-2020 by hippy mailto:dmxout@gmail.com
- * Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+ * Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,7 +38,7 @@
 
 #include "ltc.h"
 
-#include "hardware.h"
+#include "hal.h"
 #include "network.h"
 
 #include "ltcdisplayws28xx7segment.h"
@@ -154,7 +154,7 @@ void LtcDisplayRgb::Show(const char *pTimecode) {
 	struct Colours tColoursColons;
 
 	if (m_tColonBlinkMode != ColonBlinkMode::OFF) {
-		const uint32_t nMillis =hal::millis();
+		const uint32_t nMillis = hal::millis();
 
 		if (m_nSecondsPrevious != pTimecode[ltc::timecode::index::SECONDS_UNITS]) { // seconds have changed
 			m_nSecondsPrevious = pTimecode[ltc::timecode::index::SECONDS_UNITS];

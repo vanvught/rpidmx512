@@ -1,8 +1,7 @@
 /**
  * @file hwclockrun.cpp
- *
  */
-/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +28,7 @@
 
 #include "hwclock.h"
 
-#include "hardware.h"
+#include "hal.h"
 
 #include "debug.h"
 
@@ -83,7 +82,7 @@ void HwClock::Process() {
 
 			settimeofday(&tv, nullptr);
 
-			m_nLastHcToSysMillis =hal::millis();
+			m_nLastHcToSysMillis = hal::millis();
 			Status = Status::WAITING;
 
 			DEBUG_PRINTF("%d:%d (%d %d) (%d %d) -> %d", nSecondsT1, nSeconds2, static_cast<int>(tvT1.tv_sec), static_cast<int>(tvT1.tv_usec), static_cast<int>(tvT2.tv_sec), static_cast<int>(tvT2.tv_usec), static_cast<int>(tv.tv_usec));

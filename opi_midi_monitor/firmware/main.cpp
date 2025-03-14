@@ -25,7 +25,7 @@
 
 #include <cstdio>
 
-#include "hardware.h"
+#include "hal.h"
 #include "display.h"
 #include "console.h"
 
@@ -52,7 +52,7 @@ void reboot_handler() {
 }  // namespace hal
 
 int main() {
-	Hardware hw;
+	hal_init();
 	Display display;
 #if !defined(NO_EMAC)
 	ConfigStore configStore;

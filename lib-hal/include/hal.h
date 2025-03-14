@@ -1,6 +1,5 @@
 /**
  * @file hal.h
- *
  */
 /* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
@@ -26,17 +25,24 @@
 #ifndef HAL_H_
 #define HAL_H_
 
+#include <cstdint>
+#include <uuid/uuid.h>
+
 namespace hal {
+#if !defined (CONFIG_HAL_TIMERS_COUNT)
+# define CONFIG_HAL_TIMERS_COUNT 12
+#endif
+
+static constexpr uint32_t SOFTWARE_TIMERS_MAX = CONFIG_HAL_TIMERS_COUNT;
+
+void uuid_copy(uuid_t out);
+
 enum class BootDevice {
-	UNKOWN,
-	FEL,	// H3 Only
-	MMC0,
-	SPI,	// H3 Only
-	HDD,
-	FLASH,
-	RAM
+	UNKOWN, FEL, MMC0, SPI, HDD, FLASH, RAM
 };
 }  // namespace hal
+
+void hal_init();
 
 #if defined(__linux__) || defined (__APPLE__)
 # if defined (CONFIG_HAL_USE_MINIMUM)

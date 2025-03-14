@@ -1,8 +1,7 @@
 /**
  * @file firmwareversion.h
- *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +25,12 @@
 #ifndef FIRMWAREVERSION_H_
 #define FIRMWAREVERSION_H_
 
+#include <cstdint>
+#include <cstring>
 #include <cstdio>
+#include <cassert>
+
+#include "hal.h"
 
 #if !defined(STR_HELPER)
 # define STR_HELPER(x) #x
@@ -48,7 +52,28 @@ struct Info {
 
 class FirmwareVersion {
 public:
-	FirmwareVersion(const char *pSoftwareVersion, const char *pDate, const char *pTime, const uint32_t nSoftwareVersionId = 0);
+	FirmwareVersion(const char *pSoftwareVersion, const char *pDate, const char *pTime, const uint32_t nSoftwareVersionId = 0) :
+		s_nSoftwareVersionId(nSoftwareVersionId)
+	{
+		assert(pSoftwareVersion != nullptr);
+		assert(pDate != nullptr);
+		assert(pTime != nullptr);
+
+		assert(s_pThis == nullptr);
+		s_pThis = this;
+
+		memcpy(s_FirmwareVersion.SoftwareVersion, pSoftwareVersion, firmwareversion::length::SOFTWARE_VERSION);
+		memcpy(s_FirmwareVersion.BuildDate, pDate, firmwareversion::length::GCC_DATE);
+		memcpy(s_FirmwareVersion.BuildTime, pTime, firmwareversion::length::GCC_TIME);
+
+		uint8_t nHwTextLength;
+
+		snprintf(s_Print, sizeof(s_Print) - 1, "[V%.*s] %s Compiled on %.*s at %.*s",
+				firmwareversion::length::SOFTWARE_VERSION, s_FirmwareVersion.SoftwareVersion,
+				hal::board_name(nHwTextLength),
+				firmwareversion::length::GCC_DATE, s_FirmwareVersion.BuildDate,
+				firmwareversion::length::GCC_TIME, s_FirmwareVersion.BuildTime);
+	}
 
 	void Print(const char *pTitle = nullptr) {
 		puts(s_Print);

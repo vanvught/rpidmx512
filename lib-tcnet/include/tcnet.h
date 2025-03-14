@@ -43,7 +43,7 @@
 #include "tcnetpackets.h"
 #include "tcnettimecode.h"
 
-#include "hardware.h"
+#include "hal.h"
 #include "network.h"
 
 #include "debug.h"

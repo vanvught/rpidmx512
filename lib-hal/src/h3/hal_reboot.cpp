@@ -1,5 +1,5 @@
 /**
- * @file hal.cpp
+ * @file hal_reboot.cpp
  *
  */
 /* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
@@ -34,12 +34,12 @@
 #include "arm/arm.h"
 #include "arm/synchronize.h"
 
+#include "hal.h"
+#include "hal_statusled.h"
+
 #if !defined(DISABLE_RTC)
 # include "hwclock.h"
-static HwClock hwClock;
 #endif
-
-#include "hardware.h"
 
 void configstore_commit();
 
@@ -61,7 +61,7 @@ bool reboot() {
 	configstore_commit();
 
 #if !defined(DISABLE_RTC)
-	hwClock.SysToHc();
+	HwClock::Get()->SysToHc();
 #endif
 
 	hal::reboot_handler();

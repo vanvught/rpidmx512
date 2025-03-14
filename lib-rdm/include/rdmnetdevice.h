@@ -35,7 +35,7 @@
 #include "rdmhandler.h"
 #include "e131.h"
 
-#include "hardware.h"
+#include "hal.h"
 
 #include "debug.h"
 

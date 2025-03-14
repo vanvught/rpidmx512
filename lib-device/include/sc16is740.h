@@ -29,7 +29,7 @@
 #include <cstdint>
 
 #include "hal_i2c.h"
-#include "hardware.h"
+#include "hal.h"
 
 #include "sc16is7x0.h"
 

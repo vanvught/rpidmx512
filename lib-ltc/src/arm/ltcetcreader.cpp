@@ -1,6 +1,5 @@
 /**
  * @file ltcetcreader.cpp
- *
  */
 /* Copyright (C) 2022-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
@@ -38,7 +37,8 @@
 
 #include "arm/ltcetcreader.h"
 #include "ltc.h"
-#include "hardware.h"
+#include "hal.h"
+#include "hal_statusled.h"
 // Output
 #include "artnetnode.h"
 #include "ltcsender.h"
@@ -104,7 +104,7 @@ static inline bool timecode_is_equal(const struct ltc::TimeCode *pLtcTimeCode) {
 }
 
 void LtcEtcReader::Handler(const midi::Timecode *pTimeCode) {
-	m_nTimestamp =hal::millis();
+	m_nTimestamp = hal::millis();
 
 	if (ltc::Destination::IsEnabled(ltc::Destination::Output::LTC)) {
 		LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct ltc::TimeCode *>(pTimeCode));

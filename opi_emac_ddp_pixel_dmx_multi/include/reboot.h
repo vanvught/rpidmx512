@@ -26,7 +26,7 @@
 #ifndef REBOOT_H_
 #define REBOOT_H_
 
-#include "hardware.h"
+#include "hal.h"
 #include "ws28xxmulti.h"
 
 class Reboot final : public RebootHandler {

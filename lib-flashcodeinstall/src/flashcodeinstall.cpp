@@ -1,6 +1,5 @@
 /**
  * @file flashcodeinstall.cpp
- *
  */
 /* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
@@ -30,7 +29,7 @@
 #include "firmware.h"
 
 #include "display.h"
-#include "hardware.h"
+#include "hal.h"
 
 #include "debug.h"
 

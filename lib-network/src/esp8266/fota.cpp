@@ -1,8 +1,7 @@
 /**
  * @file fota.cpp
- *
  */
-/* Copyright (C) 2016-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2025 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +28,7 @@
 #include "esp8266.h"
 #include "esp8266_cmd.h"
 
-#include "hardware.h"
+#include "hal.h"
 #include "console.h"
 
 static void esp8266_fota_start(const uint32_t server_ip_address) {

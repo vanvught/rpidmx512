@@ -37,7 +37,7 @@
 
 #include "softwaretimers.h"
 
-#include "hardware.h"
+#include "hal.h"
 
 namespace ltcdisplayrgb {
 enum class Type {

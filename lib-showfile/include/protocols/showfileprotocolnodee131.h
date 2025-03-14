@@ -33,7 +33,7 @@
 #include "e131.h"
 #include "e117const.h"
 
-#include "hardware.h"
+#include "hal.h"
 
 #include "debug.h"
 

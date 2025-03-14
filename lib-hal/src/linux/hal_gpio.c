@@ -1,8 +1,8 @@
 /**
- * @file hardware.h
+ * @file hal_gpio.c
  *
  */
-/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,19 +23,22 @@
  * THE SOFTWARE.
  */
 
-#ifndef H3_HARDWARE_H_
-#define H3_HARDWARE_H_
+#include <stdint.h>
 
-class Hardware {
-public:
-	Hardware();
+void gpio_fsel(__attribute__((unused))  uint8_t _p,
+		__attribute__((unused))  uint8_t _q) {
+}
 
-	static Hardware *Get() {
-		return s_pThis;
-	}
+void gpio_set(__attribute__((unused))  uint8_t _p) {
+}
 
-private:
-	static inline Hardware *s_pThis;
-};
+void gpio_clr(__attribute__((unused))  uint8_t _p) {
+}
 
-#endif /* H3_HARDWARE_H_ */
+uint8_t gpio_lev(__attribute__((unused))  uint8_t _p) {
+	return 0;
+}
+
+void gpio_pud(__attribute__((unused))  uint8_t _p,
+		__attribute__((unused))  uint8_t _q) {
+}

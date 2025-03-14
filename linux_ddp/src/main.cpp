@@ -28,7 +28,7 @@
 #include <cstdlib>
 #include <signal.h>
 
-#include "hardware.h"
+#include "hal.h"
 #include "network.h"
 
 
@@ -66,7 +66,7 @@ int main(int argc, char **argv) {
     struct sigaction act;
     act.sa_handler = intHandler;
     sigaction(SIGINT, &act, nullptr);
-	Hardware hw;
+	hal_init();
 	Display display;
 	ConfigStore configStore;
 	Network nw(argc, argv);

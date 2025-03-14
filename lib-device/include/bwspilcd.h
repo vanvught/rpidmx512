@@ -28,7 +28,7 @@
 
 #include <cstdint>
 
-#include "hardware.h"
+#include "hal.h"
 
 #include "bw.h"
 

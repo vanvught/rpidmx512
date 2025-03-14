@@ -1,6 +1,5 @@
 /**
  * @file midireader.cpp
- *
  */
 /* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
@@ -41,7 +40,8 @@
 #include "ltc.h"
 #include "timecodeconst.h"
 
-#include "hardware.h"
+#include "hal.h"
+#include "hal_statusled.h"
 // Input
 #include "midi.h"
 // Output

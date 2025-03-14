@@ -1,6 +1,5 @@
 /**
  * @file ltcgenerator.h
- *
  */
 /* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
@@ -30,7 +29,7 @@
 
 #include "ltc.h"
 
-#include "hardware.h"
+#include "hal_statusled.h"
 
 namespace ltcgenerator {
 enum class Direction {

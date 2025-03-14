@@ -1,6 +1,5 @@
 /**
  * @file artnetreader.cpp
- *
  */
 /* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
@@ -39,7 +38,8 @@
 
 #include "arm/artnetreader.h"
 #include "ltc.h"
-#include "hardware.h"
+#include "hal.h"
+#include "hal_statusled.h"
 // Input
 #include "artnettimecode.h"
 // Output
@@ -106,7 +106,7 @@ static inline bool timecode_is_equal(const struct ltc::TimeCode *pLtcTimeCode) {
 }
 
 void ArtNetReader::Handler(const struct artnet::TimeCode *pArtNetTimeCode) {
-	m_nTimestamp =hal::millis();
+	m_nTimestamp = hal::millis();
 
 	if (ltc::Destination::IsEnabled(ltc::Destination::Output::LTC)) {
 		LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct ltc::TimeCode *>(pArtNetTimeCode));

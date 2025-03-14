@@ -1,6 +1,5 @@
 /**
  * @file main.cpp
- *
  */
 /* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
@@ -28,7 +27,7 @@
 #include <cstdlib>
 #include <signal.h>
 
-#include "hardware.h"
+#include "hal.h"
 #include "network.h"
 
 #include "display.h"
@@ -68,7 +67,7 @@ int main(int argc, char **argv) {
     struct sigaction act;
     act.sa_handler = intHandler;
     sigaction(SIGINT, &act, nullptr);
-	Hardware hw;
+	hal_init();
 	Display display;
 	ConfigStore configStore;
 	Network nw(argc, argv);
@@ -80,11 +79,11 @@ int main(int argc, char **argv) {
 
 	DisplayUdfParams displayUdfParams;
 
-	OSCServerParams oscparms;
 	OscServer server;
 
+	OSCServerParams oscparms;
 	oscparms.Load();
-	oscparms.Set(&server);
+	oscparms.Set();
 
 	DMXMonitor monitor;
 
