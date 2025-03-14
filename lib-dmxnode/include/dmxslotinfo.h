@@ -1,6 +1,5 @@
 /**
  * @file dmxslotinfo.h
- *
  */
 /* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
