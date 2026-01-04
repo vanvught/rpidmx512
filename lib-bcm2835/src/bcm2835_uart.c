@@ -55,7 +55,7 @@
  * @ingroup UART
  *
  */
-void bcm2835_uart_begin(void) {
+void bcm2835_UartBegin(void) {
 	uint32_t value;
 
     BCM2835_UART1->ENABLE = BCM2835_AUX_ENABLE_UART1;
@@ -75,8 +75,8 @@ void bcm2835_uart_begin(void) {
     BCM2835_GPIO->GPFSEL1 = value;
 
     // Disable pull-up/down
-    bcm2835_gpio_set_pud(RPI_V2_GPIO_P1_08, BCM2835_GPIO_PUD_OFF);
-    bcm2835_gpio_set_pud(RPI_V2_GPIO_P1_10, BCM2835_GPIO_PUD_OFF);
+    bcm2835_GpioSetPud(RPI_V2_GPIO_P1_08, BCM2835_GPIO_PUD_OFF);
+    bcm2835_GpioSetPud(RPI_V2_GPIO_P1_10, BCM2835_GPIO_PUD_OFF);
 
     // turn on the uart for send and receive
     BCM2835_UART1->CNTL = UART1_CNTL_REC_ENBL | UART1_CNTL_TRN_ENBL;

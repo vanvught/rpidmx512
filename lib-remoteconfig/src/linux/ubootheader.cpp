@@ -33,38 +33,38 @@
 #include "ubootheader.h"
 #include "firmware.h"
 
-UBootHeader::UBootHeader(const uint8_t *pHeader): m_pHeader(pHeader) {
+UBootHeader::UBootHeader(const uint8_t *pHeader): header_(pHeader) {
 	assert(pHeader != nullptr);
 
 	auto *pImageHeader = reinterpret_cast<const TImageHeader *>(pHeader);
 
-	m_bIsValid =  (pImageHeader->ih_magic == __builtin_bswap32(IH_MAGIC));
-	m_bIsValid &= (pImageHeader->ih_load == __builtin_bswap32(IH_LOAD));
-	m_bIsValid &= (pImageHeader->ih_ep == __builtin_bswap32(IH_EP));
-	m_bIsValid &= (pImageHeader->ih_os == IH_OS_U_BOOT);
-	m_bIsValid &= (pImageHeader->ih_arch == IH_ARCH_ARM);
-	m_bIsValid &= (pImageHeader->ih_type == IH_TYPE_STANDALONE);
-	m_bIsValid &= (strncmp(reinterpret_cast<const char *>(pImageHeader->ih_name), "http://www.orangepi-dmx.org", IH_NMLEN) == 0);
+	is_valid_ =  (pImageHeader->ih_magic == __builtin_bswap32(IH_MAGIC));
+	is_valid_ &= (pImageHeader->ih_load == __builtin_bswap32(IH_LOAD));
+	is_valid_ &= (pImageHeader->ih_ep == __builtin_bswap32(IH_EP));
+	is_valid_ &= (pImageHeader->ih_os == IH_OS_U_BOOT);
+	is_valid_ &= (pImageHeader->ih_arch == IH_ARCH_ARM);
+	is_valid_ &= (pImageHeader->ih_type == IH_TYPE_STANDALONE);
+	is_valid_ &= (strncmp(reinterpret_cast<const char *>(pImageHeader->ih_name), "http://www.orangepi-dmx.org", IH_NMLEN) == 0);
 
-	m_bIsCompressed = (pImageHeader->ih_comp == IH_COMP_GZIP);
+	is_compressed_ = (pImageHeader->ih_comp == IH_COMP_GZIP);
 
 #if !defined (CONFIG_UBOOT_COMPRESSED)
-	m_bIsValid &= !m_bIsCompressed;
+	is_valid_ &= !is_compressed_;
 #endif
 
 	TImageHeader ih;
 	memcpy(&ih, pImageHeader, sizeof(struct TImageHeader));
 	ih.ih_hcrc = 0;
 	const auto hcrc = crc32(0, reinterpret_cast<const uint8_t *>(&ih), sizeof(struct TImageHeader));
-	m_bIsValid &= (__builtin_bswap32(pImageHeader->ih_hcrc) == hcrc);
+	is_valid_ &= (__builtin_bswap32(pImageHeader->ih_hcrc) == hcrc);
 }
 
 void UBootHeader::Dump() {
-	if (!m_bIsValid) {
+	if (!is_valid_) {
 		printf("* Not a valid header! *\n");
 	}
 
-	auto *pImageHeader = reinterpret_cast<const TImageHeader *>(m_pHeader);
+	auto *pImageHeader = reinterpret_cast<const TImageHeader *>(header_);
 	const auto rawtime = static_cast<time_t>(__builtin_bswap32(pImageHeader->ih_time));
 	auto *info = localtime(&rawtime);
 

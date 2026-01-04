@@ -2,7 +2,7 @@
  * @file tlc59711dmx.h
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,22 +31,18 @@
 #include "tlc59711.h"
 #include "dmxnode.h"
 
-namespace tlc59711 {
-enum class Type {
-	RGB, RGBW, UNDEFINED
-};
-}  // namespace tlc59711
-
 class TLC59711Dmx {
 public:
 	TLC59711Dmx();
 	~TLC59711Dmx() ;
 
-	void Start(uint32_t nPortIndex = 0) ;
-	void Stop(uint32_t nPortIndex = 0) ;
+	void Start(uint32_t port_index = 0) ;
+	void Stop(uint32_t port_index = 0) ;
 
-	void SetData(const uint32_t nPortIndex, const uint8_t *pDmxData, uint32_t nLength, const bool doUpdate = true) ;
-	void Sync(const uint32_t nPortIndex) ;
+	template <bool doUpdate>
+	void SetData(uint32_t port_index, const uint8_t *pDmxData, uint32_t nLength) ;
+
+	void Sync( uint32_t port_index) ;
 	void Sync() ;
 
 #if defined (CONFIG_TLC59711DMX_ENABLE_PCT)
@@ -58,34 +54,34 @@ public:
 
 	void SetType(tlc59711::Type type);
 	tlc59711::Type GetType() {
-		return m_type;
+		return type_;
 	}
 
 	void SetCount(uint32_t nCount);
 	uint16_t GetCount() const {
-		return m_nCount;
+		return count_;
 	}
 
 	void SetSpiSpeedHz(uint32_t nSpiSpeedHz);
 	uint32_t GetSpiSpeedHz() const {
-		return m_nSpiSpeedHz;
+		return spi_speed_hz_;
 	}
 
 public: // RDM
 	bool SetDmxStartAddress(uint16_t nDmxStartAddress) ;
 
 	uint16_t GetDmxStartAddress()  {
-		return m_nDmxStartAddress;
+		return dmx_start_address_;
 	}
 
 	uint16_t GetDmxFootprint()  {
-		return m_nDmxFootprint;
+		return dmx_footprint_;
 	}
 
 	bool GetSlotInfo(uint16_t nSlotOffset, dmxnode::SlotInfo &tSlotInfo) ;
 
 	static TLC59711Dmx *Get() {
-		return s_pThis;
+		return s_this;
 	}
 
 private:
@@ -93,19 +89,19 @@ private:
 	void UpdateMembers();
 
 private:
-	uint16_t m_nDmxFootprint { TLC59711Channels::OUT };
-	uint16_t m_nCount { TLC59711Channels::RGB };
-	uint32_t m_nSpiSpeedHz { 0 };
-	uint16_t m_nDmxStartAddress { 1 };
-	bool m_bIsStarted { false };
-	bool m_bBlackout { false };
+	uint16_t dmx_footprint_ { TLC59711Channels::OUT };
+	uint16_t count_ { TLC59711Channels::RGB };
+	uint32_t spi_speed_hz_ { 0 };
+	uint16_t dmx_start_address_ { 1 };
+	bool started_ { false };
+	bool blackout_ { false };
 	TLC59711 *m_pTLC59711 { nullptr };
 #if defined (CONFIG_TLC59711DMX_ENABLE_PCT)
 	uint16_t *m_ArrayMaxValue { nullptr };
 #endif
-	tlc59711::Type m_type { tlc59711::Type::RGB };
+	tlc59711::Type type_ { tlc59711::Type::kRgb };
 
-	static TLC59711Dmx *s_pThis;
+	static TLC59711Dmx *s_this;
 };
 
-#endif /* TLC59711DMX_H_ */
+#endif  // TLC59711DMX_H_

@@ -47,8 +47,8 @@
 #include "h3_dma.h"
 #include "h3_board.h"
 #include "h3_gpio.h"
-
-#include "debug.h"
+#include "firmware/debug/debug_printbits.h"
+ #include "firmware/debug/debug_debug.h"
 
 #ifndef ALIGNED
 # define ALIGNED __attribute__ ((aligned (4)))
@@ -396,14 +396,14 @@ static void codec_hw_params(uint32_t rate, uint32_t channels) {
 }
 
 #ifndef NDEBUG
-extern void uart0_putc(int c);
+extern void uart0::Putc(int c);
 #endif
 
 static void __attribute__((interrupt("FIQ"))) codec_fiq_handler() {
 	dmb();
 
 #ifdef LOGIC_ANALYZER
-	h3_gpio_set(6);
+	H3GpioSet(6);
 #endif
 
 	if (update_counter == 2) {
@@ -417,7 +417,7 @@ static void __attribute__((interrupt("FIQ"))) codec_fiq_handler() {
 			src++;
 		}
 #ifndef NDEBUG
-		uart0_putc('1');
+		uart0::Putc('1');
 #endif
 	}
 
@@ -430,7 +430,7 @@ static void __attribute__((interrupt("FIQ"))) codec_fiq_handler() {
 	isb();
 
 #ifdef LOGIC_ANALYZER
-	h3_gpio_clr(6);
+	H3GpioClr(6);
 #endif
 
 	dmb();
@@ -539,32 +539,32 @@ void __attribute__((cold)) h3_codec_start() {
 
 	printf("================\n");
 	printf("H3_CCU->PLL_AUDIO_CTRL=%p ", H3_CCU->PLL_AUDIO_CTRL);
-	debug_print_bits(H3_CCU->PLL_AUDIO_CTRL);
+	debug::PrintBits(H3_CCU->PLL_AUDIO_CTRL);
 	printf("CCU_PLL_AUDIO=%ld n=%d,m=%d,p=%d\n", (long int) freq, n, m, p);
 	printf("================\n");
 
 	printf("H3_AC->DAC_DPC=%p ", H3_AC->DAC_DPC);
-	debug_print_bits(H3_AC->DAC_DPC);
+	debug::PrintBits(H3_AC->DAC_DPC);
 
 	printf("H3_AC->DAC_FIFOC=%p ", H3_AC->DAC_FIFOC);
-	debug_print_bits(H3_AC->DAC_FIFOC);
+	debug::PrintBits(H3_AC->DAC_FIFOC);
 
 	printf("H3_AC->DAC_FIFOS=%p ", H3_AC->DAC_FIFOS);
-	debug_print_bits(H3_AC->DAC_FIFOS);
+	debug::PrintBits(H3_AC->DAC_FIFOS);
 
 	printf("H3_AC->DAC_DAP_CTR=%p ", H3_AC->DAC_DAP_CTR);
-	debug_print_bits(H3_AC->DAC_DAP_CTR);
+	debug::PrintBits(H3_AC->DAC_DAP_CTR);
 
 	printf("H3_AC->DAC_DRC_CTRL=%p ", H3_AC->DAC_DRC_CTRL);
-	debug_print_bits(H3_AC->DAC_DRC_CTRL);
+	debug::PrintBits(H3_AC->DAC_DRC_CTRL);
 
 	printf("================\n");
 
 	printf("DAC_PA_SRC=%p ", read_prcm_wvalue(DAC_PA_SRC));
-	debug_print_bits(read_prcm_wvalue(DAC_PA_SRC));
+	debug::PrintBits(read_prcm_wvalue(DAC_PA_SRC));
 
 	printf("MIC2G_LINEOUT_CTR=%p ", read_prcm_wvalue(MIC2G_LINEOUT_CTR));
-	debug_print_bits(read_prcm_wvalue(MIC2G_LINEOUT_CTR));
+	debug::PrintBits(read_prcm_wvalue(MIC2G_LINEOUT_CTR));
 
 	printf("================\n");
 #endif

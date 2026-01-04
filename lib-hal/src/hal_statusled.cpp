@@ -1,74 +1,107 @@
 /*
  * hal_statusled.cpp
  */
+/* Copyright (C) 2025 by Arjan van Vught mailto:infogd32-dmx.org
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
 
-#if defined (DEBUG_HAL)
-# undef NDEBUG
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
+#if defined(DEBUG_HAL)
+#undef NDEBUG
 #endif
 
 #include <cstdint>
 
 #include "hal_statusled.h"
 
-#include "debug.h"
+ #include "firmware/debug/debug_debug.h"
 
-namespace hal {
-namespace global {
-hal::StatusLedMode g_statusLedMode;
-}  // namespace global
+namespace hal::statusled
+{
+namespace global
+{
+Mode g_status_led_mode;
+} // namespace global
 
-static bool s_doLock;
+static bool s_do_lock;
 
-enum class ModeToFrequency {
-	OFF_OFF = 0, NORMAL = 1, DATA = 3, FAST = 5, REBOOT = 8, OFF_ON = 255
+enum class ModeToFrequency
+{
+    kOffOff = 0,
+    kNormal = 1,
+    kData = 3,
+    kFast = 5,
+    kReboot = 8,
+    kOffOn = 255
 };
 
-#if !defined (CONFIG_HAL_USE_MINIMUM)
+#if !defined(CONFIG_HAL_USE_MINIMUM)
 
-void __attribute__((weak)) display_statusled([[maybe_unused]] const hal::StatusLedMode mode) {
-	DEBUG_PRINTF("mode=%u", static_cast<uint32_t>(mode));
+void __attribute__((weak)) Event([[maybe_unused]] Mode mode)
+{
+    DEBUG_PRINTF("mode=%u", static_cast<uint32_t>(mode));
 }
 
-void statusled_set_mode_with_lock(const StatusLedMode mode, const bool doLock) {
-	s_doLock = false;
-	statusled_set_mode(mode);
-	s_doLock = doLock;
+void SetModeWithLock(Mode mode, bool do_lock)
+{
+    s_do_lock = false;
+    SetMode(mode);
+    s_do_lock = do_lock;
 }
 
-void statusled_set_mode(const hal::StatusLedMode mode) {
-	if (s_doLock || (global::g_statusLedMode == mode)) {
-		return;
-	}
+void SetMode(hal::statusled::Mode mode)
+{
+    if (s_do_lock || (global::g_status_led_mode == mode))
+    {
+        return;
+    }
 
-	global::g_statusLedMode = mode;
+    global::g_status_led_mode = mode;
 
-	switch (global::g_statusLedMode) {
-	case hal::StatusLedMode::OFF_OFF:
-		statusled_set_frequency(static_cast<uint32_t>(ModeToFrequency::OFF_OFF));
-		break;
-	case hal::StatusLedMode::OFF_ON:
-		statusled_set_frequency(static_cast<uint32_t>(ModeToFrequency::OFF_ON));
-		break;
-	case hal::StatusLedMode::NORMAL:
-		statusled_set_frequency(static_cast<uint32_t>(ModeToFrequency::NORMAL));
-		break;
-	case hal::StatusLedMode::DATA:
-		statusled_set_frequency(static_cast<uint32_t>(ModeToFrequency::DATA));
-		break;
-	case hal::StatusLedMode::FAST:
-		statusled_set_frequency(static_cast<uint32_t>(ModeToFrequency::FAST));
-		break;
-	case hal::StatusLedMode::REBOOT:
-		statusled_set_frequency(static_cast<uint32_t>(ModeToFrequency::REBOOT));
-		break;
-	default:
-		statusled_set_frequency(static_cast<uint32_t>(ModeToFrequency::OFF_OFF));
-		break;
-	}
+    switch (global::g_status_led_mode)
+    {
+        case hal::statusled::Mode::OFF_OFF:
+            SetFrequency(static_cast<uint32_t>(ModeToFrequency::kOffOff));
+            break;
+        case hal::statusled::Mode::OFF_ON:
+            SetFrequency(static_cast<uint32_t>(ModeToFrequency::kOffOn));
+            break;
+        case hal::statusled::Mode::NORMAL:
+            SetFrequency(static_cast<uint32_t>(ModeToFrequency::kNormal));
+            break;
+        case hal::statusled::Mode::DATA:
+            SetFrequency(static_cast<uint32_t>(ModeToFrequency::kData));
+            break;
+        case hal::statusled::Mode::FAST:
+            SetFrequency(static_cast<uint32_t>(ModeToFrequency::kFast));
+            break;
+        case hal::statusled::Mode::REBOOT:
+            SetFrequency(static_cast<uint32_t>(ModeToFrequency::kReboot));
+            break;
+        default:
+            SetFrequency(static_cast<uint32_t>(ModeToFrequency::kOffOff));
+            break;
+    }
 
-	hal::display_statusled(global::g_statusLedMode);
+    hal::statusled::Event(global::g_status_led_mode);
 
-	DEBUG_PRINTF("StatusLedMode=%u", static_cast<uint32_t>(global::g_statusLedMode));
+    DEBUG_PRINTF("global::g_status_led_mode=%u", static_cast<uint32_t>(global::g_status_led_mode));
 }
 #endif
-}  // namespace hal
+} // namespace hal::statusled

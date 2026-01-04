@@ -31,179 +31,203 @@
 #include "dmxnode_outputtype.h"
 #include "dmxsend.h"
 
-#include "debug.h"
+ #include "firmware/debug/debug_debug.h"
 
-template<uint32_t nMaxPorts>
-class DmxNodeWith4 {
-public:
-	DmxNodeWith4(DmxPixelOutputType *pA, DmxSend *pB) : m_pDmxPixelOutputType(pA), m_pDmxSend(pB) {
-		DEBUG_PRINTF("nMaxPorts=%u DmxPixelOutputType=%p DmxSend=%p", nMaxPorts, reinterpret_cast<void *>(m_pDmxPixelOutputType), reinterpret_cast<void *>(m_pDmxSend));
-	}
+template <uint32_t nMaxPorts> class DmxNodeWith4
+{
+   public:
+    DmxNodeWith4(DmxPixelOutputType* pA, DmxSend* pB) : dmx_pixel_output_type_(pA), dmx_send_(pB)
+    {
+        DEBUG_PRINTF("nMaxPorts=%u DmxPixelOutputType=%p DmxSend=%p", nMaxPorts, reinterpret_cast<void*>(dmx_pixel_output_type_), reinterpret_cast<void*>(dmx_send_));
+    }
 
-	~DmxNodeWith4() = default;
+    ~DmxNodeWith4() = default;
 
-	void SetDmxPixel(DmxPixelOutputType *const pDmxPixelOutputType) {
-		m_pDmxPixelOutputType = pDmxPixelOutputType;
-	}
+    void SetDmxPixel(DmxPixelOutputType* const kDmxPixelOutputType) { dmx_pixel_output_type_ = kDmxPixelOutputType; }
 
-	DmxPixelOutputType *GetDmxPixel() const {
-		return m_pDmxPixelOutputType;
-	}
+    DmxPixelOutputType* GetDmxPixel() const { return dmx_pixel_output_type_; }
 
-	void SetDmxSend(DmxSend *const pDmxSend) {
-		m_pDmxSend = pDmxSend;
-	}
+    void SetDmxSend(DmxSend* const kDmxSend) { dmx_send_ = kDmxSend; }
 
-	DmxSend *GetDmxSend() const {
-		return m_pDmxSend;
-	}
+    DmxSend* GetDmxSend() const { return dmx_send_; }
 
-	void Start(const uint32_t nPortIndex) {
-		if (nPortIndex < nMaxPorts) {
-			if (m_pDmxPixelOutputType != nullptr) {
-				return m_pDmxPixelOutputType->Start(nPortIndex);
-			}
-			return;
-		}
-		if (m_pDmxSend != nullptr) {
-			m_pDmxSend->Start(nPortIndex & 0x3);
-		}
-	}
+    void Start(uint32_t port_index)
+    {
+        if (port_index < nMaxPorts)
+        {
+            if (dmx_pixel_output_type_ != nullptr)
+            {
+                return dmx_pixel_output_type_->Start(port_index);
+            }
+            return;
+        }
+        if (dmx_send_ != nullptr)
+        {
+            dmx_send_->Start(port_index & 0x3);
+        }
+    }
 
-	void Stop(const uint32_t nPortIndex) {
-		if (nPortIndex < nMaxPorts) {
-			if (m_pDmxPixelOutputType != nullptr) {
-				return m_pDmxPixelOutputType->Stop(nPortIndex);
-			}
-			return;
-		}
-		if (m_pDmxSend != nullptr) {
-			m_pDmxSend->Stop(nPortIndex & 0x3);
-		}
-	}
+    void Stop(uint32_t port_index)
+    {
+        if (port_index < nMaxPorts)
+        {
+            if (dmx_pixel_output_type_ != nullptr)
+            {
+                return dmx_pixel_output_type_->Stop(port_index);
+            }
+            return;
+        }
+        if (dmx_send_ != nullptr)
+        {
+            dmx_send_->Stop(port_index & 0x3);
+        }
+    }
 
-	void SetData(const uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate) {
-		if (nPortIndex < nMaxPorts) {
-			if (m_pDmxPixelOutputType != nullptr) {
-				return m_pDmxPixelOutputType->SetData(nPortIndex, pData, nLength, doUpdate);
-			}
-			return;
-		}
-		if (m_pDmxSend != nullptr) {
-			return m_pDmxSend->SetData(nPortIndex & 0x3, pData, nLength, doUpdate);
-		}
-	}
+    template <bool doUpdate> void SetData(uint32_t port_index, const uint8_t* data, uint32_t length)
+    {
+        if (port_index < nMaxPorts)
+        {
+            if (dmx_pixel_output_type_ != nullptr)
+            {
+                return dmx_pixel_output_type_->SetData<doUpdate>(port_index, data, length);
+            }
+            return;
+        }
+        if (dmx_send_ != nullptr)
+        {
+            return dmx_send_->SetData<doUpdate>(port_index & 0x3, data, length);
+        }
+    }
 
-	void Sync(const uint32_t nPortIndex) {
-		if (nPortIndex < nMaxPorts) {
-			if (m_pDmxPixelOutputType != nullptr) {
-				return m_pDmxPixelOutputType->Sync(nPortIndex);
-			}
-			return;
-		}
-		if (m_pDmxSend != nullptr) {
-			return m_pDmxSend->Sync(nPortIndex & 0x3);
-		}
-	}
+    void Sync(uint32_t port_index)
+    {
+        if (port_index < nMaxPorts)
+        {
+            if (dmx_pixel_output_type_ != nullptr)
+            {
+                return dmx_pixel_output_type_->Sync(port_index);
+            }
+            return;
+        }
+        if (dmx_send_ != nullptr)
+        {
+            return dmx_send_->Sync(port_index & 0x3);
+        }
+    }
 
-	void Sync() {
-		if (m_pDmxPixelOutputType != nullptr) {
-			m_pDmxPixelOutputType->Sync();
-		}
-		if (m_pDmxSend != nullptr) {
-			m_pDmxSend->Sync();
-		}
-	}
+    void Sync()
+    {
+        if (dmx_pixel_output_type_ != nullptr)
+        {
+            dmx_pixel_output_type_->Sync();
+        }
+        if (dmx_send_ != nullptr)
+        {
+            dmx_send_->Sync();
+        }
+    }
 
-#if defined (OUTPUT_HAVE_STYLESWITCH)
-	void SetOutputStyle(const uint32_t nPortIndex, const dmxnode::OutputStyle outputStyle) {
-		if (nPortIndex < nMaxPorts) {
-			if (m_pDmxPixelOutputType != nullptr) {
-				return m_pDmxPixelOutputType->SetOutputStyle(nPortIndex, outputStyle);
-			}
-			return;
-		}
-		if (m_pDmxSend != nullptr) {
-			return m_pDmxSend->SetOutputStyle(nPortIndex & 0x3, outputStyle);
-		}
-	}
+#if defined(OUTPUT_HAVE_STYLESWITCH)
+    void SetOutputStyle(uint32_t port_index, const dmxnode::OutputStyle outputStyle)
+    {
+        if (port_index < nMaxPorts)
+        {
+            if (dmx_pixel_output_type_ != nullptr)
+            {
+                return dmx_pixel_output_type_->SetOutputStyle(port_index, outputStyle);
+            }
+            return;
+        }
+        if (dmx_send_ != nullptr)
+        {
+            return dmx_send_->SetOutputStyle(port_index & 0x3, outputStyle);
+        }
+    }
 
-	dmxnode::OutputStyle GetOutputStyle(const uint32_t nPortIndex) const {
-		if (nPortIndex < nMaxPorts) {
-			if (m_pDmxPixelOutputType != nullptr) {
-				return m_pDmxPixelOutputType->GetOutputStyle(nPortIndex);
-			}
-			return dmxnode::OutputStyle::DELTA;
-		}
-		if (m_pDmxSend != nullptr) {
-			return m_pDmxSend->GetOutputStyle(nPortIndex & 0x3);
-		}
+    dmxnode::OutputStyle GetOutputStyle(uint32_t port_index) const
+    {
+        if (port_index < nMaxPorts)
+        {
+            if (dmx_pixel_output_type_ != nullptr)
+            {
+                return dmx_pixel_output_type_->GetOutputStyle(port_index);
+            }
+            return dmxnode::OutputStyle::kDelta;
+        }
+        if (dmx_send_ != nullptr)
+        {
+            return dmx_send_->GetOutputStyle(port_index & 0x3);
+        }
 
-		return dmxnode::OutputStyle::DELTA;
-	}
+        return dmxnode::OutputStyle::kDelta;
+    }
 #endif
 
-	void Blackout(bool bBlackout) {
-		if (m_pDmxPixelOutputType != nullptr) {
-			m_pDmxPixelOutputType->Blackout(bBlackout);
-		}
-		if (m_pDmxSend != nullptr) {
-			m_pDmxSend->Blackout(bBlackout);
-		}
-	}
+    void Blackout(bool blackout)
+    {
+        if (dmx_pixel_output_type_ != nullptr)
+        {
+            dmx_pixel_output_type_->Blackout(blackout);
+        }
+        if (dmx_send_ != nullptr)
+        {
+            dmx_send_->Blackout(blackout);
+        }
+    }
 
-	void FullOn() {
-		if (m_pDmxPixelOutputType != nullptr) {
-			m_pDmxPixelOutputType->FullOn();
-		}
-		if (m_pDmxSend != nullptr) {
-			m_pDmxSend->FullOn();
-		}
-	}
+    void FullOn()
+    {
+        if (dmx_pixel_output_type_ != nullptr)
+        {
+            dmx_pixel_output_type_->FullOn();
+        }
+        if (dmx_send_ != nullptr)
+        {
+            dmx_send_->FullOn();
+        }
+    }
 
-	void Print() {
-		if (m_pDmxPixelOutputType != nullptr) {
-			m_pDmxPixelOutputType->Print();
-		}
-		if (m_pDmxSend != nullptr) {
-			m_pDmxSend->Print();
-		}
-	}
+    void Print()
+    {
+        if (dmx_pixel_output_type_ != nullptr)
+        {
+            dmx_pixel_output_type_->Print();
+        }
+        if (dmx_send_ != nullptr)
+        {
+            dmx_send_->Print();
+        }
+    }
 
-	uint32_t GetUserData() {
-		if (m_pDmxPixelOutputType != nullptr) {
-			return m_pDmxPixelOutputType->GetUserData();
-		}
-		return 0;
-	}
+    uint32_t GetUserData()
+    {
+        if (dmx_pixel_output_type_ != nullptr)
+        {
+            return dmx_pixel_output_type_->GetUserData();
+        }
+        return 0;
+    }
 
-	uint32_t GetRefreshRate() {
-		if (m_pDmxPixelOutputType != nullptr) {
-			return m_pDmxPixelOutputType->GetRefreshRate();
-		}
-		return 0;
-	}
+    uint32_t GetRefreshRate()
+    {
+        if (dmx_pixel_output_type_ != nullptr)
+        {
+            return dmx_pixel_output_type_->GetRefreshRate();
+        }
+        return 0;
+    }
 
-	bool SetDmxStartAddress([[maybe_unused]] uint16_t nDmxStartAddress) {
-		return false;
-	}
+    bool SetDmxStartAddress([[maybe_unused]] uint16_t dmx_start_address) { return false; }
 
-	uint16_t GetDmxStartAddress() {
-		return dmxnode::ADDRESS_INVALID;
-	}
+    uint16_t GetDmxStartAddress() { return dmxnode::kAddressInvalid; }
 
-	uint16_t GetDmxFootprint() {
-		return 0;
-	}
+    uint16_t GetDmxFootprint() { return 0; }
 
-	bool GetSlotInfo([[maybe_unused]] uint16_t nSlotOffset, [[maybe_unused]] dmxnode::SlotInfo &tSlotInfo) {
-		return false;
-	}
+    bool GetSlotInfo([[maybe_unused]] uint16_t slot_offset, [[maybe_unused]] dmxnode::SlotInfo& slot_info) { return false; }
 
-private:
-	DmxPixelOutputType *m_pDmxPixelOutputType;
-	DmxSend *m_pDmxSend;
+   private:
+    DmxPixelOutputType* dmx_pixel_output_type_;
+    DmxSend* dmx_send_;
 };
 
-
-#endif /* DMXNODEWITH4_H_ */
+#endif  // DMXNODEWITH4_H_

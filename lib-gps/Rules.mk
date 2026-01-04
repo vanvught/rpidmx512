@@ -1,0 +1,2 @@
+EXTRA_SRCDIR+=src/json
+EXTRA_INCLUDES+=

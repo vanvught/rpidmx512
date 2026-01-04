@@ -2,7 +2,7 @@
  * @file applemidi.h
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,195 +34,212 @@
 #include <cstdio>
 #include <algorithm>
 #include <cassert>
+#include <cstring>
 
 #include "midi.h"
 #include "net/apps/mdns.h"
-
 #include "hal.h"
+#include "hal_millis.h"
 #include "network.h"
+ #include "firmware/debug/debug_debug.h"
 
-#include "debug.h"
+namespace applemidi
+{
+static constexpr size_t kSessionNameLengthMax = 24;
+static constexpr uint32_t kVersion = 2;
 
-namespace applemidi {
-static constexpr size_t SESSION_NAME_LENGTH_MAX = 24;
-static constexpr uint32_t VERSION = 2;
+struct ExchangePacket
+{
+    uint16_t signature;
+    uint16_t command;
+    uint32_t protocol_version;
+    uint32_t initiator_token;
+    uint32_t ssrc;
+    uint8_t name[kSessionNameLengthMax + 1];
+} __attribute__((packed));
 
-struct ExchangePacket {
-	uint16_t nSignature;
-	uint16_t nCommand;
-	uint32_t nProtocolVersion;
-	uint32_t nInitiatorToken;
-	uint32_t nSSRC;
-	uint8_t aName[SESSION_NAME_LENGTH_MAX + 1];
-}__attribute__((packed));
-
-enum class SessionState {
-	WAITING_IN_CONTROL, WAITING_IN_MIDI, IN_SYNC, ESTABLISHED
+enum class SessionState
+{
+    kWaitingInControl,
+    kWaitingInMidi,
+    kInSync,
+    kEstablished
 };
 
-struct SessionStatus {
-	SessionState sessionState;
-	uint32_t nRemoteIp;
-	uint16_t nRemotePortMidi;
+struct SessionStatus
+{
+    SessionState session_state;
+    uint32_t remote_ip;
+    uint16_t remote_port_midi;
 };
 
-static constexpr auto EXCHANGE_PACKET_MIN_LENGTH = sizeof(struct applemidi::ExchangePacket) - applemidi::SESSION_NAME_LENGTH_MAX - 1;
-}  // namespace applemidi
+static constexpr auto kExchangePacketMinLength = sizeof(struct applemidi::ExchangePacket) - applemidi::kSessionNameLengthMax - 1;
+} // namespace applemidi
 
-class AppleMidi {
-	static constexpr uint16_t UPD_PORT_CONTROL_DEFAULT = 5004;
-	static constexpr uint16_t UPD_PORT_MIDI_DEFAULT = UPD_PORT_CONTROL_DEFAULT + 1;
-	static constexpr uint16_t SIGNATURE = 0xffff;
-public:
-	AppleMidi();
+class AppleMidi
+{
+    static constexpr uint16_t kUpdPortControlDefault = 5004;
+    static constexpr uint16_t kUpdPortMidiDefault = kUpdPortControlDefault + 1;
+    static constexpr uint16_t kSignature = 0xffff;
 
-	virtual ~AppleMidi() {
-		Stop();
-	}
+   public:
+    AppleMidi();
 
-	void Start() {
-		DEBUG_ENTRY
-		mdns_service_record_add(nullptr, mdns::Services::MIDI, nullptr, m_nPort);
+    virtual ~AppleMidi() { Stop(); }
 
-		assert(m_nHandleControl == -1);
-		m_nHandleControl = Network::Get()->Begin(m_nPort, StaticCallbackFunctionControlMessage);
-		assert(m_nHandleControl != -1);
+    void Start()
+    {
+        DEBUG_ENTRY();
+        mdns::ServiceRecordAdd(nullptr, mdns::Services::MIDI, nullptr, port_);
 
-		assert(m_nHandleMidi == -1);
-		m_nHandleMidi = Network::Get()->Begin((m_nPort + 1U), StaticCallbackFunctionMidiMessage);
-		assert(m_nHandleMidi != -1);
+        assert(handle_control_ == -1);
+        handle_control_ = net::udp::Begin(port_, StaticCallbackFunctionControlMessage);
+        assert(handle_control_ != -1);
 
-		DEBUG_PRINTF("Session name: [%s]", m_ExchangePacketReply.aName);
+        assert(handle_midi_ == -1);
+        handle_midi_ = net::udp::Begin((port_ + 1U), StaticCallbackFunctionMidiMessage);
+        assert(handle_midi_ != -1);
 
-		m_nStartTime =hal::millis();
+        DEBUG_PRINTF("Session name: [%s]", exchange_packet_reply_.name);
 
-		DEBUG_EXIT
-	}
+        start_time_ = hal::Millis();
 
-	void Stop() {
-		DEBUG_ENTRY
+        DEBUG_EXIT();
+    }
 
-		assert(m_nHandleMidi != -1);
-		Network::Get()->End(static_cast<uint16_t>(m_nPort + 1U));
-		m_nHandleMidi = -1;
+    void Stop()
+    {
+        DEBUG_ENTRY();
 
-		assert(m_nHandleControl != -1);
-		Network::Get()->End(m_nPort);
-		m_nHandleControl = -1;
+        assert(handle_midi_ != -1);
+        net::udp::End(static_cast<uint16_t>(port_ + 1U));
+        handle_midi_ = -1;
 
-		DEBUG_EXIT
-	}
+        assert(handle_control_ != -1);
+        net::udp::End(port_);
+        handle_control_ = -1;
 
-	/**
-	 * @brief Processes incoming Apple MIDI MIDI messages.
-	 *
-	 * Handles MIDI messages such as RTP-MIDI data and timestamp synchronization commands.
-	 *
-	 * @param pBuffer Pointer to the received data buffer.
-	 * @param nSize Size of the received data.
-	 * @param nFromIp Source IP address.
-	 * @param nFromPort Source port.
-	 */
-	void InputMidiMessage(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort);
+        DEBUG_EXIT();
+    }
 
-	/**
-	 * @brief Processes incoming Apple MIDI control messages.
-	 *
-	 * Handles control messages such as session invitations, session end commands,
-	 * and synchronization requests.
-	 *
-	 * @param pBuffer Pointer to the received data buffer.
-	 * @param nSize Size of the received data.
-	 * @param nFromIp Source IP address.
-	 * @param nFromPort Source port.
-	 */
-	void InputControlMessage(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort);
+    /**
+     * @brief Processes incoming Apple MIDI MIDI messages.
+     *
+     * Handles MIDI messages such as RTP-MIDI data and timestamp synchronization commands.
+     *
+     * @param buffer Pointer to the received data buffer.
+     * @param nSize Size of the received data.
+     * @param from_ip Source IP address.
+     * @param from_port Source port.
+     */
+    void InputMidiMessage(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port);
 
-	void SetPort(const uint16_t nPort) {
-		assert(nPort > 1024);
-		m_nPort = nPort;
-	}
+    /**
+     * @brief Processes incoming Apple MIDI control messages.
+     *
+     * Handles control messages such as session invitations, session end commands,
+     * and synchronization requests.
+     *
+     * @param buffer Pointer to the received data buffer.
+     * @param nSize Size of the received data.
+     * @param from_ip Source IP address.
+     * @param from_port Source port.
+     */
+    void InputControlMessage(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port);
 
-	void SetSessionName(const char *pSessionName) {
-		const auto nLength = std::min(strlen(pSessionName), static_cast<size_t>(applemidi::SESSION_NAME_LENGTH_MAX));
-		memcpy(reinterpret_cast<char *>(&m_ExchangePacketReply.aName), pSessionName, nLength);
-		m_ExchangePacketReply.aName[nLength] = '\0';
-		m_nExchangePacketReplySize = static_cast<uint16_t>(applemidi::EXCHANGE_PACKET_MIN_LENGTH + 1 + nLength);
-	}
+    void SetPort(uint16_t port)
+    {
+        assert(port > 1024);
+        port_ = port;
+    }
 
-	inline uint32_t GetSSRC() {
-		return m_nSSRC;
-	}
+    void SetSessionName(const char* session_name)
+    {
+        const auto kLength = std::min(strlen(session_name), static_cast<size_t>(applemidi::kSessionNameLengthMax));
+        memcpy(reinterpret_cast<char*>(&exchange_packet_reply_.name), session_name, kLength);
+        exchange_packet_reply_.name[kLength] = '\0';
+        exchange_packet_reply_size_ = static_cast<uint16_t>(applemidi::kExchangePacketMinLength + 1 + kLength);
+    }
 
-	void Print() {
-		puts("AppleMIDI");
-		printf(" Session : %s\n", m_ExchangePacketReply.aName);
-	}
+    inline uint32_t GetSSRC() { return ssrc_; }
 
-	static auto GetSessionState() {
-		assert(s_pThis != nullptr);
-		return s_pThis->m_SessionStatus.sessionState;
-	}
+    void Print()
+    {
+        puts("AppleMIDI");
+        printf(" Session : %s\n", exchange_packet_reply_.name);
+    }
 
-	static void ResetSession() {
-		assert(s_pThis != nullptr);
-		s_pThis->m_SessionStatus.sessionState = applemidi::SessionState::WAITING_IN_CONTROL;
-		s_pThis->m_SessionStatus.nRemoteIp = 0;
-	}
+    static auto GetSessionState()
+    {
+        assert(s_this != nullptr);
+        return s_this->session_status_.session_state;
+    }
 
-protected:
-	uint32_t Now() {
-		const auto nElapsed =hal::millis() - m_nStartTime;
-		return (nElapsed * 10U);
-	}
+    static void ResetSession()
+    {
+        assert(s_this != nullptr);
+        s_this->session_status_.session_state = applemidi::SessionState::kWaitingInControl;
+        s_this->session_status_.remote_ip = 0;
+    }
 
-	bool Send(const uint8_t *pBuffer, const uint32_t nLength) {
-		if (m_SessionStatus.sessionState != applemidi::SessionState::ESTABLISHED) {
-			return false;
-		}
+   protected:
+    uint32_t Now()
+    {
+        const auto kElapsed = hal::Millis() - start_time_;
+        return (kElapsed * 10U);
+    }
 
-		Network::Get()->SendTo(m_nHandleMidi, pBuffer, nLength, m_SessionStatus.nRemoteIp, m_SessionStatus.nRemotePortMidi);
-		return true;
-	}
+    bool Send(const uint8_t* buffer, uint32_t length)
+    {
+        if (session_status_.session_state != applemidi::SessionState::kEstablished)
+        {
+            return false;
+        }
 
-private:
-	/**
-	 * @brief Static callback function for receiving UDP packets.
-	 *
-	 * @param pBuffer Pointer to the packet buffer.
-	 * @param nSize Size of the packet buffer.
-	 * @param nFromIp IP address of the sender.
-	 * @param nFromPort Port number of the sender.
-	 */
-	void static StaticCallbackFunctionControlMessage(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
-		s_pThis->InputControlMessage(pBuffer, nSize, nFromIp, nFromPort);
-	}
+        net::udp::Send(handle_midi_, buffer, length, session_status_.remote_ip, session_status_.remote_port_midi);
+        return true;
+    }
 
-	/**
-	 * @brief Static callback function for receiving UDP packets.
-	 *
-	 * @param pBuffer Pointer to the packet buffer.
-	 * @param nSize Size of the packet buffer.
-	 * @param nFromIp IP address of the sender.
-	 * @param nFromPort Port number of the sender.
-	 */
-	void static StaticCallbackFunctionMidiMessage(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
-		s_pThis->InputMidiMessage(pBuffer, nSize, nFromIp, nFromPort);
-	}
+   private:
+    /**
+     * @brief Static callback function for receiving UDP packets.
+     *
+     * @param buffer Pointer to the packet buffer.
+     * @param nSize Size of the packet buffer.
+     * @param from_ip IP address of the sender.
+     * @param from_port Port number of the sender.
+     */
+    void static StaticCallbackFunctionControlMessage(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port)
+    {
+        s_this->InputControlMessage(buffer, size, from_ip, from_port);
+    }
 
-	virtual void HandleRtpMidi(const uint8_t *pBuffer)=0;
+    /**
+     * @brief Static callback function for receiving UDP packets.
+     *
+     * @param buffer Pointer to the packet buffer.
+     * @param nSize Size of the packet buffer.
+     * @param from_ip IP address of the sender.
+     * @param from_port Port number of the sender.
+     */
+    void static StaticCallbackFunctionMidiMessage(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port)
+    {
+        s_this->InputMidiMessage(buffer, size, from_ip, from_port);
+    }
 
-private:
-	uint32_t m_nStartTime { 0 };
-	int32_t m_nHandleControl { -1 };
-	int32_t m_nHandleMidi { -1 };
-	uint32_t m_nSSRC { 0 };
-	uint16_t m_nExchangePacketReplySize { applemidi::EXCHANGE_PACKET_MIN_LENGTH };
-	uint16_t m_nPort { UPD_PORT_CONTROL_DEFAULT };
-	applemidi::ExchangePacket m_ExchangePacketReply;
-	applemidi::SessionStatus m_SessionStatus;
+    virtual void HandleRtpMidi(const uint8_t* buffer) = 0;
 
-	static inline AppleMidi *s_pThis;	///< Static instance pointer for the callback function.
+   private:
+    uint32_t start_time_{0};
+    int32_t handle_control_{-1};
+    int32_t handle_midi_{-1};
+    uint32_t ssrc_{0};
+    uint16_t exchange_packet_reply_size_{applemidi::kExchangePacketMinLength};
+    uint16_t port_{kUpdPortControlDefault};
+    applemidi::ExchangePacket exchange_packet_reply_;
+    applemidi::SessionStatus session_status_;
+
+    static inline AppleMidi* s_this; ///< Static instance pointer for the callback function.
 };
 
-#endif /* NET_APPLEMIDI_H_ */
+#endif  // NET_APPLEMIDI_H_

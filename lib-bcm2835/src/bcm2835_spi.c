@@ -41,19 +41,19 @@
  * Default to \ref BCM2835_SPI_MODE0 (CPOL = 0, CPHA = 0).
  * Default the SPI speed to 100 kHz (\ref BCM2835_SPI_CLOCK_DIVIDER_2500).
  */
-void bcm2835_spi_begin(void) {
+void bcm2835_SpiBegin(void) {
 	dsb();
-	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_26, BCM2835_GPIO_FSEL_INPT);	// SPI0_CE1
-	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_24, BCM2835_GPIO_FSEL_INPT);	// SPI0_CE0
-	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_21, BCM2835_GPIO_FSEL_INPT);	// SPI0_MISO
-	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_19, BCM2835_GPIO_FSEL_INPT);	// SPI0_MOSI
-	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_23, BCM2835_GPIO_FSEL_INPT);	// SPI0_SCLK
+	bcm2835_GpioFsel(RPI_V2_GPIO_P1_26, BCM2835_GPIO_FSEL_INPT);	// SPI0_CE1
+	bcm2835_GpioFsel(RPI_V2_GPIO_P1_24, BCM2835_GPIO_FSEL_INPT);	// SPI0_CE0
+	bcm2835_GpioFsel(RPI_V2_GPIO_P1_21, BCM2835_GPIO_FSEL_INPT);	// SPI0_MISO
+	bcm2835_GpioFsel(RPI_V2_GPIO_P1_19, BCM2835_GPIO_FSEL_INPT);	// SPI0_MOSI
+	bcm2835_GpioFsel(RPI_V2_GPIO_P1_23, BCM2835_GPIO_FSEL_INPT);	// SPI0_SCLK
 
-	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_26, BCM2835_GPIO_FSEL_ALT0);	// SPI0_CE1
-	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_24, BCM2835_GPIO_FSEL_ALT0);	// SPI0_CE0
-	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_21, BCM2835_GPIO_FSEL_ALT0);	// SPI0_MISO
-	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_19, BCM2835_GPIO_FSEL_ALT0);	// SPI0_MOSI
-	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_23, BCM2835_GPIO_FSEL_ALT0);	// SPI0_SCLK
+	bcm2835_GpioFsel(RPI_V2_GPIO_P1_26, BCM2835_GPIO_FSEL_ALT0);	// SPI0_CE1
+	bcm2835_GpioFsel(RPI_V2_GPIO_P1_24, BCM2835_GPIO_FSEL_ALT0);	// SPI0_CE0
+	bcm2835_GpioFsel(RPI_V2_GPIO_P1_21, BCM2835_GPIO_FSEL_ALT0);	// SPI0_MISO
+	bcm2835_GpioFsel(RPI_V2_GPIO_P1_19, BCM2835_GPIO_FSEL_ALT0);	// SPI0_MOSI
+	bcm2835_GpioFsel(RPI_V2_GPIO_P1_23, BCM2835_GPIO_FSEL_ALT0);	// SPI0_SCLK
 	dmb();
 
 	dsb();
@@ -62,7 +62,7 @@ void bcm2835_spi_begin(void) {
 #if 0
 	bcm2835_spi_setChipSelectPolarity(BCM2835_SPI_CS0, LOW);	// Chip select 0 active LOW
 	bcm2835_spi_setChipSelectPolarity(BCM2835_SPI_CS1, LOW);	// Chip select 1 active LOW
-	bcm2835_spi_setDataMode(BCM2835_SPI_MODE0);					// CPOL = 0, CPHA = 0
+	bcm2835_SpiSetDataMode(BCM2835_SPI_MODE0);					// CPOL = 0, CPHA = 0
 	BCM2835_SPI0->CLK = BCM2835_SPI_CLOCK_DIVIDER_2500;			// 100 kHz
 #endif
 	dmb();
@@ -75,13 +75,13 @@ void bcm2835_spi_begin(void) {
  * SPI0 pins P1-19 (MOSI), P1-21 (MISO), P1-23 (CLK), P1-24 (CE0) and P1-26 (CE1)
  * are returned to their default INPUT behavior.
  */
-void bcm2835_spi_end(void) {
+void bcm2835_SpiEnd(void) {
 	dsb();
-	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_26, BCM2835_GPIO_FSEL_INPT);	// SPI0_CE1
-	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_24, BCM2835_GPIO_FSEL_INPT);	// SPI0_CE0
-	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_21, BCM2835_GPIO_FSEL_INPT);	// SPI0_MISO
-	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_19, BCM2835_GPIO_FSEL_INPT);	// SPI0_MOSI
-	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_23, BCM2835_GPIO_FSEL_INPT);	// SPI0_SCLK
+	bcm2835_GpioFsel(RPI_V2_GPIO_P1_26, BCM2835_GPIO_FSEL_INPT);	// SPI0_CE1
+	bcm2835_GpioFsel(RPI_V2_GPIO_P1_24, BCM2835_GPIO_FSEL_INPT);	// SPI0_CE0
+	bcm2835_GpioFsel(RPI_V2_GPIO_P1_21, BCM2835_GPIO_FSEL_INPT);	// SPI0_MISO
+	bcm2835_GpioFsel(RPI_V2_GPIO_P1_19, BCM2835_GPIO_FSEL_INPT);	// SPI0_MOSI
+	bcm2835_GpioFsel(RPI_V2_GPIO_P1_23, BCM2835_GPIO_FSEL_INPT);	// SPI0_SCLK
 	dmb();
 }
 
@@ -118,14 +118,14 @@ void bcm2835_spi_setChipSelectPolarity(const uint8_t cs, const uint8_t active) {
  * @ingroup SPI
  *
  *  Transfers any number of bytes to and from the currently selected SPI slave.
- *  Asserts the currently selected CS pins (as previously set by \ref bcm2835_spi_chipSelect)
+ *  Asserts the currently selected CS pins (as previously set by \ref bcm2835_SpiChipSelect)
  *  during the transfer.
  *
  * @param tbuf Buffer of bytes to send.
  * @param rbuf Received bytes will by put in this buffer.
  * @param len Number of bytes in the tbuf buffer, and the number of bytes to send/received.
  */
-void bcm2835_spi_transfernb(char *tbuf, char *rbuf, const uint32_t len) {
+void bcm2835_SpiTransfernb(char *tbuf, char *rbuf, const uint32_t len) {
 	uint32_t fifo_writes = 0;
 	uint32_t fifo_reads = 0;
 
@@ -170,12 +170,12 @@ void bcm2835_spi_transfernb(char *tbuf, char *rbuf, const uint32_t len) {
  * @ingroup SPI
  *
  * Transfers any number of bytes to and from the currently selected SPI slave
- * using \ref bcm2835_spi_transfernb.
+ * using \ref bcm2835_SpiTransfernb.
  * The returned data from the slave replaces the transmitted data in the buffer.
  *
  * @param buf Buffer of bytes to send. Received bytes will replace the contents.
  * @param len Number of bytes in the buffer, and the number of bytes to send/received.
  */
-void bcm2835_spi_transfern(char *buf, const uint32_t len) {
-	bcm2835_spi_transfernb(buf, buf, len);
+void bcm2835_SpiTransfern(char *buf, const uint32_t len) {
+	bcm2835_SpiTransfernb(buf, buf, len);
 }

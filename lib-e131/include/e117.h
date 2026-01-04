@@ -2,8 +2,7 @@
  * @file e117.h
  *
  */
-
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,8 +26,33 @@
 #ifndef E117_H_
 #define E117_H_
 
-namespace e117 {
-static constexpr auto PACKET_IDENTIFIER_LENGTH = 12;
-}  // namespace e117
+#include <cstdint>
 
-#endif /* E117_H_ */
+#if !defined(PACKED)
+#define PACKED __attribute__((packed))
+#endif
+
+namespace e117
+{
+inline constexpr uint32_t kAcnPacketIdentifierLength = 12;
+inline constexpr uint8_t kAcnPacketIdentifier[kAcnPacketIdentifierLength] = ///< 5.3 ACN Packet Identifier
+    {0x41, 0x53, 0x43, 0x2d, 0x45, 0x31, 0x2e, 0x31, 0x37, 0x00, 0x00, 0x00};
+
+inline constexpr uint32_t kCidLength = 16;
+/**
+ * Root Layer (See Section 5)
+ */
+struct RootLayer
+{
+    uint16_t pre_amble_size;                                   ///< Define RLP Preamble Size. Fixed 0x0010
+    uint16_t post_amble_size;                                  ///< RLP Post-amble Size. Fixed 0x0000
+    uint8_t acn_packet_identifier[kAcnPacketIdentifierLength]; ///< ACN Packet Identifier
+    uint16_t flags_length;                                     ///< Protocol flags and length. Low 12 bits = PDU length High 4 bits = 0x7
+    uint32_t vector;                                           ///< Identifies RLP Data as 1.31 Protocol PDU 0x00000004
+    uint8_t cid[kCidLength];                                   ///< Sender's CID. Sender's unique ID
+} PACKED;
+
+inline constexpr auto kRootLayerSize = sizeof(struct RootLayer);
+} // namespace e117
+
+#endif  // E117_H_

@@ -2,7 +2,7 @@
  * @file h3_uart.h
  *
  */
-/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -106,24 +106,25 @@ typedef enum H3_UART_STOPBITS {
 #include "h3.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
+    extern void H3UartBegin(uint32_t uart_base, uint32_t baudrate, uint32_t bits, uint32_t parity, uint32_t stop_bits);
+    extern void H3UartSetBaudrate(uint32_t uart_base, uint32_t baudrate);
+    extern void H3UartTransmit(uint32_t uart_base, const uint8_t* data, uint32_t length);
+    extern void H3UartTransmitString(uint32_t uart_base, const char* data);
 
-extern void h3_uart_begin(const uint32_t uart_base, uint32_t baudrate, uint32_t bits, uint32_t parity, uint32_t stop_bits);
-extern void h3_uart_set_baudrate(const uint32_t uart_base, uint32_t baudrate);
-extern void h3_uart_transmit(const uint32_t uart_base, const uint8_t *data, uint32_t length);
-extern void h3_uart_transmit_string(const uint32_t uart_base, const char *data);
+    inline uint32_t H3UartGetRxFifoLevel(uint32_t uart_base)
+    {
+        return ((const H3_UART_TypeDef*)(uintptr_t)(uart_base))->RFL;
+    }
 
-inline uint32_t h3_uart_get_rx_fifo_level(const uint32_t uart_base) {
-	return ((const H3_UART_TypeDef *)(uintptr_t)(uart_base))->RFL;
-}
-
-inline uint8_t h3_uart_get_rx_data(const uint32_t uart_base) {
-	return (uint8_t) ((const H3_UART_TypeDef *)(uintptr_t)(uart_base))->O00.RBR;
-}
-
+    inline uint8_t H3UartGetRxData(uint32_t uart_base)
+    {
+        return (uint8_t)((const H3_UART_TypeDef*)(uintptr_t)(uart_base))->O00.RBR;
+    }
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* H3_UART_H_ */
+#endif  // H3_UART_H_

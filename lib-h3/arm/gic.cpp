@@ -1,5 +1,5 @@
 /**
- * @file gic.c
+ * @file gic.cpp
  *
  */
 /* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl

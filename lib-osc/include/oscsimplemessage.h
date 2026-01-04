@@ -2,7 +2,7 @@
  * @file oscsimplemessage.h
  *
  */
-/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,43 +31,46 @@
 #include "osc.h"
 #include "oscblob.h"
 
-class OscSimpleMessage {
-public:
-	OscSimpleMessage(const uint8_t *pOscMessage, uint32_t nLength);
+class OscSimpleMessage
+{
+   public:
+    OscSimpleMessage(const uint8_t* osc_message, uint32_t length);
 
-	bool IsValid() const {
-		return m_bIsValid;
-	}
+    bool IsValid() const { return is_valid_; }
 
-	int GetArgc() const {
-		if (m_bIsValid) {
-			return static_cast<int>(m_nArgc);
-		}
+    int GetArgc() const
+    {
+        if (is_valid_)
+        {
+            return static_cast<int>(argc_);
+        }
 
-		return -1;
-	}
+        return -1;
+    }
 
-	char GetType(unsigned argc) const {
-		if (argc < m_nArgc) {
-			return static_cast<char>(m_pArg[argc]);
-		}
+    char GetType(unsigned argc) const
+    {
+        if (argc < argc_)
+        {
+            return static_cast<char>(arg_[argc]);
+        }
 
-		return osc::type::UNKNOWN;
-	}
+        return osc::type::UNKNOWN;
+    }
 
-	float GetFloat(const unsigned argc);
-	int GetInt(const unsigned argc);
-	const char *GetString(const unsigned argc);
-	OSCBlob GetBlob(const unsigned argc);
+    float GetFloat(unsigned argc);
+    int GetInt(unsigned argc);
+    const char* GetString(unsigned argc);
+    OSCBlob GetBlob(unsigned argc);
 
-private:
-	const uint8_t *m_pOscMessage;
-	uint32_t m_nLength;
-	const uint8_t *m_pArg;
-	uint32_t m_nArgc { 0 };
-	const uint8_t *m_pOscMessageData { nullptr };
-	uint32_t m_nOscMessageDataLength { 0 };
-	bool m_bIsValid { false };
+   private:
+    const uint8_t* osc_message_;
+    uint32_t length_;
+    const uint8_t* arg_;
+    uint32_t argc_{0};
+    const uint8_t* osc_message_data_{nullptr};
+    uint32_t osc_message_data_length_{0};
+    bool is_valid_{false};
 };
 
-#endif /* OSCSIMPLEMESSAGE_H_ */
+#endif  // OSCSIMPLEMESSAGE_H_

@@ -2,7 +2,7 @@
  * @file algorithm
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,15 +27,6 @@
 #define ALGORITHM_
 
 /*
- * Previous used C implementation
- */
-
-//#ifndef MAX
-// #define MAX(a,b)	(((a) > (b)) ? (a) : (b))
-// #define MIN(a,b)	(((a) < (b)) ? (a) : (b))
-//#endif
-
-/*
  * Inspired by the C++11 implementation
  */
 
@@ -51,6 +42,16 @@ template<class T>
 const T& min(const T& a, const T& b)
 {
     return (a < b) ? a : b;
+}
+
+template<class T, class Compare>
+constexpr const T& clamp(const T& v, const T& lo, const T& hi, Compare comp) {
+    return comp(v, lo) ? lo : comp(hi, v) ? hi : v;
+}
+
+template<class T>
+constexpr const T& clamp(const T& v, const T& lo, const T& hi) {
+    return clamp(v, lo, hi, [](const T& a, const T& b) { return a < b; });
 }
 
 }

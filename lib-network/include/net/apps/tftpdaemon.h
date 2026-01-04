@@ -2,7 +2,7 @@
  * @file tftpdaemon.h
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,65 +29,69 @@
 #include <cstdint>
 #include <cstddef>
 
-namespace tftp {
-enum class Mode {
-	BINARY, ASCII
+namespace tftp
+{
+enum class Mode
+{
+    kBinary,
+    kAscii
 };
-}  // namespace tftp
+} // namespace tftp
 
-class TFTPDaemon {
-public:
-	TFTPDaemon();
-	virtual ~TFTPDaemon();
+class TFTPDaemon
+{
+   public:
+    TFTPDaemon();
+    virtual ~TFTPDaemon();
 
-	void Input(const uint8_t *, uint32_t, uint32_t, uint16_t);
+    void Input(const uint8_t*, uint32_t, uint32_t, uint16_t);
 
-	virtual bool FileOpen(const char *pFileName, tftp::Mode mode)=0;
-	virtual bool FileCreate(const char *pFileName, tftp::Mode mode)=0;
-	virtual bool FileClose()=0;
-	virtual size_t FileRead(void *pBuffer, size_t nCount, unsigned nBlockNumber)=0;
-	virtual size_t FileWrite(const void *pBuffer, size_t nCount, unsigned nBlockNumber)=0;
+    virtual bool FileOpen(const char* file_name, tftp::Mode mode) = 0;
+    virtual bool FileCreate(const char* file_name, tftp::Mode mode) = 0;
+    virtual bool FileClose() = 0;
+    virtual size_t FileRead(void* buffer, size_t count, unsigned block_number) = 0;
+    virtual size_t FileWrite(const void* buffer, size_t count, unsigned block_number) = 0;
 
-	virtual void Exit()=0;
+    virtual void Exit() = 0;
 
-private:
-	void Init();
-	void HandleRequest();
-	void HandleRecvAck();
-	void HandleRecvData();
-	void SendError (const uint16_t nsErrorCode, const char *pErrorMessage);
-	void DoRead();
-	void DoWriteAck();
+   private:
+    void Init();
+    void HandleRequest();
+    void HandleRecvAck();
+    void HandleRecvData();
+    void SendError(uint16_t error_code, const char* error_message);
+    void DoRead();
+    void DoWriteAck();
 
-private:
-	enum class TFTPState {
-		INIT,
-		WAITING_RQ,
-		RRQ_SEND_PACKET,
-		RRQ_RECV_ACK,
-		WRQ_SEND_ACK,
-		WRQ_RECV_PACKET
-	};
-	TFTPState m_nState { TFTPState::INIT };
-	int32_t m_nIdx { -1 };
-	uint8_t *m_pBuffer { nullptr };
-	uint32_t m_nFromIp { 0 };
-	uint32_t m_nLength { 0 };
-	uint32_t m_nDataLength { 0 };
-	uint32_t m_nPacketLength { 0 };
-	uint16_t m_nFromPort { 0 };
-	uint16_t m_nBlockNumber { 0 };
-	bool m_bIsLastBlock { false };
+   private:
+    enum class State
+    {
+        kInit,
+        kWaitingRq,
+        kRrqSendPacket,
+        kRrqRecvAck,
+        kWrqSendAck,
+        kWrqRecvPacket
+    };
+    State state_{State::kInit};
+    int32_t index_{-1};
+    uint8_t* buffer_{nullptr};
+    uint32_t from_ip_{0};
+    uint32_t length_{0};
+    uint32_t data_length_{0};
+    uint32_t packet_length_{0};
+    uint16_t from_port_{0};
+    uint16_t block_number_{0};
+    bool is_last_block_{false};
 
-	static TFTPDaemon *Get() {
-		return s_pThis;
-	}
+    static TFTPDaemon* Get() { return s_this; }
 
-private:
-	void static StaticCallbackFunction(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
-		s_pThis->Input(pBuffer, nSize, nFromIp, nFromPort);
-	}
-	static inline TFTPDaemon *s_pThis;
+   private:
+    void static StaticCallbackFunction(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port)
+    {
+        s_this->Input(buffer, size, from_ip, from_port);
+    }
+    static inline TFTPDaemon* s_this;
 };
 
-#endif /* NET_APPS_TFTPDAEMON_H_ */
+#endif  // NET_APPS_TFTPDAEMON_H_

@@ -35,16 +35,16 @@
 extern "C" {
 #endif
 
-extern void bcm2835_aux_spi_begin(void);
+extern void bcm2835_aux_SpiBegin(void);
 
 extern void bcm2835_aux_spi_setClockDivider(uint16_t);
 extern const uint16_t bcm2835_aux_spi_CalcClockDivider(uint32_t);
 
-extern void bcm2835_aux_spi_write(uint16_t);
-extern void bcm2835_aux_spi_writenb(const char *, uint32_t);
+extern void bcm2835_aux_SpiWrite(uint16_t);
+extern void bcm2835_aux_SpiWritenb(const char *, uint32_t);
 
-extern void bcm2835_aux_spi_transfernb(const char *, /*@null@*/char *, uint32_t);
-extern void bcm2835_aux_spi_transfern(char *, uint32_t);
+extern void bcm2835_aux_SpiTransfernb(const char *, /*@null@*/char *, uint32_t);
+extern void bcm2835_aux_SpiTransfern(char *, uint32_t);
 
 #ifdef __cplusplus
 }

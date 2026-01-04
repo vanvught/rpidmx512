@@ -26,31 +26,60 @@
 #ifndef CONSOLE_CONSOLE_UART0_H_
 #define CONSOLE_CONSOLE_UART0_H_
 
-#if defined (CONSOLE_FB) || defined (CONSOLE_NULL) || defined (CONSOLE_I2C)
-# error File should not be included
+#if defined(CONSOLE_FB) || defined(CONSOLE_NULL) || defined(CONSOLE_I2C)
+#error File should not be included
 #endif
 
 #include <cstdint>
 
-typedef enum {
-	CONSOLE_BLACK = 0,
-	CONSOLE_RED = 1,
-	CONSOLE_GREEN = 2,
-	CONSOLE_YELLOW = 3,
-	CONSOLE_BLUE = 4,
-	CONSOLE_MAGENTA = 5
-,	CONSOLE_CYAN = 6,
-	CONSOLE_WHITE = 7,
-	CONSOLE_DEFAULT = 9
-} _console_colors;
+namespace console
+{
+// https://github.com/shiena/ansicolor/blob/master/README.md
+struct AnsiColours
+{
+    struct Fg
+    {
+        static constexpr char kBlack[] = "\x1b[30m";
+        static constexpr char kRed[] = "\x1b[31m";
+        static constexpr char kGreen[] = "\x1b[32m";
+        static constexpr char kYellow[] = "\x1b[33m";
+        static constexpr char kWhite[] = "\x1b[37m";
+        static constexpr char kDefault[] = "\x1b[39m";
+    };
 
-void console_init();
-void console_putc(int);
-void console_puts(const char *);
-void console_write(const char *, unsigned int);
-void console_status(uint32_t, const char *);
-void console_set_fg_color(uint32_t);
-void console_set_bg_color(uint32_t);
-void console_error(const char *);
+    struct Bg
+    {
+        static constexpr char kBlack[] = "\x1b[40m";
+        static constexpr char kRed[] = "\x1b[41m";
+        static constexpr char kGreen[] = "\x1b[42m";
+        static constexpr char kYellow[] = "\x1b[43m";
+        static constexpr char kWhite[] = "\x1b[47m";
+        static constexpr char kDefault[] = "\x1b[49m";
+    };
+};
 
-#endif /* CONSOLE_CONSOLE_UART0_H_ */
+enum class Colours
+{
+    kConsoleBlack,
+    kConsoleRed,
+    kConsoleGreen,
+    kConsoleYellow,
+    kConsoleBlue,
+    kConsoleMagenta,
+    kConsoleCyan,
+    kConsoleWhite,
+    kConsoleDefault
+};
+
+void Init();
+void Putc(int);
+void Puts(const char*);
+void Write(const char*, unsigned int);
+void Status(Colours, const char*);
+void SetFgColour(uint32_t);
+void SetBgColour(uint32_t);
+void Error(const char*);
+
+} // namespace console
+
+#endif  // CONSOLE_CONSOLE_UART0_H_

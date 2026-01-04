@@ -24,32 +24,26 @@
  */
 
 #include <cstdint>
-#include <cstddef>
 #include <cstring>
-#include <cassert>
 
 #include "widgetconfiguration.h"
 #include "widgetparamsconst.h"
-
 #include "sscan.h"
-
 #include "../ff14b/source/ff.h"
 
-#include "dmx.h"
-
 typedef enum {
-	AI_BREAK_TIME = 0,
-	AI_MAB_TIME,
-	AI_REFRESH_RATE
+	kAiBreakTime = 0,
+	kAiMabTime,
+	kAiRefreshRate
 } _array_index;
 
 static bool needs_update[3] = { false, false, false };
 
-static const TCHAR FILE_NAME_PARAMS[] = "params.txt";
-static const TCHAR FILE_NAME_PARAMS_BAK[] = "params.bak";
-static const TCHAR FILE_NAME_UPDATES[] = "updates.txt";
+static const TCHAR kFileNameParams[] = "params.txt";
+static const TCHAR kFileNameParamsBak[] = "params.bak";
+static const TCHAR kFileNameUpdates[] = "updates.txt";
 
-static char* uint8_toa(uint8_t i) {
+static char* Uint8Toa(uint8_t i) {
 	/* Room for 3 digits and '\0' */
 	static char buffer[4];
 	char *p = &buffer[3]; /* points to terminating '\0' */
@@ -57,71 +51,71 @@ static char* uint8_toa(uint8_t i) {
 	*p = '\0';
 
 	do {
-		*--p = (char) '0' + (char) (i % 10);
+		*--p = '0' + static_cast<char>(i % 10);
 		i /= 10;
 	} while (i != 0);
 
 	return p;
 }
 
-static void sprintfNameValue(char *pBuffer, const char *pName, const uint8_t nValue) {
-	auto *pDst = pBuffer;
-	const auto *pSrc = pName;
+static void SprintfNameValue(char *buffer, const char *name, uint8_t value) {
+	auto *dst = buffer;
+	const auto *src = name;
 
-	while (*pSrc != '\0') {
-		*pDst++ = *pSrc++;
+	while (*src != '\0') {
+		*dst++ = *src++;
 	}
 
-	*pDst++ = '=';
+	*dst++ = '=';
 
-	auto *p = uint8_toa(nValue);
+	auto *p = Uint8Toa(value);
 
 	while (*p != '\0') {
-		*pDst++ = *p++;
+		*dst++ = *p++;
 	}
 
-	*pDst++ = '\n';
-	*pDst = '\0';
+	*dst++ = '\n';
+	*dst = '\0';
 }
 
-void WidgetConfiguration::ProcessLineUpdate(const char *pLine, FIL *file_object_wr) {
-	TCHAR buffer[128];
-	uint8_t _value;
+void WidgetConfiguration::ProcessLineUpdate(const char* line, FIL* file_object_wr)
+{
+    TCHAR buffer[128];
+	uint8_t value;
 	int i;
 
-	if (needs_update[AI_BREAK_TIME]) {
-		if (Sscan::Uint8(pLine, WidgetParamsConst::DMXUSBPRO_BREAK_TIME, _value) == Sscan::OK) {
-			sprintfNameValue(buffer, WidgetParamsConst::DMXUSBPRO_BREAK_TIME, s_nBreakTime);
+	if (needs_update[kAiBreakTime]) {
+		if (Sscan::Uint8(line, WidgetParamsConst::DMXUSBPRO_BREAK_TIME, value) == Sscan::OK) {
+			SprintfNameValue(buffer, WidgetParamsConst::DMXUSBPRO_BREAK_TIME, s_break_time);
 			f_puts(buffer, file_object_wr);
-			needs_update[AI_BREAK_TIME] = false;
+			needs_update[kAiBreakTime] = false;
 			return;
 		}
 	}
 
-	if (needs_update[AI_MAB_TIME]) {
-		if (Sscan::Uint8(pLine, WidgetParamsConst::DMXUSBPRO_MAB_TIME, _value) == Sscan::OK) {
-			sprintfNameValue(buffer, WidgetParamsConst::DMXUSBPRO_MAB_TIME, s_nMabTime);
+	if (needs_update[kAiMabTime]) {
+		if (Sscan::Uint8(line, WidgetParamsConst::DMXUSBPRO_MAB_TIME, value) == Sscan::OK) {
+			SprintfNameValue(buffer, WidgetParamsConst::DMXUSBPRO_MAB_TIME, s_mab_time);
 			f_puts(buffer, file_object_wr);
-			needs_update[AI_MAB_TIME] = false;
+			needs_update[kAiMabTime] = false;
 			return;
 		}
 	}
 
-	if (needs_update[AI_REFRESH_RATE]) {
-		if (Sscan::Uint8(pLine, WidgetParamsConst::DMXUSBPRO_REFRESH_RATE, _value) == Sscan::OK) {
-			sprintfNameValue(buffer, WidgetParamsConst::DMXUSBPRO_REFRESH_RATE, s_nRefreshRate);
+	if (needs_update[kAiRefreshRate]) {
+		if (Sscan::Uint8(line, WidgetParamsConst::DMXUSBPRO_REFRESH_RATE, value) == Sscan::OK) {
+			SprintfNameValue(buffer, WidgetParamsConst::DMXUSBPRO_REFRESH_RATE, s_refresh_rate);
 			f_puts(buffer, file_object_wr);
-			needs_update[AI_REFRESH_RATE] = false;
+			needs_update[kAiRefreshRate] = false;
 			return;
 		}
 	}
 
-	f_puts(pLine, file_object_wr);
-	i = (int) strlen(pLine) - 1;
-	if (pLine[i] != (char) '\n') {
-		f_putc((TCHAR) '\n', file_object_wr);
+	f_puts(line, file_object_wr);
+	i = static_cast<int>(strlen(line)) - 1;
+	if (line[i] != '\n') {
+		f_putc(static_cast<TCHAR>('\n'), file_object_wr);
 	}
-
 }
 
 void WidgetConfiguration::UpdateConfigFile() {
@@ -131,36 +125,36 @@ void WidgetConfiguration::UpdateConfigFile() {
 	FRESULT rc_rd = FR_DISK_ERR;
 	FRESULT rc_wr = FR_DISK_ERR;
 
-	rc_rd = f_open(&file_object_rd, FILE_NAME_PARAMS, (BYTE) FA_READ);
-	rc_wr = f_open(&file_object_wr, FILE_NAME_UPDATES, (BYTE) (FA_WRITE | FA_CREATE_ALWAYS));
+	rc_rd = f_open(&file_object_rd, kFileNameParams, (BYTE) FA_READ);
+	rc_wr = f_open(&file_object_wr, kFileNameUpdates, static_cast<BYTE>(FA_WRITE | FA_CREATE_ALWAYS));
 
 	if (rc_wr == FR_OK) {
 
 		if (rc_rd == FR_OK) {
 			for (;;) {
-				if (f_gets(buffer, (int) sizeof(buffer), &file_object_rd) == nullptr) {
+				if (f_gets(buffer, static_cast<int>(sizeof(buffer)), &file_object_rd) == nullptr) {
 					break; // Error or end of file
 				}
 				ProcessLineUpdate((const char *) buffer, &file_object_wr);
 			}
 		}
 
-		if (needs_update[AI_BREAK_TIME]) {
-			sprintfNameValue(buffer, WidgetParamsConst::DMXUSBPRO_BREAK_TIME, s_nBreakTime);
+		if (needs_update[kAiBreakTime]) {
+			SprintfNameValue(buffer, WidgetParamsConst::DMXUSBPRO_BREAK_TIME, s_break_time);
 			(void) f_puts(buffer, &file_object_wr);
-			needs_update[AI_BREAK_TIME] = false;
+			needs_update[kAiBreakTime] = false;
 		}
 
-		if (needs_update[AI_MAB_TIME]) {
-			sprintfNameValue(buffer, WidgetParamsConst::DMXUSBPRO_MAB_TIME, s_nMabTime);
+		if (needs_update[kAiMabTime]) {
+			SprintfNameValue(buffer, WidgetParamsConst::DMXUSBPRO_MAB_TIME, s_mab_time);
 			(void) f_puts(buffer, &file_object_wr);
-			needs_update[AI_MAB_TIME] = false;
+			needs_update[kAiMabTime] = false;
 		}
 
-		if (needs_update[AI_REFRESH_RATE]) {
-			sprintfNameValue(buffer, WidgetParamsConst::DMXUSBPRO_REFRESH_RATE, s_nRefreshRate);
+		if (needs_update[kAiRefreshRate]) {
+			SprintfNameValue(buffer, WidgetParamsConst::DMXUSBPRO_REFRESH_RATE, s_refresh_rate);
 			(void) f_puts(buffer, &file_object_wr);
-			needs_update[AI_REFRESH_RATE] = false;
+			needs_update[kAiRefreshRate] = false;
 		}
 
 		f_close(&file_object_wr);
@@ -169,33 +163,33 @@ void WidgetConfiguration::UpdateConfigFile() {
 			(void) f_close(&file_object_rd);
 		}
 
-		f_unlink(FILE_NAME_PARAMS_BAK);
-		f_rename(FILE_NAME_PARAMS, FILE_NAME_PARAMS_BAK);
-		f_rename(FILE_NAME_UPDATES, FILE_NAME_PARAMS);
+		f_unlink(kFileNameParamsBak);
+		f_rename(kFileNameParams, kFileNameParamsBak);
+		f_rename(kFileNameUpdates, kFileNameParams);
 	}
 }
 
 void WidgetConfiguration::Store(const struct TWidgetConfiguration *widget_params) {
 	bool call_update_config_file = false;
 
-	if (widget_params->nBreakTime != s_nBreakTime) {
-		s_nBreakTime = widget_params->nBreakTime;
-		Dmx::Get()->SetDmxBreakTime((static_cast<float>((s_nBreakTime)) * 10.67));
-		needs_update[AI_BREAK_TIME] = true;
+	if (widget_params->break_time != s_break_time) {
+		s_break_time = widget_params->break_time;
+		Dmx::Get()->SetDmxBreakTime((static_cast<float>((s_break_time)) * 10.67));
+		needs_update[kAiBreakTime] = true;
 		call_update_config_file = true;
 	}
 
-	if (widget_params->nMabTime != s_nMabTime) {
-		s_nMabTime = widget_params->nMabTime;
-		Dmx::Get()->SetDmxMabTime((static_cast<float>((s_nMabTime)) * 10.67));
-		needs_update[AI_MAB_TIME] = true;
+	if (widget_params->mab_time != s_mab_time) {
+		s_mab_time = widget_params->mab_time;
+		Dmx::Get()->SetDmxMabTime((static_cast<float>((s_mab_time)) * 10.67));
+		needs_update[kAiMabTime] = true;
 		call_update_config_file = true;
 	}
 
-	if (widget_params->nRefreshRate != s_nRefreshRate) {
-		s_nRefreshRate = widget_params->nRefreshRate;
-		Dmx::Get()->SetDmxPeriodTime(widget_params->nRefreshRate == 0 ? 0 : (1000000U / widget_params->nRefreshRate));
-		needs_update[AI_REFRESH_RATE] = true;
+	if (widget_params->refresh_rate != s_refresh_rate) {
+		s_refresh_rate = widget_params->refresh_rate;
+		Dmx::Get()->SetDmxPeriodTime(widget_params->refresh_rate == 0 ? 0 : (1000000U / widget_params->refresh_rate));
+		needs_update[kAiRefreshRate] = true;
 		call_update_config_file = true;
 	}
 

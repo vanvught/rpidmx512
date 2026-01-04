@@ -1,8 +1,7 @@
 /**
  * @file handler.h
- *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,30 +25,39 @@
 #ifndef HANDLER_H_
 #define HANDLER_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "oscserver.h"
+#include "oscsimplesend.h"
 
-#include "ws28xxdmx.h"
+#include "pixeltype.h"
+#include "pixeldmx.h"
+
+ #include "firmware/debug/debug_debug.h"
 
 class Handler: public OscServerHandler  {
 public:
-	Handler(WS28xxDmx *pWS28xxDmx);
+	Handler(PixelDmx *pPixelDmx): m_pPixelDmx(pPixelDmx) {
+		DEBUG_ENTRY();
+		DEBUG_EXIT();
+	}
 
 	void Blackout() override {
-		m_pWS28xxDmx->Blackout(true);
+		m_pPixelDmx->Blackout(true);
 	}
 
 	void Update() override {
-		m_pWS28xxDmx->Blackout(false);
+		m_pPixelDmx->Blackout(false);
 	}
 
-	void Info(int32_t nHandle, uint32_t nRemoteIp, uint16_t nPortOutgoing) override;
+	void Info(int32_t nHandle, uint32_t nRemoteIp, uint16_t nPortOutgoing) override {
+		OscSimpleSend MsgSendLedType(nHandle, nRemoteIp, nPortOutgoing, "/info/ledtype", "s", const_cast<char *>(pixel::GetType(PixelConfiguration::Get().GetType())));
+		OscSimpleSend MsgSendLedCount(nHandle, nRemoteIp, nPortOutgoing, "/info/ledcount", "i", static_cast<int>(PixelConfiguration::Get().GetCount()));
+		OscSimpleSend MsgSendGroupCount(nHandle, nRemoteIp, nPortOutgoing, "/info/groupcount", "i", static_cast<int>(PixelDmxConfiguration::Get().GetGroupingCount()));
+	}
 
 private:
-	WS28xxDmx *m_pWS28xxDmx;
-	uint32_t m_nCount;
-	char *m_TypeString;
+	PixelDmx *m_pPixelDmx;
 };
 
 #endif /* HANDLER_H_ */

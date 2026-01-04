@@ -2,7 +2,7 @@
  * @file dmx.h
  *
  */
-/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -68,25 +68,25 @@ public:
 
 	// DMX Send
 
-	void SetSendDataWithoutSC(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength);
+	void SetSendDataWithoutSC(const uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const dmx::SendStyle dmxSendStyle = dmx::SendStyle::kDirect);
 
 	void StartOutput(uint32_t nPortIndex);
 	void SetOutput(const bool doForce);
 
 	void SetOutputStyle([[maybe_unused]] const uint32_t nPortIndex, [[maybe_unused]] const dmx::OutputStyle outputStyle) {}
 	dmx::OutputStyle GetOutputStyle([[maybe_unused]] const uint32_t nPortIndex) const {
-		return dmx::OutputStyle::DELTA;
+		return dmx::OutputStyle::kDelta;
 	}
 
 	void Blackout();
 	void FullOn();
 
-	void SetDmxBreakTime(uint32_t nBreakTime);
+	void SetDmxBreakTime(uint32_t break_time);
 	uint32_t GetDmxBreakTime() const {
 		return m_nDmxTransmitBreakTime;
 	}
 
-	void SetDmxMabTime(uint32_t nMabTime);
+	void SetDmxMabTime(uint32_t mab_time);
 	uint32_t GetDmxMabTime() const {
 		return m_nDmxTransmitMabTime;
 	}
@@ -96,7 +96,7 @@ public:
 		return m_nDmxTransmitPeriod;
 	}
 
-	void SetDmxSlots(uint16_t nSlots = dmx::max::CHANNELS);
+	void SetDmxSlots(uint16_t nSlots = dmx::kChannelsMax);
 	uint16_t GetDmxSlots() const {
 		return m_nDmxTransmitSlots;
 	}
@@ -111,7 +111,7 @@ public:
 	uint32_t GetDmxReceivedCount(uint32_t nPortIndex);
 
 	static Dmx* Get() {
-		return s_pThis;
+		return s_this;
 	}
 
 private:
@@ -120,15 +120,15 @@ private:
 	void StopData(uint32_t nUart, uint32_t nPortIndex);
 
 private:
-	uint32_t m_nDmxTransmitBreakTime { dmx::transmit::BREAK_TIME_MIN };
-	uint32_t m_nDmxTransmitMabTime { dmx::transmit::MAB_TIME_MIN };
-	uint32_t m_nDmxTransmitPeriod { dmx::transmit::PERIOD_DEFAULT };
-	uint32_t m_nDmxTransmitPeriodRequested { dmx::transmit::PERIOD_DEFAULT };
-	uint16_t m_nDmxTransmitSlots { dmx::max::CHANNELS };
+	uint32_t m_nDmxTransmitBreakTime { dmx::transmit::kBreakTimeMin };
+	uint32_t m_nDmxTransmitMabTime { dmx::transmit::kMabTimeMin };
+	uint32_t m_nDmxTransmitPeriod { dmx::transmit::kPeriodDefault };
+	uint32_t m_nDmxTransmitPeriodRequested { dmx::transmit::kPeriodDefault };
+	uint16_t m_nDmxTransmitSlots { dmx::kChannelsMax };
 	dmx::PortDirection m_tDmxPortDirection[dmx::config::max::PORTS];
 	uint32_t m_nDmxTransmissionLength[dmx::config::max::PORTS];
 
-	static Dmx *s_pThis;
+	static Dmx *s_this;
 };
 
 #endif /* LINUX_DMX_H_ */

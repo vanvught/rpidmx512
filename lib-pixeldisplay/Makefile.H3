@@ -1,0 +1,6 @@
+#
+DEFINES = USE_SPI_DMA NDEBUG
+#
+EXTRA_INCLUDES = ../lib-pixel/include
+#
+include ../firmware-template-h3/lib/Rules.mk

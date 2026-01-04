@@ -31,7 +31,7 @@
 
 class MidiDescription {
 public:
-	static const char *GetType(midi::Types tType);
+	static const char *GetType(midi::Types type);
 	static const char *GetControlChange(midi::control::Change tControlChange);
 	static const char *GetControlFunction(midi::control::Function tControlFunction);
 	static const char *GetKeyName(uint8_t nKey);

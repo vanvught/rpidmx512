@@ -1,5 +1,5 @@
 /**
- * @file oscclientconst.h
+ * @file oscclientmsgconst.h
  *
  */
 /* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
@@ -26,10 +26,11 @@
 #ifndef OSCCLIENTMSGCONST_H_
 #define OSCCLIENTMSGCONST_H_
 
-struct OscClientMsgConst {
-	static inline const char PARAMS[] = "Setting Client parameters";
-	static inline const char START[] = "Starting the Client";
-	static inline const char STARTED[] = "Client started";
+struct OscClientMsgConst
+{
+    static inline const char PARAMS[] = "Setting Client parameters";
+    static inline const char START[] = "Starting the Client";
+    static inline const char STARTED[] = "Client started";
 };
 
-#endif /* OSCCLIENTMSGCONST_H_ */
+#endif  // OSCCLIENTMSGCONST_H_

@@ -26,6 +26,6 @@
 #ifndef H3_MALLOC_H_
 #define H3_MALLOC_H_
 
-static struct block_bucket s_block_bucket[] __attribute__((aligned(4))) = {{0x40, 0}, {0x400,0}, {0x1000,0}, {0x4000,0}, {0x40000,0}, {0x80000,0}, {0,0}};
+static struct BlockBucket s_block_bucket[] __attribute__((aligned(4))) = {{0x40, 0}, {0x400,0}, {0x1000,0}, {0x4000,0}, {0x40000,0}, {0x80000,0}, {0,0}};
 
-#endif /* H3_MALLOC_H_ */
+#endif  // H3_MALLOC_H_

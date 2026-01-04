@@ -27,52 +27,49 @@
 
 #include "artnet.h"
 #include "dmxnode.h"
+ #include "firmware/debug/debug_debug.h"
 
-#include "debug.h"
-
-namespace artnet {
-void display_longname([[maybe_unused]] const char *pLongName) {
-	DEBUG_ENTRY
-	DEBUG_EXIT
+namespace artnet::display
+{
+void Longname([[maybe_unused]] const char* long_name)
+{
+    DEBUG_ENTRY();
+    DEBUG_EXIT();
 }
 
-void display_universe_switch([[maybe_unused]]  uint32_t nPortIndex, [[maybe_unused]]  uint8_t nAddress) {
-	DEBUG_ENTRY
-	DEBUG_EXIT
+void Universe([[maybe_unused]] uint32_t port_index, [[maybe_unused]] uint32_t universe)
+{
+    DEBUG_ENTRY();
+    DEBUG_EXIT();
 }
 
-void display_net_switch([[maybe_unused]]  uint8_t nAddress) {
-	DEBUG_ENTRY
-	DEBUG_EXIT
+void MergeMode([[maybe_unused]] uint32_t port_index, [[maybe_unused]] dmxnode::MergeMode merge_mode)
+{
+    DEBUG_ENTRY();
+    DEBUG_EXIT();
 }
 
-void display_subnet_switch([[maybe_unused]]  uint8_t nAddress) {
-	DEBUG_ENTRY
-	DEBUG_EXIT
+void Outputstyle([[maybe_unused]] uint32_t port_index, [[maybe_unused]] dmxnode::OutputStyle output_style)
+{
+    DEBUG_ENTRY();
+    DEBUG_EXIT();
 }
 
-void display_merge_mode([[maybe_unused]]  uint32_t nPortIndex, [[maybe_unused]]  dmxnode::MergeMode mergeMode) {
-	DEBUG_ENTRY
-	DEBUG_EXIT
+void Protocol([[maybe_unused]] uint32_t port_index, [[maybe_unused]] artnet::PortProtocol port_protocol)
+{
+    DEBUG_ENTRY();
+    DEBUG_EXIT();
 }
 
-void display_outputstyle([[maybe_unused]] const uint32_t nPortIndex, [[maybe_unused]] const dmxnode::OutputStyle outputStyle) {
-	DEBUG_ENTRY
-	DEBUG_EXIT
+void RdmEnabled([[maybe_unused]] uint32_t port_index, [[maybe_unused]] bool is_enabled)
+{
+    DEBUG_ENTRY();
+    DEBUG_EXIT();
 }
 
-void display_port_protocol([[maybe_unused]]  uint32_t nPortIndex, [[maybe_unused]]  artnet::PortProtocol tPortProtocol) {
-	DEBUG_ENTRY
-	DEBUG_EXIT
+void Failsafe([[maybe_unused]] uint8_t failsafe)
+{
+    DEBUG_ENTRY();
+    DEBUG_EXIT();
 }
-
-void display_rdm_enabled([[maybe_unused]] uint32_t nPortIndex, [[maybe_unused]] bool isEnabled) {
-	DEBUG_ENTRY
-	DEBUG_EXIT
-}
-
-void display_failsafe([[maybe_unused]] uint8_t nFailsafe) {
-	DEBUG_ENTRY
-	DEBUG_EXIT
-}
-}  // namespace artnet
+} // namespace artnet::display

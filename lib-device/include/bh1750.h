@@ -2,7 +2,7 @@
  * @file bh1750.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,27 +30,28 @@
 
 #include "hal_i2c.h"
 
-namespace sensor {
-namespace bh1750 {
+namespace sensor
+{
+namespace bh1750
+{
 static constexpr char DESCRIPTION[] = "Ambient Light";
 static constexpr auto RANGE_MIN = 0;
 static constexpr auto RANGE_MAX = 65535;
-}  // namespace bh1750
+} // namespace bh1750
 
-class BH170: HAL_I2C {
-public:
-	BH170(uint8_t nAddress = 0);
+class BH170 : HAL_I2C
+{
+   public:
+    explicit BH170(uint8_t address = 0);
 
-	bool Initialize() {
-		return m_bIsInitialized;
-	}
+    bool Initialize() { return m_bIsInitialized; }
 
-	uint16_t Get();
+    uint16_t Get();
 
-private:
-	bool m_bIsInitialized = false;
+   private:
+    bool m_bIsInitialized = false;
 };
 
-}  // namespace sensor
+} // namespace sensor
 
-#endif /* BH1750_H_ */
+#endif  // BH1750_H_

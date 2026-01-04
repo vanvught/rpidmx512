@@ -31,192 +31,217 @@
 #include <cassert>
 
 #include "dmxnode.h"
+#include "common/utils/utils_hex.h"
+ #include "firmware/debug/debug_debug.h"
 
-#include "debug.h"
+class DmxSlotInfo
+{
+   public:
+    DmxSlotInfo(dmxnode::SlotInfo* slot_info, uint32_t size) : slot_info_(slot_info), size_(size)
+    {
+        DEBUG_ENTRY();
 
-class DmxSlotInfo {
-public:
-	DmxSlotInfo(dmxnode::SlotInfo *pSlotInfo, uint32_t nSize): m_pSlotInfo(pSlotInfo), m_nSize(nSize) {
-		DEBUG_ENTRY
+        assert(slot_info != nullptr);
+        assert(size != 0);
 
-		assert(m_pSlotInfo != nullptr);
-		assert(m_nSize != 0);
+        for (uint32_t i = 0; i < size_; i++)
+        {
+            slot_info_[i].type = 0x00;       // ST_PRIMARY
+            slot_info_[i].category = 0xFFFF; // SD_UNDEFINED
+        }
 
-		for (uint32_t i = 0; i < m_nSize; i++) {
-			m_pSlotInfo[i].nType = 0x00;		// ST_PRIMARY
-			m_pSlotInfo[i].nCategory = 0xFFFF;	// SD_UNDEFINED
-		}
+        DEBUG_EXIT();
+    }
 
-		DEBUG_EXIT
-	}
+    ~DmxSlotInfo()
+    {
+        DEBUG_ENTRY();
 
-	~DmxSlotInfo() {
-		DEBUG_ENTRY
+        if (slot_info_ != nullptr)
+        {
+            delete[] slot_info_;
+            slot_info_ = nullptr;
+        }
 
-		if (m_pSlotInfo != nullptr) {
-			delete[] m_pSlotInfo;
-			m_pSlotInfo = nullptr;
-		}
+        if (to_string_ != nullptr)
+        {
+            delete[] to_string_;
+            to_string_ = nullptr;
+        }
 
-		if (m_pToString != nullptr) {
-			delete[] m_pToString;
-			m_pToString = nullptr;
-		}
+        DEBUG_EXIT();
+    }
 
-		DEBUG_EXIT
-	}
+    void FromString(const char* string, uint32_t& mask)
+    {
+        assert(string != nullptr);
 
-	void FromString(const char *pString, uint32_t &nMask) {
-		assert(pString != nullptr);
+        auto* slot_info_raw = const_cast<char*>(string);
+        mask = 0;
 
-		auto *pSlotInfoRaw = const_cast<char*>(pString);
-		nMask = 0;
+        for (uint32_t i = 0; i < size_; i++)
+        {
+            auto is_set = false;
+            dmxnode::SlotInfo slot_info;
 
+            if (slot_info_raw == nullptr)
+            {
+                break;
+            }
 
-		for (uint32_t i = 0; i < m_nSize; i++) {
-			bool isSet = false;
-			dmxnode::SlotInfo tLightSetSlotInfo;
+            slot_info_raw = Parse(slot_info_raw, is_set, slot_info);
 
-			if (pSlotInfoRaw == nullptr) {
-				break;
-			}
+            if (is_set)
+            {
+                slot_info_[i].type = slot_info.type;
+                slot_info_[i].category = slot_info.category;
+                mask |= (1U << i);
+            }
+        }
 
-			pSlotInfoRaw = Parse(pSlotInfoRaw, isSet, tLightSetSlotInfo);
+        DEBUG_PRINTF("mask=0x%x", static_cast<int>(mask));
+    }
 
-			if (isSet) {
-				m_pSlotInfo[i].nType = tLightSetSlotInfo.nType;
-				m_pSlotInfo[i].nCategory = tLightSetSlotInfo.nCategory;
-				nMask |= (1U << i);
-			}
-		}
+    const char* ToString(uint32_t mask)
+    {
+        if (to_string_ == nullptr)
+        {
+            to_string_ = new char[size_ * 7];
+            assert(to_string_ != nullptr);
 
-		DEBUG_PRINTF("nMask=0x%x", static_cast<int>(nMask));
-	}
+            to_string_[0] = '\0';
+        }
 
-	const char *ToString(uint32_t nMask) {
-		if (m_pToString == nullptr) {
-			m_pToString = new char[m_nSize * 7];
-			assert(m_pToString != nullptr);
+        DEBUG_PRINTF("mask=0x%x", mask);
 
-			m_pToString[0] = '\0';
-		}
+        if (mask == 0)
+        {
+            to_string_[0] = '\0';
+            return to_string_;
+        }
 
-		DEBUG_PRINTF("nMask=0x%x", nMask);
+        auto* p = to_string_;
 
-		if (nMask == 0) {
-			m_pToString[0] = '\0';
-			return m_pToString;
-		}
+        for (uint32_t i = 0; i < size_; i++)
+        {
+            if ((mask & 0x1) == 0x1)
+            {
+                const auto kType = slot_info_[i].type;
+                const auto kCategory = slot_info_[i].category;
 
-		auto *p = m_pToString;
+                auto append_hex = [&](uint32_t nybble) 
+                { 
+					*p++ = common::hex::ToCharUppercase(nybble); 
+				};
 
-#define TO_HEX(i)	static_cast<char>(((i) < 10) ? '0' + (i) : 'A' + ((i) - 10))
+                append_hex((kType & 0xF0) >> 4);
+                append_hex(kType & 0x0F);
+                *p++ = ':';
+                append_hex((kCategory & 0xF000) >> 12);
+                append_hex((kCategory & 0x0F00) >> 8);
+                append_hex((kCategory & 0x00F0) >> 4);
+                append_hex(kCategory & 0x000F);
+                *p++ = ',';
+            }
 
-		for (uint32_t i = 0; i < m_nSize; i++) {
-			if ((nMask & 0x1) == 0x1) {
-				const auto nType = m_pSlotInfo[i].nType;
-				const auto nCategory = m_pSlotInfo[i].nCategory;
+            mask = mask >> 1;
+        }
 
-				*p++ = TO_HEX((nType & 0xF0) >> 4);
-				*p++ = TO_HEX(nType & 0x0F);
-				*p++ = ':';
-				*p++ = TO_HEX((nCategory & 0xF000) >> 12);
-				*p++ = TO_HEX((nCategory & 0x0F00) >> 8);
-				*p++ = TO_HEX((nCategory & 0x00F0) >> 4);
-				*p++ = TO_HEX(nCategory & 0x000F);
-				*p++ = ',';
-			}
+        p--;
+        *p = '\0';
 
-			nMask = nMask >> 1;
-		}
+        assert(static_cast<uint32_t>(p - to_string_) <= (size_ * 7U));
 
-#undef 	TO_HEX
+        return to_string_;
+    }
 
-		p--;
-		*p = '\0';
+    void Dump()
+    {
+        for (uint32_t i = 0; i < size_; i++)
+        {
+            printf("  Slot:%u %.2X:%.4X\n", static_cast<unsigned int>(i), slot_info_[i].type, slot_info_[i].category);
+        }
+    }
 
-		assert(static_cast<uint32_t>(p - m_pToString) <= (m_nSize * 7U));
+   private:
+    char* Parse(char* s, bool& is_valid, dmxnode::SlotInfo& slot_info)
+    {
+        assert(s != nullptr);
 
-		return m_pToString;
-	}
+        auto* b = s;
+        uint8_t i = 0;
 
-	void Dump() {
-		for (uint32_t i = 0; i < m_nSize; i++) {
-			printf("  Slot:%u %.2X:%.4X\n", static_cast<unsigned int>(i), m_pSlotInfo[i].nType, m_pSlotInfo[i].nCategory);
-		}
-	}
+        uint16_t tmp = 0;
 
+        while ((i < 2) && (*b != ':'))
+        {
+            if (isxdigit(*b) == 0)
+            {
+                is_valid = false;
+                return nullptr;
+            }
 
-private:
-	char *Parse(char *s, bool &isValid, dmxnode::SlotInfo &slotInfo) {
-		assert(s != nullptr);
+            const auto kNibble = *b > '9' ? static_cast<uint8_t>((*b | 0x20) - 'a' + 10) : static_cast<uint8_t>(*b - '0');
+            tmp = static_cast<uint16_t>((tmp << 4) | kNibble);
+            b++;
+            i++;
+        }
 
-		auto *b = s;
-		uint8_t i = 0;
+        if ((i != 2) && (*b != ':'))
+        {
+            is_valid = false;
+            return nullptr;
+        }
 
-		uint16_t nTmp = 0;
+        slot_info.type = static_cast<uint8_t>(tmp);
 
-		while ((i < 2) && (*b != ':')) {
-			if (isxdigit(*b) == 0) {
-				isValid = false;
-				return nullptr;
-			}
+        i = 0;
+        tmp = 0;
 
-			const auto nibble = *b > '9' ? static_cast<uint8_t>((*b | 0x20) - 'a' + 10) : static_cast<uint8_t>(*b - '0');
-			nTmp = static_cast<uint16_t>((nTmp << 4) | nibble);
-			b++;
-			i++;
-		}
+        b++;
 
-		if ((i != 2) && (*b != ':')) {
-			isValid = false;
-			return nullptr;
-		}
+        while ((i < 4) && (*b != ',') && (*b != '\0'))
+        {
+            if (isxdigit(*b) == 0)
+            {
+                is_valid = false;
+                return nullptr;
+            }
 
-		slotInfo.nType = static_cast<uint8_t>(nTmp);
+            const auto kNibble = *b > '9' ? static_cast<uint8_t>((*b | 0x20) - 'a' + 10) : static_cast<uint8_t>(*b - '0');
+            tmp = static_cast<uint16_t>((tmp << 4) | kNibble);
+            b++;
+            i++;
+        }
 
-		i = 0;
-		nTmp = 0;
+        if (i != 4)
+        {
+            is_valid = false;
+            return nullptr;
+        }
 
-		b++;
+        if ((*b != ',') && (*b != ' ') && (*b != '\0'))
+        {
+            is_valid = false;
+            return nullptr;
+        }
 
-		while ((i < 4) && (*b != ',') && (*b != '\0')) {
-			if (isxdigit(*b) == 0) {
-				isValid = false;
-				return nullptr;
-			}
+        slot_info.category = tmp;
 
-			const auto nibble = *b > '9' ? static_cast<uint8_t>((*b | 0x20) - 'a' + 10) : static_cast<uint8_t>(*b - '0');
-			nTmp = static_cast<uint16_t>((nTmp << 4) | nibble);
-			b++;
-			i++;
-		}
+        is_valid = true;
 
-		if (i != 4) {
-			isValid = false;
-			return nullptr;
-		}
+        if (*b == '\0')
+        {
+            return nullptr;
+        }
 
-		if ((*b != ',') && (*b != ' ') && (*b != '\0')) {
-			isValid = false;
-			return nullptr;
-		}
+        return ++b;
+    }
 
-		slotInfo.nCategory = nTmp;
-
-		isValid = true;
-
-		if (*b == '\0') {
-			return nullptr;
-		}
-
-		return ++b;
-	}
-
-private:
-	dmxnode::SlotInfo *m_pSlotInfo;
-	uint32_t m_nSize;
-	char *m_pToString { nullptr };
+   private:
+    dmxnode::SlotInfo* slot_info_;
+    uint32_t size_;
+    char* to_string_{nullptr};
 };
 
-#endif /* DMXSLOTINFO_H_ */
+#endif  // DMXSLOTINFO_H_

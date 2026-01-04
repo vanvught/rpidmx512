@@ -27,27 +27,27 @@
 #define ARM_MIDIREADER_H_
 
 #include "ltc.h"
-
 #include "midi.h"
 #include "midibpm.h"
 
-class MidiReader {
-public:
-	void Start();
-	void Run();
+class MidiReader
+{
+   public:
+    void Start();
+    void Run();
 
-private:
-	void HandleMtc();
-	void HandleMtcQf();
-	void Update();
+   private:
+    void HandleMtc();
+    void HandleMtcQf();
+    void Update();
 
-private:
-	uint32_t m_nMtcQfFramePrevious { 0 };
-	uint32_t m_nMtcQfFramesDelta { 0 };
-	midi::TimecodeType m_TimeCodeType { midi::TimecodeType::UNKNOWN };
-	uint8_t m_nPartPrevious { 0 };
-	bool m_bDirection { true };
-	MidiBPM m_MidiBPM;
+   private:
+    uint32_t mtc_qf_previous_{0};
+    uint32_t mtc_qf_delta_{0};
+    midi::TimecodeType tmecode_type_{midi::TimecodeType::UNKNOWN};
+    uint8_t part_previous_{0};
+    bool direction_{true};
+    MidiBPM midi_bpm_;
 };
 
-#endif /* ARM_MIDIREADER_H_ */
+#endif  // ARM_MIDIREADER_H_

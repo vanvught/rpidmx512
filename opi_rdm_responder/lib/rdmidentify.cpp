@@ -2,7 +2,7 @@
  * @file rdmidentify.cpp
  *
  */
-/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,36 +27,38 @@
 #include "rdmresponder.h"
 #include "pixeltestpattern.h"
 
-#include "debug.h"
+ #include "firmware/debug/debug_debug.h"
 
-static bool s_isOn = false;
-static pixelpatterns::Pattern s_Pattern;
+static bool s_is_on = false;
+static pixelpatterns::Pattern s_pattern;
 
-using namespace rdm::identify;
+void RDMIdentify::On(Mode mode)
+{
+    DEBUG_ENTRY();
+    DEBUG_PRINTF("Mode=%u, s_isOn=%d", static_cast<uint32_t>(mode), s_is_on);
 
-void RDMIdentify::On(rdm::identify::Mode nMode) {
-	DEBUG_ENTRY
-	DEBUG_PRINTF("Mode=%u, s_isOn=%d", static_cast<uint32_t>(nMode), s_isOn);
+    if ((mode == Mode::kLoud) && (!s_is_on))
+    {
+        s_is_on = true;
+        s_pattern = PixelTestPattern::Get()->GetPattern();
+        PixelTestPattern::Get()->SetPattern(pixelpatterns::Pattern::kFade);
+        RDMResponder::Get()->DmxDisableOutput(true);
+    }
 
-	if ((nMode == rdm::identify::Mode::LOUD) && (!s_isOn)) {
-		s_isOn = true;
-		s_Pattern = PixelTestPattern::Get()->GetPattern();
-		PixelTestPattern::Get()->SetPattern(pixelpatterns::Pattern::FADE);
-		RDMResponder::Get()->DmxDisableOutput(true);
-	}
-
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void RDMIdentify::Off([[maybe_unused]] rdm::identify::Mode nMode) {
-	DEBUG_ENTRY
-	DEBUG_PRINTF("Mode=%u, s_isOn=%d", static_cast<uint32_t>(nMode), s_isOn);
+void RDMIdentify::Off([[maybe_unused]] Mode mode)
+{
+    DEBUG_ENTRY();
+    DEBUG_PRINTF("Mode=%u, s_isOn=%d", static_cast<uint32_t>(mode), s_is_on);
 
-	if (s_isOn) {
-		s_isOn = false;
-		PixelTestPattern::Get()->SetPattern(s_Pattern);
-		RDMResponder::Get()->DmxDisableOutput(pixelpatterns::Pattern::NONE != s_Pattern);
-	}
+    if (s_is_on)
+    {
+        s_is_on = false;
+        PixelTestPattern::Get()->SetPattern(s_pattern);
+        RDMResponder::Get()->DmxDisableOutput(pixelpatterns::Pattern::kNone != s_pattern);
+    }
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }

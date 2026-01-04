@@ -2,7 +2,7 @@
  * @file serial.cpp
  *
  */
-/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,82 +27,115 @@
 #include <cstdio>
 #include <cassert>
 
-#include "serial.h"
+#include "serial/serial.h"
+#include "hal_uart.h"
+#include "hal_i2c.h"
+#include "firmware/debug/debug_dump.h"
+ #include "firmware/debug/debug_debug.h"
 
-#include "debug.h"
+Serial::Serial()
+{
+    DEBUG_ENTRY();
 
-using namespace serial;
+    assert(s_this == nullptr);
+    s_this = this;
 
-Serial::Serial()  {
-	DEBUG_ENTRY
+    uart_configuration_.baud = 115200;
+    uart_configuration_.bits = hal::uart::BITS_8;
+    uart_configuration_.parity = hal::uart::PARITY_NONE;
+    uart_configuration_.stop_bits = hal::uart::STOP_1BIT;
 
-	assert(s_pThis == nullptr);
-	s_pThis = this;
+    spi_configuration_.speed_hz = 1000000; // 1MHz
+    spi_configuration_.mode = 0;
 
-	m_UartConfiguration.nBaud = 115200;
-	m_UartConfiguration.nBits = hal::uart::BITS_8;
-	m_UartConfiguration.nParity = hal::uart::PARITY_NONE;
-	m_UartConfiguration.nStopBits = hal::uart::STOP_1BIT;
+    i2c_configuration_.address = 0x30;
+    i2c_configuration_.speed_hz = HAL_I2C::FULL_SPEED;
 
-	m_SpiConfiguration.nSpeed = 1000000; // 1MHz
-	m_SpiConfiguration.nMode = 0;
-
-	m_I2cConfiguration.nAddress = 0x30;
-	m_I2cConfiguration.nSpeed = HAL_I2C::FULL_SPEED;
-
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-Serial::~Serial() {
-	DEBUG_ENTRY
+Serial::~Serial()
+{
+    DEBUG_ENTRY();
 
-	s_pThis = nullptr;
+    s_this = nullptr;
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void Serial::Send(const uint8_t *pData, uint32_t nLength) {
-	DEBUG_ENTRY
-	debug_dump(const_cast<uint8_t *>(pData), nLength);
+bool Serial::Init()
+{
+    DEBUG_ENTRY();
 
-	if (m_tType == type::UART) {
-		SendUart(pData, nLength);
-		return;
-	}
+    if (type_ == serial::Type::kUart)
+    {
+        return InitUart();
+    }
 
-	if (m_tType == type::SPI) {
-		SendSpi(pData, nLength);
-		return;
-	}
+    if (type_ == serial::Type::kSpi)
+    {
+        return InitSpi();
+    }
 
-	if (m_tType == type::I2C) {
-		SendI2c(pData, nLength);
-		return;
-	}
+    if (type_ == serial::Type::kI2C)
+    {
+        return InitI2c();
+    }
 
-	DEBUG_EXIT
+    return false;
+
+    DEBUG_EXIT();
 }
 
-void Serial::Print() {
-	printf("Serial [%s]\n", GetType(m_tType));
+void Serial::Send(const uint8_t* data, uint32_t length)
+{
+    DEBUG_ENTRY();
+    debug::Dump(const_cast<uint8_t*>(data), length);
 
-	if (m_tType == type::UART) {
-		printf(" Baud     : %d\n", m_UartConfiguration.nBaud);
-		printf(" Bits     : %d\n", m_UartConfiguration.nBits);
-		printf(" Parity   : %s\n", GetUartParity(m_UartConfiguration.nParity));
-		printf(" StopBits : %d\n", m_UartConfiguration.nStopBits);
-		return;
-	}
+    if (type_ == serial::Type::kUart)
+    {
+        SendUart(data, length);
+        return;
+    }
 
-	if (m_tType == type::SPI) {
-		printf(" Speed : %d Hz\n", m_SpiConfiguration.nSpeed);
-		printf(" Mode  : %d\n", m_SpiConfiguration.nMode);
-		return;
-	}
+    if (type_ == serial::Type::kSpi)
+    {
+        SendSpi(data, length);
+        return;
+    }
 
-	if (m_tType == type::I2C) {
-		printf(" Address    : %.2x\n", m_I2cConfiguration.nAddress);
-		printf(" Speed mode : %s\n", GetI2cSpeedMode(m_I2cConfiguration.nSpeed));
-		return;
-	}
+    if (type_ == serial::Type::kI2C)
+    {
+        SendI2c(data, length);
+        return;
+    }
+
+    DEBUG_EXIT();
+}
+
+void Serial::Print()
+{
+    printf("Serial [%s]\n", serial::GetType(type_));
+
+    switch (type_)
+    {
+        case serial::Type::kUart:
+            printf(" Baud     : %d\n", uart_configuration_.baud);
+            printf(" Bits     : %d\n", uart_configuration_.bits);
+            printf(" Parity   : %s\n", serial::uart::GetParity(uart_configuration_.parity));
+            printf(" StopBits : %d\n", uart_configuration_.stop_bits);
+            break;
+        case serial::Type::kSpi:
+            printf(" Speed : %d Hz\n", spi_configuration_.speed_hz);
+            printf(" Mode  : %d\n", spi_configuration_.mode);
+            break;
+        case serial::Type::kI2C:
+            printf(" Address    : %.2x\n", i2c_configuration_.address);
+            printf(" Speed mode : %s\n", serial::i2c::GetSpeedMode(i2c_configuration_.speed_hz));
+            break;
+        default:
+            break;
+    }
+
+    return;
 }

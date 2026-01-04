@@ -1,6 +1,6 @@
 async function refresh() {
   try {
-    let d=await getJSON('dmx/portstatus')
+    let d=await getJSON('status/dmx')
     let hdrs='<tr>'
     let tdd='<tr>'
     
@@ -12,7 +12,7 @@ async function refresh() {
     document.getElementById("idStats").innerHTML=hdrs+'</tr>'+tdd+'</tr>'
     
     let tr = await Promise.all(
-      d.map(item => getJSON('dmx/status?' + item.port).then(resp => ({
+      d.map(item => getJSON('status/dmx?' + item.port).then(resp => ({
           port: item.port,
           d: { sent: resp.dmx.sent, received: resp.dmx.received },
           r: {

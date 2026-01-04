@@ -27,7 +27,7 @@
 #include "display.h"
 
 namespace ntpclient {
-void display_status(const ::ntp::Status status) {
+void DisplayStatus(const ::ntp::Status status) {
 	switch (status) {
 	case ::ntp::Status::STOPPED:
 		Display::Get()->TextStatus("No NTP Client");

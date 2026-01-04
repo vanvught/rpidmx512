@@ -27,26 +27,33 @@
 #define NOEMAC_NETWORK_H_
 
 #if !defined(NO_EMAC)
-# error
+#error
 #endif
 
-#include <cstdint>
-#include <net/if.h>
+#include <cassert>
+ #include "firmware/debug/debug_debug.h"
 
-class Network {
-public:
-	Network();
+void NetworkInit();
 
-	void MacAddressCopyTo(uint8_t *pMacAddress);
+class Network
+{
+   public:
+    Network()
+    {
+        DEBUG_ENTRY();
+        assert(s_this == nullptr);
+        s_this = this;
 
-	static Network *Get() {
-		return s_pThis;
-	}
+        NetworkInit();
 
-private:
-	char m_aIfName[IFNAMSIZ];
+        DEBUG_EXIT();
+    }
+    ~Network() = default;
 
-	static inline Network *s_pThis;
+    static Network* Get() { return s_this; }
+
+   private:
+    static inline Network* s_this;
 };
 
-#endif /* NOEMAC_NETWORK_H_ */
+#endif  // NOEMAC_NETWORK_H_

@@ -24,105 +24,90 @@
  */
 
 #include <cstdint>
-#include <cstdio>
 
-#include "hal.h"
-#include "network.h"
-
+#include "h3/hal.h"
+#include "h3/hal_watchdog.h"
+#include "hal_boardinfo.h"
+#include "emac/network.h"
+#include "net/ip4_address.h"
 #include "console.h"
 #include "h3/showsystime.h"
-
-#include "net/apps/mdns.h"
-
 #include "display.h"
-#include "displayhandler.h"
-
 #include "oscserver.h"
-#include "oscserverparams.h"
+#include "json/oscserverparams.h"
 #include "oscservermsgconst.h"
-
 #include "dmxmonitor.h"
-
 #include "firmwareversion.h"
 #include "software_version.h"
-
 #include "flashcodeinstall.h"
 #include "configstore.h"
-
 #include "remoteconfig.h"
-#include "remoteconfigparams.h"
 
-namespace hal {
-void reboot_handler() {
-}
-}  // namespace hal
+namespace hal
+{
+void RebootHandler() {}
+} // namespace hal
 
-int main() {
-	hal_init();
-	Display display;
-	ConfigStore configStore;
-	Network nw;
-	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
-	FlashCodeInstall spiFlashInstall;
+int main() // NOLINT
+{
+    hal::Init();
+    Display display;
+    ConfigStore config_store;
+    network::Init();
+    FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+    FlashCodeInstall spiflash_install;
 
-	console_clear();
+    console::Clear();
 
-	fw.Print();
+    fw.Print();
 
-	console_puts("OSC ");
-	console_set_fg_color(CONSOLE_GREEN);
-	console_puts("Real-time DMX Monitor");
-	console_set_fg_color(CONSOLE_WHITE);
-	console_set_top_row(2);
+    console::Puts("OSC ");
+    console::SetFgColour(console::Colours::kConsoleGreen);
+    console::Puts("Real-time DMX Monitor");
+    console::SetFgColour(console::Colours::kConsoleWhite);
+    console::SetTopRow(2);
 
-	ShowSystime showSystime;
+    ShowSystime show_systime;
 
-	display.TextStatus(OscServerMsgConst::PARAMS, CONSOLE_YELLOW);
+    OscServer oscserver;
 
-	OscServer oscServer;
+    json::OscServerParams oscserver_params;
+    oscserver_params.Load();
+    oscserver_params.Set();
 
-	OSCServerParams oscServerParams;
-	oscServerParams.Load();
-	oscServerParams.Set();
+     DmxMonitor monitor;
+    // There is support for HEX output only
+    oscserver.SetOutput(&monitor);
+    monitor.Cls();
+    console::SetTopRow(20);
+    console::ClearTopRow();
 
-	mdns_service_record_add(nullptr, mdns::Services::OSC, "type=monitor", oscServer.GetPortIncoming());
+    oscserver.Print();
 
-	DMXMonitor monitor;
-	// There is support for HEX output only
-	oscServer.SetOutput(&monitor);
-	monitor.Cls();
-	console_set_top_row(20);
-	console_clear_top_row();
+    uint8_t text_length;
 
-	oscServer.Print();
+    display.Printf(1, "OSC Monitor");
+    display.Write(2, hal::BoardName(text_length));
+    display.Printf(3, "IP: " IPSTR " %c", IP2STR(net::GetPrimaryIp()), network::iface::IsDhcpKnown() ? ( network::iface::IsDhcpUsed() ? 'D' : 'S') : ' ');
+    display.Printf(4, "In: %d", oscserver.GetPortIncoming());
+    display.Printf(5, "Out: %d", oscserver.GetPortOutgoing());
 
-	uint8_t nHwTextLength;
+    RemoteConfig remote_config(remoteconfig::Output::MONITOR, 1);
 
-	display.Printf(1, "OSC Monitor");
-	display.Write(2, hal::board_name(nHwTextLength));
-	display.Printf(3, "IP: " IPSTR " %c", IP2STR(Network::Get()->GetIp()), nw.IsDhcpKnown() ? (nw.IsDhcpUsed() ? 'D' : 'S') : ' ');
-	display.Printf(4, "In: %d", oscServer.GetPortIncoming());
-	display.Printf(5, "Out: %d", oscServer.GetPortOutgoing());
+    display.TextStatus(OscServerMsgConst::START, console::Colours::kConsoleYellow);
 
-	RemoteConfig remoteConfig(remoteconfig::NodeType::OSC, remoteconfig::Output::MONITOR, 1);
+    oscserver.Start();
 
-	RemoteConfigParams remoteConfigParams;
-	remoteConfigParams.Load();
-	remoteConfigParams.Set(&remoteConfig);
+    display.TextStatus(OscServerMsgConst::STARTED, console::Colours::kConsoleGreen);
 
-	display.TextStatus(OscServerMsgConst::START, CONSOLE_YELLOW);
+    hal::WatchdogInit();
 
-	oscServer.Start();
-
-	display.TextStatus(OscServerMsgConst::STARTED, CONSOLE_GREEN);
-
-	hal::watchdog_init();
-
-	for (;;) {
-		hal::watchdog_feed();
-		nw.Run();
-		showSystime.Run();
-		display.Run();
-		hal::run();
-	}
+    for (;;)
+    {
+        hal::WatchdogFeed();
+        network::Run();
+        show_systime.Run();
+        display.Run();
+        hal::Run();
+    }
 }

@@ -70,7 +70,7 @@
  *
  * Set the GPIOs for data to output
  */
-static void data_gpio_fsel_output() {
+static void data_GpioFsel_output() {
 	dmb();
 	uint32_t value = BCM2835_GPIO->GPFSEL0;
 	value &= ~(7 << 6);
@@ -99,7 +99,7 @@ static void data_gpio_fsel_output() {
  *
  * Set the GPIOs for data to input
  */
-static void data_gpio_fsel_input() {
+static void data_GpioFsel_input() {
 	dmb();
 	uint32_t value = BCM2835_GPIO->GPFSEL0;
 	value &= ~(7 << 6);
@@ -144,9 +144,9 @@ void FT245RL_init() {
 	value |= BCM2835_GPIO_FSEL_INPT << 15;
 	BCM2835_GPIO->GPFSEL2 = value;
 	// RD#	high
-	bcm2835_gpio_set(_RD);
+	bcm2835_GpioSet(_RD);
 	// WR	low
-	bcm2835_gpio_clr(WR);
+	bcm2835_GpioClr(WR);
 	dmb();
 }
 
@@ -159,9 +159,9 @@ void FT245RL_init() {
  */
 void FT245RL_write_data(const uint8_t data) {
 	uint8_t i;
-	data_gpio_fsel_output();
+	data_GpioFsel_output();
 	// Raise WR to start the write.
-	bcm2835_gpio_set(WR);
+	bcm2835_GpioSet(WR);
 	dmb();
 	i = NOP_COUNT_WRITE;
 	for (; i > 0; i--) {
@@ -177,7 +177,7 @@ void FT245RL_write_data(const uint8_t data) {
 		asm volatile("nop"::);
 	}
 	// Drop WR to tell the FT245 to read the data.
-	bcm2835_gpio_clr(WR);
+	bcm2835_GpioClr(WR);
 	dmb();
 }
 
@@ -189,8 +189,8 @@ void FT245RL_write_data(const uint8_t data) {
  * @return
  */
 const uint8_t FT245RL_read_data() {
-	data_gpio_fsel_input();
-	bcm2835_gpio_clr(_RD);
+	data_GpioFsel_input();
+	bcm2835_GpioClr(_RD);
 	dmb();
 	// Wait for the FT245 to respond with data.
 	uint8_t i = NOP_COUNT_READ;
@@ -201,7 +201,7 @@ const uint8_t FT245RL_read_data() {
 	const uint32_t in_gpio = (BCM2835_GPIO->GPLEV0 & 0b111110011100) >> 2;
 	const uint8_t data = (uint8_t) ((in_gpio >> 2) & 0xF8) | (uint8_t) (in_gpio & 0x0F);
 	// Bring RD# back up so the FT245 can let go of the data.
-	bcm2835_gpio_set(_RD);
+	bcm2835_GpioSet(_RD);
 	dmb();
 	return data;
 }

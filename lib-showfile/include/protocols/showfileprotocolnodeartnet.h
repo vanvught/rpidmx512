@@ -2,7 +2,7 @@
  * @file showfileprotocolnodeartnet.h
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,56 +32,56 @@
 #include "artnetnode.h"
 #include "artnet.h"
 
-#include "debug.h"
+ #include "firmware/debug/debug_debug.h"
 
 class ShowFileProtocol {
 public:
 	ShowFileProtocol() {
-		DEBUG_ENTRY
+		DEBUG_ENTRY();
 
-		memcpy(m_ArtDmx.Id, artnet::NODE_ID, sizeof(m_ArtDmx.Id));
-		m_ArtDmx.OpCode = static_cast<uint16_t>(artnet::OpCodes::OP_DMX);
+		memcpy(m_ArtDmx.Id, artnet::kNodeId, sizeof(m_ArtDmx.Id));
+		m_ArtDmx.OpCode = static_cast<uint16_t>(artnet::OpCodes::kOpDmx);
 		m_ArtDmx.ProtVerHi = 0;
-		m_ArtDmx.ProtVerLo = artnet::PROTOCOL_REVISION;
+		m_ArtDmx.ProtVerLo = artnet::kProtocolRevision;
 
-		DEBUG_EXIT
+		DEBUG_EXIT();
 	}
 
-	void SetSynchronizationAddress([[maybe_unused]] const uint16_t SynchronizationAddress) {
+	void SetSynchronizationAddress([[maybe_unused]] const uint16_t synchronization_address) {
 	}
 
 	void Start() {
-		DEBUG_ENTRY
+		DEBUG_ENTRY();
 
-		DEBUG_EXIT
+		DEBUG_EXIT();
 	}
 
 	void Stop() {
-		DEBUG_ENTRY
+		DEBUG_ENTRY();
 
 		ArtNetNode::Get()->SetRecordShowfile(false);
 
-		DEBUG_EXIT
+		DEBUG_EXIT();
 	}
 
 	void Record() {
-		DEBUG_ENTRY
+		DEBUG_ENTRY();
 
 		ArtNetNode::Get()->SetRecordShowfile(true);
 
-		DEBUG_EXIT
+		DEBUG_EXIT();
 	}
 
 	void DmxOut(const uint16_t nUniverse, const uint8_t *pDmxData, uint32_t nLength) {
-		memcpy(m_ArtDmx.Data, pDmxData, nLength);
+		memcpy(m_ArtDmx.data, pDmxData, nLength);
 
 		if ((nLength & 0x1) == 0x1) {
-			m_ArtDmx.Data[nLength] = 0x00;
+			m_ArtDmx.data[nLength] = 0x00;
 			nLength++;
 		}
 
 		m_ArtDmx.Sequence = m_nSequence++;
-		m_ArtDmx.Physical = static_cast<uint8_t>(artnetnode::MAX_PORTS + 1U);
+		m_ArtDmx.Physical = static_cast<uint8_t>(dmxnode::kMaxPorts + 1U);
 		m_ArtDmx.PortAddress = nUniverse;
 		m_ArtDmx.LengthHi = static_cast<uint8_t>((nLength & 0xFF00) >> 8);
 		m_ArtDmx.Length = static_cast<uint8_t>(nLength & 0xFF);

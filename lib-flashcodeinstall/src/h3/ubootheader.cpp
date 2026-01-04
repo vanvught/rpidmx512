@@ -2,7 +2,7 @@
  * @file ubootheader.cpp
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,42 +32,42 @@
 #include "ubootheader.h"
 #include "firmware.h"
 
-UBootHeader::UBootHeader(const uint8_t *pHeader): m_pHeader(pHeader) {
-	assert(pHeader != nullptr);
+UBootHeader::UBootHeader(const uint8_t *header): header_(header) {
+	assert(header != nullptr);
 
-	auto *pImageHeader = reinterpret_cast<const TImageHeader *>(pHeader);
+	auto *image_header = reinterpret_cast<const TImageHeader *>(header);
 
-	m_bIsValid =  (pImageHeader->ih_magic == __builtin_bswap32(IH_MAGIC));
-	m_bIsValid &= (pImageHeader->ih_load == __builtin_bswap32(IH_LOAD));
-	m_bIsValid &= (pImageHeader->ih_ep == __builtin_bswap32(IH_EP));
-	m_bIsValid &= (pImageHeader->ih_os == IH_OS_U_BOOT);
-	m_bIsValid &= (pImageHeader->ih_arch == IH_ARCH_ARM);
-	m_bIsValid &= (pImageHeader->ih_type == IH_TYPE_STANDALONE);
-	m_bIsValid &= (strncmp(reinterpret_cast<const char*>(pImageHeader->ih_name), "http://www.orangepi-dmx.org", IH_NMLEN) == 0);
+	is_valid_ =  (image_header->ih_magic == __builtin_bswap32(IH_MAGIC));
+	is_valid_ &= (image_header->ih_load == __builtin_bswap32(IH_LOAD));
+	is_valid_ &= (image_header->ih_ep == __builtin_bswap32(IH_EP));
+	is_valid_ &= (image_header->ih_os == IH_OS_U_BOOT);
+	is_valid_ &= (image_header->ih_arch == IH_ARCH_ARM);
+	is_valid_ &= (image_header->ih_type == IH_TYPE_STANDALONE);
+	is_valid_ &= (strncmp(reinterpret_cast<const char*>(image_header->ih_name), "http://www.orangepi-dmx.org", IH_NMLEN) == 0);
 
-	m_bIsCompressed = (pImageHeader->ih_comp == IH_COMP_GZIP);
+	is_compressed_ = (image_header->ih_comp == IH_COMP_GZIP);
 }
 
 void UBootHeader::Dump() {
 #ifndef NDEBUG
-	if (!m_bIsValid) {
+	if (!is_valid_) {
 		printf("* Not a valid header! *\n");
 	}
 
-	auto *pImageHeader = reinterpret_cast<const TImageHeader *>(m_pHeader);
-	const auto rawtime = static_cast<time_t>(__builtin_bswap32(pImageHeader->ih_time));
-	auto *info = localtime(&rawtime);
+	auto *image_header = reinterpret_cast<const TImageHeader *>(header_);
+	const auto kRawtime = static_cast<time_t>(__builtin_bswap32(image_header->ih_time));
+	auto *info = localtime(&kRawtime);
 
-	printf("Header CRC Checksum : %.8x\n", __builtin_bswap32(pImageHeader->ih_hcrc));
-	printf("Creation Timestamp  : %.8x - %s", __builtin_bswap32(pImageHeader->ih_time), asctime(info));
-	printf("Data Size           : %.8x - %d kBytes\n", __builtin_bswap32(pImageHeader->ih_size), __builtin_bswap32(pImageHeader->ih_size) / 1024);
-	printf("Data Load Address   : %.8x\n", __builtin_bswap32(pImageHeader->ih_load));
-	printf("Entry Point Address : %.8x\n", __builtin_bswap32(pImageHeader->ih_ep));
-	printf("Image CRC Checksum  : %.8x\n", __builtin_bswap32(pImageHeader->ih_dcrc));
-	printf("Operating System    : %d - %s\n", pImageHeader->ih_os, pImageHeader->ih_os == IH_OS_U_BOOT ? "Firmware" : "Not supported");
-	printf("CPU architecture    : %d - %s\n", pImageHeader->ih_arch, pImageHeader->ih_arch == IH_ARCH_ARM ? "Arm" : "Not supported");
-	printf("Image type          : %d - %s\n", pImageHeader->ih_type, pImageHeader->ih_type == IH_TYPE_STANDALONE ? "Standalone Program" : "Not supported");
-	printf("Compression         : %d - %s\n", pImageHeader->ih_comp, pImageHeader->ih_comp == IH_COMP_NONE ? "none" : (pImageHeader->ih_comp == IH_COMP_GZIP ? "gzip" : "Not supported"));
-	printf("Image Name          : %s\n", pImageHeader->ih_name);
+	printf("Header CRC Checksum : %.8x\n", __builtin_bswap32(image_header->ih_hcrc));
+	printf("Creation Timestamp  : %.8x - %s", __builtin_bswap32(image_header->ih_time), asctime(info));
+	printf("Data Size           : %.8x - %d kBytes\n", __builtin_bswap32(image_header->ih_size), __builtin_bswap32(image_header->ih_size) / 1024);
+	printf("Data Load Address   : %.8x\n", __builtin_bswap32(image_header->ih_load));
+	printf("Entry Point Address : %.8x\n", __builtin_bswap32(image_header->ih_ep));
+	printf("Image CRC Checksum  : %.8x\n", __builtin_bswap32(image_header->ih_dcrc));
+	printf("Operating System    : %d - %s\n", image_header->ih_os, image_header->ih_os == IH_OS_U_BOOT ? "Firmware" : "Not supported");
+	printf("CPU architecture    : %d - %s\n", image_header->ih_arch, image_header->ih_arch == IH_ARCH_ARM ? "Arm" : "Not supported");
+	printf("Image type          : %d - %s\n", image_header->ih_type, image_header->ih_type == IH_TYPE_STANDALONE ? "Standalone Program" : "Not supported");
+	printf("Compression         : %d - %s\n", image_header->ih_comp, image_header->ih_comp == IH_COMP_NONE ? "none" : (image_header->ih_comp == IH_COMP_GZIP ? "gzip" : "Not supported"));
+	printf("Image Name          : %s\n", image_header->ih_name);
 #endif
 }

@@ -24,76 +24,15 @@
  */
 
 #if defined(DEBUG_CONFIGSTORE)
-# undef NDEBUG
+#undef NDEBUG
 #endif
 
-#include "configstore.h"
-#if !defined (CONFIG_REMOTECONFIG_MINIMUM)
-#include "dmxnode_nodetype.h"
-#endif
-#include "debug.h"
+ #include "firmware/debug/debug_debug.h"
 
-namespace configstore {
-void set_factory_defaults() {
-	DEBUG_ENTRY
-
-	ConfigStore::Get()->ResetStore(configstore::Store::RCONFIG);
-	ConfigStore::Get()->ResetStore(configstore::Store::NETWORK);
-#if !defined (CONFIG_REMOTECONFIG_MINIMUM)
-#if defined (DISPLAY_UDF)
-	ConfigStore::Get()->ResetStore(configstore::Store::DISPLAYUDF);
-#endif
-#if defined (DMXNODE_TYPE_ARTNETNODE) ||  defined (DMXNODE_TYPE_E131BRIDGE)
-	ConfigStore::Get()->ResetStore(configstore::Store::NODE);
-#endif
-#if defined (NODE_LTC_SMPTE)
-	ConfigStore::Get()->ResetStore(configstore::Store::LTC);
-	ConfigStore::Get()->ResetStore(configstore::Store::LTCDISPLAY);
-	ConfigStore::Get()->ResetStore(configstore::Store::LTCETC);
-	ConfigStore::Get()->ResetStore(configstore::Store::TCNET);
-	ConfigStore::Get()->ResetStore(configstore::Store::GPS);
-#endif
-#if defined (NODE_OSC_SERVER)
-	ConfigStore::Get()->ResetStore(configstore::Store::OSC);
-#endif
-#if defined (NODE_OSC_CLIENT)
-	ConfigStore::Get()->ResetStore(configstore::Store::OSC_CLIENT);
-#endif
-#if defined (NODE_SHOWFILE)
-	ConfigStore::Get()->ResetStore(configstore::Store::SHOW);
-#endif
-#if defined (RDM_RESPONDER)
-	ConfigStore::Get()->ResetStore(configstore::Store::RDMDEVICE);
-	ConfigStore::Get()->ResetStore(configstore::Store::RDMSENSORS);
-# if defined (CONFIG_RDM_ENABLE_SUBDEVICES)
-	ConfigStore::Get()->ResetStore(configstore::Store::RDMSUBDEVICES);
-# endif
-#endif
-
-#if defined (DMXNODE_OUTPUT_DMX)
-	ConfigStore::Get()->ResetStore(configstore::Store::DMXSEND);
-#endif
-#if defined (DMXNODE_OUTPUT_PIXEL) || defined(OUTPUT_DMX_TLC59711)
-	ConfigStore::Get()->ResetStore(configstore::Store::WS28XXDMX);
-#endif
-#if defined (OUTPUT_DMX_MONITOR)
-	ConfigStore::Get()->ResetStore(configstore::Store::MONITOR);
-#endif
-#if defined (OUTPUT_DMX_SERIAL)
-	ConfigStore::Get()->ResetStore(configstore::Store::SERIAL);
-#endif
-#if defined (OUTPUT_RGB_PANEL)
-	ConfigStore::Get()->ResetStore(configstore::Store::RGBPANEL);
-#endif
-#if defined (OUTPUT_DMX_PCA9685)
-	ConfigStore::Get()->ResetStore(configstore::Store::PCA9685);
-#endif
-#if defined(OUTPUT_DMX_STEPPER)
-	ConfigStore::Get()->ResetStore(configstore::Store::SPARKFUN);
-	ConfigStore::Get()->ResetStore(configstore::Store::MOTORS);
-#endif
-#endif
-
-	DEBUG_EXIT
+namespace configstore
+{
+void SetFactoryDefaults()
+{
+    DEBUG_PUTS("Not implemented");
 }
-}  // namespace configstore
+} // namespace configstore

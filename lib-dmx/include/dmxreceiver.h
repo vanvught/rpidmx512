@@ -22,106 +22,102 @@
  * THE SOFTWARE.
  */
 
-#ifndef DMXRECEIVER_H
-#define DMXRECEIVER_H
+#ifndef DMXRECEIVER_H_
+#define DMXRECEIVER_H_
 
 #include <cstdint>
 #include <cstdio>
 
 #include "dmx.h"
 #include "dmxnode_outputtype.h"
-
 #include "hal_statusled.h"
 
-class DMXReceiver: Dmx {
-public:
-	DMXReceiver(DmxNodeOutputType *pDmxNodeOutputType) {
-		m_pDmxNodeOutputType = pDmxNodeOutputType;
-	}
+class DMXReceiver : Dmx
+{
+   public:
+    explicit DMXReceiver(DmxNodeOutputType* dmx_node_output_type) { dmx_node_output_type_ = dmx_node_output_type; }
 
-	~DMXReceiver() {
-		DMXReceiver::Stop();
-		m_IsActive = false;
-	}
+    ~DMXReceiver()
+    {
+        DMXReceiver::Stop();
+        is_active_ = false;
+    }
 
-	void Start() {
-		Dmx::SetPortDirection(0, dmx::PortDirection::INP, true);
-	}
+    void Start() { Dmx::SetPortDirection(0, dmx::PortDirection::kInput, true); }
 
-	void Stop() {
-		Dmx::SetPortDirection(0, dmx::PortDirection::INP, false);
-		m_pDmxNodeOutputType->Stop(0);
-	}
+    void Stop()
+    {
+        Dmx::SetPortDirection(0, dmx::PortDirection::kInput, false);
+        dmx_node_output_type_->Stop(0);
+    }
 
-	void SetDmxNodeOutputType(DmxNodeOutputType *pDmxNodeOutputType) {
-		if (pDmxNodeOutputType != m_pDmxNodeOutputType) {
-			m_pDmxNodeOutputType->Stop(0);
-			m_pDmxNodeOutputType = pDmxNodeOutputType;
-			m_IsActive = false;
-		}
+    void SetDmxNodeOutputType(DmxNodeOutputType* dmx_node_output_type)
+    {
+        if (dmx_node_output_type != dmx_node_output_type_)
+        {
+            dmx_node_output_type_->Stop(0);
+            dmx_node_output_type_ = dmx_node_output_type;
+            is_active_ = false;
+        }
+    }
 
-	}
+    const uint8_t* Run(int16_t& length)
+    {
+        if (__builtin_expect((disable_output_), 0))
+        {
+            length = 0;
+            return nullptr;
+        }
 
-	const uint8_t *Run(int16_t &nLength) {
-		if (__builtin_expect((m_bDisableOutput), 0)) {
-			nLength = 0;
-			return nullptr;
-		}
+        const auto* dmx_available = Dmx::GetDmxAvailable(0);
 
-		if (Dmx::GetDmxUpdatesPerSecond(0) == 0) {
-			if (m_IsActive) {
-				m_pDmxNodeOutputType->Stop(0);
-				m_IsActive = false;
-				hal::statusled_set_mode(hal::StatusLedMode::NORMAL);
-			}
+        if (__builtin_expect((dmx_available != nullptr), 0))
+        {
+            const auto* dmx_statistics = reinterpret_cast<const struct Data*>(dmx_available);
+            length = static_cast<int16_t>(dmx_statistics->Statistics.nSlotsInPacket);
 
-			nLength = -1;
-			return nullptr;
-		} else {
-			const auto *pDmx = Dmx::GetDmxAvailable(0);
+            ++dmx_available;
 
-			if (__builtin_expect((pDmx != nullptr), 0)) {
-				const auto *pDmxStatistics = reinterpret_cast<const struct Data *>(pDmx);
-				nLength = static_cast<int16_t>(pDmxStatistics->Statistics.nSlotsInPacket);
+            dmx_node_output_type_->SetData<true>(0, dmx_available, static_cast<uint16_t>(length));
 
-				++pDmx;
+            if (!is_active_)
+            {
+                dmx_node_output_type_->Start(0);
+                is_active_ = true;
+                hal::statusled::SetMode(hal::statusled::Mode::DATA);
+            }
 
-				m_pDmxNodeOutputType->SetData(0, pDmx, static_cast<uint16_t>(nLength));
+            return const_cast<uint8_t*>(dmx_available);
+        }
+        else if (Dmx::GetDmxUpdatesPerSecond(0) == 0)
+        {
+            if (is_active_)
+            {
+                dmx_node_output_type_->Stop(0);
+                is_active_ = false;
+                hal::statusled::SetMode(hal::statusled::Mode::NORMAL);
+            }
 
-				if (!m_IsActive) {
-					m_pDmxNodeOutputType->Start(0);
-					m_IsActive = true;
-					hal::statusled_set_mode(hal::StatusLedMode::DATA);
-				}
+            length = -1;
+            return nullptr;
+        }
 
-				return const_cast<uint8_t *>(pDmx);
-			}
-		}
+        length = 0;
+        return nullptr;
+    }
 
-		nLength = 0;
-		return nullptr;
-	}
+    void SetDisableOutput(bool disable = true) { disable_output_ = disable; }
 
-	void SetDisableOutput(const bool bDisable = true) {
-		m_bDisableOutput = bDisable;
-	}
+    uint32_t GetUpdatesPerSecond(uint32_t port_index) { return Dmx::GetDmxUpdatesPerSecond(port_index); }
 
-	uint32_t GetUpdatesPerSecond(const uint32_t nPortIndex) {
-		return Dmx::GetDmxUpdatesPerSecond(nPortIndex);
-	}
+    const uint8_t* GetDmxCurrentData(uint32_t port_index) { return Dmx::GetDmxCurrentData(port_index); }
 
-	const uint8_t *GetDmxCurrentData(const uint32_t nPortIndex) {
-		return Dmx::GetDmxCurrentData(nPortIndex);
-	}
+    void Print() { printf(" Output %s\n", disable_output_ ? "disabled" : "enabled"); }
 
-	void Print() {
-		printf(" Output %s\n", m_bDisableOutput ? "disabled" : "enabled");
-	}
-
-private:
-	DmxNodeOutputType *m_pDmxNodeOutputType { nullptr };
-	bool m_IsActive { false };
-	bool m_bDisableOutput { false };
+   private:
+    DmxNodeOutputType* dmx_node_output_type_{nullptr};
+    bool is_active_{false};
+    bool disable_output_{false};
 };
 
-#endif /* DMXRECEIVER_H */
+#endif  // DMXRECEIVER_H_

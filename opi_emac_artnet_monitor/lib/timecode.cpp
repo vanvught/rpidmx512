@@ -2,7 +2,7 @@
  * @file timecode.cpp
  *
  */
-/* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2016-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,57 +28,57 @@
 
 #include "timecode.h"
 #include "artnettimecode.h"
-
 #include "console.h"
 
-static char s_aTimecode[] = "--:--:--.-- -----";
+static char s_timecode[] = "--:--:--.-- -----";
 static uint8_t nTypePrevious = 0xFF;	///< Invalid type. Force initial update.
 
-static constexpr auto ROW = 1;
-static constexpr auto COLUMN = 80;
-static constexpr auto TC_LENGTH = sizeof(s_aTimecode) - 1;
-static constexpr char TC_TYPES[4][8] __attribute__ ((aligned (4))) = { "Film ", "EBU  ", "DF   ", "SMPTE" };
+static constexpr auto kRow = 1;
+static constexpr auto kColumn = 80;
+static constexpr auto kTcLength = sizeof(s_timecode) - 1;
+static constexpr char kTcTypes[4][8] __attribute__ ((aligned (4))) = { "Film ", "EBU  ", "DF   ", "SMPTE" };
 
-static void itoa(const uint32_t nValue, char *pBuffer) {
-	auto *nDst = pBuffer;
+static void Itoa(uint32_t value, char *buffer) {
+	auto *dst = buffer;
 
-	if (nValue == 0) {
-		*nDst++ = '0';
-		*nDst = '0';
+	if (value == 0) {
+		*dst++ = '0';
+		*dst = '0';
 		return;
 	}
 
-	*nDst++ = static_cast<char>('0' + (nValue / 10));
-	*nDst = static_cast<char>('0' + (nValue % 10));
+	*dst++ = static_cast<char>('0' + (value / 10));
+	*dst = static_cast<char>('0' + (value % 10));
 }
 
 void TimeCode::Start() {
-	console_save_cursor();
-	console_set_cursor(COLUMN, ROW);
-	console_set_fg_color(CONSOLE_CYAN);
-	console_puts(s_aTimecode);
-	console_restore_cursor();
+	console::SaveCursor();
+	console::SetCursor(kColumn, kRow);
+	console::SetFgColour(console::Colours::kConsoleCyan);
+	console::Puts(s_timecode);
+	console::RestoreCursor();
 }
 
 void TimeCode::Stop() {
-	console_set_cursor(COLUMN, ROW);
-	console_puts("                 ");
+	console::SetCursor(kColumn, kRow);
+	console::Puts("                 ");
 }
 
-void TimeCode::Handler(const struct artnet::TimeCode *pTimeCode) {
-	itoa(pTimeCode->Hours, &s_aTimecode[0]);
-	itoa(pTimeCode->Minutes, &s_aTimecode[3]);
-	itoa(pTimeCode->Seconds, &s_aTimecode[6]);
-	itoa(pTimeCode->Frames, &s_aTimecode[9]);
+void TimeCode::Handler(const struct artnet::TimeCode* time_code)
+{
+    Itoa(time_code->hours, &s_timecode[0]);
+	Itoa(time_code->minutes, &s_timecode[3]);
+	Itoa(time_code->seconds, &s_timecode[6]);
+	Itoa(time_code->frames, &s_timecode[9]);
 
-	if ((nTypePrevious != pTimeCode->Type) && (pTimeCode->Type < 4)) {
-		memcpy(&s_aTimecode[12], TC_TYPES[pTimeCode->Type], 5);
-		nTypePrevious = pTimeCode->Type;
+	if ((nTypePrevious != time_code->type) && (time_code->type < 4)) {
+		memcpy(&s_timecode[12], kTcTypes[time_code->type], 5);
+		nTypePrevious = time_code->type;
 	}
 
-	console_save_cursor();
-	console_set_cursor(COLUMN, ROW);
-	console_set_fg_color(CONSOLE_YELLOW);
-	console_write(s_aTimecode, TC_LENGTH);
-	console_restore_cursor();
+	console::SaveCursor();
+	console::SetCursor(kColumn, kRow);
+	console::SetFgColour(console::Colours::kConsoleYellow);
+	console::Write(s_timecode, kTcLength);
+	console::RestoreCursor();
 }

@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#if defined (DEBUG_HAL)
-# undef NDEBUG
+#if defined(DEBUG_HAL)
+#undef NDEBUG
 #endif
 
 #include <cstdint>
@@ -34,39 +34,45 @@
 
 #include "softwaretimers.h"
 
-#include "debug.h"
+ #include "firmware/debug/debug_debug.h"
 
 void h3_status_led_set(int);
 
-static int32_t m_nTimerId = -1;
-static int32_t m_nToggleLed;
+static int32_t s_timer_id = -1;
+static int32_t s_toggle_led;
 
-static void ledblink([[maybe_unused]] TimerHandle_t nHandle) {
-	m_nToggleLed ^= 0x1;
-	h3_status_led_set(m_nToggleLed);
+static void Ledblink([[maybe_unused]] TimerHandle_t handle)
+{
+    s_toggle_led ^= 0x1;
+    h3_status_led_set(s_toggle_led);
 }
 
-namespace hal {
-void statusled_set_frequency(const uint32_t nFrequencyHz) {
-	if (nFrequencyHz == 0) {
-		SoftwareTimerDelete (m_nTimerId);
-		h3_status_led_set(0);
-		return;
-	}
+namespace hal::statusled
+{
+void SetFrequency(uint32_t frequency_hz)
+{
+    if (frequency_hz == 0)
+    {
+        SoftwareTimerDelete(s_timer_id);
+        h3_status_led_set(0);
+        return;
+    }
 
-	if (nFrequencyHz == 255) {
-		SoftwareTimerDelete (m_nTimerId);
-		h3_status_led_set(1);
-		return;
-	}
+    if (frequency_hz == 255)
+    {
+        SoftwareTimerDelete(s_timer_id);
+        h3_status_led_set(1);
+        return;
+    }
 
-	if (m_nTimerId < 0) {
-		m_nTimerId = SoftwareTimerAdd((1000U / nFrequencyHz), ledblink);
-		DEBUG_PRINTF("m_nTimerId=%d", m_nTimerId);
-		return;
-	}
+    if (s_timer_id < 0)
+    {
+        s_timer_id = SoftwareTimerAdd((1000U / frequency_hz), Ledblink);
+        DEBUG_PRINTF("m_nTimerId=%d", s_timer_id);
+        return;
+    }
 
-	DEBUG_PRINTF("m_nTimerId=%d", m_nTimerId);
-	SoftwareTimerChange(m_nTimerId, (1000U / nFrequencyHz));
+    DEBUG_PRINTF("m_nTimerId=%d", s_timer_id);
+    SoftwareTimerChange(s_timer_id, (1000U / frequency_hz));
 }
-}  // namespace hal
+} // namespace hal::statusled

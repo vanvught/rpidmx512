@@ -23,69 +23,71 @@
  * THE SOFTWARE.
  */
 
-#if defined (DEBUG_HAL)
-# undef NDEBUG
+#if defined(DEBUG_HAL)
+#undef NDEBUG
 #endif
 
 #include <cstdio>
 
 #include "h3_watchdog.h"
 #include "h3_gpio.h"
+#include "h3_board.h"
 #include "arm/arm.h"
 #include "arm/synchronize.h"
-
 #include "hal.h"
 #include "hal_statusled.h"
 
 #if !defined(DISABLE_RTC)
-# include "hwclock.h"
+#include "hwclock.h"
 #endif
 
-void configstore_commit();
+#include "configstore.h"
 
-namespace net {
-void net_shutdown();
-}  // namespace net
+#if !defined(NO_EMAC)
+namespace net
+{
+void Shutdown();
+} // namespace net
+#endif
 
-namespace hal {
+namespace hal
+{
 bool g_bWatchdog;
 
-void reboot_handler();
-void run();
+bool Reboot()
+{
+    puts("Rebooting ...");
 
-bool reboot() {
-	puts("Rebooting ...");
+    h3_watchdog_disable();
 
-	h3_watchdog_disable();
-
-	configstore_commit();
-
+    ConfigstoreCommit();
 #if !defined(DISABLE_RTC)
-	HwClock::Get()->SysToHc();
+    HwClock::Get()->SysToHc();
 #endif
+    RebootHandler();
+#if !defined(NO_EMAC)
+    net::Shutdown();
+#endif
+    clean_data_cache();
+    invalidate_data_cache();
 
-	hal::reboot_handler();
-	net::net_shutdown();
+    H3GpioFsel(EXT_SPI_MOSI, GPIO_FSEL_INPUT);
+    H3GpioSetPud(EXT_SPI_MOSI, GPIO_PULL_DOWN);
+    H3GpioFsel(EXT_SPI_CLK, GPIO_FSEL_INPUT);
+    H3GpioSetPud(EXT_SPI_CLK, GPIO_PULL_DOWN);
+    H3GpioFsel(EXT_SPI_CS, GPIO_FSEL_INPUT);
+    H3GpioSetPud(EXT_SPI_CS, GPIO_PULL_DOWN);
 
-	clean_data_cache();
-	invalidate_data_cache();
+    hal::statusled::SetMode(hal::statusled::Mode::REBOOT);
 
-	h3_gpio_fsel(EXT_SPI_MOSI, GPIO_FSEL_INPUT);
-	h3_gpio_set_pud(EXT_SPI_MOSI, GPIO_PULL_DOWN);
-	h3_gpio_fsel(EXT_SPI_CLK, GPIO_FSEL_INPUT);
-	h3_gpio_set_pud(EXT_SPI_CLK, GPIO_PULL_DOWN);
-	h3_gpio_fsel(EXT_SPI_CS, GPIO_FSEL_INPUT);
-	h3_gpio_set_pud(EXT_SPI_CS, GPIO_PULL_DOWN);
+    h3_watchdog_enable();
 
-	hal::statusled_set_mode(hal::StatusLedMode::REBOOT);
+    for (;;)
+    {
+        Run();
+    }
 
-	h3_watchdog_enable();
-
-	for (;;) {
-		hal::run();
-	}
-
-	__builtin_unreachable();
-	return true;
+    __builtin_unreachable();
+    return true;
 }
-}  // namespace hal
+} // namespace hal

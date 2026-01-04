@@ -2,7 +2,7 @@
  * @file l6470dmxmode2.h
  *
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,11 +29,9 @@
 #include "l6470dmxmode.h"
 #include "l6470.h"
 
-#include "motorparams.h"
-
 class L6470DmxMode2 final: public L6470DmxMode {
 public:
-	L6470DmxMode2(L6470 *pL6470);
+	L6470DmxMode2(L6470 *);
 	~L6470DmxMode2() override;
 
 	void Start() override;
@@ -50,9 +48,9 @@ public:
 	}
 
 private:
-	L6470 *m_pL6470;
-	float m_fMinSpeed;
-	float m_fMaxSpeed;
+	L6470 *l6470_;
+	float min_speed_;
+	float max_speed_;
 };
 
-#endif /* L6470DMXMODE2_H_ */
+#endif  // L6470DMXMODE2_H_

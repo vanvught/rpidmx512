@@ -1,8 +1,8 @@
-EXTRA_INCLUDES+=../lib-properties/include ../lib-network/include
+EXTRA_INCLUDES+=../lib-network/include
 
 ifneq ($(MAKE_FLAGS),)
 	ifeq ($(findstring NODE_ARTNET,$(MAKE_FLAGS)), NODE_ARTNET)
-		EXTRA_SRCDIR+=src/node
+		EXTRA_SRCDIR+=src/node src/json
 	endif
 	
 	ifeq ($(findstring ARTNET_HAVE_DMXIN,$(MAKE_FLAGS)), ARTNET_HAVE_DMXIN)
@@ -14,29 +14,27 @@ ifneq ($(MAKE_FLAGS),)
 		EXTRA_SRCDIR+=src/node/rdm
 		EXTRA_SRCDIR+=src/node/rdm/controller
 		EXTRA_INCLUDES+=../lib-rdm/include ../lib-dmx/include
+		ifeq ($(findstring ENABLE_HTTPD,$(MAKE_FLAGS)), ENABLE_HTTPD)
+			EXTRA_SRCDIR+=src/node/rdm/controller/json
+		endif
 	endif
 	
 	ifeq ($(findstring RDM_RESPONDER,$(MAKE_FLAGS)), RDM_RESPONDER)
 		EXTRA_SRCDIR+=src/node/rdm
 		EXTRA_SRCDIR+=src/node/rdm/responder
-		EXTRA_INCLUDES+=../lib-rdm/include
+		EXTRA_INCLUDES+=../lib-rdm/include ../lib-rdmsensor/include
 	endif
 	
 	ifeq ($(findstring ARTNET_CONTROLLER,$(MAKE_FLAGS)), ARTNET_CONTROLLER)
 		EXTRA_SRCDIR+=src/controller
 	endif
-	
-	ifeq ($(findstring NODE_NODE,$(MAKE_FLAGS)), NODE_NODE)
-		EXTRA_SRCDIR+=src/node
-	endif
-	
+		
 	ifeq ($(findstring ARTNET_HAVE_FAILSAFE_RECORD,$(MAKE_FLAGS)), ARTNET_HAVE_FAILSAFE_RECORD)
 		EXTRA_SRCDIR+=src/node/failsafe
 		EXTRA_INCLUDES+=src/node/failsafe
 	endif
 			
 	ifeq ($(findstring ARTNET_VERSION=4,$(MAKE_FLAGS)), ARTNET_VERSION=4)
-		EXTRA_SRCDIR+=src/node/4
 		EXTRA_INCLUDES+=../lib-e131/include
 	endif
 	
@@ -45,7 +43,7 @@ ifneq ($(MAKE_FLAGS),)
 	endif
 	
 	ifeq ($(findstring OUTPUT_DMX_PIXEL,$(MAKE_FLAGS)), OUTPUT_DMX_PIXEL)
-		EXTRA_INCLUDES+=../lib-ws28xx/include ../lib-ws28xxdmx/include
+		EXTRA_INCLUDES+=../lib-pixel/include ../lib-pixeldmx/include
 	endif
 
 	ifeq ($(findstring OUTPUT_DMX_SERIAL,$(MAKE_FLAGS)), OUTPUT_DMX_SERIAL)
@@ -71,7 +69,7 @@ else
 	EXTRA_INCLUDES+=../lib-e131/include
 	EXTRA_INCLUDES+=../lib-dmx/include
 	EXTRA_INCLUDES+=../lib-rdm/include
-	EXTRA_INCLUDES+=../lib-ws28xx/include ../lib-ws28xxdmx/include
+	EXTRA_INCLUDES+=../lib-pixel/include ../lib-pixeldmx/include
 	EXTRA_INCLUDES+=../lib-l6470/include ../lib-l6470dmx/include
 	EXTRA_INCLUDES+=../lib-tlc59711/include ../lib-tlc59711dmx/include
 	DEFINES+=ARTNET_HAVE_TIMECODE

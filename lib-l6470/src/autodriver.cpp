@@ -36,7 +36,7 @@
 
 #include "l6470constants.h"
 
-#include "debug.h"
+ #include "firmware/debug/debug_debug.h"
 
 static constexpr uint8_t BUSY_PIN_NOT_USED = 0xFF;
 
@@ -46,32 +46,32 @@ AutoDriver::AutoDriver(uint8_t nPosition, uint8_t nSpiChipSelect, uint8_t nReset
 	m_nSpiChipSelect(nSpiChipSelect),
 	m_nResetPin(nResetPin),
 	m_nBusyPin(nBusyPin),
-	m_nPosition(nPosition),
+	position_(nPosition),
 	m_bIsBusy(false)
 {
-	DEBUG_ENTRY
+	DEBUG_ENTRY();
 	DEBUG_PRINTF("nPosition=%d, nSpiChipSelect=%d\n", static_cast<int>(nPosition), static_cast<int>(nSpiChipSelect));
 
 	m_nNumBoards[nSpiChipSelect]++;
 
 	DEBUG_PRINTF("m_nNumBoards[%d]=%d", static_cast<int>(nSpiChipSelect), static_cast<int>(m_nNumBoards[nSpiChipSelect]));
-	DEBUG_EXIT
+	DEBUG_EXIT();
 }
 
 AutoDriver::AutoDriver(uint8_t nPosition, uint8_t nSpiChipSelect, uint8_t nResetPin) :
 	m_nSpiChipSelect(nSpiChipSelect),
 	m_nResetPin(nResetPin),
 	m_nBusyPin(BUSY_PIN_NOT_USED),
-	m_nPosition(nPosition),
+	position_(nPosition),
 	m_bIsBusy(false)
 {
-	DEBUG_ENTRY
+	DEBUG_ENTRY();
 	DEBUG_PRINTF("nPosition=%d, nSpiChipSelect=%d\n", static_cast<int>(nPosition), static_cast<int>(nSpiChipSelect));
 
 	m_nNumBoards[nSpiChipSelect]++;
 
 	DEBUG_PRINTF("m_nNumBoards[%d]=%d", static_cast<int>(nSpiChipSelect), static_cast<int>(m_nNumBoards[nSpiChipSelect]));
-	DEBUG_EXIT
+	DEBUG_EXIT();
 }
 
 AutoDriver::~AutoDriver() {
@@ -97,7 +97,7 @@ int AutoDriver::busyCheck() {
 			}
 		}
 		// By default, the BUSY pin is forced low when the device is performing a command
-		if (FUNC_PREFIX(gpio_lev(m_nBusyPin)) == HIGH) {
+		if (FUNC_PREFIX(GpioLev(m_nBusyPin)) == HIGH) {
 			m_bIsBusy = false;
 			return 0;
 		} else {
@@ -111,7 +111,7 @@ int AutoDriver::busyCheck() {
 #pragma GCC diagnostic ignored "-Wstack-usage="	//FIXME Needed for compilation on GD32F (https://www.gd32-dmx.org)
 
 uint8_t AutoDriver::SPIXfer(uint8_t data) {
-	DEBUG_ENTRY
+	DEBUG_ENTRY();
 
 	char dataPacket[m_nNumBoards[m_nSpiChipSelect]];
 
@@ -119,16 +119,16 @@ uint8_t AutoDriver::SPIXfer(uint8_t data) {
 		dataPacket[i] = 0;
 	}
 
-	dataPacket[m_nPosition] = static_cast<char>(data);
+	dataPacket[position_] = static_cast<char>(data);
 
-	FUNC_PREFIX(spi_chipSelect(m_nSpiChipSelect));
-	FUNC_PREFIX(spi_set_speed_hz(2000000));
-	FUNC_PREFIX(spi_setDataMode(SPI_MODE3));
-	FUNC_PREFIX(spi_transfern(dataPacket, m_nNumBoards[m_nSpiChipSelect]));
+	FUNC_PREFIX(SpiChipSelect(m_nSpiChipSelect));
+	FUNC_PREFIX(SpiSetSpeedHz(2000000));
+	FUNC_PREFIX(SpiSetDataMode(SPI_MODE3));
+	FUNC_PREFIX(SpiTransfern(dataPacket, m_nNumBoards[m_nSpiChipSelect]));
 
-	DEBUG_PRINTF("data=%x, dataPacket[%d]=%x", data, m_nPosition, dataPacket[m_nPosition]);
-	DEBUG_EXIT
-	return static_cast<uint8_t>(dataPacket[m_nPosition]);
+	DEBUG_PRINTF("data=%x, dataPacket[%d]=%x", data, position_, dataPacket[position_]);
+	DEBUG_EXIT();
+	return static_cast<uint8_t>(dataPacket[position_]);
 }
 
 #pragma GCC diagnostic pop
@@ -152,14 +152,14 @@ uint8_t AutoDriver::getNumBoards(uint8_t cs) {
 }
 
 bool AutoDriver::IsConnected() {
-	DEBUG_ENTRY
+	DEBUG_ENTRY();
 
 	if (getParam(L6470_PARAM_CONFIG) == 0x2e88) {
-		DEBUG_EXIT
+		DEBUG_EXIT();
 		return true;
 	}
 
-	DEBUG_EXIT
+	DEBUG_EXIT();
 	return false;
 }
 

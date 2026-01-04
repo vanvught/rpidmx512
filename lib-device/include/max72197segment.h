@@ -1,8 +1,8 @@
 /**
- * @file d8x7segment.h
+ * @file max72197segment.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,36 +23,44 @@
  * THE SOFTWARE.
  */
 
-#ifndef DEVICE_D8X7SEGMENT_H_
-#define DEVICE_D8X7SEGMENT_H_
+#ifndef MAX72197SEGMENT_H_
+#define MAX72197SEGMENT_H_
 
 #include "max7219.h"
 
-class Max72197Segment: public MAX7219 {
-public:
-	Max72197Segment() {}
+class Max72197Segment : public MAX7219
+{
+   public:
+    Max72197Segment() = default;
+    ~Max72197Segment() = default;
 
-	void Init(uint8_t nIntensity) {
-		WriteRegister(max7219::reg::SHUTDOWN, max7219::reg::shutdown::NORMAL_OP);
-		WriteRegister(max7219::reg::DISPLAY_TEST, 0, false);
-		WriteRegister(max7219::reg::DECODE_MODE, max7219::reg::decode_mode::CODEB, false);
-		WriteRegister(max7219::reg::SCAN_LIMIT, 7, false);
+    void Init(uint8_t intensity)
+    {
+        WriteRegister(max7219::reg::SHUTDOWN, max7219::reg::shutdown::NORMAL_OP);
+        WriteRegister(max7219::reg::DISPLAY_TEST, 0, false);
+        WriteRegister(max7219::reg::DECODE_MODE, max7219::reg::decode_mode::CODEB, false);
+        WriteRegister(max7219::reg::SCAN_LIMIT, 7, false);
 
-		WriteRegister(max7219::reg::INTENSITY, nIntensity & 0x0F, false);
-
-		Cls();
+		SetIntensity(intensity);
+        Cls();
+    }
+    
+    void SetIntensity(uint8_t intensity)
+    {
+        WriteRegister(max7219::reg::INTENSITY, intensity & 0x0F, false);		
 	}
 
-	void Cls() {
-		WriteRegister(8, max7219::digit::BLANK);
+    void Cls()
+    {
+        WriteRegister(8, max7219::digit::BLANK);
 
-		uint32_t i = 7;
+        uint32_t i = 7;
 
-		do {
-			WriteRegister(i, max7219::digit::BLANK, false);
-		} while (--i > 0);
-	}
-
+        do
+        {
+            WriteRegister(i, max7219::digit::BLANK, false);
+        } while (--i > 0);
+    }
 };
 
-#endif /* DEVICE_D8X7SEGMENT_H_ */
+#endif  // MAX72197SEGMENT_H_

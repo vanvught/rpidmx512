@@ -2,7 +2,7 @@
  * @file rtpmidihandler.h
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,11 +28,12 @@
 
 #include "midi.h"
 
-class RtpMidiHandler {
-public:
-	virtual ~RtpMidiHandler() = default;
+class RtpMidiHandler
+{
+   public:
+    virtual ~RtpMidiHandler() = default;
 
-	virtual void MidiMessage(const struct midi::Message *pMidiMessage)=0;
+    virtual void MidiMessage(const struct midi::Message* message) = 0;
 };
 
-#endif /* NET_RTPMIDIHANDLER_H_ */
+#endif  // NET_RTPMIDIHANDLER_H_

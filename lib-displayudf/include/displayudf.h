@@ -30,302 +30,222 @@
 #include <cstdarg>
 
 #include "display.h"
-
-#if !defined (NO_EMAC)
-# include "network.h"
-# include "net/protocol/dhcp.h"
+#include "firmwareversion.h"
+#if !defined(NO_EMAC)
+#include "network.h"
+#include "net/protocol/dhcp.h"
 #endif
-
-#if defined (NODE_ARTNET_MULTI)
-# define NODE_ARTNET
+#if defined(NODE_ARTNET_MULTI)
+#define NODE_ARTNET
 #endif
-
-#if defined (NODE_E131_MULTI)
-# define NODE_E131
+#if defined(NODE_E131_MULTI)
+#define NODE_E131
 #endif
-
-#if defined (NODE_NODE)
-# include "node.h"
+#if defined(NODE_ARTNET)
+#include "artnetnode.h"
 #endif
-
-#if defined (NODE_ARTNET)
-# include "artnetnode.h"
+#if defined(NODE_E131)
+#include "e131bridge.h"
 #endif
-
-#if defined (NODE_E131)
-# include "e131bridge.h"
+#if defined(RDM_RESPONDER)
+#include "rdmdeviceresponder.h"
 #endif
-
-#if defined (NODE_ARTNET) || defined (NODE_E131)
-# define DISPLAYUDF_DMX_INFO
+#if defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI)
+#include "dmx.h"
+#include "dmxconst.h"
 #endif
-
-#if defined (RDM_RESPONDER)
-# include "rdmdeviceresponder.h"
+#if defined(RDM_RESPONDER) || defined(OUTPUT_DMX_MONITOR) || defined(OUTPUT_DMX_PCA9685) || defined(OUTPUT_DMX_PIXEL) || defined(OUTPUT_DMX_TLC59711)
+#define HAVE_DMX_START_ADDRESS
 #endif
+ #include "firmware/debug/debug_debug.h"
 
-#if defined (OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI)
-# include "dmx.h"
+namespace displayudf
+{
+inline constexpr uint32_t kLabelMaxRows = 6;
+
+enum class Labels: uint8_t
+{
+    kTitle,
+    kBoardname,
+    kVersion,
+    kHostname,
+    kIp,
+    kNetmask,
+    kDefaultGateway,
+    kAp,
+    kDmxStartAddress,
+#if defined(DMX_MAX_PORTS)
+    kUniversePortA,
+#if (DMX_MAX_PORTS > 1)
+    kUniversePortB,
 #endif
-
-namespace displayudf {
-static constexpr auto LABEL_MAX_ROWS = 6U;
-
-#if !defined(NODE_NODE)
-enum class Labels {
-	TITLE,
-	BOARDNAME,
-	VERSION,
-	HOSTNAME,
-	IP,
-	NETMASK,
-	DEFAULT_GATEWAY,
-	AP,
-	DMX_DIRECTION,
-	DMX_START_ADDRESS,
-	UNIVERSE_PORT_A,
-# if (DMX_MAX_PORTS > 1)
-	UNIVERSE_PORT_B,
-# endif
-# if (DMX_MAX_PORTS > 2)
-	UNIVERSE_PORT_C,
-# endif
-# if (DMX_MAX_PORTS == 4)
-	UNIVERSE_PORT_D,
-# endif
-#if defined (NODE_ARTNET) && defined (ARTNET_HAVE_DMXIN)
-	DESTINATION_IP_PORT_A,
-# if DMX_MAX_PORTS >= 2
-	DESTINATION_IP_PORT_B,
-# endif
-# if DMX_MAX_PORTS >= 3
-	DESTINATION_IP_PORT_C,
-# endif
-# if DMX_MAX_PORTS == 4
-	DESTINATION_IP_PORT_D,
-# endif
+#if (DMX_MAX_PORTS > 2)
+    UNIVERSE_PORT_C,
 #endif
-	UNKNOWN
-};
-#else
-# if DMXNODE_PORTS > 8
-#  define MAX_ARRAY 4
-# else
-#  define MAX_ARRAY DMXNODE_PORTS
-# endif
-enum class Labels {
-	TITLE,
-	BOARDNAME,
-	VERSION,
-	HOSTNAME,
-	IP,
-	NETMASK,
-	DEFAULT_GATEWAY,
-	NOT_USED,
-	UNIVERSE_PORT_A,
-# if MAX_ARRAY >= 2
-	UNIVERSE_PORT_B,
-# endif
-# if MAX_ARRAY >= 3
-	UNIVERSE_PORT_C,
-# endif
-# if MAX_ARRAY == 4
-	UNIVERSE_PORT_D,
-# endif
-# if MAX_ARRAY >= 2
-	DESTINATION_IP_PORT_A,
-# endif
-# if MAX_ARRAY >= 2
-	DESTINATION_IP_PORT_B,
-# endif
-# if MAX_ARRAY >= 3
-	DESTINATION_IP_PORT_C,
-# endif
-# if MAX_ARRAY == 4
-	DESTINATION_IP_PORT_D,
-# endif
-	UNKNOWN
-};
-# undef MAX_ARRAY
+#if (DMX_MAX_PORTS == 4)
+    UNIVERSE_PORT_D,
 #endif
-
-namespace defaults {
-static constexpr auto INTENSITY = 0x7F;
-}  // namespace defaults
-namespace dmx {
-enum class PortDir {
-	INPUT, OUTPUT, DISABLE
-};
-}  // namespace dmx
-}  // namespace displayudf
-
-class DisplayUdf final: public Display {
-public:
-	DisplayUdf();
-	DisplayUdf(const DisplayUdf&) = delete;
-	DisplayUdf& operator=(const DisplayUdf&) = delete;
-	~DisplayUdf() = default;
-
-	void SetTitle(const char *format, ...);
-
-	void Set(uint32_t nLine, displayudf::Labels tLabel);
-
-	uint8_t GetLabel(uint32_t nIndex) const {
-		if (nIndex < static_cast<uint32_t>(displayudf::Labels::UNKNOWN)) {
-			return m_aLabels[nIndex];
-		}
-
-		return m_aLabels[0];
-	}
-
-	void Show();
-
-	/**
-	 * Art-Net
-	 */
-
-#if defined (NODE_ARTNET)
-	void ShowUniverseArtNetNode();
+#if defined(NODE_ARTNET) || defined(NODE_ARTNET_MULTI)
+    kDestinationIpPortA, 
+#if (DMX_MAX_PORTS > 1)
+    kDestinationIpPortB,
 #endif
-
-	/**
-	 * DMX
-	 */
-
-#if defined (DISPLAYUDF_DMX_INFO)
-	void SetDmxInfo(displayudf::dmx::PortDir portDir, uint32_t nPorts) {
-		m_dmxInfo.portDir = portDir;
-		m_dmxInfo.nPorts = nPorts;
-	}
-
-	void ShowDmxInfo() {
-		if ((m_dmxInfo.portDir == displayudf::dmx::PortDir::DISABLE) || (m_dmxInfo.nPorts == 0)) {
-			Printf(m_aLabels[static_cast<uint32_t>(displayudf::Labels::DMX_DIRECTION)], "No DMX");
-			return;
-		}
-
-		Printf(m_aLabels[static_cast<uint32_t>(displayudf::Labels::DMX_DIRECTION)], "DMX %s %d", m_dmxInfo.portDir == displayudf::dmx::PortDir::INPUT ? "Input" : "Output",  m_dmxInfo.nPorts);
-	}
+#if (DMX_MAX_PORTS > 2)
+    DESTINATION_IP_PORT_C,
 #endif
-
-	/**
-	 * RDM Responder
-	 */
-
-#if defined (RDM_RESPONDER)
-	void ShowDmxStartAddress() {
-		const auto nDmxStartAddress = RDMDeviceResponder::Get()->GetDmxStartAddress();
-		const auto nDmxFootprint = RDMDeviceResponder::Get()->GetDmxFootPrint();
-		Printf(m_aLabels[static_cast<uint32_t>(displayudf::Labels::DMX_START_ADDRESS)], "DMX S:%3u F:%3u", nDmxStartAddress, nDmxFootprint);
-	}
+#if (DMX_MAX_PORTS == 4)
+    DESTINATION_IP_PORT_D,
 #endif
-
-	/**
-	 * Network
-	 */
-
-#if !defined (NO_EMAC)
-	void ShowEmacInit() {
-		ClearEndOfLine();
-		Printf(m_aLabels[static_cast<uint32_t>(displayudf::Labels::IP)], "Ethernet init");
-	}
-
-	void ShowEmacStart() {
-		ClearEndOfLine();
-		Printf(m_aLabels[static_cast<uint32_t>(displayudf::Labels::IP)], "Ethernet start");
-	}
-
-	void ShowEmacStatus(const bool isLinkUp) {
-		ClearEndOfLine();
-		Printf(m_aLabels[static_cast<uint32_t>(displayudf::Labels::IP)], "Ethernet Link %s", isLinkUp ? "UP" : "DOWN");
-	}
-
-	void ShowIpAddress() {
-		ClearEndOfLine();
-		Printf(m_aLabels[static_cast<uint32_t>(displayudf::Labels::IP)], "" IPSTR "/%d %c", IP2STR(Network::Get()->GetIp()), Network::Get()->GetNetmaskCIDR(), Network::Get()->GetAddressingMode());
-	}
-
-	void ShowNetmask() {
-		ClearEndOfLine();
-		Printf(m_aLabels[static_cast<uint32_t>(displayudf::Labels::NETMASK)], "N: " IPSTR "", IP2STR(Network::Get()->GetNetmask()));
-		ShowIpAddress();
-	}
-
-	void ShowGatewayIp() {
-		ClearEndOfLine();
-		Printf(m_aLabels[static_cast<uint32_t>(displayudf::Labels::DEFAULT_GATEWAY)], "G: " IPSTR "", IP2STR(Network::Get()->GetGatewayIp()));
-	}
-
-	void ShowHostName() {
-		ClearEndOfLine();
-		Write(m_aLabels[static_cast<uint32_t>(displayudf::Labels::HOSTNAME)], Network::Get()->GetHostName());
-	}
-
-	void ShowDhcpStatus(net::dhcp::State state) {
-		switch (state) {
-		case net::dhcp::State::STATE_OFF:
-			break;
-		case net::dhcp::State::STATE_RENEWING:
-			ClearEndOfLine();
-			Printf(m_aLabels[static_cast<uint32_t>(displayudf::Labels::IP)], "DHCP renewing");
-			break;
-		case net::dhcp::State::STATE_BOUND:
-			break;
-		default:
-			break;
-		}
-	}
-
-	void ShowShutdown() {
-		TextStatus("Network shutdown");
-	}
 #endif
-
-	static DisplayUdf *Get() {
-		return s_pThis;
-	}
-
-private:
-	/**
-	 * Art-Net
-	 */
-
-#if defined (NODE_ARTNET)
-	void ShowArtNetNode();
-	void ShowDestinationIpArtNetNode();
 #endif
-
-	/**
-	 * sACN E1.31
-	 */
-
-#if defined (NODE_E131)
-	void ShowE131Bridge();
-#endif
-
-	/**
-	 * Node
-	 */
-
-#if defined (NODE_NODE)
-	void ShowNode();
-	void ShowNodeNameNode();
-	void ShowUniverseNode();
-	void ShowDestinationIpNode();
-#endif
-
-private:
-	char m_aTitle[32];
-	uint8_t m_aLabels[static_cast<uint32_t>(displayudf::Labels::UNKNOWN)];
-#if defined (DISPLAYUDF_DMX_INFO)
-	struct DmxInfo {
-		displayudf::dmx::PortDir portDir;
-		uint32_t nPorts;
-	};
-	DmxInfo m_dmxInfo {displayudf::dmx::PortDir::DISABLE, 0};
-#endif
-
-	static DisplayUdf *s_pThis;
+    kUnknown
 };
 
-#endif /* DISPLAYUDF_H_ */
+namespace defaults
+{
+inline constexpr uint8_t kIntensity = 0x7F;
+} // namespace defaults
+} // namespace displayudf
+
+class DisplayUdf final : public Display
+{
+   public:
+    DisplayUdf();
+
+    DisplayUdf(const DisplayUdf&) = delete;
+    DisplayUdf& operator=(const DisplayUdf&) = delete;
+
+    ~DisplayUdf() = default;
+
+    void SetTitle(const char* format, ...);
+    void Set(uint32_t line, displayudf::Labels label);
+
+    uint8_t GetLabel(uint32_t index) const
+    {
+        if (index < static_cast<uint32_t>(displayudf::Labels::kUnknown))
+        {
+            return labels_[index];
+        }
+
+        return labels_[0];
+    }
+
+    void Show();
+
+    /**
+     * Art-Net
+     */
+
+#if defined(NODE_ARTNET)
+    void ShowUniverseArtNetNode();
+#endif
+    /**
+     * RDM Responder
+     */
+
+#if defined(RDM_RESPONDER)
+    void ShowDmxStartAddress()
+    {
+        const auto nDmxStartAddress = RDMDeviceResponder::Get()->GetDmxStartAddress();
+        const auto nDmxFootprint = RDMDeviceResponder::Get()->GetDmxFootPrint();
+        Printf(labels_[static_cast<uint32_t>(displayudf::Labels::kDmxStartAddress)], "DMX S:%3u F:%3u", nDmxStartAddress, nDmxFootprint);
+    }
+#endif
+
+    /**
+     * Network
+     */
+
+#if !defined(NO_EMAC)
+    void ShowEmacInit()
+    {
+        ClearEndOfLine();
+        Printf(labels_[static_cast<uint32_t>(displayudf::Labels::kIp)], "Ethernet init");
+    }
+
+    void ShowEmacStart()
+    {
+        ClearEndOfLine();
+        Printf(labels_[static_cast<uint32_t>(displayudf::Labels::kIp)], "Ethernet start");
+    }
+
+    void ShowEmacStatus(bool is_link_up)
+    {
+        ClearEndOfLine();
+        Printf(labels_[static_cast<uint32_t>(displayudf::Labels::kIp)], "Ethernet Link %s", is_link_up ? "UP" : "DOWN");
+    }
+
+    void ShowIpAddress()
+    {
+        ClearEndOfLine();
+        Printf(labels_[static_cast<uint32_t>(displayudf::Labels::kIp)], "" IPSTR "/%d %c", IP2STR(net::GetPrimaryIp()), net::GetNetmaskCIDR(),
+               network::iface::AddressingMode());
+    }
+
+    void ShowNetmask()
+    {
+        ClearEndOfLine();
+        Printf(labels_[static_cast<uint32_t>(displayudf::Labels::kNetmask)], "N: " IPSTR "", IP2STR(net::GetNetmask()));
+        ShowIpAddress();
+    }
+
+    void ShowGatewayIp()
+    {
+        ClearEndOfLine();
+        Printf(labels_[static_cast<uint32_t>(displayudf::Labels::kDefaultGateway)], "G: " IPSTR "", IP2STR(net::GetGatewayIp()));
+    }
+
+    void ShowHostName()
+    {
+        ClearEndOfLine();
+        Write(labels_[static_cast<uint32_t>(displayudf::Labels::kHostname)],  network::iface::GetHostName());
+    }
+
+    void ShowDhcpStatus(net::dhcp::State state)
+    {
+        switch (state)
+        {
+            case net::dhcp::State::STATE_OFF:
+                break;
+            case net::dhcp::State::STATE_RENEWING:
+                ClearEndOfLine();
+                Printf(labels_[static_cast<uint32_t>(displayudf::Labels::kIp)], "DHCP renewing");
+                break;
+            case net::dhcp::State::STATE_BOUND:
+                break;
+            default:
+                break;
+        }
+    }
+
+    void ShowShutdown() { TextStatus("Network shutdown"); }
+#endif
+
+    static DisplayUdf* Get() { return s_this; }
+
+   private:
+    /**
+     * Art-Net
+     */
+
+#if defined(NODE_ARTNET)
+    void ShowArtNetNode();
+    void ShowDestinationIpArtNetNode();
+#endif
+
+    /**
+     * sACN E1.31
+     */
+
+#if defined(NODE_E131)
+    void ShowE131Bridge();
+#endif
+
+   private:
+    char title_[32];
+    uint8_t labels_[static_cast<uint32_t>(displayudf::Labels::kUnknown)];
+
+    inline static DisplayUdf* s_this;
+};
+
+#endif  // DISPLAYUDF_H_

@@ -2,7 +2,7 @@
  * @file is_config_mode.h
  *
  */
-/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,15 +29,15 @@
 #include "h3_board.h"
 #include "h3_gpio.h"
 
-#include "debug.h"
+ #include "firmware/debug/debug_debug.h"
 
 void config_mode_init() {
-	h3_gpio_fsel(KEY1_GPIO, GPIO_FSEL_INPUT);
-	h3_gpio_set_pud(KEY1_GPIO, GPIO_PULL_UP);
+	H3GpioFsel(KEY1_GPIO, GPIO_FSEL_INPUT);
+	H3GpioSetPud(KEY1_GPIO, GPIO_PULL_UP);
 }
 
 bool is_config_mode() {
-	const auto nLevel = h3_gpio_lev(KEY1_GPIO);
+	const auto nLevel = H3GpioLev(KEY1_GPIO);
     const auto isConfigMode = (nLevel == LOW);
 
     DEBUG_PRINTF("isConfigMode=%s %u %u->%p", isConfigMode ? "Yes" : "No", KEY1_GPIO, nLevel, H3_PIO_PORTA->DAT);

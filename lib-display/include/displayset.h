@@ -1,8 +1,8 @@
 /**
- * @file dislpayset.h
+ * @file displayset.h
  *
  */
-/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,54 +28,48 @@
 
 #include <cstdint>
 
+namespace display::cursor
+{
+inline constexpr uint32_t kOff = 0;
+inline constexpr uint32_t kOn = (1U << 0);
+inline constexpr uint32_t kBlinkOff = 0;
+inline constexpr uint32_t kBlinkOn = (1U << 1);
+} // namespace display::cursor
 
-namespace display::cursor {
-static constexpr uint32_t OFF = 0;
-static constexpr uint32_t ON = (1U << 0);
-static constexpr uint32_t BLINK_OFF = 0;
-static constexpr uint32_t BLINK_ON = (1U << 1);
-}  // namespace cursor_mode
+class DisplaySet
+{
+   public:
+    virtual ~DisplaySet() = default;
 
+    uint32_t GetColumns() const { return cols_; }
 
-class DisplaySet {
-public:
-	virtual ~DisplaySet() = default;
+    uint32_t GetRows() const { return rows_; }
 
-	uint32_t GetColumns() const {
-		return m_nCols;
-	}
+    void ClearEndOfLine() { clear_end_of_line_ = true; }
 
-	uint32_t GetRows() const {
-		return m_nRows;
-	}
+    virtual bool Start() = 0;
 
-	void ClearEndOfLine() {
-		m_bClearEndOfLine = true;
-	}
+    virtual void Cls() = 0;
+    virtual void ClearLine(uint32_t line) = 0;
 
-	virtual bool Start()= 0;
+    virtual void PutChar(int) = 0;
+    virtual void PutString(const char*) = 0;
 
-	virtual void Cls()= 0;
-	virtual void ClearLine(uint32_t nLine)= 0;
+    virtual void TextLine(uint32_t line, const char* data, uint32_t length) = 0;
 
-	virtual void PutChar(int)= 0;
-	virtual void PutString(const char*)= 0;
+    virtual void SetCursorPos(uint32_t col, uint32_t row) = 0;
+    virtual void SetCursor(uint32_t) = 0;
 
-	virtual void TextLine(uint32_t nLine, const char *pData, uint32_t nLength)= 0;
+    virtual void SetSleep([[maybe_unused]] bool sleep) {}
+    virtual void SetContrast([[maybe_unused]] uint8_t contrast) {}
+    virtual void SetFlipVertically([[maybe_unused]] bool do_flip_vertically) {}
 
-	virtual void SetCursorPos(uint32_t nCol, uint32_t nRow)= 0;
-	virtual void SetCursor(uint32_t)= 0;
+    virtual void PrintInfo() {}
 
-	virtual void SetSleep([[maybe_unused]] bool bSleep) {}
-	virtual void SetContrast([[maybe_unused]] uint8_t nContrast) {}
-	virtual void SetFlipVertically([[maybe_unused]] bool doFlipVertically) {}
-
-	virtual void PrintInfo() {}
-
-protected:
-	uint32_t m_nCols;
-	uint32_t m_nRows;
-	bool m_bClearEndOfLine { false };
+   protected:
+    uint32_t cols_;
+    uint32_t rows_;
+    bool clear_end_of_line_{false};
 };
 
-#endif /* DISPLAYSET_H_ */
+#endif  // DISPLAYSET_H_

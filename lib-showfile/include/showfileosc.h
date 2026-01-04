@@ -2,7 +2,7 @@
  * @file showfileosc.h
  *
  */
-/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,8 +26,8 @@
 #ifndef SHOWFILEOSC_H_
 #define SHOWFILEOSC_H_
 
-#if !defined (CONFIG_SHOWFILE_ENABLE_OSC)
-# error This file should not be included
+#if !defined(CONFIG_SHOWFILE_ENABLE_OSC)
+#error This file should not be included
 #endif
 
 #include <cstdint>
@@ -37,105 +37,126 @@
 
 #include "showfiledisplay.h"
 #include "osc.h"
-
 #include "network.h"
+#include "firmware/debug/debug_debug.h"
 
-#include "debug.h"
+namespace showfileosc
+{
+inline constexpr char kCmdPath[] = "/showfile/";
+inline constexpr uint32_t kPathLength = sizeof(kCmdPath) - 1;
+inline constexpr uint32_t kMaxCmdLength = 128;
+inline constexpr uint32_t kMaxFilesEntries = 10;
+} // namespace showfileosc
 
-namespace showfileosc {
-static constexpr char CMD_PATH[] = "/showfile/";
-static constexpr uint32_t PATH_LENGTH = sizeof(CMD_PATH) - 1;
-static constexpr uint32_t MAX_CMD_LENGTH = 128;
-static constexpr uint32_t MAX_FILES_ENTRIES = 10;
-}  // namespace showfileosc
+class ShowFileOSC
+{
+   public:
+    explicit ShowFileOSC(uint16_t port_incoming = osc::port::DEFAULT_INCOMING, uint16_t port_outgoing = osc::port::DEFAULT_OUTGOING)
+        : port_outgoing_(port_outgoing)
+    {
+        DEBUG_ENTRY();
 
-class ShowFileOSC {
-public:
-	ShowFileOSC(uint16_t nPortIncoming = osc::port::DEFAULT_INCOMING, uint16_t nPortOutgoing = osc::port::DEFAULT_OUTGOING) : m_nPortIncoming(nPortIncoming), m_nPortOutgoing(nPortOutgoing) {
-		DEBUG_ENTRY
+        assert(s_this == nullptr);
+        s_this = this;
 
-		assert(s_pThis == nullptr);
-		s_pThis = this;
+        SetPortIncoming(port_incoming);
 
-		m_nHandle = Network::Get()->Begin(m_nPortIncoming, StaticCallbackFunction);
-		assert(m_nHandle != -1);
+        DEBUG_EXIT();
+    }
 
-		DEBUG_EXIT
-	}
+    ~ShowFileOSC()
+    {
+        DEBUG_ENTRY();
 
-	~ShowFileOSC() {
-		DEBUG_ENTRY
+        net::udp::End(port_incoming_);
 
-		Network::Get()->End(m_nPortIncoming);
+        DEBUG_EXIT();
+    }
 
-		DEBUG_EXIT
-	}
+    void Input(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port)
+    {
+        assert(buffer != nullptr);
 
-	void Input(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
-		assert(pBuffer != nullptr);
+        buffer_ = buffer;
+        remote_ip_ = from_ip;
+        bytes_received_ = size;
+        remote_port_ = from_port;
 
-		m_pBuffer = pBuffer;
-		m_nRemoteIp = nFromIp;
-		m_nBytesReceived = nSize;
-		m_nRemotePort = nFromPort;
+        if (memcmp(buffer_, showfileosc::kCmdPath, showfileosc::kPathLength) == 0)
+        {
+            Process();
+        }
+    }
 
-		if (memcmp(m_pBuffer, showfileosc::CMD_PATH, showfileosc::PATH_LENGTH) == 0) {
-			Process();
-		}
-	}
+    void Print()
+    {
+        puts("OSC Server");
+        printf(" Path : [%s]\n", showfileosc::kCmdPath);
+        printf(" Incoming port : %u\n", port_incoming_);
+        printf(" Outgoing port : %u\n", port_outgoing_);
+    }
 
-	void Print() {
-		puts("OSC Server");
-		printf(" Path : [%s]\n", showfileosc::CMD_PATH);
-		printf(" Incoming port : %u\n", m_nPortIncoming);
-		printf(" Outgoing port : %u\n", m_nPortOutgoing);
-	}
+    void SetPortIncoming(uint16_t port_incoming)
+    {
+        if (port_incoming == port_incoming_)
+        {
+            return;
+        }
 
-	void SetPortIncoming(const uint16_t nPortIncoming) {
-		assert(m_nHandle == -1);
-		if (nPortIncoming > 1023) {
-			m_nPortIncoming = nPortIncoming;
-		} else {
-			m_nPortIncoming = osc::port::DEFAULT_INCOMING;
-		}
+        if (handle_ != 1)
+        {
+            net::udp::End(port_incoming_);
+        }
 
-	}
+        if (port_incoming > 1023)
+        {
+            port_incoming_ = port_incoming;
+        }
+        else
+        {
+            port_incoming_ = osc::port::DEFAULT_INCOMING;
+        }
 
-	uint16_t GetPortIncoming() const {
-		return m_nPortIncoming;
-	}
+        handle_ = net::udp::Begin(port_incoming_, StaticCallbackFunction);
+        assert(handle_ != -1);
+    }
 
-	void SetPortOutgoing(const uint16_t nPortOutgoing) {
-		if (nPortOutgoing > 1023) {
-			m_nPortOutgoing = nPortOutgoing;
-		} else {
-			m_nPortOutgoing = osc::port::DEFAULT_OUTGOING;
-		}
-	}
+    uint16_t GetPortIncoming() const { return port_incoming_; }
 
-	uint16_t GetPortOutgoing() const {
-		return m_nPortOutgoing;
-	}
+    void SetPortOutgoing(uint16_t port_outgoing)
+    {
+        if (port_outgoing > 1023)
+        {
+            port_outgoing_ = port_outgoing;
+        }
+        else
+        {
+            port_outgoing_ = osc::port::DEFAULT_OUTGOING;
+        }
+    }
 
-private:
-	void Process();
-	void SendStatus();
-	void ShowFiles();
+    uint16_t GetPortOutgoing() const { return port_outgoing_; }
 
-	void static StaticCallbackFunction(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
-		s_pThis->Input(pBuffer, nSize, nFromIp, nFromPort);
-	}
+   private:
+    void Process();
+    void SendStatus();
+    void ShowFiles();
 
-private:
-	uint16_t m_nPortIncoming;
-	uint16_t m_nPortOutgoing;
-	int32_t m_nHandle { -1 };
-	const uint8_t *m_pBuffer { nullptr };
-	uint32_t m_nRemoteIp { 0 };
-	uint32_t m_nBytesReceived { 0 };
-	uint16_t m_nRemotePort { 0 };
+    void static StaticCallbackFunction(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port)
+    {
+        s_this->Input(buffer, size, from_ip, from_port);
+    }
 
-	static inline ShowFileOSC *s_pThis;
+   private:
+    uint16_t port_incoming_{osc::port::DEFAULT_INCOMING};
+    uint16_t port_outgoing_{osc::port::DEFAULT_OUTGOING};
+    int32_t handle_{-1};
+    const uint8_t* buffer_{nullptr};
+    uint32_t remote_ip_{0};
+    uint32_t bytes_received_{0};
+    uint16_t remote_port_{0};
+
+    static inline ShowFileOSC* s_this;
 };
 
-#endif /* SHOWFILEOSC_H_ */
+#endif // SHOWFILEOSC_H_

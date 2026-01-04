@@ -2,7 +2,7 @@
  * @file panel_led.h
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,10 +46,10 @@ static constexpr uint32_t PORT_A_RX = 0;
 static constexpr uint32_t PORT_A_TX = 0;
 }  // namespace panelled
 
-inline static void panel_led_on([[maybe_unused]] uint32_t  on) {
+inline static void PanelLedOn([[maybe_unused]] uint32_t  on) {
 }
 
-inline static void panel_led_off([[maybe_unused]] uint32_t  off) {
+inline static void PanelLedOff([[maybe_unused]] uint32_t  off) {
 }
 
 }  // namespace hal

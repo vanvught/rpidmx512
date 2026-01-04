@@ -2,7 +2,7 @@
  * @file l6470dmxmode0.cpp
  *
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,60 +28,64 @@
 
 #include "l6470dmxmode0.h"
 #include "l6470.h"
+ #include "firmware/debug/debug_debug.h"
 
-#include "motorparams.h"
+L6470DmxMode0::L6470DmxMode0(L6470* l6470)
+{
+    DEBUG_ENTRY();;
 
-#include "debug.h"
+    assert(l6470 != nullptr);
 
-L6470DmxMode0::L6470DmxMode0(L6470 *pL6470) {
-	DEBUG_ENTRY;
+    l6470_ = l6470;
 
-	assert(pL6470 != nullptr);
+    min_speed_ = l6470_->getMinSpeed();
+    max_speed_ = l6470_->getMaxSpeed();
 
-	m_pL6470 = pL6470;
-
-	m_fMinSpeed = m_pL6470->getMinSpeed();
-	m_fMaxSpeed = m_pL6470->getMaxSpeed();
-
-	DEBUG_EXIT;
+    DEBUG_EXIT();;
 }
 
-L6470DmxMode0::~L6470DmxMode0() {
-	DEBUG_ENTRY;
+L6470DmxMode0::~L6470DmxMode0()
+{
+    DEBUG_ENTRY();;
 
-	DEBUG_EXIT;
+    DEBUG_EXIT();;
 }
 
-void L6470DmxMode0::Start() {
-	DEBUG_ENTRY;
+void L6470DmxMode0::Start()
+{
+    DEBUG_ENTRY();;
 
-	m_pL6470->run(L6470_DIR_FWD, m_fMaxSpeed);
+    l6470_->run(L6470_DIR_FWD, max_speed_);
 
-	DEBUG_EXIT;
+    DEBUG_EXIT();;
 }
 
-void L6470DmxMode0::Stop() {
-	DEBUG_ENTRY;
+void L6470DmxMode0::Stop()
+{
+    DEBUG_ENTRY();;
 
-	m_pL6470->hardHiZ();
+    l6470_->hardHiZ();
 
-	DEBUG_EXIT;
+    DEBUG_EXIT();;
 }
 
-void L6470DmxMode0::Data(const uint8_t *pDmxData) {
-	DEBUG_ENTRY;
+void L6470DmxMode0::Data(const uint8_t* data)
+{
+    DEBUG_ENTRY();;
 
-	if (pDmxData[0] <= 126) {	// Left-hand rotation
-		m_pL6470->run(L6470_DIR_FWD, m_fMinSpeed + static_cast<float>((127 - pDmxData[0])) * ((m_fMaxSpeed - m_fMinSpeed) / 127));
-		return;
-	}
+    if (data[0] <= 126)
+    { // Left-hand rotation
+        l6470_->run(L6470_DIR_FWD, min_speed_ + static_cast<float>((127 - data[0])) * ((max_speed_ - min_speed_) / 127));
+        return;
+    }
 
-	if (pDmxData[0] >= 130) {	// Right-hand rotation
-		m_pL6470->run(L6470_DIR_REV, m_fMinSpeed + static_cast<float>((pDmxData[0] - 129)) * ((m_fMaxSpeed - m_fMinSpeed) / 127));
-		return;
-	}
+    if (data[0] >= 130)
+    { // Right-hand rotation
+        l6470_->run(L6470_DIR_REV, min_speed_ + static_cast<float>((data[0] - 129)) * ((max_speed_ - min_speed_) / 127));
+        return;
+    }
 
-	m_pL6470->softStop();
+    l6470_->softStop();
 
-	DEBUG_EXIT;
+    DEBUG_EXIT();;
 }

@@ -2,7 +2,7 @@
  * @file display.cpp
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,28 +23,27 @@
  * THE SOFTWARE.
  */
 
-#if defined (DEBUG_DISPLAY)
-# undef NDEBUG
+#if defined(DEBUG_DISPLAY)
+#undef NDEBUG
 #endif
-
-#include <cstdint>
 
 #include "h3.h"
 #include "h3_board.h"
 #include "h3_gpio.h"
+ #include "firmware/debug/debug_debug.h"
 
-#include "debug.h"
+namespace display::timeout
+{
+#define GPIO_PORTx (H3_GPIO_TO_PORT(DISPLAYTIMEOUT_GPIO))
+#define INT_MASK (1U << H3_GPIO_TO_NUMBER(DISPLAYTIMEOUT_GPIO))
 
-namespace display::timeout {
-#define GPIO_PORTx	(H3_GPIO_TO_PORT(DISPLAYTIMEOUT_GPIO))
-#define INT_MASK  	(1U << H3_GPIO_TO_NUMBER(DISPLAYTIMEOUT_GPIO))
-
-	void irq_init() {
-		DEBUG_ENTRY
-		DEBUG_PRINTF("GPIO_PORTx=%u, INT_MASK=0x%x", GPIO_PORTx, INT_MASK);
+void irq_init()
+{
+    DEBUG_ENTRY();
+    DEBUG_PRINTF("GPIO_PORTx=%u, INT_MASK=0x%x", GPIO_PORTx, INT_MASK);
 #if 0
-		h3_gpio_fsel(DISPLAYTIMEOUT_GPIO, GPIO_FSEL_EINT);
-		h3_gpio_int_cfg(DISPLAYTIMEOUT_GPIO, GPIO_INT_CFG_NEG_EDGE);
+		H3GpioFsel(DISPLAYTIMEOUT_GPIO, GPIO_FSEL_EINT);
+		H3GpioIntCfg(DISPLAYTIMEOUT_GPIO, GPIO_INT_CFG_NEG_EDGE);
 
 		if constexpr (GPIO_PORTx == H3_GPIO_PORTA) {
 			H3_PIO_PA_INT->STA = INT_MASK;
@@ -58,6 +57,6 @@ namespace display::timeout {
 			static_assert("IRQ is not available");
 		}
 #endif
-		DEBUG_EXIT
-	}
-}  // namespace display::timeout
+    DEBUG_EXIT();
+}
+} // namespace display::timeout

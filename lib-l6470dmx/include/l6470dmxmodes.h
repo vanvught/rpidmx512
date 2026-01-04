@@ -31,62 +31,50 @@
 #include "l6470.h"
 #include "l6470dmxmode.h"
 
-#include "motorparams.h"
-#include "modeparams.h"
+class L6470DmxModes
+{
+   public:
+    L6470DmxModes(TL6470DmxModes dmxmode, uint16_t dmx_start_address, L6470*, uint32_t motor_index);
+    ~L6470DmxModes();
 
-class L6470DmxModes {
+    void InitSwitch();
+    void InitPos();
 
-public:
-	L6470DmxModes(TL6470DmxModes, uint16_t, L6470 *, MotorParams *, ModeParams *);
-	~L6470DmxModes();
+    void HandleBusy();
+    bool BusyCheck();
 
-	void InitSwitch();
-	void InitPos();
+    bool IsDmxDataChanged(const uint8_t* dmx_data, uint32_t length);
+    void DmxData(const uint8_t* dmx_data, uint32_t length);
 
-	void HandleBusy();
-	bool BusyCheck();
+    void Start();
+    void Stop();
 
-	bool IsDmxDataChanged(const uint8_t *pDmxData, uint32_t nLength);
-	void DmxData(const uint8_t *pDmxData, uint32_t nLength);
+    void Print();
 
-	void Start();
-	void Stop();
+    TL6470DmxModes GetMode() { return dmxmode_; }
 
-	void Print();
+   public: // RDM
+    void SetDmxStartAddress(uint16_t dmx_start_address) { dmx_start_address_ = dmx_start_address; }
+    uint16_t GetDmxStartAddress() { return dmx_start_address_; }
 
-	TL6470DmxModes GetMode() {
-		return m_nMode;
-	}
+    uint16_t GetDmxFootPrint() { return dmx_footprint_; }
 
-public: // RDM
-	uint16_t GetDmxStartAddress() {
-		return m_nDmxStartAddress;
-	}
+   public:
+    static uint16_t GetDmxFootPrintMode(uint32_t);
 
-	void SetDmxStartAddress(uint16_t nDmxStartAddress) {
-		m_nDmxStartAddress = nDmxStartAddress;
-	}
+   private:
+    bool IsDmxDataChanged(const uint8_t*);
 
-	uint16_t GetDmxFootPrint() {
-		return m_DmxFootPrint;
-	}
+   private:
+    bool started_{false};
 
-public:
-	static uint16_t GetDmxFootPrintMode(uint32_t);
-
-private:
-	bool IsDmxDataChanged(const uint8_t *);
-
-private:
-	bool m_bIsStarted{false};
-
-private:
-	uint8_t m_nMotorNumber { 0 };
-	TL6470DmxModes m_nMode { L6470DMXMODE_UNDEFINED };
-	uint16_t m_nDmxStartAddress;
-	L6470DmxMode *m_pDmxMode { nullptr };
-	uint16_t m_DmxFootPrint { 0 };
-	uint8_t *m_pDmxData;
+   private:
+    uint8_t motor_number_{0};
+    TL6470DmxModes dmxmode_{L6470DMXMODE_UNDEFINED};
+    uint16_t dmx_start_address_;
+    L6470DmxMode* l6470_dmxmode_{nullptr};
+    uint16_t dmx_footprint_{0};
+    uint8_t* dmx_data_;
 };
 
-#endif /* L6470DMXMODES_H_ */
+#endif  // L6470DMXMODES_H_

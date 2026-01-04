@@ -1,6 +1,6 @@
 async function refresh() {
   try {
-    let data=await getJSON('rdm/portstatus')
+    let data=await getJSON('status/rdm')
     let h='<tr><th>Port</th><th>Direction</th><th>Status</th></tr>'
     
     data.forEach(item => {
@@ -10,11 +10,11 @@ async function refresh() {
     document.getElementById("idCfg").innerHTML=h
     
     let tr=await Promise.all(
-      data.map(item => getJSON('rdm/tod?' + item.port).then(response => ({ port: item.port, tod: response.tod })))
+      data.map(item => getJSON('status/rdm/tod?' + item.port).then(response => ({ port: item.port, tod: response.tod })))
     );
 
     try {
-      let q=await getJSON('rdm/queue')
+      let q=await getJSON('status/rdm/queue')
       h='';
       q.uid.forEach(uid => {
         h+=`<tr><td colspan="3">${uid}</td></tr>`

@@ -23,183 +23,150 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
 #include <cstdio>
-#include <cassert>
 
-#include "hal.h"
+#include "h3/hal.h"
+#include "h3/hal_watchdog.h"
 #include "network.h"
-
 #include "displayudf.h"
-#include "displayudfparams.h"
-
+#include "json/displayudfparams.h"
 #include "dmxnodenode.h"
 #include "dmxnodemsgconst.h"
-
-#include "rdmdeviceresponder.h"
 #include "rdmpersonality.h"
-#include "rdmdeviceparams.h"
-#include "rdmsensorsparams.h"
-#if defined (CONFIG_RDM_ENABLE_SUBDEVICES)
-# include "rdmsubdevicesparams.h"
-#endif
-
 #include "artnetrdmresponder.h"
-
-#include "tlc59711dmxparams.h"
+#include "tlc59711.h"
+#include "json/tlc59711dmxparams.h"
 #include "tlc59711dmx.h"
-
 #include "dmxnodechain.h"
-
 #include "flashcodeinstall.h"
 #include "configstore.h"
 #include "remoteconfig.h"
-#include "remoteconfigparams.h"
-
 #include "sparkfundmx.h"
 #include "sparkfundmxconst.h"
-
-#if defined (NODE_SHOWFILE)
-# include "showfile.h"
-# include "showfileparams.h"
+#if defined(NODE_SHOWFILE)
+#include "showfile.h"
 #endif
-
 #include "firmwareversion.h"
 #include "software_version.h"
+#include "common/utils/utils_enum.h"
+#include "configurationstore.h"
 
-#include "displayhandler.h"
-
-namespace hal {
-void reboot_handler() {
-	ArtNetNode::Get()->Stop();
+namespace hal
+{
+void RebootHandler()
+{
+    ArtNetNode::Get()->Stop();
 }
-}  // namespace hal
+} // namespace hal
 
-int main() {
-	hal_init();
-	DisplayUdf display;
-	ConfigStore configStore;
-	Network nw;
-	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
-	FlashCodeInstall spiFlashInstall;
+int main() // NOLINT
+{
+    hal::Init();
+    DisplayUdf display;
+    ConfigStore config_store;
+    network::Init();
+    FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+    FlashCodeInstall spiflash_install;
 
-	fw.Print("Art-Net 4 Stepper L6470");
+    fw.Print("Art-Net 4 Stepper L6470");
 
-	display.TextStatus(SparkFunDmxConst::MSG_INIT, CONSOLE_YELLOW);
+    display.TextStatus(SparkFunDmxConst::MSG_INIT, console::Colours::kConsoleYellow);
 
-	DmxNodeChain dmxNodeChain;
+    DmxNodeChain dmxnode_chain;
 
-	SparkFunDmx sparkFunDmx;
-	dmxNodeChain.SetSparkfunDmx(&sparkFunDmx);
+    SparkFunDmx spark_fun_dmx;
+    dmxnode_chain.SetSparkfunDmx(&spark_fun_dmx);
 
-	sparkFunDmx.ReadConfigFiles();
+    spark_fun_dmx.ReadConfigFiles();
 
-	auto nMotorsConnected = sparkFunDmx.GetMotorsConnected();
-	auto isLedTypeSet = false;
+    auto motors_connected = spark_fun_dmx.GetMotorsConnected();
 
-	TLC59711DmxParams pwmledparms;
-	pwmledparms.Load();
+    TLC59711Dmx tlc59711dmx;
 
-	TLC59711Dmx tlc59711Dmx;
+    json::Tlc59711DmxParams pwmledparms;
+    pwmledparms.Load();
+    pwmledparms.Set();
 
-	if ((isLedTypeSet = pwmledparms.IsSetLedType())) {
-		dmxNodeChain.SetTLC59711Dmx(&tlc59711Dmx);
-	}
+    const auto kType = common::FromValue<tlc59711::Type>(ConfigStore::Instance().DmxLedGet(&common::store::DmxLed::type));
+    const auto kIsLedTypeSet = kType != tlc59711::Type::kUndefined;
 
-	char aDescription[64];
-	if (isLedTypeSet) {
-		snprintf(aDescription, sizeof(aDescription) - 1, "Sparkfun [%d] with %s [%d]", nMotorsConnected, pwmledparms.GetType(pwmledparms.GetLedType()), pwmledparms.GetLedCount());
-	} else {
-		snprintf(aDescription, sizeof(aDescription) - 1, "Sparkfun [%d]", nMotorsConnected);
-	}
+    char description[64];
 
-	DmxNodeNode dmxNodeNode;
+    if (kIsLedTypeSet)
+    {
+        dmxnode_chain.SetTLC59711Dmx(&tlc59711dmx);
+        snprintf(description, sizeof(description) - 1, "Sparkfun [%d] with %s [%d]", motors_connected, tlc59711::GetType(tlc59711dmx.GetType()),
+                 tlc59711dmx.GetCount());
+    }
+    else
+    {
+        snprintf(description, sizeof(description) - 1, "Sparkfun [%d]", motors_connected);
+    }
+
+    DmxNodeNode dmxnode_node;
+
+    dmxnode_node.SetLongName(description);
+    dmxnode_node.SetOutput(&dmxnode_chain);
 	
-	dmxNodeNode.SetLongName(aDescription);
-	dmxNodeNode.SetOutput(&dmxNodeChain);
+	auto& rdm_device = RdmDevice::Get();
 
-	RDMPersonality *pRDMPersonalities[1] = { new  RDMPersonality(aDescription, &dmxNodeChain)};
+	rdm_device.SetProductCategory(E120_PRODUCT_CATEGORY_FIXTURE);
+	rdm_device.SetProductDetail(E120_PRODUCT_DETAIL_LED);
+	rdm_device.Init();
+	rdm_device.Print();
 
-	ArtNetRdmResponder rdmResponder(pRDMPersonalities, 1);
+    RDMPersonality* rdm_personalities[1] = {new RDMPersonality(description, &dmxnode_chain)};
 
-	rdmResponder.SetProductCategory(E120_PRODUCT_CATEGORY_FIXTURE);
-	rdmResponder.SetProductDetail(E120_PRODUCT_DETAIL_LED);
+    ArtNetRdmResponder rdm_responder(rdm_personalities, 1);
 
-	RDMSensorsParams rdmSensorsParams;
-	rdmSensorsParams.Load();
-	rdmSensorsParams.Set();
+    dmxnode_node.SetRdmResponder(&rdm_responder);
+    dmxnode_node.Print();
 
-#if defined (CONFIG_RDM_ENABLE_SUBDEVICES)
-	RDMSubDevicesParams rdmSubDevicesParams;
-	rdmSubDevicesParams.Load();
-	rdmSubDevicesParams.Set();
+    dmxnode_chain.Print();
+
+#if defined(NODE_SHOWFILE)
+    ShowFile showfile;
+
+    {
+    }
+
+    showfile.Print();
 #endif
 
-	rdmResponder.Init();
+    display.SetTitle("Art-Net 4 L6470");
+    display.Set(2, displayudf::Labels::kIp);
+    display.Set(3, displayudf::Labels::kVersion);
+    display.Set(4, displayudf::Labels::kHostname);
+    display.Set(5, displayudf::Labels::kDmxStartAddress);
 
-	RDMDeviceParams rdmDeviceParams;
-	rdmDeviceParams.Load();
-	rdmDeviceParams.Set(&rdmResponder);
+    json::DisplayUdfParams displayudf_params;
+    displayudf_params.Load();
+    displayudf_params.SetAndShow();
 
-	rdmResponder.Print();
+    if (kIsLedTypeSet)
+    {
+        display.Printf(7, "%s:%d", tlc59711::GetType(tlc59711dmx.GetType()), tlc59711dmx.GetCount());
+    }
 
-	dmxNodeNode.SetRdmResponder(&rdmResponder);
-	dmxNodeNode.Print();
+    RemoteConfig remote_config(remoteconfig::Output::STEPPER, dmxnode_node.GetActiveOutputPorts());
 
-	dmxNodeChain.Print();
+    display.TextStatus(DmxNodeMsgConst::START, console::Colours::kConsoleYellow);
 
-#if defined (NODE_SHOWFILE)
-	ShowFile showFile;
+    dmxnode_node.Start();
 
-	ShowFileParams showFileParams;
-	showFileParams.Load();
-	showFileParams.Set();
+    display.TextStatus(DmxNodeMsgConst::STARTED, console::Colours::kConsoleGreen);
 
-	if (showFile.IsAutoStart()) {
-		showFile.Play();
-	}
+    hal::WatchdogInit();
 
-	showFile.Print();
+    for (;;)
+    {
+        hal::WatchdogFeed();
+        network::Run();
+        dmxnode_node.Run();
+#if defined(NODE_SHOWFILE)
+        showfile.Run();
 #endif
-
-	display.SetTitle("Art-Net 4 L6470");
-	display.Set(2, displayudf::Labels::IP);
-	display.Set(3, displayudf::Labels::VERSION);
-	display.Set(4, displayudf::Labels::HOSTNAME);
-	display.Set(5, displayudf::Labels::DMX_START_ADDRESS);
-
-	DisplayUdfParams displayUdfParams;
-	displayUdfParams.Load();
-	displayUdfParams.Set(&display);
-
-	display.Show();
-
-	if (isLedTypeSet) {
-		display.Printf(7, "%s:%d", pwmledparms.GetType(pwmledparms.GetLedType()), pwmledparms.GetLedCount());
-	}
-
-	RemoteConfig remoteConfig(remoteconfig::NodeType::ARTNET, remoteconfig::Output::STEPPER, dmxNodeNode.GetActiveOutputPorts());
-
-	RemoteConfigParams remoteConfigParams;
-	remoteConfigParams.Load();
-	remoteConfigParams.Set(&remoteConfig);
-
-	display.TextStatus(DmxNodeMsgConst::START, CONSOLE_YELLOW);
-
-	dmxNodeNode.Start();
-
-	display.TextStatus(DmxNodeMsgConst::STARTED, CONSOLE_GREEN);
-
-	hal::watchdog_init();
-
-	for (;;) {
-		hal::watchdog_feed();
-		nw.Run();
-		dmxNodeNode.Run();
-#if defined (NODE_SHOWFILE)
-		showFile.Run();
-#endif
-		display.Run();
-		hal::run();
-	}
+        display.Run();
+        hal::Run();
+    }
 }

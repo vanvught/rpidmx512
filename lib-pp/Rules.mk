@@ -6,4 +6,4 @@ else
 	DEFINES+=DMXNODE_PORTS=32
 endif
 
-EXTRA_INCLUDES =../lib-properties/include ../lib-network/include 
+EXTRA_INCLUDES =../lib-network/include 

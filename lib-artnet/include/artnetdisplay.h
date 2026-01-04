@@ -31,16 +31,15 @@
 #include "artnet.h"
 #include "dmxnode.h"
 
-namespace artnet {
-void display_longname(const char *pLongName);
-void display_universe_switch(uint32_t nPortIndex, uint8_t nAddress);
-void display_net_switch(uint8_t nAddress);
-void display_subnet_switch(uint8_t nAddress);
-void display_merge_mode(uint32_t nPortIndex, dmxnode::MergeMode mergeMode);
-void display_outputstyle(const uint32_t nPortIndex, const dmxnode::OutputStyle outputStyle);
-void display_port_protocol(uint32_t nPortIndex, artnet::PortProtocol portProtocol);
-void display_rdm_enabled(uint32_t nPortIndex, bool isEnabled);
-void display_failsafe(uint8_t nFailsafe);
-}  // namespace artnet
+namespace artnet::display
+{
+void Longname(const char* long_name);
+void Universe(uint32_t port_index, uint32_t universe);
+void MergeMode(uint32_t port_index, dmxnode::MergeMode merge_mode);
+void Outputstyle(uint32_t port_index, dmxnode::OutputStyle output_style);
+void Protocol(uint32_t port_index, artnet::PortProtocol port_protocol);
+void RdmEnabled(uint32_t port_index, bool is_enabled);
+void Failsafe(uint8_t failsafe);
+} // namespace artnet::display
 
-#endif /* ARTNETDISPLAY_H_ */
+#endif  // ARTNETDISPLAY_H_

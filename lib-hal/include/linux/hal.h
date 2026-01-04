@@ -31,102 +31,40 @@
 
 #include "superloop/softwaretimers.h"
 
-#include "debug.h"
+ #include "firmware/debug/debug_debug.h"
 
-enum class Board {
-	TYPE_LINUX,
-	TYPE_RASPBIAN,
-	TYPE_OSX,
-	TYPE_UNKNOWN
+enum class Board
+{
+    TYPE_LINUX,
+    TYPE_RASPBIAN,
+    TYPE_OSX,
+    TYPE_UNKNOWN
 };
 
 Board linux_board_type();
-const char *linux_board_name(uint8_t& nLength);
-const char *linux_soc_name(uint8_t& nLength);
-const char *linux_cpu_name(uint8_t& nLength);
-const char *linux_machine_name(uint8_t& nLength);
-const char *linux_sys_name(uint8_t& nLength);
 void linux_print();
-float linux_core_temperature_current();
+float linux_CoreTemperatureCurrent();
 uint32_t linux_micros();
 uint32_t linux_millis();
 bool linux_reboot();
 
-namespace hal {
-static constexpr uint32_t BOARD_ID = 0;
-static constexpr uint32_t RELEASE_ID = 0;
-static constexpr const char WEBSITE[] = "www.gd32-dmx.org";
+namespace hal
+{
+static constexpr uint32_t kBoardId = 0;
+static constexpr uint32_t kReleaseId = 0;
+static constexpr const char kWebsite[] = "www.gd32-dmx.org";
+static constexpr float kCoreTemperatureMin = -40.0;
+static constexpr float kCoreTemperatureMax = +90.0;
 
-inline const char *board_name(uint8_t &nLength) {
-	return linux_board_name(nLength);
+inline void print()
+{
+    linux_print();
 }
 
-inline const char *soc_name(uint8_t &nLength) {
-	return linux_soc_name(nLength);
+inline void Run()
+{
+    SoftwareTimerRun();
 }
+} // namespace hal
 
-inline const char *cpu_name(uint8_t &nLength) {
-	return linux_cpu_name(nLength);
-}
-
-inline const char *machine_name(uint8_t &nLength) {
-	return linux_machine_name(nLength);
-}
-
-inline const char *sys_name(uint8_t &nLength) {
-	return linux_sys_name(nLength);
-}
-
-uint32_t get_uptime();
-
-inline hal::BootDevice boot_device() {
-#if defined (RASPPI)
-	return hal::BootDevice::MMC0;
-#else
-	return hal::BootDevice::HDD;
-#endif
-}
-
-inline uint32_t millis() {
-	return linux_millis();
-}
-
-inline uint32_t micros() {
-	return linux_micros();
-}
-
-inline uint32_t uptime() {
-	return hal::get_uptime();
-}
-
-inline bool set_rtc([[maybe_unused]] const struct tm *pTime) {
-	DEBUG_PRINTF("%s", asctime(pTime));
-	return true;
-}
-
-static constexpr float CORE_TEMPERATURE_MIN = -40.0;
-static constexpr float CORE_TEMPERATURE_MAX = +90.0;
-
-inline float core_temperature_current() {
-	return linux_core_temperature_current();
-}
-
-inline void print() {
-	linux_print();
-}
-
-inline bool watchdog() { return false; } // Not implemented
-inline void watchdog_init() { } // Not implemented
-inline void watchdog_feed() { } // Not implemented
-inline void watchdog_stop() { } // Not implemented
-
-inline bool reboot() {
-	return linux_reboot();
-}
-
-inline void run() {
-	SoftwareTimerRun();
-}
-}  // namespace hal
-
-#endif /* LINUX_HAL_H_ */
+#endif  // LINUX_HAL_H_

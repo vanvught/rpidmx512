@@ -23,11 +23,14 @@
  * THE SOFTWARE.
  */
 
-void console_puts(const char *);
-void console_putc(int);
+namespace console
+{
+void Puts(const char*);
+void Putc(int);
+} // namespace console
 
-extern "C" int puts(const char *s) {
-	console_puts(s);
-	console_putc('\n');
-	return 1;
+extern "C" int puts(const char* s) //NOLINT
+{
+    console::Puts(s);
+    return 1;
 }

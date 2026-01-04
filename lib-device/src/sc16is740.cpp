@@ -24,213 +24,213 @@
  */
 
 #include <cstdint>
-#include <cassert>
 
 #include "sc16is740.h"
 #include "sc16is7x0.h"
 
+#include "hal_millis.h"
 #include "hal_i2c.h"
+#include "firmware/debug/debug_printbits.h"
+ #include "firmware/debug/debug_debug.h"
 
-#include "debug.h"
-
-SC16IS740::SC16IS740(uint8_t nAddress, uint32_t nOnBoardCrystal) :
-	HAL_I2C(nAddress, HAL_I2C::FULL_SPEED),
-	m_nOnBoardCrystal(nOnBoardCrystal)
+SC16IS740::SC16IS740(uint8_t address, uint32_t on_board_crystal) :
+	HAL_I2C(address, HAL_I2C::FULL_SPEED),
+	on_board_crystal_hz_(on_board_crystal)
 {
-	m_IsConnected = IsConnected();
+	is_connected_ = IsConnected();
 
-	if (!m_IsConnected) {
+	if (!is_connected_) {
 		DEBUG_PRINTF("Not connected at address %.2x", GetAddress());
 		return;
 	}
 
-	SetFormat(8, SerialParity::NONE, 1);
+	SetFormat(8, SerialParity::kNone, 1);
 	SetBaud(SC16IS7X0_DEFAULT_BAUDRATE);
 
-	const uint8_t nTestCharacter = 'A';
-	WriteRegister(SC16IS7X0_SPR, nTestCharacter);
+	const uint8_t kTestCharacter = 'A';
+	WriteRegister(SC16IS7X0_SPR, kTestCharacter);
 
-	if ((ReadRegister(SC16IS7X0_SPR) != nTestCharacter)) {
+	if ((ReadRegister(SC16IS7X0_SPR) != kTestCharacter)) {
 		DEBUG_PUTS("Test character failed");
-		m_IsConnected = false;
+		is_connected_ = false;
 		return ;
 	}
 
-	auto nRegisterMCR = ReadRegister(SC16IS7X0_MCR);
-	nRegisterMCR |= MCR_ENABLE_TCR_TLR;
-	WriteRegister(SC16IS7X0_MCR, nRegisterMCR);
+	auto register_mcr = ReadRegister(SC16IS7X0_MCR);
+	register_mcr |= MCR_ENABLE_TCR_TLR;
+	WriteRegister(SC16IS7X0_MCR, register_mcr);
 
-	auto nRegisterEFR = ReadRegister(SC16IS7X0_EFR);
-	WriteRegister(SC16IS7X0_EFR, static_cast<uint8_t>(nRegisterEFR | EFR_ENABLE_ENHANCED_FUNCTIONS));
+	auto register_efr = ReadRegister(SC16IS7X0_EFR);
+	WriteRegister(SC16IS7X0_EFR, static_cast<uint8_t>(register_efr | EFR_ENABLE_ENHANCED_FUNCTIONS));
 
 	WriteRegister(SC16IS7X0_TLR, static_cast<uint8_t>(0x10));
 
-	WriteRegister(SC16IS7X0_EFR, nRegisterEFR);
+	WriteRegister(SC16IS7X0_EFR, register_efr);
 
 	WriteRegister(SC16IS7X0_FCR, static_cast<uint8_t>(FCR_RX_FIFO_RST | FCR_TX_FIFO_RST));
 	WriteRegister(SC16IS7X0_FCR, FCR_ENABLE_FIFO);
 	WriteRegister(SC16IS7X0_IER, static_cast<uint8_t>(IER_ELSI | IER_ERHRI));
 
 	DEBUG_PRINTF("TLR=%.2x", ReadRegister(SC16IS7X0_TLR));
-	debug_print_bits(ReadRegister(SC16IS7X0_TLR));
+	debug::PrintBits(ReadRegister(SC16IS7X0_TLR));
 
 	DEBUG_PRINTF("IER=%.2x", ReadRegister(SC16IS7X0_IER));
-	debug_print_bits(ReadRegister(SC16IS7X0_IER));
+	debug::PrintBits(ReadRegister(SC16IS7X0_IER));
 
 	DEBUG_PRINTF("IIR=%.2x", ReadRegister(SC16IS7X0_IIR));
-	debug_print_bits(ReadRegister(SC16IS7X0_IIR));
+	debug::PrintBits(ReadRegister(SC16IS7X0_IIR));
 }
 
-void SC16IS740::SetFormat(uint32_t nBits, SerialParity tParity,  uint32_t nStopBits) {
-	uint8_t nRegisterLCR = 0x00;
+void SC16IS740::SetFormat(uint32_t bits, SerialParity parity,  uint32_t stop_bits) {
+	uint8_t register_lcr = 0x00;
 
-	switch (nBits) {
+	switch (bits) {
 	case 5:
-		nRegisterLCR |= LCR_BITS5;
+		register_lcr |= LCR_BITS5;
 		break;
 	case 6:
-		nRegisterLCR |= LCR_BITS6;
+		register_lcr |= LCR_BITS6;
 		break;
 	case 7:
-		nRegisterLCR |= LCR_BITS7;
+		register_lcr |= LCR_BITS7;
 		break;
 	case 8:
-		nRegisterLCR |= LCR_BITS8;
+		register_lcr |= LCR_BITS8;
 		break;
 	default:
-		nRegisterLCR |= LCR_BITS8;
+		register_lcr |= LCR_BITS8;
 	}
 
-	switch (tParity) {
-	case SerialParity::NONE:
-		nRegisterLCR |= LCR_NONE;
+	switch (parity) {
+	case SerialParity::kNone:
+		register_lcr |= LCR_NONE;
 		break;
-	case SerialParity::ODD:
-		nRegisterLCR |= LCR_ODD;
+	case SerialParity::kOdd:
+		register_lcr |= LCR_ODD;
 		break;
-	case SerialParity::EVEN:
-		nRegisterLCR |= LCR_EVEN;
+	case SerialParity::kEven:
+		register_lcr |= LCR_EVEN;
 		break;
-	case SerialParity::FORCED1:
-		nRegisterLCR |= LCR_FORCED1;
+	case SerialParity::kForceD1:
+		register_lcr |= LCR_FORCED1;
 		break;
-	case SerialParity::FORCED0:
-		nRegisterLCR |= LCR_FORCED0;
+	case SerialParity::kForceD0:
+		register_lcr |= LCR_FORCED0;
 		break;
 	default:
-		nRegisterLCR |= LCR_NONE;
+		register_lcr |= LCR_NONE;
 	}
 
-	switch (nStopBits) {
+	switch (stop_bits) {
 	case 1:
-		nRegisterLCR |= LCR_BITS1;
+		register_lcr |= LCR_BITS1;
 		break;
 	case 2:
-		nRegisterLCR |= LCR_BITS2;
+		register_lcr |= LCR_BITS2;
 		break;
 	default:
-		nRegisterLCR |= LCR_BITS1;
+		register_lcr |= LCR_BITS1;
 	}
 
-	WriteRegister(SC16IS7X0_LCR, nRegisterLCR);
+	WriteRegister(SC16IS7X0_LCR, register_lcr);
 
-	DEBUG_PRINTF("LCR=%.2x:%.2x", ReadRegister(SC16IS7X0_LCR), nRegisterLCR);
+	DEBUG_PRINTF("LCR=%.2x:%.2x", ReadRegister(SC16IS7X0_LCR), register_lcr);
 }
 
-void SC16IS740::SetBaud(uint32_t nBaud) {
-	uint32_t nPrescaler;
+void SC16IS740::SetBaud(uint32_t baud) {
+	uint32_t prescaler;
 
 	if ((ReadRegister(SC16IS7X0_MCR) & MCR_PRESCALE_4) == MCR_PRESCALE_4) {
-		nPrescaler = 4;
+		prescaler = 4;
 	} else {
-		nPrescaler = 1;
+		prescaler = 1;
 	}
 
-	const uint32_t nDivisor = ((m_nOnBoardCrystal / nPrescaler) / (nBaud * 16));
-	const auto nRegisterLCR = ReadRegister(SC16IS7X0_LCR);
+	const uint32_t kDivisor = ((on_board_crystal_hz_ / prescaler) / (baud * 16U));
+	const auto kRegisterLcr = ReadRegister(SC16IS7X0_LCR);
 
-	WriteRegister(SC16IS7X0_LCR, static_cast<uint8_t>(nRegisterLCR | LCR_ENABLE_DIV));
-	WriteRegister(SC16IS7X0_DLL, static_cast<uint8_t>(nDivisor & 0xFF));
-	WriteRegister(SC16IS7X0_DLH, static_cast<uint8_t>((nDivisor >> 8) & 0xFF));
-	WriteRegister(SC16IS7X0_LCR, nRegisterLCR);
+	WriteRegister(SC16IS7X0_LCR, static_cast<uint8_t>(kRegisterLcr | LCR_ENABLE_DIV));
+	WriteRegister(SC16IS7X0_DLL, static_cast<uint8_t>(kDivisor & 0xFF));
+	WriteRegister(SC16IS7X0_DLH, static_cast<uint8_t>((kDivisor >> 8) & 0xFF));
+	WriteRegister(SC16IS7X0_LCR, kRegisterLcr);
 
-	DEBUG_PRINTF("nPrescaler=%u", nPrescaler);
-	DEBUG_PRINTF("nDivisor=%u", nDivisor);
-	DEBUG_PRINTF("m_nOnBoardCrystal=%u", m_nOnBoardCrystal);
+	DEBUG_PRINTF("prescaler=%u", prescaler);
+	DEBUG_PRINTF("kDivisor=%u", kDivisor);
+	DEBUG_PRINTF("on_board_crystal_hz_=%u", on_board_crystal_hz_);
 
-	DEBUG_PRINTF("LCR=%.2x:%.2x", ReadRegister(SC16IS7X0_LCR), nRegisterLCR);
+	DEBUG_PRINTF("LCR=%.2x:%.2x", ReadRegister(SC16IS7X0_LCR), kRegisterLcr);
 }
 
-void SC16IS740::WriteBytes(const uint8_t *pBytes, uint32_t nSize) {
-	if (!m_IsConnected) {
+void SC16IS740::WriteBytes(const uint8_t *bytes, uint32_t size) {
+	if (!is_connected_) {
 		return;
 	}
 
-	auto *p = const_cast<uint8_t *>(pBytes);
+	auto *p = const_cast<uint8_t *>(bytes);
 
-	while (nSize > 0) {
-		uint32_t nAvailable = ReadRegister(SC16IS7X0_TXLVL);
+	while (size > 0) {
+		uint32_t available = ReadRegister(SC16IS7X0_TXLVL);
 
-		while ((nSize > 0) && (nAvailable > 0)) {
+		while ((size > 0) && (available > 0)) {
 			WriteRegister(SC16IS7X0_THR, *p);
-			nSize--;
-			nAvailable--;
+			size--;
+			available--;
 			p++;
 		}
 	}
 }
 
-void SC16IS740::ReadBytes(uint8_t *pBytes, uint32_t& nSize, uint32_t nTimeOut) {
-	if (!m_IsConnected) {
-		nSize = 0;
+void SC16IS740::ReadBytes(uint8_t *bytes, uint32_t& size, uint32_t time_out) {
+	if (!is_connected_) {
+		size = 0;
 		return;
 	}
 
-	auto *Destination = pBytes;
-	uint32_t nRemaining = nSize;
+	auto *destination = bytes;
+	uint32_t remaining = size;
 
-	while (nRemaining > 0) {
-		const uint32_t nMillis =hal::millis();
-		uint32_t nAvailable;
+	while (remaining > 0) {
+		const uint32_t kMillis =hal::Millis();
+		uint32_t available;
 
-		while ((nAvailable = ReadRegister(SC16IS7X0_RXLVL)) == 0) {
-			if ((hal::millis() - nTimeOut) > nMillis) {
-				nRemaining = 0;
+		while ((available = ReadRegister(SC16IS7X0_RXLVL)) == 0) {
+			if ((hal::Millis() - time_out) > kMillis) {
+				remaining = 0;
 				break;
 			}
 		}
 
-		while ((nRemaining > 0) && (nAvailable > 0)) {
-			*Destination++ = ReadRegister(SC16IS7X0_RHR);
-			nRemaining--;
-			nAvailable--;
+		while ((remaining > 0) && (available > 0)) {
+			*destination++ = ReadRegister(SC16IS7X0_RHR);
+			remaining--;
+			available--;
 		}
 	}
 
-	nSize = static_cast<uint16_t>(Destination - pBytes);
+	size = static_cast<uint16_t>(destination - bytes);
 }
 
-void SC16IS740::FlushRead(uint32_t nTimeOut) {
-	if (!m_IsConnected) {
+void SC16IS740::FlushRead(uint32_t time_out) {
+	if (!is_connected_) {
 		return;
 	}
 
-	bool bIsRemaining = true;
+	bool is_remaining = true;
 
-	while (bIsRemaining) {
-		const auto nMillis =hal::millis();
-		uint32_t nAvailable;
+	while (is_remaining) {
+		const auto kMillis = hal::Millis();
+		uint32_t available;
 
-		while ((nAvailable = ReadRegister(SC16IS7X0_RXLVL)) == 0) {
-			if ((hal::millis() - nTimeOut) > nMillis) {
-				bIsRemaining = false;
+		while ((available = ReadRegister(SC16IS7X0_RXLVL)) == 0) {
+			if ((hal::Millis() - time_out) > kMillis) {
+				is_remaining = false;
 				break;
 			}
 		}
 
-		while (nAvailable > 0) {
+		while (available > 0) {
 			ReadRegister(SC16IS7X0_RHR);
-			nAvailable--;
+			available--;
 		}
 	}
 }

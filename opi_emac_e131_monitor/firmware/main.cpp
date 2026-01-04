@@ -26,153 +26,114 @@
 #include <cstdint>
 #include <cstdio>
 
-#include "hal.h"
+#include "h3/hal.h"
+#include "h3/hal_watchdog.h"
 #include "network.h"
-
 #include "console.h"
 #include "h3/showsystime.h"
-
 #include "displayudf.h"
-#include "displayudfparams.h"
+#include "json/displayudfparams.h"
 #include "displayhandler.h"
-
 #include "dmxnodenode.h"
-#include "dmxnodeparams.h"
 #include "dmxnodemsgconst.h"
-
 #include "dmxmonitor.h"
-
 #include "dmxnode.h"
-
-#if defined (NODE_RDMNET_LLRP_ONLY)
-# include "rdmdeviceparams.h"
-# include "rdmnetdevice.h"
-# include "rdmnetconst.h"
-# include "rdmpersonality.h"
-# include "rdm_e120.h"
+#if defined(NODE_RDMNET_LLRP_ONLY)
+#include "rdmnetdevice.h"
+#include "rdmdevice.h"
+#include "rdm_e120.h"
 #endif
-
-#if defined (NODE_SHOWFILE)
-# include "showfile.h"
-# include "showfileparams.h"
+#if defined(NODE_SHOWFILE)
+#include "showfile.h"
 #endif
-
 #include "remoteconfig.h"
-#include "remoteconfigparams.h"
-
 #include "flashcodeinstall.h"
 #include "configstore.h"
-
 #include "firmwareversion.h"
 #include "software_version.h"
 
-namespace hal {
-void reboot_handler() {
+namespace hal
+{
+void RebootHandler() {}
+} // namespace hal
+
+int main() // NOLINT
+{
+    hal::Init();
+    DisplayUdf display;
+    ConfigStore config_store;
+    network::Init();
+    FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+    FlashCodeInstall spiflash_install;
+
+    console::Clear();
+
+    fw.Print();
+
+    console::Puts("sACN E1.31 ");
+    console::SetFgColour(console::Colours::kConsoleGreen);
+    console::Puts("Real-time DMX Monitor");
+    console::SetFgColour(console::Colours::kConsoleWhite);
+    console::SetTopRow(2);
+
+    DmxNodeNode dmxnode_node;
+    ShowSystime show_systime;
+
+#if defined(NODE_RDMNET_LLRP_ONLY)
+    auto& rdm_device = RdmDevice::Get();
+    rdm_device.SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
+    rdm_device.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
+    rdm_device.Init();
+    rdm_device.Print();
+
+    RDMNetDevice llrp_only_device;
+#endif
+
+#if defined(NODE_SHOWFILE)
+    ShowFile showfile;
+    showfile.Print();
+#endif
+
+    DmxMonitor monitor;
+    // There is support for HEX output only
+
+    dmxnode_node.SetOutput(&monitor);
+
+    monitor.Cls();
+    console::SetTopRow(20);
+    console::ClearTopRow();
+
+    dmxnode_node.Print();
+
+    display.SetTitle("sACN E1.31 Monitor");
+    display.Set(2, displayudf::Labels::kIp);
+    display.Set(3, displayudf::Labels::kHostname);
+    display.Set(4, displayudf::Labels::kVersion);
+
+    json::DisplayUdfParams displayudf_params;
+    displayudf_params.Load();
+    displayudf_params.SetAndShow();
+
+    RemoteConfig remote_config(remoteconfig::Output::MONITOR, 0);
+
+    display.TextStatus(DmxNodeMsgConst::START, console::Colours::kConsoleYellow);
+
+    dmxnode_node.Start();
+
+    display.TextStatus(DmxNodeMsgConst::STARTED, console::Colours::kConsoleGreen);
+
+    hal::WatchdogInit();
+
+    for (;;)
+    {
+        hal::WatchdogFeed();
+        network::Run();
+        dmxnode_node.Run();
+#if defined(NODE_SHOWFILE)
+        showfile.Run();
+#endif
+        show_systime.Run();
+        display.Run();
+        hal::Run();
+    }
 }
-}  // namespace hal
-
-int main() {
-	hal_init();
-	DisplayUdf display;
-	ConfigStore configStore;
-	Network nw;
-	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
-	FlashCodeInstall spiFlashInstall;
-
-	console_clear();
-
-	fw.Print();
-
-	console_puts("sACN E1.31 ");
-	console_set_fg_color(CONSOLE_GREEN);
-	console_puts("Real-time DMX Monitor");
-	console_set_fg_color(CONSOLE_WHITE);
-	console_set_top_row(2);
-
-	ShowSystime showSystime;
-
-#if defined (NODE_RDMNET_LLRP_ONLY)
-	char aDescription[rdm::personality::DESCRIPTION_MAX_LENGTH + 1];
-	snprintf(aDescription, sizeof(aDescription) - 1, "sACN E1.31 Real-time DMX Monitor");
-
-	char aLabel[RDM_DEVICE_LABEL_MAX_LENGTH + 1];
-	const auto nLength = snprintf(aLabel, sizeof(aLabel) - 1, "Orange Pi Zero DMX");
-
-	RDMPersonality *pPersonalities[1] = { new RDMPersonality(aDescription, nullptr) };
-	RDMNetDevice llrpOnlyDevice(pPersonalities, 1);
-
-	llrpOnlyDevice.SetLabel(RDM_ROOT_DEVICE, aLabel, static_cast<uint8_t>(nLength));
-	llrpOnlyDevice.SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
-	llrpOnlyDevice.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
-	llrpOnlyDevice.Init();
-
-	RDMDeviceParams rdmDeviceParams;
-	rdmDeviceParams.Load();
-	rdmDeviceParams.Set(&llrpOnlyDevice);
-
-	llrpOnlyDevice.Print();
-#endif
-
-	DmxNodeNode dmxNodeNode;
-
-#if defined (NODE_SHOWFILE)
-	ShowFile showFile;
-
-	ShowFileParams showFileParams;
-	showFileParams.Load();
-	showFileParams.Set();
-
-	if (showFile.IsAutoStart()) {
-		showFile.Play();
-	}
-
-	showFile.Print();
-#endif
-
-	DMXMonitor monitor;
-	// There is support for HEX output only
-	dmxNodeNode.SetOutput(&monitor);
-	monitor.Cls();
-	console_set_top_row(20);
-	console_clear_top_row();
-
-	dmxNodeNode.Print();
-
-	display.SetTitle("sACN E1.31 Monitor");
-	display.Set(2, displayudf::Labels::IP);
-	display.Set(3, displayudf::Labels::HOSTNAME);
-	display.Set(4, displayudf::Labels::VERSION);
-
-	DisplayUdfParams displayUdfParams;
-	displayUdfParams.Load();
-	displayUdfParams.Set(&display);
-
-	display.Show();
-
-	RemoteConfig remoteConfig(remoteconfig::NodeType::E131, remoteconfig::Output::MONITOR, 0);
-
-	RemoteConfigParams remoteConfigParams;
-	remoteConfigParams.Load();
-	remoteConfigParams.Set(&remoteConfig);
-
-	display.TextStatus(DmxNodeMsgConst::START, CONSOLE_YELLOW);
-
-	dmxNodeNode.Start();
-
-	display.TextStatus(DmxNodeMsgConst::STARTED, CONSOLE_GREEN);
-
-	hal::watchdog_init();
-
-	for (;;) {
-		hal::watchdog_feed();
-		nw.Run();
-		dmxNodeNode.Run();
-#if defined (NODE_SHOWFILE)
-		showFile.Run();
-#endif
-		showSystime.Run();
-		display.Run();
-		hal::run();
-	}
-}
-

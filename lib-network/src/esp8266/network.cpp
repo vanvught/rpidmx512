@@ -42,7 +42,7 @@
 
 #include "./../../lib-display/include/display.h"
 
-#include "debug.h"
+ #include "firmware/debug/debug_debug.h"
 
 extern void fota(const uint32_t);
 
@@ -57,16 +57,16 @@ void mac_address_get(uint8_t paddr[]);
 static net::UdpCallbackFunctionPtr s_callback;
 
 Network::Network() {
-	assert(s_pThis == nullptr);
-	s_pThis = this;
+	assert(s_this == nullptr);
+	s_this = this;
 
 	strcpy(m_aIfName, "wlan0");
 }
 
 Network::~Network() {
-	DEBUG_ENTRY
+	DEBUG_ENTRY();
 
-	DEBUG_EXIT
+	DEBUG_EXIT();
 }
 
 void Network::Init() {
@@ -140,11 +140,11 @@ uint32_t  Network::RecvFrom(int32_t nHandle, const void **ppBuffer, uint32_t *pF
 
 void Network::Run() {
 	if (s_callback != nullptr) {
-		uint32_t nFromIp;
-		uint16_t nFromPort;
-		auto nSize = RecvFrom(0, s_ReadBuffer, MAX_SEGMENT_LENGTH, &nFromIp, &nFromPort);
+		uint32_t from_ip;
+		uint16_t from_port;
+		auto nSize = RecvFrom(0, s_ReadBuffer, MAX_SEGMENT_LENGTH, &from_ip, &from_port);
 		if (nSize > 0) {
-			s_callback(s_ReadBuffer, nSize, nFromIp, nFromPort);
+			s_callback(s_ReadBuffer, nSize, from_ip, from_port);
 		}
 	}
 }
@@ -190,7 +190,7 @@ bool Network::Start() {
 
 	m_pSSID = const_cast<char *>(networkParams.GetSSid());
 
-	if (networkParams.isDhcpUsed()) {
+	if (networkParams.IsDhcpUsed()) {
 		StationCreate(m_pSSID, networkParams.GetPassword());
 	} else {
 		ip_config.ip.addr = networkParams.GetIpAddress();
@@ -249,7 +249,7 @@ bool Network::Start() {
 		fotaParams.Dump();
 
 		Display::Get()->TextStatus(WifiConst::MSG_FOTA_MODE);
-		console_putc('\n');
+		Putc('\n');
 		fota(fotaParams.GetServerIp());
 
 		for (;;)

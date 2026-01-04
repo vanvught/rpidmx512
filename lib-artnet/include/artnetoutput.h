@@ -28,46 +28,49 @@
 
 #include <cstdint>
 
-#include "e131sync.h"
-
 #include "dmxnode.h"
 
-class ArtNetOutput: public E131Sync {
+class ArtNetOutput { 
 public:
 	ArtNetOutput();
 
-	void Handler() override;
+	void Start(uint32_t port_index);
+	void Stop(uint32_t port_index);
 
-	void Start(const uint32_t nPortIndex);
-	void Stop(const uint32_t nPortIndex);
+	template<bool doUpdate>
+	void SetData(uint32_t port_index, const uint8_t *data, uint32_t length) {
+		SetDataImpl(port_index, data, length);
+	}
 
-	void SetData(const uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate = true);
-	void Sync(const uint32_t nPortIndex);
+	void Sync(uint32_t port_index);
 	void Sync();
 
-	void Blackout([[maybe_unused]] bool bBlackout) {}
+	void Blackout([[maybe_unused]] bool blackout) {}
 	void FullOn() {}
 
-	bool SetDmxStartAddress([[maybe_unused]] const uint16_t nDmxStartAddress) {
+	bool SetDmxStartAddress([[maybe_unused]] uint16_t dmx_start_address) {
 		return false;
 	}
 
 	uint16_t GetDmxStartAddress() {
-		return dmxnode::START_ADDRESS_DEFAULT;
+		return dmxnode::kStartAddressDefault;
 	}
 
 	uint16_t GetDmxFootprint() {
-		return dmxnode::UNIVERSE_SIZE;
+		return dmxnode::kUniverseSize;
 	}
 
-	bool GetSlotInfo([[maybe_unused]] const uint16_t nSlotOffset, dmxnode::SlotInfo &slotInfo) {
-		slotInfo.nType = 0x00; // ST_PRIMARY
-		slotInfo.nCategory = 0x0001; // SD_INTENSITY
+	bool GetSlotInfo([[maybe_unused]] uint16_t slot_offset, dmxnode::SlotInfo &slot_info) {
+		slot_info.type = 0x00; // ST_PRIMARY
+		slot_info.category = 0x0001; // SD_INTENSITY
 		return true;
 	}
 
 private:
-	uint16_t m_nUniverse[DMXNODE_PORTS];
+	void SetDataImpl(uint32_t port_index, const uint8_t *data, uint32_t length);
+
+private:
+	uint16_t universe_[DMXNODE_PORTS];
 };
 
-#endif /* ARTNETOUTPUT_H_ */
+#endif  // ARTNETOUTPUT_H_

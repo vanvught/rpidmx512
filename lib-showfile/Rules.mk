@@ -1,7 +1,8 @@
 $(info [${CURDIR}])
 $(info $$MAKE_FLAGS [${MAKE_FLAGS}])
 
-EXTRA_INCLUDES+=../lib-properties/include ../lib-network/include
+EXTRA_INCLUDES+=../lib-network/include
+EXTRA_SRCDIR+=src/json
 
 ifneq ($(MAKE_FLAGS),)
 	ifeq (,$(findstring CONFIG_SHOWFILE_USE_CUSTOM_DISPLAY,$(MAKE_FLAGS)))

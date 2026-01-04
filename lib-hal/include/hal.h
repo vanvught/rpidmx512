@@ -1,5 +1,6 @@
 /**
  * @file hal.h
+ *
  */
 /* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
@@ -26,38 +27,46 @@
 #define HAL_H_
 
 #include <cstdint>
-#include <uuid/uuid.h>
 
-namespace hal {
-#if !defined (CONFIG_HAL_TIMERS_COUNT)
-# define CONFIG_HAL_TIMERS_COUNT 12
-#endif
-
-static constexpr uint32_t SOFTWARE_TIMERS_MAX = CONFIG_HAL_TIMERS_COUNT;
-
-void uuid_copy(uuid_t out);
-
-enum class BootDevice {
-	UNKOWN, FEL, MMC0, SPI, HDD, FLASH, RAM
+namespace hal
+{
+enum class BootDevice
+{
+    UNKOWN,
+    FEL,
+    MMC0,
+    SPI,
+    HDD,
+    FLASH,
+    RAM
 };
-}  // namespace hal
 
-void hal_init();
+BootDevice GetBootDevice();
 
-#if defined(__linux__) || defined (__APPLE__)
-# if defined (CONFIG_HAL_USE_MINIMUM)
-#  include "linux/minimum/hal.h"
-# else
-#  include "linux/hal.h"
-# endif
+void Init();
+
+uint32_t Uptime();
+
+float CoreTemperatureCurrent();
+
+bool Reboot();
+void RebootHandler();
+} // namespace hal
+
+#if defined(__linux__) || defined(__APPLE__)
+#if defined(CONFIG_HAL_USE_MINIMUM)
+#include "linux/minimum/hal.h"
 #else
-# if defined (H3)
-#  include "h3/hal.h"
-# elif defined (GD32)
-#  include "gd32/hal.h"
-# else
-#  include "rpi/hal.h"
-# endif
+#include "linux/hal.h"
+#endif
+#else
+#if defined(H3)
+#include "h3/hal.h"
+#elif defined(GD32)
+#include "gd32/hal.h"
+#else
+#include "rpi/hal.h"
+#endif
 #endif
 
-#endif /* HAL_H_ */
+#endif  // HAL_H_

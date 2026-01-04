@@ -66,7 +66,7 @@ typedef union pcast32 {
 	uint8_t u8[4];
 } esp8266_pcast32;
 
-static void data_gpio_fsel_output() {
+static void data_GpioFsel_output() {
 	__ISB();
 
 	uint32_t value = H3_PIO_PORTA->CFG0;
@@ -86,7 +86,7 @@ static void data_gpio_fsel_output() {
 	__DMB();
 }
 
-static void data_gpio_fsel_input() {
+static void data_GpioFsel_input() {
 	__ISB();
 
 	uint32_t value = H3_PIO_PORTA->CFG0;
@@ -107,19 +107,19 @@ static void data_gpio_fsel_input() {
 }
 
 void __attribute__((cold)) esp8266_init() {
-	h3_gpio_fsel(GPIO_EXT_13, GPIO_FSEL_INPUT);
-	h3_gpio_fsel(GPIO_EXT_11, GPIO_FSEL_OUTPUT);
+	H3GpioFsel(GPIO_EXT_13, GPIO_FSEL_INPUT);
+	H3GpioFsel(GPIO_EXT_11, GPIO_FSEL_OUTPUT);
 
 
 
-	h3_gpio_clr(GPIO_EXT_11);
+	H3GpioClr(GPIO_EXT_11);
 	udelay(1000);
 
 	while (PORT_CIN->DAT & (1 << CIN));
 }
 
 void esp8266_write_4bits(const uint8_t data) {
-	data_gpio_fsel_output();
+	data_GpioFsel_output();
 
 	// Put the data on the bus.
 	uint32_t out_gpio = H3_PIO_PORTA->DAT & (uint32_t)~( (1 << D0) | (1 << D1) | (1 << D2) | (1 << D3) );
@@ -130,11 +130,11 @@ void esp8266_write_4bits(const uint8_t data) {
 	H3_PIO_PORTA->DAT = out_gpio;
 
 	// tell that we have data available for read
-	h3_gpio_set(GPIO_EXT_11);
+	H3GpioSet(GPIO_EXT_11);
 	// wait for ack, wait for 0 -> 1
 	while (!(H3_PIO_PORTA->DAT & (1 << CIN)));
 	// we have 1. now wait for 0
-	h3_gpio_clr(GPIO_EXT_11); // we acknowledge, and wait for zero
+	H3GpioClr(GPIO_EXT_11); // we acknowledge, and wait for zero
 	while (H3_PIO_PORTA->DAT & (1 << CIN));
 
 	__DMB();
@@ -150,11 +150,11 @@ inline static void _write_byte(const uint8_t data) {
 	H3_PIO_PORTA->DAT = out_gpio;
 
 	// tell that we have data available for read
-	h3_gpio_set(GPIO_EXT_11);
+	H3GpioSet(GPIO_EXT_11);
 	// wait for ack, wait for 0 -> 1
 	while (!(PORT_CIN->DAT & (1 << CIN)));
 	// we have 1. now wait for 0
-	h3_gpio_clr(GPIO_EXT_11); // we acknowledge, and wait for zero
+	H3GpioClr(GPIO_EXT_11); // we acknowledge, and wait for zero
 	while (PORT_CIN->DAT & (1 << CIN));
 
 	// Put the data on the bus.
@@ -166,22 +166,22 @@ inline static void _write_byte(const uint8_t data) {
 	H3_PIO_PORTA->DAT = out_gpio;
 
 	// tell that we have data available for read
-	h3_gpio_set(GPIO_EXT_11);
+	H3GpioSet(GPIO_EXT_11);
 	// wait for ack, wait for 0 -> 1
 	while (!(PORT_CIN->DAT & (1 << CIN)));
 	// we have 1. now wait for 0
-	h3_gpio_clr(GPIO_EXT_11); // we acknowledge, and wait for zero
+	H3GpioClr(GPIO_EXT_11); // we acknowledge, and wait for zero
 	while (PORT_CIN->DAT & (1 << CIN));
 }
 
 void esp8266_write_byte(const uint8_t byte) {
-	data_gpio_fsel_output();
+	data_GpioFsel_output();
 	_write_byte(byte);
 	__DMB();
 }
 
 void esp8266_write_halfword(const uint16_t half_word) {
-	data_gpio_fsel_output();
+	data_GpioFsel_output();
 	_write_byte((uint8_t)(half_word & (uint16_t)0xFF));
 	_write_byte((uint8_t)((half_word >> 8) & (uint16_t)0xFF));
 	__DMB();
@@ -190,7 +190,7 @@ void esp8266_write_halfword(const uint16_t half_word) {
 void esp8266_write_word(const uint32_t word) {
 	esp8266_pcast32 u32 __attribute__((aligned(4)));
 
-	data_gpio_fsel_output();
+	data_GpioFsel_output();
 
 	u32.u32 = word;
 
@@ -207,7 +207,7 @@ void esp8266_write_bytes(const uint8_t *data, const uint32_t len) {
 	uint8_t d;
 	uint16_t i;
 
-	data_gpio_fsel_output();
+	data_GpioFsel_output();
 
 	for (i = 0; i < len; i++) {
 		d = *p;
@@ -222,7 +222,7 @@ void esp8266_write_str(const char *data) {
 	uint8_t *p = (uint8_t *)data;
 	uint8_t d;
 
-	data_gpio_fsel_output();
+	data_GpioFsel_output();
 
 	while (*p != (char)0) {
 		d = *p;
@@ -238,7 +238,7 @@ void esp8266_write_str(const char *data) {
 inline static uint8_t _read_byte() {
 	uint8_t data;
 
-	h3_gpio_set(GPIO_EXT_11);
+	H3GpioSet(GPIO_EXT_11);
 	while (!(PORT_CIN->DAT & (1 << CIN)))
 		;
 
@@ -249,11 +249,11 @@ inline static uint8_t _read_byte() {
 	 | ((in_gpio & (1U << D2)) ? 4 : 0)
 	 | ((in_gpio & (1U << D3)) ? 8 : 0));
 
-	h3_gpio_clr(GPIO_EXT_11);
+	H3GpioClr(GPIO_EXT_11);
 	while (PORT_CIN->DAT & (1 << CIN))
 		;
 
-	h3_gpio_set(GPIO_EXT_11);
+	H3GpioSet(GPIO_EXT_11);
 	while (!(PORT_CIN->DAT & (1 << CIN)))
 		;
 
@@ -265,7 +265,7 @@ inline static uint8_t _read_byte() {
 
 	data = (uint8_t) (data_msb | ((data_lsb & 0x0F) << 4));
 
-	h3_gpio_clr(GPIO_EXT_11);
+	H3GpioClr(GPIO_EXT_11);
 	while (PORT_CIN->DAT & (1 << CIN))
 		;
 
@@ -275,7 +275,7 @@ inline static uint8_t _read_byte() {
 uint8_t esp8266_read_byte() {
 	uint8_t data;
 
-	data_gpio_fsel_input();
+	data_GpioFsel_input();
 
 	data = _read_byte();
 
@@ -288,7 +288,7 @@ void esp8266_read_bytes(const uint8_t *data, const uint32_t len){
 	uint8_t *p = (uint8_t *)data;
 	uint32_t i;
 
-	data_gpio_fsel_input();
+	data_GpioFsel_input();
 
 	for (i = 0 ; i < len; i++) {
 		*p = _read_byte();
@@ -301,7 +301,7 @@ void esp8266_read_bytes(const uint8_t *data, const uint32_t len){
 uint16_t esp8266_read_halfword() {
 	uint16_t data;
 
-	data_gpio_fsel_input();
+	data_GpioFsel_input();
 
 	data = _read_byte();
 	data |= (uint16_t) (_read_byte() << 8);
@@ -314,7 +314,7 @@ uint16_t esp8266_read_halfword() {
 uint32_t esp8266_read_word() {
 	esp8266_pcast32 u32  __attribute__((aligned(4)));
 
-	data_gpio_fsel_input();
+	data_GpioFsel_input();
 
 	u32.u8[0] = _read_byte();
 	u32.u8[1] = _read_byte();
@@ -331,7 +331,7 @@ void esp8266_read_str(char *s, uint32_t *len) {
 	uint8_t ch;
 	auto n = *len;
 
-	data_gpio_fsel_input();
+	data_GpioFsel_input();
 
 	while ((ch = _read_byte()) != (uint8_t) 0) {
 		if (n > (uint16_t) 0) {
@@ -353,13 +353,13 @@ void esp8266_read_str(char *s, uint32_t *len) {
 bool esp8266_detect() {
 	esp8266_init();
 
-	data_gpio_fsel_output();
+	data_GpioFsel_output();
 
 	// send a CMD_NOP
 	const uint32_t out_gpio = H3_PIO_PORTA->DAT & (uint32_t)~( (1 << D0) | (1 << D1) | (1 << D2) | (1 << D3) );
 	H3_PIO_PORTA->DAT = out_gpio;
 
-	h3_gpio_set(GPIO_EXT_11);// Tell that we have data available. Wait for ack, wait for 0 -> 1
+	H3GpioSet(GPIO_EXT_11);// Tell that we have data available. Wait for ack, wait for 0 -> 1
 
 	const auto micros_now = H3_TIMER->AVS_CNT1;
 
@@ -368,11 +368,11 @@ bool esp8266_detect() {
 		;
 
 	if (!(PORT_CIN->DAT & (1 << CIN))) {
-		h3_gpio_clr(GPIO_EXT_11);
+		H3GpioClr(GPIO_EXT_11);
 		return false;
 	}
 
-	h3_gpio_clr(GPIO_EXT_11); // we acknowledge, and wait for zero
+	H3GpioClr(GPIO_EXT_11); // we acknowledge, and wait for zero
 
 	while (PORT_CIN->DAT & (1 << CIN));
 

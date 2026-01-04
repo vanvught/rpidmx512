@@ -1,4 +1,4 @@
-#if !defined (CONFIG_HAL_USE_MINIMUM)
+#if !defined(CONFIG_HAL_USE_MINIMUM)
 /**
  * @file hal_init.cpp
  *
@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#if defined (DEBUG_HAL)
-# undef NDEBUG
+#if defined(DEBUG_HAL)
+#undef NDEBUG
 #endif
 
 #include <cstdint>
@@ -44,23 +44,23 @@
 #include "exec_cmd.h"
 
 #if !defined(DISABLE_RTC)
-# include "hwclock.h"
+#include "hwclock.h"
 #endif
 
 #include "hal_i2c.h"
 #include "hal_spi.h"
 
-#if defined (DEBUG_I2C)
-# include "i2cdetect.h"
+#if defined(DEBUG_I2C)
+#include "i2cdetect.h"
 #endif
 
 #include "hal.h"
 
-#include "debug.h"
+ #include "firmware/debug/debug_debug.h"
 
 static constexpr char UNKNOWN[] = "Unknown";
 
-#if defined (__linux__)
+#if defined(__linux__)
 static constexpr char RASPBIAN_LED_INIT[] = "echo gpio | sudo tee /sys/class/leds/led0/trigger";
 static constexpr char RASPBIAN_LED_OFF[] = "echo 0 | sudo tee /sys/class/leds/led0/brightness";
 static constexpr char RASPBIAN_LED_ON[] = "echo 1 | sudo tee /sys/class/leds/led0/brightness";
@@ -75,11 +75,13 @@ static char m_aSocName[64];
 static char m_aBoardName[64];
 static uint32_t m_nBoardId;
 
-#if !defined (__APPLE__)
-extern "C" {
-int __attribute__((weak)) bcm2835_init(void) {
-	return 0;
-}
+#if !defined(__APPLE__)
+extern "C"
+{
+    int __attribute__((weak)) bcm2835_init(void)
+    {
+        return 0;
+    }
 }
 #endif
 
@@ -87,253 +89,272 @@ int __attribute__((weak)) bcm2835_init(void) {
 static HwClock hwClock;
 #endif
 
-namespace hal {
-void uuid_copy(uuid_t out);
-}  // namespace hal
+namespace hal
+{
+void UuidCopy(uuid_t out);
+} // namespace hal
 
-static char *str_find_replace(char *str, const char *find, const char *replace) {
-	assert(strlen(replace) <= strlen(find));
+static char* str_find_replace(char* str, const char* find, const char* replace)
+{
+    assert(strlen(replace) <= strlen(find));
 
-	unsigned i, j, k, n, m;
+    unsigned i, j, k, n, m;
 
-	i = j = m = n = 0;
+    i = j = m = n = 0;
 
-	while (str[i] != '\0') {
-		if (str[m] == find[n]) {
-			m++;
-			n++;
-			if (find[n] == '\0') {
-				for (k = 0; replace[k] != '\0'; k++, j++) {
-					str[j] = replace[k];
-				}
-				n = 0;
-				i = m;
-			}
-		} else {
-			str[j] = str[i];
-			j++;
-			i++;
-			m = i;
-			n = 0;
-		}
-	}
+    while (str[i] != '\0')
+    {
+        if (str[m] == find[n])
+        {
+            m++;
+            n++;
+            if (find[n] == '\0')
+            {
+                for (k = 0; replace[k] != '\0'; k++, j++)
+                {
+                    str[j] = replace[k];
+                }
+                n = 0;
+                i = m;
+            }
+        }
+        else
+        {
+            str[j] = str[i];
+            j++;
+            i++;
+            m = i;
+            n = 0;
+        }
+    }
 
-	for (; j < i; j++) {
-		str[j] = '\0';
-	}
+    for (; j < i; j++)
+    {
+        str[j] = '\0';
+    }
 
-	return str;
+    return str;
 }
 
-void hal_init() {
-	DEBUG_ENTRY
+namespace hal
+{
+void Init()
+{
+    DEBUG_ENTRY();
 
-	memset(&m_TOsInfo, 0, sizeof(struct utsname));
+    memset(&m_TOsInfo, 0, sizeof(struct utsname));
 
-	strcpy(m_aCpuName, UNKNOWN);
-	strcpy(m_aBoardName, UNKNOWN);
-	m_aSocName[0] = '\0';
+    strcpy(m_aCpuName, UNKNOWN);
+    strcpy(m_aBoardName, UNKNOWN);
+    m_aSocName[0] = '\0';
 
-#if defined (__linux__)
-	m_boardType = Board::TYPE_LINUX;
-#elif defined (__APPLE__)
-	m_boardType = Board::TYPE_OSX;
+#if defined(__linux__)
+    m_boardType = Board::TYPE_LINUX;
+#elif defined(__APPLE__)
+    m_boardType = Board::TYPE_OSX;
 #else
-	m_boardType = Board::TYPE_UNKNOWN;
+    m_boardType = Board::TYPE_UNKNOWN;
 #endif
-#if defined (__linux__)
-	constexpr char cmd[] = "which vcgencmd";
-	char buf[16];
+#if defined(__linux__)
+    constexpr char cmd[] = "which vcgencmd";
+    char buf[16];
 
-	FILE *fp = popen(cmd, "r");
+    FILE* fp = popen(cmd, "r");
 
-	if (fgets(buf, sizeof(buf)-1, fp) != 0) {
-		m_boardType = Board::TYPE_RASPBIAN;
-		if (system(RASPBIAN_LED_INIT) == 0) {
-			// Just make the compile happy
-		}
-	}
+    if (fgets(buf, sizeof(buf) - 1, fp) != 0)
+    {
+        m_boardType = Board::TYPE_RASPBIAN;
+        if (system(RASPBIAN_LED_INIT) == 0)
+        {
+            // Just make the compile happy
+        }
+    }
 
-	if (fp != nullptr) {
-		pclose(fp);
-	}
+    if (fp != nullptr)
+    {
+        pclose(fp);
+    }
 #endif
 
-	if (m_boardType != Board::TYPE_UNKNOWN) {
-		uname(&m_TOsInfo);
-	}
+    if (m_boardType != Board::TYPE_UNKNOWN)
+    {
+        uname(&m_TOsInfo);
+    }
 
 #ifndef NDEBUG
-	printf("m_boardType=%d\n", static_cast<int>(m_boardType));
+    printf("m_boardType=%d\n", static_cast<int>(m_boardType));
 #endif
 
-#if !defined (__APPLE__)
-	if (m_boardType == Board::TYPE_RASPBIAN) {
-		if (getuid() != 0) {
-			fprintf(stderr, "Program is not started as \'root\' (sudo)\n");
-			exit(-1);
-		}
+#if !defined(__APPLE__)
+    if (m_boardType == Board::TYPE_RASPBIAN)
+    {
+        if (getuid() != 0)
+        {
+            fprintf(stderr, "Program is not started as \'root\' (sudo)\n");
+            exit(-1);
+        }
 
-		if (bcm2835_init() == 0) {
-			fprintf(stderr, "Function bcm2835_init() failed\n");
-			exit(-1);
-		}
-	}
+        if (bcm2835_init() == 0)
+        {
+            fprintf(stderr, "Function bcm2835_init() failed\n");
+            exit(-1);
+        }
+    }
 #endif
 
-	{ // Board Name
-#if defined (__APPLE__)
-		constexpr char cat[] = "sysctl -n hw.model";
-		exec_cmd(cat, m_aBoardName, sizeof(m_aBoardName));
-#elif defined (__linux__)
-		constexpr char cat[] = "cat /sys/firmware/devicetree/base/model";
-		if (!exec_cmd(cat, m_aBoardName, sizeof(m_aBoardName))) {
-			constexpr char cat[] = "cat /sys/class/dmi/id/board_name";
-			exec_cmd(cat, m_aBoardName, sizeof(m_aBoardName));
-		}
+    { // Board Name
+#if defined(__APPLE__)
+        constexpr char cat[] = "sysctl -n hw.model";
+        exec_cmd(cat, m_aBoardName, sizeof(m_aBoardName));
+#elif defined(__linux__)
+        constexpr char cat[] = "cat /sys/firmware/devicetree/base/model";
+        if (!exec_cmd(cat, m_aBoardName, sizeof(m_aBoardName)))
+        {
+            constexpr char cat[] = "cat /sys/class/dmi/id/board_name";
+            exec_cmd(cat, m_aBoardName, sizeof(m_aBoardName));
+        }
 #endif
-		str_find_replace(m_aBoardName, "Rev ", "V");
-	}
+        str_find_replace(m_aBoardName, "Rev ", "V");
+    }
 
-	{ // SoC Name
-		constexpr char cmd[] = "cat /proc/cpuinfo | grep 'Hardware' | awk '{print $3}'";
-		exec_cmd(cmd, m_aSocName, sizeof(m_aSocName));
-	}
+    { // SoC Name
+        constexpr char cmd[] = "cat /proc/cpuinfo | grep 'Hardware' | awk '{print $3}'";
+        exec_cmd(cmd, m_aSocName, sizeof(m_aSocName));
+    }
 
-	{ // CPU Name
-#if defined (__APPLE__)
-		constexpr char cmd[] = "sysctl -n machdep.cpu.brand_string";
+    { // CPU Name
+#if defined(__APPLE__)
+        constexpr char cmd[] = "sysctl -n machdep.cpu.brand_string";
 #else
-		constexpr char cmd[] = "cat /proc/cpuinfo | grep 'model name' | head -n 1 | sed 's/^[^:]*://g' |  sed 's/^[^ ]* //g'";
+        constexpr char cmd[] = "cat /proc/cpuinfo | grep 'model name' | head -n 1 | sed 's/^[^:]*://g' |  sed 's/^[^ ]* //g'";
 #endif
-		exec_cmd(cmd, m_aCpuName, sizeof(m_aCpuName));
-	}
+        exec_cmd(cmd, m_aCpuName, sizeof(m_aCpuName));
+    }
 
-	if (m_boardType == Board::TYPE_RASPBIAN) {
-		char aResult[16];
-		constexpr char cmd[] = "cat /proc/cpuinfo | grep 'Revision' | awk '{print $3}'";
-		exec_cmd(cmd, aResult, sizeof(aResult));
-		m_nBoardId = static_cast<uint32_t>(strtol(aResult, nullptr, 16));
-	}
+    if (m_boardType == Board::TYPE_RASPBIAN)
+    {
+        char aResult[16];
+        constexpr char cmd[] = "cat /proc/cpuinfo | grep 'Revision' | awk '{print $3}'";
+        exec_cmd(cmd, aResult, sizeof(aResult));
+        m_nBoardId = static_cast<uint32_t>(strtol(aResult, nullptr, 16));
+    }
 
-	FUNC_PREFIX(i2c_begin());
-	FUNC_PREFIX(spi_begin());
+    FUNC_PREFIX(I2cBegin());
+    FUNC_PREFIX(SpiBegin());
 
-#if defined (DEBUG_I2C)
-	i2c_detect();
+#if defined(DEBUG_I2C)
+    I2cDetect();
 #endif
 
 #if !defined(DISABLE_RTC)
-	hwClock.RtcProbe();
-	hwClock.Print();
-	hwClock.SysToHc();
+    hwClock.RtcProbe();
+    hwClock.Print();
+    hwClock.SysToHc();
 #endif
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-Board linux_board_type() {
-	return m_boardType;
+const char* BoardName(uint8_t& length)
+{
+    length = strlen(m_aBoardName);
+    return m_aBoardName;
 }
 
-const char *linux_board_name(uint8_t& nLength) {
-	nLength = strlen(m_aBoardName);
-	return m_aBoardName;
+const char* SocName(uint8_t& length)
+{
+    length = strlen(m_aSocName);
+    return m_aSocName;
 }
 
-const char *linux_soc_name(uint8_t& nLength) {
-	nLength = strlen(m_aSocName);
-	return m_aSocName;
+const char* CpuName(uint8_t& length)
+{
+    length = strlen(m_aCpuName);
+    return m_aCpuName;
 }
 
-const char *linux_cpu_name(uint8_t& nLength) {
-	nLength = strlen(m_aCpuName);
-	return m_aCpuName;
+const char* MachineName(uint8_t& length)
+{
+    length = strlen(m_TOsInfo.machine);
+    return m_TOsInfo.machine;
 }
 
-const char *linux_machine_name(uint8_t& nLength) {
-	nLength = strlen(m_TOsInfo.machine);
-	return m_TOsInfo.machine;
+const char* SysName(uint8_t& length)
+{
+    length = strlen(m_TOsInfo.sysname);
+    return m_TOsInfo.sysname;
 }
 
-const char *linux_sys_name(uint8_t& nLength) {
-	nLength = strlen(m_TOsInfo.sysname);
-	return m_TOsInfo.sysname;
-}
-
-float linux_core_temperature_current() {
-#if defined (__linux__)
-	if (m_boardType == Board::TYPE_RASPBIAN) {
-		const char cmd[] = "vcgencmd measure_temp| egrep \"[0-9.]{4,}\" -o";
-		char aResult[8];
-
-		exec_cmd(cmd, aResult, sizeof(aResult));
-
-		return atof(aResult);
-	} else {
-		const char cmd[] = "sensors | grep 'Core 0' | awk '{print $3}' | cut -c2-3";
-		char aResult[6];
-
-		exec_cmd(cmd, aResult, sizeof(aResult));
-
-		return atof(aResult);
-	}
-#endif
-	return -1.0f;
-}
-
-uint32_t linux_micros() {
-	struct timeval tv;
-	gettimeofday(&tv, nullptr);
-	return static_cast<uint32_t>((tv.tv_sec * 1000000) + tv.tv_usec);
-}
-
-uint32_t linux_millis() {
-	struct timeval tv;
-	gettimeofday(&tv, nullptr);
-
-#if defined (__APPLE__)
-	return (tv.tv_sec * static_cast<__darwin_time_t>(1000) + (tv.tv_usec / static_cast<__darwin_time_t>(1000)));
+bool Reboot()
+{
+#if defined(__APPLE__)
+    return false;
 #else
-	return static_cast<uint32_t>(tv.tv_sec * static_cast<__time_t >(1000) + (tv.tv_usec / static_cast<__suseconds_t >(1000)));
+    if (geteuid() == 0)
+    {
+        sync();
+
+        if (reboot(RB_AUTOBOOT) == 0)
+        {
+            return true;
+        }
+
+        perror("Call to reboot(RB_AUTOBOOT) failed.\n");
+    }
+    printf("Only the superuser may call reboot(RB_AUTOBOOT).\n");
 #endif
+    return false;
 }
 
-void linux_print() {
-	static constexpr auto UUID_STRING_LENGTH = 36;
-	char uuid_str[UUID_STRING_LENGTH + 1];
-	uuid_str[UUID_STRING_LENGTH] = '\0';
+float CoreTemperatureCurrent()
+{
+#if defined(__linux__)
+    if (m_boardType == Board::TYPE_RASPBIAN)
+    {
+        const char cmd[] = "vcgencmd measure_temp| egrep \"[0-9.]{4,}\" -o";
+        char aResult[8];
 
-	uuid_t out;
-	hal::uuid_copy(out);
+        exec_cmd(cmd, aResult, sizeof(aResult));
 
-	uuid_unparse(out, uuid_str);
+        return atof(aResult);
+    }
+    else
+    {
+        const char cmd[] = "sensors | grep 'Core 0' | awk '{print $3}' | cut -c2-3";
+        char aResult[6];
 
-	printf("CPU  : %s\n", m_aCpuName);
-	printf("SoC  : %s\n", m_aSocName);
-	printf("Board: %s\n", m_aBoardName);
-	printf("UUID : %s\n", uuid_str);
-}
+        exec_cmd(cmd, aResult, sizeof(aResult));
 
-bool linux_reboot() {
-#if defined (__APPLE__)
-	return false;
-#else
-	if(geteuid() == 0) {
-		sync();
-
-		if (reboot(RB_AUTOBOOT) == 0) {
-			return true;
-		}
-
-		perror("Call to reboot(RB_AUTOBOOT) failed.\n");
-	}
-	printf("Only the superuser may call reboot(RB_AUTOBOOT).\n");
+        return atof(aResult);
+    }
 #endif
-	return false;
+    return -1.0f;
+}
+} // namespace hal
+
+Board linux_board_type()
+{
+    return m_boardType;
 }
 
-//void linux_soft_reset() {
+void linux_print()
+{
+    static constexpr auto UUID_STRING_LENGTH = 36;
+    char uuid_str[UUID_STRING_LENGTH + 1];
+    uuid_str[UUID_STRING_LENGTH] = '\0';
+
+    uuid_t out;
+    hal::UuidCopy(out);
+
+    uuid_unparse(out, uuid_str);
+
+    printf("CPU  : %s\n", m_aCpuName);
+    printf("SoC  : %s\n", m_aSocName);
+    printf("Board: %s\n", m_aBoardName);
+    printf("UUID : %s\n", uuid_str);
+}
+
+// void linux_soft_reset() {
 //	if (m_argv != 0) {
 //		sync();
 //
@@ -345,25 +366,28 @@ bool linux_reboot() {
 //			perror("call to execve failed.\n");
 //		}
 //	}
-//}
+// }
 
-bool linux_power_off() {
-#if defined (__APPLE__)
-	return false;
+bool linux_power_off()
+{
+#if defined(__APPLE__)
+    return false;
 #else
-	if(geteuid() == 0) {
-		sync();
+    if (geteuid() == 0)
+    {
+        sync();
 
-		if (reboot(RB_POWER_OFF) == 0) {
-			return true;
-		}
+        if (reboot(RB_POWER_OFF) == 0)
+        {
+            return true;
+        }
 
-		perror("Call to reboot(RB_POWER_OFF) failed.\n");
-		return false;
-	}
+        perror("Call to reboot(RB_POWER_OFF) failed.\n");
+        return false;
+    }
 
-	printf("Only the superuser may call reboot(RB_POWER_OFF).\n");
-	return false;
+    printf("Only the superuser may call reboot(RB_POWER_OFF).\n");
+    return false;
 #endif
 }
 #endif

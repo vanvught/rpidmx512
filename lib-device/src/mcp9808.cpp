@@ -29,44 +29,50 @@
 
 #include "hal_i2c.h"
 
-namespace sensor {
-namespace mcp9808 {
-static constexpr uint8_t I2C_ADDRESS = 0x18;
-namespace reg {
+namespace sensor
+{
+namespace mcp9808
+{
+static constexpr uint8_t kI2CAddress = 0x18;
+namespace reg
+{
 // static constexpr uint8_t UPPER_TEMP = 0x02;
 // static constexpr uint8_t LOWER_TEMP = 0x03;
 // static constexpr uint8_t CRIT_TEMP = 0x04;
-static constexpr uint8_t AMBIENT_TEMP = 0x05;
-static constexpr uint8_t MANUF_ID = 0x06;
-static constexpr uint8_t DEVICE_ID = 0x07;
-}  // namespace reg
-}  // namespace mcp9808
+static constexpr uint8_t kAmbientTemp = 0x05;
+static constexpr uint8_t kManufId = 0x06;
+static constexpr uint8_t kDeviceId = 0x07;
+} // namespace reg
+} // namespace mcp9808
 
-using namespace sensor::mcp9808;
+MCP9808::MCP9808(uint8_t address) : HAL_I2C(address == 0 ? sensor::mcp9808::kI2CAddress : address)
+{
+    m_bIsInitialized = IsConnected();
 
-MCP9808::MCP9808(uint8_t nAddress) : HAL_I2C(nAddress == 0 ? I2C_ADDRESS : nAddress) {
-	m_bIsInitialized = IsConnected();
+    if (m_bIsInitialized)
+    {
+        m_bIsInitialized = (ReadRegister16(sensor::mcp9808::reg::kManufId) == 0x0054);
+    }
 
-	if (m_bIsInitialized) {
-		m_bIsInitialized = (ReadRegister16(reg::MANUF_ID) == 0x0054);
-	}
-
-	if (m_bIsInitialized) {
-		m_bIsInitialized = (ReadRegister16(reg::DEVICE_ID) == 0x0400);
-	}
+    if (m_bIsInitialized)
+    {
+        m_bIsInitialized = (ReadRegister16(sensor::mcp9808::reg::kDeviceId) == 0x0400);
+    }
 }
 
-float MCP9808::Get() {
-	const auto nValue = ReadRegister16(reg::AMBIENT_TEMP);
-	auto fTemperature = static_cast<float>(nValue & 0x0FFF);
+float MCP9808::Get()
+{
+    const auto kValue = ReadRegister16(sensor::mcp9808::reg::kAmbientTemp);
+    auto temperature = static_cast<float>(kValue & 0x0FFF);
 
-	fTemperature /= 16.0f;
+    temperature /= 16.0f;
 
-	if ((nValue & 0x1000) == 0x1000) {
-		fTemperature -= 256.0f;
-	}
+    if ((kValue & 0x1000) == 0x1000)
+    {
+        temperature -= 256.0f;
+    }
 
-	return fTemperature;
+    return temperature;
 }
 
-}  // namespace sensor
+} // namespace sensor

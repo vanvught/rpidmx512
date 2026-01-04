@@ -34,16 +34,16 @@ void GPS::Display(gps::Status status) {
 	Display::Get()->PutString("GPS ");
 
 	switch (status) {
-	case gps::Status::IDLE:
+	case gps::Status::kIdle:
 		Display::Get()->PutChar('I');
 		break;
-	case gps::Status::WARNING:
+	case gps::Status::kWarning:
 		Display::Get()->PutChar('W');
 		break;
-	case gps::Status::VALID:
+	case gps::Status::kValid:
 		Display::Get()->PutChar('V');
 		break;
-	case gps::Status::UNDEFINED:
+	case gps::Status::kUndefined:
 		Display::Get()->PutChar('U');
 		break;
 	default:

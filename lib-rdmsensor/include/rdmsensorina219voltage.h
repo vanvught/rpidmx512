@@ -2,7 +2,7 @@
  * @file rdmsensorina219voltage.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,14 +35,14 @@
 
 class RDMSensorINA219Voltage: public RDMSensor, sensor::INA219 {
 public:
-	RDMSensorINA219Voltage(uint8_t nSensor, uint8_t nAddress = 0) : RDMSensor(nSensor), sensor::INA219(nAddress) {
+	RDMSensorINA219Voltage(uint8_t nSensor, uint8_t address = 0) : RDMSensor(nSensor), sensor::INA219(address) {
 		SetType(E120_SENS_CURRENT);
 		SetUnit(E120_UNITS_AMPERE_DC);
 		SetPrefix(E120_PREFIX_MILLI);
-		SetRangeMin(rdm::sensor::safe_range_min(sensor::ina219::voltage::RANGE_MIN));
-		SetRangeMax(rdm::sensor::safe_range_max(sensor::ina219::voltage::RANGE_MAX));
-		SetNormalMin(rdm::sensor::safe_range_min(sensor::ina219::voltage::RANGE_MIN));
-		SetNormalMax(rdm::sensor::safe_range_max(sensor::ina219::voltage::RANGE_MAX));
+		SetRangeMin(rdm::sensor::SafeRangeMin(sensor::ina219::voltage::RANGE_MIN));
+		SetRangeMax(rdm::sensor::SafeRangeMax(sensor::ina219::voltage::RANGE_MAX));
+		SetNormalMin(rdm::sensor::SafeRangeMin(sensor::ina219::voltage::RANGE_MIN));
+		SetNormalMax(rdm::sensor::SafeRangeMax(sensor::ina219::voltage::RANGE_MAX));
 		SetDescription(sensor::ina219::voltage::DESCRIPTION);
 	}
 

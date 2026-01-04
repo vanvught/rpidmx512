@@ -23,106 +23,138 @@
  * THE SOFTWARE.
  */
 
-#if defined (DEBUG_OSCCLIENT)
-# undef NDEBUG
+#if defined(DEBUG_OSCCLIENT)
+#undef NDEBUG
 #endif
 
 #include <cstdint>
-#include <cstdio>
-#include <cstring>
-#include <algorithm>
-#include <cassert>
 
 #include "oscclient.h"
-#include "oscsimplesend.h"
 #include "oscsimplemessage.h"
 #include "osc.h"
+#include "configurationstore.h"
+#include "network.h"
+#include "net/apps/mdns.h"
+#include "firmware/debug/debug_debug.h"
 
-#include "debug.h"
+OscClient::OscClient()
+    : port_outgoing_(oscclient::defaults::kPortOutgoing),
+      port_incoming_(oscclient::defaults::kPortIncoming),
+      ping_delay_millis_(oscclient::defaults::kPingDelaySeconds * 1000)
+{
+    DEBUG_ENTRY();
 
-void OscClient::CopyCmds(const char *pCmds, uint32_t nCount, uint32_t nLength) {
-	assert(pCmds != nullptr);
+    assert(s_this == nullptr);
+    s_this = this;
 
-	for (uint32_t i = 0; i < std::min(nCount, oscclient::max::CMD_COUNT); i++) {
-		char *dst = &m_pCmds[i * oscclient::max::CMD_PATH_LENGTH];
-		strncpy(dst, &pCmds[i * nLength], oscclient::max::CMD_PATH_LENGTH - 1);
-		dst[oscclient::max::CMD_PATH_LENGTH - 1] = '\0';
-	}
+    DEBUG_EXIT();
 }
 
-void OscClient::CopyLeds(const char *pLeds, uint32_t nCount, uint32_t nLength) {
-	assert(pLeds != nullptr);
+void OscClient::Start()
+{
+    DEBUG_ENTRY();
 
-	for (uint32_t i = 0; i < std::min(nCount, oscclient::max::LED_COUNT); i++) {
-		char *dst = &m_pLeds[i * oscclient::max::LED_PATH_LENGTH];
-		strncpy(dst, &pLeds[i * nLength], oscclient::max::LED_PATH_LENGTH - 1);
-		dst[oscclient::max::LED_PATH_LENGTH - 1] = '\0';
-	}
+    assert(handle_ == -1);
+    handle_ = net::udp::Begin(port_incoming_, StaticCallbackFunction);
+    assert(handle_ != -1);
+
+    mdns::ServiceRecordAdd(nullptr, mdns::Services::OSC, "type=client", port_incoming_);
+
+    DEBUG_EXIT();
 }
 
-bool OscClient::HandleLedMessage(const uint16_t nBytesReceived) {
-	DEBUG_ENTRY
+void OscClient::Stop()
+{
+    DEBUG_ENTRY();
 
-	uint32_t i;
+    mdns::ServiceRecordDelete(mdns::Services::OSC);
 
-	for (i = 0; i < oscclient::max::LED_COUNT; i++) {
-		const char *src = &m_pLeds[i * oscclient::max::LED_PATH_LENGTH];
-		if (osc::is_match(m_pBuffer, src)) {
-			DEBUG_PUTS("");
-			break;
-		}
-	}
+    assert(handle_ != -1);
+    net::udp::End(port_incoming_);
+    handle_ = -1;
 
-	if (i == oscclient::max::LED_COUNT) {
-		DEBUG_EXIT
-		return false;
-	}
-
-	OscSimpleMessage Msg(reinterpret_cast<const uint8_t *>(m_pBuffer), nBytesReceived);
-
-	const int nArgc = Msg.GetArgc();
-
-	if (nArgc != 1) {
-		DEBUG_EXIT
-		return false;
-	}
-
-	if (Msg.GetType(0) == osc::type::INT32) {
-		m_pOscClientLed->SetLed(static_cast<uint8_t>(i), static_cast<uint8_t>(Msg.GetInt(0)) != 0);
-		DEBUG_PRINTF("%d", Msg.GetInt(0));
-	} else if (Msg.GetType(0) == osc::type::FLOAT) {
-		m_pOscClientLed->SetLed(static_cast<uint8_t>(i), static_cast<uint8_t>(Msg.GetFloat(0)) != 0);
-		DEBUG_PRINTF("%f", Msg.GetFloat(0));
-	} else {
-		return false;
-	}
-
-	DEBUG_EXIT
-	return true;
+    DEBUG_EXIT();
 }
 
-void OscClient::Print() {
-	puts("OSC Client");
-	printf(" Server ip-address :" IPSTR "\n", IP2STR(m_nServerIP));
-	printf(" Outgoing Port     : %d\n", m_nPortOutgoing);
-	printf(" Incoming Port     : %d\n", m_nPortIncoming);
-	printf(" Disable /ping     : %s\n", m_bPingDisable ? "Yes" : "No");
+bool OscClient::HandleLedMessage(uint16_t bytes_received)
+{
+    DEBUG_ENTRY();
 
-	if (!m_bPingDisable) {
-		printf(" Ping delay        : %ds\n", m_nPingDelayMillis / 1000);
-	}
+    uint32_t i;
 
-	for (uint32_t i = 0; i < oscclient::max::CMD_COUNT; i++) {
-		const char *p = &m_pCmds[i * oscclient::max::CMD_PATH_LENGTH];
-		if (*p != '\0') {
-			printf("  cmd%c             : [%s]\n", i + '0', p);
-		}
-	}
+    for (i = 0; i < common::store::osc::client::kLedCount; i++)
+    {
+        const char* src = &s_leds[i * common::store::osc::client::kLedPathLength];
+        if (osc::is_match(buffer_, src))
+        {
+            DEBUG_PUTS("");
+            break;
+        }
+    }
 
-	for (uint32_t i = 0; i < oscclient::max::LED_COUNT; i++) {
-		const char *p = &m_pLeds[i * oscclient::max::LED_PATH_LENGTH];
-		if (*p != '\0') {
-			printf("  led%c             : [%s]\n", i + '0', p);
-		}
-	}
+    if (i == common::store::osc::client::kLedCount)
+    {
+        DEBUG_EXIT();
+        return false;
+    }
+
+    OscSimpleMessage msg(reinterpret_cast<const uint8_t*>(buffer_), bytes_received);
+
+    const int kArgc = msg.GetArgc();
+
+    if (kArgc != 1)
+    {
+        DEBUG_EXIT();
+        return false;
+    }
+
+    if (msg.GetType(0) == osc::type::INT32)
+    {
+        oscclient_led_->SetLed(static_cast<uint8_t>(i), static_cast<uint8_t>(msg.GetInt(0)) != 0);
+        DEBUG_PRINTF("%d", msg.GetInt(0));
+    }
+    else if (msg.GetType(0) == osc::type::FLOAT)
+    {
+        oscclient_led_->SetLed(static_cast<uint8_t>(i), static_cast<uint8_t>(msg.GetFloat(0)) != 0);
+        DEBUG_PRINTF("%f", msg.GetFloat(0));
+    }
+    else
+    {
+        return false;
+    }
+
+    DEBUG_EXIT();
+    return true;
+}
+
+void OscClient::Print()
+{
+    puts("OSC Client");
+    printf(" Server        : " IPSTR "\n", IP2STR(server_ip_));
+    printf(" Outgoing Port : %d\n", port_outgoing_);
+    printf(" Incoming Port : %d\n", port_incoming_);
+    printf(" Disable /ping : %s\n", ping_disable_ ? "Yes" : "No");
+
+    if (!ping_disable_)
+    {
+        printf(" Ping delay        : %ds\n", ping_delay_millis_ / 1000);
+    }
+
+    for (uint32_t i = 0; i < common::store::osc::client::kCmdCount; i++)
+    {
+        const char* p = &s_cmds[i * common::store::osc::client::kCmdPathLength];
+        if (*p != '\0')
+        {
+            printf("  cmd%c             : [%s]\n", i + '0', p);
+        }
+    }
+
+    for (uint32_t i = 0; i < common::store::osc::client::kLedCount; i++)
+    {
+        const char* p = &s_leds[i * common::store::osc::client::kLedPathLength];
+        if (*p != '\0')
+        {
+            printf("  led%c             : [%s]\n", i + '0', p);
+        }
+    }
 }

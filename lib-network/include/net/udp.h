@@ -28,15 +28,15 @@
 
 #include <cstdint>
 
-namespace net {
-typedef void (*UdpCallbackFunctionPtr)(const uint8_t *, uint32_t, uint32_t, uint16_t);
+namespace net::udp
+{
+typedef void (*UdpCallbackFunctionPtr)(const uint8_t*, uint32_t, uint32_t, uint16_t);
 
-int32_t udp_begin(uint16_t, UdpCallbackFunctionPtr callback = nullptr);
-int32_t udp_end(uint16_t);
-uint32_t udp_recv1(const int32_t, uint8_t *, uint32_t, uint32_t *, uint16_t *);
-uint32_t udp_recv2(const int32_t, const uint8_t **, uint32_t *, uint16_t *);
-void udp_send(int32_t, const uint8_t *, uint32_t, uint32_t, uint16_t);
-void udp_send_timestamp(int32_t, const uint8_t *, uint32_t, uint32_t, uint16_t);
-}  // namespace net
+int32_t Begin(uint16_t, UdpCallbackFunctionPtr callback);
+int32_t End(uint16_t);
+uint32_t Recv(const int32_t, const uint8_t**, uint32_t*, uint16_t*);
+void Send(int32_t, const uint8_t*, uint32_t, uint32_t, uint16_t);
+void SendWithTimestamp(int32_t, const uint8_t*, uint32_t, uint32_t, uint16_t);
+} // namespace net::udp
 
-#endif /* NET_UDP_H_ */
+#endif // NET_UDP_H_

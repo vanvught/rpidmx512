@@ -98,11 +98,11 @@ static constexpr char NAME[] = "Baremetal";
 static constexpr auto NAME_LENGTH = sizeof(NAME) - 1;
 }
 
-Hardware *Hardware::s_pThis = 0;
+Hardware *Hardware::s_this = 0;
 
 Hardware::Hardware(): m_nBoardRevision(-1), m_tSocType(SOC_TYPE_UNKNOWN) {
-	assert(s_pThis == 0);
-	s_pThis = this;
+	assert(s_this == 0);
+	s_this = this;
 
 	m_nBoardRevision = bcm2835_vc_get_get_board_revision();
 

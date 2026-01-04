@@ -2,7 +2,7 @@
  * @file rdmtod.h
  *
  */
-/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,208 +30,246 @@
 #include <cstring>
 #include <cassert>
 #ifndef NDEBUG
-# include <cstdio>
+#include <cstdio>
 #endif
 
 #include "rdmconst.h"
+ #include "firmware/debug/debug_debug.h"
 
-#include "debug.h"
-
-namespace rdmtod {
-#if !defined (RDM_DISCOVERY_TOD_TABLE_SIZE)
-# define RDM_DISCOVERY_TOD_TABLE_SIZE 200U
+namespace rdmtod
+{
+#if !defined(RDM_DISCOVERY_TOD_TABLE_SIZE)
+#define RDM_DISCOVERY_TOD_TABLE_SIZE 200U
 #endif
-static constexpr uint32_t TOD_TABLE_SIZE = RDM_DISCOVERY_TOD_TABLE_SIZE;
-static constexpr uint32_t MUTES_TABLE_SIZE = (TOD_TABLE_SIZE + 32) / 32;
-static constexpr uint32_t INVALID_ENTRY = static_cast<uint32_t>(~0);
-struct Tod {
-	uint8_t uid[RDM_UID_SIZE];
+inline constexpr uint32_t kTodTableSize = RDM_DISCOVERY_TOD_TABLE_SIZE;
+inline constexpr uint32_t kMutesTableSize = (kTodTableSize + 32) / 32;
+inline constexpr uint32_t kInvalidEntry = static_cast<uint32_t>(~0);
+struct Tod
+{
+    uint8_t uid[RDM_UID_SIZE];
 };
-}  // namespace rdmtod
+} // namespace rdmtod
 
-class RDMTod {
-public:
-	RDMTod() {
-		for (uint32_t i = 0; i < rdmtod::TOD_TABLE_SIZE; i++) {
-			memcpy(&m_Tod[i], UID_ALL, RDM_UID_SIZE);
-		}
+class RDMTod
+{
+   public:
+    RDMTod()
+    {
+        for (uint32_t i = 0; i < rdmtod::kTodTableSize; i++)
+        {
+            memcpy(&tod_[i], UID_ALL, RDM_UID_SIZE);
+        }
 
-		for (uint32_t i = 0; i < rdmtod::MUTES_TABLE_SIZE; i++) {
-			m_nMutes[i] = 0;
-		}
-	}
+        for (uint32_t i = 0; i < rdmtod::kMutesTableSize; i++)
+        {
+            mutes_[i] = 0;
+        }
+    }
 
-	~RDMTod() = default;
+    ~RDMTod() = default;
 
-	void Reset() {
-		for (uint32_t i = 0; i < m_nEntries; i++) {
-			memcpy(&m_Tod[i], UID_ALL, RDM_UID_SIZE);
-		}
+    void Reset()
+    {
+        for (uint32_t i = 0; i < entries_; i++)
+        {
+            memcpy(&tod_[i], UID_ALL, RDM_UID_SIZE);
+        }
 
-		m_nEntries = 0;
+        entries_ = 0;
 
-		for (uint32_t i = 0; i < rdmtod::MUTES_TABLE_SIZE; i++) {
-			m_nMutes[i] = 0;
-		}
-	}
+        for (uint32_t i = 0; i < rdmtod::kMutesTableSize; i++)
+        {
+            mutes_[i] = 0;
+        }
+    }
 
-	bool AddUid(const uint8_t *pUid) {
-		if (m_nEntries == rdmtod::TOD_TABLE_SIZE) {
-			return false;
-		}
+    bool AddUid(const uint8_t* uid)
+    {
+        if (entries_ == rdmtod::kTodTableSize)
+        {
+            return false;
+        }
 
-		if (Exist(pUid)) {
-			return false;
-		}
+        if (Exist(uid))
+        {
+            return false;
+        }
 
-		memcpy(&m_Tod[m_nEntries++], pUid, RDM_UID_SIZE);
+        memcpy(&tod_[entries_++], uid, RDM_UID_SIZE);
 
-		return true;
-	}
+        return true;
+    }
 
-	uint32_t GetUidCount() const {
-		return m_nEntries;
-	}
+    uint32_t GetUidCount() const { return entries_; }
 
-	bool CopyUidEntry(uint32_t nIndex, uint8_t uid[RDM_UID_SIZE]) {
-		if (nIndex > m_nEntries) {
-			memcpy(uid, UID_ALL, RDM_UID_SIZE);
-			return false;
-		}
+    bool CopyUidEntry(uint32_t index, uint8_t uid[RDM_UID_SIZE])
+    {
+        if (index > entries_)
+        {
+            memcpy(uid, UID_ALL, RDM_UID_SIZE);
+            return false;
+        }
 
-		memcpy(uid, &m_Tod[nIndex], RDM_UID_SIZE);
-		return true;
-	}
+        memcpy(uid, &tod_[index], RDM_UID_SIZE);
+        return true;
+    }
 
-	void Copy(uint8_t *pTable) {
-		DEBUG_ENTRY
-		DEBUG_PRINTF("m_nEntries=%u", static_cast<unsigned int>(m_nEntries));
-		assert(pTable != nullptr);
+    void Copy(uint8_t* table)
+    {
+        DEBUG_ENTRY();
+        DEBUG_PRINTF("entries_=%u", static_cast<unsigned int>(entries_));
+        assert(table != nullptr);
 
-		const auto *pSrc = reinterpret_cast<const uint8_t*>(m_Tod);
-		auto *pDst = pTable;
+        const auto* src = reinterpret_cast<const uint8_t*>(tod_);
+        auto* dst = table;
 
-		for (uint32_t i = 0; i < (m_nEntries * RDM_UID_SIZE); i++) {
-			*pDst++ = *pSrc++;
-		}
+        for (uint32_t i = 0; i < (entries_ * RDM_UID_SIZE); i++)
+        {
+            *dst++ = *src++;
+        }
 
-		DEBUG_EXIT
-	}
+        DEBUG_EXIT();
+    }
 
-	bool Delete(const uint8_t *pUid) {
-		bool found = false;
-		uint32_t i;
+    bool Delete(const uint8_t* uid)
+    {
+        bool found = false;
+        uint32_t i;
 
-		for (i = 0; i < m_nEntries; i++) {
-			if (memcmp(&m_Tod[i], pUid, RDM_UID_SIZE) == 0) {
-				found = true;
-				break;
-			}
-		}
+        for (i = 0; i < entries_; i++)
+        {
+            if (memcmp(&tod_[i], uid, RDM_UID_SIZE) == 0)
+            {
+                found = true;
+                break;
+            }
+        }
 
-		if (!found) {
-			return false;
-		}
+        if (!found)
+        {
+            return false;
+        }
 
-		if (i == rdmtod::TOD_TABLE_SIZE - 1) {
-			memcpy(&m_Tod[i], UID_ALL, RDM_UID_SIZE);
-		} else {
-			for (; i < m_nEntries; i++) {
-				memcpy(&m_Tod[i], &m_Tod[i + 1], RDM_UID_SIZE);
-			}
-		}
+        if (i == rdmtod::kTodTableSize - 1)
+        {
+            memcpy(&tod_[i], UID_ALL, RDM_UID_SIZE);
+        }
+        else
+        {
+            for (; i < entries_; i++)
+            {
+                memcpy(&tod_[i], &tod_[i + 1], RDM_UID_SIZE);
+            }
+        }
 
-		m_nEntries--;
+        entries_--;
 
-		return true;
-	}
+        return true;
+    }
 
-	bool Exist(const uint8_t *pUid) {
-		for (uint32_t nIndex = 0 ; nIndex < m_nEntries; nIndex++) {
-			if (memcmp(&m_Tod[nIndex], pUid, RDM_UID_SIZE) == 0) {
-				m_nSavedIndex = nIndex;
-				return true;
-			}
-		}
+    bool Exist(const uint8_t* uid)
+    {
+        for (uint32_t index = 0; index < entries_; index++)
+        {
+            if (memcmp(&tod_[index], uid, RDM_UID_SIZE) == 0)
+            {
+                saved_index_ = index;
+                return true;
+            }
+        }
 
-		m_nSavedIndex = rdmtod::INVALID_ENTRY;
-		return false;
-	}
+        saved_index_ = rdmtod::kInvalidEntry;
+        return false;
+    }
 
-	const uint8_t *Next() {
-		m_nSavedIndex++;
+    const uint8_t* Next()
+    {
+        saved_index_++;
 
-		if (m_nSavedIndex == m_nEntries) {
-			m_nSavedIndex = 0;
-		}
+        if (saved_index_ == entries_)
+        {
+            saved_index_ = 0;
+        }
 
-		return m_Tod[m_nSavedIndex].uid;
-	}
+        return tod_[saved_index_].uid;
+    }
 
-	void Mute() {
-		if (m_nSavedIndex == rdmtod::INVALID_ENTRY) {
-			return;
-		}
+    void Mute()
+    {
+        if (saved_index_ == rdmtod::kInvalidEntry)
+        {
+            return;
+        }
 
-		const auto i = m_nSavedIndex / 32;
-		const auto shift = m_nSavedIndex - (i * 32);
+        const auto kI = saved_index_ / 32;
+        const auto kShift = saved_index_ - (kI * 32);
 
-		m_nMutes[i] |= (1U << shift);
-	}
+        mutes_[kI] |= (1U << kShift);
+    }
 
-	void UnMute() {
-		if (m_nSavedIndex == rdmtod::INVALID_ENTRY) {
-			return;
-		}
+    void UnMute()
+    {
+        if (saved_index_ == rdmtod::kInvalidEntry)
+        {
+            return;
+        }
 
-		const auto i = m_nSavedIndex / 32;
-		const auto shift = m_nSavedIndex - (i * 32);
+        const auto kI = saved_index_ / 32;
+        const auto kShift = saved_index_ - (kI * 32);
 
-		m_nMutes[i] &= ~(1U << shift);
-	}
+        mutes_[kI] &= ~(1U << kShift);
+    }
 
-	void UnMuteAll() {
-		for (uint32_t i = 0; i < rdmtod::MUTES_TABLE_SIZE; i++) {
-			m_nMutes[i] = 0;
-		}
-	}
+    void UnMuteAll()
+    {
+        for (uint32_t i = 0; i < rdmtod::kMutesTableSize; i++)
+        {
+            mutes_[i] = 0;
+        }
+    }
 
-	bool IsMuted() {
-		if (m_nSavedIndex == rdmtod::INVALID_ENTRY) {
-			return true;
-		}
+    bool IsMuted()
+    {
+        if (saved_index_ == rdmtod::kInvalidEntry)
+        {
+            return true;
+        }
 
-		const auto i = m_nSavedIndex / 32;
-		const auto mutes = m_nMutes[i];
-		const auto shift = m_nSavedIndex - (i * 32);
+        const auto kI = saved_index_ / 32;
+        const auto kMutes = mutes_[kI];
+        const auto kShift = saved_index_ - (kI * 32);
 
-		return (mutes & (1U << shift)) == (1U << shift);
-	}
+        return (kMutes & (1U << kShift)) == (1U << kShift);
+    }
 
-	void Dump([[maybe_unused]] uint32_t nCount) {
+    void Dump([[maybe_unused]] uint32_t count)
+    {
 #ifndef NDEBUG
-	if (nCount > rdmtod::TOD_TABLE_SIZE) {
-		nCount = rdmtod::TOD_TABLE_SIZE;
-	}
+        if (count > rdmtod::kTodTableSize)
+        {
+            count = rdmtod::kTodTableSize;
+        }
 
-	printf("[%u]\n", static_cast<unsigned int>(nCount));
-	for (uint32_t i = 0 ; i < nCount; i++) {
-		printf("%.2x%.2x:%.2x%.2x%.2x%.2x\n", m_Tod[i].uid[0], m_Tod[i].uid[1], m_Tod[i].uid[2], m_Tod[i].uid[3], m_Tod[i].uid[4], m_Tod[i].uid[5]);
-	}
+        printf("[%u]\n", static_cast<unsigned int>(count));
+        for (uint32_t i = 0; i < count; i++)
+        {
+            printf("%.2x%.2x:%.2x%.2x%.2x%.2x\n", tod_[i].uid[0], tod_[i].uid[1], tod_[i].uid[2], tod_[i].uid[3], tod_[i].uid[4], tod_[i].uid[5]);
+        }
 #endif
-	}
-	
-	void Dump() {
+    }
+
+    void Dump()
+    {
 #ifndef NDEBUG
-		Dump(m_nEntries);
+        Dump(entries_);
 #endif
-	}
+    }
 
-private:
-	uint32_t m_nEntries { 0 };
-	uint32_t m_nSavedIndex { rdmtod::INVALID_ENTRY };
-	uint32_t m_nMutes[rdmtod::MUTES_TABLE_SIZE];
-	rdmtod::Tod m_Tod[rdmtod::TOD_TABLE_SIZE];
+   private:
+    uint32_t entries_{0};
+    uint32_t saved_index_{rdmtod::kInvalidEntry};
+    uint32_t mutes_[rdmtod::kMutesTableSize];
+    rdmtod::Tod tod_[rdmtod::kTodTableSize];
 };
 
-#endif /* RDMTOD_H_ */
+#endif  // RDMTOD_H_

@@ -24,10 +24,11 @@
  */
 
 #include <cstdint>
-#include <cstdio>
 
-int uart0_printf(const char* fmt, ...);
-#define printf uart0_printf
+namespace uart0
+{
+int Printf(const char* fmt, ...);
+}
 
 /* Defined by the linker */
 extern uint32_t __ram_start;
@@ -50,25 +51,26 @@ extern uint32_t __svc_stack_top_core1;
 extern uint32_t __svc_stack_top_core2;
 extern uint32_t __svc_stack_top_core3;
 
-void __attribute__((cold)) arm_dump_memmap() {
-	printf("memmap\n");
-	printf("__ram_start = %p\n", &__ram_start);
-	printf("  __data_start = %p\n", &__data_start);
-	printf("  __data_end   = %p\n", &__data_end);
-	printf("   __bss_start = %p\n", &__bss_start);
-	printf("   __bss_end   = %p\n", &__bss_end);
-	printf("  __stack_start = %p\n", &__stack_start);
-	printf("    __und_stack_top = %p\n", &__und_stack_top);
-	printf("    __abt_stack_top = %p\n", &__abt_stack_top);
-	printf("    __fiq_stack_top = %p\n", &__fiq_stack_top);
-	printf("    __irq_stack_top = %p\n", &__irq_stack_top);
-	printf("    __svc_stack_top = %p\n", &__svc_stack_top);
-	printf("    __sys_stack_top = %p\n", &__sys_stack_top);
-	printf("    __svc_stack_top_core1 = %p\n", &__svc_stack_top_core1);
-	printf("    __svc_stack_top_core2 = %p\n", &__svc_stack_top_core2);
-	printf("    __svc_stack_top_core3 = %p\n", &__svc_stack_top_core3);
-	printf("  __heap_start = %p\n", &__heap_start);
-	printf("    heap_low = %p\n", &heap_low);
-	printf("    heap_top = %p\n", &heap_top);
-	printf("__ram_end = %p\n", &__ram_end);
+void __attribute__((cold)) arm_dump_memmap()
+{
+    uart0::Printf("memmap\n");
+    uart0::Printf("__ram_start = %p\n", &__ram_start);
+    uart0::Printf("  __data_start = %p\n", &__data_start);
+    uart0::Printf("  __data_end   = %p\n", &__data_end);
+    uart0::Printf("   __bss_start = %p\n", &__bss_start);
+    uart0::Printf("   __bss_end   = %p\n", &__bss_end);
+    uart0::Printf("  __stack_start = %p\n", &__stack_start);
+    uart0::Printf("    __und_stack_top = %p\n", &__und_stack_top);
+    uart0::Printf("    __abt_stack_top = %p\n", &__abt_stack_top);
+    uart0::Printf("    __fiq_stack_top = %p\n", &__fiq_stack_top);
+    uart0::Printf("    __irq_stack_top = %p\n", &__irq_stack_top);
+    uart0::Printf("    __svc_stack_top = %p\n", &__svc_stack_top);
+    uart0::Printf("    __sys_stack_top = %p\n", &__sys_stack_top);
+    uart0::Printf("    __svc_stack_top_core1 = %p\n", &__svc_stack_top_core1);
+    uart0::Printf("    __svc_stack_top_core2 = %p\n", &__svc_stack_top_core2);
+    uart0::Printf("    __svc_stack_top_core3 = %p\n", &__svc_stack_top_core3);
+    uart0::Printf("  __heap_start = %p\n", &__heap_start);
+    uart0::Printf("    heap_low = %p\n", &heap_low);
+    uart0::Printf("    heap_top = %p\n", &heap_top);
+    uart0::Printf("__ram_end = %p\n", &__ram_end);
 }

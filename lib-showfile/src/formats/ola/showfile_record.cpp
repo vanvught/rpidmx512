@@ -35,29 +35,29 @@
 #include "artnet.h"
 
 namespace showfile {
-void record(const struct artnet::ArtDmx *pArtDmx, const uint32_t nMillis) {
-	const auto nDmxSlots = static_cast<uint32_t>(((pArtDmx->LengthHi << 8) & 0xff00) | pArtDmx->Length);
-	ShowFileFormat::Get()->ShowfileWrite(pArtDmx->Data, nDmxSlots, pArtDmx->PortAddress, nMillis);
+void record(const struct artnet::ArtDmx *pArtDmx, uint32_t millis) {
+	const auto kDmxSlots = static_cast<uint32_t>(((pArtDmx->LengthHi << 8) & 0xff00) | pArtDmx->Length);
+	ShowFileFormat::Get()->ShowfileWrite(pArtDmx->data, kDmxSlots, pArtDmx->PortAddress, millis);
 }
 
-void record([[maybe_unused]] const struct artnet::ArtSync *pArtSync, [[maybe_unused]] const uint32_t nMillis) {
+void record([[maybe_unused]] const struct artnet::ArtSync *pArtSync, [[maybe_unused]] uint32_t millis) {
 	// Nothng to do here
 }
 }  // namespace showfile
 #endif
 
 #if defined (CONFIG_SHOWFILE_PROTOCOL_NODE_E131)
-#include "e131packets.h"
+#include "e131.h"
 
 namespace showfile {
-void record(const struct TE131DataPacket *pE131DataPacket, const uint32_t nMillis) {
-	const auto *const pDmxData = &pE131DataPacket->DMPLayer.PropertyValues[1];
-	const auto nLength = __builtin_bswap16(pE131DataPacket->DMPLayer.PropertyValueCount) - 1U;
-	const auto Universe = __builtin_bswap16(pE131DataPacket->FrameLayer.Universe);
-	ShowFileFormat::Get()->ShowfileWrite(pDmxData, nLength, Universe, nMillis);
+void record(const struct e131::DataPacket *pE131DataPacket, uint32_t millis) {
+	const auto *const pDmxData = &pE131DataPacket->dmp_layer.property_values[1];
+	const auto nLength = __builtin_bswap16(pE131DataPacket->dmp_layer.property_value_count) - 1U;
+	const auto Universe = __builtin_bswap16(pE131DataPacket->frame_layer.universe);
+	ShowFileFormat::Get()->ShowfileWrite(pDmxData, nLength, Universe, millis);
 }
 
-void record([[maybe_unused]] const struct TE131SynchronizationPacket *pE131SynchronizationPacke, [[maybe_unused]] const uint32_t nMillis) {
+void record([[maybe_unused]] const struct e131::SynchronizationPacket *pE131SynchronizationPacke, [[maybe_unused]] uint32_t millis) {
 	// Nothing to do here
 }
 }  // namespace showfile

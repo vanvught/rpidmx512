@@ -32,158 +32,156 @@
 
 #include "dmxnode.h"
 
-#if defined (GD32)
+#if defined(GD32)
 /**
  * https://www.gd32-dmx.org/memory.html
  */
-# include "gd32.h"
-# if defined (GD32F450VI) || defined (GD32H7XX)
-#  define SECTION_LIGHTSET __attribute__ ((section (".lightset")))
-# else
-#  define SECTION_LIGHTSET
-# endif
+#include "gd32.h"
+#if defined(GD32F450VI) || defined(GD32H7XX)
+#define SECTION_LIGHTSET __attribute__((section(".lightset")))
 #else
-# define SECTION_LIGHTSET
+#define SECTION_LIGHTSET
+#endif
+#else
+#define SECTION_LIGHTSET
 #endif
 
-namespace dmxnode {
-class Data {
-public:
-	static Data& Get() {
-		static Data instance SECTION_LIGHTSET;
-		return instance;
+namespace dmxnode
+{
+class Data
+{
+   public:
+    static Data& Get()
+    {
+        static Data instance SECTION_LIGHTSET;
+        return instance;
+    }
+
+    static void SetSourceA(uint32_t port_index, const uint8_t* data, uint32_t length) { Get().IMergeSourceA(port_index, data, length, MergeMode::kLtp); }
+
+    static void MergeSourceA(uint32_t port_index, const uint8_t* data, uint32_t length, MergeMode merge_mode) { Get().IMergeSourceA(port_index, data, length, merge_mode); }
+
+    static void SetSourceB(uint32_t port_index, const uint8_t* data, uint32_t length) { Get().IMergeSourceB(port_index, data, length, MergeMode::kLtp); }
+
+    static void MergeSourceB(uint32_t port_index, const uint8_t* data, uint32_t length, MergeMode merge_mode) { Get().IMergeSourceB(port_index, data, length, merge_mode); }
+
+    static void Clear(uint32_t port_index) { Get().IClear(port_index); }
+
+    static void ClearLength(uint32_t port_index) { Get().IClearLength(port_index); }
+
+    static uint32_t GetLength(uint32_t port_index) { return Get().IGetLength(port_index); }
+
+    static const uint8_t* Backup(uint32_t port_index) { return Get().IBackup(port_index); }
+
+    static void Restore(uint32_t port_index, const uint8_t* data) { Get().IRestore(port_index, data); }
+
+   private:
+    void IMergeSourceA(uint32_t port_index, const uint8_t* data, uint32_t length, MergeMode merge_mode)
+    {
+        assert(port_index < kPorts);
+        assert(data != nullptr);
+
+        memcpy(output_port_[port_index].source_a.data, data, length);
+
+        output_port_[port_index].length = length;
+
+        if (merge_mode == MergeMode::kHtp)
+        {
+            for (uint32_t i = 0; i < length; i++)
+            {
+                const auto kData = std::max(output_port_[port_index].source_a.data[i], output_port_[port_index].source_b.data[i]);
+                output_port_[port_index].data[i] = kData;
+            }
+
+            return;
+        }
+
+        memcpy(output_port_[port_index].data, data, length);
+    }
+
+    void IMergeSourceB(uint32_t port_index, const uint8_t* data, uint32_t length, MergeMode merge_mode)
+    {
+        assert(port_index < kPorts);
+        assert(data != nullptr);
+
+        memcpy(output_port_[port_index].source_b.data, data, length);
+
+        output_port_[port_index].length = length;
+
+        if (merge_mode == MergeMode::kHtp)
+        {
+            for (uint32_t i = 0; i < length; i++)
+            {
+                const auto kData = std::max(output_port_[port_index].source_a.data[i], output_port_[port_index].source_b.data[i]);
+                output_port_[port_index].data[i] = kData;
+            }
+
+            return;
+        }
+
+        memcpy(output_port_[port_index].data, data, length);
+    }
+
+    void IClear(uint32_t port_index)
+    {
+        assert(port_index < kPorts);
+
+        memset(output_port_[port_index].data, 0, dmxnode::kUniverseSize);
+        output_port_[port_index].length = dmxnode::kUniverseSize;
+    }
+
+    void IClearLength(uint32_t port_index)
+    {
+        assert(port_index < kPorts);
+        output_port_[port_index].length = 0;
+    }
+
+    uint32_t IGetLength(uint32_t port_index) const 
+    { 
+		assert(port_index < kPorts);
+		return output_port_[port_index].length; 
 	}
 
-	static void SetSourceA(const uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
-		Get().IMergeSourceA(nPortIndex, pData, nLength, MergeMode::LTP);
-	}
+    const uint8_t* IBackup(uint32_t port_index)
+    {
+        assert(port_index < kPorts);
+        return const_cast<const uint8_t*>(output_port_[port_index].data);
+    }
 
-	static void MergeSourceA(const uint32_t nPortIndex, const uint8_t *pData, const uint32_t nLength, const MergeMode mergeMode) {
-		 Get().IMergeSourceA(nPortIndex, pData, nLength, mergeMode);
-	}
+    void IRestore(uint32_t port_index, const uint8_t* data)
+    {
+        assert(port_index < kPorts);
+        assert(data != nullptr);
 
-	static void SetSourceB(const uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
-		Get().IMergeSourceB(nPortIndex, pData, nLength, MergeMode::LTP);
-	}
+        memcpy(output_port_[port_index].data, data, dmxnode::kUniverseSize);
+    }
 
-	static void MergeSourceB(const uint32_t nPortIndex, const uint8_t *pData, const uint32_t nLength, const MergeMode mergeMode) {
-		 Get().IMergeSourceB(nPortIndex, pData, nLength, mergeMode);
-	}
-
-	static void Clear(uint32_t nPortIndex) {
-		Get().IClear(nPortIndex);
-	}
-
-	static void ClearLength(const uint32_t nPortIndex) {
-		Get().IClearLength(nPortIndex);
-	}
-
-	static uint32_t GetLength(const uint32_t nPortIndex) {
-		return Get().IGetLength(nPortIndex);
-	}
-
-	static const uint8_t *Backup(const uint32_t nPortIndex) {
-		return Get().IBackup(nPortIndex);
-	}
-
-	static void Restore(const uint32_t nPortIndex, const uint8_t *pData) {
-		Get().IRestore(nPortIndex, pData);
-	}
-
-private:
-	void IMergeSourceA(const uint32_t nPortIndex, const uint8_t *pData, const uint32_t nLength, const MergeMode mergeMode) {
-		assert(nPortIndex < PORTS);
-		assert(pData != nullptr);
-
-		memcpy(m_OutputPort[nPortIndex].sourceA.data, pData, nLength);
-
-		m_OutputPort[nPortIndex].nLength = nLength;
-
-		if (mergeMode == MergeMode::HTP) {
-			for (uint32_t i = 0; i < nLength; i++) {
-				const auto data = std::max(m_OutputPort[nPortIndex].sourceA.data[i], m_OutputPort[nPortIndex].sourceB.data[i]);
-				m_OutputPort[nPortIndex].data[i] = data;
-			}
-
-			return;
-		}
-
-		memcpy(m_OutputPort[nPortIndex].data, pData, nLength);
-	}
-
-	void IMergeSourceB(const uint32_t nPortIndex, const uint8_t *pData, const uint32_t nLength, const MergeMode mergeMode) {
-		assert(nPortIndex < PORTS);
-		assert(pData != nullptr);
-
-		memcpy(m_OutputPort[nPortIndex].sourceB.data, pData, nLength);
-
-		m_OutputPort[nPortIndex].nLength = nLength;
-
-		if (mergeMode == MergeMode::HTP) {
-			for (uint32_t i = 0; i < nLength; i++) {
-				const auto data = std::max(m_OutputPort[nPortIndex].sourceA.data[i], m_OutputPort[nPortIndex].sourceB.data[i]);
-				m_OutputPort[nPortIndex].data[i] = data;
-			}
-
-			return;
-		}
-
-		memcpy(m_OutputPort[nPortIndex].data, pData, nLength);
-	}
-
-	void IClear(const uint32_t nPortIndex) {
-		assert(nPortIndex < PORTS);
-
-		memset(m_OutputPort[nPortIndex].data, 0, dmxnode::UNIVERSE_SIZE);
-		m_OutputPort[nPortIndex].nLength = dmxnode::UNIVERSE_SIZE;
-	}
-
-	void IClearLength(const uint32_t nPortIndex) {
-		assert(nPortIndex < PORTS);
-
-		m_OutputPort[nPortIndex].nLength = 0;
-	}
-
-	uint32_t IGetLength(const uint32_t nPortIndex) const {
-		return m_OutputPort[nPortIndex].nLength;
-	}
-
-	const uint8_t *IBackup(const uint32_t nPortIndex) {
-		assert(nPortIndex < PORTS);
-		return const_cast<const uint8_t *>(m_OutputPort[nPortIndex].data);
-	}
-
-	void IRestore(const uint32_t nPortIndex, const uint8_t *pData) {
-		assert(nPortIndex < PORTS);
-		assert(pData != nullptr);
-
-		memcpy(m_OutputPort[nPortIndex].data, pData, dmxnode::UNIVERSE_SIZE);
-	}
-
-private:
-#if !defined (DMXNODE_PORTS)
-# define DMXNODE_PORTS 0
+   private:
+#if !defined(DMXNODE_PORTS)
+#define DMXNODE_PORTS 0
 #endif
 
 #if (DMXNODE_PORTS == 0)
-	static constexpr auto PORTS = 1;	// ISO C++ forbids zero-size array
+    static constexpr auto kPorts = 1; // ISO C++ forbids zero-size array
 #else
-	static constexpr auto PORTS = DMXNODE_PORTS;
+    static constexpr auto kPorts = DMXNODE_PORTS;
 #endif
 
-	struct Source {
-		uint8_t data[dmxnode::UNIVERSE_SIZE] __attribute__ ((aligned (4)));
-	};
+    struct Source
+    {
+        uint8_t data[dmxnode::kUniverseSize] __attribute__((aligned(4)));
+    };
 
-	struct OutputPort {
-		Source sourceA;
-		Source sourceB;
-		uint8_t data[dmxnode::UNIVERSE_SIZE] __attribute__ ((aligned (4)));
-		uint32_t nLength;
-	};
+    struct OutputPort
+    {
+        Source source_a;
+        Source source_b;
+        uint8_t data[dmxnode::kUniverseSize] __attribute__((aligned(4)));
+        uint32_t length;
+    };
 
-	OutputPort m_OutputPort[PORTS];
+    OutputPort output_port_[kPorts];
 };
-}  // namespace dmxnode
+} // namespace dmxnode
 
-#endif /* DMXNODEDATA_H_ */
+#endif  // DMXNODEDATA_H_

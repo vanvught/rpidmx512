@@ -2,7 +2,7 @@
  * @file showfileprotocolnodee131.h
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,99 +31,97 @@
 
 #include "e131bridge.h"
 #include "e131.h"
-#include "e117const.h"
+#include "e117.h"
 
-#include "hal.h"
+#include "hal_uuid.h"
 
-#include "debug.h"
+ #include "firmware/debug/debug_debug.h"
 
-class ShowFileProtocol {
-public:
-	ShowFileProtocol() {
-		DEBUG_ENTRY
-		// Root Layer (See Section 5)
-		m_E131DataPacket.RootLayer.PreAmbleSize = __builtin_bswap16(0x0010);
-		m_E131DataPacket.RootLayer.PostAmbleSize = __builtin_bswap16(0x0000);
-		memcpy(m_E131DataPacket.RootLayer.ACNPacketIdentifier, E117Const::ACN_PACKET_IDENTIFIER, e117::PACKET_IDENTIFIER_LENGTH);
-		m_E131DataPacket.RootLayer.Vector = __builtin_bswap32(e131::vector::root::DATA);
-		hal::uuid_copy(m_E131DataPacket.RootLayer.Cid);
-		// E1.31 Framing Layer (See Section 6)
-		m_E131DataPacket.FrameLayer.Vector = __builtin_bswap32(e131::vector::data::PACKET);
-		memcpy(m_E131DataPacket.FrameLayer.SourceName, E131Bridge::Get()->GetSourceName(), e131::SOURCE_NAME_LENGTH);
-		m_E131DataPacket.FrameLayer.SynchronizationAddress = __builtin_bswap16(0);
-		m_E131DataPacket.FrameLayer.Priority = e131::priority::DEFAULT;
-		m_E131DataPacket.FrameLayer.Options = 0;
-		// Data Layer
-		m_E131DataPacket.DMPLayer.Vector = e131::vector::dmp::SET_PROPERTY;
-		m_E131DataPacket.DMPLayer.Type = 0xa1;
-		m_E131DataPacket.DMPLayer.FirstAddressProperty = __builtin_bswap16(0x0000);
-		m_E131DataPacket.DMPLayer.AddressIncrement = __builtin_bswap16(0x0001);
-		m_E131DataPacket.DMPLayer.PropertyValues[0] = 0;
+class ShowFileProtocol
+{
+   public:
+    ShowFileProtocol()
+    {
+        DEBUG_ENTRY();
+        // Root Layer (See Section 5)
+        e131_data_packet_.root_layer.pre_amble_size = __builtin_bswap16(0x0010);
+        e131_data_packet_.root_layer.post_amble_size = __builtin_bswap16(0x0000);
+        memcpy(e131_data_packet_.root_layer.acn_packet_identifier, e117::kAcnPacketIdentifier, e117::kAcnPacketIdentifierLength);
+        e131_data_packet_.root_layer.vector = __builtin_bswap32(e131::vector::root::kData);
+        hal::UuidCopy(e131_data_packet_.root_layer.cid);
+        // E1.31 Framing Layer (See Section 6)
+        e131_data_packet_.frame_layer.vector = __builtin_bswap32(e131::vector::data::kPacket);
+        memcpy(e131_data_packet_.frame_layer.source_name, E131Bridge::Get()->GetSourceName(), e131::kSourceNameLength);
+        e131_data_packet_.frame_layer.synchronization_address = __builtin_bswap16(0);
+        e131_data_packet_.frame_layer.priority = e131::priority::kDefault;
+        e131_data_packet_.frame_layer.options = 0;
+        // Data Layer
+        e131_data_packet_.dmp_layer.vector = e131::vector::dmp::kSetProperty;
+        e131_data_packet_.dmp_layer.type = 0xa1;
+        e131_data_packet_.dmp_layer.first_address_property = __builtin_bswap16(0x0000);
+        e131_data_packet_.dmp_layer.address_increment = __builtin_bswap16(0x0001);
+        e131_data_packet_.dmp_layer.property_values[0] = 0;
 
-		DEBUG_EXIT
-	}
+        DEBUG_EXIT();
+    }
 
-	void SetSynchronizationAddress([[maybe_unused]] const uint16_t SynchronizationAddress) {
-	}
+    void SetSynchronizationAddress([[maybe_unused]] uint16_t synchronization_address) {}
 
-	void Start() {
-		DEBUG_ENTRY
+    void Start()
+    {
+        DEBUG_ENTRY();
 
-		DEBUG_EXIT
-	}
+        DEBUG_EXIT();
+    }
 
-	void Stop() {
-		DEBUG_ENTRY
+    void Stop()
+    {
+        DEBUG_ENTRY();
 
-		DEBUG_EXIT
-	}
+        DEBUG_EXIT();
+    }
 
-	void Record() {
-		DEBUG_ENTRY
+    void Record()
+    {
+        DEBUG_ENTRY();
 
-		DEBUG_EXIT
-	}
+        DEBUG_EXIT();
+    }
 
-	void DmxOut(const uint16_t nUniverse, const uint8_t *pDmxData, uint32_t nLength) {
-		nLength++; // Add 1 for SC
-		// Root Layer (See Section 5)
-		m_E131DataPacket.RootLayer.FlagsLength = __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | (DATA_ROOT_LAYER_LENGTH(nLength))));
-		// E1.31 Framing Layer (See Section 6)
-		m_E131DataPacket.FrameLayer.FLagsLength = __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | (DATA_FRAME_LAYER_LENGTH(nLength))));
-		m_E131DataPacket.FrameLayer.SequenceNumber = m_nSequenceNumber++;
-		m_E131DataPacket.FrameLayer.Universe = __builtin_bswap16(nUniverse);
-		// Data Layer
-		m_E131DataPacket.DMPLayer.FlagsLength = __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | (DATA_LAYER_LENGTH(nLength))));
-		memcpy(m_E131DataPacket.DMPLayer.PropertyValues, &pDmxData[1], nLength - 1);
-		m_E131DataPacket.DMPLayer.PropertyValueCount = __builtin_bswap16(static_cast<uint16_t>(nLength));
+    void DmxOut(uint16_t universe, const uint8_t* dmx_data, uint32_t length)
+    {
+        length++; // Add 1 for SC
+        // Root Layer (See Section 5)
+        e131_data_packet_.root_layer.flags_length = __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | (e131::DataRootLayerLength(length))));
+        // E1.31 Framing Layer (See Section 6)
+        e131_data_packet_.frame_layer.flags_length = __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | (e131::DataFrameLayerLength(length))));
+        e131_data_packet_.frame_layer.sequence_number = sequence_number_++;
+        e131_data_packet_.frame_layer.universe = __builtin_bswap16(universe);
+        // Data Layer
+        e131_data_packet_.dmp_layer.flags_length = __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | (e131::DataLayerLength(length))));
+        memcpy(e131_data_packet_.dmp_layer.property_values, &dmx_data[1], length - 1);
+        e131_data_packet_.dmp_layer.property_value_count = __builtin_bswap16(static_cast<uint16_t>(length));
 
-		E131Bridge::Get()->HandleShowFile(&m_E131DataPacket);
-	}
+        E131Bridge::Get()->HandleShowFile(&e131_data_packet_);
+    }
 
-	void DmxSync() {
-	}
+    void DmxSync() {}
 
-	void DmxBlackout() {
-	}
+    void DmxBlackout() {}
 
-	void DmxMaster([[maybe_unused]] const uint32_t nMaster) {
-	}
+    void DmxMaster([[maybe_unused]] uint32_t master) {}
 
-	void DoRunCleanupProcess([[maybe_unused]] bool bDoRun) {
-	}
+    void DoRunCleanupProcess([[maybe_unused]] bool do_run) {}
 
-	void Run() {
-	}
+    void Run() {}
 
-	bool IsSyncDisabled() {
-		return false;
-	}
+    bool IsSyncDisabled() { return false; }
 
-	void Print() {}
+    void Print() {}
 
-private:
-	TE131DataPacket m_E131DataPacket;
-	uint8_t m_nSequenceNumber { 0 };
+   private:
+    e131::DataPacket e131_data_packet_;
+    uint8_t sequence_number_{0};
 };
 
-#endif /* PROTOCOLS_SHOWFILEPROTOCOLNODEE131_H_ */
+#endif  // PROTOCOLS_SHOWFILEPROTOCOLNODEE131_H_

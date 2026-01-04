@@ -2,7 +2,7 @@
  * @file hal_spi.h
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,13 +49,13 @@
 # else
 #  include <stdint.h>
 # endif
-  inline static void spi_begin() {}
-  inline static void spi_chipSelect([[maybe_unused]] uint8_t _q) {}
-  inline static void spi_setDataMode([[maybe_unused]] uint8_t _q) {}
-  inline static void spi_set_speed_hz([[maybe_unused]] uint32_t _q) {}
-  inline static void spi_write([[maybe_unused]] uint16_t _q) {}
-  inline static void spi_transfern([[maybe_unused]] const char *_p, [[maybe_unused]] uint32_t _q) {}
-  inline static void spi_writenb([[maybe_unused]] const char *_p, [[maybe_unused]] uint32_t _q) {}
+  inline static void SpiBegin() {}
+  inline static void SpiChipSelect([[maybe_unused]] uint8_t _q) {}
+  inline static void SpiSetDataMode([[maybe_unused]] uint8_t _q) {}
+  inline static void SpiSetSpeedHz([[maybe_unused]] uint32_t _q) {}
+  inline static void SpiWrite([[maybe_unused]] uint16_t _q) {}
+  inline static void SpiTransfern([[maybe_unused]] const char *_p, [[maybe_unused]] uint32_t _q) {}
+  inline static void SpiWritenb([[maybe_unused]] const char *_p, [[maybe_unused]] uint32_t _q) {}
 # ifdef __cplusplus
  }
 # endif

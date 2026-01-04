@@ -28,10 +28,13 @@
 
 #include <cstdint>
 
-void network_store_save_ip(const uint32_t nIp);
-void network_store_save_netmask(const uint32_t nNetMask);
-void network_store_save_gatewayip(const uint32_t nGatewayIp);
-void network_store_save_hostname(const char *pHostName, uint32_t nLength);
-void network_store_save_dhcp(bool bIsDhcpUsed);
+namespace network::store
+{
+void SaveIp(uint32_t ip);
+void SaveNetmask(uint32_t net_mask);
+void SaveGatewayIp(uint32_t gateway_ip);
+void SaveHostname(const char* hostname, uint32_t length);
+void SaveDhcp(bool is_dhcp_used);
+} // namespace network::store
 
-#endif /* NETWORK_STORE_H_ */
+#endif  // NETWORK_STORE_H_

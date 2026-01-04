@@ -22,18 +22,17 @@
  * THE SOFTWARE.
  */
 
-#if defined (DEBUG_ARM_LTCETCREADER)
-# undef NDEBUG
+#if defined(DEBUG_ARM_LTCETCREADER)
+#undef NDEBUG
 #endif
 
 #if defined(__GNUC__) && !defined(__clang__)
-# pragma GCC push_options
-# pragma GCC optimize ("O2")
-# pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#pragma GCC push_options
+#pragma GCC optimize("O2")
+#pragma GCC optimize("no-tree-loop-distribute-patterns")
 #endif
 
 #include <cstdint>
-#include <cassert>
 
 #include "arm/ltcetcreader.h"
 #include "ltc.h"
@@ -44,79 +43,85 @@
 #include "ltcsender.h"
 #include "tcnetdisplay.h"
 #include "arm/ltcoutputs.h"
+ #include "firmware/debug/debug_debug.h"
 
-#include "arm/platform_ltc.h"
-
-#include "debug.h"
-
-#if defined (H3)
-static void arm_timer_handler() {
-	gv_ltc_nUpdatesPerSecond = gv_ltc_nUpdates - gv_ltc_nUpdatesPrevious;
-	gv_ltc_nUpdatesPrevious = gv_ltc_nUpdates;
+#if defined(H3)
+static void arm_timer_handler()
+{
+    gv_ltc_nUpdatesPerSecond = gv_ltc_nUpdates - gv_ltc_nUpdatesPrevious;
+    gv_ltc_nUpdatesPrevious = gv_ltc_nUpdates;
 }
-#elif defined (GD32)
-	// Defined in platform_ltc.cpp
+#elif defined(GD32)
+// Defined in platform_ltc.cpp
 #endif
 
-void LtcEtcReader::Start() {
-	DEBUG_ENTRY
+void LtcEtcReader::Start()
+{
+    DEBUG_ENTRY();
 
-#if defined (H3)
-	irq_timer_arm_physical_set(static_cast<thunk_irq_timer_arm_t>(arm_timer_handler));
-	irq_handler_init();
-#elif defined (GD32)
+#if defined(H3)
+    irq_timer_arm_physical_set(static_cast<thunk_irq_timer_arm_t>(arm_timer_handler));
+    irq_handler_init();
+#elif defined(GD32)
 #endif
 
-	LtcOutputs::Get()->Init();
-	hal::statusled_set_mode(hal::StatusLedMode::NORMAL);
+    LtcOutputs::Get()->Init();
+    hal::statusled::SetMode(hal::statusled::Mode::NORMAL);
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void LtcEtcReader::Stop() {
-	DEBUG_ENTRY
+void LtcEtcReader::Stop()
+{
+    DEBUG_ENTRY();
 
-#if defined (H3)
-	irq_timer_arm_physical_set(static_cast<thunk_irq_timer_arm_t>(nullptr));
-#elif defined (GD32)
+#if defined(H3)
+    irq_timer_arm_physical_set(static_cast<thunk_irq_timer_arm_t>(nullptr));
+#elif defined(GD32)
 #endif
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
 #if defined(__GNUC__) && !defined(__clang__)
-# pragma GCC push_options
-# pragma GCC optimize ("O3")
-# pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#pragma GCC push_options
+#pragma GCC optimize("O3")
+#pragma GCC optimize("no-tree-loop-distribute-patterns")
 #endif
 
-static inline bool timecode_is_equal(const struct ltc::TimeCode *pLtcTimeCode) {
-	auto isEqual = false;
-	const auto *pSrc = reinterpret_cast<const uint8_t *>(pLtcTimeCode);
-	auto *pDst = reinterpret_cast<uint8_t *>(&g_ltc_LtcTimeCode);
+static bool TimecodeIsEqual(const struct ltc::TimeCode* timecode)
+{
+    auto is_equal = false;
+    const auto* src = reinterpret_cast<const uint8_t*>(timecode);
+    auto* dst = reinterpret_cast<uint8_t*>(&g_ltc_LtcTimeCode);
 
-	for (uint32_t i = 0; i < sizeof (struct ltc::TimeCode); i++) {
-		isEqual |= (*pSrc == *pDst);
-		*pDst++ = *pSrc++;
-	}
+    for (uint32_t i = 0; i < sizeof(struct ltc::TimeCode); i++)
+    {
+        is_equal |= (*src == *dst);
+        *dst++ = *src++;
+    }
 
-	return !isEqual;
+    return !is_equal;
 }
 
-void LtcEtcReader::Handler(const midi::Timecode *pTimeCode) {
-	m_nTimestamp = hal::millis();
+void LtcEtcReader::Handler(const midi::Timecode* timecode)
+{
+    timestamp_ = hal::Millis();
 
-	if (ltc::Destination::IsEnabled(ltc::Destination::Output::LTC)) {
-		LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct ltc::TimeCode *>(pTimeCode));
-	}
+    if (ltc::Destination::IsEnabled(ltc::Destination::Output::LTC))
+    {
+        LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct ltc::TimeCode*>(timecode));
+    }
 
-	if (ltc::Destination::IsEnabled(ltc::Destination::Output::ARTNET)) {
-		ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct artnet::TimeCode *>(pTimeCode));
-	}
+    if (ltc::Destination::IsEnabled(ltc::Destination::Output::ARTNET))
+    {
+        ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct artnet::TimeCode*>(timecode));
+    }
 
-	if (!timecode_is_equal(reinterpret_cast<const struct ltc::TimeCode *>(pTimeCode))) {
-		LtcOutputs::Get()->Update(const_cast<const struct ltc::TimeCode *>(&g_ltc_LtcTimeCode));
-	}
+    if (!TimecodeIsEqual(reinterpret_cast<const struct ltc::TimeCode*>(timecode)))
+    {
+        LtcOutputs::Get()->Update(const_cast<const struct ltc::TimeCode*>(&g_ltc_LtcTimeCode));
+    }
 
-	gv_ltc_nUpdates = gv_ltc_nUpdates + 1;
+    gv_ltc_nUpdates = gv_ltc_nUpdates + 1;
 }

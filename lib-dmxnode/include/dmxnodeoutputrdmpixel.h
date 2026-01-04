@@ -29,35 +29,34 @@
 
 #include "dmxnode.h"
 
-class DmxNodeOutputRdmPixel {
-public:
-	DmxNodeOutputRdmPixel() = default;
-	virtual ~DmxNodeOutputRdmPixel() = default;
+class DmxNodeOutputRdmPixel
+{
+   public:
+    DmxNodeOutputRdmPixel() = default;
+    virtual ~DmxNodeOutputRdmPixel() = default;
 
-	virtual void Start(const uint32_t nPortIndex);
-	virtual void Stop(const uint32_t nPortIndex);
+    virtual void Start(uint32_t port_index) = 0;
+    virtual void Stop(uint32_t port_index) = 0;
 
-	virtual void SetData(const uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate = true)= 0;
+    template <bool doUpdate> void SetData(uint32_t port_index, const uint8_t* data, uint32_t length) { SetDataImpl(port_index, data, length, doUpdate); }
 
-	virtual bool SetDmxStartAddress([[maybe_unused]] const uint16_t nDmxStartAddress) {
-		return false;
-	}
+    virtual bool SetDmxStartAddress([[maybe_unused]] uint16_t dmx_start_address) { return false; }
 
-	virtual uint16_t GetDmxStartAddress() {
-		return dmxnode::START_ADDRESS_DEFAULT;
-	}
+    virtual uint16_t GetDmxStartAddress() { return dmxnode::kStartAddressDefault; }
 
-	virtual uint16_t GetDmxFootprint() {
-		return dmxnode::UNIVERSE_SIZE;
-	}
+    virtual uint16_t GetDmxFootprint() { return dmxnode::kUniverseSize; }
 
-	virtual bool GetSlotInfo([[maybe_unused]] const uint16_t nSlotOffset, dmxnode::SlotInfo &slotInfo) {
-		slotInfo.nType = 0x00; // ST_PRIMARY
-		slotInfo.nCategory = 0x0001; // SD_INTENSITY
-		return true;
-	}
+    virtual bool GetSlotInfo([[maybe_unused]] uint16_t slot_offset, dmxnode::SlotInfo& slot_info)
+    {
+        slot_info.type = 0x00;       // ST_PRIMARY
+        slot_info.category = 0x0001; // SD_INTENSITY
+        return true;
+    }
 
-	virtual void Print() {}
- };
+    virtual void Print() {}
 
-#endif /* DMXNODEOUTPUTRDMPIXEL_H_ */
+   protected:
+    virtual void SetDataImpl(uint32_t port_index, const uint8_t* data, uint32_t length, bool do_update) = 0;
+};
+
+#endif  // DMXNODEOUTPUTRDMPIXEL_H_

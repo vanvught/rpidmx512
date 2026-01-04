@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#if defined (DEBUG_DISPLAYUDF)
-# undef NDEBUG
+#if defined(DEBUG_DISPLAYUDF)
+#undef NDEBUG
 #endif
 
 #include <cstdint>
@@ -33,39 +33,37 @@
 #include "artnet.h"
 #include "dmxnode.h"
 
-namespace artnet {
-void display_longname([[maybe_unused]] const char *pLongName) {
+namespace artnet::display
+{
+void Longname([[maybe_unused]] const char* long_name) {}
+
+void Universe([[maybe_unused]] uint32_t port_index, [[maybe_unused]] uint32_t universe)
+{
+    DisplayUdf::Get()->ShowUniverseArtNetNode();
 }
 
-void display_universe_switch([[maybe_unused]]  uint32_t nPortIndex, [[maybe_unused]]  uint8_t nAddress) {
-	DisplayUdf::Get()->ShowUniverseArtNetNode();
+void MergeMode([[maybe_unused]] uint32_t port_index, [[maybe_unused]] dmxnode::MergeMode merge_mode)
+{
+    DisplayUdf::Get()->ShowUniverseArtNetNode();
 }
 
-void display_net_switch([[maybe_unused]]  uint8_t nAddress) {
-	DisplayUdf::Get()->ShowUniverseArtNetNode();
+void Outputstyle([[maybe_unused]] uint32_t port_index, [[maybe_unused]] dmxnode::OutputStyle output_style)
+{
+    DisplayUdf::Get()->ShowUniverseArtNetNode();
 }
 
-void display_subnet_switch([[maybe_unused]]  uint8_t nAddress) {
-	DisplayUdf::Get()->ShowUniverseArtNetNode();
+void Protocol([[maybe_unused]] uint32_t port_index, [[maybe_unused]] artnet::PortProtocol port_protocol)
+{
+    DisplayUdf::Get()->ShowUniverseArtNetNode();
 }
 
-void display_merge_mode([[maybe_unused]]  uint32_t nPortIndex, [[maybe_unused]]  dmxnode::MergeMode mergeMode) {
-	DisplayUdf::Get()->ShowUniverseArtNetNode();
+void RdmEnabled([[maybe_unused]] uint32_t port_index, [[maybe_unused]] bool is_enabled)
+{
+    DisplayUdf::Get()->ShowUniverseArtNetNode();
 }
 
-void display_outputstyle([[maybe_unused]] const uint32_t nPortIndex, [[maybe_unused]] const dmxnode::OutputStyle outputStyle) {
-	DisplayUdf::Get()->ShowUniverseArtNetNode();
+void Failsafe([[maybe_unused]] uint8_t failsafe)
+{
+    // TODO ShowFailSafe
 }
-
-void display_port_protocol([[maybe_unused]]  uint32_t nPortIndex, [[maybe_unused]]  artnet::PortProtocol tPortProtocol) {
-	DisplayUdf::Get()->ShowUniverseArtNetNode();
-}
-
-void display_rdm_enabled([[maybe_unused]] uint32_t nPortIndex, [[maybe_unused]] bool isEnabled) {
-	DisplayUdf::Get()->ShowUniverseArtNetNode();
-}
-
-void display_failsafe([[maybe_unused]] uint8_t nFailsafe) {
-	//TODO ShowFailSafe
-}
-}  // namespace artnet
+} // namespace artnet::display

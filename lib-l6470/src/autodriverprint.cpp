@@ -29,8 +29,8 @@
 #include "autodriver.h"
 
 void AutoDriver::Print() {
-	printf("SparkFun AutoDriver [%d]\n", m_nMotorNumber);
-	printf(" Position=%d, ChipSelect=%d, ResetPin=%d, BusyPin=%d [%s]\n", m_nPosition, m_nSpiChipSelect, m_nResetPin, m_nBusyPin, m_nBusyPin == 0xFF ? "SPI" : "GPIO");
+	printf("SparkFun AutoDriver [%d]\n", motor_number_);
+	printf(" Position=%d, ChipSelect=%d, ResetPin=%d, BusyPin=%d [%s]\n", position_, m_nSpiChipSelect, m_nResetPin, m_nBusyPin, m_nBusyPin == 0xFF ? "SPI" : "GPIO");
 	printf(" MinSpeed=%3.0f, MaxSpeed=%3.0f, Acc=%4.0f, Dec=%4.0f\n", getMinSpeed(), getMaxSpeed(), getAcc(), getDec());
 	printf(" AccKVAL=%d, DecKVAL=%d, RunKVAL=%d, HoldKVAL=%d\n",
 			static_cast<int>(getAccKVAL()), static_cast<int>(getDecKVAL()),

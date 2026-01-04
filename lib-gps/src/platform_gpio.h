@@ -2,7 +2,7 @@
  * @file platform_gpio.h
  *
  */
-/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,7 @@
 #  include "h3_gpio.h"
 #  include "h3_board.h"
 	inline void platform_gpio_init() {
-		h3_gpio_fsel(GPIO_EXT_18, GPIO_FSEL_EINT);
+		H3GpioFsel(GPIO_EXT_18, GPIO_FSEL_EINT);
 
 		H3_PIO_PA_INT->CFG2 = (GPIO_INT_CFG_POS_EDGE << 8);
 		H3_PIO_PA_INT->CTL |= (1 << GPIO_EXT_18);

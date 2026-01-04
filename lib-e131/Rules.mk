@@ -1,11 +1,12 @@
+
 ifneq ($(MAKE_FLAGS),)
 	ifeq ($(findstring NODE_E131,$(MAKE_FLAGS)), NODE_E131)
-		EXTRA_SRCDIR+=src/node
+		EXTRA_SRCDIR+=src/node src/json
 	endif
 
 	ifeq ($(findstring NODE_ARTNET,$(MAKE_FLAGS)),NODE_ARTNET)
 		ifeq ($(findstring ARTNET_VERSION=4,$(MAKE_FLAGS)),ARTNET_VERSION=4)
-			EXTRA_SRCDIR+=src/node
+			EXTRA_SRCDIR+=src/node src/json
 		endif
 	endif
 
@@ -27,7 +28,7 @@ ifneq ($(MAKE_FLAGS),)
 	endif
 
 	ifeq ($(findstring OUTPUT_DMX_PIXEL,$(MAKE_FLAGS)), OUTPUT_DMX_PIXEL)
-		EXTRA_INCLUDES+=../lib-ws28xx/include ../lib-ws28xxdmx/include
+		EXTRA_INCLUDES+=../lib-pixel/include ../lib-pixeldmx/include
 	endif
 	
 	ifeq ($(findstring OUTPUT_DMX_SERIAL,$(MAKE_FLAGS)), OUTPUT_DMX_SERIAL)
@@ -50,7 +51,7 @@ else
   DEFINES+=OUTPUT_DMX_SEND
   DEFINES+=DMXNODE_PORTS=4
   EXTRA_INCLUDES+=../lib-dmx/include
-  EXTRA_INCLUDES+=../lib-ws28xx/include ../lib-ws28xxdmx/include
+  EXTRA_INCLUDES+=../lib-pixel/include ../lib-pixeldmx/include
   EXTRA_INCLUDES+=../lib-l6470/include ../lib-l6470dmx/include
   EXTRA_INCLUDES+=../lib-tlc59711/include ../lib-tlc59711dmx/include
   DEFINES+=NODE_SHOWFILE 

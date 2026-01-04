@@ -2,7 +2,7 @@
  * @file flashcode.cpp
  *
  */
-/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,75 +29,81 @@
 
 #include "flashcode.h"
 #include "spi/spi_flash.h"
+ #include "firmware/debug/debug_debug.h"
 
-#include "debug.h"
+using flashcode::Result;
 
-using namespace flashcode;
+FlashCode::FlashCode()
+{
+    DEBUG_ENTRY();
+    assert(s_this == nullptr);
+    s_this = this;
 
-FlashCode *FlashCode::s_pThis;
+    if (!spi_flash_probe())
+    {
+        DEBUG_PUTS("No SPI flash chip");
+    }
+    else
+    {
+        printf("Detected %s with sector size %d total %d bytes\n", spi_flash_get_name(), static_cast<unsigned int>(spi_flash_get_sector_size()),
+               static_cast<unsigned int>(spi_flash_get_size()));
+        detected_ = true;
+    }
 
-FlashCode::FlashCode() {
-	DEBUG_ENTRY
-	assert(s_pThis == nullptr);
-	s_pThis = this;
-
-	if (!spi_flash_probe()) {
-		DEBUG_PUTS("No SPI flash chip");
-	} else {
-		printf("Detected %s with sector size %d total %d bytes\n",
-				spi_flash_get_name(),
-				static_cast<unsigned int>(spi_flash_get_sector_size()),
-				static_cast<unsigned int>(spi_flash_get_size()));
-		m_IsDetected = true;
-	}
-
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-FlashCode::~FlashCode() {
-	DEBUG_ENTRY
+FlashCode::~FlashCode()
+{
+    DEBUG_ENTRY();
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-const char *FlashCode::GetName() const {
-	return spi_flash_get_name();
+const char* FlashCode::GetName() const
+{
+    return spi_flash_get_name();
 }
 
-uint32_t FlashCode::GetSize() const {
-	return spi_flash_get_size();
+uint32_t FlashCode::GetSize() const
+{
+    return spi_flash_get_size();
 }
 
-uint32_t FlashCode::GetSectorSize() const {
-	return spi_flash_get_sector_size();
+uint32_t FlashCode::GetSectorSize() const
+{
+    return spi_flash_get_sector_size();
 }
 
-bool FlashCode::Read(uint32_t nOffset, uint32_t nLength, uint8_t *pBuffer, flashcode::result& nResult) {
-	DEBUG_ENTRY
+bool FlashCode::Read(uint32_t offset, uint32_t length, uint8_t* buffer, flashcode::Result& result)
+{
+    DEBUG_ENTRY();
 
-	nResult = spi_flash_cmd_read_fast(nOffset, nLength, pBuffer) ? result::OK : result::ERROR;
+    result = spi_flash_cmd_read_fast(offset, length, buffer) ? Result::kOk : Result::kError;
 
-	DEBUG_PRINTF("nResult=%d", static_cast<int>(nResult));
-	DEBUG_EXIT
-	return true;
+    DEBUG_PRINTF("result=%d", static_cast<int>(result));
+    DEBUG_EXIT();
+    return true;
 }
 
-bool FlashCode::Erase(uint32_t nOffset, uint32_t nLength, flashcode::result& nResult) {
-	DEBUG_ENTRY
+bool FlashCode::Erase(uint32_t offset, uint32_t length, flashcode::Result& result)
+{
+    DEBUG_ENTRY();
 
-	nResult = spi_flash_cmd_erase(nOffset, nLength) ? result::OK : result::ERROR;
+    result = spi_flash_cmd_erase(offset, length) ? Result::kOk : Result::kError;
 
-	DEBUG_PRINTF("nResult=%d", static_cast<int>(nResult));
-	DEBUG_EXIT
-	return true;
+    DEBUG_PRINTF("result=%d", static_cast<int>(result));
+    DEBUG_EXIT();
+    return true;
 }
 
-bool FlashCode::Write(uint32_t nOffset, uint32_t nLength, const uint8_t *pBuffer, flashcode::result& nResult) {
-	DEBUG_ENTRY
+bool FlashCode::Write(uint32_t offset, uint32_t length, const uint8_t* buffer, flashcode::Result& result)
+{
+    DEBUG_ENTRY();
 
-	nResult = spi_flash_cmd_write_multi(nOffset, nLength, pBuffer) ? result::OK : result::ERROR;
+    result = spi_flash_cmd_write_multi(offset, length, buffer) ? Result::kOk : Result::kError;
 
-	DEBUG_PRINTF("nResult=%d", static_cast<int>(nResult));
-	DEBUG_EXIT
-	return true;
+    DEBUG_PRINTF("result=%d", static_cast<int>(result));
+    DEBUG_EXIT();
+    return true;
 }

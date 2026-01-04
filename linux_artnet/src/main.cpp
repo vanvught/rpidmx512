@@ -23,117 +23,87 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cstring>
-#include <cstdlib>
-#include <cctype>
 #include <signal.h>
 
 #include "hal.h"
 #include "network.h"
-
 #include "display.h"
-
-#include "dmxnodenode.h"
+#include "json/dmxnodenode.h"
 #include "dmxnodemsgconst.h"
 #include "artnetrdmresponder.h"
-
-#include "dmxnodeparams.h"
-
-#include "rdmdeviceresponder.h"
-#include "rdmpersonality.h"
-#include "rdmdeviceparams.h"
-
+#include "json/dmxnodeparams.h"
 #include "dmxmonitor.h"
-#include "dmxmonitorparams.h"
-
+#include "json/dmxmonitorparams.h"
+#include "rdmpersonality.h"
 #include "configstore.h"
-
 #include "remoteconfig.h"
-#include "remoteconfigparams.h"
-
-#if defined (NODE_SHOWFILE)
-# include "showfile.h"
-# include "showfileparams.h"
+#if defined(NODE_SHOWFILE)
+#include "showfile.h"
 #endif
-
 #include "firmwareversion.h"
 #include "software_version.h"
+#include "software_version_id.h"
 
-static bool keepRunning = true;
+static bool keep_running = true;
 
-void intHandler(int) {
-    keepRunning = false;
+void IntHandler(int)
+{
+    keep_running = false;
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) //NOLINT
+{
     struct sigaction act;
-    act.sa_handler = intHandler;
+    act.sa_handler = IntHandler;
     sigaction(SIGINT, &act, nullptr);
-	hal_init();
-	Display display;
-	ConfigStore configStore;
-	Network nw(argc, argv);
-	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+    hal::Init();
+    Display display;
+    ConfigStore config_store;
+    Network nw(argc, argv);
+    FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__, DEVICE_SOFTWARE_VERSION_ID);
 
-	hal::print();
-	fw.Print();
-	nw.Print();
+    hal::print();
+    fw.Print();
+    nw.Print();
 
-	DMXMonitor monitor;
+    DmxMonitor monitor;
 
-	DMXMonitorParams monitorParams;
-	monitorParams.Load();
+    json::DmxMonitorParams monitor_params;
+    monitor_params.Load();
+    monitor_params.Set();
 
-	RDMPersonality *pRDMPersonalities[1] = { new  RDMPersonality("Real-time DMX Monitor", &monitor)};
+    RDMPersonality* personalities[1] = {new RDMPersonality("Real-time DMX Monitor", &monitor)};
 
-	ArtNetRdmResponder RdmResponder(pRDMPersonalities, 1);
-	RdmResponder.Init();
+    ArtNetRdmResponder rdm_responder(personalities, 1);
+    rdm_responder.Init();
+    rdm_responder.Print();
 
-	RDMDeviceParams rdmDeviceParams;
-	rdmDeviceParams.Load();
-	rdmDeviceParams.Set(&RdmResponder);
+    DmxNodeNode dmx_node_node;
+    dmx_node_node.SetOutput(&monitor);
+    dmx_node_node.SetRdmUID(RdmDevice::Get().GetUID());
+    dmx_node_node.SetRdmResponder(&rdm_responder, true);
+    dmx_node_node.SetRdm(0, true);
 
-	RdmResponder.Print();
+    dmx_node_node.Print();
 
-	DmxNodeNode dmxNodeNode;
-	dmxNodeNode.SetOutput(&monitor);
-	dmxNodeNode.SetRdmUID(RdmResponder.GetUID());
-	dmxNodeNode.SetRdmResponder(&RdmResponder, true);
-	dmxNodeNode.SetRdm(0, true);
-
-	dmxNodeNode.Print();
-
-#if defined (NODE_SHOWFILE)
-	ShowFile showFile;
-
-	ShowFileParams showFileParams;
-	showFileParams.Load();
-	showFileParams.Set();
-
-	if (showFile.IsAutoStart()) {
-		showFile.Play();
-	}
-
-	showFile.Print();
+#if defined(NODE_SHOWFILE)
+    ShowFile showfile;
+    showfile.Print();
 #endif
 
-	RemoteConfig remoteConfig(remoteconfig::NodeType::ARTNET, remoteconfig::Output::MONITOR, dmxNodeNode.GetActiveOutputPorts());
+    RemoteConfig remote_config(remoteconfig::Output::MONITOR, dmx_node_node.GetActiveOutputPorts());
 
-	RemoteConfigParams remoteConfigParams;
-	remoteConfigParams.Load();
-	remoteConfigParams.Set(&remoteConfig);
+    dmx_node_node.Start();
 
-	dmxNodeNode.Start();
-
-	while (keepRunning) {
-		nw.Run();
-		dmxNodeNode.Run();
-#if defined (NODE_SHOWFILE)
-		showFile.Run();
+    while (keep_running)
+    {
+        network::Run();
+        dmx_node_node.Run();
+#if defined(NODE_SHOWFILE)
+        showfile.Run();
 #endif
-		hal::run();
-	}
+        hal::Run();
+    }
 
-	return 0;
+    return 0;
 }

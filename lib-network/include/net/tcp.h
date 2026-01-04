@@ -28,15 +28,14 @@
 
 #include <cstdint>
 
-namespace net {
-typedef void (*TcpCallbackFunctionPtr)(const int32_t, const uint8_t *, const uint32_t);
+namespace net::tcp
+{
+typedef void (*TcpCallbackFunctionPtr)(const int32_t, const uint8_t*, const uint32_t);
 
-void tcp_shutdown();
+int32_t Begin(const uint16_t, TcpCallbackFunctionPtr callback);
+int32_t End(const int32_t);
+void Write(const int32_t, const uint8_t*, uint32_t, const uint32_t);
+void Abort(const int32_t, const uint32_t);
+} // namespace net::tcp
 
-int32_t tcp_begin(const uint16_t, TcpCallbackFunctionPtr callback);
-int32_t tcp_end(const int32_t);
-void tcp_write(const int32_t, const uint8_t *, uint32_t, const uint32_t);
-void tcp_abort(const int32_t, const uint32_t);
-}  // namespace net
-
-#endif /* NET_TCP_H_ */
+#endif  // NET_TCP_H_

@@ -27,29 +27,30 @@
 
 #include "artnetnode.h"
 #include "artnetrdmresponder.h"
+ #include "firmware/debug/debug_debug.h"
 
-#include "debug.h"
+void ArtNetNode::SetRdm(bool do_enable) {
+	DEBUG_ENTRY();
+	DEBUG_PRINTF("do_enable=%u", static_cast<uint32_t>(do_enable));
 
-void ArtNetNode::SetRdm(const bool doEnable) {
-	DEBUG_ENTRY
+	SetRdmResponder(rdm_responder_, do_enable);
 
-	SetRdmResponder(m_pArtNetRdmResponder, doEnable);
-
-	DEBUG_EXIT
+	DEBUG_EXIT();
 }
 
-void ArtNetNode::SetRdmResponder(ArtNetRdmResponder *pArtNetRdmResponder, const bool doEnable) {
-	DEBUG_ENTRY
+void ArtNetNode::SetRdmResponder(ArtNetRdmResponder *pArtNetRdmResponder, bool do_enable) {
+	DEBUG_ENTRY();
+	DEBUG_PRINTF("do_enable=%u", static_cast<uint32_t>(do_enable));
 
-	m_pArtNetRdmResponder = pArtNetRdmResponder;
-	m_State.rdm.IsEnabled = ((pArtNetRdmResponder != nullptr) & doEnable);
+	rdm_responder_ = pArtNetRdmResponder;
+	state_.is_rdm_enabled = ((pArtNetRdmResponder != nullptr) & do_enable);
 
-	if (m_State.rdm.IsEnabled) {
-		m_ArtPollReply.Status1 |= artnet::Status1::RDM_CAPABLE;
+	if (state_.is_rdm_enabled) {
+		art_poll_reply_.Status1 |= artnet::Status1::kRdmCapable;
 	} else {
-		m_ArtPollReply.Status1 &= static_cast<uint8_t>(~artnet::Status1::RDM_CAPABLE);
+		art_poll_reply_.Status1 &= static_cast<uint8_t>(~artnet::Status1::kRdmCapable);
 	}
 
-	DEBUG_PRINTF("m_State.rdm.IsEnabled=%c", m_State.rdm.IsEnabled ? 'Y' : 'N');
-	DEBUG_EXIT
+	DEBUG_PRINTF("state_.is_rdm_enabled=%c", state_.is_rdm_enabled ? 'Y' : 'N');
+	DEBUG_EXIT();
 }

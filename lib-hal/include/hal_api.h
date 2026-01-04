@@ -2,7 +2,7 @@
  * @file hal_api.h
  *
  */
-/* Copyright (C) 2023-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2023-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,22 +26,14 @@
 #ifndef HAL_API_H_
 #define HAL_API_H_
 
-#if defined(__linux__) || defined (__APPLE__)
-# include "linux/hal_api.h"
+#if defined(__linux__) || defined(__APPLE__)
+#include "linux/hal_api.h"
 #elif defined(H3)
-# include "h3/hal_api.h"
+#include "h3/hal_api.h"
 #elif defined(GD32)
-# include "gd32/hal_api.h"
+#include "gd32/hal_api.h"
 #else
-# include "rpi/hal_api.h"
+#include "rpi/hal_api.h"
 #endif
 
-#ifdef __cplusplus
-# if !defined(UDELAY)
-#  define UDELAY
-#  include <cstdint>
- void udelay(uint32_t us, uint32_t offset = 0);
-# endif
-#endif
-
-#endif /* HAL_API_H_ */
+#endif  // HAL_API_H_

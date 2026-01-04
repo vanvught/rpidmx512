@@ -83,8 +83,8 @@ int main(int argc, char **argv) {
 		return -2;
 	}
 
-	if (bcm2835_spi_begin() != 1) {
-		fprintf(stderr, "bcm2835_spi_begin() failed\n");
+	if (bcm2835_SpiBegin() != 1) {
+		fprintf(stderr, "bcm2835_SpiBegin() failed\n");
 		return -3;
 	}
 

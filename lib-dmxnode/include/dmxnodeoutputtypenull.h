@@ -22,8 +22,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef DMXOUTPUTTYPENULL_H_
-#define DMXOUTPUTTYPENULL_H_
+#ifndef DMXNODEOUTPUTTYPENULL_H_
+#define DMXNODEOUTPUTTYPENULL_H_
 
 #include <cstdint>
 
@@ -31,36 +31,38 @@
 
 class DmxNodeOutputTypeNull {
 public:
-	void Start([[maybe_unused]] const uint32_t nPortIndex) {}
-	void Stop([[maybe_unused]] const uint32_t nPortIndex) {}
+	void Start([[maybe_unused]] uint32_t port_index) {}
+	void Stop([[maybe_unused]] uint32_t port_index) {}
 
-	void SetData([[maybe_unused]] const uint32_t nPortIndex, [[maybe_unused]] const uint8_t *pData, [[maybe_unused]] uint32_t nLength, [[maybe_unused]] const bool doUpdate = true) {}
-	void Sync([[maybe_unused]] const uint32_t nPortIndex) {}
-	void Sync() {}
+	template <bool doUpdate>
+	void SetData([[maybe_unused]] uint32_t port_index, [[maybe_unused]] const uint8_t *data, [[maybe_unused]] uint32_t length) {}
+
+    void Sync([[maybe_unused]] uint32_t port_index) {}
+    void Sync() {}
 
 	uint32_t GetUserData() { return 0; }		///< Art-Net ArtPollReply
 	uint32_t GetRefreshRate() { return 0; }		///< Art-Net ArtPollReply
 
-	void Blackout([[maybe_unused]] bool bBlackout) {}
+	void Blackout([[maybe_unused]] bool blackout) {}
 	void FullOn() {}
 
-	bool SetDmxStartAddress([[maybe_unused]] const uint16_t nDmxStartAddress) {
+	bool SetDmxStartAddress([[maybe_unused]] uint16_t dmx_start_address) {
 		return false;
 	}
 
 	uint16_t GetDmxStartAddress() {
-		return dmxnode::START_ADDRESS_DEFAULT;
+		return dmxnode::kStartAddressDefault;
 	}
 
 	uint16_t GetDmxFootprint() {
-		return dmxnode::UNIVERSE_SIZE;
+		return dmxnode::kUniverseSize;
 	}
 
-	bool GetSlotInfo([[maybe_unused]] const uint16_t nSlotOffset, dmxnode::SlotInfo &slotInfo) {
-		slotInfo.nType = 0x00; // ST_PRIMARY
-		slotInfo.nCategory = 0x0001; // SD_INTENSITY
+	bool GetSlotInfo([[maybe_unused]] uint16_t slot_offset, dmxnode::SlotInfo &slot_info) {
+		slot_info.type = 0x00; // ST_PRIMARY
+		slot_info.category = 0x0001; // SD_INTENSITY
 		return true;
 	}
 };
 
-#endif /* DMXOUTPUTTYPE_NULL_H_ */
+#endif  // DMXNODEOUTPUTTYPENULL_H_

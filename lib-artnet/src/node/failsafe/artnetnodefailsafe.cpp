@@ -24,51 +24,56 @@
  */
 
 #include <cstdint>
-#include <cassert>
 
 #include "artnetnode.h"
-#include "artnetnodefailsafe.h"
+#include "dmxnode.h"
 #include "dmxnodedata.h"
 #include "dmxnode_data.h"
+ #include "firmware/debug/debug_debug.h"
 
-#include "debug.h"
+void ArtNetNode::FailSafeRecord()
+{
+    DEBUG_ENTRY();
 
-void ArtNetNode::FailSafeRecord() {
-	DEBUG_ENTRY
+    dmxnode::scenes::WriteStart();
 
-	artnetnode::failsafe_write_start();
+    for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++)
+    {
+        if (node_.port[port_index].direction == dmxnode::PortDirection::kOutput)
+        {
+            dmxnode::scenes::Write(port_index, dmxnode::Data::Backup(port_index));
+        }
+    }
 
-	for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
-		if (m_Node.Port[nPortIndex].direction == dmxnode::PortDirection::OUTPUT) {
-			artnetnode::failsafe_write(nPortIndex, dmxnode::Data::Backup(nPortIndex));
-		}
-	}
+    dmxnode::scenes::WriteEnd();
 
-	artnetnode::failsafe_write_end();
-
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void ArtNetNode::FailSafePlayback() {
-	DEBUG_ENTRY
+void ArtNetNode::FailSafePlayback()
+{
+    DEBUG_ENTRY();
 
-	artnetnode::failsafe_read_start();
+    dmxnode::scenes::ReadStart();
 
-	for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
-		if (m_Node.Port[nPortIndex].direction == dmxnode::PortDirection::OUTPUT) {
-			artnetnode::failsafe_read(nPortIndex, const_cast<uint8_t *>(dmxnode::Data::Backup(nPortIndex)));
-			dmxnode::data_output(m_pDmxNodeOutputType, nPortIndex);
+    for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++)
+    {
+        if (node_.port[port_index].direction == dmxnode::PortDirection::kOutput)
+        {
+            dmxnode::scenes::Read(port_index, const_cast<uint8_t*>(dmxnode::Data::Backup(port_index)));
+            dmxnode::DataOutput(dmxnode_output_type_, port_index);
 
-			if (!m_OutputPort[nPortIndex].IsTransmitting) {
-				m_pDmxNodeOutputType->Start(nPortIndex);
-				m_OutputPort[nPortIndex].IsTransmitting = true;
-			}
+            if (!output_port_[port_index].is_transmitting)
+            {
+                dmxnode_output_type_->Start(port_index);
+                output_port_[port_index].is_transmitting = true;
+            }
 
-			dmxnode::Data::ClearLength(nPortIndex);
-		}
-	}
+            dmxnode::Data::ClearLength(port_index);
+        }
+    }
 
-	artnetnode::failsafe_read_end();
+    dmxnode::scenes::ReadEnd();
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }

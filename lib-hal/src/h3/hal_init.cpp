@@ -1,5 +1,5 @@
 /**
- * @file hardware_init.cpp
+ * @file hal_init.cpp
  *
  */
 /* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
@@ -21,8 +21,8 @@
  * THE SOFTWARE.
  */
 
-#if defined (DEBUG_HAL)
-# undef NDEBUG
+#if defined(DEBUG_HAL)
+#undef NDEBUG
 #endif
 
 #include <cstdint>
@@ -46,76 +46,82 @@
 #include "arm/gic.h"
 #include "arm/synchronize.h"
 
+#include "hal.h"
 #include "console.h"
 
 #include "../ff14b/source/ff.h"
 
-#if defined (DEBUG_I2C)
-# include "i2cdetect.h"
+#if defined(DEBUG_I2C)
+#include "i2cdetect.h"
 #endif
 
 #if !defined(DISABLE_RTC)
-# include "hwclock.h"
+#include "hwclock.h"
 static HwClock hwClock;
 #endif
 
 #include "logic_analyzer.h"
 
-#include "debug.h"
+ #include "firmware/debug/debug_debug.h"
 
 #if defined(__GNUC__) && !defined(__clang__)
-# pragma GCC push_options
-# pragma GCC optimize ("O2")
-# if __GNUC__ > 8
-#  pragma GCC target ("general-regs-only")
-# endif
+#pragma GCC push_options
+#pragma GCC optimize("O2")
+#if __GNUC__ > 8
+#pragma GCC target("general-regs-only")
+#endif
 #endif
 
-static void EXTIA_IRQHandler() {
-	DEBUG_PUTS("EXTIA_IRQHandler");
+static void EXTIA_IRQHandler()
+{
+    DEBUG_PUTS("EXTIA_IRQHandler");
 
-	H3_PIO_PA_INT->STA = ~0;
+    H3_PIO_PA_INT->STA = ~0;
 }
 
-static void EXTIG_IRQHandler() {
-	DEBUG_PUTS("EXTIG_IRQHandler");
+static void EXTIG_IRQHandler()
+{
+    DEBUG_PUTS("EXTIG_IRQHandler");
 
-	H3_PIO_PG_INT->STA = ~0;
+    H3_PIO_PG_INT->STA = ~0;
 }
 
-static void __attribute__((interrupt("IRQ"))) IRQ_Handler() {
-	__DMB();
+static void __attribute__((interrupt("IRQ"))) IRQ_Handler()
+{
+    __DMB();
 
-	const auto nIRQ = GICInterface->AIAR;
-	IRQHandler_t const handler = IRQ_GetHandler(nIRQ);
+    const auto nIRQ = GICInterface->AIAR;
+    IRQHandler_t const handler = IRQ_GetHandler(nIRQ);
 
-	if (handler != nullptr) {
-		handler();
-	}
+    if (handler != nullptr)
+    {
+        handler();
+    }
 
-	GICInterface->AEOIR = nIRQ;
-	const auto nIndex = nIRQ / 32;
-	const auto nMask = 1U << (nIRQ % 32);
-	GICDistributor->ICPENDR[nIndex] = nMask;
+    GICInterface->AEOIR = nIRQ;
+    const auto nIndex = nIRQ / 32;
+    const auto nMask = 1U << (nIRQ % 32);
+    GICDistributor->ICPENDR[nIndex] = nMask;
 
-	__DMB();
+    __DMB();
 }
 
 #pragma GCC pop_options
 
-namespace hal {
+namespace hal
+{
 extern bool g_bWatchdog;
-}  // namespace hal
+} // namespace hal
 
-#define WIFI_EN_PIO		7	// PL7
-#define POWER_LED_PIO	10	// PL10
-#define EXTERNAL_LED 	GPIO_EXT_16
+#define WIFI_EN_PIO 7    // PL7
+#define POWER_LED_PIO 10 // PL10
+#define EXTERNAL_LED GPIO_EXT_16
 
-//#if (_FFCONF == 68300)		// R0.12c
-#if (FF_DEFINED	== 86631)		// R0.14b
- static FATFS fat_fs;
+// #if (_FFCONF == 68300)		// R0.12c
+#if (FF_DEFINED == 86631) // R0.14b
+static FATFS fat_fs;
 #else
-# error Not a recognized/tested FatFs version
+#error Not a recognized/tested FatFs version
 #endif
 
 static uint32_t s_hardware_init_startup_seconds = 0;
@@ -125,144 +131,158 @@ void h3_timer_avs_init();
 void h3_hs_timer_init();
 void h3_usb_end();
 
-uint32_t h3_uptime() {
-	return (H3_TIMER->AVS_CNT0 / 1000) - s_hardware_init_startup_seconds;
-}
-
-void h3_status_led_set(int state) {
+void h3_status_led_set(int state)
+{
 #if defined(ORANGE_PI_ONE)
-	if (state == 0) {
-		h3_gpio_clr(H3_BOARD_STATUS_LED);
+    if (state == 0)
+    {
+        H3GpioClr(H3_BOARD_STATUS_LED);
 #if !defined(DO_NOT_USE_EXTERNAL_LED)
-		h3_gpio_clr(EXTERNAL_LED);
+        H3GpioClr(EXTERNAL_LED);
 #endif
-	} else {
-		h3_gpio_set(H3_BOARD_STATUS_LED);
+    }
+    else
+    {
+        H3GpioSet(H3_BOARD_STATUS_LED);
 #if !defined(DO_NOT_USE_EXTERNAL_LED)
-		h3_gpio_set(EXTERNAL_LED);
+        H3GpioSet(EXTERNAL_LED);
 #endif
-	}
+    }
 #else
 
 #if !defined(DO_NOT_USE_EXTERNAL_LED)
-	#define MASK_LED 		static_cast<uint32_t>((1U << H3_BOARD_STATUS_LED) | (1U << EXTERNAL_LED))
+#define MASK_LED static_cast<uint32_t>((1U << H3_BOARD_STATUS_LED) | (1U << EXTERNAL_LED))
 #else
-	#define MASK_LED 		static_cast<uint32_t>(1U << H3_BOARD_STATUS_LED)
+#define MASK_LED static_cast<uint32_t>(1U << H3_BOARD_STATUS_LED)
 #endif
 
-	uint32_t dat = H3_PIO_PORTA->DAT;
+    uint32_t dat = H3_PIO_PORTA->DAT;
 
-	if (state == 0) {
-		dat &= ~(MASK_LED);
-	} else {
-		dat |= (MASK_LED);
-	}
+    if (state == 0)
+    {
+        dat &= ~(MASK_LED);
+    }
+    else
+    {
+        dat |= (MASK_LED);
+    }
 
-	H3_PIO_PORTA->DAT = dat;
+    H3_PIO_PORTA->DAT = dat;
 #endif
 }
 
-void __attribute__((cold)) hal_init() {
-	h3_gpio_fsel(EXT_SPI_MOSI, GPIO_FSEL_INPUT);
-	h3_gpio_set_pud(EXT_SPI_MOSI, GPIO_PULL_DOWN);
-	h3_gpio_fsel(EXT_SPI_CLK, GPIO_FSEL_INPUT);
-	h3_gpio_set_pud(EXT_SPI_CLK, GPIO_PULL_DOWN);
-	h3_gpio_fsel(EXT_SPI_CS, GPIO_FSEL_INPUT);
-	h3_gpio_set_pud(EXT_SPI_CS, GPIO_PULL_DOWN);
+namespace hal
+{
+void __attribute__((cold)) Init()
+{
+    H3GpioFsel(EXT_SPI_MOSI, GPIO_FSEL_INPUT);
+    H3GpioSetPud(EXT_SPI_MOSI, GPIO_PULL_DOWN);
+    H3GpioFsel(EXT_SPI_CLK, GPIO_FSEL_INPUT);
+    H3GpioSetPud(EXT_SPI_CLK, GPIO_PULL_DOWN);
+    H3GpioFsel(EXT_SPI_CS, GPIO_FSEL_INPUT);
+    H3GpioSetPud(EXT_SPI_CS, GPIO_PULL_DOWN);
 
-	h3_watchdog_disable();
-	h3_usb_end();
-	h3_timer_avs_init();
-	h3_hs_timer_init();
-	console_init();
-	gic_init();
-	h3_thermal_init();
-	emac_init();
-	h3_i2c_begin();
+    h3_watchdog_disable();
+    h3_usb_end();
+    h3_timer_avs_init();
+    h3_hs_timer_init();
+    console::Init();
+    gic_init();
+    h3_thermal_init();
+    emac_init();
+    H3I2cBegin();
 
-	console_puts("Starting ...\n");
+    console::Puts("Starting ...\n");
 
-	s_hardware_init_startup_seconds = H3_TIMER->AVS_CNT0 / 1000U;
+    s_hardware_init_startup_seconds = H3_TIMER->AVS_CNT0 / 1000U;
 
-	struct tm tmbuf;
+    struct tm tmbuf;
 
-	tmbuf.tm_hour = 0;
-	tmbuf.tm_min = 0;
-	tmbuf.tm_sec = 0;
-	tmbuf.tm_mday = _TIME_STAMP_DAY_;			// The day of the month, in the range 1 to 31.
-	tmbuf.tm_mon = _TIME_STAMP_MONTH_ - 1;		// The number of months since January, in the range 0 to 11.
-	tmbuf.tm_year = _TIME_STAMP_YEAR_ - 1900;	// The number of years since 1900.
-	tmbuf.tm_isdst = 0; 						// 0 (DST not in effect, just take RTC time)
+    tmbuf.tm_hour = 0;
+    tmbuf.tm_min = 0;
+    tmbuf.tm_sec = 0;
+    tmbuf.tm_mday = _TIME_STAMP_DAY_;         // The day of the month, in the range 1 to 31.
+    tmbuf.tm_mon = _TIME_STAMP_MONTH_ - 1;    // The number of months since January, in the range 0 to 11.
+    tmbuf.tm_year = _TIME_STAMP_YEAR_ - 1900; // The number of years since 1900.
+    tmbuf.tm_isdst = 0;                       // 0 (DST not in effect, just take RTC time)
 
-	const time_t seconds = mktime(&tmbuf);
-	const struct timeval tv = { seconds, 0 };
+    const time_t kSeconds = mktime(&tmbuf);
+    const struct timeval kTv = {kSeconds, 0};
 
-	settimeofday(&tv, nullptr);
+    settimeofday(&kTv, nullptr);
 
-	DEBUG_PRINTF("%.4d/%.2d/%.2d %.2d:%.2d:%.2d", 1900 + tmbuf.tm_year, tmbuf.tm_mon, tmbuf.tm_mday, tmbuf.tm_hour, tmbuf.tm_min, tmbuf.tm_sec);
+    DEBUG_PRINTF("%.4d/%.2d/%.2d %.2d:%.2d:%.2d", 1900 + tmbuf.tm_year, tmbuf.tm_mon, tmbuf.tm_mday, tmbuf.tm_hour, tmbuf.tm_min, tmbuf.tm_sec);
 
 #ifndef ARM_ALLOW_MULTI_CORE
-	for (uint32_t cpu_number = 1 ; cpu_number < H3_CPU_COUNT; cpu_number ++) {
-		h3_cpu_off(static_cast<h3_cpu_t>(cpu_number));
-	}
+    for (uint32_t cpu_number = 1; cpu_number < H3_CPU_COUNT; cpu_number++)
+    {
+        h3_cpu_off(static_cast<h3_cpu_t>(cpu_number));
+    }
 #endif
 
-	const FRESULT result = f_mount(&fat_fs, reinterpret_cast<const TCHAR *>(""), static_cast<BYTE>(h3_get_boot_device() == H3_BOOT_DEVICE_MMC0) ? 1 : 0);
-	if (result != FR_OK) {
-		char buffer[32];
-		snprintf(buffer, sizeof(buffer) - 1, "f_mount failed! %d\n", static_cast<int>(result));
-		console_error(buffer);
-		assert(0);
-	}
+    const FRESULT kResult = f_mount(&fat_fs, reinterpret_cast<const TCHAR*>(""), static_cast<BYTE>(hal::GetBootDevice() == hal::BootDevice::MMC0) ? 1 : 0);
+    if (kResult != FR_OK)
+    {
+        char buffer[32];
+        snprintf(buffer, sizeof(buffer) - 1, "f_mount failed! %d\n", static_cast<int>(kResult));
+        console::Error(buffer);
+        assert(0);
+    }
 
 #define PRCM_APB0_GATE_PIO (0x1 << 0)
-	H3_PRCM->APB0_GATE |= PRCM_APB0_GATE_PIO;
+    H3_PRCM->APB0_GATE |= PRCM_APB0_GATE_PIO;
 #define PRCM_APB0_RESET_PIO (0x1 << 0)
-	H3_PRCM->APB0_RESET |= PRCM_APB0_RESET_PIO;
-	uint32_t value = H3_PIO_PORTL->CFG1;
-	value &= static_cast<uint32_t>(~(GPIO_SELECT_MASK << PL10_SELECT_CFG1_SHIFT));
-	value |= (GPIO_FSEL_OUTPUT << PL10_SELECT_CFG1_SHIFT);
-	H3_PIO_PORTL->CFG1 = value;
-	// Power led on, disable WiFi
-	value = H3_PIO_PORTL->DAT;
-	value &= ~(1U << WIFI_EN_PIO);
-	value |= (1U << POWER_LED_PIO);
-	H3_PIO_PORTL->DAT = value;
+    H3_PRCM->APB0_RESET |= PRCM_APB0_RESET_PIO;
+    uint32_t value = H3_PIO_PORTL->CFG1;
+    value &= static_cast<uint32_t>(~(GPIO_SELECT_MASK << PL10_SELECT_CFG1_SHIFT));
+    value |= (GPIO_FSEL_OUTPUT << PL10_SELECT_CFG1_SHIFT);
+    H3_PIO_PORTL->CFG1 = value;
+    // Power led on, disable WiFi
+    value = H3_PIO_PORTL->DAT;
+    value &= ~(1U << WIFI_EN_PIO);
+    value |= (1U << POWER_LED_PIO);
+    H3_PIO_PORTL->DAT = value;
 
-	///< Enable DMA support
-	H3_CCU->BUS_SOFT_RESET0 |= CCU_BUS_SOFT_RESET0_DMA;
-	H3_CCU->BUS_CLK_GATING0 |= CCU_BUS_CLK_GATING0_DMA;
+    ///< Enable DMA support
+    H3_CCU->BUS_SOFT_RESET0 |= CCU_BUS_SOFT_RESET0_DMA;
+    H3_CCU->BUS_CLK_GATING0 |= CCU_BUS_CLK_GATING0_DMA;
 
-	h3_gpio_fsel(H3_BOARD_STATUS_LED, GPIO_FSEL_OUTPUT);
+    H3GpioFsel(H3_BOARD_STATUS_LED, GPIO_FSEL_OUTPUT);
 #if !defined(DO_NOT_USE_EXTERNAL_LED)
-	h3_gpio_fsel(EXTERNAL_LED, GPIO_FSEL_OUTPUT);
+    H3GpioFsel(EXTERNAL_LED, GPIO_FSEL_OUTPUT);
 #endif
 
-	h3_status_led_set(0);
+    h3_status_led_set(0);
 
-	h3_cpu_set_clock(0); // default
+    h3_cpu_set_clock(0); // default
 
-	hal::g_bWatchdog = false;
+    hal::g_bWatchdog = false;
 
-#if defined (DEBUG_I2C)
-	i2c_detect();
+#if defined(DEBUG_I2C)
+    I2cDetect();
 #endif
 
 #if !defined(DISABLE_RTC)
-	HwClock::Get()->RtcProbe();
-	HwClock::Get()->Print();
-	HwClock::Get()->HcToSys();
+    HwClock::Get()->RtcProbe();
+    HwClock::Get()->Print();
+    HwClock::Get()->HcToSys();
 #endif
 
-	h3_status_led_set(1);
+    h3_status_led_set(1);
 
-	logic_analyzer::init();
+    logic_analyzer::Init();
 
-	IRQ_SetHandler(H3_PA_EINT_IRQn, EXTIA_IRQHandler);
-//	gic_irq_config(H3_PA_EINT_IRQn, GIC_CORE0);
-//
-	IRQ_SetHandler(H3_PG_EINT_IRQn, EXTIG_IRQHandler);
-//	gic_irq_config(H3_PG_EINT_IRQn, GIC_CORE0);
+    IRQ_SetHandler(H3_PA_EINT_IRQn, EXTIA_IRQHandler);
+    //	gic_irq_config(H3_PA_EINT_IRQn, GIC_CORE0);
+    //
+    IRQ_SetHandler(H3_PG_EINT_IRQn, EXTIG_IRQHandler);
+    //	gic_irq_config(H3_PG_EINT_IRQn, GIC_CORE0);
 
-	arm_install_handler((unsigned) IRQ_Handler, ARM_VECTOR(ARM_VECTOR_IRQ));
+    arm_install_handler((unsigned)IRQ_Handler, ARM_VECTOR(ARM_VECTOR_IRQ));
 }
+
+uint32_t Uptime()
+{
+    return (H3_TIMER->AVS_CNT0 / 1000) - s_hardware_init_startup_seconds;
+}
+} // namespace hal

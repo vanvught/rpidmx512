@@ -26,29 +26,31 @@
 #ifndef CONSOLE_CONSOLE_NULL_H_
 #define CONSOLE_CONSOLE_NULL_H_
 
-#if !defined (CONSOLE_NULL)
-# error File should not be included
+#if !defined(CONSOLE_NULL)
+#error File should not be included
 #endif
 
-#include <cstdint>
+namespace console
+{
+enum class Colours
+{
+    kConsoleBlack,
+    kConsoleRed,
+    kConsoleGreen,
+    kConsoleYellow,
+    kConsoleBlue,
+    kConsoleMagenta,
+    kConsoleCyan,
+    kConsoleWhite,
+    kConsoleDefault
+};
 
-typedef enum {
-	CONSOLE_BLACK = 0,
-	CONSOLE_RED = 1,
-	CONSOLE_GREEN = 2,
-	CONSOLE_YELLOW = 3,
-	CONSOLE_BLUE = 4,
-	CONSOLE_MAGENTA = 5
-,	CONSOLE_CYAN = 6,
-	CONSOLE_WHITE = 7,
-	CONSOLE_DEFAULT = 9
-} _console_colors;
+inline void Init() {}
+inline void Putc([[maybe_unused]] int i) {}
+inline void Puts([[maybe_unused]] const char* p) {}
+inline void Write([[maybe_unused]] const char* p, [[maybe_unused]] unsigned int i) {}
+inline void Status([[maybe_unused]] Colours c, [[maybe_unused]] const char* p) {}
+inline void Error([[maybe_unused]] const char* p) {}
+} // namespace console
 
-inline void console_init() {}
-inline void console_putc([[maybe_unused]] int i) {}
-inline void console_puts([[maybe_unused]] const char *p) {}
-inline void console_write([[maybe_unused]] const char *p, [[maybe_unused]] unsigned int i) {}
-inline void console_status([[maybe_unused]] uint32_t i, [[maybe_unused]] const char *p) {}
-inline void console_error([[maybe_unused]] const char *p) {}
-
-#endif /* INCLUDE_CONSOLE_CONSOLE_NULL_H_ */
+#endif  // CONSOLE_CONSOLE_NULL_H_

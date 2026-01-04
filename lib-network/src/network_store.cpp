@@ -24,30 +24,44 @@
  */
 
 #include <cstdint>
-#include <cstddef>
 #include <algorithm>
 
-#include "networkparams.h"
+#include "common/utils/utils_flags.h"
 #include "configstore.h"
+#include "configurationstore.h"
+#include "net/ip4_address.h"
 
-__attribute__((weak)) void network_store_save_ip(const uint32_t nIp) {
-	ConfigStore::Get()->Update(configstore::Store::NETWORK, offsetof(struct networkparams::Params, nLocalIp), &nIp, sizeof(uint32_t));
+using common::store::network::Flags;
+
+namespace network::store
+{
+__attribute__((weak)) void SaveIp(uint32_t ip)
+{
+    ConfigStore::Instance().NetworkUpdate(&common::store::Network::local_ip, ip);
 }
 
-__attribute__((weak)) void network_store_save_netmask(const uint32_t nNetMask) {
-	ConfigStore::Get()->Update(configstore::Store::NETWORK, offsetof(struct networkparams::Params, nNetmask), &nNetMask, sizeof(uint32_t));
+__attribute__((weak)) void SaveNetmask(uint32_t netmask)
+{
+    ConfigStore::Instance().NetworkUpdate(&common::store::Network::netmask, netmask);
 }
 
-__attribute__((weak)) void network_store_save_gatewayip(const uint32_t nGatewayIp) {
-	ConfigStore::Get()->Update(configstore::Store::NETWORK, offsetof(struct networkparams::Params, nGatewayIp), &nGatewayIp, sizeof(uint32_t));
+__attribute__((weak)) void SaveGatewayIp(uint32_t gateway_ip)
+{
+    ConfigStore::Instance().NetworkUpdate(&common::store::Network::gateway_ip, gateway_ip);
 }
 
-__attribute__((weak)) void network_store_save_hostname(const char *pHostName, uint32_t nLength) {
-	nLength = std::min(nLength,static_cast<uint32_t>(net::HOSTNAME_SIZE));
-	ConfigStore::Get()->Update(configstore::Store::NETWORK, offsetof(struct networkparams::Params, aHostName), pHostName, nLength);
+__attribute__((weak)) void SaveHostname(const char* hostname, uint32_t length)
+{
+    length = std::min(length, static_cast<uint32_t>(net::HOSTNAME_SIZE));
+    ConfigStore::Instance().NetworkUpdateArray(&common::store::Network::host_name, hostname, length);
 }
 
-__attribute__((weak)) void network_store_save_dhcp(bool bIsDhcpUsed) {
-	auto bIsStaticIp = !bIsDhcpUsed;
-	ConfigStore::Get()->Update(configstore::Store::NETWORK, offsetof(struct networkparams::Params, bUseStaticIp), &bIsStaticIp, sizeof(bool));
+__attribute__((weak)) void SaveDhcp(bool is_dhcp_used)
+{
+    const auto kUseStaticIp = !is_dhcp_used;
+    auto flags = ConfigStore::Instance().NetworkGet(&common::store::Network::flags);
+    flags = common::SetFlagValue(flags, Flags::Flag::kUseStaticIp, kUseStaticIp);
+
+    ConfigStore::Instance().NetworkUpdate(&common::store::Network::flags, flags);
 }
+} // namespace network::store

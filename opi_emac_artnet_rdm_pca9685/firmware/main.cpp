@@ -26,150 +26,106 @@
 #include <cstdint>
 #include <cstdio>
 
-#include "hal.h"
+#include "h3/hal_watchdog.h"
 #include "network.h"
-
 #include "displayudf.h"
-#include "displayudfparams.h"
-
+#include "json/displayudfparams.h"
 #include "dmxnodenode.h"
 #include "dmxnodemsgconst.h"
-
-#include "rdmdeviceresponder.h"
 #include "rdmpersonality.h"
-#include "rdmdeviceparams.h"
-#include "rdmsensorsparams.h"
-#if defined (CONFIG_RDM_ENABLE_SUBDEVICES)
-# include "rdmsubdevicesparams.h"
-#endif
-
 #include "artnetrdmresponder.h"
-
-#include "pca9685dmxparams.h"
+#include "json/pca9685dmxparams.h"
 #include "pca9685dmx.h"
-
-#if defined (NODE_SHOWFILE)
-# include "showfile.h"
-# include "showfileparams.h"
+#if defined(NODE_SHOWFILE)
+#include "showfile.h"
 #endif
-
 #include "flashcodeinstall.h"
 #include "configstore.h"
 #include "remoteconfig.h"
-#include "remoteconfigparams.h"
-
 #include "firmwareversion.h"
 #include "software_version.h"
 
-#include "displayhandler.h"
-
-namespace hal {
-void reboot_handler() {
-	ArtNetNode::Get()->Stop();
+namespace hal
+{
+void RebootHandler()
+{
+    ArtNetNode::Get()->Stop();
 }
-}  // namespace hal
+} // namespace hal
 
-int main() {
-	hal_init();
-	DisplayUdf display;
-	ConfigStore configStore;
-	Network nw;
-	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
-	FlashCodeInstall spiFlashInstall;
+int main() // NOLINT
+{
+    hal::Init();
+    DisplayUdf display;
+    ConfigStore config_store;
+    network::Init();
+    FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+    FlashCodeInstall spiflash_install;
 
-	fw.Print("Art-Net 4 PCA9685");
+    fw.Print("Art-Net 4 PCA9685");
 
-	PCA9685Dmx pca9685Dmx;
+    Pca9685Dmx pca9685_dmx;
 
-	PCA9685DmxParams pca9685DmxParams;
-	pca9685DmxParams.Load();
-	pca9685DmxParams.Set();
+    json::Pca9685DmxParams pca9685_dmx_params;
+    pca9685_dmx_params.Load();
+    pca9685_dmx_params.Set();
 
-	DmxNodeNode dmxNodeNode;
-	dmxNodeNode.SetRdm(static_cast<uint32_t>(0), true);
-	dmxNodeNode.SetOutput(pca9685Dmx.GetPCA9685DmxSet());
+    DmxNodeNode dmxnode_node;
+    dmxnode_node.SetRdm(static_cast<uint32_t>(0), true);
+    dmxnode_node.SetOutput(pca9685_dmx.GetPCA9685DmxSet());
 
-	char aDescription[64];
-	snprintf(aDescription, sizeof(aDescription) - 1, "PCA9685");
+	auto& rdm_device = RdmDevice::Get();
+	rdm_device.SetProductCategory(E120_PRODUCT_CATEGORY_FIXTURE);
+	rdm_device.SetProductDetail(E120_PRODUCT_DETAIL_LED);
+	rdm_device.Init();
+	rdm_device.Print();
+	
+	char description[64];
+	snprintf(description, sizeof(description) - 1, "PCA9685");
+	
+    RDMPersonality* rdm_personalities[1] = {new RDMPersonality(description, pca9685_dmx.GetPCA9685DmxSet())};
 
-	RDMPersonality *pRDMPersonalities[1] = { new RDMPersonality(aDescription, pca9685Dmx.GetPCA9685DmxSet())};
+    ArtNetRdmResponder rdm_responder(rdm_personalities, 1);
 
-	ArtNetRdmResponder rdmResponder(pRDMPersonalities, 1);
+    dmxnode_node.SetRdmResponder(&rdm_responder);
+    dmxnode_node.Print();
 
-	rdmResponder.SetProductCategory(E120_PRODUCT_CATEGORY_FIXTURE);
-	rdmResponder.SetProductDetail(E120_PRODUCT_DETAIL_LED);
+    pca9685_dmx.Print();
 
-	RDMSensorsParams rdmSensorsParams;
-	rdmSensorsParams.Load();
-	rdmSensorsParams.Set();
-
-#if defined (CONFIG_RDM_ENABLE_SUBDEVICES)
-	RDMSubDevicesParams rdmSubDevicesParams;
-	rdmSubDevicesParams.Load();
-	rdmSubDevicesParams.Set();
+#if defined(NODE_SHOWFILE)
+    ShowFile showfile;
+    showfile.Print();
 #endif
 
-	rdmResponder.Init();
+    display.SetTitle("Art-Net 4 PCA9685");
+    display.Set(2, displayudf::Labels::kIp);
+    display.Set(3, displayudf::Labels::kVersion);
+    display.Set(4, displayudf::Labels::kHostname);
+    display.Set(5, displayudf::Labels::kDmxStartAddress);
 
-	RDMDeviceParams rdmDeviceParams;
-	rdmDeviceParams.Load();
-	rdmDeviceParams.Set(&rdmResponder);
+    json::DisplayUdfParams displayudf_params;
+    displayudf_params.Load();
+    displayudf_params.SetAndShow();
 
-	rdmResponder.Print();
+    RemoteConfig remote_config(remoteconfig::Output::PWM, dmxnode_node.GetActiveOutputPorts());
 
-	dmxNodeNode.SetRdmResponder(&rdmResponder);
-	dmxNodeNode.Print();
+    display.TextStatus(DmxNodeMsgConst::START, console::Colours::kConsoleYellow);
 
-	pca9685Dmx.Print();
+    dmxnode_node.Start();
 
-#if defined (NODE_SHOWFILE)
-	ShowFile showFile;
+    display.TextStatus(DmxNodeMsgConst::STARTED, console::Colours::kConsoleGreen);
 
-	ShowFileParams showFileParams;
-	showFileParams.Load();
-	showFileParams.Set();
+    hal::WatchdogInit();
 
-	if (showFile.IsAutoStart()) {
-		showFile.Play();
-	}
-
-	showFile.Print();
+    for (;;)
+    {
+        hal::WatchdogFeed();
+        network::Run();
+        dmxnode_node.Run();
+#if defined(NODE_SHOWFILE)
+        showfile.Run();
 #endif
-
-	display.SetTitle("Art-Net 4 PCA9685");
-	display.Set(2, displayudf::Labels::IP);
-	display.Set(3, displayudf::Labels::VERSION);
-	display.Set(4, displayudf::Labels::HOSTNAME);
-	display.Set(5, displayudf::Labels::DMX_START_ADDRESS);
-
-	DisplayUdfParams displayUdfParams;
-	displayUdfParams.Load();
-	displayUdfParams.Set(&display);
-
-	display.Show();
-
-	RemoteConfig remoteConfig(remoteconfig::NodeType::ARTNET, remoteconfig::Output::PWM, dmxNodeNode.GetActiveOutputPorts());
-
-	RemoteConfigParams remoteConfigParams;
-	remoteConfigParams.Load();
-	remoteConfigParams.Set(&remoteConfig);
-
-	display.TextStatus(DmxNodeMsgConst::START, CONSOLE_YELLOW);
-
-	dmxNodeNode.Start();
-
-	display.TextStatus(DmxNodeMsgConst::STARTED, CONSOLE_GREEN);
-
-	hal::watchdog_init();
-
-	for (;;) {
-		hal::watchdog_feed();
-		nw.Run();
-		dmxNodeNode.Run();
-#if defined (NODE_SHOWFILE)
-		showFile.Run();
-#endif
-		display.Run();
-		hal::run();
-	}
+        display.Run();
+        hal::Run();
+    }
 }

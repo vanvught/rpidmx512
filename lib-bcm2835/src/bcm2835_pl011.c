@@ -40,12 +40,12 @@ void bcm2835_pl011_begin(void) {
 	BCM2835_PL011 ->CR = 0; /* Disable everything */
 
     // Set the GPI0 pins to the Alt 0 function to enable PL011 access on them
-    bcm2835_gpio_fsel(RPI_V2_GPIO_P1_08, BCM2835_GPIO_FSEL_ALT0);	// PL011_TXD
-    bcm2835_gpio_fsel(RPI_V2_GPIO_P1_10, BCM2835_GPIO_FSEL_ALT0);	// PL011_RXD
+    bcm2835_GpioFsel(RPI_V2_GPIO_P1_08, BCM2835_GPIO_FSEL_ALT0);	// PL011_TXD
+    bcm2835_GpioFsel(RPI_V2_GPIO_P1_10, BCM2835_GPIO_FSEL_ALT0);	// PL011_RXD
 
     // Disable pull-up/down
-    bcm2835_gpio_set_pud(RPI_V2_GPIO_P1_08, BCM2835_GPIO_PUD_OFF);
-    bcm2835_gpio_set_pud(RPI_V2_GPIO_P1_10, BCM2835_GPIO_PUD_OFF);
+    bcm2835_GpioSetPud(RPI_V2_GPIO_P1_08, BCM2835_GPIO_PUD_OFF);
+    bcm2835_GpioSetPud(RPI_V2_GPIO_P1_10, BCM2835_GPIO_PUD_OFF);
 
     /* Poll the "flags register" to wait for the UART to stop transmitting or receiving. */
 	while (BCM2835_PL011 ->FR & PL011_FR_BUSY ) {

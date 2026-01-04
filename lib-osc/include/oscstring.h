@@ -2,7 +2,7 @@
  * @file oscstring.h
  *
  */
-/* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2016-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,48 +29,61 @@
 #include <cstring>
 #include <cstdint>
 
-#include "osc.h"
-
 /*
  * OSC-string
  * A sequence of non-null ASCII characters followed by a null,
  * followed by 0-3 additional null characters to make the total number of bits a multiple of 32.
  */
 
-namespace osc {
-inline static int string_validate(const void *pData, uint32_t nSize) {
-	uint32_t nLength = 0;
-	auto *pSrc = reinterpret_cast<const char *>(pData);
+namespace osc
+{
+namespace validate
+{
+inline constexpr int kInvalidSize = 1;
+inline constexpr int kNotTerminated = 2;
+inline constexpr int kNoneZeroInPadding = 3;
+} // namespace validate
+inline int StringValidate(const void* data, uint32_t size)
+{
+    uint32_t length = 0;
+    auto* src = reinterpret_cast<const char*>(data);
 
-	uint32_t i = 0;
+    uint32_t i = 0;
 
-	for (i = 0; i < nSize; ++i) {
-		if (pSrc[i] == '\0') {
-			nLength = 4 * (i / 4 + 1);
-			break;
-		}
-	}
+    for (i = 0; i < size; ++i)
+    {
+        if (src[i] == '\0')
+        {
+            length = 4 * (i / 4 + 1);
+            break;
+        }
+    }
 
-	if (0 == nLength) {
-		return -osc::validate::NOT_TERMINATED;
-	}
+    if (0 == length)
+    {
+        return -osc::validate::kNotTerminated;
+    }
 
-	if (nLength > nSize) {
-		return -osc::validate::INVALID_SIZE;
-	}
+    if (length > size)
+    {
+        return -osc::validate::kInvalidSize;
+    }
 
-	for (; i < nLength; ++i) {
-		if (pSrc[i] != '\0') {
-			return -osc::validate::NONE_ZERO_IN_PADDING;
-		}
-	}
+    for (; i < length; ++i)
+    {
+        if (src[i] != '\0')
+        {
+            return -osc::validate::kNoneZeroInPadding;
+        }
+    }
 
-	return static_cast<int>(nLength);
+    return static_cast<int>(length);
 }
 
-inline static unsigned string_size(const char *pString) {
-	return 4 * (strlen(pString) / 4 + 1);
+inline unsigned StringSize(const char* string)
+{
+    return 4 * (strlen(string) / 4 + 1);
 }
-}  // namespace osc
+} // namespace osc
 
-#endif /* OSCSTRING_H_ */
+#endif  // OSCSTRING_H_

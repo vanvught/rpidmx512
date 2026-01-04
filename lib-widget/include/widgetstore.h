@@ -2,7 +2,7 @@
  * @file widgetstore.h
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,36 +27,35 @@
 #define WIDGETSTORE_H_
 
 #include <cstdint>
-#include <cstddef>
 
-#include "widgetparams.h"
-
-#if defined (WIDGET_HAVE_FLASHROM)
-# include "configstore.h"
+#if defined(WIDGET_HAVE_FLASHROM)
+#include "configstore.h"
 #endif
 
-class WidgetStore {
-public:
-#if defined (WIDGET_HAVE_FLASHROM)
-	static void UpdateBreakTime(uint8_t nBreakTime) {
-		ConfigStore::Get()->Update(configstore::Store::WIDGET, offsetof(struct TWidgetParams, nBreakTime), &nBreakTime, sizeof(uint8_t), WidgetParamsMask::BREAK_TIME);
-	}
+namespace widget_store
+{
 
-	static void UpdateMabTime(uint8_t nMabTime) {
-		ConfigStore::Get()->Update(configstore::Store::WIDGET, offsetof(struct TWidgetParams, nMabTime), &nMabTime, sizeof(uint8_t), WidgetParamsMask::MAB_TIME);
-	}
+#if defined(WIDGET_HAVE_FLASHROM)
+inline void SaveBreakTime(uint8_t break_time)
+{
+    ConfigStore::Instance().WidgetUpdate(&common::store::Widget::break_time, break_time);
+}
 
-	static void UpdateRefreshRate(uint8_t nRefreshRate) {
-		ConfigStore::Get()->Update(configstore::Store::WIDGET, offsetof(struct TWidgetParams, nRefreshRate), &nRefreshRate, sizeof(uint8_t), WidgetParamsMask::REFRESH_RATE);
-	}
+inline void SaveMabTime(uint8_t mab_time)
+{
+    ConfigStore::Instance().WidgetUpdate(&common::store::Widget::mab_time, mab_time);
+}
+
+inline void SaveRefreshRate(uint8_t refresh_rate)
+{
+    ConfigStore::Instance().WidgetUpdate(&common::store::Widget::refresh_rate, refresh_rate);
+}
 #else
-	static void UpdateBreakTime(uint8_t nBreakTime) { }
-
-	static void UpdateMabTime(uint8_t nMabTime) { }
-
-	static void UpdateRefreshRate(uint8_t nRefreshRate) {	}
+inline void SaveBreakTime([[maybe_unused]] uint8_t break_time) {}
+inline void SaveMabTime([[maybe_unused]] uint8_t mab_time) {}
+inline void SaveRefreshRate([[maybe_unused]] uint8_t refresh_rate) {}
 #endif
 
-};
+} // namespace widget_store
 
-#endif /* WIDGETSTORE_H_ */
+#endif  // WIDGETSTORE_H_

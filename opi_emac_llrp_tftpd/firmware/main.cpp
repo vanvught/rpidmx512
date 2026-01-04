@@ -23,99 +23,93 @@
  * THE SOFTWARE.
  */
 
-#if !defined (NODE_RDMNET_LLRP_ONLY)
-# error
+#if !defined(NODE_RDMNET_LLRP_ONLY)
+#error
 #endif
 
 #include <cstdio>
 #include <cstring>
+#include <time.h>
 
-#include "hal.h"
+#include "h3/hal.h"
+#include "h3/hal_watchdog.h"
+#include "hal_statusled.h"
+#include "hwclock.h"
 #include "network.h"
-
 #include "displayudf.h"
-#include "displayudfparams.h"
+#include "json/displayudfparams.h"
 #include "flashcodeinstall.h"
 #include "configstore.h"
 #include "remoteconfig.h"
-#include "remoteconfigparams.h"
-
-#include "rdmnetllrponly.h"
-
+#include "rdmnetdevice.h"
 #include "firmwareversion.h"
 #include "software_version.h"
 
-namespace hal {
-void reboot_handler() {
-	if (!RemoteConfig::Get()->IsReboot()) {
-		Display::Get()->SetSleep(false);
-		Display::Get()->Cls();
-		Display::Get()->TextStatus("Rebooting ...");
-	}
+namespace hal
+{
+void RebootHandler()
+{
+    if (!RemoteConfig::Get()->IsReboot())
+    {
+        Display::Get()->SetSleep(false);
+        Display::Get()->Cls();
+        Display::Get()->TextStatus("Rebooting ...");
+    }
 }
-}  // namespace hal
+} // namespace hal
 
-int main() {
-	hal_init();
-	DisplayUdf display;
-	ConfigStore configStore;
-	Network nw;
-	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
-	FlashCodeInstall spiFlashInstall;
+int main() // NOLINT
+{
+    hal::Init();
+    DisplayUdf display;
+    ConfigStore config_store;
+    network::Init();
+    FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+    FlashCodeInstall spiflash_install;
 
-	fw.Print("RDMNet LLRP device only");
+    fw.Print("RDMNet LLRP device only");
 
-	RDMNetLLRPOnly device;
-	device.Init();
-	device.Print();
+	RDMNetDevice llrp_only_device;
+	llrp_only_device.Print();
 
-	RemoteConfig remoteConfig(remoteconfig::NodeType::RDMNET_LLRP_ONLY, remoteconfig::Output::CONFIG, 0);
+    RemoteConfig remote_config(remoteconfig::Output::CONFIG, 0);
 
-	RemoteConfigParams remoteConfigParams;
-	remoteConfigParams.Load();
-	remoteConfigParams.Set(&remoteConfig);
+    display.SetTitle("LLRP Only - TFTP");
+    display.Set(2, displayudf::Labels::kHostname);
+    display.Set(3, displayudf::Labels::kIp);
+    display.Set(4, displayudf::Labels::kDefaultGateway);
+    display.Set(5, displayudf::Labels::kVersion);
 
-	display.SetTitle("LLRP Only - TFTP");
-	display.Set(2, displayudf::Labels::HOSTNAME);
-	display.Set(3, displayudf::Labels::IP);
-	display.Set(4, displayudf::Labels::DEFAULT_GATEWAY);
-	display.Set(5, displayudf::Labels::VERSION);
+    json::DisplayUdfParams displayudf_params;
+    displayudf_params.Load();
+    displayudf_params.SetAndShow();
 
-	DisplayUdfParams displayUdfParams;
-	displayUdfParams.Load();
-	displayUdfParams.Set(&display);
+    display.Write(6, "mDNS enabled");
+    display.TextStatus("Device running", console::Colours::kConsoleGreen);
 
-	display.Show();
+    auto t1 = time(nullptr);
+    struct tm hw_clock;
+    memset(&hw_clock, 0, sizeof(struct tm));
+	
+	hal::statusled::SetMode(hal::statusled::Mode::NORMAL);
 
-	display.Write(6, "mDNS enabled");
-	display.TextStatus("Device running", CONSOLE_GREEN);
+    for (;;)
+    {
+        network::Run();
+        display.Run();
+        hal::Run();
 
-	hal::statusled_set_mode(hal::StatusLedMode::NORMAL);
-
-	auto t1 = time(nullptr);
-	struct tm tmHwClock;
-	memset(&tmHwClock, 0, sizeof(struct tm));
-
-	for (;;) {
-		nw.Run();
-		display.Run();
-		hal::run();
-
-		time_t ltime;
-		auto t2 = time(&ltime);
-		if (t1 != t2) {
-			t1 = t2;
-			auto *tm = localtime(&ltime);
-			struct tm tmlocal;
-			memcpy(&tmlocal, tm, sizeof(struct tm));
-			HwClock::Get()->Get(&tmHwClock);
-			display.Printf(7, "%.2d:%.2d:%.2d %.2d:%.2d:%.2d",
-					tmlocal.tm_hour, tmlocal.tm_min, tmlocal.tm_sec,
-					tmHwClock.tm_hour, tmHwClock.tm_min, tmHwClock.tm_sec);
-			printf("%.2d:%.2d:%.2d %.2d:%.2d:%.2d\r",
-					tmlocal.tm_hour, tmlocal.tm_min, tmlocal.tm_sec,
-					tmHwClock.tm_hour, tmHwClock.tm_min, tmHwClock.tm_sec);
-		}
-
-	}
+        time_t ltime;
+        auto t2 = time(&ltime);
+        if (t1 != t2)
+        {
+            t1 = t2;
+            auto* tm = localtime(&ltime);
+            struct tm tmlocal;
+            memcpy(&tmlocal, tm, sizeof(struct tm));
+            HwClock::Get()->Get(&hw_clock);
+            display.Printf(7, "%.2d:%.2d:%.2d %.2d:%.2d:%.2d", tmlocal.tm_hour, tmlocal.tm_min, tmlocal.tm_sec, hw_clock.tm_hour, hw_clock.tm_min, hw_clock.tm_sec);
+            printf("%.2d:%.2d:%.2d %.2d:%.2d:%.2d\r", tmlocal.tm_hour, tmlocal.tm_min, tmlocal.tm_sec, hw_clock.tm_hour, hw_clock.tm_min, hw_clock.tm_sec);
+        }
+    }
 }

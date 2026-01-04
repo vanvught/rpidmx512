@@ -29,54 +29,60 @@
 
 #include "hal_i2c.h"
 
-namespace sensor {
-namespace htu21d {
-static constexpr uint8_t I2C_ADDRESS = 0x40;
-namespace reg {
+namespace sensor
+{
+namespace htu21d
+{
+static constexpr uint8_t kI2CAddress = 0x40;
+namespace reg
+{
 // static constexpr uint8_t TRIGGER_TEMP_MEASURE_HOLD = 0xE3;
 // static constexpr uint8_t TRIGGER_HUMD_MEASURE_HOLD = 0xE5;
-static constexpr uint8_t TRIGGER_TEMP_MEASURE_NOHOLD = 0xF3;
-static constexpr uint8_t TRIGGER_HUMD_MEASURE_NOHOLD = 0xF5;
+static constexpr uint8_t kTriggerTempMeasureNohold = 0xF3;
+static constexpr uint8_t kTriggerHumdMeasureNohold = 0xF5;
 // static constexpr uint8_t WRITE_USER_REG = 0xE6;
 // static constexpr uint8_t READ_USER_REG = 0xE7;
 // static constexpr uint8_t SOFT_RESET = 0xFE;
-}  // namespace reg
-}  // namespace htu21d
+} // namespace reg
+} // namespace htu21d
 
-using namespace sensor::htu21d;
-
-HTU21D::HTU21D(uint8_t nAddress): HAL_I2C(nAddress == 0  ? I2C_ADDRESS : nAddress) {
-	m_bIsInitialized = HAL_I2C::IsConnected();
+HTU21D::HTU21D(uint8_t address) : HAL_I2C(address == 0 ? sensor::htu21d::kI2CAddress : address)
+{
+    m_bIsInitialized = HAL_I2C::IsConnected();
 }
 
-float HTU21D::GetTemperature() {
-	const auto temp = static_cast<float>(ReadRaw(reg::TRIGGER_TEMP_MEASURE_NOHOLD)) / 65536.0f;
-	return -46.85f + (175.72f * temp);
+float HTU21D::GetTemperature()
+{
+    const auto kTemp = static_cast<float>(ReadRaw(sensor::htu21d::reg::kTriggerTempMeasureNohold)) / 65536.0f;
+    return -46.85f + (175.72f * kTemp);
 }
 
-float HTU21D::GetHumidity() {
-	const auto humd = static_cast<float>(ReadRaw(reg::TRIGGER_HUMD_MEASURE_NOHOLD)) / 65536.0f;
-	return -6.0f + (125.0f * humd);
+float HTU21D::GetHumidity()
+{
+    const auto kHumd = static_cast<float>(ReadRaw(sensor::htu21d::reg::kTriggerHumdMeasureNohold)) / 65536.0f;
+    return -6.0f + (125.0f * kHumd);
 }
 
+uint16_t HTU21D::ReadRaw(uint8_t cmd)
+{
+    HAL_I2C::Write(cmd);
 
-uint16_t HTU21D::ReadRaw(uint8_t nCmd) {
-	HAL_I2C::Write(nCmd);
+    char buf[3] = {0};
 
-	char buf[3] = {0};
+    for (uint32_t i = 0; i < 8; ++i)
+    {
+        udelay(10000);
+        HAL_I2C::Read(buf, 3);
 
-	for (uint32_t i = 0; i < 8; ++i) {
-		udelay(10000);
-		HAL_I2C::Read(buf, 3);
+        if ((buf[0] & 0x3) == 2)
+        {
+            break;
+        }
+    }
 
-		if ((buf[0] & 0x3) == 2) {
-			break;
-		}
-	}
+    const auto kRawValue = static_cast<uint16_t>((buf[0] << 8) | buf[1]);
 
-	const auto nRawValue = static_cast<uint16_t>((buf[0] << 8) | buf[1]);
-
-	return nRawValue & 0xFFFC;
+    return kRawValue & 0xFFFC;
 }
 
-}  // namespace sensor
+} // namespace sensor

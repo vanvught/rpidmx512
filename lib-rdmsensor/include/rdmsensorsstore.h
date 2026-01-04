@@ -2,7 +2,7 @@
  * @file rdmsensorsstore.h
  *
  */
-/* Copyright (C) 2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2023-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,20 +27,19 @@
 #define RDMSENSORSSTORE_H_
 
 #include <cstdint>
-#include <cstddef>
 #include <cassert>
 
-#include "rdmsensorsparams.h"
-#include "rdmsensors.h"
 #include "configstore.h"
+#include "configurationstore.h"
 
-class RDMSensorsStore {
-public:
-	static void SaveCalibration(const uint32_t nSensor, const int32_t nCalibration) {
-		assert(nSensor < rdm::sensors::MAX);
-		auto c = static_cast<int16_t>(nCalibration);
-		ConfigStore::Get()->Update(configstore::Store::RDMSENSORS, (nSensor * sizeof(int16_t)) + offsetof(struct rdm::sensorsparams::Params, nCalibrate), &c, sizeof(int16_t));
-	}
-};
+namespace rdmsensors_store
+{
+inline void SaveCalibration(uint32_t sensor, int32_t calibration)
+{
+    assert(sensor < common::store::rdm::sensors::kMaxSensors);
+    auto c = static_cast<int16_t>(calibration);
+    ConfigStore::Instance().RdmSensorsUpdateIndexed(&common::store::RdmSensors::calibrate, sensor, c);
+}
+} // namespace rdmsensors_store
 
-#endif /* RDMSENSORSSTORE_H_ */
+#endif  // RDMSENSORSSTORE_H_

@@ -1,8 +1,8 @@
 /**
- * @file jamplayer.h
+ * @file jamstapl.h
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -75,8 +75,8 @@ public:
 	const char *GetExitCodeString() const;
 
 	void SetMessage(const char *pMessage) {
-		if (m_pJamSTAPLDisplay != nullptr) {
-			m_pJamSTAPLDisplay->JamShowInfo(pMessage);
+		if (jamstapl_display_ != nullptr) {
+			jamstapl_display_->JamShowInfo(pMessage);
 		}
 	}
 
@@ -94,7 +94,7 @@ public:
 	}
 
 	void SetJamSTAPLDisplay(JamSTAPLDisplay *pJamSTAPLDisplay) {
-		m_pJamSTAPLDisplay = pJamSTAPLDisplay;
+		jamstapl_display_ = pJamSTAPLDisplay;
 	}
 
 private:
@@ -118,7 +118,7 @@ private:
 	};
 	ExportInteger m_ExportInteger;
 
-	JamSTAPLDisplay *m_pJamSTAPLDisplay{ nullptr };
+	JamSTAPLDisplay *jamstapl_display_{ nullptr };
 };
 
 #endif /* JAMSTAPL_H_ */

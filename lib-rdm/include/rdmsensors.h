@@ -2,7 +2,7 @@
  * @file rdmsensors.h
  *
  */
-/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,142 +29,146 @@
 #include <cstdint>
 #include <cassert>
 
+#include "configurationstore.h"
 #include "rdmsensor.h"
+ #include "firmware/debug/debug_debug.h"
 
-#include "debug.h"
-
-#if defined (__APPLE__) || (defined (__linux__) && !defined (RASPPI))
-#else
-# define RDM_SENSORS_ENABLE
+#if !defined(__APPLE__)
+#define CONFIG_RDM_ENABLE_CPU_SENSOR
 #endif
 
-#if !defined (__APPLE__)
-# define RDMSENSOR_CPU_ENABLE
+#if defined(NODE_RDMNET_LLRP_ONLY)
+#undef CONFIG_RDM_ENABLE_SENSORS
+#undef CONFIG_RDM_ENABLE_CPU_SENSOR
 #endif
 
-#if defined (NODE_RDMNET_LLRP_ONLY)
-# undef RDM_SENSORS_ENABLE
-# undef RDMSENSOR_CPU_ENABLE
+#if defined(CONFIG_RDM_ENABLE_CPU_SENSOR)
+#include "sensor/cputemperature.h"
+#endif
+#if defined(CONFIG_RDM_ENABLE_SENSORS)
+#include "json/rdmsensorsparams.h"
 #endif
 
-#if defined (RDMSENSOR_CPU_ENABLE)
-# include "sensor/cputemperature.h"
+class RDMSensors
+{
+   public:
+    RDMSensors()
+    {
+        DEBUG_ENTRY();
+        assert(s_this == nullptr);
+        s_this = this;
+
+#if defined(CONFIG_RDM_ENABLE_SENSORS) || defined(CONFIG_RDM_ENABLE_CPU_SENSOR)
+        rdm_sensor_ = new RDMSensor*[common::store::rdm::sensors::kMaxSensors];
+        assert(rdm_sensor_ != nullptr);
+
+#if defined(CONFIG_RDM_ENABLE_CPU_SENSOR)
+        Add(new CpuTemperature(count_));
 #endif
-
-
-namespace rdm::sensors {
-static constexpr auto MAX = 16;
-static constexpr auto STORE = 64;	///< Configuration store in bytes
-namespace devices {
-static constexpr auto MAX = 8;
-}  // namespace devices
-} // namespace rdm::sensors
-
-
-class RDMSensors {
-public:
-	RDMSensors() {
-		DEBUG_ENTRY
-		assert(s_pThis == nullptr);
-		s_pThis = this;
-
-#if defined (RDM_SENSORS_ENABLE) || defined (RDMSENSOR_CPU_ENABLE)
-		m_pRDMSensor = new RDMSensor*[rdm::sensors::MAX];
-		assert(m_pRDMSensor != nullptr);
-
-# if defined (RDMSENSOR_CPU_ENABLE)
-		Add(new CpuTemperature(m_nCount));
-# endif
+#if defined(CONFIG_RDM_ENABLE_SENSORS)
+        json::RdmSensorsParams params;
+        params.Load();
+        params.Set();
 #endif
-		DEBUG_EXIT
-	}
+#endif
+        DEBUG_EXIT();
+    }
 
-	~RDMSensors() {
-		DEBUG_ENTRY
-		for (uint32_t i = 0; i < m_nCount; i++) {
-			if (m_pRDMSensor[i] != nullptr) {
-				delete m_pRDMSensor[i];
-				m_pRDMSensor[i] = nullptr;
-			}
-		}
+    ~RDMSensors()
+    {
+        DEBUG_ENTRY();
+        for (uint32_t i = 0; i < count_; i++)
+        {
+            if (rdm_sensor_[i] != nullptr)
+            {
+                delete rdm_sensor_[i];
+                rdm_sensor_[i] = nullptr;
+            }
+        }
 
-		delete [] m_pRDMSensor;
-		DEBUG_EXIT
-	}
+        delete[] rdm_sensor_;
+        DEBUG_EXIT();
+    }
 
-	bool Add(RDMSensor *pRDMSensor) {
-		DEBUG_ENTRY
+    bool Add(RDMSensor* rdm_sensor)
+    {
+        DEBUG_ENTRY();
 
-		assert(m_pRDMSensor != nullptr);
+        if (rdm_sensor_ == nullptr)
+        {
+            DEBUG_EXIT();
+            return false;
+        }
 
-		if (m_pRDMSensor == nullptr) {
-			DEBUG_EXIT
-			return false;
-		}
+        if (count_ == common::store::rdm::sensors::kMaxSensors)
+        {
+            DEBUG_EXIT();
+            return false;
+        }
 
-		if (m_nCount == rdm::sensors::MAX) {
-			DEBUG_EXIT
-			return false;
-		}
+        assert(rdm_sensor != nullptr);
+        rdm_sensor_[count_++] = rdm_sensor;
 
-		assert(pRDMSensor != nullptr);
-		m_pRDMSensor[m_nCount++] = pRDMSensor;
+        DEBUG_PRINTF("count_=%u", count_);
+        DEBUG_EXIT();
+        return true;
+    }
 
-		DEBUG_PRINTF("m_nCount=%u", m_nCount);
-		DEBUG_EXIT
-		return true;
-	}
+    uint8_t GetCount() const { return count_; }
 
-	uint8_t GetCount() const {
-		return m_nCount;
-	}
+    const struct rdm::sensor::Defintion* GetDefintion(uint8_t sensor)
+    {
+        assert(sensor < count_);
+        assert(rdm_sensor_[sensor] != nullptr);
+        return rdm_sensor_[sensor]->GetDefintion();
+    }
 
-	const struct rdm::sensor::Defintion *GetDefintion(const uint8_t nSensor) {
-		assert(nSensor < m_nCount);
-		assert(m_pRDMSensor[nSensor] != nullptr);
-		return m_pRDMSensor[nSensor]->GetDefintion();
-	}
+    const struct rdm::sensor::Values* GetValues(uint8_t sensor)
+    {
+        assert(sensor < count_);
+        assert(rdm_sensor_[sensor] != nullptr);
+        return rdm_sensor_[sensor]->GetValues();
+    }
 
-	const struct rdm::sensor::Values *GetValues(const uint8_t nSensor) {
-		assert(nSensor < m_nCount);
+    void SetValues(uint8_t sensor)
+    {
+        if (sensor == 0xFF)
+        {
+            for (uint32_t i = 0; i < count_; i++)
+            {
+                rdm_sensor_[i]->SetValues();
+            }
+        }
+        else
+        {
+            rdm_sensor_[sensor]->SetValues();
+        }
+    }
 
-		assert(m_pRDMSensor[nSensor] != nullptr);
-		return m_pRDMSensor[nSensor]->GetValues();
-	}
+    void SetRecord(uint8_t sensor)
+    {
+        if (sensor == 0xFF)
+        {
+            for (uint32_t i = 0; i < count_; i++)
+            {
+                rdm_sensor_[i]->Record();
+            }
+        }
+        else
+        {
+            rdm_sensor_[sensor]->Record();
+        }
+    }
 
-	void SetValues(const uint8_t nSensor) {
-		if (nSensor == 0xFF) {
-			for (uint32_t i = 0; i < m_nCount; i++) {
-				m_pRDMSensor[i]->SetValues();
-			}
-		} else {
-			m_pRDMSensor[nSensor]->SetValues();
-		}
-	}
+    RDMSensor* GetSensor(uint8_t sensor) { return rdm_sensor_[sensor]; }
 
-	void SetRecord(const uint8_t nSensor) {
-		if (nSensor == 0xFF) {
-			for (uint32_t i = 0; i < m_nCount; i++) {
-				m_pRDMSensor[i]->Record();
-			}
-		} else {
-			m_pRDMSensor[nSensor]->Record();
-		}
-	}
+    static RDMSensors* Get() { return s_this; }
 
-	RDMSensor *GetSensor(uint8_t nSensor) {
-		return m_pRDMSensor[nSensor];
-	}
+   private:
+    RDMSensor** rdm_sensor_{nullptr};
+    uint8_t count_{0};
 
-	static RDMSensors* Get() {
-		return s_pThis;
-	}
-
-private:
-	RDMSensor **m_pRDMSensor { nullptr };
-	uint8_t m_nCount { 0 };
-
-	static RDMSensors *s_pThis;
+    inline static RDMSensors* s_this;
 };
 
-#endif /* RDMSENSORS_H_ */
+#endif  // RDMSENSORS_H_

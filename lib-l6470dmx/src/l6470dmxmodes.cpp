@@ -24,13 +24,10 @@
  */
 
 #include <cstdint>
-#ifndef NDEBUG
- #include <cstdio>
-#endif
+#include <cstdio>
 #include <cassert>
 
 #include "l6470.h"
-
 #include "l6470dmxmodes.h"
 #include "l6470dmxmode0.h"
 #include "l6470dmxmode1.h"
@@ -39,241 +36,264 @@
 #include "l6470dmxmode4.h"
 #include "l6470dmxmode5.h"
 #include "l6470dmxmode6.h"
+#include "dmxnode.h"
+ #include "firmware/debug/debug_debug.h"
 
-#include "motorparams.h"
-#include "modeparams.h"
+L6470DmxModes::L6470DmxModes(TL6470DmxModes dmxmode, uint16_t dmx_start_address, L6470* l6470, uint32_t motor_index)
+    : dmxmode_(dmxmode), dmx_start_address_(dmx_start_address)
+{
+    DEBUG_ENTRY();;
 
-#include "debug.h"
+    assert(dmx_start_address <= dmxnode::kUniverseSize);
+    assert(l6470 != nullptr);
 
-L6470DmxModes::L6470DmxModes(TL6470DmxModes tMode, uint16_t nDmxStartAddress, L6470 *pL6470, MotorParams *pMotorParams, ModeParams *pModeParams) {
-	DEBUG_ENTRY;
+    switch (dmxmode)
+    {
+        case L6470DMXMODE0:
+            l6470_dmxmode_ = new L6470DmxMode0(l6470);
+            dmx_footprint_ = L6470DmxMode0::GetDmxFootPrint();
+            break;
+        case L6470DMXMODE1:
+            l6470_dmxmode_ = new L6470DmxMode1(l6470);
+            dmx_footprint_ = L6470DmxMode1::GetDmxFootPrint();
+            break;
+        case L6470DMXMODE2:
+            l6470_dmxmode_ = new L6470DmxMode2(l6470);
+            dmx_footprint_ = L6470DmxMode2::GetDmxFootPrint();
+            break;
+        case L6470DMXMODE3:
+            l6470_dmxmode_ = new L6470DmxMode3(l6470, motor_index);
+            dmx_footprint_ = L6470DmxMode3::GetDmxFootPrint();
+            break;
+        case L6470DMXMODE4:
+            l6470_dmxmode_ = new L6470DmxMode4(l6470, motor_index);
+            dmx_footprint_ = L6470DmxMode4::GetDmxFootPrint();
+            break;
+        case L6470DMXMODE5:
+            l6470_dmxmode_ = new L6470DmxMode5(l6470, motor_index);
+            dmx_footprint_ = L6470DmxMode5::GetDmxFootPrint();
+            break;
+        case L6470DMXMODE6:
+            l6470_dmxmode_ = new L6470DmxMode6(l6470, motor_index);
+            dmx_footprint_ = L6470DmxMode6::GetDmxFootPrint();
+            break;
+        default:
+            break;
+    }
 
-	assert(nDmxStartAddress <= dmxnode::UNIVERSE_SIZE);
-	assert(pL6470 != nullptr);
-	assert(pMotorParams != nullptr);
-	assert(pModeParams != nullptr);
+    assert(l6470_dmxmode_ != nullptr);
 
-	m_nDmxStartAddress = nDmxStartAddress;
+    if (l6470_dmxmode_ != nullptr)
+    {
+        motor_number_ = static_cast<uint8_t>(l6470->GetMotorNumber());
+        assert(motor_number_ != motor_index);
 
-	switch (tMode) {
-		case L6470DMXMODE0:
-			m_pDmxMode = new L6470DmxMode0(pL6470);
-			m_DmxFootPrint = L6470DmxMode0::GetDmxFootPrint();
-			break;
-		case L6470DMXMODE1:
-			m_pDmxMode = new L6470DmxMode1(pL6470);
-			m_DmxFootPrint = L6470DmxMode1::GetDmxFootPrint();
-			break;
-		case L6470DMXMODE2:
-			m_pDmxMode = new L6470DmxMode2(pL6470);
-			m_DmxFootPrint = L6470DmxMode2::GetDmxFootPrint();
-			break;
-		case L6470DMXMODE3:
-			m_pDmxMode = new L6470DmxMode3(pL6470, pMotorParams);
-			m_DmxFootPrint = L6470DmxMode3::GetDmxFootPrint();
-			break;
-		case L6470DMXMODE4:
-			m_pDmxMode = new L6470DmxMode4(pL6470, pMotorParams, pModeParams);
-			m_DmxFootPrint = L6470DmxMode4::GetDmxFootPrint();
-			break;
-		case L6470DMXMODE5:
-			m_pDmxMode = new L6470DmxMode5(pL6470, pMotorParams, pModeParams);
-			m_DmxFootPrint = L6470DmxMode5::GetDmxFootPrint();
-			break;
-		case L6470DMXMODE6:
-			m_pDmxMode = new L6470DmxMode6(pL6470, pMotorParams, pModeParams);
-			m_DmxFootPrint = L6470DmxMode6::GetDmxFootPrint();
-			break;
-		default:
-			break;
-	}
+        dmx_data_ = new uint8_t[dmx_footprint_];
+        assert(dmx_data_ != nullptr);
 
-	assert(m_pDmxMode != nullptr);
+        for (int i = 0; i < dmx_footprint_; i++)
+        {
+            dmx_data_[i] = 0;
+        }
+    }
 
-	if (m_pDmxMode != nullptr) {
-		m_nMotorNumber = static_cast<uint8_t>(pL6470->GetMotorNumber());
-		m_nMode = tMode;
-
-		m_pDmxData = new uint8_t[m_DmxFootPrint];
-		assert(m_pDmxData != nullptr);
-
-		for (int i = 0; i < m_DmxFootPrint; i++) {
-			m_pDmxData[i] = 0;
-		}
-	}
-
-	DEBUG_EXIT;
+    DEBUG_EXIT();;
 }
 
-L6470DmxModes::~L6470DmxModes() {
-	DEBUG_ENTRY;
+L6470DmxModes::~L6470DmxModes()
+{
+    DEBUG_ENTRY();;
 
-	delete [] m_pDmxData;
-	m_pDmxData = nullptr;
+    delete[] dmx_data_;
+    dmx_data_ = nullptr;
 
-	delete m_pDmxMode;
-	m_pDmxMode = nullptr;
+    delete l6470_dmxmode_;
+    l6470_dmxmode_ = nullptr;
 
-	DEBUG_EXIT;
+    DEBUG_EXIT();;
 }
 
-void L6470DmxModes::InitSwitch() {
-	DEBUG_ENTRY;
+void L6470DmxModes::InitSwitch()
+{
+    DEBUG_ENTRY();;
 
-	m_pDmxMode->InitSwitch();
+    l6470_dmxmode_->InitSwitch();
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void L6470DmxModes::InitPos() {
-	DEBUG_ENTRY;
+void L6470DmxModes::InitPos()
+{
+    DEBUG_ENTRY();;
 
-	m_pDmxMode->InitPos();
+    l6470_dmxmode_->InitPos();
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-uint16_t L6470DmxModes::GetDmxFootPrintMode(uint32_t tMode) {
-	switch (tMode) {
-		case L6470DMXMODE0:
-			return L6470DmxMode0::GetDmxFootPrint();
-			break;
-		case L6470DMXMODE1:
-			return L6470DmxMode1::GetDmxFootPrint();
-			break;
-		case L6470DMXMODE2:
-			return L6470DmxMode2::GetDmxFootPrint();
-			break;
-		case L6470DMXMODE3:
-			return L6470DmxMode3::GetDmxFootPrint();
-			break;
-		case L6470DMXMODE4:
-			return L6470DmxMode4::GetDmxFootPrint();
-			break;
-		case L6470DMXMODE5:
-			return L6470DmxMode5::GetDmxFootPrint();
-			break;
-		case L6470DMXMODE6:
-			return L6470DmxMode6::GetDmxFootPrint();
-			break;
-		default:
-			return 0;
-			break;
-	}
+uint16_t L6470DmxModes::GetDmxFootPrintMode(uint32_t mode)
+{
+    switch (mode)
+    {
+        case L6470DMXMODE0:
+            return L6470DmxMode0::GetDmxFootPrint();
+            break;
+        case L6470DMXMODE1:
+            return L6470DmxMode1::GetDmxFootPrint();
+            break;
+        case L6470DMXMODE2:
+            return L6470DmxMode2::GetDmxFootPrint();
+            break;
+        case L6470DMXMODE3:
+            return L6470DmxMode3::GetDmxFootPrint();
+            break;
+        case L6470DMXMODE4:
+            return L6470DmxMode4::GetDmxFootPrint();
+            break;
+        case L6470DMXMODE5:
+            return L6470DmxMode5::GetDmxFootPrint();
+            break;
+        case L6470DMXMODE6:
+            return L6470DmxMode6::GetDmxFootPrint();
+            break;
+        default:
+            return 0;
+            break;
+    }
 }
 
-void L6470DmxModes::Start() {
-	DEBUG_ENTRY;
+void L6470DmxModes::Start()
+{
+    DEBUG_ENTRY();;
 
-	if (m_bIsStarted) {
-		return;
-	}
+    if (started_)
+    {
+        return;
+    }
 
-	m_pDmxMode->Start();
+    l6470_dmxmode_->Start();
 
-	m_bIsStarted = true;
+    started_ = true;
 
-	DEBUG_EXIT;
+    DEBUG_EXIT();;
 }
 
-void L6470DmxModes::Stop() {
-	DEBUG_ENTRY;
+void L6470DmxModes::Stop()
+{
+    DEBUG_ENTRY();;
 
-	if (!m_bIsStarted) {
-		return;
-	}
+    if (!started_)
+    {
+        return;
+    }
 
-	m_pDmxMode->Stop();
+    l6470_dmxmode_->Stop();
 
-	m_bIsStarted = false;
+    started_ = false;
 
-	DEBUG_EXIT;
+    DEBUG_EXIT();;
 }
 
-void L6470DmxModes::HandleBusy() {
-	DEBUG_ENTRY;
+void L6470DmxModes::HandleBusy()
+{
+    DEBUG_ENTRY();;
 
-	m_pDmxMode->HandleBusy();
+    l6470_dmxmode_->HandleBusy();
 
-	DEBUG_EXIT;
+    DEBUG_EXIT();;
 }
 
-bool L6470DmxModes::BusyCheck() {
-	DEBUG_ENTRY;
+bool L6470DmxModes::BusyCheck()
+{
+    DEBUG_ENTRY();;
 
-	DEBUG_EXIT;
-	return m_pDmxMode->BusyCheck();
+    DEBUG_EXIT();;
+    return l6470_dmxmode_->BusyCheck();
 }
 
-bool L6470DmxModes::IsDmxDataChanged(const uint8_t *p) {
-	DEBUG_ENTRY;
+bool L6470DmxModes::IsDmxDataChanged(const uint8_t* p)
+{
+    DEBUG_ENTRY();;
 
-	auto isChanged = false;
-	const auto lastDmxChannel = static_cast<uint16_t>(m_nDmxStartAddress + m_DmxFootPrint - 1);
-	auto *q = m_pDmxData;
+    auto is_changed = false;
+    const auto kLastDmxChannel = static_cast<uint16_t>(dmx_start_address_ + dmx_footprint_ - 1);
+    auto* q = dmx_data_;
 
 #ifndef NDEBUG
-	printf("\t\tDmxStartAddress = %d, LastDmxChannel = %d\n", m_nDmxStartAddress, lastDmxChannel);
+    printf("\t\tDmxStartAddress = %d, LastDmxChannel = %d\n", dmx_start_address_, kLastDmxChannel);
 #endif
 
-	for (uint32_t i = m_nDmxStartAddress; (i <= lastDmxChannel) && (i <= 512U) ; i++) {
-		if (*p != *q) {
-			isChanged = true;
-		}
-		*q = *p;
-		p++;
-		q++;
-	}
+    for (uint32_t i = dmx_start_address_; (i <= kLastDmxChannel) && (i <= 512U); i++)
+    {
+        if (*p != *q)
+        {
+            is_changed = true;
+        }
+        *q = *p;
+        p++;
+        q++;
+    }
 
-	DEBUG_EXIT;
-	return isChanged;
+    DEBUG_EXIT();;
+    return is_changed;
 }
 
-bool L6470DmxModes::IsDmxDataChanged(const uint8_t *pDmxData, uint32_t nLength) {
-	DEBUG_ENTRY;
+bool L6470DmxModes::IsDmxDataChanged(const uint8_t* dmx_data, uint32_t length)
+{
+    DEBUG_ENTRY();;
 
-	assert(m_pDmxMode != nullptr);
-	assert(pDmxData != nullptr);
+    assert(l6470_dmxmode_ != nullptr);
+    assert(dmx_data != nullptr);
 
-	if (m_pDmxMode == nullptr) {
-		DEBUG_EXIT;
-		return false;
-	}
+    if (l6470_dmxmode_ == nullptr)
+    {
+        DEBUG_EXIT();;
+        return false;
+    }
 
-	if (nLength < (m_nDmxStartAddress + m_DmxFootPrint)) {
-		DEBUG_EXIT;
-		return false;
-	}
+    if (length < (dmx_start_address_ + dmx_footprint_))
+    {
+        DEBUG_EXIT();;
+        return false;
+    }
 
-	uint8_t *p = const_cast<uint8_t *>(pDmxData) + m_nDmxStartAddress - 1;
+    uint8_t* p = const_cast<uint8_t*>(dmx_data) + dmx_start_address_ - 1;
 
-	return IsDmxDataChanged(p);
+    return IsDmxDataChanged(p);
 }
 
-void L6470DmxModes::DmxData(const uint8_t *pDmxData, uint32_t nLength) {
-	DEBUG_ENTRY;
+void L6470DmxModes::DmxData(const uint8_t* dmx_data, uint32_t length)
+{
+    DEBUG_ENTRY();;
 
-	assert(m_pDmxMode != nullptr);
-	assert(pDmxData != nullptr);
+    assert(l6470_dmxmode_ != nullptr);
+    assert(dmx_data != nullptr);
 
-	if (nLength < (m_nDmxStartAddress + m_DmxFootPrint)) {
-		return;
-	}
+    if (length < (dmx_start_address_ + dmx_footprint_))
+    {
+        return;
+    }
 
-	const auto *p = const_cast<uint8_t *>(pDmxData) + m_nDmxStartAddress - 1;
+    const auto* p = const_cast<uint8_t*>(dmx_data) + dmx_start_address_ - 1;
 
 #ifndef NDEBUG
-	printf("\tMotor : %d\n", m_nMotorNumber);
+    printf("\tMotor : %d\n", motor_number_);
 
-	for (uint32_t i = 0; i < m_DmxFootPrint; i++) {
-		printf("\t\tDMX slot(%d) : %d\n", m_nDmxStartAddress + i, p[i]);
-	}
+    for (uint32_t i = 0; i < dmx_footprint_; i++)
+    {
+        printf("\t\tDMX slot(%d) : %d\n", dmx_start_address_ + i, p[i]);
+    }
 #endif
 
+    l6470_dmxmode_->Data(p);
 
-	m_pDmxMode->Data(p);
+    started_ = true;
 
-	m_bIsStarted = true;
+    DEBUG_EXIT();;
+}
 
-	DEBUG_EXIT;
+void L6470DmxModes::Print()
+{
+    printf(" DMX: Mode=%d, StartAddress=%d, FootPrint=%d\n", static_cast<int>(dmxmode_), static_cast<int>(dmx_start_address_),
+           static_cast<int>(dmx_footprint_));
 }

@@ -3,7 +3,6 @@
 echo $1 $2 $3
 
 DIR=../opi_*
-#DIR=../opi_emac_artnet*
 
 for f in $DIR
 do
@@ -54,6 +53,10 @@ do
 		elif [[ $f = "../opi_"*"l6470" ]] && [[ $1 != *"ORANGE_PI_ONE"* ]] && [[ $2 != *"NO_EXT_LED=1"* ]]; then
 			do_build=1
 		fi
+		
+		if [[ $f = "../opi_"*"debug"* ]]; then
+			do_build=0
+		fi
 				
 		if [[ $do_build -eq 1 ]]; then
 			1>&2 echo $f $1 $2 $3
@@ -64,7 +67,7 @@ do
 			fi
 			echo $f $1 $2 $3 > build$board.txt
 			make -f Makefile.H3 $1 $2 $3 clean -j
-			make -f Makefile.H3 $1 $2 $3 -j 2
+			make -f Makefile.H3 $1 $2 $3
 			retVal=$?
 			if [ $retVal -ne 0 ]; then
     			echo "Error : " "$f"
@@ -73,47 +76,5 @@ do
 		fi
 			
 		cd -
-	fi
-done
-
-DIR=../rpi_*
-
-for f in $DIR
-do
-	echo -e "\e[32m[$f]\e[0m"
-	if [ -d $f ]; then	
-		
-		if [[ $f != *"circle"* ]]; then
-			cd "$f"
-			
-			echo $1 $2 $3
-			
-			if [ -f Makefile.H3 ]; then
-				if [ $(grep -c ESP8266 Makefile.H3) -ne 0 ] && [[ $1 = *"ORANGE_PI_ONE"* ]]; then
-					echo -e "\e[33mSkipping...\e[0m"
-				elif [ $(grep -c ESP8266 Makefile.H3) -ne 0 ] && [[ $2 != *"NO_EXT_LED=1"* ]]; then
-					echo -e "\e[33mSkipping...\e[0m"
-				elif [ $(grep -c RDM_CONTROLLER Makefile.H3) -ne 0 ] && [[ $1 = *"ORANGE_PI_ONE"* ]]; then
-					echo -e "\e[33mSkipping...\e[0m"					
-				elif [ $(grep -c MONITOR_DMX Makefile.H3) -ne 0 ] && [[ $1 = "PLATFORM=ORANGE_PI" ]]; then
-					echo -e "\e[33mSkipping...\e[0m"
-				elif [ $(grep -c MONITOR_DMX Makefile.H3) -ne 0 ] && [[ $2 = *"NO_EXT_LED=1"* ]]; then
-					echo -e "\e[33mSkipping...\e[0m"
-				elif [ $(grep -c RDM_RESPONDER Makefile.H3) -ne 0 ] && [[ $1 = *"ORANGE_PI_ONE"* ]]; then
-					echo -e "\e[33mSkipping...\e[0m"
-				elif [ $(grep -c RDM_RESPONDER Makefile.H3) -ne 0 ] && [[ $2 = *"NO_EXT_LED=1"* ]]; then
-					echo -e "\e[33mSkipping...\e[0m"
-				else
-					echo $1 $2 $3
-					make -f Makefile.H3 $1 $2 $3 clean -j && make -f Makefile.H3 $1 $2 $3
-				fi
-			else
-				echo -e "\e[33mSkipping...\e[0m"
-			fi
-			
-			cd -
-		else
-			echo -e "\e[33mSkipping...\e[0m"
-		fi
 	fi
 done

@@ -2,7 +2,7 @@
  * @file rdm_manufacturer_pid.cpp
  *
  */
-/* Copyright (C) 2023-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2023-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,42 +23,40 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cstddef>
-#include <cstring>
-#include <cassert>
+#include "tlc59711.h"
+#if defined(DEBUG_PIXELDMX)
+#undef NDEBUG
+#endif
 
-#include "rdm_manufacturer_pid.h"
+#include <cstdint>
+#include <cstring>
+
 #include "rdmhandler.h"
 #include "rdm_e120.h"
-
-#include "tlc59711.h"
-
-#include "debug.h"
-
+#include "tlc59711dmx.h"
 #if !defined(OUTPUT_DMX_TLC59711)
-# error
-# endif
+#error
+#endif
 
-namespace rdm {
-using E120_MANUFACTURER_PIXEL_TYPE = ManufacturerPid<0x8500>;
-using E120_MANUFACTURER_PIXEL_COUNT = ManufacturerPid<0x8501>;
+using E120_MANUFACTURER_PIXEL_TYPE = rdmhandler::ManufacturerPid<0x8500>;
+using E120_MANUFACTURER_PIXEL_COUNT =rdmhandler::ManufacturerPid<0x8501>;
 
-struct PixelType {
-    static constexpr char description[] = "Pixel type";
+struct PixelType
+{
+    static constexpr char kDescription[] = "Pixel type";
 };
 
-struct PixelCount {
-    static constexpr char description[] = "Pixel count";
+struct PixelCount
+{
+    static constexpr char kDescription[] = "Pixel count";
 };
 
-constexpr char PixelType::description[];
-constexpr char PixelCount::description[];
-}  // namespace rdm
+constexpr char PixelType::kDescription[];
+constexpr char PixelCount::kDescription[];
 
-const rdm::ParameterDescription RDMHandler::PARAMETER_DESCRIPTIONS[] = {
-		  { rdm::E120_MANUFACTURER_PIXEL_TYPE::code,
-		    rdm::DEVICE_DESCRIPTION_MAX_LENGTH,
+const rdmhandler::ParameterDescription RDMHandler::PARAMETER_DESCRIPTIONS[] = {
+		  { E120_MANUFACTURER_PIXEL_TYPE::kCode,
+		    rdmhandler::kDeviceDescriptionMaxLength,
 			E120_DS_ASCII,
 			E120_CC_GET,
 			0,
@@ -67,10 +65,10 @@ const rdm::ParameterDescription RDMHandler::PARAMETER_DESCRIPTIONS[] = {
 			0,
 			0,
 			0,
-			rdm::Description<rdm::PixelType, sizeof(rdm::PixelType::description)>::value,
-			rdm::pdlParameterDescription(sizeof(rdm::PixelType::description))
+			rdmhandler::Description<PixelType, sizeof(PixelType::kDescription)>::kValue,
+			RDMHandler::PdlParameterDescription(sizeof(PixelType::kDescription))
 		  },
-		  { rdm::E120_MANUFACTURER_PIXEL_COUNT::code,
+		  { E120_MANUFACTURER_PIXEL_COUNT::kCode,
 			2,
 			E120_DS_UNSIGNED_DWORD,
 			E120_CC_GET,
@@ -80,8 +78,8 @@ const rdm::ParameterDescription RDMHandler::PARAMETER_DESCRIPTIONS[] = {
 			0,
 			__builtin_bswap32(4),
 			__builtin_bswap32(4),
-			rdm::Description<rdm::PixelCount, sizeof(rdm::PixelCount::description)>::value,
-			rdm::pdlParameterDescription(sizeof(rdm::PixelCount::description))
+			rdmhandler::Description<PixelCount, sizeof(PixelCount::kDescription)>::kValue,
+			RDMHandler::PdlParameterDescription(sizeof(PixelCount::kDescription))
 		  }
   };
 
@@ -89,25 +87,22 @@ uint32_t RDMHandler::GetParameterDescriptionCount() const {
 	return sizeof(RDMHandler::PARAMETER_DESCRIPTIONS) / sizeof(RDMHandler::PARAMETER_DESCRIPTIONS[0]);
 }
 
-#include "tlc59711dmx.h"
-#include "tlc59711dmxparams.h"
-
-namespace rdm {
-bool handle_manufactureer_pid_get(const uint16_t nPid, [[maybe_unused]] const ManufacturerParamData *pIn, ManufacturerParamData *pOut, uint16_t& nReason) {
+namespace rdmhandler {
+bool HandleManufactureerPidGet(const uint16_t nPid, [[maybe_unused]] const ManufacturerParamData *pIn, ManufacturerParamData *pOut, uint16_t& nReason) {
 	switch (nPid) {
-	case rdm::E120_MANUFACTURER_PIXEL_TYPE::code: {
-		const auto *pString = TLC59711DmxParams::GetType(TLC59711Dmx::Get()->GetType());
-		pOut->nPdl = static_cast<uint8_t>(strlen(pString));
-		memcpy(pOut->pParamData, pString, pOut->nPdl);
+	case E120_MANUFACTURER_PIXEL_TYPE::kCode: {
+		const auto *string = tlc59711::GetType(TLC59711Dmx::Get()->GetType());
+		pOut->nPdl = static_cast<uint8_t>(strlen(string));
+		memcpy(pOut->pParamData, string, pOut->nPdl);
 		return true;
 	}
-	case rdm::E120_MANUFACTURER_PIXEL_COUNT::code: {
-		const auto nCount = TLC59711Dmx::Get()->GetCount();
+	case E120_MANUFACTURER_PIXEL_COUNT::kCode: {
+		const auto kCount = TLC59711Dmx::Get()->GetCount();
 		pOut->nPdl = 4;
-		pOut->pParamData[0] = static_cast<uint8_t>(nCount >> 24);
-		pOut->pParamData[1] = static_cast<uint8_t>(nCount >> 16);
-		pOut->pParamData[2] = static_cast<uint8_t>(nCount >> 8);
-		pOut->pParamData[3] = static_cast<uint8_t>(nCount);
+		pOut->pParamData[0] = static_cast<uint8_t>(kCount >> 24);
+		pOut->pParamData[1] = static_cast<uint8_t>(kCount >> 16);
+		pOut->pParamData[2] = static_cast<uint8_t>(kCount >> 8);
+		pOut->pParamData[3] = static_cast<uint8_t>(kCount);
 		return true;
 	}
 	default:
@@ -117,4 +112,4 @@ bool handle_manufactureer_pid_get(const uint16_t nPid, [[maybe_unused]] const Ma
 	nReason = E120_NR_UNKNOWN_PID;
 	return false;
 }
-}  // namespace rdm
+}  // namespace rdmhandler

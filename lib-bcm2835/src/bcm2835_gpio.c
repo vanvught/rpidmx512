@@ -35,7 +35,7 @@ extern void udelay(uint32_t);
  *
  * Sets the Pull-up/down register for the given pin. This is
  * used with \ref bcm2835_gpio_pudclk to set the  Pull-up/down resistor for the given pin.
- * However, it is usually more convenient to use \ref bcm2835_gpio_set_pud.
+ * However, it is usually more convenient to use \ref bcm2835_GpioSetPud.
  *
  * @param pud The desired Pull-up/down mode. One of BCM2835_GPIO_PUD_* from \ref bcm2835PUDControl
  */
@@ -61,7 +61,7 @@ static void bcm2835_gpio_pudclk(const uint8_t pin, const uint8_t on) {
  * @param pin GPIO number.
  * @param pud The desired Pull-up/down mode. One of BCM2835_GPIO_PUD_* from \ref bcm2835PUDControl
  */
-void bcm2835_gpio_set_pud(const uint8_t pin, const uint8_t pud) {
+void bcm2835_GpioSetPud(const uint8_t pin, const uint8_t pud) {
 	bcm2835_gpio_pud(pud);
 	udelay(10);
 	bcm2835_gpio_pudclk(pin, 1);

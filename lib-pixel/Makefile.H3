@@ -1,0 +1,21 @@
+DEFINES =USE_SPI_DMA
+DEFINES+=NDEBUG
+
+EXTRA_INCLUDES=../lib-device/include ../lib-jamstapl/include
+
+EXTRA_SRCDIR=src/pixel src/h3 jbc
+
+ifneq ($(MAKE_FLAGS),)
+	ifeq ($(findstring OUTPUT_DMX_PIXEL,$(MAKE_FLAGS)), OUTPUT_DMX_PIXEL)
+		EXTRA_SRCDIR+=src/h3/pixel
+	endif
+	ifeq ($(findstring OUTPUT_PIXEL,$(MAKE_FLAGS)), OUTPUT_PIXEL)
+		EXTRA_SRCDIR+=src/h3/pixel
+	endif	
+	ifeq ($(findstring OUTPUT_DMX_PIXEL_MULTI,$(MAKE_FLAGS)), OUTPUT_DMX_PIXEL_MULTI)
+		EXTRA_SRCDIR+=src/h3/pixelmulti
+	endif
+endif
+
+include Rules.mk
+include ../firmware-template-h3/lib/Rules.mk

@@ -1,5 +1,5 @@
 /**
- * @file net_config
+ * @file net_config.h
  *
  */
 /* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@gd32-dmx.org

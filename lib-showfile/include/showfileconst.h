@@ -2,7 +2,7 @@
  * @file showfileconst.h
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,20 +26,28 @@
 #ifndef SHOWFILECONST_H_
 #define SHOWFILECONST_H_
 
-#include <cstdint>
-
-namespace showfile {
-enum class Status {
-	IDLE, PLAYING, STOPPED, ENDED, RECORDING, UNDEFINED
+namespace showfile
+{
+enum class Status
+{
+    kIdle,
+    kPlaying,
+    kStopped,
+    kEnded,
+    kRecording,
+    kUndefined
 };
 
-static constexpr char STATUS[static_cast<int>(showfile::Status::UNDEFINED)][12] = { "Idle", "Playing", "Stopped", "Ended", "Recording" };
+inline const char kStatus[static_cast<int>(showfile::Status::kUndefined)][12] = {"Idle", "Playing", "Stopped", "Ended", "Recording"};
 
-enum class Mode {
-	PLAYER, RECORDER, UNDEFINED
+enum class Mode
+{
+    kPlayer,
+    kRecorder,
+    kUndefined
 };
 
-static constexpr char MODE[static_cast<int>(showfile::Mode::UNDEFINED)][10] = { "Player", "Recorder" };
-}  // namespace showfile
+inline const char kMode[static_cast<int>(showfile::Mode::kUndefined)][10] = {"Player", "Recorder"};
+} // namespace showfile
 
-#endif /* SHOWFILECONST_H_ */
+#endif  // SHOWFILECONST_H_

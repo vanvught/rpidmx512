@@ -10,11 +10,11 @@ ROOT= ./../..
 SOURCE= .
 BUILD=build_linux/
 
-LIBS=rdm rdmsensor rdmsubdevice e131 network configstore properties debug hal
+LIBS=rdm e131 network configstore hal
 
 # The variable for the libraries include directory
 LIBINCDIRS=$(addprefix -I$(ROOT)/lib-,$(LIBS))
-LIBINCDIRS:=$(addsuffix /include, $(LIBINCDIRS))
+LIBINCDIRS:=$(addsuffix /include, $(LIBINCDIRS)) -I./../../common/include
 # The variables for the ld -L flag
 LIB=$(addprefix -L$(ROOT)/lib-,$(LIBS))
 LIB:=$(addsuffix /lib_linux, $(LIB))

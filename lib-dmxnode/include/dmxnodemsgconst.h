@@ -25,10 +25,11 @@
 #ifndef DMXNODEMSGCONST_H_
 #define DMXNODEMSGCONST_H_
 
-struct DmxNodeMsgConst {
-	static inline const char START[] = "Starting DMX Node";
-	static inline const char STARTED[] = "DMX Node started";
-	static inline const char RDM_RUN[] = "Running RDM Discovery";
+struct DmxNodeMsgConst
+{
+    static inline const char START[] = "Starting DMX Node";
+    static inline const char STARTED[] = "DMX Node started";
+    static inline const char RDM_RUN[] = "Running RDM Discovery";
 };
 
-#endif /* DMXNODEMSGCONST_H_ */
+#endif  // DMXNODEMSGCONST_H_

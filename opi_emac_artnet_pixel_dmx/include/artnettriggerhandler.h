@@ -30,87 +30,96 @@
 
 #include "artnettrigger.h"
 #include "artnetnode.h"
-
 #include "dmxnode_outputtype.h"
 #include "dmxnodewith4.h"
-
 #include "pixeltestpattern.h"
-
 #include "display.h"
 #include "displayudf.h"
 
-class ArtNetTriggerHandler {
-public:
-	ArtNetTriggerHandler(DmxNodeWith4<CONFIG_DMXNODE_DMX_PORT_OFFSET> *pDmxNodeWith4, DmxPixelOutputType *pDmxPixelOutputType):
-		m_pDmxNodeWith4(pDmxNodeWith4),
-		m_pDmxPixelOutputType(pDmxPixelOutputType)
-	{
-		assert(s_pThis == nullptr);
-		s_pThis = this;
+class ArtNetTriggerHandler
+{
+   public:
+    ArtNetTriggerHandler(DmxNodeWith4<CONFIG_DMXNODE_DMX_PORT_OFFSET>* pDmxNodeWith4, DmxPixelOutputType* pDmxPixelOutputType)
+        : m_pDmxNodeWith4(pDmxNodeWith4), m_pDmxPixelOutputType(pDmxPixelOutputType)
+    {
+        assert(s_this == nullptr);
+        s_this = this;
 
-		ArtNetNode::Get()->SetArtTriggerCallbackFunctionPtr(StaticCallbackFunction);
-	}
+        ArtNetNode::Get()->SetArtTriggerCallbackFunctionPtr(StaticCallbackFunction);
+    }
 
-	~ArtNetTriggerHandler() = default;
+    ~ArtNetTriggerHandler() = default;
 
-	void static StaticCallbackFunction(const ArtNetTrigger *pArtNetTrigger) {
-		assert(s_pThis != nullptr);
-		s_pThis->Handler(pArtNetTrigger);
-	}
+    void static StaticCallbackFunction(const ArtNetTrigger* pArtNetTrigger)
+    {
+        assert(s_this != nullptr);
+        s_this->Handler(pArtNetTrigger);
+    }
 
-private:
-	void Handler(const ArtNetTrigger *pArtNetTrigger) {
-		if (pArtNetTrigger->Key == ArtTriggerKey::ART_TRIGGER_KEY_SHOW) {
-			m_pDmxNodeWith4->SetDmxPixel(m_pDmxPixelOutputType);
+   private:
+    void Handler(const ArtNetTrigger* pArtNetTrigger)
+    {
+        if (pArtNetTrigger->key == ArtTriggerKey::kArtTriggerKeyShow)
+        {
+            m_pDmxNodeWith4->SetDmxPixel(m_pDmxPixelOutputType);
 
-			const auto nShow = static_cast<pixelpatterns::Pattern>(pArtNetTrigger->SubKey);
+            const auto nShow = static_cast<pixelpatterns::Pattern>(pArtNetTrigger->sub_key);
 
-			if (nShow == PixelTestPattern::Get()->GetPattern()) {
-				return;
-			}
+            if (nShow == PixelTestPattern::Get()->GetPattern())
+            {
+                return;
+            }
 
-			const auto isSet = PixelTestPattern::Get()->SetPattern(nShow);
+            const auto isSet = PixelTestPattern::Get()->SetPattern(nShow);
 
-			if (!isSet) {
-				return;
-			}
+            if (!isSet)
+            {
+                return;
+            }
 
-			if (static_cast<pixelpatterns::Pattern>(nShow) != pixelpatterns::Pattern::NONE) {
-				m_pDmxNodeWith4->SetDmxPixel(nullptr);
-				Display::Get()->ClearLine(6);
-				Display::Get()->Printf(6, "%s:%u", PixelPatterns::GetName(nShow), static_cast<uint32_t>(nShow));
-			} else {
-				m_pDmxPixelOutputType->Blackout(true);
-				DisplayUdf::Get()->Show();
-			}
+            if (static_cast<pixelpatterns::Pattern>(nShow) != pixelpatterns::Pattern::kNone)
+            {
+                m_pDmxNodeWith4->SetDmxPixel(nullptr);
+                Display::Get()->ClearLine(6);
+                Display::Get()->Printf(6, "%s:%u", PixelPatterns::GetName(nShow), static_cast<uint32_t>(nShow));
+            }
+            else
+            {
+                m_pDmxPixelOutputType->Blackout(true);
+                DisplayUdf::Get()->Show();
+            }
 
-			return;
-		}
+            return;
+        }
 
-		if (pArtNetTrigger->Key == ArtTriggerKey::ART_TRIGGER_UNDEFINED) {
-			if (pArtNetTrigger->SubKey == 0) {
-				const auto isSet = PixelTestPattern::Get()->SetPattern(pixelpatterns::Pattern::NONE);
+        if (pArtNetTrigger->key == ArtTriggerKey::kArtTriggerUndefined)
+        {
+            if (pArtNetTrigger->sub_key == 0)
+            {
+                const auto kIsSet = PixelTestPattern::Get()->SetPattern(pixelpatterns::Pattern::kNone);
 
-				if (!isSet) {
-					return;
-				}
+                if (!kIsSet)
+                {
+                    return;
+                }
 
-				m_pDmxNodeWith4->SetDmxPixel(nullptr);
+                m_pDmxNodeWith4->SetDmxPixel(nullptr);
 
-				const auto *pData = &pArtNetTrigger->Data[0];
-				const uint32_t nColour = pData[0] | (static_cast<uint32_t>(pData[1]) << 8) | (static_cast<uint32_t>(pData[2]) << 16) | (static_cast<uint32_t>(pData[3]) << 24);
+                const auto* pData = &pArtNetTrigger->data[0];
+                const uint32_t nColour =
+                    pData[0] | (static_cast<uint32_t>(pData[1]) << 8) | (static_cast<uint32_t>(pData[2]) << 16) | (static_cast<uint32_t>(pData[3]) << 24);
 
-				pixel::set_pixel_colour(0, nColour);
-				pixel::update();
-			}
-		}
-	}
+                pixel::SetPixelColour(0, nColour);
+                pixel::Update();
+            }
+        }
+    }
 
-private:
-	DmxNodeWith4<CONFIG_DMXNODE_DMX_PORT_OFFSET> *m_pDmxNodeWith4;
-	DmxPixelOutputType *m_pDmxPixelOutputType;
+   private:
+    DmxNodeWith4<CONFIG_DMXNODE_DMX_PORT_OFFSET>* m_pDmxNodeWith4;
+    DmxPixelOutputType* m_pDmxPixelOutputType;
 
-	static inline ArtNetTriggerHandler *s_pThis;
+    static inline ArtNetTriggerHandler* s_this;
 };
 
-#endif /* ARTNETTRIGGERHANDLER_H_ */
+#endif  // ARTNETTRIGGERHANDLER_H_

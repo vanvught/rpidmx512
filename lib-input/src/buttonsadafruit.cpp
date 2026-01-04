@@ -44,8 +44,8 @@
 #define MASK_GPLEV0  static_cast<uint32_t>((1 << PIN_L) | (1 << PIN_R)  | (1 << PIN_C) | (1 << PIN_U) | (1 << PIN_D) | (1 << PIN_A) | (1 << PIN_B))
 
 static void init_gpio_pin(const uint8_t nPin) {
-	FUNC_PREFIX(gpio_fsel(nPin, GPIO_FSEL_INPUT));
-	FUNC_PREFIX(gpio_set_pud(nPin, GPIO_PULL_UP));
+	FUNC_PREFIX(GpioFsel(nPin, GPIO_FSEL_INPUT));
+	FUNC_PREFIX(GpioSetPud(nPin, GPIO_PULL_UP));
 }
 
 ButtonsAdafruit::ButtonsAdafruit() {

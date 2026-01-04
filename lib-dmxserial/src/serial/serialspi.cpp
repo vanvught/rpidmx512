@@ -2,7 +2,7 @@
  * @file serialspi.cpp
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,54 +24,53 @@
  */
 
 #include <cstdint>
-#include <cstdio>
-#include <cassert>
 
-#include "serial.h"
-
+#include "serial/serial.h"
 #include "hal_spi.h"
+ #include "firmware/debug/debug_debug.h"
 
-#include "debug.h"
+void Serial::SetSpiSpeedHz(uint32_t speed_hz)
+{
+    DEBUG_PRINTF("speed_hz=%d", speed_hz);
 
-using namespace serial;
+    if (speed_hz == 0)
+    {
+        return;
+    }
 
-void Serial::SetSpiSpeedHz(uint32_t nSpeedHz) {
-	DEBUG_PRINTF("nSpeedHz=%d", nSpeedHz);
-
-	if (nSpeedHz == 0) {
-		return;
-
-	}
-
-	m_SpiConfiguration.nSpeed = nSpeedHz;
+    spi_configuration_.speed_hz = speed_hz;
 }
 
-void Serial::SetSpiMode(uint32_t nMode) {
-	DEBUG_PRINTF("tMode=%d", nMode);
+void Serial::SetSpiMode(uint32_t mode)
+{
+    DEBUG_PRINTF("mode=%d", mode);
 
-	if (nMode > 3) {
-		return;
-	}
+    if (mode > 3)
+    {
+        return;
+    }
 
-	m_SpiConfiguration.nMode = static_cast<uint8_t>(nMode);
+    spi_configuration_.mode = static_cast<uint8_t>(mode);
 }
 
-bool Serial::InitSpi() {
-	DEBUG_ENTRY
+bool Serial::InitSpi()
+{
+    DEBUG_ENTRY();
 
-	FUNC_PREFIX (spi_begin());
-	FUNC_PREFIX (spi_set_speed_hz(m_SpiConfiguration.nSpeed));
-	FUNC_PREFIX (spi_chipSelect(SPI_CS0));
-	FUNC_PREFIX (spi_setDataMode(m_SpiConfiguration.nMode));
+    FUNC_PREFIX(SpiBegin());
+    FUNC_PREFIX(SpiSetSpeedHz(spi_configuration_.speed_hz));
+    FUNC_PREFIX(SpiChipSelect(SPI_CS0));
+    FUNC_PREFIX(SpiSetDataMode(spi_configuration_.mode));
 
-	DEBUG_EXIT
-	return true;
+    DEBUG_EXIT();
+    return true;
 }
 
-void Serial::SendSpi(const uint8_t *pData, uint32_t nLength) {
-	DEBUG_ENTRY
+void Serial::SendSpi(const uint8_t* data, uint32_t length)
+{
+    DEBUG_ENTRY();
 
-	FUNC_PREFIX (spi_writenb(reinterpret_cast<const char *>(pData), nLength));
+    FUNC_PREFIX(SpiWritenb(reinterpret_cast<const char*>(data), length));
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }

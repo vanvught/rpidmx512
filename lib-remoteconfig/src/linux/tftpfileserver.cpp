@@ -29,44 +29,44 @@
 
 #include "tftp/tftpfileserver.h"
 
-#include "debug.h"
+ #include "firmware/debug/debug_debug.h"
 
-TFTPFileServer::TFTPFileServer(uint8_t *pBuffer, uint32_t nSize): m_pBuffer(pBuffer), m_nSize(nSize) {
-	DEBUG_ENTRY
-	DEBUG_EXIT
+TFTPFileServer::TFTPFileServer(uint8_t *pBuffer, uint32_t nSize): buffer_(pBuffer), m_nSize(nSize) {
+	DEBUG_ENTRY();
+	DEBUG_EXIT();
 }
 
 void TFTPFileServer::Exit() {
-	DEBUG_ENTRY
-	DEBUG_EXIT
+	DEBUG_ENTRY();
+	DEBUG_EXIT();
 }
 
 bool TFTPFileServer::FileOpen([[maybe_unused]] const char* pFileName, [[maybe_unused]] tftp::Mode mode) {
-	DEBUG_ENTRY
-	DEBUG_EXIT
+	DEBUG_ENTRY();
+	DEBUG_EXIT();
 	return false;
 }
 
 bool TFTPFileServer::FileCreate([[maybe_unused]] const char* pFileName, [[maybe_unused]] tftp::Mode mode) {
-	DEBUG_ENTRY
-	DEBUG_EXIT
+	DEBUG_ENTRY();
+	DEBUG_EXIT();
 	return false;
 }
 
 bool TFTPFileServer::FileClose() {
-	DEBUG_ENTRY
-	DEBUG_EXIT
+	DEBUG_ENTRY();
+	DEBUG_EXIT();
 	return false;
 }
 
 size_t TFTPFileServer::FileRead([[maybe_unused]] void* pBuffer, [[maybe_unused]] size_t nCount, [[maybe_unused]] unsigned nBlockNumber) {
-	DEBUG_ENTRY
-	DEBUG_EXIT
+	DEBUG_ENTRY();
+	DEBUG_EXIT();
 	return 0;
 }
 
 size_t TFTPFileServer::FileWrite([[maybe_unused]] const void *pBuffer, [[maybe_unused]] size_t nCount, [[maybe_unused]] unsigned nBlockNumber) {
-	DEBUG_ENTRY
-	DEBUG_EXIT
+	DEBUG_ENTRY();
+	DEBUG_EXIT();
 	return 0;
 }

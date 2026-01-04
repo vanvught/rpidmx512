@@ -37,73 +37,73 @@
 #include "display.h"
 #include "firmware.h"
 
-#include "debug.h"
+ #include "firmware/debug/debug_debug.h"
 
 using namespace tftpfileserver;
 
-TFTPFileServer::TFTPFileServer(uint8_t *pBuffer, uint32_t nSize): m_pBuffer(pBuffer), m_nSize(nSize) {
-	DEBUG_ENTRY
+TFTPFileServer::TFTPFileServer(uint8_t *pBuffer, uint32_t nSize): buffer_(pBuffer), m_nSize(nSize) {
+	DEBUG_ENTRY();
 
-	assert(m_pBuffer != nullptr);
+	assert(buffer_ != nullptr);
 	assert(nSize != 0);
 
-	DEBUG_EXIT
+	DEBUG_EXIT();
 }
 
 void TFTPFileServer::Exit() {
-	DEBUG_ENTRY
+	DEBUG_ENTRY();
 
 	RemoteConfig::Get()->TftpExit();
 
-	DEBUG_EXIT
+	DEBUG_EXIT();
 }
 
 
 bool TFTPFileServer::FileOpen([[maybe_unused]] const char *pFileName, [[maybe_unused]] tftp::Mode tMode) {
-	DEBUG_ENTRY
+	DEBUG_ENTRY();
 
-	DEBUG_EXIT
+	DEBUG_EXIT();
 	return false;
 }
 
 bool TFTPFileServer::FileCreate(const char* pFileName, tftp::Mode mode) {
-	DEBUG_ENTRY
+	DEBUG_ENTRY();
 
 	assert(pFileName != nullptr);
 
-	if (mode != tftp::Mode::BINARY) {
-		DEBUG_EXIT
+	if (mode != tftp::Mode::kBinary) {
+		DEBUG_EXIT();
 		return false;
 	}
 
 	if (strncmp(firmware::FILE_NAME, pFileName, firmware::FILE_NAME_LENGTH) != 0) {
-		DEBUG_EXIT
+		DEBUG_EXIT();
 		return false;
 	}
 
-	Display::Get()->TextStatus("TFTP Started", CONSOLE_GREEN);
+	Display::Get()->TextStatus("TFTP Started", console::Colours::kConsoleGreen);
 
 	m_nFileSize = 0;
 
-	DEBUG_EXIT
+	DEBUG_EXIT();
 	return (true);
 }
 
 bool TFTPFileServer::FileClose() {
-	DEBUG_ENTRY
+	DEBUG_ENTRY();
 
 	m_bDone = true;
 
-	Display::Get()->TextStatus("TFTP Ended", CONSOLE_GREEN);
+	Display::Get()->TextStatus("TFTP Ended", console::Colours::kConsoleGreen);
 
-	DEBUG_EXIT
+	DEBUG_EXIT();
 	return true;
 }
 
 size_t TFTPFileServer::FileRead([[maybe_unused]] void* pBuffer, [[maybe_unused]] size_t nCount, [[maybe_unused]] unsigned nBlockNumber) {
-	DEBUG_ENTRY
+	DEBUG_ENTRY();
 
-	DEBUG_EXIT
+	DEBUG_EXIT();
 	return 0;
 }
 
@@ -127,7 +127,7 @@ size_t TFTPFileServer::FileWrite(const void *pBuffer, size_t nCount, unsigned nB
 
 	assert((nOffset + nCount) <= m_nSize);
 
-	memcpy(&m_pBuffer[nOffset], pBuffer, nCount);
+	memcpy(&buffer_[nOffset], pBuffer, nCount);
 
 	m_nFileSize += nCount; //FIXME BUG When in retry ?
 

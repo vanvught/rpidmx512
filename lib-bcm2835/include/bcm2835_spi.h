@@ -117,34 +117,34 @@ typedef enum {
 extern "C" {
 #endif
 
-extern void bcm2835_spi_begin(void);
-extern void bcm2835_spi_end(void);
+extern void bcm2835_SpiBegin(void);
+extern void bcm2835_SpiEnd(void);
 extern void bcm2835_spi_setBitOrder(const uint8_t);
 
 /*@unused@*/inline static void bcm2835_spi_setClockDivider(uint16_t divider) {
 	BCM2835_SPI0->CLK = (uint32_t) divider;
 }
 
-/*@unused@*/inline static void bcm2835_spi_set_speed_hz(uint32_t speed_hz) {
+/*@unused@*/inline static void bcm2835_SpiSetSpeedHz(uint32_t speed_hz) {
 	uint16_t divider = (uint16_t) ((uint32_t) BCM2835_CORE_CLK_HZ / speed_hz);
 	divider &= 0xFFFE;
 	bcm2835_spi_setClockDivider(divider);
 }
 
-/*@unused@*/inline static void bcm2835_spi_setDataMode(uint8_t mode) {
+/*@unused@*/inline static void bcm2835_SpiSetDataMode(uint8_t mode) {
 	// Mask in the CPO and CPHA bits of CS
 	BCM2835_PERI_SET_BITS(BCM2835_SPI0->CS, mode << 2, BCM2835_SPI0_CS_CPOL | BCM2835_SPI0_CS_CPHA);
 }
 
-/*@unused@*/inline static void bcm2835_spi_chipSelect(uint8_t cs) {
+/*@unused@*/inline static void bcm2835_SpiChipSelect(uint8_t cs) {
 	BCM2835_PERI_SET_BITS(BCM2835_SPI0->CS, cs, BCM2835_SPI0_CS_CS);
 }
 
 extern void bcm2835_spi_setChipSelectPolarity(uint8_t, uint8_t);
-extern void bcm2835_spi_transfernb(char*, /*@null@*/char*, uint32_t);
-extern void bcm2835_spi_transfern(char*, uint32_t);
-extern void bcm2835_spi_writenb(const char*, uint32_t);
-extern void bcm2835_spi_write(uint16_t data);
+extern void bcm2835_SpiTransfernb(char*, /*@null@*/char*, uint32_t);
+extern void bcm2835_SpiTransfern(char*, uint32_t);
+extern void bcm2835_SpiWritenb(const char*, uint32_t);
+extern void bcm2835_SpiWrite(uint16_t data);
 extern uint8_t bcm2835_spi_transfer(uint8_t);
 
 #ifdef __cplusplus

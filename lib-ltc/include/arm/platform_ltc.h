@@ -26,25 +26,6 @@
 #ifndef ARM_PLATFORM_LTC_H_
 #define ARM_PLATFORM_LTC_H_
 
-#include <cstdint>
+#error
 
-#include "ltc.h"
-
-extern volatile uint32_t gv_ltc_nUpdatesPerSecond;
-extern volatile uint32_t gv_ltc_nUpdatesPrevious;
-extern volatile uint32_t gv_ltc_nUpdates;
-
-extern volatile bool gv_ltc_bTimeCodeAvailable;
-extern volatile uint32_t gv_ltc_nTimeCodeCounter;
-
-extern struct ltc::TimeCode g_ltc_LtcTimeCode;
-
-#if defined (H3)
-# define PLATFORM_LTC_ARM
-# include "../src/arm/h3/h3_platform_ltc.h"
-#elif  defined (GD32)
-# define PLATFORM_LTC_ARM
-# include "../src/arm/gd32/gd32_platform_ltc.h"
-#endif
-
-#endif /* ARM_PLATFORM_LTC_H_ */
+#endif  // ARM_PLATFORM_LTC_H_

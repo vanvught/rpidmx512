@@ -27,275 +27,294 @@
 #include <cassert>
 
 #include "flashcodeinstall.h"
-#include "flashcodeinstallparams.h"
 #include "firmware.h"
-
 #include "display.h"
-
 #include "hal.h"
+ #include "firmware/debug/debug_debug.h"
 
-#include "debug.h"
+static constexpr uint32_t kCompareBytes = 1024;
+static constexpr uint32_t kFlashSizeMinimum = 0x200000;
+static constexpr const char kFileUbootSpi[] = "uboot.spi";
+static constexpr const char kFileuImage[] = "uImage";
+static constexpr const char kWriting[] = "Writing";
+static constexpr const char kCheckDifference[] = "Check difference";
+static constexpr const char kNoDifference[] = "No difference";
+static constexpr const char kDone[] = "Done";
 
-#define COMPARE_BYTES		1024
+FlashCodeInstall::FlashCodeInstall()
+{
+    DEBUG_ENTRY();
 
-#define FLASH_SIZE_MINIMUM	0x200000
+    assert(s_this == nullptr);
+    s_this = this;
 
-constexpr char aFileUbootSpi[] = "uboot.spi";
-constexpr char aFileuImage[] = "uImage";
+    Display::Get()->Cls();
 
-constexpr char aWriting[] = "Writing";
-constexpr char aCheckDifference[] = "Check difference";
-constexpr char aNoDifference[] = "No difference";
-constexpr char aDone[] = "Done";
+    if (!FlashCode::IsDetected())
+    {
+        Display::Get()->TextStatus("No SPI flash");
+        DEBUG_PUTS("No SPI flash chip");
+    }
+    else
+    {
+        flash_size_ = FlashCode::GetSize();
+        Display::Get()->Write(1, FlashCode::GetName());
+    }
 
-FlashCodeInstall *FlashCodeInstall::s_pThis;
+    if (hal::GetBootDevice() == hal::BootDevice::MMC0)
+    {
+        DEBUG_PUTS("BOOT_DEVICE_MMC0");
 
-FlashCodeInstall::FlashCodeInstall() {
-	DEBUG_ENTRY
+        if (flash_size_ >= kFlashSizeMinimum)
+        {
+            have_flash_ = true;
+            erase_size_ = FlashCode::GetSectorSize();
 
-	assert(s_pThis == nullptr);
-	s_pThis = this;
+            file_buffer_ = new uint8_t[erase_size_];
+            assert(file_buffer_ != nullptr);
 
-	Display::Get()->Cls();
+            flash_buffer_ = new uint8_t[erase_size_];
+            assert(flash_buffer_ != nullptr);
 
-	if (!FlashCode::IsDetected()) {
-		Display::Get()->TextStatus("No SPI flash");
-		DEBUG_PUTS("No SPI flash chip");
-	} else {
-		m_nFlashSize = FlashCode::GetSize();
-		Display::Get()->Write(1, FlashCode::GetName());
-	}
+            Process(kFileUbootSpi, OFFSET_UBOOT_SPI);
+            Process(kFileuImage, OFFSET_UIMAGE);
+        }
+    }
 
-	if (hal::boot_device() == hal::BootDevice::MMC0) {
-		DEBUG_PUTS("BOOT_DEVICE_MMC0");
-
-		FlashCodeInstallParams params;
-
-		if (params.Load()) {
-			if (m_nFlashSize >= FLASH_SIZE_MINIMUM) {
-
-				m_bHaveFlashChip = true;
-				m_nEraseSize = FlashCode::GetSectorSize();
-
-				m_pFileBuffer = new uint8_t[m_nEraseSize];
-				assert(m_pFileBuffer != nullptr);
-
-				m_pFlashBuffer = new uint8_t[m_nEraseSize];
-				assert(m_pFlashBuffer != nullptr);
-
-				if (params.GetInstalluboot()) {
-					Process(aFileUbootSpi, OFFSET_UBOOT_SPI);
-				}
-
-				if (params.GetInstalluImage()) {
-					Process(aFileuImage, OFFSET_UIMAGE);
-				}
-			}
-		}
-	}
-
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-FlashCodeInstall::~FlashCodeInstall() {
-	DEBUG_ENTRY
+FlashCodeInstall::~FlashCodeInstall()
+{
+    DEBUG_ENTRY();
 
-	if (m_pFileBuffer != nullptr) {
-		delete[] m_pFileBuffer;
-	}
+    if (file_buffer_ != nullptr)
+    {
+        delete[] file_buffer_;
+    }
 
-	if (m_pFlashBuffer != nullptr) {
-		delete[] m_pFlashBuffer;
-	}
+    if (flash_buffer_ != nullptr)
+    {
+        delete[] flash_buffer_;
+    }
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void FlashCodeInstall::Process(const char *pFileName, uint32_t nOffset) {
-	if (Open(pFileName)) {
-		Display::Get()->TextStatus(aCheckDifference);
-		puts(aCheckDifference);
+void FlashCodeInstall::Process(const char* file_name, uint32_t offset)
+{
+    if (Open(file_name))
+    {
+        Display::Get()->TextStatus(kCheckDifference);
+        puts(kCheckDifference);
 
-		if (Diff(nOffset)) {
-			Display::Get()->TextStatus(aWriting);
-			puts(aWriting);
-			Write(nOffset);
-		} else {
-			Display::Get()->TextStatus(aNoDifference);
-			puts(aNoDifference);
-		}
-		Close();
-	}
+        if (Diff(offset))
+        {
+            Display::Get()->TextStatus(kWriting);
+            puts(kWriting);
+            Write(offset);
+        }
+        else
+        {
+            Display::Get()->TextStatus(kNoDifference);
+            puts(kNoDifference);
+        }
+        Close();
+    }
 }
 
-bool FlashCodeInstall::Open(const char* pFileName) {
-	DEBUG_ENTRY
+bool FlashCodeInstall::Open(const char* file_name)
+{
+    DEBUG_ENTRY();
 
-	assert(pFileName != nullptr);
-	assert(m_pFile == nullptr);
+    assert(file_name != nullptr);
+    assert(file_ == nullptr);
 
-	m_pFile = fopen(pFileName, "r");
+    file_ = fopen(file_name, "r");
 
-	if (m_pFile == nullptr) {
-		printf("Could not open file: %s\n", pFileName);
-		DEBUG_EXIT
-		return false;
-	}
+    if (file_ == nullptr)
+    {
+        printf("Could not open file: %s\n", file_name);
+        DEBUG_EXIT();
+        return false;
+    }
 
-	Display::Get()->ClearEndOfLine();
-	Display::Get()->Write(2, pFileName);
-	puts(pFileName);
+    Display::Get()->ClearEndOfLine();
+    Display::Get()->Write(2, file_name);
+    puts(file_name);
 
-	DEBUG_EXIT
-	return true;
+    DEBUG_EXIT();
+    return true;
 }
 
-void FlashCodeInstall::Close() {
-	DEBUG_ENTRY
+void FlashCodeInstall::Close()
+{
+    DEBUG_ENTRY();
 
-	static_cast<void>(fclose(m_pFile));
-	m_pFile = nullptr;
+    static_cast<void>(fclose(file_));
+    file_ = nullptr;
 
-	Display::Get()->TextStatus(aDone);
-	puts(aDone);
+    Display::Get()->TextStatus(kDone);
+    puts(kDone);
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-bool FlashCodeInstall::BuffersCompare(uint32_t nSize) {
-	DEBUG_ENTRY
+bool FlashCodeInstall::BuffersCompare(uint32_t size)
+{
+    DEBUG_ENTRY();
 
-	assert(nSize <= m_nEraseSize);
+    assert(size <= erase_size_);
 
-	const uint32_t *pSrc32 = reinterpret_cast<uint32_t*>(m_pFileBuffer);
-	assert((reinterpret_cast<uint32_t>(pSrc32) & 0x3) == 0);
+    const auto* src32 = reinterpret_cast<uint32_t*>(file_buffer_);
+    assert((reinterpret_cast<uint32_t>(src32) & 0x3) == 0);
 
-	const uint32_t *pDst32 = reinterpret_cast<uint32_t*>(m_pFlashBuffer);
-	assert((reinterpret_cast<uint32_t>(pDst32) & 0x3) == 0);
+    const auto* dst32 = reinterpret_cast<uint32_t*>(flash_buffer_);
+    assert((reinterpret_cast<uint32_t>(dst32) & 0x3) == 0);
 
-	while (nSize >= 4) {
-		if (*pSrc32++ != *pDst32++) {
-			DEBUG_EXIT
-			return false;
-		}
-		nSize -= 4;
-	}
+    while (size >= 4)
+    {
+        if (*src32++ != *dst32++)
+        {
+            DEBUG_EXIT();
+            return false;
+        }
+        size -= 4;
+    }
 
-	const auto *pSrc8 = reinterpret_cast<const uint8_t*>(pSrc32);
-	const auto *pDst8 = reinterpret_cast<const uint8_t*>(pDst32);
+    const auto* src8 = reinterpret_cast<const uint8_t*>(src32);
+    const auto* dst8 = reinterpret_cast<const uint8_t*>(dst32);
 
-	while (nSize--) {
-		if (*pSrc8++ != *pDst8++) {
-			DEBUG_EXIT
-			return false;
-		}
-	}
+    while (size--)
+    {
+        if (*src8++ != *dst8++)
+        {
+            DEBUG_EXIT();
+            return false;
+        }
+    }
 
-	DEBUG_EXIT
-	return true;
+    DEBUG_EXIT();
+    return true;
 }
 
-bool FlashCodeInstall::Diff(uint32_t nOffset) {
-	DEBUG_ENTRY
+bool FlashCodeInstall::Diff(uint32_t offset)
+{
+    DEBUG_ENTRY();
 
-	assert(m_pFile != nullptr);
-	assert(nOffset < m_nFlashSize);
-	assert(m_pFileBuffer != nullptr);
-	assert(m_pFlashBuffer != nullptr);
+    assert(file_ != nullptr);
+    assert(offset < flash_size_);
+    assert(file_buffer_ != nullptr);
+    assert(flash_buffer_ != nullptr);
 
-	if (fseek(m_pFile, 0L, SEEK_SET) != 0) {
-		DEBUG_EXIT
-		return false;
-	}
+    if (fseek(file_, 0L, SEEK_SET) != 0)
+    {
+        DEBUG_EXIT();
+        return false;
+    }
 
-	if (fread(m_pFileBuffer, sizeof(uint8_t), COMPARE_BYTES,  m_pFile) != COMPARE_BYTES) {
-		DEBUG_EXIT
-		return false;
-	}
+    if (fread(file_buffer_, sizeof(uint8_t), kCompareBytes, file_) != kCompareBytes)
+    {
+        DEBUG_EXIT();
+        return false;
+    }
 
-	flashcode::result result;
-	FlashCode::Read(nOffset, COMPARE_BYTES, m_pFlashBuffer, result);
+    flashcode::Result result;
+    FlashCode::Read(offset, kCompareBytes, flash_buffer_, result);
 
-	if (flashcode::result::ERROR == result) {
-		DEBUG_EXIT
-		return false;
-	}
+    if (flashcode::Result::kError == result)
+    {
+        DEBUG_EXIT();
+        return false;
+    }
 
-	if (!BuffersCompare(COMPARE_BYTES)) {
-		DEBUG_EXIT
-		return true;
-	}
+    if (!BuffersCompare(kCompareBytes))
+    {
+        DEBUG_EXIT();
+        return true;
+    }
 
-	DEBUG_EXIT
-	return false;
+    DEBUG_EXIT();
+    return false;
 }
 
-void FlashCodeInstall::Write(uint32_t nOffset) {
-	DEBUG_ENTRY
+void FlashCodeInstall::Write(uint32_t offset)
+{
+    DEBUG_ENTRY();
 
-	assert(m_pFile != nullptr);
-	assert(nOffset < m_nFlashSize);
-	assert(m_pFileBuffer != nullptr);
+    assert(file_ != nullptr);
+    assert(offset < flash_size_);
+    assert(file_buffer_ != nullptr);
 
-	auto bSuccess = false;
+    auto success = false;
 
-	uint32_t n_Address = nOffset;
-	size_t nTotalBytes = 0;
+    uint32_t address = offset;
+    size_t total_bytes = 0;
 
-	static_cast<void>(fseek(m_pFile, 0L, SEEK_SET));
+    static_cast<void>(fseek(file_, 0L, SEEK_SET));
 
-	while (n_Address < m_nFlashSize) {
-		const auto nBytes = fread(m_pFileBuffer, sizeof(uint8_t), m_nEraseSize, m_pFile);
-		nTotalBytes += nBytes;
+    while (address < flash_size_)
+    {
+        const auto kBytes = fread(file_buffer_, sizeof(uint8_t), erase_size_, file_);
+        total_bytes += kBytes;
 
-		flashcode::result result;
-		FlashCode::Erase(n_Address, m_nEraseSize, result);
+        flashcode::Result result;
+        FlashCode::Erase(address, erase_size_, result);
 
-		if (flashcode::result::ERROR == result) {
-			puts("error: flash erase");
-			break;
-		}
+        if (flashcode::Result::kError == result)
+        {
+            puts("error: flash erase");
+            break;
+        }
 
-		if (nBytes < m_nEraseSize) {
-			for (uint32_t i = nBytes; i < m_nEraseSize; i++) {
-				m_pFileBuffer[i] = 0xFF;
-			}
-		}
+        if (kBytes < erase_size_)
+        {
+            for (uint32_t i = kBytes; i < erase_size_; i++)
+            {
+                file_buffer_[i] = 0xFF;
+            }
+        }
 
-		FlashCode::Write(n_Address, m_nEraseSize, m_pFileBuffer, result);
+        FlashCode::Write(address, erase_size_, file_buffer_, result);
 
-		if (flashcode::result::ERROR == result) {
-			puts("error: flash write");
-			break;
-		}
+        if (flashcode::Result::kError == result)
+        {
+            puts("error: flash write");
+            break;
+        }
 
-		FlashCode::Read(n_Address, nBytes, m_pFlashBuffer, result);
+        FlashCode::Read(address, kBytes, flash_buffer_, result);
 
-		if (flashcode::result::ERROR == result) {
-			puts("error: flash read");
-			break;
-		}
+        if (flashcode::Result::kError == result)
+        {
+            puts("error: flash read");
+            break;
+        }
 
-		if (!BuffersCompare(nBytes)) {
-			puts("error: flash verify");
-			break;
-		}
+        if (!BuffersCompare(kBytes))
+        {
+            puts("error: flash verify");
+            break;
+        }
 
-		if (nBytes != m_nEraseSize) {
-			if (ferror(m_pFile) == 0 ) {
-				bSuccess = true;
-			}
-			break; // Error or end of file
-		}
+        if (kBytes != erase_size_)
+        {
+            if (ferror(file_) == 0)
+            {
+                success = true;
+            }
+            break; // Error or end of file
+        }
 
-		n_Address += m_nEraseSize;
-	}
+        address += erase_size_;
+    }
 
-	if (bSuccess) {
-		Display::Get()->ClearEndOfLine();
-		Display::Get()->Printf(3, "%d", static_cast<int>(nTotalBytes));
-		printf("%d bytes written\n", static_cast<int>(nTotalBytes));
-	}
+    if (success)
+    {
+        Display::Get()->ClearEndOfLine();
+        Display::Get()->Printf(3, "%d", static_cast<int>(total_bytes));
+        printf("%d bytes written\n", static_cast<int>(total_bytes));
+    }
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }

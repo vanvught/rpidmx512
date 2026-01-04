@@ -25,135 +25,102 @@
 
 #include <cstdint>
 
-#include "hal.h"
+#include "h3/hal_watchdog.h"
 #include "network.h"
-
 #include "displayudf.h"
-#include "displayudfparams.h"
-#include "displayhandler.h"
-
+#include "json/displayudfparams.h"
 #include "dmxsend.h"
-#include "dmxparams.h"
-
+#include "json/dmxsendparams.h"
 #include "dmxnodenode.h"
 #include "dmxnodemsgconst.h"
-
-#include "artnetrdmcontroller.h"
-#include "rdmdeviceparams.h"
-
-#if defined (NODE_SHOWFILE)
-# include "showfile.h"
-# include "showfileparams.h"
+#if defined(NODE_SHOWFILE)
+#include "showfile.h"
 #endif
-
 #include "remoteconfig.h"
-#include "remoteconfigparams.h"
-
 #include "flashcodeinstall.h"
 #include "configstore.h"
-
 #include "firmwareversion.h"
 #include "software_version.h"
 
-namespace hal {
-void reboot_handler() {
-	Dmx::Get()->Blackout();
-	ArtNetNode::Get()->Stop();
+namespace hal
+{
+void RebootHandler()
+{
+    Dmx::Get()->Blackout();
+    ArtNetNode::Get()->Stop();
 }
-}  // namespace hal
+} // namespace hal
 
-int main() {
-	hal_init();
-	DisplayUdf display;
-	ConfigStore configStore;
-	Network nw;
-	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
-	FlashCodeInstall spiFlashInstall;
+int main()
+{
+    hal::Init();
+    DisplayUdf display;
+    ConfigStore config_store;
+    network::Init();
+    FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+    FlashCodeInstall spiflash_install;
 
-	fw.Print("Art-Net 4, Universes: " STR(DMXNODE_PORTS) " DMX/RDM");
+    fw.Print("Art-Net 4, Universes: " STR(DMXNODE_PORTS) " DMX/RDM");
 
-	Dmx dmx;
+    Dmx dmx;
 
-	DmxParams dmxparams;
-	dmxparams.Load();
-	dmxparams.Set(&dmx);
+    json::DmxSendParams dmxparams;
+    dmxparams.Load();
+    dmxparams.Set();
 
-	DmxSend dmxSend;
-	dmxSend.Print();
+    DmxSend dmx_send;
+    dmx_send.Print();
 
-	DmxNodeNode dmxNodeNode;
-	dmxNodeNode.SetOutput(&dmxSend);
-		
-	for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
-		const auto portDirection = (dmxNodeNode.GetPortDirection(nPortIndex) == dmxnode::PortDirection::OUTPUT ? dmx::PortDirection::OUTP : dmx::PortDirection::INP);
-		dmx.SetPortDirection(nPortIndex, portDirection , false);
-	}
+    DmxNodeNode dmxnode_node;
+    dmxnode_node.SetOutput(&dmx_send);
 
-	ArtNetRdmController artNetRdmController;
+    for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++)
+    {
+        const auto kPortDirection =
+            (dmxnode_node.GetPortDirection(port_index) == dmxnode::PortDirection::kOutput ? dmx::PortDirection::kOutput : dmx::PortDirection::kInput);
+        dmx.SetPortDirection(port_index, kPortDirection, false);
+    }
 
-	RDMDeviceParams rdmDeviceParams;
-	rdmDeviceParams.Load();
-	rdmDeviceParams.Set(&artNetRdmController);
-
-	artNetRdmController.Init();
-	artNetRdmController.Print();
-
-	const auto isRdmEnabled = dmxNodeNode.GetRdm();
-
-	dmxNodeNode.SetRdmController(&artNetRdmController, isRdmEnabled);
-
-#if defined (NODE_SHOWFILE)
-	ShowFile showFile;
-
-	ShowFileParams showFileParams;
-	showFileParams.Load();
-	showFileParams.Set();
-
-	if (showFile.IsAutoStart()) {
-		showFile.Play();
-	}
-
-	showFile.Print();
+    const auto kIsRdmEnabled = dmxnode_node.GetRdm();
+ 
+#if defined(NODE_SHOWFILE)
+    ShowFile showfile;
+    showfile.Print();
 #endif
 
-	dmxNodeNode.Print();
+    dmxnode_node.Print();
 
-	const auto nActivePorts = dmxNodeNode.GetActiveInputPorts() + dmxNodeNode.GetActiveOutputPorts();
+    const auto kActivePorts = dmxnode_node.GetActiveInputPorts() + dmxnode_node.GetActiveOutputPorts();
 
-	display.SetTitle("Art-Net 4 %u", nActivePorts);
-	display.Set(2, displayudf::Labels::VERSION);
-	display.Set(3, displayudf::Labels::IP);
-	display.Set(4, displayudf::Labels::UNIVERSE_PORT_A);
-	display.Set(5, displayudf::Labels::UNIVERSE_PORT_B);
+    display.SetTitle("Art-Net 4 %u", kActivePorts);
+    display.Set(2, displayudf::Labels::kVersion);
+    display.Set(3, displayudf::Labels::kIp);
+    display.Set(4, displayudf::Labels::kUniversePortA);
+    display.Set(5, displayudf::Labels::kUniversePortB);
 
-	DisplayUdfParams displayUdfParams;
-	displayUdfParams.Load();
-	displayUdfParams.Set(&display);
+    json::DisplayUdfParams displayudf_params;
+    displayudf_params.Load();
+    displayudf_params.SetAndShow();
 
-	display.Show();
+    RemoteConfig remote_config(kIsRdmEnabled ? remoteconfig::Output::RDM : remoteconfig::Output::DMX, kActivePorts);
 
-	RemoteConfig remoteConfig(remoteconfig::NodeType::ARTNET, isRdmEnabled ? remoteconfig::Output::RDM : remoteconfig::Output::DMX, nActivePorts);
+    display.TextStatus(DmxNodeMsgConst::START, console::Colours::kConsoleYellow);
 
-	RemoteConfigParams remoteConfigParams;
-	remoteConfigParams.Load();
-	remoteConfigParams.Set(&remoteConfig);
+    dmxnode_node.Start();
 
-	display.TextStatus(DmxNodeMsgConst::START, CONSOLE_YELLOW);
+    display.TextStatus(DmxNodeMsgConst::STARTED, console::Colours::kConsoleGreen);
 
-	dmxNodeNode.Start();
+    hal::WatchdogInit();
 
-	display.TextStatus(DmxNodeMsgConst::STARTED, CONSOLE_GREEN);
-
-	hal::watchdog_init();
-
-	for (;;) {
-		hal::watchdog_feed();
-		nw.Run();
-		dmxNodeNode.Run();
-#if defined (NODE_SHOWFILE)
-		showFile.Run();
+    for (;;)
+    {
+        hal::WatchdogFeed();
+        network::Run();
+        dmxnode_node.Run();
+#if defined(NODE_SHOWFILE)
+        showfile.Run();
 #endif
-		display.Run();
-		hal::run();
-	}
+        display.Run();
+        hal::Run();
+    }
 }

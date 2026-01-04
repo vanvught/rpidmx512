@@ -26,6 +26,9 @@
 #ifndef I2CDETECT_H_
 #define I2CDETECT_H_
 
-void i2c_detect();
+void I2cDetect();
+#if defined(CONFIG_ENABLE_I2C1)
+void I2c1Detect();
+#endif
 
 #endif /* I2CDETECT_H_ */

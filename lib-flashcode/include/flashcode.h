@@ -2,7 +2,7 @@
  * @file flashcode.h
  *
  */
-/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,41 +23,41 @@
  * THE SOFTWARE.
  */
 
-#ifndef FLASHROM_H_
-#define FLASHROM_H_
+#ifndef FLASHCODE_H_
+#define FLASHCODE_H_
 
 #include <cstdint>
 
-namespace flashcode {
-enum class result {
-	OK, ERROR
+namespace flashcode
+{
+enum class Result
+{
+    kOk,
+    kError
 };
-}  // namespace flashcode
+} // namespace flashcode
 
-class FlashCode {
-public:
-	FlashCode();
-	~FlashCode();
+class FlashCode
+{
+   public:
+    FlashCode();
+    ~FlashCode();
 
-	bool IsDetected() const {
-		return m_IsDetected;
-	}
+    bool IsDetected() const { return detected_; }
 
-	const char* GetName() const;
-	uint32_t GetSize() const;
-	uint32_t GetSectorSize() const;
+    const char* GetName() const;
+    uint32_t GetSize() const;
+    uint32_t GetSectorSize() const;
 
-	bool Read(uint32_t nOffset, uint32_t nLength, uint8_t *pBuffer, flashcode::result& nResult);
-	bool Erase(uint32_t nOffset, uint32_t nLength, flashcode::result& nResult);
-	bool Write(uint32_t nOffset, uint32_t nLength, const uint8_t *pBuffer, flashcode::result& nResult);
+    bool Read(uint32_t offset, uint32_t length, uint8_t* buffer, flashcode::Result& result);
+    bool Erase(uint32_t offset, uint32_t length, flashcode::Result& result);
+    bool Write(uint32_t offset, uint32_t length, const uint8_t* buffer, flashcode::Result& result);
 
-	static FlashCode *Get() {
-		return s_pThis;
-	}
+    static FlashCode* Get() { return s_this; }
 
-private:
-	bool m_IsDetected { false };
-	static FlashCode *s_pThis;
+   private:
+    bool detected_{false};
+    inline static FlashCode* s_this;
 };
 
-#endif /* INCLUDE_FLASHROM_H_ */
+#endif  // FLASHCODE_H_

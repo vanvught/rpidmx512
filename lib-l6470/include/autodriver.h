@@ -5,7 +5,7 @@
 /*
  * Based on https://github.com/sparkfun/L6470-AutoDriver/tree/master/Libraries/Arduino
  */
-/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -54,11 +54,11 @@ public:
 	bool IsConnected();
 
 	unsigned getMotorNumber() {
-		return m_nMotorNumber;
+		return motor_number_;
 	}
 
 	void setMotorNumber(unsigned nMotorNumber) {
-		m_nMotorNumber = nMotorNumber;
+		motor_number_ = nMotorNumber;
 	}
 
 	static uint16_t getNumBoards();
@@ -68,7 +68,7 @@ private:
 	uint8_t m_nSpiChipSelect;
 	uint8_t m_nResetPin;
 	uint8_t m_nBusyPin;
-	uint8_t m_nPosition;
+	uint8_t position_;
 	bool m_bIsBusy;
 
 	static uint8_t m_nNumBoards[2];

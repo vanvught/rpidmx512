@@ -26,126 +26,103 @@
 #include <cstdint>
 #include <cstdio>
 
-#include "hal.h"
+#include "h3/hal.h"
+#include "h3/hal_watchdog.h"
 #include "network.h"
-
 #include "console.h"
 #include "h3/showsystime.h"
-
 #include "displayudf.h"
-#include "displayudfparams.h"
+#include "json/displayudfparams.h"
 #include "displayhandler.h"
-
 #include "dmxnodenode.h"
 #include "dmxnodemsgconst.h"
-
 #include "timecode.h"
-
 #include "dmxmonitor.h"
-
-#if defined (NODE_SHOWFILE)
-# include "showfile.h"
-# include "showfileparams.h"
+#if defined(NODE_SHOWFILE)
+#include "showfile.h"
 #endif
-
 #include "remoteconfig.h"
-#include "remoteconfigparams.h"
-
 #include "flashcodeinstall.h"
 #include "configstore.h"
-
 #include "firmwareversion.h"
 #include "software_version.h"
 
-namespace hal {
-void reboot_handler() {
-}
-}  // namespace hal
+namespace hal
+{
+void RebootHandler() {}
+} // namespace hal
 
-int main() {
-	hal_init();
-	DisplayUdf display;
-	ConfigStore configStore;
-	Network nw;
-	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
-	FlashCodeInstall spiFlashInstall;
+int main() // NOLINT
+{
+    hal::Init();
+    DisplayUdf display;
+    ConfigStore config_store;
+    network::Init();
+    FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+    FlashCodeInstall spiflash_install;
 
-	console_clear();
+    console::Clear();
 
-	fw.Print();
+    fw.Print();
 
-	console_puts("Art-Net 4 Node ");
-	console_set_fg_color(CONSOLE_GREEN);
-	console_puts("Real-time DMX Monitor");
-	console_set_fg_color(CONSOLE_WHITE);
-	console_set_top_row(2);
+    console::Puts("Art-Net 4 Node ");
+    console::SetFgColour(console::Colours::kConsoleGreen);
+    console::Puts("Real-time DMX Monitor");
+    console::SetFgColour(console::Colours::kConsoleWhite);
+    console::SetTopRow(2);
 
-	ShowSystime showSystime;
+    DmxNodeNode dmxnode_node;
+    ShowSystime show_systime;
 
-	TimeCode timecode;
-	timecode.Start();
+    TimeCode timecode;
+    timecode.Start();
 
-#if defined (NODE_SHOWFILE)
-	ShowFile showFile;
-
-	ShowFileParams showFileParams;
-	showFileParams.Load();
-	showFileParams.Set();
-
-	if (showFile.IsAutoStart()) {
-		showFile.Play();
-	}
-
-	showFile.Print();
+#if defined(NODE_SHOWFILE)
+    ShowFile showfile;
+    showfile.Print();
 #endif
 
-	DMXMonitor monitor;
-	// There is support for HEX output only
+    DmxMonitor monitor;
+    // There is support for HEX output only
 
-	DmxNodeNode dmxNodeNode;
-	dmxNodeNode.SetArtTimeCodeCallbackFunction(TimeCode::StaticCallbackFunction);
-	dmxNodeNode.SetOutput(&monitor);
+    dmxnode_node.SetArtTimeCodeCallbackFunction(TimeCode::StaticCallbackFunction);
+    dmxnode_node.SetOutput(&monitor);
 
-	monitor.Cls();
-	console_set_top_row(20);
-	console_clear_top_row();
+    monitor.Cls();
+    console::SetTopRow(20);
+    console::ClearTopRow();
 
-	dmxNodeNode.Print();
+    dmxnode_node.Print();
 
-	display.SetTitle("Art-Net 4 Monitor");
-	display.Set(2, displayudf::Labels::IP);
-	display.Set(3, displayudf::Labels::VERSION);
-	display.Set(5, displayudf::Labels::AP);
+    display.SetTitle("Art-Net 4 Monitor");
+    display.Set(2, displayudf::Labels::kIp);
+    display.Set(3, displayudf::Labels::kHostname);
+    display.Set(4, displayudf::Labels::kVersion);
 
-	DisplayUdfParams displayUdfParams;
-	displayUdfParams.Load();
-	displayUdfParams.Set(&display);
+    json::DisplayUdfParams displayudf_params;
+    displayudf_params.Load();
+    displayudf_params.SetAndShow();
 
-	display.Show();
+    RemoteConfig remote_config(remoteconfig::Output::MONITOR, 1);
 
-	RemoteConfig remoteConfig(remoteconfig::NodeType::ARTNET, remoteconfig::Output::MONITOR, 1);
+    display.TextStatus(DmxNodeMsgConst::START, console::Colours::kConsoleYellow);
 
-	RemoteConfigParams remoteConfigParams;
-	remoteConfigParams.Load();
-	remoteConfigParams.Set(&remoteConfig);
+    dmxnode_node.Start();
 
-	display.TextStatus(DmxNodeMsgConst::START, CONSOLE_YELLOW);
+    display.TextStatus(DmxNodeMsgConst::STARTED, console::Colours::kConsoleGreen);
 
-	dmxNodeNode.Start();
+    hal::WatchdogInit();
 
-	display.TextStatus(DmxNodeMsgConst::STARTED, CONSOLE_GREEN);
-
-	hal::watchdog_init();
-
-	for (;;) {
-		hal::watchdog_feed();
-		nw.Run();
-		dmxNodeNode.Run();
-#if defined (NODE_SHOWFILE)
-		showFile.Run();
+    for (;;)
+    {
+        hal::WatchdogFeed();
+        network::Run();
+        dmxnode_node.Run();
+#if defined(NODE_SHOWFILE)
+        showfile.Run();
 #endif
-		showSystime.Run();
-		display.Run();
-		hal::run();
-	}
+        show_systime.Run();
+        display.Run();
+        hal::Run();
+    }
 }

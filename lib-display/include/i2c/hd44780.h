@@ -2,7 +2,7 @@
  * @file hd44780.h
  *
  */
-/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,52 +23,51 @@
  * THE SOFTWARE.
  */
 
-#ifndef HD44780_H_
-#define HD44780_H_
+#ifndef I2C_HD44780_H_
+#define I2C_HD44780_H_
 
 #include <cstdint>
 
 #include "displayset.h"
-
 #include "hal_i2c.h"
 
-
-namespace hd44780::pcf8574t {
-static constexpr uint8_t DEFAULT_ADDRESS = 0x27;
-static constexpr uint8_t TC2004_ADDRESS = DEFAULT_ADDRESS;
-static constexpr uint8_t TC1602_ADDRESS = 0x26;
+namespace hd44780::pcf8574t
+{
+inline constexpr uint8_t kDefaultAddress = 0x27;
+inline constexpr uint8_t kTC2004Address = kDefaultAddress;
+inline constexpr uint8_t kTC1602Address = 0x26;
 } // namespace hd44780::pcf8574t
 
+class Hd44780 final : public DisplaySet
+{
+   public:
+    Hd44780();
+    Hd44780(uint8_t cols, uint8_t rows);
+    Hd44780(uint8_t slave_address, uint8_t cols, uint8_t rows);
 
-class Hd44780 final: public DisplaySet {
-public:
-	Hd44780 ();
-	Hd44780 (uint8_t nCols, uint8_t nRows);
-	Hd44780 (uint8_t nSlaveAddress, uint8_t nCols, uint8_t nRows);
+    bool Start() override;
 
-	bool Start() override;
+    void Cls() override;
+    void ClearLine(uint32_t line) override;
 
-	void Cls() override;
-	void ClearLine(uint32_t nLine) override;
+    void PutChar(int) override;
+    void PutString(const char*) override;
 
-	void PutChar(int) override;
-	void PutString(const char *) override;
+    void Text(const char* data, uint32_t length);
+    void TextLine(uint32_t line, const char* data, uint32_t length) override;
 
-	void Text(const char *pData, uint32_t nLength);
-	void TextLine(uint32_t nLine, const char *pData, uint32_t nLength) override;
+    void SetCursorPos(uint32_t col, uint32_t row) override;
+    void SetCursor(uint32_t) override;
 
-	void SetCursorPos(uint32_t nCol, uint32_t nRow) override;
-	void SetCursor(uint32_t) override;
+    void PrintInfo() override;
 
-	void PrintInfo() override;
+   private:
+    void Write4bits(uint8_t data);
+    void WriteCmd(uint8_t cmd);
+    void WriteReg(uint8_t reg);
 
-private:
-	void Write4bits(const uint8_t nData);
-	void WriteCmd(const uint8_t nCmd);
-	void WriteReg(const uint8_t nReg);
-
-private:
-	HAL_I2C m_I2C;
+   private:
+    HAL_I2C hal_i2c_;
 };
 
-#endif /* HD44780_H_ */
+#endif  // I2C_HD44780_H_

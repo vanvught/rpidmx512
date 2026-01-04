@@ -27,43 +27,42 @@
  */
 
 #include <cstdint>
-#include <cstdio>
 #include <algorithm>
 #include <time.h>
 
 #include "spi/spi_flash.h"
 #include "spi_flash_internal.h"
-
-#include "debug.h"
+#include "firmware/debug/debug_dump.h"
+ #include "firmware/debug/debug_debug.h"
 
 static struct SpiFlashInfo s_flash = { "", 0, CMD_READ_STATUS };
 
 #define IDCODE_PART_LEN 5
 
 static constexpr struct {
-	const uint8_t idcode;
+	const uint8_t kIdcode;
 	bool(*probe) (struct SpiFlashInfo *flash, uint8_t *idcode);
-} flashes[] = {
+} kFlashes[] = {
 	/* Keep it sorted by define name */
 #ifdef CONFIG_SPI_FLASH_GIGADEVICE
-	{ 0xc8, spi_flash_probe_gigadevice, },
+	{ 0xc8, SpiFlashProbeGigadevice, },
 #endif
 #ifdef CONFIG_SPI_FLASH_MACRONIX
-	{ 0xc2, spi_flash_probe_macronix, },
+	{ 0xc2, SpiFlashProbeMacronix, },
 #endif
 #ifdef CONFIG_SPI_FLASH_WINBOND
-	{ 0xef, spi_flash_probe_winbond, },
+	{ 0xef, SpiFlashProbeWinbond, },
 #endif
 };
 
 #define IDCODE_LEN IDCODE_PART_LEN
 
-static uint32_t get_timer(const uint32_t nBase) {
-	if (0 == nBase) {
+static uint32_t GetTimer(uint32_t base) {
+	if (0 == base) {
 		return static_cast<uint32_t>(time(nullptr));
 	}
 
-	return static_cast<uint32_t>(time(nullptr)) - nBase;
+	return static_cast<uint32_t>(time(nullptr)) - base;
 }
 
 uint32_t spi_flash_get_size() {
@@ -74,74 +73,74 @@ const char *spi_flash_get_name() {
 	return s_flash.name;
 }
 
-static void spi_flash_addr(const uint32_t nAddress, uint8_t *pCommand) {
+static void SpiFlashAddr(uint32_t address, uint8_t *pCommand) {
 	/* cmd[0] is actual command */
-	pCommand[1] = static_cast<uint8_t>(nAddress >> 16);
-	pCommand[2] = static_cast<uint8_t>(nAddress >> 8);
-	pCommand[3] = static_cast<uint8_t>(nAddress >> 0);
+	pCommand[1] = static_cast<uint8_t>(address >> 16);
+	pCommand[2] = static_cast<uint8_t>(address >> 8);
+	pCommand[3] = static_cast<uint8_t>(address >> 0);
 }
 
-static void spi_flash_read_write(const uint8_t *pCommand, const uint32_t nCommandLength, const uint8_t *pDataOut, uint8_t *pDataIn, const uint32_t nDataLength) {
+static void SpiFlashReadWrite(const uint8_t *pCommand, uint32_t nCommandLength, const uint8_t *pDataOut, uint8_t *pDataIn, uint32_t nDataLength) {
 	uint32_t nFlags = SPI_XFER_BEGIN;
 
 	if (nDataLength == 0) {
 		nFlags |= SPI_XFER_END;
 	}
 
-	spi_xfer(nCommandLength, pCommand, nullptr, nFlags);
+	SpiXfer(nCommandLength, pCommand, nullptr, nFlags);
 
 	if (nDataLength != 0) {
-		spi_xfer(nDataLength, pDataOut, pDataIn, SPI_XFER_END);
+		SpiXfer(nDataLength, pDataOut, pDataIn, SPI_XFER_END);
 	}
 }
 
-static inline void spi_flash_cmd_read(const uint8_t *pCommand, const uint32_t nCommandLength, uint8_t *pData, const uint32_t nDataLength) {
-	return spi_flash_read_write(pCommand, nCommandLength, nullptr, pData, nDataLength);
+static inline void SpiFlashCmdRead(const uint8_t *pCommand, const uint32_t nCommandLength, uint8_t *pData, uint32_t nDataLength) {
+	return SpiFlashReadWrite(pCommand, nCommandLength, nullptr, pData, nDataLength);
 }
 
-static inline void spi_flash_cmd(uint8_t nCommand, uint8_t *pResponse, const uint32_t nLength) {
-	return spi_flash_cmd_read(&nCommand, 1, pResponse, nLength);
+static inline void SpiFlashCmd(uint8_t nCommand, uint8_t *pResponse, uint32_t length) {
+	return SpiFlashCmdRead(&nCommand, 1, pResponse, length);
 }
 
-static inline void spi_flash_cmd_write(const uint8_t *pCommand, const uint32_t nCommandLength, const uint8_t *pData, const uint32_t nDataLength) {
-	return spi_flash_read_write(pCommand, nCommandLength, pData, nullptr, nDataLength);
+static inline void SpiFlashCmdWrite(const uint8_t *pCommand, uint32_t nCommandLength, const uint8_t *pData, uint32_t nDataLength) {
+	return SpiFlashReadWrite(pCommand, nCommandLength, pData, nullptr, nDataLength);
 }
 
-static inline void spi_flash_cmd_write_enable() {
-	return spi_flash_cmd(CMD_WRITE_ENABLE, nullptr, 0);
+static inline void SpiFlashCmdWriteEnable() {
+	return SpiFlashCmd(CMD_WRITE_ENABLE, nullptr, 0);
 }
 
-static bool spi_flash_cmd_wait_ready(const uint32_t nTimeout) {
+static bool SpiFlashCmdWaitReady(uint32_t nTimeout) {
 	uint8_t cmd = CMD_READ_STATUS;
 
-	spi_xfer(1, &cmd, nullptr, SPI_XFER_BEGIN);
+	SpiXfer(1, &cmd, nullptr, SPI_XFER_BEGIN);
 
-	const auto nTimebase = get_timer(0);
+	const auto nTimebase = GetTimer(0);
 	uint8_t status;
 
 	do {
-		spi_xfer(1, nullptr, &status, 0);
+		SpiXfer(1, nullptr, &status, 0);
 
 		if ((status & STATUS_WIP) == 0) {
 			break;
 		}
 
-	} while (get_timer(nTimebase) < nTimeout);
+	} while (GetTimer(nTimebase) < nTimeout);
 
-	spi_xfer(0, nullptr, nullptr, SPI_XFER_END);
+	SpiXfer(0, nullptr, nullptr, SPI_XFER_END);
 
 	if ((status & STATUS_WIP) == 0) {
-		DEBUG_PRINTF("get_timer(nTimebase)=%u", get_timer(nTimebase));
-		DEBUG_EXIT
+		DEBUG_PRINTF("get_timer(nTimebase)=%u", GetTimer(nTimebase));
+		DEBUG_EXIT();
 		return true;
 	}
 
 	DEBUG_PUTS("time out");
-	DEBUG_EXIT
+	DEBUG_EXIT();
 	return false;
 }
 
-static bool spi_flash_write_common(const uint8_t *pCommand, const uint32_t nCommandLength, const uint8_t *pData, const uint32_t nDataLength, const bool bWaitReady) {
+static bool SpiFlashWriteCommon(const uint8_t *pCommand, const uint32_t nCommandLength, const uint8_t *pData, const uint32_t nDataLength, const bool bWaitReady) {
 	uint32_t nTimeout;
 
 	if (pData == nullptr) {
@@ -150,13 +149,13 @@ static bool spi_flash_write_common(const uint8_t *pCommand, const uint32_t nComm
 		nTimeout = SPI_FLASH_PROG_TIMEOUT;
 	}
 
-	spi_flash_cmd_write_enable();
-	spi_flash_cmd_write(pCommand, nCommandLength, pData, nDataLength);
+	SpiFlashCmdWriteEnable();
+	SpiFlashCmdWrite(pCommand, nCommandLength, pData, nDataLength);
 
 	if (bWaitReady) {
-		const auto ret = spi_flash_cmd_wait_ready(nTimeout);
+		const auto kRet = SpiFlashCmdWaitReady(nTimeout);
 
-		if (!ret) {
+		if (!kRet) {
 			DEBUG_PRINTF("write %s timed out", nTimeout == SPI_FLASH_PROG_TIMEOUT ? "program" : "page erase");
 			return false;
 		}
@@ -165,11 +164,11 @@ static bool spi_flash_write_common(const uint8_t *pCommand, const uint32_t nComm
 	return true;
 }
 
-bool spi_flash_cmd_write_multi(uint32_t nOffset, const uint32_t nLength, const uint8_t *pData) {
-	DEBUG_ENTRY
+bool spi_flash_cmd_write_multi(uint32_t nOffset, uint32_t length, const uint8_t *pData) {
+	DEBUG_ENTRY();
 
-	if (!spi_flash_cmd_wait_ready(SPI_FLASH_SECTOR_ERASE_TIMEOUT)) {
-		DEBUG_EXIT
+	if (!SpiFlashCmdWaitReady(SPI_FLASH_SECTOR_ERASE_TIMEOUT)) {
+		DEBUG_EXIT();
 		return false;
 	}
 
@@ -177,19 +176,19 @@ bool spi_flash_cmd_write_multi(uint32_t nOffset, const uint32_t nLength, const u
 	uint8_t cmd[4];
 	cmd[0] = CMD_PAGE_PROGRAM;
 
-	for (uint32_t nActualLength = 0; nActualLength < nLength; nActualLength += nChunkLength) {
-		const auto nByteAddress = nOffset % spi_flash::PAGE_SIZE;
-		nChunkLength = std::min((nLength - nActualLength), (spi_flash::PAGE_SIZE - nByteAddress));
+	for (uint32_t nActualLength = 0; nActualLength < length; nActualLength += nChunkLength) {
+		const auto nByteAddress = nOffset % spi::flash::PAGE_SIZE;
+		nChunkLength = std::min((length - nActualLength), (spi::flash::PAGE_SIZE - nByteAddress));
 
-		spi_flash_addr(nOffset, cmd);
+		SpiFlashAddr(nOffset, cmd);
 
 		DEBUG_PRINTF("0x%p => cmd = { 0x%02x 0x%02x%02x%02x } nActualLength=%d, nChunkLength=%d", pData + nActualLength, cmd[0], cmd[1], cmd[2], cmd[3], static_cast<int>(nActualLength),static_cast<int>(nChunkLength));
 
-		const auto ret = spi_flash_write_common(cmd, sizeof(cmd), pData + nActualLength, nChunkLength, ((nActualLength + nChunkLength) != nLength));
+		const auto kRet = SpiFlashWriteCommon(cmd, sizeof(cmd), pData + nActualLength, nChunkLength, ((nActualLength + nChunkLength) != length));
 
-		if (!ret) {
+		if (!kRet) {
 			DEBUG_PUTS("write failed");
-			DEBUG_EXIT
+			DEBUG_EXIT();
 			return false;
 			break;
 		}
@@ -197,19 +196,19 @@ bool spi_flash_cmd_write_multi(uint32_t nOffset, const uint32_t nLength, const u
 		nOffset += nChunkLength;
 	}
 
-	DEBUG_EXIT
+	DEBUG_EXIT();
 	return true;
 }
 
-void spi_flash_read_common(const uint8_t *pCommand, const uint32_t nCommandLength, uint8_t *pData, const uint32_t nDataLength) {
-	return spi_flash_cmd_read(pCommand, nCommandLength, pData, nDataLength);
+void spi_flash_read_common(const uint8_t *pCommand, uint32_t nCommandLength, uint8_t *pData, const uint32_t nDataLength) {
+	return SpiFlashCmdRead(pCommand, nCommandLength, pData, nDataLength);
 }
 
-bool spi_flash_cmd_read_fast(uint32_t nOffset, uint32_t nLength, uint8_t *pData) {
-	DEBUG_ENTRY
+bool spi_flash_cmd_read_fast(uint32_t nOffset, uint32_t length, uint8_t *pData) {
+	DEBUG_ENTRY();
 
-	if (!spi_flash_cmd_wait_ready(SPI_FLASH_PROG_TIMEOUT)) {
-		DEBUG_EXIT
+	if (!SpiFlashCmdWaitReady(SPI_FLASH_PROG_TIMEOUT)) {
+		DEBUG_EXIT();
 		return false;
 	}
 
@@ -217,72 +216,72 @@ bool spi_flash_cmd_read_fast(uint32_t nOffset, uint32_t nLength, uint8_t *pData)
 	cmd[0] = CMD_READ_ARRAY_FAST;
 	cmd[4] = 0x00;
 
-	while (nLength) {
+	while (length) {
 		const auto nRemainLength = SPI_FLASH_16MB_BOUN - nOffset;
 		uint32_t nReadLength;
 
-		if (nLength < nRemainLength) {
-			nReadLength = nLength;
+		if (length < nRemainLength) {
+			nReadLength = length;
 		} else {
 			nReadLength = nRemainLength;
 		}
 
-		spi_flash_addr(nOffset, cmd);
+		SpiFlashAddr(nOffset, cmd);
 		spi_flash_read_common(cmd, sizeof(cmd), pData, nReadLength);
 
 		nOffset += nReadLength;
-		nLength -= nReadLength;
+		length -= nReadLength;
 		pData += nReadLength;
 	}
 
-	DEBUG_EXIT
+	DEBUG_EXIT();
 	return true;
 }
 
-bool spi_flash_cmd_erase(uint32_t nOffset, uint32_t nLength) {
-	DEBUG_ENTRY
+bool spi_flash_cmd_erase(uint32_t nOffset, uint32_t length) {
+	DEBUG_ENTRY();
 
-	if ((nOffset % spi_flash::SECTOR_SIZE) || (nLength % spi_flash::SECTOR_SIZE)) {
+	if ((nOffset % spi::flash::SECTOR_SIZE) || (length % spi::flash::SECTOR_SIZE)) {
 		DEBUG_PUTS("Erase offset/length not multiple of erase size");
-		DEBUG_EXIT
+		DEBUG_EXIT();
 		return false;
 	}
 
-	if (!spi_flash_cmd_wait_ready(SPI_FLASH_PROG_TIMEOUT)) {
-		DEBUG_EXIT
+	if (!SpiFlashCmdWaitReady(SPI_FLASH_PROG_TIMEOUT)) {
+		DEBUG_EXIT();
 		return false;
 	}
 
-	static_assert(spi_flash::SECTOR_SIZE == 4096);
+	static_assert(spi::flash::SECTOR_SIZE == 4096);
 	uint8_t cmd[4];
 	cmd[0] = CMD_ERASE_4K;
 
-	while (nLength) {
-		spi_flash_addr(nOffset, cmd);
+	while (length) {
+		SpiFlashAddr(nOffset, cmd);
 
 		DEBUG_PRINTF("erase %2x %2x %2x %2x (%x)", cmd[0], cmd[1], cmd[2], cmd[3], nOffset);
 
-		const auto ret = spi_flash_write_common(cmd, sizeof(cmd), nullptr, 0, (nLength != spi_flash::SECTOR_SIZE));
+		const auto kRet = SpiFlashWriteCommon(cmd, sizeof(cmd), nullptr, 0, (length != spi::flash::SECTOR_SIZE));
 
-		if (!ret) {
+		if (!kRet) {
 			DEBUG_PUTS("Erase failed");
-			DEBUG_EXIT
+			DEBUG_EXIT();
 			return false;
 		}
 
-		nOffset += spi_flash::SECTOR_SIZE;
-		nLength -= spi_flash::SECTOR_SIZE;
+		nOffset += spi::flash::SECTOR_SIZE;
+		length -= spi::flash::SECTOR_SIZE;
 	}
 
-	DEBUG_EXIT
+	DEBUG_EXIT();
 	return true;
 }
 
 bool spi_flash_cmd_write_status(uint8_t sr) {
 	uint8_t cmd = CMD_WRITE_STATUS;
-	const auto ret = spi_flash_write_common(&cmd, 1, &sr, 1, false);
+	const auto kRet = SpiFlashWriteCommon(&cmd, 1, &sr, 1, false);
 
-	if (!ret) {
+	if (!kRet) {
 		DEBUG_PUTS("Fail to write status register");
 		return false;
 	}
@@ -291,24 +290,24 @@ bool spi_flash_cmd_write_status(uint8_t sr) {
 }
 
 bool spi_flash_probe() {
-	spi_init();
+	SpiInit();
 
 	uint8_t idcode[IDCODE_LEN];
-	spi_flash_cmd(CMD_READ_ID, idcode, sizeof(idcode));
+	SpiFlashCmd(CMD_READ_ID, idcode, sizeof(idcode));
 
-	debug_dump(idcode, sizeof(idcode));
+	debug::Dump(idcode, sizeof(idcode));
 
 	uint32_t i;
 
-	for (i = 0; i < ARRAY_SIZE(flashes); ++i) {
-		if (flashes[i].idcode == idcode[0]) {
-			if (flashes[i].probe(&s_flash, idcode)) {
+	for (i = 0; i < ARRAY_SIZE(kFlashes); ++i) {
+		if (kFlashes[i].kIdcode == idcode[0]) {
+			if (kFlashes[i].probe(&s_flash, idcode)) {
 				break;
 			}
 		}
 	}
 
-	if (i == ARRAY_SIZE(flashes)) {
+	if (i == ARRAY_SIZE(kFlashes)) {
 		DEBUG_PRINTF("Unsupported manufacturer %02x", idcode[0]);
 		return false;
 	}

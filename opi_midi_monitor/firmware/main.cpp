@@ -25,71 +25,61 @@
 
 #include <cstdio>
 
-#include "hal.h"
+#include "h3/hal_watchdog.h"
 #include "display.h"
 #include "console.h"
-
 #include "flashcodeinstall.h"
-
 #if !defined(NO_EMAC)
-# include "network.h"
-# include "networkconst.h"
-# include "remoteconfig.h"
-# include "remoteconfigparams.h"
-# include "configstore.h"
+#include "network.h"
+#include "networkconst.h"
+#include "configstore.h"
 #endif
-
 #include "midi.h"
-#include "midiparams.h"
 #include "midimonitor.h"
-
 #include "software_version.h"
 #include "firmwareversion.h"
 
-namespace hal {
-void reboot_handler() {
+namespace hal
+{
+void RebootHandler() {}
+} // namespace hal
+
+int main() // NOLINT
+{
+    hal::Init();
+    Display display;
+#if !defined(NO_EMAC)
+    ConfigStore config_store;
+    network::Init();
+#endif
+    FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+    FlashCodeInstall spiflash_install;
+
+    fw.Print("MIDI Monitor");
+
+    Midi midi;
+    midi.SetActiveSense(true);
+    midi.Init(midi::Direction::INPUT);
+
+#if !defined(NO_EMAC)
+#endif
+
+    console::Clear();
+    fw.Print();
+    printf("MIDI Monitor, baudrate : %d, interface : %s", midi.GetBaudrate(), EXT_MIDI_UART_NAME);
+
+    MidiMonitor monitor;
+    monitor.Init();
+
+    hal::WatchdogInit();
+
+    for (;;)
+    {
+        hal::WatchdogFeed();
+        monitor.Run();
+#if !defined(NO_EMAC)
+        network::Run();
+#endif
+        hal::Run();
+    }
 }
-}  // namespace hal
-
-int main() {
-	hal_init();
-	Display display;
-#if !defined(NO_EMAC)
-	ConfigStore configStore;
-	Network nw;
-#endif
-	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
-	FlashCodeInstall spiFlashInstall;
-
-	fw.Print("MIDI Monitor");
-
-	Midi midi;
-
-	midi.SetActiveSense(true);
-	midi.Init(midi::Direction::INPUT);
-
-#if !defined(NO_EMAC)
-	RemoteConfigParams remoteConfigParams;
-	remoteConfigParams.Load();
-	remoteConfigParams.Set(&remoteConfig);
-#endif
-
-	console_clear();
-	fw.Print();
-	printf("MIDI Monitor, baudrate : %d, interface : %s", midi.GetBaudrate(), EXT_MIDI_UART_NAME);
-
-	MidiMonitor monitor;
-	monitor.Init();
-
-	hal::watchdog_init();
-
-	for (;;) {
-		hal::watchdog_feed();
-		monitor.Run();
-#if !defined(NO_EMAC)
-		nw.Run();
-#endif
-		hal::run();
-	}
-}
-

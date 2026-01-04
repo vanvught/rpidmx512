@@ -26,8 +26,12 @@
 #ifndef CSTDLIB_
 #define CSTDLIB_
 
-#ifdef __cplusplus
-# include <stdlib.h>
-#endif
+#include <stdlib.h>
+
+#undef abs
+
+namespace std {
+using ::abs;
+}
 
 #endif /* CSTDLIB_ */

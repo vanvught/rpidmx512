@@ -2,7 +2,7 @@
  * @file rdm.h
  *
  */
-/* Copyright (C) 2015-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2015-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,74 +29,76 @@
 #include <cstdint>
 #include <cassert>
 
+#include "hal_udelay.h" 
+#include "dmx.h" // IWYU pragma: keep
+#include "e120.h"
 #include "rdmconst.h"
-#include "dmx.h"
 
-#include "hal_api.h"
+class Rdm
+{
+   public:
+    static void SendRaw(uint32_t port_index, const uint8_t* rdm_data, uint32_t length)
+    {
+        assert(rdm_data != nullptr);
+        assert(length != 0);
 
-class Rdm {
-public:
-	static void SendRaw(const uint32_t nPortIndex, const uint8_t *pRdmData, const uint32_t nLength) {
-		assert(pRdmData != nullptr);
-		assert(nLength != 0);
+        Dmx::Get()->SetPortDirection(port_index, dmx::PortDirection::kOutput, false);
 
-		Dmx::Get()->SetPortDirection(nPortIndex, dmx::PortDirection::OUTP, false);
+        Dmx::Get()->RdmSendRaw(port_index, rdm_data, length);
 
-		Dmx::Get()->RdmSendRaw(nPortIndex, pRdmData, nLength);
+        udelay(RDM_RESPONDER_DATA_DIRECTION_DELAY);
 
-		udelay(RDM_RESPONDER_DATA_DIRECTION_DELAY);
+        Dmx::Get()->SetPortDirection(port_index, dmx::PortDirection::kInput, true);
+    }
 
-		Dmx::Get()->SetPortDirection(nPortIndex, dmx::PortDirection::INP, true);
-	}
+    static void Send(uint32_t port_index, struct TRdmMessage* rdm_command)
+    {
+        assert(port_index < dmx::config::max::PORTS);
+        assert(rdm_command != nullptr);
 
-	static void Send(const uint32_t nPortIndex, struct TRdmMessage *pRdmCommand) {
-		assert(nPortIndex < dmx::config::max::PORTS);
-		assert(pRdmCommand != nullptr);
+        auto* data = reinterpret_cast<uint8_t*>(rdm_command);
+        uint32_t i;
+        uint16_t checksum = 0;
 
-		auto *pData = reinterpret_cast<uint8_t*>(pRdmCommand);
-		uint32_t i;
-		uint16_t nChecksum = 0;
+        rdm_command->transaction_number = s_transaction_number[port_index];
 
-		pRdmCommand->transaction_number = s_TransactionNumber[nPortIndex];
+        for (i = 0; i < rdm_command->message_length; i++)
+        {
+            checksum = static_cast<uint16_t>(checksum + data[i]);
+        }
 
-		for (i = 0; i < pRdmCommand->message_length; i++) {
-			nChecksum = static_cast<uint16_t>(nChecksum + pData[i]);
-		}
+        data[i++] = static_cast<uint8_t>(checksum >> 8);
+        data[i] = static_cast<uint8_t>(checksum & 0XFF);
 
-		pData[i++] = static_cast<uint8_t>(nChecksum >> 8);
-		pData[i] = static_cast<uint8_t>(nChecksum & 0XFF);
+        SendRaw(port_index, reinterpret_cast<const uint8_t*>(rdm_command), rdm_command->message_length + RDM_MESSAGE_CHECKSUM_SIZE);
 
-		SendRaw(nPortIndex, reinterpret_cast<const uint8_t*>(pRdmCommand), pRdmCommand->message_length + RDM_MESSAGE_CHECKSUM_SIZE);
+        s_transaction_number[port_index]++;
+    }
 
-		s_TransactionNumber[nPortIndex]++;
-	}
+    static void SendRawRespondMessage(uint32_t port_index, const uint8_t* rdm_data, uint32_t length)
+    {
+        assert(port_index < dmx::config::max::PORTS);
+        assert(rdm_data != nullptr);
+        assert(length != 0);
 
-	static void SendRawRespondMessage(const uint32_t nPortIndex, const uint8_t *pRdmData, const uint32_t nLength) {
-		assert(nPortIndex < dmx::config::max::PORTS);
-		assert(pRdmData != nullptr);
-		assert(nLength != 0);
+        extern volatile uint32_t gsv_RdmDataReceiveEnd;
+        // 3.2.2 Responder Packet spacing
+        udelay(RDM_RESPONDER_PACKET_SPACING, gsv_RdmDataReceiveEnd);
 
-		extern volatile uint32_t gsv_RdmDataReceiveEnd;
-		// 3.2.2 Responder Packet spacing
-		udelay(RDM_RESPONDER_PACKET_SPACING, gsv_RdmDataReceiveEnd);
+        SendRaw(port_index, rdm_data, length);
+    }
 
-		SendRaw(nPortIndex, pRdmData, nLength);
-	}
+    static void SendDiscoveryRespondMessage(uint32_t port_index, const uint8_t* rdm_data, uint32_t length)
+    {
+        Dmx::Get()->RdmSendDiscoveryRespondMessage(port_index, rdm_data, length);
+    }
 
-	static void SendDiscoveryRespondMessage(const uint32_t nPortIndex, const uint8_t *pRdmData, const uint32_t nLength) {
-		 Dmx::Get()->RdmSendDiscoveryRespondMessage(nPortIndex, pRdmData, nLength);
-	}
+    static const uint8_t* Receive(uint32_t port_index) { return Dmx::Get()->RdmReceive(port_index); }
 
-	static const uint8_t *Receive(const uint32_t nPortIndex) {
-		return Dmx::Get()->RdmReceive(nPortIndex);
-	}
+    static const uint8_t* ReceiveTimeOut(uint32_t port_index, uint16_t time_out) { return Dmx::Get()->RdmReceiveTimeOut(port_index, time_out); }
 
-	static const uint8_t *ReceiveTimeOut(const uint32_t nPortIndex, const uint16_t nTimeOut) {
-		return Dmx::Get()->RdmReceiveTimeOut(nPortIndex, nTimeOut);
-	}
-
-private:
-	static uint8_t s_TransactionNumber[dmx::config::max::PORTS];
+   private:
+    static uint8_t s_transaction_number[dmx::config::max::PORTS];
 };
 
-#endif /* RDM_H_ */
+#endif  // RDM_H_

@@ -1,0 +1,5 @@
+DEFINES =NDEBUG
+
+EXTRA_INCLUDES=../lib-pixel/include
+
+include ../firmware-template-linux/lib/Rules.mk

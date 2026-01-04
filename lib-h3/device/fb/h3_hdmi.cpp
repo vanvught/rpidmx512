@@ -38,277 +38,299 @@
 
 #include <cstdint>
 #include <cstring>
-#include <cstddef>
 #include <cstdio>
 
-void uart0_puts(const char *);
-int uart0_printf(const char *fmt, ...);
+namespace uart0
+{
+void Puts(const char*);
+void Printf(const char* fmt, ...);
+} // namespace uart0
 
 #include "h3.h"
 #include "h3_ccu.h"
-
 #include "display_timing.h"
-
 #include "dw_hdmi.h"
 
-struct sunxi_dw_hdmi_priv {
-	struct dw_hdmi hdmi;
-	int mux;
+struct sunxi_dw_hdmi_priv
+{
+    struct dw_hdmi hdmi;
+    int mux;
 };
 
 static struct sunxi_dw_hdmi_priv _sunxi_dw_hdmi_priv;
 
-#define CCU_PLL_VIDEO_CTRL_EN			(1U << 31)
-#define CCU_PLL_VIDEO_CTRL_LOCK			(1U << 28)
-#define CCU_PLL_VIDEO_CTRL_INTEGER_MODE	(1U << 24)
-#define CCU_PLL_VIDEO_CTRL_N_SHIFT		8U
-#define CCU_PLL_VIDEO_CTRL_N_MASK		(0x7f << CCU_PLL_VIDEO_CTRL_N_SHIFT)
-#define CCU_PLL_VIDEO_CTRL_N(n)			((((n) - 1) & 0x7f) << CCU_PLL_VIDEO_CTRL_N_SHIFT)
-#define CCU_PLL_VIDEO_CTRL_M_SHIFT		0U
-#define CCU_PLL_VIDEO_CTRL_M_MASK		(0xf << CCU_PLL_VIDEO_CTRL_M_SHIFT)
-#define CCU_PLL_VIDEO_CTRL_M(n)			((((n) - 1) & 0xf) << CCU_PLL_VIDEO_CTRL_M_SHIFT)
+#define CCU_PLL_VIDEO_CTRL_EN (1U << 31)
+#define CCU_PLL_VIDEO_CTRL_LOCK (1U << 28)
+#define CCU_PLL_VIDEO_CTRL_INTEGER_MODE (1U << 24)
+#define CCU_PLL_VIDEO_CTRL_N_SHIFT 8U
+#define CCU_PLL_VIDEO_CTRL_N_MASK (0x7f << CCU_PLL_VIDEO_CTRL_N_SHIFT)
+#define CCU_PLL_VIDEO_CTRL_N(n) ((((n) - 1) & 0x7f) << CCU_PLL_VIDEO_CTRL_N_SHIFT)
+#define CCU_PLL_VIDEO_CTRL_M_SHIFT 0U
+#define CCU_PLL_VIDEO_CTRL_M_MASK (0xf << CCU_PLL_VIDEO_CTRL_M_SHIFT)
+#define CCU_PLL_VIDEO_CTRL_M(n) ((((n) - 1) & 0xf) << CCU_PLL_VIDEO_CTRL_M_SHIFT)
 
-#define CCU_HDMI_CTRL_GATE				(1U << 31)
-#define CCU_HDMI_CTRL_PLL_MASK			(3U << 24)
-#define CCU_HDMI_CTRL_PLL_VIDEO			(0U << 24)
+#define CCU_HDMI_CTRL_GATE (1U << 31)
+#define CCU_HDMI_CTRL_PLL_MASK (3U << 24)
+#define CCU_HDMI_CTRL_PLL_VIDEO (0U << 24)
 
-#define CCU_HDMI_SLOW_CTRL_DDC_GATE		(1U << 31)
+#define CCU_HDMI_SLOW_CTRL_DDC_GATE (1U << 31)
 
-#define CCU_LCD0_CTRL_GATE				(1U << 31)
-#define CCU_LCD0_CTRL_M(n)				((((n) - 1) & 0xf) << 0)
+#define CCU_LCD0_CTRL_GATE (1U << 31)
+#define CCU_LCD0_CTRL_M(n) ((((n) - 1) & 0xf) << 0)
 
-#define BIT(nr)                		(1UL << (nr))
+#define BIT(nr) (1UL << (nr))
 
-static uint32_t hdmi_get_divider(uint32_t clock) {
-	/*
-	 * Due to missing documentation of HDMI PHY, we know correct
-	 * settings only for following four PHY dividers. Select one
-	 * based on clock speed.
-	 */
-	if (clock <= 27000000) {
-		return 11;
-	}
+static uint32_t HdmiGetDivider(uint32_t clock)
+{
+    /*
+     * Due to missing documentation of HDMI PHY, we know correct
+     * settings only for following four PHY dividers. Select one
+     * based on clock speed.
+     */
+    if (clock <= 27000000)
+    {
+        return 11;
+    }
 
-	if (clock <= 74250000) {
-		return 4;
-	}
+    if (clock <= 74250000)
+    {
+        return 4;
+    }
 
-	if (clock <= 148500000) {
-		return 2;
-	}
+    if (clock <= 148500000)
+    {
+        return 2;
+    }
 
-	return 1;
+    return 1;
 }
 
-static void hdmi_phy_init() {
-	/*
-	 * HDMI PHY settings are taken as-is from Allwinner BSP code.
-	 * There is no documentation.
-	 */
-	H3_HDMI_PHY->CTRL = 0;
+static void HdmiPhyInit()
+{
+    /*
+     * HDMI PHY settings are taken as-is from Allwinner BSP code.
+     * There is no documentation.
+     */
+    H3_HDMI_PHY->CTRL = 0;
 
-	H3_HDMI_PHY->CTRL |= BIT(0);
-	udelay(5);
+    H3_HDMI_PHY->CTRL |= BIT(0);
+    udelay(5);
 
-	H3_HDMI_PHY->CTRL |= BIT(16);
-	H3_HDMI_PHY->CTRL |= BIT(1);
-	udelay(10);
+    H3_HDMI_PHY->CTRL |= BIT(16);
+    H3_HDMI_PHY->CTRL |= BIT(1);
+    udelay(10);
 
-	H3_HDMI_PHY->CTRL |= BIT(2);
-	udelay(5);
+    H3_HDMI_PHY->CTRL |= BIT(2);
+    udelay(5);
 
-	H3_HDMI_PHY->CTRL |= BIT(3);
-	udelay(40);
+    H3_HDMI_PHY->CTRL |= BIT(3);
+    udelay(40);
 
-	H3_HDMI_PHY->CTRL |= BIT(19);
-	udelay(100);
+    H3_HDMI_PHY->CTRL |= BIT(19);
+    udelay(100);
 
-	H3_HDMI_PHY->CTRL |= BIT(18);
+    H3_HDMI_PHY->CTRL |= BIT(18);
 
-	H3_HDMI_PHY->CTRL |= (7U << 4);
+    H3_HDMI_PHY->CTRL |= (7U << 4);
 
-	/* Note that Allwinner code doesn't fail in case of timeout */
-	const auto t1 = H3_TIMER->AVS_CNT1;
+    /* Note that Allwinner code doesn't fail in case of timeout */
+    const auto t1 = H3_TIMER->AVS_CNT1;
 
-	while ((H3_HDMI_PHY->STATUS & 0x80) == 0) {
-		if (H3_TIMER->AVS_CNT1 - t1 > 20000) {
-			uart0_puts("Warning: HDMI PHY init timeout!\n");
-			break;
-		}
-	}
+    while ((H3_HDMI_PHY->STATUS & 0x80) == 0)
+    {
+        if (H3_TIMER->AVS_CNT1 - t1 > 20000)
+        {
+            uart0::Puts("Warning: HDMI PHY init timeout!\n");
+            break;
+        }
+    }
 
-	H3_HDMI_PHY->CTRL |= (0xf << 8);
-	H3_HDMI_PHY->CTRL |= BIT(7);
+    H3_HDMI_PHY->CTRL |= (0xf << 8);
+    H3_HDMI_PHY->CTRL |= BIT(7);
 
-	H3_HDMI_PHY->PLL = 0x39dc5040;
-	H3_HDMI_PHY->CLK = 0x80084343;
-	udelay(10000);
+    H3_HDMI_PHY->PLL = 0x39dc5040;
+    H3_HDMI_PHY->CLK = 0x80084343;
+    udelay(10000);
 
-	H3_HDMI_PHY->UNK3 = 1;
-	H3_HDMI_PHY->PLL |= BIT(25);
-	udelay(100000);
+    H3_HDMI_PHY->UNK3 = 1;
+    H3_HDMI_PHY->PLL |= BIT(25);
+    udelay(100000);
 
-	auto tmp = (H3_HDMI_PHY->STATUS & 0x1f800) >> 11;
+    auto tmp = (H3_HDMI_PHY->STATUS & 0x1f800) >> 11;
 
-	H3_HDMI_PHY->PLL |= (BIT(31) | BIT(30));
-	H3_HDMI_PHY->PLL |= tmp;
+    H3_HDMI_PHY->PLL |= (BIT(31) | BIT(30));
+    H3_HDMI_PHY->PLL |= tmp;
 
-	H3_HDMI_PHY->CTRL = 0x01FF0F7F;
-	H3_HDMI_PHY->UNK1 = 0x80639000;
-	H3_HDMI_PHY->UNK2 = 0x0F81C405;
+    H3_HDMI_PHY->CTRL = 0x01FF0F7F;
+    H3_HDMI_PHY->UNK1 = 0x80639000;
+    H3_HDMI_PHY->UNK2 = 0x0F81C405;
 
-	/* enable read access to HDMI controller */
-	H3_HDMI_PHY->READ_EN = 0x54524545;
-	/* descramble register offsets */
-	H3_HDMI_PHY->UNSCRAMBLE = 0x42494E47;
+    /* enable read access to HDMI controller */
+    H3_HDMI_PHY->READ_EN = 0x54524545;
+    /* descramble register offsets */
+    H3_HDMI_PHY->UNSCRAMBLE = 0x42494E47;
 }
 
-static int hdmi_get_plug_in_status() {
-	return !!(H3_HDMI_PHY->STATUS & (1U << 19));
+static int HdmiGetPlugInStatus()
+{
+    return !!(H3_HDMI_PHY->STATUS & (1U << 19));
 }
 
-static int hdmi_wait_for_hpd() {
-	const auto nStart = H3_TIMER->AVS_CNT1;
+static int HdmiWaitForHpd()
+{
+    const auto nStart = H3_TIMER->AVS_CNT1;
 
-	do {
-		if (hdmi_get_plug_in_status()) {
-			return 0;
-		}
-		__DMB();
-	} while ((H3_TIMER->AVS_CNT1- nStart) < 300);
+    do
+    {
+        if (HdmiGetPlugInStatus())
+        {
+            return 0;
+        }
+        __DMB();
+    } while ((H3_TIMER->AVS_CNT1 - nStart) < 300);
 
-	return -1;
+    return -1;
 }
 
-static void hdmi_phy_set(uint32_t clock) {
-	uint32_t div = hdmi_get_divider(clock);
-	uint32_t tmp;
+static void HdmiPhySet(uint32_t clock)
+{
+    uint32_t div = HdmiGetDivider(clock);
+    uint32_t tmp;
 
-	/*
-	 * Unfortunately, we don't know much about those magic
-	 * numbers. They are taken from Allwinner BSP driver.
-	 */
-	switch (div) {
-	case 1:
-		H3_HDMI_PHY->PLL = 0x30dc5fc0;
-		H3_HDMI_PHY->CLK = 0x800863C0;
-		udelay(1000 * 10);
+    /*
+     * Unfortunately, we don't know much about those magic
+     * numbers. They are taken from Allwinner BSP driver.
+     */
+    switch (div)
+    {
+        case 1:
+            H3_HDMI_PHY->PLL = 0x30dc5fc0;
+            H3_HDMI_PHY->CLK = 0x800863C0;
+            udelay(1000 * 10);
 
-		H3_HDMI_PHY->UNK3 = 0x00000001;
-		H3_HDMI_PHY->PLL |= BIT(25);
-		udelay(1000 * 200);
+            H3_HDMI_PHY->UNK3 = 0x00000001;
+            H3_HDMI_PHY->PLL |= BIT(25);
+            udelay(1000 * 200);
 
-		tmp = (H3_HDMI_PHY->STATUS & 0x1f800) >> 11;
-		H3_HDMI_PHY->PLL |= (BIT(31) | BIT(30));
+            tmp = (H3_HDMI_PHY->STATUS & 0x1f800) >> 11;
+            H3_HDMI_PHY->PLL |= (BIT(31) | BIT(30));
 
-		if (tmp < 0x3d) {
-			H3_HDMI_PHY->PLL |= (tmp + 2);
-		} else {
-			H3_HDMI_PHY->PLL |= 0x3f;
-		}
-		udelay(1000 * 100);
+            if (tmp < 0x3d)
+            {
+                H3_HDMI_PHY->PLL |= (tmp + 2);
+            }
+            else
+            {
+                H3_HDMI_PHY->PLL |= 0x3f;
+            }
+            udelay(1000 * 100);
 
-		H3_HDMI_PHY->CTRL = 0x01FFFF7F;
-		H3_HDMI_PHY->UNK1 = 0x8063b000;
-		H3_HDMI_PHY->UNK2 = 0x0F8246B5;
-		break;
-	case 2:
-		H3_HDMI_PHY->PLL = 0x39dc5040;
-		H3_HDMI_PHY->CLK = 0x80084381;
-		udelay(1000 * 10);
+            H3_HDMI_PHY->CTRL = 0x01FFFF7F;
+            H3_HDMI_PHY->UNK1 = 0x8063b000;
+            H3_HDMI_PHY->UNK2 = 0x0F8246B5;
+            break;
+        case 2:
+            H3_HDMI_PHY->PLL = 0x39dc5040;
+            H3_HDMI_PHY->CLK = 0x80084381;
+            udelay(1000 * 10);
 
-		H3_HDMI_PHY->UNK3 = 0x00000001;
-		H3_HDMI_PHY->PLL |= BIT(25);
-		udelay(1000 * 100);
+            H3_HDMI_PHY->UNK3 = 0x00000001;
+            H3_HDMI_PHY->PLL |= BIT(25);
+            udelay(1000 * 100);
 
-		tmp = (H3_HDMI_PHY->STATUS & 0x1f800) >> 11;
-		H3_HDMI_PHY->PLL |= (BIT(31) | BIT(30));
-		H3_HDMI_PHY->PLL |= tmp;
-		H3_HDMI_PHY->CTRL = 0x01FFFF7F;
-		H3_HDMI_PHY->UNK1 = 0x8063a800;
-		H3_HDMI_PHY->UNK2 = 0x0F81C485;
-		break;
-	case 4:
-		H3_HDMI_PHY->PLL = 0x39dc5040;
-		H3_HDMI_PHY->CLK = 0x80084343;
-		udelay(1000 * 10);
+            tmp = (H3_HDMI_PHY->STATUS & 0x1f800) >> 11;
+            H3_HDMI_PHY->PLL |= (BIT(31) | BIT(30));
+            H3_HDMI_PHY->PLL |= tmp;
+            H3_HDMI_PHY->CTRL = 0x01FFFF7F;
+            H3_HDMI_PHY->UNK1 = 0x8063a800;
+            H3_HDMI_PHY->UNK2 = 0x0F81C485;
+            break;
+        case 4:
+            H3_HDMI_PHY->PLL = 0x39dc5040;
+            H3_HDMI_PHY->CLK = 0x80084343;
+            udelay(1000 * 10);
 
-		H3_HDMI_PHY->UNK3 = 0x00000001;
-		H3_HDMI_PHY->PLL |= BIT(25);
-		udelay(1000 * 100);
+            H3_HDMI_PHY->UNK3 = 0x00000001;
+            H3_HDMI_PHY->PLL |= BIT(25);
+            udelay(1000 * 100);
 
-		tmp = (H3_HDMI_PHY->STATUS & 0x1f800) >> 11;
-		H3_HDMI_PHY->PLL |=  (BIT(31) | BIT(30));
-		H3_HDMI_PHY->PLL |= tmp;
-		H3_HDMI_PHY->CTRL = 0x01FFFF7F;
-		H3_HDMI_PHY->UNK1 = 0x8063b000;
-		H3_HDMI_PHY->UNK2 = 0x0F81C405;
-		break;
-	case 11:
-		H3_HDMI_PHY->PLL = 0x39dc5040;
-		H3_HDMI_PHY->CLK = 0x8008430a;
-		udelay(1000 * 10);
+            tmp = (H3_HDMI_PHY->STATUS & 0x1f800) >> 11;
+            H3_HDMI_PHY->PLL |= (BIT(31) | BIT(30));
+            H3_HDMI_PHY->PLL |= tmp;
+            H3_HDMI_PHY->CTRL = 0x01FFFF7F;
+            H3_HDMI_PHY->UNK1 = 0x8063b000;
+            H3_HDMI_PHY->UNK2 = 0x0F81C405;
+            break;
+        case 11:
+            H3_HDMI_PHY->PLL = 0x39dc5040;
+            H3_HDMI_PHY->CLK = 0x8008430a;
+            udelay(1000 * 10);
 
-		H3_HDMI_PHY->UNK3 = 0x00000001;
-		H3_HDMI_PHY->PLL |= BIT(25);
-		udelay(1000 * 100);
+            H3_HDMI_PHY->UNK3 = 0x00000001;
+            H3_HDMI_PHY->PLL |= BIT(25);
+            udelay(1000 * 100);
 
-		tmp = (H3_HDMI_PHY->STATUS & 0x1f800) >> 11;
-		H3_HDMI_PHY->PLL |= (BIT(31) | BIT(30));
-		H3_HDMI_PHY->PLL |= tmp;
-		H3_HDMI_PHY->CTRL = 0x01FFFF7F;
-		H3_HDMI_PHY->UNK1 = 0x8063b000;
-		H3_HDMI_PHY->UNK2 = 0x0F81C405;
-		break;
-	}
+            tmp = (H3_HDMI_PHY->STATUS & 0x1f800) >> 11;
+            H3_HDMI_PHY->PLL |= (BIT(31) | BIT(30));
+            H3_HDMI_PHY->PLL |= tmp;
+            H3_HDMI_PHY->CTRL = 0x01FFFF7F;
+            H3_HDMI_PHY->UNK1 = 0x8063b000;
+            H3_HDMI_PHY->UNK2 = 0x0F81C405;
+            break;
+    }
 }
 
-static void clock_set_pll_video_factors(uint32_t m, uint32_t n) {
-	/* VIDEO rate = 24000000 * n / m */
-	H3_CCU->PLL_VIDEO_CTRL = CCU_PLL_VIDEO_CTRL_EN | CCU_PLL_VIDEO_CTRL_INTEGER_MODE | CCU_PLL_VIDEO_CTRL_N(n) | CCU_PLL_VIDEO_CTRL_M(m);
+static void ClockSetPllVideoFactors(uint32_t m, uint32_t n)
+{
+    /* VIDEO rate = 24000000 * n / m */
+    H3_CCU->PLL_VIDEO_CTRL = CCU_PLL_VIDEO_CTRL_EN | CCU_PLL_VIDEO_CTRL_INTEGER_MODE | CCU_PLL_VIDEO_CTRL_N(n) | CCU_PLL_VIDEO_CTRL_M(m);
 
-	while (!(H3_CCU->PLL_VIDEO_CTRL & CCU_PLL_VIDEO_CTRL_LOCK))
-		;
+    while (!(H3_CCU->PLL_VIDEO_CTRL & CCU_PLL_VIDEO_CTRL_LOCK));
 }
 
-static uint32_t clock_get_pll_video() {
-	uint32_t rval = H3_CCU->PLL_VIDEO_CTRL;
+static uint32_t ClockGetPllVideo()
+{
+    uint32_t rval = H3_CCU->PLL_VIDEO_CTRL;
 
-	const uint32_t n = ((rval & CCU_PLL_VIDEO_CTRL_N_MASK) >> CCU_PLL_VIDEO_CTRL_N_SHIFT) + 1;
-	const uint32_t m = ((rval & CCU_PLL_VIDEO_CTRL_M_MASK) >> CCU_PLL_VIDEO_CTRL_M_SHIFT) + 1;
+    const uint32_t n = ((rval & CCU_PLL_VIDEO_CTRL_N_MASK) >> CCU_PLL_VIDEO_CTRL_N_SHIFT) + 1;
+    const uint32_t m = ((rval & CCU_PLL_VIDEO_CTRL_M_MASK) >> CCU_PLL_VIDEO_CTRL_M_SHIFT) + 1;
 
-	/* Multiply by 1000 after dividing by m to avoid integer overflows */
-	return (24000 * n / m) * 1000;
+    /* Multiply by 1000 after dividing by m to avoid integer overflows */
+    return (24000 * n / m) * 1000;
 }
 
-static void hdmi_pll_set(const uint32_t clk_khz) {
-	uint32_t value, n, m, div = 0, diff;
-	uint32_t best_n = 0, best_m = 0, best_diff = 0x0FFFFFFF;
+static void HdmiPllSet(uint32_t clk_khz)
+{
+    uint32_t value, n, m, div = 0, diff;
+    uint32_t best_n = 0, best_m = 0, best_diff = 0x0FFFFFFF;
 
-	div = hdmi_get_divider(clk_khz * 1000);
+    div = HdmiGetDivider(clk_khz * 1000);
 
-	/*
-	 * Find the lowest divider resulting in a matching clock. If there
-	 * is no match, pick the closest lower clock, as monitors tend to
-	 * not sync to higher frequencies.
-	 */
-	for (m = 1; m <= 16; m++) {
-		n = (m * div * clk_khz) / 24000;
+    /*
+     * Find the lowest divider resulting in a matching clock. If there
+     * is no match, pick the closest lower clock, as monitors tend to
+     * not sync to higher frequencies.
+     */
+    for (m = 1; m <= 16; m++)
+    {
+        n = (m * div * clk_khz) / 24000;
 
-		if ((n >= 1) && (n <= 128)) {
-			value = (24000 * n) / m / div;
-			diff = clk_khz - value;
-			if (diff < best_diff) {
-				best_diff = diff;
-				best_m = m;
-				best_n = n;
-			}
-		}
-	}
+        if ((n >= 1) && (n <= 128))
+        {
+            value = (24000 * n) / m / div;
+            diff = clk_khz - value;
+            if (diff < best_diff)
+            {
+                best_diff = diff;
+                best_m = m;
+                best_n = n;
+            }
+        }
+    }
 
-	clock_set_pll_video_factors(best_m, best_n);
+    ClockSetPllVideoFactors(best_m, best_n);
 
-	uart0_printf("dotclock: %dkHz = %dkHz: (24MHz * %d) / %d / %d\n", clk_khz, (clock_get_pll_video() / 1000) / div, best_n, best_m, div);
+    uart0::Printf("dotclock: %dkHz = %dkHz: (24MHz * %d) / %d / %d\n", clk_khz, (ClockGetPllVideo() / 1000) / div, best_n, best_m, div);
 }
 
 /*
@@ -316,109 +338,119 @@ static void hdmi_pll_set(const uint32_t clk_khz) {
  */
 
 void h3_lcdc_init();
-void h3_lcdc_tcon1_mode_set(const struct display_timing *);
+void h3_lcdc_tcon1_mode_set(const struct display_timing*);
 void h3_lcdc_enable(const uint32_t);
 
-static void hdmi_lcdc_init(const struct display_timing *edid, uint32_t bpp) {
-	uint32_t div = hdmi_get_divider(edid->pixelclock.typ);
+static void HdmiLcdcInit(const struct display_timing* edid, uint32_t bpp)
+{
+    uint32_t div = HdmiGetDivider(edid->pixelclock.typ);
 
-	H3_CCU->BUS_SOFT_RESET1 |= CCU_BUS_SOFT_RESET1_TCON0;
-	H3_CCU->BUS_CLK_GATING1 |= CCU_BUS_CLK_GATING1_TCON0;
+    H3_CCU->BUS_SOFT_RESET1 |= CCU_BUS_SOFT_RESET1_TCON0;
+    H3_CCU->BUS_CLK_GATING1 |= CCU_BUS_CLK_GATING1_TCON0;
 
-	H3_CCU->TCON0_CLK = CCU_LCD0_CTRL_GATE | CCU_LCD0_CTRL_M(div);
+    H3_CCU->TCON0_CLK = CCU_LCD0_CTRL_GATE | CCU_LCD0_CTRL_M(div);
 
-	h3_lcdc_init();
-	h3_lcdc_tcon1_mode_set(edid);
-	h3_lcdc_enable(bpp);
+    h3_lcdc_init();
+    h3_lcdc_tcon1_mode_set(edid);
+    h3_lcdc_enable(bpp);
 }
 
-static int hdmi_phy_cfg([[maybe_unused]] struct dw_hdmi *hdmi, uint32_t mpixelclock) {
-	hdmi_pll_set(mpixelclock / 1000U);
-	hdmi_phy_set(mpixelclock);
-	return 0;
+static int HdmiPhyCfg([[maybe_unused]] struct dw_hdmi* hdmi, uint32_t mpixelclock)
+{
+    HdmiPllSet(mpixelclock / 1000U);
+    HdmiPhySet(mpixelclock);
+    return 0;
 }
 
-__attribute__((cold)) int h3_hdmi_enable(uint32_t panel_bpp, const struct display_timing *edid) {
-	struct sunxi_dw_hdmi_priv *priv = &_sunxi_dw_hdmi_priv;
-	int ret;
+__attribute__((cold)) int h3_hdmi_enable(uint32_t panel_bpp, const struct display_timing* edid)
+{
+    struct sunxi_dw_hdmi_priv* priv = &_sunxi_dw_hdmi_priv;
+    int ret;
 
-	ret = dw_hdmi_enable(&priv->hdmi, edid);
+    ret = dw_hdmi_enable(&priv->hdmi, edid);
 
-	if (ret) {
-		printf("!!\n");
-		return ret;
-	}
+    if (ret)
+    {
+        printf("!!\n");
+        return ret;
+    }
 
-	hdmi_lcdc_init(edid, panel_bpp);
+    HdmiLcdcInit(edid, panel_bpp);
 
-	if (edid->flags & DISPLAY_FLAGS_VSYNC_LOW) {
-		H3_HDMI_PHY->POL |= 0x200;
-	}
+    if (edid->flags & DISPLAY_FLAGS_VSYNC_LOW)
+    {
+        H3_HDMI_PHY->POL |= 0x200;
+    }
 
-	if (edid->flags & DISPLAY_FLAGS_HSYNC_LOW) {
-		H3_HDMI_PHY->POL |= 0x100;
-	}
+    if (edid->flags & DISPLAY_FLAGS_HSYNC_LOW)
+    {
+        H3_HDMI_PHY->POL |= 0x100;
+    }
 
-	H3_HDMI_PHY->CTRL |= (0xf << 12);
+    H3_HDMI_PHY->CTRL |= (0xf << 12);
 
-	/*
-	 * This is last hdmi access before boot, so scramble addresses
-	 * again or othwerwise BSP driver won't work. Dummy read is
-	 * needed or otherwise last write doesn't get written correctly.
-	 */
-	(void) *reinterpret_cast<volatile uint8_t *>(H3_HDMI_BASE);
+    /*
+     * This is last hdmi access before boot, so scramble addresses
+     * again or othwerwise BSP driver won't work. Dummy read is
+     * needed or otherwise last write doesn't get written correctly.
+     */
+    (void)*reinterpret_cast<volatile uint8_t*>(H3_HDMI_BASE);
 
-	H3_HDMI_PHY->UNSCRAMBLE = 0;
+    H3_HDMI_PHY->UNSCRAMBLE = 0;
 
-	return 0;
+    return 0;
 }
 
-static void clock_set_pll_video(const uint32_t nClock) {
-	if (nClock == 0) {
-		H3_CCU->PLL_VIDEO_CTRL &= (~CCU_PLL_VIDEO_CTRL_EN);
-		return;
-	}
+static void ClockSetPllVideo(uint32_t nClock)
+{
+    if (nClock == 0)
+    {
+        H3_CCU->PLL_VIDEO_CTRL &= (~CCU_PLL_VIDEO_CTRL_EN);
+        return;
+    }
 
-	/* VIDEO rate = 3000000 * m */
-	H3_CCU->PLL_VIDEO_CTRL = CCU_PLL_VIDEO_CTRL_EN | CCU_PLL_VIDEO_CTRL_INTEGER_MODE | CCU_PLL_VIDEO_CTRL_M(nClock / 3000000);
+    /* VIDEO rate = 3000000 * m */
+    H3_CCU->PLL_VIDEO_CTRL = CCU_PLL_VIDEO_CTRL_EN | CCU_PLL_VIDEO_CTRL_INTEGER_MODE | CCU_PLL_VIDEO_CTRL_M(nClock / 3000000);
 }
 
 /*
  * The MUX0 module is used for HDMI
  */
 
-int __attribute__((cold)) h3_hdmi_probe() {
-	struct sunxi_dw_hdmi_priv *priv = &_sunxi_dw_hdmi_priv;
-	clock_set_pll_video(297000000);
+int __attribute__((cold)) h3_hdmi_probe()
+{
+    struct sunxi_dw_hdmi_priv* priv = &_sunxi_dw_hdmi_priv;
+    ClockSetPllVideo(297000000);
 
-	H3_CCU->HDMI_CLK = ((H3_CCU->HDMI_CLK & (~CCU_HDMI_CTRL_PLL_MASK)) | CCU_HDMI_CTRL_PLL_VIDEO);
+    H3_CCU->HDMI_CLK = ((H3_CCU->HDMI_CLK & (~CCU_HDMI_CTRL_PLL_MASK)) | CCU_HDMI_CTRL_PLL_VIDEO);
 
-	H3_CCU->BUS_SOFT_RESET1 |= CCU_BUS_SOFT_RESET1_HDMI;
-	H3_CCU->BUS_SOFT_RESET1 |= CCU_BUS_SOFT_RESET1_HDMI2;
-	H3_CCU->BUS_CLK_GATING1 |= CCU_BUS_CLK_GATING1_HDMI;
+    H3_CCU->BUS_SOFT_RESET1 |= CCU_BUS_SOFT_RESET1_HDMI;
+    H3_CCU->BUS_SOFT_RESET1 |= CCU_BUS_SOFT_RESET1_HDMI2;
+    H3_CCU->BUS_CLK_GATING1 |= CCU_BUS_CLK_GATING1_HDMI;
 
-	H3_CCU->HDMI_SLOW_CLK |= (CCU_HDMI_SLOW_CTRL_DDC_GATE);
-	H3_CCU->HDMI_CLK |= (CCU_HDMI_CTRL_GATE);
+    H3_CCU->HDMI_SLOW_CLK |= (CCU_HDMI_SLOW_CTRL_DDC_GATE);
+    H3_CCU->HDMI_CLK |= (CCU_HDMI_CTRL_GATE);
 
-	hdmi_phy_init();
+    HdmiPhyInit();
 
-	const auto ret = hdmi_wait_for_hpd();
+    const auto ret = HdmiWaitForHpd();
 
-	if (ret < 0) {
-		uart0_puts("hdmi can not get hpd signal\n");
-		return -1;
-	}
+    if (ret < 0)
+    {
+        uart0::Puts("hdmi can not get hpd signal\n");
+        return -1;
+    }
 
-	memset(&priv->hdmi, 0, sizeof(struct dw_hdmi));
+    memset(&priv->hdmi, 0, sizeof(struct dw_hdmi));
 
-	priv->hdmi.ioaddr = H3_HDMI_BASE;
-	priv->hdmi.i2c_clk_high = 0xd8;
-	priv->hdmi.i2c_clk_low = 0xfe;
-	priv->hdmi.reg_io_width = 1;
-	priv->hdmi.phy_set = hdmi_phy_cfg;
-	priv->mux = 0;
+    priv->hdmi.ioaddr = H3_HDMI_BASE;
+    priv->hdmi.i2c_clk_high = 0xd8;
+    priv->hdmi.i2c_clk_low = 0xfe;
+    priv->hdmi.reg_io_width = 1;
+    priv->hdmi.phy_set = HdmiPhyCfg;
+    priv->mux = 0;
 
-	dw_hdmi_init(&priv->hdmi);
+    dw_hdmi_init(&priv->hdmi);
 
-	return 0;
+    return 0;
 }

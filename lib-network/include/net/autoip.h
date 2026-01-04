@@ -1,7 +1,7 @@
 /**
  * @file autoip.h
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,53 +38,55 @@
 #include "net/netif.h"
 #include "net/acd.h"
 #include "net/protocol/autoip.h"
+#include "firmware/debug/debug_debug.h"
 
-#include "debug.h"
-
-namespace net {
-namespace autoip {
-struct Autoip {
-	ip4_addr_t llipaddr;
-	State state;
-	uint8_t tried_llipaddr;
-	acd::Acd acd;
+namespace net::autoip
+{
+struct Autoip
+{
+    ip4_addr_t llipaddr;
+    State state;
+    uint8_t tried_llipaddr;
+    net::acd::Acd acd;
 };
-}  // namespace autoip
 
-void autoip_start();
-void autoip_stop();
+void Start();
+void Stop();
 
-inline bool autoip_supplied_address() {
-	auto *autoip = reinterpret_cast<struct autoip::Autoip *>(globals::netif_default.autoip);
+inline bool SuppliedAddress()
+{
+    const auto* autoip = reinterpret_cast<struct autoip::Autoip*>(netif::globals::netif_default.autoip);
 
-	return (autoip != nullptr)
-			&& (globals::netif_default.ip.addr == autoip->llipaddr.addr)
-			&& (autoip->state == autoip::State::AUTOIP_STATE_BOUND);
+    return (autoip != nullptr) && (netif::globals::netif_default.ip.addr == autoip->llipaddr.addr) && (autoip->state == autoip::State::AUTOIP_STATE_BOUND);
 }
 
-inline void autoip_network_changed_link_up() {
-	DEBUG_ENTRY
+inline void NetworkChangedLinkUp()
+{
+    DEBUG_ENTRY();
 
-	auto *autoip = reinterpret_cast<struct autoip::Autoip *>(globals::netif_default.autoip);
+    auto* autoip = reinterpret_cast<struct autoip::Autoip*>(netif::globals::netif_default.autoip);
 
-	if ((autoip != nullptr) && (autoip->state != autoip::State::AUTOIP_STATE_OFF)) {
-		acd_start(&autoip->acd, autoip->llipaddr);
-	}
+    if ((autoip != nullptr) && (autoip->state != autoip::State::AUTOIP_STATE_OFF))
+    {
+        net::acd::Start(&autoip->acd, autoip->llipaddr);
+    }
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-inline void autoip_network_changed_link_down() {
-	DEBUG_EXIT
+inline void NetworkChangedLinkDown()
+{
+    DEBUG_EXIT();
 
-	auto *autoip = reinterpret_cast<struct autoip::Autoip *>(globals::netif_default.autoip);
+    const auto* autoip = reinterpret_cast<struct autoip::Autoip*>(netif::globals::netif_default.autoip);
 
-	if ((autoip != nullptr) && (autoip->state != autoip::State::AUTOIP_STATE_OFF)) {
-		autoip_stop();
-	}
+    if ((autoip != nullptr) && (autoip->state != autoip::State::AUTOIP_STATE_OFF))
+    {
+        autoip::Stop();
+    }
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
-}  // namespace net
+} // namespace net::autoip
 
-#endif /* NET_AUTOIP_H_ */
+#endif // NET_AUTOIP_H_

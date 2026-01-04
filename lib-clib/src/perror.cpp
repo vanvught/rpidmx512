@@ -26,82 +26,91 @@
 #include <stddef.h>
 #include <errno.h>
 
-void console_error(const char *);
-int console_putc(int);
-int console_puts(const char *);
+namespace console
+{
+void Error(const char*);
+int Putc(int);
+int Puts(const char*);
+} // namespace console
 
 /*
 errno -l | cut -f3- -d ' ' | sort -V -u | awk '$0="\""$0"\","'
 */
 
-const char * const sys_errlist[] = {
- "OK",
- "Operation not permitted",
- "No such file or directory",
- "No such process",
- "Interrupted system call",
- "Input/output error",
- "No such device or address",
- "Argument list too long",
- "Exec format error",
- "Bad file descriptor",
- "No child processes",
- "Resource temporarily unavailable",
- "Cannot allocate memory",
- "Permission denied",
- "Bad address",
- "Block device required",
- "Device or resource busy",
- "File exists",
- "Invalid cross-device link",
- "No such device",
- "Not a directory",
- "Is a directory",
- "Invalid argument",
- "Too many open files in system",
- "Too many open files",
- "Inappropriate ioctl for device",
- "Text file busy",
- "File too large",
- "No space left on device",
- "Illegal seek",
- "Read-only file system",
- "Too many links",
- "Broken pipe",
- "Numerical argument out of domain",
- "Numerical result out of range",
- "Resource deadlock avoided",
- "File name too long",
- "No locks available",
- "Function not implemented",
- "Directory not empty",
- "Bad message"
-};
+const char* const kSysErrlist[] = {"OK",
+                                   "Operation not permitted",
+                                   "No such file or directory",
+                                   "No such process",
+                                   "Interrupted system call",
+                                   "Input/output error",
+                                   "No such device or address",
+                                   "Argument list too long",
+                                   "Exec format error",
+                                   "Bad file descriptor",
+                                   "No child processes",
+                                   "Resource temporarily unavailable",
+                                   "Cannot allocate memory",
+                                   "Permission denied",
+                                   "Bad address",
+                                   "Block device required",
+                                   "Device or resource busy",
+                                   "File exists",
+                                   "Invalid cross-device link",
+                                   "No such device",
+                                   "Not a directory",
+                                   "Is a directory",
+                                   "Invalid argument",
+                                   "Too many open files in system",
+                                   "Too many open files",
+                                   "Inappropriate ioctl for device",
+                                   "Text file busy",
+                                   "File too large",
+                                   "No space left on device",
+                                   "Illegal seek",
+                                   "Read-only file system",
+                                   "Too many links",
+                                   "Broken pipe",
+                                   "Numerical argument out of domain",
+                                   "Numerical result out of range",
+                                   "Resource deadlock avoided",
+                                   "File name too long",
+                                   "No locks available",
+                                   "Function not implemented",
+                                   "Directory not empty",
+                                   "Bad message"};
 
-extern "C" {
-char *strerror(int errnum) {
-	if (errnum <= ELAST) {
-		return const_cast<char *>(sys_errlist[errnum]);
-	}
+extern "C"
+{
+    char* strerror(int errnum) // NOLINT
+    {
+        if (errnum <= ELAST)
+        {
+            return const_cast<char*>(kSysErrlist[errnum]);
+        }
 
-	return const_cast<char *>(sys_errlist[EBADMSG]);
-}
+        return const_cast<char*>(kSysErrlist[EBADMSG]);
+    }
 
-void perror(const char *s) {
-	const char *ptr = nullptr;
+    void perror(const char* s) // NOLINT
+    {
+        const char* ptr = nullptr;
 
-	if (errno >= 0 && errno < ELAST) {
-		ptr = sys_errlist[errno];
-	} else {
-		ptr = sys_errlist[EBADMSG];
-	}
+        if (errno >= 0 && errno < ELAST)
+        {
+            ptr = kSysErrlist[errno];
+        }
+        else
+        {
+            ptr = kSysErrlist[EBADMSG];
+        }
 
-	if (s && *s) {
-		console_error(s);
-		console_puts(": ");
-	}
+        if (s && *s)
+        {
+            console::Error(s);
+            console::Puts(": ");
+        }
 
-	console_error(ptr);
-	console_putc('\n');
-}
+        console::Error(ptr);
+        console::Putc('\n');
+    }
 }

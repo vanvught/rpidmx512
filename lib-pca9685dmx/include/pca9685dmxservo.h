@@ -23,59 +23,60 @@
  * THE SOFTWARE.
  */
 
-#ifndef PWMDMXPCA9685SERVO_H_
-#define PWMDMXPCA9685SERVO_H_
+#ifndef PCA9685DMXSERVO_H_
+#define PCA9685DMXSERVO_H_
 
 #include <cstdint>
 
+#include "pca9685dmx.h"
 #include "pca9685dmxstore.h"
 #include "pca9685servo.h"
 #include "pca9685dmxset.h"
 
 #include "dmxnode.h"
 
-class PCA9685DmxServo : public PCA9685DmxSet {
-public:
-	PCA9685DmxServo(const pca9685dmx::Configuration &configuration);
-	~PCA9685DmxServo() override;
+class PCA9685DmxServo : public PCA9685DmxSet
+{
+   public:
+    explicit PCA9685DmxServo(const pca9685dmx::Configuration& configuration);
+    ~PCA9685DmxServo() override;
 
-	void Start([[maybe_unused]] const uint32_t nPortIndex = 0) override {};
-	void Stop([[maybe_unused]] const uint32_t nPortIndex = 0) override {};
+    void Start([[maybe_unused]] uint32_t port_index) override {};
+    void Stop([[maybe_unused]] uint32_t port_index) override {};
 
-	void SetData(const uint32_t nPortIndex, const uint8_t *pDmxData, uint32_t nLength, const bool doUpdate = true) override;
-	void Sync([[maybe_unused]] const uint32_t nPortIndex) override {};
-	void Sync() override {};
+    void SetDataImpl(uint32_t port_index, const uint8_t* dmx_data, uint32_t length) override;
 
-	bool SetDmxStartAddress(const uint16_t nDmxStartAddress) override {
-		assert((nDmxStartAddress != 0) && (nDmxStartAddress <= dmxnode::UNIVERSE_SIZE));
+    void Sync([[maybe_unused]] uint32_t port_index) override {};
+    void Sync() override {};
 
-		if ((nDmxStartAddress != 0) && (nDmxStartAddress <= dmxnode::UNIVERSE_SIZE)) {
-			m_nDmxStartAddress = nDmxStartAddress;
-			PCA9685DmxStore::SaveDmxStartAddress(m_nDmxStartAddress);
-			return true;
-		}
+    bool SetDmxStartAddress(uint16_t dmx_start_address) override
+    {
+        assert((dmx_start_address != 0) && (dmx_start_address <= dmxnode::kUniverseSize));
 
-		return false;
-	}
+        if ((dmx_start_address != 0) && (dmx_start_address <= dmxnode::kUniverseSize))
+        {
+            dmx_start_address_ = dmx_start_address;
+            dmxpwm_store::SaveDmxStartAddress(dmx_start_address_);
+            return true;
+        }
 
-	uint16_t GetDmxStartAddress() override {
-		return m_nDmxStartAddress;
-	}
+        return false;
+    }
 
-	uint16_t GetDmxFootprint() override {
-		return m_nDmxFootprint;
-	}
+    uint16_t GetDmxStartAddress() override { return dmx_start_address_; }
 
-	void Print() override;
+    uint16_t GetDmxFootprint() override { return dmx_footprint_; }
 
-private:
-	uint16_t m_nBoardInstances;
-	uint16_t m_nDmxFootprint;
-	uint16_t m_nDmxStartAddress;
-	uint16_t m_nChannelCount;
-	bool m_bUse8Bit;
-	uint8_t m_DmxData[dmxnode::UNIVERSE_SIZE];
-	PCA9685Servo **m_pServo;
+    void Print() override;
+
+   private:
+    uint16_t board_instances_;
+    uint16_t dmx_footprint_;
+    uint16_t dmx_start_address_;
+    uint16_t channel_count_;
+    bool use8_bit_;
+    uint8_t dmx_data_[dmxnode::kUniverseSize];
+    PCA9685Servo** servo_;
 };
 
-#endif /* PWMDMXPCA9685SERVO_H_ */
+#endif  // PCA9685DMXSERVO_H_

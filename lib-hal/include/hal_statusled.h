@@ -28,22 +28,30 @@
 
 #include <cstdint>
 
-namespace hal {
-enum class StatusLedMode {
-	OFF_OFF, OFF_ON, NORMAL, DATA, FAST, REBOOT, UNKNOWN
+namespace hal::statusled
+{
+enum class Mode
+{
+    OFF_OFF,
+    OFF_ON,
+    NORMAL,
+    DATA,
+    FAST,
+    REBOOT,
+    UNKNOWN
 };
-
-namespace global {
-extern StatusLedMode g_statusLedMode;
-}  // namespace global
-
-void statusled_set_mode_with_lock(const StatusLedMode mode, const bool doLock);
-void statusled_set_mode(const StatusLedMode mode);
-inline StatusLedMode statusled_get_mode() {
-	return global::g_statusLedMode;
+namespace global
+{
+extern Mode g_status_led_mode;
+} // namespace global
+void SetModeWithLock(Mode mode, bool do_lock);
+void SetMode(Mode mode);
+inline Mode GetMode()
+{
+    return global::g_status_led_mode;
 }
-void statusled_set_frequency(const uint32_t nFrequencyHz);
-void display_statusled(const StatusLedMode mode);
-}  // namespace hal
+void SetFrequency(uint32_t frequency_hz);
+void Event(Mode mode);
+}  // namespace hal::statusled
 
-#endif /* HAL_STATUSLED_H_ */
+#endif  // HAL_STATUSLED_H_

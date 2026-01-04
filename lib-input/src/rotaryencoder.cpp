@@ -2,7 +2,7 @@
  * @file rotaryencoder.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,57 +29,62 @@
 #include <cstdint>
 
 #include "rotaryencoder.h"
+ #include "firmware/debug/debug_debug.h"
 
-#include "debug.h"
+namespace hs
+{ // half-step
+static constexpr uint8_t kStart = 0x0;
+static constexpr uint8_t kCcwBegin = 0x1;
+static constexpr uint8_t kCwBegin = 0x2;
+static constexpr uint8_t kStartM = 0x3;
+static constexpr uint8_t kCwBeginM = 0x4;
+static constexpr uint8_t kCcwBeginM = 0x5;
+} // namespace hs
 
-namespace hs {	// half-step
-static constexpr uint8_t START = 0x0;
-static constexpr uint8_t CCW_BEGIN = 0x1;
-static constexpr uint8_t CW_BEGIN = 0x2;
-static constexpr uint8_t START_M = 0x3;
-static constexpr uint8_t CW_BEGIN_M = 0x4;
-static constexpr uint8_t CCW_BEGIN_M = 0x5;
-}  // namespace hs
+namespace fs
+{ // full-step
+static constexpr uint8_t kStart = 0x0;
+static constexpr uint8_t kCwFinal = 0x1;
+static constexpr uint8_t kCwBegin = 0x2;
+static constexpr uint8_t kCwNext = 0x3;
+static constexpr uint8_t kCcwBegin = 0x4;
+static constexpr uint8_t kCcwFinal = 0x5;
+static constexpr uint8_t kCcwNext = 0x6;
+} // namespace fs
 
-namespace fs {	// full-step
-static constexpr uint8_t START = 0x0;
-static constexpr uint8_t CW_FINAL = 0x1;
-static constexpr uint8_t CW_BEGIN = 0x2;
-static constexpr uint8_t CW_NEXT = 0x3;
-static constexpr uint8_t CCW_BEGIN = 0x4;
-static constexpr uint8_t CCW_FINAL = 0x5;
-static constexpr uint8_t CCW_NEXT = 0x6;
-}  // namespace fs
-
-static constexpr uint8_t s_StateTableHalfStep[6][4] = {
-  {hs::START_M,            			hs::CW_BEGIN,	 hs::CCW_BEGIN,  hs::START},
-  {hs::START_M | RotaryEncoder::CW, hs::START,		 hs::CCW_BEGIN,  hs::START},
-  {hs::START_M | RotaryEncoder::CCW,hs::CW_BEGIN,    hs::START,      hs::START},
-  {hs::START_M,            			hs::CCW_BEGIN_M, hs::CW_BEGIN_M, hs::START},
-  {hs::START_M,            			hs::START_M,     hs::CW_BEGIN_M, hs::START | RotaryEncoder::CCW},
-  {hs::START_M,            			hs::CCW_BEGIN_M, hs::START_M,    hs::START | RotaryEncoder::CW},
+static constexpr uint8_t kStateTableHalfStep[6][4] = {
+  {hs::kStartM,            			hs::kCwBegin,	 hs::kCcwBegin,  hs::kStart},
+  {hs::kStartM | RotaryEncoder::CW, hs::kStart,		 hs::kCcwBegin,  hs::kStart},
+  {hs::kStartM | RotaryEncoder::CCW,hs::kCwBegin,    hs::kStart,      hs::kStart},
+  {hs::kStartM,            			hs::kCcwBeginM, hs::kCwBeginM, hs::kStart},
+  {hs::kStartM,            			hs::kStartM,     hs::kCwBeginM, hs::kStart | RotaryEncoder::CCW},
+  {hs::kStartM,            			hs::kCcwBeginM, hs::kStartM,    hs::kStart | RotaryEncoder::CW},
 };
 
-static constexpr uint8_t s_StateTableFullStep[7][4] = {
-  {fs::START,	 fs::CW_BEGIN,  fs::CCW_BEGIN, fs::START},
-  {fs::CW_NEXT,  fs::START,     fs::CW_FINAL,  fs::START | RotaryEncoder::CCW},
-  {fs::CW_NEXT,  fs::CW_BEGIN,  fs::START,     fs::START},
-  {fs::CW_NEXT,  fs::CW_BEGIN,  fs::CW_FINAL,  fs::START},
-  {fs::CCW_NEXT, fs::START,     fs::CCW_BEGIN, fs::START},
-  {fs::CCW_NEXT, fs::CCW_FINAL, fs::START,     fs::START | RotaryEncoder::CW},
-  {fs::CCW_NEXT, fs::CCW_FINAL, fs::CCW_BEGIN, fs::START},
+static constexpr uint8_t kStateTableFullStep[7][4] = {
+  {fs::kStart,	 fs::kCwBegin,  fs::kCcwBegin, fs::kStart},
+  {fs::kCwNext,  fs::kStart,     fs::kCwFinal,  fs::kStart | RotaryEncoder::CCW},
+  {fs::kCwNext,  fs::kCwBegin,  fs::kStart,     fs::kStart},
+  {fs::kCwNext,  fs::kCwBegin,  fs::kCwFinal,  fs::kStart},
+  {fs::kCcwNext, fs::kStart,     fs::kCcwBegin, fs::kStart},
+  {fs::kCcwNext, fs::kCcwFinal, fs::kStart,     fs::kStart | RotaryEncoder::CW},
+  {fs::kCcwNext, fs::kCcwFinal, fs::kCcwBegin, fs::kStart},
 };
 
-uint8_t RotaryEncoder::Process(const uint8_t nInputAB) {
-	DEBUG_PRINTF("%x:%x", m_nState & 0x0F, nInputAB & 0x03);
+uint8_t RotaryEncoder::Process(uint8_t input_ab)
+{
+    DEBUG_PRINTF("%x:%x", state_ & 0x0F, input_ab & 0x03);
 
-	if (m_bHalfStep) {
-		m_nState = s_StateTableHalfStep[m_nState & 0x0F][nInputAB & 0x03];
-	} else {
-		m_nState = s_StateTableFullStep[m_nState & 0x0F][nInputAB & 0x03];
-	}
+    if (halfstep_)
+    {
+        state_ = kStateTableHalfStep[state_ & 0x0F][input_ab & 0x03];
+    }
+    else
+    {
+        state_ = kStateTableFullStep[state_ & 0x0F][input_ab & 0x03];
+    }
 
-	DEBUG_PRINTF("%x", m_nState & 0x30);
+    DEBUG_PRINTF("%x", state_ & 0x30);
 
-	return m_nState & 0x30;
+    return state_ & 0x30;
 }

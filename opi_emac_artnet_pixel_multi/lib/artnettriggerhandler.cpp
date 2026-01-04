@@ -44,8 +44,8 @@ void triggerhandler_set_lightset(DmxNodeOutputType *pDmxNodeOutputType) {
 }
 
 void triggerhandler(const ArtNetTrigger *pArtNetTrigger) {
-	if (pArtNetTrigger->Key == ArtTriggerKey::ART_TRIGGER_KEY_SHOW) {
-		const auto nShow = static_cast<pixelpatterns::Pattern>(pArtNetTrigger->SubKey);
+	if (pArtNetTrigger->key == ArtTriggerKey::kArtTriggerKeyShow) {
+		const auto nShow = static_cast<pixelpatterns::Pattern>(pArtNetTrigger->sub_key);
 		if (nShow == PixelTestPattern::Get()->GetPattern()) {
 			return;
 		}
@@ -55,7 +55,7 @@ void triggerhandler(const ArtNetTrigger *pArtNetTrigger) {
 			return;
 		}
 
-		if (static_cast<pixelpatterns::Pattern>(nShow) != pixelpatterns::Pattern::NONE) {
+		if (static_cast<pixelpatterns::Pattern>(nShow) != pixelpatterns::Pattern::kNone) {
 			ArtNetNode::Get()->SetOutput(nullptr);
 			Display::Get()->ClearLine(6);
 			Display::Get()->Printf(6, "%s:%u", PixelPatterns::GetName(nShow), static_cast<uint32_t>(nShow));

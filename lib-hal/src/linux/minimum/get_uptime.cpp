@@ -2,7 +2,7 @@
  * @file get_uptime.cpp
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +34,7 @@
 #endif
 
 namespace hal {
-uint32_t get_uptime() {
+uint32_t Uptime() {
 #if defined (__APPLE__)
 	struct timeval boottime;
 	size_t len = sizeof(boottime);

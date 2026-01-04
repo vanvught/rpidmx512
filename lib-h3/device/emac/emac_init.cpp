@@ -28,18 +28,18 @@
 #include "h3.h"
 #include "h3_sid.h"
 
-#include "debug.h"
+ #include "firmware/debug/debug_debug.h"
 
-void _write_hwaddr(const uint8_t *mac_id) {
-	const auto macid_lo = static_cast<uint32_t>(mac_id[0]) + static_cast<uint32_t>(mac_id[1] << 8) + static_cast<uint32_t>(mac_id[2] << 16) + static_cast<uint32_t>(mac_id[3] << 24);
-	const auto macid_hi = static_cast<uint32_t>(mac_id[4]) + static_cast<uint32_t>(mac_id[5] << 8);
+static void WriteHwaddr(const uint8_t *mac_id) {
+	const auto kMacidLo = static_cast<uint32_t>(mac_id[0]) + static_cast<uint32_t>(mac_id[1] << 8) + static_cast<uint32_t>(mac_id[2] << 16) + static_cast<uint32_t>(mac_id[3] << 24);
+	const auto kMacidHi = static_cast<uint32_t>(mac_id[4]) + static_cast<uint32_t>(mac_id[5] << 8);
 
-	H3_EMAC->ADDR[0].HIGH = macid_hi;
-	H3_EMAC->ADDR[0].LOW = macid_lo;
+	H3_EMAC->ADDR[0].HIGH = kMacidHi;
+	H3_EMAC->ADDR[0].LOW = kMacidLo;
 }
 
 __attribute__((cold)) void emac_init() {
-	DEBUG_PRINTF("PHY{%d} ID = %08x", PHY_ADDR, phy_get_id(PHY_ADDR));
+	DEBUG_PRINTF("PHY{%d} ID = %08x", PHY_ADDR, PhyGetId(PHY_ADDR));
 
 	uint8_t mac_address[6];
 	uint8_t rootkey[16];
@@ -53,7 +53,7 @@ __attribute__((cold)) void emac_init() {
 	mac_address[4] = rootkey[14];
 	mac_address[5] = rootkey[15];
 
-	_write_hwaddr(mac_address);
+	WriteHwaddr(mac_address);
 
 	DEBUG_PRINTF("H3_EMAC->ADDR[0].LOW=%08x, H3_EMAC->ADDR[0].HIGH=%08x", H3_EMAC->ADDR[0].LOW, H3_EMAC->ADDR[0].HIGH);
 }

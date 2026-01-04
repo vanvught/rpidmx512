@@ -21,106 +21,178 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+ 
 
 #ifndef DMXNODE_OUTPUTTYPE_H_
 #define DMXNODE_OUTPUTTYPE_H_
 
-#if defined (OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI)
-# define DMXNODE_OUTPUT_DMX
+ #include <cstdint>
+
+namespace dmxnode
+{
+enum class OutputType
+{
+    kDmx,
+    kDmxRdm,
+    kPixel,
+    kPixelDmx,
+    kPwm,
+    kRgbPanel,
+    kSerial,
+    kOsc,
+    kMonitor,
+    kStepper,
+    kPlayer,
+    kArtNet,
+    kTimeCode,
+    kNone,
+    kUndefined
+};
+
+inline constexpr const char* kOutputTypeNames[static_cast<uint32_t>(OutputType::kUndefined)] = 
+{
+	"DMX", 
+	"DMX/RDM", 
+	"Pixel",
+	"Pixel/DMX", 
+	"PWM", 
+	"RGB Panel", 
+	"Serial", 
+	"OSC", 
+	"Monitor", 
+	"Stepper", 
+	"Player", 
+	"Art-Net", 
+	"Timecode",
+	"None"
+};
+
+inline const char* GetOutputType(OutputType type)
+{
+    if (type < OutputType::kUndefined)
+    {
+        return kOutputTypeNames[static_cast<uint32_t>(type)];
+    }
+
+    return "Undefined";
+}
+}  // namespace dmxnode
+
+#if defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI)
+#define DMXNODE_OUTPUT_DMX
 #endif
 
-#if defined (OUTPUT_DMX_PIXEL) || defined(OUTPUT_DMX_PIXEL_MULTI)
-# define DMXNODE_OUTPUT_PIXEL
+#if defined(OUTPUT_DMX_PIXEL) || defined(OUTPUT_DMX_PIXEL_MULTI)
+#define DMXNODE_OUTPUT_PIXEL
 #endif
 
-#if defined (DMXNODE_OUTPUT_DMX) && defined(DMXNODE_OUTPUT_PIXEL)
-# define DMXNODE_OUTPUT_PIXEL_DMX
+#if defined(DMXNODE_OUTPUT_DMX) && defined(DMXNODE_OUTPUT_PIXEL)
+#define DMXNODE_OUTPUT_PIXEL_DMX
 #endif
 
-#if defined (OUTPUT_DMX_STEPPER) && defined (OUTPUT_DMX_TLC59711)
-# define DMXNODE_OUTPUT_STEPPER_TLC59711
+#if defined(OUTPUT_DMX_STEPPER) && defined(OUTPUT_DMX_TLC59711)
+#define DMXNODE_OUTPUT_STEPPER_TLC59711
 #endif
 
-#if defined (OUTPUT_DMX_PIXEL) && defined(RDM_RESPONDER) && !defined(NODE_ARTNET)
-# define DMXNODE_OUTPUT_RDM_PIXEL
+#if defined(OUTPUT_DMX_PIXEL) && defined(RDM_RESPONDER) && !defined(NODE_ARTNET)
+#define DMXNODE_OUTPUT_RDM_PIXEL
 #endif
 
-#if defined (OUTPUT_DMX_MONITOR)
-# include "dmxmonitor.h"
+#if defined(OUTPUT_DMX_MONITOR)
+#include "dmxmonitor.h"
 #endif
 
-#if defined (OUTPUT_DMX_ARTNET)
-# include "artnetoutput.h"
+#if defined(OUTPUT_DMX_ARTNET)
+#include "artnetoutput.h"
 #endif
 
-#if defined (DMXNODE_OUTPUT_DMX)
-# include "dmxsend.h"
+#if defined(DMXNODE_OUTPUT_DMX)
+#include "dmxsend.h"
 #endif
 
-#if defined (OUTPUT_DMX_PIXEL)
-# include "ws28xxdmx.h"
-using DmxPixelOutputType = WS28xxDmx;
+#if defined(OUTPUT_DMX_PIXEL)
+#include "pixeldmx.h"
+using DmxPixelOutputType = PixelDmx;
 #endif
 
-#if defined (OUTPUT_DMX_PIXEL_MULTI)
-# include "ws28xxdmxmulti.h"
-using DmxPixelOutputType = WS28xxDmxMulti;
+#if defined(OUTPUT_DMX_PIXEL_MULTI)
+#include "pixeldmxmulti.h"
+using DmxPixelOutputType = PixelDmxMulti;
 #endif
 
 #if defined(OUTPUT_DMX_PCA9685)
-# include "pca9685dmxled.h"
-# include "pca9685dmxservo.h"
+#define DMXNODE_OUTPUT_PCA9685
+#include "pca9685dmxled.h"
+#include "pca9685dmxservo.h"
 #endif
 
-#if defined (OUTPUT_DMX_SERIAL)
-# include "dmxserial.h"
+#if defined(OUTPUT_DMX_SERIAL)
+#define DMXNODE_OUTPUT_SERIAL
+#include "dmxserial.h"
 #endif
 
-#if defined (OUTPUT_DMX_STEPPER)
-# include "sparkfundmx.h"
+#if defined(OUTPUT_DMX_STEPPER)
+#include "sparkfundmx.h"
 #endif
 
-#if defined (OUTPUT_DMX_TLC59711)
-# include "tlc59711dmx.h"
+#if defined(OUTPUT_DMX_TLC59711)
+#include "tlc59711dmx.h"
 #endif
 
-#if defined (OUTPUT_DMX_NULL)
-# include "dmxnodeoutputtypenull.h"
+#if defined(OUTPUT_DMX_NULL)
+#include "dmxnodeoutputtypenull.h"
 #endif
 
 #if defined(DMXNODE_OUTPUT_PIXEL_DMX)
-# include "dmxnodewith4.h"
- using DmxNodeOutputType = DmxNodeWith4<CONFIG_DMXNODE_DMX_PORT_OFFSET>;
-#elif defined (DMXNODE_OUTPUT_DMX)
- using DmxNodeOutputType = DmxSend;
-#elif defined (DMXNODE_OUTPUT_RDM_PIXEL)
-# include "dmxnodeoutputrdmpixel.h"
- using DmxNodeOutputType = DmxNodeOutputRdmPixel;
-#elif defined (OUTPUT_DMX_ARTNET)
- using DmxNodeOutputType = ArtNetOutput;
-#elif defined (OUTPUT_DMX_MONITOR)
- using DmxNodeOutputType = DMXMonitor;
+#include "dmxnodewith4.h"
+using DmxNodeOutputType = DmxNodeWith4<CONFIG_DMXNODE_DMX_PORT_OFFSET>;
+#elif defined(DMXNODE_OUTPUT_DMX)
+using DmxNodeOutputType = DmxSend;
+#elif defined(DMXNODE_OUTPUT_RDM_PIXEL)
+#include "dmxnodeoutputrdmpixel.h"
+using DmxNodeOutputType = DmxNodeOutputRdmPixel;
+#elif defined(OUTPUT_DMX_ARTNET)
+using DmxNodeOutputType = ArtNetOutput;
+#elif defined(OUTPUT_DMX_MONITOR)
+using DmxNodeOutputType = DmxMonitor;
 #elif defined(OUTPUT_DMX_PIXEL)
- using DmxNodeOutputType = WS28xxDmx;
+using DmxNodeOutputType = PixelDmx;
 #elif defined(OUTPUT_DMX_PIXEL_MULTI)
- using DmxNodeOutputType = WS28xxDmxMulti;
+using DmxNodeOutputType = PixelDmxMulti;
 #elif defined(OUTPUT_DMX_PCA9685_LED)
- using DmxNodeOutputType = PCA9685DmxLed;
+using DmxNodeOutputType = PCA9685DmxLed;
 #elif defined(OUTPUT_DMX_PCA9685_SERVO)
- using DmxNodeOutputType = PCA9685DmxServo;
-#elif defined (DMXNODE_OUTPUT_STEPPER_TLC59711)
-# include "dmxnodechain.h"
- using DmxNodeOutputType = DmxNodeChain;
-#elif defined (OUTPUT_DMX_SERIAL)
- using DmxNodeOutputType = DmxSerial;
+using DmxNodeOutputType = PCA9685DmxServo;
+#elif defined(DMXNODE_OUTPUT_STEPPER_TLC59711)
+#include "dmxnodechain.h"
+using DmxNodeOutputType = DmxNodeChain;
+#elif defined(OUTPUT_DMX_SERIAL)
+using DmxNodeOutputType = DmxSerial;
 #elif defined(OUTPUT_DMX_STEPPER)
- using DmxNodeOutputType = SparkFunDmx;
+using DmxNodeOutputType = SparkFunDmx;
 #elif defined(OUTPUT_DMX_PCA9685)
- using DmxNodeOutputType = PCA9685DmxSet;
+using DmxNodeOutputType = PCA9685DmxSet;
 #elif defined(OUTPUT_DMX_TLC59711)
- using DmxNodeOutputType = TLC59711Dmx;
+using DmxNodeOutputType = TLC59711Dmx;
 #elif defined(OUTPUT_DMX_NULL)
- using DmxNodeOutputType = DmxNodeOutputTypeNull;
+using DmxNodeOutputType = DmxNodeOutputTypeNull;
 #endif
 
-#endif /* DMXNODE_OUTPUTTYPE_H_ */
+namespace dmxnode
+{
+#if defined(DMXNODE_OUTPUT_DMX) && defined(RDM_CONTROLLER)
+inline constexpr auto kOutputType = OutputType::kDmxRdm;
+#elif defined(DMXNODE_OUTPUT_DMX)
+inline constexpr auto kOutputType = OutputType::kDmx;
+#elif defined(OUTPUT_DMX_PIXEL) || defined(OUTPUT_DMX_PIXEL_MULTI)
+inline constexpr auto kOutputType = OutputType::kPixel;
+#elif defined(DMXNODE_OUTPUT_PIXEL_DMX)
+inline constexpr auto kOutputType = OutputType::kPixelDmx;
+#elif defined(OUTPUT_DMX_NULL)
+inline constexpr auto kOutputType = OutputType::kNone;
+#else
+inline constexpr auto kOutputType = OutputType::kUndefined;
+#endif
+} // namespace dmxnode
+
+#endif  // DMXNODE_OUTPUTTYPE_H_

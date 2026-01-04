@@ -2,7 +2,7 @@
  * @file ltcdisplayrgbpanel.cpp
  */
 /*
- * Copyright (C) 2020-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+ * Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,141 +31,165 @@
 
 #include "ltcdisplayrgbpanel.h"
 #include "ltc.h"
-
 #include "rgbpanel.h"
+ #include "firmware/debug/debug_debug.h"
 
-#include "debug.h"
+static constexpr char kTypes[5][8 + 1] = {
+    "Film 24 ", //
+    "EBU 25  ", //
+    "DF 29.97", //
+    "SMPTE 30", //
+    "----- --"  //
+};
 
-static constexpr char aTypes[5][8 + 1] =
-	{ "Film 24 ", "EBU 25  ", "DF 29.97", "SMPTE 30", "----- --" };
+static constexpr char kSources[static_cast<uint32_t>(ltc::Source::UNDEFINED)][8 + 1] = {
+    "LTC",      //
+    "Art-Net",  //
+    "Midi",     //
+    "TCNet",    //
+    "Internal", //
+    "RtpMidi",  //
+    "Systime",  //
+    "ETC"       //
+};
 
-static constexpr char aSources[static_cast<uint32_t>(ltc::Source::UNDEFINED)][8 + 1] =
-	{ "LTC", "Art-Net", "Midi", "TCNet", "Internal", "RtpMidi", "Systime", "ETC" };
+LtcDisplayRgbPanel::LtcDisplayRgbPanel()
+{
+    DEBUG_ENTRY();
 
-using namespace ltcdisplayrgb;
+    rgbpanel_ = new RgbPanel(64, 32);
+    assert(rgbpanel_ != nullptr);
 
-LtcDisplayRgbPanel::LtcDisplayRgbPanel() {
-	DEBUG_ENTRY
-
-	m_pRgbPanel = new RgbPanel(64, 32);
-	assert(m_pRgbPanel != nullptr);
-
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-LtcDisplayRgbPanel::~LtcDisplayRgbPanel() {
-	DEBUG_ENTRY
+LtcDisplayRgbPanel::~LtcDisplayRgbPanel()
+{
+    DEBUG_ENTRY();
 
-	delete m_pRgbPanel;
-	m_pRgbPanel = nullptr;
+    delete rgbpanel_;
+    rgbpanel_ = nullptr;
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void LtcDisplayRgbPanel::Init() {
-	DEBUG_ENTRY
+void LtcDisplayRgbPanel::Init()
+{
+    DEBUG_ENTRY();
 
-	for (uint32_t i = 0; i < 4; i++) {
-		memset(m_Line[i], ' ', 8);
-		m_LineColours[i].nRed = 0x00;
-		m_LineColours[i].nGreen = 0x00;
-		m_LineColours[i].nBlue = 0x00;
-	}
+    for (uint32_t i = 0; i < 4; i++)
+    {
+        memset(line_[i], ' ', 8);
+        line_colours_[i].red = 0x00;
+        line_colours_[i].green = 0x00;
+        line_colours_[i].blue = 0x00;
+    }
 
-	m_pRgbPanel->Start();
+    rgbpanel_->Start();
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void LtcDisplayRgbPanel::Print() {
-	printf("RGB Panel\n");
+void LtcDisplayRgbPanel::Print()
+{
+    printf("RGB Panel\n");
 }
 
-void LtcDisplayRgbPanel::Show(const char *pTimecode, struct Colours &tColours, struct Colours &tColoursColons) {
-	m_pRgbPanel->SetColonsOff();
-	m_pRgbPanel->SetColon(pTimecode[ltc::timecode::index::COLON_1], 1, 0, tColoursColons.nRed, tColoursColons.nGreen, tColoursColons.nBlue);
-	m_pRgbPanel->SetColon(pTimecode[ltc::timecode::index::COLON_2], 3, 0, tColoursColons.nRed, tColoursColons.nGreen, tColoursColons.nBlue);
-	m_pRgbPanel->SetColon(pTimecode[ltc::timecode::index::COLON_3], 5, 0, tColoursColons.nRed, tColoursColons.nGreen, tColoursColons.nBlue);
+void LtcDisplayRgbPanel::Show(const char* timecode, struct ltc::display::rgb::Colours& colours, struct ltc::display::rgb::Colours& colours_colons)
+{
+    rgbpanel_->SetColonsOff();
+    rgbpanel_->SetColon(timecode[ltc::timecode::index::COLON_1], 1, 0, colours_colons.red, colours_colons.green, colours_colons.blue);
+    rgbpanel_->SetColon(timecode[ltc::timecode::index::COLON_2], 3, 0, colours_colons.red, colours_colons.green, colours_colons.blue);
+    rgbpanel_->SetColon(timecode[ltc::timecode::index::COLON_3], 5, 0, colours_colons.red, colours_colons.green, colours_colons.blue);
 
-	const char cLine[8] = { pTimecode[0], pTimecode[1], pTimecode[3], pTimecode[4], pTimecode[6], pTimecode[7], pTimecode[9], pTimecode[10] };
+    const char kLine[8] = {timecode[0], timecode[1], timecode[3], timecode[4], timecode[6], timecode[7], timecode[9], timecode[10]};
 
-	memcpy(m_Line[0], cLine, 8);
+    memcpy(line_[0], kLine, 8);
 
-	m_LineColours[0].nRed = tColours.nRed;
-	m_LineColours[0].nGreen = tColours.nGreen;
-	m_LineColours[0].nBlue = tColours.nBlue;
+    line_colours_[0].red = colours.red;
+    line_colours_[0].green = colours.green;
+    line_colours_[0].blue = colours.blue;
 
-	for (uint32_t i = 0; i < 4; i++) {
-		m_pRgbPanel->TextLine(static_cast<uint8_t>(1 + i), m_Line[i], 8, m_LineColours[i].nRed, m_LineColours[i].nGreen, m_LineColours[i].nBlue);
-	}
+    for (uint32_t i = 0; i < 4; i++)
+    {
+        rgbpanel_->TextLine(static_cast<uint8_t>(1 + i), line_[i], 8, line_colours_[i].red, line_colours_[i].green, line_colours_[i].blue);
+    }
 
-	m_pRgbPanel->Show();
+    rgbpanel_->Show();
 }
 
-void LtcDisplayRgbPanel::ShowSysTime(const char *pSystemTime, struct Colours &tColours, struct Colours &tColoursColons) {
-	m_pRgbPanel->SetColonsOff();
-	m_pRgbPanel->SetColon(pSystemTime[ltc::systemtime::index::COLON_1], 2, 0, tColoursColons.nRed, tColoursColons.nGreen, tColoursColons.nBlue);
-	m_pRgbPanel->SetColon(pSystemTime[ltc::systemtime::index::COLON_2], 4, 0, tColoursColons.nRed, tColoursColons.nGreen, tColoursColons.nBlue);
+void LtcDisplayRgbPanel::ShowSysTime(const char* systemtime, struct ltc::display::rgb::Colours& colours, struct ltc::display::rgb::Colours& colours_colons)
+{
+    rgbpanel_->SetColonsOff();
+    rgbpanel_->SetColon(systemtime[ltc::systemtime::index::COLON_1], 2, 0, colours_colons.red, colours_colons.green, colours_colons.blue);
+    rgbpanel_->SetColon(systemtime[ltc::systemtime::index::COLON_2], 4, 0, colours_colons.red, colours_colons.green, colours_colons.blue);
 
-	const char cLine[] = { ' ', pSystemTime[0], pSystemTime[1], pSystemTime[3], pSystemTime[4], pSystemTime[6], pSystemTime[7], ' '};
+    const char kLine[] = {' ', systemtime[0], systemtime[1], systemtime[3], systemtime[4], systemtime[6], systemtime[7], ' '};
 
-	memcpy(m_Line[0], cLine, 8);
+    memcpy(line_[0], kLine, 8);
 
-	m_LineColours[0].nRed = tColours.nRed;
-	m_LineColours[0].nGreen = tColours.nGreen;
-	m_LineColours[0].nBlue = tColours.nBlue;
+    line_colours_[0].red = colours.red;
+    line_colours_[0].green = colours.green;
+    line_colours_[0].blue = colours.blue;
 
-	m_pRgbPanel->TextLine(1, m_Line[0], 8, m_LineColours[0].nRed, m_LineColours[0].nGreen, m_LineColours[0].nBlue);
-	m_pRgbPanel->ClearLine(2);
-	m_pRgbPanel->TextLine(3, m_Line[2], 8, m_LineColours[2].nRed, m_LineColours[2].nGreen, m_LineColours[2].nBlue);
-	m_pRgbPanel->TextLine(4, m_Line[3], 8, m_LineColours[3].nRed, m_LineColours[3].nGreen, m_LineColours[3].nBlue);
+    rgbpanel_->TextLine(1, line_[0], 8, line_colours_[0].red, line_colours_[0].green, line_colours_[0].blue);
+    rgbpanel_->ClearLine(2);
+    rgbpanel_->TextLine(3, line_[2], 8, line_colours_[2].red, line_colours_[2].green, line_colours_[2].blue);
+    rgbpanel_->TextLine(4, line_[3], 8, line_colours_[3].red, line_colours_[3].green, line_colours_[3].blue);
 
-	m_pRgbPanel->Show();
+    rgbpanel_->Show();
 }
 
-void LtcDisplayRgbPanel::ShowMessage(const char *pMessage, struct Colours &tColours) {
-	m_pRgbPanel->SetColonsOff();
-	m_pRgbPanel->TextLine(1, pMessage, MAX_MESSAGE_SIZE, tColours.nRed, tColours.nGreen, tColours.nBlue);
-	m_pRgbPanel->Show();
+void LtcDisplayRgbPanel::ShowMessage(const char* message, struct ltc::display::rgb::Colours& colours)
+{
+    rgbpanel_->SetColonsOff();
+    rgbpanel_->TextLine(1, message, ltc::display::rgb::kMaxMessageSize, colours.red, colours.green, colours.blue);
+    rgbpanel_->Show();
 }
 
-void LtcDisplayRgbPanel::ShowFPS(ltc::Type type, struct Colours& tColours) {
-	memcpy(m_Line[1], aTypes[static_cast<uint32_t>(type)], 8);
+void LtcDisplayRgbPanel::ShowFPS(ltc::Type type, struct ltc::display::rgb::Colours& colours)
+{
+    memcpy(line_[1], kTypes[static_cast<uint32_t>(type)], 8);
 
-	m_LineColours[1].nRed = tColours.nRed;
-	m_LineColours[1].nGreen = tColours.nGreen;
-	m_LineColours[1].nBlue = tColours.nBlue;
+    line_colours_[1].red = colours.red;
+    line_colours_[1].green = colours.green;
+    line_colours_[1].blue = colours.blue;
 }
 
-void LtcDisplayRgbPanel::ShowSource(ltc::Source source, struct Colours& tColours) {
-	memcpy(m_Line[3], aSources[static_cast<uint32_t>(source)], 8);
+void LtcDisplayRgbPanel::ShowSource(ltc::Source source, struct ltc::display::rgb::Colours& colours)
+{
+    memcpy(line_[3], kSources[static_cast<uint32_t>(source)], 8);
 
-	m_LineColours[3].nRed = tColours.nRed;
-	m_LineColours[3].nGreen = tColours.nGreen;
-	m_LineColours[3].nBlue = tColours.nBlue;
+    line_colours_[3].red = colours.red;
+    line_colours_[3].green = colours.green;
+    line_colours_[3].blue = colours.blue;
 }
 
-void LtcDisplayRgbPanel::ShowInfo(const char *pInfo, uint32_t nLength, struct Colours& tColours) {
-	nLength = std::min(static_cast<uint32_t>(8), nLength);
-	uint32_t i;
-	for (i = 0; i < nLength; i++) {
-		m_Line[2][i] = pInfo[i];
-	}
-	for (; i < 8; i++) {
-		m_Line[2][i] = ' ';
-	}
+void LtcDisplayRgbPanel::ShowInfo(const char* info, uint32_t length, struct ltc::display::rgb::Colours& colours)
+{
+    length = std::min(static_cast<uint32_t>(8), length);
+    uint32_t i;
+    for (i = 0; i < length; i++)
+    {
+        line_[2][i] = info[i];
+    }
+    for (; i < 8; i++)
+    {
+        line_[2][i] = ' ';
+    }
 
-	m_LineColours[2].nRed = tColours.nRed;
-	m_LineColours[2].nGreen = tColours.nGreen;
-	m_LineColours[2].nBlue = tColours.nBlue;
+    line_colours_[2].red = colours.red;
+    line_colours_[2].green = colours.green;
+    line_colours_[2].blue = colours.blue;
 
-	m_pRgbPanel->TextLine(3, m_Line[2], 8, tColours.nRed, tColours.nGreen, tColours.nBlue);
-	m_pRgbPanel->TextLine(1, m_Line[0], 8, m_LineColours[0].nRed, m_LineColours[0].nGreen, m_LineColours[0].nBlue);
-	m_pRgbPanel->Show();
+    rgbpanel_->TextLine(3, line_[2], 8, colours.red, colours.green, colours.blue);
+    rgbpanel_->TextLine(1, line_[0], 8, line_colours_[0].red, line_colours_[0].green, line_colours_[0].blue);
+    rgbpanel_->Show();
 }
 
-void LtcDisplayRgbPanel::WriteChar([[maybe_unused]] uint8_t nChar, [[maybe_unused]] uint8_t nPos, [[maybe_unused]] struct Colours &tColours) {
-	DEBUG_ENTRY
-	// TODO Implement WriteChar
-	DEBUG_EXIT
+void LtcDisplayRgbPanel::WriteChar([[maybe_unused]] uint8_t ch, [[maybe_unused]] uint8_t pos, [[maybe_unused]] struct ltc::display::rgb::Colours& colours)
+{
+    DEBUG_ENTRY();
+    // TODO(avv): Implement WriteChar
+    DEBUG_EXIT();
 }

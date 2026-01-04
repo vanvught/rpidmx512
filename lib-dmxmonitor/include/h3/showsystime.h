@@ -2,7 +2,7 @@
  * @file showsystime.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,7 @@ public:
 	void Run();
 
 private:
-	int m_nSecondsPrevious { 60 };
+	int seconds_previous_ { 60 };
 };
 
 #endif /* H3_SHOWSYSTIME_H_ */

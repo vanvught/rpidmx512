@@ -38,13 +38,13 @@ public:
 	void SetTimeCode(const struct ltc::TimeCode *pLtcTimeCode, bool nExternalClock = true);
 
 	static LtcSender* Get() {
-		return s_pThis;
+		return s_this;
 	}
 
 private:
-	uint32_t m_nTypePrevious { static_cast<uint32_t>(ltc::Type::INVALID) };
+	uint32_t type_previous_ { static_cast<uint32_t>(ltc::Type::INVALID) };
 
-	static LtcSender *s_pThis;
+	static LtcSender *s_this;
 };
 
 #endif /* H3_LTCSENDER_H_ */

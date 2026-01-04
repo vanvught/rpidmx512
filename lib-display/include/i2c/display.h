@@ -26,21 +26,21 @@
 #ifndef I2C_DISPLAY_H_
 #define I2C_DISPLAY_H_
 
-#if defined (CONFIG_DISPLAY_USE_SPI)
-# error
+#if defined(CONFIG_DISPLAY_USE_SPI)
+#error
 #endif
 
 #if defined(__GNUC__) && !defined(__clang__)
-# if defined (CONFIG_I2C_LCD_OPTIMIZE_O2) || defined (CONFIG_I2C_LCD_OPTIMIZE_O3)
-#  pragma GCC push_options
-#  if defined (CONFIG_I2C_LCD_OPTIMIZE_O2)
-#   pragma GCC optimize ("O2")
-#  else
-#   pragma GCC optimize ("O3")
-#  endif
-#  pragma GCC optimize ("no-tree-loop-distribute-patterns")
-#  pragma GCC optimize ("-fprefetch-loop-arrays")
-# endif
+#if defined(CONFIG_I2C_LCD_OPTIMIZE_O2) || defined(CONFIG_I2C_LCD_OPTIMIZE_O3)
+#pragma GCC push_options
+#if defined(CONFIG_I2C_LCD_OPTIMIZE_O2)
+#pragma GCC optimize("O2")
+#else
+#pragma GCC optimize("O3")
+#endif
+#pragma GCC optimize("no-tree-loop-distribute-patterns")
+#pragma GCC optimize("-fprefetch-loop-arrays")
+#endif
 #endif
 
 #include <cstdarg>
@@ -49,315 +49,351 @@
 #include <cassert>
 
 #include "displayset.h"
-
+#include "console.h"
 #include "hal.h"
-
-#include "hal_i2c.h"
-#if defined (DISPLAYTIMEOUT_GPIO)
-# include "hal_gpio.h"
+#if defined(DISPLAYTIMEOUT_GPIO)
+#include "hal_gpio.h"
 #endif
 
-namespace display {
-enum class Type {
-	PCF8574T_1602, PCF8574T_2004, SSD1306, SSD1311, UNKNOWN
+namespace display
+{
+enum class Type
+{
+    kPcf8574T1602,
+    kPcf8574T2004,
+    kSsd1306,
+    kSsd1311,
+    kUnknown
 };
-namespace segment7 {
-static constexpr uint8_t MCP23017_I2C_ADDRESS = 0x20;
-static constexpr uint8_t MCP23017_IODIRA = 0x00;	///< I/O DIRECTION (IODIRA) REGISTER, 1 = Input (default), 0 = Output
-static constexpr uint8_t MCP23017_GPIOA = 0x12;		///< PORT (GPIOA) REGISTER, Value on the Port - Writing Sets Bits in the Output Latch
-static constexpr uint8_t I2C_ADDRESS = (MCP23017_I2C_ADDRESS + 1);	///< It must be different from base address
-}  // namespace segment7
-}  // namespace display
+} // namespace display
+
+class Display
+{
+   public:
+    Display();
+   
+    explicit Display(uint32_t rows);
+    explicit Display(display::Type type);
+    Display(const Display&) = delete;
+    Display& operator=(const Display&) = delete;
+   
+    ~Display()
+    {
+        s_this = nullptr;
+        delete lcd_display_;
+        lcd_display_ = nullptr;
+    }
+
+    bool IsDetected() const { return lcd_display_ == nullptr ? false : true; }
+
+    display::Type GetDetectedType() const { return type_; }
+
+    void PrintInfo()
+    {
+        if (lcd_display_ == nullptr)
+        {
+            puts("No display found");
+            return;
+        }
+
+        lcd_display_->PrintInfo();
+    }
+
+    void Cls()
+    {
+        if (lcd_display_ == nullptr)
+        {
+            return;
+        }
+
+        lcd_display_->Cls();
+    }
+
+    void ClearLine(uint32_t line)
+    {
+        if (lcd_display_ == nullptr)
+        {
+            return;
+        }
+
+        lcd_display_->ClearLine(line);
+    }
+
+    void PutChar(int c)
+    {
+        if (lcd_display_ == nullptr)
+        {
+            return;
+        }
+
+        lcd_display_->PutChar(c);
+    }
+
+    void PutString(const char* text)
+    {
+        if (lcd_display_ == nullptr)
+        {
+            return;
+        }
+
+        lcd_display_->PutString(text);
+    }
+
+    int Write(uint32_t line, const char* text)
+    {
+        if (lcd_display_ == nullptr)
+        {
+            return 0;
+        }
+
+        const auto* p = text;
+        uint32_t count = 0;
+
+        const auto kColumns = lcd_display_->GetColumns();
+
+        while ((*p != 0) && (count++ < kColumns))
+        {
+            ++p;
+        }
+
+        lcd_display_->TextLine(line, text, count);
+
+        return static_cast<int>(count);
+    }
+
+    int Printf(uint32_t line, const char* format, ...)
+    {
+        if (lcd_display_ == nullptr)
+        {
+            return 0;
+        }
 
-class Display {
-public:
-	Display();
-	Display(uint32_t nRows);
-	Display(display::Type type);
-	Display(const Display&) = delete;
-	Display& operator=(const Display&) = delete;
-	~Display() {
-		s_pThis = nullptr;
-		delete m_LcdDisplay;
-	}
+        char buffer[32];
 
-	bool isDetected() const {
-		return m_LcdDisplay == nullptr ? false : true;
-	}
+        va_list arp;
 
-	display::Type GetDetectedType() const {
-		return m_tType;
-	}
+        va_start(arp, format);
 
-	void PrintInfo() {
-		if (m_LcdDisplay == nullptr) {
-			puts("No display found");
-			return;
-		}
+        auto i = vsnprintf(buffer, sizeof(buffer) / sizeof(buffer[0]), format, arp);
 
-		m_LcdDisplay->PrintInfo();
-	}
+        va_end(arp);
 
-	void Cls() {
-		if (m_LcdDisplay == nullptr) {
-			return;
-		}
+        lcd_display_->TextLine(line, buffer, static_cast<uint32_t>(i));
 
-		m_LcdDisplay->Cls();
-	}
+        return i;
+    }
 
-	void ClearLine(uint32_t nLine) {
-		if (m_LcdDisplay == nullptr) {
-			return;
-		}
+    void TextLine(uint32_t line, const char* text, uint32_t length)
+    {
+        if (lcd_display_ == nullptr)
+        {
+            return;
+        }
 
-		m_LcdDisplay->ClearLine(nLine);
-	}
+        lcd_display_->TextLine(line, text, length);
+    }
 
-	void PutChar(int c) {
-		if (m_LcdDisplay == nullptr) {
-			return;
-		}
+    void TextStatus(const char* text)
+    {
+        if (lcd_display_ == nullptr)
+        {
+            return;
+        }
 
-		m_LcdDisplay->PutChar(c);
-	}
+        const auto kColumns = lcd_display_->GetColumns();
+        const auto kRows = lcd_display_->GetRows();
 
-	void PutString(const char *pText) {
-		if (m_LcdDisplay == nullptr) {
-			return;
-		}
+        assert(kColumns >= 1);
+        assert(kRows >= 1);
 
-		m_LcdDisplay->PutString(pText);
-	}
+        SetCursorPos(0, kRows - 1U);
 
-	int Write(uint32_t nLine, const char *pText) {
-		if (m_LcdDisplay == nullptr) {
-			return 0;
-		}
+        for (uint32_t i = 0; i < kColumns - 1U; i++)
+        {
+            PutChar(' ');
+        }
 
-		const auto *p = pText;
-		uint32_t nCount = 0;
+        SetCursorPos(0, kRows - 1U);
 
-		const auto nColumns = m_LcdDisplay->GetColumns();
+        Write(kRows, text);
+    }
 
-		while ((*p != 0) && (nCount++ < nColumns)) {
-			++p;
-		}
+    void TextStatus(const char* text, console::Colours colour)
+    {
+        TextStatus(text);
 
-		m_LcdDisplay->TextLine(nLine, pText, nCount);
+        if (static_cast<uint32_t>(colour) == UINT32_MAX)
+        {
+            return;
+        }
 
-		return static_cast<int>(nCount);
-	}
+        console::Status(colour, text);
+    }
 
-	int Printf(uint32_t nLine, const char *format, ...) {
-		if (m_LcdDisplay == nullptr) {
-			return 0;
-		}
+    void SetCursor(uint32_t mode)
+    {
+        if (lcd_display_ == nullptr)
+        {
+            return;
+        }
 
-		char buffer[32];
+        lcd_display_->SetCursor(mode);
+    }
 
-		va_list arp;
+    void SetCursorPos(uint32_t col, uint32_t row)
+    {
+        if (lcd_display_ == nullptr)
+        {
+            return;
+        }
 
-		va_start(arp, format);
+        lcd_display_->SetCursorPos(col, row);
+    }
 
-		auto i = vsnprintf(buffer, sizeof(buffer) / sizeof(buffer[0]), format, arp);
+    void SetContrast(uint8_t contrast)
+    {
+        contrast_ = contrast;
 
-		va_end(arp);
+        if (lcd_display_ == nullptr)
+        {
+            return;
+        }
 
-		m_LcdDisplay->TextLine(nLine, buffer, static_cast<uint32_t>(i));
+        lcd_display_->SetContrast(contrast);
+    }
 
-		return i;
-	}
-
-	void TextLine(uint32_t nLine, const char *pText, uint32_t nLength) {
-		if (m_LcdDisplay == nullptr) {
-			return;
-		}
-
-		m_LcdDisplay->TextLine(nLine, pText, nLength);
-	}
-
-	void TextStatus(const char *pText) {
-		if (m_LcdDisplay == nullptr) {
-			return;
-		}
-
-		const auto nColumns = m_LcdDisplay->GetColumns();
-		const auto nRows = m_LcdDisplay->GetRows();
-
-		assert(nColumns >= 1);
-		assert(nRows >= 1);
-
-		SetCursorPos(0, nRows - 1U);
-
-		for (uint32_t i = 0; i < nColumns - 1U; i++) {
-			PutChar(' ');
-		}
-
-		SetCursorPos(0, nRows - 1U);
-
-		Write(nRows, pText);
-	}
-
-	void TextStatus(const char *pText, uint32_t nConsoleColor) {
-		TextStatus(pText);
-
-		if (nConsoleColor == UINT32_MAX) {
-			return;
-		}
-
-		console_status(nConsoleColor, pText);
-	}
-
-	void SetCursor(uint32_t nMode) {
-		if (m_LcdDisplay == nullptr) {
-			return;
-		}
-
-		m_LcdDisplay->SetCursor(nMode);
-	}
-
-	void SetCursorPos(uint32_t nCol, uint32_t nRow) {
-		if (m_LcdDisplay == nullptr) {
-			return;
-		}
-
-		m_LcdDisplay->SetCursorPos(nCol, nRow);
-	}
-
-	void SetContrast(uint8_t nContrast) {
-		m_nContrast = nContrast;
-
-		if (m_LcdDisplay == nullptr) {
-			return;
-		}
-
-		m_LcdDisplay->SetContrast(nContrast);
-	}
-
-	uint8_t GetContrast() const {
-		return m_nContrast;
-	}
-
-	void SetFlipVertically(bool doFlipVertically) {
-		m_bIsFlippedVertically = doFlipVertically;
-
-		if (m_LcdDisplay == nullptr) {
-			return;
-		}
-
-		m_LcdDisplay->SetFlipVertically(doFlipVertically);
-	}
-
-	void ClearEndOfLine() {
-		if (m_LcdDisplay == nullptr) {
-			return;
-		}
-
-		m_LcdDisplay->ClearEndOfLine();
-	}
-
-	bool GetFlipVertically() const {
-		return m_bIsFlippedVertically;
-	}
-
-	uint32_t GetColumns() const {
-		if (m_LcdDisplay == nullptr) {
-			return 0;
-		}
-
-		return m_LcdDisplay->GetColumns();
-	}
-
-	uint32_t GetRows() const {
-		if (m_LcdDisplay == nullptr) {
-			return 0;
-		}
-
-		return m_LcdDisplay->GetRows();
-	}
-
-	void Progress() {
-		static constexpr char SYMBOLS[] = { '/' , '-', '\\' , '|' };
-		static uint32_t nSymbolsIndex;
-
-		SetCursorPos(GetColumns() - 1U, GetRows() - 1U);
-		PutChar(SYMBOLS[nSymbolsIndex++]);
-
-		if (nSymbolsIndex >= sizeof(SYMBOLS)) {
-			nSymbolsIndex = 0;
-		}
-	}
-
-	void SetSleep(bool bSleep) {
-		if (m_LcdDisplay == nullptr) {
-			return;
-		}
-
-		m_bIsSleep = bSleep;
-
-		m_LcdDisplay->SetSleep(bSleep);
-
-		if (!bSleep) {
-			SetSleepTimer(m_nSleepTimeout != 0);
-		}
-	}
-
-	bool isSleep() const {
-		return m_bIsSleep;
-	}
-
-	void SetSleepTimeout(uint32_t nSleepTimeout = display::Defaults::SLEEP_TIMEOUT) {
-		m_nSleepTimeout = 1000U * 60U * nSleepTimeout;
-		SetSleepTimer(m_nSleepTimeout != 0);
-	}
-
-	uint32_t GetSleepTimeout() const {
-		return m_nSleepTimeout / 1000U / 60U;
-	}
-
-	void Run() {
-		if (m_nSleepTimeout == 0) {
-			return;
-		}
-
-		if (m_bIsSleep) {
-#if defined (DISPLAYTIMEOUT_GPIO)
-			if (__builtin_expect(((FUNC_PREFIX(gpio_lev(DISPLAYTIMEOUT_GPIO)) == 0)), 0)) {
-				SetSleep(false);
-			}
+    uint8_t GetContrast() const { return contrast_; }
+
+    void SetFlipVertically(bool do_flip_vertically)
+    {
+        is_flipped_vertically_ = do_flip_vertically;
+
+        if (lcd_display_ == nullptr)
+        {
+            return;
+        }
+
+        lcd_display_->SetFlipVertically(do_flip_vertically);
+    }
+
+    void ClearEndOfLine()
+    {
+        if (lcd_display_ == nullptr)
+        {
+            return;
+        }
+
+        lcd_display_->ClearEndOfLine();
+    }
+
+    bool GetFlipVertically() const { return is_flipped_vertically_; }
+
+    uint32_t GetColumns() const
+    {
+        if (lcd_display_ == nullptr)
+        {
+            return 0;
+        }
+
+        return lcd_display_->GetColumns();
+    }
+
+    uint32_t GetRows() const
+    {
+        if (lcd_display_ == nullptr)
+        {
+            return 0;
+        }
+
+        return lcd_display_->GetRows();
+    }
+
+    void Progress()
+    {
+        static constexpr char kSymbols[] = {'/', '-', '\\', '|'};
+        static uint32_t s_symbols_index;
+
+        SetCursorPos(GetColumns() - 1U, GetRows() - 1U);
+        PutChar(kSymbols[s_symbols_index++]);
+
+        if (s_symbols_index >= sizeof(kSymbols))
+        {
+            s_symbols_index = 0;
+        }
+    }
+
+    void SetSleep(bool sleep)
+    {
+        if (lcd_display_ == nullptr)
+        {
+            return;
+        }
+
+        is_sleep_ = sleep;
+
+        lcd_display_->SetSleep(sleep);
+
+        if (!sleep)
+        {
+            SetSleepTimer(sleep_timeout_ != 0);
+        }
+    }
+
+    bool IsSleep() const { return is_sleep_; }
+
+    void SetSleepTimeout(uint32_t sleep_timeout = display::Defaults::kSleepTimeout)
+    {
+        sleep_timeout_ = 1000U * 60U * sleep_timeout;
+        SetSleepTimer(sleep_timeout_ != 0);
+    }
+
+    uint32_t GetSleepTimeout() const { return sleep_timeout_ / 1000U / 60U; }
+
+    void Run()
+    {
+        if (sleep_timeout_ == 0)
+        {
+            return;
+        }
+
+        if (is_sleep_)
+        {
+#if defined(DISPLAYTIMEOUT_GPIO)
+            if (__builtin_expect(((FUNC_PREFIX(GpioLev(DISPLAYTIMEOUT_GPIO)) == 0)), 0))
+            {
+                SetSleep(false);
+            }
 #endif
-		}
-	}
+        }
+    }
 
-	static Display *Get() {
-		return s_pThis;
-	}
+    static Display* Get()
+    {
+        assert(s_this != nullptr);
+        return s_this;
+    }
 
-private:
-	void Detect(display::Type tDisplayType);
-	void Detect(uint32_t nRows);
-	void SetSleepTimer(const bool bActive);
+   private:
+    void Detect(display::Type display_type);
+    void Detect(uint32_t rows);
+    void SetSleepTimer(bool active);
 
-private:
-	display::Type m_tType { display::Type::UNKNOWN };
-	HAL_I2C m_I2C;
-	uint32_t m_nSleepTimeout { 1000 * 60 * display::Defaults::SLEEP_TIMEOUT };
-	uint8_t m_nContrast { 0x7F };
+   private:
+    display::Type type_{display::Type::kUnknown};
+    uint32_t sleep_timeout_{1000 * 60 * display::Defaults::kSleepTimeout};
+    uint8_t contrast_{0x7F};
 
-	bool m_bIsSleep { false };
-	bool m_bIsFlippedVertically { false };
-#if defined (CONFIG_DISPLAY_HAVE_7SEGMENT)
-	bool m_bHave7Segment { false };
-#endif
+    bool is_sleep_{false};
+    bool is_flipped_vertically_{false};
 
-	DisplaySet *m_LcdDisplay { nullptr };
-	static inline Display *s_pThis;
+    DisplaySet* lcd_display_{nullptr};
+    static inline Display* s_this;
 };
 
 #if defined(__GNUC__) && !defined(__clang__)
-# if defined (CONFIG_I2C_LCD_OPTIMIZE)
-#  pragma GCC pop_options
-# endif
-# endif
-#endif /* I2C_DISPLAY_H_ */
+#if defined(CONFIG_I2C_LCD_OPTIMIZE)
+#pragma GCC pop_options
+#endif
+#endif
+
+#endif  // I2C_DISPLAY_H_

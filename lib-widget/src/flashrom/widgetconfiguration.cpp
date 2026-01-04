@@ -2,7 +2,7 @@
  * @file widgetconfiguration.cpp
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,29 +24,32 @@
  */
 
 #include <cstdint>
-#include <cassert>
 
 #include "widgetconfiguration.h"
 #include "widgetstore.h"
 
 #include "dmx.h"
 
-void WidgetConfiguration::Store(const struct TWidgetConfiguration *widget_params) {
-	if (widget_params->nBreakTime != s_nBreakTime) {
-		s_nBreakTime = widget_params->nBreakTime;
-		Dmx::Get()->SetDmxBreakTime(static_cast<uint32_t>(s_nBreakTime * 10.67));
-		WidgetStore::UpdateBreakTime(widget_params->nBreakTime);
-	}
+void WidgetConfiguration::Store(const struct TWidgetConfiguration* widget_params)
+{
+    if (widget_params->break_time != s_break_time)
+    {
+        s_break_time = widget_params->break_time;
+        Dmx::Get()->SetDmxBreakTime(static_cast<uint32_t>(s_break_time * 10.67));
+        widget_store::SaveBreakTime(widget_params->break_time);
+    }
 
-	if (widget_params->nMabTime != s_nMabTime) {
-		s_nMabTime = widget_params->nMabTime;
-		Dmx::Get()->SetDmxMabTime(static_cast<uint32_t>(s_nMabTime * 10.67));
-		WidgetStore::UpdateMabTime(widget_params->nMabTime);
-	}
+    if (widget_params->mab_time != s_mab_time)
+    {
+        s_mab_time = widget_params->mab_time;
+        Dmx::Get()->SetDmxMabTime(static_cast<uint32_t>(s_mab_time * 10.67));
+        widget_store::SaveMabTime(widget_params->mab_time);
+    }
 
-	if (widget_params->nRefreshRate != s_nRefreshRate) {
-		s_nRefreshRate = widget_params->nRefreshRate;
-		Dmx::Get()->SetDmxPeriodTime(widget_params->nRefreshRate == 0 ? 0 : (1000000U / widget_params->nRefreshRate));
-		WidgetStore::UpdateRefreshRate(widget_params->nRefreshRate);
-	}
+    if (widget_params->refresh_rate != s_refresh_rate)
+    {
+        s_refresh_rate = widget_params->refresh_rate;
+        Dmx::Get()->SetDmxPeriodTime(widget_params->refresh_rate == 0 ? 0 : (1000000U / widget_params->refresh_rate));
+        widget_store::SaveRefreshRate(widget_params->refresh_rate);
+    }
 }

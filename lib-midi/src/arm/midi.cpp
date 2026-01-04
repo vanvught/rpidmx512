@@ -50,7 +50,7 @@ static constexpr uint32_t RX_BUFFER_INDEX_ENTRIES	= (1U << 6);
 static constexpr uint32_t RX_BUFFER_INDEX_MASK 		= (RX_BUFFER_INDEX_ENTRIES - 1);
 
 struct MidiReceive {
-	uint32_t nTimestamp;
+	uint32_t timestamp;
 	uint8_t nData;
 } __attribute__ ((aligned (4)));
 
@@ -121,7 +121,7 @@ void TIMER1_IRQHandler() {
 void USART2_IRQHandler() {
 	if (H3_UART2->O08.IIR & UART_IIR_IID_RD) {
 		sv_RxBuffer.midi[sv_RxBuffer.nIndexHead].nData = (H3_UART2->O00.RBR & 0xFF);
-		sv_RxBuffer.midi[sv_RxBuffer.nIndexHead].nTimestamp = H3_TIMER->AVS_CNT0;
+		sv_RxBuffer.midi[sv_RxBuffer.nIndexHead].timestamp = H3_TIMER->AVS_CNT0;
 		sv_RxBuffer.nIndexHead = (sv_RxBuffer.nIndexHead + 1) & midi::RX_BUFFER_INDEX_MASK;
 	}
 }
@@ -174,8 +174,8 @@ void TIMER0_BRK_TIMER8_IRQHandler() {
 
 void USART5_IRQHandler() {
 	if (RESET != usart_interrupt_flag_get(USART5, USART_INT_FLAG_RBNE)) {
-		sv_RxBuffer.midi[sv_RxBuffer.nIndexHead].nData = gd32_uart_get_rx_data(USART5);
-//		sv_RxBuffer[sv_RxBuffer.nIndexHead].nTimestamp =
+		sv_RxBuffer.midi[sv_RxBuffer.nIndexHead].nData = Gd32UartGetRxData(USART5);
+//		sv_RxBuffer[sv_RxBuffer.nIndexHead].timestamp =
 		sv_RxBuffer.nIndexHead = (sv_RxBuffer.nIndexHead + 1) & midi::RX_BUFFER_INDEX_MASK;
 	}
 }
@@ -212,9 +212,9 @@ static void timer8_config() {
 #endif
 
 void Midi::Init(midi::Direction direction) {
-	m_Direction = direction;
+	direction_ = direction;
 
-	FUNC_PREFIX (uart_begin(EXT_MIDI_UART_BASE, m_nBaudrate == 0 ? 31250 : m_nBaudrate, hal::uart::BITS_8, hal::uart::PARITY_NONE, hal::uart::STOP_1BIT));
+	FUNC_PREFIX (UartBegin(EXT_MIDI_UART_BASE, baudrate_ == 0 ? 31250 : baudrate_, hal::uart::BITS_8, hal::uart::PARITY_NONE, hal::uart::STOP_1BIT));
 
 	if ((static_cast<uint32_t>(direction) & static_cast<uint32_t>(midi::Direction::INPUT)) == static_cast<uint32_t>(midi::Direction::INPUT)) {
 		ResetInput();
@@ -261,7 +261,7 @@ void Midi::Init(midi::Direction direction) {
 #endif
 	}
 
-	if ((static_cast<uint32_t>(m_Direction) & static_cast<uint32_t>(midi::Direction::OUTPUT)) == static_cast<uint32_t>(midi::Direction::OUTPUT)) {
+	if ((static_cast<uint32_t>(direction_) & static_cast<uint32_t>(midi::Direction::OUTPUT)) == static_cast<uint32_t>(midi::Direction::OUTPUT)) {
 #if defined (H3)
 		H3_UART2->O08.FCR = UART_FCR_EFIFO | UART_FCR_TRESET;
 		H3_UART2->O04.IER = 0;
@@ -285,7 +285,7 @@ bool Midi::ReadRaw(uint8_t *pByte, uint32_t *pTimestamp) {
 	__DMB();
 	if (sv_RxBuffer.nIndexHead != sv_RxBuffer.nIndexTail) {
 		*pByte = sv_RxBuffer.midi[sv_RxBuffer.nIndexTail].nData;
-		*pTimestamp = sv_RxBuffer.midi[sv_RxBuffer.nIndexTail].nTimestamp;
+		*pTimestamp = sv_RxBuffer.midi[sv_RxBuffer.nIndexTail].timestamp;
 		sv_RxBuffer.nIndexTail = (sv_RxBuffer.nIndexTail + 1) & midi::RX_BUFFER_INDEX_MASK;
 		return true;
 	} else {
@@ -300,36 +300,36 @@ midi::ActiveSenseState Midi::GetActiveSenseState() {
 
 bool Midi::Parse() {
 	uint8_t nSerialData;
-	uint32_t nTimestamp;
+	uint32_t timestamp;
 	uint32_t nPendingTimestamp;
 
-    if (!ReadRaw(&nSerialData, &nTimestamp)) {
+    if (!ReadRaw(&nSerialData, &timestamp)) {
         return false;
 	}
 
     sv_nActiveSenseTimeout = 0;
 
-	if (m_nPendingMessageIndex == 0) {
+	if (pending_message_index_ == 0) {
 		// Start a new pending message
-		nPendingTimestamp = nTimestamp;
-		m_aPendingMessage[0] = nSerialData;
+		nPendingTimestamp = timestamp;
+		pending_message_[0] = nSerialData;
 
 		// Check for running status first
-		if (isChannelMessage(GetTypeFromStatusByte(m_nRunningStatusRx))) {
+		if (IsChannelMessage(GetTypeFromStatusByte(running_status_rx_))) {
 			// Only these types allow Running Status
 			// If the status byte is not received, prepend it
 			// to the pending message
 			if (nSerialData < 0x80) {
-				m_aPendingMessage[0] = m_nRunningStatusRx;
-				m_aPendingMessage[1] = nSerialData;
-				m_nPendingMessageIndex = 1;
+				pending_message_[0] = running_status_rx_;
+				pending_message_[1] = nSerialData;
+				pending_message_index_ = 1;
 			}
 			// We received another status byte,
 			// so the running status does not apply here.
 			// It will be updated upon completion of this message.
 		}
 
-		switch (GetTypeFromStatusByte(m_aPendingMessage[0])) {
+		switch (GetTypeFromStatusByte(pending_message_[0])) {
 		// 1 byte messages
 		case midi::Types::ACTIVE_SENSING:
 			sv_ActiveSenseState = midi::ActiveSenseState::ENABLED;
@@ -342,19 +342,19 @@ bool Midi::Parse() {
 		case midi::Types::SYSTEM_RESET:
 		case midi::Types::TUNE_REQUEST:
 			// Handle the message type directly here.
-			m_Message.nTimestamp = nPendingTimestamp;
-			m_Message.tType = GetTypeFromStatusByte(m_aPendingMessage[0]);
-			m_Message.nChannel = 0;
-			m_Message.nData1 = 0;
-			m_Message.nData2 = 0;
-			m_Message.nBytesCount = 1;
+			message_.timestamp = nPendingTimestamp;
+			message_.type = GetTypeFromStatusByte(pending_message_[0]);
+			message_.channel = 0;
+			message_.data1 = 0;
+			message_.data2 = 0;
+			message_.bytes_count = 1;
 			//midi_message.valid = true;
 			// \fix Running Status broken when receiving Clock messages.
 			// Do not reset all input attributes, Running Status must remain unchanged.
 			//resetInput();
 			// We still need to reset these
-			m_nPendingMessageIndex = 0;
-			m_nPendingMessageExpectedLenght = 0;
+			pending_message_index_ = 0;
+			pending_message_expected_lenght_ = 0;
 			sv_nUpdates = sv_nUpdates + 1;
 			return true;
 			__builtin_unreachable();
@@ -364,7 +364,7 @@ bool Midi::Parse() {
 		case midi::Types::AFTER_TOUCH_CHANNEL:
 		case midi::Types::TIME_CODE_QUARTER_FRAME:
 		case midi::Types::SONG_SELECT:
-			m_nPendingMessageExpectedLenght = 2;
+			pending_message_expected_lenght_ = 2;
 			break;
 		// 3 bytes messages
 		case midi::Types::NOTE_ON:
@@ -373,16 +373,16 @@ bool Midi::Parse() {
 		case midi::Types::PITCH_BEND:
 		case midi::Types::AFTER_TOUCH_POLY:
 		case midi::Types::SONG_POSITION:
-			m_nPendingMessageExpectedLenght = 3;
+			pending_message_expected_lenght_ = 3;
 			break;
 		case midi::Types::SYSTEM_EXCLUSIVE:
 			// The message can be any length
 			// between 3 and MIDI_SYSTEM_EXCLUSIVE_INDEX_ENTRIES
-			m_nPendingMessageExpectedLenght = MIDI_SYSTEM_EXCLUSIVE_INDEX_ENTRIES;
-			m_nRunningStatusRx = static_cast<uint8_t>(midi::Types::INVALIDE_TYPE);
-			m_Message.aSystemExclusive[0] = static_cast<uint8_t>(midi::Types::SYSTEM_EXCLUSIVE);
-			m_Message.nChannel = 0;
-			m_Message.nTimestamp = nPendingTimestamp;
+			pending_message_expected_lenght_ = MIDI_SYSTEM_EXCLUSIVE_INDEX_ENTRIES;
+			running_status_rx_ = static_cast<uint8_t>(midi::Types::INVALIDE_TYPE);
+			message_.system_exclusive[0] = static_cast<uint8_t>(midi::Types::SYSTEM_EXCLUSIVE);
+			message_.channel = 0;
+			message_.timestamp = nPendingTimestamp;
 			break;
 		case midi::Types::INVALIDE_TYPE:
 		default:
@@ -393,29 +393,29 @@ bool Midi::Parse() {
 			break;
 		}
 
-		if (m_nPendingMessageIndex >= (m_nPendingMessageExpectedLenght - 1)) {
+		if (pending_message_index_ >= (pending_message_expected_lenght_ - 1)) {
 			// Reception complete
-			m_Message.nTimestamp = nPendingTimestamp;
-			m_Message.tType = GetTypeFromStatusByte(m_aPendingMessage[0]);
-			m_Message.nChannel = GetChannelFromStatusByte(m_aPendingMessage[0]);
-			m_Message.nData1 = m_aPendingMessage[1];
+			message_.timestamp = nPendingTimestamp;
+			message_.type = GetTypeFromStatusByte(pending_message_[0]);
+			message_.channel = GetChannelFromStatusByte(pending_message_[0]);
+			message_.data1 = pending_message_[1];
 
 			/* Save data2 only if applicable */
-			if (m_nPendingMessageExpectedLenght == 3) {
-				m_Message.nData2 = m_aPendingMessage[2];
-				m_Message.nBytesCount = 3;
+			if (pending_message_expected_lenght_ == 3) {
+				message_.data2 = pending_message_[2];
+				message_.bytes_count = 3;
 			} else {
-				m_Message.nData2 = 0;
-				m_Message.nBytesCount = 2;
+				message_.data2 = 0;
+				message_.bytes_count = 2;
 			}
-			m_nPendingMessageIndex = 0;
-			m_nPendingMessageExpectedLenght = 0;
+			pending_message_index_ = 0;
+			pending_message_expected_lenght_ = 0;
 
 			sv_nUpdates = sv_nUpdates + 1;
 			return true;
 		} else {
 			// Waiting for more data
-			m_nPendingMessageIndex++;
+			pending_message_index_++;
 		}
 
 		if (midi::USE_1_BYTE_PARSING) {
@@ -447,27 +447,27 @@ bool Midi::Parse() {
 				// interleaved into. Oh, and without killing the running status..
 				// This is done by leaving the pending message as is,
 				// it will be completed on next calls.
-				m_Message.nTimestamp = nTimestamp;
-				m_Message.tType = static_cast<midi::Types>(nSerialData);
-				m_Message.nData1 = 0;
-				m_Message.nData2 = 0;
-				m_Message.nChannel = 0;
-				m_Message.nBytesCount = 1;
+				message_.timestamp = timestamp;
+				message_.type = static_cast<midi::Types>(nSerialData);
+				message_.data1 = 0;
+				message_.data2 = 0;
+				message_.channel = 0;
+				message_.bytes_count = 1;
 				//midi_message.valid = true;
 				return true;
 				__builtin_unreachable();
 				break;
 				// End of Exclusive
 			case 0xF7:
-				if (m_Message.aSystemExclusive[0] == static_cast<uint8_t>(midi::Types::SYSTEM_EXCLUSIVE)) {
+				if (message_.system_exclusive[0] == static_cast<uint8_t>(midi::Types::SYSTEM_EXCLUSIVE)) {
 					// Store the last byte (EOX)
-					m_Message.aSystemExclusive[m_nPendingMessageIndex++] = 0xF7;
-					m_Message.tType = midi::Types::SYSTEM_EXCLUSIVE;
+					message_.system_exclusive[pending_message_index_++] = 0xF7;
+					message_.type = midi::Types::SYSTEM_EXCLUSIVE;
 					/* Get length */
-					m_Message.nData1 = m_nPendingMessageIndex & 0xFF; // LSB
-					m_Message.nData2 = static_cast<uint8_t>(m_nPendingMessageIndex >> 8);   // MSB
-					m_Message.nChannel = 0;
-					m_Message.nBytesCount = m_nPendingMessageIndex;
+					message_.data1 = pending_message_index_ & 0xFF; // LSB
+					message_.data2 = static_cast<uint8_t>(pending_message_index_ >> 8);   // MSB
+					message_.channel = 0;
+					message_.bytes_count = pending_message_index_;
 
 					sv_nUpdates = sv_nUpdates + 1;
 
@@ -486,50 +486,50 @@ bool Midi::Parse() {
 		}
 
 		// Add extracted data byte to pending message
-		if (m_aPendingMessage[0] == static_cast<uint8_t>(midi::Types::SYSTEM_EXCLUSIVE)) {
-			m_Message.aSystemExclusive[m_nPendingMessageIndex] = nSerialData;
+		if (pending_message_[0] == static_cast<uint8_t>(midi::Types::SYSTEM_EXCLUSIVE)) {
+			message_.system_exclusive[pending_message_index_] = nSerialData;
 		} else {
-			m_aPendingMessage[m_nPendingMessageIndex] = nSerialData;
+			pending_message_[pending_message_index_] = nSerialData;
 		}
 
 		// Now we are going to check if we have reached the end of the message
-		if (m_nPendingMessageIndex >= (m_nPendingMessageExpectedLenght - 1)) {
+		if (pending_message_index_ >= (pending_message_expected_lenght_ - 1)) {
 			// "FML" case: fall down here with an overflown SysEx..
 			// This means we received the last possible data byte that can fit
 			// the buffer. If this happens, try increasing MidiMessage::sSysExMaxSize.
-			if (m_aPendingMessage[0] == static_cast<uint8_t>(midi::Types::SYSTEM_EXCLUSIVE)) {
+			if (pending_message_[0] == static_cast<uint8_t>(midi::Types::SYSTEM_EXCLUSIVE)) {
 				ResetInput();
 				return false;
 			}
 
-			m_Message.nTimestamp = nTimestamp;
-			m_Message.tType = GetTypeFromStatusByte(m_aPendingMessage[0]);
+			message_.timestamp = timestamp;
+			message_.type = GetTypeFromStatusByte(pending_message_[0]);
 
-			if (isChannelMessage(m_Message.tType)) {
-				m_Message.nChannel = GetChannelFromStatusByte(m_aPendingMessage[0]);
+			if (IsChannelMessage(message_.type)) {
+				message_.channel = GetChannelFromStatusByte(pending_message_[0]);
 			} else {
-				m_Message.nChannel = 0;
+				message_.channel = 0;
 			}
 
-			m_Message.nData1 = m_aPendingMessage[1];
+			message_.data1 = pending_message_[1];
 
 			// Save data2 only if applicable
-			if (m_nPendingMessageExpectedLenght == 3) {
-				m_Message.nData2 = m_aPendingMessage[2];
-				m_Message.nBytesCount = 3;
+			if (pending_message_expected_lenght_ == 3) {
+				message_.data2 = pending_message_[2];
+				message_.bytes_count = 3;
 			} else {
-				m_Message.nData2 = 0;
-				m_Message.nBytesCount = 2;
+				message_.data2 = 0;
+				message_.bytes_count = 2;
 			}
 
 			// Reset local variables
-			m_nPendingMessageIndex = 0;
-			m_nPendingMessageExpectedLenght = 0;
+			pending_message_index_ = 0;
+			pending_message_expected_lenght_ = 0;
 
 			sv_nUpdates = sv_nUpdates + 1;
 
 			// Activate running status (if enabled for the received type)
-			switch (m_Message.tType) {
+			switch (message_.type) {
 			case midi::Types::NOTE_OFF:
 			case midi::Types::NOTE_ON:
 			case midi::Types::AFTER_TOUCH_POLY:
@@ -538,18 +538,18 @@ bool Midi::Parse() {
 			case midi::Types::AFTER_TOUCH_CHANNEL:
 			case midi::Types::PITCH_BEND:
 				// Running status enabled: store it from received message
-				m_nRunningStatusRx = m_aPendingMessage[0];
+				running_status_rx_ = pending_message_[0];
 				break;
 
 			default:
 				// No running status
-				m_nRunningStatusRx = static_cast<uint8_t>(midi::Types::INVALIDE_TYPE);
+				running_status_rx_ = static_cast<uint8_t>(midi::Types::INVALIDE_TYPE);
 				break;
 			}
 			return true;
 		} else {
 			// Then update the index of the pending message.
-			m_nPendingMessageIndex++;
+			pending_message_index_++;
 
 			if (midi::USE_1_BYTE_PARSING) {
 				// Message is not complete.

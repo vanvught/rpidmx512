@@ -2,7 +2,7 @@
  * @file artnetrdmcontroller.cpp
  *
  */
-/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,161 +24,184 @@
  */
 
 #if defined(__GNUC__) && !defined(__clang__)
-# pragma GCC push_options
-# pragma GCC optimize ("O2")
-# pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#pragma GCC push_options
+#pragma GCC optimize("O2")
+#pragma GCC optimize("no-tree-loop-distribute-patterns")
+#pragma GCC optimize("-funroll-loops")
+#pragma GCC optimize("-fprefetch-loop-arrays")
 #endif
 
 #include <cstdint>
 #include <cstring>
 #include <cassert>
 
-#include "artnetnode.h"
 #include "artnetrdmcontroller.h"
-
 #include "rdm.h"
 #include "rdmconst.h"
+#include "e120.h"
 #include "rdm_e120.h"
 
-#include "debug.h"
+static void RespondMessageAck(uint32_t port_index, struct TRdmMessage* message)
+{
+    assert(message->start_code == E120_SC_RDM);
 
-RDMTod ArtNetRdmController::m_pRDMTod[artnetnode::MAX_PORTS];
+    message->message_count = 0;
+    message->command_class = static_cast<uint8_t>(message->command_class + 1U);
+    message->message_length = static_cast<uint8_t>(RDM_MESSAGE_MINIMUM_SIZE + message->param_data_length);
+    message->slot16.response_type = E120_RESPONSE_TYPE_ACK;
 
-static void respond_message_ack(const uint32_t nPortIndex, struct TRdmMessage *pRdmMessage) {
-	assert(pRdmMessage->start_code == E120_SC_RDM);
+    for (uint32_t i = 0; i < RDM_UID_SIZE; i++)
+    {
+        auto uid = message->destination_uid[i];
+        message->destination_uid[i] = message->source_uid[i];
+        message->source_uid[i] = uid;
+    }
 
-	pRdmMessage->message_count = 0;
-	pRdmMessage->command_class = static_cast<uint8_t>(pRdmMessage->command_class + 1U);
-	pRdmMessage->message_length = static_cast<uint8_t>(RDM_MESSAGE_MINIMUM_SIZE + pRdmMessage->param_data_length);
-	pRdmMessage->slot16.response_type = E120_RESPONSE_TYPE_ACK;
+    uint16_t checksum = 0;
+    uint32_t i;
 
-	for (uint32_t i = 0; i < RDM_UID_SIZE; i++) {
-		auto nUid = pRdmMessage->destination_uid[i];
-		pRdmMessage->destination_uid[i] = pRdmMessage->source_uid[i];
-		pRdmMessage->source_uid[i] = nUid;
-	}
+    auto* data = reinterpret_cast<uint8_t*>(message);
 
-	uint16_t nChecksum = 0;
-	uint32_t i;
+    for (i = 0; i < message->message_length; i++)
+    {
+        checksum = static_cast<uint16_t>(checksum + data[i]);
+    }
 
-	auto *pRdmData = reinterpret_cast<uint8_t *>(pRdmMessage);
+    data[i++] = static_cast<uint8_t>(checksum >> 8);
+    data[i++] = static_cast<uint8_t>(checksum & 0XFF);
 
-	for (i = 0; i < pRdmMessage->message_length; i++) {
-		nChecksum = static_cast<uint16_t>(nChecksum + pRdmData[i]);
-	}
-
-	pRdmData[i++] = static_cast<uint8_t>(nChecksum >> 8);
-	pRdmData[i++] = static_cast<uint8_t>(nChecksum & 0XFF);
-
-	Rdm::SendRawRespondMessage(nPortIndex, reinterpret_cast<uint8_t *>(pRdmMessage), i);
+    Rdm::SendRawRespondMessage(port_index, reinterpret_cast<uint8_t*>(message), i);
 }
 
-bool ArtNetRdmController::RdmReceive(const uint32_t nPortIndex, const uint8_t *pRdmData) {
-	assert(nPortIndex < artnetnode::MAX_PORTS);
-	assert(pRdmData != nullptr);
+bool ArtNetRdmController::RdmReceive(uint32_t port_index, const uint8_t* data)
+{
+    assert(port_index < dmxnode::kMaxPorts);
+    assert(data != nullptr);
 
-	auto *pRdmMessage = reinterpret_cast<const struct TRdmMessage *>(pRdmData);
-	auto *pUid = pRdmMessage->destination_uid;
-	auto bIsRdmPacketForMe = false;
+    auto* rdm_message = reinterpret_cast<const struct TRdmMessage*>(data);
+    auto* uid = rdm_message->destination_uid;
 
-	auto bIsRdmPacketBroadcast = (memcmp(pUid, UID_ALL, RDM_UID_SIZE) == 0);
+    auto is_rdm_packet_for_me = false;
+    auto is_rdm_packet_broadcast = (memcmp(uid, UID_ALL, RDM_UID_SIZE) == 0);
 
-	if (!bIsRdmPacketBroadcast) {
-		bIsRdmPacketBroadcast = (memcmp(&pRdmMessage->destination_uid[2], UID_ALL, 4) == 0);
+    if (!is_rdm_packet_broadcast)
+    {
+        is_rdm_packet_broadcast = (memcmp(&rdm_message->destination_uid[2], UID_ALL, 4) == 0);
 
-		if (!bIsRdmPacketBroadcast) {
-			bIsRdmPacketForMe = m_pRDMTod[nPortIndex].Exist(pUid);
-		}
-	}
+        if (!is_rdm_packet_broadcast)
+        {
+            is_rdm_packet_for_me = s_tod[port_index].Exist(uid);
+        }
+    }
 
-	if ((!bIsRdmPacketForMe) && (!bIsRdmPacketBroadcast)) {
-		return false;
-	}
+    if ((!is_rdm_packet_for_me) && (!is_rdm_packet_broadcast))
+    {
+        return false;
+    }
 
-	if ((pRdmMessage->command_class == E120_GET_COMMAND) || (pRdmMessage->command_class == E120_SET_COMMAND) ) {
-		return true;
-	}
+    if ((rdm_message->command_class == E120_GET_COMMAND) || (rdm_message->command_class == E120_SET_COMMAND))
+    {
+        return true;
+    }
 
-	if (bIsRdmPacketBroadcast) {
-		pUid = m_pRDMTod[nPortIndex].Next();
-	}
+    if (is_rdm_packet_broadcast)
+    {
+        uid = s_tod[port_index].Next();
+    }
 
-	if (pRdmMessage->command_class == E120_DISCOVERY_COMMAND) {
-		const auto nParamId = static_cast<uint16_t>((pRdmMessage->param_id[0] << 8) + pRdmMessage->param_id[1]);
+    if (rdm_message->command_class == E120_DISCOVERY_COMMAND)
+    {
+        const auto kParamId = static_cast<uint16_t>((rdm_message->param_id[0] << 8) + rdm_message->param_id[1]);
 
-		if (nParamId == E120_DISC_UNIQUE_BRANCH) {
-			if (!m_pRDMTod[nPortIndex].IsMuted()) {
-				if ((memcmp(pRdmMessage->param_data, pUid, RDM_UID_SIZE) <= 0) && (memcmp(pUid, pRdmMessage->param_data + 6, RDM_UID_SIZE) <= 0)) {
-					auto *pResponse = reinterpret_cast<struct TRdmDiscoveryMsg *>(const_cast<uint8_t *>(pRdmData));
+        if (kParamId == E120_DISC_UNIQUE_BRANCH)
+        {
+            if (!s_tod[port_index].IsMuted())
+            {
+                if ((memcmp(rdm_message->param_data, uid, RDM_UID_SIZE) <= 0) && (memcmp(uid, rdm_message->param_data + 6, RDM_UID_SIZE) <= 0))
+                {
+                    auto* response = reinterpret_cast<struct TRdmDiscoveryMsg*>(const_cast<uint8_t*>(data));
 
-					uint16_t nChecksum = 6 * 0xFF;
+                    uint16_t checksum = 6 * 0xFF;
 
-					for (uint32_t i = 0; i < 7; i++) {
-						pResponse->header_FE[i] = 0xFE;
-					}
+                    for (uint32_t i = 0; i < 7; i++)
+                    {
+                        response->header_FE[i] = 0xFE;
+                    }
 
-					pResponse->header_AA = 0xAA;
+                    response->header_AA = 0xAA;
 
-					for (uint32_t i = 0; i < 6; i++) {
-						pResponse->masked_device_id[i + i] = pUid[i] | 0xAA;
-						pResponse->masked_device_id[i + i + 1] = pUid[i] | 0x55;
-						nChecksum = static_cast<uint16_t>(nChecksum + pUid[i]);
-					}
+                    for (uint32_t i = 0; i < 6; i++)
+                    {
+                        response->masked_device_id[i + i] = uid[i] | 0xAA;
+                        response->masked_device_id[i + i + 1] = uid[i] | 0x55;
+                        checksum = static_cast<uint16_t>(checksum + uid[i]);
+                    }
 
-					pResponse->checksum[0] = static_cast<uint8_t>((nChecksum >> 8) | 0xAA);
-					pResponse->checksum[1] = static_cast<uint8_t>((nChecksum >> 8) | 0x55);
-					pResponse->checksum[2] = static_cast<uint8_t>((nChecksum & 0xFF) | 0xAA);
-					pResponse->checksum[3] = static_cast<uint8_t>((nChecksum & 0xFF) | 0x55);
+                    response->checksum[0] = static_cast<uint8_t>((checksum >> 8) | 0xAA);
+                    response->checksum[1] = static_cast<uint8_t>((checksum >> 8) | 0x55);
+                    response->checksum[2] = static_cast<uint8_t>((checksum & 0xFF) | 0xAA);
+                    response->checksum[3] = static_cast<uint8_t>((checksum & 0xFF) | 0x55);
 
-					Rdm::SendDiscoveryRespondMessage(nPortIndex, reinterpret_cast<uint8_t *>(pResponse), sizeof(struct TRdmDiscoveryMsg));
-					return false;
-				}
-			}
-		} else if (nParamId == E120_DISC_UN_MUTE) {
-			if (pRdmMessage->param_data_length != 0) {
-				/* The response RESPONSE_TYPE_NACK_REASON shall only be used in conjunction
-				 * with the Command Classes GET_COMMAND_RESPONSE & SET_COMMAND_RESPONSE.
-				 */
-				return false;
-			}
+                    Rdm::SendDiscoveryRespondMessage(port_index, reinterpret_cast<uint8_t*>(response), sizeof(struct TRdmDiscoveryMsg));
+                    return false;
+                }
+            }
+        }
+        else if (kParamId == E120_DISC_UN_MUTE)
+        {
+            if (rdm_message->param_data_length != 0)
+            {
+                /* The response RESPONSE_TYPE_NACK_REASON shall only be used in conjunction
+                 * with the Command Classes GET_COMMAND_RESPONSE & SET_COMMAND_RESPONSE.
+                 */
+                return false;
+            }
 
-			if (!bIsRdmPacketBroadcast && bIsRdmPacketForMe) {
-				m_pRDMTod[nPortIndex].UnMute();
+            if (!is_rdm_packet_broadcast && is_rdm_packet_for_me)
+            {
+                s_tod[port_index].UnMute();
 
-				auto *pRdmMessage = reinterpret_cast<struct TRdmMessage *>(const_cast<uint8_t *>(pRdmData));
+                auto* message_ack = reinterpret_cast<struct TRdmMessage*>(const_cast<uint8_t*>(data));
 
-				pRdmMessage->param_data_length = 2;
-				pRdmMessage->param_data[0] = 0x00;	// Control Field
-				pRdmMessage->param_data[1] = 0x00;	// Control Field
+                message_ack->param_data_length = 2;
+                message_ack->param_data[0] = 0x00; // Control Field
+                message_ack->param_data[1] = 0x00; // Control Field
 
-				respond_message_ack(nPortIndex, pRdmMessage);
-			} else {
-				m_pRDMTod[nPortIndex].UnMuteAll();
-			}
+                RespondMessageAck(port_index, message_ack);
+            }
+            else
+            {
+                s_tod[port_index].UnMuteAll();
+            }
 
-			return false;
-		} else if (nParamId == E120_DISC_MUTE) {
-			if (pRdmMessage->param_data_length != 0) {
-				/* The response RESPONSE_TYPE_NACK_REASON shall only be used in conjunction
-				 * with the Command Classes GET_COMMAND_RESPONSE & SET_COMMAND_RESPONSE.
-				 */
-				return false;
-			}
+            return false;
+        }
+        else if (kParamId == E120_DISC_MUTE)
+        {
+            if (rdm_message->param_data_length != 0)
+            {
+                /* The response RESPONSE_TYPE_NACK_REASON shall only be used in conjunction
+                 * with the Command Classes GET_COMMAND_RESPONSE & SET_COMMAND_RESPONSE.
+                 */
+                return false;
+            }
 
-			if (bIsRdmPacketForMe) {
-				m_pRDMTod[nPortIndex].Mute();
+            if (is_rdm_packet_for_me)
+            {
+                s_tod[port_index].Mute();
 
-				auto *pRdmMessage = reinterpret_cast<struct TRdmMessage *>(const_cast<uint8_t *>(pRdmData));
+                auto* message_ack = reinterpret_cast<struct TRdmMessage*>(const_cast<uint8_t*>(data));
 
-				pRdmMessage->param_data_length = 2;
-				pRdmMessage->param_data[0] = 0x00;	// Control Field
-				pRdmMessage->param_data[1] = 0x00;	// Control Field
+                message_ack->param_data_length = 2;
+                message_ack->param_data[0] = 0x00; // Control Field
+                message_ack->param_data[1] = 0x00; // Control Field
 
-				respond_message_ack(nPortIndex, pRdmMessage);;
-				return false;
-			}
-		}
-	}
+                RespondMessageAck(port_index, message_ack);
+                ;
+                return false;
+            }
+        }
+    }
 
-	return false;
+    return false;
 }

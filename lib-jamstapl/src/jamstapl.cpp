@@ -33,7 +33,7 @@ extern "C" {
 #include "../jbi_22/code/jbiexprt.h"
 }
 
-#include "debug.h"
+ #include "firmware/debug/debug_debug.h"
 
 static constexpr const char *error_text[] = {
 /* JBIC_SUCCESS            0 */ "success",
@@ -173,8 +173,8 @@ JBI_RETURN_TYPE JamSTAPL::PrintInfo() {
 
 	printf("File format is %s ByteCode format\n", (m_FormatVersion == 2) ? "Jam STAPL" : "pre-standardized Jam 1.1");
 
-	if ((m_pJamSTAPLDisplay != nullptr) && ((m_FormatVersion == 2))) {
-		m_pJamSTAPLDisplay->JamShowStatus("Intel firmware found", 0);
+	if ((jamstapl_display_ != nullptr) && ((m_FormatVersion == 2))) {
+		jamstapl_display_->JamShowStatus("Intel firmware found", 0);
 	}
 
 	return nResult;
@@ -224,10 +224,10 @@ void JamSTAPL::Execute(const char *pAction) {
 }
 
 void JamSTAPL::DisplayStatus(const char *pAction) {
-	if (m_pJamSTAPLDisplay != nullptr) {
+	if (jamstapl_display_ != nullptr) {
 		char aStatus[21];
 		snprintf(aStatus, sizeof(aStatus) - 1, "%s: %s", pAction, m_nExitCode == 0 ? "Success" : "Failed");
-		m_pJamSTAPLDisplay->JamShowStatus(aStatus, m_nExitCode);
+		jamstapl_display_->JamShowStatus(aStatus, m_nExitCode);
 	}
 }
 

@@ -30,10 +30,9 @@
 #include "console.h"
 
 #include "device/fb.h"
-
 #include "arm/arm.h"
 
-extern unsigned char FONT[] __attribute__((aligned(4)));
+extern unsigned char font[] __attribute__((aligned(4)));
 
 #define FB_CHAR_W	8
 #define FB_CHAR_H	16
@@ -42,9 +41,9 @@ static uint32_t current_x = 0;
 static uint32_t current_y = 0;
 static uint32_t saved_x = 0;
 static uint32_t saved_y = 0;
-static uint16_t cur_fore = CONSOLE_WHITE;
+static uint16_t cur_fore = console::Colours::kConsoleWhite;
 static uint16_t cur_back = CONSOLE_BLACK;
-static uint16_t saved_fore = CONSOLE_WHITE;
+static uint16_t saved_fore = console::Colours::kConsoleWhite;
 static uint16_t saved_back = CONSOLE_BLACK;
 
 static uint32_t top_row = 0;
@@ -53,15 +52,15 @@ static uint32_t top_row = 0;
 static volatile int lock = 0;
 #endif
 
-void console_init() {
+void Init() {
 	fb_init();
 }
 
-uint32_t console_get_line_width() {
+uint32_t GetLineWidth() {
 	return FB_WIDTH / FB_CHAR_W;
 }
 
-void console_set_top_row(uint32_t row) {
+void SetTopRow(uint32_t row) {
 	if (row > FB_HEIGHT / FB_CHAR_H) {
 		top_row = 0;
 	} else {
@@ -122,7 +121,7 @@ inline static void draw_pixel(uint32_t x, uint32_t y, uint16_t color) {
 inline static void draw_char(int c, uint32_t x, uint32_t y, uint16_t fore, uint16_t back) {
 	uint32_t i, j;
 	uint8_t line;
-	unsigned char *p = FONT + (c * (int) FB_CHAR_H);
+	unsigned char *p = font + (c * (int) FB_CHAR_H);
 
 	for (i = 0; i < FB_CHAR_H; i++) {
 		line = (uint8_t) *p++;
@@ -143,7 +142,7 @@ int console_draw_char(int ch, uint16_t x, uint16_t y, uint16_t fore, uint16_t ba
 	return (int)ch;
 }
 
-void console_putc(int ch) {
+void Putc(int ch) {
 #if defined (ARM_ALLOW_MULTI_CORE)
 	while (__sync_lock_test_and_set(&lock, 1) == 1);
 #endif
@@ -167,48 +166,48 @@ void console_putc(int ch) {
 #endif
 }
 
-void console_puts(const char *s) {
+void Puts(const char *s) {
 	char c;
 	int i = 0;;
 
 	while ((c = *s++) != (char) 0) {
 		i++;
-		console_putc((int) c);
+		Putc((int) c);
 	}
 }
 
-void console_write(const char *s, unsigned int n) {
+void console::Write(const char *s, unsigned int n) {
 	char c;
 
 	while (((c = *s++) != (char) 0) && (n-- != 0)) {
-		console_putc((int) c);
+		Putc((int) c);
 	}
 }
 
-void console_error(const char *s) {
+void console::Error(const char *s) {
 	char c;
 	int i = 0;;
 
 	uint16_t fore_current = cur_fore;
 	uint16_t back_current = cur_back;
 
-	cur_fore = CONSOLE_RED;
+	cur_fore = console::Colours::kConsoleRed;
 	cur_back = CONSOLE_BLACK;
 
-	console_puts("Error <");
+	Puts("Error <");
 
 	while ((c = *s++) != (char) 0) {
 		i++;
-		console_putc((int) c);
+		Putc((int) c);
 	}
 
-	console_puts(">\n");
+	Puts(">\n");
 
 	cur_fore = fore_current;
 	cur_back = back_current;
 }
 
-void console_status(uint32_t color, const char *s) {
+void console::Status(uint32_t color, const char *s) {
 	char c;
 
 	const uint16_t fore_current = cur_fore;
@@ -217,13 +216,13 @@ void console_status(uint32_t color, const char *s) {
 	const uint16_t s_y = current_y;
 	const uint16_t s_x = current_x;
 
-	console_clear_line(29);
+	ClearLine(29);
 
 	cur_fore = color;
 	cur_back = CONSOLE_BLACK;
 
 	while ((c = *s++) != (char) 0) {
-		console_putc((int) c);
+		Putc((int) c);
 	}
 
 	current_y = s_y;
@@ -235,26 +234,26 @@ void console_status(uint32_t color, const char *s) {
 
 #define TO_HEX(i)	((i) < 10) ? (uint8_t)'0' + (i) : (uint8_t)'A' + ((i) - (uint8_t)10)
 
-void console_puthex(uint8_t data) {
-	console_putc((int) (TO_HEX(((data & 0xF0) >> 4))));
-	console_putc((int) (TO_HEX(data & 0x0F)));
+void ConsolePuthex(uint8_t data) {
+	Putc((int) (TO_HEX(((data & 0xF0) >> 4))));
+	Putc((int) (TO_HEX(data & 0x0F)));
 }
 
-void console_puthex_fg_bg(uint8_t data, uint16_t fore, uint16_t back) {
+void PuthexFgBg(uint8_t data, uint16_t fore, uint16_t back) {
 	uint16_t fore_current = cur_fore;
 	uint16_t back_current = cur_back;
 
 	cur_fore = fore;
 	cur_back = back;
 
-	console_putc((int) (TO_HEX(((data & 0xF0) >> 4))));
-	console_putc((int) (TO_HEX(data & 0x0F)));
+	Putc((int) (TO_HEX(((data & 0xF0) >> 4))));
+	Putc((int) (TO_HEX(data & 0x0F)));
 
 	cur_fore = fore_current;
 	cur_back = back_current;
 }
 
-void console_putpct_fg_bg(uint8_t data, uint16_t fore, uint16_t back) {
+void PutpctFgBg(uint8_t data, uint16_t fore, uint16_t back) {
 	uint16_t fore_current = cur_fore;
 	uint16_t back_current = cur_back;
 
@@ -262,17 +261,17 @@ void console_putpct_fg_bg(uint8_t data, uint16_t fore, uint16_t back) {
 	cur_back = back;
 
 	if (data < 100) {
-		console_putc((int) ((char) '0' + (char) (data / 10)));
-		console_putc((int) ((char) '0' + (char) (data % 10)));
+		Putc((int) ((char) '0' + (char) (data / 10)));
+		Putc((int) ((char) '0' + (char) (data % 10)));
 	} else {
-		console_puts("%%");
+		Puts("%%");
 	}
 
 	cur_fore = fore_current;
 	cur_back = back_current;
 }
 
-void console_put3dec_fg_bg(uint8_t data, uint16_t fore, uint16_t back) {
+void Put3decFgBg(uint8_t data, uint16_t fore, uint16_t back) {
 	uint16_t fore_current = cur_fore;
 	uint16_t back_current = cur_back;
 
@@ -281,22 +280,22 @@ void console_put3dec_fg_bg(uint8_t data, uint16_t fore, uint16_t back) {
 
 	const uint8_t i = data / 100;
 
-	console_putc((int) ((char) '0' + (char) i));
+	Putc((int) ((char) '0' + (char) i));
 
 	data -= (i * 100);
 
-	console_putc((int) ((char) '0' + (char) (data / 10)));
-	console_putc((int) ((char) '0' + (char) (data % 10)));
+	Putc((int) ((char) '0' + (char) (data / 10)));
+	Putc((int) ((char) '0' + (char) (data % 10)));
 
 	cur_fore = fore_current;
 	cur_back = back_current;
 }
 
-void console_newline(){
+void ConsoleNewline(){
 	newline();
 }
 
-void console_clear() {
+void Clear() {
 	uint16_t *address = (uint16_t *)(fb_addr);
 	uint32_t i;
 
@@ -308,7 +307,7 @@ void console_clear() {
 	current_y = 0;
 }
 
-void console_set_cursor(uint32_t x, uint32_t y) {
+void console::SetCursor(uint32_t x, uint32_t y) {
 #if defined (ARM_ALLOW_MULTI_CORE)
 	while (__sync_lock_test_and_set(&lock, 1) == 1);
 #endif
@@ -328,44 +327,44 @@ void console_set_cursor(uint32_t x, uint32_t y) {
 #endif
 }
 
-void console_save_cursor() {
+void console::SaveCursor() {
 	saved_y = current_y;
 	saved_x = current_x;
 	saved_back = cur_back;
 	saved_fore = cur_fore;
 }
 
-void console_restore_cursor() {
+void RestoreCursor() {
 	current_y = saved_y;
 	current_x = saved_x;
 	cur_back = saved_back;
 	cur_fore = saved_fore;
 }
 
-void console_save_color() {
+void SaveColour() {
 	saved_back = cur_back;
 	saved_fore = cur_fore;
 }
 
-void console_restore_color() {
+void RestoreColour() {
 	cur_back = saved_back;
 	cur_fore = saved_fore;
 }
 
-void console_set_fg_color(uint32_t fore) {
+void SetFgColour(uint32_t fore) {
 	cur_fore = fore;
 }
 
-void console_set_bg_color(uint32_t back) {
+void SetBgColour(uint32_t back) {
 	cur_back = back;
 }
 
-void console_set_fg_bg_color(uint16_t fore, uint16_t back) {
+void SetFgBgColour(uint16_t fore, uint16_t back) {
 	cur_fore = fore;
 	cur_back = back;
 }
 
-void console_clear_line(uint32_t line) {
+void ClearLine(uint32_t line) {
 	uint32_t *address;
 
 	if (line > FB_HEIGHT / FB_CHAR_H) {

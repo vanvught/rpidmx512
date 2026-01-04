@@ -28,6 +28,7 @@
 
 #include "net/protocol/ethernet.h"
 #include "net/protocol/ieee.h"
+#include "net/protocol/ip4.h"
 
 #if !defined (PACKED)
 # define PACKED __attribute__((packed))
@@ -72,4 +73,4 @@ struct t_arp {
 	struct arp_packet arp;
 } PACKED;
 
-#endif /* NET_PROTOCOL_ARP_H_ */
+#endif  // NET_PROTOCOL_ARP_H_

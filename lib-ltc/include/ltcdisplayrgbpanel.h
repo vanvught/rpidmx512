@@ -29,31 +29,30 @@
 #include <cstdint>
 
 #include "ltcdisplayrgbset.h"
-
 #include "rgbpanel.h"
 
-class LtcDisplayRgbPanel final: public LtcDisplayRgbSet {
-public:
-	LtcDisplayRgbPanel();
-	~LtcDisplayRgbPanel() override;
+class LtcDisplayRgbPanel final : public LtcDisplayRgbSet
+{
+   public:
+    LtcDisplayRgbPanel();
+    ~LtcDisplayRgbPanel() override;
 
-	void Init() override;
-	void Print() override;
+    void Init() override;
+    void Print() override;
 
-	void Show(const char *pTimecode, struct ltcdisplayrgb::Colours &tColours, struct ltcdisplayrgb::Colours &tColoursColons) override;
-	void ShowSysTime(const char *pSystemTime, struct ltcdisplayrgb::Colours &tColours, struct ltcdisplayrgb::Colours &tColoursColons) override;
-	void ShowMessage(const char *pMessage , struct ltcdisplayrgb::Colours &tColours) override;
-	//
-	void ShowFPS(ltc::Type tTimeCodeType, struct ltcdisplayrgb::Colours &tColours) override;
-	void ShowSource(ltc::Source tSource, struct ltcdisplayrgb::Colours &tColours) override;
-	void ShowInfo(const char *pInfo, uint32_t nLength, struct ltcdisplayrgb::Colours &tColours) override;
-	//
-	void WriteChar(uint8_t nChar, uint8_t nPos, struct ltcdisplayrgb::Colours &tColours) override;
+    void Show(const char* timecode, struct ltc::display::rgb::Colours& colours, struct ltc::display::rgb::Colours& colours_colons) override;
+    void ShowSysTime(const char* systemtime, struct ltc::display::rgb::Colours& colours, struct ltc::display::rgb::Colours& colours_colons) override;
+    void ShowMessage(const char* message, struct ltc::display::rgb::Colours& colours) override;
+    void ShowFPS(ltc::Type type, struct ltc::display::rgb::Colours& colours) override;
+    void ShowSource(ltc::Source source, struct ltc::display::rgb::Colours& colours) override;
+    void ShowInfo(const char* info, uint32_t length, struct ltc::display::rgb::Colours& colours) override;
 
-private:
-	RgbPanel *m_pRgbPanel;
-	char m_Line[4][8];
-	struct ltcdisplayrgb::Colours m_LineColours[4];
+    void WriteChar(uint8_t ch, uint8_t pos, struct ltc::display::rgb::Colours& colours) override;
+
+   private:
+    RgbPanel* rgbpanel_;
+    char line_[4][8];
+    struct ltc::display::rgb::Colours line_colours_[4];
 };
 
-#endif /* LTCDISPLAYRGBPANEL_H_ */
+#endif  // LTCDISPLAYRGBPANEL_H_

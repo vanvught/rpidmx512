@@ -2,7 +2,7 @@
  * @file network.h
  *
  */
-/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -142,7 +142,7 @@ public:
 		return m_nGatewayIp;
 	}
 
-	bool SetZeroconf() {
+	bool SetAutoIp() {
 		return false;
 	}
 
@@ -174,7 +174,7 @@ public:
 	void Run();
 
 	static Network *Get() {
-		return s_pThis;
+		return s_this;
 	}
 
 private:
@@ -204,7 +204,7 @@ private:
 	bool m_isApOpen { true };
 	char *m_pSSID { nullptr };
 
-	static inline Network *s_pThis;
+	static inline Network *s_this;
 };
 
 #endif /* ESP8266_NETWORK_H_ */

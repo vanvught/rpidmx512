@@ -2,7 +2,7 @@
  * @file displayeditfps.cpp
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,64 +26,74 @@
 #include <cstdint>
 
 #include "displayeditfps.h"
-
+#include "displayset.h"
 #include "input.h"
-
 #include "ltc.h"
-
 #include "display.h"
+ #include "firmware/debug/debug_debug.h"
 
-#include "debug.h"
-
-static void key_left(uint8_t &nType) {
-	if (nType > 0) {
-		nType--;
-		return;
-	}
-	nType = 3;
+static void KeyLeft(uint8_t& type)
+{
+    if (type > 0)
+    {
+        type--;
+        return;
+    }
+    type = 3;
 }
 
-static void key_right(uint8_t &nType) {
-	if (nType < 3) {
-		nType++;
-		return;
-	}
-	nType = 0;
+static void KeyRight(uint8_t& type)
+{
+    if (type < 3)
+    {
+        type++;
+        return;
+    }
+    type = 0;
 }
 
-void DisplayEditFps::HandleKey(int nKey, uint8_t &nType) {
-	DEBUG_PRINTF("%d %d", m_State, nKey);
+void DisplayEditFps::HandleKey(int key, uint8_t& type)
+{
+    DEBUG_PRINTF("%d %d", state_, key);
 
-	if (m_State == IDLE) {
-		if (nKey == input::KEY_ENTER) {
-			m_State = EDIT;
-			m_bCursorOn = true;
-		}
-	} else {
-		switch (nKey) {
-		case input::KEY_ESC:
-			m_State = IDLE;
-			m_bCursorOn = false;
-			break;
-		case input::KEY_DOWN:
-		case input::KEY_LEFT:
-			key_left(nType);
-			break;
-		case input::KEY_UP:
-		case input::KEY_RIGHT:
-			key_right(nType);
-			break;
-		default:
-			break;
-		}
-	}
+    if (state_ == IDLE)
+    {
+        if (key == input::KEY_ENTER)
+        {
+            state_ = EDIT;
+            m_bCursorOn = true;
+        }
+    }
+    else
+    {
+        switch (key)
+        {
+            case input::KEY_ESC:
+                state_ = IDLE;
+                m_bCursorOn = false;
+                break;
+            case input::KEY_DOWN:
+            case input::KEY_LEFT:
+                KeyLeft(type);
+                break;
+            case input::KEY_UP:
+            case input::KEY_RIGHT:
+                KeyRight(type);
+                break;
+            default:
+                break;
+        }
+    }
 
-	Display::Get()->TextLine(2, ltc::get_type(static_cast<ltc::Type>(nType)), ltc::timecode::TYPE_MAX_LENGTH);
+    Display::Get()->TextLine(2, ltc::get_type(static_cast<ltc::Type>(type)), ltc::timecode::TYPE_MAX_LENGTH);
 
-	if (m_bCursorOn) {
-		Display::Get()->SetCursor(display::cursor::ON);
-		Display::Get()->SetCursorPos(0, 1);
-	} else {
-		Display::Get()->SetCursor(display::cursor::OFF);
-	}
+    if (m_bCursorOn)
+    {
+        Display::Get()->SetCursor(display::cursor::kOn);
+        Display::Get()->SetCursorPos(0, 1);
+    }
+    else
+    {
+        Display::Get()->SetCursor(display::cursor::kOff);
+    }
 }

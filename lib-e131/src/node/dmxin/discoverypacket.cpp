@@ -1,8 +1,8 @@
 /**
- * @file e131bridgediscoverypacket
+ * @file discoverypacket.cpp
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,50 +25,45 @@
 
 #include <cstdint>
 #include <cstring>
-#include <cassert>
 
 #include "e131bridge.h"
-#include "e131packets.h"
-#include "e117const.h"
-
+#include "e131.h"
+#include "e117.h"
 #include "network.h"
 
-#include "softwaretimers.h"
-
 void E131Bridge::FillDiscoveryPacket() {
-	m_State.DiscoveryPacketLength = static_cast<uint16_t>(DISCOVERY_PACKET_SIZE(m_State.nEnabledInputPorts));
+	state_.discovery_packet_length = static_cast<uint16_t>(e131::DiscoveryPacketSize(state_.enabled_input_ports));
 
-	memset(&m_E131DiscoveryPacket, 0, sizeof(struct TE131DiscoveryPacket));
+	memset(&e131_discovery_packet_, 0, sizeof(struct e131::DiscoveryPacket));
 
 	// Root Layer (See Section 5)
-	m_E131DiscoveryPacket.RootLayer.PreAmbleSize = __builtin_bswap16(0x10);
-	memcpy(m_E131DiscoveryPacket.RootLayer.ACNPacketIdentifier, E117Const::ACN_PACKET_IDENTIFIER, e117::PACKET_IDENTIFIER_LENGTH);
-	m_E131DiscoveryPacket.RootLayer.FlagsLength = __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | (DISCOVERY_ROOT_LAYER_LENGTH(m_State.nEnabledInputPorts))));
-	m_E131DiscoveryPacket.RootLayer.Vector = __builtin_bswap32(e131::vector::root::EXTENDED);
-	memcpy(m_E131DiscoveryPacket.RootLayer.Cid, m_Cid, e131::CID_LENGTH);
+	e131_discovery_packet_.root_layer.pre_amble_size = __builtin_bswap16(0x10);
+	memcpy(e131_discovery_packet_.root_layer.acn_packet_identifier, e117::kAcnPacketIdentifier, e117::kAcnPacketIdentifierLength);
+	e131_discovery_packet_.root_layer.flags_length = __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | (e131::DiscoveryRootLayerLength(state_.enabled_input_ports))));
+	e131_discovery_packet_.root_layer.vector = __builtin_bswap32(e131::vector::root::kExtended);
+	memcpy(e131_discovery_packet_.root_layer.cid, cid_, e117::kCidLength);
 
 	// E1.31 Framing Layer (See Section 6)
-	m_E131DiscoveryPacket.FrameLayer.FLagsLength = __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | (DISCOVERY_FRAME_LAYER_LENGTH(m_State.nEnabledInputPorts))));
-	m_E131DiscoveryPacket.FrameLayer.Vector = __builtin_bswap32(e131::vector::extended::DISCOVERY);
-	memcpy(m_E131DiscoveryPacket.FrameLayer.SourceName, m_SourceName, e131::SOURCE_NAME_LENGTH);
+	e131_discovery_packet_.frame_layer.flags_length = __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | (e131::DiscoveryFrameLayerLength(state_.enabled_input_ports))));
+	e131_discovery_packet_.frame_layer.vector = __builtin_bswap32(e131::vector::extended::kDiscovery);
+	memcpy(e131_discovery_packet_.frame_layer.source_name, source_name_, e131::kSourceNameLength);
 
 	// Universe Discovery Layer (See Section 8)
-	m_E131DiscoveryPacket.UniverseDiscoveryLayer.FlagsLength = __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | DISCOVERY_LAYER_LENGTH(m_State.nEnabledInputPorts)));
-	m_E131DiscoveryPacket.UniverseDiscoveryLayer.Vector = __builtin_bswap32(e131::vector::universe::DISCOVERY_UNIVERSE_LIST);
+	e131_discovery_packet_.universe_discovery_layer.flags_length = __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | e131::DiscoveryLayerLength(state_.enabled_input_ports)));
+	e131_discovery_packet_.universe_discovery_layer.vector = __builtin_bswap32(e131::vector::universe::kDiscoveryUniverseList);
 }
 
 void E131Bridge::SendDiscoveryPacket() {
-	uint32_t nListOfUniverses = 0;
+	uint32_t list_of_universes = 0;
 
-	if (m_State.nEnabledInputPorts != 0) {
-		for (uint32_t i = 0; i < e131bridge::MAX_PORTS; i++) {
-			uint16_t nUniverse;
-			if (GetUniverse(i, nUniverse, dmxnode::PortDirection::INPUT)) {
-				m_E131DiscoveryPacket.UniverseDiscoveryLayer.ListOfUniverses[nListOfUniverses++] = __builtin_bswap16(nUniverse);
+	if (state_.enabled_input_ports != 0) {
+		for (uint32_t i = 0; i < dmxnode::kMaxPorts; i++) {
+			uint16_t universe;
+			if (GetUniverse(i, universe, dmxnode::PortDirection::kInput)) {
+				e131_discovery_packet_.universe_discovery_layer.list_of_universes[list_of_universes++] = __builtin_bswap16(universe);
 			}
 		}
 
-		Network::Get()->SendTo(m_nHandle, &m_E131DiscoveryPacket, m_State.DiscoveryPacketLength, m_nDiscoveryIpAddress, e131::UDP_PORT);
+		net::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&e131_discovery_packet_), state_.discovery_packet_length, discovery_ip_address_, e131::kUdpPort);
 	}
-
 }

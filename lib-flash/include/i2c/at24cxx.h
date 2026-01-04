@@ -92,7 +92,7 @@ public:
      */
 	AT24Cxx(uint8_t nSlaveAddress) : m_nSlaveAddress(nSlaveAddress) {
 		static_assert(IsValidType(), "Invalid type specified for AT24Cxx.");
-		m_IsConnected = FUNC_PREFIX(i2c_is_connected(m_nSlaveAddress, 400000));;
+		m_IsConnected = FUNC_PREFIX(I2cIsConnected(m_nSlaveAddress, 400000));;
 	}
 
 	/** @brief Checks if the EEPROM device is connected. */
@@ -134,7 +134,7 @@ public:
 			return;
 		}
 
-		FUNC_PREFIX(i2c_set_address(m_nSlaveAddress));
+		FUNC_PREFIX(I2cSetAddress(m_nSlaveAddress));
 
 		while (!AckRead())
 			;
@@ -145,14 +145,14 @@ public:
 					  static_cast<char>(nMemoryAddress & 0xFF),
 					  static_cast<char>(nData)
 					};
-			FUNC_PREFIX(i2c_write(buffer, (sizeof(buffer) / sizeof(buffer[0]))));
+			FUNC_PREFIX(I2cWrite(buffer, (sizeof(buffer) / sizeof(buffer[0]))));
 		} else {
 			const char buffer[] =
 					{ static_cast<char>(nMemoryAddress & 0xFF),
 					  static_cast<char>(nData)
 					};
-			FUNC_PREFIX(i2c_set_address(m_nSlaveAddress | ((nMemoryAddress >> 8) & 0x7)));
-			FUNC_PREFIX(i2c_write(buffer, (sizeof(buffer) / sizeof(buffer[0]))));
+			FUNC_PREFIX(I2cSetAddress(m_nSlaveAddress | ((nMemoryAddress >> 8) & 0x7)));
+			FUNC_PREFIX(I2cWrite(buffer, (sizeof(buffer) / sizeof(buffer[0]))));
 		}
 	}
 
@@ -171,7 +171,7 @@ public:
 		char buffer[128];
 		uint32_t nIndex = 0;
 
-		FUNC_PREFIX(i2c_set_address(m_nSlaveAddress));
+		FUNC_PREFIX(I2cSetAddress(m_nSlaveAddress));
 
 		while (nLength > 0) {
 			while (!AckRead());
@@ -185,14 +185,14 @@ public:
 				buffer[1] = static_cast<char>(nMemoryAddress & 0xFF);
 
 				memcpy(&buffer[2], &pData[nIndex], nCount);
-				FUNC_PREFIX(i2c_write(buffer, 2 + nCount));
+				FUNC_PREFIX(I2cWrite(buffer, 2 + nCount));
 			} else {
 				nCount = std::min(std::min(nLength, GetPageSize() - 1), GetPageSize() - nOffsetPage);
 				buffer[0] = static_cast<char>(nMemoryAddress & 0xFF);
 				memcpy(&buffer[1], &pData[nIndex], nCount);
 
-				FUNC_PREFIX(i2c_set_address(m_nSlaveAddress | ((nMemoryAddress >> 8) & 0x7)));
-				FUNC_PREFIX(i2c_write(buffer, 1 + nCount));
+				FUNC_PREFIX(I2cSetAddress(m_nSlaveAddress | ((nMemoryAddress >> 8) & 0x7)));
+				FUNC_PREFIX(I2cWrite(buffer, 1 + nCount));
 			}
 
 			nLength -= nCount;
@@ -212,7 +212,7 @@ public:
 			return 0;
 		}
 
-		FUNC_PREFIX(i2c_set_address(m_nSlaveAddress));
+		FUNC_PREFIX(I2cSetAddress(m_nSlaveAddress));
 
 		while (!AckRead());
 
@@ -221,15 +221,15 @@ public:
 				{ static_cast<char>(nMemoryAddress >> 8),
 				  static_cast<char>(nMemoryAddress & 0xFF)
 				};
-			FUNC_PREFIX(i2c_write(buffer, sizeof(buffer) / sizeof(buffer[0])));
+			FUNC_PREFIX(I2cWrite(buffer, sizeof(buffer) / sizeof(buffer[0])));
 		} else {
 			const char buffer[] = { static_cast<char>(nMemoryAddress & 0xFF) };
-			FUNC_PREFIX(i2c_set_address(m_nSlaveAddress | ((nMemoryAddress >> 8) & 0x7)));
-			FUNC_PREFIX(i2c_write(buffer, sizeof(buffer) / sizeof(buffer[0])));
+			FUNC_PREFIX(I2cSetAddress(m_nSlaveAddress | ((nMemoryAddress >> 8) & 0x7)));
+			FUNC_PREFIX(I2cWrite(buffer, sizeof(buffer) / sizeof(buffer[0])));
  		}
 
 		char c;
-		FUNC_PREFIX(i2c_read(&c, 1));
+		FUNC_PREFIX(I2cRead(&c, 1));
 		return static_cast<uint8_t>(c);
 	}
 
@@ -246,7 +246,7 @@ public:
 			return 1;
 		}
 
-		FUNC_PREFIX(i2c_set_address(m_nSlaveAddress));
+		FUNC_PREFIX(I2cSetAddress(m_nSlaveAddress));
 
 		while (!AckRead());
 
@@ -256,21 +256,21 @@ public:
 				  static_cast<char>(nMemoryAddress & 0xFF)
 				};
 
-			FUNC_PREFIX(i2c_write(buffer, sizeof(buffer) / sizeof(buffer[0])));
+			FUNC_PREFIX(I2cWrite(buffer, sizeof(buffer) / sizeof(buffer[0])));
 		} else {
 			const char buffer[] = { static_cast<char>(nMemoryAddress & 0xFF) };
-			FUNC_PREFIX(i2c_set_address(m_nSlaveAddress | ((nMemoryAddress >> 8) & 0x7)));
-			FUNC_PREFIX(i2c_write(buffer, sizeof(buffer) / sizeof(buffer[0])));
+			FUNC_PREFIX(I2cSetAddress(m_nSlaveAddress | ((nMemoryAddress >> 8) & 0x7)));
+			FUNC_PREFIX(I2cWrite(buffer, sizeof(buffer) / sizeof(buffer[0])));
 		}
 
-		return FUNC_PREFIX(i2c_read(reinterpret_cast<char *>(pData), nLength));
+		return FUNC_PREFIX(I2cRead(reinterpret_cast<char *>(pData), nLength));
 	}
 
 private:
 	/** @brief Performs an ACK read operation. */
 	bool AckRead() {
 		char c;
-		return FUNC_PREFIX(i2c_read(&c, 1)) == 0;
+		return FUNC_PREFIX(I2cRead(&c, 1)) == 0;
 	}
 
     /** @brief Determines if the memory address size is 2 bytes. */

@@ -2,7 +2,7 @@
  * @file ltcstore.h
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,15 +27,16 @@
 #define LTCSTORE_H_
 
 #include <cstdint>
-#include <cstddef>
 
-#include "ltcparams.h"
+#include "configstore.h"
+#include "configurationstore.h"
 
-class LtcStore {
-public:
-	static void SaveSource(uint8_t nSource) {
-		ConfigStore::Get()->Update(configstore::Store::LTC, offsetof(struct ltcparams::Params, nSource), &nSource, sizeof(uint8_t), ltcparams::Mask::SOURCE);
-	}
-};
+namespace ltc_store
+{
+inline void SaveSource(uint8_t source)
+{
+    ConfigStore::Instance().LtcUpdate(&common::store::Ltc::source, source);
+}
+} // namespace ltc_store
 
-#endif /* LTCSTORE_H_ */
+#endif  // LTCSTORE_H_

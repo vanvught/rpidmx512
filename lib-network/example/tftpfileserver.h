@@ -17,7 +17,7 @@ public:
 	int FileWrite(const void *pBuffer, unsigned nCount);
 
 private:
-	FILE *m_pFile{nullptr};
+	FILE *file_{nullptr};
 };
 
 #endif /* TFTPFILESERVER_H_ */

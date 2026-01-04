@@ -1,5 +1,6 @@
 #DEFINES=NDEBUG
+EXTRA_INCLUDES=
+EXTRA_SRCDIR=
 
-EXTRA_INCLUDES=../lib-pca9685/include ../lib-properties/include 
-
+include Rules.mk
 include ../firmware-template-linux/lib/Rules.mk

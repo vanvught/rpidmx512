@@ -66,22 +66,22 @@ static rtc_types_t s_type = RTC_MCP7941X;
 #define DEC2BCD(val)	( (((val) / 10) << 4) + (val) % 10 )
 
 inline static void i2c_setup(void) {
-	FUNC_PREFIX(i2c_set_address(s_i2c_address));
-	FUNC_PREFIX(i2c_set_baudrate(400000));
+	FUNC_PREFIX(I2cSetAddress(s_i2c_address));
+	FUNC_PREFIX(I2cSetBaudrate(400000));
 }
 
-inline static bool i2c_is_connected(uint8_t address) {
+inline static bool I2cIsConnected(uint8_t address) {
 	uint8_t ret;
 	char buf;
 
-	FUNC_PREFIX(i2c_set_baudrate(100000));
-	FUNC_PREFIX(i2c_set_address(address));
+	FUNC_PREFIX(I2cSetBaudrate(100000));
+	FUNC_PREFIX(I2cSetAddress(address));
 
 	if ((address >= 0x30 && address <= 0x37) || (address >= 0x50 && address <= 0x5F)) {
-		ret = FUNC_PREFIX(i2c_read(&buf, 1));
+		ret = FUNC_PREFIX(I2cRead(&buf, 1));
 	} else {
 		/* This is known to corrupt the Atmel AT24RF08 EEPROM */
-		ret = FUNC_PREFIX(i2c_write(NULL, 0));
+		ret = FUNC_PREFIX(I2cWrite(NULL, 0));
 	}
 
 	return (ret == 0) ? true : false;
@@ -104,10 +104,10 @@ bool rtc_start(rtc_types_t type) {
 	}
 
 	if (type == RTC_PROBE) {
-		if (i2c_is_connected(MCP7941X_DEFAULT_SLAVE_ADDRESS)) {
+		if (I2cIsConnected(MCP7941X_DEFAULT_SLAVE_ADDRESS)) {
 			DEBUG_EXIT
 			return true;
-		} else if (i2c_is_connected(DS3231_DEFAULT_SLAVE_ADDRESS)) {
+		} else if (I2cIsConnected(DS3231_DEFAULT_SLAVE_ADDRESS)) {
 			s_i2c_address = DS3231_DEFAULT_SLAVE_ADDRESS;
 			s_type = RTC_DS3231;
 			DEBUG_EXIT
@@ -118,7 +118,7 @@ bool rtc_start(rtc_types_t type) {
 		return false;
 	}
 
-	if (i2c_is_connected(s_i2c_address)) {
+	if (I2cIsConnected(s_i2c_address)) {
 		DEBUG_EXIT
 		return true;
 	}
@@ -129,7 +129,7 @@ bool rtc_start(rtc_types_t type) {
 
 bool rtc_is_connected(void) {
 	i2c_setup();
-	return i2c_is_connected(s_i2c_address);
+	return I2cIsConnected(s_i2c_address);
 }
 
 
@@ -161,8 +161,8 @@ void rtc_get_date_time(struct tm *tm) {
 	reg[0] = RTC_REG_SECONDS;
 
 	i2c_setup();
-	FUNC_PREFIX(i2c_write(reg, 1));
-	FUNC_PREFIX(i2c_read(reg, sizeof(reg) / sizeof(reg[0])));
+	FUNC_PREFIX(I2cWrite(reg, 1));
+	FUNC_PREFIX(I2cRead(reg, sizeof(reg) / sizeof(reg[0])));
 
 	tm->tm_sec = BCD2DEC(reg[RTC_REG_SECONDS] & 0x7f);
 	tm->tm_min = BCD2DEC(reg[RTC_REG_MINUTES] & 0x7f);
@@ -201,5 +201,5 @@ void rtc_set_date_time(const struct tm *tm) {
 	data[7] = reg[6];
 
 	i2c_setup();
-	FUNC_PREFIX(i2c_write(data, sizeof(data) / sizeof(data[0])));
+	FUNC_PREFIX(I2cWrite(data, sizeof(data) / sizeof(data[0])));
 }

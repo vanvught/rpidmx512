@@ -2,7 +2,7 @@
  * @file net.cpp
  *
  */
-/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,214 +23,211 @@
  * THE SOFTWARE.
  */
 
-#if defined (DEBUG_NET_NET)
-# if defined (NDEBUG)
-#  undef NDEBUG
-# endif
-#endif
-
-#if !defined (CONFIG_REMOTECONFIG_MINIMUM)
-# pragma GCC push_options
-# pragma GCC optimize ("O2")
-# pragma GCC optimize ("no-tree-loop-distribute-patterns")
-# pragma GCC optimize ("-fprefetch-loop-arrays")
+#if defined(DEBUG_NET)
+#undef NDEBUG
 #endif
 
 #include <cstdint>
-#include <cstring>
 
-#include "../../config/net_config.h"
-
-#include "net.h"
-
-#include "net/net.h"
+#include "network_net.h"
+#include "emac/phy.h"
 #include "net/netif.h"
-#include "net/autoip.h"
 #include "net/dhcp.h"
-#include "net/tcp.h"
-#include "net/igmp.h"
-#if defined (CONFIG_NET_ENABLE_NTP_CLIENT) || defined (CONFIG_NET_ENABLE_PTP_NTP_CLIENT)
-# include "net/apps/ntp_client.h"
-#endif
-#if !defined(CONFIG_NET_APPS_NO_MDNS)
-# include "net/apps/mdns.h"
-#endif
-
+#include "net/apps/mdns.h"
 #include "network_store.h"
+#include "firmware/debug/debug_debug.h"
 
-#include "debug.h"
-
-namespace net {
-namespace globals {
-uint32_t nBroadcastMask;
-uint32_t nOnNetworkMask;
-}  // namespace globals
-
-void net_shutdown() {
-	DEBUG_ENTRY
-
-#if !defined(CONFIG_NET_APPS_NO_MDNS)
-	mdns_stop();
+#if !defined(PHY_ADDRESS)
+#define PHY_ADDRESS 1
 #endif
-	net::igmp_shutdown();
-	net::netif_set_link_down();
 
-	DEBUG_EXIT
-}
+namespace net
+{
+namespace globals
+{
+uint32_t broadcast_mask;
+uint32_t on_network_mask;
+} // namespace globals
 
 static struct net::acd::Acd s_acd;
 
-static void primary_ip_conflict_callback(net::acd::Callback callback) {
-	auto &netif = net::globals::netif_default;
+static void PrimaryIpConflictCallback(net::acd::Callback callback)
+{
+    auto& netif = netif::globals::netif_default;
 
-	switch (callback) {
-	case net::acd::Callback::ACD_IP_OK:
-		if (s_acd.ipaddr.addr == netif.secondary_ip.addr) {
-			net_set_secondary_ip();
-		} else {
-			net::netif_set_ipaddr(s_acd.ipaddr);
-		}
-		dhcp_inform();
-		netif_set_flags(netif::NETIF_FLAG_STATICIP_OK);
-		break;
-	case net::acd::Callback::ACD_RESTART_CLIENT:
-		break;
-	case net::acd::Callback::ACD_DECLINE:
-		netif_clear_flags(netif::NETIF_FLAG_STATICIP_OK);
-		break;
-	default:
-		break;
-	}
+    switch (callback)
+    {
+        case net::acd::Callback::ACD_IP_OK:
+            if (s_acd.ipaddr.addr == netif.secondary_ip.addr)
+            {
+                net::SetSecondaryIp();
+            }
+            else
+            {
+                netif::SetIpAddr(s_acd.ipaddr);
+            }
+            net::dhcp::Inform();
+            netif::SetFlags(netif::Netif::kNetifFlagStaticipOk);
+            break;
+        case net::acd::Callback::ACD_RESTART_CLIENT:
+            break;
+        case net::acd::Callback::ACD_DECLINE:
+            netif::ClearFlags(netif::Netif::kNetifFlagStaticipOk);
+            break;
+        default:
+            break;
+    }
 }
 
-void net_set_primary_ip(const uint32_t nIp) {
-	DEBUG_ENTRY
+void Set(net::ip4_addr_t ipaddr, net::ip4_addr_t netmask, net::ip4_addr_t gw, bool use_dhcp)
+{
+    DEBUG_ENTRY();
 
-	auto &netif = net::globals::netif_default;
+    netif::globals::netif_default.secondary_ip.addr =
+        2 + ((static_cast<uint32_t>(static_cast<uint8_t>(netif::globals::netif_default.hwaddr[3] + 0xFF + 0xFF))) << 8) +
+        ((static_cast<uint32_t>(netif::globals::netif_default.hwaddr[4])) << 16) + ((static_cast<uint32_t>(netif::globals::netif_default.hwaddr[5])) << 24);
 
-	if (nIp == netif.ip.addr) {
-		DEBUG_EXIT
-		return;
-	}
+    if (!use_dhcp)
+    {
+        net::acd::Add(&s_acd, PrimaryIpConflictCallback);
 
-	net::dhcp_release_and_stop();
-	network_store_save_dhcp(false);
+        if (ipaddr.addr != 0)
+        {
+            netif::SetNetmask(netmask);
+            netif::SetGw(gw);
+        }
+    }
 
-	acd_add(&s_acd, primary_ip_conflict_callback);
+    if (net::phy::Link::kStateUp == net::phy::GetLink(PHY_ADDRESS))
+    {
+        netif::SetFlags(netif::Netif::kNetifFlagLinkUp);
+    }
+    else
+    {
+        netif::ClearFlags(netif::Netif::kNetifFlagLinkUp);
+    }
 
-	if (nIp  == 0) {
-		acd_start(&s_acd, netif.secondary_ip);
-	} else {
-		ip_addr ipaddr;
-		ipaddr.addr = nIp;
-		acd_start(&s_acd, ipaddr);
-	}
+    if (use_dhcp)
+    {
+        net::dhcp::Start();
+    }
+    else
+    {
+        if (ipaddr.addr == 0)
+        {
+            net::acd::Start(&s_acd, netif::globals::netif_default.secondary_ip);
+        }
+        else
+        {
+            net::acd::Start(&s_acd, ipaddr);
+        }
+    }
 
-	network_store_save_ip(nIp);
-
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void net_set_secondary_ip() {
-	DEBUG_ENTRY
+void SetPrimaryIp(uint32_t primary_ip_new)
+{
+    DEBUG_ENTRY();
 
-	auto &netif = net::globals::netif_default;
-	ip4_addr_t netmask;
-	netmask.addr = 255;
-	net::netif_set_addr(netif.secondary_ip, netmask, netif.secondary_ip);
+    auto& netif = netif::globals::netif_default;
 
-	DEBUG_EXIT
+    if (primary_ip_new == netif.ip.addr)
+    {
+        DEBUG_EXIT();
+        return;
+    }
+
+    net::dhcp::ReleaseAndStop();
+
+    network::store::SaveDhcp(false);
+
+    net::acd::Add(&s_acd, PrimaryIpConflictCallback);
+
+    if (primary_ip_new == 0)
+    {
+        net::acd::Start(&s_acd, netif.secondary_ip);
+    }
+    else
+    {
+        net::ip_addr ipaddr;
+        ipaddr.addr = primary_ip_new;
+        net::acd::Start(&s_acd, ipaddr);
+    }
+
+    network::store::SaveIp(primary_ip_new);
+
+    DEBUG_EXIT();
 }
 
-void net_set_netmask(const uint32_t nNetmask) {
-	DEBUG_ENTRY
+void SetSecondaryIp()
+{
+    DEBUG_ENTRY();
 
-	if (nNetmask == net::netif_netmask()) {
-		DEBUG_EXIT
-		return;
-	}
+    auto& netif = netif::globals::netif_default;
+    net::ip4_addr_t netmask;
+    netmask.addr = 255;
+    netif::SetAddr(netif.secondary_ip, netmask, netif.secondary_ip);
 
-	net::ip4_addr_t netmask;
-	netmask.addr = nNetmask;
-
-	net::netif_set_netmask(netmask);
-
-	network_store_save_netmask(nNetmask);
-
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void net_set_gateway_ip(uint32_t nGatewayIp) {
-	DEBUG_ENTRY
+void SetNetmask(uint32_t netmask_new)
+{
+    DEBUG_ENTRY();
 
-	if (nGatewayIp == net::netif_gw()) {
-		DEBUG_EXIT
-		return;
-	}
+    if (netmask_new == netif::Netmask())
+    {
+        DEBUG_EXIT();
+        return;
+    }
 
-	net::ip4_addr_t gw;
-	gw.addr = nGatewayIp;
+    net::ip4_addr_t netmask;
+    netmask.addr = netmask_new;
 
-	net::netif_set_gw(gw);
+    netif::SetNetmask(netmask);
 
-	network_store_save_gatewayip(nGatewayIp);
+    network::store::SaveNetmask(netmask_new);
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void net_enable_dhcp() {
-	DEBUG_ENTRY
+void SetGatewayIp(uint32_t gw_new)
+{
+    DEBUG_ENTRY();
 
-	net::dhcp_start();
+    if (gw_new == netif::Gw())
+    {
+        DEBUG_EXIT();
+        return;
+    }
 
-	network_store_save_dhcp(true);
+    net::ip4_addr_t gw;
+    gw.addr = gw_new;
 
-	DEBUG_EXIT
+    netif::SetGw(gw);
+
+    network::store::SaveGatewayIp(gw_new);
+
+    DEBUG_EXIT();
 }
 
-void net_set_zeroconf() {
-	DEBUG_ENTRY
+namespace igmp
+{
+void Shutdown();
+} // namespace igmp
 
-	net::autoip_start();
+void Shutdown()
+{
+    DEBUG_ENTRY();
 
-	network_store_save_dhcp(false);
+#if !defined(CONFIG_NET_APPS_NO_MDNS)
+    mdns::Stop();
+#endif
+    net::igmp::Shutdown();
+    netif::SetLinkDown();
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void netif_set(const net::Link link, ip4_addr_t ipaddr, ip4_addr_t netmask, ip4_addr_t gw, bool bUseDhcp) {
-	DEBUG_ENTRY
-
-	globals::netif_default.secondary_ip.addr = 2
-	+ ((static_cast<uint32_t>(static_cast<uint8_t>(globals::netif_default.hwaddr[3] + 0xFF + 0xFF))) << 8)
-	+ ((static_cast<uint32_t>(globals::netif_default.hwaddr[4])) << 16)
-	+ ((static_cast<uint32_t>(globals::netif_default.hwaddr[5])) << 24);
-
-	if (!bUseDhcp) {
-		acd_add(&s_acd, primary_ip_conflict_callback);
-
-		if (ipaddr.addr != 0) {
-			net::netif_set_netmask(netmask);
-			net::netif_set_gw(gw);
-		}
-	}
-
-	if (net::Link::STATE_UP == link) {
-		net::netif_set_flags(net::netif::NETIF_FLAG_LINK_UP);
-	} else {
-		net::netif_clear_flags(net::netif::NETIF_FLAG_LINK_UP);
-	}
-
-	if (bUseDhcp) {
-		dhcp_start();
-	} else {
-		if (ipaddr.addr == 0) {
-			acd_start(&s_acd, globals::netif_default.secondary_ip);
-		} else {
-			acd_start(&s_acd, ipaddr);
-		}
-	}
-
-	DEBUG_EXIT
-}
-}  // namespace net
+} // namespace net

@@ -1,5 +1,5 @@
 /**
- * @file timecode.cpp
+ * @file timecode.h
  *
  */
 /* Copyright (C) 2016-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl

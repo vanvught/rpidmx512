@@ -26,47 +26,44 @@
  * https://developer.apple.com/library/archive/documentation/Audio/Conceptual/MIDINetworkDriverProtocol/MIDI/MIDI.html
  */
 
-#if defined (DEBUG_NET_APPLEMIDI)
-# undef NDEBUG
+#if defined(DEBUG_NET_APPLEMIDI)
+#undef NDEBUG
 #endif
 
 #if defined(__GNUC__) && !defined(__clang__)
-# pragma GCC push_options
-# pragma GCC optimize ("O2")
-# pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#pragma GCC push_options
+#pragma GCC optimize("O2")
+#pragma GCC optimize("no-tree-loop-distribute-patterns")
 #endif
 
 #include <cstdint>
 #include <cstring>
-#include <cstdio>
 #include <cassert>
 
 #include "net/applemidi.h"
-
-#include "midi.h"
-
 #include "network.h"
-
 #include "softwaretimers.h"
+#include "firmware/debug/debug_dump.h"
+ #include "firmware/debug/debug_debug.h"
 
-#include "debug.h"
+namespace applemidi
+{
 
-namespace applemidi {
-
-}  // namespace applemidi
+} // namespace applemidi
 
 /**
  * @enum TAppleMidiCommand
  * @brief Defines the Apple MIDI command identifiers with network byte order.
  */
-enum TAppleMidiCommand {
-	APPLEMIDI_COMMAND_INVITATION = __builtin_bswap16(0x494e),			///< Invitation 'IN'
-	APPLEMIDI_COMMAND_INVITATION_ACCEPTED = __builtin_bswap16(0x4f4b),	///< Invitation accepted 'OK'
-	APPLEMIDI_COMMAND_INVITATION_REJECTED = __builtin_bswap16(0x4e4f),	///< Invitation refused 'NO'
-	APPLEMIDI_COMMAND_ENDSESSION = __builtin_bswap16(0x4259),			///< Closing session 'BY'
-	APPLEMIDI_COMMAND_SYNCHRONIZATION = __builtin_bswap16(0x434b),		///< Clock synchronization 'CK'
-	APPLEMIDI_COMMAND_RECEIVER_FEEDBACK = __builtin_bswap16(0x5253),	///< Journalling synchronization 'RS'
-	APPLEMIDI_COMMAND_BITRATE_RECEIVE_LIMIT = __builtin_bswap16(0x524c)	///< Bitrate 'RL'
+enum class AppleMidiCommand : uint16_t
+{
+    kInvitation = __builtin_bswap16(0x494e),         ///< Invitation 'IN'
+    kInvitationAccepted = __builtin_bswap16(0x4f4b), ///< Invitation accepted 'OK'
+    kInvitationRejected = __builtin_bswap16(0x4e4f), ///< Invitation refused 'NO'
+    kEndsession = __builtin_bswap16(0x4259),         ///< Closing session 'BY'
+    kSynchronization = __builtin_bswap16(0x434b),    ///< Clock synchronization 'CK'
+    kReceiverFeedback = __builtin_bswap16(0x5253),   ///< Journalling synchronization 'RS'
+    kBitrateReceiveLimit = __builtin_bswap16(0x524c) ///< Bitrate 'RL'
 };
 
 /**
@@ -76,24 +73,25 @@ enum TAppleMidiCommand {
  * This structure is used to handle the synchronization of timestamps between devices
  * in an Apple MIDI session.
  */
-struct TTimestampSynchronization {
-	uint16_t nSignature;	///< Packet signature for Apple MIDI.
-	uint16_t nCommand;		///< Command identifier.
-	uint32_t nSSRC;			///< Synchronization source identifier.
-	uint8_t nCount;			///< Count of synchronization steps.
-	uint8_t padding[3];		///< Padding to align the structure.
-	uint64_t nTimestamps[3];///< Array of timestamps for synchronization.
+struct TimestampSynchronization
+{
+    uint16_t signature;     ///< Packet signature for Apple MIDI.
+    uint16_t command;       ///< Command identifier.
+    uint32_t ssrc;          ///< Synchronization source identifier.
+    uint8_t count;          ///< Count of synchronization steps.
+    uint8_t padding[3];     ///< Padding to align the structure.
+    uint64_t timestamps[3]; ///< Array of timestamps for synchronization.
 } __attribute__((packed));
 
 /**
  * @brief Timeout value in milliseconds for an Apple MIDI session.
  */
-static constexpr uint32_t TIMEOUT = 90 * 1000;
+static constexpr uint32_t kTimeout = 90 * 1000;
 
 /**
  * @brief Timer handle for session timeout management.
  */
-static TimerHandle_t s_nTimerId = TIMER_ID_NONE;
+static TimerHandle_t s_timer_id = kTimerIdNone;
 
 /**
  * @brief Timer callback function to handle session timeout.
@@ -103,196 +101,220 @@ static TimerHandle_t s_nTimerId = TIMER_ID_NONE;
  *
  * @param nHandle Handle of the expired timer (unused).
  */
-static void timeout_timer([[maybe_unused]] TimerHandle_t nHandle) {
-	if (AppleMidi::GetSessionState() == applemidi::SessionState::ESTABLISHED) {
-		AppleMidi::ResetSession();
-		SoftwareTimerDelete(s_nTimerId);
-		DEBUG_PUTS("End Session {time-out}");
-	}
+static void TimeoutTimer([[maybe_unused]] TimerHandle_t handle)
+{
+    if (AppleMidi::GetSessionState() == applemidi::SessionState::kEstablished)
+    {
+        AppleMidi::ResetSession();
+        SoftwareTimerDelete(s_timer_id);
+        DEBUG_PUTS("End Session {time-out}");
+    }
 }
 
-typedef union pcast32 {
-	uint32_t u32;
-	uint8_t u8[4];
+typedef union pcast32
+{
+    uint32_t u32;
+    uint8_t u8[4];
 } _pcast32;
 
-AppleMidi::AppleMidi() {
-	DEBUG_ENTRY
-	assert(s_pThis == nullptr);
-	s_pThis = this;
+AppleMidi::AppleMidi()
+{
+    DEBUG_ENTRY();
+    assert(s_this == nullptr);
+    s_this = this;
 
-	m_ExchangePacketReply.nSignature = SIGNATURE;
-	m_ExchangePacketReply.nProtocolVersion = __builtin_bswap32(applemidi::VERSION);
+    exchange_packet_reply_.signature = kSignature;
+    exchange_packet_reply_.protocol_version = __builtin_bswap32(applemidi::kVersion);
 
-	uint8_t macAddress[net::MAC_SIZE];
-	Network::Get()->MacAddressCopyTo(macAddress);
-	_pcast32 cast32;
-	memcpy(cast32.u8, &macAddress[2], 4);
-	m_nSSRC = cast32.u32;
+    uint8_t mac_address[net::MAC_SIZE];
+     network::iface::CopyMacAddressTo(mac_address);
+    _pcast32 cast32;
+    memcpy(cast32.u8, &mac_address[2], 4);
+    ssrc_ = cast32.u32;
 
-	SetSessionName(Network::Get()->GetHostName());
+    SetSessionName( network::iface::GetHostName());
 
-	memset(&m_SessionStatus, 0, sizeof (struct applemidi::SessionStatus));
+    memset(&session_status_, 0, sizeof(struct applemidi::SessionStatus));
 
-	DEBUG_PRINTF("applemidi::EXCHANGE_PACKET_MIN_LENGTH = %u", static_cast<uint32_t>(applemidi::EXCHANGE_PACKET_MIN_LENGTH));
-	DEBUG_EXIT
+    DEBUG_PRINTF("applemidi::EXCHANGE_PACKET_MIN_LENGTH = %u", static_cast<uint32_t>(applemidi::kExchangePacketMinLength));
+    DEBUG_EXIT();
 }
 
-void AppleMidi::InputControlMessage(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
-	DEBUG_ENTRY
+void AppleMidi::InputControlMessage(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port)
+{
+    DEBUG_ENTRY();
 
-	if (__builtin_expect((nSize >= applemidi::EXCHANGE_PACKET_MIN_LENGTH), 1)) {
-		if (*reinterpret_cast<const uint16_t *>(pBuffer) != SIGNATURE) {
+    if (__builtin_expect((size >= applemidi::kExchangePacketMinLength), 1))
+    {
+        if (*reinterpret_cast<const uint16_t*>(buffer) != kSignature)
+        {
+            DEBUG_EXIT();
+            return;
+        }
+    }
 
-			DEBUG_EXIT
-			return;
-		}
-	}
+    auto* packet = reinterpret_cast<const applemidi::ExchangePacket*>(buffer);
 
-	auto *pPacket = reinterpret_cast<const applemidi::ExchangePacket *>(pBuffer);
+    DEBUG_PRINTF("Command: %.4x, session_state=%u", packet->command, static_cast<uint32_t>(session_status_.session_state));
 
-	DEBUG_PRINTF("Command: %.4x, m_SessionStatus.sessionState=%u", pPacket->nCommand, static_cast<uint32_t>(m_SessionStatus.sessionState));
+    if (session_status_.session_state == applemidi::SessionState::kWaitingInControl)
+    {
+        DEBUG_PUTS("SESSION_STATE_WAITING_IN_CONTROL");
 
-	if (m_SessionStatus.sessionState == applemidi::SessionState::WAITING_IN_CONTROL) {
-		DEBUG_PUTS("SESSION_STATE_WAITING_IN_CONTROL");
+        if ((session_status_.remote_ip == 0) && (static_cast<AppleMidiCommand>(packet->command) == AppleMidiCommand::kInvitation))
+        {
+            DEBUG_PUTS("Invitation");
 
-		if ((m_SessionStatus.nRemoteIp == 0) && (pPacket->nCommand == APPLEMIDI_COMMAND_INVITATION)) {
- 			DEBUG_PUTS("Invitation");
+            exchange_packet_reply_.ssrc = GetSSRC();
+            exchange_packet_reply_.command = static_cast<uint16_t>(AppleMidiCommand::kInvitationAccepted);
+            exchange_packet_reply_.initiator_token = packet->initiator_token;
 
- 			m_ExchangePacketReply.nSSRC = GetSSRC();
-			m_ExchangePacketReply.nCommand = APPLEMIDI_COMMAND_INVITATION_ACCEPTED;
-			m_ExchangePacketReply.nInitiatorToken = pPacket->nInitiatorToken;
+            net::udp::Send(handle_control_, reinterpret_cast<const uint8_t*>(&exchange_packet_reply_), exchange_packet_reply_size_, from_ip, from_port);
 
-			Network::Get()->SendTo(m_nHandleControl, &m_ExchangePacketReply, m_nExchangePacketReplySize, nFromIp, nFromPort);
+            debug::Dump(&exchange_packet_reply_, exchange_packet_reply_size_);
 
-			debug_dump(&m_ExchangePacketReply, m_nExchangePacketReplySize);
+            session_status_.session_state = applemidi::SessionState::kWaitingInMidi;
+            session_status_.remote_ip = from_ip;
 
-			m_SessionStatus.sessionState = applemidi::SessionState::WAITING_IN_MIDI;
-			m_SessionStatus.nRemoteIp = nFromIp;
+            DEBUG_EXIT();
+            return;
+        }
+        else
+        {
+            DEBUG_EXIT();
+            return;
+        }
+    }
 
-			DEBUG_EXIT
-			return;
-		} else {
-			DEBUG_EXIT
-			return;
-		}
-	}
+    if (session_status_.session_state == applemidi::SessionState::kEstablished)
+    {
+        DEBUG_PUTS("SESSION_STATE_ESTABLISHED");
 
-	if (m_SessionStatus.sessionState == applemidi::SessionState::ESTABLISHED) {
-		DEBUG_PUTS("SESSION_STATE_ESTABLISHED");
+        if ((session_status_.remote_ip == from_ip) && (static_cast<AppleMidiCommand>(packet->command) == AppleMidiCommand::kEndsession))
+        {
+            session_status_.session_state = applemidi::SessionState::kWaitingInControl;
+            session_status_.remote_ip = 0;
 
-		if ((m_SessionStatus.nRemoteIp == nFromIp) && (pPacket->nCommand == APPLEMIDI_COMMAND_ENDSESSION)) {
-			m_SessionStatus.sessionState = applemidi::SessionState::WAITING_IN_CONTROL;
-			m_SessionStatus.nRemoteIp = 0;
+            DEBUG_PUTS("End Session");
+            DEBUG_EXIT();
+            return;
+        }
 
-			DEBUG_PUTS("End Session");
-			DEBUG_EXIT
-			return;
-		}
+        if (static_cast<AppleMidiCommand>(packet->command) == AppleMidiCommand::kInvitation)
+        {
+            DEBUG_PUTS("Invitation rejected");
 
-		if (pPacket->nCommand == APPLEMIDI_COMMAND_INVITATION) {
-		 	DEBUG_PUTS("Invitation rejected");
+            exchange_packet_reply_.ssrc = GetSSRC();
+            exchange_packet_reply_.command = static_cast<uint16_t>(AppleMidiCommand::kInvitationRejected);
+            exchange_packet_reply_.initiator_token = packet->initiator_token;
 
-		 	m_ExchangePacketReply.nSSRC = GetSSRC();
-			m_ExchangePacketReply.nCommand = APPLEMIDI_COMMAND_INVITATION_REJECTED;
-			m_ExchangePacketReply.nInitiatorToken = pPacket->nInitiatorToken;
+            net::udp::Send(handle_control_, reinterpret_cast<const uint8_t*>(&exchange_packet_reply_), exchange_packet_reply_size_, from_ip, from_port);
 
-			Network::Get()->SendTo(m_nHandleControl, &m_ExchangePacketReply, m_nExchangePacketReplySize, nFromIp, nFromPort);
+            DEBUG_EXIT();
+            return;
+        }
+    }
 
-			debug_dump(&m_ExchangePacketReply, m_nExchangePacketReplySize);
-			DEBUG_EXIT
-			return;
-		}
-	}
-
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void AppleMidi::InputMidiMessage(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
-	DEBUG_ENTRY
+void AppleMidi::InputMidiMessage(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port)
+{
+    DEBUG_ENTRY();
 
-	if (__builtin_expect((nSize >= 12), 0)) {
-		if (m_SessionStatus.nRemoteIp != nFromIp) {
+    if (__builtin_expect((size >= 12), 0))
+    {
+        if (session_status_.remote_ip != from_ip)
+        {
+            DEBUG_EXIT();
+            return;
+        }
+    }
 
-			DEBUG_EXIT
-			return;
-		}
-	}
+    if (*reinterpret_cast<const uint16_t*>(buffer) == 0x6180)
+    {
+        HandleRtpMidi(buffer);
 
-	if (*reinterpret_cast<const uint16_t *>(pBuffer) == 0x6180) {
-		HandleRtpMidi(pBuffer);
+        DEBUG_EXIT();
+        return;
+    }
 
-		DEBUG_EXIT
-		return;
-	}
+    if (size >= applemidi::kExchangePacketMinLength)
+    {
+        if (*reinterpret_cast<const uint16_t*>(buffer) == kSignature)
+        {
+            if (session_status_.session_state == applemidi::SessionState::kWaitingInMidi)
+            {
+                DEBUG_PUTS("SESSION_STATE_WAITING_IN_MIDI");
 
-	if (nSize >= applemidi::EXCHANGE_PACKET_MIN_LENGTH) {
+                auto* packet = reinterpret_cast<const applemidi::ExchangePacket*>(buffer);
 
-		if (*reinterpret_cast<const uint16_t *>(pBuffer) == SIGNATURE) {
+                DEBUG_PRINTF("Command: %.4x", packet->command);
 
-			if (m_SessionStatus.sessionState == applemidi::SessionState::WAITING_IN_MIDI) {
-				DEBUG_PUTS("SESSION_STATE_WAITING_IN_MIDI");
+                if (static_cast<AppleMidiCommand>(packet->command) == AppleMidiCommand::kInvitation)
+                {
+                    DEBUG_PUTS("Invitation");
 
-				auto *pPacket = reinterpret_cast<const applemidi::ExchangePacket*>(pBuffer);
+                    exchange_packet_reply_.ssrc = GetSSRC();
+                    exchange_packet_reply_.command = static_cast<uint16_t>(AppleMidiCommand::kInvitationAccepted);
+                    exchange_packet_reply_.initiator_token = packet->initiator_token;
 
-				DEBUG_PRINTF("Command: %.4x", pPacket->nCommand);
+                    net::udp::Send(handle_midi_, reinterpret_cast<const uint8_t*>(&exchange_packet_reply_), exchange_packet_reply_size_, from_ip, from_port);
 
-				if (pPacket->nCommand == APPLEMIDI_COMMAND_INVITATION) {
-					DEBUG_PUTS("Invitation");
+                    session_status_.session_state = applemidi::SessionState::kEstablished;
+                    session_status_.remote_port_midi = from_port;
 
-					m_ExchangePacketReply.nSSRC = GetSSRC();
-					m_ExchangePacketReply.nCommand = APPLEMIDI_COMMAND_INVITATION_ACCEPTED;
-					m_ExchangePacketReply.nInitiatorToken = pPacket->nInitiatorToken;
+                    s_timer_id = SoftwareTimerAdd(kTimeout, TimeoutTimer);
+                }
 
-					Network::Get()->SendTo(m_nHandleMidi, &m_ExchangePacketReply, m_nExchangePacketReplySize, nFromIp, nFromPort);
+                DEBUG_EXIT();
+                return;
+            }
 
-					m_SessionStatus.sessionState = applemidi::SessionState::ESTABLISHED;
-					m_SessionStatus.nRemotePortMidi = nFromPort;
+            if (session_status_.session_state == applemidi::SessionState::kEstablished)
+            {
+                DEBUG_PUTS("SESSION_STATE_ESTABLISHED");
 
-					s_nTimerId = SoftwareTimerAdd(TIMEOUT, timeout_timer);
-				}
+                auto* packet = reinterpret_cast<const applemidi::ExchangePacket*>(buffer);
 
-				DEBUG_EXIT
-				return;
-			}
+                if (static_cast<AppleMidiCommand>(packet->command) == AppleMidiCommand::kSynchronization)
+                {
+                    DEBUG_PUTS("Timestamp Synchronization");
+                    auto* t = reinterpret_cast<TimestampSynchronization*>(const_cast<uint8_t*>(buffer));
 
-			if (m_SessionStatus.sessionState == applemidi::SessionState::ESTABLISHED) {
-				DEBUG_PUTS("SESSION_STATE_ESTABLISHED");
+                    if (t->count == 0)
+                    {
+                        t->ssrc = GetSSRC();
+                        t->count = 1;
+                        t->timestamps[1] = __builtin_bswap64(Now());
 
-				auto *pPacket = reinterpret_cast<const applemidi::ExchangePacket *>(pBuffer);
+                        net::udp::Send(handle_midi_, buffer, sizeof(struct TimestampSynchronization), from_ip, from_port);
+                        SoftwareTimerChange(s_timer_id, kTimeout);
+                    }
+                    else if (t->count == 1)
+                    {
+                        t->ssrc = GetSSRC();
+                        t->count = 2;
+                        t->timestamps[2] = __builtin_bswap64(Now());
 
-				if (pPacket->nCommand == APPLEMIDI_COMMAND_SYNCHRONIZATION) {
-					DEBUG_PUTS("Timestamp Synchronization");
-					auto *t = reinterpret_cast<TTimestampSynchronization *>(const_cast<uint8_t *>(pBuffer));
+                        net::udp::Send(handle_midi_, buffer, sizeof(struct TimestampSynchronization), from_ip, from_port);
+                        SoftwareTimerChange(s_timer_id, kTimeout);
+                    }
+                    else if (t->count == 2)
+                    {
+                        t->ssrc = GetSSRC();
+                        t->count = 0;
+                        t->timestamps[0] = __builtin_bswap64(Now());
+                        t->timestamps[1] = 0;
+                        t->timestamps[2] = 0;
 
-					if (t->nCount == 0) {
-						t->nSSRC = GetSSRC();
-						t->nCount = 1;
-						t->nTimestamps[1] = __builtin_bswap64(Now());
+                        net::udp::Send(handle_midi_, buffer, sizeof(struct TimestampSynchronization), from_ip, from_port);
+                        SoftwareTimerChange(s_timer_id, kTimeout);
+                    }
+                }
+            }
+        }
+    }
 
-						Network::Get()->SendTo(m_nHandleMidi, pBuffer, sizeof(struct TTimestampSynchronization), nFromIp, nFromPort);
-						SoftwareTimerChange(s_nTimerId, TIMEOUT);
-					} else if (t->nCount == 1) {
-						t->nSSRC = GetSSRC();
-						t->nCount = 2;
-						t->nTimestamps[2] = __builtin_bswap64(Now());
-
-						Network::Get()->SendTo(m_nHandleMidi, pBuffer, sizeof(struct TTimestampSynchronization), nFromIp, nFromPort);
-						SoftwareTimerChange(s_nTimerId, TIMEOUT);
-					} else if (t->nCount == 2) {
-						t->nSSRC = GetSSRC();
-						t->nCount = 0;
-						t->nTimestamps[0] = __builtin_bswap64(Now());
-						t->nTimestamps[1] = 0;
-						t->nTimestamps[2] = 0;
-
-						Network::Get()->SendTo(m_nHandleMidi, pBuffer, sizeof(struct TTimestampSynchronization), nFromIp, nFromPort);
-						SoftwareTimerChange(s_nTimerId, TIMEOUT);
-					}
-				}
-			}
-		}
-	}
-
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }

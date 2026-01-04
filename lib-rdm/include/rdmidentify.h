@@ -30,74 +30,83 @@
 
 #include "hal_statusled.h"
 
-namespace rdm::identify {
-enum class Mode : uint8_t {
-	QUIET = 0x00, LOUD = 0xFF,
+class RDMIdentify
+{
+   public:
+    enum class Mode : uint8_t
+    {
+        kQuiet = 0x00,
+        kLoud = 0xFF,
+    };
+
+    RDMIdentify()
+    {
+        assert(s_this == nullptr);
+        s_this = this;
+    }
+
+    ~RDMIdentify() = default;
+
+    void On()
+    {
+        s_is_enabled = true;
+        hal::statusled::SetModeWithLock(hal::statusled::Mode::FAST, true);
+
+        if (s_mode != Mode::kQuiet)
+        {
+            On(s_mode);
+        }
+    }
+
+    void Off()
+    {
+        s_is_enabled = false;
+        hal::statusled::SetModeWithLock(hal::statusled::Mode::NORMAL, false);
+
+        if (s_mode != Mode::kQuiet)
+        {
+            Off(s_mode);
+        }
+    }
+
+    bool IsEnabled() const { return s_is_enabled; }
+
+    void SetMode(Mode mode)
+    {
+        if ((mode == Mode::kQuiet) || (mode == Mode::kLoud))
+        {
+            s_mode = mode;
+
+            if (s_is_enabled)
+            {
+                if (mode != Mode::kQuiet)
+                {
+                    On(mode);
+                }
+                else
+                {
+                    Off(mode);
+                }
+            }
+            else
+            {
+                Off(mode);
+            }
+        }
+    }
+
+    Mode GetMode() const { return s_mode; }
+
+    static RDMIdentify* Get() { return s_this; }
+
+   private:
+    void On(Mode mode);
+    void Off(Mode mode);
+
+   private:
+    static inline bool s_is_enabled;
+    static inline Mode s_mode;
+    static inline RDMIdentify* s_this;
 };
-} // namespace rdm::identify
 
-class RDMIdentify {
-public:
-	RDMIdentify() {
-		assert(s_pThis == nullptr);
-		s_pThis = this;
-	}
-	~RDMIdentify() = default;
-
-	void On() {
-		m_bIsEnabled = true;
-		hal::statusled_set_mode_with_lock(hal::StatusLedMode::FAST, true);
-
-		if (m_nMode != rdm::identify::Mode::QUIET) {
-			On(m_nMode);
-		}
-	}
-
-	void Off() {
-		m_bIsEnabled = false;
-		hal::statusled_set_mode_with_lock(hal::StatusLedMode::NORMAL, false);
-
-		if (m_nMode != rdm::identify::Mode::QUIET) {
-			Off(m_nMode);
-		}
-	}
-
-	bool IsEnabled() const {
-		return m_bIsEnabled;
-	}
-
-	void SetMode(const rdm::identify::Mode nMode) {
-		if ((nMode == rdm::identify::Mode::QUIET) || (nMode == rdm::identify::Mode::LOUD)) {
-			m_nMode = nMode;
-
-			if (m_bIsEnabled) {
-				if (nMode != rdm::identify::Mode::QUIET) {
-					On(m_nMode);
-				} else {
-					Off(m_nMode);
-				}
-			} else {
-				Off(m_nMode);
-			}
-		}
-	}
-
-	rdm::identify::Mode GetMode() const {
-		return m_nMode;
-	}
-
-	static RDMIdentify *Get() {
-		return s_pThis;
-	}
-
-private:
-	void On(rdm::identify::Mode nMode) __attribute__((weak));
-	void Off(rdm::identify::Mode nMode) __attribute__((weak));
-
-private:
-	static inline bool m_bIsEnabled;
-	static inline rdm::identify::Mode m_nMode;
-	static inline RDMIdentify *s_pThis;
-};
-
-#endif /* RDMIDENTIFY_H_ */
+#endif  // RDMIDENTIFY_H_

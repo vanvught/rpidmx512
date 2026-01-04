@@ -24,100 +24,78 @@
  */
 
 #include <cstdint>
-#include <cassert>
 
-#include "hal.h"
-#include "network.h"
-
+#include "h3/hal_watchdog.h"
+#include "hal_boardinfo.h"
+#include "emac/network.h"
 #include "display.h"
-
-#include "net/apps/mdns.h"
-
 #include "oscserver.h"
-#include "oscserverparams.h"
+#include "json/oscserverparams.h"
 #include "oscservermsgconst.h"
-
-#include "dmxparams.h"
+#include "json/dmxsendparams.h"
 #include "dmxsend.h"
-
 #include "flashcodeinstall.h"
 #include "configstore.h"
 #include "remoteconfig.h"
-#include "remoteconfigparams.h"
-
 #include "firmwareversion.h"
 #include "software_version.h"
 
-#include "displayhandler.h"
-
 namespace hal {
-void reboot_handler() {
+void RebootHandler() {
 	Dmx::Get()->Blackout();
 }
 }  // namespace hal
 
 int main() {
-	hal_init();
+	hal::Init();
 	Display display;
-	ConfigStore configStore;
-	Network nw;
+	ConfigStore config_store;
+	network::Init();
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
-	FlashCodeInstall spiFlashInstall;
+	FlashCodeInstall spiflash_install;
 
 	fw.Print("OSC Server DMX");
 
-	OscServer oscServer;
+	OscServer oscserver;
 
-	OSCServerParams oscServerParams;
-	oscServerParams.Load();
-	oscServerParams.Set();
-
-	mdns_service_record_add(nullptr, mdns::Services::OSC, "type=server", oscServer.GetPortIncoming());
-
-	display.TextStatus(OscServerMsgConst::PARAMS, CONSOLE_YELLOW);
+	json::OscServerParams oscserver_params;
+	oscserver_params.Load();
+	oscserver_params.Set();
 
 	Dmx dmx;
 
-	DmxParams dmxparams;
+	json::DmxSendParams dmxparams;
 	dmxparams.Load();
-	dmxparams.Set(&dmx);
+	dmxparams.Set();
 
-	DmxSend dmxSend;
-	dmxSend.Print();
+	DmxSend dmx_send;
+	dmx_send.Print();
 
-	oscServer.SetOutput(&dmxSend);
-	oscServer.Print();
+	oscserver.SetOutput(&dmx_send);
+	oscserver.Print();
 
-	RemoteConfig remoteConfig(remoteconfig::NodeType::OSC, remoteconfig::Output::DMX, 1);
+	RemoteConfig remote_config(remoteconfig::Output::DMX, 1);
 
-	RemoteConfigParams remoteConfigParams;
-	remoteConfigParams.Load();
-	remoteConfigParams.Set(&remoteConfig);
-
-	for (uint32_t i = 1; i < 7 ; i++) {
-		display.ClearLine(i);
-	}
-
-	uint8_t nHwTextLength;
+	uint8_t text_length;
 
 	display.Printf(1, "OSC DMX 1");
-	display.Write(2, hal::board_name(nHwTextLength));
-	display.Printf(3, "IP: " IPSTR " %c", IP2STR(Network::Get()->GetIp()), nw.IsDhcpKnown() ? (nw.IsDhcpUsed() ? 'D' : 'S') : ' ');
-	display.Printf(4, "In: %d", oscServer.GetPortIncoming());
-	display.Printf(5, "Out: %d", oscServer.GetPortOutgoing());
+	display.Write(2, hal::BoardName(text_length));
+	display.Printf(3, "IP: " IPSTR " %c", IP2STR(net::GetPrimaryIp()), network::iface::IsDhcpKnown() ? ( network::iface::IsDhcpUsed() ? 'D' : 'S') : ' ');
+	display.Printf(4, "In: %d", oscserver.GetPortIncoming());
+	display.Printf(5, "Out: %d", oscserver.GetPortOutgoing());
 
-	display.TextStatus(OscServerMsgConst::START, CONSOLE_YELLOW);
+	display.TextStatus(OscServerMsgConst::START, console::Colours::kConsoleYellow);
 
-	oscServer.Start();
+	oscserver.Start();
 
-	display.TextStatus(OscServerMsgConst::STARTED, CONSOLE_GREEN);
+	display.TextStatus(OscServerMsgConst::STARTED, console::Colours::kConsoleGreen);
 
-	hal::watchdog_init();
+	hal::WatchdogInit();
 
 	for (;;) {
-		hal::watchdog_feed();
-		nw.Run();
+		hal::WatchdogFeed();
+		network::Run();
 		display.Run();
-		hal::run();
+		hal::Run();
 	}
 }

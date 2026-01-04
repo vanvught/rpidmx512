@@ -29,196 +29,192 @@
 #include <cstdio>
 #include <cassert>
 
-#include "oscsimplesend.h"
-
+#include "net/apps/mdns.h"
 #include "hal_statusled.h"
 #include "network.h"
-
 #include "dmxnode.h"
 #include "dmxnode_outputtype.h"
+#include "configurationstore.h"
+ #include "firmware/debug/debug_debug.h"
 
-#include "debug.h"
-
-namespace osc::server {
-struct DefaultPort {
-	static constexpr auto INCOMING = 8000U;
-	static constexpr auto OUTGOING = 9000U;
-};
-
-struct Max {
-	static constexpr auto PATH_LENGTH = 128U;
+namespace osc::server
+{
+struct DefaultPort
+{
+    static constexpr uint16_t kIncoming = 8000;
+    static constexpr uint16_t kOutgoing = 9000;
 };
 } // namespace osc::server
 
-
-class OscServerHandler {
-public:
-	virtual ~OscServerHandler() {}
-	virtual void Blackout()=0;
-	virtual void Update()=0;
-	virtual void Info(int32_t nHandle, uint32_t nRemoteIp, uint16_t nPortOutgoing)=0;
+class OscServerHandler
+{
+   public:
+    virtual ~OscServerHandler() {}
+    virtual void Blackout() = 0;
+    virtual void Update() = 0;
+    virtual void Info(int32_t handle, uint32_t remote_ip, uint16_t port_outgoing) = 0;
 };
 
-class OscServer {
-public:
-	OscServer();
+class OscServer
+{
+   public:
+    OscServer();
 
-	OscServer(const OscServer&) = delete;
-	OscServer& operator=(const OscServer&) = delete;
+    OscServer(const OscServer&) = delete;
+    OscServer& operator=(const OscServer&) = delete;
 
-	~OscServer() = default;
+    ~OscServer() = default;
 
-	void Start() {
-		DEBUG_ENTRY
+    void Start()
+    {
+        DEBUG_ENTRY();
 
-		assert(m_nHandle == -1);
-		m_nHandle = Network::Get()->Begin(m_nPortIncoming, StaticCallbackFunction);
-		assert(m_nHandle != -1);
+        assert(handle_ == -1);
+        handle_ = net::udp::Begin(port_incoming_, StaticCallbackFunction);
+        assert(handle_ != -1);
 
-		hal::statusled_set_mode(hal::StatusLedMode::NORMAL);
+        mdns::ServiceRecordAdd(nullptr, mdns::Services::OSC, "type=server", port_incoming_);
 
-		DEBUG_EXIT
-	}
+        hal::statusled::SetMode(hal::statusled::Mode::NORMAL);
 
-	void Stop() {
-		DEBUG_ENTRY
+        DEBUG_EXIT();
+    }
 
-		if (m_pDmxNodeOutputType != nullptr) {
-			m_pDmxNodeOutputType->Stop(0);
-		}
+    void Stop()
+    {
+        DEBUG_ENTRY();
 
-		assert(m_nHandle != -1);
-		Network::Get()->End(m_nPortIncoming);
-		m_nHandle = -1;
+        if (dmxnode_output_type_ != nullptr)
+        {
+            dmxnode_output_type_->Stop(0);
+        }
 
-		DEBUG_EXIT
-	}
+        mdns::ServiceRecordDelete(mdns::Services::OSC);
 
-	void Print() {
-		puts("OSC Server");
-		printf(" Incoming Port        : %d\n", m_nPortIncoming);
-		printf(" Outgoing Port        : %d\n", m_nPortOutgoing);
-		printf(" DMX Path             : [%s][%s]\n", s_aPath, s_aPathSecond);
-		printf("  Blackout Path       : [%s]\n", s_aPathBlackOut);
-		printf(" Partial Transmission : %s\n", m_bPartialTransmission ? "Yes" : "No");
-	}
+        assert(handle_ != -1);
+        net::udp::End(port_incoming_);
+        handle_ = -1;
 
-	void Input(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort);
+        DEBUG_EXIT();
+    }
 
-	void SetOutput(DmxNodeOutputType *pDmxNodeOutputType) {
-		assert(pDmxNodeOutputType != nullptr);
-		m_pDmxNodeOutputType = pDmxNodeOutputType;
-	}
+    void Print()
+    {
+        puts("OSC Server");
+        printf(" Incoming Port        : %d\n", port_incoming_);
+        printf(" Outgoing Port        : %d\n", port_outgoing_);
+        printf(" DMX Path             : [%s][%s]\n", s_path, s_path_second);
+        printf("  Blackout Path       : [%s]\n", s_path_blackout);
+        printf(" Partial Transmission : %s\n", partial_transmission_ ? "Yes" : "No");
+    }
 
-	void SetOscServerHandler(OscServerHandler *pOscServerHandler) {
-		assert(pOscServerHandler != nullptr);
-		m_pOscServerHandler = pOscServerHandler;
-	}
+    void Input(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port);
 
-	void SetPortIncoming(const uint16_t nPortIncoming) {
-		if (nPortIncoming > 1023) {
-			m_nPortIncoming = nPortIncoming;
-		} else {
-			m_nPortIncoming = osc::server::DefaultPort::INCOMING;
-		}
-	}
+    void SetOutput(DmxNodeOutputType* dmx_node_output_type)
+    {
+        assert(dmx_node_output_type != nullptr);
+        dmxnode_output_type_ = dmx_node_output_type;
+    }
 
-	uint16_t GetPortIncoming() const {
-		return m_nPortIncoming;
-	}
+    void SetOscServerHandler(OscServerHandler* osc_server_handler)
+    {
+        assert(osc_server_handler != nullptr);
+        handler_ = osc_server_handler;
+    }
 
-	void SetPortOutgoing(const uint16_t nPortOutgoing) {
-		if (nPortOutgoing > 1023) {
-			m_nPortOutgoing = nPortOutgoing;
-		} else {
-			m_nPortOutgoing = osc::server::DefaultPort::OUTGOING;
-		}
-	}
+    void SetPortIncoming(uint16_t port_incoming)
+    {
+        if (port_incoming > 1023)
+        {
+            port_incoming_ = port_incoming;
+        }
+        else
+        {
+            port_incoming_ = osc::server::DefaultPort::kIncoming;
+        }
+    }
 
-	uint16_t GetPortOutgoing() const {
-		return m_nPortOutgoing;
-	}
+    uint16_t GetPortIncoming() const { return port_incoming_; }
 
-	void SetPath(const char *pPath);
+    void SetPortOutgoing(uint16_t port_outgoing)
+    {
+        if (port_outgoing > 1023)
+        {
+            port_outgoing_ = port_outgoing;
+        }
+        else
+        {
+            port_outgoing_ = osc::server::DefaultPort::kOutgoing;
+        }
+    }
 
-	const char *GetPath() {
-		return s_aPath;
-	}
+    uint16_t GetPortOutgoing() const { return port_outgoing_; }
 
-	void SetPathInfo(const char *pPathInfo);
+    void SetPath(const char* path);
+    const char* GetPath() { return s_path; }
 
-	const char *GetPathInfo() {
-		return s_aPathInfo;
-	}
+    void SetPathInfo(const char* path_info);
+    const char* GetPathInfo() { return s_path_info; }
 
-	void SetPathBlackOut(const char *pPathBlackOut);
+    void SetPathBlackOut(const char* path_black_out);
+    const char* GetPathBlackOut() { return s_path_blackout; }
 
-	const char*GetPathBlackOut() {
-		return s_aPathBlackOut;
-	}
+    void SetPartialTransmission(bool partial_transmission = false) { partial_transmission_ = partial_transmission; }
 
-	void SetPartialTransmission(bool bPartialTransmission = false) {
-		m_bPartialTransmission = bPartialTransmission;
-	}
+    bool IsPartialTransmission() const { return partial_transmission_; }
 
-	bool IsPartialTransmission() const {
-		return m_bPartialTransmission;
-	}
+    void SetEnableNoChangeUpdate(bool enable_no_change_update) { enable_no_change_update_ = enable_no_change_update; }
+    bool GetEnableNoChangeUpdate() { return enable_no_change_update_; }
 
-	void SetEnableNoChangeUpdate(bool bEnableNoChangeUpdate) {
-		m_bEnableNoChangeUpdate = bEnableNoChangeUpdate;
-	}
-	bool GetEnableNoChangeUpdate() {
-		return m_bEnableNoChangeUpdate;
-	}
+    static OscServer& Instance()
+    {
+        assert(s_this != nullptr); // Ensure that s_this is valid
+        return *s_this;
+    }
 
-	static OscServer& Get() {
-		assert(s_pThis != nullptr); // Ensure that s_pThis is valid
-		return *s_pThis;
-	}
+   private:
+    int GetChannel(const char* p);
+    bool IsDmxDataChanged(const uint8_t* data, uint16_t start_channel, uint32_t length);
 
-private:
-	int GetChannel(const char *p);
-	bool IsDmxDataChanged(const uint8_t *pData, uint16_t nStartChannel, uint32_t nLength);
+    /**
+     * @brief Static callback function for receiving UDP packets.
+     *
+     * @param pBuffer Pointer to the packet buffer.
+     * @param nSize Size of the packet buffer.
+     * @param from_ip IP address of the sender.
+     * @param from_port Port number of the sender.
+     */
+    void static StaticCallbackFunction(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port)
+    {
+        s_this->Input(buffer, size, from_ip, from_port);
+    }
 
-	/**
-	 * @brief Static callback function for receiving UDP packets.
-	 *
-	 * @param pBuffer Pointer to the packet buffer.
-	 * @param nSize Size of the packet buffer.
-	 * @param nFromIp IP address of the sender.
-	 * @param nFromPort Port number of the sender.
-	 */
-	void static StaticCallbackFunction(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
-		s_pThis->Input(pBuffer, nSize, nFromIp, nFromPort);
-	}
+   private:
+    uint16_t port_incoming_{osc::server::DefaultPort::kIncoming};
+    uint16_t port_outgoing_{osc::server::DefaultPort::kOutgoing};
+    int32_t handle_{-1};
+    uint32_t last_channel_{0};
 
-private:
-	uint16_t m_nPortIncoming { osc::server::DefaultPort::INCOMING };
-	uint16_t m_nPortOutgoing { osc::server::DefaultPort::OUTGOING };
-	int32_t m_nHandle { -1 };
-	uint32_t m_nLastChannel { 0 };
+    bool partial_transmission_{false};
+    bool enable_no_change_update_{false};
+    bool is_running_{false};
+    char os_[32];
 
-	bool m_bPartialTransmission { false };
-	bool m_bEnableNoChangeUpdate { false };
-	bool m_bIsRunning { false };
-	char m_Os[32];
+    OscServerHandler* handler_{nullptr};
+    DmxNodeOutputType* dmxnode_output_type_{nullptr};
 
-	OscServerHandler *m_pOscServerHandler { nullptr };
-	DmxNodeOutputType *m_pDmxNodeOutputType { nullptr };
+    const char* model_;
+    const char* soc_;
 
-	const char *m_pModel;
-	const char *m_pSoC;
+    static inline char s_path[common::store::osc::server::kPathLength];
+    static inline char s_path_second[common::store::osc::server::kPathLength];
+    static inline char s_path_info[common::store::osc::server::kPathLength];
+    static inline char s_path_blackout[common::store::osc::server::kPathLength];
 
-	static inline char s_aPath[osc::server::Max::PATH_LENGTH];
-	static inline char s_aPathSecond[osc::server::Max::PATH_LENGTH];
-	static inline char s_aPathInfo[osc::server::Max::PATH_LENGTH];
-	static inline char s_aPathBlackOut[osc::server::Max::PATH_LENGTH];
+    static inline uint8_t s_data[dmxnode::kUniverseSize];
+    static inline uint8_t s_osc[dmxnode::kUniverseSize];
 
-	static inline uint8_t s_pData[dmxnode::UNIVERSE_SIZE];
-	static inline uint8_t s_pOsc[dmxnode::UNIVERSE_SIZE];
-
-	static inline OscServer *s_pThis;
+    static inline OscServer* s_this;
 };
 
-#endif /* OSCSERVER_H_ */
+#endif  // OSCSERVER_H_

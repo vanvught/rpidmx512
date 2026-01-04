@@ -34,8 +34,8 @@ struct TRDMSubDevicesInfo {
 	uint16_t dmx_start_address;
 	uint8_t current_personality;
 	uint8_t personality_count;
-	char aLabel[RDM_DEVICE_LABEL_MAX_LENGTH];
-	uint8_t nLabelLength;
+	char label[RDM_DEVICE_LABEL_MAX_LENGTH];
+	uint8_t label_length;
 	uint8_t sensor_count;
 };
 
@@ -46,155 +46,155 @@ enum TRDMSubDeviceUpdateEvent {
 
 class RDMSubDevice {
 public:
-	RDMSubDevice(const char* pLabel, uint16_t nDmxStartAddress = 1, uint8_t nPersonalityCurrent = 1):
-		m_nDmxStartAddressFactoryDefault(nDmxStartAddress),
-		m_nCurrentPersonalityFactoryDefault(nPersonalityCurrent)
+	explicit RDMSubDevice(const char* label, uint16_t dmx_start_address = 1, uint8_t personality_current = 1):
+		dmx_start_address_factory_default_(dmx_start_address),
+		current_personality_factory_default_(personality_current)
 	{
-		for (uint32_t i = 0; (i < RDM_DEVICE_LABEL_MAX_LENGTH) && pLabel[i] != 0; i++) {
-			m_aLabelFactoryDefault[i] = pLabel[i];
+		for (uint32_t i = 0; (i < RDM_DEVICE_LABEL_MAX_LENGTH) && label[i] != 0; i++) {
+			label_factory_default_[i] = label[i];
 		}
 
-		SetLabel(pLabel);
+		SetLabel(label);
 
-		m_tSubDevicesInfo.dmx_start_address = nDmxStartAddress;
-		m_tSubDevicesInfo.current_personality = nPersonalityCurrent;
+		sub_devices_info_.dmx_start_address = dmx_start_address;
+		sub_devices_info_.current_personality = personality_current;
 
-		m_tSubDevicesInfo.sensor_count = 0;
-		m_tSubDevicesInfo.personality_count = 0;
+		sub_devices_info_.sensor_count = 0;
+		sub_devices_info_.personality_count = 0;
 
-		m_nCheckSum = CalculateChecksum();
+		checksum_ = CalculateChecksum();
 	}
 
 	virtual ~RDMSubDevice() = default;
 
-	void SetDmxStartAddress(uint16_t nDmxStartAddress) {
-		m_tSubDevicesInfo.dmx_start_address = nDmxStartAddress;
+	void SetDmxStartAddress(uint16_t dmx_start_address) {
+		sub_devices_info_.dmx_start_address = dmx_start_address;
 		UpdateEvent(RDM_SUBDEVICE_UPDATE_EVENT_DMX_STARTADDRESS);
 	}
 
 	uint16_t GetDmxStartAddress() const {
-		return m_tSubDevicesInfo.dmx_start_address;
+		return sub_devices_info_.dmx_start_address;
 	}
 
 	uint8_t GetPersonalityCurrent() const {
-		return m_tSubDevicesInfo.current_personality;
+		return sub_devices_info_.current_personality;
 	}
 
-	void SetPersonalityCurrent(uint8_t nCurrent) {
-		m_tSubDevicesInfo.current_personality = nCurrent;
+	void SetPersonalityCurrent(uint8_t current) {
+		sub_devices_info_.current_personality = current;
 	}
 
-	void GetLabel(struct TRDMDeviceInfoData* pInfoData) {
-		assert(pInfoData != nullptr);
+	void GetLabel(struct rdm::DeviceInfoData* info_data) {
+		assert(info_data != nullptr);
 
-		pInfoData->data = m_tSubDevicesInfo.aLabel;
-		pInfoData->length = m_tSubDevicesInfo.nLabelLength;
+		info_data->data = sub_devices_info_.label;
+		info_data->length = sub_devices_info_.label_length;
 	}
 
-	void SetLabel(const char *pLabel) {
-		assert(pLabel != nullptr);
+	void SetLabel(const char *label) {
+		assert(label != nullptr);
 		uint32_t i;
 
-		for (i = 0; (i < RDM_DEVICE_LABEL_MAX_LENGTH) && (pLabel[i] != 0); i++) {
-			m_tSubDevicesInfo.aLabel[i] = pLabel[i];
+		for (i = 0; (i < RDM_DEVICE_LABEL_MAX_LENGTH) && (label[i] != 0); i++) {
+			sub_devices_info_.label[i] = label[i];
 		}
 
-		m_tSubDevicesInfo.nLabelLength = static_cast<uint8_t>(i);
+		sub_devices_info_.label_length = static_cast<uint8_t>(i);
 	}
 
-	void SetLabel(const char *pLabel, uint8_t nLabelLength) {
-		assert(pLabel != nullptr);
+	void SetLabel(const char *label, uint8_t label_length) {
+		assert(label != nullptr);
 		uint32_t i;
 
-		for (i = 0; (i < RDM_DEVICE_LABEL_MAX_LENGTH) && (i < nLabelLength); i++) {
-			m_tSubDevicesInfo.aLabel[i] = pLabel[i];
+		for (i = 0; (i < RDM_DEVICE_LABEL_MAX_LENGTH) && (i < label_length); i++) {
+			sub_devices_info_.label[i] = label[i];
 		}
 
-		m_tSubDevicesInfo.nLabelLength = static_cast<uint8_t>(i);
+		sub_devices_info_.label_length = static_cast<uint8_t>(i);
 	}
 
 	struct TRDMSubDevicesInfo* GetInfo() {
-		return &m_tSubDevicesInfo;
+		return &sub_devices_info_;
 	}
 
-	RDMPersonality *GetPersonality(uint8_t nPersonality) {
-		assert(nPersonality != 0);
-		assert(nPersonality <= m_tSubDevicesInfo.personality_count);
+	RDMPersonality *GetPersonality(uint8_t personality) {
+		assert(personality != 0);
+		assert(personality <= sub_devices_info_.personality_count);
 
-		return m_pRDMPersonalities[nPersonality - 1];
+		return personalities_[personality - 1];
 	}
 
 	uint8_t GetPersonalityCount() const {
-		return m_tSubDevicesInfo.personality_count;
+		return sub_devices_info_.personality_count;
 	}
 
 	uint16_t GetDmxFootPrint() const {
-		return m_tSubDevicesInfo.dmx_footprint;
+		return sub_devices_info_.dmx_footprint;
 	}
 
 	bool GetFactoryDefaults() {
-		if (m_IsFactoryDefaults) {
-			if (m_nCheckSum != CalculateChecksum()) {
-				m_IsFactoryDefaults = false;
+		if (is_factory_defaults_) {
+			if (checksum_ != CalculateChecksum()) {
+				is_factory_defaults_ = false;
 			}
 		}
 
-		return m_IsFactoryDefaults;
+		return is_factory_defaults_;
 	}
 
 	void SetFactoryDefaults() {
-		if (m_IsFactoryDefaults) {
+		if (is_factory_defaults_) {
 			return;
 		}
 
-		SetLabel(m_aLabelFactoryDefault);
+		SetLabel(label_factory_default_);
 
-		m_tSubDevicesInfo.dmx_start_address = m_nDmxStartAddressFactoryDefault;
-		m_tSubDevicesInfo.current_personality = m_nCurrentPersonalityFactoryDefault;
+		sub_devices_info_.dmx_start_address = dmx_start_address_factory_default_;
+		sub_devices_info_.current_personality = current_personality_factory_default_;
 
-		m_IsFactoryDefaults = true;
+		is_factory_defaults_ = true;
 	}
 
 	virtual bool Initialize()=0;
 	virtual void Start()= 0;
 	virtual void Stop()= 0;
-	virtual void Data(const uint8_t *pDdata, uint32_t nLength)=0;
+	virtual void Data(const uint8_t *data, uint32_t length)=0;
 
 protected:
-	void SetDmxFootprint(uint16_t nDmxFootprint) {
-		m_tSubDevicesInfo.dmx_footprint = nDmxFootprint;
+	void SetDmxFootprint(uint16_t dmx_footprint) {
+		sub_devices_info_.dmx_footprint = dmx_footprint;
 	}
 
-	void SetPersonalities(RDMPersonality **pRDMPersonalities, uint8_t nPersonalityCount) {
-		assert(pRDMPersonalities != nullptr);
+	void SetPersonalities(RDMPersonality **personalities, uint8_t personality_count) {
+		assert(personalities != nullptr);
 
-		m_tSubDevicesInfo.personality_count = nPersonalityCount;
-		m_pRDMPersonalities = pRDMPersonalities;
+		sub_devices_info_.personality_count = personality_count;
+		personalities_ = personalities;
 
 		UpdateEvent(RDM_SUBDEVICE_UPDATE_EVENT_PERSONALITY);
 	}
 
 private:
-	virtual void UpdateEvent([[maybe_unused]] TRDMSubDeviceUpdateEvent tUpdateEvent) {}
+	virtual void UpdateEvent([[maybe_unused]] TRDMSubDeviceUpdateEvent update_event) {}
 	uint16_t CalculateChecksum() {
-		uint16_t nChecksum = m_tSubDevicesInfo.dmx_start_address;
-		nChecksum = static_cast<uint16_t>(nChecksum + m_tSubDevicesInfo.current_personality);
+		uint16_t checksum = sub_devices_info_.dmx_start_address;
+		checksum = static_cast<uint16_t>(checksum + sub_devices_info_.current_personality);
 
-		for (uint32_t i = 0; i < m_tSubDevicesInfo.nLabelLength; i++) {
-			nChecksum = static_cast<uint16_t>(nChecksum + m_tSubDevicesInfo.aLabel[i]);
+		for (uint32_t i = 0; i < sub_devices_info_.label_length; i++) {
+			checksum = static_cast<uint16_t>(checksum + sub_devices_info_.label[i]);
 		}
 
-		return nChecksum;
+		return checksum;
 	}
 
 private:
-	RDMPersonality **m_pRDMPersonalities { nullptr };
-	bool m_IsFactoryDefaults { true };
-	uint16_t m_nCheckSum { 0 };
-	uint16_t m_nDmxStartAddressFactoryDefault;
-	uint8_t m_nCurrentPersonalityFactoryDefault;
-	TRDMSubDevicesInfo m_tSubDevicesInfo;
-	char m_aLabelFactoryDefault[RDM_DEVICE_LABEL_MAX_LENGTH];
+ RDMPersonality** personalities_{nullptr};
+ bool is_factory_defaults_{true};
+ uint16_t checksum_{0};
+ uint16_t dmx_start_address_factory_default_;
+ uint8_t current_personality_factory_default_;
+ TRDMSubDevicesInfo sub_devices_info_;
+ char label_factory_default_[RDM_DEVICE_LABEL_MAX_LENGTH];
 };
 
-#endif /* RDMSUBDEVICE_H_ */
+#endif  // RDMSUBDEVICE_H_

@@ -23,56 +23,43 @@
  * THE SOFTWARE.
  */
 
-#include <cstdio>
-#include <cstdint>
-#include <cstring>
-#include <cstdlib>
-
 #include "hal.h"
 #include "network.h"
-
+#include "configstore.h"
 #include "firmwareversion.h"
-
 #include "software_version.h"
-
+#include "rdmdevice.h"
 #include "rdmnetdevice.h"
-#include "rdmpersonality.h"
-#include "rdmdeviceparams.h"
 
-namespace rdm {
-namespace device {
-namespace responder {
+namespace rdm::device::responder
+{
+void SetFactoryDefaults() {}
+} // namespace rdm::device::responder
 
-void set_factory_defaults() {
+int main(int argc, char** argv)
+{
+    hal::Init();
+    ConfigStore config_store;
+    Network nw(argc, argv);
+    FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
-}
+    hal::print();
+    fw.Print();
+    nw.Print();
 
-}  // namespace responder
-}  // namespace device
-}  // namespace rdm
+    auto& rdm_device = RdmDevice::Get();
 
-int main(int argc, char **argv) {
-	Hardware hw;
-	Network nw(argc, argv);
-	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+    rdm_device.SetProductCategory(E120_PRODUCT_CATEGORY_FIXTURE);
+    rdm_device.SetProductDetail(E120_PRODUCT_DETAIL_LED);
+    rdm_device.Init();
+    rdm_device.Print();
 
-	hal::print();
-	fw.Print();
-	nw.Print();
-
-	RDMPersonality *pPersonalities[1] = { new RDMPersonality("LLRP Dummy device", nullptr) };
-	RDMNetDevice device(pPersonalities, 1);
-
-	RDMDeviceParams rdmDeviceParams;
-	rdmDeviceParams.Load();
-	rdmDeviceParams.Set(&device);
-
-	device.Init();
+    RDMNetDevice device;
 	device.Print();
+	
+    for (;;)
+    {
+    }
 
-	for (;;) {
-		device.Run();
-	}
-
-	return 0;
+    return 0;
 }

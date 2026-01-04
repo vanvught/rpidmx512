@@ -24,146 +24,89 @@
  */
 
 #include <cstdint>
-#include <cstring>
-#include <cstdlib>
-#include <cctype>
 #include <signal.h>
 
 #include "hal.h"
 #include "network.h"
-
 #include "display.h"
-#include "displayudfparams.h"
-
-#include "dmxnodenode.h"
+#include "json/dmxnodenode.h"
 #include "dmxnodemsgconst.h"
-
-#include "dmxnodeparams.h"
-
+#include "json/dmxnodeparams.h"
 #include "dmxmonitor.h"
-#include "dmxmonitorparams.h"
-
-#include "rdmdeviceparams.h"
+#include "json/dmxmonitorparams.h"
 #include "rdmnetdevice.h"
-#include "rdmnetconst.h"
-#include "rdmpersonality.h"
+#include "rdmdevice.h"
 #include "rdm_e120.h"
-
 #include "configstore.h"
-
 #include "remoteconfig.h"
-#include "remoteconfigparams.h"
-
-#if defined (NODE_SHOWFILE)
-# include "showfile.h"
-# include "showfileparams.h"
+#if defined(NODE_SHOWFILE)
+#include "showfile.h"
 #endif
-
 #include "firmwareversion.h"
 #include "software_version.h"
 #include "software_version_id.h"
 
-static bool keepRunning = true;
+static bool keep_running = true;
 
-void intHandler(int) {
-    keepRunning = false;
+void IntHandler(int)
+{
+    keep_running = false;
 }
 
-namespace e131bridge {
-namespace configstore {
-uint32_t DMXPORT_OFFSET = 0;
-}  // namespace configstore
-}  // namespace e131bridge
-
-int main(int argc, char **argv) {
+int main(int argc, char** argv)
+{
     struct sigaction act;
-    act.sa_handler = intHandler;
+    act.sa_handler = IntHandler;
     sigaction(SIGINT, &act, nullptr);
-#ifndef NDEBUG
-	if (argc > 2) {
-		const int c = argv[2][0];
-		if (isdigit(c)){
-			e131bridge::configstore::DMXPORT_OFFSET = c - '0';
-		}
-	}
-#endif
-	hal_init();
-	Display display;
-	ConfigStore configStore;
-	Network nw(argc, argv);
-	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__, DEVICE_SOFTWARE_VERSION_ID);
+    hal::Init();
+    Display display;
+    ConfigStore config_store;
+    Network nw(argc, argv);
+    FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__, DEVICE_SOFTWARE_VERSION_ID);
 
-	hal::print();
-	fw.Print();
-	nw.Print();
+    hal::print();
+    fw.Print();
+    nw.Print();
 
-	DisplayUdfParams displayUdfParams;
+    DmxMonitor monitor;
 
-	DMXMonitor monitor;
+    json::DmxMonitorParams monitor_params;
+    monitor_params.Load();
+    monitor_params.Set();
 
-	DMXMonitorParams monitorParams;
-	monitorParams.Load();
+    DmxNodeNode dmx_node_node;
+    dmx_node_node.SetOutput(&monitor);
+    dmx_node_node.Print();
 
-	DmxNodeNode dmxNodeNode;
-	dmxNodeNode.SetOutput(&monitor);
-	dmxNodeNode.Print();
+    auto& rdm_device = RdmDevice::Get();
+    rdm_device.SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
+    rdm_device.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
+    rdm_device.Init();
+    rdm_device.Print();
 
-	const auto nActivePorts = dmxNodeNode.GetActiveOutputPorts();
+    RDMNetDevice llrp_only_device;
+	llrp_only_device.Print();
 
-	char aDescription[rdm::personality::DESCRIPTION_MAX_LENGTH + 1];
-	snprintf(aDescription, sizeof(aDescription) - 1, "sACN E1.31 DMX %d", nActivePorts);
+    dmx_node_node.Print();
 
-	uint8_t nLength;
-	const auto *aLabel = hal::board_name(nLength);
-
-	RDMPersonality *pPersonalities[1] = { new RDMPersonality(aDescription, nullptr) };
-	RDMNetDevice llrpOnlyDevice(pPersonalities, 1);
-
-	llrpOnlyDevice.SetLabel(RDM_ROOT_DEVICE, aLabel, nLength);
-	llrpOnlyDevice.SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
-	llrpOnlyDevice.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
-	llrpOnlyDevice.Init();
-
-
-	RDMDeviceParams rdmDeviceParams;
-
-	rdmDeviceParams.Load();
-	rdmDeviceParams.Set(&llrpOnlyDevice);
-
-	llrpOnlyDevice.Print();
-
-	dmxNodeNode.Print();
-
-#if defined (NODE_SHOWFILE)
-	ShowFile showFile;
-
-	ShowFileParams showFileParams;
-	showFileParams.Load();
-	showFileParams.Set();
-
-	if (showFile.IsAutoStart()) {
-		showFile.Play();
-	}
-
-	showFile.Print();
+#if defined(NODE_SHOWFILE)
+    ShowFile showfile;
+    showfile.Print();
 #endif
 
-	RemoteConfig remoteConfig(remoteconfig::NodeType::E131, remoteconfig::Output::MONITOR, dmxNodeNode.GetActiveOutputPorts());
+    RemoteConfig remote_config(remoteconfig::Output::MONITOR, dmx_node_node.GetActiveOutputPorts());
 
-	RemoteConfigParams remoteConfigParams;
-	remoteConfigParams.Load();
-	remoteConfigParams.Set(&remoteConfig);
+    dmx_node_node.Start();
 
-	dmxNodeNode.Start();
-
-	while (keepRunning) {
-		nw.Run();
-		dmxNodeNode.Run();
-#if defined (NODE_SHOWFILE)
-		showFile.Run();
+    while (keep_running)
+    {
+        network::Run();
+        dmx_node_node.Run();
+#if defined(NODE_SHOWFILE)
+        showfile.Run();
 #endif
-		hal::run();
-	}
+        hal::Run();
+    }
 
-	return 0;
+    return 0;
 }

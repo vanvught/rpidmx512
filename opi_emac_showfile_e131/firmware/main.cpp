@@ -23,112 +23,91 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cassert>
-
-#include "hal.h"
+#include "h3/hal.h"
+#include "h3/hal_watchdog.h"
+#include "hal_statusled.h"
 #include "network.h"
-
-
-#include "net/apps/mdns.h"
-
 #include "displayudf.h"
-#include "displayudfparams.h"
-#include "displayhandler.h"
-
+#include "json/displayudfparams.h"
 #include "showfile.h"
 #include "showfiledisplay.h"
-#include "showfileparams.h"
-
-#if defined (NODE_RDMNET_LLRP_ONLY)
-# include "rdmnetllrponly.h"
-# include "rdm_e120.h"
+#if defined(NODE_RDMNET_LLRP_ONLY)
+#include "rdmnetdevice.h"
+#include "rdm_e120.h"
 #endif
-
 #include "remoteconfig.h"
-#include "remoteconfigparams.h"
-
 #include "flashcodeinstall.h"
 #include "configstore.h"
-
 #include "firmwareversion.h"
 #include "software_version.h"
 
-namespace hal {
-void reboot_handler() {
-	ShowFile::Get().Stop();
+namespace hal
+{
+void RebootHandler()
+{
+    ShowFile::Instance().Stop();
 
-	if (!RemoteConfig::Get()->IsReboot()) {
-		Display::Get()->SetSleep(false);
-		Display::Get()->Cls();
-		Display::Get()->TextStatus("Rebooting ...");
-	}
+    if (!RemoteConfig::Get()->IsReboot())
+    {
+        Display::Get()->SetSleep(false);
+        Display::Get()->Cls();
+        Display::Get()->TextStatus("Rebooting ...");
+    }
 }
-}  // namespace hal
+} // namespace hal
 
-int main() {
-	hal_init();
-	DisplayUdf display;
-	ConfigStore configStore;
-	Network nw;
-	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
-	FlashCodeInstall spiFlashInstall;
+int main() // NOLINT
+{
+    hal::Init();
+    DisplayUdf display;
+    ConfigStore config_store;
+    network::Init();
+    FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+    FlashCodeInstall spiflash_install;
 
-	fw.Print("Showfile player");
+    fw.Print("Showfile player");
 
-	ShowFile showFile;
+    ShowFile showfile;
+    showfile.Print();
 
-	ShowFileParams showFileParams;
-	showFileParams.Load();
-	showFileParams.Set();
+#if defined(NODE_RDMNET_LLRP_ONLY)
+    auto& rdm_device = RdmDevice::Get();
+    rdm_device.SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
+    rdm_device.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
+    rdm_device.Init();
+    rdm_device.Print();
 
-	if (showFile.IsAutoStart()) {
-		showFile.Play();
-	}
-
-#if defined (NODE_RDMNET_LLRP_ONLY)
-	RDMNetLLRPOnly rdmNetLLRPOnly("Showfile player");
-
-	rdmNetLLRPOnly.GetRDMNetDevice()->SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
-	rdmNetLLRPOnly.GetRDMNetDevice()->SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
-	rdmNetLLRPOnly.Init();
-	rdmNetLLRPOnly.Print();
+    RDMNetDevice llrp_only_device;
 #endif
 
-	RemoteConfig remoteConfig(remoteconfig::NodeType::SHOWFILE, remoteconfig::Output::PLAYER, 0);
+    RemoteConfig remote_config(remoteconfig::Output::PLAYER, 0);
 
-	RemoteConfigParams remoteConfigParams;
-	remoteConfigParams.Load();
-	remoteConfigParams.Set(&remoteConfig);
+    display.SetTitle("Showfile player");
+    display.Set(2, displayudf::Labels::kHostname);
+    display.Set(3, displayudf::Labels::kIp);
+    display.Set(4, displayudf::Labels::kVersion);
 
-	display.SetTitle("Showfile player");
-	display.Set(2, displayudf::Labels::HOSTNAME);
-	display.Set(3, displayudf::Labels::IP);
-	display.Set(4, displayudf::Labels::VERSION);
+    json::DisplayUdfParams displayudf_params;
+    displayudf_params.Load();
+    displayudf_params.SetAndShow();
 
-	DisplayUdfParams displayUdfParams;
-	displayUdfParams.Load();
-	displayUdfParams.Set(&display);
+    // Fixed row 5, 6, 7
+    if (showfile.IsSyncDisabled())
+    {
+        display.Printf(6, "<No synchronization>");
+    }
 
-	display.Show();
+    showfile::DisplayStatus();
 
-	showFile.Print();
+    hal::statusled::SetMode(hal::statusled::Mode::NORMAL);
+    hal::WatchdogInit();
 
-	// Fixed row 5, 6, 7
-	if (showFile.IsSyncDisabled()) {
-		display.Printf(6, "<No synchronization>");
-	}
-
-	showfile::display_status();
-
-	hal::statusled_set_mode(hal::StatusLedMode::NORMAL);
-	hal::watchdog_init();
-
-	for (;;) {
-		hal::watchdog_feed();
-		nw.Run();
-		showFile.Run();
-		display.Run();
-		hal::run();
-	}
+    for (;;)
+    {
+        hal::WatchdogFeed();
+        network::Run();
+        showfile.Run();
+        display.Run();
+        hal::Run();
+    }
 }

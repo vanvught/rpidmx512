@@ -31,145 +31,149 @@
 
 #include "font_cp437.h"
 
-#include "debug.h"
+ #include "firmware/debug/debug_debug.h"
 
 static uint8_t spi_data[64] __attribute__((aligned(4)));
 
-Max7219Matrix::Max7219Matrix(): m_nFontSize(cp437_font_size()) {
-	DEBUG_ENTRY
+Max7219Matrix::Max7219Matrix() : font_size_(cp437_font_size())
+{
+    DEBUG_ENTRY();
 
-	m_pFont = new uint8_t[m_nFontSize * 8];
-	assert(m_pFont != nullptr);
+    font_ = new uint8_t[font_size_ * 8];
+    assert(font_ != nullptr);
 
-	auto pDst= m_pFont;
+    auto dst = font_;
 
-	for (uint32_t i = 0; i < m_nFontSize; i++) {
-		for (uint32_t j = 0; j < 8; j++) {
-			*pDst++ = Rotate(i, 7 - j);
-		}
-	}
+    for (uint32_t i = 0; i < font_size_; i++)
+    {
+        for (uint32_t j = 0; j < 8; j++)
+        {
+            *dst++ = Rotate(i, 7 - j);
+        }
+    }
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-Max7219Matrix::~Max7219Matrix() {
-	DEBUG_ENTRY
+Max7219Matrix::~Max7219Matrix()
+{
+    DEBUG_ENTRY();
 
-	delete[] m_pFont;
+    delete[] font_;
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void Max7219Matrix::Init(uint16_t nCount, uint8_t nIntensity) {
-	DEBUG_ENTRY
+void Max7219Matrix::Init(uint16_t count, uint8_t intensity)
+{
+    DEBUG_ENTRY();
 
-	constexpr uint16_t sf = sizeof(spi_data) / 2;
-	m_nCount = std::min(nCount, sf);
+    constexpr uint16_t kSf = sizeof(spi_data) / 2;
+    count_ = std::min(count, kSf);
 
-	DEBUG_PRINTF("m_nCount=%d", m_nCount);
+    DEBUG_PRINTF("count_=%d", count_);
 
-	WriteAll(max7219::reg::SHUTDOWN, max7219::reg::shutdown::NORMAL_OP);
-	WriteAll(max7219::reg::DISPLAY_TEST, 0);
-	WriteAll(max7219::reg::DECODE_MODE, 0);
-	WriteAll(max7219::reg::SCAN_LIMIT, 7);
+    WriteAll(max7219::reg::SHUTDOWN, max7219::reg::shutdown::NORMAL_OP);
+    WriteAll(max7219::reg::DISPLAY_TEST, 0);
+    WriteAll(max7219::reg::DECODE_MODE, 0);
+    WriteAll(max7219::reg::SCAN_LIMIT, 7);
 
-	WriteAll(max7219::reg::INTENSITY, nIntensity & 0x0F);
+    SetIntensity(intensity);
 
-	Max7219Matrix::Cls();
+    Max7219Matrix::Cls();
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void Max7219Matrix::Cls() {
-	DEBUG_ENTRY
+void Max7219Matrix::Write(const char* buffer, uint16_t count)
+{
+    DEBUG_PRINTF("nByte=%d", count);
 
-	WriteAll(max7219::reg::DIGIT0, 0);
-	WriteAll(max7219::reg::DIGIT1, 0);
-	WriteAll(max7219::reg::DIGIT2, 0);
-	WriteAll(max7219::reg::DIGIT3, 0);
-	WriteAll(max7219::reg::DIGIT4, 0);
-	WriteAll(max7219::reg::DIGIT5, 0);
-	WriteAll(max7219::reg::DIGIT6, 0);
-	WriteAll(max7219::reg::DIGIT7, 0);
+    if (count > count_)
+    {
+        count = count_;
+    }
 
-	DEBUG_EXIT
+    int32_t k;
+
+    for (uint32_t i = 1; i < 9; i++)
+    {
+        k = static_cast<int32_t>(count);
+
+        uint16_t j;
+
+        for (j = 0; j < (count_ * 2U) - (count * 2U); j = static_cast<uint16_t>(j + 2))
+        {
+            spi_data[j] = max7219::reg::NOOP;
+            spi_data[j + 1] = 0;
+        }
+
+        while (--k >= 0)
+        {
+            auto c = static_cast<uint32_t>(buffer[k]);
+
+            if (c >= font_size_)
+            {
+                c = ' ';
+            }
+
+            const auto kP = &font_[c * 8];
+
+            spi_data[j++] = static_cast<uint8_t>(i);
+            spi_data[j++] = kP[i - 1];
+        }
+
+        HAL_SPI::Write(reinterpret_cast<const char*>(spi_data), j);
+    }
 }
 
-void Max7219Matrix::Write(const char *pBuffer, uint16_t nCount) {
-	DEBUG_PRINTF("nByte=%d", nCount);
+void Max7219Matrix::UpdateCharacter(uint32_t c, const uint8_t bytes[8])
+{
+    if (c > font_size_)
+    {
+        return;
+    }
 
-	if (nCount > m_nCount) {
-		nCount = m_nCount;
-	}
+    auto font = &font_[c * 8];
 
-	int32_t k;
+    for (uint32_t j = 0; j < 8; j++)
+    {
+        uint8_t b = 0;
 
-	for (uint32_t i = 1; i < 9; i++) {
-		k = static_cast<int32_t>(nCount);
+        for (uint32_t y = 0; y < 8; y++)
+        {
+            const auto kSet = bytes[y] & (1U << (7U - j));
+            b |= static_cast<uint8_t>((kSet != 0) ? (1U << y) : 0);
+        }
 
-		uint16_t j;
-
-		for (j = 0; j < (m_nCount * 2U) - (nCount * 2U); j = static_cast<uint16_t>(j + 2)) {
-			spi_data[j] = max7219::reg::NOOP;
-			spi_data[j + 1] = 0;
-		}
-
-		while (--k >= 0) {
-			auto c = static_cast<uint32_t>(pBuffer[k]);
-
-			if (c >= m_nFontSize) {
-				c = ' ';
-			}
-
-			const auto p = &m_pFont[c * 8];
-
-			spi_data[j++] = static_cast<uint8_t>(i);
-			spi_data[j++] = p[i - 1];
-		}
-
-		HAL_SPI::Write(reinterpret_cast<const char *>(spi_data), j);
-	}
+        font[j] = b;
+    }
 }
 
-void Max7219Matrix::UpdateCharacter(uint32_t nChar, const uint8_t pBytes[8]) {
-	if (nChar > m_nFontSize) {
-		return;
-	}
+void Max7219Matrix::WriteAll(uint8_t reg, uint8_t data)
+{
+    DEBUG_ENTRY();
 
-	auto pFont = &m_pFont[nChar * 8];
+    for (uint32_t i = 0; i < (count_ * 2); i = i + 2)
+    {
+        spi_data[i] = reg;
+        spi_data[i + 1] = data;
+    }
 
-	for (uint32_t j = 0; j < 8; j++) {
-		uint8_t b = 0;
+    HAL_SPI::Write(reinterpret_cast<const char*>(spi_data), static_cast<uint32_t>(count_ * 2));
 
-		for (uint32_t y = 0; y < 8; y++) {
-			const auto set = pBytes[y] & (1U << (7U - j));
-			b |= static_cast<uint8_t>((set != 0) ? (1U << y) : 0);
-		}
-
-		pFont[j] = b;
-	}
+    DEBUG_EXIT();
 }
 
-void Max7219Matrix::WriteAll(uint8_t nRegister, uint8_t nData) {
-	DEBUG_ENTRY
+uint8_t Max7219Matrix::Rotate(uint32_t r, uint32_t x)
+{
+    uint8_t byte = 0;
 
-	for (uint32_t i = 0; i < (m_nCount * 2); i = i + 2) {
-		spi_data[i] = nRegister;
-		spi_data[i+1] = nData;
-	}
+    for (uint32_t y = 0; y < 8; y++)
+    {
+        const auto kSet = cp437_font[r][y] & (1U << x);
+        byte |= static_cast<uint8_t>((kSet != 0) ? (1U << y) : 0);
+    }
 
-	HAL_SPI::Write(reinterpret_cast<const char *>(spi_data), static_cast<uint32_t>(m_nCount * 2));
-
-	DEBUG_EXIT
-}
-
-uint8_t Max7219Matrix::Rotate(uint32_t r, uint32_t x) {
-	uint8_t nByte = 0;
-
-	for (uint32_t y = 0; y < 8; y++) {
-		const auto set = cp437_font[r][y] & (1U << x);
-		nByte |= static_cast<uint8_t>((set != 0) ? (1U << y) : 0);
-	}
-
-	return nByte;
+    return byte;
 }

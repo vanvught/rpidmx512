@@ -23,8 +23,15 @@
  * THE SOFTWARE.
  */
 
-#if defined (DEBUG_EMAC_IGMP)
-# undef NDEBUG
+#if defined(DEBUG_EMAC_IGMP)
+#undef NDEBUG
+#endif
+
+#if !defined(CONFIG_REMOTECONFIG_MINIMUM)
+#pragma GCC push_options
+#pragma GCC optimize("O2")
+#pragma GCC optimize("no-tree-loop-distribute-patterns")
+#pragma GCC optimize("-fprefetch-loop-arrays")
 #endif
 
 #include <cstdint>
@@ -32,61 +39,74 @@
 #include "h3.h"
 #include "emac.h"
 #include "net/ip4_address.h"
+#include "firmware/debug/debug_debug.h"
 
-#include "debug.h"
-
-uint32_t ethcrc(const uint8_t *data, const size_t length);
-
-void emac_multicast_enable_hash_filter() {
-	DEBUG_ENTRY
-
-	auto nRegFilter = H3_EMAC->RX_FRM_FLT;
-	nRegFilter &= ~RX_FRM_FLT_RX_ALL_MULTICAST;
-	nRegFilter |= RX_FRM_FLT_HASH_MULTICAST;
-	H3_EMAC->RX_FRM_FLT = nRegFilter;
-
-	H3_EMAC->RX_HASH_0 = 0;
-	H3_EMAC->RX_HASH_1 = 0;
-
-	DEBUG_EXIT
-}
-void emac_multicast_disable_hash_filter() {
-	DEBUG_ENTRY
-
-	auto nRegFilter = H3_EMAC->RX_FRM_FLT;
-	nRegFilter &= ~RX_FRM_FLT_HASH_MULTICAST;
-	nRegFilter |= RX_FRM_FLT_RX_ALL_MULTICAST;
-	H3_EMAC->RX_FRM_FLT = nRegFilter;
-
-	H3_EMAC->RX_HASH_0 = 0;
-	H3_EMAC->RX_HASH_1 = 0;
-
-	DEBUG_EXIT
+namespace network
+{
+uint32_t Crc(const uint8_t* data, size_t length);
 }
 
-void emac_multicast_set_hash(const uint8_t *mac_addr) {
-	DEBUG_ENTRY
-	DEBUG_PRINTF("RX_FRM_FLT: 0x%08X", H3_EMAC->RX_FRM_FLT);
+namespace emac::multicast
+{
+void EnableHashFilter()
+{
+    DEBUG_ENTRY();
 
-	const auto crc = ethcrc(mac_addr, 6);
-	const auto hash = (crc >> 26) & 0x3F;
+    auto reg_filter = H3_EMAC->RX_FRM_FLT;
+    reg_filter &= ~RX_FRM_FLT_RX_ALL_MULTICAST;
+    reg_filter |= RX_FRM_FLT_HASH_MULTICAST;
+    H3_EMAC->RX_FRM_FLT = reg_filter;
 
-	if (hash > 31) {
-		H3_EMAC->RX_HASH_0 |= (1U << (hash - 32));
-	} else {
-		H3_EMAC->RX_HASH_1 |= (1U << hash);
-	}
+    H3_EMAC->RX_HASH_0 = 0;
+    H3_EMAC->RX_HASH_1 = 0;
 
-	DEBUG_PRINTF("MAC: " MACSTR " -> CRC32: 0x%08X -> Hash Index: %d", MAC2STR(mac_addr), crc, hash);
-	DEBUG_PRINTF("RX_HASH_0: 0x%08X, RX_HASH_1: 0x%08X", H3_EMAC->RX_HASH_0, H3_EMAC->RX_HASH_1);
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void emac_multicast_reset_hash() {
-	DEBUG_ENTRY
+void DisableHashFilter()
+{
+    DEBUG_ENTRY();
 
-	H3_EMAC->RX_HASH_0 = 0;
-	H3_EMAC->RX_HASH_1 = 0;
+    auto reg_filter = H3_EMAC->RX_FRM_FLT;
+    reg_filter &= ~RX_FRM_FLT_HASH_MULTICAST;
+    reg_filter |= RX_FRM_FLT_RX_ALL_MULTICAST;
+    H3_EMAC->RX_FRM_FLT = reg_filter;
 
-	DEBUG_EXIT
+    H3_EMAC->RX_HASH_0 = 0;
+    H3_EMAC->RX_HASH_1 = 0;
+
+    DEBUG_EXIT();
 }
+
+void SetHash(const uint8_t* mac_addr)
+{
+    DEBUG_ENTRY();
+    DEBUG_PRINTF("RX_FRM_FLT: 0x%08X", H3_EMAC->RX_FRM_FLT);
+
+    const auto kCrc = network::Crc(mac_addr, 6);
+    const auto kHash = (kCrc >> 26) & 0x3F;
+
+    if (kHash > 31)
+    {
+        H3_EMAC->RX_HASH_0 |= (1U << (kHash - 32));
+    }
+    else
+    {
+        H3_EMAC->RX_HASH_1 |= (1U << kHash);
+    }
+
+    DEBUG_PRINTF("MAC: " MACSTR " -> CRC32: 0x%08X -> Hash Index: %d", MAC2STR(mac_addr), kCrc, kHash);
+    DEBUG_PRINTF("RX_HASH_0: 0x%08X, RX_HASH_1: 0x%08X", H3_EMAC->RX_HASH_0, H3_EMAC->RX_HASH_1);
+    DEBUG_EXIT();
+}
+
+void ResetHash()
+{
+    DEBUG_ENTRY();
+
+    H3_EMAC->RX_HASH_0 = 0;
+    H3_EMAC->RX_HASH_1 = 0;
+
+    DEBUG_EXIT();
+}
+} // namespace emac::multicast

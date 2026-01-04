@@ -37,16 +37,16 @@
 
 #include "spi/spi_flash.h"
 #include "spi_flash_internal.h"
+ #include "firmware/debug/debug_debug.h"
 
-#include "debug.h"
-
-struct gigadevice_spi_flash_params {
-	const uint16_t id;
-	const uint16_t nr_blocks;
-	const char *name;
+struct GigadeviceSpiFlashParams
+{
+    const uint16_t kId;
+    const uint16_t kNrBlocks;
+    const char* const kName;
 };
 
-static constexpr struct gigadevice_spi_flash_params gigadevice_spi_flash_table[] = {
+static constexpr struct GigadeviceSpiFlashParams kGigadeviceSpiFlashTable[] = {
 	{
 		0x6016,
 		64,
@@ -64,23 +64,28 @@ static constexpr struct gigadevice_spi_flash_params gigadevice_spi_flash_table[]
 	},
 };
 
-bool spi_flash_probe_gigadevice(struct SpiFlashInfo *flash, uint8_t *idcode) {
-	const struct gigadevice_spi_flash_params *params;
-	unsigned int i;
+bool SpiFlashProbeGigadevice(struct SpiFlashInfo* flash, uint8_t* idcode)
+{
+    const struct GigadeviceSpiFlashParams* params;
+    unsigned int i;
 
-	for (i = 0; i < ARRAY_SIZE(gigadevice_spi_flash_table); i++) {
-		params = &gigadevice_spi_flash_table[i];
-		if (params->id == ((idcode[1] << 8) | idcode[2]))
-			break;
-	}
+    for (i = 0; i < ARRAY_SIZE(kGigadeviceSpiFlashTable); i++)
+    {
+        params = &kGigadeviceSpiFlashTable[i];
+        if (params->kId == ((idcode[1] << 8) | idcode[2]))
+        {
+            break;
+        }
+    }
 
-	if (i == ARRAY_SIZE(gigadevice_spi_flash_table)) {
-		DEBUG_PRINTF("SF: Unsupported GigaDevice ID %02x%02x", idcode[1], idcode[2]);
-		return false;
-	}
+    if (i == ARRAY_SIZE(kGigadeviceSpiFlashTable))
+    {
+        DEBUG_PRINTF("SF: Unsupported GigaDevice ID %02x%02x", idcode[1], idcode[2]);
+        return false;
+    }
 
-	flash->name = params->name;
-	flash->size = 16U * spi_flash::SECTOR_SIZE * params->nr_blocks;
+    flash->name = params->kName;
+    flash->size = 16U * spi::flash::SECTOR_SIZE * params->kNrBlocks;
 
-	return true;
+    return true;
 }

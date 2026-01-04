@@ -29,46 +29,50 @@
 #include "midi.h"
 
 #include "ltcoutputs.h"
-
-#include "hal.h"
+#include "hal_millis.h"
 #include "hal_statusled.h"
 
-#include "arm/platform_ltc.h"
+class LtcEtcReader final : public LtcEtcHandler
+{
+   public:
+    void Start();
+    void Stop();
 
-class LtcEtcReader final : public LtcEtcHandler {
-public:
-	void Start();
-	void Stop();
+    void Run()
+    {
+        const auto kTimeStamp = hal::Millis();
 
-	void Run() {
-		const auto nTimeStamp =hal::millis();
+        if ((kTimeStamp - timestamp_) >= 50U)
+        {
+            LtcOutputs::Get()->ShowSysTime();
+            hal::statusled::SetMode(hal::statusled::Mode::NORMAL);
+            Reset(true);
+        }
+        else
+        {
+            hal::statusled::SetMode(hal::statusled::Mode::DATA);
+            Reset(false);
+        }
+    }
 
-		if ((nTimeStamp - m_nTimestamp) >= 50U) {
-			LtcOutputs::Get()->ShowSysTime();
-			hal::statusled_set_mode(hal::StatusLedMode::NORMAL);
-			Reset(true);
-		} else {
-			hal::statusled_set_mode(hal::StatusLedMode::DATA);
-			Reset(false);
-		}
-	}
+   private:
+    void Handler(const midi::Timecode*) override;
 
+    void Reset(bool do_reset)
+    {
+        if (reset_timecode_ != do_reset)
+        {
+            reset_timecode_ = do_reset;
+            if (reset_timecode_)
+            {
+                LtcOutputs::Get()->ResetTimeCodeTypePrevious();
+            }
+        }
+    }
 
-private:
-	void Handler(const midi::Timecode *) override;
-
-	void Reset(const bool doReset) {
-		if (m_doResetTimeCode != doReset) {
-			m_doResetTimeCode = doReset;
-			if (m_doResetTimeCode) {
-				LtcOutputs::Get()->ResetTimeCodeTypePrevious();
-			}
-		}
-	}
-
-private:
-	uint32_t m_nTimestamp { 0 };
-	bool m_doResetTimeCode { true };
+   private:
+    uint32_t timestamp_{0};
+    bool reset_timecode_{true};
 };
 
-#endif /* ARM_LTCETCREADER_H_ */
+#endif  // ARM_LTCETCREADER_H_

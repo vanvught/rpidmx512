@@ -2,19 +2,15 @@ DEFINES =ENABLE_TFTP_SERVER
 DEFINES+=NDEBUG
 
 EXTRA_SRCDIR=
+EXTRA_INCLUDES=
 
 ifneq ($(MAKE_FLAGS),)
-	ifneq (,$(findstring ENABLE_SHELL,$(MAKE_FLAGS)))
-		EXTRA_SRCDIR+=src/shell src/uart
-	endif
 else
 	DEFINES+=LTC_READER
 	EXTRA_SRCDIR+=src/shell src/uart
 endif
 
-EXTRA_SRCDIR+=src/tftp src/h3/tftp
+EXTRA_SRCDIR+=src/tftp
 
 include Rules.mk
 include ../firmware-template-h3/lib/Rules.mk
-
-$(info $$PHY_TYPE [${PHY_TYPE}])

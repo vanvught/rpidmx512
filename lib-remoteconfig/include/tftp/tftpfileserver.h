@@ -23,47 +23,45 @@
  * THE SOFTWARE.
  */
 
-#ifndef TFTPFILESERVER_H_
-#define TFTPFILESERVER_H_
+#ifndef TFTP_TFTPFILESERVER_H_
+#define TFTP_TFTPFILESERVER_H_
 
 #include <cstddef>
 #include <cstdint>
 
 #include "net/apps/tftpdaemon.h"
 
-#if defined (GD32)
-# include "gd32.h"
+#if defined(GD32)
+#include "gd32.h"
 #endif
 
-namespace tftpfileserver {
-	bool is_valid(const void *pBuffer);
-}  // namespace tftpfileserver
+namespace tftpfileserver
+{
+bool is_valid(const void* buffer);
+} // namespace tftpfileserver
 
-class TFTPFileServer final: public TFTPDaemon {
-public:
-	TFTPFileServer(uint8_t *pBuffer, uint32_t nSize);
-	~TFTPFileServer() override {}
+class TFTPFileServer final : public TFTPDaemon
+{
+   public:
+    TFTPFileServer(uint8_t* buffer, uint32_t size);
+    ~TFTPFileServer() override {}
 
-	bool FileOpen(const char *pFileName, tftp::Mode mode) override;
-	bool FileCreate(const char *pFileName, tftp::Mode mode) override;
-	bool FileClose() override;
-	size_t FileRead(void *pBuffer, size_t nCount, unsigned nBlockNumber) override;
-	size_t FileWrite(const void *pBuffer, size_t nCount, unsigned nBlockNumber) override;
-	void Exit() override;
+    bool FileOpen(const char* file_name, tftp::Mode mode) override;
+    bool FileCreate(const char* file_name, tftp::Mode mode) override;
+    bool FileClose() override;
+    size_t FileRead(void* buffer, size_t count, unsigned block_number) override;
+    size_t FileWrite(const void* buffer, size_t count, unsigned block_number) override;
+    void Exit() override;
 
-	uint32_t GetFileSize() const {
-		return m_nFileSize;
-	}
+    uint32_t GetFileSize() const { return m_nFileSize; }
 
-	bool isDone() const {
-		return m_bDone;
-	}
+    bool IsDone() const { return m_bDone; }
 
-private:
-	uint8_t *m_pBuffer;
-	uint32_t m_nSize;
-	uint32_t m_nFileSize { 0 };
-	bool m_bDone { false };
+   private:
+    uint8_t* buffer_;
+    uint32_t m_nSize;
+    uint32_t m_nFileSize{0};
+    bool m_bDone{false};
 };
 
-#endif /* TFTPFILESERVER_H_ */
+#endif  // TFTP_TFTPFILESERVER_H_

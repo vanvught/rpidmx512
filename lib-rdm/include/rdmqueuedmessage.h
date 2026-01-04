@@ -2,7 +2,7 @@
  * @file rdmqueuedmessage.h
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,32 +28,36 @@
 
 #include <cstdint>
 
-struct TRdmQueuedMessage {
-	uint8_t command_class;					///< 21
-	uint8_t param_id[2];					///< 22, 23
-	uint8_t param_data_length;				///< 24	PDL	Range 0 to 231
-	uint8_t param_data[231];				///< 25,,,,	PD	6.2.3 Message Length
+#include "e120.h"
+
+struct TRdmQueuedMessage
+{
+    uint8_t command_class;     ///< 21
+    uint8_t param_id[2];       ///< 22, 23
+    uint8_t param_data_length; ///< 24	PDL	Range 0 to 231
+    uint8_t param_data[231];   ///< 25,,,,	PD	6.2.3 Message Length
 };
 
-class RDMQueuedMessage {
-public:
-	RDMQueuedMessage();
-	~RDMQueuedMessage();
+class RDMQueuedMessage
+{
+   public:
+    RDMQueuedMessage();
+    ~RDMQueuedMessage();
 
-	uint8_t GetMessageCount() const;
+    uint8_t GetMessageCount() const;
 
-	void Handler(uint8_t *pRdmData);
+    void Handler(uint8_t* rdm_data);
 
-	bool Add(const struct TRdmQueuedMessage *msg);
+    bool Add(const struct TRdmQueuedMessage* msg);
 
-private:
-	void Copy(struct TRdmMessage *pRdmMessage, uint32_t nIndex);
+   private:
+    void Copy(struct TRdmMessage* rdm_message, uint32_t index);
 
-private:
-	uint8_t m_nMessageCount{0};
-	bool m_IsNeverQueued{true};
+   private:
+    uint8_t message_count_{0};
+    bool is_never_queued_{true};
 
-	struct TRdmQueuedMessage *m_pQueue;
+    struct TRdmQueuedMessage* queued_message_;
 };
 
-#endif /* RDMQUEUEDMESSAGE_H_ */
+#endif  // RDMQUEUEDMESSAGE_H_

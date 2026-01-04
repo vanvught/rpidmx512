@@ -2,7 +2,7 @@
  * @file tcnetdisplay.cpp
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,33 +27,35 @@
 
 #include "tcnet.h"
 #include "display.h"
-
-#if !(defined(CONFIG_LTC_DISABLE_RGB_PANEL) && defined (CONFIG_LTC_DISABLE_WS28XX))
-# include "ltcdisplayrgb.h"
+#if !(defined(CONFIG_LTC_DISABLE_RGB_PANEL) && defined(CONFIG_LTC_DISABLE_WS28XX))
+#include "ltcdisplayrgb.h"
 #else
-# define LTC_NO_DISPLAY_RGB
+#define LTC_NO_DISPLAY_RGB
 #endif
 
+namespace tcnet::display
+{
+static constexpr char kFps[4][6] = {" T24", " T25", " T29", " T30"};
 
-namespace tcnet::display {
-static constexpr char sFps[4][6] = { " T24", " T25", " T29", " T30" };
+void show()
+{
+    Display::Get()->SetCursorPos(6, 3);
+    Display::Get()->PutChar('L');
+    Display::Get()->PutChar(tcnet::GetLayer(TCNet::Get()->GetLayer()));
 
-void show() {
-	Display::Get()->SetCursorPos(6,3);
-	Display::Get()->PutChar('L');
-	Display::Get()->PutChar(TCNet::GetLayerName(TCNet::Get()->GetLayer()));
-
-	if (TCNet::Get()->GetUseTimeCode()) {
-		Display::Get()->PutString(" TC ");
-	} else {
-		Display::Get()->PutString(sFps[static_cast<uint32_t>(TCNet::Get()->GetTimeCodeType())]);
-	}
+    if (TCNet::Get()->GetUseTimeCode())
+    {
+        Display::Get()->PutString(" TC ");
+    }
+    else
+    {
+        Display::Get()->PutString(kFps[static_cast<uint32_t>(TCNet::Get()->GetTimeCodeType())]);
+    }
 
 #if !defined(LTC_NO_DISPLAY_RGB)
-	char Info[9] = "Layer  ";
-	Info[6] = TCNet::GetLayerName(TCNet::Get()->GetLayer());
-	LtcDisplayRgb::Get()->ShowInfo(Info);
+    char info[9] = "Layer  ";
+    info[6] = tcnet::GetLayer(TCNet::Get()->GetLayer());
+    LtcDisplayRgb::Get()->ShowInfo(info);
 #endif
 }
 } // namespace tcnet::display
-

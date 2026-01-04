@@ -35,7 +35,7 @@ public:
 private:
 	enum State {
 		IDLE, EDIT
-	} m_State{IDLE};
+	} state_{IDLE};
 	bool m_bCursorOn {false};
 };
 

@@ -32,13 +32,13 @@
  * @ingroup SPI
  *
  * Transfers any number of bytes to the currently selected SPI slave.
- * Asserts the currently selected CS pins (as previously set by \ref bcm2835_spi_chipSelect)
+ * Asserts the currently selected CS pins (as previously set by \ref bcm2835_SpiChipSelect)
  * during the transfer.
  *
  * @param tbuf Buffer of bytes to send.
  * @param len Number of bytes in the tbuf buffer, and the number of bytes to send.
  */
-void bcm2835_spi_writenb(const char* tbuf, const uint32_t len) {
+void bcm2835_SpiWritenb(const char* tbuf, const uint32_t len) {
 	uint32_t i;
 
 	dsb();

@@ -1,5 +1,5 @@
 /**
- * @file timecode.cpp
+ * @file timecode.h
  *
  */
 /* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org

@@ -8,6 +8,6 @@ async function syncWithLocalTime() {
   const node = formatDateTime(new Date())
   document.getElementById('nodeTime').textContent = `Node Time: ${node}`
   const data = { date: node }
-  await post(data)
+  await post('timedate', data)
   refresh()
 }

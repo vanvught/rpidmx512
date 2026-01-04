@@ -31,18 +31,19 @@
 #include "dmxnode_outputtype.h"
 #include "dmxnodedata.h"
 
-namespace dmxnode {
-inline void data_set(DmxNodeOutputType *const pDmxNodeOutputType, const uint32_t nPortIndex) {
-	assert(pDmxNodeOutputType != nullptr);
-
-	pDmxNodeOutputType->SetData(nPortIndex, dmxnode::Data::Backup(nPortIndex), dmxnode::Data::GetLength(nPortIndex), false);
+namespace dmxnode
+{
+inline void DataSet(DmxNodeOutputType* const kDmxNodeOutputType, uint32_t port_index)
+{
+    assert(kDmxNodeOutputType != nullptr);
+    kDmxNodeOutputType->SetData<false>(port_index, dmxnode::Data::Backup(port_index), dmxnode::Data::GetLength(port_index));
 }
 
-inline void data_output(DmxNodeOutputType *const pDmxNodeOutputType, const uint32_t nPortIndex) {
-	assert(pDmxNodeOutputType != nullptr);
-
-	pDmxNodeOutputType->SetData(nPortIndex, dmxnode::Data::Backup(nPortIndex), dmxnode::Data::GetLength(nPortIndex), true);
+inline void DataOutput(DmxNodeOutputType* const kDmxNodeOutputType, uint32_t port_index)
+{
+    assert(kDmxNodeOutputType != nullptr);
+    kDmxNodeOutputType->SetData<true>(port_index, dmxnode::Data::Backup(port_index), dmxnode::Data::GetLength(port_index));
 }
-}  // namespace dmxnode
+} // namespace dmxnode
 
-#endif /* DMXNODE_DATA_H_ */
+#endif  // DMXNODE_DATA_H_

@@ -33,12 +33,12 @@
  * @ingroup SPI
  *
  * Transfers uint16_t (2 bytes) to the currently selected SPI slave.
- * Asserts the currently selected CS pins (as previously set by \ref bcm2835_spi_chipSelect)
+ * Asserts the currently selected CS pins (as previously set by \ref bcm2835_SpiChipSelect)
  * during the transfer.
  *
  * @param data uint16_t
  */
-void bcm2835_spi_write(const uint16_t data) {
+void bcm2835_SpiWrite(const uint16_t data) {
 	dsb();
 	// Clear TX and RX fifos
 	BCM2835_PERI_SET_BITS(BCM2835_SPI0->CS, BCM2835_SPI0_CS_CLEAR, BCM2835_SPI0_CS_CLEAR);

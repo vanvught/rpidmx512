@@ -1,4 +1,5 @@
-EXTRA_INCLUDES+=../lib-properties/include ../lib-network/include
+EXTRA_INCLUDES+=../lib-network/include
+EXTRA_SRCDIR+=src/json
 
 ifneq ($(MAKE_FLAGS),)
 	ifeq ($(findstring NO_EMAC,$(MAKE_FLAGS)),NO_EMAC)

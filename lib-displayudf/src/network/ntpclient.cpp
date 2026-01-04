@@ -26,23 +26,26 @@
 #include "net/protocol/ntp.h"
 #include "display.h"
 
-namespace ntpclient {
-void display_status(const ::ntp::Status status) {
-	switch (status) {
-	case ::ntp::Status::STOPPED:
-		Display::Get()->TextStatus("No NTP Client");
-		break;
-	case ::ntp::Status::IDLE:
-		Display::Get()->TextStatus("NTP Client");
-		break;
-	case ::ntp::Status::LOCKED:
-		Display::Get()->TextStatus("NTP Client LOCKED");
-		break;
-	case ::ntp::Status::FAILED:
-		Display::Get()->TextStatus("Error: NTP");
-		break;
-	default:
-		break;
-	}
+namespace ntpclient
+{
+void DisplayStatus(::ntp::Status status)
+{
+    switch (status)
+    {
+        case ::ntp::Status::STOPPED:
+            Display::Get()->TextStatus("No NTP Client");
+            break;
+        case ::ntp::Status::IDLE:
+            Display::Get()->TextStatus("NTP Client");
+            break;
+        case ::ntp::Status::LOCKED:
+            Display::Get()->TextStatus("NTP Client LOCKED");
+            break;
+        case ::ntp::Status::FAILED:
+            Display::Get()->TextStatus("Error: NTP");
+            break;
+        default:
+            break;
+    }
 }
-}  // namespace ntpclient
+} // namespace ntpclient

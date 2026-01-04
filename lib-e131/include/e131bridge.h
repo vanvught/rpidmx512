@@ -26,407 +26,259 @@
 #define E131BRIDGE_H_
 
 #include <cstdint>
-#include <cassert>
-
-#include "e131.h"
-#include "e131packets.h"
-#include "e131sync.h"
-
-#include "dmxnode_outputtype.h"
-#include "dmxnode_data.h"
 
 #if defined(ARTNET_VERSION) && (ARTNET_VERSION >= 4)
-# define E131_HAVE_ARTNET
+#define E131_HAVE_ARTNET
 #endif
 
-#include "network.h"
-#include "hal.h"
-
-#include "hal_statusled.h"
-#include "panel_led.h"
-
+#include "dmxnode.h"
+#include "e131.h"
+#include "e131sync.h"
+#include "dmxnode_outputtype.h"
 #include "softwaretimers.h"
 
-#include "debug.h"
-
 #ifndef ALIGNED
-# define ALIGNED __attribute__ ((aligned (4)))
+#define ALIGNED __attribute__((aligned(4)))
 #endif
 
-namespace e131bridge {
-#if !defined(DMXNODE_PORTS)
-# error DMXNODE_PORTS is not defined
-#endif
-
-#if (DMXNODE_PORTS == 0)
- static constexpr uint32_t MAX_PORTS = 1;
-#else
- static constexpr uint32_t MAX_PORTS = DMXNODE_PORTS;
-#endif
-
- enum class Status : uint8_t {
- 	OFF, STANDBY, ON
- };
-
-struct State {
-	uint32_t SynchronizationTime;
-	uint16_t DiscoveryPacketLength;
-	uint16_t nSynchronizationAddressSourceA;
-	uint16_t nSynchronizationAddressSourceB;
-	uint8_t nEnabledInputPorts;
-	uint8_t nEnableOutputPorts;
-	uint8_t nPriority;
-	uint8_t nReceivingDmx;
-	dmxnode::FailSafe failsafe;
-	e131bridge::Status status;
-	bool IsNetworkDataLoss;
-	bool IsMergeMode;
-	bool IsSynchronized;
-	bool IsForcedSynchronized;
-	bool IsChanged;
-	bool bDisableMergeTimeout;
-	bool bDisableSynchronize;
+namespace e131bridge
+{
+enum class Status : uint8_t
+{
+    kOff,
+    kStandby,
+    kOn
 };
 
-struct Bridge {
-	struct {
-		uint16_t nUniverse;
-		dmxnode::PortDirection direction;
-		bool bLocalMerge;
-	} Port[e131bridge::MAX_PORTS] ALIGNED;
+enum StateFlags : uint8_t
+{
+    kNetworkDataLoss = (1 << 0),
+    kMergeMode = (1 << 1),
+    kSynchronized = (1 << 2),
+    kForcedSynchronized = (1 << 3),
+    kChanged = (1 << 4),
+    kDisableMergeTimeout = (1 << 5),
+    kDisableSynchronize = (1 << 6)
 };
 
-struct Source {
-	uint32_t nMillis;
-	uint32_t nIp;
-	uint8_t cid[e131::CID_LENGTH];
-	uint8_t nSequenceNumberData;
+struct State
+{
+    uint8_t enabled_input_ports;
+    uint8_t enabled_output_ports;
+    uint8_t priority;
+    uint8_t receiving_dmx;
+    dmxnode::FailSafe failsafe;
+    e131bridge::Status status;
+    uint16_t discovery_packet_length;
+    uint16_t synchronization_address_source_a;
+    uint16_t synchronization_address_source_b;
+    uint32_t synchronization_time;
+    bool is_network_data_loss;
+    bool is_merge_mode;
+    bool is_synchronized;
+    bool is_forced_synchronized;
+    bool is_changed;
+    bool disable_merge_timeout;
+    bool disable_synchronize;
 };
 
-struct OutputPort {
-	Source sourceA ALIGNED;
-	Source sourceB ALIGNED;
-	dmxnode::MergeMode mergeMode;
-	dmxnode::OutputStyle outputStyle;
-	bool IsMerging;
-	bool IsTransmitting;
-	bool IsDataPending;
+struct Bridge
+{
+    struct Port
+    {
+        uint16_t universe;
+        dmxnode::PortDirection direction;
+        bool local_merge;
+    } port[dmxnode::kMaxPorts] ALIGNED;
 };
 
-struct InputPort {
-	uint32_t nMulticastIp;
-	uint32_t nMillis;
-	uint8_t nSequenceNumber;
-	uint8_t nPriority;
-	bool IsDisabled;
-};
-}  // namespace e131bridge
-
-class E131Bridge {
-public:
-	E131Bridge();
-	~E131Bridge();
-
-	void SetOutput(DmxNodeOutputType *pDmxNodeOutputType) {
-		m_pDmxNodeOutputType = pDmxNodeOutputType;
-	}
-	DmxNodeOutputType *GetOutput() const {
-		return m_pDmxNodeOutputType;
-	}
-
-	void SetLongName([[maybe_unused]] const char *) {}
-	const char *GetLongName() { return nullptr; }
-	void GetLongNameDefault(char *);
-
-	void SetShortName([[maybe_unused]] const uint32_t nPortIndex, [[maybe_unused]] const char *) {};
-	const char *GetShortName([[maybe_unused]] uint32_t nPortIndex) const { return nullptr; }
-
-	void SetDisableMergeTimeout(const bool bDisable) {
-		m_State.bDisableMergeTimeout = bDisable;
-	}
-	bool GetDisableMergeTimeout() const {
-		return m_State.bDisableMergeTimeout;
-	}
-
-	void SetFailSafe(const dmxnode::FailSafe failsafe) {
-		m_State.failsafe = failsafe;
-	}
-	dmxnode::FailSafe GetFailSafe() const {
-		return m_State.failsafe;
-	}
-
-	void SetUniverse(const uint32_t nPortIndex, const dmxnode::PortDirection portDir, const uint16_t nUniverse);
-	bool GetUniverse(const uint32_t nPortIndex, uint16_t &nUniverse, const dmxnode::PortDirection portDir) const {
-		assert(nPortIndex < e131bridge::MAX_PORTS);
-
-		if (portDir == dmxnode::PortDirection::DISABLE) {
-			return false;
-		}
-
-		nUniverse = m_Bridge.Port[nPortIndex].nUniverse;
-		return m_Bridge.Port[nPortIndex].direction == portDir;
-	}
-
-	void SetMergeMode(const uint32_t nPortIndex, const dmxnode::MergeMode mergeMode) {
-		assert(nPortIndex < e131bridge::MAX_PORTS);
-		m_OutputPort[nPortIndex].mergeMode = mergeMode;
-	}
-	dmxnode::MergeMode GetMergeMode(const uint32_t nPortIndex) const {
-		assert(nPortIndex < e131bridge::MAX_PORTS);
-		return m_OutputPort[nPortIndex].mergeMode;
-	}
-
-	dmxnode::PortDirection GetPortDirection(const uint32_t nPortIndex) const {
-		assert(nPortIndex < e131bridge::MAX_PORTS);
-		return m_Bridge.Port[nPortIndex].direction;
-	}
-
-#if defined (OUTPUT_HAVE_STYLESWITCH)
-	void SetOutputStyle(const uint32_t nPortIndex, dmxnode::OutputStyle outputStyle) {
-		assert(nPortIndex < e131bridge::MAX_PORTS);
-
-		if (m_pDmxNodeOutputType != nullptr) {
-			m_pDmxNodeOutputType->SetOutputStyle(nPortIndex, outputStyle);
-			outputStyle = m_pDmxNodeOutputType->GetOutputStyle(nPortIndex);
-		}
-
-		m_OutputPort[nPortIndex].outputStyle = outputStyle;
-	}
-
-	dmxnode::OutputStyle GetOutputStyle(const uint32_t nPortIndex) const {
-		assert(nPortIndex < e131bridge::MAX_PORTS);
-		return m_OutputPort[nPortIndex].outputStyle;
-	}
-#endif
-
-	void SetPriority(const uint32_t nPortIndex, const uint8_t nPriority) {
-		assert(nPortIndex < e131bridge::MAX_PORTS);
-		if ((nPriority >= e131::priority::LOWEST) && (nPriority <= e131::priority::HIGHEST)) {
-			m_InputPort[nPortIndex].nPriority = nPriority;
-		}
-	}
-	uint8_t GetPriority(const uint32_t nPortIndex) const {
-		assert(nPortIndex < e131bridge::MAX_PORTS);
-		return m_InputPort[nPortIndex].nPriority;
-	}
-
-	void Print();
-
-	void Start();
-	void Stop();
-
-	bool GetOutputPort(const uint16_t nUniverse, uint32_t& nPortIndex) {
-		for (nPortIndex = 0; nPortIndex < e131bridge::MAX_PORTS; nPortIndex++) {
-			if (m_Bridge.Port[nPortIndex].direction != dmxnode::PortDirection::OUTPUT) {
-				continue;
-			}
-			if (m_Bridge.Port[nPortIndex].nUniverse == nUniverse) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	uint32_t GetActiveOutputPorts() const {
-		return m_State.nEnableOutputPorts;
-	}
-
-	uint32_t GetActiveInputPorts() const {
-		return m_State.nEnabledInputPorts;
-	}
-
-	bool IsTransmitting(uint32_t nPortIndex) const {
-		assert(nPortIndex < e131bridge::MAX_PORTS);
-		return m_OutputPort[nPortIndex].IsTransmitting;
-	}
-
-	bool IsMerging(uint32_t nPortIndex) const {
-		assert(nPortIndex < e131bridge::MAX_PORTS);
-		return m_OutputPort[nPortIndex].IsMerging;
-	}
-
-	bool IsStatusChanged() {
-		if (m_State.IsChanged) {
-			m_State.IsChanged = false;
-			return true;
-		}
-
-		return false;
-	}
-
-	void SetEnableDataIndicator(bool bEnable) {
-		m_bEnableDataIndicator = bEnable;
-	}
-	bool GetEnableDataIndicator() const {
-		return m_bEnableDataIndicator;
-	}
-
-	void SetDisableSynchronize(bool bDisableSynchronize) {
-		m_State.bDisableSynchronize = bDisableSynchronize;
-	}
-	bool GetDisableSynchronize() const {
-		return m_State.bDisableSynchronize;
-	}
-
-	void SetE131Sync(E131Sync *pE131Sync) {
-		m_pE131Sync = pE131Sync;
-	}
-
-	void SetInputDisabled(const uint32_t nPortIndex, const bool bDisable) {
-		assert(nPortIndex < e131bridge::MAX_PORTS);
-		m_InputPort[nPortIndex].IsDisabled = bDisable;
-	}
-	bool GetInputDisabled(const uint32_t nPortIndex) const {
-		return m_InputPort[nPortIndex].IsDisabled;
-	}
-
-	void Clear(const uint32_t nPortIndex) {
-		assert(nPortIndex < e131bridge::MAX_PORTS);
-
-		dmxnode::Data::Clear(nPortIndex);
-		dmxnode::data_output(m_pDmxNodeOutputType, nPortIndex);
-
-		if ((m_Bridge.Port[nPortIndex].direction == dmxnode::PortDirection::OUTPUT) && !m_OutputPort[nPortIndex].IsTransmitting) {
-			m_pDmxNodeOutputType->Start(nPortIndex);
-			m_OutputPort[nPortIndex].IsTransmitting = true;
-		}
-
-		m_State.IsNetworkDataLoss = false; // Force timeout
-	}
-
-#if defined (E131_HAVE_DMXIN) || defined (NODE_SHOWFILE)
-	void SetSourceName(const char *pSourceName) {
-		assert(pSourceName != nullptr);
-		strncpy(m_SourceName, pSourceName, e131::SOURCE_NAME_LENGTH - 1);
-		m_SourceName[e131::SOURCE_NAME_LENGTH - 1] = '\0';
-	}
-	const char *GetSourceName() const {
-		return m_SourceName;
-	}
-
-	const uint8_t *GetCid() const {
-		return m_Cid;
-	}
-#endif
-
-	void Run() {
-		uint16_t nForeignPort;
-
-		const auto nBytesReceived = Network::Get()->RecvFrom(m_nHandle, const_cast<const void **>(reinterpret_cast<void **>(&m_pReceiveBuffer)), &m_nIpAddressFrom, &nForeignPort) ;
-
-		m_nCurrentPacketMillis =hal::millis();
-
-		if (__builtin_expect((nBytesReceived == 0), 1)) {
-			if (m_State.nEnableOutputPorts != 0) {
-				if ((m_nCurrentPacketMillis - m_nPreviousPacketMillis) >= static_cast<uint32_t>(e131::NETWORK_DATA_LOSS_TIMEOUT_SECONDS * 1000)) {
-					if ((m_pDmxNodeOutputType != nullptr) && (!m_State.IsNetworkDataLoss)) {
-						SetNetworkDataLossCondition();
-					}
-				}
-
-				if ((m_nCurrentPacketMillis - m_nPreviousPacketMillis) >= 1000U) {
-					m_State.nReceivingDmx &= static_cast<uint8_t>(~(1U << static_cast<uint8_t>(dmxnode::PortDirection::OUTPUT)));
-				}
-			}
-
-#if defined (E131_HAVE_DMXIN)
-			HandleDmxIn();
-#endif
-
-			// The hal::StatusLedMode::FAST is for RDM Identify (Art-Net 4)
-			if (m_bEnableDataIndicator && (hal::statusled_get_mode() != hal::StatusLedMode::FAST)) {
-				if (m_State.nReceivingDmx != 0) {
-					hal::statusled_set_mode(hal::StatusLedMode::DATA);
-				} else {
-					hal::statusled_set_mode(hal::StatusLedMode::NORMAL);
-				}
-			}
-
-			return;
-		}
-
-		if (__builtin_expect((!IsValidRoot()), 0)) {
-			return;
-		}
-
-		Process();
-	}
-
-#if defined (NODE_SHOWFILE) && defined (CONFIG_SHOWFILE_PROTOCOL_NODE_E131)
-	void HandleShowFile(const TE131DataPacket *pE131DataPacket) {
-		m_nCurrentPacketMillis = hal::millis();
-		m_nIpAddressFrom = Network::Get()->GetIp();
-		m_pReceiveBuffer = reinterpret_cast<uint8_t *>(const_cast<TE131DataPacket *>(pE131DataPacket));
-		HandleDmx();
-	}
-#endif
-
-	static E131Bridge *Get() {
-		return s_pThis;
-	}
-
-private:
-	bool IsValidRoot();
-	bool IsValidDataPacket();
-
-	void SetNetworkDataLossCondition(bool bSourceA = true, bool bSourceB = true);
-
-	void SetSynchronizationAddress(bool bSourceA, bool bSourceB, uint16_t nSynchronizationAddress);
-
-	void CheckMergeTimeouts(uint32_t nPortIndex);
-	bool IsPriorityTimeOut(uint32_t nPortIndex) const;
-	bool isIpCidMatch(const e131bridge::Source *const) const;
-	void UpdateMergeStatus(const uint32_t nPortIndex);
-
-	void HandleDmx();
-	void HandleSynchronization();
-
-	void LeaveUniverse(uint32_t nPortIndex, uint16_t nUniverse);
-
-	void HandleDmxIn();
-	void SetLocalMerging();
-	void FillDataPacket();
-	void FillDiscoveryPacket();
-	void SendDiscoveryPacket();
-
-	void static StaticCallbackFunctionSendDiscoveryPacket([[maybe_unused]] TimerHandle_t timerHandle) {
-		s_pThis->SendDiscoveryPacket();
-	}
-
-	void Process();
-private:
-	int32_t m_nHandle { -1 };
-
-	uint32_t m_nCurrentPacketMillis { 0 };
-	uint32_t m_nPreviousPacketMillis { 0 };
-
-	e131bridge::State m_State;
-	e131bridge::Bridge m_Bridge;
-	e131bridge::OutputPort m_OutputPort[e131bridge::MAX_PORTS];
-	e131bridge::InputPort m_InputPort[e131bridge::MAX_PORTS];
-
-	bool m_bEnableDataIndicator { true };
-
-	uint8_t *m_pReceiveBuffer { nullptr };
-	uint32_t m_nIpAddressFrom { 0 };
-	DmxNodeOutputType *m_pDmxNodeOutputType { nullptr };
-
-	// Synchronization handler
-	E131Sync *m_pE131Sync { nullptr };
-
-#if defined (E131_HAVE_DMXIN) || defined (NODE_SHOWFILE)
-	char m_SourceName[e131::SOURCE_NAME_LENGTH];
-	uint8_t m_Cid[e131::CID_LENGTH];
-#endif
-
-#if defined (E131_HAVE_DMXIN)
-	TE131DataPacket m_E131DataPacket;
-	TE131DiscoveryPacket m_E131DiscoveryPacket;
-	uint32_t m_nDiscoveryIpAddress { 0 };
-	TimerHandle_t m_timerHandleSendDiscoveryPacket { -1 };
-#endif
-
-	static inline E131Bridge *s_pThis;
+struct Source
+{
+    uint32_t millis;
+    uint32_t ip;
+    uint8_t cid[e117::kCidLength];
+    uint8_t sequence_number_data;
 };
 
-#endif /* E131BRIDGE_H_ */
+struct OutputPort
+{
+    Source source_a ALIGNED;
+    Source source_b ALIGNED;
+    dmxnode::MergeMode merge_mode;
+    dmxnode::OutputStyle output_style;
+    bool is_merging;
+    bool is_transmitting;
+    bool is_data_pending;
+};
+
+struct InputPort
+{
+    uint32_t multicast_ip;
+    uint32_t millis;
+    uint8_t sequence_number;
+    uint8_t priority;
+    bool is_disabled;
+};
+} // namespace e131bridge
+
+class E131Bridge
+{
+   public:
+    E131Bridge();
+    E131Bridge(const E131Bridge&) = delete;
+    E131Bridge(E131Bridge&&) = delete;
+    E131Bridge& operator=(const E131Bridge&) = delete;
+    E131Bridge& operator=(E131Bridge&&) = delete;
+    ~E131Bridge() = default;
+
+    void SetOutput(DmxNodeOutputType* dmx_node_output_type);
+    DmxNodeOutputType* GetOutput() const;
+
+    void SetLongName(const char*);
+    const char* GetLongName();
+    void GetLongNameDefault(char*);
+
+    void SetShortName(uint32_t port_index, const char*);
+    const char* GetShortName(uint32_t port_index) const;
+
+    void SetDisableMergeTimeout(bool disable) { state_.disable_merge_timeout = disable; }
+    bool GetDisableMergeTimeout() const;
+
+    void SetFailSafe(dmxnode::FailSafe failsafe) { state_.failsafe = failsafe; }
+    dmxnode::FailSafe GetFailSafe() const;
+
+    void SetUniverse(uint32_t port_index, uint16_t universe);
+    uint16_t GetUniverse(uint32_t port_index) const;
+
+    void SetDirection(uint32_t port_index, dmxnode::PortDirection port_direction);
+    dmxnode::PortDirection GetDirection(uint32_t port_index) const;
+
+    void SetUniverse(uint32_t port_index, dmxnode::PortDirection port_direction, uint16_t universe);
+    bool GetUniverse(uint32_t port_index, uint16_t& universe, dmxnode::PortDirection port_direction) const;
+
+    void SetMergeMode(uint32_t port_index, dmxnode::MergeMode merge_mode);
+    dmxnode::MergeMode GetMergeMode(uint32_t port_index) const;
+
+    dmxnode::PortDirection GetPortDirection(uint32_t port_index) const;
+
+#if defined(OUTPUT_HAVE_STYLESWITCH)
+    void SetOutputStyle(uint32_t port_index, dmxnode::OutputStyle output_style);
+    dmxnode::OutputStyle GetOutputStyle(uint32_t port_index) const;
+#endif
+
+    void SetPriority(uint32_t port_index, uint8_t priority);
+    uint8_t GetPriority(uint32_t port_index) const;
+
+    bool GetOutputPort(uint16_t universe, uint32_t& port_index);
+
+    uint32_t GetActiveOutputPorts() const;
+    uint32_t GetActiveInputPorts() const;
+
+    bool IsTransmitting(uint32_t port_index) const;
+    bool IsMerging(uint32_t port_index) const;
+    bool IsStatusChanged();
+
+    void SetEnableDataIndicator(bool enable);
+    bool GetEnableDataIndicator() const;
+
+    void SetDisableSynchronize(bool disable_synchronize);
+    bool GetDisableSynchronize() const;
+
+    void SetE131Sync(E131SyncCallbackFunctionPtr e131_sync) { sync_callback_function_pointer_ = e131_sync; }
+
+    void SetInputDisabled(uint32_t port_index, bool disable);
+    bool GetInputDisabled(uint32_t port_index) const;
+
+    void Clear(uint32_t port_index);
+
+#if defined(E131_HAVE_DMXIN) || defined(NODE_SHOWFILE)
+    void SetSourceName(const char* source_name);
+    const char* GetSourceName() const;
+    const uint8_t* GetCid() const;
+#endif
+
+#if defined(NODE_SHOWFILE) && defined(CONFIG_SHOWFILE_PROTOCOL_NODE_E131)
+    void HandleShowFile(const e131::DataPacket* pE131DataPacket);
+#endif
+
+    void Print();
+
+    void Start();
+    void Stop();
+    void Run();
+
+    void static StaticCallbackFunctionUdp(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port)
+    {
+        s_this->InputUdp(buffer, size, from_ip, from_port);
+    }
+
+    static E131Bridge* Get() { return s_this; }
+
+   private:
+    void InputUdp(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port);
+
+    void SetNetworkDataLossCondition(bool source_a = true, bool source_b = true);
+
+    void SetSynchronizationAddress(bool source_a, bool source_b, uint16_t synchronization_address);
+
+    void CheckMergeTimeouts(uint32_t port_index);
+    bool IsPriorityTimeOut(uint32_t port_index) const;
+    bool IsIpCidMatch(const e131bridge::Source* const kSource) const;
+    void UpdateMergeStatus(uint32_t port_index);
+
+    void HandleDmx();
+    void HandleSynchronization();
+
+    enum class JoinLeave
+    {
+        kJoin,
+        kLeave
+    };
+
+    void JoinUniverse(uint32_t port_index, uint16_t universe);
+    void LeaveUniverse(uint32_t port_index, uint16_t universe);
+
+    void HandleDmxIn();
+    void SetLocalMerging();
+    void FillDataPacket();
+    void FillDiscoveryPacket();
+    void SendDiscoveryPacket();
+
+    void static StaticCallbackFunctionSendDiscoveryPacket([[maybe_unused]] TimerHandle_t timer_handle) { s_this->SendDiscoveryPacket(); }
+
+   private:
+    int32_t handle_{-1};
+    uint8_t* receive_buffer_{nullptr};
+    uint32_t packet_millis_{0};
+    uint32_t current_millis_{0};
+    uint32_t ip_address_from_{0};
+    char node_name_[dmxnode::kNodeNameLength];
+
+    e131bridge::State state_;
+    e131bridge::Bridge bridge_;
+    e131bridge::OutputPort output_port_[dmxnode::kMaxPorts];
+    e131bridge::InputPort input_port_[dmxnode::kMaxPorts];
+
+    bool enable_data_indicator_{true};
+
+    DmxNodeOutputType* dmxnode_output_type_{nullptr};
+    E131SyncCallbackFunctionPtr sync_callback_function_pointer_{nullptr};
+
+#if defined(E131_HAVE_DMXIN) || defined(NODE_SHOWFILE)
+    char source_name_[e131::kSourceNameLength];
+    uint8_t cid_[e117::kCidLength];
+#endif
+
+#if defined(E131_HAVE_DMXIN)
+    e131::DataPacket e131_data_packet_;
+    e131::DiscoveryPacket e131_discovery_packet_;
+    uint32_t discovery_ip_address_{0};
+    TimerHandle_t timer_handle_send_discovery_packet_{-1};
+#endif
+
+    static inline E131Bridge* s_this;
+};
+
+#include "e131bridge_inline_impl.h" // IWYU pragma: keep
+
+#endif  // E131BRIDGE_H_

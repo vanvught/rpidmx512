@@ -42,15 +42,15 @@ int main(int argc, char **argv) {
 		return -2;
 	}
 
-	if (bcm2835_i2c_begin() != 1) {
-		fprintf(stderr, "bcm2835_i2c_begin() failed\n");
+	if (bcm2835_I2cBegin() != 1) {
+		fprintf(stderr, "bcm2835_I2cBegin() failed\n");
 		return -3;
 	}
 
 	// When there is SSD1306 detected, then we go for for the OLED_PANEL_128x64_8ROWS
 	Display display(0, 8);
 
-	const bool isDetected = display.isDetected();
+	const bool isDetected = display.IsDetected();
 
 	display.PrintInfo();
 

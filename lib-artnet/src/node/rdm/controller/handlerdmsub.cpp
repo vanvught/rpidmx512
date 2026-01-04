@@ -2,10 +2,7 @@
  * @file handlerdmsub.cpp
  *
  */
-/**
- * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
- */
-/* Copyright (C) 2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2023-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,27 +23,20 @@
  * THE SOFTWARE.
  */
 
-#include <cstring>
-#include <cstdio>
-#include <cassert>
-
 #include "artnetnode.h"
+ #include "firmware/debug/debug_debug.h"
 
-#include "network.h"
+void ArtNetNode::HandleRdmSub()
+{
+    DEBUG_ENTRY();
 
-#include "panel_led.h"
+    auto* const kArtRdmSub = reinterpret_cast<artnet::ArtRdmSub*>(receive_buffer_);
 
-#include "debug.h"
+    if (kArtRdmSub->rdm_ver != 0x01)
+    {
+        DEBUG_EXIT();
+        return;
+    }
 
-void ArtNetNode::HandleRdmSub() {
-	DEBUG_ENTRY
-
-	auto *const pArtRdmSub = reinterpret_cast<artnet::ArtRdmSub *>(m_pReceiveBuffer);
-
-	if (pArtRdmSub->RdmVer != 0x01) {
-		DEBUG_EXIT
-		return;
-	}
-
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }

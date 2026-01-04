@@ -23,538 +23,290 @@
  * THE SOFTWARE.
  */
 
+#if defined(DEBUG_ARTNET_ADDRESS)
+#undef NDEBUG
+#endif
+
 #include <cstdint>
-#include <algorithm>
 #include <cassert>
 
+#include "artnet.h"
 #include "artnetnode.h"
-#include "artnetconst.h"
-#include "artnetnode_internal.h"
 #include "artnetstore.h"
-
+#include "artnetdisplay.h"
 #include "dmxnodedata.h"
 #include "dmxnode_data.h"
-
 #include "hal_statusled.h"
+ #include "firmware/debug/debug_debug.h"
 
-#include "debug.h"
+void ArtNetNode::SetSwitch(uint32_t port_index, uint8_t sw)
+{
+    DEBUG_ENTRY();
+    assert(port_index < dmxnode::kMaxPorts);
+    assert(state_.status == artnet::Status::kOn);
 
-void ArtNetNode::SetLocalMerging() {
-	DEBUG_ENTRY
+    node_.port[port_index].sw = sw;
+    SetPortAddress(port_index);
 
-	for (uint32_t nInputPortIndex = 0; nInputPortIndex < artnetnode::MAX_PORTS; nInputPortIndex++) {
-		if (m_Node.Port[nInputPortIndex].direction == dmxnode::PortDirection::OUTPUT) {
-			continue;
-		}
-
-		m_Node.Port[nInputPortIndex].bLocalMerge = false;
-
-		for (uint32_t nOutputPortIndex = 0; nOutputPortIndex < artnetnode::MAX_PORTS; nOutputPortIndex++) {
-			if (m_Node.Port[nOutputPortIndex].direction == dmxnode::PortDirection::INPUT) {
-				continue;
-			}
-
-			DEBUG_PRINTF("nInputPortIndex=%u %s %u, nOutputPortIndex=%u %s %u",
-					nInputPortIndex,
-					artnet::get_protocol_mode(m_Node.Port[nInputPortIndex].protocol),
-					m_Node.Port[nInputPortIndex].PortAddress,
-					nOutputPortIndex,
-					artnet::get_protocol_mode(m_Node.Port[nOutputPortIndex].protocol),
-					m_Node.Port[nOutputPortIndex].PortAddress);
-
-			if ((m_Node.Port[nInputPortIndex].protocol == m_Node.Port[nOutputPortIndex].protocol) &&
-					(m_Node.Port[nInputPortIndex].PortAddress == m_Node.Port[nOutputPortIndex].PortAddress)) {
-
-				if (!m_Node.Port[nOutputPortIndex].bLocalMerge) {
-					m_OutputPort[nOutputPortIndex].SourceA.nIp = net::IPADDR_LOOPBACK;
-					DEBUG_PUTS("Local merge Source A");
-				} else {
-					m_OutputPort[nOutputPortIndex].SourceB.nIp = net::IPADDR_LOOPBACK;
-					DEBUG_PUTS("Local merge Source B");
-				}
-
-				m_Node.Port[nInputPortIndex].bLocalMerge = true;
-				m_Node.Port[nOutputPortIndex].bLocalMerge = true;
-			}
-		}
-	}
-
-	for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
-		DEBUG_PRINTF("nPortIndex=%u, bLocalMerge=%c", nPortIndex, m_Node.Port[nPortIndex].bLocalMerge ? 'Y' : 'N');
-	}
-
-	DEBUG_EXIT
-}
-
-void ArtNetNode::SetUniverse(const uint32_t nPortIndex, const dmxnode::PortDirection dir, const uint16_t nUniverse) {
-	assert(nPortIndex < artnetnode::MAX_PORTS);
-
-	// PortAddress Bit 15 = 0
-	// Net : Bits 14-8
-	// Sub-Net : Bits 7-4
-	// Universe : Bits 3-0
-
-	m_Node.Port[nPortIndex].NetSwitch = (nUniverse >> 8) & 0x7F;
-	m_Node.Port[nPortIndex].SubSwitch = (nUniverse >> 4) & 0x0F;
-
-	SetUniverseSwitch(nPortIndex, dir, nUniverse & 0x0F);
-}
-
-void ArtNetNode::SetUniverseSwitch(const uint32_t nPortIndex, const dmxnode::PortDirection dir, const uint8_t nAddress) {
-	DEBUG_PRINTF("nPortIndex=%u, dir=%s, nAddress=%u", nPortIndex, dmxnode::get_port_direction(dir), nAddress);
-	assert(nPortIndex < artnetnode::MAX_PORTS);
-
-	if (dir == dmxnode::PortDirection::DISABLE) {
-		if (m_Node.Port[nPortIndex].direction == dmxnode::PortDirection::OUTPUT) {
-			assert(m_State.nEnabledOutputPorts > 1);
-			m_State.nEnabledOutputPorts = static_cast<uint8_t>(m_State.nEnabledOutputPorts - 1);
-		}
-#if defined (ARTNET_HAVE_DMXIN)
-		if (m_Node.Port[nPortIndex].direction == dmxnode::PortDirection::INPUT) {
-			assert(m_State.nEnabledInputPorts > 1);
-			m_State.nEnabledInputPorts = static_cast<uint8_t>(m_State.nEnabledInputPorts - 1);
-		}
-#endif
-		m_Node.Port[nPortIndex].direction = dmxnode::PortDirection::DISABLE;
-	}
-
-#if defined (ARTNET_HAVE_DMXIN)
-	if (dir == dmxnode::PortDirection::INPUT) {
-		if (m_Node.Port[nPortIndex].direction != dmxnode::PortDirection::INPUT) {
-			m_State.nEnabledInputPorts = static_cast<uint8_t>(m_State.nEnabledInputPorts + 1);
-			assert(m_State.nEnabledInputPorts <= artnetnode::MAX_PORTS);
-		}
-
-		if (m_Node.Port[nPortIndex].direction == dmxnode::PortDirection::OUTPUT) {
-			assert(m_State.nEnabledOutputPorts > 1);
-			m_State.nEnabledOutputPorts = static_cast<uint8_t>(m_State.nEnabledOutputPorts - 1);
-		}
-
-		m_InputPort[nPortIndex].GoodInput = 0;
-
-		m_Node.Port[nPortIndex].DefaultAddress = nAddress & 0x0F;
-		m_Node.Port[nPortIndex].PortAddress = MakePortAddress(nAddress, nPortIndex);
-		m_Node.Port[nPortIndex].direction = dmxnode::PortDirection::INPUT;
-	}
-#endif
-
-	if (dir == dmxnode::PortDirection::OUTPUT) {
-		if (m_Node.Port[nPortIndex].direction != dmxnode::PortDirection::OUTPUT) {
-			m_State.nEnabledOutputPorts = static_cast<uint8_t>(m_State.nEnabledOutputPorts + 1);
-			assert(m_State.nEnabledOutputPorts <= artnetnode::MAX_PORTS);
-		}
-
-		if (m_Node.Port[nPortIndex].direction == dmxnode::PortDirection::INPUT) {
-			assert(m_State.nEnabledInputPorts > 1);
-			m_State.nEnabledInputPorts = static_cast<uint8_t>(m_State.nEnabledInputPorts - 1);
-		}
-
-		m_Node.Port[nPortIndex].DefaultAddress = nAddress & 0x0F;
-		m_Node.Port[nPortIndex].PortAddress = MakePortAddress(nAddress, nPortIndex);
-		m_Node.Port[nPortIndex].direction = dmxnode::PortDirection::OUTPUT;
-	}
+    artnet::store::SaveSwitch(port_index, sw);
+    artnet::display::Universe(port_index, node_.port[port_index].port_address);
 
 #if (ARTNET_VERSION >= 4)
-	SetUniverse4(nPortIndex, dir);
+    SetUniverse4(port_index);
 #endif
 
-	if (m_State.status == artnet::Status::ON) {
-		ArtNetStore::SaveUniverseSwitch(nPortIndex, nAddress);
-		artnet::display_universe_switch(nPortIndex, nAddress);
-
-#if defined (ARTNET_HAVE_DMXIN)
-		SetLocalMerging();
+#if defined(ARTNET_HAVE_DMXIN)
+    SetLocalMerging();
 #endif
-	}
 
-	DEBUG_EXIT
-	return;
+    DEBUG_EXIT();
 }
 
-void ArtNetNode::SetSubnetSwitch(const uint32_t nPortIndex, const uint8_t nSubnetSwitch) {
-	assert(nPortIndex < artnetnode::MAX_PORTS);
+void ArtNetNode::HandleAddress()
+{
+    const auto* const kArtAddress = reinterpret_cast<artnet::ArtAddress*>(receive_buffer_);
+    state_.report_code = artnet::ReportCode::kRcpowerok;
 
-	m_Node.Port[nPortIndex].SubSwitch = nSubnetSwitch;
-	m_Node.Port[nPortIndex].PortAddress = MakePortAddress(m_Node.Port[nPortIndex].PortAddress, nPortIndex);
+    const auto kPortIndex = static_cast<uint32_t>(kArtAddress->bind_index > 0 ? kArtAddress->bind_index - 1 : 0);
 
-	if (m_State.status == artnet::Status::ON) {
-		ArtNetStore::SaveSubnetSwitch(nPortIndex, nSubnetSwitch);
-	}
+    DEBUG_PRINTF("kPortIndex=%u", kPortIndex);
 
-	DEBUG_EXIT
-}
+    if (kArtAddress->ShortName[0] != 0)
+    {
+        SetShortName(kPortIndex, reinterpret_cast<const char*>(kArtAddress->ShortName));
+        state_.report_code = artnet::ReportCode::kRcshnameok;
+    }
 
-void ArtNetNode::SetNetSwitch(const uint32_t nPortIndex, const uint8_t nNetSwitch) {
-	DEBUG_ENTRY
-	assert(nPortIndex < artnetnode::MAX_PORTS);
+    if (kArtAddress->LongName[0] != 0)
+    {
+        SetLongName(reinterpret_cast<const char*>(kArtAddress->LongName));
+        state_.report_code = artnet::ReportCode::kRclonameok;
+    }
 
-	m_Node.Port[nPortIndex].NetSwitch = nNetSwitch;
-	m_Node.Port[nPortIndex].PortAddress = MakePortAddress(m_Node.Port[nPortIndex].PortAddress, nPortIndex);
+    if (kArtAddress->SubSwitch == artnet::Program::kDefaults)
+    {
+        node_.port[kPortIndex].sub_switch = artnet::defaults::kSubnetSwitch;
+    }
+    else if (kArtAddress->SubSwitch & artnet::Program::kChangeMask)
+    {
+        node_.port[kPortIndex].sub_switch = static_cast<uint8_t>(kArtAddress->SubSwitch & ~artnet::Program::kChangeMask);
+    }
 
-	if (m_State.status == artnet::Status::ON) {
-		ArtNetStore::SaveNetSwitch(nPortIndex, nNetSwitch);
-	}
+    if (kArtAddress->NetSwitch == artnet::Program::kDefaults)
+    {
+        node_.port[kPortIndex].net_switch = artnet::defaults::kNetSwitch;
+    }
+    else if (kArtAddress->NetSwitch & artnet::Program::kChangeMask)
+    {
+        node_.port[kPortIndex].net_switch = static_cast<uint8_t>(kArtAddress->NetSwitch & ~artnet::Program::kChangeMask);
+    }
 
-	DEBUG_EXIT
-}
+    if (kArtAddress->SwOut[0] == artnet::Program::kNoChange)
+    {
+        SetSwitch(kPortIndex, node_.port[kPortIndex].sw);
+    }
+    else
+    {
+        if (node_.port[kPortIndex].direction == dmxnode::PortDirection::kOutput)
+        {
+            if (kArtAddress->SwOut[0] == artnet::Program::kDefaults)
+            {
+                SetSwitch(kPortIndex, artnet::defaults::kSwitch);
+            }
+            else if (kArtAddress->SwOut[0] & artnet::Program::kChangeMask)
+            {
+                SetSwitch(kPortIndex, static_cast<uint8_t>(kArtAddress->SwOut[0] & ~artnet::Program::kChangeMask));
+            }
+        }
+    }
 
-void ArtNetNode::SetMergeMode(const uint32_t nPortIndex, const dmxnode::MergeMode mergeMode) {
-	assert(nPortIndex < artnetnode::MAX_PORTS);
+    if (kArtAddress->SwIn[0] == artnet::Program::kNoChange)
+    {
+        SetSwitch(kPortIndex, node_.port[kPortIndex].sw);
+    }
+    else
+    {
+        if (node_.port[kPortIndex].direction == dmxnode::PortDirection::kInput)
+        {
+            if (kArtAddress->SwIn[0] == artnet::Program::kDefaults)
+            {
+                SetSwitch(kPortIndex, artnet::defaults::kSwitch);
+            }
+            else if (kArtAddress->SwIn[0] & artnet::Program::kChangeMask)
+            {
+                SetSwitch(kPortIndex, static_cast<uint8_t>(kArtAddress->SwIn[0] & ~artnet::Program::kChangeMask));
+            }
+        }
+    }
 
-	if (mergeMode == dmxnode::MergeMode::LTP) {
-		m_OutputPort[nPortIndex].GoodOutput |= artnet::GoodOutput::MERGE_MODE_LTP;
-	} else {
-		m_OutputPort[nPortIndex].GoodOutput &= static_cast<uint8_t>(~artnet::GoodOutput::MERGE_MODE_LTP);
-	}
+    switch (kArtAddress->Command)
+    {
+        case artnet::PortCommand::kNone:
+            DEBUG_PUTS("No action.");
+            break;
+        case artnet::PortCommand::kCancel:
+            state_.is_merge_mode = false;
+            for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++)
+            {
+                output_port_[port_index].source_a.ip = 0;
+                output_port_[port_index].source_b.ip = 0;
+                output_port_[port_index].good_output &= static_cast<uint8_t>(~artnet::GoodOutput::kOutputIsMerging);
+            }
+            break;
 
+        case artnet::PortCommand::kLedNormal:
+            hal::statusled::SetModeWithLock(hal::statusled::Mode::NORMAL, false);
+            art_poll_reply_.Status1 =
+                static_cast<uint8_t>((art_poll_reply_.Status1 & ~artnet::Status1::kIndicatorMask) | artnet::Status1::kIndicatorNormalMode);
 #if (ARTNET_VERSION >= 4)
-	E131Bridge::SetMergeMode(nPortIndex, mergeMode);
+            E131Bridge::SetEnableDataIndicator(true);
 #endif
+            break;
 
-	if (m_State.status == artnet::Status::ON) {
-		ArtNetStore::SaveMergeMode(nPortIndex, mergeMode);
-		artnet::display_merge_mode(nPortIndex, mergeMode);
-	}
-}
-
-void ArtNetNode::SetFailSafe(const dmxnode::FailSafe failSafe) {
-	switch (failSafe) {
-	case dmxnode::FailSafe::HOLD:
-		SetFailSafe(artnetnode::FailSafe::LAST);
-		break;
-	case dmxnode::FailSafe::OFF:
-		SetFailSafe(artnetnode::FailSafe::OFF);
-		break;
-	case dmxnode::FailSafe::ON:
-		SetFailSafe(artnetnode::FailSafe::ON);
-		break;
-	case dmxnode::FailSafe::PLAYBACK:
-		SetFailSafe(artnetnode::FailSafe::PLAYBACK);
-		break;
-	case dmxnode::FailSafe::RECORD:
-		SetFailSafe(artnetnode::FailSafe::RECORD);
-		break;
-	default:
-		assert(0);
-		__builtin_unreachable();
-		break;
-	}
-}
-
-void ArtNetNode::SetFailSafe(const artnetnode::FailSafe failsafe) {
-	DEBUG_PRINTF("failsafe=%u", static_cast<uint32_t>(failsafe));
-
-#if defined(ARTNET_HAVE_FAILSAFE_RECORD)
-	if ((m_State.status == artnet::Status::ON) && (failsafe == artnetnode::FailSafe::RECORD)) {
-		FailSafeRecord();
-		return;
-	}
-#endif
-
-	m_ArtPollReply.Status3 &= static_cast<uint8_t>(~artnet::Status3::NETWORKLOSS_MASK);
-
-	switch (failsafe) {
-	case artnetnode::FailSafe::LAST:
-		m_ArtPollReply.Status3 |= artnet::Status3::NETWORKLOSS_LAST_STATE;
-		break;
-
-	case artnetnode::FailSafe::OFF:
-		m_ArtPollReply.Status3 |= artnet::Status3::NETWORKLOSS_OFF_STATE;
-		break;
-
-	case artnetnode::FailSafe::ON:
-		m_ArtPollReply.Status3 |= artnet::Status3::NETWORKLOSS_ON_STATE;
-		break;
-
-	case artnetnode::FailSafe::PLAYBACK:
-#if defined(ARTNET_HAVE_FAILSAFE_RECORD)
-		m_ArtPollReply.Status3 |= artnet::Status3::NETWORKLOSS_PLAYBACK;
-#endif
-		break;
-
-	case artnetnode::FailSafe::RECORD:
-#if defined(ARTNET_HAVE_FAILSAFE_RECORD)
-		assert(0);
-		__builtin_unreachable();
-#endif
-		break;
-
-	default:
-		assert(0);
-		__builtin_unreachable();
-		break;
-	}
-
+        case artnet::PortCommand::kLedMute:
+            hal::statusled::SetModeWithLock(hal::statusled::Mode::OFF_OFF, true);
+            art_poll_reply_.Status1 = static_cast<uint8_t>((art_poll_reply_.Status1 & ~artnet::Status1::kIndicatorMask) | artnet::Status1::kIndicatorMuteMode);
 #if (ARTNET_VERSION >= 4)
-	E131Bridge::SetFailSafe(static_cast<dmxnode::FailSafe>(static_cast<uint8_t>(failsafe) & 0x3));
+            E131Bridge::SetEnableDataIndicator(false);
 #endif
+            break;
 
-	if (m_State.status == artnet::Status::ON) {
-		const auto nFailSafe = static_cast<uint8_t>(static_cast<uint8_t>(failsafe) & 0x3);
-		ArtNetStore::SaveFailSafe(nFailSafe);
-		artnet::display_failsafe(nFailSafe);
-	}
-
-	DEBUG_EXIT
-}
-
-dmxnode::FailSafe ArtNetNode::GetFailSafe() {
-	const auto networkloss = (m_ArtPollReply.Status3 & artnet::Status3::NETWORKLOSS_MASK);
-	switch (networkloss) {
-	case artnet::Status3::NETWORKLOSS_LAST_STATE:
-		return dmxnode::FailSafe::HOLD;
-		break;
-	case artnet::Status3::NETWORKLOSS_OFF_STATE:
-		return dmxnode::FailSafe::OFF;
-		break;
-	case artnet::Status3::NETWORKLOSS_ON_STATE:
-		return dmxnode::FailSafe::ON;
-		break;
-	case artnet::Status3::NETWORKLOSS_PLAYBACK:
-		return dmxnode::FailSafe::PLAYBACK;
-		break;
-	default:
-		assert(0);
-		__builtin_unreachable();
-		break;
-	}
-
-	__builtin_unreachable();
-	return dmxnode::FailSafe::OFF;
-}
-
-void ArtNetNode::HandleAddress() {
-	const auto *const pArtAddress = reinterpret_cast<artnet::ArtAddress *>(m_pReceiveBuffer);
-	m_State.reportCode = artnet::ReportCode::RCPOWEROK;
-
-	const auto nPage = static_cast<uint32_t>(pArtAddress->BindIndex > 0 ? pArtAddress->BindIndex - 1 : 0);
-
-	DEBUG_PRINTF("nPage=%u", nPage);
-
-	if (pArtAddress->ShortName[0] != 0)  {
-		SetShortName(nPage, reinterpret_cast<const char*>(pArtAddress->ShortName));
-		m_State.reportCode = artnet::ReportCode::RCSHNAMEOK;
-	}
-
-	if (pArtAddress->LongName[0] != 0) {
-		SetLongName(reinterpret_cast<const char*>(pArtAddress->LongName));
-		m_State.reportCode = artnet::ReportCode::RCLONAMEOK;
-	}
-
-	if (pArtAddress->SubSwitch == artnet::Program::DEFAULTS) {
-		SetSubnetSwitch(nPage, defaults::SUBNET_SWITCH);
-	} else if (pArtAddress->SubSwitch & artnet::Program::CHANGE_MASK) {
-		SetSubnetSwitch(nPage, static_cast<uint8_t>(pArtAddress->SubSwitch & ~artnet::Program::CHANGE_MASK));
-	}
-
-	if (pArtAddress->NetSwitch == artnet::Program::DEFAULTS) {
-		SetNetSwitch(nPage, defaults::NET_SWITCH);
-	} else if (pArtAddress->NetSwitch & artnet::Program::CHANGE_MASK) {
-		SetNetSwitch(nPage, static_cast<uint8_t>(pArtAddress->NetSwitch & ~artnet::Program::CHANGE_MASK));
-	}
-
-	if (pArtAddress->SwOut[0] == artnet::Program::NO_CHANGE) {
-		// Nothing here
-	} else {
-		if (m_Node.Port[nPage].direction == dmxnode::PortDirection::OUTPUT) {
-			if (pArtAddress->SwOut[0] == artnet::Program::DEFAULTS) {
-				SetUniverseSwitch(nPage, dmxnode::PortDirection::OUTPUT, defaults::UNIVERSE);
-			} else if (pArtAddress->SwOut[0] & artnet::Program::CHANGE_MASK) {
-				SetUniverseSwitch(nPage, dmxnode::PortDirection::OUTPUT, static_cast<uint8_t>(pArtAddress->SwOut[0] & ~artnet::Program::CHANGE_MASK));
-			}
-		}
-	}
-
-	if (pArtAddress->SwIn[0] == artnet::Program::NO_CHANGE) {
-		// Nothing here
-	} else {
-		if (m_Node.Port[nPage].direction == dmxnode::PortDirection::INPUT) {
-			if (pArtAddress->SwIn[0] == artnet::Program::DEFAULTS) {
-				SetUniverseSwitch(nPage, dmxnode::PortDirection::INPUT, defaults::UNIVERSE);
-			} else if (pArtAddress->SwIn[0] & artnet::Program::CHANGE_MASK) {
-				SetUniverseSwitch(nPage, dmxnode::PortDirection::INPUT, static_cast<uint8_t>(pArtAddress->SwIn[0] & ~artnet::Program::CHANGE_MASK));
-			}
-		}
-	}
-
-	switch (pArtAddress->Command) {
-	case artnet::PortCommand::NONE:
-		DEBUG_PUTS("No action.");
-		break;
-	case artnet::PortCommand::CANCEL:
-		m_State.IsMergeMode = false;
-		for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
-			m_OutputPort[nPortIndex].SourceA.nIp = 0;
-			m_OutputPort[nPortIndex].SourceB.nIp = 0;
-			m_OutputPort[nPortIndex].GoodOutput &= static_cast<uint8_t>(~artnet::GoodOutput::OUTPUT_IS_MERGING);
-		}
-		break;
-
-	case artnet::PortCommand::LED_NORMAL:
-		hal::statusled_set_mode_with_lock(hal::StatusLedMode::NORMAL, false);
-		m_ArtPollReply.Status1 = static_cast<uint8_t>((m_ArtPollReply.Status1 & ~artnet::Status1::INDICATOR_MASK) | artnet::Status1::INDICATOR_NORMAL_MODE);
+        case artnet::PortCommand::kLedLocate:
+            hal::statusled::SetModeWithLock(hal::statusled::Mode::FAST, true);
+            art_poll_reply_.Status1 =
+                static_cast<uint8_t>((art_poll_reply_.Status1 & ~artnet::Status1::kIndicatorMask) | artnet::Status1::kIndicatorLocateMode);
 #if (ARTNET_VERSION >= 4)
-		E131Bridge::SetEnableDataIndicator(true);
+            E131Bridge::SetEnableDataIndicator(false);
 #endif
-		break;
+            break;
 
-	case artnet::PortCommand::LED_MUTE:
-		hal::statusled_set_mode_with_lock(hal::StatusLedMode::OFF_OFF, true);
-		m_ArtPollReply.Status1 = static_cast<uint8_t>((m_ArtPollReply.Status1 & ~artnet::Status1::INDICATOR_MASK) | artnet::Status1::INDICATOR_MUTE_MODE);
-#if (ARTNET_VERSION >= 4)
-		E131Bridge::SetEnableDataIndicator(false);
+#if defined(ARTNET_HAVE_DMXIN)
+        case artnet::PortCommand::kReset:
+            for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++)
+            {
+                const auto kMask =
+                    artnet::GoodInput::kIncludesTestPackets | artnet::GoodInput::kIncludesSip | artnet::GoodInput::kIncludesText | artnet::GoodInput::kErrors;
+                input_port_[port_index].good_input &= static_cast<uint8_t>(~kMask);
+            }
+            break;
 #endif
-		break;
+        case artnet::PortCommand::kFailHold:
+        case artnet::PortCommand::kFailZero:
+        case artnet::PortCommand::kFailFull:
+        case artnet::PortCommand::kFailScene:
+        case artnet::PortCommand::kFailRecord:
+            SetFailSafe(static_cast<artnet::FailSafe>(kArtAddress->Command & 0x0f));
+            break;
 
-	case artnet::PortCommand::LED_LOCATE:
-		hal::statusled_set_mode_with_lock(hal::StatusLedMode::FAST, true);
-		m_ArtPollReply.Status1 = static_cast<uint8_t>((m_ArtPollReply.Status1 & ~artnet::Status1::INDICATOR_MASK) | artnet::Status1::INDICATOR_LOCATE_MODE);
-#if (ARTNET_VERSION >= 4)
-		E131Bridge::SetEnableDataIndicator(false);
-#endif
-		break;
-
-#if defined (ARTNET_HAVE_DMXIN)
-	case artnet::PortCommand::RESET:
-		for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
-			const auto MASK = artnet::GoodInput::INCLUDES_TEST_PACKETS | artnet::GoodInput::INCLUDES_SIP | artnet::GoodInput::INCLUDES_TEXT | artnet::GoodInput::ERRORS;
-			m_InputPort[nPortIndex].GoodInput &= static_cast<uint8_t>(~MASK);
-		}
-		break;
-#endif
-	case artnet::PortCommand::FAIL_HOLD:
-	case artnet::PortCommand::FAIL_ZERO:
-	case artnet::PortCommand::FAIL_FULL:
-	case artnet::PortCommand::FAIL_SCENE:
-	case artnet::PortCommand::FAIL_RECORD:
-		SetFailSafe(static_cast<artnetnode::FailSafe>(pArtAddress->Command & 0x0f));
-		break;
-
-	case artnet::PortCommand::MERGE_LTP_O:
+        case artnet::PortCommand::kMergeLtpO:
 #if (ARTNET_VERSION < 4)
-	case artnet::PortCommand::MERGE_LTP_1:
-	case artnet::PortCommand::MERGE_LTP_2:
-	case artnet::PortCommand::MERGE_LTP_3:
+        case artnet::PortCommand::kMergeLtp1:
+        case artnet::PortCommand::kMergeLtp2:
+        case artnet::PortCommand::kMergeLtp3:
 #endif
-		SetMergeMode(nPage, dmxnode::MergeMode::LTP);
-#if (ARTNET_VERSION >= 4)
-		E131Bridge::SetMergeMode(nPage, dmxnode::MergeMode::LTP);
-#endif
-		break;
+            SetMergeMode(kPortIndex, dmxnode::MergeMode::kLtp);
+            break;
 
-#if defined (ARTNET_HAVE_DMXIN)
-	case artnet::PortCommand::DIRECTION_TX_O:
+#if defined(ARTNET_HAVE_DMXIN)
+        case artnet::PortCommand::kDirectionTxO:
 #if (ARTNET_VERSION < 4)
-	case artnet::PortCommand::DIRECTION_TX_1:
-	case artnet::PortCommand::DIRECTION_TX_2:
-	case artnet::PortCommand::DIRECTION_TX_3:
+        case artnet::PortCommand::kDirectionTx1:
+        case artnet::PortCommand::kDirectionTx2:
+        case artnet::PortCommand::kDirectionTx3:
 #endif
-		DEBUG_PUTS("ToDo: PortCommand::DIRECTION_TX");
-		break;
+            SetDirection(kPortIndex, dmxnode::PortDirection::kOutput);
+            break;
 
-	case artnet::PortCommand::DIRECTION_RX_O:
+        case artnet::PortCommand::kDirectionRxO:
 #if (ARTNET_VERSION < 4)
-	case artnet::PortCommand::DIRECTION_RX_1:
-	case artnet::PortCommand::DIRECTION_RX_2:
-	case artnet::PortCommand::DIRECTION_RX_3:
+        case artnet::PortCommand::kDirectionRx1:
+        case artnet::PortCommand::kDirectionRx2:
+        case artnet::PortCommand::kDirectionRx3:
 #endif
-		DEBUG_PUTS("ToDo: PortCommand::DIRECTION_RX");
-		break;
+            SetDirection(kPortIndex, dmxnode::PortDirection::kInput);
+            break;
 #endif
-	case artnet::PortCommand::MERGE_HTP_0:
+        case artnet::PortCommand::kMergeHtp0:
 #if (ARTNET_VERSION < 4)
-	case artnet::PortCommand::MERGE_HTP_1:
-	case artnet::PortCommand::MERGE_HTP_2:
-	case artnet::PortCommand::MERGE_HTP_3:
+        case artnet::PortCommand::kMergeHtp1:
+        case artnet::PortCommand::kMergeHtp2:
+        case artnet::PortCommand::kMergeHtp3:
 #endif
-		SetMergeMode(nPage, dmxnode::MergeMode::HTP);
-#if (ARTNET_VERSION >= 4)
-		E131Bridge::SetMergeMode(nPage, dmxnode::MergeMode::HTP);
-#endif
-		break;
+            SetMergeMode(kPortIndex, dmxnode::MergeMode::kHtp);
+            break;
 
 #if (ARTNET_VERSION >= 4)
-	case artnet::PortCommand::ARTNET_SEL0:
-#if 0	// Deprecated in Art-Net 4
-	case artnet::PortCommand::ARTNET_SEL1:
-	case artnet::PortCommand::ARTNET_SEL2:
-	case artnet::PortCommand::ARTNET_SEL3:
+        case artnet::PortCommand::kArtnetSel0:
+#if (ARTNET_VERSION < 4)
+        case artnet::PortCommand::kArtnetSel1:
+        case artnet::PortCommand::kArtnetSel2:
+        case artnet::PortCommand::kArtnetSel3:
 #endif
-		SetPortProtocol4(nPage, artnet::PortProtocol::ARTNET);
-		SetUniverse4(nPage, dmxnode::PortDirection::DISABLE);
-		break;
+            SetPortProtocol4(kPortIndex, artnet::PortProtocol::kArtnet);
+            break;
 
-	case artnet::PortCommand::ACN_SEL0:
-#if 0	// Deprecated in Art-Net 4
-	case artnet::PortCommand::ACN_SEL1:
-	case artnet::PortCommand::ACN_SEL2:
-	case artnet::PortCommand::ACN_SEL3:
+        case artnet::PortCommand::kAcnSel0:
+#if (ARTNET_VERSION < 4)
+        case artnet::PortCommand::kAcnSel1:
+        case artnet::PortCommand::kAcnSel2:
+        case artnet::PortCommand::kAcnSel3:
 #endif
-		SetPortProtocol4(nPage, artnet::PortProtocol::SACN);
-		SetUniverse4(nPage, dmxnode::PortDirection::OUTPUT);
-		break;
+            SetPortProtocol4(kPortIndex, artnet::PortProtocol::kSacn);
+            break;
 #endif
 
-	case artnet::PortCommand::CLR_0:
-#if 0	// Deprecated in Art-Net 4
-	case artnet::PortCommand::CLR_1:
-	case artnet::PortCommand::CLR_2:
-	case artnet::PortCommand::CLR_3:
+        case artnet::PortCommand::kClr0:
+#if (ARTNET_VERSION < 4)
+        case artnet::PortCommand::kClr1:
+        case artnet::PortCommand::kClr2:
+        case artnet::PortCommand::kClr3:
 #endif
-		if (m_Node.Port[nPage].protocol == artnet::PortProtocol::ARTNET) {
-			dmxnode::Data::Clear(nPage);
-			dmxnode::data_output(m_pDmxNodeOutputType, nPage);
-		}
+            if (node_.port[kPortIndex].protocol == artnet::PortProtocol::kArtnet)
+            {
+                dmxnode::Data::Clear(kPortIndex);
+                dmxnode::DataOutput(dmxnode_output_type_, kPortIndex);
+            }
 #if (ARTNET_VERSION >= 4)
-		if (m_Node.Port[nPage].protocol == artnet::PortProtocol::SACN) {
-			E131Bridge::Clear(nPage);
-		}
+            if (node_.port[kPortIndex].protocol == artnet::PortProtocol::kSacn)
+            {
+                E131Bridge::Clear(kPortIndex);
+            }
 #endif
-		break;
+            break;
 
-#if defined (OUTPUT_HAVE_STYLESWITCH)
-	case artnet::PortCommand::STYLE_DELTA0:
-#if 0	// Deprecated in Art-Net 4
-	case artnet::PortCommand::STYLE_DELTA1:
-	case artnet::PortCommand::STYLE_DELTA2:
-	case artnet::PortCommand::STYLE_DELTA3:
+#if defined(OUTPUT_HAVE_STYLESWITCH)
+        case artnet::PortCommand::kStyleDelta0:
+#if (ARTNET_VERSION < 4)
+        case artnet::PortCommand::kStyleDelta1:
+        case artnet::PortCommand::kStyleDelta2:
+        case artnet::PortCommand::kStyleDelta3:
 #endif
-		SetOutputStyle(nPage, dmxnode::OutputStyle::DELTA);
-		break;
+            SetOutputStyle(kPortIndex, dmxnode::OutputStyle::kDelta);
+            break;
 
-	case artnet::PortCommand::STYLE_CONSTANT0:
-#if 0	// Deprecated in Art-Net 4
-	case artnet::PortCommand::STYLE_CONSTANT1:
-	case artnet::PortCommand::STYLE_CONSTANT2:
-	case artnet::PortCommand::STYLE_CONSTANT3:
+        case artnet::PortCommand::kStyleConstant0:
+#if (ARTNET_VERSION < 4)
+        case artnet::PortCommand::kStyleConstant1:
+        case artnet::PortCommand::kStyleConstant2:
+        case artnet::PortCommand::kStyleConstant3:
 #endif
-		SetOutputStyle(nPage, dmxnode::OutputStyle::CONSTANT);
-		break;
+            SetOutputStyle(kPortIndex, dmxnode::OutputStyle::kConstant);
+            break;
 #endif
 
-#if defined (RDM_CONTROLLER) || defined (RDM_RESPONDER)
-	case artnet::PortCommand::RDM_ENABLE0:
-#if 0	// Deprecated in Art-Net 4
-	case artnet::PortCommand::RDM_ENABLE1:
-	case artnet::PortCommand::RDM_ENABLE2:
-	case artnet::PortCommand::RDM_ENABLE3:
-#endif
-		SetRdm(nPage, true);
-		break;
+#if defined(RDM_CONTROLLER) || defined(RDM_RESPONDER)
+        case artnet::PortCommand::kRdmEnable0:
+            SetRdm(kPortIndex, true);
+            break;
 
-	case artnet::PortCommand::RDM_DISABLE0:
-#if 0	// Deprecated in Art-Net 4
-	case artnet::PortCommand::RDM_DISABLE1:
-	case artnet::PortCommand::RDM_DISABLE2:
-	case artnet::PortCommand::RDM_DISABLE3:
+        case artnet::PortCommand::kRdmDisable0:
+            SetRdm(kPortIndex, false);
+            break;
 #endif
-		SetRdm(nPage, false);
-		break;
-#endif
-	default:
-		DEBUG_PRINTF("> Not implemented: %u [%x]", pArtAddress->Command, pArtAddress->Command);
-		break;
-	}
+        default:
+            [[unlikely]] DEBUG_PRINTF("> Not implemented: %u [%x]", kArtAddress->Command, kArtAddress->Command);
+            break;
+    }
 
-	SendPollReply(pArtAddress->BindIndex, m_nIpAddressFrom);
+    SendPollReply(kPortIndex, ip_address_from_);
 }

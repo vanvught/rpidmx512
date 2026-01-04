@@ -2,7 +2,7 @@
  * @file ltcdisplaymax7219set.h
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,15 +28,15 @@
 
 #include <cstdint>
 
-class LtcDisplayMax7219Set {
-public:
-	virtual ~LtcDisplayMax7219Set() {
-	}
+class LtcDisplayMax7219Set
+{
+   public:
+    virtual ~LtcDisplayMax7219Set() = default;
 
-	virtual void Init(uint8_t nIntensity)=0;
-	virtual void Show(const char *pTimecode)=0;
-	virtual void ShowSysTime(const char *pSystemTime)=0;
-	virtual void WriteChar(uint8_t nChar, uint8_t nPos)=0;
+	virtual void SetIntensity(uint8_t intensity) = 0;  
+    virtual void Show(const char* timecode) = 0;
+    virtual void ShowSysTime(const char* systemtime) = 0;
+    virtual void WriteChar(uint8_t ch, uint8_t pos) = 0;
 };
 
-#endif /* LTCDISPLAYMAX7219SET_H_ */
+#endif  // LTCDISPLAYMAX7219SET_H_

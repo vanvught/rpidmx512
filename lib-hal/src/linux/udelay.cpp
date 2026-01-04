@@ -2,7 +2,7 @@
  * @file udelay.cpp
  *
  */
-/* Copyright (C) 2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2023-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,45 +24,43 @@
  */
 
 #include <cstdint>
-#include <cstdio>
-#include <time.h>
 #include <sys/time.h>
 
 static constexpr uint32_t TICKS_PER_US = 1;
 
-static uint32_t micros() {
+static uint32_t Micros() {
 	struct timeval tv;
 	gettimeofday(&tv, nullptr);
 	return (uint32_t)((tv.tv_sec * 1000000) + tv.tv_usec);
 }
 
-void udelay(uint32_t nMicros, uint32_t nOffsetMicros) {
-	const auto nTicks = nMicros * TICKS_PER_US;
+void udelay(uint32_t micros, uint32_t offset_micros) {
+	const auto kTicks = micros * TICKS_PER_US;
 
 	uint32_t nTicksCount = 0;
 	uint32_t nTicksPrevious;
 
-	if (nOffsetMicros == 0) {
-		nTicksPrevious = micros();
+	if (offset_micros == 0) {
+		nTicksPrevious = Micros();
 	} else {
-		nTicksPrevious = nOffsetMicros;
+		nTicksPrevious = offset_micros;
 	}
 
 	while (1) {
-		const auto nTicksNow = micros();
+		const auto kTicksNow = Micros();
 
-		if (nTicksNow != nTicksPrevious) {
-			if (nTicksNow > nTicksPrevious) {
-				nTicksCount += nTicksNow - nTicksPrevious;
+		if (kTicksNow != nTicksPrevious) {
+			if (kTicksNow > nTicksPrevious) {
+				nTicksCount += kTicksNow - nTicksPrevious;
 			} else {
-				nTicksCount += UINT32_MAX - nTicksPrevious + nTicksNow;
+				nTicksCount += UINT32_MAX - nTicksPrevious + kTicksNow;
 			}
 
-			if (nTicksCount >= nTicks) {
+			if (nTicksCount >= kTicks) {
 				break;
 			}
 
-			nTicksPrevious = nTicksNow;
+			nTicksPrevious = kTicksNow;
 		}
 	}
 }

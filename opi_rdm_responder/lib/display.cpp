@@ -2,7 +2,7 @@
  * @file display.cpp
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,35 +28,43 @@
 #include "pixeltype.h"
 #include "pixelpatterns.h"
 #include "pixeldmxparamsrdm.h"
-
 #include "displayudf.h"
 
-using namespace pixeldmx::paramsdmx;
+namespace pixeldmx::paramsdmx
+{
+static constexpr auto kLastIndex = pixeldmx::paramsdmx::kDmxFootprint - 1U;
+static bool s_is_programmed;
 
-static constexpr auto nLastIndex = DMX_FOOTPRINT - 1U;
-static bool s_IsProgrammed;
+void Display(const uint8_t data[kDmxFootprint])
+{
+    if (data[static_cast<uint32_t>(pixeldmx::paramsdmx::SlotsInfo::TEST_PATTERN)] == 0x00)
+    {
+        DisplayUdf::Get()->ClearLine(6);
+    }
+    else
+    {
+        DisplayUdf::Get()->Printf(6, 
+        "%-20s",
+        PixelPatterns::GetName(static_cast<pixelpatterns::Pattern>(data[static_cast<uint32_t>(pixeldmx::paramsdmx::SlotsInfo::TEST_PATTERN)])));
+    }
 
-void PixelDmxParamsRdm::Display(const uint8_t *pData)  {
-	if (pData[static_cast<uint32_t>(SlotInfo::TEST_PATTERN)] == 0x00) {
-		DisplayUdf::Get()->ClearLine(6);
-	} else {
-		DisplayUdf::Get()->Printf(6, "%-20s",
-				PixelPatterns::GetName(static_cast<pixelpatterns::Pattern>(pData[static_cast<uint32_t>(SlotInfo::TEST_PATTERN)])));
-	}
+    DisplayUdf::Get()->Printf(
+        7, "%-8s %-2d G%-2d %-5s", pixel::GetType(static_cast<pixel::Type>(data[static_cast<uint32_t>(pixeldmx::paramsdmx::SlotsInfo::TYPE)])),
+        data[static_cast<uint32_t>(pixeldmx::paramsdmx::SlotsInfo::COUNT)], data[static_cast<uint32_t>(pixeldmx::paramsdmx::SlotsInfo::GROUPING_COUNT)],
+        pixel::GetMap(static_cast<pixel::Map>(data[static_cast<uint32_t>(pixeldmx::paramsdmx::SlotsInfo::MAP)])));
 
-	DisplayUdf::Get()->Printf(7, "%-8s %-2d G%-2d %-5s",
-			pixel::pixel_get_type(static_cast<pixel::Type>(pData[static_cast<uint32_t>(SlotInfo::TYPE)])),
-			pData[static_cast<uint32_t>(SlotInfo::COUNT)],
-			pData[static_cast<uint32_t>(SlotInfo::GROUPING_COUNT)],
-			pixel::pixel_get_map(static_cast<pixel::Map>(pData[static_cast<uint32_t>(SlotInfo::MAP)])));
-
-	if (pData[nLastIndex] == 0xFF) {
-		if (!s_IsProgrammed) {
-			s_IsProgrammed = true;
-			DisplayUdf::Get()->TextStatus("Programmed");
-		}
-	} else {
-		s_IsProgrammed = false	;
-		DisplayUdf::Get()->ClearLine(8);
-	}
+    if (data[kLastIndex] == 0xFF)
+    {
+        if (!s_is_programmed)
+        {
+            s_is_programmed = true;
+            DisplayUdf::Get()->TextStatus("Programmed");
+        }
+    }
+    else
+    {
+        s_is_programmed = false;
+        DisplayUdf::Get()->ClearLine(8);
+    }
 }
+} // namespace pixeldmx::paramsdmx

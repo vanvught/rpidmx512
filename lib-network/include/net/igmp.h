@@ -28,19 +28,20 @@
 
 #include <cstdint>
 
-namespace net {
-void igmp_shutdown();
-void igmp_join(const uint32_t);
-void igmp_leave(const uint32_t);
-void igmp_report_groups();
-bool igmp_lookup_group(const uint32_t);
-}  // namespace net
+namespace net::igmp
+{
+void JoinGroup(int32_t handle, uint32_t ip);
+void LeaveGroup(int32_t handle, uint32_t ip);
+void ReportGroups();
+bool LookupGroup(uint32_t);
+} // namespace net::igmp
 
-#if defined (CONFIG_EMAC_HASH_MULTICAST_FILTER)
-void emac_multicast_enable_hash_filter();
-void emac_multicast_disable_hash_filter();
-void emac_multicast_set_hash(const uint8_t *);
-void emac_multicast_reset_hash();
-#endif
+namespace emac::multicast
+{
+void EnableHashFilter();
+void DisableHashFilter();
+void SetHash(const uint8_t*);
+void ResetHash();
+} // namespace emac::multicast
 
-#endif /* NET_IGMP_H_ */
+#endif  // NET_IGMP_H_

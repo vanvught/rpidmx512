@@ -2,7 +2,7 @@
  * @file mdns.h
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,31 +28,41 @@
 
 #include <cstdint>
 
-#include "../config/apps_config.h"
+namespace mdns
+{
+static constexpr uint32_t kMdnsResponseTtl = 3600; ///< (in seconds)
 
-namespace mdns {
-static constexpr uint32_t MDNS_RESPONSE_TTL = 3600;		///< (in seconds)
-
-enum class Services {
-	CONFIG, TFTP, HTTP, RDMNET_LLRP, NTP, MIDI, OSC, DDP, PP, LAST_NOT_USED
+enum class Services
+{
+    CONFIG,
+    TFTP,
+    HTTP,
+    RDMNET_LLRP,
+    NTP,
+    MIDI,
+    OSC,
+    DDP,
+    PP,
+    kLastNotUsed
 };
 
-struct ServiceRecord {
-	char *pName;
-	char *pTextContent;
-	uint16_t nTextContentLength;
-	uint16_t nPort;
-	mdns::Services services;
+struct ServiceRecord
+{
+    char* name;
+    char* text_content;
+    uint16_t text_content_length;
+    uint16_t port;
+    mdns::Services services;
 };
-}  // namespace mdns
 
-void mdns_init();
-void mdns_start();
-void mdns_stop();
+void Init();
+void Start();
+void Stop();
 
-bool mdns_service_record_add(const char *pName, const mdns::Services service, const char *pTextContent = nullptr, const uint16_t nPort = 0);
-bool mdns_service_record_delete(const mdns::Services service);
+bool ServiceRecordAdd(const char* name, Services service, const char* text_content = nullptr, uint16_t port = 0);
+bool ServiceRecordDelete(mdns::Services service);
 
-void mdns_send_announcement(const uint32_t nTTL);
+void SendAnnouncement(uint32_t ttl);
+} // namespace mdns
 
-#endif /* NET_APPS_MDNS_H_ */
+#endif  // NET_APPS_MDNS_H_

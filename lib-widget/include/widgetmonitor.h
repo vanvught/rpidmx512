@@ -1,8 +1,8 @@
 /**
- * @file widget_monitor.h
+ * @file widgetmonitor.h
  *
  */
-/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,49 +23,51 @@
  * THE SOFTWARE.
  */
 
-#ifndef WIDGET_MONITOR_H_
-#define WIDGET_MONITOR_H_
+#ifndef WIDGETMONITOR_H_
+#define WIDGETMONITOR_H_
 
-#include <stdbool.h>
 #include <cstdint>
 
-namespace widgetmonitor {
-struct MonitorLine {
-	static constexpr auto TIME = 3;
-	static constexpr auto WIDGET_PARMS = 4;
-	static constexpr auto LABEL = 6;
-	static constexpr auto INFO = 7;
-	static constexpr auto PORT_DIRECTION = 9;
-	static constexpr auto DMX_DATA = 11;
-	static constexpr auto PACKETS = 14;
-	static constexpr auto RDM_DATA = 17;
-	static constexpr auto RDM_CC = 27;
-	static constexpr auto STATUS = 28;
-	static constexpr auto STATS = 29;
+namespace widgetmonitor
+{
+struct MonitorLine
+{
+    static constexpr auto kTime = 3;
+    static constexpr auto kWidgetParms = 4;
+    static constexpr auto kLabel = 6;
+    static constexpr auto kInfo = 7;
+    static constexpr auto kPortDirection = 9;
+    static constexpr auto kDmxData = 11;
+    static constexpr auto kPackets = 14;
+    static constexpr auto kRdmData = 17;
+    static constexpr auto kRdmCc = 27;
+    static constexpr auto kStatus = 28;
+    static constexpr auto kStats = 29;
 };
-}  // namespace widgetmonitor
+} // namespace widgetmonitor
 
-class WidgetMonitor {
-public:
-	static void Line(int, const char *, ...);
-	static void Uptime(uint8_t nLine);
-	static void RdmData(int, uint16_t, const uint8_t *, bool);
-	static void Update();
+class WidgetMonitor
+{
+   public:
+    static void Line(int, const char*, ...);
+    static void Uptime(uint8_t line);
+    static void RdmData(int, uint16_t, const uint8_t*, bool);
+    static void Update();
 
-private:
-	static void Sniffer();
-	static void DmxData(const uint8_t * dmx_data, const int line);
+   private:
+    static void Sniffer();
+    static void DmxData(const uint8_t* dmx_data, int line);
 
-private:
-	static uint32_t s_nWidgetReceivedDmxPacketCountPrevious;
-	static uint32_t s_nUpdatesPerSecondeMin;
-	static uint32_t s_nUpdatesPerSecondeMax;
-	static uint32_t s_nSlotsInPacketMin;
-	static uint32_t s_nSlotsInPacketMax;
-	static uint32_t s_nSlotToSlotMin;
-	static uint32_t s_nSlotToSlotMax;
-	static uint32_t s_nBreakToBreakMin;
-	static uint32_t s_nBreakToBreakMax;
+   private:
+    inline static uint32_t s_nWidgetReceivedDmxPacketCountPrevious{0};
+    inline static uint32_t s_nUpdatesPerSecondeMin{UINT32_MAX};
+    inline static uint32_t s_nUpdatesPerSecondeMax{0};
+    inline static uint32_t s_nSlotsInPacketMin{UINT32_MAX};
+    inline static uint32_t s_nSlotsInPacketMax{0};
+    inline static uint32_t s_nSlotToSlotMin{UINT32_MAX};
+    inline static uint32_t s_nSlotToSlotMax{0};
+    inline static uint32_t s_nBreakToBreakMin{UINT32_MAX};
+    inline static uint32_t s_nBreakToBreakMax{0};
 };
 
-#endif /* WIDGET_MONITOR_H_ */
+#endif  // WIDGETMONITOR_H_

@@ -1,9 +1,10 @@
 #DEFINES=NDEBUG
 
-EXTRA_INCLUDES=src/linux/minimum
+EXTRA_INCLUDES=src/linux/minimum ../lib-network/include
+
 EXTRA_SRCDIR=src/linux/minimum
 EXTRA_SRCDIR+=superloop
-
+EXTRA_SRCDIR+=src/json
 EXTRA_SRCDIR+=debug
 
 ifneq ($(MAKE_FLAGS),)

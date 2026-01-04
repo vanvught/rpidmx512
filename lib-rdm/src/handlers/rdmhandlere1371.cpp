@@ -2,7 +2,7 @@
  * @file rdmhandlere1371.cpp
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,60 +23,63 @@
  * THE SOFTWARE.
  */
 
-#include <cstring>
-
 #include "rdmhandler.h"
-#include "rdmconst.h"
 #include "rdmidentify.h"
+#include "e120.h"
 #include "rdm_e120.h"
 
-#include "debug.h"
+ #include "firmware/debug/debug_debug.h"
 
 /*
  * ANSI E1.37-1
  */
 
-void RDMHandler::GetIdentifyMode([[maybe_unused]] uint16_t nSubDevice) {
-	DEBUG_ENTRY
+void RDMHandler::GetIdentifyMode([[maybe_unused]] uint16_t sub_device)
+{
+    DEBUG_ENTRY();
 
-	auto *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
+    auto& rdm_data_out = *reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
 
-	pRdmDataOut->param_data_length = 1;
-	pRdmDataOut->param_data[0] = static_cast<uint8_t>(RDMIdentify::Get()->GetMode());
+    rdm_data_out.param_data_length = 1;
+    rdm_data_out.param_data[0] = static_cast<uint8_t>(RDMIdentify::Get()->GetMode());
 
-	RespondMessageAck();
+    RespondMessageAck();
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void RDMHandler::SetIdentifyMode(bool IsBroadcast, [[maybe_unused]] uint16_t nSubDevice) {
-	DEBUG_ENTRY
+void RDMHandler::SetIdentifyMode(bool is_broadcast, [[maybe_unused]] uint16_t sub_device)
+{
+    DEBUG_ENTRY();
 
-	const auto *pRdmDataIn = reinterpret_cast<const struct TRdmMessageNoSc*>(m_pRdmDataIn);
+    const auto& rdm_data_in = *reinterpret_cast<const struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
-	if (pRdmDataIn->param_data_length != 1) {
-		RespondMessageNack(E120_NR_FORMAT_ERROR);
-		DEBUG_EXIT
-		return;
-	}
+    if (rdm_data_in.param_data_length != 1)
+    {
+        RespondMessageNack(E120_NR_FORMAT_ERROR);
+        DEBUG_EXIT();
+        return;
+    }
 
-	if ((pRdmDataIn->param_data[0] != 0) && (pRdmDataIn->param_data[0] != 0xFF)) {
-		RespondMessageNack( E120_NR_DATA_OUT_OF_RANGE);
-		DEBUG_EXIT
-		return;
-	}
+    if ((rdm_data_in.param_data[0] != 0) && (rdm_data_in.param_data[0] != 0xFF))
+    {
+        RespondMessageNack(E120_NR_DATA_OUT_OF_RANGE);
+        DEBUG_EXIT();
+        return;
+    }
 
-	RDMIdentify::Get()->SetMode(static_cast<rdm::identify::Mode>(pRdmDataIn->param_data[0]));
+    RDMIdentify::Get()->SetMode(static_cast<RDMIdentify::Mode>(rdm_data_in.param_data[0]));
 
-	if (IsBroadcast) {
-		DEBUG_EXIT
-		return;
-	}
+    if (is_broadcast)
+    {
+        DEBUG_EXIT();
+        return;
+    }
 
-	auto *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
-	pRdmDataOut->param_data_length = 0;
+    auto* rdm_data_out = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
+    rdm_data_out->param_data_length = 0;
 
-	RespondMessageAck();
+    RespondMessageAck();
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }

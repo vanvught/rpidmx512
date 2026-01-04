@@ -61,7 +61,7 @@ typedef enum {
 	BCM2835_I2C_CLOCK_DIVIDER_148	= 148,		///< 148 = 59ns = 1.689 MHz
 } bcm2835I2CClockDivider;
 
-/// Specifies the reason codes for the \ref bcm2835_i2c_write and \ref bcm2835_i2c_read functions.
+/// Specifies the reason codes for the \ref bcm2835_I2cWrite and \ref bcm2835_I2cRead functions.
 typedef enum {
 	BCM2835_I2C_REASON_OK			= 0x00,		///< Success
 	BCM2835_I2C_REASON_ERROR_NACK 	= 0x01,		///< Received a NACK
@@ -73,11 +73,11 @@ typedef enum {
 extern "C" {
 #endif
 
-extern void bcm2835_i2c_begin(void);
+extern void bcm2835_I2cBegin(void);
 extern void bcm2835_i2c_end(void);
-extern uint8_t bcm2835_i2c_write(/*@null@*/const char *, uint32_t);
-extern uint8_t bcm2835_i2c_read(/*@out@*/char *, uint32_t);
-extern void bcm2835_i2c_set_baudrate(uint32_t);
+extern uint8_t bcm2835_I2cWrite(/*@null@*/const char *, uint32_t);
+extern uint8_t bcm2835_I2cRead(/*@out@*/char *, uint32_t);
+extern void bcm2835_I2cSetBaudrate(uint32_t);
 
 /**
  * @ingroup I2C

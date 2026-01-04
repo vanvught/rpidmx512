@@ -30,7 +30,6 @@
 #include <cstdio>
 
 #include "flashcode.h"
-
 #include "firmware.h" //TODO Remove
 
 class FlashCodeInstall: FlashCode {
@@ -38,30 +37,30 @@ public:
 	FlashCodeInstall();
 	~FlashCodeInstall();
 
-	bool WriteFirmware(const uint8_t *pBuffer, uint32_t nSize);
+	bool WriteFirmware(const uint8_t *buffer, uint32_t size);
 
 	static FlashCodeInstall* Get() {
-		return s_pThis;
+		return s_this;
 	}
 
 private:
-	bool Open(const char *pFileName);
+	bool Open(const char *file_name);
 	void Close();
-	bool BuffersCompare(uint32_t nSize);
-	bool Diff(uint32_t nOffset);
-	void Write(uint32_t nOffset);
-	void Process(const char *pFileName, uint32_t nOffset);
+	bool BuffersCompare(uint32_t size);
+	bool Diff(uint32_t offset);
+	void Write(uint32_t offset);
+	void Process(const char *file_name, uint32_t offset);
 
 private:
-	uint32_t m_nEraseSize { 0 };
-	uint32_t m_nFlashSize { 0 };
-	uint8_t *m_pFileBuffer { nullptr };
-	uint8_t *m_pFlashBuffer { nullptr };
-	FILE *m_pFile { nullptr };
+ uint32_t erase_size_{0};
+ uint32_t flash_size_{0};
+ uint8_t* file_buffer_{nullptr};
+ uint8_t* flash_buffer_{nullptr};
+ FILE* file_{nullptr};
 
-	bool m_bHaveFlashChip { false };
+ bool have_flash_{false};
 
-	static FlashCodeInstall *s_pThis;
+ inline static FlashCodeInstall* s_this;
 };
 
-#endif /* FLASHCODEINSTALL_H_ */
+#endif  // FLASHCODEINSTALL_H_

@@ -30,14 +30,14 @@
 #include "dmxserialtftp.h"
 #include "dmxserial.h"
 
-#include "debug.h"
+ #include "firmware/debug/debug_debug.h"
 
 void DmxSerialTFTP::Exit() {
-	DEBUG_ENTRY
+	DEBUG_ENTRY();
 
 	DmxSerial::Get()->EnableTFTP(false);
 
-	DEBUG_EXIT
+	DEBUG_EXIT();
 }
 
 bool DmxSerialTFTP::FileOpen(const char *pFileName, [[maybe_unused]] tftp::Mode mode) {
@@ -45,12 +45,12 @@ bool DmxSerialTFTP::FileOpen(const char *pFileName, [[maybe_unused]] tftp::Mode 
 
 	int32_t nFileNumber;
 	if (!DmxSerial::CheckFileName(pFileName, nFileNumber)) {
-		DEBUG_EXIT
+		DEBUG_EXIT();
 		return false;
 	}
 
-	m_pFile = fopen(pFileName, "r");
-	return (m_pFile != nullptr);
+	file_ = fopen(pFileName, "r");
+	return (file_ != nullptr);
 }
 
 bool DmxSerialTFTP::FileCreate(const char *pFileName, [[maybe_unused]] tftp::Mode mode) {
@@ -58,30 +58,30 @@ bool DmxSerialTFTP::FileCreate(const char *pFileName, [[maybe_unused]] tftp::Mod
 
 	int32_t nFileNumber;
 	if (!DmxSerial::CheckFileName(pFileName, nFileNumber)) {
-		DEBUG_EXIT
+		DEBUG_EXIT();
 		return false;
 	}
 
-	m_pFile = fopen(pFileName, "w+");
-	return (m_pFile != nullptr);
+	file_ = fopen(pFileName, "w+");
+	return (file_ != nullptr);
 }
 
 bool DmxSerialTFTP::FileClose() {
-	DEBUG_ENTRY
+	DEBUG_ENTRY();
 
-	if (m_pFile != nullptr) {
-		fclose(m_pFile);
-		m_pFile = nullptr;
+	if (file_ != nullptr) {
+		fclose(file_);
+		file_ = nullptr;
 	}
 
-	DEBUG_EXIT
+	DEBUG_EXIT();
 	return true;
 }
 
 size_t DmxSerialTFTP::FileRead(void *pBuffer, size_t nCount, [[maybe_unused]] unsigned nBlockNumber) {
-	return fread(pBuffer, 1, nCount, m_pFile);
+	return fread(pBuffer, 1, nCount, file_);
 }
 
 size_t DmxSerialTFTP::FileWrite(const void *pBuffer, size_t nCount, [[maybe_unused]] unsigned nBlockNumber) {
-	return fwrite(pBuffer, 1, nCount, m_pFile);
+	return fwrite(pBuffer, 1, nCount, file_);
 }

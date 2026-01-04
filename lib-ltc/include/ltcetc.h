@@ -2,7 +2,7 @@
  * @file ltcetc.h
  *
  */
-/* Copyright (C) 2022-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2022-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,136 +27,190 @@
 #define LTCETC_H_
 
 #include <cstdint>
+#include <cstring>
 #include <cassert>
 
+#include "common/utils/utils_enum.h"
 #include "midi.h"
-#include "network.h"
+#include "net/ip4_address.h"
 
-#include "debug.h"
-
-namespace ltcetc {
-enum class UdpTerminator {
-	NONE, CR, LF, CRLF, UNDEFINED
-};
-UdpTerminator get_udp_terminator(const char *pString);
-const char* get_udp_terminator(const UdpTerminator updTerminator);
-}  // namespace ltcetc
-
-class LtcEtcHandler {
-public:
-	virtual ~LtcEtcHandler() = default;
-
-	virtual void Handler(const midi::Timecode *pTimeCode)=0;
+namespace ltcetc
+{
+enum class UdpTerminator : uint8_t
+{
+    kNone,
+    kCr,
+    kLf,
+    kCrlf,
+    kUndefined
 };
 
-class LtcEtc {
-public:
-	LtcEtc() {
-		assert(s_pThis == nullptr);
-		s_pThis = this;
-	}
+inline constexpr uint32_t kMaxNameLength = 5;
+inline constexpr const char kUdpTerminator[static_cast<uint32_t>(ltcetc::UdpTerminator::kUndefined)][kMaxNameLength] = {"None", "CR", "LF", "CRLF"};
 
-	void SetDestinationIp(const uint32_t nDestinationIp) {
-		if ((net::is_private_ip(nDestinationIp) || net::is_multicast_ip(nDestinationIp))) {
-			m_Config.nDestinationIp = nDestinationIp;
-		} else {
-			m_Config.nDestinationIp =  0;
-		}
-	}
+[[nodiscard]] inline constexpr const char* GetUdpTerminator(UdpTerminator upd_terminator)
+{
+    return upd_terminator < UdpTerminator::kUndefined ? kUdpTerminator[static_cast<uint32_t>(upd_terminator)] : "UNDEFINED";
+}
 
-	void SetDestinationPort(const uint16_t nDestinationPort) {
-		if (nDestinationPort > 1023) {
-			m_Config.nDestinationPort = nDestinationPort;
-		} else {
-			m_Config.nDestinationPort = 0;
-		}
-	}
+inline UdpTerminator GetUdpTerminator(const char* string)
+{
+    {
+        assert(string != nullptr);
+        uint8_t index = 0;
 
-	void SetSourceMulticastIp(const uint32_t nSourceMulticastIp) {
-		if (net::is_multicast_ip(nSourceMulticastIp)) {
-			m_Config.nSourceMulticastIp = nSourceMulticastIp;
-		} else {
-			m_Config.nSourceMulticastIp =  0;
-		}
-	}
+        for (const char(&module)[kMaxNameLength] : kUdpTerminator)
+        {
+            if (strcasecmp(string, module) == 0)
+            {
+                return common::FromValue<UdpTerminator>(index);
+            }
+            ++index;
+        }
 
-	void SetSourcePort(const uint16_t nSourcePort) {
-		if (nSourcePort > 1023) {
-			m_Config.nSourcePort = nSourcePort;
-		} else {
-			m_Config.nSourcePort = 0;
-		}
-	}
+        return UdpTerminator::kUndefined;
+    }
+}
+} // namespace ltcetc
 
-	void SetUdpTerminator(const ltcetc::UdpTerminator terminator) {
-		if (terminator < ltcetc::UdpTerminator::UNDEFINED) {
-			m_Config.terminator = terminator;
-		}
-	}
+class LtcEtcHandler
+{
+   public:
+    virtual ~LtcEtcHandler() = default;
 
-	void SetHandler(LtcEtcHandler *pLtcEtcHandler) {
-		s_pLtcEtcHandler = pLtcEtcHandler;
-	}
+    virtual void Handler(const midi::Timecode* timecode) = 0;
+};
 
-	void Start();
+class LtcEtc
+{
+   public:
+    LtcEtc()
+    {
+        assert(s_this == nullptr);
+        s_this = this;
+    }
 
-	void Send(const midi::Timecode *pTimeCode);
+    void SetDestinationIp(uint32_t destination_ip)
+    {
+        if ((net::is_private_ip(destination_ip) || net::is_multicast_ip(destination_ip)))
+        {
+            config_.destination_ip = destination_ip;
+        }
+        else
+        {
+            config_.destination_ip = 0;
+        }
+    }
 
-	void Input(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort);
+    uint32_t GetDestinationIp() const { return config_.destination_ip; }
+
+    void SetDestinationPort(uint16_t destination_port)
+    {
+        if (destination_port > 1023)
+        {
+            config_.destination_port = destination_port;
+        }
+        else
+        {
+            config_.destination_port = 0;
+        }
+    }
+
+    uint16_t GetDestinationPort() const { return config_.destination_port; }
+
+    void SetSourceMulticastIp(uint32_t source_multicast_ip)
+    {
+        if (net::is_multicast_ip(source_multicast_ip))
+        {
+            config_.source_multicast_ip = source_multicast_ip;
+        }
+        else
+        {
+            config_.source_multicast_ip = 0;
+        }
+    }
+
+    uint32_t GetSourceMulticastIp() const { return config_.source_multicast_ip; }
+
+    void SetSourcePort(uint16_t source_port)
+    {
+        if (source_port > 1023)
+        {
+            config_.source_port = source_port;
+        }
+        else
+        {
+            config_.source_port = 0;
+        }
+    }
+
+    uint16_t GetSourcePort() const { return config_.source_port; }
+
+    void SetUdpTerminator(ltcetc::UdpTerminator terminator)
+    {
+        if (terminator < ltcetc::UdpTerminator::kUndefined)
+        {
+            config_.terminator = terminator;
+        }
+    }
+
+    ltcetc::UdpTerminator GetUdpTerminator() const { return config_.terminator; }
+
+    void SetHandler(LtcEtcHandler* handler) { handler_ = handler; }
+
+    void Start();
+
+    void Send(const midi::Timecode* timecode);
+
+    void Input(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port);
 
 	void Print();
 
-	static LtcEtc *Get() {
-		return s_pThis;
-	}
+    static LtcEtc* Get() { return s_this; }
 
-private:
-	void ParseTimeCode();
+   private:
+    void ParseTimeCode();
 
-	/**
-	 * @brief Static callback function for receiving UDP packets.
-	 *
-	 * @param pBuffer Pointer to the packet buffer.
-	 * @param nSize Size of the packet buffer.
-	 * @param nFromIp IP address of the sender.
-	 * @param nFromPort Port number of the sender.
-	 */
-	void static StaticCallbackFunction(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
-		s_pThis->Input(pBuffer, nSize, nFromIp, nFromPort);
-	}
+    void static StaticCallbackFunction(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port)
+    {
+        s_this->Input(buffer, size, from_ip, from_port);
+    }
 
-private:
-	const char *m_pUdpBuffer { nullptr };
+   private:
+    const char* udp_buffer_{nullptr};
 
-	struct Config {
-		uint32_t nDestinationIp;
-		uint32_t nSourceMulticastIp;
-		uint16_t nDestinationPort;
-		uint16_t nSourcePort;
-		ltcetc::UdpTerminator terminator;
-	};
+    struct Config
+    {
+        uint32_t destination_ip;
+        uint32_t source_multicast_ip;
+        uint16_t destination_port;
+        uint16_t source_port;
+        ltcetc::UdpTerminator terminator;
+    };
 
-	Config m_Config = { 0, 0, 0, 0, ltcetc::UdpTerminator::NONE };
+    Config config_ = {0, 0, 0, 0, ltcetc::UdpTerminator::kNone};
 
-	struct Handle {
-		int Destination;
-		int Source;
-	};
+    struct Handle
+    {
+        int destination;
+        int source;
+    };
 
-	Handle m_Handle { -1, -1 };
+    Handle handle_{-1, -1};
 
-	LtcEtcHandler *s_pLtcEtcHandler { nullptr };
+    LtcEtcHandler* handler_{nullptr};
 
-	struct Udp {
-		static constexpr char PREFIX[] = { 'M', 'I', 'D', 'I', ' ' };
-		static constexpr char HEADER[] = { 'F', '0', ' ', '7', 'F', ' ', '7', 'F', ' ', '0', '1', ' ', '0', '1', ' ' };
-		static constexpr char TIMECODE[] = { 'H', 'H', ' ', 'M', 'M', ' ', 'S', 'S', ' ', 'F', 'F', ' ' };
-		static constexpr char END[] = { 'F', '7' };
-		static constexpr auto MIN_MSG_LENGTH = sizeof(PREFIX) + sizeof(HEADER) + sizeof(TIMECODE) + sizeof(END);
-	};
+    struct Udp
+    {
+        static constexpr char kPrefix[] = {'M', 'I', 'D', 'I', ' '};
+        static constexpr char kHeader[] = {'F', '0', ' ', '7', 'F', ' ', '7', 'F', ' ', '0', '1', ' ', '0', '1', ' '};
+        static constexpr char kTimecode[] = {'H', 'H', ' ', 'M', 'M', ' ', 'S', 'S', ' ', 'F', 'F', ' '};
+        static constexpr char kEnd[] = {'F', '7'};
+        static constexpr auto kMinMsgLength = sizeof(kPrefix) + sizeof(kHeader) + sizeof(kTimecode) + sizeof(kEnd);
+    };
 
-	static inline char s_SendBuffer[Udp::MIN_MSG_LENGTH + 2];
-	static inline LtcEtc *s_pThis;
+    static inline char s_sendbuffer[Udp::kMinMsgLength + 2];
+    static inline LtcEtc* s_this;
 };
 
-#endif /* LTCETC_H_ */
+#endif // LTCETC_H_

@@ -2,7 +2,7 @@
  * @file pca9685pwmled.h
  *
  */
-/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,38 +30,48 @@
 
 #include "pca9685.h"
 
-
-namespace pca9685::pwmled {
-static constexpr uint32_t DEFAULT_FREQUENCY = 120;
+namespace pca9685::pwmled
+{
+inline constexpr uint32_t kDefaultFrequency = 120;
 } // namespace pca9685::pwmled
 
+class PCA9685PWMLed : public PCA9685
+{
+   public:
+    explicit PCA9685PWMLed(uint8_t address) : PCA9685(address) { SetFrequency(pca9685::pwmled::kDefaultFrequency); }
 
-class PCA9685PWMLed: public PCA9685 {
-public:
-	PCA9685PWMLed(const uint8_t nAddress): PCA9685(nAddress) {
-		SetFrequency(pca9685::pwmled::DEFAULT_FREQUENCY);
-	}
+    void Set(uint32_t channel, uint16_t data)
+    {
+        if (data >= 0xFFF)
+        {
+            SetFullOn(channel, true);
+        }
+        else if (data == 0)
+        {
+            SetFullOff(channel, true);
+        }
+        else
+        {
+            Write(channel, data);
+        }
+    }
 
-	void Set(const uint32_t nChannel, const uint16_t nData) {
-		if (nData >= 0xFFF) {
-			SetFullOn(nChannel, true);
-		} else if (nData == 0) {
-			SetFullOff(nChannel, true);
-		} else {
-			Write(nChannel, nData);
-		}
-	}
-
-	void Set(const uint32_t nChannel, const uint8_t nData) {
-		if (nData == 0xFF) {
-			SetFullOn(nChannel, true);
-		} else if (nData == 0) {
-			SetFullOff(nChannel, true);
-		} else {
-			const auto nValue = static_cast<uint16_t>((nData << 4) | (nData >> 4));
-			Write(nChannel, nValue);
-		}
-	}
+    void Set(uint32_t channel, uint8_t data)
+    {
+        if (data == 0xFF)
+        {
+            SetFullOn(channel, true);
+        }
+        else if (data == 0)
+        {
+            SetFullOff(channel, true);
+        }
+        else
+        {
+            const auto kValue = static_cast<uint16_t>((data << 4) | (data >> 4));
+            Write(channel, kValue);
+        }
+    }
 };
 
-#endif /* PCA9685PWMLED_H_ */
+#endif  // PCA9685PWMLED_H_

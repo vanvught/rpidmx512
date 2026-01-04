@@ -48,7 +48,7 @@
 #include "bcm2835_gpio.h"
 #include "bcm2835_vc.h"
 
-#include "debug.h"
+ #include "firmware/debug/debug_debug.h"
 
 #if (GPIO_DMX_DATA_DIRECTION != RPI_V2_GPIO_P1_12)
 # error
@@ -75,7 +75,7 @@ typedef enum {
 
 using namespace dmx;
 
-static PortDirection s_nPortDirection = dmx::PortDirection::INP;
+static PortDirection s_nPortDirection = dmx::PortDirection::kInput;
 
 // DMX
 
@@ -86,11 +86,11 @@ static uint8_t s_DmxDataPrevious[buffer::SIZE] ALIGNED;
 static volatile _dmx_state sv_DmxReceiveState = IDLE;
 static volatile uint32_t sv_nDmxDataIndex;
 
-static uint32_t s_nDmxTransmitBreakTime { dmx::transmit::BREAK_TIME_MIN };
-static uint32_t s_nDmxTransmitMabTime { dmx::transmit::MAB_TIME_MIN };
-static uint32_t s_nDmxTransmitPeriod { dmx::transmit::PERIOD_DEFAULT };
+static uint32_t s_nDmxTransmitBreakTime { dmx::transmit::kBreakTimeMin };
+static uint32_t s_nDmxTransmitMabTime { dmx::transmit::kMabTimeMin };
+static uint32_t s_nDmxTransmitPeriod { dmx::transmit::kPeriodDefault };
 
-static uint32_t s_nDmxSendDataLength = (dmx::max::CHANNELS + 1);		///< SC + UNIVERSE SIZE
+static uint32_t s_nDmxSendDataLength = (dmx::kChannelsMax + 1);		///< SC + UNIVERSE SIZE
 static volatile uint32_t sv_nFiqMicrosCurrent;
 static volatile uint32_t sv_nFiqMicrosPrevious;
 static volatile bool sv_isDmxPreviousBreak = false;
@@ -129,8 +129,8 @@ static void irq_timer1_dmx_receive(uint32_t clo) {
 			s_DmxData[sv_nDmxDataBufferIndexHead].Statistics.nSlotsInPacket = sv_nDmxDataIndex - 1;
 			sv_nDmxDataBufferIndexHead = (sv_nDmxDataBufferIndexHead + 1) & buffer::INDEX_MASK;
 #ifdef LOGIC_ANALYZER
-			bcm2835_gpio_clr(GPIO_ANALYZER_CH3);	// DMX DATA
-			bcm2835_gpio_set(GPIO_ANALYZER_CH4);	// IDLE
+			bcm2835_GpioClr(GPIO_ANALYZER_CH3);	// DMX DATA
+			bcm2835_GpioSet(GPIO_ANALYZER_CH4);	// IDLE
 #endif
 		} else {
 			BCM2835_ST->C1 = clo + s_DmxData[sv_nDmxDataBufferIndexHead].Statistics.nSlotToSlot;
@@ -261,9 +261,9 @@ static void fiq_dmx_in_handler(void) {
 			s_DmxData[sv_nDmxDataBufferIndexHead].Data[sv_nDmxDataIndex++] = data;
 		    BCM2835_ST->C1 = sv_nFiqMicrosCurrent + s_DmxData[0].Statistics.nSlotToSlot + (uint32_t)12;
 
-			if (sv_nDmxDataIndex > dmx::max::CHANNELS) {
+			if (sv_nDmxDataIndex > dmx::kChannelsMax) {
 				sv_DmxReceiveState = IDLE;
-				s_DmxData[sv_nDmxDataBufferIndexHead].Statistics.nSlotsInPacket = dmx::max::CHANNELS;
+				s_DmxData[sv_nDmxDataBufferIndexHead].Statistics.nSlotsInPacket = dmx::kChannelsMax;
 				sv_nDmxDataBufferIndexHead = (sv_nDmxDataBufferIndexHead + 1) & buffer::INDEX_MASK;
 				dmb();
 			}
@@ -365,46 +365,46 @@ static void __attribute__((interrupt("FIQ"))) fiq_dmx(void) {
 	dmb();
 
 #ifdef LOGIC_ANALYZER
-	bcm2835_gpio_set(GPIO_ANALYZER_CH1);
+	bcm2835_GpioSet(GPIO_ANALYZER_CH1);
 #endif
 
-	if (s_nPortDirection == PortDirection::INP) {
+	if (s_nPortDirection == PortDirection::kInput) {
 		fiq_dmx_in_handler();
 	} else {
 		fiq_dmx_out_handler();
 	}
 
 #ifdef LOGIC_ANALYZER
-	bcm2835_gpio_clr(GPIO_ANALYZER_CH1);
+	bcm2835_GpioClr(GPIO_ANALYZER_CH1);
 #endif
 
 	dmb();
 }
 
-Dmx *Dmx::s_pThis = nullptr;
+Dmx *Dmx::s_this = nullptr;
 
 Dmx::Dmx() {
-	assert(s_pThis == nullptr);
-	s_pThis = this;
+	assert(s_this == nullptr);
+	s_this = this;
 
-	bcm2835_gpio_fsel(m_nDataDirectionGpio, BCM2835_GPIO_FSEL_OUTP);
-	bcm2835_gpio_clr(m_nDataDirectionGpio);	// 0 = input, 1 = output
+	bcm2835_GpioFsel(m_nDataDirectionGpio, BCM2835_GPIO_FSEL_OUTP);
+	bcm2835_GpioClr(m_nDataDirectionGpio);	// 0 = input, 1 = output
 
 #ifdef LOGIC_ANALYZER
-	bcm2835_gpio_fsel(GPIO_ANALYZER_CH1, BCM2835_GPIO_FSEL_OUTP);
-	bcm2835_gpio_clr(GPIO_ANALYZER_CH1);
-	bcm2835_gpio_fsel(GPIO_ANALYZER_CH2, BCM2835_GPIO_FSEL_OUTP);
-	bcm2835_gpio_clr(GPIO_ANALYZER_CH2);
-	bcm2835_gpio_fsel(GPIO_ANALYZER_CH3, BCM2835_GPIO_FSEL_OUTP);
-	bcm2835_gpio_clr(GPIO_ANALYZER_CH3);
-	bcm2835_gpio_fsel(GPIO_ANALYZER_CH4, BCM2835_GPIO_FSEL_OUTP);
-	bcm2835_gpio_set(GPIO_ANALYZER_CH4);
-	bcm2835_gpio_fsel(GPIO_ANALYZER_CH5, BCM2835_GPIO_FSEL_OUTP);
-	bcm2835_gpio_clr(GPIO_ANALYZER_CH5);
-	bcm2835_gpio_fsel(GPIO_ANALYZER_CH6, BCM2835_GPIO_FSEL_OUTP);
-	bcm2835_gpio_clr(GPIO_ANALYZER_CH6);
-	bcm2835_gpio_fsel(GPIO_ANALYZER_CH7, BCM2835_GPIO_FSEL_OUTP);
-	bcm2835_gpio_clr(GPIO_ANALYZER_CH7);
+	bcm2835_GpioFsel(GPIO_ANALYZER_CH1, BCM2835_GPIO_FSEL_OUTP);
+	bcm2835_GpioClr(GPIO_ANALYZER_CH1);
+	bcm2835_GpioFsel(GPIO_ANALYZER_CH2, BCM2835_GPIO_FSEL_OUTP);
+	bcm2835_GpioClr(GPIO_ANALYZER_CH2);
+	bcm2835_GpioFsel(GPIO_ANALYZER_CH3, BCM2835_GPIO_FSEL_OUTP);
+	bcm2835_GpioClr(GPIO_ANALYZER_CH3);
+	bcm2835_GpioFsel(GPIO_ANALYZER_CH4, BCM2835_GPIO_FSEL_OUTP);
+	bcm2835_GpioSet(GPIO_ANALYZER_CH4);
+	bcm2835_GpioFsel(GPIO_ANALYZER_CH5, BCM2835_GPIO_FSEL_OUTP);
+	bcm2835_GpioClr(GPIO_ANALYZER_CH5);
+	bcm2835_GpioFsel(GPIO_ANALYZER_CH6, BCM2835_GPIO_FSEL_OUTP);
+	bcm2835_GpioClr(GPIO_ANALYZER_CH6);
+	bcm2835_GpioFsel(GPIO_ANALYZER_CH7, BCM2835_GPIO_FSEL_OUTP);
+	bcm2835_GpioClr(GPIO_ANALYZER_CH7);
 #endif
 
 	ClearData(0);
@@ -446,12 +446,12 @@ void Dmx::UartInit() {
 	dmb();
 
     // Set the GPI0 pins to the Alt 0 function to enable PL011 access on them
-    bcm2835_gpio_fsel(RPI_V2_GPIO_P1_08, BCM2835_GPIO_FSEL_ALT0);		// PL011_TXD
-    bcm2835_gpio_fsel(RPI_V2_GPIO_P1_10, BCM2835_GPIO_FSEL_ALT0);		// PL011_RXD
+    bcm2835_GpioFsel(RPI_V2_GPIO_P1_08, BCM2835_GPIO_FSEL_ALT0);		// PL011_TXD
+    bcm2835_GpioFsel(RPI_V2_GPIO_P1_10, BCM2835_GPIO_FSEL_ALT0);		// PL011_RXD
 
     // Disable pull-up/down
-    bcm2835_gpio_set_pud(RPI_V2_GPIO_P1_08, BCM2835_GPIO_PUD_OFF);
-    bcm2835_gpio_set_pud(RPI_V2_GPIO_P1_10, BCM2835_GPIO_PUD_OFF);
+    bcm2835_GpioSetPud(RPI_V2_GPIO_P1_08, BCM2835_GPIO_PUD_OFF);
+    bcm2835_GpioSetPud(RPI_V2_GPIO_P1_10, BCM2835_GPIO_PUD_OFF);
 
     dmb();
 
@@ -517,7 +517,7 @@ void Dmx::SetOutput([[maybe_unused]] const bool doForce) {
 
 void Dmx::StartData() {
 	switch (s_nPortDirection) {
-	case PortDirection::OUTP: {
+	case PortDirection::kOutput: {
 		sv_doDmxTransmitAlways = true;
 		sv_DmxTransmitState = IDLE;
 
@@ -537,7 +537,7 @@ void Dmx::StartData() {
 		isb();
 	}
 		break;
-	case PortDirection::INP:
+	case PortDirection::kInput:
 		sv_DmxReceiveState = IDLE;
 
 		irq_timer_set(IRQ_TIMER_1, irq_timer1_dmx_receive);
@@ -603,14 +603,14 @@ void Dmx::SetPortDirection([[maybe_unused]] uint32_t nPortIndex, PortDirection t
 		StopData();
 
 		switch (tPortDirection) {
-		case PortDirection::OUTP:
-			bcm2835_gpio_set(m_nDataDirectionGpio); // 0 = input, 1 = output
-			s_nPortDirection = PortDirection::OUTP;
+		case PortDirection::kOutput:
+			bcm2835_GpioSet(m_nDataDirectionGpio); // 0 = input, 1 = output
+			s_nPortDirection = PortDirection::kOutput;
 			break;
-		case PortDirection::INP:
+		case PortDirection::kInput:
 		default:
-			bcm2835_gpio_clr(m_nDataDirectionGpio); // 0 = input, 1 = output
-			s_nPortDirection = PortDirection::INP;
+			bcm2835_GpioClr(m_nDataDirectionGpio); // 0 = input, 1 = output
+			s_nPortDirection = PortDirection::kInput;
 			break;
 		}
 	} else if (!bEnableData) {
@@ -628,8 +628,8 @@ PortDirection Dmx::GetPortDirection([[maybe_unused]] uint32_t nPortIndex) {
 
 // DMX
 
-void Dmx::SetDmxBreakTime(uint32_t nBreakTime) {
-	s_nDmxTransmitBreakTime = std::max(transmit::BREAK_TIME_MIN, nBreakTime);
+void Dmx::SetDmxBreakTime(uint32_t break_time) {
+	s_nDmxTransmitBreakTime = std::max(transmit::kBreakTimeMin, break_time);
 
 	SetDmxPeriodTime(m_nDmxTransmitPeriodRequested);
 }
@@ -638,8 +638,8 @@ uint32_t Dmx::GetDmxBreakTime() {
 	return s_nDmxTransmitBreakTime;
 }
 
-void Dmx::SetDmxMabTime(uint32_t nMabTime) {
-	s_nDmxTransmitMabTime =std::max(transmit::MAB_TIME_MIN, nMabTime);
+void Dmx::SetDmxMabTime(uint32_t mab_time) {
+	s_nDmxTransmitMabTime =std::max(transmit::kMabTimeMin, mab_time);
 
 	SetDmxPeriodTime(m_nDmxTransmitPeriodRequested);
 }
@@ -655,12 +655,12 @@ void Dmx::SetDmxPeriodTime(uint32_t nPeriodTime) {
 
 	if (nPeriodTime != 0) {
 		if (nPeriodTime < package_length_us) {
-			s_nDmxTransmitPeriod = std::max(transmit::BREAK_TO_BREAK_TIME_MIN, package_length_us + 44);
+			s_nDmxTransmitPeriod = std::max(transmit::kBreakToBreakTimeMin, package_length_us + 44);
 		} else {
 			s_nDmxTransmitPeriod = nPeriodTime;
 		}
 	} else {
-		s_nDmxTransmitPeriod = std::max(transmit::BREAK_TO_BREAK_TIME_MIN, package_length_us + 44);
+		s_nDmxTransmitPeriod = std::max(transmit::kBreakToBreakTimeMin, package_length_us + 44);
 	}
 }
 
@@ -794,13 +794,13 @@ const uint8_t* Dmx::RdmReceiveTimeOut(uint32_t nPortIndex, uint32_t nTimeOut) {
 	assert(nPort == 0);
 
 	uint8_t *p = nullptr;
-	const auto nMicros = BCM2835_ST->CLO;
+	const auto micros = BCM2835_ST->CLO;
 
 	do {
 		if ((p = const_cast<uint8_t*>(RdmReceive(nPortIndex))) != nullptr) {
 			return reinterpret_cast<const uint8_t*>(p);
 		}
-	} while ((BCM2835_ST->CLO - nMicros) < nTimeOut);
+	} while ((BCM2835_ST->CLO - micros) < nTimeOut);
 
 	return p;
 }

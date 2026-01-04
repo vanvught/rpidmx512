@@ -2,7 +2,7 @@
  * @file showfile_filename.cpp
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,63 +29,72 @@
 #include <cctype>
 #include <cassert>
 
+#include "formats/showfileformatola.h"
 #include "showfile.h"
 
-#include "debug.h"
+ #include "firmware/debug/debug_debug.h"
 
-namespace showfile {
-bool filename_copyto(char *pShowFileName, const uint32_t nLength, const uint32_t nShowFileNumber) {
-	assert(nLength == showfile::FILE_NAME_LENGTH + 1);
+namespace showfile
+{
+bool FilenameCopyto(char* show_file_name, uint32_t length, int32_t show_file_number)
+{
+    assert(length == showfile::kFileNameLength + 1);
 
-	if (nShowFileNumber <= showfile::FILE_MAX_NUMBER) {
-		snprintf(pShowFileName, nLength, "show%.2u.txt", static_cast<unsigned int>(nShowFileNumber));
-		return true;
-	}
+    if (show_file_number <= showfile::kFileMaxNumber)
+    {
+        snprintf(show_file_name, length, "show%.2u.txt", static_cast<unsigned int>(show_file_number));
+        return true;
+    }
 
-	return false;
+    return false;
 }
 
-bool filename_check(const char *pShowFileName, uint32_t &nShowFileNumber) {
-	DEBUG_PRINTF("pShowFileName=[%s]", pShowFileName);
+bool FilenameCheck(const char* show_file_name, int32_t& show_file_number)
+{
+    DEBUG_PRINTF("show_file_name=[%s]", show_file_name);
 
-	if ((pShowFileName == nullptr) || (strlen(pShowFileName) != showfile::FILE_NAME_LENGTH)) {
-		DEBUG_EXIT
-		return false;
-	}
+    if ((show_file_name == nullptr) || (strlen(show_file_name) != showfile::kFileNameLength))
+    {
+        DEBUG_EXIT();
+        return false;
+    }
 
-	if (memcmp(pShowFileName, SHOWFILE_PREFIX, sizeof(SHOWFILE_PREFIX) - 1) != 0) {
-		DEBUG_EXIT
-		return false;
-	}
+    if (memcmp(show_file_name, SHOWFILE_PREFIX, sizeof(SHOWFILE_PREFIX) - 1) != 0)
+    {
+        DEBUG_EXIT();
+        return false;
+    }
 
-	if (memcmp(&pShowFileName[showfile::FILE_NAME_LENGTH - sizeof(SHOWFILE_SUFFIX) + 1], SHOWFILE_SUFFIX, sizeof(SHOWFILE_SUFFIX) - 1) != 0) {
-		DEBUG_EXIT
-		return false;
-	}
+    if (memcmp(&show_file_name[showfile::kFileNameLength - sizeof(SHOWFILE_SUFFIX) + 1], SHOWFILE_SUFFIX, sizeof(SHOWFILE_SUFFIX) - 1) != 0)
+    {
+        DEBUG_EXIT();
+        return false;
+    }
 
-	char cDigit = pShowFileName[sizeof(SHOWFILE_PREFIX) - 1];
-	DEBUG_PRINTF("cDigit=%c", cDigit);
+    char digit = show_file_name[sizeof(SHOWFILE_PREFIX) - 1];
+    DEBUG_PRINTF("digit=%c", digit);
 
-	if (!isdigit(cDigit)) {
-		DEBUG_EXIT
-		return false;
-	}
+    if (!isdigit(digit))
+    {
+        DEBUG_EXIT();
+        return false;
+    }
 
-	nShowFileNumber = static_cast<uint32_t>(10 * (cDigit - '0'));
+    show_file_number = 10 * (digit - '0');
 
-	cDigit = pShowFileName[sizeof(SHOWFILE_PREFIX)];
-	DEBUG_PRINTF("cDigit=%c", cDigit);
+    digit = show_file_name[sizeof(SHOWFILE_PREFIX)];
+    DEBUG_PRINTF("digit=%c", digit);
 
-	if (!isdigit(cDigit)) {
-		DEBUG_EXIT
-		return false;
-	}
+    if (!isdigit(digit))
+    {
+        DEBUG_EXIT();
+        return false;
+    }
 
-	nShowFileNumber += static_cast<uint32_t>(cDigit - '0');
+    show_file_number += digit - '0';
 
-	DEBUG_EXIT
-	return true;
+    DEBUG_EXIT();
+    return true;
 }
 
-
-}  // namespace showfile
+} // namespace showfile

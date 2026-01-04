@@ -1,4 +1,4 @@
-EXTRA_INCLUDES+=../lib-rdm/include ../lib-properties/include
+EXTRA_INCLUDES+=../lib-rdm/include 
 
 ifneq ($(MAKE_FLAGS),)
 	ifeq ($(findstring CONFIG_RDM_ENABLE_SUBDEVICES,$(MAKE_FLAGS)), CONFIG_RDM_ENABLE_SUBDEVICES)

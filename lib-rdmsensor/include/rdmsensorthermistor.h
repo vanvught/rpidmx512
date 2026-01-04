@@ -2,7 +2,7 @@
  * @file rdmsensorthermistor.h
  *
  */
-/* Copyright (C) 2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2023-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,109 +35,113 @@
 #include "mcp3424.h"
 #include "thermistor.h"
 
-#include "debug.h"
+ #include "firmware/debug/debug_debug.h"
 
-class RDMSensorThermistor final: public RDMSensor, MCP3424 {
-public:
-	RDMSensorThermistor(uint8_t nSensor, uint8_t nAddress = 0, uint8_t nChannel = 0, int32_t nCalibration = 0) :
-	RDMSensor(nSensor),
-	MCP3424(nAddress),
-	m_nCalibration(nCalibration),
-	m_nChannel(nChannel)
-	{
-		DEBUG_ENTRY
-		DEBUG_PRINTF("nSensor=%u, nAddress=0x%.2x, nChannel=%u, nCalibration=%d", nSensor, nAddress, nChannel, nCalibration);
+class RDMSensorThermistor final : public RDMSensor, MCP3424
+{
+   public:
+    explicit RDMSensorThermistor(uint8_t sensor, uint8_t address = 0, uint8_t channel = 0, int32_t calibration = 0)
+        : RDMSensor(sensor), MCP3424(address), calibration_(calibration), channel_(channel)
+    {
+        DEBUG_ENTRY();
+        DEBUG_PRINTF("nSensor=%u, address=0x%.2x, channel=%u, nCalibration=%d", sensor, address, channel, calibration);
 
-		SetType(E120_SENS_TEMPERATURE);
-		SetUnit(E120_UNITS_CENTIGRADE);
-		SetPrefix(E120_PREFIX_NONE);
-		SetRangeMin(rdm::sensor::safe_range_min(sensor::thermistor::RANGE_MIN));
-		SetRangeMax(rdm::sensor::safe_range_max(sensor::thermistor::RANGE_MAX));
-		SetNormalMin(rdm::sensor::safe_range_min(sensor::thermistor::RANGE_MIN));
-		SetNormalMax(rdm::sensor::safe_range_max(sensor::thermistor::RANGE_MAX));
-		SetDescription(sensor::thermistor::DESCRIPTION);
+        SetType(E120_SENS_TEMPERATURE);
+        SetUnit(E120_UNITS_CENTIGRADE);
+        SetPrefix(E120_PREFIX_NONE);
+        SetRangeMin(rdm::sensor::SafeRangeMin(sensor::thermistor::RANGE_MIN));
+        SetRangeMax(rdm::sensor::SafeRangeMax(sensor::thermistor::RANGE_MAX));
+        SetNormalMin(rdm::sensor::SafeRangeMin(sensor::thermistor::RANGE_MIN));
+        SetNormalMax(rdm::sensor::SafeRangeMax(sensor::thermistor::RANGE_MAX));
+        SetDescription(sensor::thermistor::DESCRIPTION);
 
-		DEBUG_EXIT
-	}
+        DEBUG_EXIT();
+    }
 
-	bool Initialize() override {
-		return MCP3424::IsConnected();
-	}
+    bool Initialize() override { return MCP3424::IsConnected(); }
 
-	bool Calibrate(float f) {
-		const auto iCalibrate = static_cast<int32_t>(f * 10);
-		uint32_t nResistor;
-		const auto iMeasure = static_cast<int32_t>(GetValue(nResistor) * 10);
+    bool Calibrate(float f)
+    {
+        const auto kCalibrate = static_cast<int32_t>(f * 10);
+        uint32_t resistor;
+        const auto kMeasure = static_cast<int32_t>(GetValue(resistor) * 10);
 
-		DEBUG_PRINTF("iCalibrate=%d, iMeasure=%d", iCalibrate, iMeasure);
+        DEBUG_PRINTF("kCalibrate=%d, kMeasure=%d", kCalibrate, kMeasure);
 
-		if (iCalibrate == iMeasure) {
-			return true;
-		}
+        if (kCalibrate == kMeasure)
+        {
+            return true;
+        }
 
-		int32_t Offset = 10;
+        int32_t offset = 10;
 
-		if (iCalibrate > iMeasure) {
-			Offset = -10;
-		}
+        if (kCalibrate > kMeasure)
+        {
+            offset = -10;
+        }
 
-		for (int32_t i = 1; i < 128; i++) {
-			m_nCalibration = i * Offset;
-			const auto iMeasure = static_cast<int32_t>(GetValue(nResistor) * 10);
-			DEBUG_PRINTF("iCalibrate=%d, iMeasure=%d, m_nOffset=%d, nResistor=%u", iCalibrate, iMeasure, m_nCalibration, nResistor);
-			if (iCalibrate == iMeasure) {
-				RDMSensorsStore::SaveCalibration(RDMSensor::GetSensor(), m_nCalibration);
-				return true;
-			}
-		}
+        for (int32_t i = 1; i < 128; i++)
+        {
+            calibration_ = i * offset;
+            const auto kMeasures = static_cast<int32_t>(GetValue(resistor) * 10);
+            DEBUG_PRINTF("kCalibrate=%d, kMeasures=%d, m_nCalibration=%d, resistor=%u", kCalibrate, kMeasures, calibration_, resistor);
+            if (kCalibrate == kMeasures)
+            {
+                rdmsensors_store::SaveCalibration(RDMSensor::GetSensor(), calibration_);
+                return true;
+            }
+        }
 
-		return false;
-	}
+        return false;
+    }
 
-	void ResetCalibration() {
-		m_nCalibration = 0;
-		RDMSensorsStore::SaveCalibration(RDMSensor::GetSensor(), m_nCalibration);
-	}
+    void ResetCalibration()
+    {
+        calibration_ = 0;
+        rdmsensors_store::SaveCalibration(RDMSensor::GetSensor(), calibration_);
+    }
 
-	int32_t GetCalibration() const {
-		return m_nCalibration;
-	}
+    int32_t GetCalibration() const { return calibration_; }
 
-	float GetValue(uint32_t &nResistor) {
-		double sum = 0;
-		for (uint32_t i = 0; i < 4; i++) {
-			const auto v = MCP3424::GetVoltage(m_nChannel);
-			sum += v;
-		}
-		const auto v = sum / 4;
-		const auto r = resistor(v);
-		const auto t = sensor::thermistor::temperature(r);
-		DEBUG_PRINTF("v=%1.3f, r=%u, t=%3.1f", v, r, t);
-		nResistor = r;
-		return t;
-	}
+    float GetValue(uint32_t& resistor)
+    {
+        double sum = 0;
+        for (uint32_t i = 0; i < 4; i++)
+        {
+            const auto kV = MCP3424::GetVoltage(channel_);
+            sum += kV;
+        }
+        const auto kV = sum / 4;
+        const auto kR = Resistor(kV);
+        const auto kT = sensor::thermistor::Temperature(kR);
+        DEBUG_PRINTF("v=%1.3f, r=%u, t=%3.1f", kV, kR, kT);
+        resistor = kR;
+        return kT;
+    }
 
-	int16_t GetValue() override {
-		uint32_t nResistor;
-		return static_cast<int16_t>(GetValue(nResistor));
-	}
+    int16_t GetValue() override
+    {
+        uint32_t resistor;
+        return static_cast<int16_t>(GetValue(resistor));
+    }
 
-private:
-	int32_t m_nCalibration;
-	uint8_t m_nChannel;
+   private:
+    int32_t calibration_;
+    uint8_t channel_;
 
-	/*
-	 * The R values are based on:
-	 * https://www.abelectronics.co.uk/p/69/adc-pi-raspberry-pi-analogue-to-digital-converter
-	 */
-	static constexpr int32_t R_GND = 6800;		// 6K8
-	static constexpr int32_t R_HIGH = 10000;	// 10K
+    /*
+     * The R values are based on:
+     * https://www.abelectronics.co.uk/p/69/adc-pi-raspberry-pi-analogue-to-digital-converter
+     */
+    static constexpr int32_t kRGnd = 6800;   // 6K8
+    static constexpr int32_t kRHigh = 10000; // 10K
 
-	uint32_t resistor(const double vin) {
-		const double d = (5 * R_GND) / vin;
-		const auto r = static_cast<int32_t>(d) - R_GND - R_HIGH + m_nCalibration;
-		return static_cast<uint32_t>(r);
-	}
+    uint32_t Resistor(double vin)
+    {
+        const double kD = (5 * kRGnd) / vin;
+        const auto kR = static_cast<int32_t>(kD) - kRGnd - kRHigh + calibration_;
+        return static_cast<uint32_t>(kR);
+    }
 };
 
-#endif /* RDMSENSORTHERMISTOR_H_ */
+#endif  // RDMSENSORTHERMISTOR_H_

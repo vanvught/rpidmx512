@@ -37,10 +37,10 @@
  * alternate function ALT0, which enables those pins for I2C interface.
  * Default the I2C speed to 100 kHz.
  */
-void bcm2835_i2c_begin(void) {
+void bcm2835_I2cBegin(void) {
 	/* BSC1 is on GPIO 2 & 3 */
-	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_03, BCM2835_GPIO_FSEL_ALT0);
-	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_05, BCM2835_GPIO_FSEL_ALT0);
+	bcm2835_GpioFsel(RPI_V2_GPIO_P1_03, BCM2835_GPIO_FSEL_ALT0);
+	bcm2835_GpioFsel(RPI_V2_GPIO_P1_05, BCM2835_GPIO_FSEL_ALT0);
 
 	BCM2835_BSC1->DIV = BCM2835_I2C_CLOCK_DIVIDER_2500; // Default the I2C speed to 100 kHz
 }
@@ -54,8 +54,8 @@ void bcm2835_i2c_begin(void) {
  */
 void bcm2835_i2c_end(void) {
 	/* BSC1 is on GPIO 2 & 3 */
-	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_03, BCM2835_GPIO_FSEL_INPT);
-	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_05, BCM2835_GPIO_FSEL_INPT);
+	bcm2835_GpioFsel(RPI_V2_GPIO_P1_03, BCM2835_GPIO_FSEL_INPT);
+	bcm2835_GpioFsel(RPI_V2_GPIO_P1_05, BCM2835_GPIO_FSEL_INPT);
 }
 
 /**
@@ -66,7 +66,7 @@ void bcm2835_i2c_end(void) {
  * @param len size of the buffer
  * @return ::BCM2835_I2C_REASON_OK if successful; BCM2835_I2C_REASON_ERROR_* otherwise. Reference \ref bcm2835I2CReasonCodes
  */
-uint8_t bcm2835_i2c_write(/*@null@*/ const char *buf, uint32_t len) {
+uint8_t bcm2835_I2cWrite(/*@null@*/ const char *buf, uint32_t len) {
 	uint32_t remaining = len;
 	uint32_t i = 0;
 	uint8_t reason = BCM2835_I2C_REASON_OK;
@@ -125,7 +125,7 @@ uint8_t bcm2835_i2c_write(/*@null@*/ const char *buf, uint32_t len) {
  * @param len size of the buffer
  * @return ::BCM2835_I2C_REASON_OK if successful; BCM2835_I2C_REASON_ERROR_* otherwise. Reference \ref bcm2835I2CReasonCodes
  */
-uint8_t bcm2835_i2c_read(char *buf, uint32_t len) {
+uint8_t bcm2835_I2cRead(char *buf, uint32_t len) {
 	uint32_t remaining = len;
 	uint8_t reason = BCM2835_I2C_REASON_OK;
 	uint8_t *p = (uint8_t *)buf;
@@ -175,7 +175,7 @@ uint8_t bcm2835_i2c_read(char *buf, uint32_t len) {
     return reason;
 }
 
-void bcm2835_i2c_set_baudrate(uint32_t baudrate) {
+void bcm2835_I2cSetBaudrate(uint32_t baudrate) {
 	uint32_t divider = ((uint32_t)BCM2835_CORE_CLK_HZ / baudrate);
 	bcm2835_i2c_setClockDivider((uint16_t) divider);
 }

@@ -23,17 +23,17 @@
  * THE SOFTWARE.
  */
 
-
 #ifndef NET_NET_H_
 #define NET_NET_H_
 
 #include "emac/phy.h"
-#include "net/netif.h"
+#include "net/ip4_address.h"
 
-namespace net {
-void netif_set(Link link, ip4_addr_t ipaddr, ip4_addr_t netmask, ip4_addr_t gw, bool bUseDhcp);
-void net_handle();
-void net_link_down();
-}  // namespace net
+namespace net
+{
+void Set(phy::Link link, ip4_addr_t ipaddr, ip4_addr_t netmask, ip4_addr_t gw, bool use_dhcp);
+void Handle();
+void LinkDown();
+} // namespace net
 
-#endif /* INCLUDE_NET_NET_H_ */
+#endif // NET_NET_H_

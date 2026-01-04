@@ -58,7 +58,7 @@ struct Packet {
 }__attribute__((packed));
 
 struct TimeStamp {
-	uint32_t nSeconds;
+	uint32_t seconds;
 	uint32_t nFraction;
 };
 

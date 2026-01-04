@@ -23,28 +23,30 @@
  * THE SOFTWARE.
  */
 
-#ifndef SPI_FLASH_H_
-#define SPI_FLASH_H_
+#ifndef SPI_SPI_FLASH_H_
+#define SPI_SPI_FLASH_H_
 
 #include <cstdint>
 
-namespace spi_flash {
-static constexpr uint32_t PAGE_SIZE   = 256;
-static constexpr uint32_t SECTOR_SIZE = 4096;
-}  // namespace spi_flash
+namespace spi::flash
+{
+inline constexpr uint32_t PAGE_SIZE = 256;
+inline constexpr uint32_t SECTOR_SIZE = 4096;
+} // namespace spi::flash
 
 bool spi_flash_probe();
 
-const char *spi_flash_get_name();
+const char* spi_flash_get_name();
 uint32_t spi_flash_get_size();
 
-inline uint32_t spi_flash_get_sector_size() {
-	return spi_flash::SECTOR_SIZE;
+inline uint32_t spi_flash_get_sector_size()
+{
+    return spi::flash::SECTOR_SIZE;
 }
 
-bool spi_flash_cmd_read_fast(uint32_t nOffset, uint32_t nLength, uint8_t *data);
-bool spi_flash_cmd_write_multi(uint32_t nOffset, uint32_t nLength, const uint8_t *buf);
-bool spi_flash_cmd_erase(uint32_t nOffset, uint32_t nLength);
+bool spi_flash_cmd_read_fast(uint32_t offset, uint32_t length, uint8_t* data);
+bool spi_flash_cmd_write_multi(uint32_t offset, uint32_t length, const uint8_t* buffer);
+bool spi_flash_cmd_erase(uint32_t offset, uint32_t length);
 bool spi_flash_cmd_write_status(uint8_t sr);
 
-#endif /* SPI_FLASH_H_ */
+#endif  // SPI_SPI_FLASH_H_

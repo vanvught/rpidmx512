@@ -25,91 +25,106 @@
 #include <cstdint>
 #include <cstring>
 #include <errno.h>
-#include <cassert>
 
 #include "dmxserial.h"
 #include "dmxserial_internal.h"
-
 #include "hal.h"
-#include "network.h"
 #include "net/protocol/udp.h"
+#include "net/udp.h"
+#include "firmware/debug/debug_dump.h"
 
-#include "debug.h"
+namespace cmd
+{
+inline constexpr char kRequestFiles[] = "?files#";
+inline constexpr char kGetTftp[] = "?tftp#";
+inline constexpr char kSetTftp[] = "!tftp#";
+inline constexpr char kRequestReload[] = "?reload##";
+inline constexpr char kRequestDelete[] = "!delete#";
+} // namespace cmd
 
-namespace cmd {
-	static constexpr char REQUEST_FILES[] = "?files#";
-	static constexpr char GET_TFTP[] = "?tftp#";
-	static constexpr char SET_TFTP[] = "!tftp#";
-	static constexpr char REQUEST_RELOAD[] = "?reload##";
-	static constexpr char REQUEST_DELETE[] = "!delete#";
-}
+namespace length
+{
+inline constexpr auto kRequestFiles = sizeof(cmd::kRequestFiles) - 1;
+inline constexpr auto kGetTftp = sizeof(cmd::kGetTftp) - 1;
+inline constexpr auto kSetTftp = sizeof(cmd::kSetTftp) - 1;
+inline constexpr auto kRequestReload = sizeof(cmd::kRequestReload) - 1;
+inline constexpr auto kRequestDelete = sizeof(cmd::kRequestDelete) - 1;
+} // namespace length
 
-namespace length {
-	static constexpr auto REQUEST_FILES = sizeof(cmd::REQUEST_FILES) - 1;
-	static constexpr auto GET_TFTP = sizeof(cmd::GET_TFTP) - 1;
-	static constexpr auto SET_TFTP = sizeof(cmd::SET_TFTP) - 1;
-	static constexpr auto REQUEST_RELOAD = sizeof(cmd::REQUEST_RELOAD) - 1;
-	static constexpr auto REQUEST_DELETE = sizeof(cmd::REQUEST_DELETE) - 1;
-}
+void DmxSerial::Input(const uint8_t* p, uint32_t size, uint32_t from_ip, [[maybe_unused]] uint16_t from_port)
+{
+    if (__builtin_expect((size < 6), 0))
+    {
+        return;
+    }
 
-void DmxSerial::Input(const uint8_t *p, uint32_t nSize, uint32_t nFromIp, [[maybe_unused]] uint16_t nFromPort) {
-	if (__builtin_expect((nSize < 6), 0)) {
-		return;
-	}
+    auto* buffer = const_cast<uint8_t*>(p);
 
-	auto *pBuffer = const_cast<uint8_t *>(p);
-
-	if (pBuffer[nSize - 1] == '\n') {
-		nSize--;
-	}
+    if (buffer[size - 1] == '\n')
+    {
+        size--;
+    }
 
 #ifndef NDEBUG
-	debug_dump(pBuffer, nSize);
+    debug::Dump(buffer, size);
 #endif
 
-	if (memcmp(pBuffer, cmd::REQUEST_FILES, length::REQUEST_FILES) == 0) {
-		for (uint32_t i = 0; i < m_nFilesCount; i++) {
-			const auto nLength = snprintf(reinterpret_cast<char *>(pBuffer), UDP_DATA_SIZE - 1, DMXSERIAL_FILE_PREFIX "%.3d" DMXSERIAL_FILE_SUFFIX "\n", m_aFileIndex[i]);
-			Network::Get()->SendTo(m_nHandle, pBuffer, nLength, nFromIp, UDP::PORT);
-		}
-		return;
-	}
+    if (memcmp(buffer, cmd::kRequestFiles, length::kRequestFiles) == 0)
+    {
+        for (uint32_t i = 0; i < m_nFilesCount; i++)
+        {
+            const auto kLength =
+                snprintf(reinterpret_cast<char*>(buffer), UDP_DATA_SIZE - 1, DMXSERIAL_FILE_PREFIX "%.3d" DMXSERIAL_FILE_SUFFIX "\n", m_aFileIndex[i]);
+            net::udp::Send(handle_, buffer, kLength, from_ip, UDP::PORT);
+        }
+        return;
+    }
 
-	if ((nSize >= length::GET_TFTP) && (memcmp(pBuffer, cmd::GET_TFTP, length::GET_TFTP) == 0)) {
-		if (nSize == length::GET_TFTP) {
-			const auto nLength = snprintf(reinterpret_cast<char *>(pBuffer), UDP_DATA_SIZE - 1, "tftp:%s\n", m_bEnableTFTP ? "On" : "Off");
-			Network::Get()->SendTo(m_nHandle, pBuffer,nLength, nFromIp, UDP::PORT);
-			return;
-		}
+    if ((size >= length::kGetTftp) && (memcmp(buffer, cmd::kGetTftp, length::kGetTftp) == 0))
+    {
+        if (size == length::kGetTftp)
+        {
+            const auto kLength = snprintf(reinterpret_cast<char*>(buffer), UDP_DATA_SIZE - 1, "tftp:%s\n", enable_tftp_ ? "On" : "Off");
+            net::udp::Send(handle_, buffer, kLength, from_ip, UDP::PORT);
+            return;
+        }
 
-		if (nSize == length::GET_TFTP + 3) {
-			if (memcmp(&pBuffer[length::GET_TFTP], "bin", 3) == 0) {
-				Network::Get()->SendTo(m_nHandle, &m_bEnableTFTP, sizeof(bool) , nFromIp, UDP::PORT);
-				return;
-			}
-		}
-	}
+        if (size == length::kGetTftp + 3)
+        {
+            if (memcmp(&buffer[length::kGetTftp], "bin", 3) == 0)
+            {
+                net::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&enable_tftp_), sizeof(bool), from_ip, UDP::PORT);
+                return;
+            }
+        }
+    }
 
-	if ((nSize == length::SET_TFTP + 1) && (memcmp(pBuffer, cmd::SET_TFTP, length::SET_TFTP) == 0)) {
-		EnableTFTP(pBuffer[length::SET_TFTP] != '0');
-		return;
-	}
+    if ((size == length::kSetTftp + 1) && (memcmp(buffer, cmd::kSetTftp, length::kSetTftp) == 0))
+    {
+        EnableTFTP(buffer[length::kSetTftp] != '0');
+        return;
+    }
 
-	if (memcmp(pBuffer, cmd::REQUEST_RELOAD, length::REQUEST_RELOAD) == 0) {
-		hal::reboot();
-		return;
-	}
+    if (memcmp(buffer, cmd::kRequestReload, length::kRequestReload) == 0)
+    {
+        hal::Reboot();
+        return;
+    }
 
-	if ((nSize == length::REQUEST_DELETE + 3) && (memcmp(pBuffer, cmd::REQUEST_DELETE, length::REQUEST_DELETE) == 0)) {
-		pBuffer[length::REQUEST_DELETE + 3] = '\0';
+    if ((size == length::kRequestDelete + 3) && (memcmp(buffer, cmd::kRequestDelete, length::kRequestDelete) == 0))
+    {
+        buffer[length::kRequestDelete + 3] = '\0';
 
-		if (DmxSerial::Get()->DeleteFile(reinterpret_cast<char *>(&pBuffer[length::REQUEST_DELETE]))) {
-			Network::Get()->SendTo(m_nHandle, "Success\n",  8, nFromIp, UDP::PORT);
-		} else {
-			const auto *pError = strerror(errno);
-			const auto nLength = snprintf(reinterpret_cast<char *>(pBuffer), UDP_DATA_SIZE - 1, "%s\n", pError);
-			Network::Get()->SendTo(m_nHandle, pBuffer, nLength, nFromIp, UDP::PORT);
-		}
-		return;
-	}
+        if (DmxSerial::Get()->DeleteFile(reinterpret_cast<char*>(&buffer[length::kRequestDelete])))
+        {
+            net::udp::Send(handle_, reinterpret_cast<const uint8_t*>("Success\n"), 8, from_ip, UDP::PORT);
+        }
+        else	
+        {
+            const auto* error = strerror(errno);
+            const auto kLength = snprintf(reinterpret_cast<char*>(buffer), UDP_DATA_SIZE - 1, "%s\n", error);
+            net::udp::Send(handle_, buffer, kLength, from_ip, UDP::PORT);
+        }
+        return;
+    }
 }

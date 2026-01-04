@@ -2,7 +2,7 @@
  * @file artnetconst.h
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,9 +31,9 @@
 #include "artnet.h"
 
 struct ArtNetConst {
-	static const uint8_t VERSION[];
-	static const uint8_t ESTA_ID[artnet::ESTA_SIZE];
-	static const uint8_t OEM_ID[];
+	static const uint8_t kVersion[];
+	static const uint8_t kEstaId[artnet::kEstaSize];
+	static const uint8_t kOemId[];
 };
 
-#endif /* ARTNETCONST_H_ */
+#endif  // ARTNETCONST_H_

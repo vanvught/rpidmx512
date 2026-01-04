@@ -2,7 +2,7 @@
  * @file widgetconfiguration.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,64 +24,51 @@
  */
 
 #include <cstdint>
-#include <cassert>
 
 #include "widgetconfiguration.h"
 #include "widget.h"
-
 #include "dmx.h"
 
-#include "debug.h"
+void WidgetConfiguration::SetRefreshRate(uint8_t refresh_rate)
+{
+    s_refresh_rate = refresh_rate;
 
-uint8_t WidgetConfiguration::s_aDeviceTypeId[DEVICE_TYPE_ID_LENGTH] { 1, 0 };
-uint8_t WidgetConfiguration::s_nFirmwareLsb { WIDGET_DEFAULT_FIRMWARE_LSB };	///< Firmware version LSB. Valid range is 0 to 255.
-uint8_t WidgetConfiguration::s_nFirmwareMsb { FIRMWARE_RDM };					///< Firmware version MSB. Valid range is 0 to 255.
-uint8_t WidgetConfiguration::s_nBreakTime { WIDGET_DEFAULT_BREAK_TIME };		///< DMX output break time in 10.67 microsecond units. Valid range is 9 to 127.
-uint8_t WidgetConfiguration::s_nMabTime { WIDGET_DEFAULT_MAB_TIME };			///< DMX output Mark After Break time in 10.67 microsecond units. Valid range is 1 to 127.
-uint8_t WidgetConfiguration::s_nRefreshRate { WIDGET_DEFAULT_REFRESH_RATE };	///< DMX output rate in packets per second. Valid range is 1 to 40.
+    uint32_t period = 0;
 
-using namespace widget;
+    if (refresh_rate != 0)
+    {
+        period = (1000000U / refresh_rate);
+    }
 
-void WidgetConfiguration::SetRefreshRate(uint8_t nRefreshRate) {
-	s_nRefreshRate = nRefreshRate;
-
-	uint32_t nPeriod = 0;
-
-	if (nRefreshRate != 0) {
-		nPeriod = (1000000U / nRefreshRate);
-	}
-
-	Dmx::Get()->SetDmxPeriodTime(nPeriod);
+    Dmx::Get()->SetDmxPeriodTime(period);
 }
 
-void WidgetConfiguration::SetBreakTime(uint8_t nBreakTime) {
-	s_nBreakTime = nBreakTime;
-	Dmx::Get()->SetDmxBreakTime(static_cast<uint32_t>(nBreakTime * 10.67f));
+void WidgetConfiguration::SetBreakTime(uint8_t break_time)
+{
+    s_break_time = break_time;
+    Dmx::Get()->SetDmxBreakTime(static_cast<uint32_t>(break_time * 10.67f));
 }
 
-void WidgetConfiguration::SetMabTime(uint8_t nMabTime) {
-	s_nMabTime = nMabTime;
-	Dmx::Get()->SetDmxMabTime(static_cast<uint32_t>(nMabTime * 10.67f));
+void WidgetConfiguration::SetMabTime(uint8_t mab_time)
+{
+    s_mab_time = mab_time;
+    Dmx::Get()->SetDmxMabTime(static_cast<uint32_t>(mab_time * 10.67f));
 }
 
-void WidgetConfiguration::SetMode(Mode tMode) {
-	DEBUG_PRINTF("%d", static_cast<int>(tMode));
-
-	if (tMode == Mode::DMX_RDM) {
-		s_nFirmwareLsb = FIRMWARE_RDM;
-	} else {
-		s_nFirmwareLsb = static_cast<uint8_t>(tMode);
-	}
-
-	Widget::Get()->SetMode(tMode);
+void WidgetConfiguration::SetMode(widget::Mode mode)
+{
+    s_firmware_lsb = static_cast<uint8_t>(mode);
+    Widget::Get()->SetMode(mode);
 }
 
-void WidgetConfiguration::SetThrottle(uint8_t nThrottle) {
-	uint32_t nPeriod = 0;
+void WidgetConfiguration::SetThrottle(uint8_t throttle)
+{
+    uint32_t period = 0;
 
-	if (nThrottle != 0) {
-		nPeriod = (1000U / nThrottle);
-	}
+    if (throttle != 0)
+    {
+        period = (1000U / throttle);
+    }
 
-	Widget::Get()->SetReceivedDmxPacketPeriodMillis(nPeriod);
+    Widget::Get()->SetReceivedDmxPacketPeriodMillis(period);
 }

@@ -27,99 +27,86 @@
 #include <cstdint>
 
 #include "display.h"
-#include "network.h"
 #include "net/protocol/dhcp.h"
 
-#if !defined (CONFIG_DISPLAY_LINE_IP)
+#if !defined(CONFIG_DISPLAY_LINE_IP)
 static constexpr uint32_t LINE_IP = 2;
 #else
 static constexpr uint32_t LINE_IP = CONFIG_DISPLAY_LINE_IP;
 #endif
 
-void __attribute__((weak)) network_display_emac_config() {
-#if !defined (NO_EMAC)
-	Display::Get()->ClearLine(LINE_IP);
-	Display::Get()->PutString("Ethernet config");
+namespace net::emac::display
+{
+void __attribute__((weak)) Config()
+{
+#if !defined(NO_EMAC)
+    Display::Get()->ClearLine(LINE_IP);
+    Display::Get()->PutString("Ethernet config");
 #endif
 }
 
-void __attribute__((weak)) network_display_emac_start() {
-#if !defined (NO_EMAC)
-	Display::Get()->ClearLine(LINE_IP);
-	Display::Get()->PutString("Ethernet start");
+void __attribute__((weak)) Start()
+{
+#if !defined(NO_EMAC)
+    Display::Get()->ClearLine(LINE_IP);
+    Display::Get()->PutString("Ethernet start");
 #endif
 }
 
-void __attribute__((weak)) network_display_emac_status([[maybe_unused]] const bool isLinkUp) {
-#if !defined (NO_EMAC)
-	Display::Get()->ClearLine(LINE_IP);
-	Display::Get()->PutString("Ethernet Link ");
-	if (isLinkUp) {
-		Display::Get()->PutString("UP");
-	} else {
-		Display::Get()->PutString("DOWN");
-	}
+void __attribute__((weak)) Status([[maybe_unused]] bool isLinkUp)
+{
+#if !defined(NO_EMAC)
+    Display::Get()->ClearLine(LINE_IP);
+    Display::Get()->PutString("Ethernet Link ");
+    if (isLinkUp)
+    {
+        Display::Get()->PutString("UP");
+    }
+    else
+    {
+        Display::Get()->PutString("DOWN");
+    }
+#endif
+}
+} // namespace net::emac::display
+
+namespace network::display
+{
+void __attribute__((weak)) Hostname() {}
+
+void __attribute__((weak)) EmacShutdown()
+{
+#if !defined(NO_EMAC)
+    Display::Get()->ClearLine(LINE_IP);
+    Display::Get()->PutString("Ethernet shutdown");
 #endif
 }
 
-void __attribute__((weak)) network_display_ip() {
-#if !defined (NO_EMAC)
-	Display::Get()->ClearLine(LINE_IP);
-	Display::Get()->Printf(LINE_IP, "" IPSTR "/%d %c", IP2STR(Network::Get()->GetIp()), Network::Get()->GetNetmaskCIDR(), Network::Get()->GetAddressingMode());
+void __attribute__((weak)) DhcpStatus([[maybe_unused]] net::dhcp::State state)
+{
+#if !defined(NO_EMAC)
+    Display::Get()->ClearLine(LINE_IP);
+
+    switch (state)
+    {
+        case net::dhcp::State::STATE_OFF:
+            break;
+        case net::dhcp::State::STATE_RENEWING:
+            Display::Get()->PutString("DHCP renewing");
+            break;
+        case net::dhcp::State::STATE_BOUND:
+            Display::Get()->PutString("Got IP");
+            break;
+        case net::dhcp::State::STATE_REQUESTING:
+            Display::Get()->PutString("DHCP requesting");
+            break;
+        case net::dhcp::State::STATE_BACKING_OFF:
+            Display::Get()->PutString("DHCP Error");
+            break;
+        default:
+            break;
+    }
 #endif
 }
-
-void __attribute__((weak)) network_display_netmask() {
-#if !defined (NO_EMAC)
-	network_display_ip();
-#endif
-}
-
-void __attribute__((weak)) network_display_gateway() {}
-
-void __attribute__((weak)) network_display_netif_up() {
-#if !defined (NO_EMAC)
-	network_display_emac_status(true);
-#endif
-}
-
-void __attribute__((weak)) network_display_netif_down() {
-#if !defined (NO_EMAC)
-	network_display_emac_status(false);
-#endif
-}
-
-void __attribute__((weak)) network_display_hostname() {}
-
-void __attribute__((weak)) network_display_emac_shutdown() {
-#if !defined (NO_EMAC)
-	Display::Get()->ClearLine(LINE_IP);
-	Display::Get()->PutString("Ethernet shutdown");
-#endif
-}
-
-void __attribute__((weak)) network_display_dhcp_status([[maybe_unused]] net::dhcp::State state) {
-#if !defined (NO_EMAC)
-	Display::Get()->ClearLine(LINE_IP);
-
-	switch (state) {
-	case net::dhcp::State::STATE_OFF:
-		break;
-	case net::dhcp::State::STATE_RENEWING:
-		Display::Get()->PutString("DHCP renewing");
-		break;
-	case net::dhcp::State::STATE_BOUND:
-		Display::Get()->PutString("Got IP");
-		break;
-	case net::dhcp::State::STATE_REQUESTING:
-		Display::Get()->PutString("DHCP requesting");
-		break;
-	case net::dhcp::State::STATE_BACKING_OFF:
-		Display::Get()->PutString("DHCP Error");
-		break;
-	default:
-		break;
-	}
-#endif
-}
+} // namespace network::display
 #endif

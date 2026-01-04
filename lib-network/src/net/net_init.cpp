@@ -23,48 +23,52 @@
  * THE SOFTWARE.
  */
 
-#if defined (DEBUG_NET_NET)
-# if defined (NDEBUG)
-#  undef NDEBUG
-# endif
+#if defined(DEBUG_NET_NET)
+#if defined(NDEBUG)
+#undef NDEBUG
+#endif
 #endif
 
-#if defined (CONFIG_NET_ENABLE_NTP_CLIENT) || defined (CONFIG_NET_ENABLE_PTP_NTP_CLIENT)
-# include "net/apps/ntp_client.h"
+#include "net/arp.h"
+#include "net_private.h"
+#if defined(CONFIG_NET_ENABLE_NTP_CLIENT) || defined(CONFIG_NET_ENABLE_PTP_NTP_CLIENT)
+#include "net/apps/ntpclient.h"
 #endif
 #if !defined(CONFIG_NET_APPS_NO_MDNS)
-# include "net/apps/mdns.h"
+#include "net/apps/mdns.h"
 #endif
 
-#include "debug.h"
+ #include "firmware/debug/debug_debug.h"
 
-namespace net {
-void arp_init();
-void ip_init();
-
-#if defined (CONFIG_NET_ENABLE_PTP)
+namespace net
+{
+#if defined(CONFIG_NET_ENABLE_PTP)
 __attribute__((weak)) void ptp_init() {}
 #endif
 
-void net_init() {
-	DEBUG_ENTRY
+void NetInit()
+{
+    DEBUG_ENTRY();
 
-	net::arp_init();
-	net::ip_init();
+    arp::Init();
+    ip::Init();
+    
+#if defined(CONFIG_NET_ENABLE_PTP)
+    ptp_init();
+#endif
 
-#if defined (CONFIG_NET_ENABLE_PTP)
-	net::ptp_init();
+#if defined(CONFIG_NET_ENABLE_NTP_CLIENT)
+    ntpclient::Init();
 #endif
-#if defined (CONFIG_NET_ENABLE_NTP_CLIENT)
-	ntp_client_init();
+
+#if defined(CONFIG_NET_ENABLE_PTP_NTP_CLIENT)
+    ntpclient::ptp::Init();
 #endif
-#if defined (CONFIG_NET_ENABLE_PTP_NTP_CLIENT)
-	ptp_ntp_init();
-#endif
+
 #if !defined(CONFIG_NET_APPS_NO_MDNS)
-	mdns_init();
+    mdns::Init();
 #endif
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
-}  // namespace net
+} // namespace net

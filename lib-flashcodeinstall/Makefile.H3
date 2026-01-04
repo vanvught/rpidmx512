@@ -2,7 +2,7 @@ DEFINES=NDEBUG
 
 EXTRA_INCLUDES=../lib-flashcodeinstall/src/params ../lib-properties/include
 
-EXTRA_SRCDIR=src/params
+EXTRA_SRCDIR=
 
 include Rules.mk
 include ../firmware-template-h3/lib/Rules.mk

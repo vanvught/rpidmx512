@@ -2,7 +2,7 @@
  * @file dmxstatistics.h
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,25 +28,31 @@
 
 #include <cstdint>
 
-namespace dmx {
-struct TotalStatistics {
-	struct  {
-		uint32_t Sent;
-		uint32_t Received;
-	} Dmx;
+namespace dmx
+{
+struct TotalStatistics
+{
+    struct Dmx
+    {
+        uint32_t sent;
+        uint32_t received;
+    } dmx;
 
-	struct {
-		struct  {
-			uint32_t Good;
-			uint32_t Bad;
-			uint32_t DiscoveryResponse;
-		} Received;
-		struct  {
-			uint32_t Class;
-			uint32_t DiscoveryResponse;
-		} Sent;
-	} Rdm;
+    struct Rdm
+    {
+        struct Received
+        {
+            uint32_t good;
+            uint32_t bad;
+            uint32_t discovery_response;
+        } received;
+        struct Sent
+        {
+            uint32_t classes;
+            uint32_t discovery_response;
+        } sent;
+    } rdm;
 };
-}  // namespace dmx
+} // namespace dmx
 
-#endif /* DMXSTATISTICS_H_ */
+#endif  // DMXSTATISTICS_H_

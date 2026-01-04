@@ -34,7 +34,7 @@
 
 #include "network.h"
 
-bool Network::OSxGetMacaddress(const char *pIfName, uint8_t *pMacAddress) {
+bool OSxGetMacaddress(const char *pIfName, uint8_t *pMacAddress) {
 	int mib[6] = { CTL_NET, AF_ROUTE, 0, AF_LINK, NET_RT_IFLIST, 0 };
 	size_t len;
 	char *buf;

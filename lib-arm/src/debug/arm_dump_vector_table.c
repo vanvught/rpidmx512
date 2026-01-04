@@ -27,20 +27,21 @@
 
 #include "arm/synchronize.h"
 
-void arm_dump_vector_table(void) {
-	unsigned vector_table;
-	asm volatile ("mrc p15, 0, %0, c12, c0, 0" : "=r" (vector_table));
-	isb();
-	printf("Vector table at address: %p\n", (void *)vector_table);
+void arm_dump_vector_table()
+{
+    unsigned vector_table;
+    asm volatile("mrc p15, 0, %0, c12, c0, 0" : "=r"(vector_table));
+    isb();
+    printf("Vector table at address: %p\n", (void*)vector_table);
 
-	const unsigned *p = (unsigned *)vector_table;
+    const unsigned* p = (unsigned*)vector_table;
 
-	printf(" Reset: %p\n", (void *)p[0]);
-	printf(" Undefined Instruction: %p\n", (void *)p[1]);
-	printf(" SWI: %p\n", (void *)p[2]);
-	printf(" Prefetch Abort: %p\n", (void *)p[3]);
-	printf(" Data Abort: %p\n", (void *)p[4]);
-	printf(" Reserved: %p\n", (void *)p[5]);
-	printf(" IRQ: %p\n", (void *)p[6]);
-	printf(" FIQ: %p\n", (void *)p[7]);
+    printf(" Reset: %p\n", (void*)p[0]);
+    printf(" Undefined Instruction: %p\n", (void*)p[1]);
+    printf(" SWI: %p\n", (void*)p[2]);
+    printf(" Prefetch Abort: %p\n", (void*)p[3]);
+    printf(" Data Abort: %p\n", (void*)p[4]);
+    printf(" Reserved: %p\n", (void*)p[5]);
+    printf(" IRQ: %p\n", (void*)p[6]);
+    printf(" FIQ: %p\n", (void*)p[7]);
 }

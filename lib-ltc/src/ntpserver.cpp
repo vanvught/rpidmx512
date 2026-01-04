@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#if defined (DEBUG_NTPSERVER)
-# undef NDEBUG
+#if defined(DEBUG_NTPSERVER)
+#undef NDEBUG
 #endif
 
 /*
@@ -39,73 +39,76 @@
 
 #include "ntpserver.h"
 #include "net/protocol/ntp.h"
-
 #include "network.h"
+#include "firmware/debug/debug_debug.h"
 
-#include "debug.h"
+NtpServer::NtpServer(uint32_t year, uint32_t month, uint32_t day)
+{
+    DEBUG_ENTRY();
+    DEBUG_PRINTF("year=%u, month=%u, day=%u", year, month, day);
 
-NtpServer::NtpServer(const uint32_t nYear, const uint32_t nMonth, const uint32_t nDay) {
-	DEBUG_ENTRY
-	DEBUG_PRINTF("year=%u, month=%u, day=%u", nYear, nMonth, nDay);
+    assert(s_this == nullptr);
+    s_this = this;
 
-	assert(s_pThis == nullptr);
-	s_pThis = this;
+    struct tm time_date;
 
-	struct tm timeDate;
+    memset(&time_date, 0, sizeof(struct tm));
+    time_date.tm_year = static_cast<int>(100 + year);
+    time_date.tm_mon = static_cast<int>(month - 1);
+    time_date.tm_mday = static_cast<int>(day);
 
-	memset(&timeDate, 0, sizeof(struct tm));
-	timeDate.tm_year = static_cast<int>(100 + nYear);
-	timeDate.tm_mon = static_cast<int>(nMonth - 1);
-	timeDate.tm_mday = static_cast<int>(nDay);
+    time_ = mktime(&time_date);
+    assert(time_ != -1);
 
-	m_Time = mktime(&timeDate);
-	assert(m_Time != -1);
+    DEBUG_PRINTF("time_=%.8x %ld", static_cast<unsigned int>(time_), time_);
 
-	DEBUG_PRINTF("m_Time=%.8x %ld", static_cast<unsigned int>(m_Time), m_Time);
+    time_ += static_cast<time_t>(ntp::JAN_1970);
 
-	m_Time += static_cast<time_t>(ntp::JAN_1970);
-
-	DEBUG_PRINTF("m_Time=%.8x %ld", static_cast<unsigned int>(m_Time), m_Time);
-	DEBUG_EXIT
+    DEBUG_PRINTF("time_=%.8x %ld", static_cast<unsigned int>(time_), time_);
+    DEBUG_EXIT();
 }
 
-NtpServer::~NtpServer() {
-	Stop();
+NtpServer::~NtpServer()
+{
+    Stop();
 }
 
-void NtpServer::Start() {
-	DEBUG_ENTRY
+void NtpServer::Start()
+{
+    DEBUG_ENTRY();
 
-	assert(m_nHandle == -1);
-	m_nHandle = Network::Get()->Begin(ntp::UDP_PORT, StaticCallbackFunction);
-	assert(m_nHandle != -1);
+    assert(handle_ == -1);
+    handle_ = net::udp::Begin(ntp::UDP_PORT, StaticCallbackFunction);
+    assert(handle_ != -1);
 
-	m_Reply.LiVnMode = ntp::VERSION | ntp::MODE_SERVER;
-	m_Reply.Stratum = ntp::STRATUM;
-	m_Reply.Poll = ntp::MINPOLL;
-	m_Reply.Precision = static_cast<uint8_t>(-10);	// -9.9 = LOG2(0.0001) -> milliseconds
-	m_Reply.RootDelay = 0;
-	m_Reply.RootDispersion = 0;
+    reply_.LiVnMode = ntp::VERSION | ntp::MODE_SERVER;
+    reply_.Stratum = ntp::STRATUM;
+    reply_.Poll = ntp::MINPOLL;
+    reply_.Precision = static_cast<uint8_t>(-10); // -9.9 = LOG2(0.0001) -> milliseconds
+    reply_.RootDelay = 0;
+    reply_.RootDispersion = 0;
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void NtpServer::Stop() {
-	DEBUG_ENTRY
+void NtpServer::Stop()
+{
+    DEBUG_ENTRY();
 
-	assert(m_nHandle != -1);
-	Network::Get()->End(ntp::UDP_PORT);
-	m_nHandle = -1;
+    assert(handle_ != -1);
+    net::udp::End(ntp::UDP_PORT);
+    handle_ = -1;
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void NtpServer::Print() {
-	printf("NTP v%d Server\n", ntp::VERSION >> 3);
-	printf(" Port : %d\n", ntp::UDP_PORT);
-	printf(" Stratum : %d\n", ntp::STRATUM);
+void NtpServer::Print()
+{
+    printf("NTP v%d Server\n", ntp::VERSION >> 3);
+    printf(" Port : %d\n", ntp::UDP_PORT);
+    printf(" Stratum : %d\n", ntp::STRATUM);
 
-	const auto t = static_cast<time_t>(static_cast<uint32_t>(m_Time) - ntp::JAN_1970);
+    const auto kTime = static_cast<time_t>(static_cast<uint32_t>(time_) - ntp::JAN_1970);
 
-	printf(" %s", asctime(localtime(&t)));
+    printf(" %s", asctime(localtime(&kTime)));
 }

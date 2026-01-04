@@ -2,7 +2,7 @@
  * @file l6470dmxmode0.h
  *
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,30 +29,23 @@
 #include "l6470dmxmode.h"
 #include "l6470.h"
 
-#include "motorparams.h"
+class L6470DmxMode0 final : public L6470DmxMode
+{
+   public:
+    explicit L6470DmxMode0(L6470*);
+    ~L6470DmxMode0() override;
 
-class L6470DmxMode0 final: public L6470DmxMode {
-public:
-	L6470DmxMode0(L6470 *pL6470);
-	~L6470DmxMode0() override;
+    void Start() override;
+    void Stop() override;
+    void Data(const uint8_t*) override;
 
-	void Start() override;
-	void Stop() override;
+    static TL6470DmxModes GetMode() { return L6470DMXMODE0; }
+    static uint16_t GetDmxFootPrint() { return 1; }
 
-	void Data(const uint8_t*) override;
-
-	static TL6470DmxModes GetMode() {
-		return L6470DMXMODE0;
-	}
-
-	static uint16_t GetDmxFootPrint() {
-		return 1;
-	}
-
-private:
-	L6470 *m_pL6470;
-	float m_fMinSpeed;
-	float m_fMaxSpeed;
+   private:
+    L6470* l6470_;
+    float min_speed_;
+    float max_speed_;
 };
 
-#endif /* L6470DMXMODE0_H_ */
+#endif  // L6470DMXMODE0_H_

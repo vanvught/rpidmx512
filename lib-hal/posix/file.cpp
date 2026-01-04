@@ -1,5 +1,5 @@
 /**
- * @file file.c
+ * @file file.cpp
  *
  */
 /* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -38,7 +38,7 @@
 #include "../ff14b/source/ff.h"
 #include <dirent.h>	/* DO NOT MOVE -> DIR is defined in ff.h */
 
-#include "debug.h"
+ #include "firmware/debug/debug_debug.h"
 
 #if !defined (CONFIG_POSIX_OPEN_FILES_MAX) || (CONFIG_POSIX_OPEN_FILES_MAX < 1)
 # define CONFIG_POSIX_OPEN_FILES_MAX 2

@@ -24,16 +24,16 @@
  */
 
 #include "remoteconfig.h"
-#include "debug.h"
+ #include "firmware/debug/debug_debug.h"
 
 void RemoteConfig::PlatformHandleTftpSet() {
-	DEBUG_ENTRY
+	DEBUG_ENTRY();
 
-	DEBUG_EXIT
+	DEBUG_EXIT();
 }
 
 void RemoteConfig::PlatformHandleTftpGet() {
-	DEBUG_ENTRY
+	DEBUG_ENTRY();
 
-	DEBUG_EXIT
+	DEBUG_EXIT();
 }

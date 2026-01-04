@@ -1,6 +1,5 @@
 /**
  * @file main.cpp
- *
  */
 /* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
@@ -24,182 +23,139 @@
  */
 
 #pragma GCC push_options
-#pragma GCC optimize ("O2")
-#pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#pragma GCC optimize("O2")
+#pragma GCC optimize("no-tree-loop-distribute-patterns")
+#pragma GCC optimize("-fprefetch-loop-arrays")
 
 #include <cstdint>
 #include <cstdio>
 #include <cassert>
 
-#include "hal.h"
+#include "h3/hal.h"
+#include "h3/hal_watchdog.h"
 #include "network.h"
-
-#include "net/apps/mdns.h"
-
 #include "displayudf.h"
-#include "displayudfparams.h"
-#include "displayhandler.h"
-
+#include "json/displayudfparams.h"
 #include "ddpdisplay.h"
-
-#include "pixeldmxconfiguration.h"
 #include "pixeltype.h"
 #include "pixeltestpattern.h"
-#include "pixeldmxparams.h"
-#include "ws28xxmulti.h"
-#include "ws28xxdmxmulti.h"
-
-#include "handleroled.h"
-
-#include "dmxparams.h"
+#include "json/pixeldmxparams.h"
+#include "pixeldmxmulti.h"
+#include "firmware/jamstapl/handleroled.h"
+#include "json/dmxsendparams.h"
+#include "firmware/pixeldmx/show.h"
 #include "dmxsend.h"
-
 #include "dmxnodewith4.h"
-
-#if defined (NODE_RDMNET_LLRP_ONLY)
-# include "rdmdeviceparams.h"
-# include "rdmnetdevice.h"
-# include "rdmnetconst.h"
-# include "rdmpersonality.h"
-# include "rdm_e120.h"
+#if defined(NODE_RDMNET_LLRP_ONLY)
+#include "rdmnetdevice.h"
+#include "rdmdevice.h"
+#include "rdm_e120.h"
 #endif
-
 #include "remoteconfig.h"
-#include "remoteconfigparams.h"
-
 #include "flashcodeinstall.h"
 #include "configstore.h"
-
 #include "firmwareversion.h"
 #include "software_version.h"
+#include "common/utils/utils_enum.h"
+#include "configurationstore.h"
 
-namespace hal {
-void reboot_handler() {
-	WS28xxMulti::Get()->Blackout();
-	DdpDisplay::Get()->Stop();
+namespace hal
+{
+void RebootHandler()
+{
+    PixelDmxMulti::Get().Blackout();
+    DdpDisplay::Get()->Stop();
 }
-}  // namespace hal
+} // namespace hal
 
-int main() {
-	hal_init();
-	DisplayUdf display;
-	ConfigStore configStore;
-	Network nw;
-	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
-	FlashCodeInstall spiFlashInstall;
+int main() // NOLINT
+{
+    hal::Init();
+    DisplayUdf display;
+    ConfigStore config_store;
+    network::Init();
+    FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+    FlashCodeInstall spiflash_install;
 
-	fw.Print("DDP Pixel controller 8x 4U with 2x DMX");
-	
-	mdns_service_record_add(nullptr, mdns::Services::DDP, "type=display");
+    fw.Print("DDP Pixel controller 8x 4U with 2x DMX");
 
-	// LightSet A - Pixel - 32 Universes
+    DdpDisplay ddp_display;
 
-	PixelDmxConfiguration pixelDmxConfiguration;
+    // LightSet A - Pixel - 32 Universes
+    PixelDmxMulti pixeldmx_multi;
 
-	PixelDmxParams pixelDmxParams;
-	pixelDmxParams.Load();
-	pixelDmxParams.Set();
+    json::PixelDmxParams pixeldmx_params;
+    pixeldmx_params.Load();
+    pixeldmx_params.Set();
 
-	WS28xxDmxMulti pixelDmxMulti;
+    PixelOutputMulti::Get()->SetJamSTAPLDisplay(new HandlerOled);
 
-	WS28xxMulti::Get()->SetJamSTAPLDisplay(new HandlerOled);
+    const auto nActivePorts = pixeldmx_multi.GetOutputPorts();
 
-	DdpDisplay ddpDisplay;
+    ddp_display.SetCount(pixeldmx_multi.GetGroups(), pixeldmx_multi.GetLedsPerPixel(), nActivePorts);
 
-	const auto nActivePorts = pixelDmxConfiguration.GetOutputPorts();
+    const auto kTestPattern = common::FromValue<pixelpatterns::Pattern>(ConfigStore::Instance().DmxLedGet(&common::store::DmxLed::test_pattern));
 
-	ddpDisplay.SetCount(pixelDmxConfiguration.GetGroups(), pixelDmxConfiguration.GetLedsPerPixel(), nActivePorts);
+    PixelTestPattern pixeltest_pattern(kTestPattern, nActivePorts);
 
-	const auto nTestPattern = static_cast<pixelpatterns::Pattern>(pixelDmxParams.GetTestPattern());
-	PixelTestPattern pixelTestPattern(nTestPattern, nActivePorts);
+    // LightSet B - DMX - 2 Universes
 
-	// LightSet B - DMX - 2 Universes
+    Dmx dmx;
 
-	Dmx dmx;
+    json::DmxSendParams dmxparams;
+    dmxparams.Load();
+    dmxparams.Set();
 
-	DmxParams dmxparams;
-	dmxparams.Load();
-	dmxparams.Set(&dmx);
+    DmxSend dmx_send;
+    dmx_send.Print();
 
-	DmxSend dmxSend;
-	dmxSend.Print();
+    // DmxNodeWith4
 
-	// DmxNodeWith4
+    DmxNodeWith4<CONFIG_DMXNODE_DMX_PORT_OFFSET> dmxNode((PixelTestPattern::Get()->GetPattern() != pixelpatterns::Pattern::kNone) ? nullptr : &pixeldmx_multi,
+                                                         &dmx_send);
+    dmxNode.Print();
 
-	DmxNodeWith4<CONFIG_DMXNODE_DMX_PORT_OFFSET> dmxNode((PixelTestPattern::Get()->GetPattern() != pixelpatterns::Pattern::NONE) ? nullptr : &pixelDmxMulti, &dmxSend);
-	dmxNode.Print();
+    ddp_display.SetOutput(&dmxNode);
+    ddp_display.Print();
 
-	ddpDisplay.SetOutput(&dmxNode);
-	ddpDisplay.Print();
+#if defined(NODE_RDMNET_LLRP_ONLY)
+    auto& rdm_device = RdmDevice::Get();
+    rdm_device.SetProductCategory(E120_PRODUCT_CATEGORY_FIXTURE);
+    rdm_device.SetProductDetail(E120_PRODUCT_DETAIL_LED);
+    rdm_device.Init();
+    rdm_device.Print();
 
-#if defined (NODE_RDMNET_LLRP_ONLY)
-	display.TextStatus(RDMNetConst::MSG_CONFIG, CONSOLE_YELLOW);
-
-	char aDescription[rdm::personality::DESCRIPTION_MAX_LENGTH + 1];
-	snprintf(aDescription, sizeof(aDescription) - 1, "DDP Display %u-%s:%d DMX 2x", nActivePorts, pixel::pixel_get_type(pixelDmxConfiguration.GetType()), pixelDmxConfiguration.GetCount());
-
-	char aLabel[RDM_DEVICE_LABEL_MAX_LENGTH + 1];
-	const auto nLength = snprintf(aLabel, sizeof(aLabel) - 1, "Orange Pi Zero Pixel-DMX");
-
-	RDMPersonality *pPersonalities[1] = { new RDMPersonality(aDescription, nullptr) };
-	RDMNetDevice llrpOnlyDevice(pPersonalities, 1);
-
-	llrpOnlyDevice.SetLabel(RDM_ROOT_DEVICE, aLabel, static_cast<uint8_t>(nLength));
-	llrpOnlyDevice.SetProductCategory(E120_PRODUCT_CATEGORY_FIXTURE);
-	llrpOnlyDevice.SetProductDetail(E120_PRODUCT_DETAIL_LED);
-	llrpOnlyDevice.Init();
-
-	RDMDeviceParams rdmDeviceParams;
-	rdmDeviceParams.Load();
-	rdmDeviceParams.Set(&llrpOnlyDevice);
-
-	llrpOnlyDevice.Print();
+    RDMNetDevice llrp_only_device;
 #endif
 
-	display.SetTitle("DDP Pixel %d", nActivePorts);
-	display.Set(2, displayudf::Labels::VERSION);
-	display.Set(3, displayudf::Labels::HOSTNAME);
-	display.Set(4, displayudf::Labels::IP);
-	display.Set(5, displayudf::Labels::DEFAULT_GATEWAY);
-	display.Set(6, displayudf::Labels::DMX_DIRECTION);
+    display.SetTitle("DDP Pixel %d", nActivePorts);
+    display.Set(2, displayudf::Labels::kVersion);
+    display.Set(3, displayudf::Labels::kHostname);
+    display.Set(4, displayudf::Labels::kIp);
+    display.Set(5, displayudf::Labels::kDefaultGateway);
 
-	DisplayUdfParams displayUdfParams;
-	displayUdfParams.Load();
-	displayUdfParams.Set(&display);
+    json::DisplayUdfParams displayudf_params;
+    displayudf_params.Load();
+    displayudf_params.SetAndShow();
 
-	display.Show();
+    common::firmware::pixeldmx::Show(7);
 
-	display.Printf(7, "%s:%d G%d %s",
-		pixel::pixel_get_type(pixelDmxConfiguration.GetType()),
-		pixelDmxConfiguration.GetCount(),
-		pixelDmxConfiguration.GetGroupingCount(),
-		pixel::pixel_get_map(pixelDmxConfiguration.GetMap()));
+    RemoteConfig remote_config(remoteconfig::Output::PIXEL, nActivePorts);
 
-	if (nTestPattern != pixelpatterns::Pattern::NONE) {
-		display.ClearLine(6);
-		display.Printf(6, "%s:%u", PixelPatterns::GetName(nTestPattern), static_cast<uint32_t>(nTestPattern));
-	}
+    display.TextStatus("DDP Display Start", console::Colours::kConsoleYellow);
 
-	RemoteConfig remoteConfig(remoteconfig::NodeType::DDP, remoteconfig::Output::PIXEL, nActivePorts);
+    ddp_display.Start();
 
-	RemoteConfigParams remoteConfigParams;
-	remoteConfigParams.Load();
-	remoteConfigParams.Set(&remoteConfig);
+    display.TextStatus("DDP Display Started", console::Colours::kConsoleGreen);
 
-	display.TextStatus("DDP Display Start", CONSOLE_YELLOW);
+    hal::WatchdogInit();
 
-	ddpDisplay.Start();
-
-	display.TextStatus("DDP Display Started", CONSOLE_GREEN);
-
-	hal::watchdog_init();
-
-	for (;;) {
-		hal::watchdog_feed();
-		nw.Run();
-		ddpDisplay.Run();
-		pixelTestPattern.Run();
-		display.Run();
-		hal::run();
-	}
+    for (;;)
+    {
+        hal::WatchdogFeed();
+        network::Run();
+        pixeltest_pattern.Run();
+        display.Run();
+        hal::Run();
+    }
 }

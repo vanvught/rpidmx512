@@ -1,3 +1,4 @@
+$(info "Rules.mk")
 PREFIX ?= arm-none-eabi-
 
 CC	 = $(PREFIX)gcc
@@ -11,44 +12,35 @@ $(info [${CURDIR}])
 
 PLATFORM?=ORANGE_PI
 CONSOLE?=
+NO_EXT_LED?=
 
 SUFFIX=orangepi_zero
 BUILD_TXT=0
-
-$(info [${CURDIR}])
 
 ifeq ($(findstring ORANGE_PI_ONE,$(PLATFORM)),ORANGE_PI_ONE)
 	SUFFIX=orangepi_one
 	BUILD_TXT=1
 endif
 
-COND=
-ifeq ($(findstring ORANGE_PI,$(PLATFORM)),ORANGE_PI)
-	COND=1
-endif
-
-# Output 
 TARGET=$(SUFFIX).img
 LIST=$(SUFFIX).list
 MAP=$(SUFFIX).map
 BUILD=build_h3/
 
-# Input
 SOURCE=./
 FIRMWARE_DIR=./../firmware-template-h3/
 LINKER=$(FIRMWARE_DIR)memmap
+
+PROJECT=$(notdir $(patsubst %/,%,$(CURDIR)))
+$(info $$PROJECT [${PROJECT}])
 	
 DEFINES:=$(addprefix -D,$(DEFINES))
+
+$(info $$DEFINES [${DEFINES}])
 
 ifneq ($(CONSOLE),)
 	DEFINES+=-D$(CONSOLE)
 endif
-
-ifneq ($(findstring _TIME_STAMP_YEAR_,$(DEFINES)), _TIME_STAMP_YEAR_)
-	DEFINES+=-D_TIME_STAMP_YEAR_=$(shell date  +"%Y") -D_TIME_STAMP_MONTH_=$(shell date  +"%-m") -D_TIME_STAMP_DAY_=$(shell date  +"%-d")
-endif
-
-include ../firmware-template-h3/Common.mk
 
 ifneq ($(findstring CONFIG_STORE_USE_SPI,$(DEFINES)), CONFIG_STORE_USE_SPI)
 	DEFINES+=-DCONFIG_STORE_USE_SPI
@@ -60,44 +52,40 @@ ifeq ($(findstring ARTNET_VERSION=4,$(DEFINES)),ARTNET_VERSION=4)
 	endif
 endif
 
+include ../firmware-template-h3/Soc.mk
+include ../firmware-template-h3/Phy.mk
+include ../firmware-template-h3/Board.mk
 include ../firmware-template/libs.mk
-include ../firmware-template/DmxNodeNodeType.mk
-include ../firmware-template/DmxNodeOutputType.mk
+include ../common/make/DmxNodeNodeType.mk
+include ../common/make/DmxNodeOutputType.mk
+include ../firmware-template-h3/Includes.mk
+include ../common/make/Timestamp.mk
 
 LIBS+=h3 clib arm
 
-# The variable for the firmware include directories
-INCDIRS+=../include $(wildcard ./include) $(wildcard ./*/include)  ../firmware-template-h3/include ../lib-h3/CMSIS/Core_A/Include -I../lib-flashcodeinstall/include
-INCDIRS:=$(addprefix -I,$(INCDIRS))
-
-# The variable for the libraries include directory
-LIBINCDIRS:=$(addprefix -I../lib-,$(LIBS))
-LIBINCDIRS+=$(addsuffix /include, $(LIBINCDIRS))
-
-# The variables for the ld -L flag
 LIBH3=$(addprefix -L../lib-,$(LIBS))
 LIBH3:=$(addsuffix /lib_h3, $(LIBH3))
 
-# The variable for the ld -l flag 
 LDLIBS:=$(addprefix -l,$(LIBS))
 
-# The variables for the dependency check 
 LIBDEP=$(addprefix ../lib-,$(LIBS))
 
-$(info [${LIBDEP}])
+$(info $$LIBDEP [${LIBDEP}])
 
-COPS=-DBARE_METAL -DH3 -D$(PLATFORM) $(DEFINES)
-COPS+=$(INCDIRS) $(LIBINCDIRS) $(addprefix -I,$(EXTRA_INCLUDES))
-COPS+=-mfpu=neon-vfpv4 -mcpu=cortex-a7 -mfloat-abi=hard -mhard-float
-COPS+=-nostartfiles -ffreestanding -nostdlib -fprefetch-loop-arrays
-COPS+=-O2 -Wall -Werror -Wpedantic -Wextra -Wunused -Wsign-conversion  -Wconversion
-COPS+=-Wduplicated-cond -Wlogical-op -Wduplicated-branches
+DEFINES:=$(BOARD_DEFS) $(DEFINES)
+
+COPS =$(strip $(DEFINES) $(MAKE_FLAGS) $(INCLUDES) $(LIBINCDIRS))
+COPS+=$(strip $(ARMOPS) $(CMSISOPS))
+COPS+=-O2 -fprefetch-loop-arrays
+COPS+=-nostartfiles -ffreestanding -nostdlib
+COPS+=-fstack-usage
 COPS+=-ffunction-sections -fdata-sections
+COPS+=-Wall -Werror -Wpedantic -Wextra -Wunused -Wsign-conversion -Wconversion -Wduplicated-cond -Wlogical-op
+COPS+=--specs=nosys.specs
 
-CPPOPS=-std=c++20 -Wuseless-cast -Wold-style-cast -Wnon-virtual-dtor -Woverloaded-virtual -Wnull-dereference -fno-rtti -fno-exceptions -fno-unwind-tables
-CPPOPS+=-fno-threadsafe-statics
+include ../common/make/CppOps.mk
 
-LDOPS=--gc-sections --print-gc-sections
+LDOPS=--gc-sections --print-gc-sections --print-memory-usage
 
 # Why does gcc not automatically select the correct path based on -m options?
 PLATFORM_LIBGCC:=-L $(shell dirname `$(CC) $(COPS) -print-libgcc-file-name`)/armv7-a/cortex-a7/hardfp/vfpv4
@@ -143,22 +131,13 @@ clean: $(LIBDEP)
 	rm -f $(SUFFIX).uImage.gz
 	rm -f build$(BUILD_TXT).txt
 	rm -f include/sofware_version_id.h
-	
-#
-# Libraries
-#
 
 .PHONY: libdep $(LIBDEP)
 
 libdep: $(LIBDEP)
 
 $(LIBDEP):
-	$(MAKE) -f Makefile.H3 $(MAKECMDGOALS) 'PLATFORM=$(PLATFORM)' 'MAKE_FLAGS=$(DEFINES)' -C $@ 
-
-# Build uImage
-
-$(BUILD_DIRS) :
-	mkdir -p $(BUILD_DIRS)
+	$(MAKE) -f Makefile.H3 $(MAKECMDGOALS) 'PROJECT=${PROJECT}' 'PLATFORM=$(PLATFORM)' 'CONSOLE=$(CONSOLE)' 'MAKE_FLAGS=$(DEFINES)' -C $@ 
 
 $(BUILD)vectors.o : $(FIRMWARE_DIR)/vectors.S
 	$(AS) $(COPS) -D__ASSEMBLY__ -c $(FIRMWARE_DIR)/vectors.S -o $(BUILD)vectors.o

@@ -2,7 +2,7 @@
  * @file hal_gpio.h
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -68,10 +68,10 @@ extern "C" {
 # else
 # include <stdint.h>
 # endif
-  inline void gpio_fsel([[maybe_unused]] uint8_t _p, [[maybe_unused]] uint8_t _q) { }
-  inline void gpio_set([[maybe_unused]] uint8_t _p) { }
-  inline void gpio_clr([[maybe_unused]] uint8_t _p) { }
-  inline uint8_t gpio_lev([[maybe_unused]] uint8_t _p) { return 0; }
+  inline void GpioFsel([[maybe_unused]] uint8_t _p, [[maybe_unused]] uint8_t _q) { }
+  inline void GpioSet([[maybe_unused]] uint8_t _p) { }
+  inline void GpioClr([[maybe_unused]] uint8_t _p) { }
+  inline uint8_t GpioLev([[maybe_unused]] uint8_t _p) { return 0; }
   inline void gpio_pud([[maybe_unused]] uint8_t _p, [[maybe_unused]] uint8_t _q) {}
 # ifdef __cplusplus
 }

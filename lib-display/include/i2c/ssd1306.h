@@ -2,7 +2,7 @@
  * @file ssd1306.h
  *
  */
-/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,94 +23,92 @@
  * THE SOFTWARE.
  */
 
-#ifndef SSD1306_H_
-#define SSD1306_H_
+#ifndef I2C_SSD1306_H_
+#define I2C_SSD1306_H_
 
 #include <cstdint>
 
 #include "displayset.h"
-
 #include "hal_i2c.h"
 
-#define OLED_I2C_SLAVE_ADDRESS_DEFAULT	0x3C
+#define OLED_I2C_ADDRESS_DEFAULT 0x3C
 
-enum TOledPanel {
-	OLED_PANEL_128x64_8ROWS,	///< Default
-	OLED_PANEL_128x64_4ROWS,
-	OLED_PANEL_128x32_4ROWS
+enum class OledPanel
+{
+    k128x648Rows, ///< Default
+    k128x644Rows,
+    k128x324Rows
 };
 
-class Ssd1306 final: public DisplaySet {
-public:
-	Ssd1306 ();
-	Ssd1306 (TOledPanel);
-	Ssd1306 (uint8_t, TOledPanel);
-	~Ssd1306() override {
+class Ssd1306 final : public DisplaySet
+{
+   public:
+    Ssd1306();
+    explicit Ssd1306(OledPanel);
+    Ssd1306(uint8_t, OledPanel);
+    ~Ssd1306() override
+    {
 #if defined(CONFIG_DISPLAY_ENABLE_CURSOR_MODE)
-		delete[] m_pShadowRam;
-		m_pShadowRam = nullptr;
+        delete[] shadow_ram_;
+        shadow_ram_ = nullptr;
 #endif
-	}
+    }
 
-	bool Start() override;
+    bool Start() override;
 
-	void Cls() override;
-	void ClearLine(uint32_t nLine) override;
+    void Cls() override;
+    void ClearLine(uint32_t line) override;
 
-	void PutChar(int) override;
-	void PutString(const char *) override;
+    void PutChar(int) override;
+    void PutString(const char*) override;
 
-	void Text(const char *pData, uint32_t nLength);
-	void TextLine(uint32_t nLine, const char *pData, uint32_t nLength) override;
+    void Text(const char* data, uint32_t length);
+    void TextLine(uint32_t line, const char* data, uint32_t length) override;
 
-	void SetCursorPos(uint32_t nCol, uint32_t nRow) override;
-	void SetCursor(uint32_t) override;
+    void SetCursorPos(uint32_t column, uint32_t row) override;
+    void SetCursor(uint32_t) override;
 
-	void SetSleep(bool bSleep) override;
-	void SetContrast(uint8_t nContrast) override;
+    void SetSleep(bool sleep) override;
+    void SetContrast(uint8_t contrast) override;
 
-	void SetFlipVertically(bool doFlipVertically) override;
+    void SetFlipVertically(bool do_flip_vertically) override;
 
-	void PrintInfo() override;
+    void PrintInfo() override;
 
-	bool IsSH1106() {
-		return m_bHaveSH1106;
-	}
+    bool IsSH1106() { return have_sh1106_; }
 
-	static Ssd1306* Get() {
-		return s_pThis;
-	}
+    static Ssd1306* Get() { return s_this; }
 
-private:
-	void CheckSH1106();
-	void InitMembers();
-	void SendCommand(uint8_t);
-	void SendData(const uint8_t *pData, uint32_t nLength);
+   private:
+    void CheckSH1106();
+    void InitMembers();
+    void SendCommand(uint8_t);
+    void SendData(const uint8_t* data, uint32_t length);
 
-	void SetCursorOn();
-	void SetCursorOff();
-	void SetCursorBlinkOn();
-	void SetColumnRow(uint8_t nColumn, uint8_t nRow);
+    void SetCursorOn();
+    void SetCursorOff();
+    void SetCursorBlinkOn();
+    void SetColumnRow(uint8_t column, uint8_t row);
 
-	void DumpShadowRam();
+    void DumpShadowRam();
 
-private:
-	HAL_I2C m_I2C;
-	TOledPanel m_OledPanel { OLED_PANEL_128x64_8ROWS };
-	bool m_bHaveSH1106 { false };
-	uint32_t m_nPages;
+   private:
+    HAL_I2C hal_i2c_;
+    OledPanel oled_panel_{OledPanel::k128x648Rows};
+    bool have_sh1106_{false};
+    uint32_t pages_;
 #if defined(CONFIG_DISPLAY_ENABLE_CURSOR_MODE) || defined(CONFIG_DISPLAY_FIX_FLIP_VERTICALLY)
-	char *m_pShadowRam { nullptr };
-	uint32_t m_nShadowRamIndex { 0 };
+    char* shadow_ram_{nullptr};
+    uint32_t shadow_ram_index_{0};
 #endif
 #if defined(CONFIG_DISPLAY_ENABLE_CURSOR_MODE)
-	uint32_t m_nCursorMode { display::cursor::OFF };
-	uint8_t m_nCursorOnChar;
-	uint8_t m_nCursorOnCol;
-	uint8_t m_nCursorOnRow;
+    uint32_t cursor_mode_{display::cursor::kOff};
+    uint8_t cursor_on_char_;
+    uint8_t cursor_on_column_;
+    uint8_t cursor_on_row_;
 #endif
 
-	static inline Ssd1306 *s_pThis;
+    static inline Ssd1306* s_this;
 };
 
-#endif /* SSD1306_H_ */
+#endif  // I2C_SSD1306_H_

@@ -2,7 +2,7 @@
  * @file l6470dmxmode4.h
  *
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,42 +26,39 @@
 #ifndef L6470DMXMODE4_H_
 #define L6470DMXMODE4_H_
 
+#include <cstdint>
+
+#include "configurationstore.h"
 #include "l6470dmxmode.h"
 #include "l6470.h"
 
-#include "motorparams.h"
-#include "modeparams.h"
+class L6470DmxMode4 final : public L6470DmxMode
+{
+   public:
+    explicit L6470DmxMode4(L6470*, uint32_t motor_index);
+    ~L6470DmxMode4() override;
 
-class L6470DmxMode4 final: public L6470DmxMode {
-public:
-	L6470DmxMode4(L6470*, MotorParams*, ModeParams*);
-	~L6470DmxMode4() override;
+    void InitSwitch() override;
+    void InitPos() override;
 
-	void InitSwitch() override;
-	void InitPos() override;
+    void Start() override;
+    void Stop() override;
 
-	void Start() override;
-	void Stop() override;
+    void HandleBusy() override;
+    bool BusyCheck() override;
 
-	void HandleBusy() override;
-	bool BusyCheck() override;
+    void Data(const uint8_t*) override;
 
-	void Data(const uint8_t*) override;
+    static TL6470DmxModes GetMode() { return L6470DMXMODE4; }
 
-	static TL6470DmxModes GetMode() {
-		return L6470DMXMODE4;
-	}
+    static uint16_t GetDmxFootPrint() { return 1; }
 
-	static uint16_t GetDmxFootPrint() {
-		return 1;
-	}
-
-private:
-	ModeParams *m_pModeParams;
-	L6470 *m_pL6470;
-	float m_fSteps;
-	uint8_t m_nPreviousData{0};
-	bool m_bWasBusy{false};
+   private:
+    L6470* l6470_;
+    uint32_t motor_index_{common::store::l6470dmx::kMaxMotors};
+    float steps_;
+    uint8_t previous_data_{0};
+    bool was_busy_{false};
 };
 
-#endif /* L6470DMXMODE3_H_ */
+#endif  // L6470DMXMODE4_H_

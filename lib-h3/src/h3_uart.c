@@ -36,7 +36,7 @@
 
 #define DEFAUlT_BAUDRATE	115200U
 
-void __attribute__((cold)) h3_uart_begin(uint32_t uart_base, uint32_t baudrate, uint32_t bits, uint32_t parity, uint32_t stop_bits) {
+void __attribute__((cold)) H3UartBegin(uint32_t uart_base, uint32_t baudrate, uint32_t bits, uint32_t parity, uint32_t stop_bits) {
 	assert((uart_base >= H3_UART0_BASE) && (uart_base <= H3_UART3_BASE));
 	assert(baudrate != 0);
 
@@ -142,7 +142,7 @@ void __attribute__((cold)) h3_uart_begin(uint32_t uart_base, uint32_t baudrate, 
 	isb();
 }
 
-void h3_uart_set_baudrate(const uint32_t uart_base, uint32_t baudrate) {
+void H3UartSetBaudrate(uint32_t uart_base, uint32_t baudrate) {
 	assert((uart_base >= H3_UART0_BASE) && (uart_base <= H3_UART3_BASE));
 	assert(baudrate != 0);
 
@@ -163,7 +163,7 @@ void h3_uart_set_baudrate(const uint32_t uart_base, uint32_t baudrate) {
 	isb();
 }
 
-void h3_uart_transmit(const uint32_t uart_base, const uint8_t *data, uint32_t length) {
+void H3UartTransmit(uint32_t uart_base, const uint8_t *data, uint32_t length) {
 	assert((uart_base >= H3_UART0_BASE) && (uart_base <= H3_UART3_BASE));
 	assert(data != NULL);
 
@@ -181,7 +181,7 @@ void h3_uart_transmit(const uint32_t uart_base, const uint8_t *data, uint32_t le
 	}
 }
 
-void h3_uart_transmit_string(const uint32_t uart_base, const char *data) {
+void H3UartTransmitString(uint32_t uart_base, const char *data) {
 	assert((uart_base >= H3_UART0_BASE) && (uart_base <= H3_UART3_BASE));
 	assert(data != NULL);
 

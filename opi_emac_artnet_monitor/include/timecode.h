@@ -1,8 +1,8 @@
 /**
- * @file timecode.cpp
+ * @file timecode.h
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,28 +30,31 @@
 
 #include "artnettimecode.h"
 
-class TimeCode {
-public:
-	TimeCode() {
-		assert(s_pThis == nullptr);
-		s_pThis = this;
-	}
+class TimeCode
+{
+   public:
+    TimeCode()
+    {
+        assert(s_this == nullptr);
+        s_this = this;
+    }
 
-	~TimeCode() = default;
+    ~TimeCode() = default;
 
-	void Start();
-	void Stop();
+    void Start();
+    void Stop();
 
-	void static StaticCallbackFunction(const struct artnet::TimeCode *pTimeCode) {
-		assert(s_pThis != nullptr);
-		s_pThis->Handler(pTimeCode);
-	}
+    void static StaticCallbackFunction(const struct artnet::TimeCode* time_code)
+    {
+        assert(s_this != nullptr);
+        s_this->Handler(time_code);
+    }
 
-private:
-	void Handler(const struct artnet::TimeCode *);
+   private:
+    void Handler(const struct artnet::TimeCode*);
 
-private:
-	static inline TimeCode *s_pThis;
+   private:
+    static inline TimeCode* s_this;
 };
 
-#endif /* TIMECODE_H_ */
+#endif  // TIMECODE_H_

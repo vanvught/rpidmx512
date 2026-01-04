@@ -37,13 +37,13 @@ typedef enum {
 	CONSOLE_DEFAULT = 9
 } _console_colors;
 
-void console_set_fg_color(uint32_t);
+void SetFgColour(uint32_t);
 void bcm2835_watchdog_stop();
 
-void debug_exception(unsigned int type, unsigned int address) {
+void DebugException(unsigned int type, unsigned int address) {
 	__sync_synchronize();
 
-	console_set_fg_color(CONSOLE_RED);
+	SetFgColour(CONSOLE_RED);
 
 	if (type == 0) {
 		printf("\nUndefined exception at address: %p\n",address);
@@ -57,7 +57,7 @@ void debug_exception(unsigned int type, unsigned int address) {
 		printf("\nUnknown exception! [%d]\n", type);
 	}
 
-	console_set_fg_color(CONSOLE_WHITE);
+	SetFgColour(CONSOLE_WHITE);
 
 	bcm2835_watchdog_stop();
 

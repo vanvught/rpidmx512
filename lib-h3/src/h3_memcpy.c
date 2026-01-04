@@ -1,5 +1,5 @@
 /**
- * @file h3_memcpy.h
+ * @file h3_memcpy.c
  *
  */
 /* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl

@@ -2,7 +2,7 @@
  * @file personalityupdate.cpp
  *
  */
-/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,38 +25,67 @@
 
 #include <cstdint>
 
+#include "common/utils/utils_enum.h"
+#include "pixeltype.h"
 #include "rdmresponder.h"
-
-#include "ws28xxdmx.h"
+#include "pixeldmxconfiguration.h"
 #include "pixeltestpattern.h"
 #include "pixelpatterns.h"
 #include "displayudf.h"
+#include "firmware/pixeldmx/show.h"
+ #include "firmware/debug/debug_debug.h"
 
-#include "debug.h"
+void RDMResponder::PersonalityUpdate(uint32_t personality)
+{
+    DEBUG_PRINTF("personality=%u", personality);
 
-void RDMResponder::PersonalityUpdate(uint32_t nPersonality)  {
-	DEBUG_PRINTF("nPersonality=%u", nPersonality);
+#if defined(CONFIG_RDM_MANUFACTURER_PIDS_SET)
+    assert(personality != 0);
+    assert((personality - 1U) < static_cast<uint32_t>(pixel::Type::UNDEFINED));
 
-	DisplayUdf::Get()->ClearEndOfLine();
-	DisplayUdf::Get()->Printf(7, "%s:%d G%d %s",
-					pixel::pixel_get_type(PixelConfiguration::Get().GetType()),
-					PixelConfiguration::Get().GetCount(),
-					PixelDmxConfiguration::Get().GetGroupingCount(),
-					pixel::pixel_get_map(PixelConfiguration::Get().GetMap()));
-	DisplayUdf::Get()->Show();
+    const auto kType = static_cast<uint8_t>(personality - 1);
+    auto& configuration = PixelDmxConfiguration::Get();
+    configuration.SetType(common::FromValue<pixel::Type>(kType));
+    configuration.Validate(1);
 
-	if (nPersonality == 1) {
-		const auto nTestPattern = PixelTestPattern::Get()->GetPattern();
+    dmxled_store::SaveType(kType);
 
-		if (nTestPattern == pixelpatterns::Pattern::NONE) {
-		} else {
-			DisplayUdf::Get()->ClearEndOfLine();
-			DisplayUdf::Get()->Printf(6, "%s:%u", PixelPatterns::GetName(nTestPattern), static_cast<uint32_t>(nTestPattern));
-		}
-	} else if (nPersonality == 2) {
-		DisplayUdf::Get()->ClearLine(3);
-		DisplayUdf::Get()->ClearEndOfLine();
-		DisplayUdf::Get()->Write(4, "Config Mode");
-		DisplayUdf::Get()->ClearLine(5);
-	}
+    common::firmware::pixeldmx::Show(7);
+
+    const auto kTestPattern = PixelTestPattern::Get()->GetPattern();
+
+    if (kTestPattern == pixelpatterns::Pattern::kNone)
+    {
+        PixelOutputType::Get()->ApplyConfiguration();
+    }
+    else
+    {
+        DisplayUdf::Get()->ClearEndOfLine();
+        DisplayUdf::Get()->Printf(6, "%s:%u", PixelPatterns::GetName(kTestPattern), static_cast<uint32_t>(kTestPattern));
+    }
+#else
+    common::firmware::pixeldmx::Show(7);
+
+    if (personality == 1)
+    {
+        const auto kTestPattern = PixelTestPattern::Get()->GetPattern();
+
+        if (kTestPattern == pixelpatterns::Pattern::kNone)
+        {
+        	PixelOutputType::Get()->ApplyConfiguration();
+        }
+        else
+        {
+            DisplayUdf::Get()->ClearEndOfLine();
+            DisplayUdf::Get()->Printf(6, "%s:%u", PixelPatterns::GetName(kTestPattern), static_cast<uint32_t>(kTestPattern));
+        }
+    }
+    else if (personality == 2)
+    {
+        DisplayUdf::Get()->ClearLine(3);
+        DisplayUdf::Get()->ClearEndOfLine();
+        DisplayUdf::Get()->Write(4, "Config Mode");
+        DisplayUdf::Get()->ClearLine(5);
+    }
+#endif
 }

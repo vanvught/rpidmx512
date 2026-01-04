@@ -24,70 +24,73 @@
 #include <sys/time.h>
 
 #include "gpstimeclient.h"
+#include "hal_millis.h"
 #include "platform_gpio.h"
+ #include "firmware/debug/debug_debug.h"
 
-#include "hal.h"
-
-#include "debug.h"
-
-GPSTimeClient::GPSTimeClient(float fUtcOffset, GPSModule module) :
-		GPS(fUtcOffset, module),
-		m_nWaitPPSMillis(hal::millis())
+GPSTimeClient::GPSTimeClient(int32_t utc_offset, gps::Module module) : GPS(utc_offset, module), wait_pps_millis_(hal::Millis())
 {
-	DEBUG_ENTRY
+    DEBUG_ENTRY();
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void GPSTimeClient::Start() {
-	DEBUG_ENTRY
+void GPSTimeClient::Start()
+{
+    DEBUG_ENTRY();
 
-	GPS::Start();
+    GPS::Start();
 
-	platform_gpio_init();
+    platform_gpio_init();
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void GPSTimeClient::Run() {
-	GPS::Run();
+void GPSTimeClient::Run()
+{
+    GPS::Run();
 
-	if (GPS::GetStatus() == gps::Status::IDLE) {
-		return;
-	}
+    if (GPS::GetStatus() == gps::Status::kIdle)
+    {
+        return;
+    }
 
-	if (platform_is_pps()) {
-		struct timeval tv;
-		tv.tv_sec = GetLocalSeconds() + 1;
-		tv.tv_usec = 0;
-		settimeofday(&tv, nullptr);
+    if (platform_is_pps())
+    {
+        struct timeval tv;
+        tv.tv_sec = GetLocalSeconds() + 1;
+        tv.tv_usec = 0;
+        settimeofday(&tv, nullptr);
 
-		m_nWaitPPSMillis = hal::millis();
+        wait_pps_millis_ = hal::Millis();
 
-		DEBUG_PUTS("PPS handled");
-		return;
-	}
+        DEBUG_PUTS("PPS handled");
+        return;
+    }
 
-	const auto nMillis =hal::millis();
+    const auto kMillis = hal::Millis();
 
-	if (__builtin_expect(((nMillis - m_nWaitPPSMillis) > (10 * 1000)), 0)) {
-		m_nWaitPPSMillis = nMillis;
-		// There is no PPS
-		if (GPS::IsTimeUpdated()) {
-			const auto nElapsedMillis = nMillis - GetTimeTimestampMillis();
+    if (__builtin_expect(((kMillis - wait_pps_millis_) > (10 * 1000)), 0))
+    {
+        wait_pps_millis_ = kMillis;
+        // There is no PPS
+        if (GPS::IsTimeUpdated())
+        {
+            const auto kElapsedMillis = kMillis - GetTimeTimestampMillis();
 
-			if (nElapsedMillis <= 1) {
-				struct timeval tv;
-				tv.tv_sec = GPS::GetLocalSeconds();
-				tv.tv_usec = 0;
-				settimeofday(&tv, nullptr);
+            if (kElapsedMillis <= 1)
+            {
+                struct timeval tv;
+                tv.tv_sec = GPS::GetLocalSeconds();
+                tv.tv_usec = 0;
+                settimeofday(&tv, nullptr);
 
-				DEBUG_PRINTF("(GPS::IsTimeUpdated()) %u", nElapsedMillis);
-			}
-		}
+                DEBUG_PRINTF("(GPS::IsTimeUpdated()) %u", kElapsedMillis);
+            }
+        }
 
-		return;
-	}
+        return;
+    }
 
-	return;
+    return;
 }

@@ -27,55 +27,58 @@
 #include <cstdint>
 
 #include "device/fb.h"
-
 #include "h3_de2.h"
 
 #if !defined(USE_UBOOT_HDMI)
-# include <cstring>
-# include "display_timing.h"
-void h3_de2_init(struct display_timing *timing, uint32_t fbbase);
+#include <cstring>
+#include "display_timing.h"
+void h3_de2_init(struct display_timing* timing, uint32_t fbbase);
 #endif
 
-int uart0_printf(const char* fmt, ...);
-#define printf uart0_printf
+namespace uart0
+{
+void Printf(const char* fmt, ...);
+} // namespace uart0
 
 volatile uint32_t fb_width;
 volatile uint32_t fb_height;
 volatile uint32_t fb_pitch;
 volatile uint32_t fb_addr;
 
-int __attribute__((cold)) fb_init() {
+int __attribute__((cold)) fb_init()
+{
 #if !defined(USE_UBOOT_HDMI)
-	struct display_timing default_timing;
-	memset(&default_timing, 0, sizeof(struct display_timing));
+    struct display_timing default_timing;
+    memset(&default_timing, 0, sizeof(struct display_timing));
 
-	default_timing.hdmi_monitor = false;
-	default_timing.pixelclock.typ = 32000000;
-	default_timing.hactive.typ = 800;
-	default_timing.hback_porch.typ = 40;
-	default_timing.hfront_porch.typ = 40;
-	default_timing.hsync_len.typ = 48;
-	default_timing.vactive.typ = 480;
-	default_timing.vback_porch.typ = 29;
-	default_timing.vfront_porch.typ = 13;
-	default_timing.vsync_len.typ = 3;
-	default_timing.flags = static_cast<display_flags>(DISPLAY_FLAGS_HSYNC_LOW | DISPLAY_FLAGS_VSYNC_LOW);
+    default_timing.hdmi_monitor = false;
+    default_timing.pixelclock.typ = 32000000;
+    default_timing.hactive.typ = 800;
+    default_timing.hback_porch.typ = 40;
+    default_timing.hfront_porch.typ = 40;
+    default_timing.hsync_len.typ = 48;
+    default_timing.vactive.typ = 480;
+    default_timing.vback_porch.typ = 29;
+    default_timing.vfront_porch.typ = 13;
+    default_timing.vsync_len.typ = 3;
+    default_timing.flags = static_cast<display_flags>(DISPLAY_FLAGS_HSYNC_LOW | DISPLAY_FLAGS_VSYNC_LOW);
 
-	h3_de2_init(&default_timing, FB_ADDRESS);
+    h3_de2_init(&default_timing, FB_ADDRESS);
 #endif
-	const uint32_t size = H3_DE2_MUX0_UI->CFG[0].SIZE;
-	fb_width = (size & 0xFFFF) + 1;
-	fb_height = (size >> 16) + 1;
-	fb_pitch = H3_DE2_MUX0_UI->CFG[0].PITCH;
-	fb_addr = H3_DE2_MUX0_UI->CFG[0].TOP_LADDR;
+    const uint32_t size = H3_DE2_MUX0_UI->CFG[0].SIZE;
+    fb_width = (size & 0xFFFF) + 1;
+    fb_height = (size >> 16) + 1;
+    fb_pitch = H3_DE2_MUX0_UI->CFG[0].PITCH;
+    fb_addr = H3_DE2_MUX0_UI->CFG[0].TOP_LADDR;
 
-	if (fb_addr == 0) {
-		printf("fb_addr == 0\n");
-		fb_addr = FB_ADDRESS;
-	}
+    if (fb_addr == 0)
+    {
+        uart0::Printf("fb_addr == 0\n");
+        fb_addr = FB_ADDRESS;
+    }
 
-	return FB_OK;
+    return FB_OK;
 }
 #else
- typedef int ISO_C_forbids_an_empty_translation_unit;
+typedef int ISO_C_forbids_an_empty_translation_unit;
 #endif

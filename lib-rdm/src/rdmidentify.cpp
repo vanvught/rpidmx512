@@ -24,5 +24,5 @@
 
 #include "rdmidentify.h"
 
-void __attribute__((weak)) RDMIdentify::On([[maybe_unused]] rdm::identify::Mode nMode) {}
-void __attribute__((weak)) RDMIdentify::Off([[maybe_unused]] rdm::identify::Mode nMode) {}
+void __attribute__((weak)) RDMIdentify::On([[maybe_unused]] Mode mode) {}
+void __attribute__((weak)) RDMIdentify::Off([[maybe_unused]] Mode mode) {}

@@ -29,207 +29,233 @@
 #include <unistd.h>
 
 #include "configstoredevice.h"
+ #include "firmware/debug/debug_debug.h"
 
-#include "debug.h"
+static constexpr auto kFlashSectorSize = 4096U;
+static constexpr auto kFlashSize = (512 * kFlashSectorSize);
+static constexpr char kFlashFileName[] = "spiflash.bin";
+static constexpr auto kBlockWriteLength = 1024;
 
-namespace storedevice {
-static constexpr auto FLASH_SECTOR_SIZE = 4096U;
-static constexpr auto FLASH_SIZE = (512 * FLASH_SECTOR_SIZE);
-static constexpr char FLASH_FILE_NAME[] = "spiflash.bin";
-static constexpr auto BLOCK_WRITE_LENGTH = 1024;
-
-static FILE *pFile;
-
-enum class State {
-	IDLE, RUNNING, ERROR
+enum class State
+{
+    kIdle,
+    kRunning,
+    kError
 };
 
-static State s_State = State::IDLE;
-static uint32_t s_nIndex = 0;
-}  // namespace storedevice
+static FILE* s_file;
+static State s_state = State::kIdle;
+static uint32_t s_index = 0;
 
-using namespace storedevice;
+StoreDevice::StoreDevice()
+{
+    DEBUG_ENTRY();
 
-StoreDevice::StoreDevice() {
-	DEBUG_ENTRY
+    if ((s_file = fopen(kFlashFileName, "r+")) == nullptr)
+    {
+        perror("fopen r+");
 
-	if ((pFile = fopen(FLASH_FILE_NAME, "r+")) == nullptr) {
-		perror("fopen r+");
+        s_file = fopen(kFlashFileName, "w+");
 
-		pFile = fopen(FLASH_FILE_NAME, "w+");
+        for (uint32_t i = 0; i < kFlashSize; i++)
+        {
+            if (fputc(0xFF, s_file) == EOF)
+            {
+                perror("fputc(0xFF, file)");
+                DEBUG_EXIT();
+                return;
+            }
+        }
 
-		for (uint32_t i = 0; i < FLASH_SIZE; i++) {
-			if (fputc(0xFF, pFile) == EOF) {
-				perror("fputc(0xFF, file)");
-				DEBUG_EXIT
-				return;
-			}
-		}
+        if (fflush(s_file) != 0)
+        {
+            perror("fflush");
+        }
+    }
 
-		if (fflush(pFile) != 0) {
-			perror("fflush");
-		}
-	}
+    detected_ = true;
 
-	m_IsDetected = true;
-
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-StoreDevice::~StoreDevice() {
-	DEBUG_ENTRY
+StoreDevice::~StoreDevice()
+{
+    DEBUG_ENTRY();
 
-	if (pFile != nullptr) {
-		fclose(pFile);
-		pFile = nullptr;
-	}
+    if (s_file != nullptr)
+    {
+        fclose(s_file);
+        s_file = nullptr;
+    }
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-uint32_t StoreDevice::GetSize() const {
-	return FLASH_SIZE;
+uint32_t StoreDevice::GetSize() const
+{
+    return kFlashSize;
 }
 
-uint32_t StoreDevice::GetSectorSize() const {
-	return FLASH_SECTOR_SIZE;
+uint32_t StoreDevice::GetSectorSize() const
+{
+    return kFlashSectorSize;
 }
 
-bool StoreDevice::Read(uint32_t nOffset, uint32_t nLength, uint8_t *pBuffer, result& nResult) {
-	assert(pFile != nullptr);
-	DEBUG_ENTRY
-	DEBUG_PRINTF("nOffset=%u, nLength=%u", nOffset, nLength);
+bool StoreDevice::Read(uint32_t offset, uint32_t length, uint8_t* buffer, storedevice::Result& result)
+{
+    assert(s_file != nullptr);
+    DEBUG_ENTRY();
+    DEBUG_PRINTF("offset=%u, length=%u", offset, length);
 
-	if (fseek(pFile, static_cast<long int>(nOffset), SEEK_SET) != 0) {
-		nResult = result::ERROR;
-		perror("fseek");
-		DEBUG_EXIT
-		return true;
-	}
+    if (fseek(s_file, static_cast<long int>(offset), SEEK_SET) != 0)
+    {
+        result = storedevice::Result::kError;
+        perror("fseek");
+        DEBUG_EXIT();
+        return true;
+    }
 
-	if (fread(pBuffer, 1, nLength, pFile) != nLength) {
-		nResult = result::ERROR;
-		perror("fread");
-		DEBUG_EXIT
-		return true;
-	}
+    if (fread(buffer, 1, length, s_file) != length)
+    {
+        result = storedevice::Result::kError;
+        perror("fread");
+        DEBUG_EXIT();
+        return true;
+    }
 
-	DEBUG_EXIT
-	nResult = result::OK;
-	return true;
+    DEBUG_EXIT();
+    result = storedevice::Result::kOk;
+    return true;
 }
 
-bool StoreDevice::Erase(uint32_t nOffset, uint32_t nLength, storedevice::result& nResult) {
-	DEBUG_ENTRY
-	DEBUG_PRINTF("nOffset=%u, nLength=%u, s_State=%d", nOffset, nLength, static_cast<int>(s_State));
-	assert(s_State != State::ERROR);
-	assert(pFile != nullptr);
+bool StoreDevice::Erase(uint32_t offset, uint32_t length, storedevice::Result& result)
+{
+    DEBUG_ENTRY();
+    DEBUG_PRINTF("offset=%u, length=%u, s_State=%d", offset, length, static_cast<int>(s_state));
+    assert(s_state != State::kError);
+    assert(s_file != nullptr);
 
-	if (s_State == State::IDLE) {
-		if (nOffset % FLASH_SECTOR_SIZE || nLength % FLASH_SECTOR_SIZE) {
-			s_State = State::ERROR;
-			nResult = result::ERROR;
-			DEBUG_PUTS("Erase offset/length not multiple of erase size");
-			DEBUG_EXIT
-			return true;
-		}
+    if (s_state == State::kIdle)
+    {
+        if (offset % kFlashSectorSize || length % kFlashSectorSize)
+        {
+            s_state = State::kError;
+            result = storedevice::Result::kError;
+            DEBUG_PUTS("Erase offset/length not multiple of erase size");
+            DEBUG_EXIT();
+            return true;
+        }
 
-		if (fseek(pFile, static_cast<long int>(nOffset), SEEK_SET) != 0) {
-			s_State = State::ERROR;
-			nResult = result::ERROR;
-			perror("fseek");
-			DEBUG_EXIT
-			return true;
-		}
+        if (fseek(s_file, static_cast<long int>(offset), SEEK_SET) != 0)
+        {
+            s_state = State::kError;
+            result = storedevice::Result::kError;
+            perror("fseek");
+            DEBUG_EXIT();
+            return true;
+        }
 
-		s_nIndex = 0;
-		s_State = State::RUNNING;
-		nResult = result::OK;
-		DEBUG_EXIT
-		return false;
-	}
+        s_index = 0;
+        s_state = State::kRunning;
+        result = storedevice::Result::kOk;
+        DEBUG_EXIT();
+        return false;
+    }
 
-	if (s_State == State::RUNNING) {
-		for (uint32_t i = 0; i < nLength; i++) {
-			if (fputc(0xFF, pFile) == EOF) {
-				s_State = State::ERROR;
-				nResult = result::ERROR;
-				perror("fputc(0xFF, file)");
-				DEBUG_EXIT
-				return true;
-			}
-		}
+    if (s_state == State::kRunning)
+    {
+        for (uint32_t i = 0; i < length; i++)
+        {
+            if (fputc(0xFF, s_file) == EOF)
+            {
+                s_state = State::kError;
+                result = storedevice::Result::kError;
+                perror("fputc(0xFF, file)");
+                DEBUG_EXIT();
+                return true;
+            }
+        }
 
-		s_State = State::IDLE;
-		nResult = result::OK;
+        s_state = State::kIdle;
+        result = storedevice::Result::kOk;
 
-		if (fflush(pFile) != 0) {
-			perror("fflush");
-		}
+        if (fflush(s_file) != 0)
+        {
+            perror("fflush");
+        }
 
-		sync();
-		DEBUG_EXIT
-		return true;
-	}
+        sync();
+        DEBUG_EXIT();
+        return true;
+    }
 
-	DEBUG_EXIT
-	assert(0);
-	return true;
+    DEBUG_EXIT();
+    assert(0);
+    return true;
 }
 
-bool StoreDevice::Write(uint32_t nOffset, uint32_t nLength, const uint8_t *pBuffer, storedevice::result& nResult) {
-	DEBUG_ENTRY
-	DEBUG_PRINTF("s_State=%u, nOffset=%u, nLength=%u [%u]", static_cast<unsigned int>(s_State), nOffset, nLength, s_nIndex);
-	assert(s_State != State::ERROR);
-	assert(pFile != nullptr);
+bool StoreDevice::Write(uint32_t offset, uint32_t length, const uint8_t* buffer, storedevice::Result& result)
+{
+    DEBUG_ENTRY();
+    DEBUG_PRINTF("s_State=%u, offset=%u, length=%u [%u]", static_cast<unsigned int>(s_state), offset, length, s_index);
+    assert(s_state != State::kError);
+    assert(s_file != nullptr);
 
-	if (s_State == State::IDLE) {
-		if (fseek(pFile, static_cast<long int>(nOffset), SEEK_SET) != 0) {
-			s_State = State::ERROR;
-			nResult = result::ERROR;
-			perror("fseek");
-			DEBUG_EXIT
-			return true;
-		}
+    if (s_state == State::kIdle)
+    {
+        if (fseek(s_file, static_cast<long int>(offset), SEEK_SET) != 0)
+        {
+            s_state = State::kError;
+            result = storedevice::Result::kError;
+            perror("fseek");
+            DEBUG_EXIT();
+            return true;
+        }
 
-		s_nIndex = 0;
-		s_State = State::RUNNING;
-		nResult = result::OK;
-		DEBUG_EXIT
-		return false;
-	} else if (s_State == State::RUNNING) {
-		uint32_t nBlockWriteLength = nLength - s_nIndex;
+        s_index = 0;
+        s_state = State::kRunning;
+        result = storedevice::Result::kOk;
+        DEBUG_EXIT();
+        return false;
+    }
+    else if (s_state == State::kRunning)
+    {
+        uint32_t block_write_length = length - s_index;
 
-		if (nBlockWriteLength > BLOCK_WRITE_LENGTH) {
-			nBlockWriteLength = BLOCK_WRITE_LENGTH;
-		}
+        if (block_write_length > kBlockWriteLength)
+        {
+            block_write_length = kBlockWriteLength;
+        }
 
-		if (fwrite(&pBuffer[s_nIndex], 1, nBlockWriteLength, pFile) != nBlockWriteLength) {
-			s_State = State::ERROR;
-			nResult = result::ERROR;
-			perror("fwrite");
-			DEBUG_EXIT
-			return true;
-		}
+        if (fwrite(&buffer[s_index], 1, block_write_length, s_file) != block_write_length)
+        {
+            s_state = State::kError;
+            result = storedevice::Result::kError;
+            perror("fwrite");
+            DEBUG_EXIT();
+            return true;
+        }
 
-		s_nIndex += nBlockWriteLength;
+        s_index += block_write_length;
 
-		if (s_nIndex == nLength) {
-			s_State = State::IDLE;
+        if (s_index == length)
+        {
+            s_state = State::kIdle;
 
-			if (fflush(pFile) != 0) {
-				perror("fflush");
-			}
+            if (fflush(s_file) != 0)
+            {
+                perror("fflush");
+            }
 
-			DEBUG_EXIT
-			return true;
-		}
+            DEBUG_EXIT();
+            return true;
+        }
 
-		nResult = result::OK;
-		DEBUG_EXIT
-		return false;
-	}
+        result = storedevice::Result::kOk;
+        DEBUG_EXIT();
+        return false;
+    }
 
-	DEBUG_EXIT
-	return true;
+    DEBUG_EXIT();
+    return true;
 }

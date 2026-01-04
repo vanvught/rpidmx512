@@ -1,8 +1,8 @@
 /**
- * @file rdmhandlere137.cpp
+ * @file rdmhandlere1372.cpp
  *
  */
-/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,629 +23,689 @@
  * THE SOFTWARE.
  */
 
-#if defined (DEBUG_RDM_LLRP)
-# undef NDEBUG
+#if defined(DEBUG_RDM_LLRP)
+#undef NDEBUG
 #endif
 
 #include <cstring>
 #include <algorithm>
 
 #include "rdmhandler.h"
-#include "rdmconst.h"
+#include "e120.h"
 #include "rdm_e120.h"
 #include "network.h"
+#include "firmware/debug/debug_debug.h"
 
-#include "debug.h"
-
-namespace dhcp {
-enum class Mode: uint8_t {
-	INACTIVE = 0x00,	///< The IP address was not obtained via DHCP
-	ACTIVE = 0x01,		///< The IP address was obtained via DHCP
-	UNKNOWN = 0x02		///< The system cannot determine if the address was obtained via DHCP
+namespace dhcp
+{
+enum class Mode : uint8_t
+{
+    kInactive = 0x00, ///< The IP address was not obtained via DHCP
+    kActive = 0x01,   ///< The IP address was obtained via DHCP
+    kUnknown = 0x02   ///< The system cannot determine if the address was obtained via DHCP
 };
-}  // namespace dhcp
+} // namespace dhcp
 
-static dhcp::Mode get_dhcp_mode() {
-	if (Network::Get()->IsDhcpUsed()) {
-		return dhcp::Mode::ACTIVE;
-	}
+static dhcp::Mode GetDhcpMode()
+{
+    if (network::iface::IsDhcpUsed())
+    {
+        return dhcp::Mode::kActive;
+    }
 
-	return dhcp::Mode::INACTIVE;
+    return dhcp::Mode::kInactive;
 }
 
-struct QueuedConfig {
-	static constexpr uint32_t NONE = 0;
-	static constexpr uint32_t STATIC_IP = (1U << 0);
-	static constexpr uint32_t NETMASK   = (1U << 1);
-	static constexpr uint32_t GW        = (1U << 2);
-	static constexpr uint32_t DHCP      = (1U << 3);
-	static constexpr uint32_t ZEROCONF  = (1U << 4);
-	uint32_t nMask = QueuedConfig::NONE;
-	uint32_t nStaticIp;
-	uint32_t nNetmask;
-	uint32_t nGateway;
-	dhcp::Mode mode;
+struct QueuedConfig
+{
+    static constexpr uint32_t kNone = 0;
+    static constexpr uint32_t kStaticIp = (1U << 0);
+    static constexpr uint32_t kNetmask = (1U << 1);
+    static constexpr uint32_t kGw = (1U << 2);
+    static constexpr uint32_t kDhcp = (1U << 3);
+    static constexpr uint32_t kZeroconf = (1U << 4);
+    uint32_t mask = QueuedConfig::kNone;
+    uint32_t static_ip;
+    uint32_t netmask;
+    uint32_t gateway;
+    dhcp::Mode mode;
 };
 
-static QueuedConfig s_QueuedConfig;
+static QueuedConfig s_queued_config;
 
-static bool is_queued_mask_set(const uint32_t nMask) {
-	return (s_QueuedConfig.nMask & nMask) == nMask;
+static bool IsQueuedMaskSet(uint32_t mask)
+{
+    return (s_queued_config.mask & mask) == mask;
 }
 
-static void set_queued_static_ip(const uint32_t nStaticIp, const uint32_t nNetmask) {
-	DEBUG_ENTRY
-	DEBUG_PRINTF(IPSTR ", nNetmask=" IPSTR, IP2STR(nStaticIp), IP2STR(nNetmask));
+static void SetQueuedStaticIp(uint32_t static_ip, uint32_t netmask)
+{
+    DEBUG_ENTRY();
+    DEBUG_PRINTF(IPSTR ", netmask=" IPSTR, IP2STR(static_ip), IP2STR(netmask));
 
-	if (nStaticIp != 0) {
-		s_QueuedConfig.nStaticIp = nStaticIp;
-	} else {
-		s_QueuedConfig.nStaticIp = Network::Get()->GetIp();
-	}
+    if (static_ip != 0)
+    {
+        s_queued_config.static_ip = static_ip;
+    }
+    else
+    {
+        s_queued_config.static_ip = net::GetPrimaryIp();
+    }
 
-	if (nNetmask != 0) {
-		s_QueuedConfig.nNetmask = nNetmask;
-	} else {
-		s_QueuedConfig.nNetmask = Network::Get()->GetNetmask();
-	}
+    if (netmask != 0)
+    {
+        s_queued_config.netmask = netmask;
+    }
+    else
+    {
+        s_queued_config.netmask = net::GetNetmask();
+    }
 
-	s_QueuedConfig.nMask |= QueuedConfig::STATIC_IP;
-	s_QueuedConfig.nMask |= QueuedConfig::NETMASK;
+    s_queued_config.mask |= QueuedConfig::kStaticIp;
+    s_queued_config.mask |= QueuedConfig::kNetmask;
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-static void set_queued_default_route(const uint32_t nGatewayIp) {
-	if (nGatewayIp != 0) {
-		s_QueuedConfig.nGateway = nGatewayIp;
-	} else {
-		s_QueuedConfig.nGateway = Network::Get()->GetGatewayIp();
-	}
+static void SetQueuedDefaultRoute(uint32_t gateway_ip)
+{
+    if (gateway_ip != 0)
+    {
+        s_queued_config.gateway = gateway_ip;
+    }
+    else
+    {
+        s_queued_config.gateway = net::GetGatewayIp();
+    }
 
-	s_QueuedConfig.nMask |= QueuedConfig::GW;
+    s_queued_config.mask |= QueuedConfig::kGw;
 }
 
-static void set_queued_dhcp(const dhcp::Mode mode) {
-	s_QueuedConfig.mode = mode;
-	s_QueuedConfig.nMask |= QueuedConfig::DHCP;
+static void SetQueuedDhcp(dhcp::Mode mode)
+{
+    s_queued_config.mode = mode;
+    s_queued_config.mask |= QueuedConfig::kDhcp;
 }
 
-static void set_queued_zeroconf() {
-	s_QueuedConfig.nMask |= QueuedConfig::ZEROCONF;
+static void SetQueuedZeroconf()
+{
+    s_queued_config.mask |= QueuedConfig::kZeroconf;
 }
 
-static bool apply_queued_config() {
-	DEBUG_ENTRY
-	DEBUG_PRINTF("s_QueuedConfig.nMask=%x, " IPSTR ", " IPSTR, s_QueuedConfig.nMask, IP2STR(s_QueuedConfig.nStaticIp), IP2STR(s_QueuedConfig.nNetmask));
+static bool ApplyQueuedConfig()
+{
+    DEBUG_ENTRY();
+    DEBUG_PRINTF("s_queued_config.mask=%x, " IPSTR ", " IPSTR, s_queued_config.mask, IP2STR(s_queued_config.static_ip), IP2STR(s_queued_config.netmask));
 
-	if (s_QueuedConfig.nMask == QueuedConfig::NONE) {
-		DEBUG_EXIT
-		return false;
-	}
+    if (s_queued_config.mask == QueuedConfig::kNone)
+    {
+        DEBUG_EXIT();
+        return false;
+    }
 
-	if ((is_queued_mask_set(QueuedConfig::STATIC_IP)) || (is_queued_mask_set(QueuedConfig::NETMASK)) || (is_queued_mask_set(QueuedConfig::GW))) {
-		// After SetIp all ip address might be zero.
-		if (is_queued_mask_set(QueuedConfig::STATIC_IP)) {
-			Network::Get()->SetIp(s_QueuedConfig.nStaticIp);
-		}
+    if ((IsQueuedMaskSet(QueuedConfig::kStaticIp)) || (IsQueuedMaskSet(QueuedConfig::kNetmask)) || (IsQueuedMaskSet(QueuedConfig::kGw)))
+    {
+        // After SetIp all ip address might be zero.
+        if (IsQueuedMaskSet(QueuedConfig::kStaticIp))
+        {
+            net::SetPrimaryIp(s_queued_config.static_ip);
+        }
 
-		if (is_queued_mask_set(QueuedConfig::NETMASK)) {
-			Network::Get()->SetNetmask(s_QueuedConfig.nNetmask);
-		}
+        if (IsQueuedMaskSet(QueuedConfig::kNetmask))
+        {
+            net::SetNetmask(s_queued_config.netmask);
+        }
 
-		if (is_queued_mask_set(QueuedConfig::GW)) {
-			Network::Get()->SetGatewayIp(s_QueuedConfig.nGateway);
-		}
+        if (IsQueuedMaskSet(QueuedConfig::kGw))
+        {
+            net::SetGatewayIp(s_queued_config.gateway);
+        }
 
-		s_QueuedConfig.nMask = QueuedConfig::NONE;
+        s_queued_config.mask = QueuedConfig::kNone;
 
-		DEBUG_EXIT
-		return true;
-	}
+        DEBUG_EXIT();
+        return true;
+    }
 
-	if (is_queued_mask_set(QueuedConfig::DHCP)) {
-		if (s_QueuedConfig.mode == dhcp::Mode::ACTIVE) {
-			Network::Get()->EnableDhcp();
-		} else if (s_QueuedConfig.mode == dhcp::Mode::INACTIVE) {
+    if (IsQueuedMaskSet(QueuedConfig::kDhcp))
+    {
+        if (s_queued_config.mode == dhcp::Mode::kActive)
+        {
+            network::iface::EnableDhcp();
+        }
+        else if (s_queued_config.mode == dhcp::Mode::kInactive)
+        {
+        }
 
-		}
+        s_queued_config.mode = dhcp::Mode::kUnknown;
+        s_queued_config.mask = QueuedConfig::kNone;
 
-		s_QueuedConfig.mode = dhcp::Mode::UNKNOWN;
-		s_QueuedConfig.nMask = QueuedConfig::NONE;
+        DEBUG_EXIT();
+        return true;
+    }
 
-		DEBUG_EXIT
-		return true;
-	}
+    if (IsQueuedMaskSet(QueuedConfig::kZeroconf))
+    {
+        network::iface::SetAutoIp();
+        s_queued_config.mask = QueuedConfig::kNone;
 
-	if (is_queued_mask_set(QueuedConfig::ZEROCONF)) {
-		Network::Get()->SetZeroconf();
-		s_QueuedConfig.nMask = QueuedConfig::NONE;
+        DEBUG_EXIT();
+        return true;
+    }
 
-		DEBUG_EXIT
-		return true;
-	}
-
-	DEBUG_EXIT
-	return false;
+    DEBUG_EXIT();
+    return false;
 }
 
 /*
  * ANSI E1.37-2
  */
 
-bool RDMHandler::CheckInterfaceID([[maybe_unused]] const struct TRdmMessageNoSc *pRdmDataIn) {
+bool RDMHandler::CheckInterfaceID([[maybe_unused]] const struct TRdmMessageNoSc* rdm_data_in)
+{
 #if !defined(DMX_WORKSHOP_DEFECT)
-	const auto nInterfaceID = static_cast<uint32_t>((pRdmDataIn->param_data[0] << 24)
-			+ (pRdmDataIn->param_data[1] << 16)
-			+ (pRdmDataIn->param_data[2] << 8) + pRdmDataIn->param_data[3]);
+    const auto kInterfaceID = static_cast<uint32_t>((rdm_data_in->param_data[0] << 24) + (rdm_data_in->param_data[1] << 16) +
+                                                    (rdm_data_in->param_data[2] << 8) + rdm_data_in->param_data[3]);
 
-	if (nInterfaceID != Network::Get()->GetIfIndex()) {
-		RespondMessageNack(E120_NR_DATA_OUT_OF_RANGE);
-		return false;
-	}
+    if (kInterfaceID != network::iface::InterfaceIndex())
+    {
+        RespondMessageNack(E120_NR_DATA_OUT_OF_RANGE);
+        return false;
+    }
 #endif
-	return true;
+    return true;
 }
 
-void RDMHandler::GetInterfaceList([[maybe_unused]] uint16_t nSubDevice) {
-	DEBUG_ENTRY
-	// https://www.iana.org/assignments/arp-parameters/arp-parameters.xhtml
-	const uint16_t nInterfaceHardwareType = 0x6; //	IEEE 802 Networks
+void RDMHandler::GetInterfaceList([[maybe_unused]] uint16_t sub_device)
+{
+    DEBUG_ENTRY();
+    // https://www.iana.org/assignments/arp-parameters/arp-parameters.xhtml
+    const uint16_t kInterfaceHardwareType = 0x6; //	IEEE 802 Networks
 
-	auto *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
+    auto* rdm_data_out = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
 
-	const uint32_t nNetworkInterfaceId = Network::Get()->GetIfIndex();
+    const uint32_t kNetworkInterfaceId = network::iface::InterfaceIndex();
 
-	pRdmDataOut->param_data[0] = static_cast<uint8_t>(nNetworkInterfaceId >> 24);
-	pRdmDataOut->param_data[1] = static_cast<uint8_t>(nNetworkInterfaceId >> 16);
-	pRdmDataOut->param_data[2] = static_cast<uint8_t>(nNetworkInterfaceId >> 8);
-	pRdmDataOut->param_data[3] = static_cast<uint8_t>(nNetworkInterfaceId);
-	pRdmDataOut->param_data[4] = (nInterfaceHardwareType >> 8);
-	pRdmDataOut->param_data[5] = nInterfaceHardwareType;
+    rdm_data_out->param_data[0] = static_cast<uint8_t>(kNetworkInterfaceId >> 24);
+    rdm_data_out->param_data[1] = static_cast<uint8_t>(kNetworkInterfaceId >> 16);
+    rdm_data_out->param_data[2] = static_cast<uint8_t>(kNetworkInterfaceId >> 8);
+    rdm_data_out->param_data[3] = static_cast<uint8_t>(kNetworkInterfaceId);
+    rdm_data_out->param_data[4] = (kInterfaceHardwareType >> 8);
+    rdm_data_out->param_data[5] = kInterfaceHardwareType;
 
-	pRdmDataOut->param_data_length = 6;
+    rdm_data_out->param_data_length = 6;
 
-	RespondMessageAck();
+    RespondMessageAck();
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void RDMHandler::GetInterfaceName([[maybe_unused]] uint16_t nSubDevice) {
-	DEBUG_ENTRY
+void RDMHandler::GetInterfaceName([[maybe_unused]] uint16_t sub_device)
+{
+    DEBUG_ENTRY();
 
-	const auto *pRdmDataIn = reinterpret_cast<const struct TRdmMessageNoSc *>(m_pRdmDataIn);
+    const auto* rdm_data_in = reinterpret_cast<const struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
-	if (!CheckInterfaceID(pRdmDataIn)) {
+    if (!CheckInterfaceID(rdm_data_in))
+    {
+        DEBUG_EXIT();
+        return;
+    }
 
-		DEBUG_EXIT
-		return;
-	}
+    auto* rdm_data_out = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
 
-	auto *pRdmDataOut = reinterpret_cast<struct TRdmMessage *>(m_pRdmDataOut);
+    memcpy(&rdm_data_out->param_data[0], &rdm_data_in->param_data[0], 4);
 
-	memcpy(&pRdmDataOut->param_data[0], &pRdmDataIn->param_data[0], 4);
+    static const auto kLength = std::min(strlen(network::iface::InterfaceName()), static_cast<size_t>(32));
 
-	static const auto nLength = std::min(strlen(Network::Get()->GetIfName()), static_cast<size_t>(32));
+    memcpy(reinterpret_cast<char*>(&rdm_data_out->param_data[4]), network::iface::InterfaceName(), kLength);
 
-	memcpy(reinterpret_cast<char *>(&pRdmDataOut->param_data[4]), Network::Get()->GetIfName(), nLength);
+    rdm_data_out->param_data_length = static_cast<uint8_t>(4 + kLength);
 
-	pRdmDataOut->param_data_length = static_cast<uint8_t>(4 + nLength);
+    RespondMessageAck();
 
-	RespondMessageAck();
-
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void RDMHandler::GetHardwareAddress([[maybe_unused]] uint16_t nSubDevice) {
-	DEBUG_ENTRY
+void RDMHandler::GetHardwareAddress([[maybe_unused]] uint16_t sub_device)
+{
+    DEBUG_ENTRY();
 
-	const auto *pRdmDataIn = reinterpret_cast<const struct TRdmMessageNoSc *>(m_pRdmDataIn);
+    const auto* rdm_data_in = reinterpret_cast<const struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
-	if (!CheckInterfaceID(pRdmDataIn)) {
+    if (!CheckInterfaceID(rdm_data_in))
+    {
+        DEBUG_EXIT();
+        return;
+    }
 
-		DEBUG_EXIT
-		return;
-	}
+    auto* rdm_data_out = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
 
-	auto *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
+    memcpy(&rdm_data_out->param_data[0], &rdm_data_in->param_data[0], 4);
+    network::iface::CopyMacAddressTo(&rdm_data_out->param_data[4]);
 
-	memcpy(&pRdmDataOut->param_data[0], &pRdmDataIn->param_data[0], 4);
-	Network::Get()->MacAddressCopyTo(&pRdmDataOut->param_data[4]);
+    rdm_data_out->param_data_length = 10;
 
-	pRdmDataOut->param_data_length = 10;
+    RespondMessageAck();
 
-	RespondMessageAck();
-
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void RDMHandler::GetDHCPMode([[maybe_unused]] uint16_t nSubDevice) {
-	DEBUG_ENTRY
+void RDMHandler::GetDHCPMode([[maybe_unused]] uint16_t sub_device)
+{
+    DEBUG_ENTRY();
 
-	const auto *pRdmDataIn = reinterpret_cast<const struct TRdmMessageNoSc *>(m_pRdmDataIn);
+    const auto* rdm_data_in = reinterpret_cast<const struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
-	if (!CheckInterfaceID(pRdmDataIn)) {
+    if (!CheckInterfaceID(rdm_data_in))
+    {
+        DEBUG_EXIT();
+        return;
+    }
 
-		DEBUG_EXIT
-		return;
-	}
+    auto* rdm_data_out = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
 
-	auto *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
+    memcpy(&rdm_data_out->param_data[0], &rdm_data_in->param_data[0], 4);
+    rdm_data_out->param_data[4] = network::iface::IsDhcpUsed() ? 1 : 0;
 
-	memcpy(&pRdmDataOut->param_data[0], &pRdmDataIn->param_data[0], 4);
-	pRdmDataOut->param_data[4] = Network::Get()->IsDhcpUsed() ? 1 : 0;
+    rdm_data_out->param_data_length = 5;
 
-	pRdmDataOut->param_data_length = 5;
+    RespondMessageAck();
 
-	RespondMessageAck();
-
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void RDMHandler::SetDHCPMode([[maybe_unused]] bool IsBroadcast, [[maybe_unused]] uint16_t nSubDevice) {
-	DEBUG_ENTRY
+void RDMHandler::SetDHCPMode([[maybe_unused]] bool is_broadcast, [[maybe_unused]] uint16_t sub_device)
+{
+    DEBUG_ENTRY();
 
-	const auto *pRdmDataIn = reinterpret_cast<const struct TRdmMessageNoSc *>(m_pRdmDataIn);
+    const auto* rdm_data_in = reinterpret_cast<const struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
-	if (!CheckInterfaceID(pRdmDataIn)) {
+    if (!CheckInterfaceID(rdm_data_in))
+    {
+        DEBUG_EXIT();
+        return;
+    }
 
-		DEBUG_EXIT
-		return;
-	}
+    if ((!network::iface::IsDhcpKnown()) || (!network::iface::IsDhcpCapable()))
+    {
+        RespondMessageNack(E137_2_NR_ACTION_NOT_SUPPORTED);
 
-	if ((!Network::Get()->IsDhcpKnown()) || (!Network::Get()->IsDhcpCapable())) {
-		RespondMessageNack(E137_2_NR_ACTION_NOT_SUPPORTED);
+        DEBUG_EXIT();
+        return;
+    }
 
-		DEBUG_EXIT
-		return;
-	}
+    const auto kMode = static_cast<dhcp::Mode>(rdm_data_in->param_data[4]);
 
-	const auto mode = static_cast<dhcp::Mode>(pRdmDataIn->param_data[4]);
+    if ((kMode == dhcp::Mode::kActive) || kMode == dhcp::Mode::kInactive)
+    {
+        SetQueuedDhcp(kMode);
+        RespondMessageAck();
 
-	if ((mode == dhcp::Mode::ACTIVE) || mode == dhcp::Mode::INACTIVE) {
-		set_queued_dhcp(mode);
-		RespondMessageAck();
+        DEBUG_EXIT();
+        return;
+    }
 
-		DEBUG_EXIT
-		return;
-	}
+    RespondMessageNack(E120_NR_DATA_OUT_OF_RANGE);
 
-	RespondMessageNack(E120_NR_DATA_OUT_OF_RANGE);
-
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void RDMHandler::GetNameServers([[maybe_unused]] uint16_t nSubDevice) {
-	DEBUG_ENTRY
+void RDMHandler::GetNameServers([[maybe_unused]] uint16_t sub_device)
+{
+    DEBUG_ENTRY();
 
-	const auto *pRdmDataIn = reinterpret_cast<const struct TRdmMessageNoSc *>(m_pRdmDataIn);
-	const auto nNameServerIndex = pRdmDataIn->param_data[0];
+    const auto* rdm_data_in = reinterpret_cast<const struct TRdmMessageNoSc*>(m_pRdmDataIn);
+    const auto kNameServerIndex = rdm_data_in->param_data[0];
 
-	if ((nNameServerIndex >= Network::Get()->GetNameServers()) || (nNameServerIndex >  2)) {
-		RespondMessageNack(E120_NR_DATA_OUT_OF_RANGE);
+    if ((kNameServerIndex >= network::iface::NameServerCount()) || (kNameServerIndex > 2))
+    {
+        RespondMessageNack(E120_NR_DATA_OUT_OF_RANGE);
 
-		DEBUG_EXIT
-		return;
-	}
+        DEBUG_EXIT();
+        return;
+    }
 
-	auto *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
+    auto* rdm_data_out = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
 
-	uint32_t nIpAddress = Network::Get()->GetNameServer(nNameServerIndex);
-	const auto *p = reinterpret_cast<const uint8_t*>(&nIpAddress);
+    uint32_t ip_address = network::iface::NameServer(kNameServerIndex);
+    const auto* p = reinterpret_cast<const uint8_t*>(&ip_address);
 
-	pRdmDataOut->param_data[0] = nNameServerIndex;
-	memcpy(&pRdmDataOut->param_data[1], p, 4);
+    rdm_data_out->param_data[0] = kNameServerIndex;
+    memcpy(&rdm_data_out->param_data[1], p, 4);
 
-	pRdmDataOut->param_data_length = 5;
+    rdm_data_out->param_data_length = 5;
 
-	RespondMessageAck();
+    RespondMessageAck();
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void RDMHandler::GetZeroconf([[maybe_unused]] uint16_t nSubDevice) {
-	DEBUG_ENTRY
+void RDMHandler::GetZeroconf([[maybe_unused]] uint16_t sub_device)
+{
+    DEBUG_ENTRY();
 
-	const auto *pRdmDataIn = reinterpret_cast<const struct TRdmMessageNoSc *>(m_pRdmDataIn);
+    const auto* rdm_data_in = reinterpret_cast<const struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
-	if (!CheckInterfaceID(pRdmDataIn)) {
+    if (!CheckInterfaceID(rdm_data_in))
+    {
+        DEBUG_EXIT();
+        return;
+    }
 
-		DEBUG_EXIT
-		return;
-	}
+    auto* rdm_data_out = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
 
-	auto *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
+    memcpy(&rdm_data_out->param_data[0], &rdm_data_in->param_data[0], 4);
+    rdm_data_out->param_data[4] = network::iface::IsAutoIpCapable() ? (network::iface::IsAutoIpUsed()) : 0;
 
-	memcpy(&pRdmDataOut->param_data[0], &pRdmDataIn->param_data[0], 4);
-	pRdmDataOut->param_data[4] = Network::Get()->IsZeroconfCapable() ? (Network::Get()->IsZeroconfUsed()) : 0;
+    rdm_data_out->param_data_length = 5;
 
-	pRdmDataOut->param_data_length = 5;
+    RespondMessageAck();
 
-	RespondMessageAck();
-
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void RDMHandler::SetZeroconf([[maybe_unused]] bool IsBroadcast, [[maybe_unused]] uint16_t nSubDevice) {
-	DEBUG_ENTRY
+void RDMHandler::SetAutoIp([[maybe_unused]] bool is_broadcast, [[maybe_unused]] uint16_t sub_device)
+{
+    DEBUG_ENTRY();
 
-	const auto *pRdmDataIn = reinterpret_cast<const struct TRdmMessageNoSc *>(m_pRdmDataIn);
+    const auto* rdm_data_in = reinterpret_cast<const struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
-	if (!CheckInterfaceID(pRdmDataIn)) {
+    if (!CheckInterfaceID(rdm_data_in))
+    {
+        DEBUG_EXIT();
+        return;
+    }
 
-		DEBUG_EXIT
-		return;
-	}
+    if (!network::iface::IsAutoIpCapable())
+    {
+        RespondMessageNack(E137_2_NR_ACTION_NOT_SUPPORTED);
 
-	if (!Network::Get()->IsZeroconfCapable()) {
-		RespondMessageNack(E137_2_NR_ACTION_NOT_SUPPORTED);
+        DEBUG_EXIT();
+        return;
+    }
 
-		DEBUG_EXIT
-		return;
-	}
+    if (rdm_data_in->param_data[4] == 1)
+    {
+        SetQueuedZeroconf();
+        RespondMessageAck();
 
-	if (pRdmDataIn->param_data[4] == 1) {
-		set_queued_zeroconf();
-		RespondMessageAck();
+        DEBUG_EXIT();
+        return;
+    }
 
-		DEBUG_EXIT
-		return;
-	}
+    if (rdm_data_in->param_data[4] == 0)
+    {
+        SetQueuedStaticIp(0, 0);
+        RespondMessageAck();
 
-	if (pRdmDataIn->param_data[4] == 0) {
-		set_queued_static_ip(0, 0);
-		RespondMessageAck();
+        DEBUG_EXIT();
+        return;
+    }
 
-		DEBUG_EXIT
-		return;
-	}
+    RespondMessageNack(E120_NR_DATA_OUT_OF_RANGE);
 
-	RespondMessageNack(E120_NR_DATA_OUT_OF_RANGE);
-
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void RDMHandler::RenewDhcp([[maybe_unused]] bool IsBroadcast, [[maybe_unused]] uint16_t nSubDevice) {
-	DEBUG_ENTRY
+void RDMHandler::RenewDhcp([[maybe_unused]] bool is_broadcast, [[maybe_unused]] uint16_t sub_device)
+{
+    DEBUG_ENTRY();
 
-	const auto *pRdmDataIn = reinterpret_cast<const struct TRdmMessageNoSc *>(m_pRdmDataIn);
+    const auto* rdm_data_in = reinterpret_cast<const struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
-	if (!CheckInterfaceID(pRdmDataIn)) {
+    if (!CheckInterfaceID(rdm_data_in))
+    {
+        DEBUG_EXIT();
+        return;
+    }
 
-		DEBUG_EXIT
-		return;
-	}
+    if (!network::iface::IsDhcpKnown())
+    {
+        RespondMessageNack(E137_2_NR_ACTION_NOT_SUPPORTED);
 
-	if (!Network::Get()->IsDhcpKnown()) {
-		RespondMessageNack(E137_2_NR_ACTION_NOT_SUPPORTED);
+        DEBUG_EXIT();
+        return;
+    }
 
-		DEBUG_EXIT
-		return;
-	}
+    if (!network::iface::IsDhcpUsed())
+    {
+        RespondMessageNack(E137_2_NR_ACTION_NOT_SUPPORTED);
 
-	if (!Network::Get()->IsDhcpUsed()) {
-		RespondMessageNack(E137_2_NR_ACTION_NOT_SUPPORTED);
+        DEBUG_EXIT();
+        return;
+    }
 
-		DEBUG_EXIT
-		return;
-	}
+    network::iface::EnableDhcp();
 
-	Network::Get()->EnableDhcp();
+    RespondMessageAck();
 
-	RespondMessageAck();
-
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void RDMHandler::GetAddressNetmask([[maybe_unused]] uint16_t nSubDevice) {
-	DEBUG_ENTRY
+void RDMHandler::GetAddressNetmask([[maybe_unused]] uint16_t sub_device)
+{
+    DEBUG_ENTRY();
 
-	const auto *pRdmDataIn = reinterpret_cast<const struct TRdmMessageNoSc *>(m_pRdmDataIn);
+    const auto* rdm_data_in = reinterpret_cast<const struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
-	if (!CheckInterfaceID(pRdmDataIn)) {
+    if (!CheckInterfaceID(rdm_data_in))
+    {
+        DEBUG_EXIT();
+        return;
+    }
 
-		DEBUG_EXIT
-		return;
-	}
+    auto* rdm_data_out = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
 
-	auto *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
+    auto ip_address = net::GetPrimaryIp();
+    const auto* p = reinterpret_cast<const uint8_t*>(&ip_address);
 
-	auto nIpAddress = Network::Get()->GetIp();
-	const auto *p = reinterpret_cast<const uint8_t*>(&nIpAddress);
+    memcpy(&rdm_data_out->param_data[0], &rdm_data_in->param_data[0], 4);
+    memcpy(&rdm_data_out->param_data[4], p, 4);
+    rdm_data_out->param_data[8] = static_cast<uint8_t>(net::GetNetmaskCIDR());
+    rdm_data_out->param_data[9] = static_cast<uint8_t>(GetDhcpMode());
 
-	memcpy(&pRdmDataOut->param_data[0], &pRdmDataIn->param_data[0], 4);
-	memcpy(&pRdmDataOut->param_data[4], p, 4);
-	pRdmDataOut->param_data[8] = static_cast<uint8_t>(Network::Get()->GetNetmaskCIDR());
-	pRdmDataOut->param_data[9] = static_cast<uint8_t>(get_dhcp_mode());
+    rdm_data_out->param_data_length = 10;
 
-	pRdmDataOut->param_data_length = 10;
+    RespondMessageAck();
 
-	RespondMessageAck();
-
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void RDMHandler::GetStaticAddress([[maybe_unused]] uint16_t nSubDevice) {
-	DEBUG_ENTRY
+void RDMHandler::GetStaticAddress([[maybe_unused]] uint16_t sub_device)
+{
+    DEBUG_ENTRY();
 
-	const auto *pRdmDataIn = reinterpret_cast<const struct TRdmMessageNoSc *>(m_pRdmDataIn);
+    const auto* rdm_data_in = reinterpret_cast<const struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
-	if (!CheckInterfaceID(pRdmDataIn)) {
+    if (!CheckInterfaceID(rdm_data_in))
+    {
+        DEBUG_EXIT();
+        return;
+    }
 
-		DEBUG_EXIT
-		return;
-	}
+    auto* rdm_data_out = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
 
-	auto *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
+    uint32_t ip_address = net::GetPrimaryIp();
+    const auto* p = reinterpret_cast<const uint8_t*>(&ip_address);
 
-	uint32_t nIpAddress = Network::Get()->GetIp();
-	const auto *p = reinterpret_cast<const uint8_t*>(&nIpAddress);
+    memcpy(&rdm_data_out->param_data[0], &rdm_data_in->param_data[0], 4);
+    memcpy(&rdm_data_out->param_data[4], p, 4);
+    rdm_data_out->param_data[8] = static_cast<uint8_t>(net::GetNetmaskCIDR());
 
-	memcpy(&pRdmDataOut->param_data[0], &pRdmDataIn->param_data[0], 4);
-	memcpy(&pRdmDataOut->param_data[4], p, 4);
-	pRdmDataOut->param_data[8] = static_cast<uint8_t>(Network::Get()->GetNetmaskCIDR());
+    rdm_data_out->param_data_length = 9;
 
-	pRdmDataOut->param_data_length = 9;
+    RespondMessageAck();
 
-	RespondMessageAck();
-
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void RDMHandler::SetStaticAddress([[maybe_unused]] bool IsBroadcast, [[maybe_unused]] uint16_t nSubDevice) {
-	DEBUG_ENTRY
+void RDMHandler::SetStaticAddress([[maybe_unused]] bool is_broadcast, [[maybe_unused]] uint16_t sub_device)
+{
+    DEBUG_ENTRY();
 
-	const auto *pRdmDataIn = reinterpret_cast<const struct TRdmMessageNoSc *>(m_pRdmDataIn);
+    const auto* rdm_data_in = reinterpret_cast<const struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
-	if (pRdmDataIn->param_data_length != 9) {
-		RespondMessageNack(E120_NR_FORMAT_ERROR);
+    if (rdm_data_in->param_data_length != 9)
+    {
+        RespondMessageNack(E120_NR_FORMAT_ERROR);
 
-		DEBUG_EXIT
-		return;
-	}
+        DEBUG_EXIT();
+        return;
+    }
 
-	if (!CheckInterfaceID(pRdmDataIn)) {
+    if (!CheckInterfaceID(rdm_data_in))
+    {
+        DEBUG_EXIT();
+        return;
+    }
 
-		DEBUG_EXIT
-		return;
-	}
+    uint32_t ip_address;
+    auto* p = reinterpret_cast<uint8_t*>(&ip_address);
+    memcpy(p, &rdm_data_in->param_data[4], 4);
 
-	uint32_t nIpAddress;
-	auto *p = reinterpret_cast<uint8_t*>(&nIpAddress);
-	memcpy(p, &pRdmDataIn->param_data[4], 4);
+    SetQueuedStaticIp(ip_address, net::cidr_to_netmask(rdm_data_in->param_data[8]));
 
-	set_queued_static_ip(nIpAddress, net::cidr_to_netmask(pRdmDataIn->param_data[8]));
+    RespondMessageAck();
 
-	RespondMessageAck();
-
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void RDMHandler::ApplyConfiguration([[maybe_unused]] bool IsBroadcast, [[maybe_unused]] uint16_t nSubDevice) {
-	DEBUG_ENTRY
+void RDMHandler::ApplyConfiguration([[maybe_unused]] bool is_broadcast, [[maybe_unused]] uint16_t sub_device)
+{
+    DEBUG_ENTRY();
 
-	const auto *pRdmDataIn = reinterpret_cast<const struct TRdmMessageNoSc *>(m_pRdmDataIn);
+    const auto* rdm_data_in = reinterpret_cast<const struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
-	if (!CheckInterfaceID(pRdmDataIn)) {
+    if (!CheckInterfaceID(rdm_data_in))
+    {
+        DEBUG_EXIT();
+        return;
+    }
 
-		DEBUG_EXIT
-		return;
-	}
+    if (ApplyQueuedConfig())
+    { // Not Queuing -> Apply
+        RespondMessageAck();
 
-	if (apply_queued_config()) { // Not Queuing -> Apply
-		RespondMessageAck();
+        DEBUG_EXIT();
+        return;
+    }
 
-		DEBUG_EXIT
-		return;
-	}
+    RespondMessageNack(E120_NR_FORMAT_ERROR);
 
-	RespondMessageNack(E120_NR_FORMAT_ERROR);
-
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void RDMHandler::GetDefaultRoute([[maybe_unused]] uint16_t nSubDevice) {
-	DEBUG_ENTRY
+void RDMHandler::GetDefaultRoute([[maybe_unused]] uint16_t sub_device)
+{
+    DEBUG_ENTRY();
 
-	const auto *pRdmDataIn = reinterpret_cast<const struct TRdmMessageNoSc *>(m_pRdmDataIn);
+    const auto* rdm_data_in = reinterpret_cast<const struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
-	if (!CheckInterfaceID(pRdmDataIn)) {
+    if (!CheckInterfaceID(rdm_data_in))
+    {
+        DEBUG_EXIT();
+        return;
+    }
 
-		DEBUG_EXIT
-		return;
-	}
+    auto* rdm_data_out = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
 
-	auto *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
+    uint32_t ip_address = net::GetGatewayIp();
+    const auto* p = reinterpret_cast<const uint8_t*>(&ip_address);
 
-	uint32_t nIpAddress = Network::Get()->GetGatewayIp();
-	const auto *p = reinterpret_cast<const uint8_t*>(&nIpAddress);
+    memcpy(&rdm_data_out->param_data[0], &rdm_data_in->param_data[0], 4);
+    memcpy(&rdm_data_out->param_data[4], p, 4);
 
-	memcpy(&pRdmDataOut->param_data[0], &pRdmDataIn->param_data[0], 4);
-	memcpy(&pRdmDataOut->param_data[4], p, 4);
+    rdm_data_out->param_data_length = 8;
 
-	pRdmDataOut->param_data_length = 8;
+    RespondMessageAck();
 
-	RespondMessageAck();
-
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void RDMHandler::SetDefaultRoute([[maybe_unused]] bool IsBroadcast, [[maybe_unused]] uint16_t nSubDevice) {
-	DEBUG_ENTRY
+void RDMHandler::SetDefaultRoute([[maybe_unused]] bool is_broadcast, [[maybe_unused]] uint16_t sub_device)
+{
+    DEBUG_ENTRY();
 
-	const auto *pRdmDataIn = reinterpret_cast<const struct TRdmMessageNoSc *>(m_pRdmDataIn);
+    const auto* rdm_data_in = reinterpret_cast<const struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
-	if (pRdmDataIn->param_data_length != 8) {
-		RespondMessageNack(E120_NR_FORMAT_ERROR);
+    if (rdm_data_in->param_data_length != 8)
+    {
+        RespondMessageNack(E120_NR_FORMAT_ERROR);
 
-		DEBUG_EXIT
-		return;
-	}
+        DEBUG_EXIT();
+        return;
+    }
 
-	if (!CheckInterfaceID(pRdmDataIn)) {
+    if (!CheckInterfaceID(rdm_data_in))
+    {
+        DEBUG_EXIT();
+        return;
+    }
 
-		DEBUG_EXIT
-		return;
-	}
+    uint32_t ip_address;
+    auto* p = reinterpret_cast<uint8_t*>(&ip_address);
+    memcpy(p, &rdm_data_in->param_data[4], 4);
 
-	uint32_t nIpAddress;
-	auto *p = reinterpret_cast<uint8_t *>(&nIpAddress);
-	memcpy(p, &pRdmDataIn->param_data[4], 4);
+    SetQueuedDefaultRoute(ip_address);
 
-	set_queued_default_route(nIpAddress);
+    RespondMessageAck();
 
-	RespondMessageAck();
-
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void RDMHandler::GetHostName([[maybe_unused]] uint16_t nSubDevice) {
-	DEBUG_ENTRY
+void RDMHandler::GetHostName([[maybe_unused]] uint16_t sub_device)
+{
+    DEBUG_ENTRY();
 
-	const auto *pHostName = Network::Get()->GetHostName();
-	HandleString(pHostName, static_cast<uint32_t>(strlen(pHostName)));
+    const auto* host_name = network::iface::GetHostName();
+    HandleString(host_name, static_cast<uint32_t>(strlen(host_name)));
 
-	RespondMessageAck();
+    RespondMessageAck();
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void RDMHandler::SetHostName([[maybe_unused]] bool IsBroadcast, [[maybe_unused]] uint16_t nSubDevice) {
-	DEBUG_ENTRY
+void RDMHandler::SetHostName([[maybe_unused]] bool is_broadcast, [[maybe_unused]] uint16_t sub_device)
+{
+    DEBUG_ENTRY();
 
-	auto *pRdmDataIn = reinterpret_cast<struct TRdmMessageNoSc*>(m_pRdmDataIn);
+    auto* rdm_data_in = reinterpret_cast<struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
-	if (pRdmDataIn->param_data_length >= 64) {
-		RespondMessageNack(E120_NR_HARDWARE_FAULT);
+    if (rdm_data_in->param_data_length >= 64)
+    {
+        RespondMessageNack(E120_NR_HARDWARE_FAULT);
 
-		DEBUG_EXIT
-		return;
-	}
+        DEBUG_EXIT();
+        return;
+    }
 
-	pRdmDataIn->param_data[pRdmDataIn->param_data_length] = '\0';
+    rdm_data_in->param_data[rdm_data_in->param_data_length] = '\0';
 
-	Network::Get()->SetHostName(reinterpret_cast<const char*>(pRdmDataIn->param_data));
+    network::iface::SetHostname(reinterpret_cast<const char*>(rdm_data_in->param_data));
 
-	RespondMessageAck();
+    RespondMessageAck();
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void RDMHandler::GetDomainName([[maybe_unused]] uint16_t nSubDevice) {
-	DEBUG_ENTRY
+void RDMHandler::GetDomainName([[maybe_unused]] uint16_t sub_device)
+{
+    DEBUG_ENTRY();
 
-	const auto *pDomainName = Network::Get()->GetDomainName();
-	HandleString(pDomainName, static_cast<uint32_t>(strlen(pDomainName)));
+    const auto* domain_name = network::iface::DomainName();
+    HandleString(domain_name, static_cast<uint32_t>(strlen(domain_name)));
 
-	RespondMessageAck();
+    RespondMessageAck();
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void RDMHandler::SetDomainName([[maybe_unused]] bool IsBroadcast, [[maybe_unused]] uint16_t nSubDevice) {
-	DEBUG_ENTRY
+void RDMHandler::SetDomainName([[maybe_unused]] bool is_broadcast, [[maybe_unused]] uint16_t sub_device)
+{
+    DEBUG_ENTRY();
 
-	RespondMessageNack(E137_2_NR_ACTION_NOT_SUPPORTED);
+    RespondMessageNack(E137_2_NR_ACTION_NOT_SUPPORTED);
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }

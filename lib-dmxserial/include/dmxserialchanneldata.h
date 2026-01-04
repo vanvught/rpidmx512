@@ -52,10 +52,10 @@ private:
 	DmxSerialParseCode ParseSerialData(const char *pLine);
 
 private:
-	FILE *m_pFile { nullptr };
+	FILE *file_ { nullptr };
 	uint8_t m_nChannelValue { 0 };
-	uint8_t m_nChannelDataLength[dmxnode::UNIVERSE_SIZE];
-	uint8_t *m_pChannelData[dmxnode::UNIVERSE_SIZE];
+	uint8_t m_nChannelDataLength[dmxnode::kUniverseSize];
+	uint8_t *m_pChannelData[dmxnode::kUniverseSize];
 };
 
 #endif /* DMXSERIALCHANNELDATA_H_ */

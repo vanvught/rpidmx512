@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+ 
 
 #ifndef DMXNODECHAIN_H_
 #define DMXNODECHAIN_H_
@@ -33,225 +34,247 @@
 #include "sparkfundmx.h"
 #include "tlc59711dmx.h"
 
-#include "debug.h"
+ #include "firmware/debug/debug_debug.h"
 
-class DmxNodeChain {
-public:
-	DmxNodeChain() = default;
-	~DmxNodeChain() = default;
+class DmxNodeChain
+{
+   public:
+    DmxNodeChain() = default;
+    ~DmxNodeChain() = default;
 
-	void SetSparkfunDmx(SparkFunDmx *pSparkFunDmx) {
-		DEBUG_ENTRY
-		assert(pSparkFunDmx != nullptr);
-		m_pSparkFunDmx = pSparkFunDmx;
+    void SetSparkfunDmx(SparkFunDmx* spark_fun_dmx)
+    {
+        DEBUG_ENTRY();
+        assert(spark_fun_dmx != nullptr);
+        spark_fun_dmx_ = spark_fun_dmx;
 
-		Set<SparkFunDmx>(pSparkFunDmx);
-		DEBUG_EXIT
-	}
+        Set<SparkFunDmx>(spark_fun_dmx);
+        DEBUG_EXIT();
+    }
 
-	void SetTLC59711Dmx(TLC59711Dmx *pTLC59711Dmx) {
-		DEBUG_ENTRY
-		m_pTLC59711Dmx = pTLC59711Dmx;
+    void SetTLC59711Dmx(TLC59711Dmx* tlc59711_dmx)
+    {
+        DEBUG_ENTRY();
+        tlc59711_dmx_ = tlc59711_dmx;
 
-		if (m_pTLC59711Dmx == nullptr) {
-			DEBUG_EXIT
-			return;
-		}
+        if (tlc59711_dmx_ == nullptr)
+        {
+            DEBUG_EXIT();
+            return;
+        }
 
-		Set<TLC59711Dmx>(pTLC59711Dmx);
-		DEBUG_EXIT
-	}
+        Set<TLC59711Dmx>(tlc59711_dmx);
+        DEBUG_EXIT();
+    }
 
-	void Start(const uint32_t nPortIndex) {
-		assert(m_pSparkFunDmx != nullptr);
-		m_pSparkFunDmx->Start(nPortIndex);
+    void Start(uint32_t port_index)
+    {
+        assert(spark_fun_dmx_ != nullptr);
+        spark_fun_dmx_->Start(port_index);
 
-		if (m_pTLC59711Dmx != nullptr) {
-			m_pTLC59711Dmx->Start(nPortIndex);
-		}
-	}
+        if (tlc59711_dmx_ != nullptr)
+        {
+            tlc59711_dmx_->Start(port_index);
+        }
+    }
 
-	void Stop(const uint32_t nPortIndex) {
-		assert(m_pSparkFunDmx != nullptr);
-		m_pSparkFunDmx->Stop(nPortIndex);
+    void Stop(uint32_t port_index)
+    {
+        assert(spark_fun_dmx_ != nullptr);
+        spark_fun_dmx_->Stop(port_index);
 
-		if (m_pTLC59711Dmx != nullptr) {
-			m_pTLC59711Dmx->Stop(nPortIndex);
-		}
-	}
+        if (tlc59711_dmx_ != nullptr)
+        {
+            tlc59711_dmx_->Stop(port_index);
+        }
+    }
 
-	void SetData(const uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate = true) {
-		assert(pData != nullptr);
-		assert(m_pSparkFunDmx != nullptr);
-		m_pSparkFunDmx->SetData(nPortIndex, pData, nLength, doUpdate);
+    template <bool doUpdate> void SetData(uint32_t port_index, const uint8_t* data, uint32_t length)
+    {
+        assert(data != nullptr);
+        assert(spark_fun_dmx_ != nullptr);
+        spark_fun_dmx_->SetData<doUpdate>(port_index, data, length);
 
-		if (m_pTLC59711Dmx != nullptr) {
-			m_pTLC59711Dmx->SetData(nPortIndex, pData, nLength, doUpdate);
-		}
-	}
+        if (tlc59711_dmx_ != nullptr)
+        {
+            tlc59711_dmx_->SetData<doUpdate>(port_index, data, length);
+        }
+    }
 
-	void Sync(const uint32_t nPortIndex) {
-		assert(m_pSparkFunDmx != nullptr);
-		m_pSparkFunDmx->Sync(nPortIndex);
+    void Sync(uint32_t port_index)
+    {
+        assert(spark_fun_dmx_ != nullptr);
+        spark_fun_dmx_->Sync(port_index);
 
-		if (m_pTLC59711Dmx != nullptr) {
-			m_pTLC59711Dmx->Sync(nPortIndex);
-		}
-	}
+        if (tlc59711_dmx_ != nullptr)
+        {
+            tlc59711_dmx_->Sync(port_index);
+        }
+    }
 
-	void Sync() {
-		assert(m_pSparkFunDmx != nullptr);
-		m_pSparkFunDmx->Sync();
+    void Sync()
+    {
+        assert(spark_fun_dmx_ != nullptr);
+        spark_fun_dmx_->Sync();
 
-		if (m_pTLC59711Dmx != nullptr) {
-			m_pTLC59711Dmx->Sync();
-		}
-	}
+        if (tlc59711_dmx_ != nullptr)
+        {
+            tlc59711_dmx_->Sync();
+        }
+    }
 
-#if defined (OUTPUT_HAVE_STYLESWITCH)
-	void SetOutputStyle([[maybe_unused]] const uint32_t nPortIndex, [[maybe_unused]] const dmxnode::OutputStyle outputStyle) {
-		DEBUG_ENTRY
-		DEBUG_EXIT
-	}
+#if defined(OUTPUT_HAVE_STYLESWITCH)
+    void SetOutputStyle([[maybe_unused]] uint32_t port_index, [[maybe_unused]] dmxnode::OutputStyle output_style)
+    {
+		DEBUG_ENTRY(); 
+		DEBUG_EXIT();
+    }
 
-	dmxnode::OutputStyle GetOutputStyle([[maybe_unused]] const uint32_t nPortIndex) const {
-		return dmxnode::OutputStyle::DELTA;
-	}
+    dmxnode::OutputStyle GetOutputStyle([[maybe_unused]] uint32_t port_index) const
+    {
+        return dmxnode::OutputStyle::kDelta;
+    }
 #endif
 
-	 uint16_t GetDmxFootprint()  {
-		return m_nDmxFootprint;
-	}
+    uint16_t GetDmxFootprint() { return dmx_footprint_; }
 
-	bool SetDmxStartAddress(uint16_t nDmxStartAddress) {
-		DEBUG_ENTRY
+    bool SetDmxStartAddress(uint16_t dmx_start_address)
+    {
+        DEBUG_ENTRY();
 
-		if (nDmxStartAddress == m_nDmxStartAddress) {
-			DEBUG_EXIT
-			return true;
-		}
+        if (dmx_start_address == dmx_start_address_)
+        {
+            DEBUG_EXIT();
+            return true;
+        }
 
-		const auto nCurrentDmxStartAddress = m_pSparkFunDmx->GetDmxStartAddress();
-		const auto nNewDmxStartAddress =  static_cast<uint16_t>((nCurrentDmxStartAddress - m_nDmxStartAddress) + nDmxStartAddress);
-		m_pSparkFunDmx->SetDmxStartAddress(nNewDmxStartAddress);
+        const auto kCurrentDmxStartAddressSparkfun = spark_fun_dmx_->GetDmxStartAddress();
+        const auto kNewDmxStartAddressSparkfun = static_cast<uint16_t>((kCurrentDmxStartAddressSparkfun - dmx_start_address_) + dmx_start_address);
+        spark_fun_dmx_->SetDmxStartAddress(kNewDmxStartAddressSparkfun);
 
-		if (m_pTLC59711Dmx != nullptr) {
-			const auto nCurrentDmxStartAddress = m_pTLC59711Dmx->GetDmxStartAddress();
-			const auto nNewDmxStartAddress =  static_cast<uint16_t>((nCurrentDmxStartAddress - m_nDmxStartAddress) + nDmxStartAddress);
-			m_pTLC59711Dmx->SetDmxStartAddress(nNewDmxStartAddress);
-		}
+        if (tlc59711_dmx_ != nullptr)
+        {
+            const auto kCurrentDmxStartAddress = tlc59711_dmx_->GetDmxStartAddress();
+            const auto kNewDmxStartAddress = static_cast<uint16_t>((kCurrentDmxStartAddress - dmx_start_address_) + dmx_start_address);
+            tlc59711_dmx_->SetDmxStartAddress(kNewDmxStartAddress);
+        }
 
-		m_nDmxStartAddress = nDmxStartAddress;
+        dmx_start_address_ = dmx_start_address;
 
-		DEBUG_EXIT
-		return true;
-	}
+        DEBUG_EXIT();
+        return true;
+    }
 
-	 uint16_t GetDmxStartAddress() {
-		return m_nDmxStartAddress;
-	}
+    uint16_t GetDmxStartAddress() { return dmx_start_address_; }
 
-	bool GetSlotInfo(const uint16_t nSlotOffset, dmxnode::SlotInfo &slotOffset) {
-		DEBUG_ENTRY
+    bool GetSlotInfo(uint16_t slot_offset, dmxnode::SlotInfo& slot_info)
+    {
+        DEBUG_ENTRY();
 
-		if (nSlotOffset > m_nDmxFootprint) {
-			DEBUG_EXIT
-			return false;
-		}
+        if (slot_offset > dmx_footprint_)
+        {
+            DEBUG_EXIT();
+            return false;
+        }
 
-		auto b = GetSlotInfo<SparkFunDmx>(m_pSparkFunDmx, nSlotOffset, slotOffset);
+        auto b = GetSlotInfo<SparkFunDmx>(spark_fun_dmx_, slot_offset, slot_info);
 
-		if (b) {
-			DEBUG_EXIT
-			return true;
-		}
+        if (b)
+        {
+            DEBUG_EXIT();
+            return true;
+        }
 
-		b = (m_pTLC59711Dmx != nullptr) && GetSlotInfo<TLC59711Dmx>(m_pTLC59711Dmx, nSlotOffset, slotOffset);
+        b = (tlc59711_dmx_ != nullptr) && GetSlotInfo<TLC59711Dmx>(tlc59711_dmx_, slot_offset, slot_info);
 
-		DEBUG_EXIT
-		return b;
-	}
+        DEBUG_EXIT();
+        return b;
+    }
 
-	uint32_t GetUserData() { return 0; }		///< Art-Net ArtPollReply
-	uint32_t GetRefreshRate() { return 0; }		///< Art-Net ArtPollReply
+    uint32_t GetUserData() { return 0; }    ///< Art-Net ArtPollReply
+    uint32_t GetRefreshRate() { return 0; } ///< Art-Net ArtPollReply
 
-	void Blackout([[maybe_unused]] bool bBlackout) {
-		DEBUG_ENTRY
-		DEBUG_EXIT
-	}
+    void Blackout([[maybe_unused]] bool blackout)
+    {
+        DEBUG_ENTRY();
+        DEBUG_EXIT();
+    }
 
-	void FullOn() {
-		DEBUG_ENTRY
-		DEBUG_EXIT
-	}
+    void FullOn()
+    {
+        DEBUG_ENTRY();
+        DEBUG_EXIT();
+    }
 
-	void Print() {
-		m_pSparkFunDmx->Print();
-		if (m_pTLC59711Dmx != nullptr) {
-			m_pTLC59711Dmx->Print();
-		}
-	}
+    void Print()
+    {
+        spark_fun_dmx_->Print();
+        if (tlc59711_dmx_ != nullptr)
+        {
+            tlc59711_dmx_->Print();
+        }
+    }
 
-private:
-	template<class T>
-	void Set(T *pT) {
-		assert(pT != nullptr);
+   private:
+    template <class T> void Set(T* t)
+    {
+		DEBUG_ENTRY();
+        assert(t != nullptr);
+        
+        DEBUG_PRINTF("t->GetDmxStartAddress()=%u,t->GetDmxFootprint()=%u", t->GetDmxStartAddress(),t->GetDmxFootprint());
 
-		[[maybe_unused]] const bool IsValidDmxStartAddress = (pT->GetDmxStartAddress() > 0) && (static_cast<uint32_t>(pT->GetDmxFootprint() - pT->GetDmxStartAddress()) < dmxnode::UNIVERSE_SIZE);
-		assert(IsValidDmxStartAddress);
+        if (dmx_start_address_ == dmxnode::kAddressInvalid)
+        {
+            dmx_start_address_ = t->GetDmxStartAddress();
+            dmx_footprint_ = t->GetDmxFootprint();
 
-		if (m_nDmxStartAddress == dmxnode::ADDRESS_INVALID) {
-			m_nDmxStartAddress = pT->GetDmxStartAddress();
-			m_nDmxFootprint = pT->GetDmxFootprint();
+            DEBUG_PRINTF("dmx_start_address_=%d, dmx_footprint_=%d", dmx_start_address_, dmx_footprint_);
+            DEBUG_EXIT();
+            return;
+        }
 
-			DEBUG_PRINTF("m_nDmxStartAddress=%d, m_nDmxFootprint=%d", m_nDmxStartAddress, m_nDmxFootprint);
-			DEBUG_EXIT
-			return;
-		}
+        DEBUG_PRINTF("t->GetDmxStartAddress()=%d, t->GetDmxFootprint()=%d\n", t->GetDmxStartAddress(), t->GetDmxFootprint());
 
-		DEBUG_PRINTF("pT->GetDmxStartAddress()=%d, pT->GetDmxFootprint()=%d\n", pT->GetDmxStartAddress(), pT->GetDmxFootprint());
+        const auto kDmxChannelLastCurrent = static_cast<uint16_t>(dmx_start_address_ + dmx_footprint_);
+        dmx_start_address_ = std::min(dmx_start_address_, t->GetDmxStartAddress());
 
-		const auto nDmxChannelLastCurrent = static_cast<uint16_t>(m_nDmxStartAddress + m_nDmxFootprint);
-		m_nDmxStartAddress = std::min(m_nDmxStartAddress, pT->GetDmxStartAddress());
+        const auto kDmxChannelLast = static_cast<uint16_t>(t->GetDmxStartAddress() + t->GetDmxFootprint());
+        dmx_footprint_ = static_cast<uint16_t>(std::max(kDmxChannelLastCurrent, kDmxChannelLast) - dmx_start_address_);
 
-		const auto nDmxChannelLast = static_cast<uint16_t>(pT->GetDmxStartAddress() + pT->GetDmxFootprint());
-		m_nDmxFootprint = static_cast<uint16_t>(std::max(nDmxChannelLastCurrent, nDmxChannelLast) - m_nDmxStartAddress);
+        DEBUG_PRINTF("dmx_start_address_=%d, dmx_footprint_=%d\n", dmx_start_address_, dmx_footprint_);
+        DEBUG_EXIT();
+    }
 
-		DEBUG_PRINTF("m_nDmxStartAddress=%d, m_nDmxFootprint=%d\n", m_nDmxStartAddress, m_nDmxFootprint);
-	}
+    template <class T> bool GetSlotInfo(T* t, uint16_t slot_offset, dmxnode::SlotInfo& slot_info)
+    {
+        assert(t != nullptr);
 
-	template<class T>
-	bool GetSlotInfo(T *pT, const uint16_t nSlotOffset, dmxnode::SlotInfo &slotInfo) {
-		assert(pT != nullptr);
-
-		const auto nDmxAddress = m_nDmxStartAddress + nSlotOffset;
-		const auto nOffset = static_cast<int32_t>(nDmxAddress - pT->GetDmxStartAddress());
+        const auto kDmxAddress = dmx_start_address_ + slot_offset;
+        const auto kOffset = static_cast<int32_t>(kDmxAddress - t->GetDmxStartAddress());
 
 #ifndef NDEBUG
-		printf("\tnSlotOffset=%d, m_nDmxStartAddress=%d, pT->GetDmxStartAddress()=%d, pT->GetDmxFootprint()=%d\n",
-				static_cast<int>(nSlotOffset),
-				static_cast<int>(m_nDmxStartAddress),
-				static_cast<int>(pT->GetDmxStartAddress()),
-				static_cast<int>(pT->GetDmxFootprint()));
+        printf("\tkOffset=%d, dmx_start_address_=%d, t->GetDmxStartAddress()=%d, t->GetDmxFootprint()=%d\n", static_cast<int>(kOffset), static_cast<int>(dmx_start_address_), static_cast<int>(t->GetDmxStartAddress()),
+               static_cast<int>(t->GetDmxFootprint()));
 
-		printf("\tnOffset=%d\n", nOffset);
+        printf("\nkOffset=%d\n", kOffset);
 #endif
 
-		if ((pT->GetDmxStartAddress() + pT->GetDmxFootprint() <= nDmxAddress) || (nOffset < 0)){
-			DEBUG_EXIT
-			return false;
-		}
+        if ((t->GetDmxStartAddress() + t->GetDmxFootprint() <= kDmxAddress) || (kOffset < 0))
+        {
+            DEBUG_EXIT();
+            return false;
+        }
 
-		const auto b = pT->GetSlotInfo(static_cast<uint16_t>(nOffset), slotInfo);
-		DEBUG_EXIT
-		return b;
-	}
+        const auto kB = t->GetSlotInfo(static_cast<uint16_t>(kOffset), slot_info);
+        DEBUG_EXIT();
+        return kB;
+    }
 
-private:
-	SparkFunDmx *m_pSparkFunDmx { nullptr };
-	TLC59711Dmx *m_pTLC59711Dmx { nullptr };
-	uint16_t m_nDmxStartAddress { dmxnode::ADDRESS_INVALID };
-	uint16_t m_nDmxFootprint { 0 };
+   private:
+    SparkFunDmx* spark_fun_dmx_{nullptr};
+    TLC59711Dmx* tlc59711_dmx_{nullptr};
+    uint16_t dmx_start_address_{dmxnode::kAddressInvalid};
+    uint16_t dmx_footprint_{0};
 };
 
-#endif /* DMXNODECHAIN_H_ */
+#endif  // DMXNODECHAIN_H_

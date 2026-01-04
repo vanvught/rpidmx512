@@ -46,16 +46,16 @@ int main(int argc, char **argv) {
 		return -2;
 	}
 
-	bcm2835_spi_begin();
+	bcm2835_SpiBegin();
 
-	bcm2835_gpio_fsel(GPIO_RESET_OUT, BCM2835_GPIO_FSEL_OUTP);
-	bcm2835_gpio_set(GPIO_RESET_OUT);
+	bcm2835_GpioFsel(GPIO_RESET_OUT, BCM2835_GPIO_FSEL_OUTP);
+	bcm2835_GpioSet(GPIO_RESET_OUT);
 
-	bcm2835_gpio_fsel(GPIO_BUSY_IN, BCM2835_GPIO_FSEL_INPT);
+	bcm2835_GpioFsel(GPIO_BUSY_IN, BCM2835_GPIO_FSEL_INPT);
 
-	bcm2835_gpio_clr(GPIO_RESET_OUT);
+	bcm2835_GpioClr(GPIO_RESET_OUT);
 	bcm2835_delayMicroseconds(10000);
-	bcm2835_gpio_set(GPIO_RESET_OUT);
+	bcm2835_GpioSet(GPIO_RESET_OUT);
 	bcm2835_delayMicroseconds(10000);
 	/*                                                                         */
 	/***************************************************************************/

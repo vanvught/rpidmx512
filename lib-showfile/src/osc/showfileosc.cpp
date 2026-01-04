@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#if defined (DEBUG_SHOWFILEOSC)
-# undef NDEBUG
+#if defined(DEBUG_SHOWFILEOSC)
+#undef NDEBUG
 #endif
 
 #include <cstdint>
@@ -39,245 +39,287 @@
 #include "oscsimplemessage.h"
 #include "oscsimplesend.h"
 
-#include "network.h"
+ #include "firmware/debug/debug_debug.h"
 
-#include "debug.h"
-
-namespace cmd {
-	static constexpr char START[] = "start";
-	static constexpr char STOP[] = "stop";
-	static constexpr char RESUME[] = "resume";
-	static constexpr char SHOW[] = "show";
-	static constexpr char LOOP[] = "loop";
-	static constexpr char BO[] = "blackout";
-#if defined (CONFIG_SHOWFILE_ENABLE_MASTER)
-	static constexpr char MASTER[] = "master";
+namespace cmd
+{
+static constexpr char kStart[] = "start";
+static constexpr char kStop[] = "stop";
+static constexpr char kResume[] = "resume";
+static constexpr char kShow[] = "show";
+static constexpr char kLoop[] = "loop";
+static constexpr char kBlackout[] = "blackout";
+#if defined(CONFIG_SHOWFILE_ENABLE_MASTER)
+static constexpr char kMaster[] = "master";
 #endif
-	static constexpr char TFTP[] = "tftp";
-	static constexpr char DELETE[] = "delete";
-	// TouchOSC specific
-	static constexpr char RELOAD[] = "reload";
-	static constexpr char INDEX[] = "index";
-}
+static constexpr char kTftp[] = "tftp";
+static constexpr char kDelete[] = "delete";
+// TouchOSC specific
+static constexpr char kReload[] = "reload";
+static constexpr char kIndex[] = "index";
+} // namespace cmd
 
-namespace length {
-	static constexpr uint32_t START = sizeof(cmd::START) - 1;
-	static constexpr uint32_t STOP = sizeof(cmd::STOP) - 1;
-	static constexpr uint32_t RESUME = sizeof(cmd::RESUME) - 1;
-	static constexpr uint32_t SHOW = sizeof(cmd::SHOW) - 1;
-	static constexpr uint32_t LOOP = sizeof(cmd::LOOP) - 1;
-	static constexpr uint32_t BO = sizeof(cmd::BO) - 1;
-#if defined (CONFIG_SHOWFILE_ENABLE_MASTER)
-	static constexpr uint32_t MASTER = sizeof(cmd::MASTER) - 1;
+namespace length
+{
+static constexpr uint32_t kStart = sizeof(cmd::kStart) - 1;
+static constexpr uint32_t kStop = sizeof(cmd::kStop) - 1;
+static constexpr uint32_t kResume = sizeof(cmd::kResume) - 1;
+static constexpr uint32_t kShow = sizeof(cmd::kShow) - 1;
+static constexpr uint32_t kLoop = sizeof(cmd::kLoop) - 1;
+static constexpr uint32_t kBo = sizeof(cmd::kBlackout) - 1;
+#if defined(CONFIG_SHOWFILE_ENABLE_MASTER)
+static constexpr uint32_t kMaster = sizeof(cmd::kMaster) - 1;
 #endif
-	static constexpr uint32_t TFTP = sizeof(cmd::TFTP) - 1;
-	static constexpr uint32_t DELETE = sizeof(cmd::DELETE) - 1;
-	// TouchOSC specific
-	static constexpr uint32_t RELOAD = sizeof(cmd::RELOAD) - 1;
-	static constexpr uint32_t INDEX = sizeof(cmd::INDEX) - 1;
-}
+static constexpr uint32_t kTftp = sizeof(cmd::kTftp) - 1;
+static constexpr uint32_t kDelete = sizeof(cmd::kDelete) - 1;
+// TouchOSC specific
+static constexpr uint32_t kReload = sizeof(cmd::kReload) - 1;
+static constexpr uint32_t kIndex = sizeof(cmd::kIndex) - 1;
+} // namespace length
 
-void ShowFileOSC::Process() {
-	DEBUG_PRINTF("[%s] %d,%d %s", m_pBuffer, static_cast<int>(strlen(reinterpret_cast<const char *>(m_pBuffer))), static_cast<int>(showfileosc::PATH_LENGTH), &m_pBuffer[showfileosc::PATH_LENGTH]);
+void ShowFileOSC::Process()
+{
+    DEBUG_PRINTF("[%s] %d,%d %s", buffer_, static_cast<int>(strlen(reinterpret_cast<const char*>(buffer_))), static_cast<int>(showfileosc::kPathLength),
+                 &buffer_[showfileosc::kPathLength]);
 
-	if (memcmp(&m_pBuffer[showfileosc::PATH_LENGTH], cmd::START, length::START) == 0) {
-		ShowFile::Get().Play();
-		SendStatus();
-		DEBUG_PUTS("ActionStart");
-		return;
-	}
-
-	if (memcmp(&m_pBuffer[showfileosc::PATH_LENGTH], cmd::STOP, length::STOP) == 0){
-		ShowFile::Get().Stop();
-		SendStatus();
-		DEBUG_PUTS("ActionStop");
-		return;
-	}
-
-	if (memcmp(&m_pBuffer[showfileosc::PATH_LENGTH], cmd::RESUME, length::RESUME) == 0) {
-		ShowFile::Get().Resume();
-		SendStatus();
-		DEBUG_PUTS("ActionResume");
-		return;
-	}
-
-	if (memcmp(&m_pBuffer[showfileosc::PATH_LENGTH], cmd::SHOW, length::SHOW) == 0) {
-		OscSimpleMessage Msg(m_pBuffer, m_nBytesReceived);
-
-		const auto nValue = static_cast<uint32_t>(Msg.GetInt(0));
-
-		if (nValue <= showfile::FILE_MAX_NUMBER) {
-			ShowFile::Get().SetPlayerShowFileCurrent(nValue);
-			SendStatus();
-		}
-
-		DEBUG_PRINTF("Show %d", nValue);
-		return;
-	}
-
-	if (memcmp(&m_pBuffer[showfileosc::PATH_LENGTH], cmd::LOOP, length::LOOP) == 0) {
-		OscSimpleMessage Msg(m_pBuffer, m_nBytesReceived);
-
-		int nValue;
-
-		if (Msg.GetType(0) == osc::type::INT32) {
-			nValue = Msg.GetInt(0);
-		} else if (Msg.GetType(0) == osc::type::FLOAT) { // TouchOSC
-			nValue = static_cast<int>(Msg.GetFloat(0));
-		} else {
-			return;
-		}
-
-		ShowFile::Get().DoLoop(nValue != 0);
-		SendStatus();
-		showfile::display_status();
-
-		DEBUG_PRINTF("Loop %d", nValue != 0);
-		return;
-	}
-
-	if (memcmp(&m_pBuffer[showfileosc::PATH_LENGTH], cmd::BO, length::BO) == 0) {
-		ShowFile::Get().BlackOut();
-		SendStatus();
-		DEBUG_PUTS("Blackout");
-		return;
-	}
-
-#if defined (CONFIG_SHOWFILE_ENABLE_MASTER)
-	if (memcmp(&m_pBuffer[showfileosc::PATH_LENGTH], cmd::MASTER, length::MASTER) == 0) {
-		OscSimpleMessage Msg(m_pBuffer, m_nBytesReceived);
-
-		int nValue;
-
-		if (Msg.GetType(0) == osc::type::INT32) {
-			nValue = Msg.GetInt(0);
-		} else if (Msg.GetType(0) == osc::type::FLOAT) { // TouchOSC
-			nValue = static_cast<int>(Msg.GetFloat(0));
-		} else {
-			return;
-		}
-
-		if ((nValue >= 0) &&  (nValue <= 255)) {
-			ShowFile::Get().SetMaster(static_cast<uint32_t>(nValue));
-		}
-
-		DEBUG_PRINTF("Master %d", nValue);
-		return;
-	}
-#endif
-
-	if (memcmp(&m_pBuffer[showfileosc::PATH_LENGTH], cmd::TFTP, length::TFTP) == 0) {
-		OscSimpleMessage Msg(m_pBuffer, m_nBytesReceived);
-
-		int nValue;
-
-		if (Msg.GetType(0) == osc::type::INT32) {
-			nValue = Msg.GetInt(0);
-		} else if (Msg.GetType(0) == osc::type::FLOAT) { // TouchOSC
-			nValue = static_cast<int>(Msg.GetFloat(0));
-		} else {
-			return;
-		}
-
-		ShowFile::Get().EnableTFTP(nValue != 0);
-		SendStatus();
-
-		DEBUG_PRINTF("TFTP %d", nValue != 0);
-		return;
-	}
-
-
-	if (memcmp(&m_pBuffer[showfileosc::PATH_LENGTH], cmd::DELETE, length::DELETE) == 0) {
-		OscSimpleMessage Msg(m_pBuffer, m_nBytesReceived);
-
-		uint32_t nValue = 255;
-
-		if (Msg.GetType(0) == osc::type::INT32){
-			nValue = static_cast<uint32_t>(Msg.GetInt(0));
-		} else {
-			return;
-		}
-
-		DEBUG_PRINTF("nValue=%d", nValue);
-
-		if (nValue <= showfile::FILE_MAX_NUMBER) {
-			char aShowFileName[showfile::FILE_NAME_LENGTH + 1];
-
-			showfile::filename_copyto(aShowFileName, sizeof(aShowFileName), nValue);
-
-			OscSimpleSend MsgName(m_nHandle, m_nRemoteIp, m_nPortOutgoing, "/showfile/name", "s", aShowFileName);
-
-			if (ShowFile::Get().DeleteShowFile(nValue)) {
-				OscSimpleSend MsgStatus(m_nHandle, m_nRemoteIp, m_nPortOutgoing, "/showfile/status", "s", "Deleted");
-			} else {
-				OscSimpleSend MsgStatus(m_nHandle, m_nRemoteIp, m_nPortOutgoing, "/showfile/status", "s", "Not deleted");
-			}
-		}
-
-		DEBUG_PRINTF("Delete %d", nValue);
-		return;
-	}
-
-	if (memcmp(&m_pBuffer[showfileosc::PATH_LENGTH], cmd::INDEX, length::INDEX) == 0) {
-		OscSimpleMessage Msg(m_pBuffer, m_nBytesReceived);
-
-		if (Msg.GetType(0) != osc::type::FLOAT){
-			return;
-		}
-
-		const auto nIndex = static_cast<uint32_t>(Msg.GetFloat(0));
-
-		DEBUG_PRINTF("Index %u", nIndex);
-
-		const auto nShow = ShowFile::Get().GetPlayerShowFile(nIndex);
-
-		if (nShow < 0) {
-			return;
-		}
-
-		DEBUG_PRINTF("nShow %d", nShow);
-
-		ShowFile::Get().SetPlayerShowFileCurrent(static_cast<uint32_t>(nShow));
-		SendStatus();
-
-		return;
-	}
-
-	// TouchOSC
-	if (memcmp(&m_pBuffer[showfileosc::PATH_LENGTH], cmd::RELOAD, length::RELOAD) == 0) {
-		ShowFiles();
-		DEBUG_PUTS("Reload");
-		return;
-	}
-}
-
-// TouchOSC
-void ShowFileOSC::SendStatus() {
-	OscSimpleSend MsgName(m_nHandle, m_nRemoteIp, m_nPortOutgoing, "/showfile/name", "s", ShowFile::Get().GetShowFileNameCurrent());
-
-	const auto status = ShowFile::Get().GetStatus();
-	assert(status != showfile::Status::UNDEFINED);
-
-	OscSimpleSend MsgStatus(m_nHandle, m_nRemoteIp, m_nPortOutgoing, "/showfile/status", "s", showfile::STATUS[static_cast<int>(status)]);
-}
-
-// TouchOSC
-void ShowFileOSC::ShowFiles() {
-	char aPath[64];
-	char aValue[4];
-
-	uint32_t i;
-
-    for (i = 0; i < ShowFile::Get().GetShows(); i++) {
-    	snprintf(aPath, sizeof(aPath) - 1, "/showfile/%u/show", static_cast<unsigned int>(i));
-    	snprintf(aValue, sizeof(aValue) - 1, "%.2u", static_cast<unsigned int>(ShowFile::Get().GetPlayerShowFile(i)));
-    	OscSimpleSend MsgStatus(m_nHandle, m_nRemoteIp, m_nPortOutgoing, aPath, "s", aValue);
+    if (memcmp(&buffer_[showfileosc::kPathLength], cmd::kStart, length::kStart) == 0)
+    {
+        ShowFile::Instance().Play();
+        SendStatus();
+        DEBUG_PUTS("ActionStart");
+        return;
     }
 
-	for (; i < showfileosc::MAX_FILES_ENTRIES; i++) {
-		snprintf(aPath, sizeof(aPath) - 1, "/showfile/%u/show", static_cast<unsigned int>(i));
-		OscSimpleSend MsgStatus(m_nHandle, m_nRemoteIp, m_nPortOutgoing, aPath, "s", "  ");
-	}
+    if (memcmp(&buffer_[showfileosc::kPathLength], cmd::kStop, length::kStop) == 0)
+    {
+        ShowFile::Instance().Stop();
+        SendStatus();
+        DEBUG_PUTS("ActionStop");
+        return;
+    }
 
-	SendStatus();
+    if (memcmp(&buffer_[showfileosc::kPathLength], cmd::kResume, length::kResume) == 0)
+    {
+        ShowFile::Instance().Resume();
+        SendStatus();
+        DEBUG_PUTS("ActionResume");
+        return;
+    }
+
+    if (memcmp(&buffer_[showfileosc::kPathLength], cmd::kShow, length::kShow) == 0)
+    {
+        OscSimpleMessage msg(buffer_, bytes_received_);
+
+        const auto kValue = msg.GetInt(0);
+
+        if (kValue <= showfile::kFileMaxNumber)
+        {
+            ShowFile::Instance().SetPlayerShowFileCurrent(kValue);
+            SendStatus();
+        }
+
+        DEBUG_PRINTF("Show %d", kValue);
+        return;
+    }
+
+    if (memcmp(&buffer_[showfileosc::kPathLength], cmd::kLoop, length::kLoop) == 0)
+    {
+        OscSimpleMessage msg(buffer_, bytes_received_);
+
+        int value;
+
+        if (msg.GetType(0) == osc::type::INT32)
+        {
+            value = msg.GetInt(0);
+        }
+        else if (msg.GetType(0) == osc::type::FLOAT)
+        { // TouchOSC
+            value = static_cast<int>(msg.GetFloat(0));
+        }
+        else
+        {
+            return;
+        }
+
+        ShowFile::Instance().DoLoop(value != 0);
+        SendStatus();
+        showfile::DisplayStatus();
+
+        DEBUG_PRINTF("Loop %d", value != 0);
+        return;
+    }
+
+    if (memcmp(&buffer_[showfileosc::kPathLength], cmd::kBlackout, length::kBo) == 0)
+    {
+        ShowFile::Instance().BlackOut();
+        SendStatus();
+        DEBUG_PUTS("Blackout");
+        return;
+    }
+
+#if defined(CONFIG_SHOWFILE_ENABLE_MASTER)
+    if (memcmp(&buffer_[showfileosc::kPathLength], cmd::kMaster, length::kMaster) == 0)
+    {
+        OscSimpleMessage msg(buffer_, bytes_received_);
+
+        int value;
+
+        if (msg.GetType(0) == osc::type::INT32)
+        {
+            value = msg.GetInt(0);
+        }
+        else if (msg.GetType(0) == osc::type::FLOAT)
+        { // TouchOSC
+            value = static_cast<int>(msg.GetFloat(0));
+        }
+        else
+        {
+            return;
+        }
+
+        if ((value >= 0) && (value <= 255))
+        {
+            ShowFile::Instance().SetMaster(static_cast<uint32_t>(value));
+        }
+
+        DEBUG_PRINTF("Master %d", value);
+        return;
+    }
+#endif
+
+    if (memcmp(&buffer_[showfileosc::kPathLength], cmd::kTftp, length::kTftp) == 0)
+    {
+        OscSimpleMessage msg(buffer_, bytes_received_);
+
+        int value;
+
+        if (msg.GetType(0) == osc::type::INT32)
+        {
+            value = msg.GetInt(0);
+        }
+        else if (msg.GetType(0) == osc::type::FLOAT)
+        { // TouchOSC
+            value = static_cast<int>(msg.GetFloat(0));
+        }
+        else
+        {
+            return;
+        }
+
+        ShowFile::Instance().EnableTFTP(value != 0);
+        SendStatus();
+
+        DEBUG_PRINTF("TFTP %d", value != 0);
+        return;
+    }
+
+    if (memcmp(&buffer_[showfileosc::kPathLength], cmd::kDelete, length::kDelete) == 0)
+    {
+        OscSimpleMessage msg(buffer_, bytes_received_);
+
+        int32_t value = 255;
+
+        if (msg.GetType(0) == osc::type::INT32)
+        {
+            value = msg.GetInt(0);
+        }
+        else
+        {
+            return;
+        }
+
+        DEBUG_PRINTF("value=%d", value);
+
+        if (value <= showfile::kFileMaxNumber)
+        {
+            char show_file_name[showfile::kFileNameLength + 1];
+
+            showfile::FilenameCopyto(show_file_name, sizeof(show_file_name), value);
+
+            OscSimpleSend msg_name(handle_, remote_ip_, port_outgoing_, "/showfile/name", "s", show_file_name);
+
+            if (ShowFile::Instance().DeleteShowFile(value))
+            {
+                OscSimpleSend msg_status(handle_, remote_ip_, port_outgoing_, "/showfile/status", "s", "Deleted");
+            }
+            else
+            {
+                OscSimpleSend msg_status(handle_, remote_ip_, port_outgoing_, "/showfile/status", "s", "Not deleted");
+            }
+        }
+
+        DEBUG_PRINTF("Delete %d", value);
+        return;
+    }
+
+    if (memcmp(&buffer_[showfileosc::kPathLength], cmd::kIndex, length::kIndex) == 0)
+    {
+        OscSimpleMessage msg(buffer_, bytes_received_);
+
+        if (msg.GetType(0) != osc::type::FLOAT)
+        {
+            return;
+        }
+
+        const auto kIndex = static_cast<uint32_t>(msg.GetFloat(0));
+
+        DEBUG_PRINTF("kIndex=%u", kIndex);
+
+        const auto kShow = ShowFile::Instance().GetPlayerShowFile(kIndex);
+
+        if (kShow < 0)
+        {
+            return;
+        }
+
+        DEBUG_PRINTF("kShow=%d", kShow);
+
+        ShowFile::Instance().SetPlayerShowFileCurrent(kShow);
+        SendStatus();
+
+        return;
+    }
+
+    // TouchOSC
+    if (memcmp(&buffer_[showfileosc::kPathLength], cmd::kReload, length::kReload) == 0)
+    {
+        ShowFiles();
+        DEBUG_PUTS("Reload");
+        return;
+    }
+}
+
+// TouchOSC
+void ShowFileOSC::SendStatus()
+{
+    OscSimpleSend msg_name(handle_, remote_ip_, port_outgoing_, "/showfile/name", "s", ShowFile::Instance().GetShowFileNameCurrent());
+
+    const auto kStatus = ShowFile::Instance().GetStatus();
+    assert(kStatus != showfile::Status::kUndefined);
+
+    OscSimpleSend msg_status(handle_, remote_ip_, port_outgoing_, "/showfile/status", "s", showfile::kStatus[static_cast<int>(kStatus)]);
+}
+
+// TouchOSC
+void ShowFileOSC::ShowFiles()
+{
+    char path[64];
+    char value[4];
+
+    uint32_t i;
+
+    for (i = 0; i < ShowFile::Instance().GetShows(); i++)
+    {
+        snprintf(path, sizeof(path) - 1, "/showfile/%u/show", static_cast<unsigned int>(i));
+        snprintf(value, sizeof(value) - 1, "%.2u", static_cast<unsigned int>(ShowFile::Instance().GetPlayerShowFile(i)));
+        OscSimpleSend msg_status(handle_, remote_ip_, port_outgoing_, path, "s", value);
+    }
+
+    for (; i < showfileosc::kMaxFilesEntries; i++)
+    {
+        snprintf(path, sizeof(path) - 1, "/showfile/%u/show", static_cast<unsigned int>(i));
+        OscSimpleSend msg_status(handle_, remote_ip_, port_outgoing_, path, "s", "  ");
+    }
+
+    SendStatus();
 }

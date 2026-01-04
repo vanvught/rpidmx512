@@ -2,7 +2,7 @@
  * @file e133.h
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,12 +23,12 @@
  * THE SOFTWARE.
  */
 
+/**
+ * A.3 Root Layer PDU vector
+ */
+
 #ifndef E133_H_
 #define E133_H_
-
-/**
- * A.3 Root Layer PDU Vector
- */
 
 #define VECTOR_ROOT_LLRP 			0x0000000A	/* Section 5.4 */
 
@@ -50,7 +50,7 @@
 #define VECTOR_PROBE_REPLY_DATA 0x01
 
 /**
- * Table A.12 RDM Command PDU Vector
+ * Table A.12 RDM Command PDU vector
  */
 #define VECTOR_RDM_CMD_RDM_DATA	0xCC
 
@@ -71,4 +71,4 @@
 #define LLRP_COMPONENT_TYPE_BROKER         0x02	///< The LLRP Target is a Broker
 #define LLRP_COMPONENT_TYPE_NON_RDMNET     0xFF	///< The LLRP Target does not implement any RDMnet protocol other than LLRP
 
-#endif /* E133_H_ */
+#endif  // E133_H_
