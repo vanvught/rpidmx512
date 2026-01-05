@@ -52,6 +52,9 @@ static constexpr uint16_t kErrorCodeNoFile = 1;   ///< File not found.
 static constexpr uint16_t kErrorCodeAccess = 2;   ///< Access violation.
 static constexpr uint16_t kErrorCodeDiskFull = 3; ///< Disk full or allocation exceeded.
 static constexpr uint16_t kErrorCodeIllOper = 4;  ///< Illegal TFTP operation.
+// static constexpr uint16_t ERROR_CODE_INV_ID  = 5;	///< Unknown transfer ID.
+// static constexpr uint16_t ERROR_CODE_EXISTS  = 6;	///< File already exists.
+// static constexpr uint16_t ERROR_CODE_INV_USER = 7;///< No such user.
 
 namespace tftp
 {

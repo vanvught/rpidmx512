@@ -43,7 +43,7 @@
 #include "net/tcp.h"
 #include "hal.h"
 #include "firmware/debug/debug_dump.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
 const char* GetFileContent(const char* file_name, uint32_t& size, http::contentTypes& content_type);
 
@@ -51,8 +51,7 @@ const char* GetFileContent(const char* file_name, uint32_t& size, http::contentT
 static constexpr char s_request_method[][8] = {"GET", "POST", "DELETE", "UNKNOWN"};
 #endif
 
-static constexpr char kSContentType[static_cast<uint32_t>(http::contentTypes::NOT_DEFINED)][32] = {"text/html", "text/css", "text/javascript",
-                                                                                                   "application/json", "application/octet-stream"};
+static constexpr char kSContentType[static_cast<uint32_t>(http::contentTypes::NOT_DEFINED)][32] = {"text/html", "text/css", "text/javascript", "application/json", "application/octet-stream"};
 
 void HttpDeamonHandleRequest::HandleRequest(uint32_t bytes_received, char* receive_buffer)
 {
@@ -65,24 +64,27 @@ void HttpDeamonHandleRequest::HandleRequest(uint32_t bytes_received, char* recei
 
     DEBUG_PRINTF("%u: status_=%u", connection_handle_, static_cast<uint32_t>(status_));
 
+    // The HTTP handler keeps state across TCP segments (e.g. POST body arriving later).
+    // status_ == UNKNOWN_ERROR means "we are not currently processing an in-progress request".
     if (status_ == http::Status::UNKNOWN_ERROR)
     {
-        // This is an initial incoming HTTP request
+        // Initial incoming HTTP request (header + maybe body)
         status_ = ParseRequest();
 
-        DEBUG_PRINTF("%s %s", s_request_method[static_cast<uint32_t>(request_method_)],
-                     request_content_type_ < http::contentTypes::NOT_DEFINED ? kSContentType[static_cast<uint32_t>(request_content_type_)] : "Unknown");
+        DEBUG_PRINTF("%s %s", s_request_method[static_cast<uint32_t>(request_method_)], request_content_type_ < http::contentTypes::NOT_DEFINED ? kSContentType[static_cast<uint32_t>(request_content_type_)] : "Unknown");
 
         if (status_ == http::Status::OK)
         {
-            // It is a supported request
+            // Request is syntactically valid and supported.
             if (request_method_ == http::RequestMethod::GET)
             {
                 status_ = HandleGet();
             }
             else if (request_method_ == http::RequestMethod::POST)
             {
-                if ((status_ == http::Status::OK) && (request_content_length_ != 0) && (request_data_length_ == 0))
+                // If POST has Content-Length but no data in this segment,
+                // we must wait for next TCP segment(s).
+                if ((request_content_length_ != 0U) && (request_data_length_ == 0U))
                 {
                     DEBUG_PUTS("There is a POST header only -> no data");
                     DEBUG_EXIT();
@@ -95,13 +97,14 @@ void HttpDeamonHandleRequest::HandleRequest(uint32_t bytes_received, char* recei
     }
     else if ((status_ == http::Status::OK) && (request_method_ == http::RequestMethod::POST))
     {
-        // This is a follow-up TCP segment containing the body
-        // Set file_data_ to the start of this new receive_buffer_
+        // Follow-up TCP segment containing POST body data.
+        // We treat the new receive_buffer as body data.
         file_data_ = receive_buffer_;
         request_data_length_ = bytes_received_;
 
         status_ = HandlePost();
 
+        // If we haven't received the full body yet, wait for more segments.
         if (request_data_length_ < request_content_length_)
         {
             DEBUG_EXIT();
@@ -116,6 +119,7 @@ void HttpDeamonHandleRequest::HandleRequest(uint32_t bytes_received, char* recei
     }
 #endif
 
+    // If request handling failed, generate an error response or abort.
     if (status_ != http::Status::OK)
     {
         switch (status_)
@@ -135,19 +139,22 @@ void HttpDeamonHandleRequest::HandleRequest(uint32_t bytes_received, char* recei
             case http::Status::INTERNAL_SERVER_ERROR:
                 status_msg = "Internal Server Error";
                 break;
+
             case http::Status::METHOD_NOT_IMPLEMENTED:
                 __attribute__((fallthrough));
-                /* no break */
             case http::Status::VERSION_NOT_SUPPORTED:
                 __attribute__((fallthrough));
-                /* no break */
             default:
-                net::tcp::Abort(handle_, connection_handle_);
+                // IMPORTANT CHANGE:
+                // In the new TCP design there is no (listen_handle, conn_handle) pair.
+                // The connection handle alone identifies the TCB in the global pool.
+                network::tcp::Abort(connection_handle_);
+
+                // Reset our HTTP parser state; next segment would be unrelated anyway.
                 status_ = http::Status::UNKNOWN_ERROR;
                 request_method_ = http::RequestMethod::UNKNOWN;
                 DEBUG_EXIT();
                 return;
-                break;
         }
 
         request_content_type_ = http::contentTypes::TEXT_HTML;
@@ -161,6 +168,15 @@ void HttpDeamonHandleRequest::HandleRequest(uint32_t bytes_received, char* recei
                                                        static_cast<unsigned int>(status_), status_msg, status_msg));
     }
 
+    // Build HTTP header into receive_buffer_ and send it first.
+    //
+    // NOTE (bug in your original code):
+    // You used sizeof(dynamic_content_) for snprintf into receive_buffer_.
+    // That only works if receive_buffer_ actually points to a buffer of >= dynamic_content_ size.
+    // If receive_buffer_ is smaller, this can overflow.
+    //
+    // If you control the RX buffer size and it's always >= httpd::kBufsize, it's OK.
+    // Otherwise, prefer using the actual RX buffer capacity.
     const auto kHeaderLength =
         static_cast<uint32_t>(snprintf(receive_buffer_, sizeof(dynamic_content_) - 1U,
                                        "HTTP/1.1 %u %s\r\n"
@@ -169,17 +185,20 @@ void HttpDeamonHandleRequest::HandleRequest(uint32_t bytes_received, char* recei
                                        "Content-Length: %u\r\n"
                                        "Connection: close\r\n"
                                        "\r\n",
-                                       static_cast<unsigned int>(status_), status_msg,  network::iface::GetHostName(),
-                                       kSContentType[static_cast<uint32_t>(request_content_type_)], static_cast<unsigned int>(content_size_)));
+                                       static_cast<unsigned int>(status_), status_msg, network::iface::GetHostName(), kSContentType[static_cast<uint32_t>(request_content_type_)], static_cast<unsigned int>(content_size_)));
 
-    net::tcp::Write(handle_, reinterpret_cast<uint8_t*>(receive_buffer_), kHeaderLength, connection_handle_);
+    // IMPORTANT CHANGE:
+    // Write is now per-connection only.
+    network::tcp::Send(connection_handle_, reinterpret_cast<const uint8_t*>(receive_buffer_), kHeaderLength);
+
     DEBUG_PRINTF("content_size_=%u", content_size_);
-    if (content_size_ != 0)
+
+    if (content_size_ != 0U)
     {
-        net::tcp::Write(handle_, reinterpret_cast<const uint8_t*>(content_), content_size_, connection_handle_);
+        network::tcp::Send(connection_handle_, reinterpret_cast<const uint8_t*>(content_), content_size_);
     }
 
-    // Reset request state after reply is sent
+    // Reset request state after reply is sent.
     status_ = http::Status::UNKNOWN_ERROR;
     request_method_ = http::RequestMethod::UNKNOWN;
     request_content_length_ = 0;
@@ -531,7 +550,7 @@ http::Status HttpDeamonHandleRequest::HandlePost()
 
     if (memcmp(uri_, "/action/command=reboot", 23) == 0)
     {
-        net::tcp::Abort(handle_, connection_handle_);
+        network::tcp::Abort(connection_handle_);
         hal::Reboot();
     }
 

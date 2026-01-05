@@ -121,14 +121,16 @@ void Input(struct t_icmp*);
 void Shutdown();
 } // namespace icmp
 
+} // namespace net
+
+namespace network
+{
 namespace tcp
 {
 void Init();
 void Input(struct t_tcp*);
-void Shutdown();
 void Run();
 } // namespace tcp
-
-} // namespace net
+} // namespace network
 
 #endif // NET_NET_PRIVATE_H_

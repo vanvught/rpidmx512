@@ -30,8 +30,8 @@
 
 #include "http/http.h"
 #include "net/protocol/tcp.h"
-
- #include "firmware/debug/debug_debug.h"
+#include "network_tcp.h"
+#include "firmware/debug/debug_debug.h"
 
 namespace httpd
 {
@@ -48,16 +48,16 @@ static constexpr uint32_t kBufsize = HTTPD_CONTENT_SIZE;
 class HttpDeamonHandleRequest
 {
    public:
-    HttpDeamonHandleRequest() : connection_handle_(0), handle_(-1)
-    {
-		DEBUG_ENTRY(); 
-		DEBUG_EXIT();
-    }
-
-   HttpDeamonHandleRequest(uint32_t connection_handle, int32_t handle) : connection_handle_(connection_handle), handle_(handle)
+    HttpDeamonHandleRequest() : connection_handle_(network::tcp::kInvalidConnHandle)
     {
         DEBUG_ENTRY();
-        DEBUG_PRINTF("[%u] connection_handle=%u, handle=%d", httpd::kBufsize, connection_handle, handle);
+        DEBUG_EXIT();
+    }
+
+    explicit HttpDeamonHandleRequest(network::tcp::ConnHandle connection_handle) : connection_handle_(connection_handle)
+    {
+        DEBUG_ENTRY();
+        DEBUG_PRINTF("[%u] connection_handle=%u", httpd::kBufsize, connection_handle);
         DEBUG_EXIT();
     }
 
@@ -76,8 +76,7 @@ class HttpDeamonHandleRequest
     http::Status HandlePostUpload();
 
    private:
-    uint32_t connection_handle_;
-    int32_t handle_;
+    network::tcp::ConnHandle connection_handle_;
     uint32_t content_size_{0};
     uint32_t request_data_length_{0};
     uint32_t request_content_length_{0};
@@ -98,4 +97,4 @@ class HttpDeamonHandleRequest
     char dynamic_content_[httpd::kBufsize];
 };
 
-#endif  // HTTPD_HTTPDHANDLEREQUEST_H_
+#endif // HTTPD_HTTPDHANDLEREQUEST_H_

@@ -39,7 +39,7 @@ void __attribute__((cold)) Init()
     udp::Init();
     igmp::Init();
 #if defined(ENABLE_HTTPD)
-    tcp::Init();
+    network::tcp::Init();
 #endif
 
     DEBUG_EXIT();

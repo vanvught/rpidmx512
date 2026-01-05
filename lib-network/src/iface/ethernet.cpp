@@ -59,7 +59,7 @@ namespace iface
 {
 void EthernetInput(const uint8_t* buffer, [[maybe_unused]] uint32_t length)
 {
-    const auto* const kEther = reinterpret_cast<const struct ether_header*>(buffer);
+    const auto* const kEther = reinterpret_cast<const struct network::ethernet::Header*>(buffer);
 
     switch (kEther->type)
     {
@@ -72,11 +72,9 @@ void EthernetInput(const uint8_t* buffer, [[maybe_unused]] uint32_t length)
         {
             const auto* const kIp4 = reinterpret_cast<const struct t_ip4*>(buffer);
 
-            DEBUG_PRINTF(IPSTR " " IPSTR, kIp4->ip4.dst[0], kIp4->ip4.dst[1], kIp4->ip4.dst[2], kIp4->ip4.dst[3], kIp4->ip4.src[0], kIp4->ip4.src[1],
-                         kIp4->ip4.src[2], kIp4->ip4.src[3]);
+            DEBUG_PRINTF(IPSTR " " IPSTR, kIp4->ip4.dst[0], kIp4->ip4.dst[1], kIp4->ip4.dst[2], kIp4->ip4.dst[3], kIp4->ip4.src[0], kIp4->ip4.src[1], kIp4->ip4.src[2], kIp4->ip4.src[3]);
 
-            if ((kEther->dst[0] == net::ETH_IP4_MULTICAST_ADDR_0) && (kEther->dst[1] == net::ETH_IP4_MULTICAST_ADDR_1) &&
-                (kEther->dst[2] == net::ETH_IP4_MULTICAST_ADDR_2))
+            if ((kEther->dst[0] == net::ETH_IP4_MULTICAST_ADDR_0) && (kEther->dst[1] == net::ETH_IP4_MULTICAST_ADDR_1) && (kEther->dst[2] == net::ETH_IP4_MULTICAST_ADDR_2))
             {
                 if (!net::igmp::LookupGroup(net::memcpy_ip(kIp4->ip4.dst)))
                 {
@@ -101,8 +99,8 @@ void EthernetInput(const uint8_t* buffer, [[maybe_unused]] uint32_t length)
                     break;
 #if defined(ENABLE_HTTPD)
                 case IPv4_PROTO_TCP:
-                    net::tcp::Input(const_cast<struct t_tcp*>(reinterpret_cast<const struct t_tcp*>(kIp4)));
-                    net::tcp::Run();
+                    network::tcp::Input(const_cast<struct t_tcp*>(reinterpret_cast<const struct t_tcp*>(kIp4)));
+                    network::tcp::Run();
                     break;
 #endif
                 default:

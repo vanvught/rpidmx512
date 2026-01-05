@@ -2,7 +2,7 @@
  * @file ethernet.h
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,31 +28,33 @@
 
 #include <stdint.h>
 
-#if !defined (PACKED)
-# define PACKED __attribute__((packed))
+#if !defined(PACKED)
+#define PACKED __attribute__((packed))
 #endif
 
-enum MTU {
-	MTU_SIZE = 1500
-};
+namespace network::ethernet
+{
 
-enum ETH_ADDR {
-	ETH_ADDR_LEN = 6
-};
+inline constexpr uint32_t kMtuSize = 1500;
+inline constexpr uint32_t kAddressLength = 6;
 
-struct ether_header {
-	uint8_t dst[ETH_ADDR_LEN];		/*  6 */
-	uint8_t src[ETH_ADDR_LEN];		/* 12 */
-	uint16_t type;					/* 14 */
+struct Header
+{
+    uint8_t dst[kAddressLength]; /*  6 */
+    uint8_t src[kAddressLength]; /* 12 */
+    uint16_t type;             /* 14 */
 } PACKED;
 
-namespace net {
+} // namespace network::ethernet
+
+namespace net
+{
 static constexpr uint32_t ETH_HWADDR_LEN = 6;
 /** The 24-bit IANA IPv4-multicast OUI is 01-00-5e: */
 static constexpr uint8_t ETH_IP4_MULTICAST_ADDR_0 = 0x01;
 static constexpr uint8_t ETH_IP4_MULTICAST_ADDR_1 = 0x00;
 static constexpr uint8_t ETH_IP4_MULTICAST_ADDR_2 = 0x5e;
 
-}  // namespace net
+} // namespace net
 
-#endif /* NET_PROTOCOL_ETHERNET_H_ */
+#endif // NET_PROTOCOL_ETHERNET_H_

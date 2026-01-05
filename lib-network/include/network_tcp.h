@@ -1,8 +1,8 @@
 /**
- * @file tcp.h
+ * @file network_tcp.h
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,40 +23,38 @@
  * THE SOFTWARE.
  */
 
-#ifndef NET_PROTOCOL_TCP_H_
-#define NET_PROTOCOL_TCP_H_
+#ifndef NETWORK_TCP_H_
+#define NETWORK_TCP_H_
 
 #include <cstdint>
 
-#include "net/protocol/ethernet.h"
-#include "net/protocol/ip4.h"
-
-#if !defined(PACKED)
-#define PACKED __attribute__((packed))
-#endif
-
-struct t_tcp_packet
+namespace network::tcp
 {
-    uint16_t srcpt;    /*  2 */
-    uint16_t dstpt;    /*  4 */
-    uint32_t seqnum;   /*  8 */
-    uint32_t acknum;   /* 12 */
-    uint8_t offset;    /* 13 */
-    uint8_t control;   /* 14 */
-    uint16_t window;   /* 16 */
-    uint16_t checksum; /* 18 */
-    uint16_t urgent;   /* 20 */
-#define TCP_HEADER_SIZE 20
-#define TCP_OPTIONS_SIZE 40 /* Assuming maximum TCP options size is 40 bytes */
-#define TCP_DATA_SIZE (network::ethernet::kMtuSize - TCP_HEADER_SIZE - sizeof(struct ip4_header) - TCP_OPTIONS_SIZE)
-    uint8_t data[network::ethernet::kMtuSize - TCP_HEADER_SIZE - sizeof(struct ip4_header)];
-} PACKED;
+using ConnHandle = uint32_t;	
+inline constexpr ConnHandle kInvalidConnHandle = UINT32_MAX;
 
-struct t_tcp
+using CallbackListen = void (*)(ConnHandle, const uint8_t*, uint32_t);
+
+// Server
+bool Listen(uint16_t local_port, CallbackListen cb_listen);
+
+// Client
+enum class Event : uint8_t
 {
-    struct network::ethernet::Header ether;
-    struct ip4_header ip4;
-    struct t_tcp_packet tcp;
-} PACKED;
+    kConnected, // client: connect handshake completed
+    kClosed,    // connection closed
+    kReset,     // connection reset/aborted
+    kError      // generic error
+};
 
-#endif // NET_PROTOCOL_TCP_H_
+using CallbackConnect = void (*)(uint32_t connection_handle, Event event);
+
+int32_t Connect(uint32_t remote_ip, uint16_t remote_port, CallbackConnect cb_connect, CallbackListen cb_listen);
+int32_t Close(ConnHandle connection_handle); // graceful FIN
+
+// Common
+void Abort(ConnHandle connection_handle); // RST
+int32_t Send(ConnHandle connection_handle, const uint8_t* buffer, uint32_t length);
+} // namespace network::tcp
+
+#endif // NETWORK_TCP_H_

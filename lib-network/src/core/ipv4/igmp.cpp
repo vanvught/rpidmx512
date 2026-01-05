@@ -81,7 +81,7 @@ typedef union pcast32
 
 static struct t_igmp s_report SECTION_NETWORK ALIGNED;
 static struct t_igmp s_leave SECTION_NETWORK ALIGNED;
-static uint8_t s_multicast_mac[ETH_ADDR_LEN] SECTION_NETWORK ALIGNED;
+static uint8_t s_multicast_mac[network::ethernet::kAddressLength] SECTION_NETWORK ALIGNED;
 static struct GroupInfo s_groups[IGMP_MAX_JOINS_ALLOWED] SECTION_NETWORK ALIGNED;
 static uint16_t s_id SECTION_NETWORK ALIGNED;
 static TimerHandle_t s_timer_id;
@@ -100,7 +100,7 @@ static void SendReport(uint32_t group_address)
     DEBUG_PRINTF(IPSTR " " MACSTR, IP2STR(group_address), MAC2STR(s_multicast_mac));
 
     // Ethernet
-    std::memcpy(s_report.ether.dst, s_multicast_mac, ETH_ADDR_LEN);
+    std::memcpy(s_report.ether.dst, s_multicast_mac, network::ethernet::kAddressLength);
     // IPv4
     s_report.ip4.id = ++s_id;
     net::memcpy_ip(s_report.ip4.src, netif::globals::netif_default.ip.addr);
@@ -160,7 +160,7 @@ void __attribute__((cold)) Init()
     s_multicast_mac[2] = 0x5E;
 
     // Ethernet
-    std::memcpy(s_report.ether.src, netif::globals::netif_default.hwaddr, ETH_ADDR_LEN);
+    std::memcpy(s_report.ether.src, netif::globals::netif_default.hwaddr, network::ethernet::kAddressLength);
     s_report.ether.type = __builtin_bswap16(ETHER_TYPE_IPv4);
 
     // IPv4
@@ -184,7 +184,7 @@ void __attribute__((cold)) Init()
     s_leave.ether.dst[3] = 0x00;
     s_leave.ether.dst[4] = 0x00;
     s_leave.ether.dst[5] = 0x02;
-    std::memcpy(s_leave.ether.src, netif::globals::netif_default.hwaddr, ETH_ADDR_LEN);
+    std::memcpy(s_leave.ether.src, netif::globals::netif_default.hwaddr, network::ethernet::kAddressLength);
     s_leave.ether.type = __builtin_bswap16(ETHER_TYPE_IPv4);
 
     // IPv4

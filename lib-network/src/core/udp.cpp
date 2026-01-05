@@ -23,6 +23,7 @@
  * THE SOFTWARE.
  */
 
+#include "net/protocol/ethernet.h"
 #if defined(DEBUG_NET_UDP)
 #undef NDEBUG
 #endif
@@ -79,7 +80,7 @@ struct Port
 
 static Port s_ports[UDP_MAX_PORTS_ALLOWED] SECTION_NETWORK ALIGNED;
 static uint16_t s_id SECTION_NETWORK ALIGNED;
-static uint8_t s_multicast_mac[ETH_ADDR_LEN] SECTION_NETWORK ALIGNED;
+static uint8_t s_multicast_mac[network::ethernet::kAddressLength] SECTION_NETWORK ALIGNED;
 
 void __attribute__((cold)) Init()
 {
@@ -114,7 +115,7 @@ __attribute__((hot)) void Input(const struct t_udp* udp)
             }
 
             const auto kDataLength = static_cast<uint32_t>(__builtin_bswap16(udp->udp.len) - UDP_HEADER_SIZE);
-            const auto kSize = std::min(static_cast<uint32_t>(UDP_DATA_SIZE), kDataLength);
+            const auto kSize = std::min(UDP_DATA_SIZE, kDataLength);
 
             net::memcpy(data.data, udp->udp.data, kSize);
             data.from_ip = net::memcpy_ip(udp->ip4.src);
@@ -147,7 +148,7 @@ template <net::arp::EthSend S> static void SendImplementation(int index, const u
     auto* out_buffer = reinterpret_cast<t_udp*>(emac_eth_send_get_dma_buffer());
 
     // Ethernet
-    std::memcpy(out_buffer->ether.src, netif::globals::netif_default.hwaddr, ETH_ADDR_LEN);
+    std::memcpy(out_buffer->ether.src, netif::globals::netif_default.hwaddr, network::ethernet::kAddressLength);
     out_buffer->ether.type = __builtin_bswap16(ETHER_TYPE_IPv4);
 
     // IPv4
@@ -167,18 +168,18 @@ template <net::arp::EthSend S> static void SendImplementation(int index, const u
     out_buffer->udp.len = __builtin_bswap16(static_cast<uint16_t>(size + UDP_HEADER_SIZE));
     out_buffer->udp.checksum = 0;
 
-    size = std::min(static_cast<uint32_t>(UDP_DATA_SIZE), size);
+    size = std::min(UDP_DATA_SIZE, size);
 
     net::memcpy(out_buffer->udp.data, data, size);
 
     if (remote_ip == net::IPADDR_BROADCAST)
     {
-        net::memset<0xFF, ETH_ADDR_LEN>(out_buffer->ether.dst);
-        net::memset<0xFF, IPv4_ADDR_LEN>(out_buffer->ip4.dst);
+        net::memset<0xFF, network::ethernet::kAddressLength>(out_buffer->ether.dst);
+        net::memset<0xFF, network::ethernet::kAddressLength>(out_buffer->ip4.dst);
     }
     else if ((remote_ip & net::globals::broadcast_mask) == net::globals::broadcast_mask)
     {
-        net::memset<0xFF, ETH_ADDR_LEN>(out_buffer->ether.dst);
+        net::memset<0xFF, network::ethernet::kAddressLength>(out_buffer->ether.dst);
         net::memcpy_ip(out_buffer->ip4.dst, remote_ip);
     }
     else
@@ -197,7 +198,7 @@ template <net::arp::EthSend S> static void SendImplementation(int index, const u
             s_multicast_mac[4] = multicast_ip.u8[2];
             s_multicast_mac[5] = multicast_ip.u8[3];
 
-            std::memcpy(out_buffer->ether.dst, s_multicast_mac, ETH_ADDR_LEN);
+            std::memcpy(out_buffer->ether.dst, s_multicast_mac, network::ethernet::kAddressLength);
             net::memcpy_ip(out_buffer->ip4.dst, remote_ip);
         }
         else

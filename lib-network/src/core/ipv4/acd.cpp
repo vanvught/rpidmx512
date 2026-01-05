@@ -30,6 +30,7 @@
  * IPv4 Address Conflict Detection
  */
 
+#include "net/protocol/ethernet.h"
 #if defined(DEBUG_NET_ACD)
 #undef NDEBUG
 #endif
@@ -302,7 +303,7 @@ void ArpReply(const struct t_arp* arp)
              */
             if (((memcpy_ip(arp->arp.sender_ip) == acd->ipaddr.addr)) ||
                 (!(memcpy_ip(arp->arp.sender_ip) == 0) && ((memcpy_ip(arp->arp.target_ip)) == acd->ipaddr.addr) &&
-                 (memcmp(arp->arp.sender_mac, netif::globals::netif_default.hwaddr, ETH_ADDR_LEN) == 0)))
+                 (memcmp(arp->arp.sender_mac, netif::globals::netif_default.hwaddr, network::ethernet::kAddressLength) == 0)))
             {
                 DEBUG_PUTS("Probe Conflict detected");
                 Restart(acd);
@@ -315,7 +316,7 @@ void ArpReply(const struct t_arp* arp)
              * in any state we have a conflict if
              * ip.sender == ipaddr && hw.src != own macAddress (someone is using our address)
              */
-            if ((memcpy_ip(arp->arp.sender_ip) == acd->ipaddr.addr) && (memcmp(arp->arp.sender_mac, netif::globals::netif_default.hwaddr, ETH_ADDR_LEN) != 0))
+            if ((memcpy_ip(arp->arp.sender_ip) == acd->ipaddr.addr) && (memcmp(arp->arp.sender_mac, netif::globals::netif_default.hwaddr, network::ethernet::kAddressLength) != 0))
             {
                 DEBUG_PUTS("Conflicting ARP-Packet detected");
                 HandleArpConflict(acd);

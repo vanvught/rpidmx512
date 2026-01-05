@@ -37,6 +37,7 @@
 #include "net/udp.h" // IWYU pragma: keep
 #if defined(ENABLE_HTTPD)
 #include "net/tcp.h" // IWYU pragma: keep
+#include "network_tcp.h"  // IWYU pragma: keep
 #endif
 #include "emac/phy.h"
 #if defined(ENET_LINK_CHECK_USE_PIN_POLL) || defined(ENET_LINK_CHECK_REG_POLL)

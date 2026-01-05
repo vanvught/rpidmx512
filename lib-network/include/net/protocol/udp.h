@@ -2,7 +2,7 @@
  * @file udp.h
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,27 +31,29 @@
 #include "net/protocol/ethernet.h"
 #include "net/protocol/ip4.h"
 
-#if !defined (PACKED)
-# define PACKED __attribute__((packed))
+#if !defined(PACKED)
+#define PACKED __attribute__((packed))
 #endif
 
-struct t_udp_packet {
-	uint16_t source_port;			/* 2 */
-	uint16_t destination_port;		/* 4 */
-	uint16_t len;					/* 6 */
-	uint16_t checksum;				/* 8 */
-#define UDP_HEADER_SIZE		8
-#define UDP_DATA_SIZE		(MTU_SIZE - UDP_HEADER_SIZE - sizeof(struct ip4_header))
-	uint8_t data[UDP_DATA_SIZE];
-}PACKED;
-
-struct t_udp {
-	struct ether_header ether;
-	struct ip4_header ip4;
-	struct t_udp_packet udp;
+struct t_udp_packet
+{
+    uint16_t source_port;      // 2
+    uint16_t destination_port; // 4
+    uint16_t len;              // 6
+    uint16_t checksum;         // 8
+#define UDP_HEADER_SIZE 8
+#define UDP_DATA_SIZE (network::ethernet::kMtuSize - UDP_HEADER_SIZE - sizeof(struct ip4_header))
+    uint8_t data[UDP_DATA_SIZE];
 } PACKED;
 
-#define IPv4_UDP_HEADERS_SIZE 			(sizeof(struct ip4_header) + UDP_HEADER_SIZE)			/* IP | UDP */
-#define UDP_PACKET_HEADERS_SIZE			(sizeof(struct ether_header) + IPv4_UDP_HEADERS_SIZE)	/* ETH | IP | UDP */
+struct t_udp
+{
+    struct network::ethernet::Header ether;
+    struct ip4_header ip4;
+    struct t_udp_packet udp;
+} PACKED;
 
-#endif /* NET_PROTOCOL_UDP_H_ */
+#define IPv4_UDP_HEADERS_SIZE (sizeof(struct ip4_header) + UDP_HEADER_SIZE)             /* IP | UDP */
+#define UDP_PACKET_HEADERS_SIZE (sizeof(struct network::ethernet::Header) + IPv4_UDP_HEADERS_SIZE) /* ETH | IP | UDP */
+
+#endif // NET_PROTOCOL_UDP_H_

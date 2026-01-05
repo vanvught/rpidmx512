@@ -28,25 +28,24 @@
 
 #include "net/ip4_address.h"
 #include "net/protocol/arp.h"
-#include "net/protocol/udp.h"
 
 namespace net::arp
 {
 enum class Flags
 {
-    FLAG_INSERT,
-    FLAG_UPDATE
+    kFlagInsert,
+    kFlagUpdate
 };
 
 void Init();
 void Input(const struct t_arp*);
-void Send(struct t_udp*, const uint32_t, const uint32_t);
+void Send(void*, const uint32_t, uint32_t);
 #if defined CONFIG_NET_ENABLE_PTP
-void SendTimestamp(struct t_udp*, const uint32_t, const uint32_t);
+void SendTimestamp(void*, uint32_t, uint32_t);
 #endif
 void AcdProbe(ip4_addr_t ipaddr);
 void AcdSendAnnouncement(ip4_addr_t ipaddr);
 
 } // namespace net::arp
 
-#endif  // NET_ARP_H_
+#endif // NET_ARP_H_

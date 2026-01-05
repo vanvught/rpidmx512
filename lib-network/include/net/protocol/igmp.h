@@ -2,7 +2,7 @@
  * @file igmp.h
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,7 +49,7 @@ struct t_igmp_packet {
 } PACKED;
 
 struct t_igmp {
-	struct ether_header ether;
+	struct network::ethernet::Header ether;
 	struct ip4_header ip4;
 	union {
 		struct {
@@ -60,7 +60,7 @@ struct t_igmp {
 	} igmp;
 } PACKED;
 
-#define IPv4_IGMP_REPORT_HEADERS_SIZE 	(sizeof(struct t_igmp) - sizeof(struct ether_header))
+#define IPv4_IGMP_REPORT_HEADERS_SIZE 	(sizeof(struct t_igmp) - sizeof(struct network::ethernet::Header))
 #define IGMP_REPORT_PACKET_SIZE			(sizeof(struct t_igmp))
 
 #endif /* NET_PROTOCOL_IGMP_H_ */

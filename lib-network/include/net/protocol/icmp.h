@@ -50,16 +50,16 @@ struct t_icmp_packet {
 	uint16_t checksum;				/* 4 */
 	uint8_t parameter[4];			/* 8 */
 #define ICMP_HEADER_SIZE	8
-#define ICMP_PAYLOAD_SIZE	(MTU_SIZE - ICMP_HEADER_SIZE - sizeof(struct ip4_header))
+#define ICMP_PAYLOAD_SIZE	(network::ethernet::kMtuSize - ICMP_HEADER_SIZE - sizeof(struct ip4_header))
 	uint8_t payload[ICMP_PAYLOAD_SIZE];
 } PACKED;
 
 struct t_icmp {
-	struct ether_header ether;
+	struct network::ethernet::Header ether;
 	struct ip4_header ip4;
 	struct t_icmp_packet icmp;
 } PACKED;
 
-#define IPv4_ICMP_HEADERS_SIZE 			(sizeof(struct t_icmp) - sizeof(struct ether_header))
+#define IPv4_ICMP_HEADERS_SIZE 			(sizeof(struct t_icmp) - sizeof(struct network::ethernet::Header))
 
 #endif /* NET_PROTOCOL_ICMP_H_ */

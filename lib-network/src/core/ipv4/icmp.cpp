@@ -23,6 +23,7 @@
  * THE SOFTWARE.
  */
 
+#include "net/protocol/ethernet.h"
 #if defined(DEBUG_NET_ICMP)
 #undef NDEBUG
 #endif
@@ -51,8 +52,8 @@ __attribute__((hot)) void Input(struct t_icmp* p_icmp)
         if (p_icmp->icmp.code == ICMP_CODE_ECHO)
         {
             // Ethernet
-            std::memcpy(p_icmp->ether.dst, p_icmp->ether.src, ETH_ADDR_LEN);
-            std::memcpy(p_icmp->ether.src, netif::globals::netif_default.hwaddr, ETH_ADDR_LEN);
+            std::memcpy(p_icmp->ether.dst, p_icmp->ether.src, network::ethernet::kAddressLength);
+            std::memcpy(p_icmp->ether.src, netif::globals::netif_default.hwaddr, network::ethernet::kAddressLength);
             // IPv4
             p_icmp->ip4.id = static_cast<uint16_t>(~p_icmp->ip4.id);
 
@@ -79,7 +80,7 @@ __attribute__((hot)) void Input(struct t_icmp* p_icmp)
 #if !defined(CHECKSUM_BY_HARDWARE)
             p_icmp->icmp.checksum = Chksum(reinterpret_cast<void*>(&p_icmp->ip4), static_cast<uint32_t>(__builtin_bswap16(p_icmp->ip4.len)));
 #endif
-            emac_eth_send(reinterpret_cast<void*>(p_icmp), static_cast<uint32_t>(sizeof(struct ether_header) + __builtin_bswap16(p_icmp->ip4.len)));
+            emac_eth_send(reinterpret_cast<void*>(p_icmp), static_cast<uint32_t>(sizeof(struct network::ethernet::Header) + __builtin_bswap16(p_icmp->ip4.len)));
         }
     }
 }
