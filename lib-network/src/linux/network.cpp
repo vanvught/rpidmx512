@@ -45,7 +45,7 @@
 #include "net/netif.h"
 #include "net/udp.h"
 #if !defined(CONFIG_NET_APPS_NO_MDNS)
-#include "net/apps/mdns.h"
+#include "apps/mdns.h"
 #endif
 #include "network_store.h"
 #include "json/networkparams.h"

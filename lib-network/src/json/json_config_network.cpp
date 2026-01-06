@@ -36,7 +36,7 @@
 #include "net/ip4_helpers.h"
 #include "net/netif.h"
 #if defined(HAVE_NTP_CLIENT)
-#include "net/apps/ntpclient.h"
+#include "apps/ntpclient.h"
 #endif
 
 namespace json::config

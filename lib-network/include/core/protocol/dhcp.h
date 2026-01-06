@@ -28,7 +28,7 @@
 
 #include <cstdint>
 
-#include "net/protocol/ip4.h"
+#include "core/protocol/ip4.h"
 
 namespace net::dhcp {
 static constexpr uint32_t OPT_SIZE = 312;

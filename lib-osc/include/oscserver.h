@@ -29,7 +29,7 @@
 #include <cstdio>
 #include <cassert>
 
-#include "net/apps/mdns.h"
+#include "apps/mdns.h"
 #include "hal_statusled.h"
 #include "network.h"
 #include "dmxnode.h"

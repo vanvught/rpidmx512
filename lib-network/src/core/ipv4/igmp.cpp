@@ -40,12 +40,12 @@
 #include <cassert>
 
 #include "net_config.h"
-#include "net_memcpy.h"
-#include "net_private.h"
+#include "../src/core/net_memcpy.h"
+#include "../src/core/net_private.h"
 #include "net/netif.h"
-#include "net/igmp.h"
-#include "net/protocol/ieee.h"
-#include "net/protocol/igmp.h"
+#include "core/ip4/igmp.h"
+#include "core/protocol/ieee.h"
+#include "core/protocol/igmp.h"
 #include "softwaretimers.h"
 #include "firmware/debug/debug_debug.h"
 

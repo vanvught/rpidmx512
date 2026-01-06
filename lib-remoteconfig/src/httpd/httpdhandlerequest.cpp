@@ -40,7 +40,6 @@
 #include "http/html_infos.h"
 #include "http/json_infos.h"
 #include "network.h"
-#include "net/tcp.h"
 #include "hal.h"
 #include "firmware/debug/debug_dump.h"
 #include "firmware/debug/debug_debug.h"

@@ -34,7 +34,7 @@
 
 #include "ltcetc.h"
 #include "network.h"
-#include "net/igmp.h"
+#include "core/ip4/igmp.h"
 #include "common/utils/utils_hex.h"
 #include "firmware/debug/debug_dump.h"
 #include "firmware/debug/debug_debug.h"

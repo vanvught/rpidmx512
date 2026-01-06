@@ -29,30 +29,35 @@
 
 #include <cstdio>
 
-#include "common/utils/utils_flags.h"
-#include "configstore.h"
-#include "configurationstore.h"
 #include "emac/emac.h"
 #include "emac/phy.h"
 #include "emac/net_link_check.h"
 #include "emac/network.h"
+#include "../src/core/net_private.h"
+#include "core/ip4/arp.h"
 #include "net/netif.h"
 #if defined(CONFIG_NET_ENABLE_NTP_CLIENT) || defined(CONFIG_NET_ENABLE_PTP_NTP_CLIENT)
-#include "net/apps/ntpclient.h"
+#include "apps/ntpclient.h"
 #endif
 #if !defined(CONFIG_NET_APPS_NO_MDNS)
-#include "net/apps/mdns.h"
+#include "apps/mdns.h"
 #endif
 #include "network_display.h"
 #include "network_event.h"
 #include "../../config/net_config.h"
+#include "common/utils/utils_flags.h"
+#include "configstore.h"
+#include "configurationstore.h"
 #include "firmware/debug/debug_debug.h"
 
 using common::store::network::Flags;
 
 namespace net
 {
-void NetInit();
+#if defined(CONFIG_NET_ENABLE_PTP)
+__attribute__((weak)) void ptp_init() {}
+#endif
+
 } // namespace net
 namespace global::network
 {
@@ -128,7 +133,24 @@ void Init()
 
     net::emac::display::Status(net::phy::Link::kStateUp == global::network::linkState);
 
-    net::NetInit();
+    net::arp::Init();
+    net::ip::Init();
+
+#if defined(CONFIG_NET_ENABLE_PTP)
+    net::ptp_init();
+#endif
+
+#if defined(CONFIG_NET_ENABLE_NTP_CLIENT)
+    ntpclient::Init();
+#endif
+
+#if defined(CONFIG_NET_ENABLE_PTP_NTP_CLIENT)
+    ntpclient::ptp::Init();
+#endif
+
+#if !defined(CONFIG_NET_APPS_NO_MDNS)
+    mdns::Init();
+#endif
 
     netif::Init();
     netif::AddExtCallback(NetifExtCallback);

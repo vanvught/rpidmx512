@@ -1,5 +1,5 @@
 /**
- * @file udp.h
+ * @file arp.h
  *
  */
 /* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
@@ -23,37 +23,29 @@
  * THE SOFTWARE.
  */
 
-#ifndef NET_PROTOCOL_UDP_H_
-#define NET_PROTOCOL_UDP_H_
+#ifndef NET_ARP_H_
+#define NET_ARP_H_
 
-#include <cstdint>
+#include "net/ip4_address.h"
+#include "core/protocol/arp.h"
 
-#include "net/protocol/ethernet.h"
-#include "net/protocol/ip4.h"
+namespace net::arp
+{
+enum class Flags
+{
+    kFlagInsert,
+    kFlagUpdate
+};
 
-#if !defined(PACKED)
-#define PACKED __attribute__((packed))
+void Init();
+void Input(const struct t_arp*);
+void Send(void*, const uint32_t, uint32_t);
+#if defined CONFIG_NET_ENABLE_PTP
+void SendTimestamp(void*, uint32_t, uint32_t);
 #endif
+void AcdProbe(ip4_addr_t ipaddr);
+void AcdSendAnnouncement(ip4_addr_t ipaddr);
 
-struct t_udp_packet
-{
-    uint16_t source_port;      // 2
-    uint16_t destination_port; // 4
-    uint16_t len;              // 6
-    uint16_t checksum;         // 8
-#define UDP_HEADER_SIZE 8
-#define UDP_DATA_SIZE (network::ethernet::kMtuSize - UDP_HEADER_SIZE - sizeof(struct ip4_header))
-    uint8_t data[UDP_DATA_SIZE];
-} PACKED;
+} // namespace net::arp
 
-struct t_udp
-{
-    struct network::ethernet::Header ether;
-    struct ip4_header ip4;
-    struct t_udp_packet udp;
-} PACKED;
-
-#define IPv4_UDP_HEADERS_SIZE (sizeof(struct ip4_header) + UDP_HEADER_SIZE)             /* IP | UDP */
-#define UDP_PACKET_HEADERS_SIZE (sizeof(struct network::ethernet::Header) + IPv4_UDP_HEADERS_SIZE) /* ETH | IP | UDP */
-
-#endif // NET_PROTOCOL_UDP_H_
+#endif // NET_ARP_H_

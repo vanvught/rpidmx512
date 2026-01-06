@@ -1,8 +1,8 @@
 /**
- * @file icmp.h
+ * @file acd.h
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,44 +22,49 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+/* This code is inspired by: lwIP
+ * https://savannah.nongnu.org/projects/lwip/
+ */
 
-#ifndef NET_PROTOCOL_ICMP_H_
-#define NET_PROTOCOL_ICMP_H_
+#ifndef NET_ACD_H_
+#define NET_ACD_H_
 
 #include <cstdint>
 
-#include "net/protocol/ethernet.h"
-#include "net/protocol/ip4.h"
+#include "core/protocol/arp.h"
+#include "core/protocol/acd.h"
+#include "net/ip4_address.h"
 
-#if !defined (PACKED)
-# define PACKED __attribute__((packed))
-#endif
+/**
+ * https://datatracker.ietf.org/doc/html/rfc5227.html
+ * IPv4 Address Conflict Detection
+ */
 
-enum ICMP_TYPE {
-	ICMP_TYPE_ECHO_REPLY = 0,
-	ICMP_TYPE_ECHO = 8
+namespace net::acd
+{
+typedef void (*conflict_callback_t)(acd::Callback callback);
+
+struct Acd
+{
+    ip4_addr_t ipaddr;
+    State state;
+    uint8_t sent_num;
+    uint8_t lastconflict;
+    uint8_t num_conflicts;
+    conflict_callback_t conflict_callback;
+    uint16_t ttw;
 };
 
-enum ICMP_CODE {
-	ICMP_CODE_ECHO = 0
-};
+void Add(struct acd::Acd*, conflict_callback_t);
+void Remove(struct acd::Acd*);
 
-struct t_icmp_packet {
-	uint8_t type;					/* 1 */
-	uint8_t code;					/* 2 */
-	uint16_t checksum;				/* 4 */
-	uint8_t parameter[4];			/* 8 */
-#define ICMP_HEADER_SIZE	8
-#define ICMP_PAYLOAD_SIZE	(network::ethernet::kMtuSize - ICMP_HEADER_SIZE - sizeof(struct ip4_header))
-	uint8_t payload[ICMP_PAYLOAD_SIZE];
-} PACKED;
+void Start(struct acd::Acd*, ip4_addr_t ipaddr);
+void Stop(struct acd::Acd*);
 
-struct t_icmp {
-	struct network::ethernet::Header ether;
-	struct ip4_header ip4;
-	struct t_icmp_packet icmp;
-} PACKED;
+void ArpReply(const struct t_arp*);
 
-#define IPv4_ICMP_HEADERS_SIZE 			(sizeof(struct t_icmp) - sizeof(struct network::ethernet::Header))
+void NetworkChangedLinkDown();
+void NetifIpAddrChanged(ip4_addr_t old_ip_address, ip4_addr_t new_ip_address);
+} // namespace net::acd
 
-#endif /* NET_PROTOCOL_ICMP_H_ */
+#endif  // NET_ACD_H_

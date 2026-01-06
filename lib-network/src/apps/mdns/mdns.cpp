@@ -34,11 +34,11 @@
 
 #include "network.h"
 #include "net/udp.h"
-#include "net/igmp.h"
-#include "net/apps/mdns.h"
-#include "net/protocol/dns.h"
-#include "net/protocol/ip4.h"
-#include "net/protocol/iana.h"
+#include "core/ip4/igmp.h"
+#include "apps/mdns.h"
+#include "core/protocol/dns.h"
+#include "core/protocol/ip4.h"
+#include "core/protocol/iana.h"
 #include "firmware/debug/debug_debug.h"
 
 namespace mdns

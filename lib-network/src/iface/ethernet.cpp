@@ -36,12 +36,12 @@
 #include <cstdint>
 #include <cstdint>
 
-#include "net_private.h"
-#include "net_memcpy.h"
-#include "net/igmp.h"
-#include "net/arp.h"
-#include "net/protocol/ieee.h"
-#include "net/protocol/ethernet.h"
+#include "../src/core/net_private.h"
+#include "../src/core/net_memcpy.h"
+#include "core/ip4/igmp.h"
+#include "core/ip4/arp.h"
+#include "core/protocol/ieee.h"
+#include "core/protocol/ethernet.h"
 #include "net/ip4_address.h"
 #include "firmware/debug/debug_debug.h"
 

@@ -26,7 +26,7 @@
 #ifndef NETWORK_DISPLAY_H_
 #define NETWORK_DISPLAY_H_
 
-#include "net/protocol/dhcp.h"
+#include "core/protocol/dhcp.h"
 
 namespace network::display
 {

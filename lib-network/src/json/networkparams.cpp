@@ -41,7 +41,7 @@
 #include "json/json_parser.h"
 #include "net/ip4_helpers.h"
 #if defined(HAVE_NTP_CLIENT)
-#include "net/apps/ntpclient.h"
+#include "apps/ntpclient.h"
 #endif
 #include "common/utils/utils_flags.h"
 

@@ -1,8 +1,8 @@
 /**
- * @file tcp.h
+ * @file udp.h
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,40 +23,37 @@
  * THE SOFTWARE.
  */
 
-#ifndef NET_PROTOCOL_TCP_H_
-#define NET_PROTOCOL_TCP_H_
+#ifndef NET_PROTOCOL_UDP_H_
+#define NET_PROTOCOL_UDP_H_
 
 #include <cstdint>
 
-#include "net/protocol/ethernet.h"
-#include "net/protocol/ip4.h"
+#include "core/protocol/ethernet.h"
+#include "core/protocol/ip4.h"
 
 #if !defined(PACKED)
 #define PACKED __attribute__((packed))
 #endif
 
-struct t_tcp_packet
+struct t_udp_packet
 {
-    uint16_t srcpt;    /*  2 */
-    uint16_t dstpt;    /*  4 */
-    uint32_t seqnum;   /*  8 */
-    uint32_t acknum;   /* 12 */
-    uint8_t offset;    /* 13 */
-    uint8_t control;   /* 14 */
-    uint16_t window;   /* 16 */
-    uint16_t checksum; /* 18 */
-    uint16_t urgent;   /* 20 */
-#define TCP_HEADER_SIZE 20
-#define TCP_OPTIONS_SIZE 40 /* Assuming maximum TCP options size is 40 bytes */
-#define TCP_DATA_SIZE (network::ethernet::kMtuSize - TCP_HEADER_SIZE - sizeof(struct ip4_header) - TCP_OPTIONS_SIZE)
-    uint8_t data[network::ethernet::kMtuSize - TCP_HEADER_SIZE - sizeof(struct ip4_header)];
+    uint16_t source_port;      // 2
+    uint16_t destination_port; // 4
+    uint16_t len;              // 6
+    uint16_t checksum;         // 8
+#define UDP_HEADER_SIZE 8
+#define UDP_DATA_SIZE (network::ethernet::kMtuSize - UDP_HEADER_SIZE - sizeof(struct ip4_header))
+    uint8_t data[UDP_DATA_SIZE];
 } PACKED;
 
-struct t_tcp
+struct t_udp
 {
     struct network::ethernet::Header ether;
     struct ip4_header ip4;
-    struct t_tcp_packet tcp;
+    struct t_udp_packet udp;
 } PACKED;
 
-#endif // NET_PROTOCOL_TCP_H_
+#define IPv4_UDP_HEADERS_SIZE (sizeof(struct ip4_header) + UDP_HEADER_SIZE)             /* IP | UDP */
+#define UDP_PACKET_HEADERS_SIZE (sizeof(struct network::ethernet::Header) + IPv4_UDP_HEADERS_SIZE) /* ETH | IP | UDP */
+
+#endif // NET_PROTOCOL_UDP_H_

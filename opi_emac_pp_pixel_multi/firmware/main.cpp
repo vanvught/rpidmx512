@@ -32,7 +32,7 @@
 #include "h3/hal.h"
 #include "h3/hal_watchdog.h"
 #include "network.h"
-#include "net/apps/mdns.h"
+#include "apps/mdns.h"
 #include "displayudf.h"
 #include "json/displayudfparams.h"
 #include "firmware/jamstapl/handleroled.h"

@@ -32,8 +32,8 @@
 #include "network_net.h"
 #include "emac/phy.h"
 #include "net/netif.h"
-#include "net/dhcp.h"
-#include "net/apps/mdns.h"
+#include "core/ip4/dhcp.h"
+#include "apps/mdns.h"
 #include "network_store.h"
 #include "firmware/debug/debug_debug.h"
 

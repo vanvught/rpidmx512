@@ -1,8 +1,8 @@
 /**
- * @file igmp.h
+ * @file tcp.h
  *
  */
-/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,44 +23,40 @@
  * THE SOFTWARE.
  */
 
-#ifndef NET_PROTOCOL_IGMP_H_
-#define NET_PROTOCOL_IGMP_H_
+#ifndef NET_PROTOCOL_TCP_H_
+#define NET_PROTOCOL_TCP_H_
 
 #include <cstdint>
 
-#include "net/protocol/ethernet.h"
-#include "net/protocol/ip4.h"
+#include "core/protocol/ethernet.h"
+#include "core/protocol/ip4.h"
 
-#if !defined (PACKED)
-# define PACKED __attribute__((packed))
+#if !defined(PACKED)
+#define PACKED __attribute__((packed))
 #endif
 
-enum IGMP_TYPE {
-	IGMP_TYPE_QUERY = 0x11,
-	IGMP_TYPE_REPORT = 0x16,
-	IGMP_TYPE_LEAVE = 0x17
-};
-
-struct t_igmp_packet {
-	uint8_t type;
-	uint8_t max_resp_time;
-	uint16_t checksum;
-	uint8_t group_address[IPv4_ADDR_LEN];
+struct t_tcp_packet
+{
+    uint16_t srcpt;    /*  2 */
+    uint16_t dstpt;    /*  4 */
+    uint32_t seqnum;   /*  8 */
+    uint32_t acknum;   /* 12 */
+    uint8_t offset;    /* 13 */
+    uint8_t control;   /* 14 */
+    uint16_t window;   /* 16 */
+    uint16_t checksum; /* 18 */
+    uint16_t urgent;   /* 20 */
+#define TCP_HEADER_SIZE 20
+#define TCP_OPTIONS_SIZE 40 /* Assuming maximum TCP options size is 40 bytes */
+#define TCP_DATA_SIZE (network::ethernet::kMtuSize - TCP_HEADER_SIZE - sizeof(struct ip4_header) - TCP_OPTIONS_SIZE)
+    uint8_t data[network::ethernet::kMtuSize - TCP_HEADER_SIZE - sizeof(struct ip4_header)];
 } PACKED;
 
-struct t_igmp {
-	struct network::ethernet::Header ether;
-	struct ip4_header ip4;
-	union {
-		struct {
-			uint32_t ip4_options;
-			struct t_igmp_packet igmp;
-		} report;
-		struct t_igmp_packet igmp;
-	} igmp;
+struct t_tcp
+{
+    struct network::ethernet::Header ether;
+    struct ip4_header ip4;
+    struct t_tcp_packet tcp;
 } PACKED;
 
-#define IPv4_IGMP_REPORT_HEADERS_SIZE 	(sizeof(struct t_igmp) - sizeof(struct network::ethernet::Header))
-#define IGMP_REPORT_PACKET_SIZE			(sizeof(struct t_igmp))
-
-#endif /* NET_PROTOCOL_IGMP_H_ */
+#endif // NET_PROTOCOL_TCP_H_

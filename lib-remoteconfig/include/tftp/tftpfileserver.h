@@ -29,7 +29,7 @@
 #include <cstddef>
 #include <cstdint>
 
-#include "net/apps/tftpdaemon.h"
+#include "apps/tftpdaemon.h"
 
 #if defined(GD32)
 #include "gd32.h"

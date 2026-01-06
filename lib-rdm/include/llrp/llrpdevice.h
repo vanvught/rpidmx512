@@ -36,8 +36,8 @@
 #include "e120.h"
 #include "rdmhandler.h"
 #include "net/ip4_address.h"
-#include "net/igmp.h"
-#include "net/apps/mdns.h"
+#include "core/ip4/igmp.h"
+#include "apps/mdns.h"
 #include "firmware/debug/debug_debug.h"
 
 namespace llrp::device

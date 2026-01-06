@@ -19,7 +19,7 @@ ifneq ($(MAKE_FLAGS),)
 	ifndef COND
 		EXTRA_SRCDIR+=src/net src/core src/iface src/core/ipv4
 		EXTRA_SRCDIR+=src/apps/mdns src/apps/ntp src/apps/tftp
-		EXTRA_INCLUDES+=config src/net
+		EXTRA_INCLUDES+=config
 		EXTRA_SRCDIR+=src/emac src/emac/phy
 		EXTRA_SRCDIR+=src/json	
 		PHY=

@@ -1,5 +1,5 @@
 /**
- * @file arp.h
+ * @file ip4.h
  *
  */
 /* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
@@ -22,59 +22,55 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef NET_PROTOCOL_IP4_H_
+#define NET_PROTOCOL_IP4_H_
 
-#ifndef NET_PROTOCOL_ARP_H_
-#define NET_PROTOCOL_ARP_H_
+#include <cstdint>
 
-#include "net/protocol/ethernet.h"
-#include "net/protocol/ieee.h"
-#include "net/protocol/ip4.h"
+#include "core/protocol/ethernet.h"
 
 #if !defined(PACKED)
 #define PACKED __attribute__((packed))
 #endif
 
-enum ARP_HARDWARE_TYPE
+enum IPv4_ADDR
 {
-    ARP_HWTYPE_ETHERNET = 1
+    IPv4_ADDR_LEN = 4
 };
 
-enum ARP_PROTOCOL_TYPE
+enum IPv4_PROTO
 {
-    ARP_PRTYPE_IPv4 = ETHER_TYPE_IPv4
+    IPv4_PROTO_ICMP = 1,
+    IPv4_PROTO_IGMP = 2,
+    IPv4_PROTO_TCP = 6,
+    IPv4_PROTO_UDP = 17
 };
 
-inline constexpr auto ARP_HARDWARE_SIZE = network::ethernet::kAddressLength;
-
-enum ARP_PROTOCOL
+enum IPv4_FLAG
 {
-    ARP_PROTOCOL_SIZE = IPv4_ADDR_LEN
+    IPv4_FLAG_LF = 0x0000,
+    IPv4_FLAG_MF = 0x2000,
+    IPv4_FLAG_DF = 0x4000
 };
 
-enum ARP_OPCODE
+struct ip4_header
 {
-    ARP_OPCODE_RQST = 1,
-    ARP_OPCODE_REPLY = 2
-};
-
-struct arp_packet
-{
-    uint16_t hardware_type;                                //  2
-    uint16_t protocol_type;                                //  4
-    uint8_t hardware_size;                                 //  5
-    uint8_t protocol_size;                                 //  6
-    uint16_t opcode;                                       //  8
-    uint8_t sender_mac[network::ethernet::kAddressLength]; // 14
-    uint8_t sender_ip[IPv4_ADDR_LEN];                      // 18
-    uint8_t target_mac[network::ethernet::kAddressLength]; // 24
-    uint8_t target_ip[IPv4_ADDR_LEN];                      // 28
-    uint8_t padding[18];                                   // 46  // +14 = 60
+    uint8_t ver_ihl;            /*  1 */
+    uint8_t tos;                /*  2 */
+    uint16_t len;               /*  4 */
+    uint16_t id;                /*  6 */
+    uint16_t flags_froff;       /*  8 */
+    uint8_t ttl;                /*  9 */
+    uint8_t proto;              /* 10 */
+    uint16_t chksum;            /* 12 */
+    uint8_t src[IPv4_ADDR_LEN]; /* 16 */
+    uint8_t dst[IPv4_ADDR_LEN]; /* 20 */
 } PACKED;
 
-struct t_arp
+struct t_ip4
 {
     struct network::ethernet::Header ether;
-    struct arp_packet arp;
+    struct ip4_header ip4;
 } PACKED;
 
-#endif // NET_PROTOCOL_ARP_H_
+#endif // NET_PROTOCOL_IP4_H_

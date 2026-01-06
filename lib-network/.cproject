@@ -241,7 +241,6 @@
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/esp8266"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/iface"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/json"/>
-						<entry excluding="core|apps|iface" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/net"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/noemac/h3"/>
 					</sourceEntries>
 				</configuration>
@@ -608,7 +607,6 @@
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/iface"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/json"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/linux"/>
-						<entry excluding="core|apps|iface|apps/mdns" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/net"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/noemac/h3"/>
 					</sourceEntries>
 				</configuration>

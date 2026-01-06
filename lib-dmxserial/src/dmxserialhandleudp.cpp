@@ -29,8 +29,8 @@
 #include "dmxserial.h"
 #include "dmxserial_internal.h"
 #include "hal.h"
-#include "net/protocol/udp.h"
-#include "net/udp.h"
+#include "core/protocol/udp.h"
+#include "network.h"
 #include "firmware/debug/debug_dump.h"
 
 namespace cmd

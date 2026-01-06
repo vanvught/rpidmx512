@@ -28,7 +28,7 @@
 
 #include <cstdint>
 
-#include "net/protocol/ntp.h"
+#include "core/protocol/ntp.h"
 
 #if !defined(CONFIG_NTP_CLIENT_POLL_POWER_MIN)
 #define CONFIG_NTP_CLIENT_POLL_POWER_MIN 3

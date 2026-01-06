@@ -37,7 +37,7 @@
 #include "hal.h"
 #include "network.h"
 #if !defined(CONFIG_REMOTECONFIG_MINIMUM)
-#include "net/apps/mdns.h"
+#include "apps/mdns.h"
 #include "dmxnode_nodetype.h"
 #include "json/remoteconfigparams.h"
 #endif

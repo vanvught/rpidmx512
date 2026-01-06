@@ -36,13 +36,13 @@
 #include "softwaretimers.h"
 #include "net/udp.h"
 #include "net/netif.h"
-#include "net_memcpy.h"
-#include "net_private.h"
-#include "net/dhcp.h"
-#include "net/protocol/dhcp.h"
-#include "net/protocol/iana.h"
+#include "../src/core/net_memcpy.h"
+#include "../src/core/net_private.h"
+#include "core/ip4/dhcp.h"
+#include "core/protocol/dhcp.h"
+#include "core/protocol/iana.h"
 #if defined(CONFIG_NET_DHCP_USE_ACD)
-#include "net/acd.h"
+#include "core/ip4/acd.h"
 #endif
  #include "firmware/debug/debug_debug.h"
 

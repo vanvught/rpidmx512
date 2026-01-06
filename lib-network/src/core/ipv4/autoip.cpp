@@ -38,9 +38,9 @@
 #include <cassert>
 
 #include "net/netif.h"
-#include "net/autoip.h"
-#include "net/protocol/autoip.h"
-#include "net/acd.h"
+#include "core/ip4/autoip.h"
+#include "core/protocol/autoip.h"
+#include "core/ip4/acd.h"
 #include "firmware/debug/debug_debug.h"
 
 namespace net

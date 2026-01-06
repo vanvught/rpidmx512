@@ -28,7 +28,7 @@
 
 #include <cstdio>
 
-#include "net/apps/tftpdaemon.h"
+#include "apps/tftpdaemon.h"
 
  #include "firmware/debug/debug_debug.h"
 

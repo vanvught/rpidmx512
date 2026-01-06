@@ -33,7 +33,7 @@
 #include "firmwareversion.h"
 #if !defined(NO_EMAC)
 #include "network.h"
-#include "net/protocol/dhcp.h"
+#include "core/protocol/dhcp.h"
 #endif
 #if defined(NODE_ARTNET_MULTI)
 #define NODE_ARTNET

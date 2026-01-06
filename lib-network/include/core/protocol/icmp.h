@@ -1,8 +1,8 @@
 /**
- * @file net_init.cpp
+ * @file icmp.h
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,52 +23,43 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_NET_NET)
-#if defined(NDEBUG)
-#undef NDEBUG
-#endif
-#endif
+#ifndef NET_PROTOCOL_ICMP_H_
+#define NET_PROTOCOL_ICMP_H_
 
-#include "net/arp.h"
-#include "net_private.h"
-#if defined(CONFIG_NET_ENABLE_NTP_CLIENT) || defined(CONFIG_NET_ENABLE_PTP_NTP_CLIENT)
-#include "net/apps/ntpclient.h"
-#endif
-#if !defined(CONFIG_NET_APPS_NO_MDNS)
-#include "net/apps/mdns.h"
+#include <cstdint>
+
+#include "core/protocol/ethernet.h"
+#include "core/protocol/ip4.h"
+
+#if !defined (PACKED)
+# define PACKED __attribute__((packed))
 #endif
 
- #include "firmware/debug/debug_debug.h"
+enum ICMP_TYPE {
+	ICMP_TYPE_ECHO_REPLY = 0,
+	ICMP_TYPE_ECHO = 8
+};
 
-namespace net
-{
-#if defined(CONFIG_NET_ENABLE_PTP)
-__attribute__((weak)) void ptp_init() {}
-#endif
+enum ICMP_CODE {
+	ICMP_CODE_ECHO = 0
+};
 
-void NetInit()
-{
-    DEBUG_ENTRY();
+struct t_icmp_packet {
+	uint8_t type;					/* 1 */
+	uint8_t code;					/* 2 */
+	uint16_t checksum;				/* 4 */
+	uint8_t parameter[4];			/* 8 */
+#define ICMP_HEADER_SIZE	8
+#define ICMP_PAYLOAD_SIZE	(network::ethernet::kMtuSize - ICMP_HEADER_SIZE - sizeof(struct ip4_header))
+	uint8_t payload[ICMP_PAYLOAD_SIZE];
+} PACKED;
 
-    arp::Init();
-    ip::Init();
-    
-#if defined(CONFIG_NET_ENABLE_PTP)
-    ptp_init();
-#endif
+struct t_icmp {
+	struct network::ethernet::Header ether;
+	struct ip4_header ip4;
+	struct t_icmp_packet icmp;
+} PACKED;
 
-#if defined(CONFIG_NET_ENABLE_NTP_CLIENT)
-    ntpclient::Init();
-#endif
+#define IPv4_ICMP_HEADERS_SIZE 			(sizeof(struct t_icmp) - sizeof(struct network::ethernet::Header))
 
-#if defined(CONFIG_NET_ENABLE_PTP_NTP_CLIENT)
-    ntpclient::ptp::Init();
-#endif
-
-#if !defined(CONFIG_NET_APPS_NO_MDNS)
-    mdns::Init();
-#endif
-
-    DEBUG_EXIT();
-}
-} // namespace net
+#endif /* NET_PROTOCOL_ICMP_H_ */

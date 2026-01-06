@@ -42,7 +42,7 @@
 #include "hal_uuid.h"
 #include "hal_boardinfo.h"
 #include "network.h"
-#include "net/igmp.h"
+#include "core/ip4/igmp.h"
 #include "softwaretimers.h"
 #include "hal_millis.h"
 #include "hal_statusled.h"

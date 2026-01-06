@@ -30,7 +30,7 @@
  * IPv4 Address Conflict Detection
  */
 
-#include "net/protocol/ethernet.h"
+#include "core/protocol/ethernet.h"
 #if defined(DEBUG_NET_ACD)
 #undef NDEBUG
 #endif
@@ -41,12 +41,12 @@
 #include <cassert>
 
 #include "net/netif.h"
-#include "net_memcpy.h"
+#include "../src/core/net_memcpy.h"
 #include "net_config.h"
-#include "net/arp.h"
-#include "net/acd.h"
-#include "net/protocol/acd.h"
-#include "net/protocol/arp.h"
+#include "core/ip4/arp.h"
+#include "core/ip4/acd.h"
+#include "core/protocol/acd.h"
+#include "core/protocol/arp.h"
 
 #include "softwaretimers.h"
 #include "firmware/debug/debug_debug.h"

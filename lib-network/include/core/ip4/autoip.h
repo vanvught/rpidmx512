@@ -36,8 +36,8 @@
 #include <cstdint>
 
 #include "net/netif.h"
-#include "net/acd.h"
-#include "net/protocol/autoip.h"
+#include "core/ip4/acd.h"
+#include "core/protocol/autoip.h"
 #include "firmware/debug/debug_debug.h"
 
 namespace net::autoip

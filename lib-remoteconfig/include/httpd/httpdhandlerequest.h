@@ -29,7 +29,7 @@
 #include <cstdint>
 
 #include "http/http.h"
-#include "net/protocol/tcp.h"
+#include "core/protocol/tcp.h"
 #include "network_tcp.h"
 #include "firmware/debug/debug_debug.h"
 

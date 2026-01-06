@@ -46,8 +46,8 @@
 
 #include "net/udp.h"
 #include "configstore.h"
-#include "net/protocol/ntp.h"
-#include "net/apps/ntpclient.h"
+#include "core/protocol/ntp.h"
+#include "apps/ntpclient.h"
 #include "softwaretimers.h"
 #include "configurationstore.h"
  #include "firmware/debug/debug_debug.h"

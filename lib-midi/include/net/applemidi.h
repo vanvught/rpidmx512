@@ -37,7 +37,7 @@
 #include <cstring>
 
 #include "midi.h"
-#include "net/apps/mdns.h"
+#include "apps/mdns.h"
 #include "hal.h"
 #include "hal_millis.h"
 #include "network.h"

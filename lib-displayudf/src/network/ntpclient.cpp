@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include "net/protocol/ntp.h"
+#include "core/protocol/ntp.h"
 #include "display.h"
 
 namespace ntpclient

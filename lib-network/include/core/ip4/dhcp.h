@@ -29,9 +29,9 @@
 #include <cstdint>
 
 #include "net/netif.h"
-#include "net/acd.h"
+#include "core/ip4/acd.h"
 #include "net/ip4_address.h"
-#include "net/protocol/dhcp.h"
+#include "core/protocol/dhcp.h"
 
 namespace net::dhcp
 {

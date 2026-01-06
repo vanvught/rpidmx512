@@ -34,7 +34,7 @@
 #include "osc.h"
 #include "configurationstore.h"
 #include "network.h"
-#include "net/apps/mdns.h"
+#include "apps/mdns.h"
 #include "firmware/debug/debug_debug.h"
 
 OscClient::OscClient()

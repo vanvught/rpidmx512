@@ -37,8 +37,8 @@
 
 #include "network.h"
 #include "net/udp.h"
-#include "net/apps/tftpdaemon.h"
-#include "net/protocol/iana.h"
+#include "apps/tftpdaemon.h"
+#include "core/protocol/iana.h"
 #include "firmware/debug/debug_debug.h"
 
 static constexpr uint16_t kOpCodeRrq = 1;   ///< Read request (RRQ)

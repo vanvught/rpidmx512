@@ -1,8 +1,8 @@
 /**
- * @file network_iface.cpp
+ * @file iface.cpp
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,11 +25,11 @@
 
 #include "network.h"
 #include "net/ip4_address.h"
-#include "net/dhcp.h"
-#include "net/autoip.h"
+#include "core/ip4/dhcp.h"
+#include "core/ip4/autoip.h"
 #include "net_config.h"
 #if !defined(CONFIG_NET_APPS_NO_MDNS)
-#include "net/apps/mdns.h"
+#include "apps/mdns.h"
 #endif
 #include "network_store.h"
 #include "network_display.h"

@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include "net/protocol/ethernet.h"
+#include "core/protocol/ethernet.h"
 #if defined(DEBUG_NET_ICMP)
 #undef NDEBUG
 #endif
@@ -39,9 +39,9 @@
 #include <cstring>
 
 #include "net/netif.h"
-#include "net_memcpy.h"
-#include "net_private.h"
-#include "net/protocol/icmp.h"
+#include "../src/core/net_memcpy.h"
+#include "../src/core/net_private.h"
+#include "core/protocol/icmp.h"
 
 namespace net::icmp
 {

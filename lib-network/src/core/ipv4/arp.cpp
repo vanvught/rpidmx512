@@ -44,16 +44,16 @@
 #include <cstring>
 #include <cassert>
 
-#include "net_memcpy.h"
-#include "net_private.h"
+#include "../src/core/net_memcpy.h"
+#include "../src/core/net_private.h"
 #include "net_config.h"
 #include "net/netif.h"
-#include "net/arp.h"
-#include "net/acd.h"
-#include "net/protocol/ethernet.h"
-#include "net/protocol/arp.h"
+#include "core/ip4/arp.h"
+#include "core/ip4/acd.h"
+#include "core/protocol/ethernet.h"
+#include "core/protocol/arp.h"
 #include "softwaretimers.h"
-#include "../core/network_memory.h"
+#include "../src/core/network_memory.h"
 #include "firmware/debug/debug_debug.h"
 #include "firmware/debug/debug_dump.h"
 
@@ -233,7 +233,7 @@ static void CacheUpdate(const uint8_t* mac_address, uint32_t ip, arp::Flags flag
         if (!record->packet.isTimestamp)
         {
 #endif
-			debug::Dump(record->packet.p, record->packet.size);
+            debug::Dump(record->packet.p, record->packet.size);
             emac_eth_send(record->packet.p, record->packet.size);
 #if defined CONFIG_NET_ENABLE_PTP
         }
@@ -275,6 +275,7 @@ template <net::arp::EthSend S> static void Query(uint32_t destination_ip, void* 
             network::memory::Allocator::Instance().Free(record_found->packet.p);
         }
 
+		printf("size=%u\n", size);
         assert(size <= network::memory::kBlockSize);
         record_found->packet.p = network::memory::Allocator::Instance().Allocate();
         assert(record_found->packet.p != nullptr);
@@ -572,12 +573,10 @@ void AcdProbe(ip4_addr_t ipaddr)
     DEBUG_EXIT();
 }
 
-/*
- * The packet structure is identical to the ARP Probe above,
- * with the exception that a complete mapping exists.
- * Both the Sender MAC address and the Sender IP address create a complete ARP mapping,
- * and hosts on the network can use this pair of addresses in their ARP table.
- */
+// The packet structure is identical to the ARP Probe above,
+// with the exception that a complete mapping exists.
+// Both the Sender MAC address and the Sender IP address create a complete ARP mapping,
+// and hosts on the network can use this pair of addresses in their ARP table.
 void AcdSendAnnouncement(ip4_addr_t ipaddr)
 {
     net::memcpy_ip(s_arp_request.arp.target_ip, ipaddr.addr);

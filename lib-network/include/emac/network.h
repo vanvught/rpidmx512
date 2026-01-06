@@ -36,7 +36,6 @@
 #include "network_iface.h"
 #include "net/udp.h" // IWYU pragma: keep
 #if defined(ENABLE_HTTPD)
-#include "net/tcp.h" // IWYU pragma: keep
 #include "network_tcp.h"  // IWYU pragma: keep
 #endif
 #include "emac/phy.h"

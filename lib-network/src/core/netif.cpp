@@ -28,10 +28,10 @@
 #endif
 
 #include "net/netif.h"
-#include "net/acd.h"
-#include "net/autoip.h"
-#include "net/dhcp.h"
-#include "net/igmp.h"
+#include "core/ip4/acd.h"
+#include "core/ip4/autoip.h"
+#include "core/ip4/dhcp.h"
+#include "core/ip4/igmp.h"
 #include "firmware/debug/debug_debug.h"
 
 namespace net::globals

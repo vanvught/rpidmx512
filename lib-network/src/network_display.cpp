@@ -27,7 +27,7 @@
 #include <cstdint>
 
 #include "display.h"
-#include "net/protocol/dhcp.h"
+#include "core/protocol/dhcp.h"
 
 #if !defined(CONFIG_DISPLAY_LINE_IP)
 static constexpr uint32_t LINE_IP = 2;

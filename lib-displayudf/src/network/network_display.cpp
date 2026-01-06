@@ -24,7 +24,7 @@
  */
 
 #include "displayudf.h"
-#include "net/protocol/dhcp.h"
+#include "core/protocol/dhcp.h"
 
 namespace net::emac::display
 {

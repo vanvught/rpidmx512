@@ -30,7 +30,7 @@
 #include <cstring>
 #include <cassert>
 
-#include "net/protocol/tcp.h"
+#include "core/protocol/tcp.h"
 #include "network_memory.h"
 
 #define TCP_TX_QUEUE_SIZE 8

@@ -29,10 +29,10 @@
 #include <cstdint>
 
 #include "net_platform.h"
-#include "net/protocol/icmp.h"
-#include "net/protocol/igmp.h"
-#include "net/protocol/udp.h"
-#include "net/protocol/tcp.h"
+#include "core/protocol/icmp.h"
+#include "core/protocol/igmp.h"
+#include "core/protocol/udp.h"
+#include "core/protocol/tcp.h"
 
 #ifndef ALIGNED
 #define ALIGNED __attribute__((aligned(4)))

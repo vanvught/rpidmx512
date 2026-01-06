@@ -32,7 +32,7 @@
 
 #include "ltc.h"
 #include "network.h"
-#include "net/protocol/ntp.h"
+#include "core/protocol/ntp.h"
 
 class NtpServer
 {

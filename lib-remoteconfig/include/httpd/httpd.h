@@ -35,7 +35,7 @@
 
 #include "httpdhandlerequest.h"
 #include "network_tcp.h"
-#include "net/apps/mdns.h"
+#include "apps/mdns.h"
 #include "../../lib-network/config/net_config.h"
 #include "firmware/debug/debug_debug.h"
 

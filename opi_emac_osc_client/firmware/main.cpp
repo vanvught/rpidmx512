@@ -29,7 +29,7 @@
 #include "h3/hal_watchdog.h"
 #include "emac/network.h"
 #include "display.h"
-#include "net/apps/mdns.h"
+#include "apps/mdns.h"
 #include "oscclient.h"
 #include "json/oscclientparams.h"
 #include "oscclientmsgconst.h"

@@ -38,7 +38,7 @@
 #include <cassert>
 
 #include "ntpserver.h"
-#include "net/protocol/ntp.h"
+#include "core/protocol/ntp.h"
 #include "network.h"
 #include "firmware/debug/debug_debug.h"
 
