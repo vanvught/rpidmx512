@@ -97,7 +97,7 @@ void TCNetReader::Start()
 #elif defined(GD32)
 #endif
 
-    handle_ = net::udp::Begin(kUdpPort, StaticCallbackFunctionInput);
+    handle_ = network::udp::Begin(kUdpPort, StaticCallbackFunctionInput);
     assert(handle_ != -1);
 
     LtcOutputs::Get()->Init();

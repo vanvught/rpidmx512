@@ -28,7 +28,7 @@
 
 #include <cstdint>
 
-#include "net/ip4_address.h"
+#include "ip4/ip4_address.h"
 
 #ifndef NETIF_MAX_HWADDR_LEN
 #define NETIF_MAX_HWADDR_LEN 6U
@@ -44,11 +44,11 @@ struct Netif
     static constexpr uint8_t kNetifFlagAutoipOk = (1U << 2);
     static constexpr uint8_t kNetifFlagStaticipOk = (1U << 3);
 
-    struct net::ip_addr ip;
-    struct net::ip_addr netmask;
-    struct net::ip_addr gw;
-    struct net::ip_addr broadcast_ip;
-    struct net::ip_addr secondary_ip;
+    struct network::ip_addr ip;
+    struct network::ip_addr netmask;
+    struct network::ip_addr gw;
+    struct network::ip_addr broadcast_ip;
+    struct network::ip_addr secondary_ip;
 
     uint8_t hwaddr[NETIF_MAX_HWADDR_LEN];
     uint8_t flags;
@@ -78,9 +78,9 @@ struct NetifReason
 
 struct Ipv4Changed
 {
-    net::ip4_addr_t old_address;
-    net::ip4_addr_t old_netmask;
-    net::ip4_addr_t old_gw;
+    network::ip4_addr_t old_address;
+    network::ip4_addr_t old_netmask;
+    network::ip4_addr_t old_gw;
 };
 
 struct LinkChanged
@@ -133,22 +133,22 @@ inline const uint8_t* HwAddr()
 }
 
 void Init();
-void SetIpAddr(net::ip4_addr_t ipaddr);
-void SetNetmask(net::ip4_addr_t netmask);
+void SetIpAddr(network::ip4_addr_t ipaddr);
+void SetNetmask(network::ip4_addr_t netmask);
 
 inline uint32_t Netmask()
 {
     return globals::netif_default.netmask.addr;
 }
 
-void SetGw(net::ip4_addr_t gw);
+void SetGw(network::ip4_addr_t gw);
 
 inline uint32_t Gw()
 {
     return globals::netif_default.gw.addr;
 }
 
-void SetAddr(net::ip4_addr_t ipaddr, net::ip4_addr_t netmask, net::ip4_addr_t gw);
+void SetAddr(network::ip4_addr_t ipaddr, network::ip4_addr_t netmask, network::ip4_addr_t gw);
 
 void AddExtCallback(netif_ext_callback_fn fn);
 

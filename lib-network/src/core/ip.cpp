@@ -30,18 +30,18 @@
 #include "net_private.h"
 #include "firmware/debug/debug_debug.h"
 
-namespace net::ip
+namespace network::ip
 {
 void __attribute__((cold)) Init()
 {
     DEBUG_ENTRY();
 
-    udp::Init();
-    igmp::Init();
+    network::udp::Init();
+    network::igmp::Init();
 #if defined(ENABLE_HTTPD)
     network::tcp::Init();
 #endif
 
     DEBUG_EXIT();
 }
-} // namespace net::ip
+} // namespace network::ip

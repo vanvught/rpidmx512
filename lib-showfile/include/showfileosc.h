@@ -68,7 +68,7 @@ class ShowFileOSC
     {
         DEBUG_ENTRY();
 
-        net::udp::End(port_incoming_);
+        network::udp::End(port_incoming_);
 
         DEBUG_EXIT();
     }
@@ -105,7 +105,7 @@ class ShowFileOSC
 
         if (handle_ != 1)
         {
-            net::udp::End(port_incoming_);
+            network::udp::End(port_incoming_);
         }
 
         if (port_incoming > 1023)
@@ -117,7 +117,7 @@ class ShowFileOSC
             port_incoming_ = osc::port::DEFAULT_INCOMING;
         }
 
-        handle_ = net::udp::Begin(port_incoming_, StaticCallbackFunction);
+        handle_ = network::udp::Begin(port_incoming_, StaticCallbackFunction);
         assert(handle_ != -1);
     }
 

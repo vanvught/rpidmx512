@@ -2,7 +2,7 @@
  * @file icmp.cpp
  *
  */
-/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2018-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,6 @@
 #pragma GCC push_options
 #pragma GCC optimize("O2")
 #pragma GCC optimize("no-tree-loop-distribute-patterns")
-#pragma GCC optimize("-fprefetch-loop-arrays")
 #endif
 
 #include <cstdint>
@@ -43,7 +42,7 @@
 #include "../src/core/net_private.h"
 #include "core/protocol/icmp.h"
 
-namespace net::icmp
+namespace network::icmp
 {
 __attribute__((hot)) void Input(struct t_icmp* p_icmp)
 {
@@ -57,17 +56,17 @@ __attribute__((hot)) void Input(struct t_icmp* p_icmp)
             // IPv4
             p_icmp->ip4.id = static_cast<uint16_t>(~p_icmp->ip4.id);
 
-            const auto kIpDestination = net::memcpy_ip(p_icmp->ip4.dst);
+            const auto kIpDestination = network::memcpy_ip(p_icmp->ip4.dst);
 
             std::memcpy(p_icmp->ip4.dst, p_icmp->ip4.src, IPv4_ADDR_LEN);
 
             if (kIpDestination == netif::globals::netif_default.secondary_ip.addr)
             {
-                net::memcpy_ip(p_icmp->ip4.src, netif::globals::netif_default.secondary_ip.addr);
+                network::memcpy_ip(p_icmp->ip4.src, netif::globals::netif_default.secondary_ip.addr);
             }
             else
             {
-                net::memcpy_ip(p_icmp->ip4.src, netif::globals::netif_default.ip.addr);
+                network::memcpy_ip(p_icmp->ip4.src, netif::globals::netif_default.ip.addr);
             }
 
             p_icmp->ip4.chksum = 0;
@@ -84,7 +83,7 @@ __attribute__((hot)) void Input(struct t_icmp* p_icmp)
         }
     }
 }
-} // namespace net::icmp
+} // namespace network::icmp
 
 #if !defined(CONFIG_REMOTECONFIG_MINIMUM)
 #pragma GCC pop_options

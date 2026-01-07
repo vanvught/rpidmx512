@@ -174,10 +174,10 @@ class TCNet
     {
         DEBUG_ENTRY();
 
-        handles_[0] = net::udp::Begin(Broadcast::kPort0, StaticCallbackFunctionPort60000);
+        handles_[0] = network::udp::Begin(Broadcast::kPort0, StaticCallbackFunctionPort60000);
         assert(handles_[0] >= 0);
 
-        handles_[1] = net::udp::Begin(Broadcast::kPort1, StaticCallbackFunctionPort60001);
+        handles_[1] = network::udp::Begin(Broadcast::kPort1, StaticCallbackFunctionPort60001);
         assert(handles_[1] >= 0);
 
         DEBUG_EXIT();
@@ -191,7 +191,7 @@ class TCNet
 
         memcpy(&opt_out, &packet_opt_in_, sizeof(struct TTCNetPacketOptOut));
 
-        net::udp::Send(handles_[0], reinterpret_cast<const uint8_t*>(&opt_out), sizeof(struct TTCNetPacketOptOut), net::GetBroadcastIp(), Broadcast::kPort0);
+        network::udp::Send(handles_[0], reinterpret_cast<const uint8_t*>(&opt_out), sizeof(struct TTCNetPacketOptOut), network::GetBroadcastIp(), Broadcast::kPort0);
 
         DEBUG_EXIT();
     }
@@ -392,7 +392,7 @@ class TCNet
         packet_opt_in_.ManagementHeader.TimeStamp = hal::Micros();
         packet_opt_in_.Uptime = static_cast<uint16_t>(hal::Uptime());
 
-        net::udp::Send(handles_[0], reinterpret_cast<const uint8_t*>(&packet_opt_in_), sizeof(struct TTCNetPacketOptIn), net::GetBroadcastIp(),
+        network::udp::Send(handles_[0], reinterpret_cast<const uint8_t*>(&packet_opt_in_), sizeof(struct TTCNetPacketOptIn), network::GetBroadcastIp(),
                        Broadcast::kPort0);
     }
 

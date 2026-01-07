@@ -30,7 +30,6 @@
 #pragma GCC push_options
 #pragma GCC optimize("O3")
 #pragma GCC optimize("no-tree-loop-distribute-patterns")
-#pragma GCC optimize("-fprefetch-loop-arrays")
 #endif
 
 #include <cstdint>
@@ -42,11 +41,14 @@
 #include "core/ip4/arp.h"
 #include "core/protocol/ieee.h"
 #include "core/protocol/ethernet.h"
-#include "net/ip4_address.h"
 #include "firmware/debug/debug_debug.h"
 
 namespace network
 {
+namespace igmp
+{
+bool LookupGroup(uint32_t);
+}
 namespace ptp
 {
 #if defined(CONFIG_NET_ENABLE_PTP)
@@ -76,7 +78,7 @@ void EthernetInput(const uint8_t* buffer, [[maybe_unused]] uint32_t length)
 
             if ((kEther->dst[0] == net::ETH_IP4_MULTICAST_ADDR_0) && (kEther->dst[1] == net::ETH_IP4_MULTICAST_ADDR_1) && (kEther->dst[2] == net::ETH_IP4_MULTICAST_ADDR_2))
             {
-                if (!net::igmp::LookupGroup(net::memcpy_ip(kIp4->ip4.dst)))
+                if (!network::igmp::LookupGroup(network::memcpy_ip(kIp4->ip4.dst)))
                 {
                     emac_free_pkt();
                     DEBUG_PUTS("IGMP not for us");
@@ -87,20 +89,19 @@ void EthernetInput(const uint8_t* buffer, [[maybe_unused]] uint32_t length)
             switch (kIp4->ip4.proto)
             {
                 case IPv4_PROTO_UDP:
-                    net::udp::Input(reinterpret_cast<const struct t_udp*>(kIp4));
-                    // NOTE: emac_free_pkt(); is done in udp_handle
+                    network::udp::Input(reinterpret_cast<const struct t_udp*>(kIp4));
+                    // NOTE: emac_free_pkt(); is done in net::udp::Input
                     return;
                     break;
                 case IPv4_PROTO_IGMP:
-                    net::igmp::Input(reinterpret_cast<const struct t_igmp*>(kIp4));
+                    network::igmp::Input(reinterpret_cast<const struct t_igmp*>(kIp4));
                     break;
                 case IPv4_PROTO_ICMP:
-                    net::icmp::Input(const_cast<struct t_icmp*>(reinterpret_cast<const struct t_icmp*>(kIp4)));
+                    network::icmp::Input(const_cast<struct t_icmp*>(reinterpret_cast<const struct t_icmp*>(kIp4)));
                     break;
 #if defined(ENABLE_HTTPD)
                 case IPv4_PROTO_TCP:
                     network::tcp::Input(const_cast<struct t_tcp*>(reinterpret_cast<const struct t_tcp*>(kIp4)));
-                    network::tcp::Run();
                     break;
 #endif
                 default:
@@ -109,7 +110,7 @@ void EthernetInput(const uint8_t* buffer, [[maybe_unused]] uint32_t length)
         }
         break;
         case __builtin_bswap16(ETHER_TYPE_ARP):
-            net::arp::Input(reinterpret_cast<const struct t_arp*>(buffer));
+            network::arp::Input(reinterpret_cast<const struct t_arp*>(buffer));
             break;
         default:
             DEBUG_PRINTF("type %04x is not implemented", __builtin_bswap16(kEther->type));

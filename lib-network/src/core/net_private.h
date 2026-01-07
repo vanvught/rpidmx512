@@ -53,7 +53,7 @@ void emac_eth_send_timestamp(void*, const uint32_t);
 uint32_t emac_eth_recv(uint8_t**);
 void emac_free_pkt();
 
-namespace net
+namespace network
 {
 inline uint16_t Chksum(const void* data, uint32_t length)
 {
@@ -101,13 +101,6 @@ void Shutdown();
 void Handle(struct t_ip4*);
 } // namespace ip
 
-namespace udp
-{
-void Init();
-void Input(const struct t_udp*);
-void Shutdown();
-} // namespace udp
-
 namespace igmp
 {
 void Init();
@@ -121,10 +114,13 @@ void Input(struct t_icmp*);
 void Shutdown();
 } // namespace icmp
 
-} // namespace net
-
-namespace network
+namespace udp
 {
+void Init();
+void Input(const struct t_udp*);
+void Shutdown();
+} // namespace udp
+
 namespace tcp
 {
 void Init();

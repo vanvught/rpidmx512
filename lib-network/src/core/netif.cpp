@@ -31,8 +31,12 @@
 #include "core/ip4/acd.h"
 #include "core/ip4/autoip.h"
 #include "core/ip4/dhcp.h"
-#include "core/ip4/igmp.h"
 #include "firmware/debug/debug_debug.h"
+
+namespace network::igmp
+{
+void ReportGroups();
+}
 
 namespace net::globals
 {
@@ -62,8 +66,7 @@ void Init()
     netif.netmask.addr = 0;
     netif.gw.addr = 0;
     netif.broadcast_ip.addr = 0;
-    netif.secondary_ip.addr = 2 + ((static_cast<uint32_t>(static_cast<uint8_t>(netif.hwaddr[3] + 0xFF + 0xFF))) << 8) +
-                              ((static_cast<uint32_t>(netif.hwaddr[4])) << 16) + ((static_cast<uint32_t>(netif.hwaddr[5])) << 24);
+    netif.secondary_ip.addr = 2 + ((static_cast<uint32_t>(static_cast<uint8_t>(netif.hwaddr[3] + 0xFF + 0xFF))) << 8) + ((static_cast<uint32_t>(netif.hwaddr[4])) << 16) + ((static_cast<uint32_t>(netif.hwaddr[5])) << 24);
     netif.flags = 0;
     netif.dhcp = nullptr;
     netif.acd = nullptr;
@@ -81,7 +84,7 @@ static void NetifDoUpdateGlobals()
     net::globals::on_network_mask = netif.ip.addr & netif.netmask.addr;
 }
 
-static void NetifDoIpAddrChanged([[maybe_unused]] net::ip4_addr_t old_addr, [[maybe_unused]] net::ip4_addr_t new_addr)
+static void NetifDoIpAddrChanged([[maybe_unused]] network::ip4_addr_t old_addr, [[maybe_unused]] network::ip4_addr_t new_addr)
 {
     //  tcp_netif_ip_addr_changed(old_addr, new_addr);
     //  udp_netif_ip_addr_changed(old_addr, new_addr);
@@ -98,11 +101,11 @@ static void NetifIssueReports()
 
     if (netif.ip.addr != 0)
     {
-        net::igmp::ReportGroups();
+        network::igmp::ReportGroups();
     }
 }
 
-static bool NetifDoSetIpaddr(net::ip4_addr_t ipaddr, net::ip4_addr_t& old_addr)
+static bool NetifDoSetIpaddr(network::ip4_addr_t ipaddr, network::ip4_addr_t& old_addr)
 {
     DEBUG_ENTRY();
 
@@ -116,7 +119,7 @@ static bool NetifDoSetIpaddr(net::ip4_addr_t ipaddr, net::ip4_addr_t& old_addr)
         old_addr.addr = netif.ip.addr;
 
         NetifDoIpAddrChanged(old_addr, ipaddr);
-        net::acd::NetifIpAddrChanged(old_addr, ipaddr);
+        network::acd::NetifIpAddrChanged(old_addr, ipaddr);
 
         netif.ip.addr = ipaddr.addr;
 
@@ -131,7 +134,7 @@ static bool NetifDoSetIpaddr(net::ip4_addr_t ipaddr, net::ip4_addr_t& old_addr)
     return false; // address unchanged
 }
 
-static bool NetifDoSetNetmask(net::ip4_addr_t netmask, net::ip4_addr_t& old_nm)
+static bool NetifDoSetNetmask(network::ip4_addr_t netmask, network::ip4_addr_t& old_nm)
 {
     DEBUG_ENTRY();
     auto& netif = netif::globals::netif_default;
@@ -151,7 +154,7 @@ static bool NetifDoSetNetmask(net::ip4_addr_t netmask, net::ip4_addr_t& old_nm)
     return false; // netmask unchanged
 }
 
-static bool NetifDoSetGw(net::ip4_addr_t gw, net::ip4_addr_t& old_gw)
+static bool NetifDoSetGw(network::ip4_addr_t gw, network::ip4_addr_t& old_gw)
 {
     DEBUG_ENTRY();
 
@@ -170,9 +173,9 @@ static bool NetifDoSetGw(net::ip4_addr_t gw, net::ip4_addr_t& old_gw)
     return false; // gateway unchanged
 }
 
-void SetIpAddr(net::ip4_addr_t ipaddr)
+void SetIpAddr(network::ip4_addr_t ipaddr)
 {
-    net::ip4_addr_t old_addr;
+    network::ip4_addr_t old_addr;
 
     if (NetifDoSetIpaddr(ipaddr, old_addr))
     {
@@ -182,9 +185,9 @@ void SetIpAddr(net::ip4_addr_t ipaddr)
     }
 }
 
-void SetNetmask(net::ip4_addr_t netmask)
+void SetNetmask(network::ip4_addr_t netmask)
 {
-    net::ip4_addr_t old_nm;
+    network::ip4_addr_t old_nm;
 
     if (NetifDoSetNetmask(netmask, old_nm))
     {
@@ -194,9 +197,9 @@ void SetNetmask(net::ip4_addr_t netmask)
     }
 }
 
-void SetGw(net::ip4_addr_t gw)
+void SetGw(network::ip4_addr_t gw)
 {
-    net::ip4_addr_t old_gw;
+    network::ip4_addr_t old_gw;
 
     if (NetifDoSetGw(gw, old_gw))
     {
@@ -206,7 +209,7 @@ void SetGw(net::ip4_addr_t gw)
     }
 }
 
-void SetAddr(net::ip4_addr_t ipaddr, net::ip4_addr_t netmask, net::ip4_addr_t gw)
+void SetAddr(network::ip4_addr_t ipaddr, network::ip4_addr_t netmask, network::ip4_addr_t gw)
 {
     DEBUG_ENTRY();
     DEBUG_PRINTF(IPSTR " " IPSTR " " IPSTR, IP2STR(ipaddr.addr), IP2STR(netmask.addr), IP2STR(gw.addr));
@@ -214,9 +217,9 @@ void SetAddr(net::ip4_addr_t ipaddr, net::ip4_addr_t netmask, net::ip4_addr_t gw
     auto change_reason = NetifReason::kNone;
     netif_ext_callback_args_t cb_args;
 
-    net::ip4_addr_t old_addr;
-    net::ip4_addr_t old_nm;
-    net::ip4_addr_t old_gw;
+    network::ip4_addr_t old_addr;
+    network::ip4_addr_t old_nm;
+    network::ip4_addr_t old_gw;
 
     const auto kRemove = (ipaddr.addr == 0);
 
@@ -290,8 +293,8 @@ void SetLinkUp()
     {
         netif::SetFlags(Netif::kNetifFlagLinkUp);
 
-        net::dhcp::NetworkChangedLinkUp();
-        net::autoip::NetworkChangedLinkUp();
+        network::dhcp::NetworkChangedLinkUp();
+        network::autoip::NetworkChangedLinkUp();
 
         NetifIssueReports();
 
@@ -316,9 +319,9 @@ void SetLinkDown()
     {
         netif::ClearFlags(Netif::kNetifFlagLinkUp);
 
-        net::autoip::NetworkChangedLinkDown();
+        network::autoip::NetworkChangedLinkDown();
 
-        net::acd::NetworkChangedLinkDown();
+        network::acd::NetworkChangedLinkDown();
 
         netif_ext_callback_args_t args;
         args.link_changed.state = 0;

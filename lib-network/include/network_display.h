@@ -31,7 +31,7 @@
 namespace network::display
 {
 void Hostname();
-void DhcpStatus(net::dhcp::State);
+void DhcpStatus(network::dhcp::State);
 } // namespace network::display
 
 #endif  // NETWORK_DISPLAY_H_

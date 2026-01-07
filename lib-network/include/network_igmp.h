@@ -1,8 +1,8 @@
 /**
- * @file net.h
+ * @file network_igmp.h
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,17 +23,15 @@
  * THE SOFTWARE.
  */
 
-#ifndef NET_NET_H_
-#define NET_NET_H_
+#ifndef NETWORK_IGMP_H_
+#define NETWORK_IGMP_H_
 
-#include "emac/phy.h"
-#include "net/ip4_address.h"
+#include <cstdint>
 
-namespace net
+namespace network::igmp
 {
-void Set(phy::Link link, ip4_addr_t ipaddr, ip4_addr_t netmask, ip4_addr_t gw, bool use_dhcp);
-void Handle();
-void LinkDown();
-} // namespace net
+void JoinGroup(int32_t handle, uint32_t ip);
+void LeaveGroup(int32_t handle, uint32_t ip);
+} // namespace network::igmp
 
-#endif // NET_NET_H_
+#endif // NETWORK_IGMP_H_

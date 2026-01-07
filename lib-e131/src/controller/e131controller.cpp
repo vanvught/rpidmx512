@@ -73,7 +73,7 @@ E131Controller::E131Controller()
 
     SetSynchronizationAddress();
 
-    const auto kIpMulticast = net::convert_to_uint(239, 255, 0, 0);
+    const auto kIpMulticast = network::ConvertToUint(239, 255, 0, 0);
     m_DiscoveryIpAddress = kIpMulticast | ((universe::kDiscovery & static_cast<uint32_t>(0xFF)) << 24) | ((universe::kDiscovery & 0xFF00) << 8);
 
     // e131::DataPacket
@@ -88,7 +88,7 @@ E131Controller::E131Controller()
     m_pE131SynchronizationPacket = new struct e131::SynchronizationPacket;
     assert(m_pE131SynchronizationPacket != nullptr);
 
-    handle_ = net::udp::Begin(e131::kUdpPort, nullptr);
+    handle_ = network::udp::Begin(e131::kUdpPort, nullptr);
     assert(handle_ != -1);
 
     DEBUG_EXIT();
@@ -98,7 +98,7 @@ E131Controller::~E131Controller()
 {
     DEBUG_ENTRY();
 
-    net::udp::End(e131::kUdpPort);
+    network::udp::End(e131::kUdpPort);
 
     if (m_pE131SynchronizationPacket != nullptr)
     {
@@ -232,7 +232,7 @@ void E131Controller::HandleDmxOut(uint16_t nUniverse, const uint8_t* pDmxData, u
 
     m_pE131DataPacket->dmp_layer.property_value_count = __builtin_bswap16(static_cast<uint16_t>(1 + nLength));
 
-    net::udp::Send(handle_, reinterpret_cast<const uint8_t*>(m_pE131DataPacket), static_cast<uint16_t>(e131::DataPacketSize(1U + nLength)), ip, e131::kUdpPort);
+    network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(m_pE131DataPacket), static_cast<uint16_t>(e131::DataPacketSize(1U + nLength)), ip, e131::kUdpPort);
 }
 
 void E131Controller::HandleSync()
@@ -240,7 +240,7 @@ void E131Controller::HandleSync()
     if (state_.SynchronizationPacket.nUniverseNumber != 0)
     {
         m_pE131SynchronizationPacket->frame_layer.sequence_number = state_.SynchronizationPacket.sequence_number++;
-        net::udp::Send(handle_, reinterpret_cast<const uint8_t*>(m_pE131SynchronizationPacket), e131::kSynchronizationPacketSize,
+        network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(m_pE131SynchronizationPacket), e131::kSynchronizationPacketSize,
                        state_.SynchronizationPacket.nIpAddress, e131::kUdpPort);
     }
 }
@@ -266,7 +266,7 @@ void E131Controller::HandleBlackout()
         m_pE131DataPacket->frame_layer.sequence_number = GetSequenceNumber(nUniverse, ip);
         m_pE131DataPacket->frame_layer.universe = __builtin_bswap16(nUniverse);
 
-        net::udp::Send(handle_, reinterpret_cast<const uint8_t*>(m_pE131DataPacket), e131::DataPacketSize(513), ip, e131::kUdpPort);
+        network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(m_pE131DataPacket), e131::DataPacketSize(513), ip, e131::kUdpPort);
     }
 
     if (state_.SynchronizationPacket.nUniverseNumber != 0)
@@ -308,7 +308,7 @@ void E131Controller::SendDiscoveryPacket()
         m_pE131DiscoveryPacket->universe_discovery_layer.list_of_universes[i] = __builtin_bswap16(s_SequenceNumbers[i].universe);
     }
 
-    net::udp::Send(handle_, reinterpret_cast<const uint8_t*>(m_pE131DiscoveryPacket), static_cast<uint16_t>(e131::DiscoveryPacketSize(state_.nActiveUniverses)),
+    network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(m_pE131DiscoveryPacket), static_cast<uint16_t>(e131::DiscoveryPacketSize(state_.nActiveUniverses)),
                    m_DiscoveryIpAddress, e131::kUdpPort);
 
     DEBUG_PUTS("Discovery sent");

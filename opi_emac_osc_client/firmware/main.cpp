@@ -100,7 +100,7 @@ int main() // NOLINT
 
     display.Write(1, "Eth OSC Client");
     display.Printf(2, "%s.local",  network::iface::GetHostName());
-    display.Printf(3, "IP: " IPSTR " %c", IP2STR(net::GetPrimaryIp()), network::iface::IsDhcpKnown() ? ( network::iface::IsDhcpUsed() ? 'D' : 'S') : ' ');
+    display.Printf(3, "IP: " IPSTR " %c", IP2STR(network::GetPrimaryIp()), network::iface::IsDhcpKnown() ? ( network::iface::IsDhcpUsed() ? 'D' : 'S') : ' ');
     display.Printf(4, "S : " IPSTR, IP2STR(osc_client.GetServerIP()));
     display.Printf(5, "O : %d", osc_client.GetPortOutgoing());
     display.Printf(6, "I : %d", osc_client.GetPortIncoming());

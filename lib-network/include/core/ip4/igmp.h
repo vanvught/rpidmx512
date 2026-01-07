@@ -28,14 +28,6 @@
 
 #include <cstdint>
 
-namespace net::igmp
-{
-void JoinGroup(int32_t handle, uint32_t ip);
-void LeaveGroup(int32_t handle, uint32_t ip);
-void ReportGroups();
-bool LookupGroup(uint32_t);
-} // namespace net::igmp
-
 namespace emac::multicast
 {
 void EnableHashFilter();

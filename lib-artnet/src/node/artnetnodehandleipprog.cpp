@@ -62,25 +62,25 @@ void ArtNetNode::HandleIpProg()
 
     if ((kCommand & kCommandSetToDefault) == kCommandSetToDefault)
     {
-        net::SetPrimaryIp(0);
+        network::SetPrimaryIp(0);
     }
 
     if ((kCommand & kCommandProgramIpaddress) == kCommandProgramIpaddress)
     {
         memcpy(ip.u8, &kPArtIpProg->prog_ip_hi, artnet::kIpSize);
-        net::SetPrimaryIp(ip.u32);
+        network::SetPrimaryIp(ip.u32);
     }
 
     if ((kCommand & kCommandProgramSubnetmask) == kCommandProgramSubnetmask)
     {
         memcpy(ip.u8, &kPArtIpProg->prog_sm_hi, artnet::kIpSize);
-        net::SetNetmask(ip.u32);
+        network::SetNetmask(ip.u32);
     }
 
     if ((kCommand & kCommandProgramGateway) == kCommandProgramGateway)
     {
         memcpy(ip.u8, &kPArtIpProg->prog_gw_hi, artnet::kIpSize);
-        net::SetGatewayIp(ip.u32);
+        network::SetGatewayIp(ip.u32);
     }
 
     if ( network::iface::IsDhcpUsed())
@@ -96,22 +96,22 @@ void ArtNetNode::HandleIpProg()
 
     auto is_changed = (kIsDhcp !=  network::iface::IsDhcpUsed());
 
-    ip.u32 = net::GetPrimaryIp();
+    ip.u32 = network::GetPrimaryIp();
     is_changed |= (memcmp(&kPArtIpProg->prog_ip_hi, ip.u8, artnet::kIpSize) != 0);
     memcpy(&reply->prog_ip_hi, ip.u8, artnet::kIpSize);
 
-    ip.u32 = net::GetNetmask();
+    ip.u32 = network::GetNetmask();
     is_changed |= (memcmp(&kPArtIpProg->prog_sm_hi, ip.u8, artnet::kIpSize) != 0);
     memcpy(&reply->prog_sm_hi, ip.u8, artnet::kIpSize);
 
-    ip.u32 = net::GetGatewayIp();
+    ip.u32 = network::GetGatewayIp();
     is_changed |= (memcmp(&kPArtIpProg->prog_gw_hi, ip.u8, artnet::kIpSize) != 0);
     memcpy(&reply->prog_gw_hi, ip.u8, artnet::kIpSize);
 
     reply->spare7 = 0;
     reply->spare8 = 0;
 
-    net::udp::Send(handle_, receive_buffer_, sizeof(struct artnet::ArtIpProgReply), ip_address_from_, artnet::kUdpPort);
+    network::udp::Send(handle_, receive_buffer_, sizeof(struct artnet::ArtIpProgReply), ip_address_from_, artnet::kUdpPort);
 
     if (is_changed)
     {

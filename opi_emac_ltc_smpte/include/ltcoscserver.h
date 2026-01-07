@@ -61,7 +61,7 @@ public:
 		DEBUG_ENTRY();
 
 		assert(handle_ == -1);
-		handle_ = net::udp::Begin(port_incoming_, StaticCallbackFunction);
+		handle_ = network::udp::Begin(port_incoming_, StaticCallbackFunction);
 		assert(handle_ != -1);
 
 		DEBUG_EXIT();

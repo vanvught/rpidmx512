@@ -82,25 +82,25 @@ void __attribute__((weak)) EmacShutdown()
 #endif
 }
 
-void __attribute__((weak)) DhcpStatus([[maybe_unused]] net::dhcp::State state)
+void __attribute__((weak)) DhcpStatus([[maybe_unused]] network::dhcp::State state)
 {
 #if !defined(NO_EMAC)
     Display::Get()->ClearLine(LINE_IP);
 
     switch (state)
     {
-        case net::dhcp::State::STATE_OFF:
+        case network::dhcp::State::STATE_OFF:
             break;
-        case net::dhcp::State::STATE_RENEWING:
+        case network::dhcp::State::STATE_RENEWING:
             Display::Get()->PutString("DHCP renewing");
             break;
-        case net::dhcp::State::STATE_BOUND:
+        case network::dhcp::State::STATE_BOUND:
             Display::Get()->PutString("Got IP");
             break;
-        case net::dhcp::State::STATE_REQUESTING:
+        case network::dhcp::State::STATE_REQUESTING:
             Display::Get()->PutString("DHCP requesting");
             break;
-        case net::dhcp::State::STATE_BACKING_OFF:
+        case network::dhcp::State::STATE_BACKING_OFF:
             Display::Get()->PutString("DHCP Error");
             break;
         default:

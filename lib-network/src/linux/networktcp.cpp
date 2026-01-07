@@ -39,7 +39,7 @@
 #include <cassert>
 
 #include "net/tcp.h"
-#include "net/ip4_address.h"
+#include "ip4/ip4_address.h"
 #include "../../config/net_config.h"
 
  #include "firmware/debug/debug_debug.h"

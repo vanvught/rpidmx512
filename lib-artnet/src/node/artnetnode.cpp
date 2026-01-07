@@ -98,7 +98,7 @@ ArtNetNode::ArtNetNode()
     SetLongName(nullptr); // Set default long name
 
     memset(&node_, 0, sizeof(struct artnetnode::Node));
-    node_.ip_timecode = net::GetBroadcastIp();
+    node_.ip_timecode = network::GetBroadcastIp();
 
     for (auto& port : node_.port)
     {
@@ -117,7 +117,7 @@ ArtNetNode::ArtNetNode()
         output_port_[port_index].source_b.physical = 0x100;
         output_port_[port_index].good_output_b = artnet::GoodOutputB::kRdmDisabled | artnet::GoodOutputB::kDiscoveryNotRunning;
         memset(&input_port_[port_index], 0, sizeof(struct artnetnode::InputPort));
-        input_port_[port_index].destination_ip = net::GetBroadcastIp();
+        input_port_[port_index].destination_ip = network::GetBroadcastIp();
     }
 
 #if defined(ARTNET_HAVE_DMXIN)
@@ -183,7 +183,7 @@ void ArtNetNode::Start()
     art_poll_reply_.Status3 |= artnet::Status3::kOutputSwitch;
 #endif
 
-    handle_ = net::udp::Begin(artnet::kUdpPort, StaticCallbackFunction);
+    handle_ = network::udp::Begin(artnet::kUdpPort, StaticCallbackFunction);
     assert(handle_ != -1);
 
 #if defined(ARTNET_HAVE_DMXIN)
@@ -364,12 +364,12 @@ void ArtNetNode::SetLocalMerging()
             {
                 if (!node_.port[output_port_index].local_merge)
                 {
-                    output_port_[output_port_index].source_a.ip = net::IPADDR_LOOPBACK;
+                    output_port_[output_port_index].source_a.ip = network::IPADDR_LOOPBACK;
                     DEBUG_PUTS("Local merge Source A");
                 }
                 else
                 {
-                    output_port_[output_port_index].source_b.ip = net::IPADDR_LOOPBACK;
+                    output_port_[output_port_index].source_b.ip = network::IPADDR_LOOPBACK;
                     DEBUG_PUTS("Local merge Source B");
                 }
 
@@ -738,7 +738,7 @@ void ArtNetNode::Print()
                 printf("  Port %-2u %-4u", static_cast<unsigned int>(port_index), static_cast<unsigned int>(kUniverse));
                 if (node_.port[port_index].protocol == artnet::PortProtocol::kArtnet)
                 {
-                    const auto kDestinationIp = (input_port_[port_index].destination_ip == 0 ? net::GetBroadcastIp() : input_port_[port_index].destination_ip);
+                    const auto kDestinationIp = (input_port_[port_index].destination_ip == 0 ? network::GetBroadcastIp() : input_port_[port_index].destination_ip);
                     printf(" -> " IPSTR, IP2STR(kDestinationIp));
                 }
 #if (ARTNET_VERSION >= 4)

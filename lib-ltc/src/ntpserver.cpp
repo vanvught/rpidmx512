@@ -78,7 +78,7 @@ void NtpServer::Start()
     DEBUG_ENTRY();
 
     assert(handle_ == -1);
-    handle_ = net::udp::Begin(ntp::UDP_PORT, StaticCallbackFunction);
+    handle_ = network::udp::Begin(ntp::UDP_PORT, StaticCallbackFunction);
     assert(handle_ != -1);
 
     reply_.LiVnMode = ntp::VERSION | ntp::MODE_SERVER;
@@ -96,7 +96,7 @@ void NtpServer::Stop()
     DEBUG_ENTRY();
 
     assert(handle_ != -1);
-    net::udp::End(ntp::UDP_PORT);
+    network::udp::End(ntp::UDP_PORT);
     handle_ = -1;
 
     DEBUG_EXIT();

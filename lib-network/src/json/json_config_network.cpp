@@ -33,7 +33,7 @@
 #include "json/networkparamsconst.h"
 #include "json/networkparams.h"
 #include "json/json_helpers.h"
-#include "net/ip4_helpers.h"
+#include "ip4/ip4_helpers.h"
 #include "net/netif.h"
 #if defined(HAVE_NTP_CLIENT)
 #include "apps/ntpclient.h"
@@ -56,11 +56,11 @@ uint32_t GetNetwork(char* buffer, uint32_t length)
 	return json::helpers::Serialize(buffer, length, [&](JsonDoc& doc) {
 	    char ip[net::kIpBufferSize];
 
-	    doc[json::NetworkParamsConst::kSecondaryIp.name] = net::FormatIp(net::GetSecondaryIp(), ip);
+	    doc[json::NetworkParamsConst::kSecondaryIp.name] = net::FormatIp(network::GetSecondaryIp(), ip);
 	    doc[json::NetworkParamsConst::kUseStaticIp.name] = !netif::Dhcp() ? 1 : 0;
-	    doc[json::NetworkParamsConst::kIpAddress.name] = net::FormatIp(net::GetPrimaryIp(), ip);
-	    doc[json::NetworkParamsConst::kNetMask.name] = net::FormatIp(net::GetNetmask(), ip);
-	    doc[json::NetworkParamsConst::kDefaultGateway.name] = net::FormatIp(net::GetGatewayIp(), ip);
+	    doc[json::NetworkParamsConst::kIpAddress.name] = net::FormatIp(network::GetPrimaryIp(), ip);
+	    doc[json::NetworkParamsConst::kNetMask.name] = net::FormatIp(network::GetNetmask(), ip);
+	    doc[json::NetworkParamsConst::kDefaultGateway.name] = net::FormatIp(network::GetGatewayIp(), ip);
 	    doc[json::NetworkParamsConst::kHostname.name] =  network::iface::GetHostName();
 #if defined(HAVE_NTP_CLIENT)    
 	    doc[json::NetworkParamsConst::kNtpServer.name] = net::FormatIp(ntp_server_ip, ip);

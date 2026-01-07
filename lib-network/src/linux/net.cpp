@@ -92,7 +92,7 @@ void SetNetmask(uint32_t netmask_in)
         return;
     }
 
-    net::ip4_addr_t netmask;
+    network::ip4_addr_t netmask;
     netmask.addr = netmask_in;
 
     netif::SetNetmask(netmask);
@@ -112,7 +112,7 @@ void SetGatewayIp(uint32_t gateway_ip)
         return;
     }
 
-    net::ip4_addr_t gw;
+    network::ip4_addr_t gw;
     gw.addr = gateway_ip;
 
     netif::SetGw(gw);

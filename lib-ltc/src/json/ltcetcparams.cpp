@@ -31,7 +31,7 @@
 #include "json/ltcetcparamsconst.h"
 #include "json/json_parser.h"
 #include "json/json_parsehelper.h"
-#include "net/ip4_helpers.h"
+#include "ip4/ip4_helpers.h"
 #include "configstore.h"
 #include "configurationstore.h"
 #include "ltcetc.h"

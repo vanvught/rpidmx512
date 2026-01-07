@@ -33,14 +33,14 @@
 
 #include "core/protocol/arp.h"
 #include "core/protocol/acd.h"
-#include "net/ip4_address.h"
+#include "ip4/ip4_address.h"
 
 /**
  * https://datatracker.ietf.org/doc/html/rfc5227.html
  * IPv4 Address Conflict Detection
  */
 
-namespace net::acd
+namespace network::acd
 {
 typedef void (*conflict_callback_t)(acd::Callback callback);
 
@@ -65,6 +65,6 @@ void ArpReply(const struct t_arp*);
 
 void NetworkChangedLinkDown();
 void NetifIpAddrChanged(ip4_addr_t old_ip_address, ip4_addr_t new_ip_address);
-} // namespace net::acd
+} // namespace network::acd
 
-#endif  // NET_ACD_H_
+#endif // NET_ACD_H_

@@ -106,7 +106,7 @@ class DmxConfigUdp
         s_this = this;
 
         assert(handle_ == -1);
-        handle_ = net::udp::Begin(kUdpPort, DmxConfigUdp::StaticCallbackFunction);
+        handle_ = network::udp::Begin(kUdpPort, DmxConfigUdp::StaticCallbackFunction);
 
         DEBUG_EXIT();
     }
@@ -119,7 +119,7 @@ class DmxConfigUdp
         DEBUG_ENTRY();
 
         assert(handle_ != -1);
-        net::udp::End(kUdpPort);
+        network::udp::End(kUdpPort);
         handle_ = -1;
 
         s_this = nullptr;

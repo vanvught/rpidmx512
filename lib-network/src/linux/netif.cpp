@@ -52,7 +52,7 @@ static void NetifDoUpdateGlobals()
     net::globals::on_network_mask = netif.ip.addr & netif.netmask.addr;
 }
 
-static bool NetifDoSetNetmask(net::ip4_addr_t netmask, net::ip4_addr_t& old_nm)
+static bool NetifDoSetNetmask(network::ip4_addr_t netmask, network::ip4_addr_t& old_nm)
 {
     DEBUG_ENTRY();
     auto& netif = netif::globals::netif_default;
@@ -72,7 +72,7 @@ static bool NetifDoSetNetmask(net::ip4_addr_t netmask, net::ip4_addr_t& old_nm)
     return false; // netmask unchanged
 }
 
-static bool NetifDoSetGw(net::ip4_addr_t gw, net::ip4_addr_t& old_gw)
+static bool NetifDoSetGw(network::ip4_addr_t gw, network::ip4_addr_t& old_gw)
 {
     DEBUG_ENTRY();
     auto& netif = netif::globals::netif_default;
@@ -90,9 +90,9 @@ static bool NetifDoSetGw(net::ip4_addr_t gw, net::ip4_addr_t& old_gw)
     return false; // gateway unchanged
 }
 
-void SetNetmask(net::ip4_addr_t netmask)
+void SetNetmask(network::ip4_addr_t netmask)
 {
-    net::ip4_addr_t old_nm;
+    network::ip4_addr_t old_nm;
 
     if (NetifDoSetNetmask(netmask, old_nm))
     {
@@ -101,9 +101,9 @@ void SetNetmask(net::ip4_addr_t netmask)
     }
 }
 
-void SetGw(net::ip4_addr_t gw)
+void SetGw(network::ip4_addr_t gw)
 {
-    net::ip4_addr_t old_gw;
+    network::ip4_addr_t old_gw;
 
     if (NetifDoSetGw(gw, old_gw))
     {

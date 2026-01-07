@@ -44,7 +44,7 @@
 #include <ctime>
 #include <sys/time.h>
 
-#include "net/udp.h"
+#include "network.h"
 #include "configstore.h"
 #include "core/protocol/ntp.h"
 #include "apps/ntpclient.h"
@@ -194,7 +194,7 @@ static void Send()
     s_ntp_client.request.TransmitTimestamp_s = __builtin_bswap32(s_ntp_client.t1.seconds);
     s_ntp_client.request.TransmitTimestamp_f = __builtin_bswap32(s_ntp_client.t1.nFraction);
 
-    net::udp::Send(s_ntp_client.handle, reinterpret_cast<const uint8_t*>(&s_ntp_client.request), kRequestSize, s_ntp_client.server_ip, ntp::UDP_PORT);
+    network::udp::Send(s_ntp_client.handle, reinterpret_cast<const uint8_t*>(&s_ntp_client.request), kRequestSize, s_ntp_client.server_ip, ntp::UDP_PORT);
 
     s_ntp_client.request_timeout = ntpclient::kTimeoutSeconds;
     s_ntp_client.status = ntp::Status::WAITING;
@@ -428,7 +428,7 @@ void Start()
         return;
     }
 
-    s_ntp_client.handle = net::udp::Begin(ntp::UDP_PORT, Input);
+    s_ntp_client.handle = network::udp::Begin(ntp::UDP_PORT, Input);
     assert(s_ntp_client.handle != -1);
 
     s_ntp_client.status = ntp::Status::IDLE;
@@ -466,7 +466,7 @@ void Stop(bool do_disable)
 
     SoftwareTimerDelete(s_ntp_client.timer_id);
 
-    net::udp::End(ntp::UDP_PORT);
+    network::udp::End(ntp::UDP_PORT);
     s_ntp_client.handle = -1;
 
     if (!do_disable)

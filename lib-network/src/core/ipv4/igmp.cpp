@@ -2,7 +2,7 @@
  * @file igmp.cpp
  *
  */
-/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2018-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,6 @@
 #pragma GCC push_options
 #pragma GCC optimize("O2")
 #pragma GCC optimize("no-tree-loop-distribute-patterns")
-#pragma GCC optimize("-fprefetch-loop-arrays")
 #endif
 
 #include <cstdint>
@@ -54,7 +53,7 @@
  * Internet Group Management Protocol, Version 2
  */
 
-namespace net::igmp
+namespace network::igmp
 {
 static constexpr uint32_t kIgmpTmrInterval = 100; /* Milliseconds */
 static constexpr uint32_t kIgmpJoinDelayingMemberTmr = (500 / kIgmpTmrInterval);
@@ -103,7 +102,7 @@ static void SendReport(uint32_t group_address)
     std::memcpy(s_report.ether.dst, s_multicast_mac, network::ethernet::kAddressLength);
     // IPv4
     s_report.ip4.id = ++s_id;
-    net::memcpy_ip(s_report.ip4.src, netif::globals::netif_default.ip.addr);
+    network::memcpy_ip(s_report.ip4.src, netif::globals::netif_default.ip.addr);
     std::memcpy(s_report.ip4.dst, multicast_ip.u8, IPv4_ADDR_LEN);
     s_report.ip4.chksum = 0;
 #if !defined(CHECKSUM_BY_HARDWARE)
@@ -247,9 +246,9 @@ static void SendLeave(uint32_t group_address)
 #if !defined(CHECKSUM_BY_HARDWARE)
     s_leave.ip4.chksum = Chksum(reinterpret_cast<void*>(&s_leave.ip4), 24); // TODO(avv):
 #endif
-    net::memcpy_ip(s_leave.ip4.src, netif::globals::netif_default.ip.addr);
+    network::memcpy_ip(s_leave.ip4.src, netif::globals::netif_default.ip.addr);
     // IGMP
-    net::memcpy_ip(s_leave.igmp.report.igmp.group_address, group_address);
+    network::memcpy_ip(s_leave.igmp.report.igmp.group_address, group_address);
     s_leave.igmp.report.igmp.checksum = 0;
 #if !defined(CHECKSUM_BY_HARDWARE)
     s_leave.igmp.report.igmp.checksum = Chksum(reinterpret_cast<void*>(&s_leave.ip4), IPv4_IGMP_REPORT_HEADERS_SIZE);
@@ -441,7 +440,7 @@ bool LookupGroup(uint32_t group_address)
     }
 
     DEBUG_EXIT();
-    return (group_address == net::convert_to_uint(224, 0, 0, 1));
+    return (group_address == network::ConvertToUint(224, 0, 0, 1));
 }
 
 void ReportGroups()
@@ -452,7 +451,7 @@ void ReportGroups()
     }
 }
 // <---
-} // namespace net::igmp
+} // namespace network::igmp
 
 #if !defined(CONFIG_REMOTECONFIG_MINIMUM)
 #pragma GCC pop_options

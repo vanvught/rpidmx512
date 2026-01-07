@@ -178,21 +178,21 @@ class DisplayUdf final : public Display
     void ShowIpAddress()
     {
         ClearEndOfLine();
-        Printf(labels_[static_cast<uint32_t>(displayudf::Labels::kIp)], "" IPSTR "/%d %c", IP2STR(net::GetPrimaryIp()), net::GetNetmaskCIDR(),
+        Printf(labels_[static_cast<uint32_t>(displayudf::Labels::kIp)], "" IPSTR "/%d %c", IP2STR(network::GetPrimaryIp()), network::GetNetmaskCIDR(),
                network::iface::AddressingMode());
     }
 
     void ShowNetmask()
     {
         ClearEndOfLine();
-        Printf(labels_[static_cast<uint32_t>(displayudf::Labels::kNetmask)], "N: " IPSTR "", IP2STR(net::GetNetmask()));
+        Printf(labels_[static_cast<uint32_t>(displayudf::Labels::kNetmask)], "N: " IPSTR "", IP2STR(network::GetNetmask()));
         ShowIpAddress();
     }
 
     void ShowGatewayIp()
     {
         ClearEndOfLine();
-        Printf(labels_[static_cast<uint32_t>(displayudf::Labels::kDefaultGateway)], "G: " IPSTR "", IP2STR(net::GetGatewayIp()));
+        Printf(labels_[static_cast<uint32_t>(displayudf::Labels::kDefaultGateway)], "G: " IPSTR "", IP2STR(network::GetGatewayIp()));
     }
 
     void ShowHostName()
@@ -201,17 +201,17 @@ class DisplayUdf final : public Display
         Write(labels_[static_cast<uint32_t>(displayudf::Labels::kHostname)],  network::iface::GetHostName());
     }
 
-    void ShowDhcpStatus(net::dhcp::State state)
+    void ShowDhcpStatus(network::dhcp::State state)
     {
         switch (state)
         {
-            case net::dhcp::State::STATE_OFF:
+            case network::dhcp::State::STATE_OFF:
                 break;
-            case net::dhcp::State::STATE_RENEWING:
+            case network::dhcp::State::STATE_RENEWING:
                 ClearEndOfLine();
                 Printf(labels_[static_cast<uint32_t>(displayudf::Labels::kIp)], "DHCP renewing");
                 break;
-            case net::dhcp::State::STATE_BOUND:
+            case network::dhcp::State::STATE_BOUND:
                 break;
             default:
                 break;

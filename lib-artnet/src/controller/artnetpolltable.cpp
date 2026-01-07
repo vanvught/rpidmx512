@@ -36,7 +36,7 @@
 #include "artnetpolltable.h"
 #include "hal.h"
 #include "hal_millis.h"
-#include "net/ip4_address.h"
+#include "ip4/ip4_address.h"
  #include "firmware/debug/debug_debug.h"
 
 union uip

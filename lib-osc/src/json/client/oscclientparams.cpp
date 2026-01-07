@@ -34,11 +34,11 @@
 #include "json/oscparamsconst.h"
 #include "json/json_parser.h"
 #include "json/json_parsehelper.h"
-#include "net/ip4_helpers.h"
+#include "ip4/ip4_helpers.h"
 #include "configstore.h"
 #include "configurationstore.h"
 #include "common/utils/utils_flags.h"
-#include "net/ip4_address.h"
+#include "ip4/ip4_address.h"
 #include "oscclient.h"
 
 using common::store::osc::client::Flags;

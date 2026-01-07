@@ -32,7 +32,7 @@
 
 #include "common/utils/utils_enum.h"
 #include "midi.h"
-#include "net/ip4_address.h"
+#include "ip4/ip4_address.h"
 
 namespace ltcetc
 {
@@ -92,7 +92,7 @@ class LtcEtc
 
     void SetDestinationIp(uint32_t destination_ip)
     {
-        if ((net::is_private_ip(destination_ip) || net::is_multicast_ip(destination_ip)))
+        if ((network::IsPrivateIp(destination_ip) || network::IsMulticastIp(destination_ip)))
         {
             config_.destination_ip = destination_ip;
         }
@@ -120,7 +120,7 @@ class LtcEtc
 
     void SetSourceMulticastIp(uint32_t source_multicast_ip)
     {
-        if (net::is_multicast_ip(source_multicast_ip))
+        if (network::IsMulticastIp(source_multicast_ip))
         {
             config_.source_multicast_ip = source_multicast_ip;
         }

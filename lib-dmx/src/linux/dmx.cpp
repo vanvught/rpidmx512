@@ -75,10 +75,10 @@ Dmx::Dmx() {
 	s_this = this;
 
 	for (uint32_t i = 0; i < dmx::config::max::PORTS; i++) {
-		s_nHandePortDmx[i] = net::udp::Begin(UDP_PORT_DMX_START + i, nullptr);
+		s_nHandePortDmx[i] = network::udp::Begin(UDP_PORT_DMX_START + i, nullptr);
 		assert(s_nHandePortDmx[i] != -1);
 
-		s_nHandePortRdm[i] = net::udp::Begin(UDP_PORT_RDM_START + i, nullptr);
+		s_nHandePortRdm[i] = network::udp::Begin(UDP_PORT_RDM_START + i, nullptr);
 		assert(s_nHandePortRdm[i] != -1);
 
 		SetPortDirection(i, PortDirection::kInput, false);
@@ -155,7 +155,7 @@ void Dmx::SetSendDataWithoutSC(uint32_t port_index, const uint8_t *pData, uint32
 	dmxSendBuffer[0] = 0;
 	memcpy(&dmxSendBuffer[1], pData,  nLength);
 
-	net::udp::Send(s_nHandePortDmx[port_index], dmxSendBuffer, nLength, net::GetBroadcastIp(), UDP_PORT_DMX_START + port_index);
+	network::udp::Send(s_nHandePortDmx[port_index], dmxSendBuffer, nLength, network::GetBroadcastIp(), UDP_PORT_DMX_START + port_index);
 }
 
 void Dmx::Blackout() {
@@ -183,7 +183,7 @@ const uint8_t *Dmx::GetDmxAvailable([[maybe_unused]] uint32_t port_index)  {
 
 //	do {
 		nBytesReceived = net::udp::Recv(s_nHandePortDmx[port_index], const_cast<const uint8_t**>(reinterpret_cast<uint8_t**>(&dmxDataRx)), &fromIp, &fromPort);
-		if ((nBytesReceived != 0) && (fromIp != net::GetPrimaryIp()) && (fromPort == (UDP_PORT_DMX_START + port_index))) {
+		if ((nBytesReceived != 0) && (fromIp != network::GetPrimaryIp()) && (fromPort == (UDP_PORT_DMX_START + port_index))) {
 			nPackets++;
 		}
 //	} while (nBytesReceived == 0);
@@ -221,7 +221,7 @@ void Dmx::RdmSendRaw(uint32_t port_index, const uint8_t* pRdmData, uint32_t nLen
 	assert(pRdmData != nullptr);
 	assert(nLength != 0);
 
-	net::udp::Send(s_nHandePortRdm[port_index], pRdmData, nLength, net::GetBroadcastIp(), UDP_PORT_RDM_START + port_index);
+	network::udp::Send(s_nHandePortRdm[port_index], pRdmData, nLength, network::GetBroadcastIp(), UDP_PORT_RDM_START + port_index);
 
 	sv_TotalStatistics[port_index].rdm.sent.classes++;
 }
@@ -265,7 +265,7 @@ const uint8_t *Dmx::RdmReceive(uint32_t port_index) {
 			debug::Dump(rdmReceiveBuffer, nBytesReceived);
 		}
 
-		if ((nBytesReceived != 0) && (fromIp != net::GetPrimaryIp()) && (fromPort == (UDP_PORT_RDM_START + port_index))) {
+		if ((nBytesReceived != 0) && (fromIp != network::GetPrimaryIp()) && (fromPort == (UDP_PORT_RDM_START + port_index))) {
 			nPackets++;
 		}
 	} while ((Micros() - micros) < 1000);

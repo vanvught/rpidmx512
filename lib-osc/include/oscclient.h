@@ -30,7 +30,7 @@
 #include <cassert>
 
 #include "configurationstore.h"
-#include "net/ip4_address.h"
+#include "ip4/ip4_address.h"
 #include "osc.h"
 #include "oscsimplesend.h"
 #include "oscclientled.h"

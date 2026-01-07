@@ -84,13 +84,13 @@ static void timer_handler()
 
 void LtcMidiSystemRealtime::Start()
 {
-    handle_ = net::udp::Begin(udp::PORT, StaticCallbackFunctionInput);
+    handle_ = network::udp::Begin(udp::PORT, StaticCallbackFunctionInput);
     assert(handle_ != -1);
 }
 
 void LtcMidiSystemRealtime::Stop()
 {
-    handle_ = net::udp::End(udp::PORT);
+    handle_ = network::udp::End(udp::PORT);
     assert(handle_ == -1);
 }
 

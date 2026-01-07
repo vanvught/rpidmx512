@@ -40,14 +40,14 @@
 #include "core/protocol/autoip.h"
 #include "firmware/debug/debug_debug.h"
 
-namespace net::autoip
+namespace network::autoip
 {
 struct Autoip
 {
     ip4_addr_t llipaddr;
     State state;
     uint8_t tried_llipaddr;
-    net::acd::Acd acd;
+    acd::Acd acd;
 };
 
 void Start();
@@ -68,7 +68,7 @@ inline void NetworkChangedLinkUp()
 
     if ((autoip != nullptr) && (autoip->state != autoip::State::AUTOIP_STATE_OFF))
     {
-        net::acd::Start(&autoip->acd, autoip->llipaddr);
+        network::acd::Start(&autoip->acd, autoip->llipaddr);
     }
 
     DEBUG_EXIT();
@@ -87,6 +87,6 @@ inline void NetworkChangedLinkDown()
 
     DEBUG_EXIT();
 }
-} // namespace net::autoip
+} // namespace network::autoip
 
 #endif // NET_AUTOIP_H_

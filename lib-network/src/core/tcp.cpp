@@ -54,7 +54,6 @@
 #pragma GCC push_options
 #pragma GCC optimize("O2")
 #pragma GCC optimize("no-tree-loop-distribute-patterns")
-#pragma GCC optimize("-fprefetch-loop-arrays")
 
 namespace console
 {
@@ -443,7 +442,7 @@ static uint16_t TcpChecksumPseudoHeader(struct t_tcp* eth_frame, const struct Tc
     pseu->proto = IPv4_PROTO_TCP;
     pseu->length = __builtin_bswap16(length);
 
-    const auto kSum = net::Chksum(pseu, length + kTcpPseudoLen);
+    const auto kSum = network::Chksum(pseu, length + kTcpPseudoLen);
 
     // Restore data before TCP header from temporary buffer
     memcpy(pseu, buf, kTcpPseudoLen);
@@ -464,7 +463,7 @@ static void Ip4SendSegment(const Tcb* tcb, void* data, uint32_t size)
     _pcast32 src;
     memcpy(src.u8, tcb->remote_ip, 4);
 
-    net::arp::Send(data, size, src.u32);
+    network::arp::Send(data, size, src.u32);
 }
 
 static void SendSegment(Tcb* tcb, const SendInfo& send_info, bool track_rtx = true)
@@ -492,7 +491,7 @@ static void SendSegment(Tcb* tcb, const SendInfo& send_info, bool track_rtx = tr
     std::memcpy(s_eth_frame.ip4.dst, tcb->remote_ip, IPv4_ADDR_LEN);
     s_eth_frame.ip4.chksum = 0;
 #if !defined(CHECKSUM_BY_HARDWARE)
-    s_eth_frame.ip4.chksum = net::Chksum(reinterpret_cast<void*>(&s_eth_frame.ip4), 20);
+    s_eth_frame.ip4.chksum = network::Chksum(reinterpret_cast<void*>(&s_eth_frame.ip4), 20);
 #endif
     // TCP
     s_eth_frame.tcp.srcpt = tcb->local_port;
@@ -1693,12 +1692,12 @@ int32_t Connect(uint32_t remote_ip, uint16_t remote_port, CallbackConnect cb_con
         return -2;
     }
 
-	tcb->local_port = s_local_port;
-	if (s_local_port++ == kLocalPortRangeEnd)
-	{
-		s_local_port = kLocalPortRangeStart;
-	}
-		
+    tcb->local_port = s_local_port;
+    if (s_local_port++ == kLocalPortRangeEnd)
+    {
+        s_local_port = kLocalPortRangeStart;
+    }
+
     tcb->remote_port = remote_port;
 
     _pcast32 ip;

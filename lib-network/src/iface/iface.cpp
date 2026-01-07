@@ -24,7 +24,7 @@
  */
 
 #include "network.h"
-#include "net/ip4_address.h"
+#include "ip4/ip4_address.h"
 #include "core/ip4/dhcp.h"
 #include "core/ip4/autoip.h"
 #include "net_config.h"
@@ -37,9 +37,9 @@
 
 namespace network::iface
 {
-static char s_hostname[net::HOSTNAME_SIZE];
-static char s_domain_name[net::DOMAINNAME_SIZE];
-static uint32_t s_nameservers[net::NAMESERVERS_COUNT];
+static char s_hostname[network::HOSTNAME_SIZE];
+static char s_domain_name[network::DOMAINNAME_SIZE];
+static uint32_t s_nameservers[network::NAMESERVERS_COUNT];
 
 static constexpr char ToHex(char i)
 {
@@ -48,8 +48,8 @@ static constexpr char ToHex(char i)
 
 void SetDomainName(const char* domainname)
 {
-    strncpy(s_domain_name, domainname, net::DOMAINNAME_SIZE - 1);
-    s_domain_name[net::DOMAINNAME_SIZE - 1] = '\0';
+    strncpy(s_domain_name, domainname, network::DOMAINNAME_SIZE - 1);
+    s_domain_name[network::DOMAINNAME_SIZE - 1] = '\0';
 }
 
 const char* DomainName()
@@ -69,7 +69,7 @@ void SetHostname(const char* hostname)
     {
         uint32_t k = 0;
 
-        for (uint32_t i = 0; (i < (sizeof(HOST_NAME_PREFIX) - 1)) && (i < net::HOSTNAME_SIZE - 7); i++)
+        for (uint32_t i = 0; (i < (sizeof(HOST_NAME_PREFIX) - 1)) && (i < network::HOSTNAME_SIZE - 7); i++)
         {
             s_hostname[k++] = HOST_NAME_PREFIX[i];
         }
@@ -86,8 +86,8 @@ void SetHostname(const char* hostname)
     }
     else
     {
-        strncpy(s_hostname, hostname, net::HOSTNAME_SIZE - 1);
-        s_hostname[net::HOSTNAME_SIZE - 1] = '\0';
+        strncpy(s_hostname, hostname, network::HOSTNAME_SIZE - 1);
+        s_hostname[network::HOSTNAME_SIZE - 1] = '\0';
     }
 
     network::store::SaveHostname(s_hostname, static_cast<uint32_t>(strlen(s_hostname)));
@@ -103,7 +103,7 @@ void SetHostname(const char* hostname)
 
 uint32_t NameServer(uint32_t index)
 {
-    if (index < net::NAMESERVERS_COUNT)
+    if (index < network::NAMESERVERS_COUNT)
     {
         return s_nameservers[index];
     }
@@ -115,7 +115,7 @@ void EnableDhcp()
 {
     DEBUG_ENTRY();
 
-    net::dhcp::Start();
+    network::dhcp::Start();
 
     network::store::SaveDhcp(true);
 
@@ -126,7 +126,7 @@ void SetAutoIp()
 {
     DEBUG_ENTRY();
 
-    net::autoip::Start();
+    network::autoip::Start();
 
     network::store::SaveDhcp(false);
 

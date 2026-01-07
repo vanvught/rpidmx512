@@ -286,7 +286,7 @@ inline const uint8_t* E131Bridge::GetCid() const
 inline void E131Bridge::HandleShowFile(const e131::DataPacket* pE131DataPacket)
 {
     packet_millis_ = hal::Millis();
-    ip_address_from_ = net::GetPrimaryIp();
+    ip_address_from_ = network::GetPrimaryIp();
     receive_buffer_ = reinterpret_cast<uint8_t*>(const_cast<e131::DataPacket*>(pE131DataPacket));
     HandleDmx();
 }

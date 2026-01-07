@@ -240,7 +240,7 @@ class ArtNetNode
     void HandleShowFile(const artnet::ArtDmx* artdmx)
     {
         current_millis_ = hal::Millis();
-        ip_address_from_ = net::GetPrimaryIp();
+        ip_address_from_ = network::GetPrimaryIp();
         receive_buffer_ = reinterpret_cast<uint8_t*>(const_cast<artnet::ArtDmx*>(artdmx));
         HandleDmx();
     }
@@ -282,7 +282,7 @@ class ArtNetNode
     {
         assert(timecode != nullptr);
         memcpy(&art_time_code_.Frames, timecode, sizeof(struct artnet::TimeCode));
-        net::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&art_time_code_), sizeof(struct artnet::ArtTimeCode), node_.ip_timecode, artnet::kUdpPort);
+        network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&art_time_code_), sizeof(struct artnet::ArtTimeCode), node_.ip_timecode, artnet::kUdpPort);
     }
 
     void SetArtTimeCodeCallbackFunction(ArtTimeCodeCallbackFunctionPtr art_time_code_callback_function_ptr)

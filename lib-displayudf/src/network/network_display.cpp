@@ -55,7 +55,7 @@ void EmacShutdown()
     DisplayUdf::Get()->ShowShutdown();
 }
 
-void DhcpStatus(net::dhcp::State state)
+void DhcpStatus(network::dhcp::State state)
 {
     DisplayUdf::Get()->ShowDhcpStatus(state);
 }

@@ -86,10 +86,10 @@ void PixelPusher::Start()
     DEBUG_ENTRY();
     assert(dmxnode_output_type_ != nullptr);
 
-    handle_discovery_ = net::udp::Begin(pp::UDP_PORT_DISCOVERY, nullptr);
+    handle_discovery_ = network::udp::Begin(pp::UDP_PORT_DISCOVERY, nullptr);
     assert(handle_discovery_ != -1);
 
-    handle_data_ = net::udp::Begin(pp::UDP_PORT_DATA, StaticCallbackFunction);
+    handle_data_ = network::udp::Begin(pp::UDP_PORT_DATA, StaticCallbackFunction);
     assert(handle_data_ != -1);
 
 #if !defined(CONFIG_PP_16BITSTUFF)
@@ -116,10 +116,10 @@ void PixelPusher::Stop()
 {
     DEBUG_ENTRY();
 
-    handle_data_ = net::udp::End(pp::UDP_PORT_DATA);
+    handle_data_ = network::udp::End(pp::UDP_PORT_DATA);
     handle_data_ = -1;
 
-    net::udp::End(pp::UDP_PORT_DISCOVERY);
+    network::udp::End(pp::UDP_PORT_DISCOVERY);
     handle_discovery_ = -1;
 
     DEBUG_EXIT();
@@ -193,9 +193,9 @@ void PixelPusher::Run()
     }
     millis_ = kMillis;
     _pcast32 src;
-    src.u32 = net::GetPrimaryIp();
+    src.u32 = network::GetPrimaryIp();
     memcpy(discovery_packet_.header.ip_address, src.u8, 4);
-    net::udp::Send(handle_discovery_, reinterpret_cast<const uint8_t*>(&discovery_packet_), sizeof(struct pp::DiscoveryPacket), static_cast<uint32_t>(~0),
+    network::udp::Send(handle_discovery_, reinterpret_cast<const uint8_t*>(&discovery_packet_), sizeof(struct pp::DiscoveryPacket), static_cast<uint32_t>(~0),
                    pp::UDP_PORT_DISCOVERY);
 }
 

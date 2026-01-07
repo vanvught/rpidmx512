@@ -138,7 +138,7 @@ void LtcDisplayRgb::Init(pixel::Type type)
     }
 
     assert(handle_ == -1);
-    handle_ = net::udp::Begin(udp::kPort, StaticCallbackFunction);
+    handle_ = network::udp::Begin(udp::kPort, StaticCallbackFunction);
     assert(handle_ != -1);
 
     DEBUG_EXIT();

@@ -78,7 +78,7 @@ class Allocator
     void Init()
     {
         free_mask_ = kAllMask;
-        memset(size_, 0, sizeof(size_));
+        std::memset(size_, 0, sizeof(size_));
     }
 
     Allocator(const Allocator&) = delete;

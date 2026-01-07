@@ -100,7 +100,7 @@ void SystimeReader::Start(bool auto_start)
     platform::ltc::timer11_set_type(static_cast<uint8_t>(ltc::g_Type));
 #endif
 
-    handle_ = net::udp::Begin(kUdpPort, StaticCallbackFunction);
+    handle_ = network::udp::Begin(kUdpPort, StaticCallbackFunction);
     assert(handle_ != -1);
 
     LtcOutputs::Get()->Init();

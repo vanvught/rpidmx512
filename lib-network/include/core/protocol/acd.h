@@ -28,7 +28,7 @@
 
 #include <cstdint>
 
-namespace net::acd
+namespace network::acd
 {
 /**
  *  RFC 5227 and RFC 3927 Constants
@@ -62,6 +62,6 @@ enum class Callback
     ACD_RESTART_CLIENT, ///< Conflict found -> the client should try again
     ACD_DECLINE         ///< Decline the received IP address (rate limiting)
 };
-} // namespace net::acd
+} // namespace network::acd
 
 #endif /* NET_PROTOCOL_ACD_H_ */

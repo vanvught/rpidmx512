@@ -33,13 +33,13 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#include "net/ip4_address.h"
+#include "ip4/ip4_address.h"
 #include "network.h"
 #include "configstore.h"
 #include "json/networkparams.h"
 #include "json/networkparamsconst.h"
 #include "json/json_parser.h"
-#include "net/ip4_helpers.h"
+#include "ip4/ip4_helpers.h"
 #if defined(HAVE_NTP_CLIENT)
 #include "apps/ntpclient.h"
 #endif
@@ -115,9 +115,9 @@ void NetworkParams::Set()
 
     if (kUseStaticIp)
     {
-        net::SetGatewayIp(store_network.gateway_ip);
-        net::SetNetmask(store_network.netmask);
-        net::SetPrimaryIp(store_network.local_ip);
+        network::SetGatewayIp(store_network.gateway_ip);
+        network::SetNetmask(store_network.netmask);
+        network::SetPrimaryIp(store_network.local_ip);
     }
     else
     {

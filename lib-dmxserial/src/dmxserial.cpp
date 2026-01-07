@@ -33,7 +33,7 @@
 #include "dmxserial.h"
 #include "dmxserial_internal.h"
 #include "dmxserialtftp.h"
-#include "net/udp.h"
+#include "network.h"
  #include "firmware/debug/debug_debug.h"
 
 DmxSerial::DmxSerial()
@@ -60,7 +60,7 @@ DmxSerial::~DmxSerial()
         }
     }
 
-    net::udp::End(UDP::PORT);
+    network::udp::End(UDP::PORT);
     handle_ = -1;
 
     s_this = nullptr;
@@ -69,7 +69,7 @@ DmxSerial::~DmxSerial()
 void DmxSerial::Init()
 {
     assert(handle_ == -1);
-    handle_ = net::udp::Begin(UDP::PORT, StaticCallbackFunction);
+    handle_ = network::udp::Begin(UDP::PORT, StaticCallbackFunction);
     assert(handle_ != -1);
 
     ScanDirectory();

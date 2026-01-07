@@ -128,5 +128,5 @@ void OscSimpleSend::Send(uint32_t message_length, int32_t handle, uint32_t ip_ad
 {
     debug::Dump(s_message, message_length);
 
-    net::udp::Send(handle, s_message, message_length, ip_address, port);
+    network::udp::Send(handle, s_message, message_length, ip_address, port);
 }

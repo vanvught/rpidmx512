@@ -2,7 +2,7 @@
  * @file network.h
  *
  */
-/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2017-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,11 +32,13 @@
 
 #include <cstdint>
 
+#include "../src/core/net_private.h"
 #include "network_net.h" // IWYU pragma: keep
 #include "network_iface.h"
-#include "net/udp.h" // IWYU pragma: keep
+#include "network_udp.h" // IWYU pragma: keep
+#include "network_igmp.h" // IWYU pragma: keep
 #if defined(ENABLE_HTTPD)
-#include "network_tcp.h"  // IWYU pragma: keep
+#include "network_tcp.h" // IWYU pragma: keep
 #endif
 #include "emac/phy.h"
 #if defined(ENET_LINK_CHECK_USE_PIN_POLL) || defined(ENET_LINK_CHECK_REG_POLL)
@@ -74,6 +76,9 @@ inline void Run()
             length = emac_eth_recv(&ethernet_buffer);
         } while (length > 0);
     }
+#if defined(ENABLE_HTTPD)
+    network::tcp::Run();
+#endif
 #if defined(CONFIG_NET_ENABLE_PTP)
     network::ptp::Run();
 #endif

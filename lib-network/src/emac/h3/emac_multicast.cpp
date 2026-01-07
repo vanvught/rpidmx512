@@ -38,7 +38,7 @@
 
 #include "h3.h"
 #include "emac.h"
-#include "net/ip4_address.h"
+#include "ip4/ip4_address.h"
 #include "firmware/debug/debug_debug.h"
 
 namespace network

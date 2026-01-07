@@ -32,7 +32,7 @@ namespace hal
 {
 void SerialNumber(uint8_t sn[kSnSize])
 {
-    const auto kIp = net::GetPrimaryIp();
+    const auto kIp = network::GetPrimaryIp();
 #if !defined(CONFIG_RDMDEVICE_REVERSE_UID)
     sn[0] = static_cast<uint8_t>(kIp >> 24);
     sn[1] = (kIp >> 16) & 0xFF;

@@ -66,7 +66,7 @@ void ArtNetNode::HandleRdmIn()
 
                     const auto* rdm_message = reinterpret_cast<const struct TRdmMessageNoSc*>(art_rdm->RdmPacket);
 
-                    net::udp::Send(handle_, reinterpret_cast<const uint8_t*>(art_rdm),
+                    network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(art_rdm),
                                    ((sizeof(struct artnet::ArtRdm)) - 256) + rdm_message->message_length + 1, input_port_[port_index].destination_ip,
                                    artnet::kUdpPort);
 
@@ -96,7 +96,7 @@ void ArtNetNode::HandleRdmIn()
 
                     const auto* rdm_message = reinterpret_cast<const struct TRdmMessageNoSc*>(art_rdm->RdmPacket);
 
-                    net::udp::Send(handle_, reinterpret_cast<const uint8_t*>(art_rdm),
+                    network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(art_rdm),
                                    ((sizeof(struct artnet::ArtRdm)) - 256) + rdm_message->message_length + 1, output_port_[port_index].rdm_destination_ip,
                                    artnet::kUdpPort);
 

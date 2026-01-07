@@ -30,10 +30,10 @@
 
 #include "net/netif.h"
 #include "core/ip4/acd.h"
-#include "net/ip4_address.h"
+#include "ip4/ip4_address.h"
 #include "core/protocol/dhcp.h"
 
-namespace net::dhcp
+namespace network::dhcp
 {
 static constexpr uint32_t kCoarseTimerSecs = 60;
 // period (in milliseconds) of the application calling dhcp_coarse_tmr()
@@ -99,6 +99,6 @@ inline bool SuppliedAddress()
     }
     return false;
 }
-} // namespace net::dhcp
+}  // namespace network::dhcp
 
 #endif // NET_DHCP_H_

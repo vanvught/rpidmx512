@@ -1,8 +1,8 @@
 /**
- * @file udp.h
+ * @file network_udp.h
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,12 +23,12 @@
  * THE SOFTWARE.
  */
 
-#ifndef NET_UDP_H_
-#define NET_UDP_H_
+#ifndef NETWORK_UDP_H_
+#define NETWORK_UDP_H_
 
 #include <cstdint>
 
-namespace net::udp
+namespace network::udp
 {
 typedef void (*UdpCallbackFunctionPtr)(const uint8_t*, uint32_t, uint32_t, uint16_t);
 
@@ -39,4 +39,4 @@ void Send(int32_t, const uint8_t*, uint32_t, uint32_t, uint16_t);
 void SendWithTimestamp(int32_t, const uint8_t*, uint32_t, uint32_t, uint16_t);
 } // namespace net::udp
 
-#endif // NET_UDP_H_
+#endif // NETWORK_UDP_H_

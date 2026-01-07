@@ -133,8 +133,8 @@ void Init()
 
     net::emac::display::Status(net::phy::Link::kStateUp == global::network::linkState);
 
-    net::arp::Init();
-    net::ip::Init();
+    network::arp::Init();
+    network::ip::Init();
 
 #if defined(CONFIG_NET_ENABLE_PTP)
     net::ptp_init();
@@ -155,9 +155,9 @@ void Init()
     netif::Init();
     netif::AddExtCallback(NetifExtCallback);
 
-    net::ip4_addr_t ipaddr;
-    net::ip4_addr_t netmask;
-    net::ip4_addr_t gw;
+    network::ip4_addr_t ipaddr;
+    network::ip4_addr_t netmask;
+    network::ip4_addr_t gw;
 
     common::store::Network store;
     ConfigStore::Instance().Copy(&store, &ConfigurationStore::network);
@@ -170,7 +170,7 @@ void Init()
 
     const auto kFlags = ConfigStore::Instance().NetworkGet(&common::store::Network::flags);
 
-    net::Set(ipaddr, netmask, gw, !common::IsFlagSet(kFlags, Flags::Flag::kUseStaticIp));
+    network::Set(ipaddr, netmask, gw, !common::IsFlagSet(kFlags, Flags::Flag::kUseStaticIp));
 
 #if defined(ENET_LINK_CHECK_USE_INT)
     net::link_interrupt_init();

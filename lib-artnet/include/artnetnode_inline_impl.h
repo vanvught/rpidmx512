@@ -408,7 +408,7 @@ inline void ArtNetNode::SendDiag([[maybe_unused]] const artnet::PriorityCodes kP
 
     const uint16_t kSize = sizeof(struct artnet::ArtDiagData) - sizeof(diag_data_.data) + diag_data_.LengthLo;
 
-    net::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&diag_data_), kSize, state_.art.diag_ip, artnet::kUdpPort);
+    network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&diag_data_), kSize, state_.art.diag_ip, artnet::kUdpPort);
 #endif
 }
 

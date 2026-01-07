@@ -30,7 +30,7 @@
 #include "json/artnetparams.h"
 #include "json/artnetparamsconst.h"
 #include "json/json_helpers.h"
-#include "net/ip4_helpers.h"
+#include "ip4/ip4_helpers.h"
 
 namespace json::config
 {

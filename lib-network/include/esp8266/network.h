@@ -33,7 +33,7 @@
 #include <cstdint>
 #include <net/if.h>
 
-#include "net/ip4_address.h"
+#include "ip4/ip4_address.h"
 
 struct ip_addr {
     uint32_t addr;
@@ -198,7 +198,7 @@ private:
 	uint32_t m_nNetmask { 0 };
 	char m_aHostName[net::HOSTNAME_SIZE];
 	char m_aDomainName[net::DOMAINNAME_SIZE];
-	uint8_t m_aNetMacaddr[net::MAC_SIZE];
+	uint8_t m_aNetMacaddr[network::MAC_SIZE];
 	char m_aIfName[IFNAMSIZ];
 	_wifi_mode m_Mode { WIFI_OFF };
 	bool m_isApOpen { true };

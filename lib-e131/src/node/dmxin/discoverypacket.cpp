@@ -64,6 +64,6 @@ void E131Bridge::SendDiscoveryPacket() {
 			}
 		}
 
-		net::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&e131_discovery_packet_), state_.discovery_packet_length, discovery_ip_address_, e131::kUdpPort);
+		network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&e131_discovery_packet_), state_.discovery_packet_length, discovery_ip_address_, e131::kUdpPort);
 	}
 }

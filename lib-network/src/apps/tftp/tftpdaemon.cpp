@@ -36,7 +36,6 @@
 #include <cassert>
 
 #include "network.h"
-#include "net/udp.h"
 #include "apps/tftpdaemon.h"
 #include "core/protocol/iana.h"
 #include "firmware/debug/debug_debug.h"
@@ -126,7 +125,7 @@ TFTPDaemon::~TFTPDaemon()
     DEBUG_ENTRY();
     DEBUG_PRINTF("s_this=%p", reinterpret_cast<void*>(s_this));
 
-    net::udp::End(from_port_);
+    network::udp::End(from_port_);
 
     s_this = nullptr;
 
@@ -140,11 +139,11 @@ void TFTPDaemon::Init()
 
     if (from_port_ != 0)
     {
-        net::udp::End(from_port_);
+        network::udp::End(from_port_);
         index_ = -1;
     }
 
-    index_ = net::udp::Begin(net::iana::IANA_PORT_TFTP, TFTPDaemon::StaticCallbackFunction);
+    index_ = network::udp::Begin(net::iana::IANA_PORT_TFTP, TFTPDaemon::StaticCallbackFunction);
     DEBUG_PRINTF("index_=%d", index_);
 
     from_port_ = net::iana::IANA_PORT_TFTP;
@@ -243,8 +242,8 @@ void TFTPDaemon::HandleRequest()
             }
             else
             {
-                net::udp::End(net::iana::IANA_PORT_TFTP);
-                index_ = net::udp::Begin(from_port_, TFTPDaemon::StaticCallbackFunction);
+                network::udp::End(net::iana::IANA_PORT_TFTP);
+                index_ = network::udp::Begin(from_port_, TFTPDaemon::StaticCallbackFunction);
                 state_ = State::kRrqSendPacket;
                 DoRead();
             }
@@ -257,8 +256,8 @@ void TFTPDaemon::HandleRequest()
             }
             else
             {
-                net::udp::End(net::iana::IANA_PORT_TFTP);
-                index_ = net::udp::Begin(from_port_, TFTPDaemon::StaticCallbackFunction);
+                network::udp::End(net::iana::IANA_PORT_TFTP);
+                index_ = network::udp::Begin(from_port_, TFTPDaemon::StaticCallbackFunction);
                 state_ = State::kWrqSendAck;
                 DoWriteAck();
             }
@@ -278,7 +277,7 @@ void TFTPDaemon::SendError(uint16_t error_code, const char* error_message)
     error_packet.error_code = __builtin_bswap16(error_code);
     strncpy(error_packet.err_msg, error_message, sizeof(error_packet.err_msg) - 1);
 
-    net::udp::Send(index_, reinterpret_cast<const uint8_t*>(&error_packet), sizeof error_packet, from_ip_, from_port_);
+    network::udp::Send(index_, reinterpret_cast<const uint8_t*>(&error_packet), sizeof error_packet, from_ip_, from_port_);
 }
 
 void TFTPDaemon::DoRead()
@@ -306,7 +305,7 @@ void TFTPDaemon::DoRead()
 
     DEBUG_PRINTF("Sending to " IPSTR ":%d", IP2STR(from_ip_), from_port_);
 
-    net::udp::Send(index_, buffer_, packet_length_, from_ip_, from_port_);
+    network::udp::Send(index_, buffer_, packet_length_, from_ip_, from_port_);
 
     state_ = State::kRrqRecvAck;
 }
@@ -339,7 +338,7 @@ void TFTPDaemon::DoWriteAck()
 
     DEBUG_PRINTF("Sending to " IPSTR ":%d, state_=%d", IP2STR(from_ip_), from_port_, static_cast<int>(state_));
 
-    net::udp::Send(index_, buffer_, sizeof(struct tftp::AckPacket), from_ip_, from_port_);
+    network::udp::Send(index_, buffer_, sizeof(struct tftp::AckPacket), from_ip_, from_port_);
 
     if (state_ == State::kInit)
     {

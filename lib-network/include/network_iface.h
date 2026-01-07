@@ -63,7 +63,7 @@ uint32_t NameServer(uint32_t index);
 
 inline constexpr uint32_t NameServerCount()
 {
-    return net::NAMESERVERS_COUNT;
+    return network::NAMESERVERS_COUNT;
 }
 
 // Zeroconfig / AutoIp

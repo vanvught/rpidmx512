@@ -33,7 +33,6 @@
 #include <cassert>
 
 #include "network.h"
-#include "net/udp.h"
 #include "core/ip4/igmp.h"
 #include "apps/mdns.h"
 #include "core/protocol/dns.h"
@@ -262,7 +261,7 @@ static void CreateReverseDomain(Domain& domain)
     DEBUG_ENTRY();
 
     domain.length = 0;
-    auto primary_ip = net::GetPrimaryIp();
+    auto primary_ip = network::GetPrimaryIp();
     const auto* const kIp = reinterpret_cast<const uint8_t*>(&primary_ip);
 
     for (int32_t i = IPv4_ADDR_LEN - 1; i >= 0; i--)
@@ -560,7 +559,7 @@ static uint32_t AddAnswerA(uint8_t* destination, uint32_t ttl)
     dst += 4;
     *reinterpret_cast<uint16_t*>(dst) = __builtin_bswap16(4); // Data length
     dst += 2;
-    *reinterpret_cast<uint32_t*>(dst) = net::GetPrimaryIp();
+    *reinterpret_cast<uint32_t*>(dst) = network::GetPrimaryIp();
     dst += 4;
 
     DEBUG_EXIT();
@@ -678,7 +677,7 @@ void Start()
 {
     DEBUG_ENTRY();
 
-    net::igmp::JoinGroup(s_handle, net::dns::MULTICAST_ADDRESS);
+    network::igmp::JoinGroup(s_handle, net::dns::MULTICAST_ADDRESS);
     network::iface::SetDomainName(&kDomainLocal[1]);
 
     mdns::SendAnnouncement(kMdnsResponseTtl);
@@ -709,8 +708,8 @@ void Stop()
         }
     }
 
-    net::igmp::LeaveGroup(s_handle, net::dns::MULTICAST_ADDRESS);
-    net::udp::End(net::iana::IANA_PORT_MDNS);
+    network::igmp::LeaveGroup(s_handle, net::dns::MULTICAST_ADDRESS);
+    network::udp::End(net::iana::IANA_PORT_MDNS);
     s_handle = -1;
 
     DEBUG_EXIT();
@@ -720,11 +719,11 @@ static void Sendto(uint32_t length)
 {
     if (!s_is_unicast)
     {
-        net::udp::Send(s_handle, s_records_data, length, net::dns::MULTICAST_ADDRESS, net::iana::IANA_PORT_MDNS);
+        network::udp::Send(s_handle, s_records_data, length, net::dns::MULTICAST_ADDRESS, net::iana::IANA_PORT_MDNS);
         return;
     }
 
-    net::udp::Send(s_handle, s_records_data, length, s_n_remote_ip, s_n_remote_port);
+    network::udp::Send(s_handle, s_records_data, length, s_n_remote_ip, s_n_remote_port);
 }
 
 static void MdnsSendAnswerLocalIpAddress(uint16_t trans_action_id, uint32_t ttl)
@@ -1105,7 +1104,7 @@ void Init()
         record.services = Services::kLastNotUsed;
     }
 
-    s_handle = net::udp::Begin(net::iana::IANA_PORT_MDNS, Input);
+    s_handle = network::udp::Begin(net::iana::IANA_PORT_MDNS, Input);
     assert(s_handle != -1);
 
     DEBUG_EXIT();

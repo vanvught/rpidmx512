@@ -33,7 +33,7 @@
 
 #include "core/protocol/ip4.h"
 
-namespace net
+namespace network
 {
 /**
  * @brief Optimized memset function for setting memory with a fixed value.
@@ -164,6 +164,6 @@ inline uint32_t memcpy_ip(const uint8_t* pIpAddress)
         return src.u32;
     }
 }
-} // namespace net
+} // namespace network
 
 #endif /* NET_MEMCPY_H_ */

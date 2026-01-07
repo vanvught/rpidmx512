@@ -193,7 +193,7 @@ void ArtNetNode::ProcessPollReply(uint32_t port_index, [[maybe_unused]] uint32_t
 
 void ArtNetNode::SendPollReply(uint32_t port_index, uint32_t destination_ip, artnet::ArtPollQueue* queue)
 {
-    ip.u32 = net::GetPrimaryIp();
+    ip.u32 = network::GetPrimaryIp();
     memcpy(art_poll_reply_.IPAddress, ip.u8, sizeof(art_poll_reply_.IPAddress));
 #if (ARTNET_VERSION >= 4)
     memcpy(art_poll_reply_.BindIp, ip.u8, sizeof(art_poll_reply_.BindIp));
@@ -242,7 +242,7 @@ void ArtNetNode::SendPollReply(uint32_t port_index, uint32_t destination_ip, art
         }
 
         CreateNodeReport(art_poll_reply_.NodeReport, state_.report_code, state_.art.poll_reply_count);
-        net::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&art_poll_reply_), sizeof(artnet::ArtPollReply), destination_ip, artnet::kUdpPort);
+        network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&art_poll_reply_), sizeof(artnet::ArtPollReply), destination_ip, artnet::kUdpPort);
     }
 
     state_.is_changed = false;
@@ -266,7 +266,7 @@ void ArtNetNode::HandlePoll()
         else if (!state_.is_multiple_controllers_req_diag && (state_.art.poll_ip != ip_address_from_))
         {
             // If there are multiple controllers requesting diagnostics, diagnostics shall be broadcast.
-            state_.art.diag_ip = net::GetBroadcastIp();
+            state_.art.diag_ip = network::GetBroadcastIp();
             state_.is_multiple_controllers_req_diag = true;
         }
 
@@ -287,7 +287,7 @@ void ArtNetNode::HandlePoll()
         }
         else
         {
-            state_.art.diag_ip = net::GetBroadcastIp();
+            state_.art.diag_ip = network::GetBroadcastIp();
         }
     }
     else

@@ -43,14 +43,13 @@
 
 #include "linux/network.h"
 #include "net/netif.h"
-#include "net/udp.h"
 #if !defined(CONFIG_NET_APPS_NO_MDNS)
 #include "apps/mdns.h"
 #endif
 #include "network_store.h"
 #include "json/networkparams.h"
 #include "../../config/net_config.h"
-#include "net/protocol/udp.h"
+#include "core/protocol/udp.h"
 #include "firmware/debug/debug_debug.h"
 
 static int IfGetByAddress(const char*, char*, size_t);
@@ -89,17 +88,17 @@ struct Port
 static Port s_Ports[UDP_MAX_PORTS_ALLOWED];
 
 #include "net/netif.h"
-#include "net/ip4_address.h"
+#include "ip4/ip4_address.h"
 
 /**
  * END
  */
 
-extern char s_hostname[net::HOSTNAME_SIZE];
-extern char s_domain_name[net::DOMAINNAME_SIZE];
+extern char s_hostname[network::HOSTNAME_SIZE];
+extern char s_domain_name[network::DOMAINNAME_SIZE];
 char m_aIfName[IFNAMSIZ];
 static int s_if_index;
-extern uint32_t s_nameservers[net::NAMESERVERS_COUNT];
+extern uint32_t s_nameservers[network::NAMESERVERS_COUNT];
 
 #if defined(__linux__)
 static bool IsDhclient(const char* if_name)
@@ -222,11 +221,11 @@ static int IfDetails(const char* pIfInterface)
         return -3;
     }
 
-    net::ip4_addr_t netmask;
+    network::ip4_addr_t netmask;
     netmask.addr = (reinterpret_cast<struct sockaddr_in*>(&ifr.ifr_addr))->sin_addr.s_addr;
     netif::SetNetmask(netmask);
 
-    net::ip4_addr_t gw;
+    network::ip4_addr_t gw;
     gw.addr = GetDefaultGateway();
     netif::SetGw(gw);
 
@@ -244,7 +243,7 @@ static int IfDetails(const char* pIfInterface)
     }
 
     const uint8_t* mac = reinterpret_cast<uint8_t*>(ifr.ifr_ifru.ifru_hwaddr.sa_data);
-    memcpy(netif::globals::netif_default.hwaddr, mac, net::MAC_SIZE);
+    memcpy(netif::globals::netif_default.hwaddr, mac, network::MAC_SIZE);
 #endif
 
     close(fd);
@@ -258,10 +257,10 @@ void Network::Print()
     printf(" Hostname  : %s\n", s_hostname);
     printf(" Domain    : %s\n", s_domain_name);
     printf(" If        : %d: %s\n", s_if_index, m_aIfName);
-    printf(" Inet      : " IPSTR "/%d\n", IP2STR(netif::globals::netif_default.ip.addr), net::GetNetmaskCIDR());
+    printf(" Inet      : " IPSTR "/%d\n", IP2STR(netif::globals::netif_default.ip.addr), network::GetNetmaskCIDR());
     printf(" Netmask   : " IPSTR "\n", IP2STR(netif::globals::netif_default.netmask.addr));
     printf(" Gateway   : " IPSTR "\n", IP2STR(netif::globals::netif_default.gw.addr));
-    printf(" Broadcast : " IPSTR "\n", IP2STR(net::GetBroadcastIp()));
+    printf(" Broadcast : " IPSTR "\n", IP2STR(network::GetBroadcastIp()));
     printf(" Mac       : " MACSTR "\n", MAC2STR(netif::globals::netif_default.hwaddr));
     printf(" Mode      : %c\n", network::iface::AddressingMode());
 }
@@ -595,7 +594,7 @@ Network::Network(int argc, char** argv)
 
     uint32_t i = 0;
 
-    while ((s_hostname[i] != '\0') && (i < net::HOSTNAME_SIZE) && (s_hostname[i] != '.'))
+    while ((s_hostname[i] != '\0') && (i < network::HOSTNAME_SIZE) && (s_hostname[i] != '.'))
     {
         i++;
     }
@@ -604,7 +603,7 @@ Network::Network(int argc, char** argv)
 
     uint32_t j = 0;
 
-    while (j < net::DOMAINNAME_SIZE && i < net::HOSTNAME_SIZE && s_hostname[i] != '\0')
+    while (j < network::DOMAINNAME_SIZE && i < network::HOSTNAME_SIZE && s_hostname[i] != '\0')
     {
         s_domain_name[j++] = s_hostname[i++];
     }
@@ -624,7 +623,7 @@ Network::~Network()
     {
         if (s_Ports[i].info.nPort != 0)
         {
-            net::udp::End(s_Ports[i].info.nPort);
+            network::udp::End(s_Ports[i].info.nPort);
         }
     }
 }

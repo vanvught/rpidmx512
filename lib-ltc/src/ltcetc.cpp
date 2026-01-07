@@ -43,16 +43,16 @@ void LtcEtc::Start()
 {
     if ((config_.destination_ip != 0) && (config_.destination_port != 0))
     {
-        handle_.destination = net::udp::Begin(config_.destination_port, nullptr);
+        handle_.destination = network::udp::Begin(config_.destination_port, nullptr);
     }
 
     if (config_.source_port != 0)
     {
-        handle_.source = net::udp::Begin(config_.source_port, StaticCallbackFunction);
+        handle_.source = network::udp::Begin(config_.source_port, StaticCallbackFunction);
 
         if ((handle_.source >= 0) && (config_.source_multicast_ip != 0))
         {
-            net::igmp::JoinGroup(handle_.source, config_.source_multicast_ip);
+            network::igmp::JoinGroup(handle_.source, config_.source_multicast_ip);
         }
     }
 
@@ -117,7 +117,7 @@ void LtcEtc::Send(const midi::Timecode* time_code)
             break;
     }
 
-    net::udp::Send(handle_.destination, reinterpret_cast<const uint8_t*>(s_sendbuffer), length, config_.destination_ip, config_.destination_port);
+    network::udp::Send(handle_.destination, reinterpret_cast<const uint8_t*>(s_sendbuffer), length, config_.destination_ip, config_.destination_port);
 
 #ifndef NDEBUG
     debug::Dump(s_sendbuffer, length);

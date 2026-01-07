@@ -75,7 +75,7 @@ void DmxSerial::Input(const uint8_t* p, uint32_t size, uint32_t from_ip, [[maybe
         {
             const auto kLength =
                 snprintf(reinterpret_cast<char*>(buffer), UDP_DATA_SIZE - 1, DMXSERIAL_FILE_PREFIX "%.3d" DMXSERIAL_FILE_SUFFIX "\n", m_aFileIndex[i]);
-            net::udp::Send(handle_, buffer, kLength, from_ip, UDP::PORT);
+            network::udp::Send(handle_, buffer, kLength, from_ip, UDP::PORT);
         }
         return;
     }
@@ -85,7 +85,7 @@ void DmxSerial::Input(const uint8_t* p, uint32_t size, uint32_t from_ip, [[maybe
         if (size == length::kGetTftp)
         {
             const auto kLength = snprintf(reinterpret_cast<char*>(buffer), UDP_DATA_SIZE - 1, "tftp:%s\n", enable_tftp_ ? "On" : "Off");
-            net::udp::Send(handle_, buffer, kLength, from_ip, UDP::PORT);
+            network::udp::Send(handle_, buffer, kLength, from_ip, UDP::PORT);
             return;
         }
 
@@ -93,7 +93,7 @@ void DmxSerial::Input(const uint8_t* p, uint32_t size, uint32_t from_ip, [[maybe
         {
             if (memcmp(&buffer[length::kGetTftp], "bin", 3) == 0)
             {
-                net::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&enable_tftp_), sizeof(bool), from_ip, UDP::PORT);
+                network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&enable_tftp_), sizeof(bool), from_ip, UDP::PORT);
                 return;
             }
         }
@@ -117,13 +117,13 @@ void DmxSerial::Input(const uint8_t* p, uint32_t size, uint32_t from_ip, [[maybe
 
         if (DmxSerial::Get()->DeleteFile(reinterpret_cast<char*>(&buffer[length::kRequestDelete])))
         {
-            net::udp::Send(handle_, reinterpret_cast<const uint8_t*>("Success\n"), 8, from_ip, UDP::PORT);
+            network::udp::Send(handle_, reinterpret_cast<const uint8_t*>("Success\n"), 8, from_ip, UDP::PORT);
         }
         else	
         {
             const auto* error = strerror(errno);
             const auto kLength = snprintf(reinterpret_cast<char*>(buffer), UDP_DATA_SIZE - 1, "%s\n", error);
-            net::udp::Send(handle_, buffer, kLength, from_ip, UDP::PORT);
+            network::udp::Send(handle_, buffer, kLength, from_ip, UDP::PORT);
         }
         return;
     }

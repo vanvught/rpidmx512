@@ -93,11 +93,11 @@ class AppleMidi
         mdns::ServiceRecordAdd(nullptr, mdns::Services::MIDI, nullptr, port_);
 
         assert(handle_control_ == -1);
-        handle_control_ = net::udp::Begin(port_, StaticCallbackFunctionControlMessage);
+        handle_control_ = network::udp::Begin(port_, StaticCallbackFunctionControlMessage);
         assert(handle_control_ != -1);
 
         assert(handle_midi_ == -1);
-        handle_midi_ = net::udp::Begin((port_ + 1U), StaticCallbackFunctionMidiMessage);
+        handle_midi_ = network::udp::Begin((port_ + 1U), StaticCallbackFunctionMidiMessage);
         assert(handle_midi_ != -1);
 
         DEBUG_PRINTF("Session name: [%s]", exchange_packet_reply_.name);
@@ -112,11 +112,11 @@ class AppleMidi
         DEBUG_ENTRY();
 
         assert(handle_midi_ != -1);
-        net::udp::End(static_cast<uint16_t>(port_ + 1U));
+        network::udp::End(static_cast<uint16_t>(port_ + 1U));
         handle_midi_ = -1;
 
         assert(handle_control_ != -1);
-        net::udp::End(port_);
+        network::udp::End(port_);
         handle_control_ = -1;
 
         DEBUG_EXIT();
@@ -196,7 +196,7 @@ class AppleMidi
             return false;
         }
 
-        net::udp::Send(handle_midi_, buffer, length, session_status_.remote_ip, session_status_.remote_port_midi);
+        network::udp::Send(handle_midi_, buffer, length, session_status_.remote_ip, session_status_.remote_port_midi);
         return true;
     }
 

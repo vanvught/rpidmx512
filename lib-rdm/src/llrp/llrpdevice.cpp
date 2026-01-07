@@ -107,7 +107,7 @@ void LLRPDevice::HandleRequestMessage()
     reply->ProbeReplyPDU.ComponentType = LLRP_COMPONENT_TYPE_RPT_DEVICE;
 #endif
 
-    net::udp::Send(handle_llrp, reinterpret_cast<const uint8_t*>(reply), sizeof(struct TTProbeReplyPDUPacket), llrp::device::kIpV4LlrpResponse,
+    network::udp::Send(handle_llrp, reinterpret_cast<const uint8_t*>(reply), sizeof(struct TTProbeReplyPDUPacket), llrp::device::kIpV4LlrpResponse,
                    llrp::device::kLlrpPort);
 
 #ifndef NDEBUG
@@ -153,7 +153,7 @@ void LLRPDevice::HandleRdmCommand()
 
     const auto kLength = sizeof(struct TRootLayerPreAmble) + RDM_ROOT_LAYER_LENGTH(kMessageLength);
 
-    net::udp::Send(handle_llrp, reinterpret_cast<const uint8_t*>(pdu_packet), kLength, llrp::device::kIpV4LlrpResponse, llrp::device::kLlrpPort);
+    network::udp::Send(handle_llrp, reinterpret_cast<const uint8_t*>(pdu_packet), kLength, llrp::device::kIpV4LlrpResponse, llrp::device::kLlrpPort);
 
 #ifdef DEBUG_RDM_SHOW_MESSAGE
     rdm::MessagePrint(reply);

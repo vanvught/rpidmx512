@@ -28,7 +28,7 @@
 
 #include "display.h"
 #include "network.h"
-#include "net/ip4_address.h"
+#include "ip4/ip4_address.h"
 #include "network_display.h"
 #if !defined(NO_EMAC)
 #include "emac/emac.h"
@@ -46,7 +46,7 @@ void __attribute__((weak)) Ipv4AddressChanged()
 {
 #if !defined(NO_EMAC)
     Display::Get()->ClearLine(LINE_IP);
-    Display::Get()->Printf(LINE_IP, "" IPSTR "/%d %c", IP2STR(net::GetPrimaryIp()), net::GetNetmaskCIDR(), network::iface::AddressingMode());
+    Display::Get()->Printf(LINE_IP, "" IPSTR "/%d %c", IP2STR(network::GetPrimaryIp()), network::GetNetmaskCIDR(), network::iface::AddressingMode());
 #endif
 }
 

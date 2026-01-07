@@ -43,7 +43,7 @@
 #include "core/ip4/acd.h"
 #include "firmware/debug/debug_debug.h"
 
-namespace net
+namespace network
 {
 static void Bind()
 {
@@ -54,7 +54,7 @@ static void Bind()
 
     ip4_addr_t sn_mask, gw_addr;
 
-    sn_mask.addr = net::convert_to_uint(255, 255, 0, 0);
+    sn_mask.addr = network::ConvertToUint(255, 255, 0, 0);
     gw_addr.addr = 0;
 
     netif::SetAddr(autoip->llipaddr, sn_mask, gw_addr);
@@ -69,23 +69,23 @@ static void Restart()
     autoip::Start();
 }
 
-static void ConflictCallback(net::acd::Callback state)
+static void ConflictCallback(network::acd::Callback state)
 {
     auto* autoip = reinterpret_cast<struct autoip::Autoip*>(netif::globals::netif_default.autoip);
     assert(autoip != nullptr);
 
     switch (state)
     {
-        case net::acd::Callback::ACD_IP_OK:
+        case network::acd::Callback::ACD_IP_OK:
             Bind();
             netif::SetFlags(netif::Netif::kNetifFlagAutoipOk);
             break;
-        case net::acd::Callback::ACD_RESTART_CLIENT:
+        case network::acd::Callback::ACD_RESTART_CLIENT:
             Restart();
             break;
-        case net::acd::Callback::ACD_DECLINE:
+        case network::acd::Callback::ACD_DECLINE:
             // "delete" conflicting address so a new one will be selected in autoip::Start()
-            autoip->llipaddr.addr = net::IPADDR_ANY;
+            autoip->llipaddr.addr = network::IPADDR_ANY;
             autoip::Stop();
             netif::ClearFlags(netif::Netif::kNetifFlagAutoipOk);
             break;
@@ -142,19 +142,19 @@ void autoip::Start()
 
     if (autoip->state == autoip::State::AUTOIP_STATE_OFF)
     {
-        net::acd::Add(&autoip->acd, ConflictCallback);
+        network::acd::Add(&autoip->acd, ConflictCallback);
 
         /* In accordance to RFC3927 section 2.1:
          * Keep using the same link local address as much as possible.
          * Only when there is none or when there was a conflict, select a new one.
          */
-        if (!net::is_linklocal_ip(autoip->llipaddr.addr))
+        if (!network::IsLinklocalIp(autoip->llipaddr.addr))
         {
             CreateAddr(autoip->llipaddr.addr);
         }
 
         autoip->state = autoip::State::AUTOIP_STATE_CHECKING;
-        net::acd::Start(&autoip->acd, autoip->llipaddr);
+        network::acd::Start(&autoip->acd, autoip->llipaddr);
     }
     else
     {
@@ -174,9 +174,9 @@ void autoip::Stop()
         autoip->state = autoip::State::AUTOIP_STATE_OFF;
 
         ip4_addr_t any;
-        any.addr = net::IPADDR_ANY;
+        any.addr = network::IPADDR_ANY;
 
-        if (net::is_linklocal_ip(netif::globals::netif_default.ip.addr))
+        if (network::IsLinklocalIp(netif::globals::netif_default.ip.addr))
         {
             netif::SetAddr(any, any, any);
         }
@@ -184,4 +184,4 @@ void autoip::Stop()
 
     DEBUG_EXIT();
 }
-} // namespace net
+} // namespace network

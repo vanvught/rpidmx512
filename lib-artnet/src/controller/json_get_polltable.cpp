@@ -29,7 +29,7 @@
 
 #include "artnetcontroller.h"
 #include "artnet.h"
-#include "net/ip4_address.h"
+#include "ip4/ip4_address.h"
 
 namespace remoteconfig::artnet::controller
 {

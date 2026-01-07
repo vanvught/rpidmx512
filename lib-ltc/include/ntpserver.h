@@ -99,11 +99,11 @@ class NtpServer
             return;
         }
 
-        reply_.ReferenceID = net::GetPrimaryIp();
+        reply_.ReferenceID = network::GetPrimaryIp();
         reply_.OriginTimestamp_s = request->TransmitTimestamp_s;
         reply_.OriginTimestamp_f = request->TransmitTimestamp_f;
 
-        net::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&reply_), sizeof(struct ntp::Packet), from_ip, from_port);
+        network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&reply_), sizeof(struct ntp::Packet), from_ip, from_port);
     }
 
     void Print();

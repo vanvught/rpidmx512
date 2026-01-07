@@ -82,7 +82,7 @@ ArtNetController::ArtNetController()
     art_poll_reply_.Style = static_cast<uint8_t>(StyleCode::kServer);
     network::iface::CopyMacAddressTo(art_poll_reply_.MAC);
     art_poll_reply_.bind_index = 1;
-    ip.u32 = net::GetPrimaryIp();
+    ip.u32 = network::GetPrimaryIp();
     memcpy(art_poll_reply_.IPAddress, ip.u8, sizeof(art_poll_reply_.IPAddress));
 #if (ARTNET_VERSION >= 4)
     memcpy(art_poll_reply_.BindIp, ip.u8, sizeof(art_poll_reply_.BindIp));
@@ -244,10 +244,10 @@ void ArtNetController::Start()
     DEBUG_ENTRY();
 
     assert(handle_ == -1);
-    handle_ = net::udp::Begin(artnet::kUdpPort, StaticCallbackFunction);
+    handle_ = network::udp::Begin(artnet::kUdpPort, StaticCallbackFunction);
     assert(handle_ != -1);
 
-    net::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&m_ArtNetPoll), sizeof(struct ArtPoll), net::GetBroadcastIp(), artnet::kUdpPort);
+    network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&m_ArtNetPoll), sizeof(struct ArtPoll), network::GetBroadcastIp(), artnet::kUdpPort);
 
     state_.status = artnet::Status::kOn;
 
@@ -260,7 +260,7 @@ void ArtNetController::Stop()
 
     //  FIXME ArtNetController::Stop
     //
-    //	net::udp::End(artnet::UDP_PORT);
+    //	network::udp::End(artnet::UDP_PORT);
     //	handle_ = -1;
     //
     //	state_.status = artnet::Status::OFF;
@@ -330,7 +330,7 @@ void ArtNetController::HandleDmxOut(uint16_t nUniverse, const uint8_t* pDmxData,
     {
         for (uint32_t index = 0; index < count; index++)
         {
-            net::udp::Send(handle_, reinterpret_cast<const uint8_t*>(m_pArtDmx), sizeof(struct ArtDmx), IpAddresses->pIpAddresses[index], artnet::kUdpPort);
+            network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(m_pArtDmx), sizeof(struct ArtDmx), IpAddresses->pIpAddresses[index], artnet::kUdpPort);
         }
 
         m_bDmxHandled = true;
@@ -341,7 +341,7 @@ void ArtNetController::HandleDmxOut(uint16_t nUniverse, const uint8_t* pDmxData,
 
     if (!m_bUnicast || (count > 40) || !m_bForceBroadcast)
     {
-        net::udp::Send(handle_, reinterpret_cast<const uint8_t*>(m_pArtDmx), sizeof(struct ArtDmx), net::GetBroadcastIp(), artnet::kUdpPort);
+        network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(m_pArtDmx), sizeof(struct ArtDmx), network::GetBroadcastIp(), artnet::kUdpPort);
 
         m_bDmxHandled = true;
     }
@@ -354,7 +354,7 @@ void ArtNetController::HandleSync()
     if (m_bSynchronization && m_bDmxHandled)
     {
         m_bDmxHandled = false;
-        net::udp::Send(handle_, reinterpret_cast<const uint8_t*>(m_pArtSync), sizeof(struct ArtSync), net::GetBroadcastIp(), artnet::kUdpPort);
+        network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(m_pArtSync), sizeof(struct ArtSync), network::GetBroadcastIp(), artnet::kUdpPort);
     }
 }
 
@@ -397,7 +397,7 @@ void ArtNetController::HandleBlackout()
 
             for (uint32_t index = 0; index < count; index++)
             {
-                net::udp::Send(handle_, reinterpret_cast<const uint8_t*>(m_pArtDmx), sizeof(struct ArtDmx), kIpAddresses->pIpAddresses[index],
+                network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(m_pArtDmx), sizeof(struct ArtDmx), kIpAddresses->pIpAddresses[index],
                                artnet::kUdpPort);
             }
 
@@ -415,7 +415,7 @@ void ArtNetController::HandleBlackout()
                 m_pArtDmx->Sequence = 1;
             }
 
-            net::udp::Send(handle_, reinterpret_cast<const uint8_t*>(m_pArtDmx), sizeof(struct ArtDmx), net::GetBroadcastIp(), artnet::kUdpPort);
+            network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(m_pArtDmx), sizeof(struct ArtDmx), network::GetBroadcastIp(), artnet::kUdpPort);
         }
     }
 
@@ -436,7 +436,7 @@ void ArtNetController::ProcessPoll()
 
     if (__builtin_expect((kCurrentMillis - m_nLastPollMillis > POLL_INTERVAL_MILLIS), 0))
     {
-        net::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&m_ArtNetPoll), sizeof(struct ArtPoll), net::GetBroadcastIp(), artnet::kUdpPort);
+        network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&m_ArtNetPoll), sizeof(struct ArtPoll), network::GetBroadcastIp(), artnet::kUdpPort);
         m_nLastPollMillis = kCurrentMillis;
 
 #ifndef NDEBUG
@@ -461,7 +461,7 @@ void ArtNetController::HandlePoll(const uint8_t* buffer, uint32_t from_ip)
     snprintf(reinterpret_cast<char*>(art_poll_reply->NodeReport), artnet::kReportLength, "#%04x [%u]", static_cast<int>(state_.reportcode),
              static_cast<unsigned>(state_.art.poll_reply_count++));
 
-    net::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&art_poll_reply), sizeof(artnet::ArtPollReply), from_ip, artnet::kUdpPort);
+    network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&art_poll_reply), sizeof(artnet::ArtPollReply), from_ip, artnet::kUdpPort);
 
     DEBUG_EXIT();
 }
@@ -471,7 +471,7 @@ void ArtNetController::HandlePollReply(const uint8_t* buffer, uint32_t from_ip)
     DEBUG_ENTRY();
     DEBUG_PRINTF(IPSTR, IP2STR(from_ip));
 
-    if (from_ip != net::GetPrimaryIp())
+    if (from_ip != network::GetPrimaryIp())
     {
         Add(reinterpret_cast<const artnet::ArtPollReply*>(buffer));
 

@@ -134,7 +134,7 @@ void DdpDisplay::Start()
     DEBUG_ENTRY();
     assert(dmxnode_output_type_ != nullptr);
 
-    handle_ = net::udp::Begin(ddp::kUdpPort, StaticCallbackFunction);
+    handle_ = network::udp::Begin(ddp::kUdpPort, StaticCallbackFunction);
     assert(handle_ != -1);
 
     mdns::ServiceRecordAdd(nullptr, mdns::Services::DDP, "type=display");
@@ -147,7 +147,7 @@ void DdpDisplay::Start()
     packet.header.len[1] = json::size::kStart;
     memcpy(packet.data, json::kStart, json::size::kStart);
 
-    net::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&packet), HEADER_LEN + json::size::kStart, net::GetPrimaryIp() | ~(net::GetNetmask()),
+    network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&packet), HEADER_LEN + json::size::kStart, network::GetPrimaryIp() | ~(network::GetNetmask()),
                    ddp::kUdpPort);
 
     debug::Dump(&packet, HEADER_LEN + json::size::kStart);
@@ -162,7 +162,7 @@ void DdpDisplay::Stop()
 
     mdns::ServiceRecordDelete(mdns::Services::DDP);
 
-    handle_ = net::udp::End(ddp::kUdpPort);
+    handle_ = network::udp::End(ddp::kUdpPort);
     handle_ = -1;
 
     DEBUG_EXIT();
@@ -184,8 +184,8 @@ void DdpDisplay::HandleQuery()
         packet->header.len[0] = static_cast<uint8_t>(kLength >> 8);
         packet->header.len[1] = static_cast<uint8_t>(kLength);
 
-        net::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&packet), (HEADER_LEN + static_cast<uint16_t>(kLength)),
-                       net::GetPrimaryIp() | ~(net::GetNetmask()), ddp::kUdpPort);
+        network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&packet), (HEADER_LEN + static_cast<uint16_t>(kLength)),
+                       network::GetPrimaryIp() | ~(network::GetNetmask()), ddp::kUdpPort);
     }
 
     if ((packet->header.id & id::STATUS) == id::CONFIG)
@@ -193,8 +193,8 @@ void DdpDisplay::HandleQuery()
         DEBUG_PUTS("id::CONFIG");
 
         const auto kLength =
-            snprintf(reinterpret_cast<char*>(packet->data), UDP_DATA_SIZE - 1, json::kConfigReply, IP2STR(net::GetPrimaryIp()), IP2STR(net::GetNetmask()),
-                     IP2STR(net::GetGatewayIp()), active_ports_ > 0 ? count_ : 0, active_ports_ > 1 ? count_ : 0,
+            snprintf(reinterpret_cast<char*>(packet->data), UDP_DATA_SIZE - 1, json::kConfigReply, IP2STR(network::GetPrimaryIp()), IP2STR(network::GetNetmask()),
+                     IP2STR(network::GetGatewayIp()), active_ports_ > 0 ? count_ : 0, active_ports_ > 1 ? count_ : 0,
 #if CONFIG_DMXNODE_PIXEL_MAX_PORTS > 2
                      active_ports_ > 2 ? count_ : 0, active_ports_ > 3 ? count_ : 0, active_ports_ > 4 ? count_ : 0, active_ports_ > 5 ? count_ : 0,
                      active_ports_ > 6 ? count_ : 0, active_ports_ > 7 ? count_ : 0,
@@ -210,7 +210,7 @@ void DdpDisplay::HandleQuery()
         packet->header.len[0] = static_cast<uint8_t>(kLength >> 8);
         packet->header.len[1] = static_cast<uint8_t>(kLength);
 
-        net::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&packet), HEADER_LEN + kLength, from_ip_, ddp::kUdpPort);
+        network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&packet), HEADER_LEN + kLength, from_ip_, ddp::kUdpPort);
 
         debug::Dump(&packet, HEADER_LEN + kLength);
     }
@@ -296,7 +296,7 @@ void DdpDisplay::Input(const uint8_t* buffer, uint32_t size, [[maybe_unused]] ui
         return;
     }
 
-    if (from_ip_ == net::GetPrimaryIp())
+    if (from_ip_ == network::GetPrimaryIp())
     {
         DEBUG_PUTS("Own message");
         return;

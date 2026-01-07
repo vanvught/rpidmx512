@@ -29,7 +29,7 @@
 #include "json/ltcparamsconst.h"
 #include "json/json_parser.h"
 #include "json/json_parsehelper.h"
-#include "net/ip4_helpers.h"
+#include "ip4/ip4_helpers.h"
 #include "configstore.h"
 #include "configurationstore.h"
 #include "ltc.h"
@@ -288,7 +288,7 @@ void LtcParams::SetTimecodeIp(const char* val, uint32_t len)
 {
     if (len == 0)
     {
-        store_ltc.time_code_ip = net::GetBroadcastIp();
+        store_ltc.time_code_ip = network::GetBroadcastIp();
     }
     store_ltc.time_code_ip = net::ParseIpString(val, len);
 }

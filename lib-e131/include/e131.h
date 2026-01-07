@@ -29,7 +29,7 @@
 #include <cstdint>
 
 #include "e117.h"
-#include "net/ip4_address.h"
+#include "ip4/ip4_address.h"
 
 #if !defined(PACKED)
 #define PACKED __attribute__((packed))
@@ -94,7 +94,7 @@ inline constexpr uint32_t kDiscoveryUniverseList = 0x00000001;
 
 inline constexpr uint32_t UniverseToMulticastIp(uint16_t universe)
 {
-    return net::convert_to_uint(239, 255, 0, 0) | (static_cast<uint32_t>(universe & 0xFF) << 24) | (static_cast<uint32_t>((universe & 0xFF00) << 8));
+    return network::ConvertToUint(239, 255, 0, 0) | (static_cast<uint32_t>(universe & 0xFF) << 24) | (static_cast<uint32_t>((universe & 0xFF00) << 8));
 }
 
 inline constexpr uint16_t kUdpPort = 5568;

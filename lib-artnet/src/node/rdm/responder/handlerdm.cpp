@@ -65,7 +65,7 @@ void ArtNetNode::HandleRdm()
 
                 const auto kLength = sizeof(struct artnet::ArtRdm) - sizeof(kArtRdm->RdmPacket) + kMessageLength;
 
-                net::udp::Send(handle_, receive_buffer_, kLength, ip_address_from_, artnet::kUdpPort);
+                network::udp::Send(handle_, receive_buffer_, kLength, ip_address_from_, artnet::kUdpPort);
             }
             else
             {
@@ -146,7 +146,7 @@ void ArtNetNode::SendTod(uint32_t port_index)
 
     const auto kLength = sizeof(struct artnet::ArtTodData) - (sizeof(tod_data.Tod)) + (kDiscovered * 6U);
 
-    net::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&tod_data), kLength, net::GetBroadcastIp(), artnet::kUdpPort);
+    network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&tod_data), kLength, network::GetBroadcastIp(), artnet::kUdpPort);
 
     DEBUG_EXIT();
 }

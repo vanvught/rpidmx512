@@ -32,7 +32,6 @@
 #pragma GCC push_options
 #pragma GCC optimize("O2")
 #pragma GCC optimize("no-tree-loop-distribute-patterns")
-#pragma GCC optimize("-fprefetch-loop-arrays")
 #endif
 
 #include <cstdint>
@@ -44,7 +43,7 @@
 #include "core/protocol/ieee.h"
 #include "core/protocol/udp.h"
 #include "core/ip4/arp.h"
-#include "net/udp.h"
+#include "network_udp.h"
 #include "net_private.h"
 #include "net_memcpy.h"
 #include "console.h"
@@ -56,11 +55,11 @@ extern uint32_t broadcast_mask;
 }
 // namespace globals
 
-namespace net::udp
+namespace network::udp
 {
 struct PortInfo
 {
-    udp::UdpCallbackFunctionPtr callback;
+    UdpCallbackFunctionPtr callback;
     uint16_t port;
 };
 
@@ -117,8 +116,8 @@ __attribute__((hot)) void Input(const struct t_udp* udp)
             const auto kDataLength = static_cast<uint32_t>(__builtin_bswap16(udp->udp.len) - UDP_HEADER_SIZE);
             const auto kSize = std::min(UDP_DATA_SIZE, kDataLength);
 
-            net::memcpy(data.data, udp->udp.data, kSize);
-            data.from_ip = net::memcpy_ip(udp->ip4.src);
+            network::memcpy(data.data, udp->udp.data, kSize);
+            data.from_ip = network::memcpy_ip(udp->ip4.src);
             data.from_port = __builtin_bswap16(udp->udp.source_port);
             data.size = kSize;
 
@@ -135,11 +134,10 @@ __attribute__((hot)) void Input(const struct t_udp* udp)
 
     emac_free_pkt();
 
-    DEBUG_PRINTF(IPSTR ":%d[%x] " MACSTR, udp->ip4.src[0], udp->ip4.src[1], udp->ip4.src[2], udp->ip4.src[3], kDestinationPort, kDestinationPort,
-                 MAC2STR(udp->ether.dst));
+    DEBUG_PRINTF(IPSTR ":%d[%x] " MACSTR, udp->ip4.src[0], udp->ip4.src[1], udp->ip4.src[2], udp->ip4.src[3], kDestinationPort, kDestinationPort, MAC2STR(udp->ether.dst));
 }
 
-template <net::arp::EthSend S> static void SendImplementation(int index, const uint8_t* data, uint32_t size, uint32_t remote_ip, uint16_t remote_port)
+template <network::arp::EthSend S> static void SendImplementation(int index, const uint8_t* data, uint32_t size, uint32_t remote_ip, uint16_t remote_port)
 {
     assert(index >= 0);
     assert(index < UDP_MAX_PORTS_ALLOWED);
@@ -160,7 +158,7 @@ template <net::arp::EthSend S> static void SendImplementation(int index, const u
     out_buffer->ip4.id = ++s_id;
     out_buffer->ip4.len = __builtin_bswap16(static_cast<uint16_t>(size + IPv4_UDP_HEADERS_SIZE));
     out_buffer->ip4.chksum = 0;
-    net::memcpy_ip(out_buffer->ip4.src, netif::globals::netif_default.ip.addr);
+    network::memcpy_ip(out_buffer->ip4.src, netif::globals::netif_default.ip.addr);
 
     // UDP
     out_buffer->udp.source_port = __builtin_bswap16(s_ports[index].info.port);
@@ -170,17 +168,17 @@ template <net::arp::EthSend S> static void SendImplementation(int index, const u
 
     size = std::min(UDP_DATA_SIZE, size);
 
-    net::memcpy(out_buffer->udp.data, data, size);
+    network::memcpy(out_buffer->udp.data, data, size);
 
-    if (remote_ip == net::IPADDR_BROADCAST)
+    if (remote_ip == network::IPADDR_BROADCAST)
     {
-        net::memset<0xFF, network::ethernet::kAddressLength>(out_buffer->ether.dst);
-        net::memset<0xFF, network::ethernet::kAddressLength>(out_buffer->ip4.dst);
+        network::memset<0xFF, network::ethernet::kAddressLength>(out_buffer->ether.dst);
+        network::memset<0xFF, network::ethernet::kAddressLength>(out_buffer->ip4.dst);
     }
     else if ((remote_ip & net::globals::broadcast_mask) == net::globals::broadcast_mask)
     {
-        net::memset<0xFF, network::ethernet::kAddressLength>(out_buffer->ether.dst);
-        net::memcpy_ip(out_buffer->ip4.dst, remote_ip);
+        network::memset<0xFF, network::ethernet::kAddressLength>(out_buffer->ether.dst);
+        network::memcpy_ip(out_buffer->ip4.dst, remote_ip);
     }
     else
     {
@@ -199,18 +197,18 @@ template <net::arp::EthSend S> static void SendImplementation(int index, const u
             s_multicast_mac[5] = multicast_ip.u8[3];
 
             std::memcpy(out_buffer->ether.dst, s_multicast_mac, network::ethernet::kAddressLength);
-            net::memcpy_ip(out_buffer->ip4.dst, remote_ip);
+            network::memcpy_ip(out_buffer->ip4.dst, remote_ip);
         }
         else
         {
-            if constexpr (S == net::arp::EthSend::kIsNormal)
+            if constexpr (S == network::arp::EthSend::kIsNormal)
             {
-                net::arp::Send(out_buffer, size + UDP_PACKET_HEADERS_SIZE, remote_ip);
+                network::arp::Send(out_buffer, size + UDP_PACKET_HEADERS_SIZE, remote_ip);
             }
 #if defined CONFIG_NET_ENABLE_PTP
-            else if constexpr (S == net::arp::EthSend::kIsTimestamp)
+            else if constexpr (S == network::arp::EthSend::kIsTimestamp)
             {
-                net::arp::SendTimestamp(out_buffer, size + UDP_PACKET_HEADERS_SIZE, remote_ip);
+                network::arp::SendTimestamp(out_buffer, size + UDP_PACKET_HEADERS_SIZE, remote_ip);
             }
 #endif
             return;
@@ -218,15 +216,15 @@ template <net::arp::EthSend S> static void SendImplementation(int index, const u
     }
 
 #if !defined(CHECKSUM_BY_HARDWARE)
-    out_buffer->ip4.chksum = Chksum(reinterpret_cast<void*>(&out_buffer->ip4), sizeof(out_buffer->ip4));
+    out_buffer->ip4.chksum = network::Chksum(reinterpret_cast<void*>(&out_buffer->ip4), sizeof(out_buffer->ip4));
 #endif
 
-    if constexpr (S == net::arp::EthSend::kIsNormal)
+    if constexpr (S == network::arp::EthSend::kIsNormal)
     {
         emac_eth_send(size + UDP_PACKET_HEADERS_SIZE);
     }
 #if defined CONFIG_NET_ENABLE_PTP
-    else if constexpr (S == net::arp::EthSend::kIsTimestamp)
+    else if constexpr (S == network::arp::EthSend::kIsTimestamp)
     {
         emac_eth_send_timestamp(size);
     }
@@ -258,7 +256,7 @@ int32_t Begin(uint16_t localport, UdpCallbackFunctionPtr callback)
     }
 
 #ifndef NDEBUG
-    console::Error("net::udp::Begin");
+    console::Error("network::udp::Begin");
 #endif
     return -1;
 }
@@ -283,24 +281,24 @@ int32_t End(uint16_t localport)
     }
 
 #ifndef NDEBUG
-    console::Error("net::udp::End");
+    console::Error("network::udp::End");
 #endif
     return -1;
 }
 
 void Send(int32_t index, const uint8_t* data, uint32_t size, uint32_t remote_ip, uint16_t remote_port)
 {
-    SendImplementation<net::arp::EthSend::kIsNormal>(index, data, size, remote_ip, remote_port);
+    SendImplementation<network::arp::EthSend::kIsNormal>(index, data, size, remote_ip, remote_port);
 }
 
 #if defined CONFIG_NET_ENABLE_PTP
 void SendWithTimestamp(int32_t index, const uint8_t* data, uint32_t size, uint32_t remote_ip, uint16_t remote_port)
 {
-    SendImplementation<net::arp::EthSend::kIsTimestamp>(index, data, size, remote_ip, remote_port);
+    SendImplementation<network::arp::EthSend::kIsTimestamp>(index, data, size, remote_ip, remote_port);
 }
 #endif
 
-// Do not use - subject for removal 
+// Do not use - subject for removal
 uint32_t Recv(int32_t index, const uint8_t** data, uint32_t* from_ip, uint16_t* from_port)
 {
     assert(index >= 0);
@@ -330,5 +328,5 @@ uint32_t Recv(int32_t index, const uint8_t** data, uint32_t* from_ip, uint16_t* 
 
     return kSize;
 }
-} // namespace net::udp
+} // namespace network::udp
 // <---

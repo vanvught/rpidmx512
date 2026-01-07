@@ -31,7 +31,7 @@
 #include "dmxnode_nodetype.h"
 #include "dmxnode_outputtype.h"
 #include "network.h"
-#include "net/ip4_address.h"
+#include "ip4/ip4_address.h"
 
 namespace json
 {
@@ -57,7 +57,7 @@ uint32_t GetList(char* out_buffer, uint32_t out_buffer_size)
     const auto kLength = static_cast<uint32_t>(snprintf(
         out_buffer, out_buffer_size, 
         "{\"list\":{\"ip\":\"" IPSTR "\",\"name\":\"%s\",\"node\":{\"type\":\"%s\",\"output\":{\"type\":\"%s\",\"count\":%d}}}}",
-        IP2STR(net::GetPrimaryIp()), 
+        IP2STR(network::GetPrimaryIp()), 
         display_name, 
         dmxnode::GetNodeType(dmxnode::kNodeType),
         dmxnode::GetOutputType(dmxnode::kOutputType),

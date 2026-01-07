@@ -35,15 +35,15 @@
 #include "e133.h"
 #include "e120.h"
 #include "rdmhandler.h"
-#include "net/ip4_address.h"
+#include "ip4/ip4_address.h"
 #include "core/ip4/igmp.h"
 #include "apps/mdns.h"
 #include "firmware/debug/debug_debug.h"
 
 namespace llrp::device
 {
-static constexpr auto kIpV4LlrpRequest = net::convert_to_uint(239, 255, 250, 133);
-static constexpr auto kIpV4LlrpResponse = net::convert_to_uint(239, 255, 250, 134);
+static constexpr auto kIpV4LlrpRequest = network::ConvertToUint(239, 255, 250, 133);
+static constexpr auto kIpV4LlrpResponse = network::ConvertToUint(239, 255, 250, 134);
 static constexpr uint16_t kLlrpPort = 5569;
 } // namespace llrp::device
 
@@ -56,9 +56,9 @@ class LLRPDevice
         assert(s_this == nullptr);
         s_this = this;
 
-        handle_llrp = net::udp::Begin(llrp::device::kLlrpPort, LLRPDevice::StaticCallbackFunction);
+        handle_llrp = network::udp::Begin(llrp::device::kLlrpPort, LLRPDevice::StaticCallbackFunction);
         assert(handle_llrp != -1);
-        net::igmp::JoinGroup(handle_llrp, llrp::device::kIpV4LlrpRequest);
+        network::igmp::JoinGroup(handle_llrp, llrp::device::kIpV4LlrpRequest);
 
         mdns::ServiceRecordAdd(nullptr, mdns::Services::RDMNET_LLRP, "node=RDMNet LLRP Only");
 
@@ -71,8 +71,8 @@ class LLRPDevice
 
 		mdns::ServiceRecordDelete(mdns::Services::RDMNET_LLRP);
 		
-        net::igmp::LeaveGroup(handle_llrp, llrp::device::kIpV4LlrpRequest);
-        net::udp::End(llrp::device::kLlrpPort);
+        network::igmp::LeaveGroup(handle_llrp, llrp::device::kIpV4LlrpRequest);
+        network::udp::End(llrp::device::kLlrpPort);
 
         s_this = nullptr;
 

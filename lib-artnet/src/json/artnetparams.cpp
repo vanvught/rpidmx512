@@ -34,7 +34,7 @@
 #include "json/artnetparamsconst.h"
 #include "dmxnode_utils.h"
 #include "json/json_parser.h"
-#include "net/ip4_helpers.h"
+#include "ip4/ip4_helpers.h"
 #include "dmxnode.h"
 #include "configstore.h"
 #include "configurationstore.h"
@@ -75,7 +75,7 @@ void ArtNetParams::SetDestinationIpPort(const char* key, uint32_t key_len, const
 
     if (val_len == 0)
     {
-        store_dmxnode_.destination_ip[kIndex] = net::GetBroadcastIp();
+        store_dmxnode_.destination_ip[kIndex] = network::GetBroadcastIp();
     }
     else
     {

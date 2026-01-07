@@ -29,7 +29,7 @@
 #include "common/utils/utils_flags.h"
 #include "configstore.h"
 #include "configurationstore.h"
-#include "net/ip4_address.h"
+#include "ip4/ip4_address.h"
 
 using common::store::network::Flags;
 
@@ -52,7 +52,7 @@ __attribute__((weak)) void SaveGatewayIp(uint32_t gateway_ip)
 
 __attribute__((weak)) void SaveHostname(const char* hostname, uint32_t length)
 {
-    length = std::min(length, static_cast<uint32_t>(net::HOSTNAME_SIZE));
+    length = std::min(length, static_cast<uint32_t>(network::HOSTNAME_SIZE));
     ConfigStore::Instance().NetworkUpdateArray(&common::store::Network::host_name, hostname, length);
 }
 

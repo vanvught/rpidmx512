@@ -30,7 +30,7 @@
 
 #include "net/netif.h"
 
-namespace net
+namespace network
 {
 void Set(ip4_addr_t ipaddr, ip4_addr_t netmask, ip4_addr_t gw, bool use_dhcp);
 
@@ -78,6 +78,6 @@ void SetAutoIp();
 
 void Shutdown();
 
-} // namespace net
+} // namespace network
 
 #endif // NETWORK_NET_H_

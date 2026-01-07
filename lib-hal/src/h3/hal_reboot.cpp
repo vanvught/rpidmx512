@@ -44,7 +44,7 @@
 #include "configstore.h"
 
 #if !defined(NO_EMAC)
-namespace net
+namespace network
 {
 void Shutdown();
 } // namespace net
@@ -66,7 +66,7 @@ bool Reboot()
 #endif
     RebootHandler();
 #if !defined(NO_EMAC)
-    net::Shutdown();
+    network::Shutdown();
 #endif
     clean_data_cache();
     invalidate_data_cache();

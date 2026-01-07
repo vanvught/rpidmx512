@@ -32,7 +32,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#include "net/ip4_address.h"
+#include "ip4/ip4_address.h"
 
 namespace net
 {

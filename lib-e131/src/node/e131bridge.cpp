@@ -85,7 +85,7 @@ E131Bridge::E131Bridge()
     hal::UuidCopy(cid_);
 #endif
 
-    handle_ = net::udp::Begin(e131::kUdpPort, E131Bridge::StaticCallbackFunctionUdp);
+    handle_ = network::udp::Begin(e131::kUdpPort, E131Bridge::StaticCallbackFunctionUdp);
     assert(handle_ != -1);
 
     SetLongName(nullptr); // Set default long name
@@ -121,7 +121,7 @@ void E131Bridge::GetLongNameDefault(char* long_name)
 void E131Bridge::Start()
 {
 #if defined(E131_HAVE_DMXIN)
-    const auto kIpMulticast = net::convert_to_uint(239, 255, 0, 0);
+    const auto kIpMulticast = network::ConvertToUint(239, 255, 0, 0);
     discovery_ip_address_ = kIpMulticast | ((e131::universe::kDiscovery & static_cast<uint32_t>(0xFF)) << 24) | ((e131::universe::kDiscovery & 0xFF00) << 8);
     FillDataPacket();
     FillDiscoveryPacket();
@@ -229,7 +229,7 @@ void E131Bridge::SetSynchronizationAddress(bool source_a, bool source_b, uint16_
         return;
     }
 
-    net::igmp::JoinGroup(handle_, e131::UniverseToMulticastIp(synchronization_address));
+    network::igmp::JoinGroup(handle_, e131::UniverseToMulticastIp(synchronization_address));
 
     DEBUG_EXIT();
 }
@@ -257,7 +257,7 @@ void E131Bridge::JoinUniverse(uint32_t port_index, uint16_t universe)
     }
 
     DEBUG_PUTS("Join");
-    net::igmp::JoinGroup(handle_, e131::UniverseToMulticastIp(universe));
+    network::igmp::JoinGroup(handle_, e131::UniverseToMulticastIp(universe));
 
     DEBUG_EXIT();
 }
@@ -285,7 +285,7 @@ void E131Bridge::LeaveUniverse(uint32_t port_index, uint16_t universe)
     }
 
     DEBUG_PUTS("Leave");
-    net::igmp::LeaveGroup(handle_, e131::UniverseToMulticastIp(universe));
+    network::igmp::LeaveGroup(handle_, e131::UniverseToMulticastIp(universe));
 
     DEBUG_EXIT();
 }
@@ -317,12 +317,12 @@ void E131Bridge::SetLocalMerging()
             {
                 if (!bridge_.port[output_port_index].local_merge)
                 {
-                    output_port_[output_port_index].source_a.ip = net::IPADDR_LOOPBACK;
+                    output_port_[output_port_index].source_a.ip = network::IPADDR_LOOPBACK;
                     DEBUG_PUTS("Local merge Source A");
                 }
                 else
                 {
-                    output_port_[output_port_index].source_b.ip = net::IPADDR_LOOPBACK;
+                    output_port_[output_port_index].source_b.ip = network::IPADDR_LOOPBACK;
                     DEBUG_PUTS("Local merge Source B");
                 }
 

@@ -51,7 +51,7 @@
 #include "softwaretimers.h"
 #include "firmware/debug/debug_debug.h"
 
-namespace net::acd
+namespace network::acd
 {
 static constexpr uint32_t kAcdTmrInterval = 100;
 static constexpr uint32_t kAcdTicksPerSecond = (1000U / kAcdTmrInterval);
@@ -98,8 +98,7 @@ static void Timer([[maybe_unused]] TimerHandle_t handle)
                 }
                 else
                 {
-                    acd->ttw = static_cast<uint16_t>(static_cast<uint32_t>(random()) % (((PROBE_MAX - PROBE_MIN) * acd::kAcdTicksPerSecond)) +
-                                                     (PROBE_MIN * acd::kAcdTicksPerSecond));
+                    acd->ttw = static_cast<uint16_t>(static_cast<uint32_t>(random()) % (((PROBE_MAX - PROBE_MIN) * acd::kAcdTicksPerSecond)) + (PROBE_MIN * acd::kAcdTicksPerSecond));
                 }
             }
             break;
@@ -302,8 +301,7 @@ void ArpReply(const struct t_arp* arp)
              * ip.dst == ipaddr && hw.src != own macAddress (someone else is probing it)
              */
             if (((memcpy_ip(arp->arp.sender_ip) == acd->ipaddr.addr)) ||
-                (!(memcpy_ip(arp->arp.sender_ip) == 0) && ((memcpy_ip(arp->arp.target_ip)) == acd->ipaddr.addr) &&
-                 (memcmp(arp->arp.sender_mac, netif::globals::netif_default.hwaddr, network::ethernet::kAddressLength) == 0)))
+                (!(memcpy_ip(arp->arp.sender_ip) == 0) && ((memcpy_ip(arp->arp.target_ip)) == acd->ipaddr.addr) && (memcmp(arp->arp.sender_mac, netif::globals::netif_default.hwaddr, network::ethernet::kAddressLength) == 0)))
             {
                 DEBUG_PUTS("Probe Conflict detected");
                 Restart(acd);
@@ -371,11 +369,11 @@ void NetifIpAddrChanged(ip4_addr_t old_addr, ip4_addr_t new_addr)
     if (acd->ipaddr.addr == old_addr.addr)
     {
         // Did we change from a LL address to a routable address?
-        if (net::is_linklocal_ip(old_addr.addr) && !net::is_linklocal_ip(new_addr.addr))
+        if (network::IsLinklocalIp(old_addr.addr) && !network::IsLinklocalIp(new_addr.addr))
         {
             // Put the module in passive conflict detection mode
             PutInPassiveMode();
         }
     }
 }
-} // namespace net::acd
+} // namespace network::acd

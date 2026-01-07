@@ -76,12 +76,12 @@ void E131Bridge::HandleDmxIn()
                 memcpy(e131_data_packet_.dmp_layer.property_values, kDataChanged, kLength);
                 e131_data_packet_.dmp_layer.property_value_count = __builtin_bswap16(static_cast<uint16_t>(kLength));
 
-                net::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&e131_data_packet_), e131::DataPacketSize(kLength), input_port_[port_index].multicast_ip, e131::kUdpPort);
+                network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&e131_data_packet_), e131::DataPacketSize(kLength), input_port_[port_index].multicast_ip, e131::kUdpPort);
 
                 if (bridge_.port[port_index].local_merge)
                 {
                     receive_buffer_ = reinterpret_cast<uint8_t*>(&e131_data_packet_);
-                    ip_address_from_ = net::IPADDR_LOOPBACK;
+                    ip_address_from_ = network::IPADDR_LOOPBACK;
                     HandleDmx();
                 }
 
@@ -137,12 +137,12 @@ void E131Bridge::HandleDmxIn()
                     memcpy(e131_data_packet_.dmp_layer.property_values, kDataCurrent, kLength);
                     e131_data_packet_.dmp_layer.property_value_count = __builtin_bswap16(static_cast<uint16_t>(kLength));
 
-                    net::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&e131_data_packet_), e131::DataPacketSize(kLength), input_port_[port_index].multicast_ip, e131::kUdpPort);
+                    network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&e131_data_packet_), e131::DataPacketSize(kLength), input_port_[port_index].multicast_ip, e131::kUdpPort);
 
                     if (bridge_.port[port_index].local_merge)
                     {
                         receive_buffer_ = reinterpret_cast<uint8_t*>(&e131_data_packet_);
-                        ip_address_from_ = net::IPADDR_LOOPBACK;
+                        ip_address_from_ = network::IPADDR_LOOPBACK;
                         HandleDmx();
                     }
                 }

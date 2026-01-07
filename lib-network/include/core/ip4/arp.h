@@ -26,10 +26,10 @@
 #ifndef NET_ARP_H_
 #define NET_ARP_H_
 
-#include "net/ip4_address.h"
+#include "ip4/ip4_address.h"
 #include "core/protocol/arp.h"
 
-namespace net::arp
+namespace network::arp
 {
 enum class Flags
 {
@@ -46,6 +46,6 @@ void SendTimestamp(void*, uint32_t, uint32_t);
 void AcdProbe(ip4_addr_t ipaddr);
 void AcdSendAnnouncement(ip4_addr_t ipaddr);
 
-} // namespace net::arp
+} // namespace network::arp
 
 #endif // NET_ARP_H_

@@ -34,7 +34,7 @@
 #include "configurationstore.h"
 #include "common/utils/utils_enum.h"
 #include "common/utils/utils_flags.h"
-#include "net/ip4_helpers.h"
+#include "ip4/ip4_helpers.h"
 #include "ltc.h"
 
 using common::store::ltc::Flags;

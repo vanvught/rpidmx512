@@ -34,7 +34,7 @@
 #if defined(ENABLE_HTTPD)
 #include "httpd/httpd.h"
 #endif
-#include "net/ip4_address.h"
+#include "ip4/ip4_address.h"
 #include "configstore.h"
 
 namespace remoteconfig
@@ -127,7 +127,7 @@ class RemoteConfig
 
     struct List
     {
-        uint8_t mac_address[net::MAC_SIZE];
+        uint8_t mac_address[network::MAC_SIZE];
         uint8_t output;
         uint8_t active_outputs;
     };

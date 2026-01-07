@@ -188,7 +188,7 @@ void LtcGenerator::Start()
     platform::ltc::timer11_set_type(kType);
 #endif
 
-    handle_ = net::udp::Begin(kUdpPort, StaticCallbackFunction);
+    handle_ = network::udp::Begin(kUdpPort, StaticCallbackFunction);
     assert(handle_ != -1);
 
     LtcOutputs::Get()->Init();
@@ -208,7 +208,7 @@ void LtcGenerator::Stop()
 #elif defined(GD32)
 #endif
 
-    handle_ = net::udp::End(kUdpPort);
+    handle_ = network::udp::End(kUdpPort);
 
     DEBUG_EXIT();
 }

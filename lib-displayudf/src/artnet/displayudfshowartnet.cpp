@@ -33,7 +33,7 @@
 #include "artnetnode.h"
 #include "artnet.h"
 #include "dmxnode.h"
-#include "net/ip4_address.h"
+#include "ip4/ip4_address.h"
  #include "firmware/debug/debug_debug.h"
 
 void DisplayUdf::ShowArtNetNode()

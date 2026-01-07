@@ -191,7 +191,7 @@ void ArtNetNode::SendTod(uint32_t port_index)
 
     const auto kLength = sizeof(struct artnet::ArtTodData) - (sizeof(tod_data.Tod)) + (kDiscovered * 6U);
 
-    net::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&tod_data), static_cast<uint16_t>(kLength), net::GetBroadcastIp(), artnet::kUdpPort);
+    network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&tod_data), static_cast<uint16_t>(kLength), network::GetBroadcastIp(), artnet::kUdpPort);
 
     DEBUG_PRINTF("kDiscovered=%u", kDiscovered);
     DEBUG_EXIT();
@@ -225,7 +225,7 @@ void ArtNetNode::SendTodRequest(uint32_t port_index)
 
     const auto kLength = sizeof(struct artnet::ArtTodRequest) - (sizeof(request->Address)) + request->AddCount;
 
-    net::udp::Send(handle_, reinterpret_cast<const uint8_t*>(request), static_cast<uint16_t>(kLength), net::GetBroadcastIp(), artnet::kUdpPort);
+    network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(request), static_cast<uint16_t>(kLength), network::GetBroadcastIp(), artnet::kUdpPort);
 
     DEBUG_EXIT();
 }
