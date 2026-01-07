@@ -51,7 +51,7 @@ public:
 		assert(s_this == nullptr);
 		s_this = this;
 
-		path_length_ = static_cast<uint32_t>(snprintf(path_, sizeof(path_) - 1, "/%s/tc/*",  network::iface::GetHostName()) - 1);
+		path_length_ = static_cast<uint32_t>(snprintf(path_, sizeof(path_) - 1, "/%s/tc/*",  network::iface::HostName()) - 1);
 
 		DEBUG_PRINTF("%d [%s]", path_length_, path_);
 		DEBUG_EXIT();

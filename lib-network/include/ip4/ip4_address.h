@@ -23,8 +23,8 @@
  * THE SOFTWARE.
   */
 
-#ifndef NETWORK_IP4_ADDRESS_H_
-#define NETWORK_IP4_ADDRESS_H_
+#ifndef IP4_IP4_ADDRESS_H_
+#define IP4_IP4_ADDRESS_H_
 
 #include <cstdint>
 
@@ -112,4 +112,4 @@ inline uint32_t CidrToNetmask(uint8_t cidr)
 }
 } // namespace network
 
-#endif // NETWORK_IP4_ADDRESS_H_
+#endif // IP4_IP4_ADDRESS_H_

@@ -79,7 +79,7 @@ E131Bridge::E131Bridge()
 #if defined(E131_HAVE_DMXIN) || defined(NODE_SHOWFILE)
     char source_name[e131::kSourceNameLength];
     uint8_t length;
-    snprintf(source_name, e131::kSourceNameLength, "%.48s %s",  network::iface::GetHostName(), hal::BoardName(length));
+    snprintf(source_name, e131::kSourceNameLength, "%.48s %s",  network::iface::HostName(), hal::BoardName(length));
     SetSourceName(source_name);
 
     hal::UuidCopy(cid_);

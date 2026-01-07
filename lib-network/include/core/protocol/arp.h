@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef NET_PROTOCOL_ARP_H_
-#define NET_PROTOCOL_ARP_H_
+#ifndef CORE_PROTOCOL_ARP_H_
+#define CORE_PROTOCOL_ARP_H_
 
 #include "core/protocol/ethernet.h"
 #include "core/protocol/ieee.h"
@@ -77,4 +77,4 @@ struct t_arp
     struct arp_packet arp;
 } PACKED;
 
-#endif // NET_PROTOCOL_ARP_H_
+#endif // CORE_PROTOCOL_ARP_H_

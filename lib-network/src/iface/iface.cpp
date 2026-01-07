@@ -46,6 +46,11 @@ static constexpr char ToHex(char i)
     return static_cast<char>(((i) < 10) ? '0' + i : 'A' + (i - 10));
 }
 
+void CopyMacAddressTo(uint8_t* mac_address)
+{
+    memcpy(mac_address, netif::HwAddr(), NETIF_MAX_HWADDR_LEN);
+}
+
 void SetDomainName(const char* domainname)
 {
     strncpy(s_domain_name, domainname, network::DOMAINNAME_SIZE - 1);
@@ -101,6 +106,11 @@ void SetHostname(const char* hostname)
     DEBUG_EXIT();
 }
 
+const char* HostName()
+{
+    return netif::globals::netif_default.hostname;
+}
+
 uint32_t NameServer(uint32_t index)
 {
     if (index < network::NAMESERVERS_COUNT)
@@ -109,6 +119,16 @@ uint32_t NameServer(uint32_t index)
     }
 
     return 0;
+}
+
+uint32_t NameServerCount()
+{
+    return network::NAMESERVERS_COUNT;
+}
+
+bool Dhcp()
+{
+    return (netif::globals::netif_default.flags & netif::Netif::kNetifFlagDhcpOk) == netif::Netif::kNetifFlagDhcpOk;
 }
 
 void EnableDhcp()
@@ -131,5 +151,10 @@ void SetAutoIp()
     network::store::SaveDhcp(false);
 
     DEBUG_EXIT();
+}
+
+bool AutoIp()
+{
+    return (netif::globals::netif_default.flags & netif::Netif::kNetifFlagAutoipOk) == netif::Netif::kNetifFlagAutoipOk;
 }
 } // namespace network::iface

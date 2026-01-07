@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef NET_PROTOCOL_TCP_H_
-#define NET_PROTOCOL_TCP_H_
+#ifndef CORE_PROTOCOL_TCP_H_
+#define CORE_PROTOCOL_TCP_H_
 
 #include <cstdint>
 
@@ -59,4 +59,4 @@ struct t_tcp
     struct t_tcp_packet tcp;
 } PACKED;
 
-#endif // NET_PROTOCOL_TCP_H_
+#endif // CORE_PROTOCOL_TCP_H_

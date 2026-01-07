@@ -34,8 +34,9 @@
 #include "emac/net_link_check.h"
 #include "emac/network.h"
 #include "../src/core/net_private.h"
+#include "core/ip4/dhcp.h"
 #include "core/ip4/arp.h"
-#include "net/netif.h"
+#include "core/netif.h"
 #if defined(CONFIG_NET_ENABLE_NTP_CLIENT) || defined(CONFIG_NET_ENABLE_PTP_NTP_CLIENT)
 #include "apps/ntpclient.h"
 #endif
@@ -47,8 +48,14 @@
 #include "../../config/net_config.h"
 #include "common/utils/utils_flags.h"
 #include "configstore.h"
+#include "apps/mdns.h"
+#include "network_store.h"
 #include "configurationstore.h"
 #include "firmware/debug/debug_debug.h"
+
+#if !defined(PHY_ADDRESS)
+#define PHY_ADDRESS 1
+#endif
 
 using common::store::network::Flags;
 
@@ -66,6 +73,14 @@ net::phy::Link linkState;
 
 namespace network
 {
+namespace globals
+{
+uint32_t broadcast_mask;
+uint32_t on_network_mask;
+} // namespace globals
+
+void Set(ip4_addr_t ipaddr, ip4_addr_t netmask, ip4_addr_t gw, bool use_dhcp);
+
 static void NetifExtCallback(uint16_t reason, [[maybe_unused]] const netif::netif_ext_callback_args_t* args)
 {
     DEBUG_ENTRY();
@@ -179,6 +194,186 @@ void Init()
 #elif defined(ENET_LINK_CHECK_REG_POLL)
     net::link_status_read();
 #endif
+    DEBUG_EXIT();
+}
+
+static struct network::acd::Acd s_acd;
+
+static void PrimaryIpConflictCallback(network::acd::Callback callback)
+{
+    auto& netif = netif::globals::netif_default;
+
+    switch (callback)
+    {
+        case network::acd::Callback::ACD_IP_OK:
+            if (s_acd.ipaddr.addr == netif.secondary_ip.addr)
+            {
+                network::SetSecondaryIp();
+            }
+            else
+            {
+                netif::SetIpAddr(s_acd.ipaddr);
+            }
+            network::dhcp::Inform();
+            netif::SetFlags(netif::Netif::kNetifFlagStaticipOk);
+            break;
+        case network::acd::Callback::ACD_RESTART_CLIENT:
+            break;
+        case network::acd::Callback::ACD_DECLINE:
+            netif::ClearFlags(netif::Netif::kNetifFlagStaticipOk);
+            break;
+        default:
+            break;
+    }
+}
+
+void Set(network::ip4_addr_t ipaddr, network::ip4_addr_t netmask, network::ip4_addr_t gw, bool use_dhcp)
+{
+    DEBUG_ENTRY();
+
+    netif::globals::netif_default.secondary_ip.addr = 2 + ((static_cast<uint32_t>(static_cast<uint8_t>(netif::globals::netif_default.hwaddr[3] + 0xFF + 0xFF))) << 8) +
+                                                      ((static_cast<uint32_t>(netif::globals::netif_default.hwaddr[4])) << 16) + ((static_cast<uint32_t>(netif::globals::netif_default.hwaddr[5])) << 24);
+
+    if (!use_dhcp)
+    {
+        network::acd::Add(&s_acd, PrimaryIpConflictCallback);
+
+        if (ipaddr.addr != 0)
+        {
+            netif::SetNetmask(netmask);
+            netif::SetGw(gw);
+        }
+    }
+
+    if (net::phy::Link::kStateUp == net::phy::GetLink(PHY_ADDRESS))
+    {
+        netif::SetFlags(netif::Netif::kNetifFlagLinkUp);
+    }
+    else
+    {
+        netif::ClearFlags(netif::Netif::kNetifFlagLinkUp);
+    }
+
+    if (use_dhcp)
+    {
+        network::dhcp::Start();
+    }
+    else
+    {
+        if (ipaddr.addr == 0)
+        {
+            network::acd::Start(&s_acd, netif::globals::netif_default.secondary_ip);
+        }
+        else
+        {
+            network::acd::Start(&s_acd, ipaddr);
+        }
+    }
+
+    DEBUG_EXIT();
+}
+
+void SetPrimaryIp(uint32_t primary_ip_new)
+{
+    DEBUG_ENTRY();
+
+    auto& netif = netif::globals::netif_default;
+
+    if (primary_ip_new == netif.ip.addr)
+    {
+        DEBUG_EXIT();
+        return;
+    }
+
+    network::dhcp::ReleaseAndStop();
+
+    network::store::SaveDhcp(false);
+
+    network::acd::Add(&s_acd, PrimaryIpConflictCallback);
+
+    if (primary_ip_new == 0)
+    {
+        network::acd::Start(&s_acd, netif.secondary_ip);
+    }
+    else
+    {
+        network::ip_addr ipaddr;
+        ipaddr.addr = primary_ip_new;
+        network::acd::Start(&s_acd, ipaddr);
+    }
+
+    network::store::SaveIp(primary_ip_new);
+
+    DEBUG_EXIT();
+}
+
+void SetSecondaryIp()
+{
+    DEBUG_ENTRY();
+
+    auto& netif = netif::globals::netif_default;
+    network::ip4_addr_t netmask;
+    netmask.addr = 255;
+    netif::SetAddr(netif.secondary_ip, netmask, netif.secondary_ip);
+
+    DEBUG_EXIT();
+}
+
+void SetNetmask(uint32_t netmask_new)
+{
+    DEBUG_ENTRY();
+
+    if (netmask_new == netif::Netmask())
+    {
+        DEBUG_EXIT();
+        return;
+    }
+
+    network::ip4_addr_t netmask;
+    netmask.addr = netmask_new;
+
+    netif::SetNetmask(netmask);
+
+    network::store::SaveNetmask(netmask_new);
+
+    DEBUG_EXIT();
+}
+
+void SetGatewayIp(uint32_t gw_new)
+{
+    DEBUG_ENTRY();
+
+    if (gw_new == netif::Gw())
+    {
+        DEBUG_EXIT();
+        return;
+    }
+
+    network::ip4_addr_t gw;
+    gw.addr = gw_new;
+
+    netif::SetGw(gw);
+
+    network::store::SaveGatewayIp(gw_new);
+
+    DEBUG_EXIT();
+}
+
+namespace igmp
+{
+void Shutdown();
+} // namespace igmp
+
+void Shutdown()
+{
+    DEBUG_ENTRY();
+
+#if !defined(CONFIG_NET_APPS_NO_MDNS)
+    mdns::Stop();
+#endif
+    network::igmp::Shutdown();
+    netif::SetLinkDown();
+
     DEBUG_EXIT();
 }
 } // namespace network

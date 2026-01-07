@@ -23,12 +23,12 @@
  * THE SOFTWARE.
  */
 
-#ifndef NET_DHCP_H_
-#define NET_DHCP_H_
+#ifndef CORE_IP4_DHCP_H_
+#define CORE_IP4_DHCP_H_
 
 #include <cstdint>
 
-#include "net/netif.h"
+#include "core/netif.h"
 #include "core/ip4/acd.h"
 #include "ip4/ip4_address.h"
 #include "core/protocol/dhcp.h"
@@ -101,4 +101,4 @@ inline bool SuppliedAddress()
 }
 }  // namespace network::dhcp
 
-#endif // NET_DHCP_H_
+#endif // CORE_IP4_DHCP_H_

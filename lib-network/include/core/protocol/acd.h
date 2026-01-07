@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef NET_PROTOCOL_ACD_H_
-#define NET_PROTOCOL_ACD_H_
+#ifndef CORE_PROTOCOL_ACD_H_
+#define CORE_PROTOCOL_ACD_H_
 
 #include <cstdint>
 
@@ -64,4 +64,4 @@ enum class Callback
 };
 } // namespace network::acd
 
-#endif /* NET_PROTOCOL_ACD_H_ */
+#endif /* CORE_PROTOCOL_ACD_H_ */

@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef NET_PROTOCOL_UDP_H_
-#define NET_PROTOCOL_UDP_H_
+#ifndef CORE_PROTOCOL_UDP_H_
+#define CORE_PROTOCOL_UDP_H_
 
 #include <cstdint>
 
@@ -56,4 +56,4 @@ struct t_udp
 #define IPv4_UDP_HEADERS_SIZE (sizeof(struct ip4_header) + UDP_HEADER_SIZE)             /* IP | UDP */
 #define UDP_PACKET_HEADERS_SIZE (sizeof(struct network::ethernet::Header) + IPv4_UDP_HEADERS_SIZE) /* ETH | IP | UDP */
 
-#endif // NET_PROTOCOL_UDP_H_
+#endif // CORE_PROTOCOL_UDP_H_

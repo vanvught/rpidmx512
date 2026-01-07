@@ -198,7 +198,7 @@ class DisplayUdf final : public Display
     void ShowHostName()
     {
         ClearEndOfLine();
-        Write(labels_[static_cast<uint32_t>(displayudf::Labels::kHostname)],  network::iface::GetHostName());
+        Write(labels_[static_cast<uint32_t>(displayudf::Labels::kHostname)],  network::iface::HostName());
     }
 
     void ShowDhcpStatus(network::dhcp::State state)

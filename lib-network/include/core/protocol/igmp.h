@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef NET_PROTOCOL_IGMP_H_
-#define NET_PROTOCOL_IGMP_H_
+#ifndef CORE_PROTOCOL_IGMP_H_
+#define CORE_PROTOCOL_IGMP_H_
 
 #include <cstdint>
 
@@ -63,4 +63,4 @@ struct t_igmp {
 #define IPv4_IGMP_REPORT_HEADERS_SIZE 	(sizeof(struct t_igmp) - sizeof(struct network::ethernet::Header))
 #define IGMP_REPORT_PACKET_SIZE			(sizeof(struct t_igmp))
 
-#endif /* NET_PROTOCOL_IGMP_H_ */
+#endif /* CORE_PROTOCOL_IGMP_H_ */

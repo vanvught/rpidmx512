@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef NET_PROTOCOL_DHCP_H
-#define NET_PROTOCOL_DHCP_H
+#ifndef CORE_PROTOCOL_DHCP_H_
+#define CORE_PROTOCOL_DHCP_H_
 
 #include <cstdint>
 
@@ -124,4 +124,4 @@ struct Message
 } __attribute__((packed));
 } // namespace network::dhcp
 
-#endif /* NET_PROTOCOL_DHCP_H */
+#endif /* CORE_PROTOCOL_DHCP_H_ */

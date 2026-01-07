@@ -51,7 +51,7 @@ void ArtNetNode::HandleIpProg()
     const auto* const kPArtIpProg = reinterpret_cast<artnet::ArtIpProg*>(receive_buffer_);
     const auto kCommand = kPArtIpProg->command;
     auto* reply = reinterpret_cast<artnet::ArtIpProgReply*>(receive_buffer_);
-    const auto kIsDhcp =  network::iface::IsDhcpUsed();
+    const auto kIsDhcp =  network::iface::Dhcp();
 
     reply->op_code = static_cast<uint16_t>(artnet::OpCodes::kOpIpprogreply);
 
@@ -83,7 +83,7 @@ void ArtNetNode::HandleIpProg()
         network::SetGatewayIp(ip.u32);
     }
 
-    if ( network::iface::IsDhcpUsed())
+    if ( network::iface::Dhcp())
     {
         reply->status = (1U << 6);
     }
@@ -94,7 +94,7 @@ void ArtNetNode::HandleIpProg()
 
     reply->spare2 = 0;
 
-    auto is_changed = (kIsDhcp !=  network::iface::IsDhcpUsed());
+    auto is_changed = (kIsDhcp !=  network::iface::Dhcp());
 
     ip.u32 = network::GetPrimaryIp();
     is_changed |= (memcmp(&kPArtIpProg->prog_ip_hi, ip.u8, artnet::kIpSize) != 0);
@@ -116,7 +116,7 @@ void ArtNetNode::HandleIpProg()
     if (is_changed)
     {
         art_poll_reply_.Status2 = static_cast<uint8_t>((art_poll_reply_.Status2 & (~(artnet::Status2::kIpDhcp))) |
-                                                       ( network::iface::IsDhcpUsed() ? artnet::Status2::kIpDhcp : artnet::Status2::kIpManualy));
+                                                       ( network::iface::Dhcp() ? artnet::Status2::kIpDhcp : artnet::Status2::kIpManualy));
 
         memcpy(art_poll_reply_.IPAddress, &reply->prog_ip_hi, artnet::kIpSize);
 #if (ARTNET_VERSION >= 4)

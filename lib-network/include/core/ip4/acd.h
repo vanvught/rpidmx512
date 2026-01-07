@@ -26,8 +26,8 @@
  * https://savannah.nongnu.org/projects/lwip/
  */
 
-#ifndef NET_ACD_H_
-#define NET_ACD_H_
+#ifndef CORE_IP4_ACD_H_
+#define CORE_IP4_ACD_H_
 
 #include <cstdint>
 
@@ -67,4 +67,4 @@ void NetworkChangedLinkDown();
 void NetifIpAddrChanged(ip4_addr_t old_ip_address, ip4_addr_t new_ip_address);
 } // namespace network::acd
 
-#endif // NET_ACD_H_
+#endif // CORE_IP4_ACD_H_

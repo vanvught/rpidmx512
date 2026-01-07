@@ -99,7 +99,7 @@ ArtNetController::ArtNetController()
     art_poll_reply_.Status2 |=
         artnet::Status2::kPortAddress15Bit | (artnet::kVersion >= 4 ? artnet::Status2::kSacnAbleToSwitch : artnet::Status2::kSacnNoSwitch);
     art_poll_reply_.Status2 &= static_cast<uint8_t>(~artnet::Status2::kIpDhcp);
-    art_poll_reply_.Status2 |= network::iface::IsDhcpUsed() ? artnet::Status2::kIpDhcp : artnet::Status2::kIpManualy;
+    art_poll_reply_.Status2 |= network::iface::Dhcp() ? artnet::Status2::kIpDhcp : artnet::Status2::kIpManualy;
     art_poll_reply_.Status2 &= static_cast<uint8_t>(~artnet::Status2::kDhcpCapable);
     art_poll_reply_.Status2 |= network::iface::IsDhcpCapable() ? artnet::Status2::kDhcpCapable : static_cast<uint8_t>(0);
 

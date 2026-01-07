@@ -42,7 +42,7 @@
 #include <cassert>
 
 #include "linux/network.h"
-#include "net/netif.h"
+#include "core/netif.h"
 #if !defined(CONFIG_NET_APPS_NO_MDNS)
 #include "apps/mdns.h"
 #endif
@@ -87,7 +87,7 @@ struct Port
 
 static Port s_Ports[UDP_MAX_PORTS_ALLOWED];
 
-#include "net/netif.h"
+#include "core/netif.h"
 #include "ip4/ip4_address.h"
 
 /**
@@ -260,7 +260,7 @@ void Network::Print()
     printf(" Inet      : " IPSTR "/%d\n", IP2STR(netif::globals::netif_default.ip.addr), network::GetNetmaskCIDR());
     printf(" Netmask   : " IPSTR "\n", IP2STR(netif::globals::netif_default.netmask.addr));
     printf(" Gateway   : " IPSTR "\n", IP2STR(netif::globals::netif_default.gw.addr));
-    printf(" Broadcast : " IPSTR "\n", IP2STR(network::GetBroadcastIp()));
+    printf(" Broadcast : " IPSTR "\n", IP2STR(net::GetBroadcastIp()));
     printf(" Mac       : " MACSTR "\n", MAC2STR(netif::globals::netif_default.hwaddr));
     printf(" Mode      : %c\n", network::iface::AddressingMode());
 }

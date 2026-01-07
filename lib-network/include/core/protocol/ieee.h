@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef NET_PROTOCOL_IEEE_H_
-#define NET_PROTOCOL_IEEE_H_
+#ifndef CORE_PROTOCOL_IEEE_H_
+#define CORE_PROTOCOL_IEEE_H_
 
 #include <cstdint>
 
@@ -34,4 +34,4 @@ enum ETHER_TYPE {
 	ETHER_TYPE_PTP  = 0x88F7		/* IEEE1588v2 (PTPv2) over Ethernet */
 };
 
-#endif /* NET_PROTOCOL_IEEE_H_ */
+#endif /* CORE_PROTOCOL_IEEE_H_ */

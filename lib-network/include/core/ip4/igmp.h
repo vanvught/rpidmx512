@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef NET_IGMP_H_
-#define NET_IGMP_H_
+#ifndef CORE_IP4_IGMP_H_
+#define CORE_IP4_IGMP_H_
 
 #include <cstdint>
 
@@ -36,4 +36,4 @@ void SetHash(const uint8_t*);
 void ResetHash();
 } // namespace emac::multicast
 
-#endif  // NET_IGMP_H_
+#endif  // CORE_IP4_IGMP_H_

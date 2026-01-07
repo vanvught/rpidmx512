@@ -55,6 +55,14 @@ void emac_free_pkt();
 
 namespace network
 {
+
+namespace globals
+{
+extern uint32_t broadcast_mask;
+extern uint32_t on_network_mask;
+}
+// namespace globals
+
 inline uint16_t Chksum(const void* data, uint32_t length)
 {
     auto* ptr = reinterpret_cast<const uint16_t*>(data);

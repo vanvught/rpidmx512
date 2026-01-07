@@ -23,17 +23,15 @@
  * THE SOFTWARE.
  */
 
-#ifndef NETWORK_NET_H_
-#define NETWORK_NET_H_
+#ifndef NETWORK_CONFIG_H_
+#define NETWORK_CONFIG_H_
 
 #include <cstdint>
 
-#include "net/netif.h"
+#include "core/netif.h"
 
 namespace network
 {
-void Set(ip4_addr_t ipaddr, ip4_addr_t netmask, ip4_addr_t gw, bool use_dhcp);
-
 void SetPrimaryIp(uint32_t ip);
 void SetSecondaryIp();
 void SetNetmask(uint32_t netmask);
@@ -80,4 +78,4 @@ void Shutdown();
 
 } // namespace network
 
-#endif // NETWORK_NET_H_
+#endif // NETWORK_CONFIG_H_

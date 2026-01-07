@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef NET_APPS_NTPCLIENT_H_
-#define NET_APPS_NTPCLIENT_H_
+#ifndef APPS_NTPCLIENT_H_
+#define APPS_NTPCLIENT_H_
 
 #include <cstdint>
 
@@ -71,4 +71,4 @@ ntp::Status GetStatus();
 
 } // namespace ntpclient
 
-#endif  // NET_APPS_NTPCLIENT_H_
+#endif  // APPS_NTPCLIENT_H_

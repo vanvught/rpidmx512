@@ -48,7 +48,7 @@ enum class Mode : uint8_t
 
 static dhcp::Mode GetDhcpMode()
 {
-    if (network::iface::IsDhcpUsed())
+    if (network::iface::Dhcp())
     {
         return dhcp::Mode::kActive;
     }
@@ -306,7 +306,7 @@ void RDMHandler::GetDHCPMode([[maybe_unused]] uint16_t sub_device)
     auto* rdm_data_out = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
 
     memcpy(&rdm_data_out->param_data[0], &rdm_data_in->param_data[0], 4);
-    rdm_data_out->param_data[4] = network::iface::IsDhcpUsed() ? 1 : 0;
+    rdm_data_out->param_data[4] = network::iface::Dhcp() ? 1 : 0;
 
     rdm_data_out->param_data_length = 5;
 
@@ -396,7 +396,7 @@ void RDMHandler::GetZeroconf([[maybe_unused]] uint16_t sub_device)
     auto* rdm_data_out = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
 
     memcpy(&rdm_data_out->param_data[0], &rdm_data_in->param_data[0], 4);
-    rdm_data_out->param_data[4] = network::iface::IsAutoIpCapable() ? (network::iface::IsAutoIpUsed()) : 0;
+    rdm_data_out->param_data[4] = network::iface::IsAutoIpCapable() ? (network::iface::AutoIp()) : 0;
 
     rdm_data_out->param_data_length = 5;
 
@@ -468,7 +468,7 @@ void RDMHandler::RenewDhcp([[maybe_unused]] bool is_broadcast, [[maybe_unused]] 
         return;
     }
 
-    if (!network::iface::IsDhcpUsed())
+    if (!network::iface::Dhcp())
     {
         RespondMessageNack(E137_2_NR_ACTION_NOT_SUPPORTED);
 
@@ -658,7 +658,7 @@ void RDMHandler::GetHostName([[maybe_unused]] uint16_t sub_device)
 {
     DEBUG_ENTRY();
 
-    const auto* host_name = network::iface::GetHostName();
+    const auto* host_name = network::iface::HostName();
     HandleString(host_name, static_cast<uint32_t>(strlen(host_name)));
 
     RespondMessageAck();

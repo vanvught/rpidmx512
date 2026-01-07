@@ -37,7 +37,7 @@
 #include <cstdint>
 #include <cstring>
 
-#include "net/netif.h"
+#include "core/netif.h"
 #include "../src/core/net_memcpy.h"
 #include "../src/core/net_private.h"
 #include "core/protocol/icmp.h"

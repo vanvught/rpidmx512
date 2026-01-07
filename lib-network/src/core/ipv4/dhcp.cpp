@@ -35,7 +35,7 @@
 
 #include "softwaretimers.h"
 #include "emac/network.h"
-#include "net/netif.h"
+#include "core/netif.h"
 #include "../src/core/net_memcpy.h"
 #include "../src/core/net_private.h"
 #include "core/ip4/dhcp.h"

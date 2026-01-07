@@ -233,7 +233,7 @@ static void CreateServiceDomain(mdns::Domain& domain, ServiceRecord const& servi
         }
         else
         {
-            domain.AddLabel(network::iface::GetHostName(), strlen(network::iface::GetHostName()));
+            domain.AddLabel(network::iface::HostName(), strlen(network::iface::HostName()));
         }
     }
 
@@ -251,7 +251,7 @@ static void CreateServiceDomain(mdns::Domain& domain, ServiceRecord const& servi
 static void CreateHostDomain(Domain& domain)
 {
     domain.length = 0;
-    domain.AddLabel(network::iface::GetHostName(), strlen(network::iface::GetHostName()));
+    domain.AddLabel(network::iface::HostName(), strlen(network::iface::HostName()));
     domain.AddDotLocal();
 }
 

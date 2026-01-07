@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef NET_PROTOCOL_DNS_H_
-#define NET_PROTOCOL_DNS_H_
+#ifndef CORE_PROTOCOL_DNS_H_
+#define CORE_PROTOCOL_DNS_H_
 
 #include <cstdint>
 
@@ -85,4 +85,4 @@ static constexpr uint32_t MULTICAST_MESSAGE_SIZE = 512;	///< The 1987 DNS specif
 static constexpr uint32_t MULTICAST_ADDRESS = network::ConvertToUint(224, 0, 0, 251);
 }  // namespace net::dns
 
-#endif /* NET_PROTOCOL_DNS_H_ */
+#endif /* CORE_PROTOCOL_DNS_H_ */

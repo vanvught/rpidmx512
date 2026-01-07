@@ -27,7 +27,7 @@
 #undef NDEBUG
 #endif
 
-#include "net/netif.h"
+#include "core/netif.h"
 #include "firmware/debug/debug_debug.h"
 
 namespace net::globals
@@ -48,8 +48,8 @@ static void NetifDoUpdateGlobals()
     auto& netif = netif::globals::netif_default;
     netif.broadcast_ip.addr = (netif.ip.addr | ~netif.netmask.addr);
 
-    net::globals::broadcast_mask = ~(netif.netmask.addr);
-    net::globals::on_network_mask = netif.ip.addr & netif.netmask.addr;
+    network::globals::broadcast_mask = ~(netif.netmask.addr);
+    network::globals::on_network_mask = netif.ip.addr & netif.netmask.addr;
 }
 
 static bool NetifDoSetNetmask(network::ip4_addr_t netmask, network::ip4_addr_t& old_nm)

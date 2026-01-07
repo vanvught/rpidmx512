@@ -41,7 +41,7 @@
 #include "net_config.h"
 #include "../src/core/net_memcpy.h"
 #include "../src/core/net_private.h"
-#include "net/netif.h"
+#include "core/netif.h"
 #include "core/ip4/igmp.h"
 #include "core/protocol/ieee.h"
 #include "core/protocol/igmp.h"

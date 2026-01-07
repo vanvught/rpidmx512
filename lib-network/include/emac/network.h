@@ -33,9 +33,9 @@
 #include <cstdint>
 
 #include "../src/core/net_private.h"
-#include "network_net.h" // IWYU pragma: keep
+#include "network_config.h" // IWYU pragma: keep
 #include "network_iface.h"
-#include "network_udp.h" // IWYU pragma: keep
+#include "network_udp.h"  // IWYU pragma: keep
 #include "network_igmp.h" // IWYU pragma: keep
 #if defined(ENABLE_HTTPD)
 #include "network_tcp.h" // IWYU pragma: keep

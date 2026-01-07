@@ -132,7 +132,7 @@ AppleMidi::AppleMidi()
     memcpy(cast32.u8, &mac_address[2], 4);
     ssrc_ = cast32.u32;
 
-    SetSessionName( network::iface::GetHostName());
+    SetSessionName( network::iface::HostName());
 
     memset(&session_status_, 0, sizeof(struct applemidi::SessionStatus));
 

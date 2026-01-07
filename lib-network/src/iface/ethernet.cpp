@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_NET_NETIF)
+#if defined(DEBUG_NETWORK_IFACE)
 #undef NDEBUG
 #endif
 
@@ -37,7 +37,6 @@
 
 #include "../src/core/net_private.h"
 #include "../src/core/net_memcpy.h"
-#include "core/ip4/igmp.h"
 #include "core/ip4/arp.h"
 #include "core/protocol/ieee.h"
 #include "core/protocol/ethernet.h"
@@ -76,7 +75,7 @@ void EthernetInput(const uint8_t* buffer, [[maybe_unused]] uint32_t length)
 
             DEBUG_PRINTF(IPSTR " " IPSTR, kIp4->ip4.dst[0], kIp4->ip4.dst[1], kIp4->ip4.dst[2], kIp4->ip4.dst[3], kIp4->ip4.src[0], kIp4->ip4.src[1], kIp4->ip4.src[2], kIp4->ip4.src[3]);
 
-            if ((kEther->dst[0] == net::ETH_IP4_MULTICAST_ADDR_0) && (kEther->dst[1] == net::ETH_IP4_MULTICAST_ADDR_1) && (kEther->dst[2] == net::ETH_IP4_MULTICAST_ADDR_2))
+            if ((kEther->dst[0] == network::ethernet::kIP4MulticastAddr0) && (kEther->dst[1] == network::ethernet::kIP4MulticastAddr1) && (kEther->dst[2] == network::ethernet::kIP4MulticastAddr2))
             {
                 if (!network::igmp::LookupGroup(network::memcpy_ip(kIp4->ip4.dst)))
                 {

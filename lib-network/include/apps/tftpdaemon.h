@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef NET_APPS_TFTPDAEMON_H_
-#define NET_APPS_TFTPDAEMON_H_
+#ifndef APPS_TFTPDAEMON_H_
+#define APPS_TFTPDAEMON_H_
 
 #include <cstdint>
 #include <cstddef>
@@ -94,4 +94,4 @@ class TFTPDaemon
     static inline TFTPDaemon* s_this;
 };
 
-#endif  // NET_APPS_TFTPDAEMON_H_
+#endif  // APPS_TFTPDAEMON_H_

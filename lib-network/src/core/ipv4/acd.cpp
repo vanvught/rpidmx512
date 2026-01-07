@@ -40,7 +40,7 @@
 #include <cstring>
 #include <cassert>
 
-#include "net/netif.h"
+#include "core/netif.h"
 #include "../src/core/net_memcpy.h"
 #include "net_config.h"
 #include "core/ip4/arp.h"

@@ -22,8 +22,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef NET_PROTOCOL_IP4_H_
-#define NET_PROTOCOL_IP4_H_
+#ifndef CORE_PROTOCOL_IP4_H_
+#define CORE_PROTOCOL_IP4_H_
 
 #include <cstdint>
 
@@ -73,4 +73,4 @@ struct t_ip4
     struct ip4_header ip4;
 } PACKED;
 
-#endif // NET_PROTOCOL_IP4_H_
+#endif // CORE_PROTOCOL_IP4_H_

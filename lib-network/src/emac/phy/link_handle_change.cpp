@@ -29,7 +29,7 @@
 #include "hal_watchdog.h"
 #include "emac/emac.h"
 #include "emac/phy.h"
-#include "net/netif.h"
+#include "core/netif.h"
  #include "firmware/debug/debug_debug.h"
 
 #if !defined(PHY_ADDRESS)

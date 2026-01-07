@@ -46,7 +46,7 @@
 #include "../src/core/net_memcpy.h"
 #include "../src/core/net_private.h"
 #include "net_config.h"
-#include "net/netif.h"
+#include "core/netif.h"
 #include "core/ip4/arp.h"
 #include "core/ip4/acd.h"
 #include "core/protocol/ethernet.h"
@@ -62,7 +62,7 @@ static constexpr auto kMaxRecords = 16;
 static constexpr auto kMaxRecords = ARP_MAX_RECORDS;
 #endif
 
-namespace net::globals
+namespace network::globals
 {
 extern uint32_t on_network_mask;
 } // namespace net::globals
@@ -497,7 +497,7 @@ template <network::arp::EthSend S> static void SendImplementation(void* packet, 
 
     auto destination_ip = remote_ip;
 
-    if (__builtin_expect((net::globals::on_network_mask != (remote_ip & net::globals::on_network_mask)), 0))
+    if (__builtin_expect((network::globals::on_network_mask != (remote_ip & network::globals::on_network_mask)), 0))
     {
         /* According to RFC 3297, chapter 2.6.2 (Forwarding Rules), a packet with
            a link-local source address must always be "directly to its destination

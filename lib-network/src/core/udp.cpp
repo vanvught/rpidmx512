@@ -38,7 +38,7 @@
 #include <algorithm>
 #include <cassert>
 
-#include "net/netif.h"
+#include "core/netif.h"
 #include "net_config.h"
 #include "core/protocol/ieee.h"
 #include "core/protocol/udp.h"
@@ -48,12 +48,6 @@
 #include "net_memcpy.h"
 #include "console.h"
 #include "firmware/debug/debug_debug.h"
-
-namespace net::globals
-{
-extern uint32_t broadcast_mask;
-}
-// namespace globals
 
 namespace network::udp
 {
@@ -175,7 +169,7 @@ template <network::arp::EthSend S> static void SendImplementation(int index, con
         network::memset<0xFF, network::ethernet::kAddressLength>(out_buffer->ether.dst);
         network::memset<0xFF, network::ethernet::kAddressLength>(out_buffer->ip4.dst);
     }
-    else if ((remote_ip & net::globals::broadcast_mask) == net::globals::broadcast_mask)
+    else if ((remote_ip & network::globals::broadcast_mask) == network::globals::broadcast_mask)
     {
         network::memset<0xFF, network::ethernet::kAddressLength>(out_buffer->ether.dst);
         network::memcpy_ip(out_buffer->ip4.dst, remote_ip);

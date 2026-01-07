@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef NET_ARP_H_
-#define NET_ARP_H_
+#ifndef CORE_IP4_ARP_H_
+#define CORE_IP4_ARP_H_
 
 #include "ip4/ip4_address.h"
 #include "core/protocol/arp.h"
@@ -48,4 +48,4 @@ void AcdSendAnnouncement(ip4_addr_t ipaddr);
 
 } // namespace network::arp
 
-#endif // NET_ARP_H_
+#endif // CORE_IP4_ARP_H_

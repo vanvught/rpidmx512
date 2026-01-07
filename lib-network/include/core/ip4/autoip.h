@@ -30,12 +30,12 @@
  * Dynamic Configuration of IPv4 Link-Local Addresses
  */
 
-#ifndef NET_AUTOIP_H_
-#define NET_AUTOIP_H_
+#ifndef CORE_IP4_AUTOIP_H_
+#define CORE_IP4_AUTOIP_H_
 
 #include <cstdint>
 
-#include "net/netif.h"
+#include "core/netif.h"
 #include "core/ip4/acd.h"
 #include "core/protocol/autoip.h"
 #include "firmware/debug/debug_debug.h"
@@ -89,4 +89,4 @@ inline void NetworkChangedLinkDown()
 }
 } // namespace network::autoip
 
-#endif // NET_AUTOIP_H_
+#endif // CORE_IP4_AUTOIP_H_

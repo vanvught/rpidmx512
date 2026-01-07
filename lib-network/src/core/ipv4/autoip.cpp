@@ -37,7 +37,7 @@
 #include <cstring>
 #include <cassert>
 
-#include "net/netif.h"
+#include "core/netif.h"
 #include "core/ip4/autoip.h"
 #include "core/protocol/autoip.h"
 #include "core/ip4/acd.h"

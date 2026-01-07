@@ -66,7 +66,7 @@ void Error(const char*);
 #include <cstdio>
 #include <cassert>
 
-#include "net/netif.h"
+#include "core/netif.h"
 #include "net_config.h"
 #include "core/protocol/ieee.h"
 #include "core/protocol/tcp.h"

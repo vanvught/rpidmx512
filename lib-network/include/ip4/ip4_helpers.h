@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef NET_IP4_HELPERS_H_
-#define NET_IP4_HELPERS_H_
+#ifndef IP4_IP4_HELPERS_H_
+#define IP4_IP4_HELPERS_H_
 
 #include <cstdint>
 #include <cstdio>
@@ -62,4 +62,4 @@ inline uint32_t ParseIpString(const char* val, uint32_t len)
 }
 } // namespace net
 
-#endif /* NET_IP4_HELPERS_H_ */
+#endif /* IP4_IP4_HELPERS_H_ */

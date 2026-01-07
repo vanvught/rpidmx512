@@ -23,38 +23,27 @@
  * THE SOFTWARE.
  */
 
-#ifndef NET_PROTOCOL_ETHERNET_H_
-#define NET_PROTOCOL_ETHERNET_H_
+#ifndef CORE_PROTOCOL_ETHERNET_H_
+#define CORE_PROTOCOL_ETHERNET_H_
 
 #include <stdint.h>
 
-#if !defined(PACKED)
-#define PACKED __attribute__((packed))
-#endif
-
 namespace network::ethernet
 {
-
 inline constexpr uint32_t kMtuSize = 1500;
 inline constexpr uint32_t kAddressLength = 6;
+inline constexpr uint32_t kHwaddrLen = 6;
+// The 24-bit IANA IPv4-multicast OUI is 01-00-5e:
+inline constexpr uint8_t kIP4MulticastAddr0 = 0x01;
+inline constexpr uint8_t kIP4MulticastAddr1 = 0x00;
+inline constexpr uint8_t kIP4MulticastAddr2 = 0x5e;
 
 struct Header
 {
     uint8_t dst[kAddressLength]; /*  6 */
     uint8_t src[kAddressLength]; /* 12 */
-    uint16_t type;             /* 14 */
-} PACKED;
-
+    uint16_t type;               /* 14 */
+} __attribute__((packed));
 } // namespace network::ethernet
 
-namespace net
-{
-static constexpr uint32_t ETH_HWADDR_LEN = 6;
-/** The 24-bit IANA IPv4-multicast OUI is 01-00-5e: */
-static constexpr uint8_t ETH_IP4_MULTICAST_ADDR_0 = 0x01;
-static constexpr uint8_t ETH_IP4_MULTICAST_ADDR_1 = 0x00;
-static constexpr uint8_t ETH_IP4_MULTICAST_ADDR_2 = 0x5e;
-
-} // namespace net
-
-#endif // NET_PROTOCOL_ETHERNET_H_
+#endif // CORE_PROTOCOL_ETHERNET_H_

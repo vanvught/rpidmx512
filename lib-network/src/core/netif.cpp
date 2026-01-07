@@ -27,7 +27,8 @@
 #undef NDEBUG
 #endif
 
-#include "net/netif.h"
+#include "net_private.h"
+#include "core/netif.h"
 #include "core/ip4/acd.h"
 #include "core/ip4/autoip.h"
 #include "core/ip4/dhcp.h"
@@ -37,13 +38,6 @@ namespace network::igmp
 {
 void ReportGroups();
 }
-
-namespace net::globals
-{
-extern uint32_t broadcast_mask;
-extern uint32_t on_network_mask;
-} // namespace net::globals
-
 namespace netif
 {
 namespace globals
@@ -80,8 +74,8 @@ static void NetifDoUpdateGlobals()
     auto& netif = netif::globals::netif_default;
     netif.broadcast_ip.addr = (netif.ip.addr | ~netif.netmask.addr);
 
-    net::globals::broadcast_mask = ~(netif.netmask.addr);
-    net::globals::on_network_mask = netif.ip.addr & netif.netmask.addr;
+    network::globals::broadcast_mask = ~(netif.netmask.addr);
+    network::globals::on_network_mask = netif.ip.addr & netif.netmask.addr;
 }
 
 static void NetifDoIpAddrChanged([[maybe_unused]] network::ip4_addr_t old_addr, [[maybe_unused]] network::ip4_addr_t new_addr)

@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef NET_NETIF_H_
-#define NET_NETIF_H_
+#ifndef CORE_NETIF_H_
+#define CORE_NETIF_H_
 
 #include <cstdint>
 
@@ -107,16 +107,6 @@ inline void ClearFlags(uint8_t flags)
     globals::netif_default.flags &= static_cast<uint8_t>(~flags);
 }
 
-inline bool Dhcp()
-{
-    return (globals::netif_default.flags & Netif::kNetifFlagDhcpOk) == Netif::kNetifFlagDhcpOk;
-}
-
-inline bool AutoIp()
-{
-    return (globals::netif_default.flags & Netif::kNetifFlagAutoipOk) == Netif::kNetifFlagAutoipOk;
-}
-
 inline uint32_t IpAddr()
 {
     return globals::netif_default.ip.addr;
@@ -167,4 +157,4 @@ inline bool IsLinkUp()
 }
 } // namespace netif
 
-#endif // NET_NETIF_H_
+#endif // CORE_NETIF_H_

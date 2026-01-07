@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef NET_PROTOCOL_AUTOIP_H_
-#define NET_PROTOCOL_AUTOIP_H_
+#ifndef CORE_PROTOCOL_AUTOIP_H_
+#define CORE_PROTOCOL_AUTOIP_H_
 
 #include "ip4/ip4_address.h"
 
@@ -42,4 +42,4 @@ enum class State
 };
 } // namespace network::autoip
 
-#endif // NET_PROTOCOL_AUTOIP_H_
+#endif // CORE_PROTOCOL_AUTOIP_H_

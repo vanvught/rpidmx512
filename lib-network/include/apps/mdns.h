@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef NET_APPS_MDNS_H_
-#define NET_APPS_MDNS_H_
+#ifndef APPS_MDNS_H_
+#define APPS_MDNS_H_
 
 #include <cstdint>
 
@@ -65,4 +65,4 @@ bool ServiceRecordDelete(mdns::Services service);
 void SendAnnouncement(uint32_t ttl);
 } // namespace mdns
 
-#endif  // NET_APPS_MDNS_H_
+#endif  // APPS_MDNS_H_

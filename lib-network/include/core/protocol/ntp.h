@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef NET_PROTOCOL_NTP_H_
-#define NET_PROTOCOL_NTP_H_
+#ifndef CORE_PROTOCOL_NTP_H_
+#define CORE_PROTOCOL_NTP_H_
 
 #include <cstdint>
 
@@ -98,4 +98,4 @@ inline void sub_time(struct ntp::time_t *r, const struct ntp::time_t *x, const s
 }
 }  // namespace ntp
 
-#endif /* NET_PROTOCOL_NTP_H_ */
+#endif /* CORE_PROTOCOL_NTP_H_ */

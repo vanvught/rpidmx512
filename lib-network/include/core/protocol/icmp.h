@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef NET_PROTOCOL_ICMP_H_
-#define NET_PROTOCOL_ICMP_H_
+#ifndef CORE_PROTOCOL_ICMP_H_
+#define CORE_PROTOCOL_ICMP_H_
 
 #include <cstdint>
 
@@ -62,4 +62,4 @@ struct t_icmp {
 
 #define IPv4_ICMP_HEADERS_SIZE 			(sizeof(struct t_icmp) - sizeof(struct network::ethernet::Header))
 
-#endif /* NET_PROTOCOL_ICMP_H_ */
+#endif /* CORE_PROTOCOL_ICMP_H_ */

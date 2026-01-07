@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef NET_PROTOCOL_IANA_H_
-#define NET_PROTOCOL_IANA_H_
+#ifndef CORE_PROTOCOL_IANA_H_
+#define CORE_PROTOCOL_IANA_H_
 
 #include <cstdint>
 
@@ -37,4 +37,4 @@ static constexpr uint16_t IANA_PORT_NTP_SERVER  = 123;
 static constexpr uint16_t IANA_PORT_MDNS        = 5353;
 }  // namespace net::iana
 
-#endif /* NET_PROTOCOL_IANA_H_ */
+#endif /* CORE_PROTOCOL_IANA_H_ */

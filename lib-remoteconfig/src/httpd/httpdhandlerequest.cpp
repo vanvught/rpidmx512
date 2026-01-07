@@ -184,7 +184,7 @@ void HttpDeamonHandleRequest::HandleRequest(uint32_t bytes_received, char* recei
                                        "Content-Length: %u\r\n"
                                        "Connection: close\r\n"
                                        "\r\n",
-                                       static_cast<unsigned int>(status_), status_msg, network::iface::GetHostName(), kSContentType[static_cast<uint32_t>(request_content_type_)], static_cast<unsigned int>(content_size_)));
+                                       static_cast<unsigned int>(status_), status_msg, network::iface::HostName(), kSContentType[static_cast<uint32_t>(request_content_type_)], static_cast<unsigned int>(content_size_)));
 
     // IMPORTANT CHANGE:
     // Write is now per-connection only.
