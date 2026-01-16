@@ -58,7 +58,7 @@ void OscClient::Start()
     handle_ = network::udp::Begin(port_incoming_, StaticCallbackFunction);
     assert(handle_ != -1);
 
-    mdns::ServiceRecordAdd(nullptr, mdns::Services::OSC, "type=client", port_incoming_);
+    network::apps::mdns::ServiceRecordAdd(nullptr, network::apps::mdns::Services::kOsc, "type=client", port_incoming_);
 
     DEBUG_EXIT();
 }
@@ -67,7 +67,7 @@ void OscClient::Stop()
 {
     DEBUG_ENTRY();
 
-    mdns::ServiceRecordDelete(mdns::Services::OSC);
+    network::apps::mdns::ServiceRecordDelete(network::apps::mdns::Services::kOsc);
 
     assert(handle_ != -1);
     network::udp::End(port_incoming_);
