@@ -87,7 +87,7 @@ inline void Run()
     const net::phy::Link link_state = net::link::StatusRead();
     if (link_state != global::link_state)
     {
-        global::linkState = link_state;
+        global::link_state = link_state;
         net::link::HandleChange(link_state);
     }
 #endif

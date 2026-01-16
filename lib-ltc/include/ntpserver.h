@@ -69,12 +69,12 @@ class NtpServer
             assert(0);
         }
 
-        reply_.ReferenceTimestamp_s = __builtin_bswap32(static_cast<uint32_t>(time_date_));
-        reply_.ReferenceTimestamp_f = __builtin_bswap32(fraction_);
-        reply_.ReceiveTimestamp_s = __builtin_bswap32(static_cast<uint32_t>(time_date_));
-        reply_.ReceiveTimestamp_f = __builtin_bswap32(fraction_);
-        reply_.TransmitTimestamp_s = __builtin_bswap32(static_cast<uint32_t>(time_date_));
-        reply_.TransmitTimestamp_f = __builtin_bswap32(fraction_);
+        reply_.reference_timestamp_s = __builtin_bswap32(static_cast<uint32_t>(time_date_));
+        reply_.reference_timestamp_f = __builtin_bswap32(fraction_);
+        reply_.receive_timestamp_s = __builtin_bswap32(static_cast<uint32_t>(time_date_));
+        reply_.receive_timestamp_f = __builtin_bswap32(fraction_);
+        reply_.transmit_timestamp_s = __builtin_bswap32(static_cast<uint32_t>(time_date_));
+        reply_.transmit_timestamp_f = __builtin_bswap32(fraction_);
     }
 
     /**
@@ -94,14 +94,14 @@ class NtpServer
 
         auto* request = reinterpret_cast<const ntp::Packet*>(buffer);
 
-        if (__builtin_expect(((request->LiVnMode & ntp::MODE_CLIENT) != ntp::MODE_CLIENT), 0))
+        if (__builtin_expect(((request->li_vn_mode & ntp::kModeClient) != ntp::kModeClient), 0))
         {
             return;
         }
 
-        reply_.ReferenceID = network::GetPrimaryIp();
-        reply_.OriginTimestamp_s = request->TransmitTimestamp_s;
-        reply_.OriginTimestamp_f = request->TransmitTimestamp_f;
+        reply_.reference_id = network::GetPrimaryIp();
+        reply_.origin_timestamp_s = request->transmit_timestamp_s;
+        reply_.origin_timestamp_f = request->transmit_timestamp_f;
 
         network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&reply_), sizeof(struct ntp::Packet), from_ip, from_port);
     }

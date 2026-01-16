@@ -90,7 +90,7 @@ class AppleMidi
     void Start()
     {
         DEBUG_ENTRY();
-        mdns::ServiceRecordAdd(nullptr, mdns::Services::MIDI, nullptr, port_);
+        network::apps::mdns::ServiceRecordAdd(nullptr, network::apps::mdns::Services::kMidi, nullptr, port_);
 
         assert(handle_control_ == -1);
         handle_control_ = network::udp::Begin(port_, StaticCallbackFunctionControlMessage);

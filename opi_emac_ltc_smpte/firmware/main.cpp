@@ -85,7 +85,7 @@
 
 static ltc::Source ltc_source;
 
-namespace ntpclient
+namespace network::apps::ntpclient
 {
 void DisplayStatus(::ntp::Status status)
 {
@@ -96,24 +96,24 @@ void DisplayStatus(::ntp::Status status)
 
     switch (status)
     {
-        case ::ntp::Status::STOPPED:
+        case ::ntp::Status::kStopped:
             Display::Get()->TextStatus("No NTP Client");
             break;
-        case ::ntp::Status::IDLE:
+        case ::ntp::Status::kIdle:
             LtcOutputs::Get()->ResetTimeCodeTypePrevious();
             Display::Get()->TextStatus("NTP Client");
             break;
-        case ::ntp::Status::LOCKED:
+        case ::ntp::Status::kLocked:
             Display::Get()->TextStatus("NTP Client LOCKED");
             break;
-        case ::ntp::Status::FAILED:
+        case ::ntp::Status::kFailed:
             Display::Get()->TextStatus("Error: NTP");
             break;
         default:
             break;
     }
 }
-} // namespace ntpclient
+} // namespace network::apps::ntpclient
 
 namespace hal
 {
@@ -429,7 +429,7 @@ int main() // NOLINT
         oscserver.Start();
         oscserver.Print();
 
-        mdns::ServiceRecordAdd(nullptr, mdns::Services::OSC, "type=server", oscserver.GetPortIncoming());
+        network::apps::mdns::ServiceRecordAdd(nullptr, network::apps::mdns::Services::kOsc, "type=server", oscserver.GetPortIncoming());
     }
 
     /**
@@ -453,7 +453,7 @@ int main() // NOLINT
 
     if (kRunGpsTimeClient)
     {
-        ntpclient::Stop(true);
+        network::apps::ntpclient::Stop(true);
         gpstime_client.Start();
         gpstime_client.Print();
     }
@@ -471,13 +471,13 @@ int main() // NOLINT
 
     if (kRunNtpServer)
     {
-        ntpclient::Stop(true);
+        network::apps::ntpclient::Stop(true);
 
         ntp_server.SetTimeCode(&tStartTimeCode);
         ntp_server.Start();
         ntp_server.Print();
 
-        mdns::ServiceRecordAdd(nullptr, mdns::Services::NTP, "type=server");
+        network::apps::mdns::ServiceRecordAdd(nullptr, network::apps::mdns::Services::kNtp, "type=server");
     }
 
     /**
@@ -599,7 +599,7 @@ int main() // NOLINT
                     }
                     else
                     {
-                        HwClock::Get()->Run(ntpclient::GetStatus() == ::ntp::Status::FAILED); // No need to check for STOPPED
+                        HwClock::Get()->Run(network::apps::ntpclient::GetStatus() == ::ntp::Status::kFailed); // No need to check for STOPPED
                     }
                 }
                 else

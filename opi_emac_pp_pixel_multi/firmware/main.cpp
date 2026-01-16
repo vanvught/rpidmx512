@@ -77,7 +77,7 @@ int main() // NOLINT
 
     PixelPusher pp;
 
-    mdns::ServiceRecordAdd(nullptr, mdns::Services::PP, "type=PixelPusher");
+    network::apps::mdns::ServiceRecordAdd(nullptr, network::apps::mdns::Services::kPp, "type=PixelPusher");
 
     PixelDmxMulti pixeldmx_multi;
 
@@ -87,13 +87,13 @@ int main() // NOLINT
 
     PixelOutputMulti::Get()->SetJamSTAPLDisplay(new HandlerOled);
 
-    const auto nActivePorts = pixeldmx_multi.GetOutputPorts();
+    const auto kActivePorts = pixeldmx_multi.GetOutputPorts();
 
-    pp.SetCount(pixeldmx_multi.GetGroups(), nActivePorts, false);
+    pp.SetCount(pixeldmx_multi.GetGroups(), kActivePorts, false);
 
     const auto kTestPattern = common::FromValue<pixelpatterns::Pattern>(ConfigStore::Instance().DmxLedGet(&common::store::DmxLed::test_pattern));
 
-    PixelTestPattern pixeltest_pattern(kTestPattern, nActivePorts);
+    PixelTestPattern pixeltest_pattern(kTestPattern, kActivePorts);
 
     pixeldmx_multi.Print();
 
@@ -110,7 +110,7 @@ int main() // NOLINT
     RDMNetDevice llrp_only_device;
 #endif
 
-    display.SetTitle("PixelPusher %d", nActivePorts);
+    display.SetTitle("PixelPusher %d", kActivePorts);
     display.Set(2, displayudf::Labels::kVersion);
     display.Set(3, displayudf::Labels::kHostname);
     display.Set(4, displayudf::Labels::kIp);
@@ -122,7 +122,7 @@ int main() // NOLINT
 
     common::firmware::pixeldmx::Show(7);
 
-    RemoteConfig remote_config(remoteconfig::Output::PIXEL, nActivePorts);
+    RemoteConfig remote_config(remoteconfig::Output::PIXEL, kActivePorts);
 
     display.TextStatus("PixelPusher Start", console::Colours::kConsoleYellow);
 

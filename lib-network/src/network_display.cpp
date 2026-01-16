@@ -89,18 +89,18 @@ void __attribute__((weak)) DhcpStatus([[maybe_unused]] network::dhcp::State stat
 
     switch (state)
     {
-        case network::dhcp::State::STATE_OFF:
+        case network::dhcp::State::kOff:
             break;
-        case network::dhcp::State::STATE_RENEWING:
+        case network::dhcp::State::kRenewing:
             Display::Get()->PutString("DHCP renewing");
             break;
-        case network::dhcp::State::STATE_BOUND:
+        case network::dhcp::State::kBound:
             Display::Get()->PutString("Got IP");
             break;
-        case network::dhcp::State::STATE_REQUESTING:
+        case network::dhcp::State::kRequesting:
             Display::Get()->PutString("DHCP requesting");
             break;
-        case network::dhcp::State::STATE_BACKING_OFF:
+        case network::dhcp::State::kBackingOff:
             Display::Get()->PutString("DHCP Error");
             break;
         default:
