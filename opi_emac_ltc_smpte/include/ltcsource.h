@@ -2,7 +2,7 @@
  * @file ltcsource.h
  *
  */
-/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,8 +47,8 @@ inline static void Show(ltc::Source ltc_source, bool run_gps_time_client)
         {
             GPS::Get()->Display(GPS::Get()->GetStatus());
         }
-        else if ((ntpclient::GetStatus() != ::ntp::Status::FAILED) && (ntpclient::GetStatus() != ::ntp::Status::STOPPED) &&
-                 (ntpclient::GetStatus() != ::ntp::Status::DISABLED))
+        else if ((network::apps::ntpclient::GetStatus() != ::ntp::Status::kFailed) && (network::apps::ntpclient::GetStatus() != ::ntp::Status::kStopped) &&
+                 (network::apps::ntpclient::GetStatus() != ::ntp::Status::kDisabled))
         {
             Display::Get()->PutString("NTP");
         }

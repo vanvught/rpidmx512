@@ -201,7 +201,7 @@ template <network::arp::EthSend S> static void SendImplementation(int index, con
 #if defined CONFIG_NET_ENABLE_PTP
             else if constexpr (S == network::arp::EthSend::kIsTimestamp)
             {
-                network::arp::SendTimestamp(out_buffer, size + UDP_PACKET_HEADERS_SIZE, remote_ip);
+                network::arp::SendTimestamp(out_buffer, size + kUdpPacketHeadersSize, remote_ip);
             }
 #endif
             return;

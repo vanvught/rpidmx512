@@ -39,6 +39,7 @@
 
 #include "ntpserver.h"
 #include "core/protocol/ntp.h"
+#include "core/protocol/iana.h"
 #include "network.h"
 #include "firmware/debug/debug_debug.h"
 
@@ -62,7 +63,7 @@ NtpServer::NtpServer(uint32_t year, uint32_t month, uint32_t day)
 
     DEBUG_PRINTF("time_=%.8x %ld", static_cast<unsigned int>(time_), time_);
 
-    time_ += static_cast<time_t>(ntp::JAN_1970);
+    time_ += static_cast<time_t>(ntp::kJan1970);
 
     DEBUG_PRINTF("time_=%.8x %ld", static_cast<unsigned int>(time_), time_);
     DEBUG_EXIT();
@@ -78,15 +79,15 @@ void NtpServer::Start()
     DEBUG_ENTRY();
 
     assert(handle_ == -1);
-    handle_ = network::udp::Begin(ntp::UDP_PORT, StaticCallbackFunction);
+    handle_ = network::udp::Begin(network::iana::Ports::kPortNtp, StaticCallbackFunction);
     assert(handle_ != -1);
 
-    reply_.LiVnMode = ntp::VERSION | ntp::MODE_SERVER;
-    reply_.Stratum = ntp::STRATUM;
-    reply_.Poll = ntp::MINPOLL;
-    reply_.Precision = static_cast<uint8_t>(-10); // -9.9 = LOG2(0.0001) -> milliseconds
-    reply_.RootDelay = 0;
-    reply_.RootDispersion = 0;
+    reply_.li_vn_mode = ntp::kVersion | ntp::kModeServer;
+    reply_.stratum = ntp::kStratum;
+    reply_.poll = ntp::kMinpoll;
+    reply_.precision = static_cast<uint8_t>(-10); // -9.9 = LOG2(0.0001) -> milliseconds
+    reply_.root_delay = 0;
+    reply_.root_dispersion = 0;
 
     DEBUG_EXIT();
 }
@@ -96,7 +97,7 @@ void NtpServer::Stop()
     DEBUG_ENTRY();
 
     assert(handle_ != -1);
-    network::udp::End(ntp::UDP_PORT);
+    network::udp::End(network::iana::Ports::kPortNtp);
     handle_ = -1;
 
     DEBUG_EXIT();
@@ -104,11 +105,11 @@ void NtpServer::Stop()
 
 void NtpServer::Print()
 {
-    printf("NTP v%d Server\n", ntp::VERSION >> 3);
-    printf(" Port : %d\n", ntp::UDP_PORT);
-    printf(" Stratum : %d\n", ntp::STRATUM);
+    printf("NTP v%d Server\n", ntp::kVersion >> 3);
+    printf(" Port : %d\n", network::iana::Ports::kPortNtp);
+    printf(" Stratum : %d\n", ntp::kStratum);
 
-    const auto kTime = static_cast<time_t>(static_cast<uint32_t>(time_) - ntp::JAN_1970);
+    const auto kTime = static_cast<time_t>(static_cast<uint32_t>(time_) - ntp::kJan1970);
 
     printf(" %s", asctime(localtime(&kTime)));
 }

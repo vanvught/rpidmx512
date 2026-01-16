@@ -26,6 +26,7 @@
  * https://developer.apple.com/library/archive/documentation/Audio/Conceptual/MIDINetworkDriverProtocol/MIDI/MIDI.html
  */
 
+#include "network_iface.h"
 #if defined(DEBUG_NET_APPLEMIDI)
 #undef NDEBUG
 #endif
@@ -44,7 +45,7 @@
 #include "network.h"
 #include "softwaretimers.h"
 #include "firmware/debug/debug_dump.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
 namespace applemidi
 {
@@ -126,13 +127,13 @@ AppleMidi::AppleMidi()
     exchange_packet_reply_.signature = kSignature;
     exchange_packet_reply_.protocol_version = __builtin_bswap32(applemidi::kVersion);
 
-    uint8_t mac_address[network::MAC_SIZE];
-     network::iface::CopyMacAddressTo(mac_address);
+    uint8_t mac_address[network::iface::kMacSize];
+    network::iface::CopyMacAddressTo(mac_address);
     _pcast32 cast32;
     memcpy(cast32.u8, &mac_address[2], 4);
     ssrc_ = cast32.u32;
 
-    SetSessionName( network::iface::HostName());
+    SetSessionName(network::iface::HostName());
 
     memset(&session_status_, 0, sizeof(struct applemidi::SessionStatus));
 
@@ -259,7 +260,8 @@ void AppleMidi::InputMidiMessage(const uint8_t* buffer, uint32_t size, uint32_t 
                     exchange_packet_reply_.command = static_cast<uint16_t>(AppleMidiCommand::kInvitationAccepted);
                     exchange_packet_reply_.initiator_token = packet->initiator_token;
 
-                    network::udp::Send(handle_midi_, reinterpret_cast<const uint8_t*>(&exchange_packet_reply_), exchange_packet_reply_size_, from_ip, from_port);
+                    network::udp::Send(handle_midi_, reinterpret_cast<const uint8_t*>(&exchange_packet_reply_), exchange_packet_reply_size_, from_ip,
+                                       from_port);
 
                     session_status_.session_state = applemidi::SessionState::kEstablished;
                     session_status_.remote_port_midi = from_port;
