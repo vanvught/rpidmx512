@@ -29,7 +29,7 @@
 #include "common/utils/utils_flags.h"
 #include "configstore.h"
 #include "configurationstore.h"
-#include "network.h"
+#include "network_iface.h"
 
 using common::store::network::Flags;
 
