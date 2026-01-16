@@ -1,8 +1,8 @@
 /**
- * @file ntpclient.cpp
+ * @file ntpclientdisplay.cpp
  *
  */
-/* Copyright (C) 2022-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2026 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,23 +23,38 @@
  * THE SOFTWARE.
  */
 
+#if defined(DEBUG_PTP_NTP_CLIENT)
+#undef NDEBUG
+#endif
+
 #include "core/protocol/ntp.h"
 #include "display.h"
+#include "firmware/debug/debug_debug.h"
 
-namespace ntpclient {
-void DisplayStatus(const ::ntp::Status status) {
-	switch (status) {
-	case ::ntp::Status::STOPPED:
-		Display::Get()->TextStatus("No NTP Client");
-		break;
-	case ::ntp::Status::IDLE:
-		Display::Get()->TextStatus("NTP Client");
-		break;
-	case ::ntp::Status::FAILED:
-		Display::Get()->TextStatus("Error: NTP");
-		break;
-	default:
-		break;
-	}
+namespace network::apps::ntpclient
+{
+void DisplayStatus(::ntp::Status status)
+{
+    switch (status)
+    {
+        case ::ntp::Status::kStopped:
+            Display::Get()->TextStatus("No NTP Client");
+            DEBUG_PUTS("STOPPED");
+            break;
+        case ::ntp::Status::kIdle:
+            Display::Get()->TextStatus("NTP Client");
+            DEBUG_PUTS("IDLE");
+            break;
+        case ::ntp::Status::kLocked:
+            Display::Get()->TextStatus("NTP Client LOCKED");
+            DEBUG_PUTS("LOCKED");
+            break;
+        case ::ntp::Status::kFailed:
+            Display::Get()->TextStatus("Error: NTP");
+            DEBUG_PUTS("FAILED");
+            break;
+        default:
+            break;
+    }
 }
-}  // namespace ntpclient
+} // namespace network::apps::ntpclient
