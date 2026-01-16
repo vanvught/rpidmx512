@@ -143,10 +143,10 @@ void TFTPDaemon::Init()
         index_ = -1;
     }
 
-    index_ = network::udp::Begin(net::iana::IANA_PORT_TFTP, TFTPDaemon::StaticCallbackFunction);
+    index_ = network::udp::Begin(network::iana::Ports::kPortTftp, TFTPDaemon::StaticCallbackFunction);
     DEBUG_PRINTF("index_=%d", index_);
 
-    from_port_ = net::iana::IANA_PORT_TFTP;
+    from_port_ = network::iana::Ports::kPortTftp;
     block_number_ = 0;
     state_ = State::kWaitingRq;
     is_last_block_ = false;
@@ -242,7 +242,7 @@ void TFTPDaemon::HandleRequest()
             }
             else
             {
-                network::udp::End(net::iana::IANA_PORT_TFTP);
+                network::udp::End(network::iana::Ports::kPortTftp);
                 index_ = network::udp::Begin(from_port_, TFTPDaemon::StaticCallbackFunction);
                 state_ = State::kRrqSendPacket;
                 DoRead();
@@ -256,7 +256,7 @@ void TFTPDaemon::HandleRequest()
             }
             else
             {
-                network::udp::End(net::iana::IANA_PORT_TFTP);
+                network::udp::End(network::iana::Ports::kPortTftp);
                 index_ = network::udp::Begin(from_port_, TFTPDaemon::StaticCallbackFunction);
                 state_ = State::kWrqSendAck;
                 DoWriteAck();

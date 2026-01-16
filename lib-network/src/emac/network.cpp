@@ -66,18 +66,15 @@ __attribute__((weak)) void ptp_init() {}
 #endif
 
 } // namespace net
-namespace global::network
-{
-net::phy::Link linkState;
-} // namespace global::network
 
 namespace network
 {
-namespace globals
+namespace global
 {
+net::phy::Link link_state;
 uint32_t broadcast_mask;
 uint32_t on_network_mask;
-} // namespace globals
+} // namespace global
 
 void Set(ip4_addr_t ipaddr, ip4_addr_t netmask, ip4_addr_t gw, bool use_dhcp);
 
@@ -91,13 +88,13 @@ static void NetifExtCallback(uint16_t reason, [[maybe_unused]] const netif::neti
 
         network::event::Ipv4AddressChanged();
 #if defined(CONFIG_NET_ENABLE_NTP_CLIENT)
-        ntpclient::Start();
+        network::apps::ntpclient::Start();
 #endif
 #if defined(CONFIG_NET_ENABLE_PTP_NTP_CLIENT)
-        ntpclient::ptp::Start();
+        network::apps::ntpclient::ptp::Start();
 #endif
 #if !defined(CONFIG_NET_APPS_NO_MDNS)
-        mdns::Start();
+        network::apps::mdns::Start();
 #endif
     }
 
@@ -143,28 +140,33 @@ void Init()
 
     net::emac::display::Start();
 
-    net::emac::Start(netif::globals::netif_default.hwaddr, global::network::linkState);
-    printf(MACSTR "\n", MAC2STR(netif::globals::netif_default.hwaddr));
+    net::emac::Start(netif::global::netif_default.hwaddr, global::link_state);
+    printf(MACSTR "\n", MAC2STR(netif::global::netif_default.hwaddr));
 
-    net::emac::display::Status(net::phy::Link::kStateUp == global::network::linkState);
+    net::emac::display::Status(net::phy::Link::kStateUp == global::link_state);
 
     network::arp::Init();
-    network::ip::Init();
+
+    network::udp::Init();
+    network::igmp::Init();
+#if defined(ENABLE_HTTPD)
+    network::tcp::Init();
+#endif
 
 #if defined(CONFIG_NET_ENABLE_PTP)
     net::ptp_init();
 #endif
 
 #if defined(CONFIG_NET_ENABLE_NTP_CLIENT)
-    ntpclient::Init();
+    network::apps::ntpclient::Init();
 #endif
 
 #if defined(CONFIG_NET_ENABLE_PTP_NTP_CLIENT)
-    ntpclient::ptp::Init();
+    network::apps::ntpclient::ptp::Init();
 #endif
 
 #if !defined(CONFIG_NET_APPS_NO_MDNS)
-    mdns::Init();
+    network::apps::mdns::Init();
 #endif
 
     netif::Init();
@@ -188,11 +190,11 @@ void Init()
     network::Set(ipaddr, netmask, gw, !common::IsFlagSet(kFlags, Flags::Flag::kUseStaticIp));
 
 #if defined(ENET_LINK_CHECK_USE_INT)
-    net::link_interrupt_init();
+    net::link::InterruptInit();
 #elif defined(ENET_LINK_CHECK_USE_PIN_POLL)
-    net::link_pin_poll_init();
+    net::link::PinPollInit();
 #elif defined(ENET_LINK_CHECK_REG_POLL)
-    net::link_status_read();
+    net::link::StatusRead();
 #endif
     DEBUG_EXIT();
 }
@@ -201,11 +203,11 @@ static struct network::acd::Acd s_acd;
 
 static void PrimaryIpConflictCallback(network::acd::Callback callback)
 {
-    auto& netif = netif::globals::netif_default;
+    auto& netif = netif::global::netif_default;
 
     switch (callback)
     {
-        case network::acd::Callback::ACD_IP_OK:
+        case network::acd::Callback::kAcdIpOk:
             if (s_acd.ipaddr.addr == netif.secondary_ip.addr)
             {
                 network::SetSecondaryIp();
@@ -217,9 +219,9 @@ static void PrimaryIpConflictCallback(network::acd::Callback callback)
             network::dhcp::Inform();
             netif::SetFlags(netif::Netif::kNetifFlagStaticipOk);
             break;
-        case network::acd::Callback::ACD_RESTART_CLIENT:
+        case network::acd::Callback::kAcdRestartClient:
             break;
-        case network::acd::Callback::ACD_DECLINE:
+        case network::acd::Callback::kAcdDecline:
             netif::ClearFlags(netif::Netif::kNetifFlagStaticipOk);
             break;
         default:
@@ -231,8 +233,8 @@ void Set(network::ip4_addr_t ipaddr, network::ip4_addr_t netmask, network::ip4_a
 {
     DEBUG_ENTRY();
 
-    netif::globals::netif_default.secondary_ip.addr = 2 + ((static_cast<uint32_t>(static_cast<uint8_t>(netif::globals::netif_default.hwaddr[3] + 0xFF + 0xFF))) << 8) +
-                                                      ((static_cast<uint32_t>(netif::globals::netif_default.hwaddr[4])) << 16) + ((static_cast<uint32_t>(netif::globals::netif_default.hwaddr[5])) << 24);
+    netif::global::netif_default.secondary_ip.addr = 2 + ((static_cast<uint32_t>(static_cast<uint8_t>(netif::global::netif_default.hwaddr[3] + 0xFF + 0xFF))) << 8) + ((static_cast<uint32_t>(netif::global::netif_default.hwaddr[4])) << 16) +
+                                                     ((static_cast<uint32_t>(netif::global::netif_default.hwaddr[5])) << 24);
 
     if (!use_dhcp)
     {
@@ -262,7 +264,7 @@ void Set(network::ip4_addr_t ipaddr, network::ip4_addr_t netmask, network::ip4_a
     {
         if (ipaddr.addr == 0)
         {
-            network::acd::Start(&s_acd, netif::globals::netif_default.secondary_ip);
+            network::acd::Start(&s_acd, netif::global::netif_default.secondary_ip);
         }
         else
         {
@@ -277,7 +279,7 @@ void SetPrimaryIp(uint32_t primary_ip_new)
 {
     DEBUG_ENTRY();
 
-    auto& netif = netif::globals::netif_default;
+    auto& netif = netif::global::netif_default;
 
     if (primary_ip_new == netif.ip.addr)
     {
@@ -311,7 +313,7 @@ void SetSecondaryIp()
 {
     DEBUG_ENTRY();
 
-    auto& netif = netif::globals::netif_default;
+    auto& netif = netif::global::netif_default;
     network::ip4_addr_t netmask;
     netmask.addr = 255;
     netif::SetAddr(netif.secondary_ip, netmask, netif.secondary_ip);
@@ -369,7 +371,7 @@ void Shutdown()
     DEBUG_ENTRY();
 
 #if !defined(CONFIG_NET_APPS_NO_MDNS)
-    mdns::Stop();
+    network::apps::mdns::Stop();
 #endif
     network::igmp::Shutdown();
     netif::SetLinkDown();

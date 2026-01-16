@@ -43,20 +43,15 @@ typedef struct ip_addr ip4_addr_t;
 #define MAC2STR(mac) static_cast<int>(mac[0]), static_cast<int>(mac[1]), static_cast<int>(mac[2]), static_cast<int>(mac[3]), static_cast<int>(mac[4]), static_cast<int>(mac[5])
 #define MACSTR "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x"
 
-inline constexpr uint32_t MAC_SIZE = 6;
-inline constexpr uint32_t HOSTNAME_SIZE = 64;   ///< Including a terminating null byte.
-inline constexpr uint32_t DOMAINNAME_SIZE = 64; ///< Including a terminating null byte.
-inline constexpr uint32_t NAMESERVERS_COUNT = 3;
-
-inline constexpr uint32_t ConvertToUint(const uint8_t a, const uint8_t b, const uint8_t c, const uint8_t d)
+inline constexpr uint32_t ConvertToUint(uint8_t a, uint8_t b, uint8_t c, uint8_t d)
 {
     return static_cast<uint32_t>(a) | static_cast<uint32_t>(b) << 8 | static_cast<uint32_t>(c) << 16 | static_cast<uint32_t>(d) << 24;
 }
 
-inline constexpr uint32_t IPADDR_NONE = ConvertToUint(255, 255, 255, 255);
-inline constexpr uint32_t IPADDR_LOOPBACK = ConvertToUint(127, 0, 0, 1);
-inline constexpr uint32_t IPADDR_ANY = ConvertToUint(0, 0, 0, 0);
-inline constexpr uint32_t IPADDR_BROADCAST = ConvertToUint(255, 255, 255, 255);
+inline constexpr uint32_t kIpaddrNone = ConvertToUint(255, 255, 255, 255);
+inline constexpr uint32_t kIpaddrLoopback = ConvertToUint(127, 0, 0, 1);
+inline constexpr uint32_t kIpaddrAny = ConvertToUint(0, 0, 0, 0);
+inline constexpr uint32_t kIpaddrBroadcast = ConvertToUint(255, 255, 255, 255);
 
 inline bool IsNetmaskValid(uint32_t netmask)
 {
@@ -67,12 +62,11 @@ inline bool IsNetmaskValid(uint32_t netmask)
     netmask = __builtin_bswap32(netmask);
     return !(netmask & (~netmask >> 1));
 }
-/**
- * The private address ranges are defined in RFC1918.
- */
+
+// The private address ranges are defined in RFC1918.
 inline bool IsPrivateIp(uint32_t ip)
 {
-    const uint8_t n = (ip >> 8) & 0xFF;
+    const uint8_t kN = (ip >> 8) & 0xFF;
 
     switch (ip & 0xFF)
     {
@@ -80,9 +74,9 @@ inline bool IsPrivateIp(uint32_t ip)
             return true;
             break;
         case 172:
-            return (n >= 16) && (n < 32);
+            return (kN >= 16) && (kN < 32);
         case 192:
-            return n == 168;
+            return kN == 168;
         default:
             break;
     }

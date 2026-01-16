@@ -1,7 +1,7 @@
 /**
  * net_phy.cpp
  */
-/* Copyright (C) 2023-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2023-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,7 @@
 #include "emac/mmi.h"
 #include "hal_millis.h"
 #include "firmware/debug/debug_printbits.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
 #if !defined(PHY_ADDRESS)
 #define PHY_ADDRESS 1
@@ -235,7 +235,7 @@ static bool UpdateLink(uint32_t address, Status& phy_status)
 
 static void ParseLink(uint32_t address, Status& phy_status)
 {
-    phy_status.duplex = Duplex::DUPLEX_HALF;
+    phy_status.duplex = Duplex::kDuplexHalf;
     phy_status.speed = Speed::kSpeed10;
 
     uint16_t advertise;
@@ -251,12 +251,12 @@ static void ParseLink(uint32_t address, Status& phy_status)
 
         if (lpa & mmi::LPA_100FULL)
         {
-            phy_status.duplex = Duplex::DUPLEX_FULL;
+            phy_status.duplex = Duplex::kDuplexFull;
         }
     }
     else if (lpa & mmi::LPA_10FULL)
     {
-        phy_status.duplex = Duplex::DUPLEX_FULL;
+        phy_status.duplex = Duplex::kDuplexFull;
     }
 }
 
@@ -282,8 +282,7 @@ bool Start(uint32_t address, Status& phy_status)
 
     phy_status.link = phy::GetLink(address);
 
-    DEBUG_PRINTF("Link %s, %d, %s", phy_status.link == net::phy::Link::kStateUp ? "Up" : "Down", phy_status.speed == net::phy::Speed::kSpeed10 ? 10 : 100,
-                 phy_status.duplex == net::phy::Duplex::DUPLEX_HALF ? "HALF" : "FULL");
+    DEBUG_PRINTF("Link %s, %d, %s", phy_status.link == net::phy::Link::kStateUp ? "Up" : "Down", phy_status.speed == net::phy::Speed::kSpeed10 ? 10 : 100, phy_status.duplex == net::phy::Duplex::kDuplexHalf ? "HALF" : "FULL");
 
     DEBUG_EXIT();
     return true;

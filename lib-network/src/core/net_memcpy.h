@@ -117,7 +117,7 @@ inline void memcpy_ip(uint8_t* pIpAddress, const uint32_t nIpAddress)
         auto* pSrc = src.u8;
         auto* pDst = pIpAddress;
 #endif
-        for (size_t i = 0; i < IPv4_ADDR_LEN; i++)
+        for (size_t i = 0; i < network::ip4::kAddressLength; i++)
         {
             *pDst++ = *pSrc++;
         }
@@ -156,7 +156,7 @@ inline uint32_t memcpy_ip(const uint8_t* pIpAddress)
         auto* pSrc = pIpAddress;
         auto* pDst = src.u8;
 #endif
-        for (size_t i = 0; i < IPv4_ADDR_LEN; i++)
+        for (size_t i = 0; i < network::ip4::kAddressLength; i++)
         {
             *pDst++ = *pSrc++;
         }

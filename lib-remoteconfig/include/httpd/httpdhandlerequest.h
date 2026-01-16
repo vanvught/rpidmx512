@@ -2,7 +2,7 @@
  * @file httpdhandlerequest.h
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,14 +35,12 @@
 
 namespace httpd
 {
+static constexpr uint32_t kBufsize =
 #if !defined(HTTPD_CONTENT_SIZE)
-#if defined(GD32F450VI) || defined(GD32F470VG)
-#define HTTPD_CONTENT_SIZE (2 * TCP_DATA_SIZE)
+    network::tcp::kTcpDataMss;
 #else
-#define HTTPD_CONTENT_SIZE TCP_DATA_SIZE
+    HTTPD_CONTENT_SIZE;
 #endif
-#endif
-static constexpr uint32_t kBufsize = HTTPD_CONTENT_SIZE;
 } // namespace httpd
 
 class HttpDeamonHandleRequest

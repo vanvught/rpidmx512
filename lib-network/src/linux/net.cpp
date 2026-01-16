@@ -27,7 +27,7 @@ void SetPrimaryIp([[maybe_unused]] uint32_t np_in)
     DEBUG_ENTRY();
 
 #if defined(__linux__)
-    auto& netif = netif::globals::netif_default;
+    auto& netif = netif::global::netif_default;
 
     if (np_in == netif.ip.addr)
     {

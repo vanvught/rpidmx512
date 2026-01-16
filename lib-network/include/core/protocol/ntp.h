@@ -2,7 +2,7 @@
  * @file ntp.h
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,74 +28,91 @@
 
 #include <cstdint>
 
-namespace ntp {
-static constexpr uint32_t JAN_1970 = 0x83aa7e80; 	// 2208988800 1970 - 1900 in seconds
-static constexpr uint32_t LOCAL_TIME_YEAR_OFFSET = 1900;
-static constexpr uint32_t MICROSECONDS_IN_SECOND = 1000000;
-static constexpr uint16_t UDP_PORT = 123;
-static constexpr uint8_t  VERSION = (4U << 3);
-static constexpr uint8_t  MODE_CLIENT = (3U << 0);
-static constexpr uint8_t  MODE_SERVER = (4U << 0);
-static constexpr uint8_t  STRATUM = 2;
-static constexpr uint8_t  MINPOLL = 4;
+namespace ntp
+{
+inline constexpr uint32_t kJan1970 = 0x83aa7e80; // 2208988800 1970 - 1900 in seconds
+inline constexpr uint32_t kLocalTimeYearOffset = 1900;
+inline constexpr uint32_t kMicrosecondsInSecond = 1000000;
+inline constexpr uint8_t kVersion = (4U << 3);
+inline constexpr uint8_t kModeClient = (3U << 0);
+inline constexpr uint8_t kModeServer = (4U << 0);
+inline constexpr uint8_t kStratum = 2;
+inline constexpr uint8_t kMinpoll = 4;
 
-struct Packet {
-	uint8_t LiVnMode;
-	uint8_t Stratum;
-	uint8_t Poll;
-	uint8_t Precision;
-	uint32_t RootDelay;
-	uint32_t RootDispersion;
-	uint32_t ReferenceID;
-	uint32_t ReferenceTimestamp_s;
-	uint32_t ReferenceTimestamp_f;
-	uint32_t OriginTimestamp_s;
-	uint32_t OriginTimestamp_f;
-	uint32_t ReceiveTimestamp_s;
-	uint32_t ReceiveTimestamp_f;
-	uint32_t TransmitTimestamp_s;
-	uint32_t TransmitTimestamp_f;
-}__attribute__((packed));
+struct Packet
+{
+    uint8_t li_vn_mode;
+    uint8_t stratum;
+    uint8_t poll;
+    uint8_t precision;
+    uint32_t root_delay;
+    uint32_t root_dispersion;
+    uint32_t reference_id;
+    uint32_t reference_timestamp_s;
+    uint32_t reference_timestamp_f;
+    uint32_t origin_timestamp_s;
+    uint32_t origin_timestamp_f;
+    uint32_t receive_timestamp_s;
+    uint32_t receive_timestamp_f;
+    uint32_t transmit_timestamp_s;
+    uint32_t transmit_timestamp_f;
+} __attribute__((packed));
 
-struct TimeStamp {
-	uint32_t seconds;
-	uint32_t nFraction;
+struct TimeStamp
+{
+    uint32_t seconds;
+    uint32_t fraction;
 };
 
-struct time_t {
-	int32_t tv_sec;
-	int32_t tv_usec;
+struct Time
+{
+    int32_t tv_sec;
+    int32_t tv_usec;
 };
 
-enum class Status {
-	STOPPED, IDLE, WAITING, LOCKED, FAILED, DISABLED
+enum class Status
+{
+    kStopped,
+    kIdle,
+    kWaiting,
+    kLocked,
+    kFailed,
+    kDisabled
 };
 
-static constexpr char STATUS[][9] = { "Stopped", "Idle", "Waiting", "Locked", "Failed", "Disabled" };
+inline constexpr char kStatus[][9] = {"Stopped", "Idle", "Waiting", "Locked", "Failed", "Disabled"};
 
-enum class Modes {
-	BASIC, INTERLEAVED, UNKNOWN
+enum class Modes
+{
+    kBasic,
+    kInterleaved,
+    kUnknown
 };
 
-inline void normalize_time(ntp::time_t *r) {
-	r->tv_sec += r->tv_usec / 1000000;
-	r->tv_usec -= r->tv_usec / 1000000 * 1000000;
+inline void NormalizeTime(ntp::Time* r)
+{
+    r->tv_sec += r->tv_usec / 1000000;
+    r->tv_usec -= r->tv_usec / 1000000 * 1000000;
 
-	if (r->tv_sec > 0 && r->tv_usec < 0) {
-		r->tv_sec -= 1;
-		r->tv_usec += 1000000;
-	} else if (r->tv_sec < 0 && r->tv_usec > 0) {
-		r->tv_sec += 1;
-		r->tv_usec -= 1000000;
-	}
+    if (r->tv_sec > 0 && r->tv_usec < 0)
+    {
+        r->tv_sec -= 1;
+        r->tv_usec += 1000000;
+    }
+    else if (r->tv_sec < 0 && r->tv_usec > 0)
+    {
+        r->tv_sec += 1;
+        r->tv_usec -= 1000000;
+    }
 }
 
-inline void sub_time(struct ntp::time_t *r, const struct ntp::time_t *x, const struct ntp::time_t *y) {
+inline void SubTime(struct ntp::Time* r, const struct ntp::Time* x, const struct ntp::Time* y)
+{
     r->tv_sec = x->tv_sec - y->tv_sec;
     r->tv_usec = x->tv_usec - y->tv_usec;
 
-    normalize_time(r);
+    NormalizeTime(r);
 }
-}  // namespace ntp
+} // namespace ntp
 
 #endif /* CORE_PROTOCOL_NTP_H_ */

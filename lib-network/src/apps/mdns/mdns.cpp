@@ -1,7 +1,7 @@
 /**
  * @file mdns.cpp
  */
-/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,14 +33,13 @@
 #include <cassert>
 
 #include "network.h"
-#include "core/ip4/igmp.h"
 #include "apps/mdns.h"
-#include "core/protocol/dns.h"
 #include "core/protocol/ip4.h"
+#include "core/protocol/dns.h"
 #include "core/protocol/iana.h"
 #include "firmware/debug/debug_debug.h"
 
-namespace mdns
+namespace network::apps::mdns
 {
 #if !defined(MDNS_SERVICE_RECORDS_MAX)
 static constexpr auto kServiceRecordsMax = 8;
@@ -203,12 +202,10 @@ struct Domain
     }
 };
 
-static constexpr Domain kDomainDnssd{
-    {9, '_', 's', 'e', 'r', 'v', 'i', 'c', 'e', 's', 7, '_', 'd', 'n', 's', '-', 's', 'd', 4, '_', 'u', 'd', 'p', 5, 'l', 'o', 'c', 'a', 'l', 0},
-    10 + 8 + 5 + 6 + 1};
+static constexpr Domain kDomainDnssd{{9, '_', 's', 'e', 'r', 'v', 'i', 'c', 'e', 's', 7, '_', 'd', 'n', 's', '-', 's', 'd', 4, '_', 'u', 'd', 'p', 5, 'l', 'o', 'c', 'a', 'l', 0}, 10 + 8 + 5 + 6 + 1};
 
-static ServiceRecord s_service_records[mdns::kServiceRecordsMax];
-static uint8_t s_records_data[net::dns::MULTICAST_MESSAGE_SIZE];
+static ServiceRecord s_service_records[kServiceRecordsMax];
+static uint8_t s_records_data[network::dns::kMulticastMessageSize];
 static uint32_t s_host_replies;
 static uint32_t s_service_replies;
 static int32_t s_handle;
@@ -264,7 +261,7 @@ static void CreateReverseDomain(Domain& domain)
     auto primary_ip = network::GetPrimaryIp();
     const auto* const kIp = reinterpret_cast<const uint8_t*>(&primary_ip);
 
-    for (int32_t i = IPv4_ADDR_LEN - 1; i >= 0; i--)
+    for (int32_t i = ip4::kAddressLength - 1; i >= 0; i--)
     {
         char buffer[3];
         uint32_t length = 1;
@@ -425,13 +422,13 @@ static uint8_t* PutDomainNameAsLabels(uint8_t* ptr, Domain const& domain)
     return ptr;
 }
 
-static uint8_t* AddQuestion(uint8_t* destination, const mdns::Domain& domain, net::dns::RRType type, bool do_flush)
+static uint8_t* AddQuestion(uint8_t* destination, const mdns::Domain& domain, network::dns::RRType type, bool do_flush)
 {
     auto* dst = PutDomainNameAsLabels(destination, domain);
 
     *reinterpret_cast<volatile uint16_t*>(dst) = __builtin_bswap16(static_cast<uint16_t>(type));
     dst += 2;
-    *reinterpret_cast<uint16_t*>(dst) = __builtin_bswap16((do_flush ? net::dns::RRClass::RRCLASS_FLUSH : 0) | net::dns::RRClass::RRCLASS_INTERNET);
+    *reinterpret_cast<uint16_t*>(dst) = __builtin_bswap16((do_flush ? network::dns::RRClass::kFlush : 0) | network::dns::RRClass::kInternet);
     dst += 2;
 
     return dst;
@@ -444,7 +441,7 @@ static uint32_t AddAnswerSrv(mdns::ServiceRecord const& service_record, uint8_t*
     Domain domain;
     CreateServiceDomain(domain, service_record, true);
 
-    auto* dst = AddQuestion(destination, domain, net::dns::RRType::RRTYPE_SRV, true);
+    auto* dst = AddQuestion(destination, domain, network::dns::RRType::kSrv, true);
 
     *reinterpret_cast<uint32_t*>(dst) = __builtin_bswap32(ttl);
     dst += 4;
@@ -472,7 +469,7 @@ static uint32_t AddAnswerTxt(mdns::ServiceRecord const& service_record, uint8_t*
     Domain domain;
     CreateServiceDomain(domain, service_record, true);
 
-    auto* dst = AddQuestion(destination, domain, net::dns::RRType::RRTYPE_TXT, true);
+    auto* dst = AddQuestion(destination, domain, network::dns::RRType::kTxt, true);
 
     *reinterpret_cast<uint32_t*>(dst) = __builtin_bswap32(ttl);
     dst += 4;
@@ -506,7 +503,7 @@ static uint32_t AddAnswerPtr(mdns::ServiceRecord const& service_record, uint8_t*
     Domain domain;
     CreateServiceDomain(domain, service_record, false);
 
-    auto* dst = AddQuestion(destination, domain, net::dns::RRType::RRTYPE_PTR, false);
+    auto* dst = AddQuestion(destination, domain, network::dns::RRType::kPtr, false);
 
     *reinterpret_cast<uint32_t*>(dst) = __builtin_bswap32(ttl);
     dst += 4;
@@ -527,7 +524,7 @@ static uint32_t AddAnswerDnsdPtr(mdns::ServiceRecord const& service_record, uint
 {
     DEBUG_ENTRY();
 
-    auto* dst = AddQuestion(destination, kDomainDnssd, net::dns::RRType::RRTYPE_PTR, false);
+    auto* dst = AddQuestion(destination, kDomainDnssd, network::dns::RRType::kPtr, false);
 
     *reinterpret_cast<uint32_t*>(dst) = __builtin_bswap32(ttl);
     dst += 4;
@@ -553,7 +550,7 @@ static uint32_t AddAnswerA(uint8_t* destination, uint32_t ttl)
     Domain domain;
     CreateHostDomain(domain);
 
-    auto* dst = AddQuestion(destination, domain, net::dns::RRType::RRTYPE_A, true);
+    auto* dst = AddQuestion(destination, domain, network::dns::RRType::kA, true);
 
     *reinterpret_cast<uint32_t*>(dst) = __builtin_bswap32(ttl);
     dst += 4;
@@ -574,7 +571,7 @@ static uint32_t AddAnswerHostv4Ptr(uint8_t* destination, uint32_t ttl)
     Domain domain;
     CreateReverseDomain(domain);
 
-    auto* dst = AddQuestion(destination, domain, net::dns::RRType::RRTYPE_PTR, true);
+    auto* dst = AddQuestion(destination, domain, network::dns::RRType::kPtr, true);
 
     *reinterpret_cast<uint32_t*>(dst) = __builtin_bswap32(ttl);
     dst += 4;
@@ -677,7 +674,7 @@ void Start()
 {
     DEBUG_ENTRY();
 
-    network::igmp::JoinGroup(s_handle, net::dns::MULTICAST_ADDRESS);
+    network::igmp::JoinGroup(s_handle, network::dns::kMulticastAddress);
     network::iface::SetDomainName(&kDomainLocal[1]);
 
     mdns::SendAnnouncement(kMdnsResponseTtl);
@@ -708,30 +705,30 @@ void Stop()
         }
     }
 
-    network::igmp::LeaveGroup(s_handle, net::dns::MULTICAST_ADDRESS);
-    network::udp::End(net::iana::IANA_PORT_MDNS);
+    network::igmp::LeaveGroup(s_handle, network::dns::kMulticastAddress);
+    network::udp::End(network::iana::Ports::kPortMdns);
     s_handle = -1;
 
     DEBUG_EXIT();
 }
 
-static void Sendto(uint32_t length)
+static void Send(uint32_t length)
 {
     if (!s_is_unicast)
     {
-        network::udp::Send(s_handle, s_records_data, length, net::dns::MULTICAST_ADDRESS, net::iana::IANA_PORT_MDNS);
+        network::udp::Send(s_handle, s_records_data, length, network::dns::kMulticastAddress, network::iana::Ports::kPortMdns);
         return;
     }
 
     network::udp::Send(s_handle, s_records_data, length, s_n_remote_ip, s_n_remote_port);
 }
 
-static void MdnsSendAnswerLocalIpAddress(uint16_t trans_action_id, uint32_t ttl)
+static void SendAnswerLocalIpAddress(uint16_t trans_action_id, uint32_t ttl)
 {
     DEBUG_ENTRY();
 
     uint32_t answers = 0;
-    uint8_t* dst = reinterpret_cast<uint8_t*>(&s_records_data) + sizeof(struct net::dns::Header);
+    uint8_t* dst = reinterpret_cast<uint8_t*>(&s_records_data) + sizeof(struct network::dns::Header);
 
 #if defined(CONFIG_MDNS_DOMAIN_REVERSE)
     if ((HostReply::kPtr & s_host_replies) == HostReply::kPtr)
@@ -740,7 +737,7 @@ static void MdnsSendAnswerLocalIpAddress(uint16_t trans_action_id, uint32_t ttl)
         {
             Domain domain;
             CreateReverseDomain(domain);
-            dst = AddQuestion(dst, domain, net::dns::RRType::RRTYPE_PTR, false);
+            dst = AddQuestion(dst, domain, network::dns::RRType::kPtr, false);
         }
     }
 #endif
@@ -758,32 +755,32 @@ static void MdnsSendAnswerLocalIpAddress(uint16_t trans_action_id, uint32_t ttl)
     }
 #endif
 
-    auto* header = reinterpret_cast<net::dns::Header*>(&s_records_data);
+    auto* header = reinterpret_cast<network::dns::Header*>(&s_records_data);
 
     header->xid = trans_action_id;
-    header->nFlag1 = net::dns::Flag1::FLAG1_RESPONSE | net::dns::Flag1::FLAG1_AUTHORATIVE;
-    header->nFlag2 = 0;
+    header->flag1 = network::dns::Flag1::kResponse | network::dns::Flag1::kAuthorative;
+    header->flag2 = 0;
 #if defined(CONFIG_MDNS_DOMAIN_REVERSE)
-    header->nQueryCount = __builtin_bswap16(static_cast<uint16_t>(s_is_legacy_query));
+    header->query_count = __builtin_bswap16(static_cast<uint16_t>(s_is_legacy_query));
 #else
-    header->nQueryCount = 0;
+    header->query_count = 0;
 #endif
-    header->nAnswerCount = __builtin_bswap16(static_cast<uint16_t>(answers));
-    header->nAuthorityCount = 0;
-    header->nAdditionalCount = 0;
+    header->answer_count = __builtin_bswap16(static_cast<uint16_t>(answers));
+    header->authority_count = 0;
+    header->additional_count = 0;
 
     const auto kSize = static_cast<uint16_t>(dst - reinterpret_cast<uint8_t*>(header));
-    Sendto(kSize);
+    Send(kSize);
 
     DEBUG_EXIT();
 }
 
-static void MdnsSendMessage(mdns::ServiceRecord const& record, uint16_t transaction_id, uint32_t ttl)
+static void SendMessage(mdns::ServiceRecord const& record, uint16_t transaction_id, uint32_t ttl)
 {
     DEBUG_ENTRY();
 
     uint32_t answers = 0;
-    auto* dst = reinterpret_cast<uint8_t*>(&s_records_data) + sizeof(struct net::dns::Header);
+    auto* dst = reinterpret_cast<uint8_t*>(&s_records_data) + sizeof(struct network::dns::Header);
 
     if ((s_service_replies & ServiceReply::kTypePtr) == ServiceReply::kTypePtr)
     {
@@ -811,18 +808,18 @@ static void MdnsSendMessage(mdns::ServiceRecord const& record, uint16_t transact
 
     dst += AddAnswerA(dst, ttl);
 
-    auto* header = reinterpret_cast<net::dns::Header*>(&s_records_data);
+    auto* header = reinterpret_cast<network::dns::Header*>(&s_records_data);
 
     header->xid = transaction_id;
-    header->nFlag1 = net::dns::Flag1::FLAG1_RESPONSE | net::dns::Flag1::FLAG1_AUTHORATIVE;
-    header->nFlag2 = 0;
-    header->nQueryCount = 0;
-    header->nAnswerCount = __builtin_bswap16(static_cast<uint16_t>(answers));
-    header->nAuthorityCount = __builtin_bswap16(0);
-    header->nAdditionalCount = __builtin_bswap16(1);
+    header->flag1 = network::dns::Flag1::kResponse | network::dns::Flag1::kAuthorative;
+    header->flag2 = 0;
+    header->query_count = 0;
+    header->answer_count = __builtin_bswap16(static_cast<uint16_t>(answers));
+    header->authority_count = __builtin_bswap16(0);
+    header->additional_count = __builtin_bswap16(1);
 
     const auto kSize = static_cast<uint16_t>(dst - reinterpret_cast<uint8_t*>(header));
-    Sendto(kSize);
+    Send(kSize);
 
     DEBUG_EXIT();
 }
@@ -831,17 +828,17 @@ void SendAnnouncement(uint32_t ttl)
 {
     DEBUG_ENTRY();
 
-    s_n_remote_port = net::iana::IANA_PORT_MDNS; // FIXME Hack ;-)
+    s_n_remote_port = network::iana::Ports::kPortMdns; // FIXME Hack ;-)
     s_host_replies = HostReply::kA;
 
-    MdnsSendAnswerLocalIpAddress(0, ttl);
+    SendAnswerLocalIpAddress(0, ttl);
 
     for (auto& record : s_service_records)
     {
         if (record.services < Services::kLastNotUsed)
         {
             s_service_replies = ServiceReply::kTypePtr | ServiceReply::kNamePtr | ServiceReply::kSrv | ServiceReply::kTxt;
-            MdnsSendMessage(record, 0, ttl);
+            SendMessage(record, 0, ttl);
         }
     }
 
@@ -895,11 +892,11 @@ bool ServiceRecordAdd(const char* name, mdns::Services services, const char* tex
                 record.text_content_length = static_cast<uint16_t>(kLength);
             }
 
-            s_n_remote_port = net::iana::IANA_PORT_MDNS; // FIXME Hack ;-)
+            s_n_remote_port = network::iana::Ports::kPortMdns; // FIXME Hack ;-)
 
             s_service_replies = ServiceReply::kTypePtr | ServiceReply::kNamePtr | ServiceReply::kSrv | ServiceReply::kTxt;
 
-            MdnsSendMessage(record, 0, kMdnsResponseTtl);
+            SendMessage(record, 0, kMdnsResponseTtl);
 
             Domain domain;
             CreateServiceDomain(domain, record, false);
@@ -923,7 +920,7 @@ bool ServiceRecordDelete(mdns::Services service)
     {
         if (record.services == service)
         {
-            MdnsSendMessage(record, 0, 0);
+            SendMessage(record, 0, 0);
 
             if (record.name != nullptr)
             {
@@ -950,12 +947,12 @@ static void HandleQuestions(uint32_t questions)
     DEBUG_PRINTF("questions=%u", questions);
 
     s_host_replies = 0;
-    s_is_unicast = (s_n_remote_port != net::iana::IANA_PORT_MDNS);
+    s_is_unicast = (s_n_remote_port != network::iana::Ports::kPortMdns);
     s_is_legacy_query = s_is_unicast && (questions == 1);
 
     const auto kTransactionID = s_is_legacy_query ? *reinterpret_cast<uint16_t*>(&s_p_receive_buffer[0]) : static_cast<uint16_t>(0);
 
-    uint32_t offset = sizeof(struct net::dns::Header);
+    uint32_t offset = sizeof(struct network::dns::Header);
 
     for (uint32_t i = 0; i < questions; i++)
     {
@@ -971,7 +968,7 @@ static void HandleQuestions(uint32_t questions)
         resource_domain.length = static_cast<uint16_t>(result - &s_p_receive_buffer[offset]);
         offset += resource_domain.length;
 
-        const auto kType = static_cast<net::dns::RRType>(__builtin_bswap16(*reinterpret_cast<uint16_t*>(&s_p_receive_buffer[offset])));
+        const auto kType = static_cast<network::dns::RRType>(__builtin_bswap16(*reinterpret_cast<uint16_t*>(&s_p_receive_buffer[offset])));
         offset += 2;
 
         const auto kClass = __builtin_bswap16(*reinterpret_cast<uint16_t*>(&s_p_receive_buffer[offset])) & 0x7F;
@@ -982,7 +979,7 @@ static void HandleQuestions(uint32_t questions)
         printf(" ==> Type : %d, Class: %d\n", static_cast<int>(kType), static_cast<int>(kClass));
 #endif
 
-        if ((kClass != net::dns::RRClass::RRCLASS_INTERNET) && (kClass != net::dns::RRClass::RRCLASS_ANY))
+        if ((kClass != network::dns::RRClass::kInternet) && (kClass != network::dns::RRClass::kAny))
         {
             continue;
         }
@@ -993,7 +990,7 @@ static void HandleQuestions(uint32_t questions)
 
         Domain domain_host;
 
-        if ((kType == net::dns::RRType::RRTYPE_A) || (kType == net::dns::RRType::RRTYPE_ALL))
+        if ((kType == network::dns::RRType::kA) || (kType == network::dns::RRType::kAll))
         {
             DEBUG_PUTS("");
             CreateHostDomain(domain_host);
@@ -1005,7 +1002,7 @@ static void HandleQuestions(uint32_t questions)
         }
 
 #if defined(CONFIG_MDNS_DOMAIN_REVERSE)
-        if (kType == net::dns::RRType::RRTYPE_PTR || kType == net::dns::RRType::RRTYPE_ALL)
+        if (kType == network::dns::RRType::kPtr || kType == network::dns::RRType::kAll)
         {
             DEBUG_PUTS("");
             CreateReverseDomain(domain_host);
@@ -1028,7 +1025,7 @@ static void HandleQuestions(uint32_t questions)
                 s_service_replies = 0;
                 Domain service_domain;
 
-                if (kType == net::dns::RRType::RRTYPE_PTR || kType == net::dns::RRType::RRTYPE_ALL)
+                if (kType == network::dns::RRType::kPtr || kType == network::dns::RRType::kAll)
                 {
                     if (kDomainDnssd == resource_domain)
                     {
@@ -1049,12 +1046,12 @@ static void HandleQuestions(uint32_t questions)
 
                 if (service_domain == resource_domain)
                 {
-                    if ((kType == net::dns::RRType::RRTYPE_SRV) || (kType == net::dns::RRType::RRTYPE_ALL))
+                    if ((kType == network::dns::RRType::kSrv) || (kType == network::dns::RRType::kAll))
                     {
                         s_service_replies = s_service_replies | ServiceReply::kSrv;
                     }
 
-                    if ((kType == net::dns::RRType::RRTYPE_TXT) || (kType == net::dns::RRType::RRTYPE_ALL))
+                    if ((kType == network::dns::RRType::kTxt) || (kType == network::dns::RRType::kAll))
                     {
                         s_service_replies = s_service_replies | ServiceReply::kTxt;
                     }
@@ -1062,7 +1059,7 @@ static void HandleQuestions(uint32_t questions)
 
                 if (s_service_replies != 0)
                 {
-                    MdnsSendMessage(record, kTransactionID, kMdnsResponseTtl);
+                    SendMessage(record, kTransactionID, kMdnsResponseTtl);
                 }
             }
         }
@@ -1071,7 +1068,7 @@ static void HandleQuestions(uint32_t questions)
     if (s_host_replies != 0)
     {
         DEBUG_PUTS("");
-        MdnsSendAnswerLocalIpAddress(kTransactionID, kMdnsResponseTtl);
+        SendAnswerLocalIpAddress(kTransactionID, kMdnsResponseTtl);
     }
 
     DEBUG_EXIT();
@@ -1084,15 +1081,15 @@ static void Input(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16
     s_n_remote_ip = from_ip;
     s_n_remote_port = from_port;
 
-    const auto* const kHeader = reinterpret_cast<net::dns::Header*>(s_p_receive_buffer);
-    const auto kFlag1 = kHeader->nFlag1;
+    const auto* const kHeader = reinterpret_cast<network::dns::Header*>(s_p_receive_buffer);
+    const auto kFlag1 = kHeader->flag1;
 
     if ((kFlag1 >> 3) & 0xF)
     {
         return;
     }
 
-    HandleQuestions(static_cast<uint32_t>(__builtin_bswap16(kHeader->nQueryCount)));
+    HandleQuestions(static_cast<uint32_t>(__builtin_bswap16(kHeader->query_count)));
 }
 
 void Init()
@@ -1104,9 +1101,9 @@ void Init()
         record.services = Services::kLastNotUsed;
     }
 
-    s_handle = network::udp::Begin(net::iana::IANA_PORT_MDNS, Input);
+    s_handle = network::udp::Begin(network::iana::Ports::kPortMdns, Input);
     assert(s_handle != -1);
 
     DEBUG_EXIT();
 }
-} // namespace mdns
+} // namespace network::apps::mdns

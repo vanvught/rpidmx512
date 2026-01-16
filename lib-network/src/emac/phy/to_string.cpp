@@ -46,7 +46,7 @@ const char* ToString(phy::Link link)
 
 const char* ToString(phy::Duplex duplex)
 {
-    return duplex == phy::Duplex::DUPLEX_HALF ? "half" : "full";
+    return duplex == phy::Duplex::kDuplexHalf ? "half" : "full";
 }
 
 const char* ToString(phy::Speed speed)

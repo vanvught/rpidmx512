@@ -40,10 +40,10 @@ void ReportGroups();
 }
 namespace netif
 {
-namespace globals
+namespace global
 {
 struct Netif netif_default;
-} // namespace globals
+} // namespace global
 
 static netif_ext_callback_fn callback_fn;
 
@@ -54,7 +54,7 @@ static void DefaultCallback([[maybe_unused]] uint16_t reason, [[maybe_unused]] c
 
 void Init()
 {
-    auto& netif = netif::globals::netif_default;
+    auto& netif = netif::global::netif_default;
 
     netif.ip.addr = 0;
     netif.netmask.addr = 0;
@@ -71,11 +71,11 @@ void Init()
 
 static void NetifDoUpdateGlobals()
 {
-    auto& netif = netif::globals::netif_default;
+    auto& netif = netif::global::netif_default;
     netif.broadcast_ip.addr = (netif.ip.addr | ~netif.netmask.addr);
 
-    network::globals::broadcast_mask = ~(netif.netmask.addr);
-    network::globals::on_network_mask = netif.ip.addr & netif.netmask.addr;
+    network::global::broadcast_mask = ~(netif.netmask.addr);
+    network::global::on_network_mask = netif.ip.addr & netif.netmask.addr;
 }
 
 static void NetifDoIpAddrChanged([[maybe_unused]] network::ip4_addr_t old_addr, [[maybe_unused]] network::ip4_addr_t new_addr)
@@ -86,7 +86,7 @@ static void NetifDoIpAddrChanged([[maybe_unused]] network::ip4_addr_t old_addr, 
 
 static void NetifIssueReports()
 {
-    const auto& netif = netif::globals::netif_default;
+    const auto& netif = netif::global::netif_default;
 
     if (!(netif.flags & Netif::kNetifFlagLinkUp))
     {
@@ -103,7 +103,7 @@ static bool NetifDoSetIpaddr(network::ip4_addr_t ipaddr, network::ip4_addr_t& ol
 {
     DEBUG_ENTRY();
 
-    auto& netif = netif::globals::netif_default;
+    auto& netif = netif::global::netif_default;
 
     DEBUG_PRINTF(IPSTR " " IPSTR, IP2STR(ipaddr.addr), IP2STR(netif.ip.addr));
 
@@ -131,7 +131,7 @@ static bool NetifDoSetIpaddr(network::ip4_addr_t ipaddr, network::ip4_addr_t& ol
 static bool NetifDoSetNetmask(network::ip4_addr_t netmask, network::ip4_addr_t& old_nm)
 {
     DEBUG_ENTRY();
-    auto& netif = netif::globals::netif_default;
+    auto& netif = netif::global::netif_default;
 
     if (netmask.addr != netif.netmask.addr)
     {
@@ -152,7 +152,7 @@ static bool NetifDoSetGw(network::ip4_addr_t gw, network::ip4_addr_t& old_gw)
 {
     DEBUG_ENTRY();
 
-    auto& netif = netif::globals::netif_default;
+    auto& netif = netif::global::netif_default;
 
     if (gw.addr != netif.gw.addr)
     {
@@ -281,7 +281,7 @@ void AddExtCallback(netif_ext_callback_fn fn)
 void SetLinkUp()
 {
     DEBUG_ENTRY();
-    const auto& netif = netif::globals::netif_default;
+    const auto& netif = netif::global::netif_default;
 
     if (!(netif.flags & Netif::kNetifFlagLinkUp))
     {
@@ -307,7 +307,7 @@ void SetLinkDown()
 {
     DEBUG_ENTRY();
 
-    const auto& netif = netif::globals::netif_default;
+    const auto& netif = netif::global::netif_default;
 
     if (netif.flags & Netif::kNetifFlagLinkUp)
     {

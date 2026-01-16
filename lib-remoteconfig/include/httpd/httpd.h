@@ -5,7 +5,7 @@
  * This class handles HTTP requests and integrates with the network and mDNS subsystems.
  * It uses placement new to construct and destruct request handlers explicitly.
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,7 @@
 #include <cassert>
 #include <new>
 
+#include "core/protocol/iana.h"
 #include "httpdhandlerequest.h"
 #include "network_tcp.h"
 #include "apps/mdns.h"
@@ -52,21 +53,9 @@ class HttpDaemon
     HttpDaemon()
     {
         DEBUG_ENTRY();
-
-        // In the new architecture, "listening" is not a port-index handle you need later.
-        // It's a configuration entry in s_Listeners[].
-        //
-        // So Begin()/Listen() can return:
-        // - bool success
-        // - or a listener id (rarely needed by HTTP layer)
-        //
-        // For minimal churn, you *can* keep Begin() returning int32_t,
-        // but HttpDaemon should not depend on that handle anymore.
-
         assert(is_listening_ == false);
 
-        // Option A (recommended): Listen returns bool
-        is_listening_ = network::tcp::Listen(80, Input);
+        is_listening_ = network::tcp::Listen(network::iana::Ports::kPortHttp, Input);
         assert(is_listening_ == true);
 
         // IMPORTANT:
@@ -79,7 +68,7 @@ class HttpDaemon
             new (&s_handle_request[i]) HttpDeamonHandleRequest(i);
         }
 
-        mdns::ServiceRecordAdd(nullptr, mdns::Services::HTTP);
+        network::apps::mdns::ServiceRecordAdd(nullptr, network::apps::mdns::Services::kHttp);
 
         DEBUG_EXIT();
     }
@@ -87,9 +76,6 @@ class HttpDaemon
     ~HttpDaemon() = default;
 
    private:
-    // TCP calls this for RX data. conn_handle is now a GLOBAL handle:
-    //    conn_handle == index into s_Tcbs[] pool
-    // It is no longer "index within a port bucket".
     static void Input(network::tcp::ConnHandle conn_handle, const uint8_t* buffer, uint32_t size)
     {
         // Defensive: bounds check in debug builds

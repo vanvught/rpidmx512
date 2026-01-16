@@ -2,7 +2,7 @@
  * @file autoip.h
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,15 +30,16 @@
 
 namespace network::autoip
 {
-static constexpr auto AUTOIP_NET = network::ConvertToUint(169, 254, 0, 0);
-static constexpr auto AUTOIP_RANGE_START = network::ConvertToUint(169, 254, 1, 0);
-static constexpr auto AUTOIP_RANGE_END = network::ConvertToUint(169, 254, 254, 255);
+// RFC 3927 Section 2.1
+inline constexpr auto kNet = network::ConvertToUint(169, 254, 0, 0);
+inline constexpr auto kRangeStart = network::ConvertToUint(169, 254, 1, 0);
+inline constexpr auto kRangeEnd = network::ConvertToUint(169, 254, 254, 255);
 
 enum class State
 {
-    AUTOIP_STATE_OFF,
-    AUTOIP_STATE_CHECKING,
-    AUTOIP_STATE_BOUND
+    kOff,
+    kChecking,
+    kBound
 };
 } // namespace network::autoip
 

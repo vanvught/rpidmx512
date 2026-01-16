@@ -2,7 +2,7 @@
  * @file igmp.h
  *
  */
-/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,36 +31,44 @@
 #include "core/protocol/ethernet.h"
 #include "core/protocol/ip4.h"
 
-#if !defined (PACKED)
-# define PACKED __attribute__((packed))
+#if !defined(PACKED)
+#define PACKED __attribute__((packed))
 #endif
 
-enum IGMP_TYPE {
-	IGMP_TYPE_QUERY = 0x11,
-	IGMP_TYPE_REPORT = 0x16,
-	IGMP_TYPE_LEAVE = 0x17
+namespace network::igmp
+{
+struct Type
+{
+    static constexpr uint8_t kQuery = 0x11;
+    static constexpr uint8_t kReport = 0x16;
+    static constexpr uint8_t kLeave = 0x17;
 };
 
-struct t_igmp_packet {
-	uint8_t type;
-	uint8_t max_resp_time;
-	uint16_t checksum;
-	uint8_t group_address[IPv4_ADDR_LEN];
+struct Packet
+{
+    uint8_t type;
+    uint8_t max_resp_time;
+    uint16_t checksum;
+    uint8_t group_address[network::ip4::kAddressLength];
 } PACKED;
 
-struct t_igmp {
-	struct network::ethernet::Header ether;
-	struct ip4_header ip4;
-	union {
-		struct {
-			uint32_t ip4_options;
-			struct t_igmp_packet igmp;
-		} report;
-		struct t_igmp_packet igmp;
-	} igmp;
+struct Header
+{
+    struct network::ethernet::Header ether;
+    struct network::ip4::Ip4Header ip4;
+    union
+    {
+        struct
+        {
+            uint32_t ip4_options;
+            struct Packet igmp;
+        } report;
+        struct Packet igmp;
+    } igmp;
 } PACKED;
 
-#define IPv4_IGMP_REPORT_HEADERS_SIZE 	(sizeof(struct t_igmp) - sizeof(struct network::ethernet::Header))
-#define IGMP_REPORT_PACKET_SIZE			(sizeof(struct t_igmp))
+inline constexpr uint32_t kIPv4IgmpReportHeadersSize = (sizeof(struct Header) - sizeof(struct network::ethernet::Header));
+inline constexpr uint32_t kReportPacketSize = sizeof(struct Header);
+} // namespace network::igmp
 
 #endif /* CORE_PROTOCOL_IGMP_H_ */

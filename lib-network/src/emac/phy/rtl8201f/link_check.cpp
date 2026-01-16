@@ -44,10 +44,10 @@ namespace net::phy
 void WritePaged(uint16_t phy_page, uint16_t phy_reg, uint16_t phy_value, uint16_t mask = 0x0);
 }
 
-namespace net
+namespace net::link
 {
 #if defined(ENET_LINK_CHECK_USE_INT) || defined(ENET_LINK_CHECK_USE_PIN_POLL)
-void link_pin_enable()
+void PinEnable()
 {
     net::phy::WritePaged(0x07, PHY_REG_IER, IER_INT_ENABLE, IER_INT_ENABLE);
     // Clear interrupt
@@ -55,11 +55,11 @@ void link_pin_enable()
     phy::Read(PHY_ADDRESS, PHY_REG_ISR, phy_value);
 }
 
-void link_pin_recovery()
+void PinRecovery()
 {
     uint16_t phy_value;
     phy::Read(PHY_ADDRESS, PHY_REG_ISR, phy_value);
     phy::Read(PHY_ADDRESS, mmi::REG_BMSR, phy_value);
 }
 #endif
-} // namespace net
+} // namespace net::link

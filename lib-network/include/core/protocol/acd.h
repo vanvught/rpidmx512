@@ -2,7 +2,7 @@
  * @file acd.h
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,37 +30,35 @@
 
 namespace network::acd
 {
-/**
- *  RFC 5227 and RFC 3927 Constants
- */
-#define PROBE_WAIT 1           ///< second  (initial random delay)
-#define PROBE_MIN 1            ///< second  (minimum delay till repeated probe)
-#define PROBE_MAX 2            ///< seconds (maximum delay till repeated probe)
-#define PROBE_NUM 3            ///<         (number of probe packets)
-#define ANNOUNCE_NUM 2         ///<         (number of announcement packets)
-#define ANNOUNCE_INTERVAL 2    ///< seconds (time between announcement packets)
-#define ANNOUNCE_WAIT 2        ///< seconds (delay before announcing)
-#define MAX_CONFLICTS 10       ///<         (max conflicts before rate limiting)
-#define RATE_LIMIT_INTERVAL 60 ///< seconds (delay between successive attempts)
-#define DEFEND_INTERVAL 10     ///< seconds (minimum interval between defensive ARPs)
+//  RFC 5227 and RFC 3927 Constants
+inline constexpr uint32_t kProbeWait = 1;          ///< second  (initial random delay)
+inline constexpr uint32_t kProbeMin = 1;           ///< second  (minimum delay till repeated probe)
+inline constexpr uint32_t kProbeMax = 2;           ///< seconds (maximum delay till repeated probe)
+inline constexpr uint32_t kProbeNum = 3;           ///<         (number of probe packets)
+inline constexpr uint32_t kAnnounceNum = 2;        ///<         (number of announcement packets)
+inline constexpr uint32_t kAnnounceInterval = 2;   ///< seconds (time between announcement packets)
+inline constexpr uint32_t kAnnounceWait = 2;       ///< seconds (delay before announcing)
+inline constexpr uint32_t kMaxConflicts = 10;      ///<         (max conflicts before rate limiting)
+inline constexpr uint32_t kRateLimitInterval = 60; ///< seconds (delay between successive attempts)
+inline constexpr uint32_t kDefendInterval = 10;    ///< seconds (minimum interval between defensive ARPs)
 
 enum class State : uint8_t
 {
-    ACD_STATE_OFF,
-    ACD_STATE_PROBE_WAIT,
-    ACD_STATE_PROBING,
-    ACD_STATE_ANNOUNCE_WAIT,
-    ACD_STATE_ANNOUNCING,
-    ACD_STATE_ONGOING,
-    ACD_STATE_PASSIVE_ONGOING,
-    ACD_STATE_RATE_LIMIT
+    kAcdStateOff,
+    kAcdStateProbeWait,
+    kAcdStateProbing,
+    kAcdStateAnnounceWait,
+    kAcdStateAnnouncing,
+    kAcdStateOngoing,
+    kAcdStatePassiveOngoing,
+    kAcdStateRateLimit
 };
 
 enum class Callback
 {
-    ACD_IP_OK,          ///< IP address is good, no conflicts found in checking state
-    ACD_RESTART_CLIENT, ///< Conflict found -> the client should try again
-    ACD_DECLINE         ///< Decline the received IP address (rate limiting)
+    kAcdIpOk,          ///< IP address is good, no conflicts found in checking state
+    kAcdRestartClient, ///< Conflict found -> the client should try again
+    kAcdDecline        ///< Decline the received IP address (rate limiting)
 };
 } // namespace network::acd
 

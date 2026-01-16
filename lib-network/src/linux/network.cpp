@@ -212,7 +212,7 @@ static int IfDetails(const char* pIfInterface)
         return -2;
     }
 
-    netif::globals::netif_default.ip.addr = (reinterpret_cast<struct sockaddr_in*>(&ifr.ifr_addr))->sin_addr.s_addr;
+    netif::global::netif_default.ip.addr = (reinterpret_cast<struct sockaddr_in*>(&ifr.ifr_addr))->sin_addr.s_addr;
 
     if (ioctl(fd, SIOCGIFNETMASK, &ifr) < 0)
     {
@@ -230,7 +230,7 @@ static int IfDetails(const char* pIfInterface)
     netif::SetGw(gw);
 
 #if defined(__APPLE__)
-    if (!(OSxGetMacaddress(pIfInterface, netif::globals::netif_default.hwaddr)))
+    if (!(OSxGetMacaddress(pIfInterface, netif::global::netif_default.hwaddr)))
     {
         return -5;
     }
@@ -243,7 +243,7 @@ static int IfDetails(const char* pIfInterface)
     }
 
     const uint8_t* mac = reinterpret_cast<uint8_t*>(ifr.ifr_ifru.ifru_hwaddr.sa_data);
-    memcpy(netif::globals::netif_default.hwaddr, mac, network::MAC_SIZE);
+    memcpy(netif::global::netif_default.hwaddr, mac, network::iface::kMacSize);
 #endif
 
     close(fd);
@@ -257,11 +257,11 @@ void Network::Print()
     printf(" Hostname  : %s\n", s_hostname);
     printf(" Domain    : %s\n", s_domain_name);
     printf(" If        : %d: %s\n", s_if_index, m_aIfName);
-    printf(" Inet      : " IPSTR "/%d\n", IP2STR(netif::globals::netif_default.ip.addr), network::GetNetmaskCIDR());
-    printf(" Netmask   : " IPSTR "\n", IP2STR(netif::globals::netif_default.netmask.addr));
-    printf(" Gateway   : " IPSTR "\n", IP2STR(netif::globals::netif_default.gw.addr));
+    printf(" Inet      : " IPSTR "/%d\n", IP2STR(netif::global::netif_default.ip.addr), network::GetNetmaskCIDR());
+    printf(" Netmask   : " IPSTR "\n", IP2STR(netif::global::netif_default.netmask.addr));
+    printf(" Gateway   : " IPSTR "\n", IP2STR(netif::global::netif_default.gw.addr));
     printf(" Broadcast : " IPSTR "\n", IP2STR(net::GetBroadcastIp()));
-    printf(" Mac       : " MACSTR "\n", MAC2STR(netif::globals::netif_default.hwaddr));
+    printf(" Mac       : " MACSTR "\n", MAC2STR(netif::global::netif_default.hwaddr));
     printf(" Mode      : %c\n", network::iface::AddressingMode());
 }
 

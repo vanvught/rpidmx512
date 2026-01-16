@@ -32,6 +32,7 @@
 #include "ddp.h"
 #include "dmxnode_outputtype.h"
 #include "ip4/ip4_address.h"
+#include "network_iface.h"
 
 #if !defined(DMXNODE_PORTS)
 #error DMXNODE_PORTS is not defined
@@ -121,7 +122,7 @@ class DdpDisplay
 
     DmxNodeOutputType* dmxnode_output_type_{nullptr};
 
-    uint8_t mac_address_[network::MAC_SIZE];
+    uint8_t mac_address_[network::iface::kMacSize];
 
     static inline uint32_t s_port_length[ddpdisplay::lightset::kMaxPorts];
     static inline uint32_t s_offset_compare[ddpdisplay::configuration::kMaxPorts];

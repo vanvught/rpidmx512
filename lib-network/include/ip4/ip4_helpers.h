@@ -2,7 +2,7 @@
  * @file ip4_helpers.h
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,7 +36,7 @@
 
 namespace net
 {
-constexpr size_t kIpBufferSize = 16; // For "255.255.255.255" + null
+inline constexpr size_t kIpBufferSize = 16; // For "255.255.255.255" + null
 
 [[nodiscard]] inline const char* FormatIp(uint32_t ip, char (&buf)[kIpBufferSize])
 {

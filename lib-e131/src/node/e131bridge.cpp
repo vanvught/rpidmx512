@@ -2,7 +2,7 @@
  * @file e131bridge.cpp
  *
  */
-/* Copyright (C) 2016-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2016-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -317,12 +317,12 @@ void E131Bridge::SetLocalMerging()
             {
                 if (!bridge_.port[output_port_index].local_merge)
                 {
-                    output_port_[output_port_index].source_a.ip = network::IPADDR_LOOPBACK;
+                    output_port_[output_port_index].source_a.ip = network::kIpaddrLoopback;
                     DEBUG_PUTS("Local merge Source A");
                 }
                 else
                 {
-                    output_port_[output_port_index].source_b.ip = network::IPADDR_LOOPBACK;
+                    output_port_[output_port_index].source_b.ip = network::kIpaddrLoopback;
                     DEBUG_PUTS("Local merge Source B");
                 }
 

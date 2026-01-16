@@ -2,7 +2,7 @@
  * @file dns.h
  *
  */
-/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2018-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,59 +30,63 @@
 
 #include "ip4/ip4_address.h"
 
-namespace net::dns {
-static constexpr uint32_t SIZEOF_DNS_HDR = 12;
+namespace network::dns
+{
+inline constexpr uint32_t kSizeofDnsHdr = 12;
 
-enum class Flag1 : uint8_t {
-	FLAG1_RESPONSE			= 0x80,	///< query (0), or a response (1).
-	FLAG1_OPCODE_STATUS		= 0x10,	///< a server status request (STATUS)
-	FLAG1_OPCODE_IQUERY 	= 0x08,	///< an inverse query (IQUERY)
-	FLAG1_OPCODE_STANDARD	= 0x00,	///< (RFC 6762, section 18.3)
-	FLAG1_AUTHORATIVE		= 0x04,	///< Authoritative Answer
-	FLAG1_TRUNC				= 0x02,	///< TrunCation
-	FLAG1_RD				= 0x01	///< If RD is set, it directs the name server to pursue the query recursively.
+enum class Flag1 : uint8_t
+{
+    kResponse = 0x80,       ///< query (0), or a response (1).
+    kOpcodeStatus = 0x10,   ///< a server status request (STATUS)
+    kOpcodeIquery = 0x08,   ///< an inverse query (IQUERY)
+    kOpcodeStandard = 0x00, ///< (RFC 6762, section 18.3)
+    kAuthorative = 0x04,    ///< Authoritative Answer
+    kTrunc = 0x02,          ///< TrunCation
+    kRd = 0x01              ///< If RD is set, it directs the name server to pursue the query recursively.
 };
 
-static constexpr uint8_t operator| (Flag1 a, Flag1 b) {
-	return static_cast<uint8_t>((static_cast<uint8_t>(a) | static_cast<uint8_t>(b)));
+static constexpr uint8_t operator|(Flag1 a, Flag1 b)
+{
+    return static_cast<uint8_t>((static_cast<uint8_t>(a) | static_cast<uint8_t>(b)));
 }
 
 ///< NS field TYPE used for "Resource Records"
-enum class RRType : uint16_t {
-	RRTYPE_A	= 1,	///< a host address
-	RRTYPE_PTR	= 12,	///< a domain name pointer
-	RRTYPE_TXT	= 16,	///< text strings
-	RRTYPE_SRV	= 33,	///< service location
-	RRTYPE_ALL	= 255	///< any type
+enum class RRType : uint16_t
+{
+    kA = 1,    ///< a host address
+    kPtr = 12, ///< a domain name pointer
+    kTxt = 16, ///< text strings
+    kSrv = 33, ///< service location
+    kAll = 255 ///< any type
 };
 
 ///< DNS field CLASS used for "Resource Records"
-struct RRClass {
-	static constexpr uint16_t RRCLASS_INTERNET = 1;		///< Internet
-	static constexpr uint16_t RRCLASS_ANY      = 255;	///< Any class
-	static constexpr uint16_t RRCLASS_FLUSH    = 0x8000;///< Flush bit
+struct RRClass
+{
+    static constexpr uint16_t kInternet = 1;   ///< Internet
+    static constexpr uint16_t kAny = 255;      ///< Any class
+    static constexpr uint16_t kFlush = 0x8000; ///< Flush bit
 };
 
-struct Header {
-	uint16_t xid;
-	uint8_t nFlag1;
-	uint8_t nFlag2;
-	uint16_t nQueryCount;
-	uint16_t nAnswerCount;
-	uint16_t nAuthorityCount;
-	uint16_t nAdditionalCount;
+struct Header
+{
+    uint16_t xid;
+    uint8_t flag1;
+    uint8_t flag2;
+    uint16_t query_count;
+    uint16_t answer_count;
+    uint16_t authority_count;
+    uint16_t additional_count;
 } __attribute__((__packed__));
 
-inline uint8_t dns_header_get_opcode(const Header *const header) {
-	return ((header->nFlag1) >> 3) & 0xF;
+inline uint8_t DnsHeaderGetOpcode(const Header* const kHeader)
+{
+    return ((kHeader->flag1) >> 3) & 0xF;
 }
 
-/*
- * mDNS
- */
-
-static constexpr uint32_t MULTICAST_MESSAGE_SIZE = 512;	///< The 1987 DNS specification [RFC1035] restricts DNS messages carried by UDP to no more than 512 bytes
-static constexpr uint32_t MULTICAST_ADDRESS = network::ConvertToUint(224, 0, 0, 251);
-}  // namespace net::dns
+// mDNS
+inline constexpr uint32_t kMulticastMessageSize = 512; ///< The 1987 DNS specification [RFC1035] restricts DNS messages carried by UDP to no more than 512 bytes
+inline constexpr uint32_t kMulticastAddress = network::ConvertToUint(224, 0, 0, 251);
+} // namespace network::dns
 
 #endif /* CORE_PROTOCOL_DNS_H_ */

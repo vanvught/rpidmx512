@@ -2,7 +2,7 @@
  * @file arp.h
  *
  */
-/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,7 @@
 #ifndef CORE_PROTOCOL_ARP_H_
 #define CORE_PROTOCOL_ARP_H_
 
+#include <cstdint>
 #include "core/protocol/ethernet.h"
 #include "core/protocol/ieee.h"
 #include "core/protocol/ip4.h"
@@ -34,30 +35,20 @@
 #define PACKED __attribute__((packed))
 #endif
 
-enum ARP_HARDWARE_TYPE
+namespace network::arp
 {
-    ARP_HWTYPE_ETHERNET = 1
+inline constexpr uint16_t kHwtypeEthernet = 1;
+inline constexpr uint16_t kPrtypeIPv4 = network::ethernet::Type::kIPv4;
+inline constexpr auto kHardwareSize = network::ethernet::kAddressLength;
+inline constexpr auto kProtocolSize = network::ip4::kAddressLength;
+
+struct OpCode
+{
+    static constexpr uint16_t kRqstRqst = 1;
+    static constexpr uint16_t kRqstReply = 2;
 };
 
-enum ARP_PROTOCOL_TYPE
-{
-    ARP_PRTYPE_IPv4 = ETHER_TYPE_IPv4
-};
-
-inline constexpr auto ARP_HARDWARE_SIZE = network::ethernet::kAddressLength;
-
-enum ARP_PROTOCOL
-{
-    ARP_PROTOCOL_SIZE = IPv4_ADDR_LEN
-};
-
-enum ARP_OPCODE
-{
-    ARP_OPCODE_RQST = 1,
-    ARP_OPCODE_REPLY = 2
-};
-
-struct arp_packet
+struct ArpPacket
 {
     uint16_t hardware_type;                                //  2
     uint16_t protocol_type;                                //  4
@@ -65,16 +56,17 @@ struct arp_packet
     uint8_t protocol_size;                                 //  6
     uint16_t opcode;                                       //  8
     uint8_t sender_mac[network::ethernet::kAddressLength]; // 14
-    uint8_t sender_ip[IPv4_ADDR_LEN];                      // 18
+    uint8_t sender_ip[network::ip4::kAddressLength];       // 18
     uint8_t target_mac[network::ethernet::kAddressLength]; // 24
-    uint8_t target_ip[IPv4_ADDR_LEN];                      // 28
+    uint8_t target_ip[network::ip4::kAddressLength];       // 28
     uint8_t padding[18];                                   // 46  // +14 = 60
 } PACKED;
 
-struct t_arp
+struct Header
 {
     struct network::ethernet::Header ether;
-    struct arp_packet arp;
+    struct ArpPacket arp;
 } PACKED;
+} // namespace network::arp
 
 #endif // CORE_PROTOCOL_ARP_H_

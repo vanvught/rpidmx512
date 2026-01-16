@@ -112,10 +112,10 @@ RemoteConfig::RemoteConfig(remoteconfig::Output output, uint32_t active_outputs)
     assert(handle_ != -1);
 
 #if !defined(CONFIG_REMOTECONFIG_MINIMUM)
-    mdns::ServiceRecordAdd(nullptr, mdns::Services::CONFIG);
+    network::apps::mdns::ServiceRecordAdd(nullptr, network::apps::mdns::Services::kConfig);
 
 #if defined(ENABLE_TFTP_SERVER)
-    mdns::ServiceRecordAdd(nullptr, mdns::Services::TFTP);
+    network::apps::mdns::ServiceRecordAdd(nullptr, network::apps::mdns::Services::kTftp);
 #endif
 
 #if defined(ENABLE_HTTPD)
@@ -144,7 +144,7 @@ RemoteConfig::~RemoteConfig()
     }
 #endif
 
-    mdns::ServiceRecordDelete(mdns::Services::CONFIG);
+    network::apps::mdns::ServiceRecordDelete(network::apps::mdns::Services::kConfig);
 #endif
 
     network::udp::End(remoteconfig::udp::kPort);

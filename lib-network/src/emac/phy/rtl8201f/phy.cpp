@@ -2,7 +2,7 @@
  * @file phy.cpp
  *
  */
-/* Copyright (C) 2023-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2023-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,8 +28,7 @@
 #include "emac/phy.h"
 #include "emac/net_link_check.h"
 #include "emac/mmi.h"
-
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
 #if !defined(BIT)
 #define BIT(x) static_cast<uint16_t>(1U << (x))
@@ -111,19 +110,19 @@ void CustomizedTiming()
 
 void CustomizedStatus(phy::Status& phy_status)
 {
-    phy_status.link = link_status_read();
+    phy_status.link = net::link::StatusRead();
 
     uint16_t value;
     phy::Read(PHY_ADDRESS, mmi::REG_BMCR, value);
 
-    phy_status.duplex = ((value & BIT(8)) == BIT(8)) ? phy::Duplex::DUPLEX_FULL : phy::Duplex::DUPLEX_HALF;
+    phy_status.duplex = ((value & BIT(8)) == BIT(8)) ? phy::Duplex::kDuplexFull : phy::Duplex::kDuplexHalf;
     phy_status.speed = ((value & BIT(13)) == BIT(13)) ? phy::Speed::kSpeed100 : phy::Speed::kSpeed10;
     phy_status.autonegotiation = ((value & mmi::BMCR_AUTONEGOTIATION) == mmi::BMCR_AUTONEGOTIATION);
 }
 
 namespace rtl8201f
 {
-void get_timings(uint32_t& rx_timing, uint32_t& tx_timing)
+void GetTimings(uint32_t& rx_timing, uint32_t& tx_timing)
 {
     uint16_t value;
     ReadPaged(0x7, PHY_REG_RMSR, value, RMSR_RX_TIMING_MASK | RMSR_TX_TIMING_MASK);
@@ -132,15 +131,15 @@ void get_timings(uint32_t& rx_timing, uint32_t& tx_timing)
     tx_timing = (value >> RMSR_TX_TIMING_SHIFT) & 0xF;
 }
 
-void set_rxtiming(uint32_t nRxTiming)
+void SetRxtiming(uint32_t rx_timing)
 {
-    const auto kValue = static_cast<uint16_t>((nRxTiming & 0xF) << RMSR_RX_TIMING_SHIFT);
+    const auto kValue = static_cast<uint16_t>((rx_timing & 0xF) << RMSR_RX_TIMING_SHIFT);
     WritePaged(0x7, PHY_REG_RMSR, kValue, RMSR_RX_TIMING_MASK);
 }
 
-void set_txtiming(uint32_t nTxTiming)
+void SetTxtiming(uint32_t tx_timing)
 {
-    const auto kValue = static_cast<uint16_t>((nTxTiming & 0xF) << RMSR_TX_TIMING_SHIFT);
+    const auto kValue = static_cast<uint16_t>((tx_timing & 0xF) << RMSR_TX_TIMING_SHIFT);
     WritePaged(0x7, PHY_REG_RMSR, kValue, RMSR_TX_TIMING_MASK);
 }
 } // namespace rtl8201f

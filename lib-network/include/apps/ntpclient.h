@@ -2,7 +2,7 @@
  * @file ntpclient.h
  *
  */
-/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,15 +37,14 @@
 #define CONFIG_NTP_CLIENT_POLL_POWER_MAX 12
 #endif
 
-namespace ntpclient
+namespace network::apps::ntpclient
 {
-
 inline constexpr uint32_t kTimeoutSeconds = 3;
 inline constexpr uint32_t kTimeoutMillis = kTimeoutSeconds * 1000;
 inline constexpr uint8_t kPollPowerMin = CONFIG_NTP_CLIENT_POLL_POWER_MIN;
 inline constexpr uint8_t kPollPowerMax = CONFIG_NTP_CLIENT_POLL_POWER_MAX;
 inline constexpr uint32_t kPollSecondsMin = (1U << kPollPowerMin);
-static_assert(kPollSecondsMin >= ntp::MINPOLL);
+static_assert(kPollSecondsMin >= ntp::kMinpoll);
 inline constexpr uint32_t kPollSecondsMax = (1U << kPollPowerMax);
 
 void DisplayStatus(::ntp::Status status);
@@ -58,7 +57,7 @@ void SetServerIp(uint32_t server_ip);
 uint32_t GetServerIp();
 ntp::Status GetStatus();
 
-// PTP wrapper (GD32 only)
+// PTP (GD32 only)
 namespace ptp
 {
 void Init();
@@ -69,6 +68,6 @@ uint32_t GetServerIp();
 ntp::Status GetStatus();
 } // namespace ptp
 
-} // namespace ntpclient
+} // namespace network::apps::ntpclient
 
-#endif  // APPS_NTPCLIENT_H_
+#endif // APPS_NTPCLIENT_H_

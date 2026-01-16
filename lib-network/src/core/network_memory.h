@@ -49,7 +49,7 @@ static_assert(kBlocks <= 32);
 
 inline constexpr uint32_t kBlockSize =
 #if !defined(CONFIG_NETWORK_MEMORY_BLOCKSIZE)
-    1440;
+    1460;
 #else
     CONFIG_NETWORK_MEMORY_BLOCKSIZE;
 #endif

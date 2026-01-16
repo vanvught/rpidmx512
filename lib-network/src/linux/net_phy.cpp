@@ -114,7 +114,7 @@ namespace net::phy
 void CustomizedStatus(phy::Status& phyStatus)
 {
     phyStatus.link = net::phy::Link::kStateUp;
-    phyStatus.duplex = net::phy::Duplex::DUPLEX_FULL;
+    phyStatus.duplex = net::phy::Duplex::kDuplexFull;
     phyStatus.speed = net::phy::Speed::kSpeed1000;
     phyStatus.autonegotiation = true;
 
@@ -139,7 +139,7 @@ void CustomizedStatus(phy::Status& phyStatus)
             break;
     }
 
-    phyStatus.duplex = (ethtoolLinkSettings->duplex == 1) ? net::phy::Duplex::DUPLEX_FULL : net::phy::Duplex::DUPLEX_HALF;
+    phyStatus.duplex = (ethtoolLinkSettings->duplex == 1) ? net::phy::Duplex::kDuplexFull : net::phy::Duplex::kDuplexHalf;
     phyStatus.autonegotiation = (ethtoolLinkSettings->autoneg == 1);
 #endif
 }

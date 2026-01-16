@@ -29,7 +29,7 @@
  * Converting Network Protocol Addresses
  */
 
-#if defined(DEBUG_NET_ARP)
+#if defined(DEBUG_NETWORK_ARP)
 #undef NDEBUG
 #endif
 
@@ -65,7 +65,7 @@ static constexpr auto kMaxRecords = ARP_MAX_RECORDS;
 namespace network::globals
 {
 extern uint32_t on_network_mask;
-} // namespace net::globals
+} // namespace network::globals
 
 namespace network::arp
 {
@@ -101,8 +101,8 @@ struct Record
 };
 
 static network::arp::Record s_arp_records[kMaxRecords] SECTION_NETWORK ALIGNED;
-static struct t_arp s_arp_request SECTION_NETWORK ALIGNED;
-static struct t_arp s_arp_reply SECTION_NETWORK ALIGNED;
+static struct network::arp::Header s_arp_request SECTION_NETWORK ALIGNED;
+static struct network::arp::Header s_arp_reply SECTION_NETWORK ALIGNED;
 
 #ifndef NDEBUG
 static constexpr char kStates[4][12] = {
@@ -222,7 +222,7 @@ static void CacheUpdate(const uint8_t* mac_address, uint32_t ip, arp::Flags flag
 
     if (record->packet.p != nullptr)
     {
-        auto* udp = reinterpret_cast<struct t_udp*>(record->packet.p);
+        auto* udp = reinterpret_cast<struct network::udp::Header*>(record->packet.p);
         std::memcpy(udp->ether.dst, record->mac_address, network::ethernet::kAddressLength);
         udp->ip4.chksum = 0;
 #if !defined(CHECKSUM_BY_HARDWARE)
@@ -254,7 +254,7 @@ static void SendRequest(uint32_t ip)
 
     network::memcpy_ip(s_arp_request.arp.target_ip, ip);
 
-    emac_eth_send(reinterpret_cast<void*>(&s_arp_request), sizeof(struct t_arp));
+    emac_eth_send(reinterpret_cast<void*>(&s_arp_request), sizeof(struct network::arp::Header));
 }
 
 template <network::arp::EthSend S> static void Query(uint32_t destination_ip, void* packet, uint32_t size, [[maybe_unused]] arp::Flags flag)
@@ -308,7 +308,7 @@ static void SendRequestUnicast(uint32_t ip, const uint8_t* mac_address)
     network::memcpy(s_arp_request.ether.dst, mac_address, network::ethernet::kAddressLength);
     network::memcpy_ip(s_arp_request.arp.target_ip, ip);
 
-    emac_eth_send(reinterpret_cast<void*>(&s_arp_request), sizeof(struct t_arp));
+    emac_eth_send(reinterpret_cast<void*>(&s_arp_request), sizeof(struct network::arp::Header));
 
     network::memset<0xFF, network::ethernet::kAddressLength>(s_arp_request.ether.dst);
 }
@@ -356,7 +356,7 @@ static void Timer([[maybe_unused]] TimerHandle_t handle)
     CacheDump();
 }
 
-static void SendReply(const struct t_arp* p_arp)
+static void SendReply(const struct network::arp::Header* p_arp)
 {
     DEBUG_ENTRY();
 
@@ -365,10 +365,10 @@ static void SendReply(const struct t_arp* p_arp)
     // ARP Header
     const auto kIpTarget = network::memcpy_ip(p_arp->arp.target_ip);
     std::memcpy(s_arp_reply.arp.target_mac, p_arp->arp.sender_mac, network::ethernet::kAddressLength);
-    std::memcpy(s_arp_reply.arp.target_ip, p_arp->arp.sender_ip, IPv4_ADDR_LEN);
+    std::memcpy(s_arp_reply.arp.target_ip, p_arp->arp.sender_ip, network::ip4::kAddressLength);
     network::memcpy_ip(s_arp_reply.arp.sender_ip, kIpTarget);
 
-    emac_eth_send(reinterpret_cast<void*>(&s_arp_reply), sizeof(struct t_arp));
+    emac_eth_send(reinterpret_cast<void*>(&s_arp_reply), sizeof(struct network::arp::Header));
 
     DEBUG_EXIT();
 }
@@ -386,48 +386,47 @@ void __attribute__((cold)) Init()
 
     // ARP Request template
     // Ethernet header
-    std::memcpy(s_arp_request.ether.src, netif::globals::netif_default.hwaddr, network::ethernet::kAddressLength);
+    std::memcpy(s_arp_request.ether.src, netif::global::netif_default.hwaddr, network::ethernet::kAddressLength);
     std::memset(s_arp_request.ether.dst, 0xFF, network::ethernet::kAddressLength);
-    s_arp_request.ether.type = __builtin_bswap16(ETHER_TYPE_ARP);
+    s_arp_request.ether.type = __builtin_bswap16(network::ethernet::Type::kArp);
 
     // ARP Header
-    s_arp_request.arp.hardware_type = __builtin_bswap16(ARP_HWTYPE_ETHERNET);
-    s_arp_request.arp.protocol_type = __builtin_bswap16(ARP_PRTYPE_IPv4);
-    s_arp_request.arp.hardware_size = ARP_HARDWARE_SIZE;
-    s_arp_request.arp.protocol_size = ARP_PROTOCOL_SIZE;
-    s_arp_request.arp.opcode = __builtin_bswap16(ARP_OPCODE_RQST);
+    s_arp_request.arp.hardware_type = __builtin_bswap16(kHwtypeEthernet);
+    s_arp_request.arp.protocol_type = __builtin_bswap16(kPrtypeIPv4);
+    s_arp_request.arp.hardware_size = kHardwareSize;
+    s_arp_request.arp.protocol_size = kProtocolSize;
+    s_arp_request.arp.opcode = __builtin_bswap16(network::arp::OpCode::kRqstRqst);
 
-    std::memcpy(s_arp_request.arp.sender_mac, netif::globals::netif_default.hwaddr, network::ethernet::kAddressLength);
-    network::memcpy_ip(s_arp_request.arp.sender_ip, netif::globals::netif_default.ip.addr);
+    std::memcpy(s_arp_request.arp.sender_mac, netif::global::netif_default.hwaddr, network::ethernet::kAddressLength);
+    network::memcpy_ip(s_arp_request.arp.sender_ip, netif::global::netif_default.ip.addr);
     std::memset(s_arp_request.arp.target_mac, 0x00, network::ethernet::kAddressLength);
 
     // ARP Reply Template
     // Ethernet header
-    std::memcpy(s_arp_reply.ether.src, netif::globals::netif_default.hwaddr, network::ethernet::kAddressLength);
-    s_arp_reply.ether.type = __builtin_bswap16(ETHER_TYPE_ARP);
+    std::memcpy(s_arp_reply.ether.src, netif::global::netif_default.hwaddr, network::ethernet::kAddressLength);
+    s_arp_reply.ether.type = __builtin_bswap16(network::ethernet::Type::kArp);
 
     // ARP Header
-    s_arp_reply.arp.hardware_type = __builtin_bswap16(ARP_HWTYPE_ETHERNET);
-    s_arp_reply.arp.protocol_type = __builtin_bswap16(ARP_PRTYPE_IPv4);
-    s_arp_reply.arp.hardware_size = ARP_HARDWARE_SIZE;
-    s_arp_reply.arp.protocol_size = ARP_PROTOCOL_SIZE;
-    s_arp_reply.arp.opcode = __builtin_bswap16(ARP_OPCODE_REPLY);
+    s_arp_reply.arp.hardware_type = __builtin_bswap16(kHwtypeEthernet);
+    s_arp_reply.arp.protocol_type = __builtin_bswap16(kPrtypeIPv4);
+    s_arp_reply.arp.hardware_size = kHardwareSize;
+    s_arp_reply.arp.protocol_size = kProtocolSize;
+    s_arp_reply.arp.opcode = __builtin_bswap16(network::arp::OpCode::kRqstReply);
 
-    std::memcpy(s_arp_reply.arp.sender_mac, netif::globals::netif_default.hwaddr, network::ethernet::kAddressLength);
+    std::memcpy(s_arp_reply.arp.sender_mac, netif::global::netif_default.hwaddr, network::ethernet::kAddressLength);
 
     SoftwareTimerAdd(network::arp::kTimerInterval, Timer);
 
     DEBUG_EXIT();
 }
 
-__attribute__((hot)) void Input(const struct t_arp* arp)
+__attribute__((hot)) void Input(const struct network::arp::Header* arp)
 {
     /*
      * RFC 826 Packet Reception:
      */
-    if (__builtin_expect(((arp->arp.hardware_type != __builtin_bswap16(ARP_HWTYPE_ETHERNET)) || (arp->arp.protocol_type != __builtin_bswap16(ARP_PRTYPE_IPv4)) || (arp->arp.hardware_size != ARP_HARDWARE_SIZE) ||
-                          (arp->arp.protocol_size != ARP_PROTOCOL_SIZE)),
-                         0))
+    if (__builtin_expect(
+            ((arp->arp.hardware_type != __builtin_bswap16(kHwtypeEthernet)) || (arp->arp.protocol_type != __builtin_bswap16(kPrtypeIPv4)) || (arp->arp.hardware_size != kHardwareSize) || (arp->arp.protocol_size != kProtocolSize)), 0))
     {
         DEBUG_EXIT();
         return;
@@ -437,9 +436,9 @@ __attribute__((hot)) void Input(const struct t_arp* arp)
 
     // ARP packet directed to us?
     const auto kIpTarget = network::memcpy_ip(arp->arp.target_ip);
-    const auto kToUs = ((kIpTarget == netif::globals::netif_default.ip.addr) || (kIpTarget == netif::globals::netif_default.secondary_ip.addr));
+    const auto kToUs = ((kIpTarget == netif::global::netif_default.ip.addr) || (kIpTarget == netif::global::netif_default.secondary_ip.addr));
     // ARP packet from us?
-    const auto kFromUs = (network::memcpy_ip(arp->arp.sender_ip) == netif::globals::netif_default.ip.addr);
+    const auto kFromUs = (network::memcpy_ip(arp->arp.sender_ip) == netif::global::netif_default.ip.addr);
 
     DEBUG_PRINTF("bToUs:%d, bFromUs:%d", kToUs, kFromUs);
 
@@ -454,7 +453,7 @@ __attribute__((hot)) void Input(const struct t_arp* arp)
 
     switch (arp->arp.opcode)
     {
-        case __builtin_bswap16(ARP_OPCODE_RQST):
+        case __builtin_bswap16(network::arp::OpCode::kRqstRqst):
             if (kToUs && !kFromUs)
             {
                 SendReply(arp);
@@ -464,7 +463,7 @@ __attribute__((hot)) void Input(const struct t_arp* arp)
                 DEBUG_PUTS("ARP request was not for us");
             }
             break;
-        case __builtin_bswap16(ARP_OPCODE_REPLY):
+        case __builtin_bswap16(network::arp::OpCode::kRqstReply):
             /* Cache update is handled earlier */
             break;
         default:
@@ -478,7 +477,7 @@ template <network::arp::EthSend S> static void SendImplementation(void* packet, 
     DEBUG_ENTRY();
     DEBUG_PRINTF(IPSTR, IP2STR(remote_ip));
 
-    const auto& netif = netif::globals::netif_default;
+    const auto& netif = netif::global::netif_default;
 
     DEBUG_PRINTF(IPSTR, IP2STR(netif.ip.addr));
 
@@ -487,7 +486,7 @@ template <network::arp::EthSend S> static void SendImplementation(void* packet, 
         return;
     }
 
-    auto* p = reinterpret_cast<struct t_ip4*>(packet);
+    auto* p = reinterpret_cast<struct network::ip4::Header*>(packet);
 
     network::memcpy_ip(p->ip4.dst, remote_ip);
     p->ip4.chksum = 0;
@@ -497,7 +496,7 @@ template <network::arp::EthSend S> static void SendImplementation(void* packet, 
 
     auto destination_ip = remote_ip;
 
-    if (__builtin_expect((network::globals::on_network_mask != (remote_ip & network::globals::on_network_mask)), 0))
+    if (__builtin_expect((network::global::on_network_mask != (remote_ip & network::global::on_network_mask)), 0))
     {
         /* According to RFC 3297, chapter 2.6.2 (Forwarding Rules), a packet with
            a link-local source address must always be "directly to its destination
@@ -562,12 +561,12 @@ void AcdProbe(ip4_addr_t ipaddr)
 {
     DEBUG_ENTRY();
 
-    memset(s_arp_request.arp.sender_ip, 0, IPv4_ADDR_LEN);
+    network::memset<0, network::ip4::kAddressLength>(s_arp_request.arp.sender_ip);
     network::memcpy_ip(s_arp_request.arp.target_ip, ipaddr.addr);
 
-    emac_eth_send(reinterpret_cast<void*>(&s_arp_request), sizeof(struct t_arp));
+    emac_eth_send(reinterpret_cast<void*>(&s_arp_request), sizeof(struct network::arp::Header));
 
-    network::memcpy_ip(s_arp_request.arp.sender_ip, netif::globals::netif_default.ip.addr);
+    network::memcpy_ip(s_arp_request.arp.sender_ip, netif::global::netif_default.ip.addr);
 
     DEBUG_EXIT();
 }
@@ -581,6 +580,6 @@ void AcdSendAnnouncement(ip4_addr_t ipaddr)
     network::memcpy_ip(s_arp_request.arp.target_ip, ipaddr.addr);
     network::memcpy_ip(s_arp_request.arp.sender_ip, ipaddr.addr);
 
-    emac_eth_send(reinterpret_cast<void*>(&s_arp_request), sizeof(struct t_arp));
+    emac_eth_send(reinterpret_cast<void*>(&s_arp_request), sizeof(struct network::arp::Header));
 }
 } // namespace network::arp

@@ -1,7 +1,7 @@
 /**
  * @file acd.cpp
  */
-/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,24 +30,22 @@
  * IPv4 Address Conflict Detection
  */
 
-#include "core/protocol/ethernet.h"
-#if defined(DEBUG_NET_ACD)
+#if defined(DEBUG_NETWORK_ACD)
 #undef NDEBUG
 #endif
 
 #include <cstdint>
-#include <cstdlib>
 #include <cstring>
+#include <cstdlib>
 #include <cassert>
 
 #include "core/netif.h"
 #include "../src/core/net_memcpy.h"
-#include "net_config.h"
 #include "core/ip4/arp.h"
 #include "core/ip4/acd.h"
 #include "core/protocol/acd.h"
 #include "core/protocol/arp.h"
-
+#include "core/protocol/ethernet.h"
 #include "softwaretimers.h"
 #include "firmware/debug/debug_debug.h"
 
@@ -65,7 +63,7 @@ static void Timer([[maybe_unused]] TimerHandle_t handle)
         return;
     }
 
-    auto* acd = reinterpret_cast<struct acd::Acd*>(netif::globals::netif_default.acd);
+    auto* acd = reinterpret_cast<struct acd::Acd*>(netif::global::netif_default.acd);
     assert(acd != nullptr);
 
     if (acd->lastconflict > 0)
@@ -82,55 +80,55 @@ static void Timer([[maybe_unused]] TimerHandle_t handle)
 
     switch (acd->state)
     {
-        case acd::State::ACD_STATE_PROBE_WAIT:
-        case acd::State::ACD_STATE_PROBING:
+        case acd::State::kAcdStateProbeWait:
+        case acd::State::kAcdStateProbing:
             if (acd->ttw == 0)
             {
-                acd->state = acd::State::ACD_STATE_PROBING;
+                acd->state = acd::State::kAcdStateProbing;
                 arp::AcdProbe(acd->ipaddr);
                 DEBUG_PUTS("PROBING Sent Probe");
                 acd->sent_num++;
-                if (acd->sent_num >= PROBE_NUM)
+                if (acd->sent_num >= kProbeNum)
                 {
-                    acd->state = acd::State::ACD_STATE_ANNOUNCE_WAIT;
+                    acd->state = acd::State::kAcdStateAnnounceWait;
                     acd->sent_num = 0;
-                    acd->ttw = static_cast<uint16_t>(ANNOUNCE_WAIT * acd::kAcdTicksPerSecond);
+                    acd->ttw = static_cast<uint16_t>(kAnnounceWait * acd::kAcdTicksPerSecond);
                 }
                 else
                 {
-                    acd->ttw = static_cast<uint16_t>(static_cast<uint32_t>(random()) % (((PROBE_MAX - PROBE_MIN) * acd::kAcdTicksPerSecond)) + (PROBE_MIN * acd::kAcdTicksPerSecond));
+                    acd->ttw = static_cast<uint16_t>(static_cast<uint32_t>(random()) % (((kProbeMax - kProbeMin) * acd::kAcdTicksPerSecond)) + (kProbeMin * acd::kAcdTicksPerSecond));
                 }
             }
             break;
-        case acd::State::ACD_STATE_ANNOUNCE_WAIT:
-        case acd::State::ACD_STATE_ANNOUNCING:
+        case acd::State::kAcdStateAnnounceWait:
+        case acd::State::kAcdStateAnnouncing:
             if (acd->ttw == 0)
             {
                 if (acd->sent_num == 0)
                 {
-                    acd->state = acd::State::ACD_STATE_ANNOUNCING;
+                    acd->state = acd::State::kAcdStateAnnouncing;
                     acd->num_conflicts = 0;
                 }
                 arp::AcdSendAnnouncement(acd->ipaddr);
                 DEBUG_PUTS("ANNOUNCING Sent Announce");
-                acd->ttw = static_cast<uint16_t>(ANNOUNCE_INTERVAL * acd::kAcdTicksPerSecond);
+                acd->ttw = static_cast<uint16_t>(kAnnounceInterval * acd::kAcdTicksPerSecond);
                 acd->sent_num++;
 
-                if (acd->sent_num >= ANNOUNCE_NUM)
+                if (acd->sent_num >= kAnnounceNum)
                 {
-                    acd->state = acd::State::ACD_STATE_ONGOING;
+                    acd->state = acd::State::kAcdStateOngoing;
                     acd->sent_num = 0;
                     acd->ttw = 0;
                     Stop(acd);
-                    acd->conflict_callback(acd::Callback::ACD_IP_OK);
+                    acd->conflict_callback(acd::Callback::kAcdIpOk);
                 }
             }
             break;
-        case acd::State::ACD_STATE_RATE_LIMIT:
+        case acd::State::kAcdStateRateLimit:
             if (acd->ttw == 0)
             {
                 Stop(acd);
-                acd->conflict_callback(acd::Callback::ACD_RESTART_CLIENT);
+                acd->conflict_callback(acd::Callback::kAcdRestartClient);
             }
             break;
         default:
@@ -141,18 +139,18 @@ static void Timer([[maybe_unused]] TimerHandle_t handle)
 static void Restart(struct acd::Acd* acd)
 {
     acd->num_conflicts++;
-    acd->conflict_callback(acd::Callback::ACD_DECLINE);
+    acd->conflict_callback(acd::Callback::kAcdDecline);
 
-    if (acd->num_conflicts >= MAX_CONFLICTS)
+    if (acd->num_conflicts >= kMaxConflicts)
     {
-        acd->state = acd::State::ACD_STATE_RATE_LIMIT;
-        acd->ttw = static_cast<uint16_t>(RATE_LIMIT_INTERVAL * acd::kAcdTicksPerSecond);
+        acd->state = acd::State::kAcdStateRateLimit;
+        acd->ttw = static_cast<uint16_t>(kRateLimitInterval * acd::kAcdTicksPerSecond);
         DEBUG_PUTS("rate limiting initiated. too many conflicts");
     }
     else
     {
         Stop(acd);
-        acd->conflict_callback(acd::Callback::ACD_RESTART_CLIENT);
+        acd->conflict_callback(acd::Callback::kAcdRestartClient);
     }
 }
 
@@ -175,11 +173,11 @@ static void HandleArpConflict(struct acd::Acd* acd)
      situation occurs for the LL acd module when a routable address is used on
      the netif but the LL address is still open in the background. */
 
-    if (acd->state == acd::State::ACD_STATE_PASSIVE_ONGOING)
+    if (acd->state == acd::State::kAcdStatePassiveOngoing)
     {
         DEBUG_PUTS("conflict when we are in passive mode -> back off");
         Stop(acd);
-        acd->conflict_callback(acd::Callback::ACD_DECLINE);
+        acd->conflict_callback(acd::Callback::kAcdDecline);
     }
     else
     {
@@ -192,33 +190,33 @@ static void HandleArpConflict(struct acd::Acd* acd)
         {
             DEBUG_PUTS("we are defending, send ARP Announce");
             arp::AcdSendAnnouncement(acd->ipaddr);
-            acd->lastconflict = DEFEND_INTERVAL * acd::kAcdTicksPerSecond;
+            acd->lastconflict = kDefendInterval * acd::kAcdTicksPerSecond;
         }
     }
 }
 
 static void PutInPassiveMode()
 {
-    auto* acd = reinterpret_cast<struct acd::Acd*>(netif::globals::netif_default.acd);
+    auto* acd = reinterpret_cast<struct acd::Acd*>(netif::global::netif_default.acd);
     assert(acd != nullptr);
 
     switch (acd->state)
     {
-        case acd::State::ACD_STATE_OFF:
-        case acd::State::ACD_STATE_PASSIVE_ONGOING:
+        case acd::State::kAcdStateOff:
+        case acd::State::kAcdStatePassiveOngoing:
         default:
             /* do nothing */
             break;
-        case acd::State::ACD_STATE_PROBE_WAIT:
-        case acd::State::ACD_STATE_PROBING:
-        case acd::State::ACD_STATE_ANNOUNCE_WAIT:
-        case acd::State::ACD_STATE_RATE_LIMIT:
+        case acd::State::kAcdStateProbeWait:
+        case acd::State::kAcdStateProbing:
+        case acd::State::kAcdStateAnnounceWait:
+        case acd::State::kAcdStateRateLimit:
             Stop(acd);
-            acd->conflict_callback(acd::Callback::ACD_DECLINE);
+            acd->conflict_callback(acd::Callback::kAcdDecline);
             break;
-        case acd::State::ACD_STATE_ANNOUNCING:
-        case acd::State::ACD_STATE_ONGOING:
-            acd->state = acd::State::ACD_STATE_PASSIVE_ONGOING;
+        case acd::State::kAcdStateAnnouncing:
+        case acd::State::kAcdStateOngoing:
+            acd->state = acd::State::kAcdStatePassiveOngoing;
             break;
     }
 }
@@ -231,8 +229,8 @@ void Start(struct acd::Acd* acd, ip4_addr_t ipaddr)
     assert(acd != nullptr);
 
     acd->ipaddr.addr = ipaddr.addr;
-    acd->state = acd::State::ACD_STATE_PROBE_WAIT;
-    acd->ttw = static_cast<uint16_t>(static_cast<uint32_t>(random()) % (PROBE_WAIT * acd::kAcdTicksPerSecond));
+    acd->state = acd::State::kAcdStateProbeWait;
+    acd->ttw = static_cast<uint16_t>(static_cast<uint32_t>(random()) % (kProbeWait * acd::kAcdTicksPerSecond));
 
     s_timer_id = SoftwareTimerAdd(acd::kAcdTmrInterval, Timer);
     assert(s_timer_id != kTimerIdNone);
@@ -245,7 +243,7 @@ void Stop(struct acd::Acd* acd)
     DEBUG_ENTRY();
     assert(acd != nullptr);
 
-    acd->state = acd::State::ACD_STATE_OFF;
+    acd->state = acd::State::kAcdStateOff;
 
     if (s_timer_id != kTimerIdNone)
     {
@@ -260,7 +258,7 @@ void NetworkChangedLinkDown()
 {
     DEBUG_ENTRY();
 
-    auto* acd = reinterpret_cast<struct acd::Acd*>(netif::globals::netif_default.acd);
+    auto* acd = reinterpret_cast<struct acd::Acd*>(netif::global::netif_default.acd);
 
     if (acd == nullptr)
     {
@@ -274,10 +272,10 @@ void NetworkChangedLinkDown()
 }
 
 //  Handles every incoming ARP Packet, called by arp_handle
-void ArpReply(const struct t_arp* arp)
+void ArpReply(const struct network::arp::Header* arp)
 {
     DEBUG_ENTRY();
-    auto* acd = reinterpret_cast<struct acd::Acd*>(netif::globals::netif_default.acd);
+    auto* acd = reinterpret_cast<struct acd::Acd*>(netif::global::netif_default.acd);
 
     if (acd == nullptr)
     {
@@ -287,13 +285,13 @@ void ArpReply(const struct t_arp* arp)
 
     switch (acd->state)
     {
-        case acd::State::ACD_STATE_OFF:
-        case acd::State::ACD_STATE_RATE_LIMIT:
+        case acd::State::kAcdStateOff:
+        case acd::State::kAcdStateRateLimit:
         default:
             break;
-        case acd::State::ACD_STATE_PROBE_WAIT:
-        case acd::State::ACD_STATE_PROBING:
-        case acd::State::ACD_STATE_ANNOUNCE_WAIT:
+        case acd::State::kAcdStateProbeWait:
+        case acd::State::kAcdStateProbing:
+        case acd::State::kAcdStateAnnounceWait:
             /* RFC 5227 Section 2.1.1:
              * from beginning to after ANNOUNCE_WAIT seconds we have a conflict if
              * ip.sender == ipaddr (someone is already using the address)
@@ -301,20 +299,20 @@ void ArpReply(const struct t_arp* arp)
              * ip.dst == ipaddr && hw.src != own macAddress (someone else is probing it)
              */
             if (((memcpy_ip(arp->arp.sender_ip) == acd->ipaddr.addr)) ||
-                (!(memcpy_ip(arp->arp.sender_ip) == 0) && ((memcpy_ip(arp->arp.target_ip)) == acd->ipaddr.addr) && (memcmp(arp->arp.sender_mac, netif::globals::netif_default.hwaddr, network::ethernet::kAddressLength) == 0)))
+                (!(memcpy_ip(arp->arp.sender_ip) == 0) && ((memcpy_ip(arp->arp.target_ip)) == acd->ipaddr.addr) && (memcmp(arp->arp.sender_mac, netif::global::netif_default.hwaddr, network::ethernet::kAddressLength) == 0)))
             {
                 DEBUG_PUTS("Probe Conflict detected");
                 Restart(acd);
             }
             break;
-        case acd::State::ACD_STATE_ANNOUNCING:
-        case acd::State::ACD_STATE_ONGOING:
-        case acd::State::ACD_STATE_PASSIVE_ONGOING:
+        case acd::State::kAcdStateAnnouncing:
+        case acd::State::kAcdStateOngoing:
+        case acd::State::kAcdStatePassiveOngoing:
             /* RFC 5227 Section 2.4:
              * in any state we have a conflict if
              * ip.sender == ipaddr && hw.src != own macAddress (someone is using our address)
              */
-            if ((memcpy_ip(arp->arp.sender_ip) == acd->ipaddr.addr) && (memcmp(arp->arp.sender_mac, netif::globals::netif_default.hwaddr, network::ethernet::kAddressLength) != 0))
+            if ((memcpy_ip(arp->arp.sender_ip) == acd->ipaddr.addr) && (memcmp(arp->arp.sender_mac, netif::global::netif_default.hwaddr, network::ethernet::kAddressLength) != 0))
             {
                 DEBUG_PUTS("Conflicting ARP-Packet detected");
                 HandleArpConflict(acd);
@@ -333,7 +331,7 @@ void Add(struct acd::Acd* acd, conflict_callback_t acd_conflict_callback)
 
     acd->conflict_callback = acd_conflict_callback;
 
-    auto& netif = netif::globals::netif_default;
+    auto& netif = netif::global::netif_default;
     netif.acd = acd;
 
     DEBUG_EXIT();
@@ -344,7 +342,7 @@ void Remove(struct acd::Acd* acd)
     DEBUG_ENTRY();
 
     assert(acd != nullptr);
-    auto& netif = netif::globals::netif_default;
+    auto& netif = netif::global::netif_default;
 
     if (netif.acd == acd)
     {
@@ -364,7 +362,7 @@ void NetifIpAddrChanged(ip4_addr_t old_addr, ip4_addr_t new_addr)
         return;
     }
 
-    auto* acd = reinterpret_cast<struct acd::Acd*>(netif::globals::netif_default.acd);
+    auto* acd = reinterpret_cast<struct acd::Acd*>(netif::global::netif_default.acd);
 
     if (acd->ipaddr.addr == old_addr.addr)
     {

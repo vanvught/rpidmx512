@@ -2,7 +2,7 @@
  * @file acd.h
  *
  */
-/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,10 +35,8 @@
 #include "core/protocol/acd.h"
 #include "ip4/ip4_address.h"
 
-/**
- * https://datatracker.ietf.org/doc/html/rfc5227.html
- * IPv4 Address Conflict Detection
- */
+// https://datatracker.ietf.org/doc/html/rfc5227.html
+// IPv4 Address Conflict Detection
 
 namespace network::acd
 {
@@ -61,7 +59,7 @@ void Remove(struct acd::Acd*);
 void Start(struct acd::Acd*, ip4_addr_t ipaddr);
 void Stop(struct acd::Acd*);
 
-void ArpReply(const struct t_arp*);
+void ArpReply(const struct network::arp::Header*);
 
 void NetworkChangedLinkDown();
 void NetifIpAddrChanged(ip4_addr_t old_ip_address, ip4_addr_t new_ip_address);

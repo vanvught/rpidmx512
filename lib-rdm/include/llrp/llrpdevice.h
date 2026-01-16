@@ -36,7 +36,6 @@
 #include "e120.h"
 #include "rdmhandler.h"
 #include "ip4/ip4_address.h"
-#include "core/ip4/igmp.h"
 #include "apps/mdns.h"
 #include "firmware/debug/debug_debug.h"
 
@@ -60,7 +59,7 @@ class LLRPDevice
         assert(handle_llrp != -1);
         network::igmp::JoinGroup(handle_llrp, llrp::device::kIpV4LlrpRequest);
 
-        mdns::ServiceRecordAdd(nullptr, mdns::Services::RDMNET_LLRP, "node=RDMNet LLRP Only");
+        network::apps::mdns::ServiceRecordAdd(nullptr, network::apps::mdns::Services::kRdmnetLlrp, "node=RDMNet LLRP Only");
 
         DEBUG_EXIT();
     }
@@ -69,7 +68,7 @@ class LLRPDevice
     {
         DEBUG_ENTRY();
 
-		mdns::ServiceRecordDelete(mdns::Services::RDMNET_LLRP);
+		network::apps::mdns::ServiceRecordDelete(network::apps::mdns::Services::kRdmnetLlrp);
 		
         network::igmp::LeaveGroup(handle_llrp, llrp::device::kIpV4LlrpRequest);
         network::udp::End(llrp::device::kLlrpPort);

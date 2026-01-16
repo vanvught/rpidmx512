@@ -1,7 +1,7 @@
 /**
  * @file dmxnodewith4.h
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,15 +30,18 @@
 #include "dmxnode.h"
 #include "dmxnode_outputtype.h"
 #include "dmxsend.h"
-
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
 template <uint32_t nMaxPorts> class DmxNodeWith4
 {
    public:
-    DmxNodeWith4(DmxPixelOutputType* pA, DmxSend* pB) : dmx_pixel_output_type_(pA), dmx_send_(pB)
+    DmxNodeWith4(DmxPixelOutputType* dmx_pixel_output_type, DmxSend* dmx_send) : dmx_pixel_output_type_(dmx_pixel_output_type), dmx_send_(dmx_send)
     {
-        DEBUG_PRINTF("nMaxPorts=%u DmxPixelOutputType=%p DmxSend=%p", nMaxPorts, reinterpret_cast<void*>(dmx_pixel_output_type_), reinterpret_cast<void*>(dmx_send_));
+        DEBUG_PRINTF("nMaxPorts=%u DmxPixelOutputType=%p DmxSend=%p", nMaxPorts, reinterpret_cast<void*>(dmx_pixel_output_type_),
+                     reinterpret_cast<void*>(dmx_send_));
+
+        assert(s_this == nullptr);
+        s_this = this;
     }
 
     ~DmxNodeWith4() = default;
@@ -225,9 +228,17 @@ template <uint32_t nMaxPorts> class DmxNodeWith4
 
     bool GetSlotInfo([[maybe_unused]] uint16_t slot_offset, [[maybe_unused]] dmxnode::SlotInfo& slot_info) { return false; }
 
+    static DmxNodeWith4& Get()
+    {
+        assert(s_this != nullptr); // Ensure that s_this is valid
+        return *s_this;
+    }
+
    private:
     DmxPixelOutputType* dmx_pixel_output_type_;
     DmxSend* dmx_send_;
+
+    static inline DmxNodeWith4* s_this;
 };
 
-#endif  // DMXNODEWITH4_H_
+#endif // DMXNODEWITH4_H_

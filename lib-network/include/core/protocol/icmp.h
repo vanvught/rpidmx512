@@ -2,7 +2,7 @@
  * @file icmp.h
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,35 +31,40 @@
 #include "core/protocol/ethernet.h"
 #include "core/protocol/ip4.h"
 
-#if !defined (PACKED)
-# define PACKED __attribute__((packed))
+#if !defined(PACKED)
+#define PACKED __attribute__((packed))
 #endif
 
-enum ICMP_TYPE {
-	ICMP_TYPE_ECHO_REPLY = 0,
-	ICMP_TYPE_ECHO = 8
+namespace network::icmp
+{
+struct Type
+{
+    static constexpr uint8_t kEchoReply = 0;
+    static constexpr uint8_t kEcho = 8;
 };
 
-enum ICMP_CODE {
-	ICMP_CODE_ECHO = 0
-};
+inline constexpr uint8_t kCodeEcho = 0;
 
-struct t_icmp_packet {
-	uint8_t type;					/* 1 */
-	uint8_t code;					/* 2 */
-	uint16_t checksum;				/* 4 */
-	uint8_t parameter[4];			/* 8 */
-#define ICMP_HEADER_SIZE	8
-#define ICMP_PAYLOAD_SIZE	(network::ethernet::kMtuSize - ICMP_HEADER_SIZE - sizeof(struct ip4_header))
-	uint8_t payload[ICMP_PAYLOAD_SIZE];
+inline constexpr uint32_t kHeaderSize = 8;
+inline constexpr uint32_t kPayloadSize = (network::ethernet::kMtuSize - kHeaderSize - sizeof(struct network::ip4::Ip4Header));
+
+struct Packet
+{
+    uint8_t type;         // 1
+    uint8_t code;         // 2
+    uint16_t checksum;    // 4
+    uint8_t parameter[4]; // 8
+    uint8_t payload[kPayloadSize];
 } PACKED;
 
-struct t_icmp {
-	struct network::ethernet::Header ether;
-	struct ip4_header ip4;
-	struct t_icmp_packet icmp;
+struct Header
+{
+    struct network::ethernet::Header ether;
+    struct network::ip4::Ip4Header ip4;
+    struct Packet icmp;
 } PACKED;
 
-#define IPv4_ICMP_HEADERS_SIZE 			(sizeof(struct t_icmp) - sizeof(struct network::ethernet::Header))
+inline constexpr uint32_t kIPv4IcmpHeadersSize = (sizeof(struct Header) - sizeof(struct network::ethernet::Header));
+} // namespace network::icmp
 
 #endif /* CORE_PROTOCOL_ICMP_H_ */

@@ -2,7 +2,7 @@
  * @file ethernet.h
  *
  */
-/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,6 @@ namespace network::ethernet
 {
 inline constexpr uint32_t kMtuSize = 1500;
 inline constexpr uint32_t kAddressLength = 6;
-inline constexpr uint32_t kHwaddrLen = 6;
 // The 24-bit IANA IPv4-multicast OUI is 01-00-5e:
 inline constexpr uint8_t kIP4MulticastAddr0 = 0x01;
 inline constexpr uint8_t kIP4MulticastAddr1 = 0x00;
@@ -40,9 +39,9 @@ inline constexpr uint8_t kIP4MulticastAddr2 = 0x5e;
 
 struct Header
 {
-    uint8_t dst[kAddressLength]; /*  6 */
-    uint8_t src[kAddressLength]; /* 12 */
-    uint16_t type;               /* 14 */
+    uint8_t dst[kAddressLength]; //  6
+    uint8_t src[kAddressLength]; // 12
+    uint16_t type;               // 14
 } __attribute__((packed));
 } // namespace network::ethernet
 

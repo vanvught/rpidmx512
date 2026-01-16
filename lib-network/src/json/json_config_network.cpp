@@ -46,10 +46,10 @@ uint32_t GetNetwork(char* buffer, uint32_t length)
 #if defined(HAVE_NTP_CLIENT)
     uint32_t ntp_server_ip = 0;
 #if defined(CONFIG_NET_ENABLE_NTP_CLIENT)
-    ntp_server_ip = ntpclient::GetServerIp();
+    ntp_server_ip = network::apps::ntpclient::GetServerIp();
 #endif
 #if defined(CONFIG_NET_ENABLE_PTP_NTP_CLIENT)
-    ntp_server_ip = ntpclient::ptp::GetServerIp();
+    ntp_server_ip = network::apps::ntpclient::ptp::GetServerIp();
 #endif
 #endif
 

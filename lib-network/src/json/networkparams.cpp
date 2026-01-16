@@ -103,11 +103,11 @@ void NetworkParams::Store(const char* buffer, uint32_t buffer_size)
 
 void NetworkParams::Set()
 {
-    if (strncmp( network::iface::HostName(), reinterpret_cast<char*>(store_network.host_name), common::store::network::kHostnameSize - 1) != 0)
+    if (strncmp(network::iface::HostName(), reinterpret_cast<char*>(store_network.host_name), common::store::network::kHostnameSize - 1) != 0)
     {
-          network::iface::SetHostname(reinterpret_cast<char*>(store_network.host_name));
+        network::iface::SetHostname(reinterpret_cast<char*>(store_network.host_name));
         // When default is set, copy the hostname back
-        strncpy(reinterpret_cast<char*>(store_network.host_name),  network::iface::HostName(), common::store::network::kHostnameSize - 1);
+        strncpy(reinterpret_cast<char*>(store_network.host_name), network::iface::HostName(), common::store::network::kHostnameSize - 1);
         store_network.host_name[common::store::network::kHostnameSize - 1] = 0;
     }
 
@@ -121,14 +121,14 @@ void NetworkParams::Set()
     }
     else
     {
-         network::iface::EnableDhcp();
+        network::iface::EnableDhcp();
     }
 
 #if defined(CONFIG_NET_ENABLE_NTP_CLIENT)
-    ntpclient::SetServerIp(store_network.ntp_server_ip);
+    network::apps::ntpclient::SetServerIp(store_network.ntp_server_ip);
 #endif
 #if defined(CONFIG_NET_ENABLE_PTP_NTP_CLIENT)
-    ntpclient::ptp::SetServerIp(store_network.ntp_server_ip);
+    network::apps::ntpclient::ptp::SetServerIp(store_network.ntp_server_ip);
 #endif
 
 #ifndef NDEBUG

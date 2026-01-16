@@ -2,7 +2,7 @@
  * @file dhcp.h
  *
  */
-/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2018-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,76 +32,76 @@
 
 namespace network::dhcp
 {
-static constexpr uint32_t OPT_SIZE = 312;
-static constexpr uint32_t MAGIC_COOKIE = 0x63825363; ///< You should not modify it number.
+inline constexpr uint32_t kOptSize = 312;
+inline constexpr uint32_t kMagicCookie = 0x63825363; ///< You should not modify it number.
 
 struct OpCode
 {
-    static constexpr uint8_t BOOTREQUEST = 1;
-    static constexpr uint8_t BOOTREPLY = 2;
+    static constexpr uint8_t kBootrequest = 1;
+    static constexpr uint8_t kBootreply = 2;
 };
 
 struct HardwareType
 {
-    static constexpr uint8_t HTYPE_10MB = 1;
-    static constexpr uint8_t HTYPE_100MB = 2;
+    static constexpr uint8_t k10Mb = 1;
+    static constexpr uint8_t k100Mb = 2;
 };
 
 struct Type
 {
-    static constexpr uint8_t DISCOVER = 1;
-    static constexpr uint8_t OFFER = 2;
-    static constexpr uint8_t REQUEST = 3;
-    static constexpr uint8_t DECLINE = 4;
-    static constexpr uint8_t ACK = 5;
-    static constexpr uint8_t NAK = 6;
-    static constexpr uint8_t RELEASE = 7;
-    static constexpr uint8_t INFORM = 8;
+    static constexpr uint8_t kDiscover = 1;
+    static constexpr uint8_t kOffer = 2;
+    static constexpr uint8_t kRequest = 3;
+    static constexpr uint8_t kDecline = 4;
+    static constexpr uint8_t kAck = 5;
+    static constexpr uint8_t kNak = 6;
+    static constexpr uint8_t kRelease = 7;
+    static constexpr uint8_t kInform = 8;
 };
 
 struct Options
 {
-    /* BootP options */
-    static constexpr uint8_t OPTION_PAD_OPTION = 0;
-    static constexpr uint8_t OPTION_SUBNET_MASK = 1; ///< RFC 2132 3.3
-    static constexpr uint8_t OPTION_ROUTER = 3;
-    static constexpr uint8_t OPTION_DNS_SERVER = 6;
-    static constexpr uint8_t OPTION_HOSTNAME = 12;
-    static constexpr uint8_t OPTION_DOMAIN_NAME = 15;
-    static constexpr uint8_t OPTION_IP_TTL = 23;
-    static constexpr uint8_t OPTION_MTU = 26;
-    static constexpr uint8_t OPTION_BROADCAST = 28;
-    static constexpr uint8_t OPTION_TCP_TTL = 37;
-    static constexpr uint8_t OPTION_NTP = 42;
-    static constexpr uint8_t OPTION_END = 255;
-    /* DHCP options */
-    static constexpr uint8_t OPTION_REQUESTED_IP = 50;      ///< RFC 2132 9.1, requested IP address
-    static constexpr uint8_t OPTION_LEASE_TIME = 51;        ///< RFC 2132 9.2, time in seconds, in 4 bytes
-    static constexpr uint8_t OPTION_OVERLOAD = 52;          ///< RFC2132 9.3, use file and/or sname field for options
-    static constexpr uint8_t OPTION_MESSAGE_TYPE = 53;      ///< RFC 2132 9.6, important for DHCP
-    static constexpr uint8_t OPTION_SERVER_IDENTIFIER = 54; ///< RFC 2132 9.7, server IP address
-    static constexpr uint8_t OPTION_PARAM_REQUEST = 55;     ///< RFC 2132 9.8, requested option types
-    static constexpr uint8_t OPTION_MAX_MSG_SIZE = 57;      ///< RFC 2132 9.10, message size accepted >= 576
-    static constexpr uint8_t OPTION_DHCP_T1_VALUE = 58;     ///< T1 renewal time
-    static constexpr uint8_t OPTION_DHCP_T2_VALUE = 59;     ///< T2 renewal time
-    static constexpr uint8_t OPTION_CLIENT_IDENTIFIER = 61;
+    // BootP options
+    static constexpr uint8_t kPadOption = 0;
+    static constexpr uint8_t kSubnetMask = 1; ///< RFC 2132 3.3
+    static constexpr uint8_t kRouter = 3;
+    static constexpr uint8_t kDnsServer = 6;
+    static constexpr uint8_t kHostname = 12;
+    static constexpr uint8_t kDomainName = 15;
+    static constexpr uint8_t kIpTtl = 23;
+    static constexpr uint8_t kMtu = 26;
+    static constexpr uint8_t kBroadcast = 28;
+    static constexpr uint8_t kTcpTtl = 37;
+    static constexpr uint8_t kNtp = 42;
+    static constexpr uint8_t kEnd = 255;
+    // DHCP options
+    static constexpr uint8_t kRequestedIp = 50;      ///< RFC 2132 9.1, requested IP address
+    static constexpr uint8_t kLeaseTime = 51;        ///< RFC 2132 9.2, time in seconds, in 4 bytes
+    static constexpr uint8_t kOverload = 52;         ///< RFC2132 9.3, use file and/or sname field for options
+    static constexpr uint8_t kMessageType = 53;      ///< RFC 2132 9.6, important for DHCP
+    static constexpr uint8_t kServerIdentifier = 54; ///< RFC 2132 9.7, server IP address
+    static constexpr uint8_t kParamRequest = 55;     ///< RFC 2132 9.8, requested option types
+    static constexpr uint8_t kMaxMsgSize = 57;       ///< RFC 2132 9.10, message size accepted >= 576
+    static constexpr uint8_t kDhcpT1Value = 58;      ///< T1 renewal time
+    static constexpr uint8_t kDhcpT2Value = 59;      ///< T2 renewal time
+    static constexpr uint8_t kClientIdentifier = 61;
 };
 
 enum class State : uint8_t
 {
-    STATE_OFF = 0,
-    STATE_REQUESTING = 1,
-    STATE_INIT = 2,
-    STATE_REBOOTING = 3,
-    STATE_REBINDING = 4,
-    STATE_RENEWING = 5,
-    STATE_SELECTING = 6,
-    STATE_INFORMING = 7,
-    STATE_CHECKING = 8,
-    STATE_PERMANENT = 9,
-    STATE_BOUND = 10,
-    STATE_RELEASING = 11,
-    STATE_BACKING_OFF = 12
+    kOff = 0,
+    kRequesting = 1,
+    kInit = 2,
+    kRebooting = 3,
+    kRebinding = 4,
+    kRenewing = 5,
+    kSelecting = 6,
+    kInforming = 7,
+    kChecking = 8,
+    kPermanent = 9,
+    kBound = 10,
+    kReleasing = 11,
+    kBackingOff = 12
 };
 
 struct Message
@@ -113,14 +113,14 @@ struct Message
     uint32_t xid;
     uint16_t secs;
     uint16_t flags;
-    uint8_t ciaddr[IPv4_ADDR_LEN];
-    uint8_t yiaddr[IPv4_ADDR_LEN];
-    uint8_t siaddr[IPv4_ADDR_LEN];
-    uint8_t giaddr[IPv4_ADDR_LEN];
+    uint8_t ciaddr[network::ip4::kAddressLength];
+    uint8_t yiaddr[network::ip4::kAddressLength];
+    uint8_t siaddr[network::ip4::kAddressLength];
+    uint8_t giaddr[network::ip4::kAddressLength];
     uint8_t chaddr[16];
     uint8_t sname[64];
     uint8_t file[128];
-    uint8_t options[dhcp::OPT_SIZE];
+    uint8_t options[dhcp::kOptSize];
 } __attribute__((packed));
 } // namespace network::dhcp
 

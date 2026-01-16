@@ -56,11 +56,11 @@ void AdjustLink(net::phy::Status phy_status)
     DEBUG_ENTRY();
 
     printf("Link %s, %d, %s\n", phy_status.link == net::phy::Link::kStateUp ? "Up" : "Down", phy_status.speed == net::phy::Speed::kSpeed10 ? 10 : 100,
-           phy_status.duplex == net::phy::Duplex::DUPLEX_HALF ? "HALF" : "FULL");
+           phy_status.duplex == net::phy::Duplex::kDuplexHalf ? "HALF" : "FULL");
 
     auto value = H3_EMAC->CTL0;
 
-    if (phy_status.duplex == net::phy::Duplex::DUPLEX_FULL)
+    if (phy_status.duplex == net::phy::Duplex::kDuplexFull)
     {
         value |= CTL0_DUPLEX_FULL_DUPLEX;
     }
@@ -168,7 +168,7 @@ void __attribute__((cold)) Start(uint8_t mac_address[], net::phy::Link& link)
 
     net::phy::Status phy_status;
 
-    phy_status.duplex = net::phy::Duplex::DUPLEX_HALF;
+    phy_status.duplex = net::phy::Duplex::kDuplexHalf;
     phy_status.speed = net::phy::Speed::kSpeed10;
 
     net::phy::Start(PHY_ADDRESS, phy_status);
@@ -199,11 +199,11 @@ void __attribute__((cold)) Start(uint8_t mac_address[], net::phy::Link& link)
     H3_EMAC->TX_CTL0 = value;
 
     value = H3_EMAC->TX_CTL1;
-    value &= (uint32_t)~TX_CTL1_TX_DMA_EN;
+    value &= static_cast<uint32_t>(~TX_CTL1_TX_DMA_EN);
     H3_EMAC->TX_CTL1 = value;
 
     value = H3_EMAC->RX_CTL1;
-    value &= (uint32_t)~RX_CTL1_RX_DMA_EN;
+    value &= static_cast<uint32_t>(~RX_CTL1_RX_DMA_EN);
     H3_EMAC->RX_CTL1 = value;
 
     RxDescsInit();

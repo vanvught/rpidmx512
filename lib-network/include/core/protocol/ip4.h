@@ -2,7 +2,7 @@
  * @file ip4.h
  *
  */
-/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,44 +33,46 @@
 #define PACKED __attribute__((packed))
 #endif
 
-enum IPv4_ADDR
+namespace network::ip4
 {
-    IPv4_ADDR_LEN = 4
+inline constexpr uint32_t kAddressLength = 4;
+
+struct Flags
+{
+    static constexpr uint16_t kFlagLf = 0x0000;
+    static constexpr uint16_t kFlagMf = 0x2000;
+    static constexpr uint16_t kFlagDf = 0x4000;
 };
 
-enum IPv4_PROTO
+struct Proto
 {
-    IPv4_PROTO_ICMP = 1,
-    IPv4_PROTO_IGMP = 2,
-    IPv4_PROTO_TCP = 6,
-    IPv4_PROTO_UDP = 17
+    static constexpr uint8_t kIcmp = 1;
+    static constexpr uint8_t kIgmp = 2;
+    static constexpr uint8_t kTcp = 6;
+    static constexpr uint8_t kUdp = 17;
 };
 
-enum IPv4_FLAG
+struct Ip4Header
 {
-    IPv4_FLAG_LF = 0x0000,
-    IPv4_FLAG_MF = 0x2000,
-    IPv4_FLAG_DF = 0x4000
-};
-
-struct ip4_header
-{
-    uint8_t ver_ihl;            /*  1 */
-    uint8_t tos;                /*  2 */
-    uint16_t len;               /*  4 */
-    uint16_t id;                /*  6 */
-    uint16_t flags_froff;       /*  8 */
-    uint8_t ttl;                /*  9 */
-    uint8_t proto;              /* 10 */
-    uint16_t chksum;            /* 12 */
-    uint8_t src[IPv4_ADDR_LEN]; /* 16 */
-    uint8_t dst[IPv4_ADDR_LEN]; /* 20 */
+    uint8_t ver_ihl;             //  1
+    uint8_t tos;                 //  2
+    uint16_t len;                //  4
+    uint16_t id;                 //  6
+    uint16_t flags_froff;        //  8
+    uint8_t ttl;                 //  9
+    uint8_t proto;               // 10
+    uint16_t chksum;             // 12
+    uint8_t src[kAddressLength]; // 16
+    uint8_t dst[kAddressLength]; // 20
 } PACKED;
 
-struct t_ip4
+inline constexpr uint32_t kHeaderSize = sizeof(struct Ip4Header);
+
+struct Header
 {
-    struct network::ethernet::Header ether;
-    struct ip4_header ip4;
+    struct ethernet::Header ether;
+    struct Ip4Header ip4;
 } PACKED;
+} // namespace network::ip4
 
 #endif // CORE_PROTOCOL_IP4_H_

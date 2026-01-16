@@ -2,7 +2,7 @@
  * @file iana.h
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,13 +28,17 @@
 
 #include <cstdint>
 
-namespace net::iana {
-static constexpr uint16_t IANA_PORT_DHCP_SERVER = 67;
-static constexpr uint16_t IANA_PORT_DHCP_CLIENT = 68;
-static constexpr uint16_t IANA_PORT_TFTP        = 69;
-static constexpr uint16_t IANA_PORT_HTTP        = 80;
-static constexpr uint16_t IANA_PORT_NTP_SERVER  = 123;
-static constexpr uint16_t IANA_PORT_MDNS        = 5353;
-}  // namespace net::iana
+namespace network::iana
+{
+struct Ports
+{
+    static constexpr uint16_t kPortDhcpServer = 67;
+    static constexpr uint16_t kPortDhcpClient = 68;
+    static constexpr uint16_t kPortTftp = 69;
+    static constexpr uint16_t kPortHttp = 80;
+    static constexpr uint16_t kPortNtp = 123;
+    static constexpr uint16_t kPortMdns = 5353;
+};
+} // namespace network::iana
 
 #endif /* CORE_PROTOCOL_IANA_H_ */

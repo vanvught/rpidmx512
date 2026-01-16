@@ -2,7 +2,7 @@
  * @file phy.cpp
  *
  */
-/* Copyright (C) 2023-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2023-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@
 #include "emac/phy.h"
 #include "emac/net_link_check.h"
 #include "emac/mmi.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
 #if !defined(BIT)
 #define BIT(x) static_cast<uint16_t>(1U << (x))
@@ -60,12 +60,12 @@ void CustomizedTiming()
  */
 void CustomizedStatus(phy::Status& phy_status)
 {
-    phy_status.link = link_status_read();
+    phy_status.link = net::link::StatusRead();
 
     uint16_t value;
     phy::Read(PHY_ADDRESS, 0x1f, value);
 
-    phy_status.duplex = ((value & BIT(4)) == BIT(4)) ? phy::Duplex::DUPLEX_FULL : phy::Duplex::DUPLEX_HALF;
+    phy_status.duplex = ((value & BIT(4)) == BIT(4)) ? phy::Duplex::kDuplexFull : phy::Duplex::kDuplexHalf;
     phy_status.speed = ((value & BIT(2)) == BIT(2)) ? phy::Speed::kSpeed10 : phy::Speed::kSpeed100;
     phy_status.autonegotiation = ((value & BIT(12)) == BIT(12));
 }

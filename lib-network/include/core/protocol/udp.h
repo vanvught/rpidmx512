@@ -2,7 +2,7 @@
  * @file udp.h
  *
  */
-/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,25 +35,30 @@
 #define PACKED __attribute__((packed))
 #endif
 
-struct t_udp_packet
+namespace network::udp
+{
+
+inline constexpr uint32_t kHeaderSize = 8;
+inline constexpr uint32_t kDataSize = network::ethernet::kMtuSize - ip4::kHeaderSize - kHeaderSize;
+
+struct Packet
 {
     uint16_t source_port;      // 2
     uint16_t destination_port; // 4
     uint16_t len;              // 6
     uint16_t checksum;         // 8
-#define UDP_HEADER_SIZE 8
-#define UDP_DATA_SIZE (network::ethernet::kMtuSize - UDP_HEADER_SIZE - sizeof(struct ip4_header))
-    uint8_t data[UDP_DATA_SIZE];
+    uint8_t data[kDataSize];
 } PACKED;
 
-struct t_udp
+struct Header
 {
     struct network::ethernet::Header ether;
-    struct ip4_header ip4;
-    struct t_udp_packet udp;
+    struct network::ip4::Ip4Header ip4;
+    struct Packet udp;
 } PACKED;
 
-#define IPv4_UDP_HEADERS_SIZE (sizeof(struct ip4_header) + UDP_HEADER_SIZE)             /* IP | UDP */
-#define UDP_PACKET_HEADERS_SIZE (sizeof(struct network::ethernet::Header) + IPv4_UDP_HEADERS_SIZE) /* ETH | IP | UDP */
+inline constexpr uint32_t kIPv4UdpHeadersSize = (sizeof(struct network::ip4::Ip4Header) + kHeaderSize);             // IP | UDP
+inline constexpr uint32_t kUdpPacketHeadersSize = (sizeof(struct network::ethernet::Header) + kIPv4UdpHeadersSize); // ETH | IP | UDP
+} // namespace network::udp
 
 #endif // CORE_PROTOCOL_UDP_H_

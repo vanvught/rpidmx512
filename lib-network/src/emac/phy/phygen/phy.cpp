@@ -28,7 +28,7 @@
 #include "emac/phy.h"
 #include "emac/mmi.h"
 #include "firmware/debug/debug_printbits.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
 #if !defined(BIT)
 #define BIT(x) static_cast<uint16_t>(1U << (x))
@@ -61,7 +61,7 @@ void CustomizedStatus(phy::Status& phy_status)
 
     debug::PrintBits(value);
 
-    phy_status.duplex = Duplex::DUPLEX_FULL;
+    phy_status.duplex = Duplex::kDuplexFull;
     phy_status.speed = Speed::kSpeed100;
     phy_status.link = (value & mmi::BMSR_LINKED_STATUS) ? Link::kStateUp : Link::kStateDown;
     phy_status.autonegotiation = (value & mmi::BMSR_AUTONEGO_COMPLETE);

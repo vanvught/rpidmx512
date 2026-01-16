@@ -45,17 +45,17 @@ namespace netif
 {
 static void NetifDoUpdateGlobals()
 {
-    auto& netif = netif::globals::netif_default;
+    auto& netif = netif::global::netif_default;
     netif.broadcast_ip.addr = (netif.ip.addr | ~netif.netmask.addr);
 
-    network::globals::broadcast_mask = ~(netif.netmask.addr);
-    network::globals::on_network_mask = netif.ip.addr & netif.netmask.addr;
+    network::global::broadcast_mask = ~(netif.netmask.addr);
+    network::global::on_network_mask = netif.ip.addr & netif.netmask.addr;
 }
 
 static bool NetifDoSetNetmask(network::ip4_addr_t netmask, network::ip4_addr_t& old_nm)
 {
     DEBUG_ENTRY();
-    auto& netif = netif::globals::netif_default;
+    auto& netif = netif::global::netif_default;
 
     if (netmask.addr != netif.netmask.addr)
     {
@@ -75,7 +75,7 @@ static bool NetifDoSetNetmask(network::ip4_addr_t netmask, network::ip4_addr_t& 
 static bool NetifDoSetGw(network::ip4_addr_t gw, network::ip4_addr_t& old_gw)
 {
     DEBUG_ENTRY();
-    auto& netif = netif::globals::netif_default;
+    auto& netif = netif::global::netif_default;
 
     if (gw.addr != netif.gw.addr)
     {
@@ -113,7 +113,7 @@ void SetGw(network::ip4_addr_t gw)
 }
 void Init()
 {
-    auto& netif = netif::globals::netif_default;
+    auto& netif = netif::global::netif_default;
 
     netif.ip.addr = 0;
     netif.netmask.addr = 0;

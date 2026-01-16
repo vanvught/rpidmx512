@@ -23,8 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include "core/protocol/ethernet.h"
-#if defined(DEBUG_NET_ICMP)
+#if defined(DEBUG_NETWORK_ICMP)
 #undef NDEBUG
 #endif
 
@@ -41,32 +40,33 @@
 #include "../src/core/net_memcpy.h"
 #include "../src/core/net_private.h"
 #include "core/protocol/icmp.h"
+#include "core/protocol/ethernet.h"
 
 namespace network::icmp
 {
-__attribute__((hot)) void Input(struct t_icmp* p_icmp)
+__attribute__((hot)) void Input(struct Header* p_icmp)
 {
-    if (p_icmp->icmp.type == ICMP_TYPE_ECHO)
+    if (p_icmp->icmp.type == icmp::Type::kEcho)
     {
-        if (p_icmp->icmp.code == ICMP_CODE_ECHO)
+        if (p_icmp->icmp.code == kCodeEcho)
         {
             // Ethernet
             std::memcpy(p_icmp->ether.dst, p_icmp->ether.src, network::ethernet::kAddressLength);
-            std::memcpy(p_icmp->ether.src, netif::globals::netif_default.hwaddr, network::ethernet::kAddressLength);
+            std::memcpy(p_icmp->ether.src, netif::global::netif_default.hwaddr, network::ethernet::kAddressLength);
             // IPv4
             p_icmp->ip4.id = static_cast<uint16_t>(~p_icmp->ip4.id);
 
             const auto kIpDestination = network::memcpy_ip(p_icmp->ip4.dst);
 
-            std::memcpy(p_icmp->ip4.dst, p_icmp->ip4.src, IPv4_ADDR_LEN);
+            std::memcpy(p_icmp->ip4.dst, p_icmp->ip4.src, network::ip4::kAddressLength);
 
-            if (kIpDestination == netif::globals::netif_default.secondary_ip.addr)
+            if (kIpDestination == netif::global::netif_default.secondary_ip.addr)
             {
-                network::memcpy_ip(p_icmp->ip4.src, netif::globals::netif_default.secondary_ip.addr);
+                network::memcpy_ip(p_icmp->ip4.src, netif::global::netif_default.secondary_ip.addr);
             }
             else
             {
-                network::memcpy_ip(p_icmp->ip4.src, netif::globals::netif_default.ip.addr);
+                network::memcpy_ip(p_icmp->ip4.src, netif::global::netif_default.ip.addr);
             }
 
             p_icmp->ip4.chksum = 0;
@@ -74,7 +74,7 @@ __attribute__((hot)) void Input(struct t_icmp* p_icmp)
             p_icmp->ip4.chksum = Chksum(reinterpret_cast<void*>(&p_icmp->ip4), 20); // TODO(avv)
 #endif
             // ICMP
-            p_icmp->icmp.type = ICMP_TYPE_ECHO_REPLY;
+            p_icmp->icmp.type = icmp::Type::kEchoReply;
             p_icmp->icmp.checksum = 0;
 #if !defined(CHECKSUM_BY_HARDWARE)
             p_icmp->icmp.checksum = Chksum(reinterpret_cast<void*>(&p_icmp->ip4), static_cast<uint32_t>(__builtin_bswap16(p_icmp->ip4.len)));

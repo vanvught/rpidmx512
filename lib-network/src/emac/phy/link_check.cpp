@@ -1,8 +1,8 @@
 /**
- * net_link_check.cpp
+ * net_link::check.cpp
  *
  */
-/* Copyright (C) 2022-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2022-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,29 +30,29 @@
 #define PHY_ADDRESS 1
 #endif
 
-namespace net
+namespace net::link
 {
 #if defined(ENET_LINK_CHECK_USE_INT)
-void link_interrupt_init()
+void InterruptInit()
 {
-    link_pin_enable();
-    link_pin_recovery();
-    link_gpio_init();
-    link_exti_init();
+    link::PinEnable();
+    link::PinRecovery();
+    link::GpioInit();
+    link::ExtiInit();
 }
 #endif
 
 #if defined(ENET_LINK_CHECK_USE_PIN_POLL)
-void link_pin_poll_init()
+void PinPollInit()
 {
-    link_pin_enable();
-    link_pin_recovery();
-    link_gpio_init();
+    link::PinEnable();
+    link::PinRecovery();
+    link::GpioInit();
 }
 #endif
 
-net::phy::Link link_status_read()
+net::phy::Link StatusRead()
 {
     return net::phy::GetLink(PHY_ADDRESS);
 }
-} // namespace net
+} // namespace net::link

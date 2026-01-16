@@ -2,7 +2,7 @@
  * @file mdns.h
  *
  */
-/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,21 +28,21 @@
 
 #include <cstdint>
 
-namespace mdns
+namespace network::apps::mdns
 {
 static constexpr uint32_t kMdnsResponseTtl = 3600; ///< (in seconds)
 
 enum class Services
 {
-    CONFIG,
-    TFTP,
-    HTTP,
-    RDMNET_LLRP,
-    NTP,
-    MIDI,
-    OSC,
-    DDP,
-    PP,
+    kConfig,
+    kTftp,
+    kHttp,
+    kRdmnetLlrp,
+    kNtp,
+    kMidi,
+    kOsc,
+    kDdp,
+    kPp,
     kLastNotUsed
 };
 
@@ -52,7 +52,7 @@ struct ServiceRecord
     char* text_content;
     uint16_t text_content_length;
     uint16_t port;
-    mdns::Services services;
+    Services services;
 };
 
 void Init();
@@ -60,9 +60,9 @@ void Start();
 void Stop();
 
 bool ServiceRecordAdd(const char* name, Services service, const char* text_content = nullptr, uint16_t port = 0);
-bool ServiceRecordDelete(mdns::Services service);
+bool ServiceRecordDelete(Services service);
 
 void SendAnnouncement(uint32_t ttl);
-} // namespace mdns
+} // namespace network::apps::mdns
 
-#endif  // APPS_MDNS_H_
+#endif // APPS_MDNS_H_

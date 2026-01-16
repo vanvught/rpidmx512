@@ -8,7 +8,7 @@
  * @note This implementation is optimized for Cortex-M3/M4/M7 processors and assumes a standalone environment
  *       without a standard library.
  */
-/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,6 @@
  * THE SOFTWARE.
  */
 
-
 #if defined(DEBUG_NTP_CLIENT)
 #undef NDEBUG
 #endif
@@ -47,11 +46,14 @@
 #include "network.h"
 #include "configstore.h"
 #include "core/protocol/ntp.h"
+#include "core/protocol/iana.h"
 #include "apps/ntpclient.h"
 #include "softwaretimers.h"
 #include "configurationstore.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
+namespace network::apps::ntpclient
+{
 /*
  * How to multiply by 4294.967296 quickly (and not quite exactly)
  * without using floating point or greater than 32-bit integers.
@@ -121,10 +123,10 @@ static void Send();
  */
 static void NtpClientTimer([[maybe_unused]] TimerHandle_t handle)
 {
-    assert(s_ntp_client.status != ntp::Status::STOPPED);
-    assert(s_ntp_client.status != ntp::Status::DISABLED);
+    assert(s_ntp_client.status != ntp::Status::kStopped);
+    assert(s_ntp_client.status != ntp::Status::kDisabled);
 
-    if (s_ntp_client.status == ntp::Status::WAITING)
+    if (s_ntp_client.status == ntp::Status::kWaiting)
     {
         if (s_ntp_client.request_timeout > 1)
         {
@@ -134,8 +136,8 @@ static void NtpClientTimer([[maybe_unused]] TimerHandle_t handle)
 
         if (s_ntp_client.request_timeout == 1)
         {
-            s_ntp_client.status = ntp::Status::FAILED;
-            ntpclient::DisplayStatus(ntp::Status::FAILED);
+            s_ntp_client.status = ntp::Status::kFailed;
+            ntpclient::DisplayStatus(ntp::Status::kFailed);
             s_ntp_client.poll_seconds = ntpclient::kPollSecondsMin;
             return;
         }
@@ -157,9 +159,9 @@ static void NtpClientTimer([[maybe_unused]] TimerHandle_t handle)
 static void PrintNtpTime([[maybe_unused]] const char* text, [[maybe_unused]] const struct ntp::TimeStamp* ntp_time)
 {
 #ifndef NDEBUG
-    const auto kSeconds = static_cast<time_t>(ntp_time->seconds - ntp::JAN_1970);
+    const auto kSeconds = static_cast<time_t>(ntp_time->seconds - ntp::kJan1970);
     const auto* tm = localtime(&kSeconds);
-    printf("%s %02d:%02d:%02d.%06d %04d [%u]\n", text, tm->tm_hour, tm->tm_min, tm->tm_sec, USEC(ntp_time->nFraction), tm->tm_year + 1900, ntp_time->seconds);
+    printf("%s %02d:%02d:%02d.%06d %04d [%u]\n", text, tm->tm_hour, tm->tm_min, tm->tm_sec, USEC(ntp_time->fraction), tm->tm_year + 1900, ntp_time->seconds);
 #endif
 }
 
@@ -172,33 +174,31 @@ static struct timeval now;
  * NTP timestamp format, including both seconds and fractional seconds.
  *
  * @param[out] seconds Number of seconds since 01/01/1900.
- * @param[out] nFraction Fractional part of a second in NTP format.
+ * @param[out] fraction Fractional part of a second in NTP format.
  */
 static void GetTimeNtpFormat(uint32_t& seconds, uint32_t& fraction)
 {
     gettimeofday(&now, nullptr);
-    seconds = static_cast<uint32_t>(now.tv_sec) + ntp::JAN_1970;
+    seconds = static_cast<uint32_t>(now.tv_sec) + ntp::kJan1970;
     fraction = NTPFRAC(now.tv_usec);
 }
 
 /**
  * @brief Sends an NTP request to the configured server.
  *
- * This function prepares an NTP request packet and sends it to the server
- * specified in the configuration using the UDP protocol.
  */
 static void Send()
 {
-    GetTimeNtpFormat(s_ntp_client.t1.seconds, s_ntp_client.t1.nFraction);
+    GetTimeNtpFormat(s_ntp_client.t1.seconds, s_ntp_client.t1.fraction);
 
-    s_ntp_client.request.TransmitTimestamp_s = __builtin_bswap32(s_ntp_client.t1.seconds);
-    s_ntp_client.request.TransmitTimestamp_f = __builtin_bswap32(s_ntp_client.t1.nFraction);
+    s_ntp_client.request.transmit_timestamp_s = __builtin_bswap32(s_ntp_client.t1.seconds);
+    s_ntp_client.request.transmit_timestamp_f = __builtin_bswap32(s_ntp_client.t1.fraction);
 
-    network::udp::Send(s_ntp_client.handle, reinterpret_cast<const uint8_t*>(&s_ntp_client.request), kRequestSize, s_ntp_client.server_ip, ntp::UDP_PORT);
+    network::udp::Send(s_ntp_client.handle, reinterpret_cast<const uint8_t*>(&s_ntp_client.request), kRequestSize, s_ntp_client.server_ip, iana::Ports::kPortNtp);
 
     s_ntp_client.request_timeout = ntpclient::kTimeoutSeconds;
-    s_ntp_client.status = ntp::Status::WAITING;
-    ntpclient::DisplayStatus(ntp::Status::WAITING);
+    s_ntp_client.status = ntp::Status::kWaiting;
+    ntpclient::DisplayStatus(ntp::Status::kWaiting);
 }
 
 /**
@@ -211,10 +211,10 @@ static void Send()
  */
 static void Difference(const struct ntp::TimeStamp& start, const struct ntp::TimeStamp& stop, int32_t& diff_seconds, int32_t& diff_micro_seconds)
 {
-    ntp::time_t r;
-    const ntp::time_t kX = {.tv_sec = static_cast<int32_t>(stop.seconds), .tv_usec = static_cast<int32_t>(USEC(stop.nFraction))};
-    const ntp::time_t kY = {.tv_sec = static_cast<int32_t>(start.seconds), .tv_usec = static_cast<int32_t>(USEC(start.nFraction))};
-    ntp::sub_time(&r, &kX, &kY);
+    ntp::Time r;
+    const ntp::Time kX = {.tv_sec = static_cast<int32_t>(stop.seconds), .tv_usec = static_cast<int32_t>(USEC(stop.fraction))};
+    const ntp::Time kY = {.tv_sec = static_cast<int32_t>(start.seconds), .tv_usec = static_cast<int32_t>(USEC(start.fraction))};
+    ntp::SubTime(&r, &kX, &kY);
 
     diff_seconds = r.tv_sec;
     diff_micro_seconds = r.tv_usec;
@@ -240,8 +240,8 @@ static void SetTimeOfDay()
     const auto kOffsetSecondsAverage = static_cast<int32_t>(offset_seconds / 2);
     const auto kOffsetMicrosAverage = static_cast<int32_t>(offset_micro_seconds / 2);
 
-    ntp::time_t ntp_offset = {.tv_sec = kOffsetSecondsAverage, .tv_usec = kOffsetMicrosAverage};
-    ntp::normalize_time(&ntp_offset);
+    ntp::Time ntp_offset = {.tv_sec = kOffsetSecondsAverage, .tv_usec = kOffsetMicrosAverage};
+    ntp::NormalizeTime(&ntp_offset);
 
     struct timeval tv;
 
@@ -263,8 +263,8 @@ static void SetTimeOfDay()
 
     if ((ntp_offset.tv_sec == 0) && (ntp_offset.tv_usec > -999) && (ntp_offset.tv_usec < 999))
     {
-        s_ntp_client.status = ntp::Status::LOCKED;
-        ntpclient::DisplayStatus(ntp::Status::LOCKED);
+        s_ntp_client.status = ntp::Status::kLocked;
+        ntpclient::DisplayStatus(ntp::Status::kLocked);
         if (++s_ntp_client.locked_count == 4)
         {
             s_ntp_client.poll_seconds = ntpclient::kPollSecondsMax;
@@ -272,8 +272,8 @@ static void SetTimeOfDay()
     }
     else
     {
-        s_ntp_client.status = ntp::Status::IDLE;
-        ntpclient::DisplayStatus(ntp::Status::IDLE);
+        s_ntp_client.status = ntp::Status::kIdle;
+        ntpclient::DisplayStatus(ntp::Status::kIdle);
         s_ntp_client.poll_seconds = ntpclient::kPollSecondsMin;
         s_ntp_client.locked_count = 0;
     }
@@ -281,8 +281,7 @@ static void SetTimeOfDay()
 #ifndef NDEBUG
     const auto kTime = time(nullptr);
     const auto* local_time = localtime(&kTime);
-    DEBUG_PRINTF("localtime: %.4d/%.2d/%.2d %.2d:%.2d:%.2d", local_time->tm_year + 1900, local_time->tm_mon + 1, local_time->tm_mday, local_time->tm_hour,
-                 local_time->tm_min, local_time->tm_sec);
+    DEBUG_PRINTF("localtime: %.4d/%.2d/%.2d %.2d:%.2d:%.2d", local_time->tm_year + 1900, local_time->tm_mon + 1, local_time->tm_mday, local_time->tm_hour, local_time->tm_min, local_time->tm_sec);
 #endif
     PrintNtpTime("T1: ", &s_ntp_client.t1);
     PrintNtpTime("T2: ", &s_ntp_client.t2);
@@ -290,14 +289,14 @@ static void SetTimeOfDay()
     PrintNtpTime("T4: ", &s_ntp_client.t4);
 #ifndef NDEBUG
     /* delay */
-    ntp::time_t diff1;
-    ntp::time_t diff2;
+    ntp::Time diff1;
+    ntp::Time diff2;
 
     Difference(s_ntp_client.t1, s_ntp_client.t4, diff1.tv_sec, diff1.tv_usec);
     Difference(s_ntp_client.t2, s_ntp_client.t3, diff2.tv_sec, diff2.tv_usec);
 
-    ntp::time_t ntp_delay;
-    ntp::sub_time(&ntp_delay, &diff1, &diff2);
+    ntp::Time ntp_delay;
+    ntp::SubTime(&ntp_delay, &diff1, &diff2);
 
     char sign = '+';
 
@@ -337,30 +336,67 @@ void Input(const uint8_t* buffer, [[maybe_unused]] uint32_t size, uint32_t from_
 {
     const auto* reply = reinterpret_cast<const ntp::Packet*>(buffer);
 
-    GetTimeNtpFormat(s_ntp_client.t4.seconds, s_ntp_client.t4.nFraction);
-
-    if (__builtin_expect((from_ip != s_ntp_client.server_ip), 0))
+    if (size < sizeof(ntp::Packet)) [[unlikely]]
     {
-        s_ntp_client.status = ntp::Status::FAILED;
-        ntpclient::DisplayStatus(ntp::Status::FAILED);
-        DEBUG_PUTS("ntp::Status::FAILED");
         return;
     }
 
-    s_ntp_client.t2.seconds = __builtin_bswap32(reply->ReceiveTimestamp_s);
-    s_ntp_client.t2.nFraction = __builtin_bswap32(reply->ReceiveTimestamp_f);
-
-    s_ntp_client.t3.seconds = __builtin_bswap32(reply->TransmitTimestamp_s);
-    s_ntp_client.t3.nFraction = __builtin_bswap32(reply->TransmitTimestamp_f);
-
-    if (__builtin_expect(((reply->LiVnMode & ntp::MODE_SERVER) == ntp::MODE_SERVER), 1))
+    if (from_ip != s_ntp_client.server_ip) [[unlikely]]
     {
-        SetTimeOfDay();
+        return;
     }
+
+    GetTimeNtpFormat(s_ntp_client.t4.seconds, s_ntp_client.t4.fraction);
+
+    const uint8_t kLiVnMode = reply->li_vn_mode;
+    const uint8_t kLi = (kLiVnMode >> 6) & 0x03;
+    const uint8_t kVn = (kLiVnMode >> 3) & 0x07;
+    const uint8_t kMode = (kLiVnMode >> 0) & 0x07;
+
+    // Basic sanity: version 3 or 4, and mode "server"
+    if (!((kVn == 3) || (kVn == 4))) [[unlikely]]
+    {
+        return;
+    }
+
+    if (kMode != 4) [[unlikely]]
+    { // 4 = server
+        return;
+    }
+
+    // Reject unsynchronized server
+    if (kLi == 3) [[unlikely]]
+    { // alarm condition
+        return;
+    }
+
+    const uint8_t kStratum = reply->stratum;
+    // 0 = KoD/special, 16 = unsynchronized (commonly)
+    if ((kStratum == 0) || (kStratum >= 16)) [[unlikely]]
+    {
+        // TODO (a) Back off polling here.
+        return;
+    }
+
+    // Origin timestamp must match our T1 (server echoes client's transmit time)
+    const uint32_t kOrgS = __builtin_bswap32(reply->origin_timestamp_s);
+    const uint32_t kOrgF = __builtin_bswap32(reply->origin_timestamp_f);
+
+    if ((kOrgS != s_ntp_client.t1.seconds) || (kOrgF != s_ntp_client.t1.fraction)) [[unlikely]]
+    {
+        // Stale/unsolicited reply; ignore it.
+        return;
+    }
+
+    s_ntp_client.t2.seconds = __builtin_bswap32(reply->receive_timestamp_s);
+    s_ntp_client.t2.fraction = __builtin_bswap32(reply->receive_timestamp_f);
+
+    s_ntp_client.t3.seconds = __builtin_bswap32(reply->transmit_timestamp_s);
+    s_ntp_client.t3.fraction = __builtin_bswap32(reply->transmit_timestamp_f);
+
+    SetTimeOfDay();
 }
 
-namespace ntpclient
-{
 #pragma GCC pop_options
 #pragma GCC push_options
 #pragma GCC optimize("Os")
@@ -388,14 +424,14 @@ void Init()
     memset(&s_ntp_client, 0, sizeof(struct NtpClient));
 
     s_ntp_client.handle = -1;
-    s_ntp_client.request.LiVnMode = ntp::VERSION | ntp::MODE_CLIENT;
-    s_ntp_client.request.Poll = ntpclient::kPollPowerMin;
-    s_ntp_client.request.ReferenceID = ('A' << 0) | ('V' << 8) | ('S' << 16);
+    s_ntp_client.request.li_vn_mode = ntp::kVersion | ntp::kModeClient;
+    s_ntp_client.request.poll = ntpclient::kPollPowerMin;
+    s_ntp_client.request.reference_id = ('A' << 0) | ('V' << 8) | ('S' << 16);
     s_ntp_client.server_ip = ConfigStore::Instance().NetworkGet(&common::store::Network::ntp_server_ip);
 
     if (s_ntp_client.server_ip == 0)
     {
-        s_ntp_client.status = ntp::Status::STOPPED;
+        s_ntp_client.status = ntp::Status::kStopped;
     }
 
     DEBUG_EXIT();
@@ -414,7 +450,7 @@ void Start()
 {
     DEBUG_ENTRY();
 
-    if (s_ntp_client.status == ntp::Status::DISABLED)
+    if (s_ntp_client.status == ntp::Status::kDisabled)
     {
         DEBUG_EXIT();
         return;
@@ -422,17 +458,17 @@ void Start()
 
     if (s_ntp_client.server_ip == 0)
     {
-        s_ntp_client.status = ntp::Status::STOPPED;
-        ntpclient::DisplayStatus(ntp::Status::STOPPED);
+        s_ntp_client.status = ntp::Status::kStopped;
+        ntpclient::DisplayStatus(ntp::Status::kStopped);
         DEBUG_EXIT();
         return;
     }
 
-    s_ntp_client.handle = network::udp::Begin(ntp::UDP_PORT, Input);
+    s_ntp_client.handle = network::udp::Begin(iana::Ports::kPortNtp, Input);
     assert(s_ntp_client.handle != -1);
 
-    s_ntp_client.status = ntp::Status::IDLE;
-    ntpclient::DisplayStatus(ntp::Status::IDLE);
+    s_ntp_client.status = ntp::Status::kIdle;
+    ntpclient::DisplayStatus(ntp::Status::kIdle);
 
     s_ntp_client.timer_id = SoftwareTimerAdd(1000, NtpClientTimer);
 
@@ -455,24 +491,24 @@ void Stop(bool do_disable)
 
     if (do_disable)
     {
-        s_ntp_client.status = ntp::Status::DISABLED;
-        ntpclient::DisplayStatus(ntp::Status::DISABLED);
+        s_ntp_client.status = ntp::Status::kDisabled;
+        ntpclient::DisplayStatus(ntp::Status::kDisabled);
     }
 
-    if (s_ntp_client.status == ntp::Status::STOPPED)
+    if (s_ntp_client.status == ntp::Status::kStopped)
     {
         return;
     }
 
     SoftwareTimerDelete(s_ntp_client.timer_id);
 
-    network::udp::End(ntp::UDP_PORT);
+    network::udp::End(iana::Ports::kPortNtp);
     s_ntp_client.handle = -1;
 
     if (!do_disable)
     {
-        s_ntp_client.status = ntp::Status::STOPPED;
-        ntpclient::DisplayStatus(ntp::Status::STOPPED);
+        s_ntp_client.status = ntp::Status::kStopped;
+        ntpclient::DisplayStatus(ntp::Status::kStopped);
     }
 
     DEBUG_EXIT();
@@ -515,4 +551,4 @@ ntp::Status GetStatus()
 {
     return s_ntp_client.status;
 }
-} // namespace ntpclient
+} // namespace network::apps::ntpclient

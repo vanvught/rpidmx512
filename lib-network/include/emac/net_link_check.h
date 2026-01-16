@@ -2,7 +2,7 @@
  * @file net_link_check.h
  *
  */
-/* Copyright (C) 2022-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2022-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,33 +28,23 @@
 
 #include "phy.h"
 
-namespace net
+namespace net::link
 {
-net::phy::Link link_status_read();
+net::phy::Link StatusRead();
+void HandleChange(net::phy::Link state);
+// Platform defined implementations
+// #if defined(ENET_LINK_CHECK_USE_INT) || defined(ENET_LINK_CHECK_USE_PIN_POLL)
+void GpioInit();
+void PinEnable();
+void PinRecovery();
+// #endif
+// #if defined(ENET_LINK_CHECK_USE_INT)
+void ExtiInit();
+void InterruptInit();
+// #elif defined(ENET_LINK_CHECK_USE_PIN_POLL)
+void PinPollInit();
+void PinPoll();
+// #endif
+} // namespace net::link
 
-/**
- * Platform defined implementations
- */
-
-#if defined(ENET_LINK_CHECK_USE_INT) || defined(ENET_LINK_CHECK_USE_PIN_POLL)
-void link_gpio_init();
-void link_pin_enable();
-void link_pin_recovery();
-#endif
-
-#if defined(ENET_LINK_CHECK_USE_INT)
-void link_exti_init();
-void link_interrupt_init();
-#elif defined(ENET_LINK_CHECK_USE_PIN_POLL)
-void link_pin_poll_init();
-void link_pin_poll();
-#endif
-
-/**
- *
- * @param state
- */
-void LinkHandleChange(net::phy::Link state);
-} // namespace net
-
-#endif  // EMAC_NET_LINK_CHECK_H_
+#endif // EMAC_NET_LINK_CHECK_H_

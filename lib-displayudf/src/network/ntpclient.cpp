@@ -2,7 +2,7 @@
  * @file ntpclient.cpp
  *
  */
-/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,26 +26,26 @@
 #include "core/protocol/ntp.h"
 #include "display.h"
 
-namespace ntpclient
+namespace network::apps::ntpclient
 {
 void DisplayStatus(::ntp::Status status)
 {
     switch (status)
     {
-        case ::ntp::Status::STOPPED:
+        case ::ntp::Status::kStopped:
             Display::Get()->TextStatus("No NTP Client");
             break;
-        case ::ntp::Status::IDLE:
+        case ::ntp::Status::kIdle:
             Display::Get()->TextStatus("NTP Client");
             break;
-        case ::ntp::Status::LOCKED:
+        case ::ntp::Status::kLocked:
             Display::Get()->TextStatus("NTP Client LOCKED");
             break;
-        case ::ntp::Status::FAILED:
+        case ::ntp::Status::kFailed:
             Display::Get()->TextStatus("Error: NTP");
             break;
         default:
             break;
     }
 }
-} // namespace ntpclient
+} // namespace network::apps::ntpclient

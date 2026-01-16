@@ -2,7 +2,7 @@
  * @file network_store.cpp
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,7 @@
 #include "common/utils/utils_flags.h"
 #include "configstore.h"
 #include "configurationstore.h"
-#include "ip4/ip4_address.h"
+#include "network.h"
 
 using common::store::network::Flags;
 
@@ -52,7 +52,7 @@ __attribute__((weak)) void SaveGatewayIp(uint32_t gateway_ip)
 
 __attribute__((weak)) void SaveHostname(const char* hostname, uint32_t length)
 {
-    length = std::min(length, static_cast<uint32_t>(network::HOSTNAME_SIZE));
+    length = std::min(length, static_cast<uint32_t>(network::iface::kHostnameSize));
     ConfigStore::Instance().NetworkUpdateArray(&common::store::Network::host_name, hostname, length);
 }
 

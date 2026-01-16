@@ -29,9 +29,9 @@
 #include "network_store.h"
 #include "firmware/debug/debug_debug.h"
 
-char s_hostname[network::HOSTNAME_SIZE];
-char s_domain_name[network::DOMAINNAME_SIZE];
-uint32_t s_nameservers[network::NAMESERVERS_COUNT];
+char s_hostname[network::kHostnameSize];
+char s_domain_name[network::kDomainnameSize];
+uint32_t s_nameservers[network::kNameserversCount];
 
 namespace network::iface
 {
@@ -57,21 +57,21 @@ namespace network::iface
 	    }
 	    else
 	    {
-	        strncpy(s_hostname, hostname, network::HOSTNAME_SIZE - 1);
-	        s_hostname[network::HOSTNAME_SIZE - 1] = '\0';
+	        strncpy(s_hostname, hostname, network::kHostnameSize - 1);
+	        s_hostname[network::kHostnameSize - 1] = '\0';
 	    }
 
 	    network::store::SaveHostname(s_hostname, static_cast<uint32_t>(strlen(s_hostname)));
 
-	    netif::globals::netif_default.hostname = s_hostname;
+	    netif::global::netif_default.hostname = s_hostname;
 
 	    DEBUG_EXIT();
 	}
 	
 	void SetDomainName(const char* domainname)
 	{
-	    strncpy(s_domain_name, domainname, network::DOMAINNAME_SIZE - 1);
-	    s_domain_name[network::DOMAINNAME_SIZE - 1] = '\0';
+	    strncpy(s_domain_name, domainname, network::kDomainnameSize - 1);
+	    s_domain_name[network::kDomainnameSize - 1] = '\0';
 	}
 
 	const char* DomainName()
@@ -81,7 +81,7 @@ namespace network::iface
 	
 	uint32_t NameServer(uint32_t index)
 	{
-	    if (index < network::NAMESERVERS_COUNT)
+	    if (index < network::kNameserversCount)
 	    {
 	        return s_nameservers[index];
 	    }

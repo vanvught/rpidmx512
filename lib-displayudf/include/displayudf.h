@@ -57,13 +57,13 @@
 #if defined(RDM_RESPONDER) || defined(OUTPUT_DMX_MONITOR) || defined(OUTPUT_DMX_PCA9685) || defined(OUTPUT_DMX_PIXEL) || defined(OUTPUT_DMX_TLC59711)
 #define HAVE_DMX_START_ADDRESS
 #endif
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
 namespace displayudf
 {
 inline constexpr uint32_t kLabelMaxRows = 6;
 
-enum class Labels: uint8_t
+enum class Labels : uint8_t
 {
     kTitle,
     kBoardname,
@@ -86,7 +86,7 @@ enum class Labels: uint8_t
     UNIVERSE_PORT_D,
 #endif
 #if defined(NODE_ARTNET) || defined(NODE_ARTNET_MULTI)
-    kDestinationIpPortA, 
+    kDestinationIpPortA,
 #if (DMX_MAX_PORTS > 1)
     kDestinationIpPortB,
 #endif
@@ -178,8 +178,7 @@ class DisplayUdf final : public Display
     void ShowIpAddress()
     {
         ClearEndOfLine();
-        Printf(labels_[static_cast<uint32_t>(displayudf::Labels::kIp)], "" IPSTR "/%d %c", IP2STR(network::GetPrimaryIp()), network::GetNetmaskCIDR(),
-               network::iface::AddressingMode());
+        Printf(labels_[static_cast<uint32_t>(displayudf::Labels::kIp)], "" IPSTR "/%d %c", IP2STR(network::GetPrimaryIp()), network::GetNetmaskCIDR(), network::iface::AddressingMode());
     }
 
     void ShowNetmask()
@@ -198,20 +197,20 @@ class DisplayUdf final : public Display
     void ShowHostName()
     {
         ClearEndOfLine();
-        Write(labels_[static_cast<uint32_t>(displayudf::Labels::kHostname)],  network::iface::HostName());
+        Write(labels_[static_cast<uint32_t>(displayudf::Labels::kHostname)], network::iface::HostName());
     }
 
     void ShowDhcpStatus(network::dhcp::State state)
     {
         switch (state)
         {
-            case network::dhcp::State::STATE_OFF:
+            case network::dhcp::State::kOff:
                 break;
-            case network::dhcp::State::STATE_RENEWING:
+            case network::dhcp::State::kRenewing:
                 ClearEndOfLine();
                 Printf(labels_[static_cast<uint32_t>(displayudf::Labels::kIp)], "DHCP renewing");
                 break;
-            case network::dhcp::State::STATE_BOUND:
+            case network::dhcp::State::kBound:
                 break;
             default:
                 break;
@@ -248,4 +247,4 @@ class DisplayUdf final : public Display
     inline static DisplayUdf* s_this;
 };
 
-#endif  // DISPLAYUDF_H_
+#endif // DISPLAYUDF_H_

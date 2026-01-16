@@ -39,7 +39,7 @@ namespace network::tcp::datasegment
 {
 struct NodeData
 {
-    uint8_t buffer[TCP_DATA_SIZE];
+    uint8_t buffer[kTcpDataMss];
     uint32_t length;
     bool is_last_segment;
 };
@@ -69,9 +69,9 @@ class Queue
     {
         assert(data != nullptr);
         assert(length > 0);
-        assert(length <= TCP_DATA_SIZE);
+        assert(length <= kTcpDataMss);
 
-        if (IsFull() || (length > TCP_DATA_SIZE)) [[unlikely]]
+        if (IsFull() || (length > kTcpDataMss)) [[unlikely]]
         {
             return false;
         }

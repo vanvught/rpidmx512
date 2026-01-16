@@ -388,7 +388,7 @@ http::Status HttpDeamonHandleRequest::ParseHeaderField(char* line)
             return http::Status::BAD_REQUEST;
         }
 
-        if (request_content_length_ > TCP_DATA_SIZE)
+        if (request_content_length_ > network::tcp::kTcpDataMss)
         {
             return http::Status::REQUEST_ENTITY_TOO_LARGE;
         }

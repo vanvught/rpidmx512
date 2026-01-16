@@ -60,10 +60,10 @@ struct Netif
     void* autoip;
 };
 
-namespace globals
+namespace global
 {
 extern struct Netif netif_default;
-} // namespace globals
+} // namespace global
 
 struct NetifReason
 {
@@ -99,27 +99,27 @@ typedef void (*netif_ext_callback_fn)(uint16_t reason, const netif_ext_callback_
 
 inline void SetFlags(uint8_t flags)
 {
-    globals::netif_default.flags |= flags;
+    global::netif_default.flags |= flags;
 }
 
 inline void ClearFlags(uint8_t flags)
 {
-    globals::netif_default.flags &= static_cast<uint8_t>(~flags);
+    global::netif_default.flags &= static_cast<uint8_t>(~flags);
 }
 
 inline uint32_t IpAddr()
 {
-    return globals::netif_default.ip.addr;
+    return netif::global::netif_default.ip.addr;
 }
 
 inline uint32_t SecondaryIpAddr()
 {
-    return globals::netif_default.secondary_ip.addr;
+    return netif::global::netif_default.secondary_ip.addr;
 }
 
 inline const uint8_t* HwAddr()
 {
-    return globals::netif_default.hwaddr;
+    return netif::global::netif_default.hwaddr;
 }
 
 void Init();
@@ -128,14 +128,14 @@ void SetNetmask(network::ip4_addr_t netmask);
 
 inline uint32_t Netmask()
 {
-    return globals::netif_default.netmask.addr;
+    return netif::global::netif_default.netmask.addr;
 }
 
 void SetGw(network::ip4_addr_t gw);
 
 inline uint32_t Gw()
 {
-    return globals::netif_default.gw.addr;
+    return netif::global::netif_default.gw.addr;
 }
 
 void SetAddr(network::ip4_addr_t ipaddr, network::ip4_addr_t netmask, network::ip4_addr_t gw);
@@ -144,7 +144,7 @@ void AddExtCallback(netif_ext_callback_fn fn);
 
 inline uint32_t BroadcastIpAddr()
 {
-    return globals::netif_default.broadcast_ip.addr;
+    return netif::global::netif_default.broadcast_ip.addr;
 }
 
 // Link
@@ -153,7 +153,7 @@ void SetLinkDown();
 
 inline bool IsLinkUp()
 {
-    return (globals::netif_default.flags & Netif::kNetifFlagLinkUp) == Netif::kNetifFlagLinkUp;
+    return (global::netif_default.flags & Netif::kNetifFlagLinkUp) == Netif::kNetifFlagLinkUp;
 }
 } // namespace netif
 

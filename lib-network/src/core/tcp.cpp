@@ -35,6 +35,7 @@
  * - Drops connection after kTcpRtxMaxRetry
  *
  * Not implemented (by design):
+ * - RX buffering
  * - RTT measurement / Jacobson-Karels RTO
  * - Fast retransmit (dupACK counting)
  * - SACK-based partial ack handling
@@ -83,14 +84,8 @@ void Error(const char*);
 
 namespace network::tcp
 {
-#define TCP_RX_MSS (TCP_DATA_SIZE)
-#define TCP_RX_MAX_ENTRIES (1U << 1) // Must always be a power of 2
-#define TCP_RX_MAX_ENTRIES_MASK (TCP_RX_MAX_ENTRIES - 1)
-#define TCP_MAX_RX_WND (TCP_RX_MAX_ENTRIES * TCP_RX_MSS);
-#define TCP_TX_MSS (TCP_DATA_SIZE)
-
-// ----------------- Retransmission support -----------------
-
+static constexpr auto kAdvertisedRxWnd = kTcpDataMss;
+// Retransmission support
 static constexpr uint32_t kTcpRtoInitialMs = 1000;
 static constexpr uint32_t kTcpRtoMaxMs = 60000;
 static constexpr uint32_t kTcpRtxMaxRetry = 5;
@@ -133,8 +128,8 @@ struct Tcb
     network::tcp::CallbackListen cb_listen;
     network::tcp::CallbackConnect cb_connect;
 
-    uint8_t local_ip[IPv4_ADDR_LEN];
-    uint8_t remote_ip[IPv4_ADDR_LEN];
+    uint8_t local_ip[network::ip4::kAddressLength];
+    uint8_t remote_ip[network::ip4::kAddressLength];
 
     uint16_t local_port; // Port we listen on.
     uint16_t remote_port;
@@ -211,7 +206,7 @@ static void RtxClear(Tcb* tcb)
     tcb->rtx_deadline = 0;
 }
 
-static struct t_tcp s_eth_frame SECTION_NETWORK ALIGNED;
+static struct Header s_eth_frame SECTION_NETWORK ALIGNED;
 static uint16_t s_id SECTION_NETWORK ALIGNED;
 static struct Listener s_listeners[TCP_MAX_PORTS_ALLOWED] SECTION_NETWORK ALIGNED;
 static struct Tcb s_tcbs[TCP_MAX_TCBS_ALLOWED] SECTION_NETWORK ALIGNED;
@@ -332,21 +327,21 @@ typedef union pcast32
     uint8_t u8[4];
 } _pcast32;
 
-static uint32_t TcpGetSeqnum(struct t_tcp* const kTcp)
+static uint32_t TcpGetSeqnum(struct Header* const kTcp)
 {
     _pcast32 src;
     memcpy(src.u8, &kTcp->tcp.seqnum, 4);
     return src.u32;
 }
 
-static uint32_t TcpGetAcknum(struct t_tcp* const kTcp)
+static uint32_t TcpGetAcknum(struct Header* const kTcp)
 {
     _pcast32 src;
     memcpy(src.u8, &kTcp->tcp.acknum, 4);
     return src.u32;
 }
 
-static void TcpSwap32AcknumSeqnum(struct t_tcp* const kTcp)
+static void TcpSwap32AcknumSeqnum(struct Header* const kTcp)
 {
     _pcast32 src;
 
@@ -363,7 +358,7 @@ static void TcpInitTcb(struct Tcb* tcb, uint16_t local_port)
 
     tcb->ISS = hal::Millis();
 
-    tcb->RCV.WND = TCP_MAX_RX_WND;
+    tcb->RCV.WND = kAdvertisedRxWnd;
 
     tcb->SND.UNA = tcb->ISS;
     tcb->SND.NXT = tcb->ISS;
@@ -404,14 +399,14 @@ __attribute__((cold)) void Init()
     DEBUG_ENTRY();
 
     // Ethernet
-    std::memcpy(s_eth_frame.ether.src, netif::globals::netif_default.hwaddr, ethernet::kAddressLength);
-    s_eth_frame.ether.type = __builtin_bswap16(ETHER_TYPE_IPv4);
+    std::memcpy(s_eth_frame.ether.src, netif::global::netif_default.hwaddr, ethernet::kAddressLength);
+    s_eth_frame.ether.type = __builtin_bswap16(network::ethernet::Type::kIPv4);
     // IPv4
     s_eth_frame.ip4.ver_ihl = 0x45;
     s_eth_frame.ip4.tos = 0;
-    s_eth_frame.ip4.flags_froff = __builtin_bswap16(IPv4_FLAG_DF);
+    s_eth_frame.ip4.flags_froff = __builtin_bswap16(network::ip4::Flags::kFlagDf);
     s_eth_frame.ip4.ttl = 64;
-    s_eth_frame.ip4.proto = IPv4_PROTO_TCP;
+    s_eth_frame.ip4.proto = network::ip4::Proto::kTcp;
 
     DEBUG_EXIT();
 }
@@ -419,8 +414,8 @@ __attribute__((cold)) void Init()
 ///< TCP Checksum Pseudo Header
 struct TcpPseudo
 {
-    uint8_t src_ip[IPv4_ADDR_LEN];
-    uint8_t dst_ip[IPv4_ADDR_LEN];
+    uint8_t src_ip[network::ip4::kAddressLength];
+    uint8_t dst_ip[network::ip4::kAddressLength];
     uint8_t zero;
     uint8_t proto;
     uint16_t length;
@@ -428,7 +423,7 @@ struct TcpPseudo
 
 static constexpr uint32_t kTcpPseudoLen = 12;
 
-static uint16_t TcpChecksumPseudoHeader(struct t_tcp* eth_frame, const struct Tcb* const kTcb, uint16_t length)
+static uint16_t TcpChecksumPseudoHeader(struct Header* eth_frame, const struct Tcb* const kTcb, uint16_t length)
 {
     uint8_t buf[kTcpPseudoLen];
     // Store current data before TCP header in temporary buffer
@@ -436,10 +431,10 @@ static uint16_t TcpChecksumPseudoHeader(struct t_tcp* eth_frame, const struct Tc
     memcpy(buf, pseu, kTcpPseudoLen);
 
     // Generate TCP psuedo header
-    std::memcpy(pseu->src_ip, kTcb->local_ip, IPv4_ADDR_LEN);
-    std::memcpy(pseu->dst_ip, kTcb->remote_ip, IPv4_ADDR_LEN);
+    std::memcpy(pseu->src_ip, kTcb->local_ip, network::ip4::kAddressLength);
+    std::memcpy(pseu->dst_ip, kTcb->remote_ip, network::ip4::kAddressLength);
     pseu->zero = 0;
-    pseu->proto = IPv4_PROTO_TCP;
+    pseu->proto = network::ip4::Proto::kTcp;
     pseu->length = __builtin_bswap16(length);
 
     const auto kSum = network::Chksum(pseu, length + kTcpPseudoLen);
@@ -470,7 +465,6 @@ static void SendSegment(Tcb* tcb, const SendInfo& send_info, bool track_rtx = tr
 {
     tcb->did_send_ack_or_data = true;
 
-    constexpr uint32_t kBaseHdrBytes = TCP_HEADER_SIZE; // 20
     uint32_t opt_bytes = 0;
 
     if (send_info.CTL & Control::SYN) opt_bytes += 4; // MSS
@@ -478,7 +472,7 @@ static void SendSegment(Tcb* tcb, const SendInfo& send_info, bool track_rtx = tr
 
     assert((opt_bytes % 4) == 0);
 
-    const uint32_t kHeaderLength = kBaseHdrBytes + opt_bytes;
+    const uint32_t kHeaderLength = kHeaderSize + opt_bytes;
     const uint32_t kDataOffset = kHeaderLength / 4; // TCP data offset field
     const auto kTcpLength = kHeaderLength + tcb->TX.size;
 
@@ -486,9 +480,9 @@ static void SendSegment(Tcb* tcb, const SendInfo& send_info, bool track_rtx = tr
     std::memcpy(s_eth_frame.ether.dst, tcb->remote_eth_addr, ethernet::kAddressLength);
     // IPv4
     s_eth_frame.ip4.id = s_id++;
-    s_eth_frame.ip4.len = __builtin_bswap16(static_cast<uint16_t>(kTcpLength + sizeof(struct ip4_header)));
-    std::memcpy(s_eth_frame.ip4.src, tcb->local_ip, IPv4_ADDR_LEN);
-    std::memcpy(s_eth_frame.ip4.dst, tcb->remote_ip, IPv4_ADDR_LEN);
+    s_eth_frame.ip4.len = __builtin_bswap16(static_cast<uint16_t>(kTcpLength + sizeof(struct network::ip4::Ip4Header)));
+    std::memcpy(s_eth_frame.ip4.src, tcb->local_ip, network::ip4::kAddressLength);
+    std::memcpy(s_eth_frame.ip4.dst, tcb->remote_ip, network::ip4::kAddressLength);
     s_eth_frame.ip4.chksum = 0;
 #if !defined(CHECKSUM_BY_HARDWARE)
     s_eth_frame.ip4.chksum = network::Chksum(reinterpret_cast<void*>(&s_eth_frame.ip4), 20);
@@ -511,7 +505,7 @@ static void SendSegment(Tcb* tcb, const SendInfo& send_info, bool track_rtx = tr
     {
         *data++ = Option::kKindMss;
         *data++ = kOptionMssLength;
-        *(reinterpret_cast<uint16_t*>(data)) = __builtin_bswap16(TCP_RX_MSS);
+        *(reinterpret_cast<uint16_t*>(data)) = __builtin_bswap16(kTcpDataMss);
         data += 2;
     }
 
@@ -525,7 +519,7 @@ static void SendSegment(Tcb* tcb, const SendInfo& send_info, bool track_rtx = tr
     memcpy(data, &tcb->TS.recent, 4);
     data += 4;
 
-    DEBUG_PRINTF("SEQ=%u, ACK=%u, kTcpLength=%u, data_offset=%u, p_tcb->TX.size=%u", s_tcp.tcp.seqnum, s_tcp.tcp.acknum, kTcpLength, data_offset, tcb->TX.size);
+    DEBUG_PRINTF("SEQ=%u, ACK=%u, kTcpLength=%u, kDataOffset=%u, tcb->TX.size=%u", s_eth_frame.tcp.seqnum, s_eth_frame.tcp.acknum, kTcpLength, kDataOffset, tcb->TX.size);
 
     if (tcb->TX.data != nullptr)
     {
@@ -543,7 +537,7 @@ static void SendSegment(Tcb* tcb, const SendInfo& send_info, bool track_rtx = tr
 
     s_eth_frame.tcp.checksum = TcpChecksumPseudoHeader(&s_eth_frame, tcb, static_cast<uint16_t>(kTcpLength));
 
-    Ip4SendSegment(tcb, reinterpret_cast<void*>(&s_eth_frame), kTcpLength + sizeof(struct ip4_header) + sizeof(struct ethernet::Header));
+    Ip4SendSegment(tcb, reinterpret_cast<void*>(&s_eth_frame), kTcpLength + sizeof(struct network::ip4::Ip4Header) + sizeof(struct ethernet::Header));
 
     // ---- Retransmission tracking ----
     const bool kConsumesSeq = (tcb->TX.size != 0) || (send_info.CTL & Control::SYN) || (send_info.CTL & Control::FIN);
@@ -569,7 +563,7 @@ static void SendSegment(Tcb* tcb, const SendInfo& send_info, bool track_rtx = tr
     }
 }
 
-static void SendReset(struct t_tcp* eth_frame, struct Tcb* const kTcb)
+static void SendReset(struct Header* eth_frame, struct Tcb* const kTcb)
 {
     DEBUG_ENTRY();
 
@@ -614,7 +608,7 @@ static void SendReset(struct t_tcp* eth_frame, struct Tcb* const kTcb)
 static bool SendData(struct Tcb* tcb, const uint8_t* buffer, uint32_t length, bool is_last_segment)
 {
     assert(length != 0);
-    assert(length <= static_cast<uint32_t>(TCP_DATA_SIZE));
+    assert(length <= static_cast<uint32_t>(kTcpDataMss));
     assert(length <= tcb->SND.WND);
 
     DEBUG_PRINTF("length=%u, pTCB->SND.WND=%u", length, tcb->SND.WND);
@@ -650,7 +644,7 @@ struct Options
     uint8_t data;
 };
 
-static void ScanOptions(struct t_tcp* eth_frame, struct Tcb* const kTcb, int32_t data_offset)
+static void ScanOptions(struct Header* eth_frame, struct Tcb* const kTcb, int32_t data_offset)
 {
     const auto* const kTcpHeaderEnd = reinterpret_cast<uint8_t*>(&eth_frame->tcp) + data_offset;
 
@@ -672,7 +666,7 @@ static void ScanOptions(struct t_tcp* eth_frame, struct Tcb* const kTcb, int32_t
                     const auto* p = &options->data;
                     auto mss = (p[0] << 8) + p[1];
                     // RFC 1122 section 4.2.2.6
-                    mss = std::min(static_cast<int32_t>(mss + 20), static_cast<int32_t>(TCP_TX_MSS)) - TCP_HEADER_SIZE; // - IP_OPTION_SIZE;
+                    mss = std::min(static_cast<int32_t>(mss + 20), static_cast<int32_t>(kTcpDataMss)) - kHeaderSize; // - IP_OPTION_SIZE;
                     kTcb->SendMSS = static_cast<uint16_t>(mss);
                 }
                 options = reinterpret_cast<struct Options*>(reinterpret_cast<uint8_t*>(options) + options->length);
@@ -811,7 +805,7 @@ static Listener* FindListenerByPort(uint16_t local_port)
     return nullptr;
 }
 
-static Tcb* FindActiveConn(const t_tcp* const kEthFrame, uint32_t* out_index)
+static Tcb* FindActiveConn(const Header* const kEthFrame, uint32_t* out_index)
 {
     for (uint32_t i = 0; i < TCP_MAX_TCBS_ALLOWED; ++i)
     {
@@ -831,7 +825,7 @@ static Tcb* FindActiveConn(const t_tcp* const kEthFrame, uint32_t* out_index)
         }
 
         // For server bring-up, matching remote ip+port is enough because local port is fixed.
-        if (c->local_port == kEthFrame->tcp.dstpt && c->remote_port == kEthFrame->tcp.srcpt && std::memcmp(c->remote_ip, kEthFrame->ip4.src, IPv4_ADDR_LEN) == 0)
+        if (c->local_port == kEthFrame->tcp.dstpt && c->remote_port == kEthFrame->tcp.srcpt && std::memcmp(c->remote_ip, kEthFrame->ip4.src, network::ip4::kAddressLength) == 0)
         {
             if (out_index != nullptr)
             {
@@ -879,7 +873,7 @@ static Tcb* AllocTcb(uint16_t local_port, uint32_t* out_index)
     return nullptr;
 }
 
-static Tcb* AcceptNewConnection(const t_tcp* tcp_segment, uint32_t* out_index)
+static Tcb* AcceptNewConnection(const Header* tcp_segment, uint32_t* out_index)
 {
     // 1. Must have a listener for this destination port
     auto* listener = FindListenerByPort(tcp_segment->tcp.dstpt);
@@ -902,7 +896,7 @@ static Tcb* AcceptNewConnection(const t_tcp* tcp_segment, uint32_t* out_index)
 
     // 3. Fill in peer-specific tuple fields
     tcb->remote_port = tcp_segment->tcp.srcpt;
-    std::memcpy(tcb->remote_ip, tcp_segment->ip4.src, IPv4_ADDR_LEN);
+    std::memcpy(tcb->remote_ip, tcp_segment->ip4.src, network::ip4::kAddressLength);
 
     // 4. Server learns remote MAC from inbound Ethernet frame
     std::memcpy(tcb->remote_eth_addr, tcp_segment->ether.src, ethernet::kAddressLength);
@@ -937,7 +931,7 @@ static void FreeTcb(Tcb* tcb)
 }
 
 // https://www.rfc-editor.org/rfc/rfc9293.html#name-segment-arrives
-__attribute__((hot)) void Input(struct t_tcp* eth_frame)
+__attribute__((hot)) void Input(struct Header* eth_frame)
 {
     // Convert ports to host endian early (as you already do).
     eth_frame->tcp.srcpt = __builtin_bswap16(eth_frame->tcp.srcpt);
@@ -952,10 +946,10 @@ __attribute__((hot)) void Input(struct t_tcp* eth_frame)
         std::memset(&temp, 0, sizeof(temp));
 
         temp.local_port = eth_frame->tcp.dstpt;
-        std::memcpy(temp.local_ip, eth_frame->ip4.dst, IPv4_ADDR_LEN);
+        std::memcpy(temp.local_ip, eth_frame->ip4.dst, network::ip4::kAddressLength);
 
         temp.remote_port = eth_frame->tcp.srcpt;
-        std::memcpy(temp.remote_ip, eth_frame->ip4.src, IPv4_ADDR_LEN);
+        std::memcpy(temp.remote_ip, eth_frame->ip4.src, network::ip4::kAddressLength);
         std::memcpy(temp.remote_eth_addr, eth_frame->ether.src, ethernet::kAddressLength);
 
         TcpSwap32AcknumSeqnum(eth_frame);
@@ -993,10 +987,10 @@ __attribute__((hot)) void Input(struct t_tcp* eth_frame)
             std::memset(&temp, 0, sizeof(temp));
 
             temp.local_port = eth_frame->tcp.dstpt;
-            std::memcpy(temp.local_ip, eth_frame->ip4.dst, IPv4_ADDR_LEN);
+            std::memcpy(temp.local_ip, eth_frame->ip4.dst, network::ip4::kAddressLength);
 
             temp.remote_port = eth_frame->tcp.srcpt;
-            std::memcpy(temp.remote_ip, eth_frame->ip4.src, IPv4_ADDR_LEN);
+            std::memcpy(temp.remote_ip, eth_frame->ip4.src, network::ip4::kAddressLength);
             std::memcpy(temp.remote_eth_addr, eth_frame->ether.src, ethernet::kAddressLength);
 
             TcpSwap32AcknumSeqnum(eth_frame);
@@ -1016,7 +1010,7 @@ __attribute__((hot)) void Input(struct t_tcp* eth_frame)
 
     // Now proceed with your existing logic:
 
-    const auto kTcplen = static_cast<uint16_t>(__builtin_bswap16(eth_frame->ip4.len) - sizeof(struct ip4_header));
+    const auto kTcplen = static_cast<uint16_t>(__builtin_bswap16(eth_frame->ip4.len) - sizeof(struct network::ip4::Ip4Header));
     const auto kDataLength = static_cast<uint16_t>(kTcplen - kDataOffset);
 
     TcpSwap32AcknumSeqnum(eth_frame);
@@ -1038,10 +1032,10 @@ __attribute__((hot)) void Input(struct t_tcp* eth_frame)
     // Server
     if (tcb->state == kStateListen)
     {
-        std::memcpy(tcb->local_ip, eth_frame->ip4.dst, IPv4_ADDR_LEN);
+        std::memcpy(tcb->local_ip, eth_frame->ip4.dst, network::ip4::kAddressLength);
 
         tcb->remote_port = eth_frame->tcp.srcpt;
-        std::memcpy(tcb->remote_ip, eth_frame->ip4.src, IPv4_ADDR_LEN);
+        std::memcpy(tcb->remote_ip, eth_frame->ip4.src, network::ip4::kAddressLength);
         std::memcpy(tcb->remote_eth_addr, eth_frame->ether.src, ethernet::kAddressLength);
 
         // First: ignore RST
@@ -1474,41 +1468,32 @@ __attribute__((hot)) void Input(struct t_tcp* eth_frame)
                         // Therefore the only acceptable data segment is exactly at RCV.NXT.
                         if (SEG_SEQ == tcb->RCV.NXT)
                         {
-                            // The callback is attached per-connection
-                            // (copied from the Listener when the connection was accepted).
-                            assert(tcb->cb != nullptr);
-
                             // Update receive sequence and window immediately upon accepting data.
                             // (in-order only).
                             tcb->RCV.NXT += kDataLength;
-                            tcb->RCV.WND -= kDataLength;
+                            tcb->RCV.WND = kAdvertisedRxWnd;
 
                             // Application callback may send ACK/data itself.
                             // We track if it did, to avoid duplicate ACK.
                             tcb->did_send_ack_or_data = false;
 
+                            // The callback is attached per-connection
+                            // (copied from the Listener when the connection was accepted).
+                            assert(tcb->cb_listen != nullptr);
                             tcb->cb_listen(conn_index, reinterpret_cast<uint8_t*>(&eth_frame->tcp) + kDataOffset, kDataLength);
 
                             if (!tcb->did_send_ack_or_data)
                             {
                                 // Send acknowledgment (ACK-only segment).
-                                SendInfo send_info;
-                                send_info.SEQ = tcb->SND.NXT;
-                                send_info.ACK = tcb->RCV.NXT;
-                                send_info.CTL = Control::ACK;
-
-                                SendSegment(tcb, send_info);
+                                const SendInfo kAck{.SEQ = tcb->SND.NXT, .ACK = tcb->RCV.NXT, .CTL = Control::ACK};
+                                SendSegment(tcb, kAck);
                             }
                         }
                         else
                         {
                             // Out-of-order segment: send duplicate ACK for current RCV.NXT.
-                            SendInfo send_info;
-                            send_info.SEQ = tcb->SND.NXT;
-                            send_info.ACK = tcb->RCV.NXT;
-                            send_info.CTL = Control::ACK;
-
-                            SendSegment(tcb, send_info);
+                            const SendInfo kAck{.SEQ = tcb->SND.NXT, .ACK = tcb->RCV.NXT, .CTL = Control::ACK};
+                            SendSegment(tcb, kAck);
 
                             DEBUG_PUTS("Out of order");
                             DEBUG_EXIT();
@@ -1676,7 +1661,7 @@ static uint16_t s_local_port = kLocalPortRangeStart;
 // Client
 int32_t Connect(uint32_t remote_ip, uint16_t remote_port, CallbackConnect cb_connect, CallbackListen cb_listen)
 {
-    const auto& netif = netif::globals::netif_default;
+    const auto& netif = netif::global::netif_default;
     if (__builtin_expect((netif.ip.addr == 0), 0))
     {
         console::Error("Connect: No ip!");
@@ -1845,8 +1830,8 @@ int32_t Send(ConnHandle conn_handle, const uint8_t* buffer, uint32_t length)
     // NOTE: Many stacks instead send min(length, wnd)
     while ((length > 0) && (length <= c->SND.WND))
     {
-        const uint32_t kWriteLen = (length > TCP_DATA_SIZE) ? TCP_DATA_SIZE : length;
-        const bool kIsLast = (length < TCP_DATA_SIZE);
+        const uint32_t kWriteLen = (length > kTcpDataMss) ? kTcpDataMss : length;
+        const bool kIsLast = (length < kTcpDataMss);
 
         SendData(c, p, kWriteLen, kIsLast);
 
@@ -1878,8 +1863,8 @@ int32_t Send(ConnHandle conn_handle, const uint8_t* buffer, uint32_t length)
             return -2;
         }
 
-        const uint32_t kWriteLen = (length > TCP_DATA_SIZE) ? TCP_DATA_SIZE : length;
-        const bool kIsLast = (length < TCP_DATA_SIZE);
+        const uint32_t kWriteLen = (length > kTcpDataMss) ? kTcpDataMss : length;
+        const bool kIsLast = (length < kTcpDataMss);
 
         q.Push(p, kWriteLen, kIsLast);
 

@@ -1,7 +1,7 @@
 /**
  * @file link_handle_change.cpp
  */
-/* Copyright (C) 2022-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2022-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,15 +30,15 @@
 #include "emac/emac.h"
 #include "emac/phy.h"
 #include "core/netif.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
 #if !defined(PHY_ADDRESS)
 #define PHY_ADDRESS 1
 #endif
 
-namespace net
+namespace net::link
 {
-void LinkHandleChange(net::phy::Link state)
+void HandleChange(net::phy::Link state)
 {
     DEBUG_PRINTF("net::phy::Link %s", state == net::phy::Link::kStateUp ? "UP" : "DOWN");
 
@@ -67,4 +67,4 @@ void LinkHandleChange(net::phy::Link state)
 
     netif::SetLinkDown();
 }
-} // namespace net
+} // namespace net::link

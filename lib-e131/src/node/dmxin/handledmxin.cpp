@@ -1,7 +1,7 @@
 /**
  * @file handledmxin.cpp
  */
-/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -81,7 +81,7 @@ void E131Bridge::HandleDmxIn()
                 if (bridge_.port[port_index].local_merge)
                 {
                     receive_buffer_ = reinterpret_cast<uint8_t*>(&e131_data_packet_);
-                    ip_address_from_ = network::IPADDR_LOOPBACK;
+                    ip_address_from_ = network::kIpaddrLoopback;
                     HandleDmx();
                 }
 
@@ -142,7 +142,7 @@ void E131Bridge::HandleDmxIn()
                     if (bridge_.port[port_index].local_merge)
                     {
                         receive_buffer_ = reinterpret_cast<uint8_t*>(&e131_data_packet_);
-                        ip_address_from_ = network::IPADDR_LOOPBACK;
+                        ip_address_from_ = network::kIpaddrLoopback;
                         HandleDmx();
                     }
                 }

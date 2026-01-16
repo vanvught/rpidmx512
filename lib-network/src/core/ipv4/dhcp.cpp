@@ -1,7 +1,7 @@
 /**
  * @file dhcp.cpp
  */
-/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2018-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,7 @@
  * https://savannah.nongnu.org/projects/lwip/
  */
 
-#if defined(DEBUG_NET_DHCP)
+#if defined(DEBUG_NETWORK_DHCP)
 #undef NDEBUG
 #endif
 
@@ -59,27 +59,27 @@ static void MessageInit()
 {
     std::memset(&s_dhcp_message, 0, sizeof(dhcp::Message));
 
-    s_dhcp_message.op = dhcp::OpCode::BOOTREQUEST;
-    s_dhcp_message.htype = dhcp::HardwareType::HTYPE_10MB; // This is the current default
-    s_dhcp_message.hlen = network::MAC_SIZE;
-    memcpy(s_dhcp_message.chaddr, netif::globals::netif_default.hwaddr, network::MAC_SIZE);
+    s_dhcp_message.op = dhcp::OpCode::kBootrequest;
+    s_dhcp_message.htype = dhcp::HardwareType::k10Mb; // This is the current default
+    s_dhcp_message.hlen = network::iface::kMacSize;
+    memcpy(s_dhcp_message.chaddr, netif::global::netif_default.hwaddr, network::iface::kMacSize);
 
-    s_dhcp_message.options[0] = static_cast<uint8_t>((dhcp::MAGIC_COOKIE & 0xFF000000) >> 24);
-    s_dhcp_message.options[1] = static_cast<uint8_t>((dhcp::MAGIC_COOKIE & 0x00FF0000) >> 16);
-    s_dhcp_message.options[2] = static_cast<uint8_t>((dhcp::MAGIC_COOKIE & 0x0000FF00) >> 8);
-    s_dhcp_message.options[3] = static_cast<uint8_t>(dhcp::MAGIC_COOKIE & 0x000000FF) >> 0;
+    s_dhcp_message.options[0] = static_cast<uint8_t>((dhcp::kMagicCookie & 0xFF000000) >> 24);
+    s_dhcp_message.options[1] = static_cast<uint8_t>((dhcp::kMagicCookie & 0x00FF0000) >> 16);
+    s_dhcp_message.options[2] = static_cast<uint8_t>((dhcp::kMagicCookie & 0x0000FF00) >> 8);
+    s_dhcp_message.options[3] = static_cast<uint8_t>(dhcp::kMagicCookie & 0x000000FF) >> 0;
 
-    s_dhcp_message.options[4] = dhcp::Options::OPTION_MESSAGE_TYPE;
+    s_dhcp_message.options[4] = dhcp::Options::kMessageType;
     s_dhcp_message.options[5] = 0x01;
 }
 
 static void UpdateMsg(uint8_t message_type)
 {
-    auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::globals::netif_default.dhcp);
+    auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::global::netif_default.dhcp);
     assert(dhcp != nullptr);
 
     // DHCP_REQUEST should reuse 'xid' from DHCPOFFER
-    if ((message_type != dhcp::Type::REQUEST) || (dhcp->state == dhcp::State::STATE_REBOOTING))
+    if ((message_type != dhcp::Type::kRequest) || (dhcp->state == dhcp::State::kRebooting))
     {
         // reuse transaction identifier in retransmissions
         if (dhcp->tries == 0)
@@ -92,11 +92,11 @@ static void UpdateMsg(uint8_t message_type)
 
     s_dhcp_message.xid = dhcp->xid;
 
-    if ((message_type == dhcp::Type::INFORM) || (message_type == dhcp::Type::DECLINE) || (message_type == dhcp::Type::RELEASE) ||
-        ((message_type == dhcp::Type::REQUEST) && /* DHCP_STATE_BOUND not used for sending! */
-         ((dhcp->state == dhcp::State::STATE_RENEWING) || dhcp->state == dhcp::State::STATE_REBINDING)))
+    if ((message_type == dhcp::Type::kInform) || (message_type == dhcp::Type::kDecline) || (message_type == dhcp::Type::kRelease) ||
+        ((message_type == dhcp::Type::kRequest) && /* DHCP_STATE_BOUND not used for sending! */
+         ((dhcp->state == dhcp::State::kRenewing) || dhcp->state == dhcp::State::kRebinding)))
     {
-        const auto& netif = netif::globals::netif_default;
+        const auto& netif = netif::global::netif_default;
         network::memcpy_ip(s_dhcp_message.ciaddr, netif.ip.addr);
     }
 }
@@ -104,36 +104,36 @@ static void UpdateMsg(uint8_t message_type)
 static void SendDiscover()
 {
     DEBUG_ENTRY();
-    auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::globals::netif_default.dhcp);
+    auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::global::netif_default.dhcp);
     assert(dhcp != nullptr);
 
-    UpdateMsg(dhcp::Type::DISCOVER);
+    UpdateMsg(dhcp::Type::kDiscover);
 
     uint32_t k = 6;
 
-    s_dhcp_message.options[k++] = dhcp::Type::DISCOVER;
+    s_dhcp_message.options[k++] = dhcp::Type::kDiscover;
 
-    s_dhcp_message.options[k++] = dhcp::Options::OPTION_CLIENT_IDENTIFIER;
+    s_dhcp_message.options[k++] = dhcp::Options::kClientIdentifier;
     s_dhcp_message.options[k++] = 0x07;
     s_dhcp_message.options[k++] = 0x01;
-    s_dhcp_message.options[k++] = netif::globals::netif_default.hwaddr[0];
-    s_dhcp_message.options[k++] = netif::globals::netif_default.hwaddr[1];
-    s_dhcp_message.options[k++] = netif::globals::netif_default.hwaddr[2];
-    s_dhcp_message.options[k++] = netif::globals::netif_default.hwaddr[3];
-    s_dhcp_message.options[k++] = netif::globals::netif_default.hwaddr[4];
-    s_dhcp_message.options[k++] = netif::globals::netif_default.hwaddr[5];
+    s_dhcp_message.options[k++] = netif::global::netif_default.hwaddr[0];
+    s_dhcp_message.options[k++] = netif::global::netif_default.hwaddr[1];
+    s_dhcp_message.options[k++] = netif::global::netif_default.hwaddr[2];
+    s_dhcp_message.options[k++] = netif::global::netif_default.hwaddr[3];
+    s_dhcp_message.options[k++] = netif::global::netif_default.hwaddr[4];
+    s_dhcp_message.options[k++] = netif::global::netif_default.hwaddr[5];
 
-    s_dhcp_message.options[k++] = dhcp::Options::OPTION_PARAM_REQUEST;
+    s_dhcp_message.options[k++] = dhcp::Options::kParamRequest;
     s_dhcp_message.options[k++] = 0x06; // length of request
-    s_dhcp_message.options[k++] = dhcp::Options::OPTION_SUBNET_MASK;
-    s_dhcp_message.options[k++] = dhcp::Options::OPTION_ROUTER;
-    s_dhcp_message.options[k++] = dhcp::Options::OPTION_DOMAIN_NAME;
-    s_dhcp_message.options[k++] = dhcp::Options::OPTION_LEASE_TIME;
-    s_dhcp_message.options[k++] = dhcp::Options::OPTION_DHCP_T1_VALUE;
-    s_dhcp_message.options[k++] = dhcp::Options::OPTION_DHCP_T2_VALUE;
-    s_dhcp_message.options[k++] = dhcp::Options::OPTION_END;
+    s_dhcp_message.options[k++] = dhcp::Options::kSubnetMask;
+    s_dhcp_message.options[k++] = dhcp::Options::kRouter;
+    s_dhcp_message.options[k++] = dhcp::Options::kDomainName;
+    s_dhcp_message.options[k++] = dhcp::Options::kLeaseTime;
+    s_dhcp_message.options[k++] = dhcp::Options::kDhcpT1Value;
+    s_dhcp_message.options[k++] = dhcp::Options::kDhcpT2Value;
+    s_dhcp_message.options[k++] = dhcp::Options::kEnd;
 
-    network::udp::Send(dhcp->handle, reinterpret_cast<uint8_t*>(&s_dhcp_message), static_cast<uint16_t>(k + sizeof(dhcp::Message) - dhcp::OPT_SIZE), network::IPADDR_BROADCAST, net::iana::IANA_PORT_DHCP_SERVER);
+    network::udp::Send(dhcp->handle, reinterpret_cast<uint8_t*>(&s_dhcp_message), static_cast<uint16_t>(k + sizeof(dhcp::Message) - dhcp::kOptSize), network::kIpaddrBroadcast, network::iana::Ports::kPortDhcpServer);
 
     DEBUG_EXIT();
 }
@@ -141,53 +141,53 @@ static void SendDiscover()
 static void SendRequest()
 {
     DEBUG_ENTRY();
-    auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::globals::netif_default.dhcp);
+    auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::global::netif_default.dhcp);
     assert(dhcp != nullptr);
 
     uint32_t i;
     uint32_t k = 6;
 
-    s_dhcp_message.options[k++] = dhcp::Type::REQUEST;
+    s_dhcp_message.options[k++] = dhcp::Type::kRequest;
 
-    s_dhcp_message.options[k++] = dhcp::Options::OPTION_CLIENT_IDENTIFIER;
+    s_dhcp_message.options[k++] = dhcp::Options::kClientIdentifier;
     s_dhcp_message.options[k++] = 0x07;
     s_dhcp_message.options[k++] = 0x01;
-    s_dhcp_message.options[k++] = netif::globals::netif_default.hwaddr[0];
-    s_dhcp_message.options[k++] = netif::globals::netif_default.hwaddr[1];
-    s_dhcp_message.options[k++] = netif::globals::netif_default.hwaddr[2];
-    s_dhcp_message.options[k++] = netif::globals::netif_default.hwaddr[3];
-    s_dhcp_message.options[k++] = netif::globals::netif_default.hwaddr[4];
-    s_dhcp_message.options[k++] = netif::globals::netif_default.hwaddr[5];
+    s_dhcp_message.options[k++] = netif::global::netif_default.hwaddr[0];
+    s_dhcp_message.options[k++] = netif::global::netif_default.hwaddr[1];
+    s_dhcp_message.options[k++] = netif::global::netif_default.hwaddr[2];
+    s_dhcp_message.options[k++] = netif::global::netif_default.hwaddr[3];
+    s_dhcp_message.options[k++] = netif::global::netif_default.hwaddr[4];
+    s_dhcp_message.options[k++] = netif::global::netif_default.hwaddr[5];
 
-    s_dhcp_message.options[k++] = dhcp::Options::OPTION_REQUESTED_IP;
+    s_dhcp_message.options[k++] = dhcp::Options::kRequestedIp;
     s_dhcp_message.options[k++] = 0x04;
     memcpy_ip(&s_dhcp_message.options[k], dhcp->offered.offered_ip_addr.addr);
     k = k + 4;
 
-    s_dhcp_message.options[k++] = dhcp::Options::OPTION_SERVER_IDENTIFIER;
+    s_dhcp_message.options[k++] = dhcp::Options::kServerIdentifier;
     s_dhcp_message.options[k++] = 0x04;
     memcpy_ip(&s_dhcp_message.options[k], dhcp->server_ip_addr.addr);
     k = k + 4;
 
-    s_dhcp_message.options[k++] = dhcp::Options::OPTION_HOSTNAME;
+    s_dhcp_message.options[k++] = dhcp::Options::kHostname;
     s_dhcp_message.options[k++] = 0; // length of hostname
-    for (i = 0; netif::globals::netif_default.hostname[i] != 0; i++)
+    for (i = 0; netif::global::netif_default.hostname[i] != 0; i++)
     {
-        s_dhcp_message.options[k++] = netif::globals::netif_default.hostname[i];
+        s_dhcp_message.options[k++] = netif::global::netif_default.hostname[i];
     }
     s_dhcp_message.options[k - (i + 1)] = static_cast<uint8_t>(i); // length of hostname
 
-    s_dhcp_message.options[k++] = dhcp::Options::OPTION_PARAM_REQUEST;
+    s_dhcp_message.options[k++] = dhcp::Options::kParamRequest;
     s_dhcp_message.options[k++] = 0x06; // length of request
-    s_dhcp_message.options[k++] = dhcp::Options::OPTION_SUBNET_MASK;
-    s_dhcp_message.options[k++] = dhcp::Options::OPTION_ROUTER;
-    s_dhcp_message.options[k++] = dhcp::Options::OPTION_DNS_SERVER;
-    s_dhcp_message.options[k++] = dhcp::Options::OPTION_DOMAIN_NAME;
-    s_dhcp_message.options[k++] = dhcp::Options::OPTION_DHCP_T1_VALUE;
-    s_dhcp_message.options[k++] = dhcp::Options::OPTION_DHCP_T2_VALUE;
-    s_dhcp_message.options[k++] = dhcp::Options::OPTION_END;
+    s_dhcp_message.options[k++] = dhcp::Options::kSubnetMask;
+    s_dhcp_message.options[k++] = dhcp::Options::kRouter;
+    s_dhcp_message.options[k++] = dhcp::Options::kDnsServer;
+    s_dhcp_message.options[k++] = dhcp::Options::kDomainName;
+    s_dhcp_message.options[k++] = dhcp::Options::kDhcpT1Value;
+    s_dhcp_message.options[k++] = dhcp::Options::kDhcpT2Value;
+    s_dhcp_message.options[k++] = dhcp::Options::kEnd;
 
-    network::udp::Send(dhcp->handle, reinterpret_cast<uint8_t*>(&s_dhcp_message), static_cast<uint16_t>(k + sizeof(dhcp::Message) - dhcp::OPT_SIZE), network::IPADDR_BROADCAST, net::iana::IANA_PORT_DHCP_SERVER);
+    network::udp::Send(dhcp->handle, reinterpret_cast<uint8_t*>(&s_dhcp_message), static_cast<uint16_t>(k + sizeof(dhcp::Message) - dhcp::kOptSize), network::kIpaddrBroadcast, network::iana::Ports::kPortDhcpServer);
 
     DEBUG_EXIT();
 }
@@ -197,21 +197,21 @@ static void SendRelease(uint32_t destination_ip)
     DEBUG_ENTRY();
     DEBUG_PRINTF(IPSTR, IP2STR(destination_ip));
 
-    auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::globals::netif_default.dhcp);
+    auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::global::netif_default.dhcp);
     assert(dhcp != nullptr);
 
     uint32_t k = 6;
 
-    s_dhcp_message.options[k++] = dhcp::Type::RELEASE;
+    s_dhcp_message.options[k++] = dhcp::Type::kRelease;
 
-    s_dhcp_message.options[k++] = dhcp::Options::OPTION_SERVER_IDENTIFIER;
+    s_dhcp_message.options[k++] = dhcp::Options::kServerIdentifier;
     s_dhcp_message.options[k++] = 0x04;
     network::memcpy_ip(&s_dhcp_message.options[k], dhcp->server_ip_addr.addr);
     k = k + 4;
 
-    s_dhcp_message.options[k++] = dhcp::Options::OPTION_END;
+    s_dhcp_message.options[k++] = dhcp::Options::kEnd;
 
-    network::udp::Send(dhcp->handle, reinterpret_cast<uint8_t*>(&s_dhcp_message), static_cast<uint16_t>(k + sizeof(dhcp::Message) - dhcp::OPT_SIZE), destination_ip, net::iana::IANA_PORT_DHCP_SERVER);
+    network::udp::Send(dhcp->handle, reinterpret_cast<uint8_t*>(&s_dhcp_message), static_cast<uint16_t>(k + sizeof(dhcp::Message) - dhcp::kOptSize), destination_ip, network::iana::Ports::kPortDhcpServer);
 
     DEBUG_EXIT();
 }
@@ -220,9 +220,9 @@ void Input(const uint8_t* buffer, uint32_t size, [[maybe_unused]] uint32_t from_
 {
     DEBUG_ENTRY();
 
-    if (from_port == net::iana::IANA_PORT_DHCP_SERVER)
+    if (from_port == network::iana::Ports::kPortDhcpServer)
     {
-        auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::globals::netif_default.dhcp);
+        auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::global::netif_default.dhcp);
         assert(dhcp != nullptr);
 
         const auto* const kP = reinterpret_cast<const dhcp::Message*>(buffer);
@@ -246,7 +246,7 @@ void Inform()
 {
     DEBUG_ENTRY();
 
-    const auto kHandle = network::udp::Begin(net::iana::IANA_PORT_DHCP_CLIENT, nullptr);
+    const auto kHandle = network::udp::Begin(network::iana::Ports::kPortDhcpClient, nullptr);
 #ifndef NDEBUG
     if (kHandle < 0)
     {
@@ -256,26 +256,26 @@ void Inform()
 #endif
 
     MessageInit();
-    network::memcpy_ip(&s_dhcp_message.ciaddr[0], netif::globals::netif_default.ip.addr);
+    network::memcpy_ip(&s_dhcp_message.ciaddr[0], netif::global::netif_default.ip.addr);
 
     uint32_t k = 6;
 
-    s_dhcp_message.options[k++] = dhcp::Type::INFORM;
+    s_dhcp_message.options[k++] = dhcp::Type::kInform;
 
-    s_dhcp_message.options[k++] = dhcp::Options::OPTION_CLIENT_IDENTIFIER;
+    s_dhcp_message.options[k++] = dhcp::Options::kClientIdentifier;
     s_dhcp_message.options[k++] = 0x07;
     s_dhcp_message.options[k++] = 0x01;
-    s_dhcp_message.options[k++] = netif::globals::netif_default.hwaddr[0];
-    s_dhcp_message.options[k++] = netif::globals::netif_default.hwaddr[1];
-    s_dhcp_message.options[k++] = netif::globals::netif_default.hwaddr[2];
-    s_dhcp_message.options[k++] = netif::globals::netif_default.hwaddr[3];
-    s_dhcp_message.options[k++] = netif::globals::netif_default.hwaddr[4];
-    s_dhcp_message.options[k++] = netif::globals::netif_default.hwaddr[5];
+    s_dhcp_message.options[k++] = netif::global::netif_default.hwaddr[0];
+    s_dhcp_message.options[k++] = netif::global::netif_default.hwaddr[1];
+    s_dhcp_message.options[k++] = netif::global::netif_default.hwaddr[2];
+    s_dhcp_message.options[k++] = netif::global::netif_default.hwaddr[3];
+    s_dhcp_message.options[k++] = netif::global::netif_default.hwaddr[4];
+    s_dhcp_message.options[k++] = netif::global::netif_default.hwaddr[5];
 
-    s_dhcp_message.options[k++] = dhcp::Options::OPTION_END;
+    s_dhcp_message.options[k++] = dhcp::Options::kEnd;
 
-    network::udp::Send(kHandle, reinterpret_cast<uint8_t*>(&s_dhcp_message), static_cast<uint16_t>(k + sizeof(dhcp::Message) - dhcp::OPT_SIZE), network::IPADDR_BROADCAST, net::iana::IANA_PORT_DHCP_SERVER);
-    network::udp::End(net::iana::IANA_PORT_DHCP_CLIENT);
+    network::udp::Send(kHandle, reinterpret_cast<uint8_t*>(&s_dhcp_message), static_cast<uint16_t>(k + sizeof(dhcp::Message) - dhcp::kOptSize), network::kIpaddrBroadcast, network::iana::Ports::kPortDhcpServer);
+    network::udp::End(network::iana::Ports::kPortDhcpClient);
 
     DEBUG_EXIT();
 }
@@ -318,7 +318,7 @@ static void Bind()
 {
     DEBUG_ENTRY();
 
-    auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::globals::netif_default.dhcp);
+    auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::global::netif_default.dhcp);
     assert(dhcp != nullptr);
 
     /* reset time used of lease */
@@ -352,7 +352,7 @@ static void Bind()
 
     ip4_addr_t sn_mask;
 
-    if (dhcp->flags & DHCP_FLAG_SUBNET_MASK_GIVEN)
+    if (dhcp->flags & kFlagSubnetMaskGiven)
     {
         /* copy offered network mask */
         sn_mask.addr = dhcp->offered.offered_sn_mask.addr;
@@ -378,7 +378,7 @@ static void Bind()
     ip4_addr_t gw_addr;
     gw_addr.addr = dhcp->offered.offered_gw_addr.addr;
 
-    SetState(dhcp, dhcp::State::STATE_BOUND);
+    SetState(dhcp, dhcp::State::kBound);
 
     netif::SetFlags(netif::Netif::kNetifFlagDhcpOk);
     netif::SetAddr(dhcp->offered.offered_ip_addr, sn_mask, gw_addr);
@@ -397,7 +397,7 @@ static void Rebind()
 static void SendDecline()
 {
     DEBUG_ENTRY();
-    auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::globals::netif_default.dhcp);
+    auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::global::netif_default.dhcp);
     assert(dhcp != nullptr);
 
     UpdateMsg(dhcp::Type::DECLINE);
@@ -421,7 +421,7 @@ static void Decline()
 {
     DEBUG_ENTRY();
 
-    auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::globals::netif_default.dhcp);
+    auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::global::netif_default.dhcp);
     assert(dhcp != nullptr);
 
     SetState(dhcp, dhcp::State::STATE_BACKING_OFF);
@@ -434,7 +434,7 @@ static void Decline()
 
 static void ConflictCallback(network::acd::Callback callback)
 {
-    auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::globals::netif_default.dhcp);
+    auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::global::netif_default.dhcp);
     assert(dhcp != nullptr);
     assert(dhcp->state != dhcp::State::STATE_OFF);
 
@@ -475,7 +475,7 @@ static void ConflictCallback(network::acd::Callback callback)
 static void Check()
 {
     DEBUG_ENTRY();
-    auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::globals::netif_default.dhcp);
+    auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::global::netif_default.dhcp);
 
     SetState(dhcp, dhcp::State::STATE_CHECKING);
 
@@ -488,7 +488,7 @@ static void Check()
 static void Discover()
 {
     DEBUG_ENTRY();
-    auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::globals::netif_default.dhcp);
+    auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::global::netif_default.dhcp);
     assert(dhcp != nullptr);
 
 #if defined(CONFIG_NET_DHCP_USE_AUTOIP)
@@ -500,7 +500,7 @@ static void Discover()
 
     dhcp->offered.offered_ip_addr.addr = 0;
 
-    SetState(dhcp, dhcp::State::STATE_SELECTING);
+    SetState(dhcp, dhcp::State::kSelecting);
 
     SendDiscover();
 
@@ -516,10 +516,10 @@ static void Discover()
 static void Reboot()
 {
     DEBUG_ENTRY();
-    auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::globals::netif_default.dhcp);
+    auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::global::netif_default.dhcp);
     assert(dhcp != nullptr);
 
-    SetState(dhcp, dhcp::State::STATE_REBOOTING);
+    SetState(dhcp, dhcp::State::kRebooting);
 
     SendRequest();
 
@@ -537,9 +537,9 @@ static void Reboot()
 static void Select()
 {
     DEBUG_ENTRY();
-    auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::globals::netif_default.dhcp);
+    auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::global::netif_default.dhcp);
 
-    SetState(dhcp, dhcp::State::STATE_REQUESTING);
+    SetState(dhcp, dhcp::State::kRequesting);
 
     SendRequest();
 
@@ -554,16 +554,16 @@ static void Select()
 
 static void Timeout()
 {
-    auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::globals::netif_default.dhcp);
+    auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::global::netif_default.dhcp);
     assert(dhcp != nullptr);
 
     /* back-off period has passed, or server selection timed out */
-    if ((dhcp->state == dhcp::State::STATE_BACKING_OFF) || (dhcp->state == dhcp::State::STATE_SELECTING))
+    if ((dhcp->state == dhcp::State::kBackingOff) || (dhcp->state == dhcp::State::kSelecting))
     {
         Discover();
         /* receiving the requested lease timed out */
     }
-    else if (dhcp->state == dhcp::State::STATE_REQUESTING)
+    else if (dhcp->state == dhcp::State::kRequesting)
     {
         if (dhcp->tries <= 5)
         {
@@ -575,7 +575,7 @@ static void Timeout()
             dhcp::Start();
         }
     }
-    else if (dhcp->state == dhcp::State::STATE_REBOOTING)
+    else if (dhcp->state == dhcp::State::kRebooting)
     {
         if (dhcp->tries < REBOOT_TRIES)
         {
@@ -590,9 +590,9 @@ static void Timeout()
 
 static void T1Timeout()
 {
-    auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::globals::netif_default.dhcp);
+    auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::global::netif_default.dhcp);
 
-    if ((dhcp->state == dhcp::State::STATE_REQUESTING) || (dhcp->state == dhcp::State::STATE_BOUND) || (dhcp->state == dhcp::State::STATE_RENEWING))
+    if ((dhcp->state == dhcp::State::kRequesting) || (dhcp->state == dhcp::State::kBound) || (dhcp->state == dhcp::State::kRenewing))
     {
         /* just retry to renew - note that the rebind timer (t2) will
          * eventually time-out if renew tries fail. */
@@ -609,9 +609,9 @@ static void T1Timeout()
 
 static void T2Timeout()
 {
-    auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::globals::netif_default.dhcp);
+    auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::global::netif_default.dhcp);
 
-    if ((dhcp->state == dhcp::State::STATE_REQUESTING) || (dhcp->state == dhcp::State::STATE_BOUND) || (dhcp->state == dhcp::State::STATE_RENEWING) || (dhcp->state == dhcp::State::STATE_REBINDING))
+    if ((dhcp->state == dhcp::State::kRequesting) || (dhcp->state == dhcp::State::kBound) || (dhcp->state == dhcp::State::kRenewing) || (dhcp->state == dhcp::State::kRebinding))
     {
         /* just retry to rebind */
         /* This slightly different to RFC2131: DHCPREQUEST will be sent from state
@@ -627,9 +627,9 @@ static void T2Timeout()
 
 void CoarseTmr([[maybe_unused]] TimerHandle_t handle)
 {
-    auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::globals::netif_default.dhcp);
+    auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::global::netif_default.dhcp);
 
-    if ((dhcp != nullptr) && (dhcp->state != dhcp::State::STATE_OFF))
+    if ((dhcp != nullptr) && (dhcp->state != dhcp::State::kOff))
     {
         /* compare lease time to expire timeout */
         if (dhcp->t0_timeout && (++dhcp->lease_used == dhcp->t0_timeout))
@@ -655,7 +655,7 @@ void CoarseTmr([[maybe_unused]] TimerHandle_t handle)
 
 static void FineTmr([[maybe_unused]] TimerHandle_t handle)
 {
-    auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::globals::netif_default.dhcp);
+    auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::global::netif_default.dhcp);
 
     if (dhcp != nullptr)
     {
@@ -676,7 +676,7 @@ static void FineTmr([[maybe_unused]] TimerHandle_t handle)
 static void HandleOffer(const dhcp::Message* const kResponse)
 {
     DEBUG_ENTRY();
-    auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::globals::netif_default.dhcp);
+    auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::global::netif_default.dhcp);
 
     if (dhcp->server_ip_addr.addr != 0)
     {
@@ -696,7 +696,7 @@ static void HandleOffer(const dhcp::Message* const kResponse)
 static void HandleAck(const dhcp::Message* const kResponse)
 {
     DEBUG_ENTRY();
-    auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::globals::netif_default.dhcp);
+    auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::global::netif_default.dhcp);
 
     DEBUG_PRINTF("t0=%u, t1=%u, t2=%u", dhcp->offered.offered_t0_lease, dhcp->offered.offered_t1_renew, dhcp->offered.offered_t2_rebind);
 
@@ -716,11 +716,11 @@ static void HandleAck(const dhcp::Message* const kResponse)
 
     if (dhcp->offered.offered_sn_mask.addr != 0)
     {
-        dhcp->flags |= DHCP_FLAG_SUBNET_MASK_GIVEN;
+        dhcp->flags |= kFlagSubnetMaskGiven;
     }
     else
     {
-        dhcp->flags &= static_cast<uint8_t>(~DHCP_FLAG_SUBNET_MASK_GIVEN);
+        dhcp->flags &= static_cast<uint8_t>(~kFlagSubnetMaskGiven);
     }
 
     DEBUG_PRINTF("t0=%u, t1=%u, t2=%u", dhcp->offered.offered_t0_lease, dhcp->offered.offered_t1_renew, dhcp->offered.offered_t2_rebind);
@@ -730,11 +730,11 @@ static void HandleAck(const dhcp::Message* const kResponse)
 static void HandleNak()
 {
     DEBUG_ENTRY();
-    auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::globals::netif_default.dhcp);
+    auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::global::netif_default.dhcp);
 
     // Change to a defined state - set this before assigning the address
     // to ensure the callback can use dhcp_supplied_address()
-    SetState(dhcp, dhcp::State::STATE_BACKING_OFF);
+    SetState(dhcp, dhcp::State::kBackingOff);
     // remove IP address from interface (must no longer be used, as per RFC2131)
     ip4_addr_t any;
     any.addr = 0;
@@ -748,20 +748,20 @@ static void HandleNak()
 bool Start()
 {
     DEBUG_ENTRY();
-    auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::globals::netif_default.dhcp);
+    auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::global::netif_default.dhcp);
 
     if (dhcp == nullptr)
     {
         dhcp = new (struct dhcp::Dhcp);
         assert(dhcp != nullptr);
-        netif::globals::netif_default.dhcp = dhcp;
+        netif::global::netif_default.dhcp = dhcp;
 
         s_timer_id = SoftwareTimerAdd(dhcp::kFineTimerMsecs, FineTmr);
         assert(s_timer_id >= 0);
     }
 
     std::memset(dhcp, 0, sizeof(struct dhcp::Dhcp));
-    dhcp->handle = network::udp::Begin(net::iana::IANA_PORT_DHCP_CLIENT, dhcp::Input);
+    dhcp->handle = network::udp::Begin(network::iana::Ports::kPortDhcpClient, dhcp::Input);
 
 #ifndef NDEBUG
     if (dhcp->handle < 0)
@@ -780,7 +780,7 @@ bool Start()
 
     if (!netif::IsLinkUp())
     {
-        SetState(dhcp, dhcp::State::STATE_INIT);
+        SetState(dhcp, dhcp::State::kInit);
         return false;
     }
 
@@ -793,7 +793,7 @@ bool Start()
 void ReleaseAndStop()
 {
     DEBUG_ENTRY();
-    auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::globals::netif_default.dhcp);
+    auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::global::netif_default.dhcp);
 
     if (dhcp == nullptr)
     {
@@ -801,7 +801,7 @@ void ReleaseAndStop()
         return;
     }
 
-    if (dhcp->state == dhcp::State::STATE_OFF)
+    if (dhcp->state == dhcp::State::kOff)
     {
         return;
     }
@@ -817,11 +817,11 @@ void ReleaseAndStop()
 
     if (dhcp::SuppliedAddress())
     {
-        SetState(dhcp, dhcp::State::STATE_OFF);
+        SetState(dhcp, dhcp::State::kOff);
 
         SendRelease(server_ip_addr.addr);
 
-        network::udp::End(net::iana::IANA_PORT_DHCP_CLIENT);
+        network::udp::End(network::iana::Ports::kPortDhcpClient);
 
         /* remove IP address from interface (prevents routing from selecting this interface) */
         ip4_addr_t any;
@@ -833,15 +833,15 @@ void ReleaseAndStop()
     acd::Remove(&dhcp->acd);
 #endif
 
-    delete reinterpret_cast<struct dhcp::Dhcp*>(netif::globals::netif_default.dhcp);
-    netif::globals::netif_default.dhcp = nullptr;
+    delete reinterpret_cast<struct dhcp::Dhcp*>(netif::global::netif_default.dhcp);
+    netif::global::netif_default.dhcp = nullptr;
     netif::ClearFlags(netif::Netif::kNetifFlagDhcpOk);
 }
 
 void NetworkChangedLinkUp()
 {
     DEBUG_ENTRY();
-    auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::globals::netif_default.dhcp);
+    auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::global::netif_default.dhcp);
 
     if (dhcp == nullptr)
     {
@@ -851,14 +851,14 @@ void NetworkChangedLinkUp()
 
     switch (dhcp->state)
     {
-        case dhcp::State::STATE_REBINDING:
-        case dhcp::State::STATE_RENEWING:
-        case dhcp::State::STATE_BOUND:
-        case dhcp::State::STATE_REBOOTING:
+        case dhcp::State::kRebinding:
+        case dhcp::State::kRenewing:
+        case dhcp::State::kBound:
+        case dhcp::State::kRebooting:
             dhcp->tries = 0;
             Reboot();
             break;
-        case dhcp::State::STATE_OFF:
+        case dhcp::State::kOff:
             break;
         default:
             dhcp->tries = 0;
@@ -876,7 +876,7 @@ void Process(const dhcp::Message* const kResponse, uint32_t size)
     uint8_t msg_type = 0;
     uint8_t opt_len = 0;
 
-    auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::globals::netif_default.dhcp);
+    auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::global::netif_default.dhcp);
     assert(dhcp != nullptr);
 
     std::memset(&dhcp->offered, 0, sizeof(struct dhcp::Dhcp::Offered));
@@ -884,55 +884,55 @@ void Process(const dhcp::Message* const kResponse, uint32_t size)
     dhcp->server_ip_addr.addr = 0;
 
     const auto* p = reinterpret_cast<const uint8_t*>(kResponse);
-    p = p + sizeof(dhcp::Message) - dhcp::OPT_SIZE + 4;
+    p = p + sizeof(dhcp::Message) - dhcp::kOptSize + 4;
     auto* e = p + size;
 
     while (p < e)
     {
         switch (*p)
         {
-            case dhcp::Options::OPTION_END:
+            case dhcp::Options::kEnd:
                 p = e;
                 break;
-            case dhcp::Options::OPTION_PAD_OPTION:
+            case dhcp::Options::kPadOption:
                 p++;
                 break;
-            case dhcp::Options::OPTION_MESSAGE_TYPE:
+            case dhcp::Options::kMessageType:
                 p++;
                 p++;
                 msg_type = *p++;
                 break;
-            case dhcp::Options::OPTION_SUBNET_MASK:
+            case dhcp::Options::kSubnetMask:
                 p++;
                 p++;
                 dhcp->offered.offered_sn_mask.addr = network::memcpy_ip(p);
                 p = p + 4;
                 break;
-            case dhcp::Options::OPTION_ROUTER:
+            case dhcp::Options::kRouter:
                 p++;
                 p++;
                 dhcp->offered.offered_gw_addr.addr = network::memcpy_ip(p);
                 p = p + 4;
                 break;
-            case dhcp::Options::OPTION_SERVER_IDENTIFIER:
+            case dhcp::Options::kServerIdentifier:
                 p++;
                 p++;
                 dhcp->server_ip_addr.addr = network::memcpy_ip(p);
                 p += 4;
                 break;
-            case dhcp::Options::OPTION_LEASE_TIME:
+            case dhcp::Options::kLeaseTime:
                 p++;
                 p++;
                 dhcp->offered.offered_t0_lease = __builtin_bswap32(network::memcpy_ip(p));
                 p += 4;
                 break;
-            case dhcp::Options::OPTION_DHCP_T1_VALUE:
+            case dhcp::Options::kDhcpT1Value:
                 p++;
                 p++;
                 dhcp->offered.offered_t1_renew = __builtin_bswap32(network::memcpy_ip(p));
                 p += 4;
                 break;
-            case dhcp::Options::OPTION_DHCP_T2_VALUE:
+            case dhcp::Options::kDhcpT2Value:
                 p++;
                 p++;
                 dhcp->offered.offered_t2_rebind = __builtin_bswap32(network::memcpy_ip(p));
@@ -946,17 +946,17 @@ void Process(const dhcp::Message* const kResponse, uint32_t size)
         }
     }
 
-    if (msg_type == dhcp::Type::OFFER)
+    if (msg_type == dhcp::Type::kOffer)
     {
         dhcp->offered.offered_ip_addr.addr = network::memcpy_ip(kResponse->yiaddr);
     }
 
     DEBUG_PRINTF("msg_type=%u", msg_type);
 
-    if (msg_type == dhcp::Type::ACK)
+    if (msg_type == dhcp::Type::kAck)
     {
         // in requesting state or just reconnected to the network?
-        if ((dhcp->state == dhcp::State::STATE_REQUESTING) || (dhcp->state == dhcp::State::STATE_REBOOTING))
+        if ((dhcp->state == dhcp::State::kRequesting) || (dhcp->state == dhcp::State::kRebooting))
         {
             HandleAck(kResponse);
 #if defined(CONFIG_NET_DHCP_USE_ACD)
@@ -965,22 +965,31 @@ void Process(const dhcp::Message* const kResponse, uint32_t size)
             Bind();
 #endif
         }
-        else if ((dhcp->state == dhcp::State::STATE_REBINDING) || (dhcp->state == dhcp::State::STATE_RENEWING))
+        else if ((dhcp->state == dhcp::State::kRebinding) || (dhcp->state == dhcp::State::kRenewing))
         {
             HandleAck(kResponse);
             Bind();
         }
     }
-    else if ((msg_type == dhcp::Type::NAK) &&
-             ((dhcp->state == dhcp::State::STATE_REBOOTING) || (dhcp->state == dhcp::State::STATE_REQUESTING) || (dhcp->state == dhcp::State::STATE_REBINDING) || (dhcp->state == dhcp::State::STATE_RENEWING)))
+    else if ((msg_type == dhcp::Type::kNak) && ((dhcp->state == dhcp::State::kRebooting) || (dhcp->state == dhcp::State::kRequesting) || (dhcp->state == dhcp::State::kRebinding) || (dhcp->state == dhcp::State::kRenewing)))
     {
         HandleNak();
     }
-    else if ((msg_type == dhcp::Type::OFFER) && (dhcp->state == dhcp::State::STATE_SELECTING))
+    else if ((msg_type == dhcp::Type::kOffer) && (dhcp->state == dhcp::State::kSelecting))
     {
         HandleOffer(kResponse);
     }
 
     DEBUG_EXIT();
+}
+
+bool SuppliedAddress()
+{
+    const auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::global::netif_default.dhcp);
+    if ((dhcp != nullptr))
+    {
+        return (dhcp->state == dhcp::State::kBound) || (dhcp->state == dhcp::State::kRenewing) || (dhcp->state == dhcp::State::kRebinding);
+    }
+    return false;
 }
 } // namespace network::dhcp

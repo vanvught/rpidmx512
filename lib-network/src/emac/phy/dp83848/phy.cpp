@@ -29,7 +29,7 @@
 #include "emac/net_link_check.h"
 #include "emac/mmi.h"
 
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
 #if !defined(BIT)
 #define BIT(x) static_cast<uint16_t>(1U << (x))
@@ -65,7 +65,7 @@ void CustomizedStatus(phy::Status& phy_status)
     phy::Read(PHY_ADDRESS, 0x10, value);
 
     phy_status.link = ((value & BIT(0)) == BIT(0)) ? phy::Link::kStateUp : phy::Link::kStateDown;
-    phy_status.duplex = ((value & BIT(2)) == BIT(2)) ? phy::Duplex::DUPLEX_FULL : phy::Duplex::DUPLEX_HALF;
+    phy_status.duplex = ((value & BIT(2)) == BIT(2)) ? phy::Duplex::kDuplexFull : phy::Duplex::kDuplexHalf;
     phy_status.speed = ((value & BIT(1)) == BIT(1)) ? phy::Speed::kSpeed10 : phy::Speed::kSpeed100;
     phy_status.autonegotiation = ((value & BIT(4)) == BIT(4));
 }

@@ -27,15 +27,20 @@
 #define NETWORK_IFACE_H_
 
 #include <cstdint>
-#include <cstring>
 
 namespace network::iface
 {
+inline constexpr uint32_t kMacSize = 6;
+inline constexpr uint32_t kHostnameSize = 64;   ///< Including a terminating null byte.
+inline constexpr uint32_t kDomainnameSize = 64; ///< Including a terminating null byte.
+inline constexpr uint32_t kNameserversCount = 3;
+
 void EthernetInput(const uint8_t*, uint32_t);
 
 void CopyMacAddressTo(uint8_t* mac_address);
 
 void SetHostname(const char* hostname);
+void SetHostnameAuto();
 const char* HostName();
 
 void SetDomainName(const char* domainname);

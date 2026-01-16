@@ -55,13 +55,11 @@ void emac_free_pkt();
 
 namespace network
 {
-
-namespace globals
+namespace global
 {
 extern uint32_t broadcast_mask;
 extern uint32_t on_network_mask;
-}
-// namespace globals
+} // namespace global
 
 inline uint16_t Chksum(const void* data, uint32_t length)
 {
@@ -106,33 +104,33 @@ namespace ip
 {
 void Init();
 void Shutdown();
-void Handle(struct t_ip4*);
+void Handle(struct Header*);
 } // namespace ip
 
 namespace igmp
 {
 void Init();
-void Input(const struct t_igmp*);
+void Input(const struct Header*);
 void Shutdown();
 } // namespace igmp
 
 namespace icmp
 {
-void Input(struct t_icmp*);
+void Input(struct Header*);
 void Shutdown();
 } // namespace icmp
 
 namespace udp
 {
 void Init();
-void Input(const struct t_udp*);
+void Input(const struct Header*);
 void Shutdown();
 } // namespace udp
 
 namespace tcp
 {
 void Init();
-void Input(struct t_tcp*);
+void Input(struct Header*);
 void Run();
 } // namespace tcp
 } // namespace network

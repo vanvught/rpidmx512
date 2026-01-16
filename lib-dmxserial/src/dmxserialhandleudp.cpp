@@ -74,7 +74,7 @@ void DmxSerial::Input(const uint8_t* p, uint32_t size, uint32_t from_ip, [[maybe
         for (uint32_t i = 0; i < m_nFilesCount; i++)
         {
             const auto kLength =
-                snprintf(reinterpret_cast<char*>(buffer), UDP_DATA_SIZE - 1, DMXSERIAL_FILE_PREFIX "%.3d" DMXSERIAL_FILE_SUFFIX "\n", m_aFileIndex[i]);
+                snprintf(reinterpret_cast<char*>(buffer), network::udp::kDataSize - 1, DMXSERIAL_FILE_PREFIX "%.3d" DMXSERIAL_FILE_SUFFIX "\n", m_aFileIndex[i]);
             network::udp::Send(handle_, buffer, kLength, from_ip, UDP::PORT);
         }
         return;
@@ -84,7 +84,7 @@ void DmxSerial::Input(const uint8_t* p, uint32_t size, uint32_t from_ip, [[maybe
     {
         if (size == length::kGetTftp)
         {
-            const auto kLength = snprintf(reinterpret_cast<char*>(buffer), UDP_DATA_SIZE - 1, "tftp:%s\n", enable_tftp_ ? "On" : "Off");
+            const auto kLength = snprintf(reinterpret_cast<char*>(buffer), network::udp::kDataSize - 1, "tftp:%s\n", enable_tftp_ ? "On" : "Off");
             network::udp::Send(handle_, buffer, kLength, from_ip, UDP::PORT);
             return;
         }
@@ -122,7 +122,7 @@ void DmxSerial::Input(const uint8_t* p, uint32_t size, uint32_t from_ip, [[maybe
         else	
         {
             const auto* error = strerror(errno);
-            const auto kLength = snprintf(reinterpret_cast<char*>(buffer), UDP_DATA_SIZE - 1, "%s\n", error);
+            const auto kLength = snprintf(reinterpret_cast<char*>(buffer), network::udp::kDataSize - 1, "%s\n", error);
             network::udp::Send(handle_, buffer, kLength, from_ip, UDP::PORT);
         }
         return;

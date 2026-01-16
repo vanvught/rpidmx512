@@ -45,15 +45,14 @@
 #include "emac/net_link_check.h"
 #endif
 
-namespace global::network
-{
-extern net::phy::Link linkState;
-} // namespace global::network
-
 uint32_t emac_eth_recv(uint8_t**);
 
 namespace network
 {
+namespace global
+{
+extern net::phy::Link link_state;
+}
 void Init();
 
 #if defined(CONFIG_NET_ENABLE_PTP)
@@ -83,13 +82,13 @@ inline void Run()
     network::ptp::Run();
 #endif
 #if defined(ENET_LINK_CHECK_USE_PIN_POLL)
-    net::link_pin_poll();
+    net::link::PinPoll();
 #elif defined(ENET_LINK_CHECK_REG_POLL)
-    const net::phy::Link link_state = net::link_status_read();
-    if (link_state != global::network::linkState)
+    const net::phy::Link link_state = net::link::StatusRead();
+    if (link_state != global::link_state)
     {
-        global::network::linkState = link_state;
-        net::LinkHandleChange(link_state);
+        global::linkState = link_state;
+        net::link::HandleChange(link_state);
     }
 #endif
 }

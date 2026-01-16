@@ -28,7 +28,6 @@
 
 #include <cstdint>
 
-#include "core/netif.h"
 #include "core/ip4/acd.h"
 #include "ip4/ip4_address.h"
 #include "core/protocol/dhcp.h"
@@ -41,9 +40,9 @@ static constexpr uint32_t kCoarseTimerMsecs = (kCoarseTimerSecs * 1000UL);
 // period (in milliseconds) of the application calling dhcp_fine_tmr()
 static constexpr uint32_t kFineTimerMsecs = 500;
 
-#define DHCP_FLAG_SUBNET_MASK_GIVEN 0x01
+static constexpr uint8_t kFlagSubnetMaskGiven = 0x01;
 
-typedef uint16_t dhcp_timeout_t;
+using dhcp_timeout_t = uint16_t;
 
 struct Dhcp
 {
@@ -53,13 +52,13 @@ struct Dhcp
     uint8_t tries;
     uint8_t flags;
 
-    dhcp_timeout_t request_timeout; /* #ticks with period DHCP_FINE_TIMER_SECS for request timeout */
-    dhcp_timeout_t t1_timeout;      /* #ticks with period DHCP_COARSE_TIMER_SECS for renewal time */
-    dhcp_timeout_t t2_timeout;      /* #ticks with period DHCP_COARSE_TIMER_SECS for rebind time */
-    dhcp_timeout_t t1_renew_time;   /* #ticks with period DHCP_COARSE_TIMER_SECS until next renew try */
-    dhcp_timeout_t t2_rebind_time;  /* #ticks with period DHCP_COARSE_TIMER_SECS until next rebind try */
-    dhcp_timeout_t lease_used;      /* #ticks with period DHCP_COARSE_TIMER_SECS since last received DHCP ack */
-    dhcp_timeout_t t0_timeout;      /* #ticks with period DHCP_COARSE_TIMER_SECS for lease time */
+    dhcp_timeout_t request_timeout; // #ticks with period DHCP_FINE_TIMER_SECS for request timeout
+    dhcp_timeout_t t1_timeout;      // #ticks with period DHCP_COARSE_TIMER_SECS for renewal time
+    dhcp_timeout_t t2_timeout;      // #ticks with period DHCP_COARSE_TIMER_SECS for rebind time
+    dhcp_timeout_t t1_renew_time;   // #ticks with period DHCP_COARSE_TIMER_SECS until next renew try
+    dhcp_timeout_t t2_rebind_time;  // #ticks with period DHCP_COARSE_TIMER_SECS until next rebind try
+    dhcp_timeout_t lease_used;      // #ticks with period DHCP_COARSE_TIMER_SECS since last received DHCP ack
+    dhcp_timeout_t t0_timeout;      // #ticks with period DHCP_COARSE_TIMER_SECS for lease time
 
     ip4_addr_t server_ip_addr;
 
@@ -69,9 +68,9 @@ struct Dhcp
         ip4_addr_t offered_sn_mask;
         ip4_addr_t offered_gw_addr;
 
-        uint32_t offered_t0_lease;  /* lease period (in seconds) */
-        uint32_t offered_t1_renew;  /* recommended renew time (usually 50% of lease period) */
-        uint32_t offered_t2_rebind; /* recommended rebind time (usually 87.5 of lease period)  */
+        uint32_t offered_t0_lease;  // lease period (in seconds)
+        uint32_t offered_t1_renew;  // recommended renew time (usually 50% of lease period)
+        uint32_t offered_t2_rebind; // recommended rebind time (usually 87.5 of lease period)
     };
 
     Offered offered;
@@ -87,18 +86,10 @@ void ReleaseAndStop();
 void Inform();
 void NetworkChangedLinkUp();
 
+bool SuppliedAddress();
+
 void Process(const dhcp::Message* const, uint32_t size);
 void Input(const uint8_t*, uint32_t, uint32_t, uint16_t);
-
-inline bool SuppliedAddress()
-{
-    const auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::globals::netif_default.dhcp);
-    if ((dhcp != nullptr))
-    {
-        return (dhcp->state == dhcp::State::STATE_BOUND) || (dhcp->state == dhcp::State::STATE_RENEWING) || (dhcp->state == dhcp::State::STATE_REBINDING);
-    }
-    return false;
-}
-}  // namespace network::dhcp
+} // namespace network::dhcp
 
 #endif // CORE_IP4_DHCP_H_

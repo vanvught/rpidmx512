@@ -31,7 +31,7 @@
 #error
 #endif
 
-#include "network_net.h"
+#include "network_config.h"
 #include "network_iface.h"
 
 #include "net/udp.h" // IWYU pragma: keep
