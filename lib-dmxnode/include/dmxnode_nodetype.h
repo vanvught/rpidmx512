@@ -47,7 +47,7 @@ enum class NodeType
 
 inline constexpr const char* kNodeTypeNames[static_cast<uint32_t>(NodeType::kUndefined)] = 
 {
-	"Artnet",    
+	"Art-Net",    
 	"sACN E1.31", 
 	"DDP Display", 
 	"PixelPusher",
