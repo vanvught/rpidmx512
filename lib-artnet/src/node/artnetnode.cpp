@@ -84,7 +84,7 @@ ArtNetNode::ArtNetNode()
     art_poll_reply_.Oem = ArtNetConst::kOemId[1];
     art_poll_reply_.EstaMan[0] = ArtNetConst::kEstaId[1];
     art_poll_reply_.EstaMan[1] = ArtNetConst::kEstaId[0];
-     network::iface::CopyMacAddressTo(art_poll_reply_.MAC);
+    network::iface::CopyMacAddressTo(art_poll_reply_.MAC);
 #if (ARTNET_VERSION >= 4)
     art_poll_reply_.AcnPriority = e131::priority::kDefault;
 #endif
@@ -165,9 +165,9 @@ void ArtNetNode::Start()
     art_poll_reply_.Status2 |=
         artnet::Status2::kPortAddress15Bit | (artnet::kVersion >= 4 ? artnet::Status2::kSacnAbleToSwitch : artnet::Status2::kSacnNoSwitch);
     art_poll_reply_.Status2 &= static_cast<uint8_t>(~artnet::Status2::kIpDhcp);
-    art_poll_reply_.Status2 |=  network::iface::Dhcp() ? artnet::Status2::kIpDhcp : artnet::Status2::kIpManualy;
+    art_poll_reply_.Status2 |= network::iface::Dhcp() ? artnet::Status2::kIpDhcp : artnet::Status2::kIpManualy;
     art_poll_reply_.Status2 &= static_cast<uint8_t>(~artnet::Status2::kDhcpCapable);
-    art_poll_reply_.Status2 |=  network::iface::IsDhcpCapable() ? artnet::Status2::kDhcpCapable : static_cast<uint8_t>(0);
+    art_poll_reply_.Status2 |= network::iface::IsDhcpCapable() ? artnet::Status2::kDhcpCapable : static_cast<uint8_t>(0);
 #if defined(ENABLE_HTTPD) && defined(ENABLE_CONTENT)
     art_poll_reply_.Status2 |= artnet::Status2::kWebBrowserSupport;
 #endif
@@ -738,7 +738,8 @@ void ArtNetNode::Print()
                 printf("  Port %-2u %-4u", static_cast<unsigned int>(port_index), static_cast<unsigned int>(kUniverse));
                 if (node_.port[port_index].protocol == artnet::PortProtocol::kArtnet)
                 {
-                    const auto kDestinationIp = (input_port_[port_index].destination_ip == 0 ? network::GetBroadcastIp() : input_port_[port_index].destination_ip);
+                    const auto kDestinationIp =
+                        (input_port_[port_index].destination_ip == 0 ? network::GetBroadcastIp() : input_port_[port_index].destination_ip);
                     printf(" -> " IPSTR, IP2STR(kDestinationIp));
                 }
 #if (ARTNET_VERSION >= 4)

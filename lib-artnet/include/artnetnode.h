@@ -2,7 +2,7 @@
  * @file artnetnode.h
  *
  */
-/* Copyright (C) 2016-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2016-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -395,7 +395,7 @@ class ArtNetNode
     void UpdateMergeStatus(uint32_t port_index);
     void CheckMergeTimeouts(uint32_t port_index);
 
-    void ProcessPollReply(uint32_t port_index, uint32_t& num_ports_input, uint32_t& num_ports_output);
+    void ProcessPollReply(uint32_t port_index);
     void SendPollReply(uint32_t port_index, uint32_t destination_ip, artnet::ArtPollQueue* poll_queue = nullptr);
 
     void SendTodRequest(uint32_t port_index);

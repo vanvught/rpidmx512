@@ -42,7 +42,7 @@
 #include "artnet.h"
 #include "hal_millis.h"
 #include "network.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
 template <uint8_t N> static inline void Uitoa(uint32_t v, uint8_t* p)
 {
@@ -141,7 +141,7 @@ union uip
     uint8_t u8[4];
 } static ip;
 
-void ArtNetNode::ProcessPollReply(uint32_t port_index, [[maybe_unused]] uint32_t& num_ports_input, uint32_t& num_ports_output)
+void ArtNetNode::ProcessPollReply(uint32_t port_index)
 {
     if (node_.port[port_index].direction == dmxnode::PortDirection::kOutput)
     {
@@ -155,13 +155,11 @@ void ArtNetNode::ProcessPollReply(uint32_t port_index, [[maybe_unused]] uint32_t
             output_port_[port_index].good_output = good_output;
         }
 #endif
-        art_poll_reply_.PortTypes[0] = artnet::PortType::kOutputArtnet;
         art_poll_reply_.GoodOutput[0] = output_port_[port_index].good_output;
         art_poll_reply_.GoodOutputB[0] = output_port_[port_index].good_output_b;
         art_poll_reply_.GoodInput[0] = 0;
         art_poll_reply_.SwOut[0] = node_.port[port_index].sw;
         art_poll_reply_.SwIn[0] = 0;
-        num_ports_output = 1;
         DEBUG_EXIT();
         return;
     }
@@ -175,24 +173,24 @@ void ArtNetNode::ProcessPollReply(uint32_t port_index, [[maybe_unused]] uint32_t
             input_port_[port_index].good_input |= artnet::GoodInput::kInputIsSacn;
         }
 #endif
-        art_poll_reply_.PortTypes[0] = artnet::PortType::kInputArtnet;
         art_poll_reply_.GoodOutput[0] = 0;
         art_poll_reply_.GoodOutputB[0] = 0;
         art_poll_reply_.GoodInput[0] = input_port_[port_index].good_input;
         art_poll_reply_.SwOut[0] = 0;
         art_poll_reply_.SwIn[0] = node_.port[port_index].sw;
-        num_ports_input = 1;
         DEBUG_EXIT();
         return;
     }
 #endif
-
-    num_ports_output = 0;
-    num_ports_input = 0;
 }
 
 void ArtNetNode::SendPollReply(uint32_t port_index, uint32_t destination_ip, artnet::ArtPollQueue* queue)
 {
+    if (node_.port[port_index].direction == dmxnode::PortDirection::kDisable)
+    {
+        return;
+    }
+
     ip.u32 = network::GetPrimaryIp();
     memcpy(art_poll_reply_.IPAddress, ip.u8, sizeof(art_poll_reply_.IPAddress));
 #if (ARTNET_VERSION >= 4)
@@ -213,6 +211,12 @@ void ArtNetNode::SendPollReply(uint32_t port_index, uint32_t destination_ip, art
     art_poll_reply_.NetSwitch = node_.port[port_index].net_switch;
     art_poll_reply_.SubSwitch = node_.port[port_index].sub_switch;
     art_poll_reply_.bind_index = static_cast<uint8_t>(port_index + 1);
+    art_poll_reply_.NumPortsLo = 1;
+#if defined(ARTNET_HAVE_DMXIN)
+    art_poll_reply_.PortTypes[0] = artnet::PortType::kOutputArtnet | artnet::PortType::kInputArtnet;
+#else
+    art_poll_reply_.PortTypes[0] = artnet::PortType::kOutputArtnet;
+#endif
 
     const auto* shortname = DmxNode::Instance().GetShortName(port_index);
     memcpy(art_poll_reply_.ShortName, shortname, artnet::kShortNameLength);
@@ -227,23 +231,16 @@ void ArtNetNode::SendPollReply(uint32_t port_index, uint32_t destination_ip, art
         art_poll_reply_.UserHi = static_cast<uint8_t>(kUserData >> 8);
     }
 
-    uint32_t ports_output = 0;
-    uint32_t ports_input = 0;
-    ProcessPollReply(port_index, ports_input, ports_output);
+    ProcessPollReply(port_index);
 
-    art_poll_reply_.NumPortsLo = ports_input | ports_output;
-
-    if (art_poll_reply_.NumPortsLo != 0)
+    state_.art.poll_reply_count++;
+    if (state_.art.poll_reply_count == 10000)
     {
-        state_.art.poll_reply_count++;
-        if (state_.art.poll_reply_count == 10000)
-        {
-            state_.art.poll_reply_count = 0;
-        }
-
-        CreateNodeReport(art_poll_reply_.NodeReport, state_.report_code, state_.art.poll_reply_count);
-        network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&art_poll_reply_), sizeof(artnet::ArtPollReply), destination_ip, artnet::kUdpPort);
+        state_.art.poll_reply_count = 0;
     }
+
+    CreateNodeReport(art_poll_reply_.NodeReport, state_.report_code, state_.art.poll_reply_count);
+    network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&art_poll_reply_), sizeof(artnet::ArtPollReply), destination_ip, artnet::kUdpPort);
 
     state_.is_changed = false;
 }
