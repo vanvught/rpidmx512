@@ -37,7 +37,7 @@
 #include "configurationstore.h"
 #include "common/utils/utils_flags.h"
 #include "common/utils/utils_enum.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
 using common::store::gps::Flags;
 
@@ -58,7 +58,7 @@ void GpsParams::SetModule(const char* val, uint32_t len)
     char module[gps::module::kMaxNameLength];
     memcpy(module, val, len);
     module[len] = '\0';
-    
+
     store_gps.module = common::ToValue(gps::GetModule(module));
 }
 
@@ -104,10 +104,10 @@ void GpsParams::Store(const char* buffer, uint32_t buffer_size)
 
 void GpsParams::Set()
 {
-	auto& gps = *GPS::Get();
-	
-	gps.SetUtcOffset(store_gps.utc_offset);
-	
+    auto& gps = *GPS::Get();
+
+    gps.SetUtcOffset(store_gps.utc_offset);
+
 #ifndef NDEBUG
     Dump();
 #endif

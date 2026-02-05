@@ -2,7 +2,7 @@
  * @file display.cpp
  *
  */
-/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,10 +28,8 @@
 #endif
 
 #include "display.h"
-
 #include "softwaretimers.h"
-
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
 static TimerHandle_t s_timer_id = kTimerIdNone;
 

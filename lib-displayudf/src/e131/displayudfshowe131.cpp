@@ -33,7 +33,7 @@
 #include "displayudf.h"
 #include "e131bridge.h"
 #include "dmxnode.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
 void DisplayUdf::ShowE131Bridge()
 {

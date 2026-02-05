@@ -38,7 +38,7 @@
 #include "common/utils/utils_flags.h"
 #include "common/utils/utils_array.h"
 #include "common/utils/utils_enum.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 #include "displayudf.h"
 
 using common::store::displayudf::Flags;
@@ -71,7 +71,7 @@ void DisplayUdfParams::SetFlipVertically(const char* val, uint32_t len)
 void DisplayUdfParams::SetLabel(const char* key, uint32_t key_len, const char* val, uint32_t val_len)
 {
     if (val_len > 1) return;
-    
+
     DEBUG_PRINTF("%.*s ->%.*s", key_len, key, val_len, val);
 
     const uint32_t kHash = Fnv1a32Runtime(key, static_cast<uint32_t>(key_len));

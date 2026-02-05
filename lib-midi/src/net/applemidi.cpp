@@ -1,7 +1,7 @@
 /**
  * @file applemidi.cpp
  */
-/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,6 @@
  * https://developer.apple.com/library/archive/documentation/Audio/Conceptual/MIDINetworkDriverProtocol/MIDI/MIDI.html
  */
 
-#include "network_iface.h"
 #if defined(DEBUG_NET_APPLEMIDI)
 #undef NDEBUG
 #endif
@@ -43,6 +42,7 @@
 
 #include "net/applemidi.h"
 #include "network.h"
+#include "network_iface.h"
 #include "softwaretimers.h"
 #include "firmware/debug/debug_dump.h"
 #include "firmware/debug/debug_debug.h"
@@ -52,10 +52,6 @@ namespace applemidi
 
 } // namespace applemidi
 
-/**
- * @enum TAppleMidiCommand
- * @brief Defines the Apple MIDI command identifiers with network byte order.
- */
 enum class AppleMidiCommand : uint16_t
 {
     kInvitation = __builtin_bswap16(0x494e),         ///< Invitation 'IN'
@@ -67,13 +63,6 @@ enum class AppleMidiCommand : uint16_t
     kBitrateReceiveLimit = __builtin_bswap16(0x524c) ///< Bitrate 'RL'
 };
 
-/**
- * @struct TTimestampSynchronization
- * @brief Represents the structure for timestamp synchronization in Apple MIDI.
- *
- * This structure is used to handle the synchronization of timestamps between devices
- * in an Apple MIDI session.
- */
 struct TimestampSynchronization
 {
     uint16_t signature;     ///< Packet signature for Apple MIDI.

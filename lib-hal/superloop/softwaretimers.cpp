@@ -1,7 +1,7 @@
 /**
  * @file softwaretimers.cpp
  */
-/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +39,7 @@
 
 #include "softwaretimers.h"
 #include "hal_millis.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
 namespace console
 {
@@ -55,9 +55,9 @@ struct Timer
 };
 
 static Timer s_timers[hal::kSoftwareTimersMax]; ///< Timer storage pool.
-static uint32_t s_timers_count = 0;              ///< Number of active timers (0..hal::SOFTWARE_TIMERS_MAX).
-static int32_t s_next_id = 0;                    ///< Monotonically increasing ID source (may wrap, see notes).
-static uint32_t s_timer_current = 0;             ///< bRound-robin cursor for SoftwareTimerRun().
+static uint32_t s_timers_count = 0;             ///< Number of active timers (0..hal::SOFTWARE_TIMERS_MAX).
+static int32_t s_next_id = 0;                   ///< Monotonically increasing ID source (may wrap, see notes).
+static uint32_t s_timer_current = 0;            ///< bRound-robin cursor for SoftwareTimerRun().
 
 /**
  * @brief Create and start a periodic (or one-shot) software timer.

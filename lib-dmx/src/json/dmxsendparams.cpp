@@ -1,8 +1,26 @@
 /**
  * @file dmxsendparams.cpp
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org */
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:infogd32-dmx.org
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 
 #ifdef DEBUG_DMXSENDPARAMS
 #undef NDEBUG
@@ -40,36 +58,34 @@ DmxSendParams::DmxSendParams()
 
 void DmxSendParams::SetBreakTime(const char* val, uint32_t len)
 {
-    ParseAndApply<uint16_t>(val, len, [](uint16_t v) {
-        store_dmx_send.break_time = v > dmx::transmit::kBreakTimeMin ? v : dmx::transmit::kBreakTimeMin;
-    });
+    ParseAndApply<uint16_t>(val, len, [](uint16_t v) { store_dmx_send.break_time = v > dmx::transmit::kBreakTimeMin ? v : dmx::transmit::kBreakTimeMin; });
 }
 
 void DmxSendParams::SetMabTime(const char* val, uint32_t len)
 {
-    ParseAndApply<uint16_t>(val, len, [](uint16_t v) {
-        store_dmx_send.mab_time = v > dmx::transmit::kMabTimeMin ? v : dmx::transmit::kMabTimeMin;
-    });
+    ParseAndApply<uint16_t>(val, len, [](uint16_t v) { store_dmx_send.mab_time = v > dmx::transmit::kMabTimeMin ? v : dmx::transmit::kMabTimeMin; });
 }
 
 void DmxSendParams::SetRefreshRate(const char* val, uint32_t len)
 {
-    ParseAndApply<uint16_t>(val, len, [](uint16_t v) {
-        store_dmx_send.refresh_rate = v;
-    });
+    ParseAndApply<uint16_t>(val, len, [](uint16_t v) { store_dmx_send.refresh_rate = v; });
 }
 
 void DmxSendParams::SetSlotsCount(const char* val, uint32_t len)
 {
-    ParseAndApply<uint16_t>(val, len, [](uint16_t v) {
-        if (v >= 2 && v < dmx::kChannelsMax) {
-            store_dmx_send.slots_count = RounddownSlots(v);
-        } else {
-            store_dmx_send.slots_count = RounddownSlots(dmx::kChannelsMax);
-        }
-    });
+    ParseAndApply<uint16_t>(val, len,
+                            [](uint16_t v)
+                            {
+                                if (v >= 2 && v < dmx::kChannelsMax)
+                                {
+                                    store_dmx_send.slots_count = RounddownSlots(v);
+                                }
+                                else
+                                {
+                                    store_dmx_send.slots_count = RounddownSlots(dmx::kChannelsMax);
+                                }
+                            });
 }
-
 
 void DmxSendParams::Store(const char* buffer, uint32_t buffer_size)
 {
