@@ -1,7 +1,7 @@
 /**
  * @file dmxnode_outputtype.h
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,12 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
- 
 
 #ifndef DMXNODE_OUTPUTTYPE_H_
 #define DMXNODE_OUTPUTTYPE_H_
 
- #include <cstdint>
+#include <cstdint>
 
 namespace dmxnode
 {
@@ -49,23 +48,8 @@ enum class OutputType
     kUndefined
 };
 
-inline constexpr const char* kOutputTypeNames[static_cast<uint32_t>(OutputType::kUndefined)] = 
-{
-	"DMX", 
-	"DMX/RDM", 
-	"Pixel",
-	"Pixel/DMX", 
-	"PWM", 
-	"RGB Panel", 
-	"Serial", 
-	"OSC", 
-	"Monitor", 
-	"Stepper", 
-	"Player", 
-	"Art-Net", 
-	"Timecode",
-	"None"
-};
+inline constexpr const char* kOutputTypeNames[static_cast<uint32_t>(OutputType::kUndefined)] = {
+    "DMX", "DMX/RDM", "Pixel", "Pixel/DMX", "PWM", "RGB Panel", "Serial", "OSC", "Monitor", "Stepper", "Player", "Art-Net", "Timecode", "None"};
 
 inline const char* GetOutputType(OutputType type)
 {
@@ -76,7 +60,7 @@ inline const char* GetOutputType(OutputType type)
 
     return "Undefined";
 }
-}  // namespace dmxnode
+} // namespace dmxnode
 
 #if defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI)
 #define DMXNODE_OUTPUT_DMX
@@ -195,4 +179,4 @@ inline constexpr auto kOutputType = OutputType::kUndefined;
 #endif
 } // namespace dmxnode
 
-#endif  // DMXNODE_OUTPUTTYPE_H_
+#endif // DMXNODE_OUTPUTTYPE_H_

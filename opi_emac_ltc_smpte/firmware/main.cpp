@@ -214,6 +214,12 @@ int main() // NOLINT
     ltcdisplay_params.Load();
     ltcdisplay_params.Set();
 
+    if (ltc::Destination::IsEnabled(ltc::Destination::Output::MAX7219))
+    {
+        display_max7219.Init();
+        display_max7219.Print();
+    }
+
 #if !defined(CONFIG_LTC_DISABLE_WS28XX)
     const auto kLtcDisplayWs28xxType =
         common::FromValue<ltc::display::rgb::WS28xxType>(ConfigStore::Instance().LtcDisplayGet(&common::store::LtcDisplay::ws28xx_type));
@@ -242,12 +248,6 @@ int main() // NOLINT
      */
 
     LtcOutputs ltc_outputs(ltc_source, kShowSystime);
-
-    if (ltc::Destination::IsEnabled(ltc::Destination::Output::MAX7219))
-    {
-        display_max7219.Init();
-        display_max7219.Print();
-    }
 
 #if !defined(CONFIG_LTC_DISABLE_WS28XX)
     if (ltc::Destination::IsEnabled(ltc::Destination::Output::WS28XX) || ltc::Destination::IsEnabled(ltc::Destination::Output::RGBPANEL))

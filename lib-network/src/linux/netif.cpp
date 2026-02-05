@@ -2,7 +2,7 @@
  * @file netif.cpp
  *
  */
-/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,17 +28,18 @@
 #endif
 
 #include "core/netif.h"
+#include "network.h"
 #include "firmware/debug/debug_debug.h"
 
-namespace net::globals
+namespace network::global
 {
 uint32_t broadcast_mask;
 uint32_t on_network_mask;
-} // namespace net::globals
+} // namespace network::global
 
-namespace netif::globals
+namespace netif::global
 {
-	struct Netif netif_default;
+struct Netif netif_default;
 }
 
 namespace netif

@@ -72,58 +72,10 @@ class McpButtons
     void HandleRunActionSelect();
     void SetRunState(RunStatus run_state);
     // Internal
-    void HandleInternalTimeCodeStart(struct ltc::TimeCode& start_timecode)
-    {
-        displayEditTimeCode.HandleKey(key_, start_timecode, m_aTimeCode);
-
-        //	if (!ltc::g_DisabledOutputs.bMax7219) {
-        if (ltc::Destination::IsEnabled(ltc::Destination::Output::MAX7219))
-        {
-            LtcDisplayMax7219::Get()->Show(m_aTimeCode);
-        }
-        else if (ltc::Destination::IsEnabled(ltc::Destination::Output::WS28XX) || ltc::Destination::IsEnabled(ltc::Destination::Output::RGBPANEL))
-        {
-            LtcDisplayRgb::Get()->Show(m_aTimeCode);
-        }
-
-        HandleInternalKeyEsc();
-    }
-
-    void HandleInternalTimeCodeStop(struct ltc::TimeCode& start_timecode)
-    {
-        displayEditTimeCode.HandleKey(key_, start_timecode, m_aTimeCode);
-
-        //	if (!ltc::g_DisabledOutputs.bMax7219) {
-        if (ltc::Destination::IsEnabled(ltc::Destination::Output::MAX7219))
-        {
-            LtcDisplayMax7219::Get()->Show(m_aTimeCode);
-        }
-        else if (ltc::Destination::IsEnabled(ltc::Destination::Output::WS28XX) || ltc::Destination::IsEnabled(ltc::Destination::Output::RGBPANEL))
-        {
-            LtcDisplayRgb::Get()->Show(m_aTimeCode);
-        }
-
-        HandleInternalKeyEsc();
-    }
-
-    void HandleInternalTimeCodeFps(struct ltc::TimeCode& StartTimeCode)
-    {
-        displayEditFps.HandleKey(key_, StartTimeCode.type);
-
-        HandleInternalKeyEsc();
-    }
-
-    void HandleInternalKeyEsc()
-    {
-        if (key_ == input::KEY_ESC)
-        {
-            Display::Get()->SetCursor(display::cursor::kOff);
-            Display::Get()->SetCursorPos(0, 0);
-            Display::Get()->ClearLine(1);
-            Display::Get()->ClearLine(2);
-            state_ = SOURCE_SELECT;
-        }
-    }
+    void HandleInternalTimeCodeStart(struct ltc::TimeCode& start_timecode);
+    void HandleInternalTimeCodeStop(struct ltc::TimeCode& start_timecode);
+    void HandleInternalTimeCodeFps(struct ltc::TimeCode& StartTimeCode);
+    void HandleInternalKeyEsc();
 
    private:
     HAL_I2C hal_i2c_;

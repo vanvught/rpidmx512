@@ -534,7 +534,7 @@ void ArtNetController::ActiveUniversesAdd(uint16_t universe)
 
     if (m_nActiveUniverses == (sizeof(s_active_universes) / sizeof(s_active_universes[0])))
     {
-        assert(0);
+        assert(false);
         return;
     }
 

@@ -24,6 +24,7 @@
 
 #include <cstdint>
 #include <cstdio>
+#include <cassert>
 
 #include "displayset.h"
 #include "hal.h"
@@ -45,7 +46,7 @@
 #include "arm/ltcgenerator.h"
 #include "arm/systimereader.h"
 #include "configstore.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
 namespace mcp23017
 {
@@ -71,14 +72,18 @@ static constexpr auto RESUME = 7;
 #define BUTTON_STATE(x) ((nButtonsChanged & (1U << x)) == (1U << x))
 
 McpButtons::McpButtons(ltc::Source tLtcReaderSource, bool bUseAltFunction, int32_t nSkipSeconds, bool bRotaryHalfStep)
-    : hal_i2c_(mcp23017::I2C_ADDRESS), m_tLtcReaderSource(tLtcReaderSource), m_bUseAltFunction(bUseAltFunction), m_nSkipSeconds(nSkipSeconds), rotary_encoder_(bRotaryHalfStep)
+    : hal_i2c_(mcp23017::I2C_ADDRESS),
+      m_tLtcReaderSource(tLtcReaderSource),
+      m_bUseAltFunction(bUseAltFunction),
+      m_nSkipSeconds(nSkipSeconds),
+      rotary_encoder_(bRotaryHalfStep)
 {
     ltc::init_timecode(m_aTimeCode);
 }
 
 uint32_t McpButtons::LedBlink(uint8_t nPortB)
 {
-    const auto nMillisNow =hal::Millis();
+    const auto nMillisNow = hal::Millis();
 
     if (__builtin_expect(((nMillisNow - m_nMillisPrevious) < 500), 1))
     {
@@ -176,32 +181,44 @@ void McpButtons::HandleRotary(uint8_t nInputAB, ltc::Source& tLtcReaderSource)
 
 void McpButtons::UpdateDisplays(const ltc::Source ltcSource)
 {
+    DEBUG_ENTRY();
+
     const auto nSource = static_cast<uint8_t>(ltcSource);
+    DEBUG_PRINTF("nSource=%u", nSource);
+
+    assert(Display::Get() != nullptr);
 
     Display::Get()->TextStatus(LtcSourceConst::NAME[nSource]);
 
-    //	if (!ltc::g_DisabledOutputs.bMax7219) {
+    DEBUG_PUTS("");
+
     if (ltc::Destination::IsEnabled(ltc::Destination::Output::MAX7219))
     {
+        assert(LtcDisplayMax7219::Get() != nullptr);
         LtcDisplayMax7219::Get()->WriteChar(nSource);
-        return;
     }
+
+    DEBUG_PUTS("");
+
 #if !defined(CONFIG_LTC_DISABLE_WS28XX)
-    //	if (!ltc::g_DisabledOutputs.bWS28xx){
     if (ltc::Destination::IsEnabled(ltc::Destination::Output::WS28XX))
     {
+        assert(LtcDisplayRgb::Get() != nullptr);
         LtcDisplayRgb::Get()->WriteChar(nSource);
-        return;
     }
 #endif
+
+    DEBUG_PUTS("");
+
 #if !defined(CONFIG_LTC_DISABLE_RGB_PANEL)
-    //	if (!ltc::g_DisabledOutputs.bRgbPanel) {
     if (ltc::Destination::IsEnabled(ltc::Destination::Output::RGBPANEL))
     {
+        assert(LtcDisplayRgb::Get() != nullptr);
         LtcDisplayRgb::Get()->ShowSource(ltcSource);
-        return;
     }
 #endif
+
+    DEBUG_EXIT();
 }
 
 bool McpButtons::Check()
@@ -405,7 +422,7 @@ void McpButtons::HandleRunActionSelect()
         Display::Get()->SetSleep(false);
     }
 
-    const auto nMillisNow =hal::Millis();
+    const auto nMillisNow = hal::Millis();
 
     if ((nMillisNow - m_nSelectMillis) < 300)
     {
@@ -591,5 +608,58 @@ void McpButtons::Run()
 
             return;
         }
+    }
+}
+
+void McpButtons::HandleInternalTimeCodeStart(struct ltc::TimeCode& start_timecode)
+{
+    displayEditTimeCode.HandleKey(key_, start_timecode, m_aTimeCode);
+
+    //	if (!ltc::g_DisabledOutputs.bMax7219) {
+    if (ltc::Destination::IsEnabled(ltc::Destination::Output::MAX7219))
+    {
+        LtcDisplayMax7219::Get()->Show(m_aTimeCode);
+    }
+    else if (ltc::Destination::IsEnabled(ltc::Destination::Output::WS28XX) || ltc::Destination::IsEnabled(ltc::Destination::Output::RGBPANEL))
+    {
+        LtcDisplayRgb::Get()->Show(m_aTimeCode);
+    }
+
+    HandleInternalKeyEsc();
+}
+
+void McpButtons::HandleInternalTimeCodeStop(struct ltc::TimeCode& start_timecode)
+{
+    displayEditTimeCode.HandleKey(key_, start_timecode, m_aTimeCode);
+
+    //	if (!ltc::g_DisabledOutputs.bMax7219) {
+    if (ltc::Destination::IsEnabled(ltc::Destination::Output::MAX7219))
+    {
+        LtcDisplayMax7219::Get()->Show(m_aTimeCode);
+    }
+    else if (ltc::Destination::IsEnabled(ltc::Destination::Output::WS28XX) || ltc::Destination::IsEnabled(ltc::Destination::Output::RGBPANEL))
+    {
+        LtcDisplayRgb::Get()->Show(m_aTimeCode);
+    }
+
+    HandleInternalKeyEsc();
+}
+
+void McpButtons::HandleInternalTimeCodeFps(struct ltc::TimeCode& StartTimeCode)
+{
+    displayEditFps.HandleKey(key_, StartTimeCode.type);
+
+    HandleInternalKeyEsc();
+}
+
+void McpButtons::HandleInternalKeyEsc()
+{
+    if (key_ == input::KEY_ESC)
+    {
+        Display::Get()->SetCursor(display::cursor::kOff);
+        Display::Get()->SetCursorPos(0, 0);
+        Display::Get()->ClearLine(1);
+        Display::Get()->ClearLine(2);
+        state_ = SOURCE_SELECT;
     }
 }

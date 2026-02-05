@@ -1,3 +1,4 @@
+#include "network_iface.h"
 #if !defined(CONFIG_NETWORK_USE_MINIMUM)
 /**
  * @file network.cpp
@@ -75,7 +76,7 @@ static constexpr auto ENTRIES_MASK [[maybe_unused]] = (ENTRIES - 1);
 
 struct PortInfo
 {
-    net::udp::UdpCallbackFunctionPtr callback;
+    network::udp::UdpCallbackFunctionPtr callback;
     uint16_t nPort;
 };
 
@@ -94,11 +95,11 @@ static Port s_Ports[UDP_MAX_PORTS_ALLOWED];
  * END
  */
 
-extern char s_hostname[network::HOSTNAME_SIZE];
-extern char s_domain_name[network::DOMAINNAME_SIZE];
+extern char s_hostname[network::iface::kHostnameSize];
+extern char s_domain_name[network::iface::kDomainnameSize];
 char m_aIfName[IFNAMSIZ];
 static int s_if_index;
-extern uint32_t s_nameservers[network::NAMESERVERS_COUNT];
+extern uint32_t s_nameservers[network::iface::kNameserversCount];
 
 #if defined(__linux__)
 static bool IsDhclient(const char* if_name)
@@ -260,7 +261,7 @@ void Network::Print()
     printf(" Inet      : " IPSTR "/%d\n", IP2STR(netif::global::netif_default.ip.addr), network::GetNetmaskCIDR());
     printf(" Netmask   : " IPSTR "\n", IP2STR(netif::global::netif_default.netmask.addr));
     printf(" Gateway   : " IPSTR "\n", IP2STR(netif::global::netif_default.gw.addr));
-    printf(" Broadcast : " IPSTR "\n", IP2STR(net::GetBroadcastIp()));
+    printf(" Broadcast : " IPSTR "\n", IP2STR(network::GetBroadcastIp()));
     printf(" Mac       : " MACSTR "\n", MAC2STR(netif::global::netif_default.hwaddr));
     printf(" Mode      : %c\n", network::iface::AddressingMode());
 }
@@ -277,7 +278,7 @@ const char* GetIfName()
 }
 } // namespace netif
 
-namespace net
+namespace network
 {
 namespace udp
 {
@@ -488,10 +489,7 @@ void LeaveGroup(int32_t handle, uint32_t ip)
     }
 }
 } // namespace igmp
-} // namespace net
 
-namespace network
-{
 void Run()
 {
     for (uint32_t nPortIndex = 0; nPortIndex < UDP_MAX_PORTS_ALLOWED; nPortIndex++)
@@ -512,7 +510,107 @@ void Run()
         }
     }
 
-    net::tcp::Run();
+    network::tcp::Run();
+}
+
+void SetPrimaryIp([[maybe_unused]] uint32_t np_in)
+{
+    DEBUG_ENTRY();
+
+#if defined(__linux__)
+    auto& netif = netif::global::netif_default;
+
+    if (np_in == netif.ip.addr)
+    {
+        DEBUG_EXIT();
+        return;
+    }
+
+    struct ifreq ifr;
+    auto* addr = (struct sockaddr_in*)&ifr.ifr_addr;
+    int fd = socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
+
+    if (fd == -1)
+    {
+        perror("socket(PF_INET, SOCK_DGRAM, IPPROTO_IP)");
+        return;
+    }
+
+    strncpy(ifr.ifr_name, m_aIfName, IFNAMSIZ);
+
+    ifr.ifr_addr.sa_family = AF_INET;
+
+    addr->sin_addr.s_addr = np_in;
+    if (ioctl(fd, SIOCSIFADDR, &ifr) == -1)
+    {
+        perror("ioctl-SIOCSIFADDR");
+        return;
+    }
+
+    if (ioctl(fd, SIOCGIFFLAGS, &ifr) == -1)
+    {
+        perror("ioctl-SIOCGIFFLAGS");
+        return;
+    }
+
+    strncpy(ifr.ifr_name, m_aIfName, IFNAMSIZ);
+    ifr.ifr_flags |= (IFF_UP | IFF_RUNNING);
+
+    if (ioctl(fd, SIOCSIFFLAGS, &ifr) == -1)
+    {
+        perror("ioctl-SIOCGIFFLAGS");
+        return;
+    }
+
+    close(fd);
+
+    netif.ip.addr = np_in;
+
+    network::store::SaveDhcp(false);
+    network::store::SaveIp(np_in);
+#endif
+
+    DEBUG_EXIT();
+}
+
+void SetNetmask(uint32_t netmask_in)
+{
+    DEBUG_ENTRY();
+
+    if (netmask_in == netif::Netmask())
+    {
+        DEBUG_EXIT();
+        return;
+    }
+
+    network::ip4_addr_t netmask;
+    netmask.addr = netmask_in;
+
+    netif::SetNetmask(netmask);
+
+    network::store::SaveNetmask(netmask_in);
+
+    DEBUG_EXIT();
+}
+
+void SetGatewayIp(uint32_t gateway_ip)
+{
+    DEBUG_ENTRY();
+
+    if (gateway_ip == netif::Gw())
+    {
+        DEBUG_EXIT();
+        return;
+    }
+
+    network::ip4_addr_t gw;
+    gw.addr = gateway_ip;
+
+    netif::SetGw(gw);
+
+    network::store::SaveGatewayIp(gateway_ip);
+
+    DEBUG_EXIT();
 }
 } // namespace network
 
@@ -594,7 +692,7 @@ Network::Network(int argc, char** argv)
 
     uint32_t i = 0;
 
-    while ((s_hostname[i] != '\0') && (i < network::HOSTNAME_SIZE) && (s_hostname[i] != '.'))
+    while ((s_hostname[i] != '\0') && (i < network::iface::kHostnameSize) && (s_hostname[i] != '.'))
     {
         i++;
     }
@@ -603,17 +701,17 @@ Network::Network(int argc, char** argv)
 
     uint32_t j = 0;
 
-    while (j < network::DOMAINNAME_SIZE && i < network::HOSTNAME_SIZE && s_hostname[i] != '\0')
+    while (j < network::iface::kDomainnameSize && i < network::iface::kHostnameSize && s_hostname[i] != '\0')
     {
         s_domain_name[j++] = s_hostname[i++];
     }
 
     s_domain_name[j] = '\0';
 
-      network::iface::SetHostname(s_hostname);
+    network::iface::SetHostname(s_hostname);
 
 #if !defined(CONFIG_NET_APPS_NO_MDNS)
-    mdns::Init();
+    network::apps::mdns::Init();
 #endif
 }
 

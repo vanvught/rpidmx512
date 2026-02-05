@@ -32,6 +32,7 @@
 #include "ltcdisplaymax7219set.h"
 #include "ltcdisplaymax72197segment.h"
 #include "ltcdisplaymax7219matrix.h"
+#include "firmware/debug/debug_debug.h"
 
 namespace ltc::display::max7219
 {
@@ -47,8 +48,12 @@ class LtcDisplayMax7219
    public:
     explicit LtcDisplayMax7219()
     {
+        DEBUG_ENTRY();
+
         assert(s_this == nullptr);
         s_this = this;
+
+        DEBUG_ENTRY();
     }
 
     void SetType(ltc::display::max7219::Types type) { type_ = type; }
@@ -63,6 +68,8 @@ class LtcDisplayMax7219
 
     void Init()
     {
+        DEBUG_ENTRY();
+
         if (max7219set_ != nullptr) delete max7219set_;
 
         if (type_ == ltc::display::max7219::Types::kSegment)
@@ -75,6 +82,8 @@ class LtcDisplayMax7219
         }
 
         assert(max7219set_ != nullptr);
+
+        DEBUG_EXIT();
     }
 
     const char* GetTypeString() const
@@ -96,9 +105,23 @@ class LtcDisplayMax7219
         return ltc::display::max7219::Types::kMatrix;
     }
 
-    void Show(const char* timecode) { max7219set_->Show(timecode); }
-    void ShowSysTime(const char* systemtime) { max7219set_->ShowSysTime(systemtime); }
-    void WriteChar(uint8_t ch, uint8_t pos = 0) { max7219set_->WriteChar(ch, pos); }
+    void Show(const char* timecode)
+    {
+        assert(max7219set_ != nullptr);
+        max7219set_->Show(timecode);
+    }
+	
+    void ShowSysTime(const char* systemtime)
+    {
+        assert(max7219set_ != nullptr);
+        max7219set_->ShowSysTime(systemtime);
+    }
+	
+    void WriteChar(uint8_t ch, uint8_t pos = 0)
+    {
+        assert(max7219set_ != nullptr);
+        max7219set_->WriteChar(ch, pos);
+    }
 
     void Print()
     {
@@ -108,6 +131,7 @@ class LtcDisplayMax7219
 
     static LtcDisplayMax7219* Get()
     {
+        DEBUG_PRINTF("%p", s_this);
         assert(s_this != nullptr);
         return s_this;
     }
@@ -120,4 +144,4 @@ class LtcDisplayMax7219
     inline static LtcDisplayMax7219* s_this;
 };
 
-#endif  // LTCDISPLAYMAX7219_H_
+#endif // LTCDISPLAYMAX7219_H_

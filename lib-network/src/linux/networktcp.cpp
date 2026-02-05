@@ -38,13 +38,13 @@
 #include <signal.h>
 #include <cassert>
 
-#include "net/tcp.h"
+#include "linux/network.h"
 #include "ip4/ip4_address.h"
 #include "../../config/net_config.h"
 
  #include "firmware/debug/debug_debug.h"
 
-namespace net::tcp
+namespace network::tcp
 {
 // https://cboard.cprogramming.com/c-programming/158125-sockets-using-poll.html
 
@@ -53,7 +53,7 @@ namespace net::tcp
 
 struct PortInfo
 {
-    TcpCallbackFunctionPtr callback;
+    CallbackListen callback;
     uint16_t nPort;
 };
 
@@ -62,7 +62,7 @@ static struct pollfd poll_set[MAX_PORTS_ALLOWED][TCP_MAX_TCBS_ALLOWED];
 static int server_sockfd[MAX_PORTS_ALLOWED];
 static uint8_t s_ReadBuffer[MAX_SEGMENT_LENGTH];
 
-int32_t Begin(uint16_t nLocalPort, [[maybe_unused]] TcpCallbackFunctionPtr callback)
+int32_t Begin(uint16_t nLocalPort, [[maybe_unused]] CallbackListen callback)
 {
     int32_t i;
 
@@ -192,7 +192,7 @@ uint16_t Read(const int32_t nHandle, const uint8_t** ppBuffer, uint32_t& HandleC
     return 0;
 }
 
-void Write(const int32_t nHandle, const uint8_t* pBuffer, uint32_t nLength, const uint32_t HandleConnectionIndex)
+void Send(const int32_t nHandle, const uint8_t* pBuffer, uint32_t nLength, const uint32_t HandleConnectionIndex)
 {
     assert(nHandle < MAX_PORTS_ALLOWED);
 

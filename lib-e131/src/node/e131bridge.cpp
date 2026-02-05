@@ -49,7 +49,7 @@
 #include "hal_panelled.h"
 #include "hal_statusled.h"
 #include "hal.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
 E131Bridge::E131Bridge()
 {
@@ -79,7 +79,7 @@ E131Bridge::E131Bridge()
 #if defined(E131_HAVE_DMXIN) || defined(NODE_SHOWFILE)
     char source_name[e131::kSourceNameLength];
     uint8_t length;
-    snprintf(source_name, e131::kSourceNameLength, "%.48s %s",  network::iface::HostName(), hal::BoardName(length));
+    snprintf(source_name, e131::kSourceNameLength, "%.48s %s", network::iface::HostName(), hal::BoardName(length));
     SetSourceName(source_name);
 
     hal::UuidCopy(cid_);
@@ -348,12 +348,12 @@ void E131Bridge::SetUniverse(uint32_t port_index, uint16_t universe)
 
     assert(port_index < dmxnode::kMaxPorts);
     assert((universe >= e131::universe::kDefault) && (universe <= e131::universe::kMax));
-    
+
     if (bridge_.port[port_index].universe == universe)
     {
-		DEBUG_EXIT();
-		return;
-	}
+        DEBUG_EXIT();
+        return;
+    }
 
     if (bridge_.port[port_index].direction == dmxnode::PortDirection::kOutput)
     {
@@ -363,14 +363,14 @@ void E131Bridge::SetUniverse(uint32_t port_index, uint16_t universe)
 
     bridge_.port[port_index].universe = universe;
     input_port_[port_index].multicast_ip = e131::UniverseToMulticastIp(universe);
-    
-#if defined(E131_HAVE_DMXIN)    
+
+#if defined(E131_HAVE_DMXIN)
     if (state_.status == e131bridge::Status::kOn)
     {
-		SetLocalMerging();
-	}
-#endif	
-    
+        SetLocalMerging();
+    }
+#endif
+
     DEBUG_EXIT();
 }
 
@@ -440,13 +440,13 @@ void E131Bridge::SetDirection(uint32_t port_index, dmxnode::PortDirection port_d
 
         bridge_.port[port_index].direction = dmxnode::PortDirection::kOutput;
     }
-    
-#if defined(E131_HAVE_DMXIN)    
+
+#if defined(E131_HAVE_DMXIN)
     if (state_.status == e131bridge::Status::kOn)
     {
-		SetLocalMerging();
-	}
-#endif	    
+        SetLocalMerging();
+    }
+#endif
 }
 
 #if defined(E131_HAVE_DMXIN)
@@ -1066,7 +1066,7 @@ void E131Bridge::SetNetworkDataLossCondition(bool source_a, bool source_b)
                 break;
             default:
                 DEBUG_PRINTF("state_.failsafe=%u", static_cast<uint32_t>(state_.failsafe));
-                assert(0);
+                assert(false && "Invalid state_.failsafe");
                 break;
         }
     }

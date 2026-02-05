@@ -2,7 +2,6 @@
  * @file artnetnode.cpp
  *
  */
-
 /* Copyright (C) 2016-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -557,13 +556,13 @@ void ArtNetNode::SetFailSafe(artnet::FailSafe fail_safe)
 
         case artnet::FailSafe::kRecord:
 #if defined(ARTNET_HAVE_FAILSAFE_RECORD)
-            assert(0);
+            assert(false && "case artnet::FailSafe::kRecord");
             __builtin_unreachable();
 #endif
             break;
 
         default:
-            [[unlikely]] assert(0);
+            [[unlikely]] assert(false && "Invalid fail_safe");
             __builtin_unreachable();
             break;
     }
@@ -672,7 +671,7 @@ void ArtNetNode::SetNetworkDataLossCondition()
 #endif
             break;
         default:
-            assert(0);
+            assert(false && "Invalid kNetworkloss");
             break;
     }
 

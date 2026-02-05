@@ -31,6 +31,7 @@
 #include "ltcdisplaymax7219set.h"
 #include "max7219matrix.h"
 #include "ltc.h"
+#include "firmware/debug/debug_debug.h"
 
 namespace ltc::display::max7219::maxtrix
 {
@@ -81,6 +82,8 @@ class LtcDisplayMax7219Matrix final : public LtcDisplayMax7219Set, public Max721
    public:
     explicit LtcDisplayMax7219Matrix(uint8_t intensity)
     {
+		DEBUG_ENTRY();
+		
         assert(s_this == nullptr);
         s_this = this;
 
@@ -101,6 +104,8 @@ class LtcDisplayMax7219Matrix final : public LtcDisplayMax7219Set, public Max721
 
         Max7219Matrix::Init(ltc::display::max7219::maxtrix::kSegments, intensity);
         Max7219Matrix::Write("Waiting", 7);
+		
+		DEBUG_EXIT();
     }
 
     ~LtcDisplayMax7219Matrix() override 
@@ -151,7 +156,9 @@ class LtcDisplayMax7219Matrix final : public LtcDisplayMax7219Set, public Max721
 
     void WriteChar([[maybe_unused]] uint8_t ch, [[maybe_unused]] uint8_t pos) override
     {
+		DEBUG_ENTRY();
         // TODO(avv): Implement WriteChar
+		DEBUG_EXIT();
     }
 
     static LtcDisplayMax7219Matrix* Get() { return s_this; }
