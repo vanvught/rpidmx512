@@ -2,7 +2,7 @@
  * @file pixeldmxparamsrdm.cpp
  *
  */
-/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +23,6 @@
  * THE SOFTWARE.
  */
 
-
-#undef NDEBUG
-
 #if defined(DEBUG_PIXELDMX)
 #undef NDEBUG
 #endif
@@ -39,7 +36,7 @@
 #include "common/utils/utils_enum.h"
 #include "pixeldmxconfiguration.h"
 #include "rdmdeviceresponder.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
 void PixelDmxParamsRdm::SetDataImpl([[maybe_unused]] uint32_t port_index, const uint8_t* data, uint32_t length, [[maybe_unused]] bool do_update)
 {
@@ -92,7 +89,7 @@ void PixelDmxParamsRdm::SetDataImpl([[maybe_unused]] uint32_t port_index, const 
             configuration.Validate(1);
 
             char description[rdm::personality::DESCRIPTION_MAX_LENGTH];
-			pixeldmx::paramsdmx::SetPersonalityDescription(description);
+            pixeldmx::paramsdmx::SetPersonalityDescription(description);
             auto* personality = RDMDeviceResponder::Get()->GetPersonality(RDM_ROOT_DEVICE, 1);
             personality->SetDescription(description);
 
