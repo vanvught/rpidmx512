@@ -23,6 +23,7 @@
  * THE SOFTWARE.
  */
 
+#include <cassert>
 #include <cstring>
 
 #include "linux/network.h"
@@ -35,6 +36,12 @@ uint32_t s_nameservers[network::iface::kNameserversCount];
 
 namespace network::iface
 {
+void CopyMacAddressTo(uint8_t* mac_address)
+{
+    assert(mac_address != nullptr);
+    memcpy(mac_address, netif::HwAddr(), kMacSize);
+}
+
 bool Dhcp()
 {
     return (netif::global::netif_default.flags & netif::Netif::kNetifFlagDhcpOk) == netif::Netif::kNetifFlagDhcpOk;

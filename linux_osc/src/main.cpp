@@ -85,8 +85,6 @@ int main(int argc, char** argv)
 	RDMNetDevice llrp_only_device;
 	llrp_only_device.Print();
 
-    mdns::ServiceRecordAdd(nullptr, mdns::Services::OSC, "type=monitor", server.GetPortIncoming());
-
     server.Print();
 
     RemoteConfig remote_config(remoteconfig::Output::MONITOR, 1);
