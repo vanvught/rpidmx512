@@ -16,7 +16,7 @@ do
 	if [ -d $f ]; then
 		cd $f
 		if [ -f $UIMAGE ]; then
-			../scripts/do-tftp.sh $1
+			do_tftp-zero.py $1
 			
 			ON_LINE=$(echo '?list#' | nc -u -p 10501 -w 1 $1 10501) || true
 					
