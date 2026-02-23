@@ -122,3 +122,5 @@ linux_ddp/.clangd
 linux_e131/.clangd
 linux_osc/.clangd
 linux_pp/.clangd
+/lib-hal/include/rpi
+*.BCM
