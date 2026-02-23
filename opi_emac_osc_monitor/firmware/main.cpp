@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,100 +24,90 @@
  */
 
 #include <cstdint>
-#include <cstdio>
 
-#include "hardware.h"
-#include "network.h"
-
+#include "h3/hal.h"
+#include "h3/hal_watchdog.h"
+#include "hal_boardinfo.h"
+#include "emac/network.h"
+#include "ip4/ip4_address.h"
 #include "console.h"
 #include "h3/showsystime.h"
-
-#include "net/apps/mdns.h"
-
 #include "display.h"
-#include "displayhandler.h"
-
 #include "oscserver.h"
-#include "oscserverparams.h"
+#include "json/oscserverparams.h"
 #include "oscservermsgconst.h"
-
 #include "dmxmonitor.h"
-
 #include "firmwareversion.h"
 #include "software_version.h"
-
 #include "flashcodeinstall.h"
 #include "configstore.h"
-
 #include "remoteconfig.h"
-#include "remoteconfigparams.h"
 
-int main() {
-	Hardware hw;
-	Display display;
-	ConfigStore configStore;
-	Network nw;
-	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
-	FlashCodeInstall spiFlashInstall;
+namespace hal
+{
+void RebootHandler() {}
+} // namespace hal
 
-	console_clear();
+int main() // NOLINT
+{
+    hal::Init();
+    Display display;
+    ConfigStore config_store;
+    network::Init();
+    FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+    FlashCodeInstall spiflash_install;
 
-	fw.Print();
+    console::Clear();
 
-	console_puts("OSC ");
-	console_set_fg_color(CONSOLE_GREEN);
-	console_puts("Real-time DMX Monitor");
-	console_set_fg_color(CONSOLE_WHITE);
-	console_set_top_row(2);
+    fw.Print();
 
-	ShowSystime showSystime;
+    console::Puts("OSC ");
+    console::SetFgColour(console::Colours::kConsoleGreen);
+    console::Puts("Real-time DMX Monitor");
+    console::SetFgColour(console::Colours::kConsoleWhite);
+    console::SetTopRow(2);
 
-	display.TextStatus(OscServerMsgConst::PARAMS, CONSOLE_YELLOW);
+    ShowSystime show_systime;
 
-	OSCServerParams params;
-	OscServer server;
+    OscServer oscserver;
 
-	params.Load();
-	params.Set(&server);
+    json::OscServerParams oscserver_params;
+    oscserver_params.Load();
+    oscserver_params.Set();
 
-	mdns_service_record_add(nullptr, mdns::Services::OSC, "type=monitor", server.GetPortIncoming());
+     DmxMonitor monitor;
+    // There is support for HEX output only
+    oscserver.SetOutput(&monitor);
+    monitor.Cls();
+    console::SetTopRow(20);
+    console::ClearTopRow();
 
-	DMXMonitor monitor;
-	// There is support for HEX output only
-	server.SetOutput(&monitor);
-	monitor.Cls();
-	console_set_top_row(20);
-	console_clear_top_row();
+    oscserver.Print();
 
-	server.Print();
+    uint8_t text_length;
 
-	uint8_t nHwTextLength;
+    display.Printf(1, "OSC Monitor");
+    display.Write(2, hal::BoardName(text_length));
+    display.Printf(3, "IP: " IPSTR " %c", IP2STR(network::GetPrimaryIp()), network::iface::IsDhcpKnown() ? ( network::iface::Dhcp() ? 'D' : 'S') : ' ');
+    display.Printf(4, "In: %d", oscserver.GetPortIncoming());
+    display.Printf(5, "Out: %d", oscserver.GetPortOutgoing());
 
-	display.Printf(1, "OSC Monitor");
-	display.Write(2, hw.GetBoardName(nHwTextLength));
-	display.Printf(3, "IP: " IPSTR " %c", IP2STR(Network::Get()->GetIp()), nw.IsDhcpKnown() ? (nw.IsDhcpUsed() ? 'D' : 'S') : ' ');
-	display.Printf(4, "In: %d", server.GetPortIncoming());
-	display.Printf(5, "Out: %d", server.GetPortOutgoing());
+    RemoteConfig remote_config(remoteconfig::Output::MONITOR, 1);
 
-	RemoteConfig remoteConfig(remoteconfig::Node::OSC, remoteconfig::Output::MONITOR, 1);
+    display.TextStatus(OscServerMsgConst::START, console::Colours::kConsoleYellow);
 
-	RemoteConfigParams remoteConfigParams;
-	remoteConfigParams.Load();
-	remoteConfigParams.Set(&remoteConfig);
+    oscserver.Start();
 
-	display.TextStatus(OscServerMsgConst::START, CONSOLE_YELLOW);
+    display.TextStatus(OscServerMsgConst::STARTED, console::Colours::kConsoleGreen);
 
-	server.Start();
+    hal::WatchdogInit();
 
-	display.TextStatus(OscServerMsgConst::STARTED, CONSOLE_GREEN);
-
-	hw.WatchdogInit();
-
-	for (;;) {
-		hw.WatchdogFeed();
-		nw.Run();
-		showSystime.Run();
-		display.Run();
-		hw.Run();
-	}
+    for (;;)
+    {
+        hal::WatchdogFeed();
+        network::Run();
+        show_systime.Run();
+        display.Run();
+        hal::Run();
+    }
 }

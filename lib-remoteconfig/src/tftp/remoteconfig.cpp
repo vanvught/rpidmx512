@@ -2,7 +2,7 @@
  * @file remoteconfig.cpp
  *
  */
-/* Copyright (C) 2022-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2022-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,13 +24,11 @@
  */
 
 #if defined(ENABLE_TFTP_SERVER)
-# if defined (DEBUG_TFTP)
-#  undef NDEBUG
-# endif
+#if defined(DEBUG_TFTP)
+#undef NDEBUG
+#endif
 
 #include <cstdint>
-#include <cstdio>
-#include <cstring>
 #include <cassert>
 
 #include "remoteconfig.h"
@@ -41,45 +39,53 @@
 
 #include "display.h"
 
-#include "debug.h"
+ #include "firmware/debug/debug_debug.h"
 
-static uint8_t s_TFTPBuffer[FIRMWARE_MAX_SIZE];
+static uint8_t s_tftp_buffer[FIRMWARE_MAX_SIZE];
 
-void RemoteConfig::PlatformHandleTftpSet() {
-	DEBUG_ENTRY
+void RemoteConfig::PlatformHandleTftpSet()
+{
+    DEBUG_ENTRY();
 
-	if (m_bEnableTFTP && (m_pTFTPFileServer == nullptr)) {
-		m_pTFTPFileServer = new TFTPFileServer(s_TFTPBuffer, FIRMWARE_MAX_SIZE);
-		assert(m_pTFTPFileServer != nullptr);
-		Display::Get()->TextStatus("TFTP On", CONSOLE_GREEN);
-	} else if (!m_bEnableTFTP && (m_pTFTPFileServer != nullptr)) {
-		const uint32_t nFileSize = m_pTFTPFileServer->GetFileSize();
-		DEBUG_PRINTF("nFileSize=%d, %d", nFileSize, m_pTFTPFileServer->isDone());
+    if (enable_tftp_ && (tftp_file_server_ == nullptr))
+    {
+        tftp_file_server_ = new TFTPFileServer(s_tftp_buffer, FIRMWARE_MAX_SIZE);
+        assert(m_pTFTPFileServer != nullptr);
+        Display::Get()->TextStatus("TFTP On", console::Colours::kConsoleGreen);
+    }
+    else if (!enable_tftp_ && (tftp_file_server_ != nullptr))
+    {
+        const uint32_t kFileSize = tftp_file_server_->GetFileSize();
+        DEBUG_PRINTF("kFileSize=%d, %d", kFileSize, tftp_file_server_->IsDone());
 
-		bool bSucces = true;
+        bool bSucces = true;
 
-		if (m_pTFTPFileServer->isDone()) {
-			bSucces = FlashCodeInstall::Get()->WriteFirmware(s_TFTPBuffer, nFileSize);
+        if (tftp_file_server_->IsDone())
+        {
+            bSucces = FlashCodeInstall::Get()->WriteFirmware(s_tftp_buffer, kFileSize);
 
-			if (!bSucces) {
-				Display::Get()->TextStatus("Error: TFTP", CONSOLE_RED);
-			}
-		}
+            if (!bSucces)
+            {
+                Display::Get()->TextStatus("Error: TFTP", console::Colours::kConsoleRed);
+            }
+        }
 
-		delete m_pTFTPFileServer;
-		m_pTFTPFileServer = nullptr;
+        delete tftp_file_server_;
+        tftp_file_server_ = nullptr;
 
-		if (bSucces) { // Keep error message
-			Display::Get()->TextStatus("TFTP Off", CONSOLE_GREEN);
-		}
-	}
+        if (bSucces)
+        { // Keep error message
+            Display::Get()->TextStatus("TFTP Off", console::Colours::kConsoleGreen);
+        }
+    }
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void RemoteConfig::PlatformHandleTftpGet() {
-	DEBUG_ENTRY
+void RemoteConfig::PlatformHandleTftpGet()
+{
+    DEBUG_ENTRY();
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 #endif

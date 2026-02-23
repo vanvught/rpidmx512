@@ -2,7 +2,7 @@
  * @file h3_gpio.h
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -48,7 +48,7 @@ typedef enum H3_GPIO_FSEL {
 	GPIO_FSEL_OUTPUT = 1,
 	GPIO_FSEL_EINT = 6,		///< PA and PG only
 	GPIO_FSEL_DISABLE = 7
-} gpio_fsel_t;
+} GpioFsel_t;
 
 typedef enum H3_GPIO_INT_CFG {		///< PA and PG only
 	GPIO_INT_CFG_POS_EDGE = 0x0,
@@ -56,7 +56,7 @@ typedef enum H3_GPIO_INT_CFG {		///< PA and PG only
 	GPIO_INT_CFG_HIGH_LEV = 0x2,
 	GPIO_INT_CFG_LOW_LEV = 0x3,
 	GPIO_INT_CFG_DOUBLE_EDGE = 0x4
-} gpio_int_cfg_t;
+} GpioIntCfg_t;
 
 enum H3_PA_SELECT_SHIFT {
 	PA0_SELECT_CFG0_SHIFT = 0,
@@ -152,11 +152,11 @@ enum H3_PG_SELECT {
 extern "C" {
 #endif
 
-extern void h3_gpio_fsel(uint32_t gpio, uint32_t fsel);
-extern void h3_gpio_set_pud(uint32_t gpio, gpio_pull_t pull);
-extern void h3_gpio_int_cfg(uint32_t gpio, gpio_int_cfg_t int_cfg);
+extern void H3GpioFsel(uint32_t gpio, uint32_t fsel);
+extern void H3GpioSetPud(uint32_t gpio, gpio_pull_t pull);
+extern void H3GpioIntCfg(uint32_t gpio, GpioIntCfg_t int_cfg);
 
-inline void h3_gpio_clr(uint32_t pin) {
+inline void H3GpioClr(uint32_t pin) {
 	switch H3_GPIO_TO_PORT(pin) {
 		case H3_GPIO_PORTA:
 			H3_PIO_PORTA->DAT &= ~(1U << pin);
@@ -181,7 +181,7 @@ inline void h3_gpio_clr(uint32_t pin) {
 	}
 }
 
-inline void h3_gpio_set(uint32_t pin) {
+inline void H3GpioSet(uint32_t pin) {
 	switch H3_GPIO_TO_PORT(pin) {
 		case H3_GPIO_PORTA:
 			H3_PIO_PORTA->DAT |= (1U << pin);
@@ -206,7 +206,7 @@ inline void h3_gpio_set(uint32_t pin) {
 	}
 }
 
-inline uint8_t h3_gpio_lev(uint32_t pin) {
+inline uint8_t H3GpioLev(uint32_t pin) {
 	uint32_t value = 0;
 
 	switch H3_GPIO_TO_PORT(pin) {
@@ -235,11 +235,11 @@ inline uint8_t h3_gpio_lev(uint32_t pin) {
 	return (value & (1U << H3_GPIO_TO_NUMBER(pin))) ? (uint8_t) HIGH : (uint8_t) LOW;
 }
 
-inline void h3_gpio_write(const uint32_t pin, const uint32_t value) {
+inline void H3GpioWrite(uint32_t pin, uint32_t value) {
 	if (value != 0) {
-		h3_gpio_set(pin);
+		H3GpioSet(pin);
 	} else {
-		h3_gpio_clr(pin);
+		H3GpioClr(pin);
 	}
 }
 
@@ -247,4 +247,4 @@ inline void h3_gpio_write(const uint32_t pin, const uint32_t value) {
 }
 #endif
 
-#endif /* H3_GPIO_H_ */
+#endif  // H3_GPIO_H_

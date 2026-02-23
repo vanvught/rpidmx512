@@ -27,49 +27,77 @@
 
 #include "hal_i2c.h"
 
-inline static bool i2c_is_connected(const uint8_t nAddress) {
-	uint8_t nResult;
-	char buffer;
-
-	FUNC_PREFIX(i2c_set_address(nAddress));
-
-	if ((nAddress >= 0x30 && nAddress <= 0x37) || (nAddress >= 0x50 && nAddress <= 0x5F)) {
-		nResult = FUNC_PREFIX(i2c_read(&buffer, 1));
-	} else {
-		/* This is known to corrupt the Atmel AT24RF08 EEPROM */
-		nResult = FUNC_PREFIX(i2c_write(nullptr, 0));
-	}
-
-	return (nResult == 0) ? true : false;
-}
-
 static constexpr uint32_t FIRST = 0x03;
 static constexpr uint32_t LAST = 0x77;
 
-void i2c_detect() {
-	FUNC_PREFIX(i2c_begin());
-	FUNC_PREFIX(i2c_set_baudrate(100000));
+void I2cDetect()
+{
+    FUNC_PREFIX(I2cBegin());
+    FUNC_PREFIX(I2cSetBaudrate(100000));
 
-	puts("\n     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f");
+    puts("\n     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f");
 
-	for (uint32_t i = 0; i < 128; i = (i + 16)) {
-		printf("%02x: ", i);
-		for (uint32_t j = 0; j < 16; j++) {
-			/* Skip unwanted addresses */
-			if ((i + j < FIRST) || (i + j > LAST)) {
-				printf("   ");
-				continue;
-			}
+    for (uint32_t i = 0; i < 128; i = (i + 16))
+    {
+        printf("%02x: ", i);
+        for (uint32_t j = 0; j < 16; j++)
+        {
+            /* Skip unwanted addresses */
+            if ((i + j < FIRST) || (i + j > LAST))
+            {
+                printf("   ");
+                continue;
+            }
 
-			if (i2c_is_connected(static_cast<uint8_t>(i + j))) {
-				printf("%02x ", i + j);
-			} else {
-				printf("-- ");
-			}
-		}
+            if (FUNC_PREFIX(I2cIsConnected(static_cast<uint8_t>(i + j))))
+            {
+                printf("%02x ", i + j);
+            }
+            else
+            {
+                printf("-- ");
+            }
+        }
 
-		puts("");
-	}
+        puts("");
+    }
 
-	FUNC_PREFIX(i2c_begin());
+    FUNC_PREFIX(I2cBegin());
 }
+
+#if defined(CONFIG_ENABLE_I2C1)
+void I2c1Detect()
+{
+    FUNC_PREFIX(I2c1Begin());
+    FUNC_PREFIX(I2c1SetBaudrate(100000));
+
+    puts("\n     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f");
+
+    for (uint32_t i = 0; i < 128; i = (i + 16))
+    {
+        printf("%02x: ", i);
+        for (uint32_t j = 0; j < 16; j++)
+        {
+            /* Skip unwanted addresses */
+            if ((i + j < FIRST) || (i + j > LAST))
+            {
+                printf("   ");
+                continue;
+            }
+
+            if (FUNC_PREFIX(I2c1IsConnected(static_cast<uint8_t>(i + j))))
+            {
+                printf("%02x ", i + j);
+            }
+            else
+            {
+                printf("-- ");
+            }
+        }
+
+        puts("");
+    }
+
+    FUNC_PREFIX(I2c1Begin());
+}
+#endif

@@ -2,7 +2,7 @@
  * @file artnettriggerhandler.cpp
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,7 @@
 #include "artnettrigger.h"
 #include "artnetnode.h"
 
-#include "lightset.h"
+#include "dmxnode_outputtype.h"
 
 #include "pixeltestpattern.h"
 
@@ -37,15 +37,15 @@
 #include "displayudf.h"
 
 namespace artnet {
-static LightSet *s_pLightSet;
+static DmxNodeOutputType *s_pDmxNodeOutputType;
 
-void triggerhandler_set_lightset(LightSet *pLightSet) {
-	s_pLightSet = pLightSet;
+void triggerhandler_set_lightset(DmxNodeOutputType *pDmxNodeOutputType) {
+	s_pDmxNodeOutputType = pDmxNodeOutputType;
 }
 
 void triggerhandler(const ArtNetTrigger *pArtNetTrigger) {
-	if (pArtNetTrigger->Key == ArtTriggerKey::ART_TRIGGER_KEY_SHOW) {
-		const auto nShow = static_cast<pixelpatterns::Pattern>(pArtNetTrigger->SubKey);
+	if (pArtNetTrigger->key == ArtTriggerKey::kArtTriggerKeyShow) {
+		const auto nShow = static_cast<pixelpatterns::Pattern>(pArtNetTrigger->sub_key);
 		if (nShow == PixelTestPattern::Get()->GetPattern()) {
 			return;
 		}
@@ -55,13 +55,13 @@ void triggerhandler(const ArtNetTrigger *pArtNetTrigger) {
 			return;
 		}
 
-		if (static_cast<pixelpatterns::Pattern>(nShow) != pixelpatterns::Pattern::NONE) {
+		if (static_cast<pixelpatterns::Pattern>(nShow) != pixelpatterns::Pattern::kNone) {
 			ArtNetNode::Get()->SetOutput(nullptr);
 			Display::Get()->ClearLine(6);
 			Display::Get()->Printf(6, "%s:%u", PixelPatterns::GetName(nShow), static_cast<uint32_t>(nShow));
 		} else {
-			s_pLightSet->Blackout(true);
-			ArtNetNode::Get()->SetOutput(s_pLightSet);
+			s_pDmxNodeOutputType->Blackout(true);
+			ArtNetNode::Get()->SetOutput(s_pDmxNodeOutputType);
 			DisplayUdf::Get()->Show();
 		}
 	}

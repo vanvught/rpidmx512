@@ -1,4 +1,8 @@
-EXTRA_INCLUDES+=../lib-tlc59711/include ../lib-lightset/include ../lib-properties/include 
+EXTRA_INCLUDES+=../lib-tlc59711/include
+EXTRA_INCLUDES+=../lib-dmxled/include
+EXTRA_INCLUDES+=
+
+EXTRA_SRCDIR+=src/json
 
 ifneq ($(MAKE_FLAGS),)
 	ifneq (,$(findstring CONFIG_RDM_ENABLE_MANUFACTURER_PIDS,$(MAKE_FLAGS)))

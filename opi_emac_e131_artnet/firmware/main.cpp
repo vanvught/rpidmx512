@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,151 +23,90 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-
-#include "hardware.h"
+#include "h3/hal_watchdog.h"
 #include "network.h"
-
-
-#include "net/apps/mdns.h"
-
 #include "displayudf.h"
-#include "displayudfparams.h"
-#include "displayhandler.h"
-
-#include "e131bridge.h"
-#include "e131params.h"
-#include "e131msgconst.h"
-#include "e131sync.h"
-
+#include "json/displayudfparams.h"
+#include "dmxnodenode.h"
+#include "dmxnodemsgconst.h"
 #include "artnetcontroller.h"
 #include "artnetoutput.h"
-
-#include "rdmdeviceparams.h"
+#include "dmxnode.h"
+#if defined(NODE_RDMNET_LLRP_ONLY)
 #include "rdmnetdevice.h"
-#include "rdmpersonality.h"
+#include "rdmdevice.h"
 #include "rdm_e120.h"
-#include "factorydefaults.h"
-
+#endif
 #include "remoteconfig.h"
-#include "remoteconfigparams.h"
-
 #include "flashcodeinstall.h"
 #include "configstore.h"
-
 #include "firmwareversion.h"
 #include "software_version.h"
 
-namespace hal {
-void reboot_handler() {
-	E131Bridge::Get()->Stop();
+namespace hal
+{
+void RebootHandler()
+{
+    E131Bridge::Get()->Stop();
 }
-}  // namespace hal
+} // namespace hal
 
-int main() {
-	Hardware hw;
-	DisplayUdf display;
-	ConfigStore configStore;
-	Network nw;
-	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
-	FlashCodeInstall spiFlashInstall;
+int main() // NOLINT
+{
+    hal::Init();
+    DisplayUdf display;
+    ConfigStore config_store;
+    network::Init();
+    FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+    FlashCodeInstall spiflash_install;
 
-	fw.Print("sACN E1.31 -> Art-Net");
+    fw.Print("sACN E1.31 -> Art-Net");
 
-	E131Bridge bridge;
+    DmxNodeNode dmxnode_node;
 
-	E131Params e131params;
-	e131params.Load();
-	e131params.Set();
+    dmxnode_node.SetDisableSynchronize(true);
 
-	bridge.SetDisableSynchronize(true);
+    ArtNetController controller;
+    ArtNetOutput artnetOutput;
 
-	ArtNetController controller;
-	ArtNetOutput artnetOutput;
+    dmxnode_node.SetOutput(&artnetOutput);
+    dmxnode_node.Print();
 
-	bridge.SetOutput(&artnetOutput);
-	bridge.SetE131Sync(&artnetOutput);
-	
-	bool bIsSetIndividual = false;
-	uint16_t nUniverse[e131params::MAX_PORTS];
+    controller.Print();
 
-	for (uint32_t nPortIndex = 0; nPortIndex < e131params::MAX_PORTS; nPortIndex++) {
-		bool bIsSet;
-		nUniverse[nPortIndex] = e131params.GetUniverse(nPortIndex, bIsSet);
+    display.SetTitle("sACN E1.31 Art-Net %d", dmxnode_node.GetActiveOutputPorts());
+    display.Set(2, displayudf::Labels::kIp);
 
-		for (uint32_t j = 0; j < nPortIndex; j++) {
-			if (nUniverse[nPortIndex] == nUniverse[j]) {
-				bIsSet = false;
-				break;
-			}
-		}
+    json::DisplayUdfParams displayudf_params;
+    displayudf_params.Load();
+    displayudf_params.SetAndShow();
 
-		if (bIsSet) {
-			bridge.SetUniverse(nPortIndex, lightset::PortDir::OUTPUT, nUniverse[nPortIndex]);
-			bIsSetIndividual = true;
-		}
-	}
+    RemoteConfig remote_config(remoteconfig::Output::ARTNET, dmxnode_node.GetActiveOutputPorts());
 
-	if (!bIsSetIndividual) {
-		for (uint32_t nPortIndex = 0; nPortIndex < e131bridge::MAX_PORTS; nPortIndex++) {
-			bridge.SetUniverse(nPortIndex, lightset::PortDir::OUTPUT, static_cast<uint16_t>(nPortIndex + 1));
-		}
-	}
-	
-	bridge.Print();
-	artnetOutput.Print();
-	controller.Print();
+#if defined(NODE_RDMNET_LLRP_ONLY)
+    auto& rdm_device = RdmDevice::Get();
+    rdm_device.SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
+    rdm_device.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
+    rdm_device.Init();
+    rdm_device.Print();
+#endif
 
-	display.SetTitle("sACN E1.31 Art-Net %d", bridge.GetActiveOutputPorts());
-	display.Set(2, displayudf::Labels::IP);
-	display.Set(3, displayudf::Labels::UNIVERSE_PORT_A);
-	display.Set(4, displayudf::Labels::UNIVERSE_PORT_B);
-	display.Set(5, displayudf::Labels::UNIVERSE_PORT_C);
-	display.Set(6, displayudf::Labels::UNIVERSE_PORT_D);
+    display.TextStatus(DmxNodeMsgConst::START, console::Colours::kConsoleYellow);
 
-	DisplayUdfParams displayUdfParams;
-	displayUdfParams.Load();
-	displayUdfParams.Set(&display);
+    dmxnode_node.Start();
+    controller.Start();
 
-	display.Show();
+    display.TextStatus(DmxNodeMsgConst::STARTED, console::Colours::kConsoleGreen);
 
-	RemoteConfig remoteConfig(remoteconfig::Node::E131, remoteconfig::Output::ARTNET, bridge.GetActiveOutputPorts());
+    hal::WatchdogInit();
 
-	RemoteConfigParams remoteConfigParams;
-	remoteConfigParams.Load();
-	remoteConfigParams.Set(&remoteConfig);
-
-	RDMPersonality *pPersonalities[1] = { new RDMPersonality("RDMNet LLRP device only", static_cast<uint16_t>(0)) };
-	RDMNetDevice llrpOnlyDevice(pPersonalities, 1);
-
-	constexpr char aLabel[] = "sACN E1.31 to Art-Net";
-
-	llrpOnlyDevice.SetLabel(RDM_ROOT_DEVICE, aLabel, (sizeof(aLabel) / sizeof(aLabel[0])) - 1);
-	llrpOnlyDevice.SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
-	llrpOnlyDevice.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
-	llrpOnlyDevice.Init();
-
-	RDMDeviceParams rdmDeviceParams;
-	rdmDeviceParams.Load();
-	rdmDeviceParams.Set(&llrpOnlyDevice);
-
-	llrpOnlyDevice.Print();
-
-	display.TextStatus(E131MsgConst::START, CONSOLE_YELLOW);
-
-	bridge.Start();
-	controller.Start();
-
-	display.TextStatus(E131MsgConst::STARTED, CONSOLE_GREEN);
-
-	hw.WatchdogInit();
-
-	for (;;) {
-		hw.WatchdogFeed();
-		nw.Run();
-		bridge.Run();
-		controller.Run();
-		display.Run();
-		hw.Run();
-	}
+    for (;;)
+    {
+        hal::WatchdogFeed();
+        network::Run();
+        dmxnode_node.Run();
+        controller.Run();
+        display.Run();
+        hal::Run();
+    }
 }

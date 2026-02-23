@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,169 +25,115 @@
 
 #include <cstdint>
 
-#include "hardware.h"
+#include "h3/hal_watchdog.h"
 #include "network.h"
-
-
-#include "net/apps/mdns.h"
-
 #include "displayudf.h"
-#include "displayudfparams.h"
+#include "json/displayudfparams.h"
 #include "displayhandler.h"
-
-#include "e131.h"
-#include "e131bridge.h"
-#include "e131params.h"
-#include "e131msgconst.h"
-
-#include "dmxparams.h"
+#include "json/dmxsendparams.h"
 #include "dmxsend.h"
-
-#if defined (NODE_RDMNET_LLRP_ONLY)
-# include "rdmdeviceparams.h"
-# include "rdmnetdevice.h"
-# include "rdmnetconst.h"
-# include "rdmpersonality.h"
-# include "rdm_e120.h"
-# include "factorydefaults.h"
+#include "dmxnodenode.h"
+#include "dmxnodemsgconst.h"
+#if defined(NODE_RDMNET_LLRP_ONLY)
+#include "rdmnetdevice.h"
+#include "rdmdevice.h"
+#include "rdm_e120.h"
 #endif
-
-#if defined (NODE_SHOWFILE)
-# include "showfile.h"
-# include "showfileparams.h"
+#if defined(NODE_SHOWFILE)
+#include "showfile.h"
 #endif
-
 #include "remoteconfig.h"
-#include "remoteconfigparams.h"
-
 #include "flashcodeinstall.h"
 #include "configstore.h"
-
 #include "firmwareversion.h"
 #include "software_version.h"
 
-namespace hal {
-void reboot_handler() {
-	Dmx::Get()->Blackout();
-	E131Bridge::Get()->Stop();
+namespace hal
+{
+void RebootHandler()
+{
+    Dmx::Get()->Blackout();
+    E131Bridge::Get()->Stop();
 }
-}  // namespace hal
+} // namespace hal
 
-int main() {
-	Hardware hw;
-	DisplayUdf display;
-	ConfigStore configStore;
-	Network nw;
-	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
-	FlashCodeInstall spiFlashInstall;
+static constexpr uint32_t kPortIndex = 0;
 
-	fw.Print("sACN E1.31 DMX");
-	
-	E131Bridge bridge;
+int main() // NOLINT
+{
+    hal::Init();
+    DisplayUdf display;
+    ConfigStore config_store;
+    network::Init();
+    FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+    FlashCodeInstall spiflash_install;
 
-	E131Params e131params;
-	e131params.Load();
-	e131params.Set();
+    fw.Print("sACN E1.31 DMX {1 Universe}");
 
-	const auto portDirection = e131params.GetDirection(0);
-	bool bIsSet;
-	bridge.SetUniverse(0, portDirection, e131params.GetUniverse(0, bIsSet));
+    Dmx dmx;
 
-	Dmx dmx;
+    json::DmxSendParams dmxparams;
+    dmxparams.Load();
+    dmxparams.Set();
 
-	DmxParams dmxparams;
-	dmxparams.Load();
-	dmxparams.Set(&dmx);
+    DmxSend dmx_send;
+    dmx_send.Print();
 
-	uint16_t nUniverse;
+    DmxNodeNode dmxnode_node;
+    dmxnode_node.SetOutput(&dmx_send);
 
-	if (bridge.GetUniverse(0, nUniverse, lightset::PortDir::OUTPUT)) {
-		dmx.SetPortDirection(0, dmx::PortDirection::OUTP, false);
-	} else {
-		dmx.SetPortDirection(0, dmx::PortDirection::INP, false);
-	}
+    const auto kPortDirection =
+        (dmxnode_node.GetPortDirection(kPortIndex) == dmxnode::PortDirection::kOutput ? dmx::PortDirection::kOutput : dmx::PortDirection::kInput);
+    dmx.SetPortDirection(kPortIndex, kPortDirection, false);
 
-	DmxSend dmxSend;
-	dmxSend.Print();
+    const auto kActivePorts = dmxnode_node.GetActiveInputPorts() + dmxnode_node.GetActiveOutputPorts();
 
-	bridge.SetOutput(&dmxSend);
+#if defined(NODE_RDMNET_LLRP_ONLY)
+    auto& rdm_device = RdmDevice::Get();
+    rdm_device.SetProductCategory(E120_PRODUCT_CATEGORY_FIXTURE);
+    rdm_device.SetProductDetail(E120_PRODUCT_DETAIL_LED);
+    rdm_device.Init();
+    rdm_device.Print();
 
-	const auto nActivePorts = bridge.GetActiveInputPorts() + bridge.GetActiveOutputPorts();
-
-#if defined (NODE_RDMNET_LLRP_ONLY)
-	display.TextStatus(RDMNetConst::MSG_CONFIG, CONSOLE_YELLOW);
-	char aDescription[rdm::personality::DESCRIPTION_MAX_LENGTH + 1];
-	snprintf(aDescription, sizeof(aDescription) - 1, "sACN E1.31 DMX %u", nActivePorts);
-
-	char aLabel[RDM_DEVICE_LABEL_MAX_LENGTH + 1];
-	const auto nLength = snprintf(aLabel, sizeof(aLabel) - 1, H3_BOARD_NAME " DMX");
-
-	RDMPersonality *pPersonalities[1] = { new RDMPersonality(aDescription, nullptr) };
-	RDMNetDevice llrpOnlyDevice(pPersonalities, 1);
-
-	llrpOnlyDevice.SetLabel(RDM_ROOT_DEVICE, aLabel, static_cast<uint8_t>(nLength));
-	llrpOnlyDevice.SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
-	llrpOnlyDevice.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
-	llrpOnlyDevice.Init();
-
-	RDMDeviceParams rdmDeviceParams;
-	rdmDeviceParams.Load();
-	rdmDeviceParams.Set(&llrpOnlyDevice);
-
-	llrpOnlyDevice.Print();
+    RDMNetDevice llrp_only_device;
 #endif
 
-	bridge.Print();
-
-#if defined (NODE_SHOWFILE)
-	ShowFile showFile;
-
-	ShowFileParams showFileParams;
-	showFileParams.Load();
-	showFileParams.Set();
-
-	if (showFile.IsAutoStart()) {
-		showFile.Play();
-	}
-
-	showFile.Print();
+#if defined(NODE_SHOWFILE)
+    ShowFile showfile;
+    showfile.Print();
 #endif
 
-	display.SetTitle("sACN E1.31 DMX %s", portDirection == lightset::PortDir::INPUT ? "Input" : "Output");
-	display.Set(2, displayudf::Labels::IP);
-	display.Set(3, displayudf::Labels::HOSTNAME);
-	display.Set(4, displayudf::Labels::VERSION);
-	display.Set(5, displayudf::Labels::UNIVERSE_PORT_A);
-	display.Set(6, displayudf::Labels::AP);
+    dmxnode_node.Print();
 
-	DisplayUdfParams displayUdfParams;
-	displayUdfParams.Load();
-	displayUdfParams.Set(&display);
+    display.SetTitle("sACN E1.31 DMX %s", kPortDirection == dmx::PortDirection::kInput ? "Input" : "Output");
+    display.Set(2, displayudf::Labels::kIp);
+    display.Set(3, displayudf::Labels::kVersion);
+    display.Set(4, displayudf::Labels::kHostname);
+    display.Set(5, displayudf::Labels::kUniversePortA);
 
-	display.Show();
+    json::DisplayUdfParams displayudf_params;
+    displayudf_params.Load();
+    displayudf_params.SetAndShow();
 
-	RemoteConfig remoteConfig(remoteconfig::Node::E131, remoteconfig::Output::DMX, nActivePorts);
+    RemoteConfig remote_config(remoteconfig::Output::DMX, kActivePorts);
 
-	RemoteConfigParams remoteConfigParams;
-	remoteConfigParams.Load();
-	remoteConfigParams.Set(&remoteConfig);
+    display.TextStatus(DmxNodeMsgConst::START, console::Colours::kConsoleYellow);
 
-	display.TextStatus(E131MsgConst::START, CONSOLE_YELLOW);
+    dmxnode_node.Start();
 
-	bridge.Start();
+    display.TextStatus(DmxNodeMsgConst::STARTED, console::Colours::kConsoleGreen);
 
-	display.TextStatus(E131MsgConst::STARTED, CONSOLE_GREEN);
+    hal::WatchdogInit();
 
-	hw.WatchdogInit();
-
-	for (;;) {
-		hw.WatchdogFeed();
-		nw.Run();
-		bridge.Run();
-#if defined (NODE_SHOWFILE)
-		showFile.Run();
+    for (;;)
+    {
+        hal::WatchdogFeed();
+        network::Run();
+        dmxnode_node.Run();
+#if defined(NODE_SHOWFILE)
+        showfile.Run();
 #endif
-		display.Run();
-		hw.Run();
-	}
+        display.Run();
+        hal::Run();
+    }
 }

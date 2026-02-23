@@ -23,39 +23,54 @@
  * THE SOFTWARE.
  */
 
-#ifndef HAL_SOFTWARETIMERS_H_
-#define HAL_SOFTWARETIMERS_H_
+#ifndef SOFTWARETIMERS_H_
+#define SOFTWARETIMERS_H_
+
+#include <cstdint>
+
+namespace hal
+{
+static constexpr uint32_t kSoftwareTimersMax =
+#if defined(CONFIG_HAL_TIMERS_COUNT)
+    CONFIG_HAL_TIMERS_COUNT;
+#else
+    12;
+#endif
+} // namespace hal
 
 #if defined(USE_FREE_RTOS)
-# ifdef __cplusplus
-#  pragma GCC diagnostic push
-#  pragma GCC diagnostic ignored "-Wold-style-cast"
-# endif
-# include "../FreeRTOS/FreeRTOS-Kernel/include/FreeRTOS.h"
-# include "../FreeRTOS/FreeRTOS-Kernel/include/timers.h"
-# define TIMER_ID_NONE	nullptr
-inline TimerHandle_t SoftwareTimerAdd(const uint32_t nIntervalMillis, const TimerCallbackFunction_t pCallbackFunction) {
-	const auto xTimer = xTimerCreate("", nIntervalMillis / portTICK_PERIOD_MS, pdTRUE, nullptr, pCallbackFunction);
-	if (xTimer != nullptr) xTimerStart( xTimer, 0);
-	return xTimer;
+#ifdef __cplusplus
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+#endif
+#include "../FreeRTOS/FreeRTOS-Kernel/include/FreeRTOS.h"
+#include "../FreeRTOS/FreeRTOS-Kernel/include/timers.h"
+#define kTimerIdNone nullptr
+inline TimerHandle_t SoftwareTimerAdd(const uint32_t nIntervalMillis, const TimerCallbackFunction_t pCallbackFunction)
+{
+    const auto xTimer = xTimerCreate("", nIntervalMillis / portTICK_PERIOD_MS, pdTRUE, nullptr, pCallbackFunction);
+    if (xTimer != nullptr) xTimerStart(xTimer, 0);
+    return xTimer;
 }
 
-inline bool SoftwareTimerDelete(TimerHandle_t& nId) {
-	TimerHandle_t t = nId;
-	const auto b = (xTimerDelete(t, 0) != pdFAIL);
-	if (b) nId = TIMER_ID_NONE;
-	return b;
+inline bool SoftwareTimerDelete(TimerHandle_t& nId)
+{
+    TimerHandle_t t = nId;
+    const auto b = (xTimerDelete(t, 0) != pdFAIL);
+    if (b) nId = kTimerIdNone;
+    return b;
 }
 
-inline bool SoftwareTimerChange(const TimerHandle_t nId, const uint32_t nIntervalMillis) {
-	return xTimerChangePeriod(nId, nIntervalMillis / portTICK_PERIOD_MS, 0) != pdFAIL;
+inline bool SoftwareTimerChange(const TimerHandle_t nId, const uint32_t nIntervalMillis)
+{
+    return xTimerChangePeriod(nId, nIntervalMillis / portTICK_PERIOD_MS, 0) != pdFAIL;
 }
-# ifdef __cplusplus
-#  pragma GCC diagnostic pop
-# endif
+#ifdef __cplusplus
+#pragma GCC diagnostic pop
+#endif
 #else
-# include "superloop/softwaretimers.h"
-static constexpr TimerHandle_t TIMER_ID_NONE = -1;
+#include "superloop/softwaretimers.h"
+static constexpr TimerHandle_t kTimerIdNone = -1;
 #endif
 
-#endif /* HAL_SOFTWARETIMERS_H_ */
+#endif  // SOFTWARETIMERS_H_

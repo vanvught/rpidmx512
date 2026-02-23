@@ -29,7 +29,7 @@
 #include "h3.h"
 
 #ifndef NDEBUG
-int uart0_printf(const char* fmt, ...);
+int uart0::Printf(const char* fmt, ...);
 #endif
 
 void mac_address_get(uint8_t paddr[]) {
@@ -39,7 +39,7 @@ void mac_address_get(uint8_t paddr[]) {
 	const uint32_t mac_hi = H3_EMAC->ADDR[0].HIGH;
 
 #ifndef NDEBUG
-	uart0_printf("H3_EMAC->ADDR[0].LOW=%08x, H3_EMAC->ADDR[0].HIGH=%08x\n", mac_lo, mac_hi);
+	uart0::Printf("H3_EMAC->ADDR[0].LOW=%08x, H3_EMAC->ADDR[0].HIGH=%08x\n", mac_lo, mac_hi);
 #endif
 
 	paddr[0] = (mac_lo >> 0) & 0xff;
@@ -50,6 +50,6 @@ void mac_address_get(uint8_t paddr[]) {
 	paddr[5] = (mac_hi >> 8) & 0xff;
 
 #ifndef NDEBUG
-	uart0_printf("%02x:%02x:%02x:%02x:%02x:%02x\n", paddr[0], paddr[1], paddr[2], paddr[3], paddr[4], paddr[5]);
+	uart0::Printf("%02x:%02x:%02x:%02x:%02x:%02x\n", paddr[0], paddr[1], paddr[2], paddr[3], paddr[4], paddr[5]);
 #endif
 }

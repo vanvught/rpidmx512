@@ -1,8 +1,7 @@
 /**
  * @file e131controller.cpp
- *
  */
-/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,324 +28,367 @@
 #include <cassert>
 
 #include "e131controller.h"
-
 #include "e131.h"
-#include "e131packets.h"
-
-#include "e117const.h"
-
-#include "hardware.h"
+#include "e117.h"
+#include "hal_uuid.h"
+#include "hal_boardinfo.h"
 #include "network.h"
-
-#include "debug.h"
-
 #include "softwaretimers.h"
+#include "firmware/debug/debug_debug.h"
 
 using namespace e131;
 
-static constexpr uint8_t DEVICE_SOFTWARE_VERSION[] = { 1, 0 };
+static constexpr uint8_t kDeviceSoftwareVersion[] = {1, 0};
 
-struct TSequenceNumbers {
-	uint16_t nUniverse;
-	uint8_t nSequenceNumber;
-	uint32_t nIpAddress;
+struct TSequenceNumbers
+{
+    uint16_t universe;
+    uint8_t sequence_number;
+    uint32_t ip_address;
 };
 
-static struct TSequenceNumbers s_SequenceNumbers[512] __attribute__ ((aligned (8)));
+static struct TSequenceNumbers s_SequenceNumbers[512] __attribute__((aligned(8)));
 
-E131Controller::E131Controller() {
-	DEBUG_ENTRY
+E131Controller::E131Controller()
+{
+    DEBUG_ENTRY();
 
-	assert(s_pThis == nullptr);
-	s_pThis = this;
+    assert(s_this == nullptr);
+    s_this = this;
 
-	memset(&m_State, 0, sizeof(struct TE131ControllerState));
-	m_State.nPriority = 100;
+    memset(&state_, 0, sizeof(struct TE131ControllerState));
+    state_.priority = 100;
 
-	char aSourceName[e131::SOURCE_NAME_LENGTH];
-	uint8_t nLength;
-	snprintf(aSourceName, e131::SOURCE_NAME_LENGTH, "%.48s %s", Network::Get()->GetHostName(), Hardware::Get()->GetBoardName(nLength));
-	SetSourceName(aSourceName);
+    char aSourceName[e131::kSourceNameLength];
+    uint8_t nLength;
+    snprintf(aSourceName, e131::kSourceNameLength, "%.48s %s", network::iface::HostName(), hal::BoardName(nLength));
+    SetSourceName(aSourceName);
 
-	hal::uuid_copy(m_Cid);
+    hal::UuidCopy(cid_);
 
-	for (uint32_t nIndex = 0; nIndex < sizeof(s_SequenceNumbers) / sizeof(s_SequenceNumbers[0]); nIndex++) {
-		memset(&s_SequenceNumbers[nIndex], 0, sizeof(s_SequenceNumbers[0]));
-	}
+    for (uint32_t nIndex = 0; nIndex < sizeof(s_SequenceNumbers) / sizeof(s_SequenceNumbers[0]); nIndex++)
+    {
+        memset(&s_SequenceNumbers[nIndex], 0, sizeof(s_SequenceNumbers[0]));
+    }
 
-	SetSynchronizationAddress();
+    SetSynchronizationAddress();
 
-	const auto nIpMulticast = net::convert_to_uint(239, 255, 0, 0);
-	m_DiscoveryIpAddress = nIpMulticast | ((universe::DISCOVERY & static_cast<uint32_t>(0xFF)) << 24) | ((universe::DISCOVERY & 0xFF00) << 8);
+    const auto kIpMulticast = network::ConvertToUint(239, 255, 0, 0);
+    m_DiscoveryIpAddress = kIpMulticast | ((universe::kDiscovery & static_cast<uint32_t>(0xFF)) << 24) | ((universe::kDiscovery & 0xFF00) << 8);
 
-	// TE131DataPacket
-	m_pE131DataPacket = new struct TE131DataPacket;
-	assert(m_pE131DataPacket != nullptr);
+    // e131::DataPacket
+    m_pE131DataPacket = new struct e131::DataPacket;
+    assert(m_pE131DataPacket != nullptr);
 
-	// TE131DiscoveryPacket
-	m_pE131DiscoveryPacket = new struct TE131DiscoveryPacket;
-	assert(m_pE131DiscoveryPacket != nullptr);
+    // e131::DiscoveryPacket
+    m_pE131DiscoveryPacket = new struct e131::DiscoveryPacket;
+    assert(m_pE131DiscoveryPacket != nullptr);
 
-	// TE131SynchronizationPacket
-	m_pE131SynchronizationPacket = new struct TE131SynchronizationPacket;
-	assert(m_pE131SynchronizationPacket != nullptr);
+    // e131::SynchronizationPacket
+    m_pE131SynchronizationPacket = new struct e131::SynchronizationPacket;
+    assert(m_pE131SynchronizationPacket != nullptr);
 
-	m_nHandle = Network::Get()->Begin(e131::UDP_PORT);
-	assert(m_nHandle != -1);
+    handle_ = network::udp::Begin(e131::kUdpPort, nullptr);
+    assert(handle_ != -1);
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-E131Controller::~E131Controller() {
-	DEBUG_ENTRY
+E131Controller::~E131Controller()
+{
+    DEBUG_ENTRY();
 
-	Network::Get()->End(e131::UDP_PORT);
+    network::udp::End(e131::kUdpPort);
 
-	if (m_pE131SynchronizationPacket != nullptr) {
-		delete m_pE131SynchronizationPacket;
-		m_pE131SynchronizationPacket = nullptr;
-	}
+    if (m_pE131SynchronizationPacket != nullptr)
+    {
+        delete m_pE131SynchronizationPacket;
+        m_pE131SynchronizationPacket = nullptr;
+    }
 
-	if (m_pE131DiscoveryPacket != nullptr) {
-		delete m_pE131DiscoveryPacket;
-		m_pE131DiscoveryPacket = nullptr;
-	}
+    if (m_pE131DiscoveryPacket != nullptr)
+    {
+        delete m_pE131DiscoveryPacket;
+        m_pE131DiscoveryPacket = nullptr;
+    }
 
-	if (m_pE131DataPacket != nullptr) {
-		delete m_pE131DataPacket;
-		m_pE131DataPacket = nullptr;
-	}
+    if (m_pE131DataPacket != nullptr)
+    {
+        delete m_pE131DataPacket;
+        m_pE131DataPacket = nullptr;
+    }
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void E131Controller::Start() {
-	DEBUG_ENTRY
+void E131Controller::Start()
+{
+    DEBUG_ENTRY();
 
-	FillDataPacket();
-	FillDiscoveryPacket();
-	FillSynchronizationPacket();
+    FillDataPacket();
+    FillDiscoveryPacket();
+    FillSynchronizationPacket();
 
-	m_timerHandleSendDiscoveryPacket = SoftwareTimerAdd(e131::UNIVERSE_DISCOVERY_INTERVAL_SECONDS * 1000U, StaticCallbackFunctionSendDiscoveryPacket);
-	assert(m_timerHandleSendDiscoveryPacket >= 0);
+    timer_handle_send_discovery_packet_ = SoftwareTimerAdd(e131::kUniverseDiscoveryIntervalSeconds * 1000U, StaticCallbackFunctionSendDiscoveryPacket);
+    assert(timer_handle_send_discovery_packet_ >= 0);
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void E131Controller::Stop() {
-	SoftwareTimerDelete(m_timerHandleSendDiscoveryPacket);
+void E131Controller::Stop()
+{
+    SoftwareTimerDelete(timer_handle_send_discovery_packet_);
 }
 
-void E131Controller::FillDataPacket() {
-	// Root Layer (See Section 5)
-	m_pE131DataPacket->RootLayer.PreAmbleSize = __builtin_bswap16(0x0010);
-	m_pE131DataPacket->RootLayer.PostAmbleSize = __builtin_bswap16(0x0000);
-	memcpy(m_pE131DataPacket->RootLayer.ACNPacketIdentifier, E117Const::ACN_PACKET_IDENTIFIER, e117::PACKET_IDENTIFIER_LENGTH);
-	m_pE131DataPacket->RootLayer.Vector = __builtin_bswap32(vector::root::DATA);
-	memcpy(m_pE131DataPacket->RootLayer.Cid, m_Cid, e131::CID_LENGTH);
+void E131Controller::FillDataPacket()
+{
+    // Root Layer (See Section 5)
+    m_pE131DataPacket->root_layer.pre_amble_size = __builtin_bswap16(0x0010);
+    m_pE131DataPacket->root_layer.post_amble_size = __builtin_bswap16(0x0000);
+    memcpy(m_pE131DataPacket->root_layer.acn_packet_identifier, e117::kAcnPacketIdentifier, e117::kAcnPacketIdentifierLength);
+    m_pE131DataPacket->root_layer.vector = __builtin_bswap32(vector::root::kData);
+    memcpy(m_pE131DataPacket->root_layer.cid, cid_, e117::kCidLength);
 
-	// E1.31 Framing Layer (See Section 6)
-	m_pE131DataPacket->FrameLayer.Vector = __builtin_bswap32(vector::data::PACKET);
-	memcpy(m_pE131DataPacket->FrameLayer.SourceName, m_SourceName, e131::SOURCE_NAME_LENGTH);
-	m_pE131DataPacket->FrameLayer.Priority = m_State.nPriority;
-	m_pE131DataPacket->FrameLayer.SynchronizationAddress = __builtin_bswap16(m_State.SynchronizationPacket.nUniverseNumber);
-	m_pE131DataPacket->FrameLayer.Options = 0;
+    // E1.31 Framing Layer (See Section 6)
+    m_pE131DataPacket->frame_layer.vector = __builtin_bswap32(vector::data::kPacket);
+    memcpy(m_pE131DataPacket->frame_layer.source_name, source_name_, e131::kSourceNameLength);
+    m_pE131DataPacket->frame_layer.priority = state_.priority;
+    m_pE131DataPacket->frame_layer.synchronization_address = __builtin_bswap16(state_.SynchronizationPacket.nUniverseNumber);
+    m_pE131DataPacket->frame_layer.options = 0;
 
-	// Data Layer
-	m_pE131DataPacket->DMPLayer.Vector = e131::vector::dmp::SET_PROPERTY;
-	m_pE131DataPacket->DMPLayer.Type = 0xa1;
-	m_pE131DataPacket->DMPLayer.FirstAddressProperty = __builtin_bswap16(0x0000);
-	m_pE131DataPacket->DMPLayer.AddressIncrement = __builtin_bswap16(0x0001);
-	m_pE131DataPacket->DMPLayer.PropertyValues[0] = 0;
+    // Data Layer
+    m_pE131DataPacket->dmp_layer.vector = e131::vector::dmp::kSetProperty;
+    m_pE131DataPacket->dmp_layer.type = 0xa1;
+    m_pE131DataPacket->dmp_layer.first_address_property = __builtin_bswap16(0x0000);
+    m_pE131DataPacket->dmp_layer.address_increment = __builtin_bswap16(0x0001);
+    m_pE131DataPacket->dmp_layer.property_values[0] = 0;
 }
 
-void E131Controller::FillDiscoveryPacket() {
-	memset(m_pE131DiscoveryPacket, 0, sizeof(struct TE131DiscoveryPacket));
+void E131Controller::FillDiscoveryPacket()
+{
+    memset(m_pE131DiscoveryPacket, 0, sizeof(struct e131::DiscoveryPacket));
 
-	// Root Layer (See Section 5)
-	m_pE131DiscoveryPacket->RootLayer.PreAmbleSize = __builtin_bswap16(0x10);
-	memcpy(m_pE131DiscoveryPacket->RootLayer.ACNPacketIdentifier, E117Const::ACN_PACKET_IDENTIFIER, e117::PACKET_IDENTIFIER_LENGTH);
-	m_pE131DiscoveryPacket->RootLayer.Vector = __builtin_bswap32(vector::root::EXTENDED);
-	memcpy(m_pE131DiscoveryPacket->RootLayer.Cid, m_Cid, e131::CID_LENGTH);
+    // Root Layer (See Section 5)
+    m_pE131DiscoveryPacket->root_layer.pre_amble_size = __builtin_bswap16(0x10);
+    memcpy(m_pE131DiscoveryPacket->root_layer.acn_packet_identifier, e117::kAcnPacketIdentifier, e117::kAcnPacketIdentifierLength);
+    m_pE131DiscoveryPacket->root_layer.vector = __builtin_bswap32(vector::root::kExtended);
+    memcpy(m_pE131DiscoveryPacket->root_layer.cid, cid_, e117::kCidLength);
 
-	// E1.31 Framing Layer (See Section 6)
-	m_pE131DiscoveryPacket->FrameLayer.Vector = __builtin_bswap32(vector::extended::DISCOVERY);
-	memcpy(m_pE131DiscoveryPacket->FrameLayer.SourceName, m_SourceName, e131::SOURCE_NAME_LENGTH);
+    // E1.31 Framing Layer (See Section 6)
+    m_pE131DiscoveryPacket->frame_layer.vector = __builtin_bswap32(vector::extended::kDiscovery);
+    memcpy(m_pE131DiscoveryPacket->frame_layer.source_name, source_name_, e131::kSourceNameLength);
 
-	// Universe Discovery Layer (See Section 8)
-	m_pE131DiscoveryPacket->UniverseDiscoveryLayer.Vector = __builtin_bswap32(vector::universe::DISCOVERY_UNIVERSE_LIST);
+    // Universe Discovery Layer (See Section 8)
+    m_pE131DiscoveryPacket->universe_discovery_layer.vector = __builtin_bswap32(vector::universe::kDiscoveryUniverseList);
 }
 
-void E131Controller::FillSynchronizationPacket() {
-	memset(m_pE131SynchronizationPacket, 0, sizeof(struct TE131SynchronizationPacket));
+void E131Controller::FillSynchronizationPacket()
+{
+    memset(m_pE131SynchronizationPacket, 0, sizeof(struct e131::SynchronizationPacket));
 
-	// Root Layer (See Section 4.2)
-	m_pE131SynchronizationPacket->RootLayer.PreAmbleSize = __builtin_bswap16(0x10);
-	memcpy(m_pE131SynchronizationPacket->RootLayer.ACNPacketIdentifier, E117Const::ACN_PACKET_IDENTIFIER, e117::PACKET_IDENTIFIER_LENGTH);
-	m_pE131SynchronizationPacket->RootLayer.FlagsLength = __builtin_bswap16((0x07 << 12) | (SYNCHRONIZATION_ROOT_LAYER_LENGTH));
-	m_pE131SynchronizationPacket->RootLayer.Vector = __builtin_bswap32(vector::root::EXTENDED);
-	memcpy(m_pE131SynchronizationPacket->RootLayer.Cid, m_Cid, e131::CID_LENGTH);
+    // Root Layer (See Section 4.2)
+    m_pE131SynchronizationPacket->root_layer.pre_amble_size = __builtin_bswap16(0x10);
+    memcpy(m_pE131SynchronizationPacket->root_layer.acn_packet_identifier, e117::kAcnPacketIdentifier, e117::kAcnPacketIdentifierLength);
+    m_pE131SynchronizationPacket->root_layer.flags_length = __builtin_bswap16((0x07 << 12) | (e131::kSynchronizationRootLayerSize));
+    m_pE131SynchronizationPacket->root_layer.vector = __builtin_bswap32(vector::root::kExtended);
+    memcpy(m_pE131SynchronizationPacket->root_layer.cid, cid_, e117::kCidLength);
 
-	// E1.31 Framing Layer (See Section 6)
-	m_pE131SynchronizationPacket->FrameLayer.FLagsLength = __builtin_bswap16((0x07 << 12) | (SYNCHRONIZATION_LAYER_LENGTH) );
-	m_pE131SynchronizationPacket->FrameLayer.Vector = __builtin_bswap32(vector::extended::SYNCHRONIZATION);
-	m_pE131SynchronizationPacket->FrameLayer.UniverseNumber = __builtin_bswap16(m_State.SynchronizationPacket.nUniverseNumber);
+    // E1.31 Framing Layer (See Section 6)
+    m_pE131SynchronizationPacket->frame_layer.flags_length = __builtin_bswap16((0x07 << 12) | (e131::kSynchronizationFrameLayerSize));
+    m_pE131SynchronizationPacket->frame_layer.vector = __builtin_bswap32(vector::extended::kSynchronization);
+    m_pE131SynchronizationPacket->frame_layer.universe_number = __builtin_bswap16(state_.SynchronizationPacket.nUniverseNumber);
 }
 
-void E131Controller::HandleDmxOut(uint16_t nUniverse, const uint8_t *pDmxData, uint32_t nLength) {
-	uint32_t nIp;
+void E131Controller::HandleDmxOut(uint16_t nUniverse, const uint8_t* pDmxData, uint32_t nLength)
+{
+    uint32_t ip;
 
-	// Root Layer (See Section 5)
-	m_pE131DataPacket->RootLayer.FlagsLength = __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | (DATA_ROOT_LAYER_LENGTH(1U + nLength))));
+    // Root Layer (See Section 5)
+    m_pE131DataPacket->root_layer.flags_length = __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | (e131::DataRootLayerLength(1U + nLength))));
 
-	// E1.31 Framing Layer (See Section 6)
-	m_pE131DataPacket->FrameLayer.FLagsLength = __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | (DATA_FRAME_LAYER_LENGTH(1U + nLength))));
-	m_pE131DataPacket->FrameLayer.SequenceNumber = GetSequenceNumber(nUniverse, nIp);
-	m_pE131DataPacket->FrameLayer.Universe = __builtin_bswap16(nUniverse);
+    // E1.31 Framing Layer (See Section 6)
+    m_pE131DataPacket->frame_layer.flags_length = __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | (e131::DataFrameLayerLength(1U + nLength))));
+    m_pE131DataPacket->frame_layer.sequence_number = GetSequenceNumber(nUniverse, ip);
+    m_pE131DataPacket->frame_layer.universe = __builtin_bswap16(nUniverse);
 
-	// Data Layer
-	m_pE131DataPacket->DMPLayer.FlagsLength = __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | (DATA_LAYER_LENGTH(1U + nLength))));
+    // Data Layer
+    m_pE131DataPacket->dmp_layer.flags_length = __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | (e131::DataLayerLength(1U + nLength))));
 
-	if (__builtin_expect((m_nMaster == DMX_MAX_VALUE), 1)) {
-		memcpy(&m_pE131DataPacket->DMPLayer.PropertyValues[1], pDmxData, nLength);
-	} else if (m_nMaster == 0) {
-		memset(&m_pE131DataPacket->DMPLayer.PropertyValues[1], 0, nLength);
-	} else {
-		for (uint32_t i = 0; i < nLength; i++) {
-			m_pE131DataPacket->DMPLayer.PropertyValues[1 + i] = static_cast<uint8_t>((m_nMaster * pDmxData[i]) / DMX_MAX_VALUE);
-		}
-	}
+    if (__builtin_expect((master_ == dmxnode::kDmxMaxValue), 1))
+    {
+        memcpy(&m_pE131DataPacket->dmp_layer.property_values[1], pDmxData, nLength);
+    }
+    else if (master_ == 0)
+    {
+        memset(&m_pE131DataPacket->dmp_layer.property_values[1], 0, nLength);
+    }
+    else
+    {
+        for (uint32_t i = 0; i < nLength; i++)
+        {
+            m_pE131DataPacket->dmp_layer.property_values[1 + i] = static_cast<uint8_t>((master_ * pDmxData[i]) / dmxnode::kDmxMaxValue);
+        }
+    }
 
-	m_pE131DataPacket->DMPLayer.PropertyValueCount = __builtin_bswap16(static_cast<uint16_t>(1 + nLength));
+    m_pE131DataPacket->dmp_layer.property_value_count = __builtin_bswap16(static_cast<uint16_t>(1 + nLength));
 
-	Network::Get()->SendTo(m_nHandle, m_pE131DataPacket, static_cast<uint16_t>(DATA_PACKET_SIZE(1U + nLength)), nIp, e131::UDP_PORT);
+    network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(m_pE131DataPacket), static_cast<uint16_t>(e131::DataPacketSize(1U + nLength)), ip, e131::kUdpPort);
 }
 
-void E131Controller::HandleSync() {
-	if (m_State.SynchronizationPacket.nUniverseNumber != 0) {
-		m_pE131SynchronizationPacket->FrameLayer.SequenceNumber = m_State.SynchronizationPacket.nSequenceNumber++;
-		Network::Get()->SendTo(m_nHandle, m_pE131SynchronizationPacket, SYNCHRONIZATION_PACKET_SIZE, m_State.SynchronizationPacket.nIpAddress, e131::UDP_PORT);
-	}
+void E131Controller::HandleSync()
+{
+    if (state_.SynchronizationPacket.nUniverseNumber != 0)
+    {
+        m_pE131SynchronizationPacket->frame_layer.sequence_number = state_.SynchronizationPacket.sequence_number++;
+        network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(m_pE131SynchronizationPacket), e131::kSynchronizationPacketSize,
+                       state_.SynchronizationPacket.nIpAddress, e131::kUdpPort);
+    }
 }
 
-void E131Controller::HandleBlackout() {
-	// Root Layer (See Section 5)
-	m_pE131DataPacket->RootLayer.FlagsLength = __builtin_bswap16((0x07 << 12) | (DATA_ROOT_LAYER_LENGTH(513)));
+void E131Controller::HandleBlackout()
+{
+    // Root Layer (See Section 5)
+    m_pE131DataPacket->root_layer.flags_length = __builtin_bswap16((0x07 << 12) | (e131::DataRootLayerLength(513)));
 
-	// E1.31 Framing Layer (See Section 6)
-	m_pE131DataPacket->FrameLayer.FLagsLength = __builtin_bswap16((0x07 << 12) | (DATA_FRAME_LAYER_LENGTH(513)));
+    // E1.31 Framing Layer (See Section 6)
+    m_pE131DataPacket->frame_layer.flags_length = __builtin_bswap16((0x07 << 12) | (e131::DataFrameLayerLength(513)));
 
-	// Data Layer
-	m_pE131DataPacket->DMPLayer.FlagsLength = __builtin_bswap16((0x07 << 12) | (DATA_LAYER_LENGTH(513)));
-	m_pE131DataPacket->DMPLayer.PropertyValueCount = __builtin_bswap16(513);
-	memset(&m_pE131DataPacket->DMPLayer.PropertyValues[1], 0, 512);
+    // Data Layer
+    m_pE131DataPacket->dmp_layer.flags_length = __builtin_bswap16((0x07 << 12) | (e131::DataLayerLength(513)));
+    m_pE131DataPacket->dmp_layer.property_value_count = __builtin_bswap16(513);
+    memset(&m_pE131DataPacket->dmp_layer.property_values[1], 0, 512);
 
-	for (uint32_t nIndex = 0; nIndex < m_State.nActiveUniverses; nIndex++) {
-		uint32_t nIp;
-		uint16_t nUniverse = s_SequenceNumbers[nIndex].nUniverse;
+    for (uint32_t nIndex = 0; nIndex < state_.nActiveUniverses; nIndex++)
+    {
+        uint32_t ip;
+        uint16_t nUniverse = s_SequenceNumbers[nIndex].universe;
 
-		m_pE131DataPacket->FrameLayer.SequenceNumber = GetSequenceNumber(nUniverse, nIp);
-		m_pE131DataPacket->FrameLayer.Universe = __builtin_bswap16(nUniverse);
+        m_pE131DataPacket->frame_layer.sequence_number = GetSequenceNumber(nUniverse, ip);
+        m_pE131DataPacket->frame_layer.universe = __builtin_bswap16(nUniverse);
 
-		Network::Get()->SendTo(m_nHandle, m_pE131DataPacket, DATA_PACKET_SIZE(513), nIp, e131::UDP_PORT);
-	}
+        network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(m_pE131DataPacket), e131::DataPacketSize(513), ip, e131::kUdpPort);
+    }
 
-	if (m_State.SynchronizationPacket.nUniverseNumber != 0) {
-		HandleSync();
-	}
+    if (state_.SynchronizationPacket.nUniverseNumber != 0)
+    {
+        HandleSync();
+    }
 }
 
-const uint8_t *E131Controller::GetSoftwareVersion() {
-	return DEVICE_SOFTWARE_VERSION;
+const uint8_t* E131Controller::GetSoftwareVersion()
+{
+    return kDeviceSoftwareVersion;
 }
 
-void E131Controller::SetSourceName(const char *pSourceName) {
-	assert(pSourceName != nullptr);
-	strncpy(m_SourceName, pSourceName, e131::SOURCE_NAME_LENGTH - 1);
-	m_SourceName[e131::SOURCE_NAME_LENGTH - 1] = '\0';
+void E131Controller::SetSourceName(const char* pSourceName)
+{
+    assert(pSourceName != nullptr);
+    strncpy(source_name_, pSourceName, e131::kSourceNameLength - 1);
+    source_name_[e131::kSourceNameLength - 1] = '\0';
 }
 
-void E131Controller::SetPriority(uint8_t nPriority) { //TODO SetPriority
-	m_State.nPriority = nPriority;
+void E131Controller::SetPriority(uint8_t priority)
+{ // TODO (a) SetPriority
+    state_.priority = priority;
 }
 
-void E131Controller::SendDiscoveryPacket() {
-	assert(m_DiscoveryIpAddress != 0);
+void E131Controller::SendDiscoveryPacket()
+{
+    assert(m_DiscoveryIpAddress != 0);
 
-	m_pE131DiscoveryPacket->RootLayer.FlagsLength = __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | (DISCOVERY_ROOT_LAYER_LENGTH(m_State.nActiveUniverses))));
-	m_pE131DiscoveryPacket->FrameLayer.FLagsLength = __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | (DISCOVERY_FRAME_LAYER_LENGTH(m_State.nActiveUniverses))));
-	m_pE131DiscoveryPacket->UniverseDiscoveryLayer.FlagsLength = __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | DISCOVERY_LAYER_LENGTH(m_State.nActiveUniverses)));
+    m_pE131DiscoveryPacket->root_layer.flags_length =
+        __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | (e131::DiscoveryRootLayerLength(state_.nActiveUniverses))));
+    m_pE131DiscoveryPacket->frame_layer.flags_length =
+        __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | (e131::DiscoveryFrameLayerLength(state_.nActiveUniverses))));
+    m_pE131DiscoveryPacket->universe_discovery_layer.flags_length =
+        __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | e131::DiscoveryLayerLength(state_.nActiveUniverses)));
 
-	for (uint32_t i = 0; i < m_State.nActiveUniverses; i++) {
-		m_pE131DiscoveryPacket->UniverseDiscoveryLayer.ListOfUniverses[i] = __builtin_bswap16(s_SequenceNumbers[i].nUniverse);
-	}
+    for (uint32_t i = 0; i < state_.nActiveUniverses; i++)
+    {
+        m_pE131DiscoveryPacket->universe_discovery_layer.list_of_universes[i] = __builtin_bswap16(s_SequenceNumbers[i].universe);
+    }
 
-	Network::Get()->SendTo(m_nHandle, m_pE131DiscoveryPacket, static_cast<uint16_t>(DISCOVERY_PACKET_SIZE(m_State.nActiveUniverses)), m_DiscoveryIpAddress, e131::UDP_PORT);
+    network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(m_pE131DiscoveryPacket), static_cast<uint16_t>(e131::DiscoveryPacketSize(state_.nActiveUniverses)),
+                   m_DiscoveryIpAddress, e131::kUdpPort);
 
-	DEBUG_PUTS("Discovery sent");
+    DEBUG_PUTS("Discovery sent");
 }
 
-uint8_t E131Controller::GetSequenceNumber(uint16_t nUniverse, uint32_t &nMulticastIpAddress) {
-	assert(sizeof(struct TSequenceNumbers) == sizeof(uint64_t));
+uint8_t E131Controller::GetSequenceNumber(uint16_t nUniverse, uint32_t& nMulticastIpAddress)
+{
+    assert(sizeof(struct TSequenceNumbers) == sizeof(uint64_t));
 
-	int32_t nLow = 0;
-	int32_t nMid = 0;
-	int32_t nHigh = m_State.nActiveUniverses;
+    int32_t nLow = 0;
+    int32_t nMid = 0;
+    int32_t nHigh = state_.nActiveUniverses;
 
-	while (nLow <= nHigh) {
+    while (nLow <= nHigh)
+    {
+        nMid = nLow + ((nHigh - nLow) / 2);
 
-		nMid = nLow + ((nHigh - nLow) / 2);
+        const uint32_t nMidValue = s_SequenceNumbers[nMid].universe;
 
-		const uint32_t nMidValue = s_SequenceNumbers[nMid].nUniverse;
+        if (nMidValue < nUniverse)
+        {
+            nLow = nMid + 1;
+        }
+        else if (nMidValue > nUniverse)
+        {
+            nHigh = nMid - 1;
+        }
+        else
+        {
+            DEBUG_PRINTF("Found nUniverse=%u", nUniverse);
+            nMulticastIpAddress = s_SequenceNumbers[nMid].ip_address;
+            s_SequenceNumbers[nMid].sequence_number++;
+            return s_SequenceNumbers[nMid].sequence_number;
+        }
+    }
 
-		if (nMidValue < nUniverse) {
-			nLow = nMid + 1;
-		} else if (nMidValue > nUniverse) {
-			nHigh = nMid - 1;
-		} else {
-			DEBUG_PRINTF("Found nUniverse=%u", nUniverse);
-			nMulticastIpAddress = s_SequenceNumbers[nMid].nIpAddress;
-			s_SequenceNumbers[nMid].nSequenceNumber++;
-			return s_SequenceNumbers[nMid].nSequenceNumber;
-		}
-	}
+    DEBUG_PRINTF("nActiveUniverses=%u -> %u : nLow=%d, nMid=%d, nHigh=%d", state_.nActiveUniverses, nUniverse, nLow, nMid, nHigh);
 
-	DEBUG_PRINTF("nActiveUniverses=%u -> %u : nLow=%d, nMid=%d, nHigh=%d", m_State.nActiveUniverses, nUniverse, nLow, nMid, nHigh);
+    if ((nHigh != -1) && (state_.nActiveUniverses != static_cast<uint32_t>(nHigh)))
+    {
+        auto p64 = reinterpret_cast<uint64_t*>(s_SequenceNumbers);
 
-	if ((nHigh != -1) && (m_State.nActiveUniverses != static_cast<uint32_t>(nHigh))) {
-		auto p64 = reinterpret_cast<uint64_t *>(s_SequenceNumbers);
+        for (int32_t i = state_.nActiveUniverses - 1; i >= nLow; i--)
+        {
+            p64[i + 1] = p64[i];
+        }
 
-		for (int32_t i = m_State.nActiveUniverses - 1; i >= nLow; i--) {
-			p64[i + 1] = p64[i];
-		}
+        s_SequenceNumbers[nLow].ip_address = UniverseToMulticastIp(nUniverse);
+        s_SequenceNumbers[nLow].universe = nUniverse;
+        s_SequenceNumbers[nLow].sequence_number = 0;
 
-		s_SequenceNumbers[nLow].nIpAddress = universe_to_multicast_ip(nUniverse);
-		s_SequenceNumbers[nLow].nUniverse = nUniverse;
-		s_SequenceNumbers[nLow].nSequenceNumber = 0;
+        nMulticastIpAddress = s_SequenceNumbers[nLow].ip_address;
 
-		nMulticastIpAddress = s_SequenceNumbers[nLow].nIpAddress;
+        DEBUG_PRINTF(">m< nUniverse=%u, nLow=%d", nUniverse, nLow);
+    }
+    else
+    {
+        s_SequenceNumbers[nMid].ip_address = UniverseToMulticastIp(nUniverse);
+        s_SequenceNumbers[nMid].universe = nUniverse;
 
-		DEBUG_PRINTF(">m< nUniverse=%u, nLow=%d", nUniverse, nLow);
-	} else {
-		s_SequenceNumbers[nMid].nIpAddress = universe_to_multicast_ip(nUniverse);
-		s_SequenceNumbers[nMid].nUniverse = nUniverse;
+        nMulticastIpAddress = s_SequenceNumbers[nMid].ip_address;
 
-		nMulticastIpAddress = s_SequenceNumbers[nMid].nIpAddress;
+        DEBUG_PRINTF(">a< nUniverse=%u, nMid=%d", nUniverse, nMid);
+    }
 
-		DEBUG_PRINTF(">a< nUniverse=%u, nMid=%d", nUniverse, nMid);
-	}
+    state_.nActiveUniverses++;
 
-	m_State.nActiveUniverses++;
-
-	return 0;
+    return 0;
 }
 
-void E131Controller::Print() {
-	puts("sACN E1.31 Controller");
-	printf(" Max Universes : %d\n", static_cast<int>(sizeof(s_SequenceNumbers) / sizeof(s_SequenceNumbers[0])));
-	if (m_State.SynchronizationPacket.nUniverseNumber != 0) {
-		printf(" Synchronization Universe : %u\n", m_State.SynchronizationPacket.nUniverseNumber);
-	} else {
-		puts(" Synchronization is disabled");
-	}
+void E131Controller::Print()
+{
+    puts("sACN E1.31 Controller");
+    printf(" Max Universes : %d\n", static_cast<int>(sizeof(s_SequenceNumbers) / sizeof(s_SequenceNumbers[0])));
+    if (state_.SynchronizationPacket.nUniverseNumber != 0)
+    {
+        printf(" Synchronization Universe : %u\n", state_.SynchronizationPacket.nUniverseNumber);
+    }
+    else
+    {
+        puts(" Synchronization is disabled");
+    }
 }

@@ -2,7 +2,7 @@
  * @file rdmdevicestore.h
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,17 +27,20 @@
 #define RDMDEVICESTORE_H_
 
 #include <cstdint>
-#include <cstddef>
 
-#include "rdmdeviceparams.h"
 #include "configstore.h"
+#include "configurationstore.h"
+ #include "firmware/debug/debug_debug.h"
 
-class RDMDeviceStore {
-public:
-	static void SaveLabel(const char *pLabel, uint8_t nLength) {
-		ConfigStore::Get()->Update(configstore::Store::RDMDEVICE, offsetof(struct rdm::deviceparams::Params, aDeviceRootLabel), pLabel, nLength, rdm::deviceparams::Mask::LABEL);
-		ConfigStore::Get()->Update(configstore::Store::RDMDEVICE, offsetof(struct rdm::deviceparams::Params, nDeviceRootLabelLength), &nLength, sizeof(uint8_t), rdm::deviceparams::Mask::LABEL);
-	}
-};
+namespace rdmdevice_store
+{
+inline void SaveLabel(const char* label, uint32_t length)
+{
+	DEBUG_PRINTF("%.*s", length, label);
 
-#endif /* RDMDEVICESTORE_H_ */
+    ConfigStore::Instance().RdmDeviceUpdateArray(&common::store::RdmDevice::device_root_label, label, length);
+    ConfigStore::Instance().RdmDeviceUpdate(&common::store::RdmDevice::device_root_label_length, static_cast<uint8_t>(length));
+}
+} // namespace rdm_device_store
+
+#endif  // RDMDEVICESTORE_H_

@@ -44,16 +44,16 @@
 
 #include "spi/spi_flash.h"
 #include "spi_flash_internal.h"
+ #include "firmware/debug/debug_debug.h"
 
-#include "debug.h"
-
-struct macronix_spi_flash_params {
-	uint16_t idcode;
-	uint16_t nr_blocks;
-	const char *name;
+struct MacronixSpiFlashParams
+{
+    const uint16_t kIdcode;
+    const uint16_t kNrBlocks;
+    const char* const kName;
 };
 
-static constexpr struct macronix_spi_flash_params macronix_spi_flash_table[] = {
+static constexpr struct MacronixSpiFlashParams kMacronixSpiFlashTable[] = {
 	{
 		0x2013,
 		8,
@@ -91,26 +91,26 @@ static constexpr struct macronix_spi_flash_params macronix_spi_flash_table[] = {
 	},
 };
 
-bool spi_flash_probe_macronix(struct SpiFlashInfo *flash, uint8_t *idcode) {
-	const struct macronix_spi_flash_params *params;
+bool SpiFlashProbeMacronix(struct SpiFlashInfo *flash, uint8_t *idcode) {
+	const struct MacronixSpiFlashParams *params;
 	unsigned int i;
 	uint32_t id = idcode[2] | static_cast<uint32_t>(idcode[1] << 8);
 
-	for (i = 0; i < ARRAY_SIZE(macronix_spi_flash_table); i++) {
-		params = &macronix_spi_flash_table[i];
+	for (i = 0; i < ARRAY_SIZE(kMacronixSpiFlashTable); i++) {
+		params = &kMacronixSpiFlashTable[i];
 
-		if (params->idcode == id) {
+		if (params->kIdcode == id) {
 			break;
 		}
 	}
 
-	if (i == ARRAY_SIZE(macronix_spi_flash_table)) {
+	if (i == ARRAY_SIZE(kMacronixSpiFlashTable)) {
 		DEBUG_PRINTF("Unsupported Macronix ID %04x\n", id);
 		return false;
 	}
 
-	flash->name = params->name;
-	flash->size = 16U * spi_flash::SECTOR_SIZE * params->nr_blocks;
+	flash->name = params->kName;
+	flash->size = 16U * spi::flash::SECTOR_SIZE * params->kNrBlocks;
 
 	/* Clear BP# bits for read-only flash */
 	spi_flash_cmd_write_status(0);

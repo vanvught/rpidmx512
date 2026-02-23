@@ -3,7 +3,7 @@ function reset(sel) {
 	var out = {};
 	out[sel] = d;
 	var payload = JSON.stringify(out);
-	fetch('/json', {
+	fetch('/json/' + sel, {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json'

@@ -10,7 +10,7 @@ async function getJSON(json) {
 
 async function list() {
 	const l = await getJSON('list')
-	document.getElementById("idList").innerHTML = "<li>"+l.list.name+"</li><li>"+l.list.node.type+"</li><li>"+l.list.node.port.type+"</li>"
+	document.getElementById("idList").innerHTML = "<li>"+l.list.name+"</li><li>"+l.list.node.type+"</li><li>"+l.list.node.output.type+"</li>"
 }
 
 async function version() {
@@ -18,13 +18,13 @@ async function version() {
 	document.getElementById("idVersion").innerHTML = "<li>V"+v.version+"</li><li>"+v.build.date+"</li><li>"+v.build.time+"</li><li>"+v.board+"</li>"
 }
 
-function post(s) {
-	return fetch('/json/action', {
+function post(u, j) {
+	return fetch('/json/' + u, {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json'
 		},
-		body: JSON.stringify(s)
+		body: JSON.stringify(j)
 	})
 }
 
@@ -39,7 +39,7 @@ function delet(s) {
 }
 
 function reboot() {
-	post({ reboot: 1 })
+	post('action', { reboot: 1 })
 }
 
 function locate() {
@@ -48,11 +48,11 @@ function locate() {
 		b.classList.remove('inactive')
 		b.classList.add('active')
 		b.innerHTML = 'Locate On'
-		post({ identify: 1 })
+		post('action', { identify: 1 })
 	} else {
 		b.classList.remove('active')
 		b.classList.add('inactive')
 		b.innerHTML = 'Locate Off'
-		post({ identify: 0 })
+		post('action', { identify: 0 })
 	}
 }

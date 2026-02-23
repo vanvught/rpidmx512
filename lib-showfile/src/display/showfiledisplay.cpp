@@ -2,7 +2,7 @@
  * @file showfiledisplay.cpp
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,58 +31,62 @@
 
 #include "display.h"
 
-namespace showfile {
-void display_filename(const char *pFileName, const uint32_t nShow) {
-	assert(pFileName != nullptr);
+namespace showfile
+{
+void DisplayFilename(const char* file_name, [[maybe_unused]] int32_t show)
+{
+    assert(file_name != nullptr);
 
-	if (pFileName[0] != 0) {
-		Display::Get()->TextStatus(pFileName, static_cast<uint8_t>(nShow));
-	} else {
-		Display::Get()->TextStatus("No showfile");
-	}
+    if (file_name[0] != 0)
+    {
+        Display::Get()->TextStatus(file_name);
+    }
+    else
+    {
+        Display::Get()->TextStatus("No showfile");
+    }
 }
 
-void  display_status() {
-	Display::Get()->SetCursorPos(0, 6);
+void DisplayStatus()
+{
+    Display::Get()->SetCursorPos(0, 6);
 
-	switch (ShowFile::Get()->GetStatus()) {
-		case showfile::Status::IDLE:
-			Display::Get()->PutString("Idle     ");
-			break;
-		case showfile::Status::PLAYING:
-			Display::Get()->PutString("Running  ");
-			break;
-		case showfile::Status::STOPPED:
-			Display::Get()->PutString("Stopped  ");
-			break;
-		case showfile::Status::ENDED:
-			Display::Get()->PutString("Ended    ");
-			break;
-		case showfile::Status::RECORDING:
-			Display::Get()->PutString("Recording ");
-			break;
-		case showfile::Status::UNDEFINED:
-		default:
-			Display::Get()->PutString("No Status");
-			break;
-	}
+    switch (ShowFile::Instance().GetStatus())
+    {
+        case showfile::Status::kIdle:
+            Display::Get()->PutString("Idle     ");
+            break;
+        case showfile::Status::kPlaying:
+            Display::Get()->PutString("Running  ");
+            break;
+        case showfile::Status::kStopped:
+            Display::Get()->PutString("Stopped  ");
+            break;
+        case showfile::Status::kEnded:
+            Display::Get()->PutString("Ended    ");
+            break;
+        case showfile::Status::kRecording:
+            Display::Get()->PutString("Recording ");
+            break;
+        case showfile::Status::kUndefined:
+        default:
+            Display::Get()->PutString("No Status");
+            break;
+    }
 
-	Display::Get()->SetCursorPos(11, 7);
+    Display::Get()->SetCursorPos(11, 7);
 
-	if (ShowFile::Get()->IsTFTPEnabled()) {
-		Display::Get()->PutString("[TFTP On]");
-	} else if (ShowFile::Get()->GetDoLoop()) {
-		Display::Get()->PutString("[Looping]");
-	} else {
-		Display::Get()->PutString("         ");
-	}
+    if (ShowFile::Instance().IsTFTPEnabled())
+    {
+        Display::Get()->PutString("[TFTP On]");
+    }
+    else if (ShowFile::Instance().GetDoLoop())
+    {
+        Display::Get()->PutString("[Looping]");
+    }
+    else
+    {
+        Display::Get()->PutString("         ");
+    }
 }
-}  // namespace showfile
-
-
-
-
-
-
-
-
+} // namespace showfile

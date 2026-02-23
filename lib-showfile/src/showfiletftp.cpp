@@ -2,7 +2,7 @@
  * @file showfiletftp.cpp
  *
  */
-/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,38 +28,43 @@
 #include "showfiletftp.h"
 #include "showfile.h"
 
-#include "debug.h"
+ #include "firmware/debug/debug_debug.h"
 
-void ShowFileTFTP::Exit() {
-	DEBUG_ENTRY
+void ShowFileTFTP::Exit()
+{
+    DEBUG_ENTRY();
 
-	ShowFile::Get()->EnableTFTP(false);
+    ShowFile::Instance().EnableTFTP(false);
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-bool ShowFileTFTP::FileOpen(const char *pFileName, [[maybe_unused]] tftp::Mode mode) {
-	DEBUG_PRINTF("pFileName=%s, mode=%d", pFileName, static_cast<int>(mode));
+bool ShowFileTFTP::FileOpen(const char* file_name, [[maybe_unused]] tftp::Mode mode)
+{
+    DEBUG_PRINTF("file_name=%s, mode=%d", file_name, static_cast<int>(mode));
 
-	uint32_t nShowFileNumber;
-	if (!showfile::filename_check(pFileName, nShowFileNumber)) {
-		DEBUG_EXIT
-		return false;
-	}
+    int32_t show_file_number;
+    if (!showfile::FilenameCheck(file_name, show_file_number))
+    {
+        DEBUG_EXIT();
+        return false;
+    }
 
-	m_pFile = fopen(pFileName, "r");
-	return (m_pFile != nullptr);
+    file_ = fopen(file_name, "r");
+    return (file_ != nullptr);
 }
 
-bool ShowFileTFTP::FileCreate(const char *pFileName, [[maybe_unused]] tftp::Mode mode) {
-	DEBUG_PRINTF("pFileName=%s, mode=%d", pFileName, static_cast<int>(mode));
+bool ShowFileTFTP::FileCreate(const char* file_name, [[maybe_unused]] tftp::Mode mode)
+{
+    DEBUG_PRINTF("file_name=%s, mode=%d", file_name, static_cast<int>(mode));
 
-	uint32_t nShowFileNumber;
-	if (!showfile::filename_check(pFileName, nShowFileNumber)) {
-		DEBUG_EXIT
-		return false;
-	}
+    int32_t show_file_number;
+    if (!showfile::FilenameCheck(file_name, show_file_number))
+    {
+        DEBUG_EXIT();
+        return false;
+    }
 
-	m_pFile = fopen(pFileName, "w+");
-	return (m_pFile != nullptr);
+    file_ = fopen(file_name, "w+");
+    return (file_ != nullptr);
 }

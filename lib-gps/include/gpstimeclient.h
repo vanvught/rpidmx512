@@ -2,7 +2,7 @@
  * @file gpstimeclient.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,15 +28,16 @@
 
 #include "gps.h"
 
-class GPSTimeClient: public GPS {
-public:
-	GPSTimeClient(float fUtcOffset, GPSModule module);
+class GPSTimeClient : public GPS
+{
+   public:
+    GPSTimeClient(int32_t utc_offset, gps::Module module);
 
-	void Start();
-	void Run();
+    void Start();
+    void Run();
 
-private:
-	uint32_t m_nWaitPPSMillis;
+   private:
+    uint32_t wait_pps_millis_;
 };
 
-#endif /* GPSTIMECLIENT_H_ */
+#endif  // GPSTIMECLIENT_H_

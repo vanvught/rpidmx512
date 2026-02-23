@@ -106,8 +106,8 @@ static void ARM_Virtual_Timer_IRQHandler() {
 	}
 }
 
-void irq_timer_set(_irq_timers nIrqTimer, thunk_irq_timer_t func) {
-	if (nIrqTimer == IRQ_TIMER_0) {
+void irq_timer_set(_irq_timers irq_timer, thunk_irq_timer_t func) {
+	if (irq_timer == IRQ_TIMER_0) {
 		h3_timer0_func = func;
 
 		if (func != nullptr) {
@@ -124,7 +124,7 @@ void irq_timer_set(_irq_timers nIrqTimer, thunk_irq_timer_t func) {
 		return;
 	}
 
-	if (nIrqTimer == IRQ_TIMER_1) {
+	if (irq_timer == IRQ_TIMER_1) {
 		h3_timer1_func = func;
 
 		if (func != nullptr) {

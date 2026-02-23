@@ -2,7 +2,7 @@
  * @file modestore.h
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,30 +27,26 @@
 #define MODESTORE_H_
 
 #include <cstdint>
-#include <cstddef>
 #include <cassert>
 
-#include "l6470dmxstore.h"
-
 #include "configstore.h"
+#include "configurationstore.h"
 
-#include "debug.h"
+ #include "firmware/debug/debug_debug.h"
 
-class ModeStore {
-public:
-	static void SaveDmxStartAddress(uint32_t nMotorIndex, uint16_t nDmxStartAddress) {
-		DEBUG_ENTRY
+namespace l6470mode_store
+{
+inline void SaveDmxStartAddress([[maybe_unused]] uint32_t motor_index, [[maybe_unused]] uint16_t dmx_start_address)
+{
+    DEBUG_ENTRY();
+    DEBUG_PUTS("TODO");
 
-		assert(nMotorIndex < motorstore::MAX_MOTORS);
+    assert(motor_index < common::store::l6470dmx::kMaxMotors);
 
-		const uint32_t nOffsetModeParms = motorstore::OFFSET(nMotorIndex) + offsetof(struct motorstore::MotorStore, ModeParams);
+//	ConfigStore::Instance().DmxL6470StoreModeIndexed(motor_index, &common::store::l6470dmx::Mode::dmx_start_address, dmx_start_address);
 
-		DEBUG_PRINTF("nOffsetModeParms=%u", nOffsetModeParms);
+    DEBUG_EXIT();
+}
+} // namespace l6470mode_store
 
-		ConfigStore::Get()->Update(configstore::Store::MOTORS, nOffsetModeParms + offsetof(struct modeparams::Params, nDmxStartAddress), &nDmxStartAddress, sizeof(uint16_t), modeparams::Mask::DMX_START_ADDRESS, nOffsetModeParms);
-
-		DEBUG_EXIT
-	}
-};
-
-#endif /* MODESTORE_H_ */
+#endif  // MODESTORE_H_

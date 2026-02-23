@@ -33,8 +33,8 @@
 
 #include "ltcencoder.h"
 #include "ltc.h"
-
-#include "debug.h"
+#include "firmware/debug/debug_dump.h"
+ #include "firmware/debug/debug_debug.h"
 
 
 namespace ltc::encoder {
@@ -81,11 +81,11 @@ struct TTable {
 #else
 	uint32_t LtcEncoder::s_Buffer[ltc::encoder::BUFFER_SIZE];
 #endif
-LtcEncoder *LtcEncoder::s_pThis;
+LtcEncoder *LtcEncoder::s_this;
 
 LtcEncoder::LtcEncoder()  {
-	assert(s_pThis == nullptr);
-	s_pThis = this;
+	assert(s_this == nullptr);
+	s_this = this;
 
 	auto *p = reinterpret_cast<struct ltc::encoder::FormatTemplate *>(m_LtcBits);
 
@@ -180,7 +180,7 @@ uint32_t LtcEncoder::GetBufferSize() {
 }
 
 void LtcEncoder::Dump() {
-	debug_dump(m_LtcBits, sizeof(struct ltc::encoder::FormatTemplate));
+	debug::Dump(m_LtcBits, sizeof(struct ltc::encoder::FormatTemplate));
 
 	puts("");
 	printf("0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3 3 3 3 3 3 3 3 3 4 4 4 4 4 4 4 4 4 4 5 5 5 5 5 5 5 5 5 5 6 6 6 6 6 6 6 6 6 6 7 7 7 7 7 7 7 7 7 7\n");
@@ -211,9 +211,9 @@ void LtcEncoder::Dump() {
 
 void LtcEncoder::DumpBuffer() {
 #if defined (CONFIG_LTC_USE_DAC)
-	debug_dump(s_Buffer, static_cast<uint16_t>(ltc::encoder::BUFFER_SIZE * 2));
+	debug::Dump(s_Buffer, static_cast<uint16_t>(ltc::encoder::BUFFER_SIZE * 2));
 #else
-	debug_dump(s_Buffer, static_cast<uint16_t>(ltc::encoder::BUFFER_SIZE * 4));
+	debug::Dump(s_Buffer, static_cast<uint16_t>(ltc::encoder::BUFFER_SIZE * 4));
 #endif
 }
 
@@ -230,7 +230,7 @@ static bool get_parity(uint32_t nValue) {
 	return static_cast<bool>((0x6996 >> nValue) & 1);
 }
 
-static void set_polarity(const uint32_t nType, uint8_t *pLtcBits) {
+static void set_polarity(const uint32_t type, uint8_t *pLtcBits) {
 	/* "Polarity correction bit" (bit 59 at 25 frame/s, bit 27 at other rates):
 	 * this bit is chosen to provide an even number of 0 bits in the whole frame, including the sync code.
 	 * (Since the frame is an even number of bits long, this implies an even number of 1 bits, and is thus an even parity bit.
@@ -240,7 +240,7 @@ static void set_polarity(const uint32_t nType, uint8_t *pLtcBits) {
 
 	auto *p = reinterpret_cast<struct ltc::encoder::FormatTemplate *>(pLtcBits);
 
-	if (nType == static_cast<uint8_t>(ltc::Type::EBU)) {
+	if (type == static_cast<uint8_t>(ltc::Type::EBU)) {
 		auto b = p->Format.bytes[7];
 		b &= static_cast<uint8_t>(~(1U << 4));
 		p->Format.bytes[7] = b;
@@ -253,7 +253,7 @@ static void set_polarity(const uint32_t nType, uint8_t *pLtcBits) {
 	const auto bParityOnes = get_parity(p->Format.words[0]) ^ get_parity(p->Format.words[1]);
 
 	if (!bParityOnes) {
-		if (nType == static_cast<uint8_t>(ltc::Type::EBU)) {
+		if (type == static_cast<uint8_t>(ltc::Type::EBU)) {
 			auto b = p->Format.bytes[7];
 			b |= (1 << 4);
 			p->Format.bytes[7] = b;
@@ -265,12 +265,12 @@ static void set_polarity(const uint32_t nType, uint8_t *pLtcBits) {
 	}
 }
 
-static uint8_t reverse_bits(const uint8_t nBits) {
+static uint8_t reverse_bits(const uint8_t bits) {
 #if defined (PLATFORM_LTC_ARM)
-	return (static_cast<uint8_t>(__RBIT(static_cast<uint32_t>(nBits)) >> 24));
+	return (static_cast<uint8_t>(__RBIT(static_cast<uint32_t>(bits)) >> 24));
 #else
 	// http://graphics.stanford.edu/~seander/bithacks.html#ReverseByteWith64Bits
-	const uint8_t nResult = ((nBits * 0x80200802ULL) & 0x0884422110ULL) * 0x0101010101ULL >> 32;
+	const uint8_t nResult = ((bits * 0x80200802ULL) & 0x0884422110ULL) * 0x0101010101ULL >> 32;
 	return nResult;
 #endif
 }
@@ -278,34 +278,34 @@ static uint8_t reverse_bits(const uint8_t nBits) {
 void LtcEncoder::SetTimeCode(const struct ltc::TimeCode *pLtcTimeCode, bool nExternalClock) {
 	auto *p = reinterpret_cast<struct ltc::encoder::FormatTemplate *>(m_LtcBits);
 
-	uint8_t nTens = pLtcTimeCode->nFrames / 10U;
+	uint8_t nTens = pLtcTimeCode->frames / 10U;
 
-	p->Format.bytes[0] = reverse_bits(static_cast<uint8_t>(pLtcTimeCode->nFrames - (10U * nTens)));
+	p->Format.bytes[0] = reverse_bits(static_cast<uint8_t>(pLtcTimeCode->frames - (10U * nTens)));
 	p->Format.bytes[1] = reverse_bits(nTens);
 
-	nTens = pLtcTimeCode->nSeconds / 10U;
+	nTens = pLtcTimeCode->seconds / 10U;
 
-	p->Format.bytes[2] = reverse_bits(static_cast<uint8_t>(pLtcTimeCode->nSeconds - (10U * nTens)));
+	p->Format.bytes[2] = reverse_bits(static_cast<uint8_t>(pLtcTimeCode->seconds - (10U * nTens)));
 	p->Format.bytes[3] = reverse_bits(nTens);
 
-	nTens = pLtcTimeCode->nMinutes / 10U;
+	nTens = pLtcTimeCode->minutes / 10U;
 
-	p->Format.bytes[4] = reverse_bits(static_cast<uint8_t>(pLtcTimeCode->nMinutes - (10U * nTens)));
+	p->Format.bytes[4] = reverse_bits(static_cast<uint8_t>(pLtcTimeCode->minutes - (10U * nTens)));
 	p->Format.bytes[5] = reverse_bits(nTens);
 
-	nTens = pLtcTimeCode->nHours / 10U;
+	nTens = pLtcTimeCode->hours / 10U;
 
-	p->Format.bytes[6] = reverse_bits(static_cast<uint8_t>(pLtcTimeCode->nHours - (10U * nTens)));
+	p->Format.bytes[6] = reverse_bits(static_cast<uint8_t>(pLtcTimeCode->hours - (10U * nTens)));
 	p->Format.bytes[7] = reverse_bits(nTens);
 
-	m_nType = pLtcTimeCode->nType & 0x3;
+	m_nType = pLtcTimeCode->type & 0x3;
 
 	/* Bit 10 is set to 1 if drop frame numbering is in use;
 	 * frame numbers 0 and 1 are skipped during the first second of every minute, except multiples of 10 minutes.
 	 * This converts 30 frame/second time code to the 29.97 frame/second NTSC standard.
 	 */
 
-	if (pLtcTimeCode->nType == static_cast<uint8_t>(ltc::Type::DF)) {
+	if (pLtcTimeCode->type == static_cast<uint8_t>(ltc::Type::DF)) {
 		p->Format.bytes[1] |= (1U << 5);
 	}
 
@@ -318,6 +318,6 @@ void LtcEncoder::SetTimeCode(const struct ltc::TimeCode *pLtcTimeCode, bool nExt
 		p->Format.bytes[7] |= (1U << 5);
 	}
 
-	set_polarity(pLtcTimeCode->nType, m_LtcBits);
+	set_polarity(pLtcTimeCode->type, m_LtcBits);
 }
 

@@ -2,7 +2,7 @@
  * @file spilcd.h
  *
  */
-/* Copyright (C) 2022-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2022-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,122 +27,125 @@
 #define SPI_SPILCD_H_
 
 #include "spi/config.h"
-
 #include "hal_spi.h"
-
-#include "debug.h"
+ #include "firmware/debug/debug_debug.h"
 
 #if defined CONFIG_LCD_SPI_BITBANG
-# define SPI_PREFIX(x)	FUNC_PREFIX(bitbang_##x);
+#define SPI_PREFIX(x) FUNC_PREFIX(Bitbang##x);
 #else
-# define SPI_PREFIX(x)	FUNC_PREFIX(x);
+#define SPI_PREFIX(x) FUNC_PREFIX(x);
 #endif
 
-class SpiLcd {
-public:
-	SpiLcd(uint32_t nCS = 0) : m_nCS(nCS) {
-		DEBUG_ENTRY
-		DEBUG_PRINTF("nCS=%u", nCS);
+class SpiLcd
+{
+   public:
+    explicit SpiLcd(uint32_t cs = 0) : cs_(cs)
+    {
+        DEBUG_ENTRY();
+        DEBUG_PRINTF("cs=%u", cs);
 
-		SPI_PREFIX(spi_begin());
-		SPI_PREFIX(spi_chipSelect(SPI_CS_NONE));
-		SPI_PREFIX(spi_set_speed_hz(20000000));
-		SPI_PREFIX(spi_setDataMode(SPI_MODE0));
+        SPI_PREFIX(SpiBegin());
+        SPI_PREFIX(SpiChipSelect(SPI_CS_NONE));
+        SPI_PREFIX(SpiSetSpeedHz(20000000));
+        SPI_PREFIX(SpiSetDataMode(SPI_MODE0));
 
-#if defined (SPI_LCD_RST_GPIO)
-		FUNC_PREFIX(gpio_fsel(SPI_LCD_RST_GPIO, GPIO_FSEL_OUTPUT));
+#if defined(SPI_LCD_RST_GPIO)
+        FUNC_PREFIX(GpioFsel(SPI_LCD_RST_GPIO, GPIO_FSEL_OUTPUT));
 #endif
-		FUNC_PREFIX(gpio_fsel(SPI_LCD_DC_GPIO, GPIO_FSEL_OUTPUT));
-		FUNC_PREFIX(gpio_fsel(SPI_LCD_BL_GPIO, GPIO_FSEL_OUTPUT));
+        FUNC_PREFIX(GpioFsel(SPI_LCD_DC_GPIO, GPIO_FSEL_OUTPUT));
+        FUNC_PREFIX(GpioFsel(SPI_LCD_BL_GPIO, GPIO_FSEL_OUTPUT));
 #if defined(SPI_LCD_HAVE_CS_GPIO)
-		FUNC_PREFIX(gpio_fsel(m_nCS, GPIO_FSEL_OUTPUT));
+        FUNC_PREFIX(GpioFsel(cs_, GPIO_FSEL_OUTPUT));
 #endif
 
-		DEBUG_EXIT
-	}
+        DEBUG_EXIT();
+    }
 
-	void HardwareReset() {
-#if defined (SPI_LCD_RST_GPIO)
-		udelay(1000 * 200);
-		FUNC_PREFIX(gpio_clr(SPI_LCD_RST_GPIO));
-		udelay(1000 * 200);
-		FUNC_PREFIX(gpio_set(SPI_LCD_RST_GPIO));
-		udelay(1000 * 200);
+    void HardwareReset()
+    {
+#if defined(SPI_LCD_RST_GPIO)
+        udelay(1000 * 200);
+        FUNC_PREFIX(GpioClr(SPI_LCD_RST_GPIO));
+        udelay(1000 * 200);
+        FUNC_PREFIX(GpioSet(SPI_LCD_RST_GPIO));
+        udelay(1000 * 200);
 #endif
-	}
+    }
 
-	void SetCS() {
+    void SetCS()
+    {
 #if defined(SPI_LCD_HAVE_CS_GPIO)
-		FUNC_PREFIX(gpio_set(m_nCS));
+        FUNC_PREFIX(GpioSet(cs_));
 #endif
-	}
+    }
 
-	void ClearCS() {
+    void ClearCS()
+    {
 #if defined(SPI_LCD_HAVE_CS_GPIO)
-		FUNC_PREFIX(gpio_clr(m_nCS));
+        FUNC_PREFIX(GpioClr(cs_));
 #endif
-	}
+    }
 
-	void SetDC() {
-		FUNC_PREFIX(gpio_set(SPI_LCD_DC_GPIO));
-	}
+    void SetDC() { FUNC_PREFIX(GpioSet(SPI_LCD_DC_GPIO)); }
 
-	void ClearDC() {
-		FUNC_PREFIX(gpio_clr(SPI_LCD_DC_GPIO));
-	}
+    void ClearDC() { FUNC_PREFIX(GpioClr(SPI_LCD_DC_GPIO)); }
 
-	void WriteCommand(uint8_t nData) {
-		ClearCS();
-		ClearDC();
-		SPI_PREFIX(spi_writenb(reinterpret_cast<char *>(&nData), 1));
-		SetCS();
-	}
+    void WriteCommand(uint8_t data)
+    {
+        ClearCS();
+        ClearDC();
+        SPI_PREFIX(SpiWritenb(reinterpret_cast<char*>(&data), 1));
+        SetCS();
+    }
 
-	void WriteData(const uint8_t *pData, const uint32_t nLength) {
-		ClearCS();
-		SetDC();
-		SPI_PREFIX(spi_writenb(reinterpret_cast<const char *>(pData), nLength));
-		SetCS();
-	}
+    void WriteData(const uint8_t* data, uint32_t length)
+    {
+        ClearCS();
+        SetDC();
+        SPI_PREFIX(SpiWritenb(reinterpret_cast<const char*>(data), length));
+        SetCS();
+    }
 
-	void WriteCommand(const uint8_t *pData, const uint32_t nLength) {
-		auto *p = pData;
-		WriteCommand(p++[0]);
-		if (nLength != 0)
-			WriteData(p, nLength);
-	}
+    void WriteCommand(const uint8_t* data, uint32_t length)
+    {
+        auto* p = data;
+        WriteCommand(p++[0]);
+        if (length != 0) WriteData(p, length);
+    }
 
-	void WriteDataByte(uint8_t nData) {
-		ClearCS();
-		SetDC();
-		SPI_PREFIX(spi_writenb(reinterpret_cast<char *>(&nData), 1));
-		SetCS();
-	}
+    void WriteDataByte(uint8_t data)
+    {
+        ClearCS();
+        SetDC();
+        SPI_PREFIX(SpiWritenb(reinterpret_cast<char*>(&data), 1));
+        SetCS();
+    }
 
-	void WriteDataWord(uint16_t nData) {
-		ClearCS();
-		SetDC();
-		SPI_PREFIX(spi_write(nData));
-		SetCS();
-	}
+    void WriteDataWord(uint16_t data)
+    {
+        ClearCS();
+        SetDC();
+        SPI_PREFIX(SpiWrite(data));
+        SetCS();
+    }
 
-	void WriteDataStart(uint8_t *pData, const uint32_t nLength) {
-		ClearCS();
-		SetDC();
-		SPI_PREFIX(spi_writenb(reinterpret_cast<char *>(pData), nLength));
-	}
+    void WriteDataStart(uint8_t* data, uint32_t length)
+    {
+        ClearCS();
+        SetDC();
+        SPI_PREFIX(SpiWritenb(reinterpret_cast<char*>(data), length));
+    }
 
-	void WriteDataContinue(uint8_t *pData, const uint32_t nLength) {
-		SPI_PREFIX(spi_writenb(reinterpret_cast<char *>(pData), nLength));
-	}
+    void WriteDataContinue(uint8_t* data, uint32_t length) { SPI_PREFIX(SpiWritenb(reinterpret_cast<char*>(data), length)); }
 
-	void WriteDataEnd(uint8_t *pData, const uint32_t nLength) {
-		SPI_PREFIX(spi_writenb(reinterpret_cast<char *>(pData), nLength));
-		SetCS();
-	}
+    void WriteDataEnd(uint8_t* data, uint32_t length)
+    {
+        SPI_PREFIX(SpiWritenb(reinterpret_cast<char*>(data), length));
+        SetCS();
+    }
 
-private:
-	uint32_t m_nCS;
+   private:
+    uint32_t cs_;
 };
 
-#endif /* SPI_SPILCD_H_ */
+#endif  // SPI_SPILCD_H_

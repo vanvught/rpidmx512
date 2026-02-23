@@ -2,7 +2,7 @@
  * @file l6470dmxmode.h
  *
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,31 +28,63 @@
 
 #include <cstdint>
 
-enum TL6470DmxModes {
-	L6470DMXMODE0 = 0,
-	L6470DMXMODE1,
-	L6470DMXMODE2,
-	L6470DMXMODE3,
-	L6470DMXMODE4,
-	L6470DMXMODE5,
-	L6470DMXMODE6,
-	L6470DMXMODE_UNDEFINED
+ #include "firmware/debug/debug_debug.h"
+
+enum TL6470DmxModes
+{
+    L6470DMXMODE0 = 0,
+    L6470DMXMODE1,
+    L6470DMXMODE2,
+    L6470DMXMODE3,
+    L6470DMXMODE4,
+    L6470DMXMODE5,
+    L6470DMXMODE6,
+    L6470DMXMODE_UNDEFINED
 };
 
-class L6470DmxMode {
-public:
-	virtual ~L6470DmxMode();
+class L6470DmxMode
+{
+   public:
+    virtual ~L6470DmxMode()
+    {
+        DEBUG_ENTRY();
 
-	virtual void InitSwitch();
-	virtual void InitPos();
+        DEBUG_EXIT();
+    }
 
-	virtual void Start()= 0;
-	virtual void Stop()= 0;
+    virtual void InitSwitch()
+    {
+        DEBUG_ENTRY();
 
-	virtual void HandleBusy();
-	virtual bool BusyCheck();
+        DEBUG_EXIT();
+    }
 
-	virtual void Data(const uint8_t *)= 0;
+    virtual void InitPos()
+    {
+        DEBUG_ENTRY();
+
+        DEBUG_EXIT();
+    }
+
+    virtual void Start() = 0;
+    virtual void Stop() = 0;
+
+    virtual void HandleBusy()
+    {
+        DEBUG_ENTRY();
+
+        DEBUG_EXIT();
+    }
+
+    virtual bool BusyCheck()
+    {
+        DEBUG_ENTRY();
+
+        DEBUG_EXIT();
+        return false;
+    }
+
+    virtual void Data(const uint8_t*) = 0;
 };
 
-#endif /* L6470DMXMODE_H_ */
+#endif  // L6470DMXMODE_H_

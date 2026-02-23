@@ -48,7 +48,7 @@ RDMSubDeviceBwLcd::RDMSubDeviceBwLcd(uint16_t nDmxStartAddress, char nChipSselec
 	SetPersonalities(s_RDMPersonalities, 3);
 
 	memset(m_aText, ' ', sizeof(m_aText));
-	memset(m_Data, 0, sizeof(m_Data));
+	memset(data_, 0, sizeof(data_));
 }
 
 bool RDMSubDeviceBwLcd::Initialize() {
@@ -95,18 +95,18 @@ void RDMSubDeviceBwLcd::Data(const uint8_t* pData, uint32_t nLength) {
 
 	const auto* p = &pData[nDmxStartAddress-1];
 
-	for (uint32_t i = 0; (i < sizeof(m_Data)) && (i < nLength); i++) {
-		if (m_Data[i] != p[i]) {
+	for (uint32_t i = 0; (i < sizeof(data_)) && (i < nLength); i++) {
+		if (data_[i] != p[i]) {
 			IsDataChanged = true;
 		}
-		m_Data[i] = p[i];
+		data_[i] = p[i];
 	}
 
 	if (!IsDataChanged) {
 		return;
 	}
 
-	m_nLength = nLength;
+	length_ = nLength;
 
 	switch (GetPersonalityCurrent()) {
 		case 1:
@@ -236,13 +236,13 @@ void RDMSubDeviceBwLcd::UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent) {
 		if (m_aText[2] != ' ') {
 			switch (GetPersonalityCurrent()) {
 			case 1:
-				DataHex(m_Data, m_nLength);
+				DataHex(data_, length_);
 				break;
 			case 2:
-				DataDec(m_Data, m_nLength);
+				DataDec(data_, length_);
 				break;
 			case 3:
-				DataPct(m_Data, m_nLength);
+				DataPct(data_, length_);
 				break;
 			default:
 				break;

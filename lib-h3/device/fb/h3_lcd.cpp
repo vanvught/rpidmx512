@@ -1,5 +1,5 @@
 /**
- * @file h3_lcdc.cpp
+ * @file h3_lcd.cpp
  *
  */
 /* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -63,11 +63,11 @@
  * The LCD0 module is used for HDMI
  */
 
-void h3_lcdc_enable(__attribute__((unused)) const uint32_t depth) {
+void h3_lcdc_enable(__attribute__((unused)) uint32_t depth) {
 	H3_LCD0->GCTL |= LCDC_CTRL_TCON_ENABLE;
 }
 
-static uint32_t lcdc_get_clk_delay(const struct display_timing *mode, const uint32_t tcon) {
+static uint32_t LcdcGetClkDelay(const struct display_timing *mode, uint32_t tcon) {
 	uint32_t delay = mode->vfront_porch.typ + mode->vsync_len.typ + mode->vback_porch.typ;
 
 	if (mode->flags & DISPLAY_FLAGS_INTERLACED) {
@@ -82,7 +82,7 @@ static uint32_t lcdc_get_clk_delay(const struct display_timing *mode, const uint
 }
 
 void h3_lcdc_tcon1_mode_set(const struct display_timing *mode) {
-	const auto clk_delay = lcdc_get_clk_delay(mode, 1);
+	const auto clk_delay = LcdcGetClkDelay(mode, 1);
 
 	H3_LCD0->TCON1_CTL = LCDC_TCON1_CTRL_ENABLE | ((mode->flags & DISPLAY_FLAGS_INTERLACED) ? LCDC_TCON1_CTRL_INTERLACE_ENABLE : 0) | LCDC_TCON1_CTRL_CLK_DELAY(clk_delay);
 

@@ -1,8 +1,8 @@
 /**
- * @file oscserver.cpp
+ * @file ltcoscserver.cpp
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,543 +23,630 @@
  * THE SOFTWARE.
  */
 
-#if defined (DEBUG_LTCOSCSERVER)
-# undef NDEBUG
+#if defined(DEBUG_LTCOSCSERVER)
+#undef NDEBUG
 #endif
 
 #include <cstdint>
 #include <cstring>
-#include <cstdio>
-#include <cassert>
 
-#include "ltcoscserver.h"
-
-#if !defined (LTC_NO_DISPLAY_RGB)
-# include "ltcdisplayrgb.h"
+#include "../include/ltcoscserver.h"
+#if !defined(LTC_NO_DISPLAY_RGB)
+#include "ltcdisplayrgb.h"
 #endif
-
 #include "arm/ltcmidisystemrealtime.h"
 #include "arm/ltcgenerator.h"
 #include "arm/ltcoutputs.h"
 #include "arm/systimereader.h"
-
 #include "tcnetdisplay.h"
 #include "tcnet.h"
-#include "midi.h"
 #include "osc.h"
 #include "oscsimplemessage.h"
+ #include "firmware/debug/debug_debug.h"
 
-#include "network.h"
-
-#include "debug.h"
-
-namespace cmd {
-static constexpr char START[] = "start";
-static constexpr char STOP[] = "stop";
-static constexpr char RESUME[] = "resume";
-static constexpr char RATE[] = "rate";
-static constexpr char SET[] = "/set/";
-static constexpr char GOTO[] = "goto";
-static constexpr char DIRECTION[] = "direction";
-static constexpr char PITCH[] = "pitch";
-static constexpr char FORWARD[] = "forward";
-static constexpr char BACKWARD[] = "backward";
+namespace cmd
+{
+static constexpr char kStart[] = "start";
+static constexpr char kStop[] = "stop";
+static constexpr char kResume[] = "resume";
+static constexpr char kRate[] = "rate";
+static constexpr char kSet[] = "/set/";
+static constexpr char kGoto[] = "goto";
+static constexpr char kDirection[] = "direction";
+static constexpr char kPitch[] = "pitch";
+static constexpr char kForward[] = "forward";
+static constexpr char kBackward[] = "backward";
 } // namespace cmd
 
-namespace length {
-static constexpr uint32_t START = sizeof(cmd::START) - 1;
-static constexpr uint32_t STOP = sizeof(cmd::STOP) - 1;
-static constexpr uint32_t RESUME = sizeof(cmd::RESUME) - 1;
-static constexpr uint32_t RATE = sizeof(cmd::RATE) - 1;
-static constexpr uint32_t SET = sizeof(cmd::SET) - 1;
-static constexpr uint32_t GOTO = sizeof(cmd::GOTO) - 1;
-static constexpr uint32_t DIRECTION = sizeof(cmd::DIRECTION) - 1;
-static constexpr uint32_t PITCH = sizeof(cmd::PITCH) - 1;
-static constexpr uint32_t FORWARD = sizeof(cmd::FORWARD) - 1;
-static constexpr uint32_t BACKWARD = sizeof(cmd::BACKWARD) - 1;
+namespace length
+{
+static constexpr uint32_t kStart = sizeof(cmd::kStart) - 1;
+static constexpr uint32_t kStop = sizeof(cmd::kStop) - 1;
+static constexpr uint32_t kResume = sizeof(cmd::kResume) - 1;
+static constexpr uint32_t kRate = sizeof(cmd::kRate) - 1;
+static constexpr uint32_t kSet = sizeof(cmd::kSet) - 1;
+static constexpr uint32_t kGoto = sizeof(cmd::kGoto) - 1;
+static constexpr uint32_t kDirection = sizeof(cmd::kDirection) - 1;
+static constexpr uint32_t kPitch = sizeof(cmd::kPitch) - 1;
+static constexpr uint32_t kForward = sizeof(cmd::kForward) - 1;
+static constexpr uint32_t kBackward = sizeof(cmd::kBackward) - 1;
 } // namespace length
 
-namespace tcnet {
-namespace cmd {
-static constexpr char PATH[] = "tcnet/";
-static constexpr char LAYER[] = "layer/";
-static constexpr char TYPE[] = "type";
-static constexpr char TIMECODE[] = "timecode";
+namespace tcnet
+{
+namespace cmd
+{
+static constexpr char kPath[] = "tcnet/";
+static constexpr char kLayer[] = "layer/";
+static constexpr char kType[] = "type";
+static constexpr char kTimecode[] = "timecode";
 } // namespace cmd
-namespace length {
-static constexpr auto PATH = sizeof(cmd::PATH) - 1;
-static constexpr auto LAYER = sizeof(cmd::LAYER) - 1;
-static constexpr auto TYPE = sizeof(cmd::TYPE) - 1;
-static constexpr auto TIMECODE = sizeof(cmd::TIMECODE) - 1;
+namespace length
+{
+static constexpr auto kPath = sizeof(cmd::kPath) - 1;
+static constexpr auto kLayer = sizeof(cmd::kLayer) - 1;
+static constexpr auto kType = sizeof(cmd::kType) - 1;
+static constexpr auto kTimecode = sizeof(cmd::kTimecode) - 1;
 } // namespace length
 } // namespace tcnet
 
-namespace midi {
-namespace cmd {
-static constexpr char PATH[] = "midi/";
-static constexpr char START[] = "start";
-static constexpr char STOP[] = "stop";
-static constexpr char CONTINUE[] = "continue";
-static constexpr char BPM[] = "bpm";
+namespace midi
+{
+namespace cmd
+{
+static constexpr char kPath[] = "midi/";
+static constexpr char kStart[] = "start";
+static constexpr char kStop[] = "stop";
+static constexpr char kContinue[] = "continue";
+static constexpr char kBpm[] = "bpm";
 } // namespace cmd
-namespace length {
-static constexpr uint32_t PATH = sizeof(cmd::PATH) - 1;
-static constexpr uint32_t START = sizeof(cmd::START) - 1;
-static constexpr uint32_t STOP = sizeof(cmd::STOP) - 1;
-static constexpr uint32_t RESUME = sizeof(cmd::CONTINUE) - 1;
-static constexpr uint32_t BPM = sizeof(cmd::BPM) - 1;
+namespace length
+{
+static constexpr uint32_t kPath = sizeof(cmd::kPath) - 1;
+static constexpr uint32_t kStart = sizeof(cmd::kStart) - 1;
+static constexpr uint32_t kStop = sizeof(cmd::kStop) - 1;
+static constexpr uint32_t kResume = sizeof(cmd::kContinue) - 1;
+static constexpr uint32_t kBpm = sizeof(cmd::kBpm) - 1;
 } // namespace length
 } // namespace midi
 
-namespace ws28xx {
-namespace cmd {
-static constexpr char PATH[] = "ws28xx/";
-static constexpr char MASTER[] = "master";
-static constexpr char MESSAGE[] = "message";
-static constexpr char INFO[] = "info";
-}  // namespace cmd
-namespace length {
-static constexpr uint32_t PATH = sizeof(cmd::PATH) - 1;
-static constexpr uint32_t MASTER = sizeof(cmd::MASTER) - 1;
-static constexpr uint32_t MESSAGE = sizeof(cmd::MESSAGE) - 1;
-static constexpr uint32_t INFO = sizeof(cmd::INFO) - 1;
-} // namespace length
-namespace rgb {
-namespace cmd {
-static constexpr char PATH[] = "rgb/";
-static constexpr char TIME[] = "time";
-static constexpr char COLON[] = "colon";
-static constexpr char MESSAGE[] = "message";
-static constexpr char FPS[] = "fps";
-static constexpr char INFO[] = "info";
+namespace pixel
+{
+namespace cmd
+{
+static constexpr char kPath[] = "pixel/";
+static constexpr char kMaster[] = "master";
+static constexpr char kMessage[] = "message";
+static constexpr char kInfo[] = "info";
 } // namespace cmd
-namespace length {
-static constexpr uint32_t PATH = sizeof(cmd::PATH) - 1;
-static constexpr uint32_t TIME = sizeof(cmd::TIME) - 1;
-static constexpr uint32_t COLON = sizeof(cmd::COLON) - 1;
-static constexpr uint32_t MESSAGE = sizeof(cmd::MESSAGE) - 1;
-static constexpr uint32_t FPS = sizeof(cmd::FPS) - 1;
-static constexpr uint32_t INFO = sizeof(cmd::INFO) - 1;
+namespace length
+{
+static constexpr uint32_t kPath = sizeof(cmd::kPath) - 1;
+static constexpr uint32_t kMaster = sizeof(cmd::kMaster) - 1;
+static constexpr uint32_t kMessage = sizeof(cmd::kMessage) - 1;
+static constexpr uint32_t kInfo = sizeof(cmd::kInfo) - 1;
+} // namespace length
+namespace rgb
+{
+namespace cmd
+{
+static constexpr char kPath[] = "rgb/";
+static constexpr char kTime[] = "time";
+static constexpr char kColon[] = "colon";
+static constexpr char kMessage[] = "message";
+static constexpr char kFps[] = "fps";
+static constexpr char kInfo[] = "info";
+} // namespace cmd
+namespace length
+{
+static constexpr uint32_t kPath = sizeof(cmd::kPath) - 1;
+static constexpr uint32_t kTime = sizeof(cmd::kTime) - 1;
+static constexpr uint32_t kColon = sizeof(cmd::kColon) - 1;
+static constexpr uint32_t kMessage = sizeof(cmd::kMessage) - 1;
+static constexpr uint32_t kFps = sizeof(cmd::kFps) - 1;
+static constexpr uint32_t kInfo = sizeof(cmd::kInfo) - 1;
 } // namespace length
 } // namespace rgb
-} // namespace ws28xx
+} // namespace pixel
 
 // "hh/mm/ss/ff" -> length = 11
-static constexpr uint32_t VALUE_LENGTH = 11;
-static constexpr uint32_t FPS_VALUE_LENGTH = 2;
+static constexpr uint32_t kValueLength = 11;
+static constexpr uint32_t kFpsValueLength = 2;
 
-void LtcOscServer::Input(const uint8_t *pData, uint32_t nSize, [[maybe_unused]] uint32_t nFromIp, [[maybe_unused]] uint16_t nFromPort) {
-	if (nSize <= 4) {
-		return;
-	}
+void LtcOscServer::Input(const uint8_t* data, uint32_t size, [[maybe_unused]] uint32_t from_ip, [[maybe_unused]] uint16_t from_port)
+{
+    if (size <= 4)
+    {
+        return;
+    }
 
-	const auto *pDataChar = reinterpret_cast<const char *>(pData);
+    const auto* data_char = reinterpret_cast<const char*>(data);
 
-	if (osc::is_match(pDataChar, m_aPath)) {
-		const auto nCommandLength = strlen(pDataChar);
+    if (osc::is_match(data_char, path_))
+    {
+        const auto kCommandLength = strlen(data_char);
 
-		DEBUG_PRINTF("[%s]:%d %d:|%s|", pDataChar, static_cast<int>(nCommandLength), m_nPathLength, &pDataChar[m_nPathLength]);
+        DEBUG_PRINTF("[%s]:%d %d:|%s|", data_char, static_cast<int>(kCommandLength), path_length_, &data_char[path_length_]);
 
-		// */pitch f
-		if (memcmp(&pDataChar[m_nPathLength], cmd::PITCH, length::PITCH) == 0) {
-			OscSimpleMessage Msg(pData, nSize);
+        // */pitch f
+        if (memcmp(&data_char[path_length_], cmd::kPitch, length::kPitch) == 0)
+        {
+            OscSimpleMessage msg(data, size);
 
-			if (Msg.GetType(0) != osc::type::FLOAT) {
-				return;
-			}
+            if (msg.GetType(0) != osc::type::FLOAT)
+            {
+                return;
+            }
 
-			const auto fValue = Msg.GetFloat(0);
+            const auto kValue = msg.GetFloat(0);
 
-			DEBUG_PRINTF("fValue=%f", fValue);
+            DEBUG_PRINTF("fValue=%f", kValue);
 
-			LtcGenerator::Get()->ActionSetPitch(fValue);
+            LtcGenerator::Get()->ActionSetPitch(kValue);
 
-			DEBUG_PUTS("ActionSetPitch");
-			return;
-		}
-		// */start*
-		if (memcmp(&pDataChar[m_nPathLength], cmd::START, length::START) == 0) {
-			if ((nCommandLength == (m_nPathLength + length::START)) ) {
+            DEBUG_PUTS("ActionSetPitch");
+            return;
+        }
+        // */start*
+        if (memcmp(&data_char[path_length_], cmd::kStart, length::kStart) == 0)
+        {
+            if ((kCommandLength == (path_length_ + length::kStart)))
+            {
+                LtcGenerator::Get()->ActionStart();
+                SystimeReader::Get()->ActionStart();
 
-				LtcGenerator::Get()->ActionStart();
-				SystimeReader::Get()->ActionStart();
+                DEBUG_PUTS("ActionStart");
+            }
+            else if ((kCommandLength == (path_length_ + length::kStart + 1 + kValueLength)))
+            {
+                if (data_char[path_length_ + length::kStart] == '/')
+                {
+                    const auto kOffset = path_length_ + length::kStart + 1;
 
-				DEBUG_PUTS("ActionStart");
-			} else if ((nCommandLength == (m_nPathLength + length::START + 1 + VALUE_LENGTH))) {
-				if (pDataChar[m_nPathLength + length::START] == '/') {
-					const auto nOffset = m_nPathLength + length::START + 1;
+                    char timecode[kValueLength];
+                    memcpy(timecode, &data_char[kOffset], kValueLength);
 
-					char timeCode[VALUE_LENGTH];
-					memcpy(timeCode, &pDataChar[nOffset], VALUE_LENGTH);
+                    timecode[2] = ':';
+                    timecode[5] = ':';
+                    timecode[8] = ':';
 
-					timeCode[2] = ':';
-					timeCode[5] = ':';
-					timeCode[8] = ':';
+                    LtcGenerator::Get()->ActionSetStart(timecode);
+                    LtcGenerator::Get()->ActionStop();
+                    LtcGenerator::Get()->ActionStart();
 
-					LtcGenerator::Get()->ActionSetStart(timeCode);
-					LtcGenerator::Get()->ActionStop();
-					LtcGenerator::Get()->ActionStart();
+                    DEBUG_PRINTF("%.*s", kValueLength, timecode);
+                }
+            }
+            else if ((kCommandLength == (path_length_ + length::kStart + length::kSet + kValueLength)))
+            {
+                if (memcmp(&data_char[path_length_ + length::kStart], cmd::kSet, length::kSet) == 0)
+                {
+                    const auto kOffset = path_length_ + length::kStart + length::kSet;
 
-					DEBUG_PRINTF("%.*s", VALUE_LENGTH, timeCode);
-				}
-			} else if ((nCommandLength == (m_nPathLength + length::START + length::SET + VALUE_LENGTH))) {
-				if (memcmp(&pDataChar[m_nPathLength + length::START], cmd::SET, length::SET) == 0) {
-					const auto nOffset = m_nPathLength + length::START + length::SET;
+                    char timecode[kValueLength];
+                    memcpy(timecode, &data_char[kOffset], kValueLength);
 
-					char timeCode[VALUE_LENGTH];
-					memcpy(timeCode, &pDataChar[nOffset], VALUE_LENGTH);
+                    timecode[2] = ':';
+                    timecode[5] = ':';
+                    timecode[8] = ':';
 
-					timeCode[2] = ':';
-					timeCode[5] = ':';
-					timeCode[8] = ':';
+                    LtcGenerator::Get()->ActionSetStart(timecode);
 
-					LtcGenerator::Get()->ActionSetStart(timeCode);
+                    DEBUG_PRINTF("%.*s", kValueLength, timecode);
+                }
+            }
+            return;
+        }
+        // */stop*
+        if (memcmp(&data_char[path_length_], cmd::kStop, length::kStop) == 0)
+        {
+            if ((kCommandLength == (path_length_ + length::kStop)))
+            {
+                LtcGenerator::Get()->ActionStop();
+                SystimeReader::Get()->ActionStop();
 
-					DEBUG_PRINTF("%.*s", VALUE_LENGTH, timeCode);
-				}
-			}
-			return;
-		}
-		// */stop*
-		if (memcmp(&pDataChar[m_nPathLength], cmd::STOP, length::STOP) == 0) {
-			if ((nCommandLength == (m_nPathLength + length::STOP))) {
+                DEBUG_PUTS("ActionStop");
+            }
+            else if ((kCommandLength == (path_length_ + length::kStop + length::kSet + kValueLength)))
+            {
+                if (memcmp(&data_char[path_length_ + length::kStop], cmd::kSet, length::kSet) == 0)
+                {
+                    const auto kOffset = path_length_ + length::kStop + length::kSet;
 
-				LtcGenerator::Get()->ActionStop();
-				SystimeReader::Get()->ActionStop();
+                    char timecode[kValueLength];
+                    memcpy(timecode, &data_char[kOffset], kValueLength);
 
-				DEBUG_PUTS("ActionStop");
-			} else if ((nCommandLength == (m_nPathLength + length::STOP + length::SET + VALUE_LENGTH))) {
-				if (memcmp(&pDataChar[m_nPathLength + length::STOP], cmd::SET, length::SET) == 0) {
-					const auto nOffset = m_nPathLength + length::STOP + length::SET;
+                    timecode[2] = ':';
+                    timecode[5] = ':';
+                    timecode[8] = ':';
 
-					char timeCode[VALUE_LENGTH];
-					memcpy(timeCode, &pDataChar[nOffset], VALUE_LENGTH);
+                    LtcGenerator::Get()->ActionSetStop(timecode);
 
-					timeCode[2] = ':';
-					timeCode[5] = ':';
-					timeCode[8] = ':';
+                    DEBUG_PRINTF("%.*s", kValueLength, timecode);
+                }
+            }
 
-					LtcGenerator::Get()->ActionSetStop(timeCode);
+            return;
+        }
+        // */forward i
+        if (memcmp(&data_char[path_length_], cmd::kForward, length::kForward) == 0)
+        {
+            OscSimpleMessage msg(data, size);
 
-					DEBUG_PRINTF("%.*s", VALUE_LENGTH, timeCode);
-				}
-			}
+            if (msg.GetType(0) != osc::type::INT32)
+            {
+                return;
+            }
 
-			return;
-		}
-		// */forward i
-		if (memcmp(&pDataChar[m_nPathLength], cmd::FORWARD, length::FORWARD) == 0) {
-			OscSimpleMessage Msg(pData, nSize);
+            const auto kValue = msg.GetInt(0);
 
-			if (Msg.GetType(0) != osc::type::INT32) {
-				return;
-			}
+            if (kValue > 0)
+            {
+                LtcGenerator::Get()->ActionForward(kValue);
+                DEBUG_PRINTF("ActionForward(%d)", kValue);
+            }
+            return;
+        }
+        // */backward i
+        if (memcmp(&data_char[path_length_], cmd::kBackward, length::kBackward) == 0)
+        {
+            OscSimpleMessage msg(data, size);
 
-			const auto nValue = Msg.GetInt(0);
+            if (msg.GetType(0) != osc::type::INT32)
+            {
+                return;
+            }
 
-			if (nValue > 0) {
-				LtcGenerator::Get()->ActionForward(nValue);
-				DEBUG_PRINTF("ActionForward(%d)", nValue);
-			}
-			return;
-		}
-		// */backward i
-		if (memcmp(&pDataChar[m_nPathLength], cmd::BACKWARD, length::BACKWARD) == 0) {
-			OscSimpleMessage Msg(pData, nSize);
+            const auto kValue = msg.GetInt(0);
 
-			if (Msg.GetType(0) != osc::type::INT32) {
-				return;
-			}
+            if (kValue > 0)
+            {
+                LtcGenerator::Get()->ActionBackward(kValue);
+                DEBUG_PRINTF("ActionBackward(%d)", kValue);
+            }
+            return;
+        }
+        // */set/*
+        if ((kCommandLength == (path_length_ + length::kRate + length::kSet + kFpsValueLength)))
+        {
+            if (memcmp(&data_char[path_length_ + length::kRate], cmd::kSet, length::kSet) == 0)
+            {
+                const auto kOffset = path_length_ + length::kRate + length::kSet;
 
-			const auto nValue = Msg.GetInt(0);
+                LtcGenerator::Get()->ActionSetRate(&data_char[kOffset]);
 
-			if (nValue > 0) {
-				LtcGenerator::Get()->ActionBackward(nValue);
-				DEBUG_PRINTF("ActionBackward(%d)", nValue);
-			}
-			return;
-		}
-		// */set/*
-		if ((nCommandLength == (m_nPathLength + length::RATE + length::SET + FPS_VALUE_LENGTH))) {
-			if (memcmp(&pDataChar[m_nPathLength + length::RATE], cmd::SET, length::SET) == 0) {
-				const auto nOffset = m_nPathLength + length::RATE + length::SET;
+                DEBUG_PUTS(&data_char[kOffset]);
+                return;
+            }
+        }
+        // */resume
+        if ((kCommandLength == (path_length_ + length::kResume)) && (memcmp(&data_char[path_length_], cmd::kResume, length::kResume) == 0))
+        {
+            LtcGenerator::Get()->ActionResume();
 
-				LtcGenerator::Get()->ActionSetRate(&pDataChar[nOffset]);
+            DEBUG_PUTS("ActionResume");
+            return;
+        }
+        // */goto/*
+        if ((kCommandLength == (path_length_ + length::kGoto + 1 + kValueLength)) && (memcmp(&data_char[path_length_], cmd::kGoto, length::kGoto) == 0))
+        {
+            if (data_char[path_length_ + length::kGoto] == '/')
+            {
+                const auto kOffset = path_length_ + length::kGoto + 1;
 
-				DEBUG_PUTS(&pDataChar[nOffset]);
-				return;
-			}
-		}
-		// */resume
-		if ( (nCommandLength == (m_nPathLength + length::RESUME)) && (memcmp(&pDataChar[m_nPathLength], cmd::RESUME, length::RESUME) == 0)) {
-			LtcGenerator::Get()->ActionResume();
+                char timecode[kValueLength];
+                memcpy(timecode, &data_char[kOffset], kValueLength);
 
-			DEBUG_PUTS("ActionResume");
-			return;
-		}
-		// */goto/*
-		if ((nCommandLength == (m_nPathLength + length::GOTO + 1 + VALUE_LENGTH)) && (memcmp(&pDataChar[m_nPathLength], cmd::GOTO, length::GOTO) == 0)) {
-			if (pDataChar[m_nPathLength + length::GOTO] == '/') {
-				const auto nOffset = m_nPathLength + length::GOTO + 1;
+                timecode[2] = ':';
+                timecode[5] = ':';
+                timecode[8] = ':';
 
-				char timeCode[VALUE_LENGTH];
-				memcpy(timeCode, &pDataChar[nOffset], VALUE_LENGTH);
+                LtcGenerator::Get()->ActionGoto(timecode);
 
-				timeCode[2] = ':';
-				timeCode[5] = ':';
-				timeCode[8] = ':';
+                DEBUG_PUTS(timecode);
+                return;
+            }
+        }
+        // */direction/*
+        if ((kCommandLength <= (path_length_ + length::kDirection + 1 + 8)) && (memcmp(&data_char[path_length_], cmd::kDirection, length::kDirection) == 0))
+        {
+            if (data_char[path_length_ + length::kDirection] == '/')
+            {
+                const uint32_t kOffset = path_length_ + length::kDirection + 1;
+                LtcGenerator::Get()->ActionSetDirection(&data_char[kOffset]);
 
-				LtcGenerator::Get()->ActionGoto(timeCode);
+                DEBUG_PUTS(&data_char[kOffset]);
+                return;
+            }
+        }
 
-				DEBUG_PUTS(timeCode);
-				return;
-			}
-		}
-		// */direction/*
-		if ((nCommandLength <= (m_nPathLength + length::DIRECTION + 1 + 8)) && (memcmp(&pDataChar[m_nPathLength], cmd::DIRECTION, length::DIRECTION) == 0)) {
-			if (pDataChar[m_nPathLength + length::DIRECTION] == '/') {
-				const uint32_t nOffset = m_nPathLength + length::DIRECTION + 1;
-				LtcGenerator::Get()->ActionSetDirection(&pDataChar[nOffset]);
+        // */tcnet/
+        if (memcmp(&data_char[path_length_], tcnet::cmd::kPath, tcnet::length::kPath) == 0)
+        {
+            // layer/?
+            if (kCommandLength == (path_length_ + tcnet::length::kPath + tcnet::length::kLayer + 1))
+            {
+                if (memcmp(&data_char[path_length_ + tcnet::length::kPath], tcnet::cmd::kLayer, tcnet::length::kLayer) == 0)
+                {
+                    const auto kOffset = path_length_ + tcnet::length::kPath + tcnet::length::kLayer;
+                    const auto kLayer = tcnet::GetLayer(data_char[kOffset]);
 
-				DEBUG_PUTS(&pDataChar[nOffset]);
-				return;
-			}
-		}
+                    TCNet::Get()->SetLayer(kLayer);
+                    tcnet::display::show();
 
-		// */tcnet/
-		if (memcmp(&pDataChar[m_nPathLength], tcnet::cmd::PATH, tcnet::length::PATH) == 0) {
-			// layer/?
-			if (nCommandLength == (m_nPathLength + tcnet::length::PATH + tcnet::length::LAYER + 1)) {
-				if (memcmp(&pDataChar[m_nPathLength + tcnet::length::PATH], tcnet::cmd::LAYER, tcnet::length::LAYER) == 0) {
-					const auto nOffset = m_nPathLength + tcnet::length::PATH + tcnet::length::LAYER;
-					const auto tLayer = TCNet::GetLayer(pDataChar[nOffset]);
+                    DEBUG_PRINTF("*/tcnet/layer/%c -> %d", data_char[kOffset], static_cast<int>(kLayer));
+                    return;
+                }
+            }
+            // type i
+            if (kCommandLength == (path_length_ + tcnet::length::kPath + tcnet::length::kType))
+            {
+                if (memcmp(&data_char[path_length_ + tcnet::length::kPath], tcnet::cmd::kType, tcnet::length::kType) == 0)
+                {
+                    OscSimpleMessage msg(data, size);
 
-					TCNet::Get()->SetLayer(tLayer);
-					tcnet::display::show();
+                    if (msg.GetType(0) != osc::type::INT32)
+                    {
+                        return;
+                    }
 
-					DEBUG_PRINTF("*/tcnet/layer/%c -> %d", pDataChar[nOffset], static_cast<int>(tLayer));
-					return;
-				}
-			}
-			// type i
-			if (nCommandLength == (m_nPathLength + tcnet::length::PATH + tcnet::length::TYPE)) {
-				if (memcmp(&pDataChar[m_nPathLength + tcnet::length::PATH], tcnet::cmd::TYPE, tcnet::length::TYPE) == 0) {
-					OscSimpleMessage Msg(pData, nSize);
+                    const int kValue = msg.GetInt(0);
 
-					if (Msg.GetType(0) != osc::type::INT32) {
-						return;
-					}
+                    switch (kValue)
+                    {
+                        case 24:
+                            TCNet::Get()->SetTimeCodeType(tcnet::TimeCodeType::kTimecodeTypeFilm);
+                            tcnet::display::show();
+                            break;
+                        case 25:
+                            TCNet::Get()->SetTimeCodeType(tcnet::TimeCodeType::kTimecodeTypeEbu25Fps);
+                            tcnet::display::show();
+                            break;
+                        case 29:
+                            TCNet::Get()->SetTimeCodeType(tcnet::TimeCodeType::kTimecodeTypeDf);
+                            tcnet::display::show();
+                            break;
+                        case 30:
+                            TCNet::Get()->SetTimeCodeType(tcnet::TimeCodeType::kTimecodeTypeSmpte30Fps);
+                            tcnet::display::show();
+                            break;
+                        default:
+                            break;
+                    }
 
-					const int nValue = Msg.GetInt(0);
+                    DEBUG_PRINTF("*/tcnet/type -> %d", kValue);
+                    return;
+                }
+            }
+            // timecode i
+            if (kCommandLength == (path_length_ + tcnet::length::kPath + tcnet::length::kTimecode))
+            {
+                if (memcmp(&data_char[path_length_ + tcnet::length::kPath], tcnet::cmd::kType, tcnet::length::kTimecode) == 0)
+                {
+                    OscSimpleMessage msg(data, size);
 
-					switch (nValue) {
-					case 24:
-						TCNet::Get()->SetTimeCodeType(tcnet::TimeCodeType::TIMECODE_TYPE_FILM);
-						tcnet::display::show();
-						break;
-					case 25:
-						TCNet::Get()->SetTimeCodeType(tcnet::TimeCodeType::TIMECODE_TYPE_EBU_25FPS);
-						tcnet::display::show();
-						break;
-					case 29:
-						TCNet::Get()->SetTimeCodeType(tcnet::TimeCodeType::TIMECODE_TYPE_DF);
-						tcnet::display::show();
-						break;
-					case 30:
-						TCNet::Get()->SetTimeCodeType(tcnet::TimeCodeType::TIMECODE_TYPE_SMPTE_30FPS);
-						tcnet::display::show();
-						break;
-					default:
-						break;
-					}
+                    if (msg.GetType(0) != osc::type::INT32)
+                    {
+                        return;
+                    }
 
-					DEBUG_PRINTF("*/tcnet/type -> %d", nValue);
-					return;
-				}
-			}
-			// timecode i
-			if (nCommandLength == (m_nPathLength + tcnet::length::PATH + tcnet::length::TIMECODE)) {
-				if (memcmp(&pDataChar[m_nPathLength + tcnet::length::PATH], tcnet::cmd::TYPE, tcnet::length::TIMECODE) == 0) {
-					OscSimpleMessage Msg(pData, nSize);
+                    const auto kValue = msg.GetInt(0);
+                    const auto kUseTimecode = (kValue > 0);
 
-					if (Msg.GetType(0) != osc::type::INT32) {
-						return;
-					}
+                    TCNet::Get()->SetUseTimeCode(kUseTimecode);
+                    tcnet::display::show();
 
-					const auto nValue = Msg.GetInt(0);
-					const auto bUseTimeCode = (nValue > 0);
+                    DEBUG_PRINTF("*/tcnet/timecode -> %d", static_cast<int>(kUseTimecode));
+                    return;
+                }
+            }
+        }
 
-					TCNet::Get()->SetUseTimeCode(bUseTimeCode);
-					tcnet::display::show();
+        // */midi/
+        if (memcmp(&data_char[path_length_], midi::cmd::kPath, midi::length::kPath) == 0)
+        {
+            // */start
+            if ((kCommandLength == (path_length_ + midi::length::kPath + midi::length::kStart)) &&
+                (memcmp(&data_char[path_length_ + midi::length::kPath], midi::cmd::kStart, midi::length::kStart) == 0))
+            {
+                LtcMidiSystemRealtime::Get()->SendStart();
+                DEBUG_PUTS("MIDI Start");
+                return;
+            }
+            // */stop
+            if ((kCommandLength == (path_length_ + midi::length::kPath + midi::length::kStop)) &&
+                (memcmp(&data_char[path_length_ + midi::length::kPath], midi::cmd::kStop, midi::length::kStop) == 0))
+            {
+                LtcMidiSystemRealtime::Get()->SendStop();
+                DEBUG_PUTS("MIDI Stop");
+                return;
+            }
+            // */continue
+            if ((kCommandLength == (path_length_ + midi::length::kPath + midi::length::kResume)) &&
+                (memcmp(&data_char[path_length_ + midi::length::kPath], midi::cmd::kContinue, midi::length::kResume) == 0))
+            {
+                LtcMidiSystemRealtime::Get()->SendContinue();
+                DEBUG_PUTS("MIDI Continue");
+                return;
+            }
+            // */bpm i or */bpm f
+            if ((kCommandLength == (path_length_ + midi::length::kPath + midi::length::kBpm)) &&
+                (memcmp(&data_char[path_length_ + midi::length::kPath], midi::cmd::kBpm, midi::length::kBpm) == 0))
+            {
+                uint32_t bpm = 0;
 
-					DEBUG_PRINTF("*/tcnet/timecode -> %d", static_cast<int>(bUseTimeCode));
-					return;
-				}
-			}
-		}
+                OscSimpleMessage msg(data, size);
 
-		// */midi/
-		if (memcmp(&pDataChar[m_nPathLength], midi::cmd::PATH, midi::length::PATH) == 0) {
-			// */start
-			if ((nCommandLength == (m_nPathLength + midi::length::PATH + midi::length::START)) && (memcmp(&pDataChar[m_nPathLength + midi::length::PATH], midi::cmd::START, midi::length::START) == 0)) {
-				LtcMidiSystemRealtime::Get()->SendStart();
-				DEBUG_PUTS("MIDI Start");
-				return;
-			}
-			// */stop
-			if ((nCommandLength == (m_nPathLength + midi::length::PATH + midi::length::STOP)) && (memcmp(&pDataChar[m_nPathLength + midi::length::PATH], midi::cmd::STOP, midi::length::STOP) == 0)) {
-				LtcMidiSystemRealtime::Get()->SendStop();
-				DEBUG_PUTS("MIDI Stop");
-				return;
-			}
-			// */continue
-			if ((nCommandLength == (m_nPathLength + midi::length::PATH + midi::length::RESUME)) && (memcmp(&pDataChar[m_nPathLength + midi::length::PATH], midi::cmd::CONTINUE, midi::length::RESUME) == 0)) {
-				LtcMidiSystemRealtime::Get()->SendContinue();
-				DEBUG_PUTS("MIDI Continue");
-				return;
-			}
-			// */bpm i or */bpm f
-			if ((nCommandLength == (m_nPathLength + midi::length::PATH + midi::length::BPM)) && (memcmp(&pDataChar[m_nPathLength + midi::length::PATH], midi::cmd::BPM, midi::length::BPM) == 0)) {
-				uint32_t nBPM = 0;
+                if (msg.GetType(0) == osc::type::FLOAT)
+                {
+                    const auto kValue = msg.GetFloat(0);
+                    if (kValue > 0)
+                    {
+                        bpm = static_cast<uint32_t>(kValue);
+                    }
+                }
+                else if (msg.GetType(0) == osc::type::INT32)
+                {
+                    const auto kValue = msg.GetInt(0);
+                    if (kValue > 0)
+                    {
+                        bpm = static_cast<uint32_t>(kValue);
+                    }
+                }
 
-				OscSimpleMessage Msg(pData, nSize);
+                LtcMidiSystemRealtime::Get()->SetBPM(bpm);
+                LtcOutputs::Get()->ShowBPM(bpm);
 
-				if (Msg.GetType(0) == osc::type::FLOAT) {
-					const auto fValue = Msg.GetFloat(0);
-					if (fValue > 0) {
-						nBPM = static_cast<uint32_t>(fValue);
-					}
-				} else if (Msg.GetType(0) == osc::type::INT32) {
-					const auto nValue = Msg.GetInt(0);
-					if (nValue > 0) {
-						nBPM = static_cast<uint32_t>(nValue);
-					}
-				}
-
-				LtcMidiSystemRealtime::Get()->SetBPM(nBPM);
-				LtcOutputs::Get()->ShowBPM(nBPM);
-				
-				DEBUG_PRINTF("MIDI BPM: %u", nBPM);
-				return;
-			}
-		}
+                DEBUG_PRINTF("MIDI BPM: %u", bpm);
+                return;
+            }
+        }
 #if !defined(LTC_NO_DISPLAY_RGB)
-		// */ws28xx/
-		if (memcmp(&pDataChar[m_nPathLength], ws28xx::cmd::PATH, ws28xx::length::PATH) == 0) {
-			// ws28xx/master i
-			if (nCommandLength == (m_nPathLength + ws28xx::length::PATH + ws28xx::length::MASTER)) {
-				if (memcmp(&pDataChar[m_nPathLength + ws28xx::length::PATH], ws28xx::cmd::MASTER, ws28xx::length::MASTER) == 0) {
-					OscSimpleMessage Msg(pData, nSize);
+        // */pixel/
+        if (memcmp(&data_char[path_length_], pixel::cmd::kPath, pixel::length::kPath) == 0)
+        {
+            // pixel/master i
+            if (kCommandLength == (path_length_ + pixel::length::kPath + pixel::length::kMaster))
+            {
+                if (memcmp(&data_char[path_length_ + pixel::length::kPath], pixel::cmd::kMaster, pixel::length::kMaster) == 0)
+                {
+                    OscSimpleMessage msg(data, size);
 
-					if (Msg.GetType(0) != osc::type::INT32) {
-						return;
-					}
+                    if (msg.GetType(0) != osc::type::INT32)
+                    {
+                        return;
+                    }
 
-					const auto nValue = static_cast<uint8_t>(Msg.GetInt(0));
+                    const auto kValue = static_cast<uint8_t>(msg.GetInt(0));
 
-					LtcDisplayRgb::Get()->SetMaster(nValue);
+                    LtcDisplayRgb::Get()->SetMaster(kValue);
 
-					DEBUG_PRINTF("*/ws28xx/master -> %d", static_cast<int>(static_cast<uint8_t>(nValue)));
-					return;
-				}
-			}
-			// ws28xx/message string
-			if (nCommandLength == (m_nPathLength + ws28xx::length::PATH + ws28xx::length::MESSAGE)) {
-				if (memcmp(&pDataChar[m_nPathLength + ws28xx::length::PATH], ws28xx::cmd::MESSAGE, ws28xx::length::MESSAGE) == 0) {
-					OscSimpleMessage Msg(pData, nSize);
+                    DEBUG_PRINTF("*/pixel/master -> %d", static_cast<int>(static_cast<uint8_t>(kValue)));
+                    return;
+                }
+            }
+            // pixel/message string
+            if (kCommandLength == (path_length_ + pixel::length::kPath + pixel::length::kMessage))
+            {
+                if (memcmp(&data_char[path_length_ + pixel::length::kPath], pixel::cmd::kMessage, pixel::length::kMessage) == 0)
+                {
+                    OscSimpleMessage msg(data, size);
 
-					if (Msg.GetType(0) != osc::type::STRING) {
-						return;
-					}
+                    if (msg.GetType(0) != osc::type::STRING)
+                    {
+                        return;
+                    }
 
-					const auto *pString = Msg.GetString(0);
-					const auto nSize = strlen(pString);
+                    const auto* string = msg.GetString(0);
+                    const auto kSize = strlen(string);
 
-					LtcDisplayRgb::Get()->SetMessage(pString, nSize);
+                    LtcDisplayRgb::Get()->SetMessage(string, kSize);
 
-					DEBUG_PRINTF("*/ws28xx/message -> [%.*s]", nSize, pString);
-					return;
-				}
-			}
-			// ws28xx/info string
-			if (nCommandLength == (m_nPathLength + ws28xx::length::PATH + ws28xx::length::INFO)) {
-				if (memcmp(&pDataChar[m_nPathLength + ws28xx::length::PATH], ws28xx::cmd::INFO, ws28xx::length::INFO) == 0) {
-					OscSimpleMessage Msg(pData, nSize);
+                    DEBUG_PRINTF("*/pixel/message -> [%.*s]", kSize, string);
+                    return;
+                }
+            }
+            // pixel/info string
+            if (kCommandLength == (path_length_ + pixel::length::kPath + pixel::length::kInfo))
+            {
+                if (memcmp(&data_char[path_length_ + pixel::length::kPath], pixel::cmd::kInfo, pixel::length::kInfo) == 0)
+                {
+                    OscSimpleMessage msg(data, size);
 
-					if (Msg.GetType(0) != osc::type::STRING) {
-						return;
-					}
+                    if (msg.GetType(0) != osc::type::STRING)
+                    {
+                        return;
+                    }
 
-					const auto *pString = Msg.GetString(0);
+                    const auto* string = msg.GetString(0);
 
-					LtcDisplayRgb::Get()->ShowInfo(pString);
+                    LtcDisplayRgb::Get()->ShowInfo(string);
 
-					DEBUG_PRINTF("*/ws28xx/info -> [%.*s]", 8, pString);
-					return;
-				}
-
-			}
-			// ws28xx/rgb/*
-			if (nCommandLength > (m_nPathLength + ws28xx::length::PATH + ws28xx::rgb::length::PATH)) {
-				if (memcmp(&pDataChar[m_nPathLength + ws28xx::length::PATH], ws28xx::rgb::cmd::PATH, ws28xx::rgb::length::PATH) == 0) {
-					// ws28xx/rgb/time iii
-					if (nCommandLength == (m_nPathLength + ws28xx::length::PATH + ws28xx::rgb::length::PATH + ws28xx::rgb::length::TIME)) {
-						if (memcmp(&pDataChar[m_nPathLength + ws28xx::length::PATH + ws28xx::rgb::length::PATH], ws28xx::rgb::cmd::TIME, ws28xx::rgb::length::TIME) == 0) {
-							SetWS28xxRGB(pData, nSize, ltcdisplayrgb::ColourIndex::TIME);
-							return;
-						}
-					}
-					// ws28xx/rgb/colon iii
-					if (nCommandLength == (m_nPathLength + ws28xx::length::PATH + ws28xx::rgb::length::PATH + ws28xx::rgb::length::COLON)) {
-						if (memcmp(&pDataChar[m_nPathLength + ws28xx::length::PATH + ws28xx::rgb::length::PATH], ws28xx::rgb::cmd::COLON, ws28xx::rgb::length::COLON) == 0) {
-							SetWS28xxRGB(pData, nSize, ltcdisplayrgb::ColourIndex::COLON);
-							return;
-						}
-					}
-					// ws28xx/rgb/message iii
-					if (nCommandLength == (m_nPathLength + ws28xx::length::PATH + ws28xx::rgb::length::PATH + ws28xx::rgb::length::MESSAGE)) {
-						if (memcmp(&pDataChar[m_nPathLength + ws28xx::length::PATH + ws28xx::rgb::length::PATH], ws28xx::rgb::cmd::MESSAGE, ws28xx::rgb::length::MESSAGE) == 0) {
-							SetWS28xxRGB(pData ,nSize, ltcdisplayrgb::ColourIndex::MESSAGE);
-							return;
-						}
-					}
-					// ws28xx/rgb/fps iii
-					if (nCommandLength == (m_nPathLength + ws28xx::length::PATH + ws28xx::rgb::length::PATH + ws28xx::rgb::length::FPS)) {
-						if (memcmp(&pDataChar[m_nPathLength + ws28xx::length::PATH + ws28xx::rgb::length::PATH], ws28xx::rgb::cmd::FPS, ws28xx::rgb::length::FPS) == 0) {
-							SetWS28xxRGB(pData, nSize, ltcdisplayrgb::ColourIndex::FPS);
-							return;
-						}
-					}
-					// ws28xx/rgb/info iii
-					if (nCommandLength == (m_nPathLength + ws28xx::length::PATH + ws28xx::rgb::length::PATH + ws28xx::rgb::length::INFO)) {
-						if (memcmp(&pDataChar[m_nPathLength + ws28xx::length::PATH + ws28xx::rgb::length::PATH], ws28xx::rgb::cmd::INFO, ws28xx::rgb::length::INFO) == 0) {
-							SetWS28xxRGB(pData, nSize, ltcdisplayrgb::ColourIndex::INFO);
-							return;
-						}
-					}
-					return;
-				}
-			}
-		}
+                    DEBUG_PRINTF("*/pixel/info -> [%.*s]", 8, string);
+                    return;
+                }
+            }
+            // pixel/rgb/*
+            if (kCommandLength > (path_length_ + pixel::length::kPath + pixel::rgb::length::kPath))
+            {
+                if (memcmp(&data_char[path_length_ + pixel::length::kPath], pixel::rgb::cmd::kPath, pixel::rgb::length::kPath) == 0)
+                {
+                    // pixel/rgb/time iii
+                    if (kCommandLength == (path_length_ + pixel::length::kPath + pixel::rgb::length::kPath + pixel::rgb::length::kTime))
+                    {
+                        if (memcmp(&data_char[path_length_ + pixel::length::kPath + pixel::rgb::length::kPath], pixel::rgb::cmd::kTime,
+                                   pixel::rgb::length::kTime) == 0)
+                        {
+                            SetWS28xxRGB(data, size, ltc::display::rgb::ColourIndex::TIME);
+                            return;
+                        }
+                    }
+                    // pixel/rgb/colon iii
+                    if (kCommandLength == (path_length_ + pixel::length::kPath + pixel::rgb::length::kPath + pixel::rgb::length::kColon))
+                    {
+                        if (memcmp(&data_char[path_length_ + pixel::length::kPath + pixel::rgb::length::kPath], pixel::rgb::cmd::kColon,
+                                   pixel::rgb::length::kColon) == 0)
+                        {
+                            SetWS28xxRGB(data, size, ltc::display::rgb::ColourIndex::COLON);
+                            return;
+                        }
+                    }
+                    // pixel/rgb/message iii
+                    if (kCommandLength == (path_length_ + pixel::length::kPath + pixel::rgb::length::kPath + pixel::rgb::length::kMessage))
+                    {
+                        if (memcmp(&data_char[path_length_ + pixel::length::kPath + pixel::rgb::length::kPath], pixel::rgb::cmd::kMessage,
+                                   pixel::rgb::length::kMessage) == 0)
+                        {
+                            SetWS28xxRGB(data, size, ltc::display::rgb::ColourIndex::MESSAGE);
+                            return;
+                        }
+                    }
+                    // pixel/rgb/fps iii
+                    if (kCommandLength == (path_length_ + pixel::length::kPath + pixel::rgb::length::kPath + pixel::rgb::length::kFps))
+                    {
+                        if (memcmp(&data_char[path_length_ + pixel::length::kPath + pixel::rgb::length::kPath], pixel::rgb::cmd::kFps,
+                                   pixel::rgb::length::kFps) == 0)
+                        {
+                            SetWS28xxRGB(data, size, ltc::display::rgb::ColourIndex::FPS);
+                            return;
+                        }
+                    }
+                    // pixel/rgb/info iii
+                    if (kCommandLength == (path_length_ + pixel::length::kPath + pixel::rgb::length::kPath + pixel::rgb::length::kInfo))
+                    {
+                        if (memcmp(&data_char[path_length_ + pixel::length::kPath + pixel::rgb::length::kPath], pixel::rgb::cmd::kInfo,
+                                   pixel::rgb::length::kInfo) == 0)
+                        {
+                            SetWS28xxRGB(data, size, ltc::display::rgb::ColourIndex::INFO);
+                            return;
+                        }
+                    }
+                    return;
+                }
+            }
+        }
 #endif
-	}
+    }
 }
 
-
 #if !defined(LTC_NO_DISPLAY_RGB)
-void LtcOscServer::SetWS28xxRGB(const uint8_t *pData, uint32_t nSize, ltcdisplayrgb::ColourIndex tIndex) {
-	OscSimpleMessage Msg(pData, nSize);
+void LtcOscServer::SetWS28xxRGB(const uint8_t* data, uint32_t size, ltc::display::rgb::ColourIndex index)
+{
+    OscSimpleMessage msg(data, size);
 
-	if (Msg.GetArgc() == 3) {
-		const auto nRed = static_cast<uint8_t>(Msg.GetInt(0));
-		const auto nGreen = static_cast<uint8_t>(Msg.GetInt(1));
-		const auto nBlue = static_cast<uint8_t>(Msg.GetInt(2));
+    if (msg.GetArgc() == 3)
+    {
+        const auto kRed = static_cast<uint8_t>(msg.GetInt(0));
+        const auto kGreen = static_cast<uint8_t>(msg.GetInt(1));
+        const auto kBlue = static_cast<uint8_t>(msg.GetInt(2));
 
-		LtcDisplayRgb::Get()->SetRGB(nRed, nGreen, nBlue, tIndex);
+        LtcDisplayRgb::Get()->SetRGB(kRed, kGreen, kBlue, index);
 
-		DEBUG_PRINTF("*/ws28xx/rgb/[%d] -> %d %d %d", static_cast<int>(tIndex), static_cast<int>(nRed), static_cast<int>(nGreen), static_cast<int>(nBlue));
-	} else {
-		DEBUG_PUTS("Invalid ws28xx/rgb/*");
-	}
+        DEBUG_PRINTF("*/pixel/rgb/[%d] -> %d %d %d", static_cast<int>(index), static_cast<int>(kRed), static_cast<int>(kGreen), static_cast<int>(kBlue));
+    }
+    else
+    {
+        DEBUG_PUTS("Invalid pixel/rgb/*");
+    }
 }
 #endif

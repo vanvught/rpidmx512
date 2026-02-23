@@ -1,8 +1,7 @@
 /**
  * @file hwclockrun.cpp
- *
  */
-/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,67 +27,79 @@
 #include <time.h>
 
 #include "hwclock.h"
+#include "hal_millis.h"
+ #include "firmware/debug/debug_debug.h"
 
-#include "hardware.h"
-
-#include "debug.h"
-
-enum class Status {
-	WAITING, SAMPLING
+enum class Status
+{
+    kWaiting,
+    kSampling
 };
 
-static Status Status = Status::WAITING;
-static time_t nSeconds;
-static int32_t nSecondsT1;
-static struct tm rtcT1;
-static struct timeval tvT1;
-static struct tm rtcT2;
-static struct timeval tvT2;
+static Status s_status = Status::kWaiting;
+static time_t s_seconds;
+static int32_t s_seconds_t1;
+static struct tm s_rtc_t1;
+static struct timeval s_tv_t1;
+static struct tm s_rtc_t2;
+static struct timeval s_tv_t2;
 
-void HwClock::Process() {
-	if (Status == Status::WAITING) {
-		if (__builtin_expect(((Hardware::Get()->Millis() - m_nLastHcToSysMillis) > 7200 * 1000), 0)) {
-			Status = Status::SAMPLING;
+void HwClock::Process()
+{
+    if (s_status == Status::kWaiting)
+    {
+        if (__builtin_expect(((hal::Millis() - last_hc_to_sys_millis_) > 7200 * 1000), 0))
+        {
+            s_status = Status::kSampling;
 
-			RtcGet(&rtcT1);
-			gettimeofday(&tvT1, nullptr);
+            RtcGet(&s_rtc_t1);
+            gettimeofday(&s_tv_t1, nullptr);
 
-			nSecondsT1 = rtcT1.tm_sec + rtcT1.tm_min * 60;
-			nSeconds = mktime(&rtcT1);
-		}
+            s_seconds_t1 = s_rtc_t1.tm_sec + s_rtc_t1.tm_min * 60;
+            s_seconds = mktime(&s_rtc_t1);
+        }
 
-		return;
-	}
+        return;
+    }
 
-	if (Status == Status::SAMPLING) {
-		RtcGet(&rtcT2);
+    if (s_status == Status::kSampling)
+    {
+        RtcGet(&s_rtc_t2);
 
-		const auto nSeconds2 = rtcT2.tm_sec + rtcT2.tm_min * 60;
+        const auto kSeconds2 = s_rtc_t2.tm_sec + s_rtc_t2.tm_min * 60;
 
-		if (nSecondsT1 != nSeconds2) {
-			gettimeofday(&tvT2, nullptr);
+        if (s_seconds_t1 != kSeconds2)
+        {
+            gettimeofday(&s_tv_t2, nullptr);
 
-			struct timeval tv;
-			tv.tv_sec = nSeconds;
+            struct timeval tv;
+            tv.tv_sec = s_seconds;
 
-			if (tvT2.tv_sec == tvT1.tv_sec) {
-				tv.tv_usec = 1000000 - (tvT2.tv_usec - tvT1.tv_usec);
-			} else {
-				if (tvT2.tv_usec - tvT1.tv_usec >= 0) {
-					tv.tv_usec = tvT2.tv_usec - tvT1.tv_usec;
-				} else {
-					tv.tv_usec = tvT1.tv_usec - tvT2.tv_usec;
-				}
-			}
+            if (s_tv_t2.tv_sec == s_tv_t1.tv_sec)
+            {
+                tv.tv_usec = 1000000 - (s_tv_t2.tv_usec - s_tv_t1.tv_usec);
+            }
+            else
+            {
+                if (s_tv_t2.tv_usec - s_tv_t1.tv_usec >= 0)
+                {
+                    tv.tv_usec = s_tv_t2.tv_usec - s_tv_t1.tv_usec;
+                }
+                else
+                {
+                    tv.tv_usec = s_tv_t1.tv_usec - s_tv_t2.tv_usec;
+                }
+            }
 
-			settimeofday(&tv, nullptr);
+            settimeofday(&tv, nullptr);
 
-			m_nLastHcToSysMillis = Hardware::Get()->Millis();
-			Status = Status::WAITING;
+            last_hc_to_sys_millis_ = hal::Millis();
+            s_status = Status::kWaiting;
 
-			DEBUG_PRINTF("%d:%d (%d %d) (%d %d) -> %d", nSecondsT1, nSeconds2, static_cast<int>(tvT1.tv_sec), static_cast<int>(tvT1.tv_usec), static_cast<int>(tvT2.tv_sec), static_cast<int>(tvT2.tv_usec), static_cast<int>(tv.tv_usec));
-		}
+            DEBUG_PRINTF("%d:%d (%d %d) (%d %d) -> %d", s_seconds_t1, kSeconds2, static_cast<int>(s_tv_t1.tv_sec), static_cast<int>(s_tv_t1.tv_usec),
+                         static_cast<int>(s_tv_t2.tv_sec), static_cast<int>(s_tv_t2.tv_usec), static_cast<int>(tv.tv_usec));
+        }
 
-		return;
-	}
+        return;
+    }
 }

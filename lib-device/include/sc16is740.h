@@ -2,7 +2,7 @@
  * @file sc16is740.h
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,114 +29,128 @@
 #include <cstdint>
 
 #include "hal_i2c.h"
-#include "hardware.h"
+#include "hal_millis.h"
 
 #include "sc16is7x0.h"
 
-namespace sc16is740 {
-static constexpr uint8_t I2C_ADDRESS = 0x4D;
-static constexpr uint32_t CRISTAL_HZ = 14745600UL;
-}
+namespace sc16is740
+{
+static constexpr uint8_t kI2CAddress = 0x4D;
+static constexpr uint32_t kCristalHz = 14745600UL;
+} // namespace sc16is740
 
-class SC16IS740: HAL_I2C {
-public:
-	enum class SerialParity {
-		NONE, ODD, EVEN, FORCED0, FORCED1
-	};
+class SC16IS740 : HAL_I2C
+{
+   public:
+    enum class SerialParity
+    {
+        kNone,
+        kOdd,
+        kEven,
+        kForceD0,
+        kForceD1
+    };
 
-	enum class TriggerLevel {
-		LEVEL_TX, LEVEL_RX
-	};
+    enum class TriggerLevel
+    {
+        kLevelTx,
+        kLevelRx
+    };
 
-	SC16IS740(uint8_t nAddress = sc16is740::I2C_ADDRESS, uint32_t nOnBoardCrystal = sc16is740::CRISTAL_HZ);
-	~SC16IS740() = default;
+    explicit SC16IS740(uint8_t address = sc16is740::kI2CAddress, uint32_t on_board_crystal_hz = sc16is740::kCristalHz);
+    ~SC16IS740() = default;
 
-	void SetOnBoardCrystal(uint32_t nOnBoardCrystalHz) {
-		m_nOnBoardCrystal = nOnBoardCrystalHz;
-	}
+    void SetOnBoardCrystal(uint32_t on_board_crystal_hz) { on_board_crystal_hz_ = on_board_crystal_hz; }
 
-	uint32_t GetOnBoardCrystal() const {
-		return m_nOnBoardCrystal;
-	}
+    uint32_t GetOnBoardCrystal() const { return on_board_crystal_hz_; }
 
-	void SetFormat(uint32_t nBits, SerialParity tParity, uint32_t nStopBits);
-	void SetBaud(uint32_t nBaud);
+    void SetFormat(uint32_t bits, SerialParity parity, uint32_t stop_bits);
+    void SetBaud(uint32_t baud);
 
-	bool IsInterrupt() {
-		const uint32_t nRegisterIIR = ReadRegister(SC16IS7X0_IIR);
+    bool IsInterrupt()
+    {
+        const uint32_t kRegisterIIR = ReadRegister(SC16IS7X0_IIR);
 
-		return ((nRegisterIIR & 0x1) != 0x1);
-	}
+        return ((kRegisterIIR & 0x1) != 0x1);
+    }
 
-	// Read
+    // Read
 
-	int GetChar() {
-		if (!m_IsConnected) {
-			return -1;
-		}
+    int GetChar()
+    {
+        if (!is_connected_)
+        {
+            return -1;
+        }
 
-		if (!IsReadable()) {
-			return -1;
-		}
+        if (!IsReadable())
+        {
+            return -1;
+        }
 
-		return ReadRegister(SC16IS7X0_RHR);
-	}
+        return ReadRegister(SC16IS7X0_RHR);
+    }
 
-	int GetChar(uint32_t nTimeOut) {
-		if (!m_IsConnected) {
-			return -1;
-		}
+    int GetChar(uint32_t time_out)
+    {
+        if (!is_connected_)
+        {
+            return -1;
+        }
 
-		if (!IsReadable(nTimeOut)) {
-			return -1;
-		}
+        if (!IsReadable(time_out))
+        {
+            return -1;
+        }
 
-		return ReadRegister(SC16IS7X0_RHR);
-	}
+        return ReadRegister(SC16IS7X0_RHR);
+    }
 
-	// Write
-	int PutChar(int nValue) {
-		if (!m_IsConnected) {
-			return -1;
-		}
+    // Write
+    int PutChar(int value)
+    {
+        if (!is_connected_)
+        {
+            return -1;
+        }
 
-		while (!IsWritable()) {
-		}
+        while (!IsWritable())
+        {
+        }
 
-		WriteRegister(SC16IS7X0_THR, static_cast<uint8_t>(nValue));
+        WriteRegister(SC16IS7X0_THR, static_cast<uint8_t>(value));
 
-		return nValue;
-	}
+        return value;
+    }
 
-	// Multiple read/write
+    // Multiple read/write
 
-	void WriteBytes(const uint8_t *pBytes, uint32_t nSize);
-	void ReadBytes(uint8_t *pBytes, uint32_t& nSize, uint32_t nTimeOut);
-	void FlushRead(uint32_t nTimeOut);
+    void WriteBytes(const uint8_t* bytes, uint32_t size);
+    void ReadBytes(uint8_t* bytes, uint32_t& size, uint32_t time_out);
+    void FlushRead(uint32_t time_out);
 
-private:
-	bool IsWritable() {
-		return (ReadRegister(SC16IS7X0_TXLVL) != 0);
-	}
+   private:
+    bool IsWritable() { return (ReadRegister(SC16IS7X0_TXLVL) != 0); }
 
-	bool IsReadable() {
-		return (ReadRegister(SC16IS7X0_RXLVL) != 0);
-	}
+    bool IsReadable() { return (ReadRegister(SC16IS7X0_RXLVL) != 0); }
 
-	bool IsReadable(uint32_t nTimeOut) {
-		const auto nMillis = Hardware::Get()->Millis();
-		do {
-			if (IsReadable()) {
-				return true;
-			}
-		} while ((Hardware::Get()->Millis() - nTimeOut) < nMillis);
+    bool IsReadable(uint32_t time_out)
+    {
+        const auto kMillis = hal::Millis();
+        do
+        {
+            if (IsReadable())
+            {
+                return true;
+            }
+        } while ((hal::Millis() - time_out) < kMillis);
 
-		return false;
-	}
+        return false;
+    }
 
-private:
-	uint32_t m_nOnBoardCrystal;
-	bool m_IsConnected { false };
+   private:
+    uint32_t on_board_crystal_hz_;
+    bool is_connected_{false};
 };
 
-#endif /* SC16IS740_H_ */
+#endif  // SC16IS740_H_

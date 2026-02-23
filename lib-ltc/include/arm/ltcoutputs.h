@@ -28,39 +28,36 @@
 
 #include "ltc.h"
 
-class LtcOutputs {
-public:
-	LtcOutputs(const ltc::Source source, const bool bShowSysTime);
+class LtcOutputs
+{
+   public:
+    LtcOutputs(ltc::Source source, bool show_systime);
 
-	void Init(const bool bDisableRtpMidi = false);
-	void Update(const struct ltc::TimeCode *ptLtcTimeCode);
+    void Init(bool disable_rtp_midi = false);
+    void Update(const struct ltc::TimeCode* timecode);
 
-	void ShowSysTime();
-	void ShowBPM(uint32_t nBPM);
+    void ShowSysTime();
+    void ShowBPM(uint32_t bpm);
 
-	void ResetTimeCodeTypePrevious() {
-		m_TypePrevious = ltc::Type::INVALID;
-	}
+    void ResetTimeCodeTypePrevious() { type_previous_ = ltc::Type::INVALID; }
 
-	void Print();
+    void Print();
 
-	static LtcOutputs *Get() {
-		return s_pThis;
-	}
+    static LtcOutputs* Get() { return s_this; }
 
-private:
-	bool m_bShowSysTime;
-	bool m_bMidiQuarterFramePieceRunning { false };
-	bool m_bEnableRtpMidi { false };
+   private:
+    bool m_bShowSysTime;
+    bool m_bMidiQuarterFramePieceRunning{false};
+    bool m_bEnableRtpMidi{false};
 
-	ltc::Type m_TypePrevious { ltc::Type::INVALID };
-	int32_t m_nSecondsPrevious { 60 };
+    ltc::Type type_previous_{ltc::Type::INVALID};
+    int32_t seconds_previous_{60};
 
-	char m_aTimeCode[ltc::timecode::CODE_MAX_LENGTH];
-	char m_aSystemTime[ltc::timecode::SYSTIME_MAX_LENGTH];
-	char m_cBPM[9];
+    char timecode_[ltc::timecode::CODE_MAX_LENGTH];
+    char m_aSystemTime[ltc::timecode::SYSTIME_MAX_LENGTH];
+    char m_cBPM[9];
 
-	static inline LtcOutputs *s_pThis;
+    static inline LtcOutputs* s_this;
 };
 
-#endif /* ARM_LTCOUTPUTS_H_ */
+#endif  // ARM_LTCOUTPUTS_H_

@@ -22,10 +22,11 @@
   <p>Delete Show <select id="id2"></select><button onclick="del()">Delete</button></p>
 	<footer><ul id="idVersion"></ul></footer>
 	<script src="static.js" type="text/javascript"></script>
-	<script src="showfile.js" type="text/javascript"></script>
+	<script src="showfile1.js" type="text/javascript"></script>
+	<script src="showfile2.js" type="text/javascript"></script>
 	<script>function play(){send("play");}function stop(){send("stop");}function resume() {send("resume");}function record() {send("record");}
-	async function send(status) {await post({ show: "", status: status });refresh();}
-	async function loop() {const v=document.getElementById('id4').innerHTML == "Looping" ? "1" : "0";await post({ show:"",loop:`${v}` });refresh();}</script>
+	async function send(status) {await post('action/showfile', { player: status });refresh();}
+	async function loop() {const v=document.getElementById('id4').innerHTML == "Looping" ? "1" : "0";await post('action/showfile', { loop:`${v}` });refresh();}</script>
 	<script>list();version();refresh()</script>
 </body>
 </html>

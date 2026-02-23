@@ -2,7 +2,7 @@
  * @file rdmsensormcp9808.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,14 +35,14 @@
 
 class RDMSensorMCP9808: public RDMSensor, sensor::MCP9808  {
 public:
-	RDMSensorMCP9808(uint8_t nSensor, uint8_t nAddress = 0) : RDMSensor(nSensor), sensor::MCP9808(nAddress) {
+	RDMSensorMCP9808(uint8_t nSensor, uint8_t address = 0) : RDMSensor(nSensor), sensor::MCP9808(address) {
 		SetType(E120_SENS_TEMPERATURE);
 		SetUnit(E120_UNITS_CENTIGRADE);
 		SetPrefix(E120_PREFIX_NONE);
-		SetRangeMin(rdm::sensor::safe_range_min(sensor::mcp9808::RANGE_MIN));
-		SetRangeMax(rdm::sensor::safe_range_max(sensor::mcp9808::RANGE_MAX));
-		SetNormalMin(rdm::sensor::safe_range_min(18));
-		SetNormalMax(rdm::sensor::safe_range_min(40));
+		SetRangeMin(rdm::sensor::SafeRangeMin(sensor::mcp9808::RANGE_MIN));
+		SetRangeMax(rdm::sensor::SafeRangeMax(sensor::mcp9808::RANGE_MAX));
+		SetNormalMin(rdm::sensor::SafeRangeMin(18));
+		SetNormalMax(rdm::sensor::SafeRangeMin(40));
 		SetDescription(sensor::mcp9808::DESCRIPTION);
 	}
 

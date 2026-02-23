@@ -2,7 +2,7 @@
  * @file dmxconst.h
  *
  */
-/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,35 +23,45 @@
  * THE SOFTWARE.
  */
 
-#ifndef DMX_CONST_H_
-#define DMX_CONST_H_
+#ifndef DMXCONST_H_
+#define DMXCONST_H_
 
 #include <cstdint>
 
-namespace dmx {
-enum class PortDirection {
-	OUTP, INP
+namespace dmx
+{
+enum class PortDirection
+{
+    kInput,
+    kOutput,
+    kDisable
 };
-enum class OutputStyle {
-	DELTA,
-	CONTINOUS
-};
-static constexpr uint32_t START_CODE = 0;				   ///< The start code for DMX512 data. This is often referred to as NSC for "Null Start Code".
-namespace min {
-static constexpr uint32_t CHANNELS = 2;
-}  // namespace min
-namespace max {
-static constexpr uint32_t CHANNELS = 512;
-}  // namespace max
-namespace transmit {
-static constexpr uint32_t BREAK_TIME_MIN = 92;				///< 92 us
-static constexpr uint32_t BREAK_TIME_TYPICAL = 176;		    ///< 176 us
-static constexpr uint32_t MAB_TIME_MIN = 12;				///< 12 us
-static constexpr uint32_t MAB_TIME_MAX = 1000000;			///< 1s
-static constexpr uint32_t REFRESH_RATE_DEFAULT = 40;		///< 40 Hz
-static constexpr uint32_t PERIOD_DEFAULT = (1000000U / REFRESH_RATE_DEFAULT);///< 25000 us
-static constexpr uint32_t BREAK_TO_BREAK_TIME_MIN = 1204;	///< us
-}  // namespace transmit
-}  // namespace dmx
 
-#endif /* DMX_CONST_H_ */
+enum class OutputStyle
+{
+    kDelta,   ///< DMX frame is triggered
+    kConstant ///< DMX output is continuous
+};
+
+enum class SendStyle
+{
+    kDirect,
+    kSync
+};
+
+inline constexpr uint32_t kStartCode = 0; ///< The start code for DMX512 data. This is often referred to as NSC for "Null Start Code".
+inline constexpr uint32_t kChannelsMin = 2;
+inline constexpr uint32_t kChannelsMax = 512;
+namespace transmit
+{
+inline constexpr uint32_t kBreakTimeMin = 92;                                ///< 92 us
+inline constexpr uint32_t kBreakTimeTypical = 176;                           ///< 176 us
+inline constexpr uint32_t kMabTimeMin = 12;                                  ///< 12 us
+inline constexpr uint32_t kMabTimeMax = 1000000;                             ///< 1s
+inline constexpr uint32_t kRefreshRateDefault = 40;                          ///< 40 Hz
+inline constexpr uint32_t kPeriodDefault = (1000000U / kRefreshRateDefault); ///< 25000 us
+inline constexpr uint32_t kBreakToBreakTimeMin = 1204;                     ///< us
+} // namespace transmit
+} // namespace dmx
+
+#endif  // DMXCONST_H_

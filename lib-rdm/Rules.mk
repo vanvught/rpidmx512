@@ -1,13 +1,20 @@
-EXTRA_INCLUDES=../lib-rdmsensor/include ../lib-rdmsubdevice/include ../lib-dmx/include ../lib-properties/include ../lib-lightset/include
+EXTRA_INCLUDES=../lib-rdmsensor/include ../lib-rdmsubdevice/include ../lib-dmx/include 
 EXTRA_INCLUDES+=../lib-network/include ../lib-display/include
 EXTRA_INCLUDES+=../lib-e131/include
 
+EXTRA_SRCDIR+=src/json
+
 ifneq ($(MAKE_FLAGS),)
-	ifeq (,$(findstring NODE_ARTNET,$(MAKE_FLAGS)))
   	ifeq ($(findstring RDM_RESPONDER,$(MAKE_FLAGS)), RDM_RESPONDER)
   		EXTRA_SRCDIR+=src/responder
-  		EXTRA_INCLUDES+=../lib-dmxreceiver/include
-  	endif
+  		EXTRA_SRCDIR+=src/handlers
+  		ifeq (,$(findstring NODE_ARTNET,$(MAKE_FLAGS)))
+  			EXTRA_INCLUDES+=../lib-dmxreceiver/include
+  		endif
+	endif
+		
+	ifeq ($(findstring CONFIG_RDM_ENABLE_SUBDEVICES,$(MAKE_FLAGS)), CONFIG_RDM_ENABLE_SUBDEVICES)
+		EXTRA_SRCDIR+=src/subdevice
 	endif
 	
 	ifeq ($(findstring RDM_CONTROLLER,$(MAKE_FLAGS)), RDM_CONTROLLER)
@@ -17,7 +24,9 @@ ifneq ($(MAKE_FLAGS),)
 	ifneq (,$(findstring NODE_RDMNET_LLRP_ONLY,$(MAKE_FLAGS)))
  		EXTRA_SRCDIR+=src/llrp
  		EXTRA_SRCDIR+=src/rdmnet
+ 		EXTRA_SRCDIR+=src/handlers
 	endif
+	
 	ifneq (,$(findstring CONFIG_STORE_USE_ROM,$(MAKE_FLAGS)))
 		EXTRA_INCLUDES+=../lib-flashcode/include
 	endif

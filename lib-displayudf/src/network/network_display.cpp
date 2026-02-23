@@ -1,5 +1,5 @@
 /**
- * @file network.cpp
+ * @file network_display.cpp
  *
  */
 /* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
@@ -23,51 +23,68 @@
  * THE SOFTWARE.
  */
 
-#undef NDEBUG
-
 #include "displayudf.h"
-#include "net/protocol/dhcp.h"
+#include "core/protocol/dhcp.h"
 
-void network_display_emac_config() {
-	DisplayUdf::Get()->ShowEmacInit();
+namespace net::emac::display
+{
+void Config()
+{
+    DisplayUdf::Get()->ShowEmacInit();
 }
 
-void network_display_emac_start() {
-	DisplayUdf::Get()->ShowEmacStart();
+void Start()
+{
+    DisplayUdf::Get()->ShowEmacStart();
+}
+void Status(bool is_link_up)
+{
+    DisplayUdf::Get()->ShowEmacStatus(is_link_up);
+}
+} // namespace net::emac::display
+
+namespace network::display
+{
+void Hostname()
+{
+    DisplayUdf::Get()->ShowHostName();
 }
 
-void network_display_emac_status(const bool isLinkUp) {
-	DisplayUdf::Get()->ShowEmacStatus(isLinkUp);
+void EmacShutdown()
+{
+    DisplayUdf::Get()->ShowShutdown();
 }
 
-void network_display_netif_up() {
-	DisplayUdf::Get()->ShowIpAddress();
+void DhcpStatus(network::dhcp::State state)
+{
+    DisplayUdf::Get()->ShowDhcpStatus(state);
+}
+} // namespace network::display
+
+namespace network::event
+{
+void LinkUp()
+{
+    DisplayUdf::Get()->ShowIpAddress();
 }
 
-void network_display_netif_down() {
-	DisplayUdf::Get()->ShowEmacStatus(false);
+void LinkDown()
+{
+    DisplayUdf::Get()->ShowEmacStatus(false);
 }
 
-void network_display_ip() {
-	DisplayUdf::Get()->ShowIpAddress();
+void Ipv4AddressChanged()
+{
+    DisplayUdf::Get()->ShowIpAddress();
 }
 
-void network_display_netmask() {
-	DisplayUdf::Get()->ShowNetmask();
+void Ipv4NetmaskChanged()
+{
+    DisplayUdf::Get()->ShowNetmask();
 }
 
-void network_display_gateway() {
-	DisplayUdf::Get()->ShowGatewayIp();
+void Ipv4GatewayChanged()
+{
+    DisplayUdf::Get()->ShowGatewayIp();
 }
-
-void network_display_hostname() {
-	DisplayUdf::Get()->ShowHostName();
-}
-
-void network_display_emac_shutdown() {
-	DisplayUdf::Get()->ShowShutdown();
-}
-
-void network_display_dhcp_status(net::dhcp::State state) {
-	DisplayUdf::Get()->ShowDhcpStatus(state);
-}
+} // namespace network::event

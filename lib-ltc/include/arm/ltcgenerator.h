@@ -1,6 +1,5 @@
 /**
  * @file ltcgenerator.h
- *
  */
 /* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
@@ -30,7 +29,7 @@
 
 #include "ltc.h"
 
-#include "hardware.h"
+#include "hal_statusled.h"
 
 namespace ltcgenerator {
 enum class Direction {
@@ -57,10 +56,10 @@ public:
 		Update();
 		HandleButtons();
 
-		if (m_State == STARTED) {
-			Hardware::Get()->SetMode(hardware::ledblink::Mode::DATA);
+		if (state_ == STARTED) {
+			hal::statusled::SetMode(hal::statusled::Mode::DATA);
 		} else {
-			Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
+			hal::statusled::SetMode(hal::statusled::Mode::NORMAL);
 		}
 	}
 
@@ -78,13 +77,13 @@ public:
 	void ActionGoto(const char *pTimeCode);
 	void ActionSetDirection(const char *pTimeCodeDirection);
 	void ActionSetPitch(float fTimeCodePitch);
-	void ActionForward(int32_t nSeconds);
-	void ActionBackward(int32_t nSeconds);
+	void ActionForward(int32_t seconds);
+	void ActionBackward(int32_t seconds);
 
-	void Input(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort);
+	void Input(const uint8_t *pBuffer, uint32_t nSize, uint32_t from_ip, uint16_t from_port);
 
 	static LtcGenerator *Get() {
-		return s_pThis;
+		return s_this;
 	}
 
 private:
@@ -95,20 +94,20 @@ private:
 	bool PitchControl();
 	void SetPitch(const char *pTimeCodePitch, uint32_t nSize);
 	void SetSkip(const char *pSeconds, uint32_t nSize, const ltcgenerator::Direction direction);
-	void SetTimeCode(int32_t nSeconds);
+	void SetTimeCode(int32_t seconds);
 
 	int32_t GetSeconds(const struct ltc::TimeCode& timecode) {
-		int32_t nSeconds = timecode.nHours;
-		nSeconds *= 60U;
-		nSeconds += timecode.nMinutes;
-		nSeconds *= 60U;
-		nSeconds += timecode.nSeconds;
+		int32_t seconds = timecode.hours;
+		seconds *= 60U;
+		seconds += timecode.minutes;
+		seconds *= 60U;
+		seconds += timecode.seconds;
 
-		return nSeconds;
+		return seconds;
 	}
 
-	void static StaticCallbackFunction(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
-		s_pThis->Input(pBuffer, nSize, nFromIp, nFromPort);
+	void static StaticCallbackFunction(const uint8_t *pBuffer, uint32_t nSize, uint32_t from_ip, uint16_t from_port) {
+		s_this->Input(pBuffer, nSize, from_ip, from_port);
 	}
 
 private:
@@ -124,22 +123,22 @@ private:
 	uint32_t m_nPitchTicker { 1 };
 	uint32_t m_nPitchPrevious { 0 };
 	float m_fPitchControl { 0 };
-	uint32_t m_nButtons { 0 };
-	int32_t m_nHandle { -1 };
-	uint32_t m_nBytesReceived { 0 };
+	uint32_t buttons_ { 0 };
+	int32_t handle_ { -1 };
+	uint32_t bytes_received_ { 0 };
 
-	char *m_pUdpBuffer { nullptr };
+	char *udp_buffer_ { nullptr };
 
-	uint8_t m_nFps { 0 };
+	uint8_t fps_ { 0 };
 
 	ltcgenerator::Direction m_tDirection { ltcgenerator::Direction::DIRECTION_FORWARD };
 	ltcgenerator::Pitch m_tPitch { ltcgenerator::Pitch::PITCH_FASTER };
 
 	enum {
 		STOPPED, STARTED, LIMIT
-	} m_State { STOPPED };
+	} state_ { STOPPED };
 
-	static inline LtcGenerator *s_pThis;
+	static inline LtcGenerator *s_this;
 };
 
 #endif /* ARM_LTCGENERATOR_H_ */

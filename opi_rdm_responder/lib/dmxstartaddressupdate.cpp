@@ -2,7 +2,7 @@
  * @file dmxstartaddressupdate.cpp
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,11 +26,9 @@
 #include <cstdint>
 
 #include "rdmresponder.h"
-
 #include "displayudf.h"
 
-#include "debug.h"
-
-void RDMResponder::DmxStartAddressUpdate([[maybe_unused]] uint16_t nDmxStartAddress) {
-	DisplayUdf::Get()->Show();
+void RDMResponder::DmxStartAddressUpdate([[maybe_unused]] uint16_t dmx_start_address)
+{
+    DisplayUdf::Get()->Show();
 }

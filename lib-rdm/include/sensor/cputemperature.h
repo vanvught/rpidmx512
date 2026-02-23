@@ -2,7 +2,7 @@
  * @file cputemperature.h
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,46 +23,49 @@
  * THE SOFTWARE.
  */
 
-#ifndef CPUTEMPERATURE_H_
-#define CPUTEMPERATURE_H_
+#ifndef SENSOR_CPUTEMPERATURE_H_
+#define SENSOR_CPUTEMPERATURE_H_
 
 #include <cstdint>
 
 #include "rdmsensor.h"
 #include "rdm_e120.h"
-#include "hardware.h"
+#include "hal.h"
+ #include "firmware/debug/debug_debug.h"
 
-#include "debug.h"
+class CpuTemperature final : public RDMSensor
+{
+   public:
+    explicit CpuTemperature(uint8_t sensor) : RDMSensor(sensor)
+    {
+        SetType(E120_SENS_TEMPERATURE);
+        SetUnit(E120_UNITS_CENTIGRADE);
+        SetPrefix(E120_PREFIX_NONE);
+        SetRangeMin(static_cast<int16_t>(hal::kCoreTemperatureMin));
+        SetRangeMax(static_cast<int16_t>(hal::kCoreTemperatureMax));
+        SetNormalMin(static_cast<int16_t>(hal::kCoreTemperatureMin));
+        SetNormalMax(static_cast<int16_t>(hal::kCoreTemperatureMax));
+        SetDescription("CPU");
+    }
 
-class CpuTemperature final: public RDMSensor {
-public:
-	CpuTemperature(uint8_t nSensor): RDMSensor(nSensor) {
-		SetType(E120_SENS_TEMPERATURE);
-		SetUnit(E120_UNITS_CENTIGRADE);
-		SetPrefix(E120_PREFIX_NONE);
-		SetRangeMin(static_cast<int16_t>(Hardware::Get()->GetCoreTemperatureMin()));
-		SetRangeMax(static_cast<int16_t>(Hardware::Get()->GetCoreTemperatureMax()));
-		SetNormalMin(static_cast<int16_t>(Hardware::Get()->GetCoreTemperatureMin()));
-		SetNormalMax(static_cast<int16_t>(Hardware::Get()->GetCoreTemperatureMax()));
-		SetDescription("CPU");
-	}
+    bool Initialize() override
+    {
+        DEBUG_ENTRY();
+#if defined(__APPLE__)
+        DEBUG_EXIT();
+        return false;
+#else
+        DEBUG_EXIT();
+        return true;
+#endif
+    }
 
-	bool Initialize() override {
-		DEBUG_ENTRY
-	#if defined (__APPLE__)
-		DEBUG_EXIT
-		return false;
-	#else
-		DEBUG_EXIT
-		return true;
-	#endif
-	}
-
-	int16_t GetValue() override {
-		const auto nValue = static_cast<int16_t>(Hardware::Get()->GetCoreTemperature());
-		DEBUG_PRINTF("nValue=%d", nValue);
-		return nValue;
-	}
+    int16_t GetValue() override
+    {
+        const auto kValue = static_cast<int16_t>(hal::CoreTemperatureCurrent());
+        DEBUG_PRINTF("nValue=%d", kValue);
+        return kValue;
+    }
 };
 
-#endif /* CPUTEMPERATURE_H_ */
+#endif  // SENSOR_CPUTEMPERATURE_H_

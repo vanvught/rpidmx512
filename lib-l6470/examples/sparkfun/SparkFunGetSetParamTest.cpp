@@ -50,16 +50,16 @@ int main(int argc, char **argv) {
 
 	// Start by setting up the pins and the SPI peripheral.
 	//  The library doesn't do this for you!
-	bcm2835_spi_begin();
+	bcm2835_SpiBegin();
 
-	bcm2835_gpio_fsel(GPIO_RESET_OUT, BCM2835_GPIO_FSEL_OUTP);
-	bcm2835_gpio_set(GPIO_RESET_OUT);
+	bcm2835_GpioFsel(GPIO_RESET_OUT, BCM2835_GPIO_FSEL_OUTP);
+	bcm2835_GpioSet(GPIO_RESET_OUT);
 
 	// This low/high is a reset of the L6470 chip on the Autodriver board, and is a good thing to do at
 	// the start of any Autodriver sketch, to be sure you're starting the Autodriver from a known state.
-	bcm2835_gpio_clr(GPIO_RESET_OUT);
+	bcm2835_GpioClr(GPIO_RESET_OUT);
 	bcm2835_delayMicroseconds(10000);
-	bcm2835_gpio_set(GPIO_RESET_OUT);
+	bcm2835_GpioSet(GPIO_RESET_OUT);
 	bcm2835_delayMicroseconds(10000);
 	/*                                                                         */
 	/***************************************************************************/

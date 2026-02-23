@@ -27,25 +27,69 @@
 #define LTCDISPLAYMAX72197SEGMENT_H_
 
 #include <cstdint>
+#include <cassert>
 
 #include "ltcdisplaymax7219set.h"
 #include "max72197segment.h"
 
-class LtcDisplayMax72197Segment final: public LtcDisplayMax7219Set, public Max72197Segment {
-public:
-	LtcDisplayMax72197Segment();
+class LtcDisplayMax72197Segment final : public LtcDisplayMax7219Set, public Max72197Segment
+{
+   public:
+    explicit LtcDisplayMax72197Segment(uint8_t intensity)
+    {
+        assert(s_this == nullptr);
+        s_this = this;
 
-	void Init(uint8_t nIntensity) override;
-	void Show(const char *pTimecode) override;
-	void ShowSysTime(const char *pSystemTime) override;
-	void WriteChar(uint8_t nChar, uint8_t nPos) override;
+        Max72197Segment::Init(intensity);
 
-	static LtcDisplayMax72197Segment *Get() {
-		return s_pThis;
+        WriteRegister(max7219::reg::DIGIT6, 0x80);
+        WriteRegister(max7219::reg::DIGIT4, 0x80, false);
+        WriteRegister(max7219::reg::DIGIT2, 0x80, false);
+    }
+
+    ~LtcDisplayMax72197Segment() override 
+    {
+		s_this = nullptr;
 	}
 
-private:
-	static LtcDisplayMax72197Segment *s_pThis;
+    void SetIntensity(uint8_t intensity) override { Max72197Segment::SetIntensity(intensity); }
+
+    void Show(const char* timecode) override
+    {
+        WriteRegister(max7219::reg::DIGIT7, static_cast<uint32_t>(timecode[0] - '0'));
+        WriteRegister(max7219::reg::DIGIT6, static_cast<uint32_t>((timecode[1] - '0') | 0x80), false);
+        WriteRegister(max7219::reg::DIGIT5, static_cast<uint32_t>(timecode[3] - '0'), false);
+        WriteRegister(max7219::reg::DIGIT4, static_cast<uint32_t>((timecode[4] - '0') | 0x80), false);
+        WriteRegister(max7219::reg::DIGIT3, static_cast<uint32_t>(timecode[6] - '0'), false);
+        WriteRegister(max7219::reg::DIGIT2, static_cast<uint32_t>((timecode[7] - '0') | 0x80), false);
+        WriteRegister(max7219::reg::DIGIT1, static_cast<uint32_t>(timecode[9] - '0'), false);
+        WriteRegister(max7219::reg::DIGIT0, static_cast<uint32_t>(timecode[10] - '0'), false);
+    }
+
+    void ShowSysTime(const char* system_time) override
+    {
+        WriteRegister(max7219::reg::DIGIT7, max7219::digit::BLANK);
+        WriteRegister(max7219::reg::DIGIT6, static_cast<uint32_t>(system_time[0] - '0'), false);
+        WriteRegister(max7219::reg::DIGIT5, static_cast<uint32_t>((system_time[1] - '0') | 0x80), false);
+        WriteRegister(max7219::reg::DIGIT4, static_cast<uint32_t>(system_time[3] - '0'), false);
+        WriteRegister(max7219::reg::DIGIT3, static_cast<uint32_t>((system_time[4] - '0') | 0x80), false);
+        WriteRegister(max7219::reg::DIGIT2, static_cast<uint32_t>(system_time[6] - '0'), false);
+        WriteRegister(max7219::reg::DIGIT1, static_cast<uint32_t>(system_time[7] - '0'), false);
+        WriteRegister(max7219::reg::DIGIT0, max7219::digit::BLANK, false);
+    }
+
+    void WriteChar(uint8_t ch, uint8_t pos) override
+    {
+        if (pos < 8)
+        {
+            WriteRegister(static_cast<uint32_t>(max7219::reg::DIGIT0 + pos), ch);
+        }
+    }
+
+    static LtcDisplayMax72197Segment* Get() { return s_this; }
+
+   private:
+    inline static LtcDisplayMax72197Segment* s_this;
 };
 
-#endif /* LTCDISPLAYMAX72197SEGMENT_H_ */
+#endif  // LTCDISPLAYMAX72197SEGMENT_H_

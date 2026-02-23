@@ -93,7 +93,7 @@ public:
 	uint32_t GetBufferSize();
 
 	static LtcEncoder* Get() {
-		return s_pThis;
+		return s_this;
 	}
 
 private:
@@ -105,7 +105,7 @@ private:
 #else
 	static uint32_t s_Buffer[ltc::encoder::BUFFER_SIZE];
 #endif
-	static LtcEncoder *s_pThis;
+	static LtcEncoder *s_this;
 };
 
 #endif /* LTCENCODER_H_ */

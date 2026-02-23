@@ -2,7 +2,7 @@
  * @file max7219matrix.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,34 +23,47 @@
  * THE SOFTWARE.
  */
 
-#ifndef DEVICE_MAX7219MATRIX_H_
-#define DEVICE_MAX7219MATRIX_H_
+#ifndef MAX7219MATRIX_H_
+#define MAX7219MATRIX_H_
 
 #include <cstdint>
 
 #include "max7219.h"
 
-class Max7219Matrix: public MAX7219 {
-public:
-	Max7219Matrix();
-	~Max7219Matrix();
+class Max7219Matrix : public MAX7219
+{
+   public:
+    Max7219Matrix();
+    ~Max7219Matrix();
 
-	void Init(uint16_t nCount, uint8_t nIntensity);
+    void SetIntensity(uint8_t intensity) { WriteAll(max7219::reg::INTENSITY, intensity & 0x0F); }
 
-	void Cls();
+    void Init(uint16_t count, uint8_t intensity);
 
-	void Write(const char *pBuffer, uint16_t nCount);
+    void Cls()
+    {
+        WriteAll(max7219::reg::DIGIT0, 0);
+        WriteAll(max7219::reg::DIGIT1, 0);
+        WriteAll(max7219::reg::DIGIT2, 0);
+        WriteAll(max7219::reg::DIGIT3, 0);
+        WriteAll(max7219::reg::DIGIT4, 0);
+        WriteAll(max7219::reg::DIGIT5, 0);
+        WriteAll(max7219::reg::DIGIT6, 0);
+        WriteAll(max7219::reg::DIGIT7, 0);
+    }
 
-	void UpdateCharacter(uint32_t nChar, const uint8_t pBytes[8]);
+    void Write(const char* buffer, uint16_t count);
 
-private:
-	uint8_t Rotate(uint32_t r, uint32_t x);
-	void WriteAll(uint8_t nRegister, uint8_t nData);
+    void UpdateCharacter(uint32_t c, const uint8_t bytes[8]);
 
-private:
-	uint32_t m_nFontSize;
-	uint8_t *m_pFont;
-	uint16_t m_nCount { 4 };
+   private:
+    uint8_t Rotate(uint32_t r, uint32_t x);
+    void WriteAll(uint8_t reg, uint8_t data);
+
+   private:
+    uint32_t font_size_;
+    uint8_t* font_;
+    uint16_t count_{4};
 };
 
-#endif /* DEVICE_MAX7219MATRIX_H_ */
+#endif  // MAX7219MATRIX_H_

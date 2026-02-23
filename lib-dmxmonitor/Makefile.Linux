@@ -1,5 +1,6 @@
 #DEFINES=NDEBUG
+EXTRA_SRCDIR=
+EXTRA_INCLUDES=
 
-EXTRA_INCLUDES=../lib-lightset/include ../lib-properties/include
-
+include Rules.mk
 include ../firmware-template-linux/lib/Rules.mk

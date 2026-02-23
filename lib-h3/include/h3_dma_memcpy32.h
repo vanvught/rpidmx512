@@ -54,9 +54,9 @@ void memcpy32_init() ;
  *
  * @param pDestination Pointer to the destination memory address (must be 32-bit aligned).
  * @param pSource Pointer to the source memory address (must be 32-bit aligned).
- * @param nBytesCount Number of bytes to copy (must be a multiple of 4).
+ * @param bytes_count Number of bytes to copy (must be a multiple of 4).
  */
-void memcpy32(const void *pDestination, const void *pSource, const uint32_t nBytesCount);
+void memcpy32(const void *pDestination, const void *pSource, const uint32_t bytes_count);
 
 /**
  * @brief Checks if the DMA memcpy operation is still active.

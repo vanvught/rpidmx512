@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,107 +26,101 @@
 #include <cstdint>
 #include <cassert>
 
-#include "hardware.h"
-#include "network.h"
-
+#include "h3/hal_watchdog.h"
+#include "emac/network.h"
 #include "display.h"
-
-#include "net/apps/mdns.h"
-
+#include "apps/mdns.h"
 #include "oscclient.h"
-#include "oscclientparams.h"
+#include "json/oscclientparams.h"
 #include "oscclientmsgconst.h"
-#include "oscclientled.h"
-
 #include "buttonsset.h"
 #include "buttonsgpio.h"
 #include "buttonsmcp.h"
-
 #include "flashcodeinstall.h"
 #include "configstore.h"
 #include "remoteconfig.h"
-#include "remoteconfigparams.h"
-
-
 #include "firmwareversion.h"
 #include "software_version.h"
-
 #include "displayhandler.h"
 
-int main() {
-	Hardware hw;
-	Display display;
-	ConfigStore configStore;
-	Network nw;
-	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
-	FlashCodeInstall spiFlashInstall;
+namespace hal
+{
+void RebootHandler() {}
+} // namespace hal
 
-	fw.Print("OSC Client");
-	
-	OscClientParams params;
-	OscClient client;
+int main() // NOLINT
+{
+    hal::Init();
+    Display display;
+    ConfigStore config_store;
+    network::Init();
+    FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+    FlashCodeInstall spiflash_install;
 
-	params.Load();
-	params.Set(&client);
+    fw.Print("OSC Client");
 
-	mdns_service_record_add(nullptr, mdns::Services::OSC, "type=client", client.GetPortIncoming());
+    OscClient osc_client;
 
-	display.TextStatus(OscClientMsgConst::PARAMS, CONSOLE_YELLOW);
+    json::OscClientParams osc_client_params;
+    osc_client_params.Load();
+    osc_client_params.Set();
 
-	client.Print();
+    osc_client.Print();
 
-	ButtonsSet *pButtonsSet;
+    ButtonsSet* buttons_set;
 
-	auto *pButtonsMcp = new ButtonsMcp(&client);
-	assert(pButtonsMcp != nullptr);
+    auto* buttons_mcp = new ButtonsMcp(&osc_client);
+    assert(buttons_mcp != nullptr);
 
-	if (pButtonsMcp->Start()) {
-		pButtonsSet = static_cast<ButtonsSet*>(pButtonsMcp);
-		client.SetLedHandler(pButtonsMcp);
-	} else {
-		delete pButtonsMcp;
+    if (buttons_mcp->Start())
+    {
+        buttons_set = static_cast<ButtonsSet*>(buttons_mcp);
+        osc_client.SetLedHandler(buttons_mcp);
+    }
+    else
+    {
+        delete buttons_mcp;
 
-		auto *pButtonsGpio = new ButtonsGpio(&client);
-		assert(pButtonsGpio != nullptr);
+        auto* buttons_gpio = new ButtonsGpio(&osc_client);
+        assert(buttons_gpio != nullptr);
 
-		pButtonsGpio->Start();
+        buttons_gpio->Start();
 
-		pButtonsSet = static_cast<ButtonsSet*>(pButtonsGpio);
-		client.SetLedHandler(pButtonsGpio);
-	}
+        buttons_set = static_cast<ButtonsSet*>(buttons_gpio);
+        osc_client.SetLedHandler(buttons_gpio);
+    }
 
-	RemoteConfig remoteConfig(remoteconfig::Node::OSC_CLIENT, remoteconfig::Output::OSC, pButtonsSet->GetButtonsCount());
+    RemoteConfig remote_config(remoteconfig::Output::OSC, buttons_set->GetButtonsCount());
 
-	RemoteConfigParams remoteConfigParams;
-	remoteConfigParams.Load();
-	remoteConfigParams.Set(&remoteConfig);
 
-	for (uint32_t i = 1; i < 7 ; i++) {
-		display.ClearLine(i);
-	}
+    for (uint32_t i = 1; i < 7; i++)
+    {
+        display.ClearLine(i);
+    }
 
-	display.Write(1, "Eth OSC Client");
-	display.Printf(2, "%s.local", nw.GetHostName());
-	display.Printf(3, "IP: " IPSTR " %c", IP2STR(Network::Get()->GetIp()), nw.IsDhcpKnown() ? (nw.IsDhcpUsed() ? 'D' : 'S') : ' ');
-	display.Printf(4, "S : " IPSTR, IP2STR(client.GetServerIP()));
-	display.Printf(5, "O : %d", client.GetPortOutgoing());
-	display.Printf(6, "I : %d", client.GetPortIncoming());
+    display.Write(1, "Eth OSC Client");
+    display.Printf(2, "%s.local",  network::iface::HostName());
+    display.Printf(3, "IP: " IPSTR " %c", IP2STR(network::GetPrimaryIp()), network::iface::IsDhcpKnown() ? ( network::iface::Dhcp() ? 'D' : 'S') : ' ');
+    display.Printf(4, "S : " IPSTR, IP2STR(osc_client.GetServerIP()));
+    display.Printf(5, "O : %d", osc_client.GetPortOutgoing());
+    display.Printf(6, "I : %d", osc_client.GetPortIncoming());
 
-	display.TextStatus(OscClientMsgConst::START, CONSOLE_YELLOW);
+    display.TextStatus(OscClientMsgConst::START, console::Colours::kConsoleYellow);
 
-	client.Start();
+    osc_client.Start();
 
-	display.TextStatus(OscClientMsgConst::STARTED, CONSOLE_GREEN);
+    display.TextStatus(OscClientMsgConst::STARTED, console::Colours::kConsoleGreen);
 
-	hw.SetMode(hardware::ledblink::Mode::NORMAL);
-	hw.WatchdogInit();
+    hal::statusled::SetMode(hal::statusled::Mode::NORMAL);
+    hal::WatchdogInit();
 
-	for (;;) {
-		hw.WatchdogFeed();
-		nw.Run();
-		client.Run();
-		pButtonsSet->Run();
-		display.Run();
-		hw.Run();
-	}
+    for (;;)
+    {
+        hal::WatchdogFeed();
+        network::Run();
+        osc_client.Run();
+        buttons_set->Run();
+        display.Run();
+        hal::Run();
+    }
 }

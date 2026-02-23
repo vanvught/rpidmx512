@@ -1,6 +1,5 @@
 /**
  * @file httpdhandlerequest.cpp
- *
  */
 /* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
@@ -23,874 +22,682 @@
  * THE SOFTWARE.
  */
 
-#if defined (DEBUG_HTTPD)
-# undef NDEBUG
+#if defined(DEBUG_HTTPD)
+#undef NDEBUG
 #endif
 
 #if defined(__GNUC__) && !defined(__clang__)
-# pragma GCC push_options
-# pragma GCC optimize ("O2")
+#pragma GCC push_options
+#pragma GCC optimize("O2")
 #endif
 
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
-#include <ctype.h>
 #include <cassert>
 
 #include "httpd/httpdhandlerequest.h"
-#include "http_status_messages.h"
-#include "../http/content/json_switch.h"
-
-#include "remoteconfig.h"
-#include "remoteconfigjson.h"
-#include "properties.h"
-#include "sscan.h"
-#include "propertiesconfig.h"
-
-#include "hardware.h"
+#include "http/html_infos.h"
+#include "http/json_infos.h"
 #include "network.h"
-#include "net/tcp.h"
-#include "net/apps/mdns.h"
-#include "display.h"
+#include "hal.h"
+#include "firmware/debug/debug_dump.h"
+#include "firmware/debug/debug_debug.h"
 
-#if defined (NODE_ARTNET) && defined(RDM_CONTROLLER)
-# include "artnetnode.h"
-#endif
-
-#if !defined (CONFIG_HTTP_HTML_NO_DMX)
-# if defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI)
-#  define HAVE_DMX
-# endif
-# if defined(OUTPUT_DMX_PIXEL) || defined(OUTPUT_DMX_PIXEL_MULTI)
-#  define HAVE_PIXEL
-# endif
-#endif
-
-#if defined (NODE_SHOWFILE)
-# define ENABLE_METHOD_DELETE
-#endif
-
-#if defined (ENABLE_FIRMWARE_UPLOAD)
-# include "firmware.h"
-#endif
-
-#include "debug.h"
-
-#if defined ENABLE_CONTENT
-const char *get_file_content(const char *fileName, uint32_t& nSize, http::contentTypes& contentType);
-#endif
+const char* GetFileContent(const char* file_name, uint32_t& size, http::contentTypes& content_type);
 
 #ifndef NDEBUG
-static constexpr char s_request_method[][8] = {"GET", "POST", "DELETE", "UNKNOWN" };
+static constexpr char s_request_method[][8] = {"GET", "POST", "DELETE", "UNKNOWN"};
 #endif
 
-static constexpr char s_contentType[static_cast<uint32_t>(http::contentTypes::NOT_DEFINED)][32] =
-{ "text/html", "text/css", "text/javascript", "application/json", "application/octet-stream" };
+static constexpr char kSContentType[static_cast<uint32_t>(http::contentTypes::NOT_DEFINED)][32] = {"text/html", "text/css", "text/javascript", "application/json", "application/octet-stream"};
 
-void HttpDeamonHandleRequest::HandleRequest(const uint32_t nBytesReceived, char *pReceiveBuffer) {
-	DEBUG_ENTRY
+void HttpDeamonHandleRequest::HandleRequest(uint32_t bytes_received, char* receive_buffer)
+{
+    DEBUG_ENTRY();
 
-	m_nBytesReceived = nBytesReceived;
-	m_pReceiveBuffer = pReceiveBuffer;
+    bytes_received_ = bytes_received;
+    receive_buffer_ = receive_buffer;
 
-	const char *pStatusMsg = "OK";
+    const char* status_msg = "OK";
 
-	DEBUG_PRINTF("%u: m_Status=%u", m_nConnectionHandle, static_cast<uint32_t>(m_Status));
+    DEBUG_PRINTF("%u: status_=%u", connection_handle_, static_cast<uint32_t>(status_));
 
-	if (m_Status == http::Status::UNKNOWN_ERROR) {
-		// This is an initial incoming HTTP request
-		m_Status = ParseRequest();
+    // The HTTP handler keeps state across TCP segments (e.g. POST body arriving later).
+    // status_ == UNKNOWN_ERROR means "we are not currently processing an in-progress request".
+    if (status_ == http::Status::UNKNOWN_ERROR)
+    {
+        // Initial incoming HTTP request (header + maybe body)
+        status_ = ParseRequest();
 
-#ifndef NDEBUG
-		DEBUG_PRINTF("%s %s", s_request_method[static_cast<uint32_t>(m_RequestMethod)], m_RequestContentType < http::contentTypes::NOT_DEFINED ? s_contentType[static_cast<uint32_t>(m_RequestContentType)] : "Unknown");
+        DEBUG_PRINTF("%s %s", s_request_method[static_cast<uint32_t>(request_method_)], request_content_type_ < http::contentTypes::NOT_DEFINED ? kSContentType[static_cast<uint32_t>(request_content_type_)] : "Unknown");
+
+        if (status_ == http::Status::OK)
+        {
+            // Request is syntactically valid and supported.
+            if (request_method_ == http::RequestMethod::GET)
+            {
+                status_ = HandleGet();
+            }
+            else if (request_method_ == http::RequestMethod::POST)
+            {
+                // If POST has Content-Length but no data in this segment,
+                // we must wait for next TCP segment(s).
+                if ((request_content_length_ != 0U) && (request_data_length_ == 0U))
+                {
+                    DEBUG_PUTS("There is a POST header only -> no data");
+                    DEBUG_EXIT();
+                    return;
+                }
+
+                status_ = HandlePost();
+            }
+        }
+    }
+    else if ((status_ == http::Status::OK) && (request_method_ == http::RequestMethod::POST))
+    {
+        // Follow-up TCP segment containing POST body data.
+        // We treat the new receive_buffer as body data.
+        file_data_ = receive_buffer_;
+        request_data_length_ = bytes_received_;
+
+        status_ = HandlePost();
+
+        // If we haven't received the full body yet, wait for more segments.
+        if (request_data_length_ < request_content_length_)
+        {
+            DEBUG_EXIT();
+            return;
+        }
+    }
+
+#if defined(ENABLE_METHOD_DELETE)
+    else if ((status_ == http::Status::OK) && (request_method_ == http::RequestMethod::DELETE))
+    {
+        status_ = HandleDelete();
+    }
 #endif
 
-		if (m_Status == http::Status::OK) {
-			// It is a supported request
-			if (m_RequestMethod == http::RequestMethod::GET) {
-				m_Status = HandleGet();
-			} else if (m_RequestMethod == http::RequestMethod::POST) {
-				// Handling headers and body data for the first chunk
-				m_Status = HandlePost(false);
+    // If request handling failed, generate an error response or abort.
+    if (status_ != http::Status::OK)
+    {
+        switch (status_)
+        {
+            case http::Status::BAD_REQUEST:
+                status_msg = "Bad Request";
+                break;
+            case http::Status::NOT_FOUND:
+                status_msg = "Not Found";
+                break;
+            case http::Status::REQUEST_ENTITY_TOO_LARGE:
+                status_msg = "Request Entity Too Large";
+                break;
+            case http::Status::REQUEST_URI_TOO_LONG:
+                status_msg = "Request-URI Too Long";
+                break;
+            case http::Status::INTERNAL_SERVER_ERROR:
+                status_msg = "Internal Server Error";
+                break;
 
-				if ((m_Status == http::Status::OK) && (m_nRequestDataLength == 0)) {
-					DEBUG_PUTS("There is a POST header only -> no data");
-					DEBUG_EXIT
-					return;
-				}
+            case http::Status::METHOD_NOT_IMPLEMENTED:
+                __attribute__((fallthrough));
+            case http::Status::VERSION_NOT_SUPPORTED:
+                __attribute__((fallthrough));
+            default:
+                // IMPORTANT CHANGE:
+                // In the new TCP design there is no (listen_handle, conn_handle) pair.
+                // The connection handle alone identifies the TCB in the global pool.
+                network::tcp::Abort(connection_handle_);
 
-				if (m_nRequestDataLength < m_nRequestContentLength) {
-					DEBUG_EXIT
-					return;
-				}
-			}
-#if defined (ENABLE_METHOD_DELETE)
-			else if (m_RequestMethod == http::RequestMethod::DELETE) {
-				m_Status = HandleDelete(false);
+                // Reset our HTTP parser state; next segment would be unrelated anyway.
+                status_ = http::Status::UNKNOWN_ERROR;
+                request_method_ = http::RequestMethod::UNKNOWN;
+                DEBUG_EXIT();
+                return;
+        }
 
-				if ((m_Status == http::Status::OK) && (m_nRequestDataLength == 0)) {
-					DEBUG_PUTS("There is a DELETE header only -> no data");
-					DEBUG_EXIT
-					return;
-				}
-			}
-#endif
-		}
-	} else if ((m_Status == http::Status::OK) && (m_RequestMethod == http::RequestMethod::POST)) {
-		// Handling body data only for subsequent chunks
-		m_Status = HandlePost(true);
+        request_content_type_ = http::contentTypes::TEXT_HTML;
+        content_ = dynamic_content_;
+        content_size_ = static_cast<uint32_t>(snprintf(dynamic_content_, sizeof(dynamic_content_) - 1U,
+                                                       "<!DOCTYPE html>\n"
+                                                       "<html>\n"
+                                                       "<head><title>%u %s</title></head>\n"
+                                                       "<body><h1>%s</h1></body>\n"
+                                                       "</html>\n",
+                                                       static_cast<unsigned int>(status_), status_msg, status_msg));
+    }
 
-		if (m_nRequestDataLength < m_nRequestContentLength) {
-			DEBUG_EXIT
-			return;
-		}
-	}
-#if defined (ENABLE_METHOD_DELETE)
-	else if ((m_Status == http::Status::OK) && (m_RequestMethod == http::RequestMethod::DELETE)) {
-		m_Status = HandleDelete(true);
-	}
-#endif
+    // Build HTTP header into receive_buffer_ and send it first.
+    //
+    // NOTE (bug in your original code):
+    // You used sizeof(dynamic_content_) for snprintf into receive_buffer_.
+    // That only works if receive_buffer_ actually points to a buffer of >= dynamic_content_ size.
+    // If receive_buffer_ is smaller, this can overflow.
+    //
+    // If you control the RX buffer size and it's always >= httpd::kBufsize, it's OK.
+    // Otherwise, prefer using the actual RX buffer capacity.
+    const auto kHeaderLength =
+        static_cast<uint32_t>(snprintf(receive_buffer_, sizeof(dynamic_content_) - 1U,
+                                       "HTTP/1.1 %u %s\r\n"
+                                       "Server: %s\r\n"
+                                       "Content-Type: %s\r\n"
+                                       "Content-Length: %u\r\n"
+                                       "Connection: close\r\n"
+                                       "\r\n",
+                                       static_cast<unsigned int>(status_), status_msg, network::iface::HostName(), kSContentType[static_cast<uint32_t>(request_content_type_)], static_cast<unsigned int>(content_size_)));
 
-	if (m_Status != http::Status::OK) {
-		switch (m_Status) {
-		case http::Status::BAD_REQUEST:
-			pStatusMsg = "Bad Request";
-			break;
-		case http::Status::NOT_FOUND:
-			pStatusMsg = "Not Found";
-			break;
-		case http::Status::REQUEST_ENTITY_TOO_LARGE:
-			pStatusMsg = "Request Entity Too Large";
-			break;
-		case http::Status::REQUEST_URI_TOO_LONG:
-			pStatusMsg = "Request-URI Too Long";
-			break;
-		case http::Status::INTERNAL_SERVER_ERROR:
-			pStatusMsg = "Internal Server Error";
-			break;
-		case http::Status::METHOD_NOT_IMPLEMENTED:
-			 __attribute__ ((fallthrough));
-			/* no break */
-		case http::Status::VERSION_NOT_SUPPORTED:
-			 __attribute__ ((fallthrough));
-			/* no break */
-		default:
-			net::tcp_abort(m_nHandle, m_nConnectionHandle);
-			m_Status = http::Status::UNKNOWN_ERROR;
-			m_RequestMethod = http::RequestMethod::UNKNOWN;
-			DEBUG_EXIT
-			return;
-			break;
-		}
+    // IMPORTANT CHANGE:
+    // Write is now per-connection only.
+    network::tcp::Send(connection_handle_, reinterpret_cast<const uint8_t*>(receive_buffer_), kHeaderLength);
 
-		m_RequestContentType = http::contentTypes::TEXT_HTML;
-		m_pContent = m_DynamicContent;
-		m_nContentSize = static_cast<uint32_t>(snprintf(m_DynamicContent, sizeof(m_DynamicContent) - 1U,
-				"<!DOCTYPE html>\n"
-				"<html>\n"
-				"<head><title>%u %s</title></head>\n"
-				"<body><h1>%s</h1></body>\n"
-				"</html>\n", static_cast<unsigned int>(m_Status), pStatusMsg, pStatusMsg));
-	}
+    DEBUG_PRINTF("content_size_=%u", content_size_);
 
-	const auto nHeaderLength = static_cast<uint32_t>(snprintf(m_pReceiveBuffer, sizeof(m_DynamicContent) - 1U,
-			"HTTP/1.1 %u %s\r\n"
-			"Server: %s\r\n"
-			"Content-Type: %s\r\n"
-			"Content-Length: %u\r\n"
-			"Connection: close\r\n"
-			"\r\n", static_cast<unsigned int>(m_Status), pStatusMsg, Network::Get()->GetHostName(), s_contentType[static_cast<uint32_t>(m_RequestContentType)], static_cast<unsigned int>(m_nContentSize)));
+    if (content_size_ != 0U)
+    {
+        network::tcp::Send(connection_handle_, reinterpret_cast<const uint8_t*>(content_), content_size_);
+    }
 
-	net::tcp_write(m_nHandle, reinterpret_cast<uint8_t *>(m_pReceiveBuffer), nHeaderLength, m_nConnectionHandle);
-	net::tcp_write(m_nHandle, reinterpret_cast<const uint8_t *>(m_pContent), m_nContentSize, m_nConnectionHandle);
+    // Reset request state after reply is sent.
+    status_ = http::Status::UNKNOWN_ERROR;
+    request_method_ = http::RequestMethod::UNKNOWN;
+    request_content_length_ = 0;
+    request_data_length_ = 0;
+    file_data_ = nullptr;
+    firmwarefile_name_ = nullptr;
 
-	DEBUG_PRINTF("m_nContentLength=%u", m_nContentSize);
-
-	m_Status = http::Status::UNKNOWN_ERROR;
-	m_RequestMethod = http::RequestMethod::UNKNOWN;
-
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-http::Status HttpDeamonHandleRequest::ParseRequest() {
-	char *pLine = m_pReceiveBuffer;
-	uint32_t nLine = 0;
-	auto httpStatus = http::Status::UNKNOWN_ERROR;
-	m_RequestContentType = http::contentTypes::NOT_DEFINED;
-	m_nRequestContentLength = 0;
-	m_nRequestDataLength = 0;
-	m_pFirmwareFilename = nullptr;
+http::Status HttpDeamonHandleRequest::ParseRequest()
+{
+    char* line_buffer = receive_buffer_;
+    uint32_t line_index = 0;
+    auto http_status = http::Status::UNKNOWN_ERROR;
+    request_content_type_ = http::contentTypes::NOT_DEFINED;
+    request_content_length_ = 0;
+    request_data_length_ = 0;
+    firmwarefile_name_ = nullptr;
 
-	for (uint32_t i = 0; i < m_nBytesReceived; i++) {
-		if (m_pReceiveBuffer[i] == '\n') {
-			assert(i > 1);
-			m_pReceiveBuffer[i - 1] = '\0';
+    for (uint32_t i = 0; i < bytes_received_; i++)
+    {
+        if (receive_buffer_[i] == '\n')
+        {
+            assert(i > 0);
+            receive_buffer_[i - 1] = '\0'; // Turn \r\n into \0
 
-			if (nLine++ == 0) {
-				httpStatus = ParseMethod(pLine);
-			} else {
-				if (pLine[0] == '\0') {
-					assert((i + 1) <= m_nBytesReceived);
-					m_nRequestDataLength = static_cast<uint16_t>(m_nBytesReceived - 1 - i);
+            if (line_index++ == 0)
+            {
+                http_status = ParseMethod(line_buffer);
+            }
+            else
+            {
+                if (line_buffer[0] == '\0')
+                {
+                    uint32_t header_end_index = i + 1;
 
-					if (m_nRequestDataLength > 0) {
-						m_pFileData = &m_pReceiveBuffer[i + 1];
-						m_pFileData[m_nRequestDataLength] = '\0';
-					}
+                    request_data_length_ = static_cast<uint16_t>(bytes_received_ - header_end_index);
 
-					return http::Status::OK;
-				}
-				httpStatus = ParseHeaderField(pLine);
-			}
+                    if (request_data_length_ > 0)
+                    {
+                        file_data_ = &receive_buffer_[header_end_index];
+                        receive_buffer_[bytes_received_] = '\0';
+                    }
 
-			if (httpStatus != http::Status::OK) {
-				return httpStatus;
-			}
+                    return http::Status::OK;
+                }
 
-			pLine = &m_pReceiveBuffer[++i];
-		}
-	}
+                http_status = ParseHeaderField(line_buffer);
+            }
 
-	return http::Status::OK;
+            if (http_status != http::Status::OK)
+            {
+                return http_status;
+            }
+
+            line_buffer = &receive_buffer_[i + 1];
+        }
+    }
+
+    return http::Status::OK;
 }
 
-/**
- * Supported: "METHOD uri HTTP/1.1"
- * Where METHOD is "GET", "POST" or "DELETE"
- */
+http::Status HttpDeamonHandleRequest::ParseMethod(char* line)
+{
+    DEBUG_ENTRY();
 
-http::Status HttpDeamonHandleRequest::ParseMethod(char *pLine) {
-	assert(pLine != nullptr);
-	char *pToken;
+    assert(line != nullptr);
+    char* token;
 
-	if ((pToken = strtok(pLine, " ")) == nullptr) {
-		return http::Status::METHOD_NOT_IMPLEMENTED;
-	}
+    if ((token = strtok(line, " ")) == nullptr)
+    {
+        return http::Status::METHOD_NOT_IMPLEMENTED;
+    }
 
-	if (strcmp(pToken, "GET") == 0) {
-		m_RequestMethod = http::RequestMethod::GET;
-	} else if (strcmp(pToken, "POST") == 0) {
-		m_RequestMethod = http::RequestMethod::POST;
-	}
-#if defined (ENABLE_METHOD_DELETE)
-	else if (strcmp(pToken, "DELETE") == 0) {
-		m_RequestMethod = http::RequestMethod::DELETE;
-	}
+    if (strcmp(token, "GET") == 0)
+    {
+        request_method_ = http::RequestMethod::GET;
+    }
+    else if (strcmp(token, "POST") == 0)
+    {
+        request_method_ = http::RequestMethod::POST;
+    }
+#if defined(CONFIG_HTTPD_ENABLE_DELETE)
+    else if (strcmp(token, "DELETE") == 0)
+    {
+        request_method_ = http::RequestMethod::DELETE;
+    }
 #endif
-	else {
-		return http::Status::METHOD_NOT_IMPLEMENTED;
-	}
+    else
+    {
+        return http::Status::METHOD_NOT_IMPLEMENTED;
+    }
 
-	if ((pToken = strtok(nullptr, " ")) == nullptr) {
-		return http::Status::BAD_REQUEST;
-	}
+    if ((token = strtok(nullptr, " ")) == nullptr)
+    {
+        return http::Status::BAD_REQUEST;
+    }
 
-	m_pUri = pToken;
+    uri_ = token;
 
-	if ((pToken = strtok(nullptr, "/")) == nullptr || strcmp(pToken, "HTTP") != 0) {
-		return http::Status::BAD_REQUEST;
-	}
+    if ((token = strtok(nullptr, "/")) == nullptr || strcmp(token, "HTTP") != 0)
+    {
+        return http::Status::BAD_REQUEST;
+    }
 
-	if ((pToken = strtok(nullptr, " \n")) == nullptr) {
-		return http::Status::BAD_REQUEST;
-	}
+    if ((token = strtok(nullptr, " \n")) == nullptr)
+    {
+        return http::Status::BAD_REQUEST;
+    }
 
-	if (strcmp(pToken, "1.1") != 0) {
-		return http::Status::VERSION_NOT_SUPPORTED;
-	}
+    if (strcmp(token, "1.1") != 0)
+    {
+        return http::Status::VERSION_NOT_SUPPORTED;
+    }
 
-	return http::Status::OK;
+    return http::Status::OK;
 }
 
-/**
- * Only interested in "Content-Type", "Content-Length", and "X-Filename"
- * Where we check for "Content-Type: application/json" and "Content-Type: application/octet-stream"
- */
+static bool ParseUint32(const char* str, uint32_t& out)
+{
+    out = 0;
+    if (str == nullptr) return false;
 
-http::Status HttpDeamonHandleRequest::ParseHeaderField(char *pLine) {
-	DEBUG_ENTRY
-	char *pToken;
+    while (*str == ' ') ++str; // Skip leading spaces
 
-	assert(pLine != nullptr);
+    if (*str == '\0') return false; // Empty string
 
-	if ((pToken = strtok(pLine, ":")) == nullptr) {
-		return http::Status::BAD_REQUEST;
-	}
+    while (*str != '\0')
+    {
+        char c = *str++;
+        if (c < '0' || c > '9') return false;
+        uint32_t digit = static_cast<uint32_t>(c - '0');
 
-	DEBUG_PUTS(pToken);
+        // Optional: Add overflow protection
+        if (out > (UINT32_MAX - digit) / 10) return false;
 
-	if (strcasecmp(pToken, "Content-Type") == 0) {
-		if ((pToken = strtok(nullptr, " ;")) == nullptr) {
-			DEBUG_EXIT
-			return http::Status::BAD_REQUEST;
-		}
-		if (memcmp(pToken, "application/", 12) == 0) {
-			if (strcmp(&pToken[12], "json") == 0) {
-				m_RequestContentType = http::contentTypes::APPLICATION_JSON;
-				DEBUG_EXIT
-				return http::Status::OK;
-			}
+        out = out * 10 + digit;
+    }
 
-			if (strcmp(&pToken[12], "octet-stream") == 0) {
-#if defined (ENABLE_FIRMWARE_UPLOAD)
-				m_RequestContentType = http::contentTypes::APPLICATION_OCTET_STREAM;
-				DEBUG_EXIT
-				return http::Status::OK;
-#else
-				DEBUG_EXIT
-				return http::Status::BAD_REQUEST;
-#endif
-			}
-		}
-	} else if (strcasecmp(pToken, "Content-Length") == 0) {
-		if ((pToken = strtok(nullptr, " ")) == nullptr) {
-			return http::Status::BAD_REQUEST;
-		}
-
-		uint32_t nTmp = 0;
-		while (*pToken != '\0') {
-			auto nDigit = static_cast<uint32_t>(*pToken++ - '0');
-			if (nDigit > 9) {
-				return http::Status::BAD_REQUEST;
-			}
-
-			nTmp *= 10;
-			nTmp += nDigit;
-		}
-
-#if defined ENABLE_FIRMWARE_UPLOAD
-		if (nTmp > FIRMWARE_MAX_SIZE) {
-			DEBUG_EXIT
-			return http::Status::REQUEST_ENTITY_TOO_LARGE;
-		}
-#endif
-
-		m_nRequestContentLength = nTmp;
-		DEBUG_EXIT
-		return http::Status::OK;
-	}
-#if defined (ENABLE_FIRMWARE_UPLOAD)
-	else if (strcasecmp(pToken, "X-Filename") == 0) {
-		if ((pToken = strtok(nullptr, " ")) == nullptr) {
-			DEBUG_EXIT
-			return http::Status::BAD_REQUEST;
-		}
-
-		if (strncmp(pToken, firmware::FILE_NAME, firmware::FILE_NAME_LENGTH) != 0) {
-			DEBUG_EXIT
-			return http::Status::BAD_REQUEST;
-		}
-
-		m_pFirmwareFilename = pToken;
-		m_pFirmwareFilename[firmware::FILE_NAME_LENGTH] = '\0';
-
-		DEBUG_EXIT
-		return http::Status::OK;
-	}
-#endif
-
-	DEBUG_EXIT
-	return http::Status::OK;
+    return true;
 }
 
-/**
- * GET
- */
+http::Status HttpDeamonHandleRequest::ParseHeaderField(char* line)
+{
+    char* token;
 
-http::Status HttpDeamonHandleRequest::HandleGet() {
-	DEBUG_ENTRY
+    assert(line != nullptr);
 
-	uint32_t nLength = 0;
-	m_pContent = &m_DynamicContent[0];
+    if ((token = strtok(line, ":")) == nullptr)
+    {
+        return http::Status::BAD_REQUEST;
+    }
 
-	if (memcmp(m_pUri, "/json/", 6) == 0) {
-		m_RequestContentType = http::contentTypes::APPLICATION_JSON;
-		const auto *pGet = &m_pUri[6];
-		switch (http::get_uint(pGet)) {
-		case http::json::get::LIST:
-			nLength = remoteconfig::json_get_list(m_DynamicContent, sizeof(m_DynamicContent));
-			break;
-		case http::json::get::VERSION:
-			nLength = remoteconfig::json_get_version(m_DynamicContent, sizeof(m_DynamicContent));
-			break;
-		case http::json::get::UPTIME:
-			if (!RemoteConfig::Get()->IsEnableUptime()) {
-				DEBUG_PUTS("Status::BAD_REQUEST");
-				return http::Status::BAD_REQUEST;
-			}
-			nLength = remoteconfig::json_get_uptime(m_DynamicContent, sizeof(m_DynamicContent));
-			break;
-		case http::json::get::DISPLAY:
-			nLength = remoteconfig::json_get_display(m_DynamicContent, sizeof(m_DynamicContent));
-			break;
-		case http::json::get::DIRECTORY:
-			nLength = remoteconfig::json_get_directory(m_DynamicContent, sizeof(m_DynamicContent));
-			break;
-		case http::json::get::TIMEDATE:
-			nLength = remoteconfig::timedate::json_get_timeofday(m_DynamicContent, sizeof(m_DynamicContent));
-			break;
-#if !defined (DISABLE_RTC)
-		case http::json::get::RTCALARM:
-			nLength = remoteconfig::rtc::json_get_rtc(m_DynamicContent, sizeof(m_DynamicContent));
-			break;
-#endif
-#if defined (RDM_CONTROLLER) && !defined (CONFIG_HTTP_HTML_NO_RDM)
-		case http::json::get::RDM:
-			nLength = remoteconfig::rdm::json_get_rdm(m_DynamicContent, sizeof(m_DynamicContent));
-			break;
-#endif
-#if defined (ARTNET_CONTROLLER)
-		case http::json::get::POLLTABLE:
-			nLength = remoteconfig::artnet::controller::json_get_polltable(m_DynamicContent, sizeof(m_DynamicContent));
-			break;
-#endif
-#if defined (ENABLE_NET_PHYSTATUS)
-		case http::json::get::PHYSTATUS:
-			nLength = remoteconfig::net::json_get_phystatus(m_DynamicContent, sizeof(m_DynamicContent));
-			break;
-#endif
-		default:
-#if defined (HAVE_DMX)
-			if (memcmp(pGet, "dmx/", 4) == 0) {
-				const auto *pDmx = &pGet[4];
-				const bool isQuestionMark = (pDmx[6] == '?'); // Handle /dmx/status?X
-				if (isQuestionMark) {
-					auto *p = const_cast<char *>(pDmx);
-					p[6] = '\0';
-				}
-				DEBUG_PRINTF("pDmx=[%s]", pDmx);
-				switch (http::get_uint(pDmx)) {
-				case http::json::get::PORTSTATUS:
-					nLength = remoteconfig::dmx::json_get_ports(m_DynamicContent, sizeof(m_DynamicContent));
-					break;
-				case http::json::get::STATUS: {
-					const auto *pStatus = &pDmx[7];
-					if (isQuestionMark && isalpha(static_cast<int>(pStatus[0])))  {
-						nLength = remoteconfig::dmx::json_get_portstatus(pStatus[0], m_DynamicContent, sizeof(m_DynamicContent));
-					}
-				}
-				default:
-					break;
-				}
-			} else
-#endif
-#if defined (HAVE_PIXEL)
-				if (memcmp(pGet, "pixel/", 6) == 0) {
-					const auto *pPixel = &pGet[6];
-					switch (http::get_uint(pPixel)) {
-					case http::json::get::TYPES:
-						nLength = remoteconfig::pixel::json_get_types(m_DynamicContent, sizeof(m_DynamicContent));
-						break;
-					case http::json::get::STATUS:
-						nLength = remoteconfig::pixel::json_get_status(m_DynamicContent, sizeof(m_DynamicContent));
-						break;
-					default:
-						break;
-					}
-				} else
-#endif
-#if defined (RDM_CONTROLLER) && !defined (CONFIG_HTTP_HTML_NO_RDM)
-					if (memcmp(pGet, "rdm/", 4) == 0) {
-						const auto *pRdm = &pGet[4];
-						const bool isQuestionMark = (pRdm[3] == '?'); // Handle /rdm/tod?X
-						if (isQuestionMark) {
-							auto *p = const_cast<char *>(pRdm);
-							p[3] = '\0';
-						}
-						switch (http::get_uint(pRdm)) {
-						case http::json::get::QUEUE:
-							nLength = remoteconfig::rdm::json_get_queue(m_DynamicContent, sizeof(m_DynamicContent));
-							break;
-						case http::json::get::PORTSTATUS:
-							nLength = remoteconfig::rdm::json_get_portstatus(m_DynamicContent, sizeof(m_DynamicContent));
-							break;
-						case http::json::get::TOD: {
-							const auto *pTod = &pRdm[4];
-							if (isQuestionMark && isalpha(static_cast<int>(pTod[0])))  {
-								nLength = remoteconfig::rdm::json_get_tod(pTod[0], m_DynamicContent, sizeof(m_DynamicContent));
-							}
-						}
-						break;
-						default:
-							break;
-						}
-					} else
-#endif
-#if !defined(DISABLE_FS) || defined (CONFIG_USB_HOST_MSC)
-						if (memcmp(pGet, "storage/", 8) == 0) {
-							const auto *pStorage = &pGet[8];
-							switch (http::get_uint(pStorage)) {
-							case http::json::get::DIRECTORY:
-								nLength = remoteconfig::storage::json_get_directory(m_DynamicContent, sizeof(m_DynamicContent));
-								break;
-							default:
-								break;
-							}
-						} else
-#endif
-#if defined (ENABLE_PHY_SWITCH)
-							if (memcmp(pGet, "dsa/", 4) == 0) {
-								const auto *pDsa = &pGet[4];
-								switch (http::get_uint(pDsa)) {
-								case http::json::get::PORTSTATUS:
-									nLength = remoteconfig::dsa::json_get_portstatus(m_DynamicContent, sizeof(m_DynamicContent));
-									break;
-								case http::json::get::VLANTABLE:
-									nLength = remoteconfig::dsa::json_get_vlantable(m_DynamicContent, sizeof(m_DynamicContent));
-									break;
-								default:
-									break;
-								}
-							} else
-#endif
-#if defined (NODE_SHOWFILE)
-								if (memcmp(pGet, "showfile/", 9) == 0) {
-									const auto *pShowfile = &pGet[9];
-									switch (http::get_uint(pShowfile)) {
-									case http::json::get::STATUS:
-										nLength = remoteconfig::showfile::json_get_status(m_DynamicContent, sizeof(m_DynamicContent));
-										break;
-									case http::json::get::DIRECTORY:
-										nLength = remoteconfig::showfile::json_get_directory(m_DynamicContent, sizeof(m_DynamicContent));
-										break;
-									default:
-										break;
-									}
-								} else
-#endif
-								{
-									return HandleGetTxt();
+    DEBUG_PUTS(token);
 
-								}
-			break;
-		}
-	}
-#if defined (ENABLE_CONTENT)
-	else if (strcmp(m_pUri, "/") == 0) {
-		m_pContent = get_file_content("index.html", nLength, m_RequestContentType);
-	}
-#if defined (HAVE_DMX)
-	else if (strcmp(m_pUri, "/dmx") == 0) {
-		m_pContent = get_file_content("dmx.html", nLength, m_RequestContentType);
-	}
+    if (strcasecmp(token, "Content-Type") == 0)
+    {
+        if ((token = strtok(nullptr, " ;")) == nullptr)
+        {
+            return http::Status::BAD_REQUEST;
+        }
+        if (memcmp(token, "application/", 12) == 0)
+        {
+            if (strcmp(&token[12], "json") == 0)
+            {
+                request_content_type_ = http::contentTypes::APPLICATION_JSON;
+                return http::Status::OK;
+            }
+#if defined(CONFIG_HTTPD_ENABLE_UPLOAD)
+            if (strcmp(&token[12], "octet-stream") == 0)
+            {
+                request_content_type_ = http::contentTypes::APPLICATION_OCTET_STREAM;
+                return http::Status::OK;
+            }
 #endif
-#if defined (RDM_CONTROLLER) && !defined (CONFIG_HTTP_HTML_NO_RDM)
-	else if (strcmp(m_pUri, "/rdm") == 0) {
-		m_pContent = get_file_content("rdm.html", nLength, m_RequestContentType);
-	}
-#endif
-#if defined (NODE_SHOWFILE)
-	else if (strcmp(m_pUri, "/showfile") == 0) {
-		m_pContent = get_file_content("showfile.html", nLength, m_RequestContentType);
-	}
-#endif
-#if defined (ENABLE_PHY_SWITCH)
-	else if (strcmp(m_pUri, "/dsa") == 0) {
-		m_pContent = get_file_content("dsa.html", nLength, m_RequestContentType);
-	}
-#endif
-#if !defined (CONFIG_HTTP_HTML_NO_TIME)
-	else if (strcmp(m_pUri, "/time") == 0) {
-		m_pContent = get_file_content("time.html", nLength, m_RequestContentType);
-	}
-#endif
-#if !defined (CONFIG_HTTP_HTML_NO_RTC) && !defined (DISABLE_RTC)
-	else if (strcmp(m_pUri, "/rtc") == 0) {
-		m_pContent = get_file_content("rtc.html", nLength, m_RequestContentType);
-	}
-#endif
-	else {
-		m_pContent = get_file_content(&m_pUri[1], nLength, m_RequestContentType);
-	}
-#endif
+        }
+    }
+    else if (strcasecmp(token, "Content-Length") == 0)
+    {
+        if ((token = strtok(nullptr, " ")) == nullptr)
+        {
+            return http::Status::BAD_REQUEST;
+        }
 
-	if (nLength == 0) {
-		DEBUG_EXIT
-		return http::Status::NOT_FOUND;
-	}
+        if (!ParseUint32(token, request_content_length_))
+        {
+            return http::Status::BAD_REQUEST;
+        }
 
-	m_nContentSize = nLength;
+        if (request_content_length_ > network::tcp::kTcpDataMss)
+        {
+            return http::Status::REQUEST_ENTITY_TOO_LARGE;
+        }
 
-	DEBUG_EXIT
-	return http::Status::OK;
+        return http::Status::OK;
+    }
+#if defined(CONFIG_HTTPD_ENABLE_UPLOAD)
+    else if (strcasecmp(token, "X-Upload-Size") == 0)
+    {
+        if ((token = strtok(nullptr, " ")) == nullptr)
+        {
+            return http::Status::BAD_REQUEST;
+        }
+
+        if (!ParseUint32(token, upload_size_))
+        {
+            return http::Status::BAD_REQUEST;
+        }
+
+        return http::Status::OK;
+    }
+    else if (strcasecmp(token, "X-Upload-Name") == 0)
+    {
+        if ((token = strtok(nullptr, " ")) == nullptr)
+        {
+            return http::Status::BAD_REQUEST;
+        }
+
+        strncpy(upload_filename_, token, sizeof(upload_filename_) - 1);
+        upload_filename_[sizeof(upload_filename_) - 1] = '\0';
+
+        return http::Status::OK;
+    }
+#endif
+    return http::Status::OK;
 }
 
-http::Status HttpDeamonHandleRequest::HandleGetTxt() {
-	auto *pFileName = &m_pUri[6];
-	const auto nLength = strlen(pFileName);
-
-	if (nLength <= 4) {
-		return http::Status::BAD_REQUEST;
-	}
-
-	if (strcmp(&pFileName[nLength - 4], ".txt") != 0) {
-		return http::Status::BAD_REQUEST;
-	}
-
-	const auto bIsJSON = PropertiesConfig::IsJSON();
-	PropertiesConfig::EnableJSON(true);
-
-	strncpy(m_DynamicContent, pFileName, nLength);
-	m_nContentSize = RemoteConfig::Get()->HandleGet(reinterpret_cast<void *>(m_DynamicContent), sizeof(m_DynamicContent));
-
-	PropertiesConfig::EnableJSON(bIsJSON);
-
-	return http::Status::OK;
+inline uint8_t ParsePortIndex(const char* str)
+{
+    if (str[0] >= 'A' && str[0] <= 'F' && str[1] == '\0')
+    {
+        return static_cast<uint8_t>(str[0] - 'A');
+    }
+    return 0xFF;
 }
 
-/**
- * POST
- */
+// GET
 
-http::Status HttpDeamonHandleRequest::HandlePost(const bool hasDataOnly) {
-	DEBUG_ENTRY
-	DEBUG_PRINTF("m_nBytesReceived=%d, m_nFileDataLength=%u, m_nRequestContentLength=%u -> hasDataOnly=%c", m_nBytesReceived, m_nRequestDataLength, m_nRequestContentLength, hasDataOnly ? 'Y' : 'N');
+namespace json::status
+{
+uint32_t Dmx(char*, uint32_t, uint32_t);
+uint32_t RdmTod(char*, uint32_t, uint32_t);
+} // namespace json::status
 
-	if (hasDataOnly) {
-		// Accumulate body data only
-		m_pFileData = m_pReceiveBuffer;
-		m_nRequestDataLength += m_nBytesReceived;
+http::Status HttpDeamonHandleRequest::HandleGet()
+{
+    DEBUG_ENTRY();
 
-		// Check if we are still waiting for more data
-		if (m_nRequestDataLength < m_nRequestContentLength) {
-			DEBUG_PUTS("Partial body data received, waiting for more...");
-#if defined (ENABLE_FIRMWARE_UPLOAD)
-			if (m_RequestContentType == http::contentTypes::APPLICATION_OCTET_STREAM) {
-				if (!firmware::firmware_install_continue(reinterpret_cast<const uint8_t *>(m_pFileData), m_nBytesReceived)) {
-					DEBUG_EXIT
-					return http::Status::BAD_REQUEST;
-				}
-			}
+    uint32_t length = 0;
+    content_ = &dynamic_content_[0];
+    DEBUG_PUTS(uri_);
+
+    if (memcmp(uri_, "/json/", 6) == 0)
+    {
+        request_content_type_ = http::contentTypes::APPLICATION_JSON;
+        const auto* get = &uri_[6];
+        DEBUG_PUTS(get);
+
+        // Special handling: status/dmx?N
+        if (memcmp(get, "status/dmx?", 11) == 0)
+        {
+#if defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI)
+            const auto kPort = ParsePortIndex(&get[11]); // for dmx/status
+
+            if (kPort != 0xFF)
+            {
+                length = json::status::Dmx(dynamic_content_, static_cast<uint32_t>(sizeof(dynamic_content_)), kPort);
+            }
 #endif
-			DEBUG_EXIT
-			return http::Status::OK;
-		}
-	} else {
-		// Handle HTTP headers and content type (only in the first chunk)
-		if (!((m_RequestContentType == http::contentTypes::APPLICATION_JSON) || (m_RequestContentType == http::contentTypes::APPLICATION_OCTET_STREAM))) {
-			DEBUG_EXIT
-			return http::Status::BAD_REQUEST;
-		}
+        }
+        // Special handling: rdm/tod?N
+        else if (memcmp(get, "status/rdm/tod?", 15) == 0)
+        {
+#if defined(RDM_CONTROLLER)
+            const auto kPort = ParsePortIndex(&get[15]); // for rdm/tod
 
-		if (m_RequestContentType == http::contentTypes::APPLICATION_JSON) {
-			if (memcmp(m_pUri, "/json", 5) != 0) {
-				DEBUG_EXIT
-				return http::Status::NOT_FOUND;
-			}
-
-			m_isAction = (memcmp(m_pUri + 5, "/action", 7) == 0);
-		}
-
-#if defined (ENABLE_FIRMWARE_UPLOAD)
-		if (m_RequestContentType == http::contentTypes::APPLICATION_OCTET_STREAM) {
-			if (m_pFirmwareFilename == nullptr) {
-				DEBUG_EXIT
-				return http::Status::NOT_FOUND;
-			} else {
-				DEBUG_PRINTF("Firmware: Filename = %s, Size = %u", m_pFirmwareFilename, m_nRequestContentLength);
-				if (!firmware::firmware_install_start(reinterpret_cast<const uint8_t *>(m_pFileData), m_nRequestDataLength)) {
-					DEBUG_EXIT
-					return http::Status::BAD_REQUEST;
-				}
-			}
-		}
+            if (kPort != 0xFF)
+            {
+                length = json::status::RdmTod(dynamic_content_, static_cast<uint32_t>(sizeof(dynamic_content_)), kPort);
+            }
 #endif
-		// Check if full body data is received
-		if (m_nRequestDataLength < m_nRequestContentLength) {
-			DEBUG_PUTS("Headers processed, waiting for body data...");
-			DEBUG_EXIT
-			return http::Status::OK;
-		}
-	}
+        }
+        else
+        {
+            // Normal table lookup
+            const auto kIndex = json::GetFileIndex(get);
+            DEBUG_PRINTF("kIndex=%d", kIndex);
 
-	// Process the fully received POST body
+            if (kIndex >= 0)
+            {
+                const auto& handler = json::kFileInfos[kIndex];
+                if (handler.get != nullptr)
+                {
+                    length = (*(handler.get))(dynamic_content_, static_cast<uint32_t>(sizeof(dynamic_content_)));
+                }
+            }
+        }
+    }
+#if defined(ENABLE_CONTENT)
+    else
+    {
+        const auto kIndex = html::GetFileIndex(uri_);
+        DEBUG_PRINTF("kIndex=%d", kIndex);
 
-	if (m_RequestContentType == http::contentTypes::APPLICATION_JSON) {
-		return HandlePostJSON();
-	}
-
-#if defined (ENABLE_FIRMWARE_UPLOAD)
-	DEBUG_PRINTF("Firmware: Total bytes received = %u", m_nRequestDataLength);
-
-
-	if (m_nRequestDataLength != m_nRequestContentLength) {
-		m_RequestContentType = http::contentTypes::APPLICATION_JSON;
-		m_pContent = &m_DynamicContent[0];
-		m_nContentSize = static_cast<uint32_t>(snprintf(m_DynamicContent, sizeof(m_DynamicContent) - 1U,
-				"{\"status\": \"failed\", \"message\": \"File upload not completed\"}\n"));
-
-		DEBUG_EXIT
-		return http::Status::BAD_REQUEST;
-	}
-
-	if (!firmware::firmware_install_end(reinterpret_cast<const uint8_t *>(m_pFileData), m_nBytesReceived)) {
-		DEBUG_EXIT
-		return http::Status::BAD_REQUEST;
-	}
-
-	m_RequestContentType = http::contentTypes::APPLICATION_JSON;
-	m_pContent = &m_DynamicContent[0];
-	m_nContentSize = static_cast<uint32_t>(snprintf(m_DynamicContent, sizeof(m_DynamicContent) - 1U,
-			"{\"status\": \"success\", \"message\": \"File uploaded successfully\"}\n"));
-
-	DEBUG_EXIT
-	return http::Status::OK;
+        if (kIndex >= 0)
+        {
+            const auto& handler = html::kHtmlInfos[kIndex];
+            content_ = GetFileContent(handler.label, length, request_content_type_);
+        }
+        else
+        {
+            content_ = GetFileContent(&uri_[1], length, request_content_type_);
+        }
+    }
 #endif
-	DEBUG_EXIT
-	return http::Status::INTERNAL_SERVER_ERROR;
+
+    if (length == 0)
+    {
+        DEBUG_EXIT();
+        return http::Status::NOT_FOUND;
+    }
+
+    content_size_ = length;
+
+    DEBUG_EXIT();
+    return http::Status::OK;
 }
 
-/**
- * DELETE
- */
+http::Status HttpDeamonHandleRequest::HandlePost()
+{
+    DEBUG_ENTRY();
+    DEBUG_PRINTF("bytes_received_=%d, request_data_length_=%u, request_content_length_=%u", bytes_received_, request_data_length_, request_content_length_);
+    DEBUG_PUTS(uri_);
 
-http::Status HttpDeamonHandleRequest::HandleDelete(const bool hasDataOnly) {
-	DEBUG_PRINTF("hasDataOnly=%c -> m_nBytesReceived=%d, m_nRequestDataLength=%u, m_nRequestContentLength=%u", hasDataOnly ? 'Y' : 'N', m_nBytesReceived, m_nRequestDataLength, m_nRequestContentLength);
+    if (request_content_type_ == http::contentTypes::APPLICATION_JSON)
+    {
+        content_size_ = 0;
+        DEBUG_EXIT();
+        return HandlePostJSON();
+    }
 
-	if (!hasDataOnly) {
-		if (m_RequestContentType != http::contentTypes::APPLICATION_JSON) {
-			DEBUG_EXIT
-			return http::Status::BAD_REQUEST;
-		}
-
-		m_isAction = (strcmp(m_pUri, "/json/action") == 0);
-
-		if (!m_isAction) {
-			DEBUG_EXIT
-			return http::Status::NOT_FOUND;
-		}
-	}
-
-	const auto hasHeadersOnly = (!hasDataOnly && ((m_nBytesReceived < m_nRequestContentLength) || m_nRequestDataLength == 0));
-
-	if (hasHeadersOnly) {
-		DEBUG_PUTS("hasHeadersOnly");
-		DEBUG_EXIT
-		return http::Status::OK;
-	}
-
-	if (hasDataOnly) {
-		m_pFileData = m_pReceiveBuffer;
-		m_nRequestDataLength = m_nBytesReceived;
-	}
-
-	DEBUG_PRINTF("%d|%.*s|->%d", m_nRequestDataLength, m_nRequestDataLength, m_pFileData, m_isAction);
-
-	auto const nJsonLength = properties::convert_json_file(m_pFileData, m_nRequestDataLength, true);
-
-	if (nJsonLength <= 0) {
-		DEBUG_PUTS("Status::BAD_REQUEST");
-		DEBUG_EXIT
-		return http::Status::BAD_REQUEST;
-	}
-
-	m_pFileData[nJsonLength - 1] = '\0';
-	debug_dump(m_pFileData, nJsonLength);
-
-#if defined (NODE_SHOWFILE)
-	if (memcmp(m_pFileData, "show=", 5) == 0) {
-		remoteconfig::showfile::json_delete(m_pFileData, nJsonLength);
-	} else
+#if defined(CONFIG_HTTPD_ENABLE_UPLOAD)
+    if (memcmp(uri_, "/upload", 7) == 0)
+    {
+        return HandlePostUpload();
+    }
 #endif
-	{
-		DEBUG_PUTS("Status::BAD_REQUEST");
-		DEBUG_EXIT
-		return http::Status::BAD_REQUEST;
-	}
 
-	m_RequestContentType = http::contentTypes::TEXT_HTML;
-	m_pContent = &m_DynamicContent[0];
-	m_nContentSize = static_cast<uint32_t>(snprintf(m_DynamicContent, sizeof(m_DynamicContent) - 1U,
-			"<!DOCTYPE html>\n"
-			"<html>\n"
-			"<head><title>Submit</title></head>\n"
-			"<body><h1>OK</h1></body>\n"
-			"</html>\n"));
+    if (memcmp(uri_, "/action/command=reboot", 23) == 0)
+    {
+        network::tcp::Abort(connection_handle_);
+        hal::Reboot();
+    }
 
-	DEBUG_EXIT
-	return http::Status::OK;
+    DEBUG_EXIT();
+    return http::Status::INTERNAL_SERVER_ERROR;
 }
 
-http::Status HttpDeamonHandleRequest::HandlePostJSON() {
-	DEBUG_PRINTF("%d|%.*s|->%c", m_nRequestDataLength, m_nRequestDataLength, m_pFileData, m_isAction ? 'Y' : 'N');
+http::Status HttpDeamonHandleRequest::HandlePostJSON()
+{
+    DEBUG_ENTRY();
 
-	if (m_isAction) {
-		auto const nJsonLength = properties::convert_json_file(m_pFileData, m_nRequestDataLength, true);
+    if (memcmp(uri_, "/json/", 6) == 0)
+    {
+        DEBUG_PUTS(uri_);
+        const auto* get = &uri_[6];
+        DEBUG_PUTS(get);
 
-		if (nJsonLength <= 0) {
-			DEBUG_PUTS("Status::BAD_REQUEST");
-			DEBUG_EXIT
-			return http::Status::BAD_REQUEST;
-		}
+        const auto kIndex = json::GetFileIndex(get);
 
-		m_pFileData[nJsonLength - 1] = '\0';
-		debug_dump(m_pFileData, nJsonLength);
+        DEBUG_PRINTF("kIndex=%d", kIndex);
 
-		uint8_t value8;
+        if (kIndex >= 0)
+        {
+            const auto& handler = json::kFileInfos[kIndex];
+            if (handler.set != nullptr)
+            {
+                debug::Dump(file_data_, request_data_length_);
 
-		if (Sscan::Uint8(m_pFileData, "reboot", value8) == Sscan::OK) {
-			if (value8 != 0) {
-				if (!RemoteConfig::Get()->IsEnableReboot()) {
-					DEBUG_PUTS("Status::BAD_REQUEST");
-					DEBUG_EXIT
-					return http::Status::BAD_REQUEST;
-				}
-				DEBUG_PUTS("Reboot!");
-				RemoteConfig::Get()->Reboot();
-				__builtin_unreachable();
-			}
-		} else if (Sscan::Uint8(m_pFileData, "display", value8) == Sscan::OK) {
-			Display::Get()->SetSleep(value8 == 0);
-			DEBUG_PRINTF("Display::Get()->SetSleep(%d)", value8 == 0);
-		} else if (Sscan::Uint8(m_pFileData, "identify", value8) == Sscan::OK) {
-			if (value8 != 0) {
-				Hardware::Get()->SetMode(hardware::ledblink::Mode::FAST);
-			} else {
-				Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
-			}
-			DEBUG_PRINTF("identify=%d", value8 != 0);
-		} else if (memcmp(m_pFileData, "date=", 5) == 0) {
-			remoteconfig::timedate::json_set_timeofday(m_pFileData, static_cast<uint32_t>(nJsonLength));
-		}
-#if !defined (DISABLE_RTC)
-		else if (memcmp(m_pFileData, "rtc=", 4) == 0) {
-			remoteconfig::rtc::json_set_rtc(m_pFileData, static_cast<uint32_t>(nJsonLength));
-		}
-#endif
-#if defined (NODE_ARTNET) && defined(RDM_CONTROLLER)
-		else if (Sscan::Uint8(m_pFileData, "rdm", value8) == Sscan::OK) {
-			ArtNetNode::Get()->SetRdm(!(value8 != 1));
-			DEBUG_PRINTF("rdm=%d", ArtNetNode::Get()->GetRdm());
-		}
-#endif
-#if defined (NODE_SHOWFILE)
-		else if (memcmp(m_pFileData, "show=", 5) == 0) {
-			remoteconfig::showfile::json_set_status(m_pFileData, nJsonLength);
-		}
-#endif
-		else {
-			DEBUG_PUTS("Status::BAD_REQUEST");
-			DEBUG_EXIT
-			return http::Status::BAD_REQUEST;
-		}
-	} else {
-		const auto bIsJSON = PropertiesConfig::IsJSON();
+                if (file_data_ == nullptr)
+                {
+                    DEBUG_EXIT();
+                    return http::Status::INTERNAL_SERVER_ERROR;
+                }
 
-		PropertiesConfig::EnableJSON(true);
-		RemoteConfig::Get()->HandleSet(m_pFileData, m_nRequestDataLength);
-		PropertiesConfig::EnableJSON(bIsJSON);
-	}
+                (*(handler.set))(file_data_, request_data_length_);
+                DEBUG_EXIT();
+                return http::Status::OK;
+            }
+        }
+    }
 
-	m_RequestContentType = http::contentTypes::TEXT_HTML;
-	m_pContent = &m_DynamicContent[0];
-	m_nContentSize = static_cast<uint32_t>(snprintf(m_DynamicContent, sizeof(m_DynamicContent) - 1U,
-			"<!DOCTYPE html>\n"
-			"<html>\n"
-			"<head><title>Submit JSON</title></head>\n"
-			"<body><h1>OK</h1></body>\n"
-			"</html>\n"));
-
-	DEBUG_EXIT
-	return http::Status::OK;
+    DEBUG_EXIT();
+    return http::Status::NOT_FOUND;
 }
+
+#if defined(CONFIG_HTTPD_ENABLE_UPLOAD)
+static void ShowProgressSymbol()
+{
+    static constexpr char kProgressSymbols[] = {'/', '-', '\\', '|'};
+    static uint32_t progress_symbols_index = 0;
+
+    printf("%c\r", kProgressSymbols[progress_symbols_index++]);
+
+    if (progress_symbols_index >= sizeof(kProgressSymbols))
+    {
+        progress_symbols_index = 0;
+    }
+}
+
+http::Status HttpDeamonHandleRequest::HandlePostUpload()
+{
+    DEBUG_ENTRY();
+
+    auto part_uri = &uri_[7];
+
+    if (memcmp(part_uri, "_start", 7) == 0)
+    {
+        printf("Firmware: %s -> %u bytes\n", upload_filename_, upload_size_);
+
+        if (strncmp(upload_filename_, firmware::kFileName, sizeof(upload_filename_)) != 0)
+        {
+            return http::Status::BAD_REQUEST;
+        }
+
+        if ((upload_size_ >= 64) && (upload_size_ > (FIRMWARE_MAX_SIZE)))
+        {
+            return http::Status::REQUEST_ENTITY_TOO_LARGE;
+        }
+
+        if (!(FlashCodeInstall::Get()->Erase(upload_size_)))
+        {
+            puts("Erase failed.");
+            DEBUG_EXIT();
+            return http::Status::INTERNAL_SERVER_ERROR;
+        }
+
+        content_size_ = static_cast<uint32_t>(snprintf(dynamic_content_, sizeof(dynamic_content_), "{\"status\":\"ok\"}"));
+        content_ = dynamic_content_;
+        request_content_type_ = http::contentTypes::APPLICATION_JSON;
+
+        DEBUG_EXIT();
+        return http::Status::OK;
+    }
+
+    if (request_content_type_ == http::contentTypes::APPLICATION_OCTET_STREAM)
+    {
+        if (part_uri[0] == 0)
+        {
+            ShowProgressSymbol();
+            Display::Get()->Progress();
+
+            if (!(FlashCodeInstall::Get()->WriteChunk(reinterpret_cast<uint8_t*>(file_data_), request_data_length_)))
+            {
+                puts("WriteChunk failed.");
+                DEBUG_EXIT();
+                return http::Status::INTERNAL_SERVER_ERROR;
+            }
+
+            content_size_ = 0;
+
+            DEBUG_EXIT();
+            return http::Status::OK;
+        }
+    }
+
+    if (memcmp(part_uri, "_complete", 10) == 0)
+    {
+        putchar('\n');
+
+        uint32_t write_count;
+        if (!(FlashCodeInstall::Get()->WriteChunkComplete(write_count)))
+        {
+            puts("WriteChunkComplete failed.");
+            DEBUG_EXIT();
+            return http::Status::INTERNAL_SERVER_ERROR;
+        }
+
+        printf("Written bytes -> %u [%s]\n", write_count, write_count == upload_size_ ? "Ok" : "Wrong");
+
+        content_size_ = static_cast<uint32_t>(snprintf(dynamic_content_, sizeof(dynamic_content_), "{\"status\":\"ok\"}"));
+        content_ = dynamic_content_;
+        request_content_type_ = http::contentTypes::APPLICATION_JSON;
+        upload_size_ = 0;
+        upload_filename_[0] = '\0';
+        DEBUG_EXIT();
+        return http::Status::OK;
+    }
+
+    return http::Status::BAD_REQUEST;
+    DEBUG_EXIT();
+}
+#endif
+
+#if defined(CONFIG_HTTPD_ENABLE_DELETE)
+http::Status HttpDeamonHandleRequest::HandleDelete()
+{
+    DEBUG_PRINTF("bytes_received_=%d, request_data_length_=%u, request_content_length_=%u", bytes_received_, request_data_length_, request_content_length_);
+    DEBUG_EXIT();
+    return http::Status::INTERNAL_SERVER_ERROR;
+}
+#endif

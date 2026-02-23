@@ -2,7 +2,7 @@
  * @file midibpm.h
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,39 +30,39 @@
 
 class MidiBPM {
 public:
-	bool Get(uint32_t nTimeStamp, uint32_t &nBPM) {
-		m_nBpmDelta[m_nBpmClockCounter] = nTimeStamp - m_nBpmTimeStampPrevious;
+	bool Get(uint32_t timestamp, uint32_t &bpm) {
+		delta_[clock_counter_] = timestamp - timestamp_previous_;
 
-		if (m_nBpmDelta[m_nBpmClockCounter] == 0) {
+		if (delta_[clock_counter_] == 0) {
 			return false;
 		}
 
-		m_nBpmTimeStampPrevious = nTimeStamp;
+		timestamp_previous_ = timestamp;
 
-		if (++m_nBpmClockCounter == 24) {
-			m_nBpmClockCounter = 0;
+		if (++clock_counter_ == 24) {
+			clock_counter_ = 0;
 
-			uint32_t nDelta = 0;
-			uint32_t nCount = 0;
+			uint32_t delta = 0;
+			uint32_t count = 0;
 
 			for (uint32_t i = 1; i < 24; i++) {
-				const uint32_t nDiff = m_nBpmDelta[i] - m_nBpmDelta[i - 1];
+				const uint32_t kDiff = delta_[i] - delta_[i - 1];
 
-				if (nDiff <= 1) {
-					nDelta += m_nBpmDelta[i];
-					nCount++;
+				if (kDiff <= 1) {
+					delta += delta_[i];
+					count++;
 				}
 			}
 
-			if (nCount == 0) {
+			if (count == 0) {
 				return false;
 			}
 
-			const auto fBPM = (25000.0f * static_cast<float>(nCount)) / static_cast<float>(nDelta);	// 25000 = 600000 / 24
-			nBPM = static_cast<uint32_t>(fBPM + .5);
+			const auto kBpm = (25000.0f * static_cast<float>(count)) / static_cast<float>(delta);	// 25000 = 600000 / 24
+			bpm = static_cast<uint32_t>(kBpm + .5);
 
-			if (nBPM != m_nBpmPrevious) {
-				m_nBpmPrevious = nBPM;
+			if (bpm != previous_) {
+				previous_ = bpm;
 				return true;
 			}
 		}
@@ -71,10 +71,10 @@ public:
 	}
 
 private:
-	uint32_t m_nBpmPrevious { 0 };
-	uint32_t m_nBpmTimeStampPrevious { 0 };
-	uint32_t m_nBpmClockCounter { 0 };
-	uint32_t m_nBpmDelta[24];
+	uint32_t previous_ { 0 };
+	uint32_t timestamp_previous_ { 0 };
+	uint32_t clock_counter_ { 0 };
+	uint32_t delta_[24];
 };
 
-#endif /* MIDIBPM_H_ */
+#endif  // MIDIBPM_H_

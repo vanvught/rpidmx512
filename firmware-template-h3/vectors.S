@@ -161,20 +161,20 @@ und_undefined_handler:
     mov   r0, #0			@ Set type parameter
     sub   r1, lr, #4;		@ Set address parameter
 							@ Subtracting 4 adjusts for the instruction queue giving the address of the instruction that caused this exception
-    b    debug_exception	@ Call the debug_exception function - does not return
+    b    DebugException 	@ Call the debug_exception function - does not return
 
 abort_prefetch_handler:
     msr   CPSR_c, #MODE_SVC	@ Switch to SVC mode so we can the retrieve the orignal lr
     mov   r0, #1			@ Set type parameter
     sub   r1, lr, #4;		@ Set address parameter
 							@ Subtracting 4 adjusts for the instruction queue giving the address of the instruction that caused this exception
-    b    debug_exception	@ Call the debug_exception function - does not return
+    b    DebugException  	@ Call the debug_exception function - does not return
 
 abort_data_handler:
     mov   r0, #2			@ Set type parameter
     sub   r1, lr, #8;		@ Set address parameter
 							@ Subtracting 8 adjusts for the instruction queue giving the address of the instruction that caused this exception
-    b    debug_exception	@ Call to the debug_exception function  - does not return
+    b    DebugException  	@ Call to the debug_exception function  - does not return
 
 irq:
     b c_irq_handler			@ void __attribute__((weak)) __attribute__((interrupt("IRQ"))) c_irq_handler(void)

@@ -1,6 +1,5 @@
 /**
- * @file systimereader.h
- *
+ * @file systimereader.cpp
  */
 /* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
@@ -23,296 +22,330 @@
  * THE SOFTWARE.
  */
 
-#if defined (DEBUG_ARM_SYSTIMEREADER)
-# undef NDEBUG
+#if defined(DEBUG_ARM_SYSTIMEREADER)
+#undef NDEBUG
 #endif
 
 #if defined(__GNUC__) && !defined(__clang__)
-# pragma GCC push_options
-# pragma GCC optimize ("O2")
-# pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#pragma GCC push_options
+#pragma GCC optimize("O2")
+#pragma GCC optimize("no-tree-loop-distribute-patterns")
 #endif
 
 #include <cstdint>
 #include <cstring>
-#include <cstdio>
+#include <sys/time.h>
 #include <cassert>
 
 #include "arm/systimereader.h"
 #include "ltc.h"
 #include "timecodeconst.h"
-
-#include "hardware.h"
-#include "network.h"
+#include "hal_statusled.h"
 // Output
 #include "artnetnode.h"
 #include "ltcetc.h"
 #include "ltcsender.h"
 #include "display.h"
 #include "arm/ltcoutputs.h"
+#include "firmware/debug/debug_dump.h"
+ #include "firmware/debug/debug_debug.h"
 
-#include "arm/platform_ltc.h"
+static constexpr char kCmdStart[] = "start";
+static constexpr auto kStartLength = sizeof(kCmdStart) - 1;
 
-#include "debug.h"
+static constexpr char kCmdStop[] = "stop";
+static constexpr auto kStopLength = sizeof(kCmdStop) - 1;
 
-static constexpr char CMD_START[] = "start";
-static constexpr auto START_LENGTH = sizeof(CMD_START) - 1;
+static constexpr char kCmdRate[] = "rate#";
+static constexpr auto kRateLength = sizeof(kCmdRate) - 1;
 
-static constexpr char CMD_STOP[] = "stop";
-static constexpr auto STOP_LENGTH = sizeof(CMD_STOP) - 1;
+static constexpr uint16_t kUdpPort = 0x5443;
 
-static constexpr char CMD_RATE[] = "rate#";
-static constexpr auto RATE_LENGTH = sizeof(CMD_RATE) - 1;
-
-static constexpr uint16_t UDP_PORT = 0x5443;
-
-#if defined (H3)
-static void irq_timer0_handler([[maybe_unused]] uint32_t clo) {
-	gv_ltc_bTimeCodeAvailable = true;
+#if defined(H3)
+static void irq_timer0_handler([[maybe_unused]] uint32_t clo)
+{
+    gv_ltc_bTimeCodeAvailable = true;
 }
-#elif defined (GD32)
+#elif defined(GD32)
 // Defined in platform_ltc.cpp
 #endif
 
-SystimeReader::SystimeReader(uint8_t nFps, int32_t nUtcOffset) : m_nFps(nFps), m_nUtcOffset(nUtcOffset) {
-	DEBUG_ENTRY
+SystimeReader::SystimeReader(uint8_t fps, int32_t utc_offset) : fps_(fps), utc_offset_(utc_offset)
+{
+    DEBUG_ENTRY();
 
-	assert(s_pThis == nullptr);
-	s_pThis = this;
+    assert(s_this == nullptr);
+    s_this = this;
 
-	g_ltc_LtcTimeCode.nType = static_cast<uint8_t>(ltc::g_Type);
+    g_ltc_LtcTimeCode.type = static_cast<uint8_t>(ltc::g_Type);
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void SystimeReader::Start(bool bAutoStart) {
-	DEBUG_ENTRY
+void SystimeReader::Start(bool auto_start)
+{
+    DEBUG_ENTRY();
 
-#if defined (H3)
-	irq_timer_set(IRQ_TIMER_0, static_cast<thunk_irq_timer_t>(irq_timer0_handler));
+#if defined(H3)
+    irq_timer_set(IRQ_TIMER_0, static_cast<thunk_irq_timer_t>(irq_timer0_handler));
 
-	H3_TIMER->TMR0_CUR = 0;
-	H3_TIMER->TMR0_INTV = TimeCodeConst::TMR_INTV[static_cast<uint8_t>(ltc::g_Type)];
-	H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
+    H3_TIMER->TMR0_CUR = 0;
+    H3_TIMER->TMR0_INTV = TimeCodeConst::TMR_INTV[static_cast<uint8_t>(ltc::g_Type)];
+    H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
 
-	__enable_irq();
-	__DMB();
-#elif defined (GD32)
-	platform::ltc::timer11_config();
-	platform::ltc::timer11_set_type(static_cast<uint8_t>(ltc::g_Type));
+    __enable_irq();
+    __DMB();
+#elif defined(GD32)
+    platform::ltc::timer11_config();
+    platform::ltc::timer11_set_type(static_cast<uint8_t>(ltc::g_Type));
 #endif
 
-	m_nHandle = Network::Get()->Begin(UDP_PORT, StaticCallbackFunction);
-	assert(m_nHandle != -1);
+    handle_ = network::udp::Begin(kUdpPort, StaticCallbackFunction);
+    assert(handle_ != -1);
 
-	LtcOutputs::Get()->Init();
-	Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
+    LtcOutputs::Get()->Init();
+    hal::statusled::SetMode(hal::statusled::Mode::NORMAL);
 
-	if (bAutoStart) {
-		ActionStart();
-	}
+    if (auto_start)
+    {
+        ActionStart();
+    }
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void SystimeReader::SetFps(uint8_t nFps) {
-	if (nFps != m_nFps) {
-		m_nFps = nFps;
+void SystimeReader::SetFps(uint8_t fps)
+{
+    if (fps != fps_)
+    {
+        fps_ = fps;
 
-		if (g_ltc_LtcTimeCode.nFrames >= m_nFps) {
-			g_ltc_LtcTimeCode.nFrames = static_cast<uint8_t>(m_nFps - 1);
-		}
+        if (g_ltc_LtcTimeCode.frames >= fps_)
+        {
+            g_ltc_LtcTimeCode.frames = static_cast<uint8_t>(fps_ - 1);
+        }
 
-		const auto nType = static_cast<uint8_t>(ltc::g_Type);
-		g_ltc_LtcTimeCode.nType = nType;
+        const auto kType = static_cast<uint8_t>(ltc::g_Type);
+        g_ltc_LtcTimeCode.type = kType;
 
-#if defined (H3)
-		H3_TIMER->TMR0_CUR = 0;
-		H3_TIMER->TMR0_INTV = TimeCodeConst::TMR_INTV[nType];
-		H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
-#elif defined (GD32)
-		platform::ltc::timer11_set_type(nType);
+#if defined(H3)
+        H3_TIMER->TMR0_CUR = 0;
+        H3_TIMER->TMR0_INTV = TimeCodeConst::TMR_INTV[kType];
+        H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
+#elif defined(GD32)
+        platform::ltc::timer11_set_type(kType);
 #endif
 
-		if (ltc::Destination::IsEnabled(ltc::Destination::Output::LTC)) {
-			LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct ltc::TimeCode *>(&g_ltc_LtcTimeCode), false);
-		}
+        if (ltc::Destination::IsEnabled(ltc::Destination::Output::LTC))
+        {
+            LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct ltc::TimeCode*>(&g_ltc_LtcTimeCode), false);
+        }
 
-		if (ltc::Destination::IsEnabled(ltc::Destination::Output::ARTNET)) {
-			ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct artnet::TimeCode *>(&g_ltc_LtcTimeCode));
-		}
+        if (ltc::Destination::IsEnabled(ltc::Destination::Output::ARTNET))
+        {
+            ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct artnet::TimeCode*>(&g_ltc_LtcTimeCode));
+        }
 
-		if (ltc::Destination::IsEnabled(ltc::Destination::Output::ETC)) {
-			LtcEtc::Get()->Send(reinterpret_cast<const struct midi::Timecode *>(&g_ltc_LtcTimeCode));
-		}
+        if (ltc::Destination::IsEnabled(ltc::Destination::Output::ETC))
+        {
+            LtcEtc::Get()->Send(reinterpret_cast<const struct midi::Timecode*>(&g_ltc_LtcTimeCode));
+        }
 
-		LtcOutputs::Get()->Update(reinterpret_cast<const struct ltc::TimeCode *>(&g_ltc_LtcTimeCode));
-	}
+        LtcOutputs::Get()->Update(reinterpret_cast<const struct ltc::TimeCode*>(&g_ltc_LtcTimeCode));
+    }
 }
 
-void SystimeReader::ActionStart() {
-	DEBUG_ENTRY
+void SystimeReader::ActionStart()
+{
+    DEBUG_ENTRY();
 
-	if(m_bIsStarted) {
-		DEBUG_EXIT
-		return;
-	}
+    if (started_)
+    {
+        DEBUG_EXIT();
+        return;
+    }
 
-	m_bIsStarted = true;
+    started_ = true;
 
-	LtcOutputs::Get()->ResetTimeCodeTypePrevious();
+    LtcOutputs::Get()->ResetTimeCodeTypePrevious();
 
-	Hardware::Get()->SetMode(hardware::ledblink::Mode::DATA);
+    hal::statusled::SetMode(hal::statusled::Mode::DATA);
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void SystimeReader::ActionStop() {
-	DEBUG_ENTRY
+void SystimeReader::ActionStop()
+{
+    DEBUG_ENTRY();
 
-	m_bIsStarted = false;
+    started_ = false;
 
-	Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
+    hal::statusled::SetMode(hal::statusled::Mode::NORMAL);
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void SystimeReader::ActionSetRate(const char *pTimeCodeRate) {
-	DEBUG_ENTRY
+void SystimeReader::ActionSetRate(const char* timecode_rate)
+{
+    DEBUG_ENTRY();
 
-	uint8_t nFps;
+    uint8_t fps;
 
-	if (ltc::parse_timecode_rate(pTimeCodeRate, nFps)) {
-		SetFps(nFps);
-	}
+    if (ltc::parse_timecode_rate(timecode_rate, fps))
+    {
+        SetFps(fps);
+    }
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void SystimeReader::HandleRequest(char *pBuffer, uint16_t nBufferLength) {
-	if (pBuffer != nullptr) {
-		assert(nBufferLength >= 8);
-		m_pUdpBuffer = pBuffer;
-		m_nBytesReceived = nBufferLength;
-	}
+void SystimeReader::HandleRequest(char* buffer, uint16_t buffer_length)
+{
+    if (buffer != nullptr)
+    {
+        assert(buffer_length >= 8);
+        udp_buffer_ = buffer;
+        bytes_received_ = buffer_length;
+    }
 
-	if (memcmp("ltc!", m_pUdpBuffer, 4) != 0) {
-		return;
-	}
+    if (memcmp("ltc!", udp_buffer_, 4) != 0)
+    {
+        return;
+    }
 
-	if (m_pUdpBuffer[m_nBytesReceived - 1] == '\n') {
-		DEBUG_PUTS("\'\\n\'");
-		m_nBytesReceived--;
-	}
+    if (udp_buffer_[bytes_received_ - 1] == '\n')
+    {
+        DEBUG_PUTS("\'\\n\'");
+        bytes_received_--;
+    }
 
-	debug_dump(m_pUdpBuffer, m_nBytesReceived);
+    debug::Dump(udp_buffer_, bytes_received_);
 
-	if (m_nBytesReceived == (4 + START_LENGTH)) {
-		if (memcmp(&m_pUdpBuffer[4], CMD_START, START_LENGTH) == 0) {
-			ActionStart();
-			return;
-		}
+    if (bytes_received_ == (4 + kStartLength))
+    {
+        if (memcmp(&udp_buffer_[4], kCmdStart, kStartLength) == 0)
+        {
+            ActionStart();
+            return;
+        }
 
-		DEBUG_PUTS("Invalid !start command");
-	}
+        DEBUG_PUTS("Invalid !start command");
+    }
 
-	if (m_nBytesReceived == (4 + STOP_LENGTH)) {
-		if (memcmp(&m_pUdpBuffer[4], CMD_STOP, STOP_LENGTH) == 0) {
-			ActionStop();
-			return;
-		}
+    if (bytes_received_ == (4 + kStopLength))
+    {
+        if (memcmp(&udp_buffer_[4], kCmdStop, kStopLength) == 0)
+        {
+            ActionStop();
+            return;
+        }
 
-		DEBUG_PUTS("Invalid !stop command");
-	}
+        DEBUG_PUTS("Invalid !stop command");
+    }
 
-	if (m_nBytesReceived == (4 + RATE_LENGTH  + ltc::timecode::RATE_MAX_LENGTH)) {
-		if (memcmp(&m_pUdpBuffer[4], CMD_RATE, RATE_LENGTH) == 0) {
-			ActionSetRate(&m_pUdpBuffer[(4 + RATE_LENGTH)]);
-			return;
-		}
-	}
+    if (bytes_received_ == (4 + kRateLength + ltc::timecode::RATE_MAX_LENGTH))
+    {
+        if (memcmp(&udp_buffer_[4], kCmdRate, kRateLength) == 0)
+        {
+            ActionSetRate(&udp_buffer_[(4 + kRateLength)]);
+            return;
+        }
+    }
 
-	DEBUG_PUTS("Invalid command");
+    DEBUG_PUTS("Invalid command");
 }
 
-void SystimeReader::Input(const uint8_t *pBuffer, uint32_t nSize, [[maybe_unused]] uint32_t nFromIp, [[maybe_unused]] uint16_t nFromPort) {
-	m_pUdpBuffer = reinterpret_cast<char *>(const_cast<uint8_t *>(pBuffer));
-	m_nBytesReceived = nSize;
+void SystimeReader::Input(const uint8_t* buffer, uint32_t size, [[maybe_unused]] uint32_t from_ip, [[maybe_unused]] uint16_t from_port)
+{
+    udp_buffer_ = reinterpret_cast<char*>(const_cast<uint8_t*>(buffer));
+    bytes_received_ = size;
 
-	HandleRequest();
+    HandleRequest();
 }
 
 #if defined(__GNUC__) && !defined(__clang__)
-# pragma GCC push_options
-# pragma GCC optimize ("O3")
-# pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#pragma GCC push_options
+#pragma GCC optimize("O3")
+#pragma GCC optimize("no-tree-loop-distribute-patterns")
 #endif
 
-void SystimeReader::Run() {
-	// If not started, return early
-	if (__builtin_expect((m_bIsStarted), 0)) {
-		struct timeval tv;
-		gettimeofday(&tv, 0);
-		auto nTime = tv.tv_sec + m_nUtcOffset;
+void SystimeReader::Run()
+{
+    // If not started, return early
+    if (__builtin_expect((started_), 0))
+    {
+        struct timeval tv;
+        gettimeofday(&tv, 0);
+        auto time_seconds = tv.tv_sec + utc_offset_;
 
-		// Calculate frames
-		g_ltc_LtcTimeCode.nFrames = (tv.tv_usec * TimeCodeConst::FPS[g_ltc_LtcTimeCode.nType]) / 1000000U;
+        // Calculate frames
+        g_ltc_LtcTimeCode.frames = (tv.tv_usec * TimeCodeConst::FPS[g_ltc_LtcTimeCode.type]) / 1000000U;
 
-		// Drop-frame adjustments BEFORE time updates
-		if (ltc::g_Type == ltc::Type::DF) {
-			// Skip frames 00 and 01 in non-10th minutes
-			if ((g_ltc_LtcTimeCode.nMinutes % 10 != 0) && (g_ltc_LtcTimeCode.nSeconds == 0) && (g_ltc_LtcTimeCode.nFrames < 2)) {
-				g_ltc_LtcTimeCode.nFrames = 2;
-			}
-		}
+        // Drop-frame adjustments BEFORE time updates
+        if (ltc::g_Type == ltc::Type::DF)
+        {
+            // Skip frames 00 and 01 in non-10th minutes
+            if ((g_ltc_LtcTimeCode.minutes % 10 != 0) && (g_ltc_LtcTimeCode.seconds == 0) && (g_ltc_LtcTimeCode.frames < 2))
+            {
+                g_ltc_LtcTimeCode.frames = 2;
+            }
+        }
 
-		// Update timecode components if the time has changed
-		if (__builtin_expect((m_nTimePrevious != nTime), 0)) {
-			m_nTimePrevious = nTime;
+        // Update timecode components if the time has changed
+        if (__builtin_expect((time_previous_ != time_seconds), 0))
+        {
+            time_previous_ = time_seconds;
 
-			g_ltc_LtcTimeCode.nSeconds = static_cast<uint8_t>(nTime % 60U);
-			nTime /= 60U;
-			g_ltc_LtcTimeCode.nMinutes = static_cast<uint8_t>(nTime % 60U);
-			nTime /= 60U;
-			g_ltc_LtcTimeCode.nHours = static_cast<uint8_t>(nTime % 24U);
+            g_ltc_LtcTimeCode.seconds = static_cast<uint8_t>(time_seconds % 60U);
+            time_seconds /= 60U;
+            g_ltc_LtcTimeCode.minutes = static_cast<uint8_t>(time_seconds % 60U);
+            time_seconds /= 60U;
+            g_ltc_LtcTimeCode.hours = static_cast<uint8_t>(time_seconds % 24U);
 
-			// Trigger timecode availability at the start of a second
-			if (tv.tv_usec == 0) {
-#if defined (H3)
-				H3_TIMER->TMR0_CUR = 0;
-				H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
-#elif defined (GD32)
-				TIMER_CNT(TIMER11) = 0;
-				TIMER_CTL0(TIMER11) |= TIMER_CTL0_CEN;
+            // Trigger timecode availability at the start of a second
+            if (tv.tv_usec == 0)
+            {
+#if defined(H3)
+                H3_TIMER->TMR0_CUR = 0;
+                H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
+#elif defined(GD32)
+                TIMER_CNT(TIMER11) = 0;
+                TIMER_CTL0(TIMER11) |= TIMER_CTL0_CEN;
 #endif
-				gv_ltc_bTimeCodeAvailable = true;
-			}
-		}
-	}
+                gv_ltc_bTimeCodeAvailable = true;
+            }
+        }
+    }
 
-	// Update timecode outputs if available
-	__DMB();  // Data memory barrier to ensure memory consistency
-	if (__builtin_expect((gv_ltc_bTimeCodeAvailable), 0)) {
-		gv_ltc_bTimeCodeAvailable = false;
+    // Update timecode outputs if available
+    __DMB(); // Data memory barrier to ensure memory consistency
+    if (__builtin_expect((gv_ltc_bTimeCodeAvailable), 0))
+    {
+        gv_ltc_bTimeCodeAvailable = false;
 
-		if (ltc::Destination::IsEnabled(ltc::Destination::Output::LTC)) {
-			LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct ltc::TimeCode *>(&g_ltc_LtcTimeCode), false);
-		}
+        if (ltc::Destination::IsEnabled(ltc::Destination::Output::LTC))
+        {
+            LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct ltc::TimeCode*>(&g_ltc_LtcTimeCode), false);
+        }
 
-		if (__builtin_expect((!m_bIsStarted), 0)) {
-			return;
-		}
+        if (__builtin_expect((!started_), 0))
+        {
+            return;
+        }
 
-		if (ltc::Destination::IsEnabled(ltc::Destination::Output::ARTNET)) {
-			ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct artnet::TimeCode *>(&g_ltc_LtcTimeCode));
-		}
+        if (ltc::Destination::IsEnabled(ltc::Destination::Output::ARTNET))
+        {
+            ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct artnet::TimeCode*>(&g_ltc_LtcTimeCode));
+        }
 
-		if (ltc::Destination::IsEnabled(ltc::Destination::Output::ETC)) {
-			LtcEtc::Get()->Send(reinterpret_cast<const struct midi::Timecode *>(&g_ltc_LtcTimeCode));
-		}
+        if (ltc::Destination::IsEnabled(ltc::Destination::Output::ETC))
+        {
+            LtcEtc::Get()->Send(reinterpret_cast<const struct midi::Timecode*>(&g_ltc_LtcTimeCode));
+        }
 
-		if (__builtin_expect((m_bIsStarted), 0)) {
-			LtcOutputs::Get()->Update(reinterpret_cast<const struct ltc::TimeCode *>(&g_ltc_LtcTimeCode));
-		}
-	}
+        if (__builtin_expect((started_), 0))
+        {
+            LtcOutputs::Get()->Update(reinterpret_cast<const struct ltc::TimeCode*>(&g_ltc_LtcTimeCode));
+        }
+    }
 }

@@ -2,7 +2,7 @@
  * @file bwspirelay.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,33 +30,34 @@
 
 #include "bw.h"
 
-class BwSpiRelay: BwSpi {
-public:
-	BwSpiRelay(uint8_t nChipSelect = 0, uint8_t nAddress = bw::relay::address): BwSpi(nChipSelect, nAddress, bw::relay::id_string) {}
+class BwSpiRelay : BwSpi
+{
+   public:
+    explicit BwSpiRelay(uint8_t nChipSelect = 0, uint8_t address = bw::relay::address) : BwSpi(nChipSelect, address, bw::relay::id_string) {}
 
-	void SetDirection(uint8_t nMask) {
-		char cmd[3];
+    void SetDirection(uint8_t nMask)
+    {
+        char cmd[3];
 
-		cmd[0] = static_cast<char>(m_nAddress);
-		cmd[1] = bw::port::write::io_direction;
-		cmd[2] = static_cast<char>(nMask);
+        cmd[0] = static_cast<char>(address_);
+        cmd[1] = bw::port::write::io_direction;
+        cmd[2] = static_cast<char>(nMask);
 
-		HAL_SPI::Write(cmd, sizeof(cmd));
-	}
+        HAL_SPI::Write(cmd, sizeof(cmd));
+    }
 
-	void Output(uint8_t nPins) {
-		char cmd[3];
+    void Output(uint8_t nPins)
+    {
+        char cmd[3];
 
-		cmd[0] = static_cast<char>(m_nAddress);
-		cmd[1] = bw::port::write::set_all_outputs;
-		cmd[2] = static_cast<char>(nPins);
+        cmd[0] = static_cast<char>(address_);
+        cmd[1] = bw::port::write::set_all_outputs;
+        cmd[2] = static_cast<char>(nPins);
 
-		HAL_SPI::Write(cmd, sizeof(cmd));
-	}
+        HAL_SPI::Write(cmd, sizeof(cmd));
+    }
 
-	bool IsConnected() {
-		return m_IsConnected;
-	}
+    bool IsConnected() { return m_IsConnected; }
 };
 
-#endif /* BWSPIRELAY_H_ */
+#endif  // BWSPIRELAY_H_

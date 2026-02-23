@@ -3,6 +3,7 @@ PLATFORM=ORANGE_PI_ONE
 DEFINES =CONSOLE_FB
 DEFINES+=NDEBUG
 
-EXTRA_INCLUDES=../lib-lightset/include ../lib-properties/include
+EXTRA_INCLUDES=
 
+include Rules.mk
 include ../firmware-template-h3/lib/Rules.mk

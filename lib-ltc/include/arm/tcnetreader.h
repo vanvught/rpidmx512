@@ -1,8 +1,7 @@
 /**
  * @file tcnetreader.h
- *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,65 +28,67 @@
 #include <cassert>
 
 #include "tcnettimecode.h"
-
-#include "midi.h"
 #include "ltc.h"
-
 #include "ltcoutputs.h"
 
-#include "hardware.h"
+class TCNetReader
+{
+   public:
+    TCNetReader()
+    {
+        assert(s_this == nullptr);
+        s_this = this;
+    }
 
-class TCNetReader {
-public:
-	TCNetReader() {
-		assert(s_pThis == nullptr);
-		s_pThis = this;
-	}
+    ~TCNetReader() = default;
 
-	~TCNetReader() = default;
+    void Start();
+    void Stop();
 
-	void Start();
-	void Stop();
+    void Run();
 
-	void Run();
+    void Input(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port);
 
-	void Input(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort);
+    void static StaticCallbackFunctionHandler(const struct tcnet::TimeCode* timecode)
+    {
+        assert(s_this != nullptr);
+        s_this->Handler(timecode);
+    }
 
-	void static StaticCallbackFunctionHandler(const struct tcnet::TimeCode *pTimeCode) {
-		assert(s_pThis != nullptr);
-		s_pThis->Handler(pTimeCode);
-	}
+   private:
+    void static StaticCallbackFunctionInput(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port)
+    {
+        s_this->Input(buffer, size, from_ip, from_port);
+    }
 
-private:
-	void static StaticCallbackFunctionInput(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
-		s_pThis->Input(pBuffer, nSize, nFromIp, nFromPort);
-	}
+    void Handler(const struct tcnet::TimeCode* timecode);
 
-	void Handler(const struct tcnet::TimeCode *pTimeCode);
+    void Reset(bool do_reset)
+    {
+        if (reset_timecode_ != do_reset)
+        {
+            reset_timecode_ = do_reset;
+            if (reset_timecode_)
+            {
+                LtcOutputs::Get()->ResetTimeCodeTypePrevious();
+            }
+        }
+    }
 
-	void Reset(const bool doReset) {
-		if (m_doResetTimeCode != doReset) {
-			m_doResetTimeCode = doReset;
-			if (m_doResetTimeCode) {
-				LtcOutputs::Get()->ResetTimeCodeTypePrevious();
-			}
-		}
-	}
+    void ResetTimer(bool do_reset, const struct tcnet::TimeCode* timecode);
 
-	void ResetTimer(const bool doReset, const struct tcnet::TimeCode *pTimeCode);
+   private:
+    int32_t handle_{-1};
 
-private:
-	int32_t m_nHandle { -1 };
+    tcnet::TimeCode timecode_;
 
-	tcnet::TimeCode m_timeCode;
+    uint8_t type_previous_{UINT8_MAX};
+    uint8_t frame_previous_{UINT8_MAX};
 
-	uint8_t m_nTypePrevious { UINT8_MAX };
-	uint8_t m_nFramePrevious { UINT8_MAX };
+    bool reset_timecode_{true};
+    bool do_reset_timer_{true};
 
-	bool m_doResetTimeCode { true };
-	bool m_doResetTimer { true };
-
-	static inline TCNetReader *s_pThis;
+    static inline TCNetReader* s_this;
 };
 
-#endif /* ARM_TCNETREADER_H_ */
+#endif  // ARM_TCNETREADER_H_

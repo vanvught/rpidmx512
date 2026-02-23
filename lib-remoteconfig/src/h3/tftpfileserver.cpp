@@ -29,7 +29,7 @@
 #include "ubootheader.h"
 #include "remoteconfig.h"
 
-#include "debug.h"
+ #include "firmware/debug/debug_debug.h"
 
 namespace tftpfileserver {
 bool is_valid(const void *pBuffer) {

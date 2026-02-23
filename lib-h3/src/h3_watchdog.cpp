@@ -1,5 +1,5 @@
 /**
- * @file h3_watchdog.c
+ * @file h3_watchdog.cpp
  *
  */
 /* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl

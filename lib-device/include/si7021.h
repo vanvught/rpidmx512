@@ -2,7 +2,7 @@
  * @file si7021.h
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,38 +30,41 @@
 
 #include "hal_i2c.h"
 
-namespace sensor {
-namespace si7021 {
-namespace temperature {
+namespace sensor
+{
+namespace si7021
+{
+namespace temperature
+{
 static constexpr char DESCRIPTION[] = "Ambient Temperature";
 static constexpr auto RANGE_MIN = -40;
 static constexpr auto RANGE_MAX = 125;
-}  // namespace temperature
-namespace humidity {
+} // namespace temperature
+namespace humidity
+{
 static constexpr char DESCRIPTION[] = "Relative Humidity";
 static constexpr int16_t RANGE_MIN = 0;
 static constexpr int16_t RANGE_MAX = 100;
-}  // namespace humidity
-}  // namespace si7021
+} // namespace humidity
+} // namespace si7021
 
-class SI7021: HAL_I2C {
-public:
-	SI7021(uint8_t nAddress = 0);
+class SI7021 : HAL_I2C
+{
+   public:
+    explicit SI7021(uint8_t address = 0);
 
-	bool Initialize() {
-		return m_bIsInitialized;
-	}
+    bool Initialize() { return m_bIsInitialized; }
 
-	float GetTemperature();
-	float GetHumidity();
+    float GetTemperature();
+    float GetHumidity();
 
-private:
-	uint16_t ReadRaw(uint8_t nCmd);
+   private:
+    uint16_t ReadRaw(uint8_t cmd);
 
-private:
-	bool m_bIsInitialized { false };
+   private:
+    bool m_bIsInitialized{false};
 };
 
-}  // namespace sensor
+} // namespace sensor
 
-#endif /* SI7021_H_ */
+#endif  // SI7021_H_

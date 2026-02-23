@@ -2,7 +2,7 @@
  * @file hal_gpio.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,4 +29,4 @@
 #include "h3_gpio.h"
 #include "h3_board.h"
 
-#endif /* H3_HAL_GPIO_H_ */
+#endif  // H3_HAL_GPIO_H_

@@ -2,7 +2,7 @@
  * @file tcnetdump.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,36 +25,38 @@
 
 #include <cstdint>
 #include <cstdio>
-#include <cassert>
 
 #include "tcnet.h"
+ #include "firmware/debug/debug_debug.h"
 
-#include "debug.h"
+static uint32_t s_timestamp_previous = 0;
 
-static uint32_t s_nTimeStampPrevious = 0;
+void TCNet::DumpManagementHeader(const uint8_t* buffer)
+{
+    const auto* management_header = reinterpret_cast<const struct TTCNetPacketManagementHeader*>(buffer);
 
-void TCNet::DumpManagementHeader() {
-	const auto *pManagementHeader = reinterpret_cast<struct TTCNetPacketManagementHeader *>(m_pReceiveBuffer);
+    printf("ManagementHeader\n");
+    printf(" %.3s V%d.%d %.8s\n", management_header->Header, management_header->ProtocolVersionMajor, management_header->ProtocolVersionMinor,
+           management_header->NodeName);
+    printf(" %s\n", management_header->NodeType == TCNET_TYPE_SLAVE ? "SLAVE" : (management_header->NodeType == TCNET_TYPE_MASTER ? "MASTER" : "AUTO"));
+    printf(" %u [%u] %d\n", management_header->TimeStamp, management_header->TimeStamp - s_timestamp_previous, management_header->SEQ);
 
-	printf("ManagementHeader\n");
-	printf(" %.3s V%d.%d %.8s\n", pManagementHeader->Header, pManagementHeader->ProtocolVersionMajor, pManagementHeader->ProtocolVersionMinor, pManagementHeader->NodeName);
-	printf(" %s\n", pManagementHeader->NodeType == TCNET_TYPE_SLAVE ? "SLAVE" : (pManagementHeader->NodeType == TCNET_TYPE_MASTER ? "MASTER" : "AUTO"));
-	printf(" %u [%u] %d\n", pManagementHeader->TimeStamp, pManagementHeader->TimeStamp - s_nTimeStampPrevious, pManagementHeader->SEQ);
-
-	s_nTimeStampPrevious = pManagementHeader->TimeStamp;
+    s_timestamp_previous = management_header->TimeStamp;
 }
 
-void TCNet::DumpOptIn() {
-	DEBUG_ENTRY
+void TCNet::DumpOptIn(const uint8_t* buffer)
+{
+    DEBUG_ENTRY();
 
-	DumpManagementHeader();
+    DumpManagementHeader(buffer);
 
-	const auto *pPacketOptIn = reinterpret_cast<struct TTCNetPacketOptIn *>(m_pReceiveBuffer);
+    const auto* opt_in = reinterpret_cast<const struct TTCNetPacketOptIn*>(buffer);
 
-	printf(" OptIn\n");
-	printf("  %d %d\n", pPacketOptIn->NodeCount, pPacketOptIn->NodeListenerPort);
-	printf("  %d %d\n", pPacketOptIn->NodeCount, pPacketOptIn->Uptime);
-	printf("  %.16s %.16s %d.%d.%d [%d]\n", pPacketOptIn->VendorName, pPacketOptIn->DeviceName, pPacketOptIn->DeviceMajorVersion, pPacketOptIn->DeviceMinorVersion, pPacketOptIn->DeviceBugVersion, pPacketOptIn->NodeCount);
+    printf(" OptIn\n");
+    printf("  %d %d\n", opt_in->NodeCount, opt_in->NodeListenerPort);
+    printf("  %d %d\n", opt_in->NodeCount, opt_in->Uptime);
+    printf("  %.16s %.16s %d.%d.%d [%d]\n", opt_in->VendorName, opt_in->DeviceName, opt_in->DeviceMajorVersion,
+           opt_in->DeviceMinorVersion, opt_in->DeviceBugVersion, opt_in->NodeCount);
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }

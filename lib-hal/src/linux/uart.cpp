@@ -45,7 +45,7 @@
 
 #include "hal_uart.h"
 
-#include "debug.h"
+ #include "firmware/debug/debug_debug.h"
 
 #if defined(__APPLE__)
  static constexpr char DEV[2][64] = {
@@ -142,37 +142,37 @@ static void s_configure_termios() {
 	puts("\nDevice connected.");
 }
 
-void uart_begin(const uint32_t nUart, uint32_t nBaudrate, uint32_t nBits, uint32_t nParity, uint32_t nStopBits) {
+void UartBegin(const uint32_t nUart, uint32_t nBaudrate, uint32_t bits, uint32_t parity, uint32_t stop_bits) {
 	s_nUart = nUart;
 	s_nBaudrate = nBaudrate;
-	s_nBits = nBits;
-	s_nParity = nParity;
-	s_nStopBits = nStopBits;
+	s_nBits = bits;
+	s_nParity = parity;
+	s_nStopBits = stop_bits;
 
 	s_configure_termios();
 }
 
-void uart_set_baudrate([[maybe_unused]] const uint32_t uart_base, uint32_t nBaudrate) {
+void UartSetBaudrate([[maybe_unused]] const uint32_t uart_base, uint32_t nBaudrate) {
 	s_nBaudrate = nBaudrate;
 	s_configure_termios();
 }
 
-void uart_transmit([[maybe_unused]] const uint32_t uart_base, const uint8_t *pDate, uint32_t nLength) {
+void UartTransmit([[maybe_unused]] const uint32_t uart_base, const uint8_t *pDate, uint32_t nLength) {
 	if (fd < 0) {
-		DEBUG_EXIT
+		DEBUG_EXIT();
 		return;
 	}
 
 	const auto i = static_cast<uint32_t>(write(fd, pDate, nLength));
 
 	if (i != nLength) {
-		fprintf(stderr, "uart_transmit: bytes written %u [%u]\n", i, nLength);
+		fprintf(stderr, "UartTransmit: bytes written %u [%u]\n", i, nLength);
 	}
 }
 
-void uart_transmit_string([[maybe_unused]] const uint32_t uart_base, const char *pData) {
+void UartTransmitString([[maybe_unused]] const uint32_t uart_base, const char *pData) {
 	if (fd < 0) {
-		DEBUG_EXIT
+		DEBUG_EXIT();
 		return;
 	}
 
@@ -180,13 +180,13 @@ void uart_transmit_string([[maybe_unused]] const uint32_t uart_base, const char 
 	const auto i = static_cast<uint32_t>(write(fd, pData, nLength));
 
 	if (i != nLength) {
-		fprintf(stderr, "uart_transmit_string: bytes written %u [%u]\n", i, static_cast<uint32_t>(nLength));
+		fprintf(stderr, "UartTransmitString: bytes written %u [%u]\n", i, static_cast<uint32_t>(nLength));
 	}
 }
 
-uint32_t uart_get_rx_fifo_level([[maybe_unused]] const uint32_t uart_base) {
+uint32_t UartGetRxFifoLevel([[maybe_unused]] const uint32_t uart_base) {
 	if (fd < 0) {
-		DEBUG_EXIT
+		DEBUG_EXIT();
 		return 0;
 	}
 
@@ -201,9 +201,9 @@ uint32_t uart_get_rx_fifo_level([[maybe_unused]] const uint32_t uart_base) {
     return static_cast<uint32_t>(ret);
 }
 
-uint8_t uart_get_rx_data([[maybe_unused]] const uint32_t uart_base) {
+uint8_t UartGetRxData([[maybe_unused]] const uint32_t uart_base) {
 	if (fd < 0) {
-		DEBUG_EXIT
+		DEBUG_EXIT();
 		return ' ';
 	}
 
@@ -218,9 +218,9 @@ uint8_t uart_get_rx_data([[maybe_unused]] const uint32_t uart_base) {
 	return static_cast<uint8_t>(c);
 }
 
-uint32_t uart_get_rx([[maybe_unused]] const uint32_t uart_base, char *pData, uint32_t nLength) {
+uint32_t UartGetRx([[maybe_unused]] const uint32_t uart_base, char *pData, uint32_t nLength) {
 	if (fd < 0) {
-		DEBUG_EXIT
+		DEBUG_EXIT();
 		return 0;
 	}
 

@@ -2,7 +2,7 @@
  * @file dmxserialchanneldata.h
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,7 @@
 #include <cstdint>
 #include <cstdio>
 
-#include "lightset.h"
+#include "dmxnode.h"
 
 enum class DmxSerialParseCode {
 	FAILED, SERIAL, NONE, EOFILE
@@ -52,10 +52,10 @@ private:
 	DmxSerialParseCode ParseSerialData(const char *pLine);
 
 private:
-	FILE *m_pFile { nullptr };
+	FILE *file_ { nullptr };
 	uint8_t m_nChannelValue { 0 };
-	uint8_t m_nChannelDataLength[lightset::dmx::UNIVERSE_SIZE];
-	uint8_t *m_pChannelData[lightset::dmx::UNIVERSE_SIZE];
+	uint8_t m_nChannelDataLength[dmxnode::kUniverseSize];
+	uint8_t *m_pChannelData[dmxnode::kUniverseSize];
 };
 
 #endif /* DMXSERIALCHANNELDATA_H_ */

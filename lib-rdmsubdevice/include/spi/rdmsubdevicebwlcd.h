@@ -2,7 +2,7 @@
  * @file rdmsubdevicebwlcd.h
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,42 +23,44 @@
  * THE SOFTWARE.
  */
 
-#ifndef RDMSUBDEVICEBWLCD_H_
-#define RDMSUBDEVICEBWLCD_H_
+#ifndef SPI_RDMSUBDEVICEBWLCD_H_
+#define SPI_RDMSUBDEVICEBWLCD_H_
 
 #include "rdmsubdevice.h"
 
 #include "bwspilcd.h"
 
-class RDMSubDeviceBwLcd: public RDMSubDevice {
-public:
-	RDMSubDeviceBwLcd(uint16_t nDmxStartAddress = 1, char nChipSselect = 0, uint8_t nSlaveAddress = bw::lcd::address, uint32_t nSpiSpeed = bw::spi::speed::default_hz);
+class RDMSubDeviceBwLcd : public RDMSubDevice
+{
+   public:
+    explicit RDMSubDeviceBwLcd(uint16_t nDmxStartAddress = 1, char nChipSselect = 0, uint8_t nSlaveAddress = bw::lcd::address,
+                      uint32_t nSpiSpeed = bw::spi::speed::default_hz);
 
-	bool Initialize() override;
+    bool Initialize() override;
 
-	void Start() override;
-	void Stop() override;
-	void Data(const uint8_t *pData, uint32_t nLength) override;
+    void Start() override;
+    void Stop() override;
+    void Data(const uint8_t* pData, uint32_t nLength) override;
 
-private:
-	void UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent) override;
+   private:
+    void UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent) override;
 
-	void itoaBase10(uint16_t arg, char buf[]);
+    void itoaBase10(uint16_t arg, char buf[]);
 
-	void DisplayChannels();
+    void DisplayChannels();
 
-	void DataHex(const uint8_t *pData, uint32_t nLength);
-	void DataDec(const uint8_t *pData, uint32_t nLength);
-	void DataPct(const uint8_t *pData, uint32_t nLength);
+    void DataHex(const uint8_t* pData, uint32_t nLength);
+    void DataDec(const uint8_t* pData, uint32_t nLength);
+    void DataPct(const uint8_t* pData, uint32_t nLength);
 
-	void DisplayUpdatePersonality();
+    void DisplayUpdatePersonality();
 
-private:
-	BwSpiLcd m_BwSpiLcd;
-	char m_aText[bw::lcd::max_characters];
-	bool m_IsStarted = false;
-	uint8_t m_Data[4];
-	uint32_t m_nLength = 0;
+   private:
+    BwSpiLcd m_BwSpiLcd;
+    char m_aText[bw::lcd::max_characters];
+    bool m_IsStarted = false;
+    uint8_t data_[4];
+    uint32_t length_ = 0;
 };
 
-#endif /* RDMSUBDEVICEBWLCD_H_ */
+#endif  // SPI_RDMSUBDEVICEBWLCD_H_

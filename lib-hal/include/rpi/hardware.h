@@ -2,7 +2,7 @@
  * @file hardware.h
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -137,20 +137,20 @@ public:
 			return;
 		}
 
-		const auto nMicros = BCM2835_ST->CLO;
+		const auto micros = BCM2835_ST->CLO;
 
-		if (__builtin_expect ((nMicros - m_nMicrosPrevious < m_nTicksPerSecond), 0)) {
+		if (__builtin_expect ((micros - m_nMicrosPrevious < m_nTicksPerSecond), 0)) {
 			return;
 		}
 
-		m_nMicrosPrevious = nMicros;
+		m_nMicrosPrevious = micros;
 
 		m_nToggleLed ^= 0x1;
 		hardware_led_set(m_nToggleLed);
 	}
 
 	 static Hardware* Get() {
-		return s_pThis;
+		return s_this;
 	}
 
 private:
@@ -185,14 +185,14 @@ private:
 	TSocType m_tSocType;
 	bool m_bIsWatchdog { false };
 
-	hardware::ledblink::Mode m_Mode { hardware::ledblink::Mode::UNKNOWN };
+	hardware::ledblink::Mode m_Mode { hal::statusled::Mode::UNKNOWN };
 	bool m_doLock { false };
 	//
 	uint32_t m_nTicksPerSecond { 1000000 / 2 };
 	int32_t m_nToggleLed { 0 };
 	uint32_t m_nMicrosPrevious { 0 };
 
-	static Hardware *s_pThis;
+	static Hardware *s_this;
 };
 
 #endif /* RPI_HARDWARE_H_ */

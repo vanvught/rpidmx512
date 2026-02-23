@@ -2,7 +2,7 @@
  * @file rtpmidireader.h
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,29 +30,29 @@
 
 #include "net/rtpmidihandler.h"
 #include "ltc.h"
-
 #include "midibpm.h"
 
-class RtpMidiReader final : public RtpMidiHandler {
-public:
-	void Start();
-	void Stop();
-	void Run();
+class RtpMidiReader final : public RtpMidiHandler
+{
+   public:
+    void Start();
+    void Stop();
+    void Run();
 
-	void MidiMessage(const struct midi::Message *ptMidiMessage) override;
+    void MidiMessage(const struct midi::Message* message) override;
 
-private:
-	void HandleMtc(const struct midi::Message *ptMidiMessage);
-	void HandleMtcQf(const struct midi::Message *ptMidiMessage);
-	void Update();
+   private:
+    void HandleMtc(const struct midi::Message* message);
+    void HandleMtcQf(const struct midi::Message* message);
+    void Update();
 
-private:
-	struct ltc::TimeCode m_LtcTimeCode;
-	uint8_t m_nPartPrevious { 0 };
-	bool m_bDirection { true };
-	uint32_t m_nMtcQfFramePrevious { 0 };
-	uint32_t m_nMtcQfFramesDelta { 0 };
-	MidiBPM m_MidiBPM;
+   private:
+    struct ltc::TimeCode timecode_;
+    uint8_t part_previous_{0};
+    bool direction_{true};
+    uint32_t mtc_qf_previous_{0};
+    uint32_t mtc_qf_delta_{0};
+    MidiBPM midi_bpm_;
 };
 
-#endif /* ARM_RTPMIDIREADER_H_ */
+#endif  // ARM_RTPMIDIREADER_H_

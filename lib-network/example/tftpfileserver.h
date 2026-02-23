@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 
-#include "net/apps/tftpdaemon.h"
+#include "apps/tftpdaemon.h"
 
 class TFTPFileServer final: public TFTPDaemon {
 public:
@@ -17,7 +17,7 @@ public:
 	int FileWrite(const void *pBuffer, unsigned nCount);
 
 private:
-	FILE *m_pFile{nullptr};
+	FILE *file_{nullptr};
 };
 
 #endif /* TFTPFILESERVER_H_ */

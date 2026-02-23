@@ -72,8 +72,8 @@ int main(int argc, char **argv) {
 		return -2;
 	}
 
-	if (bcm2835_i2c_begin() != 1) {
-		fprintf(stderr, "bcm2835_i2c_begin() failed\n");
+	if (bcm2835_I2cBegin() != 1) {
+		fprintf(stderr, "bcm2835_I2cBegin() failed\n");
 		return -3;
 	}
 
@@ -95,24 +95,24 @@ int main(int argc, char **argv) {
 				printf("\033c%s", asctime (tm));
 
 				if (adc1.IsConnected()) {
-					for (uint32_t nChannel = 0; nChannel < 4; nChannel++) {
-						const auto adcValue = adc1.GetRaw(nChannel);
-						const auto vRef = adc1.GetVoltage(nChannel);
+					for (uint32_t channel = 0; channel < 4; channel++) {
+						const auto adcValue = adc1.GetRaw(channel);
+						const auto vRef = adc1.GetVoltage(channel);
 						const auto v = voltage(vRef);
 						const auto r = resistor(vRef) - R_HIGH;
-						const auto t = sensor::thermistor::temperature(r);
-						printf("%u:%u 0x%04x %1.3fV %1.1fV %uR -> %3.1fC\n", 1 + nChannel, nChannel, adcValue, vRef, v, r, t);
+						const auto t = sensor::thermistor::Temperature(r);
+						printf("%u:%u 0x%04x %1.3fV %1.1fV %uR -> %3.1fC\n", 1 + channel, channel, adcValue, vRef, v, r, t);
 					}
 				}
 
 				if (adc2.IsConnected()) {
-					for (uint32_t nChannel = 0; nChannel < 4; nChannel++) {
-						const auto adcValue = adc2.GetRaw(nChannel);
-						const auto vRef = adc2.GetVoltage(nChannel);
-						const auto v = voltage(vRef, R_ADDED[nChannel]);
+					for (uint32_t channel = 0; channel < 4; channel++) {
+						const auto adcValue = adc2.GetRaw(channel);
+						const auto vRef = adc2.GetVoltage(channel);
+						const auto v = voltage(vRef, R_ADDED[channel]);
 						const auto r = resistor(vRef);
-						const auto t = sensor::thermistor::temperature(r);
-						printf("%u:%u 0x%04x %1.3fV %1.1fV %uR -> %3.1fC\n", 5 + nChannel, nChannel, adcValue, vRef, v, r, t);
+						const auto t = sensor::thermistor::Temperature(r);
+						printf("%u:%u 0x%04x %1.3fV %1.1fV %uR -> %3.1fC\n", 5 + channel, channel, adcValue, vRef, v, r, t);
 					}
 				}
 			}

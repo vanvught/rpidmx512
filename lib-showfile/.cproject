@@ -99,10 +99,11 @@
 					</folderInfo>
 					<sourceEntries>
 						<entry excluding="protocols|ola|formats|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
-						<entry excluding="usb|display|formats|protocols|protocols/artnet|osc" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
+						<entry excluding="json|usb|display|formats|protocols|protocols/artnet|osc" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/display"/>
 						<entry excluding="ola" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/formats"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/formats/ola"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/json"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/osc"/>
 						<entry excluding="artnet" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/protocols"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/protocols/artnet"/>
@@ -309,10 +310,11 @@
 					</folderInfo>
 					<sourceEntries>
 						<entry excluding="src|src/display|src/formats|src/formats/ola|src/osc|src/protocols|src/protocols/artnet" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
-						<entry excluding="display|formats|formats/ola|osc|protocols|protocols/artnet" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
+						<entry excluding="json|display|formats|formats/ola|osc|protocols|protocols/artnet" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/display"/>
 						<entry excluding="ola" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/formats"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/formats/ola"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/json"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/osc"/>
 						<entry excluding="artnet" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/protocols"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/protocols/artnet"/>

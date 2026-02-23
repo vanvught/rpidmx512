@@ -28,13 +28,14 @@
 
 #include "ltc.h"
 
-class LtcReader {
-public:
-	void Start();
-	void Run();
+class LtcReader
+{
+   public:
+    void Start();
+    void Run();
 
-private:
-	ltc::Type m_nTypePrevious { ltc::Type::INVALID };
+   private:
+    ltc::Type type_previous_{ltc::Type::INVALID};
 };
 
-#endif /* ARM_LTCREADER_H_ */
+#endif  // ARM_LTCREADER_H_

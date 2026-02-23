@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,100 +24,78 @@
  */
 
 #include <cstdint>
-#include <cassert>
 
-#include "hardware.h"
-#include "network.h"
-
+#include "h3/hal_watchdog.h"
+#include "hal_boardinfo.h"
+#include "emac/network.h"
 #include "display.h"
-
-#include "net/apps/mdns.h"
-
 #include "oscserver.h"
-#include "oscserverparams.h"
+#include "json/oscserverparams.h"
 #include "oscservermsgconst.h"
-
-#include "dmxparams.h"
+#include "json/dmxsendparams.h"
 #include "dmxsend.h"
-
 #include "flashcodeinstall.h"
 #include "configstore.h"
 #include "remoteconfig.h"
-#include "remoteconfigparams.h"
-
 #include "firmwareversion.h"
 #include "software_version.h"
 
-#include "displayhandler.h"
-
 namespace hal {
-void reboot_handler() {
+void RebootHandler() {
 	Dmx::Get()->Blackout();
 }
 }  // namespace hal
 
 int main() {
-	Hardware hw;
+	hal::Init();
 	Display display;
-	ConfigStore configStore;
-	Network nw;
+	ConfigStore config_store;
+	network::Init();
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
-	FlashCodeInstall spiFlashInstall;
+	FlashCodeInstall spiflash_install;
 
 	fw.Print("OSC Server DMX");
 
-	OSCServerParams params;
-	OscServer server;
+	OscServer oscserver;
 
-	params.Load();
-	params.Set(&server);
-
-	mdns_service_record_add(nullptr, mdns::Services::OSC, "type=server", server.GetPortIncoming());
-
-	display.TextStatus(OscServerMsgConst::PARAMS, CONSOLE_YELLOW);
+	json::OscServerParams oscserver_params;
+	oscserver_params.Load();
+	oscserver_params.Set();
 
 	Dmx dmx;
 
-	DmxParams dmxparams;
+	json::DmxSendParams dmxparams;
 	dmxparams.Load();
-	dmxparams.Set(&dmx);
+	dmxparams.Set();
 
-	DmxSend dmxSend;
-	dmxSend.Print();
+	DmxSend dmx_send;
+	dmx_send.Print();
 
-	server.SetOutput(&dmxSend);
-	server.Print();
+	oscserver.SetOutput(&dmx_send);
+	oscserver.Print();
 
-	RemoteConfig remoteConfig(remoteconfig::Node::OSC, remoteconfig::Output::DMX, 1);
+	RemoteConfig remote_config(remoteconfig::Output::DMX, 1);
 
-	RemoteConfigParams remoteConfigParams;
-	remoteConfigParams.Load();
-	remoteConfigParams.Set(&remoteConfig);
-
-	for (uint32_t i = 1; i < 7 ; i++) {
-		display.ClearLine(i);
-	}
-
-	uint8_t nHwTextLength;
+	uint8_t text_length;
 
 	display.Printf(1, "OSC DMX 1");
-	display.Write(2, hw.GetBoardName(nHwTextLength));
-	display.Printf(3, "IP: " IPSTR " %c", IP2STR(Network::Get()->GetIp()), nw.IsDhcpKnown() ? (nw.IsDhcpUsed() ? 'D' : 'S') : ' ');
-	display.Printf(4, "In: %d", server.GetPortIncoming());
-	display.Printf(5, "Out: %d", server.GetPortOutgoing());
+	display.Write(2, hal::BoardName(text_length));
+	display.Printf(3, "IP: " IPSTR " %c", IP2STR(network::GetPrimaryIp()), network::iface::IsDhcpKnown() ? ( network::iface::Dhcp() ? 'D' : 'S') : ' ');
+	display.Printf(4, "In: %d", oscserver.GetPortIncoming());
+	display.Printf(5, "Out: %d", oscserver.GetPortOutgoing());
 
-	display.TextStatus(OscServerMsgConst::START, CONSOLE_YELLOW);
+	display.TextStatus(OscServerMsgConst::START, console::Colours::kConsoleYellow);
 
-	server.Start();
+	oscserver.Start();
 
-	display.TextStatus(OscServerMsgConst::STARTED, CONSOLE_GREEN);
+	display.TextStatus(OscServerMsgConst::STARTED, console::Colours::kConsoleGreen);
 
-	hw.WatchdogInit();
+	hal::WatchdogInit();
 
 	for (;;) {
-		hw.WatchdogFeed();
-		nw.Run();
+		hal::WatchdogFeed();
+		network::Run();
 		display.Run();
-		hw.Run();
+		hal::Run();
 	}
 }

@@ -2,7 +2,7 @@
  * @file displayudfshowe131.cpp
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#if defined (DEBUG_DISPLAYUDF)
-# undef NDEBUG
+#if defined(DEBUG_DISPLAYUDF)
+#undef NDEBUG
 #endif
 
 #include <cstdint>
@@ -32,42 +32,44 @@
 
 #include "displayudf.h"
 #include "e131bridge.h"
-#include "e131.h"
+#include "dmxnode.h"
+#include "firmware/debug/debug_debug.h"
 
-#include "debug.h"
+void DisplayUdf::ShowE131Bridge()
+{
+#if defined(DMX_MAX_PORTS)
+    DEBUG_ENTRY();
+    DEBUG_PRINTF("dmxnode::kDmxportOffset=%u", dmxnode::kDmxportOffset);
 
-namespace e131bridge {
-namespace configstore {
-extern uint32_t DMXPORT_OFFSET;
-}  // namespace configstore
-}  // namespace e131bridge
+    if constexpr (dmxnode::kConfigPortCount != 0)
+    {
+        auto* e131 = E131Bridge::Get();
 
-void DisplayUdf::ShowE131Bridge() {
-	DEBUG_ENTRY
-	DEBUG_PRINTF("displayudf::DMXPORT_OFFSET=%u", displayudf::DMXPORT_OFFSET);
+        Printf(labels_[static_cast<uint32_t>(displayudf::Labels::kAp)], "AP: %d", e131->GetActiveOutputPorts() + e131->GetActiveInputPorts());
 
-	auto *pE131Bridge = E131Bridge::Get();
+        for (uint32_t config_port_index = 0; config_port_index < dmxnode::kConfigPortCount; config_port_index++)
+        {
+            const auto kPortIndex = config_port_index + dmxnode::kDmxportOffset;
 
-	Printf(m_aLabels[static_cast<uint32_t>(displayudf::Labels::AP)], "AP: %d", pE131Bridge->GetActiveOutputPorts() + pE131Bridge->GetActiveInputPorts());
+            if (kPortIndex >= std::min(static_cast<uint32_t>(4), dmxnode::kMaxPorts))
+            {
+                break;
+            }
 
-	for (uint32_t nBridgePortIndex = 0; nBridgePortIndex < std::min(static_cast<uint32_t>(4), e131bridge::MAX_PORTS); nBridgePortIndex++) {
-		const auto nPortIndex = nBridgePortIndex + displayudf::DMXPORT_OFFSET;
+            const auto kLabelIndex = static_cast<uint32_t>(displayudf::Labels::kUniversePortA) + config_port_index;
 
-		if (nPortIndex >= std::min(static_cast<uint32_t>(4), e131bridge::MAX_PORTS)) {
-			break;
-		}
+            if (kLabelIndex != 0xFF)
+            {
+                uint16_t n_universe;
+                if (e131->GetUniverse(kPortIndex, n_universe, dmxnode::PortDirection::kOutput))
+                {
+                    Printf(labels_[kLabelIndex], "Port %c: %d %s", ('A' + config_port_index), n_universe,
+                           dmxnode::GetMergeMode(e131->GetMergeMode(kPortIndex), true));
+                }
+            }
+        }
+    }
 
-		const auto nLabelIndex = static_cast<uint32_t>(displayudf::Labels::UNIVERSE_PORT_A) + nBridgePortIndex;
-
-		if (nLabelIndex != 0xFF) {
-			uint16_t nUniverse;
-			if (pE131Bridge->GetUniverse(nPortIndex, nUniverse, lightset::PortDir::OUTPUT)) {
-				Printf(m_aLabels[nLabelIndex], "Port %c: %d %s", ('A' + nBridgePortIndex), nUniverse, lightset::get_merge_mode(pE131Bridge->GetMergeMode(nPortIndex), true));
-			}
-		}
-	}
-
-	ShowDmxInfo();
-
-	DEBUG_EXIT
+    DEBUG_EXIT();
+#endif
 }

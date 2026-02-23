@@ -1,7 +1,7 @@
 /**
  * @file midimonitor.h
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,16 +46,16 @@ private:
 	void ShowActiveSenseAndUpdatesPerSecond();
 	void HandleMtc();
 	void HandleQf();
-	void UpdateTimecode(uint8_t nType);
+	void UpdateTimecode(uint8_t type);
 
 private:
 	uint32_t m_nMillisPrevious { 0 };
 	struct midi::Message *m_pMidiMessage { nullptr };
 	uint32_t m_nInitTimestamp { 0 };
-	uint8_t m_nTypePrevious { 0xFF };
-	uint8_t m_nPartPrevious { 0 };
-	bool m_bDirection { true };
-	MidiBPM m_MidiBPM;
+	uint8_t type_previous_ { 0xFF };
+	uint8_t part_previous_ { 0 };
+	bool direction_ { true };
+	MidiBPM midi_bpm_;
 	uint32_t m_nBPM { 0 };
 };
 

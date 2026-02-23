@@ -106,18 +106,18 @@ void memcpy32_init() {
  *
  * @param pDestination Pointer to the destination memory address (must be 32-bit aligned).
  * @param pSource Pointer to the source memory address (must be 32-bit aligned).
- * @param nBytesCount Number of bytes to copy (must be a multiple of 4).
+ * @param bytes_count Number of bytes to copy (must be a multiple of 4).
  *
  * @note The function performs checks to ensure that the addresses and size are 32-bit aligned.
  */
-void memcpy32(const void *pDestination, const void *pSource, const uint32_t nBytesCount) {
+void memcpy32(const void *pDestination, const void *pSource, const uint32_t bytes_count) {
 	assert((reinterpret_cast<uint32_t>(pDestination) & 0x3) == 0);
 	assert((reinterpret_cast<uint32_t>(pSource) & 0x3) == 0);
-	assert((nBytesCount & 0x3) == 0);
+	assert((bytes_count & 0x3) == 0);
 
 	p_dma->lli.src = reinterpret_cast<uint32_t>(pSource);
 	p_dma->lli.dst = reinterpret_cast<uint32_t>(pDestination);
-	p_dma->lli.len = nBytesCount;
+	p_dma->lli.len = bytes_count;
 	__DMB();
 
 	H3_DMA_CHL5->DESC_ADDR = reinterpret_cast<uint32_t>(&p_dma->lli);

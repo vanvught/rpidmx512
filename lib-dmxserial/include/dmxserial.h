@@ -2,7 +2,7 @@
  * @file dmxserial.h
  *
  */
-/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,94 +30,109 @@
 
 #include "dmxserialchanneldata.h"
 #include "dmxserialtftp.h"
+#include "serial/serial.h"
+#include "hal_uart.h"
+#include "dmxnode.h"
 
-#include "lightset.h"
-#include "../src/serial/serial.h"
+namespace DmxSerialDefaults
+{
+inline constexpr auto TYPE = serial::Type::kUart;
+inline constexpr auto UART_BAUD = 115200;
+inline constexpr auto UART_BITS = hal::uart::BITS_8;
+inline constexpr auto UART_PARITY = hal::uart::PARITY_NONE;
+inline constexpr auto UART_STOPBITS = hal::uart::STOP_1BIT;
+inline constexpr auto SPI_SPEED_HZ = 1000000; ///< 1 MHz
+inline constexpr auto SPI_MODE = 0;
+inline constexpr auto I2C_ADDRESS = 0x30;
+inline constexpr auto I2C_SPEED_MODE = serial::i2c::Speed::kFast;
+} // namespace DmxSerialDefaults
 
-namespace DmxSerialDefaults {
-	static constexpr auto TYPE = serial::type::UART;
-	static constexpr auto UART_BAUD = 115200;
-	static constexpr auto UART_BITS = hal::uart::BITS_8;
-	static constexpr auto UART_PARITY = hal::uart::PARITY_NONE;
-	static constexpr auto UART_STOPBITS = hal::uart::STOP_1BIT;
-	static constexpr auto SPI_SPEED_HZ = 1000000; ///< 1 MHz
-	static constexpr auto SPI_MODE = 0;
-	static constexpr auto I2C_ADDRESS = 0x30;
-	static constexpr auto I2C_SPEED_MODE = serial::i2c::FAST;
-}
+#define DMXSERIAL_FILE_PREFIX "chl"
+#define DMXSERIAL_FILE_SUFFIX ".txt"
 
-#define DMXSERIAL_FILE_PREFIX	"chl"
-#define DMXSERIAL_FILE_SUFFIX	".txt"
+namespace DmxSerialFile
+{
+inline constexpr auto NAME_LENGTH = sizeof(DMXSERIAL_FILE_PREFIX "NNN" DMXSERIAL_FILE_SUFFIX) - 1;
+inline constexpr auto MIN_NUMBER = 1;
+inline constexpr auto MAX_NUMBER = dmxnode::kUniverseSize;
+} // namespace DmxSerialFile
 
-namespace DmxSerialFile {
-	static constexpr auto NAME_LENGTH = sizeof(DMXSERIAL_FILE_PREFIX "NNN" DMXSERIAL_FILE_SUFFIX) - 1;
-	static constexpr auto MIN_NUMBER = 1;
-	static constexpr auto MAX_NUMBER = lightset::dmx::UNIVERSE_SIZE;
-}
+class DmxSerial final: public Serial
+{
+   public:
+    DmxSerial();
+    ~DmxSerial();
 
-class DmxSerial: public LightSet {
-public:
-	DmxSerial();
-	~DmxSerial() override;
+    void Init();
 
-	void Init();
+    void Start(uint32_t port_index);
+    void Stop(uint32_t port_index);
 
-	void Start(const uint32_t nPortIndex) override;
-	void Stop(const uint32_t nPortIndex) override;
+    template <bool doUpdate> void SetData(uint32_t port_index, const uint8_t* pData, uint32_t length);
 
-	void SetData(const uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate = true) override;
-	void Sync(const uint32_t nPortIndex) override;
-	void Sync() override;
+    void Sync(uint32_t port_index);
+    void Sync();
 
-	void Print() override;
+    uint32_t GetUserData() { return 0; }    ///< Art-Net ArtPollReply
+    uint32_t GetRefreshRate() { return 0; } ///< Art-Net ArtPollReply
 
-	const char *GetSerialType() {
-		return Serial::GetType(m_Serial.GetType());
-	}
+    void Blackout([[maybe_unused]] bool blackout) {}
+    void FullOn() {}
 
-	uint32_t GetFilesCount() {
-		return m_nFilesCount;
-	}
+    bool SetDmxStartAddress([[maybe_unused]] uint16_t dmx_start_address) { return false; }
+    uint16_t GetDmxStartAddress() { return dmxnode::kStartAddressDefault; }
 
-	void EnableTFTP(bool bEnableTFTP);
+    uint16_t GetDmxFootprint() { return dmxnode::kUniverseSize; }
 
-	bool DeleteFile(int32_t nFileNumber);
-	bool DeleteFile(const char *pFileNumber);
+    bool GetSlotInfo([[maybe_unused]] uint16_t slot_offset, dmxnode::SlotInfo& slot_info)
+    {
+        slot_info.type = 0x00;       // ST_PRIMARY
+        slot_info.category = 0x0001; // SD_INTENSITY
+        return true;
+    }
 
-	void Input(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort);
+    void Print();
 
-	static bool FileNameCopyTo(char *pFileName, uint32_t nLength, int32_t nFileNumber);
-	static bool CheckFileName(const char *pFileName, int32_t &nFileNumber);
+    uint32_t GetFilesCount() { return m_nFilesCount; }
 
-	static DmxSerial *Get() {
-		return s_pThis;
-	}
+    void EnableTFTP(bool enable_tftp);
 
-private:
-	void ScanDirectory();
-	void Update(const uint8_t *pData, const uint32_t nLength);
+    bool DeleteFile(int32_t file_number);
+    bool DeleteFile(const char* file_number);
 
-	void static StaticCallbackFunction(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
-		s_pThis->Input(pBuffer, nSize, nFromIp, nFromPort);
-	}
+    void Input(const uint8_t* pBuffer, uint32_t size, uint32_t from_ip, uint16_t from_port);
 
-private:
-	Serial m_Serial;
-	uint32_t m_nFilesCount { 0 };
-	int32_t m_aFileIndex[DmxSerialFile::MAX_NUMBER];
-	int32_t m_nHandle { -1 };
-	DmxSerialChannelData *m_pDmxSerialChannelData[DmxSerialFile::MAX_NUMBER];
-	uint16_t m_nDmxLastSlot { lightset::dmx::UNIVERSE_SIZE };
-	uint8_t m_DmxData[lightset::dmx::UNIVERSE_SIZE];
-	struct SyncData {
-		uint8_t data[lightset::dmx::UNIVERSE_SIZE];
-		uint32_t nLength;
-	};
-	SyncData m_SyncData;
-	bool m_bEnableTFTP { false };
-	DmxSerialTFTP *m_pDmxSerialTFTP { nullptr };
+    static bool FileNameCopyTo(char* file_name, uint32_t length, int32_t file_number);
+    static bool CheckFileName(const char* file_name, int32_t& file_number);
 
-	static inline DmxSerial *s_pThis;
+    static DmxSerial* Get() { return s_this; }
+
+   private:
+    void ScanDirectory();
+    void Update(const uint8_t* pData, uint32_t length);
+
+    void static StaticCallbackFunction(const uint8_t* pBuffer, uint32_t size, uint32_t from_ip, uint16_t from_port)
+    {
+        s_this->Input(pBuffer, size, from_ip, from_port);
+    }
+
+   private:
+    uint32_t m_nFilesCount{0};
+    int32_t m_aFileIndex[DmxSerialFile::MAX_NUMBER];
+    int32_t handle_{-1};
+    DmxSerialChannelData* m_pDmxSerialChannelData[DmxSerialFile::MAX_NUMBER];
+    uint16_t m_nDmxLastSlot{dmxnode::kUniverseSize};
+    uint8_t dmx_data_[dmxnode::kUniverseSize];
+    struct SyncData
+    {
+        uint8_t data[dmxnode::kUniverseSize];
+        uint32_t length;
+    };
+    SyncData m_SyncData;
+    bool enable_tftp_{false};
+    DmxSerialTFTP* m_pDmxSerialTFTP{nullptr};
+
+    static inline DmxSerial* s_this;
 };
 
-#endif /* DMXSERIAL_H_ */
+#endif  // DMXSERIAL_H_

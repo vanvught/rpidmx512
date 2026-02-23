@@ -1,5 +1,5 @@
 /**
- * @file mididescription.h
+ * @file mididescription.cpp
  */
 /* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@gd32-dmx.org
  *
@@ -69,8 +69,8 @@ static constexpr char INSTRUMENT_NAMES[128][32] = {
 	"Fret Noise", "Breath Noise", "Seashore", "Tweet", "Telephone", "Helicopter", "Applause", "Gunshot"													// 121-128 Sound effects
 };
 
-const char* MidiDescription::GetType(Types tType) {
-	switch (tType) {
+const char* MidiDescription::GetType(Types type) {
+	switch (type) {
 	case Types::INVALIDE_TYPE:
 		return "> program internal use <";
 	case Types::NOTE_OFF:
@@ -80,7 +80,7 @@ const char* MidiDescription::GetType(Types tType) {
 	case Types::AFTER_TOUCH_POLY:
 		return "Polyphonic AfterTouch";
 	case Types::CONTROL_CHANGE:
-		if (static_cast<uint8_t>(tType) < 120) {
+		if (static_cast<uint8_t>(type) < 120) {
 			return "Control Change";
 		} else {
 			// Controller numbers 120-127 are reserved for Channel Mode Messages,

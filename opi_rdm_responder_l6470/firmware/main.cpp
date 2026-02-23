@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,120 +24,98 @@
  */
 
 #include <cstdio>
-#include <cstdint>
-#include <cassert>
 
-#include "hardware.h"
+#include "h3/hal.h"
+#include "h3/hal_watchdog.h"
 #include "display.h"
-#include "network.h"
-#if !defined(NO_EMAC)
-# include "networkconst.h"
-#endif
-
 #include "rdmresponder.h"
 #include "rdmpersonality.h"
-#include "rdmdeviceparams.h"
-#include "rdmsensorsparams.h"
-#if defined (CONFIG_RDM_ENABLE_SUBDEVICES)
-# include "rdmsubdevicesparams.h"
-#endif
-
-#include "tlc59711dmxparams.h"
+#include "tlc59711.h"
+#include "json/tlc59711dmxparams.h"
 #include "tlc59711dmx.h"
-
-#include "lightsetchain.h"
-
-#if !defined(NO_EMAC)
-# include "remoteconfig.h"
-# include "remoteconfigparams.h"
-#endif
-
+#include "dmxnodechain.h"
 #include "flashcodeinstall.h"
 #include "configstore.h"
-
 #include "firmwareversion.h"
 #include "software_version.h"
-
 #include "sparkfundmx.h"
-
-#include "factorydefaults.h"
-
-
-
-int main() {
-	Hardware hw;
-	Display display;
-	ConfigStore configStore;
-	Network nw;
-	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
-	FlashCodeInstall spiFlashInstall;
-
-	fw.Print();
-
-	LightSet *pBoard;
-
-	auto *pSparkFunDmx = new SparkFunDmx;
-	assert(pSparkFunDmx != nullptr);
-	pSparkFunDmx->ReadConfigFiles();
-
-	pBoard = pSparkFunDmx;
-	bool isLedTypeSet = false;
-
-	TLC59711DmxParams pwmledparms;
-	pwmledparms.Load();
-
-	if ((isLedTypeSet = pwmledparms.IsSetLedType()) == true) {
-		auto *pTLC59711Dmx = new TLC59711Dmx;
-		assert(pTLC59711Dmx != nullptr);
-		pwmledparms.Set(pTLC59711Dmx);
-
-		display.Printf(7, "%s:%d", pwmledparms.GetType(pwmledparms.GetLedType()), pwmledparms.GetLedCount());
-
-		auto *pChain = new LightSetChain;
-		assert(pChain != nullptr);
-
-		pChain->Add(pBoard, 0);
-		pChain->Add(pTLC59711Dmx, 1);
-		pChain->Dump();
-
-		pBoard = pChain;
-	}
-
-	char aDescription[64];
-	snprintf(aDescription, sizeof(aDescription) - 1, "Sparkfun%s", isLedTypeSet ? " with TLC59711" : "");
-
-	RDMPersonality *pRDMPersonalities[1] = { new  RDMPersonality(aDescription, pBoard)};
-
-	RDMResponder rdmResponder(pRDMPersonalities, 1);
-
-	rdmResponder.SetProductCategory(E120_PRODUCT_CATEGORY_FIXTURE);
-	rdmResponder.SetProductDetail(E120_PRODUCT_DETAIL_LED);
-
-	RDMSensorsParams rdmSensorsParams;
-	rdmSensorsParams.Load();
-	rdmSensorsParams.Set();
-
-#if defined (CONFIG_RDM_ENABLE_SUBDEVICES)
-	RDMSubDevicesParams rdmSubDevicesParams;
-	rdmSubDevicesParams.Load();
-	rdmSubDevicesParams.Set();
+#include "common/utils/utils_enum.h"
+#include "configurationstore.h"
+#if !defined(NO_EMAC)
+#include "networkconst.h"
+#include "remoteconfig.h"
+#include "network.h"
 #endif
 
-	rdmResponder.Init();
+namespace hal
+{
+void RebootHandler() {}
+} // namespace hal
 
-	RDMDeviceParams rdmDeviceParams;
-	rdmDeviceParams.Load();
-	rdmDeviceParams.Set(&rdmResponder);
+int main() // NOLINT
+{
+    hal::Init();
+    Display display;
+    ConfigStore config_store;
+#if !defined(NO_EMAC)    
+    NetworkInit();
+#endif    
+    FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+    FlashCodeInstall spiflash_install;
 
-	rdmResponder.Start();
-	rdmResponder.Print();
+    fw.Print();
 
-	hw.SetMode(hardware::ledblink::Mode::NORMAL);
-	hw.WatchdogInit();
+    DmxNodeChain dmxNodeChain;
 
-	for(;;) {
-		hw.WatchdogFeed();
-		rdmResponder.Run();
-		hw.Run();
-	}
+    SparkFunDmx sparkFunDmx;
+    dmxNodeChain.SetSparkfunDmx(&sparkFunDmx);
+
+    sparkFunDmx.ReadConfigFiles();
+
+    const auto kMotorsConnected = sparkFunDmx.GetMotorsConnected();
+ 
+    TLC59711Dmx tlc59711dmx;
+
+    json::Tlc59711DmxParams pwmledparms;
+    pwmledparms.Load();
+    pwmledparms.Set();
+
+    const auto kType = common::FromValue<tlc59711::Type>(ConfigStore::Instance().DmxLedGet(&common::store::DmxLed::type));
+    const auto kIsLedTypeSet = kType != tlc59711::Type::kUndefined;
+
+    char description[64];
+
+    if (kIsLedTypeSet)
+    {
+        dmxNodeChain.SetTLC59711Dmx(&tlc59711dmx);
+        display.Printf(7, "%s:%d", tlc59711::GetType(tlc59711dmx.GetType()), tlc59711dmx.GetCount());
+
+        snprintf(description, sizeof(description) - 1, "Sparkfun [%d] with %s [%d]", kMotorsConnected, tlc59711::GetType(tlc59711dmx.GetType()),
+                 tlc59711dmx.GetCount());
+    }
+    else
+    {
+        snprintf(description, sizeof(description) - 1, "Sparkfun [%d]", kMotorsConnected);
+    }
+	
+	auto& rdm_device = RdmDevice::Get();
+	rdm_device.SetProductCategory(E120_PRODUCT_CATEGORY_FIXTURE);
+	rdm_device.SetProductDetail(E120_PRODUCT_DETAIL_LED);
+
+    RDMPersonality* rdm_personalities[1] = {new RDMPersonality(description, &dmxNodeChain)};
+
+    RDMResponder rdm_responder(rdm_personalities, 1);
+    rdm_responder.Init();
+    rdm_responder.Start();
+    rdm_responder.Print();
+
+    hal::statusled::SetMode(hal::statusled::Mode::NORMAL);
+    hal::WatchdogInit();
+
+    for (;;)
+    {
+        hal::WatchdogFeed();
+        rdm_responder.Run();
+        hal::Run();
+    }
 }

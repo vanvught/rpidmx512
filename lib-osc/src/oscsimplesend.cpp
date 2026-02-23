@@ -2,7 +2,7 @@
  * @file oscsimplesend.cpp
  *
  */
-/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,100 +27,106 @@
 #include <cassert>
 
 #include "oscsimplesend.h"
-#include "osc.h"
 #include "oscstring.h"
-
 #include "network.h"
-
-#include "debug.h"
-
-char OscSimpleSend::s_Message[osc::simple::send::BUFFER_SIZE];
+#include "firmware/debug/debug_dump.h"
 
 // Support for path only
-OscSimpleSend::OscSimpleSend(int32_t nHandle, uint32_t nIpAddress , uint16_t nPort, const char *pPath, const char *pType) {
-	if (pType == nullptr) {
-		const auto nPathLength = osc::string_size(pPath);
-		const auto nMessageLength = nPathLength + 4U;
+OscSimpleSend::OscSimpleSend(int32_t handle, uint32_t ip_address, uint16_t port, const char* path, const char* type)
+{
+    if (type == nullptr)
+    {
+        const auto kPathLength = osc::StringSize(path);
+        const auto kMessageLength = kPathLength + 4U;
 
-		assert(nMessageLength < sizeof(s_Message));
+        assert(kMessageLength < sizeof(s_message));
 
-		UpdateMessage(pPath, nPathLength, 0);
-		Send(nMessageLength, nHandle, nIpAddress, nPort);
-	}
+        UpdateMessage(path, kPathLength, 0);
+        Send(kMessageLength, handle, ip_address, port);
+    }
 }
 
 // Support for 's'
-OscSimpleSend::OscSimpleSend(int32_t nHandle, uint32_t nIpAddress , uint16_t nPort, const char *pPath, const char *pType, const char *pString) {
-	if ((pType != nullptr) && (*pType == 's')) {
-		const auto nPathLength = osc::string_size(pPath);
-		const auto nMessageLength = nPathLength + 4U + osc::string_size(pString);
+OscSimpleSend::OscSimpleSend(int32_t handle, uint32_t ip_address, uint16_t port, const char* path, const char* type, const char* string)
+{
+    if ((type != nullptr) && (*type == 's'))
+    {
+        const auto kPathLength = osc::StringSize(path);
+        const auto kMessageLength = kPathLength + 4U + osc::StringSize(string);
 
-		assert(nMessageLength < sizeof(s_Message));
+        assert(kMessageLength < sizeof(s_message));
 
-		UpdateMessage(pPath, nPathLength, 's');
+        UpdateMessage(path, kPathLength, 's');
 
-		memset(s_Message + nMessageLength - 4, 0, 4);
+        memset(s_message + kMessageLength - 4, 0, 4);
 
-		assert((nPathLength + 4) < sizeof(s_Message));
-		strncpy(&s_Message[nPathLength + 4], pString, sizeof(s_Message) - (nPathLength + 4));
+        assert((kPathLength + 4) < sizeof(s_message));
+        strncpy(reinterpret_cast<char*>(&s_message[kPathLength + 4]), string, sizeof(s_message) - (kPathLength + 4));
 
-		Send(nMessageLength, nHandle, nIpAddress, nPort);
-	}
+        Send(kMessageLength, handle, ip_address, port);
+    }
 }
 
 // Support for type 'i'
-OscSimpleSend::OscSimpleSend(int32_t nHandle, uint32_t nIpAddress , uint16_t nPort, const char *pPath, const char *pType, int nValue) {
-	if ((pType != nullptr) && (*pType == 'i')) {
-		const auto nPathLength = osc::string_size(pPath);
-		const auto nMessageLength = nPathLength + 4U + 4U;
+OscSimpleSend::OscSimpleSend(int32_t handle, uint32_t ip_address, uint16_t port, const char* path, const char* type, int value)
+{
+    if ((type != nullptr) && (*type == 'i'))
+    {
+        const auto kPathLength = osc::StringSize(path);
+        const auto kMessageLength = kPathLength + 4U + 4U;
 
-		assert(nMessageLength < sizeof(s_Message));
+        assert(kMessageLength < sizeof(s_message));
 
-		UpdateMessage(pPath, nPathLength, 'i');
+        UpdateMessage(path, kPathLength, 'i');
 
-		*reinterpret_cast<int32_t*>(&s_Message[nMessageLength - 4]) = static_cast<int32_t>(__builtin_bswap32(static_cast<uint32_t>(nValue)));
+        *reinterpret_cast<int32_t*>(&s_message[kMessageLength - 4]) = static_cast<int32_t>(__builtin_bswap32(static_cast<uint32_t>(value)));
 
-		Send(nMessageLength, nHandle, nIpAddress, nPort);
-	}
+        Send(kMessageLength, handle, ip_address, port);
+    }
 }
 
 // Support for type 'f'
-OscSimpleSend::OscSimpleSend(int32_t nHandle, uint32_t nIpAddress , uint16_t nPort, const char *pPath, const char *pType, float fValue) {
-	if ((pType != nullptr) && (*pType == 'f')) {
-		const auto nPathLength = osc::string_size(pPath);
-		const auto nMessageLength = nPathLength + 4U + 4U;
+OscSimpleSend::OscSimpleSend(int32_t handle, uint32_t ip_address, uint16_t port, const char* path, const char* type, float value)
+{
+    if ((type != nullptr) && (*type == 'f'))
+    {
+        const auto kPathLength = osc::StringSize(path);
+        const auto kMessageLength = kPathLength + 4U + 4U;
 
-		assert(nMessageLength < sizeof(s_Message));
+        assert(kMessageLength < sizeof(s_message));
 
-		UpdateMessage(pPath, nPathLength, 'f');
+        UpdateMessage(path, kPathLength, 'f');
 
-		union pcast32 {
-			uint32_t u;
-			float f;
-		} osc_pcast32;
+        union pcast32
+        {
+            uint32_t u;
+            float f;
+        } osc_pcast32;
 
-		osc_pcast32.f = fValue;
+        osc_pcast32.f = value;
 
-		*reinterpret_cast<int32_t*>(&s_Message[nMessageLength - 4]) = static_cast<int32_t>(__builtin_bswap32(osc_pcast32.u));
+        *reinterpret_cast<int32_t*>(&s_message[kMessageLength - 4]) = static_cast<int32_t>(__builtin_bswap32(osc_pcast32.u));
 
-		Send(nMessageLength, nHandle, nIpAddress, nPort);
-	}
+        Send(kMessageLength, handle, ip_address, port);
+    }
 }
 
-void OscSimpleSend::UpdateMessage(const char *pPath, uint32_t nPathLength, char cType) {
-	memset(s_Message + nPathLength - 4, 0, 4);
-	strncpy(s_Message, pPath, sizeof(s_Message));
+void OscSimpleSend::UpdateMessage(const char* path, uint32_t path_length, char type)
+{
+    memset(s_message + path_length - 4, 0, 4);
+    strncpy(reinterpret_cast<char*>(s_message), path, sizeof(s_message));
 
-	assert(nPathLength < sizeof(s_Message));
+    assert(path_length < sizeof(s_message));
 
-	s_Message[nPathLength++] = ',';
-	s_Message[nPathLength++] = cType;
-	s_Message[nPathLength++] = '\0';
-	s_Message[nPathLength++] = '\0';
+    s_message[path_length++] = ',';
+    s_message[path_length++] = type;
+    s_message[path_length++] = '\0';
+    s_message[path_length++] = '\0';
 }
 
-void OscSimpleSend::Send(uint32_t nMessageLength, int32_t nHandle, uint32_t nIpAddress, uint16_t nPort) {
-	debug_dump(s_Message, nMessageLength);
+void OscSimpleSend::Send(uint32_t message_length, int32_t handle, uint32_t ip_address, uint16_t port)
+{
+    debug::Dump(s_message, message_length);
 
-	Network::Get()->SendTo(nHandle, s_Message, nMessageLength, nIpAddress, nPort);
+    network::udp::Send(handle, s_message, message_length, ip_address, port);
 }

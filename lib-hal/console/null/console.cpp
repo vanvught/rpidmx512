@@ -25,9 +25,12 @@
 
 #include <cstdint>
 
-void console_init() {}
-void console_puts([[maybe_unused]] const char *p) {}
-void console_write([[maybe_unused]] const char *p, [[maybe_unused]] unsigned int i) {}
-void console_status([[maybe_unused]]  uint32_t i, [[maybe_unused]] const char *p) {}
-void console_error([[maybe_unused]] const char *p) {}
-void console_putc([[maybe_unused]] int i) {}
+namespace console
+{
+void Init() {}
+void Puts([[maybe_unused]] const char* p) {}
+void Write([[maybe_unused]] const char* p, [[maybe_unused]] unsigned int i) {}
+void Status([[maybe_unused]] uint32_t i, [[maybe_unused]] const char* p) {}
+void Error([[maybe_unused]] const char* p) {}
+void Putc([[maybe_unused]] int i) {}
+} // namespace console

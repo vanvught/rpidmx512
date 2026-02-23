@@ -1,8 +1,8 @@
 /**
- * @file json_status.cpp
+ * @file json_get_polltable.cpp
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,65 +29,70 @@
 
 #include "artnetcontroller.h"
 #include "artnet.h"
-#include "network.h"
+#include "ip4/ip4_address.h"
 
+namespace remoteconfig::artnet::controller
+{
+static uint32_t GetPort(const struct ::artnet::NodeEntryUniverse* art_net_node_entry_universe, char* out_buffer, uint32_t out_buffer_size)
+{
+    const auto kLength = static_cast<uint32_t>(
+        snprintf(out_buffer, out_buffer_size, "{\"name\":\"%s\",\"universe\":%u},", art_net_node_entry_universe->ShortName, art_net_node_entry_universe->universe));
 
+    if (kLength <= out_buffer_size)
+    {
+        return kLength;
+    }
 
-namespace remoteconfig::artnet::controller {
-static uint32_t get_port(const struct ::artnet::NodeEntryUniverse *pArtNetNodeEntryUniverse, char *pOutBuffer, const uint32_t nOutBufferSize) {
-	const auto nLength = static_cast<uint32_t>(snprintf(pOutBuffer, nOutBufferSize,
-			"{\"name\":\"%s\",\"universe\":%u},",
-			pArtNetNodeEntryUniverse->ShortName, pArtNetNodeEntryUniverse->nUniverse));
-
-	if (nLength <= nOutBufferSize) {
-		return nLength;
-	}
-
-	return 0;
+    return 0;
 }
 
-static uint32_t get_entry(const uint32_t nIndex, char *pOutBuffer, const uint32_t nOutBufferSize) {
-	const auto *pPollTable = ArtNetController::Get()->GetPollTable();
-	auto nLength = static_cast<uint32_t>(snprintf(pOutBuffer, nOutBufferSize,
-			"{\"name\":\"%s\",\"ip\":\"" IPSTR "\",\"mac\":\"" MACSTR "\",\"ports\":[",
-			pPollTable[nIndex].LongName, IP2STR(pPollTable[nIndex].IPAddress), MAC2STR(pPollTable[nIndex].Mac)));
+static uint32_t GetEntry(uint32_t index, char* out_buffer, uint32_t out_buffer_size)
+{
+    const auto* poll_table = ArtNetController::Get()->GetPollTable();
+    auto length = static_cast<uint32_t>(snprintf(out_buffer, out_buffer_size, "{\"name\":\"%s\",\"ip\":\"" IPSTR "\",\"mac\":\"" MACSTR "\",\"ports\":[",
+                                                  poll_table[index].LongName, IP2STR(poll_table[index].IPAddress), MAC2STR(poll_table[index].Mac)));
 
-	for (uint32_t nUniverse = 0; nUniverse < pPollTable[nIndex].nUniversesCount; nUniverse++) {
-		const auto *pArtNetNodeEntryUniverse = &pPollTable[nIndex].Universe[nUniverse];
-		nLength += get_port(pArtNetNodeEntryUniverse, &pOutBuffer[nLength], nLength);
-	}
+    for (uint32_t universe = 0; universe < poll_table[index].universes_count; universe++)
+    {
+        const auto* art_net_node_entry_universe = &poll_table[index].Universe[universe];
+        length += GetPort(art_net_node_entry_universe, &out_buffer[length], length);
+    }
 
-	nLength--;
-	nLength += static_cast<uint32_t>(snprintf(&pOutBuffer[nLength], nOutBufferSize - nLength, "]},"));
+    length--;
+    length += static_cast<uint32_t>(snprintf(&out_buffer[length], out_buffer_size - length, "]},"));
 
-	if (nLength <= nOutBufferSize) {
-		return nLength;
-	}
+    if (length <= out_buffer_size)
+    {
+        return length;
+    }
 
-	return 0;
+    return 0;
 }
 
-uint32_t json_get_polltable(char *pOutBuffer, const uint32_t nOutBufferSize) {
-	const auto nBufferSize = nOutBufferSize - 2U;
-	pOutBuffer[0] = '[';
+uint32_t JsonGetPolltable(char* out_buffer, uint32_t out_buffer_size)
+{
+    const auto kBufferSize = out_buffer_size - 2U;
+    out_buffer[0] = '[';
 
-	auto nLength = 1U;
+    auto length = 1U;
 
-	for (uint32_t nIndex = 0; (nIndex < ArtNetController::Get()->GetPollTableEntries()) && (nLength < nOutBufferSize); nIndex++) {
-		const auto nSize = nBufferSize - nLength;
-		nLength += get_entry(nIndex, &pOutBuffer[nLength], nSize);
-	}
+    for (uint32_t index = 0; (index < ArtNetController::Get()->GetPollTableEntries()) && (length < out_buffer_size); index++)
+    {
+        const auto kSize = kBufferSize - length;
+        length += GetEntry(index, &out_buffer[length], kSize);
+    }
 
-	if (nLength != 1) {
-		pOutBuffer[nLength - 1] = ']';
-	} else {
-		pOutBuffer[1] = ']';
-		nLength = 2;
-	}
+    if (length != 1)
+    {
+        out_buffer[length - 1] = ']';
+    }
+    else
+    {
+        out_buffer[1] = ']';
+        length = 2;
+    }
 
-	assert(nLength <= nOutBufferSize);
-	return nLength;
+    assert(length <= out_buffer_size);
+    return length;
 }
 } // namespace remoteconfig::artnet::controller
-
-

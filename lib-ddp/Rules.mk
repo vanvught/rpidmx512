@@ -1,7 +1,7 @@
 ifneq ($(MAKE_FLAGS),)
 else
-	DEFINES+=CONFIG_PIXELDMX_MAX_PORTS=8
-	DEFINES+=LIGHTSET_PORTS=32
+	DEFINES+=CONFIG_DMXNODE_PIXEL_MAX_PORTS=8
+	DEFINES+=DMXNODE_PORTS=32
 endif
 
-EXTRA_INCLUDES =../lib-properties/include ../lib-network/include ../lib-lightset/include
+EXTRA_INCLUDES=../lib-dmx/include  ../lib-network/include ../lib-pixel/include ../lib-pixeldmx/include

@@ -2,7 +2,7 @@
  * @file serialuart.cpp
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,68 +24,71 @@
  */
 
 #include <cstdint>
-#include <cstdio>
-#include <cassert>
 
-#include "serial.h"
-
+#include "serial/serial.h"
 #include "hal_uart.h"
+ #include "firmware/debug/debug_debug.h"
 
-#include "debug.h"
+void Serial::SetUartBaud(uint32_t baud)
+{
+    DEBUG_PRINTF("baud=%d", baud);
 
-using namespace serial;
-
-void Serial::SetUartBaud(uint32_t nBaud) {
-	DEBUG_PRINTF("nBaud=%d", nBaud);
-
-	m_UartConfiguration.nBaud = nBaud;
+    uart_configuration_.baud = baud;
 }
 
-void Serial::SetUartBits(uint32_t nBits) {
-	DEBUG_PRINTF("nBits=%d", nBits);
+void Serial::SetUartBits(uint32_t bits)
+{
+    DEBUG_PRINTF("bits=%d", bits);
 
-	if ((nBits >= 5) && (nBits <= 9)) {
-		m_UartConfiguration.nBits = static_cast<uint8_t>(nBits);
-	}
+    if ((bits >= 5) && (bits <= 9))
+    {
+        uart_configuration_.bits = static_cast<uint8_t>(bits);
+    }
 }
 
-void Serial::SetUartParity(uart::parity tParity) {
-	DEBUG_PRINTF("tParity=%d", tParity);
+void Serial::SetUartParity(serial::uart::Parity parity)
+{
+    DEBUG_PRINTF("parity=%d", parity);
 
-	switch (tParity) {
-	case uart::parity::ODD:
-		m_UartConfiguration.nParity = static_cast<uint8_t>(hal::uart::PARITY_ODD);
-		break;
-	case uart::parity::EVEN:
-		m_UartConfiguration.nParity = static_cast<uint8_t>(hal::uart::PARITY_EVEN);
-		break;
-	default:
-		m_UartConfiguration.nParity = static_cast<uint8_t>(hal::uart::PARITY_NONE);
-		break;
-	}
+    switch (parity)
+    {
+        case serial::uart::Parity::kOdd:
+            uart_configuration_.parity = common::ToValue(hal::uart::PARITY_ODD);
+            break;
+        case serial::uart::Parity::kEven:
+            uart_configuration_.parity = common::ToValue(hal::uart::PARITY_EVEN);
+            break;
+        default:
+            uart_configuration_.parity = common::ToValue(hal::uart::PARITY_NONE);
+            break;
+    }
 }
 
-void Serial::SetUartStopBits(uint32_t nStopBits) {
-	DEBUG_PRINTF("nStopBits=%d", nStopBits);
+void Serial::SetUartStopBits(uint32_t stop_bits)
+{
+    DEBUG_PRINTF("stop_bits=%d", stop_bits);
 
-	if ((nStopBits == 1) || (nStopBits == 2)) {
-		m_UartConfiguration.nStopBits = static_cast<uint8_t>(nStopBits);
-	}
+    if ((stop_bits == 1) || (stop_bits == 2))
+    {
+        uart_configuration_.stop_bits = static_cast<uint8_t>(stop_bits);
+    }
 }
 
-bool Serial::InitUart() {
-	DEBUG_ENTRY
+bool Serial::InitUart()
+{
+    DEBUG_ENTRY();
 
-	FUNC_PREFIX (uart_begin(EXT_UART_BASE, m_UartConfiguration.nBaud, m_UartConfiguration.nBits, m_UartConfiguration.nParity, m_UartConfiguration.nStopBits));
+    FUNC_PREFIX(UartBegin(EXT_UART_BASE, uart_configuration_.baud, uart_configuration_.bits, uart_configuration_.parity, uart_configuration_.stop_bits));
 
-	DEBUG_EXIT
-	return true;
+    DEBUG_EXIT();
+    return true;
 }
 
-void Serial::SendUart(const uint8_t *pData, uint32_t nLength) {
-	DEBUG_ENTRY
+void Serial::SendUart(const uint8_t* data, uint32_t length)
+{
+    DEBUG_ENTRY();
 
-	FUNC_PREFIX (uart_transmit(EXT_UART_BASE, pData, nLength));
+    FUNC_PREFIX(UartTransmit(EXT_UART_BASE, data, length));
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }

@@ -2,7 +2,7 @@
  * @file phy.h
  *
  */
-/* Copyright (C) 2023-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2023-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,61 +28,64 @@
 
 #include <cstdint>
 
-namespace net {
-enum class Link {
-	STATE_DOWN, STATE_UP
+namespace net::phy
+{
+enum class Link
+{
+    kStateDown,
+    kStateUp
 };
 
-enum class Duplex {
-	DUPLEX_HALF, DUPLEX_FULL
+enum class Duplex
+{
+    kDuplexHalf,
+    kDuplexFull
 };
 
-enum class Speed {
-	SPEED10, SPEED100, SPEED1000
+enum class Speed
+{
+    kSpeed10,
+    kSpeed100,
+    kSpeed1000
 };
 
-struct PhyStatus {
-	Link link;
-	Duplex duplex;
-	Speed speed;
-	bool bAutonegotiation;
+struct Status
+{
+    Link link;
+    Duplex duplex;
+    Speed speed;
+    bool autonegotiation;
 };
 
-struct PhyIdentifier {
-	uint32_t nOui;				///< 24-bit Organizationally Unique Identifier.
-	uint16_t nVendorModel;		///< 6-bit Manufacturer’s model number.
-	uint16_t nModelRevision;	///< 4-bit Manufacturer’s revision number.
+struct Identifier
+{
+    uint32_t oui;            ///< 24-bit Organizationally Unique Identifier.
+    uint16_t vendor_model;   ///< 6-bit Manufacturer’s model number.
+    uint16_t model_revision; ///< 4-bit Manufacturer’s revision number.
 };
 
 /** \defgroup generic Generic implementation
   @{
 */
 
-bool phy_get_id(const uint32_t nAddress, PhyIdentifier& phyIdentifier);
-Link phy_get_link(const uint32_t nAddress);
+bool GetId(uint32_t address, Identifier& phy_identifier);
+Link GetLink(uint32_t address);
 
 /**
  *
- * @param nAddress PHY address
+ * @param address PHY address
  * @return true for success, false for failure
  */
-bool phy_powerdown(const uint32_t nAddress);
+bool Powerdown(uint32_t address);
 
 /**
  *
- * Called from \ref emac_start
+ * Called from \ref Start
  *
- * @param nAddress PHY address
+ * @param address PHY address
  * @return true for success, false for failure
  */
-bool phy_start(const uint32_t nAddress, PhyStatus& phyStatus);
-
-
-const char *phy_string_get_link(const Link link);
-const char *phy_string_get_duplex(const Duplex duplex);
-const char *phy_string_get_speed(const Speed speed);
-const char *phy_string_get_autonegotiation(const bool autonegotiation);
-
+bool Start(uint32_t address, Status& phy_status);
 /** @} */
 
 /** \defgroup platform Platform implementation
@@ -91,38 +94,43 @@ const char *phy_string_get_autonegotiation(const bool autonegotiation);
 
 /**
  * Reading a given PHY register
- * @param nAddress PHY address
- * @param nRegister PHY register number to read
- * @param nValue Returned value
+ * @param address PHY address
+ * @param reg PHY register number to read
+ * @param value Returned value
  * @return
  */
-bool phy_read(const uint32_t nAddress, const uint32_t nRegister, uint16_t& nValue);
+bool Read(uint32_t address, uint32_t reg, uint16_t& value);
 
 /**
  *
- * @param nAddress PHY address
- * @param nRegister PHY register number to write
- * @param nValue Value to write
+ * @param address PHY address
+ * @param reg PHY register number to write
+ * @param value Value to write
  * @return true for success, false for failure
  */
-bool phy_write(const uint32_t nAddress, const uint32_t nRegister, uint16_t nValue);
+bool Write(uint32_t address, uint32_t reg, uint16_t value);
 
 /**
  * PHY interface configuration (configure SMI and reset PHY)
- * Called from \ref emac_config
- * @param nAddress true for success, false for failure
+ * Called from \ref EmacConfig
+ * @param address true for success, false for failure
  * @return
  */
-bool phy_config(const uint32_t nAddress);
+bool Config(uint32_t address);
 /** @} */
 
 /** \defgroup specific PHY specific
   @{
 */
-void phy_customized_led();
-void phy_customized_timing();
-void phy_customized_status(PhyStatus& phyStatus);
+void CustomizedLed();
+void CustomizedTiming();
+void CustomizedStatus(Status& phy_status);
 /** @} */
-}
 
-#endif /* EMAC_PHY_H_ */
+const char* ToString(Link link);
+const char* ToString(Duplex duplex);
+const char* ToString(Speed speed);
+const char* ToStringAutonegotiation(bool autonegotiation);
+} // namespace net::phy
+
+#endif  // EMAC_PHY_H_

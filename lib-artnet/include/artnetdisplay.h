@@ -2,10 +2,7 @@
  * @file artnetdisplay.h
  *
  */
-/**
- * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
- */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,17 +29,17 @@
 #include <cstdint>
 
 #include "artnet.h"
-#include "lightset.h"
+#include "dmxnode.h"
 
-namespace artnet {
-void display_longname(const char *pLongName);
-void display_universe_switch(uint32_t nPortIndex, uint8_t nAddress);
-void display_net_switch(uint8_t nAddress);
-void display_subnet_switch(uint8_t nAddress);
-void display_merge_mode(uint32_t nPortIndex, lightset::MergeMode mergeMode);
-void display_outputstyle(const uint32_t nPortIndex, const lightset::OutputStyle outputStyle);
-void display_port_protocol(uint32_t nPortIndex, artnet::PortProtocol portProtocol);
-void display_rdm_enabled(uint32_t nPortIndex, bool isEnabled);
-void display_failsafe(uint8_t nFailsafe);
-}  // namespace artnet
-#endif /* ARTNETDISPLAY_H_ */
+namespace artnet::display
+{
+void Longname(const char* long_name);
+void Universe(uint32_t port_index, uint32_t universe);
+void MergeMode(uint32_t port_index, dmxnode::MergeMode merge_mode);
+void Outputstyle(uint32_t port_index, dmxnode::OutputStyle output_style);
+void Protocol(uint32_t port_index, artnet::PortProtocol port_protocol);
+void RdmEnabled(uint32_t port_index, bool is_enabled);
+void Failsafe(uint8_t failsafe);
+} // namespace artnet::display
+
+#endif  // ARTNETDISPLAY_H_

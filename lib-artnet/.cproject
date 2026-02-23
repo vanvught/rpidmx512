@@ -10,123 +10,31 @@
 					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.CWDLocator" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.MakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.VCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
 				<configuration artifactName="${ProjName}" buildProperties="" description="" id="cdt.managedbuild.toolchain.gnu.cross.base.563973127.1101867625" name="rpi" optionalBuildProperties="" parent="org.eclipse.cdt.build.core.emptycfg">
 					<folderInfo id="cdt.managedbuild.toolchain.gnu.cross.base.563973127.1101867625." name="/" resourcePath="">
-						<toolChain id="cdt.managedbuild.toolchain.gnu.cross.base.513480504" name="Cross GCC" superClass="cdt.managedbuild.toolchain.gnu.cross.base">
+						<toolChain id="cdt.managedbuild.toolchain.gnu.cross.base.513480504" name="Cross GCC">
 							<option id="cdt.managedbuild.option.gnu.cross.prefix.1843511646" name="Prefix" superClass="cdt.managedbuild.option.gnu.cross.prefix"/>
 							<option id="cdt.managedbuild.option.gnu.cross.path.1917533357" name="Path" superClass="cdt.managedbuild.option.gnu.cross.path"/>
-							<targetPlatform archList="all" binaryParser="" id="cdt.managedbuild.targetPlatform.gnu.cross.1523206879" isAbstract="false" osList="all" superClass="cdt.managedbuild.targetPlatform.gnu.cross"/>
-							<builder arguments="-f Makefile.BCM" id="cdt.managedbuild.builder.gnu.cross.401199610" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" parallelBuildOn="true" parallelizationNumber="optimal" superClass="cdt.managedbuild.builder.gnu.cross"/>
-							<tool id="cdt.managedbuild.tool.gnu.cross.c.compiler.1420361499" name="Cross GCC Compiler" superClass="cdt.managedbuild.tool.gnu.cross.c.compiler">
-								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.compiler.option.include.paths.381544522" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-artnet/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-lightset/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-properties/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-network/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-e131/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-dmx/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-rdm/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-configstore/include}&quot;"/>
-								</option>
-								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.compiler.option.preprocessor.def.symbols.111026104" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="ARTNET_HAVE_FAILSAFE_RECORD"/>
-									<listOptionValue builtIn="false" value="RDM_CONTROLLER"/>
-									<listOptionValue builtIn="false" value="ARTNET_HAVE_DMXIN"/>
-									<listOptionValue builtIn="false" value="ARTNET_HAVE_TIMECODE"/>
-									<listOptionValue builtIn="false" value="ARTNET_HAVE_TRIGGER"/>
-									<listOptionValue builtIn="false" value="ARTNET_ENABLE_SENDDIAG"/>
-									<listOptionValue builtIn="false" value="ARTNET_OUTPUT_STYLE_SWITCH"/>
-									<listOptionValue builtIn="false" value="ENABLE_CONTENT"/>
-									<listOptionValue builtIn="false" value="ENABLE_HTTPD"/>
-									<listOptionValue builtIn="false" value="OUTPUT_HAVE_STYLESWITCH"/>
-									<listOptionValue builtIn="false" value="OUTPUT_DMX_SEND"/>
-									<listOptionValue builtIn="false" value="ARTNET_VERSION=4"/>
-									<listOptionValue builtIn="false" value="RDM_RESPONDER"/>
-									<listOptionValue builtIn="false" value="CONFIG_PANELLED_RDM_PORT"/>
-									<listOptionValue builtIn="false" value="NODE_SHOWFILE"/>
-									<listOptionValue builtIn="false" value="CONFIG_SHOWFILE_PROTOCOL_NODE_ARTNET"/>
-									<listOptionValue builtIn="false" value="ARTNET_SHOWFILE"/>
-									<listOptionValue builtIn="false" value="LIGHTSET_PORTS=4"/>
-								</option>
-								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.272354303" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
-							</tool>
-							<tool id="cdt.managedbuild.tool.gnu.cross.cpp.compiler.1509546674" name="Cross G++ Compiler" superClass="cdt.managedbuild.tool.gnu.cross.cpp.compiler">
-								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.include.paths.1846812570" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-artnet/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-lightset/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-properties/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-network/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-e131/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-dmx/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-rdm/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-configstore/include}&quot;"/>
-								</option>
-								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.preprocessor.def.202969658" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="ARTNET_HAVE_FAILSAFE_RECORD"/>
-									<listOptionValue builtIn="false" value="RDM_CONTROLLER"/>
-									<listOptionValue builtIn="false" value="ARTNET_HAVE_DMXIN"/>
-									<listOptionValue builtIn="false" value="ARTNET_HAVE_TIMECODE"/>
-									<listOptionValue builtIn="false" value="ARTNET_HAVE_TRIGGER"/>
-									<listOptionValue builtIn="false" value="ARTNET_ENABLE_SENDDIAG"/>
-									<listOptionValue builtIn="false" value="ARTNET_OUTPUT_STYLE_SWITCH"/>
-									<listOptionValue builtIn="false" value="ENABLE_CONTENT"/>
-									<listOptionValue builtIn="false" value="ENABLE_HTTPD"/>
-									<listOptionValue builtIn="false" value="OUTPUT_HAVE_STYLESWITCH"/>
-									<listOptionValue builtIn="false" value="OUTPUT_DMX_SEND"/>
-									<listOptionValue builtIn="false" value="ARTNET_VERSION=4"/>
-									<listOptionValue builtIn="false" value="RDM_RESPONDER"/>
-									<listOptionValue builtIn="false" value="CONFIG_PANELLED_RDM_PORT"/>
-									<listOptionValue builtIn="false" value="NODE_SHOWFILE"/>
-									<listOptionValue builtIn="false" value="CONFIG_SHOWFILE_PROTOCOL_NODE_ARTNET"/>
-									<listOptionValue builtIn="false" value="ARTNET_SHOWFILE"/>
-									<listOptionValue builtIn="false" value="LIGHTSET_PORTS=4"/>
-								</option>
-								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.2086813026" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
-							</tool>
-							<tool id="cdt.managedbuild.tool.gnu.cross.c.linker.608711071" name="Cross GCC Linker" superClass="cdt.managedbuild.tool.gnu.cross.c.linker"/>
-							<tool id="cdt.managedbuild.tool.gnu.cross.cpp.linker.1010749637" name="Cross G++ Linker" superClass="cdt.managedbuild.tool.gnu.cross.cpp.linker">
-								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1389375833" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
-									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
-									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
-								</inputType>
-							</tool>
-							<tool id="cdt.managedbuild.tool.gnu.cross.archiver.1255912423" name="Cross GCC Archiver" superClass="cdt.managedbuild.tool.gnu.cross.archiver"/>
-							<tool id="cdt.managedbuild.tool.gnu.cross.assembler.401809781" name="Cross GCC Assembler" superClass="cdt.managedbuild.tool.gnu.cross.assembler">
-								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.both.asm.option.include.paths.1690783251" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-artnet/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-lightset/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-properties/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-network/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-e131/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-dmx/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-rdm/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-configstore/include}&quot;"/>
-								</option>
-								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.265493715" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
-							</tool>
+							<targetPlatform archList="all" binaryParser="" id="cdt.managedbuild.targetPlatform.gnu.cross.1523206879" isAbstract="false" osList="all"/>
+							<builder arguments="-f Makefile.BCM" id="cdt.managedbuild.builder.gnu.cross.401199610" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" parallelBuildOn="true"/>
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
 						<entry excluding="linux|platform|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
-						<entry excluding="node|controller|linux" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
+						<entry excluding="json|node|controller|linux" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/controller"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/json"/>
 						<entry excluding="4|rdm|timecode|dmxin|failsafe" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/4"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/dmxin"/>
 						<entry excluding="rom|spi" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/failsafe"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/failsafe/rom"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/failsafe/spi"/>
 						<entry excluding="responder|controller" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/rdm"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/rdm/controller"/>
+						<entry excluding="json" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/rdm/controller"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/rdm/controller/json"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/rdm/responder"/>
 					</sourceEntries>
 				</configuration>
@@ -142,120 +50,31 @@
 					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.CWDLocator" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.MakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.VCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
 				<configuration artifactName="${ProjName}" buildProperties="" description="" id="cdt.managedbuild.toolchain.gnu.cross.base.252252823.1507776794.653134790.1458406979" name="Linux" optionalBuildProperties="" parent="org.eclipse.cdt.build.core.emptycfg">
 					<folderInfo id="cdt.managedbuild.toolchain.gnu.cross.base.252252823.1507776794.653134790.1458406979." name="/" resourcePath="">
-						<toolChain id="cdt.managedbuild.toolchain.gnu.cross.base.755868381" name="Cross GCC" superClass="cdt.managedbuild.toolchain.gnu.cross.base">
+						<toolChain id="cdt.managedbuild.toolchain.gnu.cross.base.755868381" name="Cross GCC">
 							<option id="cdt.managedbuild.option.gnu.cross.prefix.2018645703" name="Prefix" superClass="cdt.managedbuild.option.gnu.cross.prefix"/>
 							<option id="cdt.managedbuild.option.gnu.cross.path.57667626" name="Path" superClass="cdt.managedbuild.option.gnu.cross.path"/>
-							<targetPlatform archList="all" binaryParser="" id="cdt.managedbuild.targetPlatform.gnu.cross.489796991" isAbstract="false" osList="all" superClass="cdt.managedbuild.targetPlatform.gnu.cross"/>
-							<builder arguments="-f Makefile.Linux" command="make" enabledIncrementalBuild="true" id="cdt.managedbuild.builder.gnu.cross.1557214624" incrementalBuildTarget="" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" parallelBuildOn="true" parallelizationNumber="optimal" superClass="cdt.managedbuild.builder.gnu.cross"/>
-							<tool id="cdt.managedbuild.tool.gnu.cross.c.compiler.1079115894" name="Cross GCC Compiler" superClass="cdt.managedbuild.tool.gnu.cross.c.compiler">
-								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.compiler.option.include.paths.599306367" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-lightset/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-artnet/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-properties/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-network/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-e131/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-dmx/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-rdm/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-configstore/include}&quot;"/>
-								</option>
-								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.compiler.option.preprocessor.def.symbols.705657636" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="ARTNET_HAVE_FAILSAFE_RECORD"/>
-									<listOptionValue builtIn="false" value="RDM_CONTROLLER"/>
-									<listOptionValue builtIn="false" value="ARTNET_HAVE_DMXIN"/>
-									<listOptionValue builtIn="false" value="ARTNET_HAVE_TIMECODE"/>
-									<listOptionValue builtIn="false" value="ARTNET_HAVE_TRIGGER"/>
-									<listOptionValue builtIn="false" value="ARTNET_ENABLE_SENDDIAG"/>
-									<listOptionValue builtIn="false" value="ARTNET_OUTPUT_STYLE_SWITCH"/>
-									<listOptionValue builtIn="false" value="ENABLE_CONTENT"/>
-									<listOptionValue builtIn="false" value="ENABLE_HTTPD"/>
-									<listOptionValue builtIn="false" value="OUTPUT_HAVE_STYLESWITCH"/>
-									<listOptionValue builtIn="false" value="OUTPUT_DMX_SEND"/>
-									<listOptionValue builtIn="false" value="ARTNET_VERSION=4"/>
-									<listOptionValue builtIn="false" value="RDM_RESPONDER"/>
-									<listOptionValue builtIn="false" value="CONFIG_PANELLED_RDM_PORT"/>
-									<listOptionValue builtIn="false" value="NODE_SHOWFILE"/>
-									<listOptionValue builtIn="false" value="CONFIG_SHOWFILE_PROTOCOL_NODE_ARTNET"/>
-									<listOptionValue builtIn="false" value="ARTNET_SHOWFILE"/>
-									<listOptionValue builtIn="false" value="LIGHTSET_PORTS=4"/>
-								</option>
-								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1814233140" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
-							</tool>
-							<tool id="cdt.managedbuild.tool.gnu.cross.cpp.compiler.123988024" name="Cross G++ Compiler" superClass="cdt.managedbuild.tool.gnu.cross.cpp.compiler">
-								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.include.paths.942356681" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-artnet/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-lightset/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-properties/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-network/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-e131/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-dmx/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-rdm/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-configstore/include}&quot;"/>
-								</option>
-								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.preprocessor.def.168529289" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="ARTNET_HAVE_FAILSAFE_RECORD"/>
-									<listOptionValue builtIn="false" value="RDM_CONTROLLER"/>
-									<listOptionValue builtIn="false" value="ARTNET_HAVE_DMXIN"/>
-									<listOptionValue builtIn="false" value="ARTNET_HAVE_TIMECODE"/>
-									<listOptionValue builtIn="false" value="ARTNET_HAVE_TRIGGER"/>
-									<listOptionValue builtIn="false" value="ARTNET_ENABLE_SENDDIAG"/>
-									<listOptionValue builtIn="false" value="ARTNET_OUTPUT_STYLE_SWITCH"/>
-									<listOptionValue builtIn="false" value="ENABLE_CONTENT"/>
-									<listOptionValue builtIn="false" value="ENABLE_HTTPD"/>
-									<listOptionValue builtIn="false" value="OUTPUT_HAVE_STYLESWITCH"/>
-									<listOptionValue builtIn="false" value="OUTPUT_DMX_SEND"/>
-									<listOptionValue builtIn="false" value="ARTNET_VERSION=4"/>
-									<listOptionValue builtIn="false" value="RDM_RESPONDER"/>
-									<listOptionValue builtIn="false" value="CONFIG_PANELLED_RDM_PORT"/>
-									<listOptionValue builtIn="false" value="NODE_SHOWFILE"/>
-									<listOptionValue builtIn="false" value="CONFIG_SHOWFILE_PROTOCOL_NODE_ARTNET"/>
-									<listOptionValue builtIn="false" value="ARTNET_SHOWFILE"/>
-									<listOptionValue builtIn="false" value="LIGHTSET_PORTS=4"/>
-								</option>
-								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.138434766" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
-							</tool>
-							<tool id="cdt.managedbuild.tool.gnu.cross.c.linker.795605715" name="Cross GCC Linker" superClass="cdt.managedbuild.tool.gnu.cross.c.linker"/>
-							<tool id="cdt.managedbuild.tool.gnu.cross.cpp.linker.1402236524" name="Cross G++ Linker" superClass="cdt.managedbuild.tool.gnu.cross.cpp.linker">
-								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.598371675" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
-									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
-									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
-								</inputType>
-							</tool>
-							<tool id="cdt.managedbuild.tool.gnu.cross.archiver.484801325" name="Cross GCC Archiver" superClass="cdt.managedbuild.tool.gnu.cross.archiver"/>
-							<tool id="cdt.managedbuild.tool.gnu.cross.assembler.1490596507" name="Cross GCC Assembler" superClass="cdt.managedbuild.tool.gnu.cross.assembler">
-								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.both.asm.option.include.paths.1260119577" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-artnet/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-lightset/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-properties/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-network/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-e131/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-dmx/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-rdm/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-configstore/include}&quot;"/>
-								</option>
-								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.341220262" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
-							</tool>
+							<targetPlatform archList="all" binaryParser="" id="cdt.managedbuild.targetPlatform.gnu.cross.489796991" isAbstract="false" osList="all"/>
+							<builder arguments="-f Makefile.Linux" command="make" enabledIncrementalBuild="true" id="cdt.managedbuild.builder.gnu.cross.1557214624" incrementalBuildTarget="" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" parallelBuildOn="true"/>
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
 						<entry excluding="linux|src|platform" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
-						<entry excluding="node|controller|linux" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
+						<entry excluding="json|node|controller|linux" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/controller"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/json"/>
 						<entry excluding="4|rdm|timecode|dmxin|failsafe" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/4"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/dmxin"/>
 						<entry excluding="rom|spi" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/failsafe"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/failsafe/rom"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/failsafe/spi"/>
 						<entry excluding="responder|controller" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/rdm"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/rdm/controller"/>
+						<entry excluding="json" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/rdm/controller"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/rdm/controller/json"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/rdm/responder"/>
 					</sourceEntries>
 				</configuration>
@@ -375,6 +194,7 @@
 									<listOptionValue builtIn="false" value="ARTNET_HAVE_TIMECODE"/>
 									<listOptionValue builtIn="false" value="OUTPUT_HAVE_STYLESWITCH"/>
 									<listOptionValue builtIn="false" value="ARTNET_HAVE_TRIGGER"/>
+									<listOptionValue builtIn="false" value="DMXNODE_PORTS=4"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="true" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.653222067" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" valueType="includePath"/>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.1115950689" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
@@ -395,6 +215,7 @@
 									<listOptionValue builtIn="false" value="ARTNET_HAVE_TIMECODE"/>
 									<listOptionValue builtIn="false" value="OUTPUT_HAVE_STYLESWITCH"/>
 									<listOptionValue builtIn="false" value="ARTNET_HAVE_TRIGGER"/>
+									<listOptionValue builtIn="false" value="DMXNODE_PORTS=4"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="true" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths.510275320" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath"/>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.2134415444" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input"/>
@@ -415,6 +236,7 @@
 									<listOptionValue builtIn="false" value="ARTNET_HAVE_TIMECODE"/>
 									<listOptionValue builtIn="false" value="OUTPUT_HAVE_STYLESWITCH"/>
 									<listOptionValue builtIn="false" value="ARTNET_HAVE_TRIGGER"/>
+									<listOptionValue builtIn="false" value="DMXNODE_PORTS=4"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths.1645629639" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/include}&quot;"/>
@@ -422,7 +244,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-h3/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-lightset/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-dmxnode/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-network/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-rdm/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-e131/include}&quot;"/>
@@ -458,17 +280,15 @@
 					</folderInfo>
 					<sourceEntries>
 						<entry excluding="src|src/controller|src/node|src/node/4|src/node/dmxin|src/node/failsafe|src/node/rdm|src/node/failsafe/file|src/node/failsafe/rom|src/node/failsafe/spi|src/node/rdm/controller|src/node/rdm/responder" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
-						<entry excluding="controller|node|node/4|node/dmxin|node/failsafe|node/failsafe/file|node/failsafe/rom|node/failsafe/spi|node/rdm|node/rdm/controller|node/rdm/responder" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
+						<entry excluding="json|controller|node|node/4|node/dmxin|node/failsafe|node/failsafe/file|node/failsafe/rom|node/failsafe/spi|node/rdm|node/rdm/controller|node/rdm/responder" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/controller"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/json"/>
 						<entry excluding="4|dmxin|failsafe|failsafe/file|failsafe/rom|failsafe/spi|rdm|rdm/controller|rdm/responder" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/node"/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/node/4"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/node/dmxin"/>
 						<entry excluding="file|rom|spi" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/node/failsafe"/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/node/failsafe/file"/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/node/failsafe/rom"/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/node/failsafe/spi"/>
 						<entry excluding="controller|responder" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/node/rdm"/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/node/rdm/controller"/>
+						<entry excluding="json" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/node/rdm/controller"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/rdm/controller/json"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/node/rdm/responder"/>
 					</sourceEntries>
 				</configuration>

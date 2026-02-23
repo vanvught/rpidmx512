@@ -2,7 +2,7 @@
  * @file displayhandler.h
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,46 +26,45 @@
 #ifndef DISPLAYHANDLER_H_
 #define DISPLAYHANDLER_H_
 
-#include <cstdint>
-
 #include "display.h"
+#include "hal_statusled.h"
 
-#include "hardware.h"
+namespace hal
+{
+void DisplayStatusled(hal::statusled::Mode status_led_mode)
+{
+    if (Display::Get()->IsDetected())
+    {
+        char c;
+        switch (status_led_mode)
+        {
+            case hal::statusled::Mode::OFF_OFF:
+                c = 'O';
+                break;
+            case hal::statusled::Mode::OFF_ON:
+                c = 'O';
+                break;
+            case hal::statusled::Mode::NORMAL:
+                c = 'N';
+                break;
+            case hal::statusled::Mode::DATA:
+                c = 'D';
+                break;
+            case hal::statusled::Mode::FAST:
+                c = 'F';
+                break;
+            case hal::statusled::Mode::REBOOT:
+                c = 'R';
+                break;
+            default:
+                c = 'U';
+                break;
+        }
 
-
-namespace hardware::ledblink {
-void display(const uint32_t nMode) {
-	if (Display::Get()->isDetected() ) {
-		char c;
-		switch (static_cast<hardware::ledblink::Mode>(nMode)) {
-		case ledblink::Mode::OFF_OFF:
-			c = 'O';
-			break;
-		case ledblink::Mode::OFF_ON:
-			c = 'O';
-			break;
-		case ledblink::Mode::NORMAL:
-			c = 'N';
-			break;
-		case ledblink::Mode::DATA:
-			c = 'D';
-			break;
-		case ledblink::Mode::FAST:
-			c = 'F';
-			break;
-		case ledblink::Mode::REBOOT:
-			c = 'R';
-			break;
-		default:
-			c = 'U';
-			break;
-		}
-
-		Display::Get()->SetCursorPos(Display::Get()->GetColumns() - 1U, Display::Get()->GetRows() - 1U);
-		Display::Get()->PutChar(c);
-	}
+        Display::Get()->SetCursorPos(Display::Get()->GetColumns() - 1U, Display::Get()->GetRows() - 1U);
+        Display::Get()->PutChar(c);
+    }
 }
-} // namespace hardware::ledblink
+} // namespace hal
 
-
-#endif /* DISPLAYHANDLER_H_ */
+#endif  // DISPLAYHANDLER_H_

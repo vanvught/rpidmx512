@@ -51,7 +51,7 @@ typedef union pcast32 {
 /**
  *
  */
-static void data_gpio_fsel_output(void) {
+static void data_GpioFsel_output(void) {
 	dmb();
 
 	uint32_t value = BCM2835_GPIO->GPFSEL2;
@@ -69,7 +69,7 @@ static void data_gpio_fsel_output(void) {
 /**
  *
  */
-static void data_gpio_fsel_input(void) {
+static void data_GpioFsel_input(void) {
 	dmb();
 
 	uint32_t value = BCM2835_GPIO->GPFSEL2;
@@ -99,7 +99,7 @@ void esp8266_init(void) {
 	value |= BCM2835_GPIO_FSEL_INPT << 21;
 	BCM2835_GPIO->GPFSEL2 = value;
 
-	bcm2835_gpio_clr(17);
+	bcm2835_GpioClr(17);
 	udelay(1000);
 
 	while (BCM2835_GPIO->GPLEV0 & (1 << 27));
@@ -112,18 +112,18 @@ void esp8266_init(void) {
  * @param data
  */
 void esp8266_write_4bits(const uint8_t data) {
-	data_gpio_fsel_output();
+	data_GpioFsel_output();
 
 	// 22, 23, 24, 25
 	uint32_t out_gpio = (data & 0x0F) << 22;
 	BCM2835_GPIO->GPSET0 = out_gpio;
 	BCM2835_GPIO->GPCLR0 = out_gpio ^ (0x0F << 22);
 	// tell that we have data available for read
-	bcm2835_gpio_set(17);
+	bcm2835_GpioSet(17);
 	// wait for ack, wait for 0 -> 1
 	while (!(BCM2835_GPIO->GPLEV0 & (1 << 27)));
 	// we have 1. now wait for 0
-	bcm2835_gpio_clr(17); // we acknowledge, and wait for zero
+	bcm2835_GpioClr(17); // we acknowledge, and wait for zero
 	while (BCM2835_GPIO->GPLEV0 & (1 << 27));
 
 	dmb();
@@ -139,11 +139,11 @@ inline static void _write_byte(const uint8_t data) {
 	BCM2835_GPIO->GPSET0 = out_gpio;
 	BCM2835_GPIO->GPCLR0 = out_gpio ^ (0x0F << 22);
 	// tell that we have data available for read
-	bcm2835_gpio_set(17);
+	bcm2835_GpioSet(17);
 	// wait for ack, wait for 0 -> 1
 	while (!(BCM2835_GPIO->GPLEV0 & (1 << 27)));
 	// we have 1. now wait for 0
-	bcm2835_gpio_clr(17); // we acknowledge, and wait for zero
+	bcm2835_GpioClr(17); // we acknowledge, and wait for zero
 	while (BCM2835_GPIO->GPLEV0 & (1 << 27));
 
 	// 22, 23, 24, 25
@@ -151,11 +151,11 @@ inline static void _write_byte(const uint8_t data) {
 	BCM2835_GPIO->GPSET0 = out_gpio;
 	BCM2835_GPIO->GPCLR0 = out_gpio ^ (0x0F << 22);
 	// tell that we have data available for read
-	bcm2835_gpio_set(17);
+	bcm2835_GpioSet(17);
 	// wait for ack, wait for 0 -> 1
 	while (!(BCM2835_GPIO->GPLEV0 & (1 << 27)));
 	// we have 1. now wait for 0
-	bcm2835_gpio_clr(17); // we acknowledge, and wait for zero
+	bcm2835_GpioClr(17); // we acknowledge, and wait for zero
 	while (BCM2835_GPIO->GPLEV0 & (1 << 27));
 }
 
@@ -164,7 +164,7 @@ inline static void _write_byte(const uint8_t data) {
  * @param data
  */
 void esp8266_write_byte(const uint8_t byte) {
-	data_gpio_fsel_output();
+	data_GpioFsel_output();
 
 	_write_byte(byte);
 
@@ -176,7 +176,7 @@ void esp8266_write_byte(const uint8_t byte) {
  * @param half_word
  */
 void esp8266_write_halfword(const uint16_t half_word) {
-	data_gpio_fsel_output();
+	data_GpioFsel_output();
 
 	_write_byte((uint8_t)(half_word & (uint16_t)0xFF));
 	_write_byte((uint8_t)((half_word >> 8) & (uint16_t)0xFF));
@@ -191,7 +191,7 @@ void esp8266_write_halfword(const uint16_t half_word) {
 void esp8266_write_word(const uint32_t word) {
 	esp8266_pcast32 u32 __attribute__((aligned(4)));
 
-	data_gpio_fsel_output();
+	data_GpioFsel_output();
 
 	u32.u32 = word;
 
@@ -214,7 +214,7 @@ void esp8266_write_bytes(const uint8_t *data, const uint16_t len) {
 	uint8_t d;
 	uint16_t i;
 
-	data_gpio_fsel_output();
+	data_GpioFsel_output();
 
 	for (i = 0; i < len; i++) {
 		d = *p;
@@ -233,7 +233,7 @@ void esp8266_write_str(const char *data) {
 	uint8_t *p = (uint8_t *)data;
 	uint8_t d;
 
-	data_gpio_fsel_output();
+	data_GpioFsel_output();
 
 	while (*p != (char)0) {
 		d = *p;
@@ -253,18 +253,18 @@ void esp8266_write_str(const char *data) {
 inline static uint8_t _read_byte(void) {
 	uint8_t data;
 
-	bcm2835_gpio_set(17);
+	bcm2835_GpioSet(17);
 	while (!(BCM2835_GPIO->GPLEV0 & (1 << 27)));
 	uint32_t in_gpio = BCM2835_GPIO->GPLEV0 >> 22;
 	data = (uint8_t)(in_gpio & 0x0F);
-	bcm2835_gpio_clr(17);
+	bcm2835_GpioClr(17);
 	while (BCM2835_GPIO->GPLEV0 & (1 << 27));
 
-	bcm2835_gpio_set(17);
+	bcm2835_GpioSet(17);
 	while (!(BCM2835_GPIO->GPLEV0 & (1 << 27)));
 	in_gpio = BCM2835_GPIO->GPLEV0 >> 22;
 	data = data | ((uint8_t)(in_gpio & 0x0F) << 4);
-	bcm2835_gpio_clr(17);
+	bcm2835_GpioClr(17);
 	while (BCM2835_GPIO->GPLEV0 & (1 << 27));
 
 	return data;
@@ -277,7 +277,7 @@ inline static uint8_t _read_byte(void) {
 uint8_t esp8266_read_byte(void) {
 	uint8_t data;
 
-	data_gpio_fsel_input();
+	data_GpioFsel_input();
 
 	data = _read_byte();
 
@@ -295,7 +295,7 @@ void esp8266_read_bytes(const uint8_t *data, const uint16_t len){
 	uint8_t *p = (uint8_t *)data;
 	uint16_t i;
 
-	data_gpio_fsel_input();
+	data_GpioFsel_input();
 
 	for (i = 0 ; i < len; i++) {
 		*p = _read_byte();
@@ -312,7 +312,7 @@ void esp8266_read_bytes(const uint8_t *data, const uint16_t len){
 uint16_t esp8266_read_halfword(void) {
 	uint16_t data;
 
-	data_gpio_fsel_input();
+	data_GpioFsel_input();
 
 	data = _read_byte();
 	data |= (_read_byte() << 8);
@@ -329,7 +329,7 @@ uint16_t esp8266_read_halfword(void) {
 uint32_t esp8266_read_word(void) {
 	esp8266_pcast32 u32  __attribute__((aligned(4)));
 
-	data_gpio_fsel_input();
+	data_GpioFsel_input();
 
 	u32.u8[0] = _read_byte();
 	u32.u8[1] = _read_byte();
@@ -351,7 +351,7 @@ void esp8266_read_str(char *s, uint16_t *len) {
 	uint8_t ch;
 	uint16_t n = *len;
 
-	data_gpio_fsel_input();
+	data_GpioFsel_input();
 
 	while ((ch = _read_byte()) != (uint8_t) 0) {
 		if (n > (uint16_t) 0) {
@@ -377,14 +377,14 @@ void esp8266_read_str(char *s, uint16_t *len) {
 const bool esp8266_detect(void) {
 	esp8266_init();
 
-	data_gpio_fsel_output();
+	data_GpioFsel_output();
 
 	// send a CMD_NOP
 	const uint32_t out_gpio = (0x00 & 0x0F) << 22;
 	BCM2835_GPIO->GPSET0 = out_gpio;
 	BCM2835_GPIO->GPCLR0 = out_gpio ^ (0x0F << 22);
 
-	bcm2835_gpio_set(17);// Tell that we have data available. Wait for ack, wait for 0 -> 1
+	bcm2835_GpioSet(17);// Tell that we have data available. Wait for ack, wait for 0 -> 1
 
 	uint32_t micros_now = BCM2835_ST->CLO;
 
@@ -396,7 +396,7 @@ const bool esp8266_detect(void) {
 		return false;
 	}
 
-	bcm2835_gpio_clr(17); // we acknowledge, and wait for zero
+	bcm2835_GpioClr(17); // we acknowledge, and wait for zero
 
 	while (BCM2835_GPIO->GPLEV0 & (1 << 27))
 		;

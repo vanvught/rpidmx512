@@ -2,7 +2,7 @@
  * @file h3.h
  *
  */
-/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -797,19 +797,9 @@ typedef struct T_H3_HDMI_PHY {
 extern "C" {
 #endif
 
+uint32_t h3_get_dram_size();
 extern void *h3_memcpy(void *__restrict__ dest, void const *__restrict__ src, size_t n);
-
-typedef enum H3_BOOT_DEVICE {
-	H3_BOOT_DEVICE_UNK,
-	H3_BOOT_DEVICE_FEL,
-	H3_BOOT_DEVICE_MMC0,
-	H3_BOOT_DEVICE_SPI
-} h3_boot_device_t;
-
-extern uint32_t h3_get_dram_size(void);
-extern h3_boot_device_t h3_get_boot_device(void);
-
-extern void h3_dump_memory_mapping(void);
+extern void h3_dump_memory_mapping();
 
 #ifdef __cplusplus
 }

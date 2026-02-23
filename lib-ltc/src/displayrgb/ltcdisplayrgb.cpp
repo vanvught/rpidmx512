@@ -3,7 +3,7 @@
  */
 /*
  * Copyright (C) 2019-2020 by hippy mailto:dmxout@gmail.com
- * Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+ * Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#if defined (DEBUG_LTCDISPLAYRGB)
-# undef NDEBUG
+#if defined(DEBUG_LTCDISPLAYRGB)
+#undef NDEBUG
 #endif
 
 #include <cstdint>
@@ -35,294 +35,343 @@
 #include <cassert>
 
 #include "ltcdisplayrgb.h"
-
 #include "ltc.h"
-
-#include "hardware.h"
+#include "hal_millis.h"
 #include "network.h"
-
-#include "ltcdisplayws28xx7segment.h"
-#include "ltcdisplayws28xxmatrix.h"
-
+#include "ltcdisplaypixel7segment.h"
+#include "ltcdisplaypixelmatrix.h"
 #include "ltcdisplayrgbpanel.h"
-
-#if !defined (CONFIG_LTC_DISABLE_WS28XX)
-# include "pixeltype.h"
+#if !defined(CONFIG_LTC_DISABLE_WS28XX)
+#include "pixeltype.h"
 #endif
-
 #include "softwaretimers.h"
+ #include "firmware/debug/debug_debug.h"
 
-#include "debug.h"
-
-namespace ltcdisplayrgb {
-namespace rgb {
-static constexpr char PATH[] = "rgb";
-static constexpr auto LENGTH = sizeof(PATH) - 1;
-static constexpr auto HEX_SIZE = 7; // 1 byte index followed by 6 bytes hex RGB
-}
-namespace master {
-static constexpr char PATH[] = "master";
-static constexpr auto LENGTH = sizeof(PATH) - 1;
-static constexpr auto HEX_SIZE = 2;
-}
-namespace showmsg {
-static constexpr char PATH[] = "showmsg";
-static constexpr auto LENGTH = sizeof(PATH) - 1;
-}
-namespace udp {
-static constexpr auto PORT = 0x2812;
-}
-}  // namespace ltcdisplayrgb
-
-using namespace ltcdisplayrgb;
-
-static TimerHandle_t s_nTimerId = TIMER_ID_NONE;
-static bool m_bShowMsg;
-
-static void message_timer([[maybe_unused]] TimerHandle_t nHandle) {
-	m_bShowMsg = false;
-	SoftwareTimerDelete(s_nTimerId);
+namespace rgb
+{
+static constexpr char kPath[] = "rgb";
+static constexpr auto kLength = sizeof(kPath) - 1;
+static constexpr auto kHexSize = 7; // 1 byte index followed by 6 bytes hex RGB
+} // namespace rgb
+namespace master
+{
+static constexpr char kPath[] = "master";
+static constexpr auto kLength = sizeof(kPath) - 1;
+static constexpr auto kHexSize = 2;
+} // namespace master
+namespace showmsg
+{
+static constexpr char kPath[] = "showmsg";
+static constexpr auto kLength = sizeof(kPath) - 1;
+} // namespace showmsg
+namespace udp
+{
+static constexpr uint16_t kPort = 0x2812;
 }
 
-LtcDisplayRgb::LtcDisplayRgb(Type tRgbType, WS28xxType tWS28xxType) : m_tDisplayRgbType(tRgbType), m_tDisplayRgbWS28xxType(tWS28xxType) {
-	DEBUG_ENTRY
-	assert(s_pThis == nullptr);
-	s_pThis = this;
+static TimerHandle_t s_timer_id = kTimerIdNone;
+static bool s_show_msg;
 
-	m_aColour[static_cast<uint32_t>(ColourIndex::TIME)] = Defaults::COLOUR_TIME;
-	m_aColour[static_cast<uint32_t>(ColourIndex::COLON)] = Defaults::COLOUR_COLON;
-	m_aColour[static_cast<uint32_t>(ColourIndex::MESSAGE)] = Defaults::COLOUR_MESSAGE;
-	m_aColour[static_cast<uint32_t>(ColourIndex::FPS)] = Defaults::COLOUR_FPS;
-	m_aColour[static_cast<uint32_t>(ColourIndex::INFO)] = Defaults::COLOUR_INFO;
-	m_aColour[static_cast<uint32_t>(ColourIndex::SOURCE)] = Defaults::COLOUR_SOURCE;
-
-	DEBUG_EXIT
+static void MessageTimer([[maybe_unused]] TimerHandle_t handle)
+{
+    s_show_msg = false;
+    SoftwareTimerDelete(s_timer_id);
 }
 
-LtcDisplayRgb::~LtcDisplayRgb() {
-	DEBUG_ENTRY
+LtcDisplayRgb::LtcDisplayRgb(ltc::display::rgb::Type type, ltc::display::rgb::WS28xxType ws28xx_type) : type_(type), ws28xx_type_(ws28xx_type)
+{
+    DEBUG_ENTRY();
+    assert(s_this == nullptr);
+    s_this = this;
 
-	assert(m_pLtcDisplayRgbSet != nullptr);
-	delete m_pLtcDisplayRgbSet;
-	m_pLtcDisplayRgbSet = nullptr;
+    colour_[static_cast<uint32_t>(ltc::display::rgb::ColourIndex::TIME)] = ltc::display::rgb::Defaults::kColourTime;
+    colour_[static_cast<uint32_t>(ltc::display::rgb::ColourIndex::COLON)] = ltc::display::rgb::Defaults::COLOUR_COLON;
+    colour_[static_cast<uint32_t>(ltc::display::rgb::ColourIndex::MESSAGE)] = ltc::display::rgb::Defaults::COLOUR_MESSAGE;
+    colour_[static_cast<uint32_t>(ltc::display::rgb::ColourIndex::FPS)] = ltc::display::rgb::Defaults::COLOUR_FPS;
+    colour_[static_cast<uint32_t>(ltc::display::rgb::ColourIndex::INFO)] = ltc::display::rgb::Defaults::COLOUR_INFO;
+    colour_[static_cast<uint32_t>(ltc::display::rgb::ColourIndex::SOURCE)] = ltc::display::rgb::Defaults::COLOUR_SOURCE;
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void LtcDisplayRgb::Init(pixel::Type type) {
-	DEBUG_ENTRY
+LtcDisplayRgb::~LtcDisplayRgb()
+{
+    DEBUG_ENTRY();
 
-	m_PixelType = type;
+    assert(display_rgb_ != nullptr);
+    delete display_rgb_;
+    display_rgb_ = nullptr;
 
-	if (m_tDisplayRgbType == Type::RGBPANEL) {
-		m_pLtcDisplayRgbSet = new LtcDisplayRgbPanel;
-
-		assert(m_pLtcDisplayRgbSet != nullptr);
-		m_pLtcDisplayRgbSet->Init();
-	} else {
-
-		if (m_tDisplayRgbWS28xxType == WS28xxType::SEGMENT) {
-			m_pLtcDisplayRgbSet = new LtcDisplayWS28xx7Segment(type, m_PixelMap);
-		} else {
-			m_pLtcDisplayRgbSet = new LtcDisplayWS28xxMatrix(type, m_PixelMap);
-		}
-
-		assert(m_pLtcDisplayRgbSet != nullptr);
-	}
-
-	for (uint32_t nIndex = 0; nIndex < static_cast<uint32_t>(ColourIndex::LAST); nIndex++) {
-		SetRGB(m_aColour[nIndex], static_cast<ColourIndex>(nIndex));
-	}
-
-	assert(m_nHandle == -1);
-	m_nHandle = Network::Get()->Begin(udp::PORT, StaticCallbackFunction);
-	assert(m_nHandle != -1);
-
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void LtcDisplayRgb::Show(const char *pTimecode) {
-	if (m_pLtcDisplayRgbSet == nullptr) {
-		return;
-	}
+void LtcDisplayRgb::Init(pixel::Type type)
+{
+    DEBUG_ENTRY();
 
-	if (__builtin_expect((m_bShowMsg), 0)) {
-		ShowMessage();
-		return;
-	}
+    pixel_type_ = type;
 
-	struct Colours tColoursColons;
+    if (type_ == ltc::display::rgb::Type::kRgbpanel)
+    {
+        display_rgb_ = new LtcDisplayRgbPanel;
 
-	if (m_tColonBlinkMode != ColonBlinkMode::OFF) {
-		const uint32_t nMillis = Hardware::Get()->Millis();
+        assert(display_rgb_ != nullptr);
+        display_rgb_->Init();
+    }
+    else
+    {
+        if (ws28xx_type_ == ltc::display::rgb::WS28xxType::SEGMENT)
+        {
+            display_rgb_ = new LtcDisplayPixel7Segment(type, pixel_map_);
+        }
+        else
+        {
+            display_rgb_ = new LtcDisplayPixelMatrix(type, pixel_map_);
+        }
 
-		if (m_nSecondsPrevious != pTimecode[ltc::timecode::index::SECONDS_UNITS]) { // seconds have changed
-			m_nSecondsPrevious = pTimecode[ltc::timecode::index::SECONDS_UNITS];
-			m_nColonBlinkMillis = nMillis;
+        assert(display_rgb_ != nullptr);
+    }
 
-			tColoursColons.nRed = 0;
-			tColoursColons.nGreen = 0;
-			tColoursColons.nBlue = 0;
-		} else if (nMillis - m_nColonBlinkMillis < 1000) {
-			uint32_t nMaster;
+    for (uint32_t index = 0; index < static_cast<uint32_t>(ltc::display::rgb::ColourIndex::LAST); index++)
+    {
+        SetRGB(colour_[index], static_cast<ltc::display::rgb::ColourIndex>(index));
+    }
 
-			if (m_tColonBlinkMode == ColonBlinkMode::DOWN) {
-				nMaster = 255 - ((nMillis - m_nColonBlinkMillis) * 255 / 1000);
-			} else {
-				nMaster = ((nMillis - m_nColonBlinkMillis) * 255 / 1000);
-			}
+    assert(handle_ == -1);
+    handle_ = network::udp::Begin(udp::kPort, StaticCallbackFunction);
+    assert(handle_ != -1);
 
-			if (!(m_nMaster == 0 || m_nMaster == 255)) {
-				nMaster = (m_nMaster * nMaster) / 255 ;
-			}
-
-			tColoursColons.nRed = static_cast<uint8_t>((nMaster * m_tColoursColons.nRed) / 255);
-			tColoursColons.nGreen = static_cast<uint8_t>((nMaster *  m_tColoursColons.nGreen) / 255);
-			tColoursColons.nBlue = static_cast<uint8_t>((nMaster * m_tColoursColons.nBlue) / 255);
-		} else {
-			if (!(m_nMaster == 0 || m_nMaster == 255)) {
-				tColoursColons.nRed = static_cast<uint8_t>((m_nMaster * m_tColoursColons.nRed) / 255);
-				tColoursColons.nGreen = static_cast<uint8_t>((m_nMaster * m_tColoursColons.nGreen) / 255);
-				tColoursColons.nBlue = static_cast<uint8_t>((m_nMaster * m_tColoursColons.nBlue) / 255);
-			} else {
-				tColoursColons.nRed = m_tColoursColons.nRed;
-				tColoursColons.nGreen = m_tColoursColons.nGreen;
-				tColoursColons.nBlue = m_tColoursColons.nBlue;
-			}
-		}
-	} else {
-		if (!(m_nMaster == 0 || m_nMaster == 255)) {
-			tColoursColons.nRed = static_cast<uint8_t>((m_nMaster * m_tColoursColons.nRed) / 255);
-			tColoursColons.nGreen = static_cast<uint8_t>((m_nMaster * m_tColoursColons.nGreen) / 255);
-			tColoursColons.nBlue = static_cast<uint8_t>((m_nMaster * m_tColoursColons.nBlue) / 255);
-		} else {
-			tColoursColons.nRed = m_tColoursColons.nRed;
-			tColoursColons.nGreen = m_tColoursColons.nGreen;
-			tColoursColons.nBlue = m_tColoursColons.nBlue;
-		}
-	}
-
-	struct Colours tColours;
-
-	if (!(m_nMaster == 0 || m_nMaster == 255)) {
-		tColours.nRed = static_cast<uint8_t>((m_nMaster * m_tColoursTime.nRed) / 255);
-		tColours.nGreen = static_cast<uint8_t>((m_nMaster * m_tColoursTime.nGreen) / 255);
-		tColours.nBlue = static_cast<uint8_t>((m_nMaster * m_tColoursTime.nBlue) / 255);
-	} else {
-		tColours.nRed = m_tColoursTime.nRed;
-		tColours.nGreen = m_tColoursTime.nGreen;
-		tColours.nBlue = m_tColoursTime.nBlue;
-	}
-
-	m_pLtcDisplayRgbSet->Show(pTimecode, tColours, tColoursColons);
+    DEBUG_EXIT();
 }
 
-void LtcDisplayRgb::ShowSysTime(const char *pSystemTime) {
-	if (m_pLtcDisplayRgbSet == nullptr) {
-		return;
-	}
+void LtcDisplayRgb::Show(const char* timecode)
+{
+    if (display_rgb_ == nullptr)
+    {
+        return;
+    }
 
-	if (__builtin_expect((m_bShowMsg), 0)) {
-		ShowMessage();
-		return;
-	}
+    if (__builtin_expect((s_show_msg), 0))
+    {
+        ShowMessage();
+        return;
+    }
 
-	struct Colours tColours;
-	struct Colours tColoursColons;
+    struct ltc::display::rgb::Colours colours_colons;
 
-	if (!(m_nMaster == 0 || m_nMaster == 255)) {
-		tColours.nRed = static_cast<uint8_t>((m_nMaster * m_tColoursTime.nRed) / 255);
-		tColours.nGreen = static_cast<uint8_t>((m_nMaster * m_tColoursTime.nGreen) / 255);
-		tColours.nBlue = static_cast<uint8_t>((m_nMaster * m_tColoursTime.nBlue) / 255);
-		//
-		tColoursColons.nRed = static_cast<uint8_t>((m_nMaster * m_tColoursColons.nRed) / 255);
-		tColoursColons.nGreen = static_cast<uint8_t>((m_nMaster * m_tColoursColons.nGreen) / 255);
-		tColoursColons.nBlue = static_cast<uint8_t>((m_nMaster * m_tColoursColons.nBlue) / 255);
-	} else {
-		tColours.nRed = m_tColoursTime.nRed;
-		tColours.nGreen = m_tColoursTime.nGreen;
-		tColours.nBlue = m_tColoursTime.nBlue;
-		//
-		tColoursColons.nRed = m_tColoursColons.nRed;
-		tColoursColons.nGreen = m_tColoursColons.nGreen;
-		tColoursColons.nBlue = m_tColoursColons.nBlue;
-	}
+    if (colon_blink_mode_ != ltc::display::rgb::ColonBlinkMode::OFF)
+    {
+        const uint32_t kMillis = hal::Millis();
 
-	m_pLtcDisplayRgbSet->ShowSysTime(pSystemTime, tColours, tColoursColons);
+        if (seconds_previous_ != timecode[ltc::timecode::index::SECONDS_UNITS])
+        { // seconds have changed
+            seconds_previous_ = timecode[ltc::timecode::index::SECONDS_UNITS];
+            colon_blink_millis_ = kMillis;
+
+            colours_colons.red = 0;
+            colours_colons.green = 0;
+            colours_colons.blue = 0;
+        }
+        else if (kMillis - colon_blink_millis_ < 1000)
+        {
+            uint32_t master;
+
+            if (colon_blink_mode_ == ltc::display::rgb::ColonBlinkMode::DOWN)
+            {
+                master = 255 - ((kMillis - colon_blink_millis_) * 255 / 1000);
+            }
+            else
+            {
+                master = ((kMillis - colon_blink_millis_) * 255 / 1000);
+            }
+
+            if (!(master_ == 0 || master_ == 255))
+            {
+                master = (master_ * master) / 255;
+            }
+
+            colours_colons.red = static_cast<uint8_t>((master * colours_colons_.red) / 255);
+            colours_colons.green = static_cast<uint8_t>((master * colours_colons_.green) / 255);
+            colours_colons.blue = static_cast<uint8_t>((master * colours_colons_.blue) / 255);
+        }
+        else
+        {
+            if (!(master_ == 0 || master_ == 255))
+            {
+                colours_colons.red = static_cast<uint8_t>((master_ * colours_colons_.red) / 255);
+                colours_colons.green = static_cast<uint8_t>((master_ * colours_colons_.green) / 255);
+                colours_colons.blue = static_cast<uint8_t>((master_ * colours_colons_.blue) / 255);
+            }
+            else
+            {
+                colours_colons.red = colours_colons_.red;
+                colours_colons.green = colours_colons_.green;
+                colours_colons.blue = colours_colons_.blue;
+            }
+        }
+    }
+    else
+    {
+        if (!(master_ == 0 || master_ == 255))
+        {
+            colours_colons.red = static_cast<uint8_t>((master_ * colours_colons_.red) / 255);
+            colours_colons.green = static_cast<uint8_t>((master_ * colours_colons_.green) / 255);
+            colours_colons.blue = static_cast<uint8_t>((master_ * colours_colons_.blue) / 255);
+        }
+        else
+        {
+            colours_colons.red = colours_colons_.red;
+            colours_colons.green = colours_colons_.green;
+            colours_colons.blue = colours_colons_.blue;
+        }
+    }
+
+    struct ltc::display::rgb::Colours colours;
+
+    if (!(master_ == 0 || master_ == 255))
+    {
+        colours.red = static_cast<uint8_t>((master_ * colours_time_.red) / 255);
+        colours.green = static_cast<uint8_t>((master_ * colours_time_.green) / 255);
+        colours.blue = static_cast<uint8_t>((master_ * colours_time_.blue) / 255);
+    }
+    else
+    {
+        colours.red = colours_time_.red;
+        colours.green = colours_time_.green;
+        colours.blue = colours_time_.blue;
+    }
+
+    display_rgb_->Show(timecode, colours, colours_colons);
 }
 
-void LtcDisplayRgb::SetMessage(const char *pMessage, uint32_t nSize) {
-	assert(pMessage != nullptr);
+void LtcDisplayRgb::ShowSysTime(const char* systemtime)
+{
+    if (display_rgb_ == nullptr)
+    {
+        return;
+    }
 
-	uint32_t i;
-	const char *pSrc = pMessage;
-	char *pDst = m_aMessage;
+    if (__builtin_expect((s_show_msg), 0))
+    {
+        ShowMessage();
+        return;
+    }
 
-	for (i = 0; i < std::min(nSize, static_cast<uint32_t>(sizeof(m_aMessage))); i++) {
-		*pDst++ = *pSrc++;
-	}
+    struct ltc::display::rgb::Colours colours;
+    struct ltc::display::rgb::Colours colours_colons;
 
-	for (; i < sizeof(m_aMessage); i++) {
-		*pDst++ = ' ';
-	}
+    if (!(master_ == 0 || master_ == 255))
+    {
+        colours.red = static_cast<uint8_t>((master_ * colours_time_.red) / 255);
+        colours.green = static_cast<uint8_t>((master_ * colours_time_.green) / 255);
+        colours.blue = static_cast<uint8_t>((master_ * colours_time_.blue) / 255);
+        //
+        colours_colons.red = static_cast<uint8_t>((master_ * colours_colons_.red) / 255);
+        colours_colons.green = static_cast<uint8_t>((master_ * colours_colons_.green) / 255);
+        colours_colons.blue = static_cast<uint8_t>((master_ * colours_colons_.blue) / 255);
+    }
+    else
+    {
+        colours.red = colours_time_.red;
+        colours.green = colours_time_.green;
+        colours.blue = colours_time_.blue;
+        //
+        colours_colons.red = colours_colons_.red;
+        colours_colons.green = colours_colons_.green;
+        colours_colons.blue = colours_colons_.blue;
+    }
 
-	m_nMsgTimer = Hardware::Get()->Millis();
-
-	if (s_nTimerId == TIMER_ID_NONE) {
-		s_nTimerId = SoftwareTimerAdd(MESSAGE_TIME_MS, message_timer);
-	} else {
-		SoftwareTimerChange(s_nTimerId, MESSAGE_TIME_MS);
-	}
-
-	m_bShowMsg = true;
+    display_rgb_->ShowSysTime(systemtime, colours, colours_colons);
 }
 
-void LtcDisplayRgb::ShowMessage() {
-	if (m_pLtcDisplayRgbSet == nullptr) {
-		return;
-	}
+void LtcDisplayRgb::SetMessage(const char* message, uint32_t size)
+{
+    assert(message != nullptr);
 
-	struct Colours tColours;
+    uint32_t i;
+    const char* src = message;
+    char* dst = message_;
 
-	const auto nMillis = Hardware::Get()->Millis();
+    for (i = 0; i < std::min(size, static_cast<uint32_t>(sizeof(message_))); i++)
+    {
+        *dst++ = *src++;
+    }
 
-	tColours.nRed = static_cast<uint8_t>(((nMillis - m_nMsgTimer) * m_tColoursMessage.nRed) / MESSAGE_TIME_MS);
-	tColours.nGreen = static_cast<uint8_t>(((nMillis - m_nMsgTimer) * m_tColoursMessage.nGreen) / MESSAGE_TIME_MS);
-	tColours.nBlue = static_cast<uint8_t>(((nMillis - m_nMsgTimer) * m_tColoursMessage.nBlue) / MESSAGE_TIME_MS);
+    for (; i < sizeof(message_); i++)
+    {
+        *dst++ = ' ';
+    }
 
-	m_pLtcDisplayRgbSet->ShowMessage(m_aMessage, tColours);
+    message_timer_ = hal::Millis();
+
+    if (s_timer_id == kTimerIdNone)
+    {
+        s_timer_id = SoftwareTimerAdd(kMessageTimeMs, MessageTimer);
+    }
+    else
+    {
+        SoftwareTimerChange(s_timer_id, kMessageTimeMs);
+    }
+
+    s_show_msg = true;
 }
 
-void LtcDisplayRgb::ShowFPS(ltc::Type tTimeCodeType) {
-	if (m_pLtcDisplayRgbSet == nullptr) {
-		return;
-	}
+void LtcDisplayRgb::ShowMessage()
+{
+    if (display_rgb_ == nullptr)
+    {
+        return;
+    }
 
-	m_pLtcDisplayRgbSet->ShowFPS(tTimeCodeType, m_tColoursFPS);
+    struct ltc::display::rgb::Colours colours;
+
+    const auto kMillis = hal::Millis();
+
+    colours.red = static_cast<uint8_t>(((kMillis - message_timer_) * colours_message_.red) / kMessageTimeMs);
+    colours.green = static_cast<uint8_t>(((kMillis - message_timer_) * colours_message_.green) / kMessageTimeMs);
+    colours.blue = static_cast<uint8_t>(((kMillis - message_timer_) * colours_message_.blue) / kMessageTimeMs);
+
+    display_rgb_->ShowMessage(message_, colours);
 }
 
-void LtcDisplayRgb::ShowInfo(const char *pInfo) {
-	if (m_pLtcDisplayRgbSet == nullptr) {
-		return;
-	}
+void LtcDisplayRgb::ShowFPS(ltc::Type type)
+{
+    if (display_rgb_ == nullptr)
+    {
+        return;
+    }
 
-	m_pLtcDisplayRgbSet->ShowInfo(pInfo, static_cast<uint16_t>(strlen(pInfo)), m_tColoursInfo);
+    display_rgb_->ShowFPS(type, colours_fps_);
 }
 
-void LtcDisplayRgb::ShowSource(ltc::Source tSource) {
-	if (m_pLtcDisplayRgbSet == nullptr) {
-		return;
-	}
+void LtcDisplayRgb::ShowInfo(const char* info)
+{
+    if (display_rgb_ == nullptr)
+    {
+        return;
+    }
 
-	m_pLtcDisplayRgbSet->ShowSource(tSource, m_tColoursSource);
+    display_rgb_->ShowInfo(info, static_cast<uint16_t>(strlen(info)), colours_info_);
 }
 
-void LtcDisplayRgb::WriteChar(uint8_t nChar, uint8_t nPos) {
-	if (m_pLtcDisplayRgbSet == nullptr) {
-		return;
-	}
+void LtcDisplayRgb::ShowSource(ltc::Source source)
+{
+    if (display_rgb_ == nullptr)
+    {
+        return;
+    }
 
-	m_pLtcDisplayRgbSet->WriteChar(nChar, nPos, m_tColoursInfo);
+    display_rgb_->ShowSource(source, colours_source_);
+}
+
+void LtcDisplayRgb::WriteChar(uint8_t ch, uint8_t pos)
+{
+    if (display_rgb_ == nullptr)
+    {
+        return;
+    }
+
+    display_rgb_->WriteChar(ch, pos, colours_info_);
 }
 
 /**
@@ -330,78 +379,95 @@ void LtcDisplayRgb::WriteChar(uint8_t nChar, uint8_t nPos) {
  *
  * @param pBuffer Pointer to the packet buffer.
  * @param nSize Size of the packet buffer.
- * @param nFromIp IP address of the sender.
- * @param nFromPort Port number of the sender.
+ * @param from_ip IP address of the sender.
+ * @param from_port Port number of the sender.
  */
-void LtcDisplayRgb::Input(const uint8_t *pBuffer, uint32_t nSize, [[maybe_unused]] uint32_t nFromIp, [[maybe_unused]] uint16_t nFromPort) {
-	if (__builtin_expect((memcmp("7seg!", pBuffer, 5) != 0), 0)) {
-		return;
-	}
+void LtcDisplayRgb::Input(const uint8_t* buffer, uint32_t size, [[maybe_unused]] uint32_t from_ip, [[maybe_unused]] uint16_t from_port)
+{
+    if (__builtin_expect((memcmp("7seg!", buffer, 5) != 0), 0))
+    {
+        return;
+    }
 
-	if (pBuffer[nSize - 1] == '\n') {
-		DEBUG_PUTS("\'\\n\'");
-		nSize--;
-	}
+    if (buffer[size - 1] == '\n')
+    {
+        DEBUG_PUTS("\'\\n\'");
+        size--;
+    }
 
-	if (memcmp(&pBuffer[5], showmsg::PATH, showmsg::LENGTH) == 0) {
-		const uint32_t nMsgLength = nSize - (5 + showmsg::LENGTH + 1);
-		DEBUG_PRINTF("m_nBytesReceived=%d, nMsgLength=%d [%.*s]", nBytesReceived, nMsgLength, nMsgLength, &m_pUdpBuffer[(5 + showmsg::LENGTH + 1)]);
+    if (memcmp(&buffer[5], showmsg::kPath, showmsg::kLength) == 0)
+    {
+        const uint32_t kMsgLength = size - (5 + showmsg::kLength + 1);
+        DEBUG_PRINTF("size=%d, nMsgLength=%d [%.*s]", size, kMsgLength, kMsgLength, &buffer[(5 + showmsg::kLength + 1)]);
 
-		if (((nMsgLength > 0) && (nMsgLength <= MAX_MESSAGE_SIZE)) && (pBuffer[5 + showmsg::LENGTH] == '#')) {
-			SetMessage(reinterpret_cast<const char *>(&pBuffer[(5 + showmsg::LENGTH + 1)]), nMsgLength);
-			return;
-		}
+        if (((kMsgLength > 0) && (kMsgLength <= ltc::display::rgb::kMaxMessageSize)) && (buffer[5 + showmsg::kLength] == '#'))
+        {
+            SetMessage(reinterpret_cast<const char*>(&buffer[(5 + showmsg::kLength + 1)]), kMsgLength);
+            return;
+        }
 
-		DEBUG_PUTS("Invalid !showmsg command");
-		return;
-	}
+        DEBUG_PUTS("Invalid !showmsg command");
+        return;
+    }
 
-	if (memcmp(&pBuffer[5], rgb::PATH, rgb::LENGTH) == 0) {
-		if ((nSize == (5 + rgb::LENGTH + 1 + rgb::HEX_SIZE)) && (pBuffer[5 + rgb::LENGTH] == '#')) {
-			SetRGB(reinterpret_cast<const char *>(&pBuffer[(5 + rgb::LENGTH + 1)]));
-			return;
-		}
+    if (memcmp(&buffer[5], rgb::kPath, rgb::kLength) == 0)
+    {
+        if ((size == (5 + rgb::kLength + 1 + rgb::kHexSize)) && (buffer[5 + rgb::kLength] == '#'))
+        {
+            SetRGB(reinterpret_cast<const char*>(&buffer[(5 + rgb::kLength + 1)]));
+            return;
+        }
 
-		DEBUG_PUTS("Invalid !rgb command");
-		return;
-	}
+        DEBUG_PUTS("Invalid !rgb command");
+        return;
+    }
 
-	if (memcmp(&pBuffer[5], master::PATH, master::LENGTH) == 0) {
-		if ((nSize == (5 + master::LENGTH + 1 + master::HEX_SIZE)) && (pBuffer[5 + master::LENGTH] == '#')) {
-			m_nMaster = hexadecimalToDecimal(reinterpret_cast<const char *>(&pBuffer[(5 + master::LENGTH + 1)]), master::HEX_SIZE);
-			return;
-		}
+    if (memcmp(&buffer[5], master::kPath, master::kLength) == 0)
+    {
+        if ((size == (5 + master::kLength + 1 + master::kHexSize)) && (buffer[5 + master::kLength] == '#'))
+        {
+            master_ = HexadecimalToDecimal(reinterpret_cast<const char*>(&buffer[(5 + master::kLength + 1)]), master::kHexSize);
+            return;
+        }
 
-		DEBUG_PUTS("Invalid !master command");
-		return;
-	}
+        DEBUG_PUTS("Invalid !master command");
+        return;
+    }
 
-	DEBUG_PUTS("Invalid command");
+    DEBUG_PUTS("Invalid command");
 }
 
-void LtcDisplayRgb::Print() {
-	if (m_tDisplayRgbType == Type::RGBPANEL) {
-#if !defined (CONFIG_LTC_DISABLE_RGB_PANEL)
-		puts("Display RGB panel");
+void LtcDisplayRgb::Print()
+{
+    if (type_ == ltc::display::rgb::Type::kRgbpanel)
+    {
+#if !defined(CONFIG_LTC_DISABLE_RGB_PANEL)
+        puts("Display RGB panel");
 #else
-		puts("Display RGB panel disabled");
+        puts("Display RGB panel disabled");
 #endif
-	} else {
-#if !defined (CONFIG_LTC_DISABLE_WS28XX)
-		puts("Display WS28xx");
-		printf(" Type    : %s [%d]\n", pixel::pixel_get_type(m_PixelType), static_cast<int>(m_PixelType));
-		printf(" Mapping : %s [%d]\n", pixel::pixel_get_map(m_PixelMap), static_cast<int>(m_PixelMap));
+    }
+    else
+    {
+#if !defined(CONFIG_LTC_DISABLE_WS28XX)
+        puts("Display PixelOutput");
+        printf(" Type    : %s [%d]\n", pixel::GetType(pixel_type_), static_cast<int>(pixel_type_));
+        printf(" Mapping : %s [%d]\n", pixel::GetMap(pixel_map_), static_cast<int>(pixel_map_));
 #else
-		puts("Display WS28xx disabled");
+        puts("Display PixelOutput disabled");
 #endif
-	}
+    }
 
-	printf(" Master  : %d\n", m_nMaster);
-	printf(" RGB     : Character 0x%.6X, Colon 0x%.6X, Message 0x%.6X\n", m_aColour[static_cast<uint32_t>(ColourIndex::TIME)], m_aColour[static_cast<uint32_t>(ColourIndex::COLON)], m_aColour[static_cast<uint32_t>(ColourIndex::MESSAGE)]);
+    printf(" Master  : %d\n", master_);
+    printf(" RGB     : Character 0x%.6X, Colon 0x%.6X, Message 0x%.6X\n", colour_[static_cast<uint32_t>(ltc::display::rgb::ColourIndex::TIME)],
+           colour_[static_cast<uint32_t>(ltc::display::rgb::ColourIndex::COLON)], colour_[static_cast<uint32_t>(ltc::display::rgb::ColourIndex::MESSAGE)]);
 
-	if (m_pLtcDisplayRgbSet == nullptr) {
-		puts(" No Init()!");
-	} else {
-		m_pLtcDisplayRgbSet->Print();
-	}
+    if (display_rgb_ == nullptr)
+    {
+        puts(" No Init()!");
+    }
+    else
+    {
+        display_rgb_->Print();
+    }
 }

@@ -28,5 +28,5 @@
 #include "rdm.h"
 #include "dmx.h"
 
-uint8_t Rdm::s_TransactionNumber[dmx::config::max::PORTS];
+uint8_t Rdm::s_transaction_number[dmx::config::max::PORTS];
 

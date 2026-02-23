@@ -7,7 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-void *memset(void *dst, int val, size_t count)
+void *memset(void *dst, int val, size_t count) // NOLINT
 {
 	char *ptr = dst;
 	uint64_t *ptr64;

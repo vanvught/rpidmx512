@@ -51,22 +51,22 @@ bool KbLinux::IsAvailable() {
 
 int KbLinux::GetChar() {
 	if (IsAvailable()) {
-//printf("%d:%d:%d\n", __LINE__, m_nState, m_nBytesWaiting);
+//printf("%d:%d:%d\n", __LINE__, state_, m_nBytesWaiting);
 		int c = getchar();
-		if ((m_nState == 0) && (c == 27) && (m_nBytesWaiting-- > 1)) {
-			m_nState++;
+		if ((state_ == 0) && (c == 27) && (m_nBytesWaiting-- > 1)) {
+			state_++;
 			if (m_nBytesWaiting-- > 0) {
 				c = getchar();
-				if ((m_nState == 1) && (c == 91)) {
-					m_nState++;
+				if ((state_ == 1) && (c == 91)) {
+					state_++;
 					if (m_nBytesWaiting > 0) {
-						m_nState = 0;
+						state_ = 0;
 						return -getchar();
 					}
 				}
 			}
 		}
-//printf("%d:%d:%d:{%d}\n", __LINE__, m_nState, m_nBytesWaiting, c);
+//printf("%d:%d:%d:{%d}\n", __LINE__, state_, m_nBytesWaiting, c);
 		return c;
 	} else {
 		return 0;

@@ -26,6 +26,9 @@
 #ifndef EMA_H_
 #define EMA_H_
 
+#ifndef EMA_H_
+#define EMA_H_
+
 #include <cstdint>
 
 /**
@@ -40,38 +43,39 @@
  * Higher K values mean a slower response to changes in the input, making the EMA smoother.
  */
 
-template<uint8_t K>
-class EMA {
-public:
-	EMA(uint16_t nIntitial = 0) : nState(static_cast<uint16_t>(nIntitial << K) - nIntitial) {}
+template <uint8_t K> class EMA
+{
+   public:
+    EMA(uint16_t nIntitial = 0) : nState(static_cast<uint16_t>(nIntitial << K) - nIntitial) {}
 
-	/**
-	 * @brief
-	 * This method allows resetting the internal state nState of the filter to a specific value nValue.
-	 * It sets the state in the same way as the constructor,
-	 * preparing the filter to start processing new inputs from the given value.
-	 * @param nValue
-	 */
-	void Reset(const uint16_t nValue = 0) {
-		nState = static_cast<uint16_t>(nValue << K) - nValue;
-	}
+    /**
+     * @brief
+     * This method allows resetting the internal state nState of the filter to a specific value nValue.
+     * It sets the state in the same way as the constructor,
+     * preparing the filter to start processing new inputs from the given value.
+     * @param nValue
+     */
+    void Reset(const uint16_t nValue = 0) { nState = static_cast<uint16_t>(nValue << K) - nValue; }
 
-	uint16_t Filter(const uint16_t nInput) {
-		nState += nInput;
-		const auto nOutput = static_cast<uint16_t>((nState + nHalf) >> K);
-		nState -= nOutput;
-		return nOutput;
-	}
+    uint16_t Filter(const uint16_t nInput)
+    {
+        nState += nInput;
+        const auto nOutput = static_cast<uint16_t>((nState + nHalf) >> K);
+        nState -= nOutput;
+        return nOutput;
+    }
 
-	/*
-	 * This static constant is used for rounding during the shift operation.
-	 * It ensures that when you shift the value right by K bits,
-	 * it rounds to the nearest integer rather than truncating.
-	 */
-	static constexpr uint16_t nHalf = K > 0 ? 1 << (K - 1) : 0;
+    /*
+     * This static constant is used for rounding during the shift operation.
+     * It ensures that when you shift the value right by K bits,
+     * it rounds to the nearest integer rather than truncating.
+     */
+    static constexpr uint16_t nHalf = K > 0 ? 1 << (K - 1) : 0;
 
-private:
-	uint16_t nState;
+   private:
+    uint16_t nState;
 };
 
 #endif /* EMA_H_ */
+
+#endif  // EMA_H_

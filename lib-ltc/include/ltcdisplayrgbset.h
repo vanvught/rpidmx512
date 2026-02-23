@@ -29,32 +29,35 @@
 
 #include "ltc.h"
 
-namespace ltcdisplayrgb {
-struct Colours {
-	uint8_t nRed;
-	uint8_t nGreen;
-	uint8_t nBlue;
+namespace ltc::display::rgb
+{
+struct Colours
+{
+    uint8_t red;
+    uint8_t green;
+    uint8_t blue;
 };
-static constexpr auto MAX_MESSAGE_SIZE = 8;
-}  // namespace ltcdisplayrgb
+static constexpr auto kMaxMessageSize = 8;
+} // namespace ltc::display::rgb
 
-class LtcDisplayRgbSet {
-public:
-	virtual ~LtcDisplayRgbSet() {}
+class LtcDisplayRgbSet
+{
+   public:
+    virtual ~LtcDisplayRgbSet() {}
 
-	virtual void Init();
+    virtual void Init() {}
 
-	virtual void Show(const char *pTimecode, struct ltcdisplayrgb::Colours &tColours, struct ltcdisplayrgb::Colours &tColoursColons)=0;
-	virtual void ShowSysTime(const char *pSystemTime, struct ltcdisplayrgb::Colours &tColours, struct ltcdisplayrgb::Colours &tColoursColons)=0;
-	virtual void ShowMessage(const char *pMessage, struct ltcdisplayrgb::Colours &tColours)=0;
+    virtual void Show(const char* timecode, struct ltc::display::rgb::Colours& colours, struct ltc::display::rgb::Colours& colours_colons) = 0;
+    virtual void ShowSysTime(const char* systemtime, struct ltc::display::rgb::Colours& colours, struct ltc::display::rgb::Colours& colours_colons) = 0;
+    virtual void ShowMessage(const char* message, struct ltc::display::rgb::Colours& colours) = 0;
 
-	virtual void WriteChar(uint8_t nChar, uint8_t nPos, struct ltcdisplayrgb::Colours &tColours)=0;
+    virtual void WriteChar(uint8_t ch, uint8_t pos, struct ltc::display::rgb::Colours& colours) = 0;
 
-	virtual void ShowFPS(ltc::Type tTimeCodeType, struct ltcdisplayrgb::Colours &tColours);
-	virtual void ShowSource(ltc::Source tSource, struct ltcdisplayrgb::Colours &tColours);
-	virtual void ShowInfo(const char *pInfo, uint32_t nLength, struct ltcdisplayrgb::Colours &tColours);
+    virtual void ShowFPS([[maybe_unused]] ltc::Type type, [[maybe_unused]] struct ltc::display::rgb::Colours& colours) {}
+    virtual void ShowSource([[maybe_unused]] ltc::Source source, [[maybe_unused]] struct ltc::display::rgb::Colours& colours) {}
+    virtual void ShowInfo([[maybe_unused]] const char* info, [[maybe_unused]] uint32_t length, [[maybe_unused]] struct ltc::display::rgb::Colours& colours) {}
 
-	virtual void Print()=0;
+    virtual void Print() = 0;
 };
 
-#endif /* LTCDISPLAYRGBSET_H_ */
+#endif  // LTCDISPLAYRGBSET_H_

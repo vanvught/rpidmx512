@@ -15,9 +15,6 @@
 #include "styles.css.h"
 #include "index.js.h"
 #include "date.js.h"
-#if defined (ENABLE_PHY_SWITCH)
-# include "dsa.js.h"
-#endif /* (ENABLE_PHY_SWITCH) */
 #if defined (NODE_SHOWFILE)
 # include "showfile.html.h"
 #endif /* (NODE_SHOWFILE) */
@@ -44,9 +41,6 @@
 #if !defined (CONFIG_HTTP_HTML_NO_DMX) && (defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI))
 # include "dmx.html.h"
 #endif /* !defined (CONFIG_HTTP_HTML_NO_DMX) && (defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI)) */
-#if defined (ENABLE_PHY_SWITCH)
-# include "dsa.html.h"
-#endif /* (ENABLE_PHY_SWITCH) */
 
 struct FilesContent {
 	const char *pFileName;
@@ -57,30 +51,27 @@ struct FilesContent {
 
 static constexpr struct FilesContent HttpContent[] = {
 #if !defined (CONFIG_HTTP_HTML_NO_DMX) && (defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI))
-	{ "dmx.js", dmx_js, 1361, static_cast<http::contentTypes>(2) },
+	{ "dmx.js", dmx_js, 1357, static_cast<http::contentTypes>(2) },
 #endif /* !defined (CONFIG_HTTP_HTML_NO_DMX) && (defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI)) */
 #if !defined (CONFIG_HTTP_HTML_NO_RTC) && !defined (DISABLE_RTC)
 	{ "rtc.html", rtc_html, 1013, static_cast<http::contentTypes>(0) },
 #endif /* !defined (CONFIG_HTTP_HTML_NO_RTC) && !defined (DISABLE_RTC) */
-	{ "static.js", static_js, 1219, static_cast<http::contentTypes>(2) },
+	{ "static.js", static_js, 1252, static_cast<http::contentTypes>(2) },
 	{ "styles.css", styles_css, 409, static_cast<http::contentTypes>(1) },
-	{ "index.js", index_js, 1140, static_cast<http::contentTypes>(2) },
+	{ "index.js", index_js, 1168, static_cast<http::contentTypes>(2) },
 	{ "date.js", date_js, 716, static_cast<http::contentTypes>(2) },
-#if defined (ENABLE_PHY_SWITCH)
-	{ "dsa.js", dsa_js, 613, static_cast<http::contentTypes>(2) },
-#endif /* (ENABLE_PHY_SWITCH) */
 #if defined (NODE_SHOWFILE)
-	{ "showfile.html", showfile_html, 1305, static_cast<http::contentTypes>(0) },
+	{ "showfile.html", showfile_html, 1386, static_cast<http::contentTypes>(0) },
 #endif /* (NODE_SHOWFILE) */
-	{ "default.js", default_js, 254, static_cast<http::contentTypes>(2) },
+	{ "default.js", default_js, 261, static_cast<http::contentTypes>(2) },
 #if !defined (CONFIG_HTTP_HTML_NO_RTC) && !defined (DISABLE_RTC)
 	{ "rtc.js", rtc_js, 843, static_cast<http::contentTypes>(2) },
 #endif /* !defined (CONFIG_HTTP_HTML_NO_RTC) && !defined (DISABLE_RTC) */
 #if !defined (CONFIG_HTTP_HTML_NO_RDM) && defined (RDM_CONTROLLER)
-	{ "rdm.js", rdm_js, 991, static_cast<http::contentTypes>(2) },
+	{ "rdm.js", rdm_js, 1001, static_cast<http::contentTypes>(2) },
 #endif /* !defined (CONFIG_HTTP_HTML_NO_RDM) && defined (RDM_CONTROLLER) */
 #if !defined (CONFIG_HTTP_HTML_NO_TIME)
-	{ "time.js", time_js, 390, static_cast<http::contentTypes>(2) },
+	{ "time.js", time_js, 402, static_cast<http::contentTypes>(2) },
 #endif /* !defined (CONFIG_HTTP_HTML_NO_TIME) */
 #if !defined (CONFIG_HTTP_HTML_NO_RDM) && defined (RDM_CONTROLLER)
 	{ "rdm.html", rdm_html, 1142, static_cast<http::contentTypes>(0) },
@@ -95,9 +86,6 @@ static constexpr struct FilesContent HttpContent[] = {
 #if !defined (CONFIG_HTTP_HTML_NO_DMX) && (defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI))
 	{ "dmx.html", dmx_html, 538, static_cast<http::contentTypes>(0) },
 #endif /* !defined (CONFIG_HTTP_HTML_NO_DMX) && (defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI)) */
-#if defined (ENABLE_PHY_SWITCH)
-	{ "dsa.html", dsa_html, 447, static_cast<http::contentTypes>(0) },
-#endif /* (ENABLE_PHY_SWITCH) */
 };
 
 #endif /* CONTENT_H_ */

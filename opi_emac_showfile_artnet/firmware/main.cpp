@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,117 +23,102 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cassert>
-
-#include "hardware.h"
+#include "h3/hal.h"
+#include "h3/hal_watchdog.h"
+#include "hal_statusled.h"
 #include "network.h"
-
-#include "net/apps/mdns.h"
-
 #include "displayudf.h"
-#include "displayudfparams.h"
-#include "displayhandler.h"
-
+#include "json/displayudfparams.h"
 #include "showfile.h"
 #include "showfiledisplay.h"
-#include "showfileparams.h"
-
-#if defined (NODE_RDMNET_LLRP_ONLY)
-# include "rdmnetllrponly.h"
-# include "rdm_e120.h"
-# include "factorydefaults.h"
+#if defined(NODE_RDMNET_LLRP_ONLY)
+#include "rdmnetdevice.h"
+#include "rdm_e120.h"
 #endif
-
 #include "remoteconfig.h"
-#include "remoteconfigparams.h"
-
 #include "flashcodeinstall.h"
 #include "configstore.h"
-
 #include "firmwareversion.h"
 #include "software_version.h"
+#include "common/utils/utils_flags.h"
 
-namespace hal {
-void reboot_handler() {
-	ShowFile::Get()->Stop();
+namespace hal
+{
+void RebootHandler()
+{
+    ShowFile::Instance().Stop();
 
-	if (!RemoteConfig::Get()->IsReboot()) {
-		Display::Get()->SetSleep(false);
-		Display::Get()->Cls();
-		Display::Get()->TextStatus("Rebooting ...");
-	}
+    if (!RemoteConfig::Get()->IsReboot())
+    {
+        Display::Get()->SetSleep(false);
+        Display::Get()->Cls();
+        Display::Get()->TextStatus("Rebooting ...");
+    }
 }
-}  // namespace hal
+} // namespace hal
 
-int main() {
-	Hardware hw;
-	DisplayUdf display;
-	ConfigStore configStore;
-	Network nw;
-	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
-	FlashCodeInstall spiFlashInstall;
+using common::store::showfile::Flags;
 
-	fw.Print("Showfile player");
-	
-	ShowFile showFile;
+int main() // NOLINT
+{
+    hal::Init();
+    DisplayUdf display;
+    ConfigStore config_store;
+    network::Init();
+    FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+    FlashCodeInstall spiflash_install;
 
-	ShowFileParams showFileParams;
-	showFileParams.Load();
-	showFileParams.Set();
+    fw.Print("Showfile player");
 
-	if (showFile.IsAutoStart()) {
-		showFile.Play();
-	}
+    ShowFile showfile;
+    showfile.Print();
 
-#if defined (NODE_RDMNET_LLRP_ONLY)
-	RDMNetLLRPOnly rdmNetLLRPOnly("Showfile player");
+#if defined(NODE_RDMNET_LLRP_ONLY)
+    auto& rdm_device = RdmDevice::Get();
+    rdm_device.SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
+    rdm_device.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
+    rdm_device.Init();
+    rdm_device.Print();
 
-	rdmNetLLRPOnly.GetRDMNetDevice()->SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
-	rdmNetLLRPOnly.GetRDMNetDevice()->SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
-	rdmNetLLRPOnly.Init();
-	rdmNetLLRPOnly.Print();
+    RDMNetDevice llrp_only_device;
 #endif
 
-	RemoteConfig remoteConfig(remoteconfig::Node::SHOWFILE, remoteconfig::Output::PLAYER, 0);
+    RemoteConfig remote_config(remoteconfig::Output::PLAYER, 0);
 
-	RemoteConfigParams remoteConfigParams;
-	remoteConfigParams.Load();
-	remoteConfigParams.Set(&remoteConfig);
+    display.SetTitle("Showfile player");
+    display.Set(2, displayudf::Labels::kHostname);
+    display.Set(3, displayudf::Labels::kIp);
+    display.Set(4, displayudf::Labels::kVersion);
 
-	display.SetTitle("Showfile player");
-	display.Set(2, displayudf::Labels::HOSTNAME);
-	display.Set(3, displayudf::Labels::IP);
-	display.Set(4, displayudf::Labels::VERSION);
+    json::DisplayUdfParams displayudf_params;
+    displayudf_params.Load();
+    displayudf_params.SetAndShow();
 
-	DisplayUdfParams displayUdfParams;
-	displayUdfParams.Load();
-	displayUdfParams.Set(&display);
+    // Fixed row 5, 6, 7
 
-	display.Show();
+    const auto kFlags = ConfigStore::Instance().ShowFileGet(&common::store::ShowFile::flags);
 
-	showFile.Print();
+    if (common::IsFlagSet(kFlags, Flags::Flag::kOptionArtnetDisableUnicast))
+    {
+        Display::Get()->PutString(" <Broadcast>");
+    }
 
-	// Fixed row 5, 6, 7
+    if (showfile.IsSyncDisabled())
+    {
+        display.Printf(6, "<No synchronization>");
+    }
 
-	if (showFileParams.IsArtNetBroadcast()) {
-		Display::Get()->PutString(" <Broadcast>");
-	}
+    showfile::DisplayStatus();
 
-	if (showFile.IsSyncDisabled()) {
-		display.Printf(6, "<No synchronization>");
-	}
+    hal::statusled::SetMode(hal::statusled::Mode::NORMAL);
+    hal::WatchdogInit();
 
-	showfile::display_status();
-
-	hw.SetMode(hardware::ledblink::Mode::NORMAL);
-	hw.WatchdogInit();
-
-	for (;;) {
-		hw.WatchdogFeed();
-		nw.Run();
-		showFile.Run();
-		display.Run();
-		hw.Run();
-	}
+    for (;;)
+    {
+        hal::WatchdogFeed();
+        network::Run();
+        showfile.Run();
+        display.Run();
+        hal::Run();
+    }
 }

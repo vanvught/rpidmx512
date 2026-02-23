@@ -2,7 +2,7 @@
  * @file showfiletftp.h
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,45 +28,45 @@
 
 #include <cstdio>
 
-#include "net/apps/tftpdaemon.h"
+#include "apps/tftpdaemon.h"
 
-#include "debug.h"
+ #include "firmware/debug/debug_debug.h"
 
-class ShowFileTFTP final: public TFTPDaemon {
-public:
-	ShowFileTFTP() {
-		DEBUG_ENTRY
+class ShowFileTFTP final : public TFTPDaemon
+{
+   public:
+    ShowFileTFTP()
+    {
+        DEBUG_ENTRY();
 
-		DEBUG_EXIT
-	}
+        DEBUG_EXIT();
+    }
 
-	bool FileOpen(const char *pFileName, tftp::Mode mode) override;
-	bool FileCreate(const char *pFileName, tftp::Mode mode) override;
+    bool FileOpen(const char* file_name, tftp::Mode mode) override;
+    bool FileCreate(const char* file_name, tftp::Mode mode) override;
 
-	bool FileClose() override {
-		DEBUG_ENTRY
+    bool FileClose() override
+    {
+        DEBUG_ENTRY();
 
-		if (m_pFile != nullptr) {
-			fclose(m_pFile);
-			m_pFile = nullptr;
-		}
+        if (file_ != nullptr)
+        {
+            fclose(file_);
+            file_ = nullptr;
+        }
 
-		DEBUG_EXIT
-		return true;
-	}
+        DEBUG_EXIT();
+        return true;
+    }
 
-	size_t FileRead(void *pBuffer, size_t nCount, [[maybe_unused]] unsigned nBlockNumber) override {
-		return fread(pBuffer, 1, nCount, m_pFile);
-	}
+    size_t FileRead(void* buffer, size_t count, [[maybe_unused]] unsigned block_number) override { return fread(buffer, 1, count, file_); }
 
-	size_t FileWrite(const void *pBuffer, size_t nCount, [[maybe_unused]] unsigned nBlockNumber) override {
-		return fwrite(pBuffer, 1, nCount, m_pFile);
-	}
+    size_t FileWrite(const void* buffer, size_t count, [[maybe_unused]] unsigned block_number) override { return fwrite(buffer, 1, count, file_); }
 
-	void Exit() override;
+    void Exit() override;
 
-private:
-	FILE *m_pFile { nullptr };
+   private:
+    FILE* file_{nullptr};
 };
 
-#endif /* SHOWFILETFTP_H_ */
+#endif  // SHOWFILETFTP_H_

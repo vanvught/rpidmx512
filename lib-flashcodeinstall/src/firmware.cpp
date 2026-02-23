@@ -33,7 +33,7 @@
 
 #include "firmware.h"
 #include "ubootheader.h"
-#include "debug.h"
+ #include "firmware/debug/debug_debug.h"
 
 namespace firmware {
 enum class State {
@@ -44,7 +44,7 @@ static auto s_State = State::IDLE;
 static uint32_t s_nCRC;
 
 bool firmware_install_start(const uint8_t *pBuffer, const uint32_t nBufferSize) {
-	DEBUG_ENTRY
+	DEBUG_ENTRY();
 	DEBUG_PRINTF("Firmware: Buffer = %p, Buffer size = %u", reinterpret_cast<const void *>(pBuffer), nBufferSize);
 
 	assert(s_State == State::IDLE);
@@ -59,7 +59,7 @@ bool firmware_install_start(const uint8_t *pBuffer, const uint32_t nBufferSize) 
 	DEBUG_PRINTF("Firmware is valid? %s", isValid ? "Yes" : "No");
 
 	if (!isValid) {
-		DEBUG_EXIT
+		DEBUG_EXIT();
 		return false;
 	}
 
@@ -73,12 +73,12 @@ bool firmware_install_start(const uint8_t *pBuffer, const uint32_t nBufferSize) 
 		s_nCRC = crc32(0, pFirmware, nFirmwareChunk);
 	}
 
-	DEBUG_EXIT
+	DEBUG_EXIT();
 	return true;
 }
 
 bool firmware_install_continue(const uint8_t *pBuffer, const uint32_t nBufferSize) {
-	DEBUG_ENTRY
+	DEBUG_ENTRY();
 	DEBUG_PRINTF("Firmware: Buffer = %p, Buffer size = %u", reinterpret_cast<const void *>(pBuffer), nBufferSize);
 
 	assert((s_State == State::START) || (s_State == State::CONTINUE));
@@ -86,12 +86,12 @@ bool firmware_install_continue(const uint8_t *pBuffer, const uint32_t nBufferSiz
 
 	s_nCRC = crc32(s_nCRC, pBuffer, nBufferSize);
 
-	DEBUG_EXIT
+	DEBUG_EXIT();
 	return true;
 }
 
 bool firmware_install_end(const uint8_t *pBuffer, const uint32_t nBufferSize) {
-	DEBUG_ENTRY
+	DEBUG_ENTRY();
 	DEBUG_PRINTF("Firmware: Buffer = %p, Buffer size = %u", reinterpret_cast<const void *>(pBuffer), nBufferSize);
 
 	assert(s_State == State::CONTINUE);
@@ -101,7 +101,7 @@ bool firmware_install_end(const uint8_t *pBuffer, const uint32_t nBufferSize) {
 
 	DEBUG_PRINTF("CRC: %x", s_nCRC);
 
-	DEBUG_EXIT
+	DEBUG_EXIT();
 	return true;
 }
 

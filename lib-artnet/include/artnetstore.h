@@ -2,10 +2,7 @@
  * @file artnetstore.h
  *
  */
-/**
- * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
- */
-/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,233 +27,294 @@
 #define ARTNETSTORE_H_
 
 #include <cstdint>
-#include <cstddef>
 
-#include "artnetparams.h"
+#include "artnet.h"
 #include "artnetnode.h"
-
+#include "dmxnode.h"
+#include "dmxnode_utils.h"
 #include "configstore.h"
+ #include "firmware/debug/debug_debug.h"
 
-#include "debug.h"
+namespace artnet::store
+{
+namespace internal
+{
+inline void SaveUniverse(uint32_t port_index)
+{
+    DEBUG_ENTRY();
+    DEBUG_PRINTF("port_index=%u", port_index);
 
-class ArtNetStore {
-public:
-	static void SaveLongName(const char *pLongName) {
-		DEBUG_ENTRY
-		ConfigStore::Get()->Update(configstore::Store::NODE, offsetof(struct artnetparams::Params, aLongName), pLongName, artnet::LONG_NAME_LENGTH, artnetparams::Mask::LONG_NAME);
-		DEBUG_EXIT
+    uint16_t universe;
 
-	}
-
-	static void SaveShortName(uint32_t nPortIndex, const char *pShortName) {
-		DEBUG_ENTRY
-		DEBUG_PRINTF("%u, %s", nPortIndex, pShortName);
-
-#if defined(CONFIG_DMX_PORT_OFFSET)
-		if (nPortIndex >= CONFIG_DMX_PORT_OFFSET) {
-			nPortIndex -= CONFIG_DMX_PORT_OFFSET;
-		} else {
-			DEBUG_EXIT
-			return;
-		}
+    if (ArtNetNode::Get()->GetPortAddress(port_index, universe))
+    {
+#if defined(CONFIG_DMXNODE_DMX_PORT_OFFSET)
+        if (port_index >= CONFIG_DMXNODE_DMX_PORT_OFFSET)
+        {
+            port_index -= CONFIG_DMXNODE_DMX_PORT_OFFSET;
+        }
+        else
+        {
+            DEBUG_EXIT();
+            return;
+        }
 #endif
 
-		DEBUG_PRINTF("nPortIndex=%u", nPortIndex);
+        DEBUG_PRINTF("port_index=%u", port_index);
 
-		if (nPortIndex >= artnet::PORTS) {
-			DEBUG_EXIT
-			return;
-		}
+        if (port_index >= artnet::kPorts)
+        {
+            DEBUG_EXIT();
+            return;
+        }
 
-		ConfigStore::Get()->Update(configstore::Store::NODE, (artnet::SHORT_NAME_LENGTH * nPortIndex) + offsetof(struct artnetparams::Params, aLabel), pShortName, artnet::SHORT_NAME_LENGTH, artnetparams::Mask::LABEL_A << nPortIndex);
-
-		DEBUG_EXIT
-	}
-
-	static void SaveUniverseSwitch(const uint32_t nPortIndex, [[maybe_unused]] const uint8_t nUniverseSwitch) {
-		DEBUG_ENTRY
-		SaveUniverse(nPortIndex);
-		DEBUG_EXIT
-	}
-
-	static void SaveNetSwitch(const uint32_t nPortIndex, [[maybe_unused]] const uint8_t nNetSwitch) {
-		DEBUG_ENTRY
-		SaveUniverse(nPortIndex);
-		DEBUG_EXIT
-	}
-
-	static void SaveSubnetSwitch(const uint32_t nPortIndex, [[maybe_unused]] const uint8_t nSubnetSwitch) {
-		DEBUG_ENTRY
-		SaveUniverse(nPortIndex);
-		DEBUG_EXIT
-	}
-
-	static void SaveMergeMode(uint32_t nPortIndex, const lightset::MergeMode mergeMode) {
-		DEBUG_ENTRY
-		DEBUG_PRINTF("%u, %u", nPortIndex, static_cast<uint32_t>(mergeMode));
-
-#if defined(CONFIG_DMX_PORT_OFFSET)
-		if (nPortIndex >= CONFIG_DMX_PORT_OFFSET) {
-			nPortIndex -= CONFIG_DMX_PORT_OFFSET;
-		} else {
-			DEBUG_EXIT
-			return;
-		}
+#if defined(__GNUC__) && !defined(__clang__) && (__GNUC__ >= 13)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdangling-pointer"
 #endif
 
-		DEBUG_PRINTF("nPortIndex=%u", nPortIndex);
+        DEBUG_PRINTF("port_index=%u, universe=%u", port_index, universe);
 
-		if (nPortIndex >= artnet::PORTS) {
-			DEBUG_EXIT
-			return;
-		}
-
-		uint16_t nMergeMode;
-		ConfigStore::Get()->Copy(configstore::Store::NODE, &nMergeMode, sizeof(uint16_t), offsetof(struct artnetparams::Params, nMergeMode), false);
-
-		nMergeMode &= artnetparams::mergemode_clear(nPortIndex);
-		nMergeMode |= artnetparams::mergemode_set(nPortIndex, mergeMode);
-
-		ConfigStore::Get()->Update(configstore::Store::NODE, offsetof(struct artnetparams::Params, nMergeMode), &nMergeMode, sizeof(uint16_t));
-
-		DEBUG_EXIT
-	}
-
-	static void SavePortProtocol(uint32_t nPortIndex, const artnet::PortProtocol portProtocol) {
-		DEBUG_ENTRY
-		DEBUG_PRINTF("nPortIndex=%u, portProtocol=%u", nPortIndex, static_cast<uint32_t>(portProtocol));
-
-#if defined(CONFIG_DMX_PORT_OFFSET)
-		if (nPortIndex >= CONFIG_DMX_PORT_OFFSET) {
-			nPortIndex -= CONFIG_DMX_PORT_OFFSET;
-		} else {
-			DEBUG_EXIT
-			return;
-		}
+#if defined(__GNUC__) && !defined(__clang__) && (__GNUC__ >= 13)
+#pragma GCC diagnostic pop
 #endif
 
-		DEBUG_PRINTF("nPortIndex=%u", nPortIndex);
+        ConfigStore::Instance().DmxNodeUpdateIndexed(&common::store::DmxNode::universe, port_index, universe);
+    }
 
-		if (nPortIndex >= artnet::PORTS) {
-			DEBUG_EXIT
-			return;
-		}
+    DEBUG_EXIT();
+}
+} // namespace internal
 
-		uint16_t nPortProtocol;
-		ConfigStore::Get()->Copy(configstore::Store::NODE, &nPortProtocol, sizeof(uint16_t), offsetof(struct artnetparams::Params, nProtocol), false);
+inline void SaveLongName(const char* long_name)
+{
+    DEBUG_ENTRY();
+    ConfigStore::Instance().DmxNodeUpdateArray(&common::store::DmxNode::long_name, long_name, artnet::kLongNameLength);
+    DEBUG_EXIT();
+}
 
-		nPortProtocol &= artnetparams::protocol_clear(nPortIndex);
-		nPortProtocol |= artnetparams::protocol_set(nPortIndex, portProtocol);
+inline void SaveShortName(uint32_t port_index, const char* short_name)
+{
+    DEBUG_ENTRY();
+    DEBUG_PRINTF("%u, %s", port_index, short_name);
 
-		ConfigStore::Get()->Update(configstore::Store::NODE, offsetof(struct artnetparams::Params, nProtocol), &nPortProtocol, sizeof(uint16_t));
-		DEBUG_EXIT
-	}
-
-	static void SaveOutputStyle(uint32_t nPortIndex, const lightset::OutputStyle outputStyle) {
-		DEBUG_ENTRY
-		DEBUG_PRINTF("nPortIndex=%u, outputStyle=%u", nPortIndex, static_cast<uint32_t>(outputStyle));
-
-#if defined(CONFIG_DMX_PORT_OFFSET)
-		if (nPortIndex >= CONFIG_DMX_PORT_OFFSET) {
-			nPortIndex -= CONFIG_DMX_PORT_OFFSET;
-		} else {
-			DEBUG_EXIT
-			return;
-		}
+#if defined(CONFIG_DMXNODE_DMX_PORT_OFFSET)
+    if (port_index >= CONFIG_DMXNODE_DMX_PORT_OFFSET)
+    {
+        port_index -= CONFIG_DMXNODE_DMX_PORT_OFFSET;
+    }
+    else
+    {
+        DEBUG_EXIT();
+        return;
+    }
 #endif
 
-		DEBUG_PRINTF("nPortIndex=%u", nPortIndex);
+    DEBUG_PRINTF("port_index=%u", port_index);
 
-		if (nPortIndex >= artnet::PORTS) {
-			DEBUG_EXIT
-			return;
-		}
+    if (port_index >= artnet::kPorts)
+    {
+        DEBUG_EXIT();
+        return;
+    }
 
-		uint8_t nOutputStyle;
-		ConfigStore::Get()->Copy(configstore::Store::NODE, &nOutputStyle, sizeof(uint8_t), offsetof(struct artnetparams::Params, nOutputStyle), false);
+    ConfigStore::Instance().DmxNodeUpdateLabel(&common::store::DmxNode::label, port_index, short_name, artnet::kShortNameLength);
 
-		if (outputStyle == lightset::OutputStyle::CONSTANT) {
-			nOutputStyle |= static_cast<uint8_t>(1U << nPortIndex);
-		} else {
-			nOutputStyle &= static_cast<uint8_t>(~(1U << nPortIndex));
-		}
+    DEBUG_EXIT();
+}
 
-		ConfigStore::Get()->Update(configstore::Store::NODE, offsetof(struct artnetparams::Params, nOutputStyle), &nOutputStyle, sizeof(uint8_t));
+inline void SaveSwitch(uint32_t port_index, [[maybe_unused]] uint8_t sw)
+{
+    DEBUG_ENTRY();
+    internal::SaveUniverse(port_index);
+    DEBUG_EXIT();
+}
 
-		DEBUG_EXIT
-	}
+inline void SaveDirection(uint32_t port_index, dmxnode::PortDirection direction)
+{
+    DEBUG_ENTRY();
+    DEBUG_PRINTF("%u, %u", port_index, static_cast<uint32_t>(direction));
 
-	static void SaveRdmEnabled(uint32_t nPortIndex, const bool isEnabled) {
-		DEBUG_ENTRY
-		DEBUG_PRINTF(" nPortIndex=%u, isEnabled=%d", nPortIndex, isEnabled);
-
-#if defined(CONFIG_DMX_PORT_OFFSET)
-		if (nPortIndex >= CONFIG_DMX_PORT_OFFSET) {
-			nPortIndex -= CONFIG_DMX_PORT_OFFSET;
-		} else {
-			DEBUG_EXIT
-			return;
-		}
+#if defined(CONFIG_DMXNODE_DMX_PORT_OFFSET)
+    if (port_index >= CONFIG_DMXNODE_DMX_PORT_OFFSET)
+    {
+        port_index -= CONFIG_DMXNODE_DMX_PORT_OFFSET;
+    }
+    else
+    {
+        DEBUG_EXIT();
+        return;
+    }
 #endif
 
-		DEBUG_PRINTF("nPortIndex=%u", nPortIndex);
+    DEBUG_PRINTF("port_index=%u", port_index);
 
-		if (nPortIndex >= artnet::PORTS) {
-			DEBUG_EXIT
-			return;
-		}
+    if (port_index >= artnet::kPorts)
+    {
+        DEBUG_EXIT();
+        return;
+    }
 
-		uint16_t nRdm;
-		ConfigStore::Get()->Copy(configstore::Store::NODE, &nRdm, sizeof(uint16_t), offsetof(struct artnetparams::Params, nRdm), false);
+    auto direction_store = ConfigStore::Instance().DmxNodeGet(&common::store::DmxNode::direction);
 
-		nRdm &= artnetparams::clear_mask(nPortIndex);
+    json::PortSet<dmxnode::PortDirection>(port_index, direction, direction_store);
 
-		if (isEnabled) {
-			nRdm |= artnetparams::shift_left(1, nPortIndex);
-			nRdm |= static_cast<uint16_t>(1U << (nPortIndex + 8));
-		}
+    ConfigStore::Instance().DmxNodeUpdate(&common::store::DmxNode::direction, direction_store);
 
-		ConfigStore::Get()->Update(configstore::Store::NODE, offsetof(struct artnetparams::Params, nRdm), &nRdm, sizeof(uint16_t));
+    DEBUG_EXIT();
+}
 
-		DEBUG_EXIT
-	}
+inline void SaveMergeMode(uint32_t port_index, dmxnode::MergeMode merge_mode)
+{
+    DEBUG_ENTRY();
+    DEBUG_PRINTF("%u, %u", port_index, static_cast<uint32_t>(merge_mode));
 
-	static void SaveFailSafe(uint8_t nFailSafe) {
-		DEBUG_ENTRY
-		ConfigStore::Get()->Update(configstore::Store::NODE, offsetof(struct artnetparams::Params, nFailSafe), &nFailSafe, sizeof(uint8_t), artnetparams::Mask::FAILSAFE);
-		DEBUG_EXIT
-	}
-
-private:
-	void static SaveUniverse(uint32_t nPortIndex) {
-		DEBUG_ENTRY
-		DEBUG_PRINTF("nPortIndex=%u", nPortIndex);
-
-		uint16_t nUniverse;
-
-		if (ArtNetNode::Get()->GetPortAddress(nPortIndex, nUniverse)) {
-#if defined(CONFIG_DMX_PORT_OFFSET)
-			if (nPortIndex >= CONFIG_DMX_PORT_OFFSET) {
-				nPortIndex -= CONFIG_DMX_PORT_OFFSET;
-			} else {
-				DEBUG_EXIT
-				return;
-			}
+#if defined(CONFIG_DMXNODE_DMX_PORT_OFFSET)
+    if (port_index >= CONFIG_DMXNODE_DMX_PORT_OFFSET)
+    {
+        port_index -= CONFIG_DMXNODE_DMX_PORT_OFFSET;
+    }
+    else
+    {
+        DEBUG_EXIT();
+        return;
+    }
 #endif
 
-			DEBUG_PRINTF("nPortIndex=%u", nPortIndex);
+    DEBUG_PRINTF("port_index=%u", port_index);
 
-			if (nPortIndex >= artnet::PORTS) {
-				DEBUG_EXIT
-				return;
-			}
+    if (port_index >= artnet::kPorts)
+    {
+        DEBUG_EXIT();
+        return;
+    }
 
-			DEBUG_PRINTF("nPortIndex=%u, nUniverse=%u", nPortIndex, nUniverse);
-			ConfigStore::Get()->Update(configstore::Store::NODE, (sizeof(uint16_t) * nPortIndex) + offsetof(struct artnetparams::Params, nUniverse), &nUniverse, sizeof(uint16_t), artnetparams::Mask::UNIVERSE_A << nPortIndex);
-		}
+    auto merge_mode_store = ConfigStore::Instance().DmxNodeGet(&common::store::DmxNode::merge_mode);
 
-		DEBUG_EXIT
-	}
-};
+    json::PortSet<dmxnode::MergeMode>(port_index, merge_mode, merge_mode_store);
 
-#endif /* ARTNETSTORE_H_ */
+    ConfigStore::Instance().DmxNodeUpdate(&common::store::DmxNode::merge_mode, merge_mode_store);
+
+    DEBUG_EXIT();
+}
+
+inline void SaveProtocol(uint32_t port_index, artnet::PortProtocol port_protocol)
+{
+    DEBUG_ENTRY();
+    DEBUG_PRINTF("port_index=%u, portProtocol=%u", port_index, static_cast<uint32_t>(port_protocol));
+
+#if defined(CONFIG_DMXNODE_DMX_PORT_OFFSET)
+    if (port_index >= CONFIG_DMXNODE_DMX_PORT_OFFSET)
+    {
+        port_index -= CONFIG_DMXNODE_DMX_PORT_OFFSET;
+    }
+    else
+    {
+        DEBUG_EXIT();
+        return;
+    }
+#endif
+
+    DEBUG_PRINTF("port_index=%u", port_index);
+
+    if (port_index >= artnet::kPorts)
+    {
+        DEBUG_EXIT();
+        return;
+    }
+
+    uint16_t protocol_store = ConfigStore::Instance().DmxNodeGet(&common::store::DmxNode::protocol);
+
+    json::PortSet<artnet::PortProtocol>(port_index, port_protocol, protocol_store);
+
+    ConfigStore::Instance().DmxNodeUpdate(&common::store::DmxNode::protocol, protocol_store);
+
+    DEBUG_EXIT();
+}
+
+inline void SaveOutputStyle(uint32_t port_index, dmxnode::OutputStyle output_style)
+{
+    DEBUG_ENTRY();
+    DEBUG_PRINTF("port_index=%u, output_style=%u", port_index, static_cast<uint32_t>(output_style));
+
+#if defined(CONFIG_DMXNODE_DMX_PORT_OFFSET)
+    if (port_index >= CONFIG_DMXNODE_DMX_PORT_OFFSET)
+    {
+        port_index -= CONFIG_DMXNODE_DMX_PORT_OFFSET;
+    }
+    else
+    {
+        DEBUG_EXIT();
+        return;
+    }
+#endif
+
+    DEBUG_PRINTF("port_index=%u", port_index);
+
+    if (port_index >= artnet::kPorts)
+    {
+        DEBUG_EXIT();
+        return;
+    }
+
+    auto output_style_store = ConfigStore::Instance().DmxNodeGet(&common::store::DmxNode::output_style);
+
+    if (output_style == dmxnode::OutputStyle::kConstant)
+    {
+        output_style_store |= static_cast<uint8_t>(1U << port_index);
+    }
+    else
+    {
+        output_style_store &= static_cast<uint8_t>(~(1U << port_index));
+    }
+
+    ConfigStore::Instance().DmxNodeUpdate(&common::store::DmxNode::output_style, output_style_store);
+
+    DEBUG_EXIT();
+}
+
+inline void SaveRdmEnabled(uint32_t port_index, bool is_enabled)
+{
+    DEBUG_ENTRY();
+    DEBUG_PRINTF("port_index=%u, is_enabled=%d", port_index, is_enabled);
+
+#if defined(CONFIG_DMXNODE_DMX_PORT_OFFSET)
+    if (port_index >= CONFIG_DMXNODE_DMX_PORT_OFFSET)
+    {
+        port_index -= CONFIG_DMXNODE_DMX_PORT_OFFSET;
+    }
+    else
+    {
+        DEBUG_EXIT();
+        return;
+    }
+#endif
+
+    DEBUG_PRINTF("port_index=%u", port_index);
+
+    if (port_index >= artnet::kPorts)
+    {
+        DEBUG_EXIT();
+        return;
+    }
+
+    auto rdm_store = ConfigStore::Instance().DmxNodeGet(&common::store::DmxNode::rdm);
+
+    json::PortSet<dmxnode::Rdm>(port_index, static_cast<dmxnode::Rdm>(is_enabled), rdm_store);
+
+    ConfigStore::Instance().DmxNodeUpdate(&common::store::DmxNode::rdm, rdm_store);
+
+    DEBUG_EXIT();
+}
+
+inline void SaveFailSafe(uint8_t fail_safe)
+{
+    DEBUG_ENTRY();
+
+    ConfigStore::Instance().DmxNodeUpdate(&common::store::DmxNode::fail_safe, fail_safe);
+
+    DEBUG_EXIT();
+}
+} // namespace artnet::store
+
+#endif  // ARTNETSTORE_H_

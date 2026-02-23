@@ -44,7 +44,7 @@ private:
 	uint8_t m_nFrames { 0 };
 	enum State {
 		IDLE, EDIT
-	} m_State { IDLE };
+	} state_ { IDLE };
 	uint32_t m_nCursorPositionIndex { 0 };
 	bool m_bCursorOn { false };
 };

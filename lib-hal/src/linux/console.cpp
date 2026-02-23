@@ -24,47 +24,42 @@
  */
 
 #include <cstdio>
-#include <cstdint>
 
-typedef enum {
-	CONSOLE_BLACK = 0,
-	CONSOLE_RED = 1,
-	CONSOLE_GREEN = 2,
-	CONSOLE_YELLOW = 3,
-	CONSOLE_BLUE = 4,
-	CONSOLE_MAGENTA = 5
-,	CONSOLE_CYAN = 6,
-	CONSOLE_WHITE = 7,
-	CONSOLE_DEFAULT = 9
-} _console_colors;
+#include "console.h"
 
-void console_status(uint32_t color, const char *s) {
-	const char *c;
+namespace console
+{
+void Status(Colours colour, const char* s)
+{
+    const char* c;
 
-	switch (color) {
-	case CONSOLE_BLACK:
-		c = "\x1b[30m";
-		break;
-	case CONSOLE_RED:
-		c = "\x1b[31m";
-		break;
-	case CONSOLE_GREEN:
-		c = "\x1b[32m";
-		break;
-	case CONSOLE_YELLOW:
-		c = "\x1b[33m";
-		break;
-	case CONSOLE_WHITE:
-		c = "\x1b[37m";
-		break;
-	default:
-		c = "\x1b[39m";
-		break;
-	}
+    switch (colour)
+    {
+        case Colours::kConsoleBlack:
+            c = AnsiColours::Fg::kBlack;
+            break;
+        case Colours::kConsoleRed:
+            c = AnsiColours::Fg::kRed;
+            break;
+        case Colours::kConsoleGreen:
+            c = AnsiColours::Fg::kGreen;
+            break;
+        case Colours::kConsoleYellow:
+            c = AnsiColours::Fg::kYellow;
+            break;
+        case Colours::kConsoleWhite:
+            c = AnsiColours::Fg::kWhite;
+            break;
+        default:
+            c = AnsiColours::Fg::kDefault;
+            break;
+    }
 
-	printf("%s[%s]\x1b[39m\n", c, s);
+    printf("%s[%s]%s\n", c, s, AnsiColours::Fg::kDefault);
 }
 
-void console_error(const char *s) {
-	fprintf(stderr, "%s", s);
+void Error(const char* s)
+{
+    fprintf(stderr, "%s", s);
 }
+} // namespace console

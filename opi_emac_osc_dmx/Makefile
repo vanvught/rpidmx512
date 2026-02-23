@@ -1,0 +1,18 @@
+PLATFORM=ORANGE_PI
+
+DEFINES =NODE_OSC_SERVER 
+DEFINES+=OUTPUT_DMX_SEND 
+
+DEFINES+=DISABLE_RTC 
+
+DEFINES+=ENABLE_HTTPD ENABLE_CONTENT
+
+DEFINES+=NDEBUG
+
+LIBS=
+
+SRCDIR=firmware lib
+
+include ../firmware-template-h3/Rules.mk
+
+prerequisites:

@@ -32,28 +32,28 @@
 #include "artnetcontroller.h"
 #include "artnettrigger.h"
 
-#include "debug.h"
+ #include "firmware/debug/debug_debug.h"
 
 class ShowFileProtocolArtNetTrigger {
 public:
 	ShowFileProtocolArtNetTrigger() {
-		DEBUG_ENTRY
+		DEBUG_ENTRY();
 
-		assert(s_pThis == nullptr);
-		s_pThis = this;
+		assert(s_this == nullptr);
+		s_this = this;
 
 		ArtNetController::Get()->SetArtTriggerCallbackFunctionPtr(StaticCallbackFunction);
 
-		DEBUG_EXIT
+		DEBUG_EXIT();
 	}
 
 private:
 	void Handler(const struct ArtNetTrigger *pArtNetTrigger)  {
-		DEBUG_ENTRY
-		DEBUG_PRINTF("Key=%d, SubKey=%d", pArtNetTrigger->Key, pArtNetTrigger->SubKey);
+		DEBUG_ENTRY();
+		DEBUG_PRINTF("Key=%d, SubKey=%d", pArtNetTrigger->key, pArtNetTrigger->sub_key);
 
-		if (pArtNetTrigger->Key == ArtTriggerKey::ART_TRIGGER_KEY_SOFT) {
-			switch (pArtNetTrigger->SubKey) {
+		if (pArtNetTrigger->key == ArtTriggerKey::ART_TRIGGER_KEY_SOFT) {
+			switch (pArtNetTrigger->sub_key) {
 			case 'B':
 				ShowFile::Get()->BlackOut();
 				break;
@@ -71,15 +71,15 @@ private:
 			}
 		}
 
-		if (pArtNetTrigger->Key == ArtTriggerKey::ART_TRIGGER_KEY_SHOW) {
-			ShowFile::Get()->SetPlayerShowFileCurrent(pArtNetTrigger->SubKey);
+		if (pArtNetTrigger->key == ArtTriggerKey::kArtTriggerKeyShow) {
+			ShowFile::Get()->SetPlayerShowFileCurrent(pArtNetTrigger->sub_key);
 		}
 
-		DEBUG_EXIT
+		DEBUG_EXIT();
 	}
 
 private:
-	static inline ShowFileProtocolArtNetTrigger *s_pThis;
+	static inline ShowFileProtocolArtNetTrigger *s_this;
 };
 
 #endif /* PROTOCOLS_SHOWFILEPROTOCOLARTNETTRIGGER_H_ */

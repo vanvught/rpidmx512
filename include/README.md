@@ -1,13 +1,12 @@
 A freestanding implementation has an implementation-defined set of headers. The following headers are provided by the C/C++ standard:
 
-#c11
 > 4 Conformance
 > 
 > 6 ... A conforming freestanding implementation shall accept any strictly conforming program that does not use complex types and in which the use of the features specified in the library clause (clause 7) is confined to the contents of the standard headers &lt;float.h>, &lt;iso646.h>, &lt;limits.h>, &lt;stdalign.h>, &lt;stdarg.h>, &lt;stdbool.h>, &lt;stddef.h>, and &lt;stdint.h>. 
 
 Reference: [https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1548.pdf](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1548.pdf)
 
-#c++11
+# c++20
 
 
 <table>
@@ -16,7 +15,7 @@ Reference: [https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1548.pdf](https://
 	<td>&lt;cstddef></td>
 </tr>
 <tr>
-	<td rowspan="3">Implementation properties</td>
+	<td rowspan="5">Implementation properties</td>
 	<td>&lt;limits></td>
 </tr>
 <tr>
@@ -24,6 +23,12 @@ Reference: [https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1548.pdf](https://
 </tr>	
 <tr>
 	<td>&lt;climits></td>
+</tr>	
+<tr>
+	<td>&lt;limits></td>
+</tr>	
+<tr>
+	<td>&lt;version></td>
 </tr>	
 <tr>
 	<td>Integer types</td>

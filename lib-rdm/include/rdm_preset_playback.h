@@ -2,7 +2,7 @@
  * @file rdm_preset_playback.h
  *
  */
-/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,8 +33,8 @@ namespace preset_playback {
 static constexpr uint16_t OFF = 0x0000;
 static constexpr uint16_t ALL = 0xFFFF;
 
-void Get(uint16_t& nMode, uint8_t& nLevel);
-bool Set(uint16_t nMode, uint8_t nLevel);
+void Get(uint16_t& mode, uint8_t& nLevel);
+bool Set(uint16_t mode, uint8_t nLevel);
 }  // namespace preset_playback
 }  // namespace rdm
 

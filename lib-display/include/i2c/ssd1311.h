@@ -2,7 +2,7 @@
  * @file ssd1311.h
  *
  */
-/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,66 +23,67 @@
  * THE SOFTWARE.
  */
 
-#ifndef SDD1311_H_
-#define SDD1311_H_
+#ifndef I2C_SSD1311_H_
+#define I2C_SSD1311_H_
 
 #include <cstdint>
 
 #include "displayset.h"
 #include "hal_i2c.h"
 
-class Ssd1311 final: public DisplaySet {
-public:
-	Ssd1311 ();
-	~Ssd1311 () override = default;
+class Ssd1311 final : public DisplaySet
+{
+   public:
+    Ssd1311();
+    ~Ssd1311() override = default;
 
-	bool Start() override;
+    bool Start() override;
 
-	void Cls() override;
-	void ClearLine(uint32_t nLine) override;
+    void Cls() override;
+    void ClearLine(uint32_t line) override;
 
-	void PutChar(int) override;
-	void PutString(const char *) override;
+    void PutChar(int) override;
+    void PutString(const char*) override;
 
-	void Text(const char *pData, uint32_t nLength);
-	void TextLine(uint32_t nLine, const char *pData, uint32_t nLength) override;
+    void Text(const char* data, uint32_t length);
+    void TextLine(uint32_t line, const char* data, uint32_t length) override;
 
-	void SetCursorPos(uint32_t nCol, uint32_t nRow) override;
-	void SetCursor(uint32_t) override;
+    void SetCursorPos(uint32_t col, uint32_t row) override;
+    void SetCursor(uint32_t) override;
 
-	void SetSleep(bool bSleep) override;
-	void SetContrast(uint8_t nContrast) override;
+    void SetSleep(bool sleep) override;
+    void SetContrast(uint8_t contrast) override;
 
-	void PrintInfo() override;
+    void PrintInfo() override;
 
-	static Ssd1311* Get() {
-		return s_pThis;
-	}
+    static Ssd1311* Get() { return s_this; }
 
-private:
-	bool CheckSSD1311();
-	void SelectRamRom(uint32_t nRam, uint32_t nRom);
-	void SetDDRAM(uint8_t nAddress);
-	void SetCGRAM(uint8_t nAddress);
-	enum class FunctionSet {
-		RE_ZERO = (0 << 1),
-		RE_ONE = (1 << 1)
-	};
-	void SetRE(FunctionSet re);
-	enum class CommandSet {
-		DISABLED = 0,
-		ENABLED = 1
-	};
-	void SetSD(CommandSet sd);
-	void SendCommand(uint8_t nCommand);
-	void SendData(uint8_t nData);
-	void SendData(const uint8_t *pData, uint32_t nLength);
+   private:
+    bool CheckSSD1311();
+    void SelectRamRom(uint32_t ram, uint32_t rom);
+    void SetDDRAM(uint8_t address);
+    void SetCGRAM(uint8_t address);
+    enum class FunctionSet
+    {
+        kReZero = (0 << 1),
+        kReOne = (1 << 1)
+    };
+    void SetRE(FunctionSet re);
+    enum class CommandSet
+    {
+        kDisabled = 0,
+        kEnabled = 1
+    };
+    void SetSD(CommandSet sd);
+    void SendCommand(uint8_t command);
+    void SendData(uint8_t data);
+    void SendData(const uint8_t* data, uint32_t length);
 
-private:
-	HAL_I2C m_I2C;
-	uint8_t m_nDisplayControl { 1U << 3 }; // Section 9.1.4 Display ON/OFF Control
+   private:
+    HAL_I2C hal_i2_c_;
+    uint8_t display_control_{1U << 3}; // Section 9.1.4 Display ON/OFF Control
 
-	static inline Ssd1311 *s_pThis;
+    static inline Ssd1311* s_this;
 };
 
-#endif /* SDD1311_H_ */
+#endif  // I2C_SSD1311_H_

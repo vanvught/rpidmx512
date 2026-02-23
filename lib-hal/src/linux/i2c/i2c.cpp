@@ -32,13 +32,13 @@
 #include <sys/ioctl.h>
 #include <linux/i2c-dev.h>
 
-#include "debug.h"
+ #include "firmware/debug/debug_debug.h"
 
 static int i2cbus;
 static constexpr char fileName[] = "/dev/i2c-1";
 
-void i2c_begin() {
-	DEBUG_ENTRY
+void I2cBegin() {
+	DEBUG_ENTRY();
 
 	if (i2cbus != 0) {
 		close(i2cbus);
@@ -48,15 +48,15 @@ void i2c_begin() {
 		fprintf(stderr, "Failed to open i2c port %s \n", strerror(errno));
 	}
 
-	DEBUG_EXIT
+	DEBUG_EXIT();
 }
 
-void i2c_set_baudrate([[maybe_unused]] uint32_t baudrate) {
+void I2cSetBaudrate([[maybe_unused]] uint32_t baudrate) {
 }
 
-void i2c_set_address(uint8_t address) {
+void I2cSetAddress(uint8_t address) {
 	if (i2cbus == 0) {
-		fprintf(stderr, "i2c_begin has failed\n");
+		fprintf(stderr, "I2cBegin has failed\n");
 		return;
 	}
 
@@ -66,10 +66,10 @@ void i2c_set_address(uint8_t address) {
 	}
 }
 
-uint8_t i2c_write(const char *buf, uint32_t len) {
+uint8_t I2cWrite(const char *buf, uint32_t len) {
 	if (i2cbus == 0) {
 #if !defined (NDEBUG)
-		fprintf(stderr, "i2c_begin has failed\n");
+		fprintf(stderr, "I2cBegin has failed\n");
 #endif
 		return 1;
 	}
@@ -84,10 +84,10 @@ uint8_t i2c_write(const char *buf, uint32_t len) {
 	return 0;
 }
 
-uint8_t i2c_read(char *buf, uint32_t len) {
+uint8_t I2cRead(char *buf, uint32_t len) {
 	if (i2cbus == 0) {
 #if !defined (NDEBUG)
-		fprintf(stderr, "i2c_begin has failed\n");
+		fprintf(stderr, "I2cBegin has failed\n");
 #endif
 		return 1;
 	}
@@ -102,38 +102,38 @@ uint8_t i2c_read(char *buf, uint32_t len) {
 	return 0;
 }
 
-bool i2c_is_connected(const uint8_t nAddress, const uint32_t nBaudrate) {
-	i2c_set_address(nAddress);
+bool I2cIsConnected(const uint8_t address, const uint32_t nBaudrate) {
+	I2cSetAddress(address);
 
 	uint8_t nResult;
 	char buffer;
 
-	if ((nAddress >= 0x30 && nAddress <= 0x37) || (nAddress >= 0x50 && nAddress <= 0x5F)) {
-		nResult = i2c_read(&buffer, 1);
+	if ((address >= 0x30 && address <= 0x37) || (address >= 0x50 && address <= 0x5F)) {
+		nResult = I2cRead(&buffer, 1);
 	} else {
 		/* This is known to corrupt the Atmel AT24RF08 EEPROM */
-		nResult = i2c_write(nullptr, 0);
+		nResult = I2cWrite(nullptr, 0);
 	}
 
 	return (nResult == 0) ? true : false;
 }
 
-void i2c_write_register(const uint8_t nRegister, const uint8_t nValue) {
+void I2cWriteReg(const uint8_t nRegister, const uint8_t nValue) {
 	char buffer[2];
 
 	buffer[0] = static_cast<char>(nRegister);
 	buffer[1] = static_cast<char>(nValue);
 
-	i2c_write(buffer, 2);
+	I2cWrite(buffer, 2);
 }
 
-void i2c_read_register(const uint8_t nRegister, uint8_t& nValue) {
+void I2cReadReg(const uint8_t nRegister, uint8_t& nValue) {
 	char buffer[1];
 
 	buffer[0] = static_cast<char>(nRegister);
 
-	i2c_write(buffer, 1);
-	i2c_read(buffer, 1);
+	I2cWrite(buffer, 1);
+	I2cRead(buffer, 1);
 
 	nValue = buffer[0];
 }

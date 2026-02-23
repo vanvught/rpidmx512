@@ -2,7 +2,7 @@
  * @file artnettriggerhandler.cpp
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,8 +29,7 @@
 #include "artnettrigger.h"
 #include "artnetnode.h"
 
-#include "lightset.h"
-#include "lightsetwith4.h"
+#include "dmxnodewith4.h"
 
 #include "pixeltestpattern.h"
 
@@ -38,17 +37,17 @@
 #include "displayudf.h"
 
 namespace artnet {
-static LightSetWith4<32> *s_pLightSet32with4;
-static LightSet *s_pLightSetA;
+static DmxNodeWith4<32> *s_pDmxNodeWith4;
+static DmxPixelOutputType *s_pDmxPixelOutputType;
 
-void triggerhandler_set_lightset(LightSetWith4<32> *pLightSet32with4, LightSet *pLightSetA) {
-	s_pLightSet32with4 = pLightSet32with4;
-	s_pLightSetA = pLightSetA;
+void triggerhandler_set_lightset(DmxNodeWith4<32> *pLightSet32with4, DmxPixelOutputType *pLightSetA) {
+	s_pDmxNodeWith4 = pLightSet32with4;
+	s_pDmxPixelOutputType = pLightSetA;
 }
 
 void triggerhandler(const ArtNetTrigger *pArtNetTrigger) {
-	if (pArtNetTrigger->Key == ArtTriggerKey::ART_TRIGGER_KEY_SHOW) {
-		const auto nShow = static_cast<pixelpatterns::Pattern>(pArtNetTrigger->SubKey);
+	if (pArtNetTrigger->key == ArtTriggerKey::kArtTriggerKeyShow) {
+		const auto nShow = static_cast<pixelpatterns::Pattern>(pArtNetTrigger->sub_key);
 		if (nShow == PixelTestPattern::Get()->GetPattern()) {
 			return;
 		}
@@ -58,13 +57,13 @@ void triggerhandler(const ArtNetTrigger *pArtNetTrigger) {
 			return;
 		}
 
-		if (static_cast<pixelpatterns::Pattern>(nShow) != pixelpatterns::Pattern::NONE) {
-			s_pLightSet32with4->SetLightSetA(nullptr);
+		if (static_cast<pixelpatterns::Pattern>(nShow) != pixelpatterns::Pattern::kNone) {
+			s_pDmxNodeWith4->SetDmxPixel(nullptr);
 			Display::Get()->ClearLine(6);
 			Display::Get()->Printf(6, "%s:%u", PixelPatterns::GetName(nShow), static_cast<uint32_t>(nShow));
 		} else {
-			s_pLightSetA->Blackout(true);
-			s_pLightSet32with4->SetLightSetA(s_pLightSetA);
+			s_pDmxPixelOutputType->Blackout(true);
+			s_pDmxNodeWith4->SetDmxPixel(s_pDmxPixelOutputType);
 			DisplayUdf::Get()->Show();
 		}
 	}

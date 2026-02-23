@@ -170,9 +170,6 @@
 					<sourceEntries>
 						<entry excluding="src|src/spi|src/spi/gd32|src/spi/h3" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 						<entry excluding="spi|spi/gd32|spi/h3" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
-						<entry excluding="gd32|h3" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/spi"/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/spi/gd32"/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/spi/h3"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

@@ -108,13 +108,19 @@ linux_pp/linux_pp
 software_version_id.h
 
 /lib-eve
-/lib-network/src/emac/gd32/dsa
 /lib-nextion
-/lib-node
 /lib-showfile/Doxygen
 /opi_emac_eve_example
 *._h
 *._cpp
 /opi_emac_debug_lcd_udp
-/lib-dmxnode
-opi_emac_llrp_tftpd/do-tftp-bad.sh
+do-tftp-bad.sh
+dummy.h
+*.su
+linux_artnet/.clangd
+linux_ddp/.clangd
+linux_e131/.clangd
+linux_osc/.clangd
+linux_pp/.clangd
+/lib-hal/include/rpi
+*.BCM

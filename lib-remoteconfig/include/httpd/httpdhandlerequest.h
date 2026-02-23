@@ -2,7 +2,7 @@
  * @file httpdhandlerequest.h
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,69 +27,72 @@
 #define HTTPD_HTTPDHANDLEREQUEST_H_
 
 #include <cstdint>
-#include <new>
 
-#include "http.h"
-#include "net/protocol/tcp.h"
+#include "http/http.h"
+#include "core/protocol/tcp.h"
+#include "network_tcp.h"
+#include "firmware/debug/debug_debug.h"
 
-#include "debug.h"
-
-namespace httpd {
+namespace httpd
+{
+static constexpr uint32_t kBufsize =
 #if !defined(HTTPD_CONTENT_SIZE)
-# define HTTPD_CONTENT_SIZE	TCP_DATA_SIZE
+    network::tcp::kTcpDataMss;
+#else
+    HTTPD_CONTENT_SIZE;
 #endif
-static constexpr uint32_t BUFSIZE = HTTPD_CONTENT_SIZE;
-}  // namespace httpd
+} // namespace httpd
 
-class HttpDeamonHandleRequest {
-public:
-    HttpDeamonHandleRequest() : m_nConnectionHandle(0), m_nHandle(-1) {
-		DEBUG_ENTRY
-		DEBUG_EXIT
-
+class HttpDeamonHandleRequest
+{
+   public:
+    HttpDeamonHandleRequest() : connection_handle_(network::tcp::kInvalidConnHandle)
+    {
+        DEBUG_ENTRY();
+        DEBUG_EXIT();
     }
 
-    HttpDeamonHandleRequest(uint32_t nConnectionHandle, int32_t nHandle) : m_nConnectionHandle(nConnectionHandle), m_nHandle(nHandle) {
-		DEBUG_ENTRY
-		DEBUG_PRINTF("[%u] m_nConnectionHandle=%u, m_nHandle=%d", httpd::BUFSIZE, m_nConnectionHandle, m_nHandle);
-		DEBUG_EXIT
-	}
+    explicit HttpDeamonHandleRequest(network::tcp::ConnHandle connection_handle) : connection_handle_(connection_handle)
+    {
+        DEBUG_ENTRY();
+        DEBUG_PRINTF("[%u] connection_handle=%u", httpd::kBufsize, connection_handle);
+        DEBUG_EXIT();
+    }
 
-	void HandleRequest(const uint32_t nBytesReceived, char *m_pReceiveBuffer);
+    void HandleRequest(uint32_t bytes_received, char* receive_buffer);
 
-private:
-	http::Status ParseRequest();
-	http::Status ParseMethod(char *pLine);
-	http::Status ParseHeaderField(char *pLine);
-	http::Status HandleGet();
-	http::Status HandleGetTxt();
-	http::Status HandlePost(const bool hasDataOnly);
-	http::Status HandleDelete(const bool hasDataOnly);
-	http::Status HandlePostJSON();
+   private:
+    http::Status ParseRequest();
+    http::Status ParseMethod(char* line);
+    http::Status ParseHeaderField(char* line);
+    http::Status HandleGet();
+    http::Status HandleGetTxt();
+    http::Status HandleGetJson();
+    http::Status HandlePost();
+    http::Status HandleDelete();
+    http::Status HandlePostJSON();
+    http::Status HandlePostUpload();
 
-private:
-	uint32_t m_nConnectionHandle;
-	int32_t m_nHandle;
-	uint32_t m_nContentSize { 0 };
-	uint32_t m_nRequestDataLength { 0 };
-	uint32_t m_nRequestContentLength { 0 };
-	uint32_t m_nBytesReceived { 0 };
+   private:
+    network::tcp::ConnHandle connection_handle_;
+    uint32_t content_size_{0};
+    uint32_t request_data_length_{0};
+    uint32_t request_content_length_{0};
+    uint32_t bytes_received_{0};
+    uint32_t upload_size_{0};
 
-	char *m_pUri { nullptr };
-	char *m_pFileData { nullptr };
-	char *m_pFirmwareFilename { nullptr };
-	char *m_pReceiveBuffer { nullptr };
-	const char *m_pContent { nullptr };
+    char* uri_{nullptr};
+    char* file_data_{nullptr};
+    char* firmwarefile_name_{nullptr};
+    char* receive_buffer_{nullptr};
+    const char* content_{nullptr};
+    char upload_filename_[16];
 
-	http::Status m_Status { http::Status::UNKNOWN_ERROR };
-	http::RequestMethod m_RequestMethod { http::RequestMethod::UNKNOWN };
-	http::contentTypes m_RequestContentType { http::contentTypes::NOT_DEFINED };
+    http::Status status_{http::Status::UNKNOWN_ERROR};
+    http::RequestMethod request_method_{http::RequestMethod::UNKNOWN};
+    http::contentTypes request_content_type_{http::contentTypes::NOT_DEFINED};
 
-	bool m_isAction { false };
-
-
-	char m_DynamicContent[httpd::BUFSIZE];
+    char dynamic_content_[httpd::kBufsize];
 };
 
-
-#endif /* HTTPD_HTTPDHANDLEREQUEST_H_ */
+#endif // HTTPD_HTTPDHANDLEREQUEST_H_

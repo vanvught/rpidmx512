@@ -2,7 +2,7 @@
  * @file widgetmonitor.cpp
  *
  */
-/* Copyright (C) 2016-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,27 +25,28 @@
 
 #include <cstdio>
 #include <cstdarg>
-#include <cstddef>
 
 #include "widgetmonitor.h"
 
-#if !defined (NO_HDMI_OUTPUT)
-# include "console.h"
+#if !defined(NO_HDMI_OUTPUT)
+#include "console.h"
 #endif
 
-void WidgetMonitor::Line([[maybe_unused]] int line, [[maybe_unused]] const char *fmt, ...) {
-	// For H3, only enabled when NDEBUG is not defined
+void WidgetMonitor::Line([[maybe_unused]] int line, [[maybe_unused]] const char* fmt, ...)
+{
+    // For H3, only enabled when NDEBUG is not defined
 #if !(defined(NDEBUG) && defined(NO_HDMI_OUTPUT))
-	va_list va;
+    va_list va;
 
-#if !defined (NO_HDMI_OUTPUT)
-	console_clear_line(line);
+#if !defined(NO_HDMI_OUTPUT)
+    ClearLine(line);
 #endif
 
-	if (fmt != nullptr) {
-		va_start(va, fmt);
-		vprintf(fmt, va);
-		va_end(va);
-	}
+    if (fmt != nullptr)
+    {
+        va_start(va, fmt);
+        vprintf(fmt, va);
+        va_end(va);
+    }
 #endif
 }

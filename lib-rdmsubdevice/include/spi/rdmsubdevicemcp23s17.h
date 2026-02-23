@@ -2,7 +2,7 @@
  * @file rdmsubdevicemcp23s17.h
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef RDMSUBDEVICEMCP23S17_H_
-#define RDMSUBDEVICEMCP23S17_H_
+#ifndef SPI_RDMSUBDEVICEMCP23S17_H_
+#define SPI_RDMSUBDEVICEMCP23S17_H_
 
 #include <cstdint>
 
@@ -32,32 +32,34 @@
 
 #include "mcp23s17.h"
 
-class RDMSubDeviceMCP23S17: public RDMSubDevice {
-public:
-	RDMSubDeviceMCP23S17(uint16_t nDmxStartAddress = 1, char nChipSselect = 0, uint8_t nSlaveAddress = 0, uint32_t nSpiSpeed = 0);
+class RDMSubDeviceMCP23S17 : public RDMSubDevice
+{
+   public:
+    explicit RDMSubDeviceMCP23S17(uint16_t nDmxStartAddress = 1, char nChipSselect = 0, uint8_t nSlaveAddress = 0, uint32_t nSpiSpeed = 0);
 
-	bool Initialize() override {
-		m_MCP23S17.WriteRegister(mcp23x17::REG_IODIRA, static_cast<uint16_t>(0x0000));
-		m_MCP23S17.WriteRegister(mcp23x17::REG_GPIOA, static_cast<uint16_t>(0x0000));
-		return true;
-	}
+    bool Initialize() override
+    {
+        m_MCP23S17.WriteRegister(mcp23x17::REG_IODIRA, static_cast<uint16_t>(0x0000));
+        m_MCP23S17.WriteRegister(mcp23x17::REG_GPIOA, static_cast<uint16_t>(0x0000));
+        return true;
+    }
 
-	void Start() override {
-	}
+    void Start() override {}
 
-	void Stop() override {
-		m_MCP23S17.WriteRegister(mcp23x17::REG_GPIOA, static_cast<uint16_t>(0x0000));
-		m_nData = 0;
-	}
+    void Stop() override
+    {
+        m_MCP23S17.WriteRegister(mcp23x17::REG_GPIOA, static_cast<uint16_t>(0x0000));
+        m_nData = 0;
+    }
 
-	void Data(const uint8_t *pData, uint32_t nLength) override;
+    void Data(const uint8_t* pData, uint32_t nLength) override;
 
-private:
-	void UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent) override;
+   private:
+    void UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent) override;
 
-private:
-	gpio::MCP23S17 m_MCP23S17;
-	uint16_t m_nData = 0;
+   private:
+    gpio::MCP23S17 m_MCP23S17;
+    uint16_t m_nData = 0;
 };
 
-#endif /* RDMSUBDEVICEMCP23S17_H_ */
+#endif  // SPI_RDMSUBDEVICEMCP23S17_H_

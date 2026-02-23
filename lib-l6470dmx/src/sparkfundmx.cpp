@@ -1,8 +1,7 @@
 /**
  * @file sparkfundmx.cpp
- *
  */
-/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,402 +28,476 @@
 #include <cassert>
 
 #include "sparkfundmx.h"
+#include "configstore.h"
+#include "dmxnode.h"
 #include "sparkfundmx_internal.h"
-#include "sparkfundmxparams.h"
-#include "sparkfundmxparamsconst.h"
-
-#include "lightset.h"
-
-#include "readconfigfile.h"
-#include "sscan.h"
-
-#include "l6470params.h"
+#include "json/sparkfundmxparams.h"
+#include "json/modeparams.h"
+#include "json/motorparams.h"
+#include "json/l6470params.h"
 #include "l6470dmxmodes.h"
-
-#include "motorparams.h"
-#include "modeparams.h"
-
+#include "modestore.h"
+#include "hal.h"
 #include "hal_api.h"
 #include "hal_spi.h"
 #include "hal_gpio.h"
+#include "hal_millis.h"
 
-#include "hardware.h"
+ #include "firmware/debug/debug_debug.h"
 
-#include "debug.h"
+SparkFunDmx::SparkFunDmx() : dmx_start_address_(dmxnode::kAddressInvalid)
+{
+    DEBUG_ENTRY();;
 
-using namespace lightset;
+    m_nGlobalSpiCs = SPI_CS0;
+    m_nGlobalResetPin = GPIO_RESET_OUT;
+    m_nGlobalBusyPin = GPIO_BUSY_IN;
 
-SparkFunDmx::SparkFunDmx(): m_nDmxStartAddress(dmx::ADDRESS_INVALID) {
-	DEBUG_ENTRY;
+    m_bIsGlobalSpiCsSet = false;
+    m_bIsGlobalResetSet = false;
+    m_bIsGlobalBusyPinSet = false;
 
-	m_nGlobalSpiCs = SPI_CS0;
-	m_nGlobalResetPin = GPIO_RESET_OUT;
-	m_nGlobalBusyPin = GPIO_BUSY_IN;
+    m_nLocalPosition = 0;
+    m_nLocalSpiCs = SPI_CS0;
+    m_nLocalResetPin = GPIO_RESET_OUT;
+    m_nLocalBusyPin = GPIO_BUSY_IN;
 
-	m_bIsGlobalSpiCsSet = false;
-	m_bIsGlobalResetSet = false;
-	m_bIsGlobalBusyPinSet = false;
+    m_bIsLocalPositionSet = false;
+    m_bIsLocalSpiCsSet = false;
+    m_bIsLocalResetSet = false;
+    m_bIsLocalBusyPinSet = false;
 
-	m_nLocalPosition = 0;
-	m_nLocalSpiCs = SPI_CS0;
-	m_nLocalResetPin = GPIO_RESET_OUT;
-	m_nLocalBusyPin = GPIO_BUSY_IN;
+    for (uint32_t i = 0; i < common::store::l6470dmx::kMaxMotors; i++)
+    {
+        autodriver_[i] = nullptr;
+        l6470dmx_modes_[i] = nullptr;
+        slotinfo_[i] = nullptr;
+    }
 
-	m_bIsLocalPositionSet = false;
-	m_bIsLocalSpiCsSet = false;
-	m_bIsLocalResetSet = false;
-	m_bIsLocalBusyPinSet = false;
-
-	m_nDmxMode = L6470DMXMODE_UNDEFINED;
-	m_nDmxStartAddressMode = 0;
-
-	for (int i = 0; i < SPARKFUN_DMX_MAX_MOTORS; i++) {
-		m_pAutoDriver[i] = nullptr;
-		m_pMotorParams[i] = nullptr;
-		m_pModeParams[i] = nullptr;
-		m_pL6470DmxModes[i] = nullptr;
-		m_pSlotInfo[i] = nullptr;
-	}
-
-	DEBUG_EXIT;
+    DEBUG_EXIT();;
 }
 
-SparkFunDmx::~SparkFunDmx() {
-	DEBUG_ENTRY;
+SparkFunDmx::~SparkFunDmx()
+{
+    DEBUG_ENTRY();;
 
-	for (int i = 0; i < SPARKFUN_DMX_MAX_MOTORS; i++) {
-		if (m_pAutoDriver[i] != nullptr) {
-			delete m_pAutoDriver[i];
-			m_pAutoDriver[i] = nullptr;
-		}
+    for (uint32_t i = 0; i < common::store::l6470dmx::kMaxMotors; i++)
+    {
+        if (autodriver_[i] != nullptr)
+        {
+            delete autodriver_[i];
+            autodriver_[i] = nullptr;
+        }
 
-		if (m_pMotorParams[i] != nullptr) {
-			delete m_pMotorParams[i];
-			m_pMotorParams[i] = nullptr;
-		}
+        if (l6470dmx_modes_[i] != nullptr)
+        {
+            delete l6470dmx_modes_[i];
+            l6470dmx_modes_[i] = nullptr;
+        }
 
-		if (m_pModeParams[i] != nullptr) {
-			delete m_pModeParams[i];
-			m_pModeParams[i] = nullptr;
-		}
+        if (slotinfo_[i] != nullptr)
+        {
+            delete slotinfo_[i];
+            slotinfo_[i] = nullptr;
+        }
+    }
 
-		if (m_pL6470DmxModes[i] != nullptr) {
-			delete m_pL6470DmxModes[i];
-			m_pL6470DmxModes[i] = nullptr;
-		}
-
-		if (m_pSlotInfo[i] != nullptr) {
-			delete m_pSlotInfo[i];
-			m_pSlotInfo[i] = nullptr;
-		}
-	}
-
-	DEBUG_EXIT;
+    DEBUG_EXIT();;
 }
 
-void SparkFunDmx::Start([[maybe_unused]] uint32_t nPortIndex) {
-	DEBUG_ENTRY;
+void SparkFunDmx::Start([[maybe_unused]] uint32_t port_index)
+{
+    DEBUG_ENTRY();;
 
-	for (int i = 0; i < SPARKFUN_DMX_MAX_MOTORS; i++) {
-		if (m_pL6470DmxModes[i] != nullptr) {
-			m_pL6470DmxModes[i]->Start();
-		}
-	}
+    for (uint32_t i = 0; i < common::store::l6470dmx::kMaxMotors; i++)
+    {
+        if (l6470dmx_modes_[i] != nullptr)
+        {
+            l6470dmx_modes_[i]->Start();
+        }
+    }
 
-	DEBUG_EXIT;
+    DEBUG_EXIT();;
 }
 
-void SparkFunDmx::Stop([[maybe_unused]] uint32_t nPortIndex) {
-	DEBUG_ENTRY;
+void SparkFunDmx::Stop([[maybe_unused]] uint32_t port_index)
+{
+    DEBUG_ENTRY();;
 
-	for (int i = 0; i < SPARKFUN_DMX_MAX_MOTORS; i++) {
-		if (m_pL6470DmxModes[i] != nullptr) {
-			m_pL6470DmxModes[i]->Stop();
-		}
-	}
+    for (uint32_t i = 0; i < common::store::l6470dmx::kMaxMotors; i++)
+    {
+        if (l6470dmx_modes_[i] != nullptr)
+        {
+            l6470dmx_modes_[i]->Stop();
+        }
+    }
 
-	DEBUG_EXIT;
+    DEBUG_EXIT();;
 }
 
-void SparkFunDmx::ReadConfigFiles() {
-	DEBUG_ENTRY;
-#if !defined (H3)
-	m_bIsGlobalSpiCsSet = false;
+void SparkFunDmx::ReadConfigFiles()
+{
+    DEBUG_ENTRY();;
+#if !defined(H3)
+    m_bIsGlobalSpiCsSet = false;
 #else
-	m_bIsGlobalSpiCsSet = true;
-	m_nGlobalSpiCs = SPI_CS0;
+    m_bIsGlobalSpiCsSet = true;
+    m_nGlobalSpiCs = SPI_CS0;
 #endif
-	m_bIsGlobalResetSet = false;
-	m_bIsGlobalBusyPinSet = false;
+    m_bIsGlobalResetSet = false;
+    m_bIsGlobalBusyPinSet = false;
 
-	SparkFunDmxParams sparkFunDmxParams;
+    json::SparkFunDmxParams sparkfun_dmxparams;
+    sparkfun_dmxparams.Load();
+    sparkfun_dmxparams.Set(this);
 
-	sparkFunDmxParams.Load();
-	sparkFunDmxParams.SetGlobal(this);
+    if (m_bIsGlobalBusyPinSet)
+    {
+        FUNC_PREFIX(GpioFsel(m_nGlobalBusyPin, GPIO_FSEL_INPUT));
+    }
 
-	if (m_bIsGlobalBusyPinSet) {
-		FUNC_PREFIX(gpio_fsel(m_nGlobalBusyPin, GPIO_FSEL_INPUT));
-	}
+    FUNC_PREFIX(GpioFsel(m_nGlobalResetPin, GPIO_FSEL_OUTPUT));
+    FUNC_PREFIX(GpioSet(m_nGlobalResetPin));
 
-	FUNC_PREFIX(gpio_fsel(m_nGlobalResetPin, GPIO_FSEL_OUTPUT));
-	FUNC_PREFIX(gpio_set(m_nGlobalResetPin));
+    FUNC_PREFIX(GpioClr(m_nGlobalResetPin));
+    udelay(10000);
+    FUNC_PREFIX(GpioSet(m_nGlobalResetPin));
+    udelay(10000);
 
-	FUNC_PREFIX(gpio_clr(m_nGlobalResetPin));
-	udelay(10000);
-	FUNC_PREFIX(gpio_set(m_nGlobalResetPin));
-	udelay(10000);
+    FUNC_PREFIX(SpiBegin());
 
-	FUNC_PREFIX(spi_begin());
+    for (uint32_t i = 0; i < common::store::l6470dmx::kMaxMotors; i++)
+    {
+        printf("SparkFun motor%d.txt:\n", i);
 
-	for (uint32_t i = 0; i < SPARKFUN_DMX_MAX_MOTORS; i++) {
-		printf("SparkFun motor%d.txt:\n", i);
+        m_bIsLocalPositionSet = false;
+        m_bIsLocalSpiCsSet = false;
+        m_bIsLocalResetSet = false;
+        m_bIsLocalBusyPinSet = false;
 
-		m_bIsLocalPositionSet = false;
-		m_bIsLocalSpiCsSet = false;
-		m_bIsLocalResetSet = false;
-		m_bIsLocalBusyPinSet = false;
+        json::SparkFunDmxParams sparkfun_dmxparams_index(i);
+        sparkfun_dmxparams_index.Load();
+        sparkfun_dmxparams_index.Set(this);
 
-		sparkFunDmxParams.Load(i);
-		sparkFunDmxParams.SetLocal(this);
+        if ((m_bIsLocalPositionSet) && (m_nLocalPosition < common::store::l6470dmx::kMaxMotors))
+        {
+            const uint8_t kSpiCs = m_bIsLocalSpiCsSet ? m_nLocalSpiCs : m_nGlobalSpiCs;
+            const uint8_t kResetPin = m_bIsLocalResetSet ? m_nLocalResetPin : m_nGlobalResetPin;
+            const uint8_t kBusyPin = m_bIsLocalBusyPinSet ? m_nLocalBusyPin : m_nGlobalBusyPin;
 
-		if ((m_bIsLocalPositionSet) && (m_nLocalPosition < SPARKFUN_DMX_MAX_MOTORS)) {
-			const uint8_t nSpiCs = m_bIsLocalSpiCsSet ? m_nLocalSpiCs : m_nGlobalSpiCs;
-			const uint8_t nResetPin = m_bIsLocalResetSet ? m_nLocalResetPin : m_nGlobalResetPin;
-			const uint8_t nBusyPin = m_bIsLocalBusyPinSet ? m_nLocalBusyPin : m_nGlobalBusyPin;
+            printf("nSpiCs=%d [m_bIsLocalSpiCsSet=%d], nResetPin=%d [m_bIsLocalResetSet=%d], nBusyPin=%d [m_bIsLocalBusyPinSet=%d, m_bIsGlobalBusyPinSet=%d]\n",
+                   static_cast<int>(kSpiCs), static_cast<int>(m_bIsLocalSpiCsSet), static_cast<int>(kResetPin), static_cast<int>(m_bIsLocalResetSet),
+                   static_cast<int>(kBusyPin), static_cast<int>(m_bIsLocalBusyPinSet), static_cast<int>(m_bIsGlobalBusyPinSet));
 
-			printf("nSpiCs=%d [m_bIsLocalSpiCsSet=%d], nResetPin=%d [m_bIsLocalResetSet=%d], nBusyPin=%d [m_bIsLocalBusyPinSet=%d, m_bIsGlobalBusyPinSet=%d]\n",
-					static_cast<int>(nSpiCs),
-					static_cast<int>(m_bIsLocalSpiCsSet),
-					static_cast<int>(nResetPin),
-					static_cast<int>(m_bIsLocalResetSet),
-					static_cast<int>(nBusyPin),
-					static_cast<int>(m_bIsLocalBusyPinSet),
-					static_cast<int>(m_bIsGlobalBusyPinSet));
+            if (m_bIsGlobalBusyPinSet || m_bIsLocalBusyPinSet)
+            {
+                autodriver_[i] = new AutoDriver(m_nLocalPosition, kSpiCs, kResetPin, kBusyPin);
+            }
+            else
+            {
+                autodriver_[i] = new AutoDriver(m_nLocalPosition, kSpiCs, kResetPin);
+            }
+        }
+        else
+        {
+            printf("Local position is not set\n");
+        }
+    }
 
-			if (m_bIsGlobalBusyPinSet || m_bIsLocalBusyPinSet) {
-				m_pAutoDriver[i] = new AutoDriver(m_nLocalPosition, nSpiCs, nResetPin, nBusyPin);
-			} else {
-				m_pAutoDriver[i] = new AutoDriver(m_nLocalPosition, nSpiCs, nResetPin);
-			}
-		} else {
-			printf("Local position is not set\n");
-		}
-	}
+    printf("NumBoards : %d\n", static_cast<int>(AutoDriver::getNumBoards()));
 
-	printf("NumBoards : %d\n", static_cast<int>(AutoDriver::getNumBoards()));
-
-	for (uint32_t i = 0; i < SPARKFUN_DMX_MAX_MOTORS; i++) {
+    for (uint32_t i = 0; i < common::store::l6470dmx::kMaxMotors; i++)
+    {
 #ifndef NDEBUG
-			printf("motor%d.txt:\n", i);
+        printf("motor%d.txt:\n", i);
 #endif
-			if (m_pAutoDriver[i] != nullptr) {
-				m_pModeParams[i] = new ModeParams;
-				assert(m_pModeParams[i] != nullptr);
-				m_pModeParams[i]->Load(i);
+        if (autodriver_[i] != nullptr)
+        {
+            json::ModeParams mode_params(i);
+            mode_params.Load();
 
-				m_nDmxMode = m_pModeParams[i]->GetDmxMode();
-				m_nDmxStartAddressMode = m_pModeParams[i]->GetDmxStartAddress();
+            const auto kDmxMode = ConfigStore::Instance().DmxL6470GetModeIndexed(i, &common::store::l6470dmx::Mode::dmx_mode);
+            const auto kDmxStartAddressMode = ConfigStore::Instance().DmxL6470GetModeIndexed(i, &common::store::l6470dmx::Mode::dmx_start_address);
+
 #ifndef NDEBUG
-				printf("\t-----------------------------\n");
-				printf("\tm_nDmxMode=%d (DMX footprint=%d)\n", m_nDmxMode, L6470DmxModes::GetDmxFootPrintMode(m_nDmxMode));
-				printf("\tm_nDmxStartAddressMode=%d\n", m_nDmxStartAddressMode);
-				printf("\t=============================\n");
+            printf("\t-----------------------------\n");
+            printf("\tkDmxMode=%d (DMX footprint=%d)\n", kDmxMode, L6470DmxModes::GetDmxFootPrintMode(kDmxMode));
+            printf("\kDmxStartAddressMode=%d\n", kDmxStartAddressMode);
+            printf("\t=============================\n");
 #endif
 
-				if ((m_nDmxStartAddressMode <= dmx::UNIVERSE_SIZE) && (L6470DmxModes::GetDmxFootPrintMode(m_nDmxMode) != 0)) {
-					if (m_pAutoDriver[i]->IsConnected()) {
-						printf("Motor %d is connected\n", i);
+            if ((kDmxStartAddressMode <= dmxnode::kUniverseSize) && (L6470DmxModes::GetDmxFootPrintMode(kDmxMode) != 0))
+            {
+                if (autodriver_[i]->IsConnected())
+                {
+                    printf("Motor %d is connected\n", i);
 
-						m_pAutoDriver[i]->setMotorNumber(i);
-						m_pAutoDriver[i]->Dump();
+                    autodriver_[i]->setMotorNumber(i);
+                    autodriver_[i]->Dump();
 
-						m_pMotorParams[i] = new MotorParams;
-						assert(m_pMotorParams[i] != nullptr);
-						m_pMotorParams[i]->Load(i);
-						m_pMotorParams[i]->Set(m_pAutoDriver[i]);
+                    json::MotorParams motor_params(i);
+                    motor_params.Load();
+                    motor_params.Set(autodriver_[i]);
 
-						L6470Params l6470Params;
-						l6470Params.Load(i);
-						l6470Params.Set(m_pAutoDriver[i]);
+                    json::L6470Params l6470_params(i);
+                    l6470_params.Load();
+                    l6470_params.Set(autodriver_[i]);
 
-						m_pAutoDriver[i]->Dump();
+                    autodriver_[i]->Dump();
 
-						m_pL6470DmxModes[i] = new L6470DmxModes(static_cast<TL6470DmxModes>(m_nDmxMode), m_nDmxStartAddressMode, m_pAutoDriver[i], m_pMotorParams[i], m_pModeParams[i]);
-						assert(m_pL6470DmxModes[i] != nullptr);
+                    l6470dmx_modes_[i] = new L6470DmxModes(static_cast<TL6470DmxModes>(kDmxMode), kDmxStartAddressMode, autodriver_[i], i);
+                    assert(l6470dmx_modes_[i] != nullptr);
 
-						if (m_nDmxStartAddress == dmx::ADDRESS_INVALID) {
-							m_nDmxStartAddress = m_pL6470DmxModes[i]->GetDmxStartAddress();
-							m_nDmxFootprint = m_pL6470DmxModes[i]->GetDmxFootPrint();
-						} else {
-							const uint16_t nDmxChannelLastCurrent = m_nDmxStartAddress + m_nDmxFootprint;
-							m_nDmxStartAddress = std::min(m_nDmxStartAddress, m_pL6470DmxModes[i]->GetDmxStartAddress());
+                    if (dmx_start_address_ == dmxnode::kAddressInvalid)
+                    {
+                        dmx_start_address_ = l6470dmx_modes_[i]->GetDmxStartAddress();
+                        dmx_footprint_ = l6470dmx_modes_[i]->GetDmxFootPrint();
+                    }
+                    else
+                    {
+                        const uint16_t kDmxChannelLastCurrent = dmx_start_address_ + dmx_footprint_;
+                        dmx_start_address_ = std::min(dmx_start_address_, l6470dmx_modes_[i]->GetDmxStartAddress());
 
-							const uint16_t nDmxChannelLastNew = m_nDmxStartAddressMode + m_pL6470DmxModes[i]->GetDmxFootPrint();
-							m_nDmxFootprint = std::max(nDmxChannelLastCurrent, nDmxChannelLastNew) - m_nDmxStartAddress;
-						}
+                        const uint16_t kDmxChannelLastNew = kDmxStartAddressMode + l6470dmx_modes_[i]->GetDmxFootPrint();
+                        dmx_footprint_ = std::max(kDmxChannelLastCurrent, kDmxChannelLastNew) - dmx_start_address_;
+                    }
 #ifndef NDEBUG
-						printf("DMX Mode: %d, DMX Start Address: %d\n", m_pL6470DmxModes[i]->GetMode(), m_pL6470DmxModes[i]->GetDmxStartAddress());
-						printf("DMX Start Address:%d, DMX Footprint:%d\n", static_cast<int>(m_nDmxStartAddress), static_cast<int>(m_nDmxFootprint));
+                    printf("DMX Mode: %d, DMX Start Address: %d\n", l6470dmx_modes_[i]->GetMode(), l6470dmx_modes_[i]->GetDmxStartAddress());
+                    printf("DMX Start Address:%d, DMX Footprint:%d\n", static_cast<int>(dmx_start_address_), static_cast<int>(dmx_footprint_));
 #endif
-						const uint32_t nMaxSlots = std::min(modeparams::MODE_PARAMS_MAX_DMX_FOOTPRINT, m_pL6470DmxModes[i]->GetDmxFootPrint());
+                    const uint32_t kMaxSlots = std::min(common::store::l6470dmx::mode::kMaxDmxFootprint, l6470dmx_modes_[i]->GetDmxFootPrint());
 #ifndef NDEBUG
-						printf("SlotInfo slots: %d\n", static_cast<int>(nMaxSlots));
+                    printf("SlotInfo slots: %d\n", static_cast<int>(kMaxSlots));
 #endif
-						m_pSlotInfo[i] = new SlotInfo[nMaxSlots];
-						assert(m_pSlotInfo[i] != nullptr);
+                    slotinfo_[i] = new dmxnode::SlotInfo[kMaxSlots];
+                    assert(slotinfo_[i] != nullptr);
 
-						for (uint32_t j = 0; j < nMaxSlots; j++) {
-							m_pModeParams[i]->GetSlotInfo(j, m_pSlotInfo[i][j]);
+                    for (uint32_t j = 0; j < kMaxSlots; j++)
+                    {
+                        //                       m_pModeParams[i]->GetSlotInfo(j, slotinfo_[i][j]);
 #ifndef NDEBUG
-							printf(" Slot:%d %2x:%4x\n", j, m_pSlotInfo[i][j].nType, m_pSlotInfo[i][j].nCategory);
+                        printf(" Slot:%d %2x:%4x\n", j, slotinfo_[i][j].type, slotinfo_[i][j].category);
 #endif
-						}
-					} else {
-						delete m_pAutoDriver[i];
-						m_pAutoDriver[i] = nullptr;
-						printf("Motor %d - Communication issues! Check SPI configuration and cables\n", i);
-					}
-				} else {
-					delete m_pAutoDriver[i];
-					m_pAutoDriver[i] = nullptr;
-					printf("Motor %d - Configuration error! Check Mode parameters\n", i);
-				}
+                    }
+                }
+                else
+                {
+                    delete autodriver_[i];
+                    autodriver_[i] = nullptr;
+                    printf("Motor %d - Communication issues! Check SPI configuration and cables\n", i);
+                }
+            }
+            else
+            {
+                delete autodriver_[i];
+                autodriver_[i] = nullptr;
+                printf("Motor %d - Configuration error! Check Mode parameters\n", i);
+            }
 #ifndef NDEBUG
-				printf("Motor %d --------- end ---------\n", i);
+            printf("Motor %d --------- end ---------\n", i);
 #endif
-			} else {
-				printf("Skipping Motor %d\n", i);
-			}
-	}
+        }
+        else
+        {
+            printf("Skipping Motor %d\n", i);
+        }
+    }
 
-	printf("InitSwitch()\n");
-	for (uint32_t i = 0; i < SPARKFUN_DMX_MAX_MOTORS; i++) {
-		if (m_pL6470DmxModes[i] != nullptr) {
-			printf(" Motor %d\n", i);
-			m_pL6470DmxModes[i]->InitSwitch();
-		}
-	}
+    printf("InitSwitch()\n");
+    for (uint32_t i = 0; i < common::store::l6470dmx::kMaxMotors; i++)
+    {
+        if (l6470dmx_modes_[i] != nullptr)
+        {
+            printf(" Motor %d\n", i);
+            l6470dmx_modes_[i]->InitSwitch();
+        }
+    }
 
-	printf("busyCheck()\n");
-	for (uint32_t i = 0; i < SPARKFUN_DMX_MAX_MOTORS; i++) {
-		if (m_pAutoDriver[i] != nullptr) {
-			printf(" Motor %d\n", i);
-			const uint32_t nMillis = Hardware::Get()->Millis();
-			while (m_pAutoDriver[i]->busyCheck()) {
-				if ((Hardware::Get()->Millis() - nMillis) > 1000) {
-					printf("  Time-out!\n");
-					break;
-				}
-			}
-		}
-	}
+    printf("busyCheck()\n");
+    for (uint32_t i = 0; i < common::store::l6470dmx::kMaxMotors; i++)
+    {
+        if (autodriver_[i] != nullptr)
+        {
+            printf(" Motor %d\n", i);
+            const uint32_t kMillis = hal::Millis();
+            while (autodriver_[i]->busyCheck())
+            {
+                if ((hal::Millis() - kMillis) > 1000)
+                {
+                    printf("  Time-out!\n");
+                    break;
+                }
+            }
+        }
+    }
 
-	printf("InitPos()\n");
-	for (uint32_t i = 0; i < SPARKFUN_DMX_MAX_MOTORS; i++) {
-		if (m_pL6470DmxModes[i] != nullptr) {
-			printf(" Motor %d\n", i);
-			m_pL6470DmxModes[i]->InitPos();
-		}
-	}
+    printf("InitPos()\n");
+    for (uint32_t i = 0; i < common::store::l6470dmx::kMaxMotors; i++)
+    {
+        if (l6470dmx_modes_[i] != nullptr)
+        {
+            printf(" Motor %d\n", i);
+            l6470dmx_modes_[i]->InitPos();
+        }
+    }
 
-	DEBUG_EXIT;
+    DEBUG_EXIT();;
 }
 
-void SparkFunDmx::SetData([[maybe_unused]] uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, [[maybe_unused]] const bool doUpdate) {
-	DEBUG_ENTRY;
-	assert(pData != nullptr);
-	assert(nLength <= lightset::dmx::UNIVERSE_SIZE);
+template <bool doUpdate> void SparkFunDmx::SetData(uint32_t port_index, const uint8_t* pData, uint32_t length)
+{
+    // delegate to single function
+    SetDataImpl(port_index, pData, length);
+}
 
-	bool bIsDmxDataChanged[SPARKFUN_DMX_MAX_MOTORS];
+void SparkFunDmx::SetDataImpl([[maybe_unused]] uint32_t port_index, const uint8_t* pData, uint32_t length)
+{
+    DEBUG_ENTRY();;
+    assert(pData != nullptr);
+    assert(length <= dmxnode::kUniverseSize);
 
-	for (uint32_t i = 0; i < SPARKFUN_DMX_MAX_MOTORS; i++) {
-		if (m_pL6470DmxModes[i] != nullptr) {
-			bIsDmxDataChanged[i] = m_pL6470DmxModes[i]->IsDmxDataChanged(pData, nLength);
+    bool bIsDmxDataChanged[common::store::l6470dmx::kMaxMotors];
 
-			if(bIsDmxDataChanged[i]) {
-				m_pL6470DmxModes[i]->HandleBusy();
-			}
-		} else {
-			bIsDmxDataChanged[i] = false;
-		}
+    for (uint32_t i = 0; i < common::store::l6470dmx::kMaxMotors; i++)
+    {
+        if (l6470dmx_modes_[i] != nullptr)
+        {
+            bIsDmxDataChanged[i] = l6470dmx_modes_[i]->IsDmxDataChanged(pData, length);
+
+            if (bIsDmxDataChanged[i])
+            {
+                l6470dmx_modes_[i]->HandleBusy();
+            }
+        }
+        else
+        {
+            bIsDmxDataChanged[i] = false;
+        }
 #ifndef NDEBUG
-		printf("bIsDmxDataChanged[%d]=%d\n", i, bIsDmxDataChanged[i]);
+        printf("bIsDmxDataChanged[%d]=%d\n", i, bIsDmxDataChanged[i]);
 #endif
-	}
+    }
 
-	for (uint32_t i = 0; i < SPARKFUN_DMX_MAX_MOTORS; i++) {
-		if (bIsDmxDataChanged[i]) {
-			while (m_pL6470DmxModes[i]->BusyCheck())
-				;
-		}
-	}
+    for (uint32_t i = 0; i < common::store::l6470dmx::kMaxMotors; i++)
+    {
+        if (bIsDmxDataChanged[i])
+        {
+            while (l6470dmx_modes_[i]->BusyCheck())
+            {
+            }
+        }
+    }
 
-	for (int i = 0; i < SPARKFUN_DMX_MAX_MOTORS; i++) {
-		if (bIsDmxDataChanged[i]) {
-			m_pL6470DmxModes[i]->DmxData(pData, nLength);
-		}
-	}
+    for (uint32_t i = 0; i < common::store::l6470dmx::kMaxMotors; i++)
+    {
+        if (bIsDmxDataChanged[i])
+        {
+            l6470dmx_modes_[i]->DmxData(pData, length);
+        }
+    }
 
-	DEBUG_EXIT;
+    DEBUG_EXIT();;
 }
 
-void SparkFunDmx::Sync([[maybe_unused]] uint32_t const nPortIndex) {
-	//TODO Implement Sync
+void SparkFunDmx::Sync([[maybe_unused]] uint32_t const port_index)
+{
+    // TODO (a) Implement Sync
 }
 
-void SparkFunDmx::Sync() {
-	//TODO Implement Sync
+void SparkFunDmx::Sync()
+{
+    // TODO (a) Implement Sync
 }
 
-bool SparkFunDmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
-	DEBUG_ENTRY;
+bool SparkFunDmx::SetDmxStartAddress(uint16_t nDmxStartAddress)
+{
+    DEBUG_ENTRY();;
 
-	if (nDmxStartAddress == m_nDmxStartAddress) {
-		return true;
-	}
+    if (nDmxStartAddress == 0)
+    {
+        return false;
+    }
 
-	for (uint32_t i = 0; i < SPARKFUN_DMX_MAX_MOTORS; i++) {
-		if (m_pL6470DmxModes[i] != nullptr) {
-			const auto nCurrentDmxStartAddress = m_pL6470DmxModes[i]->GetDmxStartAddress();
-			const auto nNewDmxStartAddress = static_cast<uint16_t>((nCurrentDmxStartAddress - m_nDmxStartAddress) + nDmxStartAddress);
+    if (nDmxStartAddress == dmx_start_address_)
+    {
+        return true;
+    }
+
+    for (uint32_t i = 0; i < common::store::l6470dmx::kMaxMotors; i++)
+    {
+        if (l6470dmx_modes_[i] != nullptr)
+        {
+            const auto kCurrentDmxStartAddress = l6470dmx_modes_[i]->GetDmxStartAddress();
+            const auto kNewDmxStartAddress = static_cast<uint16_t>((kCurrentDmxStartAddress - dmx_start_address_) + nDmxStartAddress);
 #ifndef NDEBUG
-			printf("\tMotor=%d, Current DMX Start Address=%d, New DMX Start Address=%d\n", i, nCurrentDmxStartAddress, nNewDmxStartAddress);
+            printf("\tMotor=%d, Current DMX Start Address=%d, New DMX Start Address=%d\n", i, kCurrentDmxStartAddress, kNewDmxStartAddress);
 #endif
-			m_pL6470DmxModes[i]->SetDmxStartAddress(nNewDmxStartAddress);
-			ModeStore::SaveDmxStartAddress(i, nNewDmxStartAddress);
-		}
-	}
+            l6470dmx_modes_[i]->SetDmxStartAddress(kNewDmxStartAddress);
+            l6470mode_store::SaveDmxStartAddress(i, kNewDmxStartAddress);
+        }
+    }
 
-	m_nDmxStartAddress = nDmxStartAddress;
+    dmx_start_address_ = nDmxStartAddress;
 
-	DEBUG_EXIT;
-	return true;
+    DEBUG_EXIT();;
+    return true;
 }
 
-bool SparkFunDmx::GetSlotInfo(uint16_t nSlotOffset, SlotInfo& tSlotInfo) {
-	DEBUG_ENTRY;
+bool SparkFunDmx::GetSlotInfo(uint16_t slot_offset, dmxnode::SlotInfo& slot_info)
+{
+    DEBUG_ENTRY();;
 
-	if (nSlotOffset > m_nDmxFootprint) {
-		DEBUG_EXIT
-		return false;
-	}
+    if (slot_offset > dmx_footprint_)
+    {
+        DEBUG_EXIT();
+        return false;
+    }
 
-	const uint16_t nDmxAddress = m_nDmxStartAddress + nSlotOffset;
+    const uint16_t kDmxAddress = dmx_start_address_ + slot_offset;
 
-	for (uint32_t i = 0; i < SPARKFUN_DMX_MAX_MOTORS; i++) {
-		if ((m_pL6470DmxModes[i] != nullptr) && (m_pSlotInfo[i] != nullptr)) {
-			const auto nOffset = static_cast<int16_t>(nDmxAddress - m_pL6470DmxModes[i]->GetDmxStartAddress());
+    for (uint32_t i = 0; i < common::store::l6470dmx::kMaxMotors; i++)
+    {
+        if ((l6470dmx_modes_[i] != nullptr) && (slotinfo_[i] != nullptr))
+        {
+            const auto kOffset = static_cast<int16_t>(kDmxAddress - l6470dmx_modes_[i]->GetDmxStartAddress());
 
-			if ((nDmxAddress >= m_pL6470DmxModes[i]->GetDmxStartAddress()) && (nOffset < m_pL6470DmxModes[i]->GetDmxFootPrint())) {
+            if ((kDmxAddress >= l6470dmx_modes_[i]->GetDmxStartAddress()) && (kOffset < l6470dmx_modes_[i]->GetDmxFootPrint()))
+            {
+                slot_info.type = slotinfo_[i][kOffset].type;
+                slot_info.category = slotinfo_[i][kOffset].category;
 
-				tSlotInfo.nType = m_pSlotInfo[i][nOffset].nType;
-				tSlotInfo.nCategory = m_pSlotInfo[i][nOffset].nCategory;
+                DEBUG_EXIT();
+                return true;
+            }
+        }
+    }
 
-				DEBUG_EXIT
-				return true;
-			}
-		}
-	}
-
-	return false;
+    return false;
 }
+
+void SparkFunDmx::Print()
+{
+    for (uint32_t i = 0; i < common::store::l6470dmx::kMaxMotors; i++)
+    {
+        if (autodriver_[i] != nullptr)
+        {
+            autodriver_[i]->Print();
+
+            if (l6470dmx_modes_[i] != nullptr)
+            {
+                l6470dmx_modes_[i]->Print();
+
+                printf(" SlotInfo: ");
+                for (uint32_t j = 0; j < l6470dmx_modes_[i]->GetDmxFootPrint(); j++)
+                {
+                    printf("%.2x:%.4x ", slotinfo_[i][j].type, slotinfo_[i][j].category);
+                }
+                puts("");
+            }
+        }
+    }
+}
+
+// Explicit template instantiations
+template void SparkFunDmx::SetData<true>(uint32_t, const uint8_t*, uint32_t);
+template void SparkFunDmx::SetData<false>(uint32_t, const uint8_t*, uint32_t);

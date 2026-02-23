@@ -1,5 +1,3 @@
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wsign-conversion"	//FIXE ignored "-Wsign-conversion"
 /**
  * @file l6470dmxmode3.cpp
  *
@@ -29,99 +27,110 @@
 #include <cstdio>
 #include <cassert>
 
+#include "configstore.h"
 #include "l6470dmxmode3.h"
 #include "l6470.h"
+ #include "firmware/debug/debug_debug.h"
 
-#include "motorparams.h"
+L6470DmxMode3::L6470DmxMode3(L6470* l6470, uint32_t motor_index) : l6470_(l6470), motor_index_(motor_index)
+{
+    DEBUG_ENTRY();;
 
-#include "debug.h"
+    assert(l6470_ != nullptr);
 
-L6470DmxMode3::L6470DmxMode3(L6470 *pL6470, MotorParams *pMotorParams) {
-	DEBUG_ENTRY;
+    l6470_->resetPos();
 
-	assert(pL6470 != nullptr);
-	assert(pMotorParams != nullptr);
+   const auto kStepAngel = ConfigStore::Instance().DmxL6470GetMotorIndexed(motor_index_, &common::store::l6470dmx::Motor::step_angel);
 
-	m_pL6470 = pL6470;
+    steps_ = (360 * (static_cast<uint32_t>(1) << l6470_->getStepMode())) / kStepAngel / 0xFF;
 
-	m_pL6470->resetPos();
-
-	m_fSteps = (360 * (static_cast<uint32_t>(1) << pL6470->getStepMode())) / pMotorParams->GetStepAngel() / 0xFF ;
-
-	DEBUG_EXIT;
+    DEBUG_EXIT();;
 }
 
-L6470DmxMode3::~L6470DmxMode3() {
-	DEBUG_ENTRY;
+L6470DmxMode3::~L6470DmxMode3()
+{
+    DEBUG_ENTRY();;
 
-	DEBUG_EXIT;
+    DEBUG_EXIT();;
 }
 
-void L6470DmxMode3::Start() {
-	DEBUG_ENTRY;
+void L6470DmxMode3::Start()
+{
+    DEBUG_ENTRY();;
 
-	DEBUG_EXIT;
+    DEBUG_EXIT();;
 }
 
-void L6470DmxMode3::Stop() {
-	DEBUG_ENTRY;
+void L6470DmxMode3::Stop()
+{
+    DEBUG_ENTRY();;
 
-	DEBUG_EXIT;
+    DEBUG_EXIT();;
 }
 
-void L6470DmxMode3::HandleBusy() {
-	DEBUG_ENTRY
+void L6470DmxMode3::HandleBusy()
+{
+    DEBUG_ENTRY();
 
-	if (m_pL6470->busyCheck()) {
+    if (l6470_->busyCheck())
+    {
 #ifndef NDEBUG
-		printf("\t\t\tBusy!\n");
+        printf("\t\t\tBusy!\n");
 #endif
-		m_pL6470->softStop();
-		m_bWasBusy = true;
-	} else {
-		m_bWasBusy = false;
-	}
+        l6470_->softStop();
+        was_busy_ = true;
+    }
+    else
+    {
+        was_busy_ = false;
+    }
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-bool L6470DmxMode3::BusyCheck() {
-	DEBUG_ENTRY;
+bool L6470DmxMode3::BusyCheck()
+{
+    DEBUG_ENTRY();;
 
-	DEBUG_EXIT;
-	return m_pL6470->busyCheck();
+    DEBUG_EXIT();;
+    return l6470_->busyCheck();
 }
 
-void L6470DmxMode3::Data(const uint8_t *pDmxData) {
-	DEBUG_ENTRY;
+void L6470DmxMode3::Data(const uint8_t* dmx_data)
+{
+    DEBUG_ENTRY();;
 
-	const auto steps = static_cast<uint32_t>(static_cast<float>(pDmxData[0]) * m_fSteps);
-	bool isRev;
+    const auto kSteps = static_cast<int32_t>(static_cast<float>(dmx_data[0]) * steps_);
+    bool is_rev;
 #ifndef NDEBUG
-	int32_t nDifference;
-#endif
-
-	if(m_bWasBusy) {
-		uint32_t nCurrentPosition = m_pL6470->getPos();
-		isRev = nCurrentPosition > steps;
-#ifndef NDEBUG
-		printf("\t\t\tCurrent position=%d\n", nCurrentPosition);
-		nDifference = steps - nCurrentPosition;
-#endif
-	} else {
-		isRev = m_nPreviousData > pDmxData[0];
-#ifndef NDEBUG
-		nDifference = pDmxData[0] - m_nPreviousData;
-#endif
-	}
-
-#ifndef NDEBUG
-	printf("\t\t\tm_fSteps=%f, steps=%d, pDmxData[0]=%d, nDifference=%d [%s]\n", m_fSteps, static_cast<int>(steps), pDmxData[0], nDifference, isRev ? "L6470_DIR_REV" : "L6470_DIR_FWD");
+    int32_t difference;
 #endif
 
-	m_pL6470->goToDir(isRev ? L6470_DIR_REV : L6470_DIR_FWD, steps);
+    if (was_busy_)
+    {
+        auto current_position = l6470_->getPos();
+        is_rev = current_position > kSteps;
+#ifndef NDEBUG
+        printf("\t\t\tCurrent position=%d\n", current_position);
+        difference = kSteps - current_position;
+#endif
+    }
+    else
+    {
+        is_rev = previous_data_ > dmx_data[0];
+#ifndef NDEBUG
+        difference = dmx_data[0] - previous_data_;
+#endif
+    }
 
-	m_nPreviousData = pDmxData[0];
+#ifndef NDEBUG
+    printf("\t\t\tm_fSteps=%f, steps=%d, dmx_data[0]=%d, nDifference=%d [%s]\n", steps_, static_cast<int>(kSteps), dmx_data[0], difference,
+           is_rev ? "L6470_DIR_REV" : "L6470_DIR_FWD");
+#endif
 
-	DEBUG_EXIT;
+    l6470_->goToDir(is_rev ? L6470_DIR_REV : L6470_DIR_FWD, kSteps);
+
+    previous_data_ = dmx_data[0];
+
+    DEBUG_EXIT();;
 }

@@ -1,8 +1,7 @@
 /**
  * @file showfile.cpp
- *
  */
-/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +22,7 @@
  * THE SOFTWARE.
  */
 
+#include <cstdint>
 #include <cstdio>
 #include <dirent.h>
 #include <unistd.h>
@@ -31,308 +31,362 @@
 #include "showfile.h"
 #include "showfiletftp.h"
 #include "showfiledisplay.h"
+#include "json/showfileparams.h"
 
 #if defined CONFIG_USB_HOST_MSC
-# include "device/usb/host.h"
+#include "device/usb/host.h"
 #endif
 
-#include "hardware.h"
+#include "hal_statusled.h"
 
-#include "debug.h"
+ #include "firmware/debug/debug_debug.h"
 
-ShowFile *ShowFile::s_pThis;
-
-#if defined (CONFIG_SHOWFILE_ENABLE_OSC)
-ShowFile::ShowFile(uint16_t nPortIncoming, uint16_t nPortOutgoing): m_showFileOSC(nPortIncoming, nPortOutgoing) {
+#if defined(CONFIG_SHOWFILE_ENABLE_OSC)
+ShowFile::ShowFile(uint16_t port_incoming, uint16_t port_outgoing) : showfile_osc_(port_incoming, port_outgoing)
+{
 #else
-ShowFile::ShowFile() {
+ShowFile::ShowFile()
+{
 #endif
-	DEBUG_ENTRY
+    DEBUG_ENTRY();
 
-	assert(s_pThis == nullptr);
-	s_pThis = this;
+    assert(s_this == nullptr);
+    s_this = this;
 
-	m_aShowFileNameCurrent[0] = '\0';
+    showfile_name_current_[0] = '\0';
 
-	DEBUG_EXIT
+    json::ShowFileParams showfile_params;
+    showfile_params.Load();
+    showfile_params.Set();
+
+    DEBUG_EXIT();
 }
 
-void ShowFile::OpenFile(const showfile::Mode mode, const uint32_t nShowFileNumber) {
-	DEBUG_ENTRY
+void ShowFile::OpenFile(showfile::Mode mode, int32_t show_file_number)
+{
+    DEBUG_ENTRY();
 
-	if (showfile::filename_copyto(m_aShowFileNameCurrent, sizeof(m_aShowFileNameCurrent), nShowFileNumber)) {
+    if (showfile::FilenameCopyto(showfile_name_current_, sizeof(showfile_name_current_), show_file_number))
+    {
 #if defined CONFIG_USB_HOST_MSC
-		if (usb::host::get_status() != usb::host::Status::READY) {
-			DEBUG_EXIT
-			return;
-		}
+        if (usb::host::get_status() != usb::host::Status::READY)
+        {
+            DEBUG_EXIT();
+            return;
+        }
 #endif
 
-		if (m_pShowFile != nullptr) {
-			if (fclose(m_pShowFile) != 0) {
-				perror("fclose()");
-			}
-			m_pShowFile = nullptr;
-		}
+        if (m_pShowFile != nullptr)
+        {
+            if (fclose(m_pShowFile) != 0)
+            {
+                perror("fclose()");
+            }
+            m_pShowFile = nullptr;
+        }
 
-		m_pShowFile = fopen(m_aShowFileNameCurrent, mode == showfile::Mode::RECORDER ? "w" : "r");
+        m_pShowFile = fopen(showfile_name_current_, mode == showfile::Mode::kRecorder ? "w" : "r");
 
-		if (m_pShowFile == nullptr) {
-			perror(const_cast<char *>(m_aShowFileNameCurrent));
-			m_aShowFileNameCurrent[0] = '\0';
-		} else {
-			m_nShowFileCurrent = nShowFileNumber;
-			m_Mode = mode;
-		}
+        if (m_pShowFile == nullptr)
+        {
+            perror(const_cast<char*>(showfile_name_current_));
+            showfile_name_current_[0] = '\0';
+        }
+        else
+        {
+            show_file_current_ = show_file_number;
+            mode_ = mode;
+        }
 
-		showfile::display_filename(m_aShowFileNameCurrent, m_nShowFileCurrent);
-		showfile::display_status();
+        showfile::DisplayFilename(showfile_name_current_, show_file_current_);
+        showfile::DisplayStatus();
 
-		DEBUG_EXIT
-		return;
-	}
+        DEBUG_EXIT();
+        return;
+    }
 
-	DEBUG_EXIT
-	return;
+    DEBUG_EXIT();
+    return;
 }
 
-void ShowFile::SetPlayerShowFileCurrent(const uint32_t nShowFileNumber) {
-	DEBUG_ENTRY
-	if (m_Status != showfile::Status::IDLE) {
-		DEBUG_EXIT
-		return;
-	}
+void ShowFile::SetPlayerShowFileCurrent(int32_t show_file_number)
+{
+    DEBUG_ENTRY();
+    if (status_ != showfile::Status::kIdle)
+    {
+        DEBUG_EXIT();
+        return;
+    }
 
-	DEBUG_PRINTF("nShowFileNumber=%u", nShowFileNumber);
+    DEBUG_PRINTF("show_file_number=%d", show_file_number);
 
-	OpenFile(showfile::Mode::PLAYER, nShowFileNumber);
+    OpenFile(showfile::Mode::kPlayer, show_file_number);
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-#if !defined (CONFIG_SHOWFILE_DISABLE_RECORD)
-void ShowFile::SetRecorderShowFileCurrent(const uint32_t nShowFileNumber) {
-	DEBUG_ENTRY
+#if !defined(CONFIG_SHOWFILE_DISABLE_RECORD)
+void ShowFile::SetRecorderShowFileCurrent(int32_t show_file_number)
+{
+    DEBUG_ENTRY();
 
-	if (m_Status != showfile::Status::IDLE) {
-		DEBUG_EXIT
-		return;
-	}
+    if (status_ != showfile::Status::kIdle)
+    {
+        DEBUG_EXIT();
+        return;
+    }
 
-	DEBUG_PRINTF("nShowFileNumber=%u", nShowFileNumber);
+    DEBUG_PRINTF("show_file_number=%d", show_file_number);
 
-	if (AddShow(nShowFileNumber)) {
-		OpenFile(showfile::Mode::RECORDER, nShowFileNumber);
+    if (AddShow(show_file_number))
+    {
+        OpenFile(showfile::Mode::kRecorder, show_file_number);
 
-		DEBUG_EXIT
-		return;
-	}
+        DEBUG_EXIT();
+        return;
+    }
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 #endif
 
-bool ShowFile::DeleteShowFile(const uint32_t nShowFileNumber) {
-	DEBUG_ENTRY
-	DEBUG_PRINTF("nShowFileNumber=%u", nShowFileNumber);
+bool ShowFile::DeleteShowFile(int32_t show_file_number)
+{
+    DEBUG_ENTRY();
+    DEBUG_PRINTF("show_file_number=%d", show_file_number);
 
-	char aFileName[showfile::FILE_NAME_LENGTH + 1U];
+    char file_name[showfile::kFileNameLength + 1U];
 
-	if (showfile::filename_copyto(aFileName, sizeof(aFileName), nShowFileNumber)) {
-		if (nShowFileNumber == m_nShowFileCurrent) {
-			if (fclose(m_pShowFile) != 0) {
-				perror("fclose()");
-			}
-			m_pShowFile = nullptr;
-			m_nShowFileCurrent = -1;
-		}
-		const auto nResult = unlink(aFileName);
-		DEBUG_PRINTF("nResult=%d", nResult);
-		DEBUG_EXIT
-		return (nResult == 0);
-	}
+    if (showfile::FilenameCopyto(file_name, sizeof(file_name), show_file_number))
+    {
+        if (show_file_number == show_file_current_)
+        {
+            if (fclose(m_pShowFile) != 0)
+            {
+                perror("fclose()");
+            }
+            m_pShowFile = nullptr;
+            show_file_current_ = -1;
+        }
+        const auto kResult = unlink(file_name);
+        DEBUG_PRINTF("kResult=%d", kResult);
+        DEBUG_EXIT();
+        return (kResult == 0);
+    }
 
-	DEBUG_EXIT
-	return false;
+    DEBUG_EXIT();
+    return false;
 }
 
-bool ShowFile::GetShowFileSize(const uint32_t nShowFileNumber, uint32_t &nSize) {
-	DEBUG_ENTRY
-	DEBUG_PRINTF("nShowFileNumber=%u", nShowFileNumber);
+bool ShowFile::GetShowFileSize(int32_t show_file_number, uint32_t& size)
+{
+    DEBUG_ENTRY();
+    DEBUG_PRINTF("show_file_number=%d", show_file_number);
 
-	char aFileName[showfile::FILE_NAME_LENGTH + 1U];
+    char file_name[showfile::kFileNameLength + 1U];
 
-	if (showfile::filename_copyto(aFileName, sizeof(aFileName), nShowFileNumber)) {
-		auto *pFile = fopen(aFileName, "r");
-		if (pFile != nullptr) {
-			if (fseek(pFile, 0L, SEEK_END) == 0) {
-				nSize = ftell(pFile);
-				fclose(pFile);
-				DEBUG_PRINTF("nSize=%u", nSize);
-				DEBUG_EXIT
-				return true;
-			}
-		} else {
-			perror("fopen()");
-		}
-	}
+    if (showfile::FilenameCopyto(file_name, sizeof(file_name), show_file_number))
+    {
+        auto* file = fopen(file_name, "r");
+        if (file != nullptr)
+        {
+            if (fseek(file, 0L, SEEK_END) == 0)
+            {
+                size = static_cast<uint32_t>(ftell(file));
+                fclose(file);
+                DEBUG_PRINTF("size=%u", size);
+                DEBUG_EXIT();
+                return true;
+            }
+        }
+        else
+        {
+            perror("fopen()");
+        }
+    }
 
-	DEBUG_EXIT
-	return false;
+    DEBUG_EXIT();
+    return false;
 }
 
-bool ShowFile::AddShow(const uint32_t nShowFileNumber) {
-	DEBUG_ENTRY
+bool ShowFile::AddShow(int32_t show_file_number)
+{
+    DEBUG_ENTRY();
 
-	if (m_nShows == (showfile::FILE_MAX_NUMBER)) {
-		DEBUG_EXIT
-		return false;
-	}
+    if (shows_ == (showfile::kFileMaxNumber))
+    {
+        DEBUG_EXIT();
+        return false;
+    }
 
-	if (m_nShows == 0) {
-		m_nShowFileNumber[0] = static_cast<int8_t>(nShowFileNumber);
-	} else {
-		for (auto &Show : m_nShowFileNumber) {
-			if (Show == static_cast<int32_t>(nShowFileNumber)) {
-				DEBUG_EXIT
-				return true;
-			}
-		}
+    if (shows_ == 0)
+    {
+        show_file_number_[0] = static_cast<int8_t>(show_file_number);
+    }
+    else
+    {
+        for (auto& show : show_file_number_)
+        {
+            if (show == show_file_number)
+            {
+                DEBUG_EXIT();
+                return true;
+            }
+        }
 
-		int32_t i = m_nShows - 1;
-		while ((static_cast<int32_t>(nShowFileNumber) < m_nShowFileNumber[i]) && i >= 0) {
-			m_nShowFileNumber[i + 1] = m_nShowFileNumber[i];
-			i--;
-		}
+        int32_t i = static_cast<int32_t>(shows_) - 1;
+        while ((show_file_number < show_file_number_[i]) && i >= 0)
+        {
+            show_file_number_[i + 1] = show_file_number_[i];
+            i--;
+        }
 
-		m_nShowFileNumber[i + 1] = static_cast<int8_t>(nShowFileNumber);
-	}
+        show_file_number_[i + 1] = static_cast<int8_t>(show_file_number);
+    }
 
-	m_nShows++;
+    shows_++;
 
-	DEBUG_EXIT
-	return true;
+    DEBUG_EXIT();
+    return true;
 }
 
-void ShowFile::LoadShows() {
-	DEBUG_ENTRY
+void ShowFile::LoadShows()
+{
+    DEBUG_ENTRY();
 
-#if defined (CONFIG_USB_HOST_MSC)
-	auto *dirp = opendir("0:/");
+#if defined(CONFIG_USB_HOST_MSC)
+    auto* dirp = opendir("0:/");
 #else
-	auto *dirp = opendir(".");
+    auto* dirp = opendir(".");
 #endif
 
-	if (dirp == nullptr) {
-		perror("opendir");
-		DEBUG_EXIT
-		return;
-	}
+    if (dirp == nullptr)
+    {
+        perror("opendir");
+        DEBUG_EXIT();
+        return;
+    }
 
-	for (auto &FileIndex : m_nShowFileNumber) {
-		FileIndex = -1;
-	}
+    for (auto& file_index : show_file_number_)
+    {
+        file_index = -1;
+    }
 
-	m_nShows = 0;
+    shows_ = 0;
 
-	struct dirent *dp;
+    struct dirent* dp;
 
-    do {
-        if ((dp = readdir(dirp)) != nullptr) {
-        	if (dp->d_type == DT_DIR) {
-        		continue;
-        	}
+    do
+    {
+        if ((dp = readdir(dirp)) != nullptr)
+        {
+            if (dp->d_type == DT_DIR)
+            {
+                continue;
+            }
 
-          	uint32_t nShowFileNumber;
-        	if (!showfile::filename_check(dp->d_name, nShowFileNumber)) {
+            int32_t show_file_number;
+            if (!showfile::FilenameCheck(dp->d_name, show_file_number))
+            {
                 continue;
             }
 
             DEBUG_PRINTF("Found %s", dp->d_name);
 
-            if (!AddShow(nShowFileNumber)) {
-            	break;
+            if (!AddShow(show_file_number))
+            {
+                break;
             }
         }
     } while (dp != nullptr);
 
-	closedir(dirp);
+    closedir(dirp);
 
-    DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void ShowFile::EnableTFTP([[maybe_unused]] bool bEnableTFTP) {
-	DEBUG_ENTRY
+void ShowFile::EnableTFTP([[maybe_unused]] bool enable_tftp)
+{
+    DEBUG_ENTRY();
 
 #if !defined(CONFIG_SHOWFILE_DISABLE_TFTP)
-	if (bEnableTFTP == m_bEnableTFTP) {
-		DEBUG_EXIT
-		return;
-	}
+    if (enable_tftp == enable_tftp_)
+    {
+        DEBUG_EXIT();
+        return;
+    }
 
-	m_bEnableTFTP = bEnableTFTP;
+    enable_tftp_ = enable_tftp;
 
-	if (m_bEnableTFTP) {
-		assert(m_pShowFileTFTP == nullptr);
+    if (enable_tftp_)
+    {
+        assert(showfile_tftp_ == nullptr);
 
-		Stop();
+        Stop();
 
-		if (m_pShowFile != nullptr) {
-			if (fclose(m_pShowFile) != 0) {
-				perror("fclose(m_pShowFile)");
-			}
-			m_pShowFile = nullptr;
-		}
+        if (m_pShowFile != nullptr)
+        {
+            if (fclose(m_pShowFile) != 0)
+            {
+                perror("fclose(m_pShowFile)");
+            }
+            m_pShowFile = nullptr;
+        }
 
-		m_pShowFileTFTP = new ShowFileTFTP;
-		assert(m_pShowFileTFTP != nullptr);
-	} else {
-		assert(m_pShowFileTFTP != nullptr);
+        showfile_tftp_ = new ShowFileTFTP;
+        assert(showfile_tftp_ != nullptr);
+    }
+    else
+    {
+        assert(showfile_tftp_ != nullptr);
 
-		delete m_pShowFileTFTP;
-		m_pShowFileTFTP = nullptr;
+        delete showfile_tftp_;
+        showfile_tftp_ = nullptr;
 
-		LoadShows();
-		SetPlayerShowFileCurrent(m_nShowFileCurrent);
-		SetStatus(showfile::Status::IDLE);
-	}
+        LoadShows();
+        SetPlayerShowFileCurrent(show_file_current_);
+        SetStatus(showfile::Status::kIdle);
+    }
 
-	showfile::display_status();
+    showfile::DisplayStatus();
 #endif
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void ShowFile::SetStatus(const showfile::Status Status) {
-	DEBUG_ENTRY
+void ShowFile::SetStatus(showfile::Status status)
+{
+    DEBUG_ENTRY();
 
-	if (Status == m_Status) {
-		DEBUG_EXIT
-		return;
-	}
+    if (status == status_)
+    {
+        DEBUG_EXIT();
+        return;
+    }
 
-	m_Status = Status;
+    status_ = status;
 
-	switch (m_Status) {
-		case showfile::Status::IDLE:
-			ShowFileFormat::DoRunCleanupProcess(true);
-			Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
-			break;
-		case showfile::Status::PLAYING:
-		case showfile::Status::RECORDING:
-			ShowFileFormat::DoRunCleanupProcess(false);
-			Hardware::Get()->SetMode(hardware::ledblink::Mode::DATA);
-			break;
-		case showfile::Status::STOPPED:
-		case showfile::Status::ENDED:
-			ShowFileFormat::DoRunCleanupProcess(true);
-			Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
-			break;
-		default:
-			break;
-	}
+    switch (status_)
+    {
+        case showfile::Status::kIdle:
+            ShowFileFormat::DoRunCleanupProcess(true);
+            hal::statusled::SetMode(hal::statusled::Mode::NORMAL);
+            break;
+        case showfile::Status::kPlaying:
+        case showfile::Status::kRecording:
+            ShowFileFormat::DoRunCleanupProcess(false);
+            hal::statusled::SetMode(hal::statusled::Mode::DATA);
+            break;
+        case showfile::Status::kStopped:
+        case showfile::Status::kEnded:
+            ShowFileFormat::DoRunCleanupProcess(true);
+            hal::statusled::SetMode(hal::statusled::Mode::NORMAL);
+            break;
+        default:
+            break;
+    }
 
-	showfile::display_status();
+    showfile::DisplayStatus();
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }

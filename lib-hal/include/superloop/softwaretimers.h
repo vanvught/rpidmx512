@@ -2,7 +2,7 @@
  * @file softwaretimers.h
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,18 +23,18 @@
  * THE SOFTWARE.
  */
 
-#ifndef HAL_SUPERLOOP_TIMERS_H_
-#define HAL_SUPERLOOP_TIMERS_H_
+#ifndef SUPERLOOP_SOFTWARETIMERS_H_
+#define SUPERLOOP_SOFTWARETIMERS_H_
 
 #include <cstdint>
 
 typedef int32_t TimerHandle_t;
 typedef void (*TimerCallbackFunction_t)(TimerHandle_t);
 
-TimerHandle_t SoftwareTimerAdd(const uint32_t nIntervalMillis, const TimerCallbackFunction_t callback);
-bool SoftwareTimerDelete(TimerHandle_t& nId);
-bool SoftwareTimerChange(const TimerHandle_t nId, const uint32_t nIntervalMillis);
+TimerHandle_t SoftwareTimerAdd(uint32_t interval_millis, const TimerCallbackFunction_t callback);
+bool SoftwareTimerDelete(TimerHandle_t& id);
+bool SoftwareTimerChange(TimerHandle_t id, uint32_t interval_millis);
 
 void SoftwareTimerRun();
 
-#endif /* HAL_SUPERLOOP_TIMERS_H_ */
+#endif  // SUPERLOOP_SOFTWARETIMERS_H_

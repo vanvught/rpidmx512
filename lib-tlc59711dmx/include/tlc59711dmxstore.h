@@ -2,7 +2,7 @@
  * @file tlc59711dmxstore.h
  *
  */
-/* Copyright (C) 2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2023-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,16 +27,16 @@
 #define TLC59711DMXSTORE_H_
 
 #include <cstdint>
-#include <cstddef>
 
-#include "tlc59711dmxparams.h"
 #include "configstore.h"
+#include "configurationstore.h"
 
-class TLC59711DmxStore {
-public:
-	static void SaveDmxStartAddress(uint16_t nDmxStartAddress) {
-		ConfigStore::Get()->Update(configstore::Store::TLC5711DMX, offsetof(struct tlc59711dmxparams::Params, nDmxStartAddress), &nDmxStartAddress, sizeof(uint32_t), tlc59711dmxparams::Mask::DMX_START_ADDRESS);
-	}
-};
+namespace tlc59711dmx_store
+{
+inline void SaveDmxStartAddress(uint16_t dmx_start_address)
+{
+    ConfigStore::Instance().DmxLedUpdate(&common::store::DmxLed::dmx_start_address, dmx_start_address);
+}
+} // namespace tlc59711_store
 
-#endif /* TLC59711DMXSTORE_H_ */
+#endif  // TLC59711DMXSTORE_H_

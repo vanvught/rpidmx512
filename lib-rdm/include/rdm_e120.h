@@ -308,7 +308,7 @@
 /* Table A-6: Product Detail Defines                    */
 /********************************************************/
 
-#define E120_PRODUCT_DETAIL_NOT DECLARED                  0x0000
+#define E120_PRODUCT_DETAIL_NOT_DECLARED                  0x0000
 
 /* Generally applied to fixtures                                                                                                */
 #define E120_PRODUCT_DETAIL_ARC                           0x0001

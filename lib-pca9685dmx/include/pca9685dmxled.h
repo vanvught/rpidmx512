@@ -2,7 +2,7 @@
  * @file pca9685dmxled.h
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,56 +28,56 @@
 
 #include <cstdint>
 
-#include "lightset.h"
-
 #include "pca9685dmx.h"
 #include "pca9685dmxstore.h"
 #include "pca9685pwmled.h"
+#include "pca9685dmxset.h"
 
-class PCA9685DmxLed final: public LightSet {
-public:
-	PCA9685DmxLed(const pca9685dmx::Configuration &configuration);
-	~PCA9685DmxLed() override;
+#include "dmxnode.h"
 
-	void Start([[maybe_unused]] const uint32_t nPortIndex = 0) override {};
-	void Stop(const uint32_t nPortIndex) override;
+class PCA9685DmxLed final : public PCA9685DmxSet
+{
+   public:
+    explicit PCA9685DmxLed(const pca9685dmx::Configuration& configuration);
+    ~PCA9685DmxLed() override;
 
-	void SetData(const uint32_t nPortIndex, const uint8_t *pDmxData, uint32_t nLength, const bool doUpdate = true) override;
-	void Sync([[maybe_unused]] const uint32_t nPortIndex) override {};
-	void Sync() override {};
+    void Start([[maybe_unused]] uint32_t port_index) override {};
+    void Stop(uint32_t port_index) override;
 
-	bool SetDmxStartAddress(const uint16_t nDmxStartAddress) override {
-		assert((nDmxStartAddress != 0) && (nDmxStartAddress <= lightset::dmx::UNIVERSE_SIZE));
+    void SetDataImpl(uint32_t port_index, const uint8_t* dmx_data, uint32_t length) override;
 
-		if ((nDmxStartAddress != 0) && (nDmxStartAddress <= lightset::dmx::UNIVERSE_SIZE)) {
-			m_nDmxStartAddress = nDmxStartAddress;
-			PCA9685DmxStore::SaveDmxStartAddress(m_nDmxStartAddress);
-			return true;
-		}
+    void Sync([[maybe_unused]] uint32_t port_index) override {};
+    void Sync() override {};
 
-		return false;
-	}
+    bool SetDmxStartAddress(uint16_t dmx_start_address) override
+    {
+        if ((dmx_start_address != 0) && (dmx_start_address <= dmxnode::kUniverseSize))
+        {
+            dmx_start_address_ = dmx_start_address;
+            dmxpwm_store::SaveDmxStartAddress(dmx_start_address_);
+            return true;
+        }
 
-	uint16_t GetDmxStartAddress() override {
-		return m_nDmxStartAddress;
-	}
+        dmx_start_address_ = dmxnode::kStartAddressDefault;
+        return false;
+    }
 
-	uint16_t GetDmxFootprint() override {
-		return m_nDmxFootprint;
-	}
+    uint16_t GetDmxStartAddress() override { return dmx_start_address_; }
 
-	bool GetSlotInfo(uint16_t nSlotOffset, lightset::SlotInfo& tSlotInfo) override;
+    uint16_t GetDmxFootprint() override { return dmx_footprint_; }
 
-	void Print() override;
+    bool GetSlotInfo(uint16_t slot_offset, dmxnode::SlotInfo& slot_info) override;
 
-private:
-	uint16_t m_nBoardInstances;
-	uint16_t m_nDmxFootprint;
-	uint16_t m_nDmxStartAddress;
-	uint16_t m_nChannelCount;
-	bool m_bUse8Bit;
-	uint8_t m_DmxData[lightset::dmx::UNIVERSE_SIZE];
-	PCA9685PWMLed **m_pPWMLed;
+    void Print() override;
+
+   private:
+    uint16_t board_instances_;
+    uint16_t dmx_footprint_;
+    uint16_t dmx_start_address_;
+    uint16_t channel_count_;
+    bool use8_bit_;
+    uint8_t dmx_data_[dmxnode::kUniverseSize];
+    PCA9685PWMLed** pwm_led_;
 };
 
-#endif /* PCA9685DMXLED_H_ */
+#endif  // PCA9685DMXLED_H_

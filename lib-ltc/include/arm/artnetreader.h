@@ -1,6 +1,5 @@
 /**
  * @file artnetreader.h
- *
  */
 /* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
@@ -27,62 +26,69 @@
 #define ARM_ARTNETREADER_H_
 
 #include <cstdint>
+#include <cassert>
 
 #include "artnettimecode.h"
-#include "midi.h"
-
 #include "ltcoutputs.h"
+#include "hal_millis.h"
+#include "hal_statusled.h"
 
-#include "hardware.h"
+class ArtNetReader
+{
+   public:
+    ArtNetReader()
+    {
+        assert(s_this == nullptr);
+        s_this = this;
+    }
 
-#include "arm/platform_ltc.h"
+    ~ArtNetReader() = default;
 
-class ArtNetReader {
-public:
-	ArtNetReader() {
-		assert(s_pThis == nullptr);
-		s_pThis = this;
-	}
+    void Start();
+    void Stop();
 
-	~ArtNetReader() = default;
+    void Run()
+    {
+        const auto kTimeStamp = hal::Millis();
 
-	void Start();
-	void Stop();
+        if ((kTimeStamp - timestamp_) >= 50U)
+        {
+            LtcOutputs::Get()->ShowSysTime();
+            hal::statusled::SetMode(hal::statusled::Mode::NORMAL);
+            Reset(true);
+        }
+        else
+        {
+            hal::statusled::SetMode(hal::statusled::Mode::DATA);
+            Reset(false);
+        }
+    }
 
-	void Run() {
-		const auto nTimeStamp = Hardware::Get()->Millis();
+    void static StaticCallbackFunction(const struct artnet::TimeCode* timecode)
+    {
+        assert(s_this != nullptr);
+        s_this->Handler(timecode);
+    }
 
-		if ((nTimeStamp - m_nTimestamp) >= 50U) {
-			LtcOutputs::Get()->ShowSysTime();
-			Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
-			Reset(true);
-		} else {
-			Hardware::Get()->SetMode(hardware::ledblink::Mode::DATA);
-			Reset(false);
-		}
-	}
+   private:
+    void Handler(const struct artnet::TimeCode*);
 
-	void static StaticCallbackFunction(const struct artnet::TimeCode *pTimeCode) {
-		assert(s_pThis != nullptr);
-		s_pThis->Handler(pTimeCode);
-	}
+    void Reset(bool do_reset)
+    {
+        if (reset_timecode_ != do_reset)
+        {
+            reset_timecode_ = do_reset;
+            if (reset_timecode_)
+            {
+                LtcOutputs::Get()->ResetTimeCodeTypePrevious();
+            }
+        }
+    }
 
-private:
-	void Handler(const struct artnet::TimeCode *);
-
-	void Reset(const bool doReset) {
-		if (m_doResetTimeCode != doReset) {
-			m_doResetTimeCode = doReset;
-			if (m_doResetTimeCode) {
-				LtcOutputs::Get()->ResetTimeCodeTypePrevious();
-			}
-		}
-	}
-
-private:
-	uint32_t m_nTimestamp { 0 };
-	bool m_doResetTimeCode { true };
-	static inline ArtNetReader *s_pThis;
+   private:
+    uint32_t timestamp_{0};
+    bool reset_timecode_{true};
+    static inline ArtNetReader* s_this;
 };
 
-#endif /* ARM_ARTNETREADER_H_ */
+#endif  // ARM_ARTNETREADER_H_

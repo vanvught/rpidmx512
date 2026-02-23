@@ -2,7 +2,7 @@
  * @file buttonsset.h
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,24 +27,21 @@
 #define BUTTONSSET_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 
-class ButtonsSet {
-public:
-	ButtonsSet() = default;
-	virtual ~ButtonsSet() = default;
+class ButtonsSet
+{
+   public:
+    ButtonsSet() = default;
+    virtual ~ButtonsSet() = default;
 
-	virtual bool Start()= 0;
-	virtual void Stop()= 0;
+    virtual bool Start() = 0;
+    virtual void Stop() = 0;
+    virtual void Run() = 0;
 
-	virtual void Run()= 0;
+    uint32_t GetButtonsCount() { return buttons_count_; }
 
-	uint32_t GetButtonsCount() {
-		return m_nButtonsCount;
-	}
-
-protected:
-	uint32_t m_nButtonsCount = 0;
+   protected:
+    uint32_t buttons_count_{0};
 };
 
-#endif /* BUTTONSSET_H_ */
+#endif  // BUTTONSSET_H_

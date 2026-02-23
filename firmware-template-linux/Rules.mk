@@ -16,6 +16,7 @@ $(info $$detected_OS [${detected_OS}])
 
 ifeq ($(detected_OS),Darwin)
 	LINUX=1
+	DARWIN=1
 endif
 
 ifeq ($(detected_OS),Linux) 
@@ -35,6 +36,7 @@ DEFINES+=-DENABLE_HTTPD
 DEFINES+=-DCONFIG_STORE_USE_FILE 
 DEFINES+=-DCONFIG_MDNS_DOMAIN_REVERSE
 DEFINES+=-DISABLE_INTERNAL_RTC
+include ../common/make/DmxNodeOutputType.mk
 DEFINES+=$(addprefix -I,$(EXTRA_INCLUDES))
 
 ifeq ($(findstring ARTNET_VERSION=4,$(DEFINES)),ARTNET_VERSION=4)
@@ -48,7 +50,7 @@ ifneq ($(findstring _TIME_STAMP_YEAR_,$(DEFINES)), _TIME_STAMP_YEAR_)
 endif
 
 # The variable for the firmware include directories
-INCDIRS=$(wildcard ./lib) $(wildcard ./include) $(wildcard ./*/include) ../firmware-template-linux/include
+INCDIRS=../common/include $(wildcard ./lib) $(wildcard ./include) $(wildcard ./*/include) ../firmware-template-linux/include
 INCDIRS:=$(addprefix -I,$(INCDIRS)) -I../lib-display/include
 
 # The variable for the libraries include directory
@@ -84,6 +86,9 @@ ifdef LINUX
 		endif
 		DEFINES+=-DRASPPI
 		DEFINES+=-DBCM2835_NO_DELAY_COMPATIBILITY
+	endif
+	ifndef DARWIN
+		LDLIBS+=-luuid
 	endif
 endif
 
@@ -163,7 +168,7 @@ $(BUILD_DIRS) :
 		
 $(CURR_DIR) : Makefile $(LINKER) $(OBJECTS) $(LIBDEP)
 	$(info $$TARGET [${TARGET}])
-	$(CPP) $(OBJECTS) -o $(CURR_DIR) $(LIB) $(LDLIBS) -luuid -lpthread -lz
+	$(CPP) $(OBJECTS) -o $(CURR_DIR) $(LIB) $(LDLIBS) -lz
 	$(PREFIX)objdump -d $(TARGET) | $(PREFIX)c++filt > linux.lst
 
 $(foreach bdir,$(SRCDIR),$(eval $(call compile-objects,$(bdir))))

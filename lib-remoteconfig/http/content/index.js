@@ -1,10 +1,10 @@
 async function directory() {
-	let d = await getJSON('directory')
+	let d = await getJSON('config/directory')
 	let h = ""
 	let f = Object.keys(d["files"])
 	f.forEach(function(key) {
 		var v = d["files"][key]
-		h += "<option value="+key+">"+v+"</option>"
+		h += "<option value=" + key + ">" + v + "</option>"
 	});
 	document.getElementById("idDirectory").innerHTML = h
 	get_txt(f[0])
@@ -13,12 +13,12 @@ async function directory() {
 async function get_txt(sel) {
 	let txt = await getJSON(sel)
 	let h = ""
-	Object.keys(txt[sel]).forEach(function(key) {
-		var v = txt[sel][key]
-		h += "<tr><td>"+key+'</td><td><input type="text" value="'+v+'" id="'+key+'"></td></tr>'
+	Object.keys(txt).forEach(function(key) {
+		var v = txt[key]
+		h += "<tr><td>" + key + '</td><td><input type="text" value="' + v + '" id="' + key + '"></td></tr>'
 	});
-	h += '<tr><td colspan="2"><button onclick="save(\''+sel+'\')">Save</button>';
-  h += '<button class="btn" onclick="reset(\''+sel+'\')">Defaults</button></td></tr>';
+	h += '<tr><td colspan="2"><button onclick="save(\'' + sel + '\')">Save</button>';
+	h += '<button class="btn" onclick="reset(\'' + sel + '\')">Defaults</button></td></tr>';
 	document.getElementById("idTxt").innerHTML = h
 }
 
@@ -31,13 +31,13 @@ function save(sel) {
 		d[k] = v
 	}
 	var out = {}
-	out[sel] = d
+	out = d
 	var payload = JSON.stringify(out)
-	fetch('/json', {
+	fetch('/json/' + sel, {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json'
 		},
 		body: payload
-	}) .then(response => {if (response.ok) { get_txt(sel); }});
+	}).then(response => { if (response.ok) { get_txt(sel); } });
 }

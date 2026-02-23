@@ -2,7 +2,7 @@
  * @file artnettimecode.h
  *
  */
-/* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@gd332-dmx.org
+/* Copyright (C) 2016-2025 by Arjan van Vught mailto:info@gd332-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,16 +28,18 @@
 
 #include <cstdint>
 
-namespace artnet {
-struct TimeCode {
-	uint8_t Frames;			///< Frames time. 0 – 29 depending on mode.
-	uint8_t Seconds;		///< Seconds. 0 - 59.
-	uint8_t Minutes;		///< Minutes. 0 - 59.
-	uint8_t Hours;			///< Hours. 0 - 59.
-	uint8_t Type;			///< 0 = Film (24fps) , 1 = EBU (25fps), 2 = DF (29.97fps), 3 = SMPTE (30fps)
+namespace artnet
+{
+struct TimeCode
+{
+    uint8_t frames;  ///< Frames time. 0 – 29 depending on mode.
+    uint8_t seconds; ///< Seconds. 0 - 59.
+    uint8_t minutes; ///< Minutes. 0 - 59.
+    uint8_t hours;   ///< Hours. 0 - 59.
+    uint8_t type;    ///< 0 = Film (24fps) , 1 = EBU (25fps), 2 = DF (29.97fps), 3 = SMPTE (30fps)
 } __attribute__((packed));
-}  // namespace artnet
+} // namespace artnet
 
-typedef void (*ArtTimeCodeCallbackFunctionPtr)(const struct artnet::TimeCode *);
+typedef void (*ArtTimeCodeCallbackFunctionPtr)(const struct artnet::TimeCode*);
 
-#endif /* ARTNETTIMECODE_H_ */
+#endif  // ARTNETTIMECODE_H_

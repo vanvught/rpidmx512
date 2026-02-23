@@ -2,7 +2,7 @@
  * @file get_file_content.cpp
  *
  */
-/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,123 +23,145 @@
  * THE SOFTWARE.
  */
 
-#if defined (DEBUG_HTTPD)
-# undef NDEBUG
+#if defined(DEBUG_HTTPD)
+#undef NDEBUG
 #endif
 
 #include <cstdint>
 #include <cstring>
-#include <cassert>
 
 #include "httpd/httpd.h"
-#include "../http/content/content.h"
 
-#include "debug.h"
+ #include "firmware/debug/debug_debug.h"
 
-#if defined (CONFIG_HTTP_CONTENT_FS)
+#if defined(CONFIG_HTTP_CONTENT_FS)
 #include <cstdio>
 
-static constexpr char supported_extensions[static_cast<int>(http::contentTypes::NOT_DEFINED)][8] = {
-		"html",
-		"css",
-		"js",
-		"json"
-};
+static constexpr char kSupportedExtensions[static_cast<int>(http::contentTypes::NOT_DEFINED)][8] = {"html", "css", "js", "json", "bin"};
 
-static http::contentTypes getContentType(const char *pFileName) {
-	for (int i = 0; i < static_cast<int>(http::contentTypes::NOT_DEFINED); i++) {
-		const auto l = strlen(pFileName);
-		const auto e = strlen(supported_extensions[i]);
+static http::contentTypes GetContentType(const char* file_name)
+{
+	DEBUG_ENTRY();
+	
+    for (int i = 0; i < static_cast<int>(http::contentTypes::NOT_DEFINED); i++)
+    {
+        const auto kL = strlen(file_name);
+        const auto kE = strlen(kSupportedExtensions[i]);
 
-		if (l > (e + 2)) {
-			if (pFileName[l - e - 1] == '.') {
-				if (strcmp(&pFileName[l - e], supported_extensions[i]) == 0) {
-					return static_cast<http::contentTypes>(i);
-				}
-			}
-		}
-	}
+        if (kL > (kE + 2))
+        {
+            if (file_name[kL - kE - 1] == '.')
+            {
+                if (strcmp(&file_name[kL - kE], kSupportedExtensions[i]) == 0)
+                {
+					DEBUG_EXIT();
+                    return static_cast<http::contentTypes>(i);
+                }
+            }
+        }
+    }
 
-	return http::contentTypes::NOT_DEFINED;
+DEBUG_EXIT();
+    return http::contentTypes::NOT_DEFINED;
 }
 
-uint32_t get_file_content(const char *fileName, char *pDst, http::contentTypes& contentType) {
-	auto *pFile = fopen(fileName, "r");
+uint32_t GetFileContent(const char* file_name, char* dst, http::contentTypes& content_type)
+{
+	DEBUG_PUTS(file_name);
+	
+    auto* file = fopen(file_name, "r");
 
-	if (pFile == nullptr) {
-		DEBUG_EXIT
-		return 0;
-	}
+    if (file == nullptr)
+    {
+        DEBUG_EXIT();
+        return 0;
+    }
 
-	contentType = getContentType(fileName);
+    content_type = GetContentType(file_name);
 
-	if (contentType == http::contentTypes::NOT_DEFINED) {
-		DEBUG_EXIT
-		fclose(pFile);
-		return 0;
-	}
+    if (content_type == http::contentTypes::NOT_DEFINED)
+    {
+        DEBUG_EXIT();
+        fclose(file);
+        return 0;
+    }
 
-	auto doRemoveWhiteSpaces = true;
-	auto *p = pDst;
-	int c;
+    auto do_remove_white_spaces = true;
+    auto* p = dst;
+    int c;
 
-	while ((c = fgetc(pFile)) != EOF) {
-		if (doRemoveWhiteSpaces) {
-			if (c <= ' ') {
-				continue;
-			} else {
-				doRemoveWhiteSpaces = false;
-			}
-		} else {
-			if (c == '\n') {
-				doRemoveWhiteSpaces = true;
-			}
-		}
-		*p++ = c;
-		if ((p - pDst) == httpd::BUFSIZE) {
-			DEBUG_PUTS("File too long");
-			break;
-		}
-	}
+    while ((c = fgetc(file)) != EOF)
+    {
+        if (do_remove_white_spaces)
+        {
+            if (c <= ' ')
+            {
+                continue;
+            }
+            else
+            {
+                do_remove_white_spaces = false;
+            }
+        }
+        else
+        {
+            if (c == '\n')
+            {
+                do_remove_white_spaces = true;
+            }
+        }
+        *p++ = c;
+        if ((p - dst) == httpd::kBufsize)
+        {
+            DEBUG_PUTS("File too long");
+            break;
+        }
+    }
 
-	fclose(pFile);
+    fclose(file);
 
-	DEBUG_PRINTF("%s -> %d", fileName, static_cast<int>(p - pDst));
-	return static_cast<uint32_t>(p - pDst);
+    DEBUG_PRINTF("%s -> %d", file_name, static_cast<int>(p - dst));
+    return static_cast<uint32_t>(p - dst);
 }
 
-static char s_StaticContent[httpd::BUFSIZE];
+static char s_static_content[httpd::kBufsize];
 
-const char *get_file_content(const char *pFileName, uint32_t& nSize, http::contentTypes& contentType) {
-	DEBUG_ENTRY
-	DEBUG_PUTS(pFileName);
+const char* GetFileContent(const char* file_name, uint32_t& size, http::contentTypes& content_type)
+{
+    DEBUG_ENTRY();
+    DEBUG_PUTS(file_name);
 
-	nSize = get_file_content(pFileName, s_StaticContent, contentType);
+    size = GetFileContent(file_name, s_static_content, content_type);
 
-	if (nSize != 0) {
-		return s_StaticContent;
-	}
+    if (size != 0)
+    {
+        return s_static_content;
+    }
 
-	DEBUG_EXIT
-	return nullptr;
+    DEBUG_EXIT();
+    return nullptr;
 }
 #else
-const char *get_file_content(const char *pFileName, uint32_t& nSize, http::contentTypes& contentType) {
-	DEBUG_ENTRY
-	DEBUG_PUTS(pFileName);
+#include "../http/content/content.h"
+const char* GetFileContent(const char* file_name, uint32_t& size, http::contentTypes& contentType)
+{
+    DEBUG_ENTRY();
+    DEBUG_PUTS(file_name);
 
-	for (auto& content : HttpContent) {
-		if (strcmp(pFileName, content.pFileName) == 0) {
-			nSize = content.nContentLength;
-			contentType = content.contentType;
-			return content.pContent;
-		}
-	}
+    for (auto& content : HttpContent)
+    {
+        if (strcmp(file_name, content.pFileName) == 0)
+        {
+            size = content.nContentLength;
+            contentType = content.contentType;
+            return content.pContent;
+        }
+    }
 
-	nSize = 0;
-	contentType = http::contentTypes::NOT_DEFINED;
+    size = 0;
+    contentType = http::contentTypes::NOT_DEFINED;
 
-	DEBUG_EXIT
-	return nullptr;
+    DEBUG_EXIT();
+    return nullptr;
 }
 #endif

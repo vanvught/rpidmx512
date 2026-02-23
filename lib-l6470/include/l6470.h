@@ -4,7 +4,7 @@
  * @file l6470.h
  *
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -191,7 +191,7 @@ public:
 	 * Just for administration purposes
 	 */
 	unsigned GetMotorNumber() {
-		return m_nMotorNumber;
+		return motor_number_;
 	}
 
 	void Dump();
@@ -220,7 +220,7 @@ private:
 	float spdParse(unsigned long);
 
 protected:
-	unsigned m_nMotorNumber;	///< Just for administration purposes
+	unsigned motor_number_;	///< Just for administration purposes
 };
 
 #endif /* L6470_H_ */

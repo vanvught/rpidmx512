@@ -2,7 +2,7 @@
  * @file htu21d.h
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,38 +30,41 @@
 
 #include "hal_i2c.h"
 
-namespace sensor {
-namespace htu21d {
-namespace temperature {
+namespace sensor
+{
+namespace htu21d
+{
+namespace temperature
+{
 static constexpr char DESCRIPTION[] = "Ambient Temperature";
 static constexpr auto RANGE_MIN = -40;
 static constexpr auto RANGE_MAX = 125;
-}  // namespace temperature
-namespace humidity {
+} // namespace temperature
+namespace humidity
+{
 static constexpr char DESCRIPTION[] = "Relative Humidity";
 static constexpr auto RANGE_MIN = 0;
 static constexpr auto RANGE_MAX = 100;
-}  // namespace humidity
-}  // namespace htu21d
+} // namespace humidity
+} // namespace htu21d
 
-class HTU21D: HAL_I2C {
-public:
-	HTU21D(uint8_t nAddress = 0);
+class HTU21D : HAL_I2C
+{
+   public:
+    explicit HTU21D(uint8_t address = 0);
 
-	bool Initialize() {
-		return m_bIsInitialized;
-	}
+    bool Initialize() { return m_bIsInitialized; }
 
-	float GetTemperature();
-	float GetHumidity();
+    float GetTemperature();
+    float GetHumidity();
 
-private:
-	uint16_t ReadRaw(uint8_t nCmd);
+   private:
+    uint16_t ReadRaw(uint8_t nCmd);
 
-private:
-	bool m_bIsInitialized { false };
+   private:
+    bool m_bIsInitialized{false};
 };
 
-}  // namespace sensor
+} // namespace sensor
 
-#endif /* HTU21D_H_ */
+#endif  // HTU21D_H_

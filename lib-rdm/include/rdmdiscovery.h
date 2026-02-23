@@ -1,8 +1,8 @@
 /**
- * @file rdmddiscovery.h
+ * @file rdmdiscovery.h
  *
  */
-/* Copyright (C) 2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2023-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,198 +23,207 @@
  * THE SOFTWARE.
  */
 
-#ifndef RDMDDISCOVERY_H_
-#define RDMDDISCOVERY_H_
+#ifndef RDMDISCOVERY_H_
+#define RDMDISCOVERY_H_
 
 #include <rdmtod.h>
 #include <cstdint>
 #include <algorithm>
 
 #include "rdmmessage.h"
-#include "debug.h"
 
-namespace rdmdiscovery {
+namespace rdmdiscovery
+{
 #ifndef NDEBUG
- static constexpr uint32_t RECEIVE_TIME_OUT = 58000;
- static constexpr uint32_t LATE_RESPONSE_TIME_OUT = 40000;
+inline constexpr uint32_t kReceiveTimeOut = 58000;
+inline constexpr uint32_t kLateResponseTimeOut = 40000;
 #else
- static constexpr uint32_t RECEIVE_TIME_OUT = 5800;
- static constexpr uint32_t LATE_RESPONSE_TIME_OUT = 1000;
+inline constexpr uint32_t kReceiveTimeOut = 5800;
+inline constexpr uint32_t kLateResponseTimeOut = 1000;
 #endif
-static constexpr uint32_t UNMUTE_COUNTER = 3;
-static constexpr uint32_t MUTE_COUNTER = 10;
-static constexpr uint32_t DISCOVERY_STACK_SIZE = rdmtod::TOD_TABLE_SIZE;
-static constexpr uint32_t DISCOVERY_COUNTER = 3;
-static constexpr uint32_t QUIKFIND_COUNTER = 5;
-static constexpr uint32_t QUIKFIND_DISCOVERY_COUNTER = 5;
+inline constexpr uint32_t kUnmuteCounter = 3;
+inline constexpr uint32_t kMuteCounter = 10;
+inline constexpr uint32_t kDiscoveryStackSize = rdmtod::kTodTableSize;
+inline constexpr uint32_t kDiscoveryCounter = 3;
+inline constexpr uint32_t kQuikfindCounter = 5;
+inline constexpr uint32_t kQuikfindDiscoveryCounter = 5;
 
-enum class State {
-	IDLE,
-	UNMUTE,
-	MUTE,
-	DISCOVERY,
-	DISCOVERY_SINGLE_DEVICE,
-	DUB,
-	QUICKFIND,
-	QUICKFIND_DISCOVERY,
-	LATE_RESPONSE,
-	FINISHED
+enum class State
+{
+    kIdle,
+    kUnmute,
+    kMute,
+    kDiscovery,
+    kDiscoverySingleDevice,
+    kDub,
+    kQuickfind,
+    kQuickfindDiscovery,
+    kLateResponse,
+    kFinished
 };
-}  // namespace rdmdiscovery
+} // namespace rdmdiscovery
 
-class RDMDiscovery {
-public:
-	RDMDiscovery(const uint8_t *pUid);
+class RDMDiscovery
+{
+   public:
+    explicit RDMDiscovery(const uint8_t* uid);
 
-	bool Full(const uint32_t nPortIndex, RDMTod *pRDMTod);
-	bool Incremental(const uint32_t nPortIndex, RDMTod *pRDMTod);
+    bool Full(uint32_t port_index, RDMTod* tod);
+    bool Incremental(uint32_t port_index, RDMTod* tod);
 
-	bool Stop();
+    bool Stop();
 
-	bool IsRunning(uint32_t& nPortIndex, bool& bIsIncremental) const {
-		nPortIndex = m_nPortIndex;
-		bIsIncremental = m_doIncremental;
-		return (m_State != rdmdiscovery::State::IDLE);
-	}
+    bool IsRunning(uint32_t& port_index, bool& is_incremental) const
+    {
+        port_index = port_index_;
+        is_incremental = do_incremental_;
+        return (state_ != rdmdiscovery::State::kIdle);
+    }
 
-	bool IsFinished(uint32_t& nPortIndex, bool& bIsIncremental) {
-		nPortIndex = m_nPortIndex;
-		bIsIncremental = m_doIncremental;
+    bool IsFinished(uint32_t& port_index, bool& is_incremental)
+    {
+        port_index = port_index_;
+        is_incremental = do_incremental_;
 
-		if (m_bIsFinished) {
-			m_bIsFinished = false;
-			return true;
-		}
+        if (is_finished_)
+        {
+            is_finished_ = false;
+            return true;
+        }
 
-		return false;
-	}
+        return false;
+    }
 
-	uint32_t CopyWorkingQueue(char *pOutBuffer, const uint32_t nOutBufferSize);
+    uint32_t CopyWorkingQueue(char* out_buffer, uint32_t out_buffer_size);
 
-	void Run() {
-		if (__builtin_expect((m_State == rdmdiscovery::State::IDLE), 1)) {
-			return;
-		}
+    void Run()
+    {
+        if (__builtin_expect((state_ == rdmdiscovery::State::kIdle), 1))
+        {
+            return;
+        }
 
-		Process();
-	}
+        Process();
+    }
 
-private:
-	void Process();
-	bool Start(const uint32_t nPortIndex, RDMTod *pRDMTod, const bool doIncremental);
-	bool IsValidDiscoveryResponse(uint8_t *pUid);
+   private:
+    void Process();
+    bool Start(uint32_t port_index, RDMTod* tod, bool do_incremental);
+    bool IsValidDiscoveryResponse(uint8_t* uid);
 
-	void SavedState([[maybe_unused]] const uint32_t nLine);
-	void NewState(const rdmdiscovery::State state, const bool doStateLateResponse, [[maybe_unused]] const uint32_t nLine);
+    void SavedState(uint32_t line);
+    void NewState(rdmdiscovery::State state, bool do_state_late_response, uint32_t line);
 
-private:
-	RDMMessage m_Message;
-	uint8_t *m_pResponse { nullptr };
-	uint8_t m_Uid[RDM_UID_SIZE];
-	uint32_t m_nPortIndex { 0 };
-	RDMTod *m_pRDMTod { nullptr };
+   private:
+    RDMMessage message_;
+    uint8_t* response_{nullptr};
+    uint8_t uid_[RDM_UID_SIZE];
+    uint32_t port_index_{0};
+    RDMTod* tod_{nullptr};
 
-	bool m_bIsFinished { false };
-	bool m_doIncremental { false };
-	rdmdiscovery::State m_State { rdmdiscovery::State::IDLE };
-	rdmdiscovery::State m_SavedState { rdmdiscovery::State::IDLE };
+    bool is_finished_{false};
+    bool do_incremental_{false};
+    rdmdiscovery::State state_{rdmdiscovery::State::kIdle};
+    rdmdiscovery::State saved_state_{rdmdiscovery::State::kIdle};
 
-	struct {
-		uint32_t nMicros;
-	} m_LateResponse;
+    struct
+    {
+        uint32_t micros;
+    } late_response_;
 
-	struct {
-		uint32_t nCounter;
-		uint32_t nMicros;
-		bool bCommandRunning;
-	} m_UnMute;
+    struct
+    {
+        uint32_t counter;
+        uint32_t micros;
+        bool is_command_running;
+    } unmute_;
 
-	struct {
-		uint32_t nTodEntries;
-		uint32_t nCounter;
-		uint32_t nMicros;
-		uint8_t uid[RDM_UID_SIZE];
-		bool bCommandRunning;
-	} m_Mute;
+    struct
+    {
+        uint32_t tod_entries;
+        uint32_t counter;
+        uint32_t micros;
+        uint8_t uid[RDM_UID_SIZE];
+        bool is_command_running;
+    } mute_;
 
-	struct {
-		struct {
-			bool push(const uint64_t nLowerBound, const uint64_t nUpperBound) {
-				if (nTop == rdmdiscovery::DISCOVERY_STACK_SIZE - 1) {
-					assert(0);
-					return false;
-				}
+    struct
+    {
+        struct
+        {
+            bool Push(uint64_t lower_bound, uint64_t upper_bound)
+            {
+                if (top == rdmdiscovery::kDiscoveryStackSize - 1)
+                {
+                    assert(0);
+                    return false;
+                }
 
-				nTop++;
-				items[nTop].nLowerBound = nLowerBound;
-				items[nTop].nUpperBound = nUpperBound;
+                top++;
+                items[top].lower_bound = lower_bound;
+                items[top].upper_bound = upper_bound;
 
-				nDebugStackTopMax = std::max(nDebugStackTopMax, nTop);
-				return true;
-			}
+                debug_stack_top_max = std::max(debug_stack_top_max, top);
+                return true;
+            }
 
-			bool pop(uint64_t &nLowerBound, uint64_t &nUpperBound) {
-				if (nTop == -1) {
-					return false;
-				}
+            bool Pop(uint64_t& lower_bound, uint64_t& upper_bound)
+            {
+                if (top == -1)
+                {
+                    return false;
+                }
 
-				nLowerBound = items[nTop].nLowerBound;
-				nUpperBound = items[nTop].nUpperBound;
-				nTop--;
+                lower_bound = items[top].lower_bound;
+                upper_bound = items[top].upper_bound;
+                top--;
 
-				return true;
-			}
+                return true;
+            }
 
-			int32_t nTop;
+            int32_t top;
 
-			struct {
-				uint64_t nLowerBound;
-				uint64_t nUpperBound;
-			} items[rdmdiscovery::DISCOVERY_STACK_SIZE];
+            struct
+            {
+                uint64_t lower_bound;
+                uint64_t upper_bound;
+            } items[rdmdiscovery::kDiscoveryStackSize];
 
-			int32_t nDebugStackTopMax;
-		} stack;
+            int32_t debug_stack_top_max;
+        } stack;
 
-		uint64_t nLowerBound;
-		uint64_t nMidPosition;
-		uint64_t nUpperBound;
-		uint32_t nCounter;
-		uint32_t nMicros;
-		uint8_t uid[RDM_UID_SIZE];
-		uint8_t pdl[2][RDM_UID_SIZE];
-		bool bCommandRunning;
-	} m_Discovery;
+        uint64_t lower_bound;
+        uint64_t mid_position;
+        uint64_t upper_bound;
+        uint32_t counter;
+        uint32_t micros;
+        uint8_t uid[RDM_UID_SIZE];
+        uint8_t pdl[2][RDM_UID_SIZE];
+        bool is_command_running;
+    } discovery_;
 
-	struct {
-		uint32_t nCounter;
-		uint32_t nMicros;
-		bool bCommandRunning;
-	} m_DiscoverySingleDevice;
+    struct
+    {
+        uint32_t counter;
+        uint32_t micros;
+        bool is_command_running;
+    } discovery_single_device_;
 
-	struct {
-		uint32_t nCounter;
-		uint32_t nMicros;
-		bool bCommandRunning;
-		uint8_t uid[RDM_UID_SIZE];
-	} m_QuikFind;
+    struct
+    {
+        uint32_t counter;
+        uint32_t micros;
+        bool is_command_running;
+        uint8_t uid[RDM_UID_SIZE];
+    } quick_find_;
 
-	struct {
-		uint32_t nCounter;
-		uint32_t nMicros;
-		bool bCommandRunning;
-		uint8_t uid[RDM_UID_SIZE];
-	} m_QuikFindDiscovery;
-
-#ifndef NDEBUG
-	struct {
-		struct {
-			uint64_t nLowerBound;
-			uint64_t nUpperBound;
-		} tree[1024];
-
-		uint32_t nTreeIndex;
-	} debug;
-#endif
+    struct
+    {
+        uint32_t counter;
+        uint32_t micros;
+        bool is_command_running;
+        uint8_t uid[RDM_UID_SIZE];
+    } quick_find_discovery_;
 };
 
-#endif /* RDMDDISCOVERY_H_ */
+#endif  // RDMDISCOVERY_H_

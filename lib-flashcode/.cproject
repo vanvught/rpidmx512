@@ -172,9 +172,6 @@
 						<entry excluding="src|src/gd32|src/gd32/f4xx|src/gd32/fmc|src/gd32/h7xx|src/h3" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 						<entry excluding="gd32|gd32/f4xx|gd32/fmc|gd32/h7xx|h3" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
 						<entry excluding="f4xx|fmc|h7xx" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/gd32"/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/gd32/f4xx"/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/gd32/fmc"/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/gd32/h7xx"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/h3"/>
 					</sourceEntries>
 				</configuration>

@@ -26,14 +26,14 @@
 #ifndef CONSOLE_CONSOLE_FB_H_
 #define CONSOLE_CONSOLE_FB_H_
 
-#if !defined (CONSOLE_FB)
-# error File should not be included
+#if !defined(CONSOLE_FB)
+#error File should not be included
 #endif
 
-# if defined (H3)
-#  include "h3/console_fb.h"
-# else
-#  include "rpi/console_fb.h"
-# endif
+#if defined(H3)
+#include "h3/console_fb.h"
+#else
+#include "rpi/console_fb.h"
+#endif
 
-#endif /* CONSOLE_CONSOLE_FB_H_ */
+#endif  // CONSOLE_CONSOLE_FB_H_

@@ -25,60 +25,68 @@
 
 #pragma GCC push_options
 #pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wold-style-cast" //TODO remove old-style-cast
+#pragma GCC diagnostic ignored "-Wold-style-cast" // TODO remove old-style-cast
 
 #include <stdint.h>
 #include <stdio.h>
 
-int uart0_printf(const char* fmt, ...);
-#define printf uart0_printf
+namespace uart0
+{
+int Printf(const char* fmt, ...);
+}
 
 #include "arm/synchronize.h"
 
-#define MEGABYTE		0x100000
+#define MEGABYTE 0x100000
 
-static void _print_bits(uint32_t u) {
-	unsigned i;
+static void _print_bits(uint32_t u)
+{
+    unsigned i;
 
-	for (i = 0; i < 32; i++) {
-		if ((u & 1) == 1) {
-			printf("%-2d ", i);
-		}
-		u = u >> 1;
-	}
+    for (i = 0; i < 32; i++)
+    {
+        if ((u & 1) == 1)
+        {
+            uart0::Printf("%-2d ", i);
+        }
+        u = u >> 1;
+    }
 
-	puts("");
+    puts("");
 }
 
-static void _dump_page_table(const uint32_t *p) {
-	unsigned i;
-	uint32_t prev = 0;
+static void _dump_page_table(const uint32_t* p)
+{
+    unsigned i;
+    uint32_t prev = 0;
 
-	for (i = 0; i < 4096; i++) {
-		auto data =  (*p & 0xFFFFF);
-		if (data != prev) {
-			printf(" %.4d : %p : 0x%.8x : %.5x -> bits ", i, p, i * MEGABYTE, data);
-			_print_bits(data);
-			prev = data;
-		}
-		p++;
-	}
-//	p--;
-//	i--;
-//
-//	printf(" %.4d : %p : 0x%.8x : %.5x -> bits ", i, p, i * MEGABYTE, (uint32_t) (*p & 0xFFFFF));
-//	_print_bits((uint32_t) (*p & 0xFFFFF));
+    for (i = 0; i < 4096; i++)
+    {
+        auto data = (*p & 0xFFFFF);
+        if (data != prev)
+        {
+            uart0::Printf(" %.4d : %p : 0x%.8x : %.5x -> bits ", i, p, i * MEGABYTE, data);
+            _print_bits(data);
+            prev = data;
+        }
+        p++;
+    }
+    //	p--;
+    //	i--;
+    //
+    //	uart0::Printf(" %.4d : %p : 0x%.8x : %.5x -> bits ", i, p, i * MEGABYTE, (uint32_t) (*p & 0xFFFFF));
+    //	_print_bits((uint32_t) (*p & 0xFFFFF));
 }
 
+void arm_dump_page_table()
+{
+    uint32_t page_table;
 
-void arm_dump_page_table() {
-	uint32_t page_table;
+    asm volatile("mrc p15, 0, %0, c2, c0, 0" : "=r"(page_table));
+    isb();
 
-	asm volatile ("mrc p15, 0, %0, c2, c0, 0" : "=r" (page_table));
-	isb();
+    page_table = page_table & (uint32_t)(~0xFF);
+    uart0::Printf("TTBR0 at address: %p\n", page_table);
 
-	page_table = page_table & (uint32_t)(~0xFF);
-	printf("TTBR0 at address: %p\n", page_table);
-
-	_dump_page_table((const uint32_t *) page_table);
+    _dump_page_table((const uint32_t*)page_table);
 }

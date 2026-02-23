@@ -23,9 +23,13 @@
  * THE SOFTWARE.
  */
 
-void console_putc(int);
+namespace console
+{
+void Putc(int);
+}
 
-extern "C" int putchar(int c) {
-	console_putc(c);
-	return 1;
+extern "C" int putchar(int c) //NOLINT
+{
+    console::Putc(c);
+    return 1;
 }

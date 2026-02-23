@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,135 +27,136 @@
 #include <cstdint>
 #include <algorithm>
 
-#include "hardware.h"
+#include "h3/hal_watchdog.h"
+#include "h3/hal_micros.h"
 #include "network.h"
-
 #include "displayudf.h"
-
 #include "console.h"
-
 #include "dmxreceiver.h"
-
 #include "dmxmonitor.h"
-#include "dmxmonitorparams.h"
+#include "json/dmxmonitorparams.h"
 #include "dmx.h"
-
 #if !defined(NO_EMAC)
-# include "network.h"
-# include "remoteconfig.h"
-# include "remoteconfigparams.h"
-# include "configstore.h"
+#include "network.h"
+#include "remoteconfig.h"
+#include "configstore.h"
 #endif
-
 #include "software_version.h"
 
-static constexpr auto TOP_ROW_STATS = 26;
+static constexpr auto kTopRowStats = 26;
 
-int main() {
-	Hardware hw;
-	DisplayUdf display;
+namespace hal
+{
+void RebootHandler() {}
+} // namespace hal
+
+int main() //NOLINT
+{
+    hal::Init();
+    DisplayUdf display;
 #if !defined(NO_EMAC)
-	ConfigStore configStore;
-	Network nw;
+    ConfigStore config_store;
+    network::Init();
 #endif
 
-	console_clear();
+    console::Clear();
 
-	uint32_t nMicrosPrevious = 0;
-	uint32_t nUpdatesPerSecondeMin = UINT32_MAX;
-	uint32_t nUpdatesPerSecondeMax = 0;
-	uint32_t nSlotsInPacketMin = UINT16_MAX;
-	uint32_t nSlotsInPacketMax = 0;
-	uint32_t nSotToSlotMin = UINT32_MAX;
-	uint32_t nSlotToSlotMax = 0;
-	uint32_t nBreakToBreakMin = UINT32_MAX;
-	uint32_t nBreakToBreakMax = 0;
-	int16_t nLength;
+    uint32_t micros_previous = 0;
+    uint32_t nUpdatesPerSecondeMin = UINT32_MAX;
+    uint32_t nUpdatesPerSecondeMax = 0;
+    uint32_t nSlotsInPacketMin = UINT16_MAX;
+    uint32_t nSlotsInPacketMax = 0;
+    uint32_t nSotToSlotMin = UINT32_MAX;
+    uint32_t nSlotToSlotMax = 0;
+    uint32_t nBreakToBreakMin = UINT32_MAX;
+    uint32_t break_to_break_max = 0;
+    int16_t length;
 
-	printf("DMX Real-time Monitor [V%s] Orange Pi One Compiled on %s at %s\n", SOFTWARE_VERSION, __DATE__, __TIME__);
+    printf("DMX Real-time Monitor [V%s] Orange Pi One Compiled on %s at %s\n", SOFTWARE_VERSION, __DATE__, __TIME__);
 
-	DMXMonitorParams dmxMonitorParams;
-	DMXMonitor dmxMonitor;
+    DmxMonitor dmxMonitor;
 
-	dmxMonitorParams.Load();
-	dmxMonitorParams.Set(&dmxMonitor);
-
-#if !defined(NO_EMAC)
-	RemoteConfig remoteConfig(remoteconfig::Node::NODE, remoteconfig::Output::MONITOR);
-
-	RemoteConfigParams remoteConfigParams;
-	remoteConfigParams.Load();
-	remoteConfigParams.Set(&remoteConfig);
-#endif
-
-	dmxMonitor.Cls();
-
-	console_set_cursor(0, TOP_ROW_STATS);
-	console_puts("DMX updates/sec\n");
-	console_puts("Slots in packet\n");
-	console_puts("Slot to slot\n");
-	console_puts("Break to break");
-
-	DMXReceiver dmxreceiver(&dmxMonitor);
-	dmxreceiver.Start();
-
-	hw.WatchdogInit();
-
-	for(;;) {
-		hw.WatchdogFeed();
-
-		dmxreceiver.Run(nLength);
-
-		const auto nMicrosNow = hw.Micros();
-
-		if (nMicrosNow - nMicrosPrevious > (1000000 / 2)) {
-			nMicrosPrevious = nMicrosNow;
-
-			const auto dmx_updates_per_seconde = dmxreceiver.GetUpdatesPerSecond(0);
-
-			console_save_cursor();
-
-			if (dmx_updates_per_seconde == 0) {
-				console_set_cursor(20, TOP_ROW_STATS);
-				console_puts("---");
-				console_set_cursor(20, TOP_ROW_STATS + 1);
-				console_puts("---");
-				console_set_cursor(20, TOP_ROW_STATS + 2);
-				console_puts("---");
-				console_set_cursor(17, TOP_ROW_STATS + 3);
-				console_puts("-------");
-			} else {
-				const auto *dmx_data = dmxreceiver.GetDmxCurrentData(0);
-				const auto *dmx_statistics = reinterpret_cast<const struct Data*>(dmx_data);
-
-				nUpdatesPerSecondeMin = std::min(dmx_updates_per_seconde, nUpdatesPerSecondeMin);
-				nUpdatesPerSecondeMax = std::max(dmx_updates_per_seconde, nUpdatesPerSecondeMax);
-
-				nSlotsInPacketMin = std::min(dmx_statistics->Statistics.nSlotsInPacket, nSlotsInPacketMin);
-				nSlotsInPacketMax = std::max(dmx_statistics->Statistics.nSlotsInPacket, nSlotsInPacketMax);
-
-				nSotToSlotMin = std::min(dmx_statistics->Statistics.nSlotToSlot, nSotToSlotMin);
-				nSlotToSlotMax = std::max(dmx_statistics->Statistics.nSlotToSlot, nSlotToSlotMax);
-
-				nBreakToBreakMin = std::min(dmx_statistics->Statistics.nBreakToBreak, nBreakToBreakMin);
-				nBreakToBreakMax = std::max(dmx_statistics->Statistics.nBreakToBreak, nBreakToBreakMax);
-
-				console_set_cursor(20, TOP_ROW_STATS);
-				printf("%3d     %3d / %d", dmx_updates_per_seconde, nUpdatesPerSecondeMin, nUpdatesPerSecondeMax);
-				console_set_cursor(20, TOP_ROW_STATS + 1);
-				printf("%3d     %3d / %d", dmx_statistics->Statistics.nSlotsInPacket, nSlotsInPacketMin, nSlotsInPacketMax);
-				console_set_cursor(20, TOP_ROW_STATS + 2);
-				printf("%3d     %3d / %d", dmx_statistics->Statistics.nSlotToSlot, nSotToSlotMin, nSlotToSlotMax);
-				console_set_cursor(17, TOP_ROW_STATS + 3);
-				printf("%6d  %6d / %d", dmx_statistics->Statistics.nBreakToBreak, nBreakToBreakMin, nBreakToBreakMax);
-			}
-
-			console_restore_cursor();
-		}
+    json::DmxMonitorParams dmx_monitor_params;
+    dmx_monitor_params.Load();
+    dmx_monitor_params.Set();
 
 #if !defined(NO_EMAC)
-		nw.Run();
+    RemoteConfig remote_config(remoteconfig::Output::MONITOR);
 #endif
-		hw.Run();
-	}
+
+    dmxMonitor.Cls();
+
+    console::SetCursor(0, kTopRowStats);
+    console::Puts("DMX updates/sec\n");
+    console::Puts("Slots in packet\n");
+    console::Puts("Slot to slot\n");
+    console::Puts("Break to break");
+
+    DMXReceiver dmxreceiver(&dmxMonitor);
+    dmxreceiver.Start();
+
+    hal::WatchdogInit();
+
+    for (;;)
+    {
+        hal::WatchdogFeed();
+
+        dmxreceiver.Run(length);
+
+        const auto kMicrosNow = hal::Micros();
+
+        if (kMicrosNow - micros_previous > (1000000 / 2))
+        {
+            micros_previous = kMicrosNow;
+
+            const auto kDmxUpdatesPerSeconde = dmxreceiver.GetUpdatesPerSecond(0);
+
+            console::SaveCursor();
+
+            if (kDmxUpdatesPerSeconde == 0)
+            {
+                console::SetCursor(20, kTopRowStats);
+                console::Puts("---");
+                console::SetCursor(20, kTopRowStats + 1);
+                console::Puts("---");
+                console::SetCursor(20, kTopRowStats + 2);
+                console::Puts("---");
+                console::SetCursor(17, kTopRowStats + 3);
+                console::Puts("-------");
+            }
+            else
+            {
+                const auto* dmx_data = dmxreceiver.GetDmxCurrentData(0);
+                const auto* dmx_statistics = reinterpret_cast<const struct Data*>(dmx_data);
+
+                nUpdatesPerSecondeMin = std::min(kDmxUpdatesPerSeconde, nUpdatesPerSecondeMin);
+                nUpdatesPerSecondeMax = std::max(kDmxUpdatesPerSeconde, nUpdatesPerSecondeMax);
+
+                nSlotsInPacketMin = std::min(dmx_statistics->Statistics.nSlotsInPacket, nSlotsInPacketMin);
+                nSlotsInPacketMax = std::max(dmx_statistics->Statistics.nSlotsInPacket, nSlotsInPacketMax);
+
+                nSotToSlotMin = std::min(dmx_statistics->Statistics.nSlotToSlot, nSotToSlotMin);
+                nSlotToSlotMax = std::max(dmx_statistics->Statistics.nSlotToSlot, nSlotToSlotMax);
+
+                nBreakToBreakMin = std::min(dmx_statistics->Statistics.nBreakToBreak, nBreakToBreakMin);
+                break_to_break_max = std::max(dmx_statistics->Statistics.nBreakToBreak, break_to_break_max);
+
+                console::SetCursor(20, kTopRowStats);
+                printf("%3d     %3d / %d", kDmxUpdatesPerSeconde, nUpdatesPerSecondeMin, nUpdatesPerSecondeMax);
+                console::SetCursor(20, kTopRowStats + 1);
+                printf("%3d     %3d / %d", dmx_statistics->Statistics.nSlotsInPacket, nSlotsInPacketMin, nSlotsInPacketMax);
+                console::SetCursor(20, kTopRowStats + 2);
+                printf("%3d     %3d / %d", dmx_statistics->Statistics.nSlotToSlot, nSotToSlotMin, nSlotToSlotMax);
+                console::SetCursor(17, kTopRowStats + 3);
+                printf("%6d  %6d / %d", dmx_statistics->Statistics.nBreakToBreak, nBreakToBreakMin, break_to_break_max);
+            }
+
+            console::RestoreCursor();
+        }
+
+#if !defined(NO_EMAC)
+        network::Run();
+#endif
+        hal::Run();
+    }
 }

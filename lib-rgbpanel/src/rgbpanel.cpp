@@ -2,7 +2,7 @@
  * @file rgbpanel.cpp
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,205 +22,234 @@
  */
 
 #include <cassert>
-#include <algorithm>
 #include <cstdint>
 #include <cstdio>
 
 #include "rgbpanel.h"
-
 #include "../../lib-device/src/font_cp437.h"
 
-#include "debug.h"
-
-using namespace rgbpanel;
-
-RgbPanel::RgbPanel(uint32_t nColumns, uint32_t nRows, uint32_t nChain, Types tType):
-	m_nColumns(nColumns),
-	m_nRows(nRows),
-	m_nChain(nChain != 0 ? nChain : 1),
-	m_tType(tType),
-	// Text
-	m_nMaxPosition(nColumns / FONT_CP437_CHAR_W),
-	m_nMaxLine(nRows / FONT_CP437_CHAR_H)
+RgbPanel::RgbPanel(uint32_t columns, uint32_t rows, uint32_t chain, rgbpanel::Types type)
+    : columns_(columns),
+      rows_(rows),
+      chain_(chain != 0 ? chain : 1),
+      type_(type),
+      // Text
+      max_position_(columns / FONT_CP437_CHAR_W),
+      max_line_(rows / FONT_CP437_CHAR_H)
 {
-	PlatformInit();
+	assert(s_this == nullptr);
+	s_this = this;
+	
+    PlatformInit();
 
-	// Text
-	assert(nColumns % FONT_CP437_CHAR_W == 0);
-	assert(nRows % FONT_CP437_CHAR_H == 0);
+    // Text
+    assert(columns % FONT_CP437_CHAR_W == 0);
+    assert(rows % FONT_CP437_CHAR_H == 0);
 
-	m_ptColons = new struct TColon[m_nMaxPosition * m_nMaxLine];
-	assert(m_ptColons != nullptr);
-	SetColonsOff();
+    colons_ = new struct TColon[max_position_ * max_line_];
+    assert(colons_ != nullptr);
+    SetColonsOff();
 }
 
 /**
  * Text
  */
-void RgbPanel::PutChar(char nChar, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
-	if (__builtin_expect((static_cast<uint32_t>(nChar) >= cp437_font_size()), 0)) {
-		nChar = ' ';
-	}
+void RgbPanel::PutChar(char ch, uint8_t red, uint8_t green, uint8_t blue)
+{
+    if (__builtin_expect((static_cast<uint32_t>(ch) >= cp437_font_size()), 0))
+    {
+        ch = ' ';
+    }
 
-	const auto nStartColumn = static_cast<uint8_t>(m_nPosition * FONT_CP437_CHAR_W);
-	auto nRow = m_nLine * m_nMaxPosition;
-	const auto nColonIndex = m_nPosition + nRow;
-	const auto bShowColon = (m_ptColons[nColonIndex].nBits != 0);
+    const auto kStartColumn = static_cast<uint8_t>(position_ * FONT_CP437_CHAR_W);
+    auto row = line_ * max_position_;
+    const auto kColonIndex = position_ + row;
+    const auto kShowColon = (colons_[kColonIndex].bits != 0);
 
-	for (uint32_t i = 0; i < FONT_CP437_CHAR_H; i++) {
-		uint32_t nWidth = 0;
+    for (uint32_t i = 0; i < FONT_CP437_CHAR_H; i++)
+    {
+        uint32_t width = 0;
 
-		for (uint32_t nColumn = nStartColumn; nColumn < static_cast<uint32_t>(FONT_CP437_CHAR_W + nStartColumn); nColumn++) {
+        for (uint32_t column = kStartColumn; column < static_cast<uint32_t>(FONT_CP437_CHAR_W + kStartColumn); column++)
+        {
+            if ((kShowColon) && (column == (kStartColumn + FONT_CP437_CHAR_W - 1U)))
+            {
+                const auto kByte = static_cast<uint8_t>(colons_[kColonIndex].bits >> i);
 
-			if ((bShowColon) && (nColumn == (nStartColumn + FONT_CP437_CHAR_W - 1U))) {
-				const auto nByte = static_cast<uint8_t>(m_ptColons[nColonIndex].nBits >> i);
+                if ((kByte & 0x1) != 0)
+                {
+                    SetPixel(column, row, colons_[kColonIndex].red, colons_[kColonIndex].green, colons_[kColonIndex].blue);
+                }
+                else
+                {
+                    SetPixel(column, row, 0, 0, 0);
+                }
 
-				if ((nByte & 0x1) != 0) {
-					SetPixel(nColumn, nRow, m_ptColons[nColonIndex].nRed, m_ptColons[nColonIndex].nGreen, m_ptColons[nColonIndex].nBlue);
-				} else {
-					SetPixel(nColumn, nRow, 0, 0, 0);
-				}
+                continue;
+            }
 
-				continue;
-			}
+            const auto kByte = cp437_font[static_cast<int>(ch)][width++] >> i;
 
-			const auto nByte = cp437_font[static_cast<int>(nChar)][nWidth++] >> i;
+            if ((kByte & 0x1) != 0)
+            {
+                SetPixel(column, row, red, green, blue);
+            }
+            else
+            {
+                SetPixel(column, row, 0, 0, 0);
+            }
+        }
 
-			if ((nByte & 0x1) != 0) {
-				SetPixel(nColumn, nRow, nRed, nGreen, nBlue);
-			} else {
-				SetPixel(nColumn, nRow, 0, 0, 0);
-			}
+        row++;
+    }
 
-		}
+    position_++;
 
-		nRow++;
-	}
+    if (position_ == max_position_)
+    {
+        position_ = 0;
+        line_++;
 
-	m_nPosition++;
-
-	if (m_nPosition == m_nMaxPosition ) {
-		m_nPosition = 0;
-		m_nLine++;
-
-		if (m_nLine == m_nMaxLine) {
-			m_nLine = 0;
-		}
-	}
+        if (line_ == max_line_)
+        {
+            line_ = 0;
+        }
+    }
 }
 
-void RgbPanel::PutString(const char *pString, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
-	char nChar;
+void RgbPanel::PutString(const char* string, uint8_t red, uint8_t green, uint8_t blue)
+{
+    char ch;
 
-	while ((nChar = *pString++) != 0) {
-		PutChar(nChar, nRed, nGreen, nBlue);
-	}
+    while ((ch = *string++) != 0)
+    {
+        PutChar(ch, red, green, blue);
+    }
 }
 
-void RgbPanel::Text(const char *pText, uint32_t nLength, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
-	if (__builtin_expect((nLength > m_nMaxPosition), 0)) {
-		nLength = m_nMaxPosition;
-	}
+void RgbPanel::Text(const char* text, uint32_t length, uint8_t red, uint8_t green, uint8_t blue)
+{
+    if (__builtin_expect((length > max_position_), 0))
+    {
+        length = max_position_;
+    }
 
-	for (uint32_t i = 0; i < nLength; i++) {
-		PutChar(pText[i], nRed, nGreen, nBlue);
-	}
+    for (uint32_t i = 0; i < length; i++)
+    {
+        PutChar(text[i], red, green, blue);
+    }
 }
 
 /**
  * 1 is top line
  */
-void RgbPanel::TextLine(uint8_t nLine, const char *pText, uint32_t nLength, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
-	if (__builtin_expect(((nLine == 0) || (nLine > m_nMaxLine)), 0)) {
-		return;
-	}
+void RgbPanel::TextLine(uint8_t line, const char* text, uint32_t length, uint8_t red, uint8_t green, uint8_t blue)
+{
+    if (__builtin_expect(((line == 0) || (line > max_line_)), 0))
+    {
+        return;
+    }
 
-	SetCursorPos(0, static_cast<uint8_t>(nLine - 1));
-	Text(pText, nLength, nRed, nGreen, nBlue);
+    SetCursorPos(0, static_cast<uint8_t>(line - 1));
+    Text(text, length, red, green, blue);
 }
 
 /**
  * 1 is top line
  */
-void RgbPanel::ClearLine(uint8_t nLine) {
-	if (__builtin_expect(((nLine == 0) || (nLine > m_nMaxLine)), 0)) {
-		return;
-	}
+void RgbPanel::ClearLine(uint8_t line)
+{
+    if (__builtin_expect(((line == 0) || (line > max_line_)), 0))
+    {
+        return;
+    }
 
-	const auto nStartRow = (nLine - 1U) * m_nMaxPosition;
+    const auto kStartRow = (line - 1U) * max_position_;
 
-	for (uint32_t nRow = nStartRow; nRow < (nStartRow + FONT_CP437_CHAR_H); nRow++) {
-		for (uint32_t nColumn = 0; nColumn < m_nColumns; nColumn++) {
-			SetPixel(nColumn, nRow, 0, 0, 0);
-		}
-	}
+    for (uint32_t row = kStartRow; row < (kStartRow + FONT_CP437_CHAR_H); row++)
+    {
+        for (uint32_t column = 0; column < columns_; column++)
+        {
+            SetPixel(column, row, 0, 0, 0);
+        }
+    }
 
-	SetCursorPos(0, static_cast<uint8_t>(nLine - 1));
+    SetCursorPos(0, static_cast<uint8_t>(line - 1));
 }
 
 /**
  * 0,0 is top left
  */
-void RgbPanel::SetCursorPos(uint8_t nCol, uint8_t nRow) {
-	if (__builtin_expect(((nCol >= m_nMaxPosition) || (nRow >= m_nMaxLine)), 0)) {
-		return;
-	}
+void RgbPanel::SetCursorPos(uint8_t column, uint8_t row)
+{
+    if (__builtin_expect(((column >= max_position_) || (row >= max_line_)), 0))
+    {
+        return;
+    }
 
-	m_nPosition = nCol;
-	m_nLine = nRow;
+    position_ = column;
+    line_ = row;
 }
 
-void RgbPanel::SetColon(char nChar, uint8_t nCol, uint8_t nRow, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
-	if (__builtin_expect(((nCol >= m_nMaxPosition) || (nRow >= m_nMaxLine)), 0)) {
-		return;
-	}
+void RgbPanel::SetColon(char ch, uint8_t column, uint8_t row, uint8_t red, uint8_t green, uint8_t blue)
+{
+    if (__builtin_expect(((column >= max_position_) || (row >= max_line_)), 0))
+    {
+        return;
+    }
 
-	const auto nIndex = nCol + (nRow * m_nMaxPosition);
+    const auto kIndex = column + (row * max_position_);
 
-	switch (nChar) {
-	case ':':
-	case ';':
-		m_ptColons[nIndex].nBits = 0x66;
-		break;
-	case '.':
-	case ',':
-		m_ptColons[nIndex].nBits = 0x60;
-		break;
-	default:
-		m_ptColons[nIndex].nBits = 0;
-		break;
-	}
+    switch (ch)
+    {
+        case ':':
+        case ';':
+            colons_[kIndex].bits = 0x66;
+            break;
+        case '.':
+        case ',':
+            colons_[kIndex].bits = 0x60;
+            break;
+        default:
+            colons_[kIndex].bits = 0;
+            break;
+    }
 
-	m_ptColons[nIndex].nRed = nRed;
-	m_ptColons[nIndex].nBlue = nBlue;
-	m_ptColons[nIndex].nGreen = nGreen;
+    colons_[kIndex].red = red;
+    colons_[kIndex].blue = blue;
+    colons_[kIndex].green = green;
 }
 
-void RgbPanel::SetColonsOff() {
-	for (uint32_t nIndex = 0; nIndex < m_nMaxPosition * m_nMaxLine; nIndex++) {
-		m_ptColons[nIndex].nBits = 0;
-		m_ptColons[nIndex].nRed = 0;
-		m_ptColons[nIndex].nGreen = 0;
-		m_ptColons[nIndex].nBlue = 0;
-	}
+void RgbPanel::SetColonsOff()
+{
+    for (uint32_t index = 0; index < max_position_ * max_line_; index++)
+    {
+        colons_[index].bits = 0;
+        colons_[index].red = 0;
+        colons_[index].green = 0;
+        colons_[index].blue = 0;
+    }
 }
 
 /**
  * void RgbPanel::Start() is implemented as platform specific
  */
 
-void RgbPanel::Stop() {
-	if (!m_bIsStarted) {
-		return;
-	}
+void RgbPanel::Stop()
+{
+    if (!started_)
+    {
+        return;
+    }
 
-	m_bIsStarted = false;
+    started_ = false;
 
-	Cls();
-	Show();
+    Cls();
+    Show();
 }
 
-void RgbPanel::Print() {
-	puts("RGB led panel");
-	printf(" %ux%ux%u\n", m_nColumns, m_nRows, m_nChain);
+void RgbPanel::Print()
+{
+    puts("RGB led panel");
+    printf(" %ux%ux%u\n", columns_, rows_, chain_);
 }

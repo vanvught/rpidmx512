@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,171 +24,89 @@
  */
 
 #include <cstdint>
-#include <cstring>
-#include <cstdlib>
-#include <cctype>
 #include <signal.h>
 
-#include "hardware.h"
+#include "hal.h"
 #include "network.h"
-
 #include "display.h"
-#include "displayudfparams.h"
-
-#include "e131bridge.h"
-#include "e131params.h"
-#include "e131msgconst.h"
-
+#include "json/dmxnodenode.h"
+#include "dmxnodemsgconst.h"
+#include "json/dmxnodeparams.h"
 #include "dmxmonitor.h"
-#include "dmxmonitorparams.h"
-
-#include "rdmdeviceparams.h"
+#include "json/dmxmonitorparams.h"
 #include "rdmnetdevice.h"
-#include "rdmnetconst.h"
-#include "rdmpersonality.h"
+#include "rdmdevice.h"
 #include "rdm_e120.h"
-#include "factorydefaults.h"
-
 #include "configstore.h"
-
 #include "remoteconfig.h"
-#include "remoteconfigparams.h"
-
-#if defined (NODE_SHOWFILE)
-# include "showfile.h"
-# include "showfileparams.h"
+#if defined(NODE_SHOWFILE)
+#include "showfile.h"
 #endif
-
 #include "firmwareversion.h"
 #include "software_version.h"
 #include "software_version_id.h"
 
-static bool keepRunning = true;
+static bool keep_running = true;
 
-void intHandler(int) {
-    keepRunning = false;
+void IntHandler(int)
+{
+    keep_running = false;
 }
 
-namespace e131bridge {
-namespace configstore {
-uint32_t DMXPORT_OFFSET = 0;
-}  // namespace configstore
-}  // namespace e131bridge
-
-int main(int argc, char **argv) {
+int main(int argc, char** argv)
+{
     struct sigaction act;
-    act.sa_handler = intHandler;
+    act.sa_handler = IntHandler;
     sigaction(SIGINT, &act, nullptr);
-#ifndef NDEBUG
-	if (argc > 2) {
-		const int c = argv[2][0];
-		if (isdigit(c)){
-			e131bridge::configstore::DMXPORT_OFFSET = c - '0';
-		}
-	}
-#endif
-	Hardware hw;
-	Display display;
-	ConfigStore configStore;
-	Network nw(argc, argv);
-	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__, DEVICE_SOFTWARE_VERSION_ID);
+    hal::Init();
+    Display display;
+    ConfigStore config_store;
+    Network nw(argc, argv);
+    FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__, DEVICE_SOFTWARE_VERSION_ID);
 
-	hw.Print();
-	fw.Print();
-	nw.Print();
+    hal::print();
+    fw.Print();
+    nw.Print();
 
-	DisplayUdfParams displayUdfParams;
+    DmxMonitor monitor;
 
-	E131Bridge bridge;
+    json::DmxMonitorParams monitor_params;
+    monitor_params.Load();
+    monitor_params.Set();
 
-	E131Params e131Params;
-	e131Params.Load();
-	e131Params.Set();
+    DmxNodeNode dmx_node_node;
+    dmx_node_node.SetOutput(&monitor);
+    dmx_node_node.Print();
 
-	DMXMonitor monitor;
+    auto& rdm_device = RdmDevice::Get();
+    rdm_device.SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
+    rdm_device.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
+    rdm_device.Init();
+    rdm_device.Print();
 
-	DMXMonitorParams monitorParams;
-	monitorParams.Load();
+    RDMNetDevice llrp_only_device;
+	llrp_only_device.Print();
 
-	bridge.SetOutput(&monitor);
+    dmx_node_node.Print();
 
-	for (uint32_t nPortIndex = 0; nPortIndex < e131params::MAX_PORTS; nPortIndex++) {
-		uint32_t nOffset = nPortIndex;
-		if (nPortIndex >= e131bridge::configstore::DMXPORT_OFFSET) {
-			nOffset = nPortIndex - e131bridge::configstore::DMXPORT_OFFSET;
-		} else {
-			continue;
-		}
-
-		printf(">> nPortIndex=%u, nOffset=%u\n", nPortIndex, nOffset);
-
-		bool bIsSet;
-		const auto nUniverse = e131Params.GetUniverse(nOffset, bIsSet);
-		const auto portDirection = e131Params.GetDirection(nPortIndex);
-
-		if (portDirection == lightset::PortDir::OUTPUT) {
-			bridge.SetUniverse(nPortIndex,lightset::PortDir::OUTPUT, nUniverse);
-		} else {
-			bridge.SetUniverse(nPortIndex,lightset::PortDir::DISABLE	, nUniverse);
-		}
-	}
-
-	const auto nActivePorts = bridge.GetActiveOutputPorts();
-
-	char aDescription[rdm::personality::DESCRIPTION_MAX_LENGTH + 1];
-	snprintf(aDescription, sizeof(aDescription) - 1, "sACN E1.31 DMX %d", nActivePorts);
-
-	uint8_t nLength;
-	const auto *aLabel = hw.GetBoardName(nLength);
-
-	RDMPersonality *pPersonalities[1] = { new RDMPersonality(aDescription, nullptr) };
-	RDMNetDevice llrpOnlyDevice(pPersonalities, 1);
-
-	llrpOnlyDevice.SetLabel(RDM_ROOT_DEVICE, aLabel, nLength);
-	llrpOnlyDevice.SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
-	llrpOnlyDevice.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
-	llrpOnlyDevice.Init();
-
-
-	RDMDeviceParams rdmDeviceParams;
-
-	rdmDeviceParams.Load();
-	rdmDeviceParams.Set(&llrpOnlyDevice);
-
-	llrpOnlyDevice.Print();
-
-	bridge.Print();
-
-#if defined (NODE_SHOWFILE)
-	ShowFile showFile;
-
-	ShowFileParams showFileParams;
-	showFileParams.Load();
-	showFileParams.Set();
-
-	if (showFile.IsAutoStart()) {
-		showFile.Play();
-	}
-
-	showFile.Print();
+#if defined(NODE_SHOWFILE)
+    ShowFile showfile;
+    showfile.Print();
 #endif
 
-	RemoteConfig remoteConfig(remoteconfig::Node::E131, remoteconfig::Output::MONITOR, bridge.GetActiveOutputPorts());
+    RemoteConfig remote_config(remoteconfig::Output::MONITOR, dmx_node_node.GetActiveOutputPorts());
 
-	RemoteConfigParams remoteConfigParams;
-	remoteConfigParams.Load();
-	remoteConfigParams.Set(&remoteConfig);
+    dmx_node_node.Start();
 
-	bridge.Start();
-
-	while (keepRunning) {
-		nw.Run();
-		bridge.Run();
-#if defined (NODE_SHOWFILE)
-		showFile.Run();
+    while (keep_running)
+    {
+        network::Run();
+        dmx_node_node.Run();
+#if defined(NODE_SHOWFILE)
+        showfile.Run();
 #endif
-		hw.Run();
-	}
+        hal::Run();
+    }
 
-	return 0;
+    return 0;
 }

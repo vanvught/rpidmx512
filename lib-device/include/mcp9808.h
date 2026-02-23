@@ -2,7 +2,7 @@
  * @file mcp9808.h
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,27 +30,28 @@
 
 #include "hal_i2c.h"
 
-namespace sensor {
-namespace mcp9808 {
+namespace sensor
+{
+namespace mcp9808
+{
 static constexpr char DESCRIPTION[] = "Ambient Temperature";
 static constexpr auto RANGE_MIN = -20;
 static constexpr auto RANGE_MAX = 100;
-}  // namespace mcp9808
+} // namespace mcp9808
 
-class MCP9808: HAL_I2C {
-public:
-	MCP9808(uint8_t nAddress = 0);
+class MCP9808 : HAL_I2C
+{
+   public:
+    MCP9808(uint8_t address = 0);
 
-	bool Initialize() {
-		return m_bIsInitialized;
-	}
+    bool Initialize() { return m_bIsInitialized; }
 
-	float Get();
+    float Get();
 
-private:
-	bool m_bIsInitialized { false };
+   private:
+    bool m_bIsInitialized{false};
 };
 
-}  // namespace sensor
+} // namespace sensor
 
-#endif /* MCP9808_H_ */
+#endif  // MCP9808_H_

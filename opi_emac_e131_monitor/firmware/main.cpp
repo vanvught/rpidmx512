@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,151 +26,114 @@
 #include <cstdint>
 #include <cstdio>
 
-#include "hardware.h"
+#include "h3/hal.h"
+#include "h3/hal_watchdog.h"
 #include "network.h"
-
 #include "console.h"
 #include "h3/showsystime.h"
-
 #include "displayudf.h"
-#include "displayudfparams.h"
+#include "json/displayudfparams.h"
 #include "displayhandler.h"
-
-#include "e131bridge.h"
-#include "e131params.h"
-#include "e131msgconst.h"
-
+#include "dmxnodenode.h"
+#include "dmxnodemsgconst.h"
 #include "dmxmonitor.h"
-
-#include "rdmdeviceparams.h"
+#include "dmxnode.h"
+#if defined(NODE_RDMNET_LLRP_ONLY)
 #include "rdmnetdevice.h"
-#include "rdmpersonality.h"
+#include "rdmdevice.h"
 #include "rdm_e120.h"
-#include "factorydefaults.h"
-
-#if defined (NODE_SHOWFILE)
-# include "showfile.h"
-# include "showfileparams.h"
 #endif
-
+#if defined(NODE_SHOWFILE)
+#include "showfile.h"
+#endif
 #include "remoteconfig.h"
-#include "remoteconfigparams.h"
-
 #include "flashcodeinstall.h"
 #include "configstore.h"
-
 #include "firmwareversion.h"
 #include "software_version.h"
 
-int main() {
-	Hardware hw;
-	DisplayUdf display;
-	ConfigStore configStore;
-	Network nw;
-	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
-	FlashCodeInstall spiFlashInstall;
+namespace hal
+{
+void RebootHandler() {}
+} // namespace hal
 
-	console_clear();
+int main() // NOLINT
+{
+    hal::Init();
+    DisplayUdf display;
+    ConfigStore config_store;
+    network::Init();
+    FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+    FlashCodeInstall spiflash_install;
 
-	fw.Print();
+    console::Clear();
 
-	console_puts("sACN E1.31 ");
-	console_set_fg_color(CONSOLE_GREEN);
-	console_puts("Real-time DMX Monitor");
-	console_set_fg_color(CONSOLE_WHITE);
-	console_set_top_row(2);
+    fw.Print();
 
-	ShowSystime showSystime;
+    console::Puts("sACN E1.31 ");
+    console::SetFgColour(console::Colours::kConsoleGreen);
+    console::Puts("Real-time DMX Monitor");
+    console::SetFgColour(console::Colours::kConsoleWhite);
+    console::SetTopRow(2);
 
-	char aDescription[rdm::personality::DESCRIPTION_MAX_LENGTH + 1];
-	snprintf(aDescription, sizeof(aDescription) - 1, "sACN E1.31 Real-time DMX Monitor");
+    DmxNodeNode dmxnode_node;
+    ShowSystime show_systime;
 
-	char aLabel[RDM_DEVICE_LABEL_MAX_LENGTH + 1];
-	const auto nLength = snprintf(aLabel, sizeof(aLabel) - 1, "Orange Pi Zero DMX");
+#if defined(NODE_RDMNET_LLRP_ONLY)
+    auto& rdm_device = RdmDevice::Get();
+    rdm_device.SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
+    rdm_device.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
+    rdm_device.Init();
+    rdm_device.Print();
 
-	RDMPersonality *pPersonalities[1] = { new RDMPersonality(aDescription, nullptr) };
-	RDMNetDevice llrpOnlyDevice(pPersonalities, 1);
-
-	llrpOnlyDevice.SetLabel(RDM_ROOT_DEVICE, aLabel, static_cast<uint8_t>(nLength));
-	llrpOnlyDevice.SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
-	llrpOnlyDevice.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
-	llrpOnlyDevice.Init();
-
-	RDMDeviceParams rdmDeviceParams;
-	rdmDeviceParams.Load();
-	rdmDeviceParams.Set(&llrpOnlyDevice);
-
-	llrpOnlyDevice.Print();
-
-	E131Bridge bridge;
-
-	E131Params e131params;
-	e131params.Load();
-	e131params.Set();
-
-	bool IsSet;
-	bridge.SetUniverse(0, lightset::PortDir::OUTPUT, e131params.GetUniverse(0, IsSet));
-
-#if defined (NODE_SHOWFILE)
-	ShowFile showFile;
-
-	ShowFileParams showFileParams;
-	showFileParams.Load();
-	showFileParams.Set();
-
-	if (showFile.IsAutoStart()) {
-		showFile.Play();
-	}
-
-	showFile.Print();
+    RDMNetDevice llrp_only_device;
 #endif
 
-	DMXMonitor monitor;
-	// There is support for HEX output only
-	bridge.SetOutput(&monitor);
-	monitor.Cls();
-	console_set_top_row(20);
-	console_clear_top_row();
-
-	bridge.Print();
-
-	display.SetTitle("sACN E1.31 Monitor");
-	display.Set(2, displayudf::Labels::IP);
-	display.Set(3, displayudf::Labels::HOSTNAME);
-	display.Set(4, displayudf::Labels::VERSION);
-	display.Set(5, displayudf::Labels::UNIVERSE_PORT_A);
-	display.Set(6, displayudf::Labels::AP);
-
-	DisplayUdfParams displayUdfParams;
-	displayUdfParams.Load();
-	displayUdfParams.Set(&display);
-
-	display.Show();
-
-	RemoteConfig remoteConfig(remoteconfig::Node::E131, remoteconfig::Output::MONITOR, 0);
-
-	RemoteConfigParams remoteConfigParams;
-	remoteConfigParams.Load();
-	remoteConfigParams.Set(&remoteConfig);
-
-	display.TextStatus(E131MsgConst::START, CONSOLE_YELLOW);
-
-	bridge.Start();
-
-	display.TextStatus(E131MsgConst::STARTED, CONSOLE_GREEN);
-
-	hw.WatchdogInit();
-
-	for (;;) {
-		hw.WatchdogFeed();
-		nw.Run();
-		bridge.Run();
-#if defined (NODE_SHOWFILE)
-		showFile.Run();
+#if defined(NODE_SHOWFILE)
+    ShowFile showfile;
+    showfile.Print();
 #endif
-		showSystime.Run();
-		display.Run();
-		hw.Run();
-	}
+
+    DmxMonitor monitor;
+    // There is support for HEX output only
+
+    dmxnode_node.SetOutput(&monitor);
+
+    monitor.Cls();
+    console::SetTopRow(20);
+    console::ClearTopRow();
+
+    dmxnode_node.Print();
+
+    display.SetTitle("sACN E1.31 Monitor");
+    display.Set(2, displayudf::Labels::kIp);
+    display.Set(3, displayudf::Labels::kHostname);
+    display.Set(4, displayudf::Labels::kVersion);
+
+    json::DisplayUdfParams displayudf_params;
+    displayudf_params.Load();
+    displayudf_params.SetAndShow();
+
+    RemoteConfig remote_config(remoteconfig::Output::MONITOR, 0);
+
+    display.TextStatus(DmxNodeMsgConst::START, console::Colours::kConsoleYellow);
+
+    dmxnode_node.Start();
+
+    display.TextStatus(DmxNodeMsgConst::STARTED, console::Colours::kConsoleGreen);
+
+    hal::WatchdogInit();
+
+    for (;;)
+    {
+        hal::WatchdogFeed();
+        network::Run();
+        dmxnode_node.Run();
+#if defined(NODE_SHOWFILE)
+        showfile.Run();
+#endif
+        show_systime.Run();
+        display.Run();
+        hal::Run();
+    }
 }
-

@@ -1,8 +1,7 @@
 /**
  * @file firmwareversion.h
- *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,63 +25,80 @@
 #ifndef FIRMWAREVERSION_H_
 #define FIRMWAREVERSION_H_
 
+#include <cstdint>
+#include <cstring>
 #include <cstdio>
+#include <cassert>
+
+#include "hal_boardinfo.h"
 
 #if !defined(STR_HELPER)
-# define STR_HELPER(x) #x
-# define STR(x) STR_HELPER(x)
+#define STR_HELPER(x) #x
+#define STR(x) STR_HELPER(x)
 #endif
 
-namespace firmwareversion {
-namespace length {
-static constexpr auto SOFTWARE_VERSION = 3;
-static constexpr auto GCC_DATE = 11;
-static constexpr auto GCC_TIME = 8;
-}  // namespace length
-struct Info {
-	char SoftwareVersion[length::SOFTWARE_VERSION];
-	char BuildDate[length::GCC_DATE];
-	char BuildTime[length::GCC_TIME];
+namespace firmwareversion
+{
+namespace length
+{
+static constexpr auto kSoftwareVersion = 3;
+static constexpr auto kGccDate = 11;
+static constexpr auto kGccTime = 8;
+} // namespace length
+struct Info
+{
+    char software_version[length::kSoftwareVersion];
+    char build_date[length::kGccDate];
+    char build_time[length::kGccTime];
 };
-}  // namespace firmwareversion
+} // namespace firmwareversion
 
-class FirmwareVersion {
-public:
-	FirmwareVersion(const char *pSoftwareVersion, const char *pDate, const char *pTime, const uint32_t nSoftwareVersionId = 0);
+class FirmwareVersion
+{
+   public:
+    explicit FirmwareVersion(const char* software_version, const char* date, const char* time, uint32_t software_version_id = 0)
+        : kSoftwareVersionId(software_version_id)
+    {
+        assert(software_version != nullptr);
+        assert(date != nullptr);
+        assert(time != nullptr);
 
-	void Print(const char *pTitle = nullptr) {
-		puts(s_Print);
+        assert(s_this == nullptr);
+        s_this = this;
 
-		if (pTitle != nullptr) {
-			printf("\x1b[32m%s\x1b[0m\n", pTitle);
-		}
-	}
+        memcpy(s_firmware_version.software_version, software_version, firmwareversion::length::kSoftwareVersion);
+        memcpy(s_firmware_version.build_date, date, firmwareversion::length::kGccDate);
+        memcpy(s_firmware_version.build_time, time, firmwareversion::length::kGccTime);
 
-	const struct firmwareversion::Info *GetVersion() {
-		return &s_FirmwareVersion;
-	}
+        uint8_t hw_text_length;
 
-	const char *GetPrint() {
-		return s_Print;
-	}
+        snprintf(s_print, sizeof(s_print) - 1, "[V%.*s] %s Compiled on %.*s at %.*s", firmwareversion::length::kSoftwareVersion,
+                 s_firmware_version.software_version, hal::BoardName(hw_text_length), firmwareversion::length::kGccDate, s_firmware_version.build_date,
+                 firmwareversion::length::kGccTime, s_firmware_version.build_time);
+    }
 
-	const char *GetSoftwareVersion() {
-		return s_FirmwareVersion.SoftwareVersion;
-	}
+    void Print(const char* title = nullptr)
+    {
+        puts(s_print);
 
-	uint32_t GetVersionId() const {
-		return s_nSoftwareVersionId;
-	}
+        if (title != nullptr)
+        {
+            printf("\x1b[32m%s\x1b[0m\n", title);
+        }
+    }
 
-	static FirmwareVersion *Get() {
-		return s_pThis;
-	}
+    const struct firmwareversion::Info* GetVersion() { return &s_firmware_version; }
+    const char* GetPrint() { return s_print; }
+    const char* GetSoftwareVersion() { return s_firmware_version.software_version; }
+    uint32_t GetVersionId() const { return kSoftwareVersionId; }
 
-private:
-	const uint32_t s_nSoftwareVersionId;
-	static inline firmwareversion::Info s_FirmwareVersion;
-	static inline char s_Print[64];
-	static inline FirmwareVersion *s_pThis;
+    static FirmwareVersion* Get() { return s_this; }
+
+   private:
+    const uint32_t kSoftwareVersionId;
+    static inline firmwareversion::Info s_firmware_version;
+    static inline char s_print[64];
+    static inline FirmwareVersion* s_this;
 };
 
-#endif /* FIRMWAREVERSION_H_ */
+#endif  // FIRMWAREVERSION_H_

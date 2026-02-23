@@ -1,0 +1,14 @@
+#DEFINES=NDEBUG
+
+EXTRA_SRCDIR=	
+
+ifneq ($(MAKE_FLAGS),)
+	ifeq ($(findstring ARTNET_HAVE_FAILSAFE_RECORD,$(MAKE_FLAGS)), ARTNET_HAVE_FAILSAFE_RECORD)
+		EXTRA_SRCDIR=src/scenes/file
+	endif
+else
+	EXTRA_SRCDIR=src/scenes/file
+endif
+
+include Rules.mk
+include ../firmware-template-linux/lib/Rules.mk

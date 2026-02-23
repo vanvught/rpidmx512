@@ -32,27 +32,27 @@
 typedef enum {
 	CONSOLE_BLACK = 0x0000,		///<   0,   0,   0
 	CONSOLE_BLUE = 0x001F,		///<   0,   0, 255
-	CONSOLE_GREEN = 0x07E0,		///<   0, 255,   0
+	kConsoleGreen = 0x07E0,		///<   0, 255,   0
 	CONSOLE_CYAN = 0x07FF,		///<   0, 255, 255
 	CONSOLE_RED = 0xF800,		///< 255,   0,   0
-	CONSOLE_YELLOW = 0xFFE0,	///< 255, 255,   0
+	kConsoleYellow = 0xFFE0,	///< 255, 255,   0
 	CONSOLE_WHITE = 0xFFFF,		///< 255, 255, 255
 } _console_colors;
 
-void console_clear();
-void console_set_top_row(uint32_t);
-void console_clear_line(uint32_t);
-void console_set_cursor(uint32_t, uint32_t);
-void console_save_cursor();
-void console_restore_cursor();
-void console_save_color(void);
-void console_restore_color(void);
-void console_puthex(uint8_t);
-void console_set_fg_color(uint32_t);
-void console_set_bg_color(uint32_t);
-void console_set_fg_bg_color(uint16_t, uint16_t);
-void console_puthex_fg_bg(uint8_t, uint16_t, uint16_t);
-void console_putpct_fg_bg(uint8_t, uint16_t, uint16_t);
-void console_put3dec_fg_bg(uint8_t, uint16_t, uint16_t);
+void Clear();
+void SetTopRow(uint32_t);
+void ClearLine(uint32_t);
+void SetCursor(uint32_t, uint32_t);
+void SaveCursor();
+void RestoreCursor();
+void SaveColour(void);
+void RestoreColour(void);
+void ConsolePuthex(uint8_t);
+void SetFgColour(uint32_t);
+void SetBgColour(uint32_t);
+void SetFgBgColour(uint16_t, uint16_t);
+void PuthexFgBg(uint8_t, uint16_t, uint16_t);
+void PutpctFgBg(uint8_t, uint16_t, uint16_t);
+void Put3decFgBg(uint8_t, uint16_t, uint16_t);
 
 #endif /* CONSOLE_FB_H_ */

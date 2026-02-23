@@ -74,7 +74,7 @@
 /**
  * Set the GPIOs for data to output
  */
-static void data_gpio_fsel_output() {
+static void data_GpioFsel_output() {
 	uint32_t value = H3_PIO_PORTA->CFG0;
 	value &= (uint32_t) ~(GPIO_SELECT_MASK << PA6_SELECT_CFG0_SHIFT);	// D2
 	value |= (GPIO_FSEL_OUTPUT << PA6_SELECT_CFG0_SHIFT);
@@ -104,7 +104,7 @@ static void data_gpio_fsel_output() {
 /**
  * Set the GPIOs for data to input
  */
-static void data_gpio_fsel_input() {
+static void data_GpioFsel_input() {
 	uint32_t value = H3_PIO_PORTA->CFG0;
 	value &= (uint32_t) ~(GPIO_SELECT_MASK << PA6_SELECT_CFG0_SHIFT);	// D2
 	value |= (GPIO_FSEL_INPUT << PA6_SELECT_CFG0_SHIFT);
@@ -159,9 +159,9 @@ void FT245RL_init() {
 	H3_PIO_PORTA->CFG2 = value;
 
 	// RD#	high
-	h3_gpio_set(_RD);
+	H3GpioSet(_RD);
 	// WR	low
-	h3_gpio_clr(WR);
+	H3GpioClr(WR);
 }
 
 /**
@@ -169,9 +169,9 @@ void FT245RL_init() {
  */
 void FT245RL_write_data(uint8_t data) {
 	uint8_t i;
-	data_gpio_fsel_output();
+	data_GpioFsel_output();
 	// Raise WR to start the write.
-	h3_gpio_set(WR);
+	H3GpioSet(WR);
 	i = NOP_COUNT_WRITE;
 	for (; i > 0; i--) {
 		asm volatile("nop"::);
@@ -192,15 +192,15 @@ void FT245RL_write_data(uint8_t data) {
 		asm volatile("nop"::);
 	}
 	// Drop WR to tell the FT245 to read the data.
-	h3_gpio_clr(WR);
+	H3GpioClr(WR);
 }
 
 /**
  * Read 8-bits from USB
  */
 uint8_t FT245RL_read_data() {
-	data_gpio_fsel_input();
-	h3_gpio_clr(_RD);
+	data_GpioFsel_input();
+	H3GpioClr(_RD);
 	// Wait for the FT245 to respond with data.
 	uint8_t i = NOP_COUNT_READ;
 	for (; i > 0; i--) {
@@ -217,7 +217,7 @@ uint8_t FT245RL_read_data() {
 	 | ((in_gpio & (1U << D6)) ? 64 : 0)
 	 | ((in_gpio & (1U << D7)) ? 128 : 0));
 	// Bring RD# back up so the FT245 can let go of the data.
-	h3_gpio_set(_RD);
+	H3GpioSet(_RD);
 	return data;
 }
 

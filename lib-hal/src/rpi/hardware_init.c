@@ -87,7 +87,7 @@ void hardware_init(void) {
 #endif
 #endif
 
-	console_init();
+	Init();
 	hardware_init_startup_micros = bcm2835_st_read();
 	sys_time_init();
 	bcm2835_rng_init();
@@ -98,7 +98,7 @@ void hardware_init(void) {
 	if (result != FR_OK) {
 		char buffer[32];
 		snprintf(buffer, 31, "f_mount failed! %d\n", (int) result);
-		console_error(buffer);
+		ConsoleError(buffer);
 	}
 
 

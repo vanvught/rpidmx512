@@ -1,8 +1,7 @@
 /**
  * @file rdmidentify.cpp
- *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,23 +22,7 @@
  * THE SOFTWARE.
  */
 
-#include <cassert>
-
 #include "rdmidentify.h"
 
-using namespace rdm::identify;
-
-bool RDMIdentify::m_bIsEnabled = false;
-Mode RDMIdentify::m_nMode = Mode::QUIET;
-RDMIdentify *RDMIdentify::s_pThis = nullptr;
-
-RDMIdentify::RDMIdentify() {
-	assert(s_pThis == nullptr);
-	s_pThis = this;
-}
-
-void __attribute__((weak)) RDMIdentify::On([[maybe_unused]] rdm::identify::Mode nMode) {
-}
-
-void __attribute__((weak)) RDMIdentify::Off([[maybe_unused]] rdm::identify::Mode nMode) {
-}
+void __attribute__((weak)) RDMIdentify::On([[maybe_unused]] Mode mode) {}
+void __attribute__((weak)) RDMIdentify::Off([[maybe_unused]] Mode mode) {}

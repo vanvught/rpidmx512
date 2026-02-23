@@ -2,7 +2,7 @@
  * @file emac.h
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,29 +28,43 @@
 
 #include <cstdint>
 
+#include "emac/phy.h"
+
+namespace net::emac
+{
 /** \defgroup platform Platform implementation
   @{
 */
 /**
  * Configure the PHY interface
- * - Call \ref net::phy_config
+ * - Call \ref net::phy::Config
  */
-void emac_config();
+void Config();
+
+void AdjustLink(net::phy::Status phy_status);
 
 /**
  *
  * - Soft MAC reset
  * - Set the MAC address
  * - Initialize rx/tx descriptors
- * - PHY Start Up -> \ref net::phy_start
- * - Adjust the link with duplex and speed returned from \ref net::phy_start
+ * - PHY Start Up -> \ref net::phy::Start
+ * - Adjust the link with duplex and speed returned from \ref net::phy::Start
  * - Start RX/TX DMA
  * - Enable RX/TX
  *
- * @param[out] macAddress
+ * @param[out] mac_address
  *
  */
-void emac_start(uint8_t macAddress[], net::Link& link);
+void Start(uint8_t mac_address[], net::phy::Link& link);
 /** @} */
+namespace display
+{
+void Config();
+void Start();
+void Status(bool); // TODO (a) subject for removal
+void Shutdown();
+} // namespace display
+} // namespace net::emac
 
-#endif /* EMAC_EMAC_H_ */
+#endif  // EMAC_EMAC_H_

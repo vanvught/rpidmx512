@@ -30,43 +30,42 @@
 #include <time.h>
 
 #include "ltc.h"
-#include "midi.h"
 
-class SystimeReader {
-public:
-	SystimeReader(uint8_t nFps, int32_t nUtcOffset);
+class SystimeReader
+{
+   public:
+    SystimeReader(uint8_t fps, int32_t utc_offset);
 
-	void Start(bool bAutoStart = false);
-	void Run();
+    void Start(bool start = false);
+    void Run();
 
-	void HandleRequest(char *pBuffer = nullptr, uint16_t nBufferLength = 0);
+    void HandleRequest(char* buffer = nullptr, uint16_t buffer_length = 0);
 
-	void ActionStart();
-	void ActionStop();
-	void ActionSetRate(const char *pTimeCodeRate);
+    void ActionStart();
+    void ActionStop();
+    void ActionSetRate(const char* rate);
 
-	void Input(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort);
+    void Input(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port);
 
-	static SystimeReader *Get() {
-		return s_pThis;
-	}
+    static SystimeReader* Get() { return s_this; }
 
-private:
-	void SetFps(uint8_t nFps);
-	void static StaticCallbackFunction(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
-		s_pThis->Input(pBuffer, nSize, nFromIp, nFromPort);
-	}
+   private:
+    void SetFps(uint8_t fps);
+    void static StaticCallbackFunction(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port)
+    {
+        s_this->Input(buffer, size, from_ip, from_port);
+    }
 
-private:
-	uint8_t m_nFps;
-	int32_t m_nUtcOffset { 0 };
-	int32_t m_nHandle { -1 };
-	uint32_t m_nBytesReceived { 0 };
-	char *m_pUdpBuffer { nullptr };
-	time_t m_nTimePrevious { 0 };
-	bool m_bIsStarted { false };
+   private:
+    uint8_t fps_;
+    int32_t utc_offset_{0};
+    int32_t handle_{-1};
+    uint32_t bytes_received_{0};
+    char* udp_buffer_{nullptr};
+    time_t time_previous_{0};
+    bool started_{false};
 
-	static inline SystimeReader *s_pThis;
+    static inline SystimeReader* s_this;
 };
 
-#endif /* ARM_SYSTIMEREADER_H_ */
+#endif  // ARM_SYSTIMEREADER_H_

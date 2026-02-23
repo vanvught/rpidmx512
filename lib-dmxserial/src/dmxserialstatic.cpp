@@ -2,7 +2,7 @@
  * @file dmxserialstatic.cpp
  *
  */
-/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,74 +30,74 @@
 
 #include "dmxserial.h"
 
-#include "debug.h"
+ #include "firmware/debug/debug_debug.h"
 
-bool DmxSerial::FileNameCopyTo(char *pFileName, uint32_t nLength, int32_t nFileNumber) {
-	assert(nLength == DmxSerialFile::NAME_LENGTH + 1);
+bool DmxSerial::FileNameCopyTo(char *file_name, uint32_t length, int32_t file_number) {
+	assert(length == DmxSerialFile::NAME_LENGTH + 1);
 
-	if ((nFileNumber >= DmxSerialFile::MIN_NUMBER) && (nFileNumber <= static_cast<int32_t>(DmxSerialFile::MAX_NUMBER))) {
-		snprintf(pFileName, nLength, DMXSERIAL_FILE_PREFIX "%.3d" DMXSERIAL_FILE_SUFFIX, nFileNumber);
+	if ((file_number >= DmxSerialFile::MIN_NUMBER) && (file_number <= static_cast<int32_t>(DmxSerialFile::MAX_NUMBER))) {
+		snprintf(file_name, length, DMXSERIAL_FILE_PREFIX "%.3d" DMXSERIAL_FILE_SUFFIX, file_number);
 		return true;
 	}
 
 	return false;
 }
 
-bool DmxSerial::CheckFileName(const char *pFileName, int32_t &nFileNumber) {
-	DEBUG_PRINTF("pFileName=[%s]", pFileName);
+bool DmxSerial::CheckFileName(const char *file_name, int32_t &file_number) {
+	DEBUG_PRINTF("file_name=[%s]", file_name);
 
-	if ((pFileName == nullptr) || (strlen(pFileName) != DmxSerialFile::NAME_LENGTH)) {
-		DEBUG_EXIT
+	if ((file_name == nullptr) || (strlen(file_name) != DmxSerialFile::NAME_LENGTH)) {
+		DEBUG_EXIT();
 		return false;
 	}
 
-	if (memcmp(pFileName, DMXSERIAL_FILE_PREFIX, sizeof(DMXSERIAL_FILE_PREFIX) - 1) != 0) {
-		DEBUG_EXIT
+	if (memcmp(file_name, DMXSERIAL_FILE_PREFIX, sizeof(DMXSERIAL_FILE_PREFIX) - 1) != 0) {
+		DEBUG_EXIT();
 		return false;
 	}
 
-	if (memcmp(&pFileName[DmxSerialFile::NAME_LENGTH - sizeof(DMXSERIAL_FILE_SUFFIX) + 1], DMXSERIAL_FILE_SUFFIX, sizeof(DMXSERIAL_FILE_SUFFIX) - 1) != 0) {
-		DEBUG_EXIT
+	if (memcmp(&file_name[DmxSerialFile::NAME_LENGTH - sizeof(DMXSERIAL_FILE_SUFFIX) + 1], DMXSERIAL_FILE_SUFFIX, sizeof(DMXSERIAL_FILE_SUFFIX) - 1) != 0) {
+		DEBUG_EXIT();
 		return false;
 	}
 
-	char cDigit = pFileName[sizeof(DMXSERIAL_FILE_PREFIX) - 1];
+	char digit = file_name[sizeof(DMXSERIAL_FILE_PREFIX) - 1];
 
-	if (!isdigit(cDigit)) {
-		DEBUG_EXIT
+	if (!isdigit(digit)) {
+		DEBUG_EXIT();
 		return false;
 	}
 
-	nFileNumber = 100 * (cDigit - '0');
+	file_number = 100 * (digit - '0');
 
-	if (nFileNumber > static_cast<int32_t>(DmxSerialFile::MAX_NUMBER)) {
-		DEBUG_EXIT
+	if (file_number > static_cast<int32_t>(DmxSerialFile::MAX_NUMBER)) {
+		DEBUG_EXIT();
 		return false;
 	}
 
-	cDigit = pFileName[sizeof(DMXSERIAL_FILE_PREFIX)];
+	digit = file_name[sizeof(DMXSERIAL_FILE_PREFIX)];
 
-	if (!isdigit(cDigit)) {
-		DEBUG_EXIT
+	if (!isdigit(digit)) {
+		DEBUG_EXIT();
 		return false;
 	}
 
-	nFileNumber += (10 * (cDigit - '0'));
+	file_number += (10 * (digit - '0'));
 
-	cDigit = pFileName[sizeof(DMXSERIAL_FILE_PREFIX) + 1];
+	digit = file_name[sizeof(DMXSERIAL_FILE_PREFIX) + 1];
 
-	if (!isdigit(cDigit)) {
-		DEBUG_EXIT
+	if (!isdigit(digit)) {
+		DEBUG_EXIT();
 		return false;
 	}
 
-	nFileNumber += (cDigit - '0');
+	file_number += (digit - '0');
 
-	if (nFileNumber > static_cast<int32_t>(DmxSerialFile::MAX_NUMBER)) {
-		DEBUG_EXIT
+	if (file_number > static_cast<int32_t>(DmxSerialFile::MAX_NUMBER)) {
+		DEBUG_EXIT();
 		return false;
 	}
 
-	DEBUG_EXIT
+	DEBUG_EXIT();
 	return true;
 }

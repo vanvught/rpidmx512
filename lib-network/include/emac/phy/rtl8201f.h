@@ -2,7 +2,7 @@
  * @file rtl8201f.h
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,10 +28,11 @@
 
 #include <cstdint>
 
-namespace net::phy {
-void rtl8201f_set_rxtiming(const uint32_t nRxTiming);
-void rtl8201f_set_txtiming(const uint32_t nTxTiming);
-void rtl8201f_get_timings(uint32_t& nRxTiming, uint32_t& nTxTiming);
-}  // namespace net::phy
+namespace net::phy::rtl8201f
+{
+void SetRxtiming(uint32_t rx_timing);
+void SetTxtiming(uint32_t tx_timing);
+void GetTimings(uint32_t& rx_timing, uint32_t& tx_timing);
+} // namespace net::phy::rtl8201f
 
-#endif /* EMAC_PHY_RTL8201F_H_ */
+#endif // EMAC_PHY_RTL8201F_H_

@@ -2,7 +2,7 @@
  * @file llrppacket.h
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,27 +40,27 @@ static constexpr uint32_t LLRP_KNOWN_UID_SIZE = 200;
  * 5.4.1 General Format
  */
 struct TRootLayerPreAmble {
-	uint16_t PreAmbleSize;				///< Define RLP Preamble Size. Fixed 0x0010
-	uint16_t PostAmbleSize;				///< RLP Post-amble Size. Fixed 0x0000
-	uint8_t ACNPacketIdentifier[12];  	///< ACN Packet Identifier
+	uint16_t pre_amble_size;				///< Define RLP Preamble Size. Fixed 0x0010
+	uint16_t post_amble_size;				///< RLP Post-amble Size. Fixed 0x0000
+	uint8_t acn_packet_identifier[12];  	///< ACN Packet Identifier
 }PACKED;
 
 struct TRootLayerPDU {
-	uint8_t FlagsLength[3]; 			///< Protocol flags and length. Low 20 bits = PDU length High 4 bits = 0xF
-	uint32_t Vector;					///< Identifies RLP Data as LLRP Protocol PDU -> VECTOR_ROOT_LLRP
+	uint8_t flags_length[3]; 			///< Protocol flags and length. Low 20 bits = PDU length High 4 bits = 0xF
+	uint32_t vector;					///< Identifies RLP Data as LLRP Protocol PDU -> VECTOR_ROOT_LLRP
 	uint8_t SenderCid[16];				///< Sender's CID. Sender's unique ID
 }PACKED;
 
 struct TLlrpPDU {
-	uint8_t FlagsLength[3]; 			///< Protocol flags and length. Low 20 bits = PDU length High 4 bits = 0xF
-	uint32_t Vector;					///< Identifies data format
+	uint8_t flags_length[3]; 			///< Protocol flags and length. Low 20 bits = PDU length High 4 bits = 0xF
+	uint32_t vector;					///< Identifies data format
 	uint8_t DestinationCid[16];			///< The receiver's unique CID or the LLRP_BROADCAST_CID
 	uint32_t TransactionNumber;			///< Used to match request / response messages.
 }PACKED;
 
 struct TProbeRequestPDU {
-	uint8_t FlagsLength[3]; 			///< Protocol flags and length. Low 20 bits = PDU length High 4 bits = 0xF
-	uint8_t Vector;						///< Identifies Identifies data as Probe Request -> VECTOR_PROBE_REQUEST_DATA
+	uint8_t flags_length[3]; 			///< Protocol flags and length. Low 20 bits = PDU length High 4 bits = 0xF
+	uint8_t vector;						///< Identifies Identifies data as Probe Request -> VECTOR_PROBE_REQUEST_DATA
 	uint8_t LowerUUID[6];				///< UID representing the lower UID bound of the Probe Request
 	uint8_t UpperUUID[6];				///< UID representing the upper UID bound of the Probe Request
 	uint16_t Filter;					///< Bitfield
@@ -68,16 +68,16 @@ struct TProbeRequestPDU {
 }PACKED;
 
 struct TProbeReplyPDU {
-	uint8_t FlagsLength[3]; 			///< Protocol flags and length. Low 20 bits = PDU length High 4 bits = 0xF
-	uint8_t Vector;						///< Identifies Identifies data as Probe Reply -> VECTOR_PROBE_REPLY_DATA
+	uint8_t flags_length[3]; 			///< Protocol flags and length. Low 20 bits = PDU length High 4 bits = 0xF
+	uint8_t vector;						///< Identifies Identifies data as Probe Reply -> VECTOR_PROBE_REPLY_DATA
 	uint8_t UID[6];						///< The UID of the LLRP Target
 	uint8_t HardwareAddress[6];			///< The numerically lowest hardware address of the host the LLRP Target is running on
 	uint8_t ComponentType;				///< Indicates the type of Component responding. See Table A-23
 }PACKED;
 
 struct TRDMCommandPDU {
-	uint8_t FlagsLength[3]; 			///< Protocol flags and length. Low 20 bits = PDU length High 4 bits = 0xF
-	uint8_t Vector;						///< Identifies Identifies data as Probe Reply -> VECTOR_RDM_CMD_DATA
+	uint8_t flags_length[3]; 			///< Protocol flags and length. Low 20 bits = PDU length High 4 bits = 0xF
+	uint8_t vector;						///< Identifies Identifies data as Probe Reply -> VECTOR_RDM_CMD_DATA
 	uint8_t RDMData[232];				///< RDM packet excluding START Code
 }PACKED;
 

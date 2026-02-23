@@ -36,8 +36,8 @@
 class LtcMidiSystemRealtime {
 public:
 	LtcMidiSystemRealtime() {
-		assert(s_pThis == nullptr);
-		s_pThis = this;
+		assert(s_this == nullptr);
+		s_this = this;
 	}
 
 	void Start();
@@ -57,10 +57,10 @@ public:
 
 	void SetBPM(uint32_t nBPM);
 
-	void Input(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort);
+	void Input(const uint8_t *pBuffer, uint32_t nSize, uint32_t from_ip, uint16_t from_port);
 
 	static LtcMidiSystemRealtime *Get() {
-		return s_pThis;
+		return s_this;
 	}
 
 private:
@@ -80,15 +80,15 @@ private:
 		LtcOutputs::Get()->ShowBPM(nBPM);
 	}
 
-	void static StaticCallbackFunctionInput(const uint8_t *pBuffer, uint32_t nSize, uint32_t nFromIp, uint16_t nFromPort) {
-		s_pThis->Input(pBuffer, nSize, nFromIp, nFromPort);
+	void static StaticCallbackFunctionInput(const uint8_t *pBuffer, uint32_t nSize, uint32_t from_ip, uint16_t from_port) {
+		s_this->Input(pBuffer, nSize, from_ip, from_port);
 	}
 
 private:
-	int32_t m_nHandle { -1 };
+	int32_t handle_ { -1 };
 	uint32_t m_nBPMPrevious { 999 };
 
-	static inline LtcMidiSystemRealtime *s_pThis;
+	static inline LtcMidiSystemRealtime *s_this;
 };
 
 #endif /* ARM_LTCMIDISYSTEMREALTIME_H_ */

@@ -2,7 +2,7 @@
  * @file oscblob.h
  *
  */
-/* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2016-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,34 +34,33 @@
  * followed by 0-3 additional zero bytes to make the total number of bits a multiple of 32.
  */
 
-class OSCBlob {
-public:
-	OSCBlob(const uint8_t *pData, uint32_t nSize) : m_pData(pData), m_nSize(nSize) {
-	}
+class OSCBlob
+{
+   public:
+    OSCBlob(const uint8_t* data, uint32_t size) : data_(data), size_(size) {}
 
-	uint32_t GetDataSize() const {
-		return m_nSize;
-	}
+    uint32_t GetDataSize() const { return size_; }
 
-	const uint8_t* GetDataPtr() const {
-		return m_pData;
-	}
+    const uint8_t* GetDataPtr() const { return data_; }
 
-	uint32_t GetSize() {
-		const uint32_t nBlobSize = sizeof(int32_t) + m_nSize;
-		return (4 * ((nBlobSize + 3) / 4));
-	}
+    uint32_t GetSize()
+    {
+        const uint32_t kBlobSize = sizeof(int32_t) + size_;
+        return (4 * ((kBlobSize + 3) / 4));
+    }
 
-	uint8_t GetByte(const uint32_t nIndex) {
-		if (nIndex < m_nSize) {
-			return m_pData[nIndex];
-		}
-		return 0;
-	}
+    uint8_t GetByte(uint32_t index)
+    {
+        if (index < size_)
+        {
+            return data_[index];
+        }
+        return 0;
+    }
 
-private:
-	const uint8_t *m_pData;
-	uint32_t m_nSize;
+   private:
+    const uint8_t* data_;
+    uint32_t size_;
 };
 
-#endif /* OSCBLOB_H_ */
+#endif  // OSCBLOB_H_

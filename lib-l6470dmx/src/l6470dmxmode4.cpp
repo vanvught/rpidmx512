@@ -1,5 +1,3 @@
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wsign-conversion"	//FIXE ignored "-Wsign-conversion"
 /**
  * @file l6470dmxmode4.cpp
  *
@@ -26,125 +24,142 @@
  */
 
 #include <cstdint>
-#ifndef NDEBUG
- #include <cstdio>
-#endif
+#include <cstdio>
 #include <cassert>
 
+#include "configstore.h"
+#include "common/utils/utils_flags.h"
 #include "l6470dmxmode4.h"
+#include "common/utils/utils_enum.h"
 #include "l6470.h"
+ #include "firmware/debug/debug_debug.h"
 
-#include "motorparams.h"
+L6470DmxMode4::L6470DmxMode4(L6470* l6470, uint32_t motor_index) : l6470_(l6470), motor_index_(motor_index)
+{
+    DEBUG_ENTRY();;
 
-#include "debug.h"
+    assert(l6470_ != nullptr);
 
-L6470DmxMode4::L6470DmxMode4(L6470 *pL6470, [[maybe_unused]] MotorParams *pMotorParams, ModeParams *pModeParams) {
-	DEBUG_ENTRY;
+    const auto kMaxSteps = ConfigStore::Instance().DmxL6470GetModeIndexed(motor_index_, &common::store::l6470dmx::Mode::max_steps);
 
-	assert(pL6470 != nullptr);
-	assert(pMotorParams != nullptr);
-	assert(pModeParams != nullptr);
+    steps_ = static_cast<float>(kMaxSteps) / 0xFF;
 
-	m_pModeParams = pModeParams;
-	m_pL6470 = pL6470;
-	m_fSteps = static_cast<float>(pModeParams->GetMaxSteps()) / 0xFF;
-
-	DEBUG_EXIT;
+    DEBUG_EXIT();;
 }
 
-L6470DmxMode4::~L6470DmxMode4() {
-	DEBUG_ENTRY;
+L6470DmxMode4::~L6470DmxMode4()
+{
+    DEBUG_ENTRY();;
 
-	DEBUG_EXIT;
+    DEBUG_EXIT();;
 }
 
-void L6470DmxMode4::InitSwitch() {
-	DEBUG_ENTRY;
+void L6470DmxMode4::InitSwitch()
+{
+    DEBUG_ENTRY();;
 
-	if (m_pModeParams->HasSwitch()) {
-		const TL6470Action action = m_pModeParams->GetSwitchAction();
-		const TL6470Direction dir = m_pModeParams->GetSwitchDir();
-		const float stepsPerSec = m_pModeParams->GetSwitchStepsPerSec();
+    const auto kFlags = ConfigStore::Instance().DmxL6470GetModeIndexed(motor_index_, &common::store::l6470dmx::Mode::flags);
 
-		m_pL6470->goUntil(action, dir, stepsPerSec);
-	}
+    if (common::IsFlagSet(kFlags, common::store::l6470dmx::mode::Flags::Flag::kUseSwitch))
+    {
+        const auto kAction =
+            common::FromValue<TL6470Action>(ConfigStore::Instance().DmxL6470GetModeIndexed(motor_index_, &common::store::l6470dmx::Mode::switch_action));
+        const auto kDir =
+            common::FromValue<TL6470Direction>(ConfigStore::Instance().DmxL6470GetModeIndexed(motor_index_, &common::store::l6470dmx::Mode::switch_dir));
+        const auto kStepsPerSec = ConfigStore::Instance().DmxL6470GetModeIndexed(motor_index_, &common::store::l6470dmx::Mode::switch_steps_per_sec);
 
-	DEBUG_EXIT;
+        l6470_->goUntil(kAction, kDir, kStepsPerSec);
+    }
+
+    DEBUG_EXIT();;
 }
 
-void L6470DmxMode4::InitPos() {
-	DEBUG_ENTRY;
+void L6470DmxMode4::InitPos()
+{
+    DEBUG_ENTRY();;
 
-	m_pL6470->resetPos();
+    l6470_->resetPos();
 
-	DEBUG_EXIT;
+    DEBUG_EXIT();;
 }
 
-void L6470DmxMode4::Start() {
-	DEBUG_ENTRY;
+void L6470DmxMode4::Start()
+{
+    DEBUG_ENTRY();;
 
-	DEBUG_EXIT;
+    DEBUG_EXIT();;
 }
 
-void L6470DmxMode4::Stop() {
-	DEBUG_ENTRY;
+void L6470DmxMode4::Stop()
+{
+    DEBUG_ENTRY();;
 
-	DEBUG_EXIT;
+    DEBUG_EXIT();;
 }
 
-void L6470DmxMode4::HandleBusy() {
-	DEBUG_ENTRY
+void L6470DmxMode4::HandleBusy()
+{
+    DEBUG_ENTRY();
 
-	if (m_pL6470->busyCheck()) {
+    if (l6470_->busyCheck())
+    {
 #ifndef NDEBUG
-		printf("\t\t\tBusy!\n");
+        printf("\t\t\tBusy!\n");
 #endif
-		m_pL6470->softStop();
-		m_bWasBusy = true;
-	} else {
-		m_bWasBusy = false;
-	}
+        l6470_->softStop();
+        was_busy_ = true;
+    }
+    else
+    {
+        was_busy_ = false;
+    }
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-bool L6470DmxMode4::BusyCheck() {
-	DEBUG_ENTRY;
+bool L6470DmxMode4::BusyCheck()
+{
+    DEBUG_ENTRY();;
 
-	DEBUG_EXIT;
-	return m_pL6470->busyCheck();
+    DEBUG_EXIT();;
+    return l6470_->busyCheck();
 }
 
-void L6470DmxMode4::Data(const uint8_t *pDmxData) {
-	DEBUG_ENTRY;
+void L6470DmxMode4::Data(const uint8_t* data)
+{
+    DEBUG_ENTRY();;
 
-	const auto steps = static_cast<uint32_t>(static_cast<float>(pDmxData[0]) * m_fSteps);
-	bool isRev;
+    const auto kSteps = static_cast<int32_t>(static_cast<float>(data[0]) * steps_);
+    bool is_rev;
 #ifndef NDEBUG
-	int32_t nDifference;
-#endif
-
-	if(m_bWasBusy) {
-		uint32_t nCurrentPosition = m_pL6470->getPos();
-		isRev = nCurrentPosition > steps;
-#ifndef NDEBUG
-		printf("\t\t\tCurrent position=%d\n", nCurrentPosition);
-		nDifference = steps - nCurrentPosition;
-#endif
-	} else {
-		isRev = m_nPreviousData > pDmxData[0];
-#ifndef NDEBUG
-		nDifference = pDmxData[0] - m_nPreviousData;
-#endif
-	}
-
-#ifndef NDEBUG
-	printf("\t\t\tm_fSteps=%f, steps=%d, pDmxData[0]=%d, nDifference=%d [%s]\n", m_fSteps, static_cast<int>(steps), pDmxData[0], nDifference, isRev ? "L6470_DIR_REV" : "L6470_DIR_FWD");
+    int32_t difference;
 #endif
 
-	m_pL6470->goToDir(isRev ? L6470_DIR_REV : L6470_DIR_FWD, steps);
+    if (was_busy_)
+    {
+        auto current_position = l6470_->getPos();
+        is_rev = current_position > kSteps;
+#ifndef NDEBUG
+        printf("\t\t\tCurrent position=%d\n", current_position);
+        difference = kSteps - current_position;
+#endif
+    }
+    else
+    {
+        is_rev = previous_data_ > data[0];
+#ifndef NDEBUG
+        difference = data[0] - previous_data_;
+#endif
+    }
 
-	m_nPreviousData = pDmxData[0];
+#ifndef NDEBUG
+    printf("\t\t\tm_fSteps=%f, steps=%d, data[0]=%d, nDifference=%d [%s]\n", steps_, static_cast<int>(kSteps), data[0], difference,
+           is_rev ? "L6470_DIR_REV" : "L6470_DIR_FWD");
+#endif
 
-	DEBUG_EXIT;
+    l6470_->goToDir(is_rev ? L6470_DIR_REV : L6470_DIR_FWD, kSteps);
+
+    previous_data_ = data[0];
+
+    DEBUG_EXIT();;
 }

@@ -2,7 +2,7 @@
  * @file rdmsubdevicemcp4822.h
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef RDMSUBDEVICEMCP4822_H_
-#define RDMSUBDEVICEMCP4822_H_
+#ifndef SPI_RDMSUBDEVICEMCP4822_H_
+#define SPI_RDMSUBDEVICEMCP4822_H_
 
 #include <cstdint>
 
@@ -32,32 +32,31 @@
 
 #include "mcp48x2.h"
 
-class RDMSubDeviceMCP4822: public RDMSubDevice {
-public:
-	RDMSubDeviceMCP4822(uint16_t nDmxStartAddress = 1, char nChipSselect = 0, uint8_t nSlaveAddress = 0, uint32_t nSpiSpeed = 0);
+class RDMSubDeviceMCP4822 : public RDMSubDevice
+{
+   public:
+    explicit RDMSubDeviceMCP4822(uint16_t nDmxStartAddress = 1, char nChipSselect = 0, uint8_t nSlaveAddress = 0, uint32_t nSpiSpeed = 0);
 
-	bool Initialize() override {
-		return true;
-	}
+    bool Initialize() override { return true; }
 
-	void Start() override {
-	}
+    void Start() override {}
 
-	void Stop() override {
-		m_MCP4822.WriteDacAB(0, 0);
-		m_nDataA = 0;
-		m_nDataB = 0;
-	}
+    void Stop() override
+    {
+        m_MCP4822.WriteDacAB(0, 0);
+        m_nDataA = 0;
+        m_nDataB = 0;
+    }
 
-	void Data(const uint8_t *pData, uint32_t nLength) override;
+    void Data(const uint8_t* pData, uint32_t nLength) override;
 
-private:
-	void UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent) override;
+   private:
+    void UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent) override;
 
-private:
-	dac::MCP4822 m_MCP4822;
-	uint16_t m_nDataA = 0;
-	uint16_t m_nDataB = 0;
+   private:
+    dac::MCP4822 m_MCP4822;
+    uint16_t m_nDataA = 0;
+    uint16_t m_nDataB = 0;
 };
 
-#endif /* RDMSUBDEVICEMCP4822_H_ */
+#endif  // SPI_RDMSUBDEVICEMCP4822_H_

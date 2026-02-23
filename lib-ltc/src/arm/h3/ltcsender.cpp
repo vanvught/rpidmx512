@@ -31,13 +31,13 @@
 
 #include "h3_codec.h"
 
-#include "debug.h"
+ #include "firmware/debug/debug_debug.h"
 
-LtcSender *LtcSender::s_pThis = nullptr;
+LtcSender *LtcSender::s_this = nullptr;
 
 LtcSender::LtcSender(uint32_t nVolume) {
-	assert(s_pThis == nullptr);
-	s_pThis = this;
+	assert(s_this == nullptr);
+	s_this = this;
 
 	if ((nVolume > 1) && (nVolume < 32)) {	// TODO constexpr
 		h3_codec_set_volume(static_cast<uint8_t>(nVolume));
@@ -52,8 +52,8 @@ void LtcSender::SetTimeCode(const struct ltc::TimeCode* pLtcSenderTimeCode, bool
 	LtcEncoder::SetTimeCode(pLtcSenderTimeCode, nExternalClock);
 	LtcEncoder::Get()->Encode();
 
-	if (__builtin_expect((m_nTypePrevious != pLtcSenderTimeCode->nType), 0)) {
-		m_nTypePrevious = pLtcSenderTimeCode->nType;
+	if (__builtin_expect((type_previous_ != pLtcSenderTimeCode->type), 0)) {
+		type_previous_ = pLtcSenderTimeCode->type;
 		h3_codec_set_buffer_length(LtcEncoder::Get()->GetBufferSize()); // This is an implicit stop
 		h3_codec_start();
 	}

@@ -2,7 +2,7 @@
  * @file ltcsource.h
  *
  */
-/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,28 +30,38 @@
 #include "ltcsourceconst.h"
 #include "display.h"
 #include "gps.h"
-#include "net/apps/ntp_client.h"
+#include "apps/ntpclient.h"
 #include "tcnetdisplay.h"
+#include "hwclock.h"
 
-namespace ltc {
-namespace source {
-inline static void show(ltc::Source ltcSource, bool bRunGpsTimeClient) {
-	Display::Get()->TextStatus(LtcSourceConst::NAME[static_cast<uint32_t>(ltcSource)]);
+namespace ltc::source
+{
+inline static void Show(ltc::Source ltc_source, bool run_gps_time_client)
+{
+    Display::Get()->TextStatus(LtcSourceConst::NAME[static_cast<uint32_t>(ltc_source)]);
 
-	if (ltcSource == ltc::Source::SYSTIME) {
-		Display::Get()->SetCursorPos(static_cast<uint8_t>(Display::Get()->GetColumns() - 3U), 3);
-		if (bRunGpsTimeClient) {
-			GPS::Get()->Display(GPS::Get()->GetStatus());
-		} else if ((ntp_client_get_status() != ::ntp::Status::FAILED) && (ntp_client_get_status() != ::ntp::Status::STOPPED)  && (ntp_client_get_status() != ::ntp::Status::DISABLED)) {
-			Display::Get()->PutString("NTP");
-		} else if (HwClock::Get()->IsConnected()) {
-			Display::Get()->PutString("RTC");
-		}
-	} else if (ltcSource == ltc::Source::TCNET) {
-		tcnet::display::show();
-	}
+    if (ltc_source == ltc::Source::SYSTIME)
+    {
+        Display::Get()->SetCursorPos(static_cast<uint8_t>(Display::Get()->GetColumns() - 3U), 3);
+        if (run_gps_time_client)
+        {
+            GPS::Get()->Display(GPS::Get()->GetStatus());
+        }
+        else if ((network::apps::ntpclient::GetStatus() != ::ntp::Status::kFailed) && (network::apps::ntpclient::GetStatus() != ::ntp::Status::kStopped) &&
+                 (network::apps::ntpclient::GetStatus() != ::ntp::Status::kDisabled))
+        {
+            Display::Get()->PutString("NTP");
+        }
+        else if (HwClock::Get()->IsConnected())
+        {
+            Display::Get()->PutString("RTC");
+        }
+    }
+    else if (ltc_source == ltc::Source::TCNET)
+    {
+        tcnet::display::show();
+    }
 }
-}  // namespace source
-}  // namespace ltc
+} // namespace ltc::source
 
-#endif /* SOURCE_H_ */
+#endif // LTCSOURCE_H_

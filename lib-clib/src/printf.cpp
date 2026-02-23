@@ -23,539 +23,561 @@
  * THE SOFTWARE.
  */
 
-#pragma GCC push_options
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wold-style-cast" //TODO remove old-style-cast
-
+#include <cstdint>
 #include <cstdarg>
 #include <cstddef>
 #include <cctype>
 #include <cstring>
 #include <climits>
 
-void console_putc(int);
+namespace console
+{
+void Putc(int);
+}
 
-struct context {
-	int flag;
-	int prec;
-	int width;
-	int total;
-	int capacity;
+struct Context
+{
+    int flag;
+    int prec;
+    int width;
+    int total;
+    int capacity;
 };
 
-enum {
-	FLAG_PRECISION	    =	(1 << 0 ),
-	FLAG_UPPERCASE	    =	(1 << 1 ),
-	FLAG_LONG     	    =	(1 << 2 ),
-	FLAG_NEGATIVE	    =	(1 << 3 ),
-	FLAG_MIN_WIDTH	    =	(1 << 4 ),
-	FLAG_ZERO_PADDED    =	(1 << 5 ),
-	FLAG_LEFT_JUSTIFIED =	(1 << 6 )
+enum
+{
+    kFlagPrecision = (1U << 0),
+    kFlagUppercase = (1U << 1),
+    kFlagLong = (1U << 2),
+    kFlagNegative = (1U << 3),
+    kFlagMinWidth = (1U << 4),
+    kFlagZeroPadded = (1U << 5),
+    kFlagLeftJustified = (1U << 6)
 };
 
-static char *outptr = NULL;
+static char* outptr = nullptr;
 
-inline static void _xputch(struct context *ctx, const int c) {
-	ctx->total++;
+inline static void Putc(struct Context* ctx, int c)
+{
+    ctx->total++;
 
-	if (outptr != NULL) {
-		if (ctx->total < ctx->capacity) {
-			*outptr++ = (char) c;
-		}
-		return;
-	}
+    if (outptr != nullptr)
+    {
+        if (ctx->total < ctx->capacity)
+        {
+            *outptr++ = static_cast<char>(c);
+        }
+        return;
+    }
 
-	console_putc(c);
+    console::Putc(c);
 }
 
-#if !defined (DISABLE_PRINTF_FLOAT)
-static int _pow10(int n) {
-	int r = 10;
-	n--;
+static void FormatHex(struct Context* ctx, unsigned int arg)
+{
+    char buffer[64];
+    char* p = buffer + (sizeof(buffer) / sizeof(buffer[0])) - 1;
+    char* o = p;
+    char alpha;
+    char u;
+    int i;
 
-	while (n-- > 0) {
-		r *= 10;
-	}
+    if (arg == 0)
+    {
+        *p = '0';
+        p--;
+    }
+    else
+    {
+        alpha = ((ctx->flag & kFlagUppercase) != 0) ? static_cast<char>('A' - 10) : static_cast<char>('a' - 10);
 
-	return r;
+        do
+        {
+            u = static_cast<char>(arg) & static_cast<char>(0x0F);
+            *p = (u < 10) ? static_cast<char>('0' + u) : static_cast<char>(alpha + u);
+            p--;
+            arg = arg >> 4;
+        } while ((arg != 0) && (p > buffer));
+    }
+
+    if ((ctx->flag & kFlagPrecision) != 0)
+    {
+        while (((o - p) < ctx->prec) && (p > buffer))
+        {
+            *p-- = '0';
+        }
+    }
+
+    if ((ctx->flag & kFlagZeroPadded) != 0)
+    {
+        while (((o - p) < ctx->width) && (p > buffer))
+        {
+            *p-- = '0';
+        }
+    }
+
+    if ((ctx->flag & kFlagLeftJustified) == 0)
+    {
+        while (((o - p) < ctx->width) && (p > buffer))
+        {
+            *p-- = ' ';
+        }
+    }
+
+    i = o - p;
+
+    p++;
+
+    while (p < buffer + (sizeof(buffer) / sizeof(buffer[0])))
+    {
+        Putc(ctx, static_cast<int>(*p++));
+    }
+
+    while (i++ < ctx->width)
+    {
+        Putc(ctx, static_cast<int>(' '));
+    }
 }
 
-static int _itostr(int x, char *s, int d) {
-	char buffer[64];
-	auto *p = buffer + (sizeof(buffer) / sizeof(buffer[0])) - 1;
-	auto *o = p;
-	auto *t = s;
+static void FormatInt(struct Context* ctx, uint32_t arg)
+{
+    char buffer[64];
+    char* p = buffer + (sizeof(buffer) / sizeof(buffer[0])) - 1;
+    char* o = p;
+    int i;
 
-	const auto is_neg = x < 0 ? true : false;
+    if (arg == 0)
+    {
+        *p = '0';
+        p--;
+    }
+    else
+    {
+        do
+        {
+            *p = static_cast<char>((arg % 10) + '0');
+            p--;
+            arg = arg / 10;
+        } while ((arg != 0) && (p > buffer));
+    }
 
-	if (is_neg) {
-		x = -x;
-	}
+    if ((ctx->flag & kFlagPrecision) != 0)
+    {
+        while (((o - p) < ctx->prec) && (p > buffer))
+        {
+            *p-- = '0';
+        }
+    }
 
-	if (x == 0) {
-		*p = '0';
-		p--;
-	} else {
-		do {
-			*p = (char)((x % 10) + '0');
-			p--;
-			x = x / 10;
-		} while ((x != 0) && (p > buffer));
-	}
+    if ((ctx->flag & kFlagZeroPadded) != 0)
+    {
+        while (((o - p) < ctx->width) && (p > buffer))
+        {
+            *p-- = '0';
+        }
+    }
 
-	if (d != 0) {
-		while (((o - p) < d) && (p > buffer)) {
-			*p-- = '0';
-		}
-	}
+    if ((ctx->flag & kFlagNegative) != 0)
+    {
+        *p-- = '-';
+    }
 
-	if (is_neg) {
-		*p-- = '-';
-	}
+    if ((ctx->flag & kFlagLeftJustified) == 0)
+    {
+        while (((o - p) < ctx->width) && (p > buffer))
+        {
+            *p-- = ' ';
+        }
+    }
 
-	p++;
+    i = o - p;
 
-	auto i = (o - p);
+    p++;
 
-	while (p < buffer + (sizeof(buffer) / sizeof(buffer[0]))) {
-		*t++ = *p++;
-	}
+    while (p < buffer + (sizeof(buffer) / sizeof(buffer[0])))
+    {
+        Putc(ctx, static_cast<int>(*p++));
+    }
 
-	return i + 1;
+    while (i++ < ctx->width)
+    {
+        Putc(ctx, static_cast<int>(' '));
+    }
 }
 
-static void _round_float(char *dest, int *size) {
-	int i = *size - 1;
-	auto *q = dest + i;
-	auto round_int = false;
+#if !defined(DISABLE_PRINTF_FLOAT)
+static int Pow10(int n)
+{
+    int r = 10;
+    n--;
 
-	if (*q >= '5') {
+    while (n-- > 0)
+    {
+        r *= 10;
+    }
 
-		char *w = q - 1;
+    return r;
+}
 
-		if (*w != '.') {
-			while (*w == '9') {
-				*w-- = '0';
-			}
-			if (*w != '.') {
-				*w = (char)(*w + 1);
-			} else {
-				round_int = true;
-			}
-		} else {
-			round_int = true;
-		}
+static int Itostr(int x, char* s, int d)
+{
+    char buffer[64];
+    auto* p = buffer + (sizeof(buffer) / sizeof(buffer[0])) - 1;
+    auto* o = p;
+    auto* t = s;
 
-		if (round_int) {
-			w--;
+    const auto kIsNeg = x < 0 ? true : false;
 
-			while (*w == '9' && w >= dest && *w != '-') {
-				*w-- = '0';
-			}
+    if (kIsNeg)
+    {
+        x = -x;
+    }
 
-			if (w >= dest && *w != '-') {
-				*w = (char)(*w + 1);
-			} else {
-				w++;
-				q++;
-				memmove(w + 1, w, (size_t) (q - w));
-				*w = '1';
-				i++;
-			}
-		}
-	}
+    if (x == 0)
+    {
+        *p = '0';
+        p--;
+    }
+    else
+    {
+        do
+        {
+            *p = static_cast<char>((x % 10) + '0');
+            p--;
+            x = x / 10;
+        } while ((x != 0) && (p > buffer));
+    }
 
-	if (dest[i - 1] == '.') {
-		i--;
-	}
+    if (d != 0)
+    {
+        while (((o - p) < d) && (p > buffer))
+        {
+            *p-- = '0';
+        }
+    }
 
-	*size = i;
+    if (kIsNeg)
+    {
+        *p-- = '-';
+    }
 
-	return;
+    p++;
+
+    auto i = (o - p);
+
+    while (p < buffer + (sizeof(buffer) / sizeof(buffer[0])))
+    {
+        *t++ = *p++;
+    }
+
+    return i + 1;
+}
+
+static constexpr int kMaxPrecision = 6;
+static constexpr float kFloatRounders[kMaxPrecision + 1] = {
+    0.5f, 0.05f, 0.005f, 0.0005f, 0.00005f, 0.000005f, 0.0000005f,
+};
+
+static void FormatFloat(struct Context* ctx, float f)
+{
+    char buffer[64];
+    auto* dest = buffer;
+    int ipart;
+    int precision;
+    int size;
+    int i;
+
+    if (((ctx->flag & kFlagPrecision) != 0) && (ctx->prec <= kMaxPrecision))
+    {
+        precision = ctx->prec;
+    }
+    else
+    {
+        precision = kMaxPrecision;
+    }
+
+    if (f < 0)
+    {
+        *dest++ = '-';
+        f = -f;
+    }
+
+    if (precision)
+    {
+        f += kFloatRounders[precision];
+    }
+
+    ipart = static_cast<int>(f);
+
+    dest += Itostr(ipart, dest, 0);
+
+    f -= static_cast<float>(ipart);
+
+    *dest++ = '.';
+    dest += Itostr(static_cast<int>(f * static_cast<float>(Pow10(precision))), dest, precision);
+    size = dest - buffer;
+
+    i = 0;
+    while (((size + i) < ctx->width))
+    {
+        Putc(ctx, static_cast<int>(' '));
+        i++;
+    }
+
+    dest = buffer;
+    while (size-- > 0)
+    {
+        Putc(ctx, static_cast<int>(*dest++));
+    }
 }
 #endif
 
-static void _format_hex(struct context *ctx, unsigned int arg) {
-	char buffer[64];
-	char *p = buffer + (sizeof(buffer) / sizeof(buffer[0])) - 1;
-	char *o = p;
-	char alpha;
-	char u;
-	int i;
+static void FormatString(struct Context* ctx, const char* s)
+{
+    int j;
 
-	if (arg == 0) {
-		*p = '0';
-		p--;
-	} else {
-		alpha = ((ctx->flag & FLAG_UPPERCASE) != 0) ? ('A' - (char) 10) : ('a' - (char) 10);
+    for (j = 0; s[j] != 0; j++); // strlen
 
-		do {
-			u = (char) arg & (char) 0x0F;
-			*p = (u < 10) ? (char)('0' + u) : (char)(alpha + u);
-			p--;
-			arg = arg >> 4;
-		} while ((arg != 0) && (p > buffer));
-	}
+    if ((ctx->flag & kFlagPrecision) != 0)
+    {
+        if (ctx->prec < j)
+        {
+            j = ctx->prec;
+        }
+    }
 
-	if ((ctx->flag & FLAG_PRECISION) != 0) {
-		while (((o - p) < ctx->prec) && (p > buffer)) {
-			*p-- = '0';
-		}
-	}
+    while ((((ctx->flag & kFlagLeftJustified) == 0)) && (j++ < ctx->width))
+    {
+        Putc(ctx, ' ');
+    }
 
-	if ((ctx->flag & FLAG_ZERO_PADDED) != 0) {
-		while (((o - p) < ctx->width) && (p > buffer)) {
-			*p-- = '0';
-		}
-	}
+    while ((((ctx->flag & kFlagPrecision) == 0) || (ctx->prec != 0)) && (*s != 0))
+    {
+        Putc(ctx, *s++);
+        ctx->prec--;
+    }
 
-	if ((ctx->flag & FLAG_LEFT_JUSTIFIED) == 0) {
-		while (((o - p) < ctx->width) && (p > buffer)) {
-			*p-- = ' ';
-		}
-	}
-
-	i = o - p;
-
-	p++;
-
-	while (p < buffer + (sizeof(buffer) / sizeof(buffer[0]))) {
-		_xputch(ctx, (int) *p++);
-	}
-
-	while (i++ < ctx->width) {
-		_xputch(ctx, (int) ' ');
-	}
+    while (j++ < ctx->width)
+    {
+        Putc(ctx, ' ');
+    }
 }
 
-static void _format_int(struct context *ctx, unsigned long int arg) {
-	char buffer[64];
-	char *p = buffer + (sizeof(buffer) / sizeof(buffer[0])) - 1;
-	char *o = p;
-	int i;
-	
-	if (arg == 0) {
-		*p = '0';
-		p--;
-	} else {
-		do {
-			*p = (char)((arg % 10) + '0');
-			p--;
-			arg = arg / 10;
-		} while ((arg != 0) && (p > buffer));
-	}
+static void FormatPointer(struct Context* ctx, unsigned int arg)
+{
+    ctx->width = 8;
+    ctx->flag = kFlagZeroPadded;
 
-	if ((ctx->flag & FLAG_PRECISION) != 0) {
-		while (((o - p) < ctx->prec) && (p > buffer)) {
-			*p-- = '0';
-		}
-	}
+    Putc(ctx, static_cast<int>('0'));
+    Putc(ctx, static_cast<int>('x'));
 
-	if ((ctx->flag & FLAG_ZERO_PADDED) != 0) {
-		while (((o - p) < ctx->width) && (p > buffer)) {
-			*p-- = '0';
-		}
-	}
-
-	if ((ctx->flag & FLAG_NEGATIVE) != 0) {
-		*p-- = '-';
-	}
-
-	if ((ctx->flag & FLAG_LEFT_JUSTIFIED) == 0) {
-		while (((o - p) < ctx->width) && (p > buffer)) {
-			*p-- = ' ';
-		}
-	}
-
-	i = o - p;
-
-	p++;
-
-	while (p < buffer + (sizeof(buffer) / sizeof(buffer[0]))) {
-		_xputch(ctx, (int) *p++);
-	}
-
-	while (i++ < ctx->width) {
-		_xputch(ctx, (int) ' ');
-	}
+    FormatHex(ctx, arg);
 }
 
-#if !defined (DISABLE_PRINTF_FLOAT)
-static void _format_float(struct context *ctx, float f) {
-	char buffer[64];
-	char *dest = (char *) buffer;
-	int ipart;
-	int precision;
-	int size;
-	int i;
-
-	if ((ctx->flag & FLAG_PRECISION) != 0) {
-		precision = ctx->prec;
-	} else {
-		precision = 6;
-	}
-
-	if (f < 0) {
-		*dest++ = '-';
-		f = -f;
-	}
-
-	ipart = (int) f;
-
-	dest += _itostr(ipart, dest, 0);
-
-	f -= (float)ipart;
-
-	precision++;
-	*dest++ = '.';
-	dest += _itostr((int)(f * (float)_pow10(precision)), dest, precision);
-	size = dest - buffer;
-	_round_float(buffer, &size);
-
-	i = 0;
-	while (((size + i) < ctx->width)) {
-		_xputch(ctx, (int) ' ');
-		i++;
-	}
-
-	dest = buffer;
-	while (size-- > 0) {
-		_xputch(ctx, (int) *dest++);
-	}
-
-}
+static int Vprintf(int size, const char* fmt, va_list va)
+{
+    struct Context ctx;
+#if !defined(DISABLE_PRINTF_FLOAT)
+    float f;
 #endif
+    int32_t l;
+    uint32_t lu;
+    const char* s;
 
-static void _format_string(struct context *ctx, const char *s) {
-	int j;
+    ctx.total = 0;
+    ctx.capacity = size;
 
-	for (j = 0; s[j] != (char) 0; j++)
-		;	// strlen
+    while (*fmt != 0)
+    {
+        if (*fmt != '%')
+        {
+            Putc(&ctx, static_cast<int>(*fmt++));
+            continue;
+        }
 
-	if ((ctx->flag & FLAG_PRECISION) != 0) {
-		if (ctx->prec < j) {
-			j = ctx->prec;
-		}
-	}
+        fmt++;
 
-	while ((((ctx->flag & FLAG_LEFT_JUSTIFIED) == 0)) && (j++ < ctx->width)) {
-		_xputch(ctx, (int) ' ');
-	}
+        ctx.flag = 0;
+        ctx.prec = 0;
+        ctx.width = 0;
 
-	while ((((ctx->flag & FLAG_PRECISION) == 0) || (ctx->prec != 0)) && (*s != (char) 0)) {
-		_xputch(ctx, (int) *s++);
-		ctx->prec--;
-	}
+        if (*fmt == '0')
+        {
+            ctx.flag |= kFlagZeroPadded;
+            fmt++;
+        }
+        else if (*fmt == '-')
+        {
+            ctx.flag |= kFlagLeftJustified;
+            fmt++;
+        }
 
-	while (j++ < ctx->width) {
-		_xputch(ctx, (int) ' ');
-	}
-}
+        while (isdigit(static_cast<int>(*fmt)) != 0)
+        {
+            ctx.width = ctx.width * 10 + (*fmt - '0');
+            fmt++;
+        }
 
-static void _format_pointer(struct context *ctx, unsigned int arg) {
-	ctx->width = 8;
-	ctx->flag = FLAG_ZERO_PADDED;
+        if (ctx.width != 0)
+        {
+            ctx.flag |= kFlagMinWidth;
+        }
 
-	_xputch(ctx, (int) '0');
-	_xputch(ctx, (int) 'x');
+        if (*fmt == '.')
+        {
+            fmt++;
+            if (*fmt == '*')
+            {
+                fmt++;
+                ctx.prec = va_arg(va, int);
+                if (ctx.prec < 0)
+                {
+                    ctx.prec = -ctx.prec;
+                }
+            }
+            else
+            {
+                while (isdigit(static_cast<int>(*fmt)) != 0)
+                {
+                    ctx.prec = ctx.prec * 10 + (*fmt - '0');
+                    fmt++;
+                }
+            }
+            ctx.flag |= kFlagPrecision;
+        }
 
-	_format_hex(ctx, arg);
-}
+        if (*fmt == 'l')
+        {
+            fmt++;
+            ctx.flag |= kFlagLong;
+        }
 
-static int _vprintf(const int size, const char *fmt, va_list va) {
-	struct context ctx;
-#if !defined (DISABLE_PRINTF_FLOAT)
-	float f;
+        switch (*fmt)
+        {
+            case 'c':
+                Putc(&ctx, va_arg(va, int));
+                break;
+            case 'd':
+                /*@fallthrough@*/
+                /* no break */
+            case 'i':
+                l = ((ctx.flag & kFlagLong) != 0) ? va_arg(va, long int) : static_cast<int32_t>(va_arg(va, int));
+                if (l < 0)
+                {
+                    ctx.flag |= kFlagNegative;
+                    l = -l;
+                }
+                FormatInt(&ctx, static_cast<uint32_t>(l));
+                break;
+#if !defined(DISABLE_PRINTF_FLOAT)
+            case 'f':
+                f = static_cast<float>(va_arg(va, double));
+                FormatFloat(&ctx, f);
+                break;
 #endif
-	long int l;
-	unsigned long int lu;
-	const char *s;
+            case 'p':
+                FormatPointer(&ctx, va_arg(va, unsigned int));
+                break;
+            case 's':
+                s = va_arg(va, const char*);
+                FormatString(&ctx, s);
+                break;
+            case 'u':
+                lu = ((ctx.flag & kFlagLong) != 0) ? va_arg(va, unsigned long int) : va_arg(va, unsigned int);
+                FormatInt(&ctx, lu);
+                break;
+            case 'X':
+                ctx.flag |= kFlagUppercase;
+                /*@fallthrough@*/
+                /* no break */
+            case 'x':
+                FormatHex(&ctx, va_arg(va, unsigned int));
+                break;
+            default:
+                Putc(&ctx, static_cast<int>(*fmt));
+                continue;
+        }
 
-	ctx.total = 0;
-	ctx.capacity = size;
+        fmt++;
+    }
 
-	while (*fmt != (char) 0) {
-
-		if (*fmt != '%') {
-			_xputch(&ctx, (int )*fmt++);
-			continue;
-		}
-
-		fmt++;
-
-		ctx.flag = 0;
-		ctx.prec = 0;
-		ctx.width = 0;
-
-		if (*fmt == '0') {
-			ctx.flag |= FLAG_ZERO_PADDED;
-			fmt++;
-		} else if (*fmt == '-') {
-			ctx.flag |= FLAG_LEFT_JUSTIFIED;
-			fmt++;
-		}
-
-		while (isdigit((int) *fmt) != 0) {
-			ctx.width = ctx.width * 10 + (*fmt - '0');
-			fmt++;
-		}
-
-		if (ctx.width != 0) {
-			ctx.flag |= FLAG_MIN_WIDTH;
-		}
-
-		if (*fmt == '.') {
-			fmt++;
-			if (*fmt == '*') {
-				fmt++;
-				ctx.prec = va_arg(va, int);
-				if (ctx.prec < 0) {
-					ctx.prec = -ctx.prec;
-				}
-			} else {
-				while (isdigit((int) *fmt) != 0) {
-					ctx.prec = ctx.prec * 10 + (*fmt - '0');
-					fmt++;
-				}
-			}
-			ctx.flag |= FLAG_PRECISION;
-		}
-
-		if (*fmt == 'l') {
-			fmt++;
-			ctx.flag |= FLAG_LONG;
-		}
-
-		switch (*fmt) {
-		case 'c':
-			_xputch(&ctx, va_arg(va, int));
-			break;
-		case 'd':
-			/*@fallthrough@*/
-			/* no break */
-		case 'i':
-			l = ((ctx.flag & FLAG_LONG) != 0) ? va_arg(va, long int) : (long int) va_arg(va, int);
-			if (l < 0) {
-				ctx.flag |= FLAG_NEGATIVE;
-				l = -l;
-			}
-			_format_int(&ctx, (unsigned long int) l);
-			break;
-#if !defined (DISABLE_PRINTF_FLOAT)
-		case 'f':
-			f = (float) va_arg(va, double);
-			_format_float(&ctx, f);
-			break;
-#endif
-		case 'p':
-			_format_pointer(&ctx, va_arg(va, unsigned int));
-			break;
-		case 's':
-			s = va_arg(va, const char *);
-			_format_string(&ctx, s);
-			break;
-		case 'u':
-			lu = ((ctx.flag & FLAG_LONG) != 0) ? va_arg(va, unsigned long int) : va_arg(va, unsigned int);
-			_format_int(&ctx, lu);
-			break;
-		case 'X':
-			ctx.flag |= FLAG_UPPERCASE;
-			/*@fallthrough@*/
-			/* no break */
-		case 'x':
-			_format_hex(&ctx, va_arg(va, unsigned int));
-			break;
-		default:
-			_xputch(&ctx, (int) *fmt);
-			continue;
-		}
-		
-		fmt++;
-	}
-
-	return ctx.total;
+    return ctx.total;
 }
 
-extern "C" {
-int printf(const char* fmt, ...) {
-	int i;
-	va_list arp;
+extern "C"
+{
+    int printf(const char* fmt, ...) // NOLINT
+    {
+        va_list arp;
+        va_start(arp, fmt);
 
-	va_start(arp, fmt);
+        auto i = Vprintf(INT_MAX, fmt, arp);
 
-	i = _vprintf(INT_MAX, fmt, arp);
+        va_end(arp);
 
-	va_end(arp);
+        return i;
+    }
 
-	return i;
-}
+    int vprintf(const char* fmt, va_list arp) // NOLINT
+    {
+        auto i = Vprintf(INT_MAX, fmt, arp);
 
-int vprintf(const char *fmt, va_list arp) {
-	int i;
+        return i;
+    }
 
-	i = _vprintf(INT_MAX, fmt, arp);
+    int sprintf(char* str, const char* fmt, ...) // NOLINT
+    {
+        va_list arp;
 
-	return i;
-}
+        outptr = str;
+        va_start(arp, fmt);
 
-int sprintf(char *str, const char *fmt, ...) {
-	int i;
-	va_list arp;
+        auto i = Vprintf(INT_MAX, fmt, arp);
 
-	outptr = str;
-	va_start(arp, fmt);
+        va_end(arp);
 
-	i = _vprintf(INT_MAX, fmt, arp);
+        *outptr = 0;
+        outptr = nullptr;
 
-	va_end(arp);
+        return i;
+    }
 
-	*outptr = (char) 0;
-	outptr = NULL;
+    int vsprintf(char* str, const char* fmt, va_list ap) // NOLINT
+    {
+        outptr = str;
 
-	return i;
-}
+        auto i = Vprintf(INT_MAX, fmt, ap);
 
-int vsprintf(char *str, const char *fmt, va_list ap) {
-	int i;
+        *outptr = 0;
+        outptr = nullptr;
 
-	outptr = str;
+        return i;
+    }
 
-	i = _vprintf(INT_MAX, fmt, ap);
+    int vsnprintf(char* str, size_t size, const char* fmt, va_list ap) // NOLINT
+    {
+        if (size == 0)
+        {
+            outptr = nullptr;           // don't write anywhere
+            return Vprintf(0, fmt, ap); // just count
+        }
 
-	*outptr = (char) 0;
-	outptr = NULL;
+        outptr = str;
 
-	return i;
-}
+        auto i = Vprintf((int)size, fmt, ap);
 
-int snprintf(char *str, size_t size, const char *fmt, ...) {
-	int i;
-	va_list arp;
+        *outptr = 0;
+        outptr = nullptr;
 
-	outptr = str;
-	va_start(arp, fmt);
+        return i;
+    }
 
-	i = _vprintf((int) size, fmt, arp);
-
-	va_end(arp);
-
-	*outptr = (char) 0;
-	outptr = NULL;
-
-	return i;
-
-}
-
-int vsnprintf(char *str, size_t size, const char *fmt, va_list ap) {
-	int i;
-
-	outptr = str;
-
-	i = _vprintf((int) size, fmt, ap);
-
-	*outptr = (char) 0;
-	outptr = NULL;
-
-	return i;
-}
+    int snprintf(char* str, size_t size, const char* fmt, ...) // NOLINT
+    {
+        va_list ap;
+        va_start(ap, fmt);
+        int i = vsnprintf(str, size, fmt, ap);
+        va_end(ap);
+        return i;
+    }
 }

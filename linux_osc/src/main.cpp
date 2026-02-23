@@ -1,8 +1,7 @@
 /**
  * @file main.cpp
- *
  */
-/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,116 +22,80 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cstring>
-#include <cstdlib>
 #include <signal.h>
 
-#include "hardware.h"
+#include "hal.h"
 #include "network.h"
-
 #include "display.h"
-#include "displayudfparams.h"
-
-#include "net/apps/mdns.h"
-
 #include "handler.h"
-
 #include "oscserver.h"
-#include "oscserverparams.h"
-
+#include "json/oscserverparams.h"
 #include "dmxmonitor.h"
-#include "dmxmonitorparams.h"
-
-#include "rdmdeviceparams.h"
+#include "json/dmxmonitorparams.h"
 #include "rdmnetdevice.h"
-#include "rdmnetconst.h"
-#include "rdmpersonality.h"
-#include "rdm_e120.h"
-#include "factorydefaults.h"
-
+#include "rdmdevice.h"
 #include "remoteconfig.h"
-#include "remoteconfigparams.h"
-
 #include "configstore.h"
-
 #include "firmwareversion.h"
 #include "software_version.h"
 
-static bool keepRunning = true;
+static bool keep_running = true;
 
-void intHandler(int) {
-    keepRunning = false;
+void IntHandler(int)
+{
+    keep_running = false;
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv)
+{
     struct sigaction act;
-    act.sa_handler = intHandler;
+    act.sa_handler = IntHandler;
     sigaction(SIGINT, &act, nullptr);
-	Hardware hw;
-	Display display;
-	ConfigStore configStore;
-	Network nw(argc, argv);
-	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+    hal::Init();
+    Display display;
+    ConfigStore config_store;
+    Network nw(argc, argv);
+    FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
-	hw.Print();
-	fw.Print();
-	nw.Print();
+    hal::print();
+    fw.Print();
+    nw.Print();
 
-	DisplayUdfParams displayUdfParams;
+    OscServer server;
 
-	OSCServerParams oscparms;
-	OscServer server;
+    json::OscServerParams oscparms;
+    oscparms.Load();
+    oscparms.Set();
 
-	oscparms.Load();
-	oscparms.Set(&server);
+    DmxMonitor monitor;
 
-	DMXMonitor monitor;
+    json::DmxMonitorParams monitor_params;
+    monitor_params.Load();
+    monitor_params.Set();
 
-	DMXMonitorParams monitorParams;
-	monitorParams.Load();
+    server.SetOscServerHandler(new Handler);
+    server.SetOutput(&monitor);
 
-	server.SetOscServerHandler(new Handler);
-	server.SetOutput(&monitor);
+	auto& rdm_device = RdmDevice::Get();
+	rdm_device.SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
+	rdm_device.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
+	rdm_device.Init();
+	rdm_device.Print();
 
-	char aDescription[rdm::personality::DESCRIPTION_MAX_LENGTH + 1];
-	snprintf(aDescription, sizeof(aDescription) - 1, "OSC DMX");
+	RDMNetDevice llrp_only_device;
+	llrp_only_device.Print();
 
-	uint8_t nLength;
-	const auto *aLabel = hw.GetBoardName(nLength);
+    server.Print();
 
-	RDMPersonality *pPersonalities[1] = { new RDMPersonality(aDescription, nullptr) };
-	RDMNetDevice llrpOnlyDevice(pPersonalities, 1);
+    RemoteConfig remote_config(remoteconfig::Output::MONITOR, 1);
 
-	llrpOnlyDevice.SetLabel(RDM_ROOT_DEVICE, aLabel, nLength);
-	llrpOnlyDevice.SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
-	llrpOnlyDevice.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
-	llrpOnlyDevice.Init();
+    server.Start();
 
-	RDMDeviceParams rdmDeviceParams;
+    while (keep_running)
+    {
+        network::Run();
+        hal::Run();
+    }
 
-	rdmDeviceParams.Load();
-	rdmDeviceParams.Set(&llrpOnlyDevice);
-
-	llrpOnlyDevice.Print();
-
-	mdns_service_record_add(nullptr, mdns::Services::RDMNET_LLRP, "node=RDMNet LLRP Only");
-	mdns_service_record_add(nullptr, mdns::Services::OSC, "type=monitor", server.GetPortIncoming());
-
-	server.Print();
-
-	RemoteConfig remoteConfig(remoteconfig::Node::OSC, remoteconfig::Output::MONITOR, 1);
-
-	RemoteConfigParams remoteConfigParams;
-	remoteConfigParams.Load();
-	remoteConfigParams.Set(&remoteConfig);
-
-	server.Start();
-
-	while (keepRunning) {
-		nw.Run();
-		hw.Run();
-	}
-
-	return 0;
+    return 0;
 }

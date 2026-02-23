@@ -2,7 +2,7 @@
  * @file display.h
  *
  */
-/* Copyright (C) 2022-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2022-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,27 +28,27 @@
 
 #include <cstdint>
 
-#include "console.h"
-
-namespace display {
-struct Defaults {
-	static constexpr uint32_t SLEEP_TIMEOUT = 5;
+namespace display
+{
+struct Defaults
+{
+    static constexpr uint32_t kSleepTimeout = 5;
 };
-}  // namespace display
+} // namespace display
 
-#if !defined (CONFIG_DISPLAY_USE_CUSTOM)
-# if defined (CONFIG_DISPLAY_USE_SPI)
-#  include "spi/display.h"
-# else
-#  include "i2c/display.h"
-# endif
+#if !defined(CONFIG_DISPLAY_USE_CUSTOM)
+#if defined(CONFIG_DISPLAY_USE_SPI)
+#include "spi/display.h"
 #else
-# if !defined(STR_HELPER)
-#  define STR_HELPER(x) #x
-#  define STR(x) STR_HELPER(x)
-# endif
-# define EXPAND(x) x
-# include STR(EXPAND(DISPLAY_USE_CUSTOM_INCLUDE)/custom/display.h)
+#include "i2c/display.h"
+#endif
+#else
+#if !defined(STR_HELPER)
+#define STR_HELPER(x) #x
+#define STR(x) STR_HELPER(x)
+#endif
+#define EXPAND(x) x
+#include STR(EXPAND(DISPLAY_USE_CUSTOM_INCLUDE)/custom/display.h)
 #endif
 
-#endif /* DISPLAY_H_ */
+#endif  // DISPLAY_H_

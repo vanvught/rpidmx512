@@ -2,7 +2,7 @@
  * @file oscsimplesend.h
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,31 +28,26 @@
 
 #include <cstdint>
 
+class OscSimpleSend
+{
+   public:
+    static constexpr uint32_t kBufferSize = 512U;
 
+    // Support for path only
+    OscSimpleSend(int32_t handle, uint32_t ip_address, uint16_t port, const char* path, const char* type);
+    // Support for 's'
+    OscSimpleSend(int32_t handle, uint32_t ip_address, uint16_t port, const char* path, const char* type, const char* string);
+    // Support for type 'i'
+    OscSimpleSend(int32_t handle, uint32_t ip_address, uint16_t port, const char* path, const char* type, int value);
+    // Support for type 'f'
+    OscSimpleSend(int32_t handle, uint32_t ip_address, uint16_t port, const char* path, const char* type, float value);
 
-namespace osc::simple::send {
-static constexpr auto BUFFER_SIZE = 512U;
-} // namespace osc::simple::send
+   private:
+    void UpdateMessage(const char* path, uint32_t path_length, char type);
+    void Send(uint32_t message_length, int32_t handle, uint32_t ip_address, uint16_t port);
 
-
-
-class OscSimpleSend {
-public:
-	// Support for path only
-	OscSimpleSend(int32_t nHandle, uint32_t nIpAddress , uint16_t nPort, const char *pPath, const char *pType);
-	// Support for 's'
-	OscSimpleSend(int32_t nHandle, uint32_t nIpAddress , uint16_t nPort, const char *pPath, const char *pType, const char *pString);
-	// Support for type 'i'
-	OscSimpleSend(int32_t nHandle, uint32_t nIpAddress , uint16_t nPort, const char *pPath, const char *pType, int nValue);
-	// Support for type 'f'
-	OscSimpleSend(int32_t nHandle, uint32_t nIpAddress , uint16_t nPort, const char *pPath, const char *pType, float fValue);
-
-private:
-	void UpdateMessage(const char *pPath, uint32_t nPathLength, char cType);
-	void Send(uint32_t nMessageLength, int32_t nHandle, uint32_t nIpAddress, uint16_t nPort);
-
-private:
-	static char s_Message[osc::simple::send::BUFFER_SIZE];
+   private:
+    inline static uint8_t s_message[kBufferSize];
 };
 
-#endif /* OSCSIMPLESEND_H_ */
+#endif  // OSCSIMPLESEND_H_

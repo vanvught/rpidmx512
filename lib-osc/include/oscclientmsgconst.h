@@ -1,8 +1,8 @@
 /**
- * @file oscclientconst.h
+ * @file oscclientmsgconst.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,10 +26,11 @@
 #ifndef OSCCLIENTMSGCONST_H_
 #define OSCCLIENTMSGCONST_H_
 
-struct OscClientMsgConst {
-	static const char PARAMS[];
-	static const char START[];
-	static const char STARTED[];
+struct OscClientMsgConst
+{
+    static inline const char PARAMS[] = "Setting Client parameters";
+    static inline const char START[] = "Starting the Client";
+    static inline const char STARTED[] = "Client started";
 };
 
-#endif /* OSCCLIENTMSGCONST_H_ */
+#endif  // OSCCLIENTMSGCONST_H_

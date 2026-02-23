@@ -1,8 +1,7 @@
 /**
- * @file ddpdisplay.h
- *
+ * @file ddpdisplay.cpp
  */
-/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,304 +27,307 @@
 #include <cassert>
 
 #include "ddpdisplay.h"
-
-#include "lightset.h"
-#include "lightsetdata.h"
-#include "lightset_data.h"
-
-#include "hardware.h"
+#include "ddp.h"
+#include "dmxnodedata.h"
+#include "dmxnode_data.h"
+#include "apps/mdns.h"
 #include "network.h"
-#include "net/protocol/udp.h"
-
-#include "debug.h"
+#include "core/protocol/udp.h"
+#include "hal.h"
+#include "firmware/debug/debug_dump.h"
+#include "firmware/debug/debug_debug.h"
 
 using namespace ddp;
 
-namespace json {
-static constexpr char START[] = "{\"status\":{\"update\":\"change\",\"state\":\"up\"}}";
-static constexpr char DISCOVER_REPLY[] = "{\"status\":{\"man\":\"%s\",\"mod\":\"Pixel\",\"ver\":\"1.0\",\"mac\":\"%.2x:%.2x:%.2x:%.2x:%.2x:%.2x\"}}";
-static constexpr char CONFIG_REPLY[] = "{\"config\":{\"ip\":\"%d.%d.%d.%d\",\"nm\":\"%d.%d.%d.%d\",\"gw\":\"%d.%d.%d.%d\",\"ports\":["
-		"{\"port\":\"0\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
-		"{\"port\":\"1\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
-		"{\"port\":\"2\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
-		"{\"port\":\"3\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
-#if CONFIG_PIXELDMX_MAX_PORTS > 2
-		"{\"port\":\"4\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
-		"{\"port\":\"5\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
-		"{\"port\":\"6\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
-		"{\"port\":\"7\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
-		"{\"port\":\"8\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
-		"{\"port\":\"9\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"}"
+namespace json
+{
+static constexpr char kStart[] = "{\"status\":{\"update\":\"change\",\"state\":\"up\"}}";
+static constexpr char kDiscoverReply[] = "{\"status\":{\"man\":\"%s\",\"mod\":\"Pixel\",\"ver\":\"1.0\",\"mac\":\"%.2x:%.2x:%.2x:%.2x:%.2x:%.2x\"}}";
+static constexpr char kConfigReply[] =
+    "{\"config\":{\"ip\":\"%d.%d.%d.%d\",\"nm\":\"%d.%d.%d.%d\",\"gw\":\"%d.%d.%d.%d\",\"ports\":["
+    "{\"port\":\"0\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
+    "{\"port\":\"1\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
+    "{\"port\":\"2\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
+    "{\"port\":\"3\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
+#if CONFIG_DMXNODE_PIXEL_MAX_PORTS > 2
+    "{\"port\":\"4\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
+    "{\"port\":\"5\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
+    "{\"port\":\"6\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
+    "{\"port\":\"7\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
+    "{\"port\":\"8\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
+    "{\"port\":\"9\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"}"
 #endif
-#if CONFIG_PIXELDMX_MAX_PORTS == 16
-		","
-		"{\"port\":\"10\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
-		"{\"port\":\"11\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
-		"{\"port\":\"12\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
-		"{\"port\":\"13\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
-		"{\"port\":\"14\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
-		"{\"port\":\"15\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
-		"{\"port\":\"16\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
-		"{\"port\":\"17\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"}"
+#if CONFIG_DMXNODE_PIXEL_MAX_PORTS == 16
+    ","
+    "{\"port\":\"10\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
+    "{\"port\":\"11\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
+    "{\"port\":\"12\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
+    "{\"port\":\"13\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
+    "{\"port\":\"14\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
+    "{\"port\":\"15\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
+    "{\"port\":\"16\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
+    "{\"port\":\"17\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"}"
 
 #endif
-		"]}}";
+    "]}}";
 
-namespace size {
-static constexpr auto START = sizeof(json::START) - 1U;
-}  // namespace size
-}  // namespace json
+namespace size
+{
+static constexpr auto kStart = sizeof(json::kStart) - 1U;
+} // namespace size
+} // namespace json
 
-DdpDisplay::DdpDisplay() {
-	DEBUG_ENTRY
-	assert(s_pThis == nullptr);
-	s_pThis = this;
+DdpDisplay::DdpDisplay()
+{
+    DEBUG_ENTRY();
+    assert(s_this == nullptr);
+    s_this = this;
 
-	Network::Get()->MacAddressCopyTo(m_macAddress);
+    network::iface::CopyMacAddressTo(mac_address_);
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-DdpDisplay::~DdpDisplay() {
-	DEBUG_ENTRY
+DdpDisplay::~DdpDisplay()
+{
+    DEBUG_ENTRY();
 
-	Stop();
+    Stop();
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void DdpDisplay::CalculateOffsets() {
-	uint32_t nSum = 0;
+void DdpDisplay::CalculateOffsets()
+{
+    uint32_t sum = 0;
 
-	for (uint32_t nPixelPortIndex = 0; nPixelPortIndex < ddpdisplay::configuration::pixel::MAX_PORTS; nPixelPortIndex++) {
-		nSum = nSum + m_nStripDataLength;
-		s_nOffsetCompare[nPixelPortIndex] = nSum;
-	}
+    for (uint32_t pixel_port_index = 0; pixel_port_index < ddpdisplay::configuration::pixel::kMaxPorts; pixel_port_index++)
+    {
+        sum = sum + strip_data_length_;
+        s_offset_compare[pixel_port_index] = sum;
+    }
 
-/*
-  error: comparison of unsigned expression < 0 is always false [-Werror=type-limits]
-  for (uint32_t nDmxPortIndex = 0; nDmxPortIndex < ddpdisplay::configuration::dmx::MAX_PORTS; nDmxPortIndex++) {
- */
+    /*
+      error: comparison of unsigned expression < 0 is always false [-Werror=type-limits]
+      for (uint32_t nDmxPortIndex = 0; nDmxPortIndex < ddpdisplay::configuration::dmx::MAX_PORTS; nDmxPortIndex++) {
+     */
 
 #if __GNUC__ < 10
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wtype-limits"	// FIXME ignored "-Wtype-limits"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wtype-limits" // FIXME ignored "-Wtype-limits"
 #endif
 
-	for (uint32_t nDmxPortIndex = 0; nDmxPortIndex < ddpdisplay::configuration::dmx::MAX_PORTS; nDmxPortIndex++) {
-		nSum = nSum + lightset::dmx::UNIVERSE_SIZE;
-		const auto nIndexOffset = nDmxPortIndex + ddpdisplay::configuration::pixel::MAX_PORTS;
-		s_nOffsetCompare[nIndexOffset] = nSum;
-	}
+    for (uint32_t dmx_port_index = 0; dmx_port_index < ddpdisplay::configuration::dmx::kMaxPorts; dmx_port_index++)
+    {
+        sum = sum + dmxnode::kUniverseSize;
+        const auto kIndexOffset = dmx_port_index + ddpdisplay::configuration::pixel::kMaxPorts;
+        s_offset_compare[kIndexOffset] = sum;
+    }
 
 #if __GNUC__ < 10
-# pragma GCC diagnostic pop
+#pragma GCC diagnostic pop
 #endif
-
 }
 
-void DdpDisplay::Start() {
-	DEBUG_ENTRY
-	assert(m_pLightSet != nullptr);
+void DdpDisplay::Start()
+{
+    DEBUG_ENTRY();
+    assert(dmxnode_output_type_ != nullptr);
 
-	m_nHandle = Network::Get()->Begin(ddp::UDP_PORT);
-	assert(m_nHandle != -1);
+    handle_ = network::udp::Begin(ddp::kUdpPort, StaticCallbackFunction);
+    assert(handle_ != -1);
 
-	ddp::Packet packet;
+    network::apps::mdns::ServiceRecordAdd(nullptr, network::apps::mdns::Services::kDdp, "type=display");
 
-	memset(&packet.header, 0, HEADER_LEN);
-	packet.header.flags1 = flags1::VER1 | flags1::REPLY;
-	packet.header.id = id::STATUS;
-	packet.header.len[1] = json::size::START;
-	memcpy(packet.data, json::START, json::size::START);
+    ddp::Packet packet;
 
-	Network::Get()->SendTo(m_nHandle, &packet, HEADER_LEN + json::size::START, Network::Get()->GetIp() | ~(Network::Get()->GetNetmask()), ddp::UDP_PORT);
+    memset(&packet.header, 0, HEADER_LEN);
+    packet.header.flags1 = flags1::VER1 | flags1::REPLY;
+    packet.header.id = id::STATUS;
+    packet.header.len[1] = json::size::kStart;
+    memcpy(packet.data, json::kStart, json::size::kStart);
 
-	debug_dump(&packet, HEADER_LEN + json::size::START);
+    network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&packet), HEADER_LEN + json::size::kStart, network::GetPrimaryIp() | ~(network::GetNetmask()),
+                       ddp::kUdpPort);
 
-	CalculateOffsets();
-	DEBUG_EXIT
+    debug::Dump(&packet, HEADER_LEN + json::size::kStart);
+
+    CalculateOffsets();
+    DEBUG_EXIT();
 }
 
-void DdpDisplay::Stop() {
-	DEBUG_ENTRY
+void DdpDisplay::Stop()
+{
+    DEBUG_ENTRY();
 
-	m_nHandle = Network::Get()->End(ddp::UDP_PORT);
-	m_nHandle = -1;
+    network::apps::mdns::ServiceRecordDelete(network::apps::mdns::Services::kDdp);
 
-	DEBUG_EXIT
+    handle_ = network::udp::End(ddp::kUdpPort);
+    handle_ = -1;
+
+    DEBUG_EXIT();
 }
 
-void DdpDisplay::HandleQuery() {
-	DEBUG_ENTRY
+void DdpDisplay::HandleQuery()
+{
+    DEBUG_ENTRY();
 
-	auto *pPacket = reinterpret_cast<ddp::Packet *>(m_pReceiveBuffer);
+    auto* packet = reinterpret_cast<ddp::Packet*>(receive_buffer_);
 
-	if ((pPacket->header.id & id::STATUS) == id::STATUS) {
-		DEBUG_PUTS("id::STATUS");
+    if ((packet->header.id & id::STATUS) == id::STATUS)
+    {
+        DEBUG_PUTS("id::STATUS");
 
-		const auto nLength = snprintf(reinterpret_cast<char *>(pPacket->data), UDP_DATA_SIZE - 1,
-				json::DISCOVER_REPLY, Hardware::Get()->GetWebsiteUrl(), MAC2STR(m_macAddress) );
+        const auto kLength =
+            snprintf(reinterpret_cast<char*>(packet->data), network::udp::kDataSize - 1, json::kDiscoverReply, hal::kWebsite, MAC2STR(mac_address_));
 
-		pPacket->header.flags1 = flags1::VER1 | flags1::REPLY | flags1::PUSH;
-		pPacket->header.len[0] = static_cast<uint8_t>(nLength >> 8);
-		pPacket->header.len[1] = static_cast<uint8_t>(nLength);
+        packet->header.flags1 = flags1::VER1 | flags1::REPLY | flags1::PUSH;
+        packet->header.len[0] = static_cast<uint8_t>(kLength >> 8);
+        packet->header.len[1] = static_cast<uint8_t>(kLength);
 
-		Network::Get()->SendTo(m_nHandle, &pPacket, (HEADER_LEN + static_cast<uint16_t>(nLength)), Network::Get()->GetIp() | ~(Network::Get()->GetNetmask()), ddp::UDP_PORT);
-	}
+        network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&packet), (HEADER_LEN + static_cast<uint16_t>(kLength)),
+                           network::GetPrimaryIp() | ~(network::GetNetmask()), ddp::kUdpPort);
+    }
 
-	if ((pPacket->header.id & id::STATUS) == id::CONFIG) {
-		DEBUG_PUTS("id::CONFIG");
+    if ((packet->header.id & id::STATUS) == id::CONFIG)
+    {
+        DEBUG_PUTS("id::CONFIG");
 
-		const auto nLength = snprintf(reinterpret_cast<char *>(pPacket->data), UDP_DATA_SIZE - 1,
-				json::CONFIG_REPLY,
-				IP2STR(Network::Get()->GetIp()), IP2STR(Network::Get()->GetNetmask()), IP2STR(Network::Get()->GetGatewayIp()),
-				m_nActivePorts > 0 ? m_nCount : 0,
-				m_nActivePorts > 1 ? m_nCount : 0,
-#if CONFIG_PIXELDMX_MAX_PORTS > 2
-				m_nActivePorts > 2 ? m_nCount : 0,
-				m_nActivePorts > 3 ? m_nCount : 0,
-				m_nActivePorts > 4 ? m_nCount : 0,
-				m_nActivePorts > 5 ? m_nCount : 0,
-				m_nActivePorts > 6 ? m_nCount : 0,
-				m_nActivePorts > 7 ? m_nCount : 0,
+        const auto kLength =
+            snprintf(reinterpret_cast<char*>(packet->data), network::udp::kDataSize - 1, json::kConfigReply, IP2STR(network::GetPrimaryIp()),
+                     IP2STR(network::GetNetmask()), IP2STR(network::GetGatewayIp()), active_ports_ > 0 ? count_ : 0, active_ports_ > 1 ? count_ : 0,
+#if CONFIG_DMXNODE_PIXEL_MAX_PORTS > 2
+                     active_ports_ > 2 ? count_ : 0, active_ports_ > 3 ? count_ : 0, active_ports_ > 4 ? count_ : 0, active_ports_ > 5 ? count_ : 0,
+                     active_ports_ > 6 ? count_ : 0, active_ports_ > 7 ? count_ : 0,
 #endif
-#if CONFIG_PIXELDMX_MAX_PORTS == 16
-				m_nActivePorts >  8 ? m_nCount : 0,
-				m_nActivePorts >  9 ? m_nCount : 0,
-				m_nActivePorts > 10 ? m_nCount : 0,
-				m_nActivePorts > 11 ? m_nCount : 0,
-				m_nActivePorts > 12 ? m_nCount : 0,
-				m_nActivePorts > 13 ? m_nCount : 0,
-				m_nActivePorts > 14 ? m_nCount : 0,
-				m_nActivePorts > 15 ? m_nCount : 0,
+#if CONFIG_DMXNODE_PIXEL_MAX_PORTS == 16
+                     active_ports_ > 8 ? count_ : 0, active_ports_ > 9 ? count_ : 0, active_ports_ > 10 ? count_ : 0, active_ports_ > 11 ? count_ : 0,
+                     active_ports_ > 12 ? count_ : 0, active_ports_ > 13 ? count_ : 0, active_ports_ > 14 ? count_ : 0, active_ports_ > 15 ? count_ : 0,
 #endif
-				ddpdisplay::configuration::dmx::MAX_PORTS == 0 ? 0 : lightset::dmx::UNIVERSE_SIZE,
-				ddpdisplay::configuration::dmx::MAX_PORTS == 0 ? 0 : lightset::dmx::UNIVERSE_SIZE
-				);
+                     ddpdisplay::configuration::dmx::kMaxPorts == 0 ? 0 : dmxnode::kUniverseSize,
+                     ddpdisplay::configuration::dmx::kMaxPorts == 0 ? 0 : dmxnode::kUniverseSize);
 
-		pPacket->header.flags1 = flags1::VER1 | flags1::REPLY | flags1::PUSH;
-		pPacket->header.len[0] = static_cast<uint8_t>(nLength >> 8);
-		pPacket->header.len[1] = static_cast<uint8_t>(nLength);
+        packet->header.flags1 = flags1::VER1 | flags1::REPLY | flags1::PUSH;
+        packet->header.len[0] = static_cast<uint8_t>(kLength >> 8);
+        packet->header.len[1] = static_cast<uint8_t>(kLength);
 
-		Network::Get()->SendTo(m_nHandle, &pPacket, HEADER_LEN + nLength, m_nFromIp, ddp::UDP_PORT);
+        network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&packet), HEADER_LEN + kLength, from_ip_, ddp::kUdpPort);
 
-		debug_dump(&pPacket, HEADER_LEN + nLength);
-	}
+        debug::Dump(&packet, HEADER_LEN + kLength);
+    }
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void DdpDisplay::HandleData() {
-	const auto *pPacket = reinterpret_cast<ddp::Packet *>(m_pReceiveBuffer);
+void DdpDisplay::HandleData()
+{
+    const auto* const kPacket = reinterpret_cast<ddp::Packet*>(receive_buffer_);
+    auto offset = static_cast<uint32_t>((kPacket->header.offset[0] << 24) | (kPacket->header.offset[1] << 16) | (kPacket->header.offset[2] << 8) |
+                                        kPacket->header.offset[3]);
+    auto length = ((static_cast<uint32_t>(kPacket->header.len[0]) << 8) | kPacket->header.len[1]);
+    const auto* const kReceivedData = kPacket->data;
 
-	auto nOffset = static_cast<uint32_t>(
-			  (pPacket->header.offset[0] << 24)
-			| (pPacket->header.offset[1] << 16)
-			| (pPacket->header.offset[2] << 8)
-			|  pPacket->header.offset[3]);
+    uint32_t data_source_index = 0;
+    uint32_t receiver_buffer_index = 0;
 
-	auto nLength = ((static_cast<uint32_t>(pPacket->header.len[0]) << 8) | pPacket->header.len[1]);
-	const auto *receiveBuffer = pPacket->data;
+    for (uint32_t port_index = 0; (port_index < active_ports_) && (length != 0); port_index++)
+    {
+        data_source_index = port_index * 4;
 
-//	DEBUG_PRINTF("nOffset=%u, nLength=%u, s_nOffsetCompare[0]=%u", nOffset, nLength, s_nOffsetCompare[0]);
+        const auto kOutportIndexEnd = data_source_index + 4;
 
-	uint32_t nLightSetPortIndex = 0;
-	uint32_t nReceiverBufferIndex = 0;
+        while ((offset < s_offset_compare[port_index]) && (data_source_index < kOutportIndexEnd))
+        {
+            const auto kOutLength = std::min(std::min(length, dmxnode_output_type_data_max_length_), strip_data_length_);
 
-	for (uint32_t nPortIndex = 0; (nPortIndex < m_nActivePorts) && (nLength != 0); nPortIndex++) {
-		nLightSetPortIndex = nPortIndex * 4;
+            dmxnode::Data::SetSourceA(data_source_index, &kReceivedData[receiver_buffer_index], kOutLength);
+            s_port_length[data_source_index] = kOutLength;
 
-		const auto nLightSetPortIndexEnd = nLightSetPortIndex + 4;
+            receiver_buffer_index += kOutLength;
+            offset += kOutLength;
+            length -= kOutLength;
+            data_source_index++;
+        }
+    }
 
-//		DEBUG_PRINTF("nOffset=%u, nLength=%u, s_nOffsetCompare[%u]=%u", nOffset, nLength, nPortIndex, s_nOffsetCompare[nPortIndex]);
+    /*
+     * 2x DMX ports
+     */
 
-		while ((nOffset < s_nOffsetCompare[nPortIndex]) && (nLightSetPortIndex < nLightSetPortIndexEnd)) {
-			const auto nLightSetLength = std::min(std::min(nLength, m_nLightSetDataMaxLength), m_nStripDataLength);
+    data_source_index = ddpdisplay::lightset::kMaxPorts - ddpdisplay::configuration::dmx::kMaxPorts;
 
-//			DEBUG_PRINTF("==> nOffset=%u, nLength=%u, nLightSetLength=%u, nLightSetPortIndex=%u", nOffset, nLength, nLightSetLength, nLightSetPortIndex);
+    DEBUG_PRINTF("nLightSetPortIndex=%u", data_source_index);
 
-			lightset::Data::SetSourceA(nLightSetPortIndex, &receiveBuffer[nReceiverBufferIndex], nLightSetLength);
-			s_nLightsetPortLength[nLightSetPortIndex] = nLightSetLength;
+    for (uint32_t port_index = ddpdisplay::configuration::pixel::kMaxPorts; (port_index < ddpdisplay::configuration::kMaxPorts) && (length != 0); port_index++)
+    {
+        if (offset < s_offset_compare[port_index])
+        {
+            const auto kLength = std::min(length, dmxnode::kUniverseSize);
 
-			nReceiverBufferIndex += nLightSetLength;
-			nOffset += nLightSetLength;
-			nLength -= nLightSetLength;
-			nLightSetPortIndex++;
+            //			DEBUG_PRINTF("==> nPortIndex=%u, nOffset=%u, nLength=%u, nLightSetLength=%u, nLightSetPortIndex=%u", nPortIndex, nOffset, nLength,
+            // nLightSetLength, nLightSetPortIndex);
 
-//			DEBUG_PRINTF("nOffset=%u, nLength=%u, nLightSetLength=%u, nLightSetPortIndex=%u", nOffset, nLength, nLightSetLength, nLightSetPortIndex);
-		}
-	}
+            dmxnode::Data::SetSourceA(port_index, &kReceivedData[receiver_buffer_index], kLength);
+            s_port_length[port_index] = kLength;
 
-	/*
-	 * 2x DMX ports
-	 */
+            receiver_buffer_index += kLength;
+            offset += kLength;
+            length -= kLength;
+            port_index++;
 
-	nLightSetPortIndex = ddpdisplay::lightset::MAX_PORTS - ddpdisplay::configuration::dmx::MAX_PORTS;
+            //			DEBUG_PRINTF("nPortIndex=%u, nOffset=%u, nLength=%u, nLightSetLength=%u, nLightSetPortIndex=%u", nPortIndex, nOffset, nLength,
+            // nLightSetLength, nLightSetPortIndex);
+        }
+    }
 
-	DEBUG_PRINTF("nLightSetPortIndex=%u", nLightSetPortIndex);
-
-	for (uint32_t nPortIndex = ddpdisplay::configuration::pixel::MAX_PORTS; (nPortIndex < ddpdisplay::configuration::MAX_PORTS) && (nLength != 0); nPortIndex++) {
-		if (nOffset < s_nOffsetCompare[nPortIndex]) {
-			const auto nLightSetLength = std::min(nLength,lightset::dmx::UNIVERSE_SIZE);
-
-//			DEBUG_PRINTF("==> nPortIndex=%u, nOffset=%u, nLength=%u, nLightSetLength=%u, nLightSetPortIndex=%u", nPortIndex, nOffset, nLength, nLightSetLength, nLightSetPortIndex);
-
-			lightset::Data::SetSourceA(nLightSetPortIndex, &receiveBuffer[nReceiverBufferIndex], nLightSetLength);
-			s_nLightsetPortLength[nLightSetPortIndex] = nLightSetLength;
-
-			nReceiverBufferIndex += nLightSetLength;
-			nOffset += nLightSetLength;
-			nLength -= nLightSetLength;
-			nLightSetPortIndex++;
-
-//			DEBUG_PRINTF("nPortIndex=%u, nOffset=%u, nLength=%u, nLightSetLength=%u, nLightSetPortIndex=%u", nPortIndex, nOffset, nLength, nLightSetLength, nLightSetPortIndex);
-		}
-	}
-
-	if ((pPacket->header.flags1 & flags1::PUSH) == flags1::PUSH) {
-		for (uint32_t nLightSetPortIndex = 0; nLightSetPortIndex < ddpdisplay::lightset::MAX_PORTS; nLightSetPortIndex++) {
-			lightset::data_output(m_pLightSet, nLightSetPortIndex);
-			lightset::Data::ClearLength(nLightSetPortIndex);
-		}
-	}
+    if ((kPacket->header.flags1 & flags1::PUSH) == flags1::PUSH)
+    {
+        for (uint32_t data_output_port_index = 0; data_output_port_index < ddpdisplay::lightset::kMaxPorts; data_output_port_index++)
+        {
+            dmxnode::DataOutput(dmxnode_output_type_, data_output_port_index);
+            dmxnode::Data::ClearLength(data_output_port_index);
+        }
+    }
 }
 
-void DdpDisplay::Run() {
-	uint16_t nFromPort;
+void DdpDisplay::Input(const uint8_t* buffer, uint32_t size, [[maybe_unused]] uint32_t from_ip, [[maybe_unused]] uint16_t from_port)
+{
+    if (__builtin_expect((size < HEADER_LEN), 0))
+    {
+        return;
+    }
 
-	const auto nBytesReceived = Network::Get()->RecvFrom(m_nHandle, const_cast<const void **>(reinterpret_cast<void **>(&m_pReceiveBuffer)), &m_nFromIp, &nFromPort);
+    if (from_ip_ == network::GetPrimaryIp())
+    {
+        DEBUG_PUTS("Own message");
+        return;
+    }
 
-	if (__builtin_expect((nBytesReceived < HEADER_LEN), 1)) {
-		return;
-	}
+    const auto* packet = reinterpret_cast<const ddp::Packet*>(buffer);
 
-	if (m_nFromIp == Network::Get()->GetIp()) {
-		DEBUG_PUTS("Own message");
-		return;
-	}
+    if ((packet->header.flags1 & flags1::VER_MASK) != flags1::VER1)
+    {
+        DEBUG_PUTS("Invalid version");
+        return;
+    }
 
-	const auto *pPacket = reinterpret_cast<ddp::Packet *>(m_pReceiveBuffer);
+    if (packet->header.id == id::DISPLAY)
+    {
+        HandleData();
+        return;
+    }
 
-	if ((pPacket->header.flags1 & flags1::VER_MASK) != flags1::VER1) {
-		DEBUG_PUTS("Invalid version");
-		return;
-	}
-
-	if (pPacket->header.id == id::DISPLAY) {
-		HandleData();
-		return;
-	}
-
-	if ((pPacket->header.flags1 & flags1::QUERY) == flags1::QUERY) {
-		HandleQuery();
-		return;
-	}
+    if ((packet->header.flags1 & flags1::QUERY) == flags1::QUERY)
+    {
+        HandleQuery();
+        return;
+    }
 }
 
-void DdpDisplay::Print() {
-	puts("DDP Display");
-	printf(" Count             : %u\n", m_nCount);
-	printf(" Channels per pixel: %u\n", GetChannelsPerPixel());
-	printf(" Active ports      : %u\n", m_nActivePorts);
+void DdpDisplay::Print()
+{
+    puts("DDP Display");
+    printf(" Count             : %u\n", count_);
+    printf(" Channels per pixel: %u\n", GetChannelsPerPixel());
+    printf(" Active ports      : %u\n", active_ports_);
 }

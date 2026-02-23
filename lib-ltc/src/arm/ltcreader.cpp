@@ -1,6 +1,5 @@
 /**
  * @file ltcreader.cpp
- *
  */
 /* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
@@ -44,7 +43,8 @@
 #include "ltc.h"
 #include "timecodeconst.h"
 
-#include "hardware.h"
+#include "hal.h"
+#include "hal_statusled.h"
 
 // Output
 #include "artnetnode.h"
@@ -52,7 +52,7 @@
 #include "ltcetc.h"
 #include "arm/ltcoutputs.h"
 
-#include "arm/platform_ltc.h"
+
 
 #if defined (H3)
 # if __GNUC__ > 8
@@ -183,10 +183,10 @@ void EXTI10_15_IRQHandler() {
 
 			bTimeCodeValid = false;
 
-			s_midiTimeCode.nFrames  = static_cast<uint8_t>((10 * (aTimeCodeBits[1] & 0x03)) + (aTimeCodeBits[0] & 0x0F));
-			s_midiTimeCode.nSeconds = static_cast<uint8_t>((10 * (aTimeCodeBits[3] & 0x07)) + (aTimeCodeBits[2] & 0x0F));
-			s_midiTimeCode.nMinutes = static_cast<uint8_t>((10 * (aTimeCodeBits[5] & 0x07)) + (aTimeCodeBits[4] & 0x0F));
-			s_midiTimeCode.nHours   = static_cast<uint8_t>((10 * (aTimeCodeBits[7] & 0x03)) + (aTimeCodeBits[6] & 0x0F));
+			s_midiTimeCode.frames  = static_cast<uint8_t>((10 * (aTimeCodeBits[1] & 0x03)) + (aTimeCodeBits[0] & 0x0F));
+			s_midiTimeCode.seconds = static_cast<uint8_t>((10 * (aTimeCodeBits[3] & 0x07)) + (aTimeCodeBits[2] & 0x0F));
+			s_midiTimeCode.minutes = static_cast<uint8_t>((10 * (aTimeCodeBits[5] & 0x07)) + (aTimeCodeBits[4] & 0x0F));
+			s_midiTimeCode.hours   = static_cast<uint8_t>((10 * (aTimeCodeBits[7] & 0x03)) + (aTimeCodeBits[6] & 0x0F));
 
 			bIsDropFrameFlagSet = (aTimeCodeBits[1] & (1 << 2));
 
@@ -215,7 +215,7 @@ void LtcReader::Start() {
 	/**
 	 * FIQ GPIO
 	 */
-	h3_gpio_fsel(GPIO_EXT_26, GPIO_FSEL_EINT);
+	H3GpioFsel(GPIO_EXT_26, GPIO_FSEL_EINT);
 
 	arm_install_handler(reinterpret_cast<unsigned>(fiq_handler), ARM_VECTOR(ARM_VECTOR_FIQ));
 
@@ -256,7 +256,7 @@ void LtcReader::Start() {
 #endif
 
 	LtcOutputs::Get()->Init();
-	Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
+	hal::statusled::SetMode(hal::statusled::Mode::NORMAL);
 }
 
 #if defined(__GNUC__) && !defined(__clang__)
@@ -287,13 +287,13 @@ void LtcReader::Run() {
 			}
 		}
 
-		s_midiTimeCode.nType = static_cast<uint8_t>(TimeCodeType);
+		s_midiTimeCode.type = static_cast<uint8_t>(TimeCodeType);
 
-		g_ltc_LtcTimeCode.nFrames = s_midiTimeCode.nFrames;
-		g_ltc_LtcTimeCode.nSeconds = s_midiTimeCode.nSeconds;
-		g_ltc_LtcTimeCode.nMinutes = s_midiTimeCode.nMinutes;
-		g_ltc_LtcTimeCode.nHours = s_midiTimeCode.nHours;
-		g_ltc_LtcTimeCode.nType = s_midiTimeCode.nType;
+		g_ltc_LtcTimeCode.frames = s_midiTimeCode.frames;
+		g_ltc_LtcTimeCode.seconds = s_midiTimeCode.seconds;
+		g_ltc_LtcTimeCode.minutes = s_midiTimeCode.minutes;
+		g_ltc_LtcTimeCode.hours = s_midiTimeCode.hours;
+		g_ltc_LtcTimeCode.type = s_midiTimeCode.type;
 
 		if (ltc::Destination::IsEnabled(ltc::Destination::Output::ARTNET)) {
 			ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct artnet::TimeCode*>(&g_ltc_LtcTimeCode));
@@ -308,8 +308,8 @@ void LtcReader::Run() {
 
 	__DMB();
 	if ((gv_ltc_nUpdatesPerSecond >= 24) && (gv_ltc_nUpdatesPerSecond <= 30)) {
-		Hardware::Get()->SetMode(hardware::ledblink::Mode::DATA);
+		hal::statusled::SetMode(hal::statusled::Mode::DATA);
 	} else {
-		Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
+		hal::statusled::SetMode(hal::statusled::Mode::NORMAL);
 	}
 }

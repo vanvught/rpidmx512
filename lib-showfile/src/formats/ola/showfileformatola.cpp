@@ -1,8 +1,7 @@
 /**
  * @file showfileformatola.cpp
- *
  */
-/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,11 +30,11 @@
 #include "formats/showfileformatola.h"
 #include "showfile.h"
 
-#include "hardware.h"
+#include "hal_millis.h"
 
-#include "debug.h"
+ #include "firmware/debug/debug_debug.h"
 
-ShowFileFormat *ShowFileFormat::s_pThis;
+ShowFileFormat *ShowFileFormat::s_this;
 
 void ShowFileFormat::Run() {
 	if (m_OlaState != OlaState::TIME_WAITING) {
@@ -43,7 +42,7 @@ void ShowFileFormat::Run() {
 
 		if (m_OlaParseCode == OlaParseCode::DMX) {
 			if (m_nDmxDataLength != 0) {
-				ShowFileProtocol::DmxOut(m_nUniverse, m_DmxData, m_nDmxDataLength);
+				ShowFileProtocol::DmxOut(universe_, dmx_data_, m_nDmxDataLength);
 			}
 		} else if (m_OlaParseCode == OlaParseCode::TIME) {
 			if (m_nDelayMillis != 0) {
@@ -56,15 +55,15 @@ void ShowFileFormat::Run() {
 			if (m_bDoLoop) {
 				fseek(m_pShowFile, 0L, SEEK_SET);
 			} else {
-				ShowFile::Get()->SetStatus(showfile::Status::ENDED);
+				ShowFile::Instance().SetStatus(showfile::Status::kEnded);
 			}
 		}
 	}
 
-	const auto nMillis = Hardware::Get()->Millis();
+	const auto millis = hal::Millis();
 
-	if ((nMillis - m_nLastMillis) >= m_nDelayMillis) {
-		m_nLastMillis = nMillis;
+	if ((millis - m_nLastMillis) >= m_nDelayMillis) {
+		m_nLastMillis = millis;
 		m_OlaState = OlaState::PARSING_DMX;
 	}
 }
@@ -78,7 +77,7 @@ ShowFileFormat::OlaParseCode ShowFileFormat::ParseDmxData(const char *pLine) {
 		k = k * 10 + *p - '0';
 
 		if (k > 255) {
-			DEBUG_EXIT
+			DEBUG_EXIT();
 			return OlaParseCode::FAILED;
 		}
 
@@ -87,11 +86,11 @@ ShowFileFormat::OlaParseCode ShowFileFormat::ParseDmxData(const char *pLine) {
 		if (*p == ',' || (isdigit(*p) == 0)) {
 
 			if (nLength > 512) {
-				DEBUG_EXIT
+				DEBUG_EXIT();
 				return OlaParseCode::FAILED;
 			}
 
-			m_DmxData[nLength] = static_cast<uint8_t>(k);
+			dmx_data_[nLength] = static_cast<uint8_t>(k);
 
 			k = 0;
 			nLength++;
@@ -119,7 +118,7 @@ ShowFileFormat::OlaParseCode ShowFileFormat::ParseLine(const char *pLine) {
 
 	if (*p++ == ' ') {
 		m_nDelayMillis = 0;
-		m_nUniverse = static_cast<uint16_t>(k);
+		universe_ = static_cast<uint16_t>(k);
 		return ParseDmxData(p);
 	}
 

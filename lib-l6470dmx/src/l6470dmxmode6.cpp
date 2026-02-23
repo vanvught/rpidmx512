@@ -28,44 +28,41 @@
 
 #include "l6470.h"
 #include "l6470dmxmode6.h"
+ #include "firmware/debug/debug_debug.h"
 
-#include "motorparams.h"
-#include "modeparams.h"
+L6470DmxMode6::L6470DmxMode6(L6470* l6470, uint32_t motor_index) : l6470_(l6470), motor_index_(motor_index)
+{
+    DEBUG_ENTRY();;
 
-#include "debug.h"
+    assert(l6470_ != nullptr);
 
-L6470DmxMode6::L6470DmxMode6(L6470 *pL6470, [[maybe_unused]] MotorParams *pMotorParams, [[maybe_unused]] ModeParams *pModeParams) {
-	DEBUG_ENTRY;
-
-	assert(pL6470 != nullptr);
-	assert(pMotorParams != nullptr);
-	assert(pModeParams != nullptr);
-
-	m_pL6470 = pL6470;
-
-	DEBUG_EXIT;
+    DEBUG_EXIT();;
 }
 
-L6470DmxMode6::~L6470DmxMode6() {
-	DEBUG_ENTRY;
+L6470DmxMode6::~L6470DmxMode6()
+{
+    DEBUG_ENTRY();;
 
-	DEBUG_EXIT;
+    DEBUG_EXIT();;
 }
 
-void L6470DmxMode6::Start() {
-	DEBUG_ENTRY;
+void L6470DmxMode6::Start()
+{
+    DEBUG_ENTRY();;
 
-	DEBUG_EXIT;
+    DEBUG_EXIT();;
 }
 
-void L6470DmxMode6::Stop() {
-	DEBUG_ENTRY;
+void L6470DmxMode6::Stop()
+{
+    DEBUG_ENTRY();;
 
-	DEBUG_EXIT;
+    DEBUG_EXIT();;
 }
 
-void L6470DmxMode6::Data([[maybe_unused]] const uint8_t *pDmxData) {
-	DEBUG_ENTRY;
+void L6470DmxMode6::Data([[maybe_unused]] const uint8_t* dmx_data)
+{
+    DEBUG_ENTRY();;
 
-	DEBUG_EXIT;
+    DEBUG_EXIT();;
 }

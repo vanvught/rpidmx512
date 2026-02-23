@@ -121,9 +121,9 @@ static constexpr auto FILE_NAME_LENGTH = sizeof(FILE_NAME) - 1;
 # define FIRMWARE_MAX_SIZE  4096	// for dummy.bin
 #endif
 
-bool firmware_install_start(const uint8_t *pBuffer, const uint32_t nBufferSize);
-bool firmware_install_continue(const uint8_t *pBuffer, const uint32_t nBufferSize);
-bool firmware_install_end(const uint8_t *pBuffer, const uint32_t nBufferSize);
+bool firmware_install_start(const uint8_t *buffer,  uint32_t buffer_size);
+bool firmware_install_continue(const uint8_t *buffer,  uint32_t buffer_size);
+bool firmware_install_end(const uint8_t *buffer, uint32_t buffer_size);
 }  // namespace firmware
 
-#endif /* FIRMWARE_H_ */
+#endif  // FIRMWARE_H_

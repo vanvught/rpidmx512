@@ -1,5 +1,5 @@
 /**
- * @file dmxserialchanneldata.h
+ * @file dmxserialchanneldata.cpp
  *
  */
 /* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -30,19 +30,19 @@
 
 #include "dmxserialchanneldata.h"
 
-#include "debug.h"
+ #include "firmware/debug/debug_debug.h"
 
 static char s_buffer[2048] __attribute__ ((aligned (4)));
 
 DmxSerialChannelData::DmxSerialChannelData() {
-	DEBUG_ENTRY
+	DEBUG_ENTRY();
 
 	for (uint32_t i = 0; i < sizeof(m_pChannelData) / sizeof(m_pChannelData[0]); i++) {
 		m_nChannelDataLength[i] = 0;
 		m_pChannelData[i] = nullptr;
 	}
 
-	DEBUG_EXIT
+	DEBUG_EXIT();
 }
 
 DmxSerialChannelData::~DmxSerialChannelData() {
@@ -58,13 +58,13 @@ void DmxSerialChannelData::Clear() {
 }
 
 bool DmxSerialChannelData::Parse(const char *pFileName) {
-	DEBUG_ENTRY
+	DEBUG_ENTRY();
 
-	m_pFile = fopen(pFileName, "r");
+	file_ = fopen(pFileName, "r");
 
-	if (m_pFile == nullptr) {
+	if (file_ == nullptr) {
 		perror(const_cast<char *>(pFileName));
-		DEBUG_EXIT
+		DEBUG_EXIT();
 		return false;
 	}
 
@@ -78,11 +78,11 @@ bool DmxSerialChannelData::Parse(const char *pFileName) {
 		}
 	}
 
-	if (fclose(m_pFile) != 0) {
+	if (fclose(file_) != 0) {
 		perror("fclose");
 	}
 
-	DEBUG_EXIT
+	DEBUG_EXIT();
 	return true;
 }
 
@@ -111,7 +111,7 @@ void DmxSerialChannelData::Dump() {
 }
 
 DmxSerialParseCode DmxSerialChannelData::GetNextLine() {
-	if (fgets(s_buffer, static_cast<int>(sizeof(s_buffer) - 1), m_pFile) != s_buffer) {
+	if (fgets(s_buffer, static_cast<int>(sizeof(s_buffer) - 1), file_) != s_buffer) {
 		return DmxSerialParseCode::EOFILE;
 	}
 
@@ -153,7 +153,7 @@ DmxSerialParseCode DmxSerialChannelData::ParseSerialData(const char *pLine) {
 		k = k * 10 + *p - '0';
 
 		if (k > 255) {
-			DEBUG_EXIT
+			DEBUG_EXIT();
 			return DmxSerialParseCode::FAILED;
 		}
 
@@ -162,7 +162,7 @@ DmxSerialParseCode DmxSerialChannelData::ParseSerialData(const char *pLine) {
 		if (*p == ',' || (isdigit(*p) == 0)) {
 
 			if (nLength > 512) {
-				DEBUG_EXIT
+				DEBUG_EXIT();
 				return DmxSerialParseCode::FAILED;
 			}
 

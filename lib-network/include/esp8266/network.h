@@ -2,7 +2,7 @@
  * @file network.h
  *
  */
-/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,7 @@
 #include <cstdint>
 #include <net/if.h>
 
-#include "net/ip4_address.h"
+#include "ip4/ip4_address.h"
 
 struct ip_addr {
     uint32_t addr;
@@ -142,7 +142,7 @@ public:
 		return m_nGatewayIp;
 	}
 
-	bool SetZeroconf() {
+	bool SetAutoIp() {
 		return false;
 	}
 
@@ -174,7 +174,7 @@ public:
 	void Run();
 
 	static Network *Get() {
-		return s_pThis;
+		return s_this;
 	}
 
 private:
@@ -198,13 +198,13 @@ private:
 	uint32_t m_nNetmask { 0 };
 	char m_aHostName[net::HOSTNAME_SIZE];
 	char m_aDomainName[net::DOMAINNAME_SIZE];
-	uint8_t m_aNetMacaddr[net::MAC_SIZE];
+	uint8_t m_aNetMacaddr[network::MAC_SIZE];
 	char m_aIfName[IFNAMSIZ];
 	_wifi_mode m_Mode { WIFI_OFF };
 	bool m_isApOpen { true };
 	char *m_pSSID { nullptr };
 
-	static inline Network *s_pThis;
+	static inline Network *s_this;
 };
 
 #endif /* ESP8266_NETWORK_H_ */

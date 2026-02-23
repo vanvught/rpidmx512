@@ -2,7 +2,7 @@
  * @file dmx.h
  *
  */
-/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -75,7 +75,7 @@ public:
 
 	void SetOutputStyle(const uint32_t nPortIndex, const dmx::OutputStyle outputStyle) {}
 	dmx::OutputStyle GetOutputStyle(const uint32_t nPortIndex) const {
-		return dmx::OutputStyle::CONTINOUS;
+		return dmx::OutputStyle::kConstant;
 	}
 
 	void Blackout();
@@ -83,16 +83,16 @@ public:
 
 	void ClearData(uint32_t nPortIndex);
 
-	void SetDmxBreakTime(uint32_t nBreakTime);
+	void SetDmxBreakTime(uint32_t break_time);
 	uint32_t GetDmxBreakTime();
 
-	void SetDmxMabTime(uint32_t nMabTime);
+	void SetDmxMabTime(uint32_t mab_time);
 	uint32_t GetDmxMabTime();
 
 	void SetDmxPeriodTime(uint32_t nPeriodTime);
 	uint32_t GetDmxPeriodTime();
 
-	void SetDmxSlots(uint16_t nSlots = dmx::max::CHANNELS);
+	void SetDmxSlots(uint16_t nSlots = dmx::kChannelsMax);
 	uint16_t GetDmxSlots();
 
 	uint32_t GetSendDataLength() ;
@@ -108,7 +108,7 @@ public:
 	const uint8_t* GetDmxChanged(uint32_t nPortIndex);
 
 	static Dmx* Get() {
-		return s_pThis;
+		return s_this;
 	}
 
 private:
@@ -120,10 +120,10 @@ private:
 	void UartDisableFifo();
 
 private:
-	uint32_t m_nDmxTransmitPeriodRequested { dmx::transmit::PERIOD_DEFAULT };
+	uint32_t m_nDmxTransmitPeriodRequested { dmx::transmit::kPeriodDefault };
 	uint8_t m_nDataDirectionGpio { GPIO_DMX_DATA_DIRECTION };
 
-	static Dmx *s_pThis;
+	static Dmx *s_this;
 };
 
 #endif /* RPI_DMX_H_ */

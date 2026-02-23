@@ -2,7 +2,7 @@
  * @file setrdm.cpp
  *
  */
-/* Copyright (C) 2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2023-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,31 +26,23 @@
 #include <cstdint>
 
 #include "artnetnode.h"
-#include "artnetrdmcontroller.h"
+ #include "firmware/debug/debug_debug.h"
 
-#include "debug.h"
+void ArtNetNode::SetRdm(bool do_enable)
+{
+    DEBUG_ENTRY();
 
-void ArtNetNode::SetRdm(const bool doEnable) {
-	DEBUG_ENTRY
+    state_.is_rdm_enabled = do_enable;
 
-	SetRdmController(m_pArtNetRdmController, doEnable);
+    if (state_.is_rdm_enabled)
+    {
+        art_poll_reply_.Status1 |= artnet::Status1::kRdmCapable;
+    }
+    else
+    {
+        art_poll_reply_.Status1 &= static_cast<uint8_t>(~artnet::Status1::kRdmCapable);
+    }
 
-	DEBUG_EXIT
-}
-
-void ArtNetNode::SetRdmController(ArtNetRdmController *pArtNetRdmController, const bool doEnable) {
-	DEBUG_ENTRY
-
-	m_pArtNetRdmController = pArtNetRdmController;
-	m_State.rdm.IsEnabled = ((pArtNetRdmController != nullptr) & doEnable);
-
-	if (m_State.rdm.IsEnabled) {
-		m_ArtPollReply.Status1 |= artnet::Status1::RDM_CAPABLE;
-		m_State.rdm.IsDiscoveryRunning = true;
-	} else {
-		m_ArtPollReply.Status1 &= static_cast<uint8_t>(~artnet::Status1::RDM_CAPABLE);
-	}
-
-	DEBUG_PRINTF("m_State.rdm.IsEnabled=%c", m_State.rdm.IsEnabled ? 'Y' : 'N');
-	DEBUG_EXIT
+    DEBUG_PRINTF("state_.is_rdm_enabled=%c", state_.is_rdm_enabled ? 'Y' : 'N');
+    DEBUG_EXIT();
 }

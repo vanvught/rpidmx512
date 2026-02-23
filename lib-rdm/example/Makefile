@@ -10,11 +10,11 @@ ROOT= ./../..
 SOURCE= .
 BUILD=build_linux/
 
-LIBS=rdm rdmsensor rdmsubdevice e131 lightset network configstore properties debug hal
+LIBS=rdm e131 network configstore hal
 
 # The variable for the libraries include directory
 LIBINCDIRS=$(addprefix -I$(ROOT)/lib-,$(LIBS))
-LIBINCDIRS:=$(addsuffix /include, $(LIBINCDIRS))
+LIBINCDIRS:=$(addsuffix /include, $(LIBINCDIRS)) -I./../../common/include
 # The variables for the ld -L flag
 LIB=$(addprefix -L$(ROOT)/lib-,$(LIBS))
 LIB:=$(addsuffix /lib_linux, $(LIB))
@@ -59,7 +59,7 @@ prerequisites:
 $(LIBSDEP):
 	for d in $(LIBDEP); \
 		do                               \
-			$(MAKE) -f Makefile.Linux 'MAKE_FLAGS=-DLIGHTSET_PORTS=1 -DDMX_WORKSHOP_DEFECT -DNODE_RDMNET_LLRP_ONLY -DCONFIG_STORE_USE_FILE' --directory=$$d;       \
+			$(MAKE) -f Makefile.Linux 'MAKE_FLAGS=-DDMXNODE_PORTS=1 -DDMX_WORKSHOP_DEFECT -DNODE_RDMNET_LLRP_ONLY -DCONFIG_STORE_USE_FILE' --directory=$$d;       \
 		done
 
 $(TARGET) : Makefile $(LINKER) $(OBJECTS) $(LIBDEP) $(LIBSDEP)

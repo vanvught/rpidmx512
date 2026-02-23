@@ -2,7 +2,7 @@
  * @file hal_api.h
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,11 +30,11 @@
 # define FUNC_PREFIX(x) bcm2835_##x
 # include "bcm2835.h"
 # if defined(LINUX_HAVE_I2C)
-#  undef bcm2835_i2c_begin
-#  undef bcm2835_i2c_set_baudrate
+#  undef bcm2835_I2cBegin
+#  undef bcm2835_I2cSetBaudrate
 #  undef bcm2835_i2c_setSlaveAddress
-#  undef bcm2835_i2c_read
-#  undef bcm2835_i2c_write
+#  undef bcm2835_I2cRead
+#  undef bcm2835_I2cWrite
 # endif
 #else
 #endif

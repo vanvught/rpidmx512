@@ -24,10 +24,10 @@
  */
 
 #if defined(__GNUC__) && !defined(__clang__)
-# pragma GCC push_options
-# pragma GCC optimize ("O2")
-# pragma GCC optimize ("no-tree-loop-distribute-patterns")
-# pragma GCC optimize ("-funroll-loops")
+#pragma GCC push_options
+#pragma GCC optimize("O2")
+#pragma GCC optimize("no-tree-loop-distribute-patterns")
+#pragma GCC optimize("-funroll-loops")
 #endif
 
 #include <cstdint>
@@ -36,20 +36,23 @@
 
 #include "h3_sid.h"
 
-namespace hal {
-typedef union pcast32 {
-	uuid_t uuid;
-	uint8_t u8[16];
+namespace hal
+{
+typedef union pcast32
+{
+    uuid_t uuid;
+    uint8_t u8[16];
 } _pcast32;
 
-void uuid_copy(uuid_t out) {
-	_pcast32 cast;
+void UuidCopy(uuid_t out)
+{
+    _pcast32 cast;
 
-	h3_sid_get_rootkey(&cast.u8[0]);
+    h3_sid_get_rootkey(&cast.u8[0]);
 
-	cast.uuid[6] = static_cast<char>(0x40 | (cast.uuid[6] & 0xf));
-	cast.uuid[8] = static_cast<char>(0x80 | (cast.uuid[8] & 0x3f));
+    cast.uuid[6] = static_cast<char>(0x40 | (cast.uuid[6] & 0xf));
+    cast.uuid[8] = static_cast<char>(0x80 | (cast.uuid[8] & 0x3f));
 
-	memcpy(out, cast.uuid, sizeof(uuid_t));
+    memcpy(out, cast.uuid, sizeof(uuid_t));
 }
-}  // namespace hal
+} // namespace hal

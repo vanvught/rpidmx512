@@ -2,7 +2,7 @@
  * @file kb_linux.h
  *
  */
-/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +39,7 @@ public:
 
 private:
 	int m_nBytesWaiting { 0 };
-	int m_nState { 0 };
+	int state_ { 0 };
 };
 
 #endif /* KB_LINUX_H_ */

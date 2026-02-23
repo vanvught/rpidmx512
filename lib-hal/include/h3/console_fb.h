@@ -23,59 +23,52 @@
  * THE SOFTWARE.
  */
 
-#ifndef CONSOLE_FB_H_
-#define CONSOLE_FB_H_
+#ifndef H3_CONSOLE_FB_H_
+#define H3_CONSOLE_FB_H_
 
 #if !defined ORANGE_PI_ONE
- #error Support for Orange Pi One only
+#error Support for Orange Pi One only
 #endif
 
 #include <cstdint>
 
+namespace console
+{
 // some RGB color definitions
-typedef enum {
-	CONSOLE_BLACK = 0x00000000,		///<   0,   0,   0
-	CONSOLE_BLUE = 0x000000FF,		///<   0,   0, 255
-	CONSOLE_GREEN = 0x0000FF00,		///<   0, 255,   0
-	CONSOLE_CYAN = 0x0000FFFF,		///<   0, 255, 255
-	CONSOLE_RED = 0x00FF0000,		///< 255,   0,   0
-	CONSOLE_YELLOW = 0x00FFFF00,	///< 255, 255,   0
-	CONSOLE_WHITE = 0x00FFFFFF		///< 255, 255, 255
-} _console_colors;
+enum class Colours: uint32_t
+{
+    kConsoleBlack = 0x00000000,  ///<   0,   0,   0
+    kConsoleBlue = 0x000000FF,   ///<   0,   0, 255
+    kConsoleGreen = 0x0000FF00,  ///<   0, 255,   0
+    kConsoleCyan = 0x0000FFFF,   ///<   0, 255, 255
+    kConsoleRed = 0x00FF0000,    ///< 255,   0,   0
+    kConsoleYellow = 0x00FFFF00, ///< 255, 255,   0
+    kConsoleWhite = 0x00FFFFFF   ///< 255, 255, 255
+};
 
-void console_init();
+void Init();
+uint32_t GetLineWidth();
+void Clear();
+void SetTopRow(uint32_t);
+void ClearTopRow();
+void ClearLine(uint32_t);
+void SetCursor(uint32_t, uint32_t);
+void SaveCursor();
+void RestoreCursor();
+void SaveColour();
+void RestoreColour();
+void Putc(int);
+void ConsolePuthex(uint8_t);
+void SetFgColour(Colours);
+void SetBgColour(Colours);
+void SetFgBgColour(Colours, Colours);
+void PuthexFgBg(uint8_t, Colours, Colours);
+void PutpctFgBg(uint8_t, Colours, Colours);
+void Put3decFgBg(uint8_t, Colours, Colours);
+void Write(const char*, unsigned int);
+void Puts(const char*);
+void Status(Colours, const char*);
+void Error(const char*);
+} // namespace console
 
-uint32_t console_get_line_width();
-
-void console_clear();
-
-void console_set_top_row(uint32_t);
-void console_clear_top_row();
-
-void console_clear_line(uint32_t);
-
-void console_set_cursor(uint32_t, uint32_t);
-
-void console_save_cursor();
-void console_restore_cursor();
-
-void console_save_color();
-void console_restore_color();
-
-void console_putc(int);
-void console_puthex(uint8_t);
-
-void console_set_fg_color(uint32_t);
-void console_set_bg_color(uint32_t);
-void console_set_fg_bg_color(uint32_t, uint32_t);
-
-void console_puthex_fg_bg(uint8_t, uint32_t, uint32_t);
-void console_putpct_fg_bg(uint8_t, uint32_t, uint32_t);
-void console_put3dec_fg_bg(uint8_t, uint32_t, uint32_t);
-
-void console_write(const char *, unsigned int);
-void console_puts(const char *);
-void console_status(uint32_t, const char *);
-void console_error(const char *);
-
-#endif /* CONSOLE_FB_H_ */
+#endif  // H3_CONSOLE_FB_H_

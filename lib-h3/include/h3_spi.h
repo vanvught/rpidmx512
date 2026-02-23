@@ -48,45 +48,45 @@ typedef enum H3_SPI_CS {
 	H3_SPI_CS_NONE = 4	///< No CS, control it yourself
 } h3_spi_chip_select_t;
 
-void h3_spi_begin();
-void h3_spi_end();
+void H3SpiBegin();
+void H3SpiEnd();
 
-void h3_spi_setBitOrder(h3_spi_bit_order_t bit_order);
-void h3_spi_set_speed_hz(uint32_t speed_hz);
-void h3_spi_setDataMode(uint8_t mode);
-void h3_spi_chipSelect(uint8_t chip_select);
-void h3_spi_setChipSelectPolarity(uint8_t chip_select, uint8_t polarity);
+void H3SpiSetBitOrder(h3_spi_bit_order_t bit_order);
+void H3SpiSetSpeedHz(uint32_t speed_hz);
+void H3SpiSetDataMode(uint8_t mode);
+void H3SpiChipSelect(uint8_t chip_select);
+void H3SpiSetChipSelectPolarity(uint8_t chip_select, uint8_t polarity);
 
-extern uint8_t h3_spi_transfer(uint8_t data);
-void h3_spi_transfernb(char *tx_buffer, char *rx_buffer, uint32_t data_length);
-void h3_spi_transfern(char *tx_buffer, uint32_t data_length);
+extern uint8_t H3SpiTransfer(uint8_t data);
+void H3SpiTransfernb(char *tx_buffer, char *rx_buffer, uint32_t data_length);
+void H3SpiTransfern(char *tx_buffer, uint32_t data_length);
 
-void h3_spi_write(uint16_t data);
-void h3_spi_writenb(const char *tx_buffer, uint32_t data_length);
+void H3SpiWrite(uint16_t data);
+void H3SpiWritenb(const char *tx_buffer, uint32_t data_length);
 
 /*
- * WS28xx support
+ * PixelOutput support
  */
 
-void h3_spi_set_ws28xx_mode(bool off_on);
-bool h3_spi_get_ws28xx_mode();
+void H3SpiSetPixelMode(bool off_on);
+bool H3SpiGetPixelMode();
 
 /*
  * DMA support
  */
 
-const uint8_t *h3_spi_dma_tx_prepare(uint32_t *data_length);
-void h3_spi_dma_tx_start(const uint8_t *tx_buffer, uint32_t length);
-bool h3_spi_dma_tx_is_active();
+const uint8_t *H3SpiDmaTxPrepare(uint32_t *data_length);
+void H3SpiDmaTxStart(const uint8_t *tx_buffer, uint32_t length);
+bool H3SpiDmaTxIsActive();
 
 /*
  * bitbang support
  */
 
-void h3_bitbang_spi_begin();
-void h3_bitbang_spi_chipSelect(const uint8_t chip_select);
-void h3_bitbang_spi_set_speed_hz(const uint32_t speed_hz);
-void h3_bitbang_spi_setDataMode(const uint8_t mode);
-void h3_bitbang_spi_writenb(const char *tx_buffer, uint32_t data_length);
-void h3_bitbang_spi_write(uint16_t data);
+void H3BitbangSpiBegin();
+void H3BitbangSpiChipSelect(uint8_t chip_select);
+void H3BitbangSpiSetSpeedHz(uint32_t speed_hz);
+void H3BitbangSpiSetDataMode(uint8_t mode);
+void H3BitbangSpiWritenb(const char *tx_buffer, uint32_t data_length);
+void H3BitbangSpiWrite(uint16_t data);
 #endif /* H3_SPI_H_ */

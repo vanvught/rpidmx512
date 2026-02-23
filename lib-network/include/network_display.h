@@ -26,18 +26,12 @@
 #ifndef NETWORK_DISPLAY_H_
 #define NETWORK_DISPLAY_H_
 
-#include "net/protocol/dhcp.h"
+#include "core/protocol/dhcp.h"
 
-void network_display_emac_config();
-void network_display_emac_start();
-void network_display_emac_status(const bool); //TODO subject for removal
-void network_display_emac_shutdown();
-void network_display_ip();
-void network_display_netmask();
-void network_display_gateway();
-void network_display_hostname();
-void network_display_dhcp_status(net::dhcp::State);
-void network_display_netif_up();
-void network_display_netif_down();
+namespace network::display
+{
+void Hostname();
+void DhcpStatus(network::dhcp::State);
+} // namespace network::display
 
-#endif /* NETWORK_DISPLAY_H_ */
+#endif  // NETWORK_DISPLAY_H_

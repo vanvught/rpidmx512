@@ -1,6 +1,5 @@
 /**
  * @file flashcodeinstall.cpp
- *
  */
 /* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
@@ -28,65 +27,69 @@
 
 #include "flashcodeinstall.h"
 #include "firmware.h"
-
 #include "display.h"
-#include "hardware.h"
+#include "hal_watchdog.h"
+ #include "firmware/debug/debug_debug.h"
 
-#include "debug.h"
+bool FlashCodeInstall::WriteFirmware(const uint8_t* buffer, uint32_t size)
+{
+    DEBUG_ENTRY();
 
-bool FlashCodeInstall::WriteFirmware(const uint8_t *pBuffer, uint32_t nSize) {
-	DEBUG_ENTRY
+    assert(buffer != nullptr);
+    assert(size != 0);
 
-	assert(pBuffer != nullptr);
-	assert(nSize != 0);
+    DEBUG_PRINTF("(%p + %p)=%p, flash_size_=%u", OFFSET_UIMAGE, size, (OFFSET_UIMAGE + size), static_cast<unsigned int>(flash_size_));
 
-	DEBUG_PRINTF("(%p + %p)=%p, m_nFlashSize=%u", OFFSET_UIMAGE, nSize, (OFFSET_UIMAGE + nSize), static_cast<unsigned int>(m_nFlashSize));
+    if ((OFFSET_UIMAGE + size) > flash_size_)
+    {
+        printf("Error: (OFFSET_UIMAGE + size) %u > flash_size_ %u\n", static_cast<unsigned int>(OFFSET_UIMAGE + size), static_cast<unsigned int>(flash_size_));
+        DEBUG_EXIT();
+        return false;
+    }
 
-	if ((OFFSET_UIMAGE + nSize) > m_nFlashSize) {
-		printf("Error: (OFFSET_UIMAGE + nSize) %u > m_nFlashSize %u\n", static_cast<unsigned int>(OFFSET_UIMAGE + nSize), static_cast<unsigned int>(m_nFlashSize));
-		DEBUG_EXIT
-		return false;
-	}
+    const auto kWatchdog = hal::Watchdog();
 
-	const auto bWatchdog = Hardware::Get()->IsWatchdog();
+    if (kWatchdog)
+    {
+        hal::WatchdogStop();
+    }
 
-	if (bWatchdog) {
-		Hardware::Get()->WatchdogStop();
-	}
+    puts("Write firmware");
 
-	puts("Write firmware");
+    const auto kSectorSize = FlashCode::GetSectorSize();
+    const auto kEraseSize = (size + kSectorSize - 1) & ~(kSectorSize - 1);
 
-	const auto nSectorSize = FlashCode::GetSectorSize();
-	const auto nEraseSize = (nSize + nSectorSize - 1) & ~(nSectorSize - 1);
+    DEBUG_PRINTF("size=%x, kSectorSize=%x, kEraseSize=%x", size, kSectorSize, kEraseSize);
 
-	DEBUG_PRINTF("nSize=%x, nSectorSize=%x, nEraseSize=%x", nSize, nSectorSize, nEraseSize);
+    Display::Get()->TextStatus("Erase", console::Colours::kConsoleGreen);
 
-	Display::Get()->TextStatus("Erase", CONSOLE_GREEN);
+    flashcode::Result result;
 
-	flashcode::result nResult;
+    while (!FlashCode::Erase(OFFSET_UIMAGE, kEraseSize, result));
 
-	while(!FlashCode::Erase(OFFSET_UIMAGE, nEraseSize, nResult));
+    if (flashcode::Result::kError == result)
+    {
+        puts("Error: flash erase");
+        return false;
+    }
 
-	if (flashcode::result::ERROR == nResult) {
-		puts("Error: flash erase");
-		return false;
-	}
+    Display::Get()->TextStatus("Writing", console::Colours::kConsoleGreen);
 
-	Display::Get()->TextStatus("Writing", CONSOLE_GREEN);
+    while (!FlashCode::Write(OFFSET_UIMAGE, size, buffer, result));
 
-	while(!FlashCode::Write(OFFSET_UIMAGE, nSize, pBuffer, nResult));
+    if (flashcode::Result::kError == result)
+    {
+        puts("Error: flash write");
+        return false;
+    }
 
-	if (flashcode::result::ERROR == nResult) {
-		puts("Error: flash write");
-		return false;
-	}
+    if (kWatchdog)
+    {
+        hal::WatchdogInit();
+    }
 
-	if (bWatchdog) {
-		Hardware::Get()->WatchdogInit();
-	}
+    Display::Get()->TextStatus("Done", console::Colours::kConsoleGreen);
 
-	Display::Get()->TextStatus("Done", CONSOLE_GREEN);
-
-	DEBUG_EXIT
-	return true;
+    DEBUG_EXIT();
+    return true;
 }

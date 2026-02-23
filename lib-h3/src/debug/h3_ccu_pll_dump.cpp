@@ -27,17 +27,20 @@
 
 #include "h3_ccu.h"
 
-extern "C" int uart0_printf(const char* fmt, ...);
+namespace uart0
+{
+int Printf(const char* fmt, ...);
+}
 
 void __attribute__((cold)) h3_ccu_pll_dump() {
-	uart0_printf("PLL (Hz)\n");
-	uart0_printf("CPUX=%u\n", h3_ccu_get_pll_rate(CCU_PLL_CPUX));
-	uart0_printf("AUDIO=%u\n", h3_ccu_get_pll_rate(CCU_PLL_AUDIO));
-	uart0_printf("VIDEO=%u\n", h3_ccu_get_pll_rate(CCU_PLL_VIDEO));
-	uart0_printf("VE=%u\n", h3_ccu_get_pll_rate(CCU_PLL_VE));
-	uart0_printf("DDR=%u\n", h3_ccu_get_pll_rate(CCU_PLL_DDR));
-	uart0_printf("PERIPH0=%u\n", h3_ccu_get_pll_rate(CCU_PLL_PERIPH0));
-	uart0_printf("GPU=%u\n", h3_ccu_get_pll_rate(CCU_PLL_GPU));
-	uart0_printf("PERIPH1=%u\n", h3_ccu_get_pll_rate(CCU_PLL_PERIPH1));
-	uart0_printf("DE=%u\n", h3_ccu_get_pll_rate(CCU_PLL_DE));
+	uart0::Printf("PLL (Hz)\n");
+	uart0::Printf("CPUX=%u\n", h3_ccu_get_pll_rate(CCU_PLL_CPUX));
+	uart0::Printf("AUDIO=%u\n", h3_ccu_get_pll_rate(CCU_PLL_AUDIO));
+	uart0::Printf("VIDEO=%u\n", h3_ccu_get_pll_rate(CCU_PLL_VIDEO));
+	uart0::Printf("VE=%u\n", h3_ccu_get_pll_rate(CCU_PLL_VE));
+	uart0::Printf("DDR=%u\n", h3_ccu_get_pll_rate(CCU_PLL_DDR));
+	uart0::Printf("PERIPH0=%u\n", h3_ccu_get_pll_rate(CCU_PLL_PERIPH0));
+	uart0::Printf("GPU=%u\n", h3_ccu_get_pll_rate(CCU_PLL_GPU));
+	uart0::Printf("PERIPH1=%u\n", h3_ccu_get_pll_rate(CCU_PLL_PERIPH1));
+	uart0::Printf("DE=%u\n", h3_ccu_get_pll_rate(CCU_PLL_DE));
 }

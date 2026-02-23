@@ -2,7 +2,7 @@
  * @file reboot.h
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,8 +26,8 @@
 #ifndef REBOOT_H_
 #define REBOOT_H_
 
-#include "hardware.h"
-#include "ws28xxmulti.h"
+#include "hal.h"
+#include "pixelmulti.h"
 
 class Reboot final : public RebootHandler {
 public:
@@ -35,8 +35,8 @@ public:
 	~Reboot() override = default;
 
 	void Run() override {
-		if (WS28xxMulti::Get() != nullptr) {
-			WS28xxMulti::Get()->Blackout();
+		if (PixelOutputMulti::Get() != nullptr) {
+			PixelOutputMulti::Get()->Blackout();
 		}
 	}
 };

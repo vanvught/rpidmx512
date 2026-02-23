@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,114 +24,77 @@
  */
 
 #include <cstdint>
-#include <cstring>
-#include <cstdlib>
 #include <signal.h>
 
-#include "hardware.h"
+#include "hal.h"
 #include "network.h"
-
-
 #include "display.h"
-#include "displayudfparams.h"
-
-#include "net/apps/mdns.h"
-
 #include "ddpdisplay.h"
-
 #include "dmxmonitor.h"
-#include "dmxmonitorparams.h"
-
-#include "rdmdeviceparams.h"
+#include "json/dmxmonitorparams.h"
 #include "rdmnetdevice.h"
-#include "rdmnetconst.h"
-#include "rdmpersonality.h"
-#include "rdm_e120.h"
-#include "factorydefaults.h"
-
+#include "rdmdevice.h"
 #include "remoteconfig.h"
-#include "remoteconfigparams.h"
-
 #include "configstore.h"
-
 #include "firmwareversion.h"
 #include "software_version.h"
 
-static bool keepRunning = true;
+static bool keep_running = true;
 
-void intHandler(int) {
-    keepRunning = false;
+void IntHandler(int)
+{
+    keep_running = false;
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) // NOLINT
+{
     struct sigaction act;
-    act.sa_handler = intHandler;
+    act.sa_handler = IntHandler;
     sigaction(SIGINT, &act, nullptr);
-	Hardware hw;
-	Display display;
-	ConfigStore configStore;
-	Network nw(argc, argv);
-	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+    hal::Init();
+    Display display;
+    ConfigStore config_store;
+    Network nw(argc, argv);
+    FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
-	hw.Print();
-	fw.Print();
-	nw.Print();
+    hal::print();
+    fw.Print();
+    nw.Print();
 
-	DisplayUdfParams displayUdfParams;
+    DdpDisplay ddp_display;
 
-	DdpDisplay ddpDisplay;
+    const uint32_t kActivePorts = (argc == 3 ? atoi(argv[2]) : 2);
 
-	const uint32_t nActivePorts = (argc == 3 ? atoi(argv[2]) : 2);
+    ddp_display.SetCount(256, 3, kActivePorts);
 
-	ddpDisplay.SetCount(256, 3, nActivePorts);
+    DmxMonitor monitor;
 
+    json::DmxMonitorParams monitor_params;
+    monitor_params.Load();
+    monitor_params.Set();
 
-	DMXMonitor monitor;
+    ddp_display.SetOutput(&monitor);
 
-	DMXMonitorParams monitorParams;
-	monitorParams.Load();
+    auto& rdm_device = RdmDevice::Get();
+    rdm_device.SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
+    rdm_device.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
+    rdm_device.Init();
+    rdm_device.Print();
 
-	ddpDisplay.SetOutput(&monitor);
+    RDMNetDevice llrp_only_device;
+    llrp_only_device.Print();
 
-	char aDescription[rdm::personality::DESCRIPTION_MAX_LENGTH + 1];
-	snprintf(aDescription, sizeof(aDescription) - 1, "DDP Display");
+    ddp_display.Print();
 
-	uint8_t nLength;
-	const auto *aLabel = hw.GetBoardName(nLength);
+    RemoteConfig remote_config(remoteconfig::Output::MONITOR, kActivePorts);
 
-	RDMPersonality *pPersonalities[1] = { new RDMPersonality(aDescription, nullptr) };
-	RDMNetDevice llrpOnlyDevice(pPersonalities, 1);
+    ddp_display.Start();
 
-	llrpOnlyDevice.SetLabel(RDM_ROOT_DEVICE, aLabel, nLength);
-	llrpOnlyDevice.SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
-	llrpOnlyDevice.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
-	llrpOnlyDevice.Init();
+    while (keep_running)
+    {
+        network::Run();
+        hal::Run();
+    }
 
-
-	RDMDeviceParams rdmDeviceParams;
-
-	rdmDeviceParams.Load();
-	rdmDeviceParams.Set(&llrpOnlyDevice);
-
-	llrpOnlyDevice.Print();
-
-	mdns_service_record_add(nullptr, mdns::Services::RDMNET_LLRP, "node=RDMNet LLRP Only");
-
-	ddpDisplay.Print();
-
-	RemoteConfig remoteConfig(remoteconfig::Node::DDP, remoteconfig::Output::MONITOR, nActivePorts);
-
-	RemoteConfigParams remoteConfigParams;
-	remoteConfigParams.Load();
-	remoteConfigParams.Set(&remoteConfig);
-
-	ddpDisplay.Start();
-
-	while (keepRunning) {
-		nw.Run();
-		ddpDisplay.Run();
-		hw.Run();
-	}
-
-	return 0;
+    return 0;
 }

@@ -2,7 +2,7 @@
  * @file dmx.cpp
  *
  */
-/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,29 +26,26 @@
 #undef NDEBUG
 
 #if defined(__clang__)
-# pragma GCC diagnostic ignored "-Wunused-private-field"
+#pragma GCC diagnostic ignored "-Wunused-private-field"
 #endif
 
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
-#include <algorithm>
+#include <sys/time.h>
 #include <cassert>
 
 #include "dmx.h"
 #include "rdm.h"
-
 #include "network.h"
+#include "firmware/debug/debug_dump.h"
+#include "firmware/debug/debug_debug.h"
 
-#include "debug.h"
-
-#include <time.h>
-#include <sys/time.h>
-
-static uint32_t micros() {
-	struct timeval tv;
-	gettimeofday(&tv, nullptr);
-	return static_cast<uint32_t>((tv.tv_sec * 1000000) + tv.tv_usec);
+static uint32_t Micros()
+{
+    struct timeval tv;
+    gettimeofday(&tv, nullptr);
+    return static_cast<uint32_t>((tv.tv_sec * 1000000) + tv.tv_usec);
 }
 
 #include "config.h"
@@ -69,247 +66,277 @@ static uint8_t dmxSendBuffer[513];
 
 volatile uint32_t gsv_RdmDataReceiveEnd;
 
-Dmx *Dmx::s_pThis = nullptr;
+Dmx* Dmx::s_this = nullptr;
 
-Dmx::Dmx() {
-	DEBUG_ENTRY
-	printf("Dmx: dmx::config::max::PORTS=%u\n", dmx::config::max::PORTS);
+Dmx::Dmx()
+{
+    DEBUG_ENTRY();
+    printf("Dmx: dmx::config::max::PORTS=%u\n", dmx::config::max::PORTS);
 
-	assert(s_pThis == nullptr);
-	s_pThis = this;
+    assert(s_this == nullptr);
+    s_this = this;
 
-	for (uint32_t i = 0; i < dmx::config::max::PORTS; i++) {
-		s_nHandePortDmx[i] = Network::Get()->Begin(UDP_PORT_DMX_START + i);
-		assert(s_nHandePortDmx[i] != -1);
+    for (uint32_t i = 0; i < dmx::config::max::PORTS; i++)
+    {
+        s_nHandePortDmx[i] = network::udp::Begin(UDP_PORT_DMX_START + i, nullptr);
+        assert(s_nHandePortDmx[i] != -1);
 
-		s_nHandePortRdm[i] = Network::Get()->Begin(UDP_PORT_RDM_START + i);
-		assert(s_nHandePortRdm[i] != -1);
+        s_nHandePortRdm[i] = network::udp::Begin(UDP_PORT_RDM_START + i, nullptr);
+        assert(s_nHandePortRdm[i] != -1);
 
-		SetPortDirection(i, PortDirection::INP, false);
-	}
+        SetPortDirection(i, PortDirection::kInput, false);
+    }
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void Dmx::SetPortDirection(uint32_t nPortIndex, PortDirection tPortDirection, bool bEnableData) {
-	DEBUG_ENTRY
-	DEBUG_PRINTF("nPortIndex=%u, tPortDirection=%u", nPortIndex, static_cast<uint32_t>(tPortDirection));
-	assert(nPortIndex < dmx::config::max::PORTS);
+void Dmx::SetPortDirection(uint32_t port_index, PortDirection tPortDirection, bool bEnableData)
+{
+    DEBUG_ENTRY();
+    DEBUG_PRINTF("port_index=%u, tPortDirection=%u", port_index, static_cast<uint32_t>(tPortDirection));
+    assert(port_index < dmx::config::max::PORTS);
 
-	if (tPortDirection != m_tDmxPortDirection[nPortIndex]) {
-		StopData(0, nPortIndex);
+    if (tPortDirection != m_tDmxPortDirection[port_index])
+    {
+        StopData(0, port_index);
 
-		switch (tPortDirection) {
-		case PortDirection::OUTP:
-			m_tDmxPortDirection[nPortIndex] = PortDirection::OUTP;
-			break;
-		case PortDirection::INP:
-		default:
-			m_tDmxPortDirection[nPortIndex] = PortDirection::INP;
-			break;
-		}
-	} else if (!bEnableData) {
-		StopData(0, nPortIndex);
-	}
+        switch (tPortDirection)
+        {
+            case PortDirection::kOutput:
+                m_tDmxPortDirection[port_index] = PortDirection::kOutput;
+                break;
+            case PortDirection::kInput:
+            default:
+                m_tDmxPortDirection[port_index] = PortDirection::kInput;
+                break;
+        }
+    }
+    else if (!bEnableData)
+    {
+        StopData(0, port_index);
+    }
 
-	if (bEnableData) {
-		StartData(0, nPortIndex);
-	}
+    if (bEnableData)
+    {
+        StartData(0, port_index);
+    }
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void Dmx::ClearData([[maybe_unused]] uint32_t nUart) {
+void Dmx::ClearData([[maybe_unused]] uint32_t uart) {}
+
+volatile dmx::TotalStatistics& Dmx::GetTotalStatistics(uint32_t port_index)
+{
+    return sv_TotalStatistics[port_index];
 }
 
-volatile dmx::TotalStatistics& Dmx::GetTotalStatistics(const uint32_t nPortIndex) {
-	return sv_TotalStatistics[nPortIndex];
+void Dmx::StartData([[maybe_unused]] uint32_t uart, [[maybe_unused]] uint32_t port_index)
+{
+    DEBUG_ENTRY();
+    DEBUG_EXIT();
 }
 
-void Dmx::StartData([[maybe_unused]] uint32_t nUart, [[maybe_unused]] uint32_t nPortIndex) {
-	DEBUG_ENTRY
-	DEBUG_EXIT
-}
-
-void Dmx::StopData([[maybe_unused]] uint32_t nUart, [[maybe_unused]] uint32_t nPortIndex) {
-	DEBUG_ENTRY
-	DEBUG_EXIT
+void Dmx::StopData([[maybe_unused]] uint32_t uart, [[maybe_unused]] uint32_t port_index)
+{
+    DEBUG_ENTRY();
+    DEBUG_EXIT();
 }
 
 // DMX Send
 
-void Dmx::SetDmxBreakTime([[maybe_unused]] uint32_t nBreakTime) {
+void Dmx::SetDmxBreakTime([[maybe_unused]] uint32_t break_time) {}
+
+void Dmx::SetDmxMabTime([[maybe_unused]] uint32_t mab_time) {}
+
+void Dmx::SetDmxPeriodTime([[maybe_unused]] uint32_t nPeriod) {}
+
+void Dmx::SetDmxSlots([[maybe_unused]] uint16_t nSlots) {}
+
+void Dmx::SetSendDataWithoutSC(uint32_t port_index, const uint8_t* pData, uint32_t nLength, [[maybe_unused]] const dmx::SendStyle dmxSendStyle)
+{
+    assert(port_index < dmx::config::max::PORTS);
+    assert(pData != nullptr);
+    assert(nLength != 0);
+    assert(nLength <= 512);
+
+    dmxSendBuffer[0] = 0;
+    memcpy(&dmxSendBuffer[1], pData, nLength);
+
+    network::udp::Send(s_nHandePortDmx[port_index], dmxSendBuffer, nLength, network::GetBroadcastIp(), UDP_PORT_DMX_START + port_index);
 }
 
-void Dmx::SetDmxMabTime([[maybe_unused]] uint32_t nMabTime) {
+void Dmx::Blackout()
+{
+    DEBUG_ENTRY();
+
+    DEBUG_EXIT();
 }
 
-void Dmx::SetDmxPeriodTime([[maybe_unused]] uint32_t nPeriod) {
-}
+void Dmx::FullOn()
+{
+    DEBUG_ENTRY();
 
-void Dmx::SetDmxSlots([[maybe_unused]] uint16_t nSlots) {
-}
-
-void Dmx::SetSendDataWithoutSC(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
-	assert(nPortIndex < dmx::config::max::PORTS);
-	assert(pData != nullptr);
-	assert(nLength != 0);
-	assert(nLength <= 512);
-
-	dmxSendBuffer[0] = 0;
-	memcpy(&dmxSendBuffer[1], pData,  nLength);
-
-	Network::Get()->SendTo(s_nHandePortDmx[nPortIndex], dmxSendBuffer, nLength, Network::Get()->GetBroadcastIp(), UDP_PORT_DMX_START + nPortIndex);
-}
-
-void Dmx::Blackout() {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
-void Dmx::FullOn() {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
 // DMX Receive
 
-const uint8_t *Dmx::GetDmxAvailable([[maybe_unused]] uint32_t nPortIndex)  {
-	assert(nPortIndex < dmx::config::max::PORTS);
+const uint8_t* Dmx::GetDmxAvailable([[maybe_unused]] uint32_t port_index)
+{
+    assert(port_index < dmx::config::max::PORTS);
 
-	uint32_t fromIp;
-	uint16_t fromPort;
+    uint32_t fromIp;
+    uint16_t fromPort;
 
-	uint32_t nPackets = 0;
-	uint16_t nBytesReceived;
+    uint32_t nPackets = 0;
+    uint16_t nBytesReceived;
 
-//	do {
-		nBytesReceived = Network::Get()->RecvFrom(s_nHandePortDmx[nPortIndex], &dmxDataRx, sizeof(buffer::SIZE), &fromIp, &fromPort);
-		if ((nBytesReceived != 0) && (fromIp != Network::Get()->GetIp()) && (fromPort == (UDP_PORT_DMX_START + nPortIndex))) {
-			nPackets++;
-		}
-//	} while (nBytesReceived == 0);
+    //	do {
+    nBytesReceived = network::udp::Recv(s_nHandePortDmx[port_index], const_cast<const uint8_t**>(reinterpret_cast<uint8_t**>(&dmxDataRx)), &fromIp, &fromPort);
+    if ((nBytesReceived != 0) && (fromIp != network::GetPrimaryIp()) && (fromPort == (UDP_PORT_DMX_START + port_index)))
+    {
+        nPackets++;
+    }
+    //	} while (nBytesReceived == 0);
 
-	if (nPackets == 0) {
-		return nullptr;
-	}
+    if (nPackets == 0)
+    {
+        return nullptr;
+    }
 
-	dmxDataRx.Statistics.nSlotsInPacket = nBytesReceived;
-	return const_cast<const uint8_t *>(dmxDataRx.Data);
+    dmxDataRx.Statistics.nSlotsInPacket = nBytesReceived;
+    return const_cast<const uint8_t*>(dmxDataRx.Data);
 }
 
-const uint8_t *Dmx::GetDmxChanged(uint32_t nPortIndex) {
-	const auto *p = GetDmxAvailable(nPortIndex);
-	// This function is not implemented
-	return p;
+const uint8_t* Dmx::GetDmxChanged(uint32_t port_index)
+{
+    const auto* p = GetDmxAvailable(port_index);
+    // This function is not implemented
+    return p;
 }
 
-const uint8_t* Dmx::GetDmxCurrentData([[maybe_unused]] uint32_t nPortIndex) {
-	return const_cast<const uint8_t *>(dmxDataRx.Data);
+const uint8_t* Dmx::GetDmxCurrentData([[maybe_unused]] uint32_t port_index)
+{
+    return const_cast<const uint8_t*>(dmxDataRx.Data);
 }
 
-uint32_t Dmx::GetDmxUpdatesPerSecond([[maybe_unused]] uint32_t nPortIndex) {
-	return 0;
+uint32_t Dmx::GetDmxUpdatesPerSecond([[maybe_unused]] uint32_t port_index)
+{
+    return 0;
 }
 
-uint32_t GetDmxReceivedCount([[maybe_unused]] uint32_t nPortIndex) {
-	return 0;
+uint32_t GetDmxReceivedCount([[maybe_unused]] uint32_t port_index)
+{
+    return 0;
 }
 
 // RDM Send
 
-void Dmx::RdmSendRaw(uint32_t nPortIndex, const uint8_t* pRdmData, uint32_t nLength) {
-	assert(nPortIndex < dmx::config::max::PORTS);
-	assert(pRdmData != nullptr);
-	assert(nLength != 0);
+void Dmx::RdmSendRaw(uint32_t port_index, const uint8_t* pRdmData, uint32_t nLength)
+{
+    assert(port_index < dmx::config::max::PORTS);
+    assert(pRdmData != nullptr);
+    assert(nLength != 0);
 
-	Network::Get()->SendTo(s_nHandePortRdm[nPortIndex], pRdmData, nLength, Network::Get()->GetBroadcastIp(), UDP_PORT_RDM_START + nPortIndex);
+    network::udp::Send(s_nHandePortRdm[port_index], pRdmData, nLength, network::GetBroadcastIp(), UDP_PORT_RDM_START + port_index);
 
-	sv_TotalStatistics[nPortIndex].Rdm.Sent.Class++;
+    sv_TotalStatistics[port_index].rdm.sent.classes++;
 }
 
-void Dmx::RdmSendDiscoveryRespondMessage(uint32_t nPortIndex, const uint8_t *pRdmData, uint32_t nLength) {
-	DEBUG_ENTRY
+void Dmx::RdmSendDiscoveryRespondMessage(uint32_t port_index, const uint8_t* pRdmData, uint32_t nLength)
+{
+    DEBUG_ENTRY();
 
-	assert(nPortIndex < dmx::config::max::PORTS);
-	assert(pRdmData != nullptr);
-	assert(nLength != 0);
+    assert(port_index < dmx::config::max::PORTS);
+    assert(pRdmData != nullptr);
+    assert(nLength != 0);
 
-	SetPortDirection(nPortIndex, dmx::PortDirection::OUTP, false);
+    SetPortDirection(port_index, dmx::PortDirection::kOutput, false);
 
-	RdmSendRaw(nPortIndex, pRdmData, nLength);
+    RdmSendRaw(port_index, pRdmData, nLength);
 
-	udelay(RDM_RESPONDER_DATA_DIRECTION_DELAY);
+    udelay(RDM_RESPONDER_DATA_DIRECTION_DELAY);
 
-	SetPortDirection(nPortIndex, dmx::PortDirection::INP, true);
+    SetPortDirection(port_index, dmx::PortDirection::kInput, true);
 
-	sv_TotalStatistics[nPortIndex].Rdm.Sent.DiscoveryResponse++;
+    sv_TotalStatistics[port_index].rdm.sent.discovery_response++;
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
 // RDM Receive
 
-const uint8_t *Dmx::RdmReceive(uint32_t nPortIndex) {
-	assert(nPortIndex < dmx::config::max::PORTS);
+const uint8_t* Dmx::RdmReceive(uint32_t port_index)
+{
+    assert(port_index < dmx::config::max::PORTS);
 
-	uint32_t fromIp;
-	uint16_t fromPort;
+    uint32_t fromIp;
+    uint16_t fromPort;
 
-	uint32_t nPackets = 0;
-	uint16_t nBytesReceived;
+    uint32_t nPackets = 0;
+    uint16_t nBytesReceived;
 
-	const auto nMicros = micros();
+    const auto micros = Micros();
 
-	do {
-		nBytesReceived = Network::Get()->RecvFrom(s_nHandePortRdm[nPortIndex], &rdmReceiveBuffer, sizeof(rdmReceiveBuffer), &fromIp, &fromPort);
-		if (nBytesReceived != 0) {
-			debug_dump(rdmReceiveBuffer, nBytesReceived);
-		}
+    do
+    {
+        nBytesReceived =
+            network::udp::Recv(s_nHandePortRdm[port_index], const_cast<const uint8_t**>(reinterpret_cast<uint8_t**>(&rdmReceiveBuffer)), &fromIp, &fromPort);
+        if (nBytesReceived != 0)
+        {
+            debug::Dump(rdmReceiveBuffer, nBytesReceived);
+        }
 
-		if ((nBytesReceived != 0) && (fromIp != Network::Get()->GetIp()) && (fromPort == (UDP_PORT_RDM_START + nPortIndex))) {
-			nPackets++;
-		}
-	} while ((micros() - nMicros) < 1000);
+        if ((nBytesReceived != 0) && (fromIp != network::GetPrimaryIp()) && (fromPort == (UDP_PORT_RDM_START + port_index)))
+        {
+            nPackets++;
+        }
+    } while ((Micros() - micros) < 1000);
 
-	if (nPackets == 0) {
-		return nullptr;
-	}
+    if (nPackets == 0)
+    {
+        return nullptr;
+    }
 
-	if (nPackets != 1) {
-		printf("RDM => collision:%u\n", nPackets);
-		rdmReceiveBuffer[0] = 0;
-	}
+    if (nPackets != 1)
+    {
+        printf("RDM => collision:%u\n", nPackets);
+        rdmReceiveBuffer[0] = 0;
+    }
 
-	return rdmReceiveBuffer;
+    return rdmReceiveBuffer;
 }
 
-const uint8_t *Dmx::RdmReceiveTimeOut(uint32_t nPortIndex, uint16_t nTimeOut) {
-	DEBUG_PRINTF("nTimeOut=%u", nTimeOut);
-	assert(nPortIndex < dmx::config::max::PORTS);
+const uint8_t* Dmx::RdmReceiveTimeOut(uint32_t port_index, uint16_t nTimeOut)
+{
+    DEBUG_PRINTF("nTimeOut=%u", nTimeOut);
+    assert(port_index < dmx::config::max::PORTS);
 
-	uint8_t *p = nullptr;
-	const auto nMicros = micros();
+    uint8_t* p = nullptr;
+    const auto micros = Micros();
 
-	do {
-		if ((p = const_cast<uint8_t*>(RdmReceive(nPortIndex))) != nullptr) {
-			return reinterpret_cast<const uint8_t*>(p);
-		}
-	} while (( micros() - nMicros) < (static_cast<uint32_t>(nTimeOut) + 100000U));
+    do
+    {
+        if ((p = const_cast<uint8_t*>(RdmReceive(port_index))) != nullptr)
+        {
+            return reinterpret_cast<const uint8_t*>(p);
+        }
+    } while ((Micros() - micros) < (static_cast<uint32_t>(nTimeOut) + 100000U));
 
-	return p;
+    return p;
 }
 
-void Dmx::StartOutput([[maybe_unused]] uint32_t nPortIndex) {
-	DEBUG_ENTRY
+void Dmx::StartOutput([[maybe_unused]] uint32_t port_index)
+{
+    DEBUG_ENTRY();
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void Dmx::SetOutput([[maybe_unused]] const bool doForce) {
-	DEBUG_ENTRY
+void Dmx::SetOutput([[maybe_unused]] const bool doForce)
+{
+    DEBUG_ENTRY();
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }

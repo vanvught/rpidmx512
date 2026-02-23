@@ -2,7 +2,7 @@
  * @file l6470dmxmode6.h
  *
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,32 +26,30 @@
 #ifndef L6470DMXMODE6_H_
 #define L6470DMXMODE6_H_
 
+#include <cstdint>
+
+#include "configurationstore.h"
 #include "l6470dmxmode.h"
 #include "l6470.h"
 
-#include "motorparams.h"
-#include "modeparams.h"
+class L6470DmxMode6 final : public L6470DmxMode
+{
+   public:
+    explicit L6470DmxMode6(L6470*, uint32_t motor_index);
+    ~L6470DmxMode6() override;
 
-class L6470DmxMode6 final: public L6470DmxMode {
-public:
-	L6470DmxMode6(L6470*, MotorParams*, ModeParams*);
-	~L6470DmxMode6() override;
+    void Start() override;
+    void Stop() override;
 
-	void Start() override;
-	void Stop() override;
+    void Data(const uint8_t*) override;
 
-	void Data(const uint8_t*) override;
+    static TL6470DmxModes GetMode() { return L6470DMXMODE6; }
 
-	static TL6470DmxModes GetMode() {
-		return L6470DMXMODE6;
-	}
+    static uint16_t GetDmxFootPrint() { return 0; }
 
-	static uint16_t GetDmxFootPrint() {
-		return 0;
-	}
-
-private:
-	L6470 *m_pL6470;
+   private:
+    L6470* l6470_;
+    uint32_t motor_index_{common::store::l6470dmx::kMaxMotors};
 };
 
-#endif /* L6470DMXMODE3_H_ */
+#endif  // L6470DMXMODE6_H_

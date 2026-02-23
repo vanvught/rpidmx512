@@ -43,8 +43,8 @@ int main(int argc, char **argv) {
 		return -2;
 	}
 
-	if (bcm2835_i2c_begin() != 1) {
-		fprintf(stderr, "bcm2835_i2c_begin() failed\n");
+	if (bcm2835_I2cBegin() != 1) {
+		fprintf(stderr, "bcm2835_I2cBegin() failed\n");
 		return -3;
 	}
 

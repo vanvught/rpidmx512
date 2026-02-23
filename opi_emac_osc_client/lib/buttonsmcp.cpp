@@ -28,102 +28,111 @@
 
 #include "buttonsmcp.h"
 #include "oscclient.h"
-
 #include "hal_gpio.h"
 #include "hal_i2c.h"
-
 #include "mcp23x17.h"
 
-#include "debug.h"
+ #include "firmware/debug/debug_debug.h"
 
-namespace mcp23017 {
-static constexpr auto address = 0x20;
+namespace mcp23017
+{
+static constexpr auto kAddress = 0x20;
 }
 
-namespace gpio {
-static constexpr auto interrupt = GPIO_EXT_12; // PA7
+namespace gpio
+{
+static constexpr auto kInterrupt = GPIO_EXT_12; // PA7
 }
 
-ButtonsMcp::ButtonsMcp(OscClient *pOscClient): m_I2C(mcp23017::address), m_pOscClient(pOscClient) {
-	assert(m_pOscClient != nullptr);
+ButtonsMcp::ButtonsMcp(OscClient* pOscClient) : hal_i2c_(mcp23017::kAddress), oscclient_(pOscClient)
+{
+    assert(oscclient_ != nullptr);
 }
 
-bool ButtonsMcp::Start() {
-	DEBUG_ENTRY
+bool ButtonsMcp::Start()
+{
+    DEBUG_ENTRY();
 
-	m_bIsConnected = m_I2C.IsConnected();
+    is_connected_ = hal_i2c_.IsConnected();
 
-	if (!m_bIsConnected) {
-		DEBUG_EXIT
-		return false;
-	}
+    if (!is_connected_)
+    {
+        DEBUG_EXIT();
+        return false;
+    }
 
-	// Switches
-	m_I2C.WriteRegister(mcp23x17::REG_IODIRA, static_cast<uint8_t>(0xFF));	// All input
-	m_I2C.WriteRegister(mcp23x17::REG_GPPUA, static_cast<uint8_t>(0xFF));	// Pull-up
-	m_I2C.WriteRegister(mcp23x17::REG_IPOLA, static_cast<uint8_t>(0xFF));	// Invert read
-	m_I2C.WriteRegister(mcp23x17::REG_INTCONA, static_cast<uint8_t>(0x00));
-	m_I2C.WriteRegister(mcp23x17::REG_GPINTENA, static_cast<uint8_t>(0xFF));// Interrupt on Change
-	m_I2C.ReadRegister(mcp23x17::REG_INTCAPA);								// Clear interrupt
-	// Led's
-	m_I2C.WriteRegister(mcp23x17::REG_IODIRB, static_cast<uint8_t>(0x00));	// All output
-	m_I2C.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(0x00));	// All led's Off
+    // Switches
+    hal_i2c_.WriteRegister(mcp23x17::REG_IODIRA, static_cast<uint8_t>(0xFF)); // All input
+    hal_i2c_.WriteRegister(mcp23x17::REG_GPPUA, static_cast<uint8_t>(0xFF));  // Pull-up
+    hal_i2c_.WriteRegister(mcp23x17::REG_IPOLA, static_cast<uint8_t>(0xFF));  // Invert read
+    hal_i2c_.WriteRegister(mcp23x17::REG_INTCONA, static_cast<uint8_t>(0x00));
+    hal_i2c_.WriteRegister(mcp23x17::REG_GPINTENA, static_cast<uint8_t>(0xFF)); // Interrupt on Change
+    hal_i2c_.ReadRegister(mcp23x17::REG_INTCAPA);                               // Clear interrupt
+    // Led's
+    hal_i2c_.WriteRegister(mcp23x17::REG_IODIRB, static_cast<uint8_t>(0x00)); // All output
+    hal_i2c_.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(0x00));  // All led's Off
 
-	FUNC_PREFIX(gpio_fsel(gpio::interrupt, GPIO_FSEL_INPUT));
-	FUNC_PREFIX(gpio_set_pud(gpio::interrupt, GPIO_PULL_UP));
+    FUNC_PREFIX(GpioFsel(gpio::kInterrupt, GPIO_FSEL_INPUT));
+    FUNC_PREFIX(GpioSetPud(gpio::kInterrupt, GPIO_PULL_UP));
 
-	m_nButtonsCount = 8;
+    buttons_count_ = 8;
 
-	DEBUG_EXIT
-	return true;
+    DEBUG_EXIT();
+    return true;
 }
 
-void ButtonsMcp::Stop() {
-	DEBUG_ENTRY
+void ButtonsMcp::Stop()
+{
+    DEBUG_ENTRY();
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void ButtonsMcp::Run() {
-	if (__builtin_expect(FUNC_PREFIX(gpio_lev(gpio::interrupt)) == LOW, 0)) {
+void ButtonsMcp::Run()
+{
+    if (__builtin_expect(FUNC_PREFIX(GpioLev(gpio::kInterrupt)) == LOW, 0))
+    {
+        const auto buttons = hal_i2c_.ReadRegister(mcp23x17::REG_GPIOA);
+        const uint8_t buttons_changed = (buttons ^ buttons_previous_) & buttons;
 
-		const auto nButtons = m_I2C.ReadRegister(mcp23x17::REG_GPIOA);
-		const uint8_t nButtonsChanged = (nButtons ^ m_nButtonsPrevious) & nButtons;
+        buttons_previous_ = buttons;
 
-		m_nButtonsPrevious = nButtons;
+        /* P = buttons_previous_
+         * N = buttons_
+         * X = buttons_ ^ buttons_previous_
+         * C = buttons_changed
+         *
+         * P N	X N	C
+         * 0 0	0 0	0
+         * 0 1	1 1	1
+         * 1 0	1 0	0
+         * 1 1	0 1	0
+         */
 
-		/* P = m_nButtonsPrevious
-		 * N = m_nButtons
-		 * X = m_nButtons ^ m_nButtonsPrevious
-		 * C = nButtonsChanged
-		 *
-		 * P N	X N	C
-		 * 0 0	0 0	0
-		 * 0 1	1 1	1
-		 * 1 0	1 0	0
-		 * 1 1	0 1	0
-		 */
+        DEBUG_PRINTF("%.2x %.2x", buttons, buttons_changed);
 
-		DEBUG_PRINTF("%.2x %.2x", nButtons, nButtonsChanged);
-
-		for (uint32_t i = 0; i < 8; i++) {
-			if ((nButtonsChanged & (1U << i)) == ((1U << i))) {
-				m_pOscClient->SendCmd(i);
-			}
-		}
-	}
+        for (uint32_t i = 0; i < 8; i++)
+        {
+            if ((buttons_changed & (1U << i)) == ((1U << i)))
+            {
+                oscclient_->SendCmd(i);
+            }
+        }
+    }
 }
 
-void ButtonsMcp::SetLed(const uint32_t nLed, const bool bOn) {
-	DEBUG_PRINTF("led%d %s", nLed, bOn ? "On" : "Off");
+void ButtonsMcp::SetLed(uint32_t led, bool on)
+{
+    DEBUG_PRINTF("led%d %s", led, on ? "On" : "Off");
 
-	m_nPortB &= static_cast<uint8_t>(~(1U << nLed));
+    port_b_ &= static_cast<uint8_t>(~(1U << led));
 
-	if (bOn) {
-		m_nPortB |= static_cast<uint8_t>(1U << nLed);
-	}
+    if (on)
+    {
+        port_b_ |= static_cast<uint8_t>(1U << led);
+    }
 
-	m_I2C.WriteRegister(mcp23x17::REG_GPIOB, m_nPortB);
+    hal_i2c_.WriteRegister(mcp23x17::REG_GPIOB, port_b_);
 
-	DEBUG_PRINTF("%.2x", m_nPortB);
+    DEBUG_PRINTF("%.2x", port_b_);
 }

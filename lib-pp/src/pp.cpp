@@ -13,7 +13,7 @@
  *
  *	pusher command stuff added by Christopher Schardt 2017
  */
-/* Copyright (C) 2022-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2022-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,182 +35,186 @@
  */
 
 #include <cstdint>
+#include <cstdio>
 #include <cassert>
 
 #include "pp.h"
-
 #include "network.h"
-#include "hardware.h"
-
-#include "lightsetdata.h"
-#include "lightset_data.h"
-
-#include "debug.h"
+#include "hal_millis.h"
+#include "dmxnodedata.h"
+#include "dmxnode_data.h"
+ #include "firmware/debug/debug_debug.h"
 
 #if !defined(CONFIG_PP_16BITSTUFF)
-static constexpr uint8_t COMMAND_MAGIC[16] = { 0x40, 0x09, 0x2d, 0xa6, 0x15, 0xa5, 0xdd, 0xe5, 0x6a, 0x9d, 0x4d, 0x5a, 0xcf, 0x09, 0xaf, 0x50 };
+static constexpr uint8_t kCommandMagic[16] = {0x40, 0x09, 0x2d, 0xa6, 0x15, 0xa5, 0xdd, 0xe5, 0x6a, 0x9d, 0x4d, 0x5a, 0xcf, 0x09, 0xaf, 0x50};
 #endif
 
-typedef union pcast32 {
-	uint32_t u32;
-	uint8_t u8[4];
+typedef union pcast32
+{
+    uint32_t u32;
+    uint8_t u8[4];
 } _pcast32;
 
-PixelPusher *PixelPusher::s_pThis;
+PixelPusher::PixelPusher() : millis_(hal::Millis())
+{
+    DEBUG_ENTRY();
+    assert(s_this == nullptr);
+    s_this = this;
 
-PixelPusher::PixelPusher(): m_nMillis(Hardware::Get()->Millis()) {
-	DEBUG_ENTRY
-	assert(s_pThis == nullptr);
-	s_pThis = this;
+    memset(&discovery_packet_, 0, sizeof(struct pp::DiscoveryPacket));
 
-	memset(&m_DiscoveryPacket, 0, sizeof(struct pp::DiscoveryPacket));
+     network::iface::CopyMacAddressTo(discovery_packet_.header.mac_address);
+    discovery_packet_.header.device_type = static_cast<uint8_t>(pp::DeviceType::PIXELPUSHER);
+    discovery_packet_.header.protocol_version = 1;
+    discovery_packet_.header.vendor_id = 3;
+    // discovery_packet_.header.hw_revision = ;
+    discovery_packet_.header.sw_revision = pp::version::MIN;
+    discovery_packet_.header.link_speed = 10000000;
+    //
+    discovery_packet_.pixelpusher.base.update_period = 1000;
+    discovery_packet_.pixelpusher.base.power_total = 1;
+    discovery_packet_.pixelpusher.base.max_strips_per_packet = 1; // TODO (a) This can be active_ports_ ?
+    discovery_packet_.pixelpusher.base.my_port = pp::UDP_PORT_DATA;
+    //
+    discovery_packet_.pixelpusher.ext.segments = 1;
 
-	Network::Get()->MacAddressCopyTo(m_DiscoveryPacket.header.mac_address);
-	m_DiscoveryPacket.header.device_type = static_cast<uint8_t>(pp::DeviceType::PIXELPUSHER);
-	m_DiscoveryPacket.header.protocol_version = 1;
-	m_DiscoveryPacket.header.vendor_id = 3;
-	// m_DiscoveryPacket.header.hw_revision = ;
-	m_DiscoveryPacket.header.sw_revision = pp::version::MIN;
-	m_DiscoveryPacket.header.link_speed = 10000000;
-	//
-	m_DiscoveryPacket.pixelpusher.base.update_period = 1000;
-	m_DiscoveryPacket.pixelpusher.base.power_total = 1;
-	m_DiscoveryPacket.pixelpusher.base.max_strips_per_packet = 1; //TODO This can be m_nActivePorts ?
-	m_DiscoveryPacket.pixelpusher.base.my_port = pp::UDP_PORT_DATA;
-	//
-	m_DiscoveryPacket.pixelpusher.ext.segments = 1;
-
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void PixelPusher::Start() {
-	DEBUG_ENTRY
-	assert(m_pLightSet != nullptr);
+void PixelPusher::Start()
+{
+    DEBUG_ENTRY();
+    assert(dmxnode_output_type_ != nullptr);
 
-	m_nHandleDiscovery = Network::Get()->Begin(pp::UDP_PORT_DISCOVERY);
-	assert(m_nHandleDiscovery != -1);
+    handle_discovery_ = network::udp::Begin(pp::UDP_PORT_DISCOVERY, nullptr);
+    assert(handle_discovery_ != -1);
 
-	m_nHandleData = Network::Get()->Begin(pp::UDP_PORT_DATA);
-	assert(m_nHandleData != -1);
+    handle_data_ = network::udp::Begin(pp::UDP_PORT_DATA, StaticCallbackFunction);
+    assert(handle_data_ != -1);
 
 #if !defined(CONFIG_PP_16BITSTUFF)
-	m_DiscoveryPacket.pixelpusher.base.strips_attached = static_cast<uint8_t>(m_nActivePorts);
+    discovery_packet_.pixelpusher.base.strips_attached = static_cast<uint8_t>(active_ports_);
 #else
-	m_DiscoveryPacket.pixelpusher.base.strips_attached = 1;
+    discovery_packet_.pixelpusher.base.strips_attached = 1;
 #endif
-	m_DiscoveryPacket.pixelpusher.base.pixels_per_strip = static_cast<uint16_t>(m_nCount);
-
-	m_DiscoveryPacket.pixelpusher.ext.strip_count_16 = static_cast<uint16_t>(m_nActivePorts);
-
+    discovery_packet_.pixelpusher.base.pixels_per_strip = static_cast<uint16_t>(count_);
+    discovery_packet_.pixelpusher.ext.strip_count_16 = static_cast<uint16_t>(active_ports_);
 #if !defined(CONFIG_PP_16BITSTUFF)
-	m_DiscoveryPacket.pixelpusher.ext.pusher_flags = 0;
+    discovery_packet_.pixelpusher.ext.pusher_flags = 0;
 #else
-	static const uint32_t nPusherFlags = (m_hasGlobalBrightness ? static_cast<uint32_t>(pp::PusherFlags::GLOBAL_BRIGHTNESS) : 0) | static_cast<uint32_t>(pp::PusherFlags::DYNAMICS) | static_cast<uint32_t>(pp::PusherFlags::_16BITSTUFF);
-	m_DiscoveryPacket.pixelpusher.ext.pusher_flags = nPusherFlags;
+    static const uint32_t nPusherFlags = (m_hasGlobalBrightness ? static_cast<uint32_t>(pp::PusherFlags::GLOBAL_BRIGHTNESS) : 0) |
+                                         static_cast<uint32_t>(pp::PusherFlags::DYNAMICS) | static_cast<uint32_t>(pp::PusherFlags::_16BITSTUFF);
+    discovery_packet_.pixelpusher.ext.pusher_flags = nPusherFlags;
 #endif
 
-	m_nStripDataLength = 1U +  m_nCount * pp::configuration::CHANNELS_PER_PIXEL;
+    strip_data_length_ = 1U + count_ * pp::configuration::CHANNELS_PER_PIXEL;
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void PixelPusher::Stop() {
-	DEBUG_ENTRY
+void PixelPusher::Stop()
+{
+    DEBUG_ENTRY();
 
-	m_nHandleData = Network::Get()->End(pp::UDP_PORT_DATA);
-	m_nHandleData = -1;
+    handle_data_ = network::udp::End(pp::UDP_PORT_DATA);
+    handle_data_ = -1;
 
-	Network::Get()->End(pp::UDP_PORT_DISCOVERY);
-	m_nHandleDiscovery = -1;
+    network::udp::End(pp::UDP_PORT_DISCOVERY);
+    handle_discovery_ = -1;
 
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-void PixelPusher::Run() {
-	uint16_t nRemotePort;
-	uint32_t nRemoteIP;
+void PixelPusher::Input(const uint8_t* buffer, uint32_t size, [[maybe_unused]] uint32_t from_ip, [[maybe_unused]] uint16_t from_port)
+{
+    if (__builtin_expect((size < 4), 0)) return;
 
-	m_nBytesReceived = Network::Get()->RecvFrom(m_nHandleData, const_cast<const void **>(reinterpret_cast<void **>(&m_pDataPacket)), &nRemoteIP, &nRemotePort);
+    auto* data = buffer;
 
-	if (__builtin_expect((m_nBytesReceived < 4), 1)) {
-		const auto nMillis = Hardware::Get()->Millis();
-		if (__builtin_expect((nMillis - m_nMillis < 1000), 1)) {
-			return;
-		}
-		m_nMillis = nMillis;
-		_pcast32 src;
-		src.u32 = Network::Get()->GetIp();
-		memcpy(m_DiscoveryPacket.header.ip_address, src.u8, 4);
-		Network::Get()->SendTo(m_nHandleDiscovery, reinterpret_cast<const void *>(&m_DiscoveryPacket), sizeof(struct pp::DiscoveryPacket),  static_cast<uint32_t>(~0), pp::UDP_PORT_DISCOVERY);
-		return;
-	}
-
-	auto *pData = m_pDataPacket;
-
-	uint32_t nSequenceNumber;
-	memcpy(&nSequenceNumber, pData, 4);
-	m_nBytesReceived -= 4;
-	pData += 4;
+    uint32_t sequence_number;
+    memcpy(&sequence_number, data, 4);
+    size -= 4;
+    data += 4;
 
 #if !defined(CONFIG_PP_16BITSTUFF)
-	if (m_nBytesReceived >= sizeof(COMMAND_MAGIC) && memcmp(pData, COMMAND_MAGIC, sizeof(COMMAND_MAGIC)) == 0) {
-		HandlePusherCommand(pData + sizeof(COMMAND_MAGIC), m_nBytesReceived - sizeof(COMMAND_MAGIC));
-		return;
-	}
+    if (size >= sizeof(kCommandMagic) && memcmp(data, kCommandMagic, sizeof(kCommandMagic)) == 0)
+    {
+        HandlePusherCommand(data + sizeof(kCommandMagic), size - sizeof(kCommandMagic));
+        return;
+    }
 
-	if (m_nBytesReceived % m_nStripDataLength != 0) {
-		DEBUG_PRINTF("Expecting multiple of {1 + (RGB)*%u} = %u but got %u bytes (leftover: %u)",
-				m_nCount, m_nStripDataLength, m_nBytesReceived, m_nBytesReceived % m_nStripDataLength);
-		return;
-	}
+    if (size % strip_data_length_ != 0)
+    {
+        DEBUG_PRINTF("Expecting multiple of {1 + (RGB)*%u} = %u but got %u bytes (leftover: %u)", count_, strip_data_length_, size, size % strip_data_length_);
+        return;
+    }
 
-	const auto nReceivedStrips = m_nBytesReceived / m_nStripDataLength;
+    const auto kReceivedStrips = size / strip_data_length_;
 
-	for (uint32_t i = 0; i < nReceivedStrips; i++) {
-		const auto nPortIndexStart = pData[0] * m_nUniverses;
-		uint32_t nPortIndex;
-		for (nPortIndex = nPortIndexStart; nPortIndex < (nPortIndexStart + m_nUniverses) && (m_nBytesReceived > 0); nPortIndex++) {
-			const auto nLightSetLength = std::min(std::min(m_nBytesReceived, pp::configuration::UNIVERSE_MAX_LENGTH), m_nStripDataLength - 1);
+    for (uint32_t i = 0; i < kReceivedStrips; i++)
+    {
+        const auto kPortIndexStart = data[0] * universes_;
+        uint32_t port_index;
+        for (port_index = kPortIndexStart; port_index < (kPortIndexStart + universes_) && (size > 0); port_index++)
+        {
+            const auto kLength = std::min(std::min(size, pp::configuration::UNIVERSE_MAX_LENGTH), strip_data_length_ - 1);
 
-//			DEBUG_PRINTF("i=%u, nPortIndex=%u, m_nBytesReceived=%u, nLightSetLength=%u", i, nPortIndex, m_nBytesReceived, nLightSetLength);
+            //          DEBUG_PRINTF("i=%u, port_index=%u, size=%u, kLength=%u", i, port_index, size, kLength);
 
-			lightset::Data::SetSourceA(nPortIndex, &pData[1], nLightSetLength);
+            dmxnode::Data::SetSourceA(port_index, &data[1], kLength);
 
-			m_nBytesReceived-=nLightSetLength;
-			pData+=nLightSetLength;
-		}
+            size -= kLength;
+            data += kLength;
+        }
 
-		pData+=m_nStripDataLength;
+        data += strip_data_length_;
 
-//		DEBUG_PRINTF("nPortIndex=%u, m_nPortIndexLast=%u", nPortIndex, m_nPortIndexLast);
+        //		DEBUG_PRINTF("nPortIndex=%u, port_index_last_=%u", nPortIndex, port_index_last_);
 
-		if (nPortIndex == m_nPortIndexLast) {
-			for (uint32_t nLightSetPortIndex = 0; nLightSetPortIndex < m_nPortIndexLast; nLightSetPortIndex++) {
-				lightset::data_output(m_pLightSet, nLightSetPortIndex);
-				lightset::Data::ClearLength(nLightSetPortIndex);
-			}
-		}
-	}
+        if (port_index == port_index_last_)
+        {
+            for (uint32_t type_port_index = 0; type_port_index < port_index_last_; type_port_index++)
+            {
+                dmxnode::DataOutput(dmxnode_output_type_, type_port_index);
+                dmxnode::Data::ClearLength(type_port_index);
+            }
+        }
+    }
 #else
 #endif
 }
 
-void PixelPusher::HandlePusherCommand([[maybe_unused]] const uint8_t *pBuffer, [[maybe_unused]] uint32_t nSize) {
-	DEBUG_ENTRY
-	DEBUG_PRINTF("pBuffer=%p, nSize=%u", reinterpret_cast<const void *>(pBuffer), nSize);
+void PixelPusher::Run()
+{
+    const auto kMillis = hal::Millis();
+    if (__builtin_expect((kMillis - millis_ < 1000), 1))
+    {
+        return;
+    }
+    millis_ = kMillis;
+    _pcast32 src;
+    src.u32 = network::GetPrimaryIp();
+    memcpy(discovery_packet_.header.ip_address, src.u8, 4);
+    network::udp::Send(handle_discovery_, reinterpret_cast<const uint8_t*>(&discovery_packet_), sizeof(struct pp::DiscoveryPacket), static_cast<uint32_t>(~0),
+                   pp::UDP_PORT_DISCOVERY);
+}
+
+void PixelPusher::HandlePusherCommand([[maybe_unused]] const uint8_t* buffer, [[maybe_unused]] uint32_t size)
+{
+    DEBUG_ENTRY();
+    DEBUG_PRINTF("pBuffer=%p, nSize=%u", reinterpret_cast<const void*>(buffer), size);
 #if !defined(CONFIG_PP_16BITSTUFF)
 #else
 #endif
-	DEBUG_EXIT
+    DEBUG_EXIT();
 }
 
-#include <cstdio>
-
-void PixelPusher::Print() {
-	puts("PixelPusher");
-	printf(" Count             : %u\n", m_nCount);
-	printf(" Channels per pixel: %u\n", pp::configuration::CHANNELS_PER_PIXEL);
-	printf(" Active ports      : %u\n", m_nActivePorts);
-	DEBUG_PRINTF("m_nUniverses=%u", m_nUniverses);
-	DEBUG_PRINTF("m_nPortIndexLast=%u", m_nPortIndexLast);
+void PixelPusher::Print()
+{
+    puts("PixelPusher");
+    printf(" Count             : %u\n", count_);
+    printf(" Channels per pixel: %u\n", pp::configuration::CHANNELS_PER_PIXEL);
+    printf(" Active ports      : %u\n", active_ports_);
+    DEBUG_PRINTF("universes_=%u", universes_);
+    DEBUG_PRINTF("port_index_last_=%u", port_index_last_);
 }

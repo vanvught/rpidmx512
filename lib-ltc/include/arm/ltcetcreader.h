@@ -1,6 +1,5 @@
 /**
  * @file ltcetcreader.h
- *
  */
 /* Copyright (C) 2022-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
@@ -30,45 +29,50 @@
 #include "midi.h"
 
 #include "ltcoutputs.h"
+#include "hal_millis.h"
+#include "hal_statusled.h"
 
-#include "hardware.h"
+class LtcEtcReader final : public LtcEtcHandler
+{
+   public:
+    void Start();
+    void Stop();
 
-#include "arm/platform_ltc.h"
+    void Run()
+    {
+        const auto kTimeStamp = hal::Millis();
 
-class LtcEtcReader final : public LtcEtcHandler {
-public:
-	void Start();
-	void Stop();
+        if ((kTimeStamp - timestamp_) >= 50U)
+        {
+            LtcOutputs::Get()->ShowSysTime();
+            hal::statusled::SetMode(hal::statusled::Mode::NORMAL);
+            Reset(true);
+        }
+        else
+        {
+            hal::statusled::SetMode(hal::statusled::Mode::DATA);
+            Reset(false);
+        }
+    }
 
-	void Run() {
-		const auto nTimeStamp = Hardware::Get()->Millis();
+   private:
+    void Handler(const midi::Timecode*) override;
 
-		if ((nTimeStamp - m_nTimestamp) >= 50U) {
-			LtcOutputs::Get()->ShowSysTime();
-			Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
-			Reset(true);
-		} else {
-			Hardware::Get()->SetMode(hardware::ledblink::Mode::DATA);
-			Reset(false);
-		}
-	}
+    void Reset(bool do_reset)
+    {
+        if (reset_timecode_ != do_reset)
+        {
+            reset_timecode_ = do_reset;
+            if (reset_timecode_)
+            {
+                LtcOutputs::Get()->ResetTimeCodeTypePrevious();
+            }
+        }
+    }
 
-
-private:
-	void Handler(const midi::Timecode *) override;
-
-	void Reset(const bool doReset) {
-		if (m_doResetTimeCode != doReset) {
-			m_doResetTimeCode = doReset;
-			if (m_doResetTimeCode) {
-				LtcOutputs::Get()->ResetTimeCodeTypePrevious();
-			}
-		}
-	}
-
-private:
-	uint32_t m_nTimestamp { 0 };
-	bool m_doResetTimeCode { true };
+   private:
+    uint32_t timestamp_{0};
+    bool reset_timecode_{true};
 };
 
-#endif /* ARM_LTCETCREADER_H_ */
+#endif  // ARM_LTCETCREADER_H_

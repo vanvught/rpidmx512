@@ -1,6 +1,5 @@
 /**
  * @file rtpmidireader.cpp
- *
  */
 /* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
@@ -23,14 +22,14 @@
  * THE SOFTWARE.
  */
 
-#if defined (DEBUG_ARM_RTPMIDIREADER)
-# undef NDEBUG
+#if defined(DEBUG_ARM_RTPMIDIREADER)
+#undef NDEBUG
 #endif
 
 #if defined(__GNUC__) && !defined(__clang__)
-# pragma GCC push_options
-# pragma GCC optimize ("O2")
-# pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#pragma GCC push_options
+#pragma GCC optimize("O2")
+#pragma GCC optimize("no-tree-loop-distribute-patterns")
 #endif
 
 #include <cstdint>
@@ -38,9 +37,9 @@
 #include <cassert>
 
 #include "arm/rtpmidireader.h"
-
 #include "timecodeconst.h"
-#include "hardware.h"
+#include "hal.h"
+#include "hal_statusled.h"
 // Output
 #include "artnetnode.h"
 #include "midi.h"
@@ -48,233 +47,281 @@
 #include "ltcsender.h"
 #include "arm/ltcoutputs.h"
 
-#include "arm/platform_ltc.h"
+static uint8_t s_qf[8] __attribute__((aligned(4))) = {0, 0, 0, 0, 0, 0, 0, 0};
 
-static uint8_t s_qf[8] __attribute__ ((aligned (4))) = { 0, 0, 0, 0, 0, 0, 0, 0 };
-
-#if defined (H3)
-static void arm_timer_handler() {
-	gv_ltc_nUpdatesPerSecond = gv_ltc_nUpdates - gv_ltc_nUpdatesPrevious;
-	gv_ltc_nUpdatesPrevious = gv_ltc_nUpdates;
+#if defined(H3)
+static void arm_timer_handler()
+{
+    gv_ltc_nUpdatesPerSecond = gv_ltc_nUpdates - gv_ltc_nUpdatesPrevious;
+    gv_ltc_nUpdatesPrevious = gv_ltc_nUpdates;
 }
 
-static void irq_timer0_handler([[maybe_unused]] uint32_t clo) {
-	gv_ltc_bTimeCodeAvailable = true;
-	gv_ltc_nTimeCodeCounter = gv_ltc_nTimeCodeCounter + 1;
+static void irq_timer0_handler([[maybe_unused]] uint32_t clo)
+{
+    gv_ltc_bTimeCodeAvailable = true;
+    gv_ltc_nTimeCodeCounter = gv_ltc_nTimeCodeCounter + 1;
 }
-#elif defined (GD32)
-	// Defined in platform_ltc.cpp
+#elif defined(GD32)
+// Defined in platform_ltc.cpp
 #endif
 
-void RtpMidiReader::Start() {
-#if defined (H3)
-	irq_timer_set(IRQ_TIMER_0, static_cast<thunk_irq_timer_t>(irq_timer0_handler));
-	irq_timer_arm_physical_set(static_cast<thunk_irq_timer_arm_t>(arm_timer_handler));
-	irq_handler_init();
-#elif defined (GD32)
-	platform::ltc::timer11_config();
+void RtpMidiReader::Start()
+{
+#if defined(H3)
+    irq_timer_set(IRQ_TIMER_0, static_cast<thunk_irq_timer_t>(irq_timer0_handler));
+    irq_timer_arm_physical_set(static_cast<thunk_irq_timer_arm_t>(arm_timer_handler));
+    irq_handler_init();
+#elif defined(GD32)
+    platform::ltc::timer11_config();
 #endif
 
-	LtcOutputs::Get()->Init();
-	Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
+    LtcOutputs::Get()->Init();
+    hal::statusled::SetMode(hal::statusled::Mode::NORMAL);
 }
 
-void RtpMidiReader::Stop() {
-#if defined (H3)
-	irq_timer_set(IRQ_TIMER_0, static_cast<thunk_irq_timer_t>(nullptr));
-	irq_timer_arm_physical_set(static_cast<thunk_irq_timer_arm_t>(nullptr));
-#elif defined (GD32)
+void RtpMidiReader::Stop()
+{
+#if defined(H3)
+    irq_timer_set(IRQ_TIMER_0, static_cast<thunk_irq_timer_t>(nullptr));
+    irq_timer_arm_physical_set(static_cast<thunk_irq_timer_arm_t>(nullptr));
+#elif defined(GD32)
 #endif
 }
 
 #if defined(__GNUC__) && !defined(__clang__)
-# pragma GCC push_options
-# pragma GCC optimize ("O3")
-# pragma GCC optimize ("no-tree-loop-distribute-patterns")
+#pragma GCC push_options
+#pragma GCC optimize("O3")
+#pragma GCC optimize("no-tree-loop-distribute-patterns")
 #endif
 
-void RtpMidiReader::MidiMessage(const struct midi::Message *ptMidiMessage) {
-	switch (static_cast<midi::Types>(ptMidiMessage->tType)) {
-	case midi::Types::TIME_CODE_QUARTER_FRAME:
-		HandleMtcQf(ptMidiMessage);
-		break;
-	case midi::Types::SYSTEM_EXCLUSIVE: {
-			const auto *pSystemExclusive = ptMidiMessage->aSystemExclusive;
-			if ((pSystemExclusive[1] == 0x7F) && (pSystemExclusive[2] == 0x7F) && (pSystemExclusive[3] == 0x01)) {
-				HandleMtc(ptMidiMessage);
-			}
-		}
-		break;
-	case midi::Types::CLOCK: {
-			uint32_t nBPM;
-			if (m_MidiBPM.Get(ptMidiMessage->nTimestamp, nBPM)) {
-				LtcOutputs::Get()->ShowBPM(nBPM);
-			}
-		}
-		break;
-	default:
-		break;
-	}
+void RtpMidiReader::MidiMessage(const struct midi::Message* message)
+{
+    switch (static_cast<midi::Types>(message->type))
+    {
+        case midi::Types::TIME_CODE_QUARTER_FRAME:
+            HandleMtcQf(message);
+            break;
+        case midi::Types::SYSTEM_EXCLUSIVE:
+        {
+            const auto* const kSystemExclusive = message->system_exclusive;
+            if ((kSystemExclusive[1] == 0x7F) && (kSystemExclusive[2] == 0x7F) && (kSystemExclusive[3] == 0x01))
+            {
+                HandleMtc(message);
+            }
+        }
+        break;
+        case midi::Types::CLOCK:
+        {
+            uint32_t bpm;
+            if (midi_bpm_.Get(message->timestamp, bpm))
+            {
+                LtcOutputs::Get()->ShowBPM(bpm);
+            }
+        }
+        break;
+        default:
+            break;
+    }
 }
 
-void RtpMidiReader::HandleMtc(const struct midi::Message *ptMidiMessage) {
-	const auto *pSystemExclusive = ptMidiMessage->aSystemExclusive;
+void RtpMidiReader::HandleMtc(const struct midi::Message* message)
+{
+    const auto* const kSystemExclusive = message->system_exclusive;
 
-	m_LtcTimeCode.nFrames = pSystemExclusive[8];
-	m_LtcTimeCode.nSeconds = pSystemExclusive[7];
-	m_LtcTimeCode.nMinutes = pSystemExclusive[6];
-	m_LtcTimeCode.nHours = pSystemExclusive[5] & 0x1F;
-	m_LtcTimeCode.nType = static_cast<uint8_t>(pSystemExclusive[5] >> 5);
+    timecode_.frames = kSystemExclusive[8];
+    timecode_.seconds = kSystemExclusive[7];
+    timecode_.minutes = kSystemExclusive[6];
+    timecode_.hours = kSystemExclusive[5] & 0x1F;
+    timecode_.type = static_cast<uint8_t>(kSystemExclusive[5] >> 5);
 
-	Update();
+    Update();
 
-	gv_ltc_bTimeCodeAvailable = false;
-	gv_ltc_nTimeCodeCounter = 0;
+    gv_ltc_bTimeCodeAvailable = false;
+    gv_ltc_nTimeCodeCounter = 0;
 }
 
-void RtpMidiReader::HandleMtcQf(const struct midi::Message *ptMidiMessage) {
-	const auto nData1 = ptMidiMessage->nData1;
-	const auto nPart = static_cast<uint8_t>((nData1 & 0x70) >> 4);
+void RtpMidiReader::HandleMtcQf(const struct midi::Message* midi_message)
+{
+    const auto kData1 = midi_message->data1;
+    const auto kPart = static_cast<uint8_t>((kData1 & 0x70) >> 4);
 
-	s_qf[nPart] = nData1 & 0x0F;
+    s_qf[kPart] = kData1 & 0x0F;
 
-	if ((nPart == 7) || (m_nPartPrevious == 7)) {
-	} else {
-		m_bDirection = (m_nPartPrevious < nPart);
-	}
+    if ((kPart == 7) || (part_previous_ == 7))
+    {
+    }
+    else
+    {
+        direction_ = (part_previous_ < kPart);
+    }
 
-	if ( (m_bDirection && (nPart == 7)) || (!m_bDirection && (nPart == 0)) ) {
-		m_LtcTimeCode.nFrames = static_cast<uint8_t>(s_qf[0] | (s_qf[1] << 4));
-		m_LtcTimeCode.nSeconds = static_cast<uint8_t>(s_qf[2] | (s_qf[3] << 4));
-		m_LtcTimeCode.nMinutes = static_cast<uint8_t>(s_qf[4] | (s_qf[5] << 4));
-		m_LtcTimeCode.nHours = static_cast<uint8_t>(s_qf[6] | ((s_qf[7] & 0x1) << 4));
-		m_LtcTimeCode.nType = static_cast<uint8_t>((s_qf[7] >> 1));
+    if ((direction_ && (kPart == 7)) || (!direction_ && (kPart == 0)))
+    {
+        timecode_.frames = static_cast<uint8_t>(s_qf[0] | (s_qf[1] << 4));
+        timecode_.seconds = static_cast<uint8_t>(s_qf[2] | (s_qf[3] << 4));
+        timecode_.minutes = static_cast<uint8_t>(s_qf[4] | (s_qf[5] << 4));
+        timecode_.hours = static_cast<uint8_t>(s_qf[6] | ((s_qf[7] & 0x1) << 4));
+        timecode_.type = static_cast<uint8_t>((s_qf[7] >> 1));
 
-		if (m_LtcTimeCode.nFrames < m_nMtcQfFramePrevious) {
-			m_nMtcQfFramesDelta = m_nMtcQfFramePrevious - m_LtcTimeCode.nFrames;
-		} else {
-			m_nMtcQfFramesDelta = m_LtcTimeCode.nFrames - m_nMtcQfFramePrevious;
-		}
+        if (timecode_.frames < mtc_qf_previous_)
+        {
+            mtc_qf_delta_ = mtc_qf_previous_ - timecode_.frames;
+        }
+        else
+        {
+            mtc_qf_delta_ = timecode_.frames - mtc_qf_previous_;
+        }
 
-		m_nMtcQfFramePrevious = m_LtcTimeCode.nFrames;
+        mtc_qf_previous_ = timecode_.frames;
 
-		if (m_nMtcQfFramesDelta >= static_cast<uint32_t>(TimeCodeConst::FPS[m_LtcTimeCode.nType] - 2)) {
-			m_nMtcQfFramesDelta = 2;
-		}
+        if (mtc_qf_delta_ >= static_cast<uint32_t>(TimeCodeConst::FPS[timecode_.type] - 2))
+        {
+            mtc_qf_delta_ = 2;
+        }
 
-		__DMB();
+        __DMB();
 
-		if (gv_ltc_nTimeCodeCounter < m_nMtcQfFramesDelta) {
-			Update();
-		}
+        if (gv_ltc_nTimeCodeCounter < mtc_qf_delta_)
+        {
+            Update();
+        }
 
-#if defined (H3)
-		H3_TIMER->TMR0_CTRL |= TIMER_CTRL_SINGLE_MODE;
-		H3_TIMER->TMR0_INTV = TimeCodeConst::TMR_INTV[m_LtcTimeCode.nType];
-		H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
-#elif defined (GD32)
-		platform::ltc::timer11_set_type(m_LtcTimeCode.nType);
+#if defined(H3)
+        H3_TIMER->TMR0_CTRL |= TIMER_CTRL_SINGLE_MODE;
+        H3_TIMER->TMR0_INTV = TimeCodeConst::TMR_INTV[timecode_.type];
+        H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
+#elif defined(GD32)
+        platform::ltc::timer11_set_type(timecode_.type);
 #endif
-		gv_ltc_bTimeCodeAvailable = false;
-		gv_ltc_nTimeCodeCounter = 0;
-	}
+        gv_ltc_bTimeCodeAvailable = false;
+        gv_ltc_nTimeCodeCounter = 0;
+    }
 
-	m_nPartPrevious = nPart;
+    part_previous_ = kPart;
 }
 
-void RtpMidiReader::Update() {
-	if (ltc::Destination::IsEnabled(ltc::Destination::Output::LTC)) {
-		LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct ltc::TimeCode*>(&m_LtcTimeCode));
-	}
+void RtpMidiReader::Update()
+{
+    if (ltc::Destination::IsEnabled(ltc::Destination::Output::LTC))
+    {
+        LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct ltc::TimeCode*>(&timecode_));
+    }
 
-	if (ltc::Destination::IsEnabled(ltc::Destination::Output::ARTNET)) {
-		ArtNetNode::Get()->SendTimeCode(reinterpret_cast<struct artnet::TimeCode*>(&m_LtcTimeCode));
-	}
+    if (ltc::Destination::IsEnabled(ltc::Destination::Output::ARTNET))
+    {
+        ArtNetNode::Get()->SendTimeCode(reinterpret_cast<struct artnet::TimeCode*>(&timecode_));
+    }
 
-	if (ltc::Destination::IsEnabled(ltc::Destination::Output::ETC)) {
-		LtcEtc::Get()->Send(reinterpret_cast<const midi::Timecode *>(&m_LtcTimeCode));
-	}
+    if (ltc::Destination::IsEnabled(ltc::Destination::Output::ETC))
+    {
+        LtcEtc::Get()->Send(reinterpret_cast<const midi::Timecode*>(&timecode_));
+    }
 
-	memcpy(&g_ltc_LtcTimeCode, &m_LtcTimeCode, sizeof(struct midi::Timecode));
+    memcpy(&g_ltc_LtcTimeCode, &timecode_, sizeof(struct midi::Timecode));
 
-	LtcOutputs::Get()->Update(reinterpret_cast<const struct ltc::TimeCode*>(&g_ltc_LtcTimeCode));
+    LtcOutputs::Get()->Update(reinterpret_cast<const struct ltc::TimeCode*>(&g_ltc_LtcTimeCode));
 
-	gv_ltc_nUpdates = gv_ltc_nUpdates + 1;
+    gv_ltc_nUpdates = gv_ltc_nUpdates + 1;
 }
 
-void RtpMidiReader::Run() {
-	__DMB();
+void RtpMidiReader::Run()
+{
+    __DMB();
 
-	if (gv_ltc_bTimeCodeAvailable) {
-		gv_ltc_bTimeCodeAvailable = false;
+    if (gv_ltc_bTimeCodeAvailable)
+    {
+        gv_ltc_bTimeCodeAvailable = false;
 
-		const auto nFps = TimeCodeConst::FPS[m_LtcTimeCode.nType];
+        const auto kFps = TimeCodeConst::FPS[timecode_.type];
 
-		if (m_bDirection) {
-			m_LtcTimeCode.nFrames++;
-			if (nFps == m_LtcTimeCode.nFrames) {
-				m_LtcTimeCode.nFrames = 0;
+        if (direction_)
+        {
+            timecode_.frames++;
+            if (kFps == timecode_.frames)
+            {
+                timecode_.frames = 0;
 
-				m_LtcTimeCode.nSeconds++;
-				if (m_LtcTimeCode.nSeconds == 60) {
-					m_LtcTimeCode.nSeconds = 0;
+                timecode_.seconds++;
+                if (timecode_.seconds == 60)
+                {
+                    timecode_.seconds = 0;
 
-					m_LtcTimeCode.nMinutes++;
-					if (m_LtcTimeCode.nMinutes == 60) {
-						m_LtcTimeCode.nMinutes = 0;
+                    timecode_.minutes++;
+                    if (timecode_.minutes == 60)
+                    {
+                        timecode_.minutes = 0;
 
-						m_LtcTimeCode.nHours++;
-						if (m_LtcTimeCode.nHours == 24) {
-							m_LtcTimeCode.nHours = 0;
-						}
-					}
-				}
-			}
-		} else {
-			if (m_LtcTimeCode.nFrames == nFps - 1) {
-				if (m_LtcTimeCode.nSeconds > 0) {
-					m_LtcTimeCode.nSeconds--;
-				} else {
-					m_LtcTimeCode.nSeconds = 59;
-				}
+                        timecode_.hours++;
+                        if (timecode_.hours == 24)
+                        {
+                            timecode_.hours = 0;
+                        }
+                    }
+                }
+            }
+        }
+        else
+        {
+            if (timecode_.frames == kFps - 1)
+            {
+                if (timecode_.seconds > 0)
+                {
+                    timecode_.seconds--;
+                }
+                else
+                {
+                    timecode_.seconds = 59;
+                }
 
-				if (m_LtcTimeCode.nSeconds == 59) {
-					if (m_LtcTimeCode.nMinutes > 0) {
-						m_LtcTimeCode.nMinutes--;
-					} else {
-						m_LtcTimeCode.nMinutes = 59;
-					}
+                if (timecode_.seconds == 59)
+                {
+                    if (timecode_.minutes > 0)
+                    {
+                        timecode_.minutes--;
+                    }
+                    else
+                    {
+                        timecode_.minutes = 59;
+                    }
 
-					if (m_LtcTimeCode.nMinutes == 59) {
-						if (m_LtcTimeCode.nHours > 0) {
-							m_LtcTimeCode.nHours--;
-						} else {
-							m_LtcTimeCode.nHours = 23;
-						}
-					}
-				}
-			}
-		}
+                    if (timecode_.minutes == 59)
+                    {
+                        if (timecode_.hours > 0)
+                        {
+                            timecode_.hours--;
+                        }
+                        else
+                        {
+                            timecode_.hours = 23;
+                        }
+                    }
+                }
+            }
+        }
 
-		Update();
+        Update();
 
- 		if (m_nMtcQfFramesDelta == 2) {
- 			m_nMtcQfFramesDelta = 0;
-#if defined (H3)
- 			H3_TIMER->TMR0_CTRL |= TIMER_CTRL_SINGLE_MODE;
- 			H3_TIMER->TMR0_INTV = TimeCodeConst::TMR_INTV[m_LtcTimeCode.nType];
- 			H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
-#elif defined (GD32)
- 			platform::ltc::timer11_set_type(m_LtcTimeCode.nType);
+        if (mtc_qf_delta_ == 2)
+        {
+            mtc_qf_delta_ = 0;
+#if defined(H3)
+            H3_TIMER->TMR0_CTRL |= TIMER_CTRL_SINGLE_MODE;
+            H3_TIMER->TMR0_INTV = TimeCodeConst::TMR_INTV[timecode_.type];
+            H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
+#elif defined(GD32)
+            platform::ltc::timer11_set_type(timecode_.type);
 #endif
- 		}
-	}
+        }
+    }
 
-	__DMB();
-	if (gv_ltc_nUpdatesPerSecond != 0) {
-		Hardware::Get()->SetMode(hardware::ledblink::Mode::DATA);
-	} else {
-		LtcOutputs::Get()->ShowSysTime();
-		Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
-	}
+    __DMB();
+    if (gv_ltc_nUpdatesPerSecond != 0)
+    {
+        hal::statusled::SetMode(hal::statusled::Mode::DATA);
+    }
+    else
+    {
+        LtcOutputs::Get()->ShowSysTime();
+        hal::statusled::SetMode(hal::statusled::Mode::NORMAL);
+    }
 }

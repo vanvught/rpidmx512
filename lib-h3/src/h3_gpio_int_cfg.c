@@ -31,7 +31,7 @@
 #include "h3_gpio.h"
 #include "h3.h"
 
-void h3_gpio_int_cfg(uint32_t gpio, gpio_int_cfg_t int_cfg) {
+void H3GpioIntCfg(uint32_t gpio, GpioIntCfg_t int_cfg) {
 	const uint32_t number = H3_GPIO_TO_NUMBER(gpio);
 	const uint32_t shift = (number & 0x7) * 4;
 	uint32_t value;

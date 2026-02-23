@@ -25,7 +25,9 @@ ifeq ($(findstring ARTNET_VERSION=4,$(DEFINES)),ARTNET_VERSION=4)
 	endif
 endif
 
-INCLUDES:=-I./include -I../lib-configstore/include -I../lib-hal/include -I../lib-display/include -I../lib-debug/include
+include ../common/make/DmxNodeOutputType.mk
+
+INCLUDES:=-I../common/include -I./include -I../lib-configstore/include -I../lib-hal/include -I../lib-display/include -I../lib-debug/include
 INCLUDES+=$(addprefix -I,$(EXTRA_INCLUDES))
 ifeq ($(findstring CONFIG_DISPLAY_USE_CUSTOM,$(DEFINES)),CONFIG_DISPLAY_USE_CUSTOM)
 	ifneq ($(CONFIG_DISPLAY_LIB),)

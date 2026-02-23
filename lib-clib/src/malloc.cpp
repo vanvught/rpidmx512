@@ -33,258 +33,299 @@
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 
 #ifdef DEBUG_HEAP
-# undef NDEBUG
+#undef NDEBUG
 #endif
 
 #include <cstddef>
 #include <cstdint>
 #ifdef DEBUG_HEAP
-# include <cstdio>
+#include <cstdio>
 #endif
 #include <cassert>
 
-void console_error(const char *);
+namespace console
+{
+void Error(const char*);
+}
+
 void debug_heap();
 
-struct block_header {
-	unsigned int magic;
-	unsigned int size ;
-	struct block_header *next;
-	unsigned char data;
-} PACKED;
+struct BlockHeader
+{
+    unsigned int magic;
+    unsigned int size;
+    struct BlockHeader* next;
+    unsigned char data;
+} __attribute__((packed));
 
-struct block_bucket {
-	unsigned int size;
+struct BlockBucket
+{
+    unsigned int size;
 #ifdef DEBUG_HEAP
-	unsigned int count;
-	unsigned int max_count;
+    unsigned int count;
+    unsigned int max_count;
 #endif
-	struct block_header *free_list;
+    struct BlockHeader* free_list;
 };
 
 extern unsigned char heap_low; /* Defined by the linker */
 extern unsigned char heap_top; /* Defined by the linker */
 
-static unsigned char *next_block = &heap_low;
-static unsigned char *block_limit = &heap_top;
+static unsigned char* next_block = &heap_low;
+static unsigned char* block_limit = &heap_top;
 
-static constexpr unsigned int BLOCK_MAGIC =	0x424C4D43;
+static constexpr unsigned int kBlockMagic = 0x424C4D43;
 
-#if defined (H3)
-# include "h3/malloc.h"
-#elif defined (GD32)
-# include "gd32/malloc.h"
+#if defined(H3)
+#include "h3/malloc.h"
+#elif defined(GD32)
+#include "gd32/malloc.h"
 #else
-# include "rpi/malloc.h"
+#include "rpi/malloc.h"
 #endif
 
-size_t get_allocated(void *p) {
-	if (p == nullptr) {
-		return 0;
-	}
+static size_t GetAllocated(void* p)
+{
+    if (p == nullptr)
+    {
+        return 0;
+    }
 
-	auto *pBlockHeader = reinterpret_cast<struct block_header *>(reinterpret_cast<uintptr_t>(p) - offsetof(block_header, data));
+    auto* block_header = reinterpret_cast<struct BlockHeader*>(reinterpret_cast<uintptr_t>(p) - offsetof(BlockHeader, data));
 
-	assert(pBlockHeader->magic == BLOCK_MAGIC);
+    assert(block_header->magic == kBlockMagic);
 
-	if (pBlockHeader->magic != BLOCK_MAGIC) {
-		return 0;
-	}
+    if (block_header->magic != kBlockMagic)
+    {
+        return 0;
+    }
 
-	return pBlockHeader->size;
+    return block_header->size;
 }
 
-extern "C" {
-void *malloc(size_t size) {
-	struct block_bucket *bucket;
+extern "C"
+{
+    void* malloc(size_t size) //NOLINT
+    {
+        struct BlockBucket* bucket;
 
-	if (size == 0) {
-		return nullptr;
-	}
+        if (size == 0)
+        {
+            return nullptr;
+        }
 
-	for (bucket = s_block_bucket; bucket->size > 0; bucket++) {
-		if (size <= bucket->size) {
-			size = bucket->size;
+        for (bucket = s_block_bucket; bucket->size > 0; bucket++)
+        {
+            if (size <= bucket->size)
+            {
+                size = bucket->size;
 #ifdef DEBUG_HEAP
-			if (++bucket->count > bucket->max_count) {
-				bucket->max_count = bucket->count;
-			}
+                if (++bucket->count > bucket->max_count)
+                {
+                    bucket->max_count = bucket->count;
+                }
 #endif
-			break;
-		}
-	}
+                break;
+            }
+        }
 
-	struct block_header *header;
+        struct BlockHeader* header;
 
-	if (bucket->size > 0 && (header = bucket->free_list) != nullptr) {
-		assert(header->magic == BLOCK_MAGIC);
-		bucket->free_list = header->next;
-	} else {
-		header = reinterpret_cast<struct block_header *>(next_block);
+        if (bucket->size > 0 && (header = bucket->free_list) != nullptr)
+        {
+            assert(header->magic == kBlockMagic);
+            bucket->free_list = header->next;
+        }
+        else
+        {
+            header = reinterpret_cast<struct BlockHeader*>(next_block);
 
-		const auto t1 = sizeof(struct block_header) + size;
-		const auto t2 = (t1 + 15) & static_cast<size_t>(~15);
+            const auto kT1 = sizeof(struct BlockHeader) + size;
+            const auto kT2 = (kT1 + 15) & static_cast<size_t>(~15);
 
-		auto *next = next_block + t2;
+            auto* next = next_block + kT2;
 
-		assert((reinterpret_cast<uintptr_t>(header) & 3U) == 0);
-		assert((reinterpret_cast<uintptr_t>(next) & 3U) == 0);
+            assert((reinterpret_cast<uintptr_t>(header) & 3U) == 0);
+            assert((reinterpret_cast<uintptr_t>(next) & 3U) == 0);
 
-		if (next > block_limit) {
-			console_error("malloc: out of memory\n");
+            if (next > block_limit)
+            {
+                console::Error("malloc: out of memory");
 #ifdef DEBUG_HEAP
-			debug_heap();
+                debug_heap();
 #endif
-			return nullptr;
-		}
+                return nullptr;
+            }
 
-		next_block = next;
+            next_block = next;
 
-		header->magic = BLOCK_MAGIC;
-		header->size = size;
-	}
+            header->magic = kBlockMagic;
+            header->size = size;
+        }
 
-	header->next = nullptr;
+        header->next = nullptr;
 #ifdef DEBUG_HEAP
-	printf("malloc(%u): pBlockHeader=%p, size=%u, data=%p\n", size, header, header->size, reinterpret_cast<void *>(&header->data));
-#endif
-
-	assert((reinterpret_cast<uintptr_t>(&header->data) & 3U) == 0);
-	return reinterpret_cast<void *>(&header->data);
-}
-
-void free(void *p) {
-	struct block_bucket *bucket;
-
-	if (p == nullptr) {
-		return;
-	}
-
-	auto *header = reinterpret_cast<struct block_header *>(reinterpret_cast<uintptr_t>(p)  - offsetof(block_header, data));
-
-#ifdef DEBUG_HEAP
-	printf("free: header= %p, p=%p, size=%u\n", header, p, header->size);
+        printf("malloc(%u): pBlockHeader=%p, size=%u, data=%p\n", size, header, header->size, reinterpret_cast<void*>(&header->data));
 #endif
 
-	assert(header->magic == BLOCK_MAGIC);
-	if (header->magic != BLOCK_MAGIC) {
-		return;
-	}
+        assert((reinterpret_cast<uintptr_t>(&header->data) & 3U) == 0);
+        return reinterpret_cast<void*>(&header->data);
+    }
 
-	for (bucket = s_block_bucket; bucket->size > 0; bucket++) {
-		if (header->size == bucket->size) {
-			header->next = bucket->free_list;
-			bucket->free_list = header;
+    void free(void* p) //NOLINT
+    {
+        struct BlockBucket* bucket;
+
+        if (p == nullptr)
+        {
+            return;
+        }
+
+        auto* header = reinterpret_cast<struct BlockHeader*>(reinterpret_cast<uintptr_t>(p) - offsetof(BlockHeader, data));
+
 #ifdef DEBUG_HEAP
-			if (bucket->count > 0) {
-				bucket->count--;
-			}
+        printf("free: header= %p, p=%p, size=%u\n", header, p, header->size);
 #endif
-			break;
-		}
-	}
-}
 
-void *calloc(size_t n, size_t size) {
-	if ((n == 0) || (size == 0)) {
-		return nullptr;
-	}
+        assert(header->magic == kBlockMagic);
+        if (header->magic != kBlockMagic)
+        {
+            return;
+        }
 
-	auto total = n * size;
-	auto *p = malloc(total);
-
-	if (p == nullptr) {
-		return nullptr;
-	}
-
-	assert((reinterpret_cast<uintptr_t>(p) & 3U) == 0);
-
-	auto *dst32 = reinterpret_cast<uint32_t *>(p);
-
-	while (total >= 4) {
-		*dst32++ =  0;
-		total -= 4;
-	}
-
-	auto *dst8 = reinterpret_cast<uint8_t *>(dst32);
-
-	while (total--) {
-		*dst8++ = 0;
-	}
-
-	assert((reinterpret_cast<uintptr_t>(dst8) - reinterpret_cast<uintptr_t>(p)) == (n * size));
-
-	return p;
-}
-
-void *realloc(void *ptr, size_t newsize) {
-	if (ptr == nullptr) {
-		auto *newblk = malloc(newsize);
-		return newblk;
-	}
-
-	if (newsize == 0) {
-		free(ptr);
-		return nullptr;
-	}
-
-	auto nCurrentSize = get_allocated(ptr);
-
-	if (nCurrentSize >= newsize) {
-		return ptr;
-	}
-
-	void *newblk = malloc(newsize);
-
-	if (newblk != nullptr) {
-		assert((reinterpret_cast<uintptr_t>(newblk) & 3U) == 0);
-		assert((reinterpret_cast<uintptr_t>(ptr) & 3U) == 0);
-
-		auto *src32 = reinterpret_cast<const uint32_t *>(ptr);
-		auto *dst32 = reinterpret_cast<uint32_t *>(newblk);
-
-		auto nCount = newsize;
-
-		while (nCount >= 4) {
-			*dst32++ = *src32++;
-			nCount -= 4;
-		}
-
-		auto *src8 = reinterpret_cast<const uint8_t *>(src32);
-		auto *dst8 = reinterpret_cast<uint8_t *>(dst32);
-
-		while (nCount--) {
-			*dst8++ = *src8++;
-		}
-
-		assert((reinterpret_cast<uintptr_t>(dst8) - reinterpret_cast<uintptr_t>(newblk)) == newsize);
-
-		free(ptr);
-	}
-
-	return newblk;
-}
-}
-
-void debug_heap() {
+        for (bucket = s_block_bucket; bucket->size > 0; bucket++)
+        {
+            if (header->size == bucket->size)
+            {
+                header->next = bucket->free_list;
+                bucket->free_list = header;
 #ifdef DEBUG_HEAP
-	printf("next_block = %p\n", next_block);
+                if (bucket->count > 0)
+                {
+                    bucket->count--;
+                }
+#endif
+                break;
+            }
+        }
+    }
 
-	struct block_bucket *pBucket;
+    void* calloc(size_t n, size_t size)//NOLINT
+    {
+        if ((n == 0) || (size == 0))
+        {
+            return nullptr;
+        }
 
-	for (pBucket = s_block_bucket; pBucket->size > 0; pBucket++) {
-		struct block_header *pFreeList = pBucket->free_list;
-		printf("malloc(%d): %d blocks (max %d), FreeList %p (next %p)\n", pBucket->size,  pBucket->count, pBucket->max_count, pFreeList, pFreeList->next);
-		struct block_header *pBlockHeader;
+        auto total = n * size;
+        auto* p = malloc(total);
 
-		auto nFreelistCount = pBucket->max_count - pBucket->count;
+        if (p == nullptr)
+        {
+            return nullptr;
+        }
 
-		if ((pBlockHeader = pBucket->free_list) != nullptr) {
-			while (nFreelistCount-- > 0) {
-				printf("\t %p:%p size %d (next %p)\n", pBlockHeader, reinterpret_cast<void *>(&pBlockHeader->data), pBlockHeader->size, pBlockHeader->next);
-				pBlockHeader = pBlockHeader->next;
-			}
-		}
-	}
+        assert((reinterpret_cast<uintptr_t>(p) & 3U) == 0);
+
+        auto* dst32 = reinterpret_cast<uint32_t*>(p);
+
+        while (total >= 4)
+        {
+            *dst32++ = 0;
+            total -= 4;
+        }
+
+        auto* dst8 = reinterpret_cast<uint8_t*>(dst32);
+
+        while (total--)
+        {
+            *dst8++ = 0;
+        }
+
+        assert((reinterpret_cast<uintptr_t>(dst8) - reinterpret_cast<uintptr_t>(p)) == (n * size));
+
+        return p;
+    }
+
+    void* realloc(void* ptr, size_t newsize) //NOLINT
+    {
+        if (ptr == nullptr)
+        {
+            auto* newblk = malloc(newsize);
+            return newblk;
+        }
+
+        if (newsize == 0)
+        {
+            free(ptr);
+            return nullptr;
+        }
+
+        auto current_size = GetAllocated(ptr);
+
+        if (current_size >= newsize)
+        {
+            return ptr;
+        }
+
+        void* newblk = malloc(newsize);
+
+        if (newblk != nullptr)
+        {
+            assert((reinterpret_cast<uintptr_t>(newblk) & 3U) == 0);
+            assert((reinterpret_cast<uintptr_t>(ptr) & 3U) == 0);
+
+            auto* src32 = reinterpret_cast<const uint32_t*>(ptr);
+            auto* dst32 = reinterpret_cast<uint32_t*>(newblk);
+
+            auto count = newsize;
+
+            while (count >= 4)
+            {
+                *dst32++ = *src32++;
+                count -= 4;
+            }
+
+            auto* src8 = reinterpret_cast<const uint8_t*>(src32);
+            auto* dst8 = reinterpret_cast<uint8_t*>(dst32);
+
+            while (count--)
+            {
+                *dst8++ = *src8++;
+            }
+
+            assert((reinterpret_cast<uintptr_t>(dst8) - reinterpret_cast<uintptr_t>(newblk)) == newsize);
+
+            free(ptr);
+        }
+
+        return newblk;
+    }
+}
+
+void debug_heap()
+{
+#ifdef DEBUG_HEAP
+    printf("next_block = %p\n", next_block);
+
+    struct BlockBucket* bucket;
+
+    for (bucket = s_block_bucket; bucket->size > 0; bucket++)
+    {
+        struct BlockHeader* free_list = bucket->free_list;
+        printf("malloc(%d): %d blocks (max %d), FreeList %p (next %p)\n", bucket->size, bucket->count, bucket->max_count, free_list, free_list->next);
+        struct BlockHeader* block_header;
+
+        auto freelist_count = bucket->max_count - bucket->count;
+
+        if ((block_header = bucket->free_list) != nullptr)
+        {
+            while (freelist_count-- > 0)
+            {
+                printf("\t %p:%p size %d (next %p)\n", block_header, reinterpret_cast<void*>(&block_header->data), block_header->size, block_header->next);
+                block_header = block_header->next;
+            }
+        }
+    }
 #endif
 }

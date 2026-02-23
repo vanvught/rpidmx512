@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,152 +25,118 @@
 
 #include <cstdint>
 
-#include "hardware.h"
+#include "h3/hal_watchdog.h"
 #include "network.h"
-
-#include "net/apps/mdns.h"
-
 #include "displayudf.h"
-#include "displayudfparams.h"
-#include "displayhandler.h"
-
-#include "artnetnode.h"
-#include "artnetparams.h"
-#include "artnetmsgconst.h"
-
+#include "json/displayudfparams.h"
+#include "dmxnodenode.h"
+#include "dmxnodemsgconst.h"
 #include "dmxserial.h"
-#include "dmxserialparams.h"
-
-#include "rdmdeviceparams.h"
+#include "json/dmxserialparams.h"
+#if defined(NODE_RDMNET_LLRP_ONLY)
 #include "rdmnetdevice.h"
-#include "rdmpersonality.h"
+#include "rdmdevice.h"
 #include "rdm_e120.h"
-#include "factorydefaults.h"
-
-#if defined (NODE_SHOWFILE)
-# include "showfile.h"
-# include "showfileparams.h"
 #endif
-
+#if defined(NODE_SHOWFILE)
+#include "showfile.h"
+#endif
 #include "remoteconfig.h"
-#include "remoteconfigparams.h"
-
 #include "flashcodeinstall.h"
 #include "configstore.h"
-
 #include "firmwareversion.h"
 #include "software_version.h"
 
-namespace hal {
-void reboot_handler() {
-	ArtNetNode::Get()->Stop();
+namespace hal
+{
+void RebootHandler()
+{
+    ArtNetNode::Get()->Stop();
 }
-}  // namespace hal
+} // namespace hal
 
-int main() {
-	Hardware hw;
-	DisplayUdf display;
-	ConfigStore configStore;
-	Network nw;
-	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
-	FlashCodeInstall spiFlashInstall;
+int main()
+{
+    hal::Init();
+    DisplayUdf display;
+    ConfigStore config_store;
+    network::Init();
+    FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+    FlashCodeInstall spiflash_install;
 
-	fw.Print("Art-Net 4 Node Serial [UART/SPI/I2C] {1 Universe}");
+    fw.Print("Art-Net 4 Node Serial [UART/SPI/I2C] {1 Universe}");
 
-	ArtNetNode node;
-	
-	ArtNetParams artnetParams;
-	artnetParams.Load();
-	artnetParams.Set();
+    DmxSerial dmx_serial;
 
-	const auto portDirection = artnetParams.GetDirection(0);
+    json::DmxSerialParams dmx_serial_params;
+    dmx_serial_params.Load();
+    dmx_serial_params.Set();
 
-	if (portDirection == lightset::PortDir::OUTPUT) {
-		node.SetUniverse(0, lightset::PortDir::OUTPUT, artnetParams.GetUniverse(0));
-	}
+    DmxNodeNode dmx_node_node;
+    dmx_node_node.SetOutput(&dmx_serial);
+    dmx_node_node.Print();
 
-	DmxSerial dmxSerial;
-	DmxSerialParams dmxSerialParams;
-	dmxSerialParams.Load();
-	dmxSerialParams.Set();
+    dmx_serial.Init();
+    dmx_serial.Print();
 
-	node.SetOutput(&dmxSerial);
-	node.Print();
+#if defined(NODE_SHOWFILE)
+    ShowFile showfile;
 
-	dmxSerial.Init();
-	dmxSerial.Print();
+    {
+    }
 
-#if defined (NODE_SHOWFILE)
-	ShowFile showFile;
-
-	ShowFileParams showFileParams;
-	showFileParams.Load();
-	showFileParams.Set();
-
-	if (showFile.IsAutoStart()) {
-		showFile.Play();
-	}
-
-	showFile.Print();
+    showfile.Print();
 #endif
 
-	display.SetTitle("Art-Net 4 %s", dmxSerial.GetSerialType());
-	display.Set(2, displayudf::Labels::IP);
-	display.Set(3, displayudf::Labels::VERSION);
-	display.Set(4, displayudf::Labels::UNIVERSE_PORT_A);
-	display.Set(5, displayudf::Labels::HOSTNAME);
+    display.SetTitle("Art-Net 4 %s", dmx_serial.GetType());
+    display.Set(2, displayudf::Labels::kIp);
+    display.Set(3, displayudf::Labels::kVersion);
+    display.Set(4, displayudf::Labels::kHostname);
 
-	DisplayUdfParams displayUdfParams;
-	displayUdfParams.Load();
-	displayUdfParams.Set(&display);
+    json::DisplayUdfParams displayudf_params;
+    displayudf_params.Load();
+    displayudf_params.SetAndShow();
 
-	display.Show();
+    const auto kFilesCount = dmx_serial.GetFilesCount();
 
-	uint32_t nFilesCount = dmxSerial.GetFilesCount();
-	if (nFilesCount == 0) {
-		display.Printf(7, "No files [SDCard?]");
-	} else {
-		display.Printf(7, "Channel%s: %d", nFilesCount == 1 ?  "" : "s", nFilesCount);
-	}
+    if (kFilesCount == 0)
+    {
+        display.Printf(7, "No files [SDCard?]");
+    }
+    else
+    {
+        display.Printf(7, "Channel%s: %d", kFilesCount == 1 ? "" : "s", kFilesCount);
+    }
 
-	RemoteConfig remoteConfig(remoteconfig::Node::ARTNET, remoteconfig::Output::SERIAL, node.GetActiveOutputPorts());
+    RemoteConfig remote_config(remoteconfig::Output::SERIAL, dmx_node_node.GetActiveOutputPorts());
 
-	RemoteConfigParams remoteConfigParams;
-	remoteConfigParams.Load();
-	remoteConfigParams.Set(&remoteConfig);
+#if defined(NODE_RDMNET_LLRP_ONLY)
+    auto& rdm_device = RdmDevice::Get();
+    rdm_device.SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
+    rdm_device.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
+    rdm_device.Init();
+    rdm_device.Print();
 
-	RDMPersonality *pPersonalities[1] = { new RDMPersonality("RDMNet LLRP device only", static_cast<uint16_t>(0)) };
-	RDMNetDevice llrpOnlyDevice(pPersonalities, 1);
-
-	constexpr char aLabel[] = "Art-Net 4 Serial [UART/SPI/I2C]";
-
-	llrpOnlyDevice.SetLabel(RDM_ROOT_DEVICE, aLabel, (sizeof(aLabel) / sizeof(aLabel[0])) - 1);
-	llrpOnlyDevice.SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
-	llrpOnlyDevice.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
-	llrpOnlyDevice.Init();
-
-	RDMDeviceParams rdmDeviceParams;
-	rdmDeviceParams.Load();
-	rdmDeviceParams.Set(&llrpOnlyDevice);
-
-	llrpOnlyDevice.Print();
-
-	display.TextStatus(ArtNetMsgConst::START, CONSOLE_YELLOW);
-
-	node.Start();
-
-	display.TextStatus(ArtNetMsgConst::STARTED, CONSOLE_GREEN);
-
-	hw.WatchdogInit();
-
-	for (;;) {
-		hw.WatchdogFeed();
-		nw.Run();
-		node.Run();
-#if defined (NODE_SHOWFILE)
-		showFile.Run();
+    RDMNetDevice llrp_only_device;
 #endif
-		display.Run();
-		hw.Run();
-	}
+
+    display.TextStatus(DmxNodeMsgConst::START, console::Colours::kConsoleYellow);
+
+    dmx_node_node.Start();
+
+    display.TextStatus(DmxNodeMsgConst::STARTED, console::Colours::kConsoleGreen);
+
+    hal::WatchdogInit();
+
+    for (;;)
+    {
+        hal::WatchdogFeed();
+        network::Run();
+        dmx_node_node.Run();
+#if defined(NODE_SHOWFILE)
+        showfile.Run();
+#endif
+        display.Run();
+        hal::Run();
+    }
 }

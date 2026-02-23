@@ -26,8 +26,9 @@
 #ifndef L6470DMXCONST_H_
 #define L6470DMXCONST_H_
 
-struct L6470DmxConst {
-	static inline const char FILE_NAME_MOTOR[] = "motor?.txt";
+struct L6470DmxConst
+{
+    static inline const char FILE_NAME_MOTOR[] = "motor?.txt";
 };
 
-#endif /* L6470DMXCONST_H_ */
+#endif  // L6470DMXCONST_H_

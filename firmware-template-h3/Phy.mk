@@ -1,0 +1,6 @@
+$(info "Phy.mk")
+#
+
+PHYOPS=-DPHY_GENERIC=255 -DPHY_TYPE=PHY_GENERIC
+
+$(info $$PHYOPS [${PHYOPS}])

@@ -2,7 +2,7 @@
  * @file dmx_config.h
  *
  */
-/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,21 +31,16 @@
 #if !defined (OUTPUT_DMX_SEND_MULTI)
 # define DMX_MAX_PORTS  1
 #else
-# if !defined(LIGHTSET_PORTS)
+# if !defined(DMXNODE_PORTS)
 #  define DMX_MAX_PORTS 4
 # else
-#  define DMX_MAX_PORTS LIGHTSET_PORTS
+#  define DMX_MAX_PORTS DMXNODE_PORTS
 # endif
 #endif
-
-
 
 namespace dmx::config::max {
 	static const uint32_t PORTS = DMX_MAX_PORTS;
 } // namespace dmx::config::max
-
-
-
 
 namespace dmx::buffer {
 static constexpr auto SIZE = 516;

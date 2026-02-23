@@ -28,38 +28,38 @@
 
 #include "handler.h"
 
-#include "debug.h"
+ #include "firmware/debug/debug_debug.h"
 
 Handler::Handler() {
-	DEBUG_ENTRY
+	DEBUG_ENTRY();
 
-	DEBUG_EXIT
+	DEBUG_EXIT();
 }
 
 Handler::~Handler() {
-	DEBUG_ENTRY
+	DEBUG_ENTRY();
 
-	DEBUG_EXIT
+	DEBUG_EXIT();
 }
 
 void Handler::Blackout() {
-	DEBUG_ENTRY
+	DEBUG_ENTRY();
 
 	puts(">Blackout<");
 
-	DEBUG_EXIT
+	DEBUG_EXIT();
 }
 
 void Handler::Update() {
-	DEBUG_ENTRY
+	DEBUG_ENTRY();
 
 	puts(">Update<");
 
-	DEBUG_EXIT
+	DEBUG_EXIT();
 }
 
 void Handler::Info([[maybe_unused]] int32_t nHandle, [[maybe_unused]] uint32_t nRemoteIp, [[maybe_unused]] uint16_t nPortOutgoing) {
-	DEBUG_ENTRY
+	DEBUG_ENTRY();
 
-	DEBUG_EXIT
+	DEBUG_EXIT();
 }

@@ -2,7 +2,7 @@
  * @file ltcetc.cpp
  *
  */
-/* Copyright (C) 2022-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2022-2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#if defined (DEBUG_LTCETC)
-# undef NDEBUG
+#if defined(DEBUG_LTCETC)
+#undef NDEBUG
 #endif
 
 #include <cstdint>
@@ -33,221 +33,221 @@
 #include <cassert>
 
 #include "ltcetc.h"
-
 #include "network.h"
+#include "core/ip4/igmp.h"
+#include "common/utils/utils_hex.h"
+#include "firmware/debug/debug_dump.h"
+#include "firmware/debug/debug_debug.h"
 
-static constexpr char UDP_TERMINATOR[static_cast<uint32_t>(ltcetc::UdpTerminator::UNDEFINED)][5] = { "None", "CR", "LF", "CRLF" };
+void LtcEtc::Start()
+{
+    if ((config_.destination_ip != 0) && (config_.destination_port != 0))
+    {
+        handle_.destination = network::udp::Begin(config_.destination_port, nullptr);
+    }
 
-namespace ltcetc {
-UdpTerminator get_udp_terminator(const char *pString) {
-	assert(pString != nullptr);
+    if (config_.source_port != 0)
+    {
+        handle_.source = network::udp::Begin(config_.source_port, StaticCallbackFunction);
 
-	for (uint32_t i = 0; i < sizeof(UDP_TERMINATOR)/ sizeof(UDP_TERMINATOR[0]); i++) {
-		if (strcasecmp(pString, UDP_TERMINATOR[i]) == 0) {
-			return static_cast<UdpTerminator>(i);
-		}
-	}
+        if ((handle_.source >= 0) && (config_.source_multicast_ip != 0))
+        {
+            network::igmp::JoinGroup(handle_.source, config_.source_multicast_ip);
+        }
+    }
 
-	return UdpTerminator::UNDEFINED;
+    auto* p = s_sendbuffer;
+    memcpy(p, Udp::kPrefix, sizeof(Udp::kPrefix));
+    p += sizeof(Udp::kPrefix);
+    memcpy(p, Udp::kHeader, sizeof(Udp::kHeader));
+    p += sizeof(Udp::kHeader);
+    p[2] = ' ';
+    p[5] = ' ';
+    p[8] = ' ';
+    p[11] = ' ';
+    p += sizeof(Udp::kTimecode);
+    memcpy(p, Udp::kEnd, sizeof(Udp::kEnd));
+
+    DEBUG_PRINTF("handle_.Destination=%d, handle_.Source=%d", handle_.destination, handle_.source);
 }
 
-const char *get_udp_terminator(const UdpTerminator updTerminator) {
-	if (updTerminator < UdpTerminator::UNDEFINED) {
-		return UDP_TERMINATOR[static_cast<uint32_t>(updTerminator)];
-	}
+void LtcEtc::Send(const midi::Timecode* time_code)
+{
+    if (handle_.destination < 0)
+    {
+        return;
+    }
 
-	return "Undefined";
-}
-}  // namespace ltcetc
+    assert(time_code != nullptr);
 
-void LtcEtc::Start() {
-	if ((m_Config.nDestinationIp != 0) && (m_Config.nDestinationPort != 0)) {
-		m_Handle.Destination = Network::Get()->Begin(m_Config.nDestinationPort);
-	}
+    auto* p = &s_sendbuffer[sizeof(Udp::kPrefix) + sizeof(Udp::kHeader)];
 
-	if (m_Config.nSourcePort != 0) {
-		m_Handle.Source = Network::Get()->Begin(m_Config.nSourcePort, StaticCallbackFunction);
+    const auto kData5 = static_cast<uint8_t>(((time_code->type) & 0x03) << 5) | (time_code->hours & 0x1F);
 
-		if ((m_Handle.Source >= 0) && (m_Config.nSourceMulticastIp != 0)) {
-			Network::Get()->JoinGroup(m_Handle.Source, m_Config.nSourceMulticastIp);
-		}
-	}
+    *p++ = common::hex::ToCharUppercase(kData5 >> 4);
+    *p = common::hex::ToCharUppercase(kData5 & 0x0F);
+    p += 2;
+    *p++ = common::hex::ToCharUppercase(time_code->minutes >> 4);
+    *p = common::hex::ToCharUppercase(time_code->minutes & 0x0F);
+    p += 2;
+    *p++ = common::hex::ToCharUppercase(time_code->seconds >> 4);
+    *p = common::hex::ToCharUppercase(time_code->seconds & 0x0F);
+    p += 2;
+    *p++ = common::hex::ToCharUppercase(time_code->frames >> 4);
+    *p = common::hex::ToCharUppercase(time_code->frames & 0x0F);
 
-	auto *p = s_SendBuffer;
-	memcpy(p, Udp::PREFIX, sizeof(Udp::PREFIX));
-	p += sizeof(Udp::PREFIX);
-	memcpy(p, Udp::HEADER, sizeof(Udp::HEADER));
-	p += sizeof(Udp::HEADER);
-	p[2] = ' ';
-	p[5] = ' ';
-	p[8] = ' ';
-	p[11] = ' ';
-	p += sizeof(Udp::TIMECODE);
-	memcpy(p, Udp::END, sizeof(Udp::END));
+    auto length = Udp::kMinMsgLength;
 
-	DEBUG_PRINTF("m_Handle.Destination=%d, m_Handle.Source=%d", m_Handle.Destination, m_Handle.Source);
-}
+    switch (config_.terminator)
+    {
+        case ltcetc::UdpTerminator::kCr:
+            s_sendbuffer[Udp::kMinMsgLength] = 0x0D;
+            length++;
+            break;
+        case ltcetc::UdpTerminator::kLf:
+            s_sendbuffer[Udp::kMinMsgLength] = 0x0A;
+            length++;
+            break;
+        case ltcetc::UdpTerminator::kCrlf:
+            s_sendbuffer[Udp::kMinMsgLength] = 0x0D;
+            s_sendbuffer[Udp::kMinMsgLength + 1] = 0x0A;
+            length = static_cast<uint16_t>(length + 2);
+            break;
+        default:
+            break;
+    }
 
-#define TO_HEX(i)	static_cast<char>(((i) < 10) ? '0' + (i) : 'A' + ((i) - 10))
-
-void LtcEtc::Send(const midi::Timecode *pTimeCode) {
-	if (m_Handle.Destination < 0) {
-		return;
-	}
-
-	assert(pTimeCode != nullptr);
-
-	auto *p = &s_SendBuffer[sizeof(Udp::PREFIX) + sizeof(Udp::HEADER)];
-
-	const auto data5  = static_cast<uint8_t>(((pTimeCode->nType) & 0x03) << 5) | (pTimeCode->nHours & 0x1F);
-
-	*p++ = TO_HEX(data5 >> 4);
-	*p = TO_HEX(data5 & 0x0F);
-	p += 2;
-	*p++ = TO_HEX(pTimeCode->nMinutes >> 4);
-	*p = TO_HEX(pTimeCode->nMinutes & 0x0F);
-	p += 2;
-	*p++ = TO_HEX(pTimeCode->nSeconds >> 4);
-	*p = TO_HEX(pTimeCode->nSeconds & 0x0F);
-	p += 2;
-	*p++ = TO_HEX(pTimeCode->nFrames >> 4);
-	*p = TO_HEX(pTimeCode->nFrames & 0x0F);
-
-	uint16_t nLength = Udp::MIN_MSG_LENGTH;
-
-	switch (m_Config.terminator) {
-		case ltcetc::UdpTerminator::CR:
-			s_SendBuffer[Udp::MIN_MSG_LENGTH] = 0x0D;
-			nLength++;
-			break;
-		case ltcetc::UdpTerminator::LF:
-			s_SendBuffer[Udp::MIN_MSG_LENGTH] = 0x0A;
-			nLength++;
-			break;
-		case ltcetc::UdpTerminator::CRLF:
-			s_SendBuffer[Udp::MIN_MSG_LENGTH] = 0x0D;
-			s_SendBuffer[Udp::MIN_MSG_LENGTH + 1] = 0x0A;
-			nLength = static_cast<uint16_t>(nLength + 2);
-			break;
-		default:
-			break;
-	}
-
-	Network::Get()->SendTo(m_Handle.Destination, s_SendBuffer, nLength, m_Config.nDestinationIp, m_Config.nDestinationPort);
+    network::udp::Send(handle_.destination, reinterpret_cast<const uint8_t*>(s_sendbuffer), length, config_.destination_ip, config_.destination_port);
 
 #ifndef NDEBUG
-	debug_dump(s_SendBuffer, nLength);
+    debug::Dump(s_sendbuffer, length);
 #endif
 }
 
-/**
- * @brief Processes an incoming UDP packet.
- *
- * @param pBuffer Pointer to the packet buffer.
- * @param nSize Size of the packet buffer.
- * @param nFromIp IP address of the sender.
- * @param nFromPort Port number of the sender.
- */
-void LtcEtc::Input(const uint8_t *pBuffer, uint32_t nSize, [[maybe_unused]] uint32_t nFromIp, [[maybe_unused]] uint16_t nFromPort) {
-	m_pUdpBuffer = reinterpret_cast<const char *>(pBuffer);
+void LtcEtc::Input(const uint8_t* buffer, uint32_t size, [[maybe_unused]] uint32_t from_ip, [[maybe_unused]] uint16_t from_port)
+{
+    udp_buffer_ = reinterpret_cast<const char*>(buffer);
 #ifndef NDEBUG
-	debug_dump(m_pUdpBuffer, nSize);
+    debug::Dump(udp_buffer_, size);
 #endif
 
-	if (nSize == Udp::MIN_MSG_LENGTH) {
-		if (m_Config.terminator != ltcetc::UdpTerminator::NONE) {
-			return;
-		}
-	}
+    if (size == Udp::kMinMsgLength)
+    {
+        if (config_.terminator != ltcetc::UdpTerminator::kNone)
+        {
+            return;
+        }
+    }
 
-	if (nSize == 1 + Udp::MIN_MSG_LENGTH) {
-		if (m_Config.terminator == ltcetc::UdpTerminator::CRLF) {
-			DEBUG_EXIT
-			return;
-		}
+    if (size == 1 + Udp::kMinMsgLength)
+    {
+        if (config_.terminator == ltcetc::UdpTerminator::kCrlf)
+        {
+            DEBUG_EXIT();
+            return;
+        }
 
-		if ((m_Config.terminator == ltcetc::UdpTerminator::CR) && (m_pUdpBuffer[Udp::MIN_MSG_LENGTH] != 0x0D)) {
-			DEBUG_EXIT
-			return;
-		}
+        if ((config_.terminator == ltcetc::UdpTerminator::kCr) && (udp_buffer_[Udp::kMinMsgLength] != 0x0D))
+        {
+            DEBUG_EXIT();
+            return;
+        }
 
-		if ((m_Config.terminator == ltcetc::UdpTerminator::LF) && (m_pUdpBuffer[Udp::MIN_MSG_LENGTH] != 0x0A)) {
-			DEBUG_EXIT
-			return;
-		}
-	}
+        if ((config_.terminator == ltcetc::UdpTerminator::kLf) && (udp_buffer_[Udp::kMinMsgLength] != 0x0A))
+        {
+            DEBUG_EXIT();
+            return;
+        }
+    }
 
-	if (nSize == 2 + Udp::MIN_MSG_LENGTH) {
-		if (m_Config.terminator != ltcetc::UdpTerminator::CRLF) {
-			DEBUG_EXIT
-			return;
-		}
+    if (size == 2 + Udp::kMinMsgLength)
+    {
+        if (config_.terminator != ltcetc::UdpTerminator::kCrlf)
+        {
+            DEBUG_EXIT();
+            return;
+        }
 
-		if ((m_pUdpBuffer[Udp::MIN_MSG_LENGTH] != 0x0D) || (m_pUdpBuffer[1 + Udp::MIN_MSG_LENGTH] != 0x0A)) {
-			DEBUG_EXIT;
-			return;
-		}
-	}
+        if ((udp_buffer_[Udp::kMinMsgLength] != 0x0D) || (udp_buffer_[1 + Udp::kMinMsgLength] != 0x0A))
+        {
+            DEBUG_EXIT();
+            ;
+            return;
+        }
+    }
 
-	if (memcmp(m_pUdpBuffer, s_SendBuffer, sizeof(Udp::PREFIX) + sizeof(Udp::HEADER)) != 0) {
-		DEBUG_EXIT;
-		return;
-	}
+    if (memcmp(udp_buffer_, s_sendbuffer, sizeof(Udp::kPrefix) + sizeof(Udp::kHeader)) != 0)
+    {
+        DEBUG_EXIT();
+        ;
+        return;
+    }
 
-	ParseTimeCode();
+    ParseTimeCode();
 }
 
-static uint8_t from_hex(const char *pHex) {
-	const auto nLow = (pHex[1] > '9' ? (pHex[1] | 0x20) - 'a' + 10 : pHex[1] - '0');
-	const auto nHigh = (pHex[0] > '9' ? (pHex[0] | 0x20) - 'a' + 10 : pHex[0] - '0');
-	return static_cast<uint8_t>((nHigh << 4) | nLow);
+static uint8_t FromHex(const char* hex)
+{
+    const auto kLow = (hex[1] > '9' ? (hex[1] | 0x20) - 'a' + 10 : hex[1] - '0');
+    const auto kHigh = (hex[0] > '9' ? (hex[0] | 0x20) - 'a' + 10 : hex[0] - '0');
+    return static_cast<uint8_t>((kHigh << 4) | kLow);
 }
 
-void LtcEtc::ParseTimeCode() {
-	if (s_pLtcEtcHandler != nullptr) {
-		midi::Timecode timeCode;
+void LtcEtc::ParseTimeCode()
+{
+    if (handler_ != nullptr)
+    {
+        midi::Timecode time_code;
 
-		auto *p = &m_pUdpBuffer[sizeof(Udp::PREFIX) + sizeof(Udp::HEADER)];
-		auto data = from_hex(p);
+        auto* p = &udp_buffer_[sizeof(Udp::kPrefix) + sizeof(Udp::kHeader)];
+        auto data = FromHex(p);
 
-		timeCode.nHours = data & 0x1F;
-		timeCode.nType = static_cast<uint8_t>(data >> 5);
+        time_code.hours = data & 0x1F;
+        time_code.type = static_cast<uint8_t>(data >> 5);
 
-		p += 3;
+        p += 3;
 
-		timeCode.nMinutes = from_hex(p);
+        time_code.minutes = FromHex(p);
 
-		p += 3;
+        p += 3;
 
-		timeCode.nSeconds = from_hex(p);
+        time_code.seconds = FromHex(p);
 
-		p += 3;
+        p += 3;
 
-		timeCode.nFrames = from_hex(p);
+        time_code.frames = FromHex(p);
 
-		DEBUG_PRINTF("%d:%d:%d:%d.%d", timeCode.nHours, timeCode.nMinutes, timeCode.nSeconds, timeCode.nFrames, timeCode.nType);
+        DEBUG_PRINTF("%d:%d:%d:%d.%d", time_code.hours, time_code.minutes, time_code.seconds, time_code.frames, time_code.type);
 
-		s_pLtcEtcHandler->Handler(&timeCode);
-	}
+        handler_->Handler(&time_code);
+    }
 }
 
-void LtcEtc::Print() {
-	puts("ETC gateway");
+void LtcEtc::Print()
+{
+    puts("ETC gateway");
 
-	if ((m_Config.nDestinationIp != 0) && (m_Config.nDestinationPort != 0)) {
-		printf(" Destination: " IPSTR ":%d\n", IP2STR(m_Config.nDestinationIp), m_Config.nDestinationPort);
-	} else {
-		puts(" No output");
-	}
+    if ((config_.destination_ip != 0) && (config_.destination_port != 0))
+    {
+        printf(" Destination: " IPSTR ":%d\n", IP2STR(config_.destination_ip), config_.destination_port);
+    }
+    else
+    {
+        puts(" No output");
+    }
 
-	if (m_Config.nSourcePort != 0) {
-		printf ("Source port: %d\n", m_Config.nSourcePort);
-		if (m_Config.nSourceMulticastIp != 0) {
-			printf(" Multicast ip: " IPSTR, IP2STR(m_Config.nSourceMulticastIp));
-		}
-	} else {
-		puts(" No input");
-	}
+    if (config_.source_port != 0)
+    {
+        printf("Source port: %d\n", config_.source_port);
+        if (config_.source_multicast_ip != 0)
+        {
+            printf(" Multicast ip: " IPSTR, IP2STR(config_.source_multicast_ip));
+        }
+    }
+    else
+    {
+        puts(" No input");
+    }
 
-	printf(" UDP Termination: %s\n", get_udp_terminator(m_Config.terminator));
+    printf(" UDP Termination: %s\n", ltcetc::GetUdpTerminator(config_.terminator));
 }
