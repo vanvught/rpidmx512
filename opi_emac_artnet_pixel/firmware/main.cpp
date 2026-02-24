@@ -105,7 +105,7 @@ int main() // NOLINT
     ArtNetTriggerHandler artnet_trigger_handler(&pixeldmx);
 
 #if defined(NODE_RDMNET_LLRP_ONLY)
-    auto& rdm_device = RdmDevice::Get();
+    auto& rdm_device =rdm::device::Device::Instance();
     rdm_device.SetProductCategory(E120_PRODUCT_CATEGORY_FIXTURE);
     rdm_device.SetProductDetail(E120_PRODUCT_DETAIL_LED);
     rdm_device.Init();

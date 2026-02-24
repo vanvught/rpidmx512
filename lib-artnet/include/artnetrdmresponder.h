@@ -2,7 +2,7 @@
  * @file artnetrdmresponder.h
  *
  */
-/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2018-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -56,7 +56,7 @@ class ArtNetRdmResponder final : public RDMDeviceResponder, RDMHandler
 
         if (port_index == 0)
         {
-            memcpy(tod, RdmDevice::Get().GetUID(), RDM_UID_SIZE);
+            memcpy(tod, rdm::device::Base::Instance().GetUID(), RDM_UID_SIZE);
         }
         else
         {
@@ -81,7 +81,7 @@ class ArtNetRdmResponder final : public RDMDeviceResponder, RDMHandler
         }
 
 #ifndef NDEBUG
-        rdm::MessagePrintNoStartcode(rdm_data_no_sc);
+        rdm::message::PrintNoStartcode(rdm_data_no_sc);
 #endif
 
         RDMHandler::HandleData(rdm_data_no_sc, reinterpret_cast<uint8_t*>(&s_rdm_command));
@@ -93,7 +93,7 @@ class ArtNetRdmResponder final : public RDMDeviceResponder, RDMHandler
         }
 
 #ifndef NDEBUG
-        rdm::MessagePrint(reinterpret_cast<uint8_t*>(&s_rdm_command));
+        rdm::message::Print(reinterpret_cast<uint8_t*>(&s_rdm_command));
 #endif
 
         DEBUG_EXIT();

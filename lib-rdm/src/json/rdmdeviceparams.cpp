@@ -89,9 +89,9 @@ void RdmDeviceParams::Store(const char* buffer, uint32_t buffer_size)
 void RdmDeviceParams::Set()
 {
     DEBUG_ENTRY();
-    auto& rdmdevice = RdmDevice::Get();
+    auto& rdmdevice = rdm::device::Device::Instance();
 
-    struct rdm::DeviceInfoData info_data = 
+    struct rdm::device::InfoData info_data = 
     {
 		.data = reinterpret_cast<char*>(store_rdmdevice.device_root_label),                                           
 		.length = store_rdmdevice.device_root_label_length

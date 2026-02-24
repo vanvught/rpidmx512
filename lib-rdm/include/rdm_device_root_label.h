@@ -1,8 +1,8 @@
 /**
- * @file dummy_device.cpp
+ * @file rdm_device_root_label.h
  *
  */
-/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,43 +23,38 @@
  * THE SOFTWARE.
  */
 
-#include "hal.h"
-#include "network.h"
-#include "configstore.h"
-#include "firmwareversion.h"
-#include "software_version.h"
-#include "rdmdevice.h"
-#include "rdmnetdevice.h"
+#ifndef RDM_DEVICE_ROOT_LABEL_H_
+#define RDM_DEVICE_ROOT_LABEL_H_
 
-namespace rdm::device::responder
+#if defined(H3)
+#include "h3_board.h"
+#elif defined(GD32)
+#include "gd32_board.h"
+#endif
+
+namespace rdm::device
 {
-void SetFactoryDefaults() {}
-} // namespace rdm::device::responder
+#if defined(CONFIG_RDM_DEVICE_ROOT_LABEL)
+static constexpr char kRootLabel[] = CONFIG_RDM_DEVICE_ROOT_LABEL;
+#else
+#if defined(RDM_RESPONDER)
+#if defined(H3)
+static constexpr char kRootLabel[] = H3_BOARD_NAME " RDM Device";
+#elif defined(GD32)
+static constexpr char kRootLabel[] = GD32_BOARD_NAME " RDM Device";
+#elif defined(RASPPI)
+static constexpr char kRootLabel[] = "Raspberry Pi RDM Device";
+#elif defined(__linux__)
+static constexpr char kRootLabel[] = "Linux RDM Device";
+#elif defined(__APPLE__)
+static constexpr char kRootLabel[] = "MacOS RDM Device";
+#else
+static constexpr char kRootLabel[] = "RDM Device";
+#endif
+#else
+static constexpr char kRootLabel[] = "RDMNet LLRP Only Device";
+#endif
+#endif
+} // namespace rdm::device
 
-int main(int argc, char** argv)
-{
-    hal::Init();
-    ConfigStore config_store;
-    Network nw(argc, argv);
-    FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
-
-    hal::print();
-    fw.Print();
-    nw.Print();
-
-    auto& rdm_device = rdm::device::Device::Instance();
-
-    rdm_device.SetProductCategory(E120_PRODUCT_CATEGORY_FIXTURE);
-    rdm_device.SetProductDetail(E120_PRODUCT_DETAIL_LED);
-    rdm_device.Init();
-    rdm_device.Print();
-
-    RDMNetDevice device;
-	device.Print();
-	
-    for (;;)
-    {
-    }
-
-    return 0;
-}
+#endif // RDM_DEVICE_ROOT_LABEL_H_

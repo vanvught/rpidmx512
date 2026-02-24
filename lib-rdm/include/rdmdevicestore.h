@@ -2,7 +2,7 @@
  * @file rdmdevicestore.h
  *
  */
-/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,17 +30,17 @@
 
 #include "configstore.h"
 #include "configurationstore.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
-namespace rdmdevice_store
+namespace rdm::device::store
 {
 inline void SaveLabel(const char* label, uint32_t length)
 {
-	DEBUG_PRINTF("%.*s", length, label);
+    DEBUG_PRINTF("%.*s", length, label);
 
     ConfigStore::Instance().RdmDeviceUpdateArray(&common::store::RdmDevice::device_root_label, label, length);
     ConfigStore::Instance().RdmDeviceUpdate(&common::store::RdmDevice::device_root_label_length, static_cast<uint8_t>(length));
 }
-} // namespace rdm_device_store
+} // namespace rdm::device::store
 
-#endif  // RDMDEVICESTORE_H_
+#endif // RDMDEVICESTORE_H_

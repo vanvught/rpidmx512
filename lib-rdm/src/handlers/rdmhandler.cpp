@@ -209,7 +209,7 @@ void RDMHandler::CreateRespondMessage(uint8_t nResponseType, uint16_t nReason)
             // Unreachable code: break;
     }
 
-    const auto* const kUid = RdmDevice::Get().GetUID();
+    const auto* const kUid = rdm::device::Base::Instance().GetUID();
 
     for (uint32_t i = 0; i < RDM_UID_SIZE; i++)
     {
@@ -264,10 +264,10 @@ void RDMHandler::HandleData(const uint8_t* pRdmDataIn, uint8_t* pRdmDataOut)
     }
 
 #ifndef NDEBUG
-    rdm::MessagePrintNoStartcode(pRdmDataIn);
+    rdm::message::PrintNoStartcode(pRdmDataIn);
 #endif
 
-    const auto* const kUid = RdmDevice::Get().GetUID();
+    const auto* const kUid = rdm::device::Base::Instance().GetUID();
 
     auto bIsRdmPacketBroadcast = (memcmp(pRdmRequest->destination_uid, UID_ALL, RDM_UID_SIZE) == 0);
     auto bIsRdmPacketForMe = false;
@@ -679,13 +679,13 @@ void RDMHandler::GetDeviceInfo([[maybe_unused]] uint16_t sub_device)
 #if defined(RDM_RESPONDER)
     const auto* const kDeviceInfo = RDMDeviceResponder::Get()->GetDeviceInfo(sub_device);
 #else
-    const auto* const kDeviceInfo = RdmDevice::Get().GetDeviceInfo();
+    const auto* const kDeviceInfo = rdm::device::Device::Instance().GetDeviceInfo();
 #endif
     auto* data_out = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
-    auto* device_info_out = reinterpret_cast<struct rdm::DeviceInfo*>(data_out->param_data);
+    auto* device_info_out = reinterpret_cast<struct rdm::device::Info*>(data_out->param_data);
 
-    data_out->param_data_length = sizeof(struct rdm::DeviceInfo);
-    memcpy(device_info_out, kDeviceInfo, sizeof(struct rdm::DeviceInfo));
+    data_out->param_data_length = sizeof(struct rdm::device::Info);
+    memcpy(device_info_out, kDeviceInfo, sizeof(struct rdm::device::Info));
 
     RespondMessageAck();
 }
@@ -698,7 +698,7 @@ void RDMHandler::GetFactoryDefaults([[maybe_unused]] uint16_t sub_device)
 #if defined(RDM_RESPONDER)
     data_out->param_data[0] = RDMDeviceResponder::Get()->GetFactoryDefaults() ? 1 : 0;
 #else
-    data_out->param_data[0] = RdmDevice::Get().GetFactoryDefaults();
+    data_out->param_data[0] = rdm::device::Device::Instance().GetFactoryDefaults();
 #endif
     RespondMessageAck();
 }
@@ -713,7 +713,7 @@ void RDMHandler::SetFactoryDefaults(bool is_broadcast, [[maybe_unused]] uint16_t
         return;
     }
 
-    RdmDevice::Get().SetFactoryDefaults();
+    rdm::device::Device::Instance().SetFactoryDefaults();
 
     if (is_broadcast)
     {
@@ -729,7 +729,7 @@ void RDMHandler::SetFactoryDefaults(bool is_broadcast, [[maybe_unused]] uint16_t
 #if defined(RDM_RESPONDER)
 void RDMHandler::GetProductDetailIdList([[maybe_unused]] uint16_t sub_device)
 {
-    const auto kProductDetail = RdmDevice::Get().GetProductDetail();
+    const auto kProductDetail = rdm::device::Device::Instance().GetProductDetail();
 
     auto* data_out = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
 
@@ -752,9 +752,9 @@ void RDMHandler::GetDeviceModelDescription([[maybe_unused]] uint16_t sub_device)
 
 void RDMHandler::GetManufacturerLabel([[maybe_unused]] uint16_t sub_device)
 {
-    rdm::DeviceInfoData label;
+    rdm::device::InfoData label;
 
-    RdmDevice::Get().GetManufacturerName(&label);
+    rdm::device::Device::Instance().GetManufacturerName(&label);
 
     HandleString(label.data, label.length);
     RespondMessageAck();
@@ -762,12 +762,12 @@ void RDMHandler::GetManufacturerLabel([[maybe_unused]] uint16_t sub_device)
 
 void RDMHandler::GetDeviceLabel([[maybe_unused]] uint16_t sub_device)
 {
-    rdm::DeviceInfoData label;
+    rdm::device::InfoData label;
 
 #if defined(RDM_RESPONDER)
     RDMDeviceResponder::Get()->GetLabel(sub_device, &label);
 #else
-    RdmDevice::Get().GetLabel(&label);
+    rdm::device::Device::Instance().GetLabel(&label);
 #endif
     HandleString(label.data, label.length);
     RespondMessageAck();
@@ -786,11 +786,11 @@ void RDMHandler::SetDeviceLabel(bool is_broadcast, [[maybe_unused]] uint16_t sub
 #if defined(RDM_RESPONDER)
     RDMDeviceResponder::Get()->SetLabel(sub_device, reinterpret_cast<char*>(&data_in->param_data[0]), data_in->param_data_length);
 #else
-    struct rdm::DeviceInfoData info;
+    struct rdm::device::InfoData info;
     info.data = reinterpret_cast<char*>(&data_in->param_data[0]);
     info.length = data_in->param_data_length;
 
-    RdmDevice::Get().SetLabel(&info);
+    rdm::device::Device::Instance().SetLabel(&info);
 #endif
 
     if (is_broadcast)

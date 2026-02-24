@@ -153,7 +153,7 @@ class RDMSubDevices
     }
 
     // E120_DEVICE_LABEL			0x0082
-    void GetLabel(uint16_t sub_device, struct rdm::DeviceInfoData* info_data)
+    void GetLabel(uint16_t sub_device, struct rdm::device::InfoData* info_data)
     {
         assert((sub_device != 0) && (sub_device <= count_));
         assert(info_data != nullptr);

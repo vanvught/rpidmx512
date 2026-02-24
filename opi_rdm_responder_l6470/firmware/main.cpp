@@ -98,7 +98,7 @@ int main() // NOLINT
         snprintf(description, sizeof(description) - 1, "Sparkfun [%d]", kMotorsConnected);
     }
 	
-	auto& rdm_device = RdmDevice::Get();
+	auto& rdm_device =rdm::device::Device::Instance();
 	rdm_device.SetProductCategory(E120_PRODUCT_CATEGORY_FIXTURE);
 	rdm_device.SetProductDetail(E120_PRODUCT_DETAIL_LED);
 

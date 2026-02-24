@@ -78,7 +78,7 @@ int main(int argc, char** argv)
     dmx_node_node.SetOutput(&monitor);
     dmx_node_node.Print();
 
-    auto& rdm_device = RdmDevice::Get();
+    auto& rdm_device = rdm::device::Device::Instance();
     rdm_device.SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
     rdm_device.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
     rdm_device.Init();

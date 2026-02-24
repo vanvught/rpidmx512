@@ -74,7 +74,7 @@ int main() // NOLINT
     dmxnode_node.SetRdm(static_cast<uint32_t>(0), true);
     dmxnode_node.SetOutput(pca9685_dmx.GetPCA9685DmxSet());
 
-	auto& rdm_device = RdmDevice::Get();
+	auto& rdm_device =rdm::device::Device::Instance();
 	rdm_device.SetProductCategory(E120_PRODUCT_CATEGORY_FIXTURE);
 	rdm_device.SetProductDetail(E120_PRODUCT_DETAIL_LED);
 	rdm_device.Init();

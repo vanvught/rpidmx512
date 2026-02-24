@@ -35,9 +35,9 @@ namespace json::config
 {
 uint32_t GetRdmDevice(char* buffer, uint32_t length)
 {
-    auto& rdmdevice = RdmDevice::Get();
+    auto& rdmdevice = rdm::device::Device::Instance();
 
-    struct rdm::DeviceInfoData info_data;
+    struct rdm::device::InfoData info_data;
     rdmdevice.GetLabel(&info_data);
     char label[RDM_DEVICE_LABEL_MAX_LENGTH + 1];
     memcpy(label, info_data.data, info_data.length);

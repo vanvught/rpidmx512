@@ -58,7 +58,7 @@ void Delay();
 class RDMResponder final : DMXReceiver, public RDMDeviceResponder, RDMHandler
 {
    public:
-    RDMResponder(RDMPersonality** personalities, uint32_t personality_count, uint32_t current_personality = rdm::device::responder::kDefaultCurrentPersonality)
+    RDMResponder(RDMPersonality** personalities, uint32_t personality_count, uint32_t current_personality = RDMDeviceResponder::kDefaultCurrentPersonality)
         : DMXReceiver(personalities[current_personality - 1]->GetDmxNodeOutputType()), RDMDeviceResponder(personalities, personality_count, current_personality)
     {
         assert(s_this == nullptr);
@@ -112,7 +112,7 @@ class RDMResponder final : DMXReceiver, public RDMDeviceResponder, RDMHandler
         }
 
 #ifndef NDEBUG
-        rdm::MessagePrint(rdm_data_in);
+        rdm::message::Print(rdm_data_in);
 #endif
 
         if (rdm_data_in[0] == E120_SC_RDM)
@@ -177,7 +177,7 @@ class RDMResponder final : DMXReceiver, public RDMDeviceResponder, RDMHandler
 #ifndef NDEBUG
         if (length != rdm::responder::kInvalidResponse)
         {
-            rdm::MessagePrint(response);
+            rdm::message::Print(response);
         }
 #endif
 

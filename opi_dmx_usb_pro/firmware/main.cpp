@@ -41,7 +41,7 @@
 #endif
 
 static constexpr char kWidgetModeNames[4][12] ALIGNED = {"DMX_RDM", "DMX", "RDM", "RDM_SNIFFER"};
-static constexpr struct rdm::DeviceInfoData kDeviceLabel ALIGNED = {const_cast<char*>("Orange Pi Zero DMX USB Pro"), 26};
+static constexpr struct rdm::device::InfoData kDeviceLabel ALIGNED = {const_cast<char*>("Orange Pi Zero DMX USB Pro"), 26};
 
 namespace hal
 {
@@ -61,12 +61,12 @@ int main() // NOLINT
     widget_params.Load();
     widget_params.Set();
 
-	auto& rdm_device = RdmDevice::Get();
+	auto& rdm_device = rdm::device::Device::Instance();
 	rdm_device.SetLabel(&kDeviceLabel);
 	rdm_device.Init();
 
-    const auto* rdm_device_uid = rdm_device.GetUID();
-    struct rdm::DeviceInfoData rdm_device_label;
+    const auto* device_uid = rdm::device::Base::Instance().GetUID();
+    struct rdm::device::InfoData rdm_device_label;
     rdm_device.GetLabel(&rdm_device_label);
     const auto kWidgetMode = widget_params.GetMode();
 
@@ -74,8 +74,8 @@ int main() // NOLINT
     printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hal::BoardName(hw_text_length), __DATE__, __TIME__);
     printf("RDM Controller with USB [Compatible with Enttec USB Pro protocol], Widget mode : %d (%s)\n", kWidgetMode,
            kWidgetModeNames[static_cast<uint32_t>(kWidgetMode)]);
-    printf("Device UUID : %.2x%.2x:%.2x%.2x%.2x%.2x, ", rdm_device_uid[0], rdm_device_uid[1], rdm_device_uid[2], rdm_device_uid[3], rdm_device_uid[4],
-           rdm_device_uid[5]);
+    printf("Device UUID : %.2x%.2x:%.2x%.2x%.2x%.2x, ", device_uid[0], device_uid[1], device_uid[2], device_uid[3], device_uid[4],
+           device_uid[5]);
     printf("Label : %.*s\n", static_cast<int>(rdm_device_label.length), reinterpret_cast<const char*>(rdm_device_label.data));
 
     hal::WatchdogInit();

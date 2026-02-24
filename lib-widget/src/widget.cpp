@@ -6,7 +6,7 @@
  * https://wiki.openlighting.org/index.php/USB_Protocol_Extensions
  *
  */
-/* Copyright (C) 2015-2025 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2015-2026 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,20 +43,20 @@
 
 enum
 {
-    GET_WIDGET_PARAMS = 3,                   ///< Get Widget Parameters Request
-    GET_WIDGET_PARAMS_REPLY = 3,             ///< Get Widget Parameters Reply
-    SET_WIDGET_PARAMS = 4,                   ///< Set Widget Parameters Request
-    RECEIVED_DMX_PACKET = 5,                 ///< Received DMX Packet
-    OUTPUT_ONLY_SEND_DMX_PACKET_REQUEST = 6, ///< Output Only Send DMX Packet Request
-    SEND_RDM_PACKET_REQUEST = 7,             ///< Send RDM Packet Request
-    RECEIVE_DMX_ON_CHANGE = 8,               ///< Receive DMX on Change
-    RECEIVED_DMX_COS_TYPE = 9,               ///< Received DMX Change Of State Packet
-    GET_WIDGET_SN_REQUEST = 10,              ///< Get Widget Serial Number Request
-    GET_WIDGET_SN_REPLY = 10,                ///< Get Widget Serial Number Reply
-    SEND_RDM_DISCOVERY_REQUEST = 11,         ///< Send RDM Discovery Request
-    RDM_TIMEOUT = 12,                        ///< https://github.com/OpenLightingProject/ola/blob/master/plugins/usbpro/EnttecUsbProWidget.cpp#L353
-    MANUFACTURER_LABEL = 77,                 ///< https://wiki.openlighting.org/index.php/USB_Protocol_Extensions
-    GET_WIDGET_NAME_LABEL = 78               ///< https://wiki.openlighting.org/index.php/USB_Protocol_Extensions
+    kGetWidgetParams = 3,                    ///< Get Widget Parameters Request
+    kGetWidgetParamsReply = 3,               ///< Get Widget Parameters Reply
+    kSetWidgetParams = 4,                    ///< Set Widget Parameters Request
+    kReceivedDmxPacket = 5,                  ///< Received DMX Packet
+    kOutputOnlySendDmxPacketRequest = 6, ///< Output Only Send DMX Packet Request
+    kSendRdmPacketRequest = 7,             ///< Send RDM Packet Request
+    kReceiveDmxOnChange = 8,               ///< Receive DMX on Change
+    kReceivedDmxCosType = 9,               ///< Received DMX Change Of State Packet
+    kGetWidgetSnRequest = 10,              ///< Get Widget Serial Number Request
+    kGetWidgetSnReply = 10,                ///< Get Widget Serial Number Reply
+    kSendRdmDiscoveryRequest = 11,         ///< Send RDM Discovery Request
+    kRdmTimeout = 12,                        ///< https://github.com/OpenLightingProject/ola/blob/master/plugins/usbpro/EnttecUsbProWidget.cpp#L353
+    kManufacturerLabel = 77,                 ///< https://wiki.openlighting.org/index.php/USB_Protocol_Extensions
+    kGetWidgetNameLabel = 78               ///< https://wiki.openlighting.org/index.php/USB_Protocol_Extensions
 };
 
 Widget::Widget()
@@ -88,7 +88,7 @@ void Widget::GetParamsReply()
 
     TWidgetConfiguration widget_configuration;
     WidgetConfiguration::Get(&widget_configuration);
-    SendMessage(GET_WIDGET_PARAMS_REPLY, reinterpret_cast<uint8_t*>(&widget_configuration), sizeof(struct TWidgetConfiguration));
+    SendMessage(kGetWidgetParamsReply, reinterpret_cast<uint8_t*>(&widget_configuration), sizeof(struct TWidgetConfiguration));
 }
 
 /**
@@ -165,7 +165,7 @@ void Widget::ReceivedDmxPacket()
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kStatus, nullptr);
 #endif
 
-    SendHeader(RECEIVED_DMX_PACKET, static_cast<uint16_t>(kLength + 1));
+    SendHeader(kReceivedDmxPacket, static_cast<uint16_t>(kLength + 1));
     usb_send_byte(0); // DMX Receive status
     SendData(dmx_data_available, static_cast<uint16_t>(kLength));
     SendFooter();
@@ -207,7 +207,7 @@ void Widget::ReceivedRdmPacket()
         WidgetMonitor::Line(widgetmonitor::MonitorLine::kStatus, "RECEIVED_RDM_PACKET SC:0xCC");
 #endif
 
-        SendHeader(RECEIVED_DMX_PACKET, static_cast<uint32_t>(1 + message_length));
+        SendHeader(kReceivedDmxPacket, static_cast<uint32_t>(1 + message_length));
         usb_send_byte(0); // RDM Receive status
         SendData(rdm_data, message_length);
         SendFooter();
@@ -232,7 +232,7 @@ void Widget::ReceivedRdmPacket()
         WidgetMonitor::Line(widgetmonitor::MonitorLine::kStatus, "RECEIVED_RDM_PACKET SC:0xFE");
 #endif
 
-        SendHeader(RECEIVED_DMX_PACKET, static_cast<uint32_t>(1 + message_length));
+        SendHeader(kReceivedDmxPacket, static_cast<uint32_t>(1 + message_length));
         usb_send_byte(0); // RDM Receive status
         SendData(rdm_data, message_length);
         SendFooter();
@@ -407,7 +407,7 @@ void Widget::GetSnReply()
 
     Dmx::SetPortDirection(0, dmx::PortDirection::kInput, false);
 
-    SendMessage(GET_WIDGET_SN_REPLY, RdmDevice::Get().GetSN(), DEVICE_SN_LENGTH);
+    SendMessage(kGetWidgetSnReply, rdm::device::Base::Instance().GetSN(), DEVICE_SN_LENGTH);
 
     Dmx::SetPortDirection(0, dmx::PortDirection::kInput, true);
 
@@ -454,7 +454,7 @@ void Widget::RdmTimeOutMessage()
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kStatus, "RDM_TIMEOUT");
 #endif
 
-    SendHeader(RDM_TIMEOUT, kMessageLength);
+    SendHeader(kRdmTimeout, kMessageLength);
     SendFooter();
 
     is_rdm_discovery_running_ = false;
@@ -474,15 +474,15 @@ void Widget::GetManufacturerReply()
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kStatus, nullptr);
 #endif
 
-    struct rdm::DeviceInfoData manufacturer_name;
-    RdmDevice::Get().GetManufacturerName(&manufacturer_name);
+    struct rdm::device::InfoData manufacturer_name;
+    rdm::device::Device::Instance().GetManufacturerName(&manufacturer_name);
 
-    struct rdm::DeviceInfoData manufacturer_id;
-    RdmDevice::Get().GetManufacturerId(&manufacturer_id);
+    struct rdm::device::InfoData manufacturer_id;
+    rdm::device::Device::Instance().GetManufacturerId(&manufacturer_id);
 
     Dmx::SetPortDirection(0, dmx::PortDirection::kInput, false);
 
-    SendHeader(MANUFACTURER_LABEL, static_cast<uint32_t>(manufacturer_id.length + manufacturer_name.length));
+    SendHeader(kManufacturerLabel, static_cast<uint32_t>(manufacturer_id.length + manufacturer_name.length));
     SendData(reinterpret_cast<uint8_t*>(manufacturer_id.data), manufacturer_id.length);
     SendData(reinterpret_cast<uint8_t*>(manufacturer_name.data), manufacturer_name.length);
     SendFooter();
@@ -505,15 +505,15 @@ void Widget::GetNameReply()
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kStatus, nullptr);
 #endif
 
-    struct rdm::DeviceInfoData widget_label;
-    RdmDevice::Get().GetLabel(&widget_label);
+    struct rdm::device::InfoData widget_label;
+    rdm::device::Device::Instance().GetLabel(&widget_label);
 
     TWidgetConfigurationData widget_type_id;
     WidgetConfiguration::GetTypeId(&widget_type_id);
 
     Dmx::SetPortDirection(0, dmx::PortDirection::kInput, false);
 
-    SendHeader(GET_WIDGET_NAME_LABEL, static_cast<uint32_t>(widget_type_id.length + widget_label.length));
+    SendHeader(kGetWidgetNameLabel, static_cast<uint32_t>(widget_type_id.length + widget_label.length));
     SendData(widget_type_id.data, widget_type_id.length);
     SendData(reinterpret_cast<uint8_t*>(widget_label.data), widget_label.length);
     SendFooter();
@@ -557,31 +557,31 @@ void Widget::ReceiveDataFromHost()
 
             switch (kLabel)
             {
-                case GET_WIDGET_PARAMS:
+                case kGetWidgetParams:
                     GetParamsReply();
                     break;
-                case GET_WIDGET_SN_REQUEST:
+                case kGetWidgetSnRequest:
                     GetSnReply();
                     break;
-                case SET_WIDGET_PARAMS:
+                case kSetWidgetParams:
                     SetParams();
                     break;
-                case GET_WIDGET_NAME_LABEL:
+                case kGetWidgetNameLabel:
                     GetNameReply();
                     break;
-                case MANUFACTURER_LABEL:
+                case kManufacturerLabel:
                     GetManufacturerReply();
                     break;
-                case OUTPUT_ONLY_SEND_DMX_PACKET_REQUEST:
+                case kOutputOnlySendDmxPacketRequest:
                     SendDmxPacketRequestOutputOnly(kDataLength);
                     break;
-                case RECEIVE_DMX_ON_CHANGE:
+                case kReceiveDmxOnChange:
                     ReceiveDmxOnChange();
                     break;
-                case SEND_RDM_PACKET_REQUEST:
+                case kSendRdmPacketRequest:
                     SendRdmPacketRequest(kDataLength);
                     break;
-                case SEND_RDM_DISCOVERY_REQUEST:
+                case kSendRdmDiscoveryRequest:
                     SendRdmDiscoveryRequest(kDataLength);
                     break;
                 default:

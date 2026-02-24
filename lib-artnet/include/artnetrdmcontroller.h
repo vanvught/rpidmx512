@@ -2,7 +2,7 @@
  * @file artnetrdmcontroller.h
  *
  */
-/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2017-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,7 @@
 #include <cassert>
 
 #include "rdmdiscovery.h"
-#include "rdmdevice.h"
+#include "rdm_device_base.h"
 #include "dmxnode.h"
 #include "superloop/softwaretimers.h"
 
@@ -46,7 +46,7 @@ void DiscoveryDone(uint32_t port_index);
 class ArtNetRdmController final : RDMDiscovery
 {
    public:
-    ArtNetRdmController() : RDMDiscovery(RdmDevice::Get().GetUID()) { RdmDevice::Get().Print(); }
+    ArtNetRdmController() : RDMDiscovery(rdm::device::Base::Instance().GetUID()) { rdm::device::Base::Instance().Print(); }
 
     ~ArtNetRdmController() = default;
 

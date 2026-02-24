@@ -84,7 +84,7 @@ public:
 		sub_devices_info_.current_personality = current;
 	}
 
-	void GetLabel(struct rdm::DeviceInfoData* info_data) {
+	void GetLabel(struct rdm::device::InfoData* info_data) {
 		assert(info_data != nullptr);
 
 		info_data->data = sub_devices_info_.label;
