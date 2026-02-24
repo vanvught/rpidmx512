@@ -232,10 +232,10 @@ extern struct ltc::TimeCode g_ltc_LtcTimeCode;
 
 #if defined(H3)
 #define PLATFORM_LTC_ARM
-#include "arm/h3/h3_platform_ltc.h"
+#include "arm/h3/h3_platform_ltc.h" // IWYU pragma: keep
 #elif defined(GD32)
 #define PLATFORM_LTC_ARM
-#include "arm/gd32/gd32_platform_ltc.h"
+#include "arm/gd32/gd32_platform_ltc.h" // IWYU pragma: keep
 #endif
 
-#endif  // LTC_H_
+#endif // LTC_H_

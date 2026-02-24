@@ -2,7 +2,7 @@
  * @file displayeditfps.cpp
  *
  */
-/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,42 +26,18 @@
 #include <cstdint>
 
 #include "displayeditfps.h"
-#include "displayset.h"
+#include "display.h"
 #include "input.h"
 #include "ltc.h"
-#include "display.h"
- #include "firmware/debug/debug_debug.h"
-
-static void KeyLeft(uint8_t& type)
-{
-    if (type > 0)
-    {
-        type--;
-        return;
-    }
-    type = 3;
-}
-
-static void KeyRight(uint8_t& type)
-{
-    if (type < 3)
-    {
-        type++;
-        return;
-    }
-    type = 0;
-}
 
 void DisplayEditFps::HandleKey(int key, uint8_t& type)
 {
-    DEBUG_PRINTF("%d %d", state_, key);
-
-    if (state_ == IDLE)
+    if (state_ == kIdle)
     {
         if (key == input::KEY_ENTER)
         {
-            state_ = EDIT;
-            m_bCursorOn = true;
+            state_ = kEdit;
+            cursor_on_ = true;
         }
     }
     else
@@ -69,8 +45,8 @@ void DisplayEditFps::HandleKey(int key, uint8_t& type)
         switch (key)
         {
             case input::KEY_ESC:
-                state_ = IDLE;
-                m_bCursorOn = false;
+                state_ = kIdle;
+                cursor_on_ = false;
                 break;
             case input::KEY_DOWN:
             case input::KEY_LEFT:
@@ -87,7 +63,7 @@ void DisplayEditFps::HandleKey(int key, uint8_t& type)
 
     Display::Get()->TextLine(2, ltc::get_type(static_cast<ltc::Type>(type)), ltc::timecode::TYPE_MAX_LENGTH);
 
-    if (m_bCursorOn)
+    if (cursor_on_)
     {
         Display::Get()->SetCursor(display::cursor::kOn);
         Display::Get()->SetCursorPos(0, 1);
@@ -96,4 +72,24 @@ void DisplayEditFps::HandleKey(int key, uint8_t& type)
     {
         Display::Get()->SetCursor(display::cursor::kOff);
     }
+}
+
+void DisplayEditFps::KeyLeft(uint8_t& type)
+{
+    if (type > 0)
+    {
+        type--;
+        return;
+    }
+    type = 3;
+}
+
+void DisplayEditFps::KeyRight(uint8_t& type)
+{
+    if (type < 3)
+    {
+        type++;
+        return;
+    }
+    type = 0;
 }

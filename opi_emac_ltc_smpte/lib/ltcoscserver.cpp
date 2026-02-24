@@ -153,6 +153,37 @@ static constexpr uint32_t kInfo = sizeof(cmd::kInfo) - 1;
 static constexpr uint32_t kValueLength = 11;
 static constexpr uint32_t kFpsValueLength = 2;
 
+LtcOscServer::LtcOscServer() : port_incoming_(osc::port::DEFAULT_INCOMING)
+{
+    DEBUG_ENTRY();
+
+    assert(s_this == nullptr);
+    s_this = this;
+
+    path_length_ = static_cast<uint32_t>(snprintf(path_, sizeof(path_) - 1, "/%s/tc/*", network::iface::HostName()) - 1);
+
+    DEBUG_PRINTF("%d [%s]", path_length_, path_);
+    DEBUG_EXIT();
+}
+
+void LtcOscServer::Start()
+{
+    DEBUG_ENTRY();
+
+    assert(handle_ == -1);
+    handle_ = network::udp::Begin(port_incoming_, StaticCallbackFunction);
+    assert(handle_ != -1);
+
+    DEBUG_EXIT();
+}
+
+void LtcOscServer::Print()
+{
+    puts("OSC Server");
+    printf(" Port : %u\n", port_incoming_);
+    printf(" Path : [%s]\n", path_);
+}
+
 void LtcOscServer::Input(const uint8_t* data, uint32_t size, [[maybe_unused]] uint32_t from_ip, [[maybe_unused]] uint16_t from_port)
 {
     if (size <= 4)
