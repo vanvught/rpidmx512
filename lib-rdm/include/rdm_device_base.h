@@ -1,5 +1,5 @@
 /**
- * @file rdm_device_minimum.h
+ * @file rdm_device_base.h
  *
  */
 /* Copyright (C) 2026 by Arjan van Vught mailto:info@gd32-dmx.org

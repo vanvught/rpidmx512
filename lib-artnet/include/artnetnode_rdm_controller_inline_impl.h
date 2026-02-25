@@ -40,7 +40,7 @@ inline uint32_t ArtNetNode::RdmGetUidCount(uint32_t port_index)
 {
     assert(port_index < dmxnode::kMaxPorts);
     
-    return rdm_controller_.GetUidCount(port_index);
+    return rdm_controller_.TodUidCount(port_index);
 }
 
 inline uint32_t ArtNetNode::RdmCopyTod(uint32_t port_index, char* out_buffer, uint32_t out_buffer_size)

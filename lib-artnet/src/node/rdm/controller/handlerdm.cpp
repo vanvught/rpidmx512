@@ -22,6 +22,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+ 
+ #undef NDEBUG
 
 #include <cstring>
 #include <cassert>
@@ -31,7 +33,8 @@
 #include "rdm.h"
 #include "network.h"
 #include "hal_panelled.h"
- #include "firmware/debug/debug_debug.h"
+#include "rdm_discovery.h"
+#include "firmware/debug/debug_debug.h"
 
 namespace artnet::rdm::controller
 {
@@ -40,15 +43,20 @@ void DiscoveryStart(uint32_t port_index)
     auto& artnet = *ArtNetNode::Get();
     artnet.GoodOutputBClear(port_index, artnet::GoodOutputB::kDiscoveryNotRunning);
 }
+} // namespace artnet::rdm::controller
 
-void DiscoveryDone(uint32_t port_index)
+namespace rdm
 {
+template <uint8_t PORTS> void SendTod(uint32_t port_index, [[maybe_unused]] rdm::Discovery<PORTS>& discovery)
+{
+	DEBUG_PRINTF("port_index=%u", port_index);	
     auto& artnet = *ArtNetNode::Get();
     artnet.GoodOutputBClear(port_index, artnet::GoodOutputB::kDiscoveryNotRunning);
     artnet.SendTod(port_index);
     artnet.RestartOutputPort(port_index);
 }
-} // namespace artnet::rdm::controller
+template void SendTod<dmxnode::kMaxPorts>(uint32_t port_index, Discovery<dmxnode::kMaxPorts>& discovery);
+} // namespace rdm
 
 /**
  * ArtTodControl is used to for an Output Gateway to flush its ToD and commence full discovery.
@@ -164,7 +172,7 @@ void ArtNetNode::SendTod(uint32_t port_index)
     tod_data.ProtVerLo = artnet::kProtocolRevision;
     tod_data.RdmVer = 0x01; // Devices that support RDM STANDARD V1.0 set field to 0x01.
 
-    const auto kDiscovered = static_cast<uint8_t>(rdm_controller_.GetUidCount(port_index));
+    const auto kDiscovered = static_cast<uint8_t>(rdm_controller_.TodUidCount(port_index));
 
     /**
      * Physical Port = (BindIndex-1) * ArtPollReply- >NumPortsLo + ArtTodData->Port
@@ -255,8 +263,7 @@ void ArtNetNode::HandleRdm()
 #if (ARTNET_VERSION >= 4)
             if (node_.port[port_index].protocol == artnet::PortProtocol::kSacn)
             {
-                constexpr auto kMask =
-                    artnet::GoodOutput::kOutputIsMerging | artnet::GoodOutput::kDataIsBeingTransmitted | artnet::GoodOutput::kOutputIsSacn;
+                constexpr auto kMask = artnet::GoodOutput::kOutputIsMerging | artnet::GoodOutput::kDataIsBeingTransmitted | artnet::GoodOutput::kOutputIsSacn;
                 output_port_[port_index].is_transmitting = (GetGoodOutput4(port_index) & kMask) != 0;
             }
 #endif
