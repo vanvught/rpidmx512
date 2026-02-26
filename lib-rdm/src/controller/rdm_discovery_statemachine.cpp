@@ -21,8 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
- 
- #undef NDEBUG
+
+#if defined(DEBUG_RDM_DISCOVERY)
+#undef NDEBUG
+#endif
 
 #include <cstdint>
 #include <cstring>
@@ -230,8 +232,8 @@ void StateMachine::SavedState([[maybe_unused]] uint32_t line)
 {
     assert(saved_state_ != state_);
 #ifndef NDEBUG
-    printf("State %s->%s at line %u\n", rdm::discovery::kStateName[static_cast<uint32_t>(state_)], rdm::discovery::kStateName[static_cast<uint32_t>(saved_state_)],
-           line);
+    printf("State %s->%s at line %u\n", rdm::discovery::kStateName[static_cast<uint32_t>(state_)],
+           rdm::discovery::kStateName[static_cast<uint32_t>(saved_state_)], line);
 #endif
     state_ = saved_state_;
 }
@@ -245,8 +247,8 @@ void StateMachine::NewState(rdm::discovery::State state, bool do_state_late_resp
 #ifndef NDEBUG
         assert(static_cast<uint32_t>(state) < sizeof(rdm::discovery::kStateName) / sizeof(rdm::discovery::kStateName[0]));
         printf("State %s->%s [%s] at line %u\n", rdm::discovery::kStateName[static_cast<uint32_t>(state_)],
-               rdm::discovery::kStateName[static_cast<uint32_t>(rdm::discovery::State::kLateResponse)], rdm::discovery::kStateName[static_cast<uint32_t>(state)],
-               line);
+               rdm::discovery::kStateName[static_cast<uint32_t>(rdm::discovery::State::kLateResponse)],
+               rdm::discovery::kStateName[static_cast<uint32_t>(state)], line);
 #endif
         late_response_.micros = hal::Micros();
         saved_state_ = state;

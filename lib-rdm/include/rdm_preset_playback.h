@@ -2,7 +2,7 @@
  * @file rdm_preset_playback.h
  *
  */
-/* Copyright (C) 2022 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2022-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,14 +28,13 @@
 
 #include <cstdint>
 
-namespace rdm {
-namespace preset_playback {
-static constexpr uint16_t OFF = 0x0000;
-static constexpr uint16_t ALL = 0xFFFF;
+namespace rdm::preset_playback
+{
+inline constexpr uint16_t kOff = 0x0000;
+inline constexpr uint16_t kAll = 0xFFFF;
 
-void Get(uint16_t& mode, uint8_t& nLevel);
-bool Set(uint16_t mode, uint8_t nLevel);
-}  // namespace preset_playback
-}  // namespace rdm
+void Get(uint16_t& mode, uint8_t& level);
+bool Set(uint16_t mode, uint8_t level);
+} // namespace rdm::preset_playback
 
 #endif /* RDM_PRESET_PLAYBACK_H_ */

@@ -22,8 +22,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
- 
- #undef NDEBUG
+
+#if defined(DEBUG_ARTNET_RDM)
+#undef NDEBUG
+#endif
 
 #include <cstring>
 #include <cassert>
@@ -36,26 +38,14 @@
 #include "rdm_discovery.h"
 #include "firmware/debug/debug_debug.h"
 
-namespace artnet::rdm::controller
-{
-void DiscoveryStart(uint32_t port_index)
-{
-    auto& artnet = *ArtNetNode::Get();
-    artnet.GoodOutputBClear(port_index, artnet::GoodOutputB::kDiscoveryNotRunning);
-}
-} // namespace artnet::rdm::controller
-
 namespace rdm
 {
-template <uint8_t PORTS> void SendTod(uint32_t port_index, [[maybe_unused]] rdm::Discovery<PORTS>& discovery)
+void Discovery::SendTod(uint32_t port_index, [[maybe_unused]] rdm::Discovery& discovery)
 {
-	DEBUG_PRINTF("port_index=%u", port_index);	
     auto& artnet = *ArtNetNode::Get();
-    artnet.GoodOutputBClear(port_index, artnet::GoodOutputB::kDiscoveryNotRunning);
     artnet.SendTod(port_index);
     artnet.RestartOutputPort(port_index);
 }
-template void SendTod<dmxnode::kMaxPorts>(uint32_t port_index, Discovery<dmxnode::kMaxPorts>& discovery);
 } // namespace rdm
 
 /**
@@ -253,6 +243,11 @@ void ArtNetNode::HandleRdm()
     for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++)
     {
         if (node_.port[port_index].port_address != kPortAddress)
+        {
+            continue;
+        }
+
+        if (rdm_controller_.IsRunning(port_index))
         {
             continue;
         }

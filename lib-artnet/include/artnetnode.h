@@ -270,7 +270,7 @@ class ArtNetNode
     uint32_t RdmCopyTod(uint32_t port_index, char* out_buffer, uint32_t out_buffer_size);
     bool RdmIsRunning(uint32_t port_index);
     bool RdmIsRunning(uint32_t port_index, bool& is_incremental);
-    bool GetRdmDiscovery(uint32_t port_index);
+    bool RdmDiscovery(uint32_t port_index);
 #endif
 
 #if defined(RDM_RESPONDER)

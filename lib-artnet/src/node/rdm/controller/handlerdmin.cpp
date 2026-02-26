@@ -1,7 +1,7 @@
 /**
  * @file handlerdmin.cpp
  */
-/* Copyright (C) 2023-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2023-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,6 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
+#if defined(DEBUG_ARTNET_RDMIN)
+#undef NDEBUG
+#endif
 
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC push_options
@@ -67,8 +71,8 @@ void ArtNetNode::HandleRdmIn()
                     const auto* rdm_message = reinterpret_cast<const struct TRdmMessageNoSc*>(art_rdm->RdmPacket);
 
                     network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(art_rdm),
-                                   ((sizeof(struct artnet::ArtRdm)) - 256) + rdm_message->message_length + 1, input_port_[port_index].destination_ip,
-                                   artnet::kUdpPort);
+                                       ((sizeof(struct artnet::ArtRdm)) - 256) + rdm_message->message_length + 1, input_port_[port_index].destination_ip,
+                                       artnet::kUdpPort);
 
 #if defined(CONFIG_PANELLED_RDM_PORT)
                     hal::panelled::On(hal::panelled::PORT_A_RDM << port_index);
@@ -97,8 +101,8 @@ void ArtNetNode::HandleRdmIn()
                     const auto* rdm_message = reinterpret_cast<const struct TRdmMessageNoSc*>(art_rdm->RdmPacket);
 
                     network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(art_rdm),
-                                   ((sizeof(struct artnet::ArtRdm)) - 256) + rdm_message->message_length + 1, output_port_[port_index].rdm_destination_ip,
-                                   artnet::kUdpPort);
+                                       ((sizeof(struct artnet::ArtRdm)) - 256) + rdm_message->message_length + 1, output_port_[port_index].rdm_destination_ip,
+                                       artnet::kUdpPort);
 
                     output_port_[port_index].rdm_destination_ip = 0;
 

@@ -2,7 +2,7 @@
  * @file artnetnodehandleipprog.cpp
  *
  */
-/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,13 +23,17 @@
  * THE SOFTWARE.
  */
 
+#if defined(DEBUG_ARTNET_IPPROG)
+#undef NDEBUG
+#endif
+
 #include <cstring>
 
 #include "artnet.h"
 #include "artnetnode.h"
 #include "network.h"
 #include "firmware/debug/debug_printbits.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
 static constexpr uint8_t kCommandEnableProgramming = (1U << 7);
 static constexpr uint8_t kCommandEnableDhcp = ((1U << 6) | kCommandEnableProgramming);
@@ -51,13 +55,13 @@ void ArtNetNode::HandleIpProg()
     const auto* const kPArtIpProg = reinterpret_cast<artnet::ArtIpProg*>(receive_buffer_);
     const auto kCommand = kPArtIpProg->command;
     auto* reply = reinterpret_cast<artnet::ArtIpProgReply*>(receive_buffer_);
-    const auto kIsDhcp =  network::iface::Dhcp();
+    const auto kIsDhcp = network::iface::Dhcp();
 
     reply->op_code = static_cast<uint16_t>(artnet::OpCodes::kOpIpprogreply);
 
     if ((kCommand & kCommandEnableDhcp) == kCommandEnableDhcp)
     {
-         network::iface::EnableDhcp();
+        network::iface::EnableDhcp();
     }
 
     if ((kCommand & kCommandSetToDefault) == kCommandSetToDefault)
@@ -83,7 +87,7 @@ void ArtNetNode::HandleIpProg()
         network::SetGatewayIp(ip.u32);
     }
 
-    if ( network::iface::Dhcp())
+    if (network::iface::Dhcp())
     {
         reply->status = (1U << 6);
     }
@@ -94,7 +98,7 @@ void ArtNetNode::HandleIpProg()
 
     reply->spare2 = 0;
 
-    auto is_changed = (kIsDhcp !=  network::iface::Dhcp());
+    auto is_changed = (kIsDhcp != network::iface::Dhcp());
 
     ip.u32 = network::GetPrimaryIp();
     is_changed |= (memcmp(&kPArtIpProg->prog_ip_hi, ip.u8, artnet::kIpSize) != 0);
@@ -116,7 +120,7 @@ void ArtNetNode::HandleIpProg()
     if (is_changed)
     {
         art_poll_reply_.Status2 = static_cast<uint8_t>((art_poll_reply_.Status2 & (~(artnet::Status2::kIpDhcp))) |
-                                                       ( network::iface::Dhcp() ? artnet::Status2::kIpDhcp : artnet::Status2::kIpManualy));
+                                                       (network::iface::Dhcp() ? artnet::Status2::kIpDhcp : artnet::Status2::kIpManualy));
 
         memcpy(art_poll_reply_.IPAddress, &reply->prog_ip_hi, artnet::kIpSize);
 #if (ARTNET_VERSION >= 4)

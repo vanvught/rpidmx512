@@ -155,6 +155,16 @@ void ArtNetNode::ProcessPollReply(uint32_t port_index)
             output_port_[port_index].good_output = good_output;
         }
 #endif
+#if defined(RDM_CONTROLLER)
+        if (rdm_controller_.IsRunning(port_index))
+        {
+            GoodOutputBClear(port_index, artnet::GoodOutputB::kDiscoveryNotRunning);
+        }
+        else
+        {
+            GoodOutputBSet(port_index, artnet::GoodOutputB::kDiscoveryNotRunning);
+        }
+#endif
         art_poll_reply_.GoodOutput[0] = output_port_[port_index].good_output;
         art_poll_reply_.GoodOutputB[0] = output_port_[port_index].good_output_b;
         art_poll_reply_.GoodInput[0] = 0;

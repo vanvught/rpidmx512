@@ -42,7 +42,7 @@ void DiscoveryStart(uint32_t port_index);
 void DiscoveryDone(uint32_t port_index);
 } // namespace artnet::rdm::controller
 
-class ArtNetRdmController final : rdm::Discovery<::dmx::config::max::PORTS>
+class ArtNetRdmController final : rdm::Discovery
 {
    public:
     ArtNetRdmController() { rdm::device::Base::Instance().Print(); }
@@ -56,61 +56,61 @@ class ArtNetRdmController final : rdm::Discovery<::dmx::config::max::PORTS>
 
     void Enable(uint32_t port_index)
     {
-        auto& rdmdiscovery = rdm::Discovery<::dmx::config::max::PORTS>::Instance();
+        auto& rdmdiscovery = rdm::Discovery::Instance();
         rdmdiscovery.Enable(port_index);
     }
 
     void Disable(uint32_t port_index)
     {
-        auto& rdmdiscovery = rdm::Discovery<::dmx::config::max::PORTS>::Instance();
+        auto& rdmdiscovery = rdm::Discovery::Instance();
         rdmdiscovery.Disable(port_index);
     }
 
     bool IsEnabled(uint32_t port_index) const
     {
-        auto& rdmdiscovery = rdm::Discovery<::dmx::config::max::PORTS>::Instance();
+        auto& rdmdiscovery = rdm::Discovery::Instance();
         return rdmdiscovery.IsEnabled(port_index);
     }
 
     void EnableBackground(uint32_t port_index)
     {
-        auto& rdmdiscovery = rdm::Discovery<::dmx::config::max::PORTS>::Instance();
+        auto& rdmdiscovery = rdm::Discovery::Instance();
         rdmdiscovery.EnableBackground(port_index);
     }
 
     void DisableBackground(uint32_t port_index)
     {
-        auto& rdmdiscovery = rdm::Discovery<::dmx::config::max::PORTS>::Instance();
+        auto& rdmdiscovery = rdm::Discovery::Instance();
         rdmdiscovery.DisableBackground(port_index);
     }
 
     bool IsEnabledBackground(uint32_t port_index) const
     {
-        auto& rdmdiscovery = rdm::Discovery<::dmx::config::max::PORTS>::Instance();
+        auto& rdmdiscovery = rdm::Discovery::Instance();
         return rdmdiscovery.IsEnabledBackground(port_index);
     }
 
     void Full(uint32_t port_index)
     {
-        auto& rdmdiscovery = rdm::Discovery<::dmx::config::max::PORTS>::Instance();
+        auto& rdmdiscovery = rdm::Discovery::Instance();
         rdmdiscovery.Full(port_index);
     }
 
     void Incremental(uint32_t port_index)
     {
-        auto& rdmdiscovery = rdm::Discovery<::dmx::config::max::PORTS>::Instance();
+        auto& rdmdiscovery = rdm::Discovery::Instance();
         rdmdiscovery.Incremental(port_index);
     }
 
     void Stop(uint32_t port_index)
     {
-        auto& rdmdiscovery = rdm::Discovery<::dmx::config::max::PORTS>::Instance();
+        auto& rdmdiscovery = rdm::Discovery::Instance();
         rdmdiscovery.Stop(port_index);
     }
 
     bool IsRunning(uint32_t port_index, bool& is_incremental)
     {
-        auto& rdmdiscovery = rdm::Discovery<::dmx::config::max::PORTS>::Instance();
+        auto& rdmdiscovery = rdm::Discovery::Instance();
         return rdmdiscovery.IsRunning(port_index, is_incremental);
     }
 
@@ -123,13 +123,13 @@ class ArtNetRdmController final : rdm::Discovery<::dmx::config::max::PORTS>
 
     void Run()
     {
-        auto& rdmdiscovery = rdm::Discovery<::dmx::config::max::PORTS>::Instance();
+        auto& rdmdiscovery = rdm::Discovery::Instance();
         rdmdiscovery.Run();
     }
 
     uint32_t CopyWorkingQueue(char* out_buffer, uint32_t out_buffer_size)
     {
-        auto& rdmdiscovery = rdm::Discovery<::dmx::config::max::PORTS>::Instance();
+        auto& rdmdiscovery = rdm::Discovery::Instance();
         return rdmdiscovery.CopyWorkingQueue(out_buffer, out_buffer_size);
     }
 
@@ -138,14 +138,14 @@ class ArtNetRdmController final : rdm::Discovery<::dmx::config::max::PORTS>
     uint32_t TodUidCount(uint32_t port_index)
     {
         assert(port_index < dmxnode::kMaxPorts);
-        auto& rdmdiscovery = rdm::Discovery<::dmx::config::max::PORTS>::Instance();
+        auto& rdmdiscovery = rdm::Discovery::Instance();
         return rdmdiscovery.TodUidCount(port_index);
     }
 
     void TodCopy(uint32_t port_index, uint8_t* tod)
     {
         assert(port_index < dmxnode::kMaxPorts);
-        auto& rdmdiscovery = rdm::Discovery<::dmx::config::max::PORTS>::Instance();
+        auto& rdmdiscovery = rdm::Discovery::Instance();
         rdmdiscovery.TodCopy(port_index, tod);
     }
 
@@ -183,13 +183,13 @@ class ArtNetRdmController final : rdm::Discovery<::dmx::config::max::PORTS>
     void TodReset(uint32_t port_index)
     {
         assert(port_index < dmxnode::kMaxPorts);
-        auto& rdmdiscovery = rdm::Discovery<::dmx::config::max::PORTS>::Instance();
+        auto& rdmdiscovery = rdm::Discovery::Instance();
         rdmdiscovery.TodReset(port_index);
     }
 
     bool TodAddUid(uint32_t port_index, const uint8_t* uid)
     {
-        auto& rdmdiscovery = rdm::Discovery<::dmx::config::max::PORTS>::Instance();
+        auto& rdmdiscovery = rdm::Discovery::Instance();
         return rdmdiscovery.TodAddUid(port_index, uid);
     }
 
@@ -198,22 +198,16 @@ class ArtNetRdmController final : rdm::Discovery<::dmx::config::max::PORTS>
     bool CopyTodEntry(uint32_t port_index, uint32_t index, uint8_t uid[RDM_UID_SIZE])
     {
         assert(port_index < dmxnode::kMaxPorts);
-        auto& rdmdiscovery = rdm::Discovery<::dmx::config::max::PORTS>::Instance();
+        auto& rdmdiscovery = rdm::Discovery::Instance();
         return rdmdiscovery.TodCopyUidEntry(port_index, index, uid);
     }
 
     void TodDump(uint32_t port_index)
     {
         assert(port_index < dmxnode::kMaxPorts);
-        auto& rdmdiscovery = rdm::Discovery<::dmx::config::max::PORTS>::Instance();
+        auto& rdmdiscovery = rdm::Discovery::Instance();
         rdmdiscovery.TodDump(port_index);
     }
-
-    //   rdm::Tod* GetTod(uint32_t port_index)
-    //  {
-    //     assert(port_index < dmxnode::kMaxPorts);
-    // return &s_tod[port_index];
-    // }
 
    private:
     static ArtNetRdmController& Instance()

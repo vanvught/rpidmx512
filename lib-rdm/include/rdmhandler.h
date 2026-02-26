@@ -93,13 +93,13 @@ class RDMHandler {
 public:
 	explicit RDMHandler(bool rdm = true);
 
-	void HandleData(const uint8_t *pRdmDataIn, uint8_t *pRdmDataOut);
+	void HandleData(const uint8_t *data_in, uint8_t *data_out);
 
 private:
-	void CreateRespondMessage(const uint8_t nResponseType, const uint16_t nReason);
+	void CreateRespondMessage(uint8_t nResponseType, uint16_t reason);
 	void RespondMessageAck();
-	void RespondMessageNack(const uint16_t nReason);
-	void HandleString(const char *pString, const uint32_t nLength);
+	void RespondMessageNack(uint16_t reason);
+	void HandleString(const char *pString, uint32_t length);
 	void Handlers(bool bIsBroadcast, uint8_t nCommandClass, uint16_t nParamId, uint8_t nParamDataLength, uint16_t subdevice);
 
 	// Get

@@ -1,6 +1,26 @@
 /**
- * @file discovery.h
+ * @file rdm_discovery.h
  *
+ */
+/* Copyright (C) 2026 by Arjan van Vught mailto:info@gd32-dmx.org
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 
 #ifndef RDM_DISCOVERY_H_
@@ -12,15 +32,17 @@
 
 #include "rdm_discovery_statemachine.h"
 #include "rdm_device_base.h"
-#include "dmxconst.h"
-#include "softwaretimers.h"
+#include "dmx.h"            // IWYU pragma: keep
+#include "softwaretimers.h" // IWYU pragma: keep
 
 namespace rdm
 {
 inline static constexpr uint32_t kBackgroundIntervalMinutes = 1;
 
-template <uint8_t PORTS> class Discovery : rdm::discovery::StateMachine
+class Discovery : rdm::discovery::StateMachine
 {
+    static constexpr auto kPorts = dmx::config::max::PORTS;
+
    public:
     Discovery() : rdm::discovery::StateMachine(rdm::device::Base::Instance().GetUID())
     {
@@ -37,10 +59,10 @@ template <uint8_t PORTS> class Discovery : rdm::discovery::StateMachine
 
     void Enable(uint32_t port_index)
     {
-        assert(port_index < PORTS);
+        assert(port_index < kPorts);
         enabled_ |= (1U << port_index);
 
-        printf("%s: %u -> enabled=%.2x, bg=%.2x, waiting=%.2x, type=%.2x [running_=%d]\n", __FUNCTION__, port_index, enabled_, s_bg_discovery, waiting_, type_,
+        printf("%s: %u -> enabled=%.2x, bg=%.2x, waiting=%.2x, type=%.2x [running=%d]\n", __FUNCTION__, port_index, enabled_, s_bg_discovery, waiting_, type_,
                running_);
     }
 
@@ -48,16 +70,16 @@ template <uint8_t PORTS> class Discovery : rdm::discovery::StateMachine
 
     void Disable(uint32_t port_index)
     {
-        assert(port_index < PORTS);
+        assert(port_index < kPorts);
         enabled_ &= ~(1U << port_index);
 
-        printf("%s: %u -> enabled=%.2x, bg=%.2x, waiting=%.2x, type=%.2x [running_=%d]\n", __FUNCTION__, port_index, enabled_, s_bg_discovery, waiting_, type_,
+        printf("%s: %u -> enabled=%.2x, bg=%.2x, waiting=%.2x, type=%.2x [running=%d]\n", __FUNCTION__, port_index, enabled_, s_bg_discovery, waiting_, type_,
                running_);
     }
 
     void EnableBackground(uint32_t port_index)
     {
-        assert(port_index < PORTS);
+        assert(port_index < kPorts);
         if (((1U << port_index) & enabled_) == (1U << port_index))
         {
             s_bg_discovery |= (1U << port_index);
@@ -69,13 +91,13 @@ template <uint8_t PORTS> class Discovery : rdm::discovery::StateMachine
             printf("s_timer_id=%d\n", s_timer_id);
         }
 
-        printf("%s: %u -> enabled=%.2x, bg=%.2x, waiting=%.2x, type=%.2x [running_=%d]\n", __FUNCTION__, port_index, enabled_, s_bg_discovery, waiting_, type_,
+        printf("%s: %u -> enabled=%.2x, bg=%.2x, waiting=%.2x, type=%.2x [running=%d]\n", __FUNCTION__, port_index, enabled_, s_bg_discovery, waiting_, type_,
                running_);
     }
 
     void DisableBackground(uint32_t port_index)
     {
-        assert(port_index < PORTS);
+        assert(port_index < kPorts);
         if (((1U << port_index) & enabled_) == (1U << port_index))
         {
             s_bg_discovery &= ~(1U << port_index);
@@ -86,7 +108,7 @@ template <uint8_t PORTS> class Discovery : rdm::discovery::StateMachine
             SoftwareTimerDelete(s_timer_id);
         }
 
-        printf("%s: %u -> enabled=%.2x, bg=%.2x, waiting=%.2x, type=%.2x [running_=%d]\n", __FUNCTION__, port_index, enabled_, s_bg_discovery, waiting_, type_,
+        printf("%s: %u -> enabled=%.2x, bg=%.2x, waiting=%.2x, type=%.2x [running=%d]\n", __FUNCTION__, port_index, enabled_, s_bg_discovery, waiting_, type_,
                running_);
     }
 
@@ -94,7 +116,7 @@ template <uint8_t PORTS> class Discovery : rdm::discovery::StateMachine
 
     void Full(uint32_t port_index)
     {
-        assert(port_index < PORTS);
+        assert(port_index < kPorts);
         if (((1U << port_index) & enabled_) == (1U << port_index))
         {
             waiting_ |= (1U << port_index);
@@ -102,13 +124,13 @@ template <uint8_t PORTS> class Discovery : rdm::discovery::StateMachine
             running_ = true;
         }
 
-        printf("%s: %u -> enabled=%.2x, bg=%.2x, waiting=%.2x, type=%.2x [running_=%d]\n", __FUNCTION__, port_index, enabled_, s_bg_discovery, waiting_, type_,
+        printf("%s: %u -> enabled=%.2x, bg=%.2x, waiting=%.2x, type=%.2x [running=%d]\n", __FUNCTION__, port_index, enabled_, s_bg_discovery, waiting_, type_,
                running_);
     }
 
     void Incremental(uint32_t port_index)
     {
-        assert(port_index < PORTS);
+        assert(port_index < kPorts);
         if (((1U << port_index) & enabled_) == (1U << port_index))
         {
             waiting_ |= (1U << port_index);
@@ -116,13 +138,13 @@ template <uint8_t PORTS> class Discovery : rdm::discovery::StateMachine
             running_ = true;
         }
 
-        printf("%s: %u -> enabled=%.2x, bg=%.2x, waiting=%.2x, type=%.2x [running_=%d]\n", __FUNCTION__, port_index, enabled_, s_bg_discovery, waiting_, type_,
+        printf("%s: %u -> enabled=%.2x, bg=%.2x, waiting=%.2x, type=%.2x [running=%d]\n", __FUNCTION__, port_index, enabled_, s_bg_discovery, waiting_, type_,
                running_);
     }
 
     void Stop(uint32_t port_index)
     {
-        assert(port_index < PORTS);
+        assert(port_index < kPorts);
         if (((1U << port_index) & enabled_) == (1U << port_index))
         {
             bool is_incremental;
@@ -137,7 +159,7 @@ template <uint8_t PORTS> class Discovery : rdm::discovery::StateMachine
             }
         }
 
-        printf("%s: %u -> enabled=%.2x, bg=%.2x, waiting=%.2x, type=%.2x [running_=%d]\n", __FUNCTION__, port_index, enabled_, s_bg_discovery, waiting_, type_,
+        printf("%s: %u -> enabled=%.2x, bg=%.2x, waiting=%.2x, type=%.2x [running=%d]\n", __FUNCTION__, port_index, enabled_, s_bg_discovery, waiting_, type_,
                running_);
     }
 
@@ -145,7 +167,7 @@ template <uint8_t PORTS> class Discovery : rdm::discovery::StateMachine
 
     bool IsRunning(uint32_t port_index)
     {
-        assert(port_index < PORTS);
+        assert(port_index < kPorts);
 
         uint32_t portindex;
         bool is_incremental;
@@ -165,7 +187,7 @@ template <uint8_t PORTS> class Discovery : rdm::discovery::StateMachine
         data[2] = type_;
         data[3] = s_bg_discovery;
         data[4] = 0;
-        for (uint32_t port_index = 0; port_index < PORTS; port_index++)
+        for (uint32_t port_index = 0; port_index < kPorts; port_index++)
         {
             data[4] |= (IsRunning(port_index) ? (1U << port_index) : 0);
         }
@@ -210,7 +232,7 @@ template <uint8_t PORTS> class Discovery : rdm::discovery::StateMachine
             else
             {
                 port_index_++;
-                if (port_index_ == PORTS) port_index_ = 0;
+                if (port_index_ == kPorts) port_index_ = 0;
             }
 
             return;
@@ -220,11 +242,11 @@ template <uint8_t PORTS> class Discovery : rdm::discovery::StateMachine
         {
             assert(port_index_ == port_index);
             printf("Finished:%u\n", port_index);
-            SendTod<PORTS>(port_index, *this);
+            SendTod(port_index, *this);
             Dmx::Get()->SetPortDirection(port_index, ::dmx::PortDirection::kOutput, true);
 
             port_index_++;
-            if (port_index_ == PORTS) port_index_ = 0;
+            if (port_index_ == kPorts) port_index_ = 0;
 
             if (waiting_ == 0)
             {
@@ -236,75 +258,77 @@ template <uint8_t PORTS> class Discovery : rdm::discovery::StateMachine
 
     uint32_t TodUidCount(uint32_t port_index)
     {
-        assert(port_index < PORTS);
+        assert(port_index < kPorts);
         return s_tod[port_index].UidCount();
     }
 
     bool TodCopyUidEntry(uint32_t port_index, uint32_t index, uint8_t uid[RDM_UID_SIZE])
     {
-        assert(port_index < PORTS);
+        assert(port_index < kPorts);
         return s_tod[port_index].CopyUidEntry(index, uid);
     }
 
     void TodCopy(uint32_t port_index, uint8_t* tod)
     {
-        assert(port_index < PORTS);
+        assert(port_index < kPorts);
         s_tod[port_index].Copy(tod);
     }
 
     void TodReset(uint32_t port_index)
     {
-        assert(port_index < PORTS);
+        assert(port_index < kPorts);
         s_tod[port_index].Reset();
     }
 
     bool TodAddUid(uint32_t port_index, const uint8_t* uid)
     {
-        assert(port_index < PORTS);
+        assert(port_index < kPorts);
         return s_tod[port_index].AddUid(uid);
     }
-	
-	bool TodExist(uint32_t port_index, const uint8_t* uid)
-	{
-	    assert(port_index < PORTS);
-	    return s_tod[port_index].Exist(uid);
-	}
 
-	const uint8_t* TodNext(uint32_t port_index)
-	{
-	    assert(port_index < PORTS);
-	    return s_tod[port_index].Next();
-	}
-	
-	bool TodIsMuted(uint32_t port_index)
-	{
-	    assert(port_index < PORTS);
-	    return s_tod[port_index].IsMuted();
-	}
-	
-	void TodMute(uint32_t port_index)
-	{
-	    assert(port_index < PORTS);
-	    s_tod[port_index].Mute();
-	}
-	
-	void TodUnMute(uint32_t port_index)
-	{
-	    assert(port_index < PORTS);
-	    s_tod[port_index].UnMute();
-	}
+    bool TodExist(uint32_t port_index, const uint8_t* uid)
+    {
+        assert(port_index < kPorts);
+        return s_tod[port_index].Exist(uid);
+    }
 
-	void TodUnMuteAll(uint32_t port_index)
-	{
-	    assert(port_index < PORTS);
-	    s_tod[port_index].UnMuteAll();
-	}
-		
+    const uint8_t* TodNext(uint32_t port_index)
+    {
+        assert(port_index < kPorts);
+        return s_tod[port_index].Next();
+    }
+
+    bool TodIsMuted(uint32_t port_index)
+    {
+        assert(port_index < kPorts);
+        return s_tod[port_index].IsMuted();
+    }
+
+    void TodMute(uint32_t port_index)
+    {
+        assert(port_index < kPorts);
+        s_tod[port_index].Mute();
+    }
+
+    void TodUnMute(uint32_t port_index)
+    {
+        assert(port_index < kPorts);
+        s_tod[port_index].UnMute();
+    }
+
+    void TodUnMuteAll(uint32_t port_index)
+    {
+        assert(port_index < kPorts);
+        s_tod[port_index].UnMuteAll();
+    }
+
     void TodDump(uint32_t port_index)
     {
-        assert(port_index < PORTS);
+        assert(port_index < kPorts);
         s_tod[port_index].Dump();
     }
+
+    void SendTod(uint32_t port_index, Discovery& discovery);
 
     static Discovery& Instance()
     {
@@ -314,11 +338,11 @@ template <uint8_t PORTS> class Discovery : rdm::discovery::StateMachine
 
     static void TimerBackGround([[maybe_unused]] TimerHandle_t handle)
     {
-        for (uint32_t port_index = 0; port_index < PORTS; port_index++)
+        for (uint32_t port_index = 0; port_index < kPorts; port_index++)
         {
             if (((1U << port_index) & s_bg_discovery) == (1U << port_index))
             {
-                Discovery<PORTS>::Instance().Incremental(port_index);
+                Discovery::Instance().Incremental(port_index);
             }
         }
     }
@@ -331,13 +355,11 @@ template <uint8_t PORTS> class Discovery : rdm::discovery::StateMachine
     bool running_{false};
 
     inline static Discovery* s_this;
-    inline static rdm::Tod s_tod[PORTS];
+    inline static rdm::Tod s_tod[kPorts];
 
     inline static uint8_t s_bg_discovery{0};
     inline static int32_t s_timer_id = -1;
 };
-
-template <uint8_t PORTS> void SendTod(uint32_t port_index, Discovery<PORTS>& discovery);
 } // namespace rdm
 
 #endif // RDM_DISCOVERY_H_

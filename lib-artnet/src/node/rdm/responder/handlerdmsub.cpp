@@ -2,7 +2,7 @@
  * @file handlerdmsub.cpp
  *
  */
-/* Copyright (C) 2023-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2023-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,18 +23,24 @@
  * THE SOFTWARE.
  */
 
+#if defined(DEBUG_ARTNET_RDMSUB)
+#undef NDEBUG
+#endif
+
 #include "artnetnode.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
-void ArtNetNode::HandleRdmSub() {
-	DEBUG_ENTRY();
+void ArtNetNode::HandleRdmSub()
+{
+    DEBUG_ENTRY();
 
-	auto *const kArtRdmSub = reinterpret_cast<artnet::ArtRdmSub *>(receive_buffer_);
+    auto* const kArtRdmSub = reinterpret_cast<artnet::ArtRdmSub*>(receive_buffer_);
 
-	if (kArtRdmSub->rdm_ver != 0x01) {
-		DEBUG_EXIT();
-		return;
-	}
+    if (kArtRdmSub->rdm_ver != 0x01)
+    {
+        DEBUG_EXIT();
+        return;
+    }
 
-	DEBUG_EXIT();
+    DEBUG_EXIT();
 }
