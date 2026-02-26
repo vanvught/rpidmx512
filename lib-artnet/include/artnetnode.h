@@ -226,7 +226,7 @@ class ArtNetNode
     bool GetRdm() const { return state_.is_rdm_enabled; }
 
     void SetRdm(uint32_t port_index, bool enable);
-    bool GetRdm(uint32_t port_index) const;
+    bool Rdm(uint32_t port_index) const;
 
     void SendTod(uint32_t port_index);
 
@@ -266,11 +266,11 @@ class ArtNetNode
 #if defined(RDM_CONTROLLER)
     void SetRdmController(ArtNetRdmController* art_net_rdm_controller, bool do_enable = true);
     uint32_t RdmCopyWorkingQueue(char* out_buffer, uint32_t out_buffer_size);
-    uint32_t RdmGetUidCount(uint32_t port_index);
+    uint32_t RdmTodUidCount(uint32_t port_index);
     uint32_t RdmCopyTod(uint32_t port_index, char* out_buffer, uint32_t out_buffer_size);
     bool RdmIsRunning(uint32_t port_index);
     bool RdmIsRunning(uint32_t port_index, bool& is_incremental);
-    bool RdmDiscovery(uint32_t port_index);
+    bool RdmBgDiscovery(uint32_t port_index);
 #endif
 
 #if defined(RDM_RESPONDER)
@@ -404,10 +404,6 @@ class ArtNetNode
 
     void FailSafeRecord();
     void FailSafePlayback();
-
-#if defined(RDM_CONTROLLER)
-    bool RdmDiscoveryRun();
-#endif
 
     void InputUdp(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port);
 

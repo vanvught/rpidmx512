@@ -118,7 +118,7 @@ inline void SaveShortName(uint32_t port_index, const char* short_name)
         return;
     }
 
-    ConfigStore::Instance().DmxNodeUpdateLabel(&common::store::DmxNode::label, port_index, short_name, artnet::kShortNameLength);
+    ConfigStore::Instance().DmxNodeUpdateLabel(&common::store::DmxNode::label, port_index, short_name, artnet::kPortNameLength);
 
     DEBUG_EXIT();
 }

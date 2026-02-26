@@ -155,8 +155,8 @@ void ArtNetController::GetShortNameDefault(char* short_name)
 #if !defined(ARTNET_SHORT_NAME)
     uint8_t nBoardNameLength;
     const auto* const kBoardName = hal::BoardName(nBoardNameLength);
-    snprintf(short_name, artnet::kShortNameLength - 1, "%s %s %u", kBoardName, artnet::kNodeId, static_cast<unsigned int>(artnet::kVersion));
-    short_name[artnet::kShortNameLength - 1] = '\0';
+    snprintf(short_name, artnet::kPortNameLength - 1, "%s %s %u", kBoardName, artnet::kNodeId, static_cast<unsigned int>(artnet::kVersion));
+    short_name[artnet::kPortNameLength - 1] = '\0';
 #else
     uint32_t i;
 
@@ -182,16 +182,16 @@ void ArtNetController::SetShortName(const char* short_name)
 
     if (short_name == nullptr)
     {
-        GetShortNameDefault(reinterpret_cast<char*>(art_poll_reply_.ShortName));
+        GetShortNameDefault(reinterpret_cast<char*>(art_poll_reply_.port_name));
     }
     else
     {
-        strncpy(reinterpret_cast<char*>(art_poll_reply_.ShortName), short_name, artnet::kShortNameLength - 1);
+        strncpy(reinterpret_cast<char*>(art_poll_reply_.port_name), short_name, artnet::kPortNameLength - 1);
     }
 
-    art_poll_reply_.LongName[artnet::kShortNameLength - 1] = '\0';
+    art_poll_reply_.LongName[artnet::kPortNameLength - 1] = '\0';
 
-    DEBUG_PUTS(reinterpret_cast<char*>(art_poll_reply_.ShortName));
+    DEBUG_PUTS(reinterpret_cast<char*>(art_poll_reply_.port_name));
     DEBUG_EXIT();
 }
 

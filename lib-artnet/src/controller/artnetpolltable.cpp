@@ -372,9 +372,9 @@ void ArtNetPollTable::Add(const struct artnet::ArtPollReply* poll_reply)
                 {
                     table_[i].universes_count++;
                     table_[i].Universe[nIndexUniverse].universe = kUniverse;
-                    const auto* src = poll_reply->ShortName;
+                    const auto* src = poll_reply->port_name;
                     auto* dst = table_[i].Universe[nIndexUniverse].ShortName;
-                    memcpy(dst, src, artnet::kShortNameLength);
+                    memcpy(dst, src, artnet::kPortNameLength);
                     ProcessUniverse(ip.u32, kUniverse);
                 }
                 else

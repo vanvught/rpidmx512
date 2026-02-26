@@ -143,6 +143,18 @@ union uip
 
 void ArtNetNode::ProcessPollReply(uint32_t port_index)
 {
+    // preventing: src/node/artnetnodehandlepoll.cpp:157:36: error: array subscript 2 is above array bounds of 'artnetnode::OutputPort [2]'
+    // [-Werror=array-bounds=]
+    if (__builtin_expect(port_index >= dmxnode::kMaxPorts, 0))
+    {
+#ifndef NDEBUG
+        assert(0 && "port_index >= dmxnode::kMaxPorts");
+        return;
+#else
+        __builtin_unreachable();
+#endif
+    }
+
     if (node_.port[port_index].direction == dmxnode::PortDirection::kOutput)
     {
 #if (ARTNET_VERSION >= 4)
@@ -165,6 +177,7 @@ void ArtNetNode::ProcessPollReply(uint32_t port_index)
             GoodOutputBSet(port_index, artnet::GoodOutputB::kDiscoveryNotRunning);
         }
 #endif
+        art_poll_reply_.PortTypes[0] = artnet::PortType::kOutputArtnet;
         art_poll_reply_.GoodOutput[0] = output_port_[port_index].good_output;
         art_poll_reply_.GoodOutputB[0] = output_port_[port_index].good_output_b;
         art_poll_reply_.GoodInput[0] = 0;
@@ -183,6 +196,7 @@ void ArtNetNode::ProcessPollReply(uint32_t port_index)
             input_port_[port_index].good_input |= artnet::GoodInput::kInputIsSacn;
         }
 #endif
+        art_poll_reply_.PortTypes[0] = artnet::PortType::kInputArtnet;
         art_poll_reply_.GoodOutput[0] = 0;
         art_poll_reply_.GoodOutputB[0] = 0;
         art_poll_reply_.GoodInput[0] = input_port_[port_index].good_input;
@@ -196,6 +210,8 @@ void ArtNetNode::ProcessPollReply(uint32_t port_index)
 
 void ArtNetNode::SendPollReply(uint32_t port_index, uint32_t destination_ip, artnet::ArtPollQueue* queue)
 {
+    assert(port_index < dmxnode::kMaxPorts);
+
     if (node_.port[port_index].direction == dmxnode::PortDirection::kDisable)
     {
         return;
@@ -222,14 +238,9 @@ void ArtNetNode::SendPollReply(uint32_t port_index, uint32_t destination_ip, art
     art_poll_reply_.SubSwitch = node_.port[port_index].sub_switch;
     art_poll_reply_.bind_index = static_cast<uint8_t>(port_index + 1);
     art_poll_reply_.NumPortsLo = 1;
-#if defined(ARTNET_HAVE_DMXIN)
-    art_poll_reply_.PortTypes[0] = artnet::PortType::kOutputArtnet | artnet::PortType::kInputArtnet;
-#else
-    art_poll_reply_.PortTypes[0] = artnet::PortType::kOutputArtnet;
-#endif
 
-    const auto* shortname = DmxNode::Instance().GetShortName(port_index);
-    memcpy(art_poll_reply_.ShortName, shortname, artnet::kShortNameLength);
+    const auto* const kPortName = DmxNode::Instance().GetPortName(port_index);
+    memcpy(art_poll_reply_.port_name, kPortName, artnet::kPortNameLength);
 
     if (__builtin_expect((dmxnode_output_type_ != nullptr), 1))
     {

@@ -2,10 +2,7 @@
  * @file artnet.h
  *
  */
-/**
- * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
- */
-/* Copyright (C) 2016-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2016-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -52,7 +49,7 @@ inline constexpr uint8_t kProtocolRevision = 14;
 inline constexpr uint32_t kPorts = 4;
 inline constexpr uint16_t kUdpPort = 0x1936;
 inline constexpr uint32_t kDmxLength = 512;
-inline constexpr uint32_t kShortNameLength = 18;
+inline constexpr uint32_t kPortNameLength = 18;
 inline constexpr uint32_t kLongNameLength = 64;
 inline constexpr uint32_t kReportLength = 64;
 inline constexpr uint32_t kRdmUidWidth = 6;
@@ -290,8 +287,8 @@ struct Status3
     static constexpr uint8_t kOutputNoSwitch = (0 << 3);               ///< bit 3 = 0 Outputs cannot be switched to an input
     static constexpr uint8_t kOutputSwitch = (1U << 3);                ///< bit 3 = 1 Outputs can be switched to an input
     static constexpr uint8_t kSupportsRdmnet = (1U << 2);              ///< bit 2 = 1 Node supports RDMnet
-    static constexpr uint8_t kSupportsBackgroundqueue = (1U << 1);     ///< bit 1 = 1 BackgroundQueue is supported
-    static constexpr uint8_t kSupportsBackgrounddiscovery = (1U << 0); ///< bit 0 = 1 Programmable background discovery is supported.
+    static constexpr uint8_t kSupportsBackgroundQueue = (1U << 1);     ///< bit 1 = 1 BackgroundQueue is supported
+    static constexpr uint8_t kSupportsBackgroundDiscovery = (1U << 0); ///< bit 0 = 1 Programmable background discovery is supported.
 };
 
 struct Flags
@@ -438,8 +435,8 @@ struct ArtPollReply
     uint8_t Ubea; ///< This field contains the firmware version of the User Bios Extension Area (UBEA). If the UBEA is not programmed, this field contains zero.
     uint8_t Status1;    ///< General Status register
     uint8_t EstaMan[2]; ///< The ESTA manufacturer code. These codes are used to represent equipment manufacturer. They are assigned by ESTA.
-    uint8_t ShortName[artnet::kShortNameLength]; ///< The array represents a null terminated short name for the Node.
-    uint8_t LongName[artnet::kLongNameLength];   ///< The array represents a null terminated long name for the Node.
+    uint8_t port_name[artnet::kPortNameLength]; ///< The array represents a null terminated short name for the Node.
+    uint8_t LongName[artnet::kLongNameLength];  ///< The array represents a null terminated long name for the Node.
     uint8_t NodeReport[artnet::kReportLength]; ///< The array is a textual report of the Node’s operating status or operational errors. It is primarily intended
                                                ///< for ‘engineering’ data rather than ‘end user’ data.
     uint8_t
@@ -534,16 +531,16 @@ struct ArtAddress
         NetSwitch; ///< This value is ignored unless bit 7 is high. Send 0x00 to reset this value to the physical switch setting. Use value 0x7f for no change.
     uint8_t bind_index; ///< The BindIndex defines the bound node which originated this packet and is used to uniquely identify the bound node when identical IP
                         ///< addresses are in use.
-    uint8_t ShortName[artnet::kShortNameLength]; ///< The Node will ignore this value if the string is null.
-    uint8_t LongName[artnet::kLongNameLength];   ///< The Node will ignore this value if the string is null.
+    uint8_t port_name[artnet::kPortNameLength]; ///< The Node will ignore this value if the string is null.
+    uint8_t LongName[artnet::kLongNameLength];  ///< The Node will ignore this value if the string is null.
     uint8_t SwIn[artnet::kPorts];  ///< This value is ignored unless bit 7 is high. Send 0x00 to reset this value to the physical switch setting. Use value 0x7f
                                    ///< for no change.
     uint8_t SwOut[artnet::kPorts]; ///< This value is ignored unless bit 7 is high. Send 0x00 to reset this value to the physical switch setting. Use value 0x7f
                                    ///< for no change.
     uint8_t
         SubSwitch; ///< This value is ignored unless bit 7 is high. Send 0x00 to reset this value to the physical switch setting. Use value 0x7f for no change.
-    uint8_t SwVideo; ///< Reserved
-    uint8_t Command; ///< Node configuration commands \ref TArtnetPortCommand
+    uint8_t acn_priority; ///< sACN Priority. A value of 255 represents no change. Values of 0 to 200 inclusive are valid.
+    uint8_t Command;      ///< Node configuration commands \ref TArtnetPortCommand
 } PACKED;
 
 /**

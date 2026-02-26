@@ -40,7 +40,7 @@ inline constexpr uint32_t POLL_TABLE_SIZE_UNIVERSES = 512;
 
 struct NodeEntryUniverse
 {
-    uint8_t ShortName[artnet::kShortNameLength];
+    uint8_t ShortName[artnet::kPortNameLength];
     uint32_t nLastUpdateMillis;
     uint16_t universe;
 };

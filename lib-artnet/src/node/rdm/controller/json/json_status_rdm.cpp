@@ -37,9 +37,9 @@ static uint32_t PortStatus(char* out_buffer, uint32_t out_buffer_size, uint32_t 
 
     if (kDirection == dmxnode::PortDirection::kOutput)
     {
-        if (ArtNetNode::Get()->GetRdm(port_index))
+        if (ArtNetNode::Get()->Rdm(port_index))
         {
-            if (ArtNetNode::Get()->RdmDiscovery(port_index))
+            if (ArtNetNode::Get()->RdmBgDiscovery(port_index))
             {
                 bool is_incremental;
                 if (ArtNetNode::Get()->RdmIsRunning(port_index, is_incremental))
@@ -63,7 +63,7 @@ static uint32_t PortStatus(char* out_buffer, uint32_t out_buffer_size, uint32_t 
     }
     else if (kDirection == dmxnode::PortDirection::kInput)
     {
-        if (ArtNetNode::Get()->RdmGetUidCount(port_index) != 0)
+        if (ArtNetNode::Get()->RdmTodUidCount(port_index) != 0)
         {
             status = "TOD";
         }

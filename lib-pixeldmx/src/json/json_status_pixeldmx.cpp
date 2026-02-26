@@ -43,7 +43,7 @@ uint32_t PixelDmx(char* out_buffer, uint32_t out_buffer_size)
         length += static_cast<uint32_t>(snprintf(&out_buffer[length], kBufferSize - length, 
         "\"Dmx Output %u\":\"%s\",", 
         i + 1, 
-        DmxNode::Instance().GetShortName(i)));
+        DmxNode::Instance().GetPortName(i)));
     }
 
     out_buffer[length - 1] = '}';

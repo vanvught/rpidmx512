@@ -23,6 +23,10 @@
  * THE SOFTWARE.
  */
 
+#ifdef DEBUG_ARTNET_NODE
+#undef NDEBUG
+#endif
+
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
@@ -177,7 +181,10 @@ void ArtNetNode::Start()
     art_poll_reply_.Status2 |= artnet::Status2::kRdmSwitch;
 #endif
     // Status 3
-    art_poll_reply_.Status3 |= artnet::Status3::kFailsafeControl | artnet::Status3::kSupportsBackgrounddiscovery;
+    art_poll_reply_.Status3 |= artnet::Status3::kFailsafeControl;
+#if defined(RDM_CONTROLLER)
+    art_poll_reply_.Status3 |= artnet::Status3::kSupportsBackgroundDiscovery;
+#endif
 #if defined(ARTNET_HAVE_DMXIN)
     art_poll_reply_.Status3 |= artnet::Status3::kOutputSwitch;
 #endif
@@ -319,7 +326,7 @@ void ArtNetNode::SetShortName(uint32_t port_index, const char* name)
 {
     DmxNode::Instance().SetShortName(port_index, name);
 
-    const auto* label = DmxNode::Instance().GetShortName(port_index);
+    const auto* label = DmxNode::Instance().GetPortName(port_index);
 
     if (state_.status == artnet::Status::kOn)
     {
@@ -331,7 +338,7 @@ void ArtNetNode::SetShortName(uint32_t port_index, const char* name)
 
 const char* ArtNetNode::GetShortName(uint32_t port_index) const
 {
-    return DmxNode::Instance().GetShortName(port_index);
+    return DmxNode::Instance().GetPortName(port_index);
 }
 
 void ArtNetNode::SetLocalMerging()
@@ -719,7 +726,7 @@ void ArtNetNode::Print()
 #if (ARTNET_VERSION >= 4)
                 printf(" %s", artnet::GetProtocolMode(node_.port[port_index].protocol, true));
 #endif
-                printf(" %s\n", GetRdm(port_index) ? "RDM" : "   ");
+                printf(" %s\n", Rdm(port_index) ? "RDM" : "   ");
             }
         }
     }

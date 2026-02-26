@@ -214,7 +214,7 @@ inline void ArtNetNode::SetRdm(uint32_t port_index, bool enable)
     }
 }
 
-inline bool ArtNetNode::GetRdm(uint32_t port_index) const
+inline bool ArtNetNode::Rdm(uint32_t port_index) const
 {
     assert(port_index < dmxnode::kMaxPorts);
     return !((output_port_[port_index].good_output_b & artnet::GoodOutputB::kRdmDisabled) == artnet::GoodOutputB::kRdmDisabled);
@@ -354,7 +354,7 @@ inline void ArtNetNode::Run()
 
             state_.art.poll_reply_port_index++;
 
-            if (state_.art.poll_reply_port_index == dmxnode::kMaxPorts)
+            if (state_.art.poll_reply_port_index >= dmxnode::kMaxPorts)
             {
                 entry.art_poll_millis = 0;
                 state_.art.poll_reply_state = artnetnode::PollReplyState::kWaitingTimeout;
@@ -412,4 +412,4 @@ inline void ArtNetNode::SendDiag([[maybe_unused]] const artnet::PriorityCodes kP
 #endif
 }
 
-#endif  // ARTNETNODE_INLINE_IMPL_H_
+#endif // ARTNETNODE_INLINE_IMPL_H_

@@ -339,7 +339,7 @@ class DmxNode
         port.label[dmxnode::kLabelNameLength - 1] = '\0';
     }
 
-    const char* GetShortName(uint32_t port_index) const
+    const char* GetPortName(uint32_t port_index) const
     {
         assert(port_index < dmxnode::kMaxPorts);
         const auto& port = port_[port_index];

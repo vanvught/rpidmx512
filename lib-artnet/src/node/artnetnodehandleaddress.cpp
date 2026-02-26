@@ -2,7 +2,7 @@
  * @file artnetnodehandleaddress.cpp
  *
  */
-/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,7 +37,7 @@
 #include "dmxnodedata.h"
 #include "dmxnode_data.h"
 #include "hal_statusled.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
 void ArtNetNode::SetSwitch(uint32_t port_index, uint8_t sw)
 {
@@ -71,9 +71,9 @@ void ArtNetNode::HandleAddress()
 
     DEBUG_PRINTF("kPortIndex=%u", kPortIndex);
 
-    if (kArtAddress->ShortName[0] != 0)
+    if (kArtAddress->port_name[0] != 0)
     {
-        SetShortName(kPortIndex, reinterpret_cast<const char*>(kArtAddress->ShortName));
+        SetShortName(kPortIndex, reinterpret_cast<const char*>(kArtAddress->port_name));
         state_.report_code = artnet::ReportCode::kRcshnameok;
     }
 
@@ -138,6 +138,14 @@ void ArtNetNode::HandleAddress()
             }
         }
     }
+
+#if (ARTNET_VERSION >= 4)
+    if ((kArtAddress->acn_priority != 255) && (kArtAddress->acn_priority <= 200))
+    {
+        SetPriority4(kPortIndex, kArtAddress->acn_priority);
+    }
+
+#endif
 
     switch (kArtAddress->Command)
     {
