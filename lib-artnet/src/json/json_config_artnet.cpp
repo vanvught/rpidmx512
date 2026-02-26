@@ -36,7 +36,7 @@ namespace json::config
 {
 uint32_t GetArtNet(char* buffer, uint32_t length)
 {
-    auto* dmx_node = DmxNodeNodeType::Get();
+    [[maybe_unused]] auto* dmx_node = DmxNodeNodeType::Get();
     assert(dmx_node != nullptr);
 
     return json::helpers::Serialize(
