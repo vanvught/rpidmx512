@@ -41,7 +41,7 @@ uint32_t GetArtNet(char* buffer, uint32_t length)
 
     return json::helpers::Serialize(
         buffer, length,
-        [&](JsonDoc& doc)
+        [&]([[maybe_unused]] JsonDoc& doc)
         {
 #if defined(RDM_CONTROLLER) || defined(RDM_RESPONDER)
             doc[json::ArtNetParamsConst::kEnableRdm.name] = dmx_node->GetRdm();
