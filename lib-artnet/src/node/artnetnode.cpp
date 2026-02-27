@@ -509,11 +509,11 @@ void ArtNetNode::SetMergeMode(uint32_t port_index, dmxnode::MergeMode merge_mode
 
     if (merge_mode == dmxnode::MergeMode::kLtp)
     {
-        output_port_[port_index].good_output |= artnet::good_output::kMergeModeLtp;
+        output_port_[port_index].good_output |= artnet::GoodOutput::kMergeModeLtp;
     }
     else
     {
-        output_port_[port_index].good_output &= static_cast<uint8_t>(~artnet::good_output::kMergeModeLtp);
+        output_port_[port_index].good_output &= static_cast<uint8_t>(~artnet::GoodOutput::kMergeModeLtp);
     }
 
 #if (ARTNET_VERSION >= 4)
@@ -715,7 +715,7 @@ void ArtNetNode::Print()
             if (GetDirection(port_index) == dmxnode::PortDirection::kOutput)
             {
                 const auto kUniverse = GetUniverse(port_index);
-                const auto kMergeMode = ((output_port_[port_index].good_output & artnet::good_output::kMergeModeLtp) == artnet::good_output::kMergeModeLtp)
+                const auto kMergeMode = ((output_port_[port_index].good_output & artnet::GoodOutput::kMergeModeLtp) == artnet::GoodOutput::kMergeModeLtp)
                                             ? dmxnode::MergeMode::kLtp
                                             : dmxnode::MergeMode::kHtp;
                 printf("  Port %-2u %-4u %s", static_cast<unsigned int>(port_index), static_cast<unsigned int>(kUniverse),
@@ -965,7 +965,7 @@ void ArtNetNode::UpdateMergeStatus(uint32_t port_index)
         state_.is_changed = true;
     }
 
-    output_port_[port_index].good_output |= artnet::good_output::kOutputIsMerging;
+    output_port_[port_index].good_output |= artnet::GoodOutput::kOutputIsMerging;
 }
 
 void ArtNetNode::CheckMergeTimeouts(uint32_t port_index)
@@ -975,7 +975,7 @@ void ArtNetNode::CheckMergeTimeouts(uint32_t port_index)
     if (kTimeOutAMillis > (artnet::kMergeTimeoutSeconds * 1000U))
     {
         output_port_[port_index].source_a.ip = 0;
-        output_port_[port_index].good_output &= static_cast<uint8_t>(~artnet::good_output::kOutputIsMerging);
+        output_port_[port_index].good_output &= static_cast<uint8_t>(~artnet::GoodOutput::kOutputIsMerging);
     }
 
     const auto kTimeOutBMillis = current_millis_ - output_port_[port_index].source_b.millis;
@@ -983,14 +983,14 @@ void ArtNetNode::CheckMergeTimeouts(uint32_t port_index)
     if (kTimeOutBMillis > (artnet::kMergeTimeoutSeconds * 1000U))
     {
         output_port_[port_index].source_b.ip = 0;
-        output_port_[port_index].good_output &= static_cast<uint8_t>(~artnet::good_output::kOutputIsMerging);
+        output_port_[port_index].good_output &= static_cast<uint8_t>(~artnet::GoodOutput::kOutputIsMerging);
     }
 
     auto is_merging = false;
 
     for (uint32_t i = 0; i < dmxnode::kMaxPorts; i++)
     {
-        is_merging |= ((output_port_[i].good_output & artnet::good_output::kOutputIsMerging) != 0);
+        is_merging |= ((output_port_[i].good_output & artnet::GoodOutput::kOutputIsMerging) != 0);
     }
 
     if (!is_merging)
@@ -1011,7 +1011,7 @@ void ArtNetNode::HandleDmx()
         if ((node_.port[port_index].direction == dmxnode::PortDirection::kOutput) && (node_.port[port_index].protocol == artnet::PortProtocol::kArtnet) &&
             (node_.port[port_index].port_address == kArtDmx->PortAddress))
         {
-            output_port_[port_index].good_output |= artnet::good_output::kDataIsBeingTransmitted;
+            output_port_[port_index].good_output |= artnet::GoodOutput::kDataIsBeingTransmitted;
 
             if (state_.is_merge_mode)
             {
@@ -1023,7 +1023,7 @@ void ArtNetNode::HandleDmx()
 
             const auto kIpA = output_port_[port_index].source_a.ip;
             const auto kIpB = output_port_[port_index].source_b.ip;
-            const auto kMergeMode = ((output_port_[port_index].good_output & artnet::good_output::kMergeModeLtp) == artnet::good_output::kMergeModeLtp)
+            const auto kMergeMode = ((output_port_[port_index].good_output & artnet::GoodOutput::kMergeModeLtp) == artnet::GoodOutput::kMergeModeLtp)
                                         ? dmxnode::MergeMode::kLtp
                                         : dmxnode::MergeMode::kHtp;
 
@@ -1172,7 +1172,7 @@ void ArtNetNode::HandleDmx()
             }
 
             if ((state_.is_synchronous_mode) &&
-                ((output_port_[port_index].good_output & artnet::good_output::kOutputIsMerging) != artnet::good_output::kOutputIsMerging))
+                ((output_port_[port_index].good_output & artnet::GoodOutput::kOutputIsMerging) != artnet::GoodOutput::kOutputIsMerging))
             {
                 dmxnode::DataSet(dmxnode_output_type_, port_index);
                 output_port_[port_index].is_data_pending = true;

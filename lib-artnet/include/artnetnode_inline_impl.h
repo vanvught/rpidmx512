@@ -121,7 +121,7 @@ inline bool ArtNetNode::GetUniverse(uint32_t port_index, uint16_t& universe, dmx
 inline dmxnode::MergeMode ArtNetNode::GetMergeMode(uint32_t port_index) const
 {
     assert(port_index < dmxnode::kMaxPorts);
-    if ((output_port_[port_index].good_output & artnet::good_output::kMergeModeLtp) == artnet::good_output::kMergeModeLtp)
+    if ((output_port_[port_index].good_output & artnet::GoodOutput::kMergeModeLtp) == artnet::GoodOutput::kMergeModeLtp)
     {
         return dmxnode::MergeMode::kLtp;
     }

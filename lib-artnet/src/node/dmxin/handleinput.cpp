@@ -53,11 +53,11 @@ void ArtNetNode::HandleInput()
         {
             if (kArtInput->Input[0] & 0x01)
             {
-                input_port_[kPortIndex].good_input |= static_cast<uint8_t>(artnet::good_input::kDisabled);
+                input_port_[kPortIndex].good_input |= static_cast<uint8_t>(artnet::GoodInput::kDisabled);
             }
             else
             {
-                input_port_[kPortIndex].good_input &= static_cast<uint8_t>(~static_cast<uint8_t>(artnet::good_input::kDisabled));
+                input_port_[kPortIndex].good_input &= static_cast<uint8_t>(~static_cast<uint8_t>(artnet::GoodInput::kDisabled));
             }
 #if (ARTNET_VERSION >= 4) && defined(E131_HAVE_DMXIN)
             E131Bridge::SetInputDisabled(kPortIndex, kArtInput->Input[0] & 0x01);

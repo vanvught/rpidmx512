@@ -305,7 +305,7 @@ struct Flags
                                                                ///<		   TargetPortAddressTop.
 };
 
-struct good_output
+struct GoodOutput
 {
     static constexpr uint8_t kDataIsBeingTransmitted = (1U << 7); ///< bit 7 data is transmitting
     static constexpr uint8_t kIncludesDmxTestPackets = (1U << 6); ///< bit 6 data includes test packets
@@ -330,15 +330,17 @@ struct GoodOutputB
     static constexpr uint8_t kDiscoveryEnabled = (0 << 4);     ///< bit 4 = 0 Background Discovery is enabled.
 };
 
-struct good_input
+struct GoodInput
 {
-    static constexpr uint8_t kDataRecieved = (1U << 7);        ///< bit 7 is data received
-    static constexpr uint8_t kIncludesTestPackets = (1U << 6); ///< bit 6 is data includes test packets
-    static constexpr uint8_t kIncludesSip = (1U << 5);         ///< bit 5 is data includes SIP's
-    static constexpr uint8_t kIncludesText = (1U << 4);        ///< bit 4 is data includes text
-    static constexpr uint8_t kDisabled = (1U << 3);            ///< bit 3 set is input is disabled
-    static constexpr uint8_t kErrors = (1U << 2);              ///< bit 2 is receive errors
-    static constexpr uint8_t kInputIsSacn = (1U << 0);         ///<
+    static constexpr uint8_t kDataRecieved = (1U << 7);        ///< bit 7 Set - Data received.
+    static constexpr uint8_t kIncludesTestPackets = (1U << 6); ///< bit 6 Set – Channel includes DMX512 test packets.
+    static constexpr uint8_t kIncludesSip = (1U << 5);         ///< bit 5 Set – Channel includes DMX512 SIP’s.
+    static constexpr uint8_t kIncludesText = (1U << 4);        ///< bit 4 Set – Channel includes DMX512 text packets.
+    static constexpr uint8_t kDisabled = (1U << 3);            ///< bit 3 Set – Input is disabled.
+    static constexpr uint8_t kErrors = (1U << 2);              ///< bit 2 Set – Receive errors detected.
+    static constexpr uint8_t kUnused = (1U << 1);              ///< bit 1 Unused and transmitted as zero.
+    static constexpr uint8_t kInputIsSacn = (1U << 0);         ///< bit 0 Set – Input is selected to convert to sACN.
+                                                               ///< Clr – Input is selected to convert to Art - Net.
 };
 
 inline const char* GetProtocolMode(artnet::PortProtocol protocol, bool to_upper = false)
@@ -413,14 +415,18 @@ struct ArtPoll
     uint8_t Id[8];    ///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
     uint16_t op_code; ///< The op_code defines the class of data following ArtPoll within this UDP packet. Transmitted low byte first. See \ref TOpCodes for the
                       ///< op_code listing.
-    uint8_t prot_ver_hi;  ///< High byte of the Art-Net protocol revision number.
-    uint8_t prot_ver_lo;  ///< Low byte of the Art-Net protocol revision number. Current value 14.
-    uint8_t Flags;        ///< Set behavior of Node
-    uint8_t DiagPriority; ///< The lowest priority of diagnostics message that should be sent. See \ref TPriorityCodes
-    uint8_t TargetPortAddressTopHi;
-    uint8_t TargetPortAddressTopLo;
-    uint8_t TargetPortAddressBottomHi;
-    uint8_t TargetPortAddressBottomLo;
+    uint8_t prot_ver_hi;                   ///< High byte of the Art-Net protocol revision number.
+    uint8_t prot_ver_lo;                   ///< Low byte of the Art-Net protocol revision number. Current value 14.
+    uint8_t flags;                         ///< Set behavior of Node
+    uint8_t diag_priority;                  ///< The lowest priority of diagnostics message that should be sent. See \ref TPriorityCodes
+    uint8_t target_port_address_top_hi;    ///< Top of the range of Port-Addresses to be tested if Targeted Mode is active.
+    uint8_t target_port_address_top_lo;    ///<
+    uint8_t target_port_address_bottom_hi; ///< Bottom of the range of Port-Addresses to be tested if Targeted Mode is active.
+    uint8_t target_port_address_bottom_lo; ///<
+                                           ///< Targeted mode allows the ArtPoll to define a range of Port-Addresses. Nodes will only
+                                           ///< reply to the ArtPoll is they are subscribed to a Port-Address that is inclusively in the
+                                           ///< range TargetPortAddressBottom to TargetPortAddressTop. The bit field ArtPoll->Flags->5
+                                           ///< is used to enable Targeted Mode.
 } PACKED;
 
 struct ArtPollReply
@@ -474,7 +480,7 @@ struct ArtPollReply
     ///< A value of 0 to 44 represents the maximum DMX512 rate of 44Hz.
     uint8_t BackgroundQueuePolicy; ///< The BackgroundQueuePolicy defines the method by with the node retrieves STATUS_MESSAGE and QUEUED_MESSAGE pids from the
                                    ///< connected RDM devices.
-    uint8_t Filler[10];            ///< Transmit as zero. For future expansion.
+    uint8_t filler[10];            ///< Transmit as zero. For future expansion.
 } PACKED;
 
 /**

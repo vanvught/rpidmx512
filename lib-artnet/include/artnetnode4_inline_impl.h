@@ -96,7 +96,7 @@ inline void ArtNetNode::SetPortProtocol4(uint32_t port_index, artnet::PortProtoc
     {
         if (node_.port[port_index].direction == dmxnode::PortDirection::kOutput)
         {
-            output_port_[port_index].good_output |= artnet::good_output::kOutputIsSacn;
+            output_port_[port_index].good_output |= artnet::GoodOutput::kOutputIsSacn;
         }
 
         SetUniverse4(port_index);
@@ -106,7 +106,7 @@ inline void ArtNetNode::SetPortProtocol4(uint32_t port_index, artnet::PortProtoc
     {
         if (node_.port[port_index].direction == dmxnode::PortDirection::kOutput)
         {
-            output_port_[port_index].good_output &= static_cast<uint8_t>(~artnet::good_output::kOutputIsSacn);
+            output_port_[port_index].good_output &= static_cast<uint8_t>(~artnet::GoodOutput::kOutputIsSacn);
         }
 
         E131Bridge::SetDirection(port_index, dmxnode::PortDirection::kDisable);
@@ -159,9 +159,9 @@ inline uint8_t ArtNetNode::GetGoodOutput4(uint32_t port_index)
 
     if (kIsActive)
     {
-        uint8_t status = artnet::good_output::kOutputIsSacn;
-        status = status | (E131Bridge::IsTransmitting(port_index) ? artnet::good_output::kDataIsBeingTransmitted : artnet::good_output::kOutputNone);
-        status = status | (E131Bridge::IsMerging(port_index) ? artnet::good_output::kOutputIsMerging : artnet::good_output::kOutputNone);
+        uint8_t status = artnet::GoodOutput::kOutputIsSacn;
+        status = status | (E131Bridge::IsTransmitting(port_index) ? artnet::GoodOutput::kDataIsBeingTransmitted : artnet::GoodOutput::kOutputNone);
+        status = status | (E131Bridge::IsMerging(port_index) ? artnet::GoodOutput::kOutputIsMerging : artnet::GoodOutput::kOutputNone);
         return status;
     }
 

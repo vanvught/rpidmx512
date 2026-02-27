@@ -258,7 +258,7 @@ void ArtNetNode::HandleRdm()
 #if (ARTNET_VERSION >= 4)
             if (node_.port[port_index].protocol == artnet::PortProtocol::kSacn)
             {
-                constexpr auto kMask = artnet::good_output::kOutputIsMerging | artnet::good_output::kDataIsBeingTransmitted | artnet::good_output::kOutputIsSacn;
+                constexpr auto kMask = artnet::GoodOutput::kOutputIsMerging | artnet::GoodOutput::kDataIsBeingTransmitted | artnet::GoodOutput::kOutputIsSacn;
                 output_port_[port_index].is_transmitting = (GetGoodOutput4(port_index) & kMask) != 0;
             }
 #endif

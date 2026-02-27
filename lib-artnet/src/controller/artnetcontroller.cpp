@@ -67,7 +67,7 @@ ArtNetController::ArtNetController()
     memcpy(&m_ArtNetPoll, artnet::kNodeId, 8);
     m_ArtNetPoll.op_code = static_cast<uint16_t>(artnet::OpCodes::kOpPoll);
     m_ArtNetPoll.prot_ver_lo = artnet::kProtocolRevision;
-    m_ArtNetPoll.Flags = Flags::kSendArtpOnChange;
+    m_ArtNetPoll.flags = Flags::kSendArtpOnChange;
 
     memset(&art_poll_reply_, 0, sizeof(struct ArtPollReply));
     memcpy(&art_poll_reply_, artnet::kNodeId, 8);
@@ -109,8 +109,8 @@ ArtNetController::ArtNetController()
 
     art_poll_reply_.PortTypes[0] = artnet::PortType::kOutputArtnet;
     art_poll_reply_.PortTypes[1] = artnet::PortType::kInputArtnet;
-    art_poll_reply_.good_output[0] = artnet::good_output::kDataIsBeingTransmitted;
-    art_poll_reply_.good_input[0] = artnet::good_input::kDataRecieved;
+    art_poll_reply_.good_output[0] = artnet::GoodOutput::kDataIsBeingTransmitted;
+    art_poll_reply_.good_input[0] = artnet::GoodInput::kDataRecieved;
     art_poll_reply_.NumPortsLo = 2;
 
     m_pArtDmx = new struct ArtDmx;
@@ -160,7 +160,7 @@ void ArtNetController::GetShortNameDefault(char* short_name)
 #else
     uint32_t i;
 
-    for (i = 0; i < (sizeof(ARTNET_SHORT_NAME) - 1) && i < (artnet::kShortNameLength - 1); i++)
+    for (i = 0; i < (sizeof(ARTNET_SHORT_NAME) - 1) && i < (artnet::kPortNameLength - 1); i++)
     {
         if (ARTNET_SHORT_NAME[i] == '_')
         {

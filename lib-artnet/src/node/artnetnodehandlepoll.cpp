@@ -160,7 +160,7 @@ void ArtNetNode::ProcessPollReply(uint32_t port_index)
 #if (ARTNET_VERSION >= 4)
         if (node_.port[port_index].protocol == artnet::PortProtocol::kSacn)
         {
-            constexpr auto kMask = artnet::good_output::kOutputIsMerging | artnet::good_output::kDataIsBeingTransmitted | artnet::good_output::kOutputIsSacn;
+            constexpr auto kMask = artnet::GoodOutput::kOutputIsMerging | artnet::GoodOutput::kDataIsBeingTransmitted | artnet::GoodOutput::kOutputIsSacn;
             auto good_output = output_port_[port_index].good_output;
             good_output &= static_cast<uint8_t>(~kMask);
             good_output = static_cast<uint8_t>(good_output | (GetGoodOutput4(port_index) & kMask));
@@ -193,7 +193,7 @@ void ArtNetNode::ProcessPollReply(uint32_t port_index)
 #if (ARTNET_VERSION >= 4)
         if (node_.port[port_index].protocol == artnet::PortProtocol::kSacn)
         {
-            input_port_[port_index].good_input |= artnet::good_input::kInputIsSacn;
+            input_port_[port_index].good_input |= artnet::GoodInput::kInputIsSacn;
         }
 #endif
         art_poll_reply_.PortTypes[0] = artnet::PortType::kInputArtnet;
@@ -270,10 +270,10 @@ void ArtNetNode::HandlePoll()
 {
     const auto* const kArtPoll = reinterpret_cast<artnet::ArtPoll*>(receive_buffer_);
 
-    state_.send_art_poll_reply_on_change = ((kArtPoll->Flags & artnet::Flags::kSendArtpOnChange) == artnet::Flags::kSendArtpOnChange);
+    state_.send_art_poll_reply_on_change = ((kArtPoll->flags & artnet::Flags::kSendArtpOnChange) == artnet::Flags::kSendArtpOnChange);
 
     // If any controller requests diagnostics, the node will send diagnostics. (ArtPoll->Flags->2).
-    if (kArtPoll->Flags & artnet::Flags::kSendDiagMessages)
+    if (kArtPoll->flags & artnet::Flags::kSendDiagMessages)
     {
         state_.send_art_diag_data = true;
 
@@ -290,16 +290,16 @@ void ArtNetNode::HandlePoll()
 
         if (state_.is_multiple_controllers_req_diag)
         {
-            // The lowest minimum value of Priority shall be used. (Ignore ArtPoll->DiagPriority).
-            state_.diag_priority = std::min(state_.diag_priority, kArtPoll->DiagPriority);
+            // The lowest minimum value of Priority shall be used. (Ignore ArtPoll->diag_priority).
+            state_.diag_priority = std::min(state_.diag_priority, kArtPoll->diag_priority);
         }
         else
         {
-            state_.diag_priority = kArtPoll->DiagPriority;
+            state_.diag_priority = kArtPoll->diag_priority;
         }
 
         // If there are multiple controllers requesting diagnostics, diagnostics shall be broadcast. (Ignore ArtPoll->Flags->3).
-        if (!state_.is_multiple_controllers_req_diag && (kArtPoll->Flags & artnet::Flags::kSendDiagUnicast))
+        if (!state_.is_multiple_controllers_req_diag && (kArtPoll->flags & artnet::Flags::kSendDiagUnicast))
         {
             state_.art.diag_ip = ip_address_from_;
         }
@@ -317,11 +317,11 @@ void ArtNetNode::HandlePoll()
     uint16_t target_port_address_top = 32767; // TODO (a)
     uint16_t target_port_address_bottom = 0;
 
-    if (kArtPoll->Flags & artnet::Flags::kUseTargetPortAddress)
+    if (kArtPoll->flags & artnet::Flags::kUseTargetPortAddress)
     {
-        target_port_address_top = static_cast<uint16_t>((static_cast<uint16_t>(kArtPoll->TargetPortAddressTopHi) >> 8) | kArtPoll->TargetPortAddressTopLo);
+        target_port_address_top = static_cast<uint16_t>((static_cast<uint16_t>(kArtPoll->target_port_address_top_hi) >> 8) | kArtPoll->target_port_address_top_lo);
         target_port_address_bottom =
-            static_cast<uint16_t>((static_cast<uint16_t>(kArtPoll->TargetPortAddressBottomHi) >> 8) | kArtPoll->TargetPortAddressBottomLo);
+            static_cast<uint16_t>((static_cast<uint16_t>(kArtPoll->target_port_address_bottom_hi) >> 8) | kArtPoll->target_port_address_bottom_lo);
     }
 
     for (auto& entry : state_.art.poll_reply_queue)

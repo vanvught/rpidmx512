@@ -47,7 +47,7 @@ void ArtNetNode::HandleDmxIn()
     for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++)
     {
         if ((node_.port[port_index].direction == dmxnode::PortDirection::kInput) && (node_.port[port_index].protocol == artnet::PortProtocol::kArtnet) &&
-            ((input_port_[port_index].good_input & artnet::good_input::kDisabled) != artnet::good_input::kDisabled))
+            ((input_port_[port_index].good_input & artnet::GoodInput::kDisabled) != artnet::GoodInput::kDisabled))
         {
             const auto* const kDataChanged = reinterpret_cast<const struct Data*>(Dmx::Get()->GetDmxChanged(port_index));
 
@@ -70,7 +70,7 @@ void ArtNetNode::HandleDmxIn()
                 art_dmx_.length_hi = static_cast<uint8_t>((length & 0xFF00) >> 8);
                 art_dmx_.Length = static_cast<uint8_t>(length & 0xFF);
 
-                input_port_[port_index].good_input |= artnet::good_input::kDataRecieved;
+                input_port_[port_index].good_input |= artnet::GoodInput::kDataRecieved;
 
                 const auto* udp_data = reinterpret_cast<const uint8_t*>(&art_dmx_);
                 network::udp::Send(handle_, udp_data, sizeof(struct artnet::ArtDmx), input_port_[port_index].destination_ip, artnet::kUdpPort);
@@ -100,9 +100,9 @@ void ArtNetNode::HandleDmxIn()
             {
                 auto send_art_dmx = false;
 
-                if ((input_port_[port_index].good_input & artnet::good_input::kDataRecieved) == artnet::good_input::kDataRecieved)
+                if ((input_port_[port_index].good_input & artnet::GoodInput::kDataRecieved) == artnet::GoodInput::kDataRecieved)
                 {
-                    input_port_[port_index].good_input = static_cast<uint8_t>(input_port_[port_index].good_input & ~artnet::good_input::kDataRecieved);
+                    input_port_[port_index].good_input = static_cast<uint8_t>(input_port_[port_index].good_input & ~artnet::GoodInput::kDataRecieved);
                     input_port_[port_index].millis = hal::Millis();
                     send_art_dmx = true;
 

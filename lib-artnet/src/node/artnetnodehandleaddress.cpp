@@ -158,7 +158,7 @@ void ArtNetNode::HandleAddress()
             {
                 output_port_[port_index].source_a.ip = 0;
                 output_port_[port_index].source_b.ip = 0;
-                output_port_[port_index].good_output &= static_cast<uint8_t>(~artnet::good_output::kOutputIsMerging);
+                output_port_[port_index].good_output &= static_cast<uint8_t>(~artnet::GoodOutput::kOutputIsMerging);
             }
             break;
 
@@ -193,7 +193,7 @@ void ArtNetNode::HandleAddress()
             for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++)
             {
                 const auto kMask =
-                    artnet::good_input::kIncludesTestPackets | artnet::good_input::kIncludesSip | artnet::good_input::kIncludesText | artnet::good_input::kErrors;
+                    artnet::GoodInput::kIncludesTestPackets | artnet::GoodInput::kIncludesSip | artnet::GoodInput::kIncludesText | artnet::GoodInput::kErrors;
                 input_port_[port_index].good_input &= static_cast<uint8_t>(~kMask);
             }
             break;

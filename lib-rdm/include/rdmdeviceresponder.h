@@ -182,7 +182,7 @@ class RDMDeviceResponder
 
         rdm_device.SetFactoryDefaults();
 
-        assert(rdm_personalities_ != nullptr);
+        assert(personalities_ != nullptr);
 
         SetPersonalityCurrent(RDM_ROOT_DEVICE, kDefaultCurrentPersonality);
         SetDmxStartAddress(RDM_ROOT_DEVICE, dmx_start_address_factory_default_);
