@@ -40,9 +40,9 @@ public:
 		DEBUG_ENTRY();
 
 		memcpy(m_ArtDmx.Id, artnet::kNodeId, sizeof(m_ArtDmx.Id));
-		m_ArtDmx.OpCode = static_cast<uint16_t>(artnet::OpCodes::kOpDmx);
-		m_ArtDmx.ProtVerHi = 0;
-		m_ArtDmx.ProtVerLo = artnet::kProtocolRevision;
+		m_ArtDmx.op_code = static_cast<uint16_t>(artnet::OpCodes::kOpDmx);
+		m_ArtDmx.prot_ver_hi = 0;
+		m_ArtDmx.prot_ver_lo = artnet::kProtocolRevision;
 
 		DEBUG_EXIT();
 	}
@@ -83,7 +83,7 @@ public:
 		m_ArtDmx.Sequence = m_nSequence++;
 		m_ArtDmx.Physical = static_cast<uint8_t>(dmxnode::kMaxPorts + 1U);
 		m_ArtDmx.PortAddress = nUniverse;
-		m_ArtDmx.LengthHi = static_cast<uint8_t>((nLength & 0xFF00) >> 8);
+		m_ArtDmx.length_hi = static_cast<uint8_t>((nLength & 0xFF00) >> 8);
 		m_ArtDmx.Length = static_cast<uint8_t>(nLength & 0xFF);
 
 		ArtNetNode::Get()->HandleShowFile(&m_ArtDmx);

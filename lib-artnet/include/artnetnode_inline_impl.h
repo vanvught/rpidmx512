@@ -64,7 +64,7 @@ inline DmxNodeOutputType* ArtNetNode::GetOutput() const
 
 inline const char* ArtNetNode::GetLongName() const
 {
-    return reinterpret_cast<const char*>(art_poll_reply_.LongName);
+    return reinterpret_cast<const char*>(art_poll_reply_.long_name);
 }
 
 inline void ArtNetNode::SetDisableMergeTimeout(bool disable)
@@ -121,7 +121,7 @@ inline bool ArtNetNode::GetUniverse(uint32_t port_index, uint16_t& universe, dmx
 inline dmxnode::MergeMode ArtNetNode::GetMergeMode(uint32_t port_index) const
 {
     assert(port_index < dmxnode::kMaxPorts);
-    if ((output_port_[port_index].good_output & artnet::GoodOutput::kMergeModeLtp) == artnet::GoodOutput::kMergeModeLtp)
+    if ((output_port_[port_index].good_output & artnet::good_output::kMergeModeLtp) == artnet::good_output::kMergeModeLtp)
     {
         return dmxnode::MergeMode::kLtp;
     }
@@ -404,9 +404,9 @@ inline void ArtNetNode::SendDiag([[maybe_unused]] const artnet::PriorityCodes kP
     va_end(arp);
 
     diag_data_.data[sizeof(diag_data_.data) - 1] = '\0'; // Just be sure we have a last '\0'
-    diag_data_.LengthLo = static_cast<uint8_t>(i + 1);   // Text length including the '\0'
+    diag_data_.length_lo = static_cast<uint8_t>(i + 1);   // Text length including the '\0'
 
-    const uint16_t kSize = sizeof(struct artnet::ArtDiagData) - sizeof(diag_data_.data) + diag_data_.LengthLo;
+    const uint16_t kSize = sizeof(struct artnet::ArtDiagData) - sizeof(diag_data_.data) + diag_data_.length_lo;
 
     network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&diag_data_), kSize, state_.art.diag_ip, artnet::kUdpPort);
 #endif

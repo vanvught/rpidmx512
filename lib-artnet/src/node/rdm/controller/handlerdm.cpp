@@ -114,7 +114,7 @@ void ArtNetNode::HandleTodData()
 
     const auto* const kArtTodData = reinterpret_cast<artnet::ArtTodData*>(receive_buffer_);
 
-    if (kArtTodData->RdmVer != 0x01)
+    if (kArtTodData->rdm_version != 0x01)
     {
         DEBUG_EXIT();
         return;
@@ -131,9 +131,9 @@ void ArtNetNode::HandleTodData()
 
         if (node_.port[port_index].port_address == kPortAddress)
         {
-            DEBUG_PRINTF("port_index=%u, kPortAddress=%u, pArtTodData->UidCount=%u", port_index, kPortAddress, kArtTodData->UidCount);
+            DEBUG_PRINTF("port_index=%u, kPortAddress=%u, pArtTodData->uid_count=%u", port_index, kPortAddress, kArtTodData->uid_count);
 
-            for (uint32_t uid_index = 0; uid_index < kArtTodData->UidCount; uid_index++)
+            for (uint32_t uid_index = 0; uid_index < kArtTodData->uid_count; uid_index++)
             {
                 const uint8_t* uid = kArtTodData->Tod[uid_index];
                 rdm_controller_.TodAddUid(port_index, uid);
@@ -157,10 +157,10 @@ void ArtNetNode::SendTod(uint32_t port_index)
     const auto kPage = port_index;
 
     memcpy(tod_data.Id, artnet::kNodeId, sizeof(tod_data.Id));
-    tod_data.OpCode = static_cast<uint16_t>(artnet::OpCodes::kOpToddata);
-    tod_data.ProtVerHi = 0;
-    tod_data.ProtVerLo = artnet::kProtocolRevision;
-    tod_data.RdmVer = 0x01; // Devices that support RDM STANDARD V1.0 set field to 0x01.
+    tod_data.op_code = static_cast<uint16_t>(artnet::OpCodes::kOpToddata);
+    tod_data.prot_ver_hi = 0;
+    tod_data.prot_ver_lo = artnet::kProtocolRevision;
+    tod_data.rdm_version = 0x01; // Devices that support RDM STANDARD V1.0 set field to 0x01.
 
     const auto kDiscovered = static_cast<uint8_t>(rdm_controller_.TodUidCount(port_index));
 
@@ -180,10 +180,10 @@ void ArtNetNode::SendTod(uint32_t port_index)
     tod_data.Net = node_.port[kPage].net_switch;
     tod_data.CommandResponse = 0; ///< The packet contains the entire TOD or is the first packet in a sequence of packets that contains the entire TOD.
     tod_data.Address = node_.port[port_index].sw;
-    tod_data.UidTotalHi = 0;
-    tod_data.UidTotalLo = kDiscovered;
-    tod_data.BlockCount = 0;
-    tod_data.UidCount = kDiscovered;
+    tod_data.uid_total_hi = 0;
+    tod_data.uid_total_lo = kDiscovered;
+    tod_data.block_count = 0;
+    tod_data.uid_count = kDiscovered;
 
     rdm_controller_.TodCopy(port_index, reinterpret_cast<uint8_t*>(tod_data.Tod));
 
@@ -206,9 +206,9 @@ void ArtNetNode::SendTodRequest(uint32_t port_index)
     const auto kPage = port_index;
 
     memcpy(request->Id, artnet::kNodeId, sizeof(request->Id));
-    request->OpCode = static_cast<uint16_t>(artnet::OpCodes::kOpTodrequest);
-    request->ProtVerHi = 0;
-    request->ProtVerLo = artnet::kProtocolRevision;
+    request->op_code = static_cast<uint16_t>(artnet::OpCodes::kOpTodrequest);
+    request->prot_ver_hi = 0;
+    request->prot_ver_lo = artnet::kProtocolRevision;
     request->spare1 = 0;
     request->spare2 = 0;
     request->spare3 = 0;
@@ -232,7 +232,7 @@ void ArtNetNode::HandleRdm()
 {
     auto* const kArtRdm = reinterpret_cast<artnet::ArtRdm*>(receive_buffer_);
 
-    if (kArtRdm->RdmVer != 0x01)
+    if (kArtRdm->rdm_version != 0x01)
     {
         DEBUG_EXIT();
         return;
@@ -258,7 +258,7 @@ void ArtNetNode::HandleRdm()
 #if (ARTNET_VERSION >= 4)
             if (node_.port[port_index].protocol == artnet::PortProtocol::kSacn)
             {
-                constexpr auto kMask = artnet::GoodOutput::kOutputIsMerging | artnet::GoodOutput::kDataIsBeingTransmitted | artnet::GoodOutput::kOutputIsSacn;
+                constexpr auto kMask = artnet::good_output::kOutputIsMerging | artnet::good_output::kDataIsBeingTransmitted | artnet::good_output::kOutputIsSacn;
                 output_port_[port_index].is_transmitting = (GetGoodOutput4(port_index) & kMask) != 0;
             }
 #endif

@@ -38,7 +38,7 @@ void ArtNetNode::HandleRdm()
 {
     auto* const kArtRdm = reinterpret_cast<artnet::ArtRdm*>(receive_buffer_);
 
-    if (kArtRdm->RdmVer != 0x01)
+    if (kArtRdm->rdm_version != 0x01)
     {
         DEBUG_EXIT();
         return;
@@ -59,7 +59,7 @@ void ArtNetNode::HandleRdm()
 
             if (response != nullptr)
             {
-                kArtRdm->RdmVer = 0x01;
+                kArtRdm->rdm_version = 0x01;
 
                 const auto kMessageLength = static_cast<uint16_t>(response[2] + 1);
                 memcpy(kArtRdm->RdmPacket, &response[1], kMessageLength);
@@ -115,10 +115,10 @@ void ArtNetNode::SendTod(uint32_t port_index)
     const auto kPage = port_index;
 
     memcpy(tod_data.Id, artnet::kNodeId, sizeof(tod_data.Id));
-    tod_data.OpCode = static_cast<uint16_t>(artnet::OpCodes::kOpToddata);
-    tod_data.ProtVerHi = 0;
-    tod_data.ProtVerLo = artnet::kProtocolRevision;
-    tod_data.RdmVer = 0x01; // Devices that support RDM STANDARD V1.0 set field to 0x01.
+    tod_data.op_code = static_cast<uint16_t>(artnet::OpCodes::kOpToddata);
+    tod_data.prot_ver_hi = 0;
+    tod_data.prot_ver_lo = artnet::kProtocolRevision;
+    tod_data.rdm_version = 0x01; // Devices that support RDM STANDARD V1.0 set field to 0x01.
 
     const auto kDiscovered = static_cast<uint8_t>(port_index == 0 ? 1 : 0);
 
@@ -138,10 +138,10 @@ void ArtNetNode::SendTod(uint32_t port_index)
     tod_data.Net = node_.port[kPage].net_switch;
     tod_data.CommandResponse = 0; ///< The packet contains the entire TOD or is the first packet in a sequence of packets that contains the entire TOD.
     tod_data.Address = node_.port[port_index].sw;
-    tod_data.UidTotalHi = 0;
-    tod_data.UidTotalLo = kDiscovered;
-    tod_data.BlockCount = 0;
-    tod_data.UidCount = kDiscovered;
+    tod_data.uid_total_hi = 0;
+    tod_data.uid_total_lo = kDiscovered;
+    tod_data.block_count = 0;
+    tod_data.uid_count = kDiscovered;
 
     rdm_responder_->TodCopy(port_index, reinterpret_cast<uint8_t*>(tod_data.Tod));
 

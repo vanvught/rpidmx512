@@ -149,7 +149,7 @@ namespace dmxnode
 {
 inline constexpr uint32_t kParamPorts = 4;
 inline constexpr uint32_t kNodeNameLength = 64;
-inline constexpr uint32_t kLabelNameLength = 18;
+inline constexpr uint32_t kPortNameLength = 18;
 
 struct Flags
 {
@@ -174,8 +174,8 @@ struct DmxNode
     uint16_t merge_mode;
     uint8_t output_style;
     uint8_t fail_safe;
-    uint8_t long_name[dmxnode::kNodeNameLength];
-    uint8_t label[dmxnode::kParamPorts][dmxnode::kLabelNameLength];
+    uint8_t node_name[dmxnode::kNodeNameLength];
+    uint8_t port_name[dmxnode::kParamPorts][dmxnode::kPortNameLength];
     uint8_t reserved1[2];
     uint16_t protocol;
     uint16_t rdm;

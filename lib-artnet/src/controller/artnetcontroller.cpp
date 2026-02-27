@@ -65,13 +65,13 @@ ArtNetController::ArtNetController()
 
     memset(&m_ArtNetPoll, 0, sizeof(struct ArtPoll));
     memcpy(&m_ArtNetPoll, artnet::kNodeId, 8);
-    m_ArtNetPoll.OpCode = static_cast<uint16_t>(artnet::OpCodes::kOpPoll);
-    m_ArtNetPoll.ProtVerLo = artnet::kProtocolRevision;
+    m_ArtNetPoll.op_code = static_cast<uint16_t>(artnet::OpCodes::kOpPoll);
+    m_ArtNetPoll.prot_ver_lo = artnet::kProtocolRevision;
     m_ArtNetPoll.Flags = Flags::kSendArtpOnChange;
 
     memset(&art_poll_reply_, 0, sizeof(struct ArtPollReply));
     memcpy(&art_poll_reply_, artnet::kNodeId, 8);
-    art_poll_reply_.OpCode = static_cast<uint16_t>(artnet::OpCodes::kOpPollreply);
+    art_poll_reply_.op_code = static_cast<uint16_t>(artnet::OpCodes::kOpPollreply);
     art_poll_reply_.Port = artnet::kUdpPort;
     art_poll_reply_.VersInfoH = ArtNetConst::kVersion[0];
     art_poll_reply_.VersInfoL = ArtNetConst::kVersion[1];
@@ -109,8 +109,8 @@ ArtNetController::ArtNetController()
 
     art_poll_reply_.PortTypes[0] = artnet::PortType::kOutputArtnet;
     art_poll_reply_.PortTypes[1] = artnet::PortType::kInputArtnet;
-    art_poll_reply_.GoodOutput[0] = artnet::GoodOutput::kDataIsBeingTransmitted;
-    art_poll_reply_.GoodInput[0] = artnet::GoodInput::kDataRecieved;
+    art_poll_reply_.good_output[0] = artnet::good_output::kDataIsBeingTransmitted;
+    art_poll_reply_.good_input[0] = artnet::good_input::kDataRecieved;
     art_poll_reply_.NumPortsLo = 2;
 
     m_pArtDmx = new struct ArtDmx;
@@ -118,16 +118,16 @@ ArtNetController::ArtNetController()
 
     memset(m_pArtDmx, 0, sizeof(struct ArtDmx));
     memcpy(m_pArtDmx, artnet::kNodeId, 8);
-    m_pArtDmx->OpCode = static_cast<uint16_t>(artnet::OpCodes::kOpDmx);
-    m_pArtDmx->ProtVerLo = artnet::kProtocolRevision;
+    m_pArtDmx->op_code = static_cast<uint16_t>(artnet::OpCodes::kOpDmx);
+    m_pArtDmx->prot_ver_lo = artnet::kProtocolRevision;
 
     m_pArtSync = new struct ArtSync;
     assert(m_pArtSync != nullptr);
 
     memset(m_pArtSync, 0, sizeof(struct ArtSync));
     memcpy(m_pArtSync, artnet::kNodeId, 8);
-    m_pArtSync->OpCode = static_cast<uint16_t>(artnet::OpCodes::kOpSync);
-    m_pArtSync->ProtVerLo = artnet::kProtocolRevision;
+    m_pArtSync->op_code = static_cast<uint16_t>(artnet::OpCodes::kOpSync);
+    m_pArtSync->prot_ver_lo = artnet::kProtocolRevision;
 
     m_ArtNetController.Oem[0] = ArtNetConst::kOemId[0];
     m_ArtNetController.Oem[1] = ArtNetConst::kOemId[1];
@@ -189,7 +189,7 @@ void ArtNetController::SetShortName(const char* short_name)
         strncpy(reinterpret_cast<char*>(art_poll_reply_.port_name), short_name, artnet::kPortNameLength - 1);
     }
 
-    art_poll_reply_.LongName[artnet::kPortNameLength - 1] = '\0';
+    art_poll_reply_.long_name[artnet::kPortNameLength - 1] = '\0';
 
     DEBUG_PUTS(reinterpret_cast<char*>(art_poll_reply_.port_name));
     DEBUG_EXIT();
@@ -226,16 +226,16 @@ void ArtNetController::SetLongName(const char* long_name)
 
     if (long_name == nullptr)
     {
-        GetLongNameDefault(reinterpret_cast<char*>(art_poll_reply_.LongName));
+        GetLongNameDefault(reinterpret_cast<char*>(art_poll_reply_.long_name));
     }
     else
     {
-        strncpy(reinterpret_cast<char*>(art_poll_reply_.LongName), long_name, artnet::kLongNameLength - 1);
+        strncpy(reinterpret_cast<char*>(art_poll_reply_.long_name), long_name, artnet::kLongNameLength - 1);
     }
 
-    art_poll_reply_.LongName[artnet::kLongNameLength - 1] = '\0';
+    art_poll_reply_.long_name[artnet::kLongNameLength - 1] = '\0';
 
-    DEBUG_PUTS(reinterpret_cast<char*>(art_poll_reply_.LongName));
+    DEBUG_PUTS(reinterpret_cast<char*>(art_poll_reply_.long_name));
     DEBUG_EXIT();
 }
 
@@ -276,7 +276,7 @@ void ArtNetController::HandleDmxOut(uint16_t nUniverse, const uint8_t* pDmxData,
 
     m_pArtDmx->Physical = nPortIndex & 0xFF;
     m_pArtDmx->PortAddress = nUniverse;
-    m_pArtDmx->LengthHi = static_cast<uint8_t>((nLength & 0xFF00) >> 8);
+    m_pArtDmx->length_hi = static_cast<uint8_t>((nLength & 0xFF00) >> 8);
     m_pArtDmx->Length = static_cast<uint8_t>(nLength & 0xFF);
 
     // The sequence number is used to ensure that ArtDmx packets are used in the correct order.
@@ -360,7 +360,7 @@ void ArtNetController::HandleSync()
 
 void ArtNetController::HandleBlackout()
 {
-    m_pArtDmx->LengthHi = (512 & 0xFF00) >> 8;
+    m_pArtDmx->length_hi = (512 & 0xFF00) >> 8;
     m_pArtDmx->Length = (512 & 0xFF);
 
     memset(m_pArtDmx->data, 0, 512);

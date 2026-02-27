@@ -95,7 +95,7 @@ static const char* GetReportCodeString(artnet::ReportCode code)
         case artnet::ReportCode::kRcconfigerr:
             return "Product configuration does not match firmware.";
         case artnet::ReportCode::kRcdmxshort:
-            return "DMX output short detected. See GoodOutput field.";
+            return "DMX output short detected. See good_output field.";
         case artnet::ReportCode::kRcfirmwarefail:
             return "Last attempt to upload new firmware failed.";
         case artnet::ReportCode::kRcuserfail:
@@ -160,7 +160,7 @@ void ArtNetNode::ProcessPollReply(uint32_t port_index)
 #if (ARTNET_VERSION >= 4)
         if (node_.port[port_index].protocol == artnet::PortProtocol::kSacn)
         {
-            constexpr auto kMask = artnet::GoodOutput::kOutputIsMerging | artnet::GoodOutput::kDataIsBeingTransmitted | artnet::GoodOutput::kOutputIsSacn;
+            constexpr auto kMask = artnet::good_output::kOutputIsMerging | artnet::good_output::kDataIsBeingTransmitted | artnet::good_output::kOutputIsSacn;
             auto good_output = output_port_[port_index].good_output;
             good_output &= static_cast<uint8_t>(~kMask);
             good_output = static_cast<uint8_t>(good_output | (GetGoodOutput4(port_index) & kMask));
@@ -178,9 +178,9 @@ void ArtNetNode::ProcessPollReply(uint32_t port_index)
         }
 #endif
         art_poll_reply_.PortTypes[0] = artnet::PortType::kOutputArtnet;
-        art_poll_reply_.GoodOutput[0] = output_port_[port_index].good_output;
+        art_poll_reply_.good_output[0] = output_port_[port_index].good_output;
         art_poll_reply_.GoodOutputB[0] = output_port_[port_index].good_output_b;
-        art_poll_reply_.GoodInput[0] = 0;
+        art_poll_reply_.good_input[0] = 0;
         art_poll_reply_.SwOut[0] = node_.port[port_index].sw;
         art_poll_reply_.SwIn[0] = 0;
         DEBUG_EXIT();
@@ -193,13 +193,13 @@ void ArtNetNode::ProcessPollReply(uint32_t port_index)
 #if (ARTNET_VERSION >= 4)
         if (node_.port[port_index].protocol == artnet::PortProtocol::kSacn)
         {
-            input_port_[port_index].good_input |= artnet::GoodInput::kInputIsSacn;
+            input_port_[port_index].good_input |= artnet::good_input::kInputIsSacn;
         }
 #endif
         art_poll_reply_.PortTypes[0] = artnet::PortType::kInputArtnet;
-        art_poll_reply_.GoodOutput[0] = 0;
+        art_poll_reply_.good_output[0] = 0;
         art_poll_reply_.GoodOutputB[0] = 0;
-        art_poll_reply_.GoodInput[0] = input_port_[port_index].good_input;
+        art_poll_reply_.good_input[0] = input_port_[port_index].good_input;
         art_poll_reply_.SwOut[0] = 0;
         art_poll_reply_.SwIn[0] = node_.port[port_index].sw;
         DEBUG_EXIT();
@@ -234,8 +234,8 @@ void ArtNetNode::SendPollReply(uint32_t port_index, uint32_t destination_ip, art
         }
     }
 
-    art_poll_reply_.NetSwitch = node_.port[port_index].net_switch;
-    art_poll_reply_.SubSwitch = node_.port[port_index].sub_switch;
+    art_poll_reply_.net_switch = node_.port[port_index].net_switch;
+    art_poll_reply_.sub_switch = node_.port[port_index].sub_switch;
     art_poll_reply_.bind_index = static_cast<uint8_t>(port_index + 1);
     art_poll_reply_.NumPortsLo = 1;
 
@@ -248,8 +248,8 @@ void ArtNetNode::SendPollReply(uint32_t port_index, uint32_t destination_ip, art
         art_poll_reply_.RefreshRateLo = static_cast<uint8_t>(kRefreshRate);
         art_poll_reply_.RefreshRateHi = static_cast<uint8_t>(kRefreshRate >> 8);
         const auto kUserData = dmxnode_output_type_->GetUserData();
-        art_poll_reply_.UserLo = static_cast<uint8_t>(kUserData);
-        art_poll_reply_.UserHi = static_cast<uint8_t>(kUserData >> 8);
+        art_poll_reply_.user_lo = static_cast<uint8_t>(kUserData);
+        art_poll_reply_.user_hi = static_cast<uint8_t>(kUserData >> 8);
     }
 
     ProcessPollReply(port_index);

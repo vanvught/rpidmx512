@@ -340,8 +340,8 @@ void ArtNetPollTable::Add(const struct artnet::ArtPollReply* poll_reply)
     if (poll_reply->bind_index <= 1)
     {
         memcpy(table_[i].Mac, poll_reply->MAC, artnet::kMacSize);
-        const uint8_t* pSrc = poll_reply->LongName;
-        uint8_t* pDst = table_[i].LongName;
+        const uint8_t* pSrc = poll_reply->long_name;
+        uint8_t* pDst = table_[i].long_name;
         memcpy(pDst, pSrc, artnet::kLongNameLength);
     }
 
@@ -353,7 +353,7 @@ void ArtNetPollTable::Add(const struct artnet::ArtPollReply* poll_reply)
 
         if (poll_reply->PortTypes[port_index] == static_cast<uint8_t>(artnet::PortType::kOutputArtnet))
         {
-            const auto kUniverse = artnet::MakePortAddress(poll_reply->NetSwitch, poll_reply->SubSwitch, kPortAddress);
+            const auto kUniverse = artnet::MakePortAddress(poll_reply->net_switch, poll_reply->sub_switch, kPortAddress);
 
             uint32_t nIndexUniverse;
 
@@ -467,7 +467,7 @@ void ArtNetPollTable::Dump()
 
     for (uint32_t i = 0; i < table_entries_; i++)
     {
-        printf("\t" IPSTR " [" MACSTR "] |%-64s|\n", IP2STR(table_[i].IPAddress), MAC2STR(table_[i].Mac), table_[i].LongName);
+        printf("\t" IPSTR " [" MACSTR "] |%-64s|\n", IP2STR(table_[i].IPAddress), MAC2STR(table_[i].Mac), table_[i].long_name);
 
         for (uint32_t universe = 0; universe < table_[i].universes_count; universe++)
         {

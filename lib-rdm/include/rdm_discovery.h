@@ -101,6 +101,7 @@ class Discovery : rdm::discovery::StateMachine
         if (((1U << port_index) & enabled_) == (1U << port_index))
         {
             s_bg_discovery &= ~(1U << port_index);
+			Stop(port_index);
         }
 
         if (s_bg_discovery == 0)

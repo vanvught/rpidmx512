@@ -77,28 +77,28 @@ void ArtNetNode::HandleAddress()
         state_.report_code = artnet::ReportCode::kRcshnameok;
     }
 
-    if (kArtAddress->LongName[0] != 0)
+    if (kArtAddress->long_name[0] != 0)
     {
-        SetLongName(reinterpret_cast<const char*>(kArtAddress->LongName));
+        SetLongName(reinterpret_cast<const char*>(kArtAddress->long_name));
         state_.report_code = artnet::ReportCode::kRclonameok;
     }
 
-    if (kArtAddress->SubSwitch == artnet::Program::kDefaults)
+    if (kArtAddress->sub_switch == artnet::Program::kDefaults)
     {
         node_.port[kPortIndex].sub_switch = artnet::defaults::kSubnetSwitch;
     }
-    else if (kArtAddress->SubSwitch & artnet::Program::kChangeMask)
+    else if (kArtAddress->sub_switch & artnet::Program::kChangeMask)
     {
-        node_.port[kPortIndex].sub_switch = static_cast<uint8_t>(kArtAddress->SubSwitch & ~artnet::Program::kChangeMask);
+        node_.port[kPortIndex].sub_switch = static_cast<uint8_t>(kArtAddress->sub_switch & ~artnet::Program::kChangeMask);
     }
 
-    if (kArtAddress->NetSwitch == artnet::Program::kDefaults)
+    if (kArtAddress->net_switch == artnet::Program::kDefaults)
     {
         node_.port[kPortIndex].net_switch = artnet::defaults::kNetSwitch;
     }
-    else if (kArtAddress->NetSwitch & artnet::Program::kChangeMask)
+    else if (kArtAddress->net_switch & artnet::Program::kChangeMask)
     {
-        node_.port[kPortIndex].net_switch = static_cast<uint8_t>(kArtAddress->NetSwitch & ~artnet::Program::kChangeMask);
+        node_.port[kPortIndex].net_switch = static_cast<uint8_t>(kArtAddress->net_switch & ~artnet::Program::kChangeMask);
     }
 
     if (kArtAddress->SwOut[0] == artnet::Program::kNoChange)
@@ -158,7 +158,7 @@ void ArtNetNode::HandleAddress()
             {
                 output_port_[port_index].source_a.ip = 0;
                 output_port_[port_index].source_b.ip = 0;
-                output_port_[port_index].good_output &= static_cast<uint8_t>(~artnet::GoodOutput::kOutputIsMerging);
+                output_port_[port_index].good_output &= static_cast<uint8_t>(~artnet::good_output::kOutputIsMerging);
             }
             break;
 
@@ -193,7 +193,7 @@ void ArtNetNode::HandleAddress()
             for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++)
             {
                 const auto kMask =
-                    artnet::GoodInput::kIncludesTestPackets | artnet::GoodInput::kIncludesSip | artnet::GoodInput::kIncludesText | artnet::GoodInput::kErrors;
+                    artnet::good_input::kIncludesTestPackets | artnet::good_input::kIncludesSip | artnet::good_input::kIncludesText | artnet::good_input::kErrors;
                 input_port_[port_index].good_input &= static_cast<uint8_t>(~kMask);
             }
             break;

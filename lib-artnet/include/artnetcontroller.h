@@ -140,7 +140,7 @@ class ArtNetController : public ArtNetPollTable
         union artnet::UArtPacket ArtPacket;
         uint32_t IPAddressFrom;
         uint16_t nLength;
-        artnet::OpCodes OpCode;
+        artnet::OpCodes op_code;
     };
     TArtNetPacket* m_pArtNetPacket;
 

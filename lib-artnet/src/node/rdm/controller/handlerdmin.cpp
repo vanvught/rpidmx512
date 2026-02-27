@@ -59,8 +59,8 @@ void ArtNetNode::HandleRdmIn()
             {
                 if (rdm_controller_.RdmReceive(port_index, rdm_data))
                 {
-                    art_rdm->OpCode = static_cast<uint16_t>(artnet::OpCodes::kOpRdm);
-                    art_rdm->RdmVer = 0x01;
+                    art_rdm->op_code = static_cast<uint16_t>(artnet::OpCodes::kOpRdm);
+                    art_rdm->rdm_version = 0x01;
                     art_rdm->Net = node_.port[port_index].net_switch;
                     art_rdm->Command = 0;
                     art_rdm->Address = node_.port[port_index].sw;
@@ -89,8 +89,8 @@ void ArtNetNode::HandleRdmIn()
                 const auto* rdm_data = Rdm::Receive(port_index);
                 if (rdm_data != nullptr)
                 {
-                    art_rdm->OpCode = static_cast<uint16_t>(artnet::OpCodes::kOpRdm);
-                    art_rdm->RdmVer = 0x01;
+                    art_rdm->op_code = static_cast<uint16_t>(artnet::OpCodes::kOpRdm);
+                    art_rdm->rdm_version = 0x01;
                     art_rdm->Net = node_.port[port_index].net_switch;
                     art_rdm->Command = 0;
                     art_rdm->Address = node_.port[port_index].sw;
