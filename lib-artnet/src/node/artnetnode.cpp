@@ -123,6 +123,10 @@ ArtNetNode::ArtNetNode()
         input_port_[port_index].destination_ip = network::GetBroadcastIp();
     }
 
+#if defined(RDM_CONTROLLER)
+    memset(state_.art.tod_request_ip_list, 0, sizeof(state_.art.tod_request_ip_list));
+#endif
+
 #if defined(ARTNET_HAVE_DMXIN)
     memcpy(art_dmx_.Id, artnet::kNodeId, sizeof(art_poll_reply_.Id));
     art_dmx_.op_code = static_cast<uint16_t>(artnet::OpCodes::kOpDmx);
@@ -195,9 +199,15 @@ void ArtNetNode::Start()
 #if defined(ARTNET_HAVE_DMXIN)
     for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++)
     {
-        if ((node_.port[port_index].protocol == artnet::PortProtocol::kArtnet) && (node_.port[port_index].direction == dmxnode::PortDirection::kInput))
+        if (node_.port[port_index].direction == dmxnode::PortDirection::kInput)
         {
-            Dmx::Get()->SetPortDirection(port_index, dmx::PortDirection::kInput, true);
+            if (node_.port[port_index].protocol == artnet::PortProtocol::kArtnet)
+            {
+                Dmx::Get()->SetPortDirection(port_index, dmx::PortDirection::kInput, true);
+            }
+#if defined(RDM_CONTROLLER)
+            SendTodRequest(port_index);
+#endif
         }
     }
 

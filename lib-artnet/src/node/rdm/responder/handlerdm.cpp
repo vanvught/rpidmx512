@@ -95,7 +95,7 @@ void ArtNetNode::HandleTodControl()
     {
         if (kArtTodControl->Command == 0x01)
         { // AtcFlush
-            SendTod(kPortIndex);
+            SendArtTodData(kPortIndex);
         }
     }
 
@@ -105,7 +105,7 @@ void ArtNetNode::HandleTodControl()
 /**
  * Output Gateway always Directed Broadcasts this packet.
  */
-void ArtNetNode::SendTod(uint32_t port_index)
+void ArtNetNode::SendArtTodData(uint32_t port_index)
 {
     DEBUG_ENTRY();
     DEBUG_PRINTF("port_index=%u", port_index);

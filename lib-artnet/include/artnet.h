@@ -56,6 +56,8 @@ inline constexpr uint32_t kRdmUidWidth = 6;
 inline constexpr uint32_t kMacSize = 6;
 inline constexpr uint32_t kIpSize = 4;
 inline constexpr uint32_t kEstaSize = 2;
+inline constexpr uint16_t kPortAddressFirst = 0;
+inline constexpr uint16_t kPortAddressLast = 32767;
 
 inline constexpr char kNodeId[] = "Art-Net"; ///< Array of 8 characters, the final character is a null termination. Value = A r t - N e t 0x00
 inline constexpr uint32_t kMergeTimeoutSeconds = 10;

@@ -73,6 +73,7 @@
 namespace artnetnode
 {
 inline constexpr uint32_t kPollReplyQueueSize = 4;
+inline constexpr uint32_t kTodRequestListSize = 4;
 
 enum class PollReplyState : uint8_t
 {
@@ -90,6 +91,9 @@ struct State
         uint32_t poll_reply_delay_millis;
         uint32_t dmx_ip;
         uint32_t sync_millis; ///< Latest ArtSync received time
+#if defined(RDM_CONTROLLER)
+        uint32_t tod_request_ip_list[kTodRequestListSize];
+#endif
         artnet::ArtPollQueue poll_reply_queue[kPollReplyQueueSize];
         uint8_t poll_reply_queue_index;
         uint8_t poll_reply_port_index;
@@ -228,7 +232,7 @@ class ArtNetNode
     void SetRdm(uint32_t port_index, bool enable);
     bool Rdm(uint32_t port_index) const;
 
-    void SendTod(uint32_t port_index);
+    void SendArtTodData(uint32_t port_index);
 
     void Print();
 
@@ -397,6 +401,7 @@ class ArtNetNode
 
     void ProcessPollReply(uint32_t port_index);
     void SendPollReply(uint32_t port_index, uint32_t destination_ip, artnet::ArtPollQueue* poll_queue = nullptr);
+    void PollReplyQueueAdd(uint16_t target_port_address_bottom, uint16_t target_port_address_top);
 
     void SendTodRequest(uint32_t port_index);
 

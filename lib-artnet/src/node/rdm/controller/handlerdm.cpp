@@ -43,7 +43,7 @@ namespace rdm
 void Discovery::SendTod(uint32_t port_index, [[maybe_unused]] rdm::Discovery& discovery)
 {
     auto& artnet = *ArtNetNode::Get();
-    artnet.SendTod(port_index);
+    artnet.SendArtTodData(port_index);
     artnet.RestartOutputPort(port_index);
 }
 } // namespace rdm
@@ -108,6 +108,11 @@ void ArtNetNode::HandleTodControl()
     DEBUG_EXIT();
 }
 
+/**
+ * All Input Gateways parse the ArtTodData packets.
+ * If the Sub-Net and Universe fields match, the Input Gateway adds the TOD contents to their own internal TOD.
+ * This allows Input Gateways to respond to any physical layer RDM discovery commands they receive.
+ */
 void ArtNetNode::HandleTodData()
 {
     DEBUG_ENTRY();
@@ -124,11 +129,13 @@ void ArtNetNode::HandleTodData()
 
     for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++)
     {
+        // All Input Gateways parse the ArtTodData packets.
         if (node_.port[port_index].direction != dmxnode::PortDirection::kInput)
         {
             continue;
         }
 
+        // 	If the Sub-Net and Universe fields match, the Input Gateway adds the TOD contents to their own internal TOD.
         if (node_.port[port_index].port_address == kPortAddress)
         {
             DEBUG_PRINTF("port_index=%u, kPortAddress=%u, pArtTodData->uid_count=%u", port_index, kPortAddress, kArtTodData->uid_count);
@@ -145,9 +152,10 @@ void ArtNetNode::HandleTodData()
 }
 
 /**
- * Output Gateway always Directed Broadcasts this packet.
+ * Node Output Gateway
+ * ArtTodData packet is unicast to all IP addresses that have previously requested an ArtTodData packet.
  */
-void ArtNetNode::SendTod(uint32_t port_index)
+void ArtNetNode::SendArtTodData(uint32_t port_index)
 {
     DEBUG_ENTRY();
     DEBUG_PRINTF("port_index=%u", port_index);
@@ -164,11 +172,9 @@ void ArtNetNode::SendTod(uint32_t port_index)
 
     const auto kDiscovered = static_cast<uint8_t>(rdm_controller_.TodUidCount(port_index));
 
-    /**
-     * Physical Port = (BindIndex-1) * ArtPollReply- >NumPortsLo + ArtTodData->Port
-     * As most modern Art-Net gateways implement one universe per ArtPollReply,
-     * ArtTodData->Port will usually be set to a value of 1.
-     */
+    // Physical Port = (BindIndex-1) * ArtPollReply->NumPortsLo + ArtTodData->Port
+    // As most modern Art-Net gateways implement one universe per ArtPollReply,
+    // ArtTodData->Port will usually be set to a value of 1.
     tod_data.Port = static_cast<uint8_t>(1U + (port_index & 0x3));
     tod_data.spare1 = 0;
     tod_data.spare2 = 0;
@@ -176,7 +182,7 @@ void ArtNetNode::SendTod(uint32_t port_index)
     tod_data.spare4 = 0;
     tod_data.spare5 = 0;
     tod_data.spare6 = 0;
-    tod_data.bind_index = static_cast<uint8_t>(kPage + 1U); ///< ArtPollReplyData->BindIndex == ArtTodData- >BindIndex
+    tod_data.bind_index = static_cast<uint8_t>(kPage + 1U); ///< ArtPollReplyData->BindIndex == ArtTodData ->BindIndex
     tod_data.Net = node_.port[kPage].net_switch;
     tod_data.CommandResponse = 0; ///< The packet contains the entire TOD or is the first packet in a sequence of packets that contains the entire TOD.
     tod_data.Address = node_.port[port_index].sw;
@@ -189,12 +195,21 @@ void ArtNetNode::SendTod(uint32_t port_index)
 
     const auto kLength = sizeof(struct artnet::ArtTodData) - (sizeof(tod_data.Tod)) + (kDiscovered * 6U);
 
-    network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&tod_data), static_cast<uint16_t>(kLength), network::GetBroadcastIp(), artnet::kUdpPort);
+    for (auto& entry : state_.art.tod_request_ip_list)
+    {
+        if (entry != 0)
+        {
+            network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&tod_data), static_cast<uint16_t>(kLength), entry, artnet::kUdpPort);
+        }
+    }
 
     DEBUG_PRINTF("kDiscovered=%u", kDiscovered);
     DEBUG_EXIT();
 }
 
+/**
+ * Node Input Gateway -> Input Gateway Directed Broadcasts to all nodes.
+ */
 void ArtNetNode::SendTodRequest(uint32_t port_index)
 {
     DEBUG_ENTRY();
@@ -202,28 +217,28 @@ void ArtNetNode::SendTodRequest(uint32_t port_index)
 
     rdm_controller_.TodReset(port_index);
 
-    auto* request = &art_tod_packet_.art_tod_request;
+    auto* tod_request = &art_tod_packet_.art_tod_request;
     const auto kPage = port_index;
 
-    memcpy(request->Id, artnet::kNodeId, sizeof(request->Id));
-    request->op_code = static_cast<uint16_t>(artnet::OpCodes::kOpTodrequest);
-    request->prot_ver_hi = 0;
-    request->prot_ver_lo = artnet::kProtocolRevision;
-    request->spare1 = 0;
-    request->spare2 = 0;
-    request->spare3 = 0;
-    request->spare4 = 0;
-    request->spare5 = 0;
-    request->spare6 = 0;
-    request->spare7 = 0;
-    request->Net = node_.port[kPage].net_switch;
-    request->Command = 0;
-    request->AddCount = 1;
-    request->Address[0] = node_.port[port_index].sw;
+    memcpy(tod_request->Id, artnet::kNodeId, sizeof(tod_request->Id));
+    tod_request->op_code = static_cast<uint16_t>(artnet::OpCodes::kOpTodrequest);
+    tod_request->prot_ver_hi = 0;
+    tod_request->prot_ver_lo = artnet::kProtocolRevision;
+    tod_request->spare1 = 0;
+    tod_request->spare2 = 0;
+    tod_request->spare3 = 0;
+    tod_request->spare4 = 0;
+    tod_request->spare5 = 0;
+    tod_request->spare6 = 0;
+    tod_request->spare7 = 0;
+    tod_request->Net = node_.port[kPage].net_switch;
+    tod_request->Command = 0;
+    tod_request->AddCount = 1;
+    tod_request->Address[0] = node_.port[port_index].sw;
 
-    const auto kLength = sizeof(struct artnet::ArtTodRequest) - (sizeof(request->Address)) + request->AddCount;
+    const auto kLength = sizeof(struct artnet::ArtTodRequest) - (sizeof(tod_request->Address)) + tod_request->AddCount;
 
-    network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(request), static_cast<uint16_t>(kLength), network::GetBroadcastIp(), artnet::kUdpPort);
+    network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(tod_request), static_cast<uint16_t>(kLength), network::GetBroadcastIp(), artnet::kUdpPort);
 
     DEBUG_EXIT();
 }

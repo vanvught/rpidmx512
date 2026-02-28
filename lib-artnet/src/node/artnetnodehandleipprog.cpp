@@ -128,22 +128,7 @@ void ArtNetNode::HandleIpProg()
 
         if (state_.send_art_poll_reply_on_change)
         {
-            for (auto& entry : state_.art.poll_reply_queue)
-            {
-                if ((entry.art_poll_reply_ip_address == ip_address_from_) && (entry.art_poll_millis != 0))
-                {
-                    break;
-                }
-
-                if (entry.art_poll_millis == 0)
-                {
-                    entry.art_poll_millis = hal::Millis();
-                    entry.art_poll_reply_ip_address = ip_address_from_;
-                    entry.art_poll_reply.target_port_address_top = 32767;
-                    entry.art_poll_reply.target_port_address_bottom = 0;
-                    break;
-                }
-            }
+            PollReplyQueueAdd(artnet::kPortAddressFirst, artnet::kPortAddressLast);
         }
 
         DEBUG_PUTS("Changed");

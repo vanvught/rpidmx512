@@ -13,6 +13,9 @@ ifneq ($(MAKE_FLAGS),)
 	ifeq ($(findstring RDM_CONTROLLER,$(MAKE_FLAGS)), RDM_CONTROLLER)
 		EXTRA_SRCDIR+=src/node/rdm
 		EXTRA_SRCDIR+=src/node/rdm/controller
+		ifeq ($(findstring ARTNET_HAVE_DMXIN,$(MAKE_FLAGS)), ARTNET_HAVE_DMXIN)
+			EXTRA_SRCDIR+=src/node/rdm/controller/rdmin
+		endif
 		EXTRA_INCLUDES+=../lib-rdm/include ../lib-dmx/include
 		ifeq ($(findstring ENABLE_HTTPD,$(MAKE_FLAGS)), ENABLE_HTTPD)
 			EXTRA_SRCDIR+=src/node/rdm/controller/json

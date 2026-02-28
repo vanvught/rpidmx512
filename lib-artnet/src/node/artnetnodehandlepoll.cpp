@@ -30,7 +30,6 @@
 #pragma GCC push_options
 #pragma GCC optimize("O2")
 #pragma GCC optimize("no-tree-loop-distribute-patterns")
-#pragma GCC optimize("-fprefetch-loop-arrays")
 #endif
 
 #include <cstdint>
@@ -314,21 +313,27 @@ void ArtNetNode::HandlePoll()
         state_.art.diag_ip = 0;
     }
 
-    uint16_t target_port_address_top = 32767; // TODO (a)
-    uint16_t target_port_address_bottom = 0;
+    auto target_port_address_bottom = artnet::kPortAddressFirst;
+    auto target_port_address_top = artnet::kPortAddressLast;
 
     if (kArtPoll->flags & artnet::Flags::kUseTargetPortAddress)
     {
-        target_port_address_top = static_cast<uint16_t>((static_cast<uint16_t>(kArtPoll->target_port_address_top_hi) >> 8) | kArtPoll->target_port_address_top_lo);
+        target_port_address_top =
+            static_cast<uint16_t>((static_cast<uint16_t>(kArtPoll->target_port_address_top_hi) >> 8) | kArtPoll->target_port_address_top_lo);
         target_port_address_bottom =
             static_cast<uint16_t>((static_cast<uint16_t>(kArtPoll->target_port_address_bottom_hi) >> 8) | kArtPoll->target_port_address_bottom_lo);
     }
 
+    PollReplyQueueAdd(target_port_address_bottom, target_port_address_top);
+}
+
+void ArtNetNode::PollReplyQueueAdd(uint16_t target_port_address_bottom, uint16_t target_port_address_top)
+{
     for (auto& entry : state_.art.poll_reply_queue)
     {
         if ((entry.art_poll_reply_ip_address == ip_address_from_) && (entry.art_poll_millis != 0)) [[unlikely]]
         {
-            DEBUG_PRINTF("[ArtPollReply already queued for " IPSTR, IP2STR(entry.art_poll_reply_ip_address));
+            DEBUG_PRINTF("PollReply already queued for " IPSTR, IP2STR(entry.art_poll_reply_ip_address));
             return;
         }
 
@@ -338,7 +343,7 @@ void ArtNetNode::HandlePoll()
             entry.art_poll_reply_ip_address = ip_address_from_;
             entry.art_poll_reply.target_port_address_top = target_port_address_top;
             entry.art_poll_reply.target_port_address_bottom = target_port_address_bottom;
-            DEBUG_PRINTF("[ArtPollReply queued for " IPSTR, IP2STR(entry.art_poll_reply_ip_address));
+            DEBUG_PRINTF("PollReply queued for " IPSTR, IP2STR(entry.art_poll_reply_ip_address));
             return;
         }
     }
