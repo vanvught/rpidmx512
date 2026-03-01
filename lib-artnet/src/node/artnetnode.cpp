@@ -123,10 +123,6 @@ ArtNetNode::ArtNetNode()
         input_port_[port_index].destination_ip = network::GetBroadcastIp();
     }
 
-#if defined(RDM_CONTROLLER)
-    memset(state_.art.tod_request_ip_list, 0, sizeof(state_.art.tod_request_ip_list));
-#endif
-
 #if defined(ARTNET_HAVE_DMXIN)
     memcpy(art_dmx_.Id, artnet::kNodeId, sizeof(art_poll_reply_.Id));
     art_dmx_.op_code = static_cast<uint16_t>(artnet::OpCodes::kOpDmx);

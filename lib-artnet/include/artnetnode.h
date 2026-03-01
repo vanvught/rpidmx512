@@ -268,7 +268,6 @@ class ArtNetNode
     void RestartOutputPort(uint32_t port_index);
 
 #if defined(RDM_CONTROLLER)
-    void SetRdmController(ArtNetRdmController* art_net_rdm_controller, bool do_enable = true);
     uint32_t RdmCopyWorkingQueue(char* out_buffer, uint32_t out_buffer_size);
     uint32_t RdmTodUidCount(uint32_t port_index);
     uint32_t RdmCopyTod(uint32_t port_index, char* out_buffer, uint32_t out_buffer_size);
