@@ -192,6 +192,19 @@ void ArtNetNode::Start()
     handle_ = network::udp::Begin(artnet::kUdpPort, StaticCallbackFunction);
     assert(handle_ != -1);
 
+#if defined(RDM_CONTROLLER)
+    if (state_.is_rdm_enabled)
+    {
+        for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++)
+        {
+            if ((node_.port[port_index].direction == dmxnode::PortDirection::kOutput) && Rdm(port_index))
+            {
+				rdm_controller_.Full(port_index);
+            }
+        }
+    }
+#endif
+
 #if defined(ARTNET_HAVE_DMXIN)
     for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++)
     {

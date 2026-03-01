@@ -444,7 +444,7 @@ class ArtNetNode
     ArtNetRdmController rdm_controller_;
 #endif
 #if defined(RDM_RESPONDER)
-    ArtNetRdmResponder* rdm_responder_;
+    ArtNetRdmResponder* rdm_responder_{null};
 #endif
 #endif
 #if defined(ARTNET_HAVE_TIMECODE)
