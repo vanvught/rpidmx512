@@ -120,7 +120,6 @@ ArtNetNode::ArtNetNode()
         output_port_[port_index].source_b.physical = 0x100;
         output_port_[port_index].good_output_b = artnet::GoodOutputB::kRdmDisabled | artnet::GoodOutputB::kDiscoveryNotRunning;
         memset(&input_port_[port_index], 0, sizeof(struct artnetnode::InputPort));
-        input_port_[port_index].destination_ip = network::GetBroadcastIp();
     }
 
 #if defined(ARTNET_HAVE_DMXIN)
@@ -199,7 +198,7 @@ void ArtNetNode::Start()
         {
             if ((node_.port[port_index].direction == dmxnode::PortDirection::kOutput) && Rdm(port_index))
             {
-				rdm_controller_.Full(port_index);
+                rdm_controller_.Full(port_index);
             }
         }
     }
@@ -763,9 +762,7 @@ void ArtNetNode::Print()
                 printf("  Port %-2u %-4u", static_cast<unsigned int>(port_index), static_cast<unsigned int>(kUniverse));
                 if (node_.port[port_index].protocol == artnet::PortProtocol::kArtnet)
                 {
-                    const auto kDestinationIp =
-                        (input_port_[port_index].destination_ip == 0 ? network::GetBroadcastIp() : input_port_[port_index].destination_ip);
-                    printf(" -> " IPSTR, IP2STR(kDestinationIp));
+                    printf(" -> " IPSTR, IP2STR(input_port_[port_index].destination_ip));
                 }
 #if (ARTNET_VERSION >= 4)
                 printf(" %s\n", artnet::GetProtocolMode(node_.port[port_index].protocol, true));

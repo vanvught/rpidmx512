@@ -117,28 +117,73 @@ void ArtNetNode::HandleTodData()
 {
     DEBUG_ENTRY();
 
-    const auto* const kArtTodData = reinterpret_cast<artnet::ArtTodData*>(receive_buffer_);
+    const auto* const kArtTodData = reinterpret_cast<const artnet::ArtTodData*>(receive_buffer_);
 
-    if (kArtTodData->rdm_version != 0x01)
+    if (kArtTodData->rdm_version != 0x01) [[unlikely]]
     {
         DEBUG_EXIT();
         return;
     }
 
-    const auto kPortAddress = static_cast<uint16_t>((kArtTodData->Net << 8)) | static_cast<uint16_t>((kArtTodData->Address));
+    // Defensive: uid_count must never exceed array bound
+    if (kArtTodData->uid_count > 200) [[unlikely]]
+    {
+        DEBUG_EXIT();
+        return;
+    }
 
+    const auto kPortAddress = static_cast<uint16_t>(static_cast<uint16_t>(kArtTodData->Net) << 8) | static_cast<uint16_t>(kArtTodData->Address);
+
+    // Art-Net 4: bind_index discriminates packets from the same IP.
+    // If bind_index is non-zero, treat it as selecting the logical port instance.
+    if (kArtTodData->bind_index != 0)
+    {
+        const uint32_t kPortIndex = static_cast<uint32_t>(kArtTodData->bind_index - 1);
+
+        // Validate bind_index mapping
+        if (kPortIndex >= dmxnode::kMaxPorts)
+        {
+            DEBUG_EXIT();
+            return;
+        }
+
+        // Only Input Gateways parse ArtTodData
+        if (node_.port[kPortIndex].direction != dmxnode::PortDirection::kInput)
+        {
+            DEBUG_EXIT();
+            return;
+        }
+
+        if (node_.port[kPortIndex].port_address != kPortAddress)
+        {
+            DEBUG_EXIT();
+            return;
+        }
+
+        DEBUG_PRINTF("bind_index=%u -> port_index=%u, kPortAddress=%u, uid_count=%u", kArtTodData->bind_index, port_index, kPortAddress,
+                     kArtTodData->uid_count);
+
+        for (uint32_t uid_index = 0; uid_index < kArtTodData->uid_count; uid_index++)
+        {
+            const uint8_t* uid = kArtTodData->Tod[uid_index];
+            rdm_controller_.TodAddUid(kPortIndex, uid);
+        }
+
+        DEBUG_EXIT();
+        return;
+    }
+
+    // Backward compatible / bind_index == 0 fallback:
     for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++)
     {
-        // All Input Gateways parse the ArtTodData packets.
         if (node_.port[port_index].direction != dmxnode::PortDirection::kInput)
         {
             continue;
         }
 
-        // 	If the Sub-Net and Universe fields match, the Input Gateway adds the TOD contents to their own internal TOD.
         if (node_.port[port_index].port_address == kPortAddress)
         {
-            DEBUG_PRINTF("port_index=%u, kPortAddress=%u, pArtTodData->uid_count=%u", port_index, kPortAddress, kArtTodData->uid_count);
+            DEBUG_PRINTF("port_index=%u, kPortAddress=%u, uid_count=%u", port_index, kPortAddress, kArtTodData->uid_count);
 
             for (uint32_t uid_index = 0; uid_index < kArtTodData->uid_count; uid_index++)
             {

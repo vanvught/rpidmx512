@@ -26,6 +26,7 @@
 #pragma GCC push_options
 #pragma GCC optimize("O2")
 #pragma GCC optimize("no-tree-loop-distribute-patterns")
+#pragma GCC optimize("-funroll-loops")
 #endif
 
 #include <cstdint>
@@ -38,7 +39,7 @@
 #include "hal_millis.h"
 #include "hal.h"
 #include "hal_panelled.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
 static uint32_t s_receiving_mask = 0;
 
@@ -46,7 +47,10 @@ void ArtNetNode::HandleDmxIn()
 {
     for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++)
     {
-        if ((node_.port[port_index].direction == dmxnode::PortDirection::kInput) && (node_.port[port_index].protocol == artnet::PortProtocol::kArtnet) &&
+        if (node_.port[port_index].direction != dmxnode::PortDirection::kInput) continue;
+        if (input_port_[port_index].destination_ip == 0) continue;
+
+        if ((node_.port[port_index].protocol == artnet::PortProtocol::kArtnet) &&
             ((input_port_[port_index].good_input & artnet::GoodInput::kDisabled) != artnet::GoodInput::kDisabled))
         {
             const auto* const kDataChanged = reinterpret_cast<const struct Data*>(Dmx::Get()->GetDmxChanged(port_index));
