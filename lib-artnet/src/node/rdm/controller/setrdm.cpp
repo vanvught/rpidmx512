@@ -40,11 +40,11 @@ void ArtNetNode::SetRdm(bool do_enable)
 
     if (state_.is_rdm_enabled)
     {
-        art_poll_reply_.Status1 |= artnet::Status1::kRdmCapable;
+        art_poll_reply_.status1 |= artnet::Status1::kRdmCapable;
     }
     else
     {
-        art_poll_reply_.Status1 &= static_cast<uint8_t>(~artnet::Status1::kRdmCapable);
+        art_poll_reply_.status1 &= static_cast<uint8_t>(~artnet::Status1::kRdmCapable);
     }
 
     DEBUG_PRINTF("state_.is_rdm_enabled=%c", state_.is_rdm_enabled ? 'Y' : 'N');

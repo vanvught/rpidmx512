@@ -329,7 +329,7 @@ class ConfigStore : StoreDevice
     template <std::size_t N>
     void DmxNodeUpdateLabel(uint8_t (common::store::DmxNode::*field)[common::store::dmxnode::kParamPorts][N], uint32_t index, const char* src, uint32_t length)
     {
-        static_assert(N == common::store::dmxnode::kLabelNameLength, "Label size mismatch");
+        static_assert(N == common::store::dmxnode::kPortNameLength, "Label size mismatch");
         assert(index < common::store::dmxnode::kParamPorts);
         assert(src != nullptr);
 

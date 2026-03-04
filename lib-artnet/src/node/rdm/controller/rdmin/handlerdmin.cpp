@@ -31,7 +31,6 @@
 #pragma GCC optimize("O2")
 #pragma GCC optimize("no-tree-loop-distribute-patterns")
 #pragma GCC optimize("-funroll-loops")
-#pragma GCC optimize("-fprefetch-loop-arrays")
 #endif
 
 #include <cstdint>
@@ -54,21 +53,23 @@ void ArtNetNode::HandleRdmIn()
 
         if (node_.port[port_index].direction == dmxnode::PortDirection::kInput)
         {
+			if (input_port_[port_index].destination_ip == 0) continue;
+			
             const auto* rdm_data = Rdm::Receive(port_index);
             if (rdm_data != nullptr)
             {
                 if (rdm_controller_.RdmReceive(port_index, rdm_data))
                 {
-                    art_rdm->OpCode = static_cast<uint16_t>(artnet::OpCodes::kOpRdm);
-                    art_rdm->RdmVer = 0x01;
-                    art_rdm->Net = node_.port[port_index].net_switch;
-                    art_rdm->Command = 0;
-                    art_rdm->Address = node_.port[port_index].sw;
+                    art_rdm->op_code = static_cast<uint16_t>(artnet::OpCodes::kOpRdm);
+                    art_rdm->rdm_version = 0x01;
+                    art_rdm->net = node_.port[port_index].net_switch;
+                    art_rdm->command = 0;
+                    art_rdm->address = node_.port[port_index].sw;
 
                     auto* message = reinterpret_cast<const struct TRdmMessage*>(rdm_data);
-                    memcpy(art_rdm->RdmPacket, &rdm_data[1], message->message_length + 1U);
+                    memcpy(art_rdm->rdm_packet, &rdm_data[1], message->message_length + 1U);
 
-                    const auto* rdm_message = reinterpret_cast<const struct TRdmMessageNoSc*>(art_rdm->RdmPacket);
+                    const auto* rdm_message = reinterpret_cast<const struct TRdmMessageNoSc*>(art_rdm->rdm_packet);
 
                     network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(art_rdm),
                                        ((sizeof(struct artnet::ArtRdm)) - 256) + rdm_message->message_length + 1, input_port_[port_index].destination_ip,
@@ -84,21 +85,21 @@ void ArtNetNode::HandleRdmIn()
         }
         else if (node_.port[port_index].direction == dmxnode::PortDirection::kOutput)
         {
-            if (output_port_[port_index].rdm_destination_ip != 0) // && (!rdm_controller_.IsRunning(port_index)))
+            if (output_port_[port_index].rdm_destination_ip != 0)
             {
                 const auto* rdm_data = Rdm::Receive(port_index);
                 if (rdm_data != nullptr)
                 {
-                    art_rdm->OpCode = static_cast<uint16_t>(artnet::OpCodes::kOpRdm);
-                    art_rdm->RdmVer = 0x01;
-                    art_rdm->Net = node_.port[port_index].net_switch;
-                    art_rdm->Command = 0;
-                    art_rdm->Address = node_.port[port_index].sw;
+                    art_rdm->op_code = static_cast<uint16_t>(artnet::OpCodes::kOpRdm);
+                    art_rdm->rdm_version = 0x01;
+                    art_rdm->net = node_.port[port_index].net_switch;
+                    art_rdm->command = 0;
+                    art_rdm->address = node_.port[port_index].sw;
 
                     auto* message = reinterpret_cast<const struct TRdmMessage*>(rdm_data);
-                    memcpy(art_rdm->RdmPacket, &rdm_data[1], message->message_length + 1U);
+                    memcpy(art_rdm->rdm_packet, &rdm_data[1], message->message_length + 1U);
 
-                    const auto* rdm_message = reinterpret_cast<const struct TRdmMessageNoSc*>(art_rdm->RdmPacket);
+                    const auto* rdm_message = reinterpret_cast<const struct TRdmMessageNoSc*>(art_rdm->rdm_packet);
 
                     network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(art_rdm),
                                        ((sizeof(struct artnet::ArtRdm)) - 256) + rdm_message->message_length + 1, output_port_[port_index].rdm_destination_ip,

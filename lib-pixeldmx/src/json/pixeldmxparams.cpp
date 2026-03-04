@@ -226,8 +226,8 @@ void PixelDmxParams::Set()
                 DmxNodeNodeType::Get()->SetUniverse(protocol_port_index, static_cast<uint16_t>(kStartUniverse + universe));
                 DmxNodeNodeType::Get()->SetDirection(protocol_port_index, dmxnode::PortDirection::kOutput);
 
-                char label[dmxnode::kLabelNameLength];
-                snprintf(label, dmxnode::kLabelNameLength - 1, "Pixel %c -> %u:%u", static_cast<char>('A' + pixel_port_index), protocol_port_index,
+                char label[dmxnode::kPortNameLength];
+                snprintf(label, dmxnode::kPortNameLength - 1, "Pixel %c -> %u:%u", static_cast<char>('A' + pixel_port_index), protocol_port_index,
                          kStartUniverse + universe);
                 DmxNode::Instance().SetShortName(protocol_port_index, label);
             }

@@ -1,8 +1,8 @@
 /**
- * @file rdmnetdevice.h
+ * @file rdm_device.cpp
  *
  */
-/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,51 +23,26 @@
  * THE SOFTWARE.
  */
 
-#ifndef RDMNETDEVICE_H_
-#define RDMNETDEVICE_H_
-
 #include <cstdint>
 
-#include "e117.h"
-#include "llrp/llrpdevice.h"
-#include "hal_uuid.h"
-#include "firmware/debug/debug_debug.h"
-#include "rdmdevice.h"
+#include "h3/hal.h"
+#include "firmwareversion.h"
 
-class RDMNetDevice final : public LLRPDevice
+namespace rdm::device
 {
-   public:
-    RDMNetDevice()
-    {
-        DEBUG_ENTRY();
+uint16_t DeviceModel()
+{
+    return hal::kBoardId;
+}
 
-        rdm::device::Device::Instance().Init();
+uint32_t SoftwareVersionId()
+{
+    return FirmwareVersion::Get()->GetVersionId();
+}
 
-        DEBUG_EXIT();
-    }
-
-    ~RDMNetDevice()
-    {
-        DEBUG_ENTRY();
-
-        DEBUG_EXIT();
-    };
-
-    void Print()
-    {
-        static constexpr auto kUuidStringLength = 36;
-        char uuid_str[kUuidStringLength + 1];
-        uuid_str[kUuidStringLength] = '\0';
-
-        uint8_t cid[e117::kCidLength];
-        hal::UuidCopy(cid);
-        uuid_unparse(cid, uuid_str);
-
-        printf("RDMNet\n");
-        printf(" CID : %s\n", uuid_str);
-
-        LLRPDevice::Print();
-    }
-};
-
-#endif /* RDMNETDEVICE_H_ */
+const char* SoftwareVersionLabel(uint32_t& length)
+{
+    length = firmwareversion::length::kSoftwareVersion;
+    return FirmwareVersion::Get()->GetSoftwareVersion();
+}
+} // namespace rdm::device

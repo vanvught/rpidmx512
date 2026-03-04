@@ -26,6 +26,7 @@
 #pragma GCC push_options
 #pragma GCC optimize("O2")
 #pragma GCC optimize("no-tree-loop-distribute-patterns")
+#pragma GCC optimize("-funroll-loops")
 #endif
 
 #include <cstdint>
@@ -34,11 +35,10 @@
 #include "artnetnode.h"
 #include "artnet.h"
 #include "dmx.h"
-#include "network.h"
+#include "network_udp.h"
 #include "hal_millis.h"
 #include "hal.h"
 #include "hal_panelled.h"
- #include "firmware/debug/debug_debug.h"
 
 static uint32_t s_receiving_mask = 0;
 
@@ -46,16 +46,19 @@ void ArtNetNode::HandleDmxIn()
 {
     for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++)
     {
-        if ((node_.port[port_index].direction == dmxnode::PortDirection::kInput) && (node_.port[port_index].protocol == artnet::PortProtocol::kArtnet) &&
+        if (node_.port[port_index].direction != dmxnode::PortDirection::kInput) continue;
+        if (input_port_[port_index].destination_ip == 0) continue;
+
+        if ((node_.port[port_index].protocol == artnet::PortProtocol::kArtnet) &&
             ((input_port_[port_index].good_input & artnet::GoodInput::kDisabled) != artnet::GoodInput::kDisabled))
         {
             const auto* const kDataChanged = reinterpret_cast<const struct Data*>(Dmx::Get()->GetDmxChanged(port_index));
 
             if (kDataChanged != nullptr)
             {
-                art_dmx_.Sequence = static_cast<uint8_t>(1U + input_port_[port_index].sequence_number++);
-                art_dmx_.Physical = static_cast<uint8_t>(port_index);
-                art_dmx_.PortAddress = node_.port[port_index].port_address;
+                art_dmx_.sequence = static_cast<uint8_t>(1U + input_port_[port_index].sequence_number++);
+                art_dmx_.physical = static_cast<uint8_t>(port_index);
+                art_dmx_.port_address = node_.port[port_index].port_address;
 
                 auto length = kDataChanged->Statistics.nSlotsInPacket;
 
@@ -67,8 +70,8 @@ void ArtNetNode::HandleDmxIn()
                     length++;
                 }
 
-                art_dmx_.LengthHi = static_cast<uint8_t>((length & 0xFF00) >> 8);
-                art_dmx_.Length = static_cast<uint8_t>(length & 0xFF);
+                art_dmx_.length_hi = static_cast<uint8_t>((length & 0xFF00) >> 8);
+                art_dmx_.length = static_cast<uint8_t>(length & 0xFF);
 
                 input_port_[port_index].good_input |= artnet::GoodInput::kDataRecieved;
 
@@ -132,9 +135,9 @@ void ArtNetNode::HandleDmxIn()
                 {
                     const auto* const kDataCurrent = reinterpret_cast<const struct Data*>(Dmx::Get()->GetDmxCurrentData(port_index));
 
-                    art_dmx_.Sequence = static_cast<uint8_t>(1U + input_port_[port_index].sequence_number++);
-                    art_dmx_.Physical = static_cast<uint8_t>(port_index);
-                    art_dmx_.PortAddress = node_.port[port_index].port_address;
+                    art_dmx_.sequence = static_cast<uint8_t>(1U + input_port_[port_index].sequence_number++);
+                    art_dmx_.physical = static_cast<uint8_t>(port_index);
+                    art_dmx_.port_address = node_.port[port_index].port_address;
 
                     auto length = kDataCurrent->Statistics.nSlotsInPacket;
 
@@ -146,8 +149,8 @@ void ArtNetNode::HandleDmxIn()
                         length++;
                     }
 
-                    art_dmx_.LengthHi = static_cast<uint8_t>((length & 0xFF00) >> 8);
-                    art_dmx_.Length = static_cast<uint8_t>(length & 0xFF);
+                    art_dmx_.length_hi = static_cast<uint8_t>((length & 0xFF00) >> 8);
+                    art_dmx_.length = static_cast<uint8_t>(length & 0xFF);
 
                     const auto* udp_data = reinterpret_cast<const uint8_t*>(&art_dmx_);
                     network::udp::Send(handle_, udp_data, sizeof(struct artnet::ArtDmx), input_port_[port_index].destination_ip, artnet::kUdpPort);

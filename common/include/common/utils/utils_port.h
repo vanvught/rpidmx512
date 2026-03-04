@@ -23,12 +23,12 @@
  * THE SOFTWARE.
  */
 
-#ifndef DMXNODE_UTILS_H_
-#define DMXNODE_UTILS_H_
+#ifndef COMMON_UTILS_UTILS_PORT_H_
+#define COMMON_UTILS_UTILS_PORT_H_
 
 #include <cstdint>
 
-namespace json
+namespace common
 {
 template <class S> void PortSet(uint32_t port_index, S s, uint16_t& n)
 {
@@ -42,6 +42,6 @@ template <class S> S PortGet(uint32_t port_index, uint16_t n)
 {
     return static_cast<S>((n >> (port_index * 2)) & 0x3);
 }
-} // namespace json
+} // namespace common
 
-#endif // DMXNODE_UTILS_H_
+#endif // COMMON_UTILS_UTILS_PORT_H_

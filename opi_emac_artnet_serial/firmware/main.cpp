@@ -23,8 +23,6 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-
 #include "h3/hal_watchdog.h"
 #include "network.h"
 #include "displayudf.h"
@@ -33,11 +31,6 @@
 #include "dmxnodemsgconst.h"
 #include "dmxserial.h"
 #include "json/dmxserialparams.h"
-#if defined(NODE_RDMNET_LLRP_ONLY)
-#include "rdmnetdevice.h"
-#include "rdmdevice.h"
-#include "rdm_e120.h"
-#endif
 #if defined(NODE_SHOWFILE)
 #include "showfile.h"
 #endif
@@ -109,16 +102,6 @@ int main()
     }
 
     RemoteConfig remote_config(remoteconfig::Output::SERIAL, dmx_node_node.GetActiveOutputPorts());
-
-#if defined(NODE_RDMNET_LLRP_ONLY)
-    auto& rdm_device =rdm::device::Device::Instance();
-    rdm_device.SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
-    rdm_device.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
-    rdm_device.Init();
-    rdm_device.Print();
-
-    RDMNetDevice llrp_only_device;
-#endif
 
     display.TextStatus(DmxNodeMsgConst::START, console::Colours::kConsoleYellow);
 

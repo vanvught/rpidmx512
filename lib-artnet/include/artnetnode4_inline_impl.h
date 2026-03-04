@@ -134,7 +134,7 @@ inline void ArtNetNode::SetPriority4(uint32_t port_index, uint8_t priority)
 
 inline void ArtNetNode::SetPriority4(uint32_t priority)
 {
-    art_poll_reply_.AcnPriority = static_cast<uint8_t>(priority);
+    art_poll_reply_.acn_priority = static_cast<uint8_t>(priority);
 
     for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++)
     {

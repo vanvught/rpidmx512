@@ -2,7 +2,7 @@
  * @file showfileprotocolnodeartnet.h
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,88 +31,86 @@
 
 #include "artnetnode.h"
 #include "artnet.h"
+#include "firmware/debug/debug_debug.h"
 
- #include "firmware/debug/debug_debug.h"
+class ShowFileProtocol
+{
+   public:
+    ShowFileProtocol()
+    {
+        DEBUG_ENTRY();
 
-class ShowFileProtocol {
-public:
-	ShowFileProtocol() {
-		DEBUG_ENTRY();
+        memcpy(dmx_.id, artnet::kNodeId, sizeof(dmx_.id));
+        dmx_.op_code = static_cast<uint16_t>(artnet::OpCodes::kOpDmx);
+        dmx_.prot_ver_hi = 0;
+        dmx_.prot_ver_lo = artnet::kProtocolRevision;
 
-		memcpy(m_ArtDmx.Id, artnet::kNodeId, sizeof(m_ArtDmx.Id));
-		m_ArtDmx.OpCode = static_cast<uint16_t>(artnet::OpCodes::kOpDmx);
-		m_ArtDmx.ProtVerHi = 0;
-		m_ArtDmx.ProtVerLo = artnet::kProtocolRevision;
+        DEBUG_EXIT();
+    }
 
-		DEBUG_EXIT();
-	}
+    void SetSynchronizationAddress([[maybe_unused]] uint16_t synchronization_address) {}
 
-	void SetSynchronizationAddress([[maybe_unused]] const uint16_t synchronization_address) {
-	}
+    void Start()
+    {
+        DEBUG_ENTRY();
 
-	void Start() {
-		DEBUG_ENTRY();
+        DEBUG_EXIT();
+    }
 
-		DEBUG_EXIT();
-	}
+    void Stop()
+    {
+        DEBUG_ENTRY();
 
-	void Stop() {
-		DEBUG_ENTRY();
+        ArtNetNode::Get()->SetRecordShowfile(false);
 
-		ArtNetNode::Get()->SetRecordShowfile(false);
+        DEBUG_EXIT();
+    }
 
-		DEBUG_EXIT();
-	}
+    void Record()
+    {
+        DEBUG_ENTRY();
 
-	void Record() {
-		DEBUG_ENTRY();
+        ArtNetNode::Get()->SetRecordShowfile(true);
 
-		ArtNetNode::Get()->SetRecordShowfile(true);
+        DEBUG_EXIT();
+    }
 
-		DEBUG_EXIT();
-	}
+    void DmxOut(uint16_t universe, const uint8_t* data, uint32_t length)
+    {
+        memcpy(dmx_.data, data, length);
 
-	void DmxOut(const uint16_t nUniverse, const uint8_t *pDmxData, uint32_t nLength) {
-		memcpy(m_ArtDmx.data, pDmxData, nLength);
+        if ((length & 0x1) == 0x1)
+        {
+            dmx_.data[length] = 0x00;
+            length++;
+        }
 
-		if ((nLength & 0x1) == 0x1) {
-			m_ArtDmx.data[nLength] = 0x00;
-			nLength++;
-		}
+        dmx_.sequence = sequence_++;
+        dmx_.physical = static_cast<uint8_t>(dmxnode::kMaxPorts + 1U);
+        dmx_.port_address = universe;
+        dmx_.length_hi = static_cast<uint8_t>((length & 0xFF00) >> 8);
+        dmx_.length = static_cast<uint8_t>(length & 0xFF);
 
-		m_ArtDmx.Sequence = m_nSequence++;
-		m_ArtDmx.Physical = static_cast<uint8_t>(dmxnode::kMaxPorts + 1U);
-		m_ArtDmx.PortAddress = nUniverse;
-		m_ArtDmx.LengthHi = static_cast<uint8_t>((nLength & 0xFF00) >> 8);
-		m_ArtDmx.Length = static_cast<uint8_t>(nLength & 0xFF);
+        ArtNetNode::Get()->HandleShowFile(&dmx_);
+    }
 
-		ArtNetNode::Get()->HandleShowFile(&m_ArtDmx);
-	}
+    void DmxSync() {}
 
-	void DmxSync() {
-	}
+    void DmxBlackout() {}
 
-	void DmxBlackout() {
-	}
+    void DmxMaster([[maybe_unused]] uint32_t master) {}
 
-	void DmxMaster([[maybe_unused]] const uint32_t nMaster) {
-	}
+    void DoRunCleanupProcess([[maybe_unused]] bool run) {}
 
-	void DoRunCleanupProcess([[maybe_unused]] bool bDoRun) {
-	}
+    void Run() {}
 
-	void Run() {
-	}
+    bool IsSyncDisabled() { return false; }
 
-	bool IsSyncDisabled() {
-		return false;
-	}
+    void Print() {}
 
-	void Print() {}
-
-private:
-	artnet::ArtDmx m_ArtDmx;
-	uint8_t m_nSequence { 0 };
+   private:
+    artnet::ArtDmx dmx_;
+    uint8_t sequence_{0};
 };
 
 #endif /* PROTOCOLS_SHOWFILEPROTOCOLNODEARTNET_H_ */

@@ -75,12 +75,10 @@ int main(int argc, char** argv) //NOLINT
     RDMPersonality* personalities[1] = {new RDMPersonality("Real-time DMX Monitor", &monitor)};
 
     ArtNetRdmResponder rdm_responder(personalities, 1);
-    rdm_responder.Init();
     rdm_responder.Print();
 
     DmxNodeNode dmx_node_node;
     dmx_node_node.SetOutput(&monitor);
-    dmx_node_node.SetRdmUID(rdm::device::Base::Instance().GetUID());
     dmx_node_node.SetRdmResponder(&rdm_responder, true);
     dmx_node_node.SetRdm(0, true);
 

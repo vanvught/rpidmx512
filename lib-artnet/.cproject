@@ -33,8 +33,9 @@
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/dmxin"/>
 						<entry excluding="rom|spi" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/failsafe"/>
 						<entry excluding="responder|controller" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/rdm"/>
-						<entry excluding="json" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/rdm/controller"/>
+						<entry excluding="rdmin|json" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/rdm/controller"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/rdm/controller/json"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/rdm/controller/rdmin"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/rdm/responder"/>
 					</sourceEntries>
 				</configuration>
@@ -73,8 +74,9 @@
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/dmxin"/>
 						<entry excluding="rom|spi" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/failsafe"/>
 						<entry excluding="responder|controller" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/rdm"/>
-						<entry excluding="json" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/rdm/controller"/>
+						<entry excluding="rdmin|json" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/rdm/controller"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/rdm/controller/json"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/rdm/controller/rdmin"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/rdm/responder"/>
 					</sourceEntries>
 				</configuration>
@@ -287,8 +289,9 @@
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/node/dmxin"/>
 						<entry excluding="file|rom|spi" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/node/failsafe"/>
 						<entry excluding="controller|responder" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/node/rdm"/>
-						<entry excluding="json" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/node/rdm/controller"/>
+						<entry excluding="rdmin|json" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/node/rdm/controller"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/rdm/controller/json"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/rdm/controller/rdmin"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/node/rdm/responder"/>
 					</sourceEntries>
 				</configuration>

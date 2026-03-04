@@ -32,8 +32,6 @@
 #include <cassert>
 #include <algorithm>
 
-#include "firmwareversion.h"
-#include "hal.h"
 #include "rdm_device_info.h"
 #include "rdm_device_root_label.h"
 #include "rdm_device_base.h"
@@ -41,11 +39,17 @@
 #include "rdmidentify.h"
 #include "rdmconst.h"
 #include "rdm_e120.h"
+#if defined(CONFIG_RDM_DEVICE_ENABLE_JSON)
 #include "json/rdmdeviceparams.h"
+#endif
 #include "firmware/debug/debug_debug.h"
 
 namespace rdm::device
 {
+uint16_t DeviceModel();
+uint32_t SoftwareVersionId();
+const char* SoftwareVersionLabel(uint32_t& length);
+
 class Device
 {
    public:
@@ -65,9 +69,11 @@ class Device
 
         is_init_ = true;
 
+#if defined(CONFIG_RDM_DEVICE_ENABLE_JSON)
         json::RdmDeviceParams rdmdevice_params;
         rdmdevice_params.Load();
         rdmdevice_params.Set();
+#endif
 
         DEBUG_EXIT();
     }
@@ -75,14 +81,12 @@ class Device
     void Print()
     {
         printf("RDM Device configuration [Protocol Version %d.%d]\n", info_.protocol_major, info_.protocol_minor);
-        const auto kLength = static_cast<int>(std::min(static_cast<size_t>(RDM_MANUFACTURER_LABEL_MAX_LENGTH), strlen(RDMConst::MANUFACTURER_NAME)));
-        printf(" Manufacturer Name : %.*s\n", kLength, const_cast<char*>(&RDMConst::MANUFACTURER_NAME[0]));
         rdm::device::Base::Instance().Print();
         printf(" Root label        : %.*s\n", root_label_length_, root_label_);
-        printf(" Product Category  : %.2X%.2X\n", product_category_ >> 8, product_category_ & 0xFF);
-        printf(" Product Detail    : %.2X%.2X\n", product_detail_ >> 8, product_detail_ & 0xFF);
+        printf(" Product Category  : %.2X%.2X\n", info_.product_category[0], info_.product_category[1]);
+        printf(" Product Detail    : %.4X\n", product_detail_);
 #if defined(RDM_RESPONDER)
-		puts("RDM Device Responder");
+        puts("RDM Device Responder");
         printf(" DMX Address   : %d\n", (info_.dmx_start_address[0] << 8) + info_.dmx_start_address[1]);
         printf(" DMX Footprint : %d\n", (info_.dmx_footprint[0] << 8) + info_.dmx_footprint[1]);
         printf(" Personality %d of %d\n", info_.current_personality, info_.personality_count);
@@ -128,7 +132,7 @@ class Device
 
             if (is_init_)
             {
-                 rdm::device::store::SaveLabel(root_label_, root_label_length_);
+                rdm::device::store::SaveLabel(root_label_, root_label_length_);
             }
         }
     }
@@ -139,16 +143,24 @@ class Device
         info_data->length = root_label_length_;
     }
 
-    void SetProductCategory(uint16_t product_category) { product_category_ = product_category; }
-    uint16_t GetProductCategory() const { return product_category_; }
+    void SetProductCategory(uint16_t product_category)
+    {
+        info_.product_category[0] = static_cast<uint8_t>(product_category >> 8);
+        info_.product_category[1] = static_cast<uint8_t>(product_category);
+    }
+
+    uint16_t GetProductCategory() const
+    {
+        const auto kProductCategory = (info_.product_category[0] << 8) | info_.product_category[1];
+        return kProductCategory;
+    }
 
     void SetProductDetail(uint16_t product_detail) { product_detail_ = product_detail; }
     uint16_t GetProductDetail() const { return product_detail_; }
 
     rdm::device::Info* GetDeviceInfo() { return &info_; }
 
-    // RDM Responder specific
-
+    // RDM_RESPONDER
     void SetPersonalityCount(uint8_t count) { info_.personality_count = count; }
 
     uint8_t GetPersonalityCount() const { return info_.personality_count; }
@@ -192,9 +204,9 @@ class Device
 
         memset(&info_, 0, sizeof(struct rdm::device::Info));
 
-        const auto kSoftwareVersionId = FirmwareVersion::Get()->GetVersionId();
-        const auto kDeviceModel = hal::kBoardId;
-        const auto kProductCategory = E120_PRODUCT_CATEGORY_OTHER;
+        const auto kSoftwareVersionId = rdm::device::SoftwareVersionId();
+        const auto kDeviceModel = rdm::device::DeviceModel();
+        const auto kProductCategory = E120_PRODUCT_CATEGORY_DATA;
 
         info_.protocol_major = (E120_PROTOCOL_VERSION >> 8);
         info_.protocol_minor = static_cast<uint8_t>(E120_PROTOCOL_VERSION);
@@ -235,7 +247,6 @@ class Device
     char factory_root_label_[RDM_DEVICE_LABEL_MAX_LENGTH];
     char root_label_[RDM_DEVICE_LABEL_MAX_LENGTH];
 
-    uint16_t product_category_{E120_PRODUCT_CATEGORY_OTHER};
     uint16_t product_detail_{E120_PRODUCT_DETAIL_OTHER};
     uint16_t checksum_{0};
 

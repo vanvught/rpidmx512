@@ -149,7 +149,7 @@ namespace dmxnode
 {
 inline constexpr uint32_t kParamPorts = 4;
 inline constexpr uint32_t kNodeNameLength = 64;
-inline constexpr uint32_t kLabelNameLength = 18;
+inline constexpr uint32_t kPortNameLength = 18;
 
 struct Flags
 {
@@ -174,8 +174,8 @@ struct DmxNode
     uint16_t merge_mode;
     uint8_t output_style;
     uint8_t fail_safe;
-    uint8_t long_name[dmxnode::kNodeNameLength];
-    uint8_t label[dmxnode::kParamPorts][dmxnode::kLabelNameLength];
+    uint8_t node_name[dmxnode::kNodeNameLength];
+    uint8_t port_name[dmxnode::kParamPorts][dmxnode::kPortNameLength];
     uint8_t reserved1[2];
     uint16_t protocol;
     uint16_t rdm;
@@ -619,7 +619,8 @@ struct Gps
 
 static_assert(sizeof(Gps) == kGpsSize);
 
-namespace midi {
+namespace midi
+{
 struct Flags
 {
     enum class Flag : uint32_t
@@ -629,7 +630,7 @@ struct Flags
 
     static constexpr bool Has(uint32_t value, Flag flag) noexcept { return (value & static_cast<uint32_t>(flag)) != 0; }
 };
-}  // namespace midi
+} // namespace midi
 
 struct Midi
 {
@@ -705,7 +706,7 @@ struct SlotInfo
 namespace mode
 {
 inline constexpr uint16_t kMaxDmxFootprint = 4;
-	
+
 struct Flags
 {
     enum class Flag : uint32_t
@@ -749,8 +750,8 @@ struct Flags
     };
 
     static constexpr bool Has(uint32_t value, Flag flag) noexcept { return (value & static_cast<uint32_t>(flag)) != 0; }
-};	
-}  // namespace l6470
+};
+} // namespace l6470
 
 struct L6470
 {
@@ -788,7 +789,7 @@ struct Store
 static_assert(offsetof(Store, mode) % alignof(uint32_t) == 0, "mode must be uint32_t-aligned");
 static_assert(offsetof(Store, l6470) % alignof(uint32_t) == 0, "l6470 must be uint32_t-aligned");
 static_assert(offsetof(Store, motor) % alignof(uint32_t) == 0, "motor must be uint32_t-aligned");
-}  // namespace l6470dmx
+} // namespace l6470dmx
 
 struct DmxL6470
 {
@@ -851,4 +852,4 @@ static_assert(offsetof(ConfigurationStore, global) == 16, "Wrong offset: global"
 #undef PACKED
 #endif
 
-#endif  // CONFIGURATIONSTORE_H_
+#endif // CONFIGURATIONSTORE_H_
