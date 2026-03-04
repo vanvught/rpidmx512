@@ -156,7 +156,7 @@ inline void ArtNetNode::SetFailSafe(dmxnode::FailSafe fail_safe)
 
 inline dmxnode::FailSafe ArtNetNode::GetFailSafe()
 {
-    const auto kNetworkloss = (art_poll_reply_.Status3 & artnet::Status3::kNetworklossMask);
+    const auto kNetworkloss = (art_poll_reply_.status3 & artnet::Status3::kNetworklossMask);
     switch (kNetworkloss)
     {
         case artnet::Status3::kNetworklossLastState:
@@ -311,7 +311,7 @@ inline void ArtNetNode::Run()
     }
 
 #if (DMXNODE_PORTS > 0)
-    if ((((art_poll_reply_.Status1 & artnet::Status1::kIndicatorMask) == artnet::Status1::kIndicatorNormalMode)) &&
+    if ((((art_poll_reply_.status1 & artnet::Status1::kIndicatorMask) == artnet::Status1::kIndicatorNormalMode)) &&
         (hal::statusled::GetMode() != hal::statusled::Mode::FAST))
     {
 #if (ARTNET_VERSION >= 4)
@@ -393,7 +393,7 @@ inline void ArtNetNode::SendDiag([[maybe_unused]] const artnet::PriorityCodes kP
         return;
     }
 
-    diag_data_.Priority = static_cast<uint8_t>(kPriorityCode);
+    diag_data_.priority = static_cast<uint8_t>(kPriorityCode);
 
     va_list arp;
 

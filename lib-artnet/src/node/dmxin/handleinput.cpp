@@ -67,11 +67,11 @@ void ArtNetNode::HandleInput()
 
     // Controllers might send NumPortsLo = 4
     // We only act on Input[0] because bind_index selects the logical port instance.
-    if (kArtInput->NumPortsLo >= 1)
+    if (kArtInput->num_ports_lo >= 1)
     {
         if (node_.port[kPortIndex].direction == dmxnode::PortDirection::kInput)
         {
-            const auto kDisabled = (kArtInput->Input[0] & 0x01U) != 0U;
+            const auto kDisabled = (kArtInput->input[0] & 0x01U) != 0U;
 
             if (kDisabled)
             {
@@ -82,7 +82,7 @@ void ArtNetNode::HandleInput()
                 input_port_[kPortIndex].good_input &= static_cast<uint8_t>(~static_cast<uint8_t>(artnet::GoodInput::kDisabled));
             }
 #if (ARTNET_VERSION >= 4) && defined(E131_HAVE_DMXIN)
-            E131Bridge::SetInputDisabled(kPortIndex, kArtInput->Input[0] & 0x01);
+            E131Bridge::SetInputDisabled(kPortIndex, kArtInput->input[0] & 0x01);
 #endif
         }
     }

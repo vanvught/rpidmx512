@@ -58,13 +58,13 @@ void ArtNetNode::HandleTodControl()
 
     const auto* const kArtTodControl = reinterpret_cast<artnet::ArtTodControl*>(receive_buffer_);
 
-    if (kArtTodControl->Command == artnet::TodControlCommand::kAtcNone)
+    if (kArtTodControl->command == artnet::TodControlCommand::kAtcNone)
     {
         DEBUG_EXIT();
         return;
     }
 
-    const auto kPortAddress = static_cast<uint16_t>((kArtTodControl->Net << 8)) | static_cast<uint16_t>((kArtTodControl->Address));
+    const auto kPortAddress = static_cast<uint16_t>((kArtTodControl->net << 8)) | static_cast<uint16_t>((kArtTodControl->address));
 
     for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++)
     {
@@ -76,7 +76,7 @@ void ArtNetNode::HandleTodControl()
         if ((node_.port[port_index].direction == dmxnode::PortDirection::kOutput) &&
             ((output_port_[port_index].good_output_b & artnet::GoodOutputB::kRdmDisabled) != artnet::GoodOutputB::kRdmDisabled))
         {
-            switch (kArtTodControl->Command)
+            switch (kArtTodControl->command)
             {
                 case artnet::TodControlCommand::kAtcFlush:
                     rdm_controller_.Full(port_index);
@@ -98,7 +98,7 @@ void ArtNetNode::HandleTodControl()
         }
         else if (node_.port[port_index].direction == dmxnode::PortDirection::kInput)
         {
-            if (kArtTodControl->Command == artnet::TodControlCommand::kAtcFlush)
+            if (kArtTodControl->command == artnet::TodControlCommand::kAtcFlush)
             {
                 rdm_controller_.TodReset(port_index);
             }
@@ -132,7 +132,7 @@ void ArtNetNode::HandleTodData()
         return;
     }
 
-    const auto kPortAddress = static_cast<uint16_t>(static_cast<uint16_t>(kArtTodData->Net) << 8) | static_cast<uint16_t>(kArtTodData->Address);
+    const auto kPortAddress = static_cast<uint16_t>(static_cast<uint16_t>(kArtTodData->net) << 8) | static_cast<uint16_t>(kArtTodData->address);
 
     // Art-Net 4: bind_index discriminates packets from the same IP.
     // If bind_index is non-zero, treat it as selecting the logical port instance.
@@ -165,7 +165,7 @@ void ArtNetNode::HandleTodData()
 
         for (uint32_t uid_index = 0; uid_index < kArtTodData->uid_count; uid_index++)
         {
-            const uint8_t* uid = kArtTodData->Tod[uid_index];
+            const uint8_t* uid = kArtTodData->tod[uid_index];
             rdm_controller_.TodAddUid(kPortIndex, uid);
         }
 
@@ -187,7 +187,7 @@ void ArtNetNode::HandleTodData()
 
             for (uint32_t uid_index = 0; uid_index < kArtTodData->uid_count; uid_index++)
             {
-                const uint8_t* uid = kArtTodData->Tod[uid_index];
+                const uint8_t* uid = kArtTodData->tod[uid_index];
                 rdm_controller_.TodAddUid(port_index, uid);
             }
         }
@@ -209,7 +209,7 @@ void ArtNetNode::SendArtTodData(uint32_t port_index)
     auto& tod_data = art_tod_packet_.art_tod_data;
     const auto kPage = port_index;
 
-    memcpy(tod_data.Id, artnet::kNodeId, sizeof(tod_data.Id));
+    memcpy(tod_data.id, artnet::kNodeId, sizeof(tod_data.id));
     tod_data.op_code = static_cast<uint16_t>(artnet::OpCodes::kOpToddata);
     tod_data.prot_ver_hi = 0;
     tod_data.prot_ver_lo = artnet::kProtocolRevision;
@@ -220,7 +220,7 @@ void ArtNetNode::SendArtTodData(uint32_t port_index)
     // Physical Port = (BindIndex-1) * ArtPollReply->NumPortsLo + ArtTodData->Port
     // As most modern Art-Net gateways implement one universe per ArtPollReply,
     // ArtTodData->Port will usually be set to a value of 1.
-    tod_data.Port = static_cast<uint8_t>(1U + (port_index & 0x3));
+    tod_data.port = static_cast<uint8_t>(1U + (port_index & 0x3));
     tod_data.spare1 = 0;
     tod_data.spare2 = 0;
     tod_data.spare3 = 0;
@@ -228,17 +228,17 @@ void ArtNetNode::SendArtTodData(uint32_t port_index)
     tod_data.spare5 = 0;
     tod_data.spare6 = 0;
     tod_data.bind_index = static_cast<uint8_t>(kPage + 1U); ///< ArtPollReplyData->BindIndex == ArtTodData ->BindIndex
-    tod_data.Net = node_.port[kPage].net_switch;
-    tod_data.CommandResponse = 0; ///< The packet contains the entire TOD or is the first packet in a sequence of packets that contains the entire TOD.
-    tod_data.Address = node_.port[port_index].sw;
+    tod_data.net = node_.port[kPage].net_switch;
+    tod_data.command_response = 0; ///< The packet contains the entire TOD or is the first packet in a sequence of packets that contains the entire TOD.
+    tod_data.address = node_.port[port_index].sw;
     tod_data.uid_total_hi = 0;
     tod_data.uid_total_lo = kDiscovered;
     tod_data.block_count = 0;
     tod_data.uid_count = kDiscovered;
 
-    rdm_controller_.TodCopy(port_index, reinterpret_cast<uint8_t*>(tod_data.Tod));
+    rdm_controller_.TodCopy(port_index, reinterpret_cast<uint8_t*>(tod_data.tod));
 
-    const auto kLength = sizeof(struct artnet::ArtTodData) - (sizeof(tod_data.Tod)) + (kDiscovered * 6U);
+    const auto kLength = sizeof(struct artnet::ArtTodData) - (sizeof(tod_data.tod)) + (kDiscovered * 6U);
 
     for (auto& entry : state_.art.tod_request_ip_list)
     {
@@ -265,7 +265,7 @@ void ArtNetNode::SendTodRequest(uint32_t port_index)
     auto* tod_request = &art_tod_packet_.art_tod_request;
     const auto kPage = port_index;
 
-    memcpy(tod_request->Id, artnet::kNodeId, sizeof(tod_request->Id));
+    memcpy(tod_request->id, artnet::kNodeId, sizeof(tod_request->id));
     tod_request->op_code = static_cast<uint16_t>(artnet::OpCodes::kOpTodrequest);
     tod_request->prot_ver_hi = 0;
     tod_request->prot_ver_lo = artnet::kProtocolRevision;
@@ -276,12 +276,12 @@ void ArtNetNode::SendTodRequest(uint32_t port_index)
     tod_request->spare5 = 0;
     tod_request->spare6 = 0;
     tod_request->spare7 = 0;
-    tod_request->Net = node_.port[kPage].net_switch;
-    tod_request->Command = 0;
-    tod_request->AddCount = 1;
-    tod_request->Address[0] = node_.port[port_index].sw;
+    tod_request->net = node_.port[kPage].net_switch;
+    tod_request->command = 0;
+    tod_request->add_count = 1;
+    tod_request->address[0] = node_.port[port_index].sw;
 
-    const auto kLength = sizeof(struct artnet::ArtTodRequest) - (sizeof(tod_request->Address)) + tod_request->AddCount;
+    const auto kLength = sizeof(struct artnet::ArtTodRequest) - (sizeof(tod_request->address)) + tod_request->add_count;
 
     network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(tod_request), static_cast<uint16_t>(kLength), network::GetBroadcastIp(), artnet::kUdpPort);
 
@@ -298,7 +298,7 @@ void ArtNetNode::HandleRdm()
         return;
     }
 
-    const auto kPortAddress = static_cast<uint16_t>((kArtRdm->Net << 8)) | static_cast<uint16_t>((kArtRdm->Address));
+    const auto kPortAddress = static_cast<uint16_t>((kArtRdm->net << 8)) | static_cast<uint16_t>((kArtRdm->address));
 
     for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++)
     {
@@ -330,10 +330,10 @@ void ArtNetNode::HandleRdm()
 
             output_port_[port_index].rdm_destination_ip = ip_address_from_;
 
-            auto* message = reinterpret_cast<const TRdmMessage*>(&kArtRdm->Address);
+            auto* message = reinterpret_cast<const TRdmMessage*>(&kArtRdm->address);
 
-            kArtRdm->Address = E120_SC_RDM;
-            Rdm::SendRaw(port_index, &kArtRdm->Address, message->message_length + RDM_MESSAGE_CHECKSUM_SIZE);
+            kArtRdm->address = E120_SC_RDM;
+            Rdm::SendRaw(port_index, &kArtRdm->address, message->message_length + RDM_MESSAGE_CHECKSUM_SIZE);
 
 #ifndef NDEBUG
             rdm::message::Print(reinterpret_cast<const uint8_t*>(message));
@@ -347,11 +347,11 @@ void ArtNetNode::HandleRdm()
         }
         else if (node_.port[port_index].direction == dmxnode::PortDirection::kInput)
         {
-            auto* rdm_message = reinterpret_cast<const TRdmMessage*>(&kArtRdm->Address);
+            auto* rdm_message = reinterpret_cast<const TRdmMessage*>(&kArtRdm->address);
 
             if ((rdm_message->command_class == E120_GET_COMMAND_RESPONSE) || (rdm_message->command_class == E120_SET_COMMAND_RESPONSE))
             {
-                kArtRdm->Address = E120_SC_RDM;
+                kArtRdm->address = E120_SC_RDM;
                 Rdm::SendRaw(port_index, reinterpret_cast<const uint8_t*>(rdm_message), rdm_message->message_length + RDM_MESSAGE_CHECKSUM_SIZE);
 
 #ifndef NDEBUG

@@ -176,12 +176,12 @@ void ArtNetNode::ProcessPollReply(uint32_t port_index)
             GoodOutputBSet(port_index, artnet::GoodOutputB::kDiscoveryNotRunning);
         }
 #endif
-        art_poll_reply_.PortTypes[0] = artnet::PortType::kOutputArtnet;
+        art_poll_reply_.port_types[0] = artnet::PortType::kOutputArtnet;
         art_poll_reply_.good_output[0] = output_port_[port_index].good_output;
-        art_poll_reply_.GoodOutputB[0] = output_port_[port_index].good_output_b;
+        art_poll_reply_.good_output_b[0] = output_port_[port_index].good_output_b;
         art_poll_reply_.good_input[0] = 0;
-        art_poll_reply_.SwOut[0] = node_.port[port_index].sw;
-        art_poll_reply_.SwIn[0] = 0;
+        art_poll_reply_.sw_out[0] = node_.port[port_index].sw;
+        art_poll_reply_.sw_in[0] = 0;
         DEBUG_EXIT();
         return;
     }
@@ -195,12 +195,12 @@ void ArtNetNode::ProcessPollReply(uint32_t port_index)
             input_port_[port_index].good_input |= artnet::GoodInput::kInputIsSacn;
         }
 #endif
-        art_poll_reply_.PortTypes[0] = artnet::PortType::kInputArtnet;
+        art_poll_reply_.port_types[0] = artnet::PortType::kInputArtnet;
         art_poll_reply_.good_output[0] = 0;
-        art_poll_reply_.GoodOutputB[0] = 0;
+        art_poll_reply_.good_output_b[0] = 0;
         art_poll_reply_.good_input[0] = input_port_[port_index].good_input;
-        art_poll_reply_.SwOut[0] = 0;
-        art_poll_reply_.SwIn[0] = node_.port[port_index].sw;
+        art_poll_reply_.sw_out[0] = 0;
+        art_poll_reply_.sw_in[0] = node_.port[port_index].sw;
         DEBUG_EXIT();
         return;
     }
@@ -217,9 +217,9 @@ void ArtNetNode::SendPollReply(uint32_t port_index, uint32_t destination_ip, art
     }
 
     ip.u32 = network::GetPrimaryIp();
-    memcpy(art_poll_reply_.IPAddress, ip.u8, sizeof(art_poll_reply_.IPAddress));
+    memcpy(art_poll_reply_.ip_address, ip.u8, sizeof(art_poll_reply_.ip_address));
 #if (ARTNET_VERSION >= 4)
-    memcpy(art_poll_reply_.BindIp, ip.u8, sizeof(art_poll_reply_.BindIp));
+    memcpy(art_poll_reply_.bind_ip, ip.u8, sizeof(art_poll_reply_.bind_ip));
 #endif
 
     if (queue != nullptr)
@@ -236,7 +236,7 @@ void ArtNetNode::SendPollReply(uint32_t port_index, uint32_t destination_ip, art
     art_poll_reply_.net_switch = node_.port[port_index].net_switch;
     art_poll_reply_.sub_switch = node_.port[port_index].sub_switch;
     art_poll_reply_.bind_index = static_cast<uint8_t>(port_index + 1);
-    art_poll_reply_.NumPortsLo = 1;
+    art_poll_reply_.num_ports_lo = 1;
 
     const auto* const kPortName = DmxNode::Instance().GetPortName(port_index);
     memcpy(art_poll_reply_.port_name, kPortName, artnet::kPortNameLength);
@@ -244,8 +244,8 @@ void ArtNetNode::SendPollReply(uint32_t port_index, uint32_t destination_ip, art
     if (__builtin_expect((dmxnode_output_type_ != nullptr), 1))
     {
         const auto kRefreshRate = dmxnode_output_type_->GetRefreshRate();
-        art_poll_reply_.RefreshRateLo = static_cast<uint8_t>(kRefreshRate);
-        art_poll_reply_.RefreshRateHi = static_cast<uint8_t>(kRefreshRate >> 8);
+        art_poll_reply_.refresh_rate_lo = static_cast<uint8_t>(kRefreshRate);
+        art_poll_reply_.refresh_rate_hi = static_cast<uint8_t>(kRefreshRate >> 8);
         const auto kUserData = dmxnode_output_type_->GetUserData();
         art_poll_reply_.user_lo = static_cast<uint8_t>(kUserData);
         art_poll_reply_.user_hi = static_cast<uint8_t>(kUserData >> 8);
@@ -259,7 +259,7 @@ void ArtNetNode::SendPollReply(uint32_t port_index, uint32_t destination_ip, art
         state_.art.poll_reply_count = 0;
     }
 
-    CreateNodeReport(art_poll_reply_.NodeReport, state_.report_code, state_.art.poll_reply_count);
+    CreateNodeReport(art_poll_reply_.node_report, state_.report_code, state_.art.poll_reply_count);
     network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&art_poll_reply_), sizeof(artnet::ArtPollReply), destination_ip, artnet::kUdpPort);
 
     state_.is_changed = false;

@@ -268,7 +268,7 @@ void ArtNetPollTable::Add(const struct artnet::ArtPollReply* poll_reply)
 
     auto bFound = false;
 
-    memcpy(ip.u8, poll_reply->IPAddress, 4);
+    memcpy(ip.u8, poll_reply->ip_address, 4);
 
     const auto kIpSwap = __builtin_bswap32(ip.u32);
 
@@ -339,7 +339,7 @@ void ArtNetPollTable::Add(const struct artnet::ArtPollReply* poll_reply)
 
     if (poll_reply->bind_index <= 1)
     {
-        memcpy(table_[i].Mac, poll_reply->MAC, artnet::kMacSize);
+        memcpy(table_[i].Mac, poll_reply->mac, artnet::kMacSize);
         const uint8_t* pSrc = poll_reply->long_name;
         uint8_t* pDst = table_[i].long_name;
         memcpy(pDst, pSrc, artnet::kLongNameLength);
@@ -349,9 +349,9 @@ void ArtNetPollTable::Add(const struct artnet::ArtPollReply* poll_reply)
 
     for (uint32_t port_index = 0; port_index < artnet::kPorts; port_index++)
     {
-        const auto kPortAddress = poll_reply->SwOut[port_index];
+        const auto kPortAddress = poll_reply->sw_out[port_index];
 
-        if (poll_reply->PortTypes[port_index] == static_cast<uint8_t>(artnet::PortType::kOutputArtnet))
+        if (poll_reply->port_types[port_index] == static_cast<uint8_t>(artnet::PortType::kOutputArtnet))
         {
             const auto kUniverse = artnet::MakePortAddress(poll_reply->net_switch, poll_reply->sub_switch, kPortAddress);
 

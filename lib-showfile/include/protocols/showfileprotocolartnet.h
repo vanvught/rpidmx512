@@ -2,7 +2,7 @@
  * @file showfileprotocolartnet.h
  *
  */
-/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,82 +27,70 @@
 #define PROTOCOLS_SHOWFILEPROTOCOLARTNET_H_
 
 #include <cstdint>
-#include <cstdio>
 
 #include "artnetcontroller.h"
+#include "firmware/debug/debug_debug.h"
 
- #include "firmware/debug/debug_debug.h"
+class ShowFileProtocol
+{
+   public:
+    ShowFileProtocol()
+    {
+        DEBUG_ENTRY();
 
-class ShowFileProtocol {
-public:
-	ShowFileProtocol() {
-		DEBUG_ENTRY();
+        DEBUG_EXIT();
+    }
 
-		DEBUG_EXIT();
-	}
+    ~ShowFileProtocol() { controller_.Stop(); }
 
-	~ShowFileProtocol() {
-		m_ArtNetController.Stop();
-	}
+    void Start()
+    {
+        DEBUG_ENTRY();
 
-	void Start() {
-		DEBUG_ENTRY();
+        controller_.Start();
 
-		m_ArtNetController.Start();
+        DEBUG_EXIT();
+    }
 
-		DEBUG_EXIT();
-	}
+    void Stop()
+    {
+        DEBUG_ENTRY();
 
-	void Stop() {
-		DEBUG_ENTRY();
-	
-		m_ArtNetController.Stop();
+        controller_.Stop();
 
-		DEBUG_EXIT();
-	}
+        DEBUG_EXIT();
+    }
 
-	void Record() {
-		DEBUG_ENTRY();
+    void Record()
+    {
+        DEBUG_ENTRY();
 
-		DEBUG_EXIT();
-	}
+        DEBUG_EXIT();
+    }
 
-	void DmxOut(uint16_t nUniverse, const uint8_t *pDmxData, uint32_t nLength) {
-		m_ArtNetController.HandleDmxOut(nUniverse, pDmxData, nLength);
-	}
+    void DmxOut(uint16_t universe, const uint8_t* data, uint32_t length) { controller_.HandleDmxOut(universe, data, length); }
 
-	void DmxSync() {
-		m_ArtNetController.HandleSync();
-	}
+    void DmxSync() { controller_.HandleSync(); }
 
-	void DmxBlackout() {
-		m_ArtNetController.HandleBlackout();
-	}
+    void DmxBlackout() { controller_.HandleBlackout(); }
 
-	void DmxMaster([[maybe_unused]] const uint32_t nMaster) {
+    void DmxMaster([[maybe_unused]] uint32_t master)
+    {
 #if defined(CONFIG_ARTNET_CONTROLLER_ENABLE_MASTER)
-		m_ArtNetController.SetMaster(nMaster);
+        controller_.SetMaster(master);
 #endif
-	}
+    }
 
-	void DoRunCleanupProcess(const bool bDoRun) {
-		m_ArtNetController.SetRunTableCleanup(bDoRun);
-	}
+    void DoRunCleanupProcess(bool run) { controller_.SetRunTableCleanup(run); }
 
-	void Run() {
-		m_ArtNetController.Run();
-	}
+    void Run() { controller_.Run(); }
 
-	bool IsSyncDisabled() {
-		return !m_ArtNetController.GetSynchronization();
-	}
+    bool IsSyncDisabled() { return !controller_.GetSynchronization(); }
 
-	void Print() {
-		m_ArtNetController.Print();
-	}
+    void Print() { controller_.Print(); }
 
-private:
-	ArtNetController m_ArtNetController;
+   private:
+    ArtNetController controller_;
 };
 
 #endif /* PROTOCOLS_SHOWFILEPROTOCOLARTNET_H_ */

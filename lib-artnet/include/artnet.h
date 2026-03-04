@@ -414,13 +414,13 @@ enum class OpCodes : uint16_t
 
 struct ArtPoll
 {
-    uint8_t Id[8];    ///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
-    uint16_t op_code; ///< The op_code defines the class of data following ArtPoll within this UDP packet. Transmitted low byte first. See \ref TOpCodes for the
-                      ///< op_code listing.
-    uint8_t prot_ver_hi;                   ///< High byte of the Art-Net protocol revision number.
-    uint8_t prot_ver_lo;                   ///< Low byte of the Art-Net protocol revision number. Current value 14.
-    uint8_t flags;                         ///< Set behavior of Node
-    uint8_t diag_priority;                  ///< The lowest priority of diagnostics message that should be sent. See \ref TPriorityCodes
+    uint8_t id[8];         ///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
+    uint16_t op_code;      ///< The op_code defines the class of data following ArtPoll within this UDP packet. Transmitted low byte first. See  for the
+                           ///< op_code listing.
+    uint8_t prot_ver_hi;   ///< High byte of the Art-Net protocol revision number.
+    uint8_t prot_ver_lo;   ///< Low byte of the Art-Net protocol revision number. Current value 14.
+    uint8_t flags;         ///< Set behavior of Node
+    uint8_t diag_priority; ///< The lowest priority of diagnostics message that should be sent. See \ref TPriorityCodes
     uint8_t target_port_address_top_hi;    ///< Top of the range of Port-Addresses to be tested if Targeted Mode is active.
     uint8_t target_port_address_top_lo;    ///<
     uint8_t target_port_address_bottom_hi; ///< Bottom of the range of Port-Addresses to be tested if Targeted Mode is active.
@@ -433,56 +433,56 @@ struct ArtPoll
 
 struct ArtPollReply
 {
-    uint8_t Id[8];        ///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
-    uint16_t op_code;     ///< OpPollReply \ref TOpCodes
-    uint8_t IPAddress[4]; ///< Array containing the Node’s IP address. First array entry is most significant byte of address.
-    uint16_t Port;        ///< The Port is always 0x1936
-    uint8_t VersInfoH;    ///< High byte of Node’s firmware revision number.
-    uint8_t VersInfoL;    ///< Low byte of Node’s firmware revision number.
-    uint8_t net_switch;   ///< Bits 14-8 of the 15 bit Port-Address are encoded into the bottom 7 bits of this field.
-    uint8_t sub_switch;   ///< Bits 7-4 of the 15 bit Port-Address are encoded into the bottom 4 bits of this field.
-    uint8_t OemHi;        ///< The high byte of the Oem value
-    uint8_t Oem;          ///< The low byte of the Oem value. The Oem word describes the equipment vendor and the feature set available.
-    uint8_t Ubea; ///< This field contains the firmware version of the User Bios Extension Area (UBEA). If the UBEA is not programmed, this field contains zero.
-    uint8_t Status1;    ///< General Status register
-    uint8_t EstaMan[2]; ///< The ESTA manufacturer code. These codes are used to represent equipment manufacturer. They are assigned by ESTA.
+    uint8_t id[8];                       ///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
+    uint16_t op_code;                    ///< OpPollReply
+    uint8_t ip_address[artnet::kIpSize]; ///< Array containing the Node’s IP address. First array entry is most significant byte of address.
+    uint16_t port;                       ///< The Port is always 0x1936
+    uint8_t vers_info_h;                 ///< High byte of Node’s firmware revision number.
+    uint8_t vers_info_l;                 ///< Low byte of Node’s firmware revision number.
+    uint8_t net_switch;                  ///< Bits 14-8 of the 15 bit Port-Address are encoded into the bottom 7 bits of this field.
+    uint8_t sub_switch;                  ///< Bits 7-4 of the 15 bit Port-Address are encoded into the bottom 4 bits of this field.
+    uint8_t oem_hi;                      ///< The high byte of the Oem value
+    uint8_t oem;                         ///< The low byte of the Oem value. The Oem word describes the equipment vendor and the feature set available.
+    uint8_t ubea; ///< This field contains the firmware version of the User Bios Extension Area (UBEA). If the UBEA is not programmed, this field contains zero.
+    uint8_t status1;     ///< General Status register
+    uint8_t esta_man[2]; ///< The ESTA manufacturer code. These codes are used to represent equipment manufacturer. They are assigned by ESTA.
     uint8_t port_name[artnet::kPortNameLength]; ///< The array represents a null terminated short name for the Node.
     uint8_t long_name[artnet::kLongNameLength]; ///< The array represents a null terminated long name for the Node.
-    uint8_t NodeReport[artnet::kReportLength]; ///< The array is a textual report of the Node’s operating status or operational errors. It is primarily intended
-                                               ///< for ‘engineering’ data rather than ‘end user’ data.
-    uint8_t
-        NumPortsHi; ///< The high byte of the word describing the number of input or output ports. The high byte is for future expansion and is currently zero.
-    uint8_t NumPortsLo;                  ///< The low byte of the word describing the number of input or output ports.
-    uint8_t PortTypes[artnet::kPorts];   ///< This array defines the operation and protocol of each channel.
+    uint8_t node_report[artnet::kReportLength]; ///< The array is a textual report of the Node’s operating status or operational errors. It is primarily
+                                                ///< intended for ‘engineering’ data rather than ‘end user’ data.
+    uint8_t num_ports_hi; ///< The high byte of the word describing the number of input or output ports. The high byte is for future expansion and is currently
+                          ///< zero.
+    uint8_t num_ports_lo; ///< The low byte of the word describing the number of input or output ports.
+    uint8_t port_types[artnet::kPorts];  ///< This array defines the operation and protocol of each channel.
     uint8_t good_input[artnet::kPorts];  ///< This array defines input status of the node.
     uint8_t good_output[artnet::kPorts]; ///< This array defines output status of the node.
-    uint8_t SwIn[artnet::kPorts];        ///< Bits 3-0 of the 15 bit Port-Address for each of the 4 possible input ports are encoded into the low nibble.
-    uint8_t SwOut[artnet::kPorts];       ///< Bits 3-0 of the 15 bit Port-Address for each of the 4 possible output ports are encoded into the low nibble.
-    uint8_t AcnPriority;                 ///< sACN Priority for sACN generated by this node
-    uint8_t SwMacro;                     ///< If the Node supports macro key inputs, this byte represents the trigger values.
-    uint8_t SwRemote;                    ///< If the Node supports remote trigger inputs, this byte represents the trigger values.
+    uint8_t sw_in[artnet::kPorts];       ///< Bits 3-0 of the 15 bit Port-Address for each of the 4 possible input ports are encoded into the low nibble.
+    uint8_t sw_out[artnet::kPorts];      ///< Bits 3-0 of the 15 bit Port-Address for each of the 4 possible output ports are encoded into the low nibble.
+    uint8_t acn_priority;                ///< sACN Priority for sACN generated by this node
+    uint8_t sw_macro;                    ///< If the Node supports macro key inputs, this byte represents the trigger values.
+    uint8_t sw_remote;                   ///< If the Node supports remote trigger inputs, this byte represents the trigger values.
     uint8_t spare1;                      ///< Not used, set to zero
     uint8_t spare2;                      ///< Not used, set to zero
     uint8_t spare3;                      ///< Not used, set to zero
-    uint8_t Style;                       ///< The Style code defines the equipment style of the device. See \ref TNodeStyleCode
-    uint8_t MAC[artnet::kMacSize];       ///< MAC Address
-    uint8_t BindIp[4];                   ///< If this unit is part of a larger or modular product, this is the IP of the root device.
+    uint8_t style;                       ///< The Style code defines the equipment style of the device. See \ref TNodeStyleCode
+    uint8_t mac[artnet::kMacSize];       ///< MAC Address
+    uint8_t bind_ip[artnet::kIpSize];    ///< If this unit is part of a larger or modular product, this is the IP of the root device.
     uint8_t bind_index; ///< Set to zero if no binding, otherwise this number represents the order of bound devices. A lower number means closer to root device.
                         ///< A value of 1 means root device.
-    uint8_t Status2;    ///<
-    uint8_t GoodOutputB[artnet::kPorts]; ///< This array defines output status of the node.
-    uint8_t Status3;                     ///< General Status register
-    uint8_t DefaultUidResponder[6];      ///< RDMnet & LLRP UID
-    uint8_t user_hi;                     ///< Available for user specific data
-    uint8_t user_lo;                     ///< Available for user specific data
-    uint8_t RefreshRateHi;               ///< Hi byte of RefreshRate
-    uint8_t RefreshRateLo;               ///< Lo Byte of RefreshRate.
-                           ///< RefreshRate allows the device to specify the maximum refresh rate, expressed in Hz, at which it can process ArtDmx.
+    uint8_t status2;    ///<
+    uint8_t good_output_b[artnet::kPorts]; ///< This array defines output status of the node.
+    uint8_t status3;                       ///< General Status register
+    uint8_t default_uid_responder[6];      ///< RDMnet & LLRP UID
+    uint8_t user_hi;                       ///< Available for user specific data
+    uint8_t user_lo;                       ///< Available for user specific data
+    uint8_t refresh_rate_hi;               ///< Hi byte of RefreshRate
+    uint8_t refresh_rate_lo;               ///< Lo Byte of RefreshRate.
+                             ///< RefreshRate allows the device to specify the maximum refresh rate, expressed in Hz, at which it can process ArtDmx.
     ///< This is designed to allow refresh rates above DMX512 rates, for gateways that implement other protocols such as SPI.
     ///< A value of 0 to 44 represents the maximum DMX512 rate of 44Hz.
-    uint8_t BackgroundQueuePolicy; ///< The BackgroundQueuePolicy defines the method by with the node retrieves STATUS_MESSAGE and QUEUED_MESSAGE pids from the
-                                   ///< connected RDM devices.
-    uint8_t filler[10];            ///< Transmit as zero. For future expansion.
+    uint8_t background_queue_policy; ///< The BackgroundQueuePolicy defines the method by with the node retrieves STATUS_MESSAGE and QUEUED_MESSAGE pids from
+                                     ///< the connected RDM devices.
+    uint8_t filler[10]; ///< Transmit as zero. For future expansion.
 } PACKED;
 
 /**
@@ -490,26 +490,26 @@ struct ArtPollReply
  */
 struct ArtDmx
 {
-    uint8_t Id[8];                    ///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
-    uint16_t op_code;                 ///< OpDmx \ref TOpCodes
+    uint8_t id[8];                    ///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
+    uint16_t op_code;                 ///< OpDmx
     uint8_t prot_ver_hi;              ///< High byte of the Art-Net protocol revision number.
     uint8_t prot_ver_lo;              ///< Low byte of the Art-Net protocol revision number. Current value 14.
-    uint8_t Sequence;                 ///< The sequence number is used to ensure that ArtDmx packets are used in the correct order.
-    uint8_t Physical;                 ///< The physical input port from which DMX512 data was input.
-    uint16_t PortAddress;             ///< The 15 bit Port-Address to which this packet is destined.
+    uint8_t sequence;                 ///< The sequence number is used to ensure that ArtDmx packets are used in the correct order.
+    uint8_t physical;                 ///< The physical input port from which DMX512 data was input.
+    uint16_t port_address;            ///< The 15 bit Port-Address to which this packet is destined.
     uint8_t length_hi;                ///< The length of the DMX512 data array. This value should be an even number in the range 2 – 512.
-    uint8_t Length;                   ///< Low Byte of above.
+    uint8_t length;                   ///< Low Byte of above.
     uint8_t data[artnet::kDmxLength]; ///< A variable length array of DMX512 lighting data.
 } PACKED;
 
 struct ArtDiagData
 {
-    uint8_t Id[8];       ///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
-    uint16_t op_code;    ///< OpDiagData See \ref TOpCodes
+    uint8_t id[8];       ///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
+    uint16_t op_code;    ///< OpDiagData See
     uint8_t prot_ver_hi; ///< High byte of the Art-Net protocol revision number.
     uint8_t prot_ver_lo; ///< Low byte of the Art-Net protocol revision number. Current value 14.
     uint8_t filler1;     ///< Ignore by receiver, set to zero by sender
-    uint8_t Priority;    ///< The priority of this diagnostic data. See \ref TPriorityCodes
+    uint8_t priority;    ///< The priority of this diagnostic data. See \ref TPriorityCodes
     uint8_t filler2;     ///< Ignore by receiver, set to zero by sender
     uint8_t filler3;     ///< Ignore by receiver, set to zero by sender
     uint8_t length_hi;   ///< The length of the text array below. High Byte.
@@ -519,8 +519,8 @@ struct ArtDiagData
 
 struct ArtSync
 {
-    uint8_t Id[8];       ///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
-    uint16_t op_code;    ///< OpSync \ref TOpCodes
+    uint8_t id[8];       ///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
+    uint16_t op_code;    ///< OpSync
     uint8_t prot_ver_hi; ///< High byte of the Art-Net protocol revision number.
     uint8_t prot_ver_lo; ///< Low byte of the Art-Net protocol revision number. Current value 14.
     uint8_t aux1;        ///< Transmit as zero.
@@ -534,8 +534,8 @@ struct ArtSync
  */
 struct ArtAddress
 {
-    uint8_t Id[8];       ///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
-    uint16_t op_code;    ///< OpAddress \ref TOpCodes
+    uint8_t id[8];       ///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
+    uint16_t op_code;    ///< OpAddress
     uint8_t prot_ver_hi; ///< High byte of the Art-Net protocol revision number.
     uint8_t prot_ver_lo; ///< Low byte of the Art-Net protocol revision number. Current value 14.
     uint8_t
@@ -544,14 +544,14 @@ struct ArtAddress
                         ///< addresses are in use.
     uint8_t port_name[artnet::kPortNameLength]; ///< The Node will ignore this value if the string is null.
     uint8_t long_name[artnet::kLongNameLength]; ///< The Node will ignore this value if the string is null.
-    uint8_t SwIn[artnet::kPorts];  ///< This value is ignored unless bit 7 is high. Send 0x00 to reset this value to the physical switch setting. Use value 0x7f
+    uint8_t sw_in[artnet::kPorts]; ///< This value is ignored unless bit 7 is high. Send 0x00 to reset this value to the physical switch setting. Use value 0x7f
                                    ///< for no change.
-    uint8_t SwOut[artnet::kPorts]; ///< This value is ignored unless bit 7 is high. Send 0x00 to reset this value to the physical switch setting. Use value 0x7f
-                                   ///< for no change.
+    uint8_t sw_out[artnet::kPorts]; ///< This value is ignored unless bit 7 is high. Send 0x00 to reset this value to the physical switch setting. Use value
+                                    ///< 0x7f for no change.
     uint8_t
         sub_switch; ///< This value is ignored unless bit 7 is high. Send 0x00 to reset this value to the physical switch setting. Use value 0x7f for no change.
     uint8_t acn_priority; ///< sACN Priority. A value of 255 represents no change. Values of 0 to 200 inclusive are valid.
-    uint8_t Command;      ///< Node configuration commands \ref TArtnetPortCommand
+    uint8_t command;      ///< Node configuration commands \ref TArtnetPortCommand
 } PACKED;
 
 /**
@@ -565,17 +565,17 @@ struct ArtAddress
 
 struct ArtInput
 {
-    uint8_t Id[8];       ///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
-    uint16_t op_code;    ///< OpAddress \ref TOpCodes
+    uint8_t id[8];       ///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
+    uint16_t op_code;    ///< OpAddress
     uint8_t prot_ver_hi; ///< High byte of the Art-Net protocol revision number.
     uint8_t prot_ver_lo; ///< Low byte of the Art-Net protocol revision number. Current value 14.
     uint8_t filler1;     ///< Pad length to match ArtPoll.
     uint8_t bind_index; ///< The BindIndex defines the bound node which originated this packet and is used to uniquely identify the bound node when identical IP
                         ///< addresses are in use.
-    uint8_t
-        NumPortsHi; ///< The high byte of the word describing the number of input or output ports. The high byte is for future expansion and is currently zero.
-    uint8_t NumPortsLo;            ///< The low byte of the word describing the number of input or output ports.
-    uint8_t Input[artnet::kPorts]; ///< This array defines input disable status of each channel.
+    uint8_t num_ports_hi; ///< The high byte of the word describing the number of input or output ports. The high byte is for future expansion and is currently
+                          ///< zero.
+    uint8_t num_ports_lo; ///< The low byte of the word describing the number of input or output ports.
+    uint8_t input[artnet::kPorts]; ///< This array defines input disable status of each channel.
 } PACKED;
 
 /**
@@ -588,17 +588,17 @@ struct ArtInput
  */
 struct ArtTimeCode
 {
-    uint8_t Id[8];       ///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
-    uint16_t op_code;    ///< OpAddress \ref TOpCodes
+    uint8_t id[8];       ///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
+    uint16_t op_code;    ///<
     uint8_t prot_ver_hi; ///< High byte of the Art-Net protocol revision number.
     uint8_t prot_ver_lo; ///< Low byte of the Art-Net protocol revision number. Current value 14.
     uint8_t filler1;     ///< Ignore by receiver, set to zero by sender
     uint8_t filler2;     ///< Ignore by receiver, set to zero by sender
-    uint8_t Frames;      ///< Frames time. 0 – 29 depending on mode.
-    uint8_t Seconds;     ///< Seconds. 0 - 59.
-    uint8_t Minutes;     ///< Minutes. 0 - 59.
-    uint8_t Hours;       ///< Hours. 0 - 59.
-    uint8_t Type;        ///< 0 = Film (24fps) , 1 = EBU (25fps), 2 = DF (29.97fps), 3 = SMPTE (30fps)
+    uint8_t frames;      ///< Frames time. 0 – 29 depending on mode.
+    uint8_t seconds;     ///< Seconds. 0 - 59.
+    uint8_t minutes;     ///< Minutes. 0 - 59.
+    uint8_t hours;       ///< Hours. 0 - 59.
+    uint8_t type;        ///< 0 = Film (24fps) , 1 = EBU (25fps), 2 = DF (29.97fps), 3 = SMPTE (30fps)
 } PACKED;
 
 /**
@@ -608,7 +608,7 @@ struct ArtTimeCode
 struct ArtCommand
 {
     uint8_t id[8];       ///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
-    uint16_t op_code;    ///< OpAddress \ref TOpCodes
+    uint16_t op_code;    ///<
     uint8_t prot_ver_hi; ///< High byte of the Art-Net protocol revision number.
     uint8_t prot_ver_lo; ///< Low byte of the Art-Net protocol revision number. Current value 14.
     uint8_t esta_man_hi; ///< The ESTA manufacturer code. The ESTAManufacturer Code is assigned by ESTA anduniquely identifies the manufacturer thatgenerated
@@ -621,8 +621,8 @@ struct ArtCommand
 
 struct ArtTimeSync
 {
-    uint8_t Id[8];       ///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
-    uint16_t op_code;    ///< OpAddress \ref TOpCodes
+    uint8_t id[8];       ///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
+    uint16_t op_code;    ///<
     uint8_t prot_ver_hi; ///< High byte of the Art-Net protocol revision number.
     uint8_t prot_ver_lo; ///< Low byte of the Art-Net protocol revision number. Current value 14.
     uint8_t filler1;     ///< Ignore by receiver, set to zero by sender
@@ -649,8 +649,8 @@ struct ArtTimeSync
  */
 struct ArtTodRequest
 {
-    uint8_t Id[8];       ///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
-    uint16_t op_code;    ///< OpAddress \ref TOpCodes
+    uint8_t id[8];       ///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
+    uint16_t op_code;    ///<
     uint8_t prot_ver_hi; ///< High byte of the Art-Net protocol revision number.
     uint8_t prot_ver_lo; ///< Low byte of the Art-Net protocol revision number. Current value 14.
     uint8_t filler1;     ///< Pad length to match ArtPoll.
@@ -662,10 +662,10 @@ struct ArtTodRequest
     uint8_t spare5;      ///< Transmit as zero, receivers don’t test.
     uint8_t spare6;      ///< Transmit as zero, receivers don’t test.
     uint8_t spare7;      ///< Transmit as zero, receivers don’t test.
-    uint8_t Net;         ///< The top 7 bits of the 15 bit Port-Address of Nodes that must respond to this packet.
-    uint8_t Command;     ///< 0x00 TodFull Send the entire TOD.
-    uint8_t AddCount;    ///< The array size of the Address field. Max value is 32.
-    uint8_t Address[32]; ///< This array defines the low byte of the Port-Address of the Output Gateway nodes that must respond to this packet.
+    uint8_t net;         ///< The top 7 bits of the 15 bit Port-Address of Nodes that must respond to this packet.
+    uint8_t command;     ///< 0x00 TodFull Send the entire TOD.
+    uint8_t add_count;   ///< The array size of the Address field. Max value is 32.
+    uint8_t address[32]; ///< This array defines the low byte of the Port-Address of the Output Gateway nodes that must respond to this packet.
 } PACKED;
 
 /**
@@ -674,8 +674,8 @@ struct ArtTodRequest
  */
 struct ArtTodControl
 {
-    uint8_t Id[8];       ///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
-    uint16_t op_code;    ///< OpAddress \ref TOpCodes
+    uint8_t id[8];       ///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
+    uint16_t op_code;    ///<
     uint8_t prot_ver_hi; ///< High byte of the Art-Net protocol revision number.
     uint8_t prot_ver_lo; ///< Low byte of the Art-Net protocol revision number. Current value 14.
     uint8_t filler1;     ///< Pad length to match ArtPoll.
@@ -687,36 +687,36 @@ struct ArtTodControl
     uint8_t spare5;      ///< Transmit as zero, receivers don’t test.
     uint8_t spare6;      ///< Transmit as zero, receivers don’t test.
     uint8_t spare7;      ///< Transmit as zero, receivers don’t test.
-    uint8_t Net;         ///< The top 7 bits of the 15 bit Port-Address of Nodes that must respond to this packet.
-    uint8_t Command;     ///< 0x00 AtcNone No action. 0x01 AtcFlush The node flushes its TOD and instigates full discovery.
-    uint8_t Address;     ///< The low byte of the 15 bit Port-Address of the DMX Port that should action this command.
+    uint8_t net;         ///< The top 7 bits of the 15 bit Port-Address of Nodes that must respond to this packet.
+    uint8_t command;     ///< 0x00 AtcNone No action. 0x01 AtcFlush The node flushes its TOD and instigates full discovery.
+    uint8_t address;     ///< The low byte of the 15 bit Port-Address of the DMX Port that should action this command.
 } PACKED;
 
 struct ArtTodData
 {
-    uint8_t Id[8];           ///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
-    uint16_t op_code;        ///< OpAddress \ref TOpCodes
-    uint8_t prot_ver_hi;     ///< High byte of the Art-Net protocol revision number.
-    uint8_t prot_ver_lo;     ///< Low byte of the Art-Net protocol revision number. Current value 14.
-    uint8_t rdm_version;     ///< Art-Net Devices that only support RDM DRAFT V1.0 set field to 0x00. Devices that support RDM STANDARD V1.0 set field to 0x01.
-    uint8_t Port;            ///< Physical Port. Range 1-4.
-    uint8_t spare1;          ///< Transmit as zero, receivers don’t test.
-    uint8_t spare2;          ///< Transmit as zero, receivers don’t test.
-    uint8_t spare3;          ///< Transmit as zero, receivers don’t test.
-    uint8_t spare4;          ///< Transmit as zero, receivers don’t test.
-    uint8_t spare5;          ///< Transmit as zero, receivers don’t test.
-    uint8_t spare6;          ///< Transmit as zero, receivers don’t test.
-    uint8_t bind_index;      ///< The BindIndex defines the bound node which originated this packet. In combination with Port and Source IP address, it uniquely
-                             ///< identifies the sender.
-    uint8_t Net;             ///< The top 7 bits of the 15 bit Port-Address of Nodes that must respond to this packet.
-    uint8_t CommandResponse; ///< 0x00 TodFull The packet contains the entire TOD or is the first packet in a sequence of packets that contains the entire TOD.
-    uint8_t Address; ///< The low 8 bits of the Port-Address of the Output Gateway DMX Port that generated this packet. The high nibble is the Sub-Net switch.
+    uint8_t id[8];       ///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
+    uint16_t op_code;    ///<
+    uint8_t prot_ver_hi; ///< High byte of the Art-Net protocol revision number.
+    uint8_t prot_ver_lo; ///< Low byte of the Art-Net protocol revision number. Current value 14.
+    uint8_t rdm_version; ///< Art-Net Devices that only support RDM DRAFT V1.0 set field to 0x00. Devices that support RDM STANDARD V1.0 set field to 0x01.
+    uint8_t port;        ///< Physical Port. Range 1-4.
+    uint8_t spare1;      ///< Transmit as zero, receivers don’t test.
+    uint8_t spare2;      ///< Transmit as zero, receivers don’t test.
+    uint8_t spare3;      ///< Transmit as zero, receivers don’t test.
+    uint8_t spare4;      ///< Transmit as zero, receivers don’t test.
+    uint8_t spare5;      ///< Transmit as zero, receivers don’t test.
+    uint8_t spare6;      ///< Transmit as zero, receivers don’t test.
+    uint8_t bind_index;  ///< The BindIndex defines the bound node which originated this packet. In combination with Port and Source IP address, it uniquely
+                         ///< identifies the sender.
+    uint8_t net;         ///< The top 7 bits of the 15 bit Port-Address of Nodes that must respond to this packet.
+    uint8_t command_response; ///< 0x00 TodFull The packet contains the entire TOD or is the first packet in a sequence of packets that contains the entire TOD.
+    uint8_t address; ///< The low 8 bits of the Port-Address of the Output Gateway DMX Port that generated this packet. The high nibble is the Sub-Net switch.
                      ///< The low nibble corresponds to the Universe.
     uint8_t uid_total_hi; ///< The total number of RDM devices discovered by this Universe.
     uint8_t uid_total_lo;
     uint8_t block_count; ///< The index number of this packet. When UidTotal exceeds 200, multiple ArtTodData packets are used.
     uint8_t uid_count;   ///< The number of UIDs encoded in this packet. This is the index of the following array.
-    uint8_t Tod[200][6]; ///< 48 bit An array of RDM UID.
+    uint8_t tod[200][6]; ///< 48 bit An array of RDM UID.
 } PACKED;
 
 /**
@@ -724,23 +724,23 @@ struct ArtTodData
  */
 struct ArtRdm
 {
-    uint8_t Id[8];          ///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
-    uint16_t op_code;       ///< OpAddress \ref TOpCodes
-    uint8_t prot_ver_hi;    ///< High byte of the Art-Net protocol revision number.
-    uint8_t prot_ver_lo;    ///< Low byte of the Art-Net protocol revision number. Current value 14.
-    uint8_t rdm_version;    ///< Art-Net Devices that only support RDM DRAFT V1.0 set field to 0x00. Devices that support RDM STANDARD V1.0 set field to 0x01.
-    uint8_t filler2;        ///< Pad length to match ArtPoll.
-    uint8_t spare1;         ///< Transmit as zero, receivers don’t test.
-    uint8_t spare2;         ///< Transmit as zero, receivers don’t test.
-    uint8_t spare3;         ///< Transmit as zero, receivers don’t test.
-    uint8_t spare4;         ///< Transmit as zero, receivers don’t test.
-    uint8_t spare5;         ///< Transmit as zero, receivers don’t test.
-    uint8_t spare6;         ///< Transmit as zero, receivers don’t test.
-    uint8_t spare7;         ///< Transmit as zero, receivers don’t test.
-    uint8_t Net;            ///< The top 7 bits of the 15 bit Port-Address of Nodes that must respond to this packet.
-    uint8_t Command;        ///< 0x00 ArProcess Process RDM Packet0x00 AtcNone No action. 0x01 AtcFlush The node flushes its TOD and instigates full discovery.
-    uint8_t Address;        ///< The low 8 bits of the Port-Address that should action this command.
-    uint8_t RdmPacket[256]; ///< The RDM data packet excluding the DMX StartCode with Checksum
+    uint8_t id[8];           ///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
+    uint16_t op_code;        ///<
+    uint8_t prot_ver_hi;     ///< High byte of the Art-Net protocol revision number.
+    uint8_t prot_ver_lo;     ///< Low byte of the Art-Net protocol revision number. Current value 14.
+    uint8_t rdm_version;     ///< Art-Net Devices that only support RDM DRAFT V1.0 set field to 0x00. Devices that support RDM STANDARD V1.0 set field to 0x01.
+    uint8_t filler2;         ///< Pad length to match ArtPoll.
+    uint8_t spare1;          ///< Transmit as zero, receivers don’t test.
+    uint8_t spare2;          ///< Transmit as zero, receivers don’t test.
+    uint8_t spare3;          ///< Transmit as zero, receivers don’t test.
+    uint8_t spare4;          ///< Transmit as zero, receivers don’t test.
+    uint8_t spare5;          ///< Transmit as zero, receivers don’t test.
+    uint8_t spare6;          ///< Transmit as zero, receivers don’t test.
+    uint8_t spare7;          ///< Transmit as zero, receivers don’t test.
+    uint8_t net;             ///< The top 7 bits of the 15 bit Port-Address of Nodes that must respond to this packet.
+    uint8_t command;         ///< 0x00 ArProcess Process RDM Packet0x00 AtcNone No action. 0x01 AtcFlush The node flushes its TOD and instigates full discovery.
+    uint8_t address;         ///< The low 8 bits of the Port-Address that should action this command.
+    uint8_t rdm_packet[256]; ///< The RDM data packet excluding the DMX StartCode with Checksum
 } PACKED;
 
 /**
@@ -749,7 +749,7 @@ struct ArtRdm
 struct ArtRdmSub
 {
     uint8_t id[8];           ///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
-    uint16_t op_code;        ///< OpAddress \ref TOpCodes
+    uint16_t op_code;        ///<
     uint8_t prot_ver_hi;     ///< High byte of the Art-Net protocol revision number.
     uint8_t prot_ver_lo;     ///< Low byte of the Art-Net protocol revision number. Current value 14.
     uint8_t rdm_ver;         ///< Art-Net Devices that only support RDM DRAFT V1.0 set field to 0x00. Devices that support RDM STANDARD V1.0 set field to 0x01.
@@ -770,9 +770,8 @@ struct ArtRdmSub
 
 struct ArtIpProg
 {
-    uint8_t id[8];    ///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
-    uint16_t op_code; ///< The op_code defines the class of data following ArtPoll within this UDP packet. Transmitted low byte first. See \ref TOpCodes for the
-                      ///< op_code listing.
+    uint8_t id[8];       ///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
+    uint16_t op_code;    ///< The op_code defines the class of data following ArtPoll within this UDP packet. Transmitted low byte first.
     uint8_t prot_ver_hi; ///< High byte of the Art-Net protocol revision number.
     uint8_t prot_ver_lo; ///< Low byte of the Art-Net protocol revision number. Current value 14.
     uint8_t filler1;     ///< Pad length to match ArtPoll.
@@ -797,9 +796,8 @@ struct ArtIpProg
 
 struct ArtIpProgReply
 {
-    uint8_t id[8];    ///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
-    uint16_t op_code; ///< The op_code defines the class of data following ArtPoll within this UDP packet. Transmitted low byte first. See \ref TOpCodes for the
-                      ///< op_code listing.
+    uint8_t id[8];       ///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
+    uint16_t op_code;    ///<
     uint8_t prot_ver_hi; ///< High byte of the Art-Net protocol revision number.
     uint8_t prot_ver_lo; ///< Low byte of the Art-Net protocol revision number. Current value 14.
     uint8_t filler1;     ///< Pad length to match ArtPoll.
@@ -829,7 +827,7 @@ struct ArtIpProgReply
 struct ArtTrigger
 {
     uint8_t id[8];       ///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
-    uint16_t op_code;    ///< OpPollReply
+    uint16_t op_code;    ///<
     uint8_t prot_ver_hi; ///< High byte of the Art-Net protocol revision number.
     uint8_t prot_ver_lo; ///< Low byte of the Art-Net protocol revision number. Current value 14.
     uint8_t filler1;
@@ -844,7 +842,7 @@ struct ArtTrigger
 struct ArtDirectory
 {
     uint8_t id[8];       ///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
-    uint16_t op_code;    ///< OpPollReply \ref TOpCodes
+    uint16_t op_code;    ///<
     uint8_t prot_ver_hi; ///< High byte of the Art-Net protocol revision number.
     uint8_t prot_ver_lo; ///< Low byte of the Art-Net protocol revision number. Current value 14.
     uint8_t filler1;
@@ -857,7 +855,7 @@ struct ArtDirectory
 struct ArtDirectoryReply
 {
     uint8_t id[8];       ///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
-    uint16_t op_code;    ///< OpPollReply \ref TOpCodes
+    uint16_t op_code;    ///<
     uint8_t prot_ver_hi; ///< High byte of the Art-Net protocol revision number.
     uint8_t prot_ver_lo; ///< Low byte of the Art-Net protocol revision number. Current value 14.
     uint8_t filler1;

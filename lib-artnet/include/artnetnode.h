@@ -33,7 +33,6 @@
 #include <cstdint>
 #include <cstdarg>
 #include <cstring>
-#include <cassert>
 
 #if !defined(ARTNET_VERSION)
 #error ARTNET_VERSION is not defined
@@ -58,12 +57,14 @@
 #if defined(RDM_RESPONDER)
 #include "artnetrdmresponder.h"
 #endif
+#if defined(ARTNET_HAVE_TIMECODE)
+#include "network_udp.h"
+#endif
 #if (ARTNET_VERSION >= 4)
 #include "e131bridge.h"
 #endif
 #include "dmxnode.h"
 #include "dmxnode_outputtype.h"
-#include "network.h"
 #include "firmware/debug/debug_debug.h"
 
 #ifndef ALIGNED
@@ -284,7 +285,7 @@ class ArtNetNode
     void SendTimeCode(const struct artnet::TimeCode* timecode)
     {
         assert(timecode != nullptr);
-        memcpy(&art_time_code_.Frames, timecode, sizeof(struct artnet::TimeCode));
+        memcpy(&art_time_code_.frames, timecode, sizeof(struct artnet::TimeCode));
         network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&art_time_code_), sizeof(struct artnet::ArtTimeCode), node_.ip_timecode, artnet::kUdpPort);
     }
 
@@ -320,23 +321,6 @@ class ArtNetNode
         }
 
         return 0;
-    }
-
-    /**
-     * LLRP
-     */
-    void SetRdmUID(const uint8_t* uid, bool supports_llrp = false)
-    {
-        memcpy(art_poll_reply_.DefaultUidResponder, uid, sizeof(art_poll_reply_.DefaultUidResponder));
-
-        if (supports_llrp)
-        {
-            art_poll_reply_.Status3 |= artnet::Status3::kSupportsLlrp;
-        }
-        else
-        {
-            art_poll_reply_.Status3 &= static_cast<uint8_t>(~artnet::Status3::kSupportsLlrp);
-        }
     }
 
     void static StaticCallbackFunction(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port)

@@ -72,46 +72,46 @@ ArtNetController::ArtNetController()
     memset(&art_poll_reply_, 0, sizeof(struct ArtPollReply));
     memcpy(&art_poll_reply_, artnet::kNodeId, 8);
     art_poll_reply_.op_code = static_cast<uint16_t>(artnet::OpCodes::kOpPollreply);
-    art_poll_reply_.Port = artnet::kUdpPort;
-    art_poll_reply_.VersInfoH = ArtNetConst::kVersion[0];
-    art_poll_reply_.VersInfoL = ArtNetConst::kVersion[1];
-    art_poll_reply_.OemHi = ArtNetConst::kOemId[0];
-    art_poll_reply_.Oem = ArtNetConst::kOemId[1];
-    art_poll_reply_.EstaMan[0] = ArtNetConst::kEstaId[1];
-    art_poll_reply_.EstaMan[1] = ArtNetConst::kEstaId[0];
-    art_poll_reply_.Style = static_cast<uint8_t>(StyleCode::kServer);
-    network::iface::CopyMacAddressTo(art_poll_reply_.MAC);
+    art_poll_reply_.port = artnet::kUdpPort;
+    art_poll_reply_.vers_info_h = ArtNetConst::kVersion[0];
+    art_poll_reply_.vers_info_l = ArtNetConst::kVersion[1];
+    art_poll_reply_.oem_hi = ArtNetConst::kOemId[0];
+    art_poll_reply_.oem = ArtNetConst::kOemId[1];
+    art_poll_reply_.esta_man[0] = ArtNetConst::kEstaId[1];
+    art_poll_reply_.esta_man[1] = ArtNetConst::kEstaId[0];
+    art_poll_reply_.style = static_cast<uint8_t>(StyleCode::kServer);
+    network::iface::CopyMacAddressTo(art_poll_reply_.mac);
     art_poll_reply_.bind_index = 1;
     ip.u32 = network::GetPrimaryIp();
-    memcpy(art_poll_reply_.IPAddress, ip.u8, sizeof(art_poll_reply_.IPAddress));
+    memcpy(art_poll_reply_.ip_address, ip.u8, sizeof(art_poll_reply_.ip_address));
 #if (ARTNET_VERSION >= 4)
-    memcpy(art_poll_reply_.BindIp, ip.u8, sizeof(art_poll_reply_.BindIp));
-    art_poll_reply_.AcnPriority = e131::priority::kDefault;
+    memcpy(art_poll_reply_.bind_ip, ip.u8, sizeof(art_poll_reply_.bind_ip));
+    art_poll_reply_.acn_priority = e131::priority::kDefault;
 #endif
     /*
      * Status 1
      */
-    art_poll_reply_.Status1 |= artnet::Status1::kIndicatorNormalMode | artnet::Status1::kPapNetwork;
+    art_poll_reply_.status1 |= artnet::Status1::kIndicatorNormalMode | artnet::Status1::kPapNetwork;
     /*
      * Status 2
      */
-    art_poll_reply_.Status2 &= static_cast<uint8_t>(~artnet::Status2::kSacnAbleToSwitch);
-    art_poll_reply_.Status2 |=
+    art_poll_reply_.status2 &= static_cast<uint8_t>(~artnet::Status2::kSacnAbleToSwitch);
+    art_poll_reply_.status2 |=
         artnet::Status2::kPortAddress15Bit | (artnet::kVersion >= 4 ? artnet::Status2::kSacnAbleToSwitch : artnet::Status2::kSacnNoSwitch);
-    art_poll_reply_.Status2 &= static_cast<uint8_t>(~artnet::Status2::kIpDhcp);
-    art_poll_reply_.Status2 |= network::iface::Dhcp() ? artnet::Status2::kIpDhcp : artnet::Status2::kIpManualy;
-    art_poll_reply_.Status2 &= static_cast<uint8_t>(~artnet::Status2::kDhcpCapable);
-    art_poll_reply_.Status2 |= network::iface::IsDhcpCapable() ? artnet::Status2::kDhcpCapable : static_cast<uint8_t>(0);
+    art_poll_reply_.status2 &= static_cast<uint8_t>(~artnet::Status2::kIpDhcp);
+    art_poll_reply_.status2 |= network::iface::Dhcp() ? artnet::Status2::kIpDhcp : artnet::Status2::kIpManualy;
+    art_poll_reply_.status2 &= static_cast<uint8_t>(~artnet::Status2::kDhcpCapable);
+    art_poll_reply_.status2 |= network::iface::IsDhcpCapable() ? artnet::Status2::kDhcpCapable : static_cast<uint8_t>(0);
 
 #if defined(ENABLE_HTTPD) && defined(ENABLE_CONTENT)
-    art_poll_reply_.Status2 |= artnet::Status2::kWebBrowserSupport;
+    art_poll_reply_.status2 |= artnet::Status2::kWebBrowserSupport;
 #endif
 
-    art_poll_reply_.PortTypes[0] = artnet::PortType::kOutputArtnet;
-    art_poll_reply_.PortTypes[1] = artnet::PortType::kInputArtnet;
+    art_poll_reply_.port_types[0] = artnet::PortType::kOutputArtnet;
+    art_poll_reply_.port_types[1] = artnet::PortType::kInputArtnet;
     art_poll_reply_.good_output[0] = artnet::GoodOutput::kDataIsBeingTransmitted;
     art_poll_reply_.good_input[0] = artnet::GoodInput::kDataRecieved;
-    art_poll_reply_.NumPortsLo = 2;
+    art_poll_reply_.num_ports_lo = 2;
 
     m_pArtDmx = new struct ArtDmx;
     assert(m_pArtDmx != nullptr);
@@ -274,18 +274,18 @@ void ArtNetController::HandleDmxOut(uint16_t nUniverse, const uint8_t* pDmxData,
 
     ActiveUniversesAdd(nUniverse);
 
-    m_pArtDmx->Physical = nPortIndex & 0xFF;
-    m_pArtDmx->PortAddress = nUniverse;
+    m_pArtDmx->physical = nPortIndex & 0xFF;
+    m_pArtDmx->port_address = nUniverse;
     m_pArtDmx->length_hi = static_cast<uint8_t>((nLength & 0xFF00) >> 8);
-    m_pArtDmx->Length = static_cast<uint8_t>(nLength & 0xFF);
+    m_pArtDmx->length = static_cast<uint8_t>(nLength & 0xFF);
 
     // The sequence number is used to ensure that ArtDmx packets are used in the correct order.
     // This field is incremented in the range 0x01 to 0xff to allow the receiving node to resequence packets.
-    m_pArtDmx->Sequence++;
+    m_pArtDmx->sequence++;
 
-    if (m_pArtDmx->Sequence == 0)
+    if (m_pArtDmx->sequence == 0)
     {
-        m_pArtDmx->Sequence = 1;
+        m_pArtDmx->sequence = 1;
     }
 
 #if defined(CONFIG_ARTNET_CONTROLLER_ENABLE_MASTER)
@@ -361,13 +361,13 @@ void ArtNetController::HandleSync()
 void ArtNetController::HandleBlackout()
 {
     m_pArtDmx->length_hi = (512 & 0xFF00) >> 8;
-    m_pArtDmx->Length = (512 & 0xFF);
+    m_pArtDmx->length = (512 & 0xFF);
 
     memset(m_pArtDmx->data, 0, 512);
 
     for (uint32_t active_universe_index = 0; active_universe_index < m_nActiveUniverses; active_universe_index++)
     {
-        m_pArtDmx->PortAddress = s_active_universes[active_universe_index];
+        m_pArtDmx->port_address = s_active_universes[active_universe_index];
 
         uint32_t count = 0;
         const auto* const kIpAddresses = GetIpAddress(s_active_universes[active_universe_index]);
@@ -388,11 +388,11 @@ void ArtNetController::HandleBlackout()
         {
             // The sequence number is used to ensure that ArtDmx packets are used in the correct order.
             // This field is incremented in the range 0x01 to 0xff to allow the receiving node to resequence packets.
-            m_pArtDmx->Sequence++;
+            m_pArtDmx->sequence++;
 
-            if (m_pArtDmx->Sequence == 0)
+            if (m_pArtDmx->sequence == 0)
             {
-                m_pArtDmx->Sequence = 1;
+                m_pArtDmx->sequence = 1;
             }
 
             for (uint32_t index = 0; index < count; index++)
@@ -408,11 +408,11 @@ void ArtNetController::HandleBlackout()
         {
             // The sequence number is used to ensure that ArtDmx packets are used in the correct order.
             // This field is incremented in the range 0x01 to 0xff to allow the receiving node to resequence packets.
-            m_pArtDmx->Sequence++;
+            m_pArtDmx->sequence++;
 
-            if (m_pArtDmx->Sequence == 0)
+            if (m_pArtDmx->sequence == 0)
             {
-                m_pArtDmx->Sequence = 1;
+                m_pArtDmx->sequence = 1;
             }
 
             network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(m_pArtDmx), sizeof(struct ArtDmx), network::GetBroadcastIp(), artnet::kUdpPort);
@@ -458,7 +458,7 @@ void ArtNetController::HandlePoll(const uint8_t* buffer, uint32_t from_ip)
 
     auto art_poll_reply = reinterpret_cast<artnet::ArtPollReply*>(const_cast<uint8_t*>(buffer));
 
-    snprintf(reinterpret_cast<char*>(art_poll_reply->NodeReport), artnet::kReportLength, "#%04x [%u]", static_cast<int>(state_.reportcode),
+    snprintf(reinterpret_cast<char*>(art_poll_reply->node_report), artnet::kReportLength, "#%04x [%u]", static_cast<int>(state_.reportcode),
              static_cast<unsigned>(state_.art.poll_reply_count++));
 
     network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&art_poll_reply), sizeof(artnet::ArtPollReply), from_ip, artnet::kUdpPort);

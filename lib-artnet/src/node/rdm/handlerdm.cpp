@@ -46,13 +46,13 @@ void ArtNetNode::HandleTodRequest()
 
     const auto* const kRequest = reinterpret_cast<artnet::ArtTodRequest*>(receive_buffer_);
     // The number of entries in Address that are used. Max value is 32.
-    const auto kAddCount = kRequest->AddCount & 0x1f;
+    const auto kAddCount = kRequest->add_count & 0x1f;
 
     for (auto count = 0; count < kAddCount; count++)
     {
         // Address[count] This array defines the low byte of the Port-Address of the Output Gateway nodes that
         // must respond to this packet. This is combined with the 'Net' field above to form the 15 bit address.
-        const auto kPortAddress = static_cast<uint16_t>((kRequest->Net << 8)) | static_cast<uint16_t>((kRequest->Address[count]));
+        const auto kPortAddress = static_cast<uint16_t>((kRequest->net << 8)) | static_cast<uint16_t>((kRequest->address[count]));
 
         for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++)
         {
