@@ -2,7 +2,7 @@
  * @file llrpdevice.h
  *
  */
-/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,13 +30,15 @@
 #include <cstdio>
 #include <cassert>
 
-#include "network.h"
+#include "apps/mdns.h"
+#include "network_igmp.h"
+#include "network_udp.h"
 #include "llrp/llrppacket.h"
 #include "e133.h"
 #include "e120.h"
 #include "rdmhandler.h"
 #include "ip4/ip4_address.h"
-#include "apps/mdns.h"
+#include "rdmdevice.h"
 #include "firmware/debug/debug_debug.h"
 
 namespace llrp::device
@@ -60,7 +62,7 @@ class LLRPDevice
         network::igmp::JoinGroup(handle_llrp, llrp::device::kIpV4LlrpRequest);
 
         network::apps::mdns::ServiceRecordAdd(nullptr, network::apps::mdns::Services::kRdmnetLlrp, "node=RDMNet LLRP Only");
-
+		
         DEBUG_EXIT();
     }
 
@@ -116,6 +118,7 @@ class LLRPDevice
 
     void Print()
     {
+		rdm::device::Device::Instance().Print();
         puts("LLRP Device");
         printf(" Port UDP           : %d\n", llrp::device::kLlrpPort);
         printf(" Join Request       : " IPSTR "\n", IP2STR(llrp::device::kIpV4LlrpRequest));
@@ -125,7 +128,7 @@ class LLRPDevice
    private:
     uint8_t* LLRPHandleRdmCommand(const uint8_t* rdm_data_no_sc)
     {
-        rdm_handler_.HandleData(rdm_data_no_sc, reinterpret_cast<uint8_t*>(&rdm_command));
+        RDMHandler::Instance().HandleData(rdm_data_no_sc, reinterpret_cast<uint8_t*>(&rdm_command), RDMHandler::Type::kTypeLlrp);
         return reinterpret_cast<uint8_t*>(&rdm_command);
     }
 
@@ -142,8 +145,6 @@ class LLRPDevice
     }
 
    private:
-    RDMHandler rdm_handler_{false};
-
     static inline int32_t handle_llrp;
     static inline uint32_t ip_address_from;
     static inline uint8_t* llrp;

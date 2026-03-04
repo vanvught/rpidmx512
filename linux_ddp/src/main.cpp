@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -78,8 +78,6 @@ int main(int argc, char** argv) // NOLINT
     auto& rdm_device = rdm::device::Device::Instance();
     rdm_device.SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
     rdm_device.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
-    rdm_device.Init();
-    rdm_device.Print();
 
     RDMNetDevice llrp_only_device;
     llrp_only_device.Print();

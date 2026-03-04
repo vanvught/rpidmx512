@@ -32,6 +32,7 @@
 #include "llrp/llrpdevice.h"
 #include "hal_uuid.h"
 #include "firmware/debug/debug_debug.h"
+#include "rdmdevice.h"
 
 class RDMNetDevice final : public LLRPDevice
 {
@@ -39,6 +40,8 @@ class RDMNetDevice final : public LLRPDevice
     RDMNetDevice()
     {
         DEBUG_ENTRY();
+
+        rdm::device::Device::Instance().Init();
 
         DEBUG_EXIT();
     }

@@ -33,6 +33,10 @@
 #include "rdm_discovery.h"
 #include "rdm_device_base.h"
 #include "dmxnode.h"
+#if defined(NODE_RDMNET_LLRP_ONLY)
+#include "rdmdevice.h"
+#include "llrp/llrpdevice.h"
+#endif
 
 namespace artnet::rdm::controller
 {
@@ -42,10 +46,22 @@ void DiscoveryStart(uint32_t port_index);
 void DiscoveryDone(uint32_t port_index);
 } // namespace artnet::rdm::controller
 
+#if defined(NODE_RDMNET_LLRP_ONLY)
+class ArtNetRdmController final : rdm::Discovery, LLRPDevice
+#else
 class ArtNetRdmController final : rdm::Discovery
+#endif
 {
    public:
-    ArtNetRdmController() { rdm::device::Base::Instance().Print(); }
+    ArtNetRdmController()
+    {
+#if defined(NODE_RDMNET_LLRP_ONLY)
+        rdm::device::Device::Instance().Init();
+		rdm::device::Device::Instance().Print();
+#else
+        rdm::device::Base::Instance().Print();
+#endif
+    }
 
     ~ArtNetRdmController() = default;
 

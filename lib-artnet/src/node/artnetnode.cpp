@@ -48,7 +48,7 @@
 #if (ARTNET_VERSION >= 4)
 #include "e131.h"
 #endif
-#if defined(ARTNET_ENABLE_LLRP)
+#if defined(NODE_RDMNET_LLRP_ONLY)
 #include "rdm_device_base.h"
 #endif
 #include "dmxnode.h"
@@ -94,7 +94,7 @@ ArtNetNode::ArtNetNode()
 #if (ARTNET_VERSION >= 4)
     art_poll_reply_.acn_priority = e131::priority::kDefault;
 #endif
-#if defined(ARTNET_ENABLE_LLRP)
+#if defined(NODE_RDMNET_LLRP_ONLY)
     memcpy(art_poll_reply_.default_uid_responder, rdm::device::Base::Instance().GetUID(), sizeof(art_poll_reply_.default_uid_responder));
 #endif
 
@@ -193,7 +193,7 @@ void ArtNetNode::Start()
 #if defined(ARTNET_HAVE_DMXIN)
     art_poll_reply_.status3 |= artnet::Status3::kOutputSwitch;
 #endif
-#if defined(ARTNET_ENABLE_LLRP)
+#if defined(NODE_RDMNET_LLRP_ONLY)
     art_poll_reply_.status3 |= artnet::Status3::kSupportsLlrp;
 #endif
 

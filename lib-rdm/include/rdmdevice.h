@@ -81,8 +81,6 @@ class Device
     void Print()
     {
         printf("RDM Device configuration [Protocol Version %d.%d]\n", info_.protocol_major, info_.protocol_minor);
-        const auto kLength = static_cast<int>(std::min(static_cast<size_t>(RDM_MANUFACTURER_LABEL_MAX_LENGTH), strlen(RDMConst::MANUFACTURER_NAME)));
-        printf(" Manufacturer Name : %.*s\n", kLength, const_cast<char*>(&RDMConst::MANUFACTURER_NAME[0]));
         rdm::device::Base::Instance().Print();
         printf(" Root label        : %.*s\n", root_label_length_, root_label_);
         printf(" Product Category  : %.2X%.2X\n", info_.product_category[0], info_.product_category[1]);

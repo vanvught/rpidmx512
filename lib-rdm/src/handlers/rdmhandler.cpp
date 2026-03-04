@@ -25,23 +25,24 @@
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
-#include <cstdio>
 #include <time.h>
 #include <cassert>
 
 #include "rdmhandler.h"
 #include "rdmdevice.h"
+#include "rdm_device_base.h"
 #include "rdmidentify.h"
 #include "rdmslotinfo.h"
 #include "rdmconst.h"
+#include "rdm_message_print.h"
+#include "rdmconst.h"
+#include "e120.h"
 #include "rdm_e120.h"
 #if defined(RDM_RESPONDER)
 #include "rdmdeviceresponder.h"
 #include "rdmsensors.h"
 #include "rdmsubdevices.h"
 #endif
-#include "e120.h"
-#include "rdm_message_print.h"
 #include "hal.h"
 #include "hal_rtc.h"
 #include "hal_boardinfo.h"
@@ -145,7 +146,7 @@ const RDMHandler::PidDefinition RDMHandler::PID_DEFINITION_MANUFACTURER_GENERAL{
 #endif
 #endif
 
-RDMHandler::RDMHandler(bool bIsRdm) : is_rdm_(bIsRdm)
+RDMHandler::RDMHandler()
 {
     DEBUG_ENTRY();
 
@@ -243,17 +244,17 @@ void RDMHandler::RespondMessageNack(uint16_t reason)
  * @param pRdmDataIn RDM with no Start Code
  * @param pRdmDataOut RDM with the Start Code or it is Discover Message
  */
-void RDMHandler::HandleData(const uint8_t* pRdmDataIn, uint8_t* pRdmDataOut)
+void RDMHandler::HandleData(const uint8_t* in, uint8_t* out, Type type)
 {
     DEBUG_ENTRY();
 
-    assert(pRdmDataIn != nullptr);
-    assert(pRdmDataOut != nullptr);
+    assert(in != nullptr);
+    assert(out != nullptr);
 
-    pRdmDataOut[0] = 0xFF; // Invalidate outgoing message;
+    out[0] = 0xFF; // Invalidate outgoing message;
 
-    m_pRdmDataIn = const_cast<uint8_t*>(pRdmDataIn);
-    m_pRdmDataOut = pRdmDataOut;
+    m_pRdmDataIn = const_cast<uint8_t*>(in);
+    m_pRdmDataOut = out;
 
     auto* pRdmRequest = reinterpret_cast<struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
@@ -264,7 +265,7 @@ void RDMHandler::HandleData(const uint8_t* pRdmDataIn, uint8_t* pRdmDataOut)
     }
 
 #ifndef NDEBUG
-    rdm::message::PrintNoStartcode(pRdmDataIn);
+    rdm::message::PrintNoStartcode(in);
 #endif
 
     const auto* const kUid = rdm::device::Base::Instance().GetUID();
@@ -307,7 +308,7 @@ void RDMHandler::HandleData(const uint8_t* pRdmDataIn, uint8_t* pRdmDataOut)
                 {
                     DEBUG_PUTS("E120_DISC_UNIQUE_BRANCH");
 
-                    auto* p = reinterpret_cast<struct TRdmDiscoveryMsg*>(pRdmDataOut);
+                    auto* p = reinterpret_cast<struct TRdmDiscoveryMsg*>(out);
                     uint16_t rdm_checksum = 6 * 0xFF;
 
                     for (uint32_t i = 0; i < 7; i++)
@@ -403,13 +404,13 @@ void RDMHandler::HandleData(const uint8_t* pRdmDataIn, uint8_t* pRdmDataOut)
     else
     {
         auto sub_device = static_cast<uint16_t>((pRdmRequest->sub_device[0] << 8) + pRdmRequest->sub_device[1]);
-        Handlers(bIsRdmPacketBroadcast, nCommandClass, nParamId, pRdmRequest->param_data_length, sub_device);
+        Handlers(type, bIsRdmPacketBroadcast, nCommandClass, nParamId, pRdmRequest->param_data_length, sub_device);
     }
 
     DEBUG_EXIT();
 }
 
-void RDMHandler::Handlers(bool bIsBroadcast, uint8_t nCommandClass, uint16_t nParamId, uint8_t nParamDataLength, uint16_t sub_device)
+void RDMHandler::Handlers(Type type, bool bIsBroadcast, uint8_t nCommandClass, uint16_t nParamId, uint8_t nParamDataLength, uint16_t sub_device)
 {
     DEBUG_ENTRY();
 
@@ -471,7 +472,7 @@ void RDMHandler::Handlers(bool bIsBroadcast, uint8_t nCommandClass, uint16_t nPa
         return;
     }
 
-    if (is_rdm_)
+    if (type == Type::kTypeRdm)
     {
         if (!bRDM)
         {
@@ -480,7 +481,7 @@ void RDMHandler::Handlers(bool bIsBroadcast, uint8_t nCommandClass, uint16_t nPa
             return;
         }
     }
-    else
+    else if (type == Type::kTypeLlrp)
     {
         if (!bRDMNet)
         {
@@ -488,6 +489,10 @@ void RDMHandler::Handlers(bool bIsBroadcast, uint8_t nCommandClass, uint16_t nPa
             DEBUG_EXIT();
             return;
         }
+    }
+    else
+    {
+        assert(0 && "Invalid Type");
     }
 
     if (nCommandClass == E120_GET_COMMAND)
