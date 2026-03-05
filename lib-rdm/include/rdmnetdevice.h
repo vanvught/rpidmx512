@@ -41,8 +41,6 @@ class RDMNetDevice final : public LLRPDevice
     {
         DEBUG_ENTRY();
 
-        rdm::device::Device::Instance().Init();
-
         DEBUG_EXIT();
     }
 
@@ -55,6 +53,8 @@ class RDMNetDevice final : public LLRPDevice
 
     void Print()
     {
+		rdm::device::Device::Instance().Print();
+		
         static constexpr auto kUuidStringLength = 36;
         char uuid_str[kUuidStringLength + 1];
         uuid_str[kUuidStringLength] = '\0';

@@ -718,7 +718,11 @@ void RDMHandler::SetFactoryDefaults(bool is_broadcast, [[maybe_unused]] uint16_t
         return;
     }
 
+#if defined(RDM_RESPONDER)
+    RDMDeviceResponder::Get()->SetFactoryDefaults();
+#else
     rdm::device::Device::Instance().SetFactoryDefaults();
+#endif
 
     if (is_broadcast)
     {

@@ -29,7 +29,6 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
-#include <cassert>
 #include <algorithm>
 
 #include "rdm_device_info.h"
@@ -39,9 +38,6 @@
 #include "rdmidentify.h"
 #include "rdmconst.h"
 #include "rdm_e120.h"
-#if defined(CONFIG_RDM_DEVICE_ENABLE_JSON)
-#include "json/rdmdeviceparams.h"
-#endif
 #include "firmware/debug/debug_debug.h"
 
 namespace rdm::device
@@ -57,25 +53,6 @@ class Device
     {
         static Device instance;
         return instance;
-    }
-
-    void Init()
-    {
-        DEBUG_ENTRY();
-
-        assert(!is_init_);
-
-        SetFactoryDefaults();
-
-        is_init_ = true;
-
-#if defined(CONFIG_RDM_DEVICE_ENABLE_JSON)
-        json::RdmDeviceParams rdmdevice_params;
-        rdmdevice_params.Load();
-        rdmdevice_params.Set();
-#endif
-
-        DEBUG_EXIT();
     }
 
     void Print()
@@ -99,8 +76,11 @@ class Device
     {
         DEBUG_ENTRY();
 
-        const struct rdm::device::InfoData kInfoData = {.data = factory_root_label_, .length = factory_root_label_length_};
-        SetLabel(&kInfoData);
+        memset(root_label_, 0, sizeof(root_label_));
+        rdm::device::store::SaveLabel(root_label_, root_label_length_);
+
+        root_label_length_ = sizeof(rdm::device::kRootLabel) - 1;
+        memcpy(root_label_, rdm::device::kRootLabel, root_label_length_);
 
         checksum_ = CalculateChecksum();
 
@@ -129,17 +109,14 @@ class Device
         {
             memcpy(root_label_, info_data->data, kLength);
             root_label_length_ = kLength;
-
-            if (is_init_)
-            {
-                rdm::device::store::SaveLabel(root_label_, root_label_length_);
-            }
+			
+            rdm::device::store::SaveLabel(root_label_, root_label_length_);
         }
     }
 
     void GetLabel(struct rdm::device::InfoData* info_data)
     {
-        info_data->data = root_label_;
+        info_data->data = reinterpret_cast<char*>(root_label_);
         info_data->length = root_label_length_;
     }
 
@@ -222,9 +199,15 @@ class Device
         info_.dmx_start_address[1] = 0xFF;
         info_.current_personality = 1;
 
-        factory_root_label_length_ = sizeof(rdm::device::kRootLabel) - 1;
-        memcpy(factory_root_label_, rdm::device::kRootLabel, factory_root_label_length_);
-        memcpy(root_label_, rdm::device::kRootLabel, factory_root_label_length_);
+        rdm::device::store::LoadLabel(root_label_, root_label_length_);
+
+        if (root_label_[0] == '\0')
+        {
+            root_label_length_ = sizeof(rdm::device::kRootLabel) - 1;
+            memcpy(root_label_, rdm::device::kRootLabel, root_label_length_);
+
+            checksum_ = CalculateChecksum();
+        }
 
         DEBUG_EXIT();
     }
@@ -244,16 +227,10 @@ class Device
    private:
     RDMIdentify identify_;
     rdm::device::Info info_;
-    char factory_root_label_[RDM_DEVICE_LABEL_MAX_LENGTH];
-    char root_label_[RDM_DEVICE_LABEL_MAX_LENGTH];
-
+    uint8_t root_label_[RDM_DEVICE_LABEL_MAX_LENGTH];
     uint16_t product_detail_{E120_PRODUCT_DETAIL_OTHER};
     uint16_t checksum_{0};
-
-    uint8_t factory_root_label_length_{0};
     uint8_t root_label_length_{0};
-
-    bool is_init_{false};
 };
 } // namespace rdm::device
 

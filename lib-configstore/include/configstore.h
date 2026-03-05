@@ -289,10 +289,16 @@ class ConfigStore : StoreDevice
         static_assert(N == common::store::ltc::display::kMaxInfoMessage, "Size mismatch");
         memcpy(dest, (GetStore()->ltc_display.*field), N);
     }
+	
+	template <std::size_t N> void RdmDeviceCopyArray(uint8_t (&dest)[N], const uint8_t (common::store::RdmDevice::*field)[N]) const
+	{
+	    static_assert(N == common::store::rdmdevice::kLabelMaxLength, "Size mismatch");
+	    memcpy(dest, (GetStore()->rdm_device.*field), N);
+	}
 
-    template <std::size_t N> void RdmDeviceUpdateArray(uint8_t (common::store::RdmDevice::*field)[N], const char* src, uint32_t length)
+    template <std::size_t N> void RdmDeviceUpdateArray(uint8_t (common::store::RdmDevice::*field)[N], const uint8_t* src, uint32_t length)
     {
-        UpdateArray(GetStore()->rdm_device, field, reinterpret_cast<const uint8_t*>(src), length);
+        UpdateArray(GetStore()->rdm_device, field, src, length);
     }
     
     uint8_t RdmSensorsIndexedGetType(uint32_t index) const

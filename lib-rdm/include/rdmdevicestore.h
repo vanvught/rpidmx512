@@ -34,12 +34,22 @@
 
 namespace rdm::device::store
 {
-inline void SaveLabel(const char* label, uint32_t length)
+inline void LoadLabel(uint8_t (&label)[common::store::rdmdevice::kLabelMaxLength], uint8_t& length)
+{
+    auto& c = ConfigStore::Instance();
+	
+	c.RdmDeviceCopyArray(label, &common::store::RdmDevice::device_root_label);
+	length = c.RdmDeviceGet(&common::store::RdmDevice::device_root_label_length);
+
+    DEBUG_PRINTF("%.*s", length, label);
+}
+
+inline void SaveLabel(const uint8_t* label, uint8_t length)
 {
     DEBUG_PRINTF("%.*s", length, label);
 
     ConfigStore::Instance().RdmDeviceUpdateArray(&common::store::RdmDevice::device_root_label, label, length);
-    ConfigStore::Instance().RdmDeviceUpdate(&common::store::RdmDevice::device_root_label_length, static_cast<uint8_t>(length));
+    ConfigStore::Instance().RdmDeviceUpdate(&common::store::RdmDevice::device_root_label_length, length);
 }
 } // namespace rdm::device::store
 

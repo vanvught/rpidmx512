@@ -122,10 +122,9 @@ int main() // NOLINT
     auto& rdm_device =rdm::device::Device::Instance();
     rdm_device.SetProductCategory(E120_PRODUCT_CATEGORY_FIXTURE);
     rdm_device.SetProductDetail(E120_PRODUCT_DETAIL_LED);
-    rdm_device.Init();
-    rdm_device.Print();
 
     RDMNetDevice llrp_only_device;
+	llrp_only_device.Print();
 #endif
 
     display.SetTitle("DDP Pixel %d", nActivePorts);

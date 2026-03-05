@@ -44,8 +44,6 @@ class ArtNetRdmResponder final : public RDMDeviceResponder
     {
         DEBUG_ENTRY();
 
-        rdm::device::Device::Instance().Init();
-
         DEBUG_EXIT();
     }
 

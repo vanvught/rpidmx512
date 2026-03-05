@@ -83,10 +83,9 @@ int main() // NOLINT
     auto& rdm_device = rdm::device::Device::Instance();
     rdm_device.SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
     rdm_device.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
-    rdm_device.Init();
-    rdm_device.Print();
 
-    RDMNetDevice llrp_only_device;
+	RDMNetDevice llrp_only_device;
+	llrp_only_device.Print();
 #endif
 
 #if defined(NODE_SHOWFILE)

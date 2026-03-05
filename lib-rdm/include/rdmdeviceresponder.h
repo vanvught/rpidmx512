@@ -84,11 +84,7 @@ class RDMDeviceResponder
         DEBUG_ENTRY();
 
         auto& rdm_device = rdm::device::Device::Instance();
-
-        rdm_device.Init();
-
         const auto kSubDevices = sub_devices_.GetCount();
-
         const auto kCurrentPersonality = rdm_device.GetCurrentPersonality();
 
         assert(kCurrentPersonality != 0);
@@ -142,23 +138,25 @@ class RDMDeviceResponder
     }
 
     // E120_DEVICE_LABEL			0x0082
-    void SetLabel(uint16_t sub_device, const char* label, uint8_t label_length)
+    void SetLabel(uint16_t sub_device, const char* label, uint8_t length)
     {
         struct rdm::device::InfoData info;
 
-        if (label_length > RDM_DEVICE_LABEL_MAX_LENGTH)
+        if (length > RDM_DEVICE_LABEL_MAX_LENGTH)
         {
-            label_length = RDM_DEVICE_LABEL_MAX_LENGTH;
+            length = RDM_DEVICE_LABEL_MAX_LENGTH;
         }
 
         if (sub_device != RDM_ROOT_DEVICE)
         {
-            sub_devices_.SetLabel(sub_device, label, label_length);
+            sub_devices_.SetLabel(sub_device, label, length);
+			
+			DEBUG_EXIT();
             return;
         }
 
         info.data = const_cast<char*>(label);
-        info.length = label_length;
+        info.length = length;
 
         rdm::device::Device::Instance().SetLabel(&info);
     }
@@ -201,27 +199,36 @@ class RDMDeviceResponder
 
     bool GetFactoryDefaults()
     {
+		DEBUG_ENTRY();
+		
         if (is_factory_defaults_)
         {
             if (!rdm::device::Device::Instance().GetFactoryDefaults())
             {
                 is_factory_defaults_ = false;
+
+				DEBUG_EXIT();
                 return false;
             }
 
             if (checksum_ != CalculateChecksum())
             {
                 is_factory_defaults_ = false;
+
+				DEBUG_EXIT();
                 return false;
             }
 
             if (!sub_devices_.GetFactoryDefaults())
             {
                 is_factory_defaults_ = false;
+
+				DEBUG_EXIT();
                 return false;
             }
         }
 
+		DEBUG_EXIT();
         return is_factory_defaults_;
     }
 

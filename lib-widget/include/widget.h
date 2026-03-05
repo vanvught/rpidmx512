@@ -72,8 +72,6 @@ class Widget : public Dmx
    public:
     Widget();
 
-    void Init() { rdm::device::Device::Instance().Init(); }
-
     widget::SendState GetReceiveDmxOnChange() const { return send_state_; }
 
     widget::Mode GetMode() const { return mode_; }

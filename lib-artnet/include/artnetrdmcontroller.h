@@ -56,7 +56,6 @@ class ArtNetRdmController final : rdm::Discovery
     ArtNetRdmController()
     {
 #if defined(NODE_RDMNET_LLRP_ONLY)
-        rdm::device::Device::Instance().Init();
 		rdm::device::Device::Instance().Print();
 #else
         rdm::device::Base::Instance().Print();

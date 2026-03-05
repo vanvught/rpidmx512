@@ -63,7 +63,6 @@ int main() // NOLINT
 
 	auto& rdm_device = rdm::device::Device::Instance();
 	rdm_device.SetLabel(&kDeviceLabel);
-	rdm_device.Init();
 
     const auto* device_uid = rdm::device::Base::Instance().GetUID();
     struct rdm::device::InfoData rdm_device_label;
