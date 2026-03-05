@@ -226,9 +226,7 @@ constexpr Info kFileInfos[] = {
     ENTRY(config::GetOscServer, config::SetOscServer, nullptr, "config/oscserver", "OSC Server"),
 #endif
 #if defined(RDM_CONTROLLER) || defined(RDM_RESPONDER)
-#if defined(CONFIG_RDM_DEVICE_ENABLE_JSON)
     ENTRY(config::GetRdmDevice, config::SetRdmDevice, nullptr, "config/rdmdevice", "RDM Device"),
-#endif
 #if defined(CONFIG_RDM_ENABLE_SENSORS)
     ENTRY(config::GetRdmSensors, config::SetRdmSensors, nullptr, "config/rdmsensors", "RDM Sensors"),
 #endif

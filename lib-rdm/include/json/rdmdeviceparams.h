@@ -2,7 +2,7 @@
  * @file rdmdeviceparams.h
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,12 +22,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
- 
 
 #ifndef JSON_RDMDEVICEPARAMS_H_
 #define JSON_RDMDEVICEPARAMS_H_
 
- #include "configurationstore.h"
+#include "configurationstore.h"
 #include "json/rdmdeviceparamsconst.h"
 #include "json/json_key.h"
 #include "json/json_params_base.h"
@@ -54,13 +53,9 @@ class RdmDeviceParams : public JsonParamsBase<RdmDeviceParams>
 
    private:
     static void SetLabel(const char* val, uint32_t len);
-    static void SetProductCategory(const char* val, uint32_t len);
-    static void SetProductDetail(const char* val, uint32_t len);
 
-    static constexpr json::Key kRdmDeviceKeys[] = {
-		MakeKey(SetLabel,RdmDeviceParamsConst::kLabel),
- 		MakeKey(SetProductCategory,RdmDeviceParamsConst::kProductCategory),
-  		MakeKey(SetProductDetail, RdmDeviceParamsConst::kProductDetail)
+    static constexpr json::Key kRdmDeviceKeys[] = {MakeKey(SetLabel, RdmDeviceParamsConst::kLabel)
+
     };
 
     inline static common::store::RdmDevice store_rdmdevice;
@@ -69,4 +64,4 @@ class RdmDeviceParams : public JsonParamsBase<RdmDeviceParams>
 };
 } // namespace json
 
-#endif  // JSON_RDMDEVICEPARAMS_H_
+#endif // JSON_RDMDEVICEPARAMS_H_

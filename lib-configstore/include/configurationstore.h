@@ -2,7 +2,7 @@
  * @file configurationstore.h
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -340,7 +340,7 @@ static_assert(sizeof(DmxPwm) == kDmxPwmSize);
 
 struct DmxSerial
 {
-    uint32_t set_list;
+    uint32_t flags;
     uint8_t type;
     uint8_t reserved1[3];
     uint32_t baud;
@@ -361,7 +361,7 @@ static_assert(sizeof(DmxSerial) == kDmxSerialSize);
 
 struct DmxMonitor
 {
-    uint32_t set_list;
+    uint32_t flags;
     uint16_t dmx_start_address;
     uint16_t dmx_max_channels;
     uint8_t format;
@@ -377,16 +377,12 @@ inline constexpr uint32_t kLabelMaxLength = 32;
 
 struct RdmDevice
 {
-    uint32_t set_list;
+    uint32_t flags;
     uint8_t device_root_label[rdmdevice::kLabelMaxLength];
     uint8_t device_root_label_length;
-    uint8_t reserved;
-    uint16_t product_category;
-    uint16_t product_detail;
-    uint8_t reserved2[6];
+    uint8_t reserved2[11];
 } PACKED;
 
-static_assert(offsetof(RdmDevice, product_category) % alignof(uint16_t) == 0, "product_category must be uint16_t-aligned");
 static_assert(sizeof(RdmDevice) == kRdmDeviceSize);
 
 namespace rdm::sensors

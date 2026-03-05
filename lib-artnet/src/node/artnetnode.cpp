@@ -1028,196 +1028,199 @@ void ArtNetNode::CheckMergeTimeouts(uint32_t port_index)
 void ArtNetNode::HandleDmx()
 {
     const auto* const kArtDmx = reinterpret_cast<artnet::ArtDmx*>(receive_buffer_);
-    const auto kDmxSlots = std::min(static_cast<uint32_t>(((kArtDmx->length_hi << 8) & 0xff00) | kArtDmx->length), artnet::kDmxLength);
 
     for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++)
     {
-        if ((node_.port[port_index].direction == dmxnode::PortDirection::kOutput) && (node_.port[port_index].protocol == artnet::PortProtocol::kArtnet) &&
-            (node_.port[port_index].port_address == kArtDmx->port_address))
+#if defined(RDM_CONTROLLER)
+        if (rdm_controller_.IsRunning(port_index))[[unlikely]] continue;
+#endif
+        if (node_.port[port_index].direction != dmxnode::PortDirection::kOutput) continue;
+		if (node_.port[port_index].protocol != artnet::PortProtocol::kArtnet) continue;
+        if (node_.port[port_index].port_address != kArtDmx->port_address) continue;
+
+        output_port_[port_index].good_output |= artnet::GoodOutput::kDataIsBeingTransmitted;
+
+        if (state_.is_merge_mode)
         {
-            output_port_[port_index].good_output |= artnet::GoodOutput::kDataIsBeingTransmitted;
-
-            if (state_.is_merge_mode)
+            if (__builtin_expect((!state_.disable_merge_timeout), 1))
             {
-                if (__builtin_expect((!state_.disable_merge_timeout), 1))
-                {
-                    CheckMergeTimeouts(port_index);
-                }
+                CheckMergeTimeouts(port_index);
             }
+        }
 
-            const auto kIpA = output_port_[port_index].source_a.ip;
-            const auto kIpB = output_port_[port_index].source_b.ip;
-            const auto kMergeMode = ((output_port_[port_index].good_output & artnet::GoodOutput::kMergeModeLtp) == artnet::GoodOutput::kMergeModeLtp)
-                                        ? dmxnode::MergeMode::kLtp
-                                        : dmxnode::MergeMode::kHtp;
+        const auto kDmxSlots = std::min(static_cast<uint32_t>(((kArtDmx->length_hi << 8) & 0xff00) | kArtDmx->length), artnet::kDmxLength);
+        const auto kIpA = output_port_[port_index].source_a.ip;
+        const auto kIpB = output_port_[port_index].source_b.ip;
+        const auto kMergeMode = ((output_port_[port_index].good_output & artnet::GoodOutput::kMergeModeLtp) == artnet::GoodOutput::kMergeModeLtp)
+                                    ? dmxnode::MergeMode::kLtp
+                                    : dmxnode::MergeMode::kHtp;
 
-            if (__builtin_expect((kIpA == 0 && kIpB == 0), 0))
-            { // Case 1.
-                output_port_[port_index].source_a.ip = ip_address_from_;
+        if (__builtin_expect((kIpA == 0 && kIpB == 0), 0))
+        { // Case 1.
+            output_port_[port_index].source_a.ip = ip_address_from_;
+            output_port_[port_index].source_a.millis = current_millis_;
+            output_port_[port_index].source_a.physical = kArtDmx->physical;
+            dmxnode::Data::SetSourceA(port_index, kArtDmx->data, kDmxSlots);
+            SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 1. First packet", port_index, kArtDmx->physical);
+        }
+        else if (kIpA == ip_address_from_ && kIpB == 0)
+        { // Case 2.
+            if (output_port_[port_index].source_a.physical == kArtDmx->physical)
+            {
                 output_port_[port_index].source_a.millis = current_millis_;
-                output_port_[port_index].source_a.physical = kArtDmx->physical;
                 dmxnode::Data::SetSourceA(port_index, kArtDmx->data, kDmxSlots);
-                SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 1. First packet", port_index, kArtDmx->physical);
+                SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 2. continued transmission from the same ip (source A)", port_index, kArtDmx->physical);
             }
-            else if (kIpA == ip_address_from_ && kIpB == 0)
-            { // Case 2.
-                if (output_port_[port_index].source_a.physical == kArtDmx->physical)
-                {
-                    output_port_[port_index].source_a.millis = current_millis_;
-                    dmxnode::Data::SetSourceA(port_index, kArtDmx->data, kDmxSlots);
-                    SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 2. continued transmission from the same ip (source A)", port_index, kArtDmx->physical);
-                }
-                else if (output_port_[port_index].source_b.physical != kArtDmx->physical)
-                {
-                    output_port_[port_index].source_b.ip = ip_address_from_;
-                    output_port_[port_index].source_b.millis = current_millis_;
-                    output_port_[port_index].source_b.physical = kArtDmx->physical;
-                    UpdateMergeStatus(port_index);
-                    dmxnode::Data::MergeSourceB(port_index, kArtDmx->data, kDmxSlots, kMergeMode);
-                    SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 2. New source from same ip (source B), start the merge", port_index, kArtDmx->physical);
-                }
-                else
-                {
-                    SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 2. More than two sources, discarding data", port_index, kArtDmx->physical);
-                    return;
-                }
-            }
-            else if (kIpA == 0 && kIpB == ip_address_from_)
-            { // Case 3.
-                if (output_port_[port_index].source_b.physical == kArtDmx->physical)
-                {
-                    output_port_[port_index].source_b.millis = current_millis_;
-                    dmxnode::Data::SetSourceB(port_index, kArtDmx->data, kDmxSlots);
-                    SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 3. continued transmission from the same ip (source B)", port_index, kArtDmx->physical);
-                }
-                else if (output_port_[port_index].source_a.physical != kArtDmx->physical)
-                {
-                    output_port_[port_index].source_a.ip = ip_address_from_;
-                    output_port_[port_index].source_a.millis = current_millis_;
-                    output_port_[port_index].source_a.physical = kArtDmx->physical;
-                    UpdateMergeStatus(port_index);
-                    dmxnode::Data::MergeSourceA(port_index, kArtDmx->data, kDmxSlots, kMergeMode);
-                    SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 3. New source from same ip (source A), start the merge", port_index, kArtDmx->physical);
-                }
-                else
-                {
-                    SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 3. More than two sources, discarding data", port_index, kArtDmx->physical);
-                    return;
-                }
-            }
-            else if (kIpA != ip_address_from_ && kIpB == 0)
-            { // Case 4.
+            else if (output_port_[port_index].source_b.physical != kArtDmx->physical)
+            {
                 output_port_[port_index].source_b.ip = ip_address_from_;
                 output_port_[port_index].source_b.millis = current_millis_;
                 output_port_[port_index].source_b.physical = kArtDmx->physical;
                 UpdateMergeStatus(port_index);
                 dmxnode::Data::MergeSourceB(port_index, kArtDmx->data, kDmxSlots, kMergeMode);
-                SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 4. new source, start the merge", port_index, kArtDmx->physical);
+                SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 2. New source from same ip (source B), start the merge", port_index, kArtDmx->physical);
             }
-            else if (kIpA == 0 && kIpB != ip_address_from_)
-            { // Case 5.
+            else
+            {
+                SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 2. More than two sources, discarding data", port_index, kArtDmx->physical);
+                return;
+            }
+        }
+        else if (kIpA == 0 && kIpB == ip_address_from_)
+        { // Case 3.
+            if (output_port_[port_index].source_b.physical == kArtDmx->physical)
+            {
+                output_port_[port_index].source_b.millis = current_millis_;
+                dmxnode::Data::SetSourceB(port_index, kArtDmx->data, kDmxSlots);
+                SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 3. continued transmission from the same ip (source B)", port_index, kArtDmx->physical);
+            }
+            else if (output_port_[port_index].source_a.physical != kArtDmx->physical)
+            {
                 output_port_[port_index].source_a.ip = ip_address_from_;
                 output_port_[port_index].source_a.millis = current_millis_;
                 output_port_[port_index].source_a.physical = kArtDmx->physical;
                 UpdateMergeStatus(port_index);
                 dmxnode::Data::MergeSourceA(port_index, kArtDmx->data, kDmxSlots, kMergeMode);
-                SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 5. new source, start the merge", port_index, kArtDmx->physical);
-            }
-            else if (kIpA == ip_address_from_ && kIpB != ip_address_from_)
-            { // Case 6.
-                if (output_port_[port_index].source_a.physical == kArtDmx->physical)
-                {
-                    output_port_[port_index].source_a.millis = current_millis_;
-                    UpdateMergeStatus(port_index);
-                    dmxnode::Data::MergeSourceA(port_index, kArtDmx->data, kDmxSlots, kMergeMode);
-                    SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 6. continue merge (Source A)", port_index, kArtDmx->physical);
-                }
-                else
-                {
-                    SendDiag(artnet::PriorityCodes::kDiagMed, "%u:%u 6. More than two sources, discarding data", port_index, kArtDmx->physical);
-                    return;
-                }
-            }
-            else if (kIpA != ip_address_from_ && kIpB == ip_address_from_)
-            { // Case 7.
-                if (output_port_[port_index].source_b.physical == kArtDmx->physical)
-                {
-                    output_port_[port_index].source_b.millis = current_millis_;
-                    UpdateMergeStatus(port_index);
-                    dmxnode::Data::MergeSourceB(port_index, kArtDmx->data, kDmxSlots, kMergeMode);
-                    SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 7. continue merge (Source B)", port_index, kArtDmx->physical);
-                }
-                else
-                {
-                    SendDiag(artnet::PriorityCodes::kDiagMed, "%u:%u 7. More than two sources, discarding data", port_index, kArtDmx->physical);
-                    puts("WARN: 7. More than two sources, discarding data");
-                    return;
-                }
-            }
-            else if (kIpA == ip_address_from_ && kIpB == ip_address_from_)
-            { // Case 8.
-                if (output_port_[port_index].source_a.physical == kArtDmx->physical)
-                {
-                    output_port_[port_index].source_a.millis = current_millis_;
-                    UpdateMergeStatus(port_index);
-                    dmxnode::Data::MergeSourceA(port_index, kArtDmx->data, kDmxSlots, kMergeMode);
-                    SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 8. Source matches both ip, merging Physical (source_a)", port_index, kArtDmx->physical);
-                }
-                else if (output_port_[port_index].source_b.physical == kArtDmx->physical)
-                {
-                    output_port_[port_index].source_b.millis = current_millis_;
-                    UpdateMergeStatus(port_index);
-                    dmxnode::Data::MergeSourceB(port_index, kArtDmx->data, kDmxSlots, kMergeMode);
-                    SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 8. Source matches both ip, merging Physical (source_b)", port_index, kArtDmx->physical);
-                }
-                else
-                {
-                    SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 8. Source matches both ip, more than two sources, discarding data", port_index,
-                             kArtDmx->physical);
-                    puts("WARN: 8. Source matches both ip, discarding data");
-                    return;
-                }
-            }
-#ifndef NDEBUG
-            else if (kIpA != ip_address_from_ && kIpB != ip_address_from_)
-            { // Case 9.
-                SendDiag(artnet::PriorityCodes::kDiagLow, "%u: 9. More than two sources, discarding data", port_index);
-                puts("WARN: 9. More than two sources, discarding data");
-                return;
-            }
-#endif
-            else [[unlikely]]
-            { // Case 0.
-                SendDiag(artnet::PriorityCodes::kDiagHigh, "%u: 0. No cases matched, this shouldn't happen!", port_index);
-#ifndef NDEBUG
-                puts("ERROR: 0. No cases matched, this shouldn't happen!");
-#endif
-                return;
-            }
-
-            if ((state_.is_synchronous_mode) &&
-                ((output_port_[port_index].good_output & artnet::GoodOutput::kOutputIsMerging) != artnet::GoodOutput::kOutputIsMerging))
-            {
-                dmxnode::DataSet(dmxnode_output_type_, port_index);
-                output_port_[port_index].is_data_pending = true;
-                SendDiag(artnet::PriorityCodes::kDiagLow, "%u: Buffering data", port_index);
+                SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 3. New source from same ip (source A), start the merge", port_index, kArtDmx->physical);
             }
             else
             {
-                dmxnode::DataOutput(dmxnode_output_type_, port_index);
+                SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 3. More than two sources, discarding data", port_index, kArtDmx->physical);
+                return;
+            }
+        }
+        else if (kIpA != ip_address_from_ && kIpB == 0)
+        { // Case 4.
+            output_port_[port_index].source_b.ip = ip_address_from_;
+            output_port_[port_index].source_b.millis = current_millis_;
+            output_port_[port_index].source_b.physical = kArtDmx->physical;
+            UpdateMergeStatus(port_index);
+            dmxnode::Data::MergeSourceB(port_index, kArtDmx->data, kDmxSlots, kMergeMode);
+            SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 4. new source, start the merge", port_index, kArtDmx->physical);
+        }
+        else if (kIpA == 0 && kIpB != ip_address_from_)
+        { // Case 5.
+            output_port_[port_index].source_a.ip = ip_address_from_;
+            output_port_[port_index].source_a.millis = current_millis_;
+            output_port_[port_index].source_a.physical = kArtDmx->physical;
+            UpdateMergeStatus(port_index);
+            dmxnode::Data::MergeSourceA(port_index, kArtDmx->data, kDmxSlots, kMergeMode);
+            SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 5. new source, start the merge", port_index, kArtDmx->physical);
+        }
+        else if (kIpA == ip_address_from_ && kIpB != ip_address_from_)
+        { // Case 6.
+            if (output_port_[port_index].source_a.physical == kArtDmx->physical)
+            {
+                output_port_[port_index].source_a.millis = current_millis_;
+                UpdateMergeStatus(port_index);
+                dmxnode::Data::MergeSourceA(port_index, kArtDmx->data, kDmxSlots, kMergeMode);
+                SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 6. continue merge (Source A)", port_index, kArtDmx->physical);
+            }
+            else
+            {
+                SendDiag(artnet::PriorityCodes::kDiagMed, "%u:%u 6. More than two sources, discarding data", port_index, kArtDmx->physical);
+                return;
+            }
+        }
+        else if (kIpA != ip_address_from_ && kIpB == ip_address_from_)
+        { // Case 7.
+            if (output_port_[port_index].source_b.physical == kArtDmx->physical)
+            {
+                output_port_[port_index].source_b.millis = current_millis_;
+                UpdateMergeStatus(port_index);
+                dmxnode::Data::MergeSourceB(port_index, kArtDmx->data, kDmxSlots, kMergeMode);
+                SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 7. continue merge (Source B)", port_index, kArtDmx->physical);
+            }
+            else
+            {
+                SendDiag(artnet::PriorityCodes::kDiagMed, "%u:%u 7. More than two sources, discarding data", port_index, kArtDmx->physical);
+                puts("WARN: 7. More than two sources, discarding data");
+                return;
+            }
+        }
+        else if (kIpA == ip_address_from_ && kIpB == ip_address_from_)
+        { // Case 8.
+            if (output_port_[port_index].source_a.physical == kArtDmx->physical)
+            {
+                output_port_[port_index].source_a.millis = current_millis_;
+                UpdateMergeStatus(port_index);
+                dmxnode::Data::MergeSourceA(port_index, kArtDmx->data, kDmxSlots, kMergeMode);
+                SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 8. Source matches both ip, merging Physical (source_a)", port_index, kArtDmx->physical);
+            }
+            else if (output_port_[port_index].source_b.physical == kArtDmx->physical)
+            {
+                output_port_[port_index].source_b.millis = current_millis_;
+                UpdateMergeStatus(port_index);
+                dmxnode::Data::MergeSourceB(port_index, kArtDmx->data, kDmxSlots, kMergeMode);
+                SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 8. Source matches both ip, merging Physical (source_b)", port_index, kArtDmx->physical);
+            }
+            else
+            {
+                SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 8. Source matches both ip, more than two sources, discarding data", port_index,
+                         kArtDmx->physical);
+                puts("WARN: 8. Source matches both ip, discarding data");
+                return;
+            }
+        }
+#ifndef NDEBUG
+        else if (kIpA != ip_address_from_ && kIpB != ip_address_from_)
+        { // Case 9.
+            SendDiag(artnet::PriorityCodes::kDiagLow, "%u: 9. More than two sources, discarding data", port_index);
+            puts("WARN: 9. More than two sources, discarding data");
+            return;
+        }
+#endif
+        else [[unlikely]]
+        { // Case 0.
+            SendDiag(artnet::PriorityCodes::kDiagHigh, "%u: 0. No cases matched, this shouldn't happen!", port_index);
+#ifndef NDEBUG
+            puts("ERROR: 0. No cases matched, this shouldn't happen!");
+#endif
+            return;
+        }
 
-                if (!output_port_[port_index].is_transmitting)
-                {
-                    dmxnode_output_type_->Start(port_index);
-                    state_.is_changed = true;
-                    output_port_[port_index].is_transmitting = true;
-                }
+        if ((state_.is_synchronous_mode) &&
+            ((output_port_[port_index].good_output & artnet::GoodOutput::kOutputIsMerging) != artnet::GoodOutput::kOutputIsMerging))
+        {
+            dmxnode::DataSet(dmxnode_output_type_, port_index);
+            output_port_[port_index].is_data_pending = true;
+            SendDiag(artnet::PriorityCodes::kDiagLow, "%u: Buffering data", port_index);
+        }
+        else
+        {
+            dmxnode::DataOutput(dmxnode_output_type_, port_index);
 
-                SendDiag(artnet::PriorityCodes::kDiagLow, "%u: Send data", port_index);
+            if (!output_port_[port_index].is_transmitting)
+            {
+                dmxnode_output_type_->Start(port_index);
+                state_.is_changed = true;
+                output_port_[port_index].is_transmitting = true;
             }
 
-            state_.receiving_dmx |= (1U << static_cast<uint8_t>(dmxnode::PortDirection::kOutput));
+            SendDiag(artnet::PriorityCodes::kDiagLow, "%u: Send data", port_index);
         }
+
+        state_.receiving_dmx |= (1U << static_cast<uint8_t>(dmxnode::PortDirection::kOutput));
     }
 }
 

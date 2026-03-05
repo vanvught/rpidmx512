@@ -266,7 +266,7 @@ class ArtNetNode
 
     bool GetOutputPort(uint16_t universe, uint32_t& port_index);
 
-    void RestartOutputPort(uint32_t port_index);
+    void StopOutputPort(uint32_t port_index);
 
 #if defined(RDM_CONTROLLER)
     uint32_t RdmCopyWorkingQueue(char* out_buffer, uint32_t out_buffer_size);

@@ -278,13 +278,13 @@ inline bool ArtNetNode::GetOutputPort(uint16_t universe, uint32_t& port_index)
     return false;
 }
 
-inline void ArtNetNode::RestartOutputPort(uint32_t port_index)
+inline void ArtNetNode::StopOutputPort(uint32_t port_index)
 {
-    if (output_port_[port_index].is_transmitting)
-    {
-        dmxnode_output_type_->Stop(port_index);
-        dmxnode_output_type_->Start(port_index);
-    }
+	if (output_port_[port_index].is_transmitting)
+	{
+	    output_port_[port_index].is_transmitting = false;
+	    dmxnode_output_type_->Stop(port_index); // Stop DMX if was running
+	}
 }
 
 inline void ArtNetNode::Run()

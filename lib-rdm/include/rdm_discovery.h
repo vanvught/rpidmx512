@@ -37,6 +37,15 @@
 
 namespace rdm
 {
+namespace discovery
+{
+	enum class Type {
+		kFull, kIncremental
+	};
+	
+	void Starting(uint32_t port_index, Type type);
+	void Finished(uint32_t port_index, Type type);
+}
 inline static constexpr uint32_t kBackgroundIntervalMinutes = 1;
 
 class Discovery : rdm::discovery::StateMachine
@@ -101,7 +110,7 @@ class Discovery : rdm::discovery::StateMachine
         if (((1U << port_index) & enabled_) == (1U << port_index))
         {
             s_bg_discovery &= ~(1U << port_index);
-			Stop(port_index);
+            Stop(port_index);
         }
 
         if (s_bg_discovery == 0)
@@ -219,13 +228,15 @@ class Discovery : rdm::discovery::StateMachine
             {
                 if (((1U << port_index_) & type_) == (1U << port_index_))
                 {
+					rdm::discovery::Starting(port_index, rdm::discovery::Type::kFull);
                     rdm::discovery::StateMachine::Full(port_index_, &s_tod[port_index_]);
-                    printf("Full:%u\n", port_index_);
+					printf("Full:%u\n", port_index_);
                 }
                 else
                 {
+					rdm::discovery::Starting(port_index, rdm::discovery::Type::kIncremental);
                     rdm::discovery::StateMachine::Incremental(port_index_, &s_tod[port_index_]);
-                    printf("Incremental:%u\n", port_index_);
+					printf("Incremental:%u\n", port_index_);
                 }
 
                 waiting_ &= ~(1U << port_index_);
@@ -243,8 +254,7 @@ class Discovery : rdm::discovery::StateMachine
         {
             assert(port_index_ == port_index);
             printf("Finished:%u\n", port_index);
-            SendTod(port_index, *this);
-            Dmx::Get()->SetPortDirection(port_index, ::dmx::PortDirection::kOutput, true);
+			rdm::discovery::Finished(port_index, is_incremental ? rdm::discovery::Type::kIncremental : rdm::discovery::Type::kFull);
 
             port_index_++;
             if (port_index_ == kPorts) port_index_ = 0;
@@ -328,8 +338,6 @@ class Discovery : rdm::discovery::StateMachine
         assert(port_index < kPorts);
         s_tod[port_index].Dump();
     }
-
-    void SendTod(uint32_t port_index, Discovery& discovery);
 
     static Discovery& Instance()
     {

@@ -38,15 +38,24 @@
 #include "rdm_discovery.h"
 #include "firmware/debug/debug_debug.h"
 
-namespace rdm
+namespace rdm::discovery
 {
-void Discovery::SendTod(uint32_t port_index, [[maybe_unused]] rdm::Discovery& discovery)
+void Starting(uint32_t port_index, [[maybe_unused]] Type type)
 {
+	DEBUG_PRINTF("%u:%c", port_index, rdm::discovery::Type::kFull ? 'F' : 'I');
+    
+	auto& artnet = *ArtNetNode::Get();
+    artnet.StopOutputPort(port_index);
+}
+
+void Finished(uint32_t port_index, [[maybe_unused]] Type type)
+{
+	DEBUG_PRINTF("%u:%c", port_index, rdm::discovery::Type::kFull ? 'F' : 'I');
+	
     auto& artnet = *ArtNetNode::Get();
     artnet.SendArtTodData(port_index);
-    artnet.RestartOutputPort(port_index);
 }
-} // namespace rdm
+} // namespace rdm::discovery
 
 /**
  * ArtTodControl is used to for an Output Gateway to flush its ToD and commence full discovery.
@@ -322,11 +331,7 @@ void ArtNetNode::HandleRdm()
                 output_port_[port_index].is_transmitting = (GetGoodOutput4(port_index) & kMask) != 0;
             }
 #endif
-            if (output_port_[port_index].is_transmitting)
-            {
-                output_port_[port_index].is_transmitting = false;
-                dmxnode_output_type_->Stop(port_index); // Stop DMX if was running
-            }
+            StopOutputPort(port_index);
 
             output_port_[port_index].rdm_destination_ip = ip_address_from_;
 
