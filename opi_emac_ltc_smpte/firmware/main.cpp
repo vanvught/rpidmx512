@@ -81,7 +81,6 @@
 #include "hwclock.h"
 #if defined(NODE_RDMNET_LLRP_ONLY)
 #include "rdmnetdevice.h"
-#include "rdm_e120.h"
 #endif
 #if !defined(CONFIG_LTC_DISABLE_WS28XX)
 #include "pixeltype.h"
@@ -292,10 +291,6 @@ int main() // NOLINT
 #endif
 
 #if defined(NODE_RDMNET_LLRP_ONLY)
-    auto& rdm_device = rdm::device::Device::Instance();
-    rdm_device.SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
-    rdm_device.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
-
     RDMNetDevice llrp_only_device;
 	llrp_only_device.Print();
 #endif

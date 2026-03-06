@@ -41,8 +41,6 @@
 #include "firmware/pixeldmx/show.h"
 #if defined(NODE_RDMNET_LLRP_ONLY)
 #include "rdmnetdevice.h"
-#include "rdmdevice.h"
-#include "rdm_e120.h"
 #endif
 #include "remoteconfig.h"
 #include "flashcodeinstall.h"
@@ -94,10 +92,6 @@ int main() // NOLINT
     ddpdisplay.Print();
 
 #if defined(NODE_RDMNET_LLRP_ONLY)
-    auto& rdm_device =rdm::device::Device::Instance();
-    rdm_device.SetProductCategory(E120_PRODUCT_CATEGORY_FIXTURE);
-    rdm_device.SetProductDetail(E120_PRODUCT_DETAIL_LED);
-
 	RDMNetDevice llrp_only_device;
 	llrp_only_device.Print();
 #endif

@@ -74,10 +74,6 @@ int main() // NOLINT
     dmxnode_node.SetRdm(static_cast<uint32_t>(0), true);
     dmxnode_node.SetOutput(pca9685_dmx.GetPCA9685DmxSet());
 	
-	auto& rdm_device =rdm::device::Device::Instance();
-	rdm_device.SetProductCategory(E120_PRODUCT_CATEGORY_FIXTURE);
-	rdm_device.SetProductDetail(E120_PRODUCT_DETAIL_LED);
-	
 	char description[64];
 	snprintf(description, sizeof(description) - 1, "PCA9685");
 	RDMPersonality* rdm_personalities[1] = {new RDMPersonality(description, pca9685_dmx.GetPCA9685DmxSet())};

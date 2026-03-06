@@ -25,10 +25,24 @@
 
 #include <cstdint>
 
+#include "h3_board.h"
 #include "firmwareversion.h"
 
 namespace rdm::device
 {
+static constexpr char kRootLabel[] =
+#if defined(CONFIG_RDM_DEVICE_ROOT_LABEL)
+    CONFIG_RDM_DEVICE_ROOT_LABEL;
+#else
+    H3_BOARD_NAME " RDM Device";
+#endif
+
+const char* RootLabel(uint8_t& length)
+{
+    length = sizeof(rdm::device::kRootLabel) - 1;
+    return kRootLabel;
+}
+
 uint16_t DeviceModel()
 {
 #if defined(ORANGE_PI)
@@ -42,12 +56,12 @@ uint16_t DeviceModel()
 
 uint32_t BootSoftwareVersionId()
 {
-	return 0;
+    return 0;
 }
 
 uint32_t SoftwareVersionId()
 {
-	return _TIME_STAMP_;
+    return _TIME_STAMP_;
 }
 
 const char* SoftwareVersionLabel(uint32_t& length)

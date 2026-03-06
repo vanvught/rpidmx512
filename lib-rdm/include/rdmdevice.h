@@ -32,7 +32,6 @@
 #include <algorithm>
 
 #include "rdm_device_info.h"
-#include "rdm_device_root_label.h"
 #include "rdm_device_base.h"
 #include "rdmdevicestore.h"
 #include "rdmidentify.h"
@@ -46,9 +45,23 @@ uint16_t DeviceModel();
 uint32_t BootSoftwareVersionId();
 uint32_t SoftwareVersionId();
 const char* SoftwareVersionLabel(uint32_t& length);
+const char* RootLabel(uint8_t& length);
 
 class Device
 {
+    static constexpr auto kProductCategory =
+#if defined(RDM_DEVICE_PRODUCT_CATEGORY)
+        RDM_DEVICE_PRODUCT_CATEGORY;
+#else
+        E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION;
+#endif
+    static constexpr auto kProductDetail =
+#if defined(RDM_DEVICE_PRODUCT_DETAIL)
+        RDM_DEVICE_PRODUCT_DETAIL;
+#else
+        E120_PRODUCT_DETAIL_ETHERNET_NODE;
+#endif
+
    public:
     static Device& Instance()
     {
@@ -62,7 +75,7 @@ class Device
         rdm::device::Base::Instance().Print();
         printf(" Root label        : %.*s\n", root_label_length_, root_label_);
         printf(" Product Category  : %.2X%.2X\n", info_.product_category[0], info_.product_category[1]);
-        printf(" Product Detail    : %.4X\n", product_detail_);
+        printf(" Product Detail    : %.4X\n", kProductDetail);
 #if defined(RDM_RESPONDER)
         puts("RDM Device Responder");
         printf(" DMX Address   : %d\n", (info_.dmx_start_address[0] << 8) + info_.dmx_start_address[1]);
@@ -80,8 +93,8 @@ class Device
         memset(root_label_, 0, sizeof(root_label_));
         rdm::device::store::SaveLabel(root_label_, root_label_length_);
 
-        root_label_length_ = sizeof(rdm::device::kRootLabel) - 1;
-        memcpy(root_label_, rdm::device::kRootLabel, root_label_length_);
+        const auto* const kRootLabel = rdm::device::RootLabel(root_label_length_);
+        memcpy(root_label_, kRootLabel, root_label_length_);
 
         checksum_ = CalculateChecksum();
 
@@ -110,7 +123,7 @@ class Device
         {
             memcpy(root_label_, info_data->data, kLength);
             root_label_length_ = kLength;
-			
+
             rdm::device::store::SaveLabel(root_label_, root_label_length_);
         }
     }
@@ -121,20 +134,9 @@ class Device
         info_data->length = root_label_length_;
     }
 
-    void SetProductCategory(uint16_t product_category)
-    {
-        info_.product_category[0] = static_cast<uint8_t>(product_category >> 8);
-        info_.product_category[1] = static_cast<uint8_t>(product_category);
-    }
+    uint16_t GetProductCategory() const { return kProductCategory; }
 
-    uint16_t GetProductCategory() const
-    {
-        const auto kProductCategory = (info_.product_category[0] << 8) | info_.product_category[1];
-        return kProductCategory;
-    }
-
-    void SetProductDetail(uint16_t product_detail) { product_detail_ = product_detail; }
-    uint16_t GetProductDetail() const { return product_detail_; }
+    uint16_t GetProductDetail() const { return kProductDetail; }
 
     rdm::device::Info* GetDeviceInfo() { return &info_; }
 
@@ -184,7 +186,6 @@ class Device
 
         const auto kSoftwareVersionId = rdm::device::SoftwareVersionId();
         const auto kDeviceModel = rdm::device::DeviceModel();
-        const auto kProductCategory = E120_PRODUCT_CATEGORY_DATA;
 
         info_.protocol_major = (E120_PROTOCOL_VERSION >> 8);
         info_.protocol_minor = static_cast<uint8_t>(E120_PROTOCOL_VERSION);
@@ -204,8 +205,8 @@ class Device
 
         if (root_label_[0] == '\0')
         {
-            root_label_length_ = sizeof(rdm::device::kRootLabel) - 1;
-            memcpy(root_label_, rdm::device::kRootLabel, root_label_length_);
+            const auto* const kRootLabel = rdm::device::RootLabel(root_label_length_);
+            memcpy(root_label_, kRootLabel, root_label_length_);
 
             checksum_ = CalculateChecksum();
         }
@@ -229,7 +230,6 @@ class Device
     RDMIdentify identify_;
     rdm::device::Info info_;
     uint8_t root_label_[RDM_DEVICE_LABEL_MAX_LENGTH];
-    uint16_t product_detail_{E120_PRODUCT_DETAIL_OTHER};
     uint16_t checksum_{0};
     uint8_t root_label_length_{0};
 };

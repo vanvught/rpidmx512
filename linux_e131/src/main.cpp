@@ -44,7 +44,6 @@
 #endif
 #include "firmwareversion.h"
 #include "software_version.h"
-#include "software_version_id.h"
 
 static bool keep_running = true;
 
@@ -77,10 +76,6 @@ int main(int argc, char** argv)
     DmxNodeNode dmx_node_node;
     dmx_node_node.SetOutput(&monitor);
     dmx_node_node.Print();
-
-    auto& rdm_device = rdm::device::Device::Instance();
-    rdm_device.SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
-    rdm_device.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
 
     RDMNetDevice llrp_only_device;
 	llrp_only_device.Print();

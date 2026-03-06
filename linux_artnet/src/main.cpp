@@ -42,7 +42,6 @@
 #endif
 #include "firmwareversion.h"
 #include "software_version.h"
-#include "software_version_id.h"
 
 static bool keep_running = true;
 

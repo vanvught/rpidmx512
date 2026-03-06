@@ -34,8 +34,6 @@
 #include "dmxnode.h"
 #if defined(NODE_RDMNET_LLRP_ONLY)
 #include "rdmnetdevice.h"
-#include "rdmdevice.h"
-#include "rdm_e120.h"
 #endif
 #include "remoteconfig.h"
 #include "flashcodeinstall.h"
@@ -84,10 +82,6 @@ int main() // NOLINT
     RemoteConfig remote_config(remoteconfig::Output::ARTNET, dmxnode_node.GetActiveOutputPorts());
 
 #if defined(NODE_RDMNET_LLRP_ONLY)
-    auto& rdm_device =rdm::device::Device::Instance();
-    rdm_device.SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
-    rdm_device.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
-
 	RDMNetDevice llrp_only_device;
 	llrp_only_device.Print();
 #endif

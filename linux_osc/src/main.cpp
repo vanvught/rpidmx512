@@ -76,10 +76,6 @@ int main(int argc, char** argv)
     server.SetOscServerHandler(new Handler);
     server.SetOutput(&monitor);
 
-	auto& rdm_device = rdm::device::Device::Instance();
-	rdm_device.SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
-	rdm_device.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
-
 	RDMNetDevice llrp_only_device;
 	llrp_only_device.Print();
 

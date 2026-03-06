@@ -84,10 +84,6 @@ int main() // NOLINT
 
     PixelDmxParamsRdm pixeldmx_paramsrdm;
 	
-	auto& rdm_device =rdm::device::Device::Instance();
-	rdm_device.SetProductCategory(E120_PRODUCT_CATEGORY_FIXTURE);
-	rdm_device.SetProductDetail(E120_PRODUCT_DETAIL_LED);
-
 #if defined(CONFIG_RDM_MANUFACTURER_PIDS_SET)
     static constexpr auto kPersonalityCount = static_cast<uint32_t>(pixel::Type::UNDEFINED);
     RDMPersonality* personalities[kPersonalityCount];
