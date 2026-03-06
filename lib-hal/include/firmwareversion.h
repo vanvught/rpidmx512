@@ -1,7 +1,7 @@
 /**
  * @file firmwareversion.h
  */
-/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -56,8 +56,7 @@ struct Info
 class FirmwareVersion
 {
    public:
-    explicit FirmwareVersion(const char* software_version, const char* date, const char* time, uint32_t software_version_id = 0)
-        : kSoftwareVersionId(software_version_id)
+    explicit FirmwareVersion(const char* software_version, const char* date, const char* time)
     {
         assert(software_version != nullptr);
         assert(date != nullptr);
@@ -90,12 +89,10 @@ class FirmwareVersion
     const struct firmwareversion::Info* GetVersion() { return &s_firmware_version; }
     const char* GetPrint() { return s_print; }
     const char* GetSoftwareVersion() { return s_firmware_version.software_version; }
-    uint32_t GetVersionId() const { return kSoftwareVersionId; }
 
     static FirmwareVersion* Get() { return s_this; }
 
    private:
-    const uint32_t kSoftwareVersionId;
     static inline firmwareversion::Info s_firmware_version;
     static inline char s_print[64];
     static inline FirmwareVersion* s_this;

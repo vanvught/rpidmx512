@@ -37,5 +37,5 @@ SRCDIR=firmware lib
 
 include ../firmware-template-h3/Rules.mk
 prerequisites:
-	@echo "constexpr uint32_t DEVICE_SOFTWARE_VERSION_ID="$(shell date "+%s")";" > ./include/software_version_id.h
+	
 

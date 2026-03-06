@@ -43,6 +43,7 @@
 namespace rdm::device
 {
 uint16_t DeviceModel();
+uint32_t BootSoftwareVersionId();
 uint32_t SoftwareVersionId();
 const char* SoftwareVersionLabel(uint32_t& length);
 

@@ -25,19 +25,29 @@
 
 #include <cstdint>
 
-#include "h3/hal.h"
 #include "firmwareversion.h"
 
 namespace rdm::device
 {
 uint16_t DeviceModel()
 {
-    return hal::kBoardId;
+#if defined(ORANGE_PI)
+    return 0;
+#elif defined(ORANGE_PI_ONE)
+    return 1;
+#else
+#error Platform not supported
+#endif
+}
+
+uint32_t BootSoftwareVersionId()
+{
+	return 0;
 }
 
 uint32_t SoftwareVersionId()
 {
-    return FirmwareVersion::Get()->GetVersionId();
+	return _TIME_STAMP_;
 }
 
 const char* SoftwareVersionLabel(uint32_t& length)

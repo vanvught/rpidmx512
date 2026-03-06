@@ -36,14 +36,6 @@ void stack_debug_run();
 
 namespace hal
 {
-#if defined(ORANGE_PI)
-static constexpr uint32_t kBoardId = 0;
-#elif defined(ORANGE_PI_ONE)
-static constexpr uint32_t kBoardId = 1;
-#else
-#error Platform not supported
-#endif
-static constexpr uint32_t kReleaseId = 0;
 static constexpr const char kWebsite[] = "www.orangepi-dmx.org";
 static constexpr float kCoreTemperatureMin = -40.0;
 static constexpr float kCoreTemperatureMax = +90.0;

@@ -25,19 +25,23 @@
 
 #include <cstdint>
 
-#include "linux/hal.h"
 #include "firmwareversion.h"
 
 namespace rdm::device
 {
 uint16_t DeviceModel()
 {
-    return hal::kBoardId;
+    return 0;
+}
+
+uint32_t BootSoftwareVersionId()
+{
+	return 0;
 }
 
 uint32_t SoftwareVersionId()
 {
-    return FirmwareVersion::Get()->GetVersionId();
+    return _TIME_STAMP_;
 }
 
 const char* SoftwareVersionLabel(uint32_t& length)

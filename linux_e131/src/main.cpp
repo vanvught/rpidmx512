@@ -62,7 +62,7 @@ int main(int argc, char** argv)
     Display display;
     ConfigStore config_store;
     Network nw(argc, argv);
-    FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__, DEVICE_SOFTWARE_VERSION_ID);
+    FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
     hal::print();
     fw.Print();

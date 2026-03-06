@@ -941,23 +941,23 @@ void RDMHandler::SetLanguage(bool is_broadcast, [[maybe_unused]] uint16_t sub_de
 
 void RDMHandler::GetBootSoftwareVersionId([[maybe_unused]] uint16_t sub_device)
 {
-    auto* pRdmDataIn = reinterpret_cast<struct TRdmMessageNoSc*>(m_pRdmDataIn);
+    auto* in = reinterpret_cast<struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
-    if (pRdmDataIn->param_data_length != 0)
+    if (in->param_data_length != 0)
     {
         RespondMessageNack(E120_NR_FORMAT_ERROR);
         return;
     }
 
-    uint32_t boot_software_version_id = hal::kReleaseId;
+    const auto kBootSoftwareVersionId = rdm::device::BootSoftwareVersionId();
 
-    auto* pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
+    auto* out = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
 
-    pRdmDataOut->param_data_length = RDM_BOOT_SOFTWARE_VERSION_ID_LENGTH;
-    pRdmDataOut->param_data[0] = static_cast<uint8_t>(boot_software_version_id >> 24);
-    pRdmDataOut->param_data[1] = static_cast<uint8_t>(boot_software_version_id >> 16);
-    pRdmDataOut->param_data[2] = static_cast<uint8_t>(boot_software_version_id >> 8);
-    pRdmDataOut->param_data[3] = static_cast<uint8_t>(boot_software_version_id);
+    out->param_data_length = RDM_BOOT_SOFTWARE_VERSION_ID_LENGTH;
+    out->param_data[0] = static_cast<uint8_t>(kBootSoftwareVersionId >> 24);
+    out->param_data[1] = static_cast<uint8_t>(kBootSoftwareVersionId >> 16);
+    out->param_data[2] = static_cast<uint8_t>(kBootSoftwareVersionId >> 8);
+    out->param_data[3] = static_cast<uint8_t>(kBootSoftwareVersionId);
 
     RespondMessageAck();
 }

@@ -50,7 +50,6 @@ bool linux_reboot();
 
 namespace hal
 {
-static constexpr uint32_t kBoardId = 0;
 static constexpr uint32_t kReleaseId = 0;
 static constexpr const char kWebsite[] = "www.gd32-dmx.org";
 static constexpr float kCoreTemperatureMin = -40.0;
