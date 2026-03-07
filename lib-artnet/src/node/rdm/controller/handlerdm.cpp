@@ -42,7 +42,7 @@ namespace rdm::discovery
 {
 void Starting(uint32_t port_index, [[maybe_unused]] Type type)
 {
-	DEBUG_PRINTF("%u:%c", port_index, rdm::discovery::Type::kFull ? 'F' : 'I');
+	DEBUG_PRINTF("%u:%c", port_index, type == rdm::discovery::Type::kFull ? 'F' : 'I');
     
 	auto& artnet = *ArtNetNode::Get();
     artnet.StopOutputPort(port_index);
@@ -50,7 +50,7 @@ void Starting(uint32_t port_index, [[maybe_unused]] Type type)
 
 void Finished(uint32_t port_index, [[maybe_unused]] Type type)
 {
-	DEBUG_PRINTF("%u:%c", port_index, rdm::discovery::Type::kFull ? 'F' : 'I');
+	DEBUG_PRINTF("%u:%c", port_index, type == rdm::discovery::Type::kFull ? 'F' : 'I');
 	
     auto& artnet = *ArtNetNode::Get();
     artnet.SendArtTodData(port_index);
@@ -169,7 +169,7 @@ void ArtNetNode::HandleTodData()
             return;
         }
 
-        DEBUG_PRINTF("bind_index=%u -> port_index=%u, kPortAddress=%u, uid_count=%u", kArtTodData->bind_index, port_index, kPortAddress,
+        DEBUG_PRINTF("bind_index=%u -> kPortIndex=%u, kPortAddress=%u, uid_count=%u", kArtTodData->bind_index, kPortIndex, kPortAddress,
                      kArtTodData->uid_count);
 
         for (uint32_t uid_index = 0; uid_index < kArtTodData->uid_count; uid_index++)

@@ -312,7 +312,7 @@ void ArtNetNode::HandleAddress()
             break;
 #endif
         default:
-            [[unlikely]] DEBUG_PRINTF("> Not implemented: %u [%x]", kArtAddress->Command, kArtAddress->Command);
+            [[unlikely]] DEBUG_PRINTF("> Not implemented: %u [%x]", kArtAddress->command, kArtAddress->command);
             break;
     }
 

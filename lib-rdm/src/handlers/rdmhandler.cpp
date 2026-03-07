@@ -51,16 +51,16 @@
 
 enum class PowerState : uint8_t
 {
-    FULL_OFF = 0x00,  ///< Completely disengages power to device. Device can no longer respond.
+    kFullOff = 0x00,  ///< Completely disengages power to device. Device can no longer respond.
     kShutdown = 0x01, ///< Reduced power mode, may require device reset to return to normal operation. Device still responds to messages.
-    STANDBY = 0x02,   ///< Reduced power mode. Device can return to NORMAL without a reset. Device still responds to messages.
-    NORMAL = 0xFF,    ///< Normal Operating Mode.
+    kStandby = 0x02,  ///< Reduced power mode. Device can return to NORMAL without a reset. Device still responds to messages.
+    kNormal = 0xFF,   ///< Normal Operating Mode.
 };
 
 enum class ResetMode : uint8_t
 {
     kWarm = 0x01,
-    COLD = 0xFF ///< A cold reset is the equivalent of removing and reapplying power to the device.
+    kCold = 0xFF ///< A cold reset is the equivalent of removing and reapplying power to the device.
 };
 
 const RDMHandler::PidDefinition RDMHandler::PID_DEFINITIONS[]{
@@ -549,7 +549,7 @@ void RDMHandler::GetQueuedMessage([[maybe_unused]] uint16_t sub_device)
 }
 #endif
 
-#if !defined(NODE_RDMNET_LLRP_ONLY)
+#if defined(RDM_RESPONDER)
 void RDMHandler::GetSupportedParameters(uint16_t sub_device)
 {
     uint8_t nSupportedParams = 0;
@@ -833,7 +833,7 @@ void RDMHandler::SetResetDevice([[maybe_unused]] bool is_broadcast, [[maybe_unus
 
     const auto kMode = static_cast<ResetMode>(in->param_data[0]);
 
-    if ((kMode != ResetMode::kWarm) && (kMode != ResetMode::COLD))
+    if ((kMode != ResetMode::kWarm) && (kMode != ResetMode::kCold))
     {
         RespondMessageNack(E120_NR_DATA_OUT_OF_RANGE);
         return;
@@ -842,7 +842,7 @@ void RDMHandler::SetResetDevice([[maybe_unused]] bool is_broadcast, [[maybe_unus
     auto* out = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
     out->param_data_length = 0;
 
-    if (kMode == ResetMode::COLD)
+    if (kMode == ResetMode::kCold)
     {
         RespondMessageNack(E120_NR_WRITE_PROTECT);
         return;
@@ -1459,7 +1459,7 @@ void RDMHandler::SetPowerState([[maybe_unused]] bool is_broadcast, [[maybe_unuse
 
     const auto nState = static_cast<PowerState>(pRdmDataIn->param_data[0]);
 
-    if ((nState != PowerState::NORMAL) && (nState > PowerState::STANDBY))
+    if ((nState != PowerState::kNormal) && (nState > PowerState::kStandby))
     {
         RespondMessageNack(E120_NR_DATA_OUT_OF_RANGE);
         return;
@@ -1467,7 +1467,7 @@ void RDMHandler::SetPowerState([[maybe_unused]] bool is_broadcast, [[maybe_unuse
 
     auto* pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
 
-    if (nState == PowerState::NORMAL)
+    if (nState == PowerState::kNormal)
     {
         pRdmDataOut->param_data_length = 0;
         RespondMessageAck();

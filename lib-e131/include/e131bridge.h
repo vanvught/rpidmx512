@@ -1,7 +1,7 @@
 /**
  * @file e131bridge.h
  */
-/* Copyright (C) 2016-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2016-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,6 +36,9 @@
 #include "e131sync.h"
 #include "dmxnode_outputtype.h"
 #include "softwaretimers.h"
+#if defined (NODE_RDMNET_LLRP_ONLY)
+#include "llrp/llrpdevice.h"
+#endif
 
 #ifndef ALIGNED
 #define ALIGNED __attribute__((aligned(4)))
@@ -122,6 +125,9 @@ struct InputPort
 } // namespace e131bridge
 
 class E131Bridge
+#if defined (NODE_RDMNET_LLRP_ONLY)
+: LLRPDevice
+#endif
 {
    public:
     E131Bridge();

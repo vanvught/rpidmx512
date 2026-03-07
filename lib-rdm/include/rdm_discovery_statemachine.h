@@ -69,6 +69,11 @@ class StateMachine
 
     bool Stop();
 
+	bool IsRunning()
+	{
+		return (state_ != rdm::discovery::State::kIdle);		
+	}
+	
     bool IsRunning(uint32_t& port_index, bool& is_incremental) const
     {
         port_index = port_index_;

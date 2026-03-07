@@ -499,6 +499,10 @@ void E131Bridge::Print()
     {
         printf(" Synchronize is disabled\n");
     }
+	
+	#if defined (NODE_RDMNET_LLRP_ONLY)
+	LLRPDevice::Print();
+	#endif
 }
 
 #if defined(__GNUC__) && !defined(__clang__)
