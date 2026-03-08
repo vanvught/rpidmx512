@@ -15,6 +15,3 @@ LIBS=
 include ../firmware-template-linux/Rules.mk
 
 prerequisites:
-
-
-	
