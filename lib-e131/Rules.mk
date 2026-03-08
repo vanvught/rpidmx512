@@ -19,8 +19,8 @@ ifneq ($(MAKE_FLAGS),)
 		EXTRA_SRCDIR+=src/controller
 	endif
 
-	ifeq ($(findstring NODE_NODE,$(MAKE_FLAGS)), NODE_NODE)
-		EXTRA_SRCDIR+=src/node
+	ifneq (,$(findstring NODE_RDMNET_LLRP_ONLY,$(MAKE_FLAGS)))
+		EXTRA_INCLUDES+=../lib-rdm/include
 	endif
 
 	ifeq ($(findstring OUTPUT_DMX_SEND,$(MAKE_FLAGS)), OUTPUT_DMX_SEND)
