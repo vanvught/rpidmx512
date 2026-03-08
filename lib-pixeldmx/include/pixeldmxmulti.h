@@ -1,7 +1,7 @@
 /**
  * @file pixeldmxmulti.h
  */
-/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,7 +36,6 @@
 #pragma GCC push_options
 #pragma GCC optimize("O3")
 #pragma GCC optimize("no-tree-loop-distribute-patterns")
-#pragma GCC optimize("-fprefetch-loop-arrays")
 #endif
 
 #include <cstdint>
@@ -50,7 +49,7 @@
 #if defined(PIXELDMXSTARTSTOP_GPIO)
 #include "hal_gpio.h"
 #endif
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
 namespace pixeldmxmulti
 {
@@ -84,7 +83,7 @@ class PixelDmxMulti final : public PixelDmxConfiguration
     {
         DEBUG_ENTRY();
 
-      DEBUG_EXIT();
+        DEBUG_EXIT();
     }
 
     void ApplyConfiguration()
@@ -412,4 +411,4 @@ class PixelDmxMulti final : public PixelDmxConfiguration
 #define NDEBUG
 #endif
 
-#endif  // PIXELDMXMULTI_H_
+#endif // PIXELDMXMULTI_H_

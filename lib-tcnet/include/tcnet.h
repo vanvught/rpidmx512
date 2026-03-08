@@ -2,7 +2,7 @@
  * @file tcnet.h
  *
  */
-/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,6 @@
 #pragma GCC push_options
 #pragma GCC optimize("O3")
 #pragma GCC optimize("no-tree-loop-distribute-patterns")
-#pragma GCC optimize("-fprefetch-loop-arrays")
 #endif
 
 #include <cstdint>
@@ -191,7 +190,8 @@ class TCNet
 
         memcpy(&opt_out, &packet_opt_in_, sizeof(struct TTCNetPacketOptOut));
 
-        network::udp::Send(handles_[0], reinterpret_cast<const uint8_t*>(&opt_out), sizeof(struct TTCNetPacketOptOut), network::GetBroadcastIp(), Broadcast::kPort0);
+        network::udp::Send(handles_[0], reinterpret_cast<const uint8_t*>(&opt_out), sizeof(struct TTCNetPacketOptOut), network::GetBroadcastIp(),
+                           Broadcast::kPort0);
 
         DEBUG_EXIT();
     }
@@ -393,7 +393,7 @@ class TCNet
         packet_opt_in_.Uptime = static_cast<uint16_t>(hal::Uptime());
 
         network::udp::Send(handles_[0], reinterpret_cast<const uint8_t*>(&packet_opt_in_), sizeof(struct TTCNetPacketOptIn), network::GetBroadcastIp(),
-                       Broadcast::kPort0);
+                           Broadcast::kPort0);
     }
 
     void DumpManagementHeader(const uint8_t* buffer);

@@ -39,7 +39,6 @@
 #pragma GCC optimize("O3")
 #endif
 #pragma GCC optimize("no-tree-loop-distribute-patterns")
-#pragma GCC optimize("-fprefetch-loop-arrays")
 #endif
 #endif
 

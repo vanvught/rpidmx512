@@ -47,6 +47,12 @@ ifneq ($(MAKE_FLAGS),)
 			EXTRA_INCLUDES+=../lib-rdm/include ../lib-dmx/include
 		endif
 	endif
+	
+	ifneq (,$(findstring NODE_RDMNET_LLRP_ONLY,$(MAKE_FLAGS)))
+		ifneq (,$(findstring RDM,$(MAKE_FLAGS)))
+			EXTRA_INCLUDES+=../lib-rdm/include
+		endif
+	endif
 else
 	EXTRA_SRCDIR+=src/display
 	EXTRA_SRCDIR+=src/formats/ola

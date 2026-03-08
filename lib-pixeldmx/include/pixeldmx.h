@@ -1,7 +1,7 @@
 /**
  * @file pixeldmx.h
  */
-/* Copyright (C) 2016-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2016-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,7 +36,6 @@
 #pragma GCC push_options
 #pragma GCC optimize("O3")
 #pragma GCC optimize("no-tree-loop-distribute-patterns")
-#pragma GCC optimize("-fprefetch-loop-arrays")
 #endif
 
 #include <cstdint>
@@ -50,7 +49,7 @@
 #include "hal_gpio.h"
 #endif
 #include "dmxnode.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
 #if defined(OUTPUT_DMX_PIXEL) && defined(RDM_RESPONDER) && !defined(NODE_ARTNET)
 #include "dmxnodeoutputrdmpixel.h"
@@ -97,7 +96,7 @@ class PixelDmx final : public PixelDmxConfiguration
         PixelDmxConfiguration::Print();
 #endif
 
-         output_type_.ApplyConfiguration();
+        output_type_.ApplyConfiguration();
         output_type_.Blackout();
 
         DEBUG_EXIT();
@@ -146,7 +145,7 @@ class PixelDmx final : public PixelDmxConfiguration
 
         if (output_type_.IsUpdating())
         {
-			puts("output_type_.IsUpdating()");
+            puts("output_type_.IsUpdating()");
             return;
         }
 
@@ -169,7 +168,7 @@ class PixelDmx final : public PixelDmxConfiguration
 
         if ((kSwitch == 0) && (kGroups < port_info.begin_index_port[1]))
         {
-			assert(PixelDmxConfiguration::GetDmxStartAddress() != 0);
+            assert(PixelDmxConfiguration::GetDmxStartAddress() != 0);
             d = (PixelDmxConfiguration::GetDmxStartAddress() - 1U);
         }
 
@@ -294,10 +293,7 @@ class PixelDmx final : public PixelDmxConfiguration
 
     void Sync([[maybe_unused]] uint32_t port_index) {}
 
-    void Sync()
-    {
-        output_type_.Update();
-    }
+    void Sync() { output_type_.Update(); }
 
 #if defined(OUTPUT_HAVE_STYLESWITCH)
     void SetOutputStyle([[maybe_unused]] uint32_t port_index, [[maybe_unused]] dmxnode::OutputStyle output_style) {}
@@ -426,4 +422,4 @@ class PixelDmx final : public PixelDmxConfiguration
 #define NDEBUG
 #endif
 
-#endif  // PIXELDMX_H_
+#endif // PIXELDMX_H_

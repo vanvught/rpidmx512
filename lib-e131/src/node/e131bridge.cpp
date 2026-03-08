@@ -499,17 +499,16 @@ void E131Bridge::Print()
     {
         printf(" Synchronize is disabled\n");
     }
-	
-	#if defined (NODE_RDMNET_LLRP_ONLY)
-	LLRPDevice::Print();
-	#endif
+
+#if defined(NODE_RDMNET_LLRP_ONLY)
+    LLRPDevice::Print();
+#endif
 }
 
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC push_options
 #pragma GCC optimize("O2")
 #pragma GCC optimize("no-tree-loop-distribute-patterns")
-#pragma GCC optimize("-fprefetch-loop-arrays")
 #endif
 
 static bool IsValidRoot(const uint8_t* buffer)

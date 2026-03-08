@@ -14,6 +14,10 @@ ifneq ($(MAKE_FLAGS),)
 		EXTRA_SRCDIR+=src/e131
 	endif
 	
+	ifneq (,$(findstring NODE_RDMNET_LLRP_ONLY,$(MAKE_FLAGS)))
+		EXTRA_INCLUDES+=../lib-rdm/include
+	endif
+	
 	ifneq (,$(findstring NODE_DDP_DISPLAY,$(MAKE_FLAGS)))
 		EXTRA_INCLUDES+=../lib-ddp/include
 	endif
