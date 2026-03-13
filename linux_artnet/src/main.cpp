@@ -42,7 +42,6 @@
 #endif
 #include "firmwareversion.h"
 #include "software_version.h"
-#include "software_version_id.h"
 
 static bool keep_running = true;
 
@@ -60,7 +59,7 @@ int main(int argc, char** argv) //NOLINT
     Display display;
     ConfigStore config_store;
     Network nw(argc, argv);
-    FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__, DEVICE_SOFTWARE_VERSION_ID);
+    FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
     hal::print();
     fw.Print();
@@ -75,12 +74,10 @@ int main(int argc, char** argv) //NOLINT
     RDMPersonality* personalities[1] = {new RDMPersonality("Real-time DMX Monitor", &monitor)};
 
     ArtNetRdmResponder rdm_responder(personalities, 1);
-    rdm_responder.Init();
     rdm_responder.Print();
 
     DmxNodeNode dmx_node_node;
     dmx_node_node.SetOutput(&monitor);
-    dmx_node_node.SetRdmUID(RdmDevice::Get().GetUID());
     dmx_node_node.SetRdmResponder(&rdm_responder, true);
     dmx_node_node.SetRdm(0, true);
 

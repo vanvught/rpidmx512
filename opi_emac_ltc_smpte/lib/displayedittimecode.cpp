@@ -26,17 +26,16 @@
 #include <cstdint>
 
 #include "displayedittimecode.h"
-
 #include "displayset.h"
 #include "ltc.h"
 #include "timecodeconst.h"
 #include "input.h"
 #include "display.h"
+#include "firmware/debug/debug_debug.h"
 
- #include "firmware/debug/debug_debug.h"
-
-static constexpr uint8_t kIndex[] = {ltc::timecode::index::HOURS_TENS,   ltc::timecode::index::HOURS_UNITS,   ltc::timecode::index::MINUTES_TENS, ltc::timecode::index::MINUTES_UNITS,
-                                     ltc::timecode::index::SECONDS_TENS, ltc::timecode::index::SECONDS_UNITS, ltc::timecode::index::FRAMES_TENS,  ltc::timecode::index::FRAMES_UNITS};
+static constexpr uint8_t kIndex[] = {ltc::timecode::index::HOURS_TENS,    ltc::timecode::index::HOURS_UNITS,  ltc::timecode::index::MINUTES_TENS,
+                                     ltc::timecode::index::MINUTES_UNITS, ltc::timecode::index::SECONDS_TENS, ltc::timecode::index::SECONDS_UNITS,
+                                     ltc::timecode::index::FRAMES_TENS,   ltc::timecode::index::FRAMES_UNITS};
 
 static constexpr auto kIndexSize = sizeof(kIndex) / sizeof(kIndex[0]);
 
@@ -52,7 +51,7 @@ void DisplayEditTimeCode::HandleKey(int key, struct ltc::TimeCode& timecode, cha
         {
             state_ = EDIT;
             m_nCursorPositionIndex = 0;
-            m_bCursorOn = true;
+            cursor_on_ = true;
         }
     }
     else
@@ -64,7 +63,7 @@ void DisplayEditTimeCode::HandleKey(int key, struct ltc::TimeCode& timecode, cha
             case input::KEY_ESC:
                 state_ = IDLE;
                 m_nCursorPositionIndex = 0;
-                m_bCursorOn = false;
+                cursor_on_ = false;
                 break;
             case input::KEY_UP:
                 KeyUp(timecode);
@@ -88,7 +87,7 @@ void DisplayEditTimeCode::HandleKey(int key, struct ltc::TimeCode& timecode, cha
     ltc::itoa_base10(pTimeCode, time_code);
     Display::Get()->TextLine(1, time_code, ltc::timecode::CODE_MAX_LENGTH);
 
-    if (m_bCursorOn)
+    if (cursor_on_)
     {
         Display::Get()->SetCursor(display::cursor::kOn);
     }

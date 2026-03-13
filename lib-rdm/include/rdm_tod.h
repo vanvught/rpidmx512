@@ -2,7 +2,7 @@
  * @file rdmtod.h
  *
  */
-/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2017-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,39 +34,34 @@
 #endif
 
 #include "rdmconst.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
-namespace rdmtod
+namespace rdm
 {
+class Tod
+{
+   public:
 #if !defined(RDM_DISCOVERY_TOD_TABLE_SIZE)
 #define RDM_DISCOVERY_TOD_TABLE_SIZE 200U
 #endif
-inline constexpr uint32_t kTodTableSize = RDM_DISCOVERY_TOD_TABLE_SIZE;
-inline constexpr uint32_t kMutesTableSize = (kTodTableSize + 32) / 32;
-inline constexpr uint32_t kInvalidEntry = static_cast<uint32_t>(~0);
-struct Tod
-{
-    uint8_t uid[RDM_UID_SIZE];
-};
-} // namespace rdmtod
+    static constexpr uint32_t kTableSize = RDM_DISCOVERY_TOD_TABLE_SIZE;
+    static constexpr uint32_t kMutesTableSize = (kTableSize + 32) / 32;
+    static constexpr uint32_t kInvalidEntry = static_cast<uint32_t>(~0);
 
-class RDMTod
-{
-   public:
-    RDMTod()
+    Tod()
     {
-        for (uint32_t i = 0; i < rdmtod::kTodTableSize; i++)
+        for (uint32_t i = 0; i < kTableSize; i++)
         {
             memcpy(&tod_[i], UID_ALL, RDM_UID_SIZE);
         }
 
-        for (uint32_t i = 0; i < rdmtod::kMutesTableSize; i++)
+        for (uint32_t i = 0; i < kMutesTableSize; i++)
         {
             mutes_[i] = 0;
         }
     }
 
-    ~RDMTod() = default;
+    ~Tod() = default;
 
     void Reset()
     {
@@ -77,7 +72,7 @@ class RDMTod
 
         entries_ = 0;
 
-        for (uint32_t i = 0; i < rdmtod::kMutesTableSize; i++)
+        for (uint32_t i = 0; i < kMutesTableSize; i++)
         {
             mutes_[i] = 0;
         }
@@ -85,7 +80,7 @@ class RDMTod
 
     bool AddUid(const uint8_t* uid)
     {
-        if (entries_ == rdmtod::kTodTableSize)
+        if (entries_ == kTableSize)
         {
             return false;
         }
@@ -100,7 +95,7 @@ class RDMTod
         return true;
     }
 
-    uint32_t GetUidCount() const { return entries_; }
+    uint32_t UidCount() const { return entries_; }
 
     bool CopyUidEntry(uint32_t index, uint8_t uid[RDM_UID_SIZE])
     {
@@ -150,7 +145,7 @@ class RDMTod
             return false;
         }
 
-        if (i == rdmtod::kTodTableSize - 1)
+        if (i == kTableSize - 1)
         {
             memcpy(&tod_[i], UID_ALL, RDM_UID_SIZE);
         }
@@ -178,7 +173,7 @@ class RDMTod
             }
         }
 
-        saved_index_ = rdmtod::kInvalidEntry;
+        saved_index_ = kInvalidEntry;
         return false;
     }
 
@@ -196,7 +191,7 @@ class RDMTod
 
     void Mute()
     {
-        if (saved_index_ == rdmtod::kInvalidEntry)
+        if (saved_index_ == kInvalidEntry)
         {
             return;
         }
@@ -209,7 +204,7 @@ class RDMTod
 
     void UnMute()
     {
-        if (saved_index_ == rdmtod::kInvalidEntry)
+        if (saved_index_ == kInvalidEntry)
         {
             return;
         }
@@ -222,7 +217,7 @@ class RDMTod
 
     void UnMuteAll()
     {
-        for (uint32_t i = 0; i < rdmtod::kMutesTableSize; i++)
+        for (uint32_t i = 0; i < kMutesTableSize; i++)
         {
             mutes_[i] = 0;
         }
@@ -230,7 +225,7 @@ class RDMTod
 
     bool IsMuted()
     {
-        if (saved_index_ == rdmtod::kInvalidEntry)
+        if (saved_index_ == kInvalidEntry)
         {
             return true;
         }
@@ -245,9 +240,9 @@ class RDMTod
     void Dump([[maybe_unused]] uint32_t count)
     {
 #ifndef NDEBUG
-        if (count > rdmtod::kTodTableSize)
+        if (count > kTableSize)
         {
-            count = rdmtod::kTodTableSize;
+            count = kTableSize;
         }
 
         printf("[%u]\n", static_cast<unsigned int>(count));
@@ -267,9 +262,14 @@ class RDMTod
 
    private:
     uint32_t entries_{0};
-    uint32_t saved_index_{rdmtod::kInvalidEntry};
-    uint32_t mutes_[rdmtod::kMutesTableSize];
-    rdmtod::Tod tod_[rdmtod::kTodTableSize];
+    uint32_t saved_index_{kInvalidEntry};
+    uint32_t mutes_[kMutesTableSize];
+    struct Uid
+    {
+        uint8_t uid[RDM_UID_SIZE];
+    };
+    Uid tod_[kTableSize];
 };
+} // namespace rdm
 
-#endif  // RDMTOD_H_
+#endif // RDMTOD_H_

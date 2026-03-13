@@ -105,7 +105,6 @@ linux_pp/linux_pp
 */spiflash.bin
 *.bin
 
-software_version_id.h
 
 /lib-eve
 /lib-nextion
@@ -124,3 +123,4 @@ linux_osc/.clangd
 linux_pp/.clangd
 /lib-hal/include/rpi
 *.BCM
+

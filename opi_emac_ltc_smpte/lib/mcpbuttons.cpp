@@ -22,20 +22,16 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cstdio>
-#include <cassert>
-
+#include "mcpbuttons.h"
 #include "displayset.h"
 #include "hal.h"
 #include "mcpbuttons.h"
-#include "ltcdisplayrgb.h"
 #include "display.h"
 #include "ltcdisplaymax7219.h"
 #include "rotaryencoder.h"
 #include "hal_i2c.h"
 #include "hal_gpio.h"
-#include "h3/hal_millis.h"
+#include "hal_millis.h"
 #include "mcp23x17.h"
 #include "displayedittimecode.h"
 #include "displayeditfps.h"
@@ -45,180 +41,40 @@
 #include "ltcstore.h"
 #include "arm/ltcgenerator.h"
 #include "arm/systimereader.h"
-#include "configstore.h"
+#if !(defined(CONFIG_LTC_DISABLE_RGB_PANEL) && defined(CONFIG_LTC_DISABLE_WS28XX))
+#include "ltcdisplayrgb.h"
+#else
+#define LTC_NO_DISPLAY_RGB
+#endif
 #include "firmware/debug/debug_debug.h"
 
 namespace mcp23017
 {
-static constexpr auto I2C_ADDRESS = 0x20;
+static constexpr auto kI2CAddress = 0x20;
 }
 
 namespace gpio
 {
-static constexpr auto INTA = GPIO_EXT_12; // PA7
+static constexpr auto kInta = GPIO_EXT_12; // PA7
 }
 
 namespace button
 {
-static constexpr auto SELECT = 2;
-static constexpr auto LEFT = 3;
-static constexpr auto RIGHT = 4;
-static constexpr auto START = 5;
-static constexpr auto STOP = 6;
-static constexpr auto RESUME = 7;
+static constexpr auto kSelect = 2;
+static constexpr auto kLeft = 3;
+static constexpr auto kRight = 4;
+static constexpr auto kStart = 5;
+static constexpr auto kStop = 6;
+static constexpr auto kResume = 7;
 } // namespace button
 
 #define BUTTON(x) ((nButtonsChanged >> x) & 0x01)
 #define BUTTON_STATE(x) ((nButtonsChanged & (1U << x)) == (1U << x))
 
-McpButtons::McpButtons(ltc::Source tLtcReaderSource, bool bUseAltFunction, int32_t nSkipSeconds, bool bRotaryHalfStep)
-    : hal_i2c_(mcp23017::I2C_ADDRESS),
-      m_tLtcReaderSource(tLtcReaderSource),
-      m_bUseAltFunction(bUseAltFunction),
-      m_nSkipSeconds(nSkipSeconds),
-      rotary_encoder_(bRotaryHalfStep)
+McpButtons::McpButtons(ltc::Source source, bool use_alt_function, int32_t skip_seconds, bool rotary_half_step)
+    : hal_i2c_(mcp23017::kI2CAddress), source_(source), use_alt_function_(use_alt_function), skip_seconds_(skip_seconds), rotary_encoder_(rotary_half_step)
 {
-    ltc::init_timecode(m_aTimeCode);
-}
-
-uint32_t McpButtons::LedBlink(uint8_t nPortB)
-{
-    const auto nMillisNow = hal::Millis();
-
-    if (__builtin_expect(((nMillisNow - m_nMillisPrevious) < 500), 1))
-    {
-        return m_nLedTicker;
-    }
-
-    m_nMillisPrevious = nMillisNow;
-    port_b_ ^= nPortB;
-    hal_i2c_.WriteRegister(mcp23x17::REG_GPIOB, port_b_);
-
-    return ++m_nLedTicker;
-}
-
-void McpButtons::HandleActionLeft(ltc::Source& ltcSource)
-{
-    if (state_ == SOURCE_SELECT)
-    {
-        if (ltcSource == static_cast<ltc::Source>(0))
-        {
-            ltcSource = static_cast<ltc::Source>(static_cast<uint32_t>(ltc::Source::UNDEFINED) - 1);
-        }
-        else
-        {
-            ltcSource = static_cast<ltc::Source>(static_cast<uint32_t>(ltcSource) - 1);
-        }
-        UpdateDisplays(ltcSource);
-        return;
-    }
-
-    key_ = input::KEY_LEFT;
-}
-
-void McpButtons::HandleActionRight(ltc::Source& ltcSource)
-{
-    if (state_ == SOURCE_SELECT)
-    {
-        if (ltcSource == static_cast<ltc::Source>(static_cast<uint32_t>(ltc::Source::UNDEFINED) - 1))
-        {
-            ltcSource = static_cast<ltc::Source>(0);
-        }
-        else
-        {
-            ltcSource = static_cast<ltc::Source>(static_cast<uint32_t>(ltcSource) + 1);
-        }
-        UpdateDisplays(ltcSource);
-        return;
-    }
-
-    key_ = input::KEY_RIGHT;
-}
-
-void McpButtons::HandleActionSelect(const ltc::Source& ltcSource)
-{
-    if (m_tLtcReaderSource != ltcSource)
-    {
-        m_tLtcReaderSource = ltcSource;
-        ltc_store::SaveSource(static_cast<uint8_t>(m_tLtcReaderSource));
-    }
-
-    hal_i2c_.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(1U << static_cast<uint8_t>(ltcSource)));
-    hal_i2c_.ReadRegister(mcp23x17::REG_INTCAPA); // Clear interrupts
-
-    Display::Get()->SetCursor(display::cursor::kOff);
-    Display::Get()->SetCursorPos(0, 0);
-    Display::Get()->ClearLine(1);
-    Display::Get()->ClearLine(2);
-}
-
-void McpButtons::HandleRotary(uint8_t nInputAB, ltc::Source& tLtcReaderSource)
-{
-    m_tRotaryDirection = rotary_encoder_.Process(nInputAB);
-
-    if (state_ == SOURCE_SELECT)
-    {
-        if (m_tRotaryDirection == RotaryEncoder::CW)
-        {
-            HandleActionRight(tLtcReaderSource);
-        }
-        else if (m_tRotaryDirection == RotaryEncoder::CCW)
-        {
-            HandleActionLeft(tLtcReaderSource);
-        }
-        return;
-    }
-
-    if (m_tRotaryDirection == RotaryEncoder::CW)
-    {
-        key_ = input::KEY_UP;
-    }
-    else if (m_tRotaryDirection == RotaryEncoder::CCW)
-    {
-        key_ = input::KEY_DOWN;
-    }
-}
-
-void McpButtons::UpdateDisplays(const ltc::Source ltcSource)
-{
-    DEBUG_ENTRY();
-
-    const auto nSource = static_cast<uint8_t>(ltcSource);
-    DEBUG_PRINTF("nSource=%u", nSource);
-
-    assert(Display::Get() != nullptr);
-
-    Display::Get()->TextStatus(LtcSourceConst::NAME[nSource]);
-
-    DEBUG_PUTS("");
-
-    if (ltc::Destination::IsEnabled(ltc::Destination::Output::MAX7219))
-    {
-        assert(LtcDisplayMax7219::Get() != nullptr);
-        LtcDisplayMax7219::Get()->WriteChar(nSource);
-    }
-
-    DEBUG_PUTS("");
-
-#if !defined(CONFIG_LTC_DISABLE_WS28XX)
-    if (ltc::Destination::IsEnabled(ltc::Destination::Output::WS28XX))
-    {
-        assert(LtcDisplayRgb::Get() != nullptr);
-        LtcDisplayRgb::Get()->WriteChar(nSource);
-    }
-#endif
-
-    DEBUG_PUTS("");
-
-#if !defined(CONFIG_LTC_DISABLE_RGB_PANEL)
-    if (ltc::Destination::IsEnabled(ltc::Destination::Output::RGBPANEL))
-    {
-        assert(LtcDisplayRgb::Get() != nullptr);
-        LtcDisplayRgb::Get()->ShowSource(ltcSource);
-    }
-#endif
-
-    DEBUG_EXIT();
+    ltc::init_timecode(timecode_);
 }
 
 bool McpButtons::Check()
@@ -242,37 +98,54 @@ bool McpButtons::Check()
     hal_i2c_.ReadRegister(mcp23x17::REG_INTCAPA);                               // Clear interrupts
     // Led's
     hal_i2c_.WriteRegister(mcp23x17::REG_IODIRB, static_cast<uint8_t>(0x00)); // All output
-    hal_i2c_.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(1U << static_cast<uint8_t>(m_tLtcReaderSource)));
+    hal_i2c_.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(1U << static_cast<uint8_t>(source_)));
 
-    UpdateDisplays(m_tLtcReaderSource);
+    UpdateDisplays(source_);
 
-    FUNC_PREFIX(GpioFsel(gpio::INTA, GPIO_FSEL_INPUT));
-    FUNC_PREFIX(GpioSetPud(gpio::INTA, GPIO_PULL_UP));
+    FUNC_PREFIX(GpioFsel(gpio::kInta, GPIO_FSEL_INPUT));
+    FUNC_PREFIX(GpioSetPud(gpio::kInta, GPIO_PULL_UP));
 
     DEBUG_EXIT();
     return true;
 }
 
-bool McpButtons::Wait(ltc::Source& ltcSource, struct ltc::TimeCode& StartTimeCode, struct ltc::TimeCode& StopTimeCode)
+void McpButtons::HandleActionSelect(const ltc::Source& source)
 {
-    const auto nSource = static_cast<uint32_t>(ltcSource);
-
-    if (__builtin_expect((LedBlink(static_cast<uint8_t>(1U << nSource)) >= m_nLedTickerMax), 0))
+    if (source_ != source)
     {
-        hal_i2c_.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(1U << nSource));
+        source_ = source;
+        ltc_store::SaveSource(static_cast<uint8_t>(source_));
+    }
+
+    hal_i2c_.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(1U << static_cast<uint8_t>(source)));
+    hal_i2c_.ReadRegister(mcp23x17::REG_INTCAPA); // Clear interrupts
+
+    Display::Get()->SetCursor(display::cursor::kOff);
+    Display::Get()->SetCursorPos(0, 0);
+    Display::Get()->ClearLine(1);
+    Display::Get()->ClearLine(2);
+}
+
+bool McpButtons::Wait(ltc::Source& source, struct ltc::TimeCode& start_timecode, struct ltc::TimeCode& stop_timecode)
+{
+    const auto kSource = static_cast<uint32_t>(source);
+
+    if (__builtin_expect((LedBlink(static_cast<uint8_t>(1U << kSource)) >= led_ticker_max_), 0))
+    {
+        hal_i2c_.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(1U << kSource));
         return false;
     }
 
-    if (__builtin_expect(FUNC_PREFIX(GpioLev(gpio::INTA)) == 0, 0))
+    if (__builtin_expect(FUNC_PREFIX(GpioLev(gpio::kInta)) == 0, 0))
     {
-        m_nLedTickerMax = UINT32_MAX;
+        led_ticker_max_ = UINT32_MAX;
 
-        const auto nPortA = hal_i2c_.ReadRegister(mcp23x17::REG_GPIOA);
-        const uint8_t nButtonsChanged = (nPortA ^ m_nPortAPrevious) & nPortA;
+        const auto kPortA = hal_i2c_.ReadRegister(mcp23x17::REG_GPIOA);
+        const uint8_t nButtonsChanged = (kPortA ^ port_a_previous_) & kPortA;
 
-        m_nPortAPrevious = nPortA;
+        port_a_previous_ = kPortA;
 
-        printf("%.2x %.2x\r", nPortA, nButtonsChanged);
+        printf("%.2x %.2x\r", kPortA, nButtonsChanged);
 
         /* P = m_nPortAPrevious
          * N = m_nPortA
@@ -290,24 +163,24 @@ bool McpButtons::Wait(ltc::Source& ltcSource, struct ltc::TimeCode& StartTimeCod
 
         if (nButtonsChanged != 0)
         {
-            if (BUTTON_STATE(button::LEFT))
+            if (BUTTON_STATE(button::kLeft))
             { // LEFT
-                HandleActionLeft(ltcSource);
+                HandleActionLeft(source);
             }
-            else if (BUTTON_STATE(button::RIGHT))
+            else if (BUTTON_STATE(button::kRight))
             { // RIGHT
-                HandleActionRight(ltcSource);
+                HandleActionRight(source);
             }
-            else if (BUTTON_STATE(button::SELECT))
+            else if (BUTTON_STATE(button::kSelect))
             { // SELECT
-                HandleActionSelect(ltcSource);
+                HandleActionSelect(source);
                 return false;
             }
-            else if (BUTTON_STATE(button::START))
+            else if (BUTTON_STATE(button::kStart))
             { // START
-                if (ltcSource == ltc::Source::INTERNAL)
+                if (source == ltc::Source::INTERNAL)
                 {
-                    if (state_ != EDIT_TIMECODE_START)
+                    if (state_ != kEditTimecodeStart)
                     {
                         Display::Get()->SetCursorPos(static_cast<uint8_t>(Display::Get()->GetColumns() - 7U), 0);
                         Display::Get()->PutString("[Start]");
@@ -317,57 +190,57 @@ bool McpButtons::Wait(ltc::Source& ltcSource, struct ltc::TimeCode& StartTimeCod
 
                     switch (state_)
                     {
-                        case SOURCE_SELECT:
-                            state_ = EDIT_TIMECODE_START;
+                        case kSourceSelect:
+                            state_ = kEditTimecodeStart;
                             break;
-                        case EDIT_TIMECODE_START:
-                            state_ = EDIT_FPS;
+                        case kEditTimecodeStart:
+                            state_ = kEditFps;
                             break;
-                        case EDIT_TIMECODE_STOP:
-                        case EDIT_FPS:
-                            state_ = EDIT_TIMECODE_START;
+                        case kEditTimecodeStop:
+                        case kEditFps:
+                            state_ = kEditTimecodeStart;
                             break;
                         default:
                             break;
                     }
                 }
             }
-            else if (BUTTON_STATE(button::STOP))
+            else if (BUTTON_STATE(button::kStop))
             { // STOP
-                if (ltcSource == ltc::Source::INTERNAL)
+                if (source == ltc::Source::INTERNAL)
                 {
-                    if (state_ != EDIT_TIMECODE_STOP)
+                    if (state_ != kEditTimecodeStop)
                     {
                         Display::Get()->SetCursorPos(static_cast<uint8_t>(Display::Get()->GetColumns() - 7U), 0);
                         Display::Get()->PutString("[Stop] ");
                     }
                     key_ = input::KEY_ENTER;
-                    state_ = EDIT_TIMECODE_STOP;
+                    state_ = kEditTimecodeStop;
                 }
             }
-            else if (BUTTON_STATE(button::RESUME))
+            else if (BUTTON_STATE(button::kResume))
             { // RESUME
-                if (ltcSource == ltc::Source::INTERNAL)
+                if (source == ltc::Source::INTERNAL)
                 {
                     key_ = input::KEY_ESC;
                 }
             }
         }
 
-        HandleRotary(nPortA, ltcSource);
+        HandleRotary(kPortA, source);
 
         if (key_ != input::KEY_NOT_DEFINED)
         {
             switch (state_)
             {
-                case EDIT_TIMECODE_START:
-                    HandleInternalTimeCodeStart(StartTimeCode);
+                case kEditTimecodeStart:
+                    HandleInternalTimeCodeStart(start_timecode);
                     break;
-                case EDIT_TIMECODE_STOP:
-                    HandleInternalTimeCodeStop(StopTimeCode);
+                case kEditTimecodeStop:
+                    HandleInternalTimeCodeStop(stop_timecode);
                     break;
-                case EDIT_FPS:
-                    HandleInternalTimeCodeFps(StartTimeCode);
+                case kEditFps:
+                    HandleInternalTimeCodeFps(start_timecode);
                     break;
                 default:
                     break;
@@ -380,70 +253,310 @@ bool McpButtons::Wait(ltc::Source& ltcSource, struct ltc::TimeCode& StartTimeCod
     return true;
 }
 
-/*
- * Run state
- */
-
-void McpButtons::SetRunState(RunStatus runState)
+void McpButtons::Run()
 {
-    DEBUG_PRINTF("%d %d", runState, m_tRunStatus);
-
-    m_tRunStatus = runState;
-
-    switch (runState)
+    if (__builtin_expect(!is_connected_, 0))
     {
-        case RunStatus::IDLE:
-            hal_i2c_.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(1U << static_cast<uint32_t>(m_tLtcReaderSource)));
-            ltc::source::Show(m_tLtcReaderSource, m_bRunGpsTimeClient);
-            break;
-        case RunStatus::CONTINUE:
-            hal_i2c_.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(0x0F));
-            Display::Get()->TextLine(4, ">CONTINUE?< ", 12);
-            break;
-        case RunStatus::REBOOT:
-            hal_i2c_.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(0xF0));
-            Display::Get()->TextLine(4, ">REBOOT?  < ", 12);
-            break;
-        case RunStatus::TC_RESET:
-            hal_i2c_.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(0xAA));
-            Display::Get()->TextLine(4, ">RESET TC?< ", 12);
-            break;
-        default:
-            break;
+        return;
+    }
+
+    if (__builtin_expect(FUNC_PREFIX(GpioLev(gpio::kInta)) == 0, 0))
+    {
+        const auto nPortA = hal_i2c_.ReadRegister(mcp23x17::REG_GPIOA);
+        const uint8_t nButtonsChanged = (nPortA ^ port_a_previous_) & nPortA;
+
+        port_a_previous_ = nPortA;
+
+        DEBUG_PRINTF("\n\n%.2x %.2x", nPortA, nButtonsChanged);
+
+        if (source_ == ltc::Source::INTERNAL)
+        {
+            if (BUTTON_STATE(button::kStart))
+            {
+                LtcGenerator::Get()->ActionStart(!use_alt_function_);
+                return;
+            }
+
+            if (BUTTON_STATE(button::kStop))
+            {
+                LtcGenerator::Get()->ActionStop();
+                return;
+            }
+
+            if (BUTTON_STATE(button::kResume))
+            {
+                if (!use_alt_function_)
+                {
+                    LtcGenerator::Get()->ActionResume();
+                    return;
+                }
+
+                if (run_status_ == RunStatus::kIdle)
+                {
+                    SetRunState(RunStatus::kTcReset);
+                    return;
+                }
+
+                if (run_status_ == RunStatus::kTcReset)
+                {
+                    SetRunState(RunStatus::kIdle);
+                    return;
+                }
+
+                return;
+            }
+        }
+        else if (source_ == ltc::Source::SYSTIME)
+        {
+            if (BUTTON_STATE(button::kStart))
+            {
+                SystimeReader::Get()->ActionStart();
+                return;
+            }
+            if (BUTTON_STATE(button::kStop))
+            {
+                SystimeReader::Get()->ActionStop();
+                return;
+            }
+        }
+
+        if (BUTTON_STATE(button::kSelect))
+        {
+            HandleRunActionSelect();
+            return;
+        }
+
+        if (BUTTON_STATE(button::kLeft))
+        {
+            if (run_status_ == RunStatus::kReboot)
+            {
+                SetRunState(RunStatus::kContinue);
+                return;
+            }
+
+            if (run_status_ == RunStatus::kIdle)
+            {
+                LtcGenerator::Get()->ActionBackward(skip_seconds_);
+                return;
+            }
+
+            return;
+        }
+
+        if (BUTTON_STATE(button::kRight))
+        {
+            if (run_status_ == RunStatus::kContinue)
+            {
+                SetRunState(RunStatus::kReboot);
+                return;
+            }
+
+            if (run_status_ == RunStatus::kIdle)
+            {
+                LtcGenerator::Get()->ActionForward(skip_seconds_);
+                return;
+            }
+
+            return;
+        }
+
+        rotary_direction_ = rotary_encoder_.Process(nPortA);
+
+        DEBUG_PRINTF("%d %s", rotary_direction_, rotary_direction_ == RotaryEncoder::CCW ? "CCW" : (rotary_direction_ == RotaryEncoder::CW ? "CW" : "!!"));
+
+        if (rotary_direction_ == RotaryEncoder::CCW)
+        {
+            if (run_status_ == RunStatus::kReboot)
+            {
+                SetRunState(RunStatus::kContinue);
+                return;
+            }
+
+            if (run_status_ == RunStatus::kIdle)
+            {
+                LtcGenerator::Get()->ActionBackward(skip_seconds_);
+                return;
+            }
+
+            return;
+        }
+
+        if (rotary_direction_ == RotaryEncoder::CW)
+        {
+            if (run_status_ == RunStatus::kContinue)
+            {
+                SetRunState(RunStatus::kReboot);
+                return;
+            }
+
+            if (run_status_ == RunStatus::kIdle)
+            {
+                LtcGenerator::Get()->ActionForward(skip_seconds_);
+                return;
+            }
+
+            return;
+        }
     }
 }
 
+
+uint32_t McpButtons::LedBlink(uint8_t port)
+{
+    const auto kMillisNow = hal::Millis();
+
+    if (__builtin_expect(((kMillisNow - millis_previous_) < 500), 1))
+    {
+        return led_ticker_;
+    }
+
+    millis_previous_ = kMillisNow;
+    port_b_ ^= port;
+    hal_i2c_.WriteRegister(mcp23x17::REG_GPIOB, port_b_);
+
+    return ++led_ticker_;
+}
+
+void McpButtons::HandleActionLeft(ltc::Source& source)
+{
+    if (state_ == kSourceSelect)
+    {
+        if (source == static_cast<ltc::Source>(0))
+        {
+            source = static_cast<ltc::Source>(static_cast<uint32_t>(ltc::Source::UNDEFINED) - 1);
+        }
+        else
+        {
+            source = static_cast<ltc::Source>(static_cast<uint32_t>(source) - 1);
+        }
+        UpdateDisplays(source);
+        return;
+    }
+
+    key_ = input::KEY_LEFT;
+}
+
+void McpButtons::HandleActionRight(ltc::Source& source)
+{
+    if (state_ == kSourceSelect)
+    {
+        if (source == static_cast<ltc::Source>(static_cast<uint32_t>(ltc::Source::UNDEFINED) - 1))
+        {
+            source = static_cast<ltc::Source>(0);
+        }
+        else
+        {
+            source = static_cast<ltc::Source>(static_cast<uint32_t>(source) + 1);
+        }
+        UpdateDisplays(source);
+        return;
+    }
+
+    key_ = input::KEY_RIGHT;
+}
+
+void McpButtons::HandleRotary(uint8_t input_ab, ltc::Source& source)
+{
+    rotary_direction_ = rotary_encoder_.Process(input_ab);
+
+    if (state_ == kSourceSelect)
+    {
+        if (rotary_direction_ == RotaryEncoder::CW)
+        {
+            HandleActionRight(source);
+        }
+        else if (rotary_direction_ == RotaryEncoder::CCW)
+        {
+            HandleActionLeft(source);
+        }
+        return;
+    }
+
+    if (rotary_direction_ == RotaryEncoder::CW)
+    {
+        key_ = input::KEY_UP;
+    }
+    else if (rotary_direction_ == RotaryEncoder::CCW)
+    {
+        key_ = input::KEY_DOWN;
+    }
+}
+
+    void McpButtons::UpdateDisplays(ltc::Source source)
+    {
+        DEBUG_ENTRY();
+
+        const auto nSource = static_cast<uint8_t>(source);
+        DEBUG_PRINTF("nSource=%u", nSource);
+
+        assert(Display::Get() != nullptr);
+
+        Display::Get()->TextStatus(LtcSourceConst::NAME[nSource]);
+
+        DEBUG_PUTS("");
+
+        if (ltc::Destination::IsEnabled(ltc::Destination::Output::MAX7219))
+        {
+            assert(LtcDisplayMax7219::Get() != nullptr);
+            LtcDisplayMax7219::Get()->WriteChar(nSource);
+        }
+
+        DEBUG_PUTS("");
+
+#if !defined(CONFIG_LTC_DISABLE_WS28XX)
+        if (ltc::Destination::IsEnabled(ltc::Destination::Output::WS28XX))
+        {
+            assert(LtcDisplayRgb::Get() != nullptr);
+            LtcDisplayRgb::Get()->WriteChar(nSource);
+        }
+#endif
+
+        DEBUG_PUTS("");
+
+#if !defined(CONFIG_LTC_DISABLE_RGB_PANEL)
+        if (ltc::Destination::IsEnabled(ltc::Destination::Output::RGBPANEL))
+        {
+            assert(LtcDisplayRgb::Get() != nullptr);
+            LtcDisplayRgb::Get()->ShowSource(source);
+        }
+#endif
+
+        DEBUG_EXIT();
+    }
+
+// Running mode
+
 void McpButtons::HandleRunActionSelect()
 {
-    DEBUG_PRINTF("%d", m_tRunStatus);
+    DEBUG_PRINTF("%d", run_status_);
 
     if (Display::Get()->IsSleep())
     {
         Display::Get()->SetSleep(false);
     }
 
-    const auto nMillisNow = hal::Millis();
+    const auto kMillisNow = hal::Millis();
 
-    if ((nMillisNow - m_nSelectMillis) < 300)
+    if ((kMillisNow - select_millis_) < 300)
     {
         return;
     }
 
-    m_nSelectMillis = nMillisNow;
+    select_millis_ = kMillisNow;
 
-    if (m_tRunStatus == RunStatus::IDLE)
+    if (run_status_ == RunStatus::kIdle)
     {
-        SetRunState(RunStatus::CONTINUE);
+        SetRunState(RunStatus::kContinue);
         return;
     }
 
-    if (m_tRunStatus == RunStatus::CONTINUE)
+    if (run_status_ == RunStatus::kContinue)
     {
-        SetRunState(RunStatus::IDLE);
+        SetRunState(RunStatus::kIdle);
         return;
     }
 
-    if (m_tRunStatus == RunStatus::REBOOT)
+    if (run_status_ == RunStatus::kReboot)
     {
         hal_i2c_.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(0xFF));
 
@@ -456,198 +569,81 @@ void McpButtons::HandleRunActionSelect()
         return;
     }
 
-    if (m_tRunStatus == RunStatus::TC_RESET)
+    if (run_status_ == RunStatus::kTcReset)
     {
-        SetRunState(RunStatus::IDLE);
+        SetRunState(RunStatus::kIdle);
         LtcGenerator::Get()->ActionReset();
         return;
     }
 }
 
-void McpButtons::Run()
+void McpButtons::SetRunState(RunStatus run_state)
 {
-    if (__builtin_expect(!is_connected_, 0))
+    DEBUG_PRINTF("%d %d", run_state, run_status_);
+
+    run_status_ = run_state;
+
+    switch (run_state)
     {
-        return;
-    }
-
-    if (__builtin_expect(FUNC_PREFIX(GpioLev(gpio::INTA)) == 0, 0))
-    {
-        const auto nPortA = hal_i2c_.ReadRegister(mcp23x17::REG_GPIOA);
-        const uint8_t nButtonsChanged = (nPortA ^ m_nPortAPrevious) & nPortA;
-
-        m_nPortAPrevious = nPortA;
-
-        DEBUG_PRINTF("\n\n%.2x %.2x", nPortA, nButtonsChanged);
-
-        if (m_tLtcReaderSource == ltc::Source::INTERNAL)
-        {
-            if (BUTTON_STATE(button::START))
-            {
-                LtcGenerator::Get()->ActionStart(!m_bUseAltFunction);
-                return;
-            }
-
-            if (BUTTON_STATE(button::STOP))
-            {
-                LtcGenerator::Get()->ActionStop();
-                return;
-            }
-
-            if (BUTTON_STATE(button::RESUME))
-            {
-                if (!m_bUseAltFunction)
-                {
-                    LtcGenerator::Get()->ActionResume();
-                    return;
-                }
-
-                if (m_tRunStatus == RunStatus::IDLE)
-                {
-                    SetRunState(RunStatus::TC_RESET);
-                    return;
-                }
-
-                if (m_tRunStatus == RunStatus::TC_RESET)
-                {
-                    SetRunState(RunStatus::IDLE);
-                    return;
-                }
-
-                return;
-            }
-        }
-        else if (m_tLtcReaderSource == ltc::Source::SYSTIME)
-        {
-            if (BUTTON_STATE(button::START))
-            {
-                SystimeReader::Get()->ActionStart();
-                return;
-            }
-            if (BUTTON_STATE(button::STOP))
-            {
-                SystimeReader::Get()->ActionStop();
-                return;
-            }
-        }
-
-        if (BUTTON_STATE(button::SELECT))
-        {
-            HandleRunActionSelect();
-            return;
-        }
-
-        if (BUTTON_STATE(button::LEFT))
-        {
-            if (m_tRunStatus == RunStatus::REBOOT)
-            {
-                SetRunState(RunStatus::CONTINUE);
-                return;
-            }
-
-            if (m_tRunStatus == RunStatus::IDLE)
-            {
-                LtcGenerator::Get()->ActionBackward(m_nSkipSeconds);
-                return;
-            }
-
-            return;
-        }
-
-        if (BUTTON_STATE(button::RIGHT))
-        {
-            if (m_tRunStatus == RunStatus::CONTINUE)
-            {
-                SetRunState(RunStatus::REBOOT);
-                return;
-            }
-
-            if (m_tRunStatus == RunStatus::IDLE)
-            {
-                LtcGenerator::Get()->ActionForward(m_nSkipSeconds);
-                return;
-            }
-
-            return;
-        }
-
-        m_tRotaryDirection = rotary_encoder_.Process(nPortA);
-
-        DEBUG_PRINTF("%d %s", m_tRotaryDirection, m_tRotaryDirection == RotaryEncoder::CCW ? "CCW" : (m_tRotaryDirection == RotaryEncoder::CW ? "CW" : "!!"));
-
-        if (m_tRotaryDirection == RotaryEncoder::CCW)
-        {
-            if (m_tRunStatus == RunStatus::REBOOT)
-            {
-                SetRunState(RunStatus::CONTINUE);
-                return;
-            }
-
-            if (m_tRunStatus == RunStatus::IDLE)
-            {
-                LtcGenerator::Get()->ActionBackward(m_nSkipSeconds);
-                return;
-            }
-
-            return;
-        }
-
-        if (m_tRotaryDirection == RotaryEncoder::CW)
-        {
-            if (m_tRunStatus == RunStatus::CONTINUE)
-            {
-                SetRunState(RunStatus::REBOOT);
-                return;
-            }
-
-            if (m_tRunStatus == RunStatus::IDLE)
-            {
-                LtcGenerator::Get()->ActionForward(m_nSkipSeconds);
-                return;
-            }
-
-            return;
-        }
+        case RunStatus::kIdle:
+            hal_i2c_.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(1U << static_cast<uint32_t>(source_)));
+            ltc::source::Show(source_, run_gps_time_client_);
+            break;
+        case RunStatus::kContinue:
+            hal_i2c_.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(0x0F));
+            Display::Get()->TextLine(4, ">CONTINUE?< ", 12);
+            break;
+        case RunStatus::kReboot:
+            hal_i2c_.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(0xF0));
+            Display::Get()->TextLine(4, ">REBOOT?  < ", 12);
+            break;
+        case RunStatus::kTcReset:
+            hal_i2c_.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(0xAA));
+            Display::Get()->TextLine(4, ">RESET TC?< ", 12);
+            break;
+        default:
+            break;
     }
 }
 
 void McpButtons::HandleInternalTimeCodeStart(struct ltc::TimeCode& start_timecode)
 {
-    displayEditTimeCode.HandleKey(key_, start_timecode, m_aTimeCode);
+    display_edit_time_code_.HandleKey(key_, start_timecode, timecode_);
 
-    //	if (!ltc::g_DisabledOutputs.bMax7219) {
     if (ltc::Destination::IsEnabled(ltc::Destination::Output::MAX7219))
     {
-        LtcDisplayMax7219::Get()->Show(m_aTimeCode);
+        LtcDisplayMax7219::Get()->Show(timecode_);
     }
+#if !defined(LTC_NO_DISPLAY_RGB)
     else if (ltc::Destination::IsEnabled(ltc::Destination::Output::WS28XX) || ltc::Destination::IsEnabled(ltc::Destination::Output::RGBPANEL))
     {
-        LtcDisplayRgb::Get()->Show(m_aTimeCode);
+        LtcDisplayRgb::Get()->Show(timecode_);
     }
-
+#endif
     HandleInternalKeyEsc();
 }
 
 void McpButtons::HandleInternalTimeCodeStop(struct ltc::TimeCode& start_timecode)
 {
-    displayEditTimeCode.HandleKey(key_, start_timecode, m_aTimeCode);
+    display_edit_time_code_.HandleKey(key_, start_timecode, timecode_);
 
-    //	if (!ltc::g_DisabledOutputs.bMax7219) {
     if (ltc::Destination::IsEnabled(ltc::Destination::Output::MAX7219))
     {
-        LtcDisplayMax7219::Get()->Show(m_aTimeCode);
+        LtcDisplayMax7219::Get()->Show(timecode_);
     }
+#if !defined(LTC_NO_DISPLAY_RGB)
     else if (ltc::Destination::IsEnabled(ltc::Destination::Output::WS28XX) || ltc::Destination::IsEnabled(ltc::Destination::Output::RGBPANEL))
     {
-        LtcDisplayRgb::Get()->Show(m_aTimeCode);
+        LtcDisplayRgb::Get()->Show(timecode_);
     }
+#endif
 
     HandleInternalKeyEsc();
 }
 
-void McpButtons::HandleInternalTimeCodeFps(struct ltc::TimeCode& StartTimeCode)
+void McpButtons::HandleInternalTimeCodeFps(struct ltc::TimeCode& start_timecode)
 {
-    displayEditFps.HandleKey(key_, StartTimeCode.type);
+    display_edit_fps_.HandleKey(key_, start_timecode.type);
 
     HandleInternalKeyEsc();
 }
@@ -660,6 +656,6 @@ void McpButtons::HandleInternalKeyEsc()
         Display::Get()->SetCursorPos(0, 0);
         Display::Get()->ClearLine(1);
         Display::Get()->ClearLine(2);
-        state_ = SOURCE_SELECT;
+        state_ = kSourceSelect;
     }
 }

@@ -1,7 +1,7 @@
 /**
  * @file pixel.h
  */
-/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,6 @@
 #pragma GCC push_options
 #pragma GCC optimize("O3")
 #pragma GCC optimize("no-tree-loop-distribute-patterns")
-#pragma GCC optimize("-fprefetch-loop-arrays")
 
 #include <cstdint>
 #include <cassert>
@@ -109,9 +108,9 @@ inline void SetPixelColour([[maybe_unused]] uint32_t port_index, uint32_t pixel_
     }
 #else // !PIXELPATTERNS_MULTI
     auto& pixel_configuration = PixelConfiguration::Get();
-    const auto type = pixel_configuration.GetType();
+    const auto kType = pixel_configuration.GetType();
 
-    if (type != pixel::Type::SK6812W)
+    if (kType != pixel::Type::SK6812W)
     {
         output_type->SetPixel(pixel_index, kColours.Red(), kColours.Green(), kColours.Blue());
     }
@@ -157,4 +156,4 @@ inline void Update()
 
 #pragma GCC pop_options
 
-#endif  // PIXEL_H_
+#endif // PIXEL_H_

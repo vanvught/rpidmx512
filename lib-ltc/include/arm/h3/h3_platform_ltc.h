@@ -2,7 +2,7 @@
  * @file h3_platform_ltc.h
  *
  */
-/* Copyright (C) 2022-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2022-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@
 #ifndef ARM_H3_H3_PLATFORM_LTC_H_
 #define ARM_H3_H3_PLATFORM_LTC_H_
 
-#include "h3.h"
+#include "h3.h" // IWYU pragma: keep
 
 /* ignore some GCC warnings */
 #pragma GCC diagnostic push
@@ -38,16 +38,15 @@
 
 #pragma GCC diagnostic pop
 
-#include "arm/arm.h"
-#include "arm/gic.h"
-#include "h3_timer.h"
-#include "irq_timer.h"
-#include "h3.h"
-#include "h3_board.h"
-#include "h3_gpio.h"
-#include "h3_timer.h"
-#include "h3_hs_timer.h"
-#include "irq_timer.h"
+#include "arm/arm.h"     // IWYU pragma: keep
+#include "arm/gic.h"     // IWYU pragma: keep
+#include "h3_timer.h"    // IWYU pragma: keep
+#include "irq_timer.h"   // IWYU pragma: keep
+#include "h3.h"          // IWYU pragma: keep
+#include "h3_board.h"    // IWYU pragma: keep
+#include "h3_gpio.h"     // IWYU pragma: keep
+#include "h3_timer.h"    // IWYU pragma: keep
+#include "h3_hs_timer.h" // IWYU pragma: keep
+#include "irq_timer.h"   // IWYU pragma: keep
 
-#endif  // ARM_H3_H3_PLATFORM_LTC_H_
-
+#endif // ARM_H3_H3_PLATFORM_LTC_H_

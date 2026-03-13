@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2017-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,7 +44,6 @@
 #endif
 #include "firmwareversion.h"
 #include "software_version.h"
-#include "software_version_id.h"
 
 static bool keep_running = true;
 
@@ -62,7 +61,7 @@ int main(int argc, char** argv)
     Display display;
     ConfigStore config_store;
     Network nw(argc, argv);
-    FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__, DEVICE_SOFTWARE_VERSION_ID);
+    FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
     hal::print();
     fw.Print();
@@ -77,12 +76,6 @@ int main(int argc, char** argv)
     DmxNodeNode dmx_node_node;
     dmx_node_node.SetOutput(&monitor);
     dmx_node_node.Print();
-
-    auto& rdm_device = RdmDevice::Get();
-    rdm_device.SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
-    rdm_device.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
-    rdm_device.Init();
-    rdm_device.Print();
 
     RDMNetDevice llrp_only_device;
 	llrp_only_device.Print();

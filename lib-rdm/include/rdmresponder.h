@@ -2,7 +2,7 @@
  * @file rdmresponder.h
  *
  */
-/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2018-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,7 +36,7 @@
 #include "dmxreceiver.h"
 #include "dmxnode_outputtype.h"
 #include "rdm_message_print.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
 #if defined(NODE_RDMNET_LLRP_ONLY)
 #error "Cannot be both RDMNet Device and RDM Responder"
@@ -55,10 +55,10 @@ namespace configstore
 void Delay();
 } // namespace configstore
 
-class RDMResponder final : DMXReceiver, public RDMDeviceResponder, RDMHandler
+class RDMResponder final : DMXReceiver, public RDMDeviceResponder
 {
    public:
-    RDMResponder(RDMPersonality** personalities, uint32_t personality_count, uint32_t current_personality = rdm::device::responder::kDefaultCurrentPersonality)
+    RDMResponder(RDMPersonality** personalities, uint32_t personality_count, uint32_t current_personality = RDMDeviceResponder::kDefaultCurrentPersonality)
         : DMXReceiver(personalities[current_personality - 1]->GetDmxNodeOutputType()), RDMDeviceResponder(personalities, personality_count, current_personality)
     {
         assert(s_this == nullptr);
@@ -112,7 +112,7 @@ class RDMResponder final : DMXReceiver, public RDMDeviceResponder, RDMHandler
         }
 
 #ifndef NDEBUG
-        rdm::MessagePrint(rdm_data_in);
+        rdm::message::Print(rdm_data_in);
 #endif
 
         if (rdm_data_in[0] == E120_SC_RDM)
@@ -124,7 +124,7 @@ class RDMResponder final : DMXReceiver, public RDMDeviceResponder, RDMHandler
                 case E120_DISCOVERY_COMMAND:
                 case E120_GET_COMMAND:
                 case E120_SET_COMMAND:
-                    HandleData(&rdm_data_in[1], reinterpret_cast<uint8_t*>(&rdm_command));
+                    RDMHandler::Instance().HandleData(&rdm_data_in[1], reinterpret_cast<uint8_t*>(&rdm_command), RDMHandler::Type::kTypeRdm);
                     return HandleResponse(reinterpret_cast<uint8_t*>(&rdm_command));
                     break;
                 default:
@@ -177,7 +177,7 @@ class RDMResponder final : DMXReceiver, public RDMDeviceResponder, RDMHandler
 #ifndef NDEBUG
         if (length != rdm::responder::kInvalidResponse)
         {
-            rdm::MessagePrint(response);
+            rdm::message::Print(response);
         }
 #endif
 
@@ -200,4 +200,4 @@ class RDMResponder final : DMXReceiver, public RDMDeviceResponder, RDMHandler
     static inline RDMResponder* s_this;
 };
 
-#endif  // RDMRESPONDER_H_
+#endif // RDMRESPONDER_H_

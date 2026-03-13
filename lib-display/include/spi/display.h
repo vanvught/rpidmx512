@@ -2,7 +2,7 @@
  * @file display.h
  *
  */
-/* Copyright (C) 2022-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2022-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +39,6 @@
 #pragma GCC optimize("O3")
 #endif
 #pragma GCC optimize("no-tree-loop-distribute-patterns")
-#pragma GCC optimize("-fprefetch-loop-arrays")
 #endif
 #endif
 
@@ -70,7 +69,7 @@ inline constexpr uint32_t CS_GPIO = SPI_LCD_CS_GPIO;
 inline constexpr uint32_t CS_GPIO = 0;
 #endif
 
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
 class Display : public LcdDriver
 {
@@ -356,4 +355,4 @@ class Display : public LcdDriver
 #endif
 #endif
 
-#endif  // SPI_DISPLAY_H_
+#endif // SPI_DISPLAY_H_

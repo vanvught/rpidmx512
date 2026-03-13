@@ -6,7 +6,7 @@
  * https://wiki.openlighting.org/index.php/USB_Protocol_Extensions
  *
  */
-/* Copyright (C) 2015-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2015-202 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -71,8 +71,6 @@ class Widget : public Dmx
 {
    public:
     Widget();
-
-    void Init() { RdmDevice::Get().Init(); }
 
     widget::SendState GetReceiveDmxOnChange() const { return send_state_; }
 

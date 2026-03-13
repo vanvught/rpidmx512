@@ -3,7 +3,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2018-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,8 +29,6 @@
 #pragma GCC optimize("no-tree-loop-distribute-patterns")
 #pragma GCC optimize("-fprefetch-loop-arrays")
 
-#include <cstdint>
-
 #include "h3/hal.h"
 #include "h3/hal_watchdog.h"
 #include "network.h"
@@ -40,15 +38,8 @@
 #include "dmxnodemsgconst.h"
 #include "firmware/artnet/pixel/artnettriggerhandler.h"
 #include "firmware/pixeldmx/show.h"
-#include "pixeltype.h"
 #include "pixeltestpattern.h"
 #include "json/pixeldmxparams.h"
-#include "pixeldmx.h"
-#if defined(NODE_RDMNET_LLRP_ONLY)
-#include "rdmnetdevice.h"
-#include "rdmdevice.h"
-#include "rdm_e120.h"
-#endif
 #if defined(NODE_SHOWFILE)
 #include "showfile.h"
 #endif
@@ -103,18 +94,6 @@ int main() // NOLINT
     }
 
     ArtNetTriggerHandler artnet_trigger_handler(&pixeldmx);
-
-#if defined(NODE_RDMNET_LLRP_ONLY)
-    auto& rdm_device = RdmDevice::Get();
-    rdm_device.SetProductCategory(E120_PRODUCT_CATEGORY_FIXTURE);
-    rdm_device.SetProductDetail(E120_PRODUCT_DETAIL_LED);
-    rdm_device.Init();
-    rdm_device.Print();
-
-    RDMNetDevice llrp_only_device;
-
-    dmxnode_node.SetRdmUID(rdm_device.GetUID(), true);
-#endif
 
 #if defined(NODE_SHOWFILE)
     ShowFile showfile;

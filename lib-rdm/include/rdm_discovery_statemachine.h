@@ -1,8 +1,8 @@
 /**
- * @file rdmdiscovery.h
+ * @file rdm_discovery_statemachine.h
  *
  */
-/* Copyright (C) 2023-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2023-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,27 +23,22 @@
  * THE SOFTWARE.
  */
 
-#ifndef RDMDISCOVERY_H_
-#define RDMDISCOVERY_H_
+#ifndef RDM_DISCOVERY_STATEMACHINE_H_
+#define RDM_DISCOVERY_STATEMACHINE_H_
 
-#include <rdmtod.h>
+#include "rdm_tod.h"
 #include <cstdint>
 #include <algorithm>
 
 #include "rdmmessage.h"
 
-namespace rdmdiscovery
+namespace rdm::discovery
 {
-#ifndef NDEBUG
-inline constexpr uint32_t kReceiveTimeOut = 58000;
-inline constexpr uint32_t kLateResponseTimeOut = 40000;
-#else
 inline constexpr uint32_t kReceiveTimeOut = 5800;
 inline constexpr uint32_t kLateResponseTimeOut = 1000;
-#endif
 inline constexpr uint32_t kUnmuteCounter = 3;
 inline constexpr uint32_t kMuteCounter = 10;
-inline constexpr uint32_t kDiscoveryStackSize = rdmtod::kTodTableSize;
+inline constexpr uint32_t kDiscoveryStackSize = rdm::Tod::kTableSize;
 inline constexpr uint32_t kDiscoveryCounter = 3;
 inline constexpr uint32_t kQuikfindCounter = 5;
 inline constexpr uint32_t kQuikfindDiscoveryCounter = 5;
@@ -61,23 +56,29 @@ enum class State
     kLateResponse,
     kFinished
 };
-} // namespace rdmdiscovery
 
-class RDMDiscovery
+class StateMachine
 {
    public:
-    explicit RDMDiscovery(const uint8_t* uid);
+    explicit StateMachine(const uint8_t* uid);
 
-    bool Full(uint32_t port_index, RDMTod* tod);
-    bool Incremental(uint32_t port_index, RDMTod* tod);
+    ~StateMachine() = default;
+
+    bool Full(uint32_t port_index, rdm::Tod* tod);
+    bool Incremental(uint32_t port_index, rdm::Tod* tod);
 
     bool Stop();
 
+	bool IsRunning()
+	{
+		return (state_ != rdm::discovery::State::kIdle);		
+	}
+	
     bool IsRunning(uint32_t& port_index, bool& is_incremental) const
     {
         port_index = port_index_;
         is_incremental = do_incremental_;
-        return (state_ != rdmdiscovery::State::kIdle);
+        return (state_ != rdm::discovery::State::kIdle);
     }
 
     bool IsFinished(uint32_t& port_index, bool& is_incremental)
@@ -98,7 +99,7 @@ class RDMDiscovery
 
     void Run()
     {
-        if (__builtin_expect((state_ == rdmdiscovery::State::kIdle), 1))
+        if (__builtin_expect((state_ == rdm::discovery::State::kIdle), 1))
         {
             return;
         }
@@ -108,23 +109,23 @@ class RDMDiscovery
 
    private:
     void Process();
-    bool Start(uint32_t port_index, RDMTod* tod, bool do_incremental);
+    bool Start(uint32_t port_index, rdm::Tod* tod, bool do_incremental);
     bool IsValidDiscoveryResponse(uint8_t* uid);
 
     void SavedState(uint32_t line);
-    void NewState(rdmdiscovery::State state, bool do_state_late_response, uint32_t line);
+    void NewState(rdm::discovery::State state, bool do_state_late_response, uint32_t line);
 
    private:
     RDMMessage message_;
     uint8_t* response_{nullptr};
     uint8_t uid_[RDM_UID_SIZE];
     uint32_t port_index_{0};
-    RDMTod* tod_{nullptr};
+    rdm::Tod* tod_{nullptr};
 
     bool is_finished_{false};
     bool do_incremental_{false};
-    rdmdiscovery::State state_{rdmdiscovery::State::kIdle};
-    rdmdiscovery::State saved_state_{rdmdiscovery::State::kIdle};
+    rdm::discovery::State state_{rdm::discovery::State::kIdle};
+    rdm::discovery::State saved_state_{rdm::discovery::State::kIdle};
 
     struct
     {
@@ -153,7 +154,7 @@ class RDMDiscovery
         {
             bool Push(uint64_t lower_bound, uint64_t upper_bound)
             {
-                if (top == rdmdiscovery::kDiscoveryStackSize - 1)
+                if (top == rdm::discovery::kDiscoveryStackSize - 1)
                 {
                     assert(0);
                     return false;
@@ -187,7 +188,7 @@ class RDMDiscovery
             {
                 uint64_t lower_bound;
                 uint64_t upper_bound;
-            } items[rdmdiscovery::kDiscoveryStackSize];
+            } items[rdm::discovery::kDiscoveryStackSize];
 
             int32_t debug_stack_top_max;
         } stack;
@@ -225,5 +226,5 @@ class RDMDiscovery
         uint8_t uid[RDM_UID_SIZE];
     } quick_find_discovery_;
 };
-
-#endif  // RDMDISCOVERY_H_
+} // namespace rdm::discovery
+#endif // RDM_DISCOVERY_STATEMACHINE_H_

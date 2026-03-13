@@ -2,10 +2,7 @@
  * @file handlerdm.cpp
  *
  */
-/**
- * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
- */
-/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2017-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,24 +23,28 @@
  * THE SOFTWARE.
  */
 
+#if defined(DEBUG_ARTNET_RDM)
+#undef NDEBUG
+#endif
+
 #include <cstring>
 #include <cassert>
 
 #include "artnetnode.h"
 #include "artnetrdmresponder.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
 void ArtNetNode::HandleRdm()
 {
     auto* const kArtRdm = reinterpret_cast<artnet::ArtRdm*>(receive_buffer_);
 
-    if (kArtRdm->RdmVer != 0x01)
+    if (kArtRdm->rdm_version != 0x01)
     {
         DEBUG_EXIT();
         return;
     }
 
-    const auto kPortAddress = static_cast<uint16_t>((kArtRdm->Net << 8)) | static_cast<uint16_t>((kArtRdm->Address));
+    const auto kPortAddress = static_cast<uint16_t>((kArtRdm->net << 8)) | static_cast<uint16_t>((kArtRdm->address));
 
     for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++)
     {
@@ -54,16 +55,16 @@ void ArtNetNode::HandleRdm()
 
         if ((kPortAddress == node_.port[port_index].port_address) && (node_.port[port_index].direction == dmxnode::PortDirection::kOutput))
         {
-            const auto* response = const_cast<uint8_t*>(rdm_responder_->Handler(port_index, kArtRdm->RdmPacket));
+            const auto* response = const_cast<uint8_t*>(rdm_responder_->Handler(port_index, kArtRdm->rdm_packet));
 
             if (response != nullptr)
             {
-                kArtRdm->RdmVer = 0x01;
+                kArtRdm->rdm_version = 0x01;
 
                 const auto kMessageLength = static_cast<uint16_t>(response[2] + 1);
-                memcpy(kArtRdm->RdmPacket, &response[1], kMessageLength);
+                memcpy(kArtRdm->rdm_packet, &response[1], kMessageLength);
 
-                const auto kLength = sizeof(struct artnet::ArtRdm) - sizeof(kArtRdm->RdmPacket) + kMessageLength;
+                const auto kLength = sizeof(struct artnet::ArtRdm) - sizeof(kArtRdm->rdm_packet) + kMessageLength;
 
                 network::udp::Send(handle_, receive_buffer_, kLength, ip_address_from_, artnet::kUdpPort);
             }
@@ -80,7 +81,7 @@ void ArtNetNode::HandleTodControl()
     DEBUG_ENTRY();
 
     const auto* const kArtTodControl = reinterpret_cast<artnet::ArtTodControl*>(receive_buffer_);
-    const auto kPortAddress = static_cast<uint16_t>((kArtTodControl->Net << 8)) | static_cast<uint16_t>((kArtTodControl->Address));
+    const auto kPortAddress = static_cast<uint16_t>((kArtTodControl->net << 8)) | static_cast<uint16_t>((kArtTodControl->address));
 
     const uint32_t kPortIndex = 0;
 
@@ -92,9 +93,9 @@ void ArtNetNode::HandleTodControl()
 
     if ((kPortAddress == node_.port[kPortIndex].port_address) && (node_.port[kPortIndex].direction == dmxnode::PortDirection::kOutput))
     {
-        if (kArtTodControl->Command == 0x01)
+        if (kArtTodControl->command == 0x01)
         { // AtcFlush
-            SendTod(kPortIndex);
+            SendArtTodData(kPortIndex);
         }
     }
 
@@ -104,7 +105,7 @@ void ArtNetNode::HandleTodControl()
 /**
  * Output Gateway always Directed Broadcasts this packet.
  */
-void ArtNetNode::SendTod(uint32_t port_index)
+void ArtNetNode::SendArtTodData(uint32_t port_index)
 {
     DEBUG_ENTRY();
     DEBUG_PRINTF("port_index=%u", port_index);
@@ -113,11 +114,11 @@ void ArtNetNode::SendTod(uint32_t port_index)
     auto& tod_data = art_tod_packet_.art_tod_data;
     const auto kPage = port_index;
 
-    memcpy(tod_data.Id, artnet::kNodeId, sizeof(tod_data.Id));
-    tod_data.OpCode = static_cast<uint16_t>(artnet::OpCodes::kOpToddata);
-    tod_data.ProtVerHi = 0;
-    tod_data.ProtVerLo = artnet::kProtocolRevision;
-    tod_data.RdmVer = 0x01; // Devices that support RDM STANDARD V1.0 set field to 0x01.
+    memcpy(tod_data.id, artnet::kNodeId, sizeof(tod_data.id));
+    tod_data.op_code = static_cast<uint16_t>(artnet::OpCodes::kOpToddata);
+    tod_data.prot_ver_hi = 0;
+    tod_data.prot_ver_lo = artnet::kProtocolRevision;
+    tod_data.rdm_version = 0x01; // Devices that support RDM STANDARD V1.0 set field to 0x01.
 
     const auto kDiscovered = static_cast<uint8_t>(port_index == 0 ? 1 : 0);
 
@@ -126,7 +127,7 @@ void ArtNetNode::SendTod(uint32_t port_index)
      * As most modern Art-Net gateways implement one universe per ArtPollReply,
      * ArtTodData->Port will usually be set to a value of 1.
      */
-    tod_data.Port = static_cast<uint8_t>(1U + (port_index & 0x3));
+    tod_data.port = static_cast<uint8_t>(1U + (port_index & 0x3));
     tod_data.spare1 = 0;
     tod_data.spare2 = 0;
     tod_data.spare3 = 0;
@@ -134,17 +135,17 @@ void ArtNetNode::SendTod(uint32_t port_index)
     tod_data.spare5 = 0;
     tod_data.spare6 = 0;
     tod_data.bind_index = static_cast<uint8_t>(kPage + 1U); ///< ArtPollReplyData->BindIndex == ArtTodData- >BindIndex
-    tod_data.Net = node_.port[kPage].net_switch;
-    tod_data.CommandResponse = 0; ///< The packet contains the entire TOD or is the first packet in a sequence of packets that contains the entire TOD.
-    tod_data.Address = node_.port[port_index].sw;
-    tod_data.UidTotalHi = 0;
-    tod_data.UidTotalLo = kDiscovered;
-    tod_data.BlockCount = 0;
-    tod_data.UidCount = kDiscovered;
+    tod_data.net = node_.port[kPage].net_switch;
+    tod_data.command_response = 0; ///< The packet contains the entire TOD or is the first packet in a sequence of packets that contains the entire TOD.
+    tod_data.address = node_.port[port_index].sw;
+    tod_data.uid_total_hi = 0;
+    tod_data.uid_total_lo = kDiscovered;
+    tod_data.block_count = 0;
+    tod_data.uid_count = kDiscovered;
 
-    rdm_responder_->TodCopy(port_index, reinterpret_cast<uint8_t*>(tod_data.Tod));
+    rdm_responder_->TodCopy(port_index, reinterpret_cast<uint8_t*>(tod_data.tod));
 
-    const auto kLength = sizeof(struct artnet::ArtTodData) - (sizeof(tod_data.Tod)) + (kDiscovered * 6U);
+    const auto kLength = sizeof(struct artnet::ArtTodData) - (sizeof(tod_data.tod)) + (kDiscovered * 6U);
 
     network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&tod_data), kLength, network::GetBroadcastIp(), artnet::kUdpPort);
 

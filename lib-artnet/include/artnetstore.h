@@ -31,9 +31,9 @@
 #include "artnet.h"
 #include "artnetnode.h"
 #include "dmxnode.h"
-#include "dmxnode_utils.h"
+#include "common/utils/utils_port.h"
 #include "configstore.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
 namespace artnet::store
 {
@@ -89,7 +89,7 @@ inline void SaveUniverse(uint32_t port_index)
 inline void SaveLongName(const char* long_name)
 {
     DEBUG_ENTRY();
-    ConfigStore::Instance().DmxNodeUpdateArray(&common::store::DmxNode::long_name, long_name, artnet::kLongNameLength);
+    ConfigStore::Instance().DmxNodeUpdateArray(&common::store::DmxNode::node_name, long_name, artnet::kLongNameLength);
     DEBUG_EXIT();
 }
 
@@ -118,7 +118,7 @@ inline void SaveShortName(uint32_t port_index, const char* short_name)
         return;
     }
 
-    ConfigStore::Instance().DmxNodeUpdateLabel(&common::store::DmxNode::label, port_index, short_name, artnet::kShortNameLength);
+    ConfigStore::Instance().DmxNodeUpdateLabel(&common::store::DmxNode::port_name, port_index, short_name, artnet::kPortNameLength);
 
     DEBUG_EXIT();
 }
@@ -157,7 +157,7 @@ inline void SaveDirection(uint32_t port_index, dmxnode::PortDirection direction)
 
     auto direction_store = ConfigStore::Instance().DmxNodeGet(&common::store::DmxNode::direction);
 
-    json::PortSet<dmxnode::PortDirection>(port_index, direction, direction_store);
+    common::PortSet<dmxnode::PortDirection>(port_index, direction, direction_store);
 
     ConfigStore::Instance().DmxNodeUpdate(&common::store::DmxNode::direction, direction_store);
 
@@ -191,7 +191,7 @@ inline void SaveMergeMode(uint32_t port_index, dmxnode::MergeMode merge_mode)
 
     auto merge_mode_store = ConfigStore::Instance().DmxNodeGet(&common::store::DmxNode::merge_mode);
 
-    json::PortSet<dmxnode::MergeMode>(port_index, merge_mode, merge_mode_store);
+    common::PortSet<dmxnode::MergeMode>(port_index, merge_mode, merge_mode_store);
 
     ConfigStore::Instance().DmxNodeUpdate(&common::store::DmxNode::merge_mode, merge_mode_store);
 
@@ -225,7 +225,7 @@ inline void SaveProtocol(uint32_t port_index, artnet::PortProtocol port_protocol
 
     uint16_t protocol_store = ConfigStore::Instance().DmxNodeGet(&common::store::DmxNode::protocol);
 
-    json::PortSet<artnet::PortProtocol>(port_index, port_protocol, protocol_store);
+    common::PortSet<artnet::PortProtocol>(port_index, port_protocol, protocol_store);
 
     ConfigStore::Instance().DmxNodeUpdate(&common::store::DmxNode::protocol, protocol_store);
 
@@ -300,7 +300,7 @@ inline void SaveRdmEnabled(uint32_t port_index, bool is_enabled)
 
     auto rdm_store = ConfigStore::Instance().DmxNodeGet(&common::store::DmxNode::rdm);
 
-    json::PortSet<dmxnode::Rdm>(port_index, static_cast<dmxnode::Rdm>(is_enabled), rdm_store);
+    common::PortSet<dmxnode::Rdm>(port_index, static_cast<dmxnode::Rdm>(is_enabled), rdm_store);
 
     ConfigStore::Instance().DmxNodeUpdate(&common::store::DmxNode::rdm, rdm_store);
 
@@ -317,4 +317,4 @@ inline void SaveFailSafe(uint8_t fail_safe)
 }
 } // namespace artnet::store
 
-#endif  // ARTNETSTORE_H_
+#endif // ARTNETSTORE_H_

@@ -91,7 +91,7 @@ class RDMMessage final : public Rdm
     void Send(uint32_t port_index)
     {
 #ifndef NDEBUG
-        rdm::MessagePrint(reinterpret_cast<const uint8_t*>(&message_));
+        rdm::message::Print(reinterpret_cast<const uint8_t*>(&message_));
 #endif
         Rdm::Send(port_index, &message_);
     }

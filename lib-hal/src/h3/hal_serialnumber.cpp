@@ -36,9 +36,9 @@ void SerialNumber(uint8_t sn[kSnSize])
 
     h3_sid_get_rootkey(rootkey);
 
-    sn[0] = rootkey[15];
-    sn[1] = rootkey[14];
-    sn[2] = rootkey[13];
-    sn[3] = rootkey[12];
+    sn[0] = rootkey[12];
+    sn[1] = rootkey[13];
+    sn[2] = rootkey[14];
+    sn[3] = rootkey[15];
 }
 } // namespace hal

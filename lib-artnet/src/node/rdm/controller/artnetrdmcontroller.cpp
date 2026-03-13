@@ -28,7 +28,6 @@
 #pragma GCC optimize("O2")
 #pragma GCC optimize("no-tree-loop-distribute-patterns")
 #pragma GCC optimize("-funroll-loops")
-#pragma GCC optimize("-fprefetch-loop-arrays")
 #endif
 
 #include <cstdint>
@@ -77,7 +76,8 @@ bool ArtNetRdmController::RdmReceive(uint32_t port_index, const uint8_t* data)
 {
     assert(port_index < dmxnode::kMaxPorts);
     assert(data != nullptr);
-
+	
+	auto& rdmdiscovery = rdm::Discovery::Instance();
     auto* rdm_message = reinterpret_cast<const struct TRdmMessage*>(data);
     auto* uid = rdm_message->destination_uid;
 
@@ -90,7 +90,7 @@ bool ArtNetRdmController::RdmReceive(uint32_t port_index, const uint8_t* data)
 
         if (!is_rdm_packet_broadcast)
         {
-            is_rdm_packet_for_me = s_tod[port_index].Exist(uid);
+            is_rdm_packet_for_me = rdmdiscovery.TodExist(port_index, uid);
         }
     }
 
@@ -106,7 +106,7 @@ bool ArtNetRdmController::RdmReceive(uint32_t port_index, const uint8_t* data)
 
     if (is_rdm_packet_broadcast)
     {
-        uid = s_tod[port_index].Next();
+        uid = rdmdiscovery.TodNext(port_index);
     }
 
     if (rdm_message->command_class == E120_DISCOVERY_COMMAND)
@@ -115,7 +115,7 @@ bool ArtNetRdmController::RdmReceive(uint32_t port_index, const uint8_t* data)
 
         if (kParamId == E120_DISC_UNIQUE_BRANCH)
         {
-            if (!s_tod[port_index].IsMuted())
+            if (!rdmdiscovery.TodIsMuted(port_index))
             {
                 if ((memcmp(rdm_message->param_data, uid, RDM_UID_SIZE) <= 0) && (memcmp(uid, rdm_message->param_data + 6, RDM_UID_SIZE) <= 0))
                 {
@@ -159,7 +159,7 @@ bool ArtNetRdmController::RdmReceive(uint32_t port_index, const uint8_t* data)
 
             if (!is_rdm_packet_broadcast && is_rdm_packet_for_me)
             {
-                s_tod[port_index].UnMute();
+                rdmdiscovery.TodUnMute(port_index);
 
                 auto* message_ack = reinterpret_cast<struct TRdmMessage*>(const_cast<uint8_t*>(data));
 
@@ -171,7 +171,7 @@ bool ArtNetRdmController::RdmReceive(uint32_t port_index, const uint8_t* data)
             }
             else
             {
-                s_tod[port_index].UnMuteAll();
+                rdmdiscovery.TodUnMuteAll(port_index);
             }
 
             return false;
@@ -188,7 +188,7 @@ bool ArtNetRdmController::RdmReceive(uint32_t port_index, const uint8_t* data)
 
             if (is_rdm_packet_for_me)
             {
-                s_tod[port_index].Mute();
+                rdmdiscovery.TodMute(port_index);
 
                 auto* message_ack = reinterpret_cast<struct TRdmMessage*>(const_cast<uint8_t*>(data));
 

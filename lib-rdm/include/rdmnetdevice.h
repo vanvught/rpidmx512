@@ -32,6 +32,7 @@
 #include "llrp/llrpdevice.h"
 #include "hal_uuid.h"
 #include "firmware/debug/debug_debug.h"
+#include "rdmdevice.h"
 
 class RDMNetDevice final : public LLRPDevice
 {
@@ -52,6 +53,8 @@ class RDMNetDevice final : public LLRPDevice
 
     void Print()
     {
+		rdm::device::Device::Instance().Print();
+		
         static constexpr auto kUuidStringLength = 36;
         char uuid_str[kUuidStringLength + 1];
         uuid_str[kUuidStringLength] = '\0';

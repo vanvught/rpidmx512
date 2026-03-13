@@ -54,7 +54,7 @@
 #else
 #define LTC_NO_DISPLAY_RGB
 #endif
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
 static volatile bool sv_is_midi_quarter_frame_message;
 static volatile uint32_t sv_n_midi_quarter_frame_piece;

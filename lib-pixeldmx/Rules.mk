@@ -9,14 +9,21 @@ ifneq ($(MAKE_FLAGS),)
 	ifeq ($(findstring OUTPUT_DMX_SEND,$(MAKE_FLAGS)), OUTPUT_DMX_SEND)
 		EXTRA_INCLUDES+=../lib-dmx/include
 	endif
+	
 	ifneq (,$(findstring CONFIG_RDM_ENABLE_MANUFACTURER_PIDS,$(MAKE_FLAGS)))
 		EXTRA_INCLUDES+=../lib-rdm/include
 		EXTRA_SRCDIR+=src/pixeldmxrdm
 	endif
+	
+	ifneq (,$(findstring NODE_RDMNET_LLRP_ONLY,$(MAKE_FLAGS)))
+		EXTRA_INCLUDES+=../lib-rdm/include
+	endif
+	
 	ifeq ($(findstring RDM_RESPONDER,$(MAKE_FLAGS)), RDM_RESPONDER)
 		EXTRA_SRCDIR+=src/pixeldmxparams
 		EXTRA_INCLUDES+=../lib-rdm/include
 	endif
+
 	ifeq ($(findstring CONFIG_RDM_ENABLE_SENSORS,$(MAKE_FLAGS)), CONFIG_RDM_ENABLE_SENSORS)
 		EXTRA_INCLUDES+=../lib-rdmsensor/include
 	endif

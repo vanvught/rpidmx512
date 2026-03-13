@@ -2,7 +2,7 @@
  * @file configstore.h
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -211,9 +211,9 @@ class ConfigStore : StoreDevice
     void SetFlagDmxSend(uint32_t flag) { SetFlagInternal(GetStore()->dmx_send, &common::store::DmxSend::flags, flag); }
     void SetFlagDmxLed(uint32_t flag) { SetFlagInternal(GetStore()->dmx_led, &common::store::DmxLed::flags, flag); }
     void SetFlagDmxPwm(uint32_t flag) { SetFlagInternal(GetStore()->dmx_pwm, &common::store::DmxPwm::flags, flag); }
-    void SetFlagDmxSerial(uint32_t flag) { SetFlagInternal(GetStore()->dmx_serial, &common::store::DmxSerial::set_list, flag); }
-    void SetFlagDmxMonitor(uint32_t flag) { SetFlagInternal(GetStore()->dmx_monitor, &common::store::DmxMonitor::set_list, flag); }
-    void SetFlagRdmDevice(uint32_t flag) { SetFlagInternal(GetStore()->rdm_device, &common::store::RdmDevice::set_list, flag); }
+    void SetFlagDmxSerial(uint32_t flag) { SetFlagInternal(GetStore()->dmx_serial, &common::store::DmxSerial::flags, flag); }
+    void SetFlagDmxMonitor(uint32_t flag) { SetFlagInternal(GetStore()->dmx_monitor, &common::store::DmxMonitor::flags, flag); }
+    void SetFlagRdmDevice(uint32_t flag) { SetFlagInternal(GetStore()->rdm_device, &common::store::RdmDevice::flags, flag); }
     void SetFlagShowFile(uint32_t flag) { SetFlagInternal(GetStore()->show_file, &common::store::ShowFile::flags, flag); }
     void SetFlagLtc(uint32_t flag) { SetFlagInternal(GetStore()->ltc, &common::store::Ltc::flags, flag); }
     void SetFlagLtcDisplay(uint32_t flag) { SetFlagInternal(GetStore()->ltc_display, &common::store::LtcDisplay::flags, flag); }
@@ -233,9 +233,9 @@ class ConfigStore : StoreDevice
     void ClearFlagDmxSend(uint32_t flag) { ClearFlagInternal(GetStore()->dmx_send, &common::store::DmxSend::flags, flag); }
     void ClearFlagDmxLed(uint32_t flag) { ClearFlagInternal(GetStore()->dmx_led, &common::store::DmxLed::flags, flag); }
     void ClearFlagDmxPwm(uint32_t flag) { ClearFlagInternal(GetStore()->dmx_pwm, &common::store::DmxPwm::flags, flag); }
-    void ClearFlagDmxSerial(uint32_t flag) { ClearFlagInternal(GetStore()->dmx_serial, &common::store::DmxSerial::set_list, flag); }
-    void ClearFlagDmxMonitor(uint32_t flag) { ClearFlagInternal(GetStore()->dmx_monitor, &common::store::DmxMonitor::set_list, flag); }
-    void ClearFlagRdmDevice(uint32_t flag) { ClearFlagInternal(GetStore()->rdm_device, &common::store::RdmDevice::set_list, flag); }
+    void ClearFlagDmxSerial(uint32_t flag) { ClearFlagInternal(GetStore()->dmx_serial, &common::store::DmxSerial::flags, flag); }
+    void ClearFlagDmxMonitor(uint32_t flag) { ClearFlagInternal(GetStore()->dmx_monitor, &common::store::DmxMonitor::flags, flag); }
+    void ClearFlagRdmDevice(uint32_t flag) { ClearFlagInternal(GetStore()->rdm_device, &common::store::RdmDevice::flags, flag); }
     void ClearFlagShowFile(uint32_t flag) { ClearFlagInternal(GetStore()->show_file, &common::store::ShowFile::flags, flag); }
     void ClearFlagLtc(uint32_t flag) { ClearFlagInternal(GetStore()->ltc, &common::store::Ltc::flags, flag); }
     void ClearFlagLtcDisplay(uint32_t flag) { ClearFlagInternal(GetStore()->ltc_display, &common::store::LtcDisplay::flags, flag); }
@@ -255,9 +255,9 @@ class ConfigStore : StoreDevice
     bool IsFlagSetDmxSend(uint32_t flag) const { return IsFlagSetInternal(GetStore()->dmx_send, &common::store::DmxSend::flags, flag); }
     bool IsFlagSetDmxLed(uint32_t flag) const { return IsFlagSetInternal(GetStore()->dmx_led, &common::store::DmxLed::flags, flag); }
     bool IsFlagSetDmxPwm(uint32_t flag) const { return IsFlagSetInternal(GetStore()->dmx_pwm, &common::store::DmxPwm::flags, flag); }
-    bool IsFlagSetDmxSerial(uint32_t flag) const { return IsFlagSetInternal(GetStore()->dmx_serial, &common::store::DmxSerial::set_list, flag); }
-    bool IsFlagSetDmxMonitor(uint32_t flag) const { return IsFlagSetInternal(GetStore()->dmx_monitor, &common::store::DmxMonitor::set_list, flag); }
-    bool IsFlagSetRdmDevice(uint32_t flag) const { return IsFlagSetInternal(GetStore()->rdm_device, &common::store::RdmDevice::set_list, flag); }
+    bool IsFlagSetDmxSerial(uint32_t flag) const { return IsFlagSetInternal(GetStore()->dmx_serial, &common::store::DmxSerial::flags, flag); }
+    bool IsFlagSetDmxMonitor(uint32_t flag) const { return IsFlagSetInternal(GetStore()->dmx_monitor, &common::store::DmxMonitor::flags, flag); }
+    bool IsFlagSetRdmDevice(uint32_t flag) const { return IsFlagSetInternal(GetStore()->rdm_device, &common::store::RdmDevice::flags, flag); }
     bool IsFlagSetShowFile(uint32_t flag) const { return IsFlagSetInternal(GetStore()->show_file, &common::store::ShowFile::flags, flag); }
     bool IsFlagSetLtc(uint32_t flag) const { return IsFlagSetInternal(GetStore()->ltc, &common::store::Ltc::flags, flag); }
     bool IsFlagSetLtcDisplay(uint32_t flag) const { return IsFlagSetInternal(GetStore()->ltc_display, &common::store::LtcDisplay::flags, flag); }
@@ -289,10 +289,16 @@ class ConfigStore : StoreDevice
         static_assert(N == common::store::ltc::display::kMaxInfoMessage, "Size mismatch");
         memcpy(dest, (GetStore()->ltc_display.*field), N);
     }
+	
+	template <std::size_t N> void RdmDeviceCopyArray(uint8_t (&dest)[N], const uint8_t (common::store::RdmDevice::*field)[N]) const
+	{
+	    static_assert(N == common::store::rdmdevice::kLabelMaxLength, "Size mismatch");
+	    memcpy(dest, (GetStore()->rdm_device.*field), N);
+	}
 
-    template <std::size_t N> void RdmDeviceUpdateArray(uint8_t (common::store::RdmDevice::*field)[N], const char* src, uint32_t length)
+    template <std::size_t N> void RdmDeviceUpdateArray(uint8_t (common::store::RdmDevice::*field)[N], const uint8_t* src, uint32_t length)
     {
-        UpdateArray(GetStore()->rdm_device, field, reinterpret_cast<const uint8_t*>(src), length);
+        UpdateArray(GetStore()->rdm_device, field, src, length);
     }
     
     uint8_t RdmSensorsIndexedGetType(uint32_t index) const
@@ -329,7 +335,7 @@ class ConfigStore : StoreDevice
     template <std::size_t N>
     void DmxNodeUpdateLabel(uint8_t (common::store::DmxNode::*field)[common::store::dmxnode::kParamPorts][N], uint32_t index, const char* src, uint32_t length)
     {
-        static_assert(N == common::store::dmxnode::kLabelNameLength, "Label size mismatch");
+        static_assert(N == common::store::dmxnode::kPortNameLength, "Label size mismatch");
         assert(index < common::store::dmxnode::kParamPorts);
         assert(src != nullptr);
 

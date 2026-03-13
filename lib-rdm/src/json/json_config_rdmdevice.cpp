@@ -2,7 +2,7 @@
  * @file json_config_rdmdevice.cpp
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,30 +28,21 @@
 #include "json/rdmdeviceparams.h"
 #include "json/json_helpers.h"
 #include "json/rdmdeviceparamsconst.h"
-#include "common/utils/utils_hex.h"
 #include "rdmdevice.h"
 
 namespace json::config
 {
 uint32_t GetRdmDevice(char* buffer, uint32_t length)
 {
-    auto& rdmdevice = RdmDevice::Get();
+    auto& rdmdevice = rdm::device::Device::Instance();
 
-    struct rdm::DeviceInfoData info_data;
+    struct rdm::device::InfoData info_data;
     rdmdevice.GetLabel(&info_data);
     char label[RDM_DEVICE_LABEL_MAX_LENGTH + 1];
     memcpy(label, info_data.data, info_data.length);
     label[info_data.length] = '\0';
 
-    return json::helpers::Serialize(
-        buffer, length,
-        [&](JsonDoc& doc)
-        {
-            doc[json::RdmDeviceParamsConst::kLabel.name] = label;
-            char product[5];
-            doc[json::RdmDeviceParamsConst::kProductCategory.name] = common::hex::ToStringLower<4>(product, rdmdevice.GetProductCategory());
-            doc[json::RdmDeviceParamsConst::kProductDetail.name] = common::hex::ToStringLower<4>(product, rdmdevice.GetProductDetail());
-        });
+    return json::helpers::Serialize(buffer, length, [&](JsonDoc& doc) { doc[json::RdmDeviceParamsConst::kLabel.name] = label; });
 }
 
 void SetRdmDevice(const char* buffer, uint32_t buffer_size)

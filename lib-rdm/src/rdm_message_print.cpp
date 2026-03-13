@@ -1,8 +1,8 @@
 /**
- * @file rdmmessageprint.cpp
+ * @file rdm_message_print.cpp
  *
  */
-/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2017-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,12 +30,11 @@
 
 #include "e120.h"
 #include "rdm_e120.h"
+#include "firmware/debug/debug_debug.h"
 
- #include "firmware/debug/debug_debug.h"
-
-namespace rdm
+namespace rdm::message
 {
-void MessagePrint(const uint8_t* rdm_data)
+void Print(const uint8_t* rdm_data)
 {
     if (rdm_data == nullptr)
     {
@@ -107,7 +106,7 @@ void MessagePrint(const uint8_t* rdm_data)
     }
 }
 
-void MessagePrintNoStartcode(const uint8_t* rdm_data_no_sc)
+void PrintNoStartcode(const uint8_t* rdm_data_no_sc)
 {
     assert(rdm_data_no_sc != nullptr);
 
@@ -118,6 +117,6 @@ void MessagePrintNoStartcode(const uint8_t* rdm_data_no_sc)
 
     memcpy(&message[1], data, data->message_length - 1U);
 
-    MessagePrint(message);
+    rdm::message::Print(message);
 }
-} // namespace rdm
+} // namespace rdm::message

@@ -47,12 +47,9 @@ int main(int argc, char** argv)
     fw.Print();
     nw.Print();
 
-    auto& rdm_device = RdmDevice::Get();
-
+    auto& rdm_device = rdm::device::Device::Instance();
     rdm_device.SetProductCategory(E120_PRODUCT_CATEGORY_FIXTURE);
     rdm_device.SetProductDetail(E120_PRODUCT_DETAIL_LED);
-    rdm_device.Init();
-    rdm_device.Print();
 
     RDMNetDevice device;
 	device.Print();

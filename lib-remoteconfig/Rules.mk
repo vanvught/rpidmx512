@@ -4,6 +4,9 @@ EXTRA_INCLUDES+=../lib-network/include ../lib-display/include
 EXTRA_SRCDIR+=src/json
 
 ifneq ($(MAKE_FLAGS),)
+	ifneq (,$(findstring NODE_RDMNET_LLRP_ONLY,$(MAKE_FLAGS)))
+		EXTRA_INCLUDES+=../lib-rdm/include
+	endif
 	ifneq (,$(findstring ENABLE_HTTPD,$(MAKE_FLAGS)))
 		EXTRA_SRCDIR+=src/httpd src/http
 	endif

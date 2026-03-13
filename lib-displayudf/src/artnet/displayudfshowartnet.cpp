@@ -92,7 +92,7 @@ void DisplayUdf::ShowUniverseArtNetNode()
 #if defined(OUTPUT_HAVE_STYLESWITCH)
                            artnet_node->GetOutputStyle(kPortIndex) == dmxnode::OutputStyle::kConstant ? 'C' : 'D',
 #endif
-                           artnet_node->GetRdm(kPortIndex) ? "RDM" : "");
+                           artnet_node->Rdm(kPortIndex) ? "RDM" : "");
                 }
             }
         }

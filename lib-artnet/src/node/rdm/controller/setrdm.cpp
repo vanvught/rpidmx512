@@ -2,7 +2,7 @@
  * @file setrdm.cpp
  *
  */
-/* Copyright (C) 2023-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2023-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,10 +23,14 @@
  * THE SOFTWARE.
  */
 
+#if defined(DEBUG_ARTNET_RDM)
+#undef NDEBUG
+#endif
+
 #include <cstdint>
 
 #include "artnetnode.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
 void ArtNetNode::SetRdm(bool do_enable)
 {
@@ -36,11 +40,11 @@ void ArtNetNode::SetRdm(bool do_enable)
 
     if (state_.is_rdm_enabled)
     {
-        art_poll_reply_.Status1 |= artnet::Status1::kRdmCapable;
+        art_poll_reply_.status1 |= artnet::Status1::kRdmCapable;
     }
     else
     {
-        art_poll_reply_.Status1 &= static_cast<uint8_t>(~artnet::Status1::kRdmCapable);
+        art_poll_reply_.status1 &= static_cast<uint8_t>(~artnet::Status1::kRdmCapable);
     }
 
     DEBUG_PRINTF("state_.is_rdm_enabled=%c", state_.is_rdm_enabled ? 'Y' : 'N');

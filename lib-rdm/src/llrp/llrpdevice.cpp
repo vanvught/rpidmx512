@@ -39,6 +39,7 @@
 #include "network.h"
 #include "rdmconst.h"
 #include "rdm_e120.h"
+#include "rdm_device_base.h"
 #include "rdm_message_print.h"
 #include "firmware/debug/debug_dump.h"
 #include "firmware/debug/debug_debug.h"
@@ -57,7 +58,7 @@ void LLRPDevice::HandleRequestMessage()
     const auto kLength = (static_cast<uint32_t>((pdu[0] & 0x0fu) << 16) | static_cast<uint32_t>(pdu[1] << 8) | pdu[2]);
 
     uint8_t uid[RDM_UID_SIZE];
-    memcpy(uid, RdmDevice::Get().GetUID(), RDM_UID_SIZE);
+    memcpy(uid, rdm::device::Base::Instance().GetUID(), RDM_UID_SIZE);
 
     if (kLength > 18)
     {
@@ -99,7 +100,7 @@ void LLRPDevice::HandleRequestMessage()
     // Probe Reply PDU
     reply->ProbeReplyPDU.flags_length[2] = 17;
     reply->ProbeReplyPDU.vector = VECTOR_PROBE_REPLY_DATA;
-    memcpy(reply->ProbeReplyPDU.UID, RdmDevice::Get().GetUID(), RDM_UID_SIZE);
+    memcpy(reply->ProbeReplyPDU.UID, rdm::device::Base::Instance().GetUID(), RDM_UID_SIZE);
     network::iface::CopyMacAddressTo(reply->ProbeReplyPDU.HardwareAddress);
 #if defined(NODE_RDMNET_LLRP_ONLY)
     reply->ProbeReplyPDU.ComponentType = LLRP_COMPONENT_TYPE_NON_RDMNET;
@@ -124,7 +125,7 @@ void LLRPDevice::HandleRdmCommand()
 
 #ifdef DEBUG_RDM_SHOW_MESSAGE
     const auto* rdm_data_in_no_sc = const_cast<uint8_t*>(pdu_packet->RDMCommandPDU.RDMData);
-    rdm::MessagePrintNoStartcode(rdm_data_in_no_sc);
+    rdm::message::PrintNoStartcode(rdm_data_in_no_sc);
 #endif
 
     const auto* reply = LLRPHandleRdmCommand(pdu_packet->RDMCommandPDU.RDMData);
@@ -156,7 +157,7 @@ void LLRPDevice::HandleRdmCommand()
     network::udp::Send(handle_llrp, reinterpret_cast<const uint8_t*>(pdu_packet), kLength, llrp::device::kIpV4LlrpResponse, llrp::device::kLlrpPort);
 
 #ifdef DEBUG_RDM_SHOW_MESSAGE
-    rdm::MessagePrint(reply);
+    rdm::message::Print(reply);
 #endif
 
 #ifndef NDEBUG

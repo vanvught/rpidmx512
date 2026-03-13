@@ -71,7 +71,7 @@ inline void E131Bridge::SetShortName(uint32_t port_index, const char* name)
 
 inline const char* E131Bridge::GetShortName(uint32_t port_index) const
 {
-    return DmxNode::Instance().GetShortName(port_index);
+    return DmxNode::Instance().GetPortName(port_index);
 }
 
 inline bool E131Bridge::GetDisableMergeTimeout() const

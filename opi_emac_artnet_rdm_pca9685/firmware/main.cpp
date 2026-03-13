@@ -73,20 +73,15 @@ int main() // NOLINT
     DmxNodeNode dmxnode_node;
     dmxnode_node.SetRdm(static_cast<uint32_t>(0), true);
     dmxnode_node.SetOutput(pca9685_dmx.GetPCA9685DmxSet());
-
-	auto& rdm_device = RdmDevice::Get();
-	rdm_device.SetProductCategory(E120_PRODUCT_CATEGORY_FIXTURE);
-	rdm_device.SetProductDetail(E120_PRODUCT_DETAIL_LED);
-	rdm_device.Init();
-	rdm_device.Print();
 	
 	char description[64];
 	snprintf(description, sizeof(description) - 1, "PCA9685");
+	RDMPersonality* rdm_personalities[1] = {new RDMPersonality(description, pca9685_dmx.GetPCA9685DmxSet())};
+
+	ArtNetRdmResponder rdm_responder(rdm_personalities, 1);
+	rdm_responder.Init();	
+	rdm_responder.Print();
 	
-    RDMPersonality* rdm_personalities[1] = {new RDMPersonality(description, pca9685_dmx.GetPCA9685DmxSet())};
-
-    ArtNetRdmResponder rdm_responder(rdm_personalities, 1);
-
     dmxnode_node.SetRdmResponder(&rdm_responder);
     dmxnode_node.Print();
 

@@ -37,8 +37,6 @@
 #include "dmxnodemsgconst.h"
 #if defined(NODE_RDMNET_LLRP_ONLY)
 #include "rdmnetdevice.h"
-#include "rdmdevice.h"
-#include "rdm_e120.h"
 #endif
 #if defined(NODE_SHOWFILE)
 #include "showfile.h"
@@ -91,13 +89,8 @@ int main() // NOLINT
     const auto nActivePorts = dmxnode_node.GetActiveInputPorts() + dmxnode_node.GetActiveOutputPorts();
 
 #if defined(NODE_RDMNET_LLRP_ONLY)
-    auto& rdm_device = RdmDevice::Get();
-    rdm_device.SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
-    rdm_device.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
-    rdm_device.Init();
-    rdm_device.Print();
-
-    RDMNetDevice llrp_only_device;
+	RDMNetDevice llrp_only_device;
+	llrp_only_device.Print();
 #endif
 
 #if defined(NODE_SHOWFILE)

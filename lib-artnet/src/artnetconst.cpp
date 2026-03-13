@@ -2,7 +2,7 @@
  * @file artnetconst.cpp
  *
  */
-/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,6 @@
 #include "artnetconst.h"
 #include "artnet.h"
 
-const uint8_t ArtNetConst::kVersion[] = { 1, 60 };
-const uint8_t ArtNetConst::kEstaId[artnet::kEstaSize] = { 0x50, 0x00 };	///< https://tsp.esta.org/tsp/working_groups/CP/mfctrIDs.php
-const uint8_t ArtNetConst::kOemId[] = { 0xff, 0xff };					///< Waiting OEM from Artistic Licence Holdings Ltd.
+const uint8_t ArtNetConst::kVersion[] = {1, 61};
+const uint8_t ArtNetConst::kEstaId[artnet::kEstaSize] = {0x50, 0x00}; ///< https://tsp.esta.org/tsp/working_groups/CP/mfctrIDs.php
+const uint8_t ArtNetConst::kOemId[] = {0xff, 0xff};                   ///< Waiting OEM from Artistic Licence Holdings Ltd.

@@ -33,7 +33,6 @@
 #include <cstdint>
 #include <cstdarg>
 #include <cstring>
-#include <cassert>
 
 #if !defined(ARTNET_VERSION)
 #error ARTNET_VERSION is not defined
@@ -58,12 +57,14 @@
 #if defined(RDM_RESPONDER)
 #include "artnetrdmresponder.h"
 #endif
+#if defined(ARTNET_HAVE_TIMECODE)
+#include "network_udp.h"
+#endif
 #if (ARTNET_VERSION >= 4)
 #include "e131bridge.h"
 #endif
 #include "dmxnode.h"
 #include "dmxnode_outputtype.h"
-#include "network.h"
 #include "firmware/debug/debug_debug.h"
 
 #ifndef ALIGNED
@@ -73,6 +74,7 @@
 namespace artnetnode
 {
 inline constexpr uint32_t kPollReplyQueueSize = 4;
+inline constexpr uint32_t kTodRequestListSize = 4;
 
 enum class PollReplyState : uint8_t
 {
@@ -90,6 +92,9 @@ struct State
         uint32_t poll_reply_delay_millis;
         uint32_t dmx_ip;
         uint32_t sync_millis; ///< Latest ArtSync received time
+#if defined(RDM_CONTROLLER)
+        uint32_t tod_request_ip_list[kTodRequestListSize];
+#endif
         artnet::ArtPollQueue poll_reply_queue[kPollReplyQueueSize];
         uint8_t poll_reply_queue_index;
         uint8_t poll_reply_port_index;
@@ -226,9 +231,9 @@ class ArtNetNode
     bool GetRdm() const { return state_.is_rdm_enabled; }
 
     void SetRdm(uint32_t port_index, bool enable);
-    bool GetRdm(uint32_t port_index) const;
+    bool Rdm(uint32_t port_index) const;
 
-    void SendTod(uint32_t port_index);
+    void SendArtTodData(uint32_t port_index);
 
     void Print();
 
@@ -261,16 +266,15 @@ class ArtNetNode
 
     bool GetOutputPort(uint16_t universe, uint32_t& port_index);
 
-    void RestartOutputPort(uint32_t port_index);
+    void StopOutputPort(uint32_t port_index);
 
 #if defined(RDM_CONTROLLER)
-    void SetRdmController(ArtNetRdmController* art_net_rdm_controller, bool do_enable = true);
     uint32_t RdmCopyWorkingQueue(char* out_buffer, uint32_t out_buffer_size);
-    uint32_t RdmGetUidCount(uint32_t port_index);
+    uint32_t RdmTodUidCount(uint32_t port_index);
     uint32_t RdmCopyTod(uint32_t port_index, char* out_buffer, uint32_t out_buffer_size);
     bool RdmIsRunning(uint32_t port_index);
     bool RdmIsRunning(uint32_t port_index, bool& is_incremental);
-    bool GetRdmDiscovery(uint32_t port_index);
+    bool RdmBgDiscovery(uint32_t port_index);
 #endif
 
 #if defined(RDM_RESPONDER)
@@ -281,7 +285,7 @@ class ArtNetNode
     void SendTimeCode(const struct artnet::TimeCode* timecode)
     {
         assert(timecode != nullptr);
-        memcpy(&art_time_code_.Frames, timecode, sizeof(struct artnet::TimeCode));
+        memcpy(&art_time_code_.frames, timecode, sizeof(struct artnet::TimeCode));
         network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&art_time_code_), sizeof(struct artnet::ArtTimeCode), node_.ip_timecode, artnet::kUdpPort);
     }
 
@@ -317,23 +321,6 @@ class ArtNetNode
         }
 
         return 0;
-    }
-
-    /**
-     * LLRP
-     */
-    void SetRdmUID(const uint8_t* uid, bool supports_llrp = false)
-    {
-        memcpy(art_poll_reply_.DefaultUidResponder, uid, sizeof(art_poll_reply_.DefaultUidResponder));
-
-        if (supports_llrp)
-        {
-            art_poll_reply_.Status3 |= artnet::Status3::kSupportsLlrp;
-        }
-        else
-        {
-            art_poll_reply_.Status3 &= static_cast<uint8_t>(~artnet::Status3::kSupportsLlrp);
-        }
     }
 
     void static StaticCallbackFunction(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port)
@@ -397,6 +384,7 @@ class ArtNetNode
 
     void ProcessPollReply(uint32_t port_index);
     void SendPollReply(uint32_t port_index, uint32_t destination_ip, artnet::ArtPollQueue* poll_queue = nullptr);
+    void PollReplyQueueAdd(uint16_t target_port_address_bottom, uint16_t target_port_address_top);
 
     void SendTodRequest(uint32_t port_index);
 
@@ -404,10 +392,6 @@ class ArtNetNode
 
     void FailSafeRecord();
     void FailSafePlayback();
-
-#if defined(RDM_CONTROLLER)
-    bool RdmDiscoveryRun();
-#endif
 
     void InputUdp(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port);
 
@@ -444,7 +428,7 @@ class ArtNetNode
     ArtNetRdmController rdm_controller_;
 #endif
 #if defined(RDM_RESPONDER)
-    ArtNetRdmResponder* rdm_responder_;
+    ArtNetRdmResponder* rdm_responder_{nullptr};
 #endif
 #endif
 #if defined(ARTNET_HAVE_TIMECODE)

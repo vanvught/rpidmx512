@@ -36,8 +36,8 @@
 
 namespace showfile {
 void record(const struct artnet::ArtDmx *pArtDmx, uint32_t millis) {
-	const auto kDmxSlots = static_cast<uint32_t>(((pArtDmx->LengthHi << 8) & 0xff00) | pArtDmx->Length);
-	ShowFileFormat::Get()->ShowfileWrite(pArtDmx->data, kDmxSlots, pArtDmx->PortAddress, millis);
+	const auto kDmxSlots = static_cast<uint32_t>(((pArtDmx->length_hi << 8) & 0xff00) | pArtDmx->length);
+	ShowFileFormat::Get()->ShowfileWrite(pArtDmx->data, kDmxSlots, pArtDmx->port_address, millis);
 }
 
 void record([[maybe_unused]] const struct artnet::ArtSync *pArtSync, [[maybe_unused]] uint32_t millis) {

@@ -40,7 +40,7 @@ inline constexpr uint32_t POLL_TABLE_SIZE_UNIVERSES = 512;
 
 struct NodeEntryUniverse
 {
-    uint8_t ShortName[artnet::kShortNameLength];
+    uint8_t ShortName[artnet::kPortNameLength];
     uint32_t nLastUpdateMillis;
     uint16_t universe;
 };
@@ -49,7 +49,7 @@ struct NodeEntry
 {
     uint32_t IPAddress;
     uint8_t Mac[artnet::kMacSize];
-    uint8_t LongName[artnet::kLongNameLength];
+    uint8_t long_name[artnet::kLongNameLength];
     uint16_t universes_count;
     struct NodeEntryUniverse Universe[artnet::POLL_TABLE_SIZE_NODE_UNIVERSES];
 };

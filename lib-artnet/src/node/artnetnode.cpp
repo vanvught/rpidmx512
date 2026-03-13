@@ -23,6 +23,10 @@
  * THE SOFTWARE.
  */
 
+#ifdef DEBUG_ARTNET_NODE
+#undef NDEBUG
+#endif
+
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
@@ -43,6 +47,9 @@
 #endif
 #if (ARTNET_VERSION >= 4)
 #include "e131.h"
+#endif
+#if defined(NODE_RDMNET_LLRP_ONLY)
+#include "rdm_device_base.h"
 #endif
 #include "dmxnode.h"
 #include "dmxnode_data.h"
@@ -74,25 +81,28 @@ ArtNetNode::ArtNetNode()
     DEBUG_PRINTF("MAX_PORTS=%u", dmxnode::kMaxPorts);
 
     memset(&art_poll_reply_, 0, sizeof(struct artnet::ArtPollReply));
-    memcpy(art_poll_reply_.Id, artnet::kNodeId, sizeof(art_poll_reply_.Id));
-    art_poll_reply_.OpCode = common::ToValue(artnet::OpCodes::kOpPollreply);
-    art_poll_reply_.Port = artnet::kUdpPort;
-    art_poll_reply_.VersInfoH = ArtNetConst::kVersion[0];
-    art_poll_reply_.VersInfoL = ArtNetConst::kVersion[1];
-    art_poll_reply_.OemHi = ArtNetConst::kOemId[0];
-    art_poll_reply_.Oem = ArtNetConst::kOemId[1];
-    art_poll_reply_.EstaMan[0] = ArtNetConst::kEstaId[1];
-    art_poll_reply_.EstaMan[1] = ArtNetConst::kEstaId[0];
-    network::iface::CopyMacAddressTo(art_poll_reply_.MAC);
+    memcpy(art_poll_reply_.id, artnet::kNodeId, sizeof(art_poll_reply_.id));
+    art_poll_reply_.op_code = common::ToValue(artnet::OpCodes::kOpPollreply);
+    art_poll_reply_.port = artnet::kUdpPort;
+    art_poll_reply_.vers_info_h = ArtNetConst::kVersion[0];
+    art_poll_reply_.vers_info_l = ArtNetConst::kVersion[1];
+    art_poll_reply_.oem_hi = ArtNetConst::kOemId[0];
+    art_poll_reply_.oem = ArtNetConst::kOemId[1];
+    art_poll_reply_.esta_man[0] = ArtNetConst::kEstaId[1];
+    art_poll_reply_.esta_man[1] = ArtNetConst::kEstaId[0];
+    network::iface::CopyMacAddressTo(art_poll_reply_.mac);
 #if (ARTNET_VERSION >= 4)
-    art_poll_reply_.AcnPriority = e131::priority::kDefault;
+    art_poll_reply_.acn_priority = e131::priority::kDefault;
+#endif
+#if defined(NODE_RDMNET_LLRP_ONLY)
+    memcpy(art_poll_reply_.default_uid_responder, rdm::device::Base::Instance().GetUID(), sizeof(art_poll_reply_.default_uid_responder));
 #endif
 
     memset(&state_, 0, sizeof(struct artnetnode::State));
     state_.report_code = artnet::ReportCode::kRcpowerok;
     state_.status = artnet::Status::kStandby;
     // The device should wait for a random delay of up to 1s before sending the reply.
-    state_.art.poll_reply_delay_millis = (art_poll_reply_.MAC[5] | (static_cast<uint32_t>(art_poll_reply_.MAC[4]) << 8)) % 1000;
+    state_.art.poll_reply_delay_millis = (art_poll_reply_.mac[5] | (static_cast<uint32_t>(art_poll_reply_.mac[4]) << 8)) % 1000;
 
     SetLongName(nullptr); // Set default long name
 
@@ -116,30 +126,29 @@ ArtNetNode::ArtNetNode()
         output_port_[port_index].source_b.physical = 0x100;
         output_port_[port_index].good_output_b = artnet::GoodOutputB::kRdmDisabled | artnet::GoodOutputB::kDiscoveryNotRunning;
         memset(&input_port_[port_index], 0, sizeof(struct artnetnode::InputPort));
-        input_port_[port_index].destination_ip = network::GetBroadcastIp();
     }
 
 #if defined(ARTNET_HAVE_DMXIN)
-    memcpy(art_dmx_.Id, artnet::kNodeId, sizeof(art_poll_reply_.Id));
-    art_dmx_.OpCode = static_cast<uint16_t>(artnet::OpCodes::kOpDmx);
-    art_dmx_.ProtVerHi = 0;
-    art_dmx_.ProtVerLo = artnet::kProtocolRevision;
+    memcpy(art_dmx_.id, artnet::kNodeId, sizeof(art_poll_reply_.id));
+    art_dmx_.op_code = static_cast<uint16_t>(artnet::OpCodes::kOpDmx);
+    art_dmx_.prot_ver_hi = 0;
+    art_dmx_.prot_ver_lo = artnet::kProtocolRevision;
 #endif
 
 #if defined(ARTNET_HAVE_TIMECODE)
-    memcpy(art_time_code_.Id, artnet::kNodeId, sizeof(art_poll_reply_.Id));
-    art_time_code_.OpCode = common::ToValue(artnet::OpCodes::kOpTimecode);
-    art_time_code_.ProtVerHi = 0;
-    art_time_code_.ProtVerLo = artnet::kProtocolRevision;
+    memcpy(art_time_code_.id, artnet::kNodeId, sizeof(art_poll_reply_.id));
+    art_time_code_.op_code = common::ToValue(artnet::OpCodes::kOpTimecode);
+    art_time_code_.prot_ver_hi = 0;
+    art_time_code_.prot_ver_lo = artnet::kProtocolRevision;
     art_time_code_.filler1 = 0;
     art_time_code_.filler2 = 0;
 #endif
 
 #if defined(ARTNET_ENABLE_SENDDIAG)
     memset(&diag_data_, 0, sizeof(struct artnet::ArtDiagData));
-    memcpy(diag_data_.Id, artnet::kNodeId, sizeof(diag_data_.Id));
-    diag_data_.OpCode = common::ToValue(artnet::OpCodes::kOpDiagdata);
-    diag_data_.ProtVerLo = artnet::kProtocolRevision;
+    memcpy(diag_data_.id, artnet::kNodeId, sizeof(diag_data_.id));
+    diag_data_.op_code = common::ToValue(artnet::OpCodes::kOpDiagdata);
+    diag_data_.prot_ver_lo = artnet::kProtocolRevision;
 #endif
 
     DEBUG_EXIT();
@@ -158,39 +167,64 @@ void ArtNetNode::Start()
 #endif
 
     // Status 1
-    art_poll_reply_.Status1 |= artnet::Status1::kIndicatorNormalMode | artnet::Status1::kPapNetwork;
+    art_poll_reply_.status1 |= artnet::Status1::kIndicatorNormalMode | artnet::Status1::kPapNetwork;
     //  Status 2
-    art_poll_reply_.Status2 &= static_cast<uint8_t>(~artnet::Status2::kSacnAbleToSwitch);
-    art_poll_reply_.Status2 |=
+    art_poll_reply_.status2 &= static_cast<uint8_t>(~artnet::Status2::kSacnAbleToSwitch);
+    art_poll_reply_.status2 |=
         artnet::Status2::kPortAddress15Bit | (artnet::kVersion >= 4 ? artnet::Status2::kSacnAbleToSwitch : artnet::Status2::kSacnNoSwitch);
-    art_poll_reply_.Status2 &= static_cast<uint8_t>(~artnet::Status2::kIpDhcp);
-    art_poll_reply_.Status2 |= network::iface::Dhcp() ? artnet::Status2::kIpDhcp : artnet::Status2::kIpManualy;
-    art_poll_reply_.Status2 &= static_cast<uint8_t>(~artnet::Status2::kDhcpCapable);
-    art_poll_reply_.Status2 |= network::iface::IsDhcpCapable() ? artnet::Status2::kDhcpCapable : static_cast<uint8_t>(0);
+    art_poll_reply_.status2 &= static_cast<uint8_t>(~artnet::Status2::kIpDhcp);
+    art_poll_reply_.status2 |= network::iface::Dhcp() ? artnet::Status2::kIpDhcp : artnet::Status2::kIpManualy;
+    art_poll_reply_.status2 &= static_cast<uint8_t>(~artnet::Status2::kDhcpCapable);
+    art_poll_reply_.status2 |= network::iface::IsDhcpCapable() ? artnet::Status2::kDhcpCapable : static_cast<uint8_t>(0);
 #if defined(ENABLE_HTTPD) && defined(ENABLE_CONTENT)
-    art_poll_reply_.Status2 |= artnet::Status2::kWebBrowserSupport;
+    art_poll_reply_.status2 |= artnet::Status2::kWebBrowserSupport;
 #endif
 #if defined(OUTPUT_HAVE_STYLESWITCH)
-    art_poll_reply_.Status2 |= artnet::Status2::kOutputStyleSwitch;
+    art_poll_reply_.status2 |= artnet::Status2::kOutputStyleSwitch;
 #endif
 #if defined(RDM_CONTROLLER) || defined(RDM_RESPONDER)
-    art_poll_reply_.Status2 |= artnet::Status2::kRdmSwitch;
+    art_poll_reply_.status2 |= artnet::Status2::kRdmSwitch;
 #endif
     // Status 3
-    art_poll_reply_.Status3 |= artnet::Status3::kFailsafeControl | artnet::Status3::kSupportsBackgrounddiscovery;
+    art_poll_reply_.status3 |= artnet::Status3::kFailsafeControl;
+#if defined(RDM_CONTROLLER)
+    art_poll_reply_.status3 |= artnet::Status3::kSupportsBackgroundDiscovery;
+#endif
 #if defined(ARTNET_HAVE_DMXIN)
-    art_poll_reply_.Status3 |= artnet::Status3::kOutputSwitch;
+    art_poll_reply_.status3 |= artnet::Status3::kOutputSwitch;
+#endif
+#if defined(NODE_RDMNET_LLRP_ONLY)
+    art_poll_reply_.status3 |= artnet::Status3::kSupportsLlrp;
 #endif
 
     handle_ = network::udp::Begin(artnet::kUdpPort, StaticCallbackFunction);
     assert(handle_ != -1);
 
+#if defined(RDM_CONTROLLER)
+    if (state_.is_rdm_enabled)
+    {
+        for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++)
+        {
+            if ((node_.port[port_index].direction == dmxnode::PortDirection::kOutput) && Rdm(port_index))
+            {
+                rdm_controller_.Full(port_index);
+            }
+        }
+    }
+#endif
+
 #if defined(ARTNET_HAVE_DMXIN)
     for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++)
     {
-        if ((node_.port[port_index].protocol == artnet::PortProtocol::kArtnet) && (node_.port[port_index].direction == dmxnode::PortDirection::kInput))
+        if (node_.port[port_index].direction == dmxnode::PortDirection::kInput)
         {
-            Dmx::Get()->SetPortDirection(port_index, dmx::PortDirection::kInput, true);
+            if (node_.port[port_index].protocol == artnet::PortProtocol::kArtnet)
+            {
+                Dmx::Get()->SetPortDirection(port_index, dmx::PortDirection::kInput, true);
+            }
+#if defined(RDM_CONTROLLER)
+            SendTodRequest(port_index);
+#endif
         }
     }
 
@@ -255,7 +289,7 @@ void ArtNetNode::Stop()
     hal::statusled::SetMode(hal::statusled::Mode::OFF_OFF);
     hal::panelled::Off(hal::panelled::ARTNET);
 
-    art_poll_reply_.Status1 = static_cast<uint8_t>((art_poll_reply_.Status1 & ~artnet::Status1::kIndicatorMask) | artnet::Status1::kIndicatorMuteMode);
+    art_poll_reply_.status1 = static_cast<uint8_t>((art_poll_reply_.status1 & ~artnet::Status1::kIndicatorMask) | artnet::Status1::kIndicatorMuteMode);
     state_.status = artnet::Status::kStandby;
 
     DEBUG_EXIT();
@@ -295,23 +329,23 @@ void ArtNetNode::SetLongName(const char* long_name)
 
     if ((long_name == nullptr) || (long_name[0] == '\0'))
     {
-        GetLongNameDefault(reinterpret_cast<char*>(art_poll_reply_.LongName));
+        GetLongNameDefault(reinterpret_cast<char*>(art_poll_reply_.long_name));
     }
     else
     {
         DEBUG_PUTS(long_name);
-        strncpy(reinterpret_cast<char*>(art_poll_reply_.LongName), long_name, artnet::kLongNameLength - 1);
+        strncpy(reinterpret_cast<char*>(art_poll_reply_.long_name), long_name, artnet::kLongNameLength - 1);
     }
 
-    art_poll_reply_.LongName[artnet::kLongNameLength - 1] = '\0';
+    art_poll_reply_.long_name[artnet::kLongNameLength - 1] = '\0';
 
     if (state_.status == artnet::Status::kOn)
     {
-        artnet::store::SaveLongName(reinterpret_cast<char*>(art_poll_reply_.LongName));
-        artnet::display::Longname(reinterpret_cast<char*>(art_poll_reply_.LongName));
+        artnet::store::SaveLongName(reinterpret_cast<char*>(art_poll_reply_.long_name));
+        artnet::display::Longname(reinterpret_cast<char*>(art_poll_reply_.long_name));
     }
 
-    DEBUG_PUTS(reinterpret_cast<char*>(art_poll_reply_.LongName));
+    DEBUG_PUTS(reinterpret_cast<char*>(art_poll_reply_.long_name));
     DEBUG_EXIT();
 }
 
@@ -319,7 +353,7 @@ void ArtNetNode::SetShortName(uint32_t port_index, const char* name)
 {
     DmxNode::Instance().SetShortName(port_index, name);
 
-    const auto* label = DmxNode::Instance().GetShortName(port_index);
+    const auto* label = DmxNode::Instance().GetPortName(port_index);
 
     if (state_.status == artnet::Status::kOn)
     {
@@ -331,7 +365,7 @@ void ArtNetNode::SetShortName(uint32_t port_index, const char* name)
 
 const char* ArtNetNode::GetShortName(uint32_t port_index) const
 {
-    return DmxNode::Instance().GetShortName(port_index);
+    return DmxNode::Instance().GetPortName(port_index);
 }
 
 void ArtNetNode::SetLocalMerging()
@@ -532,25 +566,25 @@ void ArtNetNode::SetFailSafe(artnet::FailSafe fail_safe)
     }
 #endif
 
-    art_poll_reply_.Status3 &= static_cast<uint8_t>(~artnet::Status3::kNetworklossMask);
+    art_poll_reply_.status3 &= static_cast<uint8_t>(~artnet::Status3::kNetworklossMask);
 
     switch (fail_safe)
     {
         case artnet::FailSafe::kLast:
-            art_poll_reply_.Status3 |= artnet::Status3::kNetworklossLastState;
+            art_poll_reply_.status3 |= artnet::Status3::kNetworklossLastState;
             break;
 
         case artnet::FailSafe::kOff:
-            art_poll_reply_.Status3 |= artnet::Status3::kNetworklossOffState;
+            art_poll_reply_.status3 |= artnet::Status3::kNetworklossOffState;
             break;
 
         case artnet::FailSafe::kOn:
-            art_poll_reply_.Status3 |= artnet::Status3::kNetworklossOnState;
+            art_poll_reply_.status3 |= artnet::Status3::kNetworklossOnState;
             break;
 
         case artnet::FailSafe::kPlayback:
 #if defined(ARTNET_HAVE_FAILSAFE_RECORD)
-            art_poll_reply_.Status3 |= artnet::Status3::kNetworklossPlayback;
+            art_poll_reply_.status3 |= artnet::Status3::kNetworklossPlayback;
 #endif
             break;
 
@@ -651,7 +685,7 @@ void ArtNetNode::SetNetworkDataLossCondition()
         return;
     }
 
-    const auto kNetworkloss = (art_poll_reply_.Status3 & artnet::Status3::kNetworklossMask);
+    const auto kNetworkloss = (art_poll_reply_.status3 & artnet::Status3::kNetworklossMask);
 
     DEBUG_PRINTF("kNetworkloss=%x", kNetworkloss);
 
@@ -694,7 +728,7 @@ void ArtNetNode::Print()
 {
     printf("Art-Net %u V%u.%u\n", static_cast<unsigned int>(artnet::kVersion), static_cast<unsigned int>(ArtNetConst::kVersion[0]),
            static_cast<unsigned int>(ArtNetConst::kVersion[1]));
-    printf(" Long name  : %s\n", reinterpret_cast<char*>(art_poll_reply_.LongName));
+    printf(" Long name  : %s\n", reinterpret_cast<char*>(art_poll_reply_.long_name));
 #if defined(ARTNET_HAVE_TIMECODE)
     printf(" TimeCode IP: " IPSTR "\n", IP2STR(node_.ip_timecode));
 #endif
@@ -719,7 +753,7 @@ void ArtNetNode::Print()
 #if (ARTNET_VERSION >= 4)
                 printf(" %s", artnet::GetProtocolMode(node_.port[port_index].protocol, true));
 #endif
-                printf(" %s\n", GetRdm(port_index) ? "RDM" : "   ");
+                printf(" %s\n", Rdm(port_index) ? "RDM" : "   ");
             }
         }
     }
@@ -737,9 +771,7 @@ void ArtNetNode::Print()
                 printf("  Port %-2u %-4u", static_cast<unsigned int>(port_index), static_cast<unsigned int>(kUniverse));
                 if (node_.port[port_index].protocol == artnet::PortProtocol::kArtnet)
                 {
-                    const auto kDestinationIp =
-                        (input_port_[port_index].destination_ip == 0 ? network::GetBroadcastIp() : input_port_[port_index].destination_ip);
-                    printf(" -> " IPSTR, IP2STR(kDestinationIp));
+                    printf(" -> " IPSTR, IP2STR(input_port_[port_index].destination_ip));
                 }
 #if (ARTNET_VERSION >= 4)
                 printf(" %s\n", artnet::GetProtocolMode(node_.port[port_index].protocol, true));
@@ -785,7 +817,6 @@ void ArtNetNode::HandleTimeSync()
 #pragma GCC push_options
 #pragma GCC optimize("O2")
 #pragma GCC optimize("no-tree-loop-distribute-patterns")
-#pragma GCC optimize("-fprefetch-loop-arrays")
 #endif
 
 static artnet::OpCodes GetOpCode(uint32_t bytes_received, const uint8_t* buffer)
@@ -878,7 +909,7 @@ void ArtNetNode::InputUdp(const uint8_t* buffer, uint32_t size, uint32_t from_ip
         case artnet::OpCodes::kOpTimecode:
         {
             const auto* const kArtTimeCode = reinterpret_cast<const artnet::ArtTimeCode*>(buffer);
-            art_time_code_callback_function_ptr_(reinterpret_cast<const struct artnet::TimeCode*>(&kArtTimeCode->Frames));
+            art_time_code_callback_function_ptr_(reinterpret_cast<const struct artnet::TimeCode*>(&kArtTimeCode->frames));
         }
         break;
 #endif
@@ -942,7 +973,7 @@ void ArtNetNode::InputUdp(const uint8_t* buffer, uint32_t size, uint32_t from_ip
             HandlePoll();
             break;
         default:
-            // ArtNet but OpCode is not implemented
+            // ArtNet but op_code is not implemented
             // Just skip ... no error
             break;
     }
@@ -997,196 +1028,199 @@ void ArtNetNode::CheckMergeTimeouts(uint32_t port_index)
 void ArtNetNode::HandleDmx()
 {
     const auto* const kArtDmx = reinterpret_cast<artnet::ArtDmx*>(receive_buffer_);
-    const auto kDmxSlots = std::min(static_cast<uint32_t>(((kArtDmx->LengthHi << 8) & 0xff00) | kArtDmx->Length), artnet::kDmxLength);
 
     for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++)
     {
-        if ((node_.port[port_index].direction == dmxnode::PortDirection::kOutput) && (node_.port[port_index].protocol == artnet::PortProtocol::kArtnet) &&
-            (node_.port[port_index].port_address == kArtDmx->PortAddress))
+#if defined(RDM_CONTROLLER)
+        if (rdm_controller_.IsRunning(port_index))[[unlikely]] continue;
+#endif
+        if (node_.port[port_index].direction != dmxnode::PortDirection::kOutput) continue;
+		if (node_.port[port_index].protocol != artnet::PortProtocol::kArtnet) continue;
+        if (node_.port[port_index].port_address != kArtDmx->port_address) continue;
+
+        output_port_[port_index].good_output |= artnet::GoodOutput::kDataIsBeingTransmitted;
+
+        if (state_.is_merge_mode)
         {
-            output_port_[port_index].good_output |= artnet::GoodOutput::kDataIsBeingTransmitted;
-
-            if (state_.is_merge_mode)
+            if (__builtin_expect((!state_.disable_merge_timeout), 1))
             {
-                if (__builtin_expect((!state_.disable_merge_timeout), 1))
-                {
-                    CheckMergeTimeouts(port_index);
-                }
+                CheckMergeTimeouts(port_index);
             }
+        }
 
-            const auto kIpA = output_port_[port_index].source_a.ip;
-            const auto kIpB = output_port_[port_index].source_b.ip;
-            const auto kMergeMode = ((output_port_[port_index].good_output & artnet::GoodOutput::kMergeModeLtp) == artnet::GoodOutput::kMergeModeLtp)
-                                        ? dmxnode::MergeMode::kLtp
-                                        : dmxnode::MergeMode::kHtp;
+        const auto kDmxSlots = std::min(static_cast<uint32_t>(((kArtDmx->length_hi << 8) & 0xff00) | kArtDmx->length), artnet::kDmxLength);
+        const auto kIpA = output_port_[port_index].source_a.ip;
+        const auto kIpB = output_port_[port_index].source_b.ip;
+        const auto kMergeMode = ((output_port_[port_index].good_output & artnet::GoodOutput::kMergeModeLtp) == artnet::GoodOutput::kMergeModeLtp)
+                                    ? dmxnode::MergeMode::kLtp
+                                    : dmxnode::MergeMode::kHtp;
 
-            if (__builtin_expect((kIpA == 0 && kIpB == 0), 0))
-            { // Case 1.
-                output_port_[port_index].source_a.ip = ip_address_from_;
+        if (__builtin_expect((kIpA == 0 && kIpB == 0), 0))
+        { // Case 1.
+            output_port_[port_index].source_a.ip = ip_address_from_;
+            output_port_[port_index].source_a.millis = current_millis_;
+            output_port_[port_index].source_a.physical = kArtDmx->physical;
+            dmxnode::Data::SetSourceA(port_index, kArtDmx->data, kDmxSlots);
+            SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 1. First packet", port_index, kArtDmx->physical);
+        }
+        else if (kIpA == ip_address_from_ && kIpB == 0)
+        { // Case 2.
+            if (output_port_[port_index].source_a.physical == kArtDmx->physical)
+            {
                 output_port_[port_index].source_a.millis = current_millis_;
-                output_port_[port_index].source_a.physical = kArtDmx->Physical;
                 dmxnode::Data::SetSourceA(port_index, kArtDmx->data, kDmxSlots);
-                SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 1. First packet", port_index, kArtDmx->Physical);
+                SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 2. continued transmission from the same ip (source A)", port_index, kArtDmx->physical);
             }
-            else if (kIpA == ip_address_from_ && kIpB == 0)
-            { // Case 2.
-                if (output_port_[port_index].source_a.physical == kArtDmx->Physical)
-                {
-                    output_port_[port_index].source_a.millis = current_millis_;
-                    dmxnode::Data::SetSourceA(port_index, kArtDmx->data, kDmxSlots);
-                    SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 2. continued transmission from the same ip (source A)", port_index, kArtDmx->Physical);
-                }
-                else if (output_port_[port_index].source_b.physical != kArtDmx->Physical)
-                {
-                    output_port_[port_index].source_b.ip = ip_address_from_;
-                    output_port_[port_index].source_b.millis = current_millis_;
-                    output_port_[port_index].source_b.physical = kArtDmx->Physical;
-                    UpdateMergeStatus(port_index);
-                    dmxnode::Data::MergeSourceB(port_index, kArtDmx->data, kDmxSlots, kMergeMode);
-                    SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 2. New source from same ip (source B), start the merge", port_index, kArtDmx->Physical);
-                }
-                else
-                {
-                    SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 2. More than two sources, discarding data", port_index, kArtDmx->Physical);
-                    return;
-                }
-            }
-            else if (kIpA == 0 && kIpB == ip_address_from_)
-            { // Case 3.
-                if (output_port_[port_index].source_b.physical == kArtDmx->Physical)
-                {
-                    output_port_[port_index].source_b.millis = current_millis_;
-                    dmxnode::Data::SetSourceB(port_index, kArtDmx->data, kDmxSlots);
-                    SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 3. continued transmission from the same ip (source B)", port_index, kArtDmx->Physical);
-                }
-                else if (output_port_[port_index].source_a.physical != kArtDmx->Physical)
-                {
-                    output_port_[port_index].source_a.ip = ip_address_from_;
-                    output_port_[port_index].source_a.millis = current_millis_;
-                    output_port_[port_index].source_a.physical = kArtDmx->Physical;
-                    UpdateMergeStatus(port_index);
-                    dmxnode::Data::MergeSourceA(port_index, kArtDmx->data, kDmxSlots, kMergeMode);
-                    SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 3. New source from same ip (source A), start the merge", port_index, kArtDmx->Physical);
-                }
-                else
-                {
-                    SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 3. More than two sources, discarding data", port_index, kArtDmx->Physical);
-                    return;
-                }
-            }
-            else if (kIpA != ip_address_from_ && kIpB == 0)
-            { // Case 4.
+            else if (output_port_[port_index].source_b.physical != kArtDmx->physical)
+            {
                 output_port_[port_index].source_b.ip = ip_address_from_;
                 output_port_[port_index].source_b.millis = current_millis_;
-                output_port_[port_index].source_b.physical = kArtDmx->Physical;
+                output_port_[port_index].source_b.physical = kArtDmx->physical;
                 UpdateMergeStatus(port_index);
                 dmxnode::Data::MergeSourceB(port_index, kArtDmx->data, kDmxSlots, kMergeMode);
-                SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 4. new source, start the merge", port_index, kArtDmx->Physical);
-            }
-            else if (kIpA == 0 && kIpB != ip_address_from_)
-            { // Case 5.
-                output_port_[port_index].source_a.ip = ip_address_from_;
-                output_port_[port_index].source_a.millis = current_millis_;
-                output_port_[port_index].source_a.physical = kArtDmx->Physical;
-                UpdateMergeStatus(port_index);
-                dmxnode::Data::MergeSourceA(port_index, kArtDmx->data, kDmxSlots, kMergeMode);
-                SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 5. new source, start the merge", port_index, kArtDmx->Physical);
-            }
-            else if (kIpA == ip_address_from_ && kIpB != ip_address_from_)
-            { // Case 6.
-                if (output_port_[port_index].source_a.physical == kArtDmx->Physical)
-                {
-                    output_port_[port_index].source_a.millis = current_millis_;
-                    UpdateMergeStatus(port_index);
-                    dmxnode::Data::MergeSourceA(port_index, kArtDmx->data, kDmxSlots, kMergeMode);
-                    SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 6. continue merge (Source A)", port_index, kArtDmx->Physical);
-                }
-                else
-                {
-                    SendDiag(artnet::PriorityCodes::kDiagMed, "%u:%u 6. More than two sources, discarding data", port_index, kArtDmx->Physical);
-                    return;
-                }
-            }
-            else if (kIpA != ip_address_from_ && kIpB == ip_address_from_)
-            { // Case 7.
-                if (output_port_[port_index].source_b.physical == kArtDmx->Physical)
-                {
-                    output_port_[port_index].source_b.millis = current_millis_;
-                    UpdateMergeStatus(port_index);
-                    dmxnode::Data::MergeSourceB(port_index, kArtDmx->data, kDmxSlots, kMergeMode);
-                    SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 7. continue merge (Source B)", port_index, kArtDmx->Physical);
-                }
-                else
-                {
-                    SendDiag(artnet::PriorityCodes::kDiagMed, "%u:%u 7. More than two sources, discarding data", port_index, kArtDmx->Physical);
-                    puts("WARN: 7. More than two sources, discarding data");
-                    return;
-                }
-            }
-            else if (kIpA == ip_address_from_ && kIpB == ip_address_from_)
-            { // Case 8.
-                if (output_port_[port_index].source_a.physical == kArtDmx->Physical)
-                {
-                    output_port_[port_index].source_a.millis = current_millis_;
-                    UpdateMergeStatus(port_index);
-                    dmxnode::Data::MergeSourceA(port_index, kArtDmx->data, kDmxSlots, kMergeMode);
-                    SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 8. Source matches both ip, merging Physical (source_a)", port_index, kArtDmx->Physical);
-                }
-                else if (output_port_[port_index].source_b.physical == kArtDmx->Physical)
-                {
-                    output_port_[port_index].source_b.millis = current_millis_;
-                    UpdateMergeStatus(port_index);
-                    dmxnode::Data::MergeSourceB(port_index, kArtDmx->data, kDmxSlots, kMergeMode);
-                    SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 8. Source matches both ip, merging Physical (source_b)", port_index, kArtDmx->Physical);
-                }
-                else
-                {
-                    SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 8. Source matches both ip, more than two sources, discarding data", port_index,
-                             kArtDmx->Physical);
-                    puts("WARN: 8. Source matches both ip, discarding data");
-                    return;
-                }
-            }
-#ifndef NDEBUG
-            else if (kIpA != ip_address_from_ && kIpB != ip_address_from_)
-            { // Case 9.
-                SendDiag(artnet::PriorityCodes::kDiagLow, "%u: 9. More than two sources, discarding data", port_index);
-                puts("WARN: 9. More than two sources, discarding data");
-                return;
-            }
-#endif
-            else [[unlikely]]
-            { // Case 0.
-                SendDiag(artnet::PriorityCodes::kDiagHigh, "%u: 0. No cases matched, this shouldn't happen!", port_index);
-#ifndef NDEBUG
-                puts("ERROR: 0. No cases matched, this shouldn't happen!");
-#endif
-                return;
-            }
-
-            if ((state_.is_synchronous_mode) &&
-                ((output_port_[port_index].good_output & artnet::GoodOutput::kOutputIsMerging) != artnet::GoodOutput::kOutputIsMerging))
-            {
-                dmxnode::DataSet(dmxnode_output_type_, port_index);
-                output_port_[port_index].is_data_pending = true;
-                SendDiag(artnet::PriorityCodes::kDiagLow, "%u: Buffering data", port_index);
+                SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 2. New source from same ip (source B), start the merge", port_index, kArtDmx->physical);
             }
             else
             {
-                dmxnode::DataOutput(dmxnode_output_type_, port_index);
+                SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 2. More than two sources, discarding data", port_index, kArtDmx->physical);
+                return;
+            }
+        }
+        else if (kIpA == 0 && kIpB == ip_address_from_)
+        { // Case 3.
+            if (output_port_[port_index].source_b.physical == kArtDmx->physical)
+            {
+                output_port_[port_index].source_b.millis = current_millis_;
+                dmxnode::Data::SetSourceB(port_index, kArtDmx->data, kDmxSlots);
+                SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 3. continued transmission from the same ip (source B)", port_index, kArtDmx->physical);
+            }
+            else if (output_port_[port_index].source_a.physical != kArtDmx->physical)
+            {
+                output_port_[port_index].source_a.ip = ip_address_from_;
+                output_port_[port_index].source_a.millis = current_millis_;
+                output_port_[port_index].source_a.physical = kArtDmx->physical;
+                UpdateMergeStatus(port_index);
+                dmxnode::Data::MergeSourceA(port_index, kArtDmx->data, kDmxSlots, kMergeMode);
+                SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 3. New source from same ip (source A), start the merge", port_index, kArtDmx->physical);
+            }
+            else
+            {
+                SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 3. More than two sources, discarding data", port_index, kArtDmx->physical);
+                return;
+            }
+        }
+        else if (kIpA != ip_address_from_ && kIpB == 0)
+        { // Case 4.
+            output_port_[port_index].source_b.ip = ip_address_from_;
+            output_port_[port_index].source_b.millis = current_millis_;
+            output_port_[port_index].source_b.physical = kArtDmx->physical;
+            UpdateMergeStatus(port_index);
+            dmxnode::Data::MergeSourceB(port_index, kArtDmx->data, kDmxSlots, kMergeMode);
+            SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 4. new source, start the merge", port_index, kArtDmx->physical);
+        }
+        else if (kIpA == 0 && kIpB != ip_address_from_)
+        { // Case 5.
+            output_port_[port_index].source_a.ip = ip_address_from_;
+            output_port_[port_index].source_a.millis = current_millis_;
+            output_port_[port_index].source_a.physical = kArtDmx->physical;
+            UpdateMergeStatus(port_index);
+            dmxnode::Data::MergeSourceA(port_index, kArtDmx->data, kDmxSlots, kMergeMode);
+            SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 5. new source, start the merge", port_index, kArtDmx->physical);
+        }
+        else if (kIpA == ip_address_from_ && kIpB != ip_address_from_)
+        { // Case 6.
+            if (output_port_[port_index].source_a.physical == kArtDmx->physical)
+            {
+                output_port_[port_index].source_a.millis = current_millis_;
+                UpdateMergeStatus(port_index);
+                dmxnode::Data::MergeSourceA(port_index, kArtDmx->data, kDmxSlots, kMergeMode);
+                SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 6. continue merge (Source A)", port_index, kArtDmx->physical);
+            }
+            else
+            {
+                SendDiag(artnet::PriorityCodes::kDiagMed, "%u:%u 6. More than two sources, discarding data", port_index, kArtDmx->physical);
+                return;
+            }
+        }
+        else if (kIpA != ip_address_from_ && kIpB == ip_address_from_)
+        { // Case 7.
+            if (output_port_[port_index].source_b.physical == kArtDmx->physical)
+            {
+                output_port_[port_index].source_b.millis = current_millis_;
+                UpdateMergeStatus(port_index);
+                dmxnode::Data::MergeSourceB(port_index, kArtDmx->data, kDmxSlots, kMergeMode);
+                SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 7. continue merge (Source B)", port_index, kArtDmx->physical);
+            }
+            else
+            {
+                SendDiag(artnet::PriorityCodes::kDiagMed, "%u:%u 7. More than two sources, discarding data", port_index, kArtDmx->physical);
+                puts("WARN: 7. More than two sources, discarding data");
+                return;
+            }
+        }
+        else if (kIpA == ip_address_from_ && kIpB == ip_address_from_)
+        { // Case 8.
+            if (output_port_[port_index].source_a.physical == kArtDmx->physical)
+            {
+                output_port_[port_index].source_a.millis = current_millis_;
+                UpdateMergeStatus(port_index);
+                dmxnode::Data::MergeSourceA(port_index, kArtDmx->data, kDmxSlots, kMergeMode);
+                SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 8. Source matches both ip, merging Physical (source_a)", port_index, kArtDmx->physical);
+            }
+            else if (output_port_[port_index].source_b.physical == kArtDmx->physical)
+            {
+                output_port_[port_index].source_b.millis = current_millis_;
+                UpdateMergeStatus(port_index);
+                dmxnode::Data::MergeSourceB(port_index, kArtDmx->data, kDmxSlots, kMergeMode);
+                SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 8. Source matches both ip, merging Physical (source_b)", port_index, kArtDmx->physical);
+            }
+            else
+            {
+                SendDiag(artnet::PriorityCodes::kDiagLow, "%u:%u 8. Source matches both ip, more than two sources, discarding data", port_index,
+                         kArtDmx->physical);
+                puts("WARN: 8. Source matches both ip, discarding data");
+                return;
+            }
+        }
+#ifndef NDEBUG
+        else if (kIpA != ip_address_from_ && kIpB != ip_address_from_)
+        { // Case 9.
+            SendDiag(artnet::PriorityCodes::kDiagLow, "%u: 9. More than two sources, discarding data", port_index);
+            puts("WARN: 9. More than two sources, discarding data");
+            return;
+        }
+#endif
+        else [[unlikely]]
+        { // Case 0.
+            SendDiag(artnet::PriorityCodes::kDiagHigh, "%u: 0. No cases matched, this shouldn't happen!", port_index);
+#ifndef NDEBUG
+            puts("ERROR: 0. No cases matched, this shouldn't happen!");
+#endif
+            return;
+        }
 
-                if (!output_port_[port_index].is_transmitting)
-                {
-                    dmxnode_output_type_->Start(port_index);
-                    state_.is_changed = true;
-                    output_port_[port_index].is_transmitting = true;
-                }
+        if ((state_.is_synchronous_mode) &&
+            ((output_port_[port_index].good_output & artnet::GoodOutput::kOutputIsMerging) != artnet::GoodOutput::kOutputIsMerging))
+        {
+            dmxnode::DataSet(dmxnode_output_type_, port_index);
+            output_port_[port_index].is_data_pending = true;
+            SendDiag(artnet::PriorityCodes::kDiagLow, "%u: Buffering data", port_index);
+        }
+        else
+        {
+            dmxnode::DataOutput(dmxnode_output_type_, port_index);
 
-                SendDiag(artnet::PriorityCodes::kDiagLow, "%u: Send data", port_index);
+            if (!output_port_[port_index].is_transmitting)
+            {
+                dmxnode_output_type_->Start(port_index);
+                state_.is_changed = true;
+                output_port_[port_index].is_transmitting = true;
             }
 
-            state_.receiving_dmx |= (1U << static_cast<uint8_t>(dmxnode::PortDirection::kOutput));
+            SendDiag(artnet::PriorityCodes::kDiagLow, "%u: Send data", port_index);
         }
+
+        state_.receiving_dmx |= (1U << static_cast<uint8_t>(dmxnode::PortDirection::kOutput));
     }
 }
 

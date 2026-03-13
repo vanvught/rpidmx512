@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,13 +27,16 @@
 #pragma GCC optimize("O2")
 #pragma GCC optimize("no-tree-loop-distribute-patterns")
 
-#include <cstdio>
 #include <cstdint>
 #include <cstring>
-#include <cassert>
 
-#include "h3/hal.h"
+#include "hal.h"
+#if defined(H3)
 #include "h3/hal_watchdog.h"
+#include "flashcodeinstall.h"
+#else
+#include "gd32/hal_watchdog.h"
+#endif
 #include "network.h"
 #include "apps/mdns.h"
 #include "display.h"
@@ -64,13 +67,8 @@
 #include "arm/ltcetcreader.h"
 #include "arm/ltcoutputs.h"
 #include "arm/ltcmidisystemrealtime.h"
-#include "flashcodeinstall.h"
 #include "configstore.h"
 #include "remoteconfig.h"
-#if defined(NODE_RDMNET_LLRP_ONLY)
-#include "rdmnetdevice.h"
-#include "rdm_e120.h"
-#endif
 #include "apps/ntpclient.h"
 #include "gpstimeclient.h"
 #include "json/gpsparams.h"
@@ -80,8 +78,13 @@
 #include "common/utils/utils_flags.h"
 #include "common/utils/utils_enum.h"
 #include "configurationstore.h"
-#include "pixeltype.h"
 #include "hwclock.h"
+#if defined(NODE_RDMNET_LLRP_ONLY)
+#include "rdmnetdevice.h"
+#endif
+#if !defined(CONFIG_LTC_DISABLE_WS28XX)
+#include "pixeltype.h"
+#endif
 
 static ltc::Source ltc_source;
 
@@ -128,13 +131,11 @@ void RebootHandler()
             break;
     }
 
-    //	if (!ltc::g_DisabledOutputs.bMax7219) {
     if (ltc::Destination::IsEnabled(ltc::Destination::Output::MAX7219))
     {
         LtcDisplayMax7219::Get()->Init(); // TODO (a) WriteChar
     }
 #if !defined(CONFIG_LTC_DISABLE_WS28XX)
-    //	if ((!ltc::g_DisabledOutputs.bWS28xx) || (!ltc::g_DisabledOutputs.bRgbPanel)) {
     if (ltc::Destination::IsEnabled(ltc::Destination::Output::WS28XX) || ltc::Destination::IsEnabled(ltc::Destination::Output::RGBPANEL))
     {
         LtcDisplayRgb::Get()->WriteChar('-');
@@ -156,7 +157,7 @@ extern "C"
 }
 #endif
 
-void static StaticCallbackFunction([[maybe_unused]] const struct artnet::TimeCode* pTimeCode) {}
+void static StaticCallbackFunction([[maybe_unused]] const struct artnet::TimeCode* timecode) {}
 
 using common::store::gps::Flags;
 
@@ -167,8 +168,9 @@ int main() // NOLINT
     ConfigStore config_store;
     network::Init();
     FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+#if defined(H3)
     FlashCodeInstall spiflash_install;
-
+#endif
     fw.Print("LTC SMPTE");
 
     display.ClearLine(1);
@@ -177,16 +179,15 @@ int main() // NOLINT
     json::LtcParams ltc_params;
     ltc_params.Load();
 
-    struct ltc::TimeCode tStartTimeCode;
-    struct ltc::TimeCode tStopTimeCode;
+    struct ltc::TimeCode start_time_code;
+    struct ltc::TimeCode stop_time_code;
 
-    ltc_params.Set(&tStartTimeCode, &tStopTimeCode);
+    ltc_params.Set(&start_time_code, &stop_time_code);
 
     const auto kLtcFlags = ConfigStore::Instance().LtcGet(&common::store::Ltc::flags);
     const auto kFps = ConfigStore::Instance().LtcGet(&common::store::Ltc::fps);
     const auto kUtcOffset = ConfigStore::Instance().LtcGet(&common::store::Ltc::utc_offset);
     const auto kSource = ConfigStore::Instance().LtcGet(&common::store::Ltc::source);
-    const auto kRgbLedType = ConfigStore::Instance().LtcGet(&common::store::Ltc::rgb_led_type);
     const auto kDisplayFlags = ConfigStore::Instance().LtcDisplayGet(&common::store::LtcDisplay::flags);
     const auto kIsRotaryFullStep = common::IsFlagSet(kDisplayFlags, common::store::ltc::display::Flags::Flag::kRotaryFullStep);
     const auto kIsAltFunction = common::IsFlagSet(kLtcFlags, common::store::ltc::Flags::Flag::kIsAltFuntion);
@@ -197,16 +198,20 @@ int main() // NOLINT
     const auto kVolume = ConfigStore::Instance().LtcGet(&common::store::Ltc::volume);
     const auto kOscEnabled = common::IsFlagSet(kLtcFlags, common::store::ltc::Flags::Flag::kOscEnabled);
     const auto kOscPort = ConfigStore::Instance().LtcGet(&common::store::Ltc::osc_port);
+#if !defined(CONFIG_LTC_DISABLE_WS28XX)
+    const auto kRgbLedType = ConfigStore::Instance().LtcGet(&common::store::Ltc::rgb_led_type);
+
+#endif
 
     ltc_source = common::FromValue<ltc::Source>(kSource);
 
     LtcReader ltc_reader;
-    MidiReader midiReader;
-    ArtNetReader artnetReader;
-    TCNetReader tcnetReader;
-    RtpMidiReader rtpMidiReader;
-    SystimeReader sysTimeReader(kFps, kUtcOffset);
-    LtcEtcReader ltcEtcReader;
+    MidiReader midi_reader;
+    ArtNetReader artnet_reader;
+    TCNetReader tcnet_reader;
+    RtpMidiReader rtp_midi_reader;
+    SystimeReader sys_time_reader(kFps, kUtcOffset);
+    LtcEtcReader ltc_etc_reader;
 
     LtcDisplayMax7219 display_max7219;
 
@@ -237,7 +242,7 @@ int main() // NOLINT
 
     if (source_select.Check() && !kIsAutoStart)
     {
-        while (source_select.Wait(ltc_source, tStartTimeCode, tStopTimeCode))
+        while (source_select.Wait(ltc_source, start_time_code, stop_time_code))
         {
             network::Run();
         }
@@ -278,21 +283,16 @@ int main() // NOLINT
 #if !defined(CONFIG_LTC_DISABLE_RGB_PANEL)
     if (ltc::Destination::IsEnabled(ltc::Destination::Output::RGBPANEL))
     {
-        for (uint32_t nCpuNumber = 1; nCpuNumber < 4; nCpuNumber++)
+        for (uint32_t cpu_number = 1; cpu_number < 4; cpu_number++)
         {
-            h3_cpu_off(nCpuNumber);
+            h3_cpu_off(cpu_number);
         }
     }
 #endif
 
 #if defined(NODE_RDMNET_LLRP_ONLY)
-    auto& rdm_device = RdmDevice::Get();
-    rdm_device.SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
-    rdm_device.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
-    rdm_device.Init();
-    rdm_device.Print();
-
     RDMNetDevice llrp_only_device;
+	llrp_only_device.Print();
 #endif
 
     /**
@@ -375,7 +375,7 @@ int main() // NOLINT
     {
         if (ltc_source == ltc::Source::APPLEMIDI)
         {
-            rtp_midi.SetHandler(&rtpMidiReader);
+            rtp_midi.SetHandler(&rtp_midi_reader);
         }
 
         rtp_midi.Start();
@@ -397,7 +397,7 @@ int main() // NOLINT
 
         if (ltc_source == ltc::Source::ETC)
         {
-            ltc_etc.SetHandler(&ltcEtcReader);
+            ltc_etc.SetHandler(&ltc_etc_reader);
         }
 
         ltc_etc.Start();
@@ -473,7 +473,7 @@ int main() // NOLINT
     {
         network::apps::ntpclient::Stop(true);
 
-        ntp_server.SetTimeCode(&tStartTimeCode);
+        ntp_server.SetTimeCode(&start_time_code);
         ntp_server.Start();
         ntp_server.Print();
 
@@ -488,7 +488,7 @@ int main() // NOLINT
     const auto kIgnoreStart = common::IsFlagSet(kLtcFlags, common::store::ltc::Flags::Flag::kIgnoreStart);
     const auto kIgnoreStop = common::IsFlagSet(kLtcFlags, common::store::ltc::Flags::Flag::kIgnoreStop);
 
-    LtcGenerator ltc_generator(&tStartTimeCode, &tStopTimeCode, kSkipFree, kIgnoreStart, kIgnoreStop);
+    LtcGenerator ltc_generator(&start_time_code, &stop_time_code, kSkipFree, kIgnoreStart, kIgnoreStop);
 
     /**
      * MIDI output System Real Time
@@ -517,26 +517,26 @@ int main() // NOLINT
     switch (ltc_source)
     {
         case ltc::Source::ARTNET:
-            artnetReader.Start();
+            artnet_reader.Start();
             break;
         case ltc::Source::MIDI:
-            midiReader.Start();
+            midi_reader.Start();
             break;
         case ltc::Source::TCNET:
-            tcnetReader.Start();
+            tcnet_reader.Start();
             break;
         case ltc::Source::INTERNAL:
             ltc_generator.Start();
             ltc_generator.Print();
             break;
         case ltc::Source::APPLEMIDI:
-            rtpMidiReader.Start();
+            rtp_midi_reader.Start();
             break;
         case ltc::Source::ETC:
-            ltcEtcReader.Start();
+            ltc_etc_reader.Start();
             break;
         case ltc::Source::SYSTIME:
-            sysTimeReader.Start(kIsAutoStart && !kGpsStart);
+            sys_time_reader.Start(kIsAutoStart && !kGpsStart);
             break;
         default:
             ltc_reader.Start();
@@ -572,25 +572,25 @@ int main() // NOLINT
                 ltc_reader.Run();
                 break;
             case ltc::Source::ARTNET:
-                artnetReader.Run();
+                artnet_reader.Run();
                 break;
             case ltc::Source::MIDI:
-                midiReader.Run();
+                midi_reader.Run();
                 break;
             case ltc::Source::TCNET:
-                tcnetReader.Run();
+                tcnet_reader.Run();
                 break;
             case ltc::Source::INTERNAL:
                 ltc_generator.Run();
                 break;
             case ltc::Source::APPLEMIDI:
-                rtpMidiReader.Run();
+                rtp_midi_reader.Run();
                 break;
             case ltc::Source::ETC:
-                ltcEtcReader.Run();
+                ltc_etc_reader.Run();
                 break;
             case ltc::Source::SYSTIME:
-                sysTimeReader.Run();
+                sys_time_reader.Run();
                 if (!kRunGpsTimeClient)
                 {
                     if (kRunNtpServer)
@@ -609,11 +609,11 @@ int main() // NOLINT
                     {
                         if (gpstime_client.GetStatus() == gps::Status::kValid)
                         {
-                            sysTimeReader.ActionStart();
+                            sys_time_reader.ActionStart();
                         }
                         else
                         {
-                            sysTimeReader.ActionStop();
+                            sys_time_reader.ActionStop();
                         }
                     }
                 }

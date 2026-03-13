@@ -23,8 +23,12 @@
  * THE SOFTWARE.
  */
 
+#if defined(DEBUG_ARTNET_RDMSUB)
+#undef NDEBUG
+#endif
+
 #include "artnetnode.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
 void ArtNetNode::HandleRdmSub()
 {

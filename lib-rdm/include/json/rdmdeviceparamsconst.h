@@ -2,7 +2,7 @@
  * @file rdmdeviceparamsconst.h
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,7 +22,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
- 
 
 #ifndef JSON_RDMDEVICEPARAMSCONST_H_
 #define JSON_RDMDEVICEPARAMSCONST_H_
@@ -33,26 +32,10 @@ namespace json
 {
 struct RdmDeviceParamsConst
 {
-	static constexpr char kFileName[] = "rdmdevice.json";
-   
-	static constexpr json::SimpleKey kLabel {
-	    "label",
-	    5,
-	    Fnv1a32("label", 5)
-	};
-	
-	static constexpr json::SimpleKey kProductCategory {
-	    "product_category",
-	    16,
-	    Fnv1a32("product_category", 16)
-	};
-	
-	static constexpr json::SimpleKey kProductDetail {
-	    "product_detail",
-	    14,
-	    Fnv1a32("product_detail", 14)
-	};
+    static constexpr char kFileName[] = "rdmdevice.json";
+
+    static constexpr json::SimpleKey kLabel{"label", 5, Fnv1a32("label", 5)};
 };
 } // namespace json
 
-#endif  // JSON_RDMDEVICEPARAMSCONST_H_
+#endif // JSON_RDMDEVICEPARAMSCONST_H_

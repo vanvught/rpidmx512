@@ -2,7 +2,7 @@
  * @file setrdm.cpp
  *
  */
-/* Copyright (C) 2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2023-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,34 +23,43 @@
  * THE SOFTWARE.
  */
 
+#if defined(DEBUG_ARTNET_RDM)
+#undef NDEBUG
+#endif
+
 #include <cstdint>
 
 #include "artnetnode.h"
 #include "artnetrdmresponder.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
-void ArtNetNode::SetRdm(bool do_enable) {
-	DEBUG_ENTRY();
-	DEBUG_PRINTF("do_enable=%u", static_cast<uint32_t>(do_enable));
+void ArtNetNode::SetRdm(bool do_enable)
+{
+    DEBUG_ENTRY();
+    DEBUG_PRINTF("do_enable=%u", static_cast<uint32_t>(do_enable));
 
-	SetRdmResponder(rdm_responder_, do_enable);
+    SetRdmResponder(rdm_responder_, do_enable);
 
-	DEBUG_EXIT();
+    DEBUG_EXIT();
 }
 
-void ArtNetNode::SetRdmResponder(ArtNetRdmResponder *pArtNetRdmResponder, bool do_enable) {
-	DEBUG_ENTRY();
-	DEBUG_PRINTF("do_enable=%u", static_cast<uint32_t>(do_enable));
+void ArtNetNode::SetRdmResponder(ArtNetRdmResponder* pArtNetRdmResponder, bool do_enable)
+{
+    DEBUG_ENTRY();
+    DEBUG_PRINTF("do_enable=%u", static_cast<uint32_t>(do_enable));
 
-	rdm_responder_ = pArtNetRdmResponder;
-	state_.is_rdm_enabled = ((pArtNetRdmResponder != nullptr) & do_enable);
+    rdm_responder_ = pArtNetRdmResponder;
+    state_.is_rdm_enabled = ((pArtNetRdmResponder != nullptr) & do_enable);
 
-	if (state_.is_rdm_enabled) {
-		art_poll_reply_.Status1 |= artnet::Status1::kRdmCapable;
-	} else {
-		art_poll_reply_.Status1 &= static_cast<uint8_t>(~artnet::Status1::kRdmCapable);
-	}
+    if (state_.is_rdm_enabled)
+    {
+        art_poll_reply_.status1 |= artnet::Status1::kRdmCapable;
+    }
+    else
+    {
+        art_poll_reply_.status1 &= static_cast<uint8_t>(~artnet::Status1::kRdmCapable);
+    }
 
-	DEBUG_PRINTF("state_.is_rdm_enabled=%c", state_.is_rdm_enabled ? 'Y' : 'N');
-	DEBUG_EXIT();
+    DEBUG_PRINTF("state_.is_rdm_enabled=%c", state_.is_rdm_enabled ? 'Y' : 'N');
+    DEBUG_EXIT();
 }

@@ -64,7 +64,7 @@ inline DmxNodeOutputType* ArtNetNode::GetOutput() const
 
 inline const char* ArtNetNode::GetLongName() const
 {
-    return reinterpret_cast<const char*>(art_poll_reply_.LongName);
+    return reinterpret_cast<const char*>(art_poll_reply_.long_name);
 }
 
 inline void ArtNetNode::SetDisableMergeTimeout(bool disable)
@@ -156,7 +156,7 @@ inline void ArtNetNode::SetFailSafe(dmxnode::FailSafe fail_safe)
 
 inline dmxnode::FailSafe ArtNetNode::GetFailSafe()
 {
-    const auto kNetworkloss = (art_poll_reply_.Status3 & artnet::Status3::kNetworklossMask);
+    const auto kNetworkloss = (art_poll_reply_.status3 & artnet::Status3::kNetworklossMask);
     switch (kNetworkloss)
     {
         case artnet::Status3::kNetworklossLastState:
@@ -214,7 +214,7 @@ inline void ArtNetNode::SetRdm(uint32_t port_index, bool enable)
     }
 }
 
-inline bool ArtNetNode::GetRdm(uint32_t port_index) const
+inline bool ArtNetNode::Rdm(uint32_t port_index) const
 {
     assert(port_index < dmxnode::kMaxPorts);
     return !((output_port_[port_index].good_output_b & artnet::GoodOutputB::kRdmDisabled) == artnet::GoodOutputB::kRdmDisabled);
@@ -278,13 +278,13 @@ inline bool ArtNetNode::GetOutputPort(uint16_t universe, uint32_t& port_index)
     return false;
 }
 
-inline void ArtNetNode::RestartOutputPort(uint32_t port_index)
+inline void ArtNetNode::StopOutputPort(uint32_t port_index)
 {
-    if (output_port_[port_index].is_transmitting)
-    {
-        dmxnode_output_type_->Stop(port_index);
-        dmxnode_output_type_->Start(port_index);
-    }
+	if (output_port_[port_index].is_transmitting)
+	{
+	    output_port_[port_index].is_transmitting = false;
+	    dmxnode_output_type_->Stop(port_index); // Stop DMX if was running
+	}
 }
 
 inline void ArtNetNode::Run()
@@ -311,7 +311,7 @@ inline void ArtNetNode::Run()
     }
 
 #if (DMXNODE_PORTS > 0)
-    if ((((art_poll_reply_.Status1 & artnet::Status1::kIndicatorMask) == artnet::Status1::kIndicatorNormalMode)) &&
+    if ((((art_poll_reply_.status1 & artnet::Status1::kIndicatorMask) == artnet::Status1::kIndicatorNormalMode)) &&
         (hal::statusled::GetMode() != hal::statusled::Mode::FAST))
     {
 #if (ARTNET_VERSION >= 4)
@@ -354,7 +354,7 @@ inline void ArtNetNode::Run()
 
             state_.art.poll_reply_port_index++;
 
-            if (state_.art.poll_reply_port_index == dmxnode::kMaxPorts)
+            if (state_.art.poll_reply_port_index >= dmxnode::kMaxPorts)
             {
                 entry.art_poll_millis = 0;
                 state_.art.poll_reply_state = artnetnode::PollReplyState::kWaitingTimeout;
@@ -393,7 +393,7 @@ inline void ArtNetNode::SendDiag([[maybe_unused]] const artnet::PriorityCodes kP
         return;
     }
 
-    diag_data_.Priority = static_cast<uint8_t>(kPriorityCode);
+    diag_data_.priority = static_cast<uint8_t>(kPriorityCode);
 
     va_list arp;
 
@@ -404,12 +404,12 @@ inline void ArtNetNode::SendDiag([[maybe_unused]] const artnet::PriorityCodes kP
     va_end(arp);
 
     diag_data_.data[sizeof(diag_data_.data) - 1] = '\0'; // Just be sure we have a last '\0'
-    diag_data_.LengthLo = static_cast<uint8_t>(i + 1);   // Text length including the '\0'
+    diag_data_.length_lo = static_cast<uint8_t>(i + 1);   // Text length including the '\0'
 
-    const uint16_t kSize = sizeof(struct artnet::ArtDiagData) - sizeof(diag_data_.data) + diag_data_.LengthLo;
+    const uint16_t kSize = sizeof(struct artnet::ArtDiagData) - sizeof(diag_data_.data) + diag_data_.length_lo;
 
     network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&diag_data_), kSize, state_.art.diag_ip, artnet::kUdpPort);
 #endif
 }
 
-#endif  // ARTNETNODE_INLINE_IMPL_H_
+#endif // ARTNETNODE_INLINE_IMPL_H_

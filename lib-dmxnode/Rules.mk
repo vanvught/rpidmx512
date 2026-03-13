@@ -8,6 +8,9 @@ ifneq ($(MAKE_FLAGS),)
 	ifeq ($(findstring NODE_E131,$(MAKE_FLAGS)), NODE_E131)
 		EXTRA_INCLUDES+=../lib-e131/include
 	endif
+	ifneq (,$(findstring NODE_RDMNET_LLRP_ONLY,$(MAKE_FLAGS)))
+		EXTRA_INCLUDES+=../lib-rdm/include
+	endif
 	ifneq (,$(findstring RDM_RESPONDER,$(MAKE_FLAGS)))
 		EXTRA_INCLUDES+=../lib-rdmsensor/include
 	endif

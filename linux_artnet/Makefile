@@ -3,6 +3,8 @@ DEFINES+=ARTNET_HAVE_FAILSAFE_RECORD
 DEFINES+=ARTNET_OUTPUT_STYLE_SWITCH
 DEFINES+=ARTNET_ENABLE_SENDDIAG
 
+DEFINES+=NODE_RDMNET_LLRP_ONLY
+
 DEFINES+=DMXNODE_PORTS=4
 
 DEFINES+=RDM_RESPONDER 
@@ -30,4 +32,3 @@ LIBS=
 include ../firmware-template-linux/Rules.mk
 
 prerequisites:
-	@echo "constexpr uint32_t DEVICE_SOFTWARE_VERSION_ID="$(shell date "+%s")";" > ./include/software_version_id.h

@@ -50,7 +50,7 @@ static uint32_t GetEntry(uint32_t index, char* out_buffer, uint32_t out_buffer_s
 {
     const auto* poll_table = ArtNetController::Get()->GetPollTable();
     auto length = static_cast<uint32_t>(snprintf(out_buffer, out_buffer_size, "{\"name\":\"%s\",\"ip\":\"" IPSTR "\",\"mac\":\"" MACSTR "\",\"ports\":[",
-                                                  poll_table[index].LongName, IP2STR(poll_table[index].IPAddress), MAC2STR(poll_table[index].Mac)));
+                                                  poll_table[index].long_name, IP2STR(poll_table[index].IPAddress), MAC2STR(poll_table[index].Mac)));
 
     for (uint32_t universe = 0; universe < poll_table[index].universes_count; universe++)
     {

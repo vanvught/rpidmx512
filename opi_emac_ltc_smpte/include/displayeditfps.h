@@ -2,7 +2,7 @@
  * @file displayeditfps.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,15 +28,25 @@
 
 #include <stdint.h>
 
-class DisplayEditFps {
-public:
-	void HandleKey(int nKey, uint8_t &nFps);
+#include "input.h"
 
-private:
-	enum State {
-		IDLE, EDIT
-	} state_{IDLE};
-	bool m_bCursorOn {false};
+class DisplayEditFps
+{
+   public:
+    DisplayEditFps() = default;
+    void HandleKey(int key, uint8_t& type);
+
+   private:
+    void KeyLeft(uint8_t& type);
+    void KeyRight(uint8_t& type);
+
+   private:
+    enum State
+    {
+        kIdle,
+        kEdit
+    } state_{kIdle};
+    bool cursor_on_{false};
 };
 
-#endif /* DISPLAYEDITFPS_H_ */
+#endif // DISPLAYEDITFPS_H_

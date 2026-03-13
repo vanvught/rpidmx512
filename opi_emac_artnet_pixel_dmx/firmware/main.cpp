@@ -46,11 +46,6 @@
 #include "json/dmxsendparams.h"
 #include "dmxsend.h"
 #include "dmxnodewith4.h"
-#if defined(NODE_RDMNET_LLRP_ONLY)
-#include "rdmnetdevice.h"
-#include "rdmdevice.h"
-#include "rdm_e120.h"
-#endif
 #if defined(NODE_SHOWFILE)
 #include "showfile.h"
 #endif
@@ -123,19 +118,6 @@ int main() // NOLINT
     ArtNetTriggerHandler artnet_trigger_handler(&dmxnode, &pixeldmx);
 
     dmxnode_node.SetOutput(&dmxnode);
-    dmxnode_node.Print();
-
-#if defined(NODE_RDMNET_LLRP_ONLY)
-    auto& rdm_device = RdmDevice::Get();
-    rdm_device.SetProductCategory(E120_PRODUCT_CATEGORY_FIXTURE);
-    rdm_device.SetProductDetail(E120_PRODUCT_DETAIL_LED);
-    rdm_device.Init();
-    rdm_device.Print();
-
-    RDMNetDevice llrp_only_device;
-
-    dmxnode_node.SetRdmUID(rdm_device.GetUID(), true);
-#endif
 
 #if defined(NODE_SHOWFILE)
     ShowFile showfile;

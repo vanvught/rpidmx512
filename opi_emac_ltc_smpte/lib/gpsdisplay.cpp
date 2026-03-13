@@ -2,7 +2,7 @@
  * @file gpsdisplay.cpp
  *
  */
-/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,29 +26,30 @@
 #include <cassert>
 
 #include "gps.h"
-
 #include "display.h"
 
-void GPS::Display(gps::Status status) {
-	Display::Get()->SetCursorPos(static_cast<uint8_t>(Display::Get()->GetColumns() - 7U), 3);
-	Display::Get()->PutString("GPS ");
+void GPS::Display(gps::Status status)
+{
+    Display::Get()->SetCursorPos(static_cast<uint8_t>(Display::Get()->GetColumns() - 7U), 3);
+    Display::Get()->PutString("GPS ");
 
-	switch (status) {
-	case gps::Status::kIdle:
-		Display::Get()->PutChar('I');
-		break;
-	case gps::Status::kWarning:
-		Display::Get()->PutChar('W');
-		break;
-	case gps::Status::kValid:
-		Display::Get()->PutChar('V');
-		break;
-	case gps::Status::kUndefined:
-		Display::Get()->PutChar('U');
-		break;
-	default:
-		assert(0);
-		__builtin_unreachable();
-		break;
-	}
+    switch (status)
+    {
+        case gps::Status::kIdle:
+            Display::Get()->PutChar('I');
+            break;
+        case gps::Status::kWarning:
+            Display::Get()->PutChar('W');
+            break;
+        case gps::Status::kValid:
+            Display::Get()->PutChar('V');
+            break;
+        case gps::Status::kUndefined:
+            Display::Get()->PutChar('U');
+            break;
+        default:
+            [[unlikely]] assert(0);
+            __builtin_unreachable();
+            break;
+    }
 }

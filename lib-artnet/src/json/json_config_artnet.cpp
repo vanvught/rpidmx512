@@ -1,7 +1,7 @@
 /**
  * @file json_config_artnet.cpp
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,38 +36,48 @@ namespace json::config
 {
 uint32_t GetArtNet(char* buffer, uint32_t length)
 {
-    auto* dmx_node = DmxNodeNodeType::Get();
+    [[maybe_unused]] auto* dmx_node = DmxNodeNodeType::Get();
     assert(dmx_node != nullptr);
 
-	return json::helpers::Serialize(buffer, length, [&](JsonDoc& doc) {
+    return json::helpers::Serialize(
+        buffer, length,
+        [&]([[maybe_unused]] JsonDoc& doc)
+        {
 #if defined(RDM_CONTROLLER) || defined(RDM_RESPONDER)
-	    doc[json::ArtNetParamsConst::kEnableRdm.name] = dmx_node->GetRdm();
+            doc[json::ArtNetParamsConst::kEnableRdm.name] = dmx_node->GetRdm();
 #endif
-#if (ARTNET_VERSION >= 4)    
-	    doc[json::ArtNetParamsConst::kMapUniverse0.name] = dmx_node->IsMapUniverse0();
-#endif
-	
-	    if constexpr (dmxnode::kConfigPortCount != 0)
-	    {
-	        for (uint32_t config_port_index = 0; config_port_index < dmxnode::kConfigPortCount; config_port_index++)
-	        {
-	            const auto kPortIndex = config_port_index + dmxnode::kDmxportOffset;
-	
-	            if (kPortIndex >= dmxnode::kMaxPorts)
-	            {
-	                break;
-	            }
-	
 #if (ARTNET_VERSION >= 4)
-	            doc[json::ArtNetParamsConst::kProtocolPort[config_port_index].name] = artnet::GetProtocolMode(dmx_node->GetPortProtocol4(kPortIndex));
-#endif            
-	            doc[json::ArtNetParamsConst::kRdmEnablePort[config_port_index].name] = dmx_node->GetRdm(kPortIndex);
-	
-	            char ip[net::kIpBufferSize];
-	            doc[json::ArtNetParamsConst::kDestinationIpPort[config_port_index].name] = net::FormatIp(dmx_node->GetDestinationIp(kPortIndex), ip);
-	        }
-	    }
-	});
+            doc[json::ArtNetParamsConst::kMapUniverse0.name] = dmx_node->IsMapUniverse0();
+#endif
+
+            if constexpr (dmxnode::kConfigPortCount != 0)
+            {
+                for (uint32_t config_port_index = 0; config_port_index < dmxnode::kConfigPortCount; config_port_index++)
+                {
+                    const auto kPortIndex = config_port_index + dmxnode::kDmxportOffset;
+
+                    if (kPortIndex >= dmxnode::kMaxPorts)
+                    {
+                        break;
+                    }
+
+#if (ARTNET_VERSION >= 4)
+                    doc[json::ArtNetParamsConst::kProtocolPort[config_port_index].name] = artnet::GetProtocolMode(dmx_node->GetPortProtocol4(kPortIndex));
+#endif
+#if defined(RDM_CONTROLLER) || defined(RDM_RESPONDER)
+                    doc[json::ArtNetParamsConst::kRdmEnablePort[config_port_index].name] = dmx_node->Rdm(kPortIndex);
+#endif
+#if defined(RDM_CONTROLLER)
+// Will implement on request
+//                   doc[json::ArtNetParamsConst::kBgDiscoveryPort[config_port_index].name] = dmx_node->RdmBgDiscovery(kPortIndex);
+#endif
+#if defined(ARTNET_HAVE_DMXIN)
+                    char ip[net::kIpBufferSize];
+                    doc[json::ArtNetParamsConst::kDestinationIpPort[config_port_index].name] = net::FormatIp(dmx_node->GetDestinationIp(kPortIndex), ip);
+#endif
+                }
+            }
+        });
 }
 
 void SetArtNet(const char* buffer, uint32_t buffer_size)

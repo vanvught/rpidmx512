@@ -2,7 +2,7 @@
  * @file displayedittimecode.h
  *
  */
-/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,23 +30,26 @@
 
 #include "ltc.h"
 
-class DisplayEditTimeCode {
-public:
-	void HandleKey(int nKey, struct ltc::TimeCode& timecode, char m_aTimeCode[ltc::timecode::CODE_MAX_LENGTH]);
+class DisplayEditTimeCode
+{
+   public:
+    void HandleKey(int nKey, struct ltc::TimeCode& timecode, char m_aTimeCode[ltc::timecode::CODE_MAX_LENGTH]);
 
-private:
-	void KeyUp(struct ltc::TimeCode& timecode);
-	void KeyDown(struct ltc::TimeCode& timecode);
-	void KeyLeft();
-	void KeyRight();
+   private:
+    void KeyUp(struct ltc::TimeCode& timecode);
+    void KeyDown(struct ltc::TimeCode& timecode);
+    void KeyLeft();
+    void KeyRight();
 
-private:
-	uint8_t m_nFrames { 0 };
-	enum State {
-		IDLE, EDIT
-	} state_ { IDLE };
-	uint32_t m_nCursorPositionIndex { 0 };
-	bool m_bCursorOn { false };
+   private:
+    uint8_t m_nFrames{0};
+    enum State
+    {
+        IDLE,
+        EDIT
+    } state_{IDLE};
+    uint32_t m_nCursorPositionIndex{0};
+    bool cursor_on_{false};
 };
 
-#endif /* DISPLAYEDITTIMECODE_H_ */
+#endif // DISPLAYEDITTIMECODE_H_

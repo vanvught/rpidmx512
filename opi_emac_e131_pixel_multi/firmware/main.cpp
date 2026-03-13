@@ -42,8 +42,6 @@
 #include "pixeldmxmulti.h"
 #if defined(NODE_RDMNET_LLRP_ONLY)
 #include "rdmnetdevice.h"
-#include "rdmevice.h"
-#include "rdm_e120.h"
 #endif
 #if defined(NODE_SHOWFILE)
 #include "showfile.h"
@@ -99,13 +97,8 @@ int main() // NOLINT
     }
 
 #if defined(NODE_RDMNET_LLRP_ONLY)
-    auto& rdm_device = RdmDevice::Get();
-    rdm_device.SetProductCategory(E120_PRODUCT_CATEGORY_FIXTURE);
-    rdm_device.SetProductDetail(E120_PRODUCT_DETAIL_LED);
-    rdm_device.Init();
-    rdm_device.Print();
-
     RDMNetDevice llrp_only_device;
+	llrp_only_device.Print();
 #endif
 
 #if defined(NODE_SHOWFILE)

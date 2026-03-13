@@ -2,7 +2,7 @@
  * @file artnetrdmresponder.h
  *
  */
-/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2018-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,26 +29,30 @@
 #include <cstdint>
 #include <cstring>
 
+#include "rdmdevice.h"
 #include "rdmdeviceresponder.h"
 #include "rdmpersonality.h"
 #include "rdmhandler.h"
 #include "e120.h"
 #include "rdm_message_print.h"
 #include "firmware/debug/debug_debug.h"
-#if defined(NODE_RDMNET_LLRP_ONLY)
-#error "Cannot be both RDMNet Device and RDM Responder"
-#endif
 
-class ArtNetRdmResponder final : public RDMDeviceResponder, RDMHandler
+class ArtNetRdmResponder final : public RDMDeviceResponder
 {
    public:
     ArtNetRdmResponder(RDMPersonality** rdm_personalities, uint32_t personality_count) : RDMDeviceResponder(rdm_personalities, personality_count)
     {
         DEBUG_ENTRY();
+
         DEBUG_EXIT();
     }
 
     ~ArtNetRdmResponder() override = default;
+
+    void Print()
+    {
+        RDMDeviceResponder::Print();
+    }
 
     void TodCopy(uint32_t port_index, unsigned char* tod)
     {
@@ -56,7 +60,7 @@ class ArtNetRdmResponder final : public RDMDeviceResponder, RDMHandler
 
         if (port_index == 0)
         {
-            memcpy(tod, RdmDevice::Get().GetUID(), RDM_UID_SIZE);
+            memcpy(tod, rdm::device::Base::Instance().GetUID(), RDM_UID_SIZE);
         }
         else
         {
@@ -81,10 +85,10 @@ class ArtNetRdmResponder final : public RDMDeviceResponder, RDMHandler
         }
 
 #ifndef NDEBUG
-        rdm::MessagePrintNoStartcode(rdm_data_no_sc);
+        rdm::message::PrintNoStartcode(rdm_data_no_sc);
 #endif
 
-        RDMHandler::HandleData(rdm_data_no_sc, reinterpret_cast<uint8_t*>(&s_rdm_command));
+        RDMHandler::Instance().HandleData(rdm_data_no_sc, reinterpret_cast<uint8_t*>(&s_rdm_command), RDMHandler::Type::kTypeRdm);
 
         if (s_rdm_command.start_code != E120_SC_RDM)
         {
@@ -93,7 +97,7 @@ class ArtNetRdmResponder final : public RDMDeviceResponder, RDMHandler
         }
 
 #ifndef NDEBUG
-        rdm::MessagePrint(reinterpret_cast<uint8_t*>(&s_rdm_command));
+        rdm::message::Print(reinterpret_cast<uint8_t*>(&s_rdm_command));
 #endif
 
         DEBUG_EXIT();

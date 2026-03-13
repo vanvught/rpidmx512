@@ -1,7 +1,7 @@
 /**
  * @file dmxnode.h
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,10 +41,10 @@ inline constexpr uint8_t kDmxMaxValue = 255;
 /*
  * Art-Net
  */
-inline constexpr uint32_t kNodeNameLength = 64; // LongName
+inline constexpr uint32_t kNodeNameLength = 64; // Long Name
 static_assert(common::store::dmxnode::kNodeNameLength == kNodeNameLength);
-inline constexpr uint32_t kLabelNameLength = 18; // ShortName
-static_assert(common::store::dmxnode::kLabelNameLength == kLabelNameLength);
+inline constexpr uint32_t kPortNameLength = 18; // Port Name
+static_assert(common::store::dmxnode::kPortNameLength == kPortNameLength);
 /*
  * sACN E1.31
  */
@@ -326,8 +326,8 @@ class DmxNode
 
         if ((name == nullptr) || (name[0] == '\0')) return SetShortNameDefault(port_index);
 
-        strncpy(port.label, name, dmxnode::kLabelNameLength - 1);
-        port.label[dmxnode::kLabelNameLength - 1] = '\0';
+        strncpy(port.label, name, dmxnode::kPortNameLength - 1);
+        port.label[dmxnode::kPortNameLength - 1] = '\0';
     }
 
     void SetShortNameDefault(uint32_t port_index)
@@ -335,11 +335,11 @@ class DmxNode
         assert(port_index < dmxnode::kMaxPorts);
         auto& port = port_[port_index];
 
-        snprintf(port.label, dmxnode::kLabelNameLength - 1, "Port %u", (1U + port_index));
-        port.label[dmxnode::kLabelNameLength - 1] = '\0';
+        snprintf(port.label, dmxnode::kPortNameLength - 1, "Port %u", (1U + port_index));
+        port.label[dmxnode::kPortNameLength - 1] = '\0';
     }
 
-    const char* GetShortName(uint32_t port_index) const
+    const char* GetPortName(uint32_t port_index) const
     {
         assert(port_index < dmxnode::kMaxPorts);
         const auto& port = port_[port_index];
@@ -363,7 +363,7 @@ class DmxNode
     {
         dmxnode::PortDirection port_direction{dmxnode::PortDirection::kDisable};
         bool is_transmitting{false};
-        char label[dmxnode::kLabelNameLength];
+        char label[dmxnode::kPortNameLength];
     } port_[dmxnode::kMaxPorts];
 };
 
