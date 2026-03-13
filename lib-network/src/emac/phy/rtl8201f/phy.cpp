@@ -89,13 +89,65 @@ void CustomizedLed()
 #define RMSR_TX_TIMING_SHIFT 8
 #define RMSR_TX_TIMING_MASK 0xF00
 
-void CustomizedTiming()
+/**
+ * @brief Apply RMII timing compensation for the RTL8201F PHY.
+ *
+ * The RTL8201F PHY provides programmable RMII interface timing adjustment
+ * through the RMII Mode Setting Register (RMSR), located at page 7, register 16.
+ *
+ * Relevant RMSR fields:
+ *
+ *   Bits [11:8]  Rg_rmii_tx_offset   RMII transmit timing offset
+ *   Bits [7:4]   Rg_rmii_rx_offset   RMII receive timing offset
+ *
+ * These fields allow the PHY to shift the internal sampling/drive timing
+ * relative to the RMII 50 MHz reference clock. The RTL8201F datasheet specifies
+ * a minimum timing adjustment resolution of approximately 2 ns per step.
+ *
+ * In principle the PHY default timing values are intended to be optimal,
+ * however the effective RMII timing budget depends on the entire system:
+ *
+ *   - MAC peripheral timing characteristics
+ *   - REFCLK distribution and clock phase
+ *   - GPIO pad delays
+ *   - PCB routing skew
+ *   - SoC internal bus and clock frequency
+ *
+ * Because of this, some platforms require PHY timing compensation to achieve
+ * reliable RMII communication.
+ *
+ * In this implementation:
+ *
+ *   GD32F1x7 and GD32F2x7 platforms operate correctly using the RTL8201F
+ *   default timing configuration and therefore require no adjustment.
+ *
+ *   GD32F4xx platforms require modified RMII timing to ensure stable
+ *   Ethernet operation. The RX and TX offsets are therefore programmed
+ *   explicitly via the RMSR register.
+ *
+ * Selected values:
+ *
+ *   RX offset: 0x4
+ *   TX offset:
+ *       GD32F407  -> 0x2  (system typically running at higher core clock)
+ *       GD32F470  -> 0x1
+ *       other F4  -> 0xF (fallback/default PHY setting)
+ *
+ * Only the RX/TX timing fields are modified. The register is updated using
+ * a masked read-modify-write sequence so that other RMSR bits (RMII mode,
+ * clock direction, CRS_DV behavior, etc.) remain unchanged.
+ *
+ * This configuration is platform-specific and compensates for MAC/PHY
+ * interface timing differences on the GD32F4xx family.
+ */
+
+ void CustomizedTiming()
 {
     DEBUG_ENTRY();
 #if defined(GD32F4XX)
 #define RMSR_RX_TIMING_VAL 0x4
 #if defined(GD32F407)
-#define RMSR_TX_TIMING_VAL 0x2 // The GD32F407 is now running at 200MHz
+#define RMSR_TX_TIMING_VAL 0x2
 #elif defined(GD32F470)
 #define RMSR_TX_TIMING_VAL 0x1
 #else
