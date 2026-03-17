@@ -54,7 +54,7 @@ int main()
     DisplayUdf display;
     ConfigStore config_store;
     network::Init();
-    FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+    FirmwareVersion fw(kSoftwareVersion, __DATE__, __TIME__);
     FlashCodeInstall spiflash_install;
 
     fw.Print("Art-Net 4 Node Serial [UART/SPI/I2C] {1 Universe}");

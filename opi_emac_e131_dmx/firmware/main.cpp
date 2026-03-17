@@ -63,7 +63,7 @@ int main() // NOLINT
     DisplayUdf display;
     ConfigStore config_store;
     network::Init();
-    FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+    FirmwareVersion fw(kSoftwareVersion, __DATE__, __TIME__);
     FlashCodeInstall spiflash_install;
 
     fw.Print("sACN E1.31 DMX {1 Universe}");

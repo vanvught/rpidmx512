@@ -72,7 +72,7 @@ int main() //NOLINT
     uint32_t break_to_break_max = 0;
     int16_t length;
 
-    printf("DMX Real-time Monitor [V%s] Orange Pi One Compiled on %s at %s\n", SOFTWARE_VERSION, __DATE__, __TIME__);
+    printf("DMX Real-time Monitor [V%s] Orange Pi One Compiled on %s at %s\n", kSoftwareVersion, __DATE__, __TIME__);
 
     DmxMonitor dmxMonitor;
 

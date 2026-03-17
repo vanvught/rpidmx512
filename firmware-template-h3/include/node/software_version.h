@@ -26,6 +26,6 @@
 #ifndef SOFTWARE_VERSION_H_
 #define SOFTWARE_VERSION_H_
 
-constexpr char SOFTWARE_VERSION[] = "1.0";
+constexpr char kSoftwareVersion[][] = "1.0";
 
 #endif /* SOFTWARE_VERSION_H_ */

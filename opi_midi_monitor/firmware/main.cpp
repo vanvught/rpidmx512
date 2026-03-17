@@ -52,7 +52,7 @@ int main() // NOLINT
     ConfigStore config_store;
     network::Init();
 #endif
-    FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+    FirmwareVersion fw(kSoftwareVersion, __DATE__, __TIME__);
     FlashCodeInstall spiflash_install;
 
     fw.Print("MIDI Monitor");

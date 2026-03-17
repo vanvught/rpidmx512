@@ -167,7 +167,7 @@ int main() // NOLINT
     Display display(4);
     ConfigStore config_store;
     network::Init();
-    FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+    FirmwareVersion fw(kSoftwareVersion, __DATE__, __TIME__);
 #if defined(H3)
     FlashCodeInstall spiflash_install;
 #endif

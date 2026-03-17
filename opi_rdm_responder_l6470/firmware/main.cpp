@@ -60,7 +60,7 @@ int main() // NOLINT
 #if !defined(NO_EMAC)    
     NetworkInit();
 #endif    
-    FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+    FirmwareVersion fw(kSoftwareVersion, __DATE__, __TIME__);
     FlashCodeInstall spiflash_install;
 
     fw.Print();

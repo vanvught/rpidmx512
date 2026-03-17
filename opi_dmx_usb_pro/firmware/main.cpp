@@ -70,7 +70,7 @@ int main() // NOLINT
     const auto kWidgetMode = widget_params.GetMode();
 
     uint8_t hw_text_length;
-    printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hal::BoardName(hw_text_length), __DATE__, __TIME__);
+    printf("[V%s] %s Compiled on %s at %s\n", kSoftwareVersion, hal::BoardName(hw_text_length), __DATE__, __TIME__);
     printf("RDM Controller with USB [Compatible with Enttec USB Pro protocol], Widget mode : %d (%s)\n", kWidgetMode,
            kWidgetModeNames[static_cast<uint32_t>(kWidgetMode)]);
     printf("Device UUID : %.2x%.2x:%.2x%.2x%.2x%.2x, ", device_uid[0], device_uid[1], device_uid[2], device_uid[3], device_uid[4],
