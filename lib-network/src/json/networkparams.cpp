@@ -33,8 +33,9 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+#include "network_config.h"
+#include "network_iface.h"
 #include "ip4/ip4_address.h"
-#include "network.h"
 #include "configstore.h"
 #include "json/networkparams.h"
 #include "json/networkparamsconst.h"
