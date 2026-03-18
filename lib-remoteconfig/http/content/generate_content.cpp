@@ -4,15 +4,24 @@
  */
 /* Copyright (C) 2023-2025 by Arjan van Vught mailto:info@gd32-dmx.org */
 
+
+#undef NDEBUG
+
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <dirent.h>
 #include <cassert>
 
-#include "httpd/httpd.h"
+#include "http/http.h"
 
-static constexpr char kSupportedExtensions[static_cast<int>(http::contentTypes::NOT_DEFINED)][8] = {"html", "css", "js", "json"};
+static constexpr char kSupportedExtensions[static_cast<int>(http::contentTypes::NOT_DEFINED)][8] = 
+{
+	"html", 
+	"css", 
+	"js", 
+	"json"
+};
 
 static constexpr char kContentHeader[] =
     "\n"
@@ -39,8 +48,8 @@ static constexpr char kHaveTimeEnd[] = "#endif /* !defined (CONFIG_HTTP_HTML_NO_
 static constexpr char kHaveRtcBegin[] = "#if !defined (CONFIG_HTTP_HTML_NO_RTC) && !defined (DISABLE_RTC)\n";
 static constexpr char kHaveRtcEnd[] = "#endif /* !defined (CONFIG_HTTP_HTML_NO_RTC) && !defined (DISABLE_RTC) */\n";
 
-static FILE* pFileContent;
-static FILE* pFileIncludes;
+static FILE* file_content;
+static FILE* file_includes;
 
 static http::contentTypes GetContentType(const char* file_name)
 {
@@ -99,65 +108,65 @@ static int ConvertToH(const char* file_name)
 
     if (bHasDMX)
     {
-        fwrite(kHaveDmxBegin, sizeof(char), sizeof(kHaveDmxBegin) - 1, pFileIncludes);
+        fwrite(kHaveDmxBegin, sizeof(char), sizeof(kHaveDmxBegin) - 1, file_includes);
     }
 
     const auto bHasRDM = (strstr(pFileNameOut, "rdm") != nullptr);
 
     if (bHasRDM)
     {
-        fwrite(kHaveRdmBegin, sizeof(char), sizeof(kHaveRdmBegin) - 1, pFileIncludes);
+        fwrite(kHaveRdmBegin, sizeof(char), sizeof(kHaveRdmBegin) - 1, file_includes);
     }
 
     const auto bHasSHOWFILE = (strstr(pFileNameOut, "showfile") != nullptr);
 
     if (bHasSHOWFILE)
     {
-        fwrite(kHaveShowfileBegin, sizeof(char), sizeof(kHaveShowfileBegin) - 1, pFileIncludes);
+        fwrite(kHaveShowfileBegin, sizeof(char), sizeof(kHaveShowfileBegin) - 1, file_includes);
     }
 
     const auto bHasTIME = (strstr(pFileNameOut, "time") != nullptr);
 
     if (bHasTIME)
     {
-        fwrite(kHaveTimeBegin, sizeof(char), sizeof(kHaveTimeBegin) - 1, pFileIncludes);
+        fwrite(kHaveTimeBegin, sizeof(char), sizeof(kHaveTimeBegin) - 1, file_includes);
     }
 
     const auto bHasRTC = (strstr(pFileNameOut, "rtc") != nullptr);
 
     if (bHasRTC)
     {
-        fwrite(kHaveRtcBegin, sizeof(char), sizeof(kHaveRtcBegin) - 1, pFileIncludes);
+        fwrite(kHaveRtcBegin, sizeof(char), sizeof(kHaveRtcBegin) - 1, file_includes);
     }
 
     auto i = snprintf(buffer, sizeof(buffer) - 1, "#%sinclude \"%s\"\n", (bHasDMX || bHasRDM || bHasSHOWFILE || bHasTIME || bHasRTC) ? " " : "", pFileNameOut);
     assert(i < static_cast<int>(sizeof(buffer)));
 
-    fwrite(buffer, sizeof(char), i, pFileIncludes);
+    fwrite(buffer, sizeof(char), i, file_includes);
 
     if (bHasDMX)
     {
-        fwrite(kHaveDmxEnd, sizeof(char), sizeof(kHaveDmxEnd) - 1, pFileIncludes);
+        fwrite(kHaveDmxEnd, sizeof(char), sizeof(kHaveDmxEnd) - 1, file_includes);
     }
 
     if (bHasRDM)
     {
-        fwrite(kHaveRdmEnd, sizeof(char), sizeof(kHaveRdmEnd) - 1, pFileIncludes);
+        fwrite(kHaveRdmEnd, sizeof(char), sizeof(kHaveRdmEnd) - 1, file_includes);
     }
 
     if (bHasSHOWFILE)
     {
-        fwrite(kHaveShowfileEnd, sizeof(char), sizeof(kHaveShowfileEnd) - 1, pFileIncludes);
+        fwrite(kHaveShowfileEnd, sizeof(char), sizeof(kHaveShowfileEnd) - 1, file_includes);
     }
 
     if (bHasTIME)
     {
-        fwrite(kHaveTimeEnd, sizeof(char), sizeof(kHaveTimeEnd) - 1, pFileIncludes);
+        fwrite(kHaveTimeEnd, sizeof(char), sizeof(kHaveTimeEnd) - 1, file_includes);
     }
 
     if (bHasRTC)
     {
-        fwrite(kHaveRtcEnd, sizeof(char), sizeof(kHaveRtcEnd) - 1, pFileIncludes);
+        fwrite(kHaveRtcEnd, sizeof(char), sizeof(kHaveRtcEnd) - 1, file_includes);
     }
 
     fwrite("static constexpr char ", sizeof(char), 22, pFileOut);
@@ -178,7 +187,7 @@ static int ConvertToH(const char* file_name)
     printf("Constant name: %s, ", pConstantName);
 
     fwrite(pConstantName, sizeof(char), strlen(pConstantName), pFileOut);
-    fwrite(pConstantName, sizeof(char), strlen(pConstantName), pFileContent);
+    fwrite(pConstantName, sizeof(char), strlen(pConstantName), file_content);
     fwrite("[] = {\n", sizeof(char), 7, pFileOut);
 
     unsigned nOffset = 0;
@@ -230,113 +239,114 @@ static int ConvertToH(const char* file_name)
 
 int main() // NOLINT
 {
-    pFileIncludes = fopen("includes.h", "w");
-    assert(pFileIncludes != nullptr);
+    file_includes = fopen("includes.h", "w");
+    assert(file_includes != nullptr);
 
-    pFileContent = fopen("content.h", "w");
-    assert(pFileContent != nullptr);
+    file_content = fopen("content.h", "w");
+    assert(file_content != nullptr);
 
-    fwrite(kContentHeader, sizeof(char), strlen(kContentHeader), pFileContent);
+    fwrite(kContentHeader, sizeof(char), strlen(kContentHeader), file_content);
 
-    auto* pDir = opendir(".");
+    auto* dir = opendir(".");
 
-    if (pDir != nullptr)
+    if (dir != nullptr)
     {
-        struct dirent* pDirEntry;
-        while ((pDirEntry = readdir(pDir)) != nullptr)
+        struct dirent* dir_entry;
+        while ((dir_entry = readdir(dir)) != nullptr)
         {
-            if (pDirEntry->d_name[0] == '.')
+            if (dir_entry->d_name[0] == '.')
             {
                 continue;
             }
 
-            auto contentType = GetContentType(pDirEntry->d_name);
-            const auto isSupported = (contentType != http::contentTypes::NOT_DEFINED);
-            printf("%s -> %c\n", pDirEntry->d_name, isSupported ? 'Y' : 'N');
+            const auto kContentType = GetContentType(dir_entry->d_name);
+            const auto kIsSupported = (kContentType != http::contentTypes::NOT_DEFINED);
+           
+			 printf("%s -> %c\n", dir_entry->d_name, kIsSupported ? 'Y' : 'N');
 
-            if (isSupported)
+            if (kIsSupported)
             {
-                auto* pFileName = new char[strlen(pDirEntry->d_name) + 9];
+                auto* pFileName = new char[strlen(dir_entry->d_name) + 9];
                 assert(pFileName != nullptr);
 
-                const auto bHasDMX = (strstr(pDirEntry->d_name, "dmx") != nullptr);
-                const auto bHasRDM = (strstr(pDirEntry->d_name, "rdm") != nullptr);
-                const auto bHasSHOWFILE = (strstr(pDirEntry->d_name, "showfile") != nullptr);
-                const auto bHasTIME = (strstr(pDirEntry->d_name, "time") != nullptr);
-                const auto bHasRTC = (strstr(pDirEntry->d_name, "rtc") != nullptr);
+                const auto bHasDMX = (strstr(dir_entry->d_name, "dmx") != nullptr);
+                const auto bHasRDM = (strstr(dir_entry->d_name, "rdm") != nullptr);
+                const auto bHasSHOWFILE = (strstr(dir_entry->d_name, "showfile") != nullptr);
+                const auto bHasTIME = (strstr(dir_entry->d_name, "time") != nullptr);
+                const auto bHasRTC = (strstr(dir_entry->d_name, "rtc") != nullptr);
 
                 if (bHasDMX)
                 {
-                    fwrite(kHaveDmxBegin, sizeof(char), sizeof(kHaveDmxBegin) - 1, pFileContent);
+                    fwrite(kHaveDmxBegin, sizeof(char), sizeof(kHaveDmxBegin) - 1, file_content);
                 }
 
                 if (bHasRDM)
                 {
-                    fwrite(kHaveRdmBegin, sizeof(char), sizeof(kHaveRdmBegin) - 1, pFileContent);
+                    fwrite(kHaveRdmBegin, sizeof(char), sizeof(kHaveRdmBegin) - 1, file_content);
                 }
 
                 if (bHasSHOWFILE)
                 {
-                    fwrite(kHaveShowfileBegin, sizeof(char), sizeof(kHaveShowfileBegin) - 1, pFileContent);
+                    fwrite(kHaveShowfileBegin, sizeof(char), sizeof(kHaveShowfileBegin) - 1, file_content);
                 }
 
                 if (bHasTIME)
                 {
-                    fwrite(kHaveTimeBegin, sizeof(char), sizeof(kHaveTimeBegin) - 1, pFileContent);
+                    fwrite(kHaveTimeBegin, sizeof(char), sizeof(kHaveTimeBegin) - 1, file_content);
                 }
 
                 if (bHasRTC)
                 {
-                    fwrite(kHaveRtcBegin, sizeof(char), sizeof(kHaveRtcBegin) - 1, pFileContent);
+                    fwrite(kHaveRtcBegin, sizeof(char), sizeof(kHaveRtcBegin) - 1, file_content);
                 }
 
-                auto i = snprintf(pFileName, strlen(pDirEntry->d_name) + 8, "\t{ \"%s\", ", pDirEntry->d_name);
-                fwrite(pFileName, sizeof(char), i, pFileContent);
+                auto i = snprintf(pFileName, strlen(dir_entry->d_name) + 8, "\t{ \"%s\", ", dir_entry->d_name);
+                fwrite(pFileName, sizeof(char), i, file_content);
                 delete[] pFileName;
 
-                auto nContentLength = ConvertToH(pDirEntry->d_name);
+                const auto kContentLength = ConvertToH(dir_entry->d_name);
 
                 char buffer[64];
-                i = snprintf(buffer, sizeof(buffer) - 1, ", %d, static_cast<http::contentTypes>(%d)", nContentLength, static_cast<int>(contentType));
+                i = snprintf(buffer, sizeof(buffer) - 1, ", %d, static_cast<http::contentTypes>(%d)", kContentLength, static_cast<int>(kContentType));
                 assert(i < static_cast<int>(sizeof(buffer)));
-                fwrite(buffer, sizeof(char), i, pFileContent);
+                fwrite(buffer, sizeof(char), i, file_content);
 
-                fwrite(" },\n", sizeof(char), 4, pFileContent);
+                fwrite(" },\n", sizeof(char), 4, file_content);
 
                 if (bHasDMX)
                 {
-                    fwrite(kHaveDmxEnd, sizeof(char), sizeof(kHaveDmxEnd) - 1, pFileContent);
+                    fwrite(kHaveDmxEnd, sizeof(char), sizeof(kHaveDmxEnd) - 1, file_content);
                 }
 
                 if (bHasRDM)
                 {
-                    fwrite(kHaveRdmEnd, sizeof(char), sizeof(kHaveRdmEnd) - 1, pFileContent);
+                    fwrite(kHaveRdmEnd, sizeof(char), sizeof(kHaveRdmEnd) - 1, file_content);
                 }
 
                 if (bHasSHOWFILE)
                 {
-                    fwrite(kHaveShowfileEnd, sizeof(char), sizeof(kHaveShowfileEnd) - 1, pFileContent);
+                    fwrite(kHaveShowfileEnd, sizeof(char), sizeof(kHaveShowfileEnd) - 1, file_content);
                 }
 
                 if (bHasTIME)
                 {
-                    fwrite(kHaveTimeEnd, sizeof(char), sizeof(kHaveTimeEnd) - 1, pFileContent);
+                    fwrite(kHaveTimeEnd, sizeof(char), sizeof(kHaveTimeEnd) - 1, file_content);
                 }
 
                 if (bHasRTC)
                 {
-                    fwrite(kHaveRtcEnd, sizeof(char), sizeof(kHaveRtcEnd) - 1, pFileContent);
+                    fwrite(kHaveRtcEnd, sizeof(char), sizeof(kHaveRtcEnd) - 1, file_content);
                 }
             }
         }
 
-        closedir(pDir);
+        closedir(dir);
     }
 
-    fclose(pFileIncludes);
+    fclose(file_includes);
 
-    fwrite("};\n", sizeof(char), 2, pFileContent);
-    fclose(pFileContent);
+    fwrite("};\n", sizeof(char), 2, file_content);
+    fclose(file_content);
 
     system("echo \'#ifndef CONTENT_H_' > tmp.h");
     system("echo \'#define CONTENT_H_\n' >> tmp.h");
