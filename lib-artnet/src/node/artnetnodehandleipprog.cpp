@@ -123,9 +123,6 @@ void ArtNetNode::HandleIpProg()
 
     if (is_changed)
     {
-        art_poll_reply_.status2 = static_cast<uint8_t>((art_poll_reply_.status2 & (~(artnet::Status2::kIpDhcp))) |
-                                                       (network::iface::Dhcp() ? artnet::Status2::kIpDhcp : artnet::Status2::kIpManualy));
-
         if (state_.send_art_poll_reply_on_change)
         {
             PollReplyQueueAdd(artnet::kPortAddressFirst, artnet::kPortAddressLast);

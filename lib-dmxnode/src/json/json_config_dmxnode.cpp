@@ -38,7 +38,6 @@ uint32_t GetDmxNode(char* buffer, uint32_t length)
     assert(dmx_node != nullptr);
 
  	return json::helpers::Serialize(buffer, length, [&](JsonDoc& doc) {	
-	    doc[json::DmxNodeParamsConst::kPersonality.name] = "node";
 	    doc[json::DmxNodeParamsConst::kNodeName.name] = dmx_node->GetLongName();
 	    doc[json::DmxNodeParamsConst::kFailsafe.name] = dmxnode::GetFailsafe(dmx_node->GetFailSafe());
 	    doc[json::DmxNodeParamsConst::kDisableMergeTimeout.name] = dmx_node->GetDisableMergeTimeout() ? 1 : 0;

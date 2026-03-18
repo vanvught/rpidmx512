@@ -29,7 +29,6 @@
 #include <cstdint>
 
 #include "artnetnode.h"
-#include "network.h"
 #include "json/artnetparams.h"
 #include "json/artnetparamsconst.h"
 #include "common/utils/utils_port.h"

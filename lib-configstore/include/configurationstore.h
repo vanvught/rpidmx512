@@ -167,8 +167,7 @@ struct Flags
 struct DmxNode
 {
     uint32_t flags;
-    uint8_t personality;
-    uint8_t reserved;
+    uint8_t reserved[2];
     uint16_t universe[dmxnode::kParamPorts];
     uint16_t direction;
     uint16_t merge_mode;

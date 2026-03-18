@@ -40,10 +40,9 @@ class DmxNodeParams : public JsonParamsBase<DmxNodeParams>
 
    private:
    	static_assert(static_cast<uint32_t>(dmxnode::OutputStyle::kDelta) == 0);
-    dmxnode::OutputStyle GetOutputStyleSet(uint8_t mask) const { return (store_dmxnode_.output_style & mask) == mask ? dmxnode::OutputStyle::kConstant : dmxnode::OutputStyle::kDelta; }
+    dmxnode::OutputStyle GetOutputStyleSet(uint8_t mask) const { return (store_dmxnode.output_style & mask) == mask ? dmxnode::OutputStyle::kConstant : dmxnode::OutputStyle::kDelta; }
 
    private:
-    static void SetPersonality(const char* val, uint32_t len);
     static void SetNodeName(const char* val, uint32_t len);
     static void SetFailsafe(const char* val, uint32_t len);
     static void SetDisableMergeTimeout(const char* val, uint32_t len);
@@ -53,8 +52,7 @@ class DmxNodeParams : public JsonParamsBase<DmxNodeParams>
     static void SetMergeModePort(const char* key, uint32_t key_len, const char* val, uint32_t val_len);
     static void SetOutputStylePort(const char* key, uint32_t key_len, const char* val, uint32_t val_len);
     
-    static constexpr json::Key kDmxNodeKeys[] = {
-        MakeKey(SetPersonality, DmxNodeParamsConst::kPersonality),         
+    static constexpr json::Key kDmxNodeKeys[] = {   
         MakeKey(SetNodeName, DmxNodeParamsConst::kNodeName),
         MakeKey(SetFailsafe, DmxNodeParamsConst::kFailsafe),         
         MakeKey(SetDisableMergeTimeout, DmxNodeParamsConst::kDisableMergeTimeout),
@@ -86,7 +84,7 @@ class DmxNodeParams : public JsonParamsBase<DmxNodeParams>
 #endif
     };
    
-    inline static common::store::DmxNode store_dmxnode_;
+    inline static common::store::DmxNode store_dmxnode;
 
     friend class JsonParamsBase<DmxNodeParams>;
 };

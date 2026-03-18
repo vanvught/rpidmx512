@@ -25,12 +25,6 @@ struct DmxNodeParamsConst
 {
     static constexpr char kFileName[] = "dmxnode.json";
 
-	static constexpr json::SimpleKey kPersonality {
-	    "personality",
-	    11,
-	    Fnv1a32("personality", 11)
-	};
-	
 	static constexpr json::SimpleKey kNodeName {
 	    "node_name",
 	    9,

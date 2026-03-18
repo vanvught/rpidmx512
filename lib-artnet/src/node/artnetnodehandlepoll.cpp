@@ -250,6 +250,9 @@ void ArtNetNode::SendPollReply(uint32_t port_index, uint32_t destination_ip, art
         art_poll_reply_.user_lo = static_cast<uint8_t>(kUserData);
         art_poll_reply_.user_hi = static_cast<uint8_t>(kUserData >> 8);
     }
+	
+	art_poll_reply_.status2 &= static_cast<uint8_t>(~artnet::Status2::kIpDhcp);
+	art_poll_reply_.status2 |= network::iface::Dhcp() ? artnet::Status2::kIpDhcp : artnet::Status2::kIpManualy;
 
     ProcessPollReply(port_index);
 
