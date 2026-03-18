@@ -65,10 +65,10 @@ class Base
 
         uid_[0] = RDMConst::MANUFACTURER_ID[0];
         uid_[1] = RDMConst::MANUFACTURER_ID[1];
-        uid_[2] = serial_number_[0];
-        uid_[3] = serial_number_[1];
-        uid_[4] = serial_number_[2];
-        uid_[5] = serial_number_[3];
+        uid_[2] = serial_number_[3];
+        uid_[3] = serial_number_[2];
+        uid_[4] = serial_number_[1];
+        uid_[5] = serial_number_[0];
     }
 
     uint8_t uid_[RDM_UID_SIZE];
