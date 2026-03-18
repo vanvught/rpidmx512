@@ -33,6 +33,7 @@
 #include "core/ip4/autoip.h"
 #include "net_config.h"
 #include "network_iface.h"
+#include "common/utils/utils_hex.h"
 #if !defined(CONFIG_NET_APPS_NO_MDNS)
 #include "apps/mdns.h"
 #endif
@@ -45,11 +46,6 @@ namespace network::iface
 static char s_hostname[kHostnameSize];
 static char s_domain_name[kDomainnameSize];
 static uint32_t s_nameservers[kNameserversCount];
-
-static constexpr char ToHex(char i)
-{
-    return static_cast<char>(((i) < 10) ? '0' + i : 'A' + (i - 10));
-}
 
 void CopyMacAddressTo(uint8_t* mac_address)
 {
@@ -92,12 +88,12 @@ static void BuildDefaultHostname()
 
     const auto* hw = netif::global::netif_default.hwaddr; // expects at least 6 bytes
 
-    s_hostname[k++] = ToHex(hw[3] >> 4);
-    s_hostname[k++] = ToHex(hw[3] & 0xF);
-    s_hostname[k++] = ToHex(hw[4] >> 4);
-    s_hostname[k++] = ToHex(hw[4] & 0xF);
-    s_hostname[k++] = ToHex(hw[5] >> 4);
-    s_hostname[k++] = ToHex(hw[5] & 0xF);
+    s_hostname[k++] = common::hex::ToCharUppercase(hw[3] >> 4);
+    s_hostname[k++] = common::hex::ToCharUppercase(hw[3] & 0xF);
+    s_hostname[k++] = common::hex::ToCharUppercase(hw[4] >> 4);
+    s_hostname[k++] = common::hex::ToCharUppercase(hw[4] & 0xF);
+    s_hostname[k++] = common::hex::ToCharUppercase(hw[5] >> 4);
+    s_hostname[k++] = common::hex::ToCharUppercase(hw[5] & 0xF);
 
     s_hostname[k] = '\0';
 
@@ -134,12 +130,12 @@ void SetHostname(const char* hostname)
             if (isprint(kC))
             {
                 *dst++ = *src++;
+				--n;
             }
             else
             {
                 src++;
             }
-            --n;
         }
 
         while (n > 0)

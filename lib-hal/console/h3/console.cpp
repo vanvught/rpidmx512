@@ -2,7 +2,7 @@
  * @file console.cpp
  *
  */
-/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +34,7 @@
 
 #include "console.h"
 #include "device/fb.h"
+#include "common/utils/utils_hex.h"
 #include "arm/arm.h"
 
 extern unsigned char font[] __attribute__((aligned(4)));
@@ -274,12 +275,10 @@ void Status(Colours colour, const char* s)
     cur_back = kBackCurrent;
 }
 
-#define TO_HEX(i) ((i) < 10) ? '0' + (i) : 'A' + ((i) - 10)
-
 void ConsolePuthex(uint8_t data)
 {
-    Putc((TO_HEX(((data & 0xF0) >> 4))));
-    Putc((TO_HEX(data & 0x0F)));
+    Putc((common::hex::ToCharUppercase(((data & 0xF0) >> 4))));
+    Putc((common::hex::ToCharUppercase(data & 0x0F)));
 }
 
 void PuthexFgBg(uint8_t data, Colours fore, Colours back)
@@ -290,8 +289,8 @@ void PuthexFgBg(uint8_t data, Colours fore, Colours back)
     cur_fore = fore;
     cur_back = back;
 
-    Putc((TO_HEX(((data & 0xF0) >> 4))));
-    Putc((TO_HEX(data & 0x0F)));
+    Putc((common::hex::ToCharUppercase(((data & 0xF0) >> 4))));
+    Putc((common::hex::ToCharUppercase(data & 0x0F)));
 
     cur_fore = fore_current;
     cur_back = back_current;

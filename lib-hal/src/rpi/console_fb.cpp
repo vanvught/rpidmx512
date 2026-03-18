@@ -31,6 +31,7 @@
 
 #include "device/fb.h"
 #include "arm/arm.h"
+#include "common/utils/utils_hex.h"
 
 extern unsigned char font[] __attribute__((aligned(4)));
 
@@ -232,11 +233,10 @@ void console::Status(uint32_t color, const char *s) {
 	cur_back = back_current;
 }
 
-#define TO_HEX(i)	((i) < 10) ? (uint8_t)'0' + (i) : (uint8_t)'A' + ((i) - (uint8_t)10)
 
 void ConsolePuthex(uint8_t data) {
-	Putc((int) (TO_HEX(((data & 0xF0) >> 4))));
-	Putc((int) (TO_HEX(data & 0x0F)));
+	Putc((common::hex::ToCharUppercase(((data & 0xF0) >> 4))));
+	Putc((common::hex::ToCharUppercase(data & 0x0F)));
 }
 
 void PuthexFgBg(uint8_t data, uint16_t fore, uint16_t back) {
@@ -246,8 +246,8 @@ void PuthexFgBg(uint8_t data, uint16_t fore, uint16_t back) {
 	cur_fore = fore;
 	cur_back = back;
 
-	Putc((int) (TO_HEX(((data & 0xF0) >> 4))));
-	Putc((int) (TO_HEX(data & 0x0F)));
+	Putc((common::hex::ToCharUppercase(((data & 0xF0) >> 4))));
+	Putc((common::hex::ToCharUppercase(data & 0x0F)));
 
 	cur_fore = fore_current;
 	cur_back = back_current;
