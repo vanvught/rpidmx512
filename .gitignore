@@ -112,7 +112,7 @@ linux_pp/linux_pp
 /opi_emac_eve_example
 *._h
 *._cpp
-/opi_emac_debug_lcd_udp
+
 do-tftp-bad.sh
 dummy.h
 *.su
@@ -124,3 +124,5 @@ linux_pp/.clangd
 /lib-hal/include/rpi
 *.BCM
 
+/opi_emac_debug_lcd_udp
+/opi_emac_debug_http_client

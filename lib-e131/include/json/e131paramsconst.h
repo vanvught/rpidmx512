@@ -1,7 +1,7 @@
 /**
  * @file e131paramsconst.h
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org */
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org */
 
 #ifndef JSON_E131PARAMSCONST_H_
 #define JSON_E131PARAMSCONST_H_
@@ -24,15 +24,15 @@ struct E131ParamsConst
 {
     static constexpr char kFileName[] = "e131.json";
 
-    static constexpr json::PortKey kPriorityPortA{"priority_port_a", 16, Fnv1a32("priority_port_a", 16)};
+    static constexpr json::PortKey kPriorityPortA{"priority_port_a", 15, Fnv1a32("priority_port_a", 15)};
 #if (MAX_ARRAY_SIZE > 1)
-    static constexpr json::PortKey kPriorityPortB{"priority_port_b", 16, Fnv1a32("priority_port_b", 16)};
+    static constexpr json::PortKey kPriorityPortB{"priority_port_b", 15, Fnv1a32("priority_port_b", 15)};
 #endif
 #if (MAX_ARRAY_SIZE > 2)
-    static constexpr json::PortKey kPriorityPortC{"priority_port_c", 16, Fnv1a32("priority_port_c", 16)};
+    static constexpr json::PortKey kPriorityPortC{"priority_port_c", 15, Fnv1a32("priority_port_c", 15)};
 #endif
 #if (MAX_ARRAY_SIZE == 4)
-    static constexpr json::PortKey kPriorityPortD{"priority_port_d", 16, Fnv1a32("priority_port_d", 16)};
+    static constexpr json::PortKey kPriorityPortD{"priority_port_d", 15, Fnv1a32("priority_port_d", 15)};
 #endif
 
     static constexpr json::PortKey kPriorityPort[] = 
