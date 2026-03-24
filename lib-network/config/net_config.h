@@ -2,7 +2,7 @@
  * @file net_config.h
  *
  */
-/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,10 @@
 #ifndef NET_CONFIG_H_
 #define NET_CONFIG_H_
 
+// Valid hostnames (as per RFC 1123) must consist only of ASCII letters (a-z, A-Z), digits (0-9), and hyphens (-). 
+// Labels must be 1-63 characters, with a maximum total length of 253 characters. 
+// They cannot start or end with a hyphen, and should not be all-numeric. 
+
 #if defined(__linux__) || defined (__APPLE__)
 # define UDP_MAX_PORTS_ALLOWED			32
 # define IGMP_MAX_JOINS_ALLOWED			(4 + (8 * 4)) /* 8 outputs x 4 Universes */
@@ -35,7 +39,7 @@
 # define TCP_MAX_PORTS_ALLOWED			1
 # if defined (H3)
 #  if !defined(HOST_NAME_PREFIX)
-#   define HOST_NAME_PREFIX				"allwinner_"
+#   define HOST_NAME_PREFIX				"allwinner-"
 #  endif
 #  define UDP_MAX_PORTS_ALLOWED			16
 #  define IGMP_MAX_JOINS_ALLOWED		(4 + (8 * 4)) /* 8 outputs x 4 Universes */
@@ -46,7 +50,7 @@
  */
 #  define CHECKSUM_BY_HARDWARE
 #  if !defined(HOST_NAME_PREFIX)
-#   define HOST_NAME_PREFIX				"gigadevice_"
+#   define HOST_NAME_PREFIX				"gigadevice-"
 #  endif
 #  if !defined (UDP_MAX_PORTS_ALLOWED)
 #   define UDP_MAX_PORTS_ALLOWED		8
