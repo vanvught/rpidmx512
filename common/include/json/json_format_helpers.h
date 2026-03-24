@@ -36,23 +36,22 @@ constexpr size_t kOffsetBufferSize = 12; // For timezone offsets e.g. "+01:00"
 
 [[nodiscard]] inline const char* FormatFloat(float value, char (&buf)[kFloatBufferSize], const char* fmt = "%.2f")
 {
-    snprintf(buf, sizeof(buf) - 1, fmt, value);
+    snprintf(buf, sizeof(buf), fmt, value);
     return buf;
 }
 
 [[nodiscard]] inline const char* FormatUtcOffset(int32_t hours, uint32_t minutes, char (&buf)[kOffsetBufferSize])
 {
-    if (hours == 0)
+    if (hours <= 0)
     {
-        snprintf(buf, sizeof(buf) - 1, "%.2d:%.2u", hours, minutes);
+        snprintf(buf, sizeof(buf), "%.2d:%.2u", hours, minutes);
     }
     else
     {
-        snprintf(buf, sizeof(buf) - 1, "%c%.2d:%.2u", hours < 0 ? '-' : '+', hours, minutes);
+        snprintf(buf, sizeof(buf), "+%.2d:%.2u", hours, minutes);
     }
     return buf;
 }
-
 } // namespace format
 
 #endif  // JSON_JSON_FORMAT_HELPERS_H_
