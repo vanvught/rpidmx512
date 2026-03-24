@@ -378,7 +378,7 @@ void static Join(uint32_t group_address)
     }
 
 #ifndef NDEBUG
-    console::Error("igmp::Join");
+    console::Error("igmp::Join\n");
 #endif
     DEBUG_ENTRY();
 }

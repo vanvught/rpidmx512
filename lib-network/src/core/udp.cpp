@@ -249,7 +249,7 @@ int32_t Begin(uint16_t localport, UdpCallbackFunctionPtr callback)
     }
 
 #ifndef NDEBUG
-    console::Error("network::udp::Begin");
+    console::Error("network::udp::Begin\n");
 #endif
     return -1;
 }
@@ -274,7 +274,7 @@ int32_t End(uint16_t localport)
     }
 
 #ifndef NDEBUG
-    console::Error("network::udp::End");
+    console::Error("network::udp::End\n");
 #endif
     return -1;
 }

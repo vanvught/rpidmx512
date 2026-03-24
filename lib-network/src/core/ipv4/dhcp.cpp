@@ -250,7 +250,7 @@ void Inform()
 #ifndef NDEBUG
     if (kHandle < 0)
     {
-        console::Error("DHCP Inform");
+        console::Error("DHCP Inform\n");
         return;
     }
 #endif
@@ -766,7 +766,7 @@ bool Start()
 #ifndef NDEBUG
     if (dhcp->handle < 0)
     {
-        console::Error("DHCP Start");
+        console::Error("DHCP Start\n");
         DEBUG_EXIT();
         return false;
     }

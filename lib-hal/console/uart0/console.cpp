@@ -23,6 +23,7 @@
  * THE SOFTWARE.
  */
 
+#include <cstdint>
 #include <cstring>
 
 #include "console.h"

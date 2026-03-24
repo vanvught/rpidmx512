@@ -2,7 +2,7 @@
  * @file perror.cpp
  *
  */
-/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,7 @@ namespace console
 void Error(const char*);
 int Putc(int);
 int Puts(const char*);
+void Write(const char*, unsigned int);
 } // namespace console
 
 /*
@@ -107,7 +108,7 @@ extern "C"
         if (s && *s)
         {
             console::Error(s);
-            console::Puts(": ");
+            console::Write(": ", 2);
         }
 
         console::Error(ptr);

@@ -1664,7 +1664,7 @@ int32_t Connect(uint32_t remote_ip, uint16_t remote_port, CallbackConnect cb_con
     const auto& netif = netif::global::netif_default;
     if (__builtin_expect((netif.ip.addr == 0), 0))
     {
-        console::Error("Connect: No ip!");
+        console::Error("Connect: No ip!\n");
         return -1;
     }
 
@@ -1673,7 +1673,7 @@ int32_t Connect(uint32_t remote_ip, uint16_t remote_port, CallbackConnect cb_con
     auto* tcb = AllocTcb(remote_port, &out_index);
     if (tcb == nullptr)
     {
-        console::Error("Connect: No TCB!");
+        console::Error("Connect: No TCB!\n");
         return -2;
     }
 
@@ -1714,7 +1714,7 @@ int32_t Close(ConnHandle conn_handle) // graceful FIN
 {
     if (conn_handle >= TCP_MAX_TCBS_ALLOWED)
     {
-        console::Error("Close: Connection handle!");
+        console::Error("Close: Connection handle!\n");
         return -1;
     }
 
@@ -1722,7 +1722,7 @@ int32_t Close(ConnHandle conn_handle) // graceful FIN
 
     if (!c->in_use || c->state == kStateClosed)
     {
-        console::Error("Close: TCB!");
+        console::Error("Close: TCB!\n");
         return -1;
     }
 
@@ -1743,7 +1743,7 @@ int32_t Close(ConnHandle conn_handle) // graceful FIN
     // We only support graceful close from states where FIN makes sense here.
     if (c->state != kStateEstablished && c->state != kStateCloseWait)
     {
-        console::Error("Close: Not graceful!");
+        console::Error("Close: Not graceful!\n");
         return -1;
     }
 

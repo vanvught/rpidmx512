@@ -482,7 +482,7 @@ static void __attribute__((interrupt("FIQ"))) FiqDmx()
     }
     else
     {
-        console::Error("spurious interrupt");
+        console::Error("spurious interrupt\n");
     }
 
     __DMB();

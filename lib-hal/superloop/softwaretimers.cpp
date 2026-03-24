@@ -77,7 +77,7 @@ TimerHandle_t SoftwareTimerAdd(uint32_t interval_millis, const TimerCallbackFunc
     if (s_timers_count >= hal::kSoftwareTimersMax)
     {
 #ifndef NDEBUG
-        console::Error("SoftwareTimerAdd: Max timer limit reached");
+        console::Error("SoftwareTimerAdd: Max timer limit reached\n");
 #endif
         return -1;
     }
@@ -134,7 +134,7 @@ bool SoftwareTimerDelete(TimerHandle_t& id)
     }
 
 #ifndef NDEBUG
-    console::Error("SoftwareTimerDelete: Timer not found");
+    console::Error("SoftwareTimerDelete: Timer not found\n");
 #endif
 
     DEBUG_EXIT();
@@ -163,7 +163,7 @@ bool SoftwareTimerChange(TimerHandle_t id, uint32_t interval_millis)
     }
 
 #ifndef NDEBUG
-    console::Error("SoftwareTimerChange: Timer not found");
+    console::Error("SoftwareTimerChange: Timer not found\n");
 #endif
 
     return false;
