@@ -39,7 +39,7 @@ namespace network::memory
 {
 inline constexpr uint32_t kBlocks =
 #if !defined(CONFIG_NETWORK_MEMORY_BLOCKS)
-    8;
+    12;
 #else
     CONFIG_NETWORK_MEMORY_BLOCKS;
 #endif
@@ -93,7 +93,7 @@ class Allocator
     {
         if (IsFull())
         {
-            console::Error("Full!");
+            console::Error("Allocate:Full!\n");
             return nullptr;
         }
 
@@ -113,7 +113,7 @@ class Allocator
 
         if (IsFull())
         {
-            console::Error("Full!");
+            console::Error("Allocate:Full!\n");
             return UINT16_MAX;
         }
 
