@@ -48,8 +48,23 @@ enum class OutputType
     kUndefined
 };
 
-inline constexpr const char* kOutputTypeNames[static_cast<uint32_t>(OutputType::kUndefined)] = {
-    "DMX", "DMX/RDM", "Pixel", "Pixel/DMX", "PWM", "RGB Panel", "Serial", "OSC", "Monitor", "Stepper", "Player", "Art-Net", "Timecode", "None"};
+inline constexpr const char* kOutputTypeNames[static_cast<uint32_t>(OutputType::kUndefined)] = 
+{
+    "DMX", 
+	"DMX/RDM", 
+	"Pixel", 
+	"Pixel/DMX", 
+	"PWM", 
+	"RGB Panel", 
+	"Serial", 
+	"OSC", 
+	"Monitor", 
+	"Stepper", 
+	"Player", 
+	"Art-Net", 
+	"Timecode", 
+	"None"
+};
 
 inline const char* GetOutputType(OutputType type)
 {

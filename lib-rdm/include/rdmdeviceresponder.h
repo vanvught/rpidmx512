@@ -40,11 +40,6 @@
 #include "dmxnode.h"
 #include "dmxnode_outputtype.h"
 
-namespace configstore
-{
-void SetFactoryDefaults();
-} // namespace configstore
-
 class RDMDeviceResponder
 {
     static constexpr char kLanguage[2] = {'e', 'n'};
@@ -192,7 +187,7 @@ class RDMDeviceResponder
         checksum_ = CalculateChecksum();
         is_factory_defaults_ = true;
 
-        configstore::SetFactoryDefaults();
+        rdm::device::SetFactoryDefaults();
 
         DEBUG_EXIT();
     }

@@ -46,6 +46,7 @@ uint32_t BootSoftwareVersionId();
 uint32_t SoftwareVersionId();
 const char* SoftwareVersionLabel(uint32_t& length);
 const char* RootLabel(uint8_t& length);
+void SetFactoryDefaults();
 
 class Device
 {

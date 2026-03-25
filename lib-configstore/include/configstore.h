@@ -55,7 +55,16 @@ class ConfigStore : StoreDevice
         kWriting
     };
 
-    [[maybe_unused]] static constexpr char kStateNames[7][16] = {"IDLE", "CHANGED", "CHANGED_WAITING", "ERASING", "ERASED", "ERASED_WAITING", "WRITING"};
+    [[maybe_unused]] static constexpr char kStateNames[7][16] = 
+	{
+		"IDLE", 
+		"CHANGED", 
+		"CHANGED_WAITING", 
+		"ERASING", 
+		"ERASED", 
+		"ERASED_WAITING", 
+		"WRITING"
+	};
 
    public:
     ConfigStore()
@@ -118,6 +127,12 @@ class ConfigStore : StoreDevice
     ConfigStore& operator=(ConfigStore&&) = delete;
 
     ~ConfigStore() = default;
+	
+	void Reset()
+	{
+		memset(s_store, 0, sizeof(s_store));
+		SetStatusChanged();	
+	}
 
     bool Commit() { return Flash(); }
 

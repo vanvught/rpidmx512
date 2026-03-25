@@ -55,8 +55,8 @@
 #endif
 
 #include "hal.h"
-
- #include "firmware/debug/debug_debug.h"
+#include "configstore.h"
+#include "firmware/debug/debug_debug.h"
 
 static constexpr char UNKNOWN[] = "Unknown";
 
@@ -287,6 +287,7 @@ const char* SysName(uint8_t& length)
 
 bool Reboot()
 {
+    ConfigstoreCommit();
 #if defined(__APPLE__)
     return false;
 #else

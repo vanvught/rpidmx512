@@ -2,7 +2,7 @@
  * @file remoteconfig.cpp
  *
  */
-/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,7 @@
 #include "remoteconfig.h"
 #include "firmwareversion.h"
 #include "hal.h"
-#include "network.h"
+#include "network_udp.h"
 #if !defined(CONFIG_REMOTECONFIG_MINIMUM)
 #include "apps/mdns.h"
 #include "dmxnode_nodetype.h"
@@ -44,7 +44,7 @@
 #include "display.h"
 #include "configstore.h"
 #include "firmware/debug/debug_dump.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
 namespace remoteconfig::udp
 {
@@ -91,11 +91,24 @@ constexpr struct RemoteConfig::Commands RemoteConfig::kSet[] = {
     {&RemoteConfig::HandleDisplaySet, "display#", 8, true} //
 };
 
-static constexpr char kOutput[static_cast<uint32_t>(remoteconfig::Output::LAST)][12] = {"DMX",     "RDM",    "Monitor", "Pixel",  "TimeCode",  "OSC", "Config",
-                                                                                        "Stepper", "Player", "Art-Net", "Serial", "RGB Panel", "PWM"};
+static constexpr char kOutput[static_cast<uint32_t>(remoteconfig::Output::LAST)][12] = 
+{
+	"DMX",     
+	"RDM",    
+	"Monitor", 
+	"Pixel",  
+	"TimeCode",  
+	"OSC", 
+	"Config",
+	"Stepper", 
+	"Player", 
+	"Art-Net", 
+	"Serial", 
+	"RGB Panel", 
+	"PWM"
+};
 
-RemoteConfig::RemoteConfig(remoteconfig::Output output, uint32_t active_outputs)
-    : output_(output), active_outputs_(active_outputs)
+RemoteConfig::RemoteConfig(remoteconfig::Output output, uint32_t active_outputs) : output_(output), active_outputs_(active_outputs)
 {
     DEBUG_ENTRY();
 
@@ -104,7 +117,7 @@ RemoteConfig::RemoteConfig(remoteconfig::Output output, uint32_t active_outputs)
     assert(s_this == nullptr);
     s_this = this;
 
-     network::iface::CopyMacAddressTo(s_list.mac_address);
+    network::iface::CopyMacAddressTo(s_list.mac_address);
     s_list.output = static_cast<uint8_t>(output);
     s_list.active_outputs = static_cast<uint8_t>(active_outputs);
 
@@ -143,7 +156,6 @@ RemoteConfig::~RemoteConfig()
         delete http_daemon_;
     }
 #endif
-
     network::apps::mdns::ServiceRecordDelete(network::apps::mdns::Services::kConfig);
 #endif
 
@@ -156,10 +168,10 @@ RemoteConfig::~RemoteConfig()
 void RemoteConfig::SetDisplayName(const char* display_name)
 {
     DEBUG_ENTRY();
-    
+
     char array[common::store::remoteconfig::kDisplayNameLength];
 
-	size_t len = strlen(display_name);
+    size_t len = strlen(display_name);
     len = len > (common::store::remoteconfig::kDisplayNameLength - 1) ? common::store::remoteconfig::kDisplayNameLength - 1 : len;
     memcpy(reinterpret_cast<char*>(array), display_name, len);
 
@@ -167,20 +179,20 @@ void RemoteConfig::SetDisplayName(const char* display_name)
     {
         array[i] = '\0';
     }
-    
-     ConfigStore::Instance().RemoteConfigUpdateArray(&common::store::RemoteConfig::display_name, array, common::store::remoteconfig::kDisplayNameLength);
+
+    ConfigStore::Instance().RemoteConfigUpdateArray(&common::store::RemoteConfig::display_name, array, common::store::remoteconfig::kDisplayNameLength);
 
     DEBUG_EXIT();
 }
 
-namespace configstore
-{
-void SetFactoryDefaults();
-}
-
 void RemoteConfig::HandleFactory()
 {
-    configstore::SetFactoryDefaults();
+     DEBUG_ENTRY();
+	 
+	 ConfigStore::Instance().Reset();
+	 HandleReboot();
+	 
+	 DEBUG_EXIT();
 }
 
 void RemoteConfig::Input(const uint8_t* buffer, uint32_t size, uint32_t from_ip, [[maybe_unused]] uint16_t from_port)
@@ -301,7 +313,7 @@ void RemoteConfig::HandleList()
 #if !defined(CONFIG_REMOTECONFIG_MINIMUM)
     const auto* const kNodeTypeName = dmxnode::GetNodeType(dmxnode::kNodeType);
 #else
-	const auto* const kNodeTypeName = "Bootloader TFTP";
+    const auto* const kNodeTypeName = "Bootloader TFTP";
 #endif
 
     if (display_name[0] != '\0')

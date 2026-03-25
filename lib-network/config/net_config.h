@@ -33,7 +33,7 @@
 #if defined(__linux__) || defined (__APPLE__)
 # define UDP_MAX_PORTS_ALLOWED			32
 # define IGMP_MAX_JOINS_ALLOWED			(4 + (8 * 4)) /* 8 outputs x 4 Universes */
-# define TCP_MAX_TCBS_ALLOWED			16
+# define TCP_MAX_TCBS_ALLOWED			32
 # define TCP_MAX_PORTS_ALLOWED			2
 #else
 # define TCP_MAX_PORTS_ALLOWED			1
