@@ -2,7 +2,7 @@
  * @file json_format_helpers.h
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,30 +28,46 @@
 
 #include <cstdio>
 #include <cstdint>
+#include <cassert>
 
 namespace format
 {
 constexpr size_t kFloatBufferSize = 8;   // For "%.2f", "%.1f"
 constexpr size_t kOffsetBufferSize = 12; // For timezone offsets e.g. "+01:00"
 
-[[nodiscard]] inline const char* FormatFloat(float value, char (&buf)[kFloatBufferSize], const char* fmt = "%.2f")
+inline void Append2Digits(char*& p, uint32_t v)
+{
+    *p++ = static_cast<char>('0' + (v / 10));
+    *p++ = static_cast<char>('0' + (v % 10));
+}
+
+inline const char* Float(float value, char (&buf)[kFloatBufferSize], const char* fmt = "%.2f")
 {
     snprintf(buf, sizeof(buf), fmt, value);
     return buf;
 }
 
-[[nodiscard]] inline const char* FormatUtcOffset(int32_t hours, uint32_t minutes, char (&buf)[kOffsetBufferSize])
+inline const char* UtcOffset(int32_t hours, uint32_t minutes, char (&buf)[kOffsetBufferSize])
 {
-    if (hours <= 0)
+    const auto kNegative = hours < 0;
+    if (kNegative) hours = -hours;
+
+    auto* p = buf;
+
+    if (hours != 0)
     {
-        snprintf(buf, sizeof(buf), "%.2d:%.2u", hours, minutes);
+        *p++ = kNegative ? '-' : '+';
     }
-    else
-    {
-        snprintf(buf, sizeof(buf), "+%.2d:%.2u", hours, minutes);
-    }
+
+    Append2Digits(p, static_cast<uint32_t>(hours));
+    *p++ = ':';
+    Append2Digits(p, minutes);
+    *p = '\0';
+
+    assert(static_cast<size_t>((p - buf) + 1) <= kOffsetBufferSize);
+
     return buf;
 }
 } // namespace format
 
-#endif  // JSON_JSON_FORMAT_HELPERS_H_
+#endif // JSON_JSON_FORMAT_HELPERS_H_

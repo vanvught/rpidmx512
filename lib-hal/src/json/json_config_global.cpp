@@ -37,7 +37,7 @@ uint32_t GetGlobal(char* buffer, uint32_t length) {
 
     return json::helpers::Serialize(buffer, length, [&](JsonDoc& doc) {
         char offset[format::kOffsetBufferSize];
-        doc[GlobalParamsConst::kUtcOffset.name] = format::FormatUtcOffset(hours, minutes, offset);
+        doc[GlobalParamsConst::kUtcOffset.name] = format::UtcOffset(hours, minutes, offset);
     });
 }
 

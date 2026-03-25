@@ -52,7 +52,7 @@ uint32_t GetGps(char* buffer, uint32_t length)
 	    doc[GpsParamsConst::kModule.name] = gps::GetModule(gps.GetModule());
 	    doc[GpsParamsConst::kEnable.name] = static_cast<uint32_t>(common::IsFlagSet(kFlags, Flags::Flag::kEnable));
 	    char offset[format::kOffsetBufferSize];
-	    doc[GpsParamsConst::kUtcOffset.name] = format::FormatUtcOffset(hours, minutes, offset);
+	    doc[GpsParamsConst::kUtcOffset.name] = format::UtcOffset(hours, minutes, offset);
     });
 }
 

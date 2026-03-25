@@ -100,7 +100,7 @@ uint32_t GetLtc(char* buffer, uint32_t length)
     	uint32_t minutes = 0;
     	hal::utc::SplitOffset(kUtcOffset, hours, minutes);
     	char offset[format::kOffsetBufferSize];
-	    doc[LtcParamsConst::kUtcOffset.name] = format::FormatUtcOffset(hours, minutes, offset);
+	    doc[LtcParamsConst::kUtcOffset.name] = format::UtcOffset(hours, minutes, offset);
 	    // source=internal
 	    doc[LtcParamsConst::kFps.name] = kFps;
 	    doc[LtcParamsConst::kStartFrame.name] = kStartFrame;
