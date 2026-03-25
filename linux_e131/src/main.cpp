@@ -34,8 +34,6 @@
 #include "json/dmxnodeparams.h"
 #include "dmxmonitor.h"
 #include "json/dmxmonitorparams.h"
-#include "rdmnetdevice.h"
-#include "rdmdevice.h"
 #include "rdm_e120.h"
 #include "configstore.h"
 #include "remoteconfig.h"
@@ -75,11 +73,6 @@ int main(int argc, char** argv)
 
     DmxNodeNode dmx_node_node;
     dmx_node_node.SetOutput(&monitor);
-    dmx_node_node.Print();
-
-    RDMNetDevice llrp_only_device;
-	llrp_only_device.Print();
-
     dmx_node_node.Print();
 
 #if defined(NODE_SHOWFILE)
