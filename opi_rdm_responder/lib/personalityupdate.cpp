@@ -41,11 +41,11 @@ void RDMResponder::PersonalityUpdate(uint32_t personality)
 
 #if defined(CONFIG_RDM_MANUFACTURER_PIDS_SET)
     assert(personality != 0);
-    assert((personality - 1U) < static_cast<uint32_t>(pixel::Type::UNDEFINED));
+    assert((personality - 1U) < static_cast<uint32_t>(pixel::LedType::kUndefined));
 
     const auto kType = static_cast<uint8_t>(personality - 1);
     auto& configuration = PixelDmxConfiguration::Get();
-    configuration.SetType(common::FromValue<pixel::Type>(kType));
+    configuration.SetType(common::FromValue<pixel::LedType>(kType));
     configuration.Validate(1);
 
     dmxled_store::SaveType(kType);

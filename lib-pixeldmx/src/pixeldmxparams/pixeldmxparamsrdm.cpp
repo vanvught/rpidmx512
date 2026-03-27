@@ -73,17 +73,17 @@ void PixelDmxParamsRdm::SetDataImpl([[maybe_unused]] uint32_t port_index, const 
             data_ = 0xFF;
 
             auto slot_data = data[static_cast<uint32_t>(pixeldmx::paramsdmx::SlotsInfo::TYPE)];
-            uint8_t undefined = common::ToValue(pixel::Type::UNDEFINED);
+            uint8_t undefined = common::ToValue(pixel::LedType::kUndefined);
             const auto kType = slot_data < undefined ? slot_data : undefined;
             slot_data = data[static_cast<uint32_t>(pixeldmx::paramsdmx::SlotsInfo::MAP)];
-            undefined = common::ToValue(pixel::Map::UNDEFINED);
+            undefined = common::ToValue(pixel::LedMap::kUndefined);
             const auto kMap = slot_data < undefined ? slot_data : undefined;
             const auto kCount = data[static_cast<uint32_t>(pixeldmx::paramsdmx::SlotsInfo::COUNT)];
             const auto kGroupingCount = data[static_cast<uint32_t>(pixeldmx::paramsdmx::SlotsInfo::GROUPING_COUNT)];
 
             auto& configuration = PixelDmxConfiguration::Get();
-            configuration.SetType(common::FromValue<pixel::Type>(kType));
-            configuration.SetMap(common::FromValue<pixel::Map>(kMap));
+            configuration.SetType(common::FromValue<pixel::LedType>(kType));
+            configuration.SetMap(common::FromValue<pixel::LedMap>(kMap));
             configuration.SetCount(kCount);
             configuration.SetGroupingCount(kGroupingCount);
             configuration.Validate(1);

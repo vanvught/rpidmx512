@@ -3,7 +3,7 @@
  */
 /*
  * Copyright (C) 2019-2020 by hippy mailto:dmxout@gmail.com
- * Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+ * Copyright (C) 2019-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,13 +39,13 @@
 #include "ltcdisplaypixel7segment.h"
 #include "pixeldisplay7segment.h"
 #include "pixeltype.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
-LtcDisplayPixel7Segment::LtcDisplayPixel7Segment(pixel::Type type, pixel::Map map)
+LtcDisplayPixel7Segment::LtcDisplayPixel7Segment(pixel::LedType led_type, pixel::LedMap led_map)
 {
     DEBUG_ENTRY();
 
-    pixel_7segment_ = new WS28xxDisplay7Segment(type, map);
+    pixel_7segment_ = new WS28xxDisplay7Segment(led_type, led_map);
     assert(pixel_7segment_ != nullptr);
 
     DEBUG_EXIT();

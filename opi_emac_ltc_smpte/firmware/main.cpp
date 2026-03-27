@@ -273,7 +273,7 @@ int main() // NOLINT
         else
         {
             const auto kWs28xxType = ConfigStore::Instance().LtcDisplayGet(&common::store::LtcDisplay::ws28xx_type);
-            display_rgb.Init(common::FromValue<pixel::Type>(kWs28xxType));
+            display_rgb.Init(common::FromValue<pixel::LedType>(kWs28xxType));
         }
 
         display_rgb.Print();

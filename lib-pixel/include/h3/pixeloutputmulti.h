@@ -1,7 +1,7 @@
 /**
  * @file pixeloutputmulti.h
  */
-/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -124,12 +124,12 @@ class PixelOutputMulti final
         }
     }
 
-    inline void SetColourWS2801(uint32_t port_index, uint32_t pixel_index, uint8_t colour1, uint8_t colour2, uint8_t nColour3)
+    inline void SetColourWS2801(uint32_t port_index, uint32_t pixel_index, uint8_t colour1, uint8_t colour2, uint8_t colour3)
     {
-        SetColour(port_index, pixel_index, colour1, colour2, nColour3);
+        SetColour(port_index, pixel_index, colour1, colour2, colour3);
     }
 
-    inline void SetPixel4Bytes(uint32_t port_index, uint32_t pixel_index, uint8_t red, uint8_t green, uint8_t blue, uint8_t nWhite)
+    inline void SetPixel4Bytes(uint32_t port_index, uint32_t pixel_index, uint8_t red, uint8_t green, uint8_t blue, uint8_t white)
     {
         uint32_t local_buffer[32] __attribute__((aligned(32)));
         const auto kPixelIndex = pixel_index * pixel::single::RGBW;
@@ -171,7 +171,7 @@ class PixelOutputMulti final
                 BIT_CLEAR(local_buffer[16 + j], port_index);
             }
 
-            if (mask & nWhite)
+            if (mask & white)
             {
                 BIT_SET(local_buffer[24 + j], port_index);
             }

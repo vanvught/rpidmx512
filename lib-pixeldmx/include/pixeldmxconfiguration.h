@@ -2,7 +2,7 @@
  * @file pixeldmxconfiguration.h
  *
  */
-/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -101,10 +101,10 @@ class PixelDmxConfiguration : public PixelConfiguration
 
         if (!PixelConfiguration::IsRTZProtocol())
         {
-            if (!((PixelConfiguration::GetType() == pixel::Type::WS2801) || (PixelConfiguration::GetType() == pixel::Type::APA102) ||
-                  (PixelConfiguration::GetType() == pixel::Type::SK9822)))
+            if (!((PixelConfiguration::GetType() == pixel::LedType::kWS2801) || (PixelConfiguration::GetType() == pixel::LedType::kAPA102) ||
+                  (PixelConfiguration::GetType() == pixel::LedType::kSK9822)))
             {
-                PixelConfiguration::SetType(pixel::Type::WS2801);
+                PixelConfiguration::SetType(pixel::LedType::kWS2801);
             }
 
             PixelConfiguration::Validate();
@@ -112,7 +112,7 @@ class PixelDmxConfiguration : public PixelConfiguration
 
         port_info_.begin_index_port[0] = 0;
 
-        if (PixelConfiguration::GetType() == pixel::Type::SK6812W)
+        if (PixelConfiguration::GetType() == pixel::LedType::kSK6812W)
         {
             port_info_.begin_index_port[1] = 128;
             port_info_.begin_index_port[2] = 256;

@@ -318,14 +318,14 @@ class PixelDmxMulti final : public PixelDmxConfiguration
 
                 switch (kPixelType)
                 {
-                    case pixel::Type::WS2801:
+                    case pixel::LedType::kWS2801:
                         output_type_.SetColourWS2801(portindex, pixelindex, r, g, b);
                         break;
-                    case pixel::Type::APA102:
-                    case pixel::Type::SK9822:
+                    case pixel::LedType::kAPA102:
+                    case pixel::LedType::kSK9822:
                         output_type_.SetPixel4Bytes(portindex, 1 + pixelindex, PixelDmxConfiguration::GetGlobalBrightness(), b, g, r);
                         break;
-                    case pixel::Type::P9813:
+                    case pixel::LedType::kP9813:
                     {
                         const auto kFlag = static_cast<uint8_t>(0xC0 | ((~b & 0xC0) >> 2) | ((~r & 0xC0) >> 4) | ((~r & 0xC0) >> 6));
                         output_type_.SetPixel4Bytes(portindex, 1 + pixelindex, kFlag, b, g, r);

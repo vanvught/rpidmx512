@@ -2,7 +2,7 @@
  * @file json_status_pixel.cpp
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,6 @@
 #include <cstdint>
 #include <cstdio>
 
-#include "pixelconfiguration.h"
 #if defined(OUTPUT_DMX_PIXEL)
 #include "pixeloutput.h"
 #elif defined(OUTPUT_DMX_PIXEL_MULTI)
@@ -34,6 +33,8 @@
 #endif
 
 #if defined(OUTPUT_DMX_PIXEL) || defined(OUTPUT_DMX_PIXEL_MULTI)
+#include "pixelconfiguration.h"
+
 namespace json::status
 {
 uint32_t Pixel(char* out_buffer, uint32_t out_buffer_size)
@@ -41,10 +42,11 @@ uint32_t Pixel(char* out_buffer, uint32_t out_buffer_size)
     auto& configuration = PixelConfiguration::Get();
     const auto kUserData = PixelOutputType::Get()->GetUserData();
 
-    return static_cast<uint32_t>(snprintf(out_buffer, out_buffer_size, 
-    "{\"refresh_rate\":\"%u\",\"frame_rate\":\"%u\"}", 
-    configuration.GetRefreshRate(), 
-    kUserData));
+    return static_cast<uint32_t>(
+        snprintf(out_buffer, out_buffer_size, 
+			"{\"refresh_rate\":\"%u\",\"frame_rate\":\"%u\"}", 
+			configuration.GetRefreshRate(), 
+			kUserData));
 }
 } // namespace json::status
 #endif

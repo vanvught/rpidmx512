@@ -85,12 +85,12 @@ int main() // NOLINT
     PixelDmxParamsRdm pixeldmx_paramsrdm;
 	
 #if defined(CONFIG_RDM_MANUFACTURER_PIDS_SET)
-    static constexpr auto kPersonalityCount = static_cast<uint32_t>(pixel::Type::UNDEFINED);
+    static constexpr auto kPersonalityCount = static_cast<uint32_t>(pixel::LedType::kUndefined);
     RDMPersonality* personalities[kPersonalityCount];
 
     for (uint32_t index = 0; index < kPersonalityCount; index++)
     {
-        const auto* description = pixel::GetType(static_cast<pixel::Type>(index));
+        const auto* description = pixel::GetTypeName(static_cast<pixel::Type>(index));
         personalities[index] = new RDMPersonality(description, &pixeldmx);
     }
 

@@ -1,7 +1,7 @@
 /**
  * @file pixeltype.h
  */
-/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,41 +26,254 @@
 #define PIXELTYPE_H_
 
 #include <stdint.h>
+#include <cstring>
 #include <cassert>
+
+#include "common/utils/utils_enum.h"
 
 namespace pixel
 {
-enum class Type: uint8_t
+inline constexpr uint8_t kRtzLowCode = 0xC0;
+inline constexpr uint32_t kNoSpeedHz = 0;
+inline constexpr uint8_t kNoCode = 0;
+
+enum class LedType : uint8_t
 {
-    WS2801,
-    WS2811,
-    WS2812,
-    WS2812B,
-    WS2813,
-    WS2815,
-    SK6812,
-    SK6812W,
-    UCS1903,
-    UCS2903,
-    CS8812,
-    APA102,
-    SK9822,
-    P9813,
-    UNDEFINED
+    kWS2801,
+    kWS2811,
+    kWS2812,
+    kWS2812B,
+    kWS2813,
+    kWS2815,
+    kSK6812,
+    kSK6812W,
+    kUCS1903,
+    kUCS2903,
+    kCS8812,
+    kAPA102,
+    kSK9822,
+    kP9813,
+    kUndefined
 };
 
-enum class Map: uint8_t
+enum class LedMap : uint8_t
 {
-    RGB,
-    RBG,
-    GRB,
-    GBR,
-    BRG,
-    BGR,
-    UNDEFINED
+    kRGB,
+    kRBG,
+    kGRB,
+    kGBR,
+    kBRG,
+    kBGR,
+	kRGBW,
+    kUndefined
 };
 
-inline constexpr auto kTypesMaxNameLength = 8;
+inline constexpr char kMaps[static_cast<uint32_t>(pixel::LedMap::kUndefined)][5] = 
+{
+	"RGB", 
+	"RBG", 
+	"GRB", 
+	"GBR", 
+	"BRG", 
+	"BGR",
+	"RGBW"
+};
+
+constexpr uint32_t kMapsCount = static_cast<uint32_t>(sizeof(kMaps) / sizeof(kMaps[0]));
+static_assert(kMapsCount == static_cast<uint32_t>(pixel::LedMap::kUndefined), "LedMap must match kMaps");
+
+enum class ProtocolType : uint8_t
+{
+    kRtz,
+    kSpi,
+};
+
+enum class LedCount : uint8_t
+{
+    k3 = 3,
+    k4 = 4,
+};
+
+struct TypeInfo
+{
+    const char* name;           // 4 bytes on Cortex-M32
+    uint32_t default_hz;        // SPI only, 0 for RTZ
+    uint32_t max_hz;            // SPI only, 0 for RTZ
+    ProtocolType protocol_type; // 1 byte
+    LedCount led_count;         // 1 byte
+    uint8_t low_code;           // RTZ only, 0 for SPI
+    uint8_t high_code;          // RTZ only, 0 for SPI
+	LedMap led_map;
+
+    constexpr bool IsRtz() const { return protocol_type == ProtocolType::kRtz; }
+    constexpr bool IsSpi() const { return protocol_type == ProtocolType::kSpi; }
+};
+
+static_assert(sizeof(TypeInfo) == 20, "TypeInfo must remain compact");
+static_assert(alignof(TypeInfo) == 4, "Unexpected TypeInfo alignment");
+
+constexpr TypeInfo MakeSpiTypeInfo(const char* name, LedCount led_count, uint32_t default_hz, uint32_t max_hz)
+{
+    return TypeInfo{
+        .name = name,
+        .default_hz = default_hz,
+        .max_hz = max_hz,
+        .protocol_type = ProtocolType::kSpi,
+        .led_count = led_count,
+        .low_code = kNoCode,
+        .high_code = kNoCode,
+		.led_map = LedMap::kRGB
+    };
+}
+
+constexpr TypeInfo MakeRtzTypeInfo(const char* name, LedMap led_map, LedCount led_count, uint8_t high_code)
+{
+    return TypeInfo{
+        .name = name,
+        .default_hz = kNoSpeedHz,
+        .max_hz = kNoSpeedHz,
+        .protocol_type = ProtocolType::kRtz,
+        .led_count = led_count,
+        .low_code = kRtzLowCode,
+        .high_code = high_code,
+		.led_map = led_map
+    };
+}
+
+inline constexpr TypeInfo kTypeInfo[] = {
+    MakeSpiTypeInfo("WS2801", LedCount::k3, 4000000, 25000000),
+    MakeRtzTypeInfo("WS2811", LedMap::kRGB, LedCount::k3, 0xF0),
+    MakeRtzTypeInfo("WS2812", LedMap::kGRB, LedCount::k3, 0xF0),  
+    MakeRtzTypeInfo("WS2812B", LedMap::kGRB, LedCount::k3, 0xF8),
+    MakeRtzTypeInfo("WS2813", LedMap::kGRB, LedCount::k3, 0xF0),  
+    MakeRtzTypeInfo("WS2815", LedMap::kGRB, LedCount::k3, 0xF0),
+    MakeRtzTypeInfo("SK6812", LedMap::kGRB, LedCount::k3, 0xF0),  
+    MakeRtzTypeInfo("SK6812W", LedMap::kRGBW, LedCount::k4, 0xF0),
+    MakeRtzTypeInfo("UCS1903", LedMap::kBRG, LedCount::k3, 0xFC), 
+    MakeRtzTypeInfo("UCS2903", LedMap::kRGB, LedCount::k3, 0xFC),
+    MakeRtzTypeInfo("CS8812", LedMap::kBGR, LedCount::k3, 0xFC),  
+    MakeSpiTypeInfo("APA102", LedCount::k3, 4000000, 25000000),
+    MakeSpiTypeInfo("SK9822", LedCount::k3, 4000000, 25000000),   
+    MakeSpiTypeInfo("P9813", LedCount::k3, 4000000, 25000000),
+};
+
+constexpr uint32_t kTypeInfoCount = static_cast<uint32_t>(sizeof(kTypeInfo) / sizeof(kTypeInfo[0]));
+static_assert(kTypeInfoCount == static_cast<uint32_t>(LedType::kUndefined), "kTypeInfo must match LedType");
+
+constexpr uint32_t ConstStrLen(const char* s)
+{
+    uint32_t len = 0;
+    while (s[len] != '\0')
+    {
+        ++len;
+    }
+    return len;
+}
+
+constexpr uint32_t GetMaxTypeNameLength()
+{
+    uint32_t max_len = 0;
+
+    for (uint32_t i = 0; i < kTypeInfoCount; ++i)
+    {
+        const uint32_t kLen = ConstStrLen(kTypeInfo[i].name);
+        if (kLen > max_len)
+        {
+            max_len = kLen;
+        }
+    }
+
+    return max_len;
+}
+
+constexpr auto kTypesMaxNameLength = GetMaxTypeNameLength();
+
+constexpr uint32_t GetMaxLedMapNameLength()
+{
+    uint32_t max_len = 0;
+
+    for (uint32_t i = 0; i < kMapsCount; ++i)
+    {
+        const uint32_t kLen = ConstStrLen(kMaps[i]);
+        if (kLen > max_len)
+        {
+            max_len = kLen;
+        }
+    }
+
+    return max_len;
+}
+
+constexpr auto kLedMapMaxNameLength = GetMaxLedMapNameLength();
+
+constexpr inline const TypeInfo& GetTypeInfo(LedType type)
+{
+    return kTypeInfo[static_cast<uint32_t>(type)];
+}
+
+inline void GetTxH(LedType type, uint8_t& low_code, uint8_t& high_code)
+{
+    const auto& info = GetTypeInfo(type);
+
+    low_code = info.low_code;
+    high_code = info.high_code;
+}
+
+constexpr inline const char* GetTypeName(LedType type)
+{
+    const auto kIndex = static_cast<uint32_t>(type);
+
+    if (kIndex < kTypeInfoCount) {
+        return kTypeInfo[kIndex].name;
+    }
+
+    return "Unknown";
+}
+
+inline LedType GetTypeByName(const char* string)
+{
+    assert(string != nullptr);
+
+    using U = std::underlying_type_t<LedType>;
+
+    for (size_t i = 0; i < kTypeInfoCount; ++i)
+    {
+        if (strcasecmp(kTypeInfo[i].name, string) == 0)
+        {
+            return common::FromValue<LedType>(static_cast<U>(i));
+        }
+    }
+
+    return LedType::kUndefined;
+}
+
+inline const char* GetMapName(LedMap map)
+{
+	const auto kIndex = static_cast<uint32_t>(map);
+
+	if (kIndex < kMapsCount) {
+	    return kMaps[kIndex];
+	}
+
+	return "Unknown";
+}
+
+inline LedMap GetMapByName(const char* string)
+{
+    assert(string != nullptr);
+
+    using U = std::underlying_type_t<LedMap>;
+
+    for (size_t i = 0; i < kMapsCount; ++i)
+    {
+        if (strcasecmp(kMaps[i], string) == 0)
+        {
+            return common::FromValue<LedMap>(static_cast<U>(i));
+        }
+    }
+
+    return LedMap::kUndefined;
+}
 
 namespace max::ledcount
 {
@@ -74,23 +287,9 @@ inline constexpr uint32_t RGB = 24;
 inline constexpr uint32_t RGBW = 32;
 } // namespace single
 
-namespace spi::speed
-{
-namespace ws2801
-{
-inline constexpr uint32_t kMaxHz = 25000000;    ///< 25 MHz
-inline constexpr uint32_t kDefaultHz = 4000000; ///< 4 MHz
-} // namespace ws2801
-namespace p9813
-{
-inline constexpr uint32_t kMaxHz = 15000000;    ///< 15 MHz
-inline constexpr uint32_t kDefaultHz = 4000000; ///< 4 MHz
-} // namespace p9813
-} // namespace spi::speed
-
 namespace defaults
 {
-inline constexpr auto kType = Type::WS2812B;
+inline constexpr auto kType = LedType::kWS2812B;
 inline constexpr uint32_t kCount = 170;
 inline constexpr uint32_t kOutputPorts = 1;
 } // namespace defaults
@@ -172,35 +371,9 @@ inline uint8_t ConvertTxH(float tx_h)
     {
         return 0xFE;
     }
-	
+
     return 0x00;
-}
-
-const char* GetType(Type);
-Type GetType(const char*);
-
-const char* GetMap(Map);
-Map GetMap(const char*);
-
-inline Map GetMap(Type type)
-{
-    if ((type == Type::WS2811) || (type == Type::UCS2903))
-    {
-        return Map::RGB;
-    }
-
-    if (type == Type::UCS1903)
-    {
-        return Map::BRG;
-    }
-
-    if (type == Type::CS8812)
-    {
-        return Map::BGR;
-    }
-
-    return Map::GRB;
 }
 } // namespace pixel
 
-#endif  // PIXELTYPE_H_
+#endif // PIXELTYPE_H_

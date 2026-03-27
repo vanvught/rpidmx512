@@ -80,16 +80,16 @@ inline void SetPixelColour([[maybe_unused]] uint32_t port_index, uint32_t pixel_
 #if defined(PIXELPATTERNS_MULTI)
     switch (PixelConfiguration::Get().GetType())
     {
-        case pixel::Type::WS2801:
+        case pixel::LedType::kWS2801:
             output_type->SetColourWS2801(port_index, pixel_index, kColours.Red(), kColours.Green(), kColours.Blue());
             break;
 
-        case pixel::Type::APA102:
-        case pixel::Type::SK9822:
+        case pixel::LedType::kAPA102:
+        case pixel::LedType::kSK9822:
             output_type->SetPixel4Bytes(port_index, pixel_index, 0xFF, kColours.Red(), kColours.Green(), kColours.Blue());
             break;
 
-        case pixel::Type::P9813:
+        case pixel::LedType::kP9813:
         {
             const auto kRed = kColours.Red();
             const auto kBlue = kColours.Blue();
@@ -98,7 +98,7 @@ inline void SetPixelColour([[maybe_unused]] uint32_t port_index, uint32_t pixel_
             break;
         }
 
-        case pixel::Type::SK6812W:
+        case pixel::LedType::kSK6812W:
             output_type->SetColourRTZ(port_index, pixel_index, kColours.Red(), kColours.Green(), kColours.Blue(), kColours.White());
             break;
 
@@ -110,7 +110,7 @@ inline void SetPixelColour([[maybe_unused]] uint32_t port_index, uint32_t pixel_
     auto& pixel_configuration = PixelConfiguration::Get();
     const auto kType = pixel_configuration.GetType();
 
-    if (kType != pixel::Type::SK6812W)
+    if (kType != pixel::LedType::kSK6812W)
     {
         output_type->SetPixel(pixel_index, kColours.Red(), kColours.Green(), kColours.Blue());
     }

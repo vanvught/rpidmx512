@@ -2,7 +2,7 @@
  * @file json_config_dmxpixel.cpp
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,13 +46,13 @@ uint32_t GetPixelDmx(char* buffer, uint32_t length)
 
 	return json::helpers::Serialize(buffer, length, [&](JsonDoc& doc) {
 		auto& pixel_configuration = PixelConfiguration::Get();
-	    doc[DmxLedParamsConst::kType.name] = pixel::GetType(pixel_configuration.GetType());
+	    doc[DmxLedParamsConst::kType.name] = pixel::GetTypeName(pixel_configuration.GetType());
 	    doc[DmxLedParamsConst::kCount.name] = pixel_configuration.GetCount();
 	    snprintf(t, sizeof(t) - 1, "%.2f", pixel::ConvertTxH(pixel_configuration.GetLowCode()));
 	    doc[DmxLedParamsConst::kT0H.name] = t;
 	    snprintf(t, sizeof(t), "%.2f", pixel::ConvertTxH(pixel_configuration.GetHighCode()));
 	    doc[DmxLedParamsConst::kT1H.name] = t;
-	    doc[DmxLedParamsConst::kMap.name] = pixel::GetMap(pixel_configuration.GetMap());
+	    doc[DmxLedParamsConst::kMap.name] = pixel::GetMapName(pixel_configuration.GetMap());
 	    doc[DmxLedParamsConst::kSpiSpeedHz.name] = pixel_configuration.GetClockSpeedHz();
 	    doc[DmxLedParamsConst::kGlobalBrightness.name] = pixel_configuration.GetGlobalBrightness();
 #if defined(CONFIG_PIXELDMX_ENABLE_GAMMATABLE)

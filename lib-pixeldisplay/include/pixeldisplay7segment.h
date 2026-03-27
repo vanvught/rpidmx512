@@ -3,7 +3,7 @@
  */
 /*
  * Copyright (C) 2019 by hippy mailto:dmxout@gmail.com
- * Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+ * Copyright (C) 2019-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,20 +46,20 @@ struct WS28xxDisplay7SegmentConfig {
 
 class WS28xxDisplay7Segment {
 public:
-	WS28xxDisplay7Segment(pixel::Type tLedType, pixel::Map tRGBMapping);
+	WS28xxDisplay7Segment(pixel::LedType led_type, pixel::LedMap led_map);
 	~WS28xxDisplay7Segment();
 
-	void WriteChar(char nChar, uint32_t nPos, uint8_t red, uint8_t green, uint8_t blue);
-	void WriteColon(char nChar, uint32_t nPos, uint8_t red, uint8_t green, uint8_t blue);
+	void WriteChar(char ch, uint32_t pos, uint8_t red, uint8_t green, uint8_t blue);
+	void WriteColon(char ch, uint32_t pos, uint8_t red, uint8_t green, uint8_t blue);
 
-	void WriteAll(const char *pChars, uint8_t red, uint8_t green, uint8_t blue);
+	void WriteAll(const char *chars, uint8_t red, uint8_t green, uint8_t blue);
 
 	void SetColonsOff();
 
 	void Show();
 
 private:
-	void RenderSegment(bool bOnOff, uint32_t nCurrentDigitBase, uint32_t nCurrentSegment, uint8_t red, uint8_t green, uint8_t blue);
+	void RenderSegment(bool on_off, uint32_t current_digit_base, uint32_t current_segment, uint8_t red, uint8_t green, uint8_t blue);
 
 private:
 	PixelOutput *m_pPixelOutput { nullptr };

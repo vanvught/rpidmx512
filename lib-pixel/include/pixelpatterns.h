@@ -1,7 +1,7 @@
 /**
  * @file pixelpatterns.h
  */
-/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,8 +33,8 @@
 
 #include "pixel.h"
 #include "pixelconfiguration.h"
-#include "hal_millis.h"
- #include "firmware/debug/debug_debug.h"
+#include "hal_millis.h" // IWYU pragma: keep
+#include "firmware/debug/debug_debug.h"
 
 namespace pixelpatterns
 {
@@ -57,8 +57,14 @@ enum class Pattern
     kLast
 };
 
-inline constexpr char kPatternName[static_cast<uint32_t>(pixelpatterns::Pattern::kLast)][14] = {"None", "Rainbow cycle", "Theater chase", "Colour wipe",
-                                                                                                "Fade"};
+inline constexpr char kPatternName[static_cast<uint32_t>(pixelpatterns::Pattern::kLast)][14] = 
+{
+	"None", 
+	"Rainbow cycle", 
+	"Theater chase", 
+	"Colour wipe",
+	"Fade"
+};
 
 enum class Direction
 {

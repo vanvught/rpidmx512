@@ -1,7 +1,7 @@
 /**
  * @file pixeloutput.cpp
  */
-/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2017-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -96,7 +96,7 @@ void PixelOutput::ApplyConfiguration()
 
     const auto kType = pixel_configuration.GetType();
 
-    if ((kType == pixel::Type::APA102) || (kType == pixel::Type::SK9822) || (kType == pixel::Type::P9813))
+    if ((kType == pixel::LedType::kAPA102) || (kType == pixel::LedType::kSK9822) || (kType == pixel::LedType::kP9813))
     {
         buf_size_ += kCount;
         buf_size_ += 8;
@@ -104,7 +104,7 @@ void PixelOutput::ApplyConfiguration()
 
     SetupBuffers();
 
-    if ((kType == pixel::Type::APA102) || (kType == pixel::Type::SK9822) || (kType == pixel::Type::P9813))
+    if ((kType == pixel::LedType::kAPA102) || (kType == pixel::LedType::kSK9822) || (kType == pixel::LedType::kP9813))
     {
         memset(buffer_, 0, 4);
 
@@ -113,7 +113,7 @@ void PixelOutput::ApplyConfiguration()
             SetPixel(pixel_index, 0, 0, 0);
         }
 
-        if ((kType == pixel::Type::APA102) || (kType == pixel::Type::SK9822))
+        if ((kType == pixel::LedType::kAPA102) || (kType == pixel::LedType::kSK9822))
         {
             memset(&buffer_[buf_size_ - 4], 0xFF, 4);
         }
@@ -125,7 +125,7 @@ void PixelOutput::ApplyConfiguration()
     else
     {
         buffer_[0] = 0x00;
-        memset(&buffer_[1], kType == pixel::Type::WS2801 ? 0 : pixel_configuration.GetLowCode(), buf_size_);
+        memset(&buffer_[1], kType == pixel::LedType::kWS2801 ? 0 : pixel_configuration.GetLowCode(), buf_size_);
     }
 
     memcpy(blackout_buffer_, buffer_, buf_size_);
@@ -181,7 +181,7 @@ void PixelOutput::Blackout()
     const auto kType = pixel_configuration.GetType();
     const auto kCount = pixel_configuration.GetCount();
 
-    if ((kType == pixel::Type::APA102) || (kType == pixel::Type::SK9822) || (kType == pixel::Type::P9813))
+    if ((kType == pixel::LedType::kAPA102) || (kType == pixel::LedType::kSK9822) || (kType == pixel::LedType::kP9813))
     {
         memset(buffer_, 0, 4);
 
@@ -190,7 +190,7 @@ void PixelOutput::Blackout()
             SetPixel(pixel_index, 0, 0, 0);
         }
 
-        if ((kType == pixel::Type::APA102) || (kType == pixel::Type::SK9822))
+        if ((kType == pixel::LedType::kAPA102) || (kType == pixel::LedType::kSK9822))
         {
             memset(&buffer_[buf_size_ - 4], 0xFF, 4);
         }
@@ -202,7 +202,7 @@ void PixelOutput::Blackout()
     else
     {
         buffer_[0] = 0x00;
-        memset(&buffer_[1], kType == pixel::Type::WS2801 ? 0 : pixel_configuration.GetLowCode(), buf_size_);
+        memset(&buffer_[1], kType == pixel::LedType::kWS2801 ? 0 : pixel_configuration.GetLowCode(), buf_size_);
     }
 
     Update();
@@ -233,7 +233,7 @@ void PixelOutput::FullOn()
     const auto kType = pixel_configuration.GetType();
     const auto kCount = pixel_configuration.GetCount();
 
-    if ((kType == pixel::Type::APA102) || (kType == pixel::Type::SK9822) || (kType == pixel::Type::P9813))
+    if ((kType == pixel::LedType::kAPA102) || (kType == pixel::LedType::kSK9822) || (kType == pixel::LedType::kP9813))
     {
         memset(buffer_, 0xFF, 4);
 
@@ -242,7 +242,7 @@ void PixelOutput::FullOn()
             SetPixel(pixel_index, 0xFF, 0xFF, 0xFF);
         }
 
-        if ((kType == pixel::Type::APA102) || (kType == pixel::Type::SK9822))
+        if ((kType == pixel::LedType::kAPA102) || (kType == pixel::LedType::kSK9822))
         {
             memset(&buffer_[buf_size_ - 4], 0xFF, 4);
         }
@@ -254,7 +254,7 @@ void PixelOutput::FullOn()
     else
     {
         buffer_[0] = 0x00;
-        memset(&buffer_[1], kType == pixel::Type::WS2801 ? 0xFF : pixel_configuration.GetHighCode(), buf_size_);
+        memset(&buffer_[1], kType == pixel::LedType::kWS2801 ? 0xFF : pixel_configuration.GetHighCode(), buf_size_);
     }
 
     Update();

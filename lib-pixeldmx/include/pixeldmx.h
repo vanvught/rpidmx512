@@ -178,7 +178,7 @@ class PixelDmx final : public PixelDmxConfiguration
         {
             switch (PixelDmxConfiguration::GetMap())
             {
-                case pixel::Map::RGB:
+                case pixel::LedMap::kRGB:
                     for (uint32_t j = kBeginIndex; (j < kEndIndex) && (d < length); j++)
                     {
                         auto const kPixelIndexStart = (j * kGroupingCount);
@@ -189,7 +189,7 @@ class PixelDmx final : public PixelDmxConfiguration
                         d = d + 3;
                     }
                     break;
-                case pixel::Map::RBG:
+                case pixel::LedMap::kRBG:
                     for (uint32_t j = kBeginIndex; (j < kEndIndex) && (d < length); j++)
                     {
                         auto const kPixelIndexStart = (j * kGroupingCount);
@@ -200,7 +200,7 @@ class PixelDmx final : public PixelDmxConfiguration
                         d = d + 3;
                     }
                     break;
-                case pixel::Map::GRB:
+                case pixel::LedMap::kGRB:
                     for (uint32_t j = kBeginIndex; (j < kEndIndex) && (d < length); j++)
                     {
                         auto const kPixelIndexStart = (j * kGroupingCount);
@@ -211,7 +211,7 @@ class PixelDmx final : public PixelDmxConfiguration
                         d = d + 3;
                     }
                     break;
-                case pixel::Map::GBR:
+                case pixel::LedMap::kGBR:
                     for (uint32_t j = kBeginIndex; (j < kEndIndex) && (d < length); j++)
                     {
                         auto const kPixelIndexStart = (j * kGroupingCount);
@@ -222,7 +222,7 @@ class PixelDmx final : public PixelDmxConfiguration
                         d = d + 3;
                     }
                     break;
-                case pixel::Map::BRG:
+                case pixel::LedMap::kBRG:
                     for (uint32_t j = kBeginIndex; (j < kEndIndex) && (d < length); j++)
                     {
                         auto const kPixelIndexStart = (j * kGroupingCount);
@@ -233,7 +233,7 @@ class PixelDmx final : public PixelDmxConfiguration
                         d = d + 3;
                     }
                     break;
-                case pixel::Map::BGR:
+                case pixel::LedMap::kBGR:
                     for (uint32_t j = kBeginIndex; (j < kEndIndex) && (d < length); j++)
                     {
                         auto const kPixelIndexStart = (j * kGroupingCount);

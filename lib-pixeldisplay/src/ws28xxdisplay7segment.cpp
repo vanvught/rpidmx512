@@ -3,7 +3,7 @@
  */
 /*
  * Copyright (C) 2019 by hippy mailto:dmxout@gmail.com
- * Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+ * Copyright (C) 2019-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,8 +32,7 @@
 #include "pixelconfiguration.h"
 #include "pixeltype.h"
 #include "pixeloutput.h"
-
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
 using namespace pixel;
 
@@ -52,241 +51,266 @@ using namespace pixel;
  *
  *  Then the colons x 3 at the end.
  *
-*/
+ */
 
 // Compliments Dean Reading (deanreading@hotmail.com: http://arduino.cc/playground/Main/SevenSegmentLibrary), 2012
 // This is the combined array that contains all the segment configurations for many different characters and symbols
 
 static constexpr uint8_t Seg7Array[] = {
-			//dec     ABCDEFG  Segments   7-segment map:
-		126,//0b1111110, // 0   "0"         AAA
-		48, //0b0110000, // 1   "1"         F   B
-		109, //0b1101101, // 2   "2"        F   B
-		121, //0b1111001, // 3   "3"         GGG
-		51, //0b0110011, // 4   "4"         E   C
-		91, //0b1011011, // 5   "5"         E   C
-		95, //0b1011111, // 6   "6"          DDD
-		112, //0b1110000, // 7   "7"
-		127, //0b1111111, // 8   "8"
-		123, //0b1111011, // 9   "9"
-		119, //0b1110111, // 10  "A"
-		31, //0b0011111, // 11  "b"
-		78, //0b1001110, // 12  "C"
-		61, //0b0111101, // 13  "d"
-		79, //0b1001111, // 14  "E"
-		71, //0b1000111, // 15  "F"
-		0, //0b0000000, // 16  NO DISPLAY
-		0, //0b0000000, // 17  NO DISPLAY
-		0, //0b0000000, // 18  NO DISPLAY
-		0, //0b0000000, // 19  NO DISPLAY
-		0, //0b0000000, // 20  NO DISPLAY
-		0, //0b0000000, // 21  NO DISPLAY
-		0, //0b0000000, // 22  NO DISPLAY
-		0, //0b0000000, // 23  NO DISPLAY
-		0, //0b0000000, // 24  NO DISPLAY
-		0, //0b0000000, // 25  NO DISPLAY
-		0, //0b0000000, // 26  NO DISPLAY
-		0, //0b0000000, // 27  NO DISPLAY
-		0, //0b0000000, // 28  NO DISPLAY
-		0, //0b0000000, // 29  NO DISPLAY
-		0, //0b0000000, // 30  NO DISPLAY
-		0, //0b0000000, // 31  NO DISPLAY
-		0, //0b0000000, // 32  ' '
-		0, //0b0000000, // 33  '!'  NO DISPLAY
-		34, //0b0100010, // 34  '"'
-		0, //0b0000000, // 35  '#'  NO DISPLAY
-		0, //0b0000000, // 36  '$'  NO DISPLAY
-		0, //0b0000000, // 37  '%'  NO DISPLAY
-		0, //0b0000000, // 38  '&'  NO DISPLAY
-		32, //0b0100000, // 39  '''
-		78, //0b1001110, // 40  '('
-		120, //0b1111000, // 41  ')'
-		0, //0b0000000, // 42  '*'  NO DISPLAY
-		0, //0b0000000, // 43  '+'  NO DISPLAY
-		4, //0b0000100, // 44  ','
-		1, //0b0000001, // 45  '-'
-		0, //0b0000000, // 46  '.'  NO DISPLAY
-		0, //0b0000000, // 47  '/'  NO DISPLAY
-		126, //0b1111110, // 48  '0'
-		48, //0b0110000, // 49  '1'
-		109, //0b1101101, // 50  '2'
-		121, //0b1111001, // 51  '3'
-		51, //0b0110011, // 52  '4'
-		91, //0b1011011, // 53  '5'
-		95, //0b1011111, // 54  '6'
-		112, //0b1110000, // 55  '7'
-		127, //0b1111111, // 56  '8'
-		123, //0b1111011, // 57  '9'
-		0, //0b0000000, // 58  ':'  NO DISPLAY
-		0, //0b0000000, // 59  ';'  NO DISPLAY
-		0, //0b0000000, // 60  '<'  NO DISPLAY
-		0, //0b0000000, // 61  '='  NO DISPLAY
-		0, //0b0000000, // 62  '>'  NO DISPLAY
-		0, //0b0000000, // 63  '?'  NO DISPLAY
-		0, //0b0000000, // 64  '@'  NO DISPLAY
-		119, //0b1110111, // 65  'A'
-		31, //0b0011111, // 66  'b'
-		78, //0b1001110, // 67  'C'
-		61, //0b0111101, // 68  'd'
-		79, //0b1001111, // 69  'E'
-		71, //0b1000111, // 70  'F'
-		94, //0b1011110, // 71  'G'
-		55, //0b0110111, // 72  'H'
-		48, //0b0110000, // 73  'I'
-		56, //0b0111000, // 74  'J'
-		0, //0b0000000, // 75  'K'  NO DISPLAY
-		14, //0b0001110, // 76  'L'
-		0, //0b0000000, // 77  'M'  NO DISPLAY
-		21, //0b0010101, // 78  'n'
-		126, //0b1111110, // 79  'O'
-		103, //0b1100111, // 80  'P'
-		115, //0b1110011, // 81  'q'
-		5, //0b0000101, // 82  'r'
-		91, //0b1011011, // 83  'S'
-		15, //0b0001111, // 84  't'
-		62, //0b0111110, // 85  'U'
-		0, //0b0000000, // 86  'V'  NO DISPLAY
-		0, //0b0000000, // 87  'W'  NO DISPLAY
-		0, //0b0000000, // 88  'X'  NO DISPLAY
-		59, //0b0111011, // 89  'y'
-		0, //0b0000000, // 90  'Z'  NO DISPLAY
-		78, //0b1001110, // 91  '['
-		0, //0b0000000, // 92  '\'  NO DISPLAY
-		120, //0b1111000, // 93  ']'
-		0, //0b0000000, // 94  '^'  NO DISPLAY
-		8, //0b0001000, // 95  '_'
-		2, //0b0000010, // 96  '`'
-		119, //0b1110111, // 97  'a' SAME AS CAP
-		31, //0b0011111, // 98  'b' SAME AS CAP
-		13, //0b0001101, // 99  'c'
-		61, //0b0111101, // 100 'd' SAME AS CAP
-		111, //0b1101111, // 101 'e'
-		71, //0b1000111, // 102 'F' SAME AS CAP
-		94, //0b1011110, // 103 'G' SAME AS CAP
-		23, //0b0010111, // 104 'h'
-		16, //0b0010000, // 105 'i'
-		56, //0b0111000, // 106 'j' SAME AS CAP
-		0, //0b0000000, // 107 'k'  NO DISPLAY
-		48, //0b0110000, // 108 'l'
-		0, //0b0000000, // 109 'm'  NO DISPLAY
-		21, //0b0010101, // 110 'n' SAME AS CAP
-		29, //0b0011101, // 111 'o'
-		103, //0b1100111, // 112 'p' SAME AS CAP
-		115, //0b1110011, // 113 'q' SAME AS CAP
-		5, //0b0000101, // 114 'r' SAME AS CAP
-		91, //0b1011011, // 115 'S' SAME AS CAP
-		15, //0b0001111, // 116 't' SAME AS CAP
-		28, //0b0011100, // 117 'u'
-		0, //0b0000000, // 118 'b'  NO DISPLAY
-		0, //0b0000000, // 119 'w'  NO DISPLAY
-		0, //0b0000000, // 120 'x'  NO DISPLAY
-		0, //0b0000000, // 121 'y'  NO DISPLAY
-		0, //0b0000000, // 122 'z'  NO DISPLAY
-		0, //0b0000000, // 123 '0b'  NO DISPLAY
-		0, //0b0000000, // 124 '|'  NO DISPLAY
-		0, //0b0000000, // 125 ','  NO DISPLAY
-		0, //0b0000000, // 126 '~'  NO DISPLAY
-		0 //0b0000000, // 127 'DEL'  NO DISPLAY
+    // dec     ABCDEFG  Segments   7-segment map:
+    126, // 0b1111110, // 0   "0"         AAA
+    48,  // 0b0110000, // 1   "1"         F   B
+    109, // 0b1101101, // 2   "2"        F   B
+    121, // 0b1111001, // 3   "3"         GGG
+    51,  // 0b0110011, // 4   "4"         E   C
+    91,  // 0b1011011, // 5   "5"         E   C
+    95,  // 0b1011111, // 6   "6"          DDD
+    112, // 0b1110000, // 7   "7"
+    127, // 0b1111111, // 8   "8"
+    123, // 0b1111011, // 9   "9"
+    119, // 0b1110111, // 10  "A"
+    31,  // 0b0011111, // 11  "b"
+    78,  // 0b1001110, // 12  "C"
+    61,  // 0b0111101, // 13  "d"
+    79,  // 0b1001111, // 14  "E"
+    71,  // 0b1000111, // 15  "F"
+    0,   // 0b0000000, // 16  NO DISPLAY
+    0,   // 0b0000000, // 17  NO DISPLAY
+    0,   // 0b0000000, // 18  NO DISPLAY
+    0,   // 0b0000000, // 19  NO DISPLAY
+    0,   // 0b0000000, // 20  NO DISPLAY
+    0,   // 0b0000000, // 21  NO DISPLAY
+    0,   // 0b0000000, // 22  NO DISPLAY
+    0,   // 0b0000000, // 23  NO DISPLAY
+    0,   // 0b0000000, // 24  NO DISPLAY
+    0,   // 0b0000000, // 25  NO DISPLAY
+    0,   // 0b0000000, // 26  NO DISPLAY
+    0,   // 0b0000000, // 27  NO DISPLAY
+    0,   // 0b0000000, // 28  NO DISPLAY
+    0,   // 0b0000000, // 29  NO DISPLAY
+    0,   // 0b0000000, // 30  NO DISPLAY
+    0,   // 0b0000000, // 31  NO DISPLAY
+    0,   // 0b0000000, // 32  ' '
+    0,   // 0b0000000, // 33  '!'  NO DISPLAY
+    34,  // 0b0100010, // 34  '"'
+    0,   // 0b0000000, // 35  '#'  NO DISPLAY
+    0,   // 0b0000000, // 36  '$'  NO DISPLAY
+    0,   // 0b0000000, // 37  '%'  NO DISPLAY
+    0,   // 0b0000000, // 38  '&'  NO DISPLAY
+    32,  // 0b0100000, // 39  '''
+    78,  // 0b1001110, // 40  '('
+    120, // 0b1111000, // 41  ')'
+    0,   // 0b0000000, // 42  '*'  NO DISPLAY
+    0,   // 0b0000000, // 43  '+'  NO DISPLAY
+    4,   // 0b0000100, // 44  ','
+    1,   // 0b0000001, // 45  '-'
+    0,   // 0b0000000, // 46  '.'  NO DISPLAY
+    0,   // 0b0000000, // 47  '/'  NO DISPLAY
+    126, // 0b1111110, // 48  '0'
+    48,  // 0b0110000, // 49  '1'
+    109, // 0b1101101, // 50  '2'
+    121, // 0b1111001, // 51  '3'
+    51,  // 0b0110011, // 52  '4'
+    91,  // 0b1011011, // 53  '5'
+    95,  // 0b1011111, // 54  '6'
+    112, // 0b1110000, // 55  '7'
+    127, // 0b1111111, // 56  '8'
+    123, // 0b1111011, // 57  '9'
+    0,   // 0b0000000, // 58  ':'  NO DISPLAY
+    0,   // 0b0000000, // 59  ';'  NO DISPLAY
+    0,   // 0b0000000, // 60  '<'  NO DISPLAY
+    0,   // 0b0000000, // 61  '='  NO DISPLAY
+    0,   // 0b0000000, // 62  '>'  NO DISPLAY
+    0,   // 0b0000000, // 63  '?'  NO DISPLAY
+    0,   // 0b0000000, // 64  '@'  NO DISPLAY
+    119, // 0b1110111, // 65  'A'
+    31,  // 0b0011111, // 66  'b'
+    78,  // 0b1001110, // 67  'C'
+    61,  // 0b0111101, // 68  'd'
+    79,  // 0b1001111, // 69  'E'
+    71,  // 0b1000111, // 70  'F'
+    94,  // 0b1011110, // 71  'G'
+    55,  // 0b0110111, // 72  'H'
+    48,  // 0b0110000, // 73  'I'
+    56,  // 0b0111000, // 74  'J'
+    0,   // 0b0000000, // 75  'K'  NO DISPLAY
+    14,  // 0b0001110, // 76  'L'
+    0,   // 0b0000000, // 77  'M'  NO DISPLAY
+    21,  // 0b0010101, // 78  'n'
+    126, // 0b1111110, // 79  'O'
+    103, // 0b1100111, // 80  'P'
+    115, // 0b1110011, // 81  'q'
+    5,   // 0b0000101, // 82  'r'
+    91,  // 0b1011011, // 83  'S'
+    15,  // 0b0001111, // 84  't'
+    62,  // 0b0111110, // 85  'U'
+    0,   // 0b0000000, // 86  'V'  NO DISPLAY
+    0,   // 0b0000000, // 87  'W'  NO DISPLAY
+    0,   // 0b0000000, // 88  'X'  NO DISPLAY
+    59,  // 0b0111011, // 89  'y'
+    0,   // 0b0000000, // 90  'Z'  NO DISPLAY
+    78,  // 0b1001110, // 91  '['
+    0,   // 0b0000000, // 92  '\'  NO DISPLAY
+    120, // 0b1111000, // 93  ']'
+    0,   // 0b0000000, // 94  '^'  NO DISPLAY
+    8,   // 0b0001000, // 95  '_'
+    2,   // 0b0000010, // 96  '`'
+    119, // 0b1110111, // 97  'a' SAME AS CAP
+    31,  // 0b0011111, // 98  'b' SAME AS CAP
+    13,  // 0b0001101, // 99  'c'
+    61,  // 0b0111101, // 100 'd' SAME AS CAP
+    111, // 0b1101111, // 101 'e'
+    71,  // 0b1000111, // 102 'F' SAME AS CAP
+    94,  // 0b1011110, // 103 'G' SAME AS CAP
+    23,  // 0b0010111, // 104 'h'
+    16,  // 0b0010000, // 105 'i'
+    56,  // 0b0111000, // 106 'j' SAME AS CAP
+    0,   // 0b0000000, // 107 'k'  NO DISPLAY
+    48,  // 0b0110000, // 108 'l'
+    0,   // 0b0000000, // 109 'm'  NO DISPLAY
+    21,  // 0b0010101, // 110 'n' SAME AS CAP
+    29,  // 0b0011101, // 111 'o'
+    103, // 0b1100111, // 112 'p' SAME AS CAP
+    115, // 0b1110011, // 113 'q' SAME AS CAP
+    5,   // 0b0000101, // 114 'r' SAME AS CAP
+    91,  // 0b1011011, // 115 'S' SAME AS CAP
+    15,  // 0b0001111, // 116 't' SAME AS CAP
+    28,  // 0b0011100, // 117 'u'
+    0,   // 0b0000000, // 118 'b'  NO DISPLAY
+    0,   // 0b0000000, // 119 'w'  NO DISPLAY
+    0,   // 0b0000000, // 120 'x'  NO DISPLAY
+    0,   // 0b0000000, // 121 'y'  NO DISPLAY
+    0,   // 0b0000000, // 122 'z'  NO DISPLAY
+    0,   // 0b0000000, // 123 '0b'  NO DISPLAY
+    0,   // 0b0000000, // 124 '|'  NO DISPLAY
+    0,   // 0b0000000, // 125 ','  NO DISPLAY
+    0,   // 0b0000000, // 126 '~'  NO DISPLAY
+    0    // 0b0000000, // 127 'DEL'  NO DISPLAY
 };
 
-WS28xxDisplay7Segment::WS28xxDisplay7Segment(Type tLedType, Map tRGBMapping) {
-	DEBUG_ENTRY();
+WS28xxDisplay7Segment::WS28xxDisplay7Segment(LedType led_type, LedMap led_map)
+{
+    DEBUG_ENTRY();
 
-	PixelConfiguration pixelConfiguration;
+    PixelConfiguration pixel_configuration;
 
-	pixelConfiguration.SetType(tLedType);
-	pixelConfiguration.SetMap(tRGBMapping);
+    pixel_configuration.SetType(led_type);
+    pixel_configuration.SetMap(led_map);
 
-	pixelConfiguration.SetCount(WS28xxDisplay7SegmentConfig::LED_COUNT);
+    pixel_configuration.SetCount(WS28xxDisplay7SegmentConfig::LED_COUNT);
 
-	m_pPixelOutput = new PixelOutput;
-	assert(m_pPixelOutput != nullptr);
-	m_pPixelOutput->Blackout();
+    m_pPixelOutput = new PixelOutput;
+    assert(m_pPixelOutput != nullptr);
+    m_pPixelOutput->Blackout();
 
-	DEBUG_EXIT();
+    DEBUG_EXIT();
 }
 
-WS28xxDisplay7Segment::~WS28xxDisplay7Segment() {
-	DEBUG_ENTRY();
+WS28xxDisplay7Segment::~WS28xxDisplay7Segment()
+{
+    DEBUG_ENTRY();
 
-	if (m_pPixelOutput != nullptr) {
-		delete m_pPixelOutput;
-		m_pPixelOutput = nullptr;
-	}
+    if (m_pPixelOutput != nullptr)
+    {
+        delete m_pPixelOutput;
+        m_pPixelOutput = nullptr;
+    }
 
-	DEBUG_EXIT();
+    DEBUG_EXIT();
 }
 
-void WS28xxDisplay7Segment::WriteChar(char nChar, uint32_t nPos, uint8_t red, uint8_t green, uint8_t blue) {
-	if (static_cast<unsigned>(nChar) > sizeof(Seg7Array)) {
-		return;
-	}
+void WS28xxDisplay7Segment::WriteChar(char nChar, uint32_t nPos, uint8_t red, uint8_t green, uint8_t blue)
+{
+    if (static_cast<unsigned>(nChar) > sizeof(Seg7Array))
+    {
+        return;
+    }
 
-	const auto nCurrentDigitBase = nPos * WS28xxDisplay7SegmentConfig::SEGMENTS_PER_DIGIT;
+    const auto kCurrentDigitBase = nPos * WS28xxDisplay7SegmentConfig::SEGMENTS_PER_DIGIT;
 
-	uint8_t chr;
+    uint8_t chr;
 
-	if (static_cast<unsigned>(nChar) & (1U << 7)) {	// use custom bitmap
-		chr = static_cast<uint8_t>(nChar);
-	} else {										// use displaypixel_font
-		chr = Seg7Array[static_cast<int>(nChar)];
-	}
+    if (static_cast<unsigned>(nChar) & (1U << 7))
+    { // use custom bitmap
+        chr = static_cast<uint8_t>(nChar);
+    }
+    else
+    { // use displaypixel_font
+        chr = Seg7Array[static_cast<int>(nChar)];
+    }
 
-	RenderSegment(chr & (1U << 6), nCurrentDigitBase, 0, red, green, blue);
-	RenderSegment(chr & (1U << 5), nCurrentDigitBase, 1, red, green, blue);
-	RenderSegment(chr & (1U << 4), nCurrentDigitBase, 2, red, green, blue);
-	RenderSegment(chr & (1U << 3), nCurrentDigitBase, 3, red, green, blue);
-	RenderSegment(chr & (1U << 2), nCurrentDigitBase, 4, red, green, blue);
-	RenderSegment(chr & (1U << 1), nCurrentDigitBase, 5, red, green, blue);
-	RenderSegment(chr & (1U << 0), nCurrentDigitBase, 6, red, green, blue);
+    RenderSegment(chr & (1U << 6), kCurrentDigitBase, 0, red, green, blue);
+    RenderSegment(chr & (1U << 5), kCurrentDigitBase, 1, red, green, blue);
+    RenderSegment(chr & (1U << 4), kCurrentDigitBase, 2, red, green, blue);
+    RenderSegment(chr & (1U << 3), kCurrentDigitBase, 3, red, green, blue);
+    RenderSegment(chr & (1U << 2), kCurrentDigitBase, 4, red, green, blue);
+    RenderSegment(chr & (1U << 1), kCurrentDigitBase, 5, red, green, blue);
+    RenderSegment(chr & (1U << 0), kCurrentDigitBase, 6, red, green, blue);
 }
 
-void WS28xxDisplay7Segment::WriteColon(char nChar, uint32_t nPos, uint8_t red, uint8_t green, uint8_t blue) {
-	const auto nCurrentDigitBase = static_cast<uint16_t>((WS28xxDisplay7SegmentConfig::NUM_OF_DIGITS * WS28xxDisplay7SegmentConfig::SEGMENTS_PER_DIGIT) + (nPos * WS28xxDisplay7SegmentConfig::LEDS_PER_COLON));
-	const bool OnOff = (nChar == ':' || nChar == '.' || nChar == ';') ? 1 : 0;
+void WS28xxDisplay7Segment::WriteColon(char nChar, uint32_t nPos, uint8_t red, uint8_t green, uint8_t blue)
+{
+    const auto nCurrentDigitBase = static_cast<uint16_t>((WS28xxDisplay7SegmentConfig::NUM_OF_DIGITS * WS28xxDisplay7SegmentConfig::SEGMENTS_PER_DIGIT) +
+                                                         (nPos * WS28xxDisplay7SegmentConfig::LEDS_PER_COLON));
+    const bool OnOff = (nChar == ':' || nChar == '.' || nChar == ';') ? 1 : 0;
 
-	while (m_pPixelOutput->IsUpdating()) {
-		// wait for completion
-	}
+    while (m_pPixelOutput->IsUpdating())
+    {
+        // wait for completion
+    }
 
-	for (uint32_t nIndex = nCurrentDigitBase; nIndex < static_cast<uint16_t>(nCurrentDigitBase + WS28xxDisplay7SegmentConfig::LEDS_PER_COLON); nIndex++) {
-		if (OnOff) {
-			m_pPixelOutput->SetPixel(nIndex, red, green, blue);
-		} else {
-			m_pPixelOutput->SetPixel(nIndex, 0x00, 0x00, 0x00);
-		}
-	}
+    for (uint32_t nIndex = nCurrentDigitBase; nIndex < static_cast<uint16_t>(nCurrentDigitBase + WS28xxDisplay7SegmentConfig::LEDS_PER_COLON); nIndex++)
+    {
+        if (OnOff)
+        {
+            m_pPixelOutput->SetPixel(nIndex, red, green, blue);
+        }
+        else
+        {
+            m_pPixelOutput->SetPixel(nIndex, 0x00, 0x00, 0x00);
+        }
+    }
 }
 
-void WS28xxDisplay7Segment::SetColonsOff() {
-	for (uint32_t nCount = 0; nCount < WS28xxDisplay7SegmentConfig::NUM_OF_COLONS; nCount++) {
-		WriteColon(' ', nCount, 0x00, 0x00, 0x00);
-	}
+void WS28xxDisplay7Segment::SetColonsOff()
+{
+    for (uint32_t nCount = 0; nCount < WS28xxDisplay7SegmentConfig::NUM_OF_COLONS; nCount++)
+    {
+        WriteColon(' ', nCount, 0x00, 0x00, 0x00);
+    }
 }
 
-void WS28xxDisplay7Segment::WriteAll(const char *pChars, uint8_t red, uint8_t green, uint8_t blue) {
-	for (uint32_t nPos = 0; nPos < WS28xxDisplay7SegmentConfig::NUM_OF_DIGITS; nPos++) {
-		WriteChar(pChars[nPos], nPos, red, green, blue);
-	}
+void WS28xxDisplay7Segment::WriteAll(const char* pChars, uint8_t red, uint8_t green, uint8_t blue)
+{
+    for (uint32_t nPos = 0; nPos < WS28xxDisplay7SegmentConfig::NUM_OF_DIGITS; nPos++)
+    {
+        WriteChar(pChars[nPos], nPos, red, green, blue);
+    }
 }
 
-void WS28xxDisplay7Segment::RenderSegment(bool bOnOff, uint32_t nCurrentDigitBase, uint32_t nCurrentSegment, uint8_t red, uint8_t green, uint8_t blue) {
-	const auto nCurrentSegmentBase = static_cast<uint16_t>(nCurrentDigitBase + (nCurrentSegment * WS28xxDisplay7SegmentConfig::LEDS_PER_SEGMENT));
+void WS28xxDisplay7Segment::RenderSegment(bool bOnOff, uint32_t nCurrentDigitBase, uint32_t nCurrentSegment, uint8_t red, uint8_t green, uint8_t blue)
+{
+    const auto kCurrentSegmentBase = static_cast<uint16_t>(nCurrentDigitBase + (nCurrentSegment * WS28xxDisplay7SegmentConfig::LEDS_PER_SEGMENT));
 
-	while (m_pPixelOutput->IsUpdating()) {
-		// wait for completion
-	}
+    while (m_pPixelOutput->IsUpdating())
+    {
+        // wait for completion
+    }
 
-	for (uint32_t nIndex = nCurrentSegmentBase; nIndex < (nCurrentSegmentBase + WS28xxDisplay7SegmentConfig::LEDS_PER_SEGMENT); nIndex++) {
-		if (bOnOff) {
-			m_pPixelOutput->SetPixel(nIndex, red, green, blue); // on
-		} else {
-			m_pPixelOutput->SetPixel(nIndex, 0, 0, 0); // off
-		}
-	}
+    for (uint32_t nIndex = kCurrentSegmentBase; nIndex < (kCurrentSegmentBase + WS28xxDisplay7SegmentConfig::LEDS_PER_SEGMENT); nIndex++)
+    {
+        if (bOnOff)
+        {
+            m_pPixelOutput->SetPixel(nIndex, red, green, blue); // on
+        }
+        else
+        {
+            m_pPixelOutput->SetPixel(nIndex, 0, 0, 0); // off
+        }
+    }
 }
 
-void WS28xxDisplay7Segment::Show() {
-	m_pPixelOutput->Update();
+void WS28xxDisplay7Segment::Show()
+{
+    m_pPixelOutput->Update();
 }
-

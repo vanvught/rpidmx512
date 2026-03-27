@@ -82,7 +82,7 @@ int main() // NOLINT
 
     PixelTestPattern pixeltest_pattern(kTestPattern, 1);
 
-    display.Printf(7, "%s:%d G%d", pixel::GetType(pixeldmx.GetType()), pixeldmx.GetCount(), pixeldmx.GetGroupingCount());
+    display.Printf(7, "%s:%d G%d", pixel::GetTypeName(pixeldmx.GetType()), pixeldmx.GetCount(), pixeldmx.GetGroupingCount());
 
     oscserver.SetOutput(&pixeldmx);
     oscserver.SetOscServerHandler(new Handler(&pixeldmx));

@@ -2,7 +2,7 @@
  * @file display.cpp
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,15 +43,14 @@ void Display(const uint8_t data[kDmxFootprint])
     }
     else
     {
-        DisplayUdf::Get()->Printf(6, 
-        "%-20s",
-        PixelPatterns::GetName(static_cast<pixelpatterns::Pattern>(data[static_cast<uint32_t>(pixeldmx::paramsdmx::SlotsInfo::TEST_PATTERN)])));
+        DisplayUdf::Get()->Printf(
+            6, "%-20s", PixelPatterns::GetName(static_cast<pixelpatterns::Pattern>(data[static_cast<uint32_t>(pixeldmx::paramsdmx::SlotsInfo::TEST_PATTERN)])));
     }
 
     DisplayUdf::Get()->Printf(
-        7, "%-8s %-2d G%-2d %-5s", pixel::GetType(static_cast<pixel::Type>(data[static_cast<uint32_t>(pixeldmx::paramsdmx::SlotsInfo::TYPE)])),
+        7, "%-8s %-2d G%-2d %-5s", pixel::GetTypeName(static_cast<pixel::LedType>(data[static_cast<uint32_t>(pixeldmx::paramsdmx::SlotsInfo::TYPE)])),
         data[static_cast<uint32_t>(pixeldmx::paramsdmx::SlotsInfo::COUNT)], data[static_cast<uint32_t>(pixeldmx::paramsdmx::SlotsInfo::GROUPING_COUNT)],
-        pixel::GetMap(static_cast<pixel::Map>(data[static_cast<uint32_t>(pixeldmx::paramsdmx::SlotsInfo::MAP)])));
+        pixel::GetMapName(static_cast<pixel::LedMap>(data[static_cast<uint32_t>(pixeldmx::paramsdmx::SlotsInfo::MAP)])));
 
     if (data[kLastIndex] == 0xFF)
     {

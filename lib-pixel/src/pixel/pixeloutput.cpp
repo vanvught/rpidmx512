@@ -45,7 +45,7 @@
 void PixelOutput::SetColorWS28xx(uint32_t offset, uint8_t value)
 {
     auto& pixel_configuration = PixelConfiguration::Get();
-    assert(pixel_configuration.GetType() != pixel::Type::WS2801);
+    assert(pixel_configuration.GetType() != pixel::LedType::kWS2801);
     assert(buffer_ != nullptr);
     assert(offset + 7 < buf_size_);
 
@@ -95,7 +95,7 @@ void PixelOutput::SetPixel(uint32_t pixel_index, uint8_t red, uint8_t green, uin
 
     const auto kType = pixel_configuration.GetType();
 
-    if (kType == pixel::Type::WS2801)
+    if (kType == pixel::LedType::kWS2801)
     {
         const auto kOffset = pixel_index * 3U;
         assert(kOffset + 2U < buf_size_);
@@ -107,7 +107,7 @@ void PixelOutput::SetPixel(uint32_t pixel_index, uint8_t red, uint8_t green, uin
         return;
     }
 
-    if ((kType == pixel::Type::APA102) || (kType == pixel::Type::SK9822))
+    if ((kType == pixel::LedType::kAPA102) || (kType == pixel::LedType::kSK9822))
     {
         const auto kOffset = 4U + (pixel_index * 4U);
         assert(kOffset + 3U < buf_size_);
@@ -120,7 +120,7 @@ void PixelOutput::SetPixel(uint32_t pixel_index, uint8_t red, uint8_t green, uin
         return;
     }
 
-    if (kType == pixel::Type::P9813)
+    if (kType == pixel::LedType::kP9813)
     {
         const auto kOffset = 4U + (pixel_index * 4U);
         assert(kOffset + 3 < buf_size_);
@@ -142,7 +142,7 @@ void PixelOutput::SetPixel(uint32_t pixel_index, uint8_t red, uint8_t green, uin
 void PixelOutput::SetPixel(uint32_t pixel_index, uint8_t red, uint8_t green, uint8_t blue, uint8_t white)
 {
     assert(pixel_index < PixelConfiguration::Get().GetCount());
-    assert(PixelConfiguration::Get().GetType() == pixel::Type::SK6812W);
+    assert(PixelConfiguration::Get().GetType() == pixel::LedType::kSK6812W);
 
 #if defined(CONFIG_PIXELDMX_ENABLE_GAMMATABLE)
     const auto* gamma_table = PixelConfiguration::Get().GetGammaTable();

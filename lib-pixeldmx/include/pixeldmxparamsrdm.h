@@ -51,8 +51,8 @@ inline constexpr auto kDmxFootprint = static_cast<uint16_t>(SlotsInfo::LAST);
 inline void SetPersonalityDescription(char description[rdm::personality::DESCRIPTION_MAX_LENGTH])
 {
     auto& configuration = PixelDmxConfiguration::Get();
-    snprintf(description, rdm::personality::DESCRIPTION_MAX_LENGTH - 1U, "%s:%u G%u [%s]", pixel::GetType(configuration.GetType()), configuration.GetCount(),
-             configuration.GetGroupingCount(), pixel::GetMap(configuration.GetMap()));
+    snprintf(description, rdm::personality::DESCRIPTION_MAX_LENGTH - 1U, "%s:%u G%u [%s]", pixel::GetTypeName(configuration.GetType()), configuration.GetCount(),
+             configuration.GetGroupingCount(), pixel::GetMapName(configuration.GetMap()));
 }
 
 void Display(const uint8_t data[kDmxFootprint]);

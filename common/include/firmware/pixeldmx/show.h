@@ -2,7 +2,7 @@
  * display.h
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,8 +41,8 @@ inline void Show(uint32_t line, pixelpatterns::Pattern pattern = pixelpatterns::
     assert(display != nullptr);
 
     display->ClearEndOfLine();
-    display->Printf(line, "%s:%d G%d %s", pixel::GetType(configuration.GetType()), configuration.GetCount(), configuration.GetGroupingCount(),
-                    pixel::GetMap(configuration.GetMap()));
+    display->Printf(line, "%s:%d G%d %s", pixel::GetTypeName(configuration.GetType()), configuration.GetCount(), configuration.GetGroupingCount(),
+                    pixel::GetMapName(configuration.GetMap()));
     display->ClearLine(8); // Status line
 
     if (pattern != pixelpatterns::Pattern::kNone)

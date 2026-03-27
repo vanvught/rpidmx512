@@ -2,7 +2,7 @@
  * @file rdm_manufacturer_pid.cpp
  *
  */
-/* Copyright (C) 2023-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2023-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +34,7 @@
 #include "rdm_e120.h"
 #include "pixeltype.h"
 #include "pixeldmxstore.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 #include "pixeldmxconfiguration.h"
 #include "common/utils/utils_enum.h"
 #include "pixeloutput.h"
@@ -74,82 +74,47 @@ constexpr char PixelGroupingCount::kDescription[];
 constexpr char PixelMap::kDescription[];
 
 const rdmhandler::ParameterDescription RDMHandler::PARAMETER_DESCRIPTIONS[] = {
-		  { E120_MANUFACTURER_PIXEL_TYPE::kCode,
-		    rdmhandler::kDeviceDescriptionMaxLength,
-			E120_DS_ASCII,
-#if defined (CONFIG_RDM_MANUFACTURER_PIDS_SET)
-			E120_CC_GET_SET,
+    {E120_MANUFACTURER_PIXEL_TYPE::kCode, rdmhandler::kDeviceDescriptionMaxLength, E120_DS_ASCII,
+#if defined(CONFIG_RDM_MANUFACTURER_PIDS_SET)
+     E120_CC_GET_SET,
 #else
-			E120_CC_GET,
+     E120_CC_GET,
 #endif
-			0,
-			E120_UNITS_NONE,
-			E120_PREFIX_NONE,
-			0,
-			0,
-			0,
-			rdmhandler::Description<PixelType, sizeof(PixelType::kDescription)>::kValue,
-			RDMHandler::PdlParameterDescription(sizeof(PixelType::kDescription))
-		  },
-		  { E120_MANUFACTURER_PIXEL_COUNT::kCode,
-			2,
-			E120_DS_UNSIGNED_WORD,
-#if defined (CONFIG_RDM_MANUFACTURER_PIDS_SET)
-			E120_CC_GET_SET,
+     0, E120_UNITS_NONE, E120_PREFIX_NONE, 0, 0, 0, rdmhandler::Description<PixelType, sizeof(PixelType::kDescription)>::kValue,
+     RDMHandler::PdlParameterDescription(sizeof(PixelType::kDescription))},
+    {E120_MANUFACTURER_PIXEL_COUNT::kCode, 2, E120_DS_UNSIGNED_WORD,
+#if defined(CONFIG_RDM_MANUFACTURER_PIDS_SET)
+     E120_CC_GET_SET,
 #else
-			E120_CC_GET,
+     E120_CC_GET,
 #endif
-			0,
-			E120_UNITS_NONE,
-			E120_PREFIX_NONE,
-			0,
-			__builtin_bswap32(pixel::defaults::kCount),
-			__builtin_bswap32(pixel::max::ledcount::RGB),
-			rdmhandler::Description<PixelCount, sizeof(PixelCount::kDescription)>::kValue,
-			RDMHandler::PdlParameterDescription(sizeof(PixelCount::kDescription))
-		  },
-		  { E120_MANUFACTURER_PIXEL_GROUPING_COUNT::kCode,
-			2,
-			E120_DS_UNSIGNED_WORD,
-#if defined (CONFIG_RDM_MANUFACTURER_PIDS_SET)
-			E120_CC_GET_SET,
+     0, E120_UNITS_NONE, E120_PREFIX_NONE, 0, __builtin_bswap32(pixel::defaults::kCount), __builtin_bswap32(pixel::max::ledcount::RGB),
+     rdmhandler::Description<PixelCount, sizeof(PixelCount::kDescription)>::kValue, RDMHandler::PdlParameterDescription(sizeof(PixelCount::kDescription))},
+    {E120_MANUFACTURER_PIXEL_GROUPING_COUNT::kCode, 2, E120_DS_UNSIGNED_WORD,
+#if defined(CONFIG_RDM_MANUFACTURER_PIDS_SET)
+     E120_CC_GET_SET,
 #else
-			E120_CC_GET,
+     E120_CC_GET,
 #endif
-			0,
-			E120_UNITS_NONE,
-			E120_PREFIX_NONE,
-			0,
-			__builtin_bswap32(pixel::defaults::kCount),
-			__builtin_bswap32(pixel::max::ledcount::RGB),
-			rdmhandler::Description<PixelGroupingCount, sizeof(PixelGroupingCount::kDescription)>::kValue,
-			RDMHandler::PdlParameterDescription(sizeof(PixelGroupingCount::kDescription))
-		  },
-		  { E120_MANUFACTURER_PIXEL_MAP::kCode,
-			rdmhandler::kDeviceDescriptionMaxLength,
-			E120_DS_ASCII,
-#if defined (CONFIG_RDM_MANUFACTURER_PIDS_SET)
-			E120_CC_GET_SET,
+     0, E120_UNITS_NONE, E120_PREFIX_NONE, 0, __builtin_bswap32(pixel::defaults::kCount), __builtin_bswap32(pixel::max::ledcount::RGB),
+     rdmhandler::Description<PixelGroupingCount, sizeof(PixelGroupingCount::kDescription)>::kValue,
+     RDMHandler::PdlParameterDescription(sizeof(PixelGroupingCount::kDescription))},
+    {E120_MANUFACTURER_PIXEL_MAP::kCode, rdmhandler::kDeviceDescriptionMaxLength, E120_DS_ASCII,
+#if defined(CONFIG_RDM_MANUFACTURER_PIDS_SET)
+     E120_CC_GET_SET,
 #else
-			E120_CC_GET,
+     E120_CC_GET,
 #endif
-			0,
-			E120_UNITS_NONE,
-			E120_PREFIX_NONE,
-			0,
-			0,
-			0,
-			rdmhandler::Description<PixelMap, sizeof(PixelMap::kDescription)>::kValue,
-			RDMHandler::PdlParameterDescription(sizeof(PixelMap::kDescription))
-		  }
-  };
+     0, E120_UNITS_NONE, E120_PREFIX_NONE, 0, 0, 0, rdmhandler::Description<PixelMap, sizeof(PixelMap::kDescription)>::kValue,
+     RDMHandler::PdlParameterDescription(sizeof(PixelMap::kDescription))}};
 
 uint32_t RDMHandler::GetParameterDescriptionCount() const
 {
     return sizeof(RDMHandler::PARAMETER_DESCRIPTIONS) / sizeof(RDMHandler::PARAMETER_DESCRIPTIONS[0]);
 }
 
-namespace rdmhandler {
+namespace rdmhandler
+{
 bool HandleManufactureerPidGet(uint16_t pid, [[maybe_unused]] const ManufacturerParamData* in, ManufacturerParamData* out, uint16_t& reason)
 {
     DEBUG_PRINTF("pid=%x", __builtin_bswap16(pid));
@@ -160,7 +125,7 @@ bool HandleManufactureerPidGet(uint16_t pid, [[maybe_unused]] const Manufacturer
     {
         case E120_MANUFACTURER_PIXEL_TYPE::kCode:
         {
-            const auto* string = ::pixel::GetType(pixeldmx_configuration.GetType());
+            const auto* string = ::pixel::GetTypeName(pixeldmx_configuration.GetType());
             out->nPdl = static_cast<uint8_t>(strlen(string));
             memcpy(out->pParamData, string, out->nPdl);
             return true;
@@ -183,7 +148,7 @@ bool HandleManufactureerPidGet(uint16_t pid, [[maybe_unused]] const Manufacturer
         }
         case E120_MANUFACTURER_PIXEL_MAP::kCode:
         {
-            const auto* string = ::pixel::GetMap(pixeldmx_configuration.GetMap());
+            const auto* string = ::pixel::GetMapName(pixeldmx_configuration.GetMap());
             out->nPdl = static_cast<uint8_t>(strlen(string));
             memcpy(out->pParamData, string, out->nPdl);
             return true;
@@ -257,9 +222,9 @@ bool HandleManufactureerPidSet(bool is_broadcast, uint16_t pid, const ParameterD
         {
             if (in->nPdl == 3)
             {
-                const auto kMap = ::pixel::GetMap(reinterpret_cast<const char*>(in->pParamData));
+                const auto kMap = ::pixel::GetMapByName(reinterpret_cast<const char*>(in->pParamData));
 
-                if (kMap == pixel::Map::UNDEFINED)
+                if (kMap == pixel::LedMap::kUndefined)
                 {
                     reason = E120_NR_DATA_OUT_OF_RANGE;
                     return false;

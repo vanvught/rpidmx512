@@ -37,21 +37,21 @@ struct TWS28xxDisplayMatrixColon {
 
 class WS28xxDisplayMatrix {
 public:
-	WS28xxDisplayMatrix(uint8_t columns, uint8_t rows, pixel::Type tLedType, pixel::Map tRGBMapping);
+	WS28xxDisplayMatrix(uint8_t columns, uint8_t rows, pixel::LedType led_type, pixel::LedMap led_map);
 	~WS28xxDisplayMatrix();
 
-	void PutChar(char nChar, uint8_t red, uint8_t green, uint8_t blue);
-	void PutString(const char *pString, uint8_t red, uint8_t green, uint8_t blue);
+	void PutChar(char ch, uint8_t red, uint8_t green, uint8_t blue);
+	void PutString(const char *string, uint8_t red, uint8_t green, uint8_t blue);
 
-	void Text(const char *pText, uint32_t nLength, uint8_t red, uint8_t green, uint8_t blue);
-	void TextLine(uint8_t nLine, const char *pText, uint32_t nLength, uint8_t red, uint8_t green, uint8_t blue);
+	void Text(const char *text, uint32_t length, uint8_t red, uint8_t green, uint8_t blue);
+	void TextLine(uint8_t line, const char *text, uint32_t length, uint8_t red, uint8_t green, uint8_t blue);
 
-	void SetColon(char nChar, uint32_t nPos, uint8_t red, uint8_t green, uint8_t blue);
+	void SetColon(char ch, uint32_t pos, uint8_t red, uint8_t green, uint8_t blue);
 	void SetColonsOff();
 
-	void ClearLine(uint8_t nLine);
+	void ClearLine(uint8_t line);
 
-	void SetCursorPos(uint8_t nCol, uint8_t row);
+	void SetCursorPos(uint8_t col, uint8_t row);
 
 	void Cls();
 	void Show();

@@ -45,7 +45,7 @@
 #include "pixeltype.h"
 #endif
 #include "softwaretimers.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
 namespace rgb
 {
@@ -105,11 +105,11 @@ LtcDisplayRgb::~LtcDisplayRgb()
     DEBUG_EXIT();
 }
 
-void LtcDisplayRgb::Init(pixel::Type type)
+void LtcDisplayRgb::Init(pixel::LedType led_type)
 {
     DEBUG_ENTRY();
 
-    pixel_type_ = type;
+    led_type_ = led_type;
 
     if (type_ == ltc::display::rgb::Type::kRgbpanel)
     {
@@ -122,11 +122,11 @@ void LtcDisplayRgb::Init(pixel::Type type)
     {
         if (ws28xx_type_ == ltc::display::rgb::WS28xxType::SEGMENT)
         {
-            display_rgb_ = new LtcDisplayPixel7Segment(type, pixel_map_);
+            display_rgb_ = new LtcDisplayPixel7Segment(led_type, led_map_);
         }
         else
         {
-            display_rgb_ = new LtcDisplayPixelMatrix(type, pixel_map_);
+            display_rgb_ = new LtcDisplayPixelMatrix(led_type, led_map_);
         }
 
         assert(display_rgb_ != nullptr);
@@ -374,14 +374,6 @@ void LtcDisplayRgb::WriteChar(uint8_t ch, uint8_t pos)
     display_rgb_->WriteChar(ch, pos, colours_info_);
 }
 
-/**
- * @brief Processes an incoming UDP packet.
- *
- * @param pBuffer Pointer to the packet buffer.
- * @param nSize Size of the packet buffer.
- * @param from_ip IP address of the sender.
- * @param from_port Port number of the sender.
- */
 void LtcDisplayRgb::Input(const uint8_t* buffer, uint32_t size, [[maybe_unused]] uint32_t from_ip, [[maybe_unused]] uint16_t from_port)
 {
     if (__builtin_expect((memcmp("7seg!", buffer, 5) != 0), 0))
@@ -451,8 +443,8 @@ void LtcDisplayRgb::Print()
     {
 #if !defined(CONFIG_LTC_DISABLE_WS28XX)
         puts("Display PixelOutput");
-        printf(" Type    : %s [%d]\n", pixel::GetType(pixel_type_), static_cast<int>(pixel_type_));
-        printf(" Mapping : %s [%d]\n", pixel::GetMap(pixel_map_), static_cast<int>(pixel_map_));
+        printf(" Type    : %s [%d]\n", pixel::GetTypeName(led_type_), static_cast<int>(led_type_));
+        printf(" Mapping : %s [%d]\n", pixel::GetMapName(led_map_), static_cast<int>(led_map_));
 #else
         puts("Display PixelOutput disabled");
 #endif

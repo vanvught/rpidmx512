@@ -1,7 +1,7 @@
 /**
  * @file pixeltestpattern.h
  */
-/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,79 +29,82 @@
 #include <cassert>
 
 #include "pixelpatterns.h"
+#include "firmware/debug/debug_debug.h"
 
- #include "firmware/debug/debug_debug.h"
+class PixelTestPattern final : PixelPatterns
+{
+   public:
+    PixelTestPattern(pixelpatterns::Pattern pattern, uint32_t output_ports) : PixelPatterns(output_ports)
+    {
+        DEBUG_ENTRY();
 
-class PixelTestPattern final: PixelPatterns {
-public:
-	PixelTestPattern(const pixelpatterns::Pattern Pattern, const uint32_t OutputPorts) : PixelPatterns(OutputPorts) {
-		DEBUG_ENTRY();
+        assert(s_this == nullptr);
+        s_this = this;
 
-		assert(s_this == nullptr);
-		s_this = this;
+        SetPattern(pattern);
 
-		SetPattern(Pattern);
+        DEBUG_EXIT();
+    }
 
-		DEBUG_EXIT();
-	}
+    bool SetPattern(pixelpatterns::Pattern pattern)
+    {
+        if (pattern >= pixelpatterns::Pattern::kLast)
+        {
+            return false;
+        }
 
-	bool SetPattern(const pixelpatterns::Pattern Pattern) {
-		if (Pattern >= pixelpatterns::Pattern::kLast)  {
-			return false;
-		}
+        pattern_ = pattern;
 
-		m_Pattern = Pattern;
+        const auto kColour1 = pixel::GetColour(0, 0, 0);
+        const auto kColour2 = pixel::GetColour(100, 100, 100);
+        constexpr auto kInterval = 100;
+        constexpr auto kSteps = 10;
 
-		const auto colour1 = pixel::GetColour(0, 0, 0);
-		const auto colour2 = pixel::GetColour(100, 100, 100);
-		constexpr auto nInterval = 100;
-		constexpr auto nSteps = 10;
+        for (uint32_t i = 0; i < PixelPatterns::GetActivePorts(); i++)
+        {
+            DEBUG_PRINTF("i=%u", i);
 
-		for (uint32_t i = 0; i < PixelPatterns::GetActivePorts(); i++) {
-			DEBUG_PRINTF("i=%u",i);
+            switch (pattern)
+            {
+                case pixelpatterns::Pattern::kRainbowCycle:
+                    PixelPatterns::RainbowCycle(i, kInterval);
+                    break;
+                case pixelpatterns::Pattern::kTheaterChase:
+                    PixelPatterns::TheaterChase(i, kColour1, kColour2, kInterval);
+                    break;
+                case pixelpatterns::Pattern::kColorWipe:
+                    PixelPatterns::ColourWipe(i, kColour2, kInterval);
+                    break;
+                case pixelpatterns::Pattern::kFade:
+                    PixelPatterns::Fade(i, kColour1, kColour2, kSteps, kInterval);
+                    break;
+                case pixelpatterns::Pattern::kNone:
+                    PixelPatterns::None(i);
+                    break;
+                default:
+                    assert(0);
+                    break;
+            }
+        }
 
-			switch (Pattern) {
-			case pixelpatterns::Pattern::kRainbowCycle:
-				PixelPatterns::RainbowCycle(i, nInterval);
-				break;
-			case pixelpatterns::Pattern::kTheaterChase:
-				PixelPatterns::TheaterChase(i, colour1, colour2, nInterval);
-				break;
-			case pixelpatterns::Pattern::kColorWipe:
-				PixelPatterns::ColourWipe(i, colour2, nInterval);
-				break;
-			case pixelpatterns::Pattern::kFade:
-				PixelPatterns::Fade(i, colour1, colour2, nSteps, nInterval);
-				break;
-			case pixelpatterns::Pattern::kNone:
-				PixelPatterns::None(i);
-				break;
-			default:
-				assert(0);
-				break;
-			}
-		}
+        return true;
+    }
 
-		return true;
-	}
+    void Run()
+    {
+        if (__builtin_expect((pattern_ != pixelpatterns::Pattern::kNone), 0))
+        {
+            PixelPatterns::Run();
+        }
+    }
 
-	void Run() {
-		if (__builtin_expect((m_Pattern != pixelpatterns::Pattern::kNone), 0)) {
-			PixelPatterns::Run();
-		}
-	}
+    pixelpatterns::Pattern GetPattern() const { return pattern_; }
 
-	pixelpatterns::Pattern GetPattern() const {
-		return m_Pattern;
-	}
+    static PixelTestPattern* Get() { return s_this; }
 
-	static PixelTestPattern *Get() {
-		return s_this;
-	}
-
-private:
-	pixelpatterns::Pattern m_Pattern;
-	static inline PixelTestPattern *s_this;
+   private:
+    pixelpatterns::Pattern pattern_;
+    static inline PixelTestPattern* s_this;
 };
 
 #endif /* PIXELTESTPATTERN_H_ */

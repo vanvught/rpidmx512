@@ -37,13 +37,13 @@
 #include "ltcdisplaypixelmatrix.h"
 #include "pixeldisplaymatrix.h"
 #include "pixeltype.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
-LtcDisplayPixelMatrix::LtcDisplayPixelMatrix(pixel::Type type, pixel::Map map)
+LtcDisplayPixelMatrix::LtcDisplayPixelMatrix(pixel::LedType led_type, pixel::LedMap led_map)
 {
     DEBUG_ENTRY();
 
-    pixel_matrix_ = new WS28xxDisplayMatrix(64, 8, type, map);
+    pixel_matrix_ = new WS28xxDisplayMatrix(64, 8, led_type, led_map);
     assert(pixel_matrix_ != nullptr);
 
     DEBUG_EXIT();

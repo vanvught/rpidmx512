@@ -1,7 +1,7 @@
 /**
  * @file ltcdisplaypixelmatrix.h
  */
-/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,7 @@
 class LtcDisplayPixelMatrix final : public LtcDisplayRgbSet
 {
    public:
-    LtcDisplayPixelMatrix(pixel::Type type, pixel::Map map);
+    LtcDisplayPixelMatrix(pixel::LedType led_type, pixel::LedMap led_map);
 
     void Show(const char* timecode, struct ltc::display::rgb::Colours& colours, struct ltc::display::rgb::Colours& colours_colons) override;
     void ShowSysTime(const char* systemtime, struct ltc::display::rgb::Colours& colours, struct ltc::display::rgb::Colours& colours_colons) override;
@@ -45,4 +45,4 @@ class LtcDisplayPixelMatrix final : public LtcDisplayRgbSet
     WS28xxDisplayMatrix* pixel_matrix_;
 };
 
-#endif  // LTCDISPLAYPIXELMATRIX_H_
+#endif // LTCDISPLAYPIXELMATRIX_H_

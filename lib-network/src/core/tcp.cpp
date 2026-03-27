@@ -46,7 +46,6 @@
 #if defined(DEBUG_NET_TCP)
 #undef NDEBUG
 #endif
-
 #pragma GCC diagnostic push
 #if (__GNUC__ < 10)
 #pragma GCC diagnostic ignored "-Wconversion"

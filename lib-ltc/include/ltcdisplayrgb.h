@@ -3,7 +3,7 @@
  */
 /*
  * Copyright (C) 2019-2020 by hippy mailto:dmxout@gmail.com
- * Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+ * Copyright (C) 2019-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -71,7 +71,7 @@ enum class ColourIndex
 struct Defaults
 {
 #if !defined(CONFIG_LTC_DISABLE_WS28XX)
-    static constexpr auto kLedType = pixel::Type::WS2812B;
+    static constexpr auto kLedType = pixel::LedType::kWS2812B;
 #endif
     static constexpr uint32_t kColourTime = 0x00FF0000;
     static constexpr uint32_t COLOUR_COLON = 0x00FFFC00;
@@ -94,7 +94,7 @@ class LtcDisplayRgb
     ~LtcDisplayRgb();
 
 #if !defined(CONFIG_LTC_DISABLE_WS28XX)
-    void SetMapping(pixel::Map map) { pixel_map_ = map; }
+    void SetMapping(pixel::LedMap map) { led_map_ = map; }
 #endif
 
     void SetMaster(uint8_t value) { master_ = value; }
@@ -111,7 +111,7 @@ class LtcDisplayRgb
     }
 
 #if !defined(CONFIG_LTC_DISABLE_WS28XX)
-    void Init(pixel::Type type = pixel::Type::WS2812B);
+    void Init(pixel::LedType type = pixel::LedType::kWS2812B);
 #else
     void Init();
 #endif
@@ -242,8 +242,8 @@ class LtcDisplayRgb
     uint8_t intensity_{ltc::display::rgb::Defaults::GLOBAL_BRIGHTNESS};
     int32_t handle_{-1};
 #if !defined(CONFIG_LTC_DISABLE_WS28XX)
-    pixel::Map pixel_map_{pixel::Map::UNDEFINED};
-    pixel::Type pixel_type_{pixel::Type::UNDEFINED};
+    pixel::LedMap led_map_{pixel::LedMap::kUndefined};
+    pixel::LedType led_type_{pixel::LedType::kUndefined};
 #endif
     uint32_t colour_[static_cast<uint32_t>(ltc::display::rgb::ColourIndex::LAST)];
     uint32_t master_{ltc::display::rgb::Defaults::MASTER};

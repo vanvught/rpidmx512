@@ -2,7 +2,7 @@
  * @file pixelconfiguration.h
  *
  */
-/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,12 +31,11 @@
 #include <cassert>
 
 #include "pixeltype.h"
-
+#include "common/utils/utils_enum.h"
 #if defined(CONFIG_PIXELDMX_ENABLE_GAMMATABLE)
 #include "gamma/gamma_tables.h"
 #endif
-
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
 class PixelConfiguration
 {
@@ -56,13 +55,13 @@ class PixelConfiguration
     PixelConfiguration(const PixelConfiguration&) = delete;
     PixelConfiguration& operator=(const PixelConfiguration&) = delete;
 
-    void SetType(pixel::Type type)
+    void SetType(pixel::LedType type)
     {
         type_ = type;
         refresh_needed_ = true;
     }
 
-    pixel::Type GetType() const { return type_; }
+    pixel::LedType GetType() const { return type_; }
 
     void SetCount(uint32_t count)
     {
@@ -72,9 +71,9 @@ class PixelConfiguration
 
     uint32_t GetCount() const { return count_; }
 
-    void SetMap(pixel::Map map) { map_ = map; }
+    void SetMap(pixel::LedMap map) { map_ = map; }
 
-    pixel::Map GetMap() const { return map_; }
+    pixel::LedMap GetMap() const { return map_; }
 
     void SetLowCode(uint8_t low_code)
     {
@@ -121,99 +120,36 @@ class PixelConfiguration
     const uint8_t* GetGammaTable() const { return gamma_table_; }
 #endif
 
-    void GetTxH(pixel::Type type, uint8_t& low_code, uint8_t& high_code)
-    {
-        low_code = 0xC0;
-        high_code = (type == pixel::Type::WS2812B
-                         ? 0xF8
-                         : (((type == pixel::Type::UCS1903) || (type == pixel::Type::UCS2903) || (type == pixel::Type::CS8812)) ? 0xFC : 0xF0));
-    }
-
     void Validate()
     {
         DEBUG_ENTRY();
+		
+		if (type_ == pixel::LedType::kUndefined)
+		{
+		    type_ = pixel::LedType::kWS2812B;
+		}
 
-        if (type_ == pixel::Type::SK6812W)
+        const auto& info = GetTypeInfo(type_);
+
+        leds_per_pixel_ = common::ToValue(info.led_count);
+        is_rtz_protocol_ = info.protocol_type == pixel::ProtocolType::kRtz;
+		
+		if (map_ == pixel::LedMap::kUndefined)
+		{
+		    map_ = info.led_map;
+		}
+
+        if (leds_per_pixel_ == 4)
         {
             count_ = count_ <= pixel::max::ledcount::RGBW ? count_ : pixel::max::ledcount::RGBW;
-            leds_per_pixel_ = 4;
         }
         else
         {
             count_ = count_ <= pixel::max::ledcount::RGB ? count_ : pixel::max::ledcount::RGB;
-            leds_per_pixel_ = 3;
         }
 
-        if ((type_ == pixel::Type::APA102) || (type_ == pixel::Type::SK9822))
+        if (is_rtz_protocol_)
         {
-            if (global_brightness_ > 0x1F)
-            {
-                global_brightness_ = 0xFF;
-            }
-            else
-            {
-                global_brightness_ = 0xE0 | (global_brightness_ & 0x1F);
-            }
-        }
-
-        if ((type_ == pixel::Type::WS2801) || (type_ == pixel::Type::APA102) || (type_ == pixel::Type::SK9822) || (type_ == pixel::Type::P9813))
-        {
-            is_rtz_protocol_ = false;
-
-            if (map_ == pixel::Map::UNDEFINED)
-            {
-                map_ = pixel::Map::RGB;
-            }
-
-            if (type_ == pixel::Type::P9813)
-            {
-                if (clock_speed_hz_ == 0)
-                {
-                    clock_speed_hz_ = pixel::spi::speed::p9813::kDefaultHz;
-                }
-                else if (clock_speed_hz_ > pixel::spi::speed::p9813::kMaxHz)
-                {
-                    clock_speed_hz_ = pixel::spi::speed::p9813::kMaxHz;
-                }
-            }
-            else
-            {
-                if (clock_speed_hz_ == 0)
-                {
-                    clock_speed_hz_ = pixel::spi::speed::ws2801::kDefaultHz;
-                }
-                else if (clock_speed_hz_ > pixel::spi::speed::ws2801::kMaxHz)
-                {
-                    clock_speed_hz_ = pixel::spi::speed::ws2801::kMaxHz;
-                }
-            }
-
-            const auto kLedTime = (8U * 1000000U) / clock_speed_hz_;
-            const auto kLedsTime = kLedTime * count_ * leds_per_pixel_;
-            if (kLedsTime > 0)
-            {
-                refresh_rate_ = 1000000U / kLedsTime;
-            }
-            else
-            {
-                refresh_rate_ = 0;
-                assert(0);
-            }
-        }
-        else
-        {
-            is_rtz_protocol_ = true;
-
-            if (type_ == pixel::Type::UNDEFINED)
-            {
-                type_ = pixel::Type::WS2812B;
-            }
-
-            if (map_ == pixel::Map::UNDEFINED)
-            {
-                map_ = pixel::GetMap(type_);
-            }
-
             if (low_code_ >= high_code_)
             {
                 low_code_ = 0;
@@ -222,7 +158,7 @@ class PixelConfiguration
 
             uint8_t low_code, high_code;
 
-            GetTxH(type_, low_code, high_code);
+            pixel::GetTxH(type_, low_code, high_code);
 
             if (low_code_ == 0)
             {
@@ -241,6 +177,41 @@ class PixelConfiguration
             //                   6.400.000
             const auto kLedsTime = 10U * count_ * leds_per_pixel_;
             refresh_rate_ = 1000000U / kLedsTime;
+        }
+        else
+        {
+            if ((type_ == pixel::LedType::kAPA102) || (type_ == pixel::LedType::kSK9822))
+            {
+                if (global_brightness_ > 0x1F)
+                {
+                    global_brightness_ = 0xFF;
+                }
+                else
+                {
+                    global_brightness_ = 0xE0 | (global_brightness_ & 0x1F);
+                }
+
+                if (clock_speed_hz_ == 0)
+                {
+                    clock_speed_hz_ = info.default_hz;
+                }
+                else if (clock_speed_hz_ > info.max_hz)
+                {
+                    clock_speed_hz_ = info.max_hz;
+                }
+
+                const auto kLedTime = (8U * 1000000U) / clock_speed_hz_;
+                const auto kLedsTime = kLedTime * count_ * leds_per_pixel_;
+                if (kLedsTime > 0)
+                {
+                    refresh_rate_ = 1000000U / kLedsTime;
+                }
+                else
+                {
+                    refresh_rate_ = 0;
+                    assert(0);
+                }
+            }
         }
 
 #if defined(CONFIG_PIXELDMX_ENABLE_GAMMATABLE)
@@ -273,18 +244,18 @@ class PixelConfiguration
     void Print()
     {
         puts("Pixel configuration");
-        printf(" Type    : %s [%d] <%d leds/pixel>\n", pixel::GetType(type_), static_cast<int>(type_), static_cast<int>(leds_per_pixel_));
+        printf(" Type    : %s [%d] <%d leds/pixel>\n", pixel::GetTypeName(type_), static_cast<int>(type_), static_cast<int>(leds_per_pixel_));
         printf(" Count   : %d\n", count_);
 
         if (is_rtz_protocol_)
         {
-            printf(" Mapping : %s [%d]\n", pixel::GetMap(map_), static_cast<int>(map_));
+            printf(" Mapping : %s [%d]\n", pixel::GetMapName(map_), static_cast<int>(map_));
             printf(" T0H     : %.2f [0x%X]\n", pixel::ConvertTxH(low_code_), low_code_);
             printf(" T1H     : %.2f [0x%X]\n", pixel::ConvertTxH(high_code_), high_code_);
         }
         else
         {
-            if ((type_ == pixel::Type::APA102) || (type_ == pixel::Type::SK9822))
+            if ((type_ == pixel::LedType::kAPA102) || (type_ == pixel::LedType::kSK9822))
             {
                 printf(" GlobalBrightness: %u\n", global_brightness_);
             }
@@ -312,8 +283,8 @@ class PixelConfiguration
     uint32_t count_{pixel::defaults::kCount};
     uint32_t clock_speed_hz_{0};
     uint32_t leds_per_pixel_{3};
-    pixel::Type type_{pixel::defaults::kType};
-    pixel::Map map_{pixel::Map::UNDEFINED};
+    pixel::LedType type_{pixel::defaults::kType};
+    pixel::LedMap map_{pixel::LedMap::kUndefined};
     bool is_rtz_protocol_{true};
     uint8_t low_code_{0};
     uint8_t high_code_{0};
@@ -329,4 +300,4 @@ class PixelConfiguration
     static inline PixelConfiguration* s_this{nullptr};
 };
 
-#endif  // PIXELCONFIGURATION_H_
+#endif // PIXELCONFIGURATION_H_

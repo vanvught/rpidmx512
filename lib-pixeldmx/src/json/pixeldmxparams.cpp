@@ -59,13 +59,19 @@ PixelDmxParams::PixelDmxParams()
 
 void PixelDmxParams::SetType(const char* val, uint32_t len)
 {
-    if (len < pixel::kTypesMaxNameLength)
+	if (len == 0)
+	{
+		store_dmxled.type = common::ToValue(pixel::LedType::kUndefined);
+		return;
+	}
+	
+    if (len <= pixel::kTypesMaxNameLength)
     {
-        char type[pixel::kTypesMaxNameLength];
+        char type[pixel::kTypesMaxNameLength + 1];
         memcpy(type, val, len);
         type[len] = '\0';
 
-        store_dmxled.type = common::ToValue(pixel::GetType(type));
+        store_dmxled.type = common::ToValue(pixel::GetTypeByName(type));
     }
 }
 
@@ -73,17 +79,17 @@ void PixelDmxParams::SetMap(const char* val, uint32_t len)
 {
     if (len == 0)
     {
-        store_dmxled.map = common::ToValue(pixel::Map::UNDEFINED);
+        store_dmxled.map = common::ToValue(pixel::LedMap::kUndefined);
         return;
     }
 
-    if (len == 3)
+    if (len <= pixel::kLedMapMaxNameLength)
     {
-        char map[4];
-        memcpy(map, val, 3);
-        map[3] = '\0';
+        char map[pixel::kLedMapMaxNameLength + 1];
+        memcpy(map, val, len);
+        map[len] = '\0';
 
-        store_dmxled.map = common::ToValue(pixel::GetMap(map));
+        store_dmxled.map = common::ToValue(pixel::GetMapByName(map));
     }
 }
 
@@ -188,8 +194,8 @@ void PixelDmxParams::Set()
 {
     auto& pixel_configuration = PixelConfiguration::Get();
 
-    pixel_configuration.SetType(static_cast<pixel::Type>(store_dmxled.type));
-    pixel_configuration.SetMap(static_cast<pixel::Map>(store_dmxled.map));
+    pixel_configuration.SetType(common::FromValue<pixel::LedType>(store_dmxled.type));
+    pixel_configuration.SetMap(common::FromValue<pixel::LedMap>(store_dmxled.map));
     pixel_configuration.SetCount(store_dmxled.count);
     pixel_configuration.SetLowCode(store_dmxled.low_code);
     pixel_configuration.SetHighCode(store_dmxled.high_code);
@@ -279,10 +285,10 @@ void PixelDmxParams::Dump()
     static const auto kMaxStartUniverses = std::min(kConfigMaxPorts, common::store::dmxled::kMaxUniverses);
 
     printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, json::DmxLedParamsConst::kFileName);
-    printf(" %s=%s [%u]\n", json::DmxLedParamsConst::kType.name, pixel::GetType(common::FromValue<pixel::Type>(store_dmxled.type)), store_dmxled.type);
+    printf(" %s=%s [%u]\n", json::DmxLedParamsConst::kType.name, pixel::GetTypeName(common::FromValue<pixel::LedType>(store_dmxled.type)), store_dmxled.type);
     printf(" %s=%.2f [0x%X]\n", DmxLedParamsConst::kT0H.name, pixel::ConvertTxH(store_dmxled.low_code), store_dmxled.low_code);
     printf(" %s=%.2f [0x%X]\n", DmxLedParamsConst::kT1H.name, pixel::ConvertTxH(store_dmxled.high_code), store_dmxled.high_code);
-    printf(" %s=%s\n", DmxLedParamsConst::kMap.name, pixel::GetMap(static_cast<pixel::Map>(store_dmxled.map)));
+    printf(" %s=%s\n", DmxLedParamsConst::kMap.name, pixel::GetMapName(common::FromValue<pixel::LedMap>(store_dmxled.map)));
     printf(" %s=%u\n", DmxLedParamsConst::kCount.name, store_dmxled.count);
     printf(" %s=%u\n", DmxLedParamsConst::kGroupingCount.name, store_dmxled.grouping_count);
     for (uint32_t i = 0; i < kMaxStartUniverses; i++)

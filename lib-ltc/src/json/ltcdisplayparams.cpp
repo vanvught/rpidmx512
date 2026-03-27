@@ -2,7 +2,7 @@
  * @file ltcdisplayparams.cpp
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -137,9 +137,9 @@ void LtcDisplayParams::Dump()
     printf(" %s=%s [%u]\n", LtcDisplayParamsConst::kPixelType,
            store_ltcdisplay.ws28xx_display_type == static_cast<uint8_t>(ltc::display::rgb::WS28xxType::SEGMENT) ? "7segment" : "matrix",
            store_ltcdisplay.ws28xx_display_type);
-    printf(" %s=%s [%u]\n", DmxLedParamsConst::kType.name, pixel::GetType(static_cast<pixel::Type>(store_ltcdisplay.ws28xx_type)),
+    printf(" %s=%s [%u]\n", DmxLedParamsConst::kType.name, pixel::GetTypeName(static_cast<pixel::LedType>(store_ltcdisplay.ws28xx_type)),
            static_cast<int>(store_ltcdisplay.ws28xx_type));
-    printf(" %s=%s [%u]\n", DmxLedParamsConst::kMap.name, pixel::GetMap(static_cast<pixel::Map>(store_ltcdisplay.ws28xx_rgb_mapping)),
+    printf(" %s=%s [%u]\n", DmxLedParamsConst::kMap.name, pixel::GetMapName(static_cast<pixel::LedMap>(store_ltcdisplay.ws28xx_rgb_mapping)),
            static_cast<int>(store_ltcdisplay.ws28xx_rgb_mapping));
 #endif
 

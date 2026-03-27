@@ -2,7 +2,7 @@
  * @file utils_enum.h
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,19 +30,20 @@
 
 namespace common
 {
-
 /// Converts an enum class value to its underlying integer type.
-template <typename Enum>
-inline auto ToValue(Enum e) noexcept {
+template <typename Enum> constexpr auto ToValue(Enum e) noexcept -> std::underlying_type_t<Enum>
+{
+    static_assert(std::is_enum_v<Enum>);
     return static_cast<std::underlying_type_t<Enum>>(e);
 }
 
 /// Converts an integer value to the corresponding enum class value.
-template <typename Enum>
-inline Enum FromValue(std::underlying_type_t<Enum> value) noexcept {
+template <typename Enum> constexpr Enum FromValue(std::underlying_type_t<Enum> value) noexcept
+{
+    static_assert(std::is_enum_v<Enum>);
     return static_cast<Enum>(value);
 }
 
 } // namespace common
 
-#endif  // COMMON_UTILS_UTILS_ENUM_H_
+#endif // COMMON_UTILS_UTILS_ENUM_H_
