@@ -126,3 +126,4 @@ linux_pp/.clangd
 
 /opi_emac_debug_lcd_udp
 /opi_emac_debug_http_client
+lib-remoteconfig/http/content/generate_content.cpp.old

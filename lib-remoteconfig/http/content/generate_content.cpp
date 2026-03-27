@@ -63,6 +63,9 @@ static constexpr char kHaveDmxEnd[] = "#endif /* !defined (CONFIG_HTTP_HTML_NO_D
 static constexpr char kHaveRdmBegin[] = "#if !defined (CONFIG_HTTP_HTML_NO_RDM) && defined (RDM_CONTROLLER)\n";
 static constexpr char kHaveRdmEnd[] = "#endif /* !defined (CONFIG_HTTP_HTML_NO_RDM) && defined (RDM_CONTROLLER) */\n";
 
+static constexpr char kHavePixelBegin[] = "#if !defined (CONFIG_HTTP_HTML_NO_PIXEL) && (defined(OUTPUT_DMX_PIXEL) || defined(OUTPUT_DMX_PIXEL_MULTI))\n";
+static constexpr char kHavePixelEnd[] = "#endif /* !defined (CONFIG_HTTP_HTML_NO_PIXEL) && (defined(OUTPUT_DMX_PIXEL) || defined(OUTPUT_DMX_PIXEL_MULTI)) */\n";
+
 static constexpr char kHaveShowfileBegin[] = "#if defined (NODE_SHOWFILE)\n";
 static constexpr char kHaveShowfileEnd[] = "#endif /* (NODE_SHOWFILE) */\n";
 
@@ -82,6 +85,7 @@ struct FeatureGuard
 static constexpr FeatureGuard kFeatureGuards[] = {
 	{"dmx", kHaveDmxBegin, kHaveDmxEnd},
 	{"rdm", kHaveRdmBegin, kHaveRdmEnd},
+	{"pixel", kHavePixelBegin, kHavePixelEnd},
 	{"showfile", kHaveShowfileBegin, kHaveShowfileEnd},
 	{"time", kHaveTimeBegin, kHaveTimeEnd},
 	{"rtc", kHaveRtcBegin, kHaveRtcEnd}

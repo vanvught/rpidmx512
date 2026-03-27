@@ -26,8 +26,14 @@
 #undef NDEBUG
 #endif
 #if defined(__GNUC__) && !defined(__clang__)
+#if defined(CONFIG_HTTPD_OPTIMIZE_O2) || defined(CONFIG_HTTPD_OPTIMIZE_O3)
 #pragma GCC push_options
+#if defined(CONFIG_HTTPD_OPTIMIZE_O2)
 #pragma GCC optimize("O2")
+#else
+#pragma GCC optimize("O3")
+#endif
+#endif
 #endif
 
 #include <cstdint>
@@ -70,7 +76,8 @@ void HttpDeamonHandleRequest::HandleRequest(uint32_t bytes_received, char* recei
         // Initial incoming HTTP request (header + maybe body)
         status_ = ParseRequest();
 
-        DEBUG_PRINTF("%s %s", kRequestMethod[static_cast<uint32_t>(request_method_)], request_content_type_ < http::ContentTypes::kNotDefined ? kSContentType[static_cast<uint32_t>(request_content_type_)] : "Unknown");
+        DEBUG_PRINTF("%s %s", kRequestMethod[static_cast<uint32_t>(request_method_)],
+                     request_content_type_ < http::ContentTypes::kNotDefined ? kSContentType[static_cast<uint32_t>(request_content_type_)] : "Unknown");
 
         if (status_ == http::Status::kOk)
         {
@@ -157,29 +164,22 @@ void HttpDeamonHandleRequest::HandleRequest(uint32_t bytes_received, char* recei
 
         request_content_type_ = http::ContentTypes::kTextHtml;
         content_ = dynamic_content_;
-        content_size_ = static_cast<uint32_t>(snprintf(dynamic_content_, sizeof(dynamic_content_), 
-			"%u %s\n", 
-			static_cast<unsigned>(status_), status_msg));
+        content_size_ = static_cast<uint32_t>(snprintf(dynamic_content_, sizeof(dynamic_content_), "%u %s\n", static_cast<unsigned>(status_), status_msg));
     }
 
     // Build HTTP header into receive_buffer_ and send it first.
-    const auto kHeaderLength =
-        static_cast<uint32_t>(snprintf(receive_buffer_, sizeof(dynamic_content_) - 1U,
-                                   "HTTP/1.1 %u %s\r\n"
-                                   "Server: %s\r\n"
-                                   "Content-Type: %s\r\n"
-                                   "Content-Length: %u\r\n"
-								   "Cache-Control: no-cache\r\n"
-								   "ETag: \"%u\"\r\n"
-                                   "Connection: close\r\n"
-                                   "\r\n",
-                                   static_cast<unsigned int>(status_), 
-								   status_msg, 
-								   network::iface::HostName(), 
-								   http::kContentType[static_cast<uint32_t>(request_content_type_)], 
-								   static_cast<unsigned int>(content_size_), 
-								   (content_ == dynamic_content_) ? hal::Millis() : _TIME_STAMP_
-								   ));
+    const auto kHeaderLength = static_cast<uint32_t>(
+        snprintf(receive_buffer_, sizeof(dynamic_content_) - 1U,
+                 "HTTP/1.1 %u %s\r\n"
+                 "Server: %s\r\n"
+                 "Content-Type: %s\r\n"
+                 "Content-Length: %u\r\n"
+                 "Cache-Control: no-cache\r\n"
+                 "ETag: \"%u\"\r\n"
+                 "Connection: close\r\n"
+                 "\r\n",
+                 static_cast<unsigned int>(status_), status_msg, network::iface::HostName(), http::kContentType[static_cast<uint32_t>(request_content_type_)],
+                 static_cast<unsigned int>(content_size_), (content_ == dynamic_content_) ? hal::Millis() : _TIME_STAMP_));
 
     network::tcp::Send(connection_handle_, reinterpret_cast<const uint8_t*>(receive_buffer_), kHeaderLength);
 
@@ -390,10 +390,10 @@ http::Status HttpDeamonHandleRequest::ParseHeaderField(char* line)
     }
     else if (strcasecmp(token, "If-None-Match") == 0)
     {
-		if ((token = strtok(nullptr, ": \"")) == nullptr)
-		{
-		    return http::Status::kBadRequest;
-		}
+        if ((token = strtok(nullptr, ": \"")) == nullptr)
+        {
+            return http::Status::kBadRequest;
+        }
 
         uint32_t etag;
 
@@ -470,36 +470,38 @@ http::Status HttpDeamonHandleRequest::HandleGet()
     if (memcmp(uri_, "/json/", 6) == 0)
     {
         request_content_type_ = http::ContentTypes::kApplicationJson;
+
         const auto* get = &uri_[6];
         DEBUG_PUTS(get);
 
+#if !defined(CONFIG_HTTP_HTML_INDEX_ONLY)
         // Special handling: status/dmx?N
         if (memcmp(get, "status/dmx?", 11) == 0)
         {
-#if !defined (CONFIG_HTTP_HTML_NO_DMX) && (defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI))
+#if (defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI))
             const auto kPort = ParsePortIndex(&get[11]); // for dmx/status
 
             if (kPort != 0xFF)
             {
                 length = json::status::Dmx(dynamic_content_, static_cast<uint32_t>(sizeof(dynamic_content_)), kPort);
             }
-#endif
+#endif // #if (defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI))
         }
         // Special handling: rdm/tod?N
         else if (memcmp(get, "status/rdm/tod?", 15) == 0)
         {
-#if !defined (CONFIG_HTTP_HTML_NO_RDM) && defined(RDM_CONTROLLER)
+#if defined(RDM_CONTROLLER)
             const auto kPort = ParsePortIndex(&get[15]); // for rdm/tod
 
             if (kPort != 0xFF)
             {
                 length = json::status::RdmTod(dynamic_content_, static_cast<uint32_t>(sizeof(dynamic_content_)), kPort);
             }
-#endif
+#endif // #if defined(RDM_CONTROLLER)
         }
         else
+#endif // #if !defined(CONFIG_HTTP_HTML_INDEX_ONLY)
         {
-            // Normal table lookup
             const auto kIndex = json::GetFileIndex(get);
             DEBUG_PRINTF("kIndex=%d", kIndex);
 
@@ -511,10 +513,10 @@ http::Status HttpDeamonHandleRequest::HandleGet()
                     length = (*(handler.get))(dynamic_content_, static_cast<uint32_t>(sizeof(dynamic_content_)));
                 }
             }
-			else
-			{
-			    content_ = GetFileContent(&uri_[6], length, request_content_type_);
-			}
+            else
+            {
+                content_ = GetFileContent(&uri_[6], length, request_content_type_);
+            }
         }
     }
 #if defined(ENABLE_CONTENT)

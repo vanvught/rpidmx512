@@ -26,7 +26,9 @@
 #if !defined (CONFIG_HTTP_HTML_NO_TIME)
 #include "time.js.h"
 #endif /* !defined (CONFIG_HTTP_HTML_NO_TIME) */
+#if !defined (CONFIG_HTTP_HTML_NO_PIXEL) && (defined(OUTPUT_DMX_PIXEL) || defined(OUTPUT_DMX_PIXEL_MULTI))
 #include "pixeltype.json.h"
+#endif /* !defined (CONFIG_HTTP_HTML_NO_PIXEL) && (defined(OUTPUT_DMX_PIXEL) || defined(OUTPUT_DMX_PIXEL_MULTI)) */
 #if !defined (CONFIG_HTTP_HTML_NO_RDM) && defined (RDM_CONTROLLER)
 #include "rdm.html.h"
 #endif /* !defined (CONFIG_HTTP_HTML_NO_RDM) && defined (RDM_CONTROLLER) */
@@ -72,7 +74,9 @@ inline constexpr struct FilesContent kHttpContent[] = {
 #if !defined (CONFIG_HTTP_HTML_NO_TIME)
 	{ "time.js", time_js, 402, static_cast<http::ContentTypes>(2) },
 #endif /* !defined (CONFIG_HTTP_HTML_NO_TIME) */
+#if !defined (CONFIG_HTTP_HTML_NO_PIXEL) && (defined(OUTPUT_DMX_PIXEL) || defined(OUTPUT_DMX_PIXEL_MULTI))
 	{ "pixeltype.json", pixeltype_json, 1665, static_cast<http::ContentTypes>(3) },
+#endif /* !defined (CONFIG_HTTP_HTML_NO_PIXEL) && (defined(OUTPUT_DMX_PIXEL) || defined(OUTPUT_DMX_PIXEL_MULTI)) */
 #if !defined (CONFIG_HTTP_HTML_NO_RDM) && defined (RDM_CONTROLLER)
 	{ "rdm.html", rdm_html, 1142, static_cast<http::ContentTypes>(0) },
 #endif /* !defined (CONFIG_HTTP_HTML_NO_RDM) && defined (RDM_CONTROLLER) */

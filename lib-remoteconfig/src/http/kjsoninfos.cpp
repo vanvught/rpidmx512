@@ -183,6 +183,7 @@ constexpr Info kFileInfos[] = {
 	ENTRY(GetVersion, nullptr, nullptr, "version", nullptr),
 	ENTRY(GetUptime, nullptr, nullptr, "uptime", nullptr), 
 	ENTRY(GetTimeofday, SetTimeofday, nullptr, "timedate", nullptr),
+#if !defined(CONFIG_HTTP_HTML_INDEX_ONLY)	
     // Status
 	ENTRY(status::Identify, nullptr, nullptr, "status/identify", nullptr), 
 	ENTRY(status::Display, nullptr, nullptr, "status/display", nullptr),
@@ -207,6 +208,7 @@ constexpr Info kFileInfos[] = {
 #if defined(NODE_SHOWFILE)
     ENTRY(nullptr, action::SetShowFile, nullptr, "action/showfile", nullptr),
 #endif	
+#endif
     // Config
     ENTRY(config::GetDirectory, nullptr, nullptr, "config/directory", nullptr),
     ENTRY(config::GetRemoteConfig, config::SetRemoteConfig, nullptr, "config/remote", "Remote configuration"),
