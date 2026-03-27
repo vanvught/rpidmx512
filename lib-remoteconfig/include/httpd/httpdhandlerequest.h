@@ -88,9 +88,9 @@ class HttpDeamonHandleRequest
     const char* content_{nullptr};
     char upload_filename_[16];
 
-    http::Status status_{http::Status::UNKNOWN_ERROR};
-    http::RequestMethod request_method_{http::RequestMethod::UNKNOWN};
-    http::contentTypes request_content_type_{http::contentTypes::NOT_DEFINED};
+    http::Status status_{http::Status::kUnknownError};
+    http::RequestMethod request_method_{http::RequestMethod::kUnknown};
+    http::ContentTypes request_content_type_{http::ContentTypes::kNotDefined};
 
     char dynamic_content_[httpd::kBufsize];
 };

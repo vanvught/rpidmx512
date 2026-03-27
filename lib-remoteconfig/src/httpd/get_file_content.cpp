@@ -2,7 +2,7 @@
  * @file get_file_content.cpp
  *
  */
-/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,21 +29,29 @@
 
 #include <cstdint>
 #include <cstring>
-
-#include "httpd/httpd.h"
-
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
 #if defined(CONFIG_HTTP_CONTENT_FS)
 #include <cstdio>
 
-static constexpr char kSupportedExtensions[static_cast<int>(http::contentTypes::NOT_DEFINED)][8] = {"html", "css", "js", "json", "bin"};
+#include "httpd/httpd.h"
 
-static http::contentTypes GetContentType(const char* file_name)
+static constexpr char kSupportedExtensions[static_cast<int>(http::ContentTypes::kNotDefined)][8] = 
 {
-	DEBUG_ENTRY();
-	
-    for (int i = 0; i < static_cast<int>(http::contentTypes::NOT_DEFINED); i++)
+	"html", 
+	"css", 
+	"js", 
+	"json", 
+	"bin"
+};
+
+static char s_static_content[4096];
+
+static http::ContentTypes GetContentType(const char* file_name)
+{
+    DEBUG_ENTRY();
+
+    for (int i = 0; i < static_cast<int>(http::ContentTypes::kNotDefined); i++)
     {
         const auto kL = strlen(file_name);
         const auto kE = strlen(kSupportedExtensions[i]);
@@ -54,21 +62,21 @@ static http::contentTypes GetContentType(const char* file_name)
             {
                 if (strcmp(&file_name[kL - kE], kSupportedExtensions[i]) == 0)
                 {
-					DEBUG_EXIT();
-                    return static_cast<http::contentTypes>(i);
+                    DEBUG_EXIT();
+                    return static_cast<http::ContentTypes>(i);
                 }
             }
         }
     }
 
-DEBUG_EXIT();
-    return http::contentTypes::NOT_DEFINED;
+    DEBUG_EXIT();
+    return http::ContentTypes::kNotDefined;
 }
 
-uint32_t GetFileContent(const char* file_name, char* dst, http::contentTypes& content_type)
+uint32_t GetFileContentFromFile(const char* file_name, char* dst, http::ContentTypes& content_type)
 {
-	DEBUG_PUTS(file_name);
-	
+    DEBUG_PUTS(file_name);
+
     auto* file = fopen(file_name, "r");
 
     if (file == nullptr)
@@ -79,7 +87,7 @@ uint32_t GetFileContent(const char* file_name, char* dst, http::contentTypes& co
 
     content_type = GetContentType(file_name);
 
-    if (content_type == http::contentTypes::NOT_DEFINED)
+    if (content_type == http::ContentTypes::kNotDefined)
     {
         DEBUG_EXIT();
         fclose(file);
@@ -111,7 +119,7 @@ uint32_t GetFileContent(const char* file_name, char* dst, http::contentTypes& co
             }
         }
         *p++ = c;
-        if ((p - dst) == httpd::kBufsize)
+        if ((p - dst) == sizeof(s_static_content))
         {
             DEBUG_PUTS("File too long");
             break;
@@ -124,14 +132,12 @@ uint32_t GetFileContent(const char* file_name, char* dst, http::contentTypes& co
     return static_cast<uint32_t>(p - dst);
 }
 
-static char s_static_content[httpd::kBufsize];
-
-const char* GetFileContent(const char* file_name, uint32_t& size, http::contentTypes& content_type)
+const char* GetFileContent(const char* file_name, uint32_t& size, http::ContentTypes& content_type)
 {
     DEBUG_ENTRY();
     DEBUG_PUTS(file_name);
 
-    size = GetFileContent(file_name, s_static_content, content_type);
+    size = GetFileContentFromFile(file_name, s_static_content, content_type);
 
     if (size != 0)
     {
@@ -143,23 +149,24 @@ const char* GetFileContent(const char* file_name, uint32_t& size, http::contentT
 }
 #else
 #include "../http/content/content.h"
-const char* GetFileContent(const char* file_name, uint32_t& size, http::contentTypes& contentType)
+
+const char* GetFileContent(const char* file_name, uint32_t& size, http::ContentTypes& content_type)
 {
     DEBUG_ENTRY();
     DEBUG_PUTS(file_name);
 
-    for (auto& content : HttpContent)
+    for (auto& content : kHttpContent)
     {
-        if (strcmp(file_name, content.pFileName) == 0)
+        if (strcmp(file_name, content.file_name) == 0)
         {
-            size = content.nContentLength;
-            contentType = content.contentType;
-            return content.pContent;
+            size = content.content_length;
+            content_type = content.content_type;
+            return content.content;
         }
     }
 
     size = 0;
-    contentType = http::contentTypes::NOT_DEFINED;
+    content_type = http::ContentTypes::kNotDefined;
 
     DEBUG_EXIT();
     return nullptr;

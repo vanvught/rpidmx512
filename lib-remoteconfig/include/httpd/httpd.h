@@ -40,13 +40,6 @@
 #include "../../lib-network/config/net_config.h"
 #include "firmware/debug/debug_debug.h"
 
-/**
- * @class HttpDaemon
- * @brief A class that manages an HTTP server with support for multiple connections.
- *
- * The HttpDaemon class sets up an HTTP server, handles incoming requests, and integrates with mDNS.
- */
-
 class HttpDaemon
 {
    public:
@@ -78,11 +71,7 @@ class HttpDaemon
    private:
     static void Input(network::tcp::ConnHandle conn_handle, const uint8_t* buffer, uint32_t size)
     {
-        // Defensive: bounds check in debug builds
         assert(conn_handle < TCP_MAX_TCBS_ALLOWED);
-
-        // Route the request to the per-connection request handler instance.
-        // This preserves your "one handler per connection slot" design.
         s_handle_request[conn_handle].HandleRequest(size, const_cast<char*>(reinterpret_cast<const char*>(buffer)));
     }
 
@@ -91,14 +80,8 @@ class HttpDaemon
 #else
 #define SECTION_HTTPD
 #endif
-
-    // NOTE:
-    // The array size must match the GLOBAL connection pool size.
-    // Otherwise you'd index out of bounds when multiple listeners or client conns exist.
     static inline HttpDeamonHandleRequest s_handle_request[TCP_MAX_TCBS_ALLOWED] __attribute__((aligned(4))) SECTION_HTTPD;
 
-    // In the new design, we typically don't store a "listener handle" at all.
-    // But if you want to keep Begin() returning something for now, you can store bool.
     bool is_listening_{false};
 };
 

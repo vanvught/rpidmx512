@@ -2,7 +2,7 @@
  * @file http.h
  *
  */
-/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,34 +30,39 @@ namespace http
 {
 enum class Status
 {
-    OK = 200,
-    BAD_REQUEST = 400,
-    NOT_FOUND = 404,
-    REQUEST_TIMEOUT = 408,
-    REQUEST_ENTITY_TOO_LARGE = 413,
-    REQUEST_URI_TOO_LONG = 414,
-    INTERNAL_SERVER_ERROR = 500,
-    METHOD_NOT_IMPLEMENTED = 501,
-    VERSION_NOT_SUPPORTED = 505,
-    UNKNOWN_ERROR = 520
+    kOk = 200,
+    kNotModified = 304,
+    kBadRequest = 400,
+    kNotFound = 404,
+    kRequestTimeout = 408,
+    kRequestEntityTooLarge = 413,
+    kRequestUriTooLong = 414,
+    kInternalServerError = 500,
+    kMethodNotImplemented = 501,
+    kVersionNotSupported = 505,
+    kUnknownError = 520
 };
 enum class RequestMethod
 {
-    GET,
-    POST,
-    DELETE,
-    UNKNOWN
+    kGet,
+    kPost,
+    kDelete,
+    kUnknown
 };
 
-enum class contentTypes
+enum class ContentTypes
 {
-    TEXT_HTML,
-    TEXT_CSS,
-    TEXT_JS,
-    APPLICATION_JSON,
-    APPLICATION_OCTET_STREAM,
-    NOT_DEFINED
+    kTextHtml,
+    kTextCss,
+    kTextJs,
+    kApplicationJson,
+    kApplicationOctetStream,
+    kNotDefined
 };
+
+inline constexpr char kRequestMethod[][8] = {"GET", "POST", "DELETE", "UNKNOWN"};
+
+inline constexpr char kContentType[][26] = {"text/html", "text/css", "text/javascript", "application/json", "application/octet-stream"};
 } // namespace http
 
-#endif  // HTTP_HTTP_H_
+#endif // HTTP_HTTP_H_

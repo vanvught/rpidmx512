@@ -17,7 +17,12 @@ clean :
 	rm -rf *.h
 		
 generate_content : Makefile generate_content.cpp
-	$(CPP) generate_content.cpp $(INCLUDES) $(COPS) -o generate_content 
+	$(CPP) generate_content.cpp $(INCLUDES) $(COPS) -o generate_content
 	
-content : generate_content
+pixeltype : $(ROOT)/lib-pixel/include/pixeltype.h
+	./parse_pixeltype.py $(ROOT)/lib-pixel/include/pixeltype.h -o  pixeltype.json
+	
+content : generate_content pixeltype
 	./generate_content
+	
+

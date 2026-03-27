@@ -179,19 +179,25 @@ void SetDmxL6470Motor7(const char*, uint32_t);
     MakeJsonFileInfo(get, set, del, filename_literal, Fnv1a32(filename_literal, static_cast<uint8_t>(sizeof(filename_literal) - 1)), label)
 
 constexpr Info kFileInfos[] = {
-    ENTRY(GetList, nullptr, nullptr, "list", nullptr), ENTRY(GetVersion, nullptr, nullptr, "version", nullptr),
-    ENTRY(GetUptime, nullptr, nullptr, "uptime", nullptr), ENTRY(GetTimeofday, SetTimeofday, nullptr, "timedate", nullptr),
+	ENTRY(GetList, nullptr, nullptr, "list", nullptr),
+	ENTRY(GetVersion, nullptr, nullptr, "version", nullptr),
+	ENTRY(GetUptime, nullptr, nullptr, "uptime", nullptr), 
+	ENTRY(GetTimeofday, SetTimeofday, nullptr, "timedate", nullptr),
     // Status
-    ENTRY(status::Identify, nullptr, nullptr, "status/identify", nullptr), ENTRY(status::Display, nullptr, nullptr, "status/display", nullptr),
-    ENTRY(status::net::Phy, nullptr, nullptr, "status/phy", nullptr), ENTRY(status::net::Emac, nullptr, nullptr, "status/emac", nullptr),
+	ENTRY(status::Identify, nullptr, nullptr, "status/identify", nullptr), 
+	ENTRY(status::Display, nullptr, nullptr, "status/display", nullptr),
+    ENTRY(status::net::Phy, nullptr, nullptr, "status/phy", nullptr), 
+	ENTRY(status::net::Emac, nullptr, nullptr, "status/emac", nullptr),
 #if defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI)
-    ENTRY(status::Dmx, nullptr, nullptr, "status/dmx", nullptr),
+	ENTRY(status::Dmx, nullptr, nullptr, "status/dmx", nullptr),
 #endif
 #if defined(DMXNODE_OUTPUT_PIXEL)
-    ENTRY(status::Pixel, nullptr, nullptr, "status/pixel", nullptr), ENTRY(status::PixelDmx, nullptr, nullptr, "status/pixeldmx", nullptr),
+	ENTRY(status::Pixel, nullptr, nullptr, "status/pixel", nullptr), 
+	ENTRY(status::PixelDmx, nullptr, nullptr, "status/pixeldmx", nullptr),
 #endif
 #if defined(RDM_CONTROLLER)
-    ENTRY(status::Rdm, nullptr, nullptr, "status/rdm", nullptr), ENTRY(status::RdmQueue, nullptr, nullptr, "status/rdm/queue", nullptr),
+	ENTRY(status::Rdm, nullptr, nullptr, "status/rdm", nullptr), 
+	ENTRY(status::RdmQueue, nullptr, nullptr, "status/rdm/queue", nullptr),
 #endif
 #if defined(NODE_SHOWFILE)
     ENTRY(status::ShowFile, nullptr, nullptr, "status/showfile", nullptr),
@@ -200,7 +206,7 @@ constexpr Info kFileInfos[] = {
     ENTRY(nullptr, action::Set, nullptr, "action", nullptr),
 #if defined(NODE_SHOWFILE)
     ENTRY(nullptr, action::SetShowFile, nullptr, "action/showfile", nullptr),
-#endif
+#endif	
     // Config
     ENTRY(config::GetDirectory, nullptr, nullptr, "config/directory", nullptr),
     ENTRY(config::GetRemoteConfig, config::SetRemoteConfig, nullptr, "config/remote", "Remote configuration"),
@@ -242,7 +248,7 @@ constexpr Info kFileInfos[] = {
     ENTRY(config::GetTlc59711Dmx, config::SetTlc59711Dmx, nullptr, "config/dmxtlc59711", "DMX TLC59711"),
 #endif
 #if defined(DMXNODE_OUTPUT_PIXEL)
-    ENTRY(config::GetPixelDmx, config::SetPixelDmx, nullptr, "config/dmxpixel", "DMX Pixel"),
+ENTRY(config::GetPixelDmx, config::SetPixelDmx, nullptr, "config/dmxpixel", "DMX Pixel"),
 #endif
 #if defined(OUTPUT_DMX_MONITOR)
     ENTRY(config::GetDmxMonitor, config::SetDmxMonitor, nullptr, "config/dmxmonitor", "DMX Monitor"),

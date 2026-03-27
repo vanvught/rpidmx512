@@ -31,23 +31,28 @@ namespace html
 {
 #define ENTRY(filename_literal, label) MakeHtmlInfo(filename_literal, Fnv1a32(filename_literal, static_cast<uint8_t>(sizeof(filename_literal) - 1)), label)
 
-constexpr Info kHtmlInfos[] =
-{
+constexpr Info kHtmlInfos[] = {
 	ENTRY("/", "index.html"),
-	ENTRY("/dmx", "dmx.html"),
-#if defined (RDM_CONTROLLER)  
+#if !defined(CONFIG_HTTP_HTML_INDEX_ONLY)
+#if !defined (CONFIG_HTTP_HTML_NO_DMX) && (defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI))
+ 	ENTRY("/dmx", "dmx.html"),
+#endif	
+#if !defined (CONFIG_HTTP_HTML_NO_RDM) && defined (RDM_CONTROLLER)
 	ENTRY("/rdm", "rdm.html"),
 #endif
-#if !defined (DISABLE_RTC)	
+#if !defined (CONFIG_HTTP_HTML_NO_RTC) && !defined (DISABLE_RTC)
 	ENTRY("/rtc", "rtc.html"),
-#endif	
-#if defined (NODE_SHOWFILE)	
+#endif
+#if defined(NODE_SHOWFILE)
 	ENTRY("/showfile", "showfile.html"),
-#endif	
+#endif
+#if !defined (CONFIG_HTTP_HTML_NO_TIME)
 	ENTRY("/time", "time.html"),
-#if defined(CONFIG_HTTPD_ENABLE_UPLOAD)	
-	ENTRY("/upload_firmware", "upload_firmware.html")
 #endif	
+#if defined(CONFIG_HTTPD_ENABLE_UPLOAD)
+	ENTRY("/upload_firmware", "upload_firmware.html")
+#endif
+#endif
 };
 
 constexpr size_t kHtmlInfosSize = sizeof(kHtmlInfos) / sizeof(kHtmlInfos[0]);
