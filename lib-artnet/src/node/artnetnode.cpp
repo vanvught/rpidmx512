@@ -174,7 +174,7 @@ void ArtNetNode::Start()
         artnet::Status2::kPortAddress15Bit | (artnet::kVersion >= 4 ? artnet::Status2::kSacnAbleToSwitch : artnet::Status2::kSacnNoSwitch);
     art_poll_reply_.status2 &= static_cast<uint8_t>(~artnet::Status2::kDhcpCapable);
     art_poll_reply_.status2 |= network::iface::IsDhcpCapable() ? artnet::Status2::kDhcpCapable : static_cast<uint8_t>(0);
-#if defined(ENABLE_HTTPD) && defined(ENABLE_CONTENT)
+#if defined(ENABLE_HTTPD)
     art_poll_reply_.status2 |= artnet::Status2::kWebBrowserSupport;
 #endif
 #if defined(OUTPUT_HAVE_STYLESWITCH)

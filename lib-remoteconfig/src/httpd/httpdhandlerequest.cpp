@@ -26,12 +26,12 @@
 #undef NDEBUG
 #endif
 #if defined(__GNUC__) && !defined(__clang__)
-#if defined(CONFIG_HTTPD_OPTIMIZE_O2) || defined(CONFIG_HTTPD_OPTIMIZE_O3)
+#if !defined(CONFIG_HTTPD_OPTIMIZE_NONE)
 #pragma GCC push_options
-#if defined(CONFIG_HTTPD_OPTIMIZE_O2)
-#pragma GCC optimize("O2")
-#else
+#if defined(CONFIG_HTTPD_OPTIMIZE_O3)
 #pragma GCC optimize("O3")
+#else
+#pragma GCC optimize("O2")
 #endif
 #endif
 #endif
@@ -519,7 +519,6 @@ http::Status HttpDeamonHandleRequest::HandleGet()
             }
         }
     }
-#if defined(ENABLE_CONTENT)
     else
     {
         const auto kIndex = html::GetFileIndex(uri_);
@@ -535,7 +534,6 @@ http::Status HttpDeamonHandleRequest::HandleGet()
             content_ = GetFileContent(&uri_[1], length, request_content_type_);
         }
     }
-#endif
 
     if (length == 0)
     {
