@@ -2,7 +2,7 @@
  * @file storedevice.cpp
  *
  */
-/* Copyright (C) 2022-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2022-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,10 @@
  * THE SOFTWARE.
  */
 
+#if defined(CONFIG_STORE_USE_I2C) || defined(CONFIG_STORE_USE_ROM) || defined(CONFIG_STORE_USE_RAM)
+#error Configuration error
+#endif
+
 #if defined(DEBUG_CONFIGSTORE)
 #undef NDEBUG
 #endif
@@ -32,7 +36,7 @@
 
 #include "configstoredevice.h"
 #include "spi/spi_flash.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
 StoreDevice::StoreDevice()
 {
@@ -52,7 +56,11 @@ StoreDevice::StoreDevice()
     DEBUG_EXIT();
 }
 
-StoreDevice::~StoreDevice(){DEBUG_ENTRY(); DEBUG_EXIT();}
+StoreDevice::~StoreDevice()
+{
+    DEBUG_ENTRY();
+    DEBUG_EXIT();
+}
 
 uint32_t StoreDevice::GetSize() const
 {

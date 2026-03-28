@@ -23,6 +23,10 @@
  * THE SOFTWARE.
  */
 
+#if defined(CONFIG_STORE_USE_SPI) || defined(CONFIG_STORE_USE_ROM) || defined(CONFIG_STORE_USE_RAM)
+#error Configuration error
+#endif
+
 #if defined(DEBUG_CONFIGSTORE)
 #undef NDEBUG
 #endif
@@ -32,8 +36,8 @@
 #include <cassert>
 
 #include "configstoredevice.h"
-#include "i2c/at24cxx.h"
- #include "firmware/debug/debug_debug.h"
+#include "i2c/at24cxx.h" // IWYU pragma: keep
+#include "firmware/debug/debug_debug.h"
 
 namespace storedevice
 {
@@ -64,7 +68,11 @@ StoreDevice::StoreDevice() : AT24C32(storedevice::kI2CIndex)
     DEBUG_EXIT();
 }
 
-StoreDevice::~StoreDevice(){DEBUG_ENTRY(); DEBUG_EXIT();}
+StoreDevice::~StoreDevice()
+{
+    DEBUG_ENTRY();
+    DEBUG_EXIT();
+}
 
 uint32_t StoreDevice::GetSize() const
 {
