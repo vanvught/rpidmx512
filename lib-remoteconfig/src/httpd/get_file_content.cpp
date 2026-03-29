@@ -149,15 +149,18 @@ const char* GetFileContent(const char* file_name, uint32_t& size, http::ContentT
 }
 #else
 #include "../http/content/content.h"
+#include "common/utils/utils_hash.h"
 
 const char* GetFileContent(const char* file_name, uint32_t& size, http::ContentTypes& content_type)
 {
     DEBUG_ENTRY();
     DEBUG_PUTS(file_name);
+	
+	const auto kHash = Fnv1a32Runtime(file_name, strlen(file_name));
 
     for (auto& content : kHttpContent)
     {
-        if (strcmp(file_name, content.file_name) == 0)
+        if (kHash == content.hash)
         {
             size = content.content_length;
             content_type = content.content_type;

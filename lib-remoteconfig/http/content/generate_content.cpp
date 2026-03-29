@@ -32,6 +32,7 @@
 #include <cassert>
 
 #include "http/http.h"
+#include "common/utils/utils_hash.h"
 
 struct SupportedExtension
 {
@@ -50,6 +51,7 @@ static constexpr SupportedExtension kSupportedExtensions[] =
 static constexpr char kContentHeader[] =
     "\n"
     "struct FilesContent {\n"
+	"\tuint32_t hash;\n"
     "\tconst char *file_name;\n"
     "\tconst char *content;\n"
     "\tuint32_t content_length;\n"
@@ -162,7 +164,7 @@ static void MakeConstantName(const char* file_name, char* constant_name, size_t 
 
     strncpy(constant_name, file_name, length);
     constant_name[length - 1] = '\0';
-
+	
     auto* p = strchr(constant_name, '.');
 
     if (p != nullptr)
@@ -344,7 +346,9 @@ int main() // NOLINT
             WriteFeatureGuardsBegin(file_content, dir_entry->d_name);
 
             char buffer[256];
-            auto i = snprintf(buffer, sizeof(buffer), "\t{ \"%s\", ", dir_entry->d_name);
+            auto i = snprintf(buffer, sizeof(buffer), "\t{ %u,\"%s\", ", 
+				Fnv1a32Runtime(dir_entry->d_name, strlen(dir_entry->d_name)),
+				dir_entry->d_name);
             assert(i > 0);
             assert(i < static_cast<int>(sizeof(buffer)));
 
