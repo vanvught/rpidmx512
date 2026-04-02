@@ -22,6 +22,10 @@
  * THE SOFTWARE.
  */
 
+// Understanding Cache-Control and ETag for efficient web caching
+// https://dev.to/andreasbergstrom/understanding-cache-control-and-etag-for-efficient-web-caching-2nf5
+
+#undef NDEBUG
 #if defined(DEBUG_HTTPD)
 #undef NDEBUG
 #endif
@@ -47,10 +51,13 @@
 #include "http/json_infos.h"
 #include "network_tcp.h"
 #include "network_iface.h"
-#include "hal.h"
-#include "hal_millis.h"
 #include "firmware/debug/debug_dump.h"
 #include "firmware/debug/debug_debug.h"
+
+namespace hal
+{
+void Reboot();
+}
 
 #if !defined(_TIME_STAMP_)
 #define _TIME_STAMP_ 0
@@ -76,8 +83,8 @@ void HttpDeamonHandleRequest::HandleRequest(uint32_t bytes_received, char* recei
         // Initial incoming HTTP request (header + maybe body)
         status_ = ParseRequest();
 
-        DEBUG_PRINTF("%s %s", kRequestMethod[static_cast<uint32_t>(request_method_)],
-                     request_content_type_ < http::ContentTypes::kNotDefined ? kSContentType[static_cast<uint32_t>(request_content_type_)] : "Unknown");
+        DEBUG_PRINTF("%s %s", http::kRequestMethod[static_cast<uint32_t>(request_method_)],
+                     request_content_type_ < http::ContentTypes::kNotDefined ? http::kContentType[static_cast<uint32_t>(request_content_type_)] : "Unknown");
 
         if (status_ == http::Status::kOk)
         {
@@ -165,25 +172,39 @@ void HttpDeamonHandleRequest::HandleRequest(uint32_t bytes_received, char* recei
         request_content_type_ = http::ContentTypes::kTextHtml;
         content_ = dynamic_content_;
         content_size_ = static_cast<uint32_t>(snprintf(dynamic_content_, sizeof(dynamic_content_), "%u %s\n", static_cast<unsigned>(status_), status_msg));
+
+        const auto kHeaderLength = static_cast<uint32_t>(snprintf(receive_buffer_, network::tcp::kTcpDataMss,
+                                                                  "HTTP/1.1 %u %s\r\n"
+                                                                  "Server: %s\r\n"
+                                                                  "Content-Type: %s\r\n"
+                                                                  "Content-Length: %u\r\n"
+                                                                  "Connection: close\r\n"
+                                                                  "\r\n",
+                                                                  static_cast<unsigned int>(status_), status_msg, network::iface::HostName(),
+                                                                  http::kContentType[static_cast<uint32_t>(request_content_type_)],
+																  static_cast<unsigned int>(content_size_)));
+
+        network::tcp::Send(connection_handle_, reinterpret_cast<const uint8_t*>(receive_buffer_), kHeaderLength);
     }
+    else
+    {
+        const auto kHeaderLength = static_cast<uint32_t>(snprintf(
+            receive_buffer_, network::tcp::kTcpDataMss,
+            "HTTP/1.1 %u %s\r\n"
+            "Server: %s\r\n"
+            "Content-Type: %s\r\n"
+            "Content-Length: %u\r\n"
+            "Cache-Control: max-age=3600\r\n"
+            "ETag: \"%u\"\r\n"
+            "Connection: close\r\n"
+            "\r\n",
+            static_cast<unsigned int>(status_), status_msg, network::iface::HostName(), http::kContentType[static_cast<uint32_t>(request_content_type_)],
+            static_cast<unsigned int>(content_size_), (content_ == dynamic_content_) ? s_etag++ : _TIME_STAMP_));
 
-    // Build HTTP header into receive_buffer_ and send it first.
-    const auto kHeaderLength = static_cast<uint32_t>(
-        snprintf(receive_buffer_, sizeof(dynamic_content_) - 1U,
-                 "HTTP/1.1 %u %s\r\n"
-                 "Server: %s\r\n"
-                 "Content-Type: %s\r\n"
-                 "Content-Length: %u\r\n"
-                 "Cache-Control: no-cache\r\n"
-                 "ETag: \"%u\"\r\n"
-                 "Connection: close\r\n"
-                 "\r\n",
-                 static_cast<unsigned int>(status_), status_msg, network::iface::HostName(), http::kContentType[static_cast<uint32_t>(request_content_type_)],
-                 static_cast<unsigned int>(content_size_), (content_ == dynamic_content_) ? hal::Millis() : _TIME_STAMP_));
+        network::tcp::Send(connection_handle_, reinterpret_cast<const uint8_t*>(receive_buffer_), kHeaderLength);
 
-    network::tcp::Send(connection_handle_, reinterpret_cast<const uint8_t*>(receive_buffer_), kHeaderLength);
-
-    DEBUG_PRINTF("content_size_=%u", content_size_);
+        DEBUG_PRINTF("content_size_=%u, %s", content_size_, (content_ == dynamic_content_) ? "Dynamic" : "Static");
+    }
 
     if (content_size_ != 0U)
     {
@@ -401,6 +422,8 @@ http::Status HttpDeamonHandleRequest::ParseHeaderField(char* line)
         {
             return http::Status::kBadRequest;
         }
+
+        DEBUG_PRINTF("etag=%u, _TIME_STAMP_=%u", etag, _TIME_STAMP_);
 
         if (etag == _TIME_STAMP_)
         {
