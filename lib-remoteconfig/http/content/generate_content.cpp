@@ -216,17 +216,23 @@ static void BuildFinalContentHeader()
     assert(kJ == 0);
 }
 
-static int ConvertToH(const char* file_name)
+static int ConvertToH(const char* dir_name, const char* file_name)
 {
     assert(file_name != nullptr);
 
-    printf("File to convert: %s, ", file_name);
+    printf("File to convert: %s/%s, ", dir_name, file_name);
+	
+	char path[128];
+	strcpy(path, dir_name);
+	strcat(path, "/");
+	strcat(path, file_name);
 
-    auto* file_in = fopen(file_name, "r");
+    auto* file_in = fopen(path, "r");
 
     if (file_in == nullptr)
     {
-        return 0;
+		perror("File not found!");
+        exit(-1);
     }
 
     const auto kFileNameLength = strlen(file_name);
@@ -310,7 +316,7 @@ static int ConvertToH(const char* file_name)
     return file_size;
 }
 
-int main() // NOLINT
+int main(int argc, char *argv[])  // NOLINT
 {
     file_includes = fopen("includes.h", "w");
     assert(file_includes != nullptr);
@@ -319,8 +325,17 @@ int main() // NOLINT
     assert(file_content != nullptr);
 
     fwrite(kContentHeader, sizeof(char), strlen(kContentHeader), file_content);
-
-    auto* dir = opendir(".");
+	
+	char dir_name[32];
+	strcpy(dir_name, "light");
+	
+	if (argc == 2)
+	{
+		strncpy(dir_name, argv[1], sizeof dir_name);
+		dir_name[(sizeof dir_name) - 1] = '\0';
+	}
+	
+    auto* dir = opendir(dir_name);
 
     if (dir != nullptr)
     {
@@ -353,8 +368,8 @@ int main() // NOLINT
             assert(i < static_cast<int>(sizeof(buffer)));
 
             fwrite(buffer, sizeof(char), i, file_content);
-
-            const auto kContentLength = ConvertToH(dir_entry->d_name);
+	
+            const auto kContentLength = ConvertToH(dir_name, dir_entry->d_name);
 
             i = snprintf(buffer, sizeof(buffer), ", %d, static_cast<http::ContentTypes>(%d) },\n", kContentLength, static_cast<int>(kContentType));
             assert(i > 0);

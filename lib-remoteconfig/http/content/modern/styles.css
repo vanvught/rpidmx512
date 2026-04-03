@@ -1,0 +1,133 @@
+body {
+	font-family: Arial, sans-serif;
+	background: #111;
+	color: #eee;
+	margin: 20px;
+}
+
+/* Header/footer */
+header, footer {
+	padding: 10px;
+	background: #1b1b1b;
+	border: 1px solid #333;
+	margin-bottom: 15px;
+}
+
+/* Card sections */
+.card {
+	background: #1b1b1b;
+	border: 1px solid #333;
+	border-radius: 6px;
+	padding: 15px;
+	margin-bottom: 15px;
+}
+
+.card h2 {
+	margin-top: 0;
+	font-size: 16px;
+	color: #ccc;
+}
+
+/* Rows */
+.row {
+	display: flex;
+	align-items: center;
+	margin-bottom: 8px;
+}
+
+.row label {
+	width: 140px;
+	color: #aaa;
+}
+
+/* Inputs */
+input[type="text"] {
+	flex: 1;
+	padding: 5px;
+	border: 1px solid #555;
+	background: #222;
+	color: #eee;
+	border-radius: 3px;
+}
+
+/* Buttons */
+button {
+	margin-left: 8px;
+	padding: 5px 10px;
+	border: 1px solid #555;
+	background: #2a2a2a;
+	color: #eee;
+	border-radius: 3px;
+	cursor: pointer;
+}
+
+button:hover {
+	background: #3a3a3a;
+}
+
+button:active {
+  background-color: #000;
+  color: #fff;
+}
+
+/* Checkbox row */
+.checkbox {
+	gap: 8px;
+}
+
+ul {
+  display: flex;
+}
+
+li {
+  list-style: none;
+  margin: 1px 5px;
+}
+
+header {
+  display: flex;
+  border-radius: 4px;
+  border: solid grey 1px;
+}
+
+footer {
+  display: flex;
+  justify-content: center;
+  border-radius: 4px;
+  border: solid grey 1px;
+}
+
+.btn {
+  margin-left: 50px;
+}
+
+.ports {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.port {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.port span {
+	min-width: 14px;
+	color: #aaa;
+	text-align: center;
+}
+
+.port input {
+	width: 60px;
+}
+
+select {
+	flex: 1;
+	padding: 5px;
+	border: 1px solid #555;
+	background: #222;
+	color: #eee;
+	border-radius: 3px;
+}

@@ -1,0 +1,39 @@
+body {
+  background-color: rgb(20,20,20);
+  color: rgb(255, 255, 255);
+}
+
+ul {
+  display: flex;
+}
+
+li {
+  list-style: none;
+  margin: 1px 5px;
+}
+
+header {
+  display: flex;
+  border-radius: 4px;
+  border: solid grey 1px;
+}
+
+footer {
+  display: flex;
+  justify-content: center;
+  border-radius: 4px;
+  border: solid grey 1px;
+}
+  
+button {
+  cursor: pointer;
+}
+
+button:active {
+  background-color: #000;
+  color: #fff;
+}
+
+.btn {
+  margin-left: 50px;
+}

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="styles.css" />
+<title></title>
+</head>
+<body>
+	<header><ul id="idList"></ul></header>
+	<p><select id="idDirectory" onchange="get_txt(this.value)"></select></p>
+	<table id="idTxt" border='1'></table>
+	<footer><ul id="idVersion"></ul></footer>
+	<div>
+		<button id="locateButton" class="inactive" onclick="locate()">Locate Off</button>
+		<button onclick="reboot()">Reboot</button>
+	</div>
+	<script src="static.js" type="text/javascript"></script>
+	<script src="index.js" type="text/javascript"></script>
+	<script src="default.js" type="text/javascript"></script>
+	<script>list();version();directory();</script>
+</body>
+</html>

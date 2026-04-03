@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head><link rel="stylesheet" href="styles.css" /><title>Node Time</title></head>
+<body>
+  <header><ul id="idList"></ul></header>
+  <p><button onclick="refresh()">Refresh</button></p>
+  <p id="nodeTime">Node time will be displayed here</p>
+  <p><button onclick="syncWithLocalTime()">Sync with Local Time</button></p>
+  <footer><ul id="idVersion"></ul></footer>
+  <script src="static.js" type="text/javascript"></script>
+  <script src="date.js" type="text/javascript"></script>
+  <script src="time.js" type="text/javascript"></script>
+<script>list();version();refresh()</script>
+</body>
+</html>

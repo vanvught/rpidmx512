@@ -93,8 +93,6 @@ class HttpDeamonHandleRequest
     http::ContentTypes request_content_type_{http::ContentTypes::kNotDefined};
 
     char dynamic_content_[httpd::kBufsize];
-
-    inline static uint32_t s_etag;
 };
 
 #endif // HTTPD_HTTPDHANDLEREQUEST_H_
