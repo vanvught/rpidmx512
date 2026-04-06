@@ -141,11 +141,11 @@ class PixelConfiguration
 
         if (leds_per_pixel_ == 4)
         {
-            count_ = count_ <= pixel::max::ledcount::RGBW ? count_ : pixel::max::ledcount::RGBW;
+            count_ = count_ <= pixel::max::ledcount::kRgbw ? count_ : pixel::max::ledcount::kRgbw;
         }
         else
         {
-            count_ = count_ <= pixel::max::ledcount::RGB ? count_ : pixel::max::ledcount::RGB;
+            count_ = count_ <= pixel::max::ledcount::kRgb ? count_ : pixel::max::ledcount::kRgb;
         }
 
         if (is_rtz_protocol_)

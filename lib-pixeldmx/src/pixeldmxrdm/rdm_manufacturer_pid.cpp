@@ -88,7 +88,7 @@ const rdmhandler::ParameterDescription RDMHandler::PARAMETER_DESCRIPTIONS[] = {
 #else
      E120_CC_GET,
 #endif
-     0, E120_UNITS_NONE, E120_PREFIX_NONE, 0, __builtin_bswap32(pixel::defaults::kCount), __builtin_bswap32(pixel::max::ledcount::RGB),
+     0, E120_UNITS_NONE, E120_PREFIX_NONE, 0, __builtin_bswap32(pixel::defaults::kCount), __builtin_bswap32(pixel::max::ledcount::kRgb),
      rdmhandler::Description<PixelCount, sizeof(PixelCount::kDescription)>::kValue, RDMHandler::PdlParameterDescription(sizeof(PixelCount::kDescription))},
     {E120_MANUFACTURER_PIXEL_GROUPING_COUNT::kCode, 2, E120_DS_UNSIGNED_WORD,
 #if defined(CONFIG_RDM_MANUFACTURER_PIDS_SET)
@@ -96,7 +96,7 @@ const rdmhandler::ParameterDescription RDMHandler::PARAMETER_DESCRIPTIONS[] = {
 #else
      E120_CC_GET,
 #endif
-     0, E120_UNITS_NONE, E120_PREFIX_NONE, 0, __builtin_bswap32(pixel::defaults::kCount), __builtin_bswap32(pixel::max::ledcount::RGB),
+     0, E120_UNITS_NONE, E120_PREFIX_NONE, 0, __builtin_bswap32(pixel::defaults::kCount), __builtin_bswap32(pixel::max::ledcount::kRgb),
      rdmhandler::Description<PixelGroupingCount, sizeof(PixelGroupingCount::kDescription)>::kValue,
      RDMHandler::PdlParameterDescription(sizeof(PixelGroupingCount::kDescription))},
     {E120_MANUFACTURER_PIXEL_MAP::kCode, rdmhandler::kDeviceDescriptionMaxLength, E120_DS_ASCII,

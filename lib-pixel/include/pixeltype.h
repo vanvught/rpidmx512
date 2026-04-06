@@ -30,6 +30,8 @@
 #include <cassert>
 
 #include "common/utils/utils_enum.h"
+#include "common/utils/utils_string.h"
+#include "common/utils/utils_array.h"
 
 namespace pixel
 {
@@ -157,18 +159,8 @@ inline constexpr TypeInfo kTypeInfo[] = {
     MakeSpiTypeInfo("P9813", LedCount::k3, 4000000, 25000000),
 };
 
-constexpr uint32_t kTypeInfoCount = static_cast<uint32_t>(sizeof(kTypeInfo) / sizeof(kTypeInfo[0]));
+constexpr uint32_t kTypeInfoCount = common::ArraySize(kTypeInfo);
 static_assert(kTypeInfoCount == static_cast<uint32_t>(LedType::kUndefined), "kTypeInfo must match LedType");
-
-constexpr uint32_t ConstStrLen(const char* s)
-{
-    uint32_t len = 0;
-    while (s[len] != '\0')
-    {
-        ++len;
-    }
-    return len;
-}
 
 constexpr uint32_t GetMaxTypeNameLength()
 {
@@ -176,7 +168,7 @@ constexpr uint32_t GetMaxTypeNameLength()
 
     for (uint32_t i = 0; i < kTypeInfoCount; ++i)
     {
-        const uint32_t kLen = ConstStrLen(kTypeInfo[i].name);
+        const uint32_t kLen = common::ConstStrLen(kTypeInfo[i].name);
         if (kLen > max_len)
         {
             max_len = kLen;
@@ -194,7 +186,7 @@ constexpr uint32_t GetMaxLedMapNameLength()
 
     for (uint32_t i = 0; i < kMapsCount; ++i)
     {
-        const uint32_t kLen = ConstStrLen(kMaps[i]);
+        const uint32_t kLen = common::ConstStrLen(kMaps[i]);
         if (kLen > max_len)
         {
             max_len = kLen;
@@ -277,14 +269,14 @@ inline LedMap GetMapByName(const char* string)
 
 namespace max::ledcount
 {
-inline constexpr uint32_t RGB = (4 * 170);
-inline constexpr uint32_t RGBW = (4 * 128);
+inline constexpr uint32_t kRgb = (4 * 170);
+inline constexpr uint32_t kRgbw = (4 * 128);
 } // namespace max::ledcount
 
 namespace single
 {
-inline constexpr uint32_t RGB = 24;
-inline constexpr uint32_t RGBW = 32;
+inline constexpr uint32_t kRgb = 24;
+inline constexpr uint32_t kRgbw = 32;
 } // namespace single
 
 namespace defaults

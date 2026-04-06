@@ -66,7 +66,7 @@ class PixelOutputMulti final
     inline void SetColourRTZ(uint32_t port_index, uint32_t pixel_index, uint8_t red, uint8_t green, uint8_t blue, uint8_t white)
     {
         uint32_t local_buffer[32] __attribute__((aligned(32)));
-        const auto kPixelIndex = pixel_index * pixel::single::RGBW;
+        const auto kPixelIndex = pixel_index * pixel::single::kRgbw;
 
         for (uint32_t i = 0; i < 32; i++)
         {
@@ -132,7 +132,7 @@ class PixelOutputMulti final
     inline void SetPixel4Bytes(uint32_t port_index, uint32_t pixel_index, uint8_t red, uint8_t green, uint8_t blue, uint8_t white)
     {
         uint32_t local_buffer[32] __attribute__((aligned(32)));
-        const auto kPixelIndex = pixel_index * pixel::single::RGBW;
+        const auto kPixelIndex = pixel_index * pixel::single::kRgbw;
 
         for (uint32_t i = 0; i < 32; i++)
         {
@@ -215,7 +215,7 @@ class PixelOutputMulti final
     void SetColour(uint32_t port_index, uint32_t pixel_index, uint8_t colour1, uint8_t colour2, uint8_t colour3)
     {
         uint32_t local_buffer[24] __attribute__((aligned(32)));
-        const uint32_t kIndex = pixel_index * pixel::single::RGB;
+        const uint32_t kIndex = pixel_index * pixel::single::kRgb;
 
         for (uint32_t i = 0; i < 24; i++)
         {

@@ -1,8 +1,8 @@
 /**
- * @file utils_port.h
+ * @file utils_string.h
  *
  */
-/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,25 +23,22 @@
  * THE SOFTWARE.
  */
 
-#ifndef COMMON_UTILS_UTILS_PORT_H_
-#define COMMON_UTILS_UTILS_PORT_H_
+#ifndef COMMON_UTILS_UTILS_STRING_H_
+#define COMMON_UTILS_UTILS_STRING_H_
 
 #include <cstdint>
 
 namespace common
 {
-template <class S> void PortSet(uint32_t port_index, S s, uint16_t& n)
+constexpr uint32_t ConstStrLen(const char* s)
 {
-    uint16_t value = n; // Create a local copy
-    value &= static_cast<uint16_t>(~(0x3 << (port_index * 2)));
-    value |= static_cast<uint16_t>((static_cast<uint32_t>(s) & 0x3) << (port_index * 2));
-    n = value; // Write back to the original field
-}
-
-template <class S> S PortGet(uint32_t port_index, uint16_t n)
-{
-    return static_cast<S>((n >> (port_index * 2)) & 0x3);
+    uint32_t len = 0;
+    while (s[len] != '\0')
+    {
+        ++len;
+    }
+    return len;
 }
 } // namespace common
 
-#endif // COMMON_UTILS_UTILS_PORT_H_
+#endif // COMMON_UTILS_UTILS_STRING_H_
