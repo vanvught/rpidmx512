@@ -1,8 +1,8 @@
 /**
- * @file strlen.c
+ * @file getchar.cpp
  *
  */
-/* Copyright (C) 2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,15 +23,12 @@
  * THE SOFTWARE.
  */
 
+namespace console
+{
+int GetChar();
+}
 
-#include <stddef.h>
-
-size_t strlen(const char *s) {
-	const char *p = s;
-
-	while (*s != (char) 0) {
-		++s;
-	}
-
-	return (size_t) (s - p);
+extern "C" int getchar() // NOLINT
+{
+    return console::GetChar();
 }

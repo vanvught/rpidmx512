@@ -1,5 +1,7 @@
 /*-
- * Copyright (c) 1990, 1993
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,25 +29,21 @@
  * SUCH DAMAGE.
  */
 
+/*
+ * Portions copyright (c) 2018, Arm Limited and Contributors.
+ * All rights reserved.
+ */
+
 #include <stddef.h>
 
-/*
- * strchr --
- *
- * PUBLIC: #ifndef HAVE_STRCHR
- * PUBLIC: char *strchr __P((const char *,  int));
- * PUBLIC: #endif
- */
-char *strchr(const char *p, int ch)
+extern "C" int strncmp(const char* s1, const char* s2, size_t n) // NOLINT
 {
-	char c;
-
-	c = (char) ch;
-	for (;; ++p) {
-		if (*p == c)
-			return ((char *)p);
-		if (*p == '\0')
-			return (NULL);
-	}
-	/* NOTREACHED */
+    if (n == 0) return (0);
+    do
+    {
+        if (*s1 != *s2++) return (*(const unsigned char*)s1 - *(const unsigned char*)(s2 - 1));
+        if (*s1++ == '\0') break;
+    } while (--n != 0);
+	
+    return 0;
 }

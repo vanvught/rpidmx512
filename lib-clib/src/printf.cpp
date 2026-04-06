@@ -32,7 +32,7 @@
 
 namespace console
 {
-void Putc(int);
+void PutChar(int);
 }
 
 struct Context
@@ -57,7 +57,7 @@ enum
 
 static char* outptr = nullptr;
 
-inline static void Putc(struct Context* ctx, int c)
+inline static void PutChar(struct Context* ctx, int c)
 {
     ctx->total++;
 
@@ -70,7 +70,7 @@ inline static void Putc(struct Context* ctx, int c)
         return;
     }
 
-    console::Putc(c);
+    console::PutChar(c);
 }
 
 static void FormatHex(struct Context* ctx, unsigned int arg)
@@ -130,12 +130,12 @@ static void FormatHex(struct Context* ctx, unsigned int arg)
 
     while (p < buffer + (sizeof(buffer) / sizeof(buffer[0])))
     {
-        Putc(ctx, static_cast<int>(*p++));
+        PutChar(ctx, static_cast<int>(*p++));
     }
 
     while (i++ < ctx->width)
     {
-        Putc(ctx, static_cast<int>(' '));
+        PutChar(ctx, static_cast<int>(' '));
     }
 }
 
@@ -196,12 +196,12 @@ static void FormatInt(struct Context* ctx, uint32_t arg)
 
     while (p < buffer + (sizeof(buffer) / sizeof(buffer[0])))
     {
-        Putc(ctx, static_cast<int>(*p++));
+        PutChar(ctx, static_cast<int>(*p++));
     }
 
     while (i++ < ctx->width)
     {
-        Putc(ctx, static_cast<int>(' '));
+        PutChar(ctx, static_cast<int>(' '));
     }
 }
 
@@ -320,14 +320,14 @@ static void FormatFloat(struct Context* ctx, float f)
     i = 0;
     while (((size + i) < ctx->width))
     {
-        Putc(ctx, static_cast<int>(' '));
+        PutChar(ctx, static_cast<int>(' '));
         i++;
     }
 
     dest = buffer;
     while (size-- > 0)
     {
-        Putc(ctx, static_cast<int>(*dest++));
+        PutChar(ctx, static_cast<int>(*dest++));
     }
 }
 #endif
@@ -348,18 +348,18 @@ static void FormatString(struct Context* ctx, const char* s)
 
     while ((((ctx->flag & kFlagLeftJustified) == 0)) && (j++ < ctx->width))
     {
-        Putc(ctx, ' ');
+        PutChar(ctx, ' ');
     }
 
     while ((((ctx->flag & kFlagPrecision) == 0) || (ctx->prec != 0)) && (*s != 0))
     {
-        Putc(ctx, *s++);
+        PutChar(ctx, *s++);
         ctx->prec--;
     }
 
     while (j++ < ctx->width)
     {
-        Putc(ctx, ' ');
+        PutChar(ctx, ' ');
     }
 }
 
@@ -368,8 +368,8 @@ static void FormatPointer(struct Context* ctx, unsigned int arg)
     ctx->width = 8;
     ctx->flag = kFlagZeroPadded;
 
-    Putc(ctx, static_cast<int>('0'));
-    Putc(ctx, static_cast<int>('x'));
+    PutChar(ctx, static_cast<int>('0'));
+    PutChar(ctx, static_cast<int>('x'));
 
     FormatHex(ctx, arg);
 }
@@ -391,7 +391,7 @@ static int Vprintf(int size, const char* fmt, va_list va)
     {
         if (*fmt != '%')
         {
-            Putc(&ctx, static_cast<int>(*fmt++));
+            PutChar(&ctx, static_cast<int>(*fmt++));
             continue;
         }
 
@@ -455,7 +455,7 @@ static int Vprintf(int size, const char* fmt, va_list va)
         switch (*fmt)
         {
             case 'c':
-                Putc(&ctx, va_arg(va, int));
+                PutChar(&ctx, va_arg(va, int));
                 break;
             case 'd':
                 /*@fallthrough@*/
@@ -494,7 +494,7 @@ static int Vprintf(int size, const char* fmt, va_list va)
                 FormatHex(&ctx, va_arg(va, unsigned int));
                 break;
             default:
-                Putc(&ctx, static_cast<int>(*fmt));
+                PutChar(&ctx, static_cast<int>(*fmt));
                 continue;
         }
 

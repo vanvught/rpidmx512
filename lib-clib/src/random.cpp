@@ -30,16 +30,20 @@
 static long int lfsr = 0xACE1u;
 static long int bit;
 
-void srandom(unsigned int seed) {
-	if (seed != 0) {
-		lfsr = seed & 0xFFFFu;
-	} else {
-		lfsr = 0xACE1u;
-	}
+extern "C" void srandom(unsigned int seed) // NOLINT
+{
+    if (seed != 0)
+    {
+        lfsr = seed & 0xFFFFu;
+    }
+    else
+    {
+        lfsr = 0xACE1u;
+    }
 }
 
-long int random(void) {
-	bit = ((lfsr >> 0) ^ (lfsr >> 2) ^ (lfsr >> 3) ^ (lfsr >> 5)) & 1;
-	return lfsr = (lfsr >> 1) | (bit << 15);
+extern "C" long int random() // NOLINT
+{
+    bit = ((lfsr >> 0) ^ (lfsr >> 2) ^ (lfsr >> 3) ^ (lfsr >> 5)) & 1;
+    return lfsr = (lfsr >> 1) | (bit << 15);
 }
-

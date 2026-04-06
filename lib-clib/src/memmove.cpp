@@ -4,7 +4,7 @@
 
 #include <stddef.h>
 
-void* memmove(void* dst, const void* src, size_t n) // NOLINT
+extern "C" void* memmove(void* dst, const void* src, size_t n) // NOLINT
 {
     char* dp = (char*)dst;
     const char* sp = (const char*)src;

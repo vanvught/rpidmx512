@@ -1,7 +1,7 @@
 /*-
  * SPDX-License-Identifier: BSD-3-Clause
  *
- * Copyright (c) 1989, 1993
+ * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,22 +30,20 @@
  */
 
 /*
- * Portions copyright (c) 2018, Arm Limited and Contributors.
+ * Portions copyright (c) 2018-2025, Arm Limited and Contributors.
  * All rights reserved.
  */
 
 #include <stddef.h>
 
-int strncmp(const char *s1, const char *s2, size_t n) {
+extern "C" char* strchr(const char* p, int ch) // NOLINT
+{
+    auto c = static_cast<char>(ch);
 
-	if (n == 0)
-		return (0);
-	do {
-		if (*s1 != *s2++)
-			return (*(const unsigned char*) s1
-					- *(const unsigned char*) (s2 - 1));
-		if (*s1++ == '\0')
-			break;
-	} while (--n != 0);
-	return (0);
+    for (;; ++p)
+    {
+        if (*p == c) return const_cast<char *>(p);
+        if (*p == '\0') return nullptr;
+    }
+    /* NOTREACHED */
 }

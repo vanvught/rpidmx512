@@ -29,7 +29,7 @@
 namespace console
 {
 void Error(const char*);
-int Putc(int);
+int PutChar(int);
 int Puts(const char*);
 void Write(const char*, unsigned int);
 } // namespace console
@@ -112,6 +112,6 @@ extern "C"
         }
 
         console::Error(ptr);
-        console::Putc('\n');
+        console::PutChar('\n');
     }
 }

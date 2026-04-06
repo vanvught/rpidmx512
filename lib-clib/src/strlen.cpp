@@ -1,8 +1,8 @@
 /**
- * @file putchar.cpp
+ * @file strlen.cpp
  *
  */
-/* Copyright (C) 2020-2026 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2023-2026 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,13 +23,16 @@
  * THE SOFTWARE.
  */
 
-namespace console
-{
-void PutChar(int);
-}
+#include <stddef.h>
 
-extern "C" int putchar(int c) // NOLINT
+extern "C" size_t strlen(const char* s) // NOLINT
 {
-    console::PutChar(c);
-    return 1;
+    const char* p = s;
+
+    while (*s != (char)0)
+    {
+        ++s;
+    }
+
+    return (size_t)(s - p);
 }

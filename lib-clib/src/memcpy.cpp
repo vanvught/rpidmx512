@@ -5,7 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-void* memcpy(void* dst, const void* src, size_t n) // NOLINT
+extern "C" void* memcpy(void* dst, const void* src, size_t n) // NOLINT
 {
     unsigned char* d = (unsigned char*)dst;
     const unsigned char* s = (const unsigned char*)src;
@@ -39,7 +39,7 @@ void* memcpy(void* dst, const void* src, size_t n) // NOLINT
 
     d = (unsigned char*)dw;
     s = (const unsigned char*)sw;
-	
+
     while (n--) *d++ = *s++;
 
     return dst;
