@@ -1076,7 +1076,12 @@ void E131Bridge::SetNetworkDataLossCondition(bool source_a, bool source_b)
 
     state_.receiving_dmx &= static_cast<uint8_t>(~(1U << static_cast<uint8_t>(dmxnode::PortDirection::kOutput)));
 
-    hal::statusled::SetMode(hal::statusled::Mode::NORMAL);
+    // The hal::statusled::Mode::FAST is for RDM Identify (Art-Net 4)
+    if (enable_data_indicator_ && (hal::statusled::GetMode() != hal::statusled::Mode::FAST))
+    {
+        hal::statusled::SetMode(hal::statusled::Mode::NORMAL);
+    }
+	
     hal::panelled::Off(hal::panelled::SACN);
 
 #if defined(E131_HAVE_DMXIN)

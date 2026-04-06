@@ -51,9 +51,7 @@ void ArtNetNode::SetSwitch(uint32_t port_index, uint8_t sw)
     artnet::store::SaveSwitch(port_index, sw);
     artnet::display::Universe(port_index, node_.port[port_index].port_address);
 
-#if (ARTNET_VERSION >= 4)
     SetUniverse4(port_index);
-#endif
 
 #if defined(ARTNET_HAVE_DMXIN)
     SetLocalMerging();
@@ -139,13 +137,10 @@ void ArtNetNode::HandleAddress()
         }
     }
 
-#if (ARTNET_VERSION >= 4)
     if ((kArtAddress->acn_priority != 255) && (kArtAddress->acn_priority <= 200))
     {
         SetPriority4(kPortIndex, kArtAddress->acn_priority);
     }
-
-#endif
 
     switch (kArtAddress->command)
     {
@@ -166,9 +161,9 @@ void ArtNetNode::HandleAddress()
             hal::statusled::SetModeWithLock(hal::statusled::Mode::NORMAL, false);
             art_poll_reply_.status1 =
                 static_cast<uint8_t>((art_poll_reply_.status1 & ~artnet::Status1::kIndicatorMask) | artnet::Status1::kIndicatorNormalMode);
-#if (ARTNET_VERSION >= 4)
+
             E131Bridge::SetEnableDataIndicator(true);
-#endif
+
             break;
 
         case artnet::PortCommand::kLedMute:
@@ -183,9 +178,9 @@ void ArtNetNode::HandleAddress()
             hal::statusled::SetModeWithLock(hal::statusled::Mode::FAST, true);
             art_poll_reply_.status1 =
                 static_cast<uint8_t>((art_poll_reply_.status1 & ~artnet::Status1::kIndicatorMask) | artnet::Status1::kIndicatorLocateMode);
-#if (ARTNET_VERSION >= 4)
+
             E131Bridge::SetEnableDataIndicator(false);
-#endif
+
             break;
 
 #if defined(ARTNET_HAVE_DMXIN)
@@ -207,97 +202,48 @@ void ArtNetNode::HandleAddress()
             break;
 
         case artnet::PortCommand::kMergeLtpO:
-#if (ARTNET_VERSION < 4)
-        case artnet::PortCommand::kMergeLtp1:
-        case artnet::PortCommand::kMergeLtp2:
-        case artnet::PortCommand::kMergeLtp3:
-#endif
             SetMergeMode(kPortIndex, dmxnode::MergeMode::kLtp);
             break;
 
 #if defined(ARTNET_HAVE_DMXIN)
         case artnet::PortCommand::kDirectionTxO:
-#if (ARTNET_VERSION < 4)
-        case artnet::PortCommand::kDirectionTx1:
-        case artnet::PortCommand::kDirectionTx2:
-        case artnet::PortCommand::kDirectionTx3:
-#endif
             SetDirection(kPortIndex, dmxnode::PortDirection::kOutput);
             break;
 
         case artnet::PortCommand::kDirectionRxO:
-#if (ARTNET_VERSION < 4)
-        case artnet::PortCommand::kDirectionRx1:
-        case artnet::PortCommand::kDirectionRx2:
-        case artnet::PortCommand::kDirectionRx3:
-#endif
             SetDirection(kPortIndex, dmxnode::PortDirection::kInput);
             break;
 #endif
         case artnet::PortCommand::kMergeHtp0:
-#if (ARTNET_VERSION < 4)
-        case artnet::PortCommand::kMergeHtp1:
-        case artnet::PortCommand::kMergeHtp2:
-        case artnet::PortCommand::kMergeHtp3:
-#endif
             SetMergeMode(kPortIndex, dmxnode::MergeMode::kHtp);
             break;
 
-#if (ARTNET_VERSION >= 4)
         case artnet::PortCommand::kArtnetSel0:
-#if (ARTNET_VERSION < 4)
-        case artnet::PortCommand::kArtnetSel1:
-        case artnet::PortCommand::kArtnetSel2:
-        case artnet::PortCommand::kArtnetSel3:
-#endif
             SetPortProtocol4(kPortIndex, artnet::PortProtocol::kArtnet);
             break;
 
         case artnet::PortCommand::kAcnSel0:
-#if (ARTNET_VERSION < 4)
-        case artnet::PortCommand::kAcnSel1:
-        case artnet::PortCommand::kAcnSel2:
-        case artnet::PortCommand::kAcnSel3:
-#endif
             SetPortProtocol4(kPortIndex, artnet::PortProtocol::kSacn);
             break;
-#endif
 
         case artnet::PortCommand::kClr0:
-#if (ARTNET_VERSION < 4)
-        case artnet::PortCommand::kClr1:
-        case artnet::PortCommand::kClr2:
-        case artnet::PortCommand::kClr3:
-#endif
             if (node_.port[kPortIndex].protocol == artnet::PortProtocol::kArtnet)
             {
                 dmxnode::Data::Clear(kPortIndex);
                 dmxnode::DataOutput(dmxnode_output_type_, kPortIndex);
             }
-#if (ARTNET_VERSION >= 4)
             if (node_.port[kPortIndex].protocol == artnet::PortProtocol::kSacn)
             {
                 E131Bridge::Clear(kPortIndex);
             }
-#endif
             break;
 
 #if defined(OUTPUT_HAVE_STYLESWITCH)
         case artnet::PortCommand::kStyleDelta0:
-#if (ARTNET_VERSION < 4)
-        case artnet::PortCommand::kStyleDelta1:
-        case artnet::PortCommand::kStyleDelta2:
-        case artnet::PortCommand::kStyleDelta3:
-#endif
             SetOutputStyle(kPortIndex, dmxnode::OutputStyle::kDelta);
             break;
 
         case artnet::PortCommand::kStyleConstant0:
-#if (ARTNET_VERSION < 4)
-        case artnet::PortCommand::kStyleConstant1:
-        case artnet::PortCommand::kStyleConstant2:
-        case artnet::PortCommand::kStyleConstant3:
-#endif
             SetOutputStyle(kPortIndex, dmxnode::OutputStyle::kConstant);
             break;
 #endif

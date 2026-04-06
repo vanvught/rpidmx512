@@ -45,9 +45,7 @@
 #if defined(ARTNET_HAVE_DMXIN)
 #include "dmx.h"
 #endif
-#if (ARTNET_VERSION >= 4)
 #include "e131.h"
-#endif
 #if defined(NODE_RDMNET_LLRP_ONLY)
 #include "rdm_device_base.h"
 #endif
@@ -91,9 +89,7 @@ ArtNetNode::ArtNetNode()
     art_poll_reply_.esta_man[0] = ArtNetConst::kEstaId[1];
     art_poll_reply_.esta_man[1] = ArtNetConst::kEstaId[0];
     network::iface::CopyMacAddressTo(art_poll_reply_.mac);
-#if (ARTNET_VERSION >= 4)
     art_poll_reply_.acn_priority = e131::priority::kDefault;
-#endif
 #if defined(NODE_RDMNET_LLRP_ONLY)
     memcpy(art_poll_reply_.default_uid_responder, rdm::device::Base::Instance().GetUID(), sizeof(art_poll_reply_.default_uid_responder));
 #endif
@@ -243,9 +239,7 @@ void ArtNetNode::Start()
     }
 #endif
 
-#if (ARTNET_VERSION >= 4)
     E131Bridge::Start();
-#endif
 
     state_.status = artnet::Status::kOn;
     hal::statusled::SetMode(hal::statusled::Mode::NORMAL);
@@ -257,9 +251,7 @@ void ArtNetNode::Stop()
 {
     DEBUG_ENTRY();
 
-#if (ARTNET_VERSION >= 4)
     E131Bridge::Stop();
-#endif
 
     for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++)
     {
@@ -436,9 +428,7 @@ void ArtNetNode::SetUniverse(uint32_t port_index, uint16_t universe)
     node_.port[port_index].sub_switch = (universe >> 4) & 0x0F;
     node_.port[port_index].port_address = universe;
 
-#if (ARTNET_VERSION >= 4)
     SetUniverse4(port_index);
-#endif
 
 #if defined(ARTNET_HAVE_DMXIN)
     if (state_.status == artnet::Status::kOn)
@@ -521,9 +511,7 @@ void ArtNetNode::SetDirection(uint32_t port_index, dmxnode::PortDirection port_d
 #endif
     }
 
-#if (ARTNET_VERSION >= 4)
     SetDirection4(port_index);
-#endif
 
     DEBUG_EXIT();
 }
@@ -541,9 +529,7 @@ void ArtNetNode::SetMergeMode(uint32_t port_index, dmxnode::MergeMode merge_mode
         output_port_[port_index].good_output &= static_cast<uint8_t>(~artnet::GoodOutput::kMergeModeLtp);
     }
 
-#if (ARTNET_VERSION >= 4)
     E131Bridge::SetMergeMode(port_index, merge_mode);
-#endif
 
     if (state_.status == artnet::Status::kOn)
     {
@@ -599,9 +585,7 @@ void ArtNetNode::SetFailSafe(artnet::FailSafe fail_safe)
             break;
     }
 
-#if (ARTNET_VERSION >= 4)
     E131Bridge::SetFailSafe(static_cast<dmxnode::FailSafe>(static_cast<uint8_t>(fail_safe) & 0x3));
-#endif
 
     if (state_.status == artnet::Status::kOn)
     {
@@ -748,9 +732,7 @@ void ArtNetNode::Print()
 #if defined(OUTPUT_HAVE_STYLESWITCH)
                 printf(" %s", dmxnode::GetOutputStyle(GetOutputStyle(port_index), true));
 #endif
-#if (ARTNET_VERSION >= 4)
                 printf(" %s", artnet::GetProtocolMode(node_.port[port_index].protocol, true));
-#endif
                 printf(" %s\n", Rdm(port_index) ? "RDM" : "   ");
             }
         }
@@ -771,17 +753,12 @@ void ArtNetNode::Print()
                 {
                     printf(" -> " IPSTR, IP2STR(input_port_[port_index].destination_ip));
                 }
-#if (ARTNET_VERSION >= 4)
                 printf(" %s\n", artnet::GetProtocolMode(node_.port[port_index].protocol, true));
-#else
-                puts("");
-#endif
             }
         }
     }
 #endif
 
-#if (ARTNET_VERSION >= 4)
     if (ArtNetNode::GetActiveOutputPorts() != 0)
     {
         if (IsMapUniverse0())
@@ -791,7 +768,6 @@ void ArtNetNode::Print()
     }
 
     E131Bridge::Print();
-#endif
 }
 
 void ArtNetNode::HandleTimeSync()
@@ -819,17 +795,17 @@ void ArtNetNode::HandleTimeSync()
 
 static artnet::OpCodes GetOpCode(uint32_t bytes_received, const uint8_t* buffer)
 {
-    if (__builtin_expect((bytes_received < kArtnetMinHeaderSize), 0))
+    if (__builtin_expect((bytes_received < kArtnetMinHeaderSize), 0)) [[unlikely]]
     {
         return artnet::OpCodes::kOpNotDefined;
     }
 
-    if (__builtin_expect(((buffer[10] != 0) || (buffer[11] != artnet::kProtocolRevision)), 0))
+    if (__builtin_expect(((buffer[10] != 0) || (buffer[11] != artnet::kProtocolRevision)), 0)) [[unlikely]]
     {
         return artnet::OpCodes::kOpNotDefined;
     }
 
-    if (__builtin_expect((memcmp(buffer, artnet::kNodeId, 8) == 0), 1))
+    if (__builtin_expect((memcmp(buffer, artnet::kNodeId, 8) == 0), 1)) [[unlikely]]
     {
         return static_cast<artnet::OpCodes>((static_cast<uint16_t>(buffer[9] << 8)) + buffer[8]);
     }
@@ -859,7 +835,6 @@ void ArtNetNode::InputUdp(const uint8_t* buffer, uint32_t size, uint32_t from_ip
 
     switch (kOpCode)
     {
-#if (DMXNODE_PORTS > 0)
         case artnet::OpCodes::kOpDmx:
             if (dmxnode_output_type_ != nullptr)
             {
@@ -899,7 +874,6 @@ void ArtNetNode::InputUdp(const uint8_t* buffer, uint32_t size, uint32_t from_ip
 #endif
             }
             break;
-#endif
         case artnet::OpCodes::kOpAddress:
             HandleAddress();
             break;
@@ -1030,10 +1004,11 @@ void ArtNetNode::HandleDmx()
     for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++)
     {
 #if defined(RDM_CONTROLLER)
-        if (rdm_controller_.IsRunning(port_index))[[unlikely]] continue;
+        if (rdm_controller_.IsRunning(port_index)) [[unlikely]]
+            continue;
 #endif
         if (node_.port[port_index].direction != dmxnode::PortDirection::kOutput) continue;
-		if (node_.port[port_index].protocol != artnet::PortProtocol::kArtnet) continue;
+        if (node_.port[port_index].protocol != artnet::PortProtocol::kArtnet) continue;
         if (node_.port[port_index].port_address != kArtDmx->port_address) continue;
 
         output_port_[port_index].good_output |= artnet::GoodOutput::kDataIsBeingTransmitted;

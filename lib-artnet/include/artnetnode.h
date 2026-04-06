@@ -34,11 +34,11 @@
 #include <cstdarg>
 #include <cstring>
 
-#if !defined(ARTNET_VERSION)
-#error ARTNET_VERSION is not defined
+#if (ARTNET_VERSION <= 3)
+#error ARTNET_VERSION is not supported
 #endif
 
-#if (ARTNET_VERSION >= 4) && defined(ARTNET_HAVE_DMXIN)
+#if defined(ARTNET_HAVE_DMXIN)
 #if !defined(E131_HAVE_DMXIN)
 #define E131_HAVE_DMXIN
 #endif
@@ -60,9 +60,7 @@
 #if defined(ARTNET_HAVE_TIMECODE)
 #include "network_udp.h"
 #endif
-#if (ARTNET_VERSION >= 4)
 #include "e131bridge.h"
-#endif
 #include "dmxnode.h"
 #include "dmxnode_outputtype.h"
 #include "firmware/debug/debug_debug.h"
@@ -181,13 +179,8 @@ inline dmxnode::FailSafe ConvertFailsafe(artnet::FailSafe failsafe)
 }
 } // namespace artnetnode
 
-#if (ARTNET_VERSION >= 4)
 class ArtNetNode : E131Bridge
 {
-#else
-class ArtNetNode
-{
-#endif
    public:
     ArtNetNode();
 
@@ -278,7 +271,7 @@ class ArtNetNode
 #endif
 
 #if defined(RDM_RESPONDER)
-    void SetRdmResponder(ArtNetRdmResponder* pArtNetRdmResponder, const bool doEnable = true);
+    void SetRdmResponder(ArtNetRdmResponder* rdm_responder, bool do_enable = true);
 #endif
 
 #if defined(ARTNET_HAVE_TIMECODE)
@@ -330,7 +323,7 @@ class ArtNetNode
 
     static ArtNetNode* Get() { return s_this; }
 
-#if (ARTNET_VERSION >= 4)
+    // Art-Net 4
    private:
     void SetUniverse4(uint32_t port_index);
     void SetDirection4(uint32_t port_index);
@@ -351,7 +344,6 @@ class ArtNetNode
 
     uint32_t GetActiveOutputPorts4() const { return E131Bridge::GetActiveOutputPorts(); }
     uint32_t GetActiveInputPorts4() const { return E131Bridge::GetActiveInputPorts(); }
-#endif
 
    private:
     void SetFailSafe(artnet::FailSafe failsafe);
@@ -441,10 +433,8 @@ class ArtNetNode
     static inline ArtNetNode* s_this;
 };
 
-#include "artnetnode_inline_impl.h" // IWYU pragma: keep
-#if (ARTNET_VERSION >= 4)
+#include "artnetnode_inline_impl.h"  // IWYU pragma: keep
 #include "artnetnode4_inline_impl.h" // IWYU pragma: keep
-#endif
 #if defined(RDM_CONTROLLER)
 #include "artnetnode_rdm_controller_inline_impl.h" // IWYU pragma: keep
 #endif
