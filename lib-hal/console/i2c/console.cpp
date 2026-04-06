@@ -212,7 +212,7 @@ void __attribute__((cold)) Init()
     WriteRegister(SC16IS7X0_FCR, FCR_ENABLE_FIFO);
 }
 
-void Putc(int c)
+void PutChar(int c)
 {
     if (!s_is_connected)
     {

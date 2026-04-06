@@ -2,7 +2,7 @@
  * @file console_uart0.h
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -72,7 +72,7 @@ enum class Colours
 };
 
 void Init();
-void Putc(int);
+void PutChar(int);
 void Puts(const char*);
 void Write(const char*, unsigned int);
 void Status(Colours, const char*);
@@ -82,4 +82,4 @@ void Error(const char*);
 
 } // namespace console
 
-#endif  // CONSOLE_CONSOLE_UART0_H_
+#endif // CONSOLE_CONSOLE_UART0_H_

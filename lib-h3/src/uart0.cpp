@@ -42,7 +42,7 @@ void __attribute__((cold)) Init()
     }
 }
 
-void Putc(int c)
+void PutChar(int c)
 {
     if (c == '\n')
     {
@@ -61,12 +61,12 @@ void Puts(const char* s)
     {
         if (*s == '\n')
         {
-            Putc('\r');
+            PutChar('\r');
         }
-        Putc(*s++);
+        PutChar(*s++);
     }
 
-    Putc('\n');
+    PutChar('\n');
 }
 
 int Getc()
@@ -104,9 +104,9 @@ int Printf(const char* fmt, ...)
     {
         if (*s == '\n')
         {
-            Putc('\r');
+            PutChar('\r');
         }
-        Putc(*s++);
+        PutChar(*s++);
     }
 
     return i;

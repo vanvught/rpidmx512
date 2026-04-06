@@ -396,7 +396,7 @@ static void codec_hw_params(uint32_t rate, uint32_t channels) {
 }
 
 #ifndef NDEBUG
-extern void uart0::Putc(int c);
+extern void uart0::PutChar(int c);
 #endif
 
 static void __attribute__((interrupt("FIQ"))) codec_fiq_handler() {
@@ -417,7 +417,7 @@ static void __attribute__((interrupt("FIQ"))) codec_fiq_handler() {
 			src++;
 		}
 #ifndef NDEBUG
-		uart0::Putc('1');
+		uart0::PutChar('1');
 #endif
 	}
 

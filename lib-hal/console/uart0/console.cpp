@@ -2,7 +2,7 @@
  * @file console.cpp
  *
  */
-/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2018-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,6 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
 #include <cstring>
 
 #include "console.h"
@@ -31,7 +30,7 @@
 namespace uart0
 {
 void Init();
-void Putc(int);
+void PutChar(int);
 void Puts(const char*);
 } // namespace uart0
 
@@ -39,9 +38,9 @@ namespace console
 {
 void SetFgColour(Colours fg);
 
-void Putc(int c)
+void PutChar(int c)
 {
-    uart0::Putc(c);
+    uart0::PutChar(c);
 }
 
 void Puts(const char* s)
@@ -100,7 +99,7 @@ void Write(const char* s, unsigned int n)
 
     while (((c = *s++) != 0) && (n-- != 0))
     {
-        Putc(static_cast<int>(c));
+        PutChar(static_cast<int>(c));
     }
 }
 

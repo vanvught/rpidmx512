@@ -2,7 +2,7 @@
  * @file console_null.h
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,11 +46,11 @@ enum class Colours
 };
 
 inline void Init() {}
-inline void Putc([[maybe_unused]] int i) {}
+inline void PutChar([[maybe_unused]] int i) {}
 inline void Puts([[maybe_unused]] const char* p) {}
 inline void Write([[maybe_unused]] const char* p, [[maybe_unused]] unsigned int i) {}
 inline void Status([[maybe_unused]] Colours c, [[maybe_unused]] const char* p) {}
 inline void Error([[maybe_unused]] const char* p) {}
 } // namespace console
 
-#endif  // CONSOLE_CONSOLE_NULL_H_
+#endif // CONSOLE_CONSOLE_NULL_H_

@@ -188,7 +188,7 @@ int ConsoleDrawChar(int ch, uint16_t x, uint16_t y, Colours fore, Colours back)
     return ch;
 }
 
-void Putc(int ch)
+void PutChar(int ch)
 {
     if (ch == '\n')
     {
@@ -219,10 +219,10 @@ void Puts(const char* s)
 
     while ((c = *s++) != 0)
     {
-        Putc(static_cast<int>(c));
+        PutChar(static_cast<int>(c));
     }
 
-    Putc('\n');
+    PutChar('\n');
 }
 
 void Write(const char* s, unsigned int n)
@@ -231,7 +231,7 @@ void Write(const char* s, unsigned int n)
 
     while (((c = *s++) != 0) && (n-- != 0))
     {
-        Putc(static_cast<int>(c));
+        PutChar(static_cast<int>(c));
     }
 }
 
@@ -277,8 +277,8 @@ void Status(Colours colour, const char* s)
 
 void ConsolePuthex(uint8_t data)
 {
-    Putc((common::hex::ToCharUppercase(((data & 0xF0) >> 4))));
-    Putc((common::hex::ToCharUppercase(data & 0x0F)));
+    PutChar((common::hex::ToCharUppercase(((data & 0xF0) >> 4))));
+    PutChar((common::hex::ToCharUppercase(data & 0x0F)));
 }
 
 void PuthexFgBg(uint8_t data, Colours fore, Colours back)
@@ -289,8 +289,8 @@ void PuthexFgBg(uint8_t data, Colours fore, Colours back)
     cur_fore = fore;
     cur_back = back;
 
-    Putc((common::hex::ToCharUppercase(((data & 0xF0) >> 4))));
-    Putc((common::hex::ToCharUppercase(data & 0x0F)));
+    PutChar((common::hex::ToCharUppercase(((data & 0xF0) >> 4))));
+    PutChar((common::hex::ToCharUppercase(data & 0x0F)));
 
     cur_fore = fore_current;
     cur_back = back_current;
@@ -306,8 +306,8 @@ void PutpctFgBg(uint8_t data, Colours fore, Colours back)
 
     if (data < 100)
     {
-        Putc('0' + (data / 10U));
-        Putc('0' + (data % 10U));
+        PutChar('0' + (data / 10U));
+        PutChar('0' + (data % 10U));
     }
     else
     {
@@ -328,12 +328,12 @@ void Put3decFgBg(uint8_t data, Colours fore, Colours back)
 
     const int kI = data / 100U;
 
-    Putc('0' + kI);
+    PutChar('0' + kI);
 
     data = (data - static_cast<uint8_t>(kI * 100));
 
-    Putc('0' + (data / 10U));
-    Putc('0' + (data % 10U));
+    PutChar('0' + (data / 10U));
+    PutChar('0' + (data % 10U));
 
     cur_fore = fore_current;
     cur_back = back_current;

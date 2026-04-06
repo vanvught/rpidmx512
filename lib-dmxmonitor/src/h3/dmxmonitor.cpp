@@ -2,7 +2,7 @@
  * @file dmxmonitor.cpp
  *
  */
-/* Copyright (C) 2016-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2016-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -77,13 +77,13 @@ void DmxMonitor::Start([[maybe_unused]] uint32_t port_index)
     switch (format_)
     {
         case dmxmonitor::Format::kPct:
-            console::Putc('%');
+            console::PutChar('%');
             break;
         case dmxmonitor::Format::kDec:
-            console::Putc('D');
+            console::PutChar('D');
             break;
         default:
-            console::Putc('H');
+            console::PutChar('H');
             break;
     }
 
@@ -206,7 +206,7 @@ void DmxMonitor::Update()
                                             static_cast<console::Colours>(RGB(kD, kD, kD)));
                     }
                 }
-                console::Putc(' ');
+                console::PutChar(' ');
                 slot++;
             }
 
@@ -241,7 +241,7 @@ void DmxMonitor::Update()
                     console::Put3decFgBg(kD, (kD > 92 ? console::Colours::kConsoleBlack : console::Colours::kConsoleWhite),
                                          static_cast<console::Colours>(RGB(kD, kD, kD)));
                 }
-                console::Putc(' ');
+                console::PutChar(' ');
                 slot++;
             }
 

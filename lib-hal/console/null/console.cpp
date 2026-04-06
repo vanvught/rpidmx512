@@ -2,7 +2,7 @@
  * @file console.cpp
  *
  */
-/* Copyright (C) 2023-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2023-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,5 +32,5 @@ void Puts([[maybe_unused]] const char* p) {}
 void Write([[maybe_unused]] const char* p, [[maybe_unused]] unsigned int i) {}
 void Status([[maybe_unused]] uint32_t i, [[maybe_unused]] const char* p) {}
 void Error([[maybe_unused]] const char* p) {}
-void Putc([[maybe_unused]] int i) {}
+void PutChar([[maybe_unused]] int i) {}
 } // namespace console

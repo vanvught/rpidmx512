@@ -74,7 +74,7 @@ void MidiMonitor::Init()
 
     for (uint32_t i = sizeof(aHeaderLine); i <= console::GetLineWidth(); i++)
     {
-        console::Putc(' ');
+        console::PutChar(' ');
     }
 
     console::SetFgBgColour(console::Colours::kConsoleWhite, console::Colours::kConsoleBlack);
@@ -163,7 +163,7 @@ void MidiMonitor::HandleMessage()
         printf("%02d:%02d.%03d ", (hours * 60) + minutes, seconds, millis);
 
         console::ConsolePuthex(static_cast<uint8_t>(m_pMidiMessage->type));
-        console::Putc(' ');
+        console::PutChar(' ');
 
         switch (m_pMidiMessage->bytes_count)
         {
@@ -176,9 +176,9 @@ void MidiMonitor::HandleMessage()
                 break;
             case 3:
                 console::ConsolePuthex(m_pMidiMessage->data1);
-                console::Putc(' ');
+                console::PutChar(' ');
                 console::ConsolePuthex(m_pMidiMessage->data2);
-                console::Putc(' ');
+                console::PutChar(' ');
                 break;
             default:
                 console::Puts("-- -- ");
@@ -195,7 +195,7 @@ void MidiMonitor::HandleMessage()
                 auto i = strlen(MidiDescription::GetKeyName(m_pMidiMessage->data1));
                 while ((5 - i++) > 0)
                 {
-                    console::Putc(' ');
+                    console::PutChar(' ');
                 }
             }
             else
@@ -243,7 +243,7 @@ void MidiMonitor::HandleMessage()
                         }
                         else
                         {
-                            console::Putc('\n');
+                            console::PutChar('\n');
                         }
                     }
                     break;
@@ -281,7 +281,7 @@ void MidiMonitor::HandleMessage()
                         printf("%3d", m_nBPM);
                         console::RestoreCursor();
                     }
-                    console::Putc('\n');
+                    console::PutChar('\n');
                     break;
                 case Types::START:
                 case Types::CONTINUE:
@@ -289,7 +289,7 @@ void MidiMonitor::HandleMessage()
                 case Types::ACTIVE_SENSING:
                 case Types::SYSTEM_RESET:
                 case Types::TUNE_REQUEST:
-                    console::Putc('\n');
+                    console::PutChar('\n');
                     break;
                     // 2 bytes messages
                 case Types::TIME_CODE_QUARTER_FRAME:
@@ -311,14 +311,14 @@ void MidiMonitor::HandleMessage()
                         for (c = 0; c < std::min(m_pMidiMessage->bytes_count, static_cast<uint8_t>(16)); c++)
                         {
                             console::ConsolePuthex(m_pMidiMessage->system_exclusive[c]);
-                            console::Putc(' ');
+                            console::PutChar(' ');
                         }
                         if (c < m_pMidiMessage->bytes_count)
                         {
                             console::Puts("..");
                         }
                     }
-                    console::Putc('\n');
+                    console::PutChar('\n');
                     if ((m_pMidiMessage->system_exclusive[1] == 0x7F) && (m_pMidiMessage->system_exclusive[2] == 0x7F) &&
                         (m_pMidiMessage->system_exclusive[3] == 0x01))
                     {

@@ -57,7 +57,7 @@ void SaveCursor();
 void RestoreCursor();
 void SaveColour();
 void RestoreColour();
-void Putc(int);
+void PutChar(int);
 void ConsolePuthex(uint8_t);
 void SetFgColour(Colours);
 void SetBgColour(Colours);

@@ -32,10 +32,8 @@
 #include "widgetconfiguration.h"
 
 #include "console.h"
-
 #include "dmx.h"
 #include "rdm.h"
-
 #include "hal.h"
 
 static constexpr auto DISPLAY_LEVEL = 1;
