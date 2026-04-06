@@ -27,6 +27,10 @@
 
 #include <cstdint>
 
+#if defined(ARTNET_VERSION) && (ARTNET_VERSION >= 4)
+#define E131_HAVE_ARTNET
+#endif
+
 #include "dmxnode.h"
 #include "e131.h"
 #include "e131sync.h"
