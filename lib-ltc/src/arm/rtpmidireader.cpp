@@ -41,7 +41,6 @@
 #include "hal.h"
 #include "hal_statusled.h"
 // Output
-#include "artnetnode.h"
 #include "midi.h"
 #include "ltcetc.h"
 #include "ltcsender.h"
@@ -209,7 +208,7 @@ void RtpMidiReader::Update()
 
     if (ltc::Destination::IsEnabled(ltc::Destination::Output::ARTNET))
     {
-        ArtNetNode::Get()->SendTimeCode(reinterpret_cast<struct artnet::TimeCode*>(&timecode_));
+        artnet::SendTimeCode(reinterpret_cast<struct artnet::TimeCode*>(&timecode_));
     }
 
     if (ltc::Destination::IsEnabled(ltc::Destination::Output::ETC))

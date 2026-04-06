@@ -1,7 +1,7 @@
 /**
  * @file artnetreader.h
  */
-/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,10 +28,11 @@
 #include <cstdint>
 #include <cassert>
 
+#include "artnet.h"
 #include "artnettimecode.h"
 #include "ltcoutputs.h"
-#include "hal_millis.h"
 #include "hal_statusled.h"
+#include "hal_millis.h" // IWYU pragma: keep
 
 class ArtNetReader
 {
@@ -64,14 +65,36 @@ class ArtNetReader
         }
     }
 
-    void static StaticCallbackFunction(const struct artnet::TimeCode* timecode)
+    void static StaticCallbackFunction(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port)
     {
-        assert(s_this != nullptr);
-        s_this->Handler(timecode);
+        s_this->InputUdp(buffer, size, from_ip, from_port);
     }
 
    private:
     void Handler(const struct artnet::TimeCode*);
+
+    void InputUdp(const uint8_t* buffer, uint32_t size, [[maybe_unused]] uint32_t from_ip, [[maybe_unused]] uint16_t from_port)
+    {
+        if (size != sizeof(artnet::ArtTimeCode)) [[unlikely]]
+        {
+            return;
+        }
+
+        if (__builtin_expect(((buffer[10] != 0) || (buffer[11] != artnet::kProtocolRevision)), 0)) [[unlikely]]
+        {
+            return;
+        }
+
+        const auto kOpCode = static_cast<artnet::OpCodes>((static_cast<uint16_t>(buffer[9] << 8)) + buffer[8]);
+
+        if (kOpCode == artnet::OpCodes::kOpTimecode) [[likely]]
+        {
+            {
+                const auto* const kArtTimeCode = reinterpret_cast<const artnet::ArtTimeCode*>(buffer);
+                Handler(reinterpret_cast<const struct artnet::TimeCode*>(&kArtTimeCode->frames));
+            }
+        }
+    }
 
     void Reset(bool do_reset)
     {
@@ -86,9 +109,10 @@ class ArtNetReader
     }
 
    private:
+    int32_t handle_{-1};
     uint32_t timestamp_{0};
     bool reset_timecode_{true};
     static inline ArtNetReader* s_this;
 };
 
-#endif  // ARM_ARTNETREADER_H_
+#endif // ARM_ARTNETREADER_H_

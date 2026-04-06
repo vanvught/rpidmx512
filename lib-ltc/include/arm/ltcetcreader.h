@@ -27,7 +27,6 @@
 
 #include "ltcetc.h"
 #include "midi.h"
-
 #include "ltcoutputs.h"
 #include "hal_millis.h"
 #include "hal_statusled.h"
@@ -75,4 +74,4 @@ class LtcEtcReader final : public LtcEtcHandler
     bool reset_timecode_{true};
 };
 
-#endif  // ARM_LTCETCREADER_H_
+#endif // ARM_LTCETCREADER_H_

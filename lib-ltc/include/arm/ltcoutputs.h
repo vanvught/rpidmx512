@@ -27,6 +27,12 @@
 #define ARM_LTCOUTPUTS_H_
 
 #include "ltc.h"
+#include "artnettimecode.h"
+
+namespace artnet
+{
+	void SendTimeCode(const struct artnet::TimeCode* timecode);
+}
 
 class LtcOutputs
 {
@@ -60,4 +66,4 @@ class LtcOutputs
     static inline LtcOutputs* s_this;
 };
 
-#endif  // ARM_LTCOUTPUTS_H_
+#endif // ARM_LTCOUTPUTS_H_

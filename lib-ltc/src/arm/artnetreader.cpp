@@ -34,6 +34,8 @@
 
 #include <cstdint>
 
+#include "artnet.h"
+#include "network_udp.h"
 #include "arm/artnetreader.h"
 #include "ltc.h"
 #include "hal.h"
@@ -76,6 +78,10 @@ void ArtNetReader::Start()
 void ArtNetReader::Stop()
 {
     DEBUG_ENTRY();
+	
+	assert(handle_ != -1);	
+	handle_ = network::udp::End(artnet::kUdpPort);
+	handle_ = -1;
 
 #if defined(H3)
     irq_timer_arm_physical_set(static_cast<thunk_irq_timer_arm_t>(nullptr));

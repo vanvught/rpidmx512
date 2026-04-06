@@ -45,7 +45,6 @@
 #include "midi.h"
 // Output
 #include "ltcsender.h"
-#include "artnetnode.h"
 #include "ltcetc.h"
 #include "net/rtpmidi.h"
 #include "arm/ltcmidisystemrealtime.h"
@@ -185,7 +184,7 @@ void MidiReader::Update()
 
     if (ltc::Destination::IsEnabled(ltc::Destination::Output::ARTNET))
     {
-        ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct artnet::TimeCode*>(&g_ltc_LtcTimeCode));
+        artnet::SendTimeCode(reinterpret_cast<const struct artnet::TimeCode*>(&g_ltc_LtcTimeCode));
     }
 
     if (ltc::Destination::IsEnabled(ltc::Destination::Output::ETC))

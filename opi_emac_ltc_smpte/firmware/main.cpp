@@ -46,7 +46,6 @@
 #include "ltcdisplaymax7219.h"
 #include "ltcetc.h"
 #include "json/ltcetcparams.h"
-#include "dmxnodenode.h"
 #include "midi.h"
 #include "net/rtpmidi.h"
 #include "tcnet.h"
@@ -157,7 +156,19 @@ extern "C"
 }
 #endif
 
-void static StaticCallbackFunction([[maybe_unused]] const struct artnet::TimeCode* timecode) {}
+namespace artnet
+{
+static int32_t handle;
+ArtTimeCode art_timecode;
+uint32_t ip_timecode;
+
+void SendTimeCode(const struct artnet::TimeCode* timecode)
+{
+    assert(timecode != nullptr);
+    memcpy(&art_timecode.frames, timecode, sizeof(struct artnet::TimeCode));
+    network::udp::Send(handle, reinterpret_cast<const uint8_t*>(&art_timecode), sizeof(struct artnet::ArtTimeCode), ip_timecode, artnet::kUdpPort);
+}
+} // namespace artnet
 
 using common::store::gps::Flags;
 
@@ -193,8 +204,8 @@ int main() // NOLINT
     const auto kIsAltFunction = common::IsFlagSet(kLtcFlags, common::store::ltc::Flags::Flag::kIsAltFuntion);
     const auto kSkipSeconds = ConfigStore::Instance().LtcGet(&common::store::Ltc::skip_seconds);
     const auto kShowSystime = common::IsFlagSet(kLtcFlags, common::store::ltc::Flags::Flag::kShowSystime);
-    const auto kTimecodeIp = ConfigStore::Instance().LtcGet(&common::store::Ltc::time_code_ip);
-    const auto kTimeSyncDisabled = common::IsFlagSet(kLtcFlags, common::store::ltc::Flags::Flag::kTimeSyncDisabled);
+    artnet::ip_timecode = ConfigStore::Instance().LtcGet(&common::store::Ltc::time_code_ip);
+    //    const auto kTimeSyncDisabled = common::IsFlagSet(kLtcFlags, common::store::ltc::Flags::Flag::kTimeSyncDisabled);
     const auto kVolume = ConfigStore::Instance().LtcGet(&common::store::Ltc::volume);
     const auto kOscEnabled = common::IsFlagSet(kLtcFlags, common::store::ltc::Flags::Flag::kOscEnabled);
     const auto kOscPort = ConfigStore::Instance().LtcGet(&common::store::Ltc::osc_port);
@@ -292,7 +303,7 @@ int main() // NOLINT
 
 #if defined(NODE_RDMNET_LLRP_ONLY)
     RDMNetDevice llrp_only_device;
-	llrp_only_device.Print();
+    llrp_only_device.Print();
 #endif
 
     /**
@@ -301,33 +312,18 @@ int main() // NOLINT
 
     const auto kRunArtNet = ((ltc_source == ltc::Source::ARTNET) || ltc::Destination::IsEnabled(ltc::Destination::Output::ARTNET));
 
-    DmxNodeNode dmxnode_node;
-
-    dmxnode_node.SetArtTimeCodeCallbackFunction(StaticCallbackFunction);
-
+	memcpy(artnet::art_timecode.id, artnet::kNodeId, sizeof(artnet::art_timecode.id));
+	artnet::art_timecode.op_code = common::ToValue(artnet::OpCodes::kOpTimecode);
+	artnet::art_timecode.prot_ver_hi = 0;
+	artnet::art_timecode.prot_ver_lo = artnet::kProtocolRevision;
+	artnet::art_timecode.filler1 = 0;
+	artnet::art_timecode.filler2 = 0;
+	
     if (kRunArtNet)
     {
-        dmxnode_node.SetShortName(0, "LTC SMPTE Node");
-        dmxnode_node.SetUniverse(0, 1);
-        dmxnode_node.SetDirection(0, dmxnode::PortDirection::kOutput);
-        dmxnode_node.SetShortName(0, "Not used");
-
-        if (ltc_source == ltc::Source::ARTNET)
-        {
-            dmxnode_node.SetArtTimeCodeCallbackFunction(ArtNetReader::StaticCallbackFunction);
-        }
-
-        dmxnode_node.SetTimeCodeIp(kTimecodeIp);
-
-        if (!kTimeSyncDisabled)
-        {
-            // TODO (a) Send ArtTimeSync
-        }
-#if defined(NODE_RDMNET_LLRP_ONLY)
-        dmxnode_node.SetRdmUID(rdm_net_llrp_only.GetRDMNetDevice()->GetUID(), true);
-#endif
-        dmxnode_node.Start();
-        dmxnode_node.Print();
+        assert(handle_ == -1);
+        artnet::handle = network::udp::Begin(artnet::kUdpPort, ArtNetReader::StaticCallbackFunction);
+        assert(handle_ != -1);
     }
 
     /**
@@ -620,11 +616,6 @@ int main() // NOLINT
                 break;
             default:
                 break;
-        }
-
-        if (kRunArtNet)
-        {
-            dmxnode_node.Run();
         }
 
         if (kRunTcNet)

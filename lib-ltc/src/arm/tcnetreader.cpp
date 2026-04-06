@@ -1,7 +1,7 @@
 /**
  * @file tcnetreader.cpp
  */
-/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,7 +42,6 @@
 // Input
 #include "tcnet.h"
 // Output
-#include "artnetnode.h"
 #include "ltcetc.h"
 #include "ltcsender.h"
 #include "tcnetdisplay.h"
@@ -253,7 +252,7 @@ void TCNetReader::Run()
 
         if (ltc::Destination::IsEnabled(ltc::Destination::Output::ARTNET))
         {
-            ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct artnet::TimeCode*>(&timecode_));
+            artnet::SendTimeCode(reinterpret_cast<const struct artnet::TimeCode*>(&timecode_));
         }
 
         if (ltc::Destination::IsEnabled(ltc::Destination::Output::ETC))
