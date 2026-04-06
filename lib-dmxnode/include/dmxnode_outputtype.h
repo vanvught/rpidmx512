@@ -138,10 +138,6 @@ using DmxPixelOutputType = PixelDmxMulti;
 #include "tlc59711dmx.h"
 #endif
 
-#if defined(OUTPUT_DMX_NULL)
-#include "dmxnodeoutputtypenull.h"
-#endif
-
 #if defined(DMXNODE_OUTPUT_PIXEL_DMX)
 #include "dmxnodewith4.h"
 using DmxNodeOutputType = DmxNodeWith4<CONFIG_DMXNODE_DMX_PORT_OFFSET>;
@@ -173,8 +169,6 @@ using DmxNodeOutputType = SparkFunDmx;
 using DmxNodeOutputType = PCA9685DmxSet;
 #elif defined(OUTPUT_DMX_TLC59711)
 using DmxNodeOutputType = TLC59711Dmx;
-#elif defined(OUTPUT_DMX_NULL)
-using DmxNodeOutputType = DmxNodeOutputTypeNull;
 #endif
 
 namespace dmxnode
@@ -187,8 +181,6 @@ inline constexpr auto kOutputType = OutputType::kDmx;
 inline constexpr auto kOutputType = OutputType::kPixel;
 #elif defined(DMXNODE_OUTPUT_PIXEL_DMX)
 inline constexpr auto kOutputType = OutputType::kPixelDmx;
-#elif defined(OUTPUT_DMX_NULL)
-inline constexpr auto kOutputType = OutputType::kNone;
 #else
 inline constexpr auto kOutputType = OutputType::kUndefined;
 #endif
