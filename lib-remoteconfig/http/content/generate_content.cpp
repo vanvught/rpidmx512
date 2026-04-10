@@ -59,8 +59,11 @@ static constexpr char kContentHeader[] =
     "};\n\n"
     "inline constexpr struct FilesContent kHttpContent[] = {\n";
 
-static constexpr char kHaveDmxBegin[] = "#if !defined (CONFIG_HTTP_HTML_NO_DMX) && (defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI))\n";
-static constexpr char kHaveDmxEnd[] = "#endif /* !defined (CONFIG_HTTP_HTML_NO_DMX) && (defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI)) */\n";
+static constexpr char kHaveDmxSendBegin[] = "#if !defined (CONFIG_HTTP_HTML_NO_DMX) && (defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI))\n";
+static constexpr char kHaveDmxSendEnd[] = "#endif /* !defined (CONFIG_HTTP_HTML_NO_DMX) && (defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI)) */\n";
+
+static constexpr char kHaveDmxMonitorBegin[] = "#if !defined (CONFIG_HTTP_HTML_NO_DMX) && defined(OUTPUT_DMX_MONITOR)\n";
+static constexpr char kHaveDmxMonitorEnd[] = "#endif /* !defined (CONFIG_HTTP_HTML_NO_DMX) && defined(OUTPUT_DMX_MONITOR) */\n";
 
 static constexpr char kHaveRdmBegin[] = "#if !defined (CONFIG_HTTP_HTML_NO_RDM) && defined (RDM_CONTROLLER)\n";
 static constexpr char kHaveRdmEnd[] = "#endif /* !defined (CONFIG_HTTP_HTML_NO_RDM) && defined (RDM_CONTROLLER) */\n";
@@ -85,9 +88,11 @@ struct FeatureGuard
 };
 
 static constexpr FeatureGuard kFeatureGuards[] = {
-	{"dmx", kHaveDmxBegin, kHaveDmxEnd},
-	{"rdm", kHaveRdmBegin, kHaveRdmEnd},
 	{"pixel", kHavePixelBegin, kHavePixelEnd},
+	{"dmxmonitor", kHaveDmxMonitorBegin, kHaveDmxMonitorEnd},
+	{"dmxsend", kHaveDmxSendBegin, kHaveDmxSendEnd},
+	{"dmx.", kHaveDmxSendBegin, kHaveDmxSendEnd},
+	{"rdm", kHaveRdmBegin, kHaveRdmEnd},
 	{"showfile", kHaveShowfileBegin, kHaveShowfileEnd},
 	{"time", kHaveTimeBegin, kHaveTimeEnd},
 	{"rtc", kHaveRtcBegin, kHaveRtcEnd}
