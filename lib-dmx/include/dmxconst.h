@@ -60,8 +60,8 @@ inline constexpr uint32_t kMabTimeMin = 12;                                  ///
 inline constexpr uint32_t kMabTimeMax = 1000000;                             ///< 1s
 inline constexpr uint32_t kRefreshRateDefault = 40;                          ///< 40 Hz
 inline constexpr uint32_t kPeriodDefault = (1000000U / kRefreshRateDefault); ///< 25000 us
-inline constexpr uint32_t kBreakToBreakTimeMin = 1204;                     ///< us
+inline constexpr uint32_t kBreakToBreakTimeMin = 1204;                       ///< us
 } // namespace transmit
 } // namespace dmx
 
-#endif  // DMXCONST_H_
+#endif // DMXCONST_H_

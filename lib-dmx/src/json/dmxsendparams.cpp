@@ -99,6 +99,7 @@ void DmxSendParams::Set()
 
     dmx.SetDmxBreakTime(store_dmx_send.break_time);
     dmx.SetDmxMabTime(store_dmx_send.mab_time);
+    dmx.SetDmxSlots(RoundupSlots(store_dmx_send.slots_count));
 
     uint32_t period = 0;
     if (store_dmx_send.refresh_rate != 0)
@@ -106,11 +107,6 @@ void DmxSendParams::Set()
         period = 1000000U / store_dmx_send.refresh_rate;
     }
     dmx.SetDmxPeriodTime(period);
-
-    if (store_dmx_send.slots_count != 0)
-    {
-        dmx.SetDmxSlots(RoundupSlots(store_dmx_send.slots_count));
-    }
 
 #ifndef NDEBUG
     Dump();
