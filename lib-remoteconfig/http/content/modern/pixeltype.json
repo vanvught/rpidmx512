@@ -1,0 +1,116 @@
+{
+  "type_info": [
+    {
+      "name": "WS2801",
+      "protocol_type": "spi",
+      "led_count": 3,
+      "default_hz": 4000000,
+      "max_hz": 25000000,
+      "led_map": "RGB"
+    },
+    {
+      "name": "WS2811",
+      "protocol_type": "rtz",
+      "led_count": 3,
+      "low_code": 192,
+      "high_code": 240,
+      "led_map": "RGB"
+    },
+    {
+      "name": "WS2812",
+      "protocol_type": "rtz",
+      "led_count": 3,
+      "low_code": 192,
+      "high_code": 240,
+      "led_map": "GRB"
+    },
+    {
+      "name": "WS2812B",
+      "protocol_type": "rtz",
+      "led_count": 3,
+      "low_code": 192,
+      "high_code": 248,
+      "led_map": "GRB"
+    },
+    {
+      "name": "WS2813",
+      "protocol_type": "rtz",
+      "led_count": 3,
+      "low_code": 192,
+      "high_code": 240,
+      "led_map": "GRB"
+    },
+    {
+      "name": "WS2815",
+      "protocol_type": "rtz",
+      "led_count": 3,
+      "low_code": 192,
+      "high_code": 240,
+      "led_map": "GRB"
+    },
+    {
+      "name": "SK6812",
+      "protocol_type": "rtz",
+      "led_count": 3,
+      "low_code": 192,
+      "high_code": 240,
+      "led_map": "GRB"
+    },
+    {
+      "name": "SK6812W",
+      "protocol_type": "rtz",
+      "led_count": 4,
+      "low_code": 192,
+      "high_code": 240,
+      "led_map": "RGBW"
+    },
+    {
+      "name": "UCS1903",
+      "protocol_type": "rtz",
+      "led_count": 3,
+      "low_code": 192,
+      "high_code": 252,
+      "led_map": "BRG"
+    },
+    {
+      "name": "UCS2903",
+      "protocol_type": "rtz",
+      "led_count": 3,
+      "low_code": 192,
+      "high_code": 252,
+      "led_map": "RGB"
+    },
+    {
+      "name": "CS8812",
+      "protocol_type": "rtz",
+      "led_count": 3,
+      "low_code": 192,
+      "high_code": 252,
+      "led_map": "BGR"
+    },
+    {
+      "name": "APA102",
+      "protocol_type": "spi",
+      "led_count": 3,
+      "default_hz": 4000000,
+      "max_hz": 25000000,
+      "led_map": "RGB"
+    },
+    {
+      "name": "SK9822",
+      "protocol_type": "spi",
+      "led_count": 3,
+      "default_hz": 4000000,
+      "max_hz": 25000000,
+      "led_map": "RGB"
+    },
+    {
+      "name": "P9813",
+      "protocol_type": "spi",
+      "led_count": 3,
+      "default_hz": 4000000,
+      "max_hz": 25000000,
+      "led_map": "RGB"
+    }
+  ]
+}

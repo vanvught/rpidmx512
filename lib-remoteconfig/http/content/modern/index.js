@@ -48,14 +48,34 @@ async function loadNetwork() {
 	const j = await getJSON('config/network');
 	if (!j) return;
 
-	for (const k in j) {
-		const e = document.getElementById(k);
+	const ids = [
+		"hostname",
+		"ip_address",
+		"net_mask",
+		"default_gateway",
+		"ntp_server",
+		"secondary_ip",
+		"use_static_ip"
+	];
+
+	for (const id of ids) {
+		const e = document.getElementById(id);
 		if (!e) continue;
 
+		if (id === "ntp_server") {
+			if (!(id in j)) {
+				e.value = "Not supported.";
+				e.disabled = true;
+				continue;
+			} else {
+				e.disabled = false;
+			}
+		}
+
 		if (e.type === "checkbox") {
-			e.checked = !!j[k];
+			e.checked = !!j[id];
 		} else {
-			e.value = j[k];
+			e.value = j[id] || "";
 		}
 	}
 }
@@ -79,7 +99,14 @@ async function saveNetwork() {
 		use_static_ip: document.getElementById("use_static_ip").checked ? 1 : 0
 	};
 
-	await postJSON("json/config/network", o);
+	const ntp = document.getElementById("ntp_server").value.trim();
+	if (ntp !== "") {
+		o.ntp_server = ntp;
+	}
+
+	const ok = await postJSON("json/config/network", o);
+	
+	if (ok) {loadNetwork()}
 }
 
 async function loadModules() {
@@ -198,4 +225,57 @@ async function version() {
 			v.build.time + "</li><li>" +
 			v.board + "</li>";
 	}
+}
+
+function post(u, j) {
+    return fetch('/json/' + u, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(j)
+    })
+}
+
+function delet(s) {
+    return fetch('/json/action', {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(s)
+    })
+}
+
+function reboot() {
+    post('action', { reboot: 1 })
+}
+
+function locate() {
+    var b = document.getElementById('locateButton');
+    if (b.classList.contains('inactive')) {
+        b.classList.remove('inactive')
+        b.classList.add('active')
+        b.innerHTML = 'Locate On'
+        post('action', { identify: 1 })
+    } else {
+        b.classList.remove('active')
+        b.classList.add('inactive')
+        b.innerHTML = 'Locate Off'
+        post('action', { identify: 0 })
+    }
+}
+
+function reset(sel) {
+    var d = {};
+    var out = {};
+    out[sel] = d;
+    var payload = JSON.stringify(out);
+    fetch('/json/' + sel, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: payload
+    }).then(response => { if (response.ok) { get_txt(sel); } });
 }
