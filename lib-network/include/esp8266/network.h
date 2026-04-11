@@ -27,7 +27,7 @@
 #define ESP8266_NETWORK_H_
 
 #if !defined(ESP8266)
-# error
+#error
 #endif
 
 #include <cstdint>
@@ -47,164 +47,118 @@ struct IpInfo {
     struct ip_addr gw;
 };
 
-typedef enum wifi_mode {
-	WIFI_OFF = 0,
-	WIFI_STA = 1,
-	WIFI_AP = 2,
-	WIFI_AP_STA = 3
-} _wifi_mode;
+typedef enum wifi_mode { WIFI_OFF = 0, WIFI_STA = 1, WIFI_AP = 2, WIFI_AP_STA = 3 } _wifi_mode;
 
 typedef enum wifi_station_status {
-	WIFI_STATION_IDLE = 0,        /**< ESP8266 station idle */
-	WIFI_STATION_CONNECTING,      /**< ESP8266 station is connecting to AP*/
-	WIFI_STATION_WRONG_PASSWORD,  /**< the password is wrong*/
-	WIFI_STATION_NO_AP_FOUND,     /**< ESP8266 station can not find the target AP*/
-	WIFI_STATION_CONNECT_FAIL,    /**< ESP8266 station fail to connect to AP*/
-	WIFI_STATION_GOT_IP           /**< ESP8266 station got IP address from AP*/
+    WIFI_STATION_IDLE = 0,       /**< ESP8266 station idle */
+    WIFI_STATION_CONNECTING,     /**< ESP8266 station is connecting to AP*/
+    WIFI_STATION_WRONG_PASSWORD, /**< the password is wrong*/
+    WIFI_STATION_NO_AP_FOUND,    /**< ESP8266 station can not find the target AP*/
+    WIFI_STATION_CONNECT_FAIL,   /**< ESP8266 station fail to connect to AP*/
+    WIFI_STATION_GOT_IP          /**< ESP8266 station got IP address from AP*/
 } _wifi_station_status;
 
-typedef enum wifiphy_phy_mode {
-	WIFI_PHY_MODE_11B = 1,
-	WIFI_PHY_MODE_11G = 2,
-	WIFI_PHY_MODE_11N = 3
-} _wifiphy_phy_mode;
+typedef enum wifiphy_phy_mode { WIFI_PHY_MODE_11B = 1, WIFI_PHY_MODE_11G = 2, WIFI_PHY_MODE_11N = 3 } _wifiphy_phy_mode;
 
-#define STATION_IF	0x00
-#define SOFTAP_IF	0x01
+#define STATION_IF 0x00
+#define SOFTAP_IF 0x01
 
-#define HOST_NAME_MAX			255
+#define HOST_NAME_MAX 255
 
 namespace net {
-typedef void (*UdpCallbackFunctionPtr)(const uint8_t *, uint32_t, uint32_t, uint16_t);
-}  // namespace net
+typedef void (*UdpCallbackFunctionPtr)(const uint8_t*, uint32_t, uint32_t, uint16_t);
+} // namespace net
 
 class Network {
-public:
-	Network();
-	~Network();
+   public:
+    Network();
+    ~Network();
 
-	void Init();
+    void Init();
 
-	int32_t Begin(uint16_t nPort, net::UdpCallbackFunctionPtr callback = nullptr) ;
-	int32_t End(uint16_t nPort) ;
+    int32_t Begin(uint16_t nPort, net::UdpCallbackFunctionPtr callback = nullptr);
+    int32_t End(uint16_t nPort);
 
-	void MacAddressCopyTo(uint8_t *pMacAddress);
+    void MacAddressCopyTo(uint8_t* pMacAddress);
 
-	void JoinGroup(int32_t nHandle, uint32_t nIp);
-	void LeaveGroup([[maybe_unused]] int32_t nHandle, [[maybe_unused]] uint32_t nIp)  {
-		// Not supported
-	}
+    void JoinGroup(int32_t nHandle, uint32_t nIp);
+    void LeaveGroup([[maybe_unused]] int32_t nHandle, [[maybe_unused]] uint32_t nIp) {
+        // Not supported
+    }
 
-	uint32_t RecvFrom(int32_t nHandle, const void **ppBuffer, uint32_t *pFromIp, uint16_t *pFromPort);
-	void SendTo(int32_t nHandle, const void *pBuffer, uint32_t nLength, uint32_t nToIp, uint16_t nRemotePort) ;
+    uint32_t RecvFrom(int32_t nHandle, const void** ppBuffer, uint32_t* pFromIp, uint16_t* pFromPort);
+    void SendTo(int32_t nHandle, const void* pBuffer, uint32_t nLength, uint32_t nToIp, uint16_t nRemotePort);
 
-	void Print() {
-	}
+    void Print() {}
 
-	_wifi_mode GetOpmode() const {
-		return m_Mode;
-	}
+    _wifi_mode GetOpmode() const { return m_Mode; }
 
-	bool IsApOpen() const {
-		return m_isApOpen;
-	}
+    bool IsApOpen() const { return m_isApOpen; }
 
-	const char *GetSsid() const {
-		return m_pSSID;
-	}
+    const char* GetSsid() const { return m_pSSID; }
 
-	uint32_t GetSecondaryIp() const {
-		return m_nLocalIp;
-	}
+    uint32_t GetSecondaryIp() const { return m_nLocalIp; }
 
-	void SetIp([[maybe_unused]] uint32_t nIp) {
-	}
+    void SetIp([[maybe_unused]] uint32_t nIp) {}
 
-	uint32_t GetIp() const {
-		return m_nLocalIp;
-	}
+    uint32_t GetIp() const { return m_nLocalIp; }
 
-	void SetNetmask([[maybe_unused]] uint32_t nNetmask) {
-	}
+    void SetNetmask([[maybe_unused]] uint32_t nNetmask) {}
 
-	uint32_t GetNetmask() const {
-		return m_nNetmask;
-	}
+    uint32_t GetNetmask() const { return m_nNetmask; }
 
-	const char *GetHostName() const {
-		return m_aHostName;
-	}
+    const char* GetHostName() const { return m_aHostName; }
 
-	void SetGatewayIp([[maybe_unused]] uint32_t nGatewayIp) {
-	}
+    void SetGatewayIp([[maybe_unused]] uint32_t nGatewayIp) {}
 
-	uint32_t GetGatewayIp() const {
-		return m_nGatewayIp;
-	}
+    uint32_t GetGatewayIp() const { return m_nGatewayIp; }
 
-	bool SetAutoIp() {
-		return false;
-	}
+    bool SetAutoIp() { return false; }
 
-	uint32_t GetBroadcastIp() const {
-		return m_nLocalIp | ~m_nNetmask;
-	}
+    uint32_t GetBroadcastIp() const { return m_nLocalIp | ~m_nNetmask; }
 
-	bool IsValidIp(uint32_t nIp) {
-		return (m_nLocalIp & m_nNetmask) == (nIp & m_nNetmask);
-	}
+    bool IsValidIp(uint32_t nIp) { return (m_nLocalIp & m_nNetmask) == (nIp & m_nNetmask); }
 
+    bool IsDhcpCapable() const { return m_IsDhcpCapable; }
 
-	bool IsDhcpCapable() const {
-		return m_IsDhcpCapable;
-	}
+    bool IsDhcpUsed() const { return m_IsDhcpUsed; }
 
-	bool IsDhcpUsed() const {
-		return m_IsDhcpUsed;
-	}
+    bool IsDhcpKnown() const { return true; }
 
-	 bool IsDhcpKnown() const {
-		return true;
-	}
+    bool EnableDhcp() { return false; }
 
-	bool EnableDhcp() {
-		return false;
-	}
+    void Run();
 
-	void Run();
+    static Network* Get() { return s_this; }
 
-	static Network *Get() {
-		return s_this;
-	}
+   private:
+    bool Start();
+    const char* GetSystemSdkVersion();
+    const char* GetFirmwareVersion();
+    void ApCreate(const char* pPassword);
+    void StationCreate(const char* pSsid, const char* pPassword);
+    void StationCreate(const char* pSsid, const char* pPassword, const struct IpInfo* pInfo);
+    _wifi_station_status StationGetConnectStatus();
+    const char* StationStatus(_wifi_station_status status);
 
-private:
-	bool Start();
-	const char *GetSystemSdkVersion();
-	const char *GetFirmwareVersion();
-	void ApCreate(const char *pPassword);
-	void StationCreate(const char *pSsid, const char *pPassword) ;
-	void StationCreate(const char *pSsid, const char *pPassword, const struct IpInfo *pInfo);
-	_wifi_station_status StationGetConnectStatus();
-	const char *StationStatus(_wifi_station_status status);
+    uint32_t RecvFrom(int32_t nHandle, void* pBuffer, uint32_t nLength, uint32_t* from_ip, uint16_t* from_port);
 
-	uint32_t RecvFrom(int32_t nHandle, void *pBuffer, uint32_t nLength, uint32_t *from_ip, uint16_t* from_port);
+   private:
+    bool m_IsInitDone{false};
+    bool m_IsDhcpCapable{true};
+    bool m_IsDhcpUsed{false};
+    uint32_t m_nLocalIp{0};
+    uint32_t m_nGatewayIp{0};
+    uint32_t m_nNetmask{0};
+    char m_aHostName[net::HOSTNAME_SIZE];
+    char m_aDomainName[net::DOMAINNAME_SIZE];
+    uint8_t m_aNetMacaddr[network::MAC_SIZE];
+    char m_aIfName[IFNAMSIZ];
+    _wifi_mode m_Mode{WIFI_OFF};
+    bool m_isApOpen{true};
+    char* m_pSSID{nullptr};
 
-private:
-	bool m_IsInitDone { false };
-	bool m_IsDhcpCapable { true };
-	bool m_IsDhcpUsed { false };
-	uint32_t m_nLocalIp { 0 };
-	uint32_t m_nGatewayIp { 0 };
-	uint32_t m_nNetmask { 0 };
-	char m_aHostName[net::HOSTNAME_SIZE];
-	char m_aDomainName[net::DOMAINNAME_SIZE];
-	uint8_t m_aNetMacaddr[network::MAC_SIZE];
-	char m_aIfName[IFNAMSIZ];
-	_wifi_mode m_Mode { WIFI_OFF };
-	bool m_isApOpen { true };
-	char *m_pSSID { nullptr };
-
-	static inline Network *s_this;
+    static inline Network* s_this;
 };
 
 #endif /* ESP8266_NETWORK_H_ */

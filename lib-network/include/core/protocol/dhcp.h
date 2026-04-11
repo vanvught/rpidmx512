@@ -30,25 +30,21 @@
 
 #include "core/protocol/ip4.h"
 
-namespace network::dhcp
-{
+namespace network::dhcp {
 inline constexpr uint32_t kOptSize = 312;
 inline constexpr uint32_t kMagicCookie = 0x63825363; ///< You should not modify it number.
 
-struct OpCode
-{
+struct OpCode {
     static constexpr uint8_t kBootrequest = 1;
     static constexpr uint8_t kBootreply = 2;
 };
 
-struct HardwareType
-{
+struct HardwareType {
     static constexpr uint8_t k10Mb = 1;
     static constexpr uint8_t k100Mb = 2;
 };
 
-struct Type
-{
+struct Type {
     static constexpr uint8_t kDiscover = 1;
     static constexpr uint8_t kOffer = 2;
     static constexpr uint8_t kRequest = 3;
@@ -59,8 +55,7 @@ struct Type
     static constexpr uint8_t kInform = 8;
 };
 
-struct Options
-{
+struct Options {
     // BootP options
     static constexpr uint8_t kPadOption = 0;
     static constexpr uint8_t kSubnetMask = 1; ///< RFC 2132 3.3
@@ -87,25 +82,24 @@ struct Options
     static constexpr uint8_t kClientIdentifier = 61;
 };
 
-enum class State : uint8_t
-{
-    kOff = 0,
-    kRequesting = 1,
-    kInit = 2,
-    kRebooting = 3,
-    kRebinding = 4,
-    kRenewing = 5,
-    kSelecting = 6,
-    kInforming = 7,
-    kChecking = 8,
-    kPermanent = 9,
-    kBound = 10,
-    kReleasing = 11,
-    kBackingOff = 12
+enum class State : uint8_t 
+{ 
+	kOff = 0, 
+	kRequesting = 1, 
+	kInit = 2, 
+	kRebooting = 3, 
+	kRebinding = 4, 
+	kRenewing = 5, 
+	kSelecting = 6, 
+	kInforming = 7, 
+	kChecking = 8, 
+	kPermanent = 9, 
+	kBound = 10, 
+	kReleasing = 11, 
+	kBackingOff = 12 
 };
 
-struct Message
-{
+struct Message {
     uint8_t op;
     uint8_t htype;
     uint8_t hlen;
@@ -124,4 +118,4 @@ struct Message
 } __attribute__((packed));
 } // namespace network::dhcp
 
-#endif /* CORE_PROTOCOL_DHCP_H_ */
+#endif // CORE_PROTOCOL_DHCP_H_

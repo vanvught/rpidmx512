@@ -28,8 +28,7 @@
 
 #include "phy.h"
 
-namespace net::link
-{
+namespace net::link {
 net::phy::Link StatusRead();
 void HandleChange(net::phy::Link state);
 // Platform defined implementations

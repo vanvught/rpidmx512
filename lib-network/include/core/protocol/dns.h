@@ -30,12 +30,10 @@
 
 #include "ip4/ip4_address.h"
 
-namespace network::dns
-{
+namespace network::dns {
 inline constexpr uint32_t kSizeofDnsHdr = 12;
 
-enum class Flag1 : uint8_t
-{
+enum class Flag1 : uint8_t {
     kResponse = 0x80,       ///< query (0), or a response (1).
     kOpcodeStatus = 0x10,   ///< a server status request (STATUS)
     kOpcodeIquery = 0x08,   ///< an inverse query (IQUERY)
@@ -45,14 +43,12 @@ enum class Flag1 : uint8_t
     kRd = 0x01              ///< If RD is set, it directs the name server to pursue the query recursively.
 };
 
-static constexpr uint8_t operator|(Flag1 a, Flag1 b)
-{
+static constexpr uint8_t operator|(Flag1 a, Flag1 b) {
     return static_cast<uint8_t>((static_cast<uint8_t>(a) | static_cast<uint8_t>(b)));
 }
 
 ///< NS field TYPE used for "Resource Records"
-enum class RRType : uint16_t
-{
+enum class RRType : uint16_t {
     kA = 1,    ///< a host address
     kPtr = 12, ///< a domain name pointer
     kTxt = 16, ///< text strings
@@ -61,15 +57,13 @@ enum class RRType : uint16_t
 };
 
 ///< DNS field CLASS used for "Resource Records"
-struct RRClass
-{
+struct RRClass {
     static constexpr uint16_t kInternet = 1;   ///< Internet
     static constexpr uint16_t kAny = 255;      ///< Any class
     static constexpr uint16_t kFlush = 0x8000; ///< Flush bit
 };
 
-struct Header
-{
+struct Header {
     uint16_t xid;
     uint8_t flag1;
     uint8_t flag2;
@@ -79,8 +73,7 @@ struct Header
     uint16_t additional_count;
 } __attribute__((__packed__));
 
-inline uint8_t DnsHeaderGetOpcode(const Header* const kHeader)
-{
+inline uint8_t DnsHeaderGetOpcode(const Header* const kHeader) {
     return ((kHeader->flag1) >> 3) & 0xF;
 }
 
@@ -89,4 +82,4 @@ inline constexpr uint32_t kMulticastMessageSize = 512; ///< The 1987 DNS specifi
 inline constexpr uint32_t kMulticastAddress = network::ConvertToUint(224, 0, 0, 251);
 } // namespace network::dns
 
-#endif /* CORE_PROTOCOL_DNS_H_ */
+#endif // CORE_PROTOCOL_DNS_H_

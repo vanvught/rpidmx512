@@ -28,37 +28,19 @@
 
 #include <cstdint>
 
-namespace net::phy
-{
-enum class Link
-{
-    kStateDown,
-    kStateUp
-};
+namespace net::phy {
+enum class Link { kStateDown, kStateUp };
+enum class Duplex { kDuplexHalf, kDuplexFull };
+enum class Speed { kSpeed10, kSpeed100, kSpeed1000 };
 
-enum class Duplex
-{
-    kDuplexHalf,
-    kDuplexFull
-};
-
-enum class Speed
-{
-    kSpeed10,
-    kSpeed100,
-    kSpeed1000
-};
-
-struct Status
-{
+struct Status {
     Link link;
     Duplex duplex;
     Speed speed;
     bool autonegotiation;
 };
 
-struct Identifier
-{
+struct Identifier {
     uint32_t oui;            ///< 24-bit Organizationally Unique Identifier.
     uint16_t vendor_model;   ///< 6-bit Manufacturer’s model number.
     uint16_t model_revision; ///< 4-bit Manufacturer’s revision number.
@@ -133,4 +115,4 @@ const char* ToString(Speed speed);
 const char* ToStringAutonegotiation(bool autonegotiation);
 } // namespace net::phy
 
-#endif  // EMAC_PHY_H_
+#endif // EMAC_PHY_H_

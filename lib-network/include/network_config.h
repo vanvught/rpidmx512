@@ -30,45 +30,37 @@
 
 #include "core/netif.h"
 
-namespace network
-{
+namespace network {
 void SetPrimaryIp(uint32_t ip);
 void SetSecondaryIp();
 void SetNetmask(uint32_t netmask);
 void SetGatewayIp(uint32_t gateway_ip);
 
-inline uint32_t GetPrimaryIp()
-{
+inline uint32_t GetPrimaryIp() {
     return netif::IpAddr();
 }
 
-inline uint32_t GetSecondaryIp()
-{
+inline uint32_t GetSecondaryIp() {
     return netif::SecondaryIpAddr();
 }
 
-inline uint32_t GetNetmask()
-{
+inline uint32_t GetNetmask() {
     return netif::Netmask();
 }
 
-inline uint32_t GetGatewayIp()
-{
+inline uint32_t GetGatewayIp() {
     return netif::Gw();
 }
 
-inline uint32_t GetBroadcastIp()
-{
+inline uint32_t GetBroadcastIp() {
     return netif::BroadcastIpAddr();
 }
 
-inline uint32_t GetNetmaskCIDR()
-{
+inline uint32_t GetNetmaskCIDR() {
     return static_cast<uint32_t>(__builtin_popcount(GetNetmask()));
 }
 
-inline bool IsValidIp(uint32_t ip)
-{
+inline bool IsValidIp(uint32_t ip) {
     return (netif::IpAddr() & netif::Netmask()) == (ip & netif::Netmask());
 }
 

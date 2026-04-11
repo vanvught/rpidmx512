@@ -37,8 +37,7 @@
 #define CONFIG_NTP_CLIENT_POLL_POWER_MAX 12
 #endif
 
-namespace network::apps::ntpclient
-{
+namespace network::apps::ntpclient {
 inline constexpr uint32_t kTimeoutSeconds = 3;
 inline constexpr uint32_t kTimeoutMillis = kTimeoutSeconds * 1000;
 inline constexpr uint8_t kPollPowerMin = CONFIG_NTP_CLIENT_POLL_POWER_MIN;
@@ -58,8 +57,7 @@ uint32_t GetServerIp();
 ntp::Status GetStatus();
 
 // PTP (GD32 only)
-namespace ptp
-{
+namespace ptp {
 void Init();
 void Start();
 void Stop(bool do_disable = false);
@@ -67,7 +65,6 @@ void SetServerIp(uint32_t server_ip);
 uint32_t GetServerIp();
 ntp::Status GetStatus();
 } // namespace ptp
-
 } // namespace network::apps::ntpclient
 
 #endif // APPS_NTPCLIENT_H_

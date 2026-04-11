@@ -28,8 +28,7 @@
 
 #include <cstdint>
 
-namespace ntp
-{
+namespace ntp {
 inline constexpr uint32_t kJan1970 = 0x83aa7e80; // 2208988800 1970 - 1900 in seconds
 inline constexpr uint32_t kLocalTimeYearOffset = 1900;
 inline constexpr uint32_t kMicrosecondsInSecond = 1000000;
@@ -39,8 +38,7 @@ inline constexpr uint8_t kModeServer = (4U << 0);
 inline constexpr uint8_t kStratum = 2;
 inline constexpr uint8_t kMinpoll = 4;
 
-struct Packet
-{
+struct Packet {
     uint8_t li_vn_mode;
     uint8_t stratum;
     uint8_t poll;
@@ -58,56 +56,44 @@ struct Packet
     uint32_t transmit_timestamp_f;
 } __attribute__((packed));
 
-struct TimeStamp
-{
+struct TimeStamp {
     uint32_t seconds;
     uint32_t fraction;
 };
 
-struct Time
-{
+struct Time {
     int32_t tv_sec;
     int32_t tv_usec;
 };
 
-enum class Status
+enum class Status { kStopped, kIdle, kWaiting, kLocked, kFailed, kDisabled };
+
+inline constexpr char kStatus[][9] = 
 {
-    kStopped,
-    kIdle,
-    kWaiting,
-    kLocked,
-    kFailed,
-    kDisabled
+	"Stopped", 
+	"Idle", 
+	"Waiting", 
+	"Locked", 
+	"Failed", 
+	"Disabled"
 };
 
-inline constexpr char kStatus[][9] = {"Stopped", "Idle", "Waiting", "Locked", "Failed", "Disabled"};
+enum class Modes { kBasic, kInterleaved, kUnknown };
 
-enum class Modes
-{
-    kBasic,
-    kInterleaved,
-    kUnknown
-};
-
-inline void NormalizeTime(ntp::Time* r)
-{
+inline void NormalizeTime(ntp::Time* r) {
     r->tv_sec += r->tv_usec / 1000000;
     r->tv_usec -= r->tv_usec / 1000000 * 1000000;
 
-    if (r->tv_sec > 0 && r->tv_usec < 0)
-    {
+    if (r->tv_sec > 0 && r->tv_usec < 0) {
         r->tv_sec -= 1;
         r->tv_usec += 1000000;
-    }
-    else if (r->tv_sec < 0 && r->tv_usec > 0)
-    {
+    } else if (r->tv_sec < 0 && r->tv_usec > 0) {
         r->tv_sec += 1;
         r->tv_usec -= 1000000;
     }
 }
 
-inline void SubTime(struct ntp::Time* r, const struct ntp::Time* x, const struct ntp::Time* y)
-{
+inline void SubTime(struct ntp::Time* r, const struct ntp::Time* x, const struct ntp::Time* y) {
     r->tv_sec = x->tv_sec - y->tv_sec;
     r->tv_usec = x->tv_usec - y->tv_usec;
 

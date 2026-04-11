@@ -2,7 +2,7 @@
  * @file emac.h
  *
  */
-/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,8 +30,7 @@
 
 #include "emac/phy.h"
 
-namespace net::emac
-{
+namespace net::emac {
 /** \defgroup platform Platform implementation
   @{
 */
@@ -58,8 +57,7 @@ void AdjustLink(net::phy::Status phy_status);
  */
 void Start(uint8_t mac_address[], net::phy::Link& link);
 /** @} */
-namespace display
-{
+namespace display {
 void Config();
 void Start();
 void Status(bool); // TODO (a) subject for removal
@@ -67,4 +65,4 @@ void Shutdown();
 } // namespace display
 } // namespace net::emac
 
-#endif  // EMAC_EMAC_H_
+#endif // EMAC_EMAC_H_

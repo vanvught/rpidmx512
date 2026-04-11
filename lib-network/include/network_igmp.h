@@ -28,8 +28,7 @@
 
 #include <cstdint>
 
-namespace network::igmp
-{
+namespace network::igmp {
 void JoinGroup(int32_t handle, uint32_t ip);
 void LeaveGroup(int32_t handle, uint32_t ip);
 } // namespace network::igmp

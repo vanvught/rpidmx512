@@ -2,7 +2,7 @@
  * @file tftpdaemon.h
  *
  */
-/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,17 +29,11 @@
 #include <cstdint>
 #include <cstddef>
 
-namespace tftp
-{
-enum class Mode
-{
-    kBinary,
-    kAscii
-};
+namespace tftp {
+enum class Mode { kBinary, kAscii };
 } // namespace tftp
 
-class TFTPDaemon
-{
+class TFTPDaemon {
    public:
     TFTPDaemon();
     virtual ~TFTPDaemon();
@@ -64,15 +58,7 @@ class TFTPDaemon
     void DoWriteAck();
 
    private:
-    enum class State
-    {
-        kInit,
-        kWaitingRq,
-        kRrqSendPacket,
-        kRrqRecvAck,
-        kWrqSendAck,
-        kWrqRecvPacket
-    };
+    enum class State { kInit, kWaitingRq, kRrqSendPacket, kRrqRecvAck, kWrqSendAck, kWrqRecvPacket };
     State state_{State::kInit};
     int32_t index_{-1};
     uint8_t* buffer_{nullptr};
@@ -87,11 +73,8 @@ class TFTPDaemon
     static TFTPDaemon* Get() { return s_this; }
 
    private:
-    void static StaticCallbackFunction(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port)
-    {
-        s_this->Input(buffer, size, from_ip, from_port);
-    }
+    void static StaticCallbackFunction(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port) { s_this->Input(buffer, size, from_ip, from_port); }
     static inline TFTPDaemon* s_this;
 };
 
-#endif  // APPS_TFTPDAEMON_H_
+#endif // APPS_TFTPDAEMON_H_

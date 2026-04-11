@@ -28,8 +28,7 @@
 
 #include <cstdint>
 
-namespace net::phy::rtl8201f
-{
+namespace net::phy::rtl8201f {
 void SetRxtiming(uint32_t rx_timing);
 void SetTxtiming(uint32_t tx_timing);
 void GetTimings(uint32_t& rx_timing, uint32_t& tx_timing);

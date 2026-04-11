@@ -35,21 +35,18 @@
 #define PACKED __attribute__((packed))
 #endif
 
-namespace network::arp
-{
+namespace network::arp {
 inline constexpr uint16_t kHwtypeEthernet = 1;
 inline constexpr uint16_t kPrtypeIPv4 = network::ethernet::Type::kIPv4;
 inline constexpr auto kHardwareSize = network::ethernet::kAddressLength;
 inline constexpr auto kProtocolSize = network::ip4::kAddressLength;
 
-struct OpCode
-{
+struct OpCode {
     static constexpr uint16_t kRqstRqst = 1;
     static constexpr uint16_t kRqstReply = 2;
 };
 
-struct ArpPacket
-{
+struct ArpPacket {
     uint16_t hardware_type;                                //  2
     uint16_t protocol_type;                                //  4
     uint8_t hardware_size;                                 //  5
@@ -62,8 +59,7 @@ struct ArpPacket
     uint8_t padding[18];                                   // 46  // +14 = 60
 } PACKED;
 
-struct Header
-{
+struct Header {
     struct network::ethernet::Header ether;
     struct ArpPacket arp;
 } PACKED;

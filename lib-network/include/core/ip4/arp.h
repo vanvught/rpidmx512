@@ -29,13 +29,8 @@
 #include "ip4/ip4_address.h"
 #include "core/protocol/arp.h"
 
-namespace network::arp
-{
-enum class Flags
-{
-    kFlagInsert,
-    kFlagUpdate
-};
+namespace network::arp {
+enum class Flags { kFlagInsert, kFlagUpdate };
 
 void Init();
 void Input(const struct network::arp::Header*);
@@ -45,7 +40,6 @@ void SendTimestamp(void*, uint32_t, uint32_t);
 #endif
 void AcdProbe(ip4_addr_t ipaddr);
 void AcdSendAnnouncement(ip4_addr_t ipaddr);
-
 } // namespace network::arp
 
 #endif // CORE_IP4_ARP_H_

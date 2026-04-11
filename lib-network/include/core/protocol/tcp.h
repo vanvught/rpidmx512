@@ -35,14 +35,12 @@
 #define PACKED __attribute__((packed))
 #endif
 
-namespace network::tcp
-{
+namespace network::tcp {
 
 inline constexpr uint16_t kHeaderSize = 20;
 inline constexpr uint32_t kDataSize = network::ethernet::kMtuSize - ip4::kHeaderSize - kHeaderSize;
 
-struct Packet
-{
+struct Packet {
     uint16_t srcpt;    //  2
     uint16_t dstpt;    //  4
     uint32_t seqnum;   //  8
@@ -55,8 +53,7 @@ struct Packet
     uint8_t data[kDataSize];
 } PACKED;
 
-struct Header
-{
+struct Header {
     struct network::ethernet::Header ether;
     struct network::ip4::Ip4Header ip4;
     struct Packet tcp;

@@ -28,10 +28,9 @@
 
 #include "core/protocol/dhcp.h"
 
-namespace network::display
-{
+namespace network::display {
 void Hostname();
 void DhcpStatus(network::dhcp::State);
 } // namespace network::display
 
-#endif  // NETWORK_DISPLAY_H_
+#endif // NETWORK_DISPLAY_H_

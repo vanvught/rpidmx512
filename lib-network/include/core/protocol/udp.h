@@ -35,14 +35,12 @@
 #define PACKED __attribute__((packed))
 #endif
 
-namespace network::udp
-{
+namespace network::udp {
 
 inline constexpr uint32_t kHeaderSize = 8;
 inline constexpr uint32_t kDataSize = network::ethernet::kMtuSize - ip4::kHeaderSize - kHeaderSize;
 
-struct Packet
-{
+struct Packet {
     uint16_t source_port;      // 2
     uint16_t destination_port; // 4
     uint16_t len;              // 6
@@ -50,8 +48,7 @@ struct Packet
     uint8_t data[kDataSize];
 } PACKED;
 
-struct Header
-{
+struct Header {
     struct network::ethernet::Header ether;
     struct network::ip4::Ip4Header ip4;
     struct Packet udp;

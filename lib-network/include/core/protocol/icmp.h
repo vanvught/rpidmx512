@@ -35,10 +35,8 @@
 #define PACKED __attribute__((packed))
 #endif
 
-namespace network::icmp
-{
-struct Type
-{
+namespace network::icmp {
+struct Type {
     static constexpr uint8_t kEchoReply = 0;
     static constexpr uint8_t kEcho = 8;
 };
@@ -48,8 +46,7 @@ inline constexpr uint8_t kCodeEcho = 0;
 inline constexpr uint32_t kHeaderSize = 8;
 inline constexpr uint32_t kPayloadSize = (network::ethernet::kMtuSize - kHeaderSize - sizeof(struct network::ip4::Ip4Header));
 
-struct Packet
-{
+struct Packet {
     uint8_t type;         // 1
     uint8_t code;         // 2
     uint16_t checksum;    // 4
@@ -57,8 +54,7 @@ struct Packet
     uint8_t payload[kPayloadSize];
 } PACKED;
 
-struct Header
-{
+struct Header {
     struct network::ethernet::Header ether;
     struct network::ip4::Ip4Header ip4;
     struct Packet icmp;
@@ -67,4 +63,4 @@ struct Header
 inline constexpr uint32_t kIPv4IcmpHeadersSize = (sizeof(struct Header) - sizeof(struct network::ethernet::Header));
 } // namespace network::icmp
 
-#endif /* CORE_PROTOCOL_ICMP_H_ */
+#endif // CORE_PROTOCOL_ICMP_H_

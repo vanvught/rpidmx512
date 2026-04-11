@@ -28,26 +28,12 @@
 
 #include <cstdint>
 
-namespace network::apps::mdns
-{
+namespace network::apps::mdns {
 static constexpr uint32_t kMdnsResponseTtl = 3600; ///< (in seconds)
 
-enum class Services
-{
-    kConfig,
-    kTftp,
-    kHttp,
-    kRdmnetLlrp,
-    kNtp,
-    kMidi,
-    kOsc,
-    kDdp,
-    kPp,
-    kLastNotUsed
-};
+enum class Services { kConfig, kTftp, kHttp, kRdmnetLlrp, kNtp, kMidi, kOsc, kDdp, kPp, kLastNotUsed };
 
-struct ServiceRecord
-{
+struct ServiceRecord {
     char* name;
     char* text_content;
     uint16_t text_content_length;

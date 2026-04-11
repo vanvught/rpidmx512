@@ -28,8 +28,7 @@
 
 #include <cstdint>
 
-namespace emac::multicast
-{
+namespace emac::multicast {
 void EnableHashFilter();
 void DisableHashFilter();
 void SetHash(const uint8_t*);

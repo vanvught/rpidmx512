@@ -34,18 +34,15 @@
 
 #include "ip4/ip4_address.h"
 
-namespace net
-{
+namespace net {
 inline constexpr size_t kIpBufferSize = 16; // For "255.255.255.255" + null
 
-[[nodiscard]] inline const char* FormatIp(uint32_t ip, char (&buf)[kIpBufferSize])
-{
+[[nodiscard]] inline const char* FormatIp(uint32_t ip, char (&buf)[kIpBufferSize]) {
     snprintf(buf, sizeof(buf), IPSTR, IP2STR(ip));
     return buf;
 }
 
-inline uint32_t ParseIpString(const char* val, uint32_t len)
-{
+inline uint32_t ParseIpString(const char* val, uint32_t len) {
     char tmp[kIpBufferSize]{};
     if (len >= sizeof(tmp)) len = sizeof(tmp) - 1;
     memcpy(tmp, val, len);
@@ -53,8 +50,7 @@ inline uint32_t ParseIpString(const char* val, uint32_t len)
 
     struct in_addr addr;
 
-    if (inet_aton(tmp, &addr) != 0)
-    {
+    if (inet_aton(tmp, &addr) != 0) {
         return addr.s_addr;
     }
 

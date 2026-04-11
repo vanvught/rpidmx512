@@ -2,7 +2,7 @@
  * @file network_store.h
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,8 +28,7 @@
 
 #include <cstdint>
 
-namespace network::store
-{
+namespace network::store {
 void SaveIp(uint32_t ip);
 void SaveNetmask(uint32_t net_mask);
 void SaveGatewayIp(uint32_t gateway_ip);
@@ -37,4 +36,4 @@ void SaveHostname(const char* hostname, uint32_t length);
 void SaveDhcp(bool is_dhcp_used);
 } // namespace network::store
 
-#endif  // NETWORK_STORE_H_
+#endif // NETWORK_STORE_H_

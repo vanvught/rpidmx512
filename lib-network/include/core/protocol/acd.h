@@ -28,8 +28,7 @@
 
 #include <cstdint>
 
-namespace network::acd
-{
+namespace network::acd {
 //  RFC 5227 and RFC 3927 Constants
 inline constexpr uint32_t kProbeWait = 1;          ///< second  (initial random delay)
 inline constexpr uint32_t kProbeMin = 1;           ///< second  (minimum delay till repeated probe)
@@ -42,24 +41,13 @@ inline constexpr uint32_t kMaxConflicts = 10;      ///<         (max conflicts b
 inline constexpr uint32_t kRateLimitInterval = 60; ///< seconds (delay between successive attempts)
 inline constexpr uint32_t kDefendInterval = 10;    ///< seconds (minimum interval between defensive ARPs)
 
-enum class State : uint8_t
-{
-    kAcdStateOff,
-    kAcdStateProbeWait,
-    kAcdStateProbing,
-    kAcdStateAnnounceWait,
-    kAcdStateAnnouncing,
-    kAcdStateOngoing,
-    kAcdStatePassiveOngoing,
-    kAcdStateRateLimit
-};
+enum class State : uint8_t { kAcdStateOff, kAcdStateProbeWait, kAcdStateProbing, kAcdStateAnnounceWait, kAcdStateAnnouncing, kAcdStateOngoing, kAcdStatePassiveOngoing, kAcdStateRateLimit };
 
-enum class Callback
-{
+enum class Callback {
     kAcdIpOk,          ///< IP address is good, no conflicts found in checking state
     kAcdRestartClient, ///< Conflict found -> the client should try again
     kAcdDecline        ///< Decline the received IP address (rate limiting)
 };
 } // namespace network::acd
 
-#endif /* CORE_PROTOCOL_ACD_H_ */
+#endif // CORE_PROTOCOL_ACD_H_

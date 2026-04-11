@@ -28,19 +28,13 @@
 
 #include "ip4/ip4_address.h"
 
-namespace network::autoip
-{
+namespace network::autoip {
 // RFC 3927 Section 2.1
 inline constexpr auto kNet = network::ConvertToUint(169, 254, 0, 0);
 inline constexpr auto kRangeStart = network::ConvertToUint(169, 254, 1, 0);
 inline constexpr auto kRangeEnd = network::ConvertToUint(169, 254, 254, 255);
 
-enum class State
-{
-    kOff,
-    kChecking,
-    kBound
-};
+enum class State { kOff, kChecking, kBound };
 } // namespace network::autoip
 
 #endif // CORE_PROTOCOL_AUTOIP_H_

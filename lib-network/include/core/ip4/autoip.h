@@ -38,10 +38,8 @@
 #include "core/ip4/acd.h"
 #include "core/protocol/autoip.h"
 
-namespace network::autoip
-{
-struct Autoip
-{
+namespace network::autoip {
+struct Autoip {
     ip4_addr_t llipaddr;
     State state;
     uint8_t tried_llipaddr;

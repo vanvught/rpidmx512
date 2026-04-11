@@ -28,10 +28,8 @@
 
 #include <cstdint>
 
-namespace network::iana
-{
-struct Ports
-{
+namespace network::iana {
+struct Ports {
     static constexpr uint16_t kPortDhcpServer = 67;
     static constexpr uint16_t kPortDhcpClient = 68;
     static constexpr uint16_t kPortTftp = 69;
@@ -41,4 +39,4 @@ struct Ports
 };
 } // namespace network::iana
 
-#endif /* CORE_PROTOCOL_IANA_H_ */
+#endif // CORE_PROTOCOL_IANA_H_

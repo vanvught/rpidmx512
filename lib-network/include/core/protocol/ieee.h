@@ -28,14 +28,12 @@
 
 #include <cstdint>
 
-namespace network::ethernet
-{
-struct Type
-{
+namespace network::ethernet {
+struct Type {
     static constexpr uint16_t kIPv4 = 0x0800;
     static constexpr uint16_t kArp = 0x0806;
     static constexpr uint16_t kPtp = 0x88F7; // IEEE1588v2 (PTPv2) over Ethernet
 };
 } // namespace network::ethernet
 
-#endif /* CORE_PROTOCOL_IEEE_H_ */
+#endif // CORE_PROTOCOL_IEEE_H_

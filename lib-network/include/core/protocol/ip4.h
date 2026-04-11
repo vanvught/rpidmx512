@@ -33,27 +33,23 @@
 #define PACKED __attribute__((packed))
 #endif
 
-namespace network::ip4
-{
+namespace network::ip4 {
 inline constexpr uint32_t kAddressLength = 4;
 
-struct Flags
-{
+struct Flags {
     static constexpr uint16_t kFlagLf = 0x0000;
     static constexpr uint16_t kFlagMf = 0x2000;
     static constexpr uint16_t kFlagDf = 0x4000;
 };
 
-struct Proto
-{
+struct Proto {
     static constexpr uint8_t kIcmp = 1;
     static constexpr uint8_t kIgmp = 2;
     static constexpr uint8_t kTcp = 6;
     static constexpr uint8_t kUdp = 17;
 };
 
-struct Ip4Header
-{
+struct Ip4Header {
     uint8_t ver_ihl;             //  1
     uint8_t tos;                 //  2
     uint16_t len;                //  4
@@ -68,8 +64,7 @@ struct Ip4Header
 
 inline constexpr uint32_t kHeaderSize = sizeof(struct Ip4Header);
 
-struct Header
-{
+struct Header {
     struct ethernet::Header ether;
     struct Ip4Header ip4;
 } PACKED;

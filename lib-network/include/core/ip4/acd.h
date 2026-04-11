@@ -38,12 +38,10 @@
 // https://datatracker.ietf.org/doc/html/rfc5227.html
 // IPv4 Address Conflict Detection
 
-namespace network::acd
-{
+namespace network::acd {
 typedef void (*conflict_callback_t)(acd::Callback callback);
 
-struct Acd
-{
+struct Acd {
     ip4_addr_t ipaddr;
     State state;
     uint8_t sent_num;

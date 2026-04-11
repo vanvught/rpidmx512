@@ -2,7 +2,7 @@
  * @file ip4_address.h
  *
  */
-/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,10 +28,8 @@
 
 #include <cstdint>
 
-namespace network
-{
-struct ip_addr
-{
+namespace network {
+struct ip_addr {
     uint32_t addr;
 };
 
@@ -43,8 +41,7 @@ typedef struct ip_addr ip4_addr_t;
 #define MAC2STR(mac) static_cast<int>(mac[0]), static_cast<int>(mac[1]), static_cast<int>(mac[2]), static_cast<int>(mac[3]), static_cast<int>(mac[4]), static_cast<int>(mac[5])
 #define MACSTR "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x"
 
-inline constexpr uint32_t ConvertToUint(uint8_t a, uint8_t b, uint8_t c, uint8_t d)
-{
+inline constexpr uint32_t ConvertToUint(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
     return static_cast<uint32_t>(a) | static_cast<uint32_t>(b) << 8 | static_cast<uint32_t>(c) << 16 | static_cast<uint32_t>(d) << 24;
 }
 
@@ -53,10 +50,8 @@ inline constexpr uint32_t kIpaddrLoopback = ConvertToUint(127, 0, 0, 1);
 inline constexpr uint32_t kIpaddrAny = ConvertToUint(0, 0, 0, 0);
 inline constexpr uint32_t kIpaddrBroadcast = ConvertToUint(255, 255, 255, 255);
 
-inline bool IsNetmaskValid(uint32_t netmask)
-{
-    if (netmask == 0)
-    {
+inline bool IsNetmaskValid(uint32_t netmask) {
+    if (netmask == 0) {
         return false;
     }
     netmask = __builtin_bswap32(netmask);
@@ -64,12 +59,10 @@ inline bool IsNetmaskValid(uint32_t netmask)
 }
 
 // The private address ranges are defined in RFC1918.
-inline bool IsPrivateIp(uint32_t ip)
-{
+inline bool IsPrivateIp(uint32_t ip) {
     const uint8_t kN = (ip >> 8) & 0xFF;
 
-    switch (ip & 0xFF)
-    {
+    switch (ip & 0xFF) {
         case 10:
             return true;
             break;
@@ -84,20 +77,16 @@ inline bool IsPrivateIp(uint32_t ip)
     return false;
 }
 
-inline constexpr bool IsLinklocalIp(uint32_t ip)
-{
+inline constexpr bool IsLinklocalIp(uint32_t ip) {
     return (ip & 0xFFFF) == 0xA9FE;
 }
 
-inline constexpr bool IsMulticastIp(uint32_t ip)
-{
+inline constexpr bool IsMulticastIp(uint32_t ip) {
     return (ip & 0xF0) == 0xE0;
 }
 
-inline uint32_t CidrToNetmask(uint8_t cidr)
-{
-    if (cidr != 0)
-    {
+inline uint32_t CidrToNetmask(uint8_t cidr) {
+    if (cidr != 0) {
         const auto kNetmask = __builtin_bswap32(static_cast<uint32_t>(~0x0) << (32 - cidr));
         return kNetmask;
     }

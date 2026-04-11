@@ -39,8 +39,7 @@
 #include "network_tcp.h" // IWYU pragma: keep
 #endif
 
-class Network
-{
+class Network {
    public:
     Network(int argc, char** argv);
     ~Network();
@@ -53,8 +52,7 @@ class Network
     inline static Network* s_this;
 };
 
-namespace network
-{
+namespace network {
 void Run();
 }
 

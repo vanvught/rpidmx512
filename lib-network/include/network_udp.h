@@ -28,8 +28,7 @@
 
 #include <cstdint>
 
-namespace network::udp
-{
+namespace network::udp {
 typedef void (*UdpCallbackFunctionPtr)(const uint8_t*, uint32_t, uint32_t, uint16_t);
 
 int32_t Begin(uint16_t, UdpCallbackFunctionPtr callback);
@@ -37,6 +36,6 @@ int32_t End(uint16_t);
 uint32_t Recv(const int32_t, const uint8_t**, uint32_t*, uint16_t*);
 void Send(int32_t, const uint8_t*, uint32_t, uint32_t, uint16_t);
 void SendWithTimestamp(int32_t, const uint8_t*, uint32_t, uint32_t, uint16_t);
-} // namespace net::udp
+} // namespace network::udp
 
 #endif // NETWORK_UDP_H_

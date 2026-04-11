@@ -28,9 +28,8 @@
 
 #include <cstdint>
 
-namespace network::tcp
-{
-using ConnHandle = uint32_t;	
+namespace network::tcp {
+using ConnHandle = uint32_t;
 inline constexpr ConnHandle kInvalidConnHandle = UINT32_MAX;
 
 using CallbackListen = void (*)(ConnHandle, const uint8_t*, uint32_t);
@@ -39,8 +38,7 @@ using CallbackListen = void (*)(ConnHandle, const uint8_t*, uint32_t);
 bool Listen(uint16_t local_port, CallbackListen cb_listen);
 
 // Client
-enum class Event : uint8_t
-{
+enum class Event : uint8_t {
     kConnected, // client: connect handshake completed
     kClosed,    // connection closed
     kReset,     // connection reset/aborted

@@ -2,7 +2,7 @@
  * @file dhcp.h
  *
  */
-/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2018-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,8 +32,7 @@
 #include "ip4/ip4_address.h"
 #include "core/protocol/dhcp.h"
 
-namespace network::dhcp
-{
+namespace network::dhcp {
 static constexpr uint32_t kCoarseTimerSecs = 60;
 // period (in milliseconds) of the application calling dhcp_coarse_tmr()
 static constexpr uint32_t kCoarseTimerMsecs = (kCoarseTimerSecs * 1000UL);
@@ -44,8 +43,7 @@ static constexpr uint8_t kFlagSubnetMaskGiven = 0x01;
 
 using dhcp_timeout_t = uint16_t;
 
-struct Dhcp
-{
+struct Dhcp {
     int32_t handle;
     uint32_t xid;
     State state;
@@ -62,8 +60,7 @@ struct Dhcp
 
     ip4_addr_t server_ip_addr;
 
-    struct Offered
-    {
+    struct Offered {
         ip4_addr_t offered_ip_addr;
         ip4_addr_t offered_sn_mask;
         ip4_addr_t offered_gw_addr;

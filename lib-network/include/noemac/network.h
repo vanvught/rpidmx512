@@ -31,15 +31,13 @@
 #endif
 
 #include <cassert>
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
 void NetworkInit();
 
-class Network
-{
+class Network {
    public:
-    Network()
-    {
+    Network() {
         DEBUG_ENTRY();
         assert(s_this == nullptr);
         s_this = this;
@@ -56,4 +54,4 @@ class Network
     static inline Network* s_this;
 };
 
-#endif  // NOEMAC_NETWORK_H_
+#endif // NOEMAC_NETWORK_H_

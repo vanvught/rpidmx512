@@ -35,31 +35,25 @@
 #define PACKED __attribute__((packed))
 #endif
 
-namespace network::igmp
-{
-struct Type
-{
+namespace network::igmp {
+struct Type {
     static constexpr uint8_t kQuery = 0x11;
     static constexpr uint8_t kReport = 0x16;
     static constexpr uint8_t kLeave = 0x17;
 };
 
-struct Packet
-{
+struct Packet {
     uint8_t type;
     uint8_t max_resp_time;
     uint16_t checksum;
     uint8_t group_address[network::ip4::kAddressLength];
 } PACKED;
 
-struct Header
-{
+struct Header {
     struct network::ethernet::Header ether;
     struct network::ip4::Ip4Header ip4;
-    union
-    {
-        struct
-        {
+    union {
+        struct {
             uint32_t ip4_options;
             struct Packet igmp;
         } report;
@@ -71,4 +65,4 @@ inline constexpr uint32_t kIPv4IgmpReportHeadersSize = (sizeof(struct Header) - 
 inline constexpr uint32_t kReportPacketSize = sizeof(struct Header);
 } // namespace network::igmp
 
-#endif /* CORE_PROTOCOL_IGMP_H_ */
+#endif // CORE_PROTOCOL_IGMP_H_

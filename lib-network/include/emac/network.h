@@ -47,30 +47,24 @@
 
 uint32_t emac_eth_recv(uint8_t**);
 
-namespace network
-{
-namespace global
-{
+namespace network {
+namespace global {
 extern net::phy::Link link_state;
 }
 void Init();
 
 #if defined(CONFIG_NET_ENABLE_PTP)
-namespace ptp
-{
+namespace ptp {
 void Run();
 }
 #endif
 
-inline void Run()
-{
+inline void Run() {
     uint8_t* ethernet_buffer;
     auto length = emac_eth_recv(&ethernet_buffer);
 
-    if (__builtin_expect((length > 0), 0))
-    {
-        do
-        {
+    if (__builtin_expect((length > 0), 0)) {
+        do {
             network::iface::EthernetInput(ethernet_buffer, length);
             length = emac_eth_recv(&ethernet_buffer);
         } while (length > 0);
@@ -85,8 +79,7 @@ inline void Run()
     net::link::PinPoll();
 #elif defined(ENET_LINK_CHECK_REG_POLL)
     const net::phy::Link link_state = net::link::StatusRead();
-    if (link_state != global::link_state)
-    {
+    if (link_state != global::link_state) {
         global::link_state = link_state;
         net::link::HandleChange(link_state);
     }
