@@ -2,7 +2,7 @@
  * @file uart0.cpp
  *
  */
-/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2018-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,22 +30,17 @@
 #include "h3.h"
 #include "h3_uart.h"
 
-namespace uart0
-{
-void __attribute__((cold)) Init()
-{
+namespace uart0 {
+void __attribute__((cold)) Init() {
     H3UartBegin(H3_UART0_BASE, 115200, H3_UART_BITS_8, H3_UART_PARITY_NONE, H3_UART_STOP_1BIT);
 
-    while ((H3_UART0->USR & UART_USR_BUSY) == UART_USR_BUSY)
-    {
+    while ((H3_UART0->USR & UART_USR_BUSY) == UART_USR_BUSY) {
         (void)H3_UART0->O00.RBR;
     }
 }
 
-void PutChar(int c)
-{
-    if (c == '\n')
-    {
+void PutChar(int c) {
+    if (c == '\n') {
         while (!(H3_UART0->LSR & UART_LSR_THRE));
         H3_UART0->O00.THR = static_cast<uint32_t>('\r');
     }
@@ -55,24 +50,40 @@ void PutChar(int c)
     H3_UART0->O00.THR = static_cast<uint32_t>(c);
 }
 
-void Puts(const char* s)
-{
-    while (*s != '\0')
-    {
-        if (*s == '\n')
-        {
-            PutChar('\r');
-        }
+void Puts(const char* s) {
+    while (*s != '\0') {
         PutChar(*s++);
     }
 
     PutChar('\n');
 }
 
-int Getc()
-{
-    if (__builtin_expect(((H3_UART0->LSR & UART_LSR_DR) != UART_LSR_DR), 1))
-    {
+static char s_buffer[128];
+
+int Printf(const char* fmt, ...) {
+    va_list arp;
+
+    va_start(arp, fmt);
+
+    int i = vsnprintf(s_buffer, sizeof(s_buffer), fmt, arp);
+    s_buffer[sizeof(s_buffer) - 1] = '\0';
+
+    va_end(arp);
+
+    char* s = s_buffer;
+
+    while (*s != '\0') {
+        if (*s == '\n') {
+            PutChar('\r');
+        }
+        PutChar(*s++);
+    }
+
+    return i;
+}
+
+int GetChar() {
+    if (__builtin_expect(((H3_UART0->LSR & UART_LSR_DR) != UART_LSR_DR), 1)) {
         return EOF;
     }
 
@@ -83,32 +94,5 @@ int Getc()
 #endif
 
     return kC;
-}
-
-static char s_buffer[128];
-
-int Printf(const char* fmt, ...)
-{
-    va_list arp;
-
-    va_start(arp, fmt);
-
-    int i = vsnprintf(s_buffer, sizeof(s_buffer), fmt, arp);
-	s_buffer[sizeof(s_buffer) - 1] = '\0';
-	
-    va_end(arp);
-
-    char* s = s_buffer;
-
-    while (*s != '\0')
-    {
-        if (*s == '\n')
-        {
-            PutChar('\r');
-        }
-        PutChar(*s++);
-    }
-
-    return i;
 }
 } // namespace uart0
