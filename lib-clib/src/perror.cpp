@@ -26,8 +26,7 @@
 #include <stddef.h>
 #include <errno.h>
 
-namespace console
-{
+namespace console {
 void Error(const char*);
 int PutChar(int);
 int Puts(const char*);
@@ -80,38 +79,30 @@ const char* const kSysErrlist[] = {"OK",
                                    "Directory not empty",
                                    "Bad message"};
 
-extern "C"
-{
-    char* strerror(int errnum) // NOLINT
-    {
-        if (errnum <= ELAST)
-        {
-            return const_cast<char*>(kSysErrlist[errnum]);
-        }
-
-        return const_cast<char*>(kSysErrlist[EBADMSG]);
+extern "C" {
+char* strerror(int errnum) { // NOLINT
+    if (errnum <= ELAST) {
+        return const_cast<char*>(kSysErrlist[errnum]);
     }
 
-    void perror(const char* s) // NOLINT
-    {
-        const char* ptr = nullptr;
+    return const_cast<char*>(kSysErrlist[EBADMSG]);
+}
 
-        if (errno >= 0 && errno < ELAST)
-        {
-            ptr = kSysErrlist[errno];
-        }
-        else
-        {
-            ptr = kSysErrlist[EBADMSG];
-        }
+void perror(const char* s) { // NOLINT
+    const char* ptr = nullptr;
 
-        if (s && *s)
-        {
-            console::Error(s);
-            console::Write(": ", 2);
-        }
-
-        console::Error(ptr);
-        console::PutChar('\n');
+    if (errno >= 0 && errno < ELAST) {
+        ptr = kSysErrlist[errno];
+    } else {
+        ptr = kSysErrlist[EBADMSG];
     }
+
+    if (s && *s) {
+        console::Error(s);
+        console::Write(": ", 2);
+    }
+
+    console::Error(ptr);
+    console::PutChar('\n');
+}
 }

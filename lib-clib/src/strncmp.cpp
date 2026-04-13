@@ -36,14 +36,12 @@
 
 #include <stddef.h>
 
-extern "C" int strncmp(const char* s1, const char* s2, size_t n) // NOLINT
-{
+extern "C" int strncmp(const char* s1, const char* s2, size_t n) { // NOLINT
     if (n == 0) return (0);
-    do
-    {
+    do {
         if (*s1 != *s2++) return (*(const unsigned char*)s1 - *(const unsigned char*)(s2 - 1));
         if (*s1++ == '\0') break;
     } while (--n != 0);
-	
+
     return 0;
 }

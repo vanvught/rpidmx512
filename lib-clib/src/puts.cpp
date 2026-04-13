@@ -23,13 +23,11 @@
  * THE SOFTWARE.
  */
 
-namespace console
-{
+namespace console {
 void Puts(const char*);
 } // namespace console
 
-extern "C" int puts(const char* s) // NOLINT
-{
+extern "C" int puts(const char* s) { // NOLINT
     console::Puts(s);
     return 1;
 }

@@ -36,13 +36,11 @@
 
 #include <stddef.h>
 
-extern "C" char* strchr(const char* p, int ch) // NOLINT
-{
+extern "C" char* strchr(const char* p, int ch) { // NOLINT
     auto c = static_cast<char>(ch);
 
-    for (;; ++p)
-    {
-        if (*p == c) return const_cast<char *>(p);
+    for (;; ++p) {
+        if (*p == c) return const_cast<char*>(p);
         if (*p == '\0') return nullptr;
     }
     /* NOTREACHED */

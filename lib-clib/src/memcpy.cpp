@@ -5,14 +5,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
-extern "C" void* memcpy(void* dst, const void* src, size_t n) // NOLINT
-{
+extern "C" void* memcpy(void* dst, const void* src, size_t n) { // NOLINT
     unsigned char* d = (unsigned char*)dst;
     const unsigned char* s = (const unsigned char*)src;
 
     // Align to word boundary
-    while (n && (((uintptr_t)d | (uintptr_t)s) & (sizeof(uint32_t) - 1)))
-    {
+    while (n && (((uintptr_t)d | (uintptr_t)s) & (sizeof(uint32_t) - 1))) {
         *d++ = *s++;
         --n;
     }
@@ -20,8 +18,7 @@ extern "C" void* memcpy(void* dst, const void* src, size_t n) // NOLINT
     uint32_t* dw = (uint32_t*)d;
     const uint32_t* sw = (const uint32_t*)s;
 
-    while (n >= 16)
-    { // unroll
+    while (n >= 16) { // unroll
         dw[0] = sw[0];
         dw[1] = sw[1];
         dw[2] = sw[2];
@@ -31,8 +28,7 @@ extern "C" void* memcpy(void* dst, const void* src, size_t n) // NOLINT
         n -= 16;
     }
 
-    while (n >= 4)
-    {
+    while (n >= 4) {
         *dw++ = *sw++;
         n -= 4;
     }

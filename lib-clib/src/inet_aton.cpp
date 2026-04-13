@@ -28,60 +28,59 @@
 #include <netinet/in.h>
 
 typedef union pcast32 {
-	uint32_t u32;
-	uint8_t u8[4];
+    uint32_t u32;
+    uint8_t u8[4];
 } _pcast32;
 
-extern "C" int inet_aton(const char *cp, struct in_addr *ip_address) {
-	const char *b = cp;
-	int i, j, k;
-	_pcast32 cast32;
+extern "C" int inet_aton(const char* cp, struct in_addr* ip_address) {
+    const char* b = cp;
+    int i, j, k;
+    _pcast32 cast32;
 
-	for (i = 0 ; i < 3 ; i++) {
-			j = 0;
-			k = 0;
+    for (i = 0; i < 3; i++) {
+        j = 0;
+        k = 0;
 
-			while ((*b != '.') && (*b != (char) 0) && (*b != '\n')) {
-				if (j == 3) {
-					return 0;
-				}
+        while ((*b != '.') && (*b != (char)0) && (*b != '\n')) {
+            if (j == 3) {
+                return 0;
+            }
 
-				if (0 == isdigit((int )*b)) {
-					return 0;
-				}
+            if (0 == isdigit((int)*b)) {
+                return 0;
+            }
 
-				j++;
-				k = k * 10 + (int) *b - (int) '0';
-				b++;
-			}
+            j++;
+            k = k * 10 + (int)*b - (int)'0';
+            b++;
+        }
 
-			cast32.u8[i] = (uint8_t)k;
-			b++;
+        cast32.u8[i] = (uint8_t)k;
+        b++;
+    }
 
-		}
+    j = 0;
+    k = 0;
 
-		j= 0;
-		k= 0;
+    while ((*b != ' ') && (*b != (char)0) && (*b != '\n')) {
+        if (j == 3) {
+            return 0;
+        }
 
-		while ((*b != ' ') && (*b != (char) 0) && (*b != '\n')) {
-			if (j == 3) {
-				return 0;
-			}
+        if (0 == isdigit((int)*b)) {
+            return 0;
+        }
 
-			if (0 == isdigit((int )*b)) {
-				return 0;
-			}
+        j++;
+        k = k * 10 + (int)*b - (int)'0';
+        b++;
+    }
 
-			j++;
-			k = k * 10 + (int) *b - (int) '0';
-			b++;
-		}
+    cast32.u8[i] = (uint8_t)k;
 
-		cast32.u8[i] = (uint8_t)k;
+    if (ip_address != 0) {
+        ip_address->s_addr = cast32.u32;
+    }
 
-		if (ip_address != 0) {
-			ip_address->s_addr = cast32.u32;
-		}
-
-		return 1;
+    return 1;
 }

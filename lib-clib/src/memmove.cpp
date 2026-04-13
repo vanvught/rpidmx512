@@ -4,24 +4,18 @@
 
 #include <stddef.h>
 
-extern "C" void* memmove(void* dst, const void* src, size_t n) // NOLINT
-{
+extern "C" void* memmove(void* dst, const void* src, size_t n) { // NOLINT
     char* dp = (char*)dst;
     const char* sp = (const char*)src;
 
-    if (dp < sp)
-    {
-        while (n--)
-        {
+    if (dp < sp) {
+        while (n--) {
             *dp++ = *sp++;
         }
-    }
-    else
-    {
+    } else {
         sp += n;
         dp += n;
-        while (n--)
-        {
+        while (n--) {
             *--dp = *--sp;
         }
     }

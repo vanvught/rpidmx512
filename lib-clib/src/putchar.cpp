@@ -23,13 +23,11 @@
  * THE SOFTWARE.
  */
 
-namespace console
-{
+namespace console {
 void PutChar(int);
 }
 
-extern "C" int putchar(int c) // NOLINT
-{
+extern "C" int putchar(int c) { // NOLINT
     console::PutChar(c);
     return 1;
 }

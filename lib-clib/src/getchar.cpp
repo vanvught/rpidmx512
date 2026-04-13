@@ -23,12 +23,10 @@
  * THE SOFTWARE.
  */
 
-namespace console
-{
+namespace console {
 int GetChar();
 }
 
-extern "C" int getchar() // NOLINT
-{
+extern "C" int getchar() { // NOLINT
     return console::GetChar();
 }

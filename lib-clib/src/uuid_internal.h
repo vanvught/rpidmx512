@@ -2,7 +2,7 @@
  * @file uuid_internal.h
  *
  */
-/* Copyright (C) 2016-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2016-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,12 +28,12 @@
 
 #include <stdint.h>
 
-struct uuid {
-	uint32_t time_low;
-	uint16_t time_mid;
-	uint16_t time_hi_and_version;
-	uint16_t clock_seq;
-	uint8_t node[6];
+struct uuid { // NOLINT
+    uint32_t time_low;
+    uint16_t time_mid;
+    uint16_t time_hi_and_version;
+    uint16_t clock_seq;
+    uint8_t node[6];
 };
 
-#endif /* UUID_INTERNAL_H_ */
+#endif // UUID_INTERNAL_H_

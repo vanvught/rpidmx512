@@ -33,12 +33,10 @@
 
 #include <cstddef>
 
-extern "C" size_t strnlen(const char* s, size_t maxlen) // NOLINT
-{
+extern "C" size_t strnlen(const char* s, size_t maxlen) { // NOLINT
     size_t len;
 
-    for (len = 0; len < maxlen; len++, s++)
-    {
+    for (len = 0; len < maxlen; len++, s++) {
         if (!*s) break;
     }
     return (len);

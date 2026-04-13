@@ -35,8 +35,7 @@
 
 #include <stddef.h>
 
-extern "C" char* strstr(const char* string, const char* substring) // NOLINT
-{
+extern "C" char* strstr(const char* string, const char* substring) { // NOLINT
     /* First scan quickly through the two strings looking for a
      * single-character match.  When it's found, then compare the
      * rest of the substring.
@@ -44,29 +43,23 @@ extern "C" char* strstr(const char* string, const char* substring) // NOLINT
 
     const char* b = substring;
 
-    if (*b == 0)
-    {
+    if (*b == 0) {
         return (char*)string;
     }
 
-    for (; *string != 0; string += 1)
-    {
-        if (*string != *b)
-        {
+    for (; *string != 0; string += 1) {
+        if (*string != *b) {
             continue;
         }
 
         const char* a = string;
 
-        while (1)
-        {
-            if (*b == 0)
-            {
+        while (1) {
+            if (*b == 0) {
                 return (char*)string;
             }
 
-            if (*a++ != *b++)
-            {
+            if (*a++ != *b++) {
                 break;
             }
         }

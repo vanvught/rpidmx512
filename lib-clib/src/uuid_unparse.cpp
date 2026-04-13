@@ -1,5 +1,5 @@
 /**
- * @file uuid_unparse.c
+ * @file uuid_unparse.cpp
  *
  */
 /**
@@ -36,7 +36,7 @@
  * DAMAGE.
  * %End-Header%
  */
-/* Copyright (C) 2016-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -66,68 +66,63 @@
 
 #include "uuid_internal.h"
 
-#ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
-#endif
-
-static const char *fmt_lower ALIGNED = "%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x";
-static const char *fmt_upper ALIGNED = "%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X";
+static constexpr char kFmtLower[]  = "%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x";
+static constexpr char kFmtUpper[]  = "%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X";
 
 #ifdef UUID_UNPARSE_DEFAULT_UPPER
-#define FMT_DEFAULT fmt_upper
+#define FMT_DEFAULT kFmtUpper
 #else
-#define FMT_DEFAULT fmt_lower
+#define FMT_DEFAULT kFmtLower
 #endif
 
-static void uuid_unpack(const uuid_t in, struct uuid *uu) {
-	const uint8_t *ptr = in;
-	uint32_t tmp;
+static void UuidUnpack(const uuid_t in, struct uuid* uu) {
+    const uint8_t* ptr = in;
+    uint32_t tmp;
 
-	assert(uu != NULL);
+    assert(uu != nullptr);
 
-	tmp = *ptr++;
-	tmp = (tmp << 8) | *ptr++;
-	tmp = (tmp << 8) | *ptr++;
-	tmp = (tmp << 8) | *ptr++;
-	uu->time_low = tmp;
+    tmp = *ptr++;
+    tmp = (tmp << 8) | *ptr++;
+    tmp = (tmp << 8) | *ptr++;
+    tmp = (tmp << 8) | *ptr++;
+    uu->time_low = tmp;
 
-	tmp = *ptr++;
-	tmp = (tmp << 8) | *ptr++;
-	uu->time_mid = (uint16_t)(tmp);
+    tmp = *ptr++;
+    tmp = (tmp << 8) | *ptr++;
+    uu->time_mid = static_cast<uint16_t>(tmp);
 
-	tmp = *ptr++;
-	tmp = (tmp << 8) | *ptr++;
-	uu->time_hi_and_version = (uint16_t)(tmp);
+    tmp = *ptr++;
+    tmp = (tmp << 8) | *ptr++;
+    uu->time_hi_and_version = static_cast<uint16_t>(tmp);
 
-	tmp = *ptr++;
-	tmp = (tmp << 8) | *ptr++;
-	uu->clock_seq = (uint16_t)(tmp);
+    tmp = *ptr++;
+    tmp = (tmp << 8) | *ptr++;
+    uu->clock_seq = static_cast<uint16_t>(tmp);
 
-	memcpy(uu->node, ptr, 6);
+    memcpy(uu->node, ptr, 6);
 }
 
-static void uuid_unparse_x(const uuid_t uu, char *out, const char *fmt) {
-	struct uuid uuid;
+static void UuidUnparseX(const uuid_t uu, char* out, const char* fmt) {
+    struct uuid uuid;
 
-	assert(out != NULL);
-	assert(fmt != NULL);
+    assert(out != nullptr);
+    assert(fmt != nullptr);
 
-	uuid_unpack(uu, &uuid);
+    UuidUnpack(uu, &uuid);
 
-	sprintf(out, fmt, uuid.time_low, uuid.time_mid, uuid.time_hi_and_version,
-			uuid.clock_seq >> 8, uuid.clock_seq & 0xFF, uuid.node[0],
-			uuid.node[1], uuid.node[2], uuid.node[3], uuid.node[4],
-			uuid.node[5]);
+    sprintf(out, fmt, uuid.time_low, uuid.time_mid, uuid.time_hi_and_version, uuid.clock_seq >> 8, uuid.clock_seq & 0xFF, uuid.node[0], uuid.node[1], uuid.node[2], uuid.node[3], uuid.node[4], uuid.node[5]);
 }
 
-void uuid_unparse_lower(const uuid_t uu, char *out) {
-	uuid_unparse_x(uu, out, fmt_lower);
+extern "C" {
+void uuid_unparse_lower(const uuid_t uu, char* out) {
+    UuidUnparseX(uu, out, kFmtLower);
 }
 
-void uuid_unparse_upper(const uuid_t uu, char *out) {
-	uuid_unparse_x(uu, out, fmt_upper);
+void uuid_unparse_upper(const uuid_t uu, char* out) {
+    UuidUnparseX(uu, out, kFmtUpper);
 }
 
-void uuid_unparse(const uuid_t uu, char *out) {
-	uuid_unparse_x(uu, out, FMT_DEFAULT);
+void uuid_unparse(const uuid_t uu, char* out) {
+    UuidUnparseX(uu, out, FMT_DEFAULT);
+}
 }

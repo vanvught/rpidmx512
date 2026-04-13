@@ -9,7 +9,7 @@
  * Reference https://www.doc.ic.ac.uk/~eedwards/compsys/float/nan.html
  * and http://steve.hollasch.net/cgindex/coding/ieeefloat.html
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,8 +32,7 @@
 
 #include <stdint.h>
 
-typedef union
-{
+typedef union {
     float number;
     int32_t bits;
 } float2bits;
@@ -51,23 +50,17 @@ typedef union
  * If x is 0, the result is -infinity
  * If x is negative a NaN (not a number) is returned.
  */
-extern "C" float log2f(float x) // NOLINT
-{
+extern "C" float log2f(float x) { // NOLINT
     float2bits m;
 
     m.number = x;
 
-    if (x == 0)
-    {
+    if (x == 0) {
         m.bits = (int32_t)0xFF800000; // -inf
         return m.number;
-    }
-    else if (x == 1)
-    {
+    } else if (x == 1) {
         return (float)0;
-    }
-    else if (x < 0)
-    {
+    } else if (x < 0) {
         m.bits = (int32_t)0x7F800001; // nan
         return m.number;
     }

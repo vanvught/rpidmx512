@@ -25,12 +25,10 @@
 
 #include <stddef.h>
 
-extern "C" size_t strlen(const char* s) // NOLINT
-{
+extern "C" size_t strlen(const char* s) { // NOLINT
     const char* p = s;
 
-    while (*s != (char)0)
-    {
+    while (*s != (char)0) {
         ++s;
     }
 

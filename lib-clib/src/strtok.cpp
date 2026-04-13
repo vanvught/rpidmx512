@@ -55,8 +55,7 @@
 #include <stddef.h>
 #include <string.h>
 
-extern "C" char* strtok(char* s, const char* delim) // NOLINT
-{
+extern "C" char* strtok(char* s, const char* delim) { // NOLINT
     char* spanp;
     int c, sc;
     char* tok;
@@ -69,13 +68,11 @@ extern "C" char* strtok(char* s, const char* delim) // NOLINT
      */
 cont:
     c = *s++;
-    for (spanp = (char*)delim; (sc = *spanp++) != 0;)
-    {
+    for (spanp = (char*)delim; (sc = *spanp++) != 0;) {
         if (c == sc) goto cont;
     }
 
-    if (c == 0)
-    { /* no non-delimiter characters */
+    if (c == 0) { /* no non-delimiter characters */
         last = nullptr;
         return nullptr;
     }
@@ -85,20 +82,14 @@ cont:
      * Scan token (scan for delimiters: s += strcspn(s, delim), sort of).
      * Note that delim must have one NUL; we stop if we see that, too.
      */
-    for (;;)
-    {
+    for (;;) {
         c = *s++;
         spanp = (char*)delim;
-        do
-        {
-            if ((sc = *spanp++) == c)
-            {
-                if (c == 0)
-                {
+        do {
+            if ((sc = *spanp++) == c) {
+                if (c == 0) {
                     s = nullptr;
-                }
-                else
-                {
+                } else {
                     s[-1] = 0;
                 }
                 last = s;

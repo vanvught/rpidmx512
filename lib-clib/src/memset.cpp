@@ -7,25 +7,21 @@
 #include <stddef.h>
 #include <stdint.h>
 
-extern "C" void* memset(void* dst, int val, size_t count) // NOLINT
-{
+extern "C" void* memset(void* dst, int val, size_t count) { // NOLINT
     uint8_t* ptr = reinterpret_cast<uint8_t*>(dst);
     uint64_t* ptr64;
     uint64_t fill = static_cast<unsigned char>(val);
 
     /* Simplify code below by making sure we write at least one byte. */
-    if (count == 0U)
-    {
+    if (count == 0U) {
         return dst;
     }
 
     /* Handle the first part, until the pointer becomes 64-bit aligned. */
-    while (((uintptr_t)ptr & 7U) != 0U)
-    {
+    while (((uintptr_t)ptr & 7U) != 0U) {
         *ptr = (uint8_t)val;
         ptr++;
-        if (--count == 0U)
-        {
+        if (--count == 0U) {
             return dst;
         }
     }
@@ -37,16 +33,14 @@ extern "C" void* memset(void* dst, int val, size_t count) // NOLINT
 
     /* Use 64-bit writes for as long as possible. */
     ptr64 = reinterpret_cast<uint64_t*>(ptr);
-    for (; count >= 8U; count -= 8)
-    {
+    for (; count >= 8U; count -= 8) {
         *ptr64 = fill;
         ptr64++;
     }
 
     /* Handle the remaining part byte-per-byte. */
     ptr = reinterpret_cast<uint8_t*>(ptr64);
-    while (count-- > 0U)
-    {
+    while (count-- > 0U) {
         *ptr = (uint8_t)val;
         ptr++;
     }

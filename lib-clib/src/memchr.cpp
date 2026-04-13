@@ -6,12 +6,10 @@
 
 #include <stddef.h>
 
-extern "C" void* memchr(const void* src, int c, size_t len) // NOLINT
-{
+extern "C" void* memchr(const void* src, int c, size_t len) { // NOLINT
     auto* s = reinterpret_cast<const unsigned char*>(src);
 
-    while (len--)
-    {
+    while (len--) {
         if (*s == (unsigned char)c) return (void*)s;
         s++;
     }

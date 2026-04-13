@@ -1,5 +1,5 @@
 /**
- * @file uuid_parse.c
+ * @file uuid_parse.cpp
  *
  */
 /**
@@ -66,106 +66,105 @@
 
 #include "uuid_internal.h"
 
-static uint32_t hex_uint32(const char *s) {
-	uint32_t ret = 0;
-	uint8_t nibble;
+static uint32_t HexUint32(const char* s) {
+    uint32_t ret = 0;
+    uint8_t nibble;
 
-	while (*s != '\0') {
-		char d = *s;
+    while (*s != '\0') {
+        char d = *s;
 
-		if (isxdigit((int) d) == 0) {
-			break;
-		}
+        if (isxdigit(static_cast<int>(d)) == 0) {
+            break;
+        }
 
-		nibble = d > '9' ? (uint8_t)((uint8_t)( d | 0x20) - 'a' + 10) : (uint8_t) (d - '0');
-		ret = (ret << 4) | nibble;
-		s++;
-	}
+        nibble = d > '9' ? static_cast<uint8_t>(static_cast<uint8_t>(d | 0x20) - 'a' + 10) : static_cast<uint8_t>(d - '0');
+        ret = (ret << 4) | nibble;
+        s++;
+    }
 
-	return ret;
+    return ret;
 }
 
-static void uuid_pack(const struct uuid *uu, uuid_t ptr) {
-	uint32_t tmp;
-	unsigned char *out = ptr;
+static void UuidPack(const struct uuid* uu, uuid_t ptr) {
+    uint32_t tmp;
+    unsigned char* out = ptr;
 
-	assert(uu != NULL);
+    assert(uu != NULL);
 
-	tmp = uu->time_low;
-	out[3] = (unsigned char) tmp;
-	tmp >>= 8;
-	out[2] = (unsigned char) tmp;
-	tmp >>= 8;
-	out[1] = (unsigned char) tmp;
-	tmp >>= 8;
-	out[0] = (unsigned char) tmp;
+    tmp = uu->time_low;
+    out[3] = static_cast<unsigned char>(tmp);
+    tmp >>= 8;
+    out[2] = static_cast<unsigned char>(tmp);
+    tmp >>= 8;
+    out[1] = static_cast<unsigned char>(tmp);
+    tmp >>= 8;
+    out[0] = static_cast<unsigned char>(tmp);
 
-	tmp = uu->time_mid;
-	out[5] = (unsigned char) tmp;
-	tmp >>= 8;
-	out[4] = (unsigned char) tmp;
+    tmp = uu->time_mid;
+    out[5] = static_cast<unsigned char>(tmp);
+    tmp >>= 8;
+    out[4] = static_cast<unsigned char>(tmp);
 
-	tmp = uu->time_hi_and_version;
-	out[7] = (unsigned char) tmp;
-	tmp >>= 8;
-	out[6] = (unsigned char) tmp;
+    tmp = uu->time_hi_and_version;
+    out[7] = static_cast<unsigned char>(tmp);
+    tmp >>= 8;
+    out[6] = static_cast<unsigned char>(tmp);
 
-	tmp = uu->clock_seq;
-	out[9] = (unsigned char) tmp;
-	tmp >>= 8;
-	out[8] = (unsigned char) tmp;
+    tmp = uu->clock_seq;
+    out[9] = static_cast<unsigned char>(tmp);
+    tmp >>= 8;
+    out[8] = static_cast<unsigned char>(tmp);
 
-	memcpy(out + 10, uu->node, 6);
+    memcpy(out + 10, uu->node, 6);
 }
 
-int uuid_parse(const char *in, uuid_t uu) {
-	struct uuid uuid;
-	int i;
-	const char *cp;
-	char buf[3];
+extern "C" int uuid_parse(const char* in, uuid_t uu) {
+    struct uuid uuid;
+    int i;
+    const char* cp;
+    char buf[3];
 
-	assert(in != NULL);
+    assert(in != NULL);
 
-	if (strlen(in) != 36) {
-		return -1;
-	}
+    if (strlen(in) != 36) {
+        return -1;
+    }
 
-	for (i = 0, cp = in; i <= 36; i++, cp++) {
+    for (i = 0, cp = in; i <= 36; i++, cp++) {
+        if ((i == 8) || (i == 13) || (i == 18) || (i == 23)) {
+            if (*cp == '-') {
+                continue;
+            } else {
+                return -1;
+            }
+        }
 
-		if ((i == 8) || (i == 13) || (i == 18) || (i == 23)) {
-			if (*cp == '-') {
-				continue;
-			} else {
-				return -1;
-			}
-		}
+        if (i == 36) {
+            if (*cp == 0) {
+                continue;
+            }
+        }
 
-		if (i == 36) {
-			if (*cp == 0) {
-				continue;
-			}
-		}
+        if (!isxdigit(*cp)) {
+            return -1;
+        }
+    }
 
-		if (!isxdigit(*cp)) {
-			return -1;
-		}
-	}
+    uuid.time_low = HexUint32(in);
+    uuid.time_mid = (uint16_t)(HexUint32(in + 9));
+    uuid.time_hi_and_version = (uint16_t)(HexUint32(in + 14));
+    uuid.clock_seq = (uint16_t)(HexUint32(in + 19));
 
-	uuid.time_low = hex_uint32(in);
-	uuid.time_mid = (uint16_t)(hex_uint32(in + 9));
-	uuid.time_hi_and_version = (uint16_t)(hex_uint32(in + 14));
-	uuid.clock_seq = (uint16_t)(hex_uint32(in + 19));
+    cp = in + 24;
+    buf[2] = 0;
 
-	cp = in + 24;
-	buf[2] = 0;
+    for (i = 0; i < 6; i++) {
+        buf[0] = *cp++;
+        buf[1] = *cp++;
+        uuid.node[i] = (uint8_t)(HexUint32(buf));
+    }
 
-	for (i = 0; i < 6; i++) {
-		buf[0] = *cp++;
-		buf[1] = *cp++;
-		uuid.node[i] = (uint8_t)(hex_uint32(buf));
-	}
+    UuidPack(&uuid, uu);
 
-	uuid_pack(&uuid, uu);
-
-	return 0;
+    return 0;
 }
