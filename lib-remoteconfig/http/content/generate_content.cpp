@@ -59,26 +59,42 @@ static constexpr char kContentHeader[] =
     "};\n\n"
     "inline constexpr struct FilesContent kHttpContent[] = {\n";
 
+		
+// Node Type
+static constexpr char kHaveDmxNodeBegin[] = "#if defined (DMXNODE_PORTS)\n";
+static constexpr char kHaveDmxNodeEnd[] = "#endif // (DMXNODE_PORTS)\n";
+
+static constexpr char kHaveArtNetBegin[] = "#if defined(NODE_ARTNET) || defined(NODE_ARTNET_MULTI)\n";
+static constexpr char kHaveArtNetEnd[] = "#endif // defined(NODE_ARTNET) || defined(NODE_ARTNET_MULTI)\n";		
+
+static constexpr char kHaveE131Begin[] = "#if defined(NODE_E131) || defined(NODE_E131_MULTI) || (ARTNET_VERSION == 4)\n";
+static constexpr char kHaveE131End[] = "#endif // defined(NODE_E131) || defined(NODE_E131_MULTI) || (ARTNET_VERSION == 4)\n";		
+		
+// Node Output
 static constexpr char kHaveDmxSendBegin[] = "#if !defined (CONFIG_HTTP_HTML_NO_DMX) && (defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI))\n";
-static constexpr char kHaveDmxSendEnd[] = "#endif /* !defined (CONFIG_HTTP_HTML_NO_DMX) && (defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI)) */\n";
+static constexpr char kHaveDmxSendEnd[] = "#endif // !defined (CONFIG_HTTP_HTML_NO_DMX) && (defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI))\n";
 
 static constexpr char kHaveDmxMonitorBegin[] = "#if !defined (CONFIG_HTTP_HTML_NO_DMX) && defined(OUTPUT_DMX_MONITOR)\n";
-static constexpr char kHaveDmxMonitorEnd[] = "#endif /* !defined (CONFIG_HTTP_HTML_NO_DMX) && defined(OUTPUT_DMX_MONITOR) */\n";
+static constexpr char kHaveDmxMonitorEnd[] = "#endif // !defined (CONFIG_HTTP_HTML_NO_DMX) && defined(OUTPUT_DMX_MONITOR)\n";
 
 static constexpr char kHaveRdmBegin[] = "#if !defined (CONFIG_HTTP_HTML_NO_RDM) && defined (RDM_CONTROLLER)\n";
-static constexpr char kHaveRdmEnd[] = "#endif /* !defined (CONFIG_HTTP_HTML_NO_RDM) && defined (RDM_CONTROLLER) */\n";
+static constexpr char kHaveRdmEnd[] = "#endif // !defined (CONFIG_HTTP_HTML_NO_RDM) && defined (RDM_CONTROLLER)\n";
 
 static constexpr char kHavePixelBegin[] = "#if !defined (CONFIG_HTTP_HTML_NO_PIXEL) && (defined(OUTPUT_DMX_PIXEL) || defined(OUTPUT_DMX_PIXEL_MULTI))\n";
-static constexpr char kHavePixelEnd[] = "#endif /* !defined (CONFIG_HTTP_HTML_NO_PIXEL) && (defined(OUTPUT_DMX_PIXEL) || defined(OUTPUT_DMX_PIXEL_MULTI)) */\n";
+static constexpr char kHavePixelEnd[] = "#endif // !defined (CONFIG_HTTP_HTML_NO_PIXEL) && (defined(OUTPUT_DMX_PIXEL) || defined(OUTPUT_DMX_PIXEL_MULTI))\n";
+
+// Others
+static constexpr char kHaveDisplayUdfBegin[] = "#if defined (DISPLAY_UDF)\n";
+static constexpr char kHaveDisplayUdfEnd[] = "#endif // (DISPLAY_UDF)\n";
 
 static constexpr char kHaveShowfileBegin[] = "#if defined (NODE_SHOWFILE)\n";
-static constexpr char kHaveShowfileEnd[] = "#endif /* (NODE_SHOWFILE) */\n";
+static constexpr char kHaveShowfileEnd[] = "#endif // (NODE_SHOWFILE)\n";
 
 static constexpr char kHaveTimeBegin[] = "#if !defined (CONFIG_HTTP_HTML_NO_TIME)\n";
-static constexpr char kHaveTimeEnd[] = "#endif /* !defined (CONFIG_HTTP_HTML_NO_TIME) */\n";
+static constexpr char kHaveTimeEnd[] = "#endif // !defined (CONFIG_HTTP_HTML_NO_TIME)\n";
 
 static constexpr char kHaveRtcBegin[] = "#if !defined (CONFIG_HTTP_HTML_NO_RTC) && !defined (DISABLE_RTC)\n";
-static constexpr char kHaveRtcEnd[] = "#endif /* !defined (CONFIG_HTTP_HTML_NO_RTC) && !defined (DISABLE_RTC) */\n";
+static constexpr char kHaveRtcEnd[] = "#endif // !defined (CONFIG_HTTP_HTML_NO_RTC) && !defined (DISABLE_RTC)\n";
 
 struct FeatureGuard
 {
@@ -88,11 +104,15 @@ struct FeatureGuard
 };
 
 static constexpr FeatureGuard kFeatureGuards[] = {
+	{"dmxnode", kHaveDmxNodeBegin, kHaveDmxNodeEnd},
+	{"artnet", kHaveArtNetBegin, kHaveArtNetEnd},
+	{"e131", kHaveE131Begin, kHaveE131End},
 	{"pixel", kHavePixelBegin, kHavePixelEnd},
 	{"dmxmonitor", kHaveDmxMonitorBegin, kHaveDmxMonitorEnd},
 	{"dmxsend", kHaveDmxSendBegin, kHaveDmxSendEnd},
 	{"dmx.", kHaveDmxSendBegin, kHaveDmxSendEnd},
 	{"rdm", kHaveRdmBegin, kHaveRdmEnd},
+	{"display", kHaveDisplayUdfBegin, kHaveDisplayUdfEnd},
 	{"showfile", kHaveShowfileBegin, kHaveShowfileEnd},
 	{"time", kHaveTimeBegin, kHaveTimeEnd},
 	{"rtc", kHaveRtcBegin, kHaveRtcEnd}
@@ -101,23 +121,19 @@ static constexpr FeatureGuard kFeatureGuards[] = {
 static FILE* file_content;
 static FILE* file_includes;
 
-static http::ContentTypes GetContentType(const char* file_name)
-{
+static http::ContentTypes GetContentType(const char* file_name) {
     assert(file_name != nullptr);
 
     const auto* dot = strrchr(file_name, '.');
 
-    if ((dot == nullptr) || (*(dot + 1) == '\0'))
-    {
+    if ((dot == nullptr) || (*(dot + 1) == '\0')) {
         return http::ContentTypes::kNotDefined;
     }
 
     const auto* extension = dot + 1;
 
-    for (const auto& entry : kSupportedExtensions)
-    {
-        if (strcmp(extension, entry.extension) == 0)
-        {
+    for (const auto& entry : kSupportedExtensions) {
+        if (strcmp(extension, entry.extension) == 0) {
             return entry.content_type;
         }
     }
@@ -125,61 +141,51 @@ static http::ContentTypes GetContentType(const char* file_name)
     return http::ContentTypes::kNotDefined;
 }
 
-static bool HasMatchingFeature(const char* file_name, const char* match)
-{
+static bool HasMatchingFeature(const char* file_name, const char* match) {
     assert(file_name != nullptr);
     assert(match != nullptr);
 
     return strstr(file_name, match) != nullptr;
 }
 
-static void WriteFeatureGuardsBegin(FILE* out, const char* file_name)
-{
+static void WriteFeatureGuardsBegin(FILE* out, const char* file_name) {
     assert(out != nullptr);
     assert(file_name != nullptr);
 
-    for (const auto& guard : kFeatureGuards)
-    {
-        if (HasMatchingFeature(file_name, guard.match))
-        {
+    for (const auto& guard : kFeatureGuards) {
+        if (HasMatchingFeature(file_name, guard.match)) {
             fwrite(guard.begin, sizeof(char), strlen(guard.begin), out);
         }
     }
 }
 
-static void WriteFeatureGuardsEnd(FILE* out, const char* file_name)
-{
+static void WriteFeatureGuardsEnd(FILE* out, const char* file_name) {
     assert(out != nullptr);
     assert(file_name != nullptr);
 
-    for (const auto& guard : kFeatureGuards)
-    {
-        if (HasMatchingFeature(file_name, guard.match))
-        {
+    for (const auto& guard : kFeatureGuards) {
+        if (HasMatchingFeature(file_name, guard.match)) {
             fwrite(guard.end, sizeof(char), strlen(guard.end), out);
         }
     }
 }
 
-static void MakeConstantName(const char* file_name, char* constant_name, size_t length)
-{
+static void MakeConstantName(const char* file_name, char* constant_name, size_t length) {
     assert(file_name != nullptr);
     assert(constant_name != nullptr);
     assert(length > strlen(file_name));
 
     strncpy(constant_name, file_name, length);
     constant_name[length - 1] = '\0';
-	
+
     auto* p = strchr(constant_name, '.');
 
-    if (p != nullptr)
-    {
+    if (p != nullptr) {
         *p = '_';
     }
 }
 
-static void AppendFile(FILE* out, const char* file_name)
-{
+static void AppendFile(FILE* out, const char* file_name) {
     assert(out != nullptr);
     assert(file_name != nullptr);
 
@@ -189,16 +195,14 @@ static void AppendFile(FILE* out, const char* file_name)
     char buffer[256];
     size_t read;
 
-    while ((read = fread(buffer, sizeof(char), sizeof(buffer), in)) > 0)
-    {
+    while ((read = fread(buffer, sizeof(char), sizeof(buffer), in)) > 0) {
         fwrite(buffer, sizeof(char), read, out);
     }
 
     fclose(in);
 }
 
-static void BuildFinalContentHeader()
-{
+static void BuildFinalContentHeader() {
     auto* out = fopen("tmp.h", "w");
     assert(out != nullptr);
 
@@ -221,22 +225,20 @@ static void BuildFinalContentHeader()
     assert(kJ == 0);
 }
 
-static int ConvertToH(const char* dir_name, const char* file_name)
-{
+static int ConvertToH(const char* dir_name, const char* file_name) {
     assert(file_name != nullptr);
 
     printf("File to convert: %s/%s, ", dir_name, file_name);
-	
-	char path[128];
-	strcpy(path, dir_name);
-	strcat(path, "/");
-	strcat(path, file_name);
+
+    char path[128];
+    strcpy(path, dir_name);
+    strcat(path, "/");
+    strcat(path, file_name);
 
     auto* file_in = fopen(path, "r");
 
-    if (file_in == nullptr)
-    {
-		perror("File not found!");
+    if (file_in == nullptr) {
+        perror("File not found!");
         exit(-1);
     }
 
@@ -253,8 +255,7 @@ static int ConvertToH(const char* dir_name, const char* file_name)
 
     auto* file_out = fopen(file_name_out, "w");
 
-    if (file_out == nullptr)
-    {
+    if (file_out == nullptr) {
         fclose(file_in);
         return 0;
     }
@@ -287,19 +288,14 @@ static int ConvertToH(const char* dir_name, const char* file_name)
     int file_size = 0;
     int c;
 
-    while ((c = fgetc(file_in)) != EOF)
-    {
-        if (skip_leading_white_space)
-        {
-            if (c <= ' ')
-            {
+    while ((c = fgetc(file_in)) != EOF) {
+        if (skip_leading_white_space) {
+            if (c <= ' ') {
                 continue;
             }
 
             skip_leading_white_space = false;
-        }
-        else if (c == '\n')
-        {
+        } else if (c == '\n') {
             skip_leading_white_space = true;
         }
 
@@ -321,7 +317,7 @@ static int ConvertToH(const char* dir_name, const char* file_name)
     return file_size;
 }
 
-int main(int argc, char *argv[])  // NOLINT
+int main(int argc, char* argv[]) // NOLINT
 {
     file_includes = fopen("includes.h", "w");
     assert(file_includes != nullptr);
@@ -330,26 +326,22 @@ int main(int argc, char *argv[])  // NOLINT
     assert(file_content != nullptr);
 
     fwrite(kContentHeader, sizeof(char), strlen(kContentHeader), file_content);
-	
-	char dir_name[32];
-	strcpy(dir_name, "light");
-	
-	if (argc == 2)
-	{
-		strncpy(dir_name, argv[1], sizeof dir_name);
-		dir_name[(sizeof dir_name) - 1] = '\0';
-	}
-	
+
+    char dir_name[32];
+    strcpy(dir_name, "light");
+
+    if (argc == 2) {
+        strncpy(dir_name, argv[1], sizeof dir_name);
+        dir_name[(sizeof dir_name) - 1] = '\0';
+    }
+
     auto* dir = opendir(dir_name);
 
-    if (dir != nullptr)
-    {
+    if (dir != nullptr) {
         struct dirent* dir_entry;
 
-        while ((dir_entry = readdir(dir)) != nullptr)
-        {
-            if (dir_entry->d_name[0] == '.')
-            {
+        while ((dir_entry = readdir(dir)) != nullptr) {
+            if (dir_entry->d_name[0] == '.') {
                 continue;
             }
 
@@ -358,22 +350,19 @@ int main(int argc, char *argv[])  // NOLINT
 
             printf("%s -> %c\n", dir_entry->d_name, kIsSupported ? 'Y' : 'N');
 
-            if (!kIsSupported)
-            {
+            if (!kIsSupported) {
                 continue;
             }
 
             WriteFeatureGuardsBegin(file_content, dir_entry->d_name);
 
             char buffer[256];
-            auto i = snprintf(buffer, sizeof(buffer), "\t{ %u,\"%s\", ", 
-				Fnv1a32Runtime(dir_entry->d_name, strlen(dir_entry->d_name)),
-				dir_entry->d_name);
+            auto i = snprintf(buffer, sizeof(buffer), "\t{ %u,\"%s\", ", Fnv1a32Runtime(dir_entry->d_name, strlen(dir_entry->d_name)), dir_entry->d_name);
             assert(i > 0);
             assert(i < static_cast<int>(sizeof(buffer)));
 
             fwrite(buffer, sizeof(char), i, file_content);
-	
+
             const auto kContentLength = ConvertToH(dir_name, dir_entry->d_name);
 
             i = snprintf(buffer, sizeof(buffer), ", %d, static_cast<http::ContentTypes>(%d) },\n", kContentLength, static_cast<int>(kContentType));
