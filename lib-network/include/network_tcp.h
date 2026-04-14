@@ -45,14 +45,15 @@ enum class Event : uint8_t {
     kError      // generic error
 };
 
-using CallbackConnect = void (*)(uint32_t connection_handle, Event event);
+using CallbackConnect = void (*)(ConnHandle, Event, void*);
+using CallbackData = void (*)(ConnHandle, const uint8_t*, uint32_t, void*);
 
-int32_t Connect(uint32_t remote_ip, uint16_t remote_port, CallbackConnect cb_connect, CallbackListen cb_listen);
-int32_t Close(ConnHandle connection_handle); // graceful FIN
+ConnHandle Connect(uint32_t remote_ip, uint16_t remote_port, CallbackConnect cb_connect, CallbackData cb_data, void* context);
 
 // Common
-void Abort(ConnHandle connection_handle); // RST
 int32_t Send(ConnHandle connection_handle, const uint8_t* buffer, uint32_t length);
+int32_t Close(ConnHandle connection_handle); // graceful FIN
+void Abort(ConnHandle connection_handle);    // RST
 } // namespace network::tcp
 
 #endif // NETWORK_TCP_H_

@@ -55,8 +55,7 @@
 #pragma GCC optimize("O2")
 #pragma GCC optimize("no-tree-loop-distribute-patterns")
 
-namespace console
-{
+namespace console {
 void Error(const char*);
 }
 
@@ -81,8 +80,7 @@ void Error(const char*);
 #include "network_memory.h"
 #include "network_tcp_datasegmentqueue.h"
 
-namespace network::tcp
-{
+namespace network::tcp {
 static constexpr auto kAdvertisedRxWnd = kTcpDataMss;
 // Retransmission support
 static constexpr uint32_t kTcpRtoInitialMs = 1000;
@@ -90,8 +88,7 @@ static constexpr uint32_t kTcpRtoMaxMs = 60000;
 static constexpr uint32_t kTcpRtxMaxRetry = 5;
 static constexpr uint32_t kTcpUnackMax = 8;
 
-struct RtxSeg
-{
+struct RtxSeg {
     uint32_t seq;
     uint16_t len;
     uint16_t consumed;
@@ -101,8 +98,7 @@ struct RtxSeg
     uint16_t pool_idx; // 0xFFFF = no payload
 };
 
-struct RtxQueue
-{
+struct RtxQueue {
     RtxSeg q[kTcpUnackMax];
     uint8_t head;
     uint8_t count;
@@ -112,8 +108,7 @@ struct RtxQueue
 // Common stacks use 60s or 120s. Embedded often uses 30s..60s.
 constexpr uint32_t kTimeWaitMs = 60000; // example 60s
 
-struct Listener
-{
+struct Listener {
     bool in_use;                     // True if this listener slot is active.
     uint16_t local_port;             // Port we listen on.
     network::tcp::CallbackListen cb; // App callback for connections/events.
@@ -122,10 +117,11 @@ struct Listener
 };
 
 ///< Transmission control block (TCB)
-struct Tcb
-{
+struct Tcb {
     network::tcp::CallbackListen cb_listen;
+    network::tcp::CallbackData cb_data;
     network::tcp::CallbackConnect cb_connect;
+    void* context;
 
     uint8_t local_ip[network::ip4::kAddressLength];
     uint8_t remote_ip[network::ip4::kAddressLength];
@@ -136,8 +132,7 @@ struct Tcb
     uint8_t remote_eth_addr[ethernet::kAddressLength];
 
     // Send Sequence Variables
-    struct
-    {
+    struct {
         uint32_t UNA; // send unacknowledged	// NOLINT
         uint32_t NXT; // send next				// NOLINT
         uint32_t WND; // send window 			// NOLINT
@@ -148,22 +143,19 @@ struct Tcb
 
     uint32_t ISS; // initial send sequence number // NOLINT
 
-    struct
-    {
+    struct {
         uint32_t recent; // holds a timestamp to be echoed in TSecr whenever a segment is sent
     } TS;                // NOLINT
 
     uint16_t SendMSS; // NOLINT
 
-    struct
-    {
+    struct {
         uint8_t* data;
         uint32_t size;
     } TX; // NOLINT
 
     // Receive Sequence Variables
-    struct
-    {
+    struct {
         uint32_t NXT; // receive next // NOLINT
         uint16_t WND; // receive window // NOLINT
         uint16_t UP;  // receive urgent pointer // NOLINT
@@ -186,17 +178,14 @@ struct Tcb
     uint32_t rtx_rto;
 };
 
-struct SendInfo
-{
+struct SendInfo {
     uint32_t SEQ; // NOLINT
     uint32_t ACK; // NOLINT
     uint8_t CTL;  // NOLINT
 };
 
-static void RtxClear(Tcb* tcb)
-{
-    while (tcb->rtx.count > 0)
-    {
+static void RtxClear(Tcb* tcb) {
+    while (tcb->rtx.count > 0) {
         auto& r = tcb->rtx.q[tcb->rtx.head];
         network::memory::Allocator::Instance().Free(r.pool_idx);
         tcb->rtx.head = (tcb->rtx.head + 1) % kTcpUnackMax;
@@ -213,8 +202,7 @@ static struct Tcb s_tcbs[TCP_MAX_TCBS_ALLOWED] SECTION_NETWORK ALIGNED;
 #ifndef NDEBUG
 static const char* const kStateName[] = {"CLOSED", "LISTEN", "SYN-SENT", "SYN-RECEIVED", "ESTABLISHED", "FIN-WAIT-1", "FIN-WAIT-2", "CLOSE-WAIT", "CLOSING", "LAST-ACK", "TIME-WAIT"};
 
-static uint8_t NewState(struct Tcb* p_tcb, uint8_t state, const char* func, const char* file, unsigned line)
-{
+static uint8_t NewState(struct Tcb* p_tcb, uint8_t state, const char* func, const char* file, unsigned line) {
     assert(p_tcb->state < sizeof kStateName / sizeof kStateName[0]);
     assert(state < sizeof kStateName / sizeof kStateName[0]);
 
@@ -223,8 +211,7 @@ static uint8_t NewState(struct Tcb* p_tcb, uint8_t state, const char* func, cons
     return p_tcb->state = state;
 }
 
-static void UnexpectedState(uint32_t state, uint32_t line)
-{
+static void UnexpectedState(uint32_t state, uint32_t line) {
     printf("Unexpected state %s at line %u\n", kStateName[state], line);
 }
 
@@ -241,8 +228,7 @@ static void NEW_STATE(struct Tcb* tcb, uint8_t state) // NOLINT
 #endif
 
 ///< https://www.rfc-editor.org/rfc/rfc9293.html#name-header-format
-enum Control : uint8_t
-{
+enum Control : uint8_t {
     URG = 0x20, ///< Urgent Pointer field significant	// NOLINT
     ACK = 0x10, ///< Acknowledgment field significant	// NOLINT
     PSH = 0x08, ///< Acknowledgment						// NOLINT
@@ -253,8 +239,7 @@ enum Control : uint8_t
 
 ///< https://www.rfc-editor.org/rfc/rfc9293.html#name-specific-option-definitions
 ///< Mandatory Option Set: https://www.rfc-editor.org/rfc/rfc9293.html#table-1
-enum Option
-{
+enum Option {
     kKindEnd = 0,      ///< End of option list
     kKindNop = 1,      ///< No-Operation
     kKindMss = 2,      ///< Maximum Segment Size
@@ -265,8 +250,7 @@ static constexpr auto kOptionMssLength = 4U;
 static constexpr auto kOptionTimestampLength = 10U;
 
 ///<  RFC 793, Page 21
-enum
-{
+enum {
     kStateClosed,      ///< Is fictional because it represents the state when there is no TCB, and therefore, no connection.
     kStateListen,      ///< Represents waiting for a connection request from any remote TCP and port.
     kStateSynSent,     ///< Represents waiting for a matching connection request after having sent a connection request.
@@ -282,18 +266,15 @@ enum
 
 #define offset2octets(x) (((x) >> 4) * 4)
 
-static constexpr bool Lt(uint32_t x, uint32_t y)
-{
+static constexpr bool Lt(uint32_t x, uint32_t y) {
     return static_cast<int32_t>(x - y) < 0;
 }
 
-static constexpr bool Leq(uint32_t x, uint32_t y)
-{
+static constexpr bool Leq(uint32_t x, uint32_t y) {
     return static_cast<int32_t>(x - y) <= 0;
 }
 
-static constexpr bool Gt(uint32_t x, uint32_t y)
-{
+static constexpr bool Gt(uint32_t x, uint32_t y) {
     return static_cast<int32_t>(x - y) > 0;
 }
 
@@ -305,43 +286,36 @@ static constexpr bool Gt(uint32_t x, uint32_t y)
 //	return SEQ_LT(l, x) && SEQ_LT(x, h);
 // }
 
-static constexpr bool BetweenL(uint32_t l, uint32_t x, uint32_t h)
-{
+static constexpr bool BetweenL(uint32_t l, uint32_t x, uint32_t h) {
     return Leq(l, x) && Lt(x, h); // low border inclusive
 }
 
-static constexpr bool BetweenH(uint32_t l, uint32_t x, uint32_t h)
-{
+static constexpr bool BetweenH(uint32_t l, uint32_t x, uint32_t h) {
     return Lt(l, x) && Leq(x, h); // high border inclusive
 }
 
-static constexpr bool BetweenLh(uint32_t l, uint32_t x, uint32_t h)
-{
+static constexpr bool BetweenLh(uint32_t l, uint32_t x, uint32_t h) {
     return Leq(l, x) && Leq(x, h); // both borders inclusive
 }
 
-typedef union pcast32
-{
+typedef union pcast32 {
     uint32_t u32;
     uint8_t u8[4];
 } _pcast32;
 
-static uint32_t TcpGetSeqnum(struct Header* const kTcp)
-{
+static uint32_t TcpGetSeqnum(struct Header* const kTcp) {
     _pcast32 src;
     memcpy(src.u8, &kTcp->tcp.seqnum, 4);
     return src.u32;
 }
 
-static uint32_t TcpGetAcknum(struct Header* const kTcp)
-{
+static uint32_t TcpGetAcknum(struct Header* const kTcp) {
     _pcast32 src;
     memcpy(src.u8, &kTcp->tcp.acknum, 4);
     return src.u32;
 }
 
-static void TcpSwap32AcknumSeqnum(struct Header* const kTcp)
-{
+static void TcpSwap32AcknumSeqnum(struct Header* const kTcp) {
     _pcast32 src;
 
     src.u32 = __builtin_bswap32(TcpGetAcknum(kTcp));
@@ -351,8 +325,7 @@ static void TcpSwap32AcknumSeqnum(struct Header* const kTcp)
     memcpy(&kTcp->tcp.seqnum, src.u8, 4);
 }
 
-static void TcpInitTcb(struct Tcb* tcb, uint16_t local_port)
-{
+static void TcpInitTcb(struct Tcb* tcb, uint16_t local_port) {
     tcb->local_port = local_port;
 
     tcb->ISS = hal::Millis();
@@ -366,35 +339,26 @@ static void TcpInitTcb(struct Tcb* tcb, uint16_t local_port)
     NEW_STATE(tcb, kStateListen);
 }
 
-static void RtxOnAck(Tcb* tcb, uint32_t ack)
-{
-    while (tcb->rtx.count > 0)
-    {
+static void RtxOnAck(Tcb* tcb, uint32_t ack) {
+    while (tcb->rtx.count > 0) {
         auto& r = tcb->rtx.q[tcb->rtx.head];
-        if (Leq(r.seq + r.consumed, ack))
-        {
+        if (Leq(r.seq + r.consumed, ack)) {
             memory::Allocator::Instance().Free(r.pool_idx);
             tcb->rtx.head = (tcb->rtx.head + 1) % kTcpUnackMax;
             tcb->rtx.count--;
-        }
-        else
-        {
+        } else {
             break;
         }
     }
 
-    if (tcb->rtx.count == 0)
-    {
+    if (tcb->rtx.count == 0) {
         tcb->rtx_deadline = 0;
-    }
-    else
-    {
+    } else {
         tcb->rtx_deadline = hal::Millis() + tcb->rtx_rto;
     }
 }
 
-__attribute__((cold)) void Init()
-{
+__attribute__((cold)) void Init() {
     DEBUG_ENTRY();
 
     // Ethernet
@@ -411,8 +375,7 @@ __attribute__((cold)) void Init()
 }
 
 ///< TCP Checksum Pseudo Header
-struct TcpPseudo
-{
+struct TcpPseudo {
     uint8_t src_ip[network::ip4::kAddressLength];
     uint8_t dst_ip[network::ip4::kAddressLength];
     uint8_t zero;
@@ -422,8 +385,7 @@ struct TcpPseudo
 
 static constexpr uint32_t kTcpPseudoLen = 12;
 
-static uint16_t TcpChecksumPseudoHeader(struct Header* eth_frame, const struct Tcb* const kTcb, uint16_t length)
-{
+static uint16_t TcpChecksumPseudoHeader(struct Header* eth_frame, const struct Tcb* const kTcb, uint16_t length) {
     uint8_t buf[kTcpPseudoLen];
     // Store current data before TCP header in temporary buffer
     auto* pseu = reinterpret_cast<struct TcpPseudo*>(reinterpret_cast<uint8_t*>(&eth_frame->tcp) - kTcpPseudoLen);
@@ -446,8 +408,7 @@ static uint16_t TcpChecksumPseudoHeader(struct Header* eth_frame, const struct T
 
 static constexpr uint8_t kZeromac[network::ethernet::kAddressLength] = {0, 0, 0, 0, 0, 0};
 
-static void Ip4SendSegment(const Tcb* tcb, void* data, uint32_t size)
-{
+static void Ip4SendSegment(const Tcb* tcb, void* data, uint32_t size) {
     if (memcmp(tcb->remote_eth_addr, kZeromac, network::ethernet::kAddressLength) != 0) // Server
     {
         return emac_eth_send(data, size);
@@ -460,8 +421,7 @@ static void Ip4SendSegment(const Tcb* tcb, void* data, uint32_t size)
     network::arp::Send(data, size, src.u32);
 }
 
-static void SendSegment(Tcb* tcb, const SendInfo& send_info, bool track_rtx = true)
-{
+static void SendSegment(Tcb* tcb, const SendInfo& send_info, bool track_rtx = true) {
     tcb->did_send_ack_or_data = true;
 
     uint32_t opt_bytes = 0;
@@ -500,8 +460,7 @@ static void SendSegment(Tcb* tcb, const SendInfo& send_info, bool track_rtx = tr
     auto* data = reinterpret_cast<uint8_t*>(&s_eth_frame.tcp.data);
 
     // Add options
-    if (send_info.CTL & Control::SYN)
-    {
+    if (send_info.CTL & Control::SYN) {
         *data++ = Option::kKindMss;
         *data++ = kOptionMssLength;
         *(reinterpret_cast<uint16_t*>(data)) = __builtin_bswap16(kTcpDataMss);
@@ -520,10 +479,8 @@ static void SendSegment(Tcb* tcb, const SendInfo& send_info, bool track_rtx = tr
 
     DEBUG_PRINTF("SEQ=%u, ACK=%u, kTcpLength=%u, kDataOffset=%u, tcb->TX.size=%u", s_eth_frame.tcp.seqnum, s_eth_frame.tcp.acknum, kTcpLength, kDataOffset, tcb->TX.size);
 
-    if (tcb->TX.data != nullptr)
-    {
-        for (uint32_t i = 0; i < tcb->TX.size; i++)
-        {
+    if (tcb->TX.data != nullptr) {
+        for (uint32_t i = 0; i < tcb->TX.size; i++) {
             *data++ = tcb->TX.data[i];
         }
     }
@@ -541,8 +498,7 @@ static void SendSegment(Tcb* tcb, const SendInfo& send_info, bool track_rtx = tr
     // ---- Retransmission tracking ----
     const bool kConsumesSeq = (tcb->TX.size != 0) || (send_info.CTL & Control::SYN) || (send_info.CTL & Control::FIN);
 
-    if (track_rtx && kConsumesSeq && tcb->rtx.count < kTcpUnackMax)
-    {
+    if (track_rtx && kConsumesSeq && tcb->rtx.count < kTcpUnackMax) {
         auto& r = tcb->rtx.q[(tcb->rtx.head + tcb->rtx.count) % kTcpUnackMax];
         r.seq = send_info.SEQ;
         r.len = static_cast<uint16_t>(tcb->TX.size);
@@ -554,20 +510,17 @@ static void SendSegment(Tcb* tcb, const SendInfo& send_info, bool track_rtx = tr
 
         tcb->rtx.count++;
 
-        if (tcb->rtx.count == 1)
-        {
+        if (tcb->rtx.count == 1) {
             tcb->rtx_rto = kTcpRtoInitialMs;
             tcb->rtx_deadline = r.last_sent + tcb->rtx_rto;
         }
     }
 }
 
-static void SendReset(struct Header* eth_frame, struct Tcb* const kTcb)
-{
+static void SendReset(struct Header* eth_frame, struct Tcb* const kTcb) {
     DEBUG_ENTRY();
 
-    if (eth_frame->tcp.control & Control::RST)
-    {
+    if (eth_frame->tcp.control & Control::RST) {
         DEBUG_EXIT();
         return;
     }
@@ -575,25 +528,20 @@ static void SendReset(struct Header* eth_frame, struct Tcb* const kTcb)
     struct SendInfo info;
     info.CTL = Control::RST;
 
-    if (eth_frame->tcp.control & Control::ACK)
-    {
+    if (eth_frame->tcp.control & Control::ACK) {
         info.SEQ = TcpGetAcknum(eth_frame);
-    }
-    else
-    {
+    } else {
         info.SEQ = 0;
         info.CTL |= Control::ACK;
     }
 
     uint32_t data_length = 0;
 
-    if (eth_frame->tcp.control & Control::SYN)
-    {
+    if (eth_frame->tcp.control & Control::SYN) {
         data_length++;
     }
 
-    if (eth_frame->tcp.control & Control::FIN)
-    {
+    if (eth_frame->tcp.control & Control::FIN) {
         data_length++;
     }
 
@@ -604,8 +552,7 @@ static void SendReset(struct Header* eth_frame, struct Tcb* const kTcb)
     DEBUG_EXIT();
 }
 
-static bool SendData(struct Tcb* tcb, const uint8_t* buffer, uint32_t length, bool is_last_segment)
-{
+static bool SendData(struct Tcb* tcb, const uint8_t* buffer, uint32_t length, bool is_last_segment) {
     assert(length != 0);
     assert(length <= static_cast<uint32_t>(kTcpDataMss));
     assert(length <= tcb->SND.WND);
@@ -620,8 +567,7 @@ static bool SendData(struct Tcb* tcb, const uint8_t* buffer, uint32_t length, bo
     info.ACK = tcb->RCV.NXT;
     info.CTL = Control::ACK;
 
-    if (is_last_segment)
-    {
+    if (is_last_segment) {
         info.CTL |= Control::PSH;
     }
 
@@ -636,23 +582,19 @@ static bool SendData(struct Tcb* tcb, const uint8_t* buffer, uint32_t length, bo
     return false;
 }
 
-struct Options
-{
+struct Options {
     uint8_t kind;
     uint8_t length;
     uint8_t data;
 };
 
-static void ScanOptions(struct Header* eth_frame, struct Tcb* const kTcb, int32_t data_offset)
-{
+static void ScanOptions(struct Header* eth_frame, struct Tcb* const kTcb, int32_t data_offset) {
     const auto* const kTcpHeaderEnd = reinterpret_cast<uint8_t*>(&eth_frame->tcp) + data_offset;
 
     auto* options = reinterpret_cast<struct Options*>(eth_frame->tcp.data);
 
-    while (reinterpret_cast<uint8_t*>(options + 2) <= kTcpHeaderEnd)
-    {
-        switch (options->kind)
-        {
+    while (reinterpret_cast<uint8_t*>(options + 2) <= kTcpHeaderEnd) {
+        switch (options->kind) {
             case Option::kKindEnd:
                 return;
                 break;
@@ -660,8 +602,7 @@ static void ScanOptions(struct Header* eth_frame, struct Tcb* const kTcb, int32_
                 options = reinterpret_cast<struct Options*>(reinterpret_cast<uint8_t*>(options) + 1);
                 break;
             case Option::kKindMss:
-                if ((options->length == kOptionMssLength) && ((reinterpret_cast<uint8_t*>(options) + kOptionMssLength) <= kTcpHeaderEnd))
-                {
+                if ((options->length == kOptionMssLength) && ((reinterpret_cast<uint8_t*>(options) + kOptionMssLength) <= kTcpHeaderEnd)) {
                     const auto* p = &options->data;
                     auto mss = (p[0] << 8) + p[1];
                     // RFC 1122 section 4.2.2.6
@@ -671,22 +612,18 @@ static void ScanOptions(struct Header* eth_frame, struct Tcb* const kTcb, int32_
                 options = reinterpret_cast<struct Options*>(reinterpret_cast<uint8_t*>(options) + options->length);
                 break;
             case Option::kKindTimestamp: // RFC 7323  3.  TCP Timestamps Option
-                if ((options->length == kOptionTimestampLength) && ((reinterpret_cast<uint8_t*>(options) + kOptionTimestampLength) <= kTcpHeaderEnd))
-                {
+                if ((options->length == kOptionTimestampLength) && ((reinterpret_cast<uint8_t*>(options) + kOptionTimestampLength) <= kTcpHeaderEnd)) {
                     _pcast32 tsval;
                     memcpy(tsval.u8, &options->data, 4);
 #ifndef NDEBUG
                     auto bIgnore = true;
 #endif
-                    if (eth_frame->tcp.control & Control::SYN)
-                    {
+                    if (eth_frame->tcp.control & Control::SYN) {
                         kTcb->TS.recent = tsval.u32;
 #ifndef NDEBUG
                         bIgnore = false;
 #endif
-                    }
-                    else if ((__builtin_bswap32(tsval.u32) > __builtin_bswap32(kTcb->TS.recent)))
-                    { // TODO(a)
+                    } else if ((__builtin_bswap32(tsval.u32) > __builtin_bswap32(kTcb->TS.recent))) { // TODO(a)
                         kTcb->TS.recent = tsval.u32;
 #ifndef NDEBUG
                         bIgnore = false;
@@ -706,18 +643,14 @@ static void ScanOptions(struct Header* eth_frame, struct Tcb* const kTcb, int32_
 
 static void FreeTcb(Tcb* tcb);
 
-__attribute__((hot)) void Run()
-{
-    for (auto& tcb : s_tcbs)
-    {
-        if (!tcb.in_use)
-        {
+__attribute__((hot)) void Run() {
+    for (auto& tcb : s_tcbs) {
+        if (!tcb.in_use) {
             continue;
         }
 
         // Server-side close handling (unchanged logic, now per-connection)
-        if (tcb.state == kStateCloseWait)
-        {
+        if (tcb.state == kStateCloseWait) {
             SendInfo info;
             info.SEQ = tcb.SND.NXT;
             info.ACK = tcb.RCV.NXT;
@@ -731,10 +664,8 @@ __attribute__((hot)) void Run()
         }
 
         // Client-side  TIME-WAIT expiry
-        if (tcb.state == kStateTimeWait)
-        {
-            if (tcb.timewait_deadline != 0 && hal::Millis() >= tcb.timewait_deadline)
-            {
+        if (tcb.state == kStateTimeWait) {
+            if (tcb.timewait_deadline != 0 && hal::Millis() >= tcb.timewait_deadline) {
                 NEW_STATE(&tcb, kStateClosed);
                 FreeTcb(&tcb);
                 continue;
@@ -747,16 +678,14 @@ __attribute__((hot)) void Run()
         // Flush per-connection queue
         auto& q = tcb.tx_queue;
 
-        while (!q.IsEmpty() && q.GetFront().length <= tcb.SND.WND)
-        {
+        while (!q.IsEmpty() && q.GetFront().length <= tcb.SND.WND) {
             const auto& seg = q.GetFront();
             SendData(&tcb, seg.buffer, seg.length, seg.is_last_segment);
             q.Pop();
         }
 
         // ---- Retransmission timeout ----
-        if (tcb.rtx.count > 0 && tcb.rtx_deadline != 0 && hal::Millis() >= tcb.rtx_deadline)
-        {
+        if (tcb.rtx.count > 0 && tcb.rtx_deadline != 0 && hal::Millis() >= tcb.rtx_deadline) {
             auto& r = tcb.rtx.q[tcb.rtx.head];
 
             SendInfo info;
@@ -767,8 +696,7 @@ __attribute__((hot)) void Run()
             tcb.TX.data = nullptr;
             tcb.TX.size = 0;
 
-            if (r.pool_idx != 0xFFFF)
-            {
+            if (r.pool_idx != 0xFFFF) {
                 tcb.TX.data = memory::Allocator::Instance().Get(r.pool_idx, tcb.TX.size);
             }
 
@@ -780,8 +708,7 @@ __attribute__((hot)) void Run()
             r.last_sent = hal::Millis();
             r.retries++;
 
-            if (r.retries > kTcpRtxMaxRetry)
-            {
+            if (r.retries > kTcpRtxMaxRetry) {
                 FreeTcb(&tcb);
                 continue;
             }
@@ -792,42 +719,33 @@ __attribute__((hot)) void Run()
     }
 }
 
-static Listener* FindListenerByPort(uint16_t local_port)
-{
-    for (auto& l : s_listeners)
-    {
-        if (l.in_use && l.local_port == local_port)
-        {
+static Listener* FindListenerByPort(uint16_t local_port) {
+    for (auto& l : s_listeners) {
+        if (l.in_use && l.local_port == local_port) {
             return &l;
         }
     }
     return nullptr;
 }
 
-static Tcb* FindActiveConn(const Header* const kEthFrame, uint32_t* out_index)
-{
-    for (uint32_t i = 0; i < TCP_MAX_TCBS_ALLOWED; ++i)
-    {
+static Tcb* FindActiveConn(const Header* const kEthFrame, uint32_t* out_index) {
+    for (uint32_t i = 0; i < TCP_MAX_TCBS_ALLOWED; ++i) {
         auto* c = &s_tcbs[i];
 
-        if (!c->in_use)
-        {
+        if (!c->in_use) {
             continue;
         }
 
         // Match only non-listen/non-closed connections.
         // (You will not keep LISTEN in the TCB long-term, but for server bring-up
         // you may set it temporarily when creating a new conn.)
-        if (c->state == kStateClosed)
-        {
+        if (c->state == kStateClosed) {
             continue;
         }
 
         // For server bring-up, matching remote ip+port is enough because local port is fixed.
-        if (c->local_port == kEthFrame->tcp.dstpt && c->remote_port == kEthFrame->tcp.srcpt && std::memcmp(c->remote_ip, kEthFrame->ip4.src, network::ip4::kAddressLength) == 0)
-        {
-            if (out_index != nullptr)
-            {
+        if (c->local_port == kEthFrame->tcp.dstpt && c->remote_port == kEthFrame->tcp.srcpt && std::memcmp(c->remote_ip, kEthFrame->ip4.src, network::ip4::kAddressLength) == 0) {
+            if (out_index != nullptr) {
                 *out_index = i;
             }
             return c;
@@ -840,15 +758,12 @@ static Tcb* FindActiveConn(const Header* const kEthFrame, uint32_t* out_index)
 // Allocate and initialize a TCB from the global pool.
 // Returns nullptr if no free slot is available.
 // If out_index != nullptr, it receives the connection handle.
-static Tcb* AllocTcb(uint16_t local_port, uint32_t* out_index)
-{
-    for (uint32_t i = 0; i < TCP_MAX_TCBS_ALLOWED; ++i)
-    {
+static Tcb* AllocTcb(uint16_t local_port, uint32_t* out_index) {
+    for (uint32_t i = 0; i < TCP_MAX_TCBS_ALLOWED; ++i) {
         Tcb* c = &s_tcbs[i];
 
         // Free slot = not in use
-        if (!c->in_use)
-        {
+        if (!c->in_use) {
             std::memset(c, 0, sizeof(*c));
             // Mark allocated FIRST to avoid reentrancy issues
             // if Input() is ever called from interrupt context.
@@ -859,8 +774,7 @@ static Tcb* AllocTcb(uint16_t local_port, uint32_t* out_index)
             TcpInitTcb(c, local_port);
 
             // Return handle to caller
-            if (out_index != nullptr)
-            {
+            if (out_index != nullptr) {
                 *out_index = i;
             }
 
@@ -872,12 +786,10 @@ static Tcb* AllocTcb(uint16_t local_port, uint32_t* out_index)
     return nullptr;
 }
 
-static Tcb* AcceptNewConnection(const Header* tcp_segment, uint32_t* out_index)
-{
+static Tcb* AcceptNewConnection(const Header* tcp_segment, uint32_t* out_index) {
     // 1. Must have a listener for this destination port
     auto* listener = FindListenerByPort(tcp_segment->tcp.dstpt);
-    if (listener == nullptr)
-    {
+    if (listener == nullptr) {
         return nullptr;
     }
 
@@ -888,8 +800,7 @@ static Tcb* AcceptNewConnection(const Header* tcp_segment, uint32_t* out_index)
     //    - initializes ISS, SND/RCV windows
     //    - sets STATE_LISTEN
     auto* tcb = AllocTcb(tcp_segment->tcp.dstpt, out_index);
-    if (tcb == nullptr)
-    {
+    if (tcb == nullptr) {
         return nullptr;
     }
 
@@ -907,8 +818,7 @@ static Tcb* AcceptNewConnection(const Header* tcp_segment, uint32_t* out_index)
     return tcb;
 }
 
-static inline void EnterTimeWait(Tcb* tcb)
-{
+static inline void EnterTimeWait(Tcb* tcb) {
     NEW_STATE(tcb, kStateTimeWait);
 
     tcb->timewait_deadline = hal::Millis() + kTimeWaitMs;
@@ -920,8 +830,7 @@ static inline void EnterTimeWait(Tcb* tcb)
 }
 
 // Frees a TCB slot back to the global pool.
-static void FreeTcb(Tcb* tcb)
-{
+static void FreeTcb(Tcb* tcb) {
     assert(tcb != nullptr);
 
     RtxClear(tcb);
@@ -930,8 +839,7 @@ static void FreeTcb(Tcb* tcb)
 }
 
 // https://www.rfc-editor.org/rfc/rfc9293.html#name-segment-arrives
-__attribute__((hot)) void Input(struct Header* eth_frame)
-{
+__attribute__((hot)) void Input(struct Header* eth_frame) {
     // Convert ports to host endian early (as you already do).
     eth_frame->tcp.srcpt = __builtin_bswap16(eth_frame->tcp.srcpt);
     eth_frame->tcp.dstpt = __builtin_bswap16(eth_frame->tcp.dstpt);
@@ -939,8 +847,7 @@ __attribute__((hot)) void Input(struct Header* eth_frame)
     DEBUG_PRINTF(IPSTR ":%d[%d]", eth_frame->ip4.src[0], eth_frame->ip4.src[1], eth_frame->ip4.src[2], eth_frame->ip4.src[3], eth_frame->tcp.dstpt, eth_frame->tcp.srcpt);
 
     // Special case reject for 443 unchanged
-    if (eth_frame->tcp.dstpt == 443 && (eth_frame->tcp.control & Control::SYN))
-    {
+    if (eth_frame->tcp.dstpt == 443 && (eth_frame->tcp.control & Control::SYN)) {
         Tcb temp;
         std::memset(&temp, 0, sizeof(temp));
 
@@ -971,17 +878,14 @@ __attribute__((hot)) void Input(struct Header* eth_frame)
     const bool kIsSyn = (eth_frame->tcp.control & Control::SYN) != 0;
     const bool kIsAck = (eth_frame->tcp.control & Control::ACK) != 0;
 
-    if (tcb == nullptr)
-    {
+    if (tcb == nullptr) {
         // No existing connection. Only a bare SYN can create a new connection.
-        if (kIsSyn && !kIsAck)
-        {
+        if (kIsSyn && !kIsAck) {
             tcb = AcceptNewConnection(eth_frame, &conn_index);
         }
 
         // If still no TCB, behave like CLOSED state: send RST.
-        if (tcb == nullptr)
-        {
+        if (tcb == nullptr) {
             Tcb temp;
             std::memset(&temp, 0, sizeof(temp));
 
@@ -1029,8 +933,7 @@ __attribute__((hot)) void Input(struct Header* eth_frame)
     auto is_acceptable = false;
 
     // Server
-    if (tcb->state == kStateListen)
-    {
+    if (tcb->state == kStateListen) {
         std::memcpy(tcb->local_ip, eth_frame->ip4.dst, network::ip4::kAddressLength);
 
         tcb->remote_port = eth_frame->tcp.srcpt;
@@ -1038,23 +941,20 @@ __attribute__((hot)) void Input(struct Header* eth_frame)
         std::memcpy(tcb->remote_eth_addr, eth_frame->ether.src, ethernet::kAddressLength);
 
         // First: ignore RST
-        if (eth_frame->tcp.control & Control::RST)
-        {
+        if (eth_frame->tcp.control & Control::RST) {
             DEBUG_EXIT();
             return;
         }
 
         // Second: if ACK in LISTEN, send RST
-        if (eth_frame->tcp.control & Control::ACK)
-        {
+        if (eth_frame->tcp.control & Control::ACK) {
             SendReset(eth_frame, tcb);
             DEBUG_EXIT();
             return;
         }
 
         // Third: SYN -> create SYN_RECEIVED
-        if (eth_frame->tcp.control & Control::SYN)
-        {
+        if (eth_frame->tcp.control & Control::SYN) {
             tcb->IRS = SEG_SEQ;
             tcb->RCV.NXT = SEG_SEQ + 1;
             tcb->SND.UNA = tcb->ISS;
@@ -1072,8 +972,7 @@ __attribute__((hot)) void Input(struct Header* eth_frame)
     }
 
     // Client
-    if (tcb->state == kStateSynSent)
-    {
+    if (tcb->state == kStateSynSent) {
         const auto kCtl = eth_frame->tcp.control;
         const bool kAckPresent = (kCtl & Control::ACK);
         const bool kRst = (kCtl & Control::RST);
@@ -1081,13 +980,10 @@ __attribute__((hot)) void Input(struct Header* eth_frame)
 
         bool ack_ok = false;
 
-        if (kAckPresent)
-        {
+        if (kAckPresent) {
             ack_ok = BetweenH(tcb->ISS, SEG_ACK, tcb->SND.NXT); // ensure this matches RFC boundaries
-            if (!ack_ok)
-            {
-                if (!kRst)
-                {
+            if (!ack_ok) {
+                if (!kRst) {
                     // <SEQ=SEG.ACK><CTL=RST>
                     SendReset(eth_frame, tcb);
                 }
@@ -1095,18 +991,15 @@ __attribute__((hot)) void Input(struct Header* eth_frame)
             }
         }
 
-        if (kRst)
-        {
-            if (kAckPresent && ack_ok)
-            {
+        if (kRst) {
+            if (kAckPresent && ack_ok) {
                 NEW_STATE(tcb, kStateClosed);
-                tcb->cb_connect(UINT32_MAX, network::tcp::Event::kError);
+                tcb->cb_connect(UINT32_MAX, network::tcp::Event::kError, tcb->context);
             }
             return; // drop
         }
 
-        if (!kSyn)
-        {
+        if (!kSyn) {
             return; // drop
         }
 
@@ -1114,8 +1007,7 @@ __attribute__((hot)) void Input(struct Header* eth_frame)
         tcb->IRS = SEG_SEQ;
         tcb->RCV.NXT = SEG_SEQ + 1;
 
-        if (kAckPresent)
-        {
+        if (kAckPresent) {
             if (Gt(SEG_ACK, tcb->SND.UNA)) tcb->SND.UNA = SEG_ACK;
 
             // Our SYN is ACKed -> ESTABLISHED
@@ -1128,11 +1020,9 @@ __attribute__((hot)) void Input(struct Header* eth_frame)
             SendInfo si{.SEQ = tcb->SND.NXT, .ACK = tcb->RCV.NXT, .CTL = Control::ACK};
             SendSegment(tcb, si);
 
-            tcb->cb_connect(conn_index, network::tcp::Event::kConnected);
+            tcb->cb_connect(conn_index, network::tcp::Event::kConnected, tcb->context);
             return;
-        }
-        else
-        {
+        } else {
             // Simultaneous open
             NEW_STATE(tcb, kStateSynReceived);
             SendInfo si{.SEQ = tcb->ISS, .ACK = tcb->RCV.NXT, .CTL = Control::SYN | Control::ACK};
@@ -1142,8 +1032,7 @@ __attribute__((hot)) void Input(struct Header* eth_frame)
     }
 
     ///< https://www.rfc-editor.org/rfc/rfc9293.html#name-other-states
-    switch (tcb->state)
-    {
+    switch (tcb->state) {
         case kStateSynReceived:
         case kStateEstablished:
         case kStateFinWait1:
@@ -1151,8 +1040,7 @@ __attribute__((hot)) void Input(struct Header* eth_frame)
         case kStateCloseWait:
         case kStateClosing:
         case kStateLastAck:
-        case kStateTimeWait:
-        {
+        case kStateTimeWait: {
             // There are four cases for the acceptability test for an incoming segment.
             /*
              * RCV.WND:
@@ -1171,10 +1059,8 @@ __attribute__((hot)) void Input(struct Header* eth_frame)
 
             DEBUG_PRINTF("RCV.WND=%u, SEG_LEN=%u, RCV.NXT=%u, SEG_SEQ=%u", tcb->RCV.WND, SEG_LEN, tcb->RCV.NXT, SEG_SEQ);
 
-            if (tcb->RCV.WND > 0)
-            {
-                if (SEG_LEN == 0)
-                {
+            if (tcb->RCV.WND > 0) {
+                if (SEG_LEN == 0) {
                     // Case 2: SEG_LEN = 0 RCV.WND > 0 -> RCV.NXT =< SEG.SEQ < RCV.NXT+RCV.WND
                     /*
                      * Condition:
@@ -1184,13 +1070,10 @@ __attribute__((hot)) void Input(struct Header* eth_frame)
                      * Even though the segment contains no data, it might carry control flags (e.g., SYN, FIN) that need to be processed.
                      * It must lie within the allowable sequence range dictated by the receiver’s window.
                      */
-                    if (BetweenL(tcb->RCV.NXT, SEG_SEQ, tcb->RCV.NXT + tcb->RCV.WND))
-                    {
+                    if (BetweenL(tcb->RCV.NXT, SEG_SEQ, tcb->RCV.NXT + tcb->RCV.WND)) {
                         is_acceptable = true;
                     }
-                }
-                else
-                {
+                } else {
                     // Case 4: SEG_LEN > 0 RCV.WND > 0 ->
                     // RCV.NXT =< SEG.SEQ < RCV.NXT+RCV.WND
                     // or
@@ -1203,14 +1086,11 @@ __attribute__((hot)) void Input(struct Header* eth_frame)
                      * Segments can be partially within the window,
                      * so either the start or the end of the segment must fall within the acceptable range.
                      */
-                    if (BetweenL(tcb->RCV.NXT, SEG_SEQ, tcb->RCV.NXT + tcb->RCV.WND) || BetweenL(tcb->RCV.NXT, SEG_SEQ + SEG_LEN - 1, tcb->RCV.NXT + tcb->RCV.WND))
-                    {
+                    if (BetweenL(tcb->RCV.NXT, SEG_SEQ, tcb->RCV.NXT + tcb->RCV.WND) || BetweenL(tcb->RCV.NXT, SEG_SEQ + SEG_LEN - 1, tcb->RCV.NXT + tcb->RCV.WND)) {
                         is_acceptable = true;
                     }
                 }
-            }
-            else
-            {
+            } else {
                 // Case 1: SEG_LEN = 0 RCV.WND = 0 -> SEG.SEQ = RCV.NXT
                 /*
                  * Condition:
@@ -1220,10 +1100,8 @@ __attribute__((hot)) void Input(struct Header* eth_frame)
                  *  Even though the window is closed,
                  *  the receiver still acknowledges control packets (e.g., ACKs or FIN) that match RCV.NXT.
                  */
-                if (SEG_LEN == 0)
-                {
-                    if (SEG_SEQ == tcb->RCV.NXT)
-                    {
+                if (SEG_LEN == 0) {
+                    if (SEG_SEQ == tcb->RCV.NXT) {
                         is_acceptable = true;
                     }
                 }
@@ -1240,13 +1118,11 @@ __attribute__((hot)) void Input(struct Header* eth_frame)
 
             DEBUG_PRINTF("is_acceptable=%d", is_acceptable);
 
-            if (!is_acceptable)
-            {
+            if (!is_acceptable) {
                 // If an incoming segment is not acceptable, an acknowledgment should be sent in reply
                 // (unless the RST bit is set, if so drop the segment and return)
                 // <SEQ=SND.NXT><ACK=RCV.NXT><CTL=ACK>
-                if (eth_frame->tcp.control & Control::RST)
-                {
+                if (eth_frame->tcp.control & Control::RST) {
                     FreeTcb(tcb);
                     DEBUG_EXIT();
                     return;
@@ -1264,10 +1140,8 @@ __attribute__((hot)) void Input(struct Header* eth_frame)
             }
 
             // second check the RST bit, *//* Page 70 */
-            if (eth_frame->tcp.control & Control::RST)
-            {
-                switch (tcb->state)
-                {
+            if (eth_frame->tcp.control & Control::RST) {
+                switch (tcb->state) {
                     case kStateSynReceived:
                         FreeTcb(tcb);
                         break;
@@ -1301,11 +1175,9 @@ __attribute__((hot)) void Input(struct Header* eth_frame)
             // third check security and precedence. No code needed here
 
             // fourth, check the SYN bit,  /* Page 71 */
-            if (eth_frame->tcp.control & Control::SYN)
-            {
+            if (eth_frame->tcp.control & Control::SYN) {
                 // RFC 1122 section 4.2.2.20 (e)
-                if (tcb->state == kStateSynReceived)
-                {
+                if (tcb->state == kStateSynReceived) {
                     FreeTcb(tcb);
                     DEBUG_EXIT();
                     return;
@@ -1317,19 +1189,16 @@ __attribute__((hot)) void Input(struct Header* eth_frame)
             }
 
             /*  fifth check the ACK field, */ /* Page 72 */
-            if (!(eth_frame->tcp.control & Control::ACK))
-            {
+            if (!(eth_frame->tcp.control & Control::ACK)) {
                 // if the ACK bit is off drop the segment and return
                 DEBUG_EXIT();
                 return;
             }
 
-            switch (tcb->state)
-            {
+            switch (tcb->state) {
                 case kStateSynReceived:
                     // If SND.UNA =< SEG.ACK =< SND.NXT then enter ESTABLISHED state and continue processing.
-                    if (BetweenLh(tcb->SND.UNA, SEG_ACK, tcb->SND.NXT))
-                    {
+                    if (BetweenLh(tcb->SND.UNA, SEG_ACK, tcb->SND.NXT)) {
                         // RFC 1122 section 4.2.2.20 (f)
                         tcb->SND.WND = SEG_WND;
                         tcb->SND.WL1 = SEG_SEQ;
@@ -1342,9 +1211,7 @@ __attribute__((hot)) void Input(struct Header* eth_frame)
                         NEW_STATE(tcb, kStateEstablished);
                         DEBUG_EXIT();
                         return;
-                    }
-                    else
-                    {
+                    } else {
                         // <SEQ=SEG.ACK><CTL=RST>
                         SendReset(eth_frame, tcb);
 
@@ -1358,61 +1225,49 @@ __attribute__((hot)) void Input(struct Header* eth_frame)
                 case kStateClosing:
                     DEBUG_PRINTF("SND.UNA=%u, SEG_ACK=%u, SND.NXT=%u", tcb->SND.UNA, SEG_ACK, tcb->SND.NXT);
 
-                    if (BetweenH(tcb->SND.UNA, SEG_ACK, tcb->SND.NXT))
-                    {
+                    if (BetweenH(tcb->SND.UNA, SEG_ACK, tcb->SND.NXT)) {
                         auto bytes_ack = SEG_ACK - tcb->SND.UNA;
                         tcb->SND.UNA = SEG_ACK;
 
                         RtxOnAck(tcb, SEG_ACK); // Retransmission ACK handling
 
-                        if (SEG_ACK == tcb->SND.NXT)
-                        {
+                        if (SEG_ACK == tcb->SND.NXT) {
                             DEBUG_PUTS("All segments are acknowledged");
                         }
 
                         auto state = tcb->state;
 
                         // If our FIN has been ACKed, FIN_WAIT_1 -> FIN_WAIT_2
-                        if (state == kStateFinWait1 && SEG_ACK == tcb->SND.NXT)
-                        {
+                        if (state == kStateFinWait1 && SEG_ACK == tcb->SND.NXT) {
                             NEW_STATE(tcb, kStateFinWait2);
                         }
 
-                        if (state == kStateFinWait1 || state == kStateClosing)
-                        {
+                        if (state == kStateFinWait1 || state == kStateClosing) {
                             bytes_ack--;
                             DEBUG_PUTS("Acknowledged FIN does not count");
                         }
 
-                        if (state == kStateEstablished && bytes_ack == 1)
-                        {
+                        if (state == kStateEstablished && bytes_ack == 1) {
                             bytes_ack--;
                         }
 
                         // update send window
-                        if (Lt(tcb->SND.WL1, SEG_SEQ) || (tcb->SND.WL1 == SEG_SEQ && Leq(tcb->SND.WL2, SEG_ACK)))
-                        {
+                        if (Lt(tcb->SND.WL1, SEG_SEQ) || (tcb->SND.WL1 == SEG_SEQ && Leq(tcb->SND.WL2, SEG_ACK))) {
                             tcb->SND.WND = SEG_WND;
                             tcb->SND.WL1 = SEG_SEQ;
                             tcb->SND.WL2 = SEG_ACK;
                         }
-                    }
-                    else if (Leq(SEG_ACK, tcb->SND.UNA))
-                    { // RFC 1122 section 4.2.2.20 (g)
+                    } else if (Leq(SEG_ACK, tcb->SND.UNA)) { // RFC 1122 section 4.2.2.20 (g)
                         DEBUG_PUTS("Ignore duplicate ACK");
-                        if (BetweenLh(tcb->SND.UNA, SEG_ACK, tcb->SND.NXT))
-                        {
+                        if (BetweenLh(tcb->SND.UNA, SEG_ACK, tcb->SND.NXT)) {
                             // ... but update send window
-                            if (Lt(tcb->SND.WL1, SEG_SEQ) || (tcb->SND.WL1 == SEG_SEQ && Leq(tcb->SND.WL2, SEG_ACK)))
-                            {
+                            if (Lt(tcb->SND.WL1, SEG_SEQ) || (tcb->SND.WL1 == SEG_SEQ && Leq(tcb->SND.WL2, SEG_ACK))) {
                                 tcb->SND.WND = SEG_WND;
                                 tcb->SND.WL1 = SEG_SEQ;
                                 tcb->SND.WL2 = SEG_ACK;
                             }
                         }
-                    }
-                    else if (Gt(SEG_ACK, tcb->SND.NXT))
-                    {
+                    } else if (Gt(SEG_ACK, tcb->SND.NXT)) {
                         DEBUG_PRINTF("SEG_ACK=%u, SND.NXT=%u", SEG_ACK, tcb->SND.NXT);
 
                         SendInfo send_info;
@@ -1427,14 +1282,12 @@ __attribute__((hot)) void Input(struct Header* eth_frame)
                     }
                     break;
                 case kStateLastAck:
-                    if (SEG_ACK == tcb->SND.NXT)
-                    { // if our FIN is now acknowledged
+                    if (SEG_ACK == tcb->SND.NXT) { // if our FIN is now acknowledged
                         FreeTcb(tcb);
                     }
                     break;
                 case kStateTimeWait:
-                    if (SEG_ACK == tcb->SND.NXT)
-                    { // if our FIN is now acknowledged
+                    if (SEG_ACK == tcb->SND.NXT) { // if our FIN is now acknowledged
                         SendInfo send_info;
                         send_info.SEQ = tcb->SND.NXT;
                         send_info.ACK = tcb->RCV.NXT;
@@ -1455,18 +1308,14 @@ __attribute__((hot)) void Input(struct Header* eth_frame)
             // sixth, check the URG bit. No code needed here
 
             // seventh, process the segment text
-            switch (tcb->state)
-            {
+            switch (tcb->state) {
                 case kStateEstablished:
                 case kStateFinWait1:
-                case kStateFinWait2:
-                {
-                    if (kDataLength > 0)
-                    {
+                case kStateFinWait2: {
+                    if (kDataLength > 0) {
                         // Stack does not support out-of-order segments.
                         // Therefore the only acceptable data segment is exactly at RCV.NXT.
-                        if (SEG_SEQ == tcb->RCV.NXT)
-                        {
+                        if (SEG_SEQ == tcb->RCV.NXT) {
                             // Update receive sequence and window immediately upon accepting data.
                             // (in-order only).
                             tcb->RCV.NXT += kDataLength;
@@ -1478,18 +1327,15 @@ __attribute__((hot)) void Input(struct Header* eth_frame)
 
                             // The callback is attached per-connection
                             // (copied from the Listener when the connection was accepted).
-                            assert(tcb->cb_listen != nullptr);
-                            tcb->cb_listen(conn_index, reinterpret_cast<uint8_t*>(&eth_frame->tcp) + kDataOffset, kDataLength);
+                            assert(tcb->cb_data != nullptr);
+                            tcb->cb_data(conn_index, reinterpret_cast<uint8_t*>(&eth_frame->tcp) + kDataOffset, kDataLength, tcb->context);
 
-                            if (!tcb->did_send_ack_or_data)
-                            {
+                            if (!tcb->did_send_ack_or_data) {
                                 // Send acknowledgment (ACK-only segment).
                                 const SendInfo kAck{.SEQ = tcb->SND.NXT, .ACK = tcb->RCV.NXT, .CTL = Control::ACK};
                                 SendSegment(tcb, kAck);
                             }
-                        }
-                        else
-                        {
+                        } else {
                             // Out-of-order segment: send duplicate ACK for current RCV.NXT.
                             const SendInfo kAck{.SEQ = tcb->SND.NXT, .ACK = tcb->RCV.NXT, .CTL = Control::ACK};
                             SendSegment(tcb, kAck);
@@ -1512,14 +1358,12 @@ __attribute__((hot)) void Input(struct Header* eth_frame)
              since the SEG.SEQ cannot be validated; drop the segment and return.
              */
 
-            if ((tcb->state == kStateClosed) || (tcb->state == kStateListen) || (tcb->state == kStateSynSent))
-            {
+            if ((tcb->state == kStateClosed) || (tcb->state == kStateListen) || (tcb->state == kStateSynSent)) {
                 DEBUG_EXIT();
                 return;
             }
 
-            if (!(eth_frame->tcp.control & Control::FIN))
-            {
+            if (!(eth_frame->tcp.control & Control::FIN)) {
                 DEBUG_EXIT();
                 return;
             }
@@ -1541,8 +1385,7 @@ __attribute__((hot)) void Input(struct Header* eth_frame)
 
             SendSegment(tcb, send_info);
 
-            switch (tcb->state)
-            {
+            switch (tcb->state) {
                 case kStateSynReceived:
                 case kStateEstablished:
                     NEW_STATE(tcb, kStateCloseWait);
@@ -1554,12 +1397,9 @@ __attribute__((hot)) void Input(struct Header* eth_frame)
                      timers; otherwise enter the CLOSING state.
                      */
                     // if ACK acknowledges everything we sent including FIN
-                    if (Leq(tcb->SND.NXT, SEG_ACK))
-                    { /* if our FIN is now acknowledged */
+                    if (Leq(tcb->SND.NXT, SEG_ACK)) { /* if our FIN is now acknowledged */
                         EnterTimeWait(tcb);
-                    }
-                    else
-                    {
+                    } else {
                         NEW_STATE(tcb, kStateClosing);
                     }
                     break;
@@ -1574,8 +1414,7 @@ __attribute__((hot)) void Input(struct Header* eth_frame)
                 case kStateLastAck:
                     // Remain in the LAST-ACK state.
                     break;
-                case kStateTimeWait:
-                {
+                case kStateTimeWait: {
                     // Always ACK what we have
                     SendInfo si{.SEQ = tcb->SND.NXT, .ACK = tcb->RCV.NXT, .CTL = Control::ACK};
                     SendSegment(tcb, si, false);
@@ -1590,8 +1429,7 @@ __attribute__((hot)) void Input(struct Header* eth_frame)
                     assert(0);
                     break;
             }
-        }
-        break;
+        } break;
         default:
             assert(0);
             break;
@@ -1600,12 +1438,9 @@ __attribute__((hot)) void Input(struct Header* eth_frame)
     DEBUG_EXIT();
 }
 
-static Listener* AllocListenerSlot()
-{
-    for (auto& l : s_listeners)
-    {
-        if (!l.in_use)
-        {
+static Listener* AllocListenerSlot() {
+    for (auto& l : s_listeners) {
+        if (!l.in_use) {
             l.in_use = true;
             return &l;
         }
@@ -1614,18 +1449,15 @@ static Listener* AllocListenerSlot()
 }
 
 // Public API: start listening on a port.
-bool Listen(uint16_t local_port, network::tcp::CallbackListen cb)
-{
+bool Listen(uint16_t local_port, network::tcp::CallbackListen cb) {
     // One listener per port in this simple design.
-    if (FindListenerByPort(local_port) != nullptr)
-    {
+    if (FindListenerByPort(local_port) != nullptr) {
         return false; // already listening
     }
 
     Listener* l = AllocListenerSlot();
 
-    if (l == nullptr)
-    {
+    if (l == nullptr) {
         return false; // no space
     }
 
@@ -1636,12 +1468,10 @@ bool Listen(uint16_t local_port, network::tcp::CallbackListen cb)
 }
 
 // Public API:
-bool Unlisten(uint16_t local_port)
-{
+bool Unlisten(uint16_t local_port) {
     Listener* l = FindListenerByPort(local_port);
 
-    if (l == nullptr)
-    {
+    if (l == nullptr) {
         return false;
     }
 
@@ -1658,27 +1488,23 @@ static constexpr uint16_t kLocalPortRangeEnd = 65535;
 static uint16_t s_local_port = kLocalPortRangeStart;
 
 // Client
-int32_t Connect(uint32_t remote_ip, uint16_t remote_port, CallbackConnect cb_connect, CallbackListen cb_listen)
-{
+ConnHandle Connect(uint32_t remote_ip, uint16_t remote_port, CallbackConnect cb_connect, CallbackData cb_data, void* context) {
     const auto& netif = netif::global::netif_default;
-    if (__builtin_expect((netif.ip.addr == 0), 0))
-    {
-        console::Error("Connect: No ip!\n");
-        return -1;
+    if (__builtin_expect((netif.ip.addr == 0), 0)) {
+        console::Error("Connect: No ip!");
+        return kInvalidConnHandle;
     }
 
     uint32_t out_index = 0;
 
     auto* tcb = AllocTcb(remote_port, &out_index);
-    if (tcb == nullptr)
-    {
-        console::Error("Connect: No TCB!\n");
-        return -2;
+    if (tcb == nullptr) {
+        console::Error("Connect: No TCB!");
+        return kInvalidConnHandle;
     }
 
     tcb->local_port = s_local_port;
-    if (s_local_port++ == kLocalPortRangeEnd)
-    {
+    if (s_local_port++ == kLocalPortRangeEnd) {
         s_local_port = kLocalPortRangeStart;
     }
 
@@ -1691,8 +1517,9 @@ int32_t Connect(uint32_t remote_ip, uint16_t remote_port, CallbackConnect cb_con
     ip.u32 = remote_ip;
     memcpy(tcb->remote_ip, ip.u8, 4);
 
-    tcb->cb_listen = cb_listen;
+    tcb->cb_data = cb_data;
     tcb->cb_connect = cb_connect;
+    tcb->context = context;
 
     tcb->SND.UNA = tcb->ISS;
     tcb->SND.NXT = tcb->ISS + 1;
@@ -1706,28 +1533,25 @@ int32_t Connect(uint32_t remote_ip, uint16_t remote_port, CallbackConnect cb_con
 
     SendSegment(tcb, info);
 
-    return 0;
+    return out_index;
 }
 
 int32_t Close(ConnHandle conn_handle) // graceful FIN
 {
-    if (conn_handle >= TCP_MAX_TCBS_ALLOWED)
-    {
+    if (conn_handle >= TCP_MAX_TCBS_ALLOWED) {
         console::Error("Close: Connection handle!\n");
         return -1;
     }
 
     auto* c = &s_tcbs[conn_handle];
 
-    if (!c->in_use || c->state == kStateClosed)
-    {
+    if (!c->in_use || c->state == kStateClosed) {
         console::Error("Close: TCB!\n");
         return -1;
     }
 
     // If we’re already closing/closed-ish, treat as success (idempotent close).
-    switch (c->state)
-    {
+    switch (c->state) {
         case kStateFinWait1:
         case kStateFinWait2:
         case kStateClosing:
@@ -1740,8 +1564,7 @@ int32_t Close(ConnHandle conn_handle) // graceful FIN
     }
 
     // We only support graceful close from states where FIN makes sense here.
-    if (c->state != kStateEstablished && c->state != kStateCloseWait)
-    {
+    if (c->state != kStateEstablished && c->state != kStateCloseWait) {
         console::Error("Close: Not graceful!\n");
         return -1;
     }
@@ -1760,11 +1583,9 @@ int32_t Close(ConnHandle conn_handle) // graceful FIN
     // FIN consumes 1 sequence number.
     c->SND.NXT += 1;
 
-    if (c->state == kStateEstablished)
-    {
+    if (c->state == kStateEstablished) {
         NEW_STATE(c, kStateFinWait1);
-    }
-    else /* kStateCloseWait */
+    } else /* kStateCloseWait */
     {
         NEW_STATE(c, kStateLastAck);
     }
@@ -1773,14 +1594,12 @@ int32_t Close(ConnHandle conn_handle) // graceful FIN
 }
 
 // Public API:
-void Abort(uint32_t conn_handle)
-{
+void Abort(uint32_t conn_handle) {
     assert(conn_handle < TCP_MAX_TCBS_ALLOWED);
 
     auto* c = &s_tcbs[conn_handle];
 
-    if (!c->in_use || c->state == kStateClosed)
-    {
+    if (!c->in_use || c->state == kStateClosed) {
         return;
     }
 
@@ -1795,28 +1614,24 @@ void Abort(uint32_t conn_handle)
 }
 
 // Public API:
-int32_t Send(ConnHandle conn_handle, const uint8_t* buffer, uint32_t length)
-{
+int32_t Send(ConnHandle conn_handle, const uint8_t* buffer, uint32_t length) {
     DEBUG_ENTRY();
     assert(buffer != nullptr);
 
-    if (conn_handle >= TCP_MAX_TCBS_ALLOWED)
-    {
+    if (conn_handle >= TCP_MAX_TCBS_ALLOWED) {
         return -1;
     }
 
     auto* c = &s_tcbs[conn_handle];
 
     // If this slot isn't in use, it's a stale/invalid handle.
-    if (!c->in_use)
-    {
+    if (!c->in_use) {
         return -1;
     }
 
     // For now, only allow sending in states where your legacy code expects it.
     // Most stacks allow in ESTABLISHED and also in CLOSE_WAIT (server can still send).
-    if (c->state != kStateEstablished && c->state != kStateCloseWait)
-    {
+    if (c->state != kStateEstablished && c->state != kStateCloseWait) {
         return -1;
     }
 
@@ -1827,8 +1642,7 @@ int32_t Send(ConnHandle conn_handle, const uint8_t* buffer, uint32_t length)
     // Legacy behavior preserved:
     // Only send if the FULL remaining length fits inside SND.WND.
     // NOTE: Many stacks instead send min(length, wnd)
-    while ((length > 0) && (length <= c->SND.WND))
-    {
+    while ((length > 0) && (length <= c->SND.WND)) {
         const uint32_t kWriteLen = (length > kTcpDataMss) ? kTcpDataMss : length;
         const bool kIsLast = (length < kTcpDataMss);
 
@@ -1838,25 +1652,21 @@ int32_t Send(ConnHandle conn_handle, const uint8_t* buffer, uint32_t length)
         length -= kWriteLen;
     }
 
-    if (length == 0)
-    {
+    if (length == 0) {
         DEBUG_EXIT();
         return 0; // everything sent immediately
     }
 
     auto& q = c->tx_queue;
 
-    if (!q.IsEmpty())
-    {
+    if (!q.IsEmpty()) {
         // Already queued something.
         DEBUG_EXIT();
         return -2;
     }
 
-    while (length > 0)
-    {
-        if (q.IsFull())
-        {
+    while (length > 0) {
+        if (q.IsFull()) {
             // Can't queue everything.
             DEBUG_EXIT();
             return -2;
