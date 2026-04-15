@@ -58,7 +58,7 @@ inline constexpr struct FilesContent kHttpContent[] = {
 #endif // defined(NODE_ARTNET) || defined(NODE_ARTNET_MULTI)
 	{ 247271700,"index.js", index_js, 5394, static_cast<http::ContentTypes>(2) },
 #if !defined (CONFIG_HTTP_HTML_NO_DMX) && defined(OUTPUT_DMX_MONITOR)
-	{ 3515266689,"dmxmonitor.js", dmxmonitor_js, 1731, static_cast<http::ContentTypes>(2) },
+	{ 3515266689,"dmxmonitor.js", dmxmonitor_js, 1759, static_cast<http::ContentTypes>(2) },
 #endif // !defined (CONFIG_HTTP_HTML_NO_DMX) && defined(OUTPUT_DMX_MONITOR)
 #if !defined (CONFIG_HTTP_HTML_NO_PIXEL) && (defined(OUTPUT_DMX_PIXEL) || defined(OUTPUT_DMX_PIXEL_MULTI))
 	{ 2632765249,"pixeltype.json", pixeltype_json, 1665, static_cast<http::ContentTypes>(3) },
@@ -74,7 +74,7 @@ inline constexpr struct FilesContent kHttpContent[] = {
 	{ 4266521075,"showfile.js", showfile_js, 2201, static_cast<http::ContentTypes>(2) },
 #endif // (NODE_SHOWFILE)
 #if !defined (CONFIG_HTTP_HTML_NO_PIXEL) && (defined(OUTPUT_DMX_PIXEL) || defined(OUTPUT_DMX_PIXEL_MULTI))
-	{ 434885195,"dmxpixel.js", dmxpixel_js, 3108, static_cast<http::ContentTypes>(2) },
+	{ 434885195,"dmxpixel.js", dmxpixel_js, 2938, static_cast<http::ContentTypes>(2) },
 #endif // !defined (CONFIG_HTTP_HTML_NO_PIXEL) && (defined(OUTPUT_DMX_PIXEL) || defined(OUTPUT_DMX_PIXEL_MULTI))
 #if !defined (CONFIG_HTTP_HTML_NO_RDM) && defined (RDM_CONTROLLER)
 	{ 2747196229,"rdmdevice.js", rdmdevice_js, 511, static_cast<http::ContentTypes>(2) },

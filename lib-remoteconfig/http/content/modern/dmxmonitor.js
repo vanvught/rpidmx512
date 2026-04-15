@@ -5,32 +5,39 @@ window.dmxmonitor = {
 
         const div = document.createElement("div");
         div.className = "card";
-        div.innerHTML =
-            "<h2>" + name + "</h2>" +
-            "<form onsubmit=\"dmxmonitor.save('" + path + "'); return false;\">" +
-            "<div class='row'>" +
-            "<label>Start address</label>" +
-            "<input id='dmx_start_address' type='number' min='1' max='512' required>" +
-            "</div>" +
-            "<div class='row'>" +
-            "<label>Max channels</label>" +
-            "<input id='dmx_max_channels' type='number' min='1' max='512' required>" +
-            "</div>" +
-            "<div class='row'>" +
-            "<label>Format</label>" +
-            "<select id='format'>" +
-            "<option value='hex'>hex</option>" +
-            "<option value='pct'>pct</option>" +
-            "<option value='dec'>dec</option>" +
-            "</select>" +
-            "</div>" +
-            "<div class='row'>" +
-            "<label></label>" +
-            "<button type='submit'>Save</button>" +
-            "</div>" +
-            "</form>";
+        div.innerHTML = `
+            <h2>${name}</h2>
+            <form accept-charset="utf-8">
+                <div class='row'>
+                    <label>Start address</label>
+                    <input id='dmx_start_address' type='number' min='1' max='512' required>
+                </div>
+                <div class='row'>
+                    <label>Max channels</label>
+                    <input id='dmx_max_channels' type='number' min='1' max='512' required>
+                </div>
+                <div class='row'>
+                    <label>Format</label>
+                    <select id='format'>
+                        <option value='hex'>hex</option>
+                        <option value='pct'>pct</option>
+                        <option value='dec'>dec</option>
+                    </select>
+                </div>
+                <div class='row'>
+                    <label></label>
+                    <button type='submit'>Save</button>
+                </div>
+            </form>
+        `;
 
         document.getElementById("modules").appendChild(div);
+
+        const form = div.querySelector("form");
+        form.addEventListener("submit", function(event) {
+            event.preventDefault();
+            dmxmonitor.save(path);
+        });
 
         document.getElementById("dmx_start_address").value = json.dmx_start_address || 1;
         document.getElementById("dmx_max_channels").value = json.dmx_max_channels || 16;
@@ -53,7 +60,9 @@ window.dmxmonitor = {
 
         fetch("json/" + path, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Content-Type": "application/json; charset=UTF-8"
+            },
             body: JSON.stringify({
                 dmx_start_address: +start.value,
                 dmx_max_channels: +max.value,

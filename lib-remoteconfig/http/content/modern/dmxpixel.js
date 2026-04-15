@@ -5,10 +5,9 @@ window.dmxpixel = {
 
         const ports = Object.keys(j).filter(k => k.startsWith("start_uni_port_"));
 
-        const card = document.createElement("div");
-        card.className = "card";
-
-        card.innerHTML = `
+        const div = document.createElement("div");
+        div.className = "card";
+        div.innerHTML = `
 			<h2>${name}</h2>
 			<form>
 				<div class='row'><label>Type</label><input data-key='type'></div>
@@ -44,10 +43,9 @@ window.dmxpixel = {
 			</form>
 		`;
 
-        document.getElementById("modules").appendChild(card);
+        document.getElementById("modules").appendChild(div);
 
-        // --- dynamic ports ---
-        const portsDiv = card.querySelector(".ports");
+        const portsDiv = div.querySelector(".ports");
         if (ports.length) {
             ports.forEach((key, i) => {
                 const p = document.createElement("div");
@@ -59,19 +57,17 @@ window.dmxpixel = {
                 portsDiv.appendChild(p);
             });
         } else {
-            card.querySelector(".universe-row").style.display = "none";
+            div.querySelector(".universe-row").style.display = "none";
         }
 
-        // --- hook save ---
-        card.querySelector("form").onsubmit = () => {
-            this.save(path, card);
+        div.querySelector("form").onsubmit = () => {
+            this.save(path, div);
             return false;
         };
 
-        this.fill(card, j);
+        this.fill(div, j);
     },
 
-    // --- fill UI from JSON ---
     fill: function(card, j) {
         const fields = card.querySelectorAll("[data-key]");
         fields.forEach(e => {
@@ -82,7 +78,6 @@ window.dmxpixel = {
         });
     },
 
-    // --- collect + validate + save ---
     save: async function(path, card) {
         const fields = card.querySelectorAll("[data-key]");
         const out = {};
@@ -120,7 +115,6 @@ window.dmxpixel = {
                 return;
             }
 
-            // --- refresh from device (source of truth) ---
             const j = await getJSON(path);
             if (!j) return;
 
