@@ -109,16 +109,13 @@ struct RtxQueue {
 constexpr uint32_t kTimeWaitMs = 60000; // example 60s
 
 struct Listener {
-    bool in_use;                     // True if this listener slot is active.
-    uint16_t local_port;             // Port we listen on.
-    network::tcp::CallbackListen cb; // App callback for connections/events.
-
-    // Optional: backlog, security flags, user context pointer, etc.
+    bool in_use;                   
+    uint16_t local_port;
+    network::tcp::CallbackData cb;
 };
 
 ///< Transmission control block (TCB)
 struct Tcb {
-    network::tcp::CallbackListen cb_listen;
     network::tcp::CallbackData cb_data;
     network::tcp::CallbackConnect cb_connect;
     void* context;
@@ -812,7 +809,7 @@ static Tcb* AcceptNewConnection(const Header* tcp_segment, uint32_t* out_index) 
     std::memcpy(tcb->remote_eth_addr, tcp_segment->ether.src, ethernet::kAddressLength);
 
     // 5. Attach the listener's callback to this connection
-    tcb->cb_listen = listener->cb;
+    tcb->cb_data = listener->cb;
 
     // STATE_LISTEN is already set by TcpInitTcb()
     return tcb;
@@ -1449,7 +1446,7 @@ static Listener* AllocListenerSlot() {
 }
 
 // Public API: start listening on a port.
-bool Listen(uint16_t local_port, network::tcp::CallbackListen cb) {
+bool Listen(uint16_t local_port, network::tcp::CallbackData cb) {
     // One listener per port in this simple design.
     if (FindListenerByPort(local_port) != nullptr) {
         return false; // already listening

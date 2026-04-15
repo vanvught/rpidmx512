@@ -33,27 +33,21 @@
 #include "core/protocol/tcp.h"
 #include "network_memory.h"
 
-#define TCP_TX_QUEUE_SIZE 8
-
-namespace network::tcp::datasegment
-{
-struct NodeData
-{
+namespace network::tcp::datasegment {
+struct NodeData {
     uint8_t buffer[kTcpDataMss];
     uint32_t length;
     bool is_last_segment;
 };
 
-struct Node
-{
+struct Node {
     NodeData node_data;
     Node* next;
 };
 
 static_assert(sizeof(Node) <= network::memory::kBlockSize);
 
-class Queue
-{
+class Queue {
    public:
     Queue() = default;
     Queue(const Queue&) = delete;
@@ -65,23 +59,20 @@ class Queue
 
     bool IsFull() const { return full_; }
 
-    bool Push(const uint8_t* data, uint32_t length, bool is_last_segment)
-    {
+    bool Push(const uint8_t* data, uint32_t length, bool is_last_segment) {
         assert(data != nullptr);
         assert(length > 0);
         assert(length <= kTcpDataMss);
 
-        if (IsFull() || (length > kTcpDataMss)) [[unlikely]]
-        {
+        if (IsFull() || (length > kTcpDataMss)) [[unlikely]] {
             return false;
         }
 
-        auto* add = reinterpret_cast<Node *>(memory::Allocator::Instance().Allocate());
+        auto* add = reinterpret_cast<Node*>(memory::Allocator::Instance().Allocate());
 
         full_ = (add == nullptr);
 
-        if (full_) [[unlikely]]
-        {
+        if (full_) [[unlikely]] {
             return false;
         }
 
@@ -91,16 +82,13 @@ class Queue
         data_segment.length = length;
         data_segment.is_last_segment = is_last_segment;
 
-        if (front_ == nullptr)
-        {
+        if (front_ == nullptr) {
             assert(last_ == nullptr);
 
             front_ = add;
             front_->next = nullptr;
             last_ = front_;
-        }
-        else
-        {
+        } else {
             assert(last_->next == nullptr);
 
             last_->next = add;
@@ -111,24 +99,21 @@ class Queue
         return true;
     }
 
-    void Pop()
-    {
+    void Pop() {
         assert(!IsEmpty());
 
-        if (IsEmpty())
-        {
+        if (IsEmpty()) {
             return;
         }
 
         Node* tmp = front_;
         front_ = front_->next;
         memory::Allocator::Instance().Free(tmp);
-		
-		full_ = false;
+
+        full_ = false;
     }
 
-    const NodeData& GetFront() const
-    {
+    const NodeData& GetFront() const {
         assert(front_ != nullptr);
         return front_->node_data;
     }

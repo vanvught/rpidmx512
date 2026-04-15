@@ -48,7 +48,7 @@ namespace network::tcp {
 #define MAX_PORTS_ALLOWED 2
 
 struct PortInfo {
-    CallbackListen callback;
+    CallbackData callback;
     uint16_t nPort;
 };
 
@@ -57,7 +57,7 @@ static struct pollfd poll_set[MAX_PORTS_ALLOWED][TCP_MAX_TCBS_ALLOWED];
 static int server_sockfd[MAX_PORTS_ALLOWED];
 static uint8_t s_ReadBuffer[network::tcp::kDataSize];
 
-bool Listen(uint16_t local_port, network::tcp::CallbackListen cb) {
+bool Listen(uint16_t local_port, network::tcp::CallbackData cb) {
     int32_t i;
 
     for (i = 0; i < MAX_PORTS_ALLOWED; i++) {
@@ -229,7 +229,7 @@ void Run() {
 
                     if (s_Ports[port_index].callback != nullptr) {
                         // IMPORTANT: pass the FD, not fd_index
-                        s_Ports[port_index].callback((ConnHandle)current_fd, (uint8_t*)s_ReadBuffer, (uint32_t)bytes);
+                        s_Ports[port_index].callback((ConnHandle)current_fd, (uint8_t*)s_ReadBuffer, (uint32_t)bytes, nullptr);
                     }
                 }
             }

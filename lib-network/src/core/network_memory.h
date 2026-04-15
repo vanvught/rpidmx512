@@ -30,13 +30,11 @@
 #include <cstring>
 #include <cassert>
 
-namespace console
-{
+namespace console {
 void Error(const char*);
 }
 
-namespace network::memory
-{
+namespace network::memory {
 inline constexpr uint32_t kBlocks =
 #if !defined(CONFIG_NETWORK_MEMORY_BLOCKS)
     12;
@@ -58,11 +56,9 @@ static_assert((kBlockSize % 4) == 0);
 
 extern uint8_t pool[kBlocks][kBlockSize] __attribute__((aligned(4)));
 
-class Allocator
-{
+class Allocator {
    public:
-    static Allocator& Instance()
-    {
+    static Allocator& Instance() {
         static Allocator instance;
         static bool inited = false;
 
@@ -75,8 +71,7 @@ class Allocator
         return instance;
     }
 
-    void Init()
-    {
+    void Init() {
         free_mask_ = kAllMask;
         std::memset(size_, 0, sizeof(size_));
     }
@@ -89,10 +84,8 @@ class Allocator
     bool IsEmpty() const { return free_mask_ == kAllMask; }
     bool IsFull() const { return free_mask_ == 0; }
 
-    uint8_t* Allocate()
-    {
-        if (IsFull())
-        {
+    uint8_t* Allocate() {
+        if (IsFull()) {
             console::Error("Allocate:Full!\n");
             return nullptr;
         }
@@ -105,14 +98,12 @@ class Allocator
         return pool[kIndex];
     }
 
-    uint16_t Allocate(const uint8_t* data, uint16_t size)
-    {
+    uint16_t Allocate(const uint8_t* data, uint16_t size) {
         assert(data != nullptr);
         assert(size > 0);
         assert(size <= kBlockSize);
 
-        if (IsFull())
-        {
+        if (IsFull()) {
             console::Error("Allocate:Full!\n");
             return UINT16_MAX;
         }
@@ -128,14 +119,11 @@ class Allocator
         return static_cast<uint16_t>(kIndex);
     }
 
-    void Free(void* pointer)
-    {
+    void Free(void* pointer) {
         assert(pointer != nullptr);
 
-        for (uint32_t index = 0; index < kBlocks; ++index)
-        {
-            if (static_cast<void*>(pool[index]) == pointer)
-            {
+        for (uint32_t index = 0; index < kBlocks; ++index) {
+            if (static_cast<void*>(pool[index]) == pointer) {
                 return Free(static_cast<uint16_t>(index));
             }
         }
@@ -143,8 +131,7 @@ class Allocator
         assert(false); // pointer not from pool
     }
 
-    void Free(uint16_t index)
-    {
+    void Free(uint16_t index) {
         if (index == UINT16_MAX) return;
 
         assert(index < kBlocks);
@@ -158,8 +145,7 @@ class Allocator
         Status();
     }
 
-    uint8_t* Get(uint16_t index, uint32_t& size)
-    {
+    uint8_t* Get(uint16_t index, uint32_t& size) {
         assert(index < kBlocks);
         assert(size_[index] != 0);
 
@@ -167,8 +153,7 @@ class Allocator
         return pool[index];
     }
 
-    void Status() const
-    {
+    void Status() const {
 #if defined DEBUG_NETWORK_MEMORY
         const uint32_t kUsedMask = (~free_mask_) & kAllMask;
         printf("free_mask=0x%08x used_mask=0x%08x free=%u used=%u\n", free_mask_, kUsedMask, __builtin_popcount(free_mask_), __builtin_popcount(kUsedMask));

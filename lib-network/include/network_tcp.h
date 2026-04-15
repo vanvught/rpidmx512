@@ -32,10 +32,10 @@ namespace network::tcp {
 using ConnHandle = uint32_t;
 inline constexpr ConnHandle kInvalidConnHandle = UINT32_MAX;
 
-using CallbackListen = void (*)(ConnHandle, const uint8_t*, uint32_t);
+using CallbackData = void (*)(ConnHandle, const uint8_t*, uint32_t, void*);
 
 // Server
-bool Listen(uint16_t local_port, CallbackListen cb_listen);
+bool Listen(uint16_t local_port, CallbackData cb_data);
 
 // Client
 enum class Event : uint8_t {
@@ -46,7 +46,6 @@ enum class Event : uint8_t {
 };
 
 using CallbackConnect = void (*)(ConnHandle, Event, void*);
-using CallbackData = void (*)(ConnHandle, const uint8_t*, uint32_t, void*);
 
 ConnHandle Connect(uint32_t remote_ip, uint16_t remote_port, CallbackConnect cb_connect, CallbackData cb_data, void* context);
 

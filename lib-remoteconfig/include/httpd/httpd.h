@@ -40,22 +40,19 @@
 #include "../../lib-network/config/net_config.h"
 #include "firmware/debug/debug_debug.h"
 
-class HttpDaemon
-{
+class HttpDaemon {
    public:
-    HttpDaemon()
-    {
+    HttpDaemon() {
         DEBUG_ENTRY();
         assert(is_listening_ == false);
 
-        is_listening_ = network::tcp::Listen(network::iana::Ports::kPortHttp, Input);
+        is_listening_ = network::tcp::Listen(network::iana::Ports::kPortHttp, Data);
         assert(is_listening_ == true);
 
         // IMPORTANT:
-        // Connection handles are now GLOBAL indices into s_Tcbs[].
+        // Connection handles are GLOBAL indices into s_Tcbs[].
         // Therefore the HTTP request handler table must also be global-sized.
-        for (uint32_t i = 0; i < TCP_MAX_TCBS_ALLOWED; ++i)
-        {
+        for (uint32_t i = 0; i < TCP_MAX_TCBS_ALLOWED; ++i) {
             // Each HttpDeamonHandleRequest corresponds to ONE possible TCB slot.
             // It can be addressed directly by conn_handle.
             new (&s_handle_request[i]) HttpDeamonHandleRequest(i);
@@ -69,8 +66,7 @@ class HttpDaemon
     ~HttpDaemon() = default;
 
    private:
-    static void Input(network::tcp::ConnHandle conn_handle, const uint8_t* buffer, uint32_t size)
-    {
+    static void Data(network::tcp::ConnHandle conn_handle, const uint8_t* buffer, uint32_t size, [[maybe_unused]] void* context) {
         assert(conn_handle < TCP_MAX_TCBS_ALLOWED);
         s_handle_request[conn_handle].HandleRequest(size, const_cast<char*>(reinterpret_cast<const char*>(buffer)));
     }
