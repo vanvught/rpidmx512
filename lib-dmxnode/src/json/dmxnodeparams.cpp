@@ -149,7 +149,7 @@ void DmxNodeParams::Set()
     dmx_node->SetLongName(reinterpret_cast<char*>(store_dmxnode.node_name));
     dmx_node->SetFailSafe(static_cast<dmxnode::FailSafe>(store_dmxnode.fail_safe));
     dmx_node->SetDisableMergeTimeout(common::IsFlagSet(store_dmxnode.flags, Flags::Flag::kDisableMergeTimeout));
-
+	
     if constexpr (dmxnode::kConfigPortCount != 0)
     {
         for (uint32_t config_port_index = 0; config_port_index < dmxnode::kConfigPortCount; config_port_index++)

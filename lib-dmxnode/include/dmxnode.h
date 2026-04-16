@@ -234,7 +234,7 @@ inline FailSafe GetFailsafe(const char* failsafe)
         return FailSafe::kOff;
     }
 
-    if (strncasecmp(failsafe, failsafe::kOn, sizeof(failsafe::kOn) - 12) == 0)
+    if (strncasecmp(failsafe, failsafe::kOn, sizeof(failsafe::kOn) - 1) == 0)
     {
         return FailSafe::kOn;
     }

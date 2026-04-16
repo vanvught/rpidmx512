@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
- 
+
 #include <cstdint>
 #include <cassert>
 
@@ -30,47 +30,41 @@
 #include "json/dmxnodeparams.h"
 #include "json/json_helpers.h"
 
-namespace json::config
-{
-uint32_t GetDmxNode(char* buffer, uint32_t length)
-{
+namespace json::config {
+uint32_t GetDmxNode(char* buffer, uint32_t length) {
     auto* dmx_node = DmxNodeNodeType::Get();
     assert(dmx_node != nullptr);
 
- 	return json::helpers::Serialize(buffer, length, [&](JsonDoc& doc) {	
-	    doc[json::DmxNodeParamsConst::kNodeName.name] = dmx_node->GetLongName();
-	    doc[json::DmxNodeParamsConst::kFailsafe.name] = dmxnode::GetFailsafe(dmx_node->GetFailSafe());
-	    doc[json::DmxNodeParamsConst::kDisableMergeTimeout.name] = dmx_node->GetDisableMergeTimeout() ? 1 : 0;
-	
-	    if constexpr (dmxnode::kConfigPortCount != 0)
-	    {
-	        for (uint32_t config_port_index = 0; config_port_index < dmxnode::kConfigPortCount; config_port_index++)
-	        {
-	            const auto kPortIndex = config_port_index + dmxnode::kDmxportOffset;
-	
-	            if (kPortIndex >= dmxnode::kMaxPorts)
-	            {
-	                break;
-	            }
-	            
-	            const auto kPortDirection = dmx_node->GetPortDirection(kPortIndex);
-	            uint16_t universe = 0;
-	            dmx_node->GetUniverse(kPortIndex, universe, kPortDirection);
-	
-	            doc[json::DmxNodeParamsConst::kLabelPort[config_port_index].name] = dmx_node->GetShortName(kPortIndex);
-	            doc[json::DmxNodeParamsConst::kUniversePort[config_port_index].name] = universe;
-	            doc[json::DmxNodeParamsConst::kDirectionPort[config_port_index].name] = dmxnode::GetPortDirection(kPortDirection);
-	            doc[json::DmxNodeParamsConst::kMergeModePort[config_port_index].name] = dmxnode::GetMergeMode(dmx_node->GetMergeMode(kPortIndex));
+    return json::helpers::Serialize(buffer, length, [&](JsonDoc& doc) {
+        doc[json::DmxNodeParamsConst::kNodeName.name] = dmx_node->GetLongName();
+        doc[json::DmxNodeParamsConst::kFailsafe.name] = dmxnode::GetFailsafe(dmx_node->GetFailSafe());
+        doc[json::DmxNodeParamsConst::kDisableMergeTimeout.name] = dmx_node->GetDisableMergeTimeout() ? 1 : 0;
+
+        if constexpr (dmxnode::kConfigPortCount != 0) {
+            for (uint32_t config_port_index = 0; config_port_index < dmxnode::kConfigPortCount; config_port_index++) {
+                const auto kPortIndex = config_port_index + dmxnode::kDmxportOffset;
+
+                if (kPortIndex >= dmxnode::kMaxPorts) {
+                    break;
+                }
+
+                const auto kPortDirection = dmx_node->GetPortDirection(kPortIndex);
+                uint16_t universe = 0;
+                dmx_node->GetUniverse(kPortIndex, universe, kPortDirection);
+
+                doc[json::DmxNodeParamsConst::kLabelPort[config_port_index].name] = dmx_node->GetShortName(kPortIndex);
+                doc[json::DmxNodeParamsConst::kUniversePort[config_port_index].name] = universe;
+                doc[json::DmxNodeParamsConst::kDirectionPort[config_port_index].name] = dmxnode::GetPortDirection(kPortDirection);
+                doc[json::DmxNodeParamsConst::kMergeModePort[config_port_index].name] = dmxnode::GetMergeMode(dmx_node->GetMergeMode(kPortIndex));
 #if defined(OUTPUT_HAVE_STYLESWITCH)
-	            doc[json::DmxNodeParamsConst::kOutputStylePort[config_port_index].name] = dmxnode::GetOutputStyle(dmx_node->GetOutputStyle(kPortIndex));
+                doc[json::DmxNodeParamsConst::kOutputStylePort[config_port_index].name] = dmxnode::GetOutputStyle(dmx_node->GetOutputStyle(kPortIndex));
 #endif
-	        }
-	    }
+            }
+        }
     });
 }
 
-void SetDmxNode(const char* buffer, uint32_t buffer_size)
-{
+void SetDmxNode(const char* buffer, uint32_t buffer_size) {
     ::json::DmxNodeParams dmxnode_params;
     dmxnode_params.Store(buffer, buffer_size);
     dmxnode_params.Set();
