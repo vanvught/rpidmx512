@@ -1,160 +1,203 @@
 window.dmxnode = {
-	init: async function(path, name) {
-		const j = await getJSON(path);
-		if (!j) return;
+    init: async function(path, name) {
+        const j = await getJSON(path);
+        if (!j) return;
 
-		const suffixes = ["a", "b", "c", "d"].filter(function(suffix) {
-			return j["label_port_" + suffix] !== undefined ||
-				j["universe_port_" + suffix] !== undefined ||
-				j["direction_port_" + suffix] !== undefined ||
-				j["merge_mode_port_" + suffix] !== undefined;
-		});
+        const suffixes = ["a", "b", "c", "d"].filter(function(suffix) {
+            return j["label_port_" + suffix] !== undefined ||
+                j["universe_port_" + suffix] !== undefined ||
+                j["direction_port_" + suffix] !== undefined ||
+                j["merge_mode_port_" + suffix] !== undefined;
+        });
 
-		const card = document.createElement("div");
-		card.className = "card";
+        const card = document.createElement("div");
+        card.className = "card";
 
-		let h = "<h2>" + name + "</h2>";
-		h += "<form>";
+        card.innerHTML = `
+            <h2>${name}</h2>
+            <form>
+                <div class="row">
+                    <label>Node name</label>
+                    <input data-key="node_name" maxlength="64" pattern="[ -~]{1,64}" required>
+                </div>
 
-		h += "<div class='row'>";
-		h += "<label>Node name</label>";
-		h += "<input data-key='node_name' maxlength='64' pattern='[ -~]{1,64}' required>";
-		h += "</div>";
+                <div class="row">
+                    <label>Failsafe</label>
+                    <select data-key="failsafe">
+                        <option value="hold">Hold</option>
+                        <option value="on">On</option>
+                        <option value="off">Off</option>
+                        <option value="playback">Playback</option>
+                    </select>
+                </div>
 
-		h += "<div class='row'>";
-		h += "<label>Failsafe</label>";
-		h += "<select data-key='failsafe'>";
-		h += "<option value='hold'>Hold</option>";
-		h += "<option value='on'>On</option>";
-		h += "<option value='off'>Off</option>";
-		h += "<option value='playback'>Playback</option>";
-		h += "</select>";
-		h += "</div>";
+                <div class="row checkbox">
+                    <label>Disable merge timeout</label>
+                    <input data-key="disable_merge_timeout" type="checkbox">
+                </div>
 
-		h += "<div class='row checkbox'>";
-		h += "<label>Disable merge timeout</label>";
-		h += "<input data-key='disable_merge_timeout' type='checkbox'>";
-		h += "</div>";
+                <div class="ports-container"></div>
 
-		for (let i = 0; i < suffixes.length; i++) {
-			const suffix = suffixes[i];
+                <div class="row">
+                    <label></label>
+                    <button type="submit">Save</button>
+                </div>
+            </form>
+        `;
 
-			h += "<div class='row'>";
-			h += "<label>Port " + suffix.toUpperCase() + "</label>";
+        const form = card.querySelector("form");
+        const portsContainer = card.querySelector(".ports-container");
 
-			if (j["label_port_" + suffix] !== undefined) {
-				h += "<input data-key='label_port_" + suffix + "' maxlength='18' pattern='[ -~]{1,18}' required>";
-			}
+        for (let i = 0; i < suffixes.length; i++) {
+            const suffix = suffixes[i];
 
-			if (j["universe_port_" + suffix] !== undefined) {
-				h += "<input data-key='universe_port_" + suffix + "' type='number' min='0' max='32768'>";
-			}
+            const row = document.createElement("div");
+            row.className = "row";
 
-			if (j["direction_port_" + suffix] !== undefined) {
-				h += "<select data-key='direction_port_" + suffix + "'>";
-				h += "<option value='output'>output</option>";
-				h += "<option value='input'>input</option>";
-				h += "<option value='disable'>disable</option>";
-				h += "</select>";
-			}
+            const label = document.createElement("label");
+            label.textContent = "Port " + suffix.toUpperCase();
+            row.appendChild(label);
 
-			if (j["merge_mode_port_" + suffix] !== undefined) {
-				h += "<select data-key='merge_mode_port_" + suffix + "'>";
-				h += "<option value='htp'>htp</option>";
-				h += "<option value='ltp'>ltp</option>";
-				h += "</select>";
-			}
+            if (j["label_port_" + suffix] !== undefined) {
+                const input = document.createElement("input");
+                input.dataset.key = "label_port_" + suffix;
+                input.maxLength = 18;
+                input.pattern = "[ -~]{1,18}";
+                input.required = true;
+                row.appendChild(input);
+            }
 
-			h += "</div>";
-		}
+            if (j["universe_port_" + suffix] !== undefined) {
+                const input = document.createElement("input");
+                input.dataset.key = "universe_port_" + suffix;
+                input.type = "number";
+                input.min = "0";
+                input.max = "32768";
+                row.appendChild(input);
+            }
 
-		h += "<div class='row'>";
-		h += "<label></label>";
-		h += "<button type='submit'>Save</button>";
-		h += "</div>";
+            if (j["direction_port_" + suffix] !== undefined) {
+                const select = document.createElement("select");
+                select.dataset.key = "direction_port_" + suffix;
 
-		h += "</form>";
+                const optOutput = document.createElement("option");
+                optOutput.value = "output";
+                optOutput.textContent = "output";
+                select.appendChild(optOutput);
 
-		card.innerHTML = h;
-		document.getElementById("modules").appendChild(card);
+                const optInput = document.createElement("option");
+                optInput.value = "input";
+                optInput.textContent = "input";
+                select.appendChild(optInput);
 
-		const form = card.querySelector("form");
-		form.onsubmit = function() {
-			window.dmxnode.save(path, card);
-			return false;
-		};
+                const optDisable = document.createElement("option");
+                optDisable.value = "disable";
+                optDisable.textContent = "disable";
+                select.appendChild(optDisable);
 
-		window.dmxnode.fill(card, j);
-	},
+                row.appendChild(select);
+            }
 
-	fill: function(card, j) {
-		const fields = card.querySelectorAll("[data-key]");
+            if (j["merge_mode_port_" + suffix] !== undefined) {
+                const select = document.createElement("select");
+                select.dataset.key = "merge_mode_port_" + suffix;
 
-		for (let i = 0; i < fields.length; i++) {
-			const e = fields[i];
-			const key = e.dataset.key;
+                const optHtp = document.createElement("option");
+                optHtp.value = "htp";
+                optHtp.textContent = "htp";
+                select.appendChild(optHtp);
 
-			if (j[key] === undefined) continue;
+                const optLtp = document.createElement("option");
+                optLtp.value = "ltp";
+                optLtp.textContent = "ltp";
+                select.appendChild(optLtp);
 
-			if (e.type === "checkbox") {
-				e.checked = !!j[key];
-			} else {
-				e.value = j[key];
-			}
-		}
-	},
+                row.appendChild(select);
+            }
 
-	save: async function(path, card) {
-		const fields = card.querySelectorAll("[data-key]");
-		const out = {};
+            portsContainer.appendChild(row);
+        }
 
-		for (let i = 0; i < fields.length; i++) {
-			const e = fields[i];
-			const key = e.dataset.key;
+        document.getElementById("modules").appendChild(card);
 
-			if (!e.checkValidity()) {
-				e.reportValidity();
-				return;
-			}
+        form.onsubmit = () => {
+            this.save(path, card);
+            return false;
+        };
 
-			if (e.type === "checkbox") {
-				out[key] = e.checked ? 1 : 0;
-			} else if (e.type === "number") {
-				out[key] = +e.value;
-			} else {
-				out[key] = e.value.trim();
-			}
-		}
+        this.fill(card, j);
+    },
 
-		const btn = card.querySelector("button[type='submit']");
-		if (btn) {
-			btn.disabled = true;
-			btn.textContent = "Saving...";
-		}
+    fill: function(card, j) {
+        const fields = card.querySelectorAll("[data-key]");
 
-		try {
-			const res = await fetch("json/" + path, {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(out)
-			});
+        for (let i = 0; i < fields.length; i++) {
+            const e = fields[i];
+            const key = e.dataset.key;
 
-			if (!res.ok) {
-				console.log("Save failed");
-				return;
-			}
+            if (j[key] === undefined) {
+                continue;
+            }
 
-			const j = await getJSON(path);
-			if (!j) return;
+            if (e.type === "checkbox") {
+                e.checked = !!j[key];
+            } else {
+                e.value = j[key];
+            }
+        }
+    },
 
-			window.dmxnode.fill(card, j);
-		} catch (e) {
-			console.log("Error:", e);
-		} finally {
-			if (btn) {
-				btn.disabled = false;
-				btn.textContent = "Save";
-			}
-		}
-	}
+    save: async function(path, card) {
+        const fields = card.querySelectorAll("[data-key]");
+        const out = {};
+
+        for (let i = 0; i < fields.length; i++) {
+            const e = fields[i];
+            const key = e.dataset.key;
+
+            if (!e.checkValidity()) {
+                e.reportValidity();
+                return;
+            }
+
+            if (e.type === "checkbox") {
+                out[key] = e.checked ? 1 : 0;
+            } else if (e.type === "number") {
+                out[key] = +e.value;
+            } else {
+                out[key] = e.value.trim();
+            }
+        }
+
+        const btn = card.querySelector("button[type='submit']");
+        if (btn) {
+            btn.disabled = true;
+            btn.textContent = "Saving...";
+        }
+
+        try {
+            const res = await fetch("json/" + path, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(out)
+            });
+
+            if (!res.ok) {
+                console.log("Save failed");
+                return;
+            }
+
+            const j = await getJSON(path);
+            if (!j) return;
+
+            this.fill(card, j);
+        } catch (e) {
+            console.log("Error:", e);
+        } finally {
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = "Save";
+            }
+        }
+    }
 };

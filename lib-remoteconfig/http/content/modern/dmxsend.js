@@ -5,71 +5,110 @@ window.dmxsend = {
 
         const div = document.createElement("div");
         div.className = "card";
-        div.innerHTML =
-            "<h2>" + name + "</h2>" +
-            "<form onsubmit=\"dmxsend.save('" + path + "'); return false;\">" +
-            "<div class='row'>" +
-            "<label>Break time</label>" +
-            "<input id='break_time' type='number' min='92' required>" +
-            "<span>us</span>" +
-            "</div>" +
-            "<div class='row'>" +
-            "<label>MAB time</label>" +
-            "<input id='mab_time' type='number' min='12' max='1000000' required>" +
-            "<span>us</span>" +
-            "</div>" +
-            "<div class='row'>" +
-            "<label>Refresh rate</label>" +
-            "<input id='refresh_rate' type='number' min='1' required>" +
-            "<span>Hz</span>" +
-            "</div>" +
-            "<div class='row'>" +
-            "<label>Slots count</label>" +
-            "<input id='slots_count' type='number' min='2' max='512' step='2' required>" +
-            "</div>" +
-            "<div class='row'>" +
-            "<label></label>" +
-            "<button type='submit'>Save</button>" +
-            "</div>" +
-            "</form>";
+
+        div.innerHTML = `
+            <h2>${name}</h2>
+            <form>
+                <div class="row">
+                    <label>Break time</label>
+                    <input data-key="break_time" type="number" min="92" required>
+                    <span>us</span>
+                </div>
+                <div class="row">
+                    <label>MAB time</label>
+                    <input data-key="mab_time" type="number" min="12" max="1000000" required>
+                    <span>us</span>
+                </div>
+                <div class="row">
+                    <label>Refresh rate</label>
+                    <input data-key="refresh_rate" type="number" min="1" required>
+                    <span>Hz</span>
+                </div>
+                <div class="row">
+                    <label>Slots count</label>
+                    <input data-key="slots_count" type="number" min="2" max="512" step="2" required>
+                </div>
+                <div class="row">
+                    <label></label>
+                    <button type="submit">Save</button>
+                </div>
+            </form>
+        `;
 
         document.getElementById("modules").appendChild(div);
 
-        document.getElementById("break_time").value = json.break_time ?? 176;
-        document.getElementById("mab_time").value = json.mab_time ?? 12;
-        document.getElementById("refresh_rate").value = json.refresh_rate ?? 40;
-        document.getElementById("slots_count").value = json.slots_count ?? 512;
+        const form = div.querySelector("form");
+        form.onsubmit = () => {
+            this.save(path, div);
+            return false;
+        };
+
+        this.fill(div, {
+            break_time: json.break_time ?? 176,
+            mab_time: json.mab_time ?? 12,
+            refresh_rate: json.refresh_rate ?? 40,
+            slots_count: json.slots_count ?? 512
+        });
     },
 
-    save: async function(path) {
-        const breakTime = document.getElementById("break_time");
-        const mabTime = document.getElementById("mab_time");
-        const refreshRate = document.getElementById("refresh_rate");
-        const slotsCount = document.getElementById("slots_count");
+    fill: function(card, json) {
+        const fields = card.querySelectorAll("[data-key]");
 
-        slotsCount.setCustomValidity("");
+        for (let i = 0; i < fields.length; i++) {
+            const e = fields[i];
+            const key = e.dataset.key;
 
-        if (!breakTime.checkValidity()) return breakTime.reportValidity();
-        if (!mabTime.checkValidity()) return mabTime.reportValidity();
-        if (!refreshRate.checkValidity()) return refreshRate.reportValidity();
-        if (!slotsCount.checkValidity()) return slotsCount.reportValidity();
+            if (json[key] !== undefined) {
+                e.value = json[key];
+            }
+        }
+    },
 
-        const slots = +slotsCount.value;
-        if ((slots & 1) !== 0) {
-            slotsCount.setCustomValidity("Slots count must be even.");
-            return slotsCount.reportValidity();
+    save: async function(path, card) {
+        const fields = card.querySelectorAll("[data-key]");
+        const out = {};
+        let slotsCount = null;
+
+        for (let i = 0; i < fields.length; i++) {
+            const e = fields[i];
+            const key = e.dataset.key;
+
+            e.setCustomValidity("");
+
+            if (!e.checkValidity()) {
+                e.reportValidity();
+                return;
+            }
+
+            const value = +e.value;
+            out[key] = value;
+
+            if (key === "slots_count") {
+                slotsCount = e;
+            }
+        }
+
+        if (slotsCount) {
+            const slots = out.slots_count;
+
+            if ((slots & 1) !== 0) {
+                slotsCount.setCustomValidity("Slots count must be even.");
+                slotsCount.reportValidity();
+                return;
+            }
+        }
+
+        const btn = card.querySelector("button[type='submit']");
+        if (btn) {
+            btn.disabled = true;
+            btn.textContent = "Saving...";
         }
 
         try {
             const res = await fetch("json/" + path, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    break_time: +breakTime.value,
-                    mab_time: +mabTime.value,
-                    refresh_rate: +refreshRate.value,
-                    slots_count: slots
-                })
+                body: JSON.stringify(out)
             });
 
             if (!res.ok) {
@@ -80,13 +119,19 @@ window.dmxsend = {
             const json = await getJSON(path);
             if (!json) return;
 
-            breakTime.value = json.break_time;
-            mabTime.value = json.mab_time;
-            refreshRate.value = json.refresh_rate;
-            slotsCount.value = json.slots_count;
-
+            this.fill(card, {
+                break_time: json.break_time ?? 176,
+                mab_time: json.mab_time ?? 12,
+                refresh_rate: json.refresh_rate ?? 40,
+                slots_count: json.slots_count ?? 512
+            });
         } catch (e) {
             console.log("Error:", e);
+        } finally {
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = "Save";
+            }
         }
     }
 };

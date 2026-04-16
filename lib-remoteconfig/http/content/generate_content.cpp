@@ -77,8 +77,8 @@ static constexpr char kHaveDmxSendEnd[] = "#endif // !defined (CONFIG_HTTP_HTML_
 static constexpr char kHaveDmxMonitorBegin[] = "#if !defined (CONFIG_HTTP_HTML_NO_DMX) && defined(OUTPUT_DMX_MONITOR)\n";
 static constexpr char kHaveDmxMonitorEnd[] = "#endif // !defined (CONFIG_HTTP_HTML_NO_DMX) && defined(OUTPUT_DMX_MONITOR)\n";
 
-static constexpr char kHaveRdmBegin[] = "#if !defined (CONFIG_HTTP_HTML_NO_RDM) && defined (RDM_CONTROLLER)\n";
-static constexpr char kHaveRdmEnd[] = "#endif // !defined (CONFIG_HTTP_HTML_NO_RDM) && defined (RDM_CONTROLLER)\n";
+static constexpr char kHaveRdmBegin[] = "#if !defined (CONFIG_HTTP_HTML_NO_RDM) && (defined (RDM_CONTROLLER) || defined (RDM_RESPONDER))\n";
+static constexpr char kHaveRdmEnd[] = "#endif // !defined (CONFIG_HTTP_HTML_NO_RDM) && (defined (RDM_CONTROLLER || defined (RDM_RESPONDER))\n";
 
 static constexpr char kHavePixelBegin[] = "#if !defined (CONFIG_HTTP_HTML_NO_PIXEL) && (defined(OUTPUT_DMX_PIXEL) || defined(OUTPUT_DMX_PIXEL_MULTI))\n";
 static constexpr char kHavePixelEnd[] = "#endif // !defined (CONFIG_HTTP_HTML_NO_PIXEL) && (defined(OUTPUT_DMX_PIXEL) || defined(OUTPUT_DMX_PIXEL_MULTI))\n";

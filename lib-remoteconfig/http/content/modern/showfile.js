@@ -5,70 +5,127 @@ window.showfile = {
 
         const div = document.createElement("div");
         div.className = "card";
-        div.innerHTML =
-            "<h2>" + name + "</h2>" +
-            "<form onsubmit=\"showfile.save('" + path + "'); return false;\">" +
-            "<div class='row'>" +
-            "<label>Show</label>" +
-            "<input id='show' type='number' min='0' max='99' required>" +
-            "</div>" +
-            "<div class='row checkbox'>" +
-            "<label></label>" +
-            "<input type='checkbox' id='auto_play'>" +
-            "<span>Auto play</span>" +
-            "</div>" +
-            "<div class='row checkbox'>" +
-            "<label></label>" +
-            "<input type='checkbox' id='loop'>" +
-            "<span>Loop</span>" +
-            "</div>" +
-            "<div class='row'>" +
-            "<label>Incoming port</label>" +
-            "<input id='incoming_port' type='number' min='1024' max='65535' required>" +
-            "</div>" +
-            "<div class='row'>" +
-            "<label>Outgoing port</label>" +
-            "<input id='outgoing_port' type='number' min='1024' max='65535' required>" +
-            "</div>" +
-            "<div class='row'>" +
-            "<label></label>" +
-            "<button type='submit'>Save</button>" +
-            "</div>" +
-            "</form>";
+
+        div.innerHTML = `
+            <h2>${name}</h2>
+            <form>
+                <div class="row">
+                    <label>Show</label>
+                    <input data-key="show" type="number" min="0" max="99" required>
+                </div>
+                <div class="row checkbox">
+                    <label></label>
+                    <input data-key="auto_play" type="checkbox">
+                    <span>Auto play</span>
+                </div>
+                <div class="row checkbox">
+                    <label></label>
+                    <input data-key="loop" type="checkbox">
+                    <span>Loop</span>
+                </div>
+                <div class="row">
+                    <label>Incoming port</label>
+                    <input data-key="incoming_port" type="number" min="1024" max="65535" required>
+                </div>
+                <div class="row">
+                    <label>Outgoing port</label>
+                    <input data-key="outgoing_port" type="number" min="1024" max="65535" required>
+                </div>
+                <div class="row">
+                    <label></label>
+                    <button type="submit">Save</button>
+                </div>
+            </form>
+        `;
 
         document.getElementById("modules").appendChild(div);
 
-        // load values
-        document.getElementById("show").value = json.show ?? 0;
-        document.getElementById("auto_play").checked = !!json.auto_play;
-        document.getElementById("loop").checked = !!json.loop;
-        document.getElementById("incoming_port").value = json.incoming_port ?? 8000;
-        document.getElementById("outgoing_port").value = json.outgoing_port ?? 9000;
+        const form = div.querySelector("form");
+        form.onsubmit = () => {
+            this.save(path, div);
+            return false;
+        };
+
+        this.fill(div, {
+            show: json.show ?? 0,
+            auto_play: json.auto_play ?? 0,
+            loop: json.loop ?? 0,
+            incoming_port: json.incoming_port ?? 8000,
+            outgoing_port: json.outgoing_port ?? 9000
+        });
     },
 
-    save: function(path) {
-        const show = document.getElementById("show");
-        const in_p = document.getElementById("incoming_port");
-        const out_p = document.getElementById("outgoing_port");
+    fill: function(card, json) {
+        const fields = card.querySelectorAll("[data-key]");
 
-        if (!show.checkValidity()) { show.reportValidity(); return; }
-        if (!in_p.checkValidity()) { in_p.reportValidity(); return; }
-        if (!out_p.checkValidity()) { out_p.reportValidity(); return; }
+        for (let i = 0; i < fields.length; i++) {
+            const e = fields[i];
+            const key = e.dataset.key;
 
-        fetch("json/" + path, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                show: +show.value,
-                auto_play: document.getElementById("auto_play").checked ? 1 : 0,
-                loop: document.getElementById("loop").checked ? 1 : 0,
-                incoming_port: +in_p.value,
-                outgoing_port: +out_p.value
-            })
-        }).then(function(r) {
+            if (json[key] === undefined) {
+                continue;
+            }
+
+            if (e.type === "checkbox") {
+                e.checked = !!json[key];
+            } else {
+                e.value = json[key];
+            }
+        }
+    },
+
+    save: async function(path, card) {
+        const fields = card.querySelectorAll("[data-key]");
+        const out = {};
+
+        for (let i = 0; i < fields.length; i++) {
+            const e = fields[i];
+
+            if (!e.checkValidity()) {
+                e.reportValidity();
+                return;
+            }
+
+            if (e.type === "checkbox") {
+                out[e.dataset.key] = e.checked ? 1 : 0;
+            } else if (e.type === "number") {
+                out[e.dataset.key] = +e.value;
+            } else {
+                out[e.dataset.key] = e.value.trim();
+            }
+        }
+
+        const btn = card.querySelector("button[type='submit']");
+        btn.disabled = true;
+        btn.textContent = "Saving...";
+
+        try {
+            const r = await fetch("json/" + path, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(out)
+            });
+
             if (!r.ok) {
                 console.log("Save failed");
+                return;
             }
-        });
+
+            const json = await getJSON(path);
+            if (!json) return;
+
+            this.fill(card, {
+                show: json.show ?? 0,
+                auto_play: json.auto_play ?? 0,
+                loop: json.loop ?? 0,
+                incoming_port: json.incoming_port ?? 8000,
+                outgoing_port: json.outgoing_port ?? 9000
+            });
+        } catch (e) {
+            console.log("Error:", e);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = "Save";
+        }
     }
 };
