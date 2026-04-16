@@ -605,7 +605,8 @@ void ArtNetNode::SetFailSafe(artnet::FailSafe fail_safe)
 
     if (state_.status == artnet::Status::kOn)
     {
-        const auto kFailSafe = static_cast<uint8_t>(static_cast<uint8_t>(fail_safe) & 0x3);
+        const auto kFailSafe = static_cast<uint8_t>(artnetnode::ConvertFailsafe(fail_safe));
+		DEBUG_PRINTF("kFailSafe=%u\n", kFailSafe);
         artnet::store::SaveFailSafe(kFailSafe);
         artnet::display::Failsafe(kFailSafe);
     }
