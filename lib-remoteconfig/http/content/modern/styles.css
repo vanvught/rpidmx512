@@ -5,7 +5,6 @@ body {
 	margin: 20px;
 }
 
-/* Header/footer */
 header, footer {
 	padding: 10px;
 	background: #1b1b1b;
@@ -13,7 +12,6 @@ header, footer {
 	margin-bottom: 15px;
 }
 
-/* Card sections */
 .card {
 	background: #1b1b1b;
 	border: 1px solid #333;
@@ -28,7 +26,13 @@ header, footer {
 	color: #ccc;
 }
 
-/* Rows */
+.card h3 {
+	margin-top: 0;
+	font-size: 14px;
+	color: #ccc;
+	margin: 14px;
+}
+
 .row {
 	display: flex;
 	align-items: center;
@@ -40,7 +44,6 @@ header, footer {
 	color: #aaa;
 }
 
-/* Inputs */
 input[type="text"] {
 	flex: 1;
 	padding: 5px;
@@ -50,7 +53,6 @@ input[type="text"] {
 	border-radius: 3px;
 }
 
-/* Buttons */
 button {
 	margin-left: 8px;
 	padding: 5px 10px;
@@ -66,39 +68,38 @@ button:hover {
 }
 
 button:active {
-  background-color: #000;
-  color: #fff;
+	background-color: #000;
+	color: #fff;
 }
 
-/* Checkbox row */
 .checkbox {
 	gap: 8px;
 }
 
 ul {
-  display: flex;
+	display: flex;
 }
 
 li {
-  list-style: none;
-  margin: 1px 5px;
+	list-style: none;
+	margin: 1px 5px;
 }
 
 header {
-  display: flex;
-  border-radius: 4px;
-  border: solid grey 1px;
+	display: flex;
+	border-radius: 4px;
+	border: solid grey 1px;
 }
 
 footer {
-  display: flex;
-  justify-content: center;
-  border-radius: 4px;
-  border: solid grey 1px;
+	display: flex;
+	justify-content: center;
+	border-radius: 4px;
+	border: solid grey 1px;
 }
 
 .btn {
-  margin-left: 50px;
+	margin-left: 50px;
 }
 
 .ports {
@@ -130,4 +131,23 @@ select {
 	background: #222;
 	color: #eee;
 	border-radius: 3px;
+}
+
+nav ul {
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+	background-color: #303030;
+	display: flex;
+}
+
+nav ul li a {
+	display: block;
+	color: white;
+	padding: 14px 16px;
+	text-decoration: none;
+}
+
+nav ul li a:hover {
+	background-color: #111111;
 }

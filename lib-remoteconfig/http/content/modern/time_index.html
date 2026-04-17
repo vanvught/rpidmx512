@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="/styles.css" />
+<title>Time</title>
+</head>
+<style>
+.row span {
+	flex: 1;
+	padding: 5px;
+	border: 1px solid #555;
+	background: #222;
+	color: #eee;
+	border-radius: 3px;
+.checkbox span {
+    user-select: none;
+}
+}
+</style>
+<body>
+	<nav>
+	  <ul>
+	    <li><a href="/config">Configuration</a></li>
+	    <li><a href="/status">Status</a></li>
+	    <li><a href="/time">Time</a></li>
+	    <li><a href="/rtc">RTC</a></li>
+	  </ul>
+	</nav>
+	<header><ul id="idList"></ul></header>
+	<div class="card">
+	<div class="row"><label>Node time</label><span id="nodeTime"></span></div>
+	<div class="row"><button onclick="syncWithLocalTime()">Sync with Local Time</button></div>
+	<div class="row"><button onclick="refreshTime()">Refresh</button></div>
+	</div>
+	<footer><ul id="idVersion"></ul></footer>
+	<div>
+		<button id="locateButton" class="inactive" onclick="locate()">Locate Off</button>
+		<button onclick="reboot()">Reboot</button>
+	</div>
+	<script src="/status/index.js" type="text/javascript"></script>
+	<script src="/date.js" type="text/javascript"></script>
+	<script>
+	function post(u, j) {
+		return fetch('/json/' + u, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify(j)
+		})
+	}
+	async function refreshTime() {
+		  let data = await getJSON('timedate')
+		  const value = formatDateTime(new Date(data.date))
+		  const el = document.getElementById('nodeTime');
+		  el.textContent = value ?? "";
+		}
+	async function syncWithLocalTime() {
+		  const node = formatDateTime(new Date())
+		  const data = { date: node }
+		  await post('timedate', data)
+		  refreshTime()
+		}
+	</script>
+	<script>list();version();refreshTime();</script>
+</body>
+</html>

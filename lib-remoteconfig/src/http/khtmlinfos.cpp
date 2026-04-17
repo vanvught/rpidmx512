@@ -33,22 +33,23 @@ namespace html
 
 constexpr Info kHtmlInfos[] = {
 	ENTRY("/", "index.html"),
+	ENTRY("/config", "index.html"),
 #if !defined(CONFIG_HTTP_HTML_INDEX_ONLY)
 ENTRY("/status", "status/index.html"),
 #if !defined (CONFIG_HTTP_HTML_NO_DMX) && (defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI))
- 	ENTRY("/dmx", "dmx.html"),
+ 	ENTRY("/dmx", "dmx/index.html"),
 #endif	
 #if !defined (CONFIG_HTTP_HTML_NO_RDM) && defined (RDM_CONTROLLER)
-	ENTRY("/rdm", "rdm.html"),
+	ENTRY("/rdm", "rdm/index.html"),
 #endif
 #if !defined (CONFIG_HTTP_HTML_NO_RTC) && !defined (DISABLE_RTC)
-	ENTRY("/rtc", "rtc.html"),
+	ENTRY("/rtc", "rtc/index.html"),
 #endif
 #if defined(NODE_SHOWFILE)
-	ENTRY("/showfile", "showfile.html"),
+	ENTRY("/showfile", "showfile/index.html"),
 #endif
 #if !defined (CONFIG_HTTP_HTML_NO_TIME)
-	ENTRY("/time", "time.html"),
+	ENTRY("/time", "time/index.html"),
 #endif	
 #if defined(CONFIG_HTTPD_ENABLE_UPLOAD)
 	ENTRY("/upload_firmware", "upload_firmware.html")

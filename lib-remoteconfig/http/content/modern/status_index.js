@@ -112,8 +112,51 @@ async function loadCore(core) {
 	}
 }
 
-async function loadCores() {
+async function loadGeneral() {
     await loadCore('display');
     await loadCore('identify');
+}
+
+async function loadCores() {
+    loadGeneral();
     await loadCore('phy');
+	await loadCore('emac');
+}
+
+async function list() {
+	const l = await getJSON('list');
+	if (l) {
+		document.getElementById("idList").innerHTML =
+			`<li>${l.list.name}</li><li>${l.list.node.type}</li><li>${l.list.node.output.type}</li>`;
+	}
+}
+
+async function version() {
+	const v = await getJSON('version');
+	if (v) {
+		document.getElementById("idVersion").innerHTML =
+			"<li>V" + v.version + "</li><li>" +
+			v.build.date + "</li><li>" +
+			v.build.time + "</li><li>" +
+			v.board + "</li>";
+	}
+}
+
+function reboot() {
+    post('action', { reboot: 1 })
+}
+
+function locate() {
+    var b = document.getElementById('locateButton');
+    if (b.classList.contains('inactive')) {
+        b.classList.remove('inactive')
+        b.classList.add('active')
+        b.innerHTML = 'Locate On'
+        post('action', { identify: 1 })
+    } else {
+        b.classList.remove('active')
+        b.classList.add('inactive')
+        b.innerHTML = 'Locate Off'
+        post('action', { identify: 0 })
+    }
 }

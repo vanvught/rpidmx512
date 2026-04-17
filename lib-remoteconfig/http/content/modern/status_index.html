@@ -18,40 +18,58 @@
 }
 </style>
 <body>
+	<nav>
+	  <ul>
+	    <li><a href="/config">Configuration</a></li>
+	    <li><a href="/status">Status</a></li>
+	    <li><a href="/time">Time</a></li>
+	    <li><a href="/rtc">RTC</a></li>
+	  </ul>
+	</nav>
+	<header><ul id="idList"></ul></header>
 	<div id="modules"></div>
 	<div class="card">
 		<h2>General</h2>
 		<div class="row checkbox">
 			<label></label> <input type="checkbox" id="display" disabled>
 			<span>Display</span>
-			<button onclick="loadCore('display')">Refresh</button>
 		</div>
 		<div class="row checkbox">
 			<label></label> <input type="checkbox" id="identify" disabled>
 			<span>Identify</span>
-			<button onclick="loadCore('identify')">Refresh</button>
 		</div>
+		<button onclick="loadGeneral()">Refresh</button>
 	</div>
 	<div class="card">
 		<h2>Phy</h2>
-		<div class="row">
-			<label>Link</label><span id="link"></span>
-		</div>
-		<div class="row">
-			<label>Speed</label><span id="speed"></span>
-		</div>
-		<div class="row">
-			<label>Duplex</label><span id="duplex"></span>
-		</div>
-		<div class="row">
-			<label>Auto-neg</label><span id="autonegotiation"></span>
-		</div>
-		<div class="row">
-			<button onclick="loadCore('phy')">Refresh</button>
+		<div class="row"><label>Link</label><span id="link"></span></div>
+		<div class="row"><label>Speed</label><span id="speed"></span></div>
+		<div class="row"><label>Duplex</label><span id="duplex"></span></div>
+		<div class="row"><label>Auto-neg</label><span id="autonegotiation"></span></div>
+		<div class="row"><button onclick="loadCore('phy')">Refresh</button></div>
+	</div>
+	<div>
+		<div class="card">
+		<h2>Network</h2>
+		<h3>Receive</h3>
+		<div class="row"><label>packets</label><span id="rx_ok"></span></div>
+		<div class="row"><label>errors</label><span id="rx_err"></span></div>
+		<div class="row"><label>drop</label><span id="rx_drp"></span></div>
+		<div class="row"><label>overrun</label><span id="rx_ovr"></span></div>
+		<h3>Transmit</h3>
+		<div class="row"><label>packets</label><span id="tx_ok"></span></div>
+		<div class="row"><label>errors</label><span id="tx_err"></span></div>
+		<div class="row"><label>drop</label><span id="tx_drp"></span></div>
+		<div class="row"><label>overrun</label><span id="tx_ovr"></span></div>
+		<div class="row"><button onclick="loadCore('emac')">Refresh</button></div>
 		</div>
 	</div>
+	<footer><ul id="idVersion"></ul></footer>
+	<div>
+		<button id="locateButton" class="inactive" onclick="locate()">Locate Off</button>
+		<button onclick="reboot()">Reboot</button>
+	</div>
 	<script src="/status/index.js" type="text/javascript"></script>
-	<script>loadCores();loadModules()
-	</script>
+	<script>list();version();loadCores();loadModules()</script>
 </body>
 </html>
