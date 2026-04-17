@@ -45,13 +45,21 @@ const char* HostName();
 void SetDomainName(const char* domainname);
 const char* DomainName();
 
+#if defined(H3) || defined (GD32)
 [[nodiscard]] inline constexpr const char* InterfaceName() {
     return "eth0";
 }
+#else
+const char* InterfaceName();
+#endif
 
+#if defined(H3) || defined (GD32)
 inline constexpr uint32_t InterfaceIndex() {
     return 1;
 }
+#else
+uint32_t InterfaceIndex();
+#endif
 
 uint32_t NameServer(uint32_t index);
 uint32_t NameServerCount();

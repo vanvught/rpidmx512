@@ -1,4 +1,3 @@
-#include "network_iface.h"
 #if !defined(CONFIG_NETWORK_USE_MINIMUM)
 /**
  * @file network.cpp
@@ -47,6 +46,7 @@
 #if !defined(CONFIG_NET_APPS_NO_MDNS)
 #include "apps/mdns.h"
 #endif
+#include "network_iface.h"
 #include "network_store.h"
 #include "json/networkparams.h"
 #include "../../config/net_config.h"
@@ -68,20 +68,17 @@ bool OSxGetMacaddress(const char*, uint8_t*);
 
 // static uint8_t s_ReadBuffer[MAX_SEGMENT_LENGTH];
 
-namespace max
-{
+namespace max {
 static constexpr auto ENTRIES = (1 << 2); // Must always be a power of 2
 static constexpr auto ENTRIES_MASK [[maybe_unused]] = (ENTRIES - 1);
 } // namespace max
 
-struct PortInfo
-{
+struct PortInfo {
     network::udp::UdpCallbackFunctionPtr callback;
     uint16_t nPort;
 };
 
-struct Port
-{
+struct Port {
     PortInfo info;
     int nSocket;
 };
@@ -97,13 +94,12 @@ static Port s_Ports[UDP_MAX_PORTS_ALLOWED];
 
 extern char s_hostname[network::iface::kHostnameSize];
 extern char s_domain_name[network::iface::kDomainnameSize];
-char m_aIfName[IFNAMSIZ];
+char s_if_name[IFNAMSIZ];
 static int s_if_index;
 extern uint32_t s_nameservers[network::iface::kNameserversCount];
 
 #if defined(__linux__)
-static bool IsDhclient(const char* if_name)
-{
+static bool IsDhclient(const char* if_name) {
     char cmd[255];
     char buf[1024];
     FILE* fp;
@@ -115,16 +111,14 @@ static bool IsDhclient(const char* if_name)
 
     fp = popen(cmd, "r");
 
-    if (fgets(buf, sizeof(buf), fp) == nullptr)
-    {
+    if (fgets(buf, sizeof(buf), fp) == nullptr) {
         pclose(fp);
         return false;
     }
 
     pclose(fp);
 
-    if ((strlen(buf) != 0) && (strstr(buf, if_name) != nullptr))
-    {
+    if ((strlen(buf) != 0) && (strstr(buf, if_name) != nullptr)) {
         return true;
     }
 
@@ -132,8 +126,7 @@ static bool IsDhclient(const char* if_name)
 }
 #endif
 
-static uint32_t GetDefaultGateway()
-{
+static uint32_t GetDefaultGateway() {
     char cmd[255];
     char buf[1024];
     FILE* fp;
@@ -145,8 +138,7 @@ static uint32_t GetDefaultGateway()
 
     fp = popen(cmd, "r");
 
-    if (fgets(buf, sizeof(buf), fp) == nullptr)
-    {
+    if (fgets(buf, sizeof(buf), fp) == nullptr) {
         pclose(fp);
         return 0;
     }
@@ -160,22 +152,18 @@ static uint32_t GetDefaultGateway()
     return addr.s_addr;
 }
 
-static int IfGetByAddress(const char* pIp, char* pName, size_t nLength)
-{
+static int IfGetByAddress(const char* pIp, char* pName, size_t nLength) {
     struct ifaddrs *addrs, *iap;
     struct sockaddr_in* sa;
     char buf[32];
 
     getifaddrs(&addrs);
 
-    for (iap = addrs; iap != nullptr; iap = iap->ifa_next)
-    {
-        if (iap->ifa_addr->sa_family == AF_INET)
-        {
+    for (iap = addrs; iap != nullptr; iap = iap->ifa_next) {
+        if (iap->ifa_addr->sa_family == AF_INET) {
             sa = reinterpret_cast<struct sockaddr_in*>((iap->ifa_addr));
             inet_ntop(iap->ifa_addr->sa_family, static_cast<void*>(&(sa->sin_addr)), buf, sizeof(buf));
-            if (!strcmp(pIp, buf))
-            {
+            if (!strcmp(pIp, buf)) {
                 strncpy(pName, iap->ifa_name, nLength);
                 freeifaddrs(addrs);
                 return 0;
@@ -187,8 +175,7 @@ static int IfGetByAddress(const char* pIp, char* pName, size_t nLength)
     return -1;
 }
 
-static int IfDetails(const char* pIfInterface)
-{
+static int IfDetails(const char* pIfInterface) {
     int fd;
     struct ifreq ifr;
 
@@ -196,8 +183,7 @@ static int IfDetails(const char* pIfInterface)
 
     fd = socket(AF_INET, SOCK_DGRAM, 0);
 
-    if (fd < 0)
-    {
+    if (fd < 0) {
         perror("socket");
         return -1;
     }
@@ -206,8 +192,7 @@ static int IfDetails(const char* pIfInterface)
 
     strncpy(ifr.ifr_name, pIfInterface, IFNAMSIZ - 1);
 
-    if (ioctl(fd, SIOCGIFADDR, &ifr) < 0)
-    {
+    if (ioctl(fd, SIOCGIFADDR, &ifr) < 0) {
         perror("ioctl(fd, SIOCGIFADDR, &ifr)");
         close(fd);
         return -2;
@@ -215,8 +200,7 @@ static int IfDetails(const char* pIfInterface)
 
     netif::global::netif_default.ip.addr = (reinterpret_cast<struct sockaddr_in*>(&ifr.ifr_addr))->sin_addr.s_addr;
 
-    if (ioctl(fd, SIOCGIFNETMASK, &ifr) < 0)
-    {
+    if (ioctl(fd, SIOCGIFNETMASK, &ifr) < 0) {
         perror("ioctl(fd, SIOCGIFNETMASK, &ifr)");
         close(fd);
         return -3;
@@ -231,13 +215,11 @@ static int IfDetails(const char* pIfInterface)
     netif::SetGw(gw);
 
 #if defined(__APPLE__)
-    if (!(OSxGetMacaddress(pIfInterface, netif::global::netif_default.hwaddr)))
-    {
+    if (!(OSxGetMacaddress(pIfInterface, netif::global::netif_default.hwaddr))) {
         return -5;
     }
 #else
-    if (ioctl(fd, SIOCGIFHWADDR, &ifr) < 0)
-    {
+    if (ioctl(fd, SIOCGIFHWADDR, &ifr) < 0) {
         perror("ioctl(fd, SIOCGIFHWADDR, &ifr)");
         close(fd);
         return -5;
@@ -252,12 +234,11 @@ static int IfDetails(const char* pIfInterface)
     return 0;
 }
 
-void Network::Print()
-{
+void Network::Print() {
     printf("Network\n");
     printf(" Hostname  : %s\n", s_hostname);
     printf(" Domain    : %s\n", s_domain_name);
-    printf(" If        : %d: %s\n", s_if_index, m_aIfName);
+    printf(" If        : %d: %s\n", s_if_index, s_if_name);
     printf(" Inet      : " IPSTR "/%d\n", IP2STR(netif::global::netif_default.ip.addr), network::GetNetmaskCIDR());
     printf(" Netmask   : " IPSTR "\n", IP2STR(netif::global::netif_default.netmask.addr));
     printf(" Gateway   : " IPSTR "\n", IP2STR(netif::global::netif_default.gw.addr));
@@ -268,22 +249,22 @@ void Network::Print()
 
 //
 
-namespace netif
-{
+namespace netif {
 void Init();
-
-const char* GetIfName()
-{
-    return m_aIfName;
-}
 } // namespace netif
 
-namespace network
-{
-namespace udp
-{
-int32_t Begin(uint16_t nPort, UdpCallbackFunctionPtr callback)
-{
+namespace network {
+namespace iface {
+const char* InterfaceName() {
+    return s_if_name;
+}
+
+uint32_t InterfaceIndex() {
+    return s_if_index;
+}
+} // namespace iface
+namespace udp {
+int32_t Begin(uint16_t nPort, UdpCallbackFunctionPtr callback) {
     DEBUG_ENTRY();
     DEBUG_PRINTF("port = %d", nPort);
 
@@ -296,17 +277,14 @@ int32_t Begin(uint16_t nPort, UdpCallbackFunctionPtr callback)
      * BEGIN - needed H3 code compatibility
      */
 
-    for (i = 0; i < UDP_MAX_PORTS_ALLOWED; i++)
-    {
+    for (i = 0; i < UDP_MAX_PORTS_ALLOWED; i++) {
         auto& portInfo = s_Ports[i].info;
 
-        if (portInfo.nPort == nPort)
-        {
+        if (portInfo.nPort == nPort) {
             return i;
         }
 
-        if (portInfo.nPort == 0)
-        {
+        if (portInfo.nPort == 0) {
             portInfo.callback = callback;
             portInfo.nPort = nPort;
 
@@ -315,8 +293,7 @@ int32_t Begin(uint16_t nPort, UdpCallbackFunctionPtr callback)
         }
     }
 
-    if (i == UDP_MAX_PORTS_ALLOWED)
-    {
+    if (i == UDP_MAX_PORTS_ALLOWED) {
         perror("i == UDP_MAX_PORTS_ALLOWED");
         exit(EXIT_FAILURE);
     }
@@ -327,14 +304,12 @@ int32_t Begin(uint16_t nPort, UdpCallbackFunctionPtr callback)
      * END
      */
 
-    if ((nSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
-    {
+    if ((nSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
         perror("socket");
         exit(EXIT_FAILURE);
     }
 
-    if (setsockopt(nSocket, SOL_SOCKET, SO_BROADCAST, reinterpret_cast<char*>(&true_flag), sizeof(int)) == -1)
-    {
+    if (setsockopt(nSocket, SOL_SOCKET, SO_BROADCAST, reinterpret_cast<char*>(&true_flag), sizeof(int)) == -1) {
         perror("setsockopt(SO_BROADCAST)");
         exit(EXIT_FAILURE);
     }
@@ -343,22 +318,19 @@ int32_t Begin(uint16_t nPort, UdpCallbackFunctionPtr callback)
     recv_timeout.tv_sec = 0;
     recv_timeout.tv_usec = 10;
 
-    if (setsockopt(nSocket, SOL_SOCKET, SO_RCVTIMEO, static_cast<void*>(&recv_timeout), sizeof(recv_timeout)) == -1)
-    {
+    if (setsockopt(nSocket, SOL_SOCKET, SO_RCVTIMEO, static_cast<void*>(&recv_timeout), sizeof(recv_timeout)) == -1) {
         perror("setsockopt(SO_RCVTIMEO)");
         exit(EXIT_FAILURE);
     }
 
     int val = 1;
-    if (setsockopt(nSocket, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(val)) == -1)
-    {
+    if (setsockopt(nSocket, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(val)) == -1) {
         perror("setsockopt(SO_REUSEADDR)");
         exit(EXIT_FAILURE);
     }
 
     val = 1;
-    if (setsockopt(nSocket, SOL_SOCKET, SO_REUSEPORT, &val, sizeof(val)) == -1)
-    {
+    if (setsockopt(nSocket, SOL_SOCKET, SO_REUSEPORT, &val, sizeof(val)) == -1) {
         perror("setsockopt(SO_REUSEPORT)");
         exit(EXIT_FAILURE);
     }
@@ -369,8 +341,7 @@ int32_t Begin(uint16_t nPort, UdpCallbackFunctionPtr callback)
     si_me.sin_port = htons(nPort);
     si_me.sin_addr.s_addr = htonl(INADDR_ANY);
 
-    if (bind(nSocket, reinterpret_cast<struct sockaddr*>(&si_me), sizeof(si_me)) == -1)
-    {
+    if (bind(nSocket, reinterpret_cast<struct sockaddr*>(&si_me), sizeof(si_me)) == -1) {
         perror("bind");
         printf(IPSTR ":%d\n", IP2STR(si_me.sin_addr.s_addr), nPort);
         exit(EXIT_FAILURE);
@@ -379,8 +350,7 @@ int32_t Begin(uint16_t nPort, UdpCallbackFunctionPtr callback)
     /**
      * BEGIN - needed H3 code compatibility
      */
-    for (uint32_t i = 0; i < UDP_MAX_PORTS_ALLOWED; i++)
-    {
+    for (uint32_t i = 0; i < UDP_MAX_PORTS_ALLOWED; i++) {
         DEBUG_PRINTF("s_Ports[%2u].info.nPort=%4u", i, s_Ports[i].info.nPort);
     }
     /**
@@ -394,25 +364,21 @@ int32_t Begin(uint16_t nPort, UdpCallbackFunctionPtr callback)
     return nSocket;
 }
 
-int32_t End(uint16_t nPort)
-{
+int32_t End(uint16_t nPort) {
     DEBUG_ENTRY();
     DEBUG_PRINTF("nPort = %d", nPort);
     /**
      * BEGIN - needed H3 code compatibility
      */
 
-    for (uint32_t i = 0; i < UDP_MAX_PORTS_ALLOWED; i++)
-    {
+    for (uint32_t i = 0; i < UDP_MAX_PORTS_ALLOWED; i++) {
         DEBUG_PRINTF("s_Ports[%2u].info.nPort=%4u", i, s_Ports[i].info.nPort);
     }
 
-    for (auto i = 0; i < UDP_MAX_PORTS_ALLOWED; i++)
-    {
+    for (auto i = 0; i < UDP_MAX_PORTS_ALLOWED; i++) {
         auto& portInfo = s_Ports[i].info;
 
-        if (portInfo.nPort == nPort)
-        {
+        if (portInfo.nPort == nPort) {
             portInfo.callback = nullptr;
             portInfo.nPort = 0;
 
@@ -429,8 +395,7 @@ int32_t End(uint16_t nPort)
      */
 }
 
-void Send(int32_t handle, const uint8_t* pPacket, uint32_t nSize, uint32_t nToIp, uint16_t nRemotePort)
-{
+void Send(int32_t handle, const uint8_t* pPacket, uint32_t nSize, uint32_t nToIp, uint16_t nRemotePort) {
     struct sockaddr_in si_other;
     socklen_t slen = sizeof(si_other);
 
@@ -444,22 +409,18 @@ void Send(int32_t handle, const uint8_t* pPacket, uint32_t nSize, uint32_t nToIp
     si_other.sin_addr.s_addr = nToIp;
     si_other.sin_port = htons(nRemotePort);
 
-    if (sendto(handle, pPacket, nSize, 0, reinterpret_cast<struct sockaddr*>(&si_other), slen) == -1)
-    {
+    if (sendto(handle, pPacket, nSize, 0, reinterpret_cast<struct sockaddr*>(&si_other), slen) == -1) {
         perror("sendto");
     }
 }
 } // namespace udp
 
-namespace tcp
-{
+namespace tcp {
 void Run();
 }
 
-namespace igmp
-{
-void JoinGroup(int32_t handle, uint32_t ip)
-{
+namespace igmp {
+void JoinGroup(int32_t handle, uint32_t ip) {
     DEBUG_ENTRY();
     DEBUG_PRINTF("handle=%d, ip=%x", handle, ip);
 
@@ -468,43 +429,36 @@ void JoinGroup(int32_t handle, uint32_t ip)
     mreq.imr_multiaddr.s_addr = ip;
     mreq.imr_interface.s_addr = htonl(INADDR_ANY);
 
-    if (setsockopt(handle, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq)) < 0)
-    {
+    if (setsockopt(handle, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq)) < 0) {
         perror("setsockopt(IP_ADD_MEMBERSHIP)");
     }
 
     DEBUG_EXIT();
 }
 
-void LeaveGroup(int32_t handle, uint32_t ip)
-{
+void LeaveGroup(int32_t handle, uint32_t ip) {
     struct ip_mreq mreq;
 
     mreq.imr_multiaddr.s_addr = ip;
     mreq.imr_interface.s_addr = htonl(INADDR_ANY);
 
-    if (setsockopt(handle, IPPROTO_IP, IP_DROP_MEMBERSHIP, &mreq, sizeof(mreq)) < 0)
-    {
+    if (setsockopt(handle, IPPROTO_IP, IP_DROP_MEMBERSHIP, &mreq, sizeof(mreq)) < 0) {
         perror("setsockopt(IP_DROP_MEMBERSHIP)");
     }
 }
 } // namespace igmp
 
-void Run()
-{
-    for (uint32_t nPortIndex = 0; nPortIndex < UDP_MAX_PORTS_ALLOWED; nPortIndex++)
-    {
+void Run() {
+    for (uint32_t nPortIndex = 0; nPortIndex < UDP_MAX_PORTS_ALLOWED; nPortIndex++) {
         struct sockaddr_in si_other;
         socklen_t slen = sizeof(si_other);
 
         const auto& portInfo = s_Ports[nPortIndex].info;
 
-        if (portInfo.callback != nullptr)
-        {
+        if (portInfo.callback != nullptr) {
             uint8_t data[MAX_SEGMENT_LENGTH];
             int nDataLength;
-            if ((nDataLength = recvfrom(s_Ports[nPortIndex].nSocket, data, MAX_SEGMENT_LENGTH, 0, reinterpret_cast<struct sockaddr*>(&si_other), &slen)) > 0)
-            {
+            if ((nDataLength = recvfrom(s_Ports[nPortIndex].nSocket, data, MAX_SEGMENT_LENGTH, 0, reinterpret_cast<struct sockaddr*>(&si_other), &slen)) > 0) {
                 portInfo.callback(data, nDataLength, si_other.sin_addr.s_addr, ntohs(si_other.sin_port));
             }
         }
@@ -513,15 +467,13 @@ void Run()
     network::tcp::Run();
 }
 
-void SetPrimaryIp([[maybe_unused]] uint32_t np_in)
-{
+void SetPrimaryIp([[maybe_unused]] uint32_t np_in) {
     DEBUG_ENTRY();
 
 #if defined(__linux__)
     auto& netif = netif::global::netif_default;
 
-    if (np_in == netif.ip.addr)
-    {
+    if (np_in == netif.ip.addr) {
         DEBUG_EXIT();
         return;
     }
@@ -530,8 +482,7 @@ void SetPrimaryIp([[maybe_unused]] uint32_t np_in)
     auto* addr = (struct sockaddr_in*)&ifr.ifr_addr;
     int fd = socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
 
-    if (fd == -1)
-    {
+    if (fd == -1) {
         perror("socket(PF_INET, SOCK_DGRAM, IPPROTO_IP)");
         return;
     }
@@ -541,14 +492,12 @@ void SetPrimaryIp([[maybe_unused]] uint32_t np_in)
     ifr.ifr_addr.sa_family = AF_INET;
 
     addr->sin_addr.s_addr = np_in;
-    if (ioctl(fd, SIOCSIFADDR, &ifr) == -1)
-    {
+    if (ioctl(fd, SIOCSIFADDR, &ifr) == -1) {
         perror("ioctl-SIOCSIFADDR");
         return;
     }
 
-    if (ioctl(fd, SIOCGIFFLAGS, &ifr) == -1)
-    {
+    if (ioctl(fd, SIOCGIFFLAGS, &ifr) == -1) {
         perror("ioctl-SIOCGIFFLAGS");
         return;
     }
@@ -556,8 +505,7 @@ void SetPrimaryIp([[maybe_unused]] uint32_t np_in)
     strncpy(ifr.ifr_name, m_aIfName, IFNAMSIZ);
     ifr.ifr_flags |= (IFF_UP | IFF_RUNNING);
 
-    if (ioctl(fd, SIOCSIFFLAGS, &ifr) == -1)
-    {
+    if (ioctl(fd, SIOCSIFFLAGS, &ifr) == -1) {
         perror("ioctl-SIOCGIFFLAGS");
         return;
     }
@@ -573,12 +521,10 @@ void SetPrimaryIp([[maybe_unused]] uint32_t np_in)
     DEBUG_EXIT();
 }
 
-void SetNetmask(uint32_t netmask_in)
-{
+void SetNetmask(uint32_t netmask_in) {
     DEBUG_ENTRY();
 
-    if (netmask_in == netif::Netmask())
-    {
+    if (netmask_in == netif::Netmask()) {
         DEBUG_EXIT();
         return;
     }
@@ -593,12 +539,10 @@ void SetNetmask(uint32_t netmask_in)
     DEBUG_EXIT();
 }
 
-void SetGatewayIp(uint32_t gateway_ip)
-{
+void SetGatewayIp(uint32_t gateway_ip) {
     DEBUG_ENTRY();
 
-    if (gateway_ip == netif::Gw())
-    {
+    if (gateway_ip == netif::Gw()) {
         DEBUG_EXIT();
         return;
     }
@@ -614,10 +558,8 @@ void SetGatewayIp(uint32_t gateway_ip)
 }
 } // namespace network
 
-Network::Network(int argc, char** argv)
-{
-    if (argc < 2)
-    {
+Network::Network(int argc, char** argv) {
+    if (argc < 2) {
         printf("Usage: %s ip_address|interface_name\n", argv[0]);
         exit(EXIT_FAILURE);
     }
@@ -630,8 +572,7 @@ Network::Network(int argc, char** argv)
     /**
      * BEGIN - needed H3 code compatibility
      */
-    for (uint32_t i = 0; i < UDP_MAX_PORTS_ALLOWED; i++)
-    {
+    for (uint32_t i = 0; i < UDP_MAX_PORTS_ALLOWED; i++) {
         s_Ports[i].nSocket = -1;
     }
 
@@ -644,56 +585,45 @@ Network::Network(int argc, char** argv)
 
     netif::Init();
 
-    if (IfGetByAddress(argv[1], m_aIfName, sizeof(m_aIfName)) == 0)
-    {
-    }
-    else
-    {
-        strncpy(m_aIfName, argv[1], IFNAMSIZ - 1);
+    if (IfGetByAddress(argv[1], s_if_name, sizeof(s_if_name)) == 0) {
+    } else {
+        strncpy(s_if_name, argv[1], IFNAMSIZ - 1);
     }
 
     DEBUG_PRINTF("m_aIfName=%s", m_aIfName);
 
-    auto result = IfDetails(m_aIfName);
+    auto result = IfDetails(s_if_name);
 
-    if (result < 0)
-    {
+    if (result < 0) {
         fprintf(stderr, "Not able to start network on : %s\n", argv[1]);
         exit(EXIT_FAILURE);
     }
 #if defined(__linux__)
-    else
-    {
-        if (IsDhclient(m_aIfName))
-        {
+    else {
+        if (IsDhclient(m_aIfName)) {
             netif::SetFlags(netif::Netif::kNetifFlagDhcpOk);
-        }
-        else
-        {
+        } else {
             netif::ClearFlags(netif::Netif::kNetifFlagDhcpOk);
         }
     }
 #endif
 
-    s_if_index = if_nametoindex(const_cast<char*>(m_aIfName));
+    s_if_index = if_nametoindex(const_cast<char*>(s_if_name));
 
-    if (s_if_index == 0)
-    {
+    if (s_if_index == 0) {
         perror("if_nametoindex");
         exit(EXIT_FAILURE);
     }
 
     memset(s_hostname, 0, sizeof(s_hostname));
 
-    if (gethostname(s_hostname, sizeof(s_hostname)) < 0)
-    {
+    if (gethostname(s_hostname, sizeof(s_hostname)) < 0) {
         perror("gethostname");
     }
 
     uint32_t i = 0;
 
-    while ((s_hostname[i] != '\0') && (i < network::iface::kHostnameSize) && (s_hostname[i] != '.'))
-    {
+    while ((s_hostname[i] != '\0') && (i < network::iface::kHostnameSize) && (s_hostname[i] != '.')) {
         i++;
     }
 
@@ -701,8 +631,7 @@ Network::Network(int argc, char** argv)
 
     uint32_t j = 0;
 
-    while (j < network::iface::kDomainnameSize && i < network::iface::kHostnameSize && s_hostname[i] != '\0')
-    {
+    while (j < network::iface::kDomainnameSize && i < network::iface::kHostnameSize && s_hostname[i] != '\0') {
         s_domain_name[j++] = s_hostname[i++];
     }
 
@@ -715,12 +644,9 @@ Network::Network(int argc, char** argv)
 #endif
 }
 
-Network::~Network()
-{
-    for (uint32_t i = 0; i < UDP_MAX_PORTS_ALLOWED; i++)
-    {
-        if (s_Ports[i].info.nPort != 0)
-        {
+Network::~Network() {
+    for (uint32_t i = 0; i < UDP_MAX_PORTS_ALLOWED; i++) {
+        if (s_Ports[i].info.nPort != 0) {
             network::udp::End(s_Ports[i].info.nPort);
         }
     }
