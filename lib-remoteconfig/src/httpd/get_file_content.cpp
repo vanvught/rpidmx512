@@ -154,9 +154,10 @@ const char* GetFileContent(const char* file_name, uint32_t& size, http::ContentT
 const char* GetFileContent(const char* file_name, uint32_t& size, http::ContentTypes& content_type)
 {
     DEBUG_ENTRY();
-    DEBUG_PUTS(file_name);
 	
 	const auto kHash = Fnv1a32Runtime(file_name, strlen(file_name));
+	
+	DEBUG_PRINTF("%s:%u", file_name, kHash);
 
     for (auto& content : kHttpContent)
     {
@@ -164,6 +165,7 @@ const char* GetFileContent(const char* file_name, uint32_t& size, http::ContentT
         {
             size = content.content_length;
             content_type = content.content_type;
+			DEBUG_PUTS(content.file_name);
             return content.content;
         }
     }

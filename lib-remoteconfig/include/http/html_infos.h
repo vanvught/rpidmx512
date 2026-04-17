@@ -70,11 +70,6 @@ constexpr bool HasUniqueHashes(const Info* entries, size_t count)
 extern const Info kHtmlInfos[];
 extern const size_t kHtmlInfosSize;
 
-inline void PrintInfos()
-{
-    PrintInfosGeneric(kHtmlInfos, kHtmlInfosSize);
-}
-
 inline int32_t GetFileIndex(const char* name)
 {
     return GetFileIndexGeneric(kHtmlInfos, kHtmlInfosSize, name);

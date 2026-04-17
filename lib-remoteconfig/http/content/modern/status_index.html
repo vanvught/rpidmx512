@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="/styles.css" />
+<title>Status</title>
+</head>
+<style>
+.row span {
+	flex: 1;
+	padding: 5px;
+	border: 1px solid #555;
+	background: #222;
+	color: #eee;
+	border-radius: 3px;
+.checkbox span {
+    user-select: none;
+}
+}
+</style>
+<body>
+	<div id="modules"></div>
+	<div class="card">
+		<h2>General</h2>
+		<div class="row checkbox">
+			<label></label> <input type="checkbox" id="display" disabled>
+			<span>Display</span>
+			<button onclick="loadCore('display')">Refresh</button>
+		</div>
+		<div class="row checkbox">
+			<label></label> <input type="checkbox" id="identify" disabled>
+			<span>Identify</span>
+			<button onclick="loadCore('identify')">Refresh</button>
+		</div>
+	</div>
+	<div class="card">
+		<h2>Phy</h2>
+		<div class="row">
+			<label>Link</label><span id="link"></span>
+		</div>
+		<div class="row">
+			<label>Speed</label><span id="speed"></span>
+		</div>
+		<div class="row">
+			<label>Duplex</label><span id="duplex"></span>
+		</div>
+		<div class="row">
+			<label>Auto-neg</label><span id="autonegotiation"></span>
+		</div>
+		<div class="row">
+			<button onclick="loadCore('phy')">Refresh</button>
+		</div>
+	</div>
+	<script src="/status/index.js" type="text/javascript"></script>
+	<script>loadCores();loadModules()
+	</script>
+</body>
+</html>

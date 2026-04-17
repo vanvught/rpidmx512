@@ -28,15 +28,6 @@ template <typename InfoT> int32_t GetFileIndexGeneric(const InfoT* infos, size_t
     return -1;
 }
 
-template <typename InfoT> void PrintInfosGeneric(const InfoT* infos, size_t size)
-{
-    for (size_t i = 0; i < size; ++i)
-    {
-        const auto& entry = infos[i];
-        printf("File %2u: %-24s %-24s (length = %2u, hash=0x%.8x)\n", static_cast<unsigned>(i), entry.name, entry.label, static_cast<unsigned>(entry.length), entry.hash);
-    }
-}
-
 template <typename InfoT> void CheckHashCollisionsGeneric(const InfoT* infos, size_t size)
 {
     for (size_t i = 0; i < size; ++i)

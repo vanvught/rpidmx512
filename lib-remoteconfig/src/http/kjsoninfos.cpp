@@ -31,8 +31,7 @@
 #include "dmxnode_nodetype.h"
 #include "dmxnode_outputtype.h"
 
-namespace json
-{
+namespace json {
 uint32_t GetList(char*, uint32_t);
 uint32_t GetVersion(char*, uint32_t);
 uint32_t GetUptime(char*, uint32_t);
@@ -41,8 +40,9 @@ uint32_t GetTimeofday(char*, uint32_t);
 void SetTimeofday(const char*, uint32_t);
 uint32_t ShowFileDirectory(char*, uint32_t);
 
-namespace status
-{
+// Status
+namespace status {
+uint32_t Directory(char*, uint32_t);
 uint32_t Identify(char*, uint32_t);
 uint32_t Display(char*, uint32_t);
 uint32_t Dmx(char*, uint32_t);
@@ -52,27 +52,24 @@ uint32_t ShowFile(char*, uint32_t);
 uint32_t Pixel(char*, uint32_t);
 uint32_t PixelDmx(char*, uint32_t);
 
-namespace net
-{
+namespace net {
 uint32_t Phy(char*, uint32_t);
 uint32_t Emac(char*, uint32_t);
 } // namespace net
 } // namespace status
 
-namespace storage
-{
-uint32_t GetDirectory(char*, uint32_t);
+namespace storage {
+uint32_t Directory(char*, uint32_t);
 }
 
-namespace action
-{
+namespace action {
 void Set(const char*, uint32_t);
 void SetShowFile(const char*, uint32_t);
 } // namespace action
 
-namespace config
-{
-uint32_t GetDirectory(char*, uint32_t);
+// Config
+namespace config {
+uint32_t Directory(char*, uint32_t);
 
 uint32_t GetRemoteConfig(char*, uint32_t);
 void SetRemoteConfig(const char*, uint32_t);
@@ -175,118 +172,119 @@ uint32_t GetDmxL6470Motor7(char*, uint32_t);
 void SetDmxL6470Motor7(const char*, uint32_t);
 } // namespace config
 
-#define ENTRY(get, set, del, filename_literal, label) \
-    MakeJsonFileInfo(get, set, del, filename_literal, Fnv1a32(filename_literal, static_cast<uint8_t>(sizeof(filename_literal) - 1)), label)
+#define ENTRY(get, set, del, filename_literal, config_label, status_label) MakeJsonFileInfo(get, set, del, filename_literal, Fnv1a32(filename_literal, static_cast<uint8_t>(sizeof(filename_literal) - 1)), config_label, status_label)
 
 constexpr Info kFileInfos[] = {
-	ENTRY(GetList, nullptr, nullptr, "list", nullptr),
-	ENTRY(GetVersion, nullptr, nullptr, "version", nullptr),
-	ENTRY(GetUptime, nullptr, nullptr, "uptime", nullptr), 
-	ENTRY(GetTimeofday, SetTimeofday, nullptr, "timedate", nullptr),
-#if !defined(CONFIG_HTTP_HTML_INDEX_ONLY)	
+    ENTRY(GetList, nullptr, nullptr, "list", nullptr, nullptr), 
+	ENTRY(GetVersion, nullptr, nullptr, "version", nullptr, nullptr), 
+	ENTRY(GetUptime, nullptr, nullptr, "uptime", nullptr, nullptr), 
+	ENTRY(GetTimeofday, SetTimeofday, nullptr, "timedate", nullptr, nullptr),
+#if !defined(CONFIG_HTTP_HTML_INDEX_ONLY)
     // Status
-	ENTRY(status::Identify, nullptr, nullptr, "status/identify", nullptr), 
-	ENTRY(status::Display, nullptr, nullptr, "status/display", nullptr),
-    ENTRY(status::net::Phy, nullptr, nullptr, "status/phy", nullptr), 
-	ENTRY(status::net::Emac, nullptr, nullptr, "status/emac", nullptr),
+	ENTRY(status::Directory, nullptr, nullptr, "status/directory", nullptr, nullptr),
+    ENTRY(status::Identify, nullptr, nullptr, "status/identify", nullptr, "Identify"), 
+	ENTRY(status::Display, nullptr, nullptr, "status/display", nullptr, "Display"), 
+	ENTRY(status::net::Phy, nullptr, nullptr, "status/phy", nullptr, "Phy"),
+    ENTRY(status::net::Emac, nullptr, nullptr, "status/emac", nullptr, "Emac"),
 #if defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI)
-	ENTRY(status::Dmx, nullptr, nullptr, "status/dmx", nullptr),
+    ENTRY(status::Dmx, nullptr, nullptr, "status/dmx", nullptr, "Dmx"),
 #endif
 #if defined(DMXNODE_OUTPUT_PIXEL)
-	ENTRY(status::Pixel, nullptr, nullptr, "status/pixel", nullptr), 
-	ENTRY(status::PixelDmx, nullptr, nullptr, "status/pixeldmx", nullptr),
+    ENTRY(status::Pixel, nullptr, nullptr, "status/pixel", nullptr, "Pixel"), 
+	ENTRY(status::PixelDmx, nullptr, nullptr, "status/pixeldmx", nullptr, "PixelDmx"),
 #endif
 #if defined(RDM_CONTROLLER)
-	ENTRY(status::Rdm, nullptr, nullptr, "status/rdm", nullptr), 
-	ENTRY(status::RdmQueue, nullptr, nullptr, "status/rdm/queue", nullptr),
+    ENTRY(status::Rdm, nullptr, nullptr, "status/rdm", nullptr, "Rdm"), 
+	ENTRY(status::RdmQueue, nullptr, nullptr, "status/rdm/queue", nullptr, "RdmQueue"),
 #endif
 #if defined(NODE_SHOWFILE)
-    ENTRY(status::ShowFile, nullptr, nullptr, "status/showfile", nullptr),
+    ENTRY(status::ShowFile, nullptr, nullptr, "status/showfile", nullptr, "Showfile"),
 #endif
     // Action
-    ENTRY(nullptr, action::Set, nullptr, "action", nullptr),
+    ENTRY(nullptr, action::Set, nullptr, "action", nullptr, nullptr),
 #if defined(NODE_SHOWFILE)
-    ENTRY(nullptr, action::SetShowFile, nullptr, "action/showfile", nullptr),
-#endif	
+    ENTRY(nullptr, action::SetShowFile, nullptr, "action/showfile", nullptr, nullptr),
+#endif
 #endif
     // Config
-    ENTRY(config::GetDirectory, nullptr, nullptr, "config/directory", nullptr),
-    ENTRY(config::GetRemoteConfig, config::SetRemoteConfig, nullptr, "config/remote", "Remote configuration"),
-    ENTRY(config::GetGlobal, config::SetGlobal, nullptr, "config/global", "Global"),
-    ENTRY(config::GetNetwork, config::SetNetwork, nullptr, "config/network", "Network"),
+    ENTRY(config::Directory, nullptr, nullptr, "config/directory", nullptr, nullptr), 
+	ENTRY(config::GetRemoteConfig, config::SetRemoteConfig, nullptr, "config/remote", "Remote configuration", nullptr),
+    ENTRY(config::GetGlobal, config::SetGlobal, nullptr, "config/global", "Global", nullptr), 
+	ENTRY(config::GetNetwork, config::SetNetwork, nullptr, "config/network", "Network", nullptr),
 #if defined(DISPLAY_UDF)
-    ENTRY(config::GetDisplayUdf, config::SetDisplayUdf, nullptr, "config/display", "Display"),
+    ENTRY(config::GetDisplayUdf, config::SetDisplayUdf, nullptr, "config/display", "Display", nullptr),
 #endif
 // Config Node
 #if defined(DMXNODE_TYPE_ARTNET) || defined(DMXNODE_TYPE_E131)
-    ENTRY(config::GetDmxNode, config::SetDmxNode, nullptr, "config/dmxnode", "DMX Node"),
+    ENTRY(config::GetDmxNode, config::SetDmxNode, nullptr, "config/dmxnode", "DMX Node", nullptr),
 #if defined(DMXNODE_TYPE_ARTNET)
-    ENTRY(config::GetArtNet, config::SetArtNet, nullptr, "config/artnet", "Art-Net"),
+    ENTRY(config::GetArtNet, config::SetArtNet, nullptr, "config/artnet", "Art-Net", nullptr),
 #endif
 #if defined(DMXNODE_TYPE_E131) || (ARTNET_VERSION >= 4)
-    ENTRY(config::GetE131, config::SetE131, nullptr, "config/e131", "sACN E1.31"),
+    ENTRY(config::GetE131, config::SetE131, nullptr, "config/e131", "sACN E1.31", nullptr),
 #endif
 #endif
 #if defined(NODE_OSC_CLIENT)
-    ENTRY(config::GetOscClient, config::SetOscClient, nullptr, "config/oscclient", "OSC Client"),
+    ENTRY(config::GetOscClient, config::SetOscClient, nullptr, "config/oscclient", "OSC Client", nullptr),
 #endif
 #if defined(NODE_OSC_SERVER)
-    ENTRY(config::GetOscServer, config::SetOscServer, nullptr, "config/oscserver", "OSC Server"),
+    ENTRY(config::GetOscServer, config::SetOscServer, nullptr, "config/oscserver", "OSC Server", nullptr),
 #endif
 #if defined(RDM_CONTROLLER) || defined(RDM_RESPONDER)
-    ENTRY(config::GetRdmDevice, config::SetRdmDevice, nullptr, "config/rdmdevice", "RDM Device"),
+    ENTRY(config::GetRdmDevice, config::SetRdmDevice, nullptr, "config/rdmdevice", "RDM Device", nullptr),
 #if defined(CONFIG_RDM_ENABLE_SENSORS)
-    ENTRY(config::GetRdmSensors, config::SetRdmSensors, nullptr, "config/rdmsensors", "RDM Sensors"),
+    ENTRY(config::GetRdmSensors, config::SetRdmSensors, nullptr, "config/rdmsensors", "RDM Sensors", nullptr),
 #endif
 #endif
 // Config Output
 #if defined(DMXNODE_OUTPUT_DMX)
-    ENTRY(config::GetDmxSend, config::SetDmxSend, nullptr, "config/dmxsend", "DMX Transmit"),
+    ENTRY(config::GetDmxSend, config::SetDmxSend, nullptr, "config/dmxsend", "DMX Transmit", nullptr),
 #endif
 #if defined(DMXNODE_OUTPUT_PCA9685)
-    ENTRY(config::GetPca9685Dmx, config::SetPca9685Dmx, nullptr, "config/dmxpca9685", "DMX PCA9685"),
+    ENTRY(config::GetPca9685Dmx, config::SetPca9685Dmx, nullptr, "config/dmxpca9685", "DMX PCA9685", nullptr),
 #endif
 #if defined(OUTPUT_DMX_TLC59711)
-    ENTRY(config::GetTlc59711Dmx, config::SetTlc59711Dmx, nullptr, "config/dmxtlc59711", "DMX TLC59711"),
+    ENTRY(config::GetTlc59711Dmx, config::SetTlc59711Dmx, nullptr, "config/dmxtlc59711", "DMX TLC59711", nullptr),
 #endif
 #if defined(DMXNODE_OUTPUT_PIXEL)
-ENTRY(config::GetPixelDmx, config::SetPixelDmx, nullptr, "config/dmxpixel", "DMX Pixel"),
+    ENTRY(config::GetPixelDmx, config::SetPixelDmx, nullptr, "config/dmxpixel", "DMX Pixel", nullptr),
 #endif
 #if defined(OUTPUT_DMX_MONITOR)
-    ENTRY(config::GetDmxMonitor, config::SetDmxMonitor, nullptr, "config/dmxmonitor", "DMX Monitor"),
+    ENTRY(config::GetDmxMonitor, config::SetDmxMonitor, nullptr, "config/dmxmonitor", "DMX Monitor", nullptr),
 #endif
 
 #if defined(DMXNODE_OUTPUT_SERIAL)
-    ENTRY(config::GetDmxSerial, config::SetDmxSerial, nullptr, "config/dmxserial", "DMX Serial"),
+    ENTRY(config::GetDmxSerial, config::SetDmxSerial, nullptr, "config/dmxserial", "DMX Serial", nullptr),
 #endif
 #if defined(OUTPUT_RGB_PANEL)
-    ENTRY(config::GetRgbPanel, config::SetRgbPanel, nullptr, "config/rgbpanel", "RGB Panel"),
+    ENTRY(config::GetRgbPanel, config::SetRgbPanel, nullptr, "config/rgbpanel", "RGB Panel", nullptr),
 #endif
 #if defined(OUTPUT_DMX_STEPPER)
-    ENTRY(config::GetSparkFunDmx, config::SetSparkFunDmx, nullptr, "config/sparkfundmx", "SparkFun DMX (global)"),
-    ENTRY(config::GetDmxL6470Motor0, config::SetDmxL6470Motor0, nullptr, "config/dmxl6470/0", "DMX L6470-0"),
-    ENTRY(config::GetDmxL6470Motor1, config::SetDmxL6470Motor1, nullptr, "config/dmxl6470/1", "DMX L6470-1"),
-    ENTRY(config::GetDmxL6470Motor2, config::SetDmxL6470Motor2, nullptr, "config/dmxl6470/2", "DMX L6470-2"),
-    ENTRY(config::GetDmxL6470Motor3, config::SetDmxL6470Motor3, nullptr, "config/dmxl6470/3", "DMX L6470-3"),
-    ENTRY(config::GetDmxL6470Motor4, config::SetDmxL6470Motor4, nullptr, "config/dmxl6470/4", "DMX L6470-4"),
-    ENTRY(config::GetDmxL6470Motor5, config::SetDmxL6470Motor5, nullptr, "config/dmxl6470/5", "DMX L6470-5"),
-    ENTRY(config::GetDmxL6470Motor6, config::SetDmxL6470Motor6, nullptr, "config/dmxl6470/6", "DMX L6470-6"),
-    ENTRY(config::GetDmxL6470Motor7, config::SetDmxL6470Motor7, nullptr, "config/dmxl6470/7", "DMX L6470-7"),
+    ENTRY(config::GetSparkFunDmx, config::SetSparkFunDmx, nullptr, "config/sparkfundmx", "SparkFun DMX (global)", nullptr), 
+	ENTRY(config::GetDmxL6470Motor0, config::SetDmxL6470Motor0, nullptr, "config/dmxl6470/0", "DMX L6470-0", nullptr),
+    ENTRY(config::GetDmxL6470Motor1, config::SetDmxL6470Motor1, nullptr, "config/dmxl6470/1", "DMX L6470-1", nullptr), 
+	ENTRY(config::GetDmxL6470Motor2, config::SetDmxL6470Motor2, nullptr, "config/dmxl6470/2", "DMX L6470-2", nullptr),
+    ENTRY(config::GetDmxL6470Motor3, config::SetDmxL6470Motor3, nullptr, "config/dmxl6470/3", "DMX L6470-3", nullptr), 
+	ENTRY(config::GetDmxL6470Motor4, config::SetDmxL6470Motor4, nullptr, "config/dmxl6470/4", "DMX L6470-4", nullptr),
+    ENTRY(config::GetDmxL6470Motor5, config::SetDmxL6470Motor5, nullptr, "config/dmxl6470/5", "DMX L6470-5", nullptr), 
+	ENTRY(config::GetDmxL6470Motor6, config::SetDmxL6470Motor6, nullptr, "config/dmxl6470/6", "DMX L6470-6", nullptr),
+    ENTRY(config::GetDmxL6470Motor7, config::SetDmxL6470Motor7, nullptr, "config/dmxl6470/7", "DMX L6470-7", nullptr),
 #endif
 // LTC SMPTE
 #if defined(NODE_LTC_SMPTE)
-    ENTRY(config::GetLtc, config::SetLtc, nullptr, "config/ltc", "LTC SMPTE"),
-    ENTRY(config::GetLtcDisplay, config::SetLtcDisplay, nullptr, "config/ltcdisplays", "LTC Displays"),
-    ENTRY(config::GetGps, config::SetGps, nullptr, "config/gps", "GPS"), ENTRY(config::GetTcNet, config::SetTcNet, nullptr, "config/tcnet", "TCNet"),
-    ENTRY(config::GetLtcEtc, config::SetLtcEtc, nullptr, "config/etc", "ETC Connect"),
+    ENTRY(config::GetLtc, config::SetLtc, nullptr, "config/ltc", "LTC SMPTE", nullptr), 
+	ENTRY(config::GetLtcDisplay, config::SetLtcDisplay, nullptr, "config/ltcdisplays", "LTC Displays", nullptr),
+    ENTRY(config::GetGps, config::SetGps, nullptr, "config/gps", "GPS", nullptr), 
+	ENTRY(config::GetTcNet, config::SetTcNet, nullptr, "config/tcnet", "TCNet", nullptr), 
+	ENTRY(config::GetLtcEtc, config::SetLtcEtc, nullptr, "config/etc", "ETC Connect", nullptr),
 #endif
 // Config Features
 #if defined(NODE_SHOWFILE)
-    ENTRY(config::GetShowFile, config::SetShowFile, nullptr, "config/showfile", "Showfile"),
-    ENTRY(ShowFileDirectory, config::SetShowFile, nullptr, "showfile/directory", nullptr),
+    ENTRY(config::GetShowFile, config::SetShowFile, nullptr, "config/showfile", "Showfile", nullptr), 
+	ENTRY(ShowFileDirectory, config::SetShowFile, nullptr, "showfile/directory", nullptr, nullptr),
 #endif
 #if !defined(DISABLE_FS)
-    ENTRY(storage::GetDirectory, nullptr, nullptr, "storage/directory", nullptr)
+    ENTRY(storage::Directory, nullptr, nullptr, "storage/directory", nullptr, nullptr)
 #endif
 };
 

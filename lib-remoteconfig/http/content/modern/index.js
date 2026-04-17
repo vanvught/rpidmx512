@@ -126,7 +126,7 @@ function loadModule(path, name) {
 	const file = path.split("/")[1];
 	const script = document.createElement("script");
 
-	script.src = file + ".js";
+	script.src = path + ".js";
 
 	script.onload = () => {
 		if (window[file] && window[file].init) {

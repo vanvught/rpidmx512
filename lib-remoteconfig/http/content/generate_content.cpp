@@ -23,6 +23,7 @@
  * THE SOFTWARE.
  */
 
+#include <cstdint>
 #undef NDEBUG
 
 #include <cstdlib>
@@ -34,24 +35,17 @@
 #include "http/http.h"
 #include "common/utils/utils_hash.h"
 
-struct SupportedExtension
-{
+struct SupportedExtension {
     const char* extension;
     http::ContentTypes content_type;
 };
 
-static constexpr SupportedExtension kSupportedExtensions[] = 
-{
-	{"html", http::ContentTypes::kTextHtml},
-	{"css", http::ContentTypes::kTextCss},
-	{"js", http::ContentTypes::kTextJs},
-	{"json", http::ContentTypes::kApplicationJson}
-};
+static constexpr SupportedExtension kSupportedExtensions[] = {{"html", http::ContentTypes::kTextHtml}, {"css", http::ContentTypes::kTextCss}, {"js", http::ContentTypes::kTextJs}, {"json", http::ContentTypes::kApplicationJson}};
 
 static constexpr char kContentHeader[] =
     "\n"
     "struct FilesContent {\n"
-	"\tuint32_t hash;\n"
+    "\tuint32_t hash;\n"
     "\tconst char *file_name;\n"
     "\tconst char *content;\n"
     "\tuint32_t content_length;\n"
@@ -59,17 +53,16 @@ static constexpr char kContentHeader[] =
     "};\n\n"
     "inline constexpr struct FilesContent kHttpContent[] = {\n";
 
-		
 // Node Type
 static constexpr char kHaveDmxNodeBegin[] = "#if defined (DMXNODE_PORTS)\n";
 static constexpr char kHaveDmxNodeEnd[] = "#endif // (DMXNODE_PORTS)\n";
 
 static constexpr char kHaveArtNetBegin[] = "#if defined(NODE_ARTNET) || defined(NODE_ARTNET_MULTI)\n";
-static constexpr char kHaveArtNetEnd[] = "#endif // defined(NODE_ARTNET) || defined(NODE_ARTNET_MULTI)\n";		
+static constexpr char kHaveArtNetEnd[] = "#endif // defined(NODE_ARTNET) || defined(NODE_ARTNET_MULTI)\n";
 
 static constexpr char kHaveE131Begin[] = "#if defined(NODE_E131) || defined(NODE_E131_MULTI) || (ARTNET_VERSION == 4)\n";
-static constexpr char kHaveE131End[] = "#endif // defined(NODE_E131) || defined(NODE_E131_MULTI) || (ARTNET_VERSION == 4)\n";		
-		
+static constexpr char kHaveE131End[] = "#endif // defined(NODE_E131) || defined(NODE_E131_MULTI) || (ARTNET_VERSION == 4)\n";
+
 // Node Output
 static constexpr char kHaveDmxSendBegin[] = "#if !defined (CONFIG_HTTP_HTML_NO_DMX) && (defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI))\n";
 static constexpr char kHaveDmxSendEnd[] = "#endif // !defined (CONFIG_HTTP_HTML_NO_DMX) && (defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI))\n";
@@ -96,27 +89,16 @@ static constexpr char kHaveTimeEnd[] = "#endif // !defined (CONFIG_HTTP_HTML_NO_
 static constexpr char kHaveRtcBegin[] = "#if !defined (CONFIG_HTTP_HTML_NO_RTC) && !defined (DISABLE_RTC)\n";
 static constexpr char kHaveRtcEnd[] = "#endif // !defined (CONFIG_HTTP_HTML_NO_RTC) && !defined (DISABLE_RTC)\n";
 
-struct FeatureGuard
-{
+struct FeatureGuard {
     const char* match;
     const char* begin;
     const char* end;
 };
 
 static constexpr FeatureGuard kFeatureGuards[] = {
-	{"dmxnode", kHaveDmxNodeBegin, kHaveDmxNodeEnd},
-	{"artnet", kHaveArtNetBegin, kHaveArtNetEnd},
-	{"e131", kHaveE131Begin, kHaveE131End},
-	{"pixel", kHavePixelBegin, kHavePixelEnd},
-	{"dmxmonitor", kHaveDmxMonitorBegin, kHaveDmxMonitorEnd},
-	{"dmxsend", kHaveDmxSendBegin, kHaveDmxSendEnd},
-	{"dmx.", kHaveDmxSendBegin, kHaveDmxSendEnd},
-	{"rdm", kHaveRdmBegin, kHaveRdmEnd},
-	{"display", kHaveDisplayUdfBegin, kHaveDisplayUdfEnd},
-	{"showfile", kHaveShowfileBegin, kHaveShowfileEnd},
-	{"time", kHaveTimeBegin, kHaveTimeEnd},
-	{"rtc", kHaveRtcBegin, kHaveRtcEnd}
-};
+    {"dmxnode", kHaveDmxNodeBegin, kHaveDmxNodeEnd},          {"artnet", kHaveArtNetBegin, kHaveArtNetEnd},       {"e131", kHaveE131Begin, kHaveE131End},       {"pixel", kHavePixelBegin, kHavePixelEnd},
+    {"dmxmonitor", kHaveDmxMonitorBegin, kHaveDmxMonitorEnd}, {"dmxsend", kHaveDmxSendBegin, kHaveDmxSendEnd},    {"dmx.", kHaveDmxSendBegin, kHaveDmxSendEnd}, {"rdm", kHaveRdmBegin, kHaveRdmEnd},
+    {"display", kHaveDisplayUdfBegin, kHaveDisplayUdfEnd},    {"showfile", kHaveShowfileBegin, kHaveShowfileEnd}, {"time", kHaveTimeBegin, kHaveTimeEnd},       {"rtc", kHaveRtcBegin, kHaveRtcEnd}};
 
 static FILE* file_content;
 static FILE* file_includes;
@@ -317,6 +299,23 @@ static int ConvertToH(const char* dir_name, const char* file_name) {
     return file_size;
 }
 
+static uint32_t CreateHash(const char* filename) {
+	char hash_name[128];
+	const auto kLength = strlen(filename);
+	assert(kLength + 1 <= sizeof(hash_name));
+	strncpy(hash_name, filename, sizeof(hash_name));
+	hash_name[kLength] = '\0';
+	
+	auto* p = strchr(hash_name, '_');
+
+	if (p != nullptr) {
+	    *p = '/';
+	}
+	
+	printf("Hash name: %s ", hash_name);
+	return Fnv1a32Runtime(hash_name, kLength);
+}
+
 int main(int argc, char* argv[]) // NOLINT
 {
     file_includes = fopen("includes.h", "w");
@@ -357,7 +356,7 @@ int main(int argc, char* argv[]) // NOLINT
             WriteFeatureGuardsBegin(file_content, dir_entry->d_name);
 
             char buffer[256];
-            auto i = snprintf(buffer, sizeof(buffer), "\t{ %u,\"%s\", ", Fnv1a32Runtime(dir_entry->d_name, strlen(dir_entry->d_name)), dir_entry->d_name);
+            auto i = snprintf(buffer, sizeof(buffer), "\t{ %u,\"%s\", ", CreateHash(dir_entry->d_name), dir_entry->d_name);
             assert(i > 0);
             assert(i < static_cast<int>(sizeof(buffer)));
 

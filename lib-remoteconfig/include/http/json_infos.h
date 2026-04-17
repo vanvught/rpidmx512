@@ -37,8 +37,8 @@ namespace json
 struct Info
 {
     constexpr Info(uint32_t (*get_in)(char*, uint32_t), void (*set_in)(const char*, uint32_t), void (*del_in)(const char*, uint32_t), const char* name_in,
-                   uint8_t length_in, uint32_t hash_in, const char* label_in) noexcept
-        : get(get_in), set(set_in), del(del_in), name(name_in), length(length_in), hash(hash_in), label(label_in)
+                   uint8_t length_in, uint32_t hash_in, const char* config_in, const char* status_in) noexcept
+        : get(get_in), set(set_in), del(del_in), name(name_in), length(length_in), hash(hash_in), config_label(config_in), status_label(status_in)
     {
     }
 
@@ -48,14 +48,15 @@ struct Info
     const char* name;
     uint8_t length;
     uint32_t hash;
-    const char* label;
+    const char* config_label;
+	const char* status_label;
 };
 
 template <size_t N>
 constexpr Info MakeJsonFileInfo(uint32_t (*get)(char*, uint32_t), void (*set)(const char*, uint32_t), void (*del)(const char*, uint32_t), const char (&str)[N],
-                                uint32_t hash, const char* label)
+                                uint32_t hash, const char* config_label, const char* status_label)
 {
-    return Info{get, set, del, str, static_cast<uint8_t>(N - 1), hash, label};
+    return Info{get, set, del, str, static_cast<uint8_t>(N - 1), hash, config_label, status_label};
 }
 
 constexpr bool HasUniqueHashes(const Info* entries, size_t count)
@@ -75,11 +76,6 @@ constexpr bool HasUniqueHashes(const Info* entries, size_t count)
 
 extern const Info kFileInfos[];
 extern const size_t kFileInfosSize;
-
-inline void PrintInfos()
-{
-    PrintInfosGeneric(kFileInfos, kFileInfosSize);
-}
 
 inline int32_t GetFileIndex(const char* name)
 {

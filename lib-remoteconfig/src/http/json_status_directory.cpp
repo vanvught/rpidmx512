@@ -1,7 +1,7 @@
 /**
- * @file json_config_getdirectory.cpp
+ * @file json_config_directory.cpp
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,33 +28,26 @@
 
 #include "http/json_infos.h"
 
-namespace json::config
-{
-uint32_t GetDirectory(char* out_buffer, uint32_t out_buffer_size)
-{
+namespace json::status {
+uint32_t Directory(char* out_buffer, uint32_t out_buffer_size) {
     uint32_t total = 0;
 
     total += static_cast<uint32_t>(snprintf(out_buffer + total, out_buffer_size - total, "{\"files\":{"));
 
-    for (size_t i = 0; i < kFileInfosSize; ++i)
-    {
+    for (size_t i = 0; i < kFileInfosSize; ++i) {
         const auto& entry = kFileInfos[i];
-        if ((entry.label != nullptr) && (entry.label[0] != '\0'))
-        {
-            total += static_cast<uint32_t>(snprintf(out_buffer + total, out_buffer_size - total, "\"%s\":\"%s\"%s", entry.name, entry.label, (i + 1 < kFileInfosSize) ? "," : ""));
+        if ((entry.status_label != nullptr) && (entry.status_label[0] != '\0')) {
+            total += static_cast<uint32_t>(snprintf(out_buffer + total, out_buffer_size - total, "\"%s\":\"%s\"%s", entry.name, entry.status_label, (i + 1 < kFileInfosSize) ? "," : ""));
         }
     }
 
-    if (out_buffer[total - 1] == ',')
-    {
+    if (out_buffer[total - 1] == ',') {
         out_buffer[total - 1] = '}';
-    }
-    else
-    {
+    } else {
         out_buffer[total++] = '}';
     }
 
     out_buffer[total++] = '}';
     return total;
 }
-} // namespace json::config
+} // namespace json::status

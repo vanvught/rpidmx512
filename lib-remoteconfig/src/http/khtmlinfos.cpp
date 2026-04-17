@@ -34,6 +34,7 @@ namespace html
 constexpr Info kHtmlInfos[] = {
 	ENTRY("/", "index.html"),
 #if !defined(CONFIG_HTTP_HTML_INDEX_ONLY)
+ENTRY("/status", "status/index.html"),
 #if !defined (CONFIG_HTTP_HTML_NO_DMX) && (defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI))
  	ENTRY("/dmx", "dmx.html"),
 #endif	

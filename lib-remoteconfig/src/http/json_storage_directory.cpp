@@ -30,15 +30,12 @@
 #include <errno.h>
 #endif
 
-namespace json::storage
-{
-static bool Filter(const char* name)
-{
+namespace json::storage {
+static bool Filter(const char* name) {
     return *name == '.';
 }
 
-uint32_t GetDirectory(char* out_buffer, uint32_t out_buffer_size)
-{
+uint32_t Directory(char* out_buffer, uint32_t out_buffer_size) {
     const auto kBufferSize = out_buffer_size - 2U;
 #if defined(__linux__) || defined(__APPLE__)
     auto* dirp = opendir("storage");
@@ -53,35 +50,28 @@ uint32_t GetDirectory(char* out_buffer, uint32_t out_buffer_size)
 
     auto length = static_cast<uint32_t>(snprintf(out_buffer, kBufferSize, "{\"label\":\"%s\",\"files\":[", (dirp != nullptr) ? "storage" : "No storage"));
 
-    if (dirp != nullptr)
-    {
+    if (dirp != nullptr) {
         struct dirent* dp;
-        do
-        {
-            if ((dp = readdir(dirp)) != nullptr)
-            {
-                if (dp->d_type == DT_DIR)
-                {
+        do {
+            if ((dp = readdir(dirp)) != nullptr) {
+                if (dp->d_type == DT_DIR) {
                     continue;
                 }
 
-                if (Filter(dp->d_name))
-                {
+                if (Filter(dp->d_name)) {
                     continue;
                 }
 
                 const auto kSize = kBufferSize - length;
                 const auto kCharacters = static_cast<uint32_t>(snprintf(&out_buffer[length], kSize, "\"%s\",", dp->d_name));
 
-                if (kCharacters > kSize)
-                {
+                if (kCharacters > kSize) {
                     break;
                 }
 
                 length += kCharacters;
 
-                if (length >= kBufferSize)
-                {
+                if (length >= kBufferSize) {
                     break;
                 }
             }
@@ -89,8 +79,7 @@ uint32_t GetDirectory(char* out_buffer, uint32_t out_buffer_size)
 
         closedir(dirp);
 
-        if (out_buffer[length - 1] == ',')
-        {
+        if (out_buffer[length - 1] == ',') {
             length--;
         }
     }
