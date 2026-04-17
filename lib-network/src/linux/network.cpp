@@ -487,7 +487,7 @@ void SetPrimaryIp([[maybe_unused]] uint32_t np_in) {
         return;
     }
 
-    strncpy(ifr.ifr_name, m_aIfName, IFNAMSIZ);
+    strncpy(ifr.ifr_name, s_if_name, IFNAMSIZ);
 
     ifr.ifr_addr.sa_family = AF_INET;
 
@@ -502,7 +502,7 @@ void SetPrimaryIp([[maybe_unused]] uint32_t np_in) {
         return;
     }
 
-    strncpy(ifr.ifr_name, m_aIfName, IFNAMSIZ);
+    strncpy(ifr.ifr_name, s_if_name, IFNAMSIZ);
     ifr.ifr_flags |= (IFF_UP | IFF_RUNNING);
 
     if (ioctl(fd, SIOCSIFFLAGS, &ifr) == -1) {
@@ -600,7 +600,7 @@ Network::Network(int argc, char** argv) {
     }
 #if defined(__linux__)
     else {
-        if (IsDhclient(m_aIfName)) {
+        if (IsDhclient(s_if_name)) {
             netif::SetFlags(netif::Netif::kNetifFlagDhcpOk);
         } else {
             netif::ClearFlags(netif::Netif::kNetifFlagDhcpOk);

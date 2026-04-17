@@ -2,7 +2,7 @@
  * @file network_iface.cpp
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,46 +34,36 @@ char s_hostname[network::iface::kHostnameSize];
 char s_domain_name[network::iface::kDomainnameSize];
 uint32_t s_nameservers[network::iface::kNameserversCount];
 
-namespace network::iface
-{
-void CopyMacAddressTo(uint8_t* mac_address)
-{
+namespace network::iface {
+void CopyMacAddressTo(uint8_t* mac_address) {
     assert(mac_address != nullptr);
     memcpy(mac_address, netif::HwAddr(), kMacSize);
 }
 
-bool Dhcp()
-{
+bool Dhcp() {
     return (netif::global::netif_default.flags & netif::Netif::kNetifFlagDhcpOk) == netif::Netif::kNetifFlagDhcpOk;
 }
 
-void EnableDhcp()
-{
+void EnableDhcp() {
     DEBUG_ENTRY();
     DEBUG_EXIT();
 }
 
-void SetAutoIp()
-{
+void SetAutoIp() {
     DEBUG_ENTRY();
     DEBUG_EXIT();
 }
 
-bool AutoIp()
-{
+bool AutoIp() {
     return (netif::global::netif_default.flags & netif::Netif::kNetifFlagAutoipOk) == netif::Netif::kNetifFlagAutoipOk;
 }
 
-void SetHostname(const char* hostname)
-{
+void SetHostname(const char* hostname) {
     DEBUG_ENTRY();
 
-    if ((hostname == nullptr) || ((hostname != nullptr) && (hostname[0] == '\0')))
-    {
+    if ((hostname == nullptr) || ((hostname != nullptr) && (hostname[0] == '\0'))) {
         return;
-    }
-    else
-    {
+    } else {
         strncpy(s_hostname, hostname, network::iface::kHostnameSize - 1);
         s_hostname[network::iface::kHostnameSize - 1] = '\0';
     }
@@ -85,34 +75,28 @@ void SetHostname(const char* hostname)
     DEBUG_EXIT();
 }
 
-void SetDomainName(const char* domainname)
-{
+void SetDomainName(const char* domainname) {
     strncpy(s_domain_name, domainname, network::iface::kDomainnameSize - 1);
     s_domain_name[network::iface::kDomainnameSize - 1] = '\0';
 }
 
-const char* HostName()
-{
+const char* HostName() {
     return netif::global::netif_default.hostname;
 }
 
-const char* DomainName()
-{
+const char* DomainName() {
     return &s_domain_name[0];
 }
 
-uint32_t NameServer(uint32_t index)
-{
-    if (index < network::iface::kNameserversCount)
-    {
+uint32_t NameServer(uint32_t index) {
+    if (index < network::iface::kNameserversCount) {
         return s_nameservers[index];
     }
 
     return 0;
 }
 
-uint32_t NameServerCount()
-{
+uint32_t NameServerCount() {
     return kNameserversCount;
 }
 
