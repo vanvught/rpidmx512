@@ -4,29 +4,9 @@
 <link rel="stylesheet" href="/styles.css" />
 <title>Status</title>
 </head>
-<style>
-.row span {
-	flex: 1;
-	padding: 5px;
-	border: 1px solid #555;
-	background: #222;
-	color: #eee;
-	border-radius: 3px;
-.checkbox span {
-    user-select: none;
-}
-}
-</style>
 <body>
-	<nav>
-	  <ul>
-	    <li><a href="/config">Configuration</a></li>
-	    <li><a href="/status">Status</a></li>
-	    <li><a href="/time">Time</a></li>
-	    <li><a href="/rtc">RTC</a></li>
-	  </ul>
-	</nav>
-	<header><ul id="idList"></ul></header>
+	<div id="appNav"></div>
+	<div id="appHeader"></div>
 	<div id="modules"></div>
 	<div class="card">
 		<h2>General</h2>
@@ -48,28 +28,49 @@
 		<div class="row"><label>Auto-neg</label><span id="autonegotiation"></span></div>
 		<div class="row"><button onclick="loadCore('phy')">Refresh</button></div>
 	</div>
-	<div>
-		<div class="card">
+	<div class="card">
 		<h2>Network</h2>
-		<h3>Receive</h3>
-		<div class="row"><label>packets</label><span id="rx_ok"></span></div>
-		<div class="row"><label>errors</label><span id="rx_err"></span></div>
-		<div class="row"><label>drop</label><span id="rx_drp"></span></div>
-		<div class="row"><label>overrun</label><span id="rx_ovr"></span></div>
-		<h3>Transmit</h3>
-		<div class="row"><label>packets</label><span id="tx_ok"></span></div>
-		<div class="row"><label>errors</label><span id="tx_err"></span></div>
-		<div class="row"><label>drop</label><span id="tx_drp"></span></div>
-		<div class="row"><label>overrun</label><span id="tx_ovr"></span></div>
-		<div class="row"><button onclick="loadCore('emac')">Refresh</button></div>
+		<table class="net-table">
+			<thead>
+				<tr>
+					<th></th>
+					<th>Packets</th>
+					<th>Errors</th>
+					<th>Drop</th>
+					<th>Overrun</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>Receive</td>
+					<td id="rx_ok"></td>
+					<td id="rx_err"></td>
+					<td id="rx_drp"></td>
+					<td id="rx_ovr"></td>
+				</tr>
+				<tr>
+					<td>Transmit</td>
+					<td id="tx_ok"></td>
+					<td id="tx_err"></td>
+					<td id="tx_drp"></td>
+					<td id="tx_ovr"></td>
+				</tr>
+			</tbody>
+		</table>
+		<div class="row">
+			<button onclick="loadCore('emac')">Refresh</button>
 		</div>
 	</div>
-	<footer><ul id="idVersion"></ul></footer>
-	<div>
-		<button id="locateButton" class="inactive" onclick="locate()">Locate Off</button>
-		<button onclick="reboot()">Reboot</button>
-	</div>
+	<div id="appFooter"></div>
+	<div id="appActions"></div>
+	<script src="/layout.js" type="text/javascript"></script>
 	<script src="/status/index.js" type="text/javascript"></script>
-	<script>list();version();loadCores();loadModules()</script>
+	<script>
+		bootPage('status');
+		list();
+		version();
+		loadCores();
+		loadModules();
+	</script>
 </body>
 </html>

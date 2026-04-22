@@ -32,7 +32,6 @@ window.artnet = {
 
         const optionalRdmContainer = card.querySelector(".optional-rdm-container");
         const portsContainer = card.querySelector(".ports-container");
-        const form = card.querySelector("form");
 
         if (j.enable_rdm !== undefined) {
             const row = document.createElement("div");
@@ -52,7 +51,6 @@ window.artnet = {
 
         for (let i = 0; i < suffixes.length; i++) {
             const suffix = suffixes[i];
-
             const row = document.createElement("div");
             row.className = "row";
 
@@ -63,22 +61,7 @@ window.artnet = {
             if (j["protocol_port_" + suffix] !== undefined) {
                 const select = document.createElement("select");
                 select.dataset.key = "protocol_port_" + suffix;
-
-                const optArtnet = document.createElement("option");
-                optArtnet.value = "artnet";
-                optArtnet.textContent = "artnet";
-                select.appendChild(optArtnet);
-
-                const optSacn = document.createElement("option");
-                optSacn.value = "sacn";
-                optSacn.textContent = "sacn";
-                select.appendChild(optSacn);
-
-                const optDisabled = document.createElement("option");
-                optDisabled.value = "disabled";
-                optDisabled.textContent = "disabled";
-                select.appendChild(optDisabled);
-
+                select.innerHTML = "<option value='artnet'>artnet</option><option value='sacn'>sacn</option><option value='disabled'>disabled</option>";
                 row.appendChild(select);
             }
 
@@ -114,85 +97,11 @@ window.artnet = {
         }
 
         document.getElementById("modules").appendChild(card);
-
-        form.onsubmit = () => {
-            this.save(path, card);
+        card.querySelector("form").onsubmit = () => {
+            saveDataKeyForm(path, card);
             return false;
         };
 
-        this.fill(card, j);
-    },
-
-    fill: function(card, j) {
-        const fields = card.querySelectorAll("[data-key]");
-
-        for (let i = 0; i < fields.length; i++) {
-            const e = fields[i];
-            const key = e.dataset.key;
-
-            if (j[key] === undefined) {
-                continue;
-            }
-
-            if (e.type === "checkbox") {
-                e.checked = !!j[key];
-            } else {
-                e.value = j[key];
-            }
-        }
-    },
-
-    save: async function(path, card) {
-        const fields = card.querySelectorAll("[data-key]");
-        const out = {};
-
-        for (let i = 0; i < fields.length; i++) {
-            const e = fields[i];
-            const key = e.dataset.key;
-
-            if (!e.checkValidity()) {
-                e.reportValidity();
-                return;
-            }
-
-            if (e.type === "checkbox") {
-                out[key] = e.checked ? 1 : 0;
-            } else if (e.type === "number") {
-                out[key] = +e.value;
-            } else {
-                out[key] = e.value.trim();
-            }
-        }
-
-        const btn = card.querySelector("button[type='submit']");
-        if (btn) {
-            btn.disabled = true;
-            btn.textContent = "Saving...";
-        }
-
-        try {
-            const res = await fetch("json/" + path, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(out)
-            });
-
-            if (!res.ok) {
-                console.log("Save failed");
-                return;
-            }
-
-            const j = await getJSON(path);
-            if (!j) return;
-
-            this.fill(card, j);
-        } catch (e) {
-            console.log("Error:", e);
-        } finally {
-            if (btn) {
-                btn.disabled = false;
-                btn.textContent = "Save";
-            }
-        }
+        fillDataKeys(card, j);
     }
 };

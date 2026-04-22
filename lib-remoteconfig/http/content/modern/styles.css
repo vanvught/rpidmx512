@@ -44,6 +44,15 @@ header, footer {
 	color: #aaa;
 }
 
+.row span {
+	flex: 1;
+	padding: 5px;
+	border: 1px solid #555;
+	background: #222;
+	color: #eee;
+	border-radius: 3px;
+}
+
 input[type="text"] {
 	flex: 1;
 	padding: 5px;
@@ -74,6 +83,10 @@ button:active {
 
 .checkbox {
 	gap: 8px;
+}
+
+.checkbox span {
+	user-select: none;
 }
 
 ul {
@@ -148,6 +161,30 @@ nav ul li a {
 	text-decoration: none;
 }
 
-nav ul li a:hover {
+nav ul li a:hover,
+nav ul li a.active {
 	background-color: #111111;
+}
+
+.net-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 12px;
+}
+
+.net-table th,
+.net-table td {
+	border: 1px solid #555;
+	padding: 4px 6px;
+	text-align: center;
+}
+
+.net-table th {
+	background: #2a2a2a;
+	color: #ccc;
+}
+
+.net-table td:first-child {
+	text-align: left;
+	color: #aaa;
 }

@@ -45,12 +45,10 @@ window.dmxnode = {
             </form>
         `;
 
-        const form = card.querySelector("form");
         const portsContainer = card.querySelector(".ports-container");
 
         for (let i = 0; i < suffixes.length; i++) {
             const suffix = suffixes[i];
-
             const row = document.createElement("div");
             row.className = "row";
 
@@ -79,39 +77,14 @@ window.dmxnode = {
             if (j["direction_port_" + suffix] !== undefined) {
                 const select = document.createElement("select");
                 select.dataset.key = "direction_port_" + suffix;
-
-                const optOutput = document.createElement("option");
-                optOutput.value = "output";
-                optOutput.textContent = "output";
-                select.appendChild(optOutput);
-
-                const optInput = document.createElement("option");
-                optInput.value = "input";
-                optInput.textContent = "input";
-                select.appendChild(optInput);
-
-                const optDisable = document.createElement("option");
-                optDisable.value = "disable";
-                optDisable.textContent = "disable";
-                select.appendChild(optDisable);
-
+                select.innerHTML = "<option value='output'>output</option><option value='input'>input</option><option value='disable'>disable</option>";
                 row.appendChild(select);
             }
 
             if (j["merge_mode_port_" + suffix] !== undefined) {
                 const select = document.createElement("select");
                 select.dataset.key = "merge_mode_port_" + suffix;
-
-                const optHtp = document.createElement("option");
-                optHtp.value = "htp";
-                optHtp.textContent = "htp";
-                select.appendChild(optHtp);
-
-                const optLtp = document.createElement("option");
-                optLtp.value = "ltp";
-                optLtp.textContent = "ltp";
-                select.appendChild(optLtp);
-
+                select.innerHTML = "<option value='htp'>htp</option><option value='ltp'>ltp</option>";
                 row.appendChild(select);
             }
 
@@ -119,85 +92,11 @@ window.dmxnode = {
         }
 
         document.getElementById("modules").appendChild(card);
-
-        form.onsubmit = () => {
-            this.save(path, card);
+        card.querySelector("form").onsubmit = () => {
+            saveDataKeyForm(path, card);
             return false;
         };
 
-        this.fill(card, j);
-    },
-
-    fill: function(card, j) {
-        const fields = card.querySelectorAll("[data-key]");
-
-        for (let i = 0; i < fields.length; i++) {
-            const e = fields[i];
-            const key = e.dataset.key;
-
-            if (j[key] === undefined) {
-                continue;
-            }
-
-            if (e.type === "checkbox") {
-                e.checked = !!j[key];
-            } else {
-                e.value = j[key];
-            }
-        }
-    },
-
-    save: async function(path, card) {
-        const fields = card.querySelectorAll("[data-key]");
-        const out = {};
-
-        for (let i = 0; i < fields.length; i++) {
-            const e = fields[i];
-            const key = e.dataset.key;
-
-            if (!e.checkValidity()) {
-                e.reportValidity();
-                return;
-            }
-
-            if (e.type === "checkbox") {
-                out[key] = e.checked ? 1 : 0;
-            } else if (e.type === "number") {
-                out[key] = +e.value;
-            } else {
-                out[key] = e.value.trim();
-            }
-        }
-
-        const btn = card.querySelector("button[type='submit']");
-        if (btn) {
-            btn.disabled = true;
-            btn.textContent = "Saving...";
-        }
-
-        try {
-            const res = await fetch("json/" + path, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(out)
-            });
-
-            if (!res.ok) {
-                console.log("Save failed");
-                return;
-            }
-
-            const j = await getJSON(path);
-            if (!j) return;
-
-            this.fill(card, j);
-        } catch (e) {
-            console.log("Error:", e);
-        } finally {
-            if (btn) {
-                btn.disabled = false;
-                btn.textContent = "Save";
-            }
-        }
+        fillDataKeys(card, j);
     }
 };

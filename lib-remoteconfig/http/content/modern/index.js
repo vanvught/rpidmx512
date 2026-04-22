@@ -1,25 +1,3 @@
-async function getJSON(path) {
-	try {
-		const r = await fetch('/json/' + path);
-		return r.ok ? await r.json() : null;
-	} catch {
-		return null;
-	}
-}
-
-async function postJSON(path, obj) {
-	try {
-		const r = await fetch(path, {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify(obj)
-		});
-		return r.ok;
-	} catch {
-		return false;
-	}
-}
-
 function setValue(id, value) {
 	document.getElementById(id).value = value || "";
 }

@@ -72,7 +72,7 @@ uint32_t Emac(char* out_buffer, uint32_t out_buffer_size) {
     emit_u64(st.tx.err);
     emit_str(",\"tx_drp\":");
     emit_u64(st.tx.drp);
-    emit_str(",\"tx.ovr\":");
+    emit_str(",\"tx_ovr\":");
     emit_u64(st.tx.ovr);
     emit_str("}");
 

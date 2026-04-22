@@ -35,32 +35,26 @@
 #include "utc.h"
 #include "configstore.h"
 #include "firmware/debug/debug_dump.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
-namespace json
-{
-uint32_t GetTimeofday(char* out_buffer, uint32_t out_buffer_size)
-{
+namespace json {
+uint32_t GetTimeofday(char* out_buffer, uint32_t out_buffer_size) {
     DEBUG_ENTRY();
 
     struct timeval tv;
-    if (gettimeofday(&tv, nullptr) >= 0)
-    {
+    if (gettimeofday(&tv, nullptr) >= 0) {
         auto* tm = localtime(&tv.tv_sec);
 
         int32_t hours;
         uint32_t minutes;
         Global::Instance().GetUtcOffset(hours, minutes);
 
-        if ((hours == 0) && (minutes == 0))
-        {
+        if ((hours == 0) && (minutes == 0)) {
             const auto kLength = static_cast<uint32_t>(snprintf(out_buffer, out_buffer_size, "{\"date\":\"%d-%.2d-%.2dT%.2d:%.2d:%.2dZ\"}\n", 1900 + tm->tm_year, 1 + tm->tm_mon, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec));
 
             DEBUG_EXIT();
             return kLength;
-        }
-        else
-        {
+        } else {
             const auto kLength = static_cast<uint32_t>(
                 snprintf(out_buffer, out_buffer_size, "{\"date\":\"%d-%.2d-%.2dT%.2d:%.2d:%.2d%s%.2d:%.2u\"}\n", 1900 + tm->tm_year, 1 + tm->tm_mon, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec, hours > 0 ? "+" : "", hours, minutes));
 
@@ -73,35 +67,35 @@ uint32_t GetTimeofday(char* out_buffer, uint32_t out_buffer_size)
     return 0;
 }
 
-static void SetDate(const char* date, uint32_t date_length)
-{
-    if ((date_length == 20) || (date_length == 25))
-    {
+static void SetDate(const char* date, uint32_t date_length) {
+    DEBUG_ENTRY();
+    DEBUG_PRINTF("%.*s [%u]", date_length, date, date_length);
+
+    if ((date_length == 20) || (date_length == 25)) {
         struct tm tm;
         tm.tm_year = json::Atoi(&date[0], 4) - 1900;
         tm.tm_mon = json::Atoi(&date[5], 2) - 1;
         tm.tm_mday = json::Atoi(&date[8], 2);
         tm.tm_hour = json::Atoi(&date[11], 2);
-        tm.tm_min = json::Atoi(&date[12], 2);
+        tm.tm_min = json::Atoi(&date[14], 2);
         tm.tm_sec = json::Atoi(&date[17], 2);
 
         struct timeval tv;
         tv.tv_sec = mktime(&tm);
         tv.tv_usec = 0;
 
-        if (date_length == 20)
-        {
+        if (date_length == 20) {
             assert(date[19] == 'Z');
-        }
-        else
-        {
+        } else {
             const int32_t kSign = date[19] == '-' ? -1 : 1;
             const auto kHours = static_cast<int8_t>(Atoi(&date[20], 2) * kSign);
             const auto kMinutes = static_cast<uint8_t>(Atoi(&date[23], 2));
-            int32_t utc_offset;
+            
+			DEBUG_PRINTF("[%d]%.2d:%.2d", kSign, kHours, kMinutes);
+			
+			int32_t utc_offset;
 
-            if (hal::utc::ValidateOffset(kHours, kMinutes, utc_offset))
-            {
+            if (hal::utc::ValidateOffset(kHours, kMinutes, utc_offset)) {
                 ConfigStore::Instance().GlobalUpdate(&common::store::Global::utc_offset, utc_offset);
                 Global::Instance().SetUtcOffsetIfValid(kHours, kMinutes);
             }
@@ -111,28 +105,23 @@ static void SetDate(const char* date, uint32_t date_length)
 
         settimeofday(&tv, nullptr);
 
-        DEBUG_PRINTF("%.4d/%.2d/%.2d %.2d:%.2d:%.2d", 1900 + tm.tm_year, 1 + tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+        DEBUG_PRINTF("%.4d-%.2d-%.2dT%.2d:%.2d:%.2d", 1900 + tm.tm_year, 1 + tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
         DEBUG_EXIT();
         return;
     }
-}	
+	
+	DEBUG_EXIT();
+}
 
-static constexpr json::SimpleKey kDate {
-    "date",
-    4,
-    Fnv1a32("date", 4)
-};
+static constexpr json::SimpleKey kDate{"date", 4, Fnv1a32("date", 4)};
 
-static constexpr json::Key kActionKeys[] = {
-	json::MakeKey(SetDate, kDate)
-};
+static constexpr json::Key kActionKeys[] = {json::MakeKey(SetDate, kDate)};
 
-void SetTimeofday(const char* buffer, uint32_t buffer_size)
-{
+void SetTimeofday(const char* buffer, uint32_t buffer_size) {
     DEBUG_ENTRY();
     debug::Dump(buffer, buffer_size);
 
-	ParseJsonWithTable(buffer, buffer_size, kActionKeys);
+    ParseJsonWithTable(buffer, buffer_size, kActionKeys);
 
     DEBUG_EXIT();
 }
