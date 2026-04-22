@@ -27,12 +27,12 @@
 
 #include "hal_statusled.h"
 
-namespace json::status
-{
-uint32_t Identify(char* out_buffer, uint32_t out_buffer_size)
-{
+namespace json::status {
+uint32_t Identify(char* out_buffer, uint32_t out_buffer_size) {
     const bool kIsOn = hal::statusled::GetMode() == hal::statusled::Mode::FAST;
-    const auto kLength = static_cast<uint32_t>(snprintf(out_buffer, out_buffer_size, "{\"identify\":%d}", kIsOn));
+    const auto kLength = static_cast<uint32_t>(snprintf(out_buffer, out_buffer_size, 
+		"{\"identify\":%d}", 
+		kIsOn));
     return kLength;
 }
 } // namespace json::status

@@ -90,10 +90,10 @@ static void SetDate(const char* date, uint32_t date_length) {
             const int32_t kSign = date[19] == '-' ? -1 : 1;
             const auto kHours = static_cast<int8_t>(Atoi(&date[20], 2) * kSign);
             const auto kMinutes = static_cast<uint8_t>(Atoi(&date[23], 2));
-            
-			DEBUG_PRINTF("[%d]%.2d:%.2d", kSign, kHours, kMinutes);
-			
-			int32_t utc_offset;
+
+            DEBUG_PRINTF("[%d]%.2d:%.2d", kSign, kHours, kMinutes);
+
+            int32_t utc_offset;
 
             if (hal::utc::ValidateOffset(kHours, kMinutes, utc_offset)) {
                 ConfigStore::Instance().GlobalUpdate(&common::store::Global::utc_offset, utc_offset);
@@ -109,8 +109,8 @@ static void SetDate(const char* date, uint32_t date_length) {
         DEBUG_EXIT();
         return;
     }
-	
-	DEBUG_EXIT();
+
+    DEBUG_EXIT();
 }
 
 static constexpr json::SimpleKey kDate{"date", 4, Fnv1a32("date", 4)};

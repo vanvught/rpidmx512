@@ -52,7 +52,7 @@ uint32_t ShowFile(char*, uint32_t);
 uint32_t Pixel(char*, uint32_t);
 uint32_t PixelDmx(char*, uint32_t);
 
-namespace net {
+namespace emac {
 uint32_t Phy(char*, uint32_t);
 uint32_t Emac(char*, uint32_t);
 } // namespace net
@@ -184,8 +184,8 @@ constexpr Info kFileInfos[] = {
 	ENTRY(status::Directory, nullptr, nullptr, "status/directory", nullptr, nullptr),
     ENTRY(status::Identify, nullptr, nullptr, "status/identify", nullptr, "Identify"), 
 	ENTRY(status::Display, nullptr, nullptr, "status/display", nullptr, "Display"), 
-	ENTRY(status::net::Phy, nullptr, nullptr, "status/phy", nullptr, "Phy"),
-    ENTRY(status::net::Emac, nullptr, nullptr, "status/emac", nullptr, "Emac"),
+	ENTRY(status::emac::Phy, nullptr, nullptr, "status/phy", nullptr, "Phy"),
+    ENTRY(status::emac::Emac, nullptr, nullptr, "status/emac", nullptr, "Emac"),
 #if defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI)
     ENTRY(status::Dmx, nullptr, nullptr, "status/dmx", nullptr, "Dmx"),
 #endif

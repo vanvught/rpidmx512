@@ -25,12 +25,12 @@
 #include <cstdint>
 #include <cstdio>
 
-#include "hal.h"
+namespace hal {
+uint32_t Uptime();
+}
 
-namespace json
-{
-uint32_t GetUptime(char* out_buffer, uint32_t out_buffer_size)
-{
+namespace json {
+uint32_t GetUptime(char* out_buffer, uint32_t out_buffer_size) {
     const auto kUptime = hal::Uptime();
     const auto kLength = static_cast<uint32_t>(snprintf(out_buffer, out_buffer_size, "{\"uptime\":%u}\n", static_cast<unsigned int>(kUptime)));
     return kLength;
