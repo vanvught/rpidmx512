@@ -78,7 +78,7 @@ inline void Run() {
 #if defined(ENET_LINK_CHECK_USE_PIN_POLL)
     emac::link::PinPoll();
 #elif defined(ENET_LINK_CHECK_REG_POLL)
-    const emac::phy::Link link_state = net::link::StatusRead();
+    const emac::phy::Link link_state = emac::link::StatusRead();
     if (link_state != global::link_state) {
         global::link_state = link_state;
         emac::link::HandleChange(link_state);
