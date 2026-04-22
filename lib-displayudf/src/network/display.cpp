@@ -1,8 +1,8 @@
 /**
- * JsonGetPhystatus.cpp
+ * @file network_display.cpp
  *
  */
-/* Copyright (C) 2023-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,20 +23,54 @@
  * THE SOFTWARE.
  */
 
-#include <cstdio>
+#include "displayudf.h"
+#include "core/protocol/dhcp.h"
 
-#include "emac/phy.h"
-
-namespace remoteconfig::net
-{
-uint32_t JsonGetPhystatus(char* out_buffer, uint32_t out_buffer_size)
-{
-    ::net::phy::Status phy_status;
-    ::net::phy::CustomizedStatus(phy_status);
-
-    const auto kLength = static_cast<uint32_t>(snprintf(
-        out_buffer, out_buffer_size, "{\"link\":\"%s\",\"speed\":\"%s\",\"duplex\":\"%s\",\"autonegotiation\":\"%s\"}", ::net::phy::ToString(phy_status.link),
-        ::net::phy::ToString(phy_status.speed), ::net::phy::ToString(phy_status.duplex), ::net::phy::ToStringAutonegotiation(phy_status.autonegotiation)));
-    return kLength;
+namespace emac::display {
+void Config() {
+    DisplayUdf::Get()->ShowEmacInit();
 }
-} // namespace remoteconfig::net
+
+void Start() {
+    DisplayUdf::Get()->ShowEmacStart();
+}
+void Status(bool is_link_up) {
+    DisplayUdf::Get()->ShowEmacStatus(is_link_up);
+}
+} // namespace emac::display
+
+namespace network::display {
+void Hostname() {
+    DisplayUdf::Get()->ShowHostName();
+}
+
+void EmacShutdown() {
+    DisplayUdf::Get()->ShowShutdown();
+}
+
+void DhcpStatus(network::dhcp::State state) {
+    DisplayUdf::Get()->ShowDhcpStatus(state);
+}
+} // namespace network::display
+
+namespace network::event {
+void LinkUp() {
+    DisplayUdf::Get()->ShowIpAddress();
+}
+
+void LinkDown() {
+    DisplayUdf::Get()->ShowEmacStatus(false);
+}
+
+void Ipv4AddressChanged() {
+    DisplayUdf::Get()->ShowIpAddress();
+}
+
+void Ipv4NetmaskChanged() {
+    DisplayUdf::Get()->ShowNetmask();
+}
+
+void Ipv4GatewayChanged() {
+    DisplayUdf::Get()->ShowGatewayIp();
+}
+} // namespace network::event

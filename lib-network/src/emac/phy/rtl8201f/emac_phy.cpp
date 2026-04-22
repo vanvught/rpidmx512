@@ -25,8 +25,8 @@
 
 #include <cstdint>
 
-#include "emac/phy.h"
-#include "emac/net_link_check.h"
+#include "emac/emac_phy.h"
+#include "emac/emac_link_check.h"
 #include "emac/mmi.h"
 #include "firmware/debug/debug_debug.h"
 
@@ -43,10 +43,8 @@
 #define PHY_ADDRESS 1
 #endif
 
-namespace net::phy
-{
-void WritePaged(uint16_t phy_page, uint16_t phy_reg, uint16_t phy_value, uint16_t mask = 0x0)
-{
+namespace emac::phy {
+void WritePaged(uint16_t phy_page, uint16_t phy_reg, uint16_t phy_value, uint16_t mask = 0x0) {
     phy::Write(PHY_ADDRESS, PHY_REG_PAGE_SELECT, phy_page);
 
     uint16_t tmp_value;
@@ -60,16 +58,14 @@ void WritePaged(uint16_t phy_page, uint16_t phy_reg, uint16_t phy_value, uint16_
     phy::Write(PHY_ADDRESS, PHY_REG_PAGE_SELECT, 0);
 }
 
-static void ReadPaged(uint16_t phy_page, uint16_t phy_reg, uint16_t& phy_value, uint16_t mask = 0x0)
-{
+static void ReadPaged(uint16_t phy_page, uint16_t phy_reg, uint16_t& phy_value, uint16_t mask = 0x0) {
     phy::Write(PHY_ADDRESS, PHY_REG_PAGE_SELECT, phy_page);
     phy::Read(PHY_ADDRESS, phy_reg, phy_value);
     phy_value &= mask;
     phy::Write(PHY_ADDRESS, PHY_REG_PAGE_SELECT, 0);
 }
 
-void CustomizedLed()
-{
+void CustomizedLed() {
     DEBUG_ENTRY();
 
 #if defined(RTL8201F_LED1_LINK_ALL) || defined(RTL8201F_LED1_LINK_ALL_ACT)
@@ -141,8 +137,7 @@ void CustomizedLed()
  * interface timing differences on the GD32F4xx family.
  */
 
- void CustomizedTiming()
-{
+void CustomizedTiming() {
     DEBUG_ENTRY();
 #if defined(GD32F4XX)
 #define RMSR_RX_TIMING_VAL 0x4
@@ -160,9 +155,8 @@ void CustomizedLed()
     DEBUG_EXIT();
 }
 
-void CustomizedStatus(phy::Status& phy_status)
-{
-    phy_status.link = net::link::StatusRead();
+void CustomizedStatus(phy::Status& phy_status) {
+    phy_status.link = link::StatusRead();
 
     uint16_t value;
     phy::Read(PHY_ADDRESS, mmi::REG_BMCR, value);
@@ -172,10 +166,8 @@ void CustomizedStatus(phy::Status& phy_status)
     phy_status.autonegotiation = ((value & mmi::BMCR_AUTONEGOTIATION) == mmi::BMCR_AUTONEGOTIATION);
 }
 
-namespace rtl8201f
-{
-void GetTimings(uint32_t& rx_timing, uint32_t& tx_timing)
-{
+namespace rtl8201f {
+void GetTimings(uint32_t& rx_timing, uint32_t& tx_timing) {
     uint16_t value;
     ReadPaged(0x7, PHY_REG_RMSR, value, RMSR_RX_TIMING_MASK | RMSR_TX_TIMING_MASK);
 
@@ -183,16 +175,14 @@ void GetTimings(uint32_t& rx_timing, uint32_t& tx_timing)
     tx_timing = (value >> RMSR_TX_TIMING_SHIFT) & 0xF;
 }
 
-void SetRxtiming(uint32_t rx_timing)
-{
+void SetRxtiming(uint32_t rx_timing) {
     const auto kValue = static_cast<uint16_t>((rx_timing & 0xF) << RMSR_RX_TIMING_SHIFT);
     WritePaged(0x7, PHY_REG_RMSR, kValue, RMSR_RX_TIMING_MASK);
 }
 
-void SetTxtiming(uint32_t tx_timing)
-{
+void SetTxtiming(uint32_t tx_timing) {
     const auto kValue = static_cast<uint16_t>((tx_timing & 0xF) << RMSR_TX_TIMING_SHIFT);
     WritePaged(0x7, PHY_REG_RMSR, kValue, RMSR_TX_TIMING_MASK);
 }
 } // namespace rtl8201f
-} // namespace net::phy
+} // namespace emac::phy

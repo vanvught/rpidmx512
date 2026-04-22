@@ -27,7 +27,7 @@
 
 #include "network_iface.h"
 
-namespace json::status::net {
+namespace json::status::emac {
 
 static uint32_t U64ToDec(char* dst, uint64_t v) {
     // Write digits into a temp buffer in reverse order
@@ -78,4 +78,4 @@ uint32_t Emac(char* out_buffer, uint32_t out_buffer_size) {
 
     return static_cast<uint32_t>(p - out_buffer);
 }
-} // namespace json::status::net
+} // namespace json::status::emac

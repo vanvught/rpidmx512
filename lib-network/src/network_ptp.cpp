@@ -2,7 +2,7 @@
  * @file network_ptp.cpp
  *
  */
-/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,13 +25,11 @@
 
 #include <cstdint>
 
-namespace net::globals
-{
-uint32_t ptpTimestamp[2];
-} // namespace net::globals
+namespace net::globals::ptp {
+uint32_t timestamp[2];
+} // namespace net::globals::ptp
 
-namespace network::ptp
-{
+namespace network::ptp {
 void __attribute__((weak)) Handle([[maybe_unused]] const uint8_t* buffer, [[maybe_unused]] uint32_t length) {}
 void __attribute__((weak)) Run() {}
 } // namespace network::ptp

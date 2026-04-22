@@ -2,7 +2,7 @@
  * @file emac.cpp
  *
  */
-/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,11 +30,11 @@
 #include <cassert>
 
 #include "emac.h"
-#include "emac/phy.h"
+#include "emac/emac_phy.h"
 #include "emac/mmi.h"
 #include "h3.h"
 #include "firmware/debug/debug_printbits.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
 #define PHY_ADDRESS 1
 
@@ -45,35 +45,28 @@
 #define H3_EPHY_SHUTDOWN (1U << 16) // 1: shutdown, 0: power up
 #define H3_EPHY_SELECT (1U << 15)   // 1: internal PHY, 0: external PHY
 
-coherent_region* p_coherent_region = nullptr;
+CoherentRegion* p_coherent_region = nullptr;
 
-extern void mac_address_get(uint8_t paddr[]);
+extern void MacAddressGet(uint8_t paddr[]);
 
-namespace net::emac
-{
-void AdjustLink(net::phy::Status phy_status)
-{
+namespace emac {
+void AdjustLink(emac::phy::Status phy_status) {
     DEBUG_ENTRY();
 
-    printf("Link %s, %d, %s\n", phy_status.link == net::phy::Link::kStateUp ? "Up" : "Down", phy_status.speed == net::phy::Speed::kSpeed10 ? 10 : 100,
-           phy_status.duplex == net::phy::Duplex::kDuplexHalf ? "HALF" : "FULL");
+    printf("Link %s, %d, %s\n", phy_status.link == emac::phy::Link::kStateUp ? "Up" : "Down", phy_status.speed == emac::phy::Speed::kSpeed10 ? 10 : 100, phy_status.duplex == emac::phy::Duplex::kDuplexHalf ? "HALF" : "FULL");
 
     auto value = H3_EMAC->CTL0;
 
-    if (phy_status.duplex == net::phy::Duplex::kDuplexFull)
-    {
+    if (phy_status.duplex == emac::phy::Duplex::kDuplexFull) {
         value |= CTL0_DUPLEX_FULL_DUPLEX;
-    }
-    else
-    {
+    } else {
         value &= static_cast<uint32_t>(~CTL0_DUPLEX_FULL_DUPLEX);
     }
 
     value &= static_cast<uint32_t>(~(CTL0_SPEED_MASK << CTL0_SPEED_SHIFT));
 
-    switch (phy_status.speed)
-    {
-        case net::phy::Speed::kSpeed10:
+    switch (phy_status.speed) {
+        case emac::phy::Speed::kSpeed10:
             value |= CTL0_SPEED_10M;
             break;
         default:
@@ -86,15 +79,13 @@ void AdjustLink(net::phy::Status phy_status)
     DEBUG_EXIT();
 }
 
-static void RxDescsInit()
-{
-    struct emac_dma_desc* desc_table_p = &p_coherent_region->rx_chain[0];
+static void RxDescsInit() {
+    struct EmacDmaDesc* desc_table_p = &p_coherent_region->rx_chain[0];
     char* rxbuffs = &p_coherent_region->rxbuffer[0];
-    struct emac_dma_desc* desc_p;
+    struct EmacDmaDesc* desc_p;
     uint32_t idx;
 
-    for (idx = 0; idx < CONFIG_RX_DESCR_NUM; idx++)
-    {
+    for (idx = 0; idx < CONFIG_RX_DESCR_NUM; idx++) {
         desc_p = &desc_table_p[idx];
         desc_p->buf_addr = (uintptr_t)&rxbuffs[idx * CONFIG_ETH_BUFSIZE];
         desc_p->next = (uintptr_t)&desc_table_p[idx + 1];
@@ -109,15 +100,13 @@ static void RxDescsInit()
     p_coherent_region->rx_currdescnum = 0;
 }
 
-static void TxDescsInit()
-{
-    struct emac_dma_desc* desc_table_p = &p_coherent_region->tx_chain[0];
+static void TxDescsInit() {
+    struct EmacDmaDesc* desc_table_p = &p_coherent_region->tx_chain[0];
     char* txbuffs = &p_coherent_region->txbuffer[0];
-    struct emac_dma_desc* desc_p;
+    struct EmacDmaDesc* desc_p;
     uint32_t idx;
 
-    for (idx = 0; idx < CONFIG_TX_DESCR_NUM; idx++)
-    {
+    for (idx = 0; idx < CONFIG_TX_DESCR_NUM; idx++) {
         desc_p = &desc_table_p[idx];
         desc_p->buf_addr = (uintptr_t)&txbuffs[idx * CONFIG_ETH_BUFSIZE];
         desc_p->next = (uintptr_t)&desc_table_p[idx + 1];
@@ -132,8 +121,7 @@ static void TxDescsInit()
     p_coherent_region->tx_currdescnum = 0;
 }
 
-void __attribute__((cold)) Config()
-{
+void __attribute__((cold)) Config() {
     DEBUG_ENTRY();
 
     H3_CCU->BUS_SOFT_RESET2 |= BUS_SOFT_RESET2_EPHY_RST;
@@ -155,23 +143,22 @@ void __attribute__((cold)) Config()
 
     H3_SYSTEM->EMAC_CLK = value;
 
-    net::phy::Config(PHY_ADDRESS);
+    emac::phy::Config(PHY_ADDRESS);
 
     DEBUG_EXIT();
 }
 
-void __attribute__((cold)) Start(uint8_t mac_address[], net::phy::Link& link)
-{
+void __attribute__((cold)) Start(uint8_t mac_address[], emac::phy::Link& link) {
     DEBUG_ENTRY();
 
-    mac_address_get(mac_address);
+    MacAddressGet(mac_address);
 
-    net::phy::Status phy_status;
+    emac::phy::Status phy_status;
 
-    phy_status.duplex = net::phy::Duplex::kDuplexHalf;
-    phy_status.speed = net::phy::Speed::kSpeed10;
+    phy_status.duplex = emac::phy::Duplex::kDuplexHalf;
+    phy_status.speed = emac::phy::Speed::kSpeed10;
 
-    net::phy::Start(PHY_ADDRESS, phy_status);
+    emac::phy::Start(PHY_ADDRESS, phy_status);
 
     link = phy_status.link;
 
@@ -188,7 +175,7 @@ void __attribute__((cold)) Start(uint8_t mac_address[], net::phy::Link& link)
     assert(p_coherent_region == nullptr);
     assert(sizeof(struct coherent_region) < MEGABYTE / 2);
 
-    p_coherent_region = (struct coherent_region*)H3_MEM_COHERENT_REGION;
+    p_coherent_region = (struct CoherentRegion*)H3_MEM_COHERENT_REGION;
 
     auto value = H3_EMAC->RX_CTL0;
     value &= ~RX_CTL0_RX_EN;
@@ -255,4 +242,4 @@ void __attribute__((cold)) Start(uint8_t mac_address[], net::phy::Link& link)
     printf("================\n");
 #endif
 }
-} // namespace net::emac
+} // namespace emac

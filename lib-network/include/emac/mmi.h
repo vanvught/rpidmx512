@@ -28,7 +28,7 @@
 
 #include <cstdint>
 
-namespace net::mmi {
+namespace emac::mmi {
 /* Generic MII registers. */
 inline constexpr uint32_t REG_BMCR = 0x00;      /* Basic mode control register    */
 inline constexpr uint32_t REG_BMSR = 0x01;      /* Basic mode status register     */
@@ -93,6 +93,6 @@ inline constexpr uint16_t LPA_RFAULT = 0x2000;          /* Link partner faulted 
 inline constexpr uint16_t LPA_LPACK = 0x4000;           /* Link partner acked us       */
 inline constexpr uint16_t LPA_NPAGE = 0x8000;           /* Next page bit               */
 
-} // namespace net::mmi
+} // namespace emac::mmi
 
 #endif // EMAC_MMI_H_

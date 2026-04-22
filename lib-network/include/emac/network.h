@@ -40,16 +40,16 @@
 #if defined(ENABLE_HTTPD)
 #include "network_tcp.h" // IWYU pragma: keep
 #endif
-#include "emac/phy.h"
 #if defined(ENET_LINK_CHECK_USE_PIN_POLL) || defined(ENET_LINK_CHECK_REG_POLL)
-#include "emac/net_link_check.h"
+#include "emac/emac_link_check.h"
 #endif
+#include "emac/emac_phy.h"
 
 uint32_t emac_eth_recv(uint8_t**);
 
 namespace network {
 namespace global {
-extern net::phy::Link link_state;
+extern emac::phy::Link link_state;
 }
 void Init();
 
@@ -76,12 +76,12 @@ inline void Run() {
     network::ptp::Run();
 #endif
 #if defined(ENET_LINK_CHECK_USE_PIN_POLL)
-    net::link::PinPoll();
+    emac::link::PinPoll();
 #elif defined(ENET_LINK_CHECK_REG_POLL)
-    const net::phy::Link link_state = net::link::StatusRead();
+    const emac::phy::Link link_state = net::link::StatusRead();
     if (link_state != global::link_state) {
         global::link_state = link_state;
-        net::link::HandleChange(link_state);
+        emac::link::HandleChange(link_state);
     }
 #endif
 }

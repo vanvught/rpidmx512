@@ -1,5 +1,5 @@
 /**
- * @file phy.h
+ * @file emac_phy.h
  *
  */
 /* Copyright (C) 2023-2026 by Arjan van Vught mailto:info@gd32-dmx.org
@@ -28,7 +28,7 @@
 
 #include <cstdint>
 
-namespace net::phy {
+namespace emac::phy {
 enum class Link { kStateDown, kStateUp };
 enum class Duplex { kDuplexHalf, kDuplexFull };
 enum class Speed { kSpeed10, kSpeed100, kSpeed1000 };
@@ -113,6 +113,6 @@ const char* ToString(Link link);
 const char* ToString(Duplex duplex);
 const char* ToString(Speed speed);
 const char* ToStringAutonegotiation(bool autonegotiation);
-} // namespace net::phy
+} // namespace emac::phy
 
 #endif // EMAC_PHY_H_

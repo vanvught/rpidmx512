@@ -1,8 +1,8 @@
 /**
- * @file phy.cpp
+ * @file emac_phy.cpp
  *
  */
-/* Copyright (C) 2023-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2023-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,10 +27,9 @@
 
 #include "h3.h"
 #include "emac/mmi.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
-namespace net::phy
-{
+namespace emac::phy {
 
 #define CONFIG_SYS_HZ 1000
 #define CONFIG_MDIO_TIMEOUT (3 * CONFIG_SYS_HZ)
@@ -43,89 +42,78 @@ namespace net::phy
 #define MDIO_CMD_MII_PHY_ADDR_MASK 0x0001f000
 #define MDIO_CMD_MII_PHY_ADDR_SHIFT 12
 
-bool Read(uint32_t address, uint32_t nRegister, uint16_t& nValue)
-{
+bool Read(uint32_t address, uint32_t reg, uint16_t& value) {
     DEBUG_ENTRY();
 
-    uint32_t nCmd = ((0x03 & 0x07) << 20);
-    nCmd |= ((address << MDIO_CMD_MII_PHY_ADDR_SHIFT) & MDIO_CMD_MII_PHY_ADDR_MASK);
-    nCmd |= ((nRegister << MDIO_CMD_MII_PHY_REG_ADDR_SHIFT) & 0x000007F0);
-    nCmd |= MDIO_CMD_MII_BUSY;
+    uint32_t cmd = ((0x03 & 0x07) << 20);
+    cmd |= ((address << MDIO_CMD_MII_PHY_ADDR_SHIFT) & MDIO_CMD_MII_PHY_ADDR_MASK);
+    cmd |= ((reg << MDIO_CMD_MII_PHY_REG_ADDR_SHIFT) & 0x000007F0);
+    cmd |= MDIO_CMD_MII_BUSY;
 
-    auto bResult = false;
+    auto result = false;
     auto micros = H3_TIMER->AVS_CNT1;
 
-    while (H3_TIMER->AVS_CNT1 - micros < CONFIG_MDIO_TIMEOUT)
-    {
-        if (!(H3_EMAC->MII_CMD & MDIO_CMD_MII_BUSY))
-        {
-            bResult = true;
+    while (H3_TIMER->AVS_CNT1 - micros < CONFIG_MDIO_TIMEOUT) {
+        if (!(H3_EMAC->MII_CMD & MDIO_CMD_MII_BUSY)) {
+            result = true;
             break;
         }
     };
 
-    if (!bResult)
-    {
+    if (!result) {
         DEBUG_EXIT();
         return false;
     }
 
-    H3_EMAC->MII_CMD = nCmd;
+    H3_EMAC->MII_CMD = cmd;
 
-    bResult = false;
+    result = false;
     micros = H3_TIMER->AVS_CNT1;
 
-    while (H3_TIMER->AVS_CNT1 - micros < CONFIG_MDIO_TIMEOUT)
-    {
-        if (!(H3_EMAC->MII_CMD & MDIO_CMD_MII_BUSY))
-        {
-            bResult = true;
+    while (H3_TIMER->AVS_CNT1 - micros < CONFIG_MDIO_TIMEOUT) {
+        if (!(H3_EMAC->MII_CMD & MDIO_CMD_MII_BUSY)) {
+            result = true;
             break;
         }
     };
 
-    if (!bResult)
-    {
+    if (!result) {
         DEBUG_EXIT();
         return false;
     }
 
-    nValue = static_cast<uint16_t>(H3_EMAC->MII_DATA);
+    value = static_cast<uint16_t>(H3_EMAC->MII_DATA);
 
     DEBUG_PRINTF("%.2x %.2x %.4x", address, nRegister, nValue);
     DEBUG_EXIT();
     return true;
 }
 
-bool Write(uint32_t address, uint32_t nRegister, uint16_t nValue)
-{
-    uint32_t miiaddr = (nRegister << MDIO_CMD_MII_PHY_REG_ADDR_SHIFT) & MDIO_CMD_MII_PHY_REG_ADDR_MASK;
+bool Write(uint32_t address, uint32_t reg, uint16_t value) {
+    uint32_t miiaddr = (reg << MDIO_CMD_MII_PHY_REG_ADDR_SHIFT) & MDIO_CMD_MII_PHY_REG_ADDR_MASK;
     miiaddr |= (address << MDIO_CMD_MII_PHY_ADDR_SHIFT) & MDIO_CMD_MII_PHY_ADDR_MASK;
 
     miiaddr |= MDIO_CMD_MII_WRITE;
     miiaddr |= MDIO_CMD_MII_BUSY;
 
-    H3_EMAC->MII_DATA = nValue;
+    H3_EMAC->MII_DATA = value;
     H3_EMAC->MII_CMD = miiaddr;
 
-    auto bResult = false;
+    auto result = false;
     auto micros = H3_TIMER->AVS_CNT1;
 
-    while (H3_TIMER->AVS_CNT1 - micros < CONFIG_MDIO_TIMEOUT)
-    {
-        if (!(H3_EMAC->MII_CMD & MDIO_CMD_MII_BUSY))
-        {
-            bResult = true;
+    while (H3_TIMER->AVS_CNT1 - micros < CONFIG_MDIO_TIMEOUT) {
+        if (!(H3_EMAC->MII_CMD & MDIO_CMD_MII_BUSY)) {
+            result = true;
             break;
         }
     };
 
     //	DEBUG_PRINTF("%d %.2x %.2x %.4x", bResult, address, nRegister, nValue);
-    return bResult;
+    return result;
 }
 
-bool Config([[maybe_unused]] const uint32_t address)
-{
+bool Config([[maybe_unused]] uint32_t address) {
     DEBUG_ENTRY();
 
     /**
@@ -169,4 +157,4 @@ bool Config([[maybe_unused]] const uint32_t address)
     return true;
 }
 
-} // namespace net::phy
+} // namespace emac::phy

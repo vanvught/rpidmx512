@@ -42,7 +42,7 @@
 #include "../../src/emac/h3/emac.h"
 inline void* get_tx_dma()
 {
-    extern struct coherent_region* p_coherent_region;
+    extern struct CoherentRegion* p_coherent_region;
     auto desc_num = p_coherent_region->tx_currdescnum;
     auto* desc_p = &p_coherent_region->tx_chain[desc_num];
     auto data_start = static_cast<uintptr_t>(desc_p->buf_addr);

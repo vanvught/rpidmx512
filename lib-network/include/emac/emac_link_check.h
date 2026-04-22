@@ -1,8 +1,8 @@
 /**
- * net_link_check.cpp
+ * @file net_link_check.h
  *
  */
-/* Copyright (C) 2023-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2022-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,43 +23,27 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
+#ifndef EMAC_NET_LINK_CHECK_H_
+#define EMAC_NET_LINK_CHECK_H_
 
-#include "emac/net_link_check.h"
-#include "emac/phy.h"
-#include "emac/mmi.h"
+#include "emac_phy.h"
 
-#if !defined(PHY_ADDRESS)
-#define PHY_ADDRESS 1
-#endif
+namespace emac::link {
+emac::phy::Link StatusRead();
+void HandleChange(emac::phy::Link state);
+// Platform defined implementations
+// #if defined(ENET_LINK_CHECK_USE_INT) || defined(ENET_LINK_CHECK_USE_PIN_POLL)
+void GpioInit();
+void PinEnable();
+void PinRecovery();
+// #endif
+// #if defined(ENET_LINK_CHECK_USE_INT)
+void ExtiInit();
+void InterruptInit();
+// #elif defined(ENET_LINK_CHECK_USE_PIN_POLL)
+void PinPollInit();
+void PinPoll();
+// #endif
+} // namespace emac::link
 
-#define PHY_REG_IER 0x13
-#define IER_INT_ENABLE (1U << 13)
-
-#define PHY_REG_ISR 0x1e
-#define ISR_LINK (1U << 11)
-
-namespace net::phy
-{
-void WritePaged(uint16_t phy_page, uint16_t phy_reg, uint16_t phy_value, uint16_t mask = 0x0);
-}
-
-namespace net::link
-{
-#if defined(ENET_LINK_CHECK_USE_INT) || defined(ENET_LINK_CHECK_USE_PIN_POLL)
-void PinEnable()
-{
-    net::phy::WritePaged(0x07, PHY_REG_IER, IER_INT_ENABLE, IER_INT_ENABLE);
-    // Clear interrupt
-    uint16_t phy_value;
-    phy::Read(PHY_ADDRESS, PHY_REG_ISR, phy_value);
-}
-
-void PinRecovery()
-{
-    uint16_t phy_value;
-    phy::Read(PHY_ADDRESS, PHY_REG_ISR, phy_value);
-    phy::Read(PHY_ADDRESS, mmi::REG_BMSR, phy_value);
-}
-#endif
-} // namespace net::link
+#endif // EMAC_NET_LINK_CHECK_H_

@@ -25,10 +25,7 @@
 
 #include <cstdint>
 
-#include "emac/phy.h"
-#include "emac/net_link_check.h"
-#include "emac/mmi.h"
-
+#include "emac/emac_phy.h"
 #include "firmware/debug/debug_debug.h"
 
 #if !defined(BIT)
@@ -39,17 +36,14 @@
 #define PHY_ADDRESS 1
 #endif
 
-namespace net::phy
-{
-void CustomizedLed()
-{
+namespace emac::phy {
+void CustomizedLed() {
     DEBUG_ENTRY();
 
     DEBUG_EXIT();
 }
 
-void CustomizedTiming()
-{
+void CustomizedTiming() {
     DEBUG_ENTRY();
 
     DEBUG_EXIT();
@@ -59,8 +53,7 @@ void CustomizedTiming()
  * PHY Status Register (PHYSTS), address 10h
  * @param phyStatus
  */
-void CustomizedStatus(phy::Status& phy_status)
-{
+void CustomizedStatus(phy::Status& phy_status) {
     uint16_t value;
     phy::Read(PHY_ADDRESS, 0x10, value);
 
@@ -69,4 +62,4 @@ void CustomizedStatus(phy::Status& phy_status)
     phy_status.speed = ((value & BIT(1)) == BIT(1)) ? phy::Speed::kSpeed10 : phy::Speed::kSpeed100;
     phy_status.autonegotiation = ((value & BIT(4)) == BIT(4));
 }
-} // namespace net::phy
+} // namespace emac::phy

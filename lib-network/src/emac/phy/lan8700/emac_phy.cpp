@@ -1,8 +1,8 @@
 /**
- * @file net_link_check.h
+ * @file phy.cpp
  *
  */
-/* Copyright (C) 2022-2026 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2023-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,27 +23,46 @@
  * THE SOFTWARE.
  */
 
-#ifndef EMAC_NET_LINK_CHECK_H_
-#define EMAC_NET_LINK_CHECK_H_
+#include <cstdint>
 
-#include "phy.h"
+#include "emac/emac_phy.h"
+#include "emac/emac_link_check.h"
+#include "emac/mmi.h"
+#include "firmware/debug/debug_debug.h"
 
-namespace net::link {
-net::phy::Link StatusRead();
-void HandleChange(net::phy::Link state);
-// Platform defined implementations
-// #if defined(ENET_LINK_CHECK_USE_INT) || defined(ENET_LINK_CHECK_USE_PIN_POLL)
-void GpioInit();
-void PinEnable();
-void PinRecovery();
-// #endif
-// #if defined(ENET_LINK_CHECK_USE_INT)
-void ExtiInit();
-void InterruptInit();
-// #elif defined(ENET_LINK_CHECK_USE_PIN_POLL)
-void PinPollInit();
-void PinPoll();
-// #endif
-} // namespace net::link
+#if !defined(BIT)
+#define BIT(x) static_cast<uint16_t>(1U << (x))
+#endif
 
-#endif // EMAC_NET_LINK_CHECK_H_
+#if !defined(PHY_ADDRESS)
+#define PHY_ADDRESS 1
+#endif
+
+namespace emac::phy {
+void CustomizedLed() {
+    DEBUG_ENTRY();
+
+    DEBUG_EXIT();
+}
+
+void CustomizedTiming() {
+    DEBUG_ENTRY();
+
+    DEBUG_EXIT();
+}
+
+/**
+ * PHY SPECIAL CONTROL/STATUS REGISTER Index (In Decimal): 31
+ * @param phyStatus
+ */
+void CustomizedStatus(emac::phy::Status& phy_status) {
+    phy_status.link = link::StatusRead();
+
+    uint16_t value;
+    phy::Read(PHY_ADDRESS, 0x1f, value);
+
+    phy_status.duplex = ((value & BIT(4)) == BIT(4)) ? phy::Duplex::kDuplexFull : phy::Duplex::kDuplexHalf;
+    phy_status.speed = ((value & BIT(2)) == BIT(2)) ? phy::Speed::kSpeed10 : phy::Speed::kSpeed100;
+    phy_status.autonegotiation = ((value & BIT(12)) == BIT(12));
+}
+} // namespace emac::phy

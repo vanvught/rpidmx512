@@ -1,5 +1,6 @@
 /**
- * @file link_handle_change.cpp
+ * net_link::check.cpp
+ *
  */
 /* Copyright (C) 2022-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
@@ -22,42 +23,56 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_NET_PHY)
-#undef NDEBUG
-#endif
-
-#include "hal_watchdog.h"
-#include "emac/emac.h"
-#include "emac/phy.h"
 #include "core/netif.h"
+#include "hal_watchdog.h"
+#include "emac/emac_link_check.h"
+#include "emac/emac_phy.h"
+#include "emac/emac.h"
+
 #include "firmware/debug/debug_debug.h"
 
 #if !defined(PHY_ADDRESS)
 #define PHY_ADDRESS 1
 #endif
 
-namespace net::link
-{
-void HandleChange(net::phy::Link state)
-{
-    DEBUG_PRINTF("net::phy::Link %s", state == net::phy::Link::kStateUp ? "UP" : "DOWN");
+namespace emac::link {
+#if defined(ENET_LINK_CHECK_USE_INT)
+void InterruptInit() {
+    link::PinEnable();
+    link::PinRecovery();
+    link::GpioInit();
+    link::ExtiInit();
+}
+#endif
 
-    if (phy::Link::kStateUp == state)
-    {
+#if defined(ENET_LINK_CHECK_USE_PIN_POLL)
+void PinPollInit() {
+    link::PinEnable();
+    link::PinRecovery();
+    link::GpioInit();
+}
+#endif
+
+emac::phy::Link StatusRead() {
+    return emac::phy::GetLink(PHY_ADDRESS);
+}
+
+void HandleChange(emac::phy::Link state) {
+    DEBUG_PRINTF("emac::phy::Link %s", state == emac::phy::Link::kStateUp ? "UP" : "DOWN");
+
+    if (phy::Link::kStateUp == state) {
         const auto kIsWatchdog = hal::Watchdog();
 
-        if (kIsWatchdog)
-        {
+        if (kIsWatchdog) {
             hal::WatchdogStop();
         }
 
         phy::Status phy_status;
         phy::Start(PHY_ADDRESS, phy_status);
 
-        net::emac::AdjustLink(phy_status);
+        emac::AdjustLink(phy_status);
 
-        if (kIsWatchdog)
-        {
+        if (kIsWatchdog) {
             hal::WatchdogInit();
         }
 
@@ -67,4 +82,4 @@ void HandleChange(net::phy::Link state)
 
     netif::SetLinkDown();
 }
-} // namespace net::link
+} // namespace emac::link

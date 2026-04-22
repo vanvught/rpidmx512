@@ -62,14 +62,14 @@ void __attribute__((weak)) Ipv4GatewayChanged() {}
 void __attribute__((weak)) LinkUp()
 {
 #if !defined(NO_EMAC)
-    net::emac::display::Status(true);
+    emac::display::Status(true);
 #endif
 }
 
 void __attribute__((weak)) LinkDown()
 {
 #if !defined(NO_EMAC)
-    net::emac::display::Status(false);
+    emac::display::Status(false);
 #endif
 }
 } // namespace network::event

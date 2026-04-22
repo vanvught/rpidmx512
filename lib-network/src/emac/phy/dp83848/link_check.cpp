@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include "emac/net_link_check.h"
-#include "emac/phy.h"
+#include "emac/emac_link_check.h"
+#include "emac/emac_phy.h"
 #include "emac/mmi.h"
 #include "firmware/debug/debug_debug.h"
 
@@ -37,18 +37,15 @@
 #define PHY_ADDRESS 1
 #endif
 
-namespace net::link
-{
+namespace emac::link {
 #if defined(ENET_LINK_CHECK_USE_INT) || defined(ENET_LINK_CHECK_USE_PIN_POLL)
-void PinEnable()
-{
+void PinEnable() {
     uint16_t phy_value = PHY_INT_AND_OUTPUT_ENABLE;
     phy::Write(PHY_ADDRESS, PHY_REG_MICR, phy_value);
 
     phy::Read(PHY_ADDRESS, PHY_REG_MICR, phy_value);
 
-    if (PHY_INT_AND_OUTPUT_ENABLE != phy_value)
-    {
+    if (PHY_INT_AND_OUTPUT_ENABLE != phy_value) {
         DEBUG_PUTS("PHY_INT_AND_OUTPUT_ENABLE != phy_value");
     }
 
@@ -56,11 +53,10 @@ void PinEnable()
     phy::Write(PHY_ADDRESS, PHY_REG_MISR, phy_value);
 }
 
-void PinRecovery()
-{
+void PinRecovery() {
     uint16_t phy_value;
     phy::Read(PHY_ADDRESS, PHY_REG_MISR, phy_value);
     phy::Read(PHY_ADDRESS, mmi::REG_BMSR, phy_value);
 }
 #endif
-} // namespace net::link
+} // namespace emac::link

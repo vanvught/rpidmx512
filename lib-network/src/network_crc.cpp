@@ -34,23 +34,16 @@
 #include <cstdint>
 #include <cstddef>
 
-namespace network
-{
-uint32_t Crc(const uint8_t* data, size_t length)
-{
+namespace network {
+uint32_t Crc(const uint8_t* data, size_t length) {
     uint32_t crc = 0xffffffff;
 
-    for (size_t i = 0; i < length; i++)
-    {
-        for (int j = 0; j < 8; j++)
-        {
-            if (((crc >> 31) ^ (data[i] >> j)) & 0x01)
-            {
+    for (size_t i = 0; i < length; i++) {
+        for (int j = 0; j < 8; j++) {
+            if (((crc >> 31) ^ (data[i] >> j)) & 0x01) {
                 /* x^26+x^23+x^22+x^16+x^12+x^11+x^10+x^8+x^7+x^5+x^4+x^2+x+1 */
                 crc = (crc << 1) ^ 0x04C11DB7;
-            }
-            else
-            {
+            } else {
                 crc = crc << 1;
             }
         }

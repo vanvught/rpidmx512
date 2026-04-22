@@ -40,12 +40,12 @@
 #include "firmware/debug/debug_dump.h"
  #include "firmware/debug/debug_debug.h"
 
-extern struct coherent_region* p_coherent_region;
+extern struct CoherentRegion* p_coherent_region;
 
 __attribute__((hot)) uint32_t emac_eth_recv(uint8_t** packetp)
 {
     uint32_t status, desc_num = p_coherent_region->rx_currdescnum;
-    struct emac_dma_desc* desc_p = &p_coherent_region->rx_chain[desc_num];
+    struct EmacDmaDesc* desc_p = &p_coherent_region->rx_chain[desc_num];
 
     status = desc_p->status;
 

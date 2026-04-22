@@ -25,20 +25,20 @@
 
 #include <cstdio>
 
-#include "emac/phy.h"
+#include "emac/emac_phy.h"
 
-namespace json::status::net {
+namespace json::status::emac {
 uint32_t Phy(char* out_buffer, uint32_t out_buffer_size) {
-    ::net::phy::Status phy_status;
-    ::net::phy::CustomizedStatus(phy_status);
+    ::emac::phy::Status phy_status;
+    ::emac::phy::CustomizedStatus(phy_status);
 
     const auto kLength = static_cast<uint32_t>(snprintf(out_buffer, out_buffer_size, 
 		"{\"link\":\"%s\",\"speed\":\"%s\",\"duplex\":\"%s\",\"autonegotiation\":\"%s\"}", 
-		::net::phy::ToString(phy_status.link),
-		::net::phy::ToString(phy_status.speed), 
-		::net::phy::ToString(phy_status.duplex), 
-		::net::phy::ToStringAutonegotiation(phy_status.autonegotiation)));
+		::emac::phy::ToString(phy_status.link),
+		::emac::phy::ToString(phy_status.speed), 
+		::emac::phy::ToString(phy_status.duplex), 
+		::emac::phy::ToStringAutonegotiation(phy_status.autonegotiation)));
 
     return kLength;
 }
-} // namespace json::status::net
+} // namespace json::status::emac

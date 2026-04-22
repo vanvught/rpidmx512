@@ -2,7 +2,7 @@
  * @file emac.h
  *
  */
-/* Copyright (C) 2022-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2022-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,8 @@
 
 #ifndef EMAC_H_
 #define EMAC_H_
+
+#include <cstdint>
 
 #define BUS_SOFT_RESET2_EPHY_RST (1 << 2)
 #define BUS_CLK_GATING4_EPHY_GATING (1 << 0)
@@ -65,7 +67,7 @@
 #define __aligned(x) __attribute__((aligned(x)))
 #endif
 
-struct emac_dma_desc
+struct EmacDmaDesc
 {
     uint32_t status;
     uint32_t st;
@@ -73,10 +75,10 @@ struct emac_dma_desc
     uint32_t next;
 } __aligned(ARM_DMA_ALIGN);
 
-struct coherent_region
+struct CoherentRegion
 {
-    struct emac_dma_desc rx_chain[CONFIG_TX_DESCR_NUM];
-    struct emac_dma_desc tx_chain[CONFIG_RX_DESCR_NUM];
+    struct EmacDmaDesc rx_chain[CONFIG_TX_DESCR_NUM];
+    struct EmacDmaDesc tx_chain[CONFIG_RX_DESCR_NUM];
     char rxbuffer[RX_TOTAL_BUFSIZE] __aligned(ARM_DMA_ALIGN);
     char txbuffer[TX_TOTAL_BUFSIZE] __aligned(ARM_DMA_ALIGN);
     uint32_t rx_currdescnum;
