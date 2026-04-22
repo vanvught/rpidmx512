@@ -1,5 +1,5 @@
 /**
- * @file json_storage_getdirectory.cpp
+ * @file json_storage_directory.cpp
  */
 /* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *

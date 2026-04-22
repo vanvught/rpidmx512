@@ -1,5 +1,5 @@
 /**
- * @file net_link_check.h
+ * @file emac_link_check.h
  *
  */
 /* Copyright (C) 2022-2026 by Arjan van Vught mailto:info@gd32-dmx.org

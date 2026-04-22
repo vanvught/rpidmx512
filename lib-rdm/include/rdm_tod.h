@@ -1,5 +1,5 @@
 /**
- * @file rdmtod.h
+ * @file rdm_tod.h
  *
  */
 /* Copyright (C) 2017-2026 by Arjan van Vught mailto:info@gd32-dmx.org

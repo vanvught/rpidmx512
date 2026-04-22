@@ -1,5 +1,5 @@
 /**
- * @file json_config_directory.cpp
+ * @file json_status_directory.cpp
  */
 /* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *

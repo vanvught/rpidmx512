@@ -1,5 +1,5 @@
 /**
- * @file phy.cpp
+ * @file emac_phy.cpp
  *
  */
 /* Copyright (C) 2023-2026 by Arjan van Vught mailto:info@gd32-dmx.org
