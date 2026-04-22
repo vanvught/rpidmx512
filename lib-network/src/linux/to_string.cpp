@@ -25,9 +25,9 @@
 
 #include <cstddef>
 
-#include "emac/phy.h"
+#include "emac/emac_phy.h"
 
-namespace net::phy
+namespace link::phy
 {
 // Ensure order matches enum class Speed
 constexpr const char* kSpeedNames[] = {

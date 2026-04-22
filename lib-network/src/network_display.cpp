@@ -35,7 +35,7 @@ static constexpr uint32_t LINE_IP = 2;
 static constexpr uint32_t LINE_IP = CONFIG_DISPLAY_LINE_IP;
 #endif
 
-namespace net::emac::display
+namespace emac::display
 {
 void __attribute__((weak)) Config()
 {
