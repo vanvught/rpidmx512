@@ -2,7 +2,7 @@
  * @file json_status_phy.cpp
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,20 +27,17 @@
 
 #include "emac/phy.h"
 
-namespace json::status::net
-{
-uint32_t Phy(char* out_buffer, uint32_t out_buffer_size)
-{
+namespace json::status::net {
+uint32_t Phy(char* out_buffer, uint32_t out_buffer_size) {
     ::net::phy::Status phy_status;
     ::net::phy::CustomizedStatus(phy_status);
 
-    const auto kLength = static_cast<uint32_t>(snprintf(out_buffer, out_buffer_size,
-        "{\"link\":\"%s\",\"speed\":\"%s\",\"duplex\":\"%s\",\"autonegotiation\":\"%s\"}",
-        ::net::phy::ToString(phy_status.link),
-        ::net::phy::ToString(phy_status.speed),
-        ::net::phy::ToString(phy_status.duplex),
-        ::net::phy::ToStringAutonegotiation(phy_status.autonegotiation))
-      );
+    const auto kLength = static_cast<uint32_t>(snprintf(out_buffer, out_buffer_size, 
+		"{\"link\":\"%s\",\"speed\":\"%s\",\"duplex\":\"%s\",\"autonegotiation\":\"%s\"}", 
+		::net::phy::ToString(phy_status.link),
+		::net::phy::ToString(phy_status.speed), 
+		::net::phy::ToString(phy_status.duplex), 
+		::net::phy::ToStringAutonegotiation(phy_status.autonegotiation)));
 
     return kLength;
 }

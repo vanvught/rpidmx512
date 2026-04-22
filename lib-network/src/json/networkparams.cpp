@@ -2,7 +2,7 @@
  * @file networkparams.cpp
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -48,52 +48,42 @@
 
 using common::store::network::Flags;
 
-namespace json
-{
+namespace json {
 
-NetworkParams::NetworkParams()
-{
+NetworkParams::NetworkParams() {
     ConfigStore::Instance().Copy(&store_network, &ConfigurationStore::network);
 }
 
-void NetworkParams::SetUseStaticIp(const char* val, uint32_t len)
-{
+void NetworkParams::SetUseStaticIp(const char* val, uint32_t len) {
     if (len == 1) store_network.flags = common::SetFlagValue(store_network.flags, Flags::Flag::kUseStaticIp, val[0] != '0');
 }
 
-void NetworkParams::SetIpAddress(const char* val, uint32_t len)
-{
+void NetworkParams::SetIpAddress(const char* val, uint32_t len) {
     store_network.local_ip = net::ParseIpString(val, len);
 }
 
-void NetworkParams::SetNetMask(const char* val, uint32_t len)
-{
+void NetworkParams::SetNetMask(const char* val, uint32_t len) {
     store_network.netmask = net::ParseIpString(val, len);
 }
 
-void NetworkParams::SetDefaultGateway(const char* val, uint32_t len)
-{
+void NetworkParams::SetDefaultGateway(const char* val, uint32_t len) {
     store_network.gateway_ip = net::ParseIpString(val, len);
 }
 
-void NetworkParams::SetHostname(const char* val, uint32_t len)
-{
+void NetworkParams::SetHostname(const char* val, uint32_t len) {
     len = len > (common::store::network::kHostnameSize - 1) ? common::store::network::kHostnameSize - 1 : len;
     memcpy(reinterpret_cast<char*>(store_network.host_name), val, len);
 
-    for (uint32_t i = len; i < common::store::network::kHostnameSize - 1; i++)
-    {
+    for (uint32_t i = len; i < common::store::network::kHostnameSize - 1; i++) {
         store_network.host_name[i] = '\0';
     }
 }
 
-void NetworkParams::SetNtpServer(const char* val, [[maybe_unused]] uint32_t len)
-{
+void NetworkParams::SetNtpServer(const char* val, [[maybe_unused]] uint32_t len) {
     store_network.ntp_server_ip = net::ParseIpString(val, len);
 }
 
-void NetworkParams::Store(const char* buffer, uint32_t buffer_size)
-{
+void NetworkParams::Store(const char* buffer, uint32_t buffer_size) {
     ParseJsonWithTable(buffer, buffer_size, kNetworkKeys);
     ConfigStore::Instance().Store(&store_network, &ConfigurationStore::network);
 
@@ -102,10 +92,8 @@ void NetworkParams::Store(const char* buffer, uint32_t buffer_size)
 #endif
 }
 
-void NetworkParams::Set()
-{
-    if (strncmp(network::iface::HostName(), reinterpret_cast<char*>(store_network.host_name), common::store::network::kHostnameSize - 1) != 0)
-    {
+void NetworkParams::Set() {
+    if (strncmp(network::iface::HostName(), reinterpret_cast<char*>(store_network.host_name), common::store::network::kHostnameSize - 1) != 0) {
         network::iface::SetHostname(reinterpret_cast<char*>(store_network.host_name));
         // When default is set, copy the hostname back
         strncpy(reinterpret_cast<char*>(store_network.host_name), network::iface::HostName(), common::store::network::kHostnameSize - 1);
@@ -114,14 +102,11 @@ void NetworkParams::Set()
 
     const auto kUseStaticIp = common::IsFlagSet(store_network.flags, Flags::Flag::kUseStaticIp);
 
-    if (kUseStaticIp)
-    {
+    if (kUseStaticIp) {
         network::SetGatewayIp(store_network.gateway_ip);
         network::SetNetmask(store_network.netmask);
         network::SetPrimaryIp(store_network.local_ip);
-    }
-    else
-    {
+    } else {
         network::iface::EnableDhcp();
     }
 
@@ -137,8 +122,7 @@ void NetworkParams::Set()
 #endif
 }
 
-void NetworkParams::Dump()
-{
+void NetworkParams::Dump() {
     const auto kUseStaticIp = common::IsFlagSet(store_network.flags, Flags::Flag::kUseStaticIp);
 
     printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, json::NetworkParamsConst::kFileName);

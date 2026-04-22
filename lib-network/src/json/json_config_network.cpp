@@ -2,7 +2,7 @@
  * @file json_config_network.cpp
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,20 +29,18 @@
 
 #include <cstdint>
 
-#include "network.h"
+#include "network_iface.h"
+#include "network_config.h"
 #include "json/networkparamsconst.h"
 #include "json/networkparams.h"
 #include "json/json_helpers.h"
 #include "ip4/ip4_helpers.h"
-#include "core/netif.h"
 #if defined(HAVE_NTP_CLIENT)
 #include "apps/ntpclient.h"
 #endif
 
-namespace json::config
-{
-uint32_t GetNetwork(char* buffer, uint32_t length)
-{
+namespace json::config {
+uint32_t GetNetwork(char* buffer, uint32_t length) {
 #if defined(HAVE_NTP_CLIENT)
     uint32_t ntp_server_ip = 0;
 #if defined(CONFIG_NET_ENABLE_NTP_CLIENT)
@@ -53,23 +51,22 @@ uint32_t GetNetwork(char* buffer, uint32_t length)
 #endif
 #endif
 
-	return json::helpers::Serialize(buffer, length, [&](JsonDoc& doc) {
-	    char ip[net::kIpBufferSize];
+    return json::helpers::Serialize(buffer, length, [&](JsonDoc& doc) {
+        char ip[net::kIpBufferSize];
 
-	    doc[json::NetworkParamsConst::kSecondaryIp.name] = net::FormatIp(network::GetSecondaryIp(), ip);
-	    doc[json::NetworkParamsConst::kUseStaticIp.name] = !network::iface::Dhcp() ? 1 : 0;
-	    doc[json::NetworkParamsConst::kIpAddress.name] = net::FormatIp(network::GetPrimaryIp(), ip);
-	    doc[json::NetworkParamsConst::kNetMask.name] = net::FormatIp(network::GetNetmask(), ip);
-	    doc[json::NetworkParamsConst::kDefaultGateway.name] = net::FormatIp(network::GetGatewayIp(), ip);
-	    doc[json::NetworkParamsConst::kHostname.name] =  network::iface::HostName();
-#if defined(HAVE_NTP_CLIENT)    
-	    doc[json::NetworkParamsConst::kNtpServer.name] = net::FormatIp(ntp_server_ip, ip);
+        doc[json::NetworkParamsConst::kSecondaryIp.name] = net::FormatIp(network::GetSecondaryIp(), ip);
+        doc[json::NetworkParamsConst::kUseStaticIp.name] = !network::iface::Dhcp() ? 1 : 0;
+        doc[json::NetworkParamsConst::kIpAddress.name] = net::FormatIp(network::GetPrimaryIp(), ip);
+        doc[json::NetworkParamsConst::kNetMask.name] = net::FormatIp(network::GetNetmask(), ip);
+        doc[json::NetworkParamsConst::kDefaultGateway.name] = net::FormatIp(network::GetGatewayIp(), ip);
+        doc[json::NetworkParamsConst::kHostname.name] = network::iface::HostName();
+#if defined(HAVE_NTP_CLIENT)
+        doc[json::NetworkParamsConst::kNtpServer.name] = net::FormatIp(ntp_server_ip, ip);
 #endif
-	});
+    });
 }
 
-void SetNetwork(const char* buffer, uint32_t buffer_size)
-{
+void SetNetwork(const char* buffer, uint32_t buffer_size) {
     ::json::NetworkParams network_params;
     network_params.Store(buffer, buffer_size);
     network_params.Set();

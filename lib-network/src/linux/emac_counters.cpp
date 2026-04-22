@@ -3,6 +3,7 @@
  */
 
 #include "linux/network.h"
+#include "network_iface.h"
 
 #if defined(__APPLE__)
 #include <sys/sysctl.h>
@@ -39,15 +40,15 @@ void GetCounters(Counters& st) {
         return; // leave zeros if not found
     }
 
-    st.rx_ok = ifmd.ifmd_data.ifi_ipackets;
-    st.rx_err = ifmd.ifmd_data.ifi_ierrors;
-    st.rx_drp = ifmd.ifmd_data.ifi_iqdrops; // input queue drops
-    st.rx_ovr = 0;                          // not exposed
+    st.rx.ok = ifmd.ifmd_data.ifi_ipackets;
+    st.rx.err = ifmd.ifmd_data.ifi_ierrors;
+    st.rx.drp = ifmd.ifmd_data.ifi_iqdrops; // input queue drops
+    st.rx.ovr = 0;                          // not exposed
 
-    st.tx_ok = ifmd.ifmd_data.ifi_opackets;
-    st.tx_err = ifmd.ifmd_data.ifi_oerrors;
-    st.tx_drp = 0; // no ifi_oqdrops on macOS
-    st.tx_ovr = 0; // not exposed
+    st.tx.ok = ifmd.ifmd_data.ifi_opackets;
+    st.tx.err = ifmd.ifmd_data.ifi_oerrors;
+    st.tx.drp = 0; // no ifi_oqdrops on macOS
+    st.tx.ovr = 0; // not exposed
 }
 
 } // namespace network::iface
@@ -94,15 +95,15 @@ void GetCounters(Counters& st) {
             return;
         }
 
-        st.rx_ok = r_packets;
-        st.rx_err = r_errs;
-        st.rx_drp = r_drop;
-        st.rx_ovr = r_fifo;
+        st.rx.ok = r_packets;
+        st.rx.err = r_errs;
+        st.rx.drp = r_drop;
+        st.rx.ovr = r_fifo;
 
-        st.tx_ok = t_packets;
-        st.tx_err = t_errs;
-        st.tx_drp = t_drop;
-        st.tx_ovr = t_fifo;
+        st.tx.ok = t_packets;
+        st.tx.err = t_errs;
+        st.tx.drp = t_drop;
+        st.tx.ovr = t_fifo;
         return;
     }
 }
