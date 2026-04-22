@@ -32,7 +32,7 @@
 int uart0::Printf(const char* fmt, ...);
 #endif
 
-void mac_address_get(uint8_t paddr[]) {
+void MacAddressGet(uint8_t paddr[]) {
 	assert(mac_addr == ENET_MAC_ADDRESS0);
 
 	const uint32_t mac_lo = H3_EMAC->ADDR[0].LOW;

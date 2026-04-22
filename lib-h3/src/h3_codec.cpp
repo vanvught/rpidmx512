@@ -138,12 +138,12 @@ static uint32_t s_volume;
 static volatile uint32_t update_counter;
 static volatile uint32_t index;
 
-struct coherent_region {
+struct CoherentRegion {
 	struct sunxi_dma_lli lli[CONFIG_TX_DESCR_NUM];
 	int16_t txbuffer[CONFIG_TX_DESCR_NUM][CONFIG_BUFSIZE] ALIGNED;
 };
 
-static struct coherent_region *p_coherent_region = reinterpret_cast<struct coherent_region *>(H3_MEM_COHERENT_REGION + MEGABYTE/2);
+static struct CoherentRegion *p_coherent_region = reinterpret_cast<struct CoherentRegion *>(H3_MEM_COHERENT_REGION + MEGABYTE/2);
 
 static uint32_t read_prcm_wvalue(uint32_t addr) {
 	uint32_t reg;
