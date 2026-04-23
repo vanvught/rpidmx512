@@ -32,11 +32,15 @@
 #if !defined (CONFIG_HTTP_HTML_NO_DMX) && defined(OUTPUT_DMX_MONITOR)
 #include "config_dmxmonitor.js.h"
 #endif // !defined (CONFIG_HTTP_HTML_NO_DMX) && defined(OUTPUT_DMX_MONITOR)
+#include "config_oscclient.js.h"
 #include "index.html.h"
 #include "layout.js.h"
 #if !defined (CONFIG_HTTP_HTML_NO_DMX_PCA9685) && defined(OUTPUT_DMX_PCA9685)
 #include "config_dmxpca9685.js.h"
 #endif // !defined (CONFIG_HTTP_HTML_NO_DMX_PCA9685) && defined(OUTPUT_DMX_PCA9685)
+#if defined (NODE_LTC_SMPTE)
+#include "config_gps.js.h"
+#endif // (NODE_LTC_SMPTE)
 #if defined (DISPLAY_UDF)
 #include "config_display.js.h"
 #endif // (DISPLAY_UDF)

@@ -41,21 +41,11 @@ window.etc = {
             </form>
         `;
 
-        document.getElementById("modules").appendChild(div);
-        div.querySelector("form").onsubmit = () => {
-            saveDataKeyForm(path, div, {
-                afterLoad: function(card, data) {
-                    fillDataKeys(card, {
-                        destination_ip: data.destination_ip ?? "0.0.0.0",
-                        destination_port: data.destination_port ?? 0,
-                        source_multicast_ip: data.source_multicast_ip ?? "0.0.0.0",
-                        source_port: data.source_port ?? 0,
-                        udp_terminator: data.udp_terminator ?? "None"
-                    });
-                }
-            });
-            return false;
-        };
+		document.getElementById("modules").appendChild(card);
+		card.querySelector("form").onsubmit = () => {
+		    saveDataKeyForm(path, card);
+		    return false;
+		};
 
         fillDataKeys(div, {
             destination_ip: json.destination_ip ?? "0.0.0.0",

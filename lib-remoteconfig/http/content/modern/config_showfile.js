@@ -38,21 +38,11 @@ window.showfile = {
             </form>
         `;
 
-        document.getElementById("modules").appendChild(div);
-        div.querySelector("form").onsubmit = () => {
-            saveDataKeyForm(path, div, {
-                afterLoad: function(card, data) {
-                    fillDataKeys(card, {
-                        show: data.show ?? 0,
-                        auto_play: data.auto_play ?? 0,
-                        loop: data.loop ?? 0,
-                        incoming_port: data.incoming_port ?? 8000,
-                        outgoing_port: data.outgoing_port ?? 9000
-                    });
-                }
-            });
-            return false;
-        };
+		document.getElementById("modules").appendChild(card);
+		card.querySelector("form").onsubmit = () => {
+		    saveDataKeyForm(path, card);
+		    return false;
+		};
 
         fillDataKeys(div, {
             show: json.show ?? 0,

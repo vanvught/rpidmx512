@@ -47,20 +47,11 @@ window.tcnet = {
             </form>
         `;
 
-        document.getElementById("modules").appendChild(div);
-        div.querySelector("form").onsubmit = () => {
-            saveDataKeyForm(path, div, {
-                afterLoad: function(card, data) {
-                    fillDataKeys(card, {
-                        node_name: data.node_name ?? "AvV",
-                        layer: (data.layer ?? "M").toUpperCase(),
-                        timecode_type: data.timecode_type ?? 30,
-                        use_timecode: data.use_timecode ?? 0
-                    });
-                }
-            });
-            return false;
-        };
+		document.getElementById("modules").appendChild(card);
+		card.querySelector("form").onsubmit = () => {
+		    saveDataKeyForm(path, card);
+		    return false;
+		};
 
         fillDataKeys(div, {
             node_name: json.node_name ?? "AvV",

@@ -37,11 +37,15 @@
 #if !defined (CONFIG_HTTP_HTML_NO_DMX) && defined(OUTPUT_DMX_MONITOR)
 #include "config_dmxmonitor.js.h"
 #endif // !defined (CONFIG_HTTP_HTML_NO_DMX) && defined(OUTPUT_DMX_MONITOR)
+#include "config_oscclient.js.h"
 #include "index.html.h"
 #include "layout.js.h"
 #if !defined (CONFIG_HTTP_HTML_NO_DMX_PCA9685) && defined(OUTPUT_DMX_PCA9685)
 #include "config_dmxpca9685.js.h"
 #endif // !defined (CONFIG_HTTP_HTML_NO_DMX_PCA9685) && defined(OUTPUT_DMX_PCA9685)
+#if defined (NODE_LTC_SMPTE)
+#include "config_gps.js.h"
+#endif // (NODE_LTC_SMPTE)
 #if defined (DISPLAY_UDF)
 #include "config_display.js.h"
 #endif // (DISPLAY_UDF)
@@ -88,11 +92,11 @@ inline constexpr struct FilesContent kHttpContent[] = {
 	{ 1436064737,"status_pixel.js", status_pixel_js, 570, static_cast<http::ContentTypes>(2) },
 #endif // !defined (CONFIG_HTTP_HTML_NO_PIXEL) && (defined(OUTPUT_DMX_PIXEL) || defined(OUTPUT_DMX_PIXEL_MULTI))
 #if defined (NODE_LTC_SMPTE)
-	{ 109007079,"config_etc.js", config_etc_js, 1789, static_cast<http::ContentTypes>(2) },
+	{ 109007079,"config_etc.js", config_etc_js, 1488, static_cast<http::ContentTypes>(2) },
 #endif // (NODE_LTC_SMPTE)
 	{ 2557875310,"styles.css", styles_css, 2170, static_cast<http::ContentTypes>(1) },
 #if defined (NODE_OSC_SERVER)
-	{ 3728864745,"config_oscserver.js", config_oscserver_js, 1395, static_cast<http::ContentTypes>(2) },
+	{ 3728864745,"config_oscserver.js", config_oscserver_js, 1510, static_cast<http::ContentTypes>(2) },
 #endif // (NODE_OSC_SERVER)
 	{ 247271700,"index.js", index_js, 5044, static_cast<http::ContentTypes>(2) },
 	{ 1602327546,"date.js", date_js, 716, static_cast<http::ContentTypes>(2) },
@@ -112,11 +116,15 @@ inline constexpr struct FilesContent kHttpContent[] = {
 #if !defined (CONFIG_HTTP_HTML_NO_DMX) && defined(OUTPUT_DMX_MONITOR)
 	{ 1186793998,"config_dmxmonitor.js", config_dmxmonitor_js, 1071, static_cast<http::ContentTypes>(2) },
 #endif // !defined (CONFIG_HTTP_HTML_NO_DMX) && defined(OUTPUT_DMX_MONITOR)
-	{ 4024653090,"index.html", index_html, 1873, static_cast<http::ContentTypes>(0) },
+	{ 3282278349,"config_oscclient.js", config_oscclient_js, 3423, static_cast<http::ContentTypes>(2) },
+	{ 4024653090,"index.html", index_html, 1902, static_cast<http::ContentTypes>(0) },
 	{ 2226674728,"layout.js", layout_js, 1374, static_cast<http::ContentTypes>(2) },
 #if !defined (CONFIG_HTTP_HTML_NO_DMX_PCA9685) && defined(OUTPUT_DMX_PCA9685)
-	{ 1666579856,"config_dmxpca9685.js", config_dmxpca9685_js, 2758, static_cast<http::ContentTypes>(2) },
+	{ 1666579856,"config_dmxpca9685.js", config_dmxpca9685_js, 2267, static_cast<http::ContentTypes>(2) },
 #endif // !defined (CONFIG_HTTP_HTML_NO_DMX_PCA9685) && defined(OUTPUT_DMX_PCA9685)
+#if defined (NODE_LTC_SMPTE)
+	{ 610379173,"config_gps.js", config_gps_js, 1020, static_cast<http::ContentTypes>(2) },
+#endif // (NODE_LTC_SMPTE)
 #if defined (DISPLAY_UDF)
 	{ 2902032383,"config_display.js", config_display_js, 3757, static_cast<http::ContentTypes>(2) },
 #endif // (DISPLAY_UDF)
@@ -130,13 +138,13 @@ inline constexpr struct FilesContent kHttpContent[] = {
 	{ 1557939568,"config_rdmdevice.js", config_rdmdevice_js, 615, static_cast<http::ContentTypes>(2) },
 #endif // !defined (CONFIG_HTTP_HTML_NO_RDM) && (defined (RDM_CONTROLLER || defined (RDM_RESPONDER))
 #if defined (NODE_SHOWFILE)
-	{ 1821390800,"config_showfile.js", config_showfile_js, 1466, static_cast<http::ContentTypes>(2) },
+	{ 1821390800,"config_showfile.js", config_showfile_js, 1242, static_cast<http::ContentTypes>(2) },
 #endif // (NODE_SHOWFILE)
 #if !defined (CONFIG_HTTP_HTML_NO_DMX) && (defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI))
 	{ 381868932,"config_dmxsend.js", config_dmxsend_js, 1617, static_cast<http::ContentTypes>(2) },
 #endif // !defined (CONFIG_HTTP_HTML_NO_DMX) && (defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI))
 #if defined (NODE_LTC_SMPTE)
-	{ 3844231377,"config_tcnet.js", config_tcnet_js, 1634, static_cast<http::ContentTypes>(2) },
+	{ 3844231377,"config_tcnet.js", config_tcnet_js, 1415, static_cast<http::ContentTypes>(2) },
 #endif // (NODE_LTC_SMPTE)
 	{ 3116920429,"common.js", common_js, 2411, static_cast<http::ContentTypes>(2) },
 #if defined(NODE_E131) || defined(NODE_E131_MULTI) || (ARTNET_VERSION == 4)
