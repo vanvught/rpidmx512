@@ -84,11 +84,11 @@ int main() {
 	display.Printf(4, "In: %d", oscserver.GetPortIncoming());
 	display.Printf(5, "Out: %d", oscserver.GetPortOutgoing());
 
-	display.TextStatus(OscServerMsgConst::START, console::Colours::kConsoleYellow);
+	display.TextStatus(OscServerMsgConst::kStart, console::Colours::kConsoleYellow);
 
 	oscserver.Start();
 
-	display.TextStatus(OscServerMsgConst::STARTED, console::Colours::kConsoleGreen);
+	display.TextStatus(OscServerMsgConst::kStarted, console::Colours::kConsoleGreen);
 
 	hal::WatchdogInit();
 

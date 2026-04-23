@@ -1,7 +1,7 @@
 /**
  * @file oscparamsconst.h
  */
- /* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+ /* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,11 +27,9 @@
 
 #include "json/json_key.h"
 
-namespace json
-{
-struct OscParamsConst
-{
-	static constexpr json::SimpleKey kIncomingPort {
+namespace json {
+struct OscParamsConst {
+    static constexpr json::SimpleKey kIncomingPort {
 	    "incoming_port",
 	    13,
 	    Fnv1a32("incoming_port", 13)

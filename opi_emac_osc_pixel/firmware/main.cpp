@@ -102,11 +102,11 @@ int main() // NOLINT
 
     RemoteConfig remote_config(remoteconfig::Output::PIXEL, 1);
 
-    display.TextStatus(OscServerMsgConst::START, console::Colours::kConsoleYellow);
+    display.TextStatus(OscServerMsgConst::kStart, console::Colours::kConsoleYellow);
 
     oscserver.Start();
 
-    display.TextStatus(OscServerMsgConst::STARTED, console::Colours::kConsoleGreen);
+    display.TextStatus(OscServerMsgConst::kStarted, console::Colours::kConsoleGreen);
 
     hal::WatchdogInit();
 

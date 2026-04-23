@@ -2,7 +2,7 @@
  * @file oscclient.h
  *
  */
-/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,33 +30,29 @@
 #include <cassert>
 
 #include "configurationstore.h"
-#include "ip4/ip4_address.h"
 #include "osc.h"
 #include "oscsimplesend.h"
 #include "oscclientled.h"
 #include "hal_millis.h"
 #include "display.h"
- #include "firmware/debug/debug_debug.h"
+#include "ip4/ip4_address.h"
+#include "firmware/debug/debug_debug.h"
 
-namespace oscclient
-{
-namespace defaults
-{
+namespace oscclient {
+namespace defaults {
 inline constexpr uint16_t kPortOutgoing = 8000;
 inline constexpr uint16_t kPortIncoming = 9000;
 inline constexpr uint32_t kPingDelaySeconds = 10;
 } // namespace defaults
 
-namespace buffer::size
-{
+namespace buffer::size {
 inline constexpr uint32_t kCmd = common::store::osc::client::kCmdCount * common::store::osc::client::kCmdPathLength;
 inline constexpr uint32_t kLed = common::store::osc::client::kLedCount * common::store::osc::client::kLedPathLength;
 } // namespace buffer::size
 
 } // namespace oscclient
 
-class OscClient
-{
+class OscClient {
    public:
     OscClient();
 
@@ -69,25 +65,20 @@ class OscClient
     void Stop();
     void Print();
 
-    void Run()
-    {
-        if (!ping_disable_)
-        {
+    void Run() {
+        if (!ping_disable_) {
             current_millis_ = hal::Millis();
 
-            if (ping_sent_ && ((current_millis_ - ping_time_millis_) >= 1000))
-            {
-				ping_sent_ = false;
-				
-                if (!pong_received_)
-                {
+            if (ping_sent_ && ((current_millis_ - ping_time_millis_) >= 1000)) {
+                ping_sent_ = false;
+
+                if (!pong_received_) {
                     Display::Get()->TextStatus("No /Pong");
                     DEBUG_PUTS("No /Pong");
                 }
             }
 
-            if ((current_millis_ - previous_millis_) >= ping_delay_millis_)
-            {
+            if ((current_millis_ - previous_millis_) >= ping_delay_millis_) {
                 OscSimpleSend msg_send(handle_, server_ip_, port_outgoing_, "/ping", nullptr);
                 ping_sent_ = true;
                 pong_received_ = false;
@@ -99,22 +90,19 @@ class OscClient
         }
     }
 
-    void Send(const char* path)
-    {
+    void Send(const char* path) {
         DEBUG_ENTRY();
 
         assert(path != nullptr);
 
-        if (*path != 0)
-        {
+        if (*path != 0) {
             OscSimpleSend msg_send(handle_, server_ip_, port_outgoing_, path, nullptr);
         }
 
         DEBUG_EXIT();
     }
 
-    void SendCmd(uint32_t cmd)
-    {
+    void SendCmd(uint32_t cmd) {
         DEBUG_ENTRY();
         DEBUG_PRINTF("cmd=%d", cmd);
 
@@ -129,28 +117,20 @@ class OscClient
     void SetServerIP(uint32_t server_ip) { server_ip_ = server_ip; }
     uint32_t GetServerIP() const { return server_ip_; }
 
-    void SetPortOutgoing(uint16_t port_outgoing)
-    {
-        if (port_outgoing > 1023)
-        {
+    void SetPortOutgoing(uint16_t port_outgoing) {
+        if (port_outgoing > 1023) {
             port_outgoing_ = port_outgoing;
-        }
-        else
-        {
+        } else {
             port_outgoing_ = oscclient::defaults::kPortOutgoing;
         }
     }
 
     uint16_t GetPortOutgoing() const { return port_outgoing_; }
 
-    void SetPortIncoming(uint16_t port_incoming)
-    {
-        if (port_incoming > 1023)
-        {
+    void SetPortIncoming(uint16_t port_incoming) {
+        if (port_incoming > 1023) {
             port_incoming_ = port_incoming;
-        }
-        else
-        {
+        } else {
             port_incoming_ = oscclient::defaults::kPortIncoming;
         }
     }
@@ -160,96 +140,78 @@ class OscClient
     void SetPingDisable(bool ping_disable = true) { ping_disable_ = ping_disable; }
     bool GetPingDisable() const { return ping_disable_; }
 
-    void SetPingDelaySeconds(uint32_t ping_delay)
-    {
-        if ((ping_delay >= 2) && (ping_delay <= 60))
-        {
+    void SetPingDelaySeconds(uint32_t ping_delay) {
+        if ((ping_delay >= 2) && (ping_delay <= 60)) {
             ping_delay_millis_ = ping_delay * 1000;
-        }
-        else
-        {
+        } else {
             ping_delay_millis_ = oscclient::defaults::kPingDelaySeconds * 1000;
         }
     }
 
     uint32_t GetPingDelaySeconds() const { return ping_delay_millis_ / 1000U; }
 
-    void CopyCmds(const char* cmds)
-    {
+    void CopyCmds(const char* cmds) {
         assert(cmds != nullptr);
 
-        for (uint32_t i = 0; i < common::store::osc::client::kCmdCount; i++)
-        {
+        for (uint32_t i = 0; i < common::store::osc::client::kCmdCount; i++) {
             char* dst = &s_cmds[i * common::store::osc::client::kCmdPathLength];
             strncpy(dst, &cmds[i * common::store::osc::client::kCmdPathLength], common::store::osc::client::kCmdPathLength - 1);
             dst[common::store::osc::client::kCmdPathLength - 1] = '\0';
         }
     }
 
-    const char* GetCmd(uint32_t index)
-    {
+    const char* GetCmd(uint32_t index) {
         assert(index < common::store::osc::client::kCmdCount);
         const char* dst = &s_cmds[index * common::store::osc::client::kCmdPathLength];
         return dst;
     }
 
-    const char* GetLed(uint32_t index)
-    {
+    const char* GetLed(uint32_t index) {
         assert(index < common::store::osc::client::kLedCount);
         const char* dst = &s_leds[index * common::store::osc::client::kLedPathLength];
         return dst;
     }
 
-    void CopyLeds(const char* leds)
-    {
+    void CopyLeds(const char* leds) {
         assert(leds != nullptr);
 
-        for (uint32_t i = 0; i < common::store::osc::client::kLedCount; i++)
-        {
+        for (uint32_t i = 0; i < common::store::osc::client::kLedCount; i++) {
             char* dst = &s_leds[i * common::store::osc::client::kLedPathLength];
             strncpy(dst, &leds[i * common::store::osc::client::kLedPathLength], common::store::osc::client::kLedPathLength - 1);
             dst[common::store::osc::client::kLedPathLength - 1] = '\0';
         }
     }
 
-    void SetLedHandler(OscClientLed* osc_client_led)
-    {
+    void SetLedHandler(OscClientLed* osc_client_led) {
         assert(osc_client_led != nullptr);
         oscclient_led_ = osc_client_led;
     }
 
-    static OscClient& Instance()
-    {
+    static OscClient& Instance() {
         assert(s_this != nullptr); // Ensure that s_this is valid
         return *s_this;
     }
 
    private:
-    void Input(const uint8_t* buffer, uint32_t size, uint32_t from_ip, [[maybe_unused]] uint16_t from_port)
-    {
+    void Input(const uint8_t* buffer, uint32_t size, uint32_t from_ip, [[maybe_unused]] uint16_t from_port) {
         buffer_ = reinterpret_cast<const char*>(buffer);
 
         DEBUG_PRINTF(IPSTR " -> %s", IP2STR(from_ip), buffer_);
 
-        if (from_ip != server_ip_)
-        {
+        if (from_ip != server_ip_) {
             DEBUG_PRINTF("Data not received from server " IPSTR, IP2STR(server_ip_));
             return;
         }
 
-        if (oscclient_led_ != nullptr)
-        {
-            if (HandleLedMessage(size))
-            {
+        if (oscclient_led_ != nullptr) {
+            if (HandleLedMessage(size)) {
                 DEBUG_EXIT();
                 return;
             }
         }
 
-        if (!ping_disable_)
-        {
-            if (!osc::is_match(buffer_, "/pong"))
-            {
+        if (!ping_disable_) {
+            if (!osc::IsMatch(buffer_, "/pong")) {
                 return;
             }
 
@@ -261,10 +223,7 @@ class OscClient
         }
     }
 
-    void static StaticCallbackFunction(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port)
-    {
-        s_this->Input(buffer, size, from_ip, from_port);
-    }
+    void static StaticCallbackFunction(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port) { s_this->Input(buffer, size, from_ip, from_port); }
 
     bool HandleLedMessage(uint16_t bytes_received);
 
@@ -290,4 +249,4 @@ class OscClient
     static inline OscClient* s_this{nullptr};
 };
 
-#endif  // OSCCLIENT_H_
+#endif // OSCCLIENT_H_

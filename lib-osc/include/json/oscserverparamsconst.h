@@ -28,40 +28,15 @@
 
 #include "json/json_key.h"
 
-namespace json
-{
-struct OscServerParamsConst
-{
+namespace json {
+struct OscServerParamsConst {
     static constexpr char kFileName[] = "oscserver.json";
 
-    static constexpr json::SimpleKey kPath
-    {
-		"path", 
-		4, 
-		Fnv1a32("path", 4)
-	};
-
-    static constexpr json::SimpleKey kPathInfo
-    {
-		"path_info", 
-		9, 
-		Fnv1a32("path_info", 9)
-	};
-
-    static constexpr json::SimpleKey kPathBlackout
-    {
-		"path_blackout", 
-		13, 
-		Fnv1a32("path_blackout", 13)
-	};
-
-    static constexpr json::SimpleKey kTransmission
-    {
-		"partial_transmission", 
-		19, 
-		Fnv1a32("partial_transmission", 19)
-	};
+    static constexpr json::SimpleKey kPath{"path", 4, Fnv1a32("path", 4)};
+    static constexpr json::SimpleKey kPathInfo{"path_info", 9, Fnv1a32("path_info", 9)};
+    static constexpr json::SimpleKey kPathBlackout{"path_blackout", 13, Fnv1a32("path_blackout", 13)};
+    static constexpr json::SimpleKey kTransmission{"partial_transmission", 19, Fnv1a32("partial_transmission", 19)};
 };
 } // namespace json
 
-#endif  // JSON_OSCSERVERPARAMSCONST_H_
+#endif // JSON_OSCSERVERPARAMSCONST_H_

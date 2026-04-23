@@ -2,7 +2,7 @@
  * @file oscblob.h
  *
  */
-/* Copyright (C) 2016-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2016-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,8 +34,7 @@
  * followed by 0-3 additional zero bytes to make the total number of bits a multiple of 32.
  */
 
-class OSCBlob
-{
+class OSCBlob {
    public:
     OSCBlob(const uint8_t* data, uint32_t size) : data_(data), size_(size) {}
 
@@ -43,16 +42,13 @@ class OSCBlob
 
     const uint8_t* GetDataPtr() const { return data_; }
 
-    uint32_t GetSize()
-    {
+    uint32_t GetSize() {
         const uint32_t kBlobSize = sizeof(int32_t) + size_;
         return (4 * ((kBlobSize + 3) / 4));
     }
 
-    uint8_t GetByte(uint32_t index)
-    {
-        if (index < size_)
-        {
+    uint8_t GetByte(uint32_t index) {
+        if (index < size_) {
             return data_[index];
         }
         return 0;
@@ -63,4 +59,4 @@ class OSCBlob
     uint32_t size_;
 };
 
-#endif  // OSCBLOB_H_
+#endif // OSCBLOB_H_

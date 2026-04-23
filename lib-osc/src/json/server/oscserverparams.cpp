@@ -2,7 +2,7 @@
  * @file oscserverparams.cpp
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,17 +39,13 @@
 
 using common::store::osc::server::Flags;
 
-namespace json
-{
-OscServerParams::OscServerParams()
-{
+namespace json {
+OscServerParams::OscServerParams() {
     ConfigStore::Instance().Copy(&store_oscserver, &ConfigurationStore::osc_server);
 }
 
-void OscServerParams::SetIncomingPort(const char* val, uint32_t len)
-{
-    if (len <= 3)
-    {
+void OscServerParams::SetIncomingPort(const char* val, uint32_t len) {
+    if (len <= 3) {
         return;
     }
 
@@ -57,10 +53,8 @@ void OscServerParams::SetIncomingPort(const char* val, uint32_t len)
     store_oscserver.incoming_port = v;
 }
 
-void OscServerParams::SetOutgoingPort(const char* val, uint32_t len)
-{
-    if (len <= 3)
-    {
+void OscServerParams::SetOutgoingPort(const char* val, uint32_t len) {
+    if (len <= 3) {
         return;
     }
 
@@ -68,19 +62,15 @@ void OscServerParams::SetOutgoingPort(const char* val, uint32_t len)
     store_oscserver.outgoing_port = v;
 }
 
-void OscServerParams::SetPath(const char* val, uint32_t len)
-{
-    if (len > common::store::osc::server::kPathLength - 1)
-    {
+void OscServerParams::SetPath(const char* val, uint32_t len) {
+    if (len > common::store::osc::server::kPathLength - 1) {
         return;
     }
 
     auto* dst = store_oscserver.path;
 
-    if (len >= 1)
-    {
-        if (val[0] != '/')
-        {
+    if (len >= 1) {
+        if (val[0] != '/') {
             dst[0] = '\0';
             return;
         }
@@ -90,19 +80,15 @@ void OscServerParams::SetPath(const char* val, uint32_t len)
     dst[len] = '\0';
 }
 
-void OscServerParams::SetPathInfo(const char* val, uint32_t len)
-{
-    if (len > common::store::osc::server::kPathLength - 1)
-    {
+void OscServerParams::SetPathInfo(const char* val, uint32_t len) {
+    if (len > common::store::osc::server::kPathLength - 1) {
         return;
     }
 
     auto* dst = store_oscserver.path_info;
 
-    if (len >= 1)
-    {
-        if (val[0] != '/')
-        {
+    if (len >= 1) {
+        if (val[0] != '/') {
             dst[0] = '\0';
             return;
         }
@@ -112,19 +98,15 @@ void OscServerParams::SetPathInfo(const char* val, uint32_t len)
     dst[len] = '\0';
 }
 
-void OscServerParams::SetPathBlackout(const char* val, [[maybe_unused]] uint32_t len)
-{
-    if (len > common::store::osc::server::kPathLength - 1)
-    {
+void OscServerParams::SetPathBlackout(const char* val, [[maybe_unused]] uint32_t len) {
+    if (len > common::store::osc::server::kPathLength - 1) {
         return;
     }
 
     auto* dst = store_oscserver.path_blackout;
 
-    if (len >= 1)
-    {
-        if (val[0] != '/')
-        {
+    if (len >= 1) {
+        if (val[0] != '/') {
             dst[0] = '\0';
             return;
         }
@@ -134,15 +116,13 @@ void OscServerParams::SetPathBlackout(const char* val, [[maybe_unused]] uint32_t
     dst[len] = '\0';
 }
 
-void OscServerParams::SetTransmission(const char* val, [[maybe_unused]] uint32_t len)
-{
+void OscServerParams::SetTransmission(const char* val, [[maybe_unused]] uint32_t len) {
     if (len != 1) return;
 
     store_oscserver.flags = common::SetFlagValue(store_oscserver.flags, Flags::Flag::kPartialTransmission, val[0] != '0');
 }
 
-void OscServerParams::Store(const char* buffer, uint32_t buffer_size)
-{
+void OscServerParams::Store(const char* buffer, uint32_t buffer_size) {
     ParseJsonWithTable(buffer, buffer_size, kOscServerKeys);
     ConfigStore::Instance().Store(&store_oscserver, &ConfigurationStore::osc_server);
 
@@ -151,15 +131,13 @@ void OscServerParams::Store(const char* buffer, uint32_t buffer_size)
 #endif
 }
 
-void OscServerParams::Set()
-{
+void OscServerParams::Set() {
 #ifndef NDEBUG
     Dump();
 #endif
 }
 
-void OscServerParams::Dump()
-{
+void OscServerParams::Dump() {
     printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, json::OscServerParamsConst::kFileName);
     printf(" %s=%u\n", OscParamsConst::kIncomingPort.name, store_oscserver.incoming_port);
     printf(" %s=%u\n", OscParamsConst::kOutgoingPort.name, store_oscserver.outgoing_port);

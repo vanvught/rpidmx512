@@ -2,7 +2,7 @@
  * @file oscclientparams.cpp
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -43,17 +43,13 @@
 
 using common::store::osc::client::Flags;
 
-namespace json
-{
-OscClientParams::OscClientParams()
-{
+namespace json {
+OscClientParams::OscClientParams() {
     ConfigStore::Instance().Copy(&store_oscclient, &ConfigurationStore::osc_client);
 }
 
-void OscClientParams::SetIncomingPort(const char* val, uint32_t len)
-{
-    if (len <= 3)
-    {
+void OscClientParams::SetIncomingPort(const char* val, uint32_t len) {
+    if (len <= 3) {
         return;
     }
 
@@ -61,10 +57,8 @@ void OscClientParams::SetIncomingPort(const char* val, uint32_t len)
     store_oscclient.incoming_port = v;
 }
 
-void OscClientParams::SetOutgoingPort(const char* val, uint32_t len)
-{
-    if (len <= 3)
-    {
+void OscClientParams::SetOutgoingPort(const char* val, uint32_t len) {
+    if (len <= 3) {
         return;
     }
 
@@ -72,35 +66,28 @@ void OscClientParams::SetOutgoingPort(const char* val, uint32_t len)
     store_oscclient.outgoing_port = v;
 }
 
-void OscClientParams::SetServerIp(const char* val, uint32_t len)
-{
+void OscClientParams::SetServerIp(const char* val, uint32_t len) {
     store_oscclient.server_ip = net::ParseIpString(val, len);
 }
 
-void OscClientParams::SetPingDisable(const char* val, [[maybe_unused]] uint32_t len)
-{
+void OscClientParams::SetPingDisable(const char* val, [[maybe_unused]] uint32_t len) {
     ParseAndApply<uint8_t>(val, len, [](uint8_t v) { store_oscclient.flags = common::SetFlagValue(store_oscclient.flags, Flags::Flag::kPingDisable, v != 0); });
 }
 
-void OscClientParams::SetPingDelay(const char* val, uint32_t len)
-{
-    if (len >= 3)
-    {
+void OscClientParams::SetPingDelay(const char* val, uint32_t len) {
+    if (len >= 3) {
         return;
     }
 
     auto v = ParseValue<uint8_t>(val, len);
 
-    if ((v >= 2) && (v <= 60))
-    {
+    if ((v >= 2) && (v <= 60)) {
         store_oscclient.ping_delay = v;
     }
 }
 
-void OscClientParams::SetCmd(const char* key, uint32_t key_len, const char* val, uint32_t val_len)
-{
-    if (val_len > common::store::osc::client::kCmdPathLength - 1)
-    {
+void OscClientParams::SetCmd(const char* key, uint32_t key_len, const char* val, uint32_t val_len) {
+    if (val_len > common::store::osc::client::kCmdPathLength - 1) {
         return;
     }
 
@@ -108,10 +95,8 @@ void OscClientParams::SetCmd(const char* key, uint32_t key_len, const char* val,
     const auto kIndex = static_cast<uint8_t>(kSuffix - '0');
     auto* dst = store_oscclient.cmd[kIndex];
 
-    if (val_len >= 1)
-    {
-        if (val[0] != '/')
-        {
+    if (val_len >= 1) {
+        if (val[0] != '/') {
             dst[0] = '\0';
             return;
         }
@@ -121,10 +106,8 @@ void OscClientParams::SetCmd(const char* key, uint32_t key_len, const char* val,
     dst[val_len] = '\0';
 }
 
-void OscClientParams::SetLed(const char* key, uint32_t key_len, const char* val, uint32_t val_len)
-{
-    if (val_len > common::store::osc::client::kLedPathLength - 1)
-    {
+void OscClientParams::SetLed(const char* key, uint32_t key_len, const char* val, uint32_t val_len) {
+    if (val_len > common::store::osc::client::kLedPathLength - 1) {
         return;
     }
 
@@ -132,10 +115,8 @@ void OscClientParams::SetLed(const char* key, uint32_t key_len, const char* val,
     const auto kIndex = static_cast<uint8_t>(kSuffix - '0');
     auto* dst = store_oscclient.led[kIndex];
 
-    if (val_len >= 1)
-    {
-        if (val[0] != '/')
-        {
+    if (val_len >= 1) {
+        if (val[0] != '/') {
             dst[0] = '\0';
             return;
         }
@@ -145,8 +126,7 @@ void OscClientParams::SetLed(const char* key, uint32_t key_len, const char* val,
     dst[val_len] = '\0';
 }
 
-void OscClientParams::Store(const char* buffer, uint32_t buffer_size)
-{
+void OscClientParams::Store(const char* buffer, uint32_t buffer_size) {
     ParseJsonWithTable(buffer, buffer_size, kOscClientKeys);
     ConfigStore::Instance().Store(&store_oscclient, &ConfigurationStore::osc_client);
 
@@ -155,8 +135,7 @@ void OscClientParams::Store(const char* buffer, uint32_t buffer_size)
 #endif
 }
 
-void OscClientParams::Set()
-{
+void OscClientParams::Set() {
     auto& osc_client = OscClient::Instance();
 
     osc_client.SetServerIP(store_oscclient.server_ip);
@@ -172,8 +151,7 @@ void OscClientParams::Set()
 #endif
 }
 
-void OscClientParams::Dump()
-{
+void OscClientParams::Dump() {
     printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, json::OscClientParamsConst::kFileName);
     printf(" %s=" IPSTR "\n", OscClientParamsConst::kServerIp.name, IP2STR(store_oscclient.server_ip));
     printf(" %s=%u\n", OscParamsConst::kOutgoingPort, store_oscclient.outgoing_port);
@@ -181,13 +159,11 @@ void OscClientParams::Dump()
     printf(" %s=%u\n", OscClientParamsConst::kPingDisable, common::IsFlagSet(store_oscclient.flags, Flags::Flag::kPingDisable));
     printf(" %s=%u\n", OscClientParamsConst::kPingDelay, store_oscclient.ping_delay);
 
-    for (uint32_t i = 0; i < common::store::osc::client::kCmdCount; i++)
-    {
+    for (uint32_t i = 0; i < common::store::osc::client::kCmdCount; i++) {
         printf(" %s=[%s]\n", OscClientParamsConst::kCmd[0].name, reinterpret_cast<char*>(&store_oscclient.cmd[i]));
     }
 
-    for (uint32_t i = 0; i < common::store::osc::client::kLedCount; i++)
-    {
+    for (uint32_t i = 0; i < common::store::osc::client::kLedCount; i++) {
         printf(" %s=[%s]\n", OscClientParamsConst::kLed[0].name, reinterpret_cast<char*>(&store_oscclient.led[i]));
     }
 }

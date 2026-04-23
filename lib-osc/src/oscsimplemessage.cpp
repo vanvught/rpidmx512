@@ -2,7 +2,7 @@
  * @file oscsimplemessage.cpp
  *
  */
-/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,12 +29,10 @@
 #include "oscsimplemessage.h"
 #include "osc.h"
 
-OscSimpleMessage::OscSimpleMessage(const uint8_t* osc_message, uint32_t length) : osc_message_(osc_message), length_(length)
-{
+OscSimpleMessage::OscSimpleMessage(const uint8_t* osc_message, uint32_t length) : osc_message_(osc_message), length_(length) {
     auto result = osc::StringValidate(osc_message_, length);
 
-    if (result < 0)
-    {
+    if (result < 0) {
         return;
     }
 
@@ -43,14 +41,12 @@ OscSimpleMessage::OscSimpleMessage(const uint8_t* osc_message, uint32_t length) 
 
     result = osc::StringValidate(arg_, length_ - static_cast<unsigned>(result));
 
-    if ((result < 0) || (arg_[0] != ','))
-    {
+    if ((result < 0) || (arg_[0] != ',')) {
         return;
     }
 
     // Support for 1 osc-string or blob only
-    if (((arg_[1] == 's') || (arg_[1] == 'b')) && (arg_[2] != '\0'))
-    {
+    if (((arg_[1] == 's') || (arg_[1] == 'b')) && (arg_[2] != '\0')) {
         return;
     }
 
@@ -65,16 +61,13 @@ OscSimpleMessage::OscSimpleMessage(const uint8_t* osc_message, uint32_t length) 
     is_valid_ = true;
 }
 
-float OscSimpleMessage::GetFloat(unsigned argc)
-{
-    union pcast32
-    {
+float OscSimpleMessage::GetFloat(unsigned argc) {
+    union pcast32 {
         int32_t i;
         float f;
     } osc_pcast32;
 
-    if ((osc_message_data_length_ >= 4 * (1 + argc)) && (arg_[argc] == osc::type::FLOAT))
-    {
+    if ((osc_message_data_length_ >= 4 * (1 + argc)) && (arg_[argc] == osc::type::kFloat)) {
         osc_pcast32.i = static_cast<int32_t>(__builtin_bswap32(*reinterpret_cast<const uint32_t*>((4 * argc) + osc_message_data_)));
         return osc_pcast32.f;
     }
@@ -82,35 +75,28 @@ float OscSimpleMessage::GetFloat(unsigned argc)
     return 0;
 }
 
-int OscSimpleMessage::GetInt(unsigned argc)
-{
-    if ((osc_message_data_length_ >= 4 * (1 + argc)) && (arg_[argc] == osc::type::INT32))
-    {
+int OscSimpleMessage::GetInt(unsigned argc) {
+    if ((osc_message_data_length_ >= 4 * (1 + argc)) && (arg_[argc] == osc::type::kInt32)) {
         return static_cast<int>(__builtin_bswap32(*reinterpret_cast<const uint32_t*>((4 * argc) + osc_message_data_)));
     }
 
     return 0;
 }
 
-const char* OscSimpleMessage::GetString([[maybe_unused]] unsigned argc)
-{
-    if ((arg_[0] == osc::type::STRING) && (osc_message_data_length_ == osc::StringSize(reinterpret_cast<const char*>(osc_message_data_))))
-    {
+const char* OscSimpleMessage::GetString([[maybe_unused]] unsigned argc) {
+    if ((arg_[0] == osc::type::kString) && (osc_message_data_length_ == osc::StringSize(reinterpret_cast<const char*>(osc_message_data_)))) {
         return reinterpret_cast<const char*>(osc_message_data_);
     }
 
     return nullptr;
 }
 
-OSCBlob OscSimpleMessage::GetBlob([[maybe_unused]] unsigned argc)
-{
-    if (arg_[0] == osc::type::BLOB)
-    {
+OSCBlob OscSimpleMessage::GetBlob([[maybe_unused]] unsigned argc) {
+    if (arg_[0] == osc::type::kBlob) {
         auto size = __builtin_bswap32(*reinterpret_cast<const uint32_t*>(osc_message_data_));
         auto* data = osc_message_data_ + 4;
 
-        if ((size + 4) <= osc_message_data_length_)
-        {
+        if ((size + 4) <= osc_message_data_length_) {
             return OSCBlob(data, size);
         }
     }

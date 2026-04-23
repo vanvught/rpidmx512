@@ -105,11 +105,11 @@ int main() // NOLINT
     display.Printf(5, "O : %d", osc_client.GetPortOutgoing());
     display.Printf(6, "I : %d", osc_client.GetPortIncoming());
 
-    display.TextStatus(OscClientMsgConst::START, console::Colours::kConsoleYellow);
+    display.TextStatus(OscClientMsgConst::kStart, console::Colours::kConsoleYellow);
 
     osc_client.Start();
 
-    display.TextStatus(OscClientMsgConst::STARTED, console::Colours::kConsoleGreen);
+    display.TextStatus(OscClientMsgConst::kStarted, console::Colours::kConsoleGreen);
 
     hal::statusled::SetMode(hal::statusled::Mode::NORMAL);
     hal::WatchdogInit();

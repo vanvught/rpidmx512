@@ -2,7 +2,7 @@
  * @file oscsimplesend.cpp
  *
  */
-/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,14 +28,12 @@
 
 #include "oscsimplesend.h"
 #include "oscstring.h"
-#include "network.h"
+#include "network_udp.h"
 #include "firmware/debug/debug_dump.h"
 
 // Support for path only
-OscSimpleSend::OscSimpleSend(int32_t handle, uint32_t ip_address, uint16_t port, const char* path, const char* type)
-{
-    if (type == nullptr)
-    {
+OscSimpleSend::OscSimpleSend(int32_t handle, uint32_t ip_address, uint16_t port, const char* path, const char* type) {
+    if (type == nullptr) {
         const auto kPathLength = osc::StringSize(path);
         const auto kMessageLength = kPathLength + 4U;
 
@@ -47,10 +45,8 @@ OscSimpleSend::OscSimpleSend(int32_t handle, uint32_t ip_address, uint16_t port,
 }
 
 // Support for 's'
-OscSimpleSend::OscSimpleSend(int32_t handle, uint32_t ip_address, uint16_t port, const char* path, const char* type, const char* string)
-{
-    if ((type != nullptr) && (*type == 's'))
-    {
+OscSimpleSend::OscSimpleSend(int32_t handle, uint32_t ip_address, uint16_t port, const char* path, const char* type, const char* string) {
+    if ((type != nullptr) && (*type == 's')) {
         const auto kPathLength = osc::StringSize(path);
         const auto kMessageLength = kPathLength + 4U + osc::StringSize(string);
 
@@ -68,10 +64,8 @@ OscSimpleSend::OscSimpleSend(int32_t handle, uint32_t ip_address, uint16_t port,
 }
 
 // Support for type 'i'
-OscSimpleSend::OscSimpleSend(int32_t handle, uint32_t ip_address, uint16_t port, const char* path, const char* type, int value)
-{
-    if ((type != nullptr) && (*type == 'i'))
-    {
+OscSimpleSend::OscSimpleSend(int32_t handle, uint32_t ip_address, uint16_t port, const char* path, const char* type, int value) {
+    if ((type != nullptr) && (*type == 'i')) {
         const auto kPathLength = osc::StringSize(path);
         const auto kMessageLength = kPathLength + 4U + 4U;
 
@@ -86,10 +80,8 @@ OscSimpleSend::OscSimpleSend(int32_t handle, uint32_t ip_address, uint16_t port,
 }
 
 // Support for type 'f'
-OscSimpleSend::OscSimpleSend(int32_t handle, uint32_t ip_address, uint16_t port, const char* path, const char* type, float value)
-{
-    if ((type != nullptr) && (*type == 'f'))
-    {
+OscSimpleSend::OscSimpleSend(int32_t handle, uint32_t ip_address, uint16_t port, const char* path, const char* type, float value) {
+    if ((type != nullptr) && (*type == 'f')) {
         const auto kPathLength = osc::StringSize(path);
         const auto kMessageLength = kPathLength + 4U + 4U;
 
@@ -97,8 +89,7 @@ OscSimpleSend::OscSimpleSend(int32_t handle, uint32_t ip_address, uint16_t port,
 
         UpdateMessage(path, kPathLength, 'f');
 
-        union pcast32
-        {
+        union pcast32 {
             uint32_t u;
             float f;
         } osc_pcast32;
@@ -111,8 +102,7 @@ OscSimpleSend::OscSimpleSend(int32_t handle, uint32_t ip_address, uint16_t port,
     }
 }
 
-void OscSimpleSend::UpdateMessage(const char* path, uint32_t path_length, char type)
-{
+void OscSimpleSend::UpdateMessage(const char* path, uint32_t path_length, char type) {
     memset(s_message + path_length - 4, 0, 4);
     strncpy(reinterpret_cast<char*>(s_message), path, sizeof(s_message));
 
@@ -124,8 +114,7 @@ void OscSimpleSend::UpdateMessage(const char* path, uint32_t path_length, char t
     s_message[path_length++] = '\0';
 }
 
-void OscSimpleSend::Send(uint32_t message_length, int32_t handle, uint32_t ip_address, uint16_t port)
-{
+void OscSimpleSend::Send(uint32_t message_length, int32_t handle, uint32_t ip_address, uint16_t port) {
     debug::Dump(s_message, message_length);
 
     network::udp::Send(handle, s_message, message_length, ip_address, port);

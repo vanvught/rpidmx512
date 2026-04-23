@@ -31,23 +31,20 @@
 
 #include "apps/mdns.h"
 #include "hal_statusled.h"
-#include "network.h"
+#include "network_udp.h"
 #include "dmxnode.h"
 #include "dmxnode_outputtype.h"
 #include "configurationstore.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
-namespace osc::server
-{
-struct DefaultPort
-{
+namespace osc::server {
+struct DefaultPort {
     static constexpr uint16_t kIncoming = 8000;
     static constexpr uint16_t kOutgoing = 9000;
 };
 } // namespace osc::server
 
-class OscServerHandler
-{
+class OscServerHandler {
    public:
     virtual ~OscServerHandler() {}
     virtual void Blackout() = 0;
@@ -55,8 +52,7 @@ class OscServerHandler
     virtual void Info(int32_t handle, uint32_t remote_ip, uint16_t port_outgoing) = 0;
 };
 
-class OscServer
-{
+class OscServer {
    public:
     OscServer();
 
@@ -65,8 +61,7 @@ class OscServer
 
     ~OscServer() = default;
 
-    void Start()
-    {
+    void Start() {
         DEBUG_ENTRY();
 
         assert(handle_ == -1);
@@ -80,12 +75,10 @@ class OscServer
         DEBUG_EXIT();
     }
 
-    void Stop()
-    {
+    void Stop() {
         DEBUG_ENTRY();
 
-        if (dmxnode_output_type_ != nullptr)
-        {
+        if (dmxnode_output_type_ != nullptr) {
             dmxnode_output_type_->Stop(0);
         }
 
@@ -98,8 +91,7 @@ class OscServer
         DEBUG_EXIT();
     }
 
-    void Print()
-    {
+    void Print() {
         puts("OSC Server");
         printf(" Incoming Port        : %d\n", port_incoming_);
         printf(" Outgoing Port        : %d\n", port_outgoing_);
@@ -110,40 +102,30 @@ class OscServer
 
     void Input(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port);
 
-    void SetOutput(DmxNodeOutputType* dmx_node_output_type)
-    {
+    void SetOutput(DmxNodeOutputType* dmx_node_output_type) {
         assert(dmx_node_output_type != nullptr);
         dmxnode_output_type_ = dmx_node_output_type;
     }
 
-    void SetOscServerHandler(OscServerHandler* osc_server_handler)
-    {
+    void SetOscServerHandler(OscServerHandler* osc_server_handler) {
         assert(osc_server_handler != nullptr);
         handler_ = osc_server_handler;
     }
 
-    void SetPortIncoming(uint16_t port_incoming)
-    {
-        if (port_incoming > 1023)
-        {
+    void SetPortIncoming(uint16_t port_incoming) {
+        if (port_incoming > 1023) {
             port_incoming_ = port_incoming;
-        }
-        else
-        {
+        } else {
             port_incoming_ = osc::server::DefaultPort::kIncoming;
         }
     }
 
     uint16_t GetPortIncoming() const { return port_incoming_; }
 
-    void SetPortOutgoing(uint16_t port_outgoing)
-    {
-        if (port_outgoing > 1023)
-        {
+    void SetPortOutgoing(uint16_t port_outgoing) {
+        if (port_outgoing > 1023) {
             port_outgoing_ = port_outgoing;
-        }
-        else
-        {
+        } else {
             port_outgoing_ = osc::server::DefaultPort::kOutgoing;
         }
     }
@@ -166,8 +148,7 @@ class OscServer
     void SetEnableNoChangeUpdate(bool enable_no_change_update) { enable_no_change_update_ = enable_no_change_update; }
     bool GetEnableNoChangeUpdate() { return enable_no_change_update_; }
 
-    static OscServer& Instance()
-    {
+    static OscServer& Instance() {
         assert(s_this != nullptr); // Ensure that s_this is valid
         return *s_this;
     }
@@ -184,10 +165,7 @@ class OscServer
      * @param from_ip IP address of the sender.
      * @param from_port Port number of the sender.
      */
-    void static StaticCallbackFunction(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port)
-    {
-        s_this->Input(buffer, size, from_ip, from_port);
-    }
+    void static StaticCallbackFunction(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port) { s_this->Input(buffer, size, from_ip, from_port); }
 
    private:
     uint16_t port_incoming_{osc::server::DefaultPort::kIncoming};
@@ -217,4 +195,4 @@ class OscServer
     static inline OscServer* s_this;
 };
 
-#endif  // OSCSERVER_H_
+#endif // OSCSERVER_H_

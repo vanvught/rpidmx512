@@ -51,7 +51,7 @@ inline constexpr uint32_t kMaxFilesEntries = 10;
 class ShowFileOSC
 {
    public:
-    explicit ShowFileOSC(uint16_t port_incoming = osc::port::DEFAULT_INCOMING, uint16_t port_outgoing = osc::port::DEFAULT_OUTGOING)
+    explicit ShowFileOSC(uint16_t port_incoming = osc::port::kDefaultIncoming, uint16_t port_outgoing = osc::port::kDefaultOutgoing)
         : port_outgoing_(port_outgoing)
     {
         DEBUG_ENTRY();
@@ -114,7 +114,7 @@ class ShowFileOSC
         }
         else
         {
-            port_incoming_ = osc::port::DEFAULT_INCOMING;
+            port_incoming_ = osc::port::kDefaultIncoming;
         }
 
         handle_ = network::udp::Begin(port_incoming_, StaticCallbackFunction);
@@ -131,7 +131,7 @@ class ShowFileOSC
         }
         else
         {
-            port_outgoing_ = osc::port::DEFAULT_OUTGOING;
+            port_outgoing_ = osc::port::kDefaultOutgoing;
         }
     }
 
@@ -148,8 +148,8 @@ class ShowFileOSC
     }
 
    private:
-    uint16_t port_incoming_{osc::port::DEFAULT_INCOMING};
-    uint16_t port_outgoing_{osc::port::DEFAULT_OUTGOING};
+    uint16_t port_incoming_{osc::port::kDefaultIncoming};
+    uint16_t port_outgoing_{osc::port::kDefaultOutgoing};
     int32_t handle_{-1};
     const uint8_t* buffer_{nullptr};
     uint32_t remote_ip_{0};

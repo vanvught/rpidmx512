@@ -2,7 +2,7 @@
  * @file json_config_oscclient.cpp
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,35 +36,30 @@
 
 using common::store::osc::client::Flags;
 
-namespace json::config
-{
-uint32_t GetOscClient(char* buffer, uint32_t length)
-{
+namespace json::config {
+uint32_t GetOscClient(char* buffer, uint32_t length) {
     auto& oscclient = OscClient::Instance();
     const auto kFlags = ConfigStore::Instance().OscClientGet(&common::store::OscClient::flags);
 
-	return json::helpers::Serialize(buffer, length, [&](JsonDoc& doc) {
-		char ip[net::kIpBufferSize];	
-	    doc[OscClientParamsConst::kServerIp.name] = net::FormatIp(oscclient.GetServerIP(), ip);
-	    doc[OscParamsConst::kIncomingPort.name] = oscclient.GetPortIncoming();
-	    doc[OscParamsConst::kOutgoingPort.name] = oscclient.GetPortOutgoing();
-	    doc[OscClientParamsConst::kPingDisable.name] = common::IsFlagSet(kFlags, Flags::Flag::kPingDisable);
-	    doc[OscClientParamsConst::kPingDelay.name] = oscclient.GetPingDelaySeconds();
-	
-	    for (uint32_t i = 0; i < common::store::osc::client::kCmdCount; i++)
-	    {
-	        doc[OscClientParamsConst::kCmd[i].name] = oscclient.GetCmd(i);
-	    }
-	
-	    for (uint32_t i = 0; i < common::store::osc::client::kLedCount; i++)
-	    {
-	        doc[OscClientParamsConst::kLed[i].name] = oscclient.GetLed(i);
-	    }
+    return json::helpers::Serialize(buffer, length, [&](JsonDoc& doc) {
+        char ip[net::kIpBufferSize];
+        doc[OscClientParamsConst::kServerIp.name] = net::FormatIp(oscclient.GetServerIP(), ip);
+        doc[OscParamsConst::kIncomingPort.name] = oscclient.GetPortIncoming();
+        doc[OscParamsConst::kOutgoingPort.name] = oscclient.GetPortOutgoing();
+        doc[OscClientParamsConst::kPingDisable.name] = common::IsFlagSet(kFlags, Flags::Flag::kPingDisable);
+        doc[OscClientParamsConst::kPingDelay.name] = oscclient.GetPingDelaySeconds();
+
+        for (uint32_t i = 0; i < common::store::osc::client::kCmdCount; i++) {
+            doc[OscClientParamsConst::kCmd[i].name] = oscclient.GetCmd(i);
+        }
+
+        for (uint32_t i = 0; i < common::store::osc::client::kLedCount; i++) {
+            doc[OscClientParamsConst::kLed[i].name] = oscclient.GetLed(i);
+        }
     });
 }
 
-void SetOscClient(const char* buffer, uint32_t buffer_size)
-{
+void SetOscClient(const char* buffer, uint32_t buffer_size) {
     ::json::OscClientParams oscclient_params;
     oscclient_params.Store(buffer, buffer_size);
     oscclient_params.Set();

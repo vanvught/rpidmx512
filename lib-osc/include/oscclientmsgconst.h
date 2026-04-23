@@ -2,7 +2,7 @@
  * @file oscclientmsgconst.h
  *
  */
-/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,9 +28,9 @@
 
 struct OscClientMsgConst
 {
-    static inline const char PARAMS[] = "Setting Client parameters";
-    static inline const char START[] = "Starting the Client";
-    static inline const char STARTED[] = "Client started";
+    static inline const char kParams[] = "Setting Client parameters";
+    static inline const char kStart[] = "Starting the Client";
+    static inline const char kStarted[] = "Client started";
 };
 
 #endif  // OSCCLIENTMSGCONST_H_

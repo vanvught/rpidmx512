@@ -2,7 +2,7 @@
  * @file oscclientled.h
  *
  */
-/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,12 +28,11 @@
 
 #include <cstdint>
 
-class OscClientLed
-{
+class OscClientLed {
    public:
     virtual ~OscClientLed() {}
 
     virtual void SetLed(uint32_t led, bool on) = 0;
 };
 
-#endif  // OSCCLIENTLED_H_
+#endif // OSCCLIENTLED_H_
