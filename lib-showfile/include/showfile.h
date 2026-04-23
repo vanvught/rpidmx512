@@ -53,7 +53,7 @@ class ShowFile final : public ShowFileFormat
 {
    public:
 #if defined(CONFIG_SHOWFILE_ENABLE_OSC)
-    explicit ShowFile(uint16_t port_incoming = osc::port::DEFAULT_INCOMING, uint16_t port_outgoing = osc::port::DEFAULT_OUTGOING);
+    explicit ShowFile(uint16_t port_incoming = osc::port::kDefaultIncoming, uint16_t port_outgoing = osc::port::kDefaultOutgoing);
 #else
     ShowFile();
 #endif
