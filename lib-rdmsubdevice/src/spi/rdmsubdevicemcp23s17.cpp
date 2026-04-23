@@ -33,8 +33,8 @@
 static constexpr uint32_t DMX_FOOTPRINT = 16;
 static RDMPersonality *s_RDMPersonalities[] = {new RDMPersonality("Digital output 16-lines", DMX_FOOTPRINT)};
 
-RDMSubDeviceMCP23S17::RDMSubDeviceMCP23S17(uint16_t nDmxStartAddress, char nChipSselect, uint8_t nSlaveAddress, uint32_t nSpiSpeed) :
-	RDMSubDevice("mcp23s17", nDmxStartAddress), m_MCP23S17(nChipSselect, nSpiSpeed, nSlaveAddress)
+RDMSubDeviceMCP23S17::RDMSubDeviceMCP23S17(uint16_t dmx_start_address, char nChipSselect, uint8_t nSlaveAddress, uint32_t nSpiSpeed) :
+	RDMSubDevice("mcp23s17", dmx_start_address), m_MCP23S17(nChipSselect, nSpiSpeed, nSlaveAddress)
 {
 	SetDmxFootprint(DMX_FOOTPRINT);
 	SetPersonalities(s_RDMPersonalities, 1);
@@ -42,9 +42,9 @@ RDMSubDeviceMCP23S17::RDMSubDeviceMCP23S17(uint16_t nDmxStartAddress, char nChip
 
 void RDMSubDeviceMCP23S17::Data(const uint8_t *pData, uint32_t nLength) {
 	uint16_t nData = 0;
-	const uint32_t nDmxStartAddress = GetDmxStartAddress();
+	const uint32_t dmx_start_address = GetDmxStartAddress();
 
-	for (uint32_t i = (nDmxStartAddress - 1), j = 0; (i < nLength) && (j < DMX_FOOTPRINT); i++, j++) {
+	for (uint32_t i = (dmx_start_address - 1), j = 0; (i < nLength) && (j < DMX_FOOTPRINT); i++, j++) {
 		if ((pData[i] & 0x80) != 0) {	// 0-127 is off, 128-255 is on
 			nData = static_cast<uint8_t>(nData | (1U << i));
 		}

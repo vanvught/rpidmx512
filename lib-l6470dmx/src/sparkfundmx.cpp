@@ -409,16 +409,16 @@ void SparkFunDmx::Sync()
     // TODO (a) Implement Sync
 }
 
-bool SparkFunDmx::SetDmxStartAddress(uint16_t nDmxStartAddress)
+bool SparkFunDmx::SetDmxStartAddress(uint16_t dmx_start_address)
 {
     DEBUG_ENTRY();;
 
-    if (nDmxStartAddress == 0)
+    if (dmx_start_address == 0)
     {
         return false;
     }
 
-    if (nDmxStartAddress == dmx_start_address_)
+    if (dmx_start_address == dmx_start_address_)
     {
         return true;
     }
@@ -428,7 +428,7 @@ bool SparkFunDmx::SetDmxStartAddress(uint16_t nDmxStartAddress)
         if (l6470dmx_modes_[i] != nullptr)
         {
             const auto kCurrentDmxStartAddress = l6470dmx_modes_[i]->GetDmxStartAddress();
-            const auto kNewDmxStartAddress = static_cast<uint16_t>((kCurrentDmxStartAddress - dmx_start_address_) + nDmxStartAddress);
+            const auto kNewDmxStartAddress = static_cast<uint16_t>((kCurrentDmxStartAddress - dmx_start_address_) + dmx_start_address);
 #ifndef NDEBUG
             printf("\tMotor=%d, Current DMX Start Address=%d, New DMX Start Address=%d\n", i, kCurrentDmxStartAddress, kNewDmxStartAddress);
 #endif
@@ -437,7 +437,7 @@ bool SparkFunDmx::SetDmxStartAddress(uint16_t nDmxStartAddress)
         }
     }
 
-    dmx_start_address_ = nDmxStartAddress;
+    dmx_start_address_ = dmx_start_address;
 
     DEBUG_EXIT();;
     return true;

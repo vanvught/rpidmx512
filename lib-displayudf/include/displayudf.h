@@ -146,9 +146,9 @@ class DisplayUdf final : public Display
 #if defined(RDM_RESPONDER)
     void ShowDmxStartAddress()
     {
-        const auto nDmxStartAddress = RDMDeviceResponder::Get()->GetDmxStartAddress();
+        const auto dmx_start_address = RDMDeviceResponder::Get()->GetDmxStartAddress();
         const auto nDmxFootprint = RDMDeviceResponder::Get()->GetDmxFootPrint();
-        Printf(labels_[static_cast<uint32_t>(displayudf::Labels::kDmxStartAddress)], "DMX S:%3u F:%3u", nDmxStartAddress, nDmxFootprint);
+        Printf(labels_[static_cast<uint32_t>(displayudf::Labels::kDmxStartAddress)], "DMX S:%3u F:%3u", dmx_start_address, nDmxFootprint);
     }
 #endif
 

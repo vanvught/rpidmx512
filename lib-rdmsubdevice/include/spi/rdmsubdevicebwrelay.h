@@ -35,7 +35,7 @@
 class RDMSubDeviceBwRelay : public RDMSubDevice
 {
    public:
-    explicit RDMSubDeviceBwRelay(uint16_t nDmxStartAddress = 1, char nChipSselect = 0, uint8_t nSlaveAddress = bw::relay::address,
+    explicit RDMSubDeviceBwRelay(uint16_t dmx_start_address = 1, char nChipSselect = 0, uint8_t nSlaveAddress = bw::relay::address,
                         uint32_t nSpiSpeed = bw::spi::speed::default_hz);
 
     bool Initialize() override

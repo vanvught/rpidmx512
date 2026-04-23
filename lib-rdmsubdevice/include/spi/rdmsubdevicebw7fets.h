@@ -35,7 +35,7 @@
 class RDMSubDeviceBw7fets : public RDMSubDevice
 {
    public:
-    explicit RDMSubDeviceBw7fets(uint16_t nDmxStartAddress = 1, char nChipSselect = 0, uint8_t nSlaveAddress = bw::fets::address,
+    explicit RDMSubDeviceBw7fets(uint16_t dmx_start_address = 1, char nChipSselect = 0, uint8_t nSlaveAddress = bw::fets::address,
                                  uint32_t nSpiSpeed = bw::spi::speed::default_hz);
 
     bool Initialize() override

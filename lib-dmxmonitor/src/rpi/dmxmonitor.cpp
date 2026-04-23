@@ -46,12 +46,12 @@ DmxMonitor::DmxMonitor() {
 	memset(data_, 0, sizeof(data_) / sizeof(data_[0]));
 }
 
-bool DmxMonitor::SetDmxStartAddress(uint16_t nDmxStartAddress)  {
-	if (nDmxStartAddress != dmxnode::kStartAddressDefault) {
+bool DmxMonitor::SetDmxStartAddress(uint16_t dmx_start_address)  {
+	if (dmx_start_address != dmxnode::kStartAddressDefault) {
 		return false;
 	}
 
-	dmx_start_address_ = nDmxStartAddress;
+	dmx_start_address_ = dmx_start_address;
 	return true;
 }
 

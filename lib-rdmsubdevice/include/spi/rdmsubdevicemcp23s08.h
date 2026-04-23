@@ -35,7 +35,7 @@
 class RDMSubDeviceMCP23S08 : public RDMSubDevice
 {
    public:
-    explicit RDMSubDeviceMCP23S08(uint16_t nDmxStartAddress = 1, char nChipSselect = 0, uint8_t nSlaveAddress = 0, uint32_t nSpiSpeed = 0);
+    explicit RDMSubDeviceMCP23S08(uint16_t dmx_start_address = 1, char nChipSselect = 0, uint8_t nSlaveAddress = 0, uint32_t nSpiSpeed = 0);
 
     bool Initialize() override
     {

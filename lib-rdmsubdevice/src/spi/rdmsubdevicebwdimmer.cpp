@@ -33,18 +33,18 @@
 static constexpr uint32_t DMX_FOOTPRINT = 1;
 static RDMPersonality *s_RDMPersonalities[] = {new RDMPersonality("Dimmer", DMX_FOOTPRINT)};
 
-RDMSubDeviceBwDimmer::RDMSubDeviceBwDimmer(uint16_t nDmxStartAddress, char nChipSselect, uint8_t nSlaveAddress, [[maybe_unused]] uint32_t nSpiSpeed) :
-	RDMSubDevice("bw_spi_dimmer", nDmxStartAddress), m_BwSpiDimmer(nChipSselect, nSlaveAddress)
+RDMSubDeviceBwDimmer::RDMSubDeviceBwDimmer(uint16_t dmx_start_address, char nChipSselect, uint8_t nSlaveAddress, [[maybe_unused]] uint32_t nSpiSpeed) :
+	RDMSubDevice("bw_spi_dimmer", dmx_start_address), m_BwSpiDimmer(nChipSselect, nSlaveAddress)
 {
 	SetDmxFootprint(DMX_FOOTPRINT);
 	SetPersonalities(s_RDMPersonalities, 1);
 }
 
 void RDMSubDeviceBwDimmer::Data(const uint8_t* pData, uint32_t nLength) {
-	const uint16_t nDmxStartAddress = GetDmxStartAddress();
+	const uint16_t dmx_start_address = GetDmxStartAddress();
 
-	if (nDmxStartAddress <= nLength) {
-		const uint8_t nData = pData[nDmxStartAddress - 1];
+	if (dmx_start_address <= nLength) {
+		const uint8_t nData = pData[dmx_start_address - 1];
 		if (m_nData != nData) {
 			m_BwSpiDimmer.Output(nData);
 			m_nData = nData;

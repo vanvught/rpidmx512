@@ -52,7 +52,7 @@ class SparkFunDmx
     uint32_t GetMotorsConnected() { return AutoDriver::getNumBoards(); }
 
     // RDM
-    bool SetDmxStartAddress(uint16_t nDmxStartAddress);
+    bool SetDmxStartAddress(uint16_t dmx_start_address);
     uint16_t GetDmxStartAddress() { return dmx_start_address_; }
 
     uint16_t GetDmxFootprint() { return dmx_footprint_; }

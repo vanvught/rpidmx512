@@ -1065,15 +1065,15 @@ void RDMHandler::SetDmxStartAddress(bool is_broadcast, uint16_t sub_device)
         return;
     }
 
-    const auto nDmxStartAddress = static_cast<uint16_t>((pRdmDataIn->param_data[0] << 8) + pRdmDataIn->param_data[1]);
+    const auto dmx_start_address = static_cast<uint16_t>((pRdmDataIn->param_data[0] << 8) + pRdmDataIn->param_data[1]);
 
-    if ((nDmxStartAddress == 0) || (nDmxStartAddress > dmxnode::kUniverseSize))
+    if ((dmx_start_address == 0) || (dmx_start_address > dmxnode::kUniverseSize))
     {
         RespondMessageNack(E120_NR_DATA_OUT_OF_RANGE);
         return;
     }
 
-    RDMDeviceResponder::Get()->SetDmxStartAddress(sub_device, nDmxStartAddress);
+    RDMDeviceResponder::Get()->SetDmxStartAddress(sub_device, dmx_start_address);
 
     if (is_broadcast)
     {
