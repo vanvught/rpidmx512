@@ -12,7 +12,13 @@
 #if !defined (CONFIG_HTTP_HTML_NO_PIXEL) && (defined(OUTPUT_DMX_PIXEL) || defined(OUTPUT_DMX_PIXEL_MULTI))
 #include "status_pixel.js.h"
 #endif // !defined (CONFIG_HTTP_HTML_NO_PIXEL) && (defined(OUTPUT_DMX_PIXEL) || defined(OUTPUT_DMX_PIXEL_MULTI))
+#if defined (NODE_LTC_SMPTE)
+#include "config_etc.js.h"
+#endif // (NODE_LTC_SMPTE)
 #include "styles.css.h"
+#if defined (NODE_OSC_SERVER)
+#include "config_oscserver.js.h"
+#endif // (NODE_OSC_SERVER)
 #include "index.js.h"
 #include "date.js.h"
 #if !defined (CONFIG_HTTP_HTML_NO_PIXEL) && (defined(OUTPUT_DMX_PIXEL) || defined(OUTPUT_DMX_PIXEL_MULTI))
@@ -33,6 +39,9 @@
 #endif // !defined (CONFIG_HTTP_HTML_NO_DMX) && defined(OUTPUT_DMX_MONITOR)
 #include "index.html.h"
 #include "layout.js.h"
+#if !defined (CONFIG_HTTP_HTML_NO_DMX_PCA9685) && defined(OUTPUT_DMX_PCA9685)
+#include "config_dmxpca9685.js.h"
+#endif // !defined (CONFIG_HTTP_HTML_NO_DMX_PCA9685) && defined(OUTPUT_DMX_PCA9685)
 #if defined (DISPLAY_UDF)
 #include "config_display.js.h"
 #endif // (DISPLAY_UDF)
@@ -51,6 +60,9 @@
 #if !defined (CONFIG_HTTP_HTML_NO_DMX) && (defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI))
 #include "config_dmxsend.js.h"
 #endif // !defined (CONFIG_HTTP_HTML_NO_DMX) && (defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI))
+#if defined (NODE_LTC_SMPTE)
+#include "config_tcnet.js.h"
+#endif // (NODE_LTC_SMPTE)
 #include "common.js.h"
 #if defined(NODE_E131) || defined(NODE_E131_MULTI) || (ARTNET_VERSION == 4)
 #include "config_e131.js.h"
@@ -75,7 +87,13 @@ inline constexpr struct FilesContent kHttpContent[] = {
 #if !defined (CONFIG_HTTP_HTML_NO_PIXEL) && (defined(OUTPUT_DMX_PIXEL) || defined(OUTPUT_DMX_PIXEL_MULTI))
 	{ 1436064737,"status_pixel.js", status_pixel_js, 570, static_cast<http::ContentTypes>(2) },
 #endif // !defined (CONFIG_HTTP_HTML_NO_PIXEL) && (defined(OUTPUT_DMX_PIXEL) || defined(OUTPUT_DMX_PIXEL_MULTI))
+#if defined (NODE_LTC_SMPTE)
+	{ 109007079,"config_etc.js", config_etc_js, 1789, static_cast<http::ContentTypes>(2) },
+#endif // (NODE_LTC_SMPTE)
 	{ 2557875310,"styles.css", styles_css, 2170, static_cast<http::ContentTypes>(1) },
+#if defined (NODE_OSC_SERVER)
+	{ 3728864745,"config_oscserver.js", config_oscserver_js, 1395, static_cast<http::ContentTypes>(2) },
+#endif // (NODE_OSC_SERVER)
 	{ 247271700,"index.js", index_js, 5044, static_cast<http::ContentTypes>(2) },
 	{ 1602327546,"date.js", date_js, 716, static_cast<http::ContentTypes>(2) },
 #if !defined (CONFIG_HTTP_HTML_NO_PIXEL) && (defined(OUTPUT_DMX_PIXEL) || defined(OUTPUT_DMX_PIXEL_MULTI))
@@ -96,6 +114,9 @@ inline constexpr struct FilesContent kHttpContent[] = {
 #endif // !defined (CONFIG_HTTP_HTML_NO_DMX) && defined(OUTPUT_DMX_MONITOR)
 	{ 4024653090,"index.html", index_html, 1873, static_cast<http::ContentTypes>(0) },
 	{ 2226674728,"layout.js", layout_js, 1374, static_cast<http::ContentTypes>(2) },
+#if !defined (CONFIG_HTTP_HTML_NO_DMX_PCA9685) && defined(OUTPUT_DMX_PCA9685)
+	{ 1666579856,"config_dmxpca9685.js", config_dmxpca9685_js, 2758, static_cast<http::ContentTypes>(2) },
+#endif // !defined (CONFIG_HTTP_HTML_NO_DMX_PCA9685) && defined(OUTPUT_DMX_PCA9685)
 #if defined (DISPLAY_UDF)
 	{ 2902032383,"config_display.js", config_display_js, 3757, static_cast<http::ContentTypes>(2) },
 #endif // (DISPLAY_UDF)
@@ -114,6 +135,9 @@ inline constexpr struct FilesContent kHttpContent[] = {
 #if !defined (CONFIG_HTTP_HTML_NO_DMX) && (defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI))
 	{ 381868932,"config_dmxsend.js", config_dmxsend_js, 1617, static_cast<http::ContentTypes>(2) },
 #endif // !defined (CONFIG_HTTP_HTML_NO_DMX) && (defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI))
+#if defined (NODE_LTC_SMPTE)
+	{ 3844231377,"config_tcnet.js", config_tcnet_js, 1634, static_cast<http::ContentTypes>(2) },
+#endif // (NODE_LTC_SMPTE)
 	{ 3116920429,"common.js", common_js, 2411, static_cast<http::ContentTypes>(2) },
 #if defined(NODE_E131) || defined(NODE_E131_MULTI) || (ARTNET_VERSION == 4)
 	{ 4064453935,"config_e131.js", config_e131_js, 1077, static_cast<http::ContentTypes>(2) },

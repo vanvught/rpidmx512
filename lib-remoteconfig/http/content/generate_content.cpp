@@ -57,11 +57,17 @@ static constexpr char kContentHeader[] =
 static constexpr char kHaveDmxNodeBegin[] = "#if defined (DMXNODE_PORTS)\n";
 static constexpr char kHaveDmxNodeEnd[] = "#endif // (DMXNODE_PORTS)\n";
 
-static constexpr char kHaveArtNetBegin[] = "#if defined(NODE_ARTNET) || defined(NODE_ARTNET_MULTI)\n";
-static constexpr char kHaveArtNetEnd[] = "#endif // defined(NODE_ARTNET) || defined(NODE_ARTNET_MULTI)\n";
+static constexpr char kHaveNodeArtNetBegin[] = "#if defined(NODE_ARTNET) || defined(NODE_ARTNET_MULTI)\n";
+static constexpr char kHaveNodeArtNetEnd[] = "#endif // defined(NODE_ARTNET) || defined(NODE_ARTNET_MULTI)\n";
 
-static constexpr char kHaveE131Begin[] = "#if defined(NODE_E131) || defined(NODE_E131_MULTI) || (ARTNET_VERSION == 4)\n";
-static constexpr char kHaveE131End[] = "#endif // defined(NODE_E131) || defined(NODE_E131_MULTI) || (ARTNET_VERSION == 4)\n";
+static constexpr char kHaveNodeE131Begin[] = "#if defined(NODE_E131) || defined(NODE_E131_MULTI) || (ARTNET_VERSION == 4)\n";
+static constexpr char kHaveNodeE131End[] = "#endif // defined(NODE_E131) || defined(NODE_E131_MULTI) || (ARTNET_VERSION == 4)\n";
+
+static constexpr char kHaveNodeLtcSmpteBegin[] = "#if defined (NODE_LTC_SMPTE)\n";
+static constexpr char kHaveNodeltcSmpteEnd[] = "#endif // (NODE_LTC_SMPTE)\n";
+
+static constexpr char kHaveNodeOscServerBegin[] = "#if defined (NODE_OSC_SERVER)\n";
+static constexpr char kHaveNodeOscServerEnd[] = "#endif // (NODE_OSC_SERVER)\n";
 
 // Node Output
 static constexpr char kHaveDmxSendBegin[] = "#if !defined (CONFIG_HTTP_HTML_NO_DMX) && (defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI))\n";
@@ -75,6 +81,9 @@ static constexpr char kHaveRdmEnd[] = "#endif // !defined (CONFIG_HTTP_HTML_NO_R
 
 static constexpr char kHavePixelBegin[] = "#if !defined (CONFIG_HTTP_HTML_NO_PIXEL) && (defined(OUTPUT_DMX_PIXEL) || defined(OUTPUT_DMX_PIXEL_MULTI))\n";
 static constexpr char kHavePixelEnd[] = "#endif // !defined (CONFIG_HTTP_HTML_NO_PIXEL) && (defined(OUTPUT_DMX_PIXEL) || defined(OUTPUT_DMX_PIXEL_MULTI))\n";
+
+static constexpr char kHaveDmxPca9585Begin[] = "#if !defined (CONFIG_HTTP_HTML_NO_DMX_PCA9685) && defined(OUTPUT_DMX_PCA9685)\n";
+static constexpr char kHaveDmxPca9585End[] = "#endif // !defined (CONFIG_HTTP_HTML_NO_DMX_PCA9685) && defined(OUTPUT_DMX_PCA9685)\n";
 
 // Others
 static constexpr char kHaveDisplayUdfBegin[] = "#if defined (DISPLAY_UDF)\n";
@@ -96,9 +105,23 @@ struct FeatureGuard {
 };
 
 static constexpr FeatureGuard kFeatureGuards[] = {
-    {"dmxnode", kHaveDmxNodeBegin, kHaveDmxNodeEnd},          {"artnet", kHaveArtNetBegin, kHaveArtNetEnd},       {"e131", kHaveE131Begin, kHaveE131End},       {"pixel", kHavePixelBegin, kHavePixelEnd},
-    {"dmxmonitor", kHaveDmxMonitorBegin, kHaveDmxMonitorEnd}, {"dmxsend", kHaveDmxSendBegin, kHaveDmxSendEnd},    {"dmx.", kHaveDmxSendBegin, kHaveDmxSendEnd}, {"rdm", kHaveRdmBegin, kHaveRdmEnd},
-    {"display", kHaveDisplayUdfBegin, kHaveDisplayUdfEnd},    {"showfile", kHaveShowfileBegin, kHaveShowfileEnd}, {"time", kHaveTimeBegin, kHaveTimeEnd},       {"rtc", kHaveRtcBegin, kHaveRtcEnd}};
+    {"dmxnode", kHaveDmxNodeBegin, kHaveDmxNodeEnd},          
+	{"artnet", kHaveNodeArtNetBegin, kHaveNodeArtNetEnd},       
+	{"e131", kHaveNodeE131Begin, kHaveNodeE131End},   
+	{"ltc", kHaveNodeLtcSmpteBegin, kHaveNodeltcSmpteEnd},
+	{"oscserver", kHaveNodeOscServerBegin, kHaveNodeOscServerEnd},
+	{"tcnet", kHaveNodeLtcSmpteBegin, kHaveNodeltcSmpteEnd},       
+	{"etc", kHaveNodeLtcSmpteBegin, kHaveNodeltcSmpteEnd},   
+	{"pixel", kHavePixelBegin, kHavePixelEnd},
+    {"dmxmonitor", kHaveDmxMonitorBegin, kHaveDmxMonitorEnd}, 
+	{"dmxsend", kHaveDmxSendBegin, kHaveDmxSendEnd}, 
+	{"dmxpca9685", kHaveDmxPca9585Begin, kHaveDmxPca9585End},    
+	{"dmx.", kHaveDmxSendBegin, kHaveDmxSendEnd}, 
+	{"rdm", kHaveRdmBegin, kHaveRdmEnd},
+    {"display", kHaveDisplayUdfBegin, kHaveDisplayUdfEnd},    
+	{"showfile", kHaveShowfileBegin, kHaveShowfileEnd}, 
+	{"time", kHaveTimeBegin, kHaveTimeEnd},       
+	{"rtc", kHaveRtcBegin, kHaveRtcEnd}};
 
 static FILE* file_content;
 static FILE* file_includes;
