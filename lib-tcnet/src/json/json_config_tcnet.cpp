@@ -2,7 +2,7 @@
  * @file json_config_tcnet.cpp
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,23 +31,20 @@
 #include "tcnet.h"
 #include "common/utils/utils_enum.h"
 
-namespace json::config
-{
-uint32_t GetTcNet(char* buffer, uint32_t length)
-{
+namespace json::config {
+uint32_t GetTcNet(char* buffer, uint32_t length) {
     auto& tcnet = *TCNet::Get();
     char layer[2] = {tcnet::GetLayer(tcnet.GetLayer()), 0};
 
-	return json::helpers::Serialize(buffer, length, [&](JsonDoc& doc) {
-	    doc[TcNetParamsConst::kNodeName.name] = tcnet.GetNodeName();
-	    doc[TcNetParamsConst::kLayer.name] = layer;
-	    doc[TcNetParamsConst::kTimecodeType.name] = tcnet::kFps[common::ToValue(tcnet.GetTimeCodeType())];
-	    doc[TcNetParamsConst::kUseTimecode.name] = tcnet.GetUseTimeCode();
+    return json::helpers::Serialize(buffer, length, [&](JsonDoc& doc) {
+        doc[TcNetParamsConst::kNodeName.name] = tcnet.GetNodeName();
+        doc[TcNetParamsConst::kLayer.name] = layer;
+        doc[TcNetParamsConst::kTimecodeType.name] = tcnet::kFps[common::ToValue(tcnet.GetTimeCodeType())];
+        doc[TcNetParamsConst::kUseTimecode.name] = tcnet.GetUseTimeCode();
     });
 }
 
-void SetTcNet(const char* buffer, uint32_t buffer_size)
-{
+void SetTcNet(const char* buffer, uint32_t buffer_size) {
     ::json::TcNetParams tcnet_params;
     tcnet_params.Store(buffer, buffer_size);
     tcnet_params.Set();
