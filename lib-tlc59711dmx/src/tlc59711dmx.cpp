@@ -232,11 +232,11 @@ void TLC59711Dmx::Blackout(bool bBlackout) {
 
 // DMX
 
-bool TLC59711Dmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
-	assert((nDmxStartAddress != 0) && (nDmxStartAddress <= (dmxnode::kUniverseSize - dmx_footprint_)));
+bool TLC59711Dmx::SetDmxStartAddress(uint16_t dmx_start_address) {
+	assert((dmx_start_address != 0) && (dmx_start_address <= (dmxnode::kUniverseSize - dmx_footprint_)));
 
-	if ((nDmxStartAddress != 0) && (nDmxStartAddress <= (dmxnode::kUniverseSize - dmx_footprint_))) {
-		dmx_start_address_ = nDmxStartAddress;
+	if ((dmx_start_address != 0) && (dmx_start_address <= (dmxnode::kUniverseSize - dmx_footprint_))) {
+		dmx_start_address_ = dmx_start_address;
 		tlc59711dmx_store::SaveDmxStartAddress(dmx_start_address_);
 		return true;
 	}

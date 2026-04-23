@@ -68,7 +68,7 @@ public:
 	}
 
 public: // RDM
-	bool SetDmxStartAddress(uint16_t nDmxStartAddress) ;
+	bool SetDmxStartAddress(uint16_t dmx_start_address) ;
 
 	uint16_t GetDmxStartAddress()  {
 		return dmx_start_address_;
