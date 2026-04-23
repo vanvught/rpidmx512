@@ -2,7 +2,7 @@
  * @file pca9685.h
  *
  */
-/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2017-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,35 +28,19 @@
 
 #include <cstdint>
 
-namespace pca9685
-{
-static constexpr uint8_t I2C_ADDRESS_DEFAULT = 0x40;
-static constexpr uint8_t I2C_ADDRESS_FIXED = 0x70;
-static constexpr uint8_t I2C_ADDRESSES_MAX = 62;
-static constexpr uint32_t PWM_CHANNELS = 16;
+namespace pca9685 {
+inline constexpr uint8_t kI2CAddressDefault = 0x40;
+inline constexpr uint8_t kI2CAddressFixed = 0x70;
+inline constexpr uint8_t kI2CAddressesMax = 62;
+inline constexpr uint32_t kPwmChannels = 16;
 
-enum class Output
-{
-    kDriverOpendrain,
-    kDriverTotempole
-};
+enum class Output { kDriverOpendrain, kDriverTotempole };
+enum class Invert { kOutputNotInverted, kOutputInverted };
+enum class Och { kOchStop, kOchAck };
 
-enum class Invert
-{
-    kOutputNotInverted,
-    kOutputInverted
-};
-
-enum class Och
-{
-    PCA9685_OCH_STOP,
-    PCA9685_OCH_ACK
-};
-
-struct Frequency
-{
-    static constexpr uint32_t RANGE_MIN = 24;
-    static constexpr uint32_t RANGE_MAX = 1526;
+struct Frequency {
+    static constexpr uint32_t kRangeMin = 24;
+    static constexpr uint32_t kRangeMax = 1526;
 };
 } // namespace pca9685
 
@@ -66,10 +50,9 @@ struct Frequency
 #define PCA9685_VALUE_MIN VALUE(0)
 #define PCA9685_VALUE_MAX VALUE(4096)
 
-class PCA9685
-{
+class PCA9685 {
    public:
-    explicit PCA9685(uint8_t address = pca9685::I2C_ADDRESS_DEFAULT);
+    explicit PCA9685(uint8_t address = pca9685::kI2CAddressDefault);
     ~PCA9685() {};
 
     void SetPreScaller(uint8_t);
@@ -123,4 +106,4 @@ class PCA9685
     uint8_t address_;
 };
 
-#endif  // PCA9685_H_
+#endif // PCA9685_H_

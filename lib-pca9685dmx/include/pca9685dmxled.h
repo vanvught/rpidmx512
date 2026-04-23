@@ -35,8 +35,7 @@
 
 #include "dmxnode.h"
 
-class PCA9685DmxLed final : public PCA9685DmxSet
-{
+class PCA9685DmxLed final : public PCA9685DmxSet {
    public:
     explicit PCA9685DmxLed(const pca9685dmx::Configuration& configuration);
     ~PCA9685DmxLed() override;
@@ -49,10 +48,8 @@ class PCA9685DmxLed final : public PCA9685DmxSet
     void Sync([[maybe_unused]] uint32_t port_index) override {};
     void Sync() override {};
 
-    bool SetDmxStartAddress(uint16_t dmx_start_address) override
-    {
-        if ((dmx_start_address != 0) && (dmx_start_address <= dmxnode::kUniverseSize))
-        {
+    bool SetDmxStartAddress(uint16_t dmx_start_address) override {
+        if ((dmx_start_address != 0) && (dmx_start_address <= dmxnode::kUniverseSize)) {
             dmx_start_address_ = dmx_start_address;
             dmxpwm_store::SaveDmxStartAddress(dmx_start_address_);
             return true;
@@ -80,4 +77,4 @@ class PCA9685DmxLed final : public PCA9685DmxSet
     PCA9685PWMLed** pwm_led_;
 };
 
-#endif  // PCA9685DMXLED_H_
+#endif // PCA9685DMXLED_H_

@@ -2,7 +2,7 @@
  * @file pca9685dmxparamsconst.h
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,11 +29,9 @@
 #include "common/utils/utils_hash.h"
 #include "json/json_key.h"
 
-namespace json
-{
-struct Pca9685DmxParamsConst
-{
-	static constexpr char kFileName[] = "pca9685.json";
+namespace json {
+struct Pca9685DmxParamsConst {
+	static constexpr char kFileName[] = "dmxpca9685.json";
 
 	static constexpr json::SimpleKey kI2cAddres {
 	    "i2c_address",

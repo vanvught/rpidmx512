@@ -2,7 +2,7 @@
  * @file pca9685dmxparams.h
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,17 +23,15 @@
  * THE SOFTWARE.
  */
 
- #include <cstdint>
- 
+#include <cstdint>
+
 #include "configurationstore.h"
 #include "json/json_key.h"
 #include "json/json_params_base.h"
 #include "json/pca9685dmxparamsconst.h"
 
-namespace json
-{
-class Pca9685DmxParams : public JsonParamsBase<Pca9685DmxParams>
-{
+namespace json {
+class Pca9685DmxParams : public JsonParamsBase<Pca9685DmxParams> {
    public:
     Pca9685DmxParams();
 
@@ -62,4 +60,4 @@ class Pca9685DmxParams : public JsonParamsBase<Pca9685DmxParams>
 
     friend class JsonParamsBase<Pca9685DmxParams>;
 };
-} // namespace json 
+} // namespace json

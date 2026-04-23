@@ -50,33 +50,33 @@ class PCA9685Servo : public PCA9685
         CalcCenterCount();
     }
 
-    void SetLeftUs(uint16_t nLeftUs)
+    void SetLeftUs(uint16_t left_us)
     {
-        if ((nLeftUs < m_nRightUs) && (nLeftUs < m_nCenterUs))
+        if ((left_us < m_nRightUs) && (left_us < m_nCenterUs))
         {
-            m_nLeftUs = nLeftUs;
+            m_nLeftUs = left_us;
             CalcLeftCount();
         }
     }
 
     uint16_t GetLeftUs() const { return m_nLeftUs; }
 
-    void SetRightUs(uint16_t nRightUs)
+    void SetRightUs(uint16_t right_us)
     {
-        if ((m_nLeftUs < nRightUs) && (m_nCenterUs < nRightUs))
+        if ((m_nLeftUs < right_us) && (m_nCenterUs < right_us))
         {
-            m_nRightUs = nRightUs;
+            m_nRightUs = right_us;
             CalcRightCount();
         }
     }
 
     uint16_t GetRightUs() const { return m_nRightUs; }
 
-    void SetCenterUs(uint16_t nCenterUs)
+    void SetCenterUs(uint16_t center_us)
     {
-        if ((nCenterUs < m_nRightUs) && (m_nLeftUs < nCenterUs))
+        if ((center_us < m_nRightUs) && (m_nLeftUs < center_us))
         {
-            m_nCenterUs = nCenterUs;
+            m_nCenterUs = center_us;
             CalcCenterCount();
         }
     }

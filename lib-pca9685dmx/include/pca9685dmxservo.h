@@ -2,7 +2,7 @@
  * @file pca9685dmxservo.h
  *
  */
-/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2018-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,8 +35,7 @@
 
 #include "dmxnode.h"
 
-class PCA9685DmxServo : public PCA9685DmxSet
-{
+class PCA9685DmxServo : public PCA9685DmxSet {
    public:
     explicit PCA9685DmxServo(const pca9685dmx::Configuration& configuration);
     ~PCA9685DmxServo() override;
@@ -49,12 +48,10 @@ class PCA9685DmxServo : public PCA9685DmxSet
     void Sync([[maybe_unused]] uint32_t port_index) override {};
     void Sync() override {};
 
-    bool SetDmxStartAddress(uint16_t dmx_start_address) override
-    {
+    bool SetDmxStartAddress(uint16_t dmx_start_address) override {
         assert((dmx_start_address != 0) && (dmx_start_address <= dmxnode::kUniverseSize));
 
-        if ((dmx_start_address != 0) && (dmx_start_address <= dmxnode::kUniverseSize))
-        {
+        if ((dmx_start_address != 0) && (dmx_start_address <= dmxnode::kUniverseSize)) {
             dmx_start_address_ = dmx_start_address;
             dmxpwm_store::SaveDmxStartAddress(dmx_start_address_);
             return true;
@@ -79,4 +76,4 @@ class PCA9685DmxServo : public PCA9685DmxSet
     PCA9685Servo** servo_;
 };
 
-#endif  // PCA9685DMXSERVO_H_
+#endif // PCA9685DMXSERVO_H_

@@ -2,7 +2,7 @@
  * @file pca9685dmx.h
  *
  */
-/* Copyright (C) 2023-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2023-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,56 +34,47 @@
 #include "pca9685servo.h"
 #include "pca9685dmxset.h"
 
-namespace pca9685dmx
-{
+namespace pca9685dmx {
+inline constexpr uint8_t kBoardInstancesDefault = 1;
+inline constexpr uint8_t kBoardInstancesMax = 32;
+inline constexpr auto kDmxFootprintDefault = pca9685::kPwmChannels;
 
-static constexpr uint8_t BOARD_INSTANCES_DEFAULT = 1;
-static constexpr uint8_t BOARD_INSTANCES_MAX = 32;
-static constexpr auto DMX_FOOTPRINT_DEFAULT = pca9685::PWM_CHANNELS;
-
-struct Mode
-{
+struct Mode {
     static constexpr char kLed[] = "led";
     static constexpr char kServo[] = "servo";
 };
 
-struct Configuration
-{
+struct Configuration {
     uint8_t mode;
     uint8_t address;
-    uint16_t nChannelCount;
-    uint16_t nDmxStartAddress;
-    bool bUse8Bit;
+    uint16_t channel_count;
+    uint16_t dmx_start_address;
+    bool use8bit;
 
-    struct
-    {
-        uint16_t nLedPwmFrequency;
+    struct {
+        uint16_t led_pwm_frequency;
         pca9685::Invert invert;
         pca9685::Output output;
     } led;
 
-    struct
-    {
-        uint16_t nLeftUs;
-        uint16_t nCenterUs;
-        uint16_t nRightUs;
+    struct {
+        uint16_t left_us;
+        uint16_t center_us;
+        uint16_t right_us;
     } servo;
 };
 
-inline const char* GetMode(uint32_t mode)
-{
+inline const char* GetMode(uint32_t mode) {
     return mode != 0 ? Mode::kServo : Mode::kLed;
 }
 
-inline uint32_t GetMode(const char* mode)
-{
+inline uint32_t GetMode(const char* mode) {
     return (strcasecmp(mode, Mode::kServo) == 0);
 }
 
 } // namespace pca9685dmx
 
-class Pca9685Dmx
-{
+class Pca9685Dmx {
    public:
     Pca9685Dmx();
     Pca9685Dmx(const Pca9685Dmx&) = delete;
@@ -94,64 +85,48 @@ class Pca9685Dmx
     void SetMode(uint32_t mode) { configuration_.mode = (mode != 0) ? 1 : 0; }
     uint8_t GetMode() const { return (configuration_.mode != 0); }
 
-    void SetAddress(uint8_t address)
-    {
-        if ((address >= 0x03) && (address <= 0x77))
-        {
+    void SetAddress(uint8_t address) {
+        if ((address >= 0x03) && (address <= 0x77)) {
             configuration_.address = address;
-        }
-        else
-        {
-            configuration_.address = pca9685::I2C_ADDRESS_DEFAULT;
+        } else {
+            configuration_.address = pca9685::kI2CAddressDefault;
         }
     }
 
     uint8_t GetAddress() const { return configuration_.address; }
 
-    void SetChannelCount(uint16_t channel_count)
-    {
-        if ((channel_count != 0) && (channel_count <= dmxnode::kUniverseSize))
-        {
-            configuration_.nChannelCount = channel_count;
-        }
-        else
-        {
-            configuration_.nChannelCount = pca9685::PWM_CHANNELS;
+    void SetChannelCount(uint16_t channel_count) {
+        if ((channel_count != 0) && (channel_count <= dmxnode::kUniverseSize)) {
+            configuration_.channel_count = channel_count;
+        } else {
+            configuration_.channel_count = pca9685::kPwmChannels;
         }
     }
 
-    uint16_t GetChannelCount() const { return configuration_.nChannelCount; }
+    uint16_t GetChannelCount() const { return configuration_.channel_count; }
 
-    void SetDmxStartAddress(uint16_t dmx_start_address)
-    {
-        if ((dmx_start_address != 0) && (dmx_start_address <= dmxnode::kUniverseSize))
-        {
-            configuration_.nDmxStartAddress = dmx_start_address;
-        }
-        else
-        {
-            configuration_.nDmxStartAddress = dmxnode::kStartAddressDefault;
+    void SetDmxStartAddress(uint16_t dmx_start_address) {
+        if ((dmx_start_address != 0) && (dmx_start_address <= dmxnode::kUniverseSize)) {
+            configuration_.dmx_start_address = dmx_start_address;
+        } else {
+            configuration_.dmx_start_address = dmxnode::kStartAddressDefault;
         }
     }
 
-    uint16_t GetDmxStartAddress() const { return configuration_.nDmxStartAddress; }
+    uint16_t GetDmxStartAddress() const { return configuration_.dmx_start_address; }
 
-    void SetUse8Bit(bool use8_bit) { configuration_.bUse8Bit = use8_bit; }
-    bool IsUse8Bit() const { return configuration_.bUse8Bit; }
+    void SetUse8Bit(bool use8_bit) { configuration_.use8bit = use8_bit; }
+    bool IsUse8Bit() const { return configuration_.use8bit; }
 
-    void SetLedPwmFrequency(uint16_t led_pwm_frequency)
-    {
-        if ((led_pwm_frequency >= pca9685::Frequency::RANGE_MIN) && (led_pwm_frequency <= pca9685::Frequency::RANGE_MAX))
-        {
-            configuration_.led.nLedPwmFrequency = led_pwm_frequency;
-        }
-        else
-        {
-            configuration_.led.nLedPwmFrequency = pca9685::pwmled::kDefaultFrequency;
+    void SetLedPwmFrequency(uint16_t led_pwm_frequency) {
+        if ((led_pwm_frequency >= pca9685::Frequency::kRangeMin) && (led_pwm_frequency <= pca9685::Frequency::kRangeMax)) {
+            configuration_.led.led_pwm_frequency = led_pwm_frequency;
+        } else {
+            configuration_.led.led_pwm_frequency = pca9685::pwmled::kDefaultFrequency;
         }
     }
 
-    uint16_t GetLedPwmFrequency() const { return configuration_.led.nLedPwmFrequency; }
+    uint16_t GetLedPwmFrequency() const { return configuration_.led.led_pwm_frequency; }
 
     void SetLedOutputInvert(pca9685::Invert invert) { configuration_.led.invert = invert; }
     pca9685::Invert GetLedOutputInvert() const { return configuration_.led.invert; }
@@ -159,43 +134,35 @@ class Pca9685Dmx
     void SetLedOutputDriver(pca9685::Output output) { configuration_.led.output = output; }
     pca9685::Output GetLedOutputDriver() const { return configuration_.led.output; }
 
-    void SetServoLeftUs(uint16_t left_us) { configuration_.servo.nLeftUs = (left_us == 0 ? pca9685::servo::kLeftDefaultUs : left_us); }
-    uint16_t GetServoLeftUs() const { return configuration_.servo.nLeftUs; }
+    void SetServoLeftUs(uint16_t left_us) { configuration_.servo.left_us = (left_us == 0 ? pca9685::servo::kLeftDefaultUs : left_us); }
+    uint16_t GetServoLeftUs() const { return configuration_.servo.left_us; }
 
-    void SetServoCenterUs(uint16_t center_us) { configuration_.servo.nCenterUs = (center_us == 0 ? pca9685::servo::kCenterDefaultUs : center_us); }
-    uint16_t GetServoCenterUs() const { return configuration_.servo.nCenterUs; }
+    void SetServoCenterUs(uint16_t center_us) { configuration_.servo.center_us = (center_us == 0 ? pca9685::servo::kCenterDefaultUs : center_us); }
+    uint16_t GetServoCenterUs() const { return configuration_.servo.center_us; }
 
-    void SetServoRightUs(uint16_t right_us)
-    {
-        configuration_.servo.nRightUs = (right_us == 0 ? pca9685::servo::kRightDefaultUs : right_us);
+    void SetServoRightUs(uint16_t right_us) {
+        configuration_.servo.right_us = (right_us == 0 ? pca9685::servo::kRightDefaultUs : right_us);
         ;
     }
 
-    uint16_t GetServoRightUs() const { return configuration_.servo.nRightUs; }
+    uint16_t GetServoRightUs() const { return configuration_.servo.right_us; }
 
-    PCA9685DmxSet* GetPCA9685DmxSet()
-    {
-        if (m_pPCA9685DmxSet == nullptr)
-        {
+    PCA9685DmxSet* GetPCA9685DmxSet() {
+        if (dmx_set_ == nullptr) {
             Start();
         }
-        return m_pPCA9685DmxSet;
+        return dmx_set_;
     }
 
-    void Print()
-    {
-        if (m_pPCA9685DmxSet != nullptr)
-        {
-            m_pPCA9685DmxSet->Print();
-        }
-        else
-        {
+    void Print() {
+        if (dmx_set_ != nullptr) {
+            dmx_set_->Print();
+        } else {
             assert(0);
         }
     }
 
-    static Pca9685Dmx& Instance()
-    {
+    static Pca9685Dmx& Instance() {
         assert(s_this != nullptr); // Ensure that s_this is valid
         return *s_this;
     }
@@ -205,9 +172,9 @@ class Pca9685Dmx
    private:
     pca9685dmx::Configuration configuration_;
 
-    PCA9685DmxSet* m_pPCA9685DmxSet{nullptr};
+    PCA9685DmxSet* dmx_set_{nullptr};
 
     static inline Pca9685Dmx* s_this;
 };
 
-#endif  // PCA9685DMX_H_
+#endif // PCA9685DMX_H_

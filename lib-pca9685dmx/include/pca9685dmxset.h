@@ -2,7 +2,7 @@
  * @file pca9685dmxset.h
  *
  */
-/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2018-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,8 +30,7 @@
 
 #include "dmxnode.h"
 
-class PCA9685DmxSet
-{
+class PCA9685DmxSet {
    public:
     PCA9685DmxSet() {}
     virtual ~PCA9685DmxSet() {}
@@ -45,8 +44,7 @@ class PCA9685DmxSet
     virtual bool SetDmxStartAddress(uint16_t dmx_start_address) = 0;
     virtual uint16_t GetDmxStartAddress() = 0;
     virtual uint16_t GetDmxFootprint() = 0;
-    virtual bool GetSlotInfo([[maybe_unused]] uint16_t slot_offset, dmxnode::SlotInfo& slot_info)
-    {
+    virtual bool GetSlotInfo([[maybe_unused]] uint16_t slot_offset, dmxnode::SlotInfo& slot_info) {
         slot_info.type = 0x00;       // ST_PRIMARY
         slot_info.category = 0x0001; // SD_INTENSITY
         return true;
@@ -66,4 +64,4 @@ class PCA9685DmxSet
     virtual void SetDataImpl(uint32_t port_index, const uint8_t* data, uint32_t length) = 0;
 };
 
-#endif  // PCA9685DMXSET_H_
+#endif // PCA9685DMXSET_H_
