@@ -2,7 +2,7 @@
  * @file net_private.h
  *
  */
-/* Copyright (C) 2023-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2023-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,70 +28,64 @@
 
 #include <cstdint>
 
-#include "net_platform.h"
 #include "core/protocol/icmp.h"
 #include "core/protocol/igmp.h"
 #include "core/protocol/udp.h"
 #include "core/protocol/tcp.h"
 
+#include "net_platform.h" // IWYU pragma: keep
+
 #ifndef ALIGNED
 #define ALIGNED __attribute__((aligned(4)))
 #endif
 
-namespace console
-{
+namespace console {
 void Error(const char*);
 }
 
-uint8_t* emac_eth_send_get_dma_buffer();
-void emac_eth_send(const uint32_t);
-void emac_eth_send(void*, const uint32_t);
+namespace emac::eth {
+uint8_t* SendGetDmaBuffer();
+void Send(const uint32_t);
+void Send(void*, const uint32_t);
 #if defined CONFIG_NET_ENABLE_PTP
-void emac_eth_send_timestamp(const uint32_t);
-void emac_eth_send_timestamp(void*, const uint32_t);
+void SendTimestamp(uint32_t);
+void SendTimestamp(void*, uint32_t);
 #endif
-uint32_t emac_eth_recv(uint8_t**);
-void emac_free_pkt();
+uint32_t Recv(uint8_t**);
+void FreePkt();
+} // namespace emac::eth
 
-namespace network
-{
-namespace global
-{
+namespace network {
+namespace global {
 extern uint32_t broadcast_mask;
 extern uint32_t on_network_mask;
 } // namespace global
 
-inline uint16_t Chksum(const void* data, uint32_t length)
-{
+inline uint16_t Chksum(const void* data, uint32_t length) {
     auto* ptr = reinterpret_cast<const uint16_t*>(data);
     uint32_t sum = 0;
 
-    while (length > 1)
-    {
+    while (length > 1) {
         sum += *ptr;
         ptr++;
         length -= 2;
     }
 
     // Add left-over byte, if any
-    if (length > 0)
-    {
+    if (length > 0) {
         sum += __builtin_bswap16(static_cast<uint16_t>(*(reinterpret_cast<const uint8_t*>(ptr)) << 8));
     }
 
     // Fold 32-bit sum into 16 bits
-    while (sum >> 16)
-    {
+    while (sum >> 16) {
         sum = (sum >> 16) + (sum & 0xFFFF);
     }
 
     return static_cast<uint16_t>(~sum);
 }
 
-namespace arp
-{
-enum class EthSend
-{
+namespace arp {
+enum class EthSend {
     kIsNormal
 #if defined CONFIG_NET_ENABLE_PTP
     ,
@@ -100,35 +94,30 @@ enum class EthSend
 };
 } // namespace arp
 
-namespace ip
-{
+namespace ip {
 void Init();
 void Shutdown();
 void Handle(struct Header*);
 } // namespace ip
 
-namespace igmp
-{
+namespace igmp {
 void Init();
 void Input(const struct Header*);
 void Shutdown();
 } // namespace igmp
 
-namespace icmp
-{
+namespace icmp {
 void Input(struct Header*);
 void Shutdown();
 } // namespace icmp
 
-namespace udp
-{
+namespace udp {
 void Init();
 void Input(const struct Header*);
 void Shutdown();
 } // namespace udp
 
-namespace tcp
-{
+namespace tcp {
 void Init();
 void Input(struct Header*);
 void Run();

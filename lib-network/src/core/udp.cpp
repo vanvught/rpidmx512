@@ -48,24 +48,20 @@
 #include "net_memcpy.h"
 #include "firmware/debug/debug_debug.h"
 
-namespace network::udp
-{
-struct PortInfo
-{
+namespace network::udp {
+struct PortInfo {
     UdpCallbackFunctionPtr callback;
     uint16_t port;
 };
 
-struct Data
-{
+struct Data {
     uint32_t from_ip;
     uint32_t size;
     uint8_t data[kDataSize];
     uint16_t from_port;
 };
 
-struct Port
-{
+struct Port {
     PortInfo info;
     Data data ALIGNED;
 } ALIGNED;
@@ -74,35 +70,29 @@ static Port s_ports[UDP_MAX_PORTS_ALLOWED] SECTION_NETWORK ALIGNED;
 static uint16_t s_id SECTION_NETWORK ALIGNED;
 static uint8_t s_multicast_mac[network::ethernet::kAddressLength] SECTION_NETWORK ALIGNED;
 
-void __attribute__((cold)) Init()
-{
+void __attribute__((cold)) Init() {
     // Multicast fixed part
     s_multicast_mac[0] = network::ethernet::kIP4MulticastAddr0;
     s_multicast_mac[1] = network::ethernet::kIP4MulticastAddr1;
     s_multicast_mac[2] = network::ethernet::kIP4MulticastAddr2;
 }
 
-void __attribute__((cold)) Shutdown()
-{
+void __attribute__((cold)) Shutdown() {
     DEBUG_ENTRY();
 
     DEBUG_EXIT();
 }
 
-__attribute__((hot)) void Input(const struct Header* udp)
-{
+__attribute__((hot)) void Input(const struct Header* udp) {
     const auto kDestinationPort = __builtin_bswap16(udp->udp.destination_port);
 
-    for (uint32_t port_index = 0; port_index < UDP_MAX_PORTS_ALLOWED; port_index++)
-    {
+    for (uint32_t port_index = 0; port_index < UDP_MAX_PORTS_ALLOWED; port_index++) {
         const auto& info = s_ports[port_index].info;
 
-        if (info.port == kDestinationPort)
-        {
+        if (info.port == kDestinationPort) {
             auto& data = s_ports[port_index].data;
 
-            if (__builtin_expect((data.size != 0), 0))
-            {
+            if (__builtin_expect((data.size != 0), 0)) {
                 DEBUG_PRINTF("%d[%x]", kDestinationPort, kDestinationPort);
             }
 
@@ -114,10 +104,9 @@ __attribute__((hot)) void Input(const struct Header* udp)
             data.from_port = __builtin_bswap16(udp->udp.source_port);
             data.size = kSize;
 
-            emac_free_pkt();
+            emac::eth::FreePkt();
 
-            if (info.callback != nullptr)
-            {
+            if (info.callback != nullptr) {
                 info.callback(data.data, kSize, data.from_ip, data.from_port);
             }
 
@@ -125,18 +114,17 @@ __attribute__((hot)) void Input(const struct Header* udp)
         }
     }
 
-    emac_free_pkt();
+    emac::eth::FreePkt();
 
     DEBUG_PRINTF(IPSTR ":%d[%x] " MACSTR, udp->ip4.src[0], udp->ip4.src[1], udp->ip4.src[2], udp->ip4.src[3], kDestinationPort, kDestinationPort, MAC2STR(udp->ether.dst));
 }
 
-template <network::arp::EthSend S> static void SendImplementation(int index, const uint8_t* data, uint32_t size, uint32_t remote_ip, uint16_t remote_port)
-{
+template <network::arp::EthSend S> static void SendImplementation(int index, const uint8_t* data, uint32_t size, uint32_t remote_ip, uint16_t remote_port) {
     assert(index >= 0);
     assert(index < UDP_MAX_PORTS_ALLOWED);
     assert(s_ports[index].info.port != 0);
 
-    auto* out_buffer = reinterpret_cast<Header*>(emac_eth_send_get_dma_buffer());
+    auto* out_buffer = reinterpret_cast<Header*>(emac::eth::SendGetDmaBuffer());
 
     // Ethernet
     std::memcpy(out_buffer->ether.src, netif::global::netif_default.hwaddr, network::ethernet::kAddressLength);
@@ -163,22 +151,15 @@ template <network::arp::EthSend S> static void SendImplementation(int index, con
 
     network::memcpy(out_buffer->udp.data, data, size);
 
-    if (remote_ip == network::kIpaddrBroadcast)
-    {
+    if (remote_ip == network::kIpaddrBroadcast) {
         network::memset<0xFF, network::ethernet::kAddressLength>(out_buffer->ether.dst);
         network::memset<0xFF, network::ethernet::kAddressLength>(out_buffer->ip4.dst);
-    }
-    else if ((remote_ip & network::global::broadcast_mask) == network::global::broadcast_mask)
-    {
+    } else if ((remote_ip & network::global::broadcast_mask) == network::global::broadcast_mask) {
         network::memset<0xFF, network::ethernet::kAddressLength>(out_buffer->ether.dst);
         network::memcpy_ip(out_buffer->ip4.dst, remote_ip);
-    }
-    else
-    {
-        if ((remote_ip & 0xF0) == 0xE0)
-        { // Multicast, we know the MAC Address
-            typedef union pcast32
-            {
+    } else {
+        if ((remote_ip & 0xF0) == 0xE0) { // Multicast, we know the MAC Address
+            typedef union pcast32 {
                 uint32_t u32;
                 uint8_t u8[4];
             } _pcast32;
@@ -191,16 +172,12 @@ template <network::arp::EthSend S> static void SendImplementation(int index, con
 
             std::memcpy(out_buffer->ether.dst, s_multicast_mac, network::ethernet::kAddressLength);
             network::memcpy_ip(out_buffer->ip4.dst, remote_ip);
-        }
-        else
-        {
-            if constexpr (S == network::arp::EthSend::kIsNormal)
-            {
+        } else {
+            if constexpr (S == network::arp::EthSend::kIsNormal) {
                 network::arp::Send(out_buffer, size + kUdpPacketHeadersSize, remote_ip);
             }
 #if defined CONFIG_NET_ENABLE_PTP
-            else if constexpr (S == network::arp::EthSend::kIsTimestamp)
-            {
+            else if constexpr (S == network::arp::EthSend::kIsTimestamp) {
                 network::arp::SendTimestamp(out_buffer, size + kUdpPacketHeadersSize, remote_ip);
             }
 #endif
@@ -212,34 +189,28 @@ template <network::arp::EthSend S> static void SendImplementation(int index, con
     out_buffer->ip4.chksum = network::Chksum(reinterpret_cast<void*>(&out_buffer->ip4), sizeof(out_buffer->ip4));
 #endif
 
-    if constexpr (S == network::arp::EthSend::kIsNormal)
-    {
-        emac_eth_send(size + kUdpPacketHeadersSize);
+    if constexpr (S == network::arp::EthSend::kIsNormal) {
+        emac::eth::Send(size + kUdpPacketHeadersSize);
     }
 #if defined CONFIG_NET_ENABLE_PTP
-    else if constexpr (S == network::arp::EthSend::kIsTimestamp)
-    {
-        emac_eth_send_timestamp(size);
+    else if constexpr (S == network::arp::EthSend::kIsTimestamp) {
+        emac::eth::SendTimestamp(size);
     }
 #endif
     return;
 }
 
-int32_t Begin(uint16_t localport, UdpCallbackFunctionPtr callback)
-{
+int32_t Begin(uint16_t localport, UdpCallbackFunctionPtr callback) {
     DEBUG_PRINTF("localport=%u", localport);
 
-    for (auto i = 0; i < UDP_MAX_PORTS_ALLOWED; i++)
-    {
+    for (auto i = 0; i < UDP_MAX_PORTS_ALLOWED; i++) {
         auto& info = s_ports[i].info;
 
-        if (info.port == localport)
-        {
+        if (info.port == localport) {
             return i;
         }
 
-        if (info.port == 0)
-        {
+        if (info.port == 0) {
             info.callback = callback;
             info.port = localport;
 
@@ -254,16 +225,13 @@ int32_t Begin(uint16_t localport, UdpCallbackFunctionPtr callback)
     return -1;
 }
 
-int32_t End(uint16_t localport)
-{
+int32_t End(uint16_t localport) {
     DEBUG_PRINTF("localport=%u[%x]", localport, localport);
 
-    for (auto i = 0; i < UDP_MAX_PORTS_ALLOWED; i++)
-    {
+    for (auto i = 0; i < UDP_MAX_PORTS_ALLOWED; i++) {
         auto& info = s_ports[i].info;
 
-        if (info.port == localport)
-        {
+        if (info.port == localport) {
             info.callback = nullptr;
             info.port = 0;
 
@@ -279,35 +247,30 @@ int32_t End(uint16_t localport)
     return -1;
 }
 
-void Send(int32_t index, const uint8_t* data, uint32_t size, uint32_t remote_ip, uint16_t remote_port)
-{
+void Send(int32_t index, const uint8_t* data, uint32_t size, uint32_t remote_ip, uint16_t remote_port) {
     SendImplementation<network::arp::EthSend::kIsNormal>(index, data, size, remote_ip, remote_port);
 }
 
 #if defined CONFIG_NET_ENABLE_PTP
-void SendWithTimestamp(int32_t index, const uint8_t* data, uint32_t size, uint32_t remote_ip, uint16_t remote_port)
-{
+void SendWithTimestamp(int32_t index, const uint8_t* data, uint32_t size, uint32_t remote_ip, uint16_t remote_port) {
     SendImplementation<network::arp::EthSend::kIsTimestamp>(index, data, size, remote_ip, remote_port);
 }
 #endif
 
 // Do not use - subject for removal
-uint32_t Recv(int32_t index, const uint8_t** data, uint32_t* from_ip, uint16_t* from_port)
-{
+uint32_t Recv(int32_t index, const uint8_t** data, uint32_t* from_ip, uint16_t* from_port) {
     assert(index >= 0);
     assert(index < UDP_MAX_PORTS_ALLOWED);
 
     const auto& info = s_ports[index].info;
 
-    if (__builtin_expect(info.callback != nullptr, 0))
-    {
+    if (__builtin_expect(info.callback != nullptr, 0)) {
         return 0;
     }
 
     auto& d = s_ports[index].data;
 
-    if (__builtin_expect((d.size == 0), 1))
-    {
+    if (__builtin_expect((d.size == 0), 1)) {
         return 0;
     }
 

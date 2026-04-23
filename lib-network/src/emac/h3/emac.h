@@ -67,16 +67,14 @@
 #define __aligned(x) __attribute__((aligned(x)))
 #endif
 
-struct EmacDmaDesc
-{
+struct EmacDmaDesc {
     uint32_t status;
     uint32_t st;
     uint32_t buf_addr;
     uint32_t next;
 } __aligned(ARM_DMA_ALIGN);
 
-struct CoherentRegion
-{
+struct CoherentRegion {
     struct EmacDmaDesc rx_chain[CONFIG_TX_DESCR_NUM];
     struct EmacDmaDesc tx_chain[CONFIG_RX_DESCR_NUM];
     char rxbuffer[RX_TOTAL_BUFSIZE] __aligned(ARM_DMA_ALIGN);

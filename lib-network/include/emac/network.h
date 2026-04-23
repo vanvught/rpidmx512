@@ -45,7 +45,7 @@
 #endif
 #include "emac/emac_phy.h"
 
-uint32_t emac_eth_recv(uint8_t**);
+uint32_t emac::eth::Recv(uint8_t**);
 
 namespace network {
 namespace global {
@@ -61,12 +61,12 @@ void Run();
 
 inline void Run() {
     uint8_t* ethernet_buffer;
-    auto length = emac_eth_recv(&ethernet_buffer);
+    auto length = emac::eth::Recv(&ethernet_buffer);
 
     if (__builtin_expect((length > 0), 0)) {
         do {
             network::iface::EthernetInput(ethernet_buffer, length);
-            length = emac_eth_recv(&ethernet_buffer);
+            length = emac::eth::Recv(&ethernet_buffer);
         } while (length > 0);
     }
 #if defined(ENABLE_HTTPD)

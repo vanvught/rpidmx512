@@ -233,12 +233,12 @@ static void CacheUpdate(const uint8_t* mac_address, uint32_t ip, arp::Flags flag
         {
 #endif
             debug::Dump(record->packet.p, record->packet.size);
-            emac_eth_send(record->packet.p, record->packet.size);
+            emac::eth::Send(record->packet.p, record->packet.size);
 #if defined CONFIG_NET_ENABLE_PTP
         }
         else
         {
-            emac_eth_send_timestamp(record->packet.p, record->packet.size);
+            emac::eth::SendTimestamp(record->packet.p, record->packet.size);
         }
 #endif
         network::memory::Allocator::Instance().Free(record->packet.p);
@@ -254,7 +254,7 @@ static void SendRequest(uint32_t ip)
 
     network::memcpy_ip(s_arp_request.arp.target_ip, ip);
 
-    emac_eth_send(reinterpret_cast<void*>(&s_arp_request), sizeof(struct network::arp::Header));
+    emac::eth::Send(reinterpret_cast<void*>(&s_arp_request), sizeof(struct network::arp::Header));
 }
 
 template <network::arp::EthSend S> static void Query(uint32_t destination_ip, void* packet, uint32_t size, [[maybe_unused]] arp::Flags flag)
@@ -308,7 +308,7 @@ static void SendRequestUnicast(uint32_t ip, const uint8_t* mac_address)
     network::memcpy(s_arp_request.ether.dst, mac_address, network::ethernet::kAddressLength);
     network::memcpy_ip(s_arp_request.arp.target_ip, ip);
 
-    emac_eth_send(reinterpret_cast<void*>(&s_arp_request), sizeof(struct network::arp::Header));
+    emac::eth::Send(reinterpret_cast<void*>(&s_arp_request), sizeof(struct network::arp::Header));
 
     network::memset<0xFF, network::ethernet::kAddressLength>(s_arp_request.ether.dst);
 }
@@ -368,7 +368,7 @@ static void SendReply(const struct network::arp::Header* p_arp)
     std::memcpy(s_arp_reply.arp.target_ip, p_arp->arp.sender_ip, network::ip4::kAddressLength);
     network::memcpy_ip(s_arp_reply.arp.sender_ip, kIpTarget);
 
-    emac_eth_send(reinterpret_cast<void*>(&s_arp_reply), sizeof(struct network::arp::Header));
+    emac::eth::Send(reinterpret_cast<void*>(&s_arp_reply), sizeof(struct network::arp::Header));
 
     DEBUG_EXIT();
 }
@@ -519,12 +519,12 @@ template <network::arp::EthSend S> static void SendImplementation(void* packet, 
 
                 if constexpr (S == network::arp::EthSend::kIsNormal)
                 {
-                    emac_eth_send(packet, size);
+                    emac::eth::Send(packet, size);
                 }
 #if defined CONFIG_NET_ENABLE_PTP
                 else if constexpr (S == network::arp::EthSend::kIsTimestamp)
                 {
-                    emac_eth_send_timestamp(packet, size);
+                    emac::eth::SendTimestamp(packet, size);
                 }
 #endif
                 DEBUG_EXIT();
@@ -564,7 +564,7 @@ void AcdProbe(ip4_addr_t ipaddr)
     network::memset<0, network::ip4::kAddressLength>(s_arp_request.arp.sender_ip);
     network::memcpy_ip(s_arp_request.arp.target_ip, ipaddr.addr);
 
-    emac_eth_send(reinterpret_cast<void*>(&s_arp_request), sizeof(struct network::arp::Header));
+    emac::eth::Send(reinterpret_cast<void*>(&s_arp_request), sizeof(struct network::arp::Header));
 
     network::memcpy_ip(s_arp_request.arp.sender_ip, netif::global::netif_default.ip.addr);
 
@@ -580,6 +580,6 @@ void AcdSendAnnouncement(ip4_addr_t ipaddr)
     network::memcpy_ip(s_arp_request.arp.target_ip, ipaddr.addr);
     network::memcpy_ip(s_arp_request.arp.sender_ip, ipaddr.addr);
 
-    emac_eth_send(reinterpret_cast<void*>(&s_arp_request), sizeof(struct network::arp::Header));
+    emac::eth::Send(reinterpret_cast<void*>(&s_arp_request), sizeof(struct network::arp::Header));
 }
 } // namespace network::arp

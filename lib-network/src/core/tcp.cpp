@@ -109,7 +109,7 @@ struct RtxQueue {
 constexpr uint32_t kTimeWaitMs = 60000; // example 60s
 
 struct Listener {
-    bool in_use;                   
+    bool in_use;
     uint16_t local_port;
     network::tcp::CallbackData cb;
 };
@@ -197,7 +197,19 @@ static struct Listener s_listeners[TCP_MAX_PORTS_ALLOWED] SECTION_NETWORK ALIGNE
 static struct Tcb s_tcbs[TCP_MAX_TCBS_ALLOWED] SECTION_NETWORK ALIGNED;
 
 #ifndef NDEBUG
-static const char* const kStateName[] = {"CLOSED", "LISTEN", "SYN-SENT", "SYN-RECEIVED", "ESTABLISHED", "FIN-WAIT-1", "FIN-WAIT-2", "CLOSE-WAIT", "CLOSING", "LAST-ACK", "TIME-WAIT"};
+static const char* const kStateName[] = {
+	"CLOSED", 
+	"LISTEN", 
+	"SYN-SENT", 
+	"SYN-RECEIVED", 
+	"ESTABLISHED", 
+	"FIN-WAIT-1", 
+	"FIN-WAIT-2", 
+	"CLOSE-WAIT", 
+	"CLOSING", 
+	"LAST-ACK", 
+	"TIME-WAIT"
+};
 
 static uint8_t NewState(struct Tcb* p_tcb, uint8_t state, const char* func, const char* file, unsigned line) {
     assert(p_tcb->state < sizeof kStateName / sizeof kStateName[0]);
@@ -408,7 +420,7 @@ static constexpr uint8_t kZeromac[network::ethernet::kAddressLength] = {0, 0, 0,
 static void Ip4SendSegment(const Tcb* tcb, void* data, uint32_t size) {
     if (memcmp(tcb->remote_eth_addr, kZeromac, network::ethernet::kAddressLength) != 0) // Server
     {
-        return emac_eth_send(data, size);
+        return emac::eth::Send(data, size);
     }
 
     // Client the destination Ethernet address (MAC) is not known

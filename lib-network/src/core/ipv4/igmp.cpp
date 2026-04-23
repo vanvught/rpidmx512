@@ -113,7 +113,7 @@ static void SendReport(uint32_t group_address)
     s_report.igmp.report.igmp.checksum = 0;
     s_report.igmp.report.igmp.checksum = Chksum(reinterpret_cast<void*>(&s_report.ip4), kIPv4IgmpReportHeadersSize);
 
-    emac_eth_send(reinterpret_cast<void*>(&s_report), kReportPacketSize);
+    emac::eth::Send(reinterpret_cast<void*>(&s_report), kReportPacketSize);
 
     DEBUG_EXIT();
 }
@@ -254,7 +254,7 @@ static void SendLeave(uint32_t group_address)
     s_leave.igmp.report.igmp.checksum = Chksum(reinterpret_cast<void*>(&s_leave.ip4), kIPv4IgmpReportHeadersSize);
 #endif
 
-    emac_eth_send(reinterpret_cast<void*>(&s_leave), kReportPacketSize);
+    emac::eth::Send(reinterpret_cast<void*>(&s_leave), kReportPacketSize);
 
     s_id++;
 

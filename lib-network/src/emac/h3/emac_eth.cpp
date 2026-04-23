@@ -2,7 +2,7 @@
  * @file emac_eth.cpp
  *
  */
-/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2018-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,42 +27,35 @@
 #undef NDEBUG
 #endif
 
-#if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC push_options
 #pragma GCC optimize("O2")
 #pragma GCC optimize("no-tree-loop-distribute-patterns")
-#endif
 
 #include <cstdint>
 
 #include "h3.h"
 #include "emac.h"
 #include "firmware/debug/debug_dump.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
 extern struct CoherentRegion* p_coherent_region;
 
-__attribute__((hot)) uint32_t emac_eth_recv(uint8_t** packetp)
-{
+namespace emac::eth {
+__attribute__((hot)) uint32_t Recv(uint8_t** packetp) {
     uint32_t status, desc_num = p_coherent_region->rx_currdescnum;
     struct EmacDmaDesc* desc_p = &p_coherent_region->rx_chain[desc_num];
 
     status = desc_p->status;
 
     /* Check for DMA own bit */
-    if (!(status & (1U << 31)))
-    {
+    if (!(status & (1U << 31))) {
         uint32_t length = (desc_p->status >> 16) & 0x3FFF;
 
-        if (length < 0x40)
-        {
+        if (length < 0x40) {
             DEBUG_PUTS("Bad Packet (length < 0x40)");
             return 0;
-        }
-        else
-        {
-            if (length > CONFIG_ETH_RXSIZE)
-            {
+        } else {
+            if (length > CONFIG_ETH_RXSIZE) {
                 DEBUG_PRINTF("Received packet is too big (length=%d)\n", length);
                 return 0;
             }
@@ -78,8 +71,7 @@ __attribute__((hot)) uint32_t emac_eth_recv(uint8_t** packetp)
     return 0;
 }
 
-void emac_free_pkt()
-{
+void FreePkt() {
     auto desc_num = p_coherent_region->rx_currdescnum;
     auto* desc_p = &p_coherent_region->rx_chain[desc_num];
 
@@ -87,16 +79,14 @@ void emac_free_pkt()
     desc_p->status |= (1U << 31);
 
     /* Move to next desc and wrap-around condition. */
-    if (++desc_num >= CONFIG_RX_DESCR_NUM)
-    {
+    if (++desc_num >= CONFIG_RX_DESCR_NUM) {
         desc_num = 0;
     }
 
     p_coherent_region->rx_currdescnum = desc_num;
 }
 
-uint8_t* emac_eth_send_get_dma_buffer()
-{
+uint8_t* SendGetDmaBuffer() {
     const auto kDescNum = p_coherent_region->tx_currdescnum;
     auto* desc_p = &p_coherent_region->tx_chain[kDescNum];
 
@@ -106,8 +96,7 @@ uint8_t* emac_eth_send_get_dma_buffer()
     return reinterpret_cast<uint8_t*>(desc_p->buf_addr);
 }
 
-void emac_eth_send(uint32_t length)
-{
+void Send(uint32_t length) {
     auto desc_num = p_coherent_region->tx_currdescnum;
     auto* desc_p = &p_coherent_region->tx_chain[desc_num];
 
@@ -122,8 +111,7 @@ void emac_eth_send(uint32_t length)
     desc_p->status = (1U << 31);
 
     /* Move to next Descriptor and wrap around */
-    if (++desc_num >= CONFIG_TX_DESCR_NUM)
-    {
+    if (++desc_num >= CONFIG_TX_DESCR_NUM) {
         desc_num = 0;
     }
 
@@ -136,14 +124,15 @@ void emac_eth_send(uint32_t length)
     H3_EMAC->TX_CTL1 = value;
 }
 
-void emac_eth_send(void* buffer, uint32_t length)
-{
-    auto* pDst = emac_eth_send_get_dma_buffer();
+void Send(void* buffer, uint32_t length) {
+    auto* dst = SendGetDmaBuffer();
 
-    h3_memcpy(pDst, buffer, length);
+    h3_memcpy(dst, buffer, length);
 #ifndef NDEBUG
     debug::Dump(pDst, length);
 #endif
 
-    emac_eth_send(length);
+    Send(length);
 }
+} // namespace emac::eth
+#pragma GCC pop_options
