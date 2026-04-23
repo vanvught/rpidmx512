@@ -2,7 +2,7 @@
  * @file gpsuart.cpp
  *
  */
-/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,19 +26,10 @@
 
 #include "gps.h"
 #include "hal_uart.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
-namespace gps
-{
-enum class State
-{
-    kStartDelimiter,
-    kData,
-    kChecksum1,
-    kChecksum2,
-    kCr,
-    kLf
-};
+namespace gps {
+enum class State { kStartDelimiter, kData, kChecksum1, kChecksum2, kCr, kLf };
 
 static constexpr uint32_t kRingBufferIndexEntries = (1 << 4);
 static constexpr uint32_t kRingBufferIndexMask = (kRingBufferIndexEntries - 1);
@@ -51,8 +42,7 @@ static uint32_t s_data_index;
 static uint8_t s_checksum;
 static gps::State s_state;
 
-void GPS::UartInit()
-{
+void GPS::UartInit() {
     DEBUG_ENTRY();
 
     s_ring_buffer_index_head = 0;
@@ -64,8 +54,7 @@ void GPS::UartInit()
     DEBUG_EXIT();
 }
 
-void GPS::UartSetBaud(uint32_t baud)
-{
+void GPS::UartSetBaud(uint32_t baud) {
     DEBUG_ENTRY();
     assert(baud != 0);
 
@@ -75,8 +64,7 @@ void GPS::UartSetBaud(uint32_t baud)
     DEBUG_EXIT();
 }
 
-void GPS::UartSend(const char* sentence)
-{
+void GPS::UartSend(const char* sentence) {
     DEBUG_ENTRY();
 
     FUNC_PREFIX(UartTransmitString(EXT_UART_BASE, sentence));
@@ -84,73 +72,52 @@ void GPS::UartSend(const char* sentence)
     DEBUG_EXIT();
 }
 
-const char* GPS::UartGetSentence()
-{
+const char* GPS::UartGetSentence() {
     uint32_t rfl = FUNC_PREFIX(UartGetRxFifoLevel(EXT_UART_BASE));
 
-    while (rfl--)
-    {
+    while (rfl--) {
         const auto kByte = FUNC_PREFIX(UartGetRxData(EXT_UART_BASE));
 
-        switch (s_state)
-        {
+        switch (s_state) {
             case gps::State::kStartDelimiter:
-                if (kByte == gps::nmea::kStartDelimiter)
-                {
+                if (kByte == gps::nmea::kStartDelimiter) {
                     s_state = gps::State::kData;
                     s_data_index = 0;
                     s_checksum = 0;
                 }
                 break;
             case gps::State::kData:
-                if (kByte != '*')
-                {
+                if (kByte != '*') {
                     s_checksum ^= kByte;
-                }
-                else
-                {
+                } else {
                     s_state = gps::State::kChecksum1;
                 }
                 break;
-            case gps::State::kChecksum1:
-            {
+            case gps::State::kChecksum1: {
                 const auto kNibble = kByte > '9' ? static_cast<uint8_t>(kByte - 'A' + 10) : static_cast<uint8_t>(kByte - '0');
-                if (kNibble == ((s_checksum >> 4) & 0xF))
-                {
+                if (kNibble == ((s_checksum >> 4) & 0xF)) {
                     s_state = gps::State::kChecksum2;
-                }
-                else
-                {
+                } else {
                     s_state = gps::State::kStartDelimiter;
                 }
-            }
-            break;
-            case gps::State::kChecksum2:
-            {
+            } break;
+            case gps::State::kChecksum2: {
                 const auto kNibble = kByte > '9' ? static_cast<uint8_t>(kByte - 'A' + 10) : static_cast<uint8_t>(kByte - '0');
-                if (kNibble == (s_checksum & 0xF))
-                {
+                if (kNibble == (s_checksum & 0xF)) {
                     s_state = gps::State::kCr;
-                }
-                else
-                {
+                } else {
                     s_state = gps::State::kStartDelimiter;
                 }
-            }
-            break;
+            } break;
             case gps::State::kCr:
-                if (kByte == '\r')
-                {
+                if (kByte == '\r') {
                     s_state = gps::State::kLf;
-                }
-                else
-                {
+                } else {
                     s_state = gps::State::kStartDelimiter;
                 }
                 break;
             case gps::State::kLf:
-                if (kByte == '\n')
-                {
+                if (kByte == '\n') {
                     s_ring_buffer[s_ring_buffer_index_head][s_data_index] = '\n';
                     s_ring_buffer_index_head = (s_ring_buffer_index_head + 1) & gps::kRingBufferIndexMask;
                 }
@@ -162,22 +129,17 @@ const char* GPS::UartGetSentence()
                 break;
         }
 
-        if (s_state != gps::State::kStartDelimiter)
-        {
+        if (s_state != gps::State::kStartDelimiter) {
             s_ring_buffer[s_ring_buffer_index_head][s_data_index++] = kByte;
-            if (s_data_index == gps::nmea::kMaxSentenceLength)
-            {
+            if (s_data_index == gps::nmea::kMaxSentenceLength) {
                 s_state = gps::State::kStartDelimiter;
             }
         }
     }
 
-    if (s_ring_buffer_index_head == s_ring_buffer_index_tail)
-    {
+    if (s_ring_buffer_index_head == s_ring_buffer_index_tail) {
         return nullptr;
-    }
-    else
-    {
+    } else {
         const char* p = reinterpret_cast<const char*>(&s_ring_buffer[s_ring_buffer_index_tail][0]);
         s_ring_buffer_index_tail = (s_ring_buffer_index_tail + 1) & gps::kRingBufferIndexMask;
         return p;

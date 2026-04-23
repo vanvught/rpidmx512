@@ -31,10 +31,8 @@
 #include "json/json_key.h"
 #include "json/json_params_base.h"
 
-namespace json
-{
-class GpsParams : public JsonParamsBase<GpsParams>
-{
+namespace json {
+class GpsParams : public JsonParamsBase<GpsParams> {
    public:
     GpsParams();
 

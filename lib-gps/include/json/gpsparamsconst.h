@@ -2,7 +2,7 @@
  * @file gpsparamsconst.h
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,30 +28,14 @@
 
 #include "json/json_key.h"
 
-namespace json
-{
-struct GpsParamsConst
-{
-	static constexpr char kFileName[] = "gps.json";
-   
-	static constexpr json::SimpleKey kModule {
-	    "module",
-	    6,
-	    Fnv1a32("module", 6)
-	};
-	
-	static constexpr json::SimpleKey kEnable {
-	    "enable",
-	    6,
-	    Fnv1a32("enable", 6)
-	};
-	
-	static constexpr json::SimpleKey kUtcOffset {
-	    "utc_offset",
-	    10,
-	    Fnv1a32("utc_offset", 10)
-	};
+namespace json {
+struct GpsParamsConst {
+    static constexpr char kFileName[] = "gps.json";
+
+    static constexpr json::SimpleKey kModule{"module", 6, Fnv1a32("module", 6)};
+    static constexpr json::SimpleKey kEnable{"enable", 6, Fnv1a32("enable", 6)};
+    static constexpr json::SimpleKey kUtcOffset{"utc_offset", 10, Fnv1a32("utc_offset", 10)};
 };
 } // namespace json
 
-#endif  // JSON_GPSPARAMSCONST_H_
+#endif // JSON_GPSPARAMSCONST_H_

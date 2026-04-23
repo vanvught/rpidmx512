@@ -71,7 +71,9 @@ inline constexpr const char kModule[static_cast<uint32_t>(Module::kUndefined)][m
 };
 
 inline constexpr const char kBaud115200[static_cast<uint32_t>(Module::kUndefined)][nmea::kMaxSentenceLength] = {
-    "$PCAS01,5*19\r\n", "$PUBX,41,1,0007,0003,115200,0*18\r\n", "$PMTK251,115200*1F\r\n"};
+    "$PCAS01,5*19\r\n", 
+	"$PUBX,41,1,0007,0003,115200,0*18\r\n", 
+	"$PMTK251,115200*1F\r\n"};
 
 [[nodiscard]] inline constexpr const char* GetModule(Module module)
 {

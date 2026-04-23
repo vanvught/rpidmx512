@@ -2,7 +2,7 @@
  * @file gpsparams.cpp
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -41,17 +41,13 @@
 
 using common::store::gps::Flags;
 
-namespace json
-{
-GpsParams::GpsParams()
-{
+namespace json {
+GpsParams::GpsParams() {
     ConfigStore::Instance().Copy(&store_gps, &ConfigurationStore::gps);
 }
 
-void GpsParams::SetModule(const char* val, uint32_t len)
-{
-    if (len >= gps::module::kMaxNameLength)
-    {
+void GpsParams::SetModule(const char* val, uint32_t len) {
+    if (len >= gps::module::kMaxNameLength) {
         return;
     }
 
@@ -62,38 +58,31 @@ void GpsParams::SetModule(const char* val, uint32_t len)
     store_gps.module = common::ToValue(gps::GetModule(module));
 }
 
-void GpsParams::SetEnable(const char* val, [[maybe_unused]] uint32_t len)
-{
+void GpsParams::SetEnable(const char* val, [[maybe_unused]] uint32_t len) {
     if (len != 1) return;
 
     store_gps.flags = common::SetFlagValue(store_gps.flags, Flags::Flag::kEnable, val[0] != '0');
 }
 
-void GpsParams::SetUtcOffset(const char* val, uint32_t len)
-{
+void GpsParams::SetUtcOffset(const char* val, uint32_t len) {
     int32_t hours;
     uint32_t minutes;
 
-    if (hal::utc::ParseOffset(val, len, hours, minutes))
-    {
+    if (hal::utc::ParseOffset(val, len, hours, minutes)) {
         DEBUG_PUTS("Parse OK");
 
         int32_t utc_offset;
 
-        if (hal::utc::ValidateOffset(hours, minutes, utc_offset))
-        {
+        if (hal::utc::ValidateOffset(hours, minutes, utc_offset)) {
             DEBUG_PUTS("Validate OK");
             store_gps.utc_offset = utc_offset;
         }
-    }
-    else
-    {
+    } else {
         DEBUG_PUTS("Parse ERROR");
     }
 }
 
-void GpsParams::Store(const char* buffer, uint32_t buffer_size)
-{
+void GpsParams::Store(const char* buffer, uint32_t buffer_size) {
     ParseJsonWithTable(buffer, buffer_size, kGpsKeys);
     ConfigStore::Instance().Store(&store_gps, &ConfigurationStore::gps);
 
@@ -102,8 +91,7 @@ void GpsParams::Store(const char* buffer, uint32_t buffer_size)
 #endif
 }
 
-void GpsParams::Set()
-{
+void GpsParams::Set() {
     auto& gps = *GPS::Get();
 
     gps.SetUtcOffset(store_gps.utc_offset);
@@ -113,8 +101,7 @@ void GpsParams::Set()
 #endif
 }
 
-void GpsParams::Dump()
-{
+void GpsParams::Dump() {
     printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, json::GpsParamsConst::kFileName);
     printf(" %s=%s [%u]\n", GpsParamsConst::kModule.name, gps::GetModule(static_cast<gps::Module>(store_gps.module)), store_gps.module);
     printf(" %s=%u\n", GpsParamsConst::kEnable.name, common::IsFlagSet(store_gps.flags, Flags::Flag::kEnable));

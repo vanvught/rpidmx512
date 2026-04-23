@@ -1,7 +1,7 @@
 /**
  * @file gps.cpp
  */
-/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,31 +31,26 @@
 #include <cassert>
 
 #include "gps.h"
-#include "hal_millis.h"
-#include "hal_uart.h"
 #include "utc.h"
-#include "json/gpsparams.h"
- #include "firmware/debug/debug_debug.h"
+#include "hal_udelay.h"
+#include "hal_uart.h" // Needed for EXT_UART_NUMBER
+#include "firmware/debug/debug_debug.h"
+
+namespace hal {
+uint32_t Millis();
+} // namespace hal
 
 // Maximum sentence length, including the $ and <CR><LF> is 82 bytes.
 
-namespace gps::nmea
-{
-namespace length
-{
+namespace gps::nmea {
+namespace length {
 static constexpr uint32_t kTalkerId = 2;
 static constexpr uint32_t kTag = 3;
 } // namespace length
-enum
-{
-    kRmc,
-    kGga,
-    kZda,
-    kUndefined
-};
+enum { kRmc, kGga, kZda, kUndefined };
 } // namespace gps::nmea
 
-constexpr char aTag[static_cast<int>(gps::nmea::kUndefined)][gps::nmea::length::kTag] = {
+static constexpr char kTag[static_cast<int>(gps::nmea::kUndefined)][gps::nmea::length::kTag] = {
     {'R', 'M', 'C'}, // Recommended Minimum Navigation Information
     {'G', 'G', 'A'}, // Global Positioning System Fix Data
     {'Z', 'D', 'A'}  // Time & Date - UTC, day, month, year and local time zone
@@ -63,8 +58,7 @@ constexpr char aTag[static_cast<int>(gps::nmea::kUndefined)][gps::nmea::length::
 
 GPS* GPS::s_this = nullptr;
 
-GPS::GPS(int32_t utc_offset, gps::Module module) : utc_offset_(hal::utc::IsValidOffset((utc_offset))), module_(module)
-{
+GPS::GPS(int32_t utc_offset, gps::Module module) : utc_offset_(hal::utc::IsValidOffset((utc_offset))), module_(module) {
     DEBUG_ENTRY();
     assert(s_this == nullptr);
     s_this = this;
@@ -78,12 +72,9 @@ GPS::GPS(int32_t utc_offset, gps::Module module) : utc_offset_(hal::utc::IsValid
     DEBUG_EXIT();
 }
 
-uint32_t GPS::GetTag(const char* tag)
-{
-    for (uint32_t i = 0; i < gps::nmea::kUndefined; i++)
-    {
-        if (memcmp(aTag[i], tag, gps::nmea::length::kTag) == 0)
-        {
+uint32_t GPS::GetTag(const char* tag) {
+    for (uint32_t i = 0; i < gps::nmea::kUndefined; i++) {
+        if (memcmp(kTag[i], tag, gps::nmea::length::kTag) == 0) {
             return i;
         }
     }
@@ -91,21 +82,18 @@ uint32_t GPS::GetTag(const char* tag)
     return static_cast<uint32_t>(gps::nmea::kUndefined);
 }
 
-int32_t GPS::ParseDecimal(const char* p, uint32_t& length)
-{
+int32_t GPS::ParseDecimal(const char* p, uint32_t& length) {
     const auto kIsNegative = (*p == '-');
 
     length = kIsNegative ? 1 : 0;
     int32_t value = 0;
 
-    while ((p[length] != '.') && (p[length] != ','))
-    {
+    while ((p[length] != '.') && (p[length] != ',')) {
         value = value * 10 + p[length] - '0';
         length++;
     }
 
-    if (p[length] == '.')
-    {
+    if (p[length] == '.') {
         length++;
         value = value * 10 + p[length] - '0';
         length++;
@@ -116,10 +104,8 @@ int32_t GPS::ParseDecimal(const char* p, uint32_t& length)
     return kIsNegative ? -value : value;
 }
 
-void GPS::SetTime(int32_t time)
-{
-    if (time != 0)
-    {
+void GPS::SetTime(int32_t time) {
+    if (time != 0) {
         time_timestamp_millis_ = hal::Millis();
         is_time_updated_ = true;
 
@@ -131,10 +117,8 @@ void GPS::SetTime(int32_t time)
     }
 }
 
-void GPS::SetDate(int32_t date)
-{
-    if (date != 0)
-    {
+void GPS::SetDate(int32_t date) {
+    if (date != 0) {
         date_timestamp_millis_ = hal::Millis();
         is_date_updated_ = true;
 
@@ -145,14 +129,12 @@ void GPS::SetDate(int32_t date)
     }
 }
 
-void GPS::Start()
-{
+void GPS::Start() {
     DEBUG_ENTRY();
 
     UartInit();
 
-    if (module_ < gps::Module::kUndefined)
-    {
+    if (module_ < gps::Module::kUndefined) {
         UartSend(gps::kBaud115200[static_cast<uint32_t>(module_)]);
         udelay(100 * 1000);
         UartSetBaud(115200);
@@ -160,12 +142,10 @@ void GPS::Start()
 
         const auto kMillis = hal::Millis();
 
-        while ((hal::Millis() - kMillis) < 1000)
-        {
+        while ((hal::Millis() - kMillis) < 1000) {
             sentence_ = const_cast<char*>(UartGetSentence());
 
-            if (sentence_ != nullptr)
-            {
+            if (sentence_ != nullptr) {
                 DumpSentence(sentence_);
 #ifndef NDEBUG
                 printf("[%u]\n", hal::Millis() - kMillis);
@@ -174,8 +154,7 @@ void GPS::Start()
             }
         }
 
-        if (sentence_ == nullptr)
-        {
+        if (sentence_ == nullptr) {
             UartSetBaud(9600);
         }
     }
@@ -186,10 +165,8 @@ void GPS::Start()
     DEBUG_EXIT();
 }
 
-void GPS::Run()
-{
-    if (__builtin_expect(((sentence_ = const_cast<char*>(UartGetSentence())) == nullptr), 1))
-    {
+void GPS::Run() {
+    if (__builtin_expect(((sentence_ = const_cast<char*>(UartGetSentence())) == nullptr), 1)) {
         return;
     }
 
@@ -197,8 +174,7 @@ void GPS::Run()
 
     uint32_t tag;
 
-    if (__builtin_expect(((tag = GetTag(&sentence_[1 + gps::nmea::length::kTalkerId])) == gps::nmea::kUndefined), 0))
-    {
+    if (__builtin_expect(((tag = GetTag(&sentence_[1 + gps::nmea::length::kTalkerId])) == gps::nmea::kUndefined), 0)) {
         return;
     }
 
@@ -207,11 +183,9 @@ void GPS::Run()
     uint32_t offset = 1 + gps::nmea::length::kTalkerId + gps::nmea::length::kTag + 1; // $ and ,
     uint32_t field_index = 1;
 
-    do
-    {
+    do {
         uint32_t length = 0;
-        switch (tag | field_index << 8)
-        {
+        switch (tag | field_index << 8) {
             case gps::nmea::kRmc | (1 << 8): // UTC Time of position, hhmmss.ss
             case gps::nmea::kGga | (1 << 8):
             case gps::nmea::kZda | (1 << 8):
@@ -233,30 +207,26 @@ void GPS::Run()
 
         field_index++;
 
-        while ((sentence_[offset] != '*') && (sentence_[offset] != ','))
-        {
+        while ((sentence_[offset] != '*') && (sentence_[offset] != ',')) {
             offset++;
         }
 
     } while (sentence_[offset++] != '*');
 
-    if (status_current_ != status_previous_)
-    {
+    if (status_current_ != status_previous_) {
         status_previous_ = status_current_;
 
         Display(status_current_);
     }
 }
 
-void GPS::DumpSentence([[maybe_unused]] const char* sentence)
-{
+void GPS::DumpSentence([[maybe_unused]] const char* sentence) {
 #ifndef NDEBUG
     printf("%p |", sentence);
 
     const char* p = sentence;
 
-    while (*p != '\r')
-    {
+    while (*p != '\r') {
         putchar(*p++);
     }
 
@@ -264,13 +234,11 @@ void GPS::DumpSentence([[maybe_unused]] const char* sentence)
 #endif
 }
 
-void GPS::Print()
-{
+void GPS::Print() {
     printf("GPS [UART%u]\n", EXT_UART_NUMBER);
     printf(" Module : %s [%u]\n", gps::GetModule(module_), baud_);
     printf(" UTC offset : %d (seconds)\n", utc_offset_);
-    switch (status_current_)
-    {
+    switch (status_current_) {
         case gps::Status::kWarning:
             puts(" No Fix");
             break;
