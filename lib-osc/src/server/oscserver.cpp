@@ -192,7 +192,7 @@ void OscServer::Input(const uint8_t* buffer, uint32_t size, uint32_t from_ip, [[
 
     debug::Dump(udp_buffer, size);
 
-    DEBUG_PRINTF("[%d] path : %s", size, osc::get_path(const_cast<char*>(udp_buffer), size));
+    DEBUG_PRINTF("[%d] path : %s", size, osc::GetPath(const_cast<char*>(udp_buffer), size));
 
     if (osc::IsMatch(udp_buffer, s_path)) {
         const auto kArgc = msg.GetArgc();
