@@ -87,9 +87,9 @@ void GetCounters(Counters& st) {
 
         std::istringstream fields(line.substr(p + 1));
         // Receive:
-        uint64_t r_bytes, r_packets, r_errs, r_drop, r_fifo, r_frame, r_comp, r_mcast;
+        uint32_t r_bytes, r_packets, r_errs, r_drop, r_fifo, r_frame, r_comp, r_mcast;
         // Transmit:
-        uint64_t t_bytes, t_packets, t_errs, t_drop, t_fifo, t_colls, t_carrier, t_comp;
+        uint32_t t_bytes, t_packets, t_errs, t_drop, t_fifo, t_colls, t_carrier, t_comp;
 
         if (!(fields >> r_bytes >> r_packets >> r_errs >> r_drop >> r_fifo >> r_frame >> r_comp >> r_mcast >> t_bytes >> t_packets >> t_errs >> t_drop >> t_fifo >> t_colls >> t_carrier >> t_comp)) {
             return;

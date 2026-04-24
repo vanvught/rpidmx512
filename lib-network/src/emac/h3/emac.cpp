@@ -30,6 +30,7 @@
 #include <cassert>
 
 #include "emac.h"
+#include "emac_counters.h"
 #include "emac/emac_phy.h"
 #include "emac/mmi.h"
 #include "h3.h"
@@ -213,6 +214,8 @@ void __attribute__((cold)) Start(uint8_t mac_address[], emac::phy::Link& link) {
     value = H3_EMAC->TX_CTL0;
     value |= TX_CTL0_TX_EN;
     H3_EMAC->TX_CTL0 = value;
+	
+	memset(&emac::eth::globals::counter, 0, sizeof(emac::eth::globals::Counters));
 
     //	H3_EMAC->INT_EN = (uint32_t)(~0);
 

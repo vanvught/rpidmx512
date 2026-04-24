@@ -35,8 +35,13 @@
 
 #include "h3.h"
 #include "emac.h"
+#include "emac_counters.h"
 #include "firmware/debug/debug_dump.h"
 #include "firmware/debug/debug_debug.h"
+
+namespace emac::eth::globals {
+struct Counters counter;
+} // namespace emac::eth::globals
 
 extern struct CoherentRegion* p_coherent_region;
 
@@ -53,17 +58,20 @@ __attribute__((hot)) uint32_t Recv(uint8_t** packetp) {
 
         if (length < 0x40) {
             DEBUG_PUTS("Bad Packet (length < 0x40)");
+			emac::eth::globals::counter.received_error++;
             return 0;
         } else {
             if (length > CONFIG_ETH_RXSIZE) {
                 DEBUG_PRINTF("Received packet is too big (length=%d)\n", length);
-                return 0;
+				emac::eth::globals::counter.received_error++;
+				return 0;
             }
 
             *packetp = reinterpret_cast<uint8_t*>(desc_p->buf_addr);
 #ifdef NDEBUG
             debug::Dump(reinterpret_cast<void*>(*packetp), static_cast<uint16_t>(length));
 #endif
+            emac::eth::globals::counter.received++;
             return length;
         }
     }
@@ -122,6 +130,8 @@ void Send(uint32_t length) {
     value |= (1U << 31); /* mandatory */
     value |= (1U << 30); /* mandatory */
     H3_EMAC->TX_CTL1 = value;
+	
+	emac::eth::globals::counter.sent++;
 }
 
 void Send(void* buffer, uint32_t length) {

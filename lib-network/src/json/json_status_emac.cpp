@@ -28,16 +28,15 @@
 #include "network_iface.h"
 
 namespace json::status::emac {
-
-static uint32_t U64ToDec(char* dst, uint64_t v) {
+static uint32_t U32ToDec(char* dst, uint32_t v) {
     // Write digits into a temp buffer in reverse order
-    char tmp[20]; // enough for 2^64-1 = 18446744073709551615
+    char tmp[12]; // enough for 2^32-1 = 4.294.967.294
     uint32_t i = 0;
     do {
-        uint64_t q = v / 10;
-        uint32_t r = static_cast<uint32_t>(v - q * 10);
-        tmp[i++] = static_cast<char>('0' + r);
-        v = q;
+        const auto kQ = v / 10U;
+        const auto kR = v - (kQ * 10U);
+        tmp[i++] = static_cast<char>('0' + kR);
+        v = kQ;
     } while (v > 0);
 
     for (uint32_t j = 0; j < i; ++j) {
@@ -47,34 +46,34 @@ static uint32_t U64ToDec(char* dst, uint64_t v) {
 }
 
 uint32_t Emac(char* out_buffer, uint32_t out_buffer_size) {
-    network::iface::Counters st{};
-    network::iface::GetCounters(st);
+    network::iface::Counters counters;
+    network::iface::GetCounters(counters);
 
     auto* p = out_buffer;
     auto* end = out_buffer + out_buffer_size;
 
-    auto emit_str = [&](const char* s) {
+    auto write_string = [&](const char* s) {
         while (*s && p < end) *p++ = *s++;
     };
-    auto emit_u64 = [&](uint64_t v) { p += U64ToDec(p, v); };
+    auto write_u32 = [&](uint32_t v) { p += U32ToDec(p, v); };
 
-    emit_str("{\"rx_ok\":");
-    emit_u64(st.rx.ok);
-    emit_str(",\"rx_err\":");
-    emit_u64(st.rx.err);
-    emit_str(",\"rx_drp\":");
-    emit_u64(st.rx.drp);
-    emit_str(",\"rx_ovr\":");
-    emit_u64(st.rx.ovr);
-    emit_str(",\"tx_ok\":");
-    emit_u64(st.tx.ok);
-    emit_str(",\"tx_err\":");
-    emit_u64(st.tx.err);
-    emit_str(",\"tx_drp\":");
-    emit_u64(st.tx.drp);
-    emit_str(",\"tx_ovr\":");
-    emit_u64(st.tx.ovr);
-    emit_str("}");
+    write_string("{\"rx_ok\":");
+    write_u32(counters.rx.ok);
+    write_string(",\"rx_err\":");
+    write_u32(counters.rx.err);
+    write_string(",\"rx_drp\":");
+    write_u32(counters.rx.drp);
+    write_string(",\"rx_ovr\":");
+    write_u32(counters.rx.ovr);
+    write_string(",\"tx_ok\":");
+    write_u32(counters.tx.ok);
+    write_string(",\"tx_err\":");
+    write_u32(counters.tx.err);
+    write_string(",\"tx_drp\":");
+    write_u32(counters.tx.drp);
+    write_string(",\"tx_ovr\":");
+    write_u32(counters.tx.ovr);
+    write_string("}");
 
     return static_cast<uint32_t>(p - out_buffer);
 }

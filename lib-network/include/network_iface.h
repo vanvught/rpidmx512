@@ -92,10 +92,10 @@ inline char AddressingMode() {
 
 struct Counters {
     struct Receive {
-        uint64_t ok = 0, err = 0, drp = 0, ovr = 0;
+        uint32_t ok = 0, err = 0, drp = 0, ovr = 0;
     } rx;
     struct Transmit {
-        uint64_t ok = 0, err = 0, drp = 0, ovr = 0;
+        uint32_t ok = 0, err = 0, drp = 0, ovr = 0;
     } tx;
 };
 
