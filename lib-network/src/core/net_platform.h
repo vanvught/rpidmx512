@@ -2,7 +2,7 @@
  * @file net_platform.h
  *
  */
-/* Copyright (C) 2022-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2022-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,11 +37,9 @@
 #define SECTION_NETWORK
 #endif
 #else
-#include "h3.h"
 #define SECTION_NETWORK
 #include "../../src/emac/h3/emac.h"
-inline void* get_tx_dma()
-{
+inline void* GetTxDma() {
     extern struct CoherentRegion* p_coherent_region;
     auto desc_num = p_coherent_region->tx_currdescnum;
     auto* desc_p = &p_coherent_region->tx_chain[desc_num];

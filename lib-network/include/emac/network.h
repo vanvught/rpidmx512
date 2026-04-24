@@ -32,7 +32,7 @@
 
 #include <cstdint>
 
-#include "../src/core/net_private.h"
+#include "../src/core/network_private.h"
 #include "network_config.h" // IWYU pragma: keep
 #include "network_iface.h"
 #include "network_udp.h"  // IWYU pragma: keep

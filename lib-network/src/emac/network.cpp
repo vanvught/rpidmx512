@@ -33,7 +33,7 @@
 #include "emac/emac_phy.h"
 #include "emac/network.h"
 #include "emac/emac_link_check.h"
-#include "../src/core/net_private.h"
+#include "../src/core/network_private.h"
 #include "core/ip4/dhcp.h"
 #include "core/ip4/arp.h"
 #include "core/netif.h"

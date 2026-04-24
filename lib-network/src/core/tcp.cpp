@@ -69,7 +69,7 @@ void Error(const char*);
 #include "net_config.h"
 #include "core/protocol/ieee.h"
 #include "core/protocol/tcp.h"
-#include "net_private.h"
+#include "network_private.h"
 #include "hal.h"
 #include "hal_millis.h"
 #include "firmware/debug/debug_debug.h"

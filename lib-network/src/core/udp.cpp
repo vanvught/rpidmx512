@@ -44,8 +44,8 @@
 #include "core/protocol/udp.h"
 #include "core/ip4/arp.h"
 #include "network_udp.h"
-#include "net_private.h"
-#include "net_memcpy.h"
+#include "network_private.h"
+#include "network_memcpy.h"
 #include "firmware/debug/debug_debug.h"
 
 namespace network::udp {
@@ -100,7 +100,7 @@ __attribute__((hot)) void Input(const struct Header* udp) {
             const auto kSize = std::min(kDataSize, kDataLength);
 
             network::memcpy(data.data, udp->udp.data, kSize);
-            data.from_ip = network::memcpy_ip(udp->ip4.src);
+            data.from_ip = network::MemcpyIp(udp->ip4.src);
             data.from_port = __builtin_bswap16(udp->udp.source_port);
             data.size = kSize;
 
@@ -139,7 +139,7 @@ template <network::arp::EthSend S> static void SendImplementation(int index, con
     out_buffer->ip4.id = ++s_id;
     out_buffer->ip4.len = __builtin_bswap16(static_cast<uint16_t>(size + kIPv4UdpHeadersSize));
     out_buffer->ip4.chksum = 0;
-    network::memcpy_ip(out_buffer->ip4.src, netif::global::netif_default.ip.addr);
+    network::MemcpyIp(out_buffer->ip4.src, netif::global::netif_default.ip.addr);
 
     // UDP
     out_buffer->udp.source_port = __builtin_bswap16(s_ports[index].info.port);
@@ -156,7 +156,7 @@ template <network::arp::EthSend S> static void SendImplementation(int index, con
         network::memset<0xFF, network::ethernet::kAddressLength>(out_buffer->ip4.dst);
     } else if ((remote_ip & network::global::broadcast_mask) == network::global::broadcast_mask) {
         network::memset<0xFF, network::ethernet::kAddressLength>(out_buffer->ether.dst);
-        network::memcpy_ip(out_buffer->ip4.dst, remote_ip);
+        network::MemcpyIp(out_buffer->ip4.dst, remote_ip);
     } else {
         if ((remote_ip & 0xF0) == 0xE0) { // Multicast, we know the MAC Address
             typedef union pcast32 {
@@ -171,7 +171,7 @@ template <network::arp::EthSend S> static void SendImplementation(int index, con
             s_multicast_mac[5] = multicast_ip.u8[3];
 
             std::memcpy(out_buffer->ether.dst, s_multicast_mac, network::ethernet::kAddressLength);
-            network::memcpy_ip(out_buffer->ip4.dst, remote_ip);
+            network::MemcpyIp(out_buffer->ip4.dst, remote_ip);
         } else {
             if constexpr (S == network::arp::EthSend::kIsNormal) {
                 network::arp::Send(out_buffer, size + kUdpPacketHeadersSize, remote_ip);

@@ -26,7 +26,6 @@
 #include "network_memory.h"
 #include "net_platform.h"
 
-namespace network::memory
-{
+namespace network::memory {
 uint8_t pool[kBlocks][kBlockSize] SECTION_NETWORK __attribute__((aligned(4)));
-}
+} // namespace network::memory

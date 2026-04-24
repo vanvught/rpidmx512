@@ -35,8 +35,8 @@
 #include <cstdint>
 #include <cstdint>
 
-#include "../src/core/net_private.h"
-#include "../src/core/net_memcpy.h"
+#include "../src/core/network_private.h"
+#include "../src/core/network_memcpy.h"
 #include "core/ip4/arp.h"
 #include "core/protocol/ieee.h"
 #include "core/protocol/ethernet.h"
@@ -69,7 +69,7 @@ void EthernetInput(const uint8_t* buffer, [[maybe_unused]] uint32_t length) {
             DEBUG_PRINTF(IPSTR " " IPSTR, kIp4->ip4.dst[0], kIp4->ip4.dst[1], kIp4->ip4.dst[2], kIp4->ip4.dst[3], kIp4->ip4.src[0], kIp4->ip4.src[1], kIp4->ip4.src[2], kIp4->ip4.src[3]);
 
             if ((kEther->dst[0] == network::ethernet::kIP4MulticastAddr0) && (kEther->dst[1] == network::ethernet::kIP4MulticastAddr1) && (kEther->dst[2] == network::ethernet::kIP4MulticastAddr2)) {
-                if (!network::igmp::LookupGroup(network::memcpy_ip(kIp4->ip4.dst))) {
+                if (!network::igmp::LookupGroup(network::MemcpyIp(kIp4->ip4.dst))) {
                     emac::eth::FreePkt();
                     DEBUG_PUTS("IGMP not for us");
                     return;

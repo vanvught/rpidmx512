@@ -37,36 +37,29 @@
 #include <cstring>
 
 #include "core/netif.h"
-#include "../src/core/net_memcpy.h"
-#include "../src/core/net_private.h"
+#include "../src/core/network_memcpy.h"
+#include "../src/core/network_private.h"
 #include "core/protocol/icmp.h"
 #include "core/protocol/ethernet.h"
 
-namespace network::icmp
-{
-__attribute__((hot)) void Input(struct Header* p_icmp)
-{
-    if (p_icmp->icmp.type == icmp::Type::kEcho)
-    {
-        if (p_icmp->icmp.code == kCodeEcho)
-        {
+namespace network::icmp {
+__attribute__((hot)) void Input(struct Header* p_icmp) {
+    if (p_icmp->icmp.type == icmp::Type::kEcho) {
+        if (p_icmp->icmp.code == kCodeEcho) {
             // Ethernet
             std::memcpy(p_icmp->ether.dst, p_icmp->ether.src, network::ethernet::kAddressLength);
             std::memcpy(p_icmp->ether.src, netif::global::netif_default.hwaddr, network::ethernet::kAddressLength);
             // IPv4
             p_icmp->ip4.id = static_cast<uint16_t>(~p_icmp->ip4.id);
 
-            const auto kIpDestination = network::memcpy_ip(p_icmp->ip4.dst);
+            const auto kIpDestination = network::MemcpyIp(p_icmp->ip4.dst);
 
             std::memcpy(p_icmp->ip4.dst, p_icmp->ip4.src, network::ip4::kAddressLength);
 
-            if (kIpDestination == netif::global::netif_default.secondary_ip.addr)
-            {
-                network::memcpy_ip(p_icmp->ip4.src, netif::global::netif_default.secondary_ip.addr);
-            }
-            else
-            {
-                network::memcpy_ip(p_icmp->ip4.src, netif::global::netif_default.ip.addr);
+            if (kIpDestination == netif::global::netif_default.secondary_ip.addr) {
+                network::MemcpyIp(p_icmp->ip4.src, netif::global::netif_default.secondary_ip.addr);
+            } else {
+                network::MemcpyIp(p_icmp->ip4.src, netif::global::netif_default.ip.addr);
             }
 
             p_icmp->ip4.chksum = 0;

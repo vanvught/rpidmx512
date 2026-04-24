@@ -36,11 +36,11 @@
 
 #include <cstdint>
 #include <cstring>
-#include <cstdlib>
+#include <cstdlib> // IWYU pragma: keep // Needed for random())
 #include <cassert>
 
 #include "core/netif.h"
-#include "../src/core/net_memcpy.h"
+#include "../src/core/network_memcpy.h"
 #include "core/ip4/arp.h"
 #include "core/ip4/acd.h"
 #include "core/protocol/acd.h"
@@ -49,63 +49,51 @@
 #include "softwaretimers.h"
 #include "firmware/debug/debug_debug.h"
 
-namespace network::acd
-{
+namespace network::acd {
 static constexpr uint32_t kAcdTmrInterval = 100;
 static constexpr uint32_t kAcdTicksPerSecond = (1000U / kAcdTmrInterval);
 
 static TimerHandle_t s_timer_id;
 
-static void Timer([[maybe_unused]] TimerHandle_t handle)
-{
-    if (!netif::IsLinkUp())
-    {
+static void Timer([[maybe_unused]] TimerHandle_t handle) {
+    if (!netif::IsLinkUp()) {
         return;
     }
 
     auto* acd = reinterpret_cast<struct acd::Acd*>(netif::global::netif_default.acd);
     assert(acd != nullptr);
 
-    if (acd->lastconflict > 0)
-    {
+    if (acd->lastconflict > 0) {
         acd->lastconflict--;
     }
 
     DEBUG_PRINTF("state=%u, ttw=%u", static_cast<uint32_t>(acd->state), acd->ttw);
 
-    if (acd->ttw > 0)
-    {
+    if (acd->ttw > 0) {
         acd->ttw--;
     }
 
-    switch (acd->state)
-    {
+    switch (acd->state) {
         case acd::State::kAcdStateProbeWait:
         case acd::State::kAcdStateProbing:
-            if (acd->ttw == 0)
-            {
+            if (acd->ttw == 0) {
                 acd->state = acd::State::kAcdStateProbing;
                 arp::AcdProbe(acd->ipaddr);
                 DEBUG_PUTS("PROBING Sent Probe");
                 acd->sent_num++;
-                if (acd->sent_num >= kProbeNum)
-                {
+                if (acd->sent_num >= kProbeNum) {
                     acd->state = acd::State::kAcdStateAnnounceWait;
                     acd->sent_num = 0;
                     acd->ttw = static_cast<uint16_t>(kAnnounceWait * acd::kAcdTicksPerSecond);
-                }
-                else
-                {
+                } else {
                     acd->ttw = static_cast<uint16_t>(static_cast<uint32_t>(random()) % (((kProbeMax - kProbeMin) * acd::kAcdTicksPerSecond)) + (kProbeMin * acd::kAcdTicksPerSecond));
                 }
             }
             break;
         case acd::State::kAcdStateAnnounceWait:
         case acd::State::kAcdStateAnnouncing:
-            if (acd->ttw == 0)
-            {
-                if (acd->sent_num == 0)
-                {
+            if (acd->ttw == 0) {
+                if (acd->sent_num == 0) {
                     acd->state = acd::State::kAcdStateAnnouncing;
                     acd->num_conflicts = 0;
                 }
@@ -114,8 +102,7 @@ static void Timer([[maybe_unused]] TimerHandle_t handle)
                 acd->ttw = static_cast<uint16_t>(kAnnounceInterval * acd::kAcdTicksPerSecond);
                 acd->sent_num++;
 
-                if (acd->sent_num >= kAnnounceNum)
-                {
+                if (acd->sent_num >= kAnnounceNum) {
                     acd->state = acd::State::kAcdStateOngoing;
                     acd->sent_num = 0;
                     acd->ttw = 0;
@@ -125,8 +112,7 @@ static void Timer([[maybe_unused]] TimerHandle_t handle)
             }
             break;
         case acd::State::kAcdStateRateLimit:
-            if (acd->ttw == 0)
-            {
+            if (acd->ttw == 0) {
                 Stop(acd);
                 acd->conflict_callback(acd::Callback::kAcdRestartClient);
             }
@@ -136,26 +122,21 @@ static void Timer([[maybe_unused]] TimerHandle_t handle)
     }
 }
 
-static void Restart(struct acd::Acd* acd)
-{
+static void Restart(struct acd::Acd* acd) {
     acd->num_conflicts++;
     acd->conflict_callback(acd::Callback::kAcdDecline);
 
-    if (acd->num_conflicts >= kMaxConflicts)
-    {
+    if (acd->num_conflicts >= kMaxConflicts) {
         acd->state = acd::State::kAcdStateRateLimit;
         acd->ttw = static_cast<uint16_t>(kRateLimitInterval * acd::kAcdTicksPerSecond);
         DEBUG_PUTS("rate limiting initiated. too many conflicts");
-    }
-    else
-    {
+    } else {
         Stop(acd);
         acd->conflict_callback(acd::Callback::kAcdRestartClient);
     }
 }
 
-static void HandleArpConflict(struct acd::Acd* acd)
-{
+static void HandleArpConflict(struct acd::Acd* acd) {
     /* RFC5227, 2.4 "Ongoing Address Conflict Detection and Address Defense"
      allows three options where:
      a) means retreat on the first conflict,
@@ -173,21 +154,15 @@ static void HandleArpConflict(struct acd::Acd* acd)
      situation occurs for the LL acd module when a routable address is used on
      the netif but the LL address is still open in the background. */
 
-    if (acd->state == acd::State::kAcdStatePassiveOngoing)
-    {
+    if (acd->state == acd::State::kAcdStatePassiveOngoing) {
         DEBUG_PUTS("conflict when we are in passive mode -> back off");
         Stop(acd);
         acd->conflict_callback(acd::Callback::kAcdDecline);
-    }
-    else
-    {
-        if (acd->lastconflict > 0)
-        {
+    } else {
+        if (acd->lastconflict > 0) {
             DEBUG_PUTS("conflict within DEFEND_INTERVAL -> retreating");
             Restart(acd);
-        }
-        else
-        {
+        } else {
             DEBUG_PUTS("we are defending, send ARP Announce");
             arp::AcdSendAnnouncement(acd->ipaddr);
             acd->lastconflict = kDefendInterval * acd::kAcdTicksPerSecond;
@@ -195,13 +170,11 @@ static void HandleArpConflict(struct acd::Acd* acd)
     }
 }
 
-static void PutInPassiveMode()
-{
+static void PutInPassiveMode() {
     auto* acd = reinterpret_cast<struct acd::Acd*>(netif::global::netif_default.acd);
     assert(acd != nullptr);
 
-    switch (acd->state)
-    {
+    switch (acd->state) {
         case acd::State::kAcdStateOff:
         case acd::State::kAcdStatePassiveOngoing:
         default:
@@ -223,8 +196,7 @@ static void PutInPassiveMode()
 
 // Public interface
 
-void Start(struct acd::Acd* acd, ip4_addr_t ipaddr)
-{
+void Start(struct acd::Acd* acd, ip4_addr_t ipaddr) {
     DEBUG_ENTRY();
     assert(acd != nullptr);
 
@@ -238,15 +210,13 @@ void Start(struct acd::Acd* acd, ip4_addr_t ipaddr)
     DEBUG_EXIT();
 }
 
-void Stop(struct acd::Acd* acd)
-{
+void Stop(struct acd::Acd* acd) {
     DEBUG_ENTRY();
     assert(acd != nullptr);
 
     acd->state = acd::State::kAcdStateOff;
 
-    if (s_timer_id != kTimerIdNone)
-    {
+    if (s_timer_id != kTimerIdNone) {
         SoftwareTimerDelete(s_timer_id);
         s_timer_id = kTimerIdNone;
     }
@@ -254,14 +224,12 @@ void Stop(struct acd::Acd* acd)
     DEBUG_EXIT();
 }
 
-void NetworkChangedLinkDown()
-{
+void NetworkChangedLinkDown() {
     DEBUG_ENTRY();
 
     auto* acd = reinterpret_cast<struct acd::Acd*>(netif::global::netif_default.acd);
 
-    if (acd == nullptr)
-    {
+    if (acd == nullptr) {
         DEBUG_EXIT();
         return;
     }
@@ -272,19 +240,16 @@ void NetworkChangedLinkDown()
 }
 
 //  Handles every incoming ARP Packet, called by arp_handle
-void ArpReply(const struct network::arp::Header* arp)
-{
+void ArpReply(const struct network::arp::Header* arp) {
     DEBUG_ENTRY();
     auto* acd = reinterpret_cast<struct acd::Acd*>(netif::global::netif_default.acd);
 
-    if (acd == nullptr)
-    {
+    if (acd == nullptr) {
         DEBUG_EXIT();
         return;
     }
 
-    switch (acd->state)
-    {
+    switch (acd->state) {
         case acd::State::kAcdStateOff:
         case acd::State::kAcdStateRateLimit:
         default:
@@ -298,9 +263,8 @@ void ArpReply(const struct network::arp::Header* arp)
              * OR
              * ip.dst == ipaddr && hw.src != own macAddress (someone else is probing it)
              */
-            if (((memcpy_ip(arp->arp.sender_ip) == acd->ipaddr.addr)) ||
-                (!(memcpy_ip(arp->arp.sender_ip) == 0) && ((memcpy_ip(arp->arp.target_ip)) == acd->ipaddr.addr) && (memcmp(arp->arp.sender_mac, netif::global::netif_default.hwaddr, network::ethernet::kAddressLength) == 0)))
-            {
+            if (((MemcpyIp(arp->arp.sender_ip) == acd->ipaddr.addr)) ||
+                (!(MemcpyIp(arp->arp.sender_ip) == 0) && ((MemcpyIp(arp->arp.target_ip)) == acd->ipaddr.addr) && (memcmp(arp->arp.sender_mac, netif::global::netif_default.hwaddr, network::ethernet::kAddressLength) == 0))) {
                 DEBUG_PUTS("Probe Conflict detected");
                 Restart(acd);
             }
@@ -312,8 +276,7 @@ void ArpReply(const struct network::arp::Header* arp)
              * in any state we have a conflict if
              * ip.sender == ipaddr && hw.src != own macAddress (someone is using our address)
              */
-            if ((memcpy_ip(arp->arp.sender_ip) == acd->ipaddr.addr) && (memcmp(arp->arp.sender_mac, netif::global::netif_default.hwaddr, network::ethernet::kAddressLength) != 0))
-            {
+            if ((MemcpyIp(arp->arp.sender_ip) == acd->ipaddr.addr) && (memcmp(arp->arp.sender_mac, netif::global::netif_default.hwaddr, network::ethernet::kAddressLength) != 0)) {
                 DEBUG_PUTS("Conflicting ARP-Packet detected");
                 HandleArpConflict(acd);
             }
@@ -323,8 +286,7 @@ void ArpReply(const struct network::arp::Header* arp)
     DEBUG_EXIT();
 }
 
-void Add(struct acd::Acd* acd, conflict_callback_t acd_conflict_callback)
-{
+void Add(struct acd::Acd* acd, conflict_callback_t acd_conflict_callback) {
     DEBUG_ENTRY();
     assert(acd != nullptr);
     assert(acd_conflict_callback != nullptr);
@@ -337,15 +299,13 @@ void Add(struct acd::Acd* acd, conflict_callback_t acd_conflict_callback)
     DEBUG_EXIT();
 }
 
-void Remove(struct acd::Acd* acd)
-{
+void Remove(struct acd::Acd* acd) {
     DEBUG_ENTRY();
 
     assert(acd != nullptr);
     auto& netif = netif::global::netif_default;
 
-    if (netif.acd == acd)
-    {
+    if (netif.acd == acd) {
         netif.acd = nullptr;
 
         DEBUG_EXIT();
@@ -355,20 +315,16 @@ void Remove(struct acd::Acd* acd)
     DEBUG_EXIT();
 }
 
-void NetifIpAddrChanged(ip4_addr_t old_addr, ip4_addr_t new_addr)
-{
-    if ((old_addr.addr == 0) || (new_addr.addr == 0))
-    {
+void NetifIpAddrChanged(ip4_addr_t old_addr, ip4_addr_t new_addr) {
+    if ((old_addr.addr == 0) || (new_addr.addr == 0)) {
         return;
     }
 
     auto* acd = reinterpret_cast<struct acd::Acd*>(netif::global::netif_default.acd);
 
-    if (acd->ipaddr.addr == old_addr.addr)
-    {
+    if (acd->ipaddr.addr == old_addr.addr) {
         // Did we change from a LL address to a routable address?
-        if (network::IsLinklocalIp(old_addr.addr) && !network::IsLinklocalIp(new_addr.addr))
-        {
+        if (network::IsLinklocalIp(old_addr.addr) && !network::IsLinklocalIp(new_addr.addr)) {
             // Put the module in passive conflict detection mode
             PutInPassiveMode();
         }

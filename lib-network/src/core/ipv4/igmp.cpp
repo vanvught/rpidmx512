@@ -35,17 +35,17 @@
 
 #include <cstdint>
 #include <cstring>
-#include <cstdlib>
+#include <cstdlib> // IWYU pragma: keep // Needed for random())
 #include <cassert>
 
 #include "net_config.h"
-#include "../src/core/net_memcpy.h"
-#include "../src/core/net_private.h"
+#include "../src/core/network_memcpy.h"
+#include "../src/core/network_private.h"
 #include "core/netif.h"
 #include "core/ip4/igmp.h"
 #include "core/protocol/ieee.h"
 #include "core/protocol/igmp.h"
-#include "softwaretimers.h"
+#include "softwaretimers.h" // IWYU pragma: keep
 #include "firmware/debug/debug_debug.h"
 
 /*
@@ -53,27 +53,19 @@
  * Internet Group Management Protocol, Version 2
  */
 
-namespace network::igmp
-{
+namespace network::igmp {
 static constexpr uint32_t kIgmpTmrInterval = 100; /* Milliseconds */
 static constexpr uint32_t kIgmpJoinDelayingMemberTmr = (500 / kIgmpTmrInterval);
 
-enum State
-{
-    kNonMember,
-    kDelayingMember,
-    kIdleMember
-};
+enum State { kNonMember, kDelayingMember, kIdleMember };
 
-struct GroupInfo
-{
+struct GroupInfo {
     uint32_t group_address;
     uint16_t timer; // 1/10 seconds
     State state;
 };
 
-typedef union pcast32
-{
+typedef union pcast32 {
     uint32_t u32;
     uint8_t u8[4];
 } _pcast32;
@@ -85,8 +77,7 @@ static struct GroupInfo s_groups[IGMP_MAX_JOINS_ALLOWED] SECTION_NETWORK ALIGNED
 static uint16_t s_id SECTION_NETWORK ALIGNED;
 static TimerHandle_t s_timer_id;
 
-static void SendReport(uint32_t group_address)
-{
+static void SendReport(uint32_t group_address) {
     DEBUG_ENTRY();
     _pcast32 multicast_ip;
 
@@ -102,7 +93,7 @@ static void SendReport(uint32_t group_address)
     std::memcpy(s_report.ether.dst, s_multicast_mac, network::ethernet::kAddressLength);
     // IPv4
     s_report.ip4.id = ++s_id;
-    network::memcpy_ip(s_report.ip4.src, netif::global::netif_default.ip.addr);
+    network::MemcpyIp(s_report.ip4.src, netif::global::netif_default.ip.addr);
     std::memcpy(s_report.ip4.dst, multicast_ip.u8, network::ip4::kAddressLength);
     s_report.ip4.chksum = 0;
 #if !defined(CHECKSUM_BY_HARDWARE)
@@ -118,42 +109,33 @@ static void SendReport(uint32_t group_address)
     DEBUG_EXIT();
 }
 
-static void StartTimer(struct GroupInfo& group, uint32_t max_time)
-{
+static void StartTimer(struct GroupInfo& group, uint32_t max_time) {
     group.timer = static_cast<uint16_t>((max_time > 2U ? (static_cast<uint32_t>(random()) % max_time) : 1U));
 
-    if (group.timer == 0)
-    {
+    if (group.timer == 0) {
         group.timer = 1;
     }
 }
 
-static void Timeout(struct GroupInfo& group)
-{
-    if ((group.state == kDelayingMember) && (group.group_address != 0x010000e0))
-    { // FIXME all-systems
+static void Timeout(struct GroupInfo& group) {
+    if ((group.state == kDelayingMember) && (group.group_address != 0x010000e0)) { // FIXME all-systems
         group.state = kIdleMember;
         SendReport(group.group_address);
     }
 }
 
-static void Timer([[maybe_unused]] TimerHandle_t handle)
-{
-    for (auto& group : s_groups)
-    {
-        if (group.timer > 0)
-        {
+static void Timer([[maybe_unused]] TimerHandle_t handle) {
+    for (auto& group : s_groups) {
+        if (group.timer > 0) {
             group.timer--;
-            if (group.timer == 0)
-            {
+            if (group.timer == 0) {
                 Timeout(group);
             }
         }
     }
 }
 
-void __attribute__((cold)) Init()
-{
+void __attribute__((cold)) Init() {
     s_multicast_mac[0] = 0x01;
     s_multicast_mac[1] = 0x00;
     s_multicast_mac[2] = 0x5E;
@@ -214,14 +196,11 @@ void __attribute__((cold)) Init()
 
 static void Leave(uint32_t);
 
-void __attribute__((cold)) Shutdown()
-{
+void __attribute__((cold)) Shutdown() {
     DEBUG_ENTRY();
 
-    for (auto& group : s_groups)
-    {
-        if (group.group_address != 0)
-        {
+    for (auto& group : s_groups) {
+        if (group.group_address != 0) {
             DEBUG_PRINTF(IPSTR, IP2STR(group.group_address));
 
             Leave(group.group_address);
@@ -235,8 +214,7 @@ void __attribute__((cold)) Shutdown()
     DEBUG_EXIT();
 }
 
-static void SendLeave(uint32_t group_address)
-{
+static void SendLeave(uint32_t group_address) {
     DEBUG_ENTRY();
     DEBUG_PRINTF(IPSTR " " MACSTR, IP2STR(group_address), MAC2STR(s_multicast_mac));
 
@@ -246,9 +224,9 @@ static void SendLeave(uint32_t group_address)
 #if !defined(CHECKSUM_BY_HARDWARE)
     s_leave.ip4.chksum = Chksum(reinterpret_cast<void*>(&s_leave.ip4), 24); // TODO(avv):
 #endif
-    network::memcpy_ip(s_leave.ip4.src, netif::global::netif_default.ip.addr);
+    network::MemcpyIp(s_leave.ip4.src, netif::global::netif_default.ip.addr);
     // IGMP
-    network::memcpy_ip(s_leave.igmp.report.igmp.group_address, group_address);
+    network::MemcpyIp(s_leave.igmp.report.igmp.group_address, group_address);
     s_leave.igmp.report.igmp.checksum = 0;
 #if !defined(CHECKSUM_BY_HARDWARE)
     s_leave.igmp.report.igmp.checksum = Chksum(reinterpret_cast<void*>(&s_leave.ip4), kIPv4IgmpReportHeadersSize);
@@ -261,12 +239,10 @@ static void SendLeave(uint32_t group_address)
     DEBUG_EXIT();
 }
 
-__attribute__((hot)) void Input(const struct Header* p_igmp)
-{
+__attribute__((hot)) void Input(const struct Header* p_igmp) {
     DEBUG_ENTRY();
 
-    if ((p_igmp->ip4.ver_ihl == 0x45) && (p_igmp->igmp.igmp.type == Type::kQuery))
-    {
+    if ((p_igmp->ip4.ver_ihl == 0x45) && (p_igmp->igmp.igmp.type == Type::kQuery)) {
         DEBUG_PRINTF(IPSTR, p_igmp->ip4.dst[0], p_igmp->ip4.dst[1], p_igmp->ip4.dst[2], p_igmp->ip4.dst[3]);
 
         auto is_general_request = false;
@@ -274,32 +250,24 @@ __attribute__((hot)) void Input(const struct Header* p_igmp)
         _pcast32 igmp_generic_address;
         igmp_generic_address.u32 = 0x010000e0;
 
-        if (memcmp(p_igmp->ip4.dst, igmp_generic_address.u8, 4) == 0)
-        {
+        if (memcmp(p_igmp->ip4.dst, igmp_generic_address.u8, 4) == 0) {
             is_general_request = true;
         }
 
-        for (auto& group : s_groups)
-        {
-            if (group.group_address == 0)
-            {
+        for (auto& group : s_groups) {
+            if (group.group_address == 0) {
                 continue;
             }
 
             _pcast32 group_address;
             group_address.u32 = group.group_address;
 
-            if (is_general_request || (memcmp(p_igmp->ip4.dst, group_address.u8, network::ip4::kAddressLength) == 0))
-            {
-                if (group.state == kDelayingMember)
-                {
-                    if (p_igmp->igmp.igmp.max_resp_time < group.timer)
-                    {
+            if (is_general_request || (memcmp(p_igmp->ip4.dst, group_address.u8, network::ip4::kAddressLength) == 0)) {
+                if (group.state == kDelayingMember) {
+                    if (p_igmp->igmp.igmp.max_resp_time < group.timer) {
                         group.timer = (1 + p_igmp->igmp.igmp.max_resp_time / 2);
                     }
-                }
-                else
-                { // s_groups[s_joins_allowed_index].state == IDLE_MEMBER
+                } else { // s_groups[s_joins_allowed_index].state == IDLE_MEMBER
                     group.state = kDelayingMember;
                     group.timer = (1 + p_igmp->igmp.igmp.max_resp_time / 2);
                 }
@@ -310,24 +278,19 @@ __attribute__((hot)) void Input(const struct Header* p_igmp)
     DEBUG_EXIT();
 }
 
-static void DelayingMember(struct GroupInfo& group, uint32_t maxresp)
-{
-    if ((group.state == kIdleMember) || ((group.state == kDelayingMember) && ((group.timer == 0) || (maxresp < group.timer))))
-    {
+static void DelayingMember(struct GroupInfo& group, uint32_t maxresp) {
+    if ((group.state == kIdleMember) || ((group.state == kDelayingMember) && ((group.timer == 0) || (maxresp < group.timer)))) {
         StartTimer(group, maxresp);
         group.state = kDelayingMember;
     }
 }
 
 #if defined(CONFIG_EMAC_HASH_MULTICAST_FILTER)
-static void ResetHash()
-{
+static void ResetHash() {
     emac::multicast::ResetHash();
 
-    for (auto& group : s_groups)
-    {
-        if (group.group_address != 0)
-        {
+    for (auto& group : s_groups) {
+        if (group.group_address != 0) {
             _pcast32 multicast_ip;
             multicast_ip.u32 = group.group_address;
             const uint8_t kMacAddr[6] = {0x01, 0x00, 0x5E, static_cast<uint8_t>(multicast_ip.u8[1] & 0x7F), multicast_ip.u8[2], multicast_ip.u8[3]};
@@ -338,27 +301,22 @@ static void ResetHash()
 }
 #endif
 
-void static Join(uint32_t group_address)
-{
+void static Join(uint32_t group_address) {
     DEBUG_ENTRY();
     DEBUG_PRINTF(IPSTR, IP2STR(group_address));
 
-    if ((group_address & 0xE0) != 0xE0)
-    {
+    if ((group_address & 0xE0) != 0xE0) {
         DEBUG_ENTRY();
         return;
     }
 
-    for (int i = 0; i < IGMP_MAX_JOINS_ALLOWED; i++)
-    {
-        if (s_groups[i].group_address == group_address)
-        {
+    for (int i = 0; i < IGMP_MAX_JOINS_ALLOWED; i++) {
+        if (s_groups[i].group_address == group_address) {
             DEBUG_EXIT();
             return;
         }
 
-        if (s_groups[i].group_address == 0)
-        {
+        if (s_groups[i].group_address == 0) {
             s_groups[i].group_address = group_address;
             s_groups[i].state = kDelayingMember;
             s_groups[i].timer = 2; // TODO(avv):
@@ -383,15 +341,12 @@ void static Join(uint32_t group_address)
     DEBUG_ENTRY();
 }
 
-static void Leave(uint32_t group_address)
-{
+static void Leave(uint32_t group_address) {
     DEBUG_ENTRY();
     DEBUG_PRINTF(IPSTR, IP2STR(group_address));
 
-    for (auto& group : s_groups)
-    {
-        if (group.group_address == group_address)
-        {
+    for (auto& group : s_groups) {
+        if (group.group_address == group_address) {
             SendLeave(group.group_address);
 
             group.group_address = 0;
@@ -415,25 +370,20 @@ static void Leave(uint32_t group_address)
 
 // --> Public
 
-void JoinGroup([[maybe_unused]] int32_t handle, uint32_t group_address)
-{
+void JoinGroup([[maybe_unused]] int32_t handle, uint32_t group_address) {
     Join(group_address);
 }
 
-void LeaveGroup([[maybe_unused]] int32_t handle, uint32_t group_address)
-{
+void LeaveGroup([[maybe_unused]] int32_t handle, uint32_t group_address) {
     Leave(group_address);
 }
 
-bool LookupGroup(uint32_t group_address)
-{
+bool LookupGroup(uint32_t group_address) {
     DEBUG_ENTRY();
     DEBUG_PRINTF(IPSTR, IP2STR(group_address));
 
-    for (auto& group : s_groups)
-    {
-        if (group.group_address == group_address)
-        {
+    for (auto& group : s_groups) {
+        if (group.group_address == group_address) {
             DEBUG_EXIT();
             return true;
         }
@@ -443,10 +393,8 @@ bool LookupGroup(uint32_t group_address)
     return (group_address == network::ConvertToUint(224, 0, 0, 1));
 }
 
-void ReportGroups()
-{
-    for (auto& group : s_groups)
-    {
+void ReportGroups() {
+    for (auto& group : s_groups) {
         DelayingMember(group, kIgmpJoinDelayingMemberTmr);
     }
 }
