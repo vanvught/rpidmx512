@@ -249,7 +249,7 @@ template <network::arp::EthSend S> static void Query(uint32_t destination_ip, vo
         record_found->packet.p = network::memory::Allocator::Instance().Allocate();
         assert(record_found->packet.p != nullptr);
 
-        network::memcpy(record_found->packet.p, packet, size);
+        std::memcpy(record_found->packet.p, packet, size);
         record_found->packet.size = size;
 #if defined CONFIG_NET_ENABLE_PTP
         record_found->packet.isTimestamp = (S != network::arp::EthSend::kIsNormal);
@@ -273,12 +273,12 @@ static void CacheCleanRecord(network::arp::Record& record) {
 static void SendRequestUnicast(uint32_t ip, const uint8_t* mac_address) {
     DEBUG_PRINTF(IPSTR, IP2STR(ip));
 
-    network::memcpy(s_arp_request.ether.dst, mac_address, network::ethernet::kAddressLength);
+    std::memcpy(s_arp_request.ether.dst, mac_address, network::ethernet::kAddressLength);
     network::MemcpyIp(s_arp_request.arp.target_ip, ip);
 
     emac::eth::Send(reinterpret_cast<void*>(&s_arp_request), sizeof(struct network::arp::Header));
 
-    network::memset<0xFF, network::ethernet::kAddressLength>(s_arp_request.ether.dst);
+    network::Memset<0xFF, network::ethernet::kAddressLength>(s_arp_request.ether.dst);
 }
 
 static void Timer([[maybe_unused]] TimerHandle_t handle) {
@@ -495,7 +495,7 @@ void SendTimestamp(void* packet, uint32_t size, uint32_t remote_ip) {
 void AcdProbe(ip4_addr_t ipaddr) {
     DEBUG_ENTRY();
 
-    network::memset<0, network::ip4::kAddressLength>(s_arp_request.arp.sender_ip);
+    network::Memset<0, network::ip4::kAddressLength>(s_arp_request.arp.sender_ip);
     network::MemcpyIp(s_arp_request.arp.target_ip, ipaddr.addr);
 
     emac::eth::Send(reinterpret_cast<void*>(&s_arp_request), sizeof(struct network::arp::Header));

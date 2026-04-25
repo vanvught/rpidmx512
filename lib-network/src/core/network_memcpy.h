@@ -53,7 +53,7 @@ namespace network {
  * @warning The caller must ensure that `dest` points to a valid memory block
  * of at least `L` bytes to avoid undefined behavior.
  */
-template <uint8_t V, size_t L> inline void memset(void* dest) { // NOLINT
+template <uint8_t V, size_t L> inline void Memset(void* dest) {
     static_assert(L > 0, "Length must be greater than 0");
 
     if constexpr (L > sizeof(uint32_t)) {
@@ -71,10 +71,6 @@ template <uint8_t V, size_t L> inline void memset(void* dest) { // NOLINT
             *dst++ = V;
         }
     }
-}
-
-inline void* memcpy(void* dst, const void* src, size_t n) { // NOLINT
-    return __builtin_memcpy(dst, src, n);
 }
 
 /**
