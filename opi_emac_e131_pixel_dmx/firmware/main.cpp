@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,9 +45,6 @@
 #include "json/dmxsendparams.h"
 #include "dmxsend.h"
 #include "dmxnodewith4.h"
-#if defined(NODE_RDMNET_LLRP_ONLY)
-#include "rdmnetdevice.h"
-#endif
 #if defined(NODE_SHOWFILE)
 #include "showfile.h"
 #endif
@@ -59,10 +56,8 @@
 #include "common/utils/utils_enum.h"
 #include "configurationstore.h"
 
-namespace hal
-{
-void RebootHandler()
-{
+namespace hal {
+void RebootHandler() {
     PixelDmx::Get().Blackout();
     Dmx::Get()->Blackout();
     E131Bridge::Get()->Stop();
@@ -102,8 +97,7 @@ int main() // NOLINT
 
     uint32_t dmx_universes = 0;
 
-    if (dmxnode_node.GetPortDirection(dmxnode::kDmxportOffset) == dmxnode::PortDirection::kOutput)
-    {
+    if (dmxnode_node.GetPortDirection(dmxnode::kDmxportOffset) == dmxnode::PortDirection::kOutput) {
         dmx.SetPortDirection(0, dmx::PortDirection::kOutput, false);
         dmx_universes = 1;
     }
@@ -112,17 +106,11 @@ int main() // NOLINT
 
     // DmxNodeWith4
 
-    DmxNodeWith4<CONFIG_DMXNODE_DMX_PORT_OFFSET> dmxnode((PixelTestPattern::Get()->GetPattern() != pixelpatterns::Pattern::kNone) ? nullptr : &pixeldmx,
-                                                         (dmx_universes != 0) ? &dmx_send : nullptr);
+    DmxNodeWith4<CONFIG_DMXNODE_DMX_PORT_OFFSET> dmxnode((PixelTestPattern::Get()->GetPattern() != pixelpatterns::Pattern::kNone) ? nullptr : &pixeldmx, (dmx_universes != 0) ? &dmx_send : nullptr);
     dmxnode.Print();
 
     dmxnode_node.SetOutput(&dmxnode);
     dmxnode_node.Print();
-
-#if defined(NODE_RDMNET_LLRP_ONLY)
-	RDMNetDevice llrp_only_device;
-	llrp_only_device.Print();
-#endif
 
 #if defined(NODE_SHOWFILE)
     ShowFile showfile;
@@ -150,8 +138,7 @@ int main() // NOLINT
 
     hal::WatchdogInit();
 
-    for (;;)
-    {
+    for (;;) {
         hal::WatchdogFeed();
         network::Run();
         dmxnode_node.Run();

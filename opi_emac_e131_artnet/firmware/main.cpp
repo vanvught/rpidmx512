@@ -32,9 +32,6 @@
 #include "artnetcontroller.h"
 #include "artnetoutput.h"
 #include "dmxnode.h"
-#if defined(NODE_RDMNET_LLRP_ONLY)
-#include "rdmnetdevice.h"
-#endif
 #include "remoteconfig.h"
 #include "flashcodeinstall.h"
 #include "configstore.h"
@@ -80,11 +77,6 @@ int main() // NOLINT
     displayudf_params.SetAndShow();
 
     RemoteConfig remote_config(remoteconfig::Output::ARTNET, dmxnode_node.GetActiveOutputPorts());
-
-#if defined(NODE_RDMNET_LLRP_ONLY)
-	RDMNetDevice llrp_only_device;
-	llrp_only_device.Print();
-#endif
 
     display.TextStatus(DmxNodeMsgConst::START, console::Colours::kConsoleYellow);
 

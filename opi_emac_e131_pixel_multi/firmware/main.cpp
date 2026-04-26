@@ -40,9 +40,6 @@
 #include "pixeltestpattern.h"
 #include "json/pixeldmxparams.h"
 #include "pixeldmxmulti.h"
-#if defined(NODE_RDMNET_LLRP_ONLY)
-#include "rdmnetdevice.h"
-#endif
 #if defined(NODE_SHOWFILE)
 #include "showfile.h"
 #endif
@@ -95,11 +92,6 @@ int main() // NOLINT
     {
         dmxnode_node.SetOutput(&pixeldmx_multi);
     }
-
-#if defined(NODE_RDMNET_LLRP_ONLY)
-    RDMNetDevice llrp_only_device;
-	llrp_only_device.Print();
-#endif
 
 #if defined(NODE_SHOWFILE)
     ShowFile showfile;

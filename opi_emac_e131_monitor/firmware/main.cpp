@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,9 +38,6 @@
 #include "dmxnodemsgconst.h"
 #include "dmxmonitor.h"
 #include "dmxnode.h"
-#if defined(NODE_RDMNET_LLRP_ONLY)
-#include "rdmnetdevice.h"
-#endif
 #if defined(NODE_SHOWFILE)
 #include "showfile.h"
 #endif
@@ -50,8 +47,7 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
-namespace hal
-{
+namespace hal {
 void RebootHandler() {}
 } // namespace hal
 
@@ -76,11 +72,6 @@ int main() // NOLINT
 
     DmxNodeNode dmxnode_node;
     ShowSystime show_systime;
-
-#if defined(NODE_RDMNET_LLRP_ONLY)
-	RDMNetDevice llrp_only_device;
-	llrp_only_device.Print();
-#endif
 
 #if defined(NODE_SHOWFILE)
     ShowFile showfile;
@@ -117,8 +108,7 @@ int main() // NOLINT
 
     hal::WatchdogInit();
 
-    for (;;)
-    {
+    for (;;) {
         hal::WatchdogFeed();
         network::Run();
         dmxnode_node.Run();

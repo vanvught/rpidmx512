@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,9 +35,6 @@
 #include "json/dmxsendparams.h"
 #include "dmxnodenode.h"
 #include "dmxnodemsgconst.h"
-#if defined(NODE_RDMNET_LLRP_ONLY)
-#include "rdmnetdevice.h"
-#endif
 #if defined(NODE_SHOWFILE)
 #include "showfile.h"
 #endif
@@ -47,10 +44,8 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
-namespace hal
-{
-void RebootHandler()
-{
+namespace hal {
+void RebootHandler() {
     Dmx::Get()->Blackout();
     E131Bridge::Get()->Stop();
 }
@@ -79,19 +74,12 @@ int main() // NOLINT
     DmxNodeNode dmxnode_node;
     dmxnode_node.SetOutput(&dmx_send);
 
-    for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++)
-    {
-        const auto kPortDirection =
-            (dmxnode_node.GetPortDirection(port_index) == dmxnode::PortDirection::kOutput ? dmx::PortDirection::kOutput : dmx::PortDirection::kInput);
+    for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++) {
+        const auto kPortDirection = (dmxnode_node.GetPortDirection(port_index) == dmxnode::PortDirection::kOutput ? dmx::PortDirection::kOutput : dmx::PortDirection::kInput);
         dmx.SetPortDirection(port_index, kPortDirection, false);
     }
 
     const auto nActivePorts = dmxnode_node.GetActiveInputPorts() + dmxnode_node.GetActiveOutputPorts();
-
-#if defined(NODE_RDMNET_LLRP_ONLY)
-	RDMNetDevice llrp_only_device;
-	llrp_only_device.Print();
-#endif
 
 #if defined(NODE_SHOWFILE)
     ShowFile showfile;
@@ -120,8 +108,7 @@ int main() // NOLINT
 
     hal::WatchdogInit();
 
-    for (;;)
-    {
+    for (;;) {
         hal::WatchdogFeed();
         network::Run();
         dmxnode_node.Run();
