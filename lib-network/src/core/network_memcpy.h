@@ -1,5 +1,5 @@
 /**
- * @file net_memcpy.h
+ * @file network_memcpy.h
  * @brief Provides optimized memory manipulation functions for embedded systems.
  *
  * This header defines utility functions for memory operations such as memset and memcpy.

@@ -1,5 +1,5 @@
 /**
- * @file net_private.h
+ * @file network_private.h
  *
  */
 /* Copyright (C) 2023-2026 by Arjan van Vught mailto:info@gd32-dmx.org
