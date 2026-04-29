@@ -660,10 +660,10 @@ void Dmx::SetPortDirection(uint32_t port_index, PortDirection port_direction, bo
     const auto kUart = _port_to_uart(port_index);
 
     if (m_dmxPortDirection[port_index] != port_direction) {
+		StopData(kUart, port_index);
+		
         m_dmxPortDirection[port_index] = port_direction;
-
-        StopData(kUart, port_index);
-
+  
         switch (port_direction) {
             case PortDirection::kOutput:
                 H3GpioSet(s_nDmxDataDirectionGpioPin[port_index]); // 0 = input, 1 = output
@@ -714,7 +714,7 @@ void Dmx::Sync() {
     // Nothing to do here
 }
 
-void Dmx::StartData(H3_UART_TypeDef* pUart, uint32_t port_index) {
+void Dmx::StartData(H3_UART_TypeDef* uart, uint32_t port_index) {
     assert(sv_port_state[port_index] == PortState::IDLE);
 
     switch (m_dmxPortDirection[port_index]) {
@@ -724,8 +724,8 @@ void Dmx::StartData(H3_UART_TypeDef* pUart, uint32_t port_index) {
             __DMB();
             break;
         case PortDirection::kInput: {
-            if (pUart != nullptr) {
-                while (!(pUart->USR & UART_USR_TFE));
+            if (uart != nullptr) {
+                while (!(uart->USR & UART_USR_TFE));
             }
 
             UartEnableFifoRx(port_index);
@@ -741,7 +741,7 @@ void Dmx::StartData(H3_UART_TypeDef* pUart, uint32_t port_index) {
     }
 }
 
-void Dmx::StopData(H3_UART_TypeDef* pUart, uint32_t port_index) {
+void Dmx::StopData(H3_UART_TypeDef* uart, uint32_t port_index) {
     assert(pUart != nullptr);
     assert(port_index < config::max::PORTS);
 
@@ -751,18 +751,18 @@ void Dmx::StopData(H3_UART_TypeDef* pUart, uint32_t port_index) {
     }
 
     if (m_dmxPortDirection[port_index] == PortDirection::kOutput) {
-        auto IsIdle = false;
+        auto is_idle = false;
 
         do {
             __DMB();
             if (sv_DmxSendState == TxRxState::DMXINTER) {
-                while (!(pUart->USR & UART_USR_TFE));
-                IsIdle = true;
+                while (!(uart->USR & UART_USR_TFE));
+                is_idle = true;
             }
-        } while (!IsIdle);
+        } while (!is_idle);
     } else if (m_dmxPortDirection[port_index] == PortDirection::kInput) {
-        pUart->O08.FCR = 0;
-        pUart->O04.IER = 0;
+        uart->O08.FCR = 0;
+        uart->O04.IER = 0;
 
         sv_PortReceiveState[port_index] = TxRxState::IDLE;
     }

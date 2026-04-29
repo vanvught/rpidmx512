@@ -452,7 +452,7 @@ static void UartEnableFifo() { // DMX Output
     __ISB();
 }
 
-static void uart_disable_fifo() { // DMX Input
+static void UartDisableFifo() { // DMX Input
     EXT_UART->O08.FCR = 0;
     EXT_UART->O04.IER = UART_IER_ERBFI;
     __ISB();
@@ -561,7 +561,7 @@ void Dmx::StartData([[maybe_unused]] uint32_t port_index) {
             (void)EXT_UART->O00.RBR;
         }
 
-        uart_disable_fifo();
+        UartDisableFifo();
         __enable_fiq();
 
         __ISB();
@@ -605,7 +605,7 @@ void Dmx::StopData([[maybe_unused]] uint32_t port_index) {
     sv_PortState = PortState::IDLE;
 }
 
-void Dmx::SetPortDirection(uint32_t port_index, PortDirection port_direction, bool bEnableData) {
+void Dmx::SetPortDirection(uint32_t port_index, PortDirection port_direction, bool enable_data) {
     DEBUG_PRINTF("port_index=%u %s %c", port_index, port_direction == PortDirection::kInput ? "Input" : "Output", bEnableData ? 'Y' : 'N');
     assert(port_index == 0);
 
@@ -616,6 +616,7 @@ void Dmx::SetPortDirection(uint32_t port_index, PortDirection port_direction, bo
 
         switch (port_direction) {
             case PortDirection::kOutput:
+				UartEnableFifo();
                 H3GpioSet(GPIO_EXT_12); // 0 = input, 1 = output
                 break;
             case PortDirection::kInput:
@@ -623,11 +624,11 @@ void Dmx::SetPortDirection(uint32_t port_index, PortDirection port_direction, bo
                 H3GpioClr(GPIO_EXT_12); // 0 = input, 1 = output
                 break;
         }
-    } else if (!bEnableData) {
+    } else if (!enable_data) {
         StopData(port_index);
     }
 
-    if (bEnableData) {
+    if (enable_data) {
         StartData(port_index);
     }
 }
@@ -930,7 +931,7 @@ void Dmx::RdmSendDiscoveryRespondMessage([[maybe_unused]] uint32_t port_index, c
     assert(port_index < dmx::config::max::PORTS);
     assert(pRdmData != nullptr);
     assert(nLength != 0);
-
+		
     // 3.2.2 Responder Packet spacing
     udelay(RDM_RESPONDER_PACKET_SPACING, gsv_RdmDataReceiveEnd);
 
@@ -943,7 +944,8 @@ void Dmx::RdmSendDiscoveryRespondMessage([[maybe_unused]] uint32_t port_index, c
         EXT_UART->O00.THR = pRdmData[i];
     }
 
-    while (!((EXT_UART->LSR & UART_LSR_TEMT) == UART_LSR_TEMT));
+    while (!((EXT_UART->LSR & UART_LSR_TEMT) == UART_LSR_TEMT)) {
+    }
 
     udelay(RDM_RESPONDER_DATA_DIRECTION_DELAY);
 
