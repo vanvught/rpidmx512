@@ -2,7 +2,7 @@
  * @file console_fb.h
  *
  */
-/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,11 +32,9 @@
 
 #include <cstdint>
 
-namespace console
-{
+namespace console {
 // some RGB color definitions
-enum class Colours: uint32_t
-{
+enum class Colours : uint32_t {
     kConsoleBlack = 0x00000000,  ///<   0,   0,   0
     kConsoleBlue = 0x000000FF,   ///<   0,   0, 255
     kConsoleGreen = 0x0000FF00,  ///<   0, 255,   0
@@ -71,4 +69,4 @@ void Status(Colours, const char*);
 void Error(const char*);
 } // namespace console
 
-#endif  // H3_CONSOLE_FB_H_
+#endif // H3_CONSOLE_FB_H_

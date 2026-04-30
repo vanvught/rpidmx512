@@ -100,7 +100,7 @@ void TCNetReader::Start()
     assert(handle_ != -1);
 
     LtcOutputs::Get()->Init();
-    hal::statusled::SetMode(hal::statusled::Mode::NORMAL);
+    hal::statusled::SetMode(hal::statusled::Mode::kNormal);
 
     DEBUG_EXIT();
 }
@@ -282,13 +282,13 @@ void TCNetReader::Run()
     __DMB();
     if (gv_ltc_nUpdatesPerSecond != 0)
     {
-        hal::statusled::SetMode(hal::statusled::Mode::DATA);
+        hal::statusled::SetMode(hal::statusled::Mode::kData);
         Reset(false);
     }
     else
     {
         LtcOutputs::Get()->ShowSysTime();
-        hal::statusled::SetMode(hal::statusled::Mode::NORMAL);
+        hal::statusled::SetMode(hal::statusled::Mode::kNormal);
         Reset(true);
     }
 }

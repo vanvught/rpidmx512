@@ -155,7 +155,7 @@ void E131Bridge::Start()
 #endif
 
     state_.status = e131bridge::Status::kOn;
-    hal::statusled::SetMode(hal::statusled::Mode::NORMAL);
+    hal::statusled::SetMode(hal::statusled::Mode::kNormal);
 }
 
 void E131Bridge::Stop()
@@ -184,7 +184,7 @@ void E131Bridge::Stop()
 #endif
 
     state_.status = e131bridge::Status::kOff;
-    hal::statusled::SetMode(hal::statusled::Mode::OFF_OFF);
+    hal::statusled::SetMode(hal::statusled::Mode::kOffOff);
 }
 
 void E131Bridge::SetSynchronizationAddress(bool source_a, bool source_b, uint16_t synchronization_address)
@@ -575,7 +575,7 @@ void E131Bridge::HandleSynchronization()
 
     if ((kSynchronizationAddress != state_.synchronization_address_source_a) && (kSynchronizationAddress != state_.synchronization_address_source_b))
     {
-        hal::statusled::SetMode(hal::statusled::Mode::NORMAL);
+        hal::statusled::SetMode(hal::statusled::Mode::kNormal);
         DEBUG_PUTS("");
         return;
     }
@@ -657,7 +657,7 @@ void E131Bridge::InputUdp(const uint8_t* buffer, [[maybe_unused]] uint32_t size,
         }
     }
 
-    hal::panelled::On(hal::panelled::SACN);
+    hal::panelled::On(hal::panelled::kSacn);
 }
 
 void E131Bridge::UpdateMergeStatus(uint32_t port_index)
@@ -1077,12 +1077,12 @@ void E131Bridge::SetNetworkDataLossCondition(bool source_a, bool source_b)
     state_.receiving_dmx &= static_cast<uint8_t>(~(1U << static_cast<uint8_t>(dmxnode::PortDirection::kOutput)));
 
     // The hal::statusled::Mode::FAST is for RDM Identify (Art-Net 4)
-    if (enable_data_indicator_ && (hal::statusled::GetMode() != hal::statusled::Mode::FAST))
+    if (enable_data_indicator_ && (hal::statusled::GetMode() != hal::statusled::Mode::kFast))
     {
-        hal::statusled::SetMode(hal::statusled::Mode::NORMAL);
+        hal::statusled::SetMode(hal::statusled::Mode::kNormal);
     }
 	
-    hal::panelled::Off(hal::panelled::SACN);
+    hal::panelled::Off(hal::panelled::kSacn);
 
 #if defined(E131_HAVE_DMXIN)
     SetLocalMerging();

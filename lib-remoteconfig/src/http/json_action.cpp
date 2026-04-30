@@ -40,9 +40,9 @@ static void SetIdentify(const char* val, uint32_t len) {
     if (len != 1) return;
 
     if (val[0] != '0') {
-        hal::statusled::SetMode(hal::statusled::Mode::FAST);
+        hal::statusled::SetMode(hal::statusled::Mode::kFast);
     } else {
-        hal::statusled::SetMode(hal::statusled::Mode::NORMAL);
+        hal::statusled::SetMode(hal::statusled::Mode::kNormal);
     }
 }
 

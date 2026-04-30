@@ -38,22 +38,22 @@ void DisplayStatusled(hal::statusled::Mode status_led_mode)
         char c;
         switch (status_led_mode)
         {
-            case hal::statusled::Mode::OFF_OFF:
+            case hal::statusled::Mode::kOffOff:
                 c = 'O';
                 break;
-            case hal::statusled::Mode::OFF_ON:
+            case hal::statusled::Mode::kOffOn:
                 c = 'O';
                 break;
-            case hal::statusled::Mode::NORMAL:
+            case hal::statusled::Mode::kNormal:
                 c = 'N';
                 break;
-            case hal::statusled::Mode::DATA:
+            case hal::statusled::Mode::kData:
                 c = 'D';
                 break;
-            case hal::statusled::Mode::FAST:
+            case hal::statusled::Mode::kFast:
                 c = 'F';
                 break;
-            case hal::statusled::Mode::REBOOT:
+            case hal::statusled::Mode::kReboot:
                 c = 'R';
                 break;
             default:

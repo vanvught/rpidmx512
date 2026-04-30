@@ -105,7 +105,7 @@ int main() // NOLINT
     rdm_responder.Start();
     rdm_responder.Print();
 
-    hal::statusled::SetMode(hal::statusled::Mode::NORMAL);
+    hal::statusled::SetMode(hal::statusled::Mode::kNormal);
     hal::WatchdogInit();
 
     for (;;)

@@ -70,7 +70,7 @@ class OscServer {
 
         network::apps::mdns::ServiceRecordAdd(nullptr, network::apps::mdns::Services::kOsc, "type=server", port_incoming_);
 
-        hal::statusled::SetMode(hal::statusled::Mode::NORMAL);
+        hal::statusled::SetMode(hal::statusled::Mode::kNormal);
 
         DEBUG_EXIT();
     }

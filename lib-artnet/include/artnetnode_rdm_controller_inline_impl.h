@@ -30,37 +30,31 @@
 
 #include "artnetnode.h"
 
-inline uint32_t ArtNetNode::RdmCopyWorkingQueue(char* out_buffer, uint32_t out_buffer_size)
-{
+inline uint32_t ArtNetNode::RdmCopyWorkingQueue(char* out_buffer, uint32_t out_buffer_size) {
     return rdm_controller_.CopyWorkingQueue(out_buffer, out_buffer_size);
 }
 
-inline uint32_t ArtNetNode::RdmTodUidCount(uint32_t port_index)
-{
+inline uint32_t ArtNetNode::RdmTodUidCount(uint32_t port_index) {
     assert(port_index < dmxnode::kMaxPorts);
     return rdm_controller_.TodUidCount(port_index);
 }
 
-inline uint32_t ArtNetNode::RdmCopyTod(uint32_t port_index, char* out_buffer, uint32_t out_buffer_size)
-{
+inline uint32_t ArtNetNode::RdmCopyTod(uint32_t port_index, char* out_buffer, uint32_t out_buffer_size) {
     assert(port_index < dmxnode::kMaxPorts);
     return rdm_controller_.CopyTod(port_index, out_buffer, out_buffer_size);
 }
 
-inline bool ArtNetNode::RdmIsRunning(uint32_t port_index)
-{
+inline bool ArtNetNode::RdmIsRunning(uint32_t port_index) {
     assert(port_index < dmxnode::kMaxPorts);
     return rdm_controller_.IsRunning(port_index);
 }
 
-inline bool ArtNetNode::RdmIsRunning(uint32_t port_index, bool& is_incremental)
-{
+inline bool ArtNetNode::RdmIsRunning(uint32_t port_index, bool& is_incremental) {
     assert(port_index < dmxnode::kMaxPorts);
     return rdm_controller_.IsRunning(port_index, is_incremental);
 }
 
-inline bool ArtNetNode::RdmBgDiscovery(uint32_t port_index)
-{
+inline bool ArtNetNode::RdmBgDiscovery(uint32_t port_index) {
     assert(port_index < dmxnode::kMaxPorts);
     return rdm_controller_.IsEnabledBackground(port_index);
 }

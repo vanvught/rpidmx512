@@ -2,7 +2,7 @@
  * @file hal.h
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,22 +26,18 @@
 #ifndef H3_HAL_H_
 #define H3_HAL_H_
 
-#include <cstdint>
-
 #include "superloop/softwaretimers.h"
 
 #if defined(DEBUG_STACK)
 void stack_debug_run();
 #endif
 
-namespace hal
-{
-static constexpr const char kWebsite[] = "www.orangepi-dmx.org";
-static constexpr float kCoreTemperatureMin = -40.0;
-static constexpr float kCoreTemperatureMax = +90.0;
+namespace hal {
+inline constexpr const char kWebsite[] = "www.orangepi-dmx.org";
+inline constexpr float kCoreTemperatureMin = -40.0;
+inline constexpr float kCoreTemperatureMax = +90.0;
 
-inline void Run()
-{
+inline void Run() {
     SoftwareTimerRun();
 #if defined(DEBUG_STACK)
     stack_debug_run();
@@ -49,4 +45,4 @@ inline void Run()
 }
 } // namespace hal
 
-#endif  // H3_HAL_H_
+#endif // H3_HAL_H_

@@ -2,7 +2,7 @@
  * @file hal_micros.h
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,12 +30,10 @@
 
 #include "h3.h"
 
-namespace hal
-{
-inline uint32_t Micros()
-{
+namespace hal {
+inline uint32_t Micros() {
     return H3_TIMER->AVS_CNT1;
 }
 } // namespace hal
 
-#endif  // H3_HAL_MICROS_H_
+#endif // H3_HAL_MICROS_H_

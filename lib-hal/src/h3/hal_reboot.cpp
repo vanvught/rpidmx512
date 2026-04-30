@@ -78,7 +78,7 @@ bool Reboot()
     H3GpioFsel(EXT_SPI_CS, GPIO_FSEL_INPUT);
     H3GpioSetPud(EXT_SPI_CS, GPIO_PULL_DOWN);
 
-    hal::statusled::SetMode(hal::statusled::Mode::REBOOT);
+    hal::statusled::SetMode(hal::statusled::Mode::kReboot);
 
     h3_watchdog_enable();
 

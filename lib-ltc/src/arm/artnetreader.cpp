@@ -70,7 +70,7 @@ void ArtNetReader::Start()
 #endif
 
     LtcOutputs::Get()->Init();
-    hal::statusled::SetMode(hal::statusled::Mode::NORMAL);
+    hal::statusled::SetMode(hal::statusled::Mode::kNormal);
 
     DEBUG_EXIT();
 }

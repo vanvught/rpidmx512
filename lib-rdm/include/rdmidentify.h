@@ -50,7 +50,7 @@ class RDMIdentify
     void On()
     {
         s_is_enabled = true;
-        hal::statusled::SetModeWithLock(hal::statusled::Mode::FAST, true);
+        hal::statusled::SetModeWithLock(hal::statusled::Mode::kFast, true);
 
         if (s_mode != Mode::kQuiet)
         {
@@ -61,7 +61,7 @@ class RDMIdentify
     void Off()
     {
         s_is_enabled = false;
-        hal::statusled::SetModeWithLock(hal::statusled::Mode::NORMAL, false);
+        hal::statusled::SetModeWithLock(hal::statusled::Mode::kNormal, false);
 
         if (s_mode != Mode::kQuiet)
         {

@@ -2,7 +2,7 @@
  * @file hal_uart.h
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,19 +28,18 @@
 
 #include "h3_uart.h"
 
-namespace hal::uart
-{
-static constexpr auto BITS_5 = H3_UART_BITS_5;
-static constexpr auto BITS_6 = H3_UART_BITS_6;
-static constexpr auto BITS_7 = H3_UART_BITS_7;
-static constexpr auto BITS_8 = H3_UART_BITS_8;
+namespace hal::uart {
+inline constexpr auto BITS_5 = H3_UART_BITS_5;
+inline constexpr auto BITS_6 = H3_UART_BITS_6;
+inline constexpr auto BITS_7 = H3_UART_BITS_7;
+inline constexpr auto BITS_8 = H3_UART_BITS_8;
 
-static constexpr auto PARITY_NONE = H3_UART_PARITY_NONE;
-static constexpr auto PARITY_ODD = H3_UART_PARITY_ODD;
-static constexpr auto PARITY_EVEN = H3_UART_PARITY_EVEN;
+inline constexpr auto PARITY_NONE = H3_UART_PARITY_NONE;
+inline constexpr auto PARITY_ODD = H3_UART_PARITY_ODD;
+inline constexpr auto PARITY_EVEN = H3_UART_PARITY_EVEN;
 
-static constexpr auto STOP_1BIT = H3_UART_STOP_1BIT;
-static constexpr auto STOP_2BITS = H3_UART_STOP_2BITS;
+inline constexpr auto STOP_1BIT = H3_UART_STOP_1BIT;
+inline constexpr auto STOP_2BITS = H3_UART_STOP_2BITS;
 } // namespace hal::uart
 
-#endif /* H3_HAL_UART_H_ */
+#endif // H3_HAL_UART_H_

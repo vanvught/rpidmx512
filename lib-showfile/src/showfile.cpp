@@ -370,17 +370,17 @@ void ShowFile::SetStatus(showfile::Status status)
     {
         case showfile::Status::kIdle:
             ShowFileFormat::DoRunCleanupProcess(true);
-            hal::statusled::SetMode(hal::statusled::Mode::NORMAL);
+            hal::statusled::SetMode(hal::statusled::Mode::kNormal);
             break;
         case showfile::Status::kPlaying:
         case showfile::Status::kRecording:
             ShowFileFormat::DoRunCleanupProcess(false);
-            hal::statusled::SetMode(hal::statusled::Mode::DATA);
+            hal::statusled::SetMode(hal::statusled::Mode::kData);
             break;
         case showfile::Status::kStopped:
         case showfile::Status::kEnded:
             ShowFileFormat::DoRunCleanupProcess(true);
-            hal::statusled::SetMode(hal::statusled::Mode::NORMAL);
+            hal::statusled::SetMode(hal::statusled::Mode::kNormal);
             break;
         default:
             break;

@@ -76,7 +76,7 @@ void MidiReader::Start()
     Midi::Get()->Init(midi::Direction::INPUT);
 
     LtcOutputs::Get()->Init(true);
-    hal::statusled::SetMode(hal::statusled::Mode::NORMAL);
+    hal::statusled::SetMode(hal::statusled::Mode::kNormal);
 
     DEBUG_EXIT();
 }
@@ -306,10 +306,10 @@ void MidiReader::Run()
 
     if (Midi::Get()->GetUpdatesPerSecond() != 0)
     {
-        hal::statusled::SetMode(hal::statusled::Mode::DATA);
+        hal::statusled::SetMode(hal::statusled::Mode::kData);
     }
     else
     {
-        hal::statusled::SetMode(hal::statusled::Mode::NORMAL);
+        hal::statusled::SetMode(hal::statusled::Mode::kNormal);
     }
 }

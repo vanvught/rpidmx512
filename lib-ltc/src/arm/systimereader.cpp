@@ -104,7 +104,7 @@ void SystimeReader::Start(bool auto_start)
     assert(handle_ != -1);
 
     LtcOutputs::Get()->Init();
-    hal::statusled::SetMode(hal::statusled::Mode::NORMAL);
+    hal::statusled::SetMode(hal::statusled::Mode::kNormal);
 
     if (auto_start)
     {
@@ -169,7 +169,7 @@ void SystimeReader::ActionStart()
 
     LtcOutputs::Get()->ResetTimeCodeTypePrevious();
 
-    hal::statusled::SetMode(hal::statusled::Mode::DATA);
+    hal::statusled::SetMode(hal::statusled::Mode::kData);
 
     DEBUG_EXIT();
 }
@@ -180,7 +180,7 @@ void SystimeReader::ActionStop()
 
     started_ = false;
 
-    hal::statusled::SetMode(hal::statusled::Mode::NORMAL);
+    hal::statusled::SetMode(hal::statusled::Mode::kNormal);
 
     DEBUG_EXIT();
 }

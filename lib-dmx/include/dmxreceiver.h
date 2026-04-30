@@ -84,7 +84,7 @@ class DMXReceiver : Dmx
             {
                 dmx_node_output_type_->Start(0);
                 is_active_ = true;
-                hal::statusled::SetMode(hal::statusled::Mode::DATA);
+                hal::statusled::SetMode(hal::statusled::Mode::kData);
             }
 
             return const_cast<uint8_t*>(dmx_available);
@@ -95,7 +95,7 @@ class DMXReceiver : Dmx
             {
                 dmx_node_output_type_->Stop(0);
                 is_active_ = false;
-                hal::statusled::SetMode(hal::statusled::Mode::NORMAL);
+                hal::statusled::SetMode(hal::statusled::Mode::kNormal);
             }
 
             length = -1;

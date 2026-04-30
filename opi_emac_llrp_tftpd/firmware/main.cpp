@@ -91,7 +91,7 @@ int main() // NOLINT
     struct tm hw_clock;
     memset(&hw_clock, 0, sizeof(struct tm));
 	
-	hal::statusled::SetMode(hal::statusled::Mode::NORMAL);
+	hal::statusled::SetMode(hal::statusled::Mode::kNormal);
 
     for (;;)
     {

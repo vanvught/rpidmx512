@@ -163,7 +163,7 @@ void ArtNetNode::HandleAddress()
             break;
 
         case artnet::PortCommand::kLedNormal:
-            hal::statusled::SetModeWithLock(hal::statusled::Mode::NORMAL, false);
+            hal::statusled::SetModeWithLock(hal::statusled::Mode::kNormal, false);
             art_poll_reply_.status1 =
                 static_cast<uint8_t>((art_poll_reply_.status1 & ~artnet::Status1::kIndicatorMask) | artnet::Status1::kIndicatorNormalMode);
 #if (ARTNET_VERSION >= 4)
@@ -172,7 +172,7 @@ void ArtNetNode::HandleAddress()
             break;
 
         case artnet::PortCommand::kLedMute:
-            hal::statusled::SetModeWithLock(hal::statusled::Mode::OFF_OFF, true);
+            hal::statusled::SetModeWithLock(hal::statusled::Mode::kOffOff, true);
             art_poll_reply_.status1 = static_cast<uint8_t>((art_poll_reply_.status1 & ~artnet::Status1::kIndicatorMask) | artnet::Status1::kIndicatorMuteMode);
 #if (ARTNET_VERSION >= 4)
             E131Bridge::SetEnableDataIndicator(false);
@@ -180,7 +180,7 @@ void ArtNetNode::HandleAddress()
             break;
 
         case artnet::PortCommand::kLedLocate:
-            hal::statusled::SetModeWithLock(hal::statusled::Mode::FAST, true);
+            hal::statusled::SetModeWithLock(hal::statusled::Mode::kFast, true);
             art_poll_reply_.status1 =
                 static_cast<uint8_t>((art_poll_reply_.status1 & ~artnet::Status1::kIndicatorMask) | artnet::Status1::kIndicatorLocateMode);
 #if (ARTNET_VERSION >= 4)

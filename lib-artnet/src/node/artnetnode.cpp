@@ -248,7 +248,7 @@ void ArtNetNode::Start()
 #endif
 
     state_.status = artnet::Status::kOn;
-    hal::statusled::SetMode(hal::statusled::Mode::NORMAL);
+    hal::statusled::SetMode(hal::statusled::Mode::kNormal);
 
     DEBUG_EXIT();
 }
@@ -284,8 +284,8 @@ void ArtNetNode::Stop()
     }
 #endif
 
-    hal::statusled::SetMode(hal::statusled::Mode::OFF_OFF);
-    hal::panelled::Off(hal::panelled::ARTNET);
+    hal::statusled::SetMode(hal::statusled::Mode::kOffOff);
+    hal::panelled::Off(hal::panelled::kArtnet);
 
     art_poll_reply_.status1 = static_cast<uint8_t>((art_poll_reply_.status1 & ~artnet::Status1::kIndicatorMask) | artnet::Status1::kIndicatorMuteMode);
     state_.status = artnet::Status::kStandby;
@@ -715,8 +715,8 @@ void ArtNetNode::SetNetworkDataLossCondition()
         dmxnode::Data::ClearLength(i);
     }
 
-    hal::statusled::SetMode(hal::statusled::Mode::NORMAL);
-    hal::panelled::Off(hal::panelled::ARTNET);
+    hal::statusled::SetMode(hal::statusled::Mode::kNormal);
+    hal::panelled::Off(hal::panelled::kArtnet);
 
 #if defined(ARTNET_HAVE_DMXIN)
     SetLocalMerging();
@@ -977,7 +977,7 @@ void ArtNetNode::InputUdp(const uint8_t* buffer, uint32_t size, uint32_t from_ip
             break;
     }
 
-    hal::panelled::On(hal::panelled::ARTNET);
+    hal::panelled::On(hal::panelled::kArtnet);
 }
 
 void ArtNetNode::UpdateMergeStatus(uint32_t port_index)

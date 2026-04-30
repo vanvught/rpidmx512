@@ -57,9 +57,9 @@ public:
 		HandleButtons();
 
 		if (state_ == STARTED) {
-			hal::statusled::SetMode(hal::statusled::Mode::DATA);
+			hal::statusled::SetMode(hal::statusled::Mode::kData);
 		} else {
-			hal::statusled::SetMode(hal::statusled::Mode::NORMAL);
+			hal::statusled::SetMode(hal::statusled::Mode::kNormal);
 		}
 	}
 

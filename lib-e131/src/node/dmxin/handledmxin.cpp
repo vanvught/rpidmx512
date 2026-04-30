@@ -89,7 +89,7 @@ void E131Bridge::HandleDmxIn()
                 {
                     s_receiving_mask |= (1U << port_index);
                     state_.receiving_dmx |= (1U << static_cast<uint8_t>(dmxnode::PortDirection::kInput));
-                    hal::panelled::On(hal::panelled::PORT_A_RX << port_index);
+                    hal::panelled::On(hal::panelled::kPortARx << port_index);
                 }
 
                 continue;
@@ -104,7 +104,7 @@ void E131Bridge::HandleDmxIn()
                     senddmx = true;
 
                     s_receiving_mask &= ~(1U << port_index);
-                    hal::panelled::Off(hal::panelled::PORT_A_RX << port_index);
+                    hal::panelled::Off(hal::panelled::kPortARx << port_index);
 
                     if (s_receiving_mask == 0)
                     {

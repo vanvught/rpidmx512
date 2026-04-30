@@ -40,26 +40,21 @@
 #include "artnet.h"
 #include "artnetrdmcontroller.h"
 #include "rdm.h"
-#include "network.h"
+#include "network_udp.h"
 #if defined(CONFIG_PANELLED_RDM_PORT) || defined(CONFIG_PANELLED_RDM_NO_PORT)
 #include "hal_panelled.h"
 #endif
 
-void ArtNetNode::HandleRdmIn()
-{
-    for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++)
-    {
+void ArtNetNode::HandleRdmIn() {
+    for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++) {
         auto* art_rdm = &art_tod_packet_.art_rdm;
 
-        if (node_.port[port_index].direction == dmxnode::PortDirection::kInput)
-        {
-			if (input_port_[port_index].destination_ip == 0) continue;
-			
+        if (node_.port[port_index].direction == dmxnode::PortDirection::kInput) {
+            if (input_port_[port_index].destination_ip == 0) continue;
+
             const auto* rdm_data = Rdm::Receive(port_index);
-            if (rdm_data != nullptr)
-            {
-                if (rdm_controller_.RdmReceive(port_index, rdm_data))
-                {
+            if (rdm_data != nullptr) {
+                if (rdm_controller_.RdmReceive(port_index, rdm_data)) {
                     art_rdm->op_code = static_cast<uint16_t>(artnet::OpCodes::kOpRdm);
                     art_rdm->rdm_version = 0x01;
                     art_rdm->net = node_.port[port_index].net_switch;
@@ -71,25 +66,19 @@ void ArtNetNode::HandleRdmIn()
 
                     const auto* rdm_message = reinterpret_cast<const struct TRdmMessageNoSc*>(art_rdm->rdm_packet);
 
-                    network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(art_rdm),
-                                       ((sizeof(struct artnet::ArtRdm)) - 256) + rdm_message->message_length + 1, input_port_[port_index].destination_ip,
-                                       artnet::kUdpPort);
+                    network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(art_rdm), ((sizeof(struct artnet::ArtRdm)) - 256) + rdm_message->message_length + 1, input_port_[port_index].destination_ip, artnet::kUdpPort);
 
 #if defined(CONFIG_PANELLED_RDM_PORT)
-                    hal::panelled::On(hal::panelled::PORT_A_RDM << port_index);
+                    hal::panelled::On(hal::panelled::kPortARdm << port_index);
 #elif defined(CONFIG_PANELLED_RDM_NO_PORT)
-                    hal::panelled::On(hal::panelled::RDM << port_index);
+                    hal::panelled::On(hal::panelled::kRdm << port_index);
 #endif
                 }
             }
-        }
-        else if (node_.port[port_index].direction == dmxnode::PortDirection::kOutput)
-        {
-            if (output_port_[port_index].rdm_destination_ip != 0)
-            {
+        } else if (node_.port[port_index].direction == dmxnode::PortDirection::kOutput) {
+            if (output_port_[port_index].rdm_destination_ip != 0) {
                 const auto* rdm_data = Rdm::Receive(port_index);
-                if (rdm_data != nullptr)
-                {
+                if (rdm_data != nullptr) {
                     art_rdm->op_code = static_cast<uint16_t>(artnet::OpCodes::kOpRdm);
                     art_rdm->rdm_version = 0x01;
                     art_rdm->net = node_.port[port_index].net_switch;
@@ -101,16 +90,14 @@ void ArtNetNode::HandleRdmIn()
 
                     const auto* rdm_message = reinterpret_cast<const struct TRdmMessageNoSc*>(art_rdm->rdm_packet);
 
-                    network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(art_rdm),
-                                       ((sizeof(struct artnet::ArtRdm)) - 256) + rdm_message->message_length + 1, output_port_[port_index].rdm_destination_ip,
-                                       artnet::kUdpPort);
+                    network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(art_rdm), ((sizeof(struct artnet::ArtRdm)) - 256) + rdm_message->message_length + 1, output_port_[port_index].rdm_destination_ip, artnet::kUdpPort);
 
                     output_port_[port_index].rdm_destination_ip = 0;
 
 #if defined(CONFIG_PANELLED_RDM_PORT)
-                    hal::panelled::On(hal::panelled::PORT_A_RDM << port_index);
+                    hal::panelled::On(hal::panelled::kPortARdm << port_index);
 #elif defined(CONFIG_PANELLED_RDM_NO_PORT)
-                    hal::panelled::On(hal::panelled::RDM << port_index);
+                    hal::panelled::On(hal::panelled::kRdm << port_index);
 #endif
                 }
             }

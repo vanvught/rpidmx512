@@ -75,22 +75,22 @@ void SetMode(hal::statusled::Mode mode)
 
     switch (global::g_status_led_mode)
     {
-        case hal::statusled::Mode::OFF_OFF:
+        case hal::statusled::Mode::kOffOff:
             SetFrequency(static_cast<uint32_t>(ModeToFrequency::kOffOff));
             break;
-        case hal::statusled::Mode::OFF_ON:
+        case hal::statusled::Mode::kOffOn:
             SetFrequency(static_cast<uint32_t>(ModeToFrequency::kOffOn));
             break;
-        case hal::statusled::Mode::NORMAL:
+        case hal::statusled::Mode::kNormal:
             SetFrequency(static_cast<uint32_t>(ModeToFrequency::kNormal));
             break;
-        case hal::statusled::Mode::DATA:
+        case hal::statusled::Mode::kData:
             SetFrequency(static_cast<uint32_t>(ModeToFrequency::kData));
             break;
-        case hal::statusled::Mode::FAST:
+        case hal::statusled::Mode::kFast:
             SetFrequency(static_cast<uint32_t>(ModeToFrequency::kFast));
             break;
-        case hal::statusled::Mode::REBOOT:
+        case hal::statusled::Mode::kReboot:
             SetFrequency(static_cast<uint32_t>(ModeToFrequency::kReboot));
             break;
         default:

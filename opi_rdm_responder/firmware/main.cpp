@@ -147,7 +147,7 @@ int main() // NOLINT
         display.ClearLine(5);
     }
 
-    hal::statusled::SetMode(hal::statusled::Mode::NORMAL);
+    hal::statusled::SetMode(hal::statusled::Mode::kNormal);
     hal::WatchdogInit();
 
     for (;;)

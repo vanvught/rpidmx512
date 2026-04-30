@@ -2,7 +2,7 @@
  * @file hal_watchdog.h
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,28 +28,25 @@
 
 #include "h3_watchdog.h"
 
-namespace hal
-{
+namespace hal {
 extern bool g_bWatchdog;
-inline void WatchdogInit()
-{
+inline void WatchdogInit() {
     g_bWatchdog = true;
     h3_watchdog_enable();
 }
 
-inline void WatchdogFeed()
-{
+inline void WatchdogFeed() {
     h3_watchdog_restart();
 }
 
 inline void WatchdogStop() {
-	g_bWatchdog = false;
-	h3_watchdog_disable();
+    g_bWatchdog = false;
+    h3_watchdog_disable();
 }
 
 inline bool Watchdog() {
-	return g_bWatchdog;
+    return g_bWatchdog;
 }
 } // namespace hal
 
-#endif  // H3_HAL_WATCHDOG_H_
+#endif // H3_HAL_WATCHDOG_H_

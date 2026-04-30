@@ -2,7 +2,7 @@
  * @file hal_spi.h
  *
  */
-/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,4 +38,4 @@
 #define SPI_CS0					H3_SPI_CS0
 #define SPI_CS_NONE				H3_SPI_CS_NONE
 
-#endif /* H3_HAL_SPI_H_ */
+#endif // H3_HAL_SPI_H_

@@ -44,12 +44,12 @@ class LtcEtcReader final : public LtcEtcHandler
         if ((kTimeStamp - timestamp_) >= 50U)
         {
             LtcOutputs::Get()->ShowSysTime();
-            hal::statusled::SetMode(hal::statusled::Mode::NORMAL);
+            hal::statusled::SetMode(hal::statusled::Mode::kNormal);
             Reset(true);
         }
         else
         {
-            hal::statusled::SetMode(hal::statusled::Mode::DATA);
+            hal::statusled::SetMode(hal::statusled::Mode::kData);
             Reset(false);
         }
     }

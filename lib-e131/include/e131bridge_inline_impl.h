@@ -319,15 +319,15 @@ inline void E131Bridge::Run()
     }
 
     // The hal::statusled::Mode::FAST is for RDM Identify (Art-Net 4)
-    if (enable_data_indicator_ && (hal::statusled::GetMode() != hal::statusled::Mode::FAST))
+    if (enable_data_indicator_ && (hal::statusled::GetMode() != hal::statusled::Mode::kFast))
     {
         if (state_.receiving_dmx != 0)
         {
-            hal::statusled::SetMode(hal::statusled::Mode::DATA);
+            hal::statusled::SetMode(hal::statusled::Mode::kData);
         }
         else
         {
-            hal::statusled::SetMode(hal::statusled::Mode::NORMAL);
+            hal::statusled::SetMode(hal::statusled::Mode::kNormal);
         }
     }
 }

@@ -2,7 +2,7 @@
  * @file handlerdm.cpp
  *
  */
-/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2017-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,28 +30,27 @@
 #include <cstring>
 #include <cassert>
 
-#include "artnet.h"
 #include "artnetnode.h"
+#include "artnet.h"
+#include "network_udp.h"
 #include "rdm.h"
-#include "network.h"
-#include "hal_panelled.h"
 #include "rdm_discovery.h"
 #include "firmware/debug/debug_debug.h"
+#if defined(CONFIG_PANELLED_RDM_PORT) || defined(CONFIG_PANELLED_RDM_NO_PORT)
+#include "hal_panelled.h"
+#endif
 
-namespace rdm::discovery
-{
-void Starting(uint32_t port_index, [[maybe_unused]] Type type)
-{
-	DEBUG_PRINTF("%u:%c", port_index, type == rdm::discovery::Type::kFull ? 'F' : 'I');
-    
-	auto& artnet = *ArtNetNode::Get();
+namespace rdm::discovery {
+void Starting(uint32_t port_index, [[maybe_unused]] Type type) {
+    DEBUG_PRINTF("%u:%c", port_index, type == rdm::discovery::Type::kFull ? 'F' : 'I');
+
+    auto& artnet = *ArtNetNode::Get();
     artnet.StopOutputPort(port_index);
 }
 
-void Finished(uint32_t port_index, [[maybe_unused]] Type type)
-{
-	DEBUG_PRINTF("%u:%c", port_index, type == rdm::discovery::Type::kFull ? 'F' : 'I');
-	
+void Finished(uint32_t port_index, [[maybe_unused]] Type type) {
+    DEBUG_PRINTF("%u:%c", port_index, type == rdm::discovery::Type::kFull ? 'F' : 'I');
+
     auto& artnet = *ArtNetNode::Get();
     artnet.SendArtTodData(port_index);
 }
@@ -61,32 +60,25 @@ void Finished(uint32_t port_index, [[maybe_unused]] Type type)
  * ArtTodControl is used to for an Output Gateway to flush its ToD and commence full discovery.
  * If the Output Gateway has physical DMX512 ports, discovery could take minutes.
  */
-void ArtNetNode::HandleTodControl()
-{
+void ArtNetNode::HandleTodControl() {
     DEBUG_ENTRY();
 
     const auto* const kArtTodControl = reinterpret_cast<artnet::ArtTodControl*>(receive_buffer_);
 
-    if (kArtTodControl->command == artnet::TodControlCommand::kAtcNone)
-    {
+    if (kArtTodControl->command == artnet::TodControlCommand::kAtcNone) {
         DEBUG_EXIT();
         return;
     }
 
     const auto kPortAddress = static_cast<uint16_t>((kArtTodControl->net << 8)) | static_cast<uint16_t>((kArtTodControl->address));
 
-    for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++)
-    {
-        if (kPortAddress != node_.port[port_index].port_address)
-        {
+    for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++) {
+        if (kPortAddress != node_.port[port_index].port_address) {
             continue;
         }
 
-        if ((node_.port[port_index].direction == dmxnode::PortDirection::kOutput) &&
-            ((output_port_[port_index].good_output_b & artnet::GoodOutputB::kRdmDisabled) != artnet::GoodOutputB::kRdmDisabled))
-        {
-            switch (kArtTodControl->command)
-            {
+        if ((node_.port[port_index].direction == dmxnode::PortDirection::kOutput) && ((output_port_[port_index].good_output_b & artnet::GoodOutputB::kRdmDisabled) != artnet::GoodOutputB::kRdmDisabled)) {
+            switch (kArtTodControl->command) {
                 case artnet::TodControlCommand::kAtcFlush:
                     rdm_controller_.Full(port_index);
                     break;
@@ -104,11 +96,8 @@ void ArtNetNode::HandleTodControl()
                 default:
                     break;
             }
-        }
-        else if (node_.port[port_index].direction == dmxnode::PortDirection::kInput)
-        {
-            if (kArtTodControl->command == artnet::TodControlCommand::kAtcFlush)
-            {
+        } else if (node_.port[port_index].direction == dmxnode::PortDirection::kInput) {
+            if (kArtTodControl->command == artnet::TodControlCommand::kAtcFlush) {
                 rdm_controller_.TodReset(port_index);
             }
         }
@@ -122,21 +111,18 @@ void ArtNetNode::HandleTodControl()
  * If the Sub-Net and Universe fields match, the Input Gateway adds the TOD contents to their own internal TOD.
  * This allows Input Gateways to respond to any physical layer RDM discovery commands they receive.
  */
-void ArtNetNode::HandleTodData()
-{
+void ArtNetNode::HandleTodData() {
     DEBUG_ENTRY();
 
     const auto* const kArtTodData = reinterpret_cast<const artnet::ArtTodData*>(receive_buffer_);
 
-    if (kArtTodData->rdm_version != 0x01) [[unlikely]]
-    {
+    if (kArtTodData->rdm_version != 0x01) [[unlikely]] {
         DEBUG_EXIT();
         return;
     }
 
     // Defensive: uid_count must never exceed array bound
-    if (kArtTodData->uid_count > 200) [[unlikely]]
-    {
+    if (kArtTodData->uid_count > 200) [[unlikely]] {
         DEBUG_EXIT();
         return;
     }
@@ -145,35 +131,29 @@ void ArtNetNode::HandleTodData()
 
     // Art-Net 4: bind_index discriminates packets from the same IP.
     // If bind_index is non-zero, treat it as selecting the logical port instance.
-    if (kArtTodData->bind_index != 0)
-    {
+    if (kArtTodData->bind_index != 0) {
         const uint32_t kPortIndex = static_cast<uint32_t>(kArtTodData->bind_index - 1);
 
         // Validate bind_index mapping
-        if (kPortIndex >= dmxnode::kMaxPorts)
-        {
+        if (kPortIndex >= dmxnode::kMaxPorts) {
             DEBUG_EXIT();
             return;
         }
 
         // Only Input Gateways parse ArtTodData
-        if (node_.port[kPortIndex].direction != dmxnode::PortDirection::kInput)
-        {
+        if (node_.port[kPortIndex].direction != dmxnode::PortDirection::kInput) {
             DEBUG_EXIT();
             return;
         }
 
-        if (node_.port[kPortIndex].port_address != kPortAddress)
-        {
+        if (node_.port[kPortIndex].port_address != kPortAddress) {
             DEBUG_EXIT();
             return;
         }
 
-        DEBUG_PRINTF("bind_index=%u -> kPortIndex=%u, kPortAddress=%u, uid_count=%u", kArtTodData->bind_index, kPortIndex, kPortAddress,
-                     kArtTodData->uid_count);
+        DEBUG_PRINTF("bind_index=%u -> kPortIndex=%u, kPortAddress=%u, uid_count=%u", kArtTodData->bind_index, kPortIndex, kPortAddress, kArtTodData->uid_count);
 
-        for (uint32_t uid_index = 0; uid_index < kArtTodData->uid_count; uid_index++)
-        {
+        for (uint32_t uid_index = 0; uid_index < kArtTodData->uid_count; uid_index++) {
             const uint8_t* uid = kArtTodData->tod[uid_index];
             rdm_controller_.TodAddUid(kPortIndex, uid);
         }
@@ -183,19 +163,15 @@ void ArtNetNode::HandleTodData()
     }
 
     // Backward compatible / bind_index == 0 fallback:
-    for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++)
-    {
-        if (node_.port[port_index].direction != dmxnode::PortDirection::kInput)
-        {
+    for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++) {
+        if (node_.port[port_index].direction != dmxnode::PortDirection::kInput) {
             continue;
         }
 
-        if (node_.port[port_index].port_address == kPortAddress)
-        {
+        if (node_.port[port_index].port_address == kPortAddress) {
             DEBUG_PRINTF("port_index=%u, kPortAddress=%u, uid_count=%u", port_index, kPortAddress, kArtTodData->uid_count);
 
-            for (uint32_t uid_index = 0; uid_index < kArtTodData->uid_count; uid_index++)
-            {
+            for (uint32_t uid_index = 0; uid_index < kArtTodData->uid_count; uid_index++) {
                 const uint8_t* uid = kArtTodData->tod[uid_index];
                 rdm_controller_.TodAddUid(port_index, uid);
             }
@@ -209,8 +185,7 @@ void ArtNetNode::HandleTodData()
  * Node Output Gateway
  * ArtTodData packet is unicast to all IP addresses that have previously requested an ArtTodData packet.
  */
-void ArtNetNode::SendArtTodData(uint32_t port_index)
-{
+void ArtNetNode::SendArtTodData(uint32_t port_index) {
     DEBUG_ENTRY();
     DEBUG_PRINTF("port_index=%u", port_index);
     assert(port_index < dmxnode::kMaxPorts);
@@ -249,10 +224,8 @@ void ArtNetNode::SendArtTodData(uint32_t port_index)
 
     const auto kLength = sizeof(struct artnet::ArtTodData) - (sizeof(tod_data.tod)) + (kDiscovered * 6U);
 
-    for (auto& entry : state_.art.tod_request_ip_list)
-    {
-        if (entry != 0)
-        {
+    for (auto& entry : state_.art.tod_request_ip_list) {
+        if (entry != 0) {
             network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&tod_data), static_cast<uint16_t>(kLength), entry, artnet::kUdpPort);
         }
     }
@@ -261,11 +234,8 @@ void ArtNetNode::SendArtTodData(uint32_t port_index)
     DEBUG_EXIT();
 }
 
-/**
- * Node Input Gateway -> Input Gateway Directed Broadcasts to all nodes.
- */
-void ArtNetNode::SendTodRequest(uint32_t port_index)
-{
+// Node Input Gateway -> Input Gateway Directed Broadcasts to all nodes.
+void ArtNetNode::SendTodRequest(uint32_t port_index) {
     DEBUG_ENTRY();
     assert(port_index < dmxnode::kMaxPorts);
 
@@ -297,36 +267,28 @@ void ArtNetNode::SendTodRequest(uint32_t port_index)
     DEBUG_EXIT();
 }
 
-void ArtNetNode::HandleRdm()
-{
+void ArtNetNode::HandleRdm() {
     auto* const kArtRdm = reinterpret_cast<artnet::ArtRdm*>(receive_buffer_);
 
-    if (kArtRdm->rdm_version != 0x01)
-    {
+    if (kArtRdm->rdm_version != 0x01) {
         DEBUG_EXIT();
         return;
     }
 
     const auto kPortAddress = static_cast<uint16_t>((kArtRdm->net << 8)) | static_cast<uint16_t>((kArtRdm->address));
 
-    for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++)
-    {
-        if (node_.port[port_index].port_address != kPortAddress)
-        {
+    for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++) {
+        if (node_.port[port_index].port_address != kPortAddress) {
             continue;
         }
 
-        if (rdm_controller_.IsRunning(port_index))
-        {
+        if (rdm_controller_.IsRunning(port_index)) {
             continue;
         }
 
-        if ((node_.port[port_index].direction == dmxnode::PortDirection::kOutput) &&
-            ((output_port_[port_index].good_output_b & artnet::GoodOutputB::kRdmDisabled) != artnet::GoodOutputB::kRdmDisabled))
-        {
+        if ((node_.port[port_index].direction == dmxnode::PortDirection::kOutput) && ((output_port_[port_index].good_output_b & artnet::GoodOutputB::kRdmDisabled) != artnet::GoodOutputB::kRdmDisabled)) {
 #if (ARTNET_VERSION >= 4)
-            if (node_.port[port_index].protocol == artnet::PortProtocol::kSacn)
-            {
+            if (node_.port[port_index].protocol == artnet::PortProtocol::kSacn) {
                 constexpr auto kMask = artnet::GoodOutput::kOutputIsMerging | artnet::GoodOutput::kDataIsBeingTransmitted | artnet::GoodOutput::kOutputIsSacn;
                 output_port_[port_index].is_transmitting = (GetGoodOutput4(port_index) & kMask) != 0;
             }
@@ -345,17 +307,14 @@ void ArtNetNode::HandleRdm()
 #endif
 
 #if defined(CONFIG_PANELLED_RDM_PORT)
-            hal::panelled::On(hal::panelled::PORT_A_RDM << port_index);
+            hal::panelled::On(hal::panelled::kPortARdm << port_index);
 #elif defined(CONFIG_PANELLED_RDM_NO_PORT)
-            hal::panelled::On(hal::panelled::RDM << port_index);
+            hal::panelled::On(hal::panelled::kRdm << port_index);
 #endif
-        }
-        else if (node_.port[port_index].direction == dmxnode::PortDirection::kInput)
-        {
+        } else if (node_.port[port_index].direction == dmxnode::PortDirection::kInput) {
             auto* rdm_message = reinterpret_cast<const TRdmMessage*>(&kArtRdm->address);
 
-            if ((rdm_message->command_class == E120_GET_COMMAND_RESPONSE) || (rdm_message->command_class == E120_SET_COMMAND_RESPONSE))
-            {
+            if ((rdm_message->command_class == E120_GET_COMMAND_RESPONSE) || (rdm_message->command_class == E120_SET_COMMAND_RESPONSE)) {
                 kArtRdm->address = E120_SC_RDM;
                 Rdm::SendRaw(port_index, reinterpret_cast<const uint8_t*>(rdm_message), rdm_message->message_length + RDM_MESSAGE_CHECKSUM_SIZE);
 
@@ -365,9 +324,9 @@ void ArtNetNode::HandleRdm()
             }
 
 #if defined(CONFIG_PANELLED_RDM_PORT)
-            hal::panelled::On(hal::panelled::PORT_A_RDM << port_index);
+            hal::panelled::On(hal::panelled::kPortARdm << port_index);
 #elif defined(CONFIG_PANELLED_RDM_NO_PORT)
-            hal::panelled::On(hal::panelled::RDM << port_index);
+            hal::panelled::On(hal::panelled::kRdm << port_index);
 #endif
         }
     }

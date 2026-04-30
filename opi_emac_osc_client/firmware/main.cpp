@@ -111,7 +111,7 @@ int main() // NOLINT
 
     display.TextStatus(OscClientMsgConst::kStarted, console::Colours::kConsoleGreen);
 
-    hal::statusled::SetMode(hal::statusled::Mode::NORMAL);
+    hal::statusled::SetMode(hal::statusled::Mode::kNormal);
     hal::WatchdogInit();
 
     for (;;)
