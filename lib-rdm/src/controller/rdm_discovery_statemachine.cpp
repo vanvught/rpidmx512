@@ -32,34 +32,42 @@
 #include <cassert>
 
 #include "rdm_discovery_statemachine.h"
-#include "hal.h"
-#include "hal_micros.h"
+#include "hal_micros.h" // IWYU pragma: keep
 #include "firmware/debug/debug_debug.h"
-
-namespace rdm::discovery
-{
-#ifndef NDEBUG
-static constexpr const char* kStateName[] = {
-    "IDLE", "UNMUTE", "MUTE", "DISCOVERY", "DISCOVERY_SINGLE_DEVICE", "DUB", "QUICKFIND", "QUICKFIND_DISCOVERY", "LATE_RESPONSE", "FINISHED"};
+#if defined(CONFIG_PANELLED_RDM_PORT) || defined(CONFIG_PANELLED_RDM_NO_PORT)
+#include "hal_panelled.h"
 #endif
 
-typedef union cast
-{
+namespace rdm::discovery {
+#ifndef NDEBUG
+static constexpr const char* kStateName[] = {
+	"IDLE", 
+	"UNMUTE", 
+	"MUTE", 
+	"DISCOVERY", 
+	"DISCOVERY_SINGLE_DEVICE", 
+	"DUB", 
+	"QUICKFIND", 
+	"QUICKFIND_DISCOVERY", 
+	"LATE_RESPONSE", 
+	"FINISHED"
+};
+#endif
+
+typedef union cast {
     uint64_t uint;
     uint8_t uid[RDM_UID_SIZE];
 } _cast;
 
 static _cast uuid_cast;
 
-static const uint8_t* ConvertUid(uint64_t uid)
-{
+static const uint8_t* ConvertUid(uint64_t uid) {
     uuid_cast.uint = __builtin_bswap64(uid << 16);
     return uuid_cast.uid;
 }
 
 #ifndef NDEBUG
-static void PrintUid(const uint8_t* uid)
-{
+static void PrintUid(const uint8_t* uid) {
     printf("%.2x%.2x:%.2x%.2x%.2x%.2x", uid[0], uid[1], uid[2], uid[3], uid[4], uid[5]);
 }
 #endif
@@ -67,8 +75,7 @@ static void PrintUid(const uint8_t* uid)
 #define NEW_STATE(state, late) NewState(state, late, __LINE__);
 #define SAVED_STATE() SavedState(__LINE__);
 
-StateMachine::StateMachine(const uint8_t* uid)
-{
+StateMachine::StateMachine(const uint8_t* uid) {
     memcpy(uid_, uid, RDM_UID_SIZE);
     message_.SetSrcUid(uid);
 
@@ -79,28 +86,24 @@ StateMachine::StateMachine(const uint8_t* uid)
 #endif
 }
 
-uint32_t StateMachine::CopyWorkingQueue(char* out_buffer, uint32_t out_buffer_size)
-{
+uint32_t StateMachine::CopyWorkingQueue(char* out_buffer, uint32_t out_buffer_size) {
     const auto kSize = static_cast<int32_t>(out_buffer_size);
     int32_t index = 0;
     int32_t length = 0;
     uint8_t lower_bound[RDM_UID_SIZE];
     uint8_t upper_bound[RDM_UID_SIZE];
 
-    while (index <= discovery_.stack.top)
-    {
+    while (index <= discovery_.stack.top) {
         memcpy(lower_bound, rdm::discovery::ConvertUid(discovery_.stack.items[index].lower_bound), RDM_UID_SIZE);
         memcpy(upper_bound, rdm::discovery::ConvertUid(discovery_.stack.items[index].upper_bound), RDM_UID_SIZE);
 
-        length += snprintf(&out_buffer[length], static_cast<size_t>(kSize - length), "\"%.2x%.2x:%.2x%.2x%.2x%.2x-%.2x%.2x:%.2x%.2x%.2x%.2x\",", lower_bound[0],
-                           lower_bound[1], lower_bound[2], lower_bound[3], lower_bound[4], lower_bound[5], upper_bound[0], upper_bound[1], upper_bound[2],
-                           upper_bound[3], upper_bound[4], upper_bound[5]);
+        length += snprintf(&out_buffer[length], static_cast<size_t>(kSize - length), "\"%.2x%.2x:%.2x%.2x%.2x%.2x-%.2x%.2x:%.2x%.2x%.2x%.2x\",", lower_bound[0], lower_bound[1], lower_bound[2], lower_bound[3], lower_bound[4], lower_bound[5],
+                           upper_bound[0], upper_bound[1], upper_bound[2], upper_bound[3], upper_bound[4], upper_bound[5]);
 
         index++;
     }
 
-    if (length == 0)
-    {
+    if (length == 0) {
         return 0;
     }
 
@@ -109,8 +112,7 @@ uint32_t StateMachine::CopyWorkingQueue(char* out_buffer, uint32_t out_buffer_si
     return static_cast<uint32_t>(length - 1);
 }
 
-bool StateMachine::Full(uint32_t port_index, rdm::Tod* tod)
-{
+bool StateMachine::Full(uint32_t port_index, rdm::Tod* tod) {
     DEBUG_ENTRY();
     tod->Reset();
     const auto kStart = Start(port_index, tod, false);
@@ -118,8 +120,7 @@ bool StateMachine::Full(uint32_t port_index, rdm::Tod* tod)
     return kStart;
 }
 
-bool StateMachine::Incremental(uint32_t port_index, rdm::Tod* tod)
-{
+bool StateMachine::Incremental(uint32_t port_index, rdm::Tod* tod) {
     DEBUG_ENTRY();
     mute_.tod_entries = tod->UidCount();
     const auto kStart = Start(port_index, tod, true);
@@ -127,12 +128,10 @@ bool StateMachine::Incremental(uint32_t port_index, rdm::Tod* tod)
     return kStart;
 }
 
-bool StateMachine::Start(uint32_t port_index, rdm::Tod* tod, bool do_incremental)
-{
+bool StateMachine::Start(uint32_t port_index, rdm::Tod* tod, bool do_incremental) {
     DEBUG_ENTRY();
 
-    if (state_ != rdm::discovery::State::kIdle)
-    {
+    if (state_ != rdm::discovery::State::kIdle) {
         DEBUG_PUTS("Is already running.");
         DEBUG_EXIT();
         return false;
@@ -171,12 +170,10 @@ bool StateMachine::Start(uint32_t port_index, rdm::Tod* tod, bool do_incremental
     return true;
 }
 
-bool StateMachine::Stop()
-{
+bool StateMachine::Stop() {
     DEBUG_ENTRY();
 
-    if (state_ == rdm::discovery::State::kIdle)
-    {
+    if (state_ == rdm::discovery::State::kIdle) {
         DEBUG_PUTS("Not running.");
         DEBUG_EXIT();
         return false;
@@ -190,14 +187,12 @@ bool StateMachine::Stop()
     return true;
 }
 
-bool StateMachine::IsValidDiscoveryResponse(uint8_t* uid)
-{
+bool StateMachine::IsValidDiscoveryResponse(uint8_t* uid) {
     uint8_t checksum[2];
     uint16_t rdm_checksum = 6 * 0xFF;
     auto is_valid = false;
 
-    if (response_[0] == 0xFE)
-    {
+    if (response_[0] == 0xFE) {
         uid[0] = response_[8] & response_[9];
         uid[1] = response_[10] & response_[11];
 
@@ -209,13 +204,11 @@ bool StateMachine::IsValidDiscoveryResponse(uint8_t* uid)
         checksum[0] = response_[22] & response_[23];
         checksum[1] = response_[20] & response_[21];
 
-        for (uint32_t i = 0; i < 6; i++)
-        {
+        for (uint32_t i = 0; i < 6; i++) {
             rdm_checksum = static_cast<uint16_t>(rdm_checksum + uid[i]);
         }
 
-        if (((rdm_checksum >> 8) == checksum[1]) && ((rdm_checksum & 0xFF) == checksum[0]))
-        {
+        if (((rdm_checksum >> 8) == checksum[1]) && ((rdm_checksum & 0xFF) == checksum[0])) {
             is_valid = true;
         }
 
@@ -228,64 +221,51 @@ bool StateMachine::IsValidDiscoveryResponse(uint8_t* uid)
     return is_valid;
 }
 
-void StateMachine::SavedState([[maybe_unused]] uint32_t line)
-{
+void StateMachine::SavedState([[maybe_unused]] uint32_t line) {
     assert(saved_state_ != state_);
 #ifndef NDEBUG
-    printf("State %s->%s at line %u\n", rdm::discovery::kStateName[static_cast<uint32_t>(state_)],
-           rdm::discovery::kStateName[static_cast<uint32_t>(saved_state_)], line);
+    printf("State %s->%s at line %u\n", rdm::discovery::kStateName[static_cast<uint32_t>(state_)], rdm::discovery::kStateName[static_cast<uint32_t>(saved_state_)], line);
 #endif
     state_ = saved_state_;
 }
 
-void StateMachine::NewState(rdm::discovery::State state, bool do_state_late_response, [[maybe_unused]] uint32_t line)
-{
+void StateMachine::NewState(rdm::discovery::State state, bool do_state_late_response, [[maybe_unused]] uint32_t line) {
     assert(state_ != state);
 
-    if (do_state_late_response && (state_ != rdm::discovery::State::kLateResponse))
-    {
+    if (do_state_late_response && (state_ != rdm::discovery::State::kLateResponse)) {
 #ifndef NDEBUG
         assert(static_cast<uint32_t>(state) < sizeof(rdm::discovery::kStateName) / sizeof(rdm::discovery::kStateName[0]));
-        printf("State %s->%s [%s] at line %u\n", rdm::discovery::kStateName[static_cast<uint32_t>(state_)],
-               rdm::discovery::kStateName[static_cast<uint32_t>(rdm::discovery::State::kLateResponse)],
+        printf("State %s->%s [%s] at line %u\n", rdm::discovery::kStateName[static_cast<uint32_t>(state_)], rdm::discovery::kStateName[static_cast<uint32_t>(rdm::discovery::State::kLateResponse)],
                rdm::discovery::kStateName[static_cast<uint32_t>(state)], line);
 #endif
         late_response_.micros = hal::Micros();
         saved_state_ = state;
         state_ = rdm::discovery::State::kLateResponse;
-    }
-    else
-    {
+    } else {
 #ifndef NDEBUG
-        printf("State %s->%s at line %u\n", rdm::discovery::kStateName[static_cast<uint32_t>(state_)], rdm::discovery::kStateName[static_cast<uint32_t>(state)],
-               line);
+        printf("State %s->%s at line %u\n", rdm::discovery::kStateName[static_cast<uint32_t>(state_)], rdm::discovery::kStateName[static_cast<uint32_t>(state)], line);
 #endif
         state_ = state;
     }
 }
 
-void StateMachine::Process()
-{
-    switch (state_)
-    {
+void StateMachine::Process() {
+    switch (state_) {
         case rdm::discovery::State::kLateResponse: ///< LATE_RESPONSE
             message_.Receive(port_index_);
 
-            if ((hal::Micros() - late_response_.micros) > rdm::discovery::kLateResponseTimeOut)
-            {
+            if ((hal::Micros() - late_response_.micros) > rdm::discovery::kLateResponseTimeOut) {
                 SAVED_STATE();
             }
 
             return;
             break;
         case rdm::discovery::State::kUnmute: ///< UNMUTE
-            if (unmute_.counter == 0)
-            {
+            if (unmute_.counter == 0) {
                 unmute_.counter = rdm::discovery::kUnmuteCounter;
                 unmute_.is_command_running = false;
 
-                if (do_incremental_)
-                {
+                if (do_incremental_) {
                     NEW_STATE(rdm::discovery::State::kMute, false);
                     return;
                 }
@@ -294,8 +274,7 @@ void StateMachine::Process()
                 return;
             }
 
-            if (!unmute_.is_command_running)
-            {
+            if (!unmute_.is_command_running) {
                 message_.SetPortID(static_cast<uint8_t>(1 + port_index_));
                 message_.SetDstUid(UID_ALL);
                 message_.SetCc(E120_DISCOVERY_COMMAND);
@@ -305,13 +284,18 @@ void StateMachine::Process()
 
                 unmute_.micros = hal::Micros();
                 unmute_.is_command_running = true;
+
+#if defined(CONFIG_PANELLED_RDM_PORT)
+                hal::panelled::On(hal::panelled::kPortARdm << port_index_);
+#elif defined(CONFIG_PANELLED_RDM_NO_PORT)
+                hal::panelled::On(hal::panelled::kRdm << port_index);
+#endif
                 return;
             }
 
             message_.Receive(port_index_);
 
-            if ((hal::Micros() - unmute_.micros) > rdm::discovery::kReceiveTimeOut)
-            {
+            if ((hal::Micros() - unmute_.micros) > rdm::discovery::kReceiveTimeOut) {
                 assert(unmute_.counter > 0);
                 unmute_.counter--;
                 unmute_.is_command_running = false;
@@ -320,15 +304,13 @@ void StateMachine::Process()
             return;
             break;
         case rdm::discovery::State::kMute: ///< MUTE
-            if (mute_.tod_entries == 0)
-            {
+            if (mute_.tod_entries == 0) {
                 mute_.is_command_running = false;
                 NEW_STATE(rdm::discovery::State::kDiscovery, false);
                 return;
             }
 
-            if (mute_.counter == 0)
-            {
+            if (mute_.counter == 0) {
                 mute_.counter = rdm::discovery::kMuteCounter;
                 mute_.is_command_running = false;
 #ifndef NDEBUG
@@ -338,16 +320,14 @@ void StateMachine::Process()
 #endif
                 tod_->Delete(mute_.uid);
 
-                if (mute_.tod_entries > 0)
-                {
+                if (mute_.tod_entries > 0) {
                     mute_.tod_entries--;
                 }
 
                 return;
             }
 
-            if (!mute_.is_command_running)
-            {
+            if (!mute_.is_command_running) {
                 assert(mute_.tod_entries > 0);
                 tod_->CopyUidEntry(mute_.tod_entries - 1, mute_.uid);
 
@@ -365,16 +345,14 @@ void StateMachine::Process()
 
             response_ = const_cast<uint8_t*>(message_.Receive(port_index_));
 
-            if (response_ != nullptr)
-            {
+            if (response_ != nullptr) {
                 assert(mute_.tod_entries > 0);
                 mute_.tod_entries--;
                 mute_.is_command_running = false;
                 return;
             }
 
-            if ((hal::Micros() - mute_.micros) > rdm::discovery::kReceiveTimeOut)
-            {
+            if ((hal::Micros() - mute_.micros) > rdm::discovery::kReceiveTimeOut) {
                 assert(mute_.counter > 0);
                 mute_.counter--;
                 message_.Send(port_index_);
@@ -384,19 +362,16 @@ void StateMachine::Process()
             return;
             break;
         case rdm::discovery::State::kDiscovery: ///< DISCOVERY
-            if (discovery_.is_command_running)
-            {
+            if (discovery_.is_command_running) {
                 response_ = const_cast<uint8_t*>(message_.Receive(port_index_));
 
-                if ((response_ != nullptr) || (discovery_.counter == 0))
-                {
+                if ((response_ != nullptr) || (discovery_.counter == 0)) {
                     discovery_.is_command_running = false;
                     NEW_STATE(rdm::discovery::State::kDub, false);
                     return;
                 }
 
-                if ((hal::Micros() - discovery_.micros) > rdm::discovery::kReceiveTimeOut)
-                {
+                if ((hal::Micros() - discovery_.micros) > rdm::discovery::kReceiveTimeOut) {
                     assert(discovery_.counter > 0);
                     discovery_.counter--;
                     message_.Send(port_index_);
@@ -406,15 +381,13 @@ void StateMachine::Process()
                 return;
             }
 
-            if (!discovery_.stack.Pop(discovery_.lower_bound, discovery_.upper_bound))
-            {
+            if (!discovery_.stack.Pop(discovery_.lower_bound, discovery_.upper_bound)) {
                 discovery_.is_command_running = false;
                 NEW_STATE(rdm::discovery::State::kFinished, true);
                 return;
             }
 
-            if (discovery_.lower_bound == discovery_.upper_bound)
-            {
+            if (discovery_.lower_bound == discovery_.upper_bound) {
                 quick_find_discovery_.is_command_running = false;
                 NEW_STATE(rdm::discovery::State::kDiscoverySingleDevice, true);
                 return;
@@ -441,19 +414,22 @@ void StateMachine::Process()
             discovery_.micros = hal::Micros();
             discovery_.is_command_running = true;
 
+#if defined(CONFIG_PANELLED_RDM_PORT)
+            hal::panelled::On(hal::panelled::kPortARdm << port_index_);
+#elif defined(CONFIG_PANELLED_RDM_NO_PORT)
+            hal::panelled::On(hal::panelled::kRdm << port_index);
+#endif
             return;
             break;
         case rdm::discovery::State::kDiscoverySingleDevice: ///< DISCOVERY_SINGLE_DEVICE
-            if (discovery_single_device_.counter == 0)
-            {
+            if (discovery_single_device_.counter == 0) {
                 discovery_single_device_.counter = rdm::discovery::kQuikfindDiscoveryCounter;
                 discovery_single_device_.is_command_running = false;
                 NEW_STATE(rdm::discovery::State::kDiscovery, true);
                 return;
             }
 
-            if (!discovery_single_device_.is_command_running)
-            {
+            if (!discovery_single_device_.is_command_running) {
                 memcpy(discovery_.uid, rdm::discovery::ConvertUid(discovery_.lower_bound), RDM_UID_SIZE);
 
                 message_.SetCc(E120_DISCOVERY_COMMAND);
@@ -464,17 +440,21 @@ void StateMachine::Process()
 
                 discovery_single_device_.micros = hal::Micros();
                 discovery_single_device_.is_command_running = true;
+
+#if defined(CONFIG_PANELLED_RDM_PORT)
+                hal::panelled::On(hal::panelled::kPortARdm << port_index_);
+#elif defined(CONFIG_PANELLED_RDM_NO_PORT)
+                hal::panelled::On(hal::panelled::kRdm << port_index);
+#endif
                 return;
             }
 
             response_ = const_cast<uint8_t*>(message_.Receive(port_index_));
 
-            if (response_ != nullptr)
-            {
+            if (response_ != nullptr) {
                 const auto* response = reinterpret_cast<struct TRdmMessage*>(response_);
 
-                if ((response->command_class == E120_DISCOVERY_COMMAND_RESPONSE) && (memcmp(discovery_.uid, response->source_uid, RDM_UID_SIZE) == 0))
-                {
+                if ((response->command_class == E120_DISCOVERY_COMMAND_RESPONSE) && (memcmp(discovery_.uid, response->source_uid, RDM_UID_SIZE) == 0)) {
                     tod_->AddUid(discovery_.uid);
 #ifndef NDEBUG
                     printf("AddUid : ");
@@ -490,8 +470,7 @@ void StateMachine::Process()
                 return;
             }
 
-            if ((hal::Micros() - discovery_single_device_.micros) > rdm::discovery::kReceiveTimeOut)
-            {
+            if ((hal::Micros() - discovery_single_device_.micros) > rdm::discovery::kReceiveTimeOut) {
                 assert(mute_.counter > 0);
                 discovery_single_device_.counter--;
                 message_.Send(port_index_);
@@ -501,8 +480,7 @@ void StateMachine::Process()
             return;
             break;
         case rdm::discovery::State::kDub: ///< DUB
-            if (response_ == nullptr)
-            {
+            if (response_ == nullptr) {
 #ifndef NDEBUG
                 puts("No responses");
 #endif
@@ -510,14 +488,12 @@ void StateMachine::Process()
                 return;
             }
 
-            if (IsValidDiscoveryResponse(quick_find_.uid))
-            {
+            if (IsValidDiscoveryResponse(quick_find_.uid)) {
                 NEW_STATE(rdm::discovery::State::kQuickfind, true);
                 return;
             }
 
-            discovery_.mid_position = ((discovery_.lower_bound & (0x0000800000000000 - 1)) + (discovery_.upper_bound & (0x0000800000000000 - 1))) / 2 +
-                                      (discovery_.upper_bound & (0x0000800000000000) ? 0x0000400000000000 : 0) +
+            discovery_.mid_position = ((discovery_.lower_bound & (0x0000800000000000 - 1)) + (discovery_.upper_bound & (0x0000800000000000 - 1))) / 2 + (discovery_.upper_bound & (0x0000800000000000) ? 0x0000400000000000 : 0) +
                                       (discovery_.lower_bound & (0x0000800000000000) ? 0x0000400000000000 : 0);
 
             discovery_.stack.Push(discovery_.lower_bound, discovery_.mid_position);
@@ -526,15 +502,13 @@ void StateMachine::Process()
             NEW_STATE(rdm::discovery::State::kDiscovery, true);
             break;
         case rdm::discovery::State::kQuickfind: ///< QUICKFIND
-            if (quick_find_.counter == 0)
-            {
+            if (quick_find_.counter == 0) {
                 quick_find_.is_command_running = false;
                 NEW_STATE(rdm::discovery::State::kQuickfindDiscovery, false);
                 return;
             }
 
-            if (!quick_find_.is_command_running)
-            {
+            if (!quick_find_.is_command_running) {
 #ifndef NDEBUG
                 printf("QuickFind : ");
                 rdm::discovery::PrintUid(quick_find_.uid);
@@ -550,25 +524,27 @@ void StateMachine::Process()
                 quick_find_.counter = rdm::discovery::kQuikfindCounter;
                 quick_find_.micros = hal::Micros();
                 quick_find_.is_command_running = true;
+
+#if defined(CONFIG_PANELLED_RDM_PORT)
+                hal::panelled::On(hal::panelled::kPortARdm << port_index_);
+#elif defined(CONFIG_PANELLED_RDM_NO_PORT)
+                hal::panelled::On(hal::panelled::kRdm << port_index);
+#endif
                 return;
             }
 
             response_ = const_cast<uint8_t*>(message_.Receive(port_index_));
 
-            if ((response_ != nullptr))
-            {
+            if ((response_ != nullptr)) {
                 const auto* response = reinterpret_cast<struct TRdmMessage*>(response_);
 
-                if ((response->command_class != E120_DISCOVERY_COMMAND_RESPONSE) ||
-                    ((static_cast<uint16_t>((response->param_id[0] << 8) + response->param_id[1])) != E120_DISC_MUTE))
-                {
+                if ((response->command_class != E120_DISCOVERY_COMMAND_RESPONSE) || ((static_cast<uint16_t>((response->param_id[0] << 8) + response->param_id[1])) != E120_DISC_MUTE)) {
                     puts("QUICKFIND invalid response");
                     // assert(0);
                     return;
                 }
 
-                if ((response->command_class == E120_DISCOVERY_COMMAND_RESPONSE) && (memcmp(quick_find_.uid, response->source_uid, RDM_UID_SIZE) == 0))
-                {
+                if ((response->command_class == E120_DISCOVERY_COMMAND_RESPONSE) && (memcmp(quick_find_.uid, response->source_uid, RDM_UID_SIZE) == 0)) {
                     tod_->AddUid(quick_find_.uid);
 #ifndef NDEBUG
                     printf("AddUid : ");
@@ -583,8 +559,7 @@ void StateMachine::Process()
                 return;
             }
 
-            if ((hal::Micros() - quick_find_.micros) > rdm::discovery::kReceiveTimeOut)
-            {
+            if ((hal::Micros() - quick_find_.micros) > rdm::discovery::kReceiveTimeOut) {
                 assert(quick_find_.counter > 0);
                 quick_find_.counter--;
                 quick_find_.is_command_running = false;
@@ -593,16 +568,14 @@ void StateMachine::Process()
             return;
             break;
         case rdm::discovery::State::kQuickfindDiscovery: ///< QUICKFIND_DISCOVERY
-            if (quick_find_discovery_.counter == 0)
-            {
+            if (quick_find_discovery_.counter == 0) {
                 quick_find_discovery_.counter = rdm::discovery::kQuikfindDiscoveryCounter;
                 quick_find_discovery_.is_command_running = false;
                 NEW_STATE(rdm::discovery::State::kDiscovery, true);
                 return;
             }
 
-            if (!quick_find_discovery_.is_command_running)
-            {
+            if (!quick_find_discovery_.is_command_running) {
                 message_.SetDstUid(UID_ALL);
                 message_.SetCc(E120_DISCOVERY_COMMAND);
                 message_.SetPid(E120_DISC_UNIQUE_BRANCH);
@@ -616,24 +589,21 @@ void StateMachine::Process()
 
             response_ = const_cast<uint8_t*>(message_.Receive(port_index_));
 
-            if ((response_ != nullptr) && (IsValidDiscoveryResponse(quick_find_.uid)))
-            {
+            if ((response_ != nullptr) && (IsValidDiscoveryResponse(quick_find_.uid))) {
                 quick_find_discovery_.counter = rdm::discovery::kQuikfindDiscoveryCounter;
                 quick_find_discovery_.is_command_running = false;
                 NEW_STATE(rdm::discovery::State::kQuickfind, true);
                 return;
             }
 
-            if ((response_ != nullptr) && (!IsValidDiscoveryResponse(quick_find_.uid)))
-            {
+            if ((response_ != nullptr) && (!IsValidDiscoveryResponse(quick_find_.uid))) {
                 quick_find_discovery_.counter = rdm::discovery::kQuikfindDiscoveryCounter;
                 quick_find_discovery_.is_command_running = false;
                 NEW_STATE(rdm::discovery::State::kDub, false);
                 return;
             }
 
-            if ((hal::Micros() - quick_find_discovery_.micros) > rdm::discovery::kReceiveTimeOut)
-            {
+            if ((hal::Micros() - quick_find_discovery_.micros) > rdm::discovery::kReceiveTimeOut) {
                 assert(quick_find_.counter > 0);
                 quick_find_discovery_.counter--;
                 quick_find_discovery_.is_command_running = false;
