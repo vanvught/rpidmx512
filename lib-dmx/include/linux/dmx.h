@@ -33,102 +33,88 @@
 #include "dmxstatistics.h"
 
 struct Statistics {
-	uint32_t nSlotsInPacket;
-	uint32_t nSlotToSlot;
-	uint32_t nMarkAfterBreak;
-	uint32_t nBreakToBreak;
+    uint32_t nSlotsInPacket;
+    uint32_t nSlotToSlot;
+    uint32_t nMarkAfterBreak;
+    uint32_t nBreakToBreak;
 };
 
 struct Data {
-	uint8_t Data[dmx::buffer::SIZE];
-	struct Statistics Statistics;
+    uint8_t Data[dmx::buffer::kSize];
+    struct Statistics Statistics;
 };
 
 class Dmx {
-public:
-	Dmx();
+   public:
+    Dmx();
 
-	void SetPortDirection(uint32_t nPortIndex, dmx::PortDirection portDirection, bool bEnableData = false);
-	dmx::PortDirection GetPortDirection(const uint32_t nPortIndex) {
-		return m_tDmxPortDirection[nPortIndex];
-	}
+    void SetPortDirection(uint32_t nPortIndex, dmx::PortDirection portDirection, bool bEnableData = false);
+    dmx::PortDirection GetPortDirection(const uint32_t nPortIndex) { return m_tDmxPortDirection[nPortIndex]; }
 
-	volatile dmx::TotalStatistics& GetTotalStatistics(const uint32_t nPortIndex);
+    volatile dmx::TotalStatistics& GetTotalStatistics(const uint32_t nPortIndex);
 
-	// RDM Send
+    // RDM Send
 
-	void RdmSendRaw(uint32_t nPortIndex, const uint8_t *pRdmData, uint32_t nLength);
-	void RdmSendDiscoveryRespondMessage(const uint32_t nPortIndex, const uint8_t *pRdmData, uint32_t nLength);
+    void RdmSendRaw(uint32_t nPortIndex, const uint8_t* pRdmData, uint32_t nLength);
+    void RdmSendDiscoveryRespondMessage(const uint32_t nPortIndex, const uint8_t* pRdmData, uint32_t nLength);
 
-	// RDM Receive
+    // RDM Receive
 
-	const uint8_t *RdmReceive(uint32_t nPortIndex);
-	const uint8_t *RdmReceiveTimeOut(uint32_t nPortIndex, uint16_t nTimeOut);
-	uint32_t RdmGetDateReceivedEnd();
+    const uint8_t* RdmReceive(uint32_t nPortIndex);
+    const uint8_t* RdmReceiveTimeOut(uint32_t nPortIndex, uint16_t nTimeOut);
+    uint32_t RdmGetDateReceivedEnd();
 
-	// DMX Send
+    // DMX Send
 
-	void SetSendDataWithoutSC(const uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const dmx::SendStyle dmxSendStyle = dmx::SendStyle::kDirect);
+    void SetSendDataWithoutSC(const uint32_t nPortIndex, const uint8_t* pData, uint32_t nLength, const dmx::SendStyle dmxSendStyle = dmx::SendStyle::kDirect);
 
-	void StartOutput(uint32_t nPortIndex);
-	void SetOutput(const bool doForce);
+    void StartOutput(uint32_t nPortIndex);
+    void SetOutput(const bool doForce);
 
-	void SetOutputStyle([[maybe_unused]] const uint32_t nPortIndex, [[maybe_unused]] const dmx::OutputStyle outputStyle) {}
-	dmx::OutputStyle GetOutputStyle([[maybe_unused]] const uint32_t nPortIndex) const {
-		return dmx::OutputStyle::kDelta;
-	}
+    void SetOutputStyle([[maybe_unused]] const uint32_t nPortIndex, [[maybe_unused]] const dmx::OutputStyle outputStyle) {}
+    dmx::OutputStyle GetOutputStyle([[maybe_unused]] const uint32_t nPortIndex) const { return dmx::OutputStyle::kDelta; }
 
-	void Blackout();
-	void FullOn();
+    void Blackout();
+    void FullOn();
 
-	void SetDmxBreakTime(uint32_t break_time);
-	uint32_t GetDmxBreakTime() const {
-		return m_nDmxTransmitBreakTime;
-	}
+    void SetDmxBreakTime(uint32_t break_time);
+    uint32_t GetDmxBreakTime() const { return m_nDmxTransmitBreakTime; }
 
-	void SetDmxMabTime(uint32_t mab_time);
-	uint32_t GetDmxMabTime() const {
-		return m_nDmxTransmitMabTime;
-	}
+    void SetDmxMabTime(uint32_t mab_time);
+    uint32_t GetDmxMabTime() const { return m_nDmxTransmitMabTime; }
 
-	void SetDmxPeriodTime(uint32_t nPeriodTime);
-	uint32_t GetDmxPeriodTime() const {
-		return m_nDmxTransmitPeriod;
-	}
+    void SetDmxPeriodTime(uint32_t nPeriodTime);
+    uint32_t GetDmxPeriodTime() const { return m_nDmxTransmitPeriod; }
 
-	void SetDmxSlots(uint16_t nSlots = dmx::kChannelsMax);
-	uint16_t GetDmxSlots() const {
-		return m_nDmxTransmitSlots;
-	}
+    void SetDmxSlots(uint16_t nSlots = dmx::kChannelsMax);
+    uint16_t GetDmxSlots() const { return m_nDmxTransmitSlots; }
 
-	// DMX Receive
+    // DMX Receive
 
-	const uint8_t* GetDmxAvailable(uint32_t nPortIndex);
-	const uint8_t* GetDmxCurrentData(uint32_t nPortIndex);
-	const uint8_t* GetDmxChanged(uint32_t nPortIndex);
+    const uint8_t* GetDmxAvailable(uint32_t nPortIndex);
+    const uint8_t* GetDmxCurrentData(uint32_t nPortIndex);
+    const uint8_t* GetDmxChanged(uint32_t nPortIndex);
 
-	uint32_t GetDmxUpdatesPerSecond(uint32_t nPortIndex);
-	uint32_t GetDmxReceivedCount(uint32_t nPortIndex);
+    uint32_t GetDmxUpdatesPerSecond(uint32_t nPortIndex);
+    uint32_t GetDmxReceivedCount(uint32_t nPortIndex);
 
-	static Dmx* Get() {
-		return s_this;
-	}
+    static Dmx* Get() { return s_this; }
 
-private:
-	void ClearData(uint32_t nUart);
-	void StartData(uint32_t nUart, uint32_t nPortIndex);
-	void StopData(uint32_t nUart, uint32_t nPortIndex);
+   private:
+    void ClearData(uint32_t nUart);
+    void StartData(uint32_t nUart, uint32_t nPortIndex);
+    void StopData(uint32_t nUart, uint32_t nPortIndex);
 
-private:
-	uint32_t m_nDmxTransmitBreakTime { dmx::transmit::kBreakTimeMin };
-	uint32_t m_nDmxTransmitMabTime { dmx::transmit::kMabTimeMin };
-	uint32_t m_nDmxTransmitPeriod { dmx::transmit::kPeriodDefault };
-	uint32_t m_nDmxTransmitPeriodRequested { dmx::transmit::kPeriodDefault };
-	uint16_t m_nDmxTransmitSlots { dmx::kChannelsMax };
-	dmx::PortDirection m_tDmxPortDirection[dmx::config::max::kPorts];
-	uint32_t m_nDmxTransmissionLength[dmx::config::max::kPorts];
+   private:
+    uint32_t m_nDmxTransmitBreakTime{dmx::transmit::kBreakTimeMin};
+    uint32_t m_nDmxTransmitMabTime{dmx::transmit::kMabTimeMin};
+    uint32_t m_nDmxTransmitPeriod{dmx::transmit::kPeriodDefault};
+    uint32_t m_nDmxTransmitPeriodRequested{dmx::transmit::kPeriodDefault};
+    uint16_t m_nDmxTransmitSlots{dmx::kChannelsMax};
+    dmx::PortDirection m_tDmxPortDirection[dmx::config::max::kPorts];
+    uint32_t m_nDmxTransmissionLength[dmx::config::max::kPorts];
 
-	static Dmx *s_this;
+    static Dmx* s_this;
 };
 
 #endif /* LINUX_DMX_H_ */

@@ -770,7 +770,7 @@ uint32_t Dmx::GetUpdatesPerSecond([[maybe_unused]]uint32_t nPortIndex) {
 
 void Dmx::ClearData([[maybe_unused]]uint32_t nPortIndex) {
 	for (uint32_t i = 0; i < buffer::INDEX_ENTRIES; i++) {
-		memset(s_DmxData[i].Data, 0, dmx::buffer::SIZE);
+		memset(s_DmxData[i].Data, 0, dmx::buffer::kSize);
 		memset(&s_DmxData[i].Statistics, 0, sizeof(struct Statistics));
 	}
 }

@@ -44,7 +44,7 @@ struct Statistics {
 };
 
 struct Data {
-	uint8_t Data[dmx::buffer::SIZE];
+	uint8_t Data[dmx::buffer::kSize];
 	struct Statistics Statistics;
 };
 
