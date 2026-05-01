@@ -2,7 +2,7 @@
  * @file json_parsehelper.h
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,79 +29,64 @@
 #include <cstdint>
 #include <type_traits>
 
-namespace json
-{
-inline int32_t Atoi(const char* buffer, uint32_t size)
-{
+namespace json {
+inline int32_t Atoi(const char* buffer, uint32_t size) {
     const char* p = buffer;
     int32_t sign = 1;
     int32_t res = 0;
 
-    if (size == 0)
-    {
+    if (size == 0) {
         return 0;
     }
 
-    if (*p == '-')
-    {
+    if (*p == '-') {
         sign = -1;
         p++;
         size--;
-    }
-    else if (*p == '+')
-    {
+    } else if (*p == '+') {
         p++;
         size--;
     }
 
-    for (; (size > 0) && (*p >= '0' && *p <= '9'); size--, p++)
-    {
+    for (; (size > 0) && (*p >= '0' && *p <= '9'); size--, p++) {
         res = res * 10 + (*p - '0');
     }
 
     return sign * res;
 }
 
-inline float Atof(const char* buffer, uint32_t size)
-{
+inline float Atof(const char* buffer, uint32_t size) {
     const char* p = buffer;
     float sign = 1.0f;
     float result = 0.0f;
 
-    if (size == 0)
-    {
+    if (size == 0) {
         return 0.0f;
     }
 
-    if (*p == '-')
-    {
+    if (*p == '-') {
         sign = -1.0f;
         ++p;
         --size;
-    }
-    else if (*p == '+')
-    {
+    } else if (*p == '+') {
         ++p;
         --size;
     }
 
     // Parse integer part
-    while (size > 0 && *p >= '0' && *p <= '9')
-    {
+    while (size > 0 && *p >= '0' && *p <= '9') {
         result = result * 10.0f + static_cast<float>(*p - '0');
         ++p;
         --size;
     }
 
     // Parse fractional part
-    if (size > 0 && *p == '.')
-    {
+    if (size > 0 && *p == '.') {
         ++p;
         --size;
 
         float divisor = 10.0f;
-        while (size > 0 && *p >= '0' && *p <= '9')
-        {
+        while (size > 0 && *p >= '0' && *p <= '9') {
             result += static_cast<float>(*p - '0') / divisor;
             divisor *= 10.0f;
             ++p;
@@ -112,23 +97,39 @@ inline float Atof(const char* buffer, uint32_t size)
     return sign * result;
 }
 
-template <typename T> T ParseValue(const char* val, uint32_t len)
-{
+template <typename T> T ParseValue(const char* val, uint32_t len) {
     int32_t v = Atoi(val, len);
-    if constexpr (std::is_unsigned_v<T>)
-    {
-        if (v < 0)
-        {
+    if constexpr (std::is_unsigned_v<T>) {
+        if (v < 0) {
             return 0; // or handle error
         }
     }
     return static_cast<T>(v);
 }
 
-template <typename T, typename F> void ParseAndApply(const char* val, uint32_t len, F&& apply)
-{
-    apply(ParseValue<T>(val, len));
+template <typename T> 
+bool ParseInRange(const char* val, uint32_t len, T min, T max, T* out) {
+    const auto kV = ParseValue<T>(val, len);
+
+    if ((kV < min) || (kV > max)) {
+        return false;
+    }
+
+    *out = kV;
+    return true;
+}
+
+template <typename ParseT, typename StoreT> 
+bool ParseInRange(const char* val, uint32_t len, ParseT min, ParseT max, StoreT* out) {
+    const auto kV = ParseValue<ParseT>(val, len);
+
+    if ((kV < min) || (kV > max)) {
+        return false;
+    }
+
+    *out = static_cast<StoreT>(kV);
+    return true;
 }
 } // namespace json
 
-#endif  // JSON_JSON_PARSEHELPER_H_
+#endif // JSON_JSON_PARSEHELPER_H_

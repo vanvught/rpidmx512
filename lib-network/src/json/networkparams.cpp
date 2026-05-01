@@ -55,7 +55,9 @@ NetworkParams::NetworkParams() {
 }
 
 void NetworkParams::SetUseStaticIp(const char* val, uint32_t len) {
-    if (len == 1) store_network.flags = common::SetFlagValue(store_network.flags, Flags::Flag::kUseStaticIp, val[0] != '0');
+    if (len == 1) {
+        store_network.flags = common::SetFlagValue(store_network.flags, Flags::Flag::kUseStaticIp, val[0] != '0');
+    }
 }
 
 void NetworkParams::SetIpAddress(const char* val, uint32_t len) {

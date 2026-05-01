@@ -49,21 +49,19 @@ OscClientParams::OscClientParams() {
 }
 
 void OscClientParams::SetIncomingPort(const char* val, uint32_t len) {
-    if (len <= 3) {
-        return;
-    }
+    uint16_t v;
 
-    auto v = ParseValue<uint16_t>(val, len);
-    store_oscclient.incoming_port = v;
+    if (ParseInRange<uint32_t, uint16_t>(val, len, 1U, 65535U, &v)) {
+        store_oscclient.incoming_port = v;
+    }
 }
 
 void OscClientParams::SetOutgoingPort(const char* val, uint32_t len) {
-    if (len <= 3) {
-        return;
-    }
+    uint16_t v;
 
-    auto v = ParseValue<uint16_t>(val, len);
-    store_oscclient.outgoing_port = v;
+    if (ParseInRange<uint32_t, uint16_t>(val, len, 1U, 65535U, &v)) {
+        store_oscclient.outgoing_port = v;
+    }
 }
 
 void OscClientParams::SetServerIp(const char* val, uint32_t len) {
@@ -71,17 +69,15 @@ void OscClientParams::SetServerIp(const char* val, uint32_t len) {
 }
 
 void OscClientParams::SetPingDisable(const char* val, [[maybe_unused]] uint32_t len) {
-    ParseAndApply<uint8_t>(val, len, [](uint8_t v) { store_oscclient.flags = common::SetFlagValue(store_oscclient.flags, Flags::Flag::kPingDisable, v != 0); });
+    if (len == 1) {
+        store_oscclient.flags = common::SetFlagValue(store_oscclient.flags, Flags::Flag::kPingDisable, val[0] != '0');
+    }
 }
 
 void OscClientParams::SetPingDelay(const char* val, uint32_t len) {
-    if (len >= 3) {
-        return;
-    }
+    uint8_t v;
 
-    auto v = ParseValue<uint8_t>(val, len);
-
-    if ((v >= 2) && (v <= 60)) {
+    if (ParseInRange<uint16_t, uint8_t>(val, len, 2U, 60U, &v)) {
         store_oscclient.ping_delay = v;
     }
 }
