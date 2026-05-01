@@ -35,28 +35,20 @@
 #include "dmx.h"            // IWYU pragma: keep
 #include "softwaretimers.h" // IWYU pragma: keep
 
-namespace rdm
-{
-namespace discovery
-{
-enum class Type
-{
-    kFull,
-    kIncremental
-};
+namespace rdm {
+namespace discovery {
+enum class Type { kFull, kIncremental };
 
 void Starting(uint32_t port_index, Type type);
 void Finished(uint32_t port_index, Type type);
 } // namespace discovery
 inline static constexpr uint32_t kBackgroundIntervalMinutes = 1;
 
-class Discovery : rdm::discovery::StateMachine
-{
-    static constexpr auto kPorts = dmx::config::max::PORTS;
+class Discovery : rdm::discovery::StateMachine {
+    static constexpr auto kPorts = dmx::config::max::kPorts;
 
    public:
-    Discovery() : rdm::discovery::StateMachine(rdm::device::Base::Instance().GetUID())
-    {
+    Discovery() : rdm::discovery::StateMachine(rdm::device::Base::Instance().GetUID()) {
         assert(s_this == nullptr);
         s_this = this;
     }
@@ -68,87 +60,71 @@ class Discovery : rdm::discovery::StateMachine
 
     void Print() { rdm::device::Base::Instance().Print(); }
 
-    void Enable(uint32_t port_index)
-    {
+    void Enable(uint32_t port_index) {
         assert(port_index < kPorts);
-        enabled_ |= (1U << port_index);
+        enabled_ |= Bit(port_index);
     }
 
-    bool IsEnabled(uint32_t port_index) const { return (((1U << port_index) & enabled_) == (1U << port_index)); }
+    bool IsEnabled(uint32_t port_index) const { return ((Bit(port_index) & enabled_) == Bit(port_index)); }
 
-    void Disable(uint32_t port_index)
-    {
+    void Disable(uint32_t port_index) {
         assert(port_index < kPorts);
-        enabled_ &= ~(1U << port_index);
+        enabled_ &= static_cast<uint8_t>(~Bit(port_index));
     }
 
-    void EnableBackground(uint32_t port_index)
-    {
+    void EnableBackground(uint32_t port_index) {
         assert(port_index < kPorts);
-        if (((1U << port_index) & enabled_) == (1U << port_index))
-        {
-            s_bg_discovery |= (1U << port_index);
+        if ((Bit(port_index) & enabled_) == Bit(port_index)) {
+            s_bg_discovery |= Bit(port_index);
         }
 
-        if (s_timer_id < 0)
-        {
+        if (s_timer_id < 0) {
             s_timer_id = SoftwareTimerAdd((1000U * 60U) * kBackgroundIntervalMinutes, TimerBackGround);
             printf("s_timer_id=%d\n", s_timer_id);
         }
     }
 
-    void DisableBackground(uint32_t port_index)
-    {
+    void DisableBackground(uint32_t port_index) {
         assert(port_index < kPorts);
-        if (((1U << port_index) & enabled_) == (1U << port_index))
-        {
-            s_bg_discovery &= ~(1U << port_index);
+        if ((Bit(port_index) & enabled_) == Bit(port_index)) {
+            s_bg_discovery &= static_cast<uint8_t>(~Bit(port_index));
             Stop(port_index);
         }
 
-        if (s_bg_discovery == 0)
-        {
+        if (s_bg_discovery == 0) {
             SoftwareTimerDelete(s_timer_id);
         }
     }
 
-    bool IsEnabledBackground(uint32_t port_index) const { return (((1U << port_index) & s_bg_discovery) == (1U << port_index)); }
+    bool IsEnabledBackground(uint32_t port_index) const { return ((Bit(port_index) & s_bg_discovery) == Bit(port_index)); }
 
-    void Full(uint32_t port_index)
-    {
+    void Full(uint32_t port_index) {
         assert(port_index < kPorts);
-        if (((1U << port_index) & enabled_) == (1U << port_index))
-        {
-            waiting_ |= (1U << port_index);
-            type_ |= (1U << port_index);
+        if ((Bit(port_index) & enabled_) == Bit(port_index)) {
+            waiting_ |= Bit(port_index);
+            type_ |= Bit(port_index);
             running_ = true;
         }
     }
 
-    void Incremental(uint32_t port_index)
-    {
+    void Incremental(uint32_t port_index) {
         assert(port_index < kPorts);
-        if (((1U << port_index) & enabled_) == (1U << port_index))
-        {
-            waiting_ |= (1U << port_index);
-            type_ &= ~(1U << port_index);
+        if ((Bit(port_index) & enabled_) == Bit(port_index)) {
+            waiting_ |= Bit(port_index);
+            type_ &= static_cast<uint8_t>(~Bit(port_index));
             running_ = true;
         }
     }
 
-    void Stop(uint32_t port_index)
-    {
+    void Stop(uint32_t port_index) {
         assert(port_index < kPorts);
-        if (((1U << port_index) & enabled_) == (1U << port_index))
-        {
+        if ((Bit(port_index) & enabled_) == Bit(port_index)) {
             bool is_incremental;
             uint32_t index;
-            if (rdm::discovery::StateMachine::IsRunning(index, is_incremental))
-            {
-                if (index == port_index)
-                {
+            if (rdm::discovery::StateMachine::IsRunning(index, is_incremental)) {
+                if (index == port_index) {
                     rdm::discovery::StateMachine::Stop();
-                    waiting_ &= ~(1U << port_index);
+                    waiting_ &= static_cast<uint8_t>(~Bit(port_index));
                 }
             }
         }
@@ -156,45 +132,39 @@ class Discovery : rdm::discovery::StateMachine
 
     bool IsRunning(uint32_t portindex, bool& is_incremental) { return rdm::discovery::StateMachine::IsRunning(portindex, is_incremental); }
 
-    bool IsRunning(uint32_t port_index)
-    {
+    bool IsRunning(uint32_t port_index) {
         assert(port_index < kPorts);
 
         uint32_t portindex;
         bool is_incremental;
 
-        if (rdm::discovery::StateMachine::IsRunning(portindex, is_incremental))
-        {
+        if (rdm::discovery::StateMachine::IsRunning(portindex, is_incremental)) {
             return port_index == portindex;
         }
 
         return false;
     }
 
-    void GetStatus(uint8_t data[5])
-    {
+    void GetStatus(uint8_t data[5]) {
         data[0] = enabled_;
         data[1] = waiting_;
         data[2] = type_;
         data[3] = s_bg_discovery;
         data[4] = 0;
-        for (uint32_t port_index = 0; port_index < kPorts; port_index++)
-        {
-            data[4] |= (IsRunning(port_index) ? (1U << port_index) : 0);
+
+        for (uint32_t port_index = 0; port_index < kPorts; port_index++) {
+            if (IsRunning(port_index)) {
+                data[4] |= Bit(port_index);
+            }
         }
     }
 
-    uint32_t CopyWorkingQueue(char* out_buffer, uint32_t out_buffer_size)
-    {
-        return rdm::discovery::StateMachine::CopyWorkingQueue(out_buffer, out_buffer_size);
-    }
+    uint32_t CopyWorkingQueue(char* out_buffer, uint32_t out_buffer_size) { return rdm::discovery::StateMachine::CopyWorkingQueue(out_buffer, out_buffer_size); }
 
-    void Run()
-    {
+    void Run() {
         rdm::discovery::StateMachine::Run();
 
-        if (__builtin_expect((!running_), 1))
-        {
+        if (__builtin_expect((!running_), 1)) {
             return;
         }
 
@@ -203,8 +173,7 @@ class Discovery : rdm::discovery::StateMachine
         bool is_incremental;
 
         uint32_t port_index;
-        if (rdm::discovery::StateMachine::IsFinished(port_index, is_incremental))
-        {
+        if (rdm::discovery::StateMachine::IsFinished(port_index, is_incremental)) {
             assert(port_index_ == port_index);
             printf("Finished:%u\n", port_index_);
             rdm::discovery::Finished(port_index_, is_incremental ? rdm::discovery::Type::kIncremental : rdm::discovery::Type::kFull);
@@ -212,35 +181,26 @@ class Discovery : rdm::discovery::StateMachine
             port_index_++;
             if (port_index_ == kPorts) port_index_ = 0;
 
-            if (waiting_ == 0)
-            {
+            if (waiting_ == 0) {
                 running_ = false;
                 port_index_ = 0;
             }
         }
 
-        if (waiting_)
-        {
-            if (((1U << port_index_) & waiting_) == (1U << port_index_))
-            {
-                if (((1U << port_index_) & type_) == (1U << port_index_))
-
-                {
+        if (waiting_) {
+            if ((Bit(port_index_) & waiting_) == Bit(port_index_)) {
+                if ((Bit(port_index_) & type_) == Bit(port_index_)) {
                     rdm::discovery::Starting(port_index_, rdm::discovery::Type::kFull);
                     rdm::discovery::StateMachine::Full(port_index_, &s_tod[port_index_]);
                     printf("Full:%u\n", port_index_);
-                }
-                else
-                {
+                } else {
                     rdm::discovery::Starting(port_index_, rdm::discovery::Type::kIncremental);
                     rdm::discovery::StateMachine::Incremental(port_index_, &s_tod[port_index_]);
                     printf("Incremental:%u\n", port_index_);
                 }
 
-                waiting_ &= ~(1U << port_index_);
-            }
-            else
-            {
+                waiting_ &= static_cast<uint8_t>(~Bit(port_index));
+            } else {
                 port_index_++;
                 if (port_index_ == kPorts) port_index_ = 0;
             }
@@ -249,94 +209,81 @@ class Discovery : rdm::discovery::StateMachine
         }
     }
 
-    uint32_t TodUidCount(uint32_t port_index)
-    {
+    uint32_t TodUidCount(uint32_t port_index) {
         assert(port_index < kPorts);
         return s_tod[port_index].UidCount();
     }
 
-    bool TodCopyUidEntry(uint32_t port_index, uint32_t index, uint8_t uid[RDM_UID_SIZE])
-    {
+    bool TodCopyUidEntry(uint32_t port_index, uint32_t index, uint8_t uid[RDM_UID_SIZE]) {
         assert(port_index < kPorts);
         return s_tod[port_index].CopyUidEntry(index, uid);
     }
 
-    void TodCopy(uint32_t port_index, uint8_t* tod)
-    {
+    void TodCopy(uint32_t port_index, uint8_t* tod) {
         assert(port_index < kPorts);
         s_tod[port_index].Copy(tod);
     }
 
-    void TodReset(uint32_t port_index)
-    {
+    void TodReset(uint32_t port_index) {
         assert(port_index < kPorts);
         s_tod[port_index].Reset();
     }
 
-    bool TodAddUid(uint32_t port_index, const uint8_t* uid)
-    {
+    bool TodAddUid(uint32_t port_index, const uint8_t* uid) {
         assert(port_index < kPorts);
         return s_tod[port_index].AddUid(uid);
     }
 
-    bool TodExist(uint32_t port_index, const uint8_t* uid)
-    {
+    bool TodExist(uint32_t port_index, const uint8_t* uid) {
         assert(port_index < kPorts);
         return s_tod[port_index].Exist(uid);
     }
 
-    const uint8_t* TodNext(uint32_t port_index)
-    {
+    const uint8_t* TodNext(uint32_t port_index) {
         assert(port_index < kPorts);
         return s_tod[port_index].Next();
     }
 
-    bool TodIsMuted(uint32_t port_index)
-    {
+    bool TodIsMuted(uint32_t port_index) {
         assert(port_index < kPorts);
         return s_tod[port_index].IsMuted();
     }
 
-    void TodMute(uint32_t port_index)
-    {
+    void TodMute(uint32_t port_index) {
         assert(port_index < kPorts);
         s_tod[port_index].Mute();
     }
 
-    void TodUnMute(uint32_t port_index)
-    {
+    void TodUnMute(uint32_t port_index) {
         assert(port_index < kPorts);
         s_tod[port_index].UnMute();
     }
 
-    void TodUnMuteAll(uint32_t port_index)
-    {
+    void TodUnMuteAll(uint32_t port_index) {
         assert(port_index < kPorts);
         s_tod[port_index].UnMuteAll();
     }
 
-    void TodDump(uint32_t port_index)
-    {
+    void TodDump(uint32_t port_index) {
         assert(port_index < kPorts);
         s_tod[port_index].Dump();
     }
 
-    static Discovery& Instance()
-    {
+    static Discovery& Instance() {
         assert(s_this != nullptr);
         return *s_this;
     }
 
-    static void TimerBackGround([[maybe_unused]] TimerHandle_t handle)
-    {
-        for (uint32_t port_index = 0; port_index < kPorts; port_index++)
-        {
-            if (((1U << port_index) & s_bg_discovery) == (1U << port_index))
-            {
+    static void TimerBackGround([[maybe_unused]] TimerHandle_t handle) {
+        for (uint32_t port_index = 0; port_index < kPorts; port_index++) {
+            if ((Bit(port_index) & s_bg_discovery) == Bit(port_index)) {
                 Discovery::Instance().Incremental(port_index);
             }
         }
     }
+
+   private:
+    static constexpr uint8_t Bit(uint32_t index) { return static_cast<uint8_t>(1U << index); }
 
    private:
     uint8_t port_index_{0};

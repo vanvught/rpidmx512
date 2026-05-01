@@ -288,7 +288,7 @@ void StateMachine::Process() {
 #if defined(CONFIG_PANELLED_RDM_PORT)
                 hal::panelled::On(hal::panelled::kPortARdm << port_index_);
 #elif defined(CONFIG_PANELLED_RDM_NO_PORT)
-                hal::panelled::On(hal::panelled::kRdm << port_index);
+                hal::panelled::On(hal::panelled::kRdm << port_index_);
 #endif
                 return;
             }
@@ -417,7 +417,7 @@ void StateMachine::Process() {
 #if defined(CONFIG_PANELLED_RDM_PORT)
             hal::panelled::On(hal::panelled::kPortARdm << port_index_);
 #elif defined(CONFIG_PANELLED_RDM_NO_PORT)
-            hal::panelled::On(hal::panelled::kRdm << port_index);
+            hal::panelled::On(hal::panelled::kRdm << port_index_);
 #endif
             return;
             break;
@@ -444,7 +444,7 @@ void StateMachine::Process() {
 #if defined(CONFIG_PANELLED_RDM_PORT)
                 hal::panelled::On(hal::panelled::kPortARdm << port_index_);
 #elif defined(CONFIG_PANELLED_RDM_NO_PORT)
-                hal::panelled::On(hal::panelled::kRdm << port_index);
+                hal::panelled::On(hal::panelled::kRdm << port_index_);
 #endif
                 return;
             }
@@ -528,7 +528,7 @@ void StateMachine::Process() {
 #if defined(CONFIG_PANELLED_RDM_PORT)
                 hal::panelled::On(hal::panelled::kPortARdm << port_index_);
 #elif defined(CONFIG_PANELLED_RDM_NO_PORT)
-                hal::panelled::On(hal::panelled::kRdm << port_index);
+                hal::panelled::On(hal::panelled::kRdm << port_index_);
 #endif
                 return;
             }
