@@ -199,7 +199,7 @@ class Discovery : rdm::discovery::StateMachine {
                     printf("Incremental:%u\n", port_index_);
                 }
 
-                waiting_ &= static_cast<uint8_t>(~Bit(port_index));
+                waiting_ &= static_cast<uint8_t>(~Bit(port_index_));
             } else {
                 port_index_++;
                 if (port_index_ == kPorts) port_index_ = 0;
