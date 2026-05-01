@@ -125,8 +125,8 @@ private:
 	uint32_t m_nDmxTransmitPeriod { dmx::transmit::kPeriodDefault };
 	uint32_t m_nDmxTransmitPeriodRequested { dmx::transmit::kPeriodDefault };
 	uint16_t m_nDmxTransmitSlots { dmx::kChannelsMax };
-	dmx::PortDirection m_tDmxPortDirection[dmx::config::max::PORTS];
-	uint32_t m_nDmxTransmissionLength[dmx::config::max::PORTS];
+	dmx::PortDirection m_tDmxPortDirection[dmx::config::max::kPorts];
+	uint32_t m_nDmxTransmissionLength[dmx::config::max::kPorts];
 
 	static Dmx *s_this;
 };

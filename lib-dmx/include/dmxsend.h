@@ -115,7 +115,7 @@ class DmxSend
     {
         Dmx::Get()->Sync();
 
-        for (uint32_t port_index = 0; port_index < dmx::config::max::PORTS; port_index++)
+        for (uint32_t port_index = 0; port_index < dmx::config::max::kPorts; port_index++)
         {
             const auto kLightsetOffset = port_index + dmxnode::kDmxportOffset;
             if (dmxnode::Data::GetLength(kLightsetOffset) != 0)

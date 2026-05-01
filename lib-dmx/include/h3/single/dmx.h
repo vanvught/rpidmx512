@@ -42,7 +42,7 @@ struct Statistics
 
 struct Data
 {
-    uint8_t Data[dmx::buffer::SIZE];
+    uint8_t Data[dmx::buffer::kSize];
     struct Statistics Statistics;
 };
 
@@ -117,9 +117,9 @@ class Dmx
     uint32_t m_nDmxTransmitMabTime{dmx::transmit::kMabTimeMin};
     uint32_t m_nDmxTransmitPeriod{dmx::transmit::kPeriodDefault};
     uint32_t m_nDmxTransmitPeriodRequested{dmx::transmit::kPeriodDefault};
-    uint32_t m_nDmxTransmissiolength[dmx::config::max::PORTS];
+    uint32_t m_nDmxTransmissiolength[dmx::config::max::kPorts];
     uint16_t m_nDmxTransmitSlots{dmx::kChannelsMax};
-    dmx::PortDirection m_dmxPortDirection[dmx::config::max::PORTS];
+    dmx::PortDirection m_dmxPortDirection[dmx::config::max::kPorts];
 
     static Dmx* s_this;
 };

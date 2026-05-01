@@ -53,7 +53,7 @@ class Rdm
 
     static void Send(uint32_t port_index, struct TRdmMessage* rdm_command)
     {
-        assert(port_index < dmx::config::max::PORTS);
+        assert(port_index < dmx::config::max::kPorts);
         assert(rdm_command != nullptr);
 
         auto* data = reinterpret_cast<uint8_t*>(rdm_command);
@@ -77,7 +77,7 @@ class Rdm
 
     static void SendRawRespondMessage(uint32_t port_index, const uint8_t* rdm_data, uint32_t length)
     {
-        assert(port_index < dmx::config::max::PORTS);
+        assert(port_index < dmx::config::max::kPorts);
         assert(rdm_data != nullptr);
         assert(length != 0);
 
@@ -98,7 +98,7 @@ class Rdm
     static const uint8_t* ReceiveTimeOut(uint32_t port_index, uint16_t time_out) { return Dmx::Get()->RdmReceiveTimeOut(port_index, time_out); }
 
    private:
-    static uint8_t s_transaction_number[dmx::config::max::PORTS];
+    static uint8_t s_transaction_number[dmx::config::max::kPorts];
 };
 
 #endif  // RDM_H_

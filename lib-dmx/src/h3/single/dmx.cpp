@@ -85,12 +85,12 @@ static PortDirection s_nPortDirection = dmx::PortDirection::kInput;
 static volatile PortState sv_PortState;
 static OutputStyle s_OutputStyle;
 
-static volatile dmx::TotalStatistics sv_TotalStatistics[dmx::config::max::PORTS] ALIGNED;
+static volatile dmx::TotalStatistics sv_TotalStatistics[dmx::config::max::kPorts] ALIGNED;
 
 // DMX
 
 static struct Data s_DmxData ALIGNED;
-static uint8_t s_DmxDataPrevious[buffer::SIZE] ALIGNED;
+static uint8_t s_DmxDataPrevious[buffer::kSize] ALIGNED;
 static volatile _dmx_state sv_DmxReceiveState = IDLE;
 static volatile uint32_t sv_nDmxDataIndex;
 
@@ -720,7 +720,7 @@ const uint8_t* Dmx::GetDmxChanged([[maybe_unused]] uint32_t port_index) {
         H3GpioSet(GPIO_ANALYZER_CH1);
 
         sv_DmxSlotsInPacketPrevious = dmx_statistics->Statistics.nSlotsInPacket;
-        for (uint32_t i = 0; i < buffer::SIZE / 4; i++) {
+        for (uint32_t i = 0; i < buffer::kSize / 4; i++) {
             *dst = *src;
             dst++;
             src++;
@@ -734,7 +734,7 @@ const uint8_t* Dmx::GetDmxChanged([[maybe_unused]] uint32_t port_index) {
 
     auto is_changed = false;
 
-    for (uint32_t i = 0; i < buffer::SIZE / 4; i++) {
+    for (uint32_t i = 0; i < buffer::kSize / 4; i++) {
         if (*dst != *src) {
             *dst = *src;
             is_changed = true;
@@ -816,7 +816,7 @@ void Dmx::Blackout() {
 
     auto* p = reinterpret_cast<uint32_t*>(s_DmxData.Data);
 
-    for (uint32_t i = 0; i < buffer::SIZE / 4; i++) {
+    for (uint32_t i = 0; i < buffer::kSize / 4; i++) {
         *p++ = 0;
     }
 
@@ -834,7 +834,7 @@ void Dmx::FullOn() {
 
     auto* p = reinterpret_cast<uint32_t*>(s_DmxData.Data);
 
-    for (uint32_t i = 0; i < buffer::SIZE / 4; i++) {
+    for (uint32_t i = 0; i < buffer::kSize / 4; i++) {
         *p++ = static_cast<uint32_t>(~0);
     }
 
@@ -851,7 +851,7 @@ uint32_t Dmx::GetDmxUpdatesPerSecond([[maybe_unused]] uint32_t port_index) {
 void Dmx::ClearData([[maybe_unused]] uint32_t port_index) {
     auto* p = reinterpret_cast<uint32_t*>(s_DmxData.Data);
 
-    for (uint32_t i = 0; i < buffer::SIZE / 4; i++) {
+    for (uint32_t i = 0; i < buffer::kSize / 4; i++) {
         *p++ = 0;
     }
 }
@@ -928,7 +928,7 @@ void Dmx::RdmSendRaw([[maybe_unused]] uint32_t port_index, const uint8_t* pRdmDa
 
 void Dmx::RdmSendDiscoveryRespondMessage([[maybe_unused]] uint32_t port_index, const uint8_t* pRdmData, uint32_t nLength) {
     DEBUG_PRINTF("port_index=%u, pRdmData=%p, nLength=%u", port_index, pRdmData, nLength);
-    assert(port_index < dmx::config::max::PORTS);
+    assert(port_index < dmx::config::max::kPorts);
     assert(pRdmData != nullptr);
     assert(nLength != 0);
 		
