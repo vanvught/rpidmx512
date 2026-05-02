@@ -30,9 +30,22 @@
 #include <cstring>
 #include <climits>
 
+#if defined(CONFIG_CLIB_USE_UART0)
+namespace uart0 {
+void PutChar(int);
+} // namespace uart0
+using uart0::PutChar;
+#elif defined(CONFIG_CLIB_USE_NULL)
+namespace {
+void PutChar([[maybe_unused]] int) {}
+} // namespace
+using ::PutChar;
+#else
 namespace console {
 void PutChar(int);
-}
+} // namespace console
+using console::PutChar;
+#endif
 
 struct Context {
     int flag;
@@ -42,15 +55,7 @@ struct Context {
     int capacity;
 };
 
-enum { 
-	kFlagPrecision = (1U << 0), 
-	kFlagUppercase = (1U << 1), 
-	kFlagLong = (1U << 2), 
-	kFlagNegative = (1U << 3), 
-	kFlagMinWidth = (1U << 4), 
-	kFlagZeroPadded = (1U << 5), 
-	kFlagLeftJustified = (1U << 6) 
-};
+enum { kFlagPrecision = (1U << 0), kFlagUppercase = (1U << 1), kFlagLong = (1U << 2), kFlagNegative = (1U << 3), kFlagMinWidth = (1U << 4), kFlagZeroPadded = (1U << 5), kFlagLeftJustified = (1U << 6) };
 
 static char* outptr = nullptr;
 
@@ -64,7 +69,7 @@ inline static void PutChar(struct Context* ctx, int c) {
         return;
     }
 
-    console::PutChar(c);
+    PutChar(c);
 }
 
 static void FormatHex(struct Context* ctx, unsigned int arg) {

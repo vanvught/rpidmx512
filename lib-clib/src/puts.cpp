@@ -23,11 +23,24 @@
  * THE SOFTWARE.
  */
 
+#if defined(CONFIG_CLIB_USE_UART0)
+namespace uart0 {
+void Puts(const char* s);
+} // namespace uart0
+using uart0::Puts;
+#elif defined(CONFIG_CLIB_USE_NULL)
+namespace {
+void Puts([maybe_unused]] const char* s) {}
+} // namespace
+using ::Puts;
+#else
 namespace console {
-void Puts(const char*);
+void Puts(const char* s);
 } // namespace console
+using console::Puts;
+#endif
 
 extern "C" int puts(const char* s) { // NOLINT
-    console::Puts(s);
+    Puts(s);
     return 1;
 }
