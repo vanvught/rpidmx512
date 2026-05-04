@@ -36,8 +36,7 @@
 #include "hal_millis.h" // IWYU pragma: keep
 #include "firmware/debug/debug_debug.h"
 
-namespace pixelpatterns
-{
+namespace pixelpatterns {
 #if defined(PIXELPATTERNS_MULTI)
 #if !defined(CONFIG_DMXNODE_PIXEL_MAX_PORTS)
 #define CONFIG_DMXNODE_PIXEL_MAX_PORTS 8U
@@ -47,37 +46,29 @@ static constexpr uint32_t kMaxPorts = CONFIG_DMXNODE_PIXEL_MAX_PORTS;
 static constexpr uint32_t kMaxPorts = 1;
 #endif
 
-enum class Pattern
-{
-    kNone,
-    kRainbowCycle,
-    kTheaterChase,
-    kColorWipe,
-    kFade,
-    kLast
+enum class Pattern : uint8_t { 
+	kNone, 
+	kRainbowCycle, 
+	kTheaterChase, 
+	kColorWipe, 
+	kFade, 
+	kLast 
 };
 
-inline constexpr char kPatternName[static_cast<uint32_t>(pixelpatterns::Pattern::kLast)][14] = 
-{
+inline constexpr char kPatternName[static_cast<uint32_t>(pixelpatterns::Pattern::kLast)][14] = {
 	"None", 
 	"Rainbow cycle", 
 	"Theater chase", 
-	"Colour wipe",
+	"Colour wipe", 
 	"Fade"
 };
 
-enum class Direction
-{
-    kForward,
-    kReverse
-};
+enum class Direction { kForward, kReverse };
 } // namespace pixelpatterns
 
-class PixelPatterns
-{
+class PixelPatterns {
    public:
-    explicit PixelPatterns(uint32_t active_ports)
-    {
+    explicit PixelPatterns(uint32_t active_ports) {
         DEBUG_ENTRY();
         DEBUG_PRINTF("nActivePorts=%u", active_ports);
 
@@ -88,10 +79,8 @@ class PixelPatterns
 
     ~PixelPatterns() = default;
 
-    static const char* GetName(pixelpatterns::Pattern pattern)
-    {
-        if (pattern < pixelpatterns::Pattern::kLast)
-        {
+    static const char* GetName(pixelpatterns::Pattern pattern) {
+        if (pattern < pixelpatterns::Pattern::kLast) {
             return pixelpatterns::kPatternName[static_cast<uint32_t>(pattern)];
         }
 
@@ -100,8 +89,7 @@ class PixelPatterns
 
     inline uint32_t GetActivePorts() const { return s_active_ports; }
 
-    void RainbowCycle(uint32_t port_index, uint32_t interval, pixelpatterns::Direction direction = pixelpatterns::Direction::kForward)
-    {
+    void RainbowCycle(uint32_t port_index, uint32_t interval, pixelpatterns::Direction direction = pixelpatterns::Direction::kForward) {
         Clear(port_index);
 
         s_port_config[port_index].active_pattern = pixelpatterns::Pattern::kRainbowCycle;
@@ -111,9 +99,7 @@ class PixelPatterns
         s_port_config[port_index].direction = direction;
     }
 
-    void TheaterChase(uint32_t port_index, uint32_t colour1, uint32_t colour2, uint32_t interval,
-                      pixelpatterns::Direction direction = pixelpatterns::Direction::kForward)
-    {
+    void TheaterChase(uint32_t port_index, uint32_t colour1, uint32_t colour2, uint32_t interval, pixelpatterns::Direction direction = pixelpatterns::Direction::kForward) {
         Clear(port_index);
 
         s_port_config[port_index].active_pattern = pixelpatterns::Pattern::kTheaterChase;
@@ -125,8 +111,7 @@ class PixelPatterns
         s_port_config[port_index].direction = direction;
     }
 
-    void ColourWipe(uint32_t port_index, uint32_t colour, uint32_t interval, pixelpatterns::Direction direction = pixelpatterns::Direction::kForward)
-    {
+    void ColourWipe(uint32_t port_index, uint32_t colour, uint32_t interval, pixelpatterns::Direction direction = pixelpatterns::Direction::kForward) {
         Clear(port_index);
 
         s_port_config[port_index].active_pattern = pixelpatterns::Pattern::kColorWipe;
@@ -137,9 +122,7 @@ class PixelPatterns
         s_port_config[port_index].direction = direction;
     }
 
-    void Fade(uint32_t port_index, uint32_t colour1, uint32_t colour2, uint32_t steps, uint32_t interval,
-              pixelpatterns::Direction direction = pixelpatterns::Direction::kForward)
-    {
+    void Fade(uint32_t port_index, uint32_t colour1, uint32_t colour2, uint32_t steps, uint32_t interval, pixelpatterns::Direction direction = pixelpatterns::Direction::kForward) {
         Clear(port_index);
 
         s_port_config[port_index].active_pattern = pixelpatterns::Pattern::kFade;
@@ -151,8 +134,7 @@ class PixelPatterns
         s_port_config[port_index].direction = direction;
     }
 
-    void None(uint32_t port_index)
-    {
+    void None(uint32_t port_index) {
         DEBUG_ENTRY();
         DEBUG_PRINTF("port_index=%u", port_index);
 
@@ -163,54 +145,43 @@ class PixelPatterns
         DEBUG_EXIT();
     }
 
-    void Run()
-    {
-        if (pixel::IsUpdating())
-        {
+    void Run() {
+        if (pixel::IsUpdating()) {
             return;
         }
 
         auto is_updated = false;
         const auto kMillis = hal::Millis();
 
-        for (uint32_t i = 0; i < s_active_ports; i++)
-        {
+        for (uint32_t i = 0; i < s_active_ports; i++) {
             is_updated |= PortUpdate(i, kMillis);
         }
 
-        if (is_updated)
-        {
+        if (is_updated) {
             pixel::Update();
         }
     }
 
    private:
-    void RainbowCycleUpdate(uint32_t port_index)
-    {
+    void RainbowCycleUpdate(uint32_t port_index) {
         const auto kIndex = s_port_config[port_index].pixel_index;
 
-        for (uint32_t i = 0; i < PixelConfiguration::Get().GetCount(); i++)
-        {
+        for (uint32_t i = 0; i < PixelConfiguration::Get().GetCount(); i++) {
             pixel::SetPixelColour(port_index, i, Wheel(((i * 256U / PixelConfiguration::Get().GetCount()) + kIndex) & 0xFF));
         }
 
         Increment(port_index);
     }
 
-    void TheaterChaseUpdate(uint32_t port_index)
-    {
+    void TheaterChaseUpdate(uint32_t port_index) {
         const auto kColour1 = s_port_config[port_index].colour1;
         const auto kColour2 = s_port_config[port_index].colour2;
         const auto kPixelIndex = s_port_config[port_index].pixel_index;
 
-        for (uint32_t i = 0; i < PixelConfiguration::Get().GetCount(); i++)
-        {
-            if ((i + kPixelIndex) % 3 == 0)
-            {
+        for (uint32_t i = 0; i < PixelConfiguration::Get().GetCount(); i++) {
+            if ((i + kPixelIndex) % 3 == 0) {
                 pixel::SetPixelColour(port_index, i, kColour1);
-            }
-            else
-            {
+            } else {
                 pixel::SetPixelColour(port_index, i, kColour2);
             }
         }
@@ -218,8 +189,7 @@ class PixelPatterns
         Increment(port_index);
     }
 
-    void ColourWipeUpdate(uint32_t port_index)
-    {
+    void ColourWipeUpdate(uint32_t port_index) {
         const auto kColour1 = s_port_config[port_index].colour1;
         const auto kIndex = s_port_config[port_index].pixel_index;
 
@@ -227,8 +197,7 @@ class PixelPatterns
         Increment(port_index);
     }
 
-    void FadeUpdate(uint32_t port_index)
-    {
+    void FadeUpdate(uint32_t port_index) {
         const auto& config = s_port_config[port_index];
 
         const pixel::PixelColours kColor1(config.colour1);
@@ -238,9 +207,7 @@ class PixelPatterns
         const auto kIndex = config.pixel_index;
         const auto kInvIndex = kTotalSteps - kIndex;
 
-        const auto kInterp = [=](uint8_t a, uint8_t b) -> uint8_t { 
-			return static_cast<uint8_t>((a * kInvIndex + b * kIndex) / kTotalSteps); 
-		};
+        const auto kInterp = [=](uint8_t a, uint8_t b) -> uint8_t { return static_cast<uint8_t>((a * kInvIndex + b * kIndex) / kTotalSteps); };
 
         const auto kR = kInterp(kColor1.Red(), kColor2.Red());
         const auto kG = kInterp(kColor1.Green(), kColor2.Green());
@@ -251,17 +218,14 @@ class PixelPatterns
         Increment(port_index);
     }
 
-    bool PortUpdate(uint32_t port_index, uint32_t millis)
-    {
-        if ((millis - s_port_config[port_index].last_update) < s_port_config[port_index].interval)
-        {
+    bool PortUpdate(uint32_t port_index, uint32_t millis) {
+        if ((millis - s_port_config[port_index].last_update) < s_port_config[port_index].interval) {
             return false;
         }
 
         s_port_config[port_index].last_update = millis;
 
-        switch (s_port_config[port_index].active_pattern)
-        {
+        switch (s_port_config[port_index].active_pattern) {
             case pixelpatterns::Pattern::kRainbowCycle:
                 RainbowCycleUpdate(port_index);
                 break;
@@ -282,65 +246,47 @@ class PixelPatterns
         return true;
     }
 
-    uint32_t Wheel(uint8_t wheel_position)
-    {
+    uint32_t Wheel(uint8_t wheel_position) {
         wheel_position = static_cast<uint8_t>(255U - wheel_position);
 
-        if (wheel_position < 85)
-        {
+        if (wheel_position < 85) {
             return pixel::GetColour(static_cast<uint8_t>(255U - wheel_position * 3), 0, static_cast<uint8_t>(wheel_position * 3));
-        }
-        else if (wheel_position < 170U)
-        {
+        } else if (wheel_position < 170U) {
             wheel_position = static_cast<uint8_t>(wheel_position - 85U);
             return pixel::GetColour(0, static_cast<uint8_t>(wheel_position * 3), static_cast<uint8_t>(255U - wheel_position * 3));
-        }
-        else
-        {
+        } else {
             wheel_position = static_cast<uint8_t>(wheel_position - 170U);
             return pixel::GetColour(static_cast<uint8_t>(wheel_position * 3), static_cast<uint8_t>(255U - wheel_position * 3), 0);
         }
     }
 
-    void Increment(uint32_t port_index)
-    {
-        if (s_port_config[port_index].direction == pixelpatterns::Direction::kForward)
-        {
+    void Increment(uint32_t port_index) {
+        if (s_port_config[port_index].direction == pixelpatterns::Direction::kForward) {
             s_port_config[port_index].pixel_index++;
-            if (s_port_config[port_index].pixel_index == s_port_config[port_index].total_steps)
-            {
+            if (s_port_config[port_index].pixel_index == s_port_config[port_index].total_steps) {
                 s_port_config[port_index].pixel_index = 0;
             }
-        }
-        else
-        {
-            if (s_port_config[port_index].pixel_index > 0)
-            {
+        } else {
+            if (s_port_config[port_index].pixel_index > 0) {
                 s_port_config[port_index].pixel_index--;
             }
-            if (s_port_config[port_index].pixel_index == 0)
-            {
+            if (s_port_config[port_index].pixel_index == 0) {
                 s_port_config[port_index].pixel_index = s_port_config[port_index].total_steps - 1;
             }
         }
     }
 
-    void Reverse(uint32_t port_index)
-    {
-        if (s_port_config[port_index].direction == pixelpatterns::Direction::kForward)
-        {
+    void Reverse(uint32_t port_index) {
+        if (s_port_config[port_index].direction == pixelpatterns::Direction::kForward) {
             s_port_config[port_index].direction = pixelpatterns::Direction::kReverse;
             s_port_config[port_index].pixel_index = s_port_config[port_index].total_steps - 1;
-        }
-        else
-        {
+        } else {
             s_port_config[port_index].direction = pixelpatterns::Direction::kForward;
             s_port_config[port_index].pixel_index = 0;
         }
     }
 
-    uint32_t DimColour(uint32_t colour)
-    {
+    uint32_t DimColour(uint32_t colour) {
         const pixel::PixelColours kC(colour);
         return pixel::GetColour(static_cast<uint8_t>(kC.Red() >> 1), static_cast<uint8_t>(kC.Green() >> 1), static_cast<uint8_t>(kC.Blue() >> 1));
     }
@@ -350,8 +296,7 @@ class PixelPatterns
    private:
     static inline uint32_t s_active_ports;
 
-    struct PortConfig
-    {
+    struct PortConfig {
         uint32_t last_update;
         uint32_t interval;
         uint32_t colour1;
@@ -365,4 +310,4 @@ class PixelPatterns
     static inline PortConfig s_port_config[pixelpatterns::kMaxPorts];
 };
 
-#endif  // PIXELPATTERNS_H_
+#endif // PIXELPATTERNS_H_
