@@ -25,8 +25,7 @@
 
 #include <cstdint>
 
-namespace hal::panelled::global
-{
+namespace hal::panelled::global {
 uint32_t data;
 uint32_t data_previous;
 } // namespace hal::panelled::global
