@@ -44,7 +44,7 @@ enum class RunStatus
 class McpButtons
 {
    public:
-    McpButtons(ltc::Source source, bool use_alt_function, int32_t skip_seconds, bool rotary_half_step);
+    McpButtons(ltc::Source source, bool use_alt_function, uint32_t skip_seconds, bool rotary_half_step);
 
     bool Check();
     bool Wait(ltc::Source& source, struct ltc::TimeCode& start_timecode, struct ltc::TimeCode& stop_timecode);
@@ -84,7 +84,7 @@ class McpButtons
     } state_{kSourceSelect};
     ltc::Source source_;
     bool use_alt_function_;
-    int32_t skip_seconds_;
+    uint32_t skip_seconds_;
     bool is_connected_{false};
     uint8_t port_a_previous_{0};
     uint8_t port_b_{0};

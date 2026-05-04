@@ -275,7 +275,7 @@ void LtcOscServer::Input(const uint8_t* data, uint32_t size, [[maybe_unused]] ui
             const auto kValue = msg.GetInt(0);
 
             if (kValue > 0) {
-                LtcGenerator::Get()->ActionForward(kValue);
+                LtcGenerator::Get()->ActionForward(static_cast<uint32_t>(kValue));
                 DEBUG_PRINTF("ActionForward(%d)", kValue);
             }
             return;
@@ -291,7 +291,7 @@ void LtcOscServer::Input(const uint8_t* data, uint32_t size, [[maybe_unused]] ui
             const auto kValue = msg.GetInt(0);
 
             if (kValue > 0) {
-                LtcGenerator::Get()->ActionBackward(kValue);
+                LtcGenerator::Get()->ActionBackward(static_cast<uint32_t>(kValue));
                 DEBUG_PRINTF("ActionBackward(%d)", kValue);
             }
             return;

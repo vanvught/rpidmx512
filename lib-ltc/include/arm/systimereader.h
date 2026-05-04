@@ -62,7 +62,7 @@ class SystimeReader
     int32_t handle_{-1};
     uint32_t bytes_received_{0};
     char* udp_buffer_{nullptr};
-    time_t time_previous_{0};
+    uint32_t time_previous_{0};
     bool started_{false};
 
     static inline SystimeReader* s_this;

@@ -2,7 +2,7 @@
  * @file ntpserver.h
  *
  */
-/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,11 +31,11 @@
 #include <time.h>
 
 #include "ltc.h"
-#include "network.h"
+#include "network_config.h"
+#include "network_udp.h"
 #include "core/protocol/ntp.h"
 
-class NtpServer
-{
+class NtpServer {
    public:
     NtpServer(uint32_t year, uint32_t month, uint32_t day);
     ~NtpServer();
@@ -43,29 +43,21 @@ class NtpServer
     void Start();
     void Stop();
 
-    void SetTimeCode(const struct ltc::TimeCode* timecode)
-    {
+    void SetTimeCode(const struct ltc::TimeCode* timecode) {
         time_date_ = time_;
         time_date_ += timecode->seconds;
-        time_date_ += timecode->minutes * 60U;
-        time_date_ += timecode->hours * 60U * 60U;
+        time_date_ += static_cast<time_t>(timecode->minutes * 60U);
+        time_date_ += static_cast<time_t>(timecode->hours * 60U * 60U);
 
         const auto kType = static_cast<ltc::Type>(timecode->type);
 
-        if (kType == ltc::Type::FILM)
-        {
+        if (kType == ltc::Type::FILM) {
             fraction_ = static_cast<uint32_t>((178956970.625 * timecode->frames));
-        }
-        else if (kType == ltc::Type::EBU)
-        {
+        } else if (kType == ltc::Type::EBU) {
             fraction_ = static_cast<uint32_t>((171798691.8 * timecode->frames));
-        }
-        else if ((kType == ltc::Type::DF) || (kType == ltc::Type::SMPTE))
-        {
+        } else if ((kType == ltc::Type::DF) || (kType == ltc::Type::SMPTE)) {
             fraction_ = static_cast<uint32_t>((143165576.5 * timecode->frames));
-        }
-        else
-        {
+        } else {
             assert(0);
         }
 
@@ -85,17 +77,14 @@ class NtpServer
      * @param from_ip IP address of the sender.
      * @param from_port Port number of the sender.
      */
-    void Input(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port)
-    {
-        if (__builtin_expect((size != sizeof(struct ntp::Packet)), 0))
-        {
+    void Input(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port) {
+        if (__builtin_expect((size != sizeof(struct ntp::Packet)), 0)) {
             return;
         }
 
         auto* request = reinterpret_cast<const ntp::Packet*>(buffer);
 
-        if (__builtin_expect(((request->li_vn_mode & ntp::kModeClient) != ntp::kModeClient), 0))
-        {
+        if (__builtin_expect(((request->li_vn_mode & ntp::kModeClient) != ntp::kModeClient), 0)) {
             return;
         }
 
@@ -119,10 +108,7 @@ class NtpServer
      * @param from_ip IP address of the sender.
      * @param from_port Port number of the sender.
      */
-    void static StaticCallbackFunction(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port)
-    {
-        s_this->Input(buffer, size, from_ip, from_port);
-    }
+    void static StaticCallbackFunction(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port) { s_this->Input(buffer, size, from_ip, from_port); }
 
    private:
     time_t time_{0};
@@ -134,4 +120,4 @@ class NtpServer
     static inline NtpServer* s_this;
 };
 
-#endif  // NTPSERVER_H_
+#endif // NTPSERVER_H_

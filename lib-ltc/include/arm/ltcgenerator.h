@@ -1,7 +1,7 @@
 /**
  * @file ltcgenerator.h
  */
-/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,117 +28,105 @@
 #include <cstdint>
 
 #include "ltc.h"
-
 #include "hal_statusled.h"
 
 namespace ltcgenerator {
-enum class Direction {
-	DIRECTION_FORWARD, DIRECTION_BACKWARD
-};
-
-enum class Pitch {
-	PITCH_NORMAL, PITCH_FASTER, PITCH_SLOWER
-};
-}  // namespace ltcgenerator
+enum class Direction { kDirectionForward, kDirectionBackward };
+enum class Pitch { kPitchNormal, kPitchFaster, kPitchSlower };
+} // namespace ltcgenerator
 
 class LtcGenerator {
-public:
-	LtcGenerator(const struct ltc::TimeCode *pStartLtcTimeCode, const struct ltc::TimeCode *pStopLtcTimeCode, bool bSkipFree = false, bool bIgnoreStart = false, bool bIgnoreStop = false);
+   public:
+    LtcGenerator(const struct ltc::TimeCode* start_timecode, const struct ltc::TimeCode* stop_timecode, bool skip_free = false, bool ignore_start = false, bool ignore_stop = false);
 
-	~LtcGenerator() {
-		Stop();
+    ~LtcGenerator() { Stop(); }
+
+    void Start();
+    void Stop();
+
+    void Run() {
+        Update();
+        HandleButtons();
+
+        if (state_ == kStarted) {
+            hal::statusled::SetMode(hal::statusled::Mode::kData);
+        } else {
+            hal::statusled::SetMode(hal::statusled::Mode::kNormal);
+        }
+    }
+
+    void Print();
+
+    void HandleRequest(char* buffer = nullptr, uint32_t nBufferLength = 0);
+
+    void ActionStart(bool reset = true);
+    void ActionStop();
+    void ActionResume();
+    void ActionReset();
+    void ActionSetStart(const char* timecode);
+    void ActionSetStop(const char* timecode);
+    void ActionSetRate(const char* rate);
+    void ActionGoto(const char* timecode);
+    void ActionSetDirection(const char* direction);
+    void ActionSetPitch(float pitch);
+    void ActionForward(uint32_t seconds);
+    void ActionBackward(uint32_t seconds);
+
+    void Input(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port);
+
+    static LtcGenerator* Get() { return s_this; }
+
+   private:
+    void HandleButtons();
+    void Update();
+    void Increment();
+    void Decrement();
+    bool PitchControl();
+    void SetPitch(const char* pitch, uint32_t size);
+    void SetSkip(const char* seconds, uint32_t size, ltcgenerator::Direction direction);
+    void SetTimeCode(uint32_t seconds);
+
+    uint32_t GetSeconds(const struct ltc::TimeCode& timecode) {
+        uint32_t seconds = timecode.hours;
+        seconds *= 60U;
+        seconds += timecode.minutes;
+        seconds *= 60U;
+        seconds += timecode.seconds;
+
+        return seconds;
+    }
+
+    void static StaticCallbackFunction(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port) { 
+		s_this->Input(buffer, size, from_ip, from_port); 
 	}
 
-	void Start();
-	void Stop();
+   private:
+    ltc::TimeCode* m_pStartLtcTimeCode;
+    ltc::TimeCode* m_pStopLtcTimeCode;
+    bool skip_free_;
+    bool m_bIgnoreStart;
+    bool m_bIgnoreStop;
+    bool m_bDropFrame;
+    uint32_t m_nStartSeconds;
+    uint32_t m_nStopSeconds;
 
-	void Run() {
-		Update();
-		HandleButtons();
+    uint32_t pitch_ticker_{1};
+    uint32_t m_nPitchPrevious{0};
+    float m_fPitchControl{0};
+    uint32_t buttons_{0};
+    int32_t handle_{-1};
+    uint32_t bytes_received_{0};
 
-		if (state_ == STARTED) {
-			hal::statusled::SetMode(hal::statusled::Mode::kData);
-		} else {
-			hal::statusled::SetMode(hal::statusled::Mode::kNormal);
-		}
-	}
+    char* udp_buffer_{nullptr};
 
-	void Print();
+    uint8_t fps_{0};
 
-	void HandleRequest(char *pBuffer = nullptr, uint32_t nBufferLength = 0);
+    ltcgenerator::Direction m_tDirection{ltcgenerator::Direction::kDirectionForward};
+    ltcgenerator::Pitch m_tPitch{ltcgenerator::Pitch::kPitchFaster};
 
-	void ActionStart(bool bDoReset = true);
-	void ActionStop();
-	void ActionResume();
-	void ActionReset();
-	void ActionSetStart(const char *pTimeCode);
-	void ActionSetStop(const char *pTimeCode);
-	void ActionSetRate(const char *pTimeCodeRate);
-	void ActionGoto(const char *pTimeCode);
-	void ActionSetDirection(const char *pTimeCodeDirection);
-	void ActionSetPitch(float fTimeCodePitch);
-	void ActionForward(int32_t seconds);
-	void ActionBackward(int32_t seconds);
+    enum { kStopped, kStarted, kLimit } state_{kStopped};
 
-	void Input(const uint8_t *pBuffer, uint32_t nSize, uint32_t from_ip, uint16_t from_port);
-
-	static LtcGenerator *Get() {
-		return s_this;
-	}
-
-private:
-	void HandleButtons();
-	void Update();
-	void Increment();
-	void Decrement();
-	bool PitchControl();
-	void SetPitch(const char *pTimeCodePitch, uint32_t nSize);
-	void SetSkip(const char *pSeconds, uint32_t nSize, const ltcgenerator::Direction direction);
-	void SetTimeCode(int32_t seconds);
-
-	int32_t GetSeconds(const struct ltc::TimeCode& timecode) {
-		int32_t seconds = timecode.hours;
-		seconds *= 60U;
-		seconds += timecode.minutes;
-		seconds *= 60U;
-		seconds += timecode.seconds;
-
-		return seconds;
-	}
-
-	void static StaticCallbackFunction(const uint8_t *pBuffer, uint32_t nSize, uint32_t from_ip, uint16_t from_port) {
-		s_this->Input(pBuffer, nSize, from_ip, from_port);
-	}
-
-private:
-	ltc::TimeCode *m_pStartLtcTimeCode;
-	ltc::TimeCode *m_pStopLtcTimeCode;
-	bool m_bSkipFree;
-	bool m_bIgnoreStart;
-	bool m_bIgnoreStop;
-	bool m_bDropFrame;
-	int32_t m_nStartSeconds;
-	int32_t m_nStopSeconds;
-
-	uint32_t m_nPitchTicker { 1 };
-	uint32_t m_nPitchPrevious { 0 };
-	float m_fPitchControl { 0 };
-	uint32_t buttons_ { 0 };
-	int32_t handle_ { -1 };
-	uint32_t bytes_received_ { 0 };
-
-	char *udp_buffer_ { nullptr };
-
-	uint8_t fps_ { 0 };
-
-	ltcgenerator::Direction m_tDirection { ltcgenerator::Direction::DIRECTION_FORWARD };
-	ltcgenerator::Pitch m_tPitch { ltcgenerator::Pitch::PITCH_FASTER };
-
-	enum {
-		STOPPED, STARTED, LIMIT
-	} state_ { STOPPED };
-
-	static inline LtcGenerator *s_this;
+    static inline LtcGenerator* s_this;
 };
 
 #endif /* ARM_LTCGENERATOR_H_ */

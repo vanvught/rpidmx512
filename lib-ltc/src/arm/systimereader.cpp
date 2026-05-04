@@ -275,11 +275,11 @@ void SystimeReader::Run()
     if (__builtin_expect((started_), 0))
     {
         struct timeval tv;
-        gettimeofday(&tv, 0);
-        auto time_seconds = tv.tv_sec + utc_offset_;
+        gettimeofday(&tv, nullptr);
+        auto time_seconds = static_cast<uint32_t>(tv.tv_sec + utc_offset_);
 
         // Calculate frames
-        g_ltc_LtcTimeCode.frames = (tv.tv_usec * TimeCodeConst::FPS[g_ltc_LtcTimeCode.type]) / 1000000U;
+        g_ltc_LtcTimeCode.frames = static_cast<uint8_t>(static_cast<uint32_t>(tv.tv_usec * TimeCodeConst::FPS[g_ltc_LtcTimeCode.type]) / 1000000U);
 
         // Drop-frame adjustments BEFORE time updates
         if (ltc::g_Type == ltc::Type::DF)
