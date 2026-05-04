@@ -30,7 +30,7 @@ void Puts(const char* s);
 using uart0::Puts;
 #elif defined(CONFIG_CLIB_USE_NULL)
 namespace {
-void Puts([maybe_unused]] const char* s) {}
+void Puts([[maybe_unused]] const char* s) {}
 } // namespace
 using ::Puts;
 #else

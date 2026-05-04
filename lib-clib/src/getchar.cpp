@@ -23,10 +23,25 @@
  * THE SOFTWARE.
  */
 
+#if defined(CONFIG_CLIB_USE_UART0)
+namespace uart0 {
+int GetChar();
+} // namespace uart0
+using uart0::PutChar;
+#elif defined(CONFIG_CLIB_USE_NULL)
+namespace {
+int GetChar() {
+    return -1;
+}
+} // namespace
+using ::GetChar;
+#else
 namespace console {
 int GetChar();
-}
+} // namespace console
+using console::GetChar;
+#endif
 
 extern "C" int getchar() { // NOLINT
-    return console::GetChar();
+    return GetChar();
 }
