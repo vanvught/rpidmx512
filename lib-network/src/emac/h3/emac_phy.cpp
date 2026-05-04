@@ -26,7 +26,7 @@
 #include <cstdint>
 
 #include "h3.h"
-#include "emac/mmi.h"
+#include "emac/mmi.h" // IWYU pragma: keep
 #include "firmware/debug/debug_debug.h"
 
 namespace emac::phy {
@@ -42,7 +42,7 @@ namespace emac::phy {
 #define MDIO_CMD_MII_PHY_ADDR_MASK 0x0001f000
 #define MDIO_CMD_MII_PHY_ADDR_SHIFT 12
 
-bool Read(uint32_t address, uint32_t reg, uint16_t& value) {
+bool Read(uint16_t address, uint16_t reg, uint16_t& value) {
     DEBUG_ENTRY();
 
     uint32_t cmd = ((0x03 & 0x07) << 20);
@@ -89,7 +89,7 @@ bool Read(uint32_t address, uint32_t reg, uint16_t& value) {
     return true;
 }
 
-bool Write(uint32_t address, uint32_t reg, uint16_t value) {
+bool Write(uint16_t address, uint16_t reg, uint16_t value) {
     uint32_t miiaddr = (reg << MDIO_CMD_MII_PHY_REG_ADDR_SHIFT) & MDIO_CMD_MII_PHY_REG_ADDR_MASK;
     miiaddr |= (address << MDIO_CMD_MII_PHY_ADDR_SHIFT) & MDIO_CMD_MII_PHY_ADDR_MASK;
 
@@ -113,7 +113,7 @@ bool Write(uint32_t address, uint32_t reg, uint16_t value) {
     return result;
 }
 
-bool Config([[maybe_unused]] uint32_t address) {
+bool Config([[maybe_unused]] uint16_t address) {
     DEBUG_ENTRY();
 
     /**

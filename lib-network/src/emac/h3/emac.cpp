@@ -32,12 +32,17 @@
 #include "emac.h"
 #include "emac_counters.h"
 #include "emac/emac_phy.h"
-#include "emac/mmi.h"
+#include "emac/mmi.h" // IWYU pragma: keep
 #include "h3.h"
-#include "firmware/debug/debug_printbits.h"
+#include "firmware/debug/debug_printbits.h" // IWYU pragma: keep
 #include "firmware/debug/debug_debug.h"
 
-#define PHY_ADDRESS 1
+static constexpr uint16_t kAddress =
+#if !defined(PHY_ADDRESS)
+    1;
+#else
+    PHY_ADDRESS;
+#endif
 
 #define H3_EPHY_DEFAULT_VALUE 0x00058000
 #define H3_EPHY_DEFAULT_MASK 0xFFFF8000
@@ -138,13 +143,13 @@ void __attribute__((cold)) Config() {
 
     value &= ~H3_EPHY_DEFAULT_MASK;
     value |= H3_EPHY_DEFAULT_VALUE;
-    value |= PHY_ADDRESS << H3_EPHY_ADDR_SHIFT;
+    value |= kAddress << H3_EPHY_ADDR_SHIFT;
     value &= ~H3_EPHY_SHUTDOWN;
     value |= H3_EPHY_SELECT;
 
     H3_SYSTEM->EMAC_CLK = value;
 
-    emac::phy::Config(PHY_ADDRESS);
+    emac::phy::Config(kAddress);
 
     DEBUG_EXIT();
 }
@@ -159,7 +164,7 @@ void __attribute__((cold)) Start(uint8_t mac_address[], emac::phy::Link& link) {
     phy_status.duplex = emac::phy::Duplex::kDuplexHalf;
     phy_status.speed = emac::phy::Speed::kSpeed10;
 
-    emac::phy::Start(PHY_ADDRESS, phy_status);
+    emac::phy::Start(kAddress, phy_status);
 
     link = phy_status.link;
 
@@ -217,7 +222,7 @@ void __attribute__((cold)) Start(uint8_t mac_address[], emac::phy::Link& link) {
 	
 	memset(&emac::eth::globals::counter, 0, sizeof(emac::eth::globals::Counters));
 
-    //	H3_EMAC->INT_EN = (uint32_t)(~0);
+    //	H3_EMAC->INT_EN = (uint32_t)(UINT32_MAX);
 
 #ifndef NDEBUG
     printf("================\n");

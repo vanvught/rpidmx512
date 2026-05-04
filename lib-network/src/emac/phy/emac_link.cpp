@@ -23,16 +23,20 @@
  * THE SOFTWARE.
  */
 
+#include <cstdint>
+
 #include "core/netif.h"
-#include "hal_watchdog.h"
 #include "emac/emac_link_check.h"
 #include "emac/emac_phy.h"
 #include "emac/emac.h"
-
+#include "hal_watchdog.h" // IWYU pragma: keep
 #include "firmware/debug/debug_debug.h"
 
+static constexpr uint16_t kAddress =
 #if !defined(PHY_ADDRESS)
-#define PHY_ADDRESS 1
+    1;
+#else
+    PHY_ADDRESS;
 #endif
 
 namespace emac::link {
@@ -54,7 +58,7 @@ void PinPollInit() {
 #endif
 
 emac::phy::Link StatusRead() {
-    return emac::phy::GetLink(PHY_ADDRESS);
+    return emac::phy::GetLink(kAddress);
 }
 
 void HandleChange(emac::phy::Link state) {
@@ -68,7 +72,7 @@ void HandleChange(emac::phy::Link state) {
         }
 
         phy::Status phy_status;
-        phy::Start(PHY_ADDRESS, phy_status);
+        phy::Start(kAddress, phy_status);
 
         emac::AdjustLink(phy_status);
 

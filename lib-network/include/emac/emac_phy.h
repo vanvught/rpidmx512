@@ -50,15 +50,15 @@ struct Identifier {
   @{
 */
 
-bool GetId(uint32_t address, Identifier& phy_identifier);
-Link GetLink(uint32_t address);
+bool GetId(uint16_t address, Identifier& phy_identifier);
+Link GetLink(uint16_t address);
 
 /**
  *
  * @param address PHY address
  * @return true for success, false for failure
  */
-bool Powerdown(uint32_t address);
+bool Powerdown(uint16_t address);
 
 /**
  *
@@ -67,7 +67,7 @@ bool Powerdown(uint32_t address);
  * @param address PHY address
  * @return true for success, false for failure
  */
-bool Start(uint32_t address, Status& phy_status);
+bool Start(uint16_t address, Status& phy_status);
 /** @} */
 
 /** \defgroup platform Platform implementation
@@ -81,7 +81,7 @@ bool Start(uint32_t address, Status& phy_status);
  * @param value Returned value
  * @return
  */
-bool Read(uint32_t address, uint32_t reg, uint16_t& value);
+bool Read(uint16_t address, uint16_t reg, uint16_t& value);
 
 /**
  *
@@ -90,7 +90,7 @@ bool Read(uint32_t address, uint32_t reg, uint16_t& value);
  * @param value Value to write
  * @return true for success, false for failure
  */
-bool Write(uint32_t address, uint32_t reg, uint16_t value);
+bool Write(uint16_t address, uint16_t reg, uint16_t value);
 
 /**
  * PHY interface configuration (configure SMI and reset PHY)
@@ -98,7 +98,7 @@ bool Write(uint32_t address, uint32_t reg, uint16_t value);
  * @param address true for success, false for failure
  * @return
  */
-bool Config(uint32_t address);
+bool Config(uint16_t address);
 /** @} */
 
 /** \defgroup specific PHY specific

@@ -31,15 +31,11 @@
 
 #include "emac/emac_phy.h"
 #include "emac/mmi.h"
-#include "hal_millis.h"
+#include "hal_millis.h" // IWYU pragma: keep
 #include "firmware/debug/debug_debug.h"
 
-#if !defined(PHY_ADDRESS)
-#define PHY_ADDRESS 1
-#endif
-
 namespace emac::phy {
-bool GetId(uint32_t address, Identifier& phy_identifier) {
+bool GetId(uint16_t address, Identifier& phy_identifier) {
     DEBUG_ENTRY();
     DEBUG_PRINTF("address=%.2x", address);
 
@@ -66,7 +62,7 @@ bool GetId(uint32_t address, Identifier& phy_identifier) {
     return true;
 }
 
-Link GetLink(uint32_t address) {
+Link GetLink(uint16_t address) {
     uint16_t value = 0;
     phy::Read(address, mmi::REG_BMSR, value);
 
@@ -77,11 +73,11 @@ Link GetLink(uint32_t address) {
     return emac::phy::Link::kStateDown;
 }
 
-bool Powerdown(uint32_t address) {
+bool Powerdown(uint16_t address) {
     return phy::Write(address, mmi::REG_BMCR, mmi::BMCR_POWERDOWN);
 }
 
-static int32_t ConfigAdvertisement(uint32_t address, uint16_t advertisement) {
+static int32_t ConfigAdvertisement(uint16_t address, uint16_t advertisement) {
     DEBUG_ENTRY();
 
     uint16_t advertise;
@@ -114,7 +110,7 @@ static int32_t ConfigAdvertisement(uint32_t address, uint16_t advertisement) {
     return 0;
 }
 
-static bool RestartAutonegotiation(uint32_t address) {
+static bool RestartAutonegotiation(uint16_t address) {
     uint16_t value;
     auto result = phy::Read(address, mmi::REG_BMCR, value);
 
@@ -126,7 +122,7 @@ static bool RestartAutonegotiation(uint32_t address) {
     return result;
 }
 
-static bool ConfigAutonegotiation(uint32_t address, uint16_t advertisement) {
+static bool ConfigAutonegotiation(uint16_t address, uint16_t advertisement) {
     DEBUG_ENTRY();
 
     auto result = ConfigAdvertisement(address, advertisement);
@@ -164,7 +160,7 @@ static bool ConfigAutonegotiation(uint32_t address, uint16_t advertisement) {
     return true;
 }
 
-static bool UpdateLink(uint32_t address, Status& phy_status) {
+static bool UpdateLink(uint16_t address, Status& phy_status) {
     DEBUG_ENTRY();
 
     uint16_t bmsr;
@@ -209,7 +205,7 @@ static bool UpdateLink(uint32_t address, Status& phy_status) {
     return true;
 }
 
-static void ParseLink(uint32_t address, Status& phy_status) {
+static void ParseLink(uint16_t address, Status& phy_status) {
     phy_status.duplex = Duplex::kDuplexHalf;
     phy_status.speed = Speed::kSpeed10;
 
@@ -231,7 +227,7 @@ static void ParseLink(uint32_t address, Status& phy_status) {
     }
 }
 
-bool Start(uint32_t address, Status& phy_status) {
+bool Start(uint16_t address, Status& phy_status) {
     DEBUG_ENTRY();
 
     constexpr auto kAdvertisement = emac::mmi::ADVERTISE_FULL;
