@@ -35,18 +35,17 @@
 #endif
 
 #include <cstdint>
+#include <cstdio>
 
 #include "softwaretimers.h"
-#include "hal_millis.h"
+#include "hal_millis.h" // IWYU pragma: keep
 #include "firmware/debug/debug_debug.h"
 
-namespace console
-{
-void Error(const char*);
-} // namespace console
+static void Error(const char* func, const char* s) {
+    printf("%s: %s\n", func, s);
+}
 
-struct Timer
-{
+struct Timer {
     uint32_t expire_time;                      ///< Absolute expire time in milliseconds (wrap-around safe).
     uint32_t interval_millis;                  ///< Period in milliseconds
     int32_t id;                                ///< Opaque handle returned to the caller.
@@ -59,9 +58,9 @@ static int32_t s_next_id = 0;                   ///< Monotonically increasing ID
 static uint32_t s_timer_current = 0;            ///< bRound-robin cursor for SoftwareTimerRun().
 
 /**
- * @brief Create and start a periodic (or one-shot) software timer.
+ * @brief Create and start a periodic software timer.
  *
- * @param interval_millis  Period in milliseconds. If set to 0, the timer is treated as one-shot.
+ * @param interval_millis  Period in milliseconds.
  * @param kCallbackFunction Callback function. Must be non-null.
  * @return TimerHandle_t    A non-negative handle on success; -1 on failure (pool full or bad args).
  *
@@ -69,16 +68,12 @@ static uint32_t s_timer_current = 0;            ///< bRound-robin cursor for Sof
  *          non-blocking, and ISR-safe *only if* SoftwareTimerRun() is called from an ISR.
  * @note    The first expiration is scheduled relative to the current @ref hal::Millis().
  */
-TimerHandle_t SoftwareTimerAdd(uint32_t interval_millis, const TimerCallbackFunction_t kCallbackFunction)
-{
+TimerHandle_t SoftwareTimerAdd(uint32_t interval_millis, const TimerCallbackFunction_t kCallbackFunction) {
     DEBUG_ENTRY();
     DEBUG_PRINTF("s_timers_count=%u", s_timers_count);
 
-    if (s_timers_count >= hal::kSoftwareTimersMax)
-    {
-#ifndef NDEBUG
-        console::Error("SoftwareTimerAdd: Max timer limit reached\n");
-#endif
+    if (s_timers_count >= hal::kSoftwareTimersMax) {
+        Error(__func__, "Max timer limit reachedß");
         return -1;
     }
 
@@ -108,21 +103,17 @@ TimerHandle_t SoftwareTimerAdd(uint32_t interval_millis, const TimerCallbackFunc
  * @note Deletion is O(1): the removed slot is replaced with the last active timer.
  *       This changes the order of timers.
  */
-bool SoftwareTimerDelete(TimerHandle_t& id)
-{
+bool SoftwareTimerDelete(TimerHandle_t& id) {
     DEBUG_ENTRY();
     DEBUG_PRINTF("s_timers_count=%u", s_timers_count);
 
-    for (uint32_t i = 0; i < s_timers_count; ++i)
-    {
-        if (s_timers[i].id == id)
-        {
+    for (uint32_t i = 0; i < s_timers_count; ++i) {
+        if (s_timers[i].id == id) {
             // Swap with the last timer to efficiently remove the current timer
             s_timers[i] = s_timers[s_timers_count - 1];
             --s_timers_count;
             // Keep the round-robin cursor within bounds.
-            if (s_timer_current >= s_timers_count)
-            {
+            if (s_timer_current >= s_timers_count) {
                 s_timer_current = 0;
             }
 
@@ -133,9 +124,7 @@ bool SoftwareTimerDelete(TimerHandle_t& id)
         }
     }
 
-#ifndef NDEBUG
-    console::Error("SoftwareTimerDelete: Timer not found\n");
-#endif
+    Error(__func__, "Timer not found");
 
     DEBUG_EXIT();
     return false;
@@ -149,12 +138,9 @@ bool SoftwareTimerDelete(TimerHandle_t& id)
  * @return true  On success.
  * @return false If the handle was not found.
  */
-bool SoftwareTimerChange(TimerHandle_t id, uint32_t interval_millis)
-{
-    for (uint32_t i = 0; i < s_timers_count; ++i)
-    {
-        if (s_timers[i].id == id)
-        {
+bool SoftwareTimerChange(TimerHandle_t id, uint32_t interval_millis) {
+    for (uint32_t i = 0; i < s_timers_count; ++i) {
+        if (s_timers[i].id == id) {
             const auto kCurrentTime = hal::Millis();
             s_timers[i].expire_time = kCurrentTime + interval_millis;
             s_timers[i].interval_millis = interval_millis;
@@ -162,9 +148,7 @@ bool SoftwareTimerChange(TimerHandle_t id, uint32_t interval_millis)
         }
     }
 
-#ifndef NDEBUG
-    console::Error("SoftwareTimerChange: Timer not found\n");
-#endif
+    Error(__func__, "Timer not found");
 
     return false;
 }
@@ -179,18 +163,15 @@ bool SoftwareTimerChange(TimerHandle_t id, uint32_t interval_millis)
  * @note If callbacks delete or add timers, this remains safe due to the
  *       swap-delete approach and the post-callback cursor normalization.
  */
-void SoftwareTimerRun()
-{
-    if (s_timers_count == 0) [[unlikely]]
-    {
+void SoftwareTimerRun() {
+    if (s_timers_count == 0) [[unlikely]] {
         return;
     }
 
     const uint32_t kNow = hal::Millis();
     Timer& t = s_timers[s_timer_current];
 
-    if (static_cast<int32_t>(kNow - t.expire_time) >= 0) [[unlikely]]
-    {
+    if (static_cast<int32_t>(kNow - t.expire_time) >= 0) [[unlikely]] {
         const int32_t kId = t.id;
         const uint32_t kInterval = t.interval_millis;
         auto cb = t.callback_function;
@@ -203,8 +184,7 @@ void SoftwareTimerRun()
 
     // Advance round-robin cursor (bounded next call).
     ++s_timer_current;
-    if (s_timer_current >= s_timers_count)
-    {
+    if (s_timer_current >= s_timers_count) {
         s_timer_current = 0;
     }
 }
