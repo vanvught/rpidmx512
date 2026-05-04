@@ -164,7 +164,7 @@ uint32_t MCP3424::GetRaw(uint32_t channel)
 
         if (timeout-- == 0)
         {
-            return static_cast<uint32_t>(~0);
+            return UINT32_MAX;
         }
     }
 
@@ -190,7 +190,7 @@ uint32_t MCP3424::GetRaw(uint32_t channel)
 
     assert(0);
     __builtin_unreachable();
-    return static_cast<uint32_t>(~0);
+    return UINT32_MAX;
 }
 
 double MCP3424::GetVoltage(uint32_t channel)

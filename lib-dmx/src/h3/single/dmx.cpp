@@ -835,7 +835,7 @@ void Dmx::FullOn() {
     auto* p = reinterpret_cast<uint32_t*>(s_DmxData.Data);
 
     for (uint32_t i = 0; i < buffer::kSize / 4; i++) {
-        *p++ = static_cast<uint32_t>(~0);
+        *p++ = UINT32_MAX;
     }
 
     s_DmxData.Data[0] = kStartCode;

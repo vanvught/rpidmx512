@@ -195,7 +195,7 @@ void PixelPusher::Run()
     _pcast32 src;
     src.u32 = network::GetPrimaryIp();
     memcpy(discovery_packet_.header.ip_address, src.u8, 4);
-    network::udp::Send(handle_discovery_, reinterpret_cast<const uint8_t*>(&discovery_packet_), sizeof(struct pp::DiscoveryPacket), static_cast<uint32_t>(~0),
+    network::udp::Send(handle_discovery_, reinterpret_cast<const uint8_t*>(&discovery_packet_), sizeof(struct pp::DiscoveryPacket), UINT32_MAX,
                    pp::UDP_PORT_DISCOVERY);
 }
 

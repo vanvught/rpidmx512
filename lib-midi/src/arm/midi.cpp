@@ -199,7 +199,7 @@ static void timer8_config() {
 	timer_initpara.period = (1000 - 1);		// 10Hz / 100 ms
 	timer_init(TIMERx, &timer_initpara);
 
-	timer_interrupt_flag_clear(TIMERx, ~0);
+	timer_interrupt_flag_clear(TIMERx, UINT32_MAX);
 
 	timer_interrupt_enable(TIMERx, TIMER_INT_UP);
 

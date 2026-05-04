@@ -46,7 +46,7 @@ class Tod
 #endif
     static constexpr uint32_t kTableSize = RDM_DISCOVERY_TOD_TABLE_SIZE;
     static constexpr uint32_t kMutesTableSize = (kTableSize + 32) / 32;
-    static constexpr uint32_t kInvalidEntry = static_cast<uint32_t>(~0);
+    static constexpr uint32_t kInvalidEntry = UINT32_MAX;
 
     Tod()
     {

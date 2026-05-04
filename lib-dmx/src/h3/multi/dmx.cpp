@@ -912,7 +912,7 @@ void Dmx::FullOn() {
         auto* p32 = reinterpret_cast<uint32_t*>(p->data);
 
         for (uint32_t i = 0; i < buffer::kSize / 4; i++) {
-            *p32++ = static_cast<uint32_t>(~0);
+            *p32++ = UINT32_MAX;
         }
 
         p->data[0] = dmx::kStartCode;

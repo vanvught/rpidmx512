@@ -617,7 +617,7 @@ bool H3SpiDmaTxIsActive()
 
     if (EXT_SPI->IS & IS_TC)
     {
-        EXT_SPI->IS = static_cast<uint32_t>(~0);
+        EXT_SPI->IS = UINT32_MAX;
         EXT_SPI->IE = 0;
         is_running = false;
         dmb();
@@ -663,7 +663,7 @@ void H3SpiDmaTxStart(const uint8_t* pTxBuffer, uint32_t length)
     EXT_SPI->GC &= static_cast<uint32_t>(~(1U << 7));
     EXT_SPI->FC = static_cast<uint32_t>((1U << 31) | (1U << 15));
 
-    EXT_SPI->IS = static_cast<uint32_t>(~0);
+    EXT_SPI->IS = UINT32_MAX;
     EXT_SPI->IE = IE_TC;
 
     EXT_SPI->MBC = length;
