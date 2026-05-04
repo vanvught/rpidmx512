@@ -36,19 +36,16 @@
 #include "dmx.h"
 #include "rdm.h"
 #include "rdm_e120.h"
-
 #include "arm/arm.h"
 #include "arm/synchronize.h"
 #include "arm/gic.h"
 #include "irq_timer.h"
-
 #include "h3_gpio.h"
 #include "h3_uart.h"
 #include "h3_ccu.h"
 #include "h3_timer.h"
 #include "h3_hs_timer.h"
 #include "h3_board.h"
-
 #include "firmware/debug/debug_debug.h"
 
 #define GPIO_ANALYZER_CH1 GPIO_EXT_26
@@ -407,7 +404,7 @@ static void __attribute__((interrupt("FIQ"))) FiqDmx() {
     __DMB();
 }
 
-static void uart_dmx_config() {
+static void UartDmxConfig() {
 #if (EXT_UART_NUMBER == 1)
     uint32_t value = H3_PIO_PORTG->CFG0;
     // PG6, TX
@@ -523,7 +520,7 @@ Dmx::Dmx() {
 
     gic_fiq_config(UART_IRQN, GIC_CORE0);
 
-    uart_dmx_config();
+    UartDmxConfig();
 
     __disable_fiq();
     arm_install_handler(reinterpret_cast<unsigned>(FiqDmx), ARM_VECTOR(ARM_VECTOR_FIQ));
@@ -616,7 +613,7 @@ void Dmx::SetPortDirection(uint32_t port_index, PortDirection port_direction, bo
 
         switch (port_direction) {
             case PortDirection::kOutput:
-				UartEnableFifo();
+                UartEnableFifo();
                 H3GpioSet(GPIO_EXT_12); // 0 = input, 1 = output
                 break;
             case PortDirection::kInput:
@@ -931,7 +928,7 @@ void Dmx::RdmSendDiscoveryRespondMessage([[maybe_unused]] uint32_t port_index, c
     assert(port_index < dmx::config::max::kPorts);
     assert(pRdmData != nullptr);
     assert(nLength != 0);
-		
+
     // 3.2.2 Responder Packet spacing
     udelay(RDM_RESPONDER_PACKET_SPACING, gsv_RdmDataReceiveEnd);
 
