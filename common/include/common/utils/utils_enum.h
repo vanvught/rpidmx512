@@ -30,20 +30,19 @@
 
 namespace common
 {
-/// Converts an enum class value to its underlying integer type.
-template <typename Enum> constexpr auto ToValue(Enum e) noexcept -> std::underlying_type_t<Enum>
-{
+// Converts an enum class value to its underlying integer type.
+template <typename Enum> 
+constexpr auto ToValue(Enum e) noexcept -> std::underlying_type_t<Enum> {
     static_assert(std::is_enum_v<Enum>);
     return static_cast<std::underlying_type_t<Enum>>(e);
 }
 
-/// Converts an integer value to the corresponding enum class value.
-template <typename Enum> constexpr Enum FromValue(std::underlying_type_t<Enum> value) noexcept
-{
+// Converts an integer value to the corresponding enum class value.
+template <typename Enum> 
+constexpr Enum FromValue(std::underlying_type_t<Enum> value) noexcept {
     static_assert(std::is_enum_v<Enum>);
     return static_cast<Enum>(value);
 }
-
 } // namespace common
 
 #endif // COMMON_UTILS_UTILS_ENUM_H_
