@@ -32,28 +32,23 @@
 #include "rdm_e120.h"
 #include "firmware/debug/debug_debug.h"
 
-namespace rdm::message
-{
-void Print(const uint8_t* rdm_data)
-{
-    if (rdm_data == nullptr)
-    {
+namespace rdm::message {
+void Print(const uint8_t* rdm_data) {
+    if (rdm_data == nullptr) {
         DEBUG_PUTS("No RDM data");
         return;
     }
 
     const auto* rdm_message = reinterpret_cast<const struct TRdmMessage*>(rdm_data);
 
-    if (rdm_data[0] == E120_SC_RDM)
-    {
+    if (rdm_data[0] == E120_SC_RDM) {
         const uint8_t* src_uid = rdm_message->source_uid;
         printf("%.2x%.2x:%.2x%.2x%.2x%.2x -> ", src_uid[0], src_uid[1], src_uid[2], src_uid[3], src_uid[4], src_uid[5]);
 
         const uint8_t* dst_uid = rdm_message->destination_uid;
         printf("%.2x%.2x:%.2x%.2x%.2x%.2x ", dst_uid[0], dst_uid[1], dst_uid[2], dst_uid[3], dst_uid[4], dst_uid[5]);
 
-        switch (rdm_message->command_class)
-        {
+        switch (rdm_message->command_class) {
             case E120_DISCOVERY_COMMAND:
                 printf("DISCOVERY_COMMAND");
                 break;
@@ -78,36 +73,27 @@ void Print(const uint8_t* rdm_data)
         }
 
         const auto kSubDevice = static_cast<uint16_t>((rdm_message->sub_device[0] << 8) + rdm_message->sub_device[1]);
-        printf(", sub-dev: %d, tn: %d, PID 0x%.2x%.2x, pdl: %d", kSubDevice, rdm_message->transaction_number, rdm_message->param_id[0],
-               rdm_message->param_id[1], rdm_message->param_data_length);
+        printf(", sub-dev: %d, tn: %d, PID 0x%.2x%.2x, pdl: %d", kSubDevice, rdm_message->transaction_number, rdm_message->param_id[0], rdm_message->param_id[1], rdm_message->param_data_length);
 
-        if (rdm_message->param_data_length != 0)
-        {
+        if (rdm_message->param_data_length != 0) {
             printf(" -> ");
-            for (uint32_t i = 0; (i < 12) && (i < rdm_message->param_data_length); i++)
-            {
+            for (uint32_t i = 0; (i < 12) && (i < rdm_message->param_data_length); i++) {
                 printf("%.2x ", rdm_message->param_data[i]);
             }
         }
 
         puts("");
-    }
-    else if (rdm_data[0] == 0xFE)
-    {
-        for (uint32_t i = 0; i < 24; i++)
-        {
+    } else if (rdm_data[0] == 0xFE) {
+        for (uint32_t i = 0; i < 24; i++) {
             printf("%.2x ", rdm_data[i]);
         }
         puts("");
-    }
-    else
-    {
+    } else {
         printf("Corrupted? RDM data [0-3]: %.2x:%.2x:%.2x:%.2x\n", rdm_data[0], rdm_data[1], rdm_data[2], rdm_data[3]);
     }
 }
 
-void PrintNoStartcode(const uint8_t* rdm_data_no_sc)
-{
+void PrintNoStartcode(const uint8_t* rdm_data_no_sc) {
     assert(rdm_data_no_sc != nullptr);
 
     const auto* data = reinterpret_cast<const struct TRdmMessageNoSc*>(rdm_data_no_sc);

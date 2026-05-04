@@ -291,16 +291,16 @@ void RDMHandler::HandleData(const uint8_t* in, uint8_t* out, Type type)
 
     DEBUG_PRINTF("ForMe=%d, Broadcast=%d, Muted=%d", bIsRdmPacketForMe, bIsRdmPacketBroadcast, is_muted_);
 
-    const auto nCommandClass = pRdmRequest->command_class;
-    const auto nParamId = static_cast<uint16_t>((pRdmRequest->param_id[0] << 8) + pRdmRequest->param_id[1]);
+    const auto kCommandClass = pRdmRequest->command_class;
+    const auto kParamId = static_cast<uint16_t>((pRdmRequest->param_id[0] << 8) + pRdmRequest->param_id[1]);
 
     if ((!bIsRdmPacketForMe) && (!bIsRdmPacketBroadcast))
     {
         // Ignore RDM packet
     }
-    else if (nCommandClass == E120_DISCOVERY_COMMAND)
+    else if (kCommandClass == E120_DISCOVERY_COMMAND)
     {
-        if (nParamId == E120_DISC_UNIQUE_BRANCH)
+        if (kParamId == E120_DISC_UNIQUE_BRANCH)
         {
             if (!is_muted_)
             {
@@ -335,7 +335,7 @@ void RDMHandler::HandleData(const uint8_t* in, uint8_t* out, Type type)
                 }
             }
         }
-        else if (nParamId == E120_DISC_UN_MUTE)
+        else if (kParamId == E120_DISC_UN_MUTE)
         {
             DEBUG_PUTS("E120_DISC_UN_MUTE");
 
@@ -367,7 +367,7 @@ void RDMHandler::HandleData(const uint8_t* in, uint8_t* out, Type type)
                 return;
             }
         }
-        else if (nParamId == E120_DISC_MUTE)
+        else if (kParamId == E120_DISC_MUTE)
         {
             DEBUG_PUTS("E120_DISC_MUTE");
 
@@ -404,7 +404,7 @@ void RDMHandler::HandleData(const uint8_t* in, uint8_t* out, Type type)
     else
     {
         auto sub_device = static_cast<uint16_t>((pRdmRequest->sub_device[0] << 8) + pRdmRequest->sub_device[1]);
-        Handlers(type, bIsRdmPacketBroadcast, nCommandClass, nParamId, pRdmRequest->param_data_length, sub_device);
+        Handlers(type, bIsRdmPacketBroadcast, kCommandClass, kParamId, pRdmRequest->param_data_length, sub_device);
     }
 
     DEBUG_EXIT();
@@ -435,16 +435,16 @@ void RDMHandler::Handlers(Type type, bool bIsBroadcast, uint8_t nCommandClass, u
     }
 
     PidDefinition const* pid_handler = nullptr;
-    auto bRDM = false;
-    auto bRDMNet = false;
+    auto is_rdm = false;
+    auto is_rdm_net = false;
 
     for (auto& defintion : PID_DEFINITIONS)
     {
         if (defintion.nPid == nParamId)
         {
             pid_handler = &defintion;
-            bRDM = defintion.bRDM;
-            bRDMNet = defintion.bRDMNet;
+            is_rdm = defintion.bRDM;
+            is_rdm_net = defintion.bRDMNet;
             break;
         }
     }
@@ -457,8 +457,8 @@ void RDMHandler::Handlers(Type type, bool bIsBroadcast, uint8_t nCommandClass, u
             if (PARAMETER_DESCRIPTIONS[i].pid == __builtin_bswap16(nParamId))
             {
                 pid_handler = &PID_DEFINITION_MANUFACTURER_GENERAL;
-                bRDM = true;
-                bRDMNet = false;
+                is_rdm = true;
+                is_rdm_net = false;
                 break;
             }
         }
@@ -474,7 +474,7 @@ void RDMHandler::Handlers(Type type, bool bIsBroadcast, uint8_t nCommandClass, u
 
     if (type == Type::kTypeRdm)
     {
-        if (!bRDM)
+        if (!is_rdm)
         {
             RespondMessageNack(E120_NR_UNKNOWN_PID);
             DEBUG_EXIT();
@@ -483,7 +483,7 @@ void RDMHandler::Handlers(Type type, bool bIsBroadcast, uint8_t nCommandClass, u
     }
     else if (type == Type::kTypeLlrp)
     {
-        if (!bRDMNet)
+        if (!is_rdm_net)
         {
             RespondMessageNack(E120_NR_UNKNOWN_PID);
             DEBUG_EXIT();
@@ -553,30 +553,30 @@ void RDMHandler::GetQueuedMessage([[maybe_unused]] uint16_t sub_device)
 void RDMHandler::GetSupportedParameters(uint16_t sub_device)
 {
     uint8_t nSupportedParams = 0;
-    PidDefinition* pPidDefinitions;
-    uint32_t nTableSize = 0;
+    PidDefinition* pid_definitions;
+    uint32_t table_size = 0;
 
     if (sub_device != 0)
     {
-        pPidDefinitions = const_cast<PidDefinition*>(&PID_DEFINITIONS_SUB_DEVICES[0]);
-        nTableSize = sizeof(PID_DEFINITIONS_SUB_DEVICES) / sizeof(PID_DEFINITIONS_SUB_DEVICES[0]);
+        pid_definitions = const_cast<PidDefinition*>(&PID_DEFINITIONS_SUB_DEVICES[0]);
+        table_size = sizeof(PID_DEFINITIONS_SUB_DEVICES) / sizeof(PID_DEFINITIONS_SUB_DEVICES[0]);
     }
     else
     {
-        pPidDefinitions = const_cast<PidDefinition*>(&PID_DEFINITIONS[0]);
-        nTableSize = sizeof(PID_DEFINITIONS) / sizeof(PID_DEFINITIONS[0]);
+        pid_definitions = const_cast<PidDefinition*>(&PID_DEFINITIONS[0]);
+        table_size = sizeof(PID_DEFINITIONS) / sizeof(PID_DEFINITIONS[0]);
     }
 
     auto* out = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
     uint32_t j = 0;
 
-    for (uint32_t i = 0; i < nTableSize; i++)
+    for (uint32_t i = 0; i < table_size; i++)
     {
-        if (pPidDefinitions[i].bIncludeInSupportedParams)
+        if (pid_definitions[i].bIncludeInSupportedParams)
         {
             nSupportedParams++;
-            out->param_data[j + j] = static_cast<uint8_t>(pPidDefinitions[i].nPid >> 8);
-            out->param_data[j + j + 1] = static_cast<uint8_t>(pPidDefinitions[i].nPid);
+            out->param_data[j + j] = static_cast<uint8_t>(pid_definitions[i].nPid >> 8);
+            out->param_data[j + j + 1] = static_cast<uint8_t>(pid_definitions[i].nPid);
             j++;
         }
     }
@@ -1412,16 +1412,16 @@ void RDMHandler::SetRealTimeClock(bool is_broadcast, [[maybe_unused]] uint16_t s
         return;
     }
 
-    struct tm tTime;
+    struct tm t;
 
-    tTime.tm_year = ((pRdmDataIn->param_data[0] << 8) + pRdmDataIn->param_data[1]) - 1900;
-    tTime.tm_mon = pRdmDataIn->param_data[2] - 1; // 0..11
-    tTime.tm_mday = pRdmDataIn->param_data[3];
-    tTime.tm_hour = pRdmDataIn->param_data[4];
-    tTime.tm_min = pRdmDataIn->param_data[5];
-    tTime.tm_sec = pRdmDataIn->param_data[6];
+    t.tm_year = ((pRdmDataIn->param_data[0] << 8) + pRdmDataIn->param_data[1]) - 1900;
+    t.tm_mon = pRdmDataIn->param_data[2] - 1; // 0..11
+    t.tm_mday = pRdmDataIn->param_data[3];
+    t.tm_hour = pRdmDataIn->param_data[4];
+    t.tm_min = pRdmDataIn->param_data[5];
+    t.tm_sec = pRdmDataIn->param_data[6];
 
-    if ((!is_broadcast) && (!hal::rtc::Set(&tTime)))
+    if ((!is_broadcast) && (!hal::rtc::Set(&t)))
     {
         RespondMessageNack(E120_NR_WRITE_PROTECT);
     }
