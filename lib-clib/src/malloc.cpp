@@ -38,14 +38,14 @@
 
 #include <cstddef>
 #include <cstdint>
-#ifdef DEBUG_HEAP
 #include <cstdio>
-#endif
 #include <cassert>
 
-namespace console {
-void Error(const char*);
+static void Error(const char* func, const char* s) {
+    printf("%s: %s\n", func, s);
 }
+
+#define ERROR(s) Error(__func__, (s))
 
 void DebugHeap();
 
@@ -135,7 +135,7 @@ void* malloc(size_t size) // NOLINT
         assert((reinterpret_cast<uintptr_t>(next) & 3U) == 0);
 
         if (next > block_limit) {
-            console::Error("malloc: out of memory\n");
+            ERROR("Out of memory\n");
 #ifdef DEBUG_HEAP
             DebugHeap();
 #endif
@@ -295,3 +295,5 @@ void DebugHeap() {
     }
 #endif
 }
+
+#pragma GCC diagnostic pop

@@ -27,7 +27,7 @@
 namespace uart0 {
 int GetChar();
 } // namespace uart0
-using uart0::PutChar;
+using uart0::GetChar;
 #elif defined(CONFIG_CLIB_USE_NULL)
 namespace {
 int GetChar() {
