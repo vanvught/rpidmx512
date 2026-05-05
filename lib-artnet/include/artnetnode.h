@@ -268,17 +268,8 @@ class ArtNetNode
 
     void StopOutputPort(uint32_t port_index);
 
-#if defined(RDM_CONTROLLER)
-    uint32_t RdmCopyWorkingQueue(char* out_buffer, uint32_t out_buffer_size);
-    uint32_t RdmTodUidCount(uint32_t port_index);
-    uint32_t RdmCopyTod(uint32_t port_index, char* out_buffer, uint32_t out_buffer_size);
-    bool RdmIsRunning(uint32_t port_index);
-    bool RdmIsRunning(uint32_t port_index, bool& is_incremental);
-    bool RdmBgDiscovery(uint32_t port_index);
-#endif
-
 #if defined(RDM_RESPONDER)
-    void SetRdmResponder(ArtNetRdmResponder* pArtNetRdmResponder, const bool doEnable = true);
+    void SetRdmResponder(ArtNetRdmResponder* responder, bool enable = true);
 #endif
 
 #if defined(ARTNET_HAVE_TIMECODE)
@@ -444,9 +435,6 @@ class ArtNetNode
 #include "artnetnode_inline_impl.h" // IWYU pragma: keep
 #if (ARTNET_VERSION >= 4)
 #include "artnetnode4_inline_impl.h" // IWYU pragma: keep
-#endif
-#if defined(RDM_CONTROLLER)
-#include "artnetnode_rdm_controller_inline_impl.h" // IWYU pragma: keep
 #endif
 
 #endif // ARTNETNODE_H_

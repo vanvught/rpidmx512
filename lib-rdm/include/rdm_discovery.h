@@ -45,9 +45,9 @@ void Finished(uint32_t port_index, Type type);
 inline static constexpr uint32_t kBackgroundIntervalMinutes = 1;
 
 class Discovery : rdm::discovery::StateMachine {
+   public:
     static constexpr auto kPorts = dmx::config::max::kPorts;
 
-   public:
     Discovery() : rdm::discovery::StateMachine(rdm::device::Base::Instance().GetUID()) {
         assert(s_this == nullptr);
         s_this = this;

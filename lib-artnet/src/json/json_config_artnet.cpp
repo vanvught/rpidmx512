@@ -67,10 +67,6 @@ uint32_t GetArtNet(char* buffer, uint32_t length)
 #if defined(RDM_CONTROLLER) || defined(RDM_RESPONDER)
                     doc[json::ArtNetParamsConst::kRdmEnablePort[config_port_index].name] = dmx_node->Rdm(kPortIndex);
 #endif
-#if defined(RDM_CONTROLLER)
-// Will implement on request
-//                   doc[json::ArtNetParamsConst::kBgDiscoveryPort[config_port_index].name] = dmx_node->RdmBgDiscovery(kPortIndex);
-#endif
 #if defined(ARTNET_HAVE_DMXIN)
                     char ip[net::kIpBufferSize];
                     doc[json::ArtNetParamsConst::kDestinationIpPort[config_port_index].name] = net::FormatIp(dmx_node->GetDestinationIp(kPortIndex), ip);

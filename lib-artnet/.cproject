@@ -34,7 +34,6 @@
 						<entry excluding="rom|spi" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/failsafe"/>
 						<entry excluding="responder|controller" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/rdm"/>
 						<entry excluding="rdmin|json" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/rdm/controller"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/rdm/controller/json"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/rdm/controller/rdmin"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/rdm/responder"/>
 					</sourceEntries>
@@ -75,7 +74,6 @@
 						<entry excluding="rom|spi" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/failsafe"/>
 						<entry excluding="responder|controller" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/rdm"/>
 						<entry excluding="rdmin|json" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/rdm/controller"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/rdm/controller/json"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/rdm/controller/rdmin"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/rdm/responder"/>
 					</sourceEntries>
@@ -290,7 +288,6 @@
 						<entry excluding="file|rom|spi" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/node/failsafe"/>
 						<entry excluding="controller|responder" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/node/rdm"/>
 						<entry excluding="rdmin|json" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/node/rdm/controller"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/rdm/controller/json"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/node/rdm/controller/rdmin"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/node/rdm/responder"/>
 					</sourceEntries>
