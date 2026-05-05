@@ -233,12 +233,10 @@ void Inform() {
     DEBUG_ENTRY();
 
     const auto kHandle = network::udp::Begin(network::iana::Ports::kPortDhcpClient, nullptr);
-#ifndef NDEBUG
     if (kHandle < 0) {
-        console::Error("DHCP Inform\n");
+		ERROR("No handle\n");
         return;
     }
-#endif
 
     MessageInit();
     network::MemcpyIp(&s_dhcp_message.ciaddr[0], netif::global::netif_default.ip.addr);
@@ -674,13 +672,11 @@ bool Start() {
     std::memset(dhcp, 0, sizeof(struct dhcp::Dhcp));
     dhcp->handle = network::udp::Begin(network::iana::Ports::kPortDhcpClient, dhcp::Input);
 
-#ifndef NDEBUG
     if (dhcp->handle < 0) {
-        console::Error("DHCP Start\n");
+        ERROR("No handle.\n");
         DEBUG_EXIT();
         return false;
     }
-#endif
 
     MessageInit();
 

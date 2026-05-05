@@ -139,7 +139,7 @@ void Send(void* buffer, uint32_t length) {
 
     h3_memcpy(dst, buffer, length);
 #ifndef NDEBUG
-    debug::Dump(pDst, length);
+    debug::Dump(dst, length);
 #endif
 
     Send(length);

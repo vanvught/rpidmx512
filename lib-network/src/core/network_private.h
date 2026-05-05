@@ -27,6 +27,7 @@
 #define NET_NET_PRIVATE_H_
 
 #include <cstdint>
+#include <cstdio>
 
 #include "core/protocol/icmp.h"
 #include "core/protocol/igmp.h"
@@ -38,10 +39,6 @@
 #ifndef ALIGNED
 #define ALIGNED __attribute__((aligned(4)))
 #endif
-
-namespace console {
-void Error(const char*);
-}
 
 namespace emac::eth {
 uint8_t* SendGetDmaBuffer();
@@ -56,6 +53,12 @@ void FreePkt();
 } // namespace emac::eth
 
 namespace network {
+inline void Error(const char* func, const char* s) {
+    printf("%s: %s\n", func, s);
+}
+
+#define ERROR(s)	Error(__func__, (s))
+
 namespace global {
 extern uint32_t broadcast_mask;
 extern uint32_t on_network_mask;

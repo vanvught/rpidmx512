@@ -33,6 +33,7 @@
 #include "emac/mmi.h"
 #include "hal_millis.h" // IWYU pragma: keep
 #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_printbits.h" // IWYU pragma: keep
 
 namespace emac::phy {
 bool GetId(uint16_t address, Identifier& phy_identifier) {

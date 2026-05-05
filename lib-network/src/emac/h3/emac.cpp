@@ -171,7 +171,7 @@ void __attribute__((cold)) Start(uint8_t mac_address[], emac::phy::Link& link) {
     AdjustLink(phy_status);
 
 #ifndef NDEBUG
-    printf("sizeof(struct coherent_region)=%u\n", sizeof(struct coherent_region));
+    printf("sizeof(struct CoherentRegion)=%u\n", sizeof(struct CoherentRegion));
     printf("H3_SYSTEM->EMAC_CLK=%p ", H3_SYSTEM->EMAC_CLK);
     debug::PrintBits(H3_SYSTEM->EMAC_CLK);
     printf("H3_EMAC->CTL0=%p ", H3_EMAC->CTL0);
@@ -179,7 +179,7 @@ void __attribute__((cold)) Start(uint8_t mac_address[], emac::phy::Link& link) {
 #endif
 
     assert(p_coherent_region == nullptr);
-    assert(sizeof(struct coherent_region) < MEGABYTE / 2);
+    assert(sizeof(struct CoherentRegion) < MEGABYTE / 2);
 
     p_coherent_region = (struct CoherentRegion*)H3_MEM_COHERENT_REGION;
 

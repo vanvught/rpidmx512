@@ -335,9 +335,7 @@ void static Join(uint32_t group_address) {
         }
     }
 
-#ifndef NDEBUG
-    console::Error("igmp::Join\n");
-#endif
+	ERROR("Max joins reached.\n");
     DEBUG_ENTRY();
 }
 
@@ -361,10 +359,7 @@ static void Leave(uint32_t group_address) {
         }
     }
 
-#ifndef NDEBUG
-    console::Error("igmp::Leave: ");
-    printf(IPSTR "\n", IP2STR(group_address));
-#endif
+	ERROR("Group address not found.\n");
     DEBUG_EXIT();
 }
 

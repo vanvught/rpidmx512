@@ -84,7 +84,7 @@ bool Read(uint16_t address, uint16_t reg, uint16_t& value) {
 
     value = static_cast<uint16_t>(H3_EMAC->MII_DATA);
 
-    DEBUG_PRINTF("%.2x %.2x %.4x", address, nRegister, nValue);
+    DEBUG_PRINTF("%.2x %.2x %.4x", address, reg, value);
     DEBUG_EXIT();
     return true;
 }
@@ -109,7 +109,7 @@ bool Write(uint16_t address, uint16_t reg, uint16_t value) {
         }
     };
 
-    //	DEBUG_PRINTF("%d %.2x %.2x %.4x", bResult, address, nRegister, nValue);
+    //	DEBUG_PRINTF("%d %.2x %.2x %.4x", bResult, address, reg, value);
     return result;
 }
 

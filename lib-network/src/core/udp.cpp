@@ -219,9 +219,7 @@ int32_t Begin(uint16_t localport, UdpCallbackFunctionPtr callback) {
         }
     }
 
-#ifndef NDEBUG
-    console::Error("network::udp::Begin\n");
-#endif
+    ERROR("Max ports reached.\n");
     return -1;
 }
 
@@ -241,9 +239,7 @@ int32_t End(uint16_t localport) {
         }
     }
 
-#ifndef NDEBUG
-    console::Error("network::udp::End\n");
-#endif
+    ERROR("Port not found.\n");
     return -1;
 }
 
