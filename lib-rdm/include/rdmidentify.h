@@ -1,7 +1,7 @@
 /**
  * @file rdmidentify.h
  */
-/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2018-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,66 +30,51 @@
 
 #include "hal_statusled.h"
 
-class RDMIdentify
-{
+class RDMIdentify {
    public:
-    enum class Mode : uint8_t
-    {
+    enum class Mode : uint8_t {
         kQuiet = 0x00,
         kLoud = 0xFF,
     };
 
-    RDMIdentify()
-    {
+    RDMIdentify() {
         assert(s_this == nullptr);
         s_this = this;
     }
 
     ~RDMIdentify() = default;
 
-    void On()
-    {
+    void On() {
         s_is_enabled = true;
         hal::statusled::SetModeWithLock(hal::statusled::Mode::kFast, true);
 
-        if (s_mode != Mode::kQuiet)
-        {
+        if (s_mode != Mode::kQuiet) {
             On(s_mode);
         }
     }
 
-    void Off()
-    {
+    void Off() {
         s_is_enabled = false;
         hal::statusled::SetModeWithLock(hal::statusled::Mode::kNormal, false);
 
-        if (s_mode != Mode::kQuiet)
-        {
+        if (s_mode != Mode::kQuiet) {
             Off(s_mode);
         }
     }
 
     bool IsEnabled() const { return s_is_enabled; }
 
-    void SetMode(Mode mode)
-    {
-        if ((mode == Mode::kQuiet) || (mode == Mode::kLoud))
-        {
+    void SetMode(Mode mode) {
+        if ((mode == Mode::kQuiet) || (mode == Mode::kLoud)) {
             s_mode = mode;
 
-            if (s_is_enabled)
-            {
-                if (mode != Mode::kQuiet)
-                {
+            if (s_is_enabled) {
+                if (mode != Mode::kQuiet) {
                     On(mode);
-                }
-                else
-                {
+                } else {
                     Off(mode);
                 }
-            }
-            else
-            {
+            } else {
                 Off(mode);
             }
         }
@@ -109,4 +94,4 @@ class RDMIdentify
     static inline RDMIdentify* s_this;
 };
 
-#endif  // RDMIDENTIFY_H_
+#endif // RDMIDENTIFY_H_

@@ -37,10 +37,10 @@ struct TotalStatistics {
 };
 
 struct Statistics {
-	uint32_t nSlotsInPacket;
-	uint32_t nSlotToSlot;
-	uint32_t nMarkAfterBreak;
-	uint32_t nBreakToBreak;
+	uint32_t slots_in_packet;
+	uint32_t slot_to_slot;
+	uint32_t mark_after_break;
+	uint32_t break_to_break;
 };
 
 struct Data {
@@ -120,7 +120,7 @@ private:
 	void UartDisableFifo();
 
 private:
-	uint32_t m_nDmxTransmitPeriodRequested { dmx::transmit::kPeriodDefault };
+	uint32_t transmit_period_requested_ { dmx::transmit::kPeriodDefault };
 	uint8_t m_nDataDirectionGpio { GPIO_DMX_DATA_DIRECTION };
 
 	static Dmx *s_this;

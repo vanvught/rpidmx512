@@ -118,7 +118,7 @@ class StateMachine
    private:
     RDMMessage message_;
     uint8_t* response_{nullptr};
-    uint8_t uid_[RDM_UID_SIZE];
+    uint8_t uid_[rdm::kUidSize];
     uint32_t port_index_{0};
     rdm::Tod* tod_{nullptr};
 
@@ -144,7 +144,7 @@ class StateMachine
         uint32_t tod_entries;
         uint32_t counter;
         uint32_t micros;
-        uint8_t uid[RDM_UID_SIZE];
+        uint8_t uid[rdm::kUidSize];
         bool is_command_running;
     } mute_;
 
@@ -198,8 +198,8 @@ class StateMachine
         uint64_t upper_bound;
         uint32_t counter;
         uint32_t micros;
-        uint8_t uid[RDM_UID_SIZE];
-        uint8_t pdl[2][RDM_UID_SIZE];
+        uint8_t uid[rdm::kUidSize];
+        uint8_t pdl[2][rdm::kUidSize];
         bool is_command_running;
     } discovery_;
 
@@ -215,7 +215,7 @@ class StateMachine
         uint32_t counter;
         uint32_t micros;
         bool is_command_running;
-        uint8_t uid[RDM_UID_SIZE];
+        uint8_t uid[rdm::kUidSize];
     } quick_find_;
 
     struct
@@ -223,7 +223,7 @@ class StateMachine
         uint32_t counter;
         uint32_t micros;
         bool is_command_running;
-        uint8_t uid[RDM_UID_SIZE];
+        uint8_t uid[rdm::kUidSize];
     } quick_find_discovery_;
 };
 } // namespace rdm::discovery

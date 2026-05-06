@@ -60,11 +60,11 @@ class ArtNetRdmResponder final : public RDMDeviceResponder
 
         if (port_index == 0)
         {
-            memcpy(tod, rdm::device::Base::Instance().GetUID(), RDM_UID_SIZE);
+            memcpy(tod, rdm::device::Base::Instance().GetUID(), rdm::kUidSize);
         }
         else
         {
-            memcpy(tod, UID_ALL, RDM_UID_SIZE);
+            memcpy(tod, rdm::kUidAll, rdm::kUidSize);
         }
     }
 

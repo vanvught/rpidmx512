@@ -38,7 +38,7 @@ uint32_t GetRdmDevice(char* buffer, uint32_t length)
 
     struct rdm::device::InfoData info_data;
     rdmdevice.GetLabel(&info_data);
-    char label[RDM_DEVICE_LABEL_MAX_LENGTH + 1];
+    char label[rdm::device::kLabelMaxLength + 1];
     memcpy(label, info_data.data, info_data.length);
     label[info_data.length] = '\0';
 

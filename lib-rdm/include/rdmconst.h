@@ -2,7 +2,7 @@
  * @file rdmconst.h
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,77 +28,84 @@
 
 #include <cstdint>
 
-#define RDM_DATA_BUFFER_SIZE					512									///<
-#define RDM_DATA_BUFFER_INDEX_ENTRIES			(1 << 4)							///<
-#define RDM_DATA_BUFFER_INDEX_MASK 				(RDM_DATA_BUFFER_INDEX_ENTRIES - 1)	///<
-
-#define RDM_ROOT_DEVICE							0		///<
-
-///< 3 Timing
-#define RDM_TRANSMIT_BREAK_TIME					176		///< Min 176us
-#define RDM_TRANSMIT_MAB_TIME					12		///< Min 12us
-
+namespace rdm {
+namespace transmit {
+// 3.1 Controller Timing Requirements
+// 3.1.1 Controller Packet Timing
+// time in µs
+inline constexpr uint32_t kBreakTimeMin = 176;
+inline constexpr uint32_t kBreakTimeTypical = 180;
+inline constexpr uint32_t kBreakTimeMax = 352;
+inline constexpr uint32_t kMabTimeMin = 12;
+inline constexpr uint32_t kMabTimeTypical = 16;
+inline constexpr uint32_t kMabTimeMax = 88;
+inline constexpr uint32_t kDirectionTime = 94;
+} // namespace transmit
+namespace responder {
 ///< 3.2.2 Responder Packet spacing
-#define RDM_RESPONDER_PACKET_SPACING			200		///< Min 176us, Max 2ms
+inline constexpr uint32_t kPacketSpacing = 200;    ///< Min 176us, Max 2ms
+inline constexpr uint32_t kDataDirectionDelay = 4; ///<
+} // namespace responder
 
-#define RDM_RESPONDER_DATA_DIRECTION_DELAY		4		///<
-
+inline constexpr uint16_t kRootDevice = 0;
 ///< 5 Device Addressing
-#define RDM_UID_SIZE  							6		///< 48-bit
+inline constexpr uint32_t kUidSize = 6; ///< 48-bit
+
+// Unique identifier (UID) which consists of a 2 byte ESTA manufacturer ID, and a 4 byte device ID.
+inline constexpr uint8_t kUidAll[kUidSize] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
 ///< 6.2.3 Message Length
-#define RDM_MESSAGE_MINIMUM_SIZE				24U		///< Minimum size of RDM message without the checksum
-#define RDM_MESSAGE_CHECKSUM_SIZE				2U		///< Size of the checksum
-#define RDM_MESSAGE_COUNT_MAX					255U	///< Message Count field for Responder Generated Messages
+inline constexpr uint32_t kMessageMinimumSize = 24; ///< Minimum size of RDM message without the checksum
+inline constexpr uint32_t kMessageChecksumSize = 2; ///< Size of the checksum
+inline constexpr uint32_t kMessageCountMax = 255;   ///< Message Count field for Responder Generated Messages
 
+struct Manufacturer {
+    static const char kName[];
+    static const uint8_t kId[];
+};
+namespace control {
 ///< 7.6 Discovery Mute/Un-Mute Messages
 ///< 7.6.1 Control Field
 ///< The Reserved bits (Bits 4-15) are reserved for future implementation and shall be set to 0.
-#define RDM_CONTROL_FIELD_MANAGED_PROXY_FLAG	(1 << 0)	///< The Managed Proxy Flag (Bit 0) shall be set to 1 when the responder is a Proxy device.
-#define RDM_CONTROL_FIELD_SUB_DEVICE_FLAG		(1 << 1)	///< The Sub-Device Flag (Bit 1) shall be set to 1 when the responder supports Sub-Devices.
-#define RDM_CONTROL_FIELD_BOOTLOADER_FLAG		(1 << 2)	///< The Boot-Loader Flag (Bit 2) shall only be set to 1 when the device is incapable of normal operation until receiving a firmware upload.
-#define RDM_CONTROL_FIELD_PROXIED_DEVICE_FLAG	(1 << 3)	///< The Proxied Device Flag (Bit 3) shall only be set to 1 when a Proxy is responding to Discovery on behalf of another device. This flag indicates that the response has come from a Proxy, rather than the actual device.
-
-#define RDM_DEVICE_MANUFACTURER_ID_LENGTH		2	///<
-
-///< 10.5.4 Get Manufacturer Label (MANUFACTURER_LABEL)
-#define RDM_MANUFACTURER_LABEL_MAX_LENGTH		32			///< Manufacturer name for the device of up to 32 characters.
-
-///< 10.5.5 Get/Set Device Label (DEVICE_LABEL)
-#define RDM_DEVICE_LABEL_MAX_LENGTH				32
-
-///< 10.5.8 Get/Set Language (LANGUAGE)
-#define RDM_DEVICE_SUPPORTED_LANGUAGE_LENGTH	2			///< The Language Codes are 2 character alpha codes as defined by ISO 639-1.
-
-///< 10.5.9 Get Software Version Label (SOFTWARE_VERSION_LABEL)
-#define RDM_SOFTWARE_VERSION_LABEL_MAX_LENGTH	32
-
-///< 10.5.10 Get Boot Software Version ID (BOOT_SOFTWARE_VERSION_ID)
-#define RDM_BOOT_SOFTWARE_VERSION_ID_LENGTH		4			///< The Boot Software Version ID is a 32-bit value determined by the Manufacturer.
-
-///< 10.5.11 Get Boot Software Version Label (BOOT_SOFTWARE_VERSION_LABEL)
-#define RDM_BOOT_SOFTWARE_VERSION_LABEL_MAX_LENGTH	32
-
-///< 10.7.1 Get Sensor Definition (SENSOR_DEFINITION)
-#define RDM_SENSORS_ALL							0xFF		///< The sensor number 0xFF is used to address all sensors.
-
-///< 10.8.1 Get/Set Device Hours (DEVICE_HOURS)
-#define RDM_DEVICE_HOURS_SIZE					4
-
-///< 10.11.1 Get/Set Identify Device (IDENTIFY_DEVICE)
-#define	RDM_IDENTIFY_STATE_OFF				0
-#define	RDM_IDENTIFY_STATE_ON				1
-
-#if  ! defined (PACKED)
-# define PACKED __attribute__((packed))
-#endif
-
-// Unique identifier (UID) which consists of a 2 byte ESTA manufacturer ID, and a 4 byte device ID.
-inline constexpr uint8_t UID_ALL[RDM_UID_SIZE] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
-
-struct RDMConst {
-	static const char MANUFACTURER_NAME[];
-	static const uint8_t MANUFACTURER_ID[];
+struct Field {
+    static constexpr uint16_t kManagedProxyFlag = (1U << 0); ///< The Managed Proxy Flag (Bit 0) shall be set to 1 when the responder is a Proxy device.
+    static constexpr uint16_t kSubDeviceFlag = (1U << 1);    ///< The Sub-Device Flag (Bit 1) shall be set to 1 when the responder supports Sub-Devices.
+    static constexpr uint16_t kBootloaderFlag = (1U << 2);   ///< The Boot-Loader Flag (Bit 2) shall only be set to 1 when the device is incapable of normal operation until receiving a firmware upload.
+    static constexpr uint16_t kProxiedDeviceFlag =
+        (1U << 3); ///< The Proxied Device Flag (Bit 3) shall only be set to 1 when a Proxy is responding to Discovery on behalf of another device. This flag indicates that the response has come from a Proxy, rather than the actual device.
 };
+} // namespace control
 
-#endif  // RDMCONST_H_
+namespace device {
+///< 10.5.4 Get Manufacturer Label (MANUFACTURER_LABEL)
+inline constexpr uint32_t kManufacturerLabelMaxLength = 32;
+inline constexpr uint32_t kManufacturerIdLength = 2; ///<
+///< 10.5.5 Get/Set Device Label (DEVICE_LABEL)
+inline constexpr uint32_t kLabelMaxLength = 32;
+///< 10.5.8 Get/Set Language (LANGUAGE)
+inline constexpr uint32_t kSupportedLanguageLength = 2; ///< The Language Codes are 2 character alpha codes as defined by ISO 639-1.
+///< 10.5.9 Get Software Version Label (SOFTWARE_VERSION_LABEL)
+inline constexpr uint32_t kSoftwareVersionLabelMaxLength = 32;
+///< 10.5.10 Get Boot Software Version ID (BOOT_SOFTWARE_VERSION_ID)
+inline constexpr uint32_t kBootSoftwareVersionIdLength = 4; ///< The Boot Software Version ID is a 32-bit value determined by the Manufacturer.
+///< 10.5.11 Get Boot Software Version Label (BOOT_SOFTWARE_VERSION_LABEL)
+inline constexpr uint8_t kBootSoftwareVersionLabelMaxLength = 32;
+///< 10.7.1 Get Sensor Definition (SENSOR_DEFINITION)
+inline constexpr uint8_t kSensorsAll = 0xFF; ///< The sensor number 0xFF is used to address all sensors.
+///< 10.8.1 Get/Set Device Hours (DEVICE_HOURS)
+inline constexpr uint32_t kHoursSize = 4;
+
+namespace identify {
+struct State {
+    ///< 10.11.1 Get/Set Identify Device (IDENTIFY_DEVICE)
+    static constexpr uint8_t kOff = 0;
+    static constexpr uint8_t kOn = 1;
+};
+} // namespace identify
+} // namespace device
+} // namespace rdm
+
+#if !defined(PACKED)
+#define PACKED __attribute__((packed))
+#endif
+#endif // RDMCONST_H_

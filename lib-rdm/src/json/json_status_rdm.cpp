@@ -95,7 +95,7 @@ static uint32_t CopyTod(uint32_t port_index, char* out_buffer, uint32_t out_buff
     auto& discovery = rdm::Discovery::Instance();
 
     for (uint32_t count = 0; count < discovery.TodUidCount(port_index); count++) {
-        uint8_t uid[RDM_UID_SIZE];
+        uint8_t uid[rdm::kUidSize];
 
         discovery.TodCopyUidEntry(port_index, count, uid);
 

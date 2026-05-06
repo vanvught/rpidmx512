@@ -75,7 +75,7 @@ void WidgetMonitor::DmxData(const uint8_t* pDmxData, int line)
     if (PortDirection::kInput == Dmx::Get()->GetPortDirection(0))
     {
         const struct Data* dmx_statistics = (struct Data*)pDmxData;
-        slots = dmx_statistics->Statistics.nSlotsInPacket + 1;
+        slots = dmx_statistics->statistics.slots_in_packet + 1;
     }
     else
     {
@@ -159,16 +159,16 @@ void WidgetMonitor::Sniffer()
 
     if (dmx_updates_per_seconde != 0)
     {
-        s_nSlotsInPacketMin = std::min(dmx_statistics->Statistics.nSlotsInPacket, s_nSlotsInPacketMin);
-        s_nSlotsInPacketMax = std::max(dmx_statistics->Statistics.nSlotsInPacket, s_nSlotsInPacketMax);
-        s_nSlotToSlotMin = std::min(dmx_statistics->Statistics.nSlotToSlot, s_nSlotToSlotMin);
-        s_nSlotToSlotMax = std::max(dmx_statistics->Statistics.nSlotToSlot, s_nSlotToSlotMax);
-        s_nBreakToBreakMin = std::min(dmx_statistics->Statistics.nBreakToBreak, s_nBreakToBreakMin);
-        s_nBreakToBreakMax = std::max(dmx_statistics->Statistics.nBreakToBreak, s_nBreakToBreakMax);
+        s_nSlotsInPacketMin = std::min(dmx_statistics->statistics.slots_in_packet, s_nSlotsInPacketMin);
+        s_nSlotsInPacketMax = std::max(dmx_statistics->statistics.slots_in_packet, s_nSlotsInPacketMax);
+        s_nSlotToSlotMin = std::min(dmx_statistics->statistics.slot_to_slot, s_nSlotToSlotMin);
+        s_nSlotToSlotMax = std::max(dmx_statistics->statistics.slot_to_slot, s_nSlotToSlotMax);
+        s_nBreakToBreakMin = std::min(dmx_statistics->statistics.break_to_break, s_nBreakToBreakMin);
+        s_nBreakToBreakMax = std::max(dmx_statistics->statistics.break_to_break, s_nBreakToBreakMax);
 
-        printf("Slots in packet     %3d     %3d / %d\n", (int)dmx_statistics->Statistics.nSlotsInPacket, (int)s_nSlotsInPacketMin, (int)s_nSlotsInPacketMax);
-        printf("Slot to slot        %3d     %3d / %d\n", (int)dmx_statistics->Statistics.nSlotToSlot, (int)s_nSlotToSlotMin, (int)s_nSlotToSlotMax);
-        printf("Break to break   %6d  %6d / %d\n", (int)dmx_statistics->Statistics.nBreakToBreak, (int)s_nBreakToBreakMin, (int)s_nBreakToBreakMax);
+        printf("Slots in packet     %3d     %3d / %d\n", (int)dmx_statistics->statistics.slots_in_packet, (int)s_nSlotsInPacketMin, (int)s_nSlotsInPacketMax);
+        printf("Slot to slot        %3d     %3d / %d\n", (int)dmx_statistics->statistics.slot_to_slot, (int)s_nSlotToSlotMin, (int)s_nSlotToSlotMax);
+        printf("Break to break   %6d  %6d / %d\n", (int)dmx_statistics->statistics.break_to_break, (int)s_nBreakToBreakMin, (int)s_nBreakToBreakMax);
     }
     else
     {

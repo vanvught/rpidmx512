@@ -46,10 +46,10 @@ static void RespondMessageAck(uint32_t port_index, struct TRdmMessage* message)
 
     message->message_count = 0;
     message->command_class = static_cast<uint8_t>(message->command_class + 1U);
-    message->message_length = static_cast<uint8_t>(RDM_MESSAGE_MINIMUM_SIZE + message->param_data_length);
+    message->message_length = static_cast<uint8_t>(rdm::kMessageMinimumSize + message->param_data_length);
     message->slot16.response_type = E120_RESPONSE_TYPE_ACK;
 
-    for (uint32_t i = 0; i < RDM_UID_SIZE; i++)
+    for (uint32_t i = 0; i < rdm::kUidSize; i++)
     {
         auto uid = message->destination_uid[i];
         message->destination_uid[i] = message->source_uid[i];
@@ -82,11 +82,11 @@ bool ArtNetRdmController::RdmReceive(uint32_t port_index, const uint8_t* data)
     auto* uid = rdm_message->destination_uid;
 
     auto is_rdm_packet_for_me = false;
-    auto is_rdm_packet_broadcast = (memcmp(uid, UID_ALL, RDM_UID_SIZE) == 0);
+    auto is_rdm_packet_broadcast = (memcmp(uid, rdm::kUidAll, rdm::kUidSize) == 0);
 
     if (!is_rdm_packet_broadcast)
     {
-        is_rdm_packet_broadcast = (memcmp(&rdm_message->destination_uid[2], UID_ALL, 4) == 0);
+        is_rdm_packet_broadcast = (memcmp(&rdm_message->destination_uid[2], rdm::kUidAll, 4) == 0);
 
         if (!is_rdm_packet_broadcast)
         {
@@ -117,7 +117,7 @@ bool ArtNetRdmController::RdmReceive(uint32_t port_index, const uint8_t* data)
         {
             if (!rdmdiscovery.TodIsMuted(port_index))
             {
-                if ((memcmp(rdm_message->param_data, uid, RDM_UID_SIZE) <= 0) && (memcmp(uid, rdm_message->param_data + 6, RDM_UID_SIZE) <= 0))
+                if ((memcmp(rdm_message->param_data, uid, rdm::kUidSize) <= 0) && (memcmp(uid, rdm_message->param_data + 6, rdm::kUidSize) <= 0))
                 {
                     auto* response = reinterpret_cast<struct TRdmDiscoveryMsg*>(const_cast<uint8_t*>(data));
 

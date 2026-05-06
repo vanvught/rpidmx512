@@ -113,7 +113,7 @@ static volatile uint32_t sv_nRdmDataBufferIndexHead;
 static volatile uint32_t sv_nRdmDataBufferIndexTail;
 static uint8_t s_RdmData[RDM_DATA_BUFFER_INDEX_ENTRIES][RDM_DATA_BUFFER_SIZE] ALIGNED;
 static volatile uint16_t sv_nRdmChecksum;	///< This must be uint16_t
-volatile uint32_t gsv_RdmDataReceiveEnd;
+volatile uint32_t gsv_rdm_data_receive_end;
 static volatile uint32_t sv_RdmDiscIndex;
 
 /**
@@ -123,17 +123,17 @@ static volatile uint32_t sv_RdmDiscIndex;
 static void irq_timer1_dmx_receive(uint32_t clo) {
 	dmb();
 	if (sv_DmxReceiveState == DMXDATA) {
-		if (clo - sv_nFiqMicrosCurrent > s_DmxData[0].Statistics.nSlotToSlot) {
+		if (clo - sv_nFiqMicrosCurrent > s_DmxData[0].Statistics.slot_to_slot) {
 			dmb();
 			sv_DmxReceiveState = IDLE;
-			s_DmxData[sv_nDmxDataBufferIndexHead].Statistics.nSlotsInPacket = sv_nDmxDataIndex - 1;
+			s_DmxData[sv_nDmxDataBufferIndexHead].Statistics.slots_in_packet = sv_nDmxDataIndex - 1;
 			sv_nDmxDataBufferIndexHead = (sv_nDmxDataBufferIndexHead + 1) & buffer::INDEX_MASK;
 #ifdef LOGIC_ANALYZER
 			bcm2835_GpioClr(GPIO_ANALYZER_CH3);	// DMX DATA
 			bcm2835_GpioSet(GPIO_ANALYZER_CH4);	// IDLE
 #endif
 		} else {
-			BCM2835_ST->C1 = clo + s_DmxData[sv_nDmxDataBufferIndexHead].Statistics.nSlotToSlot;
+			BCM2835_ST->C1 = clo + s_DmxData[sv_nDmxDataBufferIndexHead].Statistics.slot_to_slot;
 		}
 	}
 }
@@ -230,7 +230,7 @@ static void fiq_dmx_in_handler(void) {
 				sv_TotalStatistics.nDmxPackets = sv_TotalStatistics.nDmxPackets + 1;
 
 				if (sv_isDmxPreviousBreak) {
-					s_DmxData[sv_nDmxDataBufferIndexHead].Statistics.nBreakToBreak = sv_DmxBreakToBreakLatest - sv_DmxBreakToBreakPrevious;
+					s_DmxData[sv_nDmxDataBufferIndexHead].Statistics.break_to_break = sv_DmxBreakToBreakLatest - sv_DmxBreakToBreakPrevious;
 					sv_DmxBreakToBreakPrevious = sv_DmxBreakToBreakLatest;
 
 				} else {
@@ -253,17 +253,17 @@ static void fiq_dmx_in_handler(void) {
 			}
 			break;
 		case DMXDATA:
-			s_DmxData[sv_nDmxDataBufferIndexHead].Statistics.nSlotToSlot = sv_nFiqMicrosCurrent - sv_nFiqMicrosPrevious;
+			s_DmxData[sv_nDmxDataBufferIndexHead].Statistics.slot_to_slot = sv_nFiqMicrosCurrent - sv_nFiqMicrosPrevious;
 
-			if (s_DmxData[sv_nDmxDataBufferIndexHead].Statistics.nSlotToSlot < 44) { // Broadcom BUG ? FIQ is late
-				s_DmxData[sv_nDmxDataBufferIndexHead].Statistics.nSlotToSlot = (uint32_t)44;
+			if (s_DmxData[sv_nDmxDataBufferIndexHead].Statistics.slot_to_slot < 44) { // Broadcom BUG ? FIQ is late
+				s_DmxData[sv_nDmxDataBufferIndexHead].Statistics.slot_to_slot = (uint32_t)44;
 			}
 			s_DmxData[sv_nDmxDataBufferIndexHead].Data[sv_nDmxDataIndex++] = data;
-		    BCM2835_ST->C1 = sv_nFiqMicrosCurrent + s_DmxData[0].Statistics.nSlotToSlot + (uint32_t)12;
+		    BCM2835_ST->C1 = sv_nFiqMicrosCurrent + s_DmxData[0].Statistics.slot_to_slot + (uint32_t)12;
 
 			if (sv_nDmxDataIndex > dmx::kChannelsMax) {
 				sv_DmxReceiveState = IDLE;
-				s_DmxData[sv_nDmxDataBufferIndexHead].Statistics.nSlotsInPacket = dmx::kChannelsMax;
+				s_DmxData[sv_nDmxDataBufferIndexHead].Statistics.slots_in_packet = dmx::kChannelsMax;
 				sv_nDmxDataBufferIndexHead = (sv_nDmxDataBufferIndexHead + 1) & buffer::INDEX_MASK;
 				dmb();
 			}
@@ -311,7 +311,7 @@ static void fiq_dmx_in_handler(void) {
 			s_RdmData[sv_nRdmDataBufferIndexHead][sv_nDmxDataIndex++] = data;
 			sv_RdmDiscIndex++;
 
-			if (sv_RdmDiscIndex == 2 * RDM_UID_SIZE) {
+			if (sv_RdmDiscIndex == 2 * rdm::kUidSize) {
 				sv_DmxReceiveState = RDMDISCECS;
 				sv_RdmDiscIndex = 0;
 			}
@@ -590,7 +590,7 @@ void Dmx::StopData() {
 	sv_DmxReceiveState = IDLE;
 
 	for (uint32_t i = 0; i < buffer::INDEX_ENTRIES; i++) {
-		s_DmxData[i].Statistics.nSlotsInPacket = 0;
+		s_DmxData[i].Statistics.slots_in_packet = 0;
 	}
 
 	s_IsStopped = true;
@@ -631,7 +631,7 @@ PortDirection Dmx::GetPortDirection([[maybe_unused]] uint32_t nPortIndex) {
 void Dmx::SetDmxBreakTime(uint32_t break_time) {
 	s_nDmxTransmitBreakTime = std::max(transmit::kBreakTimeMin, break_time);
 
-	SetDmxPeriodTime(m_nDmxTransmitPeriodRequested);
+	SetDmxPeriodTime(transmit_period_requested_);
 }
 
 uint32_t Dmx::GetDmxBreakTime() {
@@ -641,7 +641,7 @@ uint32_t Dmx::GetDmxBreakTime() {
 void Dmx::SetDmxMabTime(uint32_t mab_time) {
 	s_nDmxTransmitMabTime =std::max(transmit::kMabTimeMin, mab_time);
 
-	SetDmxPeriodTime(m_nDmxTransmitPeriodRequested);
+	SetDmxPeriodTime(transmit_period_requested_);
 }
 
 uint32_t Dmx::GetDmxMabTime() {
@@ -651,7 +651,7 @@ uint32_t Dmx::GetDmxMabTime() {
 void Dmx::SetDmxPeriodTime(uint32_t nPeriodTime) {
 	const auto package_length_us = s_nDmxTransmitBreakTime + s_nDmxTransmitMabTime + (s_nDmxSendDataLength * 44);
 
-	m_nDmxTransmitPeriodRequested = nPeriodTime;
+	transmit_period_requested_ = nPeriodTime;
 
 	if (nPeriodTime != 0) {
 		if (nPeriodTime < package_length_us) {
@@ -702,8 +702,8 @@ const uint8_t* Dmx::GetDmxChanged([[maybe_unused]]uint32_t nPortIndex) {
 	auto *dst = reinterpret_cast<uint32_t *>(s_DmxDataPrevious);
 	const auto *dmx_statistics = reinterpret_cast<const struct Data *>(p);
 
-	if (dmx_statistics->Statistics.nSlotsInPacket != sv_DmxSlotsInPacketPrevious) {
-		sv_DmxSlotsInPacketPrevious = dmx_statistics->Statistics.nSlotsInPacket;
+	if (dmx_statistics->statistics.slots_in_packet != sv_DmxSlotsInPacketPrevious) {
+		sv_DmxSlotsInPacketPrevious = dmx_statistics->statistics.slots_in_packet;
 		for (uint32_t i = 0; i < buffer::SIZE / 4; i++) {
 			*dst= *src;
 			dst++;
@@ -728,7 +728,7 @@ const uint8_t* Dmx::GetDmxChanged([[maybe_unused]]uint32_t nPortIndex) {
 
 void Dmx::SetSendDataLength(uint32_t nLength) {
 	s_nDmxSendDataLength = nLength;
-	SetDmxPeriodTime(m_nDmxTransmitPeriodRequested);
+	SetDmxPeriodTime(transmit_period_requested_);
 }
 
 void Dmx::SetDmxSlots(uint16_t nSlots) {
@@ -805,15 +805,25 @@ const uint8_t* Dmx::RdmReceiveTimeOut(uint32_t nPortIndex, uint32_t nTimeOut) {
 	return p;
 }
 
+void Dmx::RdmSend(uint32_t port_index, const uint8_t* rdm_data, uint32_t length) {
+    Dmx::Get()->SetPortDirection(port_index, dmx::PortDirection::kOutput, false);
+
+    Dmx::Get()->RdmSendRaw(port_index, rdm_data, length);
+
+    udelay(rdm::responder::kDataDirectionDelay);
+
+    Dmx::Get()->SetPortDirection(port_index, dmx::PortDirection::kInput, true);
+}
+
 void Dmx::RdmSendRaw([[maybe_unused]] uint32_t nPortIndex, const uint8_t *pRdmData, uint32_t nLength) {
 	assert(nPort == 0);
 
 	BCM2835_PL011->LCRH &= ~PL011_LCRH_FEN;
 	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2 | PL011_LCRH_BRK;
-	udelay(RDM_TRANSMIT_BREAK_TIME);
+	udelay(rdm::transmit::kBreakTimeTypical);
 
 	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2;
-	udelay(RDM_TRANSMIT_MAB_TIME);
+	udelay(rdm::transmit::kMabTimeTypical);
 
 	for (uint32_t i = 0; i < nLength; i++) {
 		while ((BCM2835_PL011->FR & PL011_FR_TXFF) == PL011_FR_TXFF)

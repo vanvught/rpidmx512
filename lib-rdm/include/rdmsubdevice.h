@@ -34,7 +34,7 @@ struct TRDMSubDevicesInfo {
 	uint16_t dmx_start_address;
 	uint8_t current_personality;
 	uint8_t personality_count;
-	char label[RDM_DEVICE_LABEL_MAX_LENGTH];
+	char label[rdm::device::kLabelMaxLength];
 	uint8_t label_length;
 	uint8_t sensor_count;
 };
@@ -50,7 +50,7 @@ public:
 		dmx_start_address_factory_default_(dmx_start_address),
 		current_personality_factory_default_(personality_current)
 	{
-		for (uint32_t i = 0; (i < RDM_DEVICE_LABEL_MAX_LENGTH) && label[i] != 0; i++) {
+		for (uint32_t i = 0; (i < rdm::device::kLabelMaxLength) && label[i] != 0; i++) {
 			label_factory_default_[i] = label[i];
 		}
 
@@ -95,7 +95,7 @@ public:
 		assert(label != nullptr);
 		uint32_t i;
 
-		for (i = 0; (i < RDM_DEVICE_LABEL_MAX_LENGTH) && (label[i] != 0); i++) {
+		for (i = 0; (i < rdm::device::kLabelMaxLength) && (label[i] != 0); i++) {
 			sub_devices_info_.label[i] = label[i];
 		}
 
@@ -106,7 +106,7 @@ public:
 		assert(label != nullptr);
 		uint32_t i;
 
-		for (i = 0; (i < RDM_DEVICE_LABEL_MAX_LENGTH) && (i < label_length); i++) {
+		for (i = 0; (i < rdm::device::kLabelMaxLength) && (i < label_length); i++) {
 			sub_devices_info_.label[i] = label[i];
 		}
 
@@ -194,7 +194,7 @@ private:
  uint16_t dmx_start_address_factory_default_;
  uint8_t current_personality_factory_default_;
  TRDMSubDevicesInfo sub_devices_info_;
- char label_factory_default_[RDM_DEVICE_LABEL_MAX_LENGTH];
+ char label_factory_default_[rdm::device::kLabelMaxLength];
 };
 
 #endif  // RDMSUBDEVICE_H_

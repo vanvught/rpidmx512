@@ -47,7 +47,7 @@ RdmDeviceParams::RdmDeviceParams()
 
 void RdmDeviceParams::SetLabel(const char* val, uint32_t len)
 {
-    memcpy(store_rdmdevice.device_root_label, val, std::max(len, static_cast<uint32_t>(RDM_DEVICE_LABEL_MAX_LENGTH)));
+    memcpy(store_rdmdevice.device_root_label, val, std::max(len, static_cast<uint32_t>(rdm::device::kLabelMaxLength)));
     store_rdmdevice.device_root_label_length = static_cast<uint8_t>(len);
 }
 

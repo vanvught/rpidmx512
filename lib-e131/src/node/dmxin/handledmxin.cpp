@@ -64,7 +64,7 @@ void E131Bridge::HandleDmxIn()
             if (kDataChanged != nullptr)
             {
                 // Root Layer (See Section 5)
-                const auto kLength = (1U + kDataChanged->Statistics.nSlotsInPacket); // Add 1 for SC
+                const auto kLength = (1U + kDataChanged->statistics.slots_in_packet); // Add 1 for SC
                 e131_data_packet_.root_layer.flags_length = __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | (e131::DataRootLayerLength(kLength))));
                 // E1.31 Framing Layer (See Section 6)
                 e131_data_packet_.frame_layer.flags_length = __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | (e131::DataFrameLayerLength(kLength))));
@@ -125,7 +125,7 @@ void E131Bridge::HandleDmxIn()
                 {
                     const auto* const kDataCurrent = reinterpret_cast<const struct Data*>(Dmx::Get()->GetDmxCurrentData(port_index));
                     // Root Layer (See Section 5)
-                    const auto kLength = (1U + kDataCurrent->Statistics.nSlotsInPacket); // Add 1 for SC
+                    const auto kLength = (1U + kDataCurrent->statistics.slots_in_packet); // Add 1 for SC
                     e131_data_packet_.root_layer.flags_length = __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | (e131::DataRootLayerLength(kLength))));
                     // E1.31 Framing Layer (See Section 6)
                     e131_data_packet_.frame_layer.flags_length = __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | (e131::DataFrameLayerLength(kLength))));

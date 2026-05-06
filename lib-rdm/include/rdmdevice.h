@@ -106,19 +106,19 @@ class Device
 
     void GetManufacturerId(struct rdm::device::InfoData* info_data)
     {
-        info_data->data = reinterpret_cast<char*>(const_cast<uint8_t*>(RDMConst::MANUFACTURER_ID));
-        info_data->length = RDM_DEVICE_MANUFACTURER_ID_LENGTH;
+        info_data->data = reinterpret_cast<char*>(const_cast<uint8_t*>(rdm::Manufacturer::kId));
+        info_data->length = rdm::device::kManufacturerIdLength;
     }
 
     void GetManufacturerName(struct rdm::device::InfoData* info_data)
     {
-        info_data->data = const_cast<char*>(&RDMConst::MANUFACTURER_NAME[0]);
-        info_data->length = static_cast<uint8_t>(std::min(static_cast<size_t>(RDM_MANUFACTURER_LABEL_MAX_LENGTH), strlen(RDMConst::MANUFACTURER_NAME)));
+        info_data->data = const_cast<char*>(&rdm::Manufacturer::kName[0]);
+        info_data->length = static_cast<uint8_t>(std::min(static_cast<size_t>(rdm::device::kManufacturerLabelMaxLength), strlen(rdm::Manufacturer::kName)));
     }
 
     void SetLabel(const struct rdm::device::InfoData* info_data)
     {
-        const auto kLength = std::min(static_cast<uint8_t>(RDM_DEVICE_LABEL_MAX_LENGTH), info_data->length);
+        const auto kLength = std::min(static_cast<uint8_t>(rdm::device::kLabelMaxLength), info_data->length);
 
         if ((kLength > 1) && info_data->data[0] > ' ')
         {
@@ -230,7 +230,7 @@ class Device
    private:
     RDMIdentify identify_;
     rdm::device::Info info_;
-    uint8_t root_label_[RDM_DEVICE_LABEL_MAX_LENGTH];
+    uint8_t root_label_[rdm::device::kLabelMaxLength];
     uint16_t checksum_{0};
     uint8_t root_label_length_{0};
 };

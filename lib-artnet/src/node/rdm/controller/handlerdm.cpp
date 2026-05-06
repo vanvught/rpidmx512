@@ -300,7 +300,7 @@ void ArtNetNode::HandleRdm() {
             auto* message = reinterpret_cast<const TRdmMessage*>(&kArtRdm->address);
 
             kArtRdm->address = E120_SC_RDM;
-            Rdm::SendRaw(port_index, &kArtRdm->address, message->message_length + RDM_MESSAGE_CHECKSUM_SIZE);
+            Rdm::SendRaw(port_index, &kArtRdm->address, message->message_length + rdm::kMessageChecksumSize);
 
 #ifndef NDEBUG
             rdm::message::Print(reinterpret_cast<const uint8_t*>(message));
@@ -316,7 +316,7 @@ void ArtNetNode::HandleRdm() {
 
             if ((rdm_message->command_class == E120_GET_COMMAND_RESPONSE) || (rdm_message->command_class == E120_SET_COMMAND_RESPONSE)) {
                 kArtRdm->address = E120_SC_RDM;
-                Rdm::SendRaw(port_index, reinterpret_cast<const uint8_t*>(rdm_message), rdm_message->message_length + RDM_MESSAGE_CHECKSUM_SIZE);
+                Rdm::SendRaw(port_index, reinterpret_cast<const uint8_t*>(rdm_message), rdm_message->message_length + rdm::kMessageChecksumSize);
 
 #ifndef NDEBUG
                 rdm::message::Print(reinterpret_cast<const uint8_t*>(rdm_message));

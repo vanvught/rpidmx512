@@ -31,5 +31,5 @@
  * https://tsp.esta.org/tsp/working_groups/CP/mfctrIDs.php
  */
 
-const char RDMConst::MANUFACTURER_NAME[] = "http://www.orangepi-dmx.org";
-const uint8_t RDMConst::MANUFACTURER_ID[2] = {0x50, 0x00};
+const char rdm::Manufacturer::kName[] = "http://www.orangepi-dmx.org";
+const uint8_t rdm::Manufacturer::kId[2] = {0x50, 0x00};

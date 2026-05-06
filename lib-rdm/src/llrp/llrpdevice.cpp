@@ -57,28 +57,28 @@ void LLRPDevice::HandleRequestMessage()
     const auto* pdu = request->ProbeRequestPDU.flags_length;
     const auto kLength = (static_cast<uint32_t>((pdu[0] & 0x0fu) << 16) | static_cast<uint32_t>(pdu[1] << 8) | pdu[2]);
 
-    uint8_t uid[RDM_UID_SIZE];
-    memcpy(uid, rdm::device::Base::Instance().GetUID(), RDM_UID_SIZE);
+    uint8_t uid[rdm::kUidSize];
+    memcpy(uid, rdm::device::Base::Instance().GetUID(), rdm::kUidSize);
 
     if (kLength > 18)
     {
-        const auto kKnownUiDs = (kLength - 18) / RDM_UID_SIZE;
+        const auto kKnownUiDs = (kLength - 18) / rdm::kUidSize;
         const auto* p = request->ProbeRequestPDU.KnownUUIDs;
 
         for (uint32_t index = 0; index < kKnownUiDs; index++)
         {
-            if (memcmp(p, uid, RDM_UID_SIZE) == 0)
+            if (memcmp(p, uid, rdm::kUidSize) == 0)
             {
                 DEBUG_EXIT();
                 return;
             }
-            p += RDM_UID_SIZE;
+            p += rdm::kUidSize;
         }
     }
 
-    debug::Dump(request->ProbeRequestPDU.LowerUUID, 2 * RDM_UID_SIZE);
+    debug::Dump(request->ProbeRequestPDU.LowerUUID, 2 * rdm::kUidSize);
 
-    if (!((memcmp(request->ProbeRequestPDU.LowerUUID, uid, RDM_UID_SIZE) <= 0) && (memcmp(uid, request->ProbeRequestPDU.UpperUUID, RDM_UID_SIZE) <= 0)))
+    if (!((memcmp(request->ProbeRequestPDU.LowerUUID, uid, rdm::kUidSize) <= 0) && (memcmp(uid, request->ProbeRequestPDU.UpperUUID, rdm::kUidSize) <= 0)))
     {
         DEBUG_PUTS("Not for me");
         DEBUG_EXIT();
@@ -100,7 +100,7 @@ void LLRPDevice::HandleRequestMessage()
     // Probe Reply PDU
     reply->ProbeReplyPDU.flags_length[2] = 17;
     reply->ProbeReplyPDU.vector = VECTOR_PROBE_REPLY_DATA;
-    memcpy(reply->ProbeReplyPDU.UID, rdm::device::Base::Instance().GetUID(), RDM_UID_SIZE);
+    memcpy(reply->ProbeReplyPDU.UID, rdm::device::Base::Instance().GetUID(), rdm::kUidSize);
     network::iface::CopyMacAddressTo(reply->ProbeReplyPDU.HardwareAddress);
 #if defined(NODE_RDMNET_LLRP_ONLY)
     reply->ProbeReplyPDU.ComponentType = LLRP_COMPONENT_TYPE_NON_RDMNET;

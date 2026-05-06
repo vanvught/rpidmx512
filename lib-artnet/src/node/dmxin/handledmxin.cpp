@@ -60,9 +60,9 @@ void ArtNetNode::HandleDmxIn()
                 art_dmx_.physical = static_cast<uint8_t>(port_index);
                 art_dmx_.port_address = node_.port[port_index].port_address;
 
-                auto length = kDataChanged->Statistics.nSlotsInPacket;
+                auto length = kDataChanged->statistics.slots_in_packet;
 
-                memcpy(art_dmx_.data, &kDataChanged->Data[1], length);
+                memcpy(art_dmx_.data, &kDataChanged->data[1], length);
 
                 if ((length & 0x1) == 0x1)
                 {
@@ -139,9 +139,9 @@ void ArtNetNode::HandleDmxIn()
                     art_dmx_.physical = static_cast<uint8_t>(port_index);
                     art_dmx_.port_address = node_.port[port_index].port_address;
 
-                    auto length = kDataCurrent->Statistics.nSlotsInPacket;
+                    auto length = kDataCurrent->statistics.slots_in_packet;
 
-                    memcpy(art_dmx_.data, &kDataCurrent->Data[1], length);
+                    memcpy(art_dmx_.data, &kDataCurrent->data[1], length);
 
                     if ((length & 0x1) == 0x1)
                     {

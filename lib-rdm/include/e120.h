@@ -38,8 +38,8 @@ struct TRdmMessage {
     uint8_t start_code;                    ///< 1	SC_RDM
     uint8_t sub_start_code;                ///< 2	SC_SUB_MESSAGE
     uint8_t message_length;                ///< 3	Range 24 to 255
-    uint8_t destination_uid[RDM_UID_SIZE]; ///< 4,5,6,7,8,9
-    uint8_t source_uid[RDM_UID_SIZE];      ///< 10,11,12,13,14,15
+    uint8_t destination_uid[rdm::kUidSize]; ///< 4,5,6,7,8,9
+    uint8_t source_uid[rdm::kUidSize];      ///< 10,11,12,13,14,15
     uint8_t transaction_number;            ///< 16
     union {
         uint8_t port_id;       ///< 17
@@ -57,8 +57,8 @@ struct TRdmMessage {
 struct TRdmMessageNoSc {
     uint8_t sub_start_code;                ///< 2	SC_SUB_MESSAGE
     uint8_t message_length;                ///< 3	Range 24 to 255
-    uint8_t destination_uid[RDM_UID_SIZE]; ///< 4,5,6,7,8,9
-    uint8_t source_uid[RDM_UID_SIZE];      ///< 10,11,12,13,14,15
+    uint8_t destination_uid[rdm::kUidSize]; ///< 4,5,6,7,8,9
+    uint8_t source_uid[rdm::kUidSize];      ///< 10,11,12,13,14,15
     uint8_t transaction_number;            ///< 16
     union {
         uint8_t port_id;       ///< 17

@@ -49,8 +49,8 @@ class Base
     void Print()
     {
 		puts("RDM Device Base");
-        const auto kLength = static_cast<int>(std::min(static_cast<size_t>(RDM_MANUFACTURER_LABEL_MAX_LENGTH), strlen(RDMConst::MANUFACTURER_NAME)));
-        printf(" Manufacturer Name : %.*s\n", kLength, const_cast<char*>(&RDMConst::MANUFACTURER_NAME[0]));
+        const auto kLength = static_cast<int>(std::min(static_cast<size_t>(rdm::device::kManufacturerLabelMaxLength), strlen(rdm::Manufacturer::kName)));
+        printf(" Manufacturer Name : %.*s\n", kLength, const_cast<char*>(&rdm::Manufacturer::kName[0]));
         printf(" Manufacturer ID   : %.2X%.2X\n", uid_[0], uid_[1]);
         printf(" Serial Number     : %.2X%.2X%.2X%.2X\n", serial_number_[3], serial_number_[2], serial_number_[1], serial_number_[0]);
     }
@@ -63,15 +63,15 @@ class Base
     {
         hal::SerialNumber(serial_number_);
 
-        uid_[0] = RDMConst::MANUFACTURER_ID[0];
-        uid_[1] = RDMConst::MANUFACTURER_ID[1];
+        uid_[0] = rdm::Manufacturer::kId[0];
+        uid_[1] = rdm::Manufacturer::kId[1];
         uid_[2] = serial_number_[3];
         uid_[3] = serial_number_[2];
         uid_[4] = serial_number_[1];
         uid_[5] = serial_number_[0];
     }
 
-    uint8_t uid_[RDM_UID_SIZE];
+    uint8_t uid_[rdm::kUidSize];
 #define DEVICE_SN_LENGTH 4
     uint8_t serial_number_[DEVICE_SN_LENGTH];
 };

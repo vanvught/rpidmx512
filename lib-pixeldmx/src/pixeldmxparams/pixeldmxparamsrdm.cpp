@@ -90,7 +90,7 @@ void PixelDmxParamsRdm::SetDataImpl([[maybe_unused]] uint32_t port_index, const 
 
             char description[rdm::personality::DESCRIPTION_MAX_LENGTH];
             pixeldmx::paramsdmx::SetPersonalityDescription(description);
-            auto* personality = RDMDeviceResponder::Get()->GetPersonality(RDM_ROOT_DEVICE, 1);
+            auto* personality = RDMDeviceResponder::Get()->GetPersonality(rdm::kRootDevice, 1);
             personality->SetDescription(description);
 
             dmxled_store::SaveType(common::ToValue(configuration.GetType()));

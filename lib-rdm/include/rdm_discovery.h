@@ -214,7 +214,7 @@ class Discovery : rdm::discovery::StateMachine {
         return s_tod[port_index].UidCount();
     }
 
-    bool TodCopyUidEntry(uint32_t port_index, uint32_t index, uint8_t uid[RDM_UID_SIZE]) {
+    bool TodCopyUidEntry(uint32_t port_index, uint32_t index, uint8_t uid[rdm::kUidSize]) {
         assert(port_index < kPorts);
         return s_tod[port_index].CopyUidEntry(index, uid);
     }

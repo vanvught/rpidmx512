@@ -114,7 +114,7 @@ void Widget::SnifferDmx()
     }
 
     const auto* dmx_statistics = reinterpret_cast<const struct Data*>(dmx_data_changed);
-    const auto kDataLength = dmx_statistics->Statistics.nSlotsInPacket + 1;
+    const auto kDataLength = dmx_statistics->statistics.slots_in_packet + 1;
 
     if (!UsbCanSend())
     {

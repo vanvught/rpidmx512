@@ -52,7 +52,7 @@ class Tod
     {
         for (uint32_t i = 0; i < kTableSize; i++)
         {
-            memcpy(&tod_[i], UID_ALL, RDM_UID_SIZE);
+            memcpy(&tod_[i], rdm::kUidAll, rdm::kUidSize);
         }
 
         for (uint32_t i = 0; i < kMutesTableSize; i++)
@@ -67,7 +67,7 @@ class Tod
     {
         for (uint32_t i = 0; i < entries_; i++)
         {
-            memcpy(&tod_[i], UID_ALL, RDM_UID_SIZE);
+            memcpy(&tod_[i], rdm::kUidAll, rdm::kUidSize);
         }
 
         entries_ = 0;
@@ -90,22 +90,22 @@ class Tod
             return false;
         }
 
-        memcpy(&tod_[entries_++], uid, RDM_UID_SIZE);
+        memcpy(&tod_[entries_++], uid, rdm::kUidSize);
 
         return true;
     }
 
     uint32_t UidCount() const { return entries_; }
 
-    bool CopyUidEntry(uint32_t index, uint8_t uid[RDM_UID_SIZE])
+    bool CopyUidEntry(uint32_t index, uint8_t uid[rdm::kUidSize])
     {
         if (index > entries_)
         {
-            memcpy(uid, UID_ALL, RDM_UID_SIZE);
+            memcpy(uid, rdm::kUidAll, rdm::kUidSize);
             return false;
         }
 
-        memcpy(uid, &tod_[index], RDM_UID_SIZE);
+        memcpy(uid, &tod_[index], rdm::kUidSize);
         return true;
     }
 
@@ -118,7 +118,7 @@ class Tod
         const auto* src = reinterpret_cast<const uint8_t*>(tod_);
         auto* dst = table;
 
-        for (uint32_t i = 0; i < (entries_ * RDM_UID_SIZE); i++)
+        for (uint32_t i = 0; i < (entries_ * rdm::kUidSize); i++)
         {
             *dst++ = *src++;
         }
@@ -133,7 +133,7 @@ class Tod
 
         for (i = 0; i < entries_; i++)
         {
-            if (memcmp(&tod_[i], uid, RDM_UID_SIZE) == 0)
+            if (memcmp(&tod_[i], uid, rdm::kUidSize) == 0)
             {
                 found = true;
                 break;
@@ -147,13 +147,13 @@ class Tod
 
         if (i == kTableSize - 1)
         {
-            memcpy(&tod_[i], UID_ALL, RDM_UID_SIZE);
+            memcpy(&tod_[i], rdm::kUidAll, rdm::kUidSize);
         }
         else
         {
             for (; i < entries_; i++)
             {
-                memcpy(&tod_[i], &tod_[i + 1], RDM_UID_SIZE);
+                memcpy(&tod_[i], &tod_[i + 1], rdm::kUidSize);
             }
         }
 
@@ -166,7 +166,7 @@ class Tod
     {
         for (uint32_t index = 0; index < entries_; index++)
         {
-            if (memcmp(&tod_[index], uid, RDM_UID_SIZE) == 0)
+            if (memcmp(&tod_[index], uid, rdm::kUidSize) == 0)
             {
                 saved_index_ = index;
                 return true;
@@ -266,7 +266,7 @@ class Tod
     uint32_t mutes_[kMutesTableSize];
     struct Uid
     {
-        uint8_t uid[RDM_UID_SIZE];
+        uint8_t uid[rdm::kUidSize];
     };
     Uid tod_[kTableSize];
 };

@@ -56,7 +56,7 @@ static constexpr const char* kStateName[] = {
 
 typedef union cast {
     uint64_t uint;
-    uint8_t uid[RDM_UID_SIZE];
+    uint8_t uid[rdm::kUidSize];
 } _cast;
 
 static _cast uuid_cast;
@@ -76,7 +76,7 @@ static void PrintUid(const uint8_t* uid) {
 #define SAVED_STATE() SavedState(__LINE__);
 
 StateMachine::StateMachine(const uint8_t* uid) {
-    memcpy(uid_, uid, RDM_UID_SIZE);
+    memcpy(uid_, uid, rdm::kUidSize);
     message_.SetSrcUid(uid);
 
 #ifndef NDEBUG
@@ -90,12 +90,12 @@ uint32_t StateMachine::CopyWorkingQueue(char* out_buffer, uint32_t out_buffer_si
     const auto kSize = static_cast<int32_t>(out_buffer_size);
     int32_t index = 0;
     int32_t length = 0;
-    uint8_t lower_bound[RDM_UID_SIZE];
-    uint8_t upper_bound[RDM_UID_SIZE];
+    uint8_t lower_bound[rdm::kUidSize];
+    uint8_t upper_bound[rdm::kUidSize];
 
     while (index <= discovery_.stack.top) {
-        memcpy(lower_bound, rdm::discovery::ConvertUid(discovery_.stack.items[index].lower_bound), RDM_UID_SIZE);
-        memcpy(upper_bound, rdm::discovery::ConvertUid(discovery_.stack.items[index].upper_bound), RDM_UID_SIZE);
+        memcpy(lower_bound, rdm::discovery::ConvertUid(discovery_.stack.items[index].lower_bound), rdm::kUidSize);
+        memcpy(upper_bound, rdm::discovery::ConvertUid(discovery_.stack.items[index].upper_bound), rdm::kUidSize);
 
         length += snprintf(&out_buffer[length], static_cast<size_t>(kSize - length), "\"%.2x%.2x:%.2x%.2x%.2x%.2x-%.2x%.2x:%.2x%.2x%.2x%.2x\",", lower_bound[0], lower_bound[1], lower_bound[2], lower_bound[3], lower_bound[4], lower_bound[5],
                            upper_bound[0], upper_bound[1], upper_bound[2], upper_bound[3], upper_bound[4], upper_bound[5]);
@@ -276,7 +276,7 @@ void StateMachine::Process() {
 
             if (!unmute_.is_command_running) {
                 message_.SetPortID(static_cast<uint8_t>(1 + port_index_));
-                message_.SetDstUid(UID_ALL);
+                message_.SetDstUid(rdm::kUidAll);
                 message_.SetCc(E120_DISCOVERY_COMMAND);
                 message_.SetPid(E120_DISC_UN_MUTE);
                 message_.SetPd(nullptr, 0);
@@ -393,8 +393,8 @@ void StateMachine::Process() {
                 return;
             }
 
-            memcpy(discovery_.pdl[0], rdm::discovery::ConvertUid(discovery_.lower_bound), RDM_UID_SIZE);
-            memcpy(discovery_.pdl[1], rdm::discovery::ConvertUid(discovery_.upper_bound), RDM_UID_SIZE);
+            memcpy(discovery_.pdl[0], rdm::discovery::ConvertUid(discovery_.lower_bound), rdm::kUidSize);
+            memcpy(discovery_.pdl[1], rdm::discovery::ConvertUid(discovery_.upper_bound), rdm::kUidSize);
 
 #ifndef NDEBUG
             printf("DISC_UNIQUE_BRANCH -> ");
@@ -404,10 +404,10 @@ void StateMachine::Process() {
             puts("");
 #endif
 
-            message_.SetDstUid(UID_ALL);
+            message_.SetDstUid(rdm::kUidAll);
             message_.SetCc(E120_DISCOVERY_COMMAND);
             message_.SetPid(E120_DISC_UNIQUE_BRANCH);
-            message_.SetPd(reinterpret_cast<const uint8_t*>(discovery_.pdl), 2 * RDM_UID_SIZE);
+            message_.SetPd(reinterpret_cast<const uint8_t*>(discovery_.pdl), 2 * rdm::kUidSize);
             message_.Send(port_index_);
 
             discovery_.counter = rdm::discovery::kDiscoveryCounter;
@@ -430,7 +430,7 @@ void StateMachine::Process() {
             }
 
             if (!discovery_single_device_.is_command_running) {
-                memcpy(discovery_.uid, rdm::discovery::ConvertUid(discovery_.lower_bound), RDM_UID_SIZE);
+                memcpy(discovery_.uid, rdm::discovery::ConvertUid(discovery_.lower_bound), rdm::kUidSize);
 
                 message_.SetCc(E120_DISCOVERY_COMMAND);
                 message_.SetPid(E120_DISC_MUTE);
@@ -454,7 +454,7 @@ void StateMachine::Process() {
             if (response_ != nullptr) {
                 const auto* response = reinterpret_cast<struct TRdmMessage*>(response_);
 
-                if ((response->command_class == E120_DISCOVERY_COMMAND_RESPONSE) && (memcmp(discovery_.uid, response->source_uid, RDM_UID_SIZE) == 0)) {
+                if ((response->command_class == E120_DISCOVERY_COMMAND_RESPONSE) && (memcmp(discovery_.uid, response->source_uid, rdm::kUidSize) == 0)) {
                     tod_->AddUid(discovery_.uid);
 #ifndef NDEBUG
                     printf("AddUid : ");
@@ -544,7 +544,7 @@ void StateMachine::Process() {
                     return;
                 }
 
-                if ((response->command_class == E120_DISCOVERY_COMMAND_RESPONSE) && (memcmp(quick_find_.uid, response->source_uid, RDM_UID_SIZE) == 0)) {
+                if ((response->command_class == E120_DISCOVERY_COMMAND_RESPONSE) && (memcmp(quick_find_.uid, response->source_uid, rdm::kUidSize) == 0)) {
                     tod_->AddUid(quick_find_.uid);
 #ifndef NDEBUG
                     printf("AddUid : ");
@@ -576,10 +576,10 @@ void StateMachine::Process() {
             }
 
             if (!quick_find_discovery_.is_command_running) {
-                message_.SetDstUid(UID_ALL);
+                message_.SetDstUid(rdm::kUidAll);
                 message_.SetCc(E120_DISCOVERY_COMMAND);
                 message_.SetPid(E120_DISC_UNIQUE_BRANCH);
-                message_.SetPd(reinterpret_cast<const uint8_t*>(discovery_.pdl), 2 * RDM_UID_SIZE);
+                message_.SetPd(reinterpret_cast<const uint8_t*>(discovery_.pdl), 2 * rdm::kUidSize);
                 message_.Send(port_index_);
 
                 quick_find_discovery_.micros = hal::Micros();

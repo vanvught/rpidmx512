@@ -157,7 +157,7 @@ void Widget::ReceivedDmxPacket()
     received_dmx_packet_count_++;
 
     const auto* dmx_statistics = reinterpret_cast<const struct Data*>(dmx_data_available);
-    const auto kLength = dmx_statistics->Statistics.nSlotsInPacket + 1;
+    const auto kLength = dmx_statistics->statistics.slots_in_packet + 1;
 
 #if !defined(NO_HDMI_OUTPUT)
     WidgetMonitor::Line(widgetmonitor::MonitorLine::kLabel, "RECEIVED_DMX_PACKET");

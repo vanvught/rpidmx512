@@ -132,23 +132,23 @@ int main() //NOLINT
                 nUpdatesPerSecondeMin = std::min(kDmxUpdatesPerSeconde, nUpdatesPerSecondeMin);
                 nUpdatesPerSecondeMax = std::max(kDmxUpdatesPerSeconde, nUpdatesPerSecondeMax);
 
-                nSlotsInPacketMin = std::min(dmx_statistics->Statistics.nSlotsInPacket, nSlotsInPacketMin);
-                nSlotsInPacketMax = std::max(dmx_statistics->Statistics.nSlotsInPacket, nSlotsInPacketMax);
+                nSlotsInPacketMin = std::min(dmx_statistics->statistics.slots_in_packet, nSlotsInPacketMin);
+                nSlotsInPacketMax = std::max(dmx_statistics->statistics.slots_in_packet, nSlotsInPacketMax);
 
-                nSotToSlotMin = std::min(dmx_statistics->Statistics.nSlotToSlot, nSotToSlotMin);
-                nSlotToSlotMax = std::max(dmx_statistics->Statistics.nSlotToSlot, nSlotToSlotMax);
+                nSotToSlotMin = std::min(dmx_statistics->statistics.slot_to_slot, nSotToSlotMin);
+                nSlotToSlotMax = std::max(dmx_statistics->statistics.slot_to_slot, nSlotToSlotMax);
 
-                nBreakToBreakMin = std::min(dmx_statistics->Statistics.nBreakToBreak, nBreakToBreakMin);
-                break_to_break_max = std::max(dmx_statistics->Statistics.nBreakToBreak, break_to_break_max);
+                nBreakToBreakMin = std::min(dmx_statistics->statistics.break_to_break, nBreakToBreakMin);
+                break_to_break_max = std::max(dmx_statistics->statistics.break_to_break, break_to_break_max);
 
                 console::SetCursor(20, kTopRowStats);
                 printf("%3d     %3d / %d", kDmxUpdatesPerSeconde, nUpdatesPerSecondeMin, nUpdatesPerSecondeMax);
                 console::SetCursor(20, kTopRowStats + 1);
-                printf("%3d     %3d / %d", dmx_statistics->Statistics.nSlotsInPacket, nSlotsInPacketMin, nSlotsInPacketMax);
+                printf("%3d     %3d / %d", dmx_statistics->statistics.slots_in_packet, nSlotsInPacketMin, nSlotsInPacketMax);
                 console::SetCursor(20, kTopRowStats + 2);
-                printf("%3d     %3d / %d", dmx_statistics->Statistics.nSlotToSlot, nSotToSlotMin, nSlotToSlotMax);
+                printf("%3d     %3d / %d", dmx_statistics->statistics.slot_to_slot, nSotToSlotMin, nSlotToSlotMax);
                 console::SetCursor(17, kTopRowStats + 3);
-                printf("%6d  %6d / %d", dmx_statistics->Statistics.nBreakToBreak, nBreakToBreakMin, break_to_break_max);
+                printf("%6d  %6d / %d", dmx_statistics->statistics.break_to_break, nBreakToBreakMin, break_to_break_max);
             }
 
             console::RestoreCursor();

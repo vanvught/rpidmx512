@@ -74,7 +74,7 @@ class DMXReceiver : Dmx
         if (__builtin_expect((dmx_available != nullptr), 0))
         {
             const auto* dmx_statistics = reinterpret_cast<const struct Data*>(dmx_available);
-            length = static_cast<int16_t>(dmx_statistics->Statistics.nSlotsInPacket);
+            length = static_cast<int16_t>(dmx_statistics->statistics.slots_in_packet);
 
             ++dmx_available;
 

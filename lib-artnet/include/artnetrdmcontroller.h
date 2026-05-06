@@ -163,7 +163,7 @@ class ArtNetRdmController final : rdm::Discovery
 
         for (uint32_t count = 0; count < TodUidCount(port_index); count++)
         {
-            uint8_t uid[RDM_UID_SIZE];
+            uint8_t uid[rdm::kUidSize];
 
             CopyTodEntry(port_index, count, uid);
 
@@ -200,7 +200,7 @@ class ArtNetRdmController final : rdm::Discovery
 
     // Generic
 
-    bool CopyTodEntry(uint32_t port_index, uint32_t index, uint8_t uid[RDM_UID_SIZE])
+    bool CopyTodEntry(uint32_t port_index, uint32_t index, uint8_t uid[rdm::kUidSize])
     {
         assert(port_index < dmxnode::kMaxPorts);
         auto& rdmdiscovery = rdm::Discovery::Instance();

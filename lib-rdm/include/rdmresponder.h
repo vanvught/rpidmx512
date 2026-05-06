@@ -165,7 +165,7 @@ class RDMResponder final : DMXReceiver, public RDMDeviceResponder
         if (response[0] == E120_SC_RDM)
         {
             const auto* p = reinterpret_cast<const struct TRdmMessage*>(response);
-            length = static_cast<int>(p->message_length + RDM_MESSAGE_CHECKSUM_SIZE);
+            length = static_cast<int>(p->message_length + rdm::kMessageChecksumSize);
             Rdm::SendRawRespondMessage(0, response, static_cast<uint16_t>(length));
         }
         else if (response[0] == 0xFE)
@@ -188,10 +188,10 @@ class RDMResponder final : DMXReceiver, public RDMDeviceResponder
     void PersonalityUpdate(DmxNodeOutputType* dmx_node_output_type) override
     {
         DMXReceiver::SetDmxNodeOutputType(dmx_node_output_type);
-        PersonalityUpdate(static_cast<uint32_t>(RDMDeviceResponder::GetPersonalityCurrent(RDM_ROOT_DEVICE)));
+        PersonalityUpdate(static_cast<uint32_t>(RDMDeviceResponder::GetPersonalityCurrent(rdm::kRootDevice)));
     }
 
-    void DmxStartAddressUpdate() override { DmxStartAddressUpdate(RDMDeviceResponder::GetDmxStartAddress(RDM_ROOT_DEVICE)); }
+    void DmxStartAddressUpdate() override { DmxStartAddressUpdate(RDMDeviceResponder::GetDmxStartAddress(rdm::kRootDevice)); }
 
    private:
     static inline TRdmMessage rdm_command;

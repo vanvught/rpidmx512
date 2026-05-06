@@ -33,7 +33,7 @@
 
 RDMQueuedMessage::RDMQueuedMessage()
 {
-    queued_message_ = new TRdmQueuedMessage[RDM_MESSAGE_COUNT_MAX];
+    queued_message_ = new TRdmQueuedMessage[rdm::kMessageCountMax];
     assert(queued_message_ != nullptr);
 }
 
@@ -45,7 +45,7 @@ RDMQueuedMessage::~RDMQueuedMessage()
 
 void RDMQueuedMessage::Copy(struct TRdmMessage* rdm_message, uint32_t index)
 {
-    assert(index < RDM_MESSAGE_COUNT_MAX);
+    assert(index < rdm::kMessageCountMax);
 
     rdm_message->command_class = queued_message_[index].command_class;
     rdm_message->param_id[0] = queued_message_[index].param_id[0];
@@ -95,7 +95,7 @@ bool RDMQueuedMessage::Add(const struct TRdmQueuedMessage* queued_message)
 {
     is_never_queued_ = false;
 
-    if (message_count_ != RDM_MESSAGE_COUNT_MAX)
+    if (message_count_ != rdm::kMessageCountMax)
     {
         queued_message_[message_count_].command_class = queued_message->command_class;
         queued_message_[message_count_].param_id[0] = queued_message->param_id[0];
