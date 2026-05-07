@@ -174,21 +174,21 @@ void WidgetConfiguration::Store(const struct TWidgetConfiguration *widget_params
 
 	if (widget_params->break_time != s_break_time) {
 		s_break_time = widget_params->break_time;
-		Dmx::Get()->SetDmxBreakTime((static_cast<float>((s_break_time)) * 10.67));
+		Dmx::Get()->SetTransmitBreakTime((static_cast<float>((s_break_time)) * 10.67));
 		needs_update[kAiBreakTime] = true;
 		call_update_config_file = true;
 	}
 
 	if (widget_params->mab_time != s_mab_time) {
 		s_mab_time = widget_params->mab_time;
-		Dmx::Get()->SetDmxMabTime((static_cast<float>((s_mab_time)) * 10.67));
+		Dmx::Get()->SetTransmitMabTime((static_cast<float>((s_mab_time)) * 10.67));
 		needs_update[kAiMabTime] = true;
 		call_update_config_file = true;
 	}
 
 	if (widget_params->refresh_rate != s_refresh_rate) {
 		s_refresh_rate = widget_params->refresh_rate;
-		Dmx::Get()->SetDmxPeriodTime(widget_params->refresh_rate == 0 ? 0 : (1000000U / widget_params->refresh_rate));
+		Dmx::Get()->SetTransmitPeriodTime(widget_params->refresh_rate == 0 ? 0 : (1000000U / widget_params->refresh_rate));
 		needs_update[kAiRefreshRate] = true;
 		call_update_config_file = true;
 	}

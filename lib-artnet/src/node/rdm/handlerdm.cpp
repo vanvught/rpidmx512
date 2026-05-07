@@ -61,7 +61,7 @@ void ArtNetNode::HandleTodRequest()
                 continue;
             }
 
-            if ((kPortAddress == node_.port[port_index].port_address) && (node_.port[port_index].direction == dmxnode::PortDirection::kOutput))
+            if ((kPortAddress == node_.port[port_index].port_address) && (node_.port[port_index].direction == dmxnode::Direction::kOutput))
             {
                 SendArtTodData(port_index);
             }

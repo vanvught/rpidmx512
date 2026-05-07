@@ -133,15 +133,15 @@ void Dmx::StopData([[maybe_unused]] uint32_t uart, [[maybe_unused]] uint32_t por
 
 // DMX Send
 
-void Dmx::SetDmxBreakTime([[maybe_unused]] uint32_t break_time) {}
+void Dmx::SetTransmitBreakTime([[maybe_unused]] uint32_t break_time) {}
 
-void Dmx::SetDmxMabTime([[maybe_unused]] uint32_t mab_time) {}
+void Dmx::SetTransmitMabTime([[maybe_unused]] uint32_t mab_time) {}
 
-void Dmx::SetDmxPeriodTime([[maybe_unused]] uint32_t nPeriod) {}
+void Dmx::SetTransmitPeriodTime([[maybe_unused]] uint32_t nPeriod) {}
 
-void Dmx::SetDmxSlots([[maybe_unused]] uint16_t nSlots) {}
+void Dmx::SetTransmitSlots([[maybe_unused]] uint16_t nSlots) {}
 
-void Dmx::SetSendDataWithoutSC(uint32_t port_index, const uint8_t* pData, uint32_t length, [[maybe_unused]] const dmx::SendStyle dmxSendStyle) {
+void Dmx::SetTransmitDataWithoutSC(uint32_t port_index, const uint8_t* pData, uint32_t length, [[maybe_unused]] const dmx::SendStyle dmxSendStyle) {
     assert(port_index < dmx::config::max::kPorts);
     assert(pData != nullptr);
     assert(length != 0);
@@ -211,7 +211,7 @@ uint32_t GetDmxReceivedCount([[maybe_unused]] uint32_t port_index) {
 
 // RDM Send
 
-void Dmx::RdmSend(uint32_t port_index, const uint8_t* pRdmData, uint32_t length) {
+void Dmx::RdmTransmit(uint32_t port_index, const uint8_t* pRdmData, uint32_t length) {
     assert(port_index < dmx::config::max::kPorts);
     assert(pRdmData != nullptr);
     assert(length != 0);
@@ -221,20 +221,20 @@ void Dmx::RdmSend(uint32_t port_index, const uint8_t* pRdmData, uint32_t length)
     sv_TotalStatistics[port_index].rdm.sent.classes++;
 }
 
-void Dmx::RdmSendDiscoveryRespondMessage(uint32_t port_index, const uint8_t* pRdmData, uint32_t length) {
+void Dmx::RdmTransmitDiscoveryRespondMessage(uint32_t port_index, const uint8_t* pRdmData, uint32_t length) {
     DEBUG_ENTRY();
 
     assert(port_index < dmx::config::max::kPorts);
     assert(pRdmData != nullptr);
     assert(length != 0);
 
-    SetPortDirection(port_index, dmx::PortDirection::kOutput, false);
+    SetPortDirection(port_index, dmx::Direction::kOutput, false);
 
     RdmSendRaw(port_index, pRdmData, length);
 
     udelay(rdm::responder::kDataDirectionDelay);
 
-    SetPortDirection(port_index, dmx::PortDirection::kInput, true);
+    SetPortDirection(port_index, dmx::Direction::kInput, true);
 
     sv_TotalStatistics[port_index].rdm.sent.discovery_response++;
 

@@ -564,7 +564,7 @@ Dmx::Dmx() {
         lli->para = DMA_NORMAL_WAIT;
         lli->p_lli_next = DMA_LLI_LAST_ITEM;
         //
-        port_direction_[port_index] = PortDirection::kInput;
+        port_direction_[port_index] = dmx::Direction::kInput;
         //
         sv_port_state[port_index] = PortState::IDLE;
         // RDM RX
@@ -581,9 +581,9 @@ Dmx::Dmx() {
         sv_nDmxPacketsPrevious[port_index] = 0;
     }
 
-    SetDmxBreakTime(dmx::transmit::kBreakTimeTypical);
-    SetDmxMabTime(dmx::transmit::kMabTimeMin);
-    SetDmxSlots(dmx::kChannelsMax);
+    SetTransmitBreakTime(dmx::transmit::kBreakTimeTypical);
+    SetTransmitMabTime(dmx::transmit::kMabTimeMin);
+    SetTransmitSlots(dmx::kChannelsMax);
 
     H3GpioFsel(s_nDmxDataDirectionGpioPin[0], GPIO_FSEL_OUTPUT);
     H3GpioClr(s_nDmxDataDirectionGpioPin[0]); // 0 = input, 1 = output
@@ -658,7 +658,7 @@ Dmx::Dmx() {
     DEBUG_EXIT();
 }
 
-void Dmx::SetPortDirection(uint32_t port_index, PortDirection port_direction, bool enable_data) {
+void Dmx::SetPortDirection(uint32_t port_index, dmx::Direction port_direction, bool enable_data) {
     DEBUG_PRINTF("port_index=%u, port_direction=%u, enable_data=%u", port_index, port_direction, enable_data);
     assert(port_index < config::max::PORTS);
 
@@ -670,10 +670,10 @@ void Dmx::SetPortDirection(uint32_t port_index, PortDirection port_direction, bo
         port_direction_[port_index] = port_direction;
   
         switch (port_direction) {
-            case PortDirection::kOutput:
+            case dmx::Direction::kOutput:
                 H3GpioSet(s_nDmxDataDirectionGpioPin[port_index]); // 0 = input, 1 = output
                 break;
-            case PortDirection::kInput:
+            case dmx::Direction::kInput:
                 H3GpioClr(s_nDmxDataDirectionGpioPin[port_index]); // 0 = input, 1 = output
                 break;
             default:
@@ -723,12 +723,12 @@ void Dmx::StartData(H3_UART_TypeDef* uart, uint32_t port_index) {
     assert(sv_port_state[port_index] == PortState::IDLE);
 
     switch (port_direction_[port_index]) {
-        case PortDirection::kOutput:
+        case dmx::Direction::kOutput:
             UartEnableFifoTx(port_index);
             sv_port_state[port_index] = PortState::TX;
             __DMB();
             break;
-        case PortDirection::kInput: {
+        case dmx::Direction::kInput: {
             if (uart != nullptr) {
                 while (!(uart->USR & UART_USR_TFE));
             }
@@ -755,7 +755,7 @@ void Dmx::StopData(H3_UART_TypeDef* uart, uint32_t port_index) {
         return;
     }
 
-    if (port_direction_[port_index] == PortDirection::kOutput) {
+    if (port_direction_[port_index] == dmx::Direction::kOutput) {
         auto is_idle = false;
 
         do {
@@ -765,7 +765,7 @@ void Dmx::StopData(H3_UART_TypeDef* uart, uint32_t port_index) {
                 is_idle = true;
             }
         } while (!is_idle);
-    } else if (port_direction_[port_index] == PortDirection::kInput) {
+    } else if (port_direction_[port_index] == dmx::Direction::kInput) {
         uart->O08.FCR = 0;
         uart->O04.IER = 0;
 
@@ -778,25 +778,25 @@ void Dmx::StopData(H3_UART_TypeDef* uart, uint32_t port_index) {
 
 // DMX Send
 
-void Dmx::SetDmxBreakTime(uint32_t break_time) {
+void Dmx::SetTransmitBreakTime(uint32_t break_time) {
     DEBUG_PRINTF("break_time=%u", break_time);
 
     transmit_break_time_ = std::max(transmit::kBreakTimeMin, break_time);
     s_nDmxTransmistBreakTimeINTV = transmit_break_time_ * 12;
     //
-    SetDmxPeriodTime(transmit_period_requested_);
+    SetTransmitPeriodTime(transmit_period_requested_);
 }
 
-void Dmx::SetDmxMabTime(uint32_t mab_time) {
+void Dmx::SetTransmitMabTime(uint32_t mab_time) {
     DEBUG_PRINTF("mab_time=%u", mab_time);
 
     transmit_mab_time_ = std::min(std::max(transmit::kMabTimeMin, mab_time), transmit::kMabTimeMax);
     s_nDmxTransmitMabTimeINTV = transmit_mab_time_ * 12;
     //
-    SetDmxPeriodTime(transmit_period_requested_);
+    SetTransmitPeriodTime(transmit_period_requested_);
 }
 
-void Dmx::SetDmxPeriodTime(uint32_t period_time) {
+void Dmx::SetTransmitPeriodTime(uint32_t period_time) {
     DEBUG_ENTRY();
 
     transmit_period_requested_ = period_time;
@@ -831,7 +831,7 @@ void Dmx::SetDmxPeriodTime(uint32_t period_time) {
     DEBUG_EXIT();
 }
 
-void Dmx::SetDmxSlots(uint16_t slots) {
+void Dmx::SetTransmitSlots(uint16_t slots) {
     DEBUG_ENTRY();
     DEBUG_PRINTF("slots=%u", slots);
 
@@ -842,7 +842,7 @@ void Dmx::SetDmxSlots(uint16_t slots) {
             transmit_length_[i] = static_cast<uint32_t>(slots);
         }
 
-        SetDmxPeriodTime(transmit_period_requested_);
+        SetTransmitPeriodTime(transmit_period_requested_);
     }
 
     DEBUG_EXIT();
@@ -872,7 +872,7 @@ template <uint32_t port_index> void Dmx::SetSendDataInternal(const uint8_t* data
 
     if (length != transmit_length_[port_index]) {
         transmit_length_[port_index] = length;
-        SetDmxPeriodTime(transmit_period_requested_);
+        SetTransmitPeriodTime(transmit_period_requested_);
     }
 
     sv_nDmxDataWriteIndex[port_index] = kNext;
@@ -978,14 +978,14 @@ uint32_t Dmx::GetDmxUpdatesPerSecond(uint32_t port_index) {
 }
 
 // RDM Send
-void Dmx::RdmSend(uint32_t port_index, const uint8_t* rdm_data, uint32_t length) {
-    Dmx::Get()->SetPortDirection(port_index, dmx::PortDirection::kOutput, false);
+void Dmx::RdmTransmit(uint32_t port_index, const uint8_t* rdm_data, uint32_t length) {
+    Dmx::Get()->SetPortDirection(port_index, dmx::Direction::kOutput, false);
 
     Dmx::Get()->RdmSendRaw(port_index, rdm_data, length);
 
     udelay(rdm::responder::kDataDirectionDelay);
 
-    Dmx::Get()->SetPortDirection(port_index, dmx::PortDirection::kInput, true);
+    Dmx::Get()->SetPortDirection(port_index, dmx::Direction::kInput, true);
 }
 
 void Dmx::RdmSendRaw(uint32_t port_index, const uint8_t* pRdmData, uint32_t nLength) {
@@ -1016,7 +1016,7 @@ void Dmx::RdmSendRaw(uint32_t port_index, const uint8_t* pRdmData, uint32_t nLen
     sv_TotalStatistics[port_index].rdm.sent.classes++;
 }
 
-void Dmx::RdmSendDiscoveryRespondMessage(uint32_t port_index, const uint8_t* pRdmData, uint32_t nLength) {
+void Dmx::RdmTransmitDiscoveryRespondMessage(uint32_t port_index, const uint8_t* pRdmData, uint32_t nLength) {
     DEBUG_PRINTF("port_index=%u, pRdmData=%p, nLength=%u", port_index, pRdmData, nLength);
     assert(port_index < dmx::config::max::kPorts);
     assert(pRdmData != nullptr);
@@ -1025,7 +1025,7 @@ void Dmx::RdmSendDiscoveryRespondMessage(uint32_t port_index, const uint8_t* pRd
     // 3.2.2 Responder Packet spacing
     udelay(rdm::responder::kPacketSpacing, gsv_rdm_data_receive_end[port_index]);
 
-    SetPortDirection(port_index, dmx::PortDirection::kOutput, false);
+    SetPortDirection(port_index, dmx::Direction::kOutput, false);
 
     auto* p = _port_to_uart(port_index);
 
@@ -1040,7 +1040,7 @@ void Dmx::RdmSendDiscoveryRespondMessage(uint32_t port_index, const uint8_t* pRd
 
     udelay(rdm::responder::kDataDirectionDelay);
 
-    SetPortDirection(port_index, dmx::PortDirection::kInput, true);
+    SetPortDirection(port_index, dmx::Direction::kInput, true);
 
     sv_TotalStatistics[port_index].rdm.sent.discovery_response++;
 
@@ -1107,8 +1107,8 @@ const uint8_t* Dmx::RdmReceiveTimeOut(uint32_t port_index, uint16_t nTimeOut) {
 }
 
 // Explicit template instantiations
-template void Dmx::SetSendDataWithoutSC<dmx::SendStyle::kDirect>(const uint32_t, const uint8_t*, uint32_t);
-template void Dmx::SetSendDataWithoutSC<dmx::SendStyle::kSync>(const uint32_t, const uint8_t*, uint32_t);
+template void Dmx::SetTransmitDataWithoutSC<dmx::SendStyle::kDirect>(const uint32_t, const uint8_t*, uint32_t);
+template void Dmx::SetTransmitDataWithoutSC<dmx::SendStyle::kSync>(const uint32_t, const uint8_t*, uint32_t);
 
 template void Dmx::SetSendDataInternal<0>(const uint8_t*, uint32_t);
 

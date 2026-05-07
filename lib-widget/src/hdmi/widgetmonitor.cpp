@@ -72,7 +72,7 @@ void WidgetMonitor::DmxData(const uint8_t* pDmxData, int line)
 {
     uint32_t slots;
 
-    if (PortDirection::kInput == Dmx::Get()->GetPortDirection(0))
+    if (PortDirection::kInput == Dmx::Get()->PortDirection(0))
     {
         const struct Data* dmx_statistics = (struct Data*)pDmxData;
         slots = dmx_statistics->statistics.slots_in_packet + 1;
@@ -206,12 +206,12 @@ void WidgetMonitor::Update()
         ClearLine(MonitorLine::kWidgetParms);
 
         printf("Firmware %d.%d BreakTime %d(%d) MaBTime %d(%d) RefreshRate %d(%d)", widget_params.firmware_msb, widget_params.firmware_lsb,
-               widget_params.break_time, Dmx::Get()->GetDmxBreakTime(), widget_params.mab_time, Dmx::Get()->GetDmxMabTime(), widget_params.refresh_rate,
-               (1000000 / Dmx::Get()->GetDmxPeriodTime()));
+               widget_params.break_time, Dmx::Get()->TransmitBreakTime(), widget_params.mab_time, Dmx::Get()->TransmitMabTime(), widget_params.refresh_rate,
+               (1000000 / Dmx::Get()->TransmitPeriodTime()));
 
         ClearLine(MonitorLine::kPortDirection);
 
-        if (PortDirection::kInput == Dmx::Get()->GetPortDirection(0))
+        if (PortDirection::kInput == Dmx::Get()->PortDirection(0))
         {
             const auto receive_dmx_on_change = Widget::Get()->GetReceiveDmxOnChange();
 

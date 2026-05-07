@@ -2,7 +2,7 @@
  * @file dmx_config.h
  *
  */
-/* Copyright (C) 2023-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2023-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@
 #ifndef H3_MULTI_DMX_CONFIG_H_
 #define H3_MULTI_DMX_CONFIG_H_
 
-#include "h3_board.h"
+#include "h3_board.h" // IWYU pragma: keep
 
 #if defined(ORANGE_PI_ONE)
 #define DMX_MAX_PORTS 4
@@ -34,13 +34,11 @@
 #define DMX_MAX_PORTS 2
 #endif
 
-namespace dmx::config::max
-{
+namespace dmx::config::max {
 inline const uint32_t kPorts = DMX_MAX_PORTS;
 } // namespace dmx::config::max
 
-namespace dmx::buffer
-{
+namespace dmx::buffer {
 inline constexpr auto kSize = 516;
 inline constexpr auto kIndexEntries = (1U << 1);
 inline constexpr auto kIndexMask = (kIndexEntries - 1);
@@ -58,4 +56,4 @@ inline constexpr auto kIndexMask = (kIndexEntries - 1);
 #define GPIO_DMX_DATA_DIRECTION_OUT_C GPIO_EXT_12 ///< UART1
 #endif
 
-#endif  // H3_MULTI_DMX_CONFIG_H_
+#endif // H3_MULTI_DMX_CONFIG_H_

@@ -33,214 +33,209 @@
 #include "spi/lcd_font.h"
 #include "spi/spilcd.h"
 #include "spi/config.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
 class Paint : public SpiLcd {
-public:
- explicit Paint(uint32_t cs) : SpiLcd(cs)
- {
-     DEBUG_ENTRY();
-     DEBUG_EXIT();
- }
+   public:
+    explicit Paint(uint32_t cs) : SpiLcd(cs) {
+        DEBUG_ENTRY();
+        DEBUG_EXIT();
+    }
     virtual ~Paint() = default;
 
-	uint32_t GetWidth() const {
-		return width_;
-	}
+    uint32_t GetWidth() const { return width_; }
 
-	uint32_t GetHeight() const {
-		return height_;
-	}
+    uint32_t GetHeight() const { return height_; }
 
-	void FillColour(uint16_t colour) {
-		DEBUG_PRINTF("colour=0x%x", colour);
+    void FillColour(uint16_t colour) {
+        DEBUG_PRINTF("colour=0x%x", colour);
 
-		SetAddressWindow(0, 0, width_ - 1, height_ - 1);
+        SetAddressWindow(0, 0, width_ - 1, height_ - 1);
 
-		FillFramebuffer(colour);
+        FillFramebuffer(colour);
 
-		ClearCS();
-		SetDC();
+        ClearCS();
+        SetDC();
 
-		for (uint32_t i = 0; i < config::kHeight / kFrameBufferRows; i++) {
-			WriteDataContinue(reinterpret_cast<uint8_t *>(s_frame_buffer), sizeof(s_frame_buffer));
-		}
+        for (uint32_t i = 0; i < config::kHeight / kFrameBufferRows; i++) {
+            WriteDataContinue(reinterpret_cast<uint8_t*>(s_frame_buffer), sizeof(s_frame_buffer));
+        }
 
-		SetCS();
-	}
+        SetCS();
+    }
 
-	void Fill(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1, uint16_t colour) {
-		if (!(x0 < width_ && (y0 < height_) && (x1 < width_) && (y1 < height_))) {
-//			DEBUG_PRINTF("[%u:%u] %u:%u-%u:%u", width_, height_, x0, y0, x1, y1);
-			return;
-		}
+    void Fill(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1, uint16_t colour) {
+        if (!(x0 < width_ && (y0 < height_) && (x1 < width_) && (y1 < height_))) {
+            //			DEBUG_PRINTF("[%u:%u] %u:%u-%u:%u", width_, height_, x0, y0, x1, y1);
+            return;
+        }
 
-		assert(x1 > x0);
-		assert(y1 > y0);
+        assert(x1 > x0);
+        assert(y1 > y0);
 
-		SetAddressWindow(x0, y0, x1, y1);
+        SetAddressWindow(x0, y0, x1, y1);
 
-		FillFramebuffer(colour);
+        FillFramebuffer(colour);
 
-		auto pixels = (1 + (y1 - y0)) * (1 + (x1 - x0));
-		const auto kBufferSize = sizeof(s_frame_buffer) / sizeof(s_frame_buffer[0]);
+        auto pixels = (1 + (y1 - y0)) * (1 + (x1 - x0));
+        const auto kBufferSize = sizeof(s_frame_buffer) / sizeof(s_frame_buffer[0]);
 
-		if (pixels > kBufferSize) {
-			WriteDataStart(reinterpret_cast<uint8_t *>(s_frame_buffer), sizeof(s_frame_buffer));
+        if (pixels > kBufferSize) {
+            WriteDataStart(reinterpret_cast<uint8_t*>(s_frame_buffer), sizeof(s_frame_buffer));
 
-			pixels = pixels - kBufferSize;
+            pixels = pixels - kBufferSize;
 
-			while (pixels > kBufferSize) {
-				WriteDataContinue(reinterpret_cast<uint8_t *>(s_frame_buffer), sizeof(s_frame_buffer));
-				pixels = pixels - kBufferSize;
-			}
+            while (pixels > kBufferSize) {
+                WriteDataContinue(reinterpret_cast<uint8_t*>(s_frame_buffer), sizeof(s_frame_buffer));
+                pixels = pixels - kBufferSize;
+            }
 
-			if (pixels > 0) {
-				WriteDataEnd(reinterpret_cast<uint8_t *>(s_frame_buffer), pixels * 2);
-			} else {
-				SetCS();
-			}
-		} else {
-			WriteData(reinterpret_cast<uint8_t *>(s_frame_buffer), pixels * 2);
-		}
-	}
+            if (pixels > 0) {
+                WriteDataEnd(reinterpret_cast<uint8_t*>(s_frame_buffer), pixels * 2);
+            } else {
+                SetCS();
+            }
+        } else {
+            WriteData(reinterpret_cast<uint8_t*>(s_frame_buffer), pixels * 2);
+        }
+    }
 
-	void DrawPixel(uint32_t x, uint32_t y, uint16_t colour) {
-		SetAddressWindow(x, y, x, y);
-		WriteDataWord(colour);
-	}
+    void DrawPixel(uint32_t x, uint32_t y, uint16_t colour) {
+        SetAddressWindow(x, y, x, y);
+        WriteDataWord(colour);
+    }
 
-	void DrawChar(uint32_t x0, uint32_t y0, char c, sFONT *font, uint16_t colour_background, uint16_t colour_fore_ground) {
-		const auto kX1 = x0 + font->kWidth - 1;
-		const auto kY1 = y0 + font->kHeight - 1;
+    void DrawChar(uint32_t x0, uint32_t y0, char c, sFONT* font, uint16_t colour_background, uint16_t colour_fore_ground) {
+        const auto kX1 = x0 + font->kWidth - 1;
+        const auto kY1 = y0 + font->kHeight - 1;
 
-		SetAddressWindow(x0, y0, kX1, kY1);
+        SetAddressWindow(x0, y0, kX1, kY1);
 
-	    colour_fore_ground = __builtin_bswap16(colour_fore_ground);
-	    colour_background = __builtin_bswap16(colour_background);
+        colour_fore_ground = __builtin_bswap16(colour_fore_ground);
+        colour_background = __builtin_bswap16(colour_background);
 
-	    const auto kCharOffset = (c - ' ') * font->kHeight;
-	    const auto *ptr = &font->table[kCharOffset];
+        const auto kCharOffset = (c - ' ') * font->kHeight;
+        const auto* ptr = &font->table[kCharOffset];
 
-//	    DEBUG_PRINTF("w=%u, h=%u, nCharOffset=%u", font->kWidth , font->kHeight, nCharOffset);
+        //	    DEBUG_PRINTF("w=%u, h=%u, nCharOffset=%u", font->kWidth , font->kHeight, nCharOffset);
 
-	    uint32_t index = 0;
+        uint32_t index = 0;
 
-	    if (font->kWidth == 8) {
-	    	for (auto page = 0; page < font->kHeight; page++) {
-	    		auto line = *ptr++;
+        if (font->kWidth == 8) {
+            for (auto page = 0; page < font->kHeight; page++) {
+                auto line = *ptr++;
 
-	    		for (auto column = 0; column < font->kWidth; column++) {
-	    			if ((line & 0x80) != 0) {
-	    				s_frame_buffer[index++] = colour_fore_ground;
-	    			} else {
-	    				s_frame_buffer[index++] = colour_background;
-	    			}
+                for (auto column = 0; column < font->kWidth; column++) {
+                    if ((line & 0x80) != 0) {
+                        s_frame_buffer[index++] = colour_fore_ground;
+                    } else {
+                        s_frame_buffer[index++] = colour_background;
+                    }
 
-	    			line = line << 1;
-	    		}
-	    	}
-	    } else if (font->kWidth < 16) {
-	    	for (auto page = 0; page < font->kHeight; page++) {
-	    		auto line = *ptr++;
+                    line = line << 1;
+                }
+            }
+        } else if (font->kWidth < 16) {
+            for (auto page = 0; page < font->kHeight; page++) {
+                auto line = *ptr++;
 
-	    		for (auto column = 0; column < font->kWidth; column++) {
-	    			if ((line & 0x8000) != 0) {
-	    				s_frame_buffer[index++] = colour_fore_ground;
-	    			} else {
-	    				s_frame_buffer[index++] = colour_background;
-	    			}
+                for (auto column = 0; column < font->kWidth; column++) {
+                    if ((line & 0x8000) != 0) {
+                        s_frame_buffer[index++] = colour_fore_ground;
+                    } else {
+                        s_frame_buffer[index++] = colour_background;
+                    }
 
-	    			line = line << 1;
-	    		}
-	    	}
-	    } else {
-	    	for (auto page = 0; page < font->kHeight; page++) {
-	    		auto line = *ptr++;
+                    line = line << 1;
+                }
+            }
+        } else {
+            for (auto page = 0; page < font->kHeight; page++) {
+                auto line = *ptr++;
 
-	    		for (auto column = 0; column < font->kWidth; column++) {
-	    			if ((line & 0x1) != 0) {
-	    				s_frame_buffer[index++] = colour_fore_ground;
-	    			} else {
-	    				s_frame_buffer[index++] = colour_background;
-	    			}
+                for (auto column = 0; column < font->kWidth; column++) {
+                    if ((line & 0x1) != 0) {
+                        s_frame_buffer[index++] = colour_fore_ground;
+                    } else {
+                        s_frame_buffer[index++] = colour_background;
+                    }
 
-	    			line = line >> 1;
-	    		}
-	    	}
-	    }
+                    line = line >> 1;
+                }
+            }
+        }
 
-	    WriteData(reinterpret_cast<uint8_t *>(s_frame_buffer), index * 2);
-	}
+        WriteData(reinterpret_cast<uint8_t*>(s_frame_buffer), index * 2);
+    }
 
-	/**
-	 * Bresenham
-	 */
-	//TODO (a) Can be optimized for horizontal and vertical lines
-	void DrawLine(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1, uint16_t colour) {
-		const auto kDx = abs(x1 - x0);
-		const auto kDy = -abs(y1 - y0);
+    /**
+     * Bresenham
+     */
+    // TODO (a) Can be optimized for horizontal and vertical lines
+    void DrawLine(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1, uint16_t colour) {
+        const int32_t kIx0 = static_cast<int32_t>(x0);
+        const int32_t kIy0 = static_cast<int32_t>(y0);
+        const int32_t kIx1 = static_cast<int32_t>(x1);
+        const int32_t kIy1 = static_cast<int32_t>(y1);
 
-		const auto kSx = x0 < x1 ? 1 : -1;
-		const auto kSy = y0 < y1 ? 1 : -1;
+        const int32_t kDx = abs(kIx1 - kIx0);
+        const int32_t kDy = -abs(kIy1 - kIy0);
 
-		auto error = kDx + kDy;
+        const int32_t kSx = kIx0 < kIx1 ? 1 : -1;
+        const int32_t kSy = kIy0 < kIy1 ? 1 : -1;
 
-		while (true) {
-			DrawPixel(x0, y0, colour);
+        int32_t x = kIx0;
+        int32_t y = kIy0;
 
-			if ((x0 == x1) && (y0 == y1)) {
-				break;
-			}
+        int32_t error = kDx + kDy;
 
-			auto e2 = 2 * error;
+        while (true) {
+            DrawPixel(static_cast<uint32_t>(x), static_cast<uint32_t>(y), colour);
 
-			if (e2 >= kDy) {
-				if (x0 == x1) {
-					break;
-				}
-				error = error + kDy;
-				x0 = x0 + kSx;
-			}
+            if ((x == kIx1) && (y == kIy1)) {
+                break;
+            }
 
-			if (e2 <= kDx) {
-				if (y0 == y1) {
-					break;
-				}
-				error = error + kDx;
-				y0 = y0 + kSy;
-			}
-		}
-	}
+            const int32_t kE2 = 2 * error;
 
-private:
-	virtual void SetAddressWindow(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1)=0;
+            if (kE2 >= kDy) {
+                error += kDy;
+                x += kSx;
+            }
 
-private:
-	void SetCursor(uint32_t x, uint32_t y) {
-		SetAddressWindow(x, y, x, y);
-	}
+            if (kE2 <= kDx) {
+                error += kDx;
+                y += kSy;
+            }
+        }
+    }
 
-	void FillFramebuffer(uint16_t colour) {
-		colour = __builtin_bswap16(colour);
+   private:
+    virtual void SetAddressWindow(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1) = 0;
 
-		for (uint32_t i = 0; i < sizeof(s_frame_buffer) / sizeof(s_frame_buffer[0]); i++) {
-			s_frame_buffer[i] = colour;
-		}
-	}
+   private:
+    void SetCursor(uint32_t x, uint32_t y) { SetAddressWindow(x, y, x, y); }
 
-protected:
-	uint32_t width_ { config::kWidth };
-	uint32_t height_ { config::kHeight };
-	uint32_t rotate_ { 0 };
+    void FillFramebuffer(uint16_t colour) {
+        colour = __builtin_bswap16(colour);
+
+        for (uint32_t i = 0; i < sizeof(s_frame_buffer) / sizeof(s_frame_buffer[0]); i++) {
+            s_frame_buffer[i] = colour;
+        }
+    }
+
+   protected:
+    uint32_t width_{config::kWidth};
+    uint32_t height_{config::kHeight};
+    uint32_t rotate_{0};
 
 #if !defined(SPI_LCD_kFrameBufferRows)
- static constexpr uint32_t kFrameBufferRows = 5;
+    static constexpr uint32_t kFrameBufferRows = 5;
 #else
- static constexpr uint32_t kFrameBufferRows = SPI_LCD_kFrameBufferRows;
+    static constexpr uint32_t kFrameBufferRows = SPI_LCD_kFrameBufferRows;
 #endif
 
-	static inline uint16_t s_frame_buffer[config::kWidth * kFrameBufferRows];
+    static inline uint16_t s_frame_buffer[config::kWidth * kFrameBufferRows];
 };
 
-#endif  // SPI_PAINT_H_
+#endif // SPI_PAINT_H_

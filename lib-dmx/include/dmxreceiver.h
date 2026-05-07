@@ -1,7 +1,7 @@
 /**
  * @file dmxreceiver.h
  */
-/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2017-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,51 +28,43 @@
 #include <cstdint>
 #include <cstdio>
 
-#include "dmx.h"
+#include "dmx.h" // IWYU pragma: keep
 #include "dmxnode_outputtype.h"
 #include "hal_statusled.h"
 
-class DMXReceiver : Dmx
-{
+class DMXReceiver : Dmx {
    public:
     explicit DMXReceiver(DmxNodeOutputType* dmx_node_output_type) { dmx_node_output_type_ = dmx_node_output_type; }
 
-    ~DMXReceiver()
-    {
+    ~DMXReceiver() {
         DMXReceiver::Stop();
         is_active_ = false;
     }
 
-    void Start() { Dmx::SetPortDirection(0, dmx::PortDirection::kInput, true); }
+    void Start() { Dmx::SetPortDirection(0, dmx::Direction::kInput, true); }
 
-    void Stop()
-    {
-        Dmx::SetPortDirection(0, dmx::PortDirection::kInput, false);
+    void Stop() {
+        Dmx::SetPortDirection(0, dmx::Direction::kInput, false);
         dmx_node_output_type_->Stop(0);
     }
 
-    void SetDmxNodeOutputType(DmxNodeOutputType* dmx_node_output_type)
-    {
-        if (dmx_node_output_type != dmx_node_output_type_)
-        {
+    void SetDmxNodeOutputType(DmxNodeOutputType* dmx_node_output_type) {
+        if (dmx_node_output_type != dmx_node_output_type_) {
             dmx_node_output_type_->Stop(0);
             dmx_node_output_type_ = dmx_node_output_type;
             is_active_ = false;
         }
     }
 
-    const uint8_t* Run(int16_t& length)
-    {
-        if (__builtin_expect((disable_output_), 0))
-        {
+    const uint8_t* Run(int16_t& length) {
+        if (__builtin_expect((disable_output_), 0)) {
             length = 0;
             return nullptr;
         }
 
         const auto* dmx_available = Dmx::GetDmxAvailable(0);
 
-        if (__builtin_expect((dmx_available != nullptr), 0))
-        {
+        if (__builtin_expect((dmx_available != nullptr), 0)) {
             const auto* dmx_statistics = reinterpret_cast<const struct Data*>(dmx_available);
             length = static_cast<int16_t>(dmx_statistics->statistics.slots_in_packet);
 
@@ -80,19 +72,15 @@ class DMXReceiver : Dmx
 
             dmx_node_output_type_->SetData<true>(0, dmx_available, static_cast<uint16_t>(length));
 
-            if (!is_active_)
-            {
+            if (!is_active_) {
                 dmx_node_output_type_->Start(0);
                 is_active_ = true;
                 hal::statusled::SetMode(hal::statusled::Mode::kData);
             }
 
             return const_cast<uint8_t*>(dmx_available);
-        }
-        else if (Dmx::GetDmxUpdatesPerSecond(0) == 0)
-        {
-            if (is_active_)
-            {
+        } else if (Dmx::GetDmxUpdatesPerSecond(0) == 0) {
+            if (is_active_) {
                 dmx_node_output_type_->Stop(0);
                 is_active_ = false;
                 hal::statusled::SetMode(hal::statusled::Mode::kNormal);
@@ -120,4 +108,4 @@ class DMXReceiver : Dmx
     bool disable_output_{false};
 };
 
-#endif  // DMXRECEIVER_H_
+#endif // DMXRECEIVER_H_

@@ -107,7 +107,7 @@ void ArtNetNode::HandleAddress()
     }
     else
     {
-        if (node_.port[kPortIndex].direction == dmxnode::PortDirection::kOutput)
+        if (node_.port[kPortIndex].direction == dmxnode::Direction::kOutput)
         {
             if (kArtAddress->sw_out[0] == artnet::Program::kDefaults)
             {
@@ -126,7 +126,7 @@ void ArtNetNode::HandleAddress()
     }
     else
     {
-        if (node_.port[kPortIndex].direction == dmxnode::PortDirection::kInput)
+        if (node_.port[kPortIndex].direction == dmxnode::Direction::kInput)
         {
             if (kArtAddress->sw_in[0] == artnet::Program::kDefaults)
             {
@@ -222,7 +222,7 @@ void ArtNetNode::HandleAddress()
         case artnet::PortCommand::kDirectionTx2:
         case artnet::PortCommand::kDirectionTx3:
 #endif
-            SetDirection(kPortIndex, dmxnode::PortDirection::kOutput);
+            SetDirection(kPortIndex, dmxnode::Direction::kOutput);
             break;
 
         case artnet::PortCommand::kDirectionRxO:
@@ -231,7 +231,7 @@ void ArtNetNode::HandleAddress()
         case artnet::PortCommand::kDirectionRx2:
         case artnet::PortCommand::kDirectionRx3:
 #endif
-            SetDirection(kPortIndex, dmxnode::PortDirection::kInput);
+            SetDirection(kPortIndex, dmxnode::Direction::kInput);
             break;
 #endif
         case artnet::PortCommand::kMergeHtp0:

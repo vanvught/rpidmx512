@@ -61,7 +61,7 @@ void DisplayUdf::ShowE131Bridge()
             if (kLabelIndex != 0xFF)
             {
                 uint16_t n_universe;
-                if (e131->GetUniverse(kPortIndex, n_universe, dmxnode::PortDirection::kOutput))
+                if (e131->GetUniverse(kPortIndex, n_universe, dmxnode::Direction::kOutput))
                 {
                     Printf(labels_[kLabelIndex], "Port %c: %d %s", ('A' + config_port_index), n_universe,
                            dmxnode::GetMergeMode(e131->GetMergeMode(kPortIndex), true));

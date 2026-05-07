@@ -35,21 +35,21 @@ void WidgetConfiguration::Store(const struct TWidgetConfiguration* widget_params
     if (widget_params->break_time != s_break_time)
     {
         s_break_time = widget_params->break_time;
-        Dmx::Get()->SetDmxBreakTime(static_cast<uint32_t>(s_break_time * 10.67));
+        Dmx::Get()->SetTransmitBreakTime(static_cast<uint32_t>(s_break_time * 10.67));
         widget_store::SaveBreakTime(widget_params->break_time);
     }
 
     if (widget_params->mab_time != s_mab_time)
     {
         s_mab_time = widget_params->mab_time;
-        Dmx::Get()->SetDmxMabTime(static_cast<uint32_t>(s_mab_time * 10.67));
+        Dmx::Get()->SetTransmitMabTime(static_cast<uint32_t>(s_mab_time * 10.67));
         widget_store::SaveMabTime(widget_params->mab_time);
     }
 
     if (widget_params->refresh_rate != s_refresh_rate)
     {
         s_refresh_rate = widget_params->refresh_rate;
-        Dmx::Get()->SetDmxPeriodTime(widget_params->refresh_rate == 0 ? 0 : (1000000U / widget_params->refresh_rate));
+        Dmx::Get()->SetTransmitPeriodTime(widget_params->refresh_rate == 0 ? 0 : (1000000U / widget_params->refresh_rate));
         widget_store::SaveRefreshRate(widget_params->refresh_rate);
     }
 }

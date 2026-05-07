@@ -166,12 +166,12 @@ class RDMResponder final : DMXReceiver, public RDMDeviceResponder
         {
             const auto* p = reinterpret_cast<const struct TRdmMessage*>(response);
             length = static_cast<int>(p->message_length + rdm::kMessageChecksumSize);
-            Rdm::SendRawRespondMessage(0, response, static_cast<uint16_t>(length));
+            Rdm::TransmitRawRespondMessage(0, response, static_cast<uint16_t>(length));
         }
         else if (response[0] == 0xFE)
         {
             length = sizeof(struct TRdmDiscoveryMsg);
-            Rdm::SendDiscoveryRespondMessage(0, response, static_cast<uint16_t>(length));
+            Rdm::TransmitDiscoveryRespondMessage(0, response, static_cast<uint16_t>(length));
         }
 
 #ifndef NDEBUG

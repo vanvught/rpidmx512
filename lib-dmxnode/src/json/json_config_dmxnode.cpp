@@ -48,13 +48,13 @@ uint32_t GetDmxNode(char* buffer, uint32_t length) {
                     break;
                 }
 
-                const auto kPortDirection = dmx_node->GetPortDirection(kPortIndex);
+                const auto kPortDirection = dmx_node->PortDirection(kPortIndex);
                 uint16_t universe = 0;
                 dmx_node->GetUniverse(kPortIndex, universe, kPortDirection);
 
                 doc[json::DmxNodeParamsConst::kLabelPort[config_port_index].name] = dmx_node->GetShortName(kPortIndex);
                 doc[json::DmxNodeParamsConst::kUniversePort[config_port_index].name] = universe;
-                doc[json::DmxNodeParamsConst::kDirectionPort[config_port_index].name] = dmxnode::GetPortDirection(kPortDirection);
+                doc[json::DmxNodeParamsConst::kDirectionPort[config_port_index].name] = dmxnode::PortDirection(kPortDirection);
                 doc[json::DmxNodeParamsConst::kMergeModePort[config_port_index].name] = dmxnode::GetMergeMode(dmx_node->GetMergeMode(kPortIndex));
 #if defined(OUTPUT_HAVE_STYLESWITCH)
                 doc[json::DmxNodeParamsConst::kOutputStylePort[config_port_index].name] = dmxnode::GetOutputStyle(dmx_node->GetOutputStyle(kPortIndex));

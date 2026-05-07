@@ -79,7 +79,7 @@ int main() // NOLINT
     dmx_node_node.SetOutput(&dmx_send);
 
     const auto kPortDirection =
-        (dmx_node_node.GetPortDirection(kPortIndex) == dmxnode::PortDirection::kOutput ? dmx::PortDirection::kOutput : dmx::PortDirection::kInput);
+        (dmx_node_node.PortDirection(kPortIndex) == dmxnode::Direction::kOutput ? dmx::Direction::kOutput : dmx::Direction::kInput);
     dmx.SetPortDirection(kPortIndex, kPortDirection, false);
 
     const auto kIsRdmEnabled = dmx_node_node.GetRdm();
@@ -93,7 +93,7 @@ int main() // NOLINT
 
     const auto kActivePorts = dmx_node_node.GetActiveInputPorts() + dmx_node_node.GetActiveOutputPorts();
 
-    display.SetTitle("Art-Net 4 %s", kPortDirection == dmx::PortDirection::kInput ? "DMX Input" : (kIsRdmEnabled ? "RDM" : "DMX Output"));
+    display.SetTitle("Art-Net 4 %s", kPortDirection == dmx::Direction::kInput ? "DMX Input" : (kIsRdmEnabled ? "RDM" : "DMX Output"));
     display.Set(2, displayudf::Labels::kIp);
     display.Set(3, displayudf::Labels::kVersion);
     display.Set(4, displayudf::Labels::kHostname);

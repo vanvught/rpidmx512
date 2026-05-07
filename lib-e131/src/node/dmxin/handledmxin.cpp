@@ -57,7 +57,7 @@ void E131Bridge::HandleDmxIn()
 {
     for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++)
     {
-        if ((bridge_.port[port_index].direction == dmxnode::PortDirection::kInput) && (!input_port_[port_index].is_disabled))
+        if ((bridge_.port[port_index].direction == dmxnode::Direction::kInput) && (!input_port_[port_index].is_disabled))
         {
             const auto* const kDataChanged = reinterpret_cast<const struct Data*>(Dmx::Get()->GetDmxChanged(port_index));
 
@@ -88,7 +88,7 @@ void E131Bridge::HandleDmxIn()
                 if ((s_receiving_mask & (1U << port_index)) != (1U << port_index))
                 {
                     s_receiving_mask |= (1U << port_index);
-                    state_.receiving_dmx |= (1U << static_cast<uint8_t>(dmxnode::PortDirection::kInput));
+                    state_.receiving_dmx |= (1U << static_cast<uint8_t>(dmxnode::Direction::kInput));
                     hal::panelled::On(hal::panelled::kPortARx << port_index);
                 }
 
@@ -108,7 +108,7 @@ void E131Bridge::HandleDmxIn()
 
                     if (s_receiving_mask == 0)
                     {
-                        state_.receiving_dmx &= static_cast<uint8_t>(~(1U << static_cast<uint8_t>(dmxnode::PortDirection::kInput)));
+                        state_.receiving_dmx &= static_cast<uint8_t>(~(1U << static_cast<uint8_t>(dmxnode::Direction::kInput)));
                     }
                 }
                 else if (input_port_[port_index].millis != 0)

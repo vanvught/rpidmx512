@@ -122,7 +122,7 @@ class RtpMidi final : public AppleMidi
      * @brief Sends a single raw MIDI byte.
      * @param nByte The raw MIDI byte to send.
      */
-    void SendRaw(uint8_t byte)
+    void TransmitRaw(uint8_t byte)
     {
         auto* data = &send_buffer_[rtpmidi::kCommandOffset + 1];
         data[0] = byte;
@@ -133,7 +133,7 @@ class RtpMidi final : public AppleMidi
      * @brief Sends a raw MIDI type.
      * @param type The MIDI type to send.
      */
-    void SendRaw(midi::Types type) { SendRaw(static_cast<uint8_t>(type)); }
+    void TransmitRaw(midi::Types type) { TransmitRaw(static_cast<uint8_t>(type)); }
 
     /**
      * @brief Sends a full MIDI timecode message.

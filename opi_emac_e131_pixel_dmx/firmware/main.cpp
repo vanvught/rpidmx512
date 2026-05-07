@@ -97,8 +97,8 @@ int main() // NOLINT
 
     uint32_t dmx_universes = 0;
 
-    if (dmxnode_node.GetPortDirection(dmxnode::kDmxportOffset) == dmxnode::PortDirection::kOutput) {
-        dmx.SetPortDirection(0, dmx::PortDirection::kOutput, false);
+    if (dmxnode_node.PortDirection(dmxnode::kDmxportOffset) == dmxnode::Direction::kOutput) {
+        dmx.SetPortDirection(0, dmx::Direction::kOutput, false);
         dmx_universes = 1;
     }
 

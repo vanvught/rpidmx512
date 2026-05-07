@@ -53,7 +53,7 @@ void ArtNetNode::HandleRdm()
             continue;
         }
 
-        if ((kPortAddress == node_.port[port_index].port_address) && (node_.port[port_index].direction == dmxnode::PortDirection::kOutput))
+        if ((kPortAddress == node_.port[port_index].port_address) && (node_.port[port_index].direction == dmxnode::Direction::kOutput))
         {
             const auto* response = const_cast<uint8_t*>(rdm_responder_->Handler(port_index, kArtRdm->rdm_packet));
 
@@ -91,7 +91,7 @@ void ArtNetNode::HandleTodControl()
         return;
     }
 
-    if ((kPortAddress == node_.port[kPortIndex].port_address) && (node_.port[kPortIndex].direction == dmxnode::PortDirection::kOutput))
+    if ((kPortAddress == node_.port[kPortIndex].port_address) && (node_.port[kPortIndex].direction == dmxnode::Direction::kOutput))
     {
         if (kArtTodControl->command == 0x01)
         { // AtcFlush

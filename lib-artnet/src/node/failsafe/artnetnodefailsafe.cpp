@@ -39,7 +39,7 @@ void ArtNetNode::FailSafeRecord()
 
     for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++)
     {
-        if (node_.port[port_index].direction == dmxnode::PortDirection::kOutput)
+        if (node_.port[port_index].direction == dmxnode::Direction::kOutput)
         {
             dmxnode::scenes::Write(port_index, dmxnode::Data::Backup(port_index));
         }
@@ -58,7 +58,7 @@ void ArtNetNode::FailSafePlayback()
 
     for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++)
     {
-        if (node_.port[port_index].direction == dmxnode::PortDirection::kOutput)
+        if (node_.port[port_index].direction == dmxnode::Direction::kOutput)
         {
             dmxnode::scenes::Read(port_index, const_cast<uint8_t*>(dmxnode::Data::Backup(port_index)));
             dmxnode::DataOutput(dmxnode_output_type_, port_index);

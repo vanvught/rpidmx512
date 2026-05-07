@@ -130,7 +130,7 @@ inline void SaveSwitch(uint32_t port_index, [[maybe_unused]] uint8_t sw)
     DEBUG_EXIT();
 }
 
-inline void SaveDirection(uint32_t port_index, dmxnode::PortDirection direction)
+inline void SaveDirection(uint32_t port_index, dmxnode::Direction direction)
 {
     DEBUG_ENTRY();
     DEBUG_PRINTF("%u, %u", port_index, static_cast<uint32_t>(direction));
@@ -157,7 +157,7 @@ inline void SaveDirection(uint32_t port_index, dmxnode::PortDirection direction)
 
     auto direction_store = ConfigStore::Instance().DmxNodeGet(&common::store::DmxNode::direction);
 
-    common::PortSet<dmxnode::PortDirection>(port_index, direction, direction_store);
+    common::PortSet<dmxnode::Direction>(port_index, direction, direction_store);
 
     ConfigStore::Instance().DmxNodeUpdate(&common::store::DmxNode::direction, direction_store);
 

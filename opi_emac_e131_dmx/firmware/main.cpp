@@ -75,7 +75,7 @@ int main() // NOLINT
     DmxNodeNode dmxnode_node;
     dmxnode_node.SetOutput(&dmx_send);
 
-    const auto kPortDirection = (dmxnode_node.GetPortDirection(kPortIndex) == dmxnode::PortDirection::kOutput ? dmx::PortDirection::kOutput : dmx::PortDirection::kInput);
+    const auto kPortDirection = (dmxnode_node.PortDirection(kPortIndex) == dmxnode::Direction::kOutput ? dmx::Direction::kOutput : dmx::Direction::kInput);
     dmx.SetPortDirection(kPortIndex, kPortDirection, false);
 
     const auto kActivePorts = dmxnode_node.GetActiveInputPorts() + dmxnode_node.GetActiveOutputPorts();
@@ -87,7 +87,7 @@ int main() // NOLINT
 
     dmxnode_node.Print();
 
-    display.SetTitle("sACN E1.31 DMX %s", kPortDirection == dmx::PortDirection::kInput ? "Input" : "Output");
+    display.SetTitle("sACN E1.31 DMX %s", kPortDirection == dmx::Direction::kInput ? "Input" : "Output");
     display.Set(2, displayudf::Labels::kIp);
     display.Set(3, displayudf::Labels::kVersion);
     display.Set(4, displayudf::Labels::kHostname);

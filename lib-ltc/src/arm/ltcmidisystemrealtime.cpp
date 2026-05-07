@@ -71,12 +71,12 @@ static void timer_handler()
 {
     if (ltc::Destination::IsEnabled(ltc::Destination::Output::RTPMIDI))
     {
-        RtpMidi::Get()->SendRaw(midi::Types::CLOCK);
+        RtpMidi::Get()->TransmitRaw(midi::Types::CLOCK);
     }
 
     if (ltc::Destination::IsEnabled(ltc::Destination::Output::MIDI))
     {
-        Midi::Get()->SendRaw(midi::Types::CLOCK);
+        Midi::Get()->TransmitRaw(midi::Types::CLOCK);
     }
 }
 #elif defined(GD32)

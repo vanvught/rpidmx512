@@ -2,7 +2,7 @@
  * @file dmxconfigudp.h
  *
  */
-/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,10 +31,9 @@
 #include <cassert>
 
 #include "dmxconst.h"
-#include "network.h"
-#include "dmx.h"
-
- #include "firmware/debug/debug_debug.h"
+#include "network_udp.h"
+#include "dmx.h" // IWYU pragma: keep
+#include "firmware/debug/debug_debug.h"
 
 /**
  * @class DmxConfigUdp
@@ -48,8 +47,7 @@
  * min length: dmx!mab#12 => 10 bytes
  * max length: dmx!mab#1000000/n => 16 bytes
  */
-class DmxConfigUdp
-{
+class DmxConfigUdp {
     static constexpr uint32_t kMinSize = 10;   ///< Minimum valid size for a UDP packet.
     static constexpr uint32_t kMaxSize = 16;   ///< Maximum valid size for a UDP packet.
     static constexpr uint16_t kUdpPort = 5120; ///< UDP port used for receiving DMX configuration messages.
@@ -84,11 +82,9 @@ class DmxConfigUdp
      * @param size Length of the string.
      * @return Converted unsigned integer value.
      */
-    inline uint32_t Atoi(const char* buffer, uint32_t size)
-    {
+    inline uint32_t Atoi(const char* buffer, uint32_t size) {
         uint32_t result = 0;
-        for (uint32_t i = 0; i < size && buffer[i] >= '0' && buffer[i] <= '9'; ++i)
-        {
+        for (uint32_t i = 0; i < size && buffer[i] >= '0' && buffer[i] <= '9'; ++i) {
             result = result * 10 + static_cast<uint32_t>(buffer[i] - '0');
         }
         return result;
@@ -98,8 +94,7 @@ class DmxConfigUdp
     /**
      * @brief Constructs the DmxConfigUdp object and initializes UDP listening.
      */
-    DmxConfigUdp()
-    {
+    DmxConfigUdp() {
         DEBUG_ENTRY();
 
         assert(s_this == nullptr);
@@ -114,8 +109,7 @@ class DmxConfigUdp
     /**
      * @brief Destroys the DmxConfigUdp object and stops UDP listening.
      */
-    ~DmxConfigUdp()
-    {
+    ~DmxConfigUdp() {
         DEBUG_ENTRY();
 
         assert(handle_ != -1);
@@ -135,31 +129,26 @@ class DmxConfigUdp
      * @param from_ip IP address of the sender.
      * @param from_port Port number of the sender.
      */
-    void Input(const uint8_t* buffer, uint32_t size, [[maybe_unused]] uint32_t from_ip, [[maybe_unused]] uint16_t from_port)
-    {
+    void Input(const uint8_t* buffer, uint32_t size, [[maybe_unused]] uint32_t from_ip, [[maybe_unused]] uint16_t from_port) {
         DEBUG_ENTRY();
 
-        if (!Validate(size, kMinSize, kMaxSize))
-        {
+        if (!Validate(size, kMinSize, kMaxSize)) {
             DEBUG_EXIT();
             return;
         }
 
-        if (memcmp("dmx!", buffer, 4) != 0)
-        {
+        if (memcmp("dmx!", buffer, 4) != 0) {
             DEBUG_EXIT();
             return;
         }
 
-        if (buffer[size - 1] == '\n')
-        {
+        if (buffer[size - 1] == '\n') {
             size--;
         }
 
         DEBUG_PRINTF("size=%u", size);
 
-        struct CommandHandler
-        {
+        struct CommandHandler {
             const char* command;
             const uint32_t kCommandLength;
             void (DmxConfigUdp::*handler)(const uint8_t*, uint32_t);
@@ -170,10 +159,8 @@ class DmxConfigUdp
                                                        {kCmdRefresh, kCmdRefreshLength, &DmxConfigUdp::HandleRefresh},
                                                        {kCmdSlots, kCmdSlotsLength, &DmxConfigUdp::HandleSlots}};
 
-        for (const auto& handler : kCommandHandlers)
-        {
-            if (memcmp(handler.command, &buffer[4], handler.kCommandLength) == 0)
-            {
+        for (const auto& handler : kCommandHandlers) {
+            if (memcmp(handler.command, &buffer[4], handler.kCommandLength) == 0) {
                 (this->*handler.handler)(buffer, size);
 
                 DEBUG_EXIT();
@@ -191,13 +178,11 @@ class DmxConfigUdp
      * @param buffer Pointer to the packet buffer.
      * @param size Size of the packet buffer.
      */
-    void HandleBreak(const uint8_t* buffer, uint32_t size)
-    {
+    void HandleBreak(const uint8_t* buffer, uint32_t size) {
         static constexpr auto kOffset = kCmdBreakLength + 4;
         const auto kBreakTime = Atoi(reinterpret_cast<const char*>(&buffer[kOffset]), size - kOffset);
-        if (kBreakTime >= dmx::transmit::kBreakTimeMin)
-        {
-            Dmx::Get()->SetDmxBreakTime(kBreakTime);
+        if (kBreakTime >= dmx::transmit::kBreakTimeMin) {
+            Dmx::Get()->SetTransmitBreakTime(kBreakTime);
             DEBUG_PRINTF("kBreakTime=%u", kBreakTime);
         }
     }
@@ -208,13 +193,11 @@ class DmxConfigUdp
      * @param buffer Pointer to the packet buffer.
      * @param size Size of the packet buffer.
      */
-    void HandleMab(const uint8_t* buffer, uint32_t size)
-    {
+    void HandleMab(const uint8_t* buffer, uint32_t size) {
         static constexpr auto kOffset = kCmdMabLength + 4;
         const auto kMabTime = Atoi(reinterpret_cast<const char*>(&buffer[kOffset]), size - kOffset);
-        if (Validate(kMabTime, dmx::transmit::kMabTimeMin, dmx::transmit::kMabTimeMax))
-        {
-            Dmx::Get()->SetDmxMabTime(kMabTime);
+        if (Validate(kMabTime, dmx::transmit::kMabTimeMin, dmx::transmit::kMabTimeMax)) {
+            Dmx::Get()->SetTransmitMabTime(kMabTime);
             DEBUG_PRINTF("kMabTime=%u", kMabTime);
         }
     }
@@ -225,12 +208,11 @@ class DmxConfigUdp
      * @param buffer Pointer to the packet buffer.
      * @param size Size of the packet buffer.
      */
-    void HandleRefresh(const uint8_t* buffer, uint32_t size)
-    {
+    void HandleRefresh(const uint8_t* buffer, uint32_t size) {
         static constexpr auto kOffset = kCmdRefreshLength + 4;
         const auto kRefreshRate = Atoi(reinterpret_cast<const char*>(&buffer[kOffset]), size - kOffset);
         const auto kPeriodTime = (kRefreshRate != 0) ? 1000000U / kRefreshRate : 0;
-        Dmx::Get()->SetDmxPeriodTime(kPeriodTime);
+        Dmx::Get()->SetTransmitPeriodTime(kPeriodTime);
         DEBUG_PRINTF("kPeriodTime=%u", kPeriodTime);
     }
 
@@ -240,13 +222,11 @@ class DmxConfigUdp
      * @param buffer Pointer to the packet buffer.
      * @param size Size of the packet buffer.
      */
-    void HandleSlots(const uint8_t* buffer, uint32_t size)
-    {
+    void HandleSlots(const uint8_t* buffer, uint32_t size) {
         static constexpr auto kOffset = kCmdSlotsLength + 4;
         const auto kSlots = Atoi(reinterpret_cast<const char*>(&buffer[kOffset]), size - kOffset);
-        if (Validate(kSlots, dmx::kChannelsMin, dmx::kChannelsMax))
-        {
-            Dmx::Get()->SetDmxSlots(static_cast<uint16_t>(kSlots));
+        if (Validate(kSlots, dmx::kChannelsMin, dmx::kChannelsMax)) {
+            Dmx::Get()->SetTransmitSlots(static_cast<uint16_t>(kSlots));
             DEBUG_PRINTF("kSlots=%u", kSlots);
         }
     }
@@ -259,14 +239,11 @@ class DmxConfigUdp
      * @param from_ip IP address of the sender.
      * @param from_port Port number of the sender.
      */
-    void static StaticCallbackFunction(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port)
-    {
-        s_this->Input(buffer, size, from_ip, from_port);
-    }
+    void static StaticCallbackFunction(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port) { s_this->Input(buffer, size, from_ip, from_port); }
 
    private:
     int32_t handle_{-1};                ///< UDP handle for the network interface.
     static inline DmxConfigUdp* s_this; ///< Static instance pointer for the callback function.
 };
 
-#endif  // DMXCONFIGUDP_H_
+#endif // DMXCONFIGUDP_H_

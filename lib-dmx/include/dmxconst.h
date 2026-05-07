@@ -2,7 +2,7 @@
  * @file dmxconst.h
  *
  */
-/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,32 +28,21 @@
 
 #include <cstdint>
 
-namespace dmx
-{
-enum class PortDirection
-{
-    kInput,
-    kOutput,
-    kDisable
-};
+namespace dmx {
+enum class Direction { kInput, kOutput, kDisable };
 
-enum class OutputStyle
-{
+enum class OutputStyle {
     kDelta,   ///< DMX frame is triggered
     kConstant ///< DMX output is continuous
 };
 
-enum class SendStyle
-{
-    kDirect,
-    kSync
-};
+enum class SendStyle { kDirect, kSync };
 
 inline constexpr uint32_t kStartCode = 0; ///< The start code for DMX512 data. This is often referred to as NSC for "Null Start Code".
 inline constexpr uint32_t kChannelsMin = 2;
 inline constexpr uint32_t kChannelsMax = 512;
-namespace transmit
-{
+
+namespace transmit {
 inline constexpr uint32_t kBreakTimeMin = 92;                                ///< 92 us
 inline constexpr uint32_t kBreakTimeTypical = 176;                           ///< 176 us
 inline constexpr uint32_t kMabTimeMin = 12;                                  ///< 12 us

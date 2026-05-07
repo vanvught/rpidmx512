@@ -74,7 +74,7 @@ void DisplayUdf::ShowUniverseArtNetNode()
 
             if (kLabelIndex != 0xFF)
             {
-                if (artnet_node->GetPortAddress(kPortIndex, universe, dmxnode::PortDirection::kOutput))
+                if (artnet_node->GetPortAddress(kPortIndex, universe, dmxnode::Direction::kOutput))
                 {
                     ClearEndOfLine();
                     Printf(labels_[kLabelIndex],

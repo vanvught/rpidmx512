@@ -34,13 +34,13 @@ namespace json::config
 uint32_t GetDmxSend(char* buffer, uint32_t length)
 {
 	auto& dmx = *Dmx::Get();
-	const auto kPeriod = dmx.GetDmxPeriodTime();
+	const auto kPeriod = dmx.TransmitPeriodTime();
 
  	return json::helpers::Serialize(buffer, length, [&](JsonDoc& doc) {	
-	    doc[DmxSendParamsConst::kBreakTime.name] = dmx.GetDmxBreakTime();
-	    doc[DmxSendParamsConst::kMabTime.name] = dmx.GetDmxMabTime();	
+	    doc[DmxSendParamsConst::kBreakTime.name] = dmx.TransmitBreakTime();
+	    doc[DmxSendParamsConst::kMabTime.name] = dmx.TransmitMabTime();	
 	    doc[DmxSendParamsConst::kRefreshRate.name] = 1000000U / kPeriod;
-	    doc[DmxSendParamsConst::kSlotsCount.name] = dmx.GetDmxSlots();
+	    doc[DmxSendParamsConst::kSlotsCount.name] = dmx.TransmitSlots();
     });
 }
 

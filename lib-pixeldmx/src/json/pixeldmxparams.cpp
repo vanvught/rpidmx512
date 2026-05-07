@@ -208,7 +208,7 @@ void PixelDmxParams::Set() {
         for (uint32_t universe = 0; universe < kUniverses; universe++) {
             if (kStartUniverse != 0) {
                 DmxNodeNodeType::Get()->SetUniverse(protocol_port_index, static_cast<uint16_t>(kStartUniverse + universe));
-                DmxNodeNodeType::Get()->SetDirection(protocol_port_index, dmxnode::PortDirection::kOutput);
+                DmxNodeNodeType::Get()->SetDirection(protocol_port_index, dmxnode::Direction::kOutput);
 
                 char label[dmxnode::kPortNameLength];
                 snprintf(label, dmxnode::kPortNameLength - 1, "Pixel %c -> %u:%u", static_cast<char>('A' + pixel_port_index), protocol_port_index, kStartUniverse + universe);
@@ -219,7 +219,7 @@ void PixelDmxParams::Set() {
     }
 
     for (; protocol_port_index < dmxnode::kMaxPorts; protocol_port_index++) {
-        DmxNodeNodeType::Get()->SetDirection(protocol_port_index, dmxnode::PortDirection::kDisable);
+        DmxNodeNodeType::Get()->SetDirection(protocol_port_index, dmxnode::Direction::kDisable);
         DmxNode::Instance().SetShortNameDefault(protocol_port_index);
     }
 #endif

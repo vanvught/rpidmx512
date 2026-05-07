@@ -75,7 +75,7 @@ int main() // NOLINT
     dmxnode_node.SetOutput(&dmx_send);
 
     for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++) {
-        const auto kPortDirection = (dmxnode_node.GetPortDirection(port_index) == dmxnode::PortDirection::kOutput ? dmx::PortDirection::kOutput : dmx::PortDirection::kInput);
+        const auto kPortDirection = (dmxnode_node.PortDirection(port_index) == dmxnode::Direction::kOutput ? dmx::Direction::kOutput : dmx::Direction::kInput);
         dmx.SetPortDirection(port_index, kPortDirection, false);
     }
 

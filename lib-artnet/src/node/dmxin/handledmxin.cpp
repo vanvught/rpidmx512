@@ -46,7 +46,7 @@ void ArtNetNode::HandleDmxIn()
 {
     for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++)
     {
-        if (node_.port[port_index].direction != dmxnode::PortDirection::kInput) continue;
+        if (node_.port[port_index].direction != dmxnode::Direction::kInput) continue;
         if (input_port_[port_index].destination_ip == 0) continue;
 
         if ((node_.port[port_index].protocol == artnet::PortProtocol::kArtnet) &&
@@ -92,7 +92,7 @@ void ArtNetNode::HandleDmxIn()
                 if ((s_receiving_mask & (1U << port_index)) != (1U << port_index))
                 {
                     s_receiving_mask |= (1U << port_index);
-                    state_.receiving_dmx |= (1U << static_cast<uint8_t>(dmxnode::PortDirection::kInput));
+                    state_.receiving_dmx |= (1U << static_cast<uint8_t>(dmxnode::Direction::kInput));
                     hal::panelled::On(hal::panelled::kPortARx << port_index);
                 }
 
@@ -114,7 +114,7 @@ void ArtNetNode::HandleDmxIn()
 
                     if (s_receiving_mask == 0)
                     {
-                        state_.receiving_dmx &= static_cast<uint8_t>(~(1U << static_cast<uint8_t>(dmxnode::PortDirection::kInput)));
+                        state_.receiving_dmx &= static_cast<uint8_t>(~(1U << static_cast<uint8_t>(dmxnode::Direction::kInput)));
                     }
 
                     SendDiag(artnet::PriorityCodes::kDiagLow, "%u: Input DMX updates per second is 0", port_index);

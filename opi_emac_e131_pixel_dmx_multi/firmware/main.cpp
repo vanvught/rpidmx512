@@ -100,8 +100,8 @@ int main() // NOLINT
     for (uint32_t port_index = dmxnode::kDmxportOffset; port_index < dmxnode::kMaxPorts; port_index++) {
         const auto nDmxPortIndex = port_index - dmxnode::kDmxportOffset;
 
-        if (dmxnode_node.GetPortDirection(port_index) == dmxnode::PortDirection::kOutput) {
-            dmx.SetPortDirection(nDmxPortIndex, dmx::PortDirection::kOutput, false);
+        if (dmxnode_node.PortDirection(port_index) == dmxnode::Direction::kOutput) {
+            dmx.SetPortDirection(nDmxPortIndex, dmx::Direction::kOutput, false);
             nDmxUniverses++;
         }
     }

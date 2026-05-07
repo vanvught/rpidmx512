@@ -210,7 +210,7 @@ class Midi
         data[7] = timecode->seconds & 0x3F;
         data[8] = timecode->frames & 0x1F;
 
-        SendRaw(data, 10);
+        TransmitRaw(data, 10);
     }
 
     void SendQf(uint8_t value)
@@ -220,7 +220,7 @@ class Midi
         data[0] = 0xF1;
         data[1] = value;
 
-        SendRaw(data, 2);
+        TransmitRaw(data, 2);
     }
 
     void SendQf(const struct midi::Timecode* timecode, uint32_t& quarter_frame_piece)
@@ -262,11 +262,11 @@ class Midi
         quarter_frame_piece = (quarter_frame_piece + 1) & 0x07;
     }
 
-    void SendRaw(const uint8_t* data, uint32_t length) { FUNC_PREFIX(UartTransmit(EXT_MIDI_UART_BASE, data, length)); }
+    void TransmitRaw(const uint8_t* data, uint32_t length) { FUNC_PREFIX(UartTransmit(EXT_MIDI_UART_BASE, data, length)); }
 
-    void SendRaw(uint8_t byte) { SendRaw(&byte, 1); }
+    void TransmitRaw(uint8_t byte) { TransmitRaw(&byte, 1); }
 
-    void SendRaw(midi::Types type) { SendRaw(static_cast<uint8_t>(type)); }
+    void TransmitRaw(midi::Types type) { TransmitRaw(static_cast<uint8_t>(type)); }
 
     bool Read(uint8_t channel)
     {

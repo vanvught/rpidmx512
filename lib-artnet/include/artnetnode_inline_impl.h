@@ -87,12 +87,12 @@ inline uint16_t ArtNetNode::GetUniverse(uint32_t port_index) const {
     return 0;
 }
 
-inline dmxnode::PortDirection ArtNetNode::GetDirection(uint32_t port_index) const {
+inline dmxnode::Direction ArtNetNode::GetDirection(uint32_t port_index) const {
     assert(port_index < dmxnode::kMaxPorts);
     return node_.port[port_index].direction;
 }
 
-inline bool ArtNetNode::GetUniverse(uint32_t port_index, uint16_t& universe, dmxnode::PortDirection port_direction) {
+inline bool ArtNetNode::GetUniverse(uint32_t port_index, uint16_t& universe, dmxnode::Direction port_direction) {
     if (node_.port[port_index].protocol == artnet::PortProtocol::kArtnet) {
         return ArtNetNode::GetPortAddress(port_index, universe, port_direction);
     }
@@ -201,7 +201,7 @@ inline void ArtNetNode::GoodOutputBClear(uint32_t port_index, uint8_t b) {
     output_port_[port_index].good_output_b &= static_cast<uint8_t>(~b);
 }
 
-inline dmxnode::PortDirection ArtNetNode::GetPortDirection(uint32_t port_index) const {
+inline dmxnode::Direction ArtNetNode::PortDirection(uint32_t port_index) const {
     assert(port_index < dmxnode::kMaxPorts);
     return node_.port[port_index].direction;
 }
@@ -209,7 +209,7 @@ inline dmxnode::PortDirection ArtNetNode::GetPortDirection(uint32_t port_index) 
 inline bool ArtNetNode::GetPortAddress(uint32_t port_index, uint16_t& address) const {
     assert(port_index < dmxnode::kMaxPorts);
 
-    if (node_.port[port_index].direction == dmxnode::PortDirection::kDisable) {
+    if (node_.port[port_index].direction == dmxnode::Direction::kDisable) {
         return false;
     }
 
@@ -217,10 +217,10 @@ inline bool ArtNetNode::GetPortAddress(uint32_t port_index, uint16_t& address) c
     return true;
 }
 
-inline bool ArtNetNode::GetPortAddress(uint32_t port_index, uint16_t& address, dmxnode::PortDirection port_direction) const {
+inline bool ArtNetNode::GetPortAddress(uint32_t port_index, uint16_t& address, dmxnode::Direction port_direction) const {
     assert(port_index < dmxnode::kMaxPorts);
 
-    if (port_direction == dmxnode::PortDirection::kDisable) {
+    if (port_direction == dmxnode::Direction::kDisable) {
         return false;
     }
 
@@ -230,7 +230,7 @@ inline bool ArtNetNode::GetPortAddress(uint32_t port_index, uint16_t& address, d
 
 inline bool ArtNetNode::GetOutputPort(uint16_t universe, uint32_t& port_index) {
     for (port_index = 0; port_index < dmxnode::kMaxPorts; port_index++) {
-        if (node_.port[port_index].direction != dmxnode::PortDirection::kOutput) {
+        if (node_.port[port_index].direction != dmxnode::Direction::kOutput) {
             continue;
         }
         if ((node_.port[port_index].protocol == artnet::PortProtocol::kArtnet) && (universe == node_.port[port_index].port_address)) {
@@ -264,7 +264,7 @@ inline void ArtNetNode::Run() {
     }
 
     if (kDeltaMillis >= (1U * 1000U)) {
-        state_.receiving_dmx &= static_cast<uint8_t>(~(1U << static_cast<uint8_t>(dmxnode::PortDirection::kOutput)));
+        state_.receiving_dmx &= static_cast<uint8_t>(~(1U << static_cast<uint8_t>(dmxnode::Direction::kOutput)));
     }
 
 #if (DMXNODE_PORTS > 0)
@@ -312,8 +312,9 @@ inline void ArtNetNode::Run() {
 
 #if defined(RDM_CONTROLLER)
     if (__builtin_expect((state_.is_rdm_enabled), 0)) {
+#if defined(ARTNET_HAVE_DMXIN)
         HandleRdmIn();
-
+#endif
         rdm_controller_.Run();
     }
 #endif

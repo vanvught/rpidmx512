@@ -38,7 +38,7 @@ void DmxNode::SceneStore()
         assert(port_index < dmxnode::kMaxPorts);
         auto& port = port_[port_index];
 
-        if (port.port_direction == dmxnode::PortDirection::kOutput)
+        if (port.port_direction == dmxnode::Direction::kOutput)
         {
             dmxnode::scenes::Write(port_index, dmxnode::Data::Backup(port_index));
         }
@@ -58,7 +58,7 @@ void DmxNode::ScenePlayback()
         assert(port_index < dmxnode::kMaxPorts);
         auto& port = port_[port_index];
 
-        if (port.port_direction == dmxnode::PortDirection::kOutput)
+        if (port.port_direction == dmxnode::Direction::kOutput)
         {
             dmxnode::scenes::Read(port_index, const_cast<uint8_t*>(dmxnode::Data::Backup(port_index)));
             dmxnode::DataOutput(dmxnode_output_type, port_index);

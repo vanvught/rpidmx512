@@ -77,7 +77,7 @@ void ArtNetNode::HandleTodControl() {
             continue;
         }
 
-        if ((node_.port[port_index].direction == dmxnode::PortDirection::kOutput) && ((output_port_[port_index].good_output_b & artnet::GoodOutputB::kRdmDisabled) != artnet::GoodOutputB::kRdmDisabled)) {
+        if ((node_.port[port_index].direction == dmxnode::Direction::kOutput) && ((output_port_[port_index].good_output_b & artnet::GoodOutputB::kRdmDisabled) != artnet::GoodOutputB::kRdmDisabled)) {
             switch (kArtTodControl->command) {
                 case artnet::TodControlCommand::kAtcFlush:
                     rdm_controller_.Full(port_index);
@@ -96,7 +96,7 @@ void ArtNetNode::HandleTodControl() {
                 default:
                     break;
             }
-        } else if (node_.port[port_index].direction == dmxnode::PortDirection::kInput) {
+        } else if (node_.port[port_index].direction == dmxnode::Direction::kInput) {
             if (kArtTodControl->command == artnet::TodControlCommand::kAtcFlush) {
                 rdm_controller_.TodReset(port_index);
             }
@@ -141,7 +141,7 @@ void ArtNetNode::HandleTodData() {
         }
 
         // Only Input Gateways parse ArtTodData
-        if (node_.port[kPortIndex].direction != dmxnode::PortDirection::kInput) {
+        if (node_.port[kPortIndex].direction != dmxnode::Direction::kInput) {
             DEBUG_EXIT();
             return;
         }
@@ -164,7 +164,7 @@ void ArtNetNode::HandleTodData() {
 
     // Backward compatible / bind_index == 0 fallback:
     for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++) {
-        if (node_.port[port_index].direction != dmxnode::PortDirection::kInput) {
+        if (node_.port[port_index].direction != dmxnode::Direction::kInput) {
             continue;
         }
 
@@ -286,7 +286,7 @@ void ArtNetNode::HandleRdm() {
             continue;
         }
 
-        if ((node_.port[port_index].direction == dmxnode::PortDirection::kOutput) && ((output_port_[port_index].good_output_b & artnet::GoodOutputB::kRdmDisabled) != artnet::GoodOutputB::kRdmDisabled)) {
+        if ((node_.port[port_index].direction == dmxnode::Direction::kOutput) && ((output_port_[port_index].good_output_b & artnet::GoodOutputB::kRdmDisabled) != artnet::GoodOutputB::kRdmDisabled)) {
 #if (ARTNET_VERSION >= 4)
             if (node_.port[port_index].protocol == artnet::PortProtocol::kSacn) {
                 constexpr auto kMask = artnet::GoodOutput::kOutputIsMerging | artnet::GoodOutput::kDataIsBeingTransmitted | artnet::GoodOutput::kOutputIsSacn;
@@ -300,7 +300,7 @@ void ArtNetNode::HandleRdm() {
             auto* message = reinterpret_cast<const TRdmMessage*>(&kArtRdm->address);
 
             kArtRdm->address = E120_SC_RDM;
-            Rdm::SendRaw(port_index, &kArtRdm->address, message->message_length + rdm::kMessageChecksumSize);
+            Rdm::TransmitRaw(port_index, &kArtRdm->address, message->message_length + rdm::kMessageChecksumSize);
 
 #ifndef NDEBUG
             rdm::message::Print(reinterpret_cast<const uint8_t*>(message));
@@ -311,12 +311,12 @@ void ArtNetNode::HandleRdm() {
 #elif defined(CONFIG_PANELLED_RDM_NO_PORT)
             hal::panelled::On(hal::panelled::kRdm << port_index);
 #endif
-        } else if (node_.port[port_index].direction == dmxnode::PortDirection::kInput) {
+        } else if (node_.port[port_index].direction == dmxnode::Direction::kInput) {
             auto* rdm_message = reinterpret_cast<const TRdmMessage*>(&kArtRdm->address);
 
             if ((rdm_message->command_class == E120_GET_COMMAND_RESPONSE) || (rdm_message->command_class == E120_SET_COMMAND_RESPONSE)) {
                 kArtRdm->address = E120_SC_RDM;
-                Rdm::SendRaw(port_index, reinterpret_cast<const uint8_t*>(rdm_message), rdm_message->message_length + rdm::kMessageChecksumSize);
+                Rdm::TransmitRaw(port_index, reinterpret_cast<const uint8_t*>(rdm_message), rdm_message->message_length + rdm::kMessageChecksumSize);
 
 #ifndef NDEBUG
                 rdm::message::Print(reinterpret_cast<const uint8_t*>(rdm_message));

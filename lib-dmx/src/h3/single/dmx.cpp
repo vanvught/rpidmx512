@@ -82,7 +82,7 @@ enum class PortState { IDLE, TX, RX };
 
 using namespace dmx;
 
-static PortDirection s_nPortDirection = dmx::PortDirection::kInput;
+static dmx::Direction s_nPortDirection = dmx::Direction::kInput;
 static volatile PortState sv_PortState;
 static OutputStyle s_OutputStyle;
 
@@ -389,7 +389,7 @@ static void __attribute__((interrupt("FIQ"))) FiqDmx() {
     if (gic_get_active_fiq() == UART_IRQN) {
         const uint32_t iir = EXT_UART->O08.IIR;
 
-        if (s_nPortDirection == PortDirection::kInput) {
+        if (s_nPortDirection == dmx::Direction::kInput) {
             FiqDmxInHandler();
         } else {
             if ((iir & 0xF) == UART_IIR_IID_THRE) {
@@ -547,12 +547,12 @@ void Dmx::Sync() {
 void Dmx::StartData([[maybe_unused]] uint32_t port_index) {
     assert(sv_PortState == PortState::IDLE);
 
-    if (s_nPortDirection == PortDirection::kOutput) {
+    if (s_nPortDirection == dmx::Direction::kOutput) {
         sv_PortState = PortState::TX;
         return;
     }
 
-    if (s_nPortDirection == PortDirection::kInput) {
+    if (s_nPortDirection == dmx::Direction::kInput) {
         sv_DmxReceiveState = IDLE;
 
         irq_timer_set(IRQ_TIMER_0, IrqTimer0DmxReceive);
@@ -580,7 +580,7 @@ void Dmx::StopData([[maybe_unused]] uint32_t port_index) {
         return;
     }
 
-    if (s_nPortDirection == PortDirection::kOutput) {
+    if (s_nPortDirection == dmx::Direction::kOutput) {
         do {
             __DMB();
             if (sv_DmxTransmitState == DMXINTER) {
@@ -589,7 +589,7 @@ void Dmx::StopData([[maybe_unused]] uint32_t port_index) {
             }
             __DMB();
         } while (sv_DmxTransmitState != IDLE);
-    } else if (s_nPortDirection == PortDirection::kInput) {
+    } else if (s_nPortDirection == dmx::Direction::kInput) {
         sv_DmxReceiveState = IDLE;
     } else {
         assert(0);
@@ -606,8 +606,8 @@ void Dmx::StopData([[maybe_unused]] uint32_t port_index) {
     sv_PortState = PortState::IDLE;
 }
 
-void Dmx::SetPortDirection(uint32_t port_index, PortDirection port_direction, bool enable_data) {
-    DEBUG_PRINTF("port_index=%u %s %c", port_index, port_direction == PortDirection::kInput ? "Input" : "Output", bEnableData ? 'Y' : 'N');
+void Dmx::SetPortDirection(uint32_t port_index, dmx::Direction port_direction, bool enable_data) {
+    DEBUG_PRINTF("port_index=%u %s %c", port_index, port_direction == dmx::Direction::kInput ? "Input" : "Output", bEnableData ? 'Y' : 'N');
     assert(port_index == 0);
 
     if (s_nPortDirection != port_direction) {
@@ -616,11 +616,11 @@ void Dmx::SetPortDirection(uint32_t port_index, PortDirection port_direction, bo
         StopData(port_index);
 
         switch (port_direction) {
-            case PortDirection::kOutput:
+            case dmx::Direction::kOutput:
                 UartEnableFifo();
                 H3GpioSet(GPIO_EXT_12); // 0 = input, 1 = output
                 break;
-            case PortDirection::kInput:
+            case dmx::Direction::kInput:
             default:
                 H3GpioClr(GPIO_EXT_12); // 0 = input, 1 = output
                 break;
@@ -634,7 +634,7 @@ void Dmx::SetPortDirection(uint32_t port_index, PortDirection port_direction, bo
     }
 }
 
-PortDirection Dmx::GetPortDirection([[maybe_unused]] uint32_t port_index) {
+dmx::Direction Dmx::PortDirection([[maybe_unused]] uint32_t port_index) {
     assert(port_index == 0);
 
     return s_nPortDirection;
@@ -642,21 +642,21 @@ PortDirection Dmx::GetPortDirection([[maybe_unused]] uint32_t port_index) {
 
 // DMX
 
-void Dmx::SetDmxBreakTime(uint32_t break_time) {
+void Dmx::SetTransmitBreakTime(uint32_t break_time) {
     transmit_break_time_ = std::max(transmit::kBreakTimeMin, break_time);
     s_DmxTransmitBreakTimeIntv = transmit_break_time_ * 12;
 
-    SetDmxPeriodTime(transmit_period_requested_);
+    SetTransmitPeriodTime(transmit_period_requested_);
 }
 
-void Dmx::SetDmxMabTime(uint32_t mab_time) {
+void Dmx::SetTransmitMabTime(uint32_t mab_time) {
     transmit_mab_time_ = std::max(transmit::kMabTimeMin, mab_time);
     s_DmxTransmitMabTimeIntv = transmit_mab_time_ * 12;
 
-    SetDmxPeriodTime(transmit_period_requested_);
+    SetTransmitPeriodTime(transmit_period_requested_);
 }
 
-void Dmx::SetDmxPeriodTime(uint32_t nPeriodTime) {
+void Dmx::SetTransmitPeriodTime(uint32_t nPeriodTime) {
     const auto kPackageLengthUs = transmit_break_time_ + transmit_mab_time_ + (s_nDmxSendDataLength * 44);
 
     transmit_period_requested_ = nPeriodTime;
@@ -674,11 +674,11 @@ void Dmx::SetDmxPeriodTime(uint32_t nPeriodTime) {
     s_DmxTransmitPeriodIntv = (transmit_period_ * 12) - s_DmxTransmitBreakTimeIntv - s_DmxTransmitMabTimeIntv;
 }
 
-void Dmx::SetDmxSlots(uint16_t nSlots) {
+void Dmx::SetTransmitSlots(uint16_t nSlots) {
     if ((nSlots >= 2) && (nSlots <= dmx::kChannelsMax)) {
         transmit_slots_ = nSlots;
         s_nDmxSendDataLength = 1U + transmit_slots_;
-        SetDmxPeriodTime(transmit_period_requested_);
+        SetTransmitPeriodTime(transmit_period_requested_);
     }
 }
 
@@ -756,7 +756,7 @@ void Dmx::SetOutputStyle(uint32_t port_index, dmx::OutputStyle output_style) {
 
     s_OutputStyle = output_style;
 
-    if ((s_OutputStyle == dmx::OutputStyle::kConstant) && (s_nPortDirection == dmx::PortDirection::kOutput)) {
+    if ((s_OutputStyle == dmx::OutputStyle::kConstant) && (s_nPortDirection == dmx::Direction::kOutput)) {
         StopData(port_index);
         StartDmxOutput(port_index);
     }
@@ -766,7 +766,7 @@ dmx::OutputStyle Dmx::GetOutputStyle([[maybe_unused]] uint32_t port_index) const
     return s_OutputStyle;
 }
 
-template <dmx::SendStyle dmxSendStyle> void Dmx::SetSendData([[maybe_unused]] uint32_t port_index, const uint8_t* pData, uint32_t nLength) {
+template <dmx::SendStyle dmxSendStyle> void Dmx::SetTransmitDataWithSC([[maybe_unused]] uint32_t port_index, const uint8_t* pData, uint32_t nLength) {
     assert(port_index == 0);
 
     do {
@@ -778,7 +778,7 @@ template <dmx::SendStyle dmxSendStyle> void Dmx::SetSendData([[maybe_unused]] ui
 
     if (nLength != s_nDmxSendDataLength) {
         s_nDmxSendDataLength = nLength;
-        SetDmxPeriodTime(transmit_period_requested_);
+        SetTransmitPeriodTime(transmit_period_requested_);
     }
 
     if constexpr (dmxSendStyle == dmx::SendStyle::kDirect) {
@@ -786,7 +786,7 @@ template <dmx::SendStyle dmxSendStyle> void Dmx::SetSendData([[maybe_unused]] ui
     }
 }
 
-template <dmx::SendStyle dmxSendStyle> void Dmx::SetSendDataWithoutSC([[maybe_unused]] uint32_t port_index, const uint8_t* pData, uint32_t nLength) {
+template <dmx::SendStyle dmxSendStyle> void Dmx::SetTransmitDataWithoutSC([[maybe_unused]] uint32_t port_index, const uint8_t* pData, uint32_t nLength) {
     do {
         __DMB();
     } while (sv_DmxTransmitState != IDLE && sv_DmxTransmitState != DMXINTER);
@@ -800,7 +800,7 @@ template <dmx::SendStyle dmxSendStyle> void Dmx::SetSendDataWithoutSC([[maybe_un
 
     if (nLength != s_nDmxSendDataLength) {
         s_nDmxSendDataLength = 1U + nLength;
-        SetDmxPeriodTime(transmit_period_requested_);
+        SetTransmitPeriodTime(transmit_period_requested_);
     }
 
     if constexpr (dmxSendStyle == dmx::SendStyle::kDirect) {
@@ -906,14 +906,14 @@ const uint8_t* Dmx::RdmReceiveTimeOut(uint32_t port_index, uint16_t nTimeOut) {
     return p;
 }
 
-void Dmx::RdmSend(uint32_t port_index, const uint8_t* rdm_data, uint32_t length) {
-    Dmx::Get()->SetPortDirection(port_index, dmx::PortDirection::kOutput, false);
+void Dmx::RdmTransmit(uint32_t port_index, const uint8_t* rdm_data, uint32_t length) {
+    Dmx::Get()->SetPortDirection(port_index, dmx::Direction::kOutput, false);
 
     Dmx::Get()->RdmSendRaw(port_index, rdm_data, length);
 
     udelay(rdm::responder::kDataDirectionDelay);
 
-    Dmx::Get()->SetPortDirection(port_index, dmx::PortDirection::kInput, true);
+    Dmx::Get()->SetPortDirection(port_index, dmx::Direction::kInput, true);
 }
 
 void Dmx::RdmSendRaw([[maybe_unused]] uint32_t port_index, const uint8_t* pRdmData, uint32_t nLength) {
@@ -937,7 +937,7 @@ void Dmx::RdmSendRaw([[maybe_unused]] uint32_t port_index, const uint8_t* pRdmDa
     }
 }
 
-void Dmx::RdmSendDiscoveryRespondMessage([[maybe_unused]] uint32_t port_index, const uint8_t* pRdmData, uint32_t nLength) {
+void Dmx::RdmTransmitDiscoveryRespondMessage([[maybe_unused]] uint32_t port_index, const uint8_t* pRdmData, uint32_t nLength) {
     DEBUG_PRINTF("port_index=%u, pRdmData=%p, nLength=%u", port_index, pRdmData, nLength);
     assert(port_index < dmx::config::max::kPorts);
     assert(pRdmData != nullptr);
@@ -946,7 +946,7 @@ void Dmx::RdmSendDiscoveryRespondMessage([[maybe_unused]] uint32_t port_index, c
     // 3.2.2 Responder Packet spacing
     udelay(rdm::responder::kPacketSpacing, gsv_rdm_data_receive_end[0]);
 
-    SetPortDirection(port_index, dmx::PortDirection::kOutput, false);
+    SetPortDirection(port_index, dmx::Direction::kOutput, false);
 
     EXT_UART->LCR = UART_LCR_8_N_2;
 
@@ -960,14 +960,14 @@ void Dmx::RdmSendDiscoveryRespondMessage([[maybe_unused]] uint32_t port_index, c
 
     udelay(rdm::responder::kDataDirectionDelay);
 
-    SetPortDirection(port_index, dmx::PortDirection::kInput, true);
+    SetPortDirection(port_index, dmx::Direction::kInput, true);
 
     DEBUG_EXIT();
 }
 
 // Explicit template instantiations
-template void Dmx::SetSendData<dmx::SendStyle::kDirect>(const uint32_t, const uint8_t*, uint32_t);
-template void Dmx::SetSendData<dmx::SendStyle::kSync>(const uint32_t, const uint8_t*, uint32_t);
+template void Dmx::SetTransmitDataWithSC<dmx::SendStyle::kDirect>(const uint32_t, const uint8_t*, uint32_t);
+template void Dmx::SetTransmitDataWithSC<dmx::SendStyle::kSync>(const uint32_t, const uint8_t*, uint32_t);
 
-template void Dmx::SetSendDataWithoutSC<dmx::SendStyle::kDirect>(const uint32_t, const uint8_t*, uint32_t);
-template void Dmx::SetSendDataWithoutSC<dmx::SendStyle::kSync>(const uint32_t, const uint8_t*, uint32_t);
+template void Dmx::SetTransmitDataWithoutSC<dmx::SendStyle::kDirect>(const uint32_t, const uint8_t*, uint32_t);
+template void Dmx::SetTransmitDataWithoutSC<dmx::SendStyle::kSync>(const uint32_t, const uint8_t*, uint32_t);

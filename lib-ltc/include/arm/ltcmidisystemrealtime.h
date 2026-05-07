@@ -67,12 +67,12 @@ private:
 	void Send(const midi::Types type) {
 //		if (!ltc::g_DisabledOutputs.bRtpMidi) {
 		if (ltc::Destination::IsEnabled(ltc::Destination::Output::RTPMIDI)) {
-			RtpMidi::Get()->SendRaw(type);
+			RtpMidi::Get()->TransmitRaw(type);
 		}
 
 //		if (!ltc::g_DisabledOutputs.bMidi) {
 		if (ltc::Destination::IsEnabled(ltc::Destination::Output::MIDI)) {
-			Midi::Get()->SendRaw(type);
+			Midi::Get()->TransmitRaw(type);
 		}
 	}
 

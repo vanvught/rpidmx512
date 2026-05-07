@@ -62,7 +62,7 @@ E131Bridge::E131Bridge()
 
     for (auto& port : bridge_.port)
     {
-        port.direction = dmxnode::PortDirection::kDisable;
+        port.direction = dmxnode::Direction::kDisable;
     }
 
     memset(&state_, 0, sizeof(e131bridge::State));
@@ -128,9 +128,9 @@ void E131Bridge::Start()
 
     for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++)
     {
-        if (bridge_.port[port_index].direction == dmxnode::PortDirection::kInput)
+        if (bridge_.port[port_index].direction == dmxnode::Direction::kInput)
         {
-            Dmx::Get()->SetPortDirection(port_index, dmx::PortDirection::kInput, true);
+            Dmx::Get()->SetPortDirection(port_index, dmx::Direction::kInput, true);
         }
     }
 
@@ -146,7 +146,7 @@ void E131Bridge::Start()
     {
         for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++)
         {
-            if (bridge_.port[port_index].direction == dmxnode::PortDirection::kOutput)
+            if (bridge_.port[port_index].direction == dmxnode::Direction::kOutput)
             {
                 SetOutputStyle(port_index, GetOutputStyle(port_index));
             }
@@ -176,9 +176,9 @@ void E131Bridge::Stop()
 
     for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++)
     {
-        if (bridge_.port[port_index].direction == dmxnode::PortDirection::kInput)
+        if (bridge_.port[port_index].direction == dmxnode::Direction::kInput)
         {
-            Dmx::Get()->SetPortDirection(port_index, dmx::PortDirection::kInput, false);
+            Dmx::Get()->SetPortDirection(port_index, dmx::Direction::kInput, false);
         }
     }
 #endif
@@ -296,7 +296,7 @@ void E131Bridge::SetLocalMerging()
 
     for (uint32_t input_port_index = 0; input_port_index < dmxnode::kMaxPorts; input_port_index++)
     {
-        if ((bridge_.port[input_port_index].direction == dmxnode::PortDirection::kOutput) || (bridge_.port[input_port_index].universe == 0))
+        if ((bridge_.port[input_port_index].direction == dmxnode::Direction::kOutput) || (bridge_.port[input_port_index].universe == 0))
         {
             continue;
         }
@@ -305,7 +305,7 @@ void E131Bridge::SetLocalMerging()
 
         for (uint32_t output_port_index = 0; output_port_index < dmxnode::kMaxPorts; output_port_index++)
         {
-            if (bridge_.port[output_port_index].direction == dmxnode::PortDirection::kInput)
+            if (bridge_.port[output_port_index].direction == dmxnode::Direction::kInput)
             {
                 continue;
             }
@@ -355,7 +355,7 @@ void E131Bridge::SetUniverse(uint32_t port_index, uint16_t universe)
         return;
     }
 
-    if (bridge_.port[port_index].direction == dmxnode::PortDirection::kOutput)
+    if (bridge_.port[port_index].direction == dmxnode::Direction::kOutput)
     {
         LeaveUniverse(port_index, bridge_.port[port_index].universe);
         JoinUniverse(port_index, universe);
@@ -374,13 +374,13 @@ void E131Bridge::SetUniverse(uint32_t port_index, uint16_t universe)
     DEBUG_EXIT();
 }
 
-void E131Bridge::SetDirection(uint32_t port_index, dmxnode::PortDirection port_direction)
+void E131Bridge::SetDirection(uint32_t port_index, dmxnode::Direction port_direction)
 {
     DEBUG_ENTRY();
-    DEBUG_PRINTF("port_index=%u, port_direction=%s", port_index, dmxnode::GetPortDirection(port_direction));
+    DEBUG_PRINTF("port_index=%u, port_direction=%s", port_index, dmxnode::Direction(port_direction));
 
     assert(port_index < dmxnode::kMaxPorts);
-    assert(port_direction <= dmxnode::PortDirection::kDisable);
+    assert(port_direction <= dmxnode::Direction::kDisable);
 
     if (bridge_.port[port_index].direction == port_direction)
     {
@@ -388,9 +388,9 @@ void E131Bridge::SetDirection(uint32_t port_index, dmxnode::PortDirection port_d
         return;
     }
 
-    if (port_direction == dmxnode::PortDirection::kDisable)
+    if (port_direction == dmxnode::Direction::kDisable)
     {
-        if (bridge_.port[port_index].direction == dmxnode::PortDirection::kOutput)
+        if (bridge_.port[port_index].direction == dmxnode::Direction::kOutput)
         {
             assert(state_.enabled_output_ports >= 1);
             state_.enabled_output_ports = static_cast<uint8_t>(state_.enabled_output_ports - 1);
@@ -398,19 +398,19 @@ void E131Bridge::SetDirection(uint32_t port_index, dmxnode::PortDirection port_d
             LeaveUniverse(port_index, bridge_.port[port_index].universe);
         }
 #if defined(E131_HAVE_DMXIN)
-        else if (bridge_.port[port_index].direction == dmxnode::PortDirection::kInput)
+        else if (bridge_.port[port_index].direction == dmxnode::Direction::kInput)
         {
             assert(state_.enabled_input_ports > 1);
             state_.enabled_input_ports = static_cast<uint8_t>(state_.enabled_input_ports - 1);
         }
 #endif
 
-        bridge_.port[port_index].direction = dmxnode::PortDirection::kDisable;
+        bridge_.port[port_index].direction = dmxnode::Direction::kDisable;
     }
 #if defined(E131_HAVE_DMXIN)
-    else if (port_direction == dmxnode::PortDirection::kInput)
+    else if (port_direction == dmxnode::Direction::kInput)
     {
-        if (bridge_.port[port_index].direction == dmxnode::PortDirection::kOutput)
+        if (bridge_.port[port_index].direction == dmxnode::Direction::kOutput)
         {
             assert(state_.enabled_output_ports >= 1);
             state_.enabled_output_ports = static_cast<uint8_t>(state_.enabled_output_ports - 1);
@@ -420,13 +420,13 @@ void E131Bridge::SetDirection(uint32_t port_index, dmxnode::PortDirection port_d
         state_.enabled_input_ports = static_cast<uint8_t>(state_.enabled_input_ports + 1);
         assert(state_.enabled_input_ports <= dmxnode::kMaxPorts);
 
-        bridge_.port[port_index].direction = dmxnode::PortDirection::kInput;
+        bridge_.port[port_index].direction = dmxnode::Direction::kInput;
     }
 #endif
-    else if (port_direction == dmxnode::PortDirection::kOutput)
+    else if (port_direction == dmxnode::Direction::kOutput)
     {
 #if defined(E131_HAVE_DMXIN)
-        if (bridge_.port[port_index].direction == dmxnode::PortDirection::kInput)
+        if (bridge_.port[port_index].direction == dmxnode::Direction::kInput)
         {
             assert(state_.enabled_input_ports >= 1);
             state_.enabled_input_ports = static_cast<uint8_t>(state_.enabled_input_ports - 1);
@@ -438,7 +438,7 @@ void E131Bridge::SetDirection(uint32_t port_index, dmxnode::PortDirection port_d
 
         JoinUniverse(port_index, bridge_.port[port_index].universe);
 
-        bridge_.port[port_index].direction = dmxnode::PortDirection::kOutput;
+        bridge_.port[port_index].direction = dmxnode::Direction::kOutput;
     }
 
 #if defined(E131_HAVE_DMXIN)
@@ -470,7 +470,7 @@ void E131Bridge::Print()
 
         for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++)
         {
-            if (GetPortDirection(port_index) == dmxnode::PortDirection::kOutput)
+            if (PortDirection(port_index) == dmxnode::Direction::kOutput)
             {
                 const auto kUniverse = GetUniverse(port_index);
                 printf("  Port %-2u %-4u %s\n", static_cast<unsigned int>(port_index), static_cast<unsigned int>(kUniverse),
@@ -486,7 +486,7 @@ void E131Bridge::Print()
 
         for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++)
         {
-            if (GetPortDirection(port_index) == dmxnode::PortDirection::kInput)
+            if (PortDirection(port_index) == dmxnode::Direction::kInput)
             {
                 const auto kUniverse = GetUniverse(port_index);
                 printf("  Port %-2u %-4u %-3u\n", static_cast<unsigned int>(port_index), static_cast<unsigned int>(kUniverse), GetPriority(port_index));
@@ -768,7 +768,7 @@ void E131Bridge::HandleDmx()
 
     for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++)
     {
-        if (bridge_.port[port_index].direction == dmxnode::PortDirection::kOutput)
+        if (bridge_.port[port_index].direction == dmxnode::Direction::kOutput)
         {
             // Frame layer
             // 8.2 Association of Multicast Addresses and Universe
@@ -989,7 +989,7 @@ void E131Bridge::HandleDmx()
                 output_port_[port_index].is_data_pending = true;
             }
 
-            state_.receiving_dmx |= (1U << static_cast<uint8_t>(dmxnode::PortDirection::kOutput));
+            state_.receiving_dmx |= (1U << static_cast<uint8_t>(dmxnode::Direction::kOutput));
         }
     }
 }
@@ -1074,7 +1074,7 @@ void E131Bridge::SetNetworkDataLossCondition(bool source_a, bool source_b)
         }
     }
 
-    state_.receiving_dmx &= static_cast<uint8_t>(~(1U << static_cast<uint8_t>(dmxnode::PortDirection::kOutput)));
+    state_.receiving_dmx &= static_cast<uint8_t>(~(1U << static_cast<uint8_t>(dmxnode::Direction::kOutput)));
 
     // The hal::statusled::Mode::FAST is for RDM Identify (Art-Net 4)
     if (enable_data_indicator_ && (hal::statusled::GetMode() != hal::statusled::Mode::kFast))

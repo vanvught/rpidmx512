@@ -32,7 +32,7 @@
 #include "e131sync.h"
 #include "dmxnode_outputtype.h"
 #include "softwaretimers.h"
-#if defined (NODE_RDMNET_LLRP_ONLY)
+#if defined(NODE_RDMNET_LLRP_ONLY)
 #include "llrp/llrpdevice.h"
 #endif
 
@@ -40,28 +40,12 @@
 #define ALIGNED __attribute__((aligned(4)))
 #endif
 
-namespace e131bridge
-{
-enum class Status : uint8_t
-{
-    kOff,
-    kStandby,
-    kOn
-};
+namespace e131bridge {
+enum class Status : uint8_t { kOff, kStandby, kOn };
 
-enum StateFlags : uint8_t
-{
-    kNetworkDataLoss = (1 << 0),
-    kMergeMode = (1 << 1),
-    kSynchronized = (1 << 2),
-    kForcedSynchronized = (1 << 3),
-    kChanged = (1 << 4),
-    kDisableMergeTimeout = (1 << 5),
-    kDisableSynchronize = (1 << 6)
-};
+enum StateFlags : uint8_t { kNetworkDataLoss = (1 << 0), kMergeMode = (1 << 1), kSynchronized = (1 << 2), kForcedSynchronized = (1 << 3), kChanged = (1 << 4), kDisableMergeTimeout = (1 << 5), kDisableSynchronize = (1 << 6) };
 
-struct State
-{
+struct State {
     uint8_t enabled_input_ports;
     uint8_t enabled_output_ports;
     uint8_t priority;
@@ -81,26 +65,22 @@ struct State
     bool disable_synchronize;
 };
 
-struct Bridge
-{
-    struct Port
-    {
+struct Bridge {
+    struct Port {
         uint16_t universe;
-        dmxnode::PortDirection direction;
+        dmxnode::Direction direction;
         bool local_merge;
     } port[dmxnode::kMaxPorts] ALIGNED;
 };
 
-struct Source
-{
+struct Source {
     uint32_t millis;
     uint32_t ip;
     uint8_t cid[e117::kCidLength];
     uint8_t sequence_number_data;
 };
 
-struct OutputPort
-{
+struct OutputPort {
     Source source_a ALIGNED;
     Source source_b ALIGNED;
     dmxnode::MergeMode merge_mode;
@@ -110,8 +90,7 @@ struct OutputPort
     bool is_data_pending;
 };
 
-struct InputPort
-{
+struct InputPort {
     uint32_t multicast_ip;
     uint32_t millis;
     uint8_t sequence_number;
@@ -121,8 +100,8 @@ struct InputPort
 } // namespace e131bridge
 
 class E131Bridge
-#if defined (NODE_RDMNET_LLRP_ONLY)
-: LLRPDevice
+#if defined(NODE_RDMNET_LLRP_ONLY)
+    : LLRPDevice
 #endif
 {
    public:
@@ -152,16 +131,16 @@ class E131Bridge
     void SetUniverse(uint32_t port_index, uint16_t universe);
     uint16_t GetUniverse(uint32_t port_index) const;
 
-    void SetDirection(uint32_t port_index, dmxnode::PortDirection port_direction);
-    dmxnode::PortDirection GetDirection(uint32_t port_index) const;
+    void SetDirection(uint32_t port_index, dmxnode::Direction port_direction);
+    dmxnode::Direction GetDirection(uint32_t port_index) const;
 
-    void SetUniverse(uint32_t port_index, dmxnode::PortDirection port_direction, uint16_t universe);
-    bool GetUniverse(uint32_t port_index, uint16_t& universe, dmxnode::PortDirection port_direction) const;
+    void SetUniverse(uint32_t port_index, dmxnode::Direction port_direction, uint16_t universe);
+    bool GetUniverse(uint32_t port_index, uint16_t& universe, dmxnode::Direction port_direction) const;
 
     void SetMergeMode(uint32_t port_index, dmxnode::MergeMode merge_mode);
     dmxnode::MergeMode GetMergeMode(uint32_t port_index) const;
 
-    dmxnode::PortDirection GetPortDirection(uint32_t port_index) const;
+    dmxnode::Direction PortDirection(uint32_t port_index) const;
 
 #if defined(OUTPUT_HAVE_STYLESWITCH)
     void SetOutputStyle(uint32_t port_index, dmxnode::OutputStyle output_style);
@@ -209,10 +188,7 @@ class E131Bridge
     void Stop();
     void Run();
 
-    void static StaticCallbackFunctionUdp(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port)
-    {
-        s_this->InputUdp(buffer, size, from_ip, from_port);
-    }
+    void static StaticCallbackFunctionUdp(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port) { s_this->InputUdp(buffer, size, from_ip, from_port); }
 
     static E131Bridge* Get() { return s_this; }
 
@@ -231,11 +207,7 @@ class E131Bridge
     void HandleDmx();
     void HandleSynchronization();
 
-    enum class JoinLeave
-    {
-        kJoin,
-        kLeave
-    };
+    enum class JoinLeave { kJoin, kLeave };
 
     void JoinUniverse(uint32_t port_index, uint16_t universe);
     void LeaveUniverse(uint32_t port_index, uint16_t universe);
@@ -283,4 +255,4 @@ class E131Bridge
 
 #include "e131bridge_inline_impl.h" // IWYU pragma: keep
 
-#endif  // E131BRIDGE_H_
+#endif // E131BRIDGE_H_

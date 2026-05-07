@@ -85,18 +85,18 @@ inline void ArtNetNode::SetPortProtocol4(uint32_t port_index, artnet::PortProtoc
     node_.port[port_index].protocol = port_protocol;
 
     if (port_protocol == artnet::PortProtocol::kSacn) {
-        if (node_.port[port_index].direction == dmxnode::PortDirection::kOutput) {
+        if (node_.port[port_index].direction == dmxnode::Direction::kOutput) {
             output_port_[port_index].good_output |= artnet::GoodOutput::kOutputIsSacn;
         }
 
         SetUniverse4(port_index);
         E131Bridge::SetDirection(port_index, node_.port[port_index].direction);
     } else {
-        if (node_.port[port_index].direction == dmxnode::PortDirection::kOutput) {
+        if (node_.port[port_index].direction == dmxnode::Direction::kOutput) {
             output_port_[port_index].good_output &= static_cast<uint8_t>(~artnet::GoodOutput::kOutputIsSacn);
         }
 
-        E131Bridge::SetDirection(port_index, dmxnode::PortDirection::kDisable);
+        E131Bridge::SetDirection(port_index, dmxnode::Direction::kDisable);
     }
 
     if (state_.status == artnet::Status::kOn) {
@@ -132,7 +132,7 @@ inline uint8_t ArtNetNode::GetGoodOutput4(uint32_t port_index) {
     assert(port_index < dmxnode::kMaxPorts);
 
     uint16_t universe;
-    const auto kIsActive = E131Bridge::GetUniverse(port_index, universe, dmxnode::PortDirection::kOutput);
+    const auto kIsActive = E131Bridge::GetUniverse(port_index, universe, dmxnode::Direction::kOutput);
 
     DEBUG_PRINTF("Port %u, Active %c, Universe %d, %s", port_index, kIsActive ? 'Y' : 'N', universe, dmxnode::GetMergeMode(E131Bridge::GetMergeMode(port_index), true));
 

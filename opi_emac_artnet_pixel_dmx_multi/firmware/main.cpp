@@ -106,9 +106,9 @@ int main() // NOLINT
     {
         const auto kDmxPortIndex = port_index - dmxnode::kDmxportOffset;
 
-        if (dmxnode_node.GetPortDirection(port_index) == dmxnode::PortDirection::kOutput)
+        if (dmxnode_node.PortDirection(port_index) == dmxnode::Direction::kOutput)
         {
-            dmx.SetPortDirection(kDmxPortIndex, dmx::PortDirection::kOutput, false);
+            dmx.SetPortDirection(kDmxPortIndex, dmx::Direction::kOutput, false);
             dmx_universes++;
         }
     }

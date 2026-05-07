@@ -49,7 +49,7 @@ void ArtNetNode::HandleRdmIn() {
     for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++) {
         auto* art_rdm = &art_tod_packet_.art_rdm;
 
-        if (node_.port[port_index].direction == dmxnode::PortDirection::kInput) {
+        if (node_.port[port_index].direction == dmxnode::Direction::kInput) {
             if (input_port_[port_index].destination_ip == 0) continue;
 
             const auto* rdm_data = Rdm::Receive(port_index);
@@ -75,7 +75,7 @@ void ArtNetNode::HandleRdmIn() {
 #endif
                 }
             }
-        } else if (node_.port[port_index].direction == dmxnode::PortDirection::kOutput) {
+        } else if (node_.port[port_index].direction == dmxnode::Direction::kOutput) {
             if (output_port_[port_index].rdm_destination_ip != 0) {
                 const auto* rdm_data = Rdm::Receive(port_index);
                 if (rdm_data != nullptr) {

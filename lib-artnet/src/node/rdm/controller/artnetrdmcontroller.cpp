@@ -69,7 +69,7 @@ static void RespondMessageAck(uint32_t port_index, struct TRdmMessage* message)
     data[i++] = static_cast<uint8_t>(checksum >> 8);
     data[i++] = static_cast<uint8_t>(checksum & 0XFF);
 
-    Rdm::SendRawRespondMessage(port_index, reinterpret_cast<uint8_t*>(message), i);
+    Rdm::TransmitRawRespondMessage(port_index, reinterpret_cast<uint8_t*>(message), i);
 }
 
 bool ArtNetRdmController::RdmReceive(uint32_t port_index, const uint8_t* data)
@@ -142,7 +142,7 @@ bool ArtNetRdmController::RdmReceive(uint32_t port_index, const uint8_t* data)
                     response->checksum[2] = static_cast<uint8_t>((checksum & 0xFF) | 0xAA);
                     response->checksum[3] = static_cast<uint8_t>((checksum & 0xFF) | 0x55);
 
-                    Rdm::SendDiscoveryRespondMessage(port_index, reinterpret_cast<uint8_t*>(response), sizeof(struct TRdmDiscoveryMsg));
+                    Rdm::TransmitDiscoveryRespondMessage(port_index, reinterpret_cast<uint8_t*>(response), sizeof(struct TRdmDiscoveryMsg));
                     return false;
                 }
             }

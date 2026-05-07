@@ -55,7 +55,7 @@ int main() // NOLINT
     FlashCodeInstall spiflash_install;
 
     Widget widget;
-    widget.SetPortDirection(0, dmx::PortDirection::kInput, false);
+    widget.SetPortDirection(0, dmx::Direction::kInput, false);
 
     WidgetParams widget_params;
     widget_params.Load();
@@ -81,7 +81,7 @@ int main() // NOLINT
 
     if (kWidgetMode == widget::Mode::kRdmSniffer)
     {
-        widget.SetPortDirection(0, dmx::PortDirection::kInput, true);
+        widget.SetPortDirection(0, dmx::Direction::kInput, true);
         widget.SnifferFillTransmitBuffer(); // Prevent missing first frame
     }
 

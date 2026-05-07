@@ -52,13 +52,13 @@ class Dmx {
 public:
 	Dmx();
 
-	void SetPortDirection(uint32_t nPortIndex, dmx::PortDirection portDirection, bool bEnableData = false);
-	dmx::PortDirection GetPortDirection(uint32_t nPortIndex);
+	void SetPortDirection(uint32_t nPortIndex, dmx::Direction portDirection, bool bEnableData = false);
+	dmx::Direction PortDirection(uint32_t nPortIndex);
 
 	// RDM Send
 	
 	void RdmSendRaw(uint32_t nPortIndex, const uint8_t *pRdmData, uint32_t nLength);
-	void RdmSendDiscoveryRespondMessage(const uint32_t nPortIndex, const uint8_t *pRdmData, uint32_t nLength);
+	void RdmTransmitDiscoveryRespondMessage(const uint32_t nPortIndex, const uint8_t *pRdmData, uint32_t nLength);
 
 	// RDM Receive
 
@@ -67,8 +67,8 @@ public:
 
 	// DMX Send
 	
-	void SetSendData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength);
-	void SetSendDataWithoutSC(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength);
+	void SetTransmitDataWithSC(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength);
+	void SetTransmitDataWithoutSC(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength);
 
 	void StartOutput(uint32_t nPortIndex);
 	void SetOutput(const bool doForce);
@@ -83,17 +83,17 @@ public:
 
 	void ClearData(uint32_t nPortIndex);
 
-	void SetDmxBreakTime(uint32_t break_time);
-	uint32_t GetDmxBreakTime();
+	void SetTransmitBreakTime(uint32_t break_time);
+	uint32_t TransmitBreakTime();
 
-	void SetDmxMabTime(uint32_t mab_time);
-	uint32_t GetDmxMabTime();
+	void SetTransmitMabTime(uint32_t mab_time);
+	uint32_t TransmitMabTime();
 
-	void SetDmxPeriodTime(uint32_t nPeriodTime);
-	uint32_t GetDmxPeriodTime();
+	void SetTransmitPeriodTime(uint32_t nPeriodTime);
+	uint32_t TransmitPeriodTime();
 
-	void SetDmxSlots(uint16_t nSlots = dmx::kChannelsMax);
-	uint16_t GetDmxSlots();
+	void SetTransmitSlots(uint16_t nSlots = dmx::kChannelsMax);
+	uint16_t TransmitSlots();
 
 	uint32_t GetSendDataLength() ;
 

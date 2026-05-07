@@ -40,19 +40,19 @@ void WidgetConfiguration::SetRefreshRate(uint8_t refresh_rate)
         period = (1000000U / refresh_rate);
     }
 
-    Dmx::Get()->SetDmxPeriodTime(period);
+    Dmx::Get()->SetTransmitPeriodTime(period);
 }
 
 void WidgetConfiguration::SetBreakTime(uint8_t break_time)
 {
     s_break_time = break_time;
-    Dmx::Get()->SetDmxBreakTime(static_cast<uint32_t>(break_time * 10.67f));
+    Dmx::Get()->SetTransmitBreakTime(static_cast<uint32_t>(break_time * 10.67f));
 }
 
 void WidgetConfiguration::SetMabTime(uint8_t mab_time)
 {
     s_mab_time = mab_time;
-    Dmx::Get()->SetDmxMabTime(static_cast<uint32_t>(mab_time * 10.67f));
+    Dmx::Get()->SetTransmitMabTime(static_cast<uint32_t>(mab_time * 10.67f));
 }
 
 void WidgetConfiguration::SetMode(widget::Mode mode)

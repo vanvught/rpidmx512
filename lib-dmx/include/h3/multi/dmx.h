@@ -48,36 +48,28 @@ class Dmx {
    public:
     Dmx();
 
-    void SetPortDirection(uint32_t port_index, dmx::PortDirection port_direction, bool enable_data = false);
-    dmx::PortDirection GetPortDirection(uint32_t port_index) const { return port_direction_[port_index]; }
+    void SetPortDirection(uint32_t port_index, dmx::Direction port_direction, bool enable_data = false);
+    dmx::Direction PortDirection(uint32_t port_index) const { return port_direction_[port_index]; }
 
     void ClearData(uint32_t port_index);
 
     volatile dmx::TotalStatistics& GetTotalStatistics(uint32_t port_index);
 
-    // RDM Send
-    void RdmSend(uint32_t port_index, const uint8_t* data, uint32_t length);
-    void RdmSendDiscoveryRespondMessage(uint32_t port_index, const uint8_t* data, uint32_t length);
+    // DMX Transmit
+    void SetTransmitBreakTime(uint32_t break_time);
+    uint32_t TransmitBreakTime() const { return transmit_break_time_; }
 
-    // RDM Receive
-    const uint8_t* RdmReceive(uint32_t port_index);
-    const uint8_t* RdmReceiveTimeOut(uint32_t port_index, uint16_t timeout);
+    void SetTransmitMabTime(uint32_t mab_time);
+    uint32_t TransmitMabTime() const { return transmit_mab_time_; }
 
-    // DMX Send
-    void SetDmxBreakTime(uint32_t break_time);
-    uint32_t GetDmxBreakTime() const { return transmit_break_time_; }
+    void SetTransmitPeriodTime(uint32_t period_time);
+    uint32_t TransmitPeriodTime() const { return transmit_period_; }
 
-    void SetDmxMabTime(uint32_t mab_time);
-    uint32_t GetDmxMabTime() const { return transmit_mab_time_; }
+    void SetTransmitSlots(uint16_t slots = dmx::kChannelsMax);
+    uint16_t TransmitSlots() const { return transmit_slots_; }
 
-    void SetDmxPeriodTime(uint32_t period_time);
-    uint32_t GetDmxPeriodTime() const { return transmit_period_; }
-
-    void SetDmxSlots(uint16_t slots = dmx::kChannelsMax);
-    uint16_t GetDmxSlots() const { return transmit_slots_; }
-
-    //	void SetSendData(uint32_t port_index, const uint8_t *pData, uint32_t length, const dmx::SendStyle dmxSendStyle = dmx::SendStyle::kDirect);
-    template <dmx::SendStyle dmxSendStyle> void SetSendDataWithoutSC(uint32_t port_index, const uint8_t* data, uint32_t length);
+    template <dmx::SendStyle dmxSendStyle> 
+	void SetTransmitDataWithoutSC(uint32_t port_index, const uint8_t* data, uint32_t length);
 
     void Sync();
 
@@ -94,6 +86,14 @@ class Dmx {
 
     uint32_t GetDmxUpdatesPerSecond(uint32_t port_index);
     uint32_t GetDmxReceivedCount(uint32_t port_index);
+
+    // RDM Send
+    void RdmTransmit(uint32_t port_index, const uint8_t* data, uint32_t length);
+    void RdmTransmitDiscoveryRespondMessage(uint32_t port_index, const uint8_t* data, uint32_t length);
+
+    // RDM Receive
+    const uint8_t* RdmReceive(uint32_t port_index);
+    const uint8_t* RdmReceiveTimeOut(uint32_t port_index, uint16_t timeout);
 
     static Dmx* Get() { return s_this; }
 
@@ -115,7 +115,7 @@ class Dmx {
     uint32_t transmit_period_requested_{dmx::transmit::kPeriodDefault};
     uint32_t transmit_length_[dmx::config::max::kPorts];
     uint16_t transmit_slots_{dmx::kChannelsMax};
-    dmx::PortDirection port_direction_[dmx::config::max::kPorts];
+    dmx::Direction port_direction_[dmx::config::max::kPorts];
 
     static Dmx* s_this;
 };
@@ -124,7 +124,7 @@ class Dmx {
     case i:                     \
         return SetSendDataInternal<i>(pData, length)
 
-template <dmx::SendStyle dmxSendStyle> inline void Dmx::SetSendDataWithoutSC(uint32_t port_index, const uint8_t* pData, uint32_t length) {
+template <dmx::SendStyle dmxSendStyle> inline void Dmx::SetTransmitDataWithoutSC(uint32_t port_index, const uint8_t* pData, uint32_t length) {
     switch (port_index) {
         DMX_HANDLE_SEND_CASE(0);
 #if DMX_MAX_PORTS >= 2

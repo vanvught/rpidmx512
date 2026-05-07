@@ -32,8 +32,7 @@
 
 #include "configurationstore.h"
 
-namespace dmxnode
-{
+namespace dmxnode {
 inline constexpr uint16_t kAddressInvalid = 0xFFFF;
 inline constexpr uint32_t kStartAddressDefault = 1;
 inline constexpr uint32_t kUniverseSize = 512;
@@ -48,8 +47,7 @@ static_assert(common::store::dmxnode::kPortNameLength == kPortNameLength);
 /*
  * sACN E1.31
  */
-namespace priority
-{
+namespace priority {
 inline constexpr uint8_t kLowest = 1;
 inline constexpr uint8_t kDefault = 100;
 inline constexpr uint8_t kHighest = 200;
@@ -67,48 +65,24 @@ inline constexpr uint32_t kDmxportOffset = 0; // Default if not overridden
 inline constexpr uint32_t kDmxportOffset = CONFIG_DMXNODE_DMX_PORT_OFFSET; // From build config
 #endif
 
-inline constexpr uint32_t kConfigPortCount =
-    ((kMaxPorts - kDmxportOffset) <= common::store::dmxnode::kParamPorts) ? (kMaxPorts - kDmxportOffset) : common::store::dmxnode::kParamPorts;
+inline constexpr uint32_t kConfigPortCount = ((kMaxPorts - kDmxportOffset) <= common::store::dmxnode::kParamPorts) ? (kMaxPorts - kDmxportOffset) : common::store::dmxnode::kParamPorts;
 
-enum class Personality
-{
-    kArtnet,
-    kSacn,
-    kNode
-};
+enum class Personality { kArtnet, kSacn, kNode };
 
-enum class MergeMode
-{
-    kHtp,
-    kLtp
-};
+enum class MergeMode { kHtp, kLtp };
 
-namespace mergemode
-{
+namespace mergemode {
 inline static constexpr const char kHtp[] = "htp";
 inline static constexpr const char kLtp[] = "ltp";
 inline static constexpr const char kHtpUpper[] = "HTP";
 inline static constexpr const char kLtpUpper[] = "LTP";
 } // namespace mergemode
 
-enum class PortDirection
-{
-    kInput,
-    kOutput,
-    kDisable
-};
+enum class Direction { kInput, kOutput, kDisable };
 
-enum class FailSafe
-{
-    kHold,
-    kOff,
-    kOn,
-    kPlayback,
-    kRecord
-};
+enum class FailSafe { kHold, kOff, kOn, kPlayback, kRecord };
 
-namespace failsafe
-{
+namespace failsafe {
 inline static constexpr const char kHold[] = "hold";
 inline static constexpr const char kOff[] = "off";
 inline static constexpr const char kOn[] = "on";
@@ -116,146 +90,115 @@ inline static constexpr const char kPlayback[] = "playback";
 inline static constexpr const char kRecord[] = "record";
 } // namespace failsafe
 
-enum class OutputStyle
-{
+enum class OutputStyle {
     kDelta,   ///< DMX frame is triggered
     kConstant ///< DMX output is continuous
 };
 
-enum class Rdm
-{
-    kDisable,
-    kEnable
-};
+enum class Rdm { kDisable, kEnable };
 
-struct SlotInfo
-{
+struct SlotInfo {
     uint16_t category;
     uint8_t type;
 };
 
-inline Personality GetPersonality(const char* personality)
-{
+inline Personality GetPersonality(const char* personality) {
     assert(personality != nullptr);
-    if (strncasecmp(personality, "node", 4) == 0)
-    {
+    if (strncasecmp(personality, "node", 4) == 0) {
         return Personality::kNode;
     }
 
-    if (strncasecmp(personality, "sacn", 4) == 0)
-    {
+    if (strncasecmp(personality, "sacn", 4) == 0) {
         return Personality::kSacn;
     }
 
     return Personality::kArtnet;
 }
 
-[[nodiscard]] inline constexpr const char* GetPersonality(Personality personality)
-{
-    if (personality == Personality::kNode)
-    {
+[[nodiscard]] inline constexpr const char* GetPersonality(Personality personality) {
+    if (personality == Personality::kNode) {
         return "node";
     }
 
-    if (personality == Personality::kSacn)
-    {
+    if (personality == Personality::kSacn) {
         return "sacn";
     }
 
     return "artnet";
 }
 
-inline MergeMode GetMergeMode(const char* merge_mode)
-{
+inline MergeMode GetMergeMode(const char* merge_mode) {
     assert(merge_mode != nullptr);
-    if (strncasecmp(merge_mode, mergemode::kLtp, sizeof(mergemode::kLtp) - 1) == 0)
-    {
+    if (strncasecmp(merge_mode, mergemode::kLtp, sizeof(mergemode::kLtp) - 1) == 0) {
         return MergeMode::kLtp;
     }
 
     return MergeMode::kHtp;
 }
 
-[[nodiscard]] inline constexpr const char* GetMergeMode(MergeMode merge_mode, bool to_upper = false)
-{
-    if (to_upper)
-    {
+[[nodiscard]] inline constexpr const char* GetMergeMode(MergeMode merge_mode, bool to_upper = false) {
+    if (to_upper) {
         return (merge_mode == MergeMode::kHtp) ? mergemode::kHtpUpper : mergemode::kLtpUpper;
     }
     return (merge_mode == MergeMode::kHtp) ? mergemode::kHtp : mergemode::kLtp;
 }
 
-inline const char* GetMergeMode(unsigned m, bool to_upper = false)
-{
+inline const char* GetMergeMode(unsigned m, bool to_upper = false) {
     return GetMergeMode(static_cast<MergeMode>(m), to_upper);
 }
 
-inline PortDirection GetPortDirection(const char* port_direction)
-{
+inline Direction PortDirection(const char* port_direction) {
     assert(port_direction != nullptr);
 
-    if (strncasecmp(port_direction, "input", 5) == 0)
-    {
-        return PortDirection::kInput;
+    if (strncasecmp(port_direction, "input", 5) == 0) {
+        return Direction::kInput;
     }
 
-    if (strncasecmp(port_direction, "disable", 7) == 0)
-    {
-        return PortDirection::kDisable;
+    if (strncasecmp(port_direction, "disable", 7) == 0) {
+        return Direction::kDisable;
     }
 
-    return PortDirection::kOutput;
+    return Direction::kOutput;
 }
 
-[[nodiscard]] inline constexpr const char* GetPortDirection(PortDirection port_direction)
-{
-    if (port_direction == PortDirection::kInput)
-    {
+[[nodiscard]] inline constexpr const char* PortDirection(Direction port_direction) {
+    if (port_direction == Direction::kInput) {
         return "input";
     }
 
-    if (port_direction == PortDirection::kDisable)
-    {
+    if (port_direction == Direction::kDisable) {
         return "disable";
     }
 
     return "output";
 }
 
-inline FailSafe GetFailsafe(const char* failsafe)
-{
-    if (strncasecmp(failsafe, failsafe::kHold, sizeof(failsafe::kHold) - 1) == 0)
-    {
+inline FailSafe GetFailsafe(const char* failsafe) {
+    if (strncasecmp(failsafe, failsafe::kHold, sizeof(failsafe::kHold) - 1) == 0) {
         return FailSafe::kHold;
     }
 
-    if (strncasecmp(failsafe, failsafe::kOff, sizeof(failsafe::kOff) - 1) == 0)
-    {
+    if (strncasecmp(failsafe, failsafe::kOff, sizeof(failsafe::kOff) - 1) == 0) {
         return FailSafe::kOff;
     }
 
-    if (strncasecmp(failsafe, failsafe::kOn, sizeof(failsafe::kOn) - 1) == 0)
-    {
+    if (strncasecmp(failsafe, failsafe::kOn, sizeof(failsafe::kOn) - 1) == 0) {
         return FailSafe::kOn;
     }
 
-    if (strncasecmp(failsafe, failsafe::kPlayback, sizeof(failsafe::kPlayback) - 1) == 0)
-    {
+    if (strncasecmp(failsafe, failsafe::kPlayback, sizeof(failsafe::kPlayback) - 1) == 0) {
         return FailSafe::kPlayback;
     }
 
-    if (strncasecmp(failsafe, failsafe::kRecord, sizeof(failsafe::kRecord) - 1) == 0)
-    {
+    if (strncasecmp(failsafe, failsafe::kRecord, sizeof(failsafe::kRecord) - 1) == 0) {
         return FailSafe::kRecord;
     }
 
     return FailSafe::kHold;
 }
 
-[[nodiscard]] inline constexpr const char* GetFailsafe(FailSafe failsafe)
-{
-    switch (failsafe)
-    {
+[[nodiscard]] inline constexpr const char* GetFailsafe(FailSafe failsafe) {
+    switch (failsafe) {
         case FailSafe::kHold:
             return failsafe::kHold;
             break;
@@ -276,28 +219,23 @@ inline FailSafe GetFailsafe(const char* failsafe)
     return failsafe::kHold;
 }
 
-inline OutputStyle GetOutputStyle(const char* output_style)
-{
+inline OutputStyle GetOutputStyle(const char* output_style) {
     assert(output_style != nullptr);
-    if (strncasecmp(output_style, "const", 5) == 0)
-    {
+    if (strncasecmp(output_style, "const", 5) == 0) {
         return OutputStyle::kConstant;
     }
 
     return OutputStyle::kDelta;
 }
 
-[[nodiscard]] inline constexpr const char* GetOutputStyle(OutputStyle output_style, bool to_upper = false)
-{
-    if (to_upper)
-    {
+[[nodiscard]] inline constexpr const char* GetOutputStyle(OutputStyle output_style, bool to_upper = false) {
+    if (to_upper) {
         return (output_style == OutputStyle::kDelta) ? "DELTA" : "CONST";
     }
     return (output_style == OutputStyle::kDelta) ? "delta" : "const";
 }
 
-namespace scenes
-{
+namespace scenes {
 inline constexpr auto kBytesNeeded = dmxnode::kMaxPorts * dmxnode::kUniverseSize;
 
 void WriteStart();
@@ -310,17 +248,14 @@ void ReadEnd();
 } // namespace scenes
 } // namespace dmxnode
 
-class DmxNode
-{
+class DmxNode {
    public:
-    static DmxNode& Instance()
-    {
+    static DmxNode& Instance() {
         static DmxNode instance;
         return instance;
     }
 
-    void SetShortName(uint32_t port_index, const char* name)
-    {
+    void SetShortName(uint32_t port_index, const char* name) {
         assert(port_index < dmxnode::kMaxPorts);
         auto& port = port_[port_index];
 
@@ -330,8 +265,7 @@ class DmxNode
         port.label[dmxnode::kPortNameLength - 1] = '\0';
     }
 
-    void SetShortNameDefault(uint32_t port_index)
-    {
+    void SetShortNameDefault(uint32_t port_index) {
         assert(port_index < dmxnode::kMaxPorts);
         auto& port = port_[port_index];
 
@@ -339,8 +273,7 @@ class DmxNode
         port.label[dmxnode::kPortNameLength - 1] = '\0';
     }
 
-    const char* GetPortName(uint32_t port_index) const
-    {
+    const char* GetPortName(uint32_t port_index) const {
         assert(port_index < dmxnode::kMaxPorts);
         const auto& port = port_[port_index];
 
@@ -351,20 +284,17 @@ class DmxNode
     void ScenePlayback();
 
    private:
-    DmxNode()
-    {
-        for (uint32_t i = 0; i < dmxnode::kMaxPorts; i++)
-        {
+    DmxNode() {
+        for (uint32_t i = 0; i < dmxnode::kMaxPorts; i++) {
             SetShortNameDefault(i);
         }
     }
 
-    struct
-    {
-        dmxnode::PortDirection port_direction{dmxnode::PortDirection::kDisable};
+    struct {
+        dmxnode::Direction port_direction{dmxnode::Direction::kDisable};
         bool is_transmitting{false};
         char label[dmxnode::kPortNameLength];
     } port_[dmxnode::kMaxPorts];
 };
 
-#endif  // DMXNODE_H_
+#endif // DMXNODE_H_

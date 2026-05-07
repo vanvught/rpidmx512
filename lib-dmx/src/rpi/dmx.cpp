@@ -75,7 +75,7 @@ typedef enum {
 
 using namespace dmx;
 
-static PortDirection s_nPortDirection = dmx::PortDirection::kInput;
+static PortDirection s_nPortDirection = dmx::Direction::kInput;
 
 // DMX
 
@@ -622,33 +622,33 @@ void Dmx::SetPortDirection([[maybe_unused]] uint32_t nPortIndex, PortDirection t
 	}
 }
 
-PortDirection Dmx::GetPortDirection([[maybe_unused]] uint32_t nPortIndex) {
+PortDirection Dmx::PortDirection([[maybe_unused]] uint32_t nPortIndex) {
 	return s_nPortDirection;
 }
 
 // DMX
 
-void Dmx::SetDmxBreakTime(uint32_t break_time) {
+void Dmx::SetTransmitBreakTime(uint32_t break_time) {
 	s_nDmxTransmitBreakTime = std::max(transmit::kBreakTimeMin, break_time);
 
-	SetDmxPeriodTime(transmit_period_requested_);
+	SetTransmitPeriodTime(transmit_period_requested_);
 }
 
-uint32_t Dmx::GetDmxBreakTime() {
+uint32_t Dmx::TransmitBreakTime() {
 	return s_nDmxTransmitBreakTime;
 }
 
-void Dmx::SetDmxMabTime(uint32_t mab_time) {
+void Dmx::SetTransmitMabTime(uint32_t mab_time) {
 	s_nDmxTransmitMabTime =std::max(transmit::kMabTimeMin, mab_time);
 
-	SetDmxPeriodTime(transmit_period_requested_);
+	SetTransmitPeriodTime(transmit_period_requested_);
 }
 
-uint32_t Dmx::GetDmxMabTime() {
+uint32_t Dmx::TransmitMabTime() {
 	return s_nDmxTransmitMabTime;
 }
 
-void Dmx::SetDmxPeriodTime(uint32_t nPeriodTime) {
+void Dmx::SetTransmitPeriodTime(uint32_t nPeriodTime) {
 	const auto package_length_us = s_nDmxTransmitBreakTime + s_nDmxTransmitMabTime + (s_nDmxSendDataLength * 44);
 
 	transmit_period_requested_ = nPeriodTime;
@@ -664,7 +664,7 @@ void Dmx::SetDmxPeriodTime(uint32_t nPeriodTime) {
 	}
 }
 
-uint32_t Dmx::GetDmxPeriodTime() {
+uint32_t Dmx::TransmitPeriodTime() {
 	return s_nDmxTransmitPeriod;
 }
 
@@ -728,18 +728,18 @@ const uint8_t* Dmx::GetDmxChanged([[maybe_unused]]uint32_t nPortIndex) {
 
 void Dmx::SetSendDataLength(uint32_t nLength) {
 	s_nDmxSendDataLength = nLength;
-	SetDmxPeriodTime(transmit_period_requested_);
+	SetTransmitPeriodTime(transmit_period_requested_);
 }
 
-void Dmx::SetDmxSlots(uint16_t nSlots) {
+void Dmx::SetTransmitSlots(uint16_t nSlots) {
 	SetSendDataLength(nSlots + 1U);
 }
 
-uint16_t Dmx::GetDmxSlots() {
+uint16_t Dmx::TransmitSlots() {
 	return s_nDmxSendDataLength - 1U;
 }
 
-void Dmx::SetSendData([[maybe_unused]]uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
+void Dmx::SetTransmitDataWithSC([[maybe_unused]]uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
 	do {
 		dmb();
 	} while (sv_DmxTransmitState != IDLE && sv_DmxTransmitState != DMXINTER);
@@ -750,7 +750,7 @@ void Dmx::SetSendData([[maybe_unused]]uint32_t nPortIndex, const uint8_t *pData,
 	SetSendDataLength(nLength);
 }
 
-void Dmx::SetSendDataWithoutSC([[maybe_unused]]uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
+void Dmx::SetTransmitDataWithoutSC([[maybe_unused]]uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
 	do {
 		dmb();
 	} while (sv_DmxTransmitState != IDLE && sv_DmxTransmitState != DMXINTER);
@@ -805,14 +805,14 @@ const uint8_t* Dmx::RdmReceiveTimeOut(uint32_t nPortIndex, uint32_t nTimeOut) {
 	return p;
 }
 
-void Dmx::RdmSend(uint32_t port_index, const uint8_t* rdm_data, uint32_t length) {
-    Dmx::Get()->SetPortDirection(port_index, dmx::PortDirection::kOutput, false);
+void Dmx::RdmTransmit(uint32_t port_index, const uint8_t* rdm_data, uint32_t length) {
+    Dmx::Get()->SetPortDirection(port_index, dmx::Direction::kOutput, false);
 
     Dmx::Get()->RdmSendRaw(port_index, rdm_data, length);
 
     udelay(rdm::responder::kDataDirectionDelay);
 
-    Dmx::Get()->SetPortDirection(port_index, dmx::PortDirection::kInput, true);
+    Dmx::Get()->SetPortDirection(port_index, dmx::Direction::kInput, true);
 }
 
 void Dmx::RdmSendRaw([[maybe_unused]] uint32_t nPortIndex, const uint8_t *pRdmData, uint32_t nLength) {

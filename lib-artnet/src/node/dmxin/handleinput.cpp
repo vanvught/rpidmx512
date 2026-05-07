@@ -69,7 +69,7 @@ void ArtNetNode::HandleInput()
     // We only act on Input[0] because bind_index selects the logical port instance.
     if (kArtInput->num_ports_lo >= 1)
     {
-        if (node_.port[kPortIndex].direction == dmxnode::PortDirection::kInput)
+        if (node_.port[kPortIndex].direction == dmxnode::Direction::kInput)
         {
             const auto kDisabled = (kArtInput->input[0] & 0x01U) != 0U;
 

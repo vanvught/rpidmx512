@@ -88,16 +88,16 @@ void DmxSendParams::Store(const char* buffer, uint32_t buffer_size) {
 void DmxSendParams::Set() {
     auto& dmx = *Dmx::Get();
 
-    dmx.SetDmxBreakTime(store_dmx_send.break_time);
-    dmx.SetDmxMabTime(store_dmx_send.mab_time);
-    dmx.SetDmxSlots(RoundupSlots(store_dmx_send.slots_count));
+    dmx.SetTransmitBreakTime(store_dmx_send.break_time);
+    dmx.SetTransmitMabTime(store_dmx_send.mab_time);
+    dmx.SetTransmitSlots(RoundupSlots(store_dmx_send.slots_count));
 
     uint32_t period = 0;
     if (store_dmx_send.refresh_rate != 0) {
         period = 1000000U / store_dmx_send.refresh_rate;
     }
 
-    dmx.SetDmxPeriodTime(period);
+    dmx.SetTransmitPeriodTime(period);
 
 #ifndef NDEBUG
     Dump();

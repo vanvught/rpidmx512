@@ -36,14 +36,14 @@
 
 class Rdm {
    public:
-    static void SendRaw(uint32_t port_index, const uint8_t* rdm_data, uint32_t length) {
+    static void TransmitRaw(uint32_t port_index, const uint8_t* rdm_data, uint32_t length) {
         assert(rdm_data != nullptr);
         assert(length != 0);
 
-        Dmx::Get()->RdmSend(port_index, rdm_data, length);
+        Dmx::Get()->RdmTransmit(port_index, rdm_data, length);
     }
 
-    static void Send(uint32_t port_index, struct TRdmMessage* rdm_command) {
+    static void Transmit(uint32_t port_index, struct TRdmMessage* rdm_command) {
         assert(port_index < dmx::config::max::kPorts);
         assert(rdm_command != nullptr);
 
@@ -60,12 +60,12 @@ class Rdm {
         data[i++] = static_cast<uint8_t>(checksum >> 8);
         data[i] = static_cast<uint8_t>(checksum & 0XFF);
 
-        SendRaw(port_index, reinterpret_cast<const uint8_t*>(rdm_command), rdm_command->message_length + rdm::kMessageChecksumSize);
+        TransmitRaw(port_index, reinterpret_cast<const uint8_t*>(rdm_command), rdm_command->message_length + rdm::kMessageChecksumSize);
 
         s_transaction_number[port_index]++;
     }
 
-    static void SendRawRespondMessage(uint32_t port_index, const uint8_t* rdm_data, uint32_t length) {
+    static void TransmitRawRespondMessage(uint32_t port_index, const uint8_t* rdm_data, uint32_t length) {
         assert(port_index < dmx::config::max::kPorts);
         assert(rdm_data != nullptr);
         assert(length != 0);
@@ -74,10 +74,10 @@ class Rdm {
         // 3.2.2 Responder Packet spacing
         udelay(rdm::responder::kPacketSpacing, gsv_rdm_data_receive_end[port_index]);
 
-        SendRaw(port_index, rdm_data, length);
+        TransmitRaw(port_index, rdm_data, length);
     }
 
-    static void SendDiscoveryRespondMessage(uint32_t port_index, const uint8_t* rdm_data, uint32_t length) { Dmx::Get()->RdmSendDiscoveryRespondMessage(port_index, rdm_data, length); }
+    static void TransmitDiscoveryRespondMessage(uint32_t port_index, const uint8_t* rdm_data, uint32_t length) { Dmx::Get()->RdmTransmitDiscoveryRespondMessage(port_index, rdm_data, length); }
 
     static const uint8_t* Receive(uint32_t port_index) { return Dmx::Get()->RdmReceive(port_index); }
     static const uint8_t* ReceiveTimeOut(uint32_t port_index, uint16_t time_out) { return Dmx::Get()->RdmReceiveTimeOut(port_index, time_out); }

@@ -58,7 +58,7 @@ void ArtNetOutput::Start(uint32_t port_index) {
 	if (port_index < dmxnode::kMaxPorts) {
 		uint16_t universe;
 
-		if (E131Bridge::Get()->GetUniverse(static_cast<uint8_t>(port_index), universe, dmxnode::PortDirection::kOutput)) {
+		if (E131Bridge::Get()->GetUniverse(static_cast<uint8_t>(port_index), universe, dmxnode::Direction::kOutput)) {
 			universe_[port_index] = universe;
 			DEBUG_PRINTF("universe_[%u]=%d", port_index, static_cast<int>(universe_[port_index]));
 		}
@@ -73,7 +73,7 @@ void ArtNetOutput::Stop(uint32_t port_index) {
 	if (port_index < dmxnode::kMaxPorts) {
 		uint16_t universe;
 
-		if (E131Bridge::Get()->GetUniverse(static_cast<uint8_t>(port_index), universe, dmxnode::PortDirection::kOutput)) {
+		if (E131Bridge::Get()->GetUniverse(static_cast<uint8_t>(port_index), universe, dmxnode::Direction::kOutput)) {
 			universe_[port_index] = 0;
 			DEBUG_PRINTF("universe_[%d]=0", static_cast<int>(port_index));
 		}
