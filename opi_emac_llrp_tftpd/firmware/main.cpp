@@ -69,7 +69,7 @@ int main() // NOLINT
 
     fw.Print("RDMNet LLRP device only");
 
-	RDMNetDevice llrp_only_device;
+	RdmNetDevice llrp_only_device;
 	llrp_only_device.Print();
 
     RemoteConfig remote_config(remoteconfig::Output::CONFIG, 0);

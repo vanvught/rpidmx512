@@ -32,8 +32,7 @@
 
 #include "rdmmessage.h"
 
-namespace rdm::discovery
-{
+namespace rdm::discovery {
 inline constexpr uint32_t kReceiveTimeOut = 5800;
 inline constexpr uint32_t kLateResponseTimeOut = 1000;
 inline constexpr uint32_t kUnmuteCounter = 3;
@@ -43,22 +42,20 @@ inline constexpr uint32_t kDiscoveryCounter = 3;
 inline constexpr uint32_t kQuikfindCounter = 5;
 inline constexpr uint32_t kQuikfindDiscoveryCounter = 5;
 
-enum class State
-{
-    kIdle,
-    kUnmute,
-    kMute,
-    kDiscovery,
-    kDiscoverySingleDevice,
-    kDub,
-    kQuickfind,
-    kQuickfindDiscovery,
-    kLateResponse,
-    kFinished
+enum class State { 
+	kIdle, 
+	kUnmute, 
+	kMute, 
+	kDiscovery, 
+	kDiscoverySingleDevice, 
+	kDub, 
+	kQuickfind, 
+	kQuickfindDiscovery, 
+	kLateResponse, 
+	kFinished
 };
 
-class StateMachine
-{
+class StateMachine {
    public:
     explicit StateMachine(const uint8_t* uid);
 
@@ -69,25 +66,19 @@ class StateMachine
 
     bool Stop();
 
-	bool IsRunning()
-	{
-		return (state_ != rdm::discovery::State::kIdle);		
-	}
-	
-    bool IsRunning(uint32_t& port_index, bool& is_incremental) const
-    {
+    bool IsRunning() { return (state_ != rdm::discovery::State::kIdle); }
+
+    bool IsRunning(uint32_t& port_index, bool& is_incremental) const {
         port_index = port_index_;
         is_incremental = do_incremental_;
         return (state_ != rdm::discovery::State::kIdle);
     }
 
-    bool IsFinished(uint32_t& port_index, bool& is_incremental)
-    {
+    bool IsFinished(uint32_t& port_index, bool& is_incremental) {
         port_index = port_index_;
         is_incremental = do_incremental_;
 
-        if (is_finished_)
-        {
+        if (is_finished_) {
             is_finished_ = false;
             return true;
         }
@@ -97,10 +88,8 @@ class StateMachine
 
     uint32_t CopyWorkingQueue(char* out_buffer, uint32_t out_buffer_size);
 
-    void Run()
-    {
-        if (__builtin_expect((state_ == rdm::discovery::State::kIdle), 1))
-        {
+    void Run() {
+        if (__builtin_expect((state_ == rdm::discovery::State::kIdle), 1)) {
             return;
         }
 
@@ -116,7 +105,7 @@ class StateMachine
     void NewState(rdm::discovery::State state, bool do_state_late_response, uint32_t line);
 
    private:
-    RDMMessage message_;
+    RdmMessage message_;
     uint8_t* response_{nullptr};
     uint8_t uid_[rdm::kUidSize];
     uint32_t port_index_{0};
@@ -127,20 +116,17 @@ class StateMachine
     rdm::discovery::State state_{rdm::discovery::State::kIdle};
     rdm::discovery::State saved_state_{rdm::discovery::State::kIdle};
 
-    struct
-    {
+    struct {
         uint32_t micros;
     } late_response_;
 
-    struct
-    {
+    struct {
         uint32_t counter;
         uint32_t micros;
         bool is_command_running;
     } unmute_;
 
-    struct
-    {
+    struct {
         uint32_t tod_entries;
         uint32_t counter;
         uint32_t micros;
@@ -148,14 +134,10 @@ class StateMachine
         bool is_command_running;
     } mute_;
 
-    struct
-    {
-        struct
-        {
-            bool Push(uint64_t lower_bound, uint64_t upper_bound)
-            {
-                if (top == rdm::discovery::kDiscoveryStackSize - 1)
-                {
+    struct {
+        struct {
+            bool Push(uint64_t lower_bound, uint64_t upper_bound) {
+                if (top == rdm::discovery::kDiscoveryStackSize - 1) {
                     assert(0);
                     return false;
                 }
@@ -168,10 +150,8 @@ class StateMachine
                 return true;
             }
 
-            bool Pop(uint64_t& lower_bound, uint64_t& upper_bound)
-            {
-                if (top == -1)
-                {
+            bool Pop(uint64_t& lower_bound, uint64_t& upper_bound) {
+                if (top == -1) {
                     return false;
                 }
 
@@ -184,8 +164,7 @@ class StateMachine
 
             int32_t top;
 
-            struct
-            {
+            struct {
                 uint64_t lower_bound;
                 uint64_t upper_bound;
             } items[rdm::discovery::kDiscoveryStackSize];
@@ -203,23 +182,20 @@ class StateMachine
         bool is_command_running;
     } discovery_;
 
-    struct
-    {
+    struct {
         uint32_t counter;
         uint32_t micros;
         bool is_command_running;
     } discovery_single_device_;
 
-    struct
-    {
+    struct {
         uint32_t counter;
         uint32_t micros;
         bool is_command_running;
         uint8_t uid[rdm::kUidSize];
     } quick_find_;
 
-    struct
-    {
+    struct {
         uint32_t counter;
         uint32_t micros;
         bool is_command_running;

@@ -2,7 +2,7 @@
  * @file rdmnetdevice.h
  *
  */
-/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,27 +34,23 @@
 #include "firmware/debug/debug_debug.h"
 #include "rdmdevice.h"
 
-class RDMNetDevice final : public LLRPDevice
-{
+class RdmNetDevice final : public LLRPDevice {
    public:
-    RDMNetDevice()
-    {
+    RdmNetDevice() {
         DEBUG_ENTRY();
 
         DEBUG_EXIT();
     }
 
-    ~RDMNetDevice()
-    {
+    ~RdmNetDevice() {
         DEBUG_ENTRY();
 
         DEBUG_EXIT();
     };
 
-    void Print()
-    {
-		rdm::device::Device::Instance().Print();
-		
+    void Print() {
+        rdm::device::Device::Instance().Print();
+
         static constexpr auto kUuidStringLength = 36;
         char uuid_str[kUuidStringLength + 1];
         uuid_str[kUuidStringLength] = '\0';

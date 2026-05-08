@@ -75,7 +75,7 @@ int main(int argc, char** argv)
 
     pp.SetOutput(&monitor);
 
-    RDMNetDevice llrp_only_device;
+    RdmNetDevice llrp_only_device;
     llrp_only_device.Print();
 
     pp.Print();

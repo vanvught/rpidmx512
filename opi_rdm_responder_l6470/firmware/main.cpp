@@ -98,7 +98,7 @@ int main() // NOLINT
         snprintf(description, sizeof(description) - 1, "Sparkfun [%d]", kMotorsConnected);
     }
 	
-    RDMPersonality* rdm_personalities[1] = {new RDMPersonality(description, &dmxNodeChain)};
+    RdmPersonality* rdm_personalities[1] = {new RdmPersonality(description, &dmxNodeChain)};
 
     RDMResponder rdm_responder(rdm_personalities, 1);
     rdm_responder.Init();

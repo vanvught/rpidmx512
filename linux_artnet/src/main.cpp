@@ -71,7 +71,7 @@ int main(int argc, char** argv) //NOLINT
     monitor_params.Load();
     monitor_params.Set();
 
-    RDMPersonality* personalities[1] = {new RDMPersonality("Real-time DMX Monitor", &monitor)};
+    RdmPersonality* personalities[1] = {new RdmPersonality("Real-time DMX Monitor", &monitor)};
 
     ArtNetRdmResponder rdm_responder(personalities, 1);
     rdm_responder.Print();

@@ -48,10 +48,10 @@ enum class SlotsInfo
 };
 inline constexpr auto kDmxFootprint = static_cast<uint16_t>(SlotsInfo::LAST);
 
-inline void SetPersonalityDescription(char description[rdm::personality::DESCRIPTION_MAX_LENGTH])
+inline void SetPersonalityDescription(char description[rdm::personality::kDescriptionMaxLength])
 {
     auto& configuration = PixelDmxConfiguration::Get();
-    snprintf(description, rdm::personality::DESCRIPTION_MAX_LENGTH - 1U, "%s:%u G%u [%s]", pixel::GetTypeName(configuration.GetType()), configuration.GetCount(),
+    snprintf(description, rdm::personality::kDescriptionMaxLength - 1U, "%s:%u G%u [%s]", pixel::GetTypeName(configuration.GetType()), configuration.GetCount(),
              configuration.GetGroupingCount(), pixel::GetMapName(configuration.GetMap()));
 }
 

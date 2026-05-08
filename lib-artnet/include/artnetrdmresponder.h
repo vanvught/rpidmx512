@@ -40,7 +40,7 @@
 class ArtNetRdmResponder final : public RDMDeviceResponder
 {
    public:
-    ArtNetRdmResponder(RDMPersonality** rdm_personalities, uint32_t personality_count) : RDMDeviceResponder(rdm_personalities, personality_count)
+    ArtNetRdmResponder(RdmPersonality** rdm_personalities, uint32_t personality_count) : RDMDeviceResponder(rdm_personalities, personality_count)
     {
         DEBUG_ENTRY();
 

@@ -92,7 +92,7 @@ int main() // NOLINT
     ddpdisplay.Print();
 
 #if defined(NODE_RDMNET_LLRP_ONLY)
-	RDMNetDevice llrp_only_device;
+	RdmNetDevice llrp_only_device;
 	llrp_only_device.Print();
 #endif
 

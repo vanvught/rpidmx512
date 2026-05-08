@@ -2,7 +2,7 @@
  * @file rdmslotinfo.h
  *
  */
-/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2018-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,8 +28,7 @@
 
 #include <cstdint>
 
-class RDMSlotInfo
-{
+class RDMSlotInfo {
    public:
     static const char* GetTypeText(uint8_t id, uint32_t& length);
     static const char* GetCategoryText(uint16_t slot_offset, uint16_t id, uint32_t& length);
@@ -39,4 +38,4 @@ class RDMSlotInfo
     static int Bsearch(uint16_t key);
 };
 
-#endif  // RDMSLOTINFO_H_
+#endif // RDMSLOTINFO_H_

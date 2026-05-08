@@ -31,7 +31,7 @@
 #include "bwspi7fets.h"
 
 static constexpr uint32_t DMX_FOOTPRINT = 7;
-static RDMPersonality *s_RDMPersonalities[] = {new RDMPersonality("Digital output 7-lines", DMX_FOOTPRINT)};
+static RdmPersonality *s_RDMPersonalities[] = {new RdmPersonality("Digital output 7-lines", DMX_FOOTPRINT)};
 
 RDMSubDeviceBw7fets::RDMSubDeviceBw7fets(uint16_t dmx_start_address, char nChipSselect, uint8_t nSlaveAddress, [[maybe_unused]] uint32_t nSpiSpeed) :
 	RDMSubDevice("bw_spi_7fets", dmx_start_address), m_BwSpi7fets(nChipSselect, nSlaveAddress)

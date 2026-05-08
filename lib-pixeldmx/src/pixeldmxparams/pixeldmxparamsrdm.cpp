@@ -88,7 +88,7 @@ void PixelDmxParamsRdm::SetDataImpl([[maybe_unused]] uint32_t port_index, const 
             configuration.SetGroupingCount(kGroupingCount);
             configuration.Validate(1);
 
-            char description[rdm::personality::DESCRIPTION_MAX_LENGTH];
+            char description[rdm::personality::kDescriptionMaxLength];
             pixeldmx::paramsdmx::SetPersonalityDescription(description);
             auto* personality = RDMDeviceResponder::Get()->GetPersonality(rdm::kRootDevice, 1);
             personality->SetDescription(description);

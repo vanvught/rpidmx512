@@ -31,7 +31,7 @@
 #include "rdmpersonality.h"
 
 static constexpr uint32_t DMX_FOOTPRINT = 4;
-static RDMPersonality *s_RDMPersonalities[] = {new RDMPersonality("Dummy-H", DMX_FOOTPRINT), new RDMPersonality("Dummy-D", DMX_FOOTPRINT)};
+static RdmPersonality *s_RDMPersonalities[] = {new RdmPersonality("Dummy-H", DMX_FOOTPRINT), new RdmPersonality("Dummy-D", DMX_FOOTPRINT)};
 
 RDMSubDeviceDummy::RDMSubDeviceDummy([[maybe_unused]] uint16_t dmx_start_address, [[maybe_unused]] char nChipSselect, [[maybe_unused]] uint8_t nSlaveAddress, [[maybe_unused]] uint32_t nSpiSpeed) :
 	RDMSubDevice("SubDevice Dummy", dmx_start_address)

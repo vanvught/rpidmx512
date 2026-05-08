@@ -31,7 +31,7 @@
 #include "bwspirelay.h"
 
 static constexpr uint32_t DMX_FOOTPRINT = 2;
-static RDMPersonality *s_RDMPersonalities[] = {new RDMPersonality("Relays", DMX_FOOTPRINT)};
+static RdmPersonality *s_RDMPersonalities[] = {new RdmPersonality("Relays", DMX_FOOTPRINT)};
 
 RDMSubDeviceBwRelay::RDMSubDeviceBwRelay(uint16_t dmx_start_address, char nChipSselect, uint8_t nSlaveAddress, [[maybe_unused]] uint32_t nSpiSpeed) :
 	RDMSubDevice("bw_spi_relay", dmx_start_address), m_BwSpiRelay(nChipSselect, nSlaveAddress)

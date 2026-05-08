@@ -358,7 +358,7 @@ void RDMHandler::HandleData(const uint8_t* in, uint8_t* out, Type type)
                 response->param_data[1] = 0x00; // Control Field
 
 #if defined(RDM_RESPONDER)
-                if (RDMSubDevices::Get()->GetCount() != 0)
+                if (RdmSubDevices::Get()->GetCount() != 0)
                 {
                     response->param_data[1] |= rdm::control::Field::kSubDeviceFlag;
                 }
@@ -390,7 +390,7 @@ void RDMHandler::HandleData(const uint8_t* in, uint8_t* out, Type type)
                 response->param_data[1] = 0x00; // Control Field
 
 #if defined(RDM_RESPONDER)
-                if (RDMSubDevices::Get()->GetCount() != 0)
+                if (RdmSubDevices::Get()->GetCount() != 0)
                 {
                     response->param_data[1] |= rdm::control::Field::kSubDeviceFlag;
                 }
@@ -422,7 +422,7 @@ void RDMHandler::Handlers(Type type, bool bIsBroadcast, uint8_t nCommandClass, u
     }
 
 #if defined(RDM_RESPONDER)
-    const auto kSubDeviceCount = RDMSubDevices::Get()->GetCount();
+    const auto kSubDeviceCount = RdmSubDevices::Get()->GetCount();
 #else
     const auto kSubDeviceCount = 0U;
 #endif
@@ -986,7 +986,7 @@ void RDMHandler::GetPersonalityDescription(uint16_t sub_device)
     pRdmDataOut->param_data[2] = static_cast<uint8_t>(nSlots);
 
     auto* pDst = reinterpret_cast<char*>(&pRdmDataOut->param_data[3]);
-    uint8_t length = rdm::personality::DESCRIPTION_MAX_LENGTH;
+    uint8_t length = rdm::personality::kDescriptionMaxLength;
 
     RDMDeviceResponder::Get()->GetPersonality(sub_device, nPersonality)->DescriptionCopyTo(pDst, length);
 

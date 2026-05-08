@@ -117,7 +117,7 @@ public:
 		return &sub_devices_info_;
 	}
 
-	RDMPersonality *GetPersonality(uint8_t personality) {
+	RdmPersonality *GetPersonality(uint8_t personality) {
 		assert(personality != 0);
 		assert(personality <= sub_devices_info_.personality_count);
 
@@ -165,7 +165,7 @@ protected:
 		sub_devices_info_.dmx_footprint = dmx_footprint;
 	}
 
-	void SetPersonalities(RDMPersonality **personalities, uint8_t personality_count) {
+	void SetPersonalities(RdmPersonality **personalities, uint8_t personality_count) {
 		assert(personalities != nullptr);
 
 		sub_devices_info_.personality_count = personality_count;
@@ -188,7 +188,7 @@ private:
 	}
 
 private:
- RDMPersonality** personalities_{nullptr};
+ RdmPersonality** personalities_{nullptr};
  bool is_factory_defaults_{true};
  uint16_t checksum_{0};
  uint16_t dmx_start_address_factory_default_;

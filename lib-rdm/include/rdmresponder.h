@@ -42,39 +42,33 @@
 #error "Cannot be both RDMNet Device and RDM Responder"
 #endif
 
-namespace rdm::responder
-{
+namespace rdm::responder {
 inline constexpr int kNoData = 0;
 inline constexpr int kDiscoveryResponse = -1;
 inline constexpr int kInvalidDataReceived = -2;
 inline constexpr int kInvalidResponse = -3;
 } // namespace rdm::responder
 
-namespace configstore
-{
+namespace configstore {
 void Delay();
 } // namespace configstore
 
-class RDMResponder final : DMXReceiver, public RDMDeviceResponder
-{
+class RDMResponder final : DMXReceiver, public RDMDeviceResponder {
    public:
-    RDMResponder(RDMPersonality** personalities, uint32_t personality_count, uint32_t current_personality = RDMDeviceResponder::kDefaultCurrentPersonality)
-        : DMXReceiver(personalities[current_personality - 1]->GetDmxNodeOutputType()), RDMDeviceResponder(personalities, personality_count, current_personality)
-    {
+    RDMResponder(RdmPersonality** personalities, uint32_t personality_count, uint32_t current_personality = RDMDeviceResponder::kDefaultCurrentPersonality)
+        : DMXReceiver(personalities[current_personality - 1]->GetDmxNodeOutputType()), RDMDeviceResponder(personalities, personality_count, current_personality) {
         assert(s_this == nullptr);
         s_this = this;
     }
 
     ~RDMResponder() override = default;
 
-    void Init()
-    {
+    void Init() {
         RDMDeviceResponder::Init();
         // There is no DMXReceiver::Init()
     }
 
-    int Run()
-    {
+    int Run() {
         int16_t length;
 
 #if !defined(CONFIG_RDM_ENABLE_SUBDEVICES)
@@ -82,22 +76,16 @@ class RDMResponder final : DMXReceiver, public RDMDeviceResponder
 #else
         const auto* dmx_data_in = DMXReceiver::Run(length);
 
-        if (RDMSubDevices::Get()->GetCount() != 0)
-        {
-            if (length == -1)
-            {
-                if (is_sub_device_active)
-                {
-                    RDMSubDevices::Get()->Stop();
+        if (RdmSubDevices::Get()->GetCount() != 0) {
+            if (length == -1) {
+                if (is_sub_device_active) {
+                    RdmSubDevices::Get()->Stop();
                     is_sub_device_active = false;
                 }
-            }
-            else if (dmx_data_in != nullptr)
-            {
-                RDMSubDevices::Get()->SetData(dmx_data_in, static_cast<uint16_t>(length));
-                if (!is_sub_device_active)
-                {
-                    RDMSubDevices::Get()->Start();
+            } else if (dmx_data_in != nullptr) {
+                RdmSubDevices::Get()->SetData(dmx_data_in, static_cast<uint16_t>(length));
+                if (!is_sub_device_active) {
+                    RdmSubDevices::Get()->Start();
                     is_sub_device_active = true;
                 }
             }
@@ -106,8 +94,7 @@ class RDMResponder final : DMXReceiver, public RDMDeviceResponder
 
         const auto* rdm_data_in = Rdm::Receive(0);
 
-        if (rdm_data_in == nullptr) [[likely]]
-        {
+        if (rdm_data_in == nullptr) [[likely]] {
             return rdm::responder::kNoData;
         }
 
@@ -115,12 +102,10 @@ class RDMResponder final : DMXReceiver, public RDMDeviceResponder
         rdm::message::Print(rdm_data_in);
 #endif
 
-        if (rdm_data_in[0] == E120_SC_RDM)
-        {
+        if (rdm_data_in[0] == E120_SC_RDM) {
             const auto* rdm_in = reinterpret_cast<const struct TRdmMessage*>(rdm_data_in);
 
-            switch (rdm_in->command_class)
-            {
+            switch (rdm_in->command_class) {
                 case E120_DISCOVERY_COMMAND:
                 case E120_GET_COMMAND:
                 case E120_SET_COMMAND:
@@ -138,14 +123,12 @@ class RDMResponder final : DMXReceiver, public RDMDeviceResponder
         return rdm::responder::kDiscoveryResponse;
     }
 
-    void Print()
-    {
+    void Print() {
         RDMDeviceResponder::Print();
         DMXReceiver::Print();
     }
 
-    void Start()
-    {
+    void Start() {
         // There is no RDMDeviceResponder::Start()
         DMXReceiver::Start();
     }
@@ -158,25 +141,20 @@ class RDMResponder final : DMXReceiver, public RDMDeviceResponder
     void DmxStartAddressUpdate(uint16_t dmx_start_address) __attribute__((weak));
 
    private:
-    int HandleResponse(const uint8_t* response)
-    {
+    int HandleResponse(const uint8_t* response) {
         auto length = rdm::responder::kInvalidResponse;
 
-        if (response[0] == E120_SC_RDM)
-        {
+        if (response[0] == E120_SC_RDM) {
             const auto* p = reinterpret_cast<const struct TRdmMessage*>(response);
             length = static_cast<int>(p->message_length + rdm::kMessageChecksumSize);
             Rdm::TransmitRawRespondMessage(0, response, static_cast<uint16_t>(length));
-        }
-        else if (response[0] == 0xFE)
-        {
+        } else if (response[0] == 0xFE) {
             length = sizeof(struct TRdmDiscoveryMsg);
             Rdm::TransmitDiscoveryRespondMessage(0, response, static_cast<uint16_t>(length));
         }
 
 #ifndef NDEBUG
-        if (length != rdm::responder::kInvalidResponse)
-        {
+        if (length != rdm::responder::kInvalidResponse) {
             rdm::message::Print(response);
         }
 #endif
@@ -185,8 +163,7 @@ class RDMResponder final : DMXReceiver, public RDMDeviceResponder
         return length;
     }
 
-    void PersonalityUpdate(DmxNodeOutputType* dmx_node_output_type) override
-    {
+    void PersonalityUpdate(DmxNodeOutputType* dmx_node_output_type) override {
         DMXReceiver::SetDmxNodeOutputType(dmx_node_output_type);
         PersonalityUpdate(static_cast<uint32_t>(RDMDeviceResponder::GetPersonalityCurrent(rdm::kRootDevice)));
     }

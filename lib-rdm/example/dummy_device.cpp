@@ -51,7 +51,7 @@ int main(int argc, char** argv)
     rdm_device.SetProductCategory(E120_PRODUCT_CATEGORY_FIXTURE);
     rdm_device.SetProductDetail(E120_PRODUCT_DETAIL_LED);
 
-    RDMNetDevice device;
+    RdmNetDevice device;
 	device.Print();
 	
     for (;;)

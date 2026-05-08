@@ -31,7 +31,7 @@
 #include "mcp23s17.h"
 
 static constexpr uint32_t DMX_FOOTPRINT = 16;
-static RDMPersonality *s_RDMPersonalities[] = {new RDMPersonality("Digital output 16-lines", DMX_FOOTPRINT)};
+static RdmPersonality *s_RDMPersonalities[] = {new RdmPersonality("Digital output 16-lines", DMX_FOOTPRINT)};
 
 RDMSubDeviceMCP23S17::RDMSubDeviceMCP23S17(uint16_t dmx_start_address, char nChipSselect, uint8_t nSlaveAddress, uint32_t nSpiSpeed) :
 	RDMSubDevice("mcp23s17", dmx_start_address), m_MCP23S17(nChipSselect, nSpiSpeed, nSlaveAddress)

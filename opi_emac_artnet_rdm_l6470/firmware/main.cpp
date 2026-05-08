@@ -108,7 +108,7 @@ int main() // NOLINT
     dmxnode_node.SetLongName(description);
     dmxnode_node.SetOutput(&dmxnode_chain);
 	
-    RDMPersonality* rdm_personalities[1] = {new RDMPersonality(description, &dmxnode_chain)};
+    RdmPersonality* rdm_personalities[1] = {new RdmPersonality(description, &dmxnode_chain)};
     ArtNetRdmResponder rdm_responder(rdm_personalities, 1);
 
     dmxnode_node.SetRdmResponder(&rdm_responder);

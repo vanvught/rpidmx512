@@ -31,7 +31,7 @@
 #include "mcp23s08.h"
 
 static constexpr uint32_t DMX_FOOTPRINT = 8;
-static RDMPersonality *s_RDMPersonalities[] = {new RDMPersonality("Digital output 8-lines", DMX_FOOTPRINT)};
+static RdmPersonality *s_RDMPersonalities[] = {new RdmPersonality("Digital output 8-lines", DMX_FOOTPRINT)};
 
 RDMSubDeviceMCP23S08::RDMSubDeviceMCP23S08(uint16_t dmx_start_address, char nChipSselect, uint8_t nSlaveAddress, uint32_t nSpiSpeed) :
 	RDMSubDevice("mcp23s08", dmx_start_address), m_MCP23S08(nChipSselect, nSpiSpeed, nSlaveAddress)

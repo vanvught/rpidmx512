@@ -32,8 +32,8 @@
 #include "common/utils/utils_hex.h"
 
 static constexpr uint32_t kDmxFootprint = 4;
-static RDMPersonality* rdm_personalities[] = {new RDMPersonality("LCD 4-slots H", kDmxFootprint), new RDMPersonality("LCD 4-slots D", kDmxFootprint),
-                                              new RDMPersonality("LCD 4-slots %%", kDmxFootprint)};
+static RdmPersonality* rdm_personalities[] = {new RdmPersonality("LCD 4-slots H", kDmxFootprint), new RdmPersonality("LCD 4-slots D", kDmxFootprint),
+                                              new RdmPersonality("LCD 4-slots %%", kDmxFootprint)};
 static constexpr char kLine[bw::lcd::max_characters + 1] = "--- --- --- --- ";
 
 RDMSubDeviceBwLcd::RDMSubDeviceBwLcd(uint16_t start_address, char chip_select, uint8_t spi_address, [[maybe_unused]] uint32_t speed)

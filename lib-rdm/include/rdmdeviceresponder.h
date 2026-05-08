@@ -47,7 +47,7 @@ class RDMDeviceResponder
    public:
     static constexpr uint8_t kDefaultCurrentPersonality = 1;
 
-    RDMDeviceResponder(RDMPersonality** personalities, uint32_t personality_count, uint32_t current_personality = kDefaultCurrentPersonality)
+    RDMDeviceResponder(RdmPersonality** personalities, uint32_t personality_count, uint32_t current_personality = kDefaultCurrentPersonality)
         : personalities_(personalities)
     {
         DEBUG_ENTRY();
@@ -305,7 +305,7 @@ class RDMDeviceResponder
     }
 
     // Personalities
-    RDMPersonality* GetPersonality(uint16_t sub_device, uint8_t personality)
+    RdmPersonality* GetPersonality(uint16_t sub_device, uint8_t personality)
     {
         assert(personality >= 1);
 
@@ -386,8 +386,8 @@ class RDMDeviceResponder
 
    private:
     RDMSensors sensors_;
-    RDMSubDevices sub_devices_;
-    RDMPersonality** personalities_;
+    RdmSubDevices sub_devices_;
+    RdmPersonality** personalities_;
     rdm::device::Info sub_device_info_;
     char language_[2]{kLanguage[0], kLanguage[1]};
     bool is_factory_defaults_{true};

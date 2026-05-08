@@ -2,7 +2,7 @@
  * @file rdmsensor.h
  *
  */
-/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2018-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,12 +33,10 @@
 
 #include "rdm_e120.h"
 
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
-namespace rdm::sensor
-{
-struct Defintion
-{
+namespace rdm::sensor {
+struct Defintion {
     uint8_t sensor;
     uint8_t type;
     uint8_t unit;
@@ -52,8 +50,7 @@ struct Defintion
     uint8_t recorded_supported;
 };
 
-struct Values
-{
+struct Values {
     int16_t present;
     int16_t lowest_detected;
     int16_t highest_detected;
@@ -70,24 +67,20 @@ inline constexpr int16_t TEMPERATURE_ABS_ZERO = -273;
 inline constexpr uint8_t RECORDED_SUPPORTED = (1U << 0);
 inline constexpr uint8_t LOW_HIGH_DETECT = (1U << 1);
 
-template <class T> constexpr int16_t SafeRangeMax(const T& a)
-{
+template <class T> constexpr int16_t SafeRangeMax(const T& a) {
     static_assert(sizeof(int16_t) <= sizeof(T), "T");
     return (a > static_cast<T>(INT16_MAX)) ? INT16_MAX : static_cast<int16_t>(a);
 }
 
-template <class T> constexpr int16_t SafeRangeMin(const T& a)
-{
+template <class T> constexpr int16_t SafeRangeMin(const T& a) {
     static_assert(sizeof(int16_t) <= sizeof(T), "T");
     return (a < static_cast<T>(INT16_MIN)) ? INT16_MIN : static_cast<int16_t>(a);
 }
 } // namespace rdm::sensor
 
-class RDMSensor
-{
+class RDMSensor {
    public:
-    explicit RDMSensor(uint8_t sensor) : sensor_(sensor)
-    {
+    explicit RDMSensor(uint8_t sensor) : sensor_(sensor) {
         DEBUG_ENTRY();
 
         sensor_defintion_.sensor = sensor_;
@@ -128,15 +121,13 @@ class RDMSensor
 
     void SetNormalMax(int16_t normal_max) { sensor_defintion_.normal_max = normal_max; }
 
-    void SetDescription(const char* description)
-    {
+    void SetDescription(const char* description) {
         DEBUG_ENTRY();
 
         assert(description != nullptr);
         uint32_t i;
 
-        for (i = 0; i < 32 && description[i] != 0; i++)
-        {
+        for (i = 0; i < 32 && description[i] != 0; i++) {
             sensor_defintion_.description[i] = description[i];
         }
 
@@ -145,8 +136,7 @@ class RDMSensor
         DEBUG_EXIT();
     }
 
-    void Print()
-    {
+    void Print() {
         printf("%d [%.*s]\n", sensor_defintion_.sensor, sensor_defintion_.length, sensor_defintion_.description);
         printf(" RangeMin  %d\n", sensor_defintion_.range_min);
         printf(" RangeMax  %d\n", sensor_defintion_.range_max);
@@ -158,8 +148,7 @@ class RDMSensor
 
     const struct rdm::sensor::Defintion* GetDefintion() { return &sensor_defintion_; }
 
-    const struct rdm::sensor::Values* GetValues()
-    {
+    const struct rdm::sensor::Values* GetValues() {
         DEBUG_ENTRY();
         const auto kValue = this->GetValue();
 
@@ -171,8 +160,7 @@ class RDMSensor
         return &sensor_values_;
     }
 
-    void SetValues()
-    {
+    void SetValues() {
         DEBUG_ENTRY();
         const auto kValue = this->GetValue();
 
@@ -184,8 +172,7 @@ class RDMSensor
         DEBUG_EXIT();
     }
 
-    void Record()
-    {
+    void Record() {
         DEBUG_ENTRY();
         const auto kValue = this->GetValue();
 
@@ -206,4 +193,4 @@ class RDMSensor
     rdm::sensor::Values sensor_values_;
 };
 
-#endif  // RDMSENSOR_H_
+#endif // RDMSENSOR_H_
