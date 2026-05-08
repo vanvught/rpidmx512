@@ -171,7 +171,7 @@ void DmxNodeParams::Dump() {
             printf(" %s=%s\n", json::DmxNodeParamsConst::kLabelPort[port_index].name, reinterpret_cast<char*>(store_dmxnode.port_name[port_index]));
             printf(" %s=%u\n", json::DmxNodeParamsConst::kUniversePort[port_index].name, store_dmxnode.universe[port_index]);
             const auto kPortDirection = common::PortGet<dmxnode::Direction>(port_index, store_dmxnode.direction);
-            printf(" %s=%s\n", json::DmxNodeParamsConst::kDirectionPort[port_index].name, dmxnode::Direction(kPortDirection));
+            printf(" %s=%s\n", json::DmxNodeParamsConst::kDirectionPort[port_index].name, dmxnode::PortDirection(kPortDirection));
             const auto kPortMergeMode = common::PortGet<dmxnode::MergeMode>(port_index, store_dmxnode.merge_mode);
             printf(" %s=%s\n", json::DmxNodeParamsConst::kMergeModePort[port_index].name, dmxnode::GetMergeMode(kPortMergeMode));
             const auto kOutputStyle = GetOutputStyleSet(1U << port_index);

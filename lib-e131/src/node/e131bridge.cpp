@@ -377,7 +377,7 @@ void E131Bridge::SetUniverse(uint32_t port_index, uint16_t universe)
 void E131Bridge::SetDirection(uint32_t port_index, dmxnode::Direction port_direction)
 {
     DEBUG_ENTRY();
-    DEBUG_PRINTF("port_index=%u, port_direction=%s", port_index, dmxnode::Direction(port_direction));
+    DEBUG_PRINTF("port_index=%u, port_direction=%s", port_index, dmxnode::PortDirection(port_direction));
 
     assert(port_index < dmxnode::kMaxPorts);
     assert(port_direction <= dmxnode::Direction::kDisable);

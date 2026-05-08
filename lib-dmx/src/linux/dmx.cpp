@@ -81,13 +81,13 @@ Dmx::Dmx() {
         s_nHandePortRdm[i] = network::udp::Begin(UDP_PORT_RDM_START + i, nullptr);
         assert(s_nHandePortRdm[i] != -1);
 
-        SetPortDirection(i, PortDirection::kInput, false);
+        SetPortDirection(i, dmx::Direction::kInput, false);
     }
 
     DEBUG_EXIT();
 }
 
-void Dmx::SetPortDirection(uint32_t port_index, PortDirection tPortDirection, bool bEnableData) {
+void Dmx::SetPortDirection(uint32_t port_index, dmx::Direction tPortDirection, bool bEnableData) {
     DEBUG_ENTRY();
     DEBUG_PRINTF("port_index=%u, tPortDirection=%u", port_index, static_cast<uint32_t>(tPortDirection));
     assert(port_index < dmx::config::max::kPorts);
@@ -96,12 +96,12 @@ void Dmx::SetPortDirection(uint32_t port_index, PortDirection tPortDirection, bo
         StopData(0, port_index);
 
         switch (tPortDirection) {
-            case PortDirection::kOutput:
-                port_direction_[port_index] = PortDirection::kOutput;
+            case dmx::Direction::kOutput:
+                port_direction_[port_index] = dmx::Direction::kOutput;
                 break;
-            case PortDirection::kInput:
+            case dmx::Direction::kInput:
             default:
-                port_direction_[port_index] = PortDirection::kInput;
+                port_direction_[port_index] = dmx::Direction::kInput;
                 break;
         }
     } else if (!bEnableData) {
