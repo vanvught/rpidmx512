@@ -182,5 +182,14 @@ endif
 
 LIBS+=device hal
 
+ifeq (,$(findstring DISABLE_RTC,$(DEFINES)))
+	LIBS+=hwclock
+endif
+
+ifdef LINUX 
+	LIBS+=linux
+else
+endif
+
 $(info $$LIBS [${LIBS}])
 $(info $$DEFINES [${DEFINES}])

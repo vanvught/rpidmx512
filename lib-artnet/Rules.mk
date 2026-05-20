@@ -1,4 +1,4 @@
-EXTRA_INCLUDES+=../lib-network/include
+EXTRA_INCLUDES+=../lib-hwclock/include ../lib-network/include
 
 ifneq ($(MAKE_FLAGS),)
 	ifeq ($(findstring NODE_ARTNET,$(MAKE_FLAGS)), NODE_ARTNET)
