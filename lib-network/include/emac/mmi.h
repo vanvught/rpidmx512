@@ -74,7 +74,7 @@ inline constexpr uint16_t ADVERTISE_LPACK = 0x4000;         /* Ack link partners
 inline constexpr uint16_t ADVERTISE_NPAGE = 0x8000;         /* Next page bit               */
 
 inline constexpr uint16_t ADVERTISE_FULL = (ADVERTISE_100FULL | ADVERTISE_10FULL | ADVERTISE_CSMA);
-inline constexpr uint16_t ADVERTISE_ALL = (ADVERTISE_10HALF | ADVERTISE_10FULL | ADVERTISE_100HALF | ADVERTISE_100FULL);
+inline constexpr uint16_t ADVERTISE_ALL = (ADVERTISE_10HALF | ADVERTISE_10FULL | ADVERTISE_100HALF | ADVERTISE_100FULL | ADVERTISE_CSMA);
 
 /* Link partner ability register. */
 inline constexpr uint16_t LPA_SLCT = 0x001f;            /* Same as advertise selector  */

@@ -31,7 +31,7 @@
 
 #include "emac/emac_phy.h"
 #include "emac/mmi.h"
-#include "hal_millis.h" // IWYU pragma: keep
+#include "timing.h"
 #include "firmware/debug/debug_debug.h"
 #include "firmware/debug/debug_printbits.h" // IWYU pragma: keep
 
@@ -64,14 +64,12 @@ bool GetId(uint16_t address, Identifier& phy_identifier) {
 }
 
 Link GetLink(uint16_t address) {
-    uint16_t value = 0;
-    phy::Read(address, mmi::REG_BMSR, value);
+    uint16_t value;
 
-    if (mmi::BMSR_LINKED_STATUS == (value & mmi::BMSR_LINKED_STATUS)) {
-        return emac::phy::Link::kStateUp;
-    }
+    phy::Read(address, mmi::REG_BMSR, value); // clear latch
+    phy::Read(address, mmi::REG_BMSR, value); // current state
 
-    return emac::phy::Link::kStateDown;
+    return (value & mmi::BMSR_LINKED_STATUS) ? Link::kStateUp : Link::kStateDown;
 }
 
 bool Powerdown(uint16_t address) {
@@ -81,34 +79,25 @@ bool Powerdown(uint16_t address) {
 static int32_t ConfigAdvertisement(uint16_t address, uint16_t advertisement) {
     DEBUG_ENTRY();
 
-    uint16_t advertise;
-    phy::Read(address, mmi::REG_ADVERTISE, advertise);
+    uint16_t current;
 
-#ifndef NDEBUG
-    debug::PrintBits(advertise);
-#endif
+    if (!phy::Read(address, mmi::REG_ADVERTISE, current)) {
+        DEBUG_EXIT();
+        return -1;
+    }
 
-    advertise &= static_cast<uint16_t>(mmi::ADVERTISE_ALL | mmi::ADVERTISE_100BASE4 | mmi::ADVERTISE_PAUSE_CAP | mmi::ADVERTISE_PAUSE_ASYM);
-    advertise |= advertisement;
+    if (current == advertisement) {
+        DEBUG_EXIT();
+        return 0;
+    }
 
-#ifndef NDEBUG
-    debug::PrintBits(advertise);
-    debug::PrintBits(advertisement);
-#endif
-
-    if (advertise != advertisement) {
-        if (!phy::Write(address, mmi::REG_ADVERTISE, advertisement)) {
-            DEBUG_EXIT();
-            // error
-            return -1;
-        }
-        // Changed
-        return 1;
+    if (!phy::Write(address, mmi::REG_ADVERTISE, advertisement)) {
+        DEBUG_EXIT();
+        return -1;
     }
 
     DEBUG_EXIT();
-    // No change
-    return 0;
+    return 1;
 }
 
 static bool RestartAutonegotiation(uint16_t address) {
@@ -116,7 +105,7 @@ static bool RestartAutonegotiation(uint16_t address) {
     auto result = phy::Read(address, mmi::REG_BMCR, value);
 
     value |= (mmi::BMCR_AUTONEGOTIATION | mmi::BMCR_RESTART_AUTONEGOTIATION);
-    /* Don't isolate the PHY if we're negotiating */
+    // Don't isolate the PHY if we're negotiating
     value &= static_cast<uint16_t>(~(mmi::BMCR_ISOLATE));
 
     result = phy::Write(address, mmi::REG_BMCR, value);
@@ -150,7 +139,6 @@ static bool ConfigAutonegotiation(uint16_t address, uint16_t advertisement) {
 
     // Only restart autonegotiation if we are advertising something different
     // than we were before.
-
     if (result > 0) {
         const auto kResult = RestartAutonegotiation(address);
         DEBUG_EXIT();
@@ -173,7 +161,6 @@ static bool UpdateLink(uint16_t address, Status& phy_status) {
 
     // If we already saw the link up, and it hasn't gone down, then
     // we don't need to wait for autoneg again
-
     if ((phy_status.link == Link::kStateDown) && (bmsr & mmi::BMSR_LINKED_STATUS)) {
         DEBUG_EXIT();
         return true;
@@ -182,9 +169,9 @@ static bool UpdateLink(uint16_t address, Status& phy_status) {
     if (!(bmsr & mmi::BMSR_AUTONEGO_COMPLETE)) {
         puts("Waiting for PHY auto negotiation to complete");
 
-        const auto kMillis = hal::Millis();
+        const auto kMillis = timing::Millis();
         while (!(bmsr & mmi::BMSR_AUTONEGO_COMPLETE)) {
-            if ((hal::Millis() - kMillis) > 5000) {
+            if ((timing::Millis() - kMillis) > 5000) {
                 DEBUG_EXIT();
                 return false;
             }
@@ -193,7 +180,7 @@ static bool UpdateLink(uint16_t address, Status& phy_status) {
 
         phy_status.link = Link::kStateUp;
 
-        DEBUG_PRINTF("%u", hal::Millis() - kMillis);
+        DEBUG_PRINTF("%u", timing::Millis() - kMillis);
         DEBUG_EXIT();
         return true;
     }
@@ -207,31 +194,49 @@ static bool UpdateLink(uint16_t address, Status& phy_status) {
 }
 
 static void ParseLink(uint16_t address, Status& phy_status) {
+    if (phy_status.link != Link::kStateUp) {
+        phy_status.duplex = Duplex::kUnknown;
+        phy_status.speed = Speed::kUnknown;
+        return;
+    }
+
     phy_status.duplex = Duplex::kDuplexHalf;
     phy_status.speed = Speed::kSpeed10;
 
     uint16_t advertise;
     phy::Read(address, mmi::REG_ADVERTISE, advertise);
+    debug::PrintBits(advertise);
+
     uint16_t lpa;
     phy::Read(address, mmi::REG_LPA, lpa);
+    debug::PrintBits(lpa);
 
     lpa &= advertise;
 
-    if (lpa & (mmi::LPA_100FULL | mmi::LPA_100HALF)) {
+    if (lpa & mmi::LPA_100FULL) {
         phy_status.speed = Speed::kSpeed100;
-
-        if (lpa & mmi::LPA_100FULL) {
-            phy_status.duplex = Duplex::kDuplexFull;
-        }
-    } else if (lpa & mmi::LPA_10FULL) {
         phy_status.duplex = Duplex::kDuplexFull;
+    } else if (lpa & mmi::LPA_100HALF) {
+        phy_status.speed = Speed::kSpeed100;
+        phy_status.duplex = Duplex::kDuplexHalf;
+    } else if (lpa & mmi::LPA_10FULL) {
+        phy_status.speed = Speed::kSpeed10;
+        phy_status.duplex = Duplex::kDuplexFull;
+    } else if (lpa & mmi::LPA_10HALF) {
+        phy_status.speed = Speed::kSpeed10;
+        phy_status.duplex = Duplex::kDuplexHalf;
+    } else {
+        phy_status.speed = Speed::kUnknown;
+        phy_status.duplex = Duplex::kUnknown;
     }
 }
 
 bool Start(uint16_t address, Status& phy_status) {
     DEBUG_ENTRY();
 
-    constexpr auto kAdvertisement = emac::mmi::ADVERTISE_FULL;
+    phy_status = {.link = Link::kStateDown, .duplex = Duplex::kUnknown, .speed = Speed::kUnknown, .autonegotiation = false};
+
+    constexpr auto kAdvertisement = emac::mmi::ADVERTISE_ALL;
 
     if (!ConfigAutonegotiation(address, kAdvertisement)) {
         DEBUG_EXIT();
@@ -243,23 +248,34 @@ bool Start(uint16_t address, Status& phy_status) {
         return false;
     }
 
-    ParseLink(address, phy_status);
+    uint16_t bmcr;
+    phy::Read(address, mmi::REG_BMCR, bmcr);
+
+    phy_status.autonegotiation = (bmcr & mmi::BMCR_AUTONEGOTIATION);
 
     phy_status.link = phy::GetLink(address);
 
-    DEBUG_PRINTF("Link %s, %d, %s", phy_status.link == emac::phy::Link::kStateUp ? "Up" : "Down", phy_status.speed == emac::phy::Speed::kSpeed10 ? 10 : 100, phy_status.duplex == emac::phy::Duplex::kDuplexHalf ? "HALF" : "FULL");
+    if (phy_status.link == Link::kStateUp) {
+        ParseLink(address, phy_status);
+    } else {
+        phy_status.speed = Speed::kUnknown;
+        phy_status.duplex = Duplex::kUnknown;
+    }
+
+    DEBUG_PRINTF("Link %s, %s, %s", ToString(phy_status.link), ToString(phy_status.speed), ToString(phy_status.duplex));
     DEBUG_EXIT();
     return true;
 }
 
 // Ensure order matches enum class Speed
 constexpr const char* kSpeedNames[] = {
+    "Unknown",
     "10baseT",   // Speed::SPEED10
     "100baseTX", // Speed::SPEED100
     "1000baseT"  // Speed::SPEED1000
 };
 
-static_assert(static_cast<size_t>(phy::Speed::kSpeed10) == 0, "Enum ordering mismatch");
+static_assert(static_cast<size_t>(phy::Speed::kUnknown) == 0, "Enum ordering mismatch");
 static_assert(static_cast<size_t>(phy::Speed::kSpeed1000) < (sizeof(kSpeedNames) / sizeof(kSpeedNames[0])), "Enum range mismatch");
 
 const char* ToString(phy::Link link) {
@@ -267,7 +283,15 @@ const char* ToString(phy::Link link) {
 }
 
 const char* ToString(phy::Duplex duplex) {
-    return duplex == phy::Duplex::kDuplexHalf ? "half" : "full";
+    switch (duplex) {
+        case phy::Duplex::kUnknown:
+            return "unknown";
+        case phy::Duplex::kDuplexHalf:
+            return "half";
+        case phy::Duplex::kDuplexFull:
+            return "full";
+    }
+    return "error";
 }
 
 const char* ToString(phy::Speed speed) {
@@ -275,7 +299,7 @@ const char* ToString(phy::Speed speed) {
     if (kIndex < sizeof(kSpeedNames) / sizeof(kSpeedNames[0])) {
         return kSpeedNames[kIndex];
     }
-    return "unknown";
+    return "error";
 }
 
 const char* ToStringAutonegotiation(bool autonegotiation) {

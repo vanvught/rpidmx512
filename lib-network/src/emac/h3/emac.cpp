@@ -34,6 +34,7 @@
 #include "emac/emac_phy.h"
 #include "emac/mmi.h" // IWYU pragma: keep
 #include "h3.h"
+#include "timing.h"
 #include "firmware/debug/debug_printbits.h" // IWYU pragma: keep
 #include "firmware/debug/debug_debug.h"
 
@@ -131,9 +132,9 @@ void __attribute__((cold)) Config() {
     DEBUG_ENTRY();
 
     H3_CCU->BUS_SOFT_RESET2 |= BUS_SOFT_RESET2_EPHY_RST;
-    udelay(1000); // 1ms
+    timing::DelayUs(1000); // 1ms
     H3_CCU->BUS_CLK_GATING4 &= static_cast<uint32_t>(~BUS_CLK_GATING4_EPHY_GATING);
-    udelay(1000); // 1ms
+    timing::DelayUs(1000); // 1ms
     H3_CCU->BUS_CLK_GATING4 |= BUS_CLK_GATING4_EPHY_GATING;
 
     /* H3 based SoC's that has an Internal 100MBit PHY

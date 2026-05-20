@@ -149,8 +149,8 @@ void CustomizedTiming() {
 #define RMSR_TX_TIMING_VAL 0xF
 #endif
 
-    constexpr uint16_t phy_value = (RMSR_RX_TIMING_VAL << RMSR_RX_TIMING_SHIFT) | (RMSR_TX_TIMING_VAL << RMSR_TX_TIMING_SHIFT);
-    WritePaged(0x7, PHY_REG_RMSR, phy_value, RMSR_RX_TIMING_MASK | RMSR_TX_TIMING_MASK);
+    constexpr uint16_t kPhyValue = (RMSR_RX_TIMING_VAL << RMSR_RX_TIMING_SHIFT) | (RMSR_TX_TIMING_VAL << RMSR_TX_TIMING_SHIFT);
+    WritePaged(0x7, PHY_REG_RMSR, kPhyValue, RMSR_RX_TIMING_MASK | RMSR_TX_TIMING_MASK);
 #endif
     DEBUG_EXIT();
 }
@@ -158,12 +158,19 @@ void CustomizedTiming() {
 void CustomizedStatus(phy::Status& phy_status) {
     phy_status.link = link::StatusRead();
 
-    uint16_t value;
-    phy::Read(PHY_ADDRESS, mmi::REG_BMCR, value);
+    uint16_t bmcr;
+    phy::Read(PHY_ADDRESS, mmi::REG_BMCR, bmcr);
 
-    phy_status.duplex = ((value & BIT(8)) == BIT(8)) ? phy::Duplex::kDuplexFull : phy::Duplex::kDuplexHalf;
-    phy_status.speed = ((value & BIT(13)) == BIT(13)) ? phy::Speed::kSpeed100 : phy::Speed::kSpeed10;
-    phy_status.autonegotiation = ((value & mmi::BMCR_AUTONEGOTIATION) == mmi::BMCR_AUTONEGOTIATION);
+    phy_status.autonegotiation = (bmcr & mmi::BMCR_AUTONEGOTIATION);
+
+    if (phy_status.link != phy::Link::kStateUp) {
+        phy_status.speed = phy::Speed::kUnknown;
+        phy_status.duplex = phy::Duplex::kUnknown;
+        return;
+    }
+
+    phy_status.duplex = (bmcr & BIT(8)) ? phy::Duplex::kDuplexFull : phy::Duplex::kDuplexHalf;
+    phy_status.speed = (bmcr & BIT(13)) ? phy::Speed::kSpeed100 : phy::Speed::kSpeed10;
 }
 
 namespace rtl8201f {

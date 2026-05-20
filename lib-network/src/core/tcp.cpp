@@ -70,8 +70,7 @@ void Error(const char*);
 #include "core/protocol/ieee.h"
 #include "core/protocol/tcp.h"
 #include "network_private.h"
-#include "hal.h"
-#include "hal_millis.h"
+#include "timing.h"
 #include "firmware/debug/debug_debug.h"
 #include "network_tcp.h"
 #include "core/protocol/ethernet.h"
@@ -337,7 +336,7 @@ static void TcpSwap32AcknumSeqnum(struct Header* const kTcp) {
 static void TcpInitTcb(struct Tcb* tcb, uint16_t local_port) {
     tcb->local_port = local_port;
 
-    tcb->ISS = hal::Millis();
+    tcb->ISS = timing::Millis();
 
     tcb->RCV.WND = kAdvertisedRxWnd;
 
@@ -363,7 +362,7 @@ static void RtxOnAck(Tcb* tcb, uint32_t ack) {
     if (tcb->rtx.count == 0) {
         tcb->rtx_deadline = 0;
     } else {
-        tcb->rtx_deadline = hal::Millis() + tcb->rtx_rto;
+        tcb->rtx_deadline = timing::Millis() + tcb->rtx_rto;
     }
 }
 
@@ -480,7 +479,7 @@ static void SendSegment(Tcb* tcb, const SendInfo& send_info, bool track_rtx = tr
     *data++ = Option::kKindNop;
     *data++ = Option::kKindTimestamp;
     *data++ = 10;
-    const auto kMillis = __builtin_bswap32(hal::Millis());
+    const auto kMillis = __builtin_bswap32(timing::Millis());
     memcpy(data, &kMillis, 4);
     data += 4;
     memcpy(data, &tcb->TS.recent, 4);
@@ -514,7 +513,7 @@ static void SendSegment(Tcb* tcb, const SendInfo& send_info, bool track_rtx = tr
         r.consumed = r.len + ((send_info.CTL & Control::SYN) ? 1U : 0U) + ((send_info.CTL & Control::FIN) ? 1U : 0U);
         r.ctl = send_info.CTL;
         r.retries = 0;
-        r.last_sent = hal::Millis();
+        r.last_sent = timing::Millis();
         r.pool_idx = (r.len != 0) ? memory::Allocator::Instance().Allocate(tcb->TX.data, r.len) : 0xFFFF;
 
         tcb->rtx.count++;
@@ -674,7 +673,7 @@ __attribute__((hot)) void Run() {
 
         // Client-side  TIME-WAIT expiry
         if (tcb.state == kStateTimeWait) {
-            if (tcb.timewait_deadline != 0 && hal::Millis() >= tcb.timewait_deadline) {
+            if (tcb.timewait_deadline != 0 && timing::Millis() >= tcb.timewait_deadline) {
                 NEW_STATE(&tcb, kStateClosed);
                 FreeTcb(&tcb);
                 continue;
@@ -694,7 +693,7 @@ __attribute__((hot)) void Run() {
         }
 
         // ---- Retransmission timeout ----
-        if (tcb.rtx.count > 0 && tcb.rtx_deadline != 0 && hal::Millis() >= tcb.rtx_deadline) {
+        if (tcb.rtx.count > 0 && tcb.rtx_deadline != 0 && timing::Millis() >= tcb.rtx_deadline) {
             auto& r = tcb.rtx.q[tcb.rtx.head];
 
             SendInfo info;
@@ -714,7 +713,7 @@ __attribute__((hot)) void Run() {
             tcb.TX.data = nullptr;
             tcb.TX.size = 0;
 
-            r.last_sent = hal::Millis();
+            r.last_sent = timing::Millis();
             r.retries++;
 
             if (r.retries > kTcpRtxMaxRetry) {
@@ -723,7 +722,7 @@ __attribute__((hot)) void Run() {
             }
 
             tcb.rtx_rto = std::min(tcb.rtx_rto * 2U, kTcpRtoMaxMs);
-            tcb.rtx_deadline = hal::Millis() + tcb.rtx_rto;
+            tcb.rtx_deadline = timing::Millis() + tcb.rtx_rto;
         }
     }
 }
@@ -830,7 +829,7 @@ static Tcb* AcceptNewConnection(const Header* tcp_segment, uint32_t* out_index) 
 static inline void EnterTimeWait(Tcb* tcb) {
     NEW_STATE(tcb, kStateTimeWait);
 
-    tcb->timewait_deadline = hal::Millis() + kTimeWaitMs;
+    tcb->timewait_deadline = timing::Millis() + kTimeWaitMs;
 
     // Turn off other timers
     tcb->rtx.count = 0;    // drop unacked queue
@@ -1429,7 +1428,7 @@ __attribute__((hot)) void Input(struct Header* eth_frame) {
                     SendSegment(tcb, si, false);
 
                     // Restart TIME-WAIT timer
-                    tcb->timewait_deadline = hal::Millis() + kTimeWaitMs;
+                    tcb->timewait_deadline = timing::Millis() + kTimeWaitMs;
                     return;
                 }
 

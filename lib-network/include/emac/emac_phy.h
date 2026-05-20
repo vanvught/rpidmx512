@@ -30,8 +30,8 @@
 
 namespace emac::phy {
 enum class Link { kStateDown, kStateUp };
-enum class Duplex { kDuplexHalf, kDuplexFull };
-enum class Speed { kSpeed10, kSpeed100, kSpeed1000 };
+enum class Duplex { kUnknown, kDuplexHalf, kDuplexFull };
+enum class Speed { kUnknown, kSpeed10, kSpeed100, kSpeed1000 };
 
 struct Status {
     Link link;

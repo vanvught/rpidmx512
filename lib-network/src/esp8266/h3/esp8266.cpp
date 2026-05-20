@@ -113,7 +113,7 @@ void __attribute__((cold)) esp8266_init() {
 
 
 	H3GpioClr(GPIO_EXT_11);
-	udelay(1000);
+	timing::DelayUs(1000);
 
 	while (PORT_CIN->DAT & (1 << CIN));
 }

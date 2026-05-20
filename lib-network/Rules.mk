@@ -1,7 +1,7 @@
 $(info $$MAKE_FLAGS [${MAKE_FLAGS}])
 $(info $$DEFINES [${DEFINES}])
 
-EXTRA_INCLUDES+=../lib-display/include
+EXTRA_INCLUDES+=../lib-hwclock/include ../lib-display/include
 
 COND=
 

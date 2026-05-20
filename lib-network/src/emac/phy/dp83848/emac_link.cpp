@@ -1,8 +1,8 @@
 /**
- * net_link::check.cpp
+ * @file emac_link.cpp
  *
  */
-/* Copyright (C) 2022-2026 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2023-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,65 +23,40 @@
  * THE SOFTWARE.
  */
 
-#include "core/netif.h"
 #include "emac/emac_link_check.h"
 #include "emac/emac_phy.h"
-#include "emac/emac.h"
-#include "watchdog.h" // IWYU pragma: keep
+#include "emac/mmi.h"
 #include "firmware/debug/debug_debug.h"
 
-static constexpr uint16_t kAddress =
+#define PHY_REG_MICR 0x11U
+#define PHY_REG_MISR 0x12U
+#define PHY_INT_AND_OUTPUT_ENABLE 0x03U
+#define PHY_LINK_INT_ENABLE 0x20U
+
 #if !defined(PHY_ADDRESS)
-    1;
-#else
-    PHY_ADDRESS;
+#define PHY_ADDRESS 1
 #endif
 
 namespace emac::link {
-#if defined(ENET_LINK_CHECK_USE_INT)
-void InterruptInit() {
-    link::PinEnable();
-    link::PinRecovery();
-    link::GpioInit();
-    link::ExtiInit();
-}
-#endif
+#if defined(ENET_LINK_CHECK_USE_INT) || defined(ENET_LINK_CHECK_USE_PIN_POLL)
+void PinEnable() {
+    uint16_t phy_value = PHY_INT_AND_OUTPUT_ENABLE;
+    phy::Write(PHY_ADDRESS, PHY_REG_MICR, phy_value);
 
-#if defined(ENET_LINK_CHECK_USE_PIN_POLL)
-void PinPollInit() {
-    link::PinEnable();
-    link::PinRecovery();
-    link::GpioInit();
-}
-#endif
+    phy::Read(PHY_ADDRESS, PHY_REG_MICR, phy_value);
 
-emac::phy::Link StatusRead() {
-    return emac::phy::GetLink(kAddress);
-}
-
-void HandleChange(emac::phy::Link state) {
-    DEBUG_PRINTF("emac::phy::Link %s", state == emac::phy::Link::kStateUp ? "UP" : "DOWN");
-
-    if (phy::Link::kStateUp == state) {
-        const auto kIsWatchdog = watchdog::Watchdog();
-
-        if (kIsWatchdog) {
-            watchdog::Stop();
-        }
-
-        phy::Status phy_status;
-        phy::Start(kAddress, phy_status);
-
-        emac::AdjustLink(phy_status);
-
-        if (kIsWatchdog) {
-            watchdog::Init();
-        }
-
-        netif::SetLinkUp();
-        return;
+    if (PHY_INT_AND_OUTPUT_ENABLE != phy_value) {
+        DEBUG_PUTS("PHY_INT_AND_OUTPUT_ENABLE != phy_value");
     }
 
-    netif::SetLinkDown();
+    phy_value = PHY_LINK_INT_ENABLE;
+    phy::Write(PHY_ADDRESS, PHY_REG_MISR, phy_value);
 }
+
+void PinRecovery() {
+    uint16_t phy_value;
+    phy::Read(PHY_ADDRESS, PHY_REG_MISR, phy_value);
+    phy::Read(PHY_ADDRESS, mmi::REG_BMSR, phy_value);
+}
+#endif
 } // namespace emac::link
