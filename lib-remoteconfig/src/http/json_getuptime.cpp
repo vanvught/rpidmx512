@@ -1,7 +1,7 @@
 /**
  * @file json_getuptime.cpp
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,13 +25,11 @@
 #include <cstdint>
 #include <cstdio>
 
-namespace hal {
-uint32_t Uptime();
-}
+#include "timing.h"
 
 namespace json {
 uint32_t GetUptime(char* out_buffer, uint32_t out_buffer_size) {
-    const auto kUptime = hal::Uptime();
+    const auto kUptime = timing::UpTime();
     const auto kLength = static_cast<uint32_t>(snprintf(out_buffer, out_buffer_size, "{\"uptime\":%u}\n", static_cast<unsigned int>(kUptime)));
     return kLength;
 }

@@ -1,56 +1,47 @@
 (function() {
-    function navItem(href, label, active) {
-        return '<li><a href="' + href + '"' + (active ? ' class="active"' : '') + '>' + label + '</a></li>';
-    }
+	function navItem(href, label, active) {
+		return '<li><a href="' + href + '"' + (active ? ' class="active"' : '') + '>' + label + '</a></li>';
+	}
 
-    function renderNav(activePage) {
-        const el = document.getElementById('appNav');
-        if (!el) return;
+	function renderNav(activePage) {
+		const el = document.getElementById('appNav');
+		if (!el) return;
 
-        el.innerHTML =
-            '<nav>' +
-                '<ul>' +
-                    navItem('/config', 'Configuration', activePage === 'config') +
-                    navItem('/status', 'Status', activePage === 'status') +
-                    navItem('/time', 'Time', activePage === 'time') +
-                    navItem('/rtc', 'RTC', activePage === 'rtc') +
-                '</ul>' +
-            '</nav>';
-    }
+		const pages = window.UI_PAGES || [
+			['/config', 'Configuration', 'config'],
+			['/status', 'Status', 'status'],
+			['/time', 'Time', 'time'],
+			['/rtc', 'RTC', 'rtc']
+		];
 
-    function renderHeader() {
-        const el = document.getElementById('appHeader');
-        if (!el) return;
-        el.innerHTML = '<header><ul id="idList"></ul></header>';
-    }
+		let html = '<nav><ul>';
+		for (const p of pages) {
+			html += navItem(p[0], p[1], activePage === p[2]);
+		}
+		html += '</ul></nav>';
+		el.innerHTML = html;
+	}
 
-    function renderFooter() {
-        const el = document.getElementById('appFooter');
-        if (!el) return;
-        el.innerHTML = '<footer><ul id="idVersion"></ul></footer>';
-    }
+	function renderHeader() {
+		const el = document.getElementById('appHeader');
+		if (el) el.innerHTML = '<header><ul id="idList"></ul></header>';
+	}
 
-    function renderActions() {
-        const el = document.getElementById('appActions');
-        if (!el) return;
+	function renderFooter() {
+		const el = document.getElementById('appFooter');
+		if (el) el.innerHTML = '<footer><ul id="idVersion"></ul></footer>';
+	}
 
-        el.innerHTML =
-            '<div>' +
-                '<button id="locateButton" class="inactive" onclick="locate()">Locate Off</button>' +
-                '<button onclick="reboot()">Reboot</button>' +
-            '</div>';
-    }
+	function renderActions() {
+		const el = document.getElementById('appActions');
+		if (!el) return;
+		el.innerHTML = '<div><button id="locateButton" class="inactive" onclick="locate()">Locate Off</button><button onclick="reboot()">Reboot</button></div>';
+	}
 
-    function bootPage(activePage) {
-        renderNav(activePage);
-        renderHeader();
-        renderFooter();
-        renderActions();
-    }
-
-    window.renderNav = renderNav;
-    window.renderHeader = renderHeader;
-    window.renderFooter = renderFooter;
-    window.renderActions = renderActions;
-    window.bootPage = bootPage;
+	window.bootPage = function(activePage) {
+		renderNav(activePage);
+		renderHeader();
+		renderFooter();
+		renderActions();
+	};
 })();

@@ -19,10 +19,19 @@
 })();
 
 window.dmx = {
+	_path: '',
+	_name: '',
+
 	async init(path, name) {
+		this._path = path;
+		this._name = name;
+		await this.load();
+	},
+
+	async load() {
 		let data;
 		try {
-			data = await getJSON(path);
+			data = await getJSON(this._path);
 		} catch (e) {
 			console.error('DMX status load failed', e);
 			return;
@@ -31,11 +40,16 @@ window.dmx = {
 		const container = document.getElementById('modules');
 		if (!container) return;
 
-		const card = document.createElement('div');
-		card.className = 'card';
+		let card = document.getElementById('status-dmx-card');
+		if (!card) {
+			card = document.createElement('div');
+			card.id = 'status-dmx-card';
+			card.className = 'card';
+			container.appendChild(card);
+		}
 
 		let html =
-			'<h2>' + name + '</h2>' +
+			'<h2>' + this._name + '</h2>' +
 			'<table class="dmx-table">' +
 				'<thead>' +
 					'<tr>' +
@@ -70,10 +84,11 @@ window.dmx = {
 				'</tr>';
 		}
 
-		html += '</tbody></table>';
+		html +=
+			'</tbody></table>' +
+			'<div class="row"><button onclick="dmx.load()">Refresh</button></div>';
 
 		card.innerHTML = html;
-		container.appendChild(card);
 	}
 };
 

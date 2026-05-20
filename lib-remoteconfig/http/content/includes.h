@@ -23,6 +23,9 @@
 #include "config_artnet.js.h"
 #endif // defined(NODE_ARTNET) || defined(NODE_ARTNET_MULTI)
 #include "status_index.html.h"
+#if defined (NODE_LTC_SMPTE)
+#include "config_ltcdisplays.js.h"
+#endif // (NODE_LTC_SMPTE)
 #if !defined (CONFIG_HTTP_HTML_NO_RTC) && !defined (DISABLE_RTC)
 #include "rtc_index.html.h"
 #endif // !defined (CONFIG_HTTP_HTML_NO_RTC) && !defined (DISABLE_RTC)

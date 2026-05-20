@@ -24,7 +24,7 @@ window.gps = {
                 </div>
                 <div class="row">
                     <label>UTC offset</label>
-                    <input data-key="utc_offset" pattern="[+-]?\\d{2}:\\d{2}" required>
+                    <input data-key="utc_offset" pattern="[+\-][0-9]{2}:[0-9]{2}" required>
                 </div>
                 <div class="row">
                     <label></label>
@@ -33,9 +33,9 @@ window.gps = {
             </form>
         `;
 
-		document.getElementById("modules").appendChild(card);
-		card.querySelector("form").onsubmit = () => {
-		    saveDataKeyForm(path, card);
+		document.getElementById("modules").appendChild(div);
+		div.querySelector("form").onsubmit = () => {
+		    saveDataKeyForm(path, div);
 		    return false;
 		};
 

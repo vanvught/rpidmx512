@@ -1,132 +1,154 @@
-(function() {
-    async function getJSON(path) {
-        try {
-            const r = await fetch('/json/' + path);
-            return r.ok ? await r.json() : null;
-        } catch {
-            return null;
-        }
-    }
+function $(id) { return document.getElementById(id); }
 
-    async function postJSON(path, obj) {
-        try {
-            const r = await fetch(path, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(obj)
-            });
-            return r.ok;
-        } catch {
-            return false;
-        }
-    }
+async function getJSON(path) {
+	try {
+		const r = await fetch('/json/' + path);
+		return r.ok ? await r.json() : null;
+	} catch {
+		return null;
+	}
+}
 
-    function setFieldValue(field, value) {
-        if (field.type === 'checkbox') {
-            field.checked = !!value;
-        } else {
-            field.value = value ?? '';
-        }
-    }
+async function postJSON(path, data) {
+	try {
+		const r = await fetch('/json/' + path, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(data)
+		});
+		return r.ok;
+	} catch {
+		return false;
+	}
+}
 
-    function fillDataKeys(root, json) {
-        const fields = root.querySelectorAll('[data-key]');
+function setValue(id, value) {
+	const el = $(id);
+	if (!el) return;
 
-        for (let i = 0; i < fields.length; i++) {
-            const field = fields[i];
-            const key = field.dataset.key;
+	if (el.type === 'checkbox') {
+		el.checked = !!value;
+	} else if ('value' in el) {
+		el.value = value ?? '';
+	} else {
+		el.textContent = value ?? '';
+	}
+}
 
-            if (json[key] !== undefined) {
-                setFieldValue(field, json[key]);
-            }
-        }
-    }
+function escapeHtml(s) {
+	return String(s)
+		.replace(/&/g, '&amp;')
+		.replace(/"/g, '&quot;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;');
+}
 
-    function validateFields(fields) {
-        for (let i = 0; i < fields.length; i++) {
-            const field = fields[i];
-            field.setCustomValidity('');
+async function list() {
+	const l = await getJSON('list');
+	if (!l || !$('idList')) return;
+	$('idList').innerHTML =
+		`<li>${escapeHtml(l.list.name)}</li>` +
+		`<li>${escapeHtml(l.list.node.type)}</li>` +
+		`<li>${escapeHtml(l.list.node.output.type)}</li>`;
+}
 
-            if (!field.checkValidity()) {
-                field.reportValidity();
-                return false;
-            }
-        }
+async function version() {
+	const v = await getJSON('version');
+	if (!v || !$('idVersion')) return;
+	$('idVersion').innerHTML =
+		'<li>V' + escapeHtml(v.version) + '</li><li>' +
+		escapeHtml(v.build.date) + '</li><li>' +
+		escapeHtml(v.build.time) + '</li><li>' +
+		escapeHtml(v.board) + '</li>';
+}
 
-        return true;
-    }
+function reboot() {
+	postJSON('action', { reboot: 1 });
+}
 
-    function collectDataKeys(root) {
-        const fields = root.querySelectorAll('[data-key]');
-        if (!validateFields(fields)) {
-            return null;
-        }
+function locate() {
+	const b = $('locateButton');
+	if (!b) return;
 
-        const out = {};
+	const on = b.classList.contains('inactive');
+	b.classList.toggle('inactive', !on);
+	b.classList.toggle('active', on);
+	b.innerHTML = on ? 'Locate On' : 'Locate Off';
+	postJSON('action', { identify: on ? 1 : 0 });
+}
 
-        for (let i = 0; i < fields.length; i++) {
-            const field = fields[i];
-            const key = field.dataset.key;
+function isCorePath(path, corePaths) {
+	return corePaths.indexOf(path) >= 0;
+}
 
-            if (field.type === 'checkbox') {
-                out[key] = field.checked ? 1 : 0;
-            } else if (field.type === 'number') {
-                out[key] = +field.value;
-            } else {
-                out[key] = field.value.trim();
-            }
-        }
+async function loadModulesFrom(directory, corePaths, options) {
+	const j = await getJSON(directory);
+	if (!j) return;
 
-        return out;
-    }
+	const files = j.files || {};
+	for (const path in files) {
+		if (isCorePath(path, corePaths)) continue;
+		loadModule(path, files[path], options || {});
+	}
+}
 
-    async function saveDataKeyForm(path, card, options) {
-        const out = collectDataKeys(card);
-        if (!out) return false;
+function loadModule(path, name, options) {
+	const file = path.split('/')[1];
+	const script = document.createElement('script');
+	script.src = path + '.js';
 
-        if (options && options.beforePost && options.beforePost(out, card) === false) {
-            return false;
-        }
+	script.onload = () => {
+		if (window[file] && window[file].init) {
+			window[file].init(path, name);
+		}
+	};
 
-        const btn = card.querySelector("button[type='submit']");
-        if (btn) {
-            btn.disabled = true;
-            btn.textContent = 'Saving...';
-        }
+	script.onerror = () => {
+		const id = 'mod_' + file;
+		const div = document.createElement('div');
+		div.className = 'card';
+		div.innerHTML = '<h2>' + escapeHtml(name) + '</h2><div id="' + id + '"></div>';
+		$('modules').appendChild(div);
+		renderJsonTable(path, id, options || {});
+	};
 
-        try {
-            const ok = await postJSON('json/' + path, out);
-            if (!ok) {
-                console.log('Save failed');
-                return false;
-            }
+	document.body.appendChild(script);
+}
 
-            const json = await getJSON(path);
-            if (!json) return true;
+async function renderJsonTable(path, id, options) {
+	const json = await getJSON(path);
+	if (!json) return;
 
-            if (options && options.afterLoad) {
-                options.afterLoad(card, json);
-            } else {
-                fillDataKeys(card, json);
-            }
+	const readonly = !!options.readonly;
+	let html = '<table>';
+	Object.keys(json).forEach(function(key) {
+		const value = json[key] ?? '';
+		html += '<tr><td>' + escapeHtml(key) + '</td><td>';
+		if (readonly) {
+			html += '<span id="' + escapeHtml(key) + '">' + escapeHtml(value) + '</span>';
+		} else {
+			html += '<input type="text" id="' + escapeHtml(key) + '" value="' + escapeHtml(value) + '">';
+		}
+		html += '</td></tr>';
+	});
 
-            return true;
-        } catch (e) {
-            console.log('Error:', e);
-            return false;
-        } finally {
-            if (btn) {
-                btn.disabled = false;
-                btn.textContent = 'Save';
-            }
-        }
-    }
+	const label = readonly ? 'Refresh' : 'Save';
+	const action = readonly ? 'refreshJsonTable' : 'saveJsonTable';
+	html += '<tr><td colspan="2"><button onclick="' + action + '(\'' + path + '\',\'' + id + '\')">' + label + '</button></td></tr></table>';
+	$(id).innerHTML = html;
+}
 
-    window.getJSON = getJSON;
-    window.postJSON = postJSON;
-    window.setFieldValue = setFieldValue;
-    window.fillDataKeys = fillDataKeys;
-    window.validateFields = validateFields;
-    window.collectDataKeys = collectDataKeys;
-    window.saveDataKeyForm = saveDataKeyForm;
-})();
+function refreshJsonTable(path, id) {
+	renderJsonTable(path, id, { readonly: true });
+}
+
+async function saveJsonTable(path, id) {
+	const inputs = $(id).getElementsByTagName('input');
+	const data = {};
+	for (let i = 0; i < inputs.length; i++) {
+		data[inputs[i].id] = inputs[i].value;
+	}
+	if (await postJSON(path, data)) {
+		renderJsonTable(path, id, { readonly: false });
+	}
+}

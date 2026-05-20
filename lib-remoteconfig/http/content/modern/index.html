@@ -9,47 +9,27 @@
 	<div id="appHeader"></div>
 	<div class="card">
 		<h2>General</h2>
-		<form
-			onsubmit="saveField('display_name','json/config/remote','display_name',list); return false;">
+		<form onsubmit="saveField('display_name','config/remote','display_name',list); return false;">
 			<div class="row">
 				<label>Display name</label><input id="display_name" pattern="[A-Za-z0-9\-]{1,20}" maxlength="20" required>
 				<button type="submit">Save</button>
 			</div>
 		</form>
 		<div class="row">
-			<label>UTC offset</label> <input id="utc_offset" pattern="[+-]?\\d{2}:\\d{2}">
-			<button onclick="saveField('utc_offset','json/config/global','utc_offset',display);">Save</button>
+			<label>UTC offset</label>
+			<input id="utc_offset" pattern="[+\-][0-9]{2}:[0-9]{2}">
+			<button onclick="saveField('utc_offset','config/global','utc_offset',display);">Save</button>
 		</div>
 	</div>
 	<div class="card">
 		<h2>Network</h2>
-		<div class="row">
-			<label>Hostname</label><input id="hostname"
-				pattern="[A-Za-z0-9\-]{0,63}" maxlength="63">
-		</div>
-		<div class="row">
-			<label>IP address</label><input id="ip_address"
-				pattern="(\d{1,3}\.){3}\d{1,3}" required>
-		</div>
-		<div class="row">
-			<label>Netmask</label><input id="net_mask"
-				pattern="(\d{1,3}\.){3}\d{1,3}" required>
-		</div>
-		<div class="row">
-			<label>Gateway</label><input id="default_gateway"
-				pattern="(\d{1,3}\.){3}\d{1,3}" required>
-		</div>
-		<div class="row">
-			<label>NTP server</label><input id="ntp_server"
-				pattern="(\d{1,3}\.){3}\d{1,3}">
-		</div>
-		<div class="row">
-			<label>Secondary IP</label><input id="secondary_ip" disabled>
-		</div>
-		<div class="row checkbox">
-			<label></label><input type="checkbox" id="use_static_ip"><span>Use static IP</span>
-			<button onclick="saveNetwork()">Save</button>
-		</div>
+		<div class="row"><label>Hostname</label><input id="hostname" pattern="[A-Za-z0-9\-]{0,63}" maxlength="63"></div>
+		<div class="row"><label>IP address</label><input id="ip_address" pattern="(\d{1,3}\.){3}\d{1,3}" required></div>
+		<div class="row"><label>Netmask</label><input id="net_mask" pattern="(\d{1,3}\.){3}\d{1,3}" required></div>
+		<div class="row"><label>Gateway</label><input id="default_gateway" pattern="(\d{1,3}\.){3}\d{1,3}" required></div>
+		<div class="row"><label>NTP server</label><input id="ntp_server" pattern="(\d{1,3}\.){3}\d{1,3}"></div>
+		<div class="row"><label>Secondary IP</label><input id="secondary_ip" disabled></div>
+		<div class="row checkbox"><label></label><input type="checkbox" id="use_static_ip"><span>Use static IP</span><button onclick="saveNetwork()">Save</button></div>
 	</div>
 	<div id="modules"></div>
 	<div id="appFooter"></div>
@@ -57,12 +37,6 @@
 	<script src="/common.js" type="text/javascript"></script>
 	<script src="/layout.js" type="text/javascript"></script>
 	<script src="/index.js" type="text/javascript"></script>
-	<script>
-		bootPage('config');
-		list();
-		version();
-		display();
-		loadModules();
-	</script>
+	<script>bootPage('config'); list(); version(); display(); loadModules();</script>
 </body>
 </html>

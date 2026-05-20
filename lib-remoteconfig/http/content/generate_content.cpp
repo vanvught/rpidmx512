@@ -108,7 +108,8 @@ static constexpr FeatureGuard kFeatureGuards[] = {
     {"dmxnode", kHaveDmxNodeBegin, kHaveDmxNodeEnd},          
 	{"artnet", kHaveNodeArtNetBegin, kHaveNodeArtNetEnd},       
 	{"e131", kHaveNodeE131Begin, kHaveNodeE131End},   
-	{"ltc", kHaveNodeLtcSmpteBegin, kHaveNodeltcSmpteEnd},
+	{"ltc.js", kHaveNodeLtcSmpteBegin, kHaveNodeltcSmpteEnd},
+	{"ltcdisplays.js", kHaveNodeLtcSmpteBegin, kHaveNodeltcSmpteEnd},
 	{"oscserver", kHaveNodeOscServerBegin, kHaveNodeOscServerEnd},
 	{"tcnet", kHaveNodeLtcSmpteBegin, kHaveNodeltcSmpteEnd},       
 	{"etc", kHaveNodeLtcSmpteBegin, kHaveNodeltcSmpteEnd}, 
@@ -119,8 +120,8 @@ static constexpr FeatureGuard kFeatureGuards[] = {
 	{"dmxpca9685", kHaveDmxPca9585Begin, kHaveDmxPca9585End},    
 	{"dmx.", kHaveDmxSendBegin, kHaveDmxSendEnd}, 
 	{"rdm", kHaveRdmBegin, kHaveRdmEnd},
-    {"display", kHaveDisplayUdfBegin, kHaveDisplayUdfEnd},    
-	{"showfile", kHaveShowfileBegin, kHaveShowfileEnd}, 
+    {"display.js", kHaveDisplayUdfBegin, kHaveDisplayUdfEnd},    
+	{"showfile.js", kHaveShowfileBegin, kHaveShowfileEnd}, 
 	{"time", kHaveTimeBegin, kHaveTimeEnd},       
 	{"rtc", kHaveRtcBegin, kHaveRtcEnd}};
 
