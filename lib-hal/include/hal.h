@@ -2,7 +2,7 @@
  * @file hal.h
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,26 +26,12 @@
 #ifndef HAL_H_
 #define HAL_H_
 
-#include <cstdint>
-
-namespace hal
-{
-enum class BootDevice
-{
-    UNKOWN,
-    FEL,
-    MMC0,
-    SPI,
-    HDD,
-    FLASH,
-    RAM
-};
+namespace hal {
+enum class BootDevice { UNKOWN, FEL, MMC0, SPI, HDD, FLASH, RAM };
 
 BootDevice GetBootDevice();
 
 void Init();
-
-uint32_t Uptime();
 
 float CoreTemperatureCurrent();
 
@@ -69,4 +55,4 @@ void RebootHandler();
 #endif
 #endif
 
-#endif  // HAL_H_
+#endif // HAL_H_

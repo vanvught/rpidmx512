@@ -118,7 +118,7 @@ using namespace rtc;
 void HwClock::RtcProbe() {
 	DEBUG_ENTRY();
 
-	last_hc_to_sys_millis_ =hal::Millis();
+	last_hc_to_sys_millis_ =timing::Millis();
 
 	FUNC_PREFIX(I2cSetBaudrate(HAL_I2C::NORMAL_SPEED));
 

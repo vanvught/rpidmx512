@@ -44,21 +44,16 @@
 #include "configstore.h"
 
 #if !defined(NO_EMAC)
-namespace network
-{
+namespace network {
 void Shutdown();
-} // namespace net
+} // namespace network
 #endif
 
-namespace hal
-{
-bool g_bWatchdog;
-
-bool Reboot()
-{
+namespace hal {
+bool Reboot() {
     puts("Rebooting ...");
 
-    h3_watchdog_disable();
+    H3WatchdogDisable();
 
     ConfigstoreCommit();
 #if !defined(DISABLE_RTC)
@@ -80,10 +75,9 @@ bool Reboot()
 
     hal::statusled::SetMode(hal::statusled::Mode::kReboot);
 
-    h3_watchdog_enable();
+    H3WatchdogEnable();
 
-    for (;;)
-    {
+    for (;;) {
         Run();
     }
 

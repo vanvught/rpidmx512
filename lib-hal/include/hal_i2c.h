@@ -35,8 +35,7 @@
 #endif
 #endif
 
-#include "hal_udelay.h"
-
+#include "timing.h"
 #if defined(__linux__) || defined(__APPLE__)
 #include "linux/hal_api.h"
 #include "linux/hal_i2c.h"
@@ -65,8 +64,7 @@
  *
  * @note Designed for Cortex-M3/M4 embedded systems without a standard library.
  */
-class HAL_I2C
-{
+class HAL_I2C {
    public:
     static constexpr uint32_t NORMAL_SPEED = 100000;
     static constexpr uint32_t FULL_SPEED = 400000;
@@ -119,8 +117,7 @@ class HAL_I2C
      *
      * @param data The byte to write.
      */
-    void Write(uint8_t data)
-    {
+    void Write(uint8_t data) {
         Setup();
         const char buffer[] = {static_cast<char>(data)};
         FUNC_PREFIX(I2cWrite(buffer, 1));
@@ -132,8 +129,7 @@ class HAL_I2C
      * @param data Pointer to the data buffer.
      * @param length Number of bytes to write.
      */
-    void Write(const char* data, uint32_t length)
-    {
+    void Write(const char* data, uint32_t length) {
         Setup();
         FUNC_PREFIX(I2cWrite(data, length));
     }
@@ -144,8 +140,7 @@ class HAL_I2C
      * @param reg The register address.
      * @param value The value to write.
      */
-    void WriteRegister(uint8_t reg, uint8_t value)
-    {
+    void WriteRegister(uint8_t reg, uint8_t value) {
         const char kBuffer[] = {static_cast<char>(reg), static_cast<char>(value)};
 
         Setup();
@@ -158,8 +153,7 @@ class HAL_I2C
      * @param reg The register address.
      * @param value The 16-bit value to write.
      */
-    void WriteRegister(uint8_t reg, uint16_t value)
-    {
+    void WriteRegister(uint8_t reg, uint16_t value) {
         const char kBuffer[] = {static_cast<char>(reg), static_cast<char>(value >> 8), static_cast<char>(value & 0xFF)};
 
         Setup();
@@ -171,8 +165,7 @@ class HAL_I2C
      *
      * @return The byte read from the device.
      */
-    uint8_t Read()
-    {
+    uint8_t Read() {
         char buf[1] = {0};
 
         Setup();
@@ -188,8 +181,7 @@ class HAL_I2C
      * @param length Number of bytes to read.
      * @return The number of bytes successfully read.
      */
-    uint8_t Read(char* buffer, uint32_t length)
-    {
+    uint8_t Read(char* buffer, uint32_t length) {
         Setup();
         return FUNC_PREFIX(I2cRead(buffer, length));
     }
@@ -199,8 +191,7 @@ class HAL_I2C
      *
      * @return The 16-bit value read from the device.
      */
-    uint16_t Read16()
-    {
+    uint16_t Read16() {
         char buf[2] = {0};
 
         Setup();
@@ -215,8 +206,7 @@ class HAL_I2C
      * @param reg The register address.
      * @return The byte read from the register.
      */
-    uint8_t ReadRegister(uint8_t reg)
-    {
+    uint8_t ReadRegister(uint8_t reg) {
         const char buf[] = {static_cast<char>(reg)};
 
         Setup();
@@ -231,18 +221,16 @@ class HAL_I2C
      * @param reg The register address.
      * @return The 16-bit value read from the register.
      */
-    uint16_t ReadRegister16(uint8_t reg)
-    {
-        const char buf[] = {static_cast<char>(reg)};
+    uint16_t ReadRegister16(uint8_t reg) {
+        const char kBuf[] = {static_cast<char>(reg)};
 
         Setup();
-        FUNC_PREFIX(I2cWrite(&buf[0], 1));
+        FUNC_PREFIX(I2cWrite(&kBuf[0], 1));
 
         return Read16();
     }
 
-    uint16_t ReadRegister16DelayUs(uint8_t reg, uint32_t delay_us)
-    {
+    uint16_t ReadRegister16DelayUs(uint8_t reg, uint32_t delay_us) {
         char buf[2] = {0};
 
         buf[0] = static_cast<char>(reg);
@@ -250,15 +238,14 @@ class HAL_I2C
         Setup();
         FUNC_PREFIX(I2cWrite(&buf[0], 1));
 
-        udelay(delay_us);
+        timing::DelayUs(delay_us);
 
         FUNC_PREFIX(I2cRead(buf, 2));
 
         return static_cast<uint16_t>(static_cast<uint16_t>(buf[0]) << 8 | static_cast<uint16_t>(buf[1]));
     }
 
-    bool AckRead()
-    {
+    bool AckRead() {
         char buf;
         return FUNC_PREFIX(I2cRead(&buf, 1)) == 0;
     }
@@ -270,8 +257,7 @@ class HAL_I2C
      * This function is called internally before any I2C operation to ensure
      * the correct address and baud rate are set.
      */
-    void Setup()
-    {
+    void Setup() {
         FUNC_PREFIX(I2cSetAddress(address_));
         FUNC_PREFIX(I2cSetBaudrate(baudrate_));
     }
@@ -286,4 +272,4 @@ class HAL_I2C
 #pragma GCC pop_options
 #endif
 
-#endif  // HAL_I2C_H_
+#endif // HAL_I2C_H_

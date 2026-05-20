@@ -38,7 +38,7 @@
 #include <cstdio>
 
 #include "softwaretimers.h"
-#include "hal_millis.h" // IWYU pragma: keep
+#include "timing.h" // IWYU pragma: keep
 #include "firmware/debug/debug_debug.h"
 
 static void Error(const char* func, const char* s) {
@@ -66,7 +66,7 @@ static uint32_t s_timer_current = 0;            ///< bRound-robin cursor for Sof
  *
  * @warning Callbacks run in the context that calls SoftwareTimerRun(). Keep them short,
  *          non-blocking, and ISR-safe *only if* SoftwareTimerRun() is called from an ISR.
- * @note    The first expiration is scheduled relative to the current @ref hal::Millis().
+ * @note    The first expiration is scheduled relative to the current @ref Millis().
  */
 TimerHandle_t SoftwareTimerAdd(uint32_t interval_millis, const TimerCallbackFunction_t kCallbackFunction) {
     DEBUG_ENTRY();
@@ -77,7 +77,7 @@ TimerHandle_t SoftwareTimerAdd(uint32_t interval_millis, const TimerCallbackFunc
         return -1;
     }
 
-    const auto kCurrentTime = hal::Millis();
+    const auto kCurrentTime = timing::Millis();
     // TODO (a) Prevent potential overflow when calculating expiration time.
 
     Timer new_timer = {
@@ -141,7 +141,7 @@ bool SoftwareTimerDelete(TimerHandle_t& id) {
 bool SoftwareTimerChange(TimerHandle_t id, uint32_t interval_millis) {
     for (uint32_t i = 0; i < s_timers_count; ++i) {
         if (s_timers[i].id == id) {
-            const auto kCurrentTime = hal::Millis();
+            const auto kCurrentTime = timing::Millis();
             s_timers[i].expire_time = kCurrentTime + interval_millis;
             s_timers[i].interval_millis = interval_millis;
             return true;
@@ -168,7 +168,7 @@ void SoftwareTimerRun() {
         return;
     }
 
-    const uint32_t kNow = hal::Millis();
+    const uint32_t kNow = timing::Millis();
     Timer& t = s_timers[s_timer_current];
 
     if (static_cast<int32_t>(kNow - t.expire_time) >= 0) [[unlikely]] {

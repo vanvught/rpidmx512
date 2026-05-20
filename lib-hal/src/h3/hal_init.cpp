@@ -62,7 +62,7 @@ static HwClock hwClock;
 
 #include "logic_analyzer.h"
 
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC push_options
@@ -72,29 +72,25 @@ static HwClock hwClock;
 #endif
 #endif
 
-static void EXTIA_IRQHandler()
-{
+static void EXTIA_IRQHandler() {
     DEBUG_PUTS("EXTIA_IRQHandler");
 
     H3_PIO_PA_INT->STA = ~0;
 }
 
-static void EXTIG_IRQHandler()
-{
+static void EXTIG_IRQHandler() {
     DEBUG_PUTS("EXTIG_IRQHandler");
 
     H3_PIO_PG_INT->STA = ~0;
 }
 
-static void __attribute__((interrupt("IRQ"))) IRQ_Handler()
-{
+static void __attribute__((interrupt("IRQ"))) IRQ_Handler() {
     __DMB();
 
     const auto nIRQ = GICInterface->AIAR;
     IRQHandler_t const handler = IRQ_GetHandler(nIRQ);
 
-    if (handler != nullptr)
-    {
+    if (handler != nullptr) {
         handler();
     }
 
@@ -107,11 +103,6 @@ static void __attribute__((interrupt("IRQ"))) IRQ_Handler()
 }
 
 #pragma GCC pop_options
-
-namespace hal
-{
-extern bool g_bWatchdog;
-} // namespace hal
 
 #define WIFI_EN_PIO 7    // PL7
 #define POWER_LED_PIO 10 // PL10
@@ -131,18 +122,14 @@ void h3_timer_avs_init();
 void h3_hs_timer_init();
 void h3_usb_end();
 
-void h3_status_led_set(int state)
-{
+void h3_status_led_set(int state) {
 #if defined(ORANGE_PI_ONE)
-    if (state == 0)
-    {
+    if (state == 0) {
         H3GpioClr(H3_BOARD_STATUS_LED);
 #if !defined(DO_NOT_USE_EXTERNAL_LED)
         H3GpioClr(EXTERNAL_LED);
 #endif
-    }
-    else
-    {
+    } else {
         H3GpioSet(H3_BOARD_STATUS_LED);
 #if !defined(DO_NOT_USE_EXTERNAL_LED)
         H3GpioSet(EXTERNAL_LED);
@@ -158,12 +145,9 @@ void h3_status_led_set(int state)
 
     uint32_t dat = H3_PIO_PORTA->DAT;
 
-    if (state == 0)
-    {
+    if (state == 0) {
         dat &= ~(MASK_LED);
-    }
-    else
-    {
+    } else {
         dat |= (MASK_LED);
     }
 
@@ -171,10 +155,8 @@ void h3_status_led_set(int state)
 #endif
 }
 
-namespace hal
-{
-void __attribute__((cold)) Init()
-{
+namespace hal {
+void __attribute__((cold)) Init() {
     H3GpioFsel(EXT_SPI_MOSI, GPIO_FSEL_INPUT);
     H3GpioSetPud(EXT_SPI_MOSI, GPIO_PULL_DOWN);
     H3GpioFsel(EXT_SPI_CLK, GPIO_FSEL_INPUT);
@@ -182,7 +164,7 @@ void __attribute__((cold)) Init()
     H3GpioFsel(EXT_SPI_CS, GPIO_FSEL_INPUT);
     H3GpioSetPud(EXT_SPI_CS, GPIO_PULL_DOWN);
 
-    h3_watchdog_disable();
+    H3WatchdogDisable();
     h3_usb_end();
     h3_timer_avs_init();
     h3_hs_timer_init();
@@ -214,15 +196,13 @@ void __attribute__((cold)) Init()
     DEBUG_PRINTF("%.4d/%.2d/%.2d %.2d:%.2d:%.2d", 1900 + tmbuf.tm_year, tmbuf.tm_mon, tmbuf.tm_mday, tmbuf.tm_hour, tmbuf.tm_min, tmbuf.tm_sec);
 
 #ifndef ARM_ALLOW_MULTI_CORE
-    for (uint32_t cpu_number = 1; cpu_number < H3_CPU_COUNT; cpu_number++)
-    {
+    for (uint32_t cpu_number = 1; cpu_number < H3_CPU_COUNT; cpu_number++) {
         h3_cpu_off(static_cast<h3_cpu_t>(cpu_number));
     }
 #endif
 
     const FRESULT kResult = f_mount(&fat_fs, reinterpret_cast<const TCHAR*>(""), static_cast<BYTE>(hal::GetBootDevice() == hal::BootDevice::MMC0) ? 1 : 0);
-    if (kResult != FR_OK)
-    {
+    if (kResult != FR_OK) {
         char buffer[32];
         snprintf(buffer, sizeof(buffer) - 1, "f_mount failed! %d\n", static_cast<int>(kResult));
         console::Error(buffer);
@@ -256,8 +236,6 @@ void __attribute__((cold)) Init()
 
     h3_cpu_set_clock(0); // default
 
-    hal::g_bWatchdog = false;
-
 #if defined(DEBUG_I2C)
     I2cDetect();
 #endif
@@ -281,8 +259,10 @@ void __attribute__((cold)) Init()
     arm_install_handler((unsigned)IRQ_Handler, ARM_VECTOR(ARM_VECTOR_IRQ));
 }
 
-uint32_t Uptime()
-{
+} // namespace hal
+
+namespace timing {
+uint32_t UpTime() {
     return (H3_TIMER->AVS_CNT0 / 1000) - s_hardware_init_startup_seconds;
 }
-} // namespace hal
+} // namespace timing
