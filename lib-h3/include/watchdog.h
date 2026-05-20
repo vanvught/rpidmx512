@@ -1,8 +1,8 @@
 /**
- * @file h3_udelay.cpp
+ * @file watchdog.h
  *
  */
-/* Copyright (C) 2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,40 +23,32 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
+#ifndef WATCHDOG_H_
+#define WATCHDOG_H_
 
-#include "h3.h"
+void H3WatchdogEnable();
+void H3WatchdogRestart();
+void H3WatchdogDisable();
 
-static constexpr uint32_t TICKS_PER_US = 100;
-
-void udelay(uint32_t nUs, uint32_t nOffset) {
-	const auto nTicks = nUs * TICKS_PER_US;
-
-	uint32_t nTicksCount = 0;
-	uint32_t nTicksPrevious;
-
-	if (nOffset == 0) {
-		nTicksPrevious = H3_HS_TIMER->CURNT_LO;
-	} else {
-		nTicksPrevious = nOffset;
-	}
-
-	while (1) {
-		const auto nTicksNow = H3_HS_TIMER->CURNT_LO;
-
-		if (nTicksNow != nTicksPrevious) {
-			if (nTicksNow > nTicksPrevious) {
-				nTicksCount += -(UINT32_MAX - nTicksPrevious + nTicksNow);
-
-			} else {
-				nTicksCount += -(nTicksNow - nTicksPrevious);
-			}
-
-			if (nTicksCount > nTicks) {
-				break;
-			}
-
-			nTicksPrevious = nTicksNow;
-		}
-	}
+namespace watchdog {
+extern bool watchdog;
+inline void Init() {
+    watchdog = true;
+    H3WatchdogEnable();
 }
+
+inline void Feed() {
+    H3WatchdogRestart();
+}
+
+inline void Stop() {
+    watchdog = false;
+    H3WatchdogDisable();
+}
+
+inline bool Watchdog() {
+    return watchdog;
+}
+} // namespace watchdog
+
+#endif // WATCHDOG_H_

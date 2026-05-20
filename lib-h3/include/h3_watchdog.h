@@ -2,7 +2,7 @@
  * @file h3_watchdog.h
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2018-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,8 +26,8 @@
 #ifndef H3_WATCHDOG_H_
 #define H3_WATCHDOG_H_
 
-void h3_watchdog_enable();
-void h3_watchdog_restart();
-void h3_watchdog_disable();
+void H3WatchdogEnable();
+void H3WatchdogRestart();
+void H3WatchdogDisable();
 
 #endif /* H3_WATCHDOG_H_ */

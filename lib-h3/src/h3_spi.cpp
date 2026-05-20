@@ -34,27 +34,20 @@
 #include "h3_spi.h"
 #include "h3_ccu.h"
 #include "h3_dma.h"
-
 #include "h3_board.h"
-
 #include "h3_spi_internal.h"
-
 #include "arm/synchronize.h"
+#include "timing.h"
 
-static constexpr uint32_t ALT_FUNCTION_CS =
-    (EXT_SPI_NUMBER == 0 ? static_cast<uint32_t>(H3_PC3_SELECT_SPI0_CS) : static_cast<uint32_t>(H3_PA13_SELECT_SPI1_CS));
-static constexpr uint32_t ALT_FUNCTION_CLK =
-    (EXT_SPI_NUMBER == 0 ? static_cast<uint32_t>(H3_PC2_SELECT_SPI0_CLK) : static_cast<uint32_t>(H3_PA14_SELECT_SPI1_CLK));
-static constexpr uint32_t ALT_FUNCTION_MOSI =
-    (EXT_SPI_NUMBER == 0 ? static_cast<uint32_t>(H3_PC1_SELECT_SPI0_MISO) : static_cast<uint32_t>(H3_PA15_SELECT_SPI1_MOSI));
-static constexpr uint32_t ALT_FUNCTION_MISO =
-    (EXT_SPI_NUMBER == 0 ? static_cast<uint32_t>(H3_PC0_SELECT_SPI0_MOSI) : static_cast<uint32_t>(H3_PA16_SELECT_SPI1_MISO));
+static constexpr uint32_t kAltFunctionCs = (EXT_SPI_NUMBER == 0 ? static_cast<uint32_t>(H3_PC3_SELECT_SPI0_CS) : static_cast<uint32_t>(H3_PA13_SELECT_SPI1_CS));
+static constexpr uint32_t kAltFunctionClk = (EXT_SPI_NUMBER == 0 ? static_cast<uint32_t>(H3_PC2_SELECT_SPI0_CLK) : static_cast<uint32_t>(H3_PA14_SELECT_SPI1_CLK));
+static constexpr uint32_t kAltFunctionMosi = (EXT_SPI_NUMBER == 0 ? static_cast<uint32_t>(H3_PC1_SELECT_SPI0_MISO) : static_cast<uint32_t>(H3_PA15_SELECT_SPI1_MOSI));
+static constexpr uint32_t kAltFunctionMiso = (EXT_SPI_NUMBER == 0 ? static_cast<uint32_t>(H3_PC0_SELECT_SPI0_MOSI) : static_cast<uint32_t>(H3_PA16_SELECT_SPI1_MISO));
 
 static bool s_pixel_mode = false;
 static uint32_t s_current_speed_hz = 0; // This forces an update
 
-struct spi_status
-{
+struct spi_status {
     bool transfer_active;
     uint8_t* rxbuf;
     uint32_t rxcnt;
@@ -66,32 +59,27 @@ struct spi_status
 
 static struct spi_status s_spi_status;
 
-void H3SpiSetPixelMode(bool off_on)
-{
+void H3SpiSetPixelMode(bool off_on) {
     s_pixel_mode = off_on;
 }
 
-bool H3SpiGetPixelMode()
-{
+bool H3SpiGetPixelMode() {
     return s_pixel_mode;
 }
 
-static uint32_t ClockTestCdr1(uint32_t pll_clock, uint32_t spi_clock, uint32_t* ccr)
-{
+static uint32_t ClockTestCdr1(uint32_t pll_clock, uint32_t spi_clock, uint32_t* ccr) {
     uint32_t cur, best = 0;
     uint32_t i, best_div = 0;
 
     const uint32_t max = CC_CDR1_MASK >> CC_CDR1_SHIFT;
 
-    for (i = 0; i < max; i++)
-    {
+    for (i = 0; i < max; i++) {
         cur = pll_clock / (1U << i);
 
         const uint32_t d1 = (spi_clock > cur) ? (spi_clock - cur) : (cur - spi_clock);
         const uint32_t d2 = (spi_clock > best) ? (spi_clock - best) : (best - spi_clock);
 
-        if (d1 < d2)
-        {
+        if (d1 < d2) {
             best = cur;
             best_div = i;
         }
@@ -102,29 +90,25 @@ static uint32_t ClockTestCdr1(uint32_t pll_clock, uint32_t spi_clock, uint32_t* 
     return best;
 }
 
-static uint32_t ClockTestCdr2(uint32_t pll_clock, uint32_t spi_clock, uint32_t* ccr)
-{
+static uint32_t ClockTestCdr2(uint32_t pll_clock, uint32_t spi_clock, uint32_t* ccr) {
     uint32_t cur, best = 0;
     uint32_t i, best_div = 0;
 
     const uint32_t kMax = ((CC_CDR2_MASK) >> CC_CDR2_SHIFT);
 
-    for (i = 0; i < kMax; i++)
-    {
+    for (i = 0; i < kMax; i++) {
         cur = pll_clock / (2 * i + 1);
 
         const uint32_t d1 = (spi_clock > cur) ? (spi_clock - cur) : (cur - spi_clock);
         const uint32_t d2 = (spi_clock > best) ? (spi_clock - best) : (best - spi_clock);
 
-        if (d1 < d2)
-        {
+        if (d1 < d2) {
             best = cur;
             best_div = i;
         }
     }
 
-    if (best == 0)
-    {
+    if (best == 0) {
         best_div = kMax;
         best = pll_clock / (2 * kMax + 1);
     }
@@ -134,8 +118,7 @@ static uint32_t ClockTestCdr2(uint32_t pll_clock, uint32_t spi_clock, uint32_t* 
     return best;
 }
 
-static void SetupClock(uint32_t pll_clock, uint32_t spi_clock)
-{
+static void SetupClock(uint32_t pll_clock, uint32_t spi_clock) {
     uint32_t best_ccr1, best_ccr2;
     uint32_t ccr, ccr1, ccr2;
 
@@ -149,27 +132,19 @@ static void SetupClock(uint32_t pll_clock, uint32_t spi_clock)
     printf("best_ccr1=%u, best_ccr2=%u\n", best_ccr1, best_ccr2);
 #endif
 
-    if (best_ccr1 == spi_clock)
-    {
+    if (best_ccr1 == spi_clock) {
         ccr = ccr1;
-    }
-    else if (best_ccr2 == spi_clock)
-    {
+    } else if (best_ccr2 == spi_clock) {
         ccr = ccr2;
-    }
-    else
-    {
+    } else {
         const uint32_t d1 = (spi_clock > best_ccr1) ? (spi_clock - best_ccr1) : (best_ccr1 - spi_clock);
         const uint32_t d2 = (spi_clock > best_ccr2) ? (spi_clock - best_ccr2) : (best_ccr2 - spi_clock);
 #ifndef NDEBUG
         printf("d1=%u, d2=%u\n", d1, d2);
 #endif
-        if (d1 < d2)
-        {
+        if (d1 < d2) {
             ccr = ccr1;
-        }
-        else
-        {
+        } else {
             ccr = ccr2;
         }
     }
@@ -181,92 +156,76 @@ static void SetupClock(uint32_t pll_clock, uint32_t spi_clock)
 #endif
 }
 
-inline static uint32_t QueryTxfifo()
-{
+inline static uint32_t QueryTxfifo() {
     uint32_t value = EXT_SPI->FS & FS_TX_CNT;
     value >>= FS_TXCNT_BIT_POS;
     return value;
 }
 
-inline static uint32_t QueryRxfifo()
-{
+inline static uint32_t QueryRxfifo() {
     uint32_t value = EXT_SPI->FS & FS_RX_CNT;
     value >>= FS_RXCNT_BIT_POS;
     return value;
 }
 
-inline static void ClearFifos()
-{
+inline static void ClearFifos() {
     EXT_SPI->FC = (FC_RX_RST | FC_TX_RST);
 
     int timeout;
     // TODO Do we really need to check?
-    for (timeout = 1000; timeout > 0; timeout--)
-    { // TODO What if failed?
+    for (timeout = 1000; timeout > 0; timeout--) { // TODO What if failed?
         if (EXT_SPI->FC == 0) break;
     }
 
     // TODO Do we need to set the trigger level of RxFIFO/TxFIFO?
 }
 
-static void ReadRxfifo()
-{
-    if (s_spi_status.rxcnt == s_spi_status.rxlen)
-    {
+static void ReadRxfifo() {
+    if (s_spi_status.rxcnt == s_spi_status.rxlen) {
         return;
     }
 
     uint32_t rx_count = QueryRxfifo();
 
-    while (rx_count-- > 0)
-    {
+    while (rx_count-- > 0) {
         const uint8_t value = EXT_SPI->RX.byte;
 
         if (s_spi_status.rxcnt < s_spi_status.rxlen) s_spi_status.rxbuf[s_spi_status.rxcnt++] = value;
     }
 }
 
-static void WriteTxfifo()
-{
-    if (s_spi_status.txcnt == s_spi_status.txlen)
-    {
+static void WriteTxfifo() {
+    if (s_spi_status.txcnt == s_spi_status.txlen) {
         return;
     }
 
     uint32_t tx_count = SPI_FIFO_SIZE - QueryTxfifo();
 
-    while (tx_count-- > 0)
-    {
+    while (tx_count-- > 0) {
         EXT_SPI->TX.byte = s_spi_status.txbuf[s_spi_status.txcnt++];
 
-        if (s_spi_status.txcnt == s_spi_status.txlen)
-        {
+        if (s_spi_status.txcnt == s_spi_status.txlen) {
             break;
         }
     }
 }
 
-static void InterruptHandler()
-{
+static void InterruptHandler() {
     uint32_t intr = EXT_SPI->IS;
 
-    if (intr & IS_RX_FULL)
-    {
+    if (intr & IS_RX_FULL) {
         ReadRxfifo();
     }
 
-    if (intr & IS_TX_EMP)
-    {
+    if (intr & IS_TX_EMP) {
         WriteTxfifo();
 
-        if (s_spi_status.txcnt == s_spi_status.txlen)
-        {
+        if (s_spi_status.txcnt == s_spi_status.txlen) {
             EXT_SPI->IE = IE_TC | IE_RX_FULL;
         }
     }
 
-    if (intr & IS_TC)
-    {
+    if (intr & IS_TC) {
         ReadRxfifo();
 
         EXT_SPI->IE = 0;
@@ -276,25 +235,24 @@ static void InterruptHandler()
     EXT_SPI->IS = intr;
 }
 
-void __attribute__((cold)) H3SpiBegin()
-{
-    H3GpioFsel(EXT_SPI_CS, ALT_FUNCTION_CS);
-    H3GpioFsel(EXT_SPI_CLK, ALT_FUNCTION_CLK);
-    H3GpioFsel(EXT_SPI_MOSI, ALT_FUNCTION_MOSI);
-    H3GpioFsel(EXT_SPI_MISO, ALT_FUNCTION_MISO);
+void __attribute__((cold)) H3SpiBegin() {
+    H3GpioFsel(EXT_SPI_CS, kAltFunctionCs);
+    H3GpioFsel(EXT_SPI_CLK, kAltFunctionClk);
+    H3GpioFsel(EXT_SPI_MOSI, kAltFunctionMosi);
+    H3GpioFsel(EXT_SPI_MISO, kAltFunctionMiso);
 
 #if (EXT_SPI_NUMBER == 0)
     H3_CCU->BUS_SOFT_RESET0 |= CCU_BUS_SOFT_RESET0_SPI0;
-    udelay(1000); // 1ms
+    timing::DelayUs(1000); // 1ms
     H3_CCU->BUS_CLK_GATING0 &= ~CCU_BUS_CLK_GATING0_SPI0;
-    udelay(1000); // 1ms
+    timing::DelayUs(1000); // 1ms
     H3_CCU->BUS_CLK_GATING0 |= CCU_BUS_CLK_GATING0_SPI0;
     H3_CCU->SPI0_CLK = (1U << 31) | (0x01 << 24); // Clock is ON, P0
 #elif (EXT_SPI_NUMBER == 1)
     H3_CCU->BUS_SOFT_RESET0 |= CCU_BUS_SOFT_RESET0_SPI1;
-    udelay(1000); // 1ms
+    timing::DelayUs(1000); // 1ms
     H3_CCU->BUS_CLK_GATING0 &= ~CCU_BUS_CLK_GATING0_SPI1;
-    udelay(1000); // 1ms
+    timing::DelayUs(1000); // 1ms
     H3_CCU->BUS_CLK_GATING0 |= CCU_BUS_CLK_GATING0_SPI1;
     H3_CCU->SPI1_CLK = (1U << 31) | (0x01 << 24); // Clock is ON, P0
 #else
@@ -338,8 +296,7 @@ void __attribute__((cold)) H3SpiBegin()
 #endif
 }
 
-void __attribute__((cold)) H3SpiEnd()
-{
+void __attribute__((cold)) H3SpiEnd() {
     uint32_t value;
 
     value = EXT_SPI->GC;
@@ -366,35 +323,28 @@ void __attribute__((cold)) H3SpiEnd()
     H3GpioFsel(EXT_SPI_MISO, GPIO_FSEL_DISABLE);
 }
 
-void H3SpiSetSpeedHz(uint32_t speed_hz)
-{
+void H3SpiSetSpeedHz(uint32_t speed_hz) {
     assert(speed_hz != 0);
 
-    if (__builtin_expect((s_current_speed_hz != speed_hz), 0))
-    {
+    if (__builtin_expect((s_current_speed_hz != speed_hz), 0)) {
         s_current_speed_hz = speed_hz;
         SetupClock(CCU_PERIPH0_CLOCK_HZ, speed_hz);
     }
 }
 
-void H3SpiSetBitOrder(h3_spi_bit_order_t bit_order)
-{
+void H3SpiSetBitOrder(h3_spi_bit_order_t bit_order) {
     uint32_t value = EXT_SPI->TC;
 
-    if (bit_order == H3_SPI_BIT_ORDER_LSBFIRST)
-    {
+    if (bit_order == H3_SPI_BIT_ORDER_LSBFIRST) {
         value |= TC_FBS;
-    }
-    else
-    {
+    } else {
         value &= static_cast<uint32_t>(~TC_FBS);
     }
 
     EXT_SPI->TC = value;
 }
 
-void H3SpiSetDataMode(uint8_t mode)
-{
+void H3SpiSetDataMode(uint8_t mode) {
     uint32_t value = EXT_SPI->TC;
     value &= static_cast<uint32_t>(~TC_CPHA);
     value &= static_cast<uint32_t>(~TC_CPOL);
@@ -402,42 +352,33 @@ void H3SpiSetDataMode(uint8_t mode)
     EXT_SPI->TC = value;
 }
 
-void H3SpiChipSelect(uint8_t chip_select)
-{
+void H3SpiChipSelect(uint8_t chip_select) {
     uint32_t value = EXT_SPI->TC;
 
-    if (chip_select < H3_SPI_CS_NONE)
-    {
+    if (chip_select < H3_SPI_CS_NONE) {
         value &= static_cast<uint32_t>(~TC_SS_OWNER);
         value &= static_cast<uint32_t>(~TC_SS_MASK);
         value |= static_cast<uint32_t>(chip_select << TC_SS_MASK_SHIFT);
-    }
-    else
-    {
+    } else {
         value |= TC_SS_OWNER; // Software controlled
     }
 
     EXT_SPI->TC = value;
 }
 
-void H3SpiSetChipSelectPolarity([[maybe_unused]] uint8_t chip_select, uint8_t polarity)
-{
+void H3SpiSetChipSelectPolarity([[maybe_unused]] uint8_t chip_select, uint8_t polarity) {
     uint32_t value = EXT_SPI->TC;
 
-    if (polarity == HIGH)
-    {
+    if (polarity == HIGH) {
         value &= static_cast<uint32_t>(~TC_SPOL);
-    }
-    else
-    {
+    } else {
         value |= TC_SPOL;
     }
 
     EXT_SPI->TC = value;
 }
 
-void H3SpiTransfernb(char* tx_buffer, char* rx_buffer, uint32_t data_length)
-{
+void H3SpiTransfernb(char* tx_buffer, char* rx_buffer, uint32_t data_length) {
     s_spi_status.rxbuf = reinterpret_cast<uint8_t*>(rx_buffer);
     s_spi_status.rxcnt = 0;
     s_spi_status.txbuf = reinterpret_cast<uint8_t*>(tx_buffer);
@@ -458,37 +399,31 @@ void H3SpiTransfernb(char* tx_buffer, char* rx_buffer, uint32_t data_length)
 
     s_spi_status.transfer_active = true;
 
-    while (s_spi_status.transfer_active)
-    {
+    while (s_spi_status.transfer_active) {
         InterruptHandler();
     }
 }
 
-void H3SpiTransfern(char* buffer, uint32_t data_length)
-{
+void H3SpiTransfern(char* buffer, uint32_t data_length) {
     assert(buffer != nullptr);
 
     H3SpiTransfernb(buffer, buffer, data_length);
 }
 
-void H3SpiWritenb(const char* tx_buffer, uint32_t data_length)
-{
+void H3SpiWritenb(const char* tx_buffer, uint32_t data_length) {
     assert(tx_buffer != nullptr);
 
     EXT_SPI->GC &= static_cast<uint32_t>(~(GC_TP_EN)); // ignore RXFIFO
 
     ClearFifos();
 
-    if (s_pixel_mode)
-    {
+    if (s_pixel_mode) {
         EXT_SPI->MBC = data_length + 1;
         EXT_SPI->MTC = data_length + 1;
         EXT_SPI->BCC = data_length + 1;
 
         EXT_SPI->TX.byte = static_cast<uint8_t>(0x00);
-    }
-    else
-    {
+    } else {
         EXT_SPI->MBC = data_length;
         EXT_SPI->MTC = data_length;
         EXT_SPI->BCC = data_length;
@@ -498,8 +433,7 @@ void H3SpiWritenb(const char* tx_buffer, uint32_t data_length)
 
     uint32_t tx_count1 = SPI_FIFO_SIZE - QueryTxfifo();
 
-    while ((fifo_writes < data_length) && (tx_count1-- > 0))
-    {
+    while ((fifo_writes < data_length) && (tx_count1-- > 0)) {
         EXT_SPI->TX.byte = tx_buffer[fifo_writes];
         fifo_writes++;
     }
@@ -511,12 +445,10 @@ void H3SpiWritenb(const char* tx_buffer, uint32_t data_length)
 
     EXT_SPI->IS = IS_TX_EMP;
 
-    while (fifo_writes < data_length)
-    {
+    while (fifo_writes < data_length) {
         uint32_t tx_count = SPI_FIFO_SIZE - QueryTxfifo();
 
-        while ((fifo_writes < data_length) && (tx_count-- > 0))
-        {
+        while ((fifo_writes < data_length) && (tx_count-- > 0)) {
             EXT_SPI->TX.byte = tx_buffer[fifo_writes];
             fifo_writes++;
         }
@@ -533,8 +465,7 @@ void H3SpiWritenb(const char* tx_buffer, uint32_t data_length)
     EXT_SPI->IE = 0;
 }
 
-void H3SpiWrite(uint16_t data)
-{
+void H3SpiWrite(uint16_t data) {
     EXT_SPI->GC &= static_cast<uint32_t>(~(GC_TP_EN)); // ignore RXFIFO
 
     ClearFifos();
@@ -558,8 +489,7 @@ void H3SpiWrite(uint16_t data)
     EXT_SPI->IE = 0;
 }
 
-uint8_t H3SpiTransfer(uint8_t data)
-{
+uint8_t H3SpiTransfer(uint8_t data) {
     uint8_t ret;
 
     ClearFifos();
@@ -599,8 +529,7 @@ uint8_t H3SpiTransfer(uint8_t data)
 #endif
 #define SPI_DMA_TX_BUFFER_SIZE (SPI_DMA_COHERENT_REGION_SIZE - sizeof(struct sunxi_dma_lli))
 
-struct dma_spi
-{
+struct dma_spi {
     struct sunxi_dma_lli lli;
     uint8_t tx_buffer[SPI_DMA_TX_BUFFER_SIZE] __attribute__((aligned(4)));
 };
@@ -608,15 +537,12 @@ struct dma_spi
 static struct dma_spi* p_dma_tx = reinterpret_cast<struct dma_spi*>(SPI_DMA_COHERENT_REGION);
 static bool is_running = false;
 
-bool H3SpiDmaTxIsActive()
-{
-    if (!is_running)
-    {
+bool H3SpiDmaTxIsActive() {
+    if (!is_running) {
         return false;
     }
 
-    if (EXT_SPI->IS & IS_TC)
-    {
+    if (EXT_SPI->IS & IS_TC) {
         EXT_SPI->IS = UINT32_MAX;
         EXT_SPI->IE = 0;
         is_running = false;
@@ -627,15 +553,14 @@ bool H3SpiDmaTxIsActive()
     return true;
 }
 
-const uint8_t* H3SpiDmaTxPrepare(uint32_t* nSize)
-{
+const uint8_t* H3SpiDmaTxPrepare(uint32_t* nSize) {
     assert(nSize != nullptr);
 
     H3_CCU->BUS_SOFT_RESET0 |= CCU_BUS_SOFT_RESET0_DMA;
     H3_CCU->BUS_CLK_GATING0 |= CCU_BUS_CLK_GATING0_DMA;
 
-    p_dma_tx->lli.cfg = DMA_CHAN_CFG_SRC_LINEAR_MODE | DMA_CHAN_CFG_SRC_DRQ(DRQSRC_SDRAM) | DMA_CHAN_CFG_SRC_WIDTH(0) | DMA_CHAN_CFG_SRC_BURST(0) |
-                        DMA_CHAN_CFG_DST_IO_MODE | DMA_CHAN_CFG_DST_DRQ(DRQDST_SPIO1) | DMA_CHAN_CFG_DST_WIDTH(0) | DMA_CHAN_CFG_DST_BURST(0);
+    p_dma_tx->lli.cfg = DMA_CHAN_CFG_SRC_LINEAR_MODE | DMA_CHAN_CFG_SRC_DRQ(DRQSRC_SDRAM) | DMA_CHAN_CFG_SRC_WIDTH(0) | DMA_CHAN_CFG_SRC_BURST(0) | DMA_CHAN_CFG_DST_IO_MODE | DMA_CHAN_CFG_DST_DRQ(DRQDST_SPIO1) | DMA_CHAN_CFG_DST_WIDTH(0) |
+                        DMA_CHAN_CFG_DST_BURST(0);
     p_dma_tx->lli.src = reinterpret_cast<uint32_t>(&p_dma_tx->tx_buffer);
     p_dma_tx->lli.dst = reinterpret_cast<uint32_t>(&EXT_SPI->TX.byte);
     p_dma_tx->lli.para = DMA_NORMAL_WAIT;
@@ -648,12 +573,10 @@ const uint8_t* H3SpiDmaTxPrepare(uint32_t* nSize)
     return reinterpret_cast<const uint8_t*>(&p_dma_tx->tx_buffer);
 }
 
-void H3SpiDmaTxStart(const uint8_t* pTxBuffer, uint32_t length)
-{
+void H3SpiDmaTxStart(const uint8_t* pTxBuffer, uint32_t length) {
     assert(!is_running);
     assert(pTxBuffer != nullptr);
-    assert(length <=
-           static_cast<uint32_t>(sizeof(p_dma_tx->tx_buffer)) - (reinterpret_cast<uint32_t>(pTxBuffer)) - reinterpret_cast<uint32_t>(&p_dma_tx->tx_buffer));
+    assert(length <= static_cast<uint32_t>(sizeof(p_dma_tx->tx_buffer)) - (reinterpret_cast<uint32_t>(pTxBuffer)) - reinterpret_cast<uint32_t>(&p_dma_tx->tx_buffer));
     assert(((uint32_t)pTxBuffer & H3_MEM_COHERENT_REGION) == H3_MEM_COHERENT_REGION);
 
     p_dma_tx->lli.src = reinterpret_cast<uint32_t>(pTxBuffer);
@@ -683,8 +606,7 @@ void H3SpiDmaTxStart(const uint8_t* pTxBuffer, uint32_t length)
  * bitbang support
  */
 
-void __attribute__((cold)) H3BitbangSpiBegin()
-{
+void __attribute__((cold)) H3BitbangSpiBegin() {
     H3GpioFsel(EXT_SPI_CS, GPIO_FSEL_OUTPUT);
     H3GpioFsel(EXT_SPI_CLK, GPIO_FSEL_OUTPUT);
     H3GpioFsel(EXT_SPI_MOSI, GPIO_FSEL_OUTPUT);
@@ -697,16 +619,11 @@ void __attribute__((cold)) H3BitbangSpiSetSpeedHz([[maybe_unused]] uint32_t spee
 
 void __attribute__((cold)) H3BitbangSpiSetDataMode([[maybe_unused]] uint8_t mode) {}
 
-static inline void BitbangSpiWrite(char c)
-{
-    for (uint32_t nMask = (1U << 7); nMask != 0; nMask = (nMask >> 1U))
-    {
-        if (c & nMask)
-        {
+static inline void BitbangSpiWrite(char c) {
+    for (uint32_t nMask = (1U << 7); nMask != 0; nMask = (nMask >> 1U)) {
+        if (c & nMask) {
             H3GpioSet(EXT_SPI_MOSI);
-        }
-        else
-        {
+        } else {
             H3GpioClr(EXT_SPI_MOSI);
         }
 
@@ -715,10 +632,8 @@ static inline void BitbangSpiWrite(char c)
     }
 }
 
-void H3BitbangSpiWritenb(const char* pTxBuffer, uint32_t length)
-{
-    for (uint32_t i = 0; i < length; i++)
-    {
+void H3BitbangSpiWritenb(const char* pTxBuffer, uint32_t length) {
+    for (uint32_t i = 0; i < length; i++) {
         BitbangSpiWrite(pTxBuffer[i]);
     }
 }

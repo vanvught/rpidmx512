@@ -40,6 +40,8 @@
 #include <cstring>
 #include <cstdio>
 
+#include "timing.h"
+
 namespace uart0
 {
 void Puts(const char*);
@@ -114,20 +116,20 @@ static void HdmiPhyInit()
     H3_HDMI_PHY->CTRL = 0;
 
     H3_HDMI_PHY->CTRL |= BIT(0);
-    udelay(5);
+    timing::DelayUs(5);
 
     H3_HDMI_PHY->CTRL |= BIT(16);
     H3_HDMI_PHY->CTRL |= BIT(1);
-    udelay(10);
+    timing::DelayUs(10);
 
     H3_HDMI_PHY->CTRL |= BIT(2);
-    udelay(5);
+    timing::DelayUs(5);
 
     H3_HDMI_PHY->CTRL |= BIT(3);
-    udelay(40);
+    timing::DelayUs(40);
 
     H3_HDMI_PHY->CTRL |= BIT(19);
-    udelay(100);
+    timing::DelayUs(100);
 
     H3_HDMI_PHY->CTRL |= BIT(18);
 
@@ -150,11 +152,11 @@ static void HdmiPhyInit()
 
     H3_HDMI_PHY->PLL = 0x39dc5040;
     H3_HDMI_PHY->CLK = 0x80084343;
-    udelay(10000);
+    timing::DelayUs(10000);
 
     H3_HDMI_PHY->UNK3 = 1;
     H3_HDMI_PHY->PLL |= BIT(25);
-    udelay(100000);
+    timing::DelayUs(100000);
 
     auto tmp = (H3_HDMI_PHY->STATUS & 0x1f800) >> 11;
 
@@ -206,11 +208,11 @@ static void HdmiPhySet(uint32_t clock)
         case 1:
             H3_HDMI_PHY->PLL = 0x30dc5fc0;
             H3_HDMI_PHY->CLK = 0x800863C0;
-            udelay(1000 * 10);
+            timing::DelayUs(1000 * 10);
 
             H3_HDMI_PHY->UNK3 = 0x00000001;
             H3_HDMI_PHY->PLL |= BIT(25);
-            udelay(1000 * 200);
+            timing::DelayUs(1000 * 200);
 
             tmp = (H3_HDMI_PHY->STATUS & 0x1f800) >> 11;
             H3_HDMI_PHY->PLL |= (BIT(31) | BIT(30));
@@ -223,7 +225,7 @@ static void HdmiPhySet(uint32_t clock)
             {
                 H3_HDMI_PHY->PLL |= 0x3f;
             }
-            udelay(1000 * 100);
+            timing::DelayUs(1000 * 100);
 
             H3_HDMI_PHY->CTRL = 0x01FFFF7F;
             H3_HDMI_PHY->UNK1 = 0x8063b000;
@@ -232,11 +234,11 @@ static void HdmiPhySet(uint32_t clock)
         case 2:
             H3_HDMI_PHY->PLL = 0x39dc5040;
             H3_HDMI_PHY->CLK = 0x80084381;
-            udelay(1000 * 10);
+            timing::DelayUs(1000 * 10);
 
             H3_HDMI_PHY->UNK3 = 0x00000001;
             H3_HDMI_PHY->PLL |= BIT(25);
-            udelay(1000 * 100);
+            timing::DelayUs(1000 * 100);
 
             tmp = (H3_HDMI_PHY->STATUS & 0x1f800) >> 11;
             H3_HDMI_PHY->PLL |= (BIT(31) | BIT(30));
@@ -248,11 +250,11 @@ static void HdmiPhySet(uint32_t clock)
         case 4:
             H3_HDMI_PHY->PLL = 0x39dc5040;
             H3_HDMI_PHY->CLK = 0x80084343;
-            udelay(1000 * 10);
+            timing::DelayUs(1000 * 10);
 
             H3_HDMI_PHY->UNK3 = 0x00000001;
             H3_HDMI_PHY->PLL |= BIT(25);
-            udelay(1000 * 100);
+            timing::DelayUs(1000 * 100);
 
             tmp = (H3_HDMI_PHY->STATUS & 0x1f800) >> 11;
             H3_HDMI_PHY->PLL |= (BIT(31) | BIT(30));
@@ -264,11 +266,11 @@ static void HdmiPhySet(uint32_t clock)
         case 11:
             H3_HDMI_PHY->PLL = 0x39dc5040;
             H3_HDMI_PHY->CLK = 0x8008430a;
-            udelay(1000 * 10);
+            timing::DelayUs(1000 * 10);
 
             H3_HDMI_PHY->UNK3 = 0x00000001;
             H3_HDMI_PHY->PLL |= BIT(25);
-            udelay(1000 * 100);
+            timing::DelayUs(1000 * 100);
 
             tmp = (H3_HDMI_PHY->STATUS & 0x1f800) >> 11;
             H3_HDMI_PHY->PLL |= (BIT(31) | BIT(30));

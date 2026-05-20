@@ -2,7 +2,7 @@
  * @file h3_thermal.cpp
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2026 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,8 +28,8 @@
 #include "h3.h"
 #include "h3_ccu.h"
 #include "h3_sid.h"
-
- #include "firmware/debug/debug_debug.h"
+#include "timing.h"
+#include "firmware/debug/debug_debug.h"
 
 #define CTRL1_ADC_CALI_EN (1U << 17)
 
@@ -68,52 +68,44 @@
 #define H3_FILTER 0x6            // Some other calculation here -> https://github.com/megous/h3-firmware/blob/master/ths.c
 #define H3_INTC 0x191000         // Other values here -> https://github.com/ayufan-pine64/linux-3.10/blob/master/drivers/thermal/sunxi_thermal/sun50i_ths.h
 
-static int ToTemp(uint32_t val)
-{
+static int ToTemp(uint32_t val) {
     return (TEMP_BASE - (static_cast<int>(val * TEMP_MUL) / TEMP_DIV));
 }
 
-static uint32_t ToReg(int val)
-{
+static uint32_t ToReg(int val) {
     return static_cast<uint32_t>((TEMP_MINUS - (val * TEMP_DIV)) / TEMP_MUL);
 }
 
-int h3_thermal_gettemp()
-{
+int h3_thermal_gettemp() {
     const uint32_t value = H3_THS->DATA & DATA_MASK;
     return (value == 0 ? -1 : ToTemp(value));
 }
 
-int h3_thermal_getshut()
-{
+int h3_thermal_getshut() {
     const uint32_t value = (H3_THS->SHUTDOWN_CTRL >> SHUTDOWN_CTRL_T_HOT_SHIFT) & SHUTDOWN_CTRL_T_HOT_MASK;
     return (ToTemp(value));
 }
 
-void h3_thermal_setshut(int temp)
-{
+void h3_thermal_setshut(int temp) {
     uint32_t value = H3_THS->SHUTDOWN_CTRL;
     value &= static_cast<uint32_t>(~(SHUTDOWN_CTRL_T_HOT_MASK << SHUTDOWN_CTRL_T_HOT_SHIFT));
     value |= (ToReg(temp) << SHUTDOWN_CTRL_T_HOT_SHIFT);
     H3_THS->SHUTDOWN_CTRL = value;
 }
 
-int h3_thermal_getalarm()
-{
+int h3_thermal_getalarm() {
     const uint32_t value = (H3_THS->ALARM_CTRL >> ALARM_CTRL_T_HOT_SHIFT) & ALARM_CTRL_T_HOT_MASK;
     return (ToTemp(value));
 }
 
-void h3_thermal_setalarm(int temp)
-{
+void h3_thermal_setalarm(int temp) {
     uint32_t value = H3_THS->ALARM_CTRL;
     value &= static_cast<uint32_t>(~(ALARM_CTRL_T_HOT_MASK << ALARM_CTRL_T_HOT_SHIFT));
     value |= (ToReg(temp) << ALARM_CTRL_T_HOT_SHIFT);
     H3_THS->ALARM_CTRL = value;
 }
 
-void __attribute__((cold)) h3_thermal_init()
-{
+void __attribute__((cold)) h3_thermal_init() {
     uint32_t value = H3_CCU->THS_CLK;
     value &= ~(CCU_THS_CLK_SRC_MASK);
     value |= (CCU_THS_CLK_SRC_OSC24M << CCU_THS_CLK_SRC_SHIFT);
@@ -122,9 +114,9 @@ void __attribute__((cold)) h3_thermal_init()
     H3_CCU->THS_CLK = value | CCU_THS_CLK_SCLK_GATING;
 
     H3_CCU->BUS_SOFT_RESET3 |= CCU_BUS_SOFT_RESET3_THS;
-    udelay(1000); // 1ms
+    timing::DelayUs(1000); // 1ms
     H3_CCU->BUS_CLK_GATING2 &= ~(CCU_BUS_CLK_GATING2_THS);
-    udelay(1000); // 1ms
+    timing::DelayUs(1000); // 1ms
     H3_CCU->BUS_CLK_GATING2 |= CCU_BUS_CLK_GATING2_THS;
 
     uint32_t calib;
@@ -133,8 +125,7 @@ void __attribute__((cold)) h3_thermal_init()
 
     calib &= DATA_MASK;
 
-    if (calib != 0)
-    {
+    if (calib != 0) {
         H3_THS->CDATA = calib;
     }
 
@@ -155,10 +146,8 @@ void __attribute__((cold)) h3_thermal_init()
     h3_thermal_setshut(INIT_SHUT_CELCIUS);
 }
 
-namespace hal
-{
-float CoreTemperatureCurrent()
-{
+namespace hal {
+float CoreTemperatureCurrent() {
     return static_cast<float>(h3_thermal_gettemp());
 }
 } // namespace hal

@@ -40,28 +40,23 @@
 #include <cstdio>
 #endif
 
- #include "firmware/debug/debug_debug.h"
-
 #include "h3.h"
 #include "h3_ccu.h"
 #include "h3_gpio.h"
 #include "h3_i2c.h"
-
 #include "h3_board.h"
+#include "timing.h"
+#include "firmware/debug/debug_debug.h"
 
 static uint8_t s_slave_address;
 static uint32_t s_current_baudrate;
 
-static constexpr auto ALT_FUNCTION_SCK = (EXT_I2C_NUMBER == 0 ? static_cast<uint32_t>(H3_PA11_SELECT_TWI0_SCK) : static_cast<uint32_t>(H3_PA18_SELECT_TWI1_SCK));
-static constexpr auto ALT_FUNCTION_SDA = (EXT_I2C_NUMBER == 0 ? static_cast<uint32_t>(H3_PA12_SELECT_TWI0_SDA) : static_cast<uint32_t>(H3_PA19_SELECT_TWI1_SDA));
+static constexpr auto kAltFunctionSck = (EXT_I2C_NUMBER == 0 ? static_cast<uint32_t>(H3_PA11_SELECT_TWI0_SCK) : static_cast<uint32_t>(H3_PA18_SELECT_TWI1_SCK));
+static constexpr auto kAltFunctionSda = (EXT_I2C_NUMBER == 0 ? static_cast<uint32_t>(H3_PA12_SELECT_TWI0_SDA) : static_cast<uint32_t>(H3_PA19_SELECT_TWI1_SDA));
 
 #define TIMEOUT 0xffff
 
-typedef enum I2C_MODE
-{
-    I2C_MODE_WRITE = 0,
-    I2C_MODE_READ
-} i2c_mode_t;
+typedef enum I2C_MODE { I2C_MODE_WRITE = 0, I2C_MODE_READ } i2c_mode_t;
 
 #define STAT_BUS_ERROR 0x00        ///< Bus error
 #define STAT_START_TRANSMIT 0x08   ///< START condition transmitted
@@ -87,8 +82,7 @@ typedef enum I2C_MODE
 #define CLK_M_SHIFT 3
 #define CLK_M_MASK 0xF
 
-static inline void _cc_write_reg(const uint32_t clk_n, const uint32_t clk_m)
-{
+static inline void _cc_write_reg(const uint32_t clk_n, const uint32_t clk_m) {
     uint32_t value = EXT_I2C->CC;
 #ifndef NDEBUG
     printf("%s: clk_n = %d, clk_m = %d\n", __FUNCTION__, clk_n, clk_m);
@@ -98,8 +92,7 @@ static inline void _cc_write_reg(const uint32_t clk_n, const uint32_t clk_m)
     EXT_I2C->CC = value;
 }
 
-static void _set_clock(const uint32_t clk_in, const uint32_t sclk_req)
-{
+static void _set_clock(const uint32_t clk_in, const uint32_t sclk_req) {
     uint32_t clk_m = 0;
     uint32_t clk_n = 0;
     uint32_t _2_pow_clk_n = 1;
@@ -109,23 +102,18 @@ static void _set_clock(const uint32_t clk_in, const uint32_t sclk_req)
 
     assert(divider != 0);
 
-    while (clk_n < (CLK_N_MASK + 1))
-    {
+    while (clk_n < (CLK_N_MASK + 1)) {
         /* (m+1)*2^n = divider -->m = divider/2^n -1 */
         clk_m = (divider / _2_pow_clk_n) - 1;
         /* clk_m = (divider >> (_2_pow_clk_n>>1))-1 */
 
-        while (clk_m < (CLK_M_MASK + 1))
-        {
+        while (clk_m < (CLK_M_MASK + 1)) {
             sclk_real = src_clk / (clk_m + 1) / _2_pow_clk_n; /* src_clk/((m+1)*2^n) */
 
-            if (sclk_real <= sclk_req)
-            {
+            if (sclk_real <= sclk_req) {
                 _cc_write_reg(clk_n, clk_m);
                 return;
-            }
-            else
-            {
+            } else {
                 clk_m++;
             }
         }
@@ -139,8 +127,7 @@ static void _set_clock(const uint32_t clk_in, const uint32_t sclk_req)
     return;
 }
 
-static int32_t Stop()
-{
+static int32_t Stop() {
     int32_t time = TIMEOUT;
     uint32_t tmp_val;
 
@@ -148,8 +135,7 @@ static int32_t Stop()
 
     while ((time--) && (EXT_I2C->CTL & 0x10));
 
-    if (time <= 0)
-    {
+    if (time <= 0) {
         return -H3_I2C_NOK_TOUT;
     }
 
@@ -158,16 +144,14 @@ static int32_t Stop()
 
     tmp_val = EXT_I2C->STAT;
 
-    if (tmp_val != STAT_READY)
-    {
+    if (tmp_val != STAT_READY) {
         return -H3_I2C_NOK_TOUT;
     }
 
     return H3_I2C_OK;
 }
 
-static int32_t Sendstart()
-{
+static int32_t Sendstart() {
     int32_t time = 0xfffff;
     uint32_t tmp_val;
 
@@ -177,23 +161,20 @@ static int32_t Sendstart()
 
     while ((time--) && (!(EXT_I2C->CTL & 0x08)));
 
-    if (time <= 0)
-    {
+    if (time <= 0) {
         return -H3_I2C_NOK_TOUT;
     }
 
     tmp_val = EXT_I2C->STAT;
 
-    if (tmp_val != STAT_START_TRANSMIT)
-    {
+    if (tmp_val != STAT_START_TRANSMIT) {
         return -STAT_START_TRANSMIT;
     }
 
     return H3_I2C_OK;
 }
 
-static int32_t Sendslaveaddr(uint32_t mode)
-{
+static int32_t Sendslaveaddr(uint32_t mode) {
     int32_t time = TIMEOUT;
     uint32_t tmp_val;
 
@@ -204,24 +185,18 @@ static int32_t Sendslaveaddr(uint32_t mode)
 
     while ((time--) && (!(EXT_I2C->CTL & 0x08)));
 
-    if (time <= 0)
-    {
+    if (time <= 0) {
         return -H3_I2C_NOK_TOUT;
     }
 
     tmp_val = EXT_I2C->STAT;
 
-    if (mode == I2C_MODE_WRITE)
-    {
-        if (tmp_val != STAT_ADDRWRITE_ACK)
-        {
+    if (mode == I2C_MODE_WRITE) {
+        if (tmp_val != STAT_ADDRWRITE_ACK) {
             return -STAT_ADDRWRITE_ACK;
         }
-    }
-    else
-    {
-        if (tmp_val != STAT_ADDRREAD_ACK)
-        {
+    } else {
+        if (tmp_val != STAT_ADDRREAD_ACK) {
             return -STAT_ADDRREAD_ACK;
         }
     }
@@ -229,20 +204,17 @@ static int32_t Sendslaveaddr(uint32_t mode)
     return H3_I2C_OK;
 }
 
-static int32_t Getdata(uint8_t* data_addr, uint32_t data_count)
-{
+static int32_t Getdata(uint8_t* data_addr, uint32_t data_count) {
     int32_t time_out = TIMEOUT;
     uint32_t tmp_val;
     uint32_t i;
 
-    if (data_count == 1)
-    {
+    if (data_count == 1) {
         EXT_I2C->CTL |= (0x01 << 3);
 
         while ((time_out--) && (!(EXT_I2C->CTL & 0x08)));
 
-        if (time_out <= 0)
-        {
+        if (time_out <= 0) {
             return -H3_I2C_NOK_TOUT;
         }
 
@@ -250,15 +222,11 @@ static int32_t Getdata(uint8_t* data_addr, uint32_t data_count)
 
         tmp_val = EXT_I2C->STAT;
 
-        if (tmp_val != STAT_DATAREAD_NACK)
-        {
+        if (tmp_val != STAT_DATAREAD_NACK) {
             return -STAT_DATAREAD_NACK;
         }
-    }
-    else
-    {
-        for (i = 0; i < data_count - 1; i++)
-        {
+    } else {
+        for (i = 0; i < data_count - 1; i++) {
             time_out = TIMEOUT;
             tmp_val = EXT_I2C->CTL | (0x01 << 2);
             tmp_val = EXT_I2C->CTL | (0x01 << 3);
@@ -267,8 +235,7 @@ static int32_t Getdata(uint8_t* data_addr, uint32_t data_count)
 
             while ((time_out--) && (!(EXT_I2C->CTL & 0x08)));
 
-            if (time_out <= 0)
-            {
+            if (time_out <= 0) {
                 return -H3_I2C_NOK_TOUT;
             }
 
@@ -278,8 +245,7 @@ static int32_t Getdata(uint8_t* data_addr, uint32_t data_count)
 
             while ((time_out--) && (EXT_I2C->STAT != STAT_DATAREAD_ACK));
 
-            if (time_out <= 0)
-            {
+            if (time_out <= 0) {
                 return -H3_I2C_NOK_TOUT;
             }
         }
@@ -290,8 +256,7 @@ static int32_t Getdata(uint8_t* data_addr, uint32_t data_count)
 
         while ((time_out--) && (!(EXT_I2C->CTL & 0x08)));
 
-        if (time_out <= 0)
-        {
+        if (time_out <= 0) {
             return -H3_I2C_NOK_TOUT;
         }
 
@@ -299,8 +264,7 @@ static int32_t Getdata(uint8_t* data_addr, uint32_t data_count)
 
         while ((time_out--) && (EXT_I2C->STAT != STAT_DATAREAD_NACK));
 
-        if (time_out <= 0)
-        {
+        if (time_out <= 0) {
             return -H3_I2C_NOK_TOUT;
         }
     }
@@ -308,28 +272,24 @@ static int32_t Getdata(uint8_t* data_addr, uint32_t data_count)
     return H3_I2C_OK;
 }
 
-static int32_t Senddata(const uint8_t* data_addr, const uint32_t data_count)
-{
+static int32_t Senddata(const uint8_t* data_addr, const uint32_t data_count) {
     int32_t time = TIMEOUT;
     uint32_t i;
 
-    for (i = 0; i < data_count; i++)
-    {
+    for (i = 0; i < data_count; i++) {
         time = TIMEOUT;
         EXT_I2C->DATA = data_addr[i];
         EXT_I2C->CTL |= (0x01 << 3);
 
         while ((time--) && (!(EXT_I2C->CTL & 0x08)));
 
-        if (time <= 0)
-        {
+        if (time <= 0) {
             return -H3_I2C_NOK_TOUT;
         }
 
         time = TIMEOUT;
         while ((time--) && (EXT_I2C->STAT != STAT_DATAWRITE_ACK));
-        if (time <= 0)
-        {
+        if (time <= 0) {
             return -H3_I2C_NOK_TOUT;
         }
     }
@@ -337,26 +297,22 @@ static int32_t Senddata(const uint8_t* data_addr, const uint32_t data_count)
     return H3_I2C_OK;
 }
 
-static int Read(char* buffer, int length)
-{
+static int Read(char* buffer, int length) {
     int ret, ret0 = -1;
 
     ret = Sendstart();
-    if (ret)
-    {
+    if (ret) {
         goto I2cRead_err_occur;
     }
 
     ret = Sendslaveaddr(I2C_MODE_READ);
-    if (ret)
-    {
+    if (ret) {
         goto I2cRead_err_occur;
     }
 
     ret = Getdata(reinterpret_cast<uint8_t*>(buffer), static_cast<uint32_t>(length));
 
-    if (ret)
-    {
+    if (ret) {
         goto I2cRead_err_occur;
     }
     ret0 = 0;
@@ -367,28 +323,24 @@ I2cRead_err_occur:
     return ret0;
 }
 
-static int Write(const char* buffer, int length)
-{
+static int Write(const char* buffer, int length) {
     int ret, ret0 = -1;
 
     ret = Sendstart();
 
-    if (ret != H3_I2C_OK)
-    {
+    if (ret != H3_I2C_OK) {
         goto I2cWrite_err_occur;
     }
 
     ret = Sendslaveaddr(I2C_MODE_WRITE);
 
-    if (ret)
-    {
+    if (ret) {
         goto I2cWrite_err_occur;
     }
 
     ret = Senddata(reinterpret_cast<const uint8_t*>(buffer), static_cast<uint32_t>(length));
 
-    if (ret)
-    {
+    if (ret) {
         goto I2cWrite_err_occur;
     }
 
@@ -400,22 +352,21 @@ I2cWrite_err_occur:
     return ret0;
 }
 
-void __attribute__((cold)) H3I2cBegin()
-{
-    H3GpioFsel(EXT_I2C_SCL, ALT_FUNCTION_SCK);
-    H3GpioFsel(EXT_I2C_SDA, ALT_FUNCTION_SDA);
+void __attribute__((cold)) H3I2cBegin() {
+    H3GpioFsel(EXT_I2C_SCL, kAltFunctionSck);
+    H3GpioFsel(EXT_I2C_SDA, kAltFunctionSda);
 
 #if (EXT_I2C_NUMBER == 0)
     H3_CCU->BUS_SOFT_RESET4 |= CCU_BUS_SOFT_RESET4_TWI0;
-    udelay(1000); // 1ms
+    timing::DelayUs(1000); // 1ms
     H3_CCU->BUS_CLK_GATING3 &= ~CCU_BUS_CLK_GATING3_TWI0;
-    udelay(1000); // 1ms
+    timing::DelayUs(1000); // 1ms
     H3_CCU->BUS_CLK_GATING3 |= CCU_BUS_CLK_GATING3_TWI0;
 #elif (EXT_I2C_NUMBER == 1)
     H3_CCU->BUS_SOFT_RESET4 |= CCU_BUS_SOFT_RESET4_TWI1;
-    udelay(1000); // 1ms
+    timing::DelayUs(1000); // 1ms
     H3_CCU->BUS_CLK_GATING3 &= ~CCU_BUS_CLK_GATING3_TWI1;
-    udelay(1000); // 1ms
+    timing::DelayUs(1000); // 1ms
     H3_CCU->BUS_CLK_GATING3 |= CCU_BUS_CLK_GATING3_TWI1;
 #else
 #error Unsupported I2C device configured
@@ -440,8 +391,7 @@ void __attribute__((cold)) H3I2cBegin()
 #endif
 }
 
-void __attribute__((cold)) H3I2cEnd()
-{
+void __attribute__((cold)) H3I2cEnd() {
 #if (EXT_I2C_NUMBER == 0)
     H3_CCU->BUS_CLK_GATING3 &= ~CCU_BUS_CLK_GATING3_TWI0;
     H3_CCU->BUS_SOFT_RESET4 &= ~CCU_BUS_SOFT_RESET4_TWI0;
@@ -454,60 +404,49 @@ void __attribute__((cold)) H3I2cEnd()
     H3GpioFsel(EXT_I2C_SDA, GPIO_FSEL_DISABLE);
 }
 
-uint8_t H3I2cWrite(const char* buffer, uint32_t data_length)
-{
+uint8_t H3I2cWrite(const char* buffer, uint32_t data_length) {
     const auto ret = Write(const_cast<char*>(buffer), static_cast<int>(data_length));
 #ifndef NDEBUG
-    if (ret)
-    {
+    if (ret) {
         printf("ret=%d\n", ret);
     }
 #endif
     return static_cast<uint8_t>(-ret);
 }
 
-uint8_t H3I2cRead(char* buffer, uint32_t data_length)
-{
+uint8_t H3I2cRead(char* buffer, uint32_t data_length) {
     const auto ret = Read(buffer, static_cast<int>(data_length));
 #ifndef NDEBUG
-    if (ret)
-    {
+    if (ret) {
         printf("ret=%d\n", ret);
     }
 #endif
     return static_cast<uint8_t>(-ret);
 }
 
-void H3I2cSetBaudrate(const uint32_t nBaudrate)
-{
+void H3I2cSetBaudrate(const uint32_t nBaudrate) {
     assert(nBaudrate <= H3_I2C_FULL_SPEED);
 
-    if (__builtin_expect((s_current_baudrate != nBaudrate), 0))
-    {
+    if (__builtin_expect((s_current_baudrate != nBaudrate), 0)) {
         s_current_baudrate = nBaudrate;
         _set_clock(H3_F_24M, nBaudrate);
     }
 }
 
-void H3I2cSetAddress(const uint8_t address)
-{
+void H3I2cSetAddress(const uint8_t address) {
     s_slave_address = address;
 }
 
-bool H3I2cIsConnected(const uint8_t address, const uint32_t nBaudrate)
-{
+bool H3I2cIsConnected(const uint8_t address, const uint32_t nBaudrate) {
     H3I2cSetAddress(address);
     H3I2cSetBaudrate(nBaudrate);
 
     uint8_t nResult;
     char buffer;
 
-    if ((address >= 0x30 && address <= 0x37) || (address >= 0x50 && address <= 0x5F))
-    {
+    if ((address >= 0x30 && address <= 0x37) || (address >= 0x50 && address <= 0x5F)) {
         nResult = H3I2cRead(&buffer, 1);
-    }
-    else
-    {
+    } else {
         /* This is known to corrupt the Atmel AT24RF08 EEPROM */
         nResult = H3I2cWrite(nullptr, 0);
     }
@@ -515,8 +454,7 @@ bool H3I2cIsConnected(const uint8_t address, const uint32_t nBaudrate)
     return (nResult == 0) ? true : false;
 }
 
-void H3I2cWriteReg(uint8_t reg, uint8_t value)
-{
+void H3I2cWriteReg(uint8_t reg, uint8_t value) {
     char buffer[2];
 
     buffer[0] = static_cast<char>(reg);
@@ -525,8 +463,7 @@ void H3I2cWriteReg(uint8_t reg, uint8_t value)
     H3I2cWrite(buffer, 2);
 }
 
-void H3I2cReadReg(uint8_t reg, uint8_t& value)
-{
+void H3I2cReadReg(uint8_t reg, uint8_t& value) {
     char buffer[1];
 
     buffer[0] = static_cast<char>(reg);

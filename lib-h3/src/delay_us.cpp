@@ -1,8 +1,8 @@
 /**
- * @file h3_watchdog.cpp
+ * @file delay_us.cpp
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2023-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,48 +27,38 @@
 
 #include "h3.h"
 
-#define CFG_WHOLE_SYSTEM	(1U << 0)
-#define CFG_ONLY_INT		(2U << 0)
+static constexpr uint32_t kTicksPerUs = 100;
 
-#define MODE_ENABLE			(1U << 0)
+namespace timing {
+void DelayUs(uint32_t us, uint32_t offset) {
+    const auto kTicks = us * kTicksPerUs;
 
-#define CTRL_RELOAD			((1U << 0) | (0x0a57 << 1))
+    uint32_t ticks_count = 0;
+    uint32_t ticks_previous;
 
-#if 0
+    if (offset == 0) {
+        ticks_previous = H3_HS_TIMER->CURNT_LO;
+    } else {
+        ticks_previous = offset;
+    }
 
-/* Watchdog clock source is OSC24M/750 = 32000 */
+    while (1) {
+        const auto kTicksNow = H3_HS_TIMER->CURNT_LO;
 
-static const uint8_t interval_value_map[] = {
-	[1] = 0x1,  /* 1s  */
-	[2] = 0x2,  /* 2s  */
-	[3] = 0x3,  /* 3s  */
-	[4] = 0x4,  /* 4s  */
-	[5] = 0x5,  /* 5s  */
-	[6] = 0x6,  /* 6s  */
-	[8] = 0x7,  /* 8s  */
-	[10] = 0x8, /* 10s */
-	[12] = 0x9, /* 12s */
-	[14] = 0xA, /* 14s */
-	[16] = 0xB, /* 16s */
-};
+        if (kTicksNow != ticks_previous) {
+            if (kTicksNow > ticks_previous) {
+                ticks_count += -(UINT32_MAX - ticks_previous + kTicksNow);
 
-#define INVERVAL_VALUE_MIN			1
-#define INVERVAL_VALUE_MAX			16
+            } else {
+                ticks_count += -(kTicksNow - ticks_previous);
+            }
 
-#define INTERVAL_VALUE_MASK			0x0F
-#define INTERVAL_VALUE_MAP_SHIFT	4
-#endif
+            if (ticks_count > kTicks) {
+                break;
+            }
 
-void H3WatchdogEnable() {
-	H3_TIMER->WDOG0_CFG = CFG_WHOLE_SYSTEM;
-	H3_TIMER->WDOG0_MODE = 0x10;
-	H3_TIMER->WDOG0_MODE |= MODE_ENABLE;
+            ticks_previous = kTicksNow;
+        }
+    }
 }
-
-void H3WatchdogRestart() {
-	H3_TIMER->WDOG0_CTRL = CTRL_RELOAD;
-}
-
-void H3WatchdogDisable() {
-	H3_TIMER->WDOG0_MODE = 0;
-}
+} // namespace timing

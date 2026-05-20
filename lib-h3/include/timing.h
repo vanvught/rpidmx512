@@ -1,8 +1,8 @@
 /**
- * @file h3_watchdog.cpp
+ * @file timing.h
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,52 +23,24 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
+#ifndef TIMING_H_
+#define TIMING_H_
 
 #include "h3.h"
 
-#define CFG_WHOLE_SYSTEM	(1U << 0)
-#define CFG_ONLY_INT		(2U << 0)
+namespace timing {
 
-#define MODE_ENABLE			(1U << 0)
-
-#define CTRL_RELOAD			((1U << 0) | (0x0a57 << 1))
-
-#if 0
-
-/* Watchdog clock source is OSC24M/750 = 32000 */
-
-static const uint8_t interval_value_map[] = {
-	[1] = 0x1,  /* 1s  */
-	[2] = 0x2,  /* 2s  */
-	[3] = 0x3,  /* 3s  */
-	[4] = 0x4,  /* 4s  */
-	[5] = 0x5,  /* 5s  */
-	[6] = 0x6,  /* 6s  */
-	[8] = 0x7,  /* 8s  */
-	[10] = 0x8, /* 10s */
-	[12] = 0x9, /* 12s */
-	[14] = 0xA, /* 14s */
-	[16] = 0xB, /* 16s */
-};
-
-#define INVERVAL_VALUE_MIN			1
-#define INVERVAL_VALUE_MAX			16
-
-#define INTERVAL_VALUE_MASK			0x0F
-#define INTERVAL_VALUE_MAP_SHIFT	4
-#endif
-
-void H3WatchdogEnable() {
-	H3_TIMER->WDOG0_CFG = CFG_WHOLE_SYSTEM;
-	H3_TIMER->WDOG0_MODE = 0x10;
-	H3_TIMER->WDOG0_MODE |= MODE_ENABLE;
+[[nodiscard]] inline uint32_t Micros() {
+    return H3_TIMER->AVS_CNT1;
 }
 
-void H3WatchdogRestart() {
-	H3_TIMER->WDOG0_CTRL = CTRL_RELOAD;
+[[nodiscard]]inline uint32_t Millis() {
+    return H3_TIMER->AVS_CNT0;
 }
 
-void H3WatchdogDisable() {
-	H3_TIMER->WDOG0_MODE = 0;
-}
+void DelayUs(uint32_t us, uint32_t offset = 0);
+
+[[nodiscard]] uint32_t UpTime();
+} // namespace timing
+
+#endif // TIMING_H_

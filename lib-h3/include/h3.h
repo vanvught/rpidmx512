@@ -804,15 +804,6 @@ extern void h3_dump_memory_mapping();
 #ifdef __cplusplus
 }
 #endif
-
-#ifdef __cplusplus
-# include <cstdint>
-# if !defined(UDELAY)
-#  define UDELAY
- void udelay(uint32_t us, uint32_t offset = 0);
-# endif
-#endif //
-
 #endif
 
 #define GIC_DISTRIBUTOR_BASE	H3_GIC_DIST_BASE
