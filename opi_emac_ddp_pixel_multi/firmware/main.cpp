@@ -28,7 +28,7 @@
 #pragma GCC optimize("-fprefetch-loop-arrays")
 
 #include "h3/hal.h"
-#include "h3/hal_watchdog.h"
+#include "watchdog.h"
 #include "network.h"
 #include "displayudf.h"
 #include "json/displayudfparams.h"
@@ -117,11 +117,11 @@ int main() // NOLINT
 
     display.TextStatus("DDP Display Started", console::Colours::kConsoleGreen);
 
-    hal::WatchdogInit();
+    watchdog::Init();
 
     for (;;)
     {
-        hal::WatchdogFeed();
+        watchdog::Feed();
         network::Run();
         pixeltest_pattern.Run();
         display.Run();

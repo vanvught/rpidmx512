@@ -26,7 +26,7 @@
 #include <cstdint>
 
 #include "h3/hal.h"
-#include "h3/hal_watchdog.h"
+#include "watchdog.h"
 #include "hal_boardinfo.h"
 #include "emac/network.h"
 #include "display.h"
@@ -108,11 +108,11 @@ int main() // NOLINT
 
     display.TextStatus(OscServerMsgConst::kStarted, console::Colours::kConsoleGreen);
 
-    hal::WatchdogInit();
+    watchdog::Init();
 
     for (;;)
     {
-        hal::WatchdogFeed();
+        watchdog::Feed();
         network::Run();
         pixeltest_pattern.Run();
         display.Run();

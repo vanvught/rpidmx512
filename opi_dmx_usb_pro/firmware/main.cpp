@@ -27,7 +27,7 @@
 #include <cstdint>
 
 #include "hal.h"
-#include "h3/hal_watchdog.h"
+#include "watchdog.h"
 #include "hal_boardinfo.h"
 #include "rdmdevice.h"
 #include "widget.h"
@@ -77,7 +77,7 @@ int main() // NOLINT
            device_uid[5]);
     printf("Label : %.*s\n", static_cast<int>(rdm_device_label.length), reinterpret_cast<const char*>(rdm_device_label.data));
 
-    hal::WatchdogInit();
+    watchdog::Init();
 
     if (kWidgetMode == widget::Mode::kRdmSniffer)
     {
@@ -87,7 +87,7 @@ int main() // NOLINT
 
     for (;;)
     {
-        hal::WatchdogFeed();
+        watchdog::Feed();
         widget.Run();
         hal::Run();
     }

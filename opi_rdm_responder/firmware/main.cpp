@@ -26,7 +26,7 @@
 #include <cstdio>
 #include <cstdint>
 
-#include "h3/hal_watchdog.h"
+#include "watchdog.h"
 #include "displayudf.h"
 #include "json/displayudfparams.h"
 #include "rdmresponder.h"
@@ -148,11 +148,11 @@ int main() // NOLINT
     }
 
     hal::statusled::SetMode(hal::statusled::Mode::kNormal);
-    hal::WatchdogInit();
+    watchdog::Init();
 
     for (;;)
     {
-        hal::WatchdogFeed();
+        watchdog::Feed();
         rdm_responder.Run();
 #if !defined(NO_EMAC)
         network::Run();

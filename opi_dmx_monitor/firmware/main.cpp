@@ -27,8 +27,8 @@
 #include <cstdint>
 #include <algorithm>
 
-#include "h3/hal_watchdog.h"
-#include "h3/hal_micros.h"
+#include "watchdog.h"
+#include "timing.h"
 #include "network.h"
 #include "displayudf.h"
 #include "console.h"
@@ -95,15 +95,15 @@ int main() //NOLINT
     DMXReceiver dmxreceiver(&dmxMonitor);
     dmxreceiver.Start();
 
-    hal::WatchdogInit();
+    watchdog::Init();
 
     for (;;)
     {
-        hal::WatchdogFeed();
+        watchdog::Feed();
 
         dmxreceiver.Run(length);
 
-        const auto kMicrosNow = hal::Micros();
+        const auto kMicrosNow = timing::Micros();
 
         if (kMicrosNow - micros_previous > (1000000 / 2))
         {

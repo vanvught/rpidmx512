@@ -32,7 +32,7 @@
 #include <time.h>
 
 #include "h3/hal.h"
-#include "h3/hal_watchdog.h"
+#include "watchdog.h"
 #include "hal_statusled.h"
 #include "hwclock.h"
 #include "network.h"

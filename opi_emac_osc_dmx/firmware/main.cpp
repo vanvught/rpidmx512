@@ -25,7 +25,7 @@
 
 #include <cstdint>
 
-#include "h3/hal_watchdog.h"
+#include "watchdog.h"
 #include "hal_boardinfo.h"
 #include "emac/network.h"
 #include "display.h"
@@ -90,10 +90,10 @@ int main() {
 
 	display.TextStatus(OscServerMsgConst::kStarted, console::Colours::kConsoleGreen);
 
-	hal::WatchdogInit();
+	watchdog::Init();
 
 	for (;;) {
-		hal::WatchdogFeed();
+		watchdog::Feed();
 		network::Run();
 		display.Run();
 		hal::Run();

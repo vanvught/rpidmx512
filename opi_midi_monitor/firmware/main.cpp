@@ -25,7 +25,7 @@
 
 #include <cstdio>
 
-#include "h3/hal_watchdog.h"
+#include "watchdog.h"
 #include "display.h"
 #include "console.h"
 #include "flashcodeinstall.h"
@@ -71,11 +71,11 @@ int main() // NOLINT
     MidiMonitor monitor;
     monitor.Init();
 
-    hal::WatchdogInit();
+    watchdog::Init();
 
     for (;;)
     {
-        hal::WatchdogFeed();
+        watchdog::Feed();
         monitor.Run();
 #if !defined(NO_EMAC)
         network::Run();

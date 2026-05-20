@@ -30,7 +30,7 @@
 #include <cstdio>
 
 #include "h3/hal.h"
-#include "h3/hal_watchdog.h"
+#include "watchdog.h"
 #include "network.h"
 #include "apps/mdns.h"
 #include "displayudf.h"
@@ -123,11 +123,11 @@ int main() // NOLINT
 
     display.TextStatus("PixelPusher Started", console::Colours::kConsoleGreen);
 
-    hal::WatchdogInit();
+    watchdog::Init();
 
     for (;;)
     {
-        hal::WatchdogFeed();
+        watchdog::Feed();
         network::Run();
         pp.Run();
         pixeltest_pattern.Run();

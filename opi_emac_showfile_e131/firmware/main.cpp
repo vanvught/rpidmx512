@@ -24,7 +24,7 @@
  */
 
 #include "h3/hal.h"
-#include "h3/hal_watchdog.h"
+#include "watchdog.h"
 #include "hal_statusled.h"
 #include "network.h"
 #include "displayudf.h"
@@ -94,11 +94,11 @@ int main() // NOLINT
     showfile::DisplayStatus();
 
     hal::statusled::SetMode(hal::statusled::Mode::kNormal);
-    hal::WatchdogInit();
+    watchdog::Init();
 
     for (;;)
     {
-        hal::WatchdogFeed();
+        watchdog::Feed();
         network::Run();
         showfile.Run();
         display.Run();

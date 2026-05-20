@@ -27,7 +27,7 @@
 #include <cstdio>
 
 #include "h3/hal.h"
-#include "h3/hal_watchdog.h"
+#include "watchdog.h"
 #include "network.h"
 #include "console.h"
 #include "h3/showsystime.h"
@@ -111,11 +111,11 @@ int main() // NOLINT
 
     display.TextStatus(DmxNodeMsgConst::STARTED, console::Colours::kConsoleGreen);
 
-    hal::WatchdogInit();
+    watchdog::Init();
 
     for (;;)
     {
-        hal::WatchdogFeed();
+        watchdog::Feed();
         network::Run();
         dmxnode_node.Run();
 #if defined(NODE_SHOWFILE)

@@ -26,7 +26,7 @@
 #include <cstdint>
 #include <cassert>
 
-#include "h3/hal_watchdog.h"
+#include "watchdog.h"
 #include "emac/network.h"
 #include "display.h"
 #include "apps/mdns.h"
@@ -112,11 +112,11 @@ int main() // NOLINT
     display.TextStatus(OscClientMsgConst::kStarted, console::Colours::kConsoleGreen);
 
     hal::statusled::SetMode(hal::statusled::Mode::kNormal);
-    hal::WatchdogInit();
+    watchdog::Init();
 
     for (;;)
     {
-        hal::WatchdogFeed();
+        watchdog::Feed();
         network::Run();
         osc_client.Run();
         buttons_set->Run();

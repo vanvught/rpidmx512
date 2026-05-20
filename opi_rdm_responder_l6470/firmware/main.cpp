@@ -26,7 +26,7 @@
 #include <cstdio>
 
 #include "h3/hal.h"
-#include "h3/hal_watchdog.h"
+#include "watchdog.h"
 #include "display.h"
 #include "rdmresponder.h"
 #include "rdmpersonality.h"
@@ -106,11 +106,11 @@ int main() // NOLINT
     rdm_responder.Print();
 
     hal::statusled::SetMode(hal::statusled::Mode::kNormal);
-    hal::WatchdogInit();
+    watchdog::Init();
 
     for (;;)
     {
-        hal::WatchdogFeed();
+        watchdog::Feed();
         rdm_responder.Run();
         hal::Run();
     }

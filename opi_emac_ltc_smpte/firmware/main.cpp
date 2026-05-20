@@ -32,7 +32,7 @@
 
 #include "hal.h"
 #if defined(H3)
-#include "h3/hal_watchdog.h"
+#include "watchdog.h"
 #include "flashcodeinstall.h"
 #else
 #include "gd32/hal_watchdog.h"
@@ -554,11 +554,11 @@ int main() // NOLINT
 
     ltc_outputs.Print();
 
-    hal::WatchdogInit();
+    watchdog::Init();
 
     for (;;)
     {
-        hal::WatchdogFeed();
+        watchdog::Feed();
         network::Run();
         // Run the reader
         // Handles MIDI Quarter Frame output messages

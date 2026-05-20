@@ -25,7 +25,7 @@
 
 #include <cstdint>
 
-#include "h3/hal_watchdog.h"
+#include "watchdog.h"
 #include "network.h"
 #include "displayudf.h"
 #include "json/displayudfparams.h"
@@ -110,11 +110,11 @@ int main()
 
     display.TextStatus(DmxNodeMsgConst::STARTED, console::Colours::kConsoleGreen);
 
-    hal::WatchdogInit();
+    watchdog::Init();
 
     for (;;)
     {
-        hal::WatchdogFeed();
+        watchdog::Feed();
         network::Run();
         dmxnode_node.Run();
 #if defined(NODE_SHOWFILE)
