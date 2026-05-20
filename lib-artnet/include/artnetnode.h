@@ -244,7 +244,7 @@ class ArtNetNode
 #if defined(ARTNET_SHOWFILE)
     void HandleShowFile(const artnet::ArtDmx* artdmx)
     {
-        current_millis_ = hal::Millis();
+        current_millis_ = timing::Millis();
         ip_address_from_ = network::GetPrimaryIp();
         receive_buffer_ = reinterpret_cast<uint8_t*>(const_cast<artnet::ArtDmx*>(artdmx));
         HandleDmx();

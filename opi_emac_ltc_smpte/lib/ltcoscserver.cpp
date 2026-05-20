@@ -42,6 +42,7 @@
 #include "tcnet.h"
 #include "osc.h"
 #include "oscsimplemessage.h"
+#include "network_iface.h"
 #include "firmware/debug/debug_debug.h"
 
 namespace cmd {

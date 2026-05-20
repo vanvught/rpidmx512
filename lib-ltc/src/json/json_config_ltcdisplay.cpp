@@ -36,28 +36,25 @@
 
 using common::store::ltc::display::Flags;
 
-namespace json::config
-{
-uint32_t GetLtcDisplay(char* buffer, uint32_t length)
-{
+namespace json::config {
+uint32_t GetLtcDisplay(char* buffer, uint32_t length) {
     const auto kFlags = ConfigStore::Instance().LtcDisplayGet(&common::store::LtcDisplay::flags);
 
-	return json::helpers::Serialize(buffer, length, [&](JsonDoc& doc) {
-	    // OLED SSD1306/11
-	    doc[json::LtcDisplayParamsConst::kOledIntensity.name] = static_cast<uint32_t>(Display::Get()->GetContrast());
-	    // Rotary control
-	    doc[json::LtcDisplayParamsConst::kRotaryFullstep.name] = static_cast<uint32_t>(common::IsFlagSet(kFlags, Flags::Flag::kRotaryFullStep));
-	    // MAX7219
-	    doc[json::LtcDisplayParamsConst::kMax7219Type.name] = LtcDisplayMax7219::Get()->GetTypeString();
-	    doc[json::LtcDisplayParamsConst::kMax7219Intensity.name] = static_cast<uint32_t>(LtcDisplayMax7219::Get()->GetIntensity());
-		// RGB Display (generic)
-		
-		// PixelOutput (specific)
+    return json::helpers::Serialize(buffer, length, [&](JsonDoc& doc) {
+        // OLED SSD1306/11
+        doc[json::LtcDisplayParamsConst::kOledIntensity.name] = static_cast<uint32_t>(Display::Get()->GetContrast());
+        // Rotary control
+        doc[json::LtcDisplayParamsConst::kRotaryFullstep.name] = static_cast<uint32_t>(common::IsFlagSet(kFlags, Flags::Flag::kRotaryFullStep));
+        // MAX7219
+        doc[json::LtcDisplayParamsConst::kMax7219Type.name] = LtcDisplayMax7219::Get()->GetTypeString();
+        doc[json::LtcDisplayParamsConst::kMax7219Intensity.name] = static_cast<uint32_t>(LtcDisplayMax7219::Get()->GetIntensity());
+        // RGB Display (generic)
+
+        // PixelOutput (specific)
     });
 }
 
-void SetLtcDisplay(const char* buffer, uint32_t buffer_size)
-{
+void SetLtcDisplay(const char* buffer, uint32_t buffer_size) {
     ::json::LtcDisplayParams ltcdisplay_params;
     ltcdisplay_params.Store(buffer, buffer_size);
     ltcdisplay_params.Set();

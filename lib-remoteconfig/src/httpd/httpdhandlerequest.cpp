@@ -46,7 +46,7 @@
 
 #include "http/http.h"
 #include "httpd/httpdhandlerequest.h"
-#include "hal_millis.h" // IWYU pragma: keep
+#include "timing.h" // IWYU pragma: keep
 #include "http/html_infos.h"
 #include "http/json_infos.h"
 #include "network_tcp.h"
@@ -203,7 +203,7 @@ void HttpDeamonHandleRequest::HandleRequest(uint32_t bytes_received, char* recei
 			http::kContentType[static_cast<uint32_t>(request_content_type_)],
             static_cast<unsigned int>(content_size_), 
 			(content_ == dynamic_content_) ? "no-cache" : "max-age=3600",
-			(content_ == dynamic_content_) ? hal::Millis() : _TIME_STAMP_));
+			(content_ == dynamic_content_) ? timing::Millis() : _TIME_STAMP_));
 
         network::tcp::Send(connection_handle_, reinterpret_cast<const uint8_t*>(receive_buffer_), kHeaderLength);
 

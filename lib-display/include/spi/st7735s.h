@@ -91,7 +91,7 @@ class ST7735S : public ST77XX
         s_instance++;
 
         WriteCommand(st77xx::cmd::kSwreset);
-        udelay(1000 * 150);
+        timing::DelayUs(1000 * 150);
 
         static constexpr uint8_t kConfig[] = {
             1,  st77xx::cmd::kColmod,    0x05, ///< Page 150, 5 -> 16-bit/pixel

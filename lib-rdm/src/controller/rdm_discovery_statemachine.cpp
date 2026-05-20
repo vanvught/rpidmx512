@@ -32,7 +32,7 @@
 #include <cassert>
 
 #include "rdm_discovery_statemachine.h"
-#include "hal_micros.h" // IWYU pragma: keep
+#include "timing.h" // IWYU pragma: keep
 #include "firmware/debug/debug_debug.h"
 #if defined(CONFIG_PANELLED_RDM_PORT) || defined(CONFIG_PANELLED_RDM_NO_PORT)
 #include "hal_panelled.h"
@@ -240,7 +240,7 @@ void StateMachine::NewState(rdm::discovery::State state, bool do_state_late_resp
 			rdm::discovery::kStateName[static_cast<uint32_t>(rdm::discovery::State::kLateResponse)],
             rdm::discovery::kStateName[static_cast<uint32_t>(state)], line);
 #endif
-        late_response_.micros = hal::Micros();
+        late_response_.micros = timing::Micros();
         saved_state_ = state;
         state_ = rdm::discovery::State::kLateResponse;
     } else {
@@ -257,7 +257,7 @@ void StateMachine::Process() {
         case rdm::discovery::State::kLateResponse: ///< LATE_RESPONSE
             message_.Receive(port_index_);
 
-            if ((hal::Micros() - late_response_.micros) > rdm::discovery::kLateResponseTimeOut) {
+            if ((timing::Micros() - late_response_.micros) > rdm::discovery::kLateResponseTimeOut) {
                 SAVED_STATE();
             }
 
@@ -286,7 +286,7 @@ void StateMachine::Process() {
                 message_.SetPd(nullptr, 0);
                 message_.Transmit(port_index_);
 
-                unmute_.micros = hal::Micros();
+                unmute_.micros = timing::Micros();
                 unmute_.is_command_running = true;
 
 #if defined(CONFIG_PANELLED_RDM_PORT)
@@ -299,7 +299,7 @@ void StateMachine::Process() {
 
             message_.Receive(port_index_);
 
-            if ((hal::Micros() - unmute_.micros) > rdm::discovery::kReceiveTimeOut) {
+            if ((timing::Micros() - unmute_.micros) > rdm::discovery::kReceiveTimeOut) {
                 assert(unmute_.counter > 0);
                 unmute_.counter--;
                 unmute_.is_command_running = false;
@@ -343,7 +343,7 @@ void StateMachine::Process() {
                 message_.SetPd(nullptr, 0);
                 message_.Transmit(port_index_);
 
-                mute_.micros = hal::Micros();
+                mute_.micros = timing::Micros();
                 mute_.is_command_running = true;
                 return;
             }
@@ -357,11 +357,11 @@ void StateMachine::Process() {
                 return;
             }
 
-            if ((hal::Micros() - mute_.micros) > rdm::discovery::kReceiveTimeOut) {
+            if ((timing::Micros() - mute_.micros) > rdm::discovery::kReceiveTimeOut) {
                 assert(mute_.counter > 0);
                 mute_.counter--;
                 message_.Transmit(port_index_);
-                mute_.micros = hal::Micros();
+                mute_.micros = timing::Micros();
             }
 
             return;
@@ -377,11 +377,11 @@ void StateMachine::Process() {
                     return;
                 }
 
-                if ((hal::Micros() - discovery_.micros) > rdm::discovery::kReceiveTimeOut) {
+                if ((timing::Micros() - discovery_.micros) > rdm::discovery::kReceiveTimeOut) {
                     assert(discovery_.counter > 0);
                     discovery_.counter--;
                     message_.Transmit(port_index_);
-                    discovery_.micros = hal::Micros();
+                    discovery_.micros = timing::Micros();
                 }
 
                 return;
@@ -415,7 +415,7 @@ void StateMachine::Process() {
             message_.Transmit(port_index_);
 
             discovery_.counter = rdm::discovery::kDiscoveryCounter;
-            discovery_.micros = hal::Micros();
+            discovery_.micros = timing::Micros();
             discovery_.is_command_running = true;
 
 #if defined(CONFIG_PANELLED_RDM_PORT)
@@ -443,7 +443,7 @@ void StateMachine::Process() {
                 message_.SetPd(nullptr, 0);
                 message_.Transmit(port_index_);
 
-                discovery_single_device_.micros = hal::Micros();
+                discovery_single_device_.micros = timing::Micros();
                 discovery_single_device_.is_command_running = true;
 
 #if defined(CONFIG_PANELLED_RDM_PORT)
@@ -474,11 +474,11 @@ void StateMachine::Process() {
                 return;
             }
 
-            if ((hal::Micros() - discovery_single_device_.micros) > rdm::discovery::kReceiveTimeOut) {
+            if ((timing::Micros() - discovery_single_device_.micros) > rdm::discovery::kReceiveTimeOut) {
                 assert(mute_.counter > 0);
                 discovery_single_device_.counter--;
                 message_.Transmit(port_index_);
-                discovery_single_device_.micros = hal::Micros();
+                discovery_single_device_.micros = timing::Micros();
             }
 
             return;
@@ -515,7 +515,7 @@ void StateMachine::Process() {
             }
 
             if (!quick_find_.is_command_running) {
-                if ((hal::Micros() - message_.TransmitMicros()) < rdm::discovery::kReceiveTimeOut) return;
+                if ((timing::Micros() - message_.TransmitMicros()) < rdm::discovery::kReceiveTimeOut) return;
 #ifndef NDEBUG
                 printf("QuickFind : ");
                 rdm::discovery::PrintUid(quick_find_.uid);
@@ -528,7 +528,7 @@ void StateMachine::Process() {
                 message_.Transmit(port_index_);
 
                 quick_find_.counter = rdm::discovery::kQuikfindCounter;
-                quick_find_.micros = hal::Micros();
+                quick_find_.micros = timing::Micros();
                 quick_find_.is_command_running = true;
 
 #if defined(CONFIG_PANELLED_RDM_PORT)
@@ -564,7 +564,7 @@ void StateMachine::Process() {
                 return;
             }
 
-            if ((hal::Micros() - quick_find_.micros) > rdm::discovery::kReceiveTimeOut) {
+            if ((timing::Micros() - quick_find_.micros) > rdm::discovery::kReceiveTimeOut) {
                 assert(quick_find_.counter > 0);
                 quick_find_.counter--;
                 quick_find_.is_command_running = false;
@@ -582,7 +582,7 @@ void StateMachine::Process() {
             }
 
             if (!quick_find_discovery_.is_command_running) {
-                if ((hal::Micros() - message_.TransmitMicros()) < rdm::discovery::kReceiveTimeOut) return;
+                if ((timing::Micros() - message_.TransmitMicros()) < rdm::discovery::kReceiveTimeOut) return;
 
                 message_.SetDstUid(rdm::kUidAll);
                 message_.SetCc(E120_DISCOVERY_COMMAND);
@@ -590,7 +590,7 @@ void StateMachine::Process() {
                 message_.SetPd(reinterpret_cast<const uint8_t*>(discovery_.pdl), 2 * rdm::kUidSize);
                 message_.Transmit(port_index_);
 
-                quick_find_discovery_.micros = hal::Micros();
+                quick_find_discovery_.micros = timing::Micros();
                 quick_find_discovery_.is_command_running = true;
                 return;
             }
@@ -611,7 +611,7 @@ void StateMachine::Process() {
                 return;
             }
 
-            if ((hal::Micros() - quick_find_discovery_.micros) > rdm::discovery::kReceiveTimeOut) {
+            if ((timing::Micros() - quick_find_discovery_.micros) > rdm::discovery::kReceiveTimeOut) {
                 assert(quick_find_.counter > 0);
                 quick_find_discovery_.counter--;
                 quick_find_discovery_.is_command_running = false;

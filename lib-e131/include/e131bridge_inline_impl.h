@@ -31,7 +31,7 @@
 #include "e131bridge.h"
 #include "dmxnode_outputtype.h"
 #include "dmxnode_data.h"
-#include "hal_millis.h"
+#include "timing.h"
 #include "hal_statusled.h"
 #include "network.h"
 
@@ -238,7 +238,7 @@ inline const uint8_t* E131Bridge::GetCid() const {
 
 #if defined(NODE_SHOWFILE) && defined(CONFIG_SHOWFILE_PROTOCOL_NODE_E131)
 inline void E131Bridge::HandleShowFile(const e131::DataPacket* pE131DataPacket) {
-    packet_millis_ = hal::Millis();
+    packet_millis_ = timing::Millis();
     ip_address_from_ = network::GetPrimaryIp();
     receive_buffer_ = reinterpret_cast<uint8_t*>(const_cast<e131::DataPacket*>(pE131DataPacket));
     HandleDmx();
@@ -251,7 +251,7 @@ inline void E131Bridge::Run() {
     HandleDmxIn();
 #endif
 
-    current_millis_ = hal::Millis();
+    current_millis_ = timing::Millis();
     const auto kDeltaMillis = current_millis_ - packet_millis_;
 
     if (state_.enabled_output_ports != 0) {

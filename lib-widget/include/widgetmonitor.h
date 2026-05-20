@@ -50,7 +50,7 @@ class WidgetMonitor
 {
    public:
     static void Line(int, const char*, ...);
-    static void Uptime(uint8_t line);
+    static void UpTime(uint8_t line);
     static void RdmData(int, uint16_t, const uint8_t*, bool);
     static void Update();
 

@@ -85,7 +85,7 @@ struct TTCNetPacketOptIn {
 	struct TTCNetPacketManagementHeader ManagementHeader;
 	uint16_t NodeCount;
 	uint16_t NodeListenerPort;
-	uint16_t Uptime;
+	uint16_t UpTime;
 	uint8_t Reserved1[2];
 	uint8_t VendorName[TCNET_VENDOR_NAME_LENGTH];
 	uint8_t DeviceName[TCNET_DEVICE_NAME_LENGTH];

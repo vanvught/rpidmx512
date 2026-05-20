@@ -25,7 +25,7 @@
 #include <cstdint>
 
 #include "widget.h"
-#include "hal_micros.h"
+#include "timing.h"
 #include "dmx.h"
 #include "rdm.h"
 #include "rdm_e120.h"
@@ -79,9 +79,9 @@ void Widget::UsbSendPackage(const uint8_t* data, uint16_t start, uint16_t data_l
 
 bool Widget::UsbCanSend()
 {
-    const auto kMicros = hal::Micros();
+    const auto kMicros = timing::Micros();
 
-    while (!usb_can_write() && (hal::Micros() - kMicros < 1000))
+    while (!usb_can_write() && (timing::Micros() - kMicros < 1000))
     {
     }
 

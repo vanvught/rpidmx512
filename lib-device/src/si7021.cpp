@@ -71,7 +71,7 @@ uint16_t SI7021::ReadRaw(uint8_t cmd)
 
     for (uint32_t i = 0; i < 8; ++i)
     {
-        udelay(10000);
+        timing::DelayUs(10000);
         HAL_I2C::Read(buf, 3);
 
         if ((buf[0] & 0x3) == 2)

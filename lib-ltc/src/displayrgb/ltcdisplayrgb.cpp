@@ -36,7 +36,7 @@
 
 #include "ltcdisplayrgb.h"
 #include "ltc.h"
-#include "hal_millis.h"
+#include "timing.h"
 #include "network.h"
 #include "ltcdisplaypixel7segment.h"
 #include "ltcdisplaypixelmatrix.h"
@@ -161,7 +161,7 @@ void LtcDisplayRgb::Show(const char* timecode)
 
     if (colon_blink_mode_ != ltc::display::rgb::ColonBlinkMode::OFF)
     {
-        const uint32_t kMillis = hal::Millis();
+        const uint32_t kMillis = timing::Millis();
 
         if (seconds_previous_ != timecode[ltc::timecode::index::SECONDS_UNITS])
         { // seconds have changed
@@ -302,7 +302,7 @@ void LtcDisplayRgb::SetMessage(const char* message, uint32_t size)
         *dst++ = ' ';
     }
 
-    message_timer_ = hal::Millis();
+    message_timer_ = timing::Millis();
 
     if (s_timer_id == kTimerIdNone)
     {
@@ -325,7 +325,7 @@ void LtcDisplayRgb::ShowMessage()
 
     struct ltc::display::rgb::Colours colours;
 
-    const auto kMillis = hal::Millis();
+    const auto kMillis = timing::Millis();
 
     colours.red = static_cast<uint8_t>(((kMillis - message_timer_) * colours_message_.red) / kMessageTimeMs);
     colours.green = static_cast<uint8_t>(((kMillis - message_timer_) * colours_message_.green) / kMessageTimeMs);

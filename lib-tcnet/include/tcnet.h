@@ -40,33 +40,18 @@
 
 #include "tcnetpackets.h"
 #include "tcnettimecode.h"
-#include "hal.h"
-#include "hal_micros.h"
-#include "network.h"
-#include "hal_millis.h"
+#include "timing.h"
+#include "network_config.h"
+#include "network_udp.h"
 #include "firmware/debug/debug_debug.h"
 
-namespace tcnet
-{
+namespace tcnet {
 inline constexpr char kNodeNameDefault[] = "AvV";
 
-enum class Layer : uint8_t
-{
-    kLayer1,
-    kLayer2,
-    kLayer3,
-    kLayer4,
-    kLayerA,
-    kLayerB,
-    kLayerM,
-    kLayerC,
-    kLayerUndefined
-};
+enum class Layer : uint8_t { kLayer1, kLayer2, kLayer3, kLayer4, kLayerA, kLayerB, kLayerM, kLayerC, kLayerUndefined };
 
-[[nodiscard]] inline constexpr char GetLayer(Layer layer)
-{
-    switch (layer)
-    {
+[[nodiscard]] inline constexpr char GetLayer(Layer layer) {
+    switch (layer) {
         case Layer::kLayer1:
         case Layer::kLayer2:
         case Layer::kLayer3:
@@ -92,10 +77,8 @@ enum class Layer : uint8_t
     return ' ';
 }
 
-[[nodiscard]] inline constexpr Layer GetLayer(char c)
-{
-    switch (c | 0x20)
-    { // to lower case
+[[nodiscard]] inline constexpr Layer GetLayer(char c) {
+    switch (c | 0x20) { // to lower case
         case '1':
         case '2':
         case '3':
@@ -121,24 +104,15 @@ enum class Layer : uint8_t
     return Layer::kLayerUndefined;
 }
 
-enum class TimeCodeType : uint8_t
-{
-    kTimecodeTypeFilm,
-    kTimecodeTypeEbu25Fps,
-    kTimecodeTypeDf,
-    kTimecodeTypeSmpte30Fps,
-    kTimecodeTypeInvalid = 0xFF
-};
+enum class TimeCodeType : uint8_t { kTimecodeTypeFilm, kTimecodeTypeEbu25Fps, kTimecodeTypeDf, kTimecodeTypeSmpte30Fps, kTimecodeTypeInvalid = 0xFF };
 
 inline constexpr const uint8_t kFps[5] = {24, 25, 29, 30, 25};
 
 } // namespace tcnet
 
-class TCNet
-{
+class TCNet {
    public:
-    TCNet()
-    {
+    TCNet() {
         DEBUG_ENTRY();
 
         assert(s_this == nullptr);
@@ -169,8 +143,7 @@ class TCNet
         DEBUG_EXIT();
     }
 
-    void Start()
-    {
+    void Start() {
         DEBUG_ENTRY();
 
         handles_[0] = network::udp::Begin(Broadcast::kPort0, StaticCallbackFunctionPort60000);
@@ -182,42 +155,34 @@ class TCNet
         DEBUG_EXIT();
     }
 
-    void Stop()
-    {
+    void Stop() {
         DEBUG_ENTRY();
 
         TTCNetPacketOptOut opt_out;
 
         memcpy(&opt_out, &packet_opt_in_, sizeof(struct TTCNetPacketOptOut));
 
-        network::udp::Send(handles_[0], reinterpret_cast<const uint8_t*>(&opt_out), sizeof(struct TTCNetPacketOptOut), network::GetBroadcastIp(),
-                           Broadcast::kPort0);
+        network::udp::Send(handles_[0], reinterpret_cast<const uint8_t*>(&opt_out), sizeof(struct TTCNetPacketOptOut), network::GetBroadcastIp(), Broadcast::kPort0);
 
         DEBUG_EXIT();
     }
 
-    void Run()
-    {
-        current_millis_ = hal::Millis();
+    void Run() {
+        current_millis_ = timing::Millis();
 
-        if (__builtin_expect(((current_millis_ - previous_millis_) >= 1000), 0))
-        {
+        if (__builtin_expect(((current_millis_ - previous_millis_) >= 1000), 0)) {
             previous_millis_ = current_millis_;
             HandleOptInOutgoing();
         }
     }
 
-    void Print()
-    {
+    void Print() {
         puts("TCNet");
         printf(" Node : %.8s\n", packet_opt_in_.ManagementHeader.NodeName);
         printf(" L%c", tcnet::GetLayer(layer_));
-        if (use_time_code_)
-        {
+        if (use_time_code_) {
             puts(" TC");
-        }
-        else
-        {
+        } else {
             printf(" T%u\n", tcnet::kFps[static_cast<uint32_t>(timecode_type_)]);
         }
 
@@ -226,16 +191,14 @@ class TCNet
 
     TTCNetNodeType GetNodeType() const { return static_cast<TTCNetNodeType>(packet_opt_in_.ManagementHeader.NodeType); }
 
-    void SetNodeName(const char* node_name)
-    {
+    void SetNodeName(const char* node_name) {
         strncpy(reinterpret_cast<char*>(packet_opt_in_.ManagementHeader.NodeName), node_name, sizeof packet_opt_in_.ManagementHeader.NodeName - 1);
         packet_opt_in_.ManagementHeader.NodeName[sizeof packet_opt_in_.ManagementHeader.NodeName - 1] = '\0';
     }
 
     const char* GetNodeName() { return reinterpret_cast<char*>(packet_opt_in_.ManagementHeader.NodeName); }
 
-    void SetLayer(tcnet::Layer layer)
-    {
+    void SetLayer(tcnet::Layer layer) {
         layer_ = layer;
         lx_time_offset_ = offsetof(struct TTCNetPacketTime, L1Time) + (4 * static_cast<uint32_t>(layer));
         lx_time_code_offset_ = offsetof(struct TTCNetPacketTime, L1TimeCode) + static_cast<uint32_t>(layer) * sizeof(struct TTCNetPacketTimeTimeCode);
@@ -246,10 +209,8 @@ class TCNet
     void SetUseTimeCode(bool use_time_code) { use_time_code_ = use_time_code; }
     bool GetUseTimeCode() const { return use_time_code_; }
 
-    void SetTimeCodeType(tcnet::TimeCodeType type)
-    {
-        switch (type)
-        {
+    void SetTimeCodeType(tcnet::TimeCodeType type) {
+        switch (type) {
             case tcnet::TimeCodeType::kTimecodeTypeFilm:
                 type_divider_ = 1000.0f / 24;
                 break;
@@ -279,20 +240,15 @@ class TCNet
     static TCNet* Get() { return s_this; }
 
    private:
-    void static StaticCallbackFunctionPort60000(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port)
-    {
-        s_this->InputPort60000(buffer, size, from_ip, from_port);
-    }
+    void static StaticCallbackFunctionPort60000(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port) { s_this->InputPort60000(buffer, size, from_ip, from_port); }
 
-    void InputPort60000(const uint8_t* buffer, [[maybe_unused]] uint32_t size, [[maybe_unused]] uint32_t from_ip, [[maybe_unused]] uint16_t from_port)
-    {
+    void InputPort60000(const uint8_t* buffer, [[maybe_unused]] uint32_t size, [[maybe_unused]] uint32_t from_ip, [[maybe_unused]] uint16_t from_port) {
         const auto* packet = reinterpret_cast<const struct TTCNetPacketManagementHeader*>(buffer);
         const auto kMessageType = static_cast<TTCNetMessageType>(packet->MessageType);
 
         DEBUG_PRINTF("kMessageType=%u", static_cast<uint32_t>(kMessageType));
 
-        if (kMessageType == TCNET_MESSAGE_TYPE_OPTIN)
-        {
+        if (kMessageType == TCNET_MESSAGE_TYPE_OPTIN) {
 #ifndef NDEBUG
             DumpOptIn(buffer);
 #endif
@@ -300,22 +256,16 @@ class TCNet
         }
     }
 
-    void static StaticCallbackFunctionPort60001(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port)
-    {
-        s_this->InputPort60001(buffer, size, from_ip, from_port);
-    }
+    void static StaticCallbackFunctionPort60001(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port) { s_this->InputPort60001(buffer, size, from_ip, from_port); }
 
-    void InputPort60001(const uint8_t* buffer, [[maybe_unused]] uint32_t size, [[maybe_unused]] uint32_t from_ip, [[maybe_unused]] uint16_t from_port)
-    {
+    void InputPort60001(const uint8_t* buffer, [[maybe_unused]] uint32_t size, [[maybe_unused]] uint32_t from_ip, [[maybe_unused]] uint16_t from_port) {
 #if defined(TCNET_HAVE_TIMECODE)
         const auto* packet_time = reinterpret_cast<const struct TTCNetPacketTime*>(buffer);
 
-        if (static_cast<TTCNetMessageType>(packet_time->ManagementHeader.MessageType) == TCNET_MESSAGE_TYPE_TIME)
-        {
+        if (static_cast<TTCNetMessageType>(packet_time->ManagementHeader.MessageType) == TCNET_MESSAGE_TYPE_TIME) {
             tcnet::TimeCode timecode __attribute__((aligned(4)));
 
-            if (use_time_code_)
-            {
+            if (use_time_code_) {
                 const auto* tc = reinterpret_cast<const TTCNetPacketTimeTimeCode*>(buffer + lx_time_code_offset_);
                 timecode.frames = tc->Frames;
                 timecode.seconds = tc->Seconds;
@@ -324,13 +274,11 @@ class TCNet
 
                 auto smpte_mode = tc->SMPTEMode;
 
-                if (smpte_mode < 24)
-                {
+                if (smpte_mode < 24) {
                     smpte_mode = packet_time->SMPTEMode;
                 }
 
-                switch (smpte_mode)
-                {
+                switch (smpte_mode) {
                     case 24:
                         timecode.type = static_cast<uint8_t>(tcnet::TimeCodeType::kTimecodeTypeFilm);
                         break;
@@ -347,9 +295,7 @@ class TCNet
                         timecode.type = static_cast<uint8_t>(tcnet::TimeCodeType::kTimecodeTypeSmpte30Fps);
                         break;
                 }
-            }
-            else
-            {
+            } else {
                 auto lx_time = *reinterpret_cast<const uint32_t*>(buffer + lx_time_offset_);
 
                 const auto kHours = lx_time / 3600000U;
@@ -371,14 +317,12 @@ class TCNet
             auto* dst = reinterpret_cast<uint8_t*>(&timecode_);
             auto do_send = false;
 
-            for (uint32_t index = 0; index < sizeof(struct tcnet::TimeCode); index++)
-            {
+            for (uint32_t index = 0; index < sizeof(struct tcnet::TimeCode); index++) {
                 do_send |= (*src != *dst);
                 *dst++ = *src++;
             }
 
-            if (do_send)
-            {
+            if (do_send) {
                 assert(function_ptr_ != nullptr);
                 function_ptr_(&timecode);
             }
@@ -386,29 +330,25 @@ class TCNet
 #endif
     }
 
-    void HandleOptInOutgoing()
-    {
+    void HandleOptInOutgoing() {
         packet_opt_in_.ManagementHeader.SEQ++;
-        packet_opt_in_.ManagementHeader.TimeStamp = hal::Micros();
-        packet_opt_in_.Uptime = static_cast<uint16_t>(hal::Uptime());
+        packet_opt_in_.ManagementHeader.TimeStamp = timing::Micros();
+        packet_opt_in_.UpTime = static_cast<uint16_t>(timing::UpTime());
 
-        network::udp::Send(handles_[0], reinterpret_cast<const uint8_t*>(&packet_opt_in_), sizeof(struct TTCNetPacketOptIn), network::GetBroadcastIp(),
-                           Broadcast::kPort0);
+        network::udp::Send(handles_[0], reinterpret_cast<const uint8_t*>(&packet_opt_in_), sizeof(struct TTCNetPacketOptIn), network::GetBroadcastIp(), Broadcast::kPort0);
     }
 
     void DumpManagementHeader(const uint8_t* buffer);
     void DumpOptIn(const uint8_t* buffer);
 
    private:
-    struct Broadcast
-    {
+    struct Broadcast {
         static constexpr uint16_t kPort0 = 60000;
         static constexpr uint16_t kPort1 = 60001;
         static constexpr uint16_t kPort2 = 60002;
     };
 
-    struct Unicast
-    {
+    struct Unicast {
         static constexpr uint16_t kPort = 65023;
     };
 

@@ -810,7 +810,7 @@ void Dmx::RdmTransmit(uint32_t port_index, const uint8_t* rdm_data, uint32_t len
 
     Dmx::Get()->RdmSendRaw(port_index, rdm_data, length);
 
-    udelay(rdm::responder::kDataDirectionDelay);
+    timing::DelayUs(rdm::responder::kDataDirectionDelay);
 
     Dmx::Get()->SetPortDirection(port_index, dmx::Direction::kInput, true);
 }
@@ -820,10 +820,10 @@ void Dmx::RdmSendRaw([[maybe_unused]] uint32_t nPortIndex, const uint8_t *pRdmDa
 
 	BCM2835_PL011->LCRH &= ~PL011_LCRH_FEN;
 	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2 | PL011_LCRH_BRK;
-	udelay(rdm::transmit::kBreakTimeTypical);
+	timing::DelayUs(rdm::transmit::kBreakTimeTypical);
 
 	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2;
-	udelay(rdm::transmit::kMabTimeTypical);
+	timing::DelayUs(rdm::transmit::kMabTimeTypical);
 
 	for (uint32_t i = 0; i < nLength; i++) {
 		while ((BCM2835_PL011->FR & PL011_FR_TXFF) == PL011_FR_TXFF)

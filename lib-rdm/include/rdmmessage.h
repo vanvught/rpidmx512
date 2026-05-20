@@ -36,7 +36,7 @@
 #ifndef NDEBUG
 #include "rdm_message_print.h"
 #endif
-#include "hal_micros.h" // IWYU pragma: keep
+#include "timing.h"
 
 class RdmMessage final : public Rdm {
    public:
@@ -88,7 +88,7 @@ class RdmMessage final : public Rdm {
         rdm::message::Print(reinterpret_cast<const uint8_t*>(&message_));
 #endif
         Rdm::Transmit(port_index, &message_);
-        transmit_micros_ = hal::Micros();
+        transmit_micros_ = timing::Micros();
     }
 
     uint32_t TransmitMicros() const { return transmit_micros_; }

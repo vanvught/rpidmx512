@@ -1,8 +1,8 @@
 /**
- * @file debug_printbits.h
+ * @file hwclockset.cpp
  *
  */
- /* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,42 +23,34 @@
  * THE SOFTWARE.
  */
 
-#ifndef COMMON_DEBUG_DEBUG_PRINTBITS_H_
-#define COMMON_DEBUG_DEBUG_PRINTBITS_H_
+#include <time.h>
+#include <sys/time.h>
 
-#include <cstdio>
-#include <cstdint>
+#include "hwclock.h"
 
-#if defined(H3)
-namespace uart0
-{
-int Printf(const char* fmt, ...);
-}
-#define printf uart0::Printf // NOLINT
-#endif
-
-namespace debug
-{
-#ifdef NDEBUG
-inline void PrintBits([[maybe_unused]] uint32_t u) {}
-#else
-inline void PrintBits(uint32_t u) {
-	printf("%.8x ", u);
-    uint32_t b = 1U << 31;
-
-    for (uint32_t i = 0; i < 32; i++)
-    {
-        if ((b & u) == b)
-        {
-            uint32_t bit_number = 31 - i;
-            printf("%-2d ", bit_number);
-        }
-        b = b >> 1;
+bool HwClock::Set(const tm* time) {
+    if (!is_connected_) {
+        return false;
     }
 
-    puts("");
-}
-#endif
-} // namespace debug
+    struct timeval tv_t1;
+    gettimeofday(&tv_t1, nullptr);
 
-#endif /* COMMON_DEBUG_DEBUG_PRINTBITS_H_ */
+    RtcSet(time);
+
+    struct timeval tv;
+    tv.tv_sec = mktime(const_cast<tm*>(time));
+
+    struct timeval tv_t2;
+    gettimeofday(&tv_t2, nullptr);
+
+    if (tv_t2.tv_usec - tv_t1.tv_usec >= 0) {
+        tv.tv_usec = tv_t2.tv_usec - tv_t1.tv_usec;
+    } else {
+        tv.tv_usec = 1000000 - (tv_t1.tv_usec - tv_t2.tv_usec);
+    }
+
+    settimeofday(&tv, nullptr);
+
+    return true;
+}

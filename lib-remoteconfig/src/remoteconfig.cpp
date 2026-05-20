@@ -34,7 +34,7 @@
 
 #include "remoteconfig.h"
 #include "firmwareversion.h"
-#include "hal.h"
+#include "timing.h"
 #include "network_udp.h"
 #if !defined(CONFIG_REMOTECONFIG_MINIMUM)
 #include "apps/mdns.h"
@@ -277,7 +277,7 @@ void RemoteConfig::HandleUptime()
 {
     DEBUG_ENTRY();
 
-    const auto kUptime = hal::Uptime();
+    const auto kUptime = timing::UpTime();
     const auto kLength = snprintf(udp_buffer_, remoteconfig::udp::kBufferSize - 1, "uptime: %us\n", static_cast<unsigned int>(kUptime));
 
     network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(udp_buffer_), static_cast<uint32_t>(kLength), ip_from_, remoteconfig::udp::kPort);

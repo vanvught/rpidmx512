@@ -30,7 +30,7 @@
 #include "formats/showfileformatola.h"
 #include "showfile.h"
 
-#include "hal_millis.h"
+#include "timing.h"
 
  #include "firmware/debug/debug_debug.h"
 
@@ -60,7 +60,7 @@ void ShowFileFormat::Run() {
 		}
 	}
 
-	const auto millis = hal::Millis();
+	const auto millis = timing::Millis();
 
 	if ((millis - m_nLastMillis) >= m_nDelayMillis) {
 		m_nLastMillis = millis;

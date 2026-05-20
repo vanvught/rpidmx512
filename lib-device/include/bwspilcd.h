@@ -28,7 +28,7 @@
 
 #include <cstdint>
 
-#include "hal_micros.h"
+#include "timing.h"
 
 #include "bw.h"
 
@@ -38,11 +38,11 @@ class BwSpiLcd : BwSpi
     {
         do
         {
-        } while ((hal::Micros() - m_nSpiWriteUs) < bw::lcd::spi::write_delay_us);
+        } while ((timing::Micros() - m_nSpiWriteUs) < bw::lcd::spi::write_delay_us);
 
         HAL_SPI::Write(pData, length);
 
-        m_nSpiWriteUs = hal::Micros();
+        m_nSpiWriteUs = timing::Micros();
     }
 
    public:
@@ -112,7 +112,7 @@ class BwSpiLcd : BwSpi
     bool IsConnected() { return m_IsConnected; }
 
    private:
-    uint32_t m_nSpiWriteUs = hal::Micros();
+    uint32_t m_nSpiWriteUs = timing::Micros();
 };
 
 #endif  // BWSPILCD_H_

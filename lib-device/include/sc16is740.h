@@ -29,7 +29,7 @@
 #include <cstdint>
 
 #include "hal_i2c.h"
-#include "hal_millis.h"
+#include "timing.h"
 
 #include "sc16is7x0.h"
 
@@ -136,14 +136,14 @@ class SC16IS740 : HAL_I2C
 
     bool IsReadable(uint32_t time_out)
     {
-        const auto kMillis = hal::Millis();
+        const auto kMillis = timing::Millis();
         do
         {
             if (IsReadable())
             {
                 return true;
             }
-        } while ((hal::Millis() - time_out) < kMillis);
+        } while ((timing::Millis() - time_out) < kMillis);
 
         return false;
     }

@@ -33,7 +33,7 @@
 
 #include "pixel.h"
 #include "pixelconfiguration.h"
-#include "hal_millis.h" // IWYU pragma: keep
+#include "timing.h"
 #include "firmware/debug/debug_debug.h"
 
 namespace pixelpatterns {
@@ -151,7 +151,7 @@ class PixelPatterns {
         }
 
         auto is_updated = false;
-        const auto kMillis = hal::Millis();
+        const auto kMillis = timing::Millis();
 
         for (uint32_t i = 0; i < s_active_ports; i++) {
             is_updated |= PortUpdate(i, kMillis);

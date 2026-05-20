@@ -28,7 +28,7 @@
 #include "ltcetc.h"
 #include "midi.h"
 #include "ltcoutputs.h"
-#include "hal_millis.h"
+#include "timing.h"
 #include "hal_statusled.h"
 
 class LtcEtcReader final : public LtcEtcHandler
@@ -39,7 +39,7 @@ class LtcEtcReader final : public LtcEtcHandler
 
     void Run()
     {
-        const auto kTimeStamp = hal::Millis();
+        const auto kTimeStamp = timing::Millis();
 
         if ((kTimeStamp - timestamp_) >= 50U)
         {

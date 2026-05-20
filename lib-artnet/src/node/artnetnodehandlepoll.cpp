@@ -39,7 +39,7 @@
 
 #include "artnetnode.h"
 #include "artnet.h"
-#include "hal_millis.h"
+#include "timing.h"
 #include "network.h"
 #include "firmware/debug/debug_debug.h"
 
@@ -342,7 +342,7 @@ void ArtNetNode::PollReplyQueueAdd(uint16_t target_port_address_bottom, uint16_t
 
         if (entry.art_poll_millis == 0)
         {
-            entry.art_poll_millis = hal::Millis();
+            entry.art_poll_millis = timing::Millis();
             entry.art_poll_reply_ip_address = ip_address_from_;
             entry.art_poll_reply.target_port_address_top = target_port_address_top;
             entry.art_poll_reply.target_port_address_bottom = target_port_address_bottom;

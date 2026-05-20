@@ -104,7 +104,7 @@ void PCA9685::Sleep(bool mode) {
     I2cWriteReg(kPcA9685RegModE1, data);
 
     //	if (data & ~PCA9685_MODE1_RESTART) {
-    //		udelay(500);
+    //		timing::DelayUs(500);
     //		data |= PCA9685_MODE1_RESTART;
     //	}
 }

@@ -114,7 +114,7 @@ static bool TimecodeIsEqual(const struct ltc::TimeCode* timecode)
 
 void ArtNetReader::Handler(const struct artnet::TimeCode* timecode)
 {
-    timestamp_ = hal::Millis();
+    timestamp_ = timing::Millis();
 
     if (ltc::Destination::IsEnabled(ltc::Destination::Output::LTC))
     {

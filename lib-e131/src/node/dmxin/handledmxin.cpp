@@ -113,7 +113,7 @@ void E131Bridge::HandleDmxIn()
                 }
                 else if (input_port_[port_index].millis != 0)
                 {
-                    const auto kMillis = hal::Millis();
+                    const auto kMillis = timing::Millis();
                     if ((kMillis - input_port_[port_index].millis) > 1000)
                     {
                         input_port_[port_index].millis = kMillis;

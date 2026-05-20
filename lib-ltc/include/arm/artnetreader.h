@@ -32,7 +32,7 @@
 #include "artnettimecode.h"
 #include "ltcoutputs.h"
 #include "hal_statusled.h"
-#include "hal_millis.h" // IWYU pragma: keep
+#include "timing.h"
 
 class ArtNetReader
 {
@@ -50,7 +50,7 @@ class ArtNetReader
 
     void Run()
     {
-        const auto kTimeStamp = hal::Millis();
+        const auto kTimeStamp = timing::Millis();
 
         if ((kTimeStamp - timestamp_) >= 50U)
         {

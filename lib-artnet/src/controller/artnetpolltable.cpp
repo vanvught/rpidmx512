@@ -35,7 +35,7 @@
 
 #include "artnetpolltable.h"
 #include "hal.h"
-#include "hal_millis.h"
+#include "timing.h"
 #include "ip4/ip4_address.h"
  #include "firmware/debug/debug_debug.h"
 
@@ -345,7 +345,7 @@ void ArtNetPollTable::Add(const struct artnet::ArtPollReply* poll_reply)
         memcpy(pDst, pSrc, artnet::kLongNameLength);
     }
 
-    const auto kMillis = hal::Millis();
+    const auto kMillis = timing::Millis();
 
     for (uint32_t port_index = 0; port_index < artnet::kPorts; port_index++)
     {
@@ -410,7 +410,7 @@ void ArtNetPollTable::Clean()
 
     if (pArtNetNodeEntryBind->nLastUpdateMillis != 0)
     {
-        if ((hal::Millis() - pArtNetNodeEntryBind->nLastUpdateMillis) > (1.5 * artnet::POLL_INTERVAL_MILLIS))
+        if ((timing::Millis() - pArtNetNodeEntryBind->nLastUpdateMillis) > (1.5 * artnet::POLL_INTERVAL_MILLIS))
         {
             pArtNetNodeEntryBind->nLastUpdateMillis = 0;
             RemoveIpAddress(pArtNetNodeEntryBind->universe, table_[table_clean_.nTableIndex].IPAddress);
@@ -472,7 +472,7 @@ void ArtNetPollTable::Dump()
         for (uint32_t universe = 0; universe < table_[i].universes_count; universe++)
         {
             auto* pArtNetNodeEntryUniverse = &table_[i].Universe[universe];
-            printf("\t %u [%u] |%-18s|\n", pArtNetNodeEntryUniverse->universe, (hal::Millis() - pArtNetNodeEntryUniverse->nLastUpdateMillis) / 1000U,
+            printf("\t %u [%u] |%-18s|\n", pArtNetNodeEntryUniverse->universe, (timing::Millis() - pArtNetNodeEntryUniverse->nLastUpdateMillis) / 1000U,
                    pArtNetNodeEntryUniverse->ShortName);
         }
         puts("");

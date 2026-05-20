@@ -122,7 +122,7 @@ bool Hd44780::Start()
               hd44780::cmd::display::kBlinkOff)); ///< Display On,Cursor Off, Blink Off
 
     WriteCmd(hd44780::cmd::kCls);
-    udelay(hd44780::exectime::kCls - hd44780::exectime::kCmd);
+    timing::DelayUs(hd44780::exectime::kCls - hd44780::exectime::kCmd);
 
     WriteCmd((hd44780::cmd::kEntryMode | hd44780::cmd::entrymode::kInc)); ///< Cursor move direction
 
@@ -132,7 +132,7 @@ bool Hd44780::Start()
 void Hd44780::Cls()
 {
     WriteCmd(hd44780::cmd::kCls);
-    udelay(hd44780::exectime::kCls - hd44780::exectime::kCmd);
+    timing::DelayUs(hd44780::exectime::kCls - hd44780::exectime::kCmd);
 }
 
 void Hd44780::PutChar(int c)
@@ -217,14 +217,14 @@ void Hd44780::WriteCmd(uint8_t cmd)
 {
     Write4bits(cmd & 0xF0);
     Write4bits(static_cast<uint8_t>((cmd << 4) & 0xF0));
-    udelay(hd44780::exectime::kCmd);
+    timing::DelayUs(hd44780::exectime::kCmd);
 }
 
 void Hd44780::WriteReg(uint8_t reg)
 {
     Write4bits(static_cast<uint8_t>(hd44780::kBitRs | (reg & 0xF0)));
     Write4bits(static_cast<uint8_t>(hd44780::kBitRs | ((reg << 4) & 0xF0)));
-    udelay(hd44780::exectime::kReg);
+    timing::DelayUs(hd44780::exectime::kReg);
 }
 
 void Hd44780::SetCursor([[maybe_unused]] uint32_t mode)

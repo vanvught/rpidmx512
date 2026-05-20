@@ -34,7 +34,7 @@
 #if !defined(NO_HDMI_OUTPUT)
 #include "widgetmonitor.h"
 #endif
-#include "hal_millis.h"
+#include "timing.h"
 #include "dmx.h"
 #include "rdm.h"
 #include "rdmdevice.h"
@@ -115,7 +115,7 @@ void Widget::SetParams()
 
     SetPortDirection(0, dmx::Direction::kInput, true);
 
-    received_dmx_packet_start_millis_ = hal::Millis();
+    received_dmx_packet_start_millis_ = timing::Millis();
 }
 
 /**
@@ -146,7 +146,7 @@ void Widget::ReceivedDmxPacket()
         return;
     }
 
-    const auto kMillis = hal::Millis();
+    const auto kMillis = timing::Millis();
 
     if (kMillis - received_dmx_packet_start_millis_ < received_dmx_packet_period_millis_)
     {
@@ -299,7 +299,7 @@ void Widget::SendRdmPacketRequest(uint16_t data_length)
 
     Rdm::TransmitRaw(0, data_, data_length);
 
-    send_rdm_packet_start_millis_ = hal::Millis();
+    send_rdm_packet_start_millis_ = timing::Millis();
 
 #if !defined(NO_HDMI_OUTPUT)
     WidgetMonitor::RdmData(widgetmonitor::MonitorLine::kRdmData, data_length, data_, true);
@@ -323,7 +323,7 @@ void Widget::RdmTimeout()
         return;
     }
 
-    if (hal::Millis() - send_rdm_packet_start_millis_ < 1000U)
+    if (timing::Millis() - send_rdm_packet_start_millis_ < 1000U)
     { // 1 second
         return;
     }
@@ -359,7 +359,7 @@ void Widget::ReceiveDmxOnChange()
     Dmx::ClearData(0);
     Dmx::SetPortDirection(0, dmx::Direction::kInput, true);
 
-    received_dmx_packet_start_millis_ = hal::Millis();
+    received_dmx_packet_start_millis_ = timing::Millis();
 }
 
 /**
@@ -411,7 +411,7 @@ void Widget::GetSnReply()
 
     Dmx::SetPortDirection(0, dmx::Direction::kInput, true);
 
-    received_dmx_packet_start_millis_ = hal::Millis();
+    received_dmx_packet_start_millis_ = timing::Millis();
 }
 
 /**
@@ -431,7 +431,7 @@ void Widget::SendRdmDiscoveryRequest(uint16_t data_length)
     Rdm::TransmitRaw(0, data_, data_length);
 
     is_rdm_discovery_running_ = true;
-    send_rdm_packet_start_millis_ = hal::Millis();
+    send_rdm_packet_start_millis_ = timing::Millis();
 
 #if !defined(NO_HDMI_OUTPUT)
     WidgetMonitor::RdmData(widgetmonitor::MonitorLine::kRdmData, data_length, data_, true);
@@ -489,7 +489,7 @@ void Widget::GetManufacturerReply()
 
     Dmx::SetPortDirection(0, dmx::Direction::kInput, true);
 
-    received_dmx_packet_start_millis_ = hal::Millis();
+    received_dmx_packet_start_millis_ = timing::Millis();
 }
 
 /**
@@ -520,7 +520,7 @@ void Widget::GetNameReply()
 
     Dmx::SetPortDirection(0, dmx::Direction::kInput, true);
 
-    received_dmx_packet_start_millis_ = hal::Millis();
+    received_dmx_packet_start_millis_ = timing::Millis();
 }
 
 /**

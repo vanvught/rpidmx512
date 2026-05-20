@@ -6,7 +6,7 @@
  * which extends AppleMidi to add functionality for RTP-MIDI communication.
  * It supports sending and receiving raw MIDI data, timecodes, and MIDI quarter frames.
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,14 +36,13 @@
 #include "net/applemidi.h"
 #include "net/rtpmidihandler.h"
 #include "midi.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
 /**
  * @namespace rtpmidi
  * @brief Contains constants and structures for RTP-MIDI communication.
  */
-namespace rtpmidi
-{
+namespace rtpmidi {
 /**
  * @brief Buffer size for RTP-MIDI messages.
  */
@@ -53,12 +52,11 @@ inline constexpr auto kBufferSize = 512U;
  * @struct Header
  * @brief Structure representing the RTP-MIDI header.
  */
-struct Header
-{
+struct Header {
     uint16_t fixed;
     uint16_t sequence_number;
     uint32_t timestamp;
-    uint32_t nSenderSSRC;
+    uint32_t sender_ssrc;
 } __attribute__((packed));
 
 /**
@@ -74,11 +72,9 @@ inline constexpr auto kCommandOffset = sizeof(struct Header);
  * RtpMidi extends the AppleMidi class to handle real-time MIDI data transfer
  * over RTP. It supports sending raw MIDI messages, timecodes, and MIDI quarter frames.
  */
-class RtpMidi final : public AppleMidi
-{
+class RtpMidi final : public AppleMidi {
    public:
-    RtpMidi()
-    {
+    RtpMidi() {
         DEBUG_ENTRY();
 
         assert(s_this == nullptr);
@@ -90,8 +86,7 @@ class RtpMidi final : public AppleMidi
     /**
      * @brief Starts the RTP-MIDI service.
      */
-    void Start()
-    {
+    void Start() {
         DEBUG_ENTRY();
 
         AppleMidi::Start();
@@ -101,7 +96,7 @@ class RtpMidi final : public AppleMidi
 
         auto* header = reinterpret_cast<rtpmidi::Header*>(send_buffer_);
         header->fixed = 0x6180;
-        header->nSenderSSRC = AppleMidi::GetSSRC();
+        header->sender_ssrc = AppleMidi::GetSSRC();
 
         DEBUG_EXIT();
     }
@@ -109,8 +104,7 @@ class RtpMidi final : public AppleMidi
     /**
      * @brief Stops the RTP-MIDI service.
      */
-    void Stop()
-    {
+    void Stop() {
         DEBUG_ENTRY();
 
         AppleMidi::Stop();
@@ -122,8 +116,7 @@ class RtpMidi final : public AppleMidi
      * @brief Sends a single raw MIDI byte.
      * @param nByte The raw MIDI byte to send.
      */
-    void TransmitRaw(uint8_t byte)
-    {
+    void TransmitRaw(uint8_t byte) {
         auto* data = &send_buffer_[rtpmidi::kCommandOffset + 1];
         data[0] = byte;
         Send(1);
@@ -139,8 +132,7 @@ class RtpMidi final : public AppleMidi
      * @brief Sends a full MIDI timecode message.
      * @param tTimeCode Pointer to the MIDI timecode structure.
      */
-    void SendTimeCode(const midi::Timecode* timecode)
-    {
+    void SendTimeCode(const midi::Timecode* timecode) {
         auto* data = &send_buffer_[rtpmidi::kCommandOffset + 1];
 
         data[0] = 0xF0;
@@ -161,8 +153,7 @@ class RtpMidi final : public AppleMidi
      * @brief Sends a MIDI quarter frame message.
      * @param nValue The quarter frame value to send.
      */
-    void SendQf(uint8_t value)
-    {
+    void SendQf(uint8_t value) {
         auto* data = &send_buffer_[rtpmidi::kCommandOffset + 1];
 
         data[0] = 0xF1;
@@ -176,12 +167,10 @@ class RtpMidi final : public AppleMidi
      * @param timeCode Pointer to the MIDI timecode structure.
      * @param nMidiQuarterFramePiece Reference to the quarter frame piece index.
      */
-    void SendQf(const struct midi::Timecode* timecode, uint32_t& quarter_frame_piece)
-    {
+    void SendQf(const struct midi::Timecode* timecode, uint32_t& quarter_frame_piece) {
         auto data = static_cast<uint8_t>(quarter_frame_piece << 4);
 
-        switch (quarter_frame_piece)
-        {
+        switch (quarter_frame_piece) {
             case 0:
                 data = data | (timecode->frames & 0x0F);
                 break;
@@ -257,15 +246,12 @@ class RtpMidi final : public AppleMidi
      */
     int32_t DecodeMidi(uint32_t command_length, uint32_t offset);
 
-    midi::Types GetTypeFromStatusByte(uint8_t status_byte)
-    {
-        if ((status_byte < 0x80) || (status_byte == 0xf4) || (status_byte == 0xf5) || (status_byte == 0xf9) || (status_byte == 0xfD))
-        {
+    midi::Types GetTypeFromStatusByte(uint8_t status_byte) {
+        if ((status_byte < 0x80) || (status_byte == 0xf4) || (status_byte == 0xf5) || (status_byte == 0xf9) || (status_byte == 0xfD)) {
             return midi::Types::INVALIDE_TYPE;
         }
 
-        if (status_byte < 0xF0)
-        {
+        if (status_byte < 0xF0) {
             return static_cast<midi::Types>(status_byte & 0xF0);
         }
 
@@ -274,8 +260,7 @@ class RtpMidi final : public AppleMidi
 
     uint8_t GetChannelFromStatusByte(uint8_t status_byte) { return static_cast<uint8_t>((status_byte & 0x0F) + 1); }
 
-    void Send(uint32_t length)
-    {
+    void Send(uint32_t length) {
         auto* header = reinterpret_cast<rtpmidi::Header*>(send_buffer_);
 
         header->sequence_number = __builtin_bswap16(sequence_number_++);
@@ -289,11 +274,11 @@ class RtpMidi final : public AppleMidi
    private:
     midi::Message message_;
     RtpMidiHandler* handler_{nullptr}; ///< Pointer to the RTP-MIDI handler.
-    uint8_t* receive_buffer_{nullptr};          ///< Receive buffer pointer.
-    uint8_t* send_buffer_{nullptr};            ///< Send buffer pointer.
-    uint16_t sequence_number_{0};              ///< Sequence number for outgoing messages.
+    uint8_t* receive_buffer_{nullptr}; ///< Receive buffer pointer.
+    uint8_t* send_buffer_{nullptr};    ///< Send buffer pointer.
+    uint16_t sequence_number_{0};      ///< Sequence number for outgoing messages.
 
     static inline RtpMidi* s_this; ///< Static pointer to the current instance.
 };
 
-#endif  // NET_RTPMIDI_H_
+#endif // NET_RTPMIDI_H_

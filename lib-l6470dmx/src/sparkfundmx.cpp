@@ -41,7 +41,7 @@
 #include "hal_api.h"
 #include "hal_spi.h"
 #include "hal_gpio.h"
-#include "hal_millis.h"
+#include "timing.h"
 
  #include "firmware/debug/debug_debug.h"
 
@@ -160,9 +160,9 @@ void SparkFunDmx::ReadConfigFiles()
     FUNC_PREFIX(GpioSet(m_nGlobalResetPin));
 
     FUNC_PREFIX(GpioClr(m_nGlobalResetPin));
-    udelay(10000);
+    timing::DelayUs(10000);
     FUNC_PREFIX(GpioSet(m_nGlobalResetPin));
-    udelay(10000);
+    timing::DelayUs(10000);
 
     FUNC_PREFIX(SpiBegin());
 
@@ -319,10 +319,10 @@ void SparkFunDmx::ReadConfigFiles()
         if (autodriver_[i] != nullptr)
         {
             printf(" Motor %d\n", i);
-            const uint32_t kMillis = hal::Millis();
+            const uint32_t kMillis = timing::Millis();
             while (autodriver_[i]->busyCheck())
             {
-                if ((hal::Millis() - kMillis) > 1000)
+                if ((timing::Millis() - kMillis) > 1000)
                 {
                     printf("  Time-out!\n");
                     break;

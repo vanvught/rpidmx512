@@ -44,7 +44,7 @@
 #include "network.h"
 #include "core/ip4/igmp.h"
 #include "softwaretimers.h"
-#include "hal_millis.h"
+#include "timing.h"
 #include "hal_statusled.h"
 #include "hal_panelled.h"
 #include "hal_statusled.h"
@@ -615,7 +615,7 @@ void E131Bridge::InputUdp(const uint8_t* buffer, [[maybe_unused]] uint32_t size,
 {
     if (__builtin_expect((!IsValidRoot(buffer)), 0)) return;
 
-    current_millis_ = hal::Millis();
+    current_millis_ = timing::Millis();
     packet_millis_ = current_millis_;
 
     state_.is_network_data_loss = false;

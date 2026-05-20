@@ -25,13 +25,10 @@
 
 #include "gpstimeclient.h"
 #include "platform_gpio.h"
+#include "timing.h"
 #include "firmware/debug/debug_debug.h"
 
-namespace hal {
-uint32_t Millis();
-} // namespace hal
-
-GPSTimeClient::GPSTimeClient(int32_t utc_offset, gps::Module module) : GPS(utc_offset, module), wait_pps_millis_(hal::Millis()) {
+GPSTimeClient::GPSTimeClient(int32_t utc_offset, gps::Module module) : GPS(utc_offset, module), wait_pps_millis_(timing::Millis()) {
     DEBUG_ENTRY();
 
     DEBUG_EXIT();
@@ -60,13 +57,13 @@ void GPSTimeClient::Run() {
         tv.tv_usec = 0;
         settimeofday(&tv, nullptr);
 
-        wait_pps_millis_ = hal::Millis();
+        wait_pps_millis_ = timing::Millis();
 
         DEBUG_PUTS("PPS handled");
         return;
     }
 
-    const auto kMillis = hal::Millis();
+    const auto kMillis = timing::Millis();
 
     if (__builtin_expect(((kMillis - wait_pps_millis_) > (10 * 1000)), 0)) {
         wait_pps_millis_ = kMillis;

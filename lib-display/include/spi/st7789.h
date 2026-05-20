@@ -83,7 +83,7 @@ class ST7789 : public ST77XX
 #endif
 
         WriteCommand(st77xx::cmd::kSwreset);
-        udelay(1000 * 150);
+        timing::DelayUs(1000 * 150);
 
         static constexpr uint8_t kConfig[] = {1,
                                               st77xx::cmd::kColmod,

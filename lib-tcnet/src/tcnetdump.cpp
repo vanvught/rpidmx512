@@ -54,7 +54,7 @@ void TCNet::DumpOptIn(const uint8_t* buffer)
 
     printf(" OptIn\n");
     printf("  %d %d\n", opt_in->NodeCount, opt_in->NodeListenerPort);
-    printf("  %d %d\n", opt_in->NodeCount, opt_in->Uptime);
+    printf("  %d %d\n", opt_in->NodeCount, opt_in->UpTime);
     printf("  %.16s %.16s %d.%d.%d [%d]\n", opt_in->VendorName, opt_in->DeviceName, opt_in->DeviceMajorVersion,
            opt_in->DeviceMinorVersion, opt_in->DeviceBugVersion, opt_in->NodeCount);
 

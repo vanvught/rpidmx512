@@ -28,7 +28,7 @@
 #include "sc16is740.h"
 #include "sc16is7x0.h"
 
-#include "hal_millis.h"
+#include "timing.h"
 #include "hal_i2c.h"
 #include "firmware/debug/debug_printbits.h"
  #include "firmware/debug/debug_debug.h"
@@ -190,11 +190,11 @@ void SC16IS740::ReadBytes(uint8_t *bytes, uint32_t& size, uint32_t time_out) {
 	uint32_t remaining = size;
 
 	while (remaining > 0) {
-		const uint32_t kMillis =hal::Millis();
+		const uint32_t kMillis =timing::Millis();
 		uint32_t available;
 
 		while ((available = ReadRegister(SC16IS7X0_RXLVL)) == 0) {
-			if ((hal::Millis() - time_out) > kMillis) {
+			if ((timing::Millis() - time_out) > kMillis) {
 				remaining = 0;
 				break;
 			}
@@ -218,11 +218,11 @@ void SC16IS740::FlushRead(uint32_t time_out) {
 	bool is_remaining = true;
 
 	while (is_remaining) {
-		const auto kMillis = hal::Millis();
+		const auto kMillis = timing::Millis();
 		uint32_t available;
 
 		while ((available = ReadRegister(SC16IS7X0_RXLVL)) == 0) {
-			if ((hal::Millis() - time_out) > kMillis) {
+			if ((timing::Millis() - time_out) > kMillis) {
 				is_remaining = false;
 				break;
 			}

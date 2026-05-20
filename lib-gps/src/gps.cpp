@@ -32,16 +32,11 @@
 
 #include "gps.h"
 #include "utc.h"
-#include "hal_udelay.h"
+#include "timing.h"
 #include "hal_uart.h" // Needed for EXT_UART_NUMBER
 #include "firmware/debug/debug_debug.h"
 
-namespace hal {
-uint32_t Millis();
-} // namespace hal
-
 // Maximum sentence length, including the $ and <CR><LF> is 82 bytes.
-
 namespace gps::nmea {
 namespace length {
 static constexpr uint32_t kTalkerId = 2;
@@ -106,7 +101,7 @@ int32_t GPS::ParseDecimal(const char* p, uint32_t& length) {
 
 void GPS::SetTime(int32_t time) {
     if (time != 0) {
-        time_timestamp_millis_ = hal::Millis();
+        time_timestamp_millis_ = timing::Millis();
         is_time_updated_ = true;
 
         time /= 100;
@@ -119,7 +114,7 @@ void GPS::SetTime(int32_t time) {
 
 void GPS::SetDate(int32_t date) {
     if (date != 0) {
-        date_timestamp_millis_ = hal::Millis();
+        date_timestamp_millis_ = timing::Millis();
         is_date_updated_ = true;
 
         tm_.tm_year = 100 + (date % 100); // The number of years since 1900.
@@ -136,19 +131,19 @@ void GPS::Start() {
 
     if (module_ < gps::Module::kUndefined) {
         UartSend(gps::kBaud115200[static_cast<uint32_t>(module_)]);
-        udelay(100 * 1000);
+        timing::DelayUs(100 * 1000);
         UartSetBaud(115200);
         UartSend(gps::kBaud115200[static_cast<uint32_t>(module_)]);
 
-        const auto kMillis = hal::Millis();
+        const auto kMillis = timing::Millis();
 
-        while ((hal::Millis() - kMillis) < 1000) {
+        while ((timing::Millis() - kMillis) < 1000) {
             sentence_ = const_cast<char*>(UartGetSentence());
 
             if (sentence_ != nullptr) {
                 DumpSentence(sentence_);
 #ifndef NDEBUG
-                printf("[%u]\n", hal::Millis() - kMillis);
+                printf("[%u]\n", Millis() - kMillis);
 #endif
                 break;
             }

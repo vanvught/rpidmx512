@@ -43,8 +43,8 @@
 #include "rdmsensors.h"
 #include "rdmsubdevices.h"
 #endif
-#include "hal.h"
-#include "hal_rtc.h"
+#include "timing.h"
+#include "hwclock.h"
 #include "hal_boardinfo.h"
 #include "display.h"
 #include "firmware/debug/debug_debug.h"
@@ -1229,7 +1229,7 @@ void RDMHandler::SetRecordSensors(bool is_broadcast, [[maybe_unused]] uint16_t s
 
 void RDMHandler::GetDeviceHours([[maybe_unused]] uint16_t sub_device)
 {
-    uint64_t device_hours = hal::Uptime() / 3600U;
+    uint64_t device_hours = timing::UpTime() / 3600U;
     // The value for the Device Hours field shall be unsigned and not roll over when maximum value is reached.
     if (device_hours > UINT32_MAX)
     {
@@ -1357,9 +1357,9 @@ void RDMHandler::GetRealTimeClock([[maybe_unused]] uint16_t sub_device)
 
 void RDMHandler::SetRealTimeClock(bool is_broadcast, [[maybe_unused]] uint16_t sub_device)
 {
-    auto* pRdmDataIn = reinterpret_cast<struct TRdmMessageNoSc*>(m_pRdmDataIn);
+    auto* in = reinterpret_cast<struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
-    if (pRdmDataIn->param_data_length != 7)
+    if (in->param_data_length != 7)
     {
         RespondMessageNack(E120_NR_FORMAT_ERROR);
         return;
@@ -1367,14 +1367,14 @@ void RDMHandler::SetRealTimeClock(bool is_broadcast, [[maybe_unused]] uint16_t s
 
     struct tm t;
 
-    t.tm_year = ((pRdmDataIn->param_data[0] << 8) + pRdmDataIn->param_data[1]) - 1900;
-    t.tm_mon = pRdmDataIn->param_data[2] - 1; // 0..11
-    t.tm_mday = pRdmDataIn->param_data[3];
-    t.tm_hour = pRdmDataIn->param_data[4];
-    t.tm_min = pRdmDataIn->param_data[5];
-    t.tm_sec = pRdmDataIn->param_data[6];
+    t.tm_year = ((in->param_data[0] << 8) + in->param_data[1]) - 1900;
+    t.tm_mon = in->param_data[2] - 1; // 0..11
+    t.tm_mday = in->param_data[3];
+    t.tm_hour = in->param_data[4];
+    t.tm_min = in->param_data[5];
+    t.tm_sec = in->param_data[6];
 
-    if ((!is_broadcast) && (!hal::rtc::Set(&t)))
+    if ((!is_broadcast) && (!rtc::Set(&t)))
     {
         RespondMessageNack(E120_NR_WRITE_PROTECT);
     }
@@ -1384,8 +1384,8 @@ void RDMHandler::SetRealTimeClock(bool is_broadcast, [[maybe_unused]] uint16_t s
         return;
     }
 
-    auto* pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
-    pRdmDataOut->param_data_length = 0;
+    auto* out = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
+    out->param_data_length = 0;
 
     RespondMessageAck();
 }

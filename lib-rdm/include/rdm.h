@@ -29,10 +29,10 @@
 #include <cstdint>
 #include <cassert>
 
-#include "hal_udelay.h"
 #include "dmx.h" // IWYU pragma: keep
 #include "e120.h"
 #include "rdmconst.h"
+#include "timing.h"
 
 class Rdm {
    public:
@@ -72,7 +72,7 @@ class Rdm {
 
         extern volatile uint32_t gsv_rdm_data_receive_end[dmx::config::max::kPorts];
         // 3.2.2 Responder Packet spacing
-        udelay(rdm::responder::kPacketSpacing, gsv_rdm_data_receive_end[port_index]);
+        timing::DelayUs(rdm::responder::kPacketSpacing, gsv_rdm_data_receive_end[port_index]);
 
         TransmitRaw(port_index, rdm_data, length);
     }

@@ -38,7 +38,7 @@
 #if (ARTNET_VERSION >= 4)
 #include "e131bridge.h"
 #endif
-#include "hal_millis.h"
+#include "timing.h"
 #include "hal_panelled.h"
 #include "hal_statusled.h"
 #include "network.h"
@@ -256,7 +256,7 @@ inline void ArtNetNode::Run() {
     E131Bridge::Run();
 #endif
 
-    current_millis_ = hal::Millis();
+    current_millis_ = timing::Millis();
     const auto kDeltaMillis = current_millis_ - packet_millis_;
 
     if (kDeltaMillis >= artnet::kNetworkDataLossTimeout * 1000) {

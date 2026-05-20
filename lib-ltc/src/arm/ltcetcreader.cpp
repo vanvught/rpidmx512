@@ -105,7 +105,7 @@ static bool TimecodeIsEqual(const struct ltc::TimeCode* timecode)
 
 void LtcEtcReader::Handler(const midi::Timecode* timecode)
 {
-    timestamp_ = hal::Millis();
+    timestamp_ = timing::Millis();
 
     if (ltc::Destination::IsEnabled(ltc::Destination::Output::LTC))
     {

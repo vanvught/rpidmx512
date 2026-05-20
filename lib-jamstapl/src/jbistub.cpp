@@ -29,9 +29,9 @@
 #include "jbiport.h"
 #include "jamstapl.h"
 #include "hal_gpio.h"
+#include "timing.h"
 
-namespace uart0
-{
+namespace uart0 {
 void Puts(const char* s);
 int Printf(const char* fmt, ...);
 } // namespace uart0
@@ -44,13 +44,11 @@ int Printf(const char* fmt, ...);
 #define GPIO_TCK GPIO_EXT_8  // GPIO_EXT_18
 #define GPIO_TMS GPIO_EXT_11 // GPIO_EXT_22
 
-void* jbi_malloc(unsigned int size)
-{
+void* jbi_malloc(unsigned int size) {
     return malloc(size);
 }
 
-void jbi_free(void* ptr)
-{
+void jbi_free(void* ptr) {
     free(ptr);
 }
 
@@ -66,8 +64,7 @@ void jbi_free(void* ptr)
 static JamSTAPL* s_pJamSTAPL = nullptr;
 static bool s_bVerbose = false;
 
-void jbi_jtag_io_init(JamSTAPL* pJamSTAPL, bool bVerbose)
-{
+void jbi_jtag_io_init(JamSTAPL* pJamSTAPL, bool bVerbose) {
     s_pJamSTAPL = pJamSTAPL;
     s_bVerbose = bVerbose;
 
@@ -77,30 +74,22 @@ void jbi_jtag_io_init(JamSTAPL* pJamSTAPL, bool bVerbose)
     FUNC_PREFIX(GpioFsel(GPIO_TMS, GPIO_FSEL_OUTPUT));
 }
 
-int jbi_jtag_io(int tms, int tdi, int read_tdo)
-{
+int jbi_jtag_io(int tms, int tdi, int read_tdo) {
     int tdo = 0;
 
-    if (tdi)
-    {
+    if (tdi) {
         FUNC_PREFIX(GpioSet(GPIO_TDI));
-    }
-    else
-    {
+    } else {
         FUNC_PREFIX(GpioClr(GPIO_TDI));
     }
 
-    if (tms)
-    {
+    if (tms) {
         FUNC_PREFIX(GpioSet(GPIO_TMS));
-    }
-    else
-    {
+    } else {
         FUNC_PREFIX(GpioClr(GPIO_TMS));
     }
 
-    if (read_tdo)
-    {
+    if (read_tdo) {
         tdo = FUNC_PREFIX(GpioLev(GPIO_TDO));
     }
 
@@ -110,32 +99,27 @@ int jbi_jtag_io(int tms, int tdi, int read_tdo)
     return tdo;
 }
 
-void jbi_message(char* message_text)
-{
+void jbi_message(char* message_text) {
     s_pJamSTAPL->SetMessage(message_text);
 
-    if (s_bVerbose)
-    {
+    if (s_bVerbose) {
         puts(message_text);
         puts("\n");
     }
 }
 
-void jbi_delay(long microseconds)
-{
-    udelay(microseconds);
+void jbi_delay(long microseconds) {
+    timing::DelayUs(microseconds);
 }
 
 /************************************************************************
  *
  */
 
-void jbi_export_integer(char* key, long value)
-{
+void jbi_export_integer(char* key, long value) {
     s_pJamSTAPL->SetExportInteger(key, value);
 
-    if (s_bVerbose)
-    {
+    if (s_bVerbose) {
         printf("Export: key = \"%s\", value = %p\n", key, value);
     }
 }
@@ -143,45 +127,34 @@ void jbi_export_integer(char* key, long value)
 #define HEX_LINE_CHARS 72
 #define HEX_LINE_BITS (HEX_LINE_CHARS * 4)
 
-static char conv_to_hex(unsigned long value)
-{
+static char ConvToHex(unsigned long value) {
     char c;
 
-    if (value > 9)
-    {
+    if (value > 9) {
         c = static_cast<char>(value + ('A' - 10));
-    }
-    else
-    {
+    } else {
         c = static_cast<char>(value + '0');
     }
 
     return c;
 }
 
-void jbi_export_boolean_array(char* key, unsigned char* data, long count)
-{
+void jbi_export_boolean_array(char* key, unsigned char* data, long count) {
     char string[HEX_LINE_CHARS + 1];
     long i, offset;
     unsigned long size, line, lines, linebits, value, j, k;
 
-    if (s_bVerbose)
-    {
-        if (count > HEX_LINE_BITS)
-        {
+    if (s_bVerbose) {
+        if (count > HEX_LINE_BITS) {
             printf("Export: key = \"%s\", %ld bits, value = HEX\n", key, count);
             lines = (count + (HEX_LINE_BITS - 1)) / HEX_LINE_BITS;
 
-            for (line = 0; line < lines; ++line)
-            {
-                if (line < (lines - 1))
-                {
+            for (line = 0; line < lines; ++line) {
+                if (line < (lines - 1)) {
                     linebits = HEX_LINE_BITS;
                     size = HEX_LINE_CHARS;
                     offset = count - ((line + 1) * HEX_LINE_BITS);
-                }
-                else
-                {
+                } else {
                     linebits = count - ((lines - 1) * HEX_LINE_BITS);
                     size = (linebits + 3) / 4;
                     offset = 0L;
@@ -191,40 +164,34 @@ void jbi_export_boolean_array(char* key, unsigned char* data, long count)
                 j = size - 1;
                 value = 0;
 
-                for (k = 0; k < linebits; ++k)
-                {
+                for (k = 0; k < linebits; ++k) {
                     i = k + offset;
                     if (data[i >> 3] & (1 << (i & 7))) value |= (1 << (i & 3));
-                    if ((i & 3) == 3)
-                    {
-                        string[j] = conv_to_hex(value);
+                    if ((i & 3) == 3) {
+                        string[j] = ConvToHex(value);
                         value = 0;
                         --j;
                     }
                 }
-                if ((k & 3) > 0) string[j] = conv_to_hex(value);
+                if ((k & 3) > 0) string[j] = ConvToHex(value);
 
                 printf("%s\n", string);
             }
-        }
-        else
-        {
+        } else {
             size = (count + 3) / 4;
             string[size] = '\0';
             j = size - 1;
             value = 0;
 
-            for (i = 0; i < count; ++i)
-            {
+            for (i = 0; i < count; ++i) {
                 if (data[i >> 3] & (1 << (i & 7))) value |= (1 << (i & 3));
-                if ((i & 3) == 3)
-                {
-                    string[j] = conv_to_hex(value);
+                if ((i & 3) == 3) {
+                    string[j] = ConvToHex(value);
                     value = 0;
                     --j;
                 }
             }
-            if ((i & 3) > 0) string[j] = conv_to_hex(value);
+            if ((i & 3) > 0) string[j] = ConvToHex(value);
 
             printf("Export: key = \"%s\", %ld bits, value = HEX %s\n", key, count, string);
         }

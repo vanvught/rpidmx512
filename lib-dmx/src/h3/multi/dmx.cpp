@@ -983,7 +983,7 @@ void Dmx::RdmTransmit(uint32_t port_index, const uint8_t* rdm_data, uint32_t len
 
     Dmx::Get()->RdmSendRaw(port_index, rdm_data, length);
 
-    udelay(rdm::responder::kDataDirectionDelay);
+    timing::DelayUs(rdm::responder::kDataDirectionDelay);
 
     Dmx::Get()->SetPortDirection(port_index, dmx::Direction::kInput, true);
 }
@@ -999,10 +999,10 @@ void Dmx::RdmSendRaw(uint32_t port_index, const uint8_t* pRdmData, uint32_t nLen
     while (!(p->LSR & UART_LSR_TEMT));
 
     p->LCR = UART_LCR_8_N_2 | UART_LCR_BC;
-    udelay(rdm::transmit::kBreakTimeTypical);
+    timing::DelayUs(rdm::transmit::kBreakTimeTypical);
 
     p->LCR = UART_LCR_8_N_2;
-    udelay(rdm::transmit::kMabTimeTypical);
+    timing::DelayUs(rdm::transmit::kMabTimeTypical);
 
     for (uint32_t i = 0; i < nLength; i++) {
         while (!(p->LSR & UART_LSR_THRE));
@@ -1023,7 +1023,7 @@ void Dmx::RdmTransmitDiscoveryRespondMessage(uint32_t port_index, const uint8_t*
     assert(nLength != 0);
 
     // 3.2.2 Responder Packet spacing
-    udelay(rdm::responder::kPacketSpacing, gsv_rdm_data_receive_end[port_index]);
+    timing::DelayUs(rdm::responder::kPacketSpacing, gsv_rdm_data_receive_end[port_index]);
 
     SetPortDirection(port_index, dmx::Direction::kOutput, false);
 
@@ -1038,7 +1038,7 @@ void Dmx::RdmTransmitDiscoveryRespondMessage(uint32_t port_index, const uint8_t*
 
     while (!((p->LSR & UART_LSR_TEMT) == UART_LSR_TEMT));
 
-    udelay(rdm::responder::kDataDirectionDelay);
+    timing::DelayUs(rdm::responder::kDataDirectionDelay);
 
     SetPortDirection(port_index, dmx::Direction::kInput, true);
 

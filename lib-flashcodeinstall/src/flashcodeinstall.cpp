@@ -28,7 +28,7 @@
 #include "flashcodeinstall.h"
 #include "firmware.h"
 #include "display.h"
-#include "hal_watchdog.h"
+#include "watchdog.h"
  #include "firmware/debug/debug_debug.h"
 
 bool FlashCodeInstall::WriteFirmware(const uint8_t* buffer, uint32_t size)
@@ -47,11 +47,11 @@ bool FlashCodeInstall::WriteFirmware(const uint8_t* buffer, uint32_t size)
         return false;
     }
 
-    const auto kWatchdog = hal::Watchdog();
+    const auto kWatchdog = watchdog::Watchdog();
 
     if (kWatchdog)
     {
-        hal::WatchdogStop();
+        watchdog::Stop();
     }
 
     puts("Write firmware");
@@ -85,7 +85,7 @@ bool FlashCodeInstall::WriteFirmware(const uint8_t* buffer, uint32_t size)
 
     if (kWatchdog)
     {
-        hal::WatchdogInit();
+        watchdog::Init();
     }
 
     Display::Get()->TextStatus("Done", console::Colours::kConsoleGreen);

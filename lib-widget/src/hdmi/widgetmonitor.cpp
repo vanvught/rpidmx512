@@ -46,9 +46,9 @@ using namespace widgetmonitor;
 using namespace dmxsingle;
 using namespace dmx;
 
-void WidgetMonitor::Uptime(uint8_t line)
+void WidgetMonitor::UpTime(uint8_t line)
 {
-    auto nUptime = hal::Uptime();
+    auto nUptime = timing::UpTime();
     auto ltime = time(nullptr);
     auto* pLocalTime = localtime(&ltime);
 
@@ -192,7 +192,7 @@ void WidgetMonitor::Update()
 
     if (DISPLAY_LEVEL > 1)
     {
-        WidgetMonitor::Uptime(MonitorLine::kTime);
+        WidgetMonitor::UpTime(MonitorLine::kTime);
     }
 
     ClearLine(MonitorLine::kInfo);

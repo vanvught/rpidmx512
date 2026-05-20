@@ -36,7 +36,7 @@
 #include "artnet.h"
 #include "dmx.h"
 #include "network_udp.h"
-#include "hal_millis.h"
+#include "timing.h"
 #include "hal.h"
 #include "hal_panelled.h"
 
@@ -106,7 +106,7 @@ void ArtNetNode::HandleDmxIn()
                 if ((input_port_[port_index].good_input & artnet::GoodInput::kDataRecieved) == artnet::GoodInput::kDataRecieved)
                 {
                     input_port_[port_index].good_input = static_cast<uint8_t>(input_port_[port_index].good_input & ~artnet::GoodInput::kDataRecieved);
-                    input_port_[port_index].millis = hal::Millis();
+                    input_port_[port_index].millis = timing::Millis();
                     send_art_dmx = true;
 
                     s_receiving_mask &= ~(1U << port_index);
@@ -121,7 +121,7 @@ void ArtNetNode::HandleDmxIn()
                 }
                 else if (input_port_[port_index].millis != 0)
                 {
-                    const auto kMillis = hal::Millis();
+                    const auto kMillis = timing::Millis();
                     if ((kMillis - input_port_[port_index].millis) > 1000)
                     {
                         input_port_[port_index].millis = kMillis;

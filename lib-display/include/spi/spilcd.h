@@ -64,11 +64,11 @@ class SpiLcd
     void HardwareReset()
     {
 #if defined(SPI_LCD_RST_GPIO)
-        udelay(1000 * 200);
+        timing::DelayUs(1000 * 200);
         FUNC_PREFIX(GpioClr(SPI_LCD_RST_GPIO));
-        udelay(1000 * 200);
+        timing::DelayUs(1000 * 200);
         FUNC_PREFIX(GpioSet(SPI_LCD_RST_GPIO));
-        udelay(1000 * 200);
+        timing::DelayUs(1000 * 200);
 #endif
     }
 

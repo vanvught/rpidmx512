@@ -13,7 +13,7 @@
  *
  *	pusher command stuff added by Christopher Schardt 2017
  */
-/* Copyright (C) 2022-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2022-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,31 +39,31 @@
 #include <cassert>
 
 #include "pp.h"
-#include "network.h"
-#include "hal_millis.h"
+#include "network_config.h"
+#include "network_iface.h"
+#include "network_udp.h"
+#include "timing.h"
 #include "dmxnodedata.h"
 #include "dmxnode_data.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
 #if !defined(CONFIG_PP_16BITSTUFF)
 static constexpr uint8_t kCommandMagic[16] = {0x40, 0x09, 0x2d, 0xa6, 0x15, 0xa5, 0xdd, 0xe5, 0x6a, 0x9d, 0x4d, 0x5a, 0xcf, 0x09, 0xaf, 0x50};
 #endif
 
-typedef union pcast32
-{
+typedef union pcast32 {
     uint32_t u32;
     uint8_t u8[4];
 } _pcast32;
 
-PixelPusher::PixelPusher() : millis_(hal::Millis())
-{
+PixelPusher::PixelPusher() : millis_(timing::Millis()) {
     DEBUG_ENTRY();
     assert(s_this == nullptr);
     s_this = this;
 
     memset(&discovery_packet_, 0, sizeof(struct pp::DiscoveryPacket));
 
-     network::iface::CopyMacAddressTo(discovery_packet_.header.mac_address);
+    network::iface::CopyMacAddressTo(discovery_packet_.header.mac_address);
     discovery_packet_.header.device_type = static_cast<uint8_t>(pp::DeviceType::PIXELPUSHER);
     discovery_packet_.header.protocol_version = 1;
     discovery_packet_.header.vendor_id = 3;
@@ -81,8 +81,7 @@ PixelPusher::PixelPusher() : millis_(hal::Millis())
     DEBUG_EXIT();
 }
 
-void PixelPusher::Start()
-{
+void PixelPusher::Start() {
     DEBUG_ENTRY();
     assert(dmxnode_output_type_ != nullptr);
 
@@ -102,8 +101,7 @@ void PixelPusher::Start()
 #if !defined(CONFIG_PP_16BITSTUFF)
     discovery_packet_.pixelpusher.ext.pusher_flags = 0;
 #else
-    static const uint32_t nPusherFlags = (m_hasGlobalBrightness ? static_cast<uint32_t>(pp::PusherFlags::GLOBAL_BRIGHTNESS) : 0) |
-                                         static_cast<uint32_t>(pp::PusherFlags::DYNAMICS) | static_cast<uint32_t>(pp::PusherFlags::_16BITSTUFF);
+    static const uint32_t nPusherFlags = (m_hasGlobalBrightness ? static_cast<uint32_t>(pp::PusherFlags::GLOBAL_BRIGHTNESS) : 0) | static_cast<uint32_t>(pp::PusherFlags::DYNAMICS) | static_cast<uint32_t>(pp::PusherFlags::_16BITSTUFF);
     discovery_packet_.pixelpusher.ext.pusher_flags = nPusherFlags;
 #endif
 
@@ -112,8 +110,7 @@ void PixelPusher::Start()
     DEBUG_EXIT();
 }
 
-void PixelPusher::Stop()
-{
+void PixelPusher::Stop() {
     DEBUG_ENTRY();
 
     handle_data_ = network::udp::End(pp::UDP_PORT_DATA);
@@ -125,8 +122,7 @@ void PixelPusher::Stop()
     DEBUG_EXIT();
 }
 
-void PixelPusher::Input(const uint8_t* buffer, uint32_t size, [[maybe_unused]] uint32_t from_ip, [[maybe_unused]] uint16_t from_port)
-{
+void PixelPusher::Input(const uint8_t* buffer, uint32_t size, [[maybe_unused]] uint32_t from_ip, [[maybe_unused]] uint16_t from_port) {
     if (__builtin_expect((size < 4), 0)) return;
 
     auto* data = buffer;
@@ -137,26 +133,22 @@ void PixelPusher::Input(const uint8_t* buffer, uint32_t size, [[maybe_unused]] u
     data += 4;
 
 #if !defined(CONFIG_PP_16BITSTUFF)
-    if (size >= sizeof(kCommandMagic) && memcmp(data, kCommandMagic, sizeof(kCommandMagic)) == 0)
-    {
+    if (size >= sizeof(kCommandMagic) && memcmp(data, kCommandMagic, sizeof(kCommandMagic)) == 0) {
         HandlePusherCommand(data + sizeof(kCommandMagic), size - sizeof(kCommandMagic));
         return;
     }
 
-    if (size % strip_data_length_ != 0)
-    {
+    if (size % strip_data_length_ != 0) {
         DEBUG_PRINTF("Expecting multiple of {1 + (RGB)*%u} = %u but got %u bytes (leftover: %u)", count_, strip_data_length_, size, size % strip_data_length_);
         return;
     }
 
     const auto kReceivedStrips = size / strip_data_length_;
 
-    for (uint32_t i = 0; i < kReceivedStrips; i++)
-    {
+    for (uint32_t i = 0; i < kReceivedStrips; i++) {
         const auto kPortIndexStart = data[0] * universes_;
         uint32_t port_index;
-        for (port_index = kPortIndexStart; port_index < (kPortIndexStart + universes_) && (size > 0); port_index++)
-        {
+        for (port_index = kPortIndexStart; port_index < (kPortIndexStart + universes_) && (size > 0); port_index++) {
             const auto kLength = std::min(std::min(size, pp::configuration::UNIVERSE_MAX_LENGTH), strip_data_length_ - 1);
 
             //          DEBUG_PRINTF("i=%u, port_index=%u, size=%u, kLength=%u", i, port_index, size, kLength);
@@ -171,10 +163,8 @@ void PixelPusher::Input(const uint8_t* buffer, uint32_t size, [[maybe_unused]] u
 
         //		DEBUG_PRINTF("nPortIndex=%u, port_index_last_=%u", nPortIndex, port_index_last_);
 
-        if (port_index == port_index_last_)
-        {
-            for (uint32_t type_port_index = 0; type_port_index < port_index_last_; type_port_index++)
-            {
+        if (port_index == port_index_last_) {
+            for (uint32_t type_port_index = 0; type_port_index < port_index_last_; type_port_index++) {
                 dmxnode::DataOutput(dmxnode_output_type_, type_port_index);
                 dmxnode::Data::ClearLength(type_port_index);
             }
@@ -184,23 +174,19 @@ void PixelPusher::Input(const uint8_t* buffer, uint32_t size, [[maybe_unused]] u
 #endif
 }
 
-void PixelPusher::Run()
-{
-    const auto kMillis = hal::Millis();
-    if (__builtin_expect((kMillis - millis_ < 1000), 1))
-    {
+void PixelPusher::Run() {
+    const auto kMillis = timing::Millis();
+    if (__builtin_expect((kMillis - millis_ < 1000), 1)) {
         return;
     }
     millis_ = kMillis;
     _pcast32 src;
     src.u32 = network::GetPrimaryIp();
     memcpy(discovery_packet_.header.ip_address, src.u8, 4);
-    network::udp::Send(handle_discovery_, reinterpret_cast<const uint8_t*>(&discovery_packet_), sizeof(struct pp::DiscoveryPacket), UINT32_MAX,
-                   pp::UDP_PORT_DISCOVERY);
+    network::udp::Send(handle_discovery_, reinterpret_cast<const uint8_t*>(&discovery_packet_), sizeof(struct pp::DiscoveryPacket), UINT32_MAX, pp::UDP_PORT_DISCOVERY);
 }
 
-void PixelPusher::HandlePusherCommand([[maybe_unused]] const uint8_t* buffer, [[maybe_unused]] uint32_t size)
-{
+void PixelPusher::HandlePusherCommand([[maybe_unused]] const uint8_t* buffer, [[maybe_unused]] uint32_t size) {
     DEBUG_ENTRY();
     DEBUG_PRINTF("pBuffer=%p, nSize=%u", reinterpret_cast<const void*>(buffer), size);
 #if !defined(CONFIG_PP_16BITSTUFF)
@@ -209,8 +195,7 @@ void PixelPusher::HandlePusherCommand([[maybe_unused]] const uint8_t* buffer, [[
     DEBUG_EXIT();
 }
 
-void PixelPusher::Print()
-{
+void PixelPusher::Print() {
     puts("PixelPusher");
     printf(" Count             : %u\n", count_);
     printf(" Channels per pixel: %u\n", pp::configuration::CHANNELS_PER_PIXEL);

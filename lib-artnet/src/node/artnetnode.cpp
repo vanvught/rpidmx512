@@ -56,9 +56,9 @@
 #include "hal_boardinfo.h"
 #include "network_udp.h"
 #include "hal.h"
+#include "hwclock.h"
 #include "hal_statusled.h"
-#include "hal_millis.h"
-#include "hal_rtc.h"
+#include "timing.h"
 #include "firmware/debug/debug_debug.h"
 
 #if defined(ARTNET_SHOWFILE)
@@ -707,7 +707,7 @@ void ArtNetNode::HandleTimeSync() {
     tm_time.tm_mon = kArtTimeSync->tm_mon;
     tm_time.tm_year = ((kArtTimeSync->tm_year_hi) << 8) + kArtTimeSync->tm_year_lo;
 
-    hal::rtc::Set(&tm_time);
+    rtc::Set(&tm_time);
 
     DEBUG_PRINTF("%.4d/%.2d/%.2d %.2d:%.2d:%.2d", 1900 + tm_time.tm_year, 1 + tm_time.tm_mon, tm_time.tm_mday, tm_time.tm_hour, tm_time.tm_min, tm_time.tm_sec);
 }
@@ -742,7 +742,7 @@ void ArtNetNode::InputUdp(const uint8_t* buffer, uint32_t size, uint32_t from_ip
     receive_buffer_ = const_cast<uint8_t*>(buffer);
     ip_address_from_ = from_ip;
 
-    current_millis_ = hal::Millis();
+    current_millis_ = timing::Millis();
     packet_millis_ = current_millis_;
 
     if (state_.is_synchronous_mode) {

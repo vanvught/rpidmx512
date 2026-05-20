@@ -35,7 +35,7 @@
 #endif
 #include "hal.h"
 #include "hal_boardinfo.h"
-#include "hal_millis.h"
+#include "timing.h"
 #include "network.h"
 #include "firmware/debug/debug_debug.h"
 
@@ -432,7 +432,7 @@ void ArtNetController::HandleTrigger()
 
 void ArtNetController::ProcessPoll()
 {
-    const auto kCurrentMillis = hal::Millis();
+    const auto kCurrentMillis = timing::Millis();
 
     if (__builtin_expect((kCurrentMillis - m_nLastPollMillis > POLL_INTERVAL_MILLIS), 0))
     {

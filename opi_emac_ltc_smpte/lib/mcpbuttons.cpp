@@ -31,7 +31,7 @@
 #include "rotaryencoder.h"
 #include "hal_i2c.h"
 #include "hal_gpio.h"
-#include "hal_millis.h"
+#include "timing.h"
 #include "mcp23x17.h"
 #include "displayedittimecode.h"
 #include "displayeditfps.h"
@@ -403,7 +403,7 @@ void McpButtons::Run()
 
 uint32_t McpButtons::LedBlink(uint8_t port)
 {
-    const auto kMillisNow = hal::Millis();
+    const auto kMillisNow = timing::Millis();
 
     if (__builtin_expect(((kMillisNow - millis_previous_) < 500), 1))
     {
@@ -535,7 +535,7 @@ void McpButtons::HandleRunActionSelect()
         Display::Get()->SetSleep(false);
     }
 
-    const auto kMillisNow = hal::Millis();
+    const auto kMillisNow = timing::Millis();
 
     if ((kMillisNow - select_millis_) < 300)
     {

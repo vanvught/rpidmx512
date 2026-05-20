@@ -38,14 +38,9 @@
 #include "dmx.h"
 #include "rdm.h"
 #include "network.h"
+#include "timing.h"
 #include "firmware/debug/debug_dump.h"
 #include "firmware/debug/debug_debug.h"
-
-static uint32_t Micros() {
-    struct timeval tv;
-    gettimeofday(&tv, nullptr);
-    return static_cast<uint32_t>((tv.tv_sec * 1000000) + tv.tv_usec);
-}
 
 #include "config.h"
 
@@ -232,7 +227,7 @@ void Dmx::RdmTransmitDiscoveryRespondMessage(uint32_t port_index, const uint8_t*
 
     RdmSendRaw(port_index, pRdmData, length);
 
-    udelay(rdm::responder::kDataDirectionDelay);
+    timing::DelayUs(rdm::responder::kDataDirectionDelay);
 
     SetPortDirection(port_index, dmx::Direction::kInput, true);
 
@@ -252,7 +247,7 @@ const uint8_t* Dmx::RdmReceive(uint32_t port_index) {
     uint32_t nPackets = 0;
     uint16_t nBytesReceived;
 
-    const auto kMicros = Micros();
+    const auto kMicros = timing::Micros();
 
     do {
         nBytesReceived = network::udp::Recv(s_nHandePortRdm[port_index], const_cast<const uint8_t**>(reinterpret_cast<uint8_t**>(&rdmReceiveBuffer)), &fromIp, &fromPort);
@@ -263,7 +258,7 @@ const uint8_t* Dmx::RdmReceive(uint32_t port_index) {
         if ((nBytesReceived != 0) && (fromIp != network::GetPrimaryIp()) && (fromPort == (UDP_PORT_RDM_START + port_index))) {
             nPackets++;
         }
-    } while ((Micros() - kMicros) < 1000U);
+    } while ((timing::Micros() - kMicros) < 1000U);
 
     if (nPackets == 0) {
         return nullptr;
@@ -282,13 +277,13 @@ const uint8_t* Dmx::RdmReceiveTimeOut(uint32_t port_index, uint16_t nTimeOut) {
     assert(port_index < dmx::config::max::kPorts);
 
     uint8_t* p = nullptr;
-    const auto kMicros = Micros();
+    const auto kMicros = timing::Micros();
 
     do {
         if ((p = const_cast<uint8_t*>(RdmReceive(port_index))) != nullptr) {
             return reinterpret_cast<const uint8_t*>(p);
         }
-    } while ((Micros() - kMicros) < (static_cast<uint32_t>(nTimeOut) + 100000U));
+    } while ((timing::Micros() - kMicros) < (static_cast<uint32_t>(nTimeOut) + 100000U));
 
     return p;
 }
