@@ -2,7 +2,7 @@
  * @file st7735s.h
  *
  */
-/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,12 +40,10 @@
 
 #include "spi/config.h"
 #include "spi/st77xx.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
-namespace st7735s
-{
-namespace cmd
-{
+namespace st7735s {
+namespace cmd {
 inline constexpr uint8_t kInvctr = 0xB4;  ///< Display Inversion Control
 inline constexpr uint8_t kPwctR1 = 0xC0;  ///< Power Control 1
 inline constexpr uint8_t kPwctR2 = 0xC1;  ///< Power Control 2
@@ -76,15 +74,12 @@ inline constexpr uint32_t kRotation3ShiftY = 24;
 #endif
 } // namespace st7735s
 
-class ST7735S : public ST77XX
-{
+class ST7735S : public ST77XX {
    public:
-    explicit ST7735S(uint32_t cs) : ST77XX(cs)
-    {
+    explicit ST7735S(uint32_t cs) : ST77XX(cs) {
         DEBUG_ENTRY();
 
-        if (s_instance == 0)
-        {
+        if (s_instance == 0) {
             HardwareReset();
         }
 
@@ -94,8 +89,8 @@ class ST7735S : public ST77XX
         timing::DelayUs(1000 * 150);
 
         static constexpr uint8_t kConfig[] = {
-            1,  st77xx::cmd::kColmod,    0x05, ///< Page 150, 5 -> 16-bit/pixel
-            1,  st77xx::cmd::kGamset,    0x08, ///< Page 125, 8 -> Gamma Curve 4
+            1,  st77xx::cmd::kColmod,   0x05, ///< Page 150, 5 -> 16-bit/pixel
+            1,  st77xx::cmd::kGamset,   0x08, ///< Page 125, 8 -> Gamma Curve 4
             1,  st7735s::cmd::kInvctr,  0x01, ///< Page 162, Display Inversion mode control -> 3-bit,  0=Dot, 1=Column
             16, st7735s::cmd::kGmctrP1, 0x02, 0x1c, 0x07, 0x12, 0x37, 0x32, 0x29, 0x2c, 0x29, 0x25, 0x2b, 0x39, 0x00, 0x01, 0x03, 0x10,
             16, st7735s::cmd::kGmctrN1, 0x03, 0x1d, 0x07, 0x06, 0x2E, 0x2C, 0x29, 0x2c, 0x2e, 0x2e, 0x37, 0x3f, 0x00, 0x00, 0x02, 0x10,
@@ -106,8 +101,7 @@ class ST7735S : public ST77XX
 
         uint32_t arg_length = 0;
 
-        for (uint32_t i = 0; i < sizeof(kConfig); i += (arg_length + 2))
-        {
+        for (uint32_t i = 0; i < sizeof(kConfig); i += (arg_length + 2)) {
             arg_length = kConfig[i];
             DEBUG_PRINTF("i=%u, arg_length=%u", i, arg_length);
             WriteCommand(&kConfig[i + 1], arg_length);
@@ -123,15 +117,13 @@ class ST7735S : public ST77XX
 
     ~ST7735S() override {};
 
-    void SetRotation(uint32_t rotation)
-    {
+    void SetRotation(uint32_t rotation) {
         DEBUG_ENTRY();
         DEBUG_PRINTF("rotation=%u", rotation);
 
         WriteCommand(st77xx::cmd::kMadctl);
 
-        switch (rotation)
-        {
+        switch (rotation) {
             case 0:
                 WriteDataByte(st77xx::data::kMadctlMx | st77xx::data::kMadctlMy | st77xx::data::kMadctlBgr);
                 shift_x_ = st7735s::kRotation0ShiftX;
@@ -175,4 +167,4 @@ class ST7735S : public ST77XX
     static inline uint32_t s_instance;
 };
 
-#endif  // SPI_ST7735S_H_
+#endif // SPI_ST7735S_H_

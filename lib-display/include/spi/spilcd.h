@@ -2,7 +2,7 @@
  * @file spilcd.h
  *
  */
-/* Copyright (C) 2022-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2022-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,9 +26,10 @@
 #ifndef SPI_SPILCD_H_
 #define SPI_SPILCD_H_
 
+#include "timing.h"
 #include "spi/config.h"
 #include "hal_spi.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
 #if defined CONFIG_LCD_SPI_BITBANG
 #define SPI_PREFIX(x) FUNC_PREFIX(Bitbang##x);
@@ -36,11 +37,9 @@
 #define SPI_PREFIX(x) FUNC_PREFIX(x);
 #endif
 
-class SpiLcd
-{
+class SpiLcd {
    public:
-    explicit SpiLcd(uint32_t cs = 0) : cs_(cs)
-    {
+    explicit SpiLcd(uint32_t cs = 0) : cs_(cs) {
         DEBUG_ENTRY();
         DEBUG_PRINTF("cs=%u", cs);
 
@@ -61,8 +60,7 @@ class SpiLcd
         DEBUG_EXIT();
     }
 
-    void HardwareReset()
-    {
+    void HardwareReset() {
 #if defined(SPI_LCD_RST_GPIO)
         timing::DelayUs(1000 * 200);
         FUNC_PREFIX(GpioClr(SPI_LCD_RST_GPIO));
@@ -72,15 +70,13 @@ class SpiLcd
 #endif
     }
 
-    void SetCS()
-    {
+    void SetCS() {
 #if defined(SPI_LCD_HAVE_CS_GPIO)
         FUNC_PREFIX(GpioSet(cs_));
 #endif
     }
 
-    void ClearCS()
-    {
+    void ClearCS() {
 #if defined(SPI_LCD_HAVE_CS_GPIO)
         FUNC_PREFIX(GpioClr(cs_));
 #endif
@@ -90,47 +86,41 @@ class SpiLcd
 
     void ClearDC() { FUNC_PREFIX(GpioClr(SPI_LCD_DC_GPIO)); }
 
-    void WriteCommand(uint8_t data)
-    {
+    void WriteCommand(uint8_t data) {
         ClearCS();
         ClearDC();
         SPI_PREFIX(SpiWritenb(reinterpret_cast<char*>(&data), 1));
         SetCS();
     }
 
-    void WriteData(const uint8_t* data, uint32_t length)
-    {
+    void WriteData(const uint8_t* data, uint32_t length) {
         ClearCS();
         SetDC();
         SPI_PREFIX(SpiWritenb(reinterpret_cast<const char*>(data), length));
         SetCS();
     }
 
-    void WriteCommand(const uint8_t* data, uint32_t length)
-    {
+    void WriteCommand(const uint8_t* data, uint32_t length) {
         auto* p = data;
         WriteCommand(p++[0]);
         if (length != 0) WriteData(p, length);
     }
 
-    void WriteDataByte(uint8_t data)
-    {
+    void WriteDataByte(uint8_t data) {
         ClearCS();
         SetDC();
         SPI_PREFIX(SpiWritenb(reinterpret_cast<char*>(&data), 1));
         SetCS();
     }
 
-    void WriteDataWord(uint16_t data)
-    {
+    void WriteDataWord(uint16_t data) {
         ClearCS();
         SetDC();
         SPI_PREFIX(SpiWrite(data));
         SetCS();
     }
 
-    void WriteDataStart(uint8_t* data, uint32_t length)
-    {
+    void WriteDataStart(uint8_t* data, uint32_t length) {
         ClearCS();
         SetDC();
         SPI_PREFIX(SpiWritenb(reinterpret_cast<char*>(data), length));
@@ -138,8 +128,7 @@ class SpiLcd
 
     void WriteDataContinue(uint8_t* data, uint32_t length) { SPI_PREFIX(SpiWritenb(reinterpret_cast<char*>(data), length)); }
 
-    void WriteDataEnd(uint8_t* data, uint32_t length)
-    {
+    void WriteDataEnd(uint8_t* data, uint32_t length) {
         SPI_PREFIX(SpiWritenb(reinterpret_cast<char*>(data), length));
         SetCS();
     }
@@ -148,4 +137,4 @@ class SpiLcd
     uint32_t cs_;
 };
 
-#endif  // SPI_SPILCD_H_
+#endif // SPI_SPILCD_H_
