@@ -26,6 +26,7 @@
 #include <cstdint>
 
 #include "h3/hal.h"
+#include "h3/console_fb.h"
 #include "watchdog.h"
 #include "hal_boardinfo.h"
 #include "emac/network.h"
@@ -62,9 +63,9 @@ int main() // NOLINT
     fw.Print();
 
     console::Puts("OSC ");
-    console::SetFgColour(console::Colours::kConsoleGreen);
+    console::SetFgColour(console::Colour::kGreen);
     console::Puts("Real-time DMX Monitor");
-    console::SetFgColour(console::Colours::kConsoleWhite);
+    console::SetFgColour(console::Colour::kWhite);
     console::SetTopRow(2);
 
     ShowSystime show_systime;
@@ -94,11 +95,11 @@ int main() // NOLINT
 
     RemoteConfig remote_config(remoteconfig::Output::MONITOR, 1);
 
-    display.TextStatus(OscServerMsgConst::kStart, console::Colours::kConsoleYellow);
+    display.TextStatus(OscServerMsgConst::kStart, ansi::Colours::Colour::kYellow);
 
     oscserver.Start();
 
-    display.TextStatus(OscServerMsgConst::kStarted, console::Colours::kConsoleGreen);
+    display.TextStatus(OscServerMsgConst::kStarted, ansi::Colours::Colour::kGreen);
 
     watchdog::Init();
 

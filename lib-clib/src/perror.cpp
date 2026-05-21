@@ -23,20 +23,10 @@
  * THE SOFTWARE.
  */
 
-#include <stddef.h>
+#include <cstdio>
 #include <errno.h>
 
-namespace console {
-void Error(const char*);
-int PutChar(int);
-int Puts(const char*);
-void Write(const char*, unsigned int);
-} // namespace console
-
-/*
-errno -l | cut -f3- -d ' ' | sort -V -u | awk '$0="\""$0"\","'
-*/
-
+//errno -l | cut -f3- -d ' ' | sort -V -u | awk '$0="\""$0"\","'
 const char* const kSysErrlist[] = {"OK",
                                    "Operation not permitted",
                                    "No such file or directory",
@@ -98,11 +88,9 @@ void perror(const char* s) { // NOLINT
     }
 
     if (s && *s) {
-        console::Error(s);
-        console::Write(": ", 2);
+		printf("%s: ", s);
     }
 
-    console::Error(ptr);
-    console::PutChar('\n');
+    puts(ptr);
 }
 }

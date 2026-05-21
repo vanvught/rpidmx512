@@ -46,13 +46,10 @@
 #include "firmware/debug/debug_dump.h"
 #include "firmware/debug/debug_debug.h"
 
-namespace remoteconfig::udp
-{
+namespace remoteconfig::udp {
 static constexpr auto kPort = 0x2905;
-namespace get
-{
-enum class Command
-{
+namespace get {
+enum class Command {
     kReboot,
     kList,
     kVersion,
@@ -64,13 +61,8 @@ enum class Command
     kFactory
 };
 } // namespace get
-namespace set
-{
-enum class Command
-{
-    kTftp,
-    kDisplay
-};
+namespace set {
+enum class Command { kTftp, kDisplay };
 } // namespace set
 } // namespace remoteconfig::udp
 
@@ -91,25 +83,9 @@ constexpr struct RemoteConfig::Commands RemoteConfig::kSet[] = {
     {&RemoteConfig::HandleDisplaySet, "display#", 8, true} //
 };
 
-static constexpr char kOutput[static_cast<uint32_t>(remoteconfig::Output::LAST)][12] = 
-{
-	"DMX",     
-	"RDM",    
-	"Monitor", 
-	"Pixel",  
-	"TimeCode",  
-	"OSC", 
-	"Config",
-	"Stepper", 
-	"Player", 
-	"Art-Net", 
-	"Serial", 
-	"RGB Panel", 
-	"PWM"
-};
+static constexpr char kOutput[static_cast<uint32_t>(remoteconfig::Output::LAST)][12] = {"DMX", "RDM", "Monitor", "Pixel", "TimeCode", "OSC", "Config", "Stepper", "Player", "Art-Net", "Serial", "RGB Panel", "PWM"};
 
-RemoteConfig::RemoteConfig(remoteconfig::Output output, uint32_t active_outputs) : output_(output), active_outputs_(active_outputs)
-{
+RemoteConfig::RemoteConfig(remoteconfig::Output output, uint32_t active_outputs) : output_(output), active_outputs_(active_outputs) {
     DEBUG_ENTRY();
 
     assert(output < remoteconfig::Output::LAST);
@@ -145,14 +121,12 @@ RemoteConfig::RemoteConfig(remoteconfig::Output output, uint32_t active_outputs)
     DEBUG_EXIT();
 }
 
-RemoteConfig::~RemoteConfig()
-{
+RemoteConfig::~RemoteConfig() {
     DEBUG_ENTRY();
 
 #if !defined(CONFIG_REMOTECONFIG_MINIMUM)
 #if defined(ENABLE_HTTPD)
-    if (http_daemon_ != nullptr)
-    {
+    if (http_daemon_ != nullptr) {
         delete http_daemon_;
     }
 #endif
@@ -165,8 +139,7 @@ RemoteConfig::~RemoteConfig()
     DEBUG_EXIT();
 }
 
-void RemoteConfig::SetDisplayName(const char* display_name)
-{
+void RemoteConfig::SetDisplayName(const char* display_name) {
     DEBUG_ENTRY();
 
     char array[common::store::remoteconfig::kDisplayNameLength];
@@ -175,8 +148,7 @@ void RemoteConfig::SetDisplayName(const char* display_name)
     len = len > (common::store::remoteconfig::kDisplayNameLength - 1) ? common::store::remoteconfig::kDisplayNameLength - 1 : len;
     memcpy(reinterpret_cast<char*>(array), display_name, len);
 
-    for (uint32_t i = len; i < common::store::remoteconfig::kDisplayNameLength; i++)
-    {
+    for (uint32_t i = len; i < common::store::remoteconfig::kDisplayNameLength; i++) {
         array[i] = '\0';
     }
 
@@ -185,18 +157,16 @@ void RemoteConfig::SetDisplayName(const char* display_name)
     DEBUG_EXIT();
 }
 
-void RemoteConfig::HandleFactory()
-{
-     DEBUG_ENTRY();
-	 
-	 ConfigStore::Instance().Reset();
-	 HandleReboot();
-	 
-	 DEBUG_EXIT();
+void RemoteConfig::HandleFactory() {
+    DEBUG_ENTRY();
+
+    ConfigStore::Instance().Reset();
+    HandleReboot();
+
+    DEBUG_EXIT();
 }
 
-void RemoteConfig::Input(const uint8_t* buffer, uint32_t size, uint32_t from_ip, [[maybe_unused]] uint16_t from_port)
-{
+void RemoteConfig::Input(const uint8_t* buffer, uint32_t size, uint32_t from_ip, [[maybe_unused]] uint16_t from_port) {
     udp_buffer_ = const_cast<char*>(reinterpret_cast<const char*>(buffer));
     bytes_received_ = size;
     ip_from_ = from_ip;
@@ -204,35 +174,28 @@ void RemoteConfig::Input(const uint8_t* buffer, uint32_t size, uint32_t from_ip,
     debug::Dump(udp_buffer_, bytes_received_);
 #endif
 
-    if (udp_buffer_[bytes_received_ - 1] == '\n')
-    {
+    if (udp_buffer_[bytes_received_ - 1] == '\n') {
         bytes_received_--;
     }
 
     const Commands* handler = nullptr;
 
-    if (udp_buffer_[0] == '?')
-    {
+    if (udp_buffer_[0] == '?') {
         bytes_received_--;
-        for (uint32_t i = 0; i < (sizeof(kGet) / sizeof(kGet[0])); i++)
-        {
-            if ((kGet[i].kGreaterThan) && (bytes_received_ <= kGet[i].kLength))
-            {
+        for (uint32_t i = 0; i < (sizeof(kGet) / sizeof(kGet[0])); i++) {
+            if ((kGet[i].kGreaterThan) && (bytes_received_ <= kGet[i].kLength)) {
                 continue;
             }
-            if ((!kGet[i].kGreaterThan) && (bytes_received_ != kGet[i].kLength))
-            {
+            if ((!kGet[i].kGreaterThan) && (bytes_received_ != kGet[i].kLength)) {
                 continue;
             }
-            if (memcmp(&udp_buffer_[1], kGet[i].cmd, kGet[i].kLength) == 0)
-            {
+            if (memcmp(&udp_buffer_[1], kGet[i].cmd, kGet[i].kLength) == 0) {
                 handler = &kGet[i];
                 break;
             }
         }
 
-        if (handler != nullptr)
-        {
+        if (handler != nullptr) {
             (this->*(handler->handler))();
             return;
         }
@@ -241,28 +204,22 @@ void RemoteConfig::Input(const uint8_t* buffer, uint32_t size, uint32_t from_ip,
         return;
     }
 
-    if (udp_buffer_[0] == '!')
-    {
+    if (udp_buffer_[0] == '!') {
         bytes_received_--;
-        for (uint32_t i = 0; i < (sizeof(kSet) / sizeof(kSet[0])); i++)
-        {
-            if ((kSet[i].kGreaterThan) && (bytes_received_ <= kSet[i].kLength))
-            {
+        for (uint32_t i = 0; i < (sizeof(kSet) / sizeof(kSet[0])); i++) {
+            if ((kSet[i].kGreaterThan) && (bytes_received_ <= kSet[i].kLength)) {
                 continue;
             }
-            if ((!kSet[i].kGreaterThan) && ((bytes_received_ - 1U) != kSet[i].kLength))
-            {
+            if ((!kSet[i].kGreaterThan) && ((bytes_received_ - 1U) != kSet[i].kLength)) {
                 continue;
             }
-            if (memcmp(&udp_buffer_[1], kSet[i].cmd, kSet[i].kLength) == 0)
-            {
+            if (memcmp(&udp_buffer_[1], kSet[i].cmd, kSet[i].kLength) == 0) {
                 handler = &kSet[i];
                 break;
             }
         }
 
-        if (handler != nullptr)
-        {
+        if (handler != nullptr) {
             (this->*(handler->handler))();
             return;
         }
@@ -273,8 +230,7 @@ void RemoteConfig::Input(const uint8_t* buffer, uint32_t size, uint32_t from_ip,
 }
 
 #if !defined(CONFIG_REMOTECONFIG_MINIMUM)
-void RemoteConfig::HandleUptime()
-{
+void RemoteConfig::HandleUptime() {
     DEBUG_ENTRY();
 
     const auto kUptime = timing::UpTime();
@@ -286,8 +242,7 @@ void RemoteConfig::HandleUptime()
 }
 #endif
 
-void RemoteConfig::HandleVersion()
-{
+void RemoteConfig::HandleVersion() {
     DEBUG_ENTRY();
 
     const auto* p = FirmwareVersion::Get()->GetPrint();
@@ -297,8 +252,7 @@ void RemoteConfig::HandleVersion()
     DEBUG_EXIT();
 }
 
-void RemoteConfig::HandleList()
-{
+void RemoteConfig::HandleList() {
     DEBUG_ENTRY();
 
     constexpr auto kCmdLength = kGet[static_cast<uint32_t>(remoteconfig::udp::get::Command::kList)].kLength;
@@ -316,15 +270,11 @@ void RemoteConfig::HandleList()
     const auto* const kNodeTypeName = "Bootloader TFTP";
 #endif
 
-    if (display_name[0] != '\0')
-    {
-        list_length = snprintf(list_response, kListResponseBufferLength - 1, "" IPSTR ",%s,%s,%u,%s\n", IP2STR(network::GetPrimaryIp()), kNodeTypeName,
-                               kOutput[static_cast<uint32_t>(output_)], static_cast<unsigned int>(active_outputs_), display_name);
-    }
-    else
-    {
-        list_length = snprintf(list_response, kListResponseBufferLength - 1, "" IPSTR ",%s,%s,%u\n", IP2STR(network::GetPrimaryIp()), kNodeTypeName,
-                               kOutput[static_cast<uint32_t>(output_)], static_cast<unsigned int>(active_outputs_));
+    if (display_name[0] != '\0') {
+        list_length = snprintf(list_response, kListResponseBufferLength - 1, "" IPSTR ",%s,%s,%u,%s\n", IP2STR(network::GetPrimaryIp()), kNodeTypeName, kOutput[static_cast<uint32_t>(output_)], static_cast<unsigned int>(active_outputs_),
+                               display_name);
+    } else {
+        list_length = snprintf(list_response, kListResponseBufferLength - 1, "" IPSTR ",%s,%s,%u\n", IP2STR(network::GetPrimaryIp()), kNodeTypeName, kOutput[static_cast<uint32_t>(output_)], static_cast<unsigned int>(active_outputs_));
     }
 
     network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(list_response), static_cast<uint32_t>(list_length), ip_from_, remoteconfig::udp::kPort);
@@ -332,14 +282,12 @@ void RemoteConfig::HandleList()
     DEBUG_EXIT();
 }
 
-void RemoteConfig::HandleDisplaySet()
-{
+void RemoteConfig::HandleDisplaySet() {
     DEBUG_ENTRY();
 
     constexpr auto kCmdLength = kSet[static_cast<uint32_t>(remoteconfig::udp::set::Command::kDisplay)].kLength;
 
-    if (bytes_received_ != (kCmdLength + 1U))
-    {
+    if (bytes_received_ != (kCmdLength + 1U)) {
         DEBUG_EXIT();
         return;
     }
@@ -350,8 +298,7 @@ void RemoteConfig::HandleDisplaySet()
     DEBUG_EXIT();
 }
 
-void RemoteConfig::HandleDisplayGet()
-{
+void RemoteConfig::HandleDisplayGet() {
     DEBUG_ENTRY();
 
     const bool kIsOn = !(Display::Get()->IsSleep());
@@ -362,8 +309,7 @@ void RemoteConfig::HandleDisplayGet()
     DEBUG_EXIT();
 }
 
-void RemoteConfig::TftpExit()
-{
+void RemoteConfig::TftpExit() {
     DEBUG_ENTRY();
 
     const auto kCmdLength = kSet[static_cast<uint32_t>(remoteconfig::udp::set::Command::kTftp)].kLength;
@@ -376,22 +322,19 @@ void RemoteConfig::TftpExit()
     DEBUG_EXIT();
 }
 
-void RemoteConfig::HandleTftpSet()
-{
+void RemoteConfig::HandleTftpSet() {
     DEBUG_ENTRY();
 
     constexpr auto kCmdLength = kSet[static_cast<uint32_t>(remoteconfig::udp::set::Command::kTftp)].kLength;
 
-    if (bytes_received_ != (kCmdLength + 1U))
-    {
+    if (bytes_received_ != (kCmdLength + 1U)) {
         DEBUG_EXIT();
         return;
     }
 
     enable_tftp_ = (udp_buffer_[kCmdLength + 1U] != '0');
 
-    if (enable_tftp_)
-    {
+    if (enable_tftp_) {
         Display::Get()->SetSleep(false);
     }
 
@@ -400,8 +343,7 @@ void RemoteConfig::HandleTftpSet()
     DEBUG_EXIT();
 }
 
-void RemoteConfig::HandleTftpGet()
-{
+void RemoteConfig::HandleTftpGet() {
     DEBUG_ENTRY();
 
     PlatformHandleTftpGet();
@@ -412,8 +354,11 @@ void RemoteConfig::HandleTftpGet()
     DEBUG_EXIT();
 }
 
-void RemoteConfig::HandleReboot()
-{
+namespace hal {
+bool Reboot();
+} // namespace hal
+
+void RemoteConfig::HandleReboot() {
     DEBUG_ENTRY();
 
     is_reboot_ = true;

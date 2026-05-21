@@ -23,6 +23,7 @@
  * THE SOFTWARE.
  */
 
+#include "h3/hal.h"
 #include "watchdog.h"
 #include "network.h"
 #include "displayudf.h"
@@ -103,11 +104,11 @@ int main()
 
     RemoteConfig remote_config(remoteconfig::Output::SERIAL, dmx_node_node.GetActiveOutputPorts());
 
-    display.TextStatus(DmxNodeMsgConst::START, console::Colours::kConsoleYellow);
+    display.TextStatus(DmxNodeMsgConst::START, ansi::Colours::Colour::kYellow);
 
     dmx_node_node.Start();
 
-    display.TextStatus(DmxNodeMsgConst::STARTED, console::Colours::kConsoleGreen);
+    display.TextStatus(DmxNodeMsgConst::STARTED, ansi::Colours::Colour::kGreen);
 
     watchdog::Init();
 

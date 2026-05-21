@@ -225,7 +225,7 @@ class OscClient {
 
     void static StaticCallbackFunction(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port) { s_this->Input(buffer, size, from_ip, from_port); }
 
-    bool HandleLedMessage(uint16_t bytes_received);
+    bool HandleLedMessage(uint32_t bytes_received);
 
    private:
     uint16_t port_outgoing_;

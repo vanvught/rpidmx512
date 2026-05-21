@@ -292,23 +292,23 @@ void Error(const char* s)
     Puts("\x1b[37m");
 }
 
-void SetFgColour(Colours fg)
+void SetFgColour(Colour fg)
 {
     switch (fg)
     {
-        case Colours::kConsoleBlack:
+        case Colour::kConsoleBlack:
             Puts("\x1b[30m");
             break;
-        case Colours::kConsoleRed:
+        case Colour::kConsoleRed:
             Puts("\x1b[31m");
             break;
-        case Colours::kConsoleGreen:
+        case Colour::kConsoleGreen:
             Puts("\x1b[32m");
             break;
-        case Colours::kConsoleYellow:
+        case Colour::kConsoleYellow:
             Puts("\x1b[33m");
             break;
-        case Colours::kConsoleWhite:
+        case Colour::kConsoleWhite:
             Puts("\x1b[37m");
             break;
         default:
@@ -317,17 +317,17 @@ void SetFgColour(Colours fg)
     }
 }
 
-void SetBgColour(Colours bg)
+void SetBgColour(Colour bg)
 {
     switch (bg)
     {
-        case Colours::kConsoleBlack:
+        case Colour::kConsoleBlack:
             Puts("\x1b[40m");
             break;
-        case Colours::kConsoleRed:
+        case Colour::kConsoleRed:
             Puts("\x1b[41m");
             break;
-        case Colours::kConsoleWhite:
+        case Colour::kConsoleWhite:
             Puts("\x1b[47m");
             break;
         default:
@@ -336,7 +336,7 @@ void SetBgColour(Colours bg)
     }
 }
 
-void Status(Colours colour, const char* s)
+void Status(Colour colour, const char* s)
 {
     if (!s_is_connected)
     {
@@ -344,8 +344,8 @@ void Status(Colours colour, const char* s)
     }
 
     SetFgColour(colour);
-    SetBgColour(Colours::kConsoleBlack);
+    SetBgColour(Colour::kConsoleBlack);
     Puts(s);
-    SetFgColour(Colours::kConsoleWhite);
+    SetFgColour(Colour::kConsoleWhite);
 }
 } // namespace console

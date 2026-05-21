@@ -71,7 +71,7 @@ void OscClient::Stop() {
     DEBUG_EXIT();
 }
 
-bool OscClient::HandleLedMessage(uint16_t bytes_received) {
+bool OscClient::HandleLedMessage(uint32_t bytes_received) {
     DEBUG_ENTRY();
 
     uint32_t i;

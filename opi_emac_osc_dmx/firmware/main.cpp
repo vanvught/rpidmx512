@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,7 @@
 
 #include <cstdint>
 
+#include "h3/hal.h"
 #include "watchdog.h"
 #include "hal_boardinfo.h"
 #include "emac/network.h"
@@ -42,60 +43,60 @@
 
 namespace hal {
 void RebootHandler() {
-	Dmx::Get()->Blackout();
+    Dmx::Get()->Blackout();
 }
-}  // namespace hal
+} // namespace hal
 
 int main() {
-	hal::Init();
-	Display display;
-	ConfigStore config_store;
-	network::Init();
-	FirmwareVersion fw(kSoftwareVersion, __DATE__, __TIME__);
-	FlashCodeInstall spiflash_install;
+    hal::Init();
+    Display display;
+    ConfigStore config_store;
+    network::Init();
+    FirmwareVersion fw(kSoftwareVersion, __DATE__, __TIME__);
+    FlashCodeInstall spiflash_install;
 
-	fw.Print("OSC Server DMX");
+    fw.Print("OSC Server DMX");
 
-	OscServer oscserver;
+    OscServer oscserver;
 
-	json::OscServerParams oscserver_params;
-	oscserver_params.Load();
-	oscserver_params.Set();
+    json::OscServerParams oscserver_params;
+    oscserver_params.Load();
+    oscserver_params.Set();
 
-	Dmx dmx;
+    Dmx dmx;
 
-	json::DmxSendParams dmxparams;
-	dmxparams.Load();
-	dmxparams.Set();
+    json::DmxSendParams dmxparams;
+    dmxparams.Load();
+    dmxparams.Set();
 
-	DmxSend dmx_send;
-	dmx_send.Print();
+    DmxSend dmx_send;
+    dmx_send.Print();
 
-	oscserver.SetOutput(&dmx_send);
-	oscserver.Print();
+    oscserver.SetOutput(&dmx_send);
+    oscserver.Print();
 
-	RemoteConfig remote_config(remoteconfig::Output::DMX, 1);
+    RemoteConfig remote_config(remoteconfig::Output::DMX, 1);
 
-	uint8_t text_length;
+    uint8_t text_length;
 
-	display.Printf(1, "OSC DMX 1");
-	display.Write(2, hal::BoardName(text_length));
-	display.Printf(3, "IP: " IPSTR " %c", IP2STR(network::GetPrimaryIp()), network::iface::IsDhcpKnown() ? ( network::iface::Dhcp() ? 'D' : 'S') : ' ');
-	display.Printf(4, "In: %d", oscserver.GetPortIncoming());
-	display.Printf(5, "Out: %d", oscserver.GetPortOutgoing());
+    display.Printf(1, "OSC DMX 1");
+    display.Write(2, hal::BoardName(text_length));
+    display.Printf(3, "IP: " IPSTR " %c", IP2STR(network::GetPrimaryIp()), network::iface::IsDhcpKnown() ? (network::iface::Dhcp() ? 'D' : 'S') : ' ');
+    display.Printf(4, "In: %d", oscserver.GetPortIncoming());
+    display.Printf(5, "Out: %d", oscserver.GetPortOutgoing());
 
-	display.TextStatus(OscServerMsgConst::kStart, console::Colours::kConsoleYellow);
+    display.TextStatus(OscServerMsgConst::kStart, ansi::Colours::Colour::kYellow);
 
-	oscserver.Start();
+    oscserver.Start();
 
-	display.TextStatus(OscServerMsgConst::kStarted, console::Colours::kConsoleGreen);
+    display.TextStatus(OscServerMsgConst::kStarted, ansi::Colours::Colour::kGreen);
 
-	watchdog::Init();
+    watchdog::Init();
 
-	for (;;) {
-		watchdog::Feed();
-		network::Run();
-		display.Run();
-		hal::Run();
-	}
+    for (;;) {
+        watchdog::Feed();
+        network::Run();
+        display.Run();
+        hal::Run();
+    }
 }

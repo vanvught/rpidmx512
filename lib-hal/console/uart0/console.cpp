@@ -26,102 +26,41 @@
 #include <cstring>
 
 #include "console.h"
+#include "ansi_colour.h"
 
-namespace uart0
-{
+namespace uart0 {
 void Init();
 void PutChar(int);
 void Puts(const char*);
 } // namespace uart0
 
-namespace console
-{
-void SetFgColour(Colours fg);
-
-void PutChar(int c)
-{
+namespace console {
+void PutChar(int c) {
     uart0::PutChar(c);
 }
 
-void Puts(const char* s)
-{
+void Puts(const char* s) {
     uart0::Puts(s);
 }
 
-void SetFgColour(Colours fg)
-{
-    switch (fg)
-    {
-        case console::Colours::kConsoleBlack:
-            Write(AnsiColours::Fg::kBlack, sizeof(AnsiColours::Fg::kBlack) - 1);
-            break;
-        case console::Colours::kConsoleRed:
-            Write(AnsiColours::Fg::kRed, sizeof(AnsiColours::Fg::kRed) - 1);
-            break;
-        case console::Colours::kConsoleGreen:
-            Write(AnsiColours::Fg::kGreen, sizeof(AnsiColours::Fg::kGreen) - 1);
-            break;
-        case console::Colours::kConsoleYellow:
-            Write(AnsiColours::Fg::kYellow, sizeof(AnsiColours::Fg::kYellow) - 1);
-            break;
-        case console::Colours::kConsoleWhite:
-            Write(AnsiColours::Fg::kWhite, sizeof(AnsiColours::Fg::kWhite) - 1);
-            break;
-        default:
-            Write(AnsiColours::Fg::kDefault, sizeof(AnsiColours::Fg::kDefault) - 1);
-            break;
-    }
-}
-
-void SetBgColour(Colours bg)
-{
-    switch (bg)
-    {
-        case console::Colours::kConsoleBlack:
-            Write(AnsiColours::Bg::kBlack, sizeof(AnsiColours::Bg::kBlack) - 1);
-            break;
-        case console::Colours::kConsoleRed:
-            Write(AnsiColours::Bg::kRed, sizeof(AnsiColours::Bg::kRed) - 1);
-            break;
-        case console::Colours::kConsoleWhite:
-            Write(AnsiColours::Bg::kWhite, sizeof(AnsiColours::Bg::kWhite) - 1);
-            ;
-            break;
-        default:
-            Write(AnsiColours::Bg::kDefault, sizeof(AnsiColours::Bg::kDefault) - 1);
-            break;
-    }
-}
-
-void Write(const char* s, unsigned int n)
-{
+void Write(const char* s, unsigned int n) {
     char c;
 
-    while (((c = *s++) != 0) && (n-- != 0))
-    {
+    while (((c = *s++) != 0) && (n-- != 0)) {
         PutChar(static_cast<int>(c));
     }
 }
 
-void Error(const char* s)
-{
-    Write(AnsiColours::Fg::kRed, sizeof(AnsiColours::Fg::kRed) - 1);
+void Error(const char* s) {
+    Write(ansi::Colours::Fg::kRed, sizeof(ansi::Colours::Fg::kRed) - 1);
     Write(s, strlen(s));
-    Write(AnsiColours::Fg::kDefault, sizeof(AnsiColours::Fg::kDefault) - 1);
+    Write(ansi::Colours::Fg::kDefault, sizeof(ansi::Colours::Fg::kDefault) - 1);
 }
 
-void Status(Colours colour, const char* s)
-{
-    SetFgColour(colour);
-    Puts(s);
-    SetFgColour(Colours::kConsoleDefault);
-}
-
-void __attribute__((cold)) Init()
-{
+void __attribute__((cold)) Init() {
     uart0::Init();
 
-    SetFgColour(Colours::kConsoleWhite);
-    SetBgColour(Colours::kConsoleBlack);
+    Write(ansi::Colours::Fg::kDefault, sizeof(ansi::Colours::Fg::kDefault) - 1);
+    Write(ansi::Colours::Bg::kDefault, sizeof(ansi::Colours::Bg::kDefault) - 1);
 }
 } // namespace console

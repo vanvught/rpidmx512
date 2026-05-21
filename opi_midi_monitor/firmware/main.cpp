@@ -25,9 +25,10 @@
 
 #include <cstdio>
 
+#include "h3/hal.h"
+#include "h3/console_fb.h"
 #include "watchdog.h"
 #include "display.h"
-#include "console.h"
 #include "flashcodeinstall.h"
 #if !defined(NO_EMAC)
 #include "network.h"
@@ -39,8 +40,7 @@
 #include "software_version.h"
 #include "firmwareversion.h"
 
-namespace hal
-{
+namespace hal {
 void RebootHandler() {}
 } // namespace hal
 
@@ -73,8 +73,7 @@ int main() // NOLINT
 
     watchdog::Init();
 
-    for (;;)
-    {
+    for (;;) {
         watchdog::Feed();
         monitor.Run();
 #if !defined(NO_EMAC)

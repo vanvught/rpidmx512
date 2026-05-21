@@ -23,10 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cstdio>
-
 #include "h3/hal.h"
+#include "h3/console_fb.h"
 #include "watchdog.h"
 #include "network.h"
 #include "console.h"
@@ -65,9 +63,9 @@ int main() // NOLINT
     fw.Print();
 
     console::Puts("sACN E1.31 ");
-    console::SetFgColour(console::Colours::kConsoleGreen);
+    console::SetFgColour(console::Colour::kGreen);
     console::Puts("Real-time DMX Monitor");
-    console::SetFgColour(console::Colours::kConsoleWhite);
+    console::SetFgColour(console::Colour::kWhite);
     console::SetTopRow(2);
 
     DmxNodeNode dmxnode_node;
@@ -100,11 +98,11 @@ int main() // NOLINT
 
     RemoteConfig remote_config(remoteconfig::Output::MONITOR, 0);
 
-    display.TextStatus(DmxNodeMsgConst::START, console::Colours::kConsoleYellow);
+    display.TextStatus(DmxNodeMsgConst::START, ansi::Colours::Colour::kYellow);
 
     dmxnode_node.Start();
 
-    display.TextStatus(DmxNodeMsgConst::STARTED, console::Colours::kConsoleGreen);
+    display.TextStatus(DmxNodeMsgConst::STARTED, ansi::Colours::Colour::kGreen);
 
     watchdog::Init();
 

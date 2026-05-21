@@ -32,54 +32,17 @@
 
 #include <cstdint>
 
-namespace console
-{
-// https://github.com/shiena/ansicolor/blob/master/README.md
-struct AnsiColours
-{
-    struct Fg
-    {
-        static constexpr char kBlack[] = "\x1b[30m";
-        static constexpr char kRed[] = "\x1b[31m";
-        static constexpr char kGreen[] = "\x1b[32m";
-        static constexpr char kYellow[] = "\x1b[33m";
-        static constexpr char kWhite[] = "\x1b[37m";
-        static constexpr char kDefault[] = "\x1b[39m";
-    };
+#include "ansi_colour.h"
 
-    struct Bg
-    {
-        static constexpr char kBlack[] = "\x1b[40m";
-        static constexpr char kRed[] = "\x1b[41m";
-        static constexpr char kGreen[] = "\x1b[42m";
-        static constexpr char kYellow[] = "\x1b[43m";
-        static constexpr char kWhite[] = "\x1b[47m";
-        static constexpr char kDefault[] = "\x1b[49m";
-    };
-};
-
-enum class Colours
-{
-    kConsoleBlack,
-    kConsoleRed,
-    kConsoleGreen,
-    kConsoleYellow,
-    kConsoleBlue,
-    kConsoleMagenta,
-    kConsoleCyan,
-    kConsoleWhite,
-    kConsoleDefault
-};
-
+namespace console {
 void Init();
 void PutChar(int);
 void Puts(const char*);
 void Write(const char*, unsigned int);
-void Status(Colours, const char*);
+void Status(ansi::Colours, const char*);
 void SetFgColour(uint32_t);
 void SetBgColour(uint32_t);
 void Error(const char*);
-
 } // namespace console
 
 #endif // CONSOLE_CONSOLE_UART0_H_

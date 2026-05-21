@@ -2,7 +2,7 @@
  * @file debug_exception.cpp
  *
  */
-/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2018-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,51 +26,26 @@
 #include <cstdio>
 
 #include "h3.h"
+#include "ansi_colour.h"
 
-namespace console
-{
-enum class Colours
-{
-    kConsoleBlack,
-    kConsoleRed,
-    kConsoleGreen,
-    kConsoleYellow,
-    kConsoleBlue,
-    kConsoleMagenta,
-    kConsoleCyan,
-    kConsoleWhite,
-    kConsoleDefault
-};
-
-void SetFgColour(Colours);
-} // namespace console
-
-extern "C" void DebugException(unsigned int type, unsigned int address)
-{
+extern "C" void DebugException(unsigned int type, unsigned int address) {
     __sync_synchronize();
+	
+	puts(ansi::Colours::Fg::kRed);
 
-    console::SetFgColour(console::Colours::kConsoleRed);
-
-    if (type == 0)
-    {
+    if (type == 0) {
         printf("\nUndefined exception at address: %p\n", (void*)address);
-    }
-    else if (type == 1)
-    {
+    } else if (type == 1) {
         printf("\nPrefetch abort at address: %p\n", (void*)address);
-    }
-    else if (type == 2)
-    {
+    } else if (type == 2) {
         volatile unsigned int datafaultaddr;
         asm volatile("mrc p15, 0, %[dfa], c6, c0, 0\n\t" : [dfa] "=r"(datafaultaddr));
         printf("\nData abort at address: %p -> %p\n", (void*)address, (void*)datafaultaddr);
-    }
-    else
-    {
+    } else {
         printf("\nUnknown exception! [%u]\n", type);
     }
 
-    console::SetFgColour(console::Colours::kConsoleWhite);
+	puts(ansi::Colours::Fg::kDefault);
 
     H3_TIMER->WDOG0_MODE = 0;
 

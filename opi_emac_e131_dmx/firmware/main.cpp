@@ -25,6 +25,7 @@
 
 #include <cstdint>
 
+#include "h3/hal.h"
 #include "watchdog.h"
 #include "network.h"
 #include "displayudf.h"
@@ -99,11 +100,11 @@ int main() // NOLINT
 
     RemoteConfig remote_config(remoteconfig::Output::DMX, kActivePorts);
 
-    display.TextStatus(DmxNodeMsgConst::START, console::Colours::kConsoleYellow);
+    display.TextStatus(DmxNodeMsgConst::START, ansi::Colours::Colour::kYellow);
 
     dmxnode_node.Start();
 
-    display.TextStatus(DmxNodeMsgConst::STARTED, console::Colours::kConsoleGreen);
+    display.TextStatus(DmxNodeMsgConst::STARTED, ansi::Colours::Colour::kGreen);
 
     watchdog::Init();
 

@@ -2,7 +2,7 @@
  * @file timecode.cpp
  *
  */
-/* Copyright (C) 2016-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2016-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@
 
 #include "timecode.h"
 #include "artnettimecode.h"
-#include "console.h"
+#include "h3/console_fb.h"
 
 static char s_timecode[] = "--:--:--.-- -----";
 static uint8_t nTypePrevious = 0xFF;	///< Invalid type. Force initial update.
@@ -54,7 +54,7 @@ static void Itoa(uint32_t value, char *buffer) {
 void TimeCode::Start() {
 	console::SaveCursor();
 	console::SetCursor(kColumn, kRow);
-	console::SetFgColour(console::Colours::kConsoleCyan);
+	console::SetFgColour(console::Colour::kCyan);
 	console::Puts(s_timecode);
 	console::RestoreCursor();
 }
@@ -78,7 +78,7 @@ void TimeCode::Handler(const struct artnet::TimeCode* time_code)
 
 	console::SaveCursor();
 	console::SetCursor(kColumn, kRow);
-	console::SetFgColour(console::Colours::kConsoleYellow);
+	console::SetFgColour(console::Colour::kYellow);
 	console::Write(s_timecode, kTcLength);
 	console::RestoreCursor();
 }

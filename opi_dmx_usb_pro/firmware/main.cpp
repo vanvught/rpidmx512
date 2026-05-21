@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@
 #include <cstdio>
 #include <cstdint>
 
-#include "hal.h"
+#include "h3/hal.h"
 #include "watchdog.h"
 #include "hal_boardinfo.h"
 #include "rdmdevice.h"
@@ -43,8 +43,7 @@
 static constexpr char kWidgetModeNames[4][12] ALIGNED = {"DMX_RDM", "DMX", "RDM", "RDM_SNIFFER"};
 static constexpr struct rdm::device::InfoData kDeviceLabel ALIGNED = {const_cast<char*>("Orange Pi Zero DMX USB Pro"), 26};
 
-namespace hal
-{
+namespace hal {
 void RebootHandler() {}
 } // namespace hal
 
@@ -61,8 +60,8 @@ int main() // NOLINT
     widget_params.Load();
     widget_params.Set();
 
-	auto& rdm_device = rdm::device::Device::Instance();
-	rdm_device.SetLabel(&kDeviceLabel);
+    auto& rdm_device = rdm::device::Device::Instance();
+    rdm_device.SetLabel(&kDeviceLabel);
 
     const auto* device_uid = rdm::device::Base::Instance().GetUID();
     struct rdm::device::InfoData rdm_device_label;
@@ -71,22 +70,18 @@ int main() // NOLINT
 
     uint8_t hw_text_length;
     printf("[V%s] %s Compiled on %s at %s\n", kSoftwareVersion, hal::BoardName(hw_text_length), __DATE__, __TIME__);
-    printf("RDM Controller with USB [Compatible with Enttec USB Pro protocol], Widget mode : %d (%s)\n", kWidgetMode,
-           kWidgetModeNames[static_cast<uint32_t>(kWidgetMode)]);
-    printf("Device UUID : %.2x%.2x:%.2x%.2x%.2x%.2x, ", device_uid[0], device_uid[1], device_uid[2], device_uid[3], device_uid[4],
-           device_uid[5]);
+    printf("RDM Controller with USB [Compatible with Enttec USB Pro protocol], Widget mode : %d (%s)\n", kWidgetMode, kWidgetModeNames[static_cast<uint32_t>(kWidgetMode)]);
+    printf("Device UUID : %.2x%.2x:%.2x%.2x%.2x%.2x, ", device_uid[0], device_uid[1], device_uid[2], device_uid[3], device_uid[4], device_uid[5]);
     printf("Label : %.*s\n", static_cast<int>(rdm_device_label.length), reinterpret_cast<const char*>(rdm_device_label.data));
 
     watchdog::Init();
 
-    if (kWidgetMode == widget::Mode::kRdmSniffer)
-    {
+    if (kWidgetMode == widget::Mode::kRdmSniffer) {
         widget.SetPortDirection(0, dmx::Direction::kInput, true);
         widget.SnifferFillTransmitBuffer(); // Prevent missing first frame
     }
 
-    for (;;)
-    {
+    for (;;) {
         watchdog::Feed();
         widget.Run();
         hal::Run();

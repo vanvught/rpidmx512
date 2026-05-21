@@ -58,7 +58,7 @@ using LcdDriver = ST7789;
 #endif
 #include "spi/lcd_font.h"
 #include "spi/spilcd.h"
-#include "console.h"
+#include "ansi_colour.h"
 #if defined(DISPLAYTIMEOUT_GPIO)
 #include "hal_gpio.h"
 #endif
@@ -71,11 +71,9 @@ inline constexpr uint32_t CS_GPIO = 0;
 
 #include "firmware/debug/debug_debug.h"
 
-class Display : public LcdDriver
-{
+class Display : public LcdDriver {
    public:
-    Display(uint32_t cs = CS_GPIO) : LcdDriver(cs)
-    {
+    Display(uint32_t cs = CS_GPIO) : LcdDriver(cs) {
         DEBUG_ENTRY();
 
         s_this = this;
@@ -99,8 +97,7 @@ class Display : public LcdDriver
 
     bool isDetected() const { return true; }
 
-    void PrintInfo()
-    {
+    void PrintInfo() {
 #if defined(CONFIG_USE_ILI9341)
         printf("ILI9341 ");
 #elif defined(CONFIG_USE_ST7735S)
@@ -113,61 +110,50 @@ class Display : public LcdDriver
 
     void Cls() { FillColour(kColorBackground); }
 
-    void SetCursorPos(const uint32_t nCol, const uint32_t row)
-    {
+    void SetCursorPos(const uint32_t nCol, const uint32_t row) {
         cursor_x_ = nCol * s_pFONT->kWidth;
         cursor_y_ = row * s_pFONT->kHeight;
     }
 
-    void PutChar(const int c)
-    {
+    void PutChar(const int c) {
         DrawChar(cursor_x_, cursor_y_, static_cast<char>(c), s_pFONT, kColorBackground, kColorForeground);
 
         cursor_x_ += s_pFONT->kWidth;
 
-        if (cursor_x_ >= GetWidth())
-        {
+        if (cursor_x_ >= GetWidth()) {
             cursor_x_ = 0;
 
             cursor_y_ += s_pFONT->kHeight;
 
-            if (cursor_y_ >= GetHeight())
-            {
+            if (cursor_y_ >= GetHeight()) {
                 cursor_y_ = 0;
             }
         }
     }
 
-    void PutString(const char* p)
-    {
-        for (uint32_t i = 0; *p != '\0'; i++)
-        {
+    void PutString(const char* p) {
+        for (uint32_t i = 0; *p != '\0'; i++) {
             PutChar(static_cast<int>(*p));
             p++;
         }
     }
 
-    void ClearLine(const uint32_t nLine)
-    {
-        if (__builtin_expect((!(nLine <= rows_)), 0))
-        {
+    void ClearLine(const uint32_t nLine) {
+        if (__builtin_expect((!(nLine <= rows_)), 0)) {
             return;
         }
 
         SetCursorPos(0, (nLine - 1U));
 
-        for (uint32_t i = 0; i < cols_; i++)
-        {
+        for (uint32_t i = 0; i < cols_; i++) {
             PutChar(' ');
         }
 
         SetCursorPos(0, (nLine - 1U));
     }
 
-    void TextLine(const uint32_t nLine, const char* pText, const uint32_t nLength)
-    {
-        if (__builtin_expect((!(nLine <= rows_)), 0))
-        {
+    void TextLine(const uint32_t nLine, const char* pText, const uint32_t nLength) {
+        if (__builtin_expect((!(nLine <= rows_)), 0)) {
             return;
         }
 
@@ -177,28 +163,23 @@ class Display : public LcdDriver
 
     void ClearEndOfLine() { clear_end_of_line_ = true; }
 
-    void Text(const char* pData, uint32_t nLength)
-    {
-        if (nLength > cols_)
-        {
+    void Text(const char* pData, uint32_t nLength) {
+        if (nLength > cols_) {
             nLength = cols_;
         }
 
-        for (uint32_t i = 0; i < nLength; i++)
-        {
+        for (uint32_t i = 0; i < nLength; i++) {
             PutChar(pData[i]);
         }
     }
 
-    int Write(const uint32_t nLine, const char* pText)
-    {
+    int Write(const uint32_t nLine, const char* pText) {
         const auto* p = pText;
         int nCount = 0;
 
         const auto columns = static_cast<int>(cols_);
 
-        while ((*p != 0) && (nCount++ < columns))
-        {
+        while ((*p != 0) && (nCount++ < columns)) {
             ++p;
         }
 
@@ -207,8 +188,7 @@ class Display : public LcdDriver
         return nCount;
     }
 
-    int Printf(const uint8_t nLine, const char* format, ...)
-    {
+    int Printf(const uint8_t nLine, const char* format, ...) {
         char buffer[32];
 
         va_list arp;
@@ -224,12 +204,10 @@ class Display : public LcdDriver
         return i;
     }
 
-    void TextStatus(const char* pText)
-    {
+    void TextStatus(const char* pText) {
         SetCursorPos(0, static_cast<uint8_t>(rows_ - 1));
 
-        for (uint32_t i = 0; i < (cols_ - 1); i++)
-        {
+        for (uint32_t i = 0; i < (cols_ - 1); i++) {
             PutChar(' ');
         }
 
@@ -238,50 +216,38 @@ class Display : public LcdDriver
         Write(rows_, pText);
     }
 
-    void TextStatus(const char* text, console::Colours colour)
-    {
-        TextStatus(text);
+	void TextStatus(const char* text, ansi::Colours::Colour colour) {
+	    TextStatus(text);
+		printf("%s%s%s\n", ansi::Colours::Foreground(colour), text, ansi::Colours::Fg::kDefault);
+	}
 
-        if (static_cast<uint32_t>(colour) == UINT32_MAX)
-        {
-            return;
-        }
-
-        console::Status(colour, text);
-    }
-
-    void Progress()
-    {
+    void Progress() {
         static constexpr char SYMBOLS[] = {'/', '-', '\\', '|'};
         static uint32_t nSymbolsIndex;
 
         SetCursorPos(GetColumns() - 1U, GetRows() - 1U);
         PutChar(SYMBOLS[nSymbolsIndex++]);
 
-        if (nSymbolsIndex >= sizeof(SYMBOLS))
-        {
+        if (nSymbolsIndex >= sizeof(SYMBOLS)) {
             nSymbolsIndex = 0;
         }
     }
 
     void SetContrast(const uint8_t nContrast) { SetBackLight(nContrast); }
 
-    void SetSleep(const bool bSleep)
-    {
+    void SetSleep(const bool bSleep) {
         is_sleep_ = bSleep;
 
         EnableSleep(bSleep);
 
-        if (!bSleep)
-        {
+        if (!bSleep) {
             SetSleepTimer(sleep_timeout_ != 0);
         }
     }
 
     bool IsSleep() const { return is_sleep_; }
 
-    void SetSleepTimeout(uint32_t nSleepTimeout = display::Defaults::kSleepTimeout)
-    {
+    void SetSleepTimeout(uint32_t nSleepTimeout = display::Defaults::kSleepTimeout) {
         sleep_timeout_ = 1000U * 60U * nSleepTimeout;
         SetSleepTimer(sleep_timeout_ != 0);
     }
@@ -298,18 +264,14 @@ class Display : public LcdDriver
 
     bool GetFlipVertically() const { return is_flipped_vertically_; }
 
-    void Run()
-    {
-        if (sleep_timeout_ == 0)
-        {
+    void Run() {
+        if (sleep_timeout_ == 0) {
             return;
         }
 
-        if (is_sleep_)
-        {
+        if (is_sleep_) {
 #if defined(DISPLAYTIMEOUT_GPIO)
-            if (__builtin_expect(((FUNC_PREFIX(GpioLev(DISPLAYTIMEOUT_GPIO)) == 0)), 0))
-            {
+            if (__builtin_expect(((FUNC_PREFIX(GpioLev(DISPLAYTIMEOUT_GPIO)) == 0)), 0)) {
                 SetSleep(false);
             }
 #endif

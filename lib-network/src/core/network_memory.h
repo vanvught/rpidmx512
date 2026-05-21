@@ -30,9 +30,7 @@
 #include <cstring>
 #include <cassert>
 
-namespace console {
-void Error(const char*);
-}
+#include "network_private.h"
 
 namespace network::memory {
 inline constexpr uint32_t kBlocks =
@@ -86,7 +84,7 @@ class Allocator {
 
     uint8_t* Allocate() {
         if (IsFull()) {
-            console::Error("Allocate:Full!\n");
+            network::Error(__func__, "Allocate:Full!");
             return nullptr;
         }
 
@@ -104,7 +102,7 @@ class Allocator {
         assert(size <= kBlockSize);
 
         if (IsFull()) {
-            console::Error("Allocate:Full!\n");
+            network::Error(__func__, "Allocate:Full!");
             return UINT16_MAX;
         }
 

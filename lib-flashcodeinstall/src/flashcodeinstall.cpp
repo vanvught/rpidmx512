@@ -1,7 +1,7 @@
 /**
  * @file flashcodeinstall.cpp
  */
-/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2018-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,10 +29,9 @@
 #include "firmware.h"
 #include "display.h"
 #include "watchdog.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
-bool FlashCodeInstall::WriteFirmware(const uint8_t* buffer, uint32_t size)
-{
+bool FlashCodeInstall::WriteFirmware(const uint8_t* buffer, uint32_t size) {
     DEBUG_ENTRY();
 
     assert(buffer != nullptr);
@@ -40,8 +39,7 @@ bool FlashCodeInstall::WriteFirmware(const uint8_t* buffer, uint32_t size)
 
     DEBUG_PRINTF("(%p + %p)=%p, flash_size_=%u", OFFSET_UIMAGE, size, (OFFSET_UIMAGE + size), static_cast<unsigned int>(flash_size_));
 
-    if ((OFFSET_UIMAGE + size) > flash_size_)
-    {
+    if ((OFFSET_UIMAGE + size) > flash_size_) {
         printf("Error: (OFFSET_UIMAGE + size) %u > flash_size_ %u\n", static_cast<unsigned int>(OFFSET_UIMAGE + size), static_cast<unsigned int>(flash_size_));
         DEBUG_EXIT();
         return false;
@@ -49,8 +47,7 @@ bool FlashCodeInstall::WriteFirmware(const uint8_t* buffer, uint32_t size)
 
     const auto kWatchdog = watchdog::Watchdog();
 
-    if (kWatchdog)
-    {
+    if (kWatchdog) {
         watchdog::Stop();
     }
 
@@ -61,34 +58,31 @@ bool FlashCodeInstall::WriteFirmware(const uint8_t* buffer, uint32_t size)
 
     DEBUG_PRINTF("size=%x, kSectorSize=%x, kEraseSize=%x", size, kSectorSize, kEraseSize);
 
-    Display::Get()->TextStatus("Erase", console::Colours::kConsoleGreen);
+    Display::Get()->TextStatus("Erase", ansi::Colours::Colour::kGreen);
 
     flashcode::Result result;
 
     while (!FlashCode::Erase(OFFSET_UIMAGE, kEraseSize, result));
 
-    if (flashcode::Result::kError == result)
-    {
+    if (flashcode::Result::kError == result) {
         puts("Error: flash erase");
         return false;
     }
 
-    Display::Get()->TextStatus("Writing", console::Colours::kConsoleGreen);
+    Display::Get()->TextStatus("Writing", ansi::Colours::Colour::kGreen);
 
     while (!FlashCode::Write(OFFSET_UIMAGE, size, buffer, result));
 
-    if (flashcode::Result::kError == result)
-    {
+    if (flashcode::Result::kError == result) {
         puts("Error: flash write");
         return false;
     }
 
-    if (kWatchdog)
-    {
+    if (kWatchdog) {
         watchdog::Init();
     }
 
-    Display::Get()->TextStatus("Done", console::Colours::kConsoleGreen);
+    Display::Get()->TextStatus("Done", ansi::Colours::Colour::kGreen);
 
     DEBUG_EXIT();
     return true;

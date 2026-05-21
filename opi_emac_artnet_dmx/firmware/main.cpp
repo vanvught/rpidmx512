@@ -105,11 +105,11 @@ int main() // NOLINT
 
     RemoteConfig remote_config(kIsRdmEnabled ? remoteconfig::Output::RDM : remoteconfig::Output::DMX, kActivePorts);
 
-    display.TextStatus(DmxNodeMsgConst::START, console::Colours::kConsoleYellow);
+    display.TextStatus(DmxNodeMsgConst::START, ansi::Colours::Colour::kYellow);
 
     dmx_node_node.Start();
 
-    display.TextStatus(DmxNodeMsgConst::STARTED, console::Colours::kConsoleGreen);
+    display.TextStatus(DmxNodeMsgConst::STARTED, ansi::Colours::Colour::kGreen);
 
     watchdog::Init();
 

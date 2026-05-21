@@ -117,11 +117,11 @@ int main() // NOLINT
 
     RemoteConfig remote_config(remoteconfig::Output::PIXEL, kActivePorts);
 
-    display.TextStatus("PixelPusher Start", console::Colours::kConsoleYellow);
+    display.TextStatus("PixelPusher Start", ansi::Colours::Colour::kYellow);
 
     pp.Start();
 
-    display.TextStatus("PixelPusher Started", console::Colours::kConsoleGreen);
+    display.TextStatus("PixelPusher Started", ansi::Colours::Colour::kGreen);
 
     watchdog::Init();
 

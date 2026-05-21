@@ -59,7 +59,7 @@ class TFTPFileServer final : public TFTPDaemon
 
    private:
     uint8_t* buffer_;
-    uint32_t m_nSize;
+    uint32_t size_;
     uint32_t m_nFileSize{0};
     bool m_bDone{false};
 };

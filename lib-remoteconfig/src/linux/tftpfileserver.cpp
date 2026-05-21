@@ -31,7 +31,7 @@
 
  #include "firmware/debug/debug_debug.h"
 
-TFTPFileServer::TFTPFileServer(uint8_t *pBuffer, uint32_t nSize): buffer_(pBuffer), m_nSize(nSize) {
+TFTPFileServer::TFTPFileServer(uint8_t *pBuffer, uint32_t nSize): buffer_(pBuffer), size_(nSize) {
 	DEBUG_ENTRY();
 	DEBUG_EXIT();
 }

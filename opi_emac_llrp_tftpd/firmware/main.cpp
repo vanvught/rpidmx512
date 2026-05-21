@@ -85,7 +85,7 @@ int main() // NOLINT
     displayudf_params.SetAndShow();
 
     display.Write(6, "mDNS enabled");
-    display.TextStatus("Device running", console::Colours::kConsoleGreen);
+    display.TextStatus("Device running", ansi::Colours::Colour::kGreen);
 
     auto t1 = time(nullptr);
     struct tm hw_clock;

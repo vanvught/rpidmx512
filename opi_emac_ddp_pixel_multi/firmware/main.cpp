@@ -111,11 +111,11 @@ int main() // NOLINT
 
     RemoteConfig remote_config(remoteconfig::Output::PIXEL, kActivePorts);
 
-    display.TextStatus("DDP Display Start", console::Colours::kConsoleYellow);
+    display.TextStatus("DDP Display Start", ansi::Colours::Colour::kYellow);
 
     ddpdisplay.Start();
 
-    display.TextStatus("DDP Display Started", console::Colours::kConsoleGreen);
+    display.TextStatus("DDP Display Started", ansi::Colours::Colour::kGreen);
 
     watchdog::Init();
 

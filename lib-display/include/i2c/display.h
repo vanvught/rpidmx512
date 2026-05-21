@@ -2,7 +2,7 @@
  * @file display.h
  *
  */
-/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2017-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -48,36 +48,31 @@
 #include <cassert>
 
 #include "displayset.h"
-#include "console.h"
-#include "hal.h"
+#include "ansi_colour.h"
 #if defined(DISPLAYTIMEOUT_GPIO)
 #include "hal_gpio.h"
 #endif
 
-namespace display
-{
-enum class Type
-{
-    kPcf8574T1602,
-    kPcf8574T2004,
-    kSsd1306,
-    kSsd1311,
-    kUnknown
+namespace display {
+enum class Type { 
+	kPcf8574T1602, 
+	kPcf8574T2004, 
+	kSsd1306, 
+	kSsd1311, 
+	kUnknown 
 };
 } // namespace display
 
-class Display
-{
+class Display {
    public:
     Display();
-   
+
     explicit Display(uint32_t rows);
     explicit Display(display::Type type);
     Display(const Display&) = delete;
     Display& operator=(const Display&) = delete;
-   
-    ~Display()
-    {
+
+    ~Display() {
         s_this = nullptr;
         delete lcd_display_;
         lcd_display_ = nullptr;
@@ -87,10 +82,8 @@ class Display
 
     display::Type GetDetectedType() const { return type_; }
 
-    void PrintInfo()
-    {
-        if (lcd_display_ == nullptr)
-        {
+    void PrintInfo() {
+        if (lcd_display_ == nullptr) {
             puts("No display found");
             return;
         }
@@ -98,50 +91,40 @@ class Display
         lcd_display_->PrintInfo();
     }
 
-    void Cls()
-    {
-        if (lcd_display_ == nullptr)
-        {
+    void Cls() {
+        if (lcd_display_ == nullptr) {
             return;
         }
 
         lcd_display_->Cls();
     }
 
-    void ClearLine(uint32_t line)
-    {
-        if (lcd_display_ == nullptr)
-        {
+    void ClearLine(uint32_t line) {
+        if (lcd_display_ == nullptr) {
             return;
         }
 
         lcd_display_->ClearLine(line);
     }
 
-    void PutChar(int c)
-    {
-        if (lcd_display_ == nullptr)
-        {
+    void PutChar(int c) {
+        if (lcd_display_ == nullptr) {
             return;
         }
 
         lcd_display_->PutChar(c);
     }
 
-    void PutString(const char* text)
-    {
-        if (lcd_display_ == nullptr)
-        {
+    void PutString(const char* text) {
+        if (lcd_display_ == nullptr) {
             return;
         }
 
         lcd_display_->PutString(text);
     }
 
-    int Write(uint32_t line, const char* text)
-    {
-        if (lcd_display_ == nullptr)
-        {
+    int Write(uint32_t line, const char* text) {
+        if (lcd_display_ == nullptr) {
             return 0;
         }
 
@@ -150,8 +133,7 @@ class Display
 
         const auto kColumns = lcd_display_->GetColumns();
 
-        while ((*p != 0) && (count++ < kColumns))
-        {
+        while ((*p != 0) && (count++ < kColumns)) {
             ++p;
         }
 
@@ -160,10 +142,8 @@ class Display
         return static_cast<int>(count);
     }
 
-    int Printf(uint32_t line, const char* format, ...)
-    {
-        if (lcd_display_ == nullptr)
-        {
+    int Printf(uint32_t line, const char* format, ...) {
+        if (lcd_display_ == nullptr) {
             return 0;
         }
 
@@ -182,20 +162,16 @@ class Display
         return i;
     }
 
-    void TextLine(uint32_t line, const char* text, uint32_t length)
-    {
-        if (lcd_display_ == nullptr)
-        {
+    void TextLine(uint32_t line, const char* text, uint32_t length) {
+        if (lcd_display_ == nullptr) {
             return;
         }
 
         lcd_display_->TextLine(line, text, length);
     }
 
-    void TextStatus(const char* text)
-    {
-        if (lcd_display_ == nullptr)
-        {
+    void TextStatus(const char* text) {
+        if (lcd_display_ == nullptr) {
             return;
         }
 
@@ -207,8 +183,7 @@ class Display
 
         SetCursorPos(0, kRows - 1U);
 
-        for (uint32_t i = 0; i < kColumns - 1U; i++)
-        {
+        for (uint32_t i = 0; i < kColumns - 1U; i++) {
             PutChar(' ');
         }
 
@@ -217,44 +192,31 @@ class Display
         Write(kRows, text);
     }
 
-    void TextStatus(const char* text, console::Colours colour)
-    {
+    void TextStatus(const char* text, ansi::Colours::Colour colour) {
         TextStatus(text);
-
-        if (static_cast<uint32_t>(colour) == UINT32_MAX)
-        {
-            return;
-        }
-
-        console::Status(colour, text);
+		printf("%s%s%s\n", ansi::Colours::Foreground(colour), text, ansi::Colours::Fg::kDefault);
     }
 
-    void SetCursor(uint32_t mode)
-    {
-        if (lcd_display_ == nullptr)
-        {
+    void SetCursor(uint32_t mode) {
+        if (lcd_display_ == nullptr) {
             return;
         }
 
         lcd_display_->SetCursor(mode);
     }
 
-    void SetCursorPos(uint32_t col, uint32_t row)
-    {
-        if (lcd_display_ == nullptr)
-        {
+    void SetCursorPos(uint32_t col, uint32_t row) {
+        if (lcd_display_ == nullptr) {
             return;
         }
 
         lcd_display_->SetCursorPos(col, row);
     }
 
-    void SetContrast(uint8_t contrast)
-    {
+    void SetContrast(uint8_t contrast) {
         contrast_ = contrast;
 
-        if (lcd_display_ == nullptr)
-        {
+        if (lcd_display_ == nullptr) {
             return;
         }
 
@@ -263,22 +225,18 @@ class Display
 
     uint8_t GetContrast() const { return contrast_; }
 
-    void SetFlipVertically(bool do_flip_vertically)
-    {
+    void SetFlipVertically(bool do_flip_vertically) {
         is_flipped_vertically_ = do_flip_vertically;
 
-        if (lcd_display_ == nullptr)
-        {
+        if (lcd_display_ == nullptr) {
             return;
         }
 
         lcd_display_->SetFlipVertically(do_flip_vertically);
     }
 
-    void ClearEndOfLine()
-    {
-        if (lcd_display_ == nullptr)
-        {
+    void ClearEndOfLine() {
+        if (lcd_display_ == nullptr) {
             return;
         }
 
@@ -287,44 +245,36 @@ class Display
 
     bool GetFlipVertically() const { return is_flipped_vertically_; }
 
-    uint32_t GetColumns() const
-    {
-        if (lcd_display_ == nullptr)
-        {
+    uint32_t GetColumns() const {
+        if (lcd_display_ == nullptr) {
             return 0;
         }
 
         return lcd_display_->GetColumns();
     }
 
-    uint32_t GetRows() const
-    {
-        if (lcd_display_ == nullptr)
-        {
+    uint32_t GetRows() const {
+        if (lcd_display_ == nullptr) {
             return 0;
         }
 
         return lcd_display_->GetRows();
     }
 
-    void Progress()
-    {
+    void Progress() {
         static constexpr char kSymbols[] = {'/', '-', '\\', '|'};
         static uint32_t s_symbols_index;
 
         SetCursorPos(GetColumns() - 1U, GetRows() - 1U);
         PutChar(kSymbols[s_symbols_index++]);
 
-        if (s_symbols_index >= sizeof(kSymbols))
-        {
+        if (s_symbols_index >= sizeof(kSymbols)) {
             s_symbols_index = 0;
         }
     }
 
-    void SetSleep(bool sleep)
-    {
-        if (lcd_display_ == nullptr)
-        {
+    void SetSleep(bool sleep) {
+        if (lcd_display_ == nullptr) {
             return;
         }
 
@@ -332,42 +282,35 @@ class Display
 
         lcd_display_->SetSleep(sleep);
 
-        if (!sleep)
-        {
+        if (!sleep) {
             SetSleepTimer(sleep_timeout_ != 0);
         }
     }
 
     bool IsSleep() const { return is_sleep_; }
 
-    void SetSleepTimeout(uint32_t sleep_timeout = display::Defaults::kSleepTimeout)
-    {
+    void SetSleepTimeout(uint32_t sleep_timeout = display::Defaults::kSleepTimeout) {
         sleep_timeout_ = 1000U * 60U * sleep_timeout;
         SetSleepTimer(sleep_timeout_ != 0);
     }
 
     uint32_t GetSleepTimeout() const { return sleep_timeout_ / 1000U / 60U; }
 
-    void Run()
-    {
-        if (sleep_timeout_ == 0)
-        {
+    void Run() {
+        if (sleep_timeout_ == 0) {
             return;
         }
 
-        if (is_sleep_)
-        {
+        if (is_sleep_) {
 #if defined(DISPLAYTIMEOUT_GPIO)
-            if (__builtin_expect(((FUNC_PREFIX(GpioLev(DISPLAYTIMEOUT_GPIO)) == 0)), 0))
-            {
+            if (__builtin_expect(((FUNC_PREFIX(GpioLev(DISPLAYTIMEOUT_GPIO)) == 0)), 0)) {
                 SetSleep(false);
             }
 #endif
         }
     }
 
-    static Display* Get()
-    {
+    static Display* Get() {
         assert(s_this != nullptr);
         return s_this;
     }
@@ -395,4 +338,4 @@ class Display
 #endif
 #endif
 
-#endif  // I2C_DISPLAY_H_
+#endif // I2C_DISPLAY_H_

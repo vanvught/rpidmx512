@@ -2,7 +2,7 @@
  * @file utils_array.h
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,12 +28,11 @@
 
 #include <cstddef>
 
-namespace common
-{
-template <typename T, size_t N> constexpr size_t ArraySize(const T (&)[N]) noexcept
-{
+namespace common {
+template <typename T, size_t N> 
+constexpr size_t ArraySize(const T (&)[N]) noexcept {
     return N;
 }
 } // namespace common
 
-#endif  // COMMON_UTILS_UTILS_ARRAY_H_
+#endif // COMMON_UTILS_UTILS_ARRAY_H_

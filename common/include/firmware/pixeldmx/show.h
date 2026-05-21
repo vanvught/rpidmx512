@@ -32,21 +32,20 @@
 #include "display.h"
 #include "pixelpatterns.h"
 
-namespace common::firmware::pixeldmx
-{
-inline void Show(uint32_t line, pixelpatterns::Pattern pattern = pixelpatterns::Pattern::kNone)
-{
+namespace common::firmware::pixeldmx {
+inline void Show(uint32_t line, pixelpatterns::Pattern pattern = pixelpatterns::Pattern::kNone) {
     auto& configuration = PixelDmxConfiguration::Get();
     auto* display = Display::Get();
     assert(display != nullptr);
 
     display->ClearEndOfLine();
-    display->Printf(line, "%s:%d G%d %s", pixel::GetTypeName(configuration.GetType()), configuration.GetCount(), configuration.GetGroupingCount(),
-                    pixel::GetMapName(configuration.GetMap()));
+    display->Printf(line, "%s:%d G%d %s", 
+		pixel::GetTypeName(configuration.GetType()), 
+		configuration.GetCount(), configuration.GetGroupingCount(), 
+		pixel::GetMapName(configuration.GetMap()));
     display->ClearLine(8); // Status line
 
-    if (pattern != pixelpatterns::Pattern::kNone)
-    {
+    if (pattern != pixelpatterns::Pattern::kNone) {
         display->ClearLine(6);
         display->Printf(6, "%s:%u", PixelPatterns::GetName(pattern), static_cast<uint32_t>(pattern));
     }

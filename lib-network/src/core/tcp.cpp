@@ -55,14 +55,9 @@
 #pragma GCC optimize("O2")
 #pragma GCC optimize("no-tree-loop-distribute-patterns")
 
-namespace console {
-void Error(const char*);
-}
-
 #include <cstdint>
 #include <cstring>
 #include <algorithm>
-#include <cstdio>
 #include <cassert>
 
 #include "core/netif.h"
@@ -1499,7 +1494,7 @@ static uint16_t s_local_port = kLocalPortRangeStart;
 ConnHandle Connect(uint32_t remote_ip, uint16_t remote_port, CallbackConnect cb_connect, CallbackData cb_data, void* context) {
     const auto& netif = netif::global::netif_default;
     if (__builtin_expect((netif.ip.addr == 0), 0)) {
-        console::Error("Connect: No ip!");
+        network::Error(__func__, "Connect: No ip!");
         return kInvalidConnHandle;
     }
 
@@ -1507,7 +1502,7 @@ ConnHandle Connect(uint32_t remote_ip, uint16_t remote_port, CallbackConnect cb_
 
     auto* tcb = AllocTcb(remote_port, &out_index);
     if (tcb == nullptr) {
-        console::Error("Connect: No TCB!");
+        network::Error(__func__, "Connect: No TCB!");
         return kInvalidConnHandle;
     }
 
@@ -1547,14 +1542,14 @@ ConnHandle Connect(uint32_t remote_ip, uint16_t remote_port, CallbackConnect cb_
 int32_t Close(ConnHandle conn_handle) // graceful FIN
 {
     if (conn_handle >= TCP_MAX_TCBS_ALLOWED) {
-        console::Error("Close: Connection handle!\n");
+        network::Error(__func__, "Close: Connection handle!");
         return -1;
     }
 
     auto* c = &s_tcbs[conn_handle];
 
     if (!c->in_use || c->state == kStateClosed) {
-        console::Error("Close: TCB!\n");
+        network::Error(__func__, "Close: TCB!");
         return -1;
     }
 
@@ -1573,7 +1568,7 @@ int32_t Close(ConnHandle conn_handle) // graceful FIN
 
     // We only support graceful close from states where FIN makes sense here.
     if (c->state != kStateEstablished && c->state != kStateCloseWait) {
-        console::Error("Close: Not graceful!\n");
+        network::Error(__func__, "Close: Not graceful!");
         return -1;
     }
 

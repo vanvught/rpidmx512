@@ -2,7 +2,7 @@
  * @file tftpfileserver.cpp
  *
  */
-/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#if defined (DEBUG_TFTP)
-# undef NDEBUG
+#if defined(DEBUG_TFTP)
+#undef NDEBUG
 #endif
 
 #include <cstdint>
@@ -36,102 +36,98 @@
 #include "remoteconfig.h"
 #include "display.h"
 #include "firmware.h"
+#include "firmware/debug/debug_debug.h"
 
- #include "firmware/debug/debug_debug.h"
+TFTPFileServer::TFTPFileServer(uint8_t* buffer, uint32_t size) : buffer_(buffer), size_(size) {
+    DEBUG_ENTRY();
 
-using namespace tftpfileserver;
+    assert(buffer_ != nullptr);
+    assert(size != 0);
 
-TFTPFileServer::TFTPFileServer(uint8_t *pBuffer, uint32_t nSize): buffer_(pBuffer), m_nSize(nSize) {
-	DEBUG_ENTRY();
-
-	assert(buffer_ != nullptr);
-	assert(nSize != 0);
-
-	DEBUG_EXIT();
+    DEBUG_EXIT();
 }
 
 void TFTPFileServer::Exit() {
-	DEBUG_ENTRY();
+    DEBUG_ENTRY();
 
-	RemoteConfig::Get()->TftpExit();
+    RemoteConfig::Get()->TftpExit();
 
-	DEBUG_EXIT();
+    DEBUG_EXIT();
 }
 
+bool TFTPFileServer::FileOpen([[maybe_unused]] const char* file_name, [[maybe_unused]] tftp::Mode mode) {
+    DEBUG_ENTRY();
 
-bool TFTPFileServer::FileOpen([[maybe_unused]] const char *pFileName, [[maybe_unused]] tftp::Mode tMode) {
-	DEBUG_ENTRY();
-
-	DEBUG_EXIT();
-	return false;
+    DEBUG_EXIT();
+    return false;
 }
 
-bool TFTPFileServer::FileCreate(const char* pFileName, tftp::Mode mode) {
-	DEBUG_ENTRY();
+bool TFTPFileServer::FileCreate(const char* file_name, tftp::Mode mode) {
+    DEBUG_ENTRY();
 
-	assert(pFileName != nullptr);
+    assert(pFileName != nullptr);
 
-	if (mode != tftp::Mode::kBinary) {
-		DEBUG_EXIT();
-		return false;
-	}
+    if (mode != tftp::Mode::kBinary) {
+        DEBUG_EXIT();
+        return false;
+    }
 
-	if (strncmp(firmware::FILE_NAME, pFileName, firmware::FILE_NAME_LENGTH) != 0) {
-		DEBUG_EXIT();
-		return false;
-	}
+    if (strncmp(firmware::FILE_NAME, file_name, firmware::FILE_NAME_LENGTH) != 0) {
+        DEBUG_EXIT();
+        return false;
+    }
 
-	Display::Get()->TextStatus("TFTP Started", console::Colours::kConsoleGreen);
+    Display::Get()->TextStatus("TFTP Started", ansi::Colours::Colour::kGreen);
 
-	m_nFileSize = 0;
+    m_nFileSize = 0;
 
-	DEBUG_EXIT();
-	return (true);
+    DEBUG_EXIT();
+    return (true);
 }
 
 bool TFTPFileServer::FileClose() {
-	DEBUG_ENTRY();
+    DEBUG_ENTRY();
 
-	m_bDone = true;
+    m_bDone = true;
 
-	Display::Get()->TextStatus("TFTP Ended", console::Colours::kConsoleGreen);
+    Display::Get()->TextStatus("TFTP Ended", ansi::Colours::Colour::kGreen);
 
-	DEBUG_EXIT();
-	return true;
+    DEBUG_EXIT();
+    return true;
 }
 
-size_t TFTPFileServer::FileRead([[maybe_unused]] void* pBuffer, [[maybe_unused]] size_t nCount, [[maybe_unused]] unsigned nBlockNumber) {
-	DEBUG_ENTRY();
+size_t TFTPFileServer::FileRead([[maybe_unused]] void* buffer, [[maybe_unused]] size_t count, [[maybe_unused]] unsigned block_number) {
+    DEBUG_ENTRY();
 
-	DEBUG_EXIT();
-	return 0;
+    DEBUG_EXIT();
+    return 0;
 }
 
-size_t TFTPFileServer::FileWrite(const void *pBuffer, size_t nCount, unsigned nBlockNumber) {
-	DEBUG_PRINTF("pBuffer=%p, nCount=%d, nBlockNumber=%d (%d)", pBuffer, nCount, nBlockNumber, m_nSize / 512);
+size_t TFTPFileServer::FileWrite(const void* buffer, size_t count, unsigned block_number) {
+    DEBUG_PRINTF("buffer=%p, count=%d, count=%d (%d)", buffer, count, block_number, size_ / 512);
 
-	if (nBlockNumber > (m_nSize / 512)) {
-		m_nFileSize = 0;
-		return 0;
-	}
+    if (block_number > (size_ / 512)) {
+        m_nFileSize = 0;
+        return 0;
+    }
 
-	assert(nBlockNumber != 0);
+    assert(block_number != 0);
 
-	if (nBlockNumber == 1) {
-		if (!is_valid(pBuffer)) {
-			return 0;
-		}
-	}
+    if (block_number == 1) {
+        if (!tftpfileserver::is_valid(buffer)) {
+            return 0;
+        }
+    }
 
-	const auto nOffset = (nBlockNumber - 1) * 512U;
+    const auto kOffset = (block_number - 1) * 512U;
 
-	assert((nOffset + nCount) <= m_nSize);
+    assert((kOffset + count) <= size_);
 
-	memcpy(&buffer_[nOffset], pBuffer, nCount);
+    memcpy(&buffer_[kOffset], buffer, count);
 
-	m_nFileSize += nCount; //FIXME BUG When in retry ?
+    m_nFileSize += count; // FIXME BUG When in retry ?
 
-	Display::Get()->Progress();
+    Display::Get()->Progress();
 
-	return nCount;
+    return count;
 }

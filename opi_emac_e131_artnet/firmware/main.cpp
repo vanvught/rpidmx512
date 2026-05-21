@@ -23,6 +23,7 @@
  * THE SOFTWARE.
  */
 
+#include "h3/hal.h"
 #include "watchdog.h"
 #include "network.h"
 #include "displayudf.h"
@@ -38,10 +39,8 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
-namespace hal
-{
-void RebootHandler()
-{
+namespace hal {
+void RebootHandler() {
     E131Bridge::Get()->Stop();
 }
 } // namespace hal
@@ -78,17 +77,16 @@ int main() // NOLINT
 
     RemoteConfig remote_config(remoteconfig::Output::ARTNET, dmxnode_node.GetActiveOutputPorts());
 
-    display.TextStatus(DmxNodeMsgConst::START, console::Colours::kConsoleYellow);
+    display.TextStatus(DmxNodeMsgConst::START, ansi::Colours::Colour::kYellow);
 
     dmxnode_node.Start();
     controller.Start();
 
-    display.TextStatus(DmxNodeMsgConst::STARTED, console::Colours::kConsoleGreen);
+    display.TextStatus(DmxNodeMsgConst::STARTED, ansi::Colours::Colour::kGreen);
 
     watchdog::Init();
 
-    for (;;)
-    {
+    for (;;) {
         watchdog::Feed();
         network::Run();
         dmxnode_node.Run();

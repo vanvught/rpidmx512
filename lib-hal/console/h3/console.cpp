@@ -22,7 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
- 
+
 #pragma GCC push_options
 #pragma GCC optimize("O2")
 #pragma GCC optimize("no-tree-loop-distribute-patterns")
@@ -32,15 +32,14 @@
 #include <cstdint>
 #include <cstring>
 
-#include "console.h"
+#include "h3/console_fb.h"
 #include "device/fb.h"
 #include "common/utils/utils_hex.h"
 #include "arm/arm.h"
 
 extern unsigned char font[] __attribute__((aligned(4)));
 
-namespace console
-{
+namespace console {
 static const uint32_t kFbCharW = 8;
 static const uint32_t kFbCharH = 16;
 
@@ -51,10 +50,10 @@ static uint32_t saved_y = 0;
 
 static uint32_t top_row = 0;
 
-static auto cur_fore = Colours::kConsoleWhite;
-static auto cur_back = Colours::kConsoleBlack;
-static auto saved_fore = Colours::kConsoleWhite;
-static auto saved_back = Colours::kConsoleBlack;
+static auto cur_fore = console::Colour::kWhite;
+static auto cur_back = console::Colour::kBlack;
+static auto saved_fore = console::Colour::kWhite;
+static auto saved_back = console::Colour::kBlack;
 
 #if defined(USE_UBOOT_HDMI)
 #undef FB_WIDTH
@@ -73,29 +72,22 @@ static auto saved_back = Colours::kConsoleBlack;
 void Clear();
 void ClearLine(uint32_t);
 
-void __attribute__((cold)) Init()
-{
+void __attribute__((cold)) Init() {
     const int kR = fb_init();
 
-    if (kR == FB_OK)
-    {
+    if (kR == FB_OK) {
         Clear();
     }
 }
 
-uint32_t GetLineWidth()
-{
+uint32_t GetLineWidth() {
     return FB_WIDTH / kFbCharW;
 }
 
-void SetTopRow(uint32_t row)
-{
-    if (row > FB_HEIGHT / kFbCharH)
-    {
+void SetTopRow(uint32_t row) {
+    if (row > FB_HEIGHT / kFbCharH) {
         top_row = 0;
-    }
-    else
-    {
+    } else {
         top_row = row;
     }
 
@@ -103,18 +95,15 @@ void SetTopRow(uint32_t row)
     current_y = row;
 }
 
-static void ClearRow(uint32_t* address)
-{
+static void ClearRow(uint32_t* address) {
     uint32_t i;
 
-    for (i = 0; i < (kFbCharH * FB_WIDTH); i++)
-    {
+    for (i = 0; i < (kFbCharH * FB_WIDTH); i++) {
         *address++ = static_cast<uint32_t>(cur_back);
     }
 }
 
-static void Newline()
-{
+static void Newline() {
     uint32_t i;
     uint32_t* address;
     uint32_t* to;
@@ -123,19 +112,15 @@ static void Newline()
     current_y++;
     current_x = 0;
 
-    if (current_y == FB_HEIGHT / kFbCharH)
-    {
-        if (top_row == 0)
-        {
+    if (current_y == FB_HEIGHT / kFbCharH) {
+        if (top_row == 0) {
             /* Pointer to row = 0 */
             to = reinterpret_cast<uint32_t*>(FB_ADDRESS);
             /* Pointer to row = 1 */
             from = to + (kFbCharH * FB_WIDTH);
             /* Copy block from {row = 1, rows} to {row = 0, rows - 1} */
             i = ((FB_HEIGHT - kFbCharH) * FB_WIDTH);
-        }
-        else
-        {
+        } else {
             to = reinterpret_cast<uint32_t*>(FB_ADDRESS) + ((kFbCharH * FB_WIDTH) * top_row);
             from = to + (kFbCharH * FB_WIDTH);
             i = ((FB_HEIGHT - kFbCharH) * FB_WIDTH - ((kFbCharH * FB_WIDTH) * top_row));
@@ -151,29 +136,22 @@ static void Newline()
     }
 }
 
-static void DrawPixel(uint32_t x, uint32_t y, Colours colour)
-{
+static void DrawPixel(uint32_t x, uint32_t y, console::Colour colour) {
     volatile auto* address = reinterpret_cast<volatile uint32_t*>(FB_ADDRESS + (x * FB_BYTES_PER_PIXEL) + (y * FB_WIDTH * FB_BYTES_PER_PIXEL));
     *address = static_cast<uint32_t>(colour);
 }
 
-static void DrawChar(int c, uint32_t x, uint32_t y, Colours fore, Colours back)
-{
+static void DrawChar(int c, uint32_t x, uint32_t y, console::Colour fore, console::Colour back) {
     uint32_t i, j;
     uint8_t line;
     unsigned char* p = font + (c * static_cast<int>(kFbCharH));
 
-    for (i = 0; i < kFbCharH; i++)
-    {
+    for (i = 0; i < kFbCharH; i++) {
         line = *p++;
-        for (j = x; j < (kFbCharW + x); j++)
-        {
-            if ((line & 0x1) != 0)
-            {
+        for (j = x; j < (kFbCharW + x); j++) {
+            if ((line & 0x1) != 0) {
                 DrawPixel(j, y, fore);
-            }
-            else
-            {
+            } else {
                 DrawPixel(j, y, back);
             }
             line >>= 1;
@@ -182,68 +160,53 @@ static void DrawChar(int c, uint32_t x, uint32_t y, Colours fore, Colours back)
     }
 }
 
-int ConsoleDrawChar(int ch, uint16_t x, uint16_t y, Colours fore, Colours back)
-{
+int ConsoleDrawChar(int ch, uint16_t x, uint16_t y, console::Colour fore, console::Colour back) {
     DrawChar(ch, x * kFbCharW, y * kFbCharH, fore, back);
     return ch;
 }
 
-void PutChar(int ch)
-{
-    if (ch == '\n')
-    {
+void PutChar(int ch) {
+    if (ch == '\n') {
         Newline();
-    }
-    else if (ch == '\r')
-    {
+    } else if (ch == '\r') {
         current_x = 0;
-    }
-    else if (ch == '\t')
-    {
+    } else if (ch == '\t') {
         current_x += 4;
-    }
-    else
-    {
+    } else {
         DrawChar(ch, current_x * kFbCharW, current_y * kFbCharH, cur_fore, cur_back);
         current_x++;
-        if (current_x == FB_WIDTH / kFbCharW)
-        {
+        if (current_x == FB_WIDTH / kFbCharW) {
             Newline();
         }
     }
 }
 
-void Puts(const char* s)
-{
+void Puts(const char* s) {
     char c;
 
-    while ((c = *s++) != 0)
-    {
+    while ((c = *s++) != 0) {
         PutChar(static_cast<int>(c));
     }
 
     PutChar('\n');
 }
 
-void Write(const char* s, unsigned int n)
-{
+void Write(const char* s, unsigned int n) {
     char c;
 
-    while (((c = *s++) != 0) && (n-- != 0))
-    {
+    while (((c = *s++) != 0) && (n-- != 0)) {
         PutChar(static_cast<int>(c));
     }
 }
 
-void Error(const char* s)
-{
+void Error(const char* s) {
     auto fore_current = cur_fore;
     auto back_current = cur_back;
 
-    cur_fore = console::Colours::kConsoleRed;
-    cur_back = console::Colours::kConsoleBlack;
+    cur_fore = console::Colour::kRed;
+    cur_back = console::Colour::kBlack;
 
-	static constexpr char kPrefix[] = "Error <";
+    static constexpr char kPrefix[] = "Error <";
 
     Write(kPrefix, sizeof(kPrefix) - 1);
     Write(const_cast<char*>(s), strlen(s));
@@ -253,8 +216,7 @@ void Error(const char* s)
     cur_back = back_current;
 }
 
-void Status(Colours colour, const char* s)
-{
+void Status(console::Colour colour, const char* s) {
     const auto kForeCurrent = cur_fore;
     const auto kBackCurrent = cur_back;
 
@@ -264,7 +226,7 @@ void Status(Colours colour, const char* s)
     ClearLine(29);
 
     cur_fore = colour;
-    cur_back = console::Colours::kConsoleBlack;
+    cur_back = console::Colour::kBlack;
 
     Write(const_cast<char*>(s), strlen(s));
 
@@ -275,14 +237,12 @@ void Status(Colours colour, const char* s)
     cur_back = kBackCurrent;
 }
 
-void ConsolePuthex(uint8_t data)
-{
+void ConsolePuthex(uint8_t data) {
     PutChar((common::hex::ToCharUppercase(((data & 0xF0) >> 4))));
     PutChar((common::hex::ToCharUppercase(data & 0x0F)));
 }
 
-void PuthexFgBg(uint8_t data, Colours fore, Colours back)
-{
+void PuthexFgBg(uint8_t data, console::Colour fore, console::Colour back) {
     auto fore_current = cur_fore;
     auto back_current = cur_back;
 
@@ -296,21 +256,17 @@ void PuthexFgBg(uint8_t data, Colours fore, Colours back)
     cur_back = back_current;
 }
 
-void PutpctFgBg(uint8_t data, Colours fore, Colours back)
-{
+void PutpctFgBg(uint8_t data, console::Colour fore, console::Colour back) {
     auto fore_current = cur_fore;
     auto back_current = cur_back;
 
     cur_fore = fore;
     cur_back = back;
 
-    if (data < 100)
-    {
+    if (data < 100) {
         PutChar('0' + (data / 10U));
         PutChar('0' + (data % 10U));
-    }
-    else
-    {
+    } else {
         Write("%%", 2);
     }
 
@@ -318,8 +274,7 @@ void PutpctFgBg(uint8_t data, Colours fore, Colours back)
     cur_back = back_current;
 }
 
-void Put3decFgBg(uint8_t data, Colours fore, Colours back)
-{
+void Put3decFgBg(uint8_t data, console::Colour fore, console::Colour back) {
     auto fore_current = cur_fore;
     auto back_current = cur_back;
 
@@ -339,18 +294,15 @@ void Put3decFgBg(uint8_t data, Colours fore, Colours back)
     cur_back = back_current;
 }
 
-void ConsoleNewline()
-{
+void ConsoleNewline() {
     Newline();
 }
 
-void Clear()
-{
+void Clear() {
     auto* address = reinterpret_cast<uint32_t*>(fb_addr);
     uint32_t i;
 
-    for (i = 0; i < (FB_HEIGHT * FB_WIDTH); i++)
-    {
+    for (i = 0; i < (FB_HEIGHT * FB_WIDTH); i++) {
         *address++ = static_cast<uint32_t>(cur_back);
     }
 
@@ -358,81 +310,63 @@ void Clear()
     current_y = 0;
 }
 
-void SetCursor(uint32_t x, uint32_t y)
-{
-    if (x > FB_WIDTH / kFbCharW)
-    {
+void SetCursor(uint32_t x, uint32_t y) {
+    if (x > FB_WIDTH / kFbCharW) {
         current_x = 0;
-    }
-    else
-    {
+    } else {
         current_x = x;
     }
 
-    if (y > FB_HEIGHT / kFbCharH)
-    {
+    if (y > FB_HEIGHT / kFbCharH) {
         current_y = 0;
-    }
-    else
-    {
+    } else {
         current_y = y;
     }
 }
 
-void SaveCursor()
-{
+void SaveCursor() {
     saved_y = current_y;
     saved_x = current_x;
     saved_back = cur_back;
     saved_fore = cur_fore;
 }
 
-void RestoreCursor()
-{
+void RestoreCursor() {
     current_y = saved_y;
     current_x = saved_x;
     cur_back = saved_back;
     cur_fore = saved_fore;
 }
 
-void ConsoleSaveColor()
-{
+void ConsoleSaveColor() {
     saved_back = cur_back;
     saved_fore = cur_fore;
 }
 
-void ConsoleRestoreColor()
-{
+void ConsoleRestoreColor() {
     cur_back = saved_back;
     cur_fore = saved_fore;
 }
 
-void SetFgColour(Colours fore)
-{
+void SetFgColour(console::Colour fore) {
     cur_fore = fore;
 }
 
-void SetBgColour(Colours back)
-{
+void SetBgColour(console::Colour back) {
     cur_back = back;
 }
 
-void SetFgBgColour(Colours fore, Colours back)
-{
+void SetFgBgColour(console::Colour fore, console::Colour back) {
     cur_fore = fore;
     cur_back = back;
 }
 
-void ClearLine(uint32_t line)
-{
+void ClearLine(uint32_t line) {
     uint32_t* address;
 
-    if (line > FB_HEIGHT / kFbCharH)
-    {
+    if (line > FB_HEIGHT / kFbCharH) {
         return;
-    }
-    else
-    {
+    } else {
         current_y = line;
     }
 
@@ -442,13 +376,11 @@ void ClearLine(uint32_t line)
     ClearRow(address);
 }
 
-void ClearTopRow()
-{
+void ClearTopRow() {
     uint32_t line;
     uint32_t* address;
 
-    for (line = top_row; line < (FB_HEIGHT / kFbCharH) - 1; line++)
-    {
+    for (line = top_row; line < (FB_HEIGHT / kFbCharH) - 1; line++) {
         address = reinterpret_cast<uint32_t*>(fb_addr) + (line * kFbCharH * FB_WIDTH);
         ClearRow(address);
     }
@@ -457,8 +389,7 @@ void ClearTopRow()
     current_y = top_row;
 }
 
-void ConsolePutpixel(uint32_t x, uint32_t y, Colours colour)
-{
+void ConsolePutpixel(uint32_t x, uint32_t y, console::Colour colour) {
     DrawPixel(x, y, colour);
 }
 } // namespace console

@@ -2,7 +2,7 @@
  * @file remoteconfig.cpp
  *
  */
-/* Copyright (C) 2022-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2022-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,58 +32,47 @@
 #include <cassert>
 
 #include "remoteconfig.h"
-
 #include "tftp/tftpfileserver.h"
 #include "flashcodeinstall.h"
 #include "firmware.h"
-
 #include "display.h"
-
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
 static uint8_t s_tftp_buffer[FIRMWARE_MAX_SIZE];
 
-void RemoteConfig::PlatformHandleTftpSet()
-{
+void RemoteConfig::PlatformHandleTftpSet() {
     DEBUG_ENTRY();
 
-    if (enable_tftp_ && (tftp_file_server_ == nullptr))
-    {
+    if (enable_tftp_ && (tftp_file_server_ == nullptr)) {
         tftp_file_server_ = new TFTPFileServer(s_tftp_buffer, FIRMWARE_MAX_SIZE);
         assert(m_pTFTPFileServer != nullptr);
-        Display::Get()->TextStatus("TFTP On", console::Colours::kConsoleGreen);
-    }
-    else if (!enable_tftp_ && (tftp_file_server_ != nullptr))
-    {
+        Display::Get()->TextStatus("TFTP On", ansi::Colours::Colour::kGreen);
+    } else if (!enable_tftp_ && (tftp_file_server_ != nullptr)) {
         const uint32_t kFileSize = tftp_file_server_->GetFileSize();
         DEBUG_PRINTF("kFileSize=%d, %d", kFileSize, tftp_file_server_->IsDone());
 
-        bool bSucces = true;
+        auto succes = true;
 
-        if (tftp_file_server_->IsDone())
-        {
-            bSucces = FlashCodeInstall::Get()->WriteFirmware(s_tftp_buffer, kFileSize);
+        if (tftp_file_server_->IsDone()) {
+            succes = FlashCodeInstall::Get()->WriteFirmware(s_tftp_buffer, kFileSize);
 
-            if (!bSucces)
-            {
-                Display::Get()->TextStatus("Error: TFTP", console::Colours::kConsoleRed);
+            if (!succes) {
+                Display::Get()->TextStatus("Error: TFTP", ansi::Colours::Colour::kRed);
             }
         }
 
         delete tftp_file_server_;
         tftp_file_server_ = nullptr;
 
-        if (bSucces)
-        { // Keep error message
-            Display::Get()->TextStatus("TFTP Off", console::Colours::kConsoleGreen);
+        if (succes) { // Keep error message
+            Display::Get()->TextStatus("TFTP Off", ansi::Colours::Colour::kGreen);
         }
     }
 
     DEBUG_EXIT();
 }
 
-void RemoteConfig::PlatformHandleTftpGet()
-{
+void RemoteConfig::PlatformHandleTftpGet() {
     DEBUG_ENTRY();
 
     DEBUG_EXIT();

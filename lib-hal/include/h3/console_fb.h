@@ -34,14 +34,14 @@
 
 namespace console {
 // some RGB color definitions
-enum class Colours : uint32_t {
-    kConsoleBlack = 0x00000000,  ///<   0,   0,   0
-    kConsoleBlue = 0x000000FF,   ///<   0,   0, 255
-    kConsoleGreen = 0x0000FF00,  ///<   0, 255,   0
-    kConsoleCyan = 0x0000FFFF,   ///<   0, 255, 255
-    kConsoleRed = 0x00FF0000,    ///< 255,   0,   0
-    kConsoleYellow = 0x00FFFF00, ///< 255, 255,   0
-    kConsoleWhite = 0x00FFFFFF   ///< 255, 255, 255
+enum class Colour : uint32_t {
+    kBlack = 0x00000000,  ///<   0,   0,   0
+    kBlue = 0x000000FF,   ///<   0,   0, 255
+    kGreen = 0x0000FF00,  ///<   0, 255,   0
+    kCyan = 0x0000FFFF,   ///<   0, 255, 255
+    kRed = 0x00FF0000,    ///< 255,   0,   0
+    kYellow = 0x00FFFF00, ///< 255, 255,   0
+    kWhite = 0x00FFFFFF   ///< 255, 255, 255
 };
 
 void Init();
@@ -57,15 +57,15 @@ void SaveColour();
 void RestoreColour();
 void PutChar(int);
 void ConsolePuthex(uint8_t);
-void SetFgColour(Colours);
-void SetBgColour(Colours);
-void SetFgBgColour(Colours, Colours);
-void PuthexFgBg(uint8_t, Colours, Colours);
-void PutpctFgBg(uint8_t, Colours, Colours);
-void Put3decFgBg(uint8_t, Colours, Colours);
+void SetFgColour(Colour);
+void SetBgColour(Colour);
+void SetFgBgColour(Colour, Colour);
+void PuthexFgBg(uint8_t, Colour, Colour);
+void PutpctFgBg(uint8_t, Colour, Colour);
+void Put3decFgBg(uint8_t, Colour, Colour);
 void Write(const char*, unsigned int);
 void Puts(const char*);
-void Status(Colours, const char*);
+void Status(Colour, const char*);
 void Error(const char*);
 } // namespace console
 

@@ -27,6 +27,8 @@
 #include <cstdint>
 #include <algorithm>
 
+#include "h3/hal.h"
+#include "h3/console_fb.h"
 #include "watchdog.h"
 #include "timing.h"
 #include "network.h"
@@ -45,12 +47,11 @@
 
 static constexpr auto kTopRowStats = 26;
 
-namespace hal
-{
+namespace hal {
 void RebootHandler() {}
 } // namespace hal
 
-int main() //NOLINT
+int main() // NOLINT
 {
     hal::Init();
     DisplayUdf display;
@@ -68,7 +69,7 @@ int main() //NOLINT
     uint32_t nSlotsInPacketMax = 0;
     uint32_t nSotToSlotMin = UINT32_MAX;
     uint32_t nSlotToSlotMax = 0;
-    uint32_t nBreakToBreakMin = UINT32_MAX;
+    uint32_t break_to_break_min = UINT32_MAX;
     uint32_t break_to_break_max = 0;
     int16_t length;
 
@@ -97,24 +98,21 @@ int main() //NOLINT
 
     watchdog::Init();
 
-    for (;;)
-    {
+    for (;;) {
         watchdog::Feed();
 
         dmxreceiver.Run(length);
 
         const auto kMicrosNow = timing::Micros();
 
-        if (kMicrosNow - micros_previous > (1000000 / 2))
-        {
+        if (kMicrosNow - micros_previous > (1000000 / 2)) {
             micros_previous = kMicrosNow;
 
             const auto kDmxUpdatesPerSeconde = dmxreceiver.GetUpdatesPerSecond(0);
 
             console::SaveCursor();
 
-            if (kDmxUpdatesPerSeconde == 0)
-            {
+            if (kDmxUpdatesPerSeconde == 0) {
                 console::SetCursor(20, kTopRowStats);
                 console::Puts("---");
                 console::SetCursor(20, kTopRowStats + 1);
@@ -123,9 +121,7 @@ int main() //NOLINT
                 console::Puts("---");
                 console::SetCursor(17, kTopRowStats + 3);
                 console::Puts("-------");
-            }
-            else
-            {
+            } else {
                 const auto* dmx_data = dmxreceiver.GetDmxCurrentData(0);
                 const auto* dmx_statistics = reinterpret_cast<const struct Data*>(dmx_data);
 
@@ -138,7 +134,7 @@ int main() //NOLINT
                 nSotToSlotMin = std::min(dmx_statistics->statistics.slot_to_slot, nSotToSlotMin);
                 nSlotToSlotMax = std::max(dmx_statistics->statistics.slot_to_slot, nSlotToSlotMax);
 
-                nBreakToBreakMin = std::min(dmx_statistics->statistics.break_to_break, nBreakToBreakMin);
+                break_to_break_min = std::min(dmx_statistics->statistics.break_to_break, break_to_break_min);
                 break_to_break_max = std::max(dmx_statistics->statistics.break_to_break, break_to_break_max);
 
                 console::SetCursor(20, kTopRowStats);
@@ -148,7 +144,7 @@ int main() //NOLINT
                 console::SetCursor(20, kTopRowStats + 2);
                 printf("%3d     %3d / %d", dmx_statistics->statistics.slot_to_slot, nSotToSlotMin, nSlotToSlotMax);
                 console::SetCursor(17, kTopRowStats + 3);
-                printf("%6d  %6d / %d", dmx_statistics->statistics.break_to_break, nBreakToBreakMin, break_to_break_max);
+                printf("%6d  %6d / %d", dmx_statistics->statistics.break_to_break, break_to_break_min, break_to_break_max);
             }
 
             console::RestoreCursor();

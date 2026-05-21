@@ -49,7 +49,7 @@ void fota(uint32_t server_ip_address) {
 	uint32_t nLength;
 	char last_first_char = ' ';
 
-	console::Status(console::Colours::kConsoleYellow, "Starting FOTA ...");
+	console::Status(console::Colour::kConsoleYellow, "Starting FOTA ...");
 
 	esp8266_fota_start(server_ip_address);
 
@@ -64,9 +64,9 @@ void fota(uint32_t server_ip_address) {
 	} while (nLength != 0);
 
 	if (last_first_char == 'S') {
-		console::Status(console::Colours::kConsoleGreen, "FOTA Done!");
+		console::Status(console::Colour::kConsoleGreen, "FOTA Done!");
 	} else {
-		console::Status(console::Colours::kConsoleRed, "FOTA Failed!");
+		console::Status(console::Colour::kConsoleRed, "FOTA Failed!");
 	}
 
 	for (;;)

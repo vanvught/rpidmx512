@@ -2,7 +2,7 @@
  * @file console.cpp
  *
  */
-/* Copyright (C) 2022-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2022-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,40 +26,37 @@
 #include <cstdio>
 
 #include "console.h"
+#include "ansi_colour.h"
 
-namespace console
-{
-void Status(Colours colour, const char* s)
-{
+namespace console {
+void Status(ansi::Colours::Colour colour, const char* s) {
     const char* c;
 
-    switch (colour)
-    {
-        case Colours::kConsoleBlack:
-            c = AnsiColours::Fg::kBlack;
+    switch (colour) {
+        case ansi::Colours::Colour::kBlack:
+            c = ansi::Colours::Fg::kBlack;
             break;
-        case Colours::kConsoleRed:
-            c = AnsiColours::Fg::kRed;
+        case ansi::Colours::Colour::kRed:
+            c = ansi::Colours::Fg::kRed;
             break;
-        case Colours::kConsoleGreen:
-            c = AnsiColours::Fg::kGreen;
+        case ansi::Colours::Colour::kGreen:
+            c = ansi::Colours::Fg::kGreen;
             break;
-        case Colours::kConsoleYellow:
-            c = AnsiColours::Fg::kYellow;
+        case ansi::Colours::Colour::kYellow:
+            c = ansi::Colours::Fg::kYellow;
             break;
-        case Colours::kConsoleWhite:
-            c = AnsiColours::Fg::kWhite;
+        case ansi::Colours::Colour::kWhite:
+            c = ansi::Colours::Fg::kWhite;
             break;
         default:
-            c = AnsiColours::Fg::kDefault;
+            c = ansi::Colours::Fg::kDefault;
             break;
     }
 
-    printf("%s[%s]%s\n", c, s, AnsiColours::Fg::kDefault);
+    printf("%s[%s]%s\n", c, s, ansi::Colours::Fg::kDefault);
 }
 
-void Error(const char* s)
-{
+void Error(const char* s) {
     fprintf(stderr, "%s", s);
 }
 } // namespace console

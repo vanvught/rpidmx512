@@ -26,6 +26,7 @@
 #include <cstdint>
 #include <cassert>
 
+#include "h3/hal.h"
 #include "watchdog.h"
 #include "emac/network.h"
 #include "display.h"
@@ -43,8 +44,7 @@
 #include "software_version.h"
 #include "displayhandler.h"
 
-namespace hal
-{
+namespace hal {
 void RebootHandler() {}
 } // namespace hal
 
@@ -72,13 +72,10 @@ int main() // NOLINT
     auto* buttons_mcp = new ButtonsMcp(&osc_client);
     assert(buttons_mcp != nullptr);
 
-    if (buttons_mcp->Start())
-    {
+    if (buttons_mcp->Start()) {
         buttons_set = static_cast<ButtonsSet*>(buttons_mcp);
         osc_client.SetLedHandler(buttons_mcp);
-    }
-    else
-    {
+    } else {
         delete buttons_mcp;
 
         auto* buttons_gpio = new ButtonsGpio(&osc_client);
@@ -92,30 +89,27 @@ int main() // NOLINT
 
     RemoteConfig remote_config(remoteconfig::Output::OSC, buttons_set->GetButtonsCount());
 
-
-    for (uint32_t i = 1; i < 7; i++)
-    {
+    for (uint32_t i = 1; i < 7; i++) {
         display.ClearLine(i);
     }
 
     display.Write(1, "Eth OSC Client");
-    display.Printf(2, "%s.local",  network::iface::HostName());
-    display.Printf(3, "IP: " IPSTR " %c", IP2STR(network::GetPrimaryIp()), network::iface::IsDhcpKnown() ? ( network::iface::Dhcp() ? 'D' : 'S') : ' ');
+    display.Printf(2, "%s.local", network::iface::HostName());
+    display.Printf(3, "IP: " IPSTR " %c", IP2STR(network::GetPrimaryIp()), network::iface::IsDhcpKnown() ? (network::iface::Dhcp() ? 'D' : 'S') : ' ');
     display.Printf(4, "S : " IPSTR, IP2STR(osc_client.GetServerIP()));
     display.Printf(5, "O : %d", osc_client.GetPortOutgoing());
     display.Printf(6, "I : %d", osc_client.GetPortIncoming());
 
-    display.TextStatus(OscClientMsgConst::kStart, console::Colours::kConsoleYellow);
+    display.TextStatus(OscClientMsgConst::kStart, ansi::Colours::Colour::kYellow);
 
     osc_client.Start();
 
-    display.TextStatus(OscClientMsgConst::kStarted, console::Colours::kConsoleGreen);
+    display.TextStatus(OscClientMsgConst::kStarted, ansi::Colours::Colour::kGreen);
 
     hal::statusled::SetMode(hal::statusled::Mode::kNormal);
     watchdog::Init();
 
-    for (;;)
-    {
+    for (;;) {
         watchdog::Feed();
         network::Run();
         osc_client.Run();

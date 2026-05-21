@@ -33,6 +33,7 @@ void stack_debug_run();
 #endif
 
 namespace hal {
+void Init();
 inline constexpr const char kWebsite[] = "www.orangepi-dmx.org";
 inline constexpr float kCoreTemperatureMin = -40.0;
 inline constexpr float kCoreTemperatureMax = +90.0;

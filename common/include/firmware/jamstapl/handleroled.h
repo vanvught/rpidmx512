@@ -2,7 +2,7 @@
  * @file handleroled.h
  *
  */
-/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,25 +27,22 @@
 #define COMMON_FIRMWARE_JAMSTAPL_HANDLEROLED_H_
 
 #include "jamstapl.h"
-#include "console.h"
+#include "ansi_colour.h"
 #include "display.h"
 
-struct HandlerOled : public JamSTAPLDisplay
-{
+struct HandlerOled : public JamSTAPLDisplay {
     HandlerOled() { s_this = this; }
     ~HandlerOled() override = default;
 
     // JamSTAPL
-    void JamShowInfo(const char* info) override
-    {
+    void JamShowInfo(const char* info) override {
         Display::Get()->ClearLine(1);
         Display::Get()->Write(1, info);
     }
 
-    void JamShowStatus(const char* status, int exit_code) override
-    {
-        Display::Get()->TextStatus(status, exit_code == 0 ? console::Colours::kConsoleGreen : console::Colours::kConsoleRed);
-    }
+    void JamShowStatus(const char* status, int exit_code) override { 
+		Display::Get()->TextStatus(status, exit_code == 0 ? ansi::Colours::Colour::kGreen : ansi::Colours::Colour::kRed); 
+	}
 
     static HandlerOled* Get() { return s_this; }
 
@@ -53,4 +50,4 @@ struct HandlerOled : public JamSTAPLDisplay
     inline static HandlerOled* s_this;
 };
 
-#endif  // COMMON_FIRMWARE_JAMSTAPL_HANDLEROLED_H_
+#endif // COMMON_FIRMWARE_JAMSTAPL_HANDLEROLED_H_

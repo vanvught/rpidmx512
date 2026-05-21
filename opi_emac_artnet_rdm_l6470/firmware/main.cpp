@@ -70,7 +70,7 @@ int main() // NOLINT
 
     fw.Print("Art-Net 4 Stepper L6470");
 
-    display.TextStatus(SparkFunDmxConst::MSG_INIT, console::Colours::kConsoleYellow);
+    display.TextStatus(SparkFunDmxConst::MSG_INIT, ansi::Colours::Colour::kYellow);
 
     DmxNodeChain dmxnode_chain;
 
@@ -142,11 +142,11 @@ int main() // NOLINT
 
     RemoteConfig remote_config(remoteconfig::Output::STEPPER, dmxnode_node.GetActiveOutputPorts());
 
-    display.TextStatus(DmxNodeMsgConst::START, console::Colours::kConsoleYellow);
+    display.TextStatus(DmxNodeMsgConst::START, ansi::Colours::Colour::kYellow);
 
     dmxnode_node.Start();
 
-    display.TextStatus(DmxNodeMsgConst::STARTED, console::Colours::kConsoleGreen);
+    display.TextStatus(DmxNodeMsgConst::STARTED, ansi::Colours::Colour::kGreen);
 
     watchdog::Init();
 
