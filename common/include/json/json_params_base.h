@@ -2,7 +2,7 @@
  * @file json_params_base.h
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,41 +26,31 @@
 #ifndef JSON_JSON_PARAMS_BASE_H_
 #define JSON_JSON_PARAMS_BASE_H_
 
-#include <cassert>
 #include <cstdio>
 #include <cstdint>
 
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
-namespace json
-{
-template <typename Derived> class JsonParamsBase
-{
+namespace json {
+template <typename Derived> class JsonParamsBase {
    public:
-    void Load([[maybe_unused]] const char* file_name)
-    {
+    void Load([[maybe_unused]] const char* file_name) {
 #if !defined(DISABLE_FS)
         FILE* fp = fopen(file_name, "r");
-        if (fp != nullptr)
-        {
+        if (fp != nullptr) {
             char buffer[512]; // Adjust as needed for max config size
             size_t size = fread(buffer, 1, sizeof(buffer), fp);
             fclose(fp);
 
-            if (size > 0)
-            {
+            if (size > 0) {
                 static_cast<Derived*>(this)->Store(buffer, static_cast<uint32_t>(size));
-            }
-            else
-            {
+            } else {
                 DEBUG_PUTS("Empty or failed read");
             }
 #ifndef NDEBUG
             static_cast<Derived*>(this)->Dump();
 #endif
-        }
-        else
-        {
+        } else {
             DEBUG_PUTS("Failed to open file");
         }
 #endif
@@ -73,4 +63,4 @@ template <typename Derived> class JsonParamsBase
 
 } // namespace json
 
-#endif  // JSON_JSON_PARAMS_BASE_H_
+#endif // JSON_JSON_PARAMS_BASE_H_

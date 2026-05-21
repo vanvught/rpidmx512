@@ -2,7 +2,7 @@
  * @file motorparamsconst.h
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,47 +23,20 @@
  * THE SOFTWARE.
  */
 
-
 #ifndef JSON_MOTORPARAMSCONST_H_
 #define JSON_MOTORPARAMSCONST_H_
 
 #include "json/json_key.h"
+#include "common/utils/utils_hash.h"
 
-namespace json
-{
-struct MotorParamsConst
-{
-	static constexpr json::SimpleKey kStepAngel {
-	    "motor_step_angel",
-	    16,
-	    Fnv1a32("motor_step_angel", 16)
-	};
-
-
-	static constexpr json::SimpleKey kVoltage {
-	    "motor_voltage",
-	    13,
-	    Fnv1a32("motor_voltage", 13)
-	};
-
-	static constexpr json::SimpleKey kCurrent {
-	    "motor_current",
-	    13,
-	    Fnv1a32("motor_current", 13)
-	};
-	
-	static constexpr json::SimpleKey kResistance {
-	    "motor_resistance",
-	    16,
-	    Fnv1a32("motor_resistance", 16)
-	};
-
-	static constexpr json::SimpleKey kInductance {
-	    "motor_inductance",
-	    16,
-	    Fnv1a32("motor_inductance", 16)
-	};
+namespace json {
+struct MotorParamsConst {
+    static constexpr json::SimpleKey kStepAngel{"motor_step_angel", 16, Fnv1a32("motor_step_angel", 16)};
+    static constexpr json::SimpleKey kVoltage{"motor_voltage", 13, Fnv1a32("motor_voltage", 13)};
+    static constexpr json::SimpleKey kCurrent{"motor_current", 13, Fnv1a32("motor_current", 13)};
+    static constexpr json::SimpleKey kResistance{"motor_resistance", 16, Fnv1a32("motor_resistance", 16)};
+    static constexpr json::SimpleKey kInductance{"motor_inductance", 16, Fnv1a32("motor_inductance", 16)};
 };
 } // namespace json
 
-#endif  // JSON_MOTORPARAMSCONST_H_
+#endif // JSON_MOTORPARAMSCONST_H_

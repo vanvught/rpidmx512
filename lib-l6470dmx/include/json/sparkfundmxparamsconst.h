@@ -27,40 +27,20 @@
 #define JSON_SPARKFUNDMXPARAMSCONST_H_
 
 #include "json/json_key.h"
+#include "common/utils/utils_hash.h"
 
-namespace json
-{
-struct SparkFunDmxParamsConst
-{
-	static constexpr char kFileName[] = "sparkfun.json";
-   	static constexpr char kFileNameMotor[] = "motor?.json";
-   
-	static constexpr json::SimpleKey kPosition {
-	    "sparkfun_position",
-	    17,
-	    Fnv1a32("sparkfun_position", 17)
-	};
+namespace json {
+struct SparkFunDmxParamsConst {
+    static constexpr char kFileName[] = "sparkfun.json";
+    static constexpr char kFileNameMotor[] = "motor?.json";
 
-//#if !defined (H3)	
-	static constexpr json::SimpleKey kSpiCs {
-	    "sparkfun_spi_cs",
-	    15,
-	    Fnv1a32("sparkfun_spi_cs", 15)
-	};
-//#endif	
-	
-	static constexpr json::SimpleKey kResetPin {
-	    "sparkfun_reset_pin",
-	    18,
-	    Fnv1a32("sparkfun_reset_pin", 18)
-	};
-	
-	static constexpr json::SimpleKey kBusyPin {
-	    "sparkfun_busy_pin",
-	    17,
-	    Fnv1a32("sparkfun_busy_pin", 17)
-	};
+    static constexpr json::SimpleKey kPosition{"sparkfun_position", 17, Fnv1a32("sparkfun_position", 17)};
+    // #if !defined (H3)
+    static constexpr json::SimpleKey kSpiCs{"sparkfun_spi_cs", 15, Fnv1a32("sparkfun_spi_cs", 15)};
+    // #endif
+    static constexpr json::SimpleKey kResetPin{"sparkfun_reset_pin", 18, Fnv1a32("sparkfun_reset_pin", 18)};
+    static constexpr json::SimpleKey kBusyPin{"sparkfun_busy_pin", 17, Fnv1a32("sparkfun_busy_pin", 17)};
 };
 } // namespace json
 
-#endif  // JSON_SPARKFUNDMXPARAMSCONST_H_
+#endif // JSON_SPARKFUNDMXPARAMSCONST_H_

@@ -27,25 +27,15 @@
 #define JSON_MIDIPARAMSCONST_H_
 
 #include "json/json_key.h"
+#include "common/utils/utils_hash.h"
 
-namespace json
-{
-struct MidiParamsConst
-{
-	static constexpr char kFileName[] = "midi.json";
-   
-	static constexpr json::SimpleKey kBaudrate {
-	    "baudrate",
-	    8,
-	    Fnv1a32("baudrate", 8)
-	};
-	
-	static constexpr json::SimpleKey kActiveSense {
-	    "active_sense",
-	    12,
-	    Fnv1a32("active_sense", 12)
-	};
+namespace json {
+struct MidiParamsConst {
+    static constexpr char kFileName[] = "midi.json";
+
+    static constexpr json::SimpleKey kBaudrate{"baudrate", 8, Fnv1a32("baudrate", 8)};
+    static constexpr json::SimpleKey kActiveSense{"active_sense", 12, Fnv1a32("active_sense", 12)};
 };
 } // namespace json
 
-#endif  // JSON_MIDIPARAMSCONST_H_
+#endif // JSON_MIDIPARAMSCONST_H_

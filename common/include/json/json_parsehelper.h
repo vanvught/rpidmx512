@@ -107,8 +107,7 @@ template <typename T> T ParseValue(const char* val, uint32_t len) {
     return static_cast<T>(v);
 }
 
-template <typename T> 
-bool ParseInRange(const char* val, uint32_t len, T min, T max, T* out) {
+template <typename T> bool ParseInRange(const char* val, uint32_t len, T min, T max, T* out) {
     const auto kV = ParseValue<T>(val, len);
 
     if ((kV < min) || (kV > max)) {
@@ -119,8 +118,7 @@ bool ParseInRange(const char* val, uint32_t len, T min, T max, T* out) {
     return true;
 }
 
-template <typename ParseT, typename StoreT> 
-bool ParseInRange(const char* val, uint32_t len, ParseT min, ParseT max, StoreT* out) {
+template <typename ParseT, typename StoreT> bool ParseInRange(const char* val, uint32_t len, ParseT min, ParseT max, StoreT* out) {
     const auto kV = ParseValue<ParseT>(val, len);
 
     if ((kV < min) || (kV > max)) {

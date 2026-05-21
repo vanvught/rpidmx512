@@ -22,43 +22,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
- 
 
 #ifndef JSON_TCNETPARAMSCONST_H_
 #define JSON_TCNETPARAMSCONST_H_
 
- #include "json/json_key.h"
+#include "json/json_key.h"
+#include "common/utils/utils_hash.h"
 
-namespace json
-{
-struct TcNetParamsConst
-{
-	static constexpr char kFileName[] = "tcnet.json";
-   
-	static constexpr json::SimpleKey kNodeName {
-	    "node_name",
-	    9,
-	    Fnv1a32("node_name", 9)
-	};
-	
-	static constexpr json::SimpleKey kLayer {
-	    "layer",
-	    5,
-	    Fnv1a32("layer", 5)
-	};
-	
-	static constexpr json::SimpleKey kTimecodeType {
-	    "timecode_type",
-	    13,
-	    Fnv1a32("timecode_type", 13)
-	};
-	
-	static constexpr json::SimpleKey kUseTimecode {
-	    "use_timecode",
-	    12,
-	    Fnv1a32("use_timecode", 12)
-	};
+namespace json {
+struct TcNetParamsConst {
+    static constexpr char kFileName[] = "tcnet.json";
+
+    static constexpr json::SimpleKey kNodeName{"node_name", 9, Fnv1a32("node_name", 9)};
+    static constexpr json::SimpleKey kLayer{"layer", 5, Fnv1a32("layer", 5)};
+    static constexpr json::SimpleKey kTimecodeType{"timecode_type", 13, Fnv1a32("timecode_type", 13)};
+    static constexpr json::SimpleKey kUseTimecode{"use_timecode", 12, Fnv1a32("use_timecode", 12)};
 };
 } // namespace json
 
-#endif  // JSON_TCNETPARAMSCONST_H_
+#endif // JSON_TCNETPARAMSCONST_H_

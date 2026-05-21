@@ -30,32 +30,27 @@
 #include <cstdint>
 #include <cassert>
 
-namespace format
-{
+namespace format {
 constexpr size_t kFloatBufferSize = 8;   // For "%.2f", "%.1f"
 constexpr size_t kOffsetBufferSize = 12; // For timezone offsets e.g. "+01:00"
 
-inline void Append2Digits(char*& p, uint32_t v)
-{
+inline void Append2Digits(char*& p, uint32_t v) {
     *p++ = static_cast<char>('0' + (v / 10));
     *p++ = static_cast<char>('0' + (v % 10));
 }
 
-inline const char* Float(float value, char (&buf)[kFloatBufferSize], const char* fmt = "%.2f")
-{
+inline const char* Float(float value, char (&buf)[kFloatBufferSize], const char* fmt = "%.2f") {
     snprintf(buf, sizeof(buf), fmt, value);
     return buf;
 }
 
-inline const char* UtcOffset(int32_t hours, uint32_t minutes, char (&buf)[kOffsetBufferSize])
-{
+inline const char* UtcOffset(int32_t hours, uint32_t minutes, char (&buf)[kOffsetBufferSize]) {
     const auto kNegative = hours < 0;
     if (kNegative) hours = -hours;
 
     auto* p = buf;
 
-    if (hours != 0)
-    {
+    if (hours != 0) {
         *p++ = kNegative ? '-' : '+';
     }
 

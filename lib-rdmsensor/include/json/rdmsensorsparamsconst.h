@@ -27,49 +27,19 @@
 #define JSON_RDMSENSORSPARAMSCONST_H_
 
 #include "json/json_key.h"
+#include "common/utils/utils_hash.h"
 
-namespace json
-{
-struct RdmSensorsParamsConst
-{
-	static constexpr char kFileName[] = "sensors.json";
-   
-	static constexpr json::SimpleKey kBH170 {
-	    "bh1750",
-	    6,
-	    Fnv1a32("bh1750", 6)
-	};
-	
-	static constexpr json::SimpleKey kHTU21D {
-	    "htu21d",
-	    6,
-	    Fnv1a32("htu21d", 6)
-	};
-	
-	static constexpr json::SimpleKey kINA219 {
-	    "ina219",
-	    6,
-	    Fnv1a32("ina219", 6)
-	};
-	
-	static constexpr json::SimpleKey kMCP9808 {
-	    "mcp9808",
-	    7,
-	    Fnv1a32("mcp9808", 7)
-	};
-	
-	static constexpr json::SimpleKey kSI7021 {
-	    "si7021",
-	    6,
-	    Fnv1a32("si7021", 6)
-	};
-	
-	static constexpr json::SimpleKey kMCP3424 {
-	    "mcp3424",
-	    7,
-	    Fnv1a32("mcp3424", 7)
-	};
+namespace json {
+struct RdmSensorsParamsConst {
+    static constexpr char kFileName[] = "sensors.json";
+
+    static constexpr json::SimpleKey kBH170{"bh1750", 6, Fnv1a32("bh1750", 6)};
+    static constexpr json::SimpleKey kHTU21D{"htu21d", 6, Fnv1a32("htu21d", 6)};
+    static constexpr json::SimpleKey kINA219{"ina219", 6, Fnv1a32("ina219", 6)};
+    static constexpr json::SimpleKey kMCP9808{"mcp9808", 7, Fnv1a32("mcp9808", 7)};
+    static constexpr json::SimpleKey kSI7021{"si7021", 6, Fnv1a32("si7021", 6)};
+    static constexpr json::SimpleKey kMCP3424{"mcp3424", 7, Fnv1a32("mcp3424", 7)};
 };
 } // namespace json
 
-#endif  // JSON_RDMSENSORSPARAMSCONST_H_
+#endif // JSON_RDMSENSORSPARAMSCONST_H_

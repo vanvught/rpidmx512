@@ -27,11 +27,10 @@
 #define JSON_RDMDEVICEPARAMSCONST_H_
 
 #include "json/json_key.h"
+#include "common/utils/utils_hash.h"
 
-namespace json
-{
-struct RdmDeviceParamsConst
-{
+namespace json {
+struct RdmDeviceParamsConst {
     static constexpr char kFileName[] = "rdmdevice.json";
 
     static constexpr json::SimpleKey kLabel{"label", 5, Fnv1a32("label", 5)};

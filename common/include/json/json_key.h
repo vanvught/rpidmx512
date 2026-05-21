@@ -27,76 +27,47 @@
 #define JSON_JSON_KEY_H_
 
 #include <cstdint>
-#include <cstddef>
 
-#include "common/utils/utils_hash.h"
-
-namespace json
-{
-struct SimpleKey
-{
+namespace json {
+struct SimpleKey {
     const char* name;
     uint8_t length;
     uint32_t hash;
 };
 
-struct PortKey
-{
+struct PortKey {
     const char* name;
     uint8_t length;
     uint32_t hash;
 };
 
-struct Key
-{
-    union
-    {
+struct Key {
+    union {
         const SimpleKey* simple_key;
         const PortKey* port_key;
     };
 
-    union
-    {
+    union {
         void (*set_simple)(const char*, uint32_t);
         void (*set_keyed)(const char*, uint32_t, const char*, uint32_t);
     };
 
-    enum
-    {
-        kSimple,
-        kKeyed
-    } type;
-    
-    constexpr const char* GetName() const noexcept {
-	    return type == kSimple ? simple_key->name : port_key->name;
-	}
-	
-	constexpr uint8_t GetLength() const noexcept {
-	    return type == kSimple ? simple_key->length : port_key->length;
-	}
+    enum { kSimple, kKeyed } type;
 
-    constexpr uint32_t GetHash() const noexcept {
-		 return type == kSimple ? simple_key->hash : port_key->hash;
-	}
+    constexpr const char* GetName() const noexcept { return type == kSimple ? simple_key->name : port_key->name; }
+
+    constexpr uint8_t GetLength() const noexcept { return type == kSimple ? simple_key->length : port_key->length; }
+
+    constexpr uint32_t GetHash() const noexcept { return type == kSimple ? simple_key->hash : port_key->hash; }
 };
 
-constexpr Key MakeKey(void (*set)(const char*, uint32_t), const SimpleKey& simple) noexcept
-{
-    return Key{
-        .simple_key = &simple,
-        .set_simple = set,
-        .type = Key::kSimple
-    };
+constexpr Key MakeKey(void (*set)(const char*, uint32_t), const SimpleKey& simple) noexcept {
+    return Key{.simple_key = &simple, .set_simple = set, .type = Key::kSimple};
 }
 
-constexpr Key MakeKey(void (*set)(const char*, uint32_t, const char*, uint32_t), const PortKey& port) noexcept
-{
-    return Key{
-        .port_key = &port,
-        .set_keyed = set,
-        .type = Key::kKeyed
-    };
+constexpr Key MakeKey(void (*set)(const char*, uint32_t, const char*, uint32_t), const PortKey& port) noexcept {
+    return Key{.port_key = &port, .set_keyed = set, .type = Key::kKeyed};
 }
 } // namespace json
 
-#endif  // JSON_JSON_KEY_H_
+#endif // JSON_JSON_KEY_H_

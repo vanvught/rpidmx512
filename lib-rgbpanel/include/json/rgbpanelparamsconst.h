@@ -22,43 +22,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
- 
 
 #ifndef JSON_RGBPANELPARAMSCONST_H_
 #define JSON_RGBPANELPARAMSCONST_H_
 
- #include "json/json_key.h"
+#include "json/json_key.h"
+#include "common/utils/utils_hash.h"
 
-namespace json
-{
-struct RgbPanelParamsConst
-{
-	static constexpr char kFileName[] = "rgbpanel.json";
-   
-	static constexpr json::SimpleKey kCols {
-	    "cols",
-	    4,
-	    Fnv1a32("cols", 4)
-	};
-	
-	static constexpr json::SimpleKey kRows {
-	    "rows",
-	    4,
-	    Fnv1a32("rows", 4)
-	};
-	
-	static constexpr json::SimpleKey kChain {
-	    "chain",
-	    5,
-	    Fnv1a32("chain", 5)
-	};
-	
-	static constexpr json::SimpleKey kType {
-	    "type",
-	    4,
-	    Fnv1a32("type", 4)
-	};
+namespace json {
+struct RgbPanelParamsConst {
+    static constexpr char kFileName[] = "rgbpanel.json";
+
+    static constexpr json::SimpleKey kCols{"cols", 4, Fnv1a32("cols", 4)};
+    static constexpr json::SimpleKey kRows{"rows", 4, Fnv1a32("rows", 4)};
+    static constexpr json::SimpleKey kChain{"chain", 5, Fnv1a32("chain", 5)};
+    static constexpr json::SimpleKey kType{"type", 4, Fnv1a32("type", 4)};
 };
 } // namespace json
 
-#endif  // JSON_RGBPANELPARAMSCONST_H_
+#endif // JSON_RGBPANELPARAMSCONST_H_

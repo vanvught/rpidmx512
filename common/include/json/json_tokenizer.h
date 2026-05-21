@@ -2,7 +2,7 @@
  * @file json_tokenizer.h
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,27 +22,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
- 
 
 #ifndef JSON_JSON_TOKENIZER_H_
 #define JSON_JSON_TOKENIZER_H_
 
 #include <cstddef>
 
-struct JsonTokenizer
-{
+struct JsonTokenizer {
     const char* p;
     const char* end;
 
     constexpr JsonTokenizer(const char* buffer, size_t size) : p(buffer), end(buffer + size) {}
 
-    constexpr void SkipWhitespace()
-    {
+    constexpr void SkipWhitespace() {
         while (p < end && (*p == ' ' || *p == '\t' || *p == '\n' || *p == '\r')) ++p;
     }
 
-    bool NextString(const char*& out, size_t& len)
-    {
+    bool NextString(const char*& out, size_t& len) {
         SkipWhitespace();
         if (p >= end || *p != '"') return false;
         ++p; // skip "
@@ -54,21 +50,18 @@ struct JsonTokenizer
         return true;
     }
 
-    bool Expect(char c)
-    {
+    bool Expect(char c) {
         SkipWhitespace();
         if (p >= end || *p != c) return false;
         ++p;
         return true;
     }
 
-    bool NextValue(const char*& out, size_t& len)
-    {
+    bool NextValue(const char*& out, size_t& len) {
         SkipWhitespace();
         if (p >= end) return false;
 
-        if (*p == '"')
-        {
+        if (*p == '"') {
             return NextString(out, len);
         }
 
@@ -79,4 +72,4 @@ struct JsonTokenizer
     }
 };
 
-#endif  // JSON_JSON_TOKENIZER_H_
+#endif // JSON_JSON_TOKENIZER_H_

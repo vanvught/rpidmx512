@@ -1,13 +1,33 @@
 /**
  * @file dmxnodeparamsconst.h
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org */
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 
 #ifndef JSON_DMXNODEPARAMSCONST_H_
 #define JSON_DMXNODEPARAMSCONST_H_
 
 #include "configurationstore.h"
 #include "json/json_key.h"
+#include "common/utils/utils_hash.h"
 
 #undef MAX_ARRAY_SIZE
 #if defined(DMXNODE_OUTPUT_DMX)
@@ -19,41 +39,15 @@
 
 static_assert(MAX_ARRAY_SIZE <= common::store::dmxnode::kParamPorts);
 
-namespace json
-{
-struct DmxNodeParamsConst
-{
+namespace json {
+struct DmxNodeParamsConst {
     static constexpr char kFileName[] = "dmxnode.json";
 
-	static constexpr json::SimpleKey kNodeName {
-	    "node_name",
-	    9,
-	    Fnv1a32("node_name", 9)
-	};
-	
-	static constexpr json::SimpleKey kFailsafe {
-	    "failsafe",
-	    8,
-	    Fnv1a32("failsafe", 8)
-	};
-		
-	static constexpr json::SimpleKey kDisableMergeTimeout {
-	    "disable_merge_timeout",
-	    21,
-	    Fnv1a32("disable_merge_timeout", 21)
-	};
-	
-	static constexpr json::SimpleKey kDmxStartAddress {
-	    "dmx_start_address",
-	    17,
-	    Fnv1a32("dmx_start_address", 17)
-	};
-	
-	static constexpr json::SimpleKey kDmxSlotInfo {
-	    "dmx_slot_info",
-	    13,
-	    Fnv1a32("dmx_slot_info", 13)
-	};
+    static constexpr json::SimpleKey kNodeName{"node_name", 9, Fnv1a32("node_name", 9)};
+    static constexpr json::SimpleKey kFailsafe{"failsafe", 8, Fnv1a32("failsafe", 8)};
+    static constexpr json::SimpleKey kDisableMergeTimeout{"disable_merge_timeout", 21, Fnv1a32("disable_merge_timeout", 21)};
+    static constexpr json::SimpleKey kDmxStartAddress{"dmx_start_address", 17, Fnv1a32("dmx_start_address", 17)};
+    static constexpr json::SimpleKey kDmxSlotInfo{"dmx_slot_info", 13, Fnv1a32("dmx_slot_info", 13)};
 
     static constexpr json::PortKey kLabelPortA{"label_port_a", 12, Fnv1a32("label_port_a", 12)};
 #if (MAX_ARRAY_SIZE > 1)
@@ -66,8 +60,7 @@ struct DmxNodeParamsConst
     static constexpr json::PortKey kLabelPortD{"label_port_d", 12, Fnv1a32("label_port_d", 12)};
 #endif
 
-    static constexpr json::PortKey kLabelPort[] = 
-    {
+    static constexpr json::PortKey kLabelPort[] = {
         kLabelPortA,
 #if (MAX_ARRAY_SIZE > 1)
         kLabelPortB,
@@ -91,8 +84,7 @@ struct DmxNodeParamsConst
     static constexpr json::PortKey kUniversePortD{"universe_port_d", 15, Fnv1a32("universe_port_d", 15)};
 #endif
 
-    static constexpr json::PortKey kUniversePort[] = 
-    {
+    static constexpr json::PortKey kUniversePort[] = {
         kUniversePortA,
 #if (MAX_ARRAY_SIZE > 1)
         kUniversePortB,
@@ -116,8 +108,7 @@ struct DmxNodeParamsConst
     static constexpr json::PortKey kDirectionPortD{"direction_port_d", 16, Fnv1a32("direction_port_d", 16)};
 #endif
 
-    static constexpr json::PortKey kDirectionPort[] = 
-    {
+    static constexpr json::PortKey kDirectionPort[] = {
         kDirectionPortA,
 #if (MAX_ARRAY_SIZE > 1)
         kDirectionPortB,
@@ -141,9 +132,8 @@ struct DmxNodeParamsConst
     static constexpr json::PortKey kMergeModePortD{"merge_mode_port_d", 17, Fnv1a32("merge_mode_port_d", 17)};
 #endif
 
-    static constexpr json::PortKey kMergeModePort[] = 
-    {
-		kMergeModePortA,
+    static constexpr json::PortKey kMergeModePort[] = {
+        kMergeModePortA,
 #if (MAX_ARRAY_SIZE > 1)
         kMergeModePortB,
 #endif
@@ -166,8 +156,7 @@ struct DmxNodeParamsConst
     static constexpr json::PortKey kOutputStylePortD{"output_style_d", 14, Fnv1a32("output_style_d", 14)};
 #endif
 
-    static constexpr json::PortKey kOutputStylePort[] = 
-    {
+    static constexpr json::PortKey kOutputStylePort[] = {
         kOutputStylePortA,
 #if (MAX_ARRAY_SIZE > 1)
         kOutputStylePortB,
@@ -182,4 +171,4 @@ struct DmxNodeParamsConst
 };
 } // namespace json
 
-#endif  // JSON_DMXNODEPARAMSCONST_H_
+#endif // JSON_DMXNODEPARAMSCONST_H_

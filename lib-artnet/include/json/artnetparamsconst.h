@@ -28,6 +28,7 @@
 #include "common/utils/utils_hash.h"
 #include "configurationstore.h"
 #include "json/json_key.h"
+#include "common/utils/utils_hash.h"
 
 #undef MAX_ARRAY_SIZE
 #if defined(DMXNODE_OUTPUT_DMX)
@@ -41,8 +42,7 @@ static_assert(MAX_ARRAY_SIZE <= common::store::dmxnode::kParamPorts);
 
 namespace json
 {
-struct ArtNetParamsConst
-{
+struct ArtNetParamsConst {
     static constexpr char kFileName[] = "artnet.json";
 
     static constexpr json::PortKey kDestinationIpPortA{"destination_ip_port_a", 21, Fnv1a32("destination_ip_port_a", 21)};

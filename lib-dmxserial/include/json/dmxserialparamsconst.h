@@ -2,7 +2,7 @@
  * @file dmxserialparamsconst.h
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,70 +27,28 @@
 #define JSON_DMXSERIALPARAMSCONST_H_
 
 #include "json/json_key.h"
+#include "common/utils/utils_hash.h"
 
-namespace json
-{
-struct DmxSerialParamsConst
-{
-	static constexpr char kFileName[] = "dmxserial.json";
-   
-	static constexpr json::SimpleKey kType {
-	    "type",
-	    4,
-	    Fnv1a32("type", 4)
-	};
+namespace json {
+struct DmxSerialParamsConst {
+    static constexpr char kFileName[] = "dmxserial.json";
 
-	// UART
-	static constexpr json::SimpleKey kUartBaud {
-	    "uart_baud",
-	    9,
-	    Fnv1a32("uart_baud", 9)
-	};		  
-		  
-	static constexpr json::SimpleKey kUartBits {
-	    "uart_bits",
-	    9,
-	    Fnv1a32("uart_bits", 9)
-	};	
-	
-	static constexpr json::SimpleKey kUartParity {
-	    "uart_parity",
-	    11,
-	    Fnv1a32("uart_parity",11)
-	};	
+    static constexpr json::SimpleKey kType{"type", 4, Fnv1a32("type", 4)};
 
-	static constexpr json::SimpleKey kUartStopbits {
-	    "uart_stopbits",
-	    13,
-	    Fnv1a32("uart_stopbits",13)
-	};
+    // UART
+    static constexpr json::SimpleKey kUartBaud{"uart_baud", 9, Fnv1a32("uart_baud", 9)};
+    static constexpr json::SimpleKey kUartBits{"uart_bits", 9, Fnv1a32("uart_bits", 9)};
+    static constexpr json::SimpleKey kUartParity{"uart_parity", 11, Fnv1a32("uart_parity", 11)};
+    static constexpr json::SimpleKey kUartStopbits{"uart_stopbits", 13, Fnv1a32("uart_stopbits", 13)};
 
-	// SPI
-	static constexpr json::SimpleKey kSpiSpeedHz {
-	    "spi_speed_hz",
-	    12,
-	    Fnv1a32("spi_speed_hz",12)
-	};	
+    // SPI
+    static constexpr json::SimpleKey kSpiSpeedHz{"spi_speed_hz", 12, Fnv1a32("spi_speed_hz", 12)};
+    static constexpr json::SimpleKey kSpiMode{"spi_mode", 8, Fnv1a32("spi_mode", 8)};
 
-	static constexpr json::SimpleKey kSpiMode {
-	    "spi_mode",
-	    8,
-	    Fnv1a32("spi_mode",8)
-	};
-	
-	// I2C
-	static constexpr json::SimpleKey kI2CAddress {
-	    "i2c_address",
-	    11,
-	    Fnv1a32("i2c_address",11)
-	};	
-
-	static constexpr json::SimpleKey kI2CSpeedMode {
-	    "i2c_speed_mode",
-	    14,
-	    Fnv1a32("i2c_speed_mode",14)
-	};	   
+    // I2C
+    static constexpr json::SimpleKey kI2CAddress{"i2c_address", 11, Fnv1a32("i2c_address", 11)};
+    static constexpr json::SimpleKey kI2CSpeedMode{"i2c_speed_mode", 14, Fnv1a32("i2c_speed_mode", 14)};
 };
 } // namespace json
 
-#endif  // JSON_DMXSERIALPARAMSCONST_H_
+#endif // JSON_DMXSERIALPARAMSCONST_H_

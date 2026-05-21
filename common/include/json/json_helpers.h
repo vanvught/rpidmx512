@@ -31,12 +31,9 @@
 
 #include "json/json_jsondoc.h"
 
-namespace json::helpers
-{
+namespace json::helpers {
 // Template wrapper for consistent JSON serialization pattern.
-template <typename Callback> 
-uint32_t Serialize(char* buffer, uint32_t length, Callback&& callback)
-{
+template <typename Callback> uint32_t Serialize(char* buffer, uint32_t length, Callback&& callback) {
     assert(buffer != nullptr);
     assert(length != 0);
 
@@ -47,4 +44,4 @@ uint32_t Serialize(char* buffer, uint32_t length, Callback&& callback)
 }
 } // namespace json::helpers
 
-#endif  // JSON_JSON_HELPERS_H_
+#endif // JSON_JSON_HELPERS_H_

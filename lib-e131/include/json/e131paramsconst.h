@@ -8,6 +8,7 @@
 
 #include "configurationstore.h"
 #include "json/json_key.h"
+#include "common/utils/utils_hash.h"
 
 #if defined(DMXNODE_OUTPUT_DMX)
 #include "dmx.h"
@@ -18,10 +19,8 @@
 
 static_assert(MAX_ARRAY_SIZE <= common::store::dmxnode::kParamPorts);
 
-namespace json
-{
-struct E131ParamsConst
-{
+namespace json {
+struct E131ParamsConst {
     static constexpr char kFileName[] = "e131.json";
 
     static constexpr json::PortKey kPriorityPortA{"priority_port_a", 15, Fnv1a32("priority_port_a", 15)};
@@ -35,20 +34,19 @@ struct E131ParamsConst
     static constexpr json::PortKey kPriorityPortD{"priority_port_d", 15, Fnv1a32("priority_port_d", 15)};
 #endif
 
-    static constexpr json::PortKey kPriorityPort[] = 
-    {
-		kPriorityPortA,
+    static constexpr json::PortKey kPriorityPort[] = {
+        kPriorityPortA,
 #if (MAX_ARRAY_SIZE > 1)
-		kPriorityPortB,
+        kPriorityPortB,
 #endif
 #if (MAX_ARRAY_SIZE > 2)
-    	kPriorityPortC,
+        kPriorityPortC,
 #endif
 #if (MAX_ARRAY_SIZE == 4)
-    	kPriorityPortD,
+        kPriorityPortD,
 #endif
     };
 };
 } // namespace json
 
-#endif  // JSON_E131PARAMSCONST_H_
+#endif // JSON_E131PARAMSCONST_H_

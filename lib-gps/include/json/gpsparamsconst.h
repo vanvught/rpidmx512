@@ -27,6 +27,7 @@
 #define JSON_GPSPARAMSCONST_H_
 
 #include "json/json_key.h"
+#include "common/utils/utils_hash.h"
 
 namespace json {
 struct GpsParamsConst {

@@ -2,7 +2,7 @@
  * @file displayudfparamsconst.h
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,145 +27,83 @@
 #define JSON_DISPLAYUDFPARAMSCONST_H_
 
 #include "json/json_key.h"
-#if defined (DMXNODE_PORTS) && (DMXNODE_PORTS > 0)
+#include "common/utils/utils_hash.h"
+#if defined(DMXNODE_PORTS) && (DMXNODE_PORTS > 0)
 #include "json/dmxnodeparamsconst.h"
 #endif
-#if defined(NODE_ARTNET) || defined (NODE_ARTNET_MULTI)
+#if defined(NODE_ARTNET) || defined(NODE_ARTNET_MULTI)
 #include "json/artnetparamsconst.h"
 #endif
 #if defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI)
 #include "dmx.h"
 #endif
 
-namespace json
-{
-struct DisplayUdfParamsConst
-{
-	static constexpr char kFileName[] = "display.json";
-   
-	static constexpr json::SimpleKey kIntensity {
-	    "intensity",
-	    9,
-	    Fnv1a32("intensity", 9)
-	};
-	
-	static constexpr json::SimpleKey kSleepTimeout {
-	    "sleep_timeout",
-	    13,
-	    Fnv1a32("sleep_timeout", 13)
-	};
-	
-	static constexpr json::SimpleKey kFlipVertically {
-	    "flip_vertically",
-	    15,
-	    Fnv1a32("flip_vertically", 15)
-	};
-	
-	static constexpr json::PortKey kTitle {
-	    "title",
-	    5,
-	    Fnv1a32("title", 5)
-	};
-	
-	static constexpr json::PortKey kBoardName {
-	    "board_name",
-	    10,
-	    Fnv1a32("board_name", 10)
-	};
-	
-	static constexpr json::PortKey kVersion {
-	    "version",
-	    7,
-	    Fnv1a32("version", 7)
-	};
+namespace json {
+struct DisplayUdfParamsConst {
+    static constexpr char kFileName[] = "display.json";
 
-	static constexpr json::PortKey kActivePorts {
-	    "active_ports",
-	    12,
-	    Fnv1a32("active_ports", 12)
-	};
-	
-	static constexpr json::PortKey kHostname {
-	    "hostname",
-	    8,
-	    Fnv1a32("hostname", 8)
-	};
-		
-	static constexpr json::PortKey kIpAddress {
-	    "ip_address",
-	    10,
-	    Fnv1a32("ip_address", 10)
-	};
-	
-	static constexpr json::PortKey kNetMask {
-	    "net_mask",
-	    8,
-	    Fnv1a32("net_mask", 8)
-	};
-	
-	static constexpr json::PortKey kDefaultGateway {
-	    "default_gateway",
-	    15,
-	    Fnv1a32("default_gateway", 15)
-	};
-	
-	static constexpr json::PortKey kDmxStartAddress {
-	    "dmx_start_address",
-	    17,
-	    Fnv1a32("dmx_start_address", 17)
-	};
-		
-	static constexpr json::PortKey kLabels[] = 
-    {
-		kTitle,
-		kBoardName,
-		kVersion,
-		kHostname,
-		kIpAddress,
-		kNetMask,
-		kDefaultGateway,
-		kActivePorts,	
-		kDmxStartAddress,
-#if defined (DMX_MAX_PORTS)
-#if (DMX_MAX_PORTS == 1)	
-		DmxNodeParamsConst::kUniversePortA,
-#if defined(NODE_ARTNET) || defined (NODE_ARTNET_MULTI)			
-		ArtNetParamsConst::kDestinationIpPortA
-#endif		
-#endif		
-#if (DMX_MAX_PORTS == 2)		
-		DmxNodeParamsConst::kUniversePortA,
-		DmxNodeParamsConst::kUniversePortB,
-#if defined(NODE_ARTNET) || defined (NODE_ARTNET_MULTI)		
-		ArtNetParamsConst::kDestinationIpPortA,
-		ArtNetParamsConst::kDestinationIpPortB	
-#endif			
+    static constexpr json::SimpleKey kIntensity{"intensity", 9, Fnv1a32("intensity", 9)};
+    static constexpr json::SimpleKey kSleepTimeout{"sleep_timeout", 13, Fnv1a32("sleep_timeout", 13)};
+    static constexpr json::SimpleKey kFlipVertically{"flip_vertically", 15, Fnv1a32("flip_vertically", 15)};
+    static constexpr json::PortKey kTitle{"title", 5, Fnv1a32("title", 5)};
+    static constexpr json::PortKey kBoardName{"board_name", 10, Fnv1a32("board_name", 10)};
+    static constexpr json::PortKey kVersion{"version", 7, Fnv1a32("version", 7)};
+    static constexpr json::PortKey kActivePorts{"active_ports", 12, Fnv1a32("active_ports", 12)};
+    static constexpr json::PortKey kHostname{"hostname", 8, Fnv1a32("hostname", 8)};
+    static constexpr json::PortKey kIpAddress{"ip_address", 10, Fnv1a32("ip_address", 10)};
+    static constexpr json::PortKey kNetMask{"net_mask", 8, Fnv1a32("net_mask", 8)};
+    static constexpr json::PortKey kDefaultGateway{"default_gateway", 15, Fnv1a32("default_gateway", 15)};
+    static constexpr json::PortKey kDmxStartAddress{"dmx_start_address", 17, Fnv1a32("dmx_start_address", 17)};
+
+    static constexpr json::PortKey kLabels[] = {kTitle,
+                                                kBoardName,
+                                                kVersion,
+                                                kHostname,
+                                                kIpAddress,
+                                                kNetMask,
+                                                kDefaultGateway,
+                                                kActivePorts,
+                                                kDmxStartAddress,
+#if defined(DMX_MAX_PORTS)
+#if (DMX_MAX_PORTS == 1)
+                                                DmxNodeParamsConst::kUniversePortA,
+#if defined(NODE_ARTNET) || defined(NODE_ARTNET_MULTI)
+                                                ArtNetParamsConst::kDestinationIpPortA
 #endif
-#if (DMX_MAX_PORTS == 3)		
-		DmxNodeParamsConst::kUniversePortA,
-		DmxNodeParamsConst::kUniversePortB,
-		DmxNodeParamsConst::kUniversePortC,
-#if defined(NODE_ARTNET) || defined (NODE_ARTNET_MULTI)		
-		ArtNetParamsConst::kDestinationIpPortA,
-		ArtNetParamsConst::kDestinationIpPortB,
-		ArtNetParamsConst::kDestinationIpPortC	
-#endif			
 #endif
-#if (DMX_MAX_PORTS == 4)		
-		DmxNodeParamsConst::kUniversePortA,
-		DmxNodeParamsConst::kUniversePortB,
-		DmxNodeParamsConst::kUniversePortC,
-		DmxNodeParamsConst::kUniversePortD,
-#if defined(NODE_ARTNET) || defined (NODE_ARTNET_MULTI)		
-		ArtNetParamsConst::kDestinationIpPortA,
-		ArtNetParamsConst::kDestinationIpPortB,
-		ArtNetParamsConst::kDestinationIpPortC,	
-		ArtNetParamsConst::kDestinationIpPortD	
-#endif			
+#if (DMX_MAX_PORTS == 2)
+                                                DmxNodeParamsConst::kUniversePortA,
+                                                DmxNodeParamsConst::kUniversePortB,
+#if defined(NODE_ARTNET) || defined(NODE_ARTNET_MULTI)
+                                                ArtNetParamsConst::kDestinationIpPortA,
+                                                ArtNetParamsConst::kDestinationIpPortB
 #endif
-#endif   
-	};
+#endif
+#if (DMX_MAX_PORTS == 3)
+                                                DmxNodeParamsConst::kUniversePortA,
+                                                DmxNodeParamsConst::kUniversePortB,
+                                                DmxNodeParamsConst::kUniversePortC,
+#if defined(NODE_ARTNET) || defined(NODE_ARTNET_MULTI)
+                                                ArtNetParamsConst::kDestinationIpPortA,
+                                                ArtNetParamsConst::kDestinationIpPortB,
+                                                ArtNetParamsConst::kDestinationIpPortC
+#endif
+#endif
+#if (DMX_MAX_PORTS == 4)
+                                                DmxNodeParamsConst::kUniversePortA,
+                                                DmxNodeParamsConst::kUniversePortB,
+                                                DmxNodeParamsConst::kUniversePortC,
+                                                DmxNodeParamsConst::kUniversePortD,
+#if defined(NODE_ARTNET) || defined(NODE_ARTNET_MULTI)
+                                                ArtNetParamsConst::kDestinationIpPortA,
+                                                ArtNetParamsConst::kDestinationIpPortB,
+                                                ArtNetParamsConst::kDestinationIpPortC,
+                                                ArtNetParamsConst::kDestinationIpPortD
+#endif
+#endif
+#endif
+    };
 };
 } // namespace json
 
-#endif  // JSON_DISPLAYUDFPARAMSCONST_H_
+#endif // JSON_DISPLAYUDFPARAMSCONST_H_

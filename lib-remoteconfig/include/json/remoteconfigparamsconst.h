@@ -27,19 +27,14 @@
 #define JSON_REMOTECONFIGPARAMSCONST_H_
 
 #include "json/json_key.h"
+#include "common/utils/utils_hash.h"
 
-namespace json
-{
-struct RemoteConfigParamsConst
-{
-	static constexpr char kFileName[] = "remote.json";
-  
-	static constexpr json::SimpleKey kDisplayName {
-	    "display_name",
-	    12,
-	    Fnv1a32("display_name", 12)
-	};
+namespace json {
+struct RemoteConfigParamsConst {
+    static constexpr char kFileName[] = "remote.json";
+
+    static constexpr json::SimpleKey kDisplayName{"display_name", 12, Fnv1a32("display_name", 12)};
 };
 } // namespace json
 
-#endif  // JSON_REMOTECONFIGPARAMSCONST_H_
+#endif // JSON_REMOTECONFIGPARAMSCONST_H_

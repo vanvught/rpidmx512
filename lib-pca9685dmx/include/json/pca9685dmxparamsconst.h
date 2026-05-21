@@ -31,74 +31,20 @@
 
 namespace json {
 struct Pca9685DmxParamsConst {
-	static constexpr char kFileName[] = "dmxpca9685.json";
+    static constexpr char kFileName[] = "dmxpca9685.json";
 
-	static constexpr json::SimpleKey kI2cAddres {
-	    "i2c_address",
-	    11,
-	    Fnv1a32("i2c_address", 11)
-	};
-	
-	static constexpr json::SimpleKey kDmxStartAddress {
-	    "dmx_start_address",
-	    17,
-	    Fnv1a32("dmx_start_address", 17)
-	};	
-   
-	static constexpr json::SimpleKey kMode {
-	    "mode",
-	    4,
-	    Fnv1a32("mode", 4)
-	};
-
-	static constexpr json::SimpleKey kChannelCount {
-	    "channel_count",
-	    13,
-	    Fnv1a32("channel_count", 13)
-	};
-
-	static constexpr json::SimpleKey kUse8Bit {
-	    "use_8bit",
-	    8,
-	    Fnv1a32("use_8bit", 8)
-	};
-	
-	static constexpr json::SimpleKey kLedPwmFrequency {
-	    "led_pwm_frequency",
-	    8,
-	    Fnv1a32("led_pwm_frequency", 8)
-	};
-	
-	static constexpr json::SimpleKey kLedOutputInvert {
-	    "led_output_invert",
-	    8,
-	    Fnv1a32("led_output_invert", 8)
-	};
-	
-	static constexpr json::SimpleKey kLedOutputOpendrain {
-	    "led_output_opendrain",
-	    8,
-	    Fnv1a32("led_output_opendrain", 8)
-	};
-	
-	static constexpr json::SimpleKey kServoLeftUs {
-	    "servo_left_us",
-	    8,
-	    Fnv1a32("servo_left_us", 8)
-	};
-	
-	static constexpr json::SimpleKey kServoCenterUs {
-	    "servo_center_us",
-	    8,
-	    Fnv1a32("servo_center_us", 8)
-	};
-	
-	static constexpr json::SimpleKey kServoRightUs {
-	    "servo_right_us",
-	    8,
-	    Fnv1a32("servo_right_us", 8)
-	};
+    static constexpr json::SimpleKey kI2cAddres{"i2c_address", 11, Fnv1a32("i2c_address", 11)};
+    static constexpr json::SimpleKey kDmxStartAddress{"dmx_start_address", 17, Fnv1a32("dmx_start_address", 17)};
+    static constexpr json::SimpleKey kMode{"mode", 4, Fnv1a32("mode", 4)};
+    static constexpr json::SimpleKey kChannelCount{"channel_count", 13, Fnv1a32("channel_count", 13)};
+    static constexpr json::SimpleKey kUse8Bit{"use_8bit", 8, Fnv1a32("use_8bit", 8)};
+    static constexpr json::SimpleKey kLedPwmFrequency{"led_pwm_frequency", 8, Fnv1a32("led_pwm_frequency", 8)};
+    static constexpr json::SimpleKey kLedOutputInvert{"led_output_invert", 8, Fnv1a32("led_output_invert", 8)};
+    static constexpr json::SimpleKey kLedOutputOpendrain{"led_output_opendrain", 8, Fnv1a32("led_output_opendrain", 8)};
+    static constexpr json::SimpleKey kServoLeftUs{"servo_left_us", 8, Fnv1a32("servo_left_us", 8)};
+    static constexpr json::SimpleKey kServoCenterUs{"servo_center_us", 8, Fnv1a32("servo_center_us", 8)};
+    static constexpr json::SimpleKey kServoRightUs{"servo_right_us", 8, Fnv1a32("servo_right_us", 8)};
 };
 } // namespace json
 
-#endif  // JSON_PCA9685DMXPARAMSCONST_H_
+#endif // JSON_PCA9685DMXPARAMSCONST_H_
