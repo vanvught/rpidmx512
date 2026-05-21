@@ -56,7 +56,9 @@
 #include "hal_boardinfo.h"
 #include "network_udp.h"
 #include "hal.h"
+#if !defined(DISABLE_RTC)
 #include "hwclock.h"
+#endif
 #include "hal_statusled.h"
 #include "timing.h"
 #include "firmware/debug/debug_debug.h"
@@ -697,6 +699,7 @@ void ArtNetNode::Print() {
 }
 
 void ArtNetNode::HandleTimeSync() {
+#if !defined(DISABLE_RTC)
     const auto* const kArtTimeSync = reinterpret_cast<artnet::ArtTimeSync*>(receive_buffer_);
     struct tm tm_time;
 
@@ -710,6 +713,7 @@ void ArtNetNode::HandleTimeSync() {
     rtc::Set(&tm_time);
 
     DEBUG_PRINTF("%.4d/%.2d/%.2d %.2d:%.2d:%.2d", 1900 + tm_time.tm_year, 1 + tm_time.tm_mon, tm_time.tm_mday, tm_time.tm_hour, tm_time.tm_min, tm_time.tm_sec);
+#endif
 }
 
 #if defined(__GNUC__) && !defined(__clang__)
@@ -797,9 +801,11 @@ void ArtNetNode::InputUdp(const uint8_t* buffer, uint32_t size, uint32_t from_ip
             art_time_code_callback_function_ptr_(reinterpret_cast<const struct artnet::TimeCode*>(&kArtTimeCode->frames));
         } break;
 #endif
+#if !defined(DISABLE_RTC)
         case artnet::OpCodes::kOpTimesync:
             HandleTimeSync();
             break;
+#endif			
 #if defined(RDM_CONTROLLER) || defined(RDM_RESPONDER)
         case artnet::OpCodes::kOpTodrequest:
             if (state_.is_rdm_enabled) {

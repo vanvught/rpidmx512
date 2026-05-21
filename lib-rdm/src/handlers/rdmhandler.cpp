@@ -44,21 +44,25 @@
 #include "rdmsubdevices.h"
 #endif
 #include "timing.h"
+#if !defined(DISABLE_RTC)
 #include "hwclock.h"
+#endif
 #include "hal_boardinfo.h"
 #include "display.h"
 #include "firmware/debug/debug_debug.h"
 
-enum class PowerState : uint8_t
-{
+namespace hal {
+bool Reboot();
+} // namespace hal
+
+enum class PowerState : uint8_t {
     kFullOff = 0x00,  ///< Completely disengages power to device. Device can no longer respond.
     kShutdown = 0x01, ///< Reduced power mode, may require device reset to return to normal operation. Device still responds to messages.
     kStandby = 0x02,  ///< Reduced power mode. Device can return to NORMAL without a reset. Device still responds to messages.
     kNormal = 0xFF,   ///< Normal Operating Mode.
 };
 
-enum class ResetMode : uint8_t
-{
+enum class ResetMode : uint8_t {
     kWarm = 0x01,
     kCold = 0xFF ///< A cold reset is the equivalent of removing and reapplying power to the device.
 };
@@ -96,8 +100,10 @@ const RDMHandler::PidDefinition RDMHandler::PID_DEFINITIONS[]{
     {E120_DEVICE_HOURS, &RDMHandler::GetDeviceHours, &RDMHandler::SetDeviceHours, 0, true, true, false},
     {E120_DISPLAY_INVERT, &RDMHandler::GetDisplayInvert, &RDMHandler::SetDisplayInvert, 0, true, true, false},
     {E120_DISPLAY_LEVEL, &RDMHandler::GetDisplayLevel, &RDMHandler::SetDisplayLevel, 0, true, true, false},
+#if !defined(DISABLE_RTC)
     {E120_REAL_TIME_CLOCK, &RDMHandler::GetRealTimeClock, &RDMHandler::SetRealTimeClock, 0, true, true, false},
-    {E120_POWER_STATE, &RDMHandler::GetPowerState, &RDMHandler::SetPowerState, 0, true, true, false},
+#endif
+	 {E120_POWER_STATE, &RDMHandler::GetPowerState, &RDMHandler::SetPowerState, 0, true, true, false},
 #if defined(CONFIG_RDM_ENABLE_SELF_TEST)
     {E120_PERFORM_SELFTEST, &RDMHandler::GetPerformSelfTest, &RDMHandler::SetPerformSelfTest, 0, true, true, false},
     {E120_SELF_TEST_DESCRIPTION, &RDMHandler::GetSelfTestDescription, nullptr, 1, true, true, false},
@@ -1334,33 +1340,31 @@ void RDMHandler::SetDisplayLevel([[maybe_unused]] bool is_broadcast, [[maybe_unu
     RespondMessageAck();
 }
 
-void RDMHandler::GetRealTimeClock([[maybe_unused]] uint16_t sub_device)
-{
-    const auto ltime = time(nullptr);
-    const auto* tm = localtime(&ltime);
-    const auto year = static_cast<uint16_t>(tm->tm_year + 1900);
+#if !defined(DISABLE_RTC)
+void RDMHandler::GetRealTimeClock([[maybe_unused]] uint16_t sub_device) {
+    const auto kLtime = time(nullptr);
+    const auto* tm = localtime(&kLtime);
+    const auto kYear = static_cast<uint16_t>(tm->tm_year + 1900);
 
-    auto* pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
+    auto* out = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
 
-    pRdmDataOut->param_data[0] = static_cast<uint8_t>(year >> 8);
-    pRdmDataOut->param_data[1] = static_cast<uint8_t>(year);
-    pRdmDataOut->param_data[2] = static_cast<uint8_t>(tm->tm_mon + 1); // 0..11
-    pRdmDataOut->param_data[3] = static_cast<uint8_t>(tm->tm_mday);
-    pRdmDataOut->param_data[4] = static_cast<uint8_t>(tm->tm_hour);
-    pRdmDataOut->param_data[5] = static_cast<uint8_t>(tm->tm_min);
-    pRdmDataOut->param_data[6] = static_cast<uint8_t>(tm->tm_sec);
+    out->param_data[0] = static_cast<uint8_t>(kYear >> 8);
+    out->param_data[1] = static_cast<uint8_t>(kYear);
+    out->param_data[2] = static_cast<uint8_t>(tm->tm_mon + 1); // 0..11
+    out->param_data[3] = static_cast<uint8_t>(tm->tm_mday);
+    out->param_data[4] = static_cast<uint8_t>(tm->tm_hour);
+    out->param_data[5] = static_cast<uint8_t>(tm->tm_min);
+    out->param_data[6] = static_cast<uint8_t>(tm->tm_sec);
 
-    pRdmDataOut->param_data_length = 7;
+    out->param_data_length = 7;
 
     RespondMessageAck();
 }
 
-void RDMHandler::SetRealTimeClock(bool is_broadcast, [[maybe_unused]] uint16_t sub_device)
-{
+void RDMHandler::SetRealTimeClock(bool is_broadcast, [[maybe_unused]] uint16_t sub_device) {
     auto* in = reinterpret_cast<struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
-    if (in->param_data_length != 7)
-    {
+    if (in->param_data_length != 7) {
         RespondMessageNack(E120_NR_FORMAT_ERROR);
         return;
     }
@@ -1374,13 +1378,11 @@ void RDMHandler::SetRealTimeClock(bool is_broadcast, [[maybe_unused]] uint16_t s
     t.tm_min = in->param_data[5];
     t.tm_sec = in->param_data[6];
 
-    if ((!is_broadcast) && (!rtc::Set(&t)))
-    {
+    if ((!is_broadcast) && (!rtc::Set(&t))) {
         RespondMessageNack(E120_NR_WRITE_PROTECT);
     }
 
-    if (is_broadcast)
-    {
+    if (is_broadcast) {
         return;
     }
 
@@ -1389,6 +1391,7 @@ void RDMHandler::SetRealTimeClock(bool is_broadcast, [[maybe_unused]] uint16_t s
 
     RespondMessageAck();
 }
+#endif
 
 void RDMHandler::GetPowerState([[maybe_unused]] uint16_t sub_device)
 {
