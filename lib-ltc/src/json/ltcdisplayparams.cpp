@@ -119,7 +119,7 @@ void LtcDisplayParams::Dump() {
     printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, json::LtcDisplayParamsConst::kFileName);
 
 #if !defined(CONFIG_LTC_DISABLE_WS28XX)
-    printf(" %s=%s [%u]\n", LtcDisplayParamsConst::kPixelType, store_ltcdisplay.ws28xx_display_type == static_cast<uint8_t>(ltc::display::rgb::WS28xxType::SEGMENT) ? "7segment" : "matrix", store_ltcdisplay.ws28xx_display_type);
+    printf(" %s=%s [%u]\n", LtcDisplayParamsConst::kPixelType.name, store_ltcdisplay.ws28xx_display_type == static_cast<uint8_t>(ltc::display::rgb::WS28xxType::SEGMENT) ? "7segment" : "matrix", store_ltcdisplay.ws28xx_display_type);
     printf(" %s=%s [%u]\n", DmxLedParamsConst::kType.name, pixel::GetTypeName(static_cast<pixel::LedType>(store_ltcdisplay.ws28xx_type)), static_cast<int>(store_ltcdisplay.ws28xx_type));
     printf(" %s=%s [%u]\n", DmxLedParamsConst::kMap.name, pixel::GetMapName(static_cast<pixel::LedMap>(store_ltcdisplay.ws28xx_rgb_mapping)), static_cast<int>(store_ltcdisplay.ws28xx_rgb_mapping));
 #endif
