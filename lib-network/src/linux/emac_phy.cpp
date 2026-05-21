@@ -137,36 +137,40 @@ void CustomizedStatus(phy::Status& phyStatus) {
 
 // Ensure order matches enum class Speed
 constexpr const char* kSpeedNames[] = {
+    "Unknown",
     "10baseT",   // Speed::SPEED10
     "100baseTX", // Speed::SPEED100
     "1000baseT"  // Speed::SPEED1000
 };
 
-static_assert(static_cast<size_t>(phy::Speed::kSpeed10) == 0, "Enum ordering mismatch");
+static_assert(static_cast<size_t>(phy::Speed::kUnknown) == 0, "Enum ordering mismatch");
 static_assert(static_cast<size_t>(phy::Speed::kSpeed1000) < (sizeof(kSpeedNames) / sizeof(kSpeedNames[0])), "Enum range mismatch");
 
-const char* ToString(phy::Link link)
-{
+const char* ToString(phy::Link link) {
     return link == phy::Link::kStateUp ? "up" : "down";
 }
 
-const char* ToString(phy::Duplex duplex)
-{
-    return duplex == phy::Duplex::kDuplexHalf ? "half" : "full";
+const char* ToString(phy::Duplex duplex) {
+    switch (duplex) {
+        case phy::Duplex::kUnknown:
+            return "unknown";
+        case phy::Duplex::kDuplexHalf:
+            return "half";
+        case phy::Duplex::kDuplexFull:
+            return "full";
+    }
+    return "error";
 }
 
-const char* ToString(phy::Speed speed)
-{
+const char* ToString(phy::Speed speed) {
     const auto kIndex = static_cast<size_t>(speed);
-    if (kIndex < sizeof(kSpeedNames) / sizeof(kSpeedNames[0]))
-    {
+    if (kIndex < sizeof(kSpeedNames) / sizeof(kSpeedNames[0])) {
         return kSpeedNames[kIndex];
     }
-    return "unknown";
+    return "error";
 }
 
-const char* ToStringAutonegotiation(bool autonegotiation)
-{
+const char* ToStringAutonegotiation(bool autonegotiation) {
     return autonegotiation ? "on" : "off";
 }
 } // namespace emac::phy
