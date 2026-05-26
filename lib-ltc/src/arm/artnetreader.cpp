@@ -1,7 +1,7 @@
 /**
  * @file artnetreader.cpp
  */
-/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,7 +38,6 @@
 #include "network_udp.h"
 #include "arm/artnetreader.h"
 #include "ltc.h"
-#include "hal.h"
 #include "hal_statusled.h"
 // Input
 #include "artnettimecode.h"
@@ -47,11 +46,10 @@
 #include "ltcsender.h"
 #include "arm/ltcoutputs.h"
 
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
 #if defined(H3)
-static void arm_timer_handler()
-{
+static void arm_timer_handler() {
     gv_ltc_nUpdatesPerSecond = gv_ltc_nUpdates - gv_ltc_nUpdatesPrevious;
     gv_ltc_nUpdatesPrevious = gv_ltc_nUpdates;
 }
@@ -59,8 +57,7 @@ static void arm_timer_handler()
 // Defined in platform_ltc.cpp
 #endif
 
-void ArtNetReader::Start()
-{
+void ArtNetReader::Start() {
     DEBUG_ENTRY();
 
 #if defined(H3)
@@ -75,13 +72,12 @@ void ArtNetReader::Start()
     DEBUG_EXIT();
 }
 
-void ArtNetReader::Stop()
-{
+void ArtNetReader::Stop() {
     DEBUG_ENTRY();
-	
-	assert(handle_ != -1);	
-	handle_ = network::udp::End(artnet::kUdpPort);
-	handle_ = -1;
+
+    assert(handle_ != -1);
+    handle_ = network::udp::End(artnet::kUdpPort);
+    handle_ = -1;
 
 #if defined(H3)
     irq_timer_arm_physical_set(static_cast<thunk_irq_timer_arm_t>(nullptr));
@@ -97,14 +93,12 @@ void ArtNetReader::Stop()
 #pragma GCC optimize("no-tree-loop-distribute-patterns")
 #endif
 
-static bool TimecodeIsEqual(const struct ltc::TimeCode* timecode)
-{
+static bool TimecodeIsEqual(const struct ltc::TimeCode* timecode) {
     auto is_equal = false;
     const auto* src = reinterpret_cast<const uint8_t*>(timecode);
     auto* dst = reinterpret_cast<uint8_t*>(&g_ltc_LtcTimeCode);
 
-    for (uint32_t i = 0; i < sizeof(struct ltc::TimeCode); i++)
-    {
+    for (uint32_t i = 0; i < sizeof(struct ltc::TimeCode); i++) {
         is_equal |= (*src == *dst);
         *dst++ = *src++;
     }
@@ -112,22 +106,18 @@ static bool TimecodeIsEqual(const struct ltc::TimeCode* timecode)
     return !is_equal;
 }
 
-void ArtNetReader::Handler(const struct artnet::TimeCode* timecode)
-{
+void ArtNetReader::Handler(const struct artnet::TimeCode* timecode) {
     timestamp_ = timing::Millis();
 
-    if (ltc::Destination::IsEnabled(ltc::Destination::Output::LTC))
-    {
+    if (ltc::Destination::IsEnabled(ltc::Destination::Output::LTC)) {
         LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct ltc::TimeCode*>(timecode));
     }
 
-    if (ltc::Destination::IsEnabled(ltc::Destination::Output::ETC))
-    {
+    if (ltc::Destination::IsEnabled(ltc::Destination::Output::ETC)) {
         LtcEtc::Get()->Send(reinterpret_cast<const struct midi::Timecode*>(timecode));
     }
 
-    if (!TimecodeIsEqual(reinterpret_cast<const struct ltc::TimeCode*>(timecode)))
-    {
+    if (!TimecodeIsEqual(reinterpret_cast<const struct ltc::TimeCode*>(timecode))) {
         LtcOutputs::Get()->Update(const_cast<const struct ltc::TimeCode*>(&g_ltc_LtcTimeCode));
     }
 

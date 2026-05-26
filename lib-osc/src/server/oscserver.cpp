@@ -37,7 +37,7 @@
 #include "oscsimplesend.h"
 #include "oscblob.h"
 #include "dmxnode.h"
-#include "hal_boardinfo.h"
+#include "board.h"
 #include "firmware/debug/debug_dump.h"
 #include "firmware/debug/debug_debug.h"
 
@@ -69,11 +69,11 @@ OscServer::OscServer() {
     snprintf(os_, sizeof(os_) - 1, "[V%s] %s", kSoftwareVersion, __DATE__);
 
     uint8_t text_length;
-    model_ = hal::BoardName(text_length);
-    soc_ = hal::SocName(text_length);
+    model_ = board::BoardName(text_length);
+    soc_ = board::SocName(text_length);
 
     if (soc_[0] == '\0') {
-        soc_ = hal::CpuName(text_length);
+        soc_ = board::CpuName(text_length);
     }
 
     DEBUG_EXIT();

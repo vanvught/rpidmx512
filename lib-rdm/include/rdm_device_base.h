@@ -33,22 +33,18 @@
 
 #include "rdmconst.h"
 #include "rdm_e120.h"
-#include "hal_serialnumber.h"
+#include "serialnumber.h"
 
-namespace rdm::device
-{
-class Base
-{
+namespace rdm::device {
+class Base {
    public:
-    static Base& Instance()
-    {
+    static Base& Instance() {
         static Base instance; // one instance for the whole program
         return instance;
     }
 
-    void Print()
-    {
-		puts("RDM Device Base");
+    void Print() {
+        puts("RDM Device Base");
         const auto kLength = static_cast<int>(std::min(static_cast<size_t>(rdm::device::kManufacturerLabelMaxLength), strlen(rdm::Manufacturer::kName)));
         printf(" Manufacturer Name : %.*s\n", kLength, const_cast<char*>(&rdm::Manufacturer::kName[0]));
         printf(" Manufacturer ID   : %.2X%.2X\n", uid_[0], uid_[1]);
@@ -59,9 +55,8 @@ class Base
     const uint8_t* GetSN() const { return serial_number_; }
 
    private:
-    Base()
-    {
-        hal::SerialNumber(serial_number_);
+    Base() {
+        SerialNumber(serial_number_);
 
         uid_[0] = rdm::Manufacturer::kId[0];
         uid_[1] = rdm::Manufacturer::kId[1];

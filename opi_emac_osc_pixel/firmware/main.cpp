@@ -27,7 +27,7 @@
 
 #include "h3/hal.h"
 #include "watchdog.h"
-#include "hal_boardinfo.h"
+#include "board.h"
 #include "emac/network.h"
 #include "display.h"
 #include "oscserver.h"
@@ -47,10 +47,8 @@
 #include "common/utils/utils_enum.h"
 #include "configurationstore.h"
 
-namespace hal
-{
-void RebootHandler()
-{
+namespace hal {
+void RebootHandler() {
     PixelDmx::Get().Blackout();
 }
 } // namespace hal
@@ -93,11 +91,11 @@ int main() // NOLINT
     uint8_t text_length;
 
     display.Printf(1, "OSC Pixel 1");
-    display.Write(2, hal::BoardName(text_length));
-    display.Printf(3, "IP: " IPSTR " %c", IP2STR(network::GetPrimaryIp()), network::iface::IsDhcpKnown() ? ( network::iface::Dhcp() ? 'D' : 'S') : ' ');
+    display.Write(2, board::BoardName(text_length));
+    display.Printf(3, "IP: " IPSTR " %c", IP2STR(network::GetPrimaryIp()), network::iface::IsDhcpKnown() ? (network::iface::Dhcp() ? 'D' : 'S') : ' ');
     display.Printf(4, "In: %d", oscserver.GetPortIncoming());
     display.Printf(5, "Out: %d", oscserver.GetPortOutgoing());
-    
+
     common::firmware::pixeldmx::Show(7);
 
     RemoteConfig remote_config(remoteconfig::Output::PIXEL, 1);
@@ -110,8 +108,7 @@ int main() // NOLINT
 
     watchdog::Init();
 
-    for (;;)
-    {
+    for (;;) {
         watchdog::Feed();
         network::Run();
         pixeltest_pattern.Run();

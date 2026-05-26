@@ -41,20 +41,15 @@
 #include "h3_gpio.h"
 #include "h3_sid.h"
 #include "h3_thermal.h"
-
 #include "arm/arm.h"
 #include "arm/gic.h"
 #include "arm/synchronize.h"
-
-#include "hal.h"
+#include "board.h"
 #include "console.h"
-
 #include "../ff14b/source/ff.h"
-
 #if defined(DEBUG_I2C)
 #include "i2cdetect.h"
 #endif
-
 #if !defined(DISABLE_RTC)
 #include "hwclock.h"
 static HwClock hwClock;
@@ -201,7 +196,7 @@ void __attribute__((cold)) Init() {
     }
 #endif
 
-    const FRESULT kResult = f_mount(&fat_fs, reinterpret_cast<const TCHAR*>(""), static_cast<BYTE>(hal::GetBootDevice() == hal::BootDevice::MMC0) ? 1 : 0);
+    const FRESULT kResult = f_mount(&fat_fs, reinterpret_cast<const TCHAR*>(""), static_cast<BYTE>(board::GetBootDevice() == board::BootDevice::kMmc0) ? 1 : 0);
     if (kResult != FR_OK) {
         char buffer[32];
         snprintf(buffer, sizeof(buffer) - 1, "f_mount failed! %d\n", static_cast<int>(kResult));

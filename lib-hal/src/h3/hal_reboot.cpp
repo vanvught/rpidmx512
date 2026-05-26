@@ -34,8 +34,8 @@
 #include "h3_board.h"
 #include "arm/arm.h"
 #include "arm/synchronize.h"
-#include "hal.h"
 #include "hal_statusled.h"
+#include "hal.h"
 
 #if !defined(DISABLE_RTC)
 #include "hwclock.h"
@@ -49,7 +49,7 @@ void Shutdown();
 } // namespace network
 #endif
 
-namespace hal {
+namespace hal {	
 bool Reboot() {
     puts("Rebooting ...");
 
@@ -85,3 +85,10 @@ bool Reboot() {
     return true;
 }
 } // namespace hal
+
+namespace board {
+	void Reboot() {
+		hal::Reboot();
+	}
+}
+

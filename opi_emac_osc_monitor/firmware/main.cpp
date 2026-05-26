@@ -28,7 +28,7 @@
 #include "h3/hal.h"
 #include "h3/console_fb.h"
 #include "watchdog.h"
-#include "hal_boardinfo.h"
+#include "board.h"
 #include "emac/network.h"
 #include "ip4/ip4_address.h"
 #include "console.h"
@@ -44,8 +44,7 @@
 #include "configstore.h"
 #include "remoteconfig.h"
 
-namespace hal
-{
+namespace hal {
 void RebootHandler() {}
 } // namespace hal
 
@@ -76,7 +75,7 @@ int main() // NOLINT
     oscserver_params.Load();
     oscserver_params.Set();
 
-     DmxMonitor monitor;
+    DmxMonitor monitor;
     // There is support for HEX output only
     oscserver.SetOutput(&monitor);
     monitor.Cls();
@@ -88,8 +87,8 @@ int main() // NOLINT
     uint8_t text_length;
 
     display.Printf(1, "OSC Monitor");
-    display.Write(2, hal::BoardName(text_length));
-    display.Printf(3, "IP: " IPSTR " %c", IP2STR(network::GetPrimaryIp()), network::iface::IsDhcpKnown() ? ( network::iface::Dhcp() ? 'D' : 'S') : ' ');
+    display.Write(2, board::BoardName(text_length));
+    display.Printf(3, "IP: " IPSTR " %c", IP2STR(network::GetPrimaryIp()), network::iface::IsDhcpKnown() ? (network::iface::Dhcp() ? 'D' : 'S') : ' ');
     display.Printf(4, "In: %d", oscserver.GetPortIncoming());
     display.Printf(5, "Out: %d", oscserver.GetPortOutgoing());
 
@@ -103,8 +102,7 @@ int main() // NOLINT
 
     watchdog::Init();
 
-    for (;;)
-    {
+    for (;;) {
         watchdog::Feed();
         network::Run();
         show_systime.Run();

@@ -27,7 +27,7 @@
 
 #include "h3/hal.h"
 #include "watchdog.h"
-#include "hal_boardinfo.h"
+#include "board.h"
 #include "emac/network.h"
 #include "display.h"
 #include "oscserver.h"
@@ -80,7 +80,7 @@ int main() {
     uint8_t text_length;
 
     display.Printf(1, "OSC DMX 1");
-    display.Write(2, hal::BoardName(text_length));
+    display.Write(2, board::BoardName(text_length));
     display.Printf(3, "IP: " IPSTR " %c", IP2STR(network::GetPrimaryIp()), network::iface::IsDhcpKnown() ? (network::iface::Dhcp() ? 'D' : 'S') : ' ');
     display.Printf(4, "In: %d", oscserver.GetPortIncoming());
     display.Printf(5, "Out: %d", oscserver.GetPortOutgoing());

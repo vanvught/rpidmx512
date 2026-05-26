@@ -1,8 +1,8 @@
 /**
- * @file hal_boardinfo.h
+ * @file board.h
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,18 +23,31 @@
  * THE SOFTWARE.
  */
 
-#ifndef HAL_BOARDINFO_H_
-#define HAL_BOARDINFO_H_
+#ifndef BOARD_H_
+#define BOARD_H_
 
 #include <cstdint>
 
-namespace hal
-{
+namespace board {
+enum class BootDevice { kUnkown, kFel, kMmc0, kSpi, kHdd, kFlash, kRam };
+
+void Init();
+bool Reboot();
+void RebootHandler();
+
+BootDevice GetBootDevice();
+
 const char* BoardName(uint8_t& length);
 const char* SocName(uint8_t& length);
 const char* CpuName(uint8_t& length);
-const char* SysName(uint8_t& length);
 const char* MachineName(uint8_t& length);
-} // namespace hal
+const char* SysName(uint8_t& length);
 
-#endif  // HAL_BOARDINFO_H_
+float CoreTemperatureMin();
+float CoreTemperatureMax();
+float CoreTemperatureCurrent();
+
+const char* Website();
+} // namespace board
+
+#endif // BOARD_H_

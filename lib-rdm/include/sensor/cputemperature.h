@@ -2,7 +2,7 @@
  * @file cputemperature.h
  *
  */
-/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2018-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,27 +29,24 @@
 #include <cstdint>
 
 #include "rdmsensor.h"
+#include "board.h"
 #include "rdm_e120.h"
-#include "hal.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
-class CpuTemperature final : public RDMSensor
-{
+class CpuTemperature final : public RDMSensor {
    public:
-    explicit CpuTemperature(uint8_t sensor) : RDMSensor(sensor)
-    {
+    explicit CpuTemperature(uint8_t sensor) : RDMSensor(sensor) {
         SetType(E120_SENS_TEMPERATURE);
         SetUnit(E120_UNITS_CENTIGRADE);
         SetPrefix(E120_PREFIX_NONE);
-        SetRangeMin(static_cast<int16_t>(hal::kCoreTemperatureMin));
-        SetRangeMax(static_cast<int16_t>(hal::kCoreTemperatureMax));
-        SetNormalMin(static_cast<int16_t>(hal::kCoreTemperatureMin));
-        SetNormalMax(static_cast<int16_t>(hal::kCoreTemperatureMax));
+        SetRangeMin(static_cast<int16_t>(board::CoreTemperatureMin()));
+        SetRangeMax(static_cast<int16_t>(board::CoreTemperatureMax()));
+        SetNormalMin(static_cast<int16_t>(board::CoreTemperatureMin()));
+        SetNormalMax(static_cast<int16_t>(board::CoreTemperatureMax()));
         SetDescription("CPU");
     }
 
-    bool Initialize() override
-    {
+    bool Initialize() override {
         DEBUG_ENTRY();
 #if defined(__APPLE__)
         DEBUG_EXIT();
@@ -60,12 +57,11 @@ class CpuTemperature final : public RDMSensor
 #endif
     }
 
-    int16_t GetValue() override
-    {
-        const auto kValue = static_cast<int16_t>(hal::CoreTemperatureCurrent());
+    int16_t GetValue() override {
+        const auto kValue = static_cast<int16_t>(board::CoreTemperatureCurrent());
         DEBUG_PRINTF("nValue=%d", kValue);
         return kValue;
     }
 };
 
-#endif  // SENSOR_CPUTEMPERATURE_H_
+#endif // SENSOR_CPUTEMPERATURE_H_

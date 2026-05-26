@@ -47,7 +47,7 @@
 #if !defined(DISABLE_RTC)
 #include "hwclock.h"
 #endif
-#include "hal_boardinfo.h"
+#include "board.h"
 #include "display.h"
 #include "firmware/debug/debug_debug.h"
 
@@ -742,7 +742,7 @@ void RDMHandler::GetProductDetailIdList([[maybe_unused]] uint16_t sub_device) {
 
 void RDMHandler::GetDeviceModelDescription([[maybe_unused]] uint16_t sub_device) {
     uint8_t board_name_length;
-    const char* board_model = hal::BoardName(board_name_length);
+    const char* board_model = board::BoardName(board_name_length);
 
     HandleString(board_model, board_name_length);
     RespondMessageAck();
@@ -827,7 +827,7 @@ void RDMHandler::SetResetDevice([[maybe_unused]] bool is_broadcast, [[maybe_unus
         return;
     }
 
-    if (!hal::Reboot()) {
+    if (!board::Reboot()) {
         RespondMessageNack(E120_NR_WRITE_PROTECT);
     }
 }
@@ -928,7 +928,7 @@ void RDMHandler::GetBootSoftwareVersionId([[maybe_unused]] uint16_t sub_device) 
 
 void RDMHandler::GetBootSoftwareVersionLabel([[maybe_unused]] uint16_t sub_device) {
     uint8_t sys_name_length;
-    const auto* sys_name = hal::SysName(sys_name_length);
+    const auto* sys_name = board::SysName(sys_name_length);
 
     HandleString(sys_name, std::min(rdm::device::kBootSoftwareVersionLabelMaxLength, sys_name_length));
     RespondMessageAck();

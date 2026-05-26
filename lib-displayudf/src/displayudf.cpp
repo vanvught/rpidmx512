@@ -31,21 +31,19 @@
 #include <cassert>
 
 #include "displayudf.h"
+#include "board.h"
 #include "firmware/debug/debug_debug.h"
 
-DisplayUdf::DisplayUdf()
-{
+DisplayUdf::DisplayUdf() {
     assert(s_this == nullptr);
     s_this = this;
 
-    for (uint32_t i = 0; i < static_cast<uint32_t>(displayudf::Labels::kUnknown); i++)
-    {
+    for (uint32_t i = 0; i < static_cast<uint32_t>(displayudf::Labels::kUnknown); i++) {
         labels_[i] = static_cast<uint8_t>(i + 1);
     }
 }
 
-void DisplayUdf::SetTitle(const char* format, ...)
-{
+void DisplayUdf::SetTitle(const char* format, ...) {
     va_list arp;
     va_start(arp, format);
 
@@ -58,17 +56,13 @@ void DisplayUdf::SetTitle(const char* format, ...)
     DEBUG_PUTS(title_);
 }
 
-void DisplayUdf::Set(uint32_t line, displayudf::Labels label)
-{
-    if (!((line > 0) && (line <= displayudf::kLabelMaxRows)))
-    {
+void DisplayUdf::Set(uint32_t line, displayudf::Labels label) {
+    if (!((line > 0) && (line <= displayudf::kLabelMaxRows))) {
         return;
     }
 
-    for (uint32_t i = 0; i < static_cast<uint32_t>(displayudf::Labels::kUnknown); i++)
-    {
-        if (labels_[i] == static_cast<uint8_t>(line))
-        {
+    for (uint32_t i = 0; i < static_cast<uint32_t>(displayudf::Labels::kUnknown); i++) {
+        if (labels_[i] == static_cast<uint8_t>(line)) {
             labels_[i] = labels_[static_cast<uint32_t>(label)];
             break;
         }
@@ -77,8 +71,7 @@ void DisplayUdf::Set(uint32_t line, displayudf::Labels label)
     labels_[static_cast<uint32_t>(label)] = static_cast<uint8_t>(line);
 }
 
-void DisplayUdf::Show()
-{
+void DisplayUdf::Show() {
 #if defined(NODE_ARTNET)
     ShowArtNetNode();
 #elif defined(NODE_E131)
@@ -87,10 +80,8 @@ void DisplayUdf::Show()
     ShowNode();
 #endif
 
-    for (uint32_t i = 0; i < static_cast<uint32_t>(displayudf::Labels::kUnknown); i++)
-    {
-        if (labels_[i] > displayudf::kLabelMaxRows)
-        {
+    for (uint32_t i = 0; i < static_cast<uint32_t>(displayudf::Labels::kUnknown); i++) {
+        if (labels_[i] > displayudf::kLabelMaxRows) {
             labels_[i] = 0xFF;
         }
 
@@ -101,10 +92,9 @@ void DisplayUdf::Show()
     Write(labels_[static_cast<uint32_t>(displayudf::Labels::kTitle)], title_);
     uint8_t hw_text_length;
     ClearEndOfLine();
-    Write(labels_[static_cast<uint32_t>(displayudf::Labels::kBoardname)], hal::BoardName(hw_text_length));
+    Write(labels_[static_cast<uint32_t>(displayudf::Labels::kBoardname)], board::BoardName(hw_text_length));
     ClearEndOfLine();
-    Printf(labels_[static_cast<uint32_t>(displayudf::Labels::kVersion)], "Firmware V%.*s", firmwareversion::length::kSoftwareVersion,
-           FirmwareVersion::Get()->GetVersion()->software_version);
+    Printf(labels_[static_cast<uint32_t>(displayudf::Labels::kVersion)], "Firmware V%.*s", firmwareversion::length::kSoftwareVersion, FirmwareVersion::Get()->GetVersion()->software_version);
 
 #if defined(RDM_RESPONDER)
     ShowDmxStartAddress();

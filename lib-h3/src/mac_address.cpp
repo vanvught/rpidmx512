@@ -2,7 +2,7 @@
  * @file mac_address.cpp
  *
  */
-/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2026 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,22 +32,22 @@
 int uart0::Printf(const char* fmt, ...);
 #endif
 
-void MacAddressGet(uint8_t paddr[]) {
+void MacAddress(uint8_t paddr[]) {
 	assert(mac_addr == ENET_MAC_ADDRESS0);
 
-	const uint32_t mac_lo = H3_EMAC->ADDR[0].LOW;
-	const uint32_t mac_hi = H3_EMAC->ADDR[0].HIGH;
+	const auto kMacLo = H3_EMAC->ADDR[0].LOW;
+	const auto kMacHi = H3_EMAC->ADDR[0].HIGH;
 
 #ifndef NDEBUG
 	uart0::Printf("H3_EMAC->ADDR[0].LOW=%08x, H3_EMAC->ADDR[0].HIGH=%08x\n", mac_lo, mac_hi);
 #endif
 
-	paddr[0] = (mac_lo >> 0) & 0xff;
-	paddr[1] = (mac_lo >> 8) & 0xff;
-	paddr[2] = (mac_lo >> 16) & 0xff;
-	paddr[3] = static_cast<uint8_t> ((mac_lo >> 24) & 0xff);
-	paddr[4] = (mac_hi >> 0) & 0xff;
-	paddr[5] = (mac_hi >> 8) & 0xff;
+	paddr[0] = (kMacLo >> 0) & 0xff;
+	paddr[1] = (kMacLo >> 8) & 0xff;
+	paddr[2] = (kMacLo >> 16) & 0xff;
+	paddr[3] = static_cast<uint8_t> ((kMacLo >> 24) & 0xff);
+	paddr[4] = (kMacHi >> 0) & 0xff;
+	paddr[5] = (kMacHi >> 8) & 0xff;
 
 #ifndef NDEBUG
 	uart0::Printf("%02x:%02x:%02x:%02x:%02x:%02x\n", paddr[0], paddr[1], paddr[2], paddr[3], paddr[4], paddr[5]);

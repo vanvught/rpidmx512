@@ -40,46 +40,36 @@
 #include "pixeltype.h"
 #include "pixelconfiguration.h"
 
-namespace pixel
-{
-inline uint32_t GetColour(uint8_t red, uint8_t green, uint8_t blue)
-{
+namespace pixel {
+inline uint32_t GetColour(uint8_t red, uint8_t green, uint8_t blue) {
     return static_cast<uint32_t>(red << 16) | static_cast<uint32_t>(green << 8) | blue;
 }
 
-inline uint32_t GetColour(uint8_t red, uint8_t green, uint8_t blue, uint8_t white)
-{
+inline uint32_t GetColour(uint8_t red, uint8_t green, uint8_t blue, uint8_t white) {
     return static_cast<uint32_t>(white << 24) | static_cast<uint32_t>(red << 16) | static_cast<uint32_t>(green << 8) | blue;
 }
 
-struct PixelColours
-{
+struct PixelColours {
     constexpr explicit PixelColours(uint32_t value) : value_(value) {}
 
     constexpr uint8_t White() const { return static_cast<uint8_t>((value_ >> 24) & 0xFF); }
-
     constexpr uint8_t Red() const { return static_cast<uint8_t>((value_ >> 16) & 0xFF); }
-
     constexpr uint8_t Green() const { return static_cast<uint8_t>((value_ >> 8) & 0xFF); }
-
     constexpr uint8_t Blue() const { return static_cast<uint8_t>(value_ & 0xFF); }
-
     constexpr uint32_t Raw() const { return value_; }
 
    private:
     uint32_t value_;
 };
 
-inline void SetPixelColour([[maybe_unused]] uint32_t port_index, uint32_t pixel_index, uint32_t colour)
-{
+inline void SetPixelColour([[maybe_unused]] uint32_t port_index, uint32_t pixel_index, uint32_t colour) {
     auto* output_type = PixelOutputType::Get();
     assert(output_type != nullptr);
 
     const pixel::PixelColours kColours(colour);
 
 #if defined(PIXELPATTERNS_MULTI)
-    switch (PixelConfiguration::Get().GetType())
-    {
+    switch (PixelConfiguration::Get().GetType()) {
         case pixel::LedType::kWS2801:
             output_type->SetColourWS2801(port_index, pixel_index, kColours.Red(), kColours.Green(), kColours.Blue());
             break;
@@ -89,8 +79,7 @@ inline void SetPixelColour([[maybe_unused]] uint32_t port_index, uint32_t pixel_
             output_type->SetPixel4Bytes(port_index, pixel_index, 0xFF, kColours.Red(), kColours.Green(), kColours.Blue());
             break;
 
-        case pixel::LedType::kP9813:
-        {
+        case pixel::LedType::kP9813: {
             const auto kRed = kColours.Red();
             const auto kBlue = kColours.Blue();
             const uint8_t kFlag = static_cast<uint8_t>(0xC0 | ((~kBlue & 0xC0) >> 2) | ((~kRed & 0xC0) >> 4) | ((~kRed & 0xC0) >> 6));
@@ -110,18 +99,12 @@ inline void SetPixelColour([[maybe_unused]] uint32_t port_index, uint32_t pixel_
     auto& pixel_configuration = PixelConfiguration::Get();
     const auto kType = pixel_configuration.GetType();
 
-    if (kType != pixel::LedType::kSK6812W)
-    {
+    if (kType != pixel::LedType::kSK6812W) {
         output_type->SetPixel(pixel_index, kColours.Red(), kColours.Green(), kColours.Blue());
-    }
-    else
-    {
-        if ((kColours.Red() == kColours.Green()) && (kColours.Green() == kColours.Blue()))
-        {
+    } else {
+        if ((kColours.Red() == kColours.Green()) && (kColours.Green() == kColours.Blue())) {
             output_type->SetPixel(pixel_index, 0x00, 0x00, 0x00, kColours.Red());
-        }
-        else
-        {
+        } else {
             output_type->SetPixel(pixel_index, kColours.Red(), kColours.Green(), kColours.Blue(), 0x00);
         }
     }
@@ -129,25 +112,21 @@ inline void SetPixelColour([[maybe_unused]] uint32_t port_index, uint32_t pixel_
 #endif // PIXELPATTERNS_MULTI
 }
 
-inline void SetPixelColour(uint32_t port_index, uint32_t colour)
-{
+inline void SetPixelColour(uint32_t port_index, uint32_t colour) {
     const auto kCount = PixelConfiguration::Get().GetCount();
 
-    for (uint32_t i = 0; i < kCount; i++)
-    {
+    for (uint32_t i = 0; i < kCount; i++) {
         SetPixelColour(port_index, i, colour);
     }
 }
 
-inline bool IsUpdating()
-{
+inline bool IsUpdating() {
     auto* output_type = PixelOutputType::Get();
     assert(output_type != nullptr);
     return output_type->IsUpdating();
 }
 
-inline void Update()
-{
+inline void Update() {
     auto* output_type = PixelOutputType::Get();
     assert(output_type != nullptr);
     return output_type->Update();

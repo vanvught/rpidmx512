@@ -43,7 +43,6 @@ int main(int argc, char** argv)
     Network nw(argc, argv);
     FirmwareVersion fw(kSoftwareVersion, __DATE__, __TIME__);
 
-    hal::print();
     fw.Print();
     nw.Print();
 

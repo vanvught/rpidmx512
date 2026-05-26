@@ -29,7 +29,6 @@
 #include "h3_ccu.h"
 #include "h3_sid.h"
 #include "timing.h"
-#include "firmware/debug/debug_debug.h"
 
 #define CTRL1_ADC_CALI_EN (1U << 17)
 
@@ -146,8 +145,8 @@ void __attribute__((cold)) h3_thermal_init() {
     h3_thermal_setshut(INIT_SHUT_CELCIUS);
 }
 
-namespace hal {
+namespace board {
 float CoreTemperatureCurrent() {
     return static_cast<float>(h3_thermal_gettemp());
 }
-} // namespace hal
+} // namespace board

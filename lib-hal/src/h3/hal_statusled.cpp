@@ -2,7 +2,7 @@
  * @file hal_statusled.cpp
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,44 +29,35 @@
 
 #include <cstdint>
 
-#include "hal.h"
 #include "hal_statusled.h"
-
 #include "softwaretimers.h"
-
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
 void h3_status_led_set(int);
 
 static int32_t s_timer_id = -1;
 static int32_t s_toggle_led;
 
-static void Ledblink([[maybe_unused]] TimerHandle_t handle)
-{
+static void Ledblink([[maybe_unused]] TimerHandle_t handle) {
     s_toggle_led ^= 0x1;
     h3_status_led_set(s_toggle_led);
 }
 
-namespace hal::statusled
-{
-void SetFrequency(uint32_t frequency_hz)
-{
-    if (frequency_hz == 0)
-    {
+namespace hal::statusled {
+void SetFrequency(uint32_t frequency_hz) {
+    if (frequency_hz == 0) {
         SoftwareTimerDelete(s_timer_id);
         h3_status_led_set(0);
         return;
     }
 
-    if (frequency_hz == 255)
-    {
+    if (frequency_hz == 255) {
         SoftwareTimerDelete(s_timer_id);
         h3_status_led_set(1);
         return;
     }
 
-    if (s_timer_id < 0)
-    {
+    if (s_timer_id < 0) {
         s_timer_id = SoftwareTimerAdd((1000U / frequency_hz), Ledblink);
         DEBUG_PRINTF("m_nTimerId=%d", s_timer_id);
         return;

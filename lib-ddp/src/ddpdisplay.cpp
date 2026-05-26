@@ -31,9 +31,11 @@
 #include "dmxnodedata.h"
 #include "dmxnode_data.h"
 #include "apps/mdns.h"
-#include "network.h"
+#include "network_iface.h"
+#include "network_udp.h"
+#include "network_config.h"
+#include "board.h"
 #include "core/protocol/udp.h"
-#include "hal.h"
 #include "firmware/debug/debug_dump.h"
 #include "firmware/debug/debug_debug.h"
 
@@ -179,7 +181,7 @@ void DdpDisplay::HandleQuery()
         DEBUG_PUTS("id::STATUS");
 
         const auto kLength =
-            snprintf(reinterpret_cast<char*>(packet->data), network::udp::kDataSize - 1, json::kDiscoverReply, hal::kWebsite, MAC2STR(mac_address_));
+            snprintf(reinterpret_cast<char*>(packet->data), network::udp::kDataSize - 1, json::kDiscoverReply, board::Website(), MAC2STR(mac_address_));
 
         packet->header.flags1 = flags1::VER1 | flags1::REPLY | flags1::PUSH;
         packet->header.len[0] = static_cast<uint8_t>(kLength >> 8);

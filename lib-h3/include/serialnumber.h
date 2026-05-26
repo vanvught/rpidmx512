@@ -1,7 +1,8 @@
 /**
- * @file json_getversion.cpp
+ * @file serialnumber.h
+ *
  */
-/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,25 +22,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef SERIALNUMBER_H_
+#define SERIALNUMBER_H_
 
 #include <cstdint>
-#include <cstdio>
 
-#include "board.h"
-#include "firmwareversion.h"
+inline constexpr uint32_t kSnSize = 4;
+void SerialNumber(uint8_t sn[kSnSize]);
 
-namespace json {
-uint32_t GetVersion(char* out_buffer, uint32_t out_buffer_size) {
-    const auto* version = FirmwareVersion::Get()->GetVersion();
-    uint8_t hw_text_length;
-
-    const auto kLength = static_cast<uint32_t>(snprintf(out_buffer, out_buffer_size, 
-		"{\"version\":\"%.*s\",\"board\":\"%s\",\"build\":{\"date\":\"%.*s\",\"time\":\"%.*s\"}}", 
-		firmwareversion::length::kSoftwareVersion, 
-		version->software_version, 
-		board::BoardName(hw_text_length), 
-		firmwareversion::length::kGccDate, version->build_date, 
-		firmwareversion::length::kGccTime, version->build_time));
-    return kLength;
-}
-} // namespace json
+#endif // SERIALNUMBER_H_

@@ -30,34 +30,29 @@
 #include <cstdio>
 #include <cassert>
 
-#include "hal_boardinfo.h"
+#include "board.h"
 
 #if !defined(STR_HELPER)
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
 #endif
 
-namespace firmwareversion
-{
-namespace length
-{
-static constexpr auto kSoftwareVersion = 3;
-static constexpr auto kGccDate = 11;
-static constexpr auto kGccTime = 8;
+namespace firmwareversion {
+namespace length {
+inline constexpr auto kSoftwareVersion = 3;
+inline constexpr auto kGccDate = 11;
+inline constexpr auto kGccTime = 8;
 } // namespace length
-struct Info
-{
+struct Info {
     char software_version[length::kSoftwareVersion];
     char build_date[length::kGccDate];
     char build_time[length::kGccTime];
 };
 } // namespace firmwareversion
 
-class FirmwareVersion
-{
+class FirmwareVersion {
    public:
-    explicit FirmwareVersion(const char* software_version, const char* date, const char* time)
-    {
+    explicit FirmwareVersion(const char* software_version, const char* date, const char* time) {
         assert(software_version != nullptr);
         assert(date != nullptr);
         assert(time != nullptr);
@@ -71,17 +66,21 @@ class FirmwareVersion
 
         uint8_t hw_text_length;
 
-        snprintf(s_print, sizeof(s_print) - 1, "[V%.*s] %s Compiled on %.*s at %.*s", firmwareversion::length::kSoftwareVersion,
-                 s_firmware_version.software_version, hal::BoardName(hw_text_length), firmwareversion::length::kGccDate, s_firmware_version.build_date,
-                 firmwareversion::length::kGccTime, s_firmware_version.build_time);
+        snprintf(s_print, sizeof(s_print) - 1, "[V%.*s] %s Compiled on %.*s at %.*s", 
+			firmwareversion::length::kSoftwareVersion, 
+			s_firmware_version.software_version, 
+			board::BoardName(hw_text_length), 
+			firmwareversion::length::kGccDate,
+	        s_firmware_version.build_date, 
+			firmwareversion::length::kGccTime, 
+			s_firmware_version.build_time
+		);
     }
 
-    void Print(const char* title = nullptr)
-    {
+    void Print(const char* title = nullptr) {
         puts(s_print);
 
-        if (title != nullptr)
-        {
+        if (title != nullptr) {
             printf("\x1b[32m%s\x1b[0m\n", title);
         }
     }
@@ -98,4 +97,4 @@ class FirmwareVersion
     static inline FirmwareVersion* s_this;
 };
 
-#endif  // FIRMWAREVERSION_H_
+#endif // FIRMWAREVERSION_H_

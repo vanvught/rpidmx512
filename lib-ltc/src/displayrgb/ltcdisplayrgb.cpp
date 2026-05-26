@@ -85,11 +85,11 @@ LtcDisplayRgb::LtcDisplayRgb(ltc::display::rgb::Type type, ltc::display::rgb::WS
     s_this = this;
 
     colour_[static_cast<uint32_t>(ltc::display::rgb::ColourIndex::TIME)] = ltc::display::rgb::Defaults::kColourTime;
-    colour_[static_cast<uint32_t>(ltc::display::rgb::ColourIndex::COLON)] = ltc::display::rgb::Defaults::COLOUR_COLON;
-    colour_[static_cast<uint32_t>(ltc::display::rgb::ColourIndex::MESSAGE)] = ltc::display::rgb::Defaults::COLOUR_MESSAGE;
-    colour_[static_cast<uint32_t>(ltc::display::rgb::ColourIndex::FPS)] = ltc::display::rgb::Defaults::COLOUR_FPS;
-    colour_[static_cast<uint32_t>(ltc::display::rgb::ColourIndex::INFO)] = ltc::display::rgb::Defaults::COLOUR_INFO;
-    colour_[static_cast<uint32_t>(ltc::display::rgb::ColourIndex::SOURCE)] = ltc::display::rgb::Defaults::COLOUR_SOURCE;
+    colour_[static_cast<uint32_t>(ltc::display::rgb::ColourIndex::COLON)] = ltc::display::rgb::Defaults::kColourColon;
+    colour_[static_cast<uint32_t>(ltc::display::rgb::ColourIndex::MESSAGE)] = ltc::display::rgb::Defaults::kColourMessage;
+    colour_[static_cast<uint32_t>(ltc::display::rgb::ColourIndex::FPS)] = ltc::display::rgb::Defaults::kColourFps;
+    colour_[static_cast<uint32_t>(ltc::display::rgb::ColourIndex::INFO)] = ltc::display::rgb::Defaults::kColourInfo;
+    colour_[static_cast<uint32_t>(ltc::display::rgb::ColourIndex::SOURCE)] = ltc::display::rgb::Defaults::kColourSource;
 
     DEBUG_EXIT();
 }

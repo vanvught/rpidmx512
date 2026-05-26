@@ -2,7 +2,7 @@
  * @file dmxserial.cpp
  *
  */
-/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,21 +28,22 @@
 #include <cstdio>
 #include <dirent.h>
 #include <unistd.h>
+#include <cerrno>
 #include <cassert>
 
 #include "dmxserial.h"
+#include "core/protocol/udp.h"
 #include "dmxserial_internal.h"
 #include "dmxserialtftp.h"
-#include "network.h"
- #include "firmware/debug/debug_debug.h"
+#include "network_udp.h"
+#include "board.h"
+#include "firmware/debug/debug_debug.h"
 
-DmxSerial::DmxSerial()
-{
+DmxSerial::DmxSerial() {
     assert(s_this == nullptr);
     s_this = this;
 
-    for (uint32_t i = 0; i < DmxSerialFile::MAX_NUMBER; i++)
-    {
+    for (uint32_t i = 0; i < DmxSerialFile::MAX_NUMBER; i++) {
         m_aFileIndex[i] = -1;
         m_pDmxSerialChannelData[i] = nullptr;
     }
@@ -50,12 +51,9 @@ DmxSerial::DmxSerial()
     memset(dmx_data_, 0, sizeof(dmx_data_));
 }
 
-DmxSerial::~DmxSerial()
-{
-    for (uint32_t i = 0; i < m_nFilesCount; i++)
-    {
-        if (m_pDmxSerialChannelData[i] != nullptr)
-        {
+DmxSerial::~DmxSerial() {
+    for (uint32_t i = 0; i < m_nFilesCount; i++) {
+        if (m_pDmxSerialChannelData[i] != nullptr) {
             delete m_pDmxSerialChannelData[i];
         }
     }
@@ -66,8 +64,7 @@ DmxSerial::~DmxSerial()
     s_this = nullptr;
 }
 
-void DmxSerial::Init()
-{
+void DmxSerial::Init() {
     assert(handle_ == -1);
     handle_ = network::udp::Begin(UDP::PORT, StaticCallbackFunction);
     assert(handle_ != -1);
@@ -76,23 +73,19 @@ void DmxSerial::Init()
     Serial::Init();
 }
 
-void DmxSerial::Start([[maybe_unused]] uint32_t port_index)
-{
+void DmxSerial::Start([[maybe_unused]] uint32_t port_index) {
     // No actions here
 }
 
-void DmxSerial::Stop([[maybe_unused]] uint32_t port_index)
-{
+void DmxSerial::Stop([[maybe_unused]] uint32_t port_index) {
     // No actions here
 }
 
-template <bool doUpdate> void DmxSerial::SetData([[maybe_unused]] uint32_t port_index, const uint8_t* data, uint32_t length)
-{
+template <bool doUpdate> void DmxSerial::SetData([[maybe_unused]] uint32_t port_index, const uint8_t* data, uint32_t length) {
     assert(port_index == 0);
     assert(data != nullptr);
 
-    if constexpr (doUpdate)
-    {
+    if constexpr (doUpdate) {
         Update(data, length);
         return;
     }
@@ -101,36 +94,30 @@ template <bool doUpdate> void DmxSerial::SetData([[maybe_unused]] uint32_t port_
     m_SyncData.length = length;
 }
 
-void DmxSerial::Update(const uint8_t* data, uint32_t length)
-{
+void DmxSerial::Update(const uint8_t* data, uint32_t length) {
     assert(data != nullptr);
 
-    for (uint32_t index = 0; index < m_nFilesCount; index++)
-    {
+    for (uint32_t index = 0; index < m_nFilesCount; index++) {
         assert(m_aFileIndex[index] > 1);
         const int32_t kOffset = m_aFileIndex[index] - 1;
 
         assert(kOffset < static_cast<int32_t>(sizeof(dmx_data_)));
 
-        if (static_cast<uint32_t>(kOffset) >= length)
-        {
+        if (static_cast<uint32_t>(kOffset) >= length) {
             continue;
         }
 
-        if (dmx_data_[kOffset] != data[kOffset])
-        {
+        if (dmx_data_[kOffset] != data[kOffset]) {
             dmx_data_[kOffset] = data[kOffset];
 
             //			DEBUG_PRINTF("nPort=%d, index=%d, m_aFileIndex[index]=%d, nOffset=%d, dmx_data_[nOffset]=%d", nPort, index, m_aFileIndex[index],
-            //nOffset, dmx_data_[nOffset]);
+            // nOffset, dmx_data_[nOffset]);
 
-            if (m_pDmxSerialChannelData[index] != nullptr)
-            {
+            if (m_pDmxSerialChannelData[index] != nullptr) {
                 uint32_t channel_data_length;
                 const uint8_t* serial_data = m_pDmxSerialChannelData[index]->GetData(dmx_data_[kOffset], channel_data_length);
 
-                if (channel_data_length == 0)
-                {
+                if (channel_data_length == 0) {
                     continue;
                 }
 
@@ -140,18 +127,15 @@ void DmxSerial::Update(const uint8_t* data, uint32_t length)
     }
 }
 
-void DmxSerial::Sync([[maybe_unused]] uint32_t port_index)
-{
+void DmxSerial::Sync([[maybe_unused]] uint32_t port_index) {
     // No actions here
 }
 
-void DmxSerial::Sync()
-{
+void DmxSerial::Sync() {
     Update(m_SyncData.data, m_SyncData.length);
 }
 
-void DmxSerial::Print()
-{
+void DmxSerial::Print() {
     Serial::Print();
 
     printf("Files : %d\n", m_nFilesCount);
@@ -160,8 +144,7 @@ void DmxSerial::Print()
     printf(" Last channel  : %u\n", m_nDmxLastSlot);
 }
 
-void DmxSerial::ScanDirectory()
-{
+void DmxSerial::ScanDirectory() {
     // We can only run this once, for now
     assert(m_pDmxSerialChannelData[0] == nullptr);
 
@@ -169,30 +152,24 @@ void DmxSerial::ScanDirectory()
     struct dirent* dp;
     m_nFilesCount = 0;
 
-    if ((dirp = opendir(".")) == nullptr)
-    {
+    if ((dirp = opendir(".")) == nullptr) {
         perror("couldn't open '.'");
 
-        for (uint32_t i = 0; i < DmxSerialFile::MAX_NUMBER; i++)
-        {
+        for (uint32_t i = 0; i < DmxSerialFile::MAX_NUMBER; i++) {
             m_aFileIndex[i] = -1;
         }
 
         return;
     }
 
-    do
-    {
-        if ((dp = readdir(dirp)) != nullptr)
-        {
-            if (dp->d_type == DT_DIR)
-            {
+    do {
+        if ((dp = readdir(dirp)) != nullptr) {
+            if (dp->d_type == DT_DIR) {
                 continue;
             }
 
             int32_t file_number;
-            if (!CheckFileName(dp->d_name, file_number))
-            {
+            if (!CheckFileName(dp->d_name, file_number)) {
                 continue;
             }
 
@@ -202,20 +179,16 @@ void DmxSerial::ScanDirectory()
 
             m_nFilesCount++;
 
-            if (m_nFilesCount == DmxSerialFile::MAX_NUMBER)
-            {
+            if (m_nFilesCount == DmxSerialFile::MAX_NUMBER) {
                 break;
             }
         }
     } while (dp != nullptr);
 
     // Sort
-    for (uint32_t i = 0; i < m_nFilesCount; i++)
-    {
-        for (uint32_t j = 0; j < m_nFilesCount; j++)
-        {
-            if (m_aFileIndex[j] > m_aFileIndex[i])
-            {
+    for (uint32_t i = 0; i < m_nFilesCount; i++) {
+        for (uint32_t j = 0; j < m_nFilesCount; j++) {
+            if (m_aFileIndex[j] > m_aFileIndex[i]) {
                 auto tmp = m_aFileIndex[i];
                 m_aFileIndex[i] = m_aFileIndex[j];
                 m_aFileIndex[j] = tmp;
@@ -225,8 +198,7 @@ void DmxSerial::ScanDirectory()
 
     m_nDmxLastSlot = static_cast<uint16_t>(m_aFileIndex[m_nFilesCount - 1]);
 
-    for (uint32_t i = m_nFilesCount; i < DmxSerialFile::MAX_NUMBER; i++)
-    {
+    for (uint32_t i = m_nFilesCount; i < DmxSerialFile::MAX_NUMBER; i++) {
         m_aFileIndex[i] = -1;
     }
 
@@ -236,8 +208,7 @@ void DmxSerial::ScanDirectory()
     printf("%d\n", m_nFilesCount);
 #endif
 
-    for (uint32_t index = 0; index < m_nFilesCount; index++)
-    {
+    for (uint32_t index = 0; index < m_nFilesCount; index++) {
 #ifndef NDEBUG
         printf("\tnIndex=%d -> %d\n", index, m_aFileIndex[index]);
 #endif
@@ -252,20 +223,17 @@ void DmxSerial::ScanDirectory()
     }
 
 #ifndef NDEBUG
-    for (uint32_t index = 0; index < m_nFilesCount; index++)
-    {
+    for (uint32_t index = 0; index < m_nFilesCount; index++) {
         printf("\tindex=%d -> %d\n", index, m_aFileIndex[index]);
         m_pDmxSerialChannelData[index]->Dump();
     }
 #endif
 }
 
-void DmxSerial::EnableTFTP(bool enable_tftp)
-{
+void DmxSerial::EnableTFTP(bool enable_tftp) {
     DEBUG_ENTRY();
 
-    if (enable_tftp == enable_tftp_)
-    {
+    if (enable_tftp == enable_tftp_) {
         DEBUG_EXIT();
         return;
     }
@@ -274,14 +242,11 @@ void DmxSerial::EnableTFTP(bool enable_tftp)
 
     enable_tftp_ = enable_tftp;
 
-    if (enable_tftp_)
-    {
+    if (enable_tftp_) {
         assert(m_pDmxSerialTFTP == nullptr);
         m_pDmxSerialTFTP = new DmxSerialTFTP;
         assert(m_pDmxSerialTFTP != nullptr);
-    }
-    else
-    {
+    } else {
         assert(m_pDmxSerialTFTP != nullptr);
         delete m_pDmxSerialTFTP;
         m_pDmxSerialTFTP = nullptr;
@@ -290,14 +255,12 @@ void DmxSerial::EnableTFTP(bool enable_tftp)
     DEBUG_EXIT();
 }
 
-bool DmxSerial::DeleteFile(int32_t file_number)
-{
+bool DmxSerial::DeleteFile(int32_t file_number) {
     DEBUG_PRINTF("file_number=%u", file_number);
 
     char file_name[DmxSerialFile::NAME_LENGTH + 1];
 
-    if (FileNameCopyTo(file_name, sizeof(file_name), file_number))
-    {
+    if (FileNameCopyTo(file_name, sizeof(file_name), file_number)) {
         const int kResult = unlink(file_name);
         DEBUG_PRINTF("kResult=%d", kResult);
         DEBUG_EXIT();
@@ -308,14 +271,12 @@ bool DmxSerial::DeleteFile(int32_t file_number)
     return false;
 }
 
-bool DmxSerial::DeleteFile(const char* delete_file_number)
-{
+bool DmxSerial::DeleteFile(const char* delete_file_number) {
     assert(delete_file_number != nullptr);
 
     DEBUG_PUTS(delete_file_number);
 
-    if (strlen(delete_file_number) != 3)
-    {
+    if (strlen(delete_file_number) != 3) {
         return false;
     }
 
@@ -323,8 +284,7 @@ bool DmxSerial::DeleteFile(const char* delete_file_number)
     file_number += (delete_file_number[1] - '0') * 10;
     file_number += (delete_file_number[2] - '0');
 
-    if (file_number > static_cast<int32_t>(DmxSerialFile::MAX_NUMBER))
-    {
+    if (file_number > static_cast<int32_t>(DmxSerialFile::MAX_NUMBER)) {
         return false;
     }
 
@@ -334,3 +294,81 @@ bool DmxSerial::DeleteFile(const char* delete_file_number)
 // Explicit template instantiations
 template void DmxSerial::SetData<true>(uint32_t, const uint8_t*, uint32_t);
 template void DmxSerial::SetData<false>(uint32_t, const uint8_t*, uint32_t);
+
+namespace cmd {
+inline constexpr char kRequestFiles[] = "?files#";
+inline constexpr char kGetTftp[] = "?tftp#";
+inline constexpr char kSetTftp[] = "!tftp#";
+inline constexpr char kRequestReload[] = "?reload##";
+inline constexpr char kRequestDelete[] = "!delete#";
+} // namespace cmd
+
+namespace length {
+inline constexpr auto kRequestFiles = sizeof(cmd::kRequestFiles) - 1;
+inline constexpr auto kGetTftp = sizeof(cmd::kGetTftp) - 1;
+inline constexpr auto kSetTftp = sizeof(cmd::kSetTftp) - 1;
+inline constexpr auto kRequestReload = sizeof(cmd::kRequestReload) - 1;
+inline constexpr auto kRequestDelete = sizeof(cmd::kRequestDelete) - 1;
+} // namespace length
+
+void DmxSerial::Input(const uint8_t* p, uint32_t size, uint32_t from_ip, [[maybe_unused]] uint16_t from_port) {
+    if (__builtin_expect((size < 6), 0)) {
+        return;
+    }
+
+    auto* buffer = const_cast<uint8_t*>(p);
+
+    if (buffer[size - 1] == '\n') {
+        size--;
+    }
+
+#ifndef NDEBUG
+    debug::Dump(buffer, size);
+#endif
+
+    if (memcmp(buffer, cmd::kRequestFiles, length::kRequestFiles) == 0) {
+        for (uint32_t i = 0; i < m_nFilesCount; i++) {
+            const auto kLength = snprintf(reinterpret_cast<char*>(buffer), network::udp::kDataSize - 1, DMXSERIAL_FILE_PREFIX "%.3d" DMXSERIAL_FILE_SUFFIX "\n", m_aFileIndex[i]);
+            network::udp::Send(handle_, buffer, kLength, from_ip, UDP::PORT);
+        }
+        return;
+    }
+
+    if ((size >= length::kGetTftp) && (memcmp(buffer, cmd::kGetTftp, length::kGetTftp) == 0)) {
+        if (size == length::kGetTftp) {
+            const auto kLength = snprintf(reinterpret_cast<char*>(buffer), network::udp::kDataSize - 1, "tftp:%s\n", enable_tftp_ ? "On" : "Off");
+            network::udp::Send(handle_, buffer, kLength, from_ip, UDP::PORT);
+            return;
+        }
+
+        if (size == length::kGetTftp + 3) {
+            if (memcmp(&buffer[length::kGetTftp], "bin", 3) == 0) {
+                network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&enable_tftp_), sizeof(bool), from_ip, UDP::PORT);
+                return;
+            }
+        }
+    }
+
+    if ((size == length::kSetTftp + 1) && (memcmp(buffer, cmd::kSetTftp, length::kSetTftp) == 0)) {
+        EnableTFTP(buffer[length::kSetTftp] != '0');
+        return;
+    }
+
+    if (memcmp(buffer, cmd::kRequestReload, length::kRequestReload) == 0) {
+        board::Reboot();
+        return;
+    }
+
+    if ((size == length::kRequestDelete + 3) && (memcmp(buffer, cmd::kRequestDelete, length::kRequestDelete) == 0)) {
+        buffer[length::kRequestDelete + 3] = '\0';
+
+        if (DmxSerial::Get()->DeleteFile(reinterpret_cast<char*>(&buffer[length::kRequestDelete]))) {
+            network::udp::Send(handle_, reinterpret_cast<const uint8_t*>("Success\n"), 8, from_ip, UDP::PORT);
+        } else {
+            const auto* error = strerror(errno);
+            const auto kLength = snprintf(reinterpret_cast<char*>(buffer), network::udp::kDataSize - 1, "%s\n", error);
+            network::udp::Send(handle_, buffer, kLength, from_ip, UDP::PORT);
+        }
+        return;
+    }
+}

@@ -34,8 +34,7 @@
 #include "arm/ltcgenerator.h"
 #include "ltc.h"
 #include "timecodeconst.h"
-#include "network.h"
-#include "hal.h"
+#include "network_udp.h"
 #include "hal_statusled.h"
 // Output
 #include "ltcetc.h"

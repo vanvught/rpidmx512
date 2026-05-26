@@ -182,13 +182,13 @@ endif
 
 LIBS+=device hal
 
-ifeq (,$(findstring DISABLE_RTC,$(DEFINES)))
-	LIBS+=hwclock
-endif
-
 ifdef LINUX 
 	LIBS+=linux
 else
+endif
+
+ifeq (,$(findstring DISABLE_RTC,$(DEFINES)))
+	LIBS+=hwclock
 endif
 
 $(info $$LIBS [${LIBS}])

@@ -54,7 +54,7 @@ static constexpr uint16_t kAddress =
 
 CoherentRegion* p_coherent_region = nullptr;
 
-extern void MacAddressGet(uint8_t paddr[]);
+extern void MacAddress(uint8_t paddr[]);
 
 namespace emac {
 void AdjustLink(emac::phy::Status phy_status) {
@@ -158,7 +158,7 @@ void __attribute__((cold)) Config() {
 void __attribute__((cold)) Start(uint8_t mac_address[], emac::phy::Link& link) {
     DEBUG_ENTRY();
 
-    MacAddressGet(mac_address);
+    MacAddress(mac_address);
 
     emac::phy::Status phy_status;
 

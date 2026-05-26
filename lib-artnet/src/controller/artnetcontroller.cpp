@@ -33,9 +33,9 @@
 #if (ARTNET_VERSION >= 4)
 #include "e131.h"
 #endif
-#include "hal.h"
-#include "hal_boardinfo.h"
+#include "board.h"
 #include "timing.h"
+#include "board.h"
 #include "network.h"
 #include "firmware/debug/debug_debug.h"
 
@@ -154,7 +154,7 @@ void ArtNetController::GetShortNameDefault(char* short_name)
 {
 #if !defined(ARTNET_SHORT_NAME)
     uint8_t nBoardNameLength;
-    const auto* const kBoardName = hal::BoardName(nBoardNameLength);
+    const auto* const kBoardName = board::BoardName(nBoardNameLength);
     snprintf(short_name, artnet::kPortNameLength - 1, "%s %s %u", kBoardName, artnet::kNodeId, static_cast<unsigned int>(artnet::kVersion));
     short_name[artnet::kPortNameLength - 1] = '\0';
 #else
@@ -199,8 +199,8 @@ void ArtNetController::GetLongNameDefault(char* long_name)
 {
 #if !defined(ARTNET_LONG_NAME)
     uint8_t nBoardNameLength;
-    const auto* const kBoardName = hal::BoardName(nBoardNameLength);
-    snprintf(long_name, artnet::kLongNameLength - 1, "%s %s %u %s", kBoardName, artnet::kNodeId, static_cast<unsigned int>(artnet::kVersion), hal::kWebsite);
+    const auto* const kBoardName = board::BoardName(nBoardNameLength);
+    snprintf(long_name, artnet::kLongNameLength - 1, "%s %s %u %s", kBoardName, artnet::kNodeId, static_cast<unsigned int>(artnet::kVersion), board::Website());
 #else
     uint32_t i;
 

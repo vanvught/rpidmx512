@@ -48,8 +48,6 @@
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/h3/i2c"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/h3/sdcard"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/json"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/linux/i2c"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/linux/minimum"/>
 						<entry excluding="sdcard" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/rpi"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/rpi/sdcard"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="superloop"/>
@@ -156,9 +154,6 @@
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="ff14b/source"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/h3/i2c"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/json"/>
-						<entry excluding="minimum|i2c" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/linux"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/linux/i2c"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/linux/minimum"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="superloop"/>
 					</sourceEntries>
 				</configuration>
@@ -359,9 +354,6 @@
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/h3/i2c"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/h3/sdcard"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/json"/>
-						<entry excluding="i2c|minimum" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/linux"/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/linux/i2c"/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/linux/minimum"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="superloop"/>
 					</sourceEntries>
 				</configuration>

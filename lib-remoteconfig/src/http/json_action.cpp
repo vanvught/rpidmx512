@@ -26,7 +26,7 @@
 
 #include "display.h"
 #include "hal_statusled.h"
-#include "hal.h"
+#include "board.h"
 #include "json/json_key.h"
 #include "json/json_parser.h"
 
@@ -49,14 +49,11 @@ static void SetIdentify(const char* val, uint32_t len) {
 // TODO (a) Subject for deletion
 static void SetReboot(const char* val, uint32_t len) {
     if (len != 1) return;
-
-    if (val[0] != '0') hal::Reboot();
+    if (val[0] != '0') board::Reboot();
 }
 
 static constexpr json::SimpleKey kDisplay{"display", 7, Fnv1a32("display", 7)};
-
 static constexpr json::SimpleKey kIdentify{"identify", 8, Fnv1a32("identify", 8)};
-
 static constexpr json::SimpleKey kReboot{"reboot", 6, Fnv1a32("reboot", 6)};
 
 static constexpr json::Key kActionKeys[] = {json::MakeKey(SetDisplay, kDisplay), json::MakeKey(SetIdentify, kIdentify), json::MakeKey(SetReboot, kReboot)};

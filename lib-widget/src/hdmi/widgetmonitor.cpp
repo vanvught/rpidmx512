@@ -1,7 +1,7 @@
 /**
  * @file widgetmonitor.cpp
  */
-/* Copyright (C) 2015-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2015-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,11 +30,9 @@
 #include "widgetmonitor.h"
 #include "widget.h"
 #include "widgetconfiguration.h"
-
 #include "console.h"
 #include "dmx.h"
 #include "rdm.h"
-#include "hal.h"
 
 static constexpr auto DISPLAY_LEVEL = 1;
 
@@ -46,8 +44,7 @@ using namespace widgetmonitor;
 using namespace dmxsingle;
 using namespace dmx;
 
-void WidgetMonitor::UpTime(uint8_t line)
-{
+void WidgetMonitor::UpTime(uint8_t line) {
     auto nUptime = timing::UpTime();
     auto ltime = time(nullptr);
     auto* pLocalTime = localtime(&ltime);
@@ -62,23 +59,18 @@ void WidgetMonitor::UpTime(uint8_t line)
     const uint32_t minutes = nUptime / 60;
     const uint32_t seconds = nUptime - minutes * 60;
 
-    printf("Local time %.2d:%.2d:%.2d, uptime %d days, %02d:%02d:%02d", pLocalTime->tm_hour, pLocalTime->tm_min, pLocalTime->tm_sec, nDays, hours, minutes,
-           seconds);
+    printf("Local time %.2d:%.2d:%.2d, uptime %d days, %02d:%02d:%02d", pLocalTime->tm_hour, pLocalTime->tm_min, pLocalTime->tm_sec, nDays, hours, minutes, seconds);
 
     RestoreCursor();
 }
 
-void WidgetMonitor::DmxData(const uint8_t* pDmxData, int line)
-{
+void WidgetMonitor::DmxData(const uint8_t* pDmxData, int line) {
     uint32_t slots;
 
-    if (PortDirection::kInput == Dmx::Get()->PortDirection(0))
-    {
+    if (PortDirection::kInput == Dmx::Get()->PortDirection(0)) {
         const struct Data* dmx_statistics = (struct Data*)pDmxData;
         slots = dmx_statistics->statistics.slots_in_packet + 1;
-    }
-    else
-    {
+    } else {
         slots = Dmx::Get()->GetSendDataLength();
     }
 
@@ -86,50 +78,37 @@ void WidgetMonitor::DmxData(const uint8_t* pDmxData, int line)
 
     Puts("01-16 : ");
 
-    if (slots > 33)
-    {
+    if (slots > 33) {
         slots = 33;
     }
 
     uint32_t i;
 
-    for (i = 1; i < slots; i++)
-    {
+    for (i = 1; i < slots; i++) {
         uint8_t d = pDmxData[i];
-        if (d == 0)
-        {
+        if (d == 0) {
             Puts(" 0");
-        }
-        else
-        {
+        } else {
             PuthexFgBg(d, (uint16_t)(d > 92 ? CONSOLE_BLACK : console::Colours::kConsoleWhite), (uint16_t)RGB(d, d, d));
         }
-        if (i == 16)
-        {
+        if (i == 16) {
             Puts("\n17-32 : ");
-        }
-        else
-        {
+        } else {
             Putc((int)' ');
         }
     }
 
-    for (; i < 33; i++)
-    {
+    for (; i < 33; i++) {
         Puts("--");
-        if (i == 16)
-        {
+        if (i == 16) {
             Puts("\n17-32 : ");
-        }
-        else
-        {
+        } else {
             Putc(' ');
         }
     }
 }
 
-void WidgetMonitor::Sniffer()
-{
+void WidgetMonitor::Sniffer() {
     const volatile auto* total_statistics = Dmx::Get()->GetTotalStatistics();
     const auto total_packets = total_statistics->nDmxPackets + total_statistics->nRdmPackets;
     const auto* dmx_data = Dmx::Get()->GetDmxCurrentData(0);
@@ -146,19 +125,15 @@ void WidgetMonitor::Sniffer()
     printf("GET Requests       : %u\n", rdm_statistics->get_requests);
     printf("SET Requests       : %u\n", rdm_statistics->set_requests);
 
-    if (dmx_updates_per_seconde != 0)
-    {
+    if (dmx_updates_per_seconde != 0) {
         s_nUpdatesPerSecondeMin = std::min(dmx_updates_per_seconde, s_nUpdatesPerSecondeMin);
         s_nUpdatesPerSecondeMax = std::max(dmx_updates_per_seconde, s_nUpdatesPerSecondeMax);
         printf("\nDMX updates/sec     %3d     %3d / %d\n\n", (int)dmx_updates_per_seconde, (int)s_nUpdatesPerSecondeMin, (int)s_nUpdatesPerSecondeMax);
-    }
-    else
-    {
+    } else {
         Puts("\nDMX updates/sec --     \n\n");
     }
 
-    if (dmx_updates_per_seconde != 0)
-    {
+    if (dmx_updates_per_seconde != 0) {
         s_nSlotsInPacketMin = std::min(dmx_statistics->statistics.slots_in_packet, s_nSlotsInPacketMin);
         s_nSlotsInPacketMax = std::max(dmx_statistics->statistics.slots_in_packet, s_nSlotsInPacketMax);
         s_nSlotToSlotMin = std::min(dmx_statistics->statistics.slot_to_slot, s_nSlotToSlotMin);
@@ -169,76 +144,59 @@ void WidgetMonitor::Sniffer()
         printf("Slots in packet     %3d     %3d / %d\n", (int)dmx_statistics->statistics.slots_in_packet, (int)s_nSlotsInPacketMin, (int)s_nSlotsInPacketMax);
         printf("Slot to slot        %3d     %3d / %d\n", (int)dmx_statistics->statistics.slot_to_slot, (int)s_nSlotToSlotMin, (int)s_nSlotToSlotMax);
         printf("Break to break   %6d  %6d / %d\n", (int)dmx_statistics->statistics.break_to_break, (int)s_nBreakToBreakMin, (int)s_nBreakToBreakMax);
-    }
-    else
-    {
+    } else {
         Puts("Slots in packet --     \n");
         Puts("Slot to slot    --     \n");
         Puts("Break to break  --     \n");
     }
 }
 
-void WidgetMonitor::Update()
-{
+void WidgetMonitor::Update() {
     const auto tMode = Widget::Get()->GetMode();
 
-    if (tMode != Mode::kRdmSniffer && DISPLAY_LEVEL == 0)
-    {
+    if (tMode != Mode::kRdmSniffer && DISPLAY_LEVEL == 0) {
         return;
     }
 
     struct TWidgetConfiguration widget_params;
     WidgetConfiguration::Get(&widget_params);
 
-    if (DISPLAY_LEVEL > 1)
-    {
+    if (DISPLAY_LEVEL > 1) {
         WidgetMonitor::UpTime(MonitorLine::kTime);
     }
 
     ClearLine(MonitorLine::kInfo);
 
-    if (tMode == Mode::kRdmSniffer)
-    {
+    if (tMode == Mode::kRdmSniffer) {
         Sniffer();
-    }
-    else
-    {
+    } else {
         ClearLine(MonitorLine::kWidgetParms);
 
-        printf("Firmware %d.%d BreakTime %d(%d) MaBTime %d(%d) RefreshRate %d(%d)", widget_params.firmware_msb, widget_params.firmware_lsb,
-               widget_params.break_time, Dmx::Get()->TransmitBreakTime(), widget_params.mab_time, Dmx::Get()->TransmitMabTime(), widget_params.refresh_rate,
-               (1000000 / Dmx::Get()->TransmitPeriodTime()));
+        printf("Firmware %d.%d BreakTime %d(%d) MaBTime %d(%d) RefreshRate %d(%d)", widget_params.firmware_msb, widget_params.firmware_lsb, widget_params.break_time, Dmx::Get()->TransmitBreakTime(), widget_params.mab_time,
+               Dmx::Get()->TransmitMabTime(), widget_params.refresh_rate, (1000000 / Dmx::Get()->TransmitPeriodTime()));
 
         ClearLine(MonitorLine::kPortDirection);
 
-        if (PortDirection::kInput == Dmx::Get()->PortDirection(0))
-        {
+        if (PortDirection::kInput == Dmx::Get()->PortDirection(0)) {
             const auto receive_dmx_on_change = Widget::Get()->GetReceiveDmxOnChange();
 
-            if (receive_dmx_on_change == SendState::kAlways)
-            {
+            if (receive_dmx_on_change == SendState::kAlways) {
                 const auto throttle = Widget::Get()->GetReceivedDmxPacketPeriodMillis();
                 const auto widget_received_dmx_packet_count = Widget::Get()->GetReceivedDmxPacketCount();
 
                 Puts("Input [SEND_ALWAYS]");
 
-                if (throttle != (uint32_t)0)
-                {
+                if (throttle != (uint32_t)0) {
                     printf(", Throttle %d", (int)(1E6 / throttle));
                 }
 
-                WidgetMonitor::Line(MonitorLine::kStats, "DMX packets per second to host : %d",
-                                    widget_received_dmx_packet_count - s_nWidgetReceivedDmxPacketCountPrevious);
+                WidgetMonitor::Line(MonitorLine::kStats, "DMX packets per second to host : %d", widget_received_dmx_packet_count - s_nWidgetReceivedDmxPacketCountPrevious);
                 s_nWidgetReceivedDmxPacketCountPrevious = widget_received_dmx_packet_count;
-            }
-            else
-            {
+            } else {
                 Puts("Input [SEND_ON_DATA_CHANGE_ONLY]");
                 ClearLine(MonitorLine::kStats);
             }
-        }
-        else
-        {
+        } else {
             Puts("Output");
             ClearLine(MonitorLine::kStats);
         }
@@ -248,49 +206,40 @@ void WidgetMonitor::Update()
     }
 }
 
-void WidgetMonitor::RdmData(int line, uint16_t nDataLength, const uint8_t* pData, bool isSent)
-{
+void WidgetMonitor::RdmData(int line, uint16_t nDataLength, const uint8_t* pData, bool isSent) {
     auto* p = (uint8_t*)pData;
     bool is_rdm_command = (*p == E120_SC_RDM);
 
     WidgetMonitor::Line(line, "RDM [%s], l:%d\n", isSent ? "Sent" : "Received", (int)nDataLength);
 
-    if (DISPLAY_LEVEL == 0)
-    {
+    if (DISPLAY_LEVEL == 0) {
         return;
     }
 
     uint32_t l;
 
-    for (l = 0; l < std::min(nDataLength, static_cast<uint16_t>(28)); l++)
-    {
+    for (l = 0; l < std::min(nDataLength, static_cast<uint16_t>(28)); l++) {
         ConsolePuthex(*p++);
         Putc((int)' ');
     }
 
-    while (l++ < 26)
-    {
+    while (l++ < 26) {
         Puts("   ");
     }
 
-    if (is_rdm_command)
-    {
-        if (nDataLength >= 24)
-        {
+    if (is_rdm_command) {
+        if (nDataLength >= 24) {
             auto* cmd = (struct TRdmMessage*)(pData);
-            WidgetMonitor::Line(line + 2, "tn:%d, cc:%.2x, pid:%d, l:%d", (int)cmd->transaction_number, (unsigned int)cmd->command_class,
-                                (int)((cmd->param_id[0] << 8) + cmd->param_id[1]), (int)cmd->param_data_length);
+            WidgetMonitor::Line(line + 2, "tn:%d, cc:%.2x, pid:%d, l:%d", (int)cmd->transaction_number, (unsigned int)cmd->command_class, (int)((cmd->param_id[0] << 8) + cmd->param_id[1]), (int)cmd->param_data_length);
             ClearLine(line + 4);
             ClearLine(line + 3);
-            if (cmd->param_data_length != 0)
-            {
+            if (cmd->param_data_length != 0) {
                 auto i = std::min(cmd->param_data_length, static_cast<uint8_t>(24));
                 uint8_t j;
 
                 p = &cmd->param_data[0];
 
-                for (j = 0; j < i; j++)
-                {
+                for (j = 0; j < i; j++) {
                     ConsolePuthex(*p++);
                     Putc((int)' ');
                 }
@@ -298,14 +247,10 @@ void WidgetMonitor::RdmData(int line, uint16_t nDataLength, const uint8_t* pData
                 p = &cmd->param_data[0];
                 console::SetCursor(0, line + 4);
 
-                for (j = 0; j < i; j++)
-                {
-                    if (isprint((int)*p))
-                    {
+                for (j = 0; j < i; j++) {
+                    if (isprint((int)*p)) {
                         Putc((int)*p);
-                    }
-                    else
-                    {
+                    } else {
                         Putc((int)'.');
                     }
                     (void)Puts("  ");
@@ -313,9 +258,7 @@ void WidgetMonitor::RdmData(int line, uint16_t nDataLength, const uint8_t* pData
                 }
             }
         }
-    }
-    else
-    {
+    } else {
         ClearLine(line + 2);
         ClearLine(line + 3);
         ClearLine(line + 4);

@@ -31,7 +31,7 @@
 #include "e131.h"
 #include "e117.h"
 #include "hal_uuid.h"
-#include "hal_boardinfo.h"
+#include "board.h"
 #include "network.h"
 #include "softwaretimers.h"
 #include "firmware/debug/debug_debug.h"
@@ -61,7 +61,7 @@ E131Controller::E131Controller()
 
     char aSourceName[e131::kSourceNameLength];
     uint8_t nLength;
-    snprintf(aSourceName, e131::kSourceNameLength, "%.48s %s", network::iface::HostName(), hal::BoardName(nLength));
+    snprintf(aSourceName, e131::kSourceNameLength, "%.48s %s", network::iface::HostName(), board::BoardName(nLength));
     SetSourceName(aSourceName);
 
     hal::UuidCopy(cid_);

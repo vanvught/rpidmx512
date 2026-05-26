@@ -1,5 +1,5 @@
 /**
- * @file hal_bootdevice.cpp
+ * @file serialnumber.cpp
  *
  */
 /* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
@@ -23,36 +23,18 @@
  * THE SOFTWARE.
  */
 
-#include "hal.h"
+#include <cstdint>
 
-namespace hal
-{
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Warray-bounds"
+#include "h3_sid.h"
+#include "serialnumber.h"
 
-// https://github.com/linux-sunxi/sunxi-tools/blob/master/uart0-helloworld-sdboot.c#L598
-BootDevice GetBootDevice()
-{
-    auto* spl_signature = reinterpret_cast<volatile uint32_t*>(0x4);
+void SerialNumber(uint8_t sn[kSnSize]) {
+    uint8_t rootkey[16];
 
-    /* Check the eGON.BT0 magic in the SPL header */
-    if (spl_signature[0] != 0x4E4F4765 || spl_signature[1] != 0x3054422E)
-    {
-        return BootDevice::FEL;
-    }
+    h3_sid_get_rootkey(rootkey);
 
-    const uint32_t kBootDev = spl_signature[9] & 0xFF; /* offset into SPL = 0x28 */
-
-    if (kBootDev == 0)
-    {
-        return BootDevice::MMC0;
-    }
-
-    if (kBootDev == 3)
-    {
-        return BootDevice::SPI;
-    }
-
-    return BootDevice::UNKOWN;
+    sn[0] = rootkey[15];
+    sn[1] = rootkey[14];
+    sn[2] = rootkey[13];
+    sn[3] = rootkey[12];
 }
-} // namespace hal

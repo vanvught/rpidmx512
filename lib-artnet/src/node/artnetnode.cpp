@@ -53,9 +53,9 @@
 #endif
 #include "dmxnode.h"
 #include "dmxnode_data.h"
-#include "hal_boardinfo.h"
+#include "board.h"
 #include "network_udp.h"
-#include "hal.h"
+#include "board.h"
 #if !defined(DISABLE_RTC)
 #include "hwclock.h"
 #endif
@@ -276,8 +276,8 @@ void ArtNetNode::GetLongNameDefault(char* long_name) {
     DEBUG_ENTRY();
 #if !defined(ARTNET_LONG_NAME)
     uint8_t board_name_length;
-    const auto* const kBoardName = hal::BoardName(board_name_length);
-    snprintf(long_name, artnet::kLongNameLength - 1, "%s %s %u %s", kBoardName, artnet::kNodeId, static_cast<unsigned int>(artnet::kVersion), hal::kWebsite);
+    const auto* const kBoardName = board::BoardName(board_name_length);
+    snprintf(long_name, artnet::kLongNameLength - 1, "%s %s %u %s", kBoardName, artnet::kNodeId, static_cast<unsigned int>(artnet::kVersion), board::Website());
 #else
     uint32_t i;
 

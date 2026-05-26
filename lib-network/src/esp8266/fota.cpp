@@ -1,7 +1,7 @@
 /**
  * @file fota.cpp
  */
-/* Copyright (C) 2016-2025 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2026 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,48 +27,45 @@
 
 #include "esp8266.h"
 #include "esp8266_cmd.h"
-
-#include "hal.h"
 #include "console.h"
 
 static void esp8266_fota_start(const uint32_t server_ip_address) {
-	esp8266_write_4bits(CMD_ESP_FOTA_START);
-	esp8266_write_word(server_ip_address);
+    esp8266_write_4bits(CMD_ESP_FOTA_START);
+    esp8266_write_word(server_ip_address);
 }
 
-static void esp8266_fota_status(char *status, uint32_t *len) {
-	assert(status != nullptr);
-	assert(len != nullptr);
+static void esp8266_fota_status(char* status, uint32_t* len) {
+    assert(status != nullptr);
+    assert(len != nullptr);
 
-	esp8266_write_4bits(CMD_NOP);
-	esp8266_read_str(status, len);
+    esp8266_write_4bits(CMD_NOP);
+    esp8266_read_str(status, len);
 }
 
 void fota(uint32_t server_ip_address) {
-	char message[80];
-	uint32_t nLength;
-	char last_first_char = ' ';
+    char message[80];
+    uint32_t nLength;
+    char last_first_char = ' ';
 
-	console::Status(console::Colour::kConsoleYellow, "Starting FOTA ...");
+    console::Status(console::Colour::kConsoleYellow, "Starting FOTA ...");
 
-	esp8266_fota_start(server_ip_address);
+    esp8266_fota_start(server_ip_address);
 
-	do {
-		nLength = sizeof(message) / sizeof(char);
-		esp8266_fota_status(message, &nLength);
-		if (nLength != 0) {
-			Puts(message);
-			PutChar('\n');
-			last_first_char = message[0];
-		}
-	} while (nLength != 0);
+    do {
+        nLength = sizeof(message) / sizeof(char);
+        esp8266_fota_status(message, &nLength);
+        if (nLength != 0) {
+            Puts(message);
+            PutChar('\n');
+            last_first_char = message[0];
+        }
+    } while (nLength != 0);
 
-	if (last_first_char == 'S') {
-		console::Status(console::Colour::kConsoleGreen, "FOTA Done!");
-	} else {
-		console::Status(console::Colour::kConsoleRed, "FOTA Failed!");
-	}
+    if (last_first_char == 'S') {
+        console::Status(console::Colour::kConsoleGreen, "FOTA Done!");
+    } else {
+        console::Status(console::Colour::kConsoleRed, "FOTA Failed!");
+    }
 
-	for (;;)
-		;
+    for (;;);
 }
