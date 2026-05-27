@@ -37,7 +37,7 @@
 #if defined(CONFIG_DMXSEND_ENABLE_CONFIGUDP)
 #include "dmxconfigudp.h"
 #endif
-#include "hal_panelled.h" // IWYU pragma: keep
+#include "panelled.h"
 #include "firmware/debug/debug_debug.h"
 
 class DmxSend {

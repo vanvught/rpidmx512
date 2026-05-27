@@ -42,7 +42,7 @@
 #include "rdm.h"
 #include "network_udp.h"
 #if defined(CONFIG_PANELLED_RDM_PORT) || defined(CONFIG_PANELLED_RDM_NO_PORT)
-#include "hal_panelled.h"
+#include "panelled.h"
 #endif
 
 void ArtNetNode::HandleRdmIn() {

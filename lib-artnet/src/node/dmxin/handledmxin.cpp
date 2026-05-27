@@ -37,7 +37,7 @@
 #include "dmx.h"
 #include "network_udp.h"
 #include "timing.h"
-#include "hal_panelled.h"
+#include "panelled.h"
 
 static uint32_t s_receiving_mask = 0;
 

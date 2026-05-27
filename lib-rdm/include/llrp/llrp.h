@@ -2,7 +2,7 @@
  * @file llrp.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,9 +26,7 @@
 #ifndef LLRP_H_
 #define LLRP_H_
 
-/**
- * Table A-2: LLRP Constants
- */
+// Table A-2: LLRP Constants
 #define LLRP_MULTICAST_IPV4_ADDRESS_REQUEST  "239.255.250.133"
 #define LLRP_MULTICAST_IPV4_ADDRESS_RESPONSE "239.255.250.134"
 #define LLRP_MULTICAST_IPV6_ADDRESS_REQUEST  "ff18::85:0:0:85"
@@ -40,4 +38,4 @@
 #define LLRP_KNOWN_UID_SIZE                  200
 #define LLRP_BROADCAST_CID                   "fbad822c-bd0c-4d4c-bdc8-7eabebc85aff"
 
-#endif /* LLRP_H_ */
+#endif // LLRP_H_

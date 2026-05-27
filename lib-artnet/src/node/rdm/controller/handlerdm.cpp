@@ -37,7 +37,7 @@
 #include "rdm_discovery.h"
 #include "firmware/debug/debug_debug.h"
 #if defined(CONFIG_PANELLED_RDM_PORT) || defined(CONFIG_PANELLED_RDM_NO_PORT)
-#include "hal_panelled.h"
+#include "panelled.h"
 #endif
 
 namespace rdm::discovery {

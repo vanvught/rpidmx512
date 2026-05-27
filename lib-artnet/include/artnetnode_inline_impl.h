@@ -39,9 +39,11 @@
 #include "e131bridge.h"
 #endif
 #include "timing.h"
-#include "hal_panelled.h"
+#include "panelled.h"
 #include "hal_statusled.h"
-#include "network.h"
+#if defined(ARTNET_ENABLE_SENDDIAG)
+#include "network_udp.h"
+#endif
 
 inline void ArtNetNode::SetPortAddress(uint32_t port_index) {
     node_.port[port_index].port_address = artnet::MakePortAddress(node_.port[port_index].net_switch, node_.port[port_index].sub_switch, node_.port[port_index].sw);

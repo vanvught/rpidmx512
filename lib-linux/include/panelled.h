@@ -1,5 +1,5 @@
 /**
- * @file hal_panelled.h
+ * @file panelled.h
  *
  */
 /* Copyright (C) 2021-2026 by Arjan van Vught mailto:info@gd32-dmx.org
@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef H3_HAL_PANELLED_H_
-#define H3_HAL_PANELLED_H_
+#ifndef LINUX_HAL_PANELLED_H_
+#define LINUX_HAL_PANELLED_H_
 
 #include <cstdint>
 
@@ -43,8 +43,6 @@ inline constexpr uint32_t kTcnet = 0;
 // DMX
 inline constexpr uint32_t kPortARx = 0;
 inline constexpr uint32_t kPortATx = 0;
-// RDM
-inline constexpr uint32_t kPortARdm = 0;
 
 inline void Init() {}
 inline void On([[maybe_unused]] uint32_t on) {}
@@ -52,4 +50,4 @@ inline void Off([[maybe_unused]] uint32_t off) {}
 inline void Run() {}
 } // namespace hal::panelled
 
-#endif // H3_HAL_PANELLED_H_
+#endif // LINUX_HAL_PANELLED_H_

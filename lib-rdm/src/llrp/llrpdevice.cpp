@@ -30,13 +30,11 @@
 #include <cstring>
 #include <cassert>
 
-#include "hal.h"
 #include "hal_uuid.h"
 #include "llrp/llrpdevice.h"
 #include "llrp/llrppacket.h"
-#include "rdmdevice.h"
 #include "e133.h"
-#include "network.h"
+#include "network_iface.h"
 #include "rdmconst.h"
 #include "rdm_e120.h"
 #include "rdm_device_base.h"
@@ -49,8 +47,7 @@
 #define DEBUG_RDM_SHOW_MESSAGE
 #endif
 
-void LLRPDevice::HandleRequestMessage()
-{
+void LLRPDevice::HandleRequestMessage() {
     DEBUG_ENTRY();
 
     const auto* request = reinterpret_cast<struct TProbeRequestPDUPacket*>(llrp);
@@ -60,15 +57,12 @@ void LLRPDevice::HandleRequestMessage()
     uint8_t uid[rdm::kUidSize];
     memcpy(uid, rdm::device::Base::Instance().GetUID(), rdm::kUidSize);
 
-    if (kLength > 18)
-    {
+    if (kLength > 18) {
         const auto kKnownUiDs = (kLength - 18) / rdm::kUidSize;
         const auto* p = request->ProbeRequestPDU.KnownUUIDs;
 
-        for (uint32_t index = 0; index < kKnownUiDs; index++)
-        {
-            if (memcmp(p, uid, rdm::kUidSize) == 0)
-            {
+        for (uint32_t index = 0; index < kKnownUiDs; index++) {
+            if (memcmp(p, uid, rdm::kUidSize) == 0) {
                 DEBUG_EXIT();
                 return;
             }
@@ -78,8 +72,7 @@ void LLRPDevice::HandleRequestMessage()
 
     debug::Dump(request->ProbeRequestPDU.LowerUUID, 2 * rdm::kUidSize);
 
-    if (!((memcmp(request->ProbeRequestPDU.LowerUUID, uid, rdm::kUidSize) <= 0) && (memcmp(uid, request->ProbeRequestPDU.UpperUUID, rdm::kUidSize) <= 0)))
-    {
+    if (!((memcmp(request->ProbeRequestPDU.LowerUUID, uid, rdm::kUidSize) <= 0) && (memcmp(uid, request->ProbeRequestPDU.UpperUUID, rdm::kUidSize) <= 0))) {
         DEBUG_PUTS("Not for me");
         DEBUG_EXIT();
         return;
@@ -108,8 +101,7 @@ void LLRPDevice::HandleRequestMessage()
     reply->ProbeReplyPDU.ComponentType = LLRP_COMPONENT_TYPE_RPT_DEVICE;
 #endif
 
-    network::udp::Send(handle_llrp, reinterpret_cast<const uint8_t*>(reply), sizeof(struct TTProbeReplyPDUPacket), llrp::device::kIpV4LlrpResponse,
-                   llrp::device::kLlrpPort);
+    network::udp::Send(handle_llrp, reinterpret_cast<const uint8_t*>(reply), sizeof(struct TTProbeReplyPDUPacket), llrp::device::kIpV4LlrpResponse, llrp::device::kLlrpPort);
 
 #ifndef NDEBUG
     DumpCommon();
@@ -117,8 +109,7 @@ void LLRPDevice::HandleRequestMessage()
     DEBUG_EXIT();
 }
 
-void LLRPDevice::HandleRdmCommand()
-{
+void LLRPDevice::HandleRdmCommand() {
     DEBUG_ENTRY();
 
     auto* pdu_packet = reinterpret_cast<struct LTRDMCommandPDUPacket*>(llrp);
@@ -130,8 +121,7 @@ void LLRPDevice::HandleRdmCommand()
 
     const auto* reply = LLRPHandleRdmCommand(pdu_packet->RDMCommandPDU.RDMData);
 
-    if ((reply == nullptr) || (*reply != E120_SC_RDM))
-    {
+    if ((reply == nullptr) || (*reply != E120_SC_RDM)) {
         DEBUG_EXIT();
         return;
     }
