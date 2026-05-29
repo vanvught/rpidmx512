@@ -76,17 +76,13 @@ int main() // NOLINT
 
     // Pixel - 32 Universes
     PixelDmxMulti pixeldmx_multi;
+    PixelTestPattern pixeltest_pattern(pixelpatterns::Pattern::kNone, 8);
 
     json::PixelDmxParams pixeldmx_params;
     pixeldmx_params.Load();
     pixeldmx_params.Set();
 
     PixelOutputMulti::Get()->SetJamSTAPLDisplay(new HandlerOled);
-
-    const auto nPixelActivePorts = pixeldmx_multi.GetOutputPorts();
-    const auto kTestPattern = common::FromValue<pixelpatterns::Pattern>(ConfigStore::Instance().DmxLedGet(&common::store::DmxLed::test_pattern));
-
-    PixelTestPattern pixeltest_pattern(kTestPattern, nPixelActivePorts);
 
     // DMX - 2 Universes
     Dmx dmx;
@@ -95,26 +91,26 @@ int main() // NOLINT
     dmxparams.Load();
     dmxparams.Set();
 
-    uint32_t nDmxUniverses = 0;
+    uint32_t dmx_universes = 0;
 
     for (uint32_t port_index = dmxnode::kDmxportOffset; port_index < dmxnode::kMaxPorts; port_index++) {
-        const auto nDmxPortIndex = port_index - dmxnode::kDmxportOffset;
+        const auto kDmxPortIndex = port_index - dmxnode::kDmxportOffset;
 
         if (dmxnode_node.PortDirection(port_index) == dmxnode::Direction::kOutput) {
-            dmx.SetPortDirection(nDmxPortIndex, dmx::Direction::kOutput, false);
-            nDmxUniverses++;
+            dmx.SetPortDirection(kDmxPortIndex, dmx::Direction::kOutput, false);
+            dmx_universes++;
         }
     }
 
     DmxSend dmx_send;
 
     // DmxNodeWith4
-
-    DmxNodeWith4<CONFIG_DMXNODE_DMX_PORT_OFFSET> dmxNodeWith4((PixelTestPattern::Get()->GetPattern() != pixelpatterns::Pattern::kNone) ? nullptr : &pixeldmx_multi, (nDmxUniverses != 0) ? &dmx_send : nullptr);
+    DmxNodeWith4<CONFIG_DMXNODE_DMX_PORT_OFFSET> dmxNodeWith4((pixeltest_pattern.GetPattern() != pixelpatterns::Pattern::kNone) ? nullptr : &pixeldmx_multi, (dmx_universes != 0) ? &dmx_send : nullptr);
     dmxNodeWith4.Print();
 
     dmxnode_node.SetOutput(&dmxNodeWith4);
-
+	dmxnode_node.Print();
+	
 #if defined(NODE_SHOWFILE)
     ShowFile showfile;
     showfile.Print();
@@ -122,7 +118,7 @@ int main() // NOLINT
 
     dmxnode_node.Print();
 
-    display.SetTitle("sACN Pixel %dx%d", nPixelActivePorts, pixeldmx_multi.GetCount());
+    display.SetTitle("sACN Pixel %dx%d", dmxnode_node.GetActiveOutputPorts(), pixeldmx_multi.GetCount());
     display.Set(2, displayudf::Labels::kVersion);
     display.Set(3, displayudf::Labels::kHostname);
     display.Set(4, displayudf::Labels::kIp);
@@ -131,7 +127,7 @@ int main() // NOLINT
     displayudf_params.Load();
     displayudf_params.SetAndShow();
 
-    common::firmware::pixeldmx::Show(7);
+    common::firmware::pixeldmx::Show(7, pixeltest_pattern.GetPattern());
 
     RemoteConfig remote_config(remoteconfig::Output::PIXEL, dmxnode_node.GetActiveOutputPorts());
 

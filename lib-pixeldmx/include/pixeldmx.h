@@ -54,17 +54,14 @@
 #if defined(OUTPUT_DMX_PIXEL) && defined(RDM_RESPONDER) && !defined(NODE_ARTNET)
 #include "dmxnodeoutputrdmpixel.h"
 #define OVERRIDE override
-class PixelDmx final : public DmxNodeOutputRdmPixel, public PixelDmxConfiguration
-{
+class PixelDmx final : public DmxNodeOutputRdmPixel, public PixelDmxConfiguration {
 #else
 #define OVERRIDE
 #define SETDATA
-class PixelDmx final : public PixelDmxConfiguration
-{
+class PixelDmx final : public PixelDmxConfiguration {
 #endif
    public:
-    PixelDmx()
-    {
+    PixelDmx() {
         DEBUG_ENTRY();
 
         assert(s_this == nullptr);
@@ -80,15 +77,13 @@ class PixelDmx final : public PixelDmxConfiguration
         DEBUG_EXIT();
     }
 
-    ~PixelDmx() OVERRIDE
-    {
+    ~PixelDmx() OVERRIDE {
         DEBUG_ENTRY();
 
         DEBUG_EXIT();
     }
 
-    void ApplyConfiguration()
-    {
+    void ApplyConfiguration() {
         DEBUG_ENTRY();
         PixelDmxConfiguration::Validate(1);
 
@@ -102,10 +97,8 @@ class PixelDmx final : public PixelDmxConfiguration
         DEBUG_EXIT();
     }
 
-    void Start([[maybe_unused]] uint32_t port_index) OVERRIDE
-    {
-        if (started_)
-        {
+    void Start([[maybe_unused]] uint32_t port_index) OVERRIDE {
+        if (started_) {
             return;
         }
 
@@ -116,10 +109,8 @@ class PixelDmx final : public PixelDmxConfiguration
 #endif
     }
 
-    void Stop([[maybe_unused]] uint32_t port_index) OVERRIDE
-    {
-        if (!started_)
-        {
+    void Stop([[maybe_unused]] uint32_t port_index) OVERRIDE {
+        if (!started_) {
             return;
         }
 
@@ -133,18 +124,15 @@ class PixelDmx final : public PixelDmxConfiguration
 #if defined(SETDATA)
     template <bool do_update> void SetData(uint32_t port_index, const uint8_t* data, uint32_t length) { SetDataImpl<do_update>(port_index, data, length); }
 
-    template <bool do_update> void SetDataImpl([[maybe_unused]] uint32_t port_index, const uint8_t* data, uint32_t length)
-    {
+    template <bool do_update> void SetDataImpl([[maybe_unused]] uint32_t port_index, const uint8_t* data, uint32_t length) {
 #else
-    void SetDataImpl([[maybe_unused]] uint32_t port_index, const uint8_t* data, uint32_t length, bool do_update) OVERRIDE
-    {
+    void SetDataImpl([[maybe_unused]] uint32_t port_index, const uint8_t* data, uint32_t length, bool do_update) OVERRIDE {
 
 #endif
         assert(data != nullptr);
         assert(length <= dmxnode::kUniverseSize);
 
-        if (output_type_.IsUpdating())
-        {
+        if (output_type_.IsUpdating()) {
             puts("output_type_.IsUpdating()");
             return;
         }
@@ -166,79 +154,64 @@ class PixelDmx final : public PixelDmxConfiguration
         const auto kChannelsPerPixel = PixelDmxConfiguration::GetLedsPerPixel();
         const auto kEndIndex = std::min(kGroups, (kBeginIndex + (length / kChannelsPerPixel)));
 
-        if ((kSwitch == 0) && (kGroups < port_info.begin_index_port[1]))
-        {
+        if ((kSwitch == 0) && (kGroups < port_info.begin_index_port[1])) {
             assert(PixelDmxConfiguration::GetDmxStartAddress() != 0);
             d = (PixelDmxConfiguration::GetDmxStartAddress() - 1U);
         }
 
         const auto kGroupingCount = PixelDmxConfiguration::GetGroupingCount();
 
-        if (kChannelsPerPixel == 3)
-        {
-            switch (PixelDmxConfiguration::GetMap())
-            {
+        if (kChannelsPerPixel == 3) {
+            switch (PixelDmxConfiguration::GetMap()) {
                 case pixel::LedMap::kRGB:
-                    for (uint32_t j = kBeginIndex; (j < kEndIndex) && (d < length); j++)
-                    {
+                    for (uint32_t j = kBeginIndex; (j < kEndIndex) && (d < length); j++) {
                         auto const kPixelIndexStart = (j * kGroupingCount);
-                        for (uint32_t k = 0; k < kGroupingCount; k++)
-                        {
+                        for (uint32_t k = 0; k < kGroupingCount; k++) {
                             output_type_.SetPixel(kPixelIndexStart + k, data[d + 0], data[d + 1], data[d + 2]);
                         }
                         d = d + 3;
                     }
                     break;
                 case pixel::LedMap::kRBG:
-                    for (uint32_t j = kBeginIndex; (j < kEndIndex) && (d < length); j++)
-                    {
+                    for (uint32_t j = kBeginIndex; (j < kEndIndex) && (d < length); j++) {
                         auto const kPixelIndexStart = (j * kGroupingCount);
-                        for (uint32_t k = 0; k < kGroupingCount; k++)
-                        {
+                        for (uint32_t k = 0; k < kGroupingCount; k++) {
                             output_type_.SetPixel(kPixelIndexStart + k, data[d + 0], data[d + 2], data[d + 1]);
                         }
                         d = d + 3;
                     }
                     break;
                 case pixel::LedMap::kGRB:
-                    for (uint32_t j = kBeginIndex; (j < kEndIndex) && (d < length); j++)
-                    {
+                    for (uint32_t j = kBeginIndex; (j < kEndIndex) && (d < length); j++) {
                         auto const kPixelIndexStart = (j * kGroupingCount);
-                        for (uint32_t k = 0; k < kGroupingCount; k++)
-                        {
+                        for (uint32_t k = 0; k < kGroupingCount; k++) {
                             output_type_.SetPixel(kPixelIndexStart + k, data[d + 1], data[d + 0], data[d + 2]);
                         }
                         d = d + 3;
                     }
                     break;
                 case pixel::LedMap::kGBR:
-                    for (uint32_t j = kBeginIndex; (j < kEndIndex) && (d < length); j++)
-                    {
+                    for (uint32_t j = kBeginIndex; (j < kEndIndex) && (d < length); j++) {
                         auto const kPixelIndexStart = (j * kGroupingCount);
-                        for (uint32_t k = 0; k < kGroupingCount; k++)
-                        {
+                        for (uint32_t k = 0; k < kGroupingCount; k++) {
                             output_type_.SetPixel(kPixelIndexStart + k, data[d + 2], data[d + 0], data[d + 1]);
                         }
                         d = d + 3;
                     }
                     break;
                 case pixel::LedMap::kBRG:
-                    for (uint32_t j = kBeginIndex; (j < kEndIndex) && (d < length); j++)
-                    {
+                    for (uint32_t j = kBeginIndex; (j < kEndIndex) && (d < length); j++) {
                         auto const kPixelIndexStart = (j * kGroupingCount);
-                        for (uint32_t k = 0; k < kGroupingCount; k++)
-                        {
+                        for (uint32_t k = 0; k < kGroupingCount; k++) {
                             output_type_.SetPixel(kPixelIndexStart + k, data[d + 1], data[d + 2], data[d + 0]);
                         }
                         d = d + 3;
                     }
                     break;
                 case pixel::LedMap::kBGR:
-                    for (uint32_t j = kBeginIndex; (j < kEndIndex) && (d < length); j++)
-                    {
+                    for (uint32_t j = kBeginIndex; (j < kEndIndex) && (d < length); j++) {
                         auto const kPixelIndexStart = (j * kGroupingCount);
-                        for (uint32_t k = 0; k < kGroupingCount; k++)
-                        {
+                        for (uint32_t k = 0; k < kGroupingCount; k++) {
                             output_type_.SetPixel(kPixelIndexStart + k, data[d + 2], data[d + 1], data[d + 0]);
                         }
                         d = d + 3;
@@ -249,15 +222,11 @@ class PixelDmx final : public PixelDmxConfiguration
                     __builtin_unreachable();
                     break;
             }
-        }
-        else
-        {
+        } else {
             assert(kChannelsPerPixel == 4);
-            for (auto j = kBeginIndex; (j < kEndIndex) && (d < length); j++)
-            {
+            for (auto j = kBeginIndex; (j < kEndIndex) && (d < length); j++) {
                 auto const kPixelIndexStart = (j * kGroupingCount);
-                for (uint32_t k = 0; k < kGroupingCount; k++)
-                {
+                for (uint32_t k = 0; k < kGroupingCount; k++) {
                     output_type_.SetPixel(kPixelIndexStart + k, data[d], data[d + 1], data[d + 2], data[d + 3]);
                 }
                 d = d + 4;
@@ -265,10 +234,8 @@ class PixelDmx final : public PixelDmxConfiguration
         }
 
 #if !defined(DMXNODE_PORTS)
-        if (do_update)
-        {
-            if (__builtin_expect((blackout_), 0))
-            {
+        if (do_update) {
+            if (__builtin_expect((blackout_), 0)) {
                 return;
             }
             output_type_.Update();
@@ -277,12 +244,9 @@ class PixelDmx final : public PixelDmxConfiguration
 #if !defined(SETDATA)
 #error
 #endif
-        if constexpr (do_update)
-        {
-            if (port_index == port_info.protocol_port_index_last)
-            {
-                if (__builtin_expect((blackout_), 0))
-                {
+        if constexpr (do_update) {
+            if (port_index == port_info.protocol_port_index_last) {
+                if (__builtin_expect((blackout_), 0)) {
                     return;
                 }
                 output_type_.Update();
@@ -300,29 +264,22 @@ class PixelDmx final : public PixelDmxConfiguration
     dmxnode::OutputStyle GetOutputStyle([[maybe_unused]] uint32_t port_index) const { return dmxnode::OutputStyle::kDelta; }
 #endif
 
-    void Blackout(bool blackout = true)
-    {
+    void Blackout(bool blackout = true) {
         blackout_ = blackout;
 
-        while (output_type_.IsUpdating())
-        {
+        while (output_type_.IsUpdating()) {
             // wait for completion
         }
 
-        if (blackout)
-        {
+        if (blackout) {
             output_type_.Blackout();
-        }
-        else
-        {
+        } else {
             output_type_.Update();
         }
     }
 
-    void FullOn()
-    {
-        while (output_type_.IsUpdating())
-        {
+    void FullOn() {
+        while (output_type_.IsUpdating()) {
             // wait for completion
         }
 
@@ -332,20 +289,16 @@ class PixelDmx final : public PixelDmxConfiguration
     void Print() OVERRIDE { PixelDmxConfiguration::Get().Print(); }
 
     // RDM
-    bool SetDmxStartAddress(uint16_t dmx_start_address) OVERRIDE
-    {
-        if (dmx_start_address == PixelDmxConfiguration::GetDmxStartAddress())
-        {
+    bool SetDmxStartAddress(uint16_t dmx_start_address) OVERRIDE {
+        if (dmx_start_address == PixelDmxConfiguration::GetDmxStartAddress()) {
             return true;
         }
 
-        if ((dmx_start_address + PixelDmxConfiguration::GetDmxFootprint()) > dmxnode::kUniverseSize)
-        {
+        if ((dmx_start_address + PixelDmxConfiguration::GetDmxFootprint()) > dmxnode::kUniverseSize) {
             return false;
         }
 
-        if ((dmx_start_address != 0) && (dmx_start_address <= dmxnode::kUniverseSize))
-        {
+        if ((dmx_start_address != 0) && (dmx_start_address <= dmxnode::kUniverseSize)) {
             PixelDmxConfiguration::SetDmxStartAddress(dmx_start_address);
             dmxled_store::SaveDmxStartAddress(dmx_start_address);
             return true;
@@ -358,19 +311,16 @@ class PixelDmx final : public PixelDmxConfiguration
 
     uint16_t GetDmxFootprint() OVERRIDE { return PixelDmxConfiguration::Get().GetDmxFootprint(); }
 
-    bool GetSlotInfo(uint16_t slotoffset, dmxnode::SlotInfo& slotinfo) OVERRIDE
-    {
+    bool GetSlotInfo(uint16_t slotoffset, dmxnode::SlotInfo& slotinfo) OVERRIDE {
         auto& pixeldmx_configuration = PixelDmxConfiguration::Get();
 
-        if (slotoffset > pixeldmx_configuration.GetDmxFootprint())
-        {
+        if (slotoffset > pixeldmx_configuration.GetDmxFootprint()) {
             return false;
         }
 
         slotinfo.type = 0x00; // ST_PRIMARY
 
-        switch (slotoffset % pixeldmx_configuration.GetLedsPerPixel())
-        {
+        switch (slotoffset % pixeldmx_configuration.GetLedsPerPixel()) {
             case 0:
                 slotinfo.category = 0x0205; // SD_COLOR_ADD_RED
                 break;
@@ -397,8 +347,7 @@ class PixelDmx final : public PixelDmxConfiguration
     uint32_t GetUserData() { return 0; }
     uint32_t GetRefreshRate() { return 0; }
 
-    static PixelDmx& Get()
-    {
+    static PixelDmx& Get() {
         assert(s_this != nullptr); // Ensure that s_this is valid
         return *s_this;
     }

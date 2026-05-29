@@ -29,11 +29,14 @@
 #include <cstdint>
 
 #include "pixeldmxconfiguration.h"
-#include "display.h"
+#include "display.h" // IWYU pragma: keep
 #include "pixelpatterns.h"
+#include "firmware/debug/debug_debug.h"
 
 namespace common::firmware::pixeldmx {
-inline void Show(uint32_t line, pixelpatterns::Pattern pattern = pixelpatterns::Pattern::kNone) {
+inline void Show(uint32_t line, pixelpatterns::Pattern pattern) {
+	DEBUG_PRINTF("line=%u, pattern=%u", line, static_cast<uint32_t>(pattern));
+	
     auto& configuration = PixelDmxConfiguration::Get();
     auto* display = Display::Get();
     assert(display != nullptr);
@@ -41,13 +44,19 @@ inline void Show(uint32_t line, pixelpatterns::Pattern pattern = pixelpatterns::
     display->ClearEndOfLine();
     display->Printf(line, "%s:%d G%d %s", 
 		pixel::GetTypeName(configuration.GetType()), 
-		configuration.GetCount(), configuration.GetGroupingCount(), 
-		pixel::GetMapName(configuration.GetMap()));
+		configuration.GetCount(), 
+		configuration.GetGroupingCount(), 
+		pixel::GetMapName(configuration.GetMap())
+	);
+
     display->ClearLine(8); // Status line
 
+    display->ClearLine(6);
     if (pattern != pixelpatterns::Pattern::kNone) {
-        display->ClearLine(6);
-        display->Printf(6, "%s:%u", PixelPatterns::GetName(pattern), static_cast<uint32_t>(pattern));
+        display->Printf(6, "%s:%u", 
+			PixelPatterns::GetName(pattern), 
+			static_cast<uint32_t>(pattern)
+		);
     }
 }
 } // namespace common::firmware::pixeldmx

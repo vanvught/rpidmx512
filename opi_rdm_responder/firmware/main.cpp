@@ -72,17 +72,13 @@ int main() // NOLINT
     fw.Print("RDM Responder");
 
     PixelDmx pixeldmx;
+    PixelTestPattern pixel_test_pattern(pixelpatterns::Pattern::kNone, 1);
 
     json::PixelDmxParams pixeldmx_params;
     pixeldmx_params.Load();
     pixeldmx_params.Set();
 
-    const auto kTestPattern = common::FromValue<pixelpatterns::Pattern>(ConfigStore::Instance().DmxLedGet(&common::store::DmxLed::test_pattern));
-
-    PixelTestPattern pixel_test_pattern(kTestPattern, 1);
-
     PixelDmxParamsRdm pixeldmx_paramsrdm;
-
 #if defined(CONFIG_RDM_MANUFACTURER_PIDS_SET)
     static constexpr auto kPersonalityCount = static_cast<uint32_t>(pixel::LedType::kUndefined);
     RdmPersonality* personalities[kPersonalityCount];
@@ -102,7 +98,7 @@ int main() // NOLINT
 #endif
     rdm_responder.Init();
     rdm_responder.Start();
-    rdm_responder.DmxDisableOutput(!kIsConfigMode && (kTestPattern != pixelpatterns::Pattern::kNone));
+    rdm_responder.DmxDisableOutput(!kIsConfigMode && (pixel_test_pattern.GetPattern() != pixelpatterns::Pattern::kNone));
     rdm_responder.Print();
 
     if (kIsConfigMode) {
@@ -113,8 +109,8 @@ int main() // NOLINT
 
     if (kIsConfigMode) {
         puts("Config mode");
-    } else if (kTestPattern != pixelpatterns::Pattern::kNone) {
-        printf("Test pattern : %s [%u]\n", PixelPatterns::GetName(kTestPattern), static_cast<uint32_t>(kTestPattern));
+    } else if (pixel_test_pattern.GetPattern() != pixelpatterns::Pattern::kNone) {
+        printf("Test pattern : %s [%u]\n", PixelPatterns::GetName(pixel_test_pattern.GetPattern()), static_cast<uint32_t>(pixel_test_pattern.GetPattern()));
     }
 
 #if !defined(NO_EMAC)
@@ -129,7 +125,7 @@ int main() // NOLINT
     displayudf_params.Load();
     displayudf_params.SetAndShow();
 
-    common::firmware::pixeldmx::Show(7);
+    common::firmware::pixeldmx::Show(7, pixel_test_pattern.GetPattern());
 
     if (kIsConfigMode) {
         display.ClearLine(3);

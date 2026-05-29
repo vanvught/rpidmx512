@@ -31,11 +31,9 @@
 #include "pixelpatterns.h"
 #include "firmware/debug/debug_debug.h"
 
-class PixelTestPattern final : PixelPatterns
-{
+class PixelTestPattern final : PixelPatterns {
    public:
-    PixelTestPattern(pixelpatterns::Pattern pattern, uint32_t output_ports) : PixelPatterns(output_ports)
-    {
+    PixelTestPattern(pixelpatterns::Pattern pattern, uint32_t output_ports) : PixelPatterns(output_ports) {
         DEBUG_ENTRY();
 
         assert(s_this == nullptr);
@@ -46,26 +44,27 @@ class PixelTestPattern final : PixelPatterns
         DEBUG_EXIT();
     }
 
-    bool SetPattern(pixelpatterns::Pattern pattern)
-    {
-        if (pattern >= pixelpatterns::Pattern::kLast)
-        {
+    bool SetPattern(pixelpatterns::Pattern pattern) {
+        DEBUG_ENTRY();
+
+        if (pattern >= pixelpatterns::Pattern::kLast) {
+            DEBUG_EXIT();
             return false;
         }
 
         pattern_ = pattern;
+
+        DEBUG_PRINTF("pattern_=%u", static_cast<uint32_t>(pattern_));
 
         const auto kColour1 = pixel::GetColour(0, 0, 0);
         const auto kColour2 = pixel::GetColour(100, 100, 100);
         constexpr auto kInterval = 100;
         constexpr auto kSteps = 10;
 
-        for (uint32_t i = 0; i < PixelPatterns::GetActivePorts(); i++)
-        {
+        for (uint32_t i = 0; i < PixelPatterns::GetActivePorts(); i++) {
             DEBUG_PRINTF("i=%u", i);
 
-            switch (pattern)
-            {
+            switch (pattern) {
                 case pixelpatterns::Pattern::kRainbowCycle:
                     PixelPatterns::RainbowCycle(i, kInterval);
                     break;
@@ -90,17 +89,18 @@ class PixelTestPattern final : PixelPatterns
         return true;
     }
 
-    void Run()
-    {
-        if (__builtin_expect((pattern_ != pixelpatterns::Pattern::kNone), 0))
-        {
+    void Run() {
+        if (__builtin_expect((pattern_ != pixelpatterns::Pattern::kNone), 0)) {
             PixelPatterns::Run();
         }
     }
 
     pixelpatterns::Pattern GetPattern() const { return pattern_; }
 
-    static PixelTestPattern* Get() { return s_this; }
+    static PixelTestPattern* Get() {
+        assert(s_this != nullptr);
+        return s_this;
+    }
 
    private:
     pixelpatterns::Pattern pattern_;

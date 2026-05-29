@@ -53,10 +53,8 @@
 #include "common/utils/utils_enum.h"
 #include "configurationstore.h"
 
-namespace hal
-{
-void RebootHandler()
-{
+namespace hal {
+void RebootHandler() {
     PixelDmxMulti::Get().Blackout();
     PixelPusher::Get()->Stop();
 }
@@ -78,6 +76,7 @@ int main() // NOLINT
     network::apps::mdns::ServiceRecordAdd(nullptr, network::apps::mdns::Services::kPp, "type=PixelPusher");
 
     PixelDmxMulti pixeldmx_multi;
+    PixelTestPattern pixeltest_pattern(pixelpatterns::Pattern::kNone, 8);
 
     json::PixelDmxParams pixeldmx_params;
     pixeldmx_params.Load();
@@ -89,9 +88,7 @@ int main() // NOLINT
 
     pp.SetCount(pixeldmx_multi.GetGroups(), kActivePorts, false);
 
-    const auto kTestPattern = common::FromValue<pixelpatterns::Pattern>(ConfigStore::Instance().DmxLedGet(&common::store::DmxLed::test_pattern));
-
-    PixelTestPattern pixeltest_pattern(kTestPattern, kActivePorts);
+    const auto kTestPattern = pixeltest_pattern.GetPattern();
 
     pixeldmx_multi.Print();
 
@@ -100,7 +97,7 @@ int main() // NOLINT
 
 #if defined(NODE_RDMNET_LLRP_ONLY)
     RdmNetDevice llrp_only_device;
-	llrp_only_device.Print();
+    llrp_only_device.Print();
 #endif
 
     display.SetTitle("PixelPusher %d", kActivePorts);
@@ -113,7 +110,7 @@ int main() // NOLINT
     displayudf_params.Load();
     displayudf_params.SetAndShow();
 
-    common::firmware::pixeldmx::Show(7);
+    common::firmware::pixeldmx::Show(7, kTestPattern);
 
     RemoteConfig remote_config(remoteconfig::Output::PIXEL, kActivePorts);
 
@@ -125,8 +122,7 @@ int main() // NOLINT
 
     watchdog::Init();
 
-    for (;;)
-    {
+    for (;;) {
         watchdog::Feed();
         network::Run();
         pp.Run();

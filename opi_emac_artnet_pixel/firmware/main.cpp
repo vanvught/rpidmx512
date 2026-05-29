@@ -40,6 +40,7 @@
 #include "firmware/pixeldmx/show.h"
 #include "pixeltestpattern.h"
 #include "json/pixeldmxparams.h"
+#include "pixeldmx.h"
 #if defined(NODE_SHOWFILE)
 #include "showfile.h"
 #endif
@@ -48,13 +49,9 @@
 #include "configstore.h"
 #include "firmwareversion.h"
 #include "software_version.h"
-#include "common/utils/utils_enum.h"
-#include "configurationstore.h"
 
-namespace hal
-{
-void RebootHandler()
-{
+namespace hal {
+void RebootHandler() {
     PixelDmx::Get().Blackout();
     ArtNetNode::Get()->Stop();
 }
@@ -75,21 +72,15 @@ int main() // NOLINT
 
     // Pixel - 4 Universes
     PixelDmx pixeldmx;
+    PixelTestPattern pixeltest_pattern(pixelpatterns::Pattern::kNone, 1);
 
     json::PixelDmxParams pixeldmx_params;
     pixeldmx_params.Load();
     pixeldmx_params.Set();
 
-    const auto kTestPattern = common::FromValue<pixelpatterns::Pattern>(ConfigStore::Instance().DmxLedGet(&common::store::DmxLed::test_pattern));
-
-    PixelTestPattern pixeltest_pattern(kTestPattern, 1);
-
-    if (PixelTestPattern::Get()->GetPattern() != pixelpatterns::Pattern::kNone)
-    {
+    if (pixeltest_pattern.GetPattern() != pixelpatterns::Pattern::kNone) {
         dmxnode_node.SetOutput(nullptr);
-    }
-    else
-    {
+    } else {
         dmxnode_node.SetOutput(&pixeldmx);
     }
 
@@ -112,7 +103,7 @@ int main() // NOLINT
     displayudf_params.Load();
     displayudf_params.SetAndShow();
 
-    common::firmware::pixeldmx::Show(7);
+    common::firmware::pixeldmx::Show(7, pixeltest_pattern.GetPattern());
 
     RemoteConfig remote_config(remoteconfig::Output::PIXEL, dmxnode_node.GetActiveOutputPorts());
 
@@ -124,8 +115,7 @@ int main() // NOLINT
 
     watchdog::Init();
 
-    for (;;)
-    {
+    for (;;) {
         watchdog::Feed();
         network::Run();
         dmxnode_node.Run();

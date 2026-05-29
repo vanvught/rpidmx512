@@ -32,7 +32,8 @@
 #include "firmware/debug/debug_debug.h"
 
 namespace json {
-template <typename Derived> class JsonParamsBase {
+template <typename Derived> 
+class JsonParamsBase {
    public:
     void Load([[maybe_unused]] const char* file_name) {
 #if !defined(DISABLE_FS)
@@ -51,7 +52,7 @@ template <typename Derived> class JsonParamsBase {
             static_cast<Derived*>(this)->Dump();
 #endif
         } else {
-            DEBUG_PUTS("Failed to open file");
+            DEBUG_PRINTF("Failed to open file: %s", file_name);
         }
 #endif
     }

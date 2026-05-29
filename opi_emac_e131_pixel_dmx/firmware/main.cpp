@@ -28,8 +28,6 @@
 #pragma GCC optimize("no-tree-loop-distribute-patterns")
 #pragma GCC optimize("-fprefetch-loop-arrays")
 
-#include <cstdint>
-
 #include "h3/hal.h"
 #include "watchdog.h"
 #include "network.h"
@@ -38,7 +36,6 @@
 #include "dmxnodenode.h"
 #include "dmxnodemsgconst.h"
 #include "firmware/pixeldmx/show.h"
-#include "pixeltype.h"
 #include "pixeltestpattern.h"
 #include "json/pixeldmxparams.h"
 #include "pixeldmx.h"
@@ -53,8 +50,6 @@
 #include "configstore.h"
 #include "firmwareversion.h"
 #include "software_version.h"
-#include "common/utils/utils_enum.h"
-#include "configurationstore.h"
 
 namespace hal {
 void RebootHandler() {
@@ -79,14 +74,11 @@ int main() // NOLINT
 
     // Pixel - 4 Universes
     PixelDmx pixeldmx;
+    PixelTestPattern pixeltest_pattern(pixelpatterns::Pattern::kNone, 1);
 
     json::PixelDmxParams pixeldmx_params;
     pixeldmx_params.Load();
     pixeldmx_params.Set();
-
-    const auto kTestPattern = common::FromValue<pixelpatterns::Pattern>(ConfigStore::Instance().DmxLedGet(&common::store::DmxLed::test_pattern));
-
-    PixelTestPattern pixeltest_pattern(kTestPattern, 1);
 
     // DMX - 1 Universe
     Dmx dmx;
@@ -105,12 +97,10 @@ int main() // NOLINT
     DmxSend dmx_send;
 
     // DmxNodeWith4
-
-    DmxNodeWith4<CONFIG_DMXNODE_DMX_PORT_OFFSET> dmxnode((PixelTestPattern::Get()->GetPattern() != pixelpatterns::Pattern::kNone) ? nullptr : &pixeldmx, (dmx_universes != 0) ? &dmx_send : nullptr);
+    DmxNodeWith4<CONFIG_DMXNODE_DMX_PORT_OFFSET> dmxnode((pixeltest_pattern.GetPattern() != pixelpatterns::Pattern::kNone) ? nullptr : &pixeldmx, (dmx_universes != 0) ? &dmx_send : nullptr);
     dmxnode.Print();
 
     dmxnode_node.SetOutput(&dmxnode);
-    dmxnode_node.Print();
 
 #if defined(NODE_SHOWFILE)
     ShowFile showfile;
@@ -126,7 +116,7 @@ int main() // NOLINT
     displayudf_params.Load();
     displayudf_params.SetAndShow();
 
-    common::firmware::pixeldmx::Show(7);
+    common::firmware::pixeldmx::Show(7, pixeltest_pattern.GetPattern());
 
     RemoteConfig remote_config(remoteconfig::Output::PIXEL, dmxnode_node.GetActiveOutputPorts());
 

@@ -73,6 +73,7 @@ int main() // NOLINT
     DdpDisplay ddpdisplay;
 
     PixelDmxMulti pixeldmx_multi;
+	PixelTestPattern pixeltest_pattern(pixelpatterns::Pattern::kNone, 8);
 
     json::PixelDmxParams pixeldmx_params;
     pixeldmx_params.Load();
@@ -84,9 +85,7 @@ int main() // NOLINT
 
     ddpdisplay.SetCount(pixeldmx_multi.GetGroups(), pixeldmx_multi.GetLedsPerPixel(), kActivePorts);
 
-    const auto kTestPattern = common::FromValue<pixelpatterns::Pattern>(ConfigStore::Instance().DmxLedGet(&common::store::DmxLed::test_pattern));
-
-    PixelTestPattern pixeltest_pattern(kTestPattern, kActivePorts);
+    const auto kTestPattern = pixeltest_pattern.GetPattern();
 
     ddpdisplay.SetOutput(&pixeldmx_multi);
     ddpdisplay.Print();
@@ -107,7 +106,7 @@ int main() // NOLINT
     displayudf_params.Load();
     displayudf_params.SetAndShow();
 
-    common::firmware::pixeldmx::Show(7);
+    common::firmware::pixeldmx::Show(7, kTestPattern);
 
     RemoteConfig remote_config(remoteconfig::Output::PIXEL, kActivePorts);
 

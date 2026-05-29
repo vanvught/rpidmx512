@@ -27,17 +27,12 @@
 #pragma GCC optimize("no-tree-loop-distribute-patterns")
 #pragma GCC optimize("-fprefetch-loop-arrays")
 
-#include <cstdint>
-#include <cstdio>
-#include <cassert>
-
 #include "h3/hal.h"
 #include "watchdog.h"
 #include "network.h"
 #include "displayudf.h"
 #include "json/displayudfparams.h"
 #include "ddpdisplay.h"
-#include "pixeltype.h"
 #include "pixeltestpattern.h"
 #include "json/pixeldmxparams.h"
 #include "pixeldmxmulti.h"
@@ -54,13 +49,9 @@
 #include "configstore.h"
 #include "firmwareversion.h"
 #include "software_version.h"
-#include "common/utils/utils_enum.h"
-#include "configurationstore.h"
 
-namespace hal
-{
-void RebootHandler()
-{
+namespace hal {
+void RebootHandler() {
     PixelDmxMulti::Get().Blackout();
     DdpDisplay::Get()->Stop();
 }
@@ -81,6 +72,7 @@ int main() // NOLINT
 
     // LightSet A - Pixel - 32 Universes
     PixelDmxMulti pixeldmx_multi;
+    PixelTestPattern pixeltest_pattern(pixelpatterns::Pattern::kNone, 8);
 
     json::PixelDmxParams pixeldmx_params;
     pixeldmx_params.Load();
@@ -88,16 +80,11 @@ int main() // NOLINT
 
     PixelOutputMulti::Get()->SetJamSTAPLDisplay(new HandlerOled);
 
-    const auto nActivePorts = pixeldmx_multi.GetOutputPorts();
+    const auto kActivePorts = pixeldmx_multi.GetOutputPorts();
 
-    ddp_display.SetCount(pixeldmx_multi.GetGroups(), pixeldmx_multi.GetLedsPerPixel(), nActivePorts);
-
-    const auto kTestPattern = common::FromValue<pixelpatterns::Pattern>(ConfigStore::Instance().DmxLedGet(&common::store::DmxLed::test_pattern));
-
-    PixelTestPattern pixeltest_pattern(kTestPattern, nActivePorts);
+    ddp_display.SetCount(pixeldmx_multi.GetGroups(), pixeldmx_multi.GetLedsPerPixel(), kActivePorts);
 
     // LightSet B - DMX - 2 Universes
-
     Dmx dmx;
 
     json::DmxSendParams dmxparams;
@@ -108,9 +95,7 @@ int main() // NOLINT
     dmx_send.Print();
 
     // DmxNodeWith4
-
-    DmxNodeWith4<CONFIG_DMXNODE_DMX_PORT_OFFSET> dmxNode((PixelTestPattern::Get()->GetPattern() != pixelpatterns::Pattern::kNone) ? nullptr : &pixeldmx_multi,
-                                                         &dmx_send);
+    DmxNodeWith4<CONFIG_DMXNODE_DMX_PORT_OFFSET> dmxNode((PixelTestPattern::Get()->GetPattern() != pixelpatterns::Pattern::kNone) ? nullptr : &pixeldmx_multi, &dmx_send);
     dmxNode.Print();
 
     ddp_display.SetOutput(&dmxNode);
@@ -118,10 +103,10 @@ int main() // NOLINT
 
 #if defined(NODE_RDMNET_LLRP_ONLY)
     RdmNetDevice llrp_only_device;
-	llrp_only_device.Print();
+    llrp_only_device.Print();
 #endif
 
-    display.SetTitle("DDP Pixel %d", nActivePorts);
+    display.SetTitle("DDP Pixel %d", kActivePorts);
     display.Set(2, displayudf::Labels::kVersion);
     display.Set(3, displayudf::Labels::kHostname);
     display.Set(4, displayudf::Labels::kIp);
@@ -131,9 +116,9 @@ int main() // NOLINT
     displayudf_params.Load();
     displayudf_params.SetAndShow();
 
-    common::firmware::pixeldmx::Show(7);
+    common::firmware::pixeldmx::Show(7, pixeltest_pattern.GetPattern());
 
-    RemoteConfig remote_config(remoteconfig::Output::PIXEL, nActivePorts);
+    RemoteConfig remote_config(remoteconfig::Output::PIXEL, kActivePorts);
 
     display.TextStatus("DDP Display Start", ansi::Colours::Colour::kYellow);
 
@@ -143,8 +128,7 @@ int main() // NOLINT
 
     watchdog::Init();
 
-    for (;;)
-    {
+    for (;;) {
         watchdog::Feed();
         network::Run();
         pixeltest_pattern.Run();

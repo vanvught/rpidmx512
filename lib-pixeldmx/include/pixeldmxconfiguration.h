@@ -50,8 +50,7 @@ struct PortInfo
 };
 } // namespace pixeldmxconfiguration
 
-class PixelDmxConfiguration : public PixelConfiguration
-{
+class PixelDmxConfiguration : public PixelConfiguration {
    public:
     PixelDmxConfiguration()
     {

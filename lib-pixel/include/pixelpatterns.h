@@ -70,10 +70,11 @@ class PixelPatterns {
    public:
     explicit PixelPatterns(uint32_t active_ports) {
         DEBUG_ENTRY();
-        DEBUG_PRINTF("nActivePorts=%u", active_ports);
+        DEBUG_PRINTF("active_ports=%u", active_ports);
 
-        active_ports = std::min(pixelpatterns::kMaxPorts, active_ports);
+        s_active_ports = std::min(pixelpatterns::kMaxPorts, active_ports);
 
+		DEBUG_PRINTF("s_active_ports=%u", s_active_ports);
         DEBUG_EXIT();
     }
 

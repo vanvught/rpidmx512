@@ -50,10 +50,8 @@
 #include "software_version.h"
 #include "common/utils/utils_enum.h"
 
-namespace hal
-{
-void RebootHandler()
-{
+namespace hal {
+void RebootHandler() {
     PixelDmxMulti::Get().Blackout();
     E131Bridge::Get()->Stop();
 }
@@ -72,6 +70,7 @@ int main() // NOLINT
 
     DmxNodeNode dmxnode_node;
     PixelDmxMulti pixeldmx_multi;
+	PixelTestPattern pixeltest_pattern(pixelpatterns::Pattern::kNone, 8);
 
     json::PixelDmxParams pixeldmx_params;
     pixeldmx_params.Load();
@@ -80,16 +79,11 @@ int main() // NOLINT
     PixelOutputMulti::Get()->SetJamSTAPLDisplay(new HandlerOled);
 
     const auto kPixelActivePorts = pixeldmx_multi.GetOutputPorts();
-    const auto kTestPattern = common::FromValue<pixelpatterns::Pattern>(ConfigStore::Instance().DmxLedGet(&common::store::DmxLed::test_pattern));
+    const auto kTestPattern = pixeltest_pattern.GetPattern();
 
-    PixelTestPattern pixeltest_pattern(kTestPattern, kPixelActivePorts);
-
-    if (PixelTestPattern::Get()->GetPattern() != pixelpatterns::Pattern::kNone)
-    {
+    if (kTestPattern != pixelpatterns::Pattern::kNone) {
         dmxnode_node.SetOutput(nullptr);
-    }
-    else
-    {
+    } else {
         dmxnode_node.SetOutput(&pixeldmx_multi);
     }
 
@@ -110,7 +104,7 @@ int main() // NOLINT
     displayudf_params.Load();
     displayudf_params.SetAndShow();
 
-    common::firmware::pixeldmx::Show(7);
+    common::firmware::pixeldmx::Show(7, kTestPattern);
 
     RemoteConfig remote_config(remoteconfig::Output::PIXEL, dmxnode_node.GetActiveOutputPorts());
 
@@ -122,8 +116,7 @@ int main() // NOLINT
 
     watchdog::Init();
 
-    for (;;)
-    {
+    for (;;) {
         watchdog::Feed();
         network::Run();
         dmxnode_node.Run();

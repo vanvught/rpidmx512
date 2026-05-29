@@ -71,14 +71,13 @@ int main() // NOLINT
     oscserver_params.Set();
 
     PixelDmx pixeldmx;
-
+	PixelTestPattern pixeltest_pattern(pixelpatterns::Pattern::kNone, 1);
+	
     json::PixelDmxParams pixeldmx_params;
     pixeldmx_params.Load();
     pixeldmx_params.Set();
 
-    const auto kTestPattern = common::FromValue<pixelpatterns::Pattern>(ConfigStore::Instance().DmxLedGet(&common::store::DmxLed::test_pattern));
-
-    PixelTestPattern pixeltest_pattern(kTestPattern, 1);
+    const auto kTestPattern = pixeltest_pattern.GetPattern();
 
     display.Printf(7, "%s:%d G%d", pixel::GetTypeName(pixeldmx.GetType()), pixeldmx.GetCount(), pixeldmx.GetGroupingCount());
 
@@ -96,7 +95,7 @@ int main() // NOLINT
     display.Printf(4, "In: %d", oscserver.GetPortIncoming());
     display.Printf(5, "Out: %d", oscserver.GetPortOutgoing());
 
-    common::firmware::pixeldmx::Show(7);
+    common::firmware::pixeldmx::Show(7, kTestPattern);
 
     RemoteConfig remote_config(remoteconfig::Output::PIXEL, 1);
 

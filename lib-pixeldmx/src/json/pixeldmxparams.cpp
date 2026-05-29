@@ -22,6 +22,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+ 
+#if defined(DEBUG_PIXELDMXPARAMS)
+#undef NDEBUG
+#endif
 
 #include <cstdint>
 #include <algorithm>
@@ -173,6 +177,7 @@ void PixelDmxParams::Store(const char* buffer, uint32_t buffer_size) {
 }
 
 void PixelDmxParams::Set() {
+	DEBUG_ENTRY();
     auto& pixel_configuration = PixelConfiguration::Get();
 
     pixel_configuration.SetType(common::FromValue<pixel::LedType>(store_dmxled.type));
@@ -249,6 +254,8 @@ void PixelDmxParams::Set() {
     }
 
     common::firmware::pixeldmx::Show(7, kTestPattern);
+	
+	DEBUG_EXIT();
 }
 
 void PixelDmxParams::Dump() {

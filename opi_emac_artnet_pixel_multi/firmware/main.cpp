@@ -37,8 +37,6 @@
 #include "dmxnodenode.h"
 #include "dmxnodemsgconst.h"
 #include "firmware/artnet/pixel/artnettriggerhandler.h"
-#include "common/utils/utils_enum.h"
-#include "pixeltype.h"
 #include "pixeltestpattern.h"
 #include "json/pixeldmxparams.h"
 #include "pixeldmxmulti.h"
@@ -50,13 +48,9 @@
 #include "configstore.h"
 #include "firmwareversion.h"
 #include "software_version.h"
-#include "common/utils/utils_enum.h"
-#include "configurationstore.h"
 
-namespace hal
-{
-void RebootHandler()
-{
+namespace hal {
+void RebootHandler() {
     PixelDmxMulti::Get().Blackout();
     ArtNetNode::Get()->Stop();
 }
@@ -74,6 +68,7 @@ int main() // NOLINT
     fw.Print("Art-Net 4 Pixel controller {8x 4 Universes}");
 
     DmxNodeNode dmxnode_node;
+    PixelTestPattern pixeltest_pattern(pixelpatterns::Pattern::kNone, 8);
 
     // Pixel - 32 Universes
     PixelDmxMulti pixeldmx_multi;
@@ -84,17 +79,9 @@ int main() // NOLINT
 
     PixelOutputMulti::Get()->SetJamSTAPLDisplay(new HandlerOled);
 
-    const auto kPixelOutputPorts = pixeldmx_multi.GetOutputPorts();
-    const auto kTestPattern = common::FromValue<pixelpatterns::Pattern>(ConfigStore::Instance().DmxLedGet(&common::store::DmxLed::test_pattern));
-
-    PixelTestPattern pixeltest_pattern(kTestPattern, kPixelOutputPorts);
-
-    if (PixelTestPattern::Get()->GetPattern() != pixelpatterns::Pattern::kNone)
-    {
+    if (pixeltest_pattern.GetPattern() != pixelpatterns::Pattern::kNone) {
         dmxnode_node.SetOutput(nullptr);
-    }
-    else
-    {
+    } else {
         dmxnode_node.SetOutput(&pixeldmx_multi);
     }
 
@@ -108,7 +95,7 @@ int main() // NOLINT
     dmxnode_node.Print();
     pixeldmx_multi.Print();
 
-    display.SetTitle("ArtNet 4 Pixel %dx%d", kPixelOutputPorts, pixeldmx_multi.GetCount());
+    display.SetTitle("ArtNet 4 Pixel %dx%d", pixeldmx_multi.GetOutputPorts(), pixeldmx_multi.GetCount());
     display.Set(2, displayudf::Labels::kVersion);
     display.Set(3, displayudf::Labels::kHostname);
     display.Set(4, displayudf::Labels::kIp);
@@ -117,7 +104,7 @@ int main() // NOLINT
     displayudf_params.Load();
     displayudf_params.SetAndShow();
 
-    common::firmware::pixeldmx::Show(7);
+    common::firmware::pixeldmx::Show(7, pixeltest_pattern.GetPattern());
 
     RemoteConfig remote_config(remoteconfig::Output::PIXEL, dmxnode_node.GetActiveOutputPorts());
 
@@ -129,8 +116,7 @@ int main() // NOLINT
 
     watchdog::Init();
 
-    for (;;)
-    {
+    for (;;) {
         watchdog::Feed();
         network::Run();
         dmxnode_node.Run();

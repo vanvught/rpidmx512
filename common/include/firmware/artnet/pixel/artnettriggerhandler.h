@@ -35,11 +35,9 @@
 #include "pixeldmxconfiguration.h"
 #include "displayudf.h"
 
-class ArtNetTriggerHandler : ArtNetTrigger
-{
+class ArtNetTriggerHandler : ArtNetTrigger {
    public:
-    explicit ArtNetTriggerHandler(DmxNodeOutputType* output_type) : dmxnode_output_type_(output_type)
-    {
+    explicit ArtNetTriggerHandler(DmxNodeOutputType* output_type) : dmxnode_output_type_(output_type) {
         assert(s_this == nullptr);
         s_this = this;
 
@@ -48,41 +46,33 @@ class ArtNetTriggerHandler : ArtNetTrigger
 
     ~ArtNetTriggerHandler() = default;
 
-    void static StaticCallbackFunction(const ArtNetTrigger* trigger)
-    {
+    void static StaticCallbackFunction(const ArtNetTrigger* trigger) {
         assert(s_this != nullptr);
         s_this->Handler(trigger);
     }
 
    private:
-    void Handler(const ArtNetTrigger* trigger)
-    {
-        if (trigger->key == ArtTriggerKey::kArtTriggerKeyShow)
-        {
+    void Handler(const ArtNetTrigger* trigger) {
+        if (trigger->key == ArtTriggerKey::kArtTriggerKeyShow) {
             ArtNetNode::Get()->SetOutput(dmxnode_output_type_);
 
             const auto kShow = static_cast<pixelpatterns::Pattern>(trigger->sub_key);
 
-            if (kShow == PixelTestPattern::Get()->GetPattern())
-            {
+            if (kShow == PixelTestPattern::Get()->GetPattern()) {
                 return;
             }
 
             const auto kIsSet = PixelTestPattern::Get()->SetPattern(kShow);
 
-            if (!kIsSet)
-            {
+            if (!kIsSet) {
                 return;
             }
 
-            if (static_cast<pixelpatterns::Pattern>(kShow) != pixelpatterns::Pattern::kNone)
-            {
+            if (static_cast<pixelpatterns::Pattern>(kShow) != pixelpatterns::Pattern::kNone) {
                 ArtNetNode::Get()->SetOutput(nullptr);
                 Display::Get()->ClearLine(6);
                 Display::Get()->Printf(6, "%s:%u", PixelPatterns::GetName(kShow), static_cast<uint32_t>(kShow));
-            }
-            else
-            {
+            } else {
                 dmxnode_output_type_->Blackout(true);
                 DisplayUdf::Get()->Show();
             }
@@ -90,14 +80,11 @@ class ArtNetTriggerHandler : ArtNetTrigger
             return;
         }
 
-        if (trigger->key == ArtTriggerKey::kArtTriggerUndefined)
-        {
-            if (trigger->sub_key == 0)
-            {
+        if (trigger->key == ArtTriggerKey::kArtTriggerUndefined) {
+            if (trigger->sub_key == 0) {
                 const auto kIsSet = PixelTestPattern::Get()->SetPattern(pixelpatterns::Pattern::kNone);
 
-                if (!kIsSet)
-                {
+                if (!kIsSet) {
                     return;
                 }
 
@@ -105,11 +92,9 @@ class ArtNetTriggerHandler : ArtNetTrigger
 
                 auto& configuration = PixelDmxConfiguration::Get();
                 const auto* trigger_data = &trigger->data[0];
-                const uint32_t kColour = trigger_data[0] | (static_cast<uint32_t>(trigger_data[1]) << 8) | (static_cast<uint32_t>(trigger_data[2]) << 16) |
-                                         (static_cast<uint32_t>(trigger_data[3]) << 24);
+                const uint32_t kColour = trigger_data[0] | (static_cast<uint32_t>(trigger_data[1]) << 8) | (static_cast<uint32_t>(trigger_data[2]) << 16) | (static_cast<uint32_t>(trigger_data[3]) << 24);
 
-                for (uint32_t active_port = 0; active_port < configuration.GetOutputPorts(); active_port++)
-                {
+                for (uint32_t active_port = 0; active_port < configuration.GetOutputPorts(); active_port++) {
                     pixel::SetPixelColour(active_port, kColour);
                 }
 

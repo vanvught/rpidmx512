@@ -37,11 +37,9 @@
 #endif
 #include "firmware/debug/debug_debug.h"
 
-class PixelConfiguration
-{
+class PixelConfiguration {
    public:
-    PixelConfiguration()
-    {
+    PixelConfiguration() {
         DEBUG_ENTRY();
 
         assert(s_this == nullptr);
@@ -55,16 +53,14 @@ class PixelConfiguration
     PixelConfiguration(const PixelConfiguration&) = delete;
     PixelConfiguration& operator=(const PixelConfiguration&) = delete;
 
-    void SetType(pixel::LedType type)
-    {
+    void SetType(pixel::LedType type) {
         type_ = type;
         refresh_needed_ = true;
     }
 
     pixel::LedType GetType() const { return type_; }
 
-    void SetCount(uint32_t count)
-    {
+    void SetCount(uint32_t count) {
         count_ = (count == 0 ? pixel::defaults::kCount : count);
         refresh_needed_ = true;
     }
@@ -75,24 +71,21 @@ class PixelConfiguration
 
     pixel::LedMap GetMap() const { return map_; }
 
-    void SetLowCode(uint8_t low_code)
-    {
+    void SetLowCode(uint8_t low_code) {
         low_code_ = low_code;
         refresh_needed_ = true;
     }
 
     uint8_t GetLowCode() const { return low_code_; }
 
-    void SetHighCode(uint8_t high_code)
-    {
+    void SetHighCode(uint8_t high_code) {
         high_code_ = high_code;
         refresh_needed_ = true;
     }
 
     uint8_t GetHighCode() const { return high_code_; }
 
-    void SetClockSpeedHz(uint32_t clock_speed_hz)
-    {
+    void SetClockSpeedHz(uint32_t clock_speed_hz) {
         clock_speed_hz_ = clock_speed_hz;
         refresh_needed_ = true;
     }
@@ -120,38 +113,30 @@ class PixelConfiguration
     const uint8_t* GetGammaTable() const { return gamma_table_; }
 #endif
 
-    void Validate()
-    {
+    void Validate() {
         DEBUG_ENTRY();
-		
-		if (type_ == pixel::LedType::kUndefined)
-		{
-		    type_ = pixel::LedType::kWS2812B;
-		}
+
+        if (type_ == pixel::LedType::kUndefined) {
+            type_ = pixel::LedType::kWS2812B;
+        }
 
         const auto& info = GetTypeInfo(type_);
 
         leds_per_pixel_ = common::ToValue(info.led_count);
         is_rtz_protocol_ = info.protocol_type == pixel::ProtocolType::kRtz;
-		
-		if (map_ == pixel::LedMap::kUndefined)
-		{
-		    map_ = info.led_map;
-		}
 
-        if (leds_per_pixel_ == 4)
-        {
-            count_ = count_ <= pixel::max::ledcount::kRgbw ? count_ : pixel::max::ledcount::kRgbw;
+        if (map_ == pixel::LedMap::kUndefined) {
+            map_ = info.led_map;
         }
-        else
-        {
+
+        if (leds_per_pixel_ == 4) {
+            count_ = count_ <= pixel::max::ledcount::kRgbw ? count_ : pixel::max::ledcount::kRgbw;
+        } else {
             count_ = count_ <= pixel::max::ledcount::kRgb ? count_ : pixel::max::ledcount::kRgb;
         }
 
-        if (is_rtz_protocol_)
-        {
-            if (low_code_ >= high_code_)
-            {
+        if (is_rtz_protocol_) {
+            if (low_code_ >= high_code_) {
                 low_code_ = 0;
                 high_code_ = 0;
             }
@@ -160,13 +145,11 @@ class PixelConfiguration
 
             pixel::GetTxH(type_, low_code, high_code);
 
-            if (low_code_ == 0)
-            {
+            if (low_code_ == 0) {
                 low_code_ = low_code;
             }
 
-            if (high_code_ == 0)
-            {
+            if (high_code_ == 0) {
                 high_code_ = high_code;
             }
 
@@ -177,37 +160,25 @@ class PixelConfiguration
             //                   6.400.000
             const auto kLedsTime = 10U * count_ * leds_per_pixel_;
             refresh_rate_ = 1000000U / kLedsTime;
-        }
-        else
-        {
-            if ((type_ == pixel::LedType::kAPA102) || (type_ == pixel::LedType::kSK9822))
-            {
-                if (global_brightness_ > 0x1F)
-                {
+        } else {
+            if ((type_ == pixel::LedType::kAPA102) || (type_ == pixel::LedType::kSK9822)) {
+                if (global_brightness_ > 0x1F) {
                     global_brightness_ = 0xFF;
-                }
-                else
-                {
+                } else {
                     global_brightness_ = 0xE0 | (global_brightness_ & 0x1F);
                 }
 
-                if (clock_speed_hz_ == 0)
-                {
+                if (clock_speed_hz_ == 0) {
                     clock_speed_hz_ = info.default_hz;
-                }
-                else if (clock_speed_hz_ > info.max_hz)
-                {
+                } else if (clock_speed_hz_ > info.max_hz) {
                     clock_speed_hz_ = info.max_hz;
                 }
 
                 const auto kLedTime = (8U * 1000000U) / clock_speed_hz_;
                 const auto kLedsTime = kLedTime * count_ * leds_per_pixel_;
-                if (kLedsTime > 0)
-                {
+                if (kLedsTime > 0) {
                     refresh_rate_ = 1000000U / kLedsTime;
-                }
-                else
-                {
+                } else {
                     refresh_rate_ = 0;
                     assert(0);
                 }
@@ -215,19 +186,13 @@ class PixelConfiguration
         }
 
 #if defined(CONFIG_PIXELDMX_ENABLE_GAMMATABLE)
-        if (enable_gamma_correction_)
-        {
-            if (gamma_value_ == 0)
-            {
+        if (enable_gamma_correction_) {
+            if (gamma_value_ == 0) {
                 gamma_table_ = gamma::GetTableDefault(type_);
-            }
-            else
-            {
+            } else {
                 gamma_table_ = gamma::GetTable(gamma_value_);
             }
-        }
-        else
-        {
+        } else {
             gamma_table_ = gamma10_0;
         }
 
@@ -241,22 +206,17 @@ class PixelConfiguration
 
     void RefreshNeededReset() { refresh_needed_ = false; }
 
-    void Print()
-    {
+    void Print() {
         puts("Pixel configuration");
         printf(" Type    : %s [%d] <%d leds/pixel>\n", pixel::GetTypeName(type_), static_cast<int>(type_), static_cast<int>(leds_per_pixel_));
         printf(" Count   : %d\n", count_);
 
-        if (is_rtz_protocol_)
-        {
+        if (is_rtz_protocol_) {
             printf(" Mapping : %s [%d]\n", pixel::GetMapName(map_), static_cast<int>(map_));
             printf(" T0H     : %.2f [0x%X]\n", pixel::ConvertTxH(low_code_), low_code_);
             printf(" T1H     : %.2f [0x%X]\n", pixel::ConvertTxH(high_code_), high_code_);
-        }
-        else
-        {
-            if ((type_ == pixel::LedType::kAPA102) || (type_ == pixel::LedType::kSK9822))
-            {
+        } else {
+            if ((type_ == pixel::LedType::kAPA102) || (type_ == pixel::LedType::kSK9822)) {
                 printf(" GlobalBrightness: %u\n", global_brightness_);
             }
         }
@@ -266,15 +226,13 @@ class PixelConfiguration
 
 #if defined(CONFIG_PIXELDMX_ENABLE_GAMMATABLE)
         printf(" Gamma correction %s\n", enable_gamma_correction_ ? "Yes" : "No");
-        if (enable_gamma_correction_)
-        {
+        if (enable_gamma_correction_) {
             printf("   Value = %u\n", gamma_value_);
         }
 #endif
     }
 
-    static PixelConfiguration& Get()
-    {
+    static PixelConfiguration& Get() {
         assert(s_this != nullptr);
         return *s_this;
     }

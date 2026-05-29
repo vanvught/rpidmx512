@@ -2,7 +2,7 @@
  * @file personalityupdate.cpp
  *
  */
-/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,10 +33,9 @@
 #include "pixelpatterns.h"
 #include "displayudf.h"
 #include "firmware/pixeldmx/show.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
-void RDMResponder::PersonalityUpdate(uint32_t personality)
-{
+void RDMResponder::PersonalityUpdate(uint32_t personality) {
     DEBUG_PRINTF("personality=%u", personality);
 
 #if defined(CONFIG_RDM_MANUFACTURER_PIDS_SET)
@@ -50,38 +49,29 @@ void RDMResponder::PersonalityUpdate(uint32_t personality)
 
     dmxled_store::SaveType(kType);
 
-    common::firmware::pixeldmx::Show(7);
+	const auto kTestPattern = PixelTestPattern::Get()->GetPattern();
+	
+    common::firmware::pixeldmx::Show(7, kTestPattern);
 
-    const auto kTestPattern = PixelTestPattern::Get()->GetPattern();
-
-    if (kTestPattern == pixelpatterns::Pattern::kNone)
-    {
+    if (kTestPattern == pixelpatterns::Pattern::kNone) {
         PixelOutputType::Get()->ApplyConfiguration();
-    }
-    else
-    {
+    } else {
         DisplayUdf::Get()->ClearEndOfLine();
         DisplayUdf::Get()->Printf(6, "%s:%u", PixelPatterns::GetName(kTestPattern), static_cast<uint32_t>(kTestPattern));
     }
 #else
-    common::firmware::pixeldmx::Show(7);
+    const auto kTestPattern = PixelTestPattern::Get()->GetPattern();
 
-    if (personality == 1)
-    {
-        const auto kTestPattern = PixelTestPattern::Get()->GetPattern();
+    common::firmware::pixeldmx::Show(7, kTestPattern);
 
-        if (kTestPattern == pixelpatterns::Pattern::kNone)
-        {
-        	PixelOutputType::Get()->ApplyConfiguration();
-        }
-        else
-        {
+    if (personality == 1) {
+        if (kTestPattern == pixelpatterns::Pattern::kNone) {
+            PixelOutputType::Get()->ApplyConfiguration();
+        } else {
             DisplayUdf::Get()->ClearEndOfLine();
             DisplayUdf::Get()->Printf(6, "%s:%u", PixelPatterns::GetName(kTestPattern), static_cast<uint32_t>(kTestPattern));
         }
-    }
-    else if (personality == 2)
-    {
+    } else if (personality == 2) {
         DisplayUdf::Get()->ClearLine(3);
         DisplayUdf::Get()->ClearEndOfLine();
         DisplayUdf::Get()->Write(4, "Config Mode");

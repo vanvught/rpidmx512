@@ -28,8 +28,6 @@
 #pragma GCC optimize("no-tree-loop-distribute-patterns")
 #pragma GCC optimize("-fprefetch-loop-arrays")
 
-#include <cstdint>
-
 #include "h3/hal.h"
 #include "watchdog.h"
 #include "network.h"
@@ -38,7 +36,6 @@
 #include "dmxnodenode.h"
 #include "dmxnodemsgconst.h"
 #include "firmware/pixeldmx/show.h"
-#include "pixeltype.h"
 #include "pixeltestpattern.h"
 #include "json/pixeldmxparams.h"
 #include "pixeldmx.h"
@@ -50,8 +47,6 @@
 #include "configstore.h"
 #include "firmwareversion.h"
 #include "software_version.h"
-#include "common/utils/utils_enum.h"
-#include "configurationstore.h"
 
 namespace hal {
 void RebootHandler() {
@@ -73,18 +68,14 @@ int main() // NOLINT
 
     DmxNodeNode dmxnode_node;
 
-    // Pixel - 4 Universes
     PixelDmx pixeldmx;
+    PixelTestPattern pixeltest_pattern(pixelpatterns::Pattern::kNone, 1);
 
     json::PixelDmxParams pixeldmx_params;
     pixeldmx_params.Load();
     pixeldmx_params.Set();
 
-    const auto kTestPattern = common::FromValue<pixelpatterns::Pattern>(ConfigStore::Instance().DmxLedGet(&common::store::DmxLed::test_pattern));
-
-    PixelTestPattern pixeltest_pattern(kTestPattern, 1);
-
-    if (PixelTestPattern::Get()->GetPattern() != pixelpatterns::Pattern::kNone) {
+    if (pixeltest_pattern.GetPattern() != pixelpatterns::Pattern::kNone) {
         dmxnode_node.SetOutput(nullptr);
     } else {
         dmxnode_node.SetOutput(&pixeldmx);
@@ -107,7 +98,7 @@ int main() // NOLINT
     displayudf_params.Load();
     displayudf_params.SetAndShow();
 
-    common::firmware::pixeldmx::Show(7);
+    common::firmware::pixeldmx::Show(7, pixeltest_pattern.GetPattern());
 
     RemoteConfig remote_config(remoteconfig::Output::PIXEL, dmxnode_node.GetActiveOutputPorts());
 
