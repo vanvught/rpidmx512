@@ -360,13 +360,7 @@ bool Reboot();
 
 void RemoteConfig::HandleReboot() {
     DEBUG_ENTRY();
-
     is_reboot_ = true;
-
-    Display::Get()->SetSleep(false);
-    Display::Get()->Cls();
-    Display::Get()->TextStatus("Rebooting ...");
-
     hal::Reboot();
     __builtin_unreachable();
 }

@@ -31,6 +31,7 @@
 
 #include "artnet.h"
 #include "artnetnode.h"
+#include "network_iface.h"
 #include "network_config.h"
 #include "firmware/debug/debug_debug.h"
 
@@ -41,14 +42,12 @@ static constexpr uint8_t kCommandSetToDefault = (1U << 3);
 static constexpr uint8_t kCommandProgramIpaddress = (1U << 2);
 static constexpr uint8_t kCommandProgramSubnetmask = (1U << 1);
 
-union uip
-{
+union uip {
     uint32_t u32;
     uint8_t u8[4];
 } static ip;
 
-void ArtNetNode::HandleIpProg()
-{
+void ArtNetNode::HandleIpProg() {
     DEBUG_ENTRY();
 
     const auto* const kArtIpProg = reinterpret_cast<artnet::ArtIpProg*>(receive_buffer_);
@@ -58,39 +57,31 @@ void ArtNetNode::HandleIpProg()
     reply->op_code = static_cast<uint16_t>(artnet::OpCodes::kOpIpprogreply);
     auto is_changed = false;
 
-    if ((kCommand & kCommandEnableProgramming) == kCommandEnableProgramming)
-    {
+    if ((kCommand & kCommandEnableProgramming) == kCommandEnableProgramming) {
         const auto kIsDhcp = network::iface::Dhcp();
 
-        if ((kCommand & kCommandEnableDhcp) == kCommandEnableDhcp)
-        {
+        if ((kCommand & kCommandEnableDhcp) == kCommandEnableDhcp) {
             network::iface::EnableDhcp();
             is_changed = (kIsDhcp != network::iface::Dhcp());
-        }
-        else
-        {
-            if ((kCommand & kCommandSetToDefault) == kCommandSetToDefault)
-            {
+        } else {
+            if ((kCommand & kCommandSetToDefault) == kCommandSetToDefault) {
                 network::SetPrimaryIp(0);
                 is_changed = (network::GetPrimaryIp() != network::GetSecondaryIp());
             }
 
-            if ((kCommand & kCommandProgramIpaddress) == kCommandProgramIpaddress)
-            {
+            if ((kCommand & kCommandProgramIpaddress) == kCommandProgramIpaddress) {
                 memcpy(ip.u8, &kArtIpProg->prog_ip_hi, artnet::kIpSize);
                 is_changed |= (network::GetPrimaryIp() != ip.u32);
                 network::SetPrimaryIp(ip.u32);
             }
 
-            if ((kCommand & kCommandProgramSubnetmask) == kCommandProgramSubnetmask)
-            {
+            if ((kCommand & kCommandProgramSubnetmask) == kCommandProgramSubnetmask) {
                 memcpy(ip.u8, &kArtIpProg->prog_sm_hi, artnet::kIpSize);
                 is_changed |= (network::GetNetmask() != ip.u32);
                 network::SetNetmask(ip.u32);
             }
 
-            if ((kCommand & kCommandProgramGateway) == kCommandProgramGateway)
-            {
+            if ((kCommand & kCommandProgramGateway) == kCommandProgramGateway) {
                 memcpy(ip.u8, &kArtIpProg->prog_gw_hi, artnet::kIpSize);
                 is_changed |= (network::GetGatewayIp() != ip.u32);
                 network::SetGatewayIp(ip.u32);
@@ -98,12 +89,9 @@ void ArtNetNode::HandleIpProg()
         }
     }
 
-    if (network::iface::Dhcp())
-    {
+    if (network::iface::Dhcp()) {
         reply->status = (1U << 6);
-    }
-    else
-    {
+    } else {
         reply->status = 0;
     }
 
@@ -121,17 +109,13 @@ void ArtNetNode::HandleIpProg()
 
     network::udp::Send(handle_, receive_buffer_, sizeof(struct artnet::ArtIpProgReply), ip_address_from_, artnet::kUdpPort);
 
-    if (is_changed)
-    {
-        if (state_.send_art_poll_reply_on_change)
-        {
+    if (is_changed) {
+        if (state_.send_art_poll_reply_on_change) {
             PollReplyQueueAdd(artnet::kPortAddressFirst, artnet::kPortAddressLast);
         }
 
         DEBUG_PUTS("Changed");
-    }
-    else
-    {
+    } else {
         DEBUG_PUTS("No changes");
     }
 

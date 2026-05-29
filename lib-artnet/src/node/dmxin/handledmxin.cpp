@@ -84,7 +84,7 @@ void ArtNetNode::HandleDmxIn() {
                 if ((s_receiving_mask & (1U << port_index)) != (1U << port_index)) {
                     s_receiving_mask |= (1U << port_index);
                     state_.receiving_dmx |= (1U << static_cast<uint8_t>(dmxnode::Direction::kInput));
-                    hal::panelled::On(hal::panelled::kPortARx << port_index);
+                    panelled::On(panelled::kPortARx << port_index);
                 }
 
                 continue;
@@ -99,7 +99,7 @@ void ArtNetNode::HandleDmxIn() {
                     send_art_dmx = true;
 
                     s_receiving_mask &= ~(1U << port_index);
-                    hal::panelled::Off(hal::panelled::kPortARx << port_index);
+                    panelled::Off(panelled::kPortARx << port_index);
 
                     if (s_receiving_mask == 0) {
                         state_.receiving_dmx &= static_cast<uint8_t>(~(1U << static_cast<uint8_t>(dmxnode::Direction::kInput)));

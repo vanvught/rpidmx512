@@ -55,6 +55,8 @@
 #include "dmxnode_data.h"
 #include "board.h"
 #include "network_udp.h"
+#include "network_iface.h"
+#include "network_config.h"
 #include "board.h"
 #if !defined(DISABLE_RTC)
 #include "hwclock.h"
@@ -264,7 +266,7 @@ void ArtNetNode::Stop() {
 #endif
 
     hal::statusled::SetMode(hal::statusled::Mode::kOffOff);
-    hal::panelled::Off(hal::panelled::kArtnet);
+    panelled::Off(panelled::kArtnet);
 
     art_poll_reply_.status1 = static_cast<uint8_t>((art_poll_reply_.status1 & ~artnet::Status1::kIndicatorMask) | artnet::Status1::kIndicatorMuteMode);
     state_.status = artnet::Status::kStandby;
@@ -633,7 +635,7 @@ void ArtNetNode::SetNetworkDataLossCondition() {
     }
 
     hal::statusled::SetMode(hal::statusled::Mode::kNormal);
-    hal::panelled::Off(hal::panelled::kArtnet);
+    panelled::Off(panelled::kArtnet);
 
 #if defined(ARTNET_HAVE_DMXIN)
     SetLocalMerging();
@@ -859,7 +861,7 @@ void ArtNetNode::InputUdp(const uint8_t* buffer, uint32_t size, uint32_t from_ip
             break;
     }
 
-    hal::panelled::On(hal::panelled::kArtnet);
+    panelled::On(panelled::kArtnet);
 }
 
 void ArtNetNode::UpdateMergeStatus(uint32_t port_index) {

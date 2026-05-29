@@ -43,33 +43,27 @@
 
 using common::store::displayudf::Flags;
 
-namespace json
-{
-DisplayUdfParams::DisplayUdfParams()
-{
+namespace json {
+DisplayUdfParams::DisplayUdfParams() {
     ConfigStore::Instance().Copy(&store_displayudf, &ConfigurationStore::display_udf);
 }
 
-void DisplayUdfParams::SetIntensity(const char* val, uint32_t len)
-{
+void DisplayUdfParams::SetIntensity(const char* val, uint32_t len) {
     if (len > 3) return;
     store_displayudf.intensity = ParseValue<uint8_t>(val, len);
 }
 
-void DisplayUdfParams::SetSleepTimeout(const char* val, uint32_t len)
-{
+void DisplayUdfParams::SetSleepTimeout(const char* val, uint32_t len) {
     if (len > 3) return;
     store_displayudf.sleep_timeout = ParseValue<uint8_t>(val, len);
 }
 
-void DisplayUdfParams::SetFlipVertically(const char* val, uint32_t len)
-{
+void DisplayUdfParams::SetFlipVertically(const char* val, uint32_t len) {
     if (len != 1) return;
     store_displayudf.flags = common::SetFlagValue(store_displayudf.flags, Flags::Flag::kFlipVertically, val[0] != '0');
 }
 
-void DisplayUdfParams::SetLabel(const char* key, uint32_t key_len, const char* val, uint32_t val_len)
-{
+void DisplayUdfParams::SetLabel(const char* key, uint32_t key_len, const char* val, uint32_t val_len) {
     if (val_len > 1) return;
 
     DEBUG_PRINTF("%.*s ->%.*s", key_len, key, val_len, val);
@@ -79,29 +73,24 @@ void DisplayUdfParams::SetLabel(const char* key, uint32_t key_len, const char* v
     size_t i = 0;
     size_t j = 0;
 
-    for (i = 0; i < common::ArraySize(kDisplayUdfKeys); ++i)
-    {
-        if (kDisplayUdfKeys[i].type == json::Key::kSimple)
-        {
+    for (i = 0; i < common::ArraySize(kDisplayUdfKeys); ++i) {
+        if (kDisplayUdfKeys[i].type == json::Key::kSimple) {
             j++;
             continue;
         }
-        if (kDisplayUdfKeys[i].GetHash() == kHash)
-        {
+        if (kDisplayUdfKeys[i].GetHash() == kHash) {
             matched = true;
             break;
         }
     }
 
-    if (matched)
-    {
+    if (matched) {
         const auto kIndex = i - j;
         store_displayudf.label_index[kIndex] = ParseValue<uint8_t>(val, val_len);
     }
 }
 
-void DisplayUdfParams::Store(const char* buffer, uint32_t buffer_size)
-{
+void DisplayUdfParams::Store(const char* buffer, uint32_t buffer_size) {
     ParseJsonWithTable(buffer, buffer_size, kDisplayUdfKeys);
     ConfigStore::Instance().Store(&store_displayudf, &ConfigurationStore::display_udf);
 
@@ -110,23 +99,18 @@ void DisplayUdfParams::Store(const char* buffer, uint32_t buffer_size)
 #endif
 }
 
-void DisplayUdfParams::SetAndShow()
-{
+void DisplayUdfParams::SetAndShow() {
     auto& displayudf = *DisplayUdf::Get();
 
     displayudf.SetContrast(store_displayudf.intensity);
     displayudf.SetSleepTimeout(store_displayudf.sleep_timeout);
     displayudf.SetFlipVertically(common::IsFlagSet(store_displayudf.flags, Flags::Flag::kFlipVertically));
 
-    for (uint8_t i = 0; i < common::ArraySize(DisplayUdfParamsConst::kLabels); ++i)
-    {
+    for (uint8_t i = 0; i < common::ArraySize(DisplayUdfParamsConst::kLabels); ++i) {
         const auto kLabelIndex = store_displayudf.label_index[i];
-        if (kLabelIndex != 0)
-        {
+        if (kLabelIndex != 0) {
             displayudf.Set(kLabelIndex, common::FromValue<displayudf::Labels>(i));
-        }
-        else
-        {
+        } else {
             displayudf.Set(255, common::FromValue<displayudf::Labels>(i));
         }
     }
@@ -138,15 +122,13 @@ void DisplayUdfParams::SetAndShow()
 #endif
 }
 
-void DisplayUdfParams::Dump()
-{
+void DisplayUdfParams::Dump() {
     printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, json::DisplayUdfParamsConst::kFileName);
     printf(" %s=%u\n", DisplayUdfParamsConst::kIntensity.name, store_displayudf.intensity);
     printf(" %s=%u\n", DisplayUdfParamsConst::kSleepTimeout.name, store_displayudf.sleep_timeout);
     printf(" %s=%u\n", DisplayUdfParamsConst::kFlipVertically.name, common::IsFlagSet(store_displayudf.flags, Flags::Flag::kFlipVertically));
 
-    for (uint32_t i = 0; i < common::ArraySize(DisplayUdfParamsConst::kLabels); ++i)
-    {
+    for (uint32_t i = 0; i < common::ArraySize(DisplayUdfParamsConst::kLabels); ++i) {
         printf(" %s=%u\n", DisplayUdfParamsConst::kLabels[i].name, store_displayudf.label_index[i]);
     }
 }

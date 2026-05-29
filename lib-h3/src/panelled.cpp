@@ -1,5 +1,5 @@
 /**
- * @file hal_panelled.cpp
+ * @file panelled.cpp
  *
  */
 /* Copyright (C) 2023-2025 by Arjan van Vught mailto:infogd32-dmx.org
@@ -25,7 +25,7 @@
 
 #include <cstdint>
 
-namespace hal::panelled::global {
+namespace panelled::global {
 uint32_t data;
 uint32_t data_previous;
-} // namespace hal::panelled::global
+} // namespace panelled::global

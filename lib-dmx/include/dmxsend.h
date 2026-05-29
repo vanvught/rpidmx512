@@ -58,7 +58,7 @@ class DmxSend {
         Dmx::Get()->SetPortDirection(port_index, dmx::Direction::kOutput, true);
 
         if (Dmx::Get()->GetOutputStyle(port_index) == dmx::OutputStyle::kConstant) {
-            hal::panelled::On(hal::panelled::kPortATx << port_index);
+            panelled::On(panelled::kPortATx << port_index);
         }
 
         DEBUG_EXIT();
@@ -79,7 +79,7 @@ class DmxSend {
 
         Dmx::Get()->SetPortDirection(port_index, dmx::Direction::kOutput, false);
 
-        hal::panelled::Off(hal::panelled::kPortATx << port_index);
+        panelled::Off(panelled::kPortATx << port_index);
 
         DEBUG_EXIT();
     }
@@ -91,7 +91,7 @@ class DmxSend {
 
         if constexpr (doUpdate) {
             Dmx::Get()->SetTransmitDataWithoutSC<doUpdate ? dmx::SendStyle::kDirect : dmx::SendStyle::kSync>(port_index, data, length);
-            hal::panelled::On(hal::panelled::kPortATx << port_index);
+            panelled::On(panelled::kPortATx << port_index);
         }
     }
 
@@ -108,7 +108,7 @@ class DmxSend {
             const auto kLightsetOffset = port_index + dmxnode::kDmxportOffset;
             if (dmxnode::Data::GetLength(kLightsetOffset) != 0) {
                 dmxnode::Data::ClearLength(kLightsetOffset);
-                hal::panelled::On(hal::panelled::kPortATx << port_index);
+                panelled::On(panelled::kPortATx << port_index);
                 if (!IsStarted(started_, port_index)) {
                     Start(port_index);
                 }

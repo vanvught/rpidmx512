@@ -23,12 +23,12 @@
  * THE SOFTWARE.
  */
 
-#ifndef LINUX_HAL_PANELLED_H_
-#define LINUX_HAL_PANELLED_H_
+#ifndef PANELLED_H_
+#define PANELLED_H_
 
 #include <cstdint>
 
-namespace hal::panelled {
+namespace panelled {
 inline constexpr uint32_t kActivity = 0;
 inline constexpr uint32_t kArtnet = 0;
 inline constexpr uint32_t kDdp = 0;
@@ -48,6 +48,6 @@ inline void Init() {}
 inline void On([[maybe_unused]] uint32_t on) {}
 inline void Off([[maybe_unused]] uint32_t off) {}
 inline void Run() {}
-} // namespace hal::panelled
+} // namespace panelled
 
-#endif // LINUX_HAL_PANELLED_H_
+#endif // PANELLED_H_

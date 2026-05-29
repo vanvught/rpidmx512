@@ -69,9 +69,9 @@ void ArtNetNode::HandleRdmIn() {
                     network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(art_rdm), ((sizeof(struct artnet::ArtRdm)) - 256) + rdm_message->message_length + 1, input_port_[port_index].destination_ip, artnet::kUdpPort);
 
 #if defined(CONFIG_PANELLED_RDM_PORT)
-                    hal::panelled::On(hal::panelled::kPortARdm << port_index);
+                    panelled::On(panelled::kPortARdm << port_index);
 #elif defined(CONFIG_PANELLED_RDM_NO_PORT)
-                    hal::panelled::On(hal::panelled::kRdm << port_index);
+                    panelled::On(panelled::kRdm << port_index);
 #endif
                 }
             }
@@ -95,9 +95,9 @@ void ArtNetNode::HandleRdmIn() {
                     output_port_[port_index].rdm_destination_ip = 0;
 
 #if defined(CONFIG_PANELLED_RDM_PORT)
-                    hal::panelled::On(hal::panelled::kPortARdm << port_index);
+                    panelled::On(panelled::kPortARdm << port_index);
 #elif defined(CONFIG_PANELLED_RDM_NO_PORT)
-                    hal::panelled::On(hal::panelled::kRdm << port_index);
+                    panelled::On(panelled::kRdm << port_index);
 #endif
                 }
             }

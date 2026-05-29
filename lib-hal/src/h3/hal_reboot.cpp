@@ -2,7 +2,7 @@
  * @file hal_reboot.cpp
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,21 +27,18 @@
 #undef NDEBUG
 #endif
 
-#include <cstdio>
-
+#include "hal.h"
+#include "display.h"
 #include "h3_watchdog.h"
 #include "h3_gpio.h"
 #include "h3_board.h"
-#include "arm/arm.h"
 #include "arm/synchronize.h"
 #include "hal_statusled.h"
-#include "hal.h"
-
+#include "configstore.h"
 #if !defined(DISABLE_RTC)
 #include "hwclock.h"
 #endif
 
-#include "configstore.h"
 
 #if !defined(NO_EMAC)
 namespace network {
@@ -49,9 +46,11 @@ void Shutdown();
 } // namespace network
 #endif
 
-namespace hal {	
+namespace hal {
 bool Reboot() {
-    puts("Rebooting ...");
+	Display::Get()->SetSleep(false);
+	Display::Get()->Cls();
+	Display::Get()->TextStatus("Rebooting ...");
 
     H3WatchdogDisable();
 
@@ -87,8 +86,7 @@ bool Reboot() {
 } // namespace hal
 
 namespace board {
-	void Reboot() {
-		hal::Reboot();
-	}
+void Reboot() {
+    hal::Reboot();
 }
-
+} // namespace board

@@ -558,7 +558,7 @@ void E131Bridge::InputUdp(const uint8_t* buffer, [[maybe_unused]] uint32_t size,
         }
     }
 
-    hal::panelled::On(hal::panelled::kSacn);
+    panelled::On(panelled::kSacn);
 }
 
 void E131Bridge::UpdateMergeStatus(uint32_t port_index) {
@@ -900,7 +900,7 @@ void E131Bridge::SetNetworkDataLossCondition(bool source_a, bool source_b) {
         hal::statusled::SetMode(hal::statusled::Mode::kNormal);
     }
 
-    hal::panelled::Off(hal::panelled::kSacn);
+    panelled::Off(panelled::kSacn);
 
 #if defined(E131_HAVE_DMXIN)
     SetLocalMerging();

@@ -1,8 +1,8 @@
 /**
- * @file panelled.h
+ * @file panelled.cpp
  *
  */
-/* Copyright (C) 2021-2026 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2023-2025 by Arjan van Vught mailto:infogd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,33 +23,9 @@
  * THE SOFTWARE.
  */
 
-#ifndef PANELLED_H_
-#define PANELLED_H_
-
 #include <cstdint>
 
-namespace panelled {
-inline constexpr uint32_t kActivity = 0;
-inline constexpr uint32_t kArtnet = 0;
-inline constexpr uint32_t kDdp = 0;
-inline constexpr uint32_t kSacn = 0;
-inline constexpr uint32_t kLtcIn = 0;
-inline constexpr uint32_t kLtcOut = 0;
-inline constexpr uint32_t kMidiIn = 0;
-inline constexpr uint32_t kMidiOut = 0;
-inline constexpr uint32_t kOscIn = 0;
-inline constexpr uint32_t kOscOut = 0;
-inline constexpr uint32_t kTcnet = 0;
-// DMX
-inline constexpr uint32_t kPortARx = 0;
-inline constexpr uint32_t kPortATx = 0;
-// RDM
-inline constexpr uint32_t kPortARdm = 0;
-
-inline void Init() {}
-inline void On([[maybe_unused]] uint32_t on) {}
-inline void Off([[maybe_unused]] uint32_t off) {}
-inline void Run() {}
-} // namespace panelled
-
-#endif // PANELLED_H_
+namespace panelled::global {
+uint32_t data;
+uint32_t data_previous;
+} // namespace panelled::global

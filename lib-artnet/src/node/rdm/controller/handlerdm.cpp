@@ -307,9 +307,9 @@ void ArtNetNode::HandleRdm() {
 #endif
 
 #if defined(CONFIG_PANELLED_RDM_PORT)
-            hal::panelled::On(hal::panelled::kPortARdm << port_index);
+            panelled::On(panelled::kPortARdm << port_index);
 #elif defined(CONFIG_PANELLED_RDM_NO_PORT)
-            hal::panelled::On(hal::panelled::kRdm << port_index);
+            panelled::On(panelled::kRdm << port_index);
 #endif
         } else if (node_.port[port_index].direction == dmxnode::Direction::kInput) {
             auto* rdm_message = reinterpret_cast<const TRdmMessage*>(&kArtRdm->address);
@@ -324,9 +324,9 @@ void ArtNetNode::HandleRdm() {
             }
 
 #if defined(CONFIG_PANELLED_RDM_PORT)
-            hal::panelled::On(hal::panelled::kPortARdm << port_index);
+            panelled::On(panelled::kPortARdm << port_index);
 #elif defined(CONFIG_PANELLED_RDM_NO_PORT)
-            hal::panelled::On(hal::panelled::kRdm << port_index);
+            panelled::On(panelled::kRdm << port_index);
 #endif
         }
     }
