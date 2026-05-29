@@ -37,20 +37,18 @@
 #include "dmxnode.h"
 #include "configstore.h"
 #include "configurationstore.h"
+#include "network_config.h"
 #include "common/utils/utils_flags.h"
 #include "firmware/debug/debug_dump.h"
 
 using common::store::dmxnode::Flags;
 
-namespace json
-{
-ArtNetParams::ArtNetParams()
-{
+namespace json {
+ArtNetParams::ArtNetParams() {
     ConfigStore::Instance().Copy(&store_dmxnode_, &ConfigurationStore::dmx_node);
 }
 
-void ArtNetParams::SetEnableRdm(const char* val, uint32_t len)
-{
+void ArtNetParams::SetEnableRdm(const char* val, uint32_t len) {
     DEBUG_ENTRY();
 
     if (len != 1) return;
@@ -60,47 +58,37 @@ void ArtNetParams::SetEnableRdm(const char* val, uint32_t len)
     DEBUG_EXIT();
 }
 
-void ArtNetParams::SetMapUniverse0(const char* val, uint32_t len)
-{
+void ArtNetParams::SetMapUniverse0(const char* val, uint32_t len) {
     if (len != 1) return;
 
     store_dmxnode_.flags = common::SetFlagValue(store_dmxnode_.flags, Flags::Flag::kMapUniverse0, val[0] != '0');
 }
 
-void ArtNetParams::SetDestinationIpPort(const char* key, uint32_t key_len, const char* val, uint32_t val_len)
-{
+void ArtNetParams::SetDestinationIpPort(const char* key, uint32_t key_len, const char* val, uint32_t val_len) {
     const char kSuffix = key[key_len - 1];
     const auto kIndex = static_cast<uint8_t>(kSuffix - 'a');
 
-    if (val_len == 0)
-    {
+    if (val_len == 0) {
         store_dmxnode_.destination_ip[kIndex] = network::GetBroadcastIp();
-    }
-    else
-    {
+    } else {
         store_dmxnode_.destination_ip[kIndex] = net::ParseIpString(val, val_len);
     }
 }
 
-void ArtNetParams::SetProtocolPort(const char* key, uint32_t key_len, const char* val, [[maybe_unused]] uint32_t val_len)
-{
+void ArtNetParams::SetProtocolPort(const char* key, uint32_t key_len, const char* val, [[maybe_unused]] uint32_t val_len) {
     const char kSuffix = key[key_len - 1];
     const auto kIndex = static_cast<uint8_t>(kSuffix - 'a');
 
     auto protocol = store_dmxnode_.protocol;
-    if (val_len == 0)
-    {
+    if (val_len == 0) {
         common::PortSet<artnet::PortProtocol>(kIndex, artnet::PortProtocol::kArtnet, protocol);
-    }
-    else
-    {
+    } else {
         common::PortSet<artnet::PortProtocol>(kIndex, artnet::GetProtocolMode(val), protocol);
     }
     store_dmxnode_.protocol = protocol;
 }
 
-void ArtNetParams::SetRdmEnablePort(const char* key, uint32_t key_len, const char* val, uint32_t val_len)
-{
+void ArtNetParams::SetRdmEnablePort(const char* key, uint32_t key_len, const char* val, uint32_t val_len) {
     DEBUG_ENTRY();
     debug::Dump(key, key_len);
     debug::Dump(val, val_len);
@@ -117,14 +105,12 @@ void ArtNetParams::SetRdmEnablePort(const char* key, uint32_t key_len, const cha
     DEBUG_EXIT();
 }
 
-void ArtNetParams::Store(const char* buffer, uint32_t buffer_size)
-{
+void ArtNetParams::Store(const char* buffer, uint32_t buffer_size) {
     ParseJsonWithTable(buffer, buffer_size, kArtNetKeys);
     ConfigStore::Instance().Store(&store_dmxnode_, &ConfigurationStore::dmx_node);
 }
 
-void ArtNetParams::Set()
-{
+void ArtNetParams::Set() {
     DEBUG_ENTRY();
 
     auto& artnet = *ArtNetNode::Get();
@@ -136,14 +122,11 @@ void ArtNetParams::Set()
     artnet.SetMapUniverse0(common::IsFlagSet(store_dmxnode_.flags, Flags::Flag::kMapUniverse0));
 #endif
 
-    if constexpr (dmxnode::kConfigPortCount != 0)
-    {
-        for (uint32_t config_port_index = 0; config_port_index < dmxnode::kConfigPortCount; config_port_index++)
-        {
+    if constexpr (dmxnode::kConfigPortCount != 0) {
+        for (uint32_t config_port_index = 0; config_port_index < dmxnode::kConfigPortCount; config_port_index++) {
             const auto kPortIndex = config_port_index + dmxnode::kDmxportOffset;
 
-            if (kPortIndex >= dmxnode::kMaxPorts)
-            {
+            if (kPortIndex >= dmxnode::kMaxPorts) {
                 break;
             }
 
@@ -165,8 +148,7 @@ void ArtNetParams::Set()
     DEBUG_EXIT();
 }
 
-void ArtNetParams::Dump()
-{
+void ArtNetParams::Dump() {
     printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, json::ArtNetParamsConst::kFileName);
 
 #if defined(RDM_CONTROLLER) || defined(RDM_RESPONDER)
@@ -176,10 +158,8 @@ void ArtNetParams::Dump()
     printf(" %s=%u\n", json::ArtNetParamsConst::kMapUniverse0.name, common::IsFlagSet(store_dmxnode_.flags, Flags::Flag::kMapUniverse0));
 #endif
 
-    if constexpr (dmxnode::kConfigPortCount != 0)
-    {
-        for (uint32_t port_index = 0; port_index < dmxnode::kConfigPortCount; port_index++)
-        {
+    if constexpr (dmxnode::kConfigPortCount != 0) {
+        for (uint32_t port_index = 0; port_index < dmxnode::kConfigPortCount; port_index++) {
 #if (ARTNET_VERSION >= 4)
             const auto kProtocol = common::PortGet<artnet::PortProtocol>(port_index, store_dmxnode_.protocol);
             printf(" %s=%s\n", json::ArtNetParamsConst::kProtocolPort[port_index].name, artnet::GetProtocolMode(kProtocol));
@@ -191,7 +171,7 @@ void ArtNetParams::Dump()
             printf(" %s=" IPSTR "\n", json::ArtNetParamsConst::kDestinationIpPort[port_index].name, IP2STR(store_dmxnode_.destination_ip[port_index]));
         }
     }
-	
+
     auto& artnet = *ArtNetNode::Get();
     artnet.Print();
 }

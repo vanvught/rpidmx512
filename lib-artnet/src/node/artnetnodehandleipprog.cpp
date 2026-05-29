@@ -31,6 +31,7 @@
 
 #include "artnet.h"
 #include "artnetnode.h"
+#include "network_udp.h"
 #include "network_iface.h"
 #include "network_config.h"
 #include "firmware/debug/debug_debug.h"
