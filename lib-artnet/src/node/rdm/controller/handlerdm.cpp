@@ -33,6 +33,7 @@
 #include "artnetnode.h"
 #include "artnet.h"
 #include "network_udp.h"
+#include "network_config.h"
 #include "rdm.h"
 #include "rdm_discovery.h"
 #include "firmware/debug/debug_debug.h"
