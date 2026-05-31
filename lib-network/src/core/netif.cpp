@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_NET_NETIF)
+#if defined(DEBUG_NETIF)
 #undef NDEBUG
 #endif
 

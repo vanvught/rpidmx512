@@ -24,7 +24,7 @@
  */
 
 #include "core/protocol/ethernet.h"
-#if defined(DEBUG_NET_UDP)
+#if defined(DEBUG_UDP)
 #undef NDEBUG
 #endif
 

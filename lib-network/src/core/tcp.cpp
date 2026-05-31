@@ -43,7 +43,7 @@
  * - Zero-window probing
  */
 
-#if defined(DEBUG_NET_TCP)
+#if defined(DEBUG_TCP)
 #undef NDEBUG
 #endif
 #pragma GCC diagnostic push
@@ -51,9 +51,11 @@
 #pragma GCC diagnostic ignored "-Wconversion"
 #pragma GCC diagnostic ignored "-Wsign-conversion"
 #endif
+#if !defined(CONFIG_TCP_NO_OPTIMIZE)
 #pragma GCC push_options
 #pragma GCC optimize("O2")
 #pragma GCC optimize("no-tree-loop-distribute-patterns")
+#endif
 
 #include <cstdint>
 #include <cstring>
@@ -1494,7 +1496,7 @@ static uint16_t s_local_port = kLocalPortRangeStart;
 ConnHandle Connect(uint32_t remote_ip, uint16_t remote_port, CallbackConnect cb_connect, CallbackData cb_data, void* context) {
     const auto& netif = netif::global::netif_default;
     if (__builtin_expect((netif.ip.addr == 0), 0)) {
-        network::Error(__func__, "Connect: No ip!");
+        ERROR("Connect: No ip!");
         return kInvalidConnHandle;
     }
 
@@ -1502,7 +1504,7 @@ ConnHandle Connect(uint32_t remote_ip, uint16_t remote_port, CallbackConnect cb_
 
     auto* tcb = AllocTcb(remote_port, &out_index);
     if (tcb == nullptr) {
-        network::Error(__func__, "Connect: No TCB!");
+        ERROR("Connect: No TCB!");
         return kInvalidConnHandle;
     }
 
@@ -1542,14 +1544,14 @@ ConnHandle Connect(uint32_t remote_ip, uint16_t remote_port, CallbackConnect cb_
 int32_t Close(ConnHandle conn_handle) // graceful FIN
 {
     if (conn_handle >= TCP_MAX_TCBS_ALLOWED) {
-        network::Error(__func__, "Close: Connection handle!");
+        ERROR("Close: Connection handle!");
         return -1;
     }
 
     auto* c = &s_tcbs[conn_handle];
 
     if (!c->in_use || c->state == kStateClosed) {
-        network::Error(__func__, "Close: TCB!");
+        ERROR("Close: TCB!");
         return -1;
     }
 
@@ -1568,7 +1570,7 @@ int32_t Close(ConnHandle conn_handle) // graceful FIN
 
     // We only support graceful close from states where FIN makes sense here.
     if (c->state != kStateEstablished && c->state != kStateCloseWait) {
-        network::Error(__func__, "Close: Not graceful!");
+        ERROR("Close: Not graceful!");
         return -1;
     }
 
@@ -1588,8 +1590,7 @@ int32_t Close(ConnHandle conn_handle) // graceful FIN
 
     if (c->state == kStateEstablished) {
         NEW_STATE(c, kStateFinWait1);
-    } else /* kStateCloseWait */
-    {
+    } else {
         NEW_STATE(c, kStateLastAck);
     }
 
