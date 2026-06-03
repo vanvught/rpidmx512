@@ -23,9 +23,12 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
 #undef NDEBUG
-
+#if !defined (USE_GZIP)
+#define USE_GZIP
+#endif
+ 
+#include <cstdint>
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
@@ -40,16 +43,22 @@ struct SupportedExtension {
     http::ContentTypes content_type;
 };
 
-static constexpr SupportedExtension kSupportedExtensions[] = {{"html", http::ContentTypes::kTextHtml}, {"css", http::ContentTypes::kTextCss}, {"js", http::ContentTypes::kTextJs}, {"json", http::ContentTypes::kApplicationJson}};
+static constexpr SupportedExtension kSupportedExtensions[] = {
+	{"html", http::ContentTypes::kTextHtml}, 
+	{"css", http::ContentTypes::kTextCss}, 
+	{"js", http::ContentTypes::kTextJs}, 
+	{"json", http::ContentTypes::kApplicationJson}
+};
 
 static constexpr char kContentHeader[] =
     "\n"
     "struct FilesContent {\n"
     "\tuint32_t hash;\n"
     "\tconst char *file_name;\n"
-    "\tconst char *content;\n"
+    "\tconst uint8_t *content;\n"
     "\tuint32_t content_length;\n"
     "\thttp::ContentTypes content_type;\n"
+	"\tbool gzip;\n"
     "};\n\n"
     "inline constexpr struct FilesContent kHttpContent[] = {\n";
 
@@ -120,7 +129,7 @@ static constexpr FeatureGuard kFeatureGuards[] = {
 	{"dmxpca9685", kHaveDmxPca9585Begin, kHaveDmxPca9585End},    
 	{"dmx.", kHaveDmxSendBegin, kHaveDmxSendEnd}, 
 	{"rdm", kHaveRdmBegin, kHaveRdmEnd},
-    {"display.js", kHaveDisplayUdfBegin, kHaveDisplayUdfEnd},    
+	{"display.js", kHaveDisplayUdfBegin, kHaveDisplayUdfEnd},    
 	{"showfile.js", kHaveShowfileBegin, kHaveShowfileEnd}, 
 	{"time", kHaveTimeBegin, kHaveTimeEnd},       
 	{"rtc", kHaveRtcBegin, kHaveRtcEnd}};
@@ -232,6 +241,108 @@ static void BuildFinalContentHeader() {
     assert(kJ == 0);
 }
 
+#if defined(USE_GZIP)
+static int ConvertToHCompressed(const char* dir_name, const char* file_name) {
+    assert(dir_name != nullptr);
+    assert(file_name != nullptr);
+
+    printf("File to convert: %s/%s, ", dir_name, file_name);
+
+    char path[128];
+    auto n = snprintf(path, sizeof(path), "%s/%s", dir_name, file_name);
+    assert(n > 0);
+    assert(n < static_cast<int>(sizeof(path)));
+
+    const auto kFileNameLength = strlen(file_name);
+
+    char file_name_out[128];
+    n = snprintf(file_name_out, sizeof(file_name_out), "%s.h", file_name);
+    assert(n > 0);
+    assert(n < static_cast<int>(sizeof(file_name_out)));
+
+    printf("Header file: \"%s\", ", file_name_out);
+
+    auto* file_out = fopen(file_name_out, "w");
+    if (file_out == nullptr) {
+        perror(file_name_out);
+        return -1;
+    }
+
+    char constant_name[128];
+    assert((kFileNameLength + 4) < sizeof(constant_name));
+
+    MakeConstantName(file_name, constant_name, sizeof(constant_name));
+
+    char constant_name_gz[128];
+    n = snprintf(constant_name_gz, sizeof(constant_name_gz), "%s_gz", constant_name);
+    assert(n > 0);
+    assert(n < static_cast<int>(sizeof(constant_name_gz)));
+
+    printf("Constant name: %s, ", constant_name_gz);
+
+    WriteFeatureGuardsBegin(file_includes, file_name_out);
+
+    char buffer[128];
+    n = snprintf(buffer, sizeof(buffer), "#include \"%s\"\n", file_name_out);
+    assert(n > 0);
+    assert(n < static_cast<int>(sizeof(buffer)));
+
+    fwrite(buffer, sizeof(char), n, file_includes);
+
+    WriteFeatureGuardsEnd(file_includes, file_name_out);
+
+    fprintf(file_out, "#pragma once\n\n");
+    fprintf(file_out, "#include <cstdint>\n\n");
+
+    fprintf(file_out, "static constexpr uint8_t %s[] = {\n", constant_name_gz);
+
+    char command[256];
+    n = snprintf(command, sizeof(command), "gzip -n -9 -c \"%s\"", path);
+    assert(n > 0);
+    assert(n < static_cast<int>(sizeof(command)));
+
+    auto* gzip_pipe = popen(command, "r");
+    if (gzip_pipe == nullptr) {
+        fclose(file_out);
+        perror("gzip");
+        return -1;
+    }
+
+    unsigned offset = 0;
+    int c;
+
+    while ((c = fgetc(gzip_pipe)) != EOF) {
+        n = snprintf(buffer, sizeof(buffer), "0x%02X,%c", static_cast<unsigned>(static_cast<uint8_t>(c)), (++offset % 16U == 0U) ? '\n' : ' ');
+        assert(n > 0);
+        assert(n < static_cast<int>(sizeof(buffer)));
+
+        fwrite(buffer, sizeof(char), n, file_out);
+    }
+
+    const auto kGzipStatus = pclose(gzip_pipe);
+
+    if (kGzipStatus != 0) {
+        fclose(file_out);
+        fprintf(stderr, "gzip failed for %s\n", path);
+        return -1;
+    }
+
+    if ((offset % 16U) != 0U) {
+        fwrite("\n", sizeof(char), 1, file_out);
+    }
+
+    fprintf(file_out, "};\n\n");
+    fprintf(file_out, "static constexpr uint32_t %s_len = sizeof(%s);\n", constant_name_gz, constant_name_gz);
+
+    fclose(file_out);
+
+    fwrite(constant_name_gz, sizeof(char), strlen(constant_name_gz), file_content);
+
+    printf("Compressed size: %u\n", offset);
+
+    return static_cast<int>(offset);
+}
+#else
 static int ConvertToH(const char* dir_name, const char* file_name) {
     assert(file_name != nullptr);
 
@@ -278,7 +389,7 @@ static int ConvertToH(const char* dir_name, const char* file_name) {
 
     WriteFeatureGuardsEnd(file_includes, file_name_out);
 
-    fwrite("static constexpr char ", sizeof(char), 22, file_out);
+    fwrite("static constexpr uint8_t ", sizeof(char), 25, file_out);
 
     char constant_name[128];
     assert((kFileNameLength + 1) < sizeof(constant_name));
@@ -323,6 +434,7 @@ static int ConvertToH(const char* dir_name, const char* file_name) {
 
     return file_size;
 }
+#endif
 
 static uint32_t CreateHash(const char* filename) {
 	char hash_name[128];
@@ -343,6 +455,9 @@ static uint32_t CreateHash(const char* filename) {
 
 int main(int argc, char* argv[]) // NOLINT
 {
+#if defined(USE_GZIP)
+	puts("Using gzip.");
+#endif	
     file_includes = fopen("includes.h", "w");
     assert(file_includes != nullptr);
 
@@ -387,9 +502,15 @@ int main(int argc, char* argv[]) // NOLINT
 
             fwrite(buffer, sizeof(char), i, file_content);
 
+            auto use_gzip = false;
+#if defined(USE_GZIP)
+            use_gzip = true;
+            const auto kContentLength = ConvertToHCompressed(dir_name, dir_entry->d_name);
+#else
             const auto kContentLength = ConvertToH(dir_name, dir_entry->d_name);
+#endif
 
-            i = snprintf(buffer, sizeof(buffer), ", %d, static_cast<http::ContentTypes>(%d) },\n", kContentLength, static_cast<int>(kContentType));
+            i = snprintf(buffer, sizeof(buffer), ", %d, static_cast<http::ContentTypes>(%d), %s },\n", kContentLength, static_cast<int>(kContentType), use_gzip ? "true" : "false");
             assert(i > 0);
             assert(i < static_cast<int>(sizeof(buffer)));
 
