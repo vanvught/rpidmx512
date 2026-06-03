@@ -85,12 +85,13 @@ class HttpDeamonHandleRequest
     char* file_data_{nullptr};
     char* firmwarefile_name_{nullptr};
     char* receive_buffer_{nullptr};
-    const char* content_{nullptr};
+    const uint8_t* content_{nullptr};
     char upload_filename_[16];
 
     http::Status status_{http::Status::kUnknownError};
     http::RequestMethod request_method_{http::RequestMethod::kUnknown};
     http::ContentTypes request_content_type_{http::ContentTypes::kNotDefined};
+	bool gzip_{false};
 
     char dynamic_content_[httpd::kBufsize];
 };

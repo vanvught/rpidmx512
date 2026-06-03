@@ -62,7 +62,7 @@ void Reboot();
 #define _TIME_STAMP_ 0
 #endif
 
-const char* GetFileContent(const char* file_name, uint32_t& size, http::ContentTypes& content_type);
+const uint8_t* GetFileContent(const char* file_name, uint32_t& size, http::ContentTypes& content_type, bool& gzip);
 
 void HttpDeamonHandleRequest::HandleRequest(uint32_t bytes_received, char* receive_buffer) {
     DEBUG_ENTRY();
@@ -154,7 +154,7 @@ void HttpDeamonHandleRequest::HandleRequest(uint32_t bytes_received, char* recei
         }
 
         request_content_type_ = http::ContentTypes::kTextHtml;
-        content_ = dynamic_content_;
+        content_ = reinterpret_cast<uint8_t*>(dynamic_content_);
         content_size_ = static_cast<uint32_t>(snprintf(dynamic_content_, sizeof(dynamic_content_), "%u %s\n", static_cast<unsigned>(status_), status_msg));
 
         const auto kHeaderLength =
@@ -172,14 +172,20 @@ void HttpDeamonHandleRequest::HandleRequest(uint32_t bytes_received, char* recei
         const auto kHeaderLength = static_cast<uint32_t>(snprintf(receive_buffer_, network::tcp::kTcpDataMss,
                                                                   "HTTP/1.1 %u %s\r\n"
                                                                   "Server: %s\r\n"
+																  "Content-Encoding: %s\r\n"
                                                                   "Content-Type: %s\r\n"
                                                                   "Content-Length: %u\r\n"
                                                                   "Cache-Control: %s\r\n"
                                                                   "ETag: \"%u\"\r\n"
                                                                   "Connection: close\r\n"
                                                                   "\r\n",
-                                                                  static_cast<unsigned int>(status_), status_msg, network::iface::HostName(), http::kContentType[static_cast<uint32_t>(request_content_type_)],
-                                                                  static_cast<unsigned int>(content_size_), (content_ == dynamic_content_) ? "no-cache" : "max-age=3600", (content_ == dynamic_content_) ? timing::Millis() : _TIME_STAMP_));
+                                                                  static_cast<unsigned int>(status_),
+																  status_msg, network::iface::HostName(),
+																  gzip_ ? "gzip" : "identity",
+																  http::kContentType[static_cast<uint32_t>(request_content_type_)],
+                                                                  static_cast<unsigned int>(content_size_), (content_ == reinterpret_cast<uint8_t*>(dynamic_content_)) ? "no-cache" : "max-age=3600", 
+																  (content_ == reinterpret_cast<uint8_t*>(dynamic_content_)) ? timing::Millis() : _TIME_STAMP_)
+															  );
 
         network::tcp::Send(connection_handle_, reinterpret_cast<const uint8_t*>(receive_buffer_), kHeaderLength);
 
@@ -187,7 +193,7 @@ void HttpDeamonHandleRequest::HandleRequest(uint32_t bytes_received, char* recei
     }
 
     if (content_size_ != 0U) {
-        network::tcp::Send(connection_handle_, reinterpret_cast<const uint8_t*>(content_), content_size_);
+        network::tcp::Send(connection_handle_, content_, content_size_);
     }
 
     // Reset request state after reply is sent.
@@ -414,8 +420,9 @@ uint32_t RdmTod(char*, uint32_t, uint32_t);
 http::Status HttpDeamonHandleRequest::HandleGet() {
     DEBUG_ENTRY();
 
+	gzip_ = false;
     uint32_t length = 0;
-    content_ = dynamic_content_;
+    content_ = reinterpret_cast<uint8_t*>(dynamic_content_);
     DEBUG_PUTS(uri_);
 
     if (memcmp(uri_, "/json/", 6) == 0) {
@@ -456,7 +463,7 @@ http::Status HttpDeamonHandleRequest::HandleGet() {
                     length = (*(handler.get))(dynamic_content_, static_cast<uint32_t>(sizeof(dynamic_content_)));
                 }
             } else {
-                content_ = GetFileContent(&uri_[6], length, request_content_type_);
+                content_ = GetFileContent(&uri_[6], length, request_content_type_, gzip_);
             }
         }
     } else {
@@ -465,9 +472,9 @@ http::Status HttpDeamonHandleRequest::HandleGet() {
 
         if (kIndex >= 0) {
             const auto& handler = html::kHtmlInfos[kIndex];
-            content_ = GetFileContent(handler.label, length, request_content_type_);
+            content_ = GetFileContent(handler.label, length, request_content_type_, gzip_);
         } else {
-            content_ = GetFileContent(&uri_[1], length, request_content_type_);
+            content_ = GetFileContent(&uri_[1], length, request_content_type_, gzip_);
         }
     }
 

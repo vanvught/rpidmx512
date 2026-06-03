@@ -36,8 +36,7 @@
 
 #include "httpd/httpd.h"
 
-static constexpr char kSupportedExtensions[static_cast<int>(http::ContentTypes::kNotDefined)][8] = 
-{
+static constexpr char kSupportedExtensions[static_cast<int>(http::ContentTypes::kNotDefined)][8] = {
 	"html", 
 	"css", 
 	"js", 
@@ -45,23 +44,18 @@ static constexpr char kSupportedExtensions[static_cast<int>(http::ContentTypes::
 	"bin"
 };
 
-static char s_static_content[4096];
+static uint8_t s_static_content[4096];
 
-static http::ContentTypes GetContentType(const char* file_name)
-{
+static http::ContentTypes GetContentType(const char* file_name) {
     DEBUG_ENTRY();
 
-    for (int i = 0; i < static_cast<int>(http::ContentTypes::kNotDefined); i++)
-    {
+    for (int i = 0; i < static_cast<int>(http::ContentTypes::kNotDefined); i++) {
         const auto kL = strlen(file_name);
         const auto kE = strlen(kSupportedExtensions[i]);
 
-        if (kL > (kE + 2))
-        {
-            if (file_name[kL - kE - 1] == '.')
-            {
-                if (strcmp(&file_name[kL - kE], kSupportedExtensions[i]) == 0)
-                {
+        if (kL > (kE + 2)) {
+            if (file_name[kL - kE - 1] == '.') {
+                if (strcmp(&file_name[kL - kE], kSupportedExtensions[i]) == 0) {
                     DEBUG_EXIT();
                     return static_cast<http::ContentTypes>(i);
                 }
@@ -73,22 +67,19 @@ static http::ContentTypes GetContentType(const char* file_name)
     return http::ContentTypes::kNotDefined;
 }
 
-uint32_t GetFileContentFromFile(const char* file_name, char* dst, http::ContentTypes& content_type)
-{
+uint32_t GetFileContentFromFile(const char* file_name, char* dst, http::ContentTypes& content_type) {
     DEBUG_PUTS(file_name);
 
     auto* file = fopen(file_name, "r");
 
-    if (file == nullptr)
-    {
+    if (file == nullptr) {
         DEBUG_EXIT();
         return 0;
     }
 
     content_type = GetContentType(file_name);
 
-    if (content_type == http::ContentTypes::kNotDefined)
-    {
+    if (content_type == http::ContentTypes::kNotDefined) {
         DEBUG_EXIT();
         fclose(file);
         return 0;
@@ -98,29 +89,20 @@ uint32_t GetFileContentFromFile(const char* file_name, char* dst, http::ContentT
     auto* p = dst;
     int c;
 
-    while ((c = fgetc(file)) != EOF)
-    {
-        if (do_remove_white_spaces)
-        {
-            if (c <= ' ')
-            {
+    while ((c = fgetc(file)) != EOF) {
+        if (do_remove_white_spaces) {
+            if (c <= ' ') {
                 continue;
-            }
-            else
-            {
+            } else {
                 do_remove_white_spaces = false;
             }
-        }
-        else
-        {
-            if (c == '\n')
-            {
+        } else {
+            if (c == '\n') {
                 do_remove_white_spaces = true;
             }
         }
         *p++ = c;
-        if ((p - dst) == sizeof(s_static_content))
-        {
+        if ((p - dst) == sizeof(s_static_content)) {
             DEBUG_PUTS("File too long");
             break;
         }
@@ -132,15 +114,14 @@ uint32_t GetFileContentFromFile(const char* file_name, char* dst, http::ContentT
     return static_cast<uint32_t>(p - dst);
 }
 
-const char* GetFileContent(const char* file_name, uint32_t& size, http::ContentTypes& content_type)
-{
+const uint8_t* GetFileContent(const char* file_name, uint32_t& size, http::ContentTypes& content_type, , bool& gzip) {
     DEBUG_ENTRY();
     DEBUG_PUTS(file_name);
 
     size = GetFileContentFromFile(file_name, s_static_content, content_type);
+    gzip = false;
 
-    if (size != 0)
-    {
+    if (size != 0) {
         return s_static_content;
     }
 
@@ -151,21 +132,19 @@ const char* GetFileContent(const char* file_name, uint32_t& size, http::ContentT
 #include "../http/content/content.h"
 #include "common/utils/utils_hash.h"
 
-const char* GetFileContent(const char* file_name, uint32_t& size, http::ContentTypes& content_type)
-{
+const uint8_t* GetFileContent(const char* file_name, uint32_t& size, http::ContentTypes& content_type, bool& gzip) {
     DEBUG_ENTRY();
-	
-	const auto kHash = Fnv1a32Runtime(file_name, strlen(file_name));
-	
-	DEBUG_PRINTF("%s:%u", file_name, kHash);
 
-    for (auto& content : kHttpContent)
-    {
-        if (kHash == content.hash)
-        {
+    const auto kHash = Fnv1a32Runtime(file_name, strlen(file_name));
+
+    DEBUG_PRINTF("%s:%u", file_name, kHash);
+
+    for (auto& content : kHttpContent) {
+        if (kHash == content.hash) {
             size = content.content_length;
             content_type = content.content_type;
-			DEBUG_PUTS(content.file_name);
+            gzip = content.gzip;
+            DEBUG_PUTS(content.file_name);
             return content.content;
         }
     }
