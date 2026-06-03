@@ -13,6 +13,10 @@ ifneq ($(MAKE_FLAGS),)
 	else
 		EXTRA_SRCDIR+=device/emac
 	endif
+	
+	ifeq (,$(findstring DISABLE_FS,$(MAKE_FLAGS)))
+		EXTRA_INCLUDES+=../lib-fatfs/ff14b
+	endif
 else
 	EXTRA_SRCDIR+=device/fb device/emac
 endif

@@ -18,20 +18,6 @@ ifneq ($(MAKE_FLAGS),)
 		endif
 	endif
 	
-	FATFS=
-	ifeq ($(findstring CONFIG_USB_HOST_MSC,$(MAKE_FLAGS)), CONFIG_USB_HOST_MSC)
-		FATFS=1
- 	endif
- 	
- 	ifeq (,$(findstring DISABLE_FS,$(MAKE_FLAGS)))
- 			FATFS=1
- 	endif
- 	
- 	ifdef FATFS
-		EXTRA_SRCDIR+=ff14b/source
- 		EXTRA_SRCDIR+=posix
- 	endif
-	
 	ifeq (,$(findstring DISABLE_RTC,$(MAKE_FLAGS)))
 		EXTRA_SRCDIR+=rtc
 		ifneq (,$(findstring DISABLE_INTERNAL_RTC,$(MAKE_FLAGS)))
@@ -56,8 +42,6 @@ else
 	DEFINES+=DEBUG_I2C DEBUG_STACK DEBUG_POSIX
 	EXTRA_INCLUDES+=debug/i2c debug/stack
 	EXTRA_SRCDIR+=console/i2c console/null console/uart0 
-	EXTRA_SRCDIR+=posix
 	EXTRA_SRCDIR+=rtc rtc/i2c
 	EXTRA_SRCDIR+=superloop
-	EXTRA_INCLUDES+=
 endif

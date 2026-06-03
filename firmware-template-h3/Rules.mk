@@ -63,7 +63,7 @@ include ../common/make/DmxNodeOutputType.mk
 include ../firmware-template-h3/Includes.mk
 include ../common/make/Timestamp.mk
 
-LIBS+=h3 clib arm
+LIBS+=fatfs h3 clib arm
 
 LIBH3=$(addprefix -L../lib-,$(LIBS))
 LIBH3:=$(addsuffix /lib_h3, $(LIBH3))

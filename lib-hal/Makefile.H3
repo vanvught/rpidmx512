@@ -10,5 +10,9 @@ else
 	EXTRA_SRCDIR+=debug/emac/h3
 endif
 
+ifeq (,$(findstring DISABLE_FS,$(MAKE_FLAGS)))
+	EXTRA_INCLUDES+=../lib-fatfs/ff14b
+endif
+
 include Rules.mk
 include ../firmware-template-h3/lib/Rules.mk
