@@ -38,9 +38,9 @@ window.showfile = {
             </form>
         `;
 
-		document.getElementById("modules").appendChild(card);
-		card.querySelector("form").onsubmit = () => {
-		    saveDataKeyForm(path, card);
+		document.getElementById("modules").appendChild(div);
+		div.querySelector("form").onsubmit = () => {
+		    saveDataKeyForm(path, div);
 		    return false;
 		};
 

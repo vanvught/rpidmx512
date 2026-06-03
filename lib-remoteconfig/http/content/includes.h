@@ -47,6 +47,9 @@
 #if defined (DISPLAY_UDF)
 #include "config_display.js.h"
 #endif // (DISPLAY_UDF)
+#if defined (NODE_LTC_SMPTE)
+#include "config_ltc.js.h"
+#endif // (NODE_LTC_SMPTE)
 #if !defined (CONFIG_HTTP_HTML_NO_TIME)
 #include "time_index.html.h"
 #endif // !defined (CONFIG_HTTP_HTML_NO_TIME)

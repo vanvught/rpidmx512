@@ -11,6 +11,14 @@ INCLUDES := -I$(ROOT)/common/include -I$(ROOT)/lib-remoteconfig/include -I$(ROOT
 COPS := -std=c++20 -Wall -Werror
 
 CONTENT ?= light
+USE_GZIP ?= 0
+
+ifeq ($(USE_GZIP),1)
+$(info Building with gzip support)
+COPS += -DUSE_GZIP
+else
+$(info Building without gzip support)
+endif
 
 all : content
 
