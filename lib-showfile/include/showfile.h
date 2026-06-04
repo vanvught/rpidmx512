@@ -2,7 +2,7 @@
  * @file showfile.h
  *
  */
-/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,16 +41,14 @@
 #define CONFIG_SHOWFILE_ENABLE_MASTER
 #endif
 
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
-namespace showfile
-{
+namespace showfile {
 bool FilenameCopyto(char* show_file_name, uint32_t length, int32_t show_file_number);
 bool FilenameCheck(const char* show_file_name, int32_t& show_file_number);
 } // namespace showfile
 
-class ShowFile final : public ShowFileFormat
-{
+class ShowFile final : public ShowFileFormat {
    public:
 #if defined(CONFIG_SHOWFILE_ENABLE_OSC)
     explicit ShowFile(uint16_t port_incoming = osc::port::kDefaultIncoming, uint16_t port_outgoing = osc::port::kDefaultOutgoing);
@@ -61,49 +59,38 @@ class ShowFile final : public ShowFileFormat
     ShowFile(const ShowFile&) = delete;
     ShowFile& operator=(const ShowFile&) = delete;
 
-    void Play()
-    {
+    void Play() {
         DEBUG_ENTRY();
 
-        if ((mode_ == showfile::Mode::kRecorder) || (status_ == showfile::Status::kPlaying) || (status_ == showfile::Status::kRecording))
-        {
+        if ((mode_ == showfile::Mode::kRecorder) || (status_ == showfile::Status::kPlaying) || (status_ == showfile::Status::kRecording)) {
             DEBUG_EXIT();
             return;
         }
 
         EnableTFTP(false);
 
-        if (m_pShowFile != nullptr)
-        {
+        if (m_pShowFile != nullptr) {
             ShowFileFormat::ShowFileStart();
             SetStatus(showfile::Status::kPlaying);
-        }
-        else
-        {
+        } else {
             SetStatus(showfile::Status::kIdle);
         }
 
         DEBUG_EXIT();
     }
 
-    void Stop()
-    {
+    void Stop() {
         DEBUG_ENTRY();
 
-        if (m_pShowFile != nullptr)
-        {
+        if (m_pShowFile != nullptr) {
             ShowFileFormat::ShowFileStop();
 
-            if ((status_ == showfile::Status::kStopped) || (status_ == showfile::Status::kRecording))
-            {
-                if (status_ == showfile::Status::kRecording)
-                {
+            if ((status_ == showfile::Status::kStopped) || (status_ == showfile::Status::kRecording)) {
+                if (status_ == showfile::Status::kRecording) {
                     fclose(m_pShowFile);
                 }
                 SetStatus(showfile::Status::kIdle);
-            }
-            else
-            {
+            } else {
                 SetStatus(showfile::Status::kStopped);
             }
         }
@@ -111,18 +98,15 @@ class ShowFile final : public ShowFileFormat
         DEBUG_EXIT();
     }
 
-    void Resume()
-    {
+    void Resume() {
         DEBUG_ENTRY();
 
-        if (status_ != showfile::Status::kStopped)
-        {
+        if (status_ != showfile::Status::kStopped) {
             DEBUG_EXIT();
             return;
         }
 
-        if (m_pShowFile != nullptr)
-        {
+        if (m_pShowFile != nullptr) {
             ShowFileFormat::ShowFileResume();
             SetStatus(showfile::Status::kPlaying);
         }
@@ -131,23 +115,18 @@ class ShowFile final : public ShowFileFormat
     }
 
 #if !defined(CONFIG_SHOWFILE_DISABLE_RECORD)
-    void Record()
-    {
+    void Record() {
         DEBUG_ENTRY();
 
-        if ((mode_ == showfile::Mode::kPlayer) || (status_ != showfile::Status::kIdle))
-        {
+        if ((mode_ == showfile::Mode::kPlayer) || (status_ != showfile::Status::kIdle)) {
             DEBUG_EXIT();
             return;
         }
 
-        if (m_pShowFile != nullptr)
-        {
+        if (m_pShowFile != nullptr) {
             ShowFileFormat::ShowFileRecord();
             SetStatus(showfile::Status::kRecording);
-        }
-        else
-        {
+        } else {
             SetStatus(showfile::Status::kIdle);
         }
 
@@ -157,15 +136,12 @@ class ShowFile final : public ShowFileFormat
 
     void Run() { ShowFileFormat::ShowFileRun(status_ == showfile::Status::kPlaying); }
 
-    void Print()
-    {
+    void Print() {
         puts("Showfile");
-        if (showfile_name_current_[0] != '\0')
-        {
+        if (showfile_name_current_[0] != '\0') {
             printf(" %s\n", showfile_name_current_);
         }
-        if (auto_play_)
-        {
+        if (auto_play_) {
             puts(" Auto play");
         }
         printf(" %s\n", m_bDoLoop ? "Looping" : "Not looping");
@@ -186,12 +162,10 @@ class ShowFile final : public ShowFileFormat
 
     void LoadShows();
 
-    void UnloadShows()
-    {
+    void UnloadShows() {
         shows_ = 0;
 
-        for (auto& file_index : show_file_number_)
-        {
+        for (auto& file_index : show_file_number_) {
             file_index = -1;
         }
 
@@ -208,19 +182,15 @@ class ShowFile final : public ShowFileFormat
 
     int32_t GetShowFileCurrent() const { return show_file_current_; }
 
-    uint32_t GetShows()
-    {
-        if (shows_ == 0)
-        {
+    uint32_t GetShows() {
+        if (shows_ == 0) {
             LoadShows();
         }
         return shows_;
     }
 
-    int32_t GetPlayerShowFile(uint32_t index) const
-    {
-        if (index < sizeof(show_file_number_) / sizeof(show_file_number_[0]))
-        {
+    int32_t GetPlayerShowFile(uint32_t index) const {
+        if (index < sizeof(show_file_number_) / sizeof(show_file_number_[0])) {
             return show_file_number_[index];
         }
 
@@ -241,16 +211,14 @@ class ShowFile final : public ShowFileFormat
 
     bool IsSyncDisabled() { return ShowFileFormat::IsSyncDisabled(); }
 
-    void BlackOut()
-    {
+    void BlackOut() {
 #if defined(CONFIG_SHOWFILE_ENABLE_MASTER)
         Stop();
         ShowFileFormat::BlackOut();
 #endif
     }
 
-    void SetMaster([[maybe_unused]] uint32_t master)
-    {
+    void SetMaster([[maybe_unused]] uint32_t master) {
 #if defined(CONFIG_SHOWFILE_ENABLE_MASTER)
         ShowFileFormat::SetMaster(master);
 #endif
@@ -262,8 +230,7 @@ class ShowFile final : public ShowFileFormat
 
     void EnableTFTP(bool enable_tftp);
 
-    bool IsTFTPEnabled() const
-    {
+    bool IsTFTPEnabled() const {
 #if !defined(CONFIG_SHOWFILE_DISABLE_TFTP)
         return enable_tftp_;
 #else
@@ -284,8 +251,7 @@ class ShowFile final : public ShowFileFormat
     uint16_t GetOscPortOutgoing() const { return showfile_osc_.GetPortOutgoing(); }
 #endif
 
-    static ShowFile& Instance()
-    {
+    static ShowFile& Instance() {
         assert(s_this != nullptr); // Ensure that s_this is valid
         return *s_this;
     }
@@ -311,4 +277,4 @@ class ShowFile final : public ShowFileFormat
     static inline ShowFile* s_this;
 };
 
-#endif  // SHOWFILE_H_
+#endif // SHOWFILE_H_

@@ -2,7 +2,7 @@
  * @file showfiledisplay.h
  *
  */
-/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,16 +23,14 @@
  * THE SOFTWARE.
  */
 
-
 #ifndef SHOWFILEDISPLAY_H_
 #define SHOWFILEDISPLAY_H_
 
 #include <cstdint>
 
-namespace showfile
-{
+namespace showfile {
 void DisplayFilename(const char* file_name, int32_t show);
 void DisplayStatus();
 } // namespace showfile
 
-#endif  // SHOWFILEDISPLAY_H_
+#endif // SHOWFILEDISPLAY_H_

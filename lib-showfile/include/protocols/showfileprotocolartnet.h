@@ -31,11 +31,9 @@
 #include "artnetcontroller.h"
 #include "firmware/debug/debug_debug.h"
 
-class ShowFileProtocol
-{
+class ShowFileProtocol {
    public:
-    ShowFileProtocol()
-    {
+    ShowFileProtocol() {
         DEBUG_ENTRY();
 
         DEBUG_EXIT();
@@ -43,8 +41,7 @@ class ShowFileProtocol
 
     ~ShowFileProtocol() { controller_.Stop(); }
 
-    void Start()
-    {
+    void Start() {
         DEBUG_ENTRY();
 
         controller_.Start();
@@ -52,8 +49,7 @@ class ShowFileProtocol
         DEBUG_EXIT();
     }
 
-    void Stop()
-    {
+    void Stop() {
         DEBUG_ENTRY();
 
         controller_.Stop();
@@ -61,8 +57,7 @@ class ShowFileProtocol
         DEBUG_EXIT();
     }
 
-    void Record()
-    {
+    void Record() {
         DEBUG_ENTRY();
 
         DEBUG_EXIT();
@@ -74,8 +69,7 @@ class ShowFileProtocol
 
     void DmxBlackout() { controller_.HandleBlackout(); }
 
-    void DmxMaster([[maybe_unused]] uint32_t master)
-    {
+    void DmxMaster([[maybe_unused]] uint32_t master) {
 #if defined(CONFIG_ARTNET_CONTROLLER_ENABLE_MASTER)
         controller_.SetMaster(master);
 #endif
@@ -93,4 +87,4 @@ class ShowFileProtocol
     ArtNetController controller_;
 };
 
-#endif /* PROTOCOLS_SHOWFILEPROTOCOLARTNET_H_ */
+#endif // PROTOCOLS_SHOWFILEPROTOCOLARTNET_H_

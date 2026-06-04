@@ -2,7 +2,7 @@
  * @file showfiletftp.h
  *
  */
-/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,14 +29,11 @@
 #include <cstdio>
 
 #include "apps/tftpdaemon.h"
+#include "firmware/debug/debug_debug.h"
 
- #include "firmware/debug/debug_debug.h"
-
-class ShowFileTFTP final : public TFTPDaemon
-{
+class ShowFileTFTP final : public TFTPDaemon {
    public:
-    ShowFileTFTP()
-    {
+    ShowFileTFTP() {
         DEBUG_ENTRY();
 
         DEBUG_EXIT();
@@ -45,12 +42,10 @@ class ShowFileTFTP final : public TFTPDaemon
     bool FileOpen(const char* file_name, tftp::Mode mode) override;
     bool FileCreate(const char* file_name, tftp::Mode mode) override;
 
-    bool FileClose() override
-    {
+    bool FileClose() override {
         DEBUG_ENTRY();
 
-        if (file_ != nullptr)
-        {
+        if (file_ != nullptr) {
             fclose(file_);
             file_ = nullptr;
         }
@@ -69,4 +64,4 @@ class ShowFileTFTP final : public TFTPDaemon
     FILE* file_{nullptr};
 };
 
-#endif  // SHOWFILETFTP_H_
+#endif // SHOWFILETFTP_H_

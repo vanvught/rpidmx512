@@ -48,4 +48,4 @@
 #error Protocol node configuration error
 #endif
 
-#endif  // SHOWFILEPROTOCOL_H_
+#endif // SHOWFILEPROTOCOL_H_

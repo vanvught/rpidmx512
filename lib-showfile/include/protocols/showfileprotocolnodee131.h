@@ -2,7 +2,7 @@
  * @file showfileprotocolnodee131.h
  *
  */
-/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,23 +32,19 @@
 #include "e131bridge.h"
 #include "e131.h"
 #include "e117.h"
+#include "uuid.h"
+#include "firmware/debug/debug_debug.h"
 
-#include "hal_uuid.h"
-
- #include "firmware/debug/debug_debug.h"
-
-class ShowFileProtocol
-{
+class ShowFileProtocol {
    public:
-    ShowFileProtocol()
-    {
+    ShowFileProtocol() {
         DEBUG_ENTRY();
         // Root Layer (See Section 5)
         e131_data_packet_.root_layer.pre_amble_size = __builtin_bswap16(0x0010);
         e131_data_packet_.root_layer.post_amble_size = __builtin_bswap16(0x0000);
         memcpy(e131_data_packet_.root_layer.acn_packet_identifier, e117::kAcnPacketIdentifier, e117::kAcnPacketIdentifierLength);
         e131_data_packet_.root_layer.vector = __builtin_bswap32(e131::vector::root::kData);
-        hal::UuidCopy(e131_data_packet_.root_layer.cid);
+        UuidCopy(e131_data_packet_.root_layer.cid);
         // E1.31 Framing Layer (See Section 6)
         e131_data_packet_.frame_layer.vector = __builtin_bswap32(e131::vector::data::kPacket);
         memcpy(e131_data_packet_.frame_layer.source_name, E131Bridge::Get()->GetSourceName(), e131::kSourceNameLength);
@@ -67,29 +63,25 @@ class ShowFileProtocol
 
     void SetSynchronizationAddress([[maybe_unused]] uint16_t synchronization_address) {}
 
-    void Start()
-    {
+    void Start() {
         DEBUG_ENTRY();
 
         DEBUG_EXIT();
     }
 
-    void Stop()
-    {
+    void Stop() {
         DEBUG_ENTRY();
 
         DEBUG_EXIT();
     }
 
-    void Record()
-    {
+    void Record() {
         DEBUG_ENTRY();
 
         DEBUG_EXIT();
     }
 
-    void DmxOut(uint16_t universe, const uint8_t* dmx_data, uint32_t length)
-    {
+    void DmxOut(uint16_t universe, const uint8_t* dmx_data, uint32_t length) {
         length++; // Add 1 for SC
         // Root Layer (See Section 5)
         e131_data_packet_.root_layer.flags_length = __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | (e131::DataRootLayerLength(length))));
@@ -124,4 +116,4 @@ class ShowFileProtocol
     uint8_t sequence_number_{0};
 };
 
-#endif  // PROTOCOLS_SHOWFILEPROTOCOLNODEE131_H_
+#endif // PROTOCOLS_SHOWFILEPROTOCOLNODEE131_H_

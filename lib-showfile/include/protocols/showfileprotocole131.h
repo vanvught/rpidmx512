@@ -2,7 +2,7 @@
  * @file showfileprotocole131.h
  *
  */
-/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,13 +29,11 @@
 #include <cstdint>
 
 #include "e131controller.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
-class ShowFileProtocol
-{
+class ShowFileProtocol {
    public:
-    ShowFileProtocol()
-    {
+    ShowFileProtocol() {
         DEBUG_ENTRY();
 
         DEBUG_EXIT();
@@ -43,8 +41,7 @@ class ShowFileProtocol
 
     void SetSynchronizationAddress(uint16_t synchronization_address) { e131_controller_.SetSynchronizationAddress(synchronization_address); }
 
-    void Start()
-    {
+    void Start() {
         DEBUG_ENTRY();
 
         e131_controller_.Start();
@@ -52,8 +49,7 @@ class ShowFileProtocol
         DEBUG_EXIT();
     }
 
-    void Stop()
-    {
+    void Stop() {
         DEBUG_ENTRY();
 
         e131_controller_.Stop();
@@ -61,8 +57,7 @@ class ShowFileProtocol
         DEBUG_EXIT();
     }
 
-    void Record()
-    {
+    void Record() {
         DEBUG_ENTRY();
 
         DEBUG_EXIT();
@@ -75,8 +70,7 @@ class ShowFileProtocol
 
     void DoRunCleanupProcess([[maybe_unused]] bool do_run) {}
 
-    void Run()
-    {
+    void Run() {
         // Nothing todo here
     }
 
@@ -88,4 +82,4 @@ class ShowFileProtocol
     E131Controller e131_controller_;
 };
 
-#endif  // PROTOCOLS_SHOWFILEPROTOCOLE131_H_
+#endif // PROTOCOLS_SHOWFILEPROTOCOLE131_H_

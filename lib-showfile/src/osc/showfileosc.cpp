@@ -36,6 +36,7 @@
 #include "osc.h"
 #include "showfileosc.h"
 #include "showfile.h"
+#include "showfiledisplay.h"
 #include "oscsimplemessage.h"
 #include "oscsimplesend.h"
 #include "firmware/debug/debug_debug.h"

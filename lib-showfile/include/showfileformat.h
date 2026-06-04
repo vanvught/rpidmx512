@@ -2,7 +2,7 @@
  * @file showfileformat.h
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,10 +26,10 @@
 #ifndef SHOWFILEFORMAT_H_
 #define SHOWFILEFORMAT_H_
 
-#if defined (CONFIG_SHOWFILE_FORMAT_OLA)
-# include "formats/showfileformatola.h"
+#if defined(CONFIG_SHOWFILE_FORMAT_OLA)
+#include "formats/showfileformatola.h"
 #else
-# error Format is not supported
+#error Format is not supported
 #endif
 
-#endif /* SHOWFILEFORMAT_H_ */
+#endif // SHOWFILEFORMAT_H_

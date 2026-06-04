@@ -2,7 +2,7 @@
  * @file showfileprotocolartnettrigger.h
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,60 +26,56 @@
 #ifndef PROTOCOLS_SHOWFILEPROTOCOLARTNETTRIGGER_H_
 #define PROTOCOLS_SHOWFILEPROTOCOLARTNETTRIGGER_H_
 
-#include <cstdint>
-#include <cstdio>
-
 #include "artnetcontroller.h"
 #include "artnettrigger.h"
-
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
 class ShowFileProtocolArtNetTrigger {
-public:
-	ShowFileProtocolArtNetTrigger() {
-		DEBUG_ENTRY();
+   public:
+    ShowFileProtocolArtNetTrigger() {
+        DEBUG_ENTRY();
 
-		assert(s_this == nullptr);
-		s_this = this;
+        assert(s_this == nullptr);
+        s_this = this;
 
-		ArtNetController::Get()->SetArtTriggerCallbackFunctionPtr(StaticCallbackFunction);
+        ArtNetController::Get()->SetArtTriggerCallbackFunctionPtr(StaticCallbackFunction);
 
-		DEBUG_EXIT();
-	}
+        DEBUG_EXIT();
+    }
 
-private:
-	void Handler(const struct ArtNetTrigger *pArtNetTrigger)  {
-		DEBUG_ENTRY();
-		DEBUG_PRINTF("Key=%d, SubKey=%d", pArtNetTrigger->key, pArtNetTrigger->sub_key);
+   private:
+    void Handler(const struct ArtNetTrigger* trigger) {
+        DEBUG_ENTRY();
+        DEBUG_PRINTF("Key=%d, SubKey=%d", trigger->key, trigger->sub_key);
 
-		if (pArtNetTrigger->key == ArtTriggerKey::ART_TRIGGER_KEY_SOFT) {
-			switch (pArtNetTrigger->sub_key) {
-			case 'B':
-				ShowFile::Get()->BlackOut();
-				break;
-			case 'G':
-				ShowFile::Get()->Play();
-				break;
-			case 'R':
-				ShowFile::Get()->Resume();
-				break;
-			case 'S':
-				ShowFile::Get()->Stop();
-				break;
-			default:
-				break;
-			}
-		}
+        if (trigger->key == ArtTriggerKey::ART_TRIGGER_KEY_SOFT) {
+            switch (trigger->sub_key) {
+                case 'B':
+                    ShowFile::Get()->BlackOut();
+                    break;
+                case 'G':
+                    ShowFile::Get()->Play();
+                    break;
+                case 'R':
+                    ShowFile::Get()->Resume();
+                    break;
+                case 'S':
+                    ShowFile::Get()->Stop();
+                    break;
+                default:
+                    break;
+            }
+        }
 
-		if (pArtNetTrigger->key == ArtTriggerKey::kArtTriggerKeyShow) {
-			ShowFile::Get()->SetPlayerShowFileCurrent(pArtNetTrigger->sub_key);
-		}
+        if (trigger->key == ArtTriggerKey::kArtTriggerKeyShow) {
+            ShowFile::Get()->SetPlayerShowFileCurrent(trigger->sub_key);
+        }
 
-		DEBUG_EXIT();
-	}
+        DEBUG_EXIT();
+    }
 
-private:
-	static inline ShowFileProtocolArtNetTrigger *s_this;
+   private:
+    static inline ShowFileProtocolArtNetTrigger* s_this;
 };
 
-#endif /* PROTOCOLS_SHOWFILEPROTOCOLARTNETTRIGGER_H_ */
+#endif // PROTOCOLS_SHOWFILEPROTOCOLARTNETTRIGGER_H_

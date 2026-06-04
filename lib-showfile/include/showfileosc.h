@@ -35,25 +35,20 @@
 #include <cstdio>
 #include <cassert>
 
-#include "showfiledisplay.h"
 #include "osc.h"
-#include "network.h"
+#include "network_udp.h"
 #include "firmware/debug/debug_debug.h"
 
-namespace showfileosc
-{
+namespace showfileosc {
 inline constexpr char kCmdPath[] = "/showfile/";
 inline constexpr uint32_t kPathLength = sizeof(kCmdPath) - 1;
 inline constexpr uint32_t kMaxCmdLength = 128;
 inline constexpr uint32_t kMaxFilesEntries = 10;
 } // namespace showfileosc
 
-class ShowFileOSC
-{
+class ShowFileOSC {
    public:
-    explicit ShowFileOSC(uint16_t port_incoming = osc::port::kDefaultIncoming, uint16_t port_outgoing = osc::port::kDefaultOutgoing)
-        : port_outgoing_(port_outgoing)
-    {
+    explicit ShowFileOSC(uint16_t port_incoming = osc::port::kDefaultIncoming, uint16_t port_outgoing = osc::port::kDefaultOutgoing) : port_outgoing_(port_outgoing) {
         DEBUG_ENTRY();
 
         assert(s_this == nullptr);
@@ -64,8 +59,7 @@ class ShowFileOSC
         DEBUG_EXIT();
     }
 
-    ~ShowFileOSC()
-    {
+    ~ShowFileOSC() {
         DEBUG_ENTRY();
 
         network::udp::End(port_incoming_);
@@ -73,8 +67,7 @@ class ShowFileOSC
         DEBUG_EXIT();
     }
 
-    void Input(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port)
-    {
+    void Input(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port) {
         assert(buffer != nullptr);
 
         buffer_ = buffer;
@@ -82,38 +75,30 @@ class ShowFileOSC
         bytes_received_ = size;
         remote_port_ = from_port;
 
-        if (memcmp(buffer_, showfileosc::kCmdPath, showfileosc::kPathLength) == 0)
-        {
+        if (memcmp(buffer_, showfileosc::kCmdPath, showfileosc::kPathLength) == 0) {
             Process();
         }
     }
 
-    void Print()
-    {
+    void Print() {
         puts("OSC Server");
         printf(" Path : [%s]\n", showfileosc::kCmdPath);
         printf(" Incoming port : %u\n", port_incoming_);
         printf(" Outgoing port : %u\n", port_outgoing_);
     }
 
-    void SetPortIncoming(uint16_t port_incoming)
-    {
-        if (port_incoming == port_incoming_)
-        {
+    void SetPortIncoming(uint16_t port_incoming) {
+        if (port_incoming == port_incoming_) {
             return;
         }
 
-        if (handle_ != 1)
-        {
+        if (handle_ != 1) {
             network::udp::End(port_incoming_);
         }
 
-        if (port_incoming > 1023)
-        {
+        if (port_incoming > 1023) {
             port_incoming_ = port_incoming;
-        }
-        else
-        {
+        } else {
             port_incoming_ = osc::port::kDefaultIncoming;
         }
 
@@ -123,14 +108,10 @@ class ShowFileOSC
 
     uint16_t GetPortIncoming() const { return port_incoming_; }
 
-    void SetPortOutgoing(uint16_t port_outgoing)
-    {
-        if (port_outgoing > 1023)
-        {
+    void SetPortOutgoing(uint16_t port_outgoing) {
+        if (port_outgoing > 1023) {
             port_outgoing_ = port_outgoing;
-        }
-        else
-        {
+        } else {
             port_outgoing_ = osc::port::kDefaultOutgoing;
         }
     }
@@ -142,10 +123,7 @@ class ShowFileOSC
     void SendStatus();
     void ShowFiles();
 
-    void static StaticCallbackFunction(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port)
-    {
-        s_this->Input(buffer, size, from_ip, from_port);
-    }
+    void static StaticCallbackFunction(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port) { s_this->Input(buffer, size, from_ip, from_port); }
 
    private:
     uint16_t port_incoming_{osc::port::kDefaultIncoming};

@@ -33,11 +33,9 @@
 #include "artnet.h"
 #include "firmware/debug/debug_debug.h"
 
-class ShowFileProtocol
-{
+class ShowFileProtocol {
    public:
-    ShowFileProtocol()
-    {
+    ShowFileProtocol() {
         DEBUG_ENTRY();
 
         memcpy(dmx_.id, artnet::kNodeId, sizeof(dmx_.id));
@@ -50,15 +48,13 @@ class ShowFileProtocol
 
     void SetSynchronizationAddress([[maybe_unused]] uint16_t synchronization_address) {}
 
-    void Start()
-    {
+    void Start() {
         DEBUG_ENTRY();
 
         DEBUG_EXIT();
     }
 
-    void Stop()
-    {
+    void Stop() {
         DEBUG_ENTRY();
 
         ArtNetNode::Get()->SetRecordShowfile(false);
@@ -66,8 +62,7 @@ class ShowFileProtocol
         DEBUG_EXIT();
     }
 
-    void Record()
-    {
+    void Record() {
         DEBUG_ENTRY();
 
         ArtNetNode::Get()->SetRecordShowfile(true);
@@ -75,12 +70,10 @@ class ShowFileProtocol
         DEBUG_EXIT();
     }
 
-    void DmxOut(uint16_t universe, const uint8_t* data, uint32_t length)
-    {
+    void DmxOut(uint16_t universe, const uint8_t* data, uint32_t length) {
         memcpy(dmx_.data, data, length);
 
-        if ((length & 0x1) == 0x1)
-        {
+        if ((length & 0x1) == 0x1) {
             dmx_.data[length] = 0x00;
             length++;
         }
@@ -113,4 +106,4 @@ class ShowFileProtocol
     uint8_t sequence_{0};
 };
 
-#endif /* PROTOCOLS_SHOWFILEPROTOCOLNODEARTNET_H_ */
+#endif // PROTOCOLS_SHOWFILEPROTOCOLNODEARTNET_H_

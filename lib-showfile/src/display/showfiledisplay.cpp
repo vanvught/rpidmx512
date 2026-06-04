@@ -2,7 +2,7 @@
  * @file showfiledisplay.cpp
  *
  */
-/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2065 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,31 +28,23 @@
 
 #include "showfile.h"
 #include "showfiledisplay.h"
-
 #include "display.h"
 
-namespace showfile
-{
-void DisplayFilename(const char* file_name, [[maybe_unused]] int32_t show)
-{
+namespace showfile {
+void DisplayFilename(const char* file_name, [[maybe_unused]] int32_t show) {
     assert(file_name != nullptr);
 
-    if (file_name[0] != 0)
-    {
+    if (file_name[0] != 0) {
         Display::Get()->TextStatus(file_name);
-    }
-    else
-    {
+    } else {
         Display::Get()->TextStatus("No showfile");
     }
 }
 
-void DisplayStatus()
-{
+void DisplayStatus() {
     Display::Get()->SetCursorPos(0, 6);
 
-    switch (ShowFile::Instance().GetStatus())
-    {
+    switch (ShowFile::Instance().GetStatus()) {
         case showfile::Status::kIdle:
             Display::Get()->PutString("Idle     ");
             break;
@@ -76,16 +68,11 @@ void DisplayStatus()
 
     Display::Get()->SetCursorPos(11, 7);
 
-    if (ShowFile::Instance().IsTFTPEnabled())
-    {
+    if (ShowFile::Instance().IsTFTPEnabled()) {
         Display::Get()->PutString("[TFTP On]");
-    }
-    else if (ShowFile::Instance().GetDoLoop())
-    {
+    } else if (ShowFile::Instance().GetDoLoop()) {
         Display::Get()->PutString("[Looping]");
-    }
-    else
-    {
+    } else {
         Display::Get()->PutString("         ");
     }
 }
