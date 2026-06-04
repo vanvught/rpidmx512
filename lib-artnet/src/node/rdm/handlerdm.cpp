@@ -32,53 +32,43 @@
 #include "artnetnode.h"
 #include "firmware/debug/debug_debug.h"
 
-/**
- * Node Output Gateway -> Reply with ArtTodData.
- *
- * This packet is used to request the Table of RDM Devices (TOD). A Node receiving this
- * packet must not interpret it as forcing full discovery. Full discovery is only initiated at
- * power on or when an ArtTodControl.AtcFlush is received. The response is ArtTodData.
+// Node Output Gateway -> Reply with ArtTodData.
+//
+// This packet is used to request the Table of RDM Devices (TOD). A Node receiving this
+// packet must not interpret it as forcing full discovery. Full discovery is only initiated at
+// power on or when an ArtTodControl.AtcFlush is received. The response is ArtTodData.
 
- */
-void ArtNetNode::HandleTodRequest()
-{
+void ArtNetNode::HandleTodRequest() {
     DEBUG_ENTRY();
 
     const auto* const kRequest = reinterpret_cast<artnet::ArtTodRequest*>(receive_buffer_);
     // The number of entries in Address that are used. Max value is 32.
     const auto kAddCount = kRequest->add_count & 0x1f;
 
-    for (auto count = 0; count < kAddCount; count++)
-    {
+    for (auto count = 0; count < kAddCount; count++) {
         // Address[count] This array defines the low byte of the Port-Address of the Output Gateway nodes that
         // must respond to this packet. This is combined with the 'Net' field above to form the 15 bit address.
         const auto kPortAddress = static_cast<uint16_t>((kRequest->net << 8)) | static_cast<uint16_t>((kRequest->address[count]));
 
-        for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++)
-        {
-            if ((output_port_[port_index].good_output_b & artnet::GoodOutputB::kRdmDisabled) == artnet::GoodOutputB::kRdmDisabled)
-            {
+        for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++) {
+            if ((output_port_[port_index].good_output_b & artnet::GoodOutputB::kRdmDisabled) == artnet::GoodOutputB::kRdmDisabled) {
                 continue;
             }
 
-            if ((kPortAddress == node_.port[port_index].port_address) && (node_.port[port_index].direction == dmxnode::Direction::kOutput))
-            {
+            if ((kPortAddress == node_.port[port_index].port_address) && (node_.port[port_index].direction == dmxnode::Direction::kOutput)) {
                 SendArtTodData(port_index);
             }
         }
     }
 
 #if defined(RDM_CONTROLLER)
-    for (auto& entry : state_.art.tod_request_ip_list)
-    {
-        if (entry == ip_address_from_)
-        {
+    for (auto& entry : state_.art.tod_request_ip_list) {
+        if (entry == ip_address_from_) {
             DEBUG_EXIT();
             return;
         }
 
-        if (entry == 0)
-        {
+        if (entry == 0) {
             entry = ip_address_from_;
             DEBUG_EXIT();
             return;

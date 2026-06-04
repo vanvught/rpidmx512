@@ -30,7 +30,9 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
+#if !defined(DISABLE_RTC)
 #include <ctime>
+#endif
 #include <cassert>
 
 #include "artnetnode.h"
@@ -67,12 +69,12 @@
 
 #if defined(ARTNET_SHOWFILE)
 namespace showfile {
-void record(const struct artnet::ArtDmx* artdmx, uint32_t millis);
-void record(const struct artnet::ArtSync* artsync, uint32_t millis);
+void Record(const struct artnet::ArtDmx* artdmx, uint32_t millis);
+void Record(const struct artnet::ArtSync* artsync, uint32_t millis);
 } // namespace showfile
 #endif
 
-static constexpr auto kArtnetMinHeaderSize = 12;
+static constexpr auto kArtnetMinHeaderSize = 12U;
 
 ArtNetNode::ArtNetNode() {
     DEBUG_ENTRY();
@@ -765,7 +767,7 @@ void ArtNetNode::InputUdp(const uint8_t* buffer, uint32_t size, uint32_t from_ip
                 state_.art.dmx_ip = ip_address_from_;
 #if defined(ARTNET_SHOWFILE)
                 if (state_.do_record) {
-                    showfile::record(reinterpret_cast<const artnet::ArtDmx*>(buffer), current_millis_);
+                    showfile::Record(reinterpret_cast<const artnet::ArtDmx*>(buffer), current_millis_);
                 }
 #endif
             }
@@ -788,7 +790,7 @@ void ArtNetNode::InputUdp(const uint8_t* buffer, uint32_t size, uint32_t from_ip
                 }
 #if defined(ARTNET_SHOWFILE)
                 if (state_.do_record) {
-                    showfile::record(reinterpret_cast<const artnet::ArtSync*>(buffer), current_millis_);
+                    showfile::Record(reinterpret_cast<const artnet::ArtSync*>(buffer), current_millis_);
                 }
 #endif
             }

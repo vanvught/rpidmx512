@@ -57,10 +57,9 @@ void Finished(uint32_t port_index, [[maybe_unused]] Type type) {
 }
 } // namespace rdm::discovery
 
-/**
- * ArtTodControl is used to for an Output Gateway to flush its ToD and commence full discovery.
- * If the Output Gateway has physical DMX512 ports, discovery could take minutes.
- */
+// ArtTodControl is used to for an Output Gateway to flush its ToD and commence full discovery.
+// If the Output Gateway has physical DMX512 ports, discovery could take minutes.
+
 void ArtNetNode::HandleTodControl() {
     DEBUG_ENTRY();
 

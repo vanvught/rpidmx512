@@ -29,18 +29,15 @@
 #include "dmxnode.h"
 #include "dmxnodedata.h"
 #include "dmxnode_data.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
-void ArtNetNode::FailSafeRecord()
-{
+void ArtNetNode::FailSafeRecord() {
     DEBUG_ENTRY();
 
     dmxnode::scenes::WriteStart();
 
-    for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++)
-    {
-        if (node_.port[port_index].direction == dmxnode::Direction::kOutput)
-        {
+    for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++) {
+        if (node_.port[port_index].direction == dmxnode::Direction::kOutput) {
             dmxnode::scenes::Write(port_index, dmxnode::Data::Backup(port_index));
         }
     }
@@ -50,21 +47,17 @@ void ArtNetNode::FailSafeRecord()
     DEBUG_EXIT();
 }
 
-void ArtNetNode::FailSafePlayback()
-{
+void ArtNetNode::FailSafePlayback() {
     DEBUG_ENTRY();
 
     dmxnode::scenes::ReadStart();
 
-    for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++)
-    {
-        if (node_.port[port_index].direction == dmxnode::Direction::kOutput)
-        {
+    for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++) {
+        if (node_.port[port_index].direction == dmxnode::Direction::kOutput) {
             dmxnode::scenes::Read(port_index, const_cast<uint8_t*>(dmxnode::Data::Backup(port_index)));
             dmxnode::DataOutput(dmxnode_output_type_, port_index);
 
-            if (!output_port_[port_index].is_transmitting)
-            {
+            if (!output_port_[port_index].is_transmitting) {
                 dmxnode_output_type_->Start(port_index);
                 output_port_[port_index].is_transmitting = true;
             }

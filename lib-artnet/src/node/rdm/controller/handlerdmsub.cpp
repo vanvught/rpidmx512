@@ -30,14 +30,12 @@
 #include "artnetnode.h"
 #include "firmware/debug/debug_debug.h"
 
-void ArtNetNode::HandleRdmSub()
-{
+void ArtNetNode::HandleRdmSub() {
     DEBUG_ENTRY();
 
     auto* const kArtRdmSub = reinterpret_cast<artnet::ArtRdmSub*>(receive_buffer_);
 
-    if (kArtRdmSub->rdm_ver != 0x01)
-    {
+    if (kArtRdmSub->rdm_ver != 0x01) {
         DEBUG_EXIT();
         return;
     }

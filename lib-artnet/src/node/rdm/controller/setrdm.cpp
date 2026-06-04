@@ -32,18 +32,14 @@
 #include "artnetnode.h"
 #include "firmware/debug/debug_debug.h"
 
-void ArtNetNode::SetRdm(bool do_enable)
-{
+void ArtNetNode::SetRdm(bool do_enable) {
     DEBUG_ENTRY();
 
     state_.is_rdm_enabled = do_enable;
 
-    if (state_.is_rdm_enabled)
-    {
+    if (state_.is_rdm_enabled) {
         art_poll_reply_.status1 |= artnet::Status1::kRdmCapable;
-    }
-    else
-    {
+    } else {
         art_poll_reply_.status1 &= static_cast<uint8_t>(~artnet::Status1::kRdmCapable);
     }
 
