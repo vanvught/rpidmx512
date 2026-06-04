@@ -30,7 +30,7 @@
 #include <cstring>
 #include <cassert>
 
-#include "hal_uuid.h"
+#include "uuid.h"
 #include "llrp/llrpdevice.h"
 #include "llrp/llrppacket.h"
 #include "e133.h"
@@ -85,7 +85,7 @@ void LLRPDevice::HandleRequestMessage() {
 
     // Root Layer PDU
     reply->Common.RootLayerPDU.flags_length[2] = 67;
-    hal::UuidCopy(reply->Common.RootLayerPDU.SenderCid);
+    UuidCopy(reply->Common.RootLayerPDU.SenderCid);
     // LLRP PDU
     reply->Common.LlrpPDU.flags_length[2] = 44;
     reply->Common.LlrpPDU.vector = __builtin_bswap32(VECTOR_LLRP_PROBE_REPLY);
@@ -133,7 +133,7 @@ void LLRPDevice::HandleRdmCommand() {
 
     // Root Layer PDU
     pdu_packet->Common.RootLayerPDU.flags_length[2] = RDM_ROOT_LAYER_LENGTH(kMessageLength);
-    hal::UuidCopy(pdu_packet->Common.RootLayerPDU.SenderCid);
+    UuidCopy(pdu_packet->Common.RootLayerPDU.SenderCid);
     // LLRP PDU
     pdu_packet->Common.LlrpPDU.flags_length[2] = RDM_LLRP_PDU_LENGHT(kMessageLength);
     memcpy(pdu_packet->Common.LlrpPDU.DestinationCid, destination_cid, 16);

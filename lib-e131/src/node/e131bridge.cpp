@@ -39,7 +39,7 @@
 #include "dmxnode.h"
 #include "dmxnodedata.h"
 #include "dmxnode_data.h"
-#include "hal_uuid.h"
+#include "uuid.h"
 #include "board.h"
 #include "network_udp.h"
 #include "core/ip4/igmp.h"
@@ -78,7 +78,7 @@ E131Bridge::E131Bridge() {
     snprintf(source_name, e131::kSourceNameLength, "%.48s %s", network::iface::HostName(), board::BoardName(length));
     SetSourceName(source_name);
 
-    hal::UuidCopy(cid_);
+    UuidCopy(cid_);
 #endif
 
     handle_ = network::udp::Begin(e131::kUdpPort, E131Bridge::StaticCallbackFunctionUdp);

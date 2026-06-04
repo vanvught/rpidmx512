@@ -1,8 +1,8 @@
 /**
- * @file uuid.cpp
+ * @file uuid.h
  *
  */
-/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,36 +23,11 @@
  * THE SOFTWARE.
  */
 
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC push_options
-#pragma GCC optimize("O2")
-#pragma GCC optimize("no-tree-loop-distribute-patterns")
-#pragma GCC optimize("-funroll-loops")
-#endif
+#ifndef LINUX_UUID_H_
+#define LINUX_UUID_H_
 
-#include <cstdint>
-#include <cstring>
 #include <uuid/uuid.h>
 
-#include "h3_sid.h"
+void UuidCopy(uuid_t out);
 
-namespace hal
-{
-typedef union pcast32
-{
-    uuid_t uuid;
-    uint8_t u8[16];
-} _pcast32;
-
-void UuidCopy(uuid_t out)
-{
-    _pcast32 cast;
-
-    h3_sid_get_rootkey(&cast.u8[0]);
-
-    cast.uuid[6] = static_cast<char>(0x40 | (cast.uuid[6] & 0xf));
-    cast.uuid[8] = static_cast<char>(0x80 | (cast.uuid[8] & 0x3f));
-
-    memcpy(out, cast.uuid, sizeof(uuid_t));
-}
-} // namespace hal
+#endif // LINUX_UUID_H_

@@ -159,7 +159,7 @@ class Discovery : rdm::discovery::StateMachine {
     }
 
     void SetBackgroundIntervalMinutes(uint8_t background_interval_minutes) {
-        if (background_interval_minutes != 0) {
+        if ((background_interval_minutes > 0) && (background_interval_minutes <= 240))  {
             background_interval_minutes_ = background_interval_minutes;
         }
     }

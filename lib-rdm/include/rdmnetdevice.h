@@ -30,7 +30,7 @@
 
 #include "e117.h"
 #include "llrp/llrpdevice.h"
-#include "hal_uuid.h"
+#include "uuid.h"
 #include "firmware/debug/debug_debug.h"
 #include "rdmdevice.h"
 
@@ -56,7 +56,7 @@ class RdmNetDevice final : public LLRPDevice {
         uuid_str[kUuidStringLength] = '\0';
 
         uint8_t cid[e117::kCidLength];
-        hal::UuidCopy(cid);
+        UuidCopy(cid);
         uuid_unparse(cid, uuid_str);
 
         printf("RDMNet\n");

@@ -55,6 +55,7 @@
 #endif
 
 #include "hal.h"
+#include "uuid.h"
 #include "configstore.h"
 #include "firmware/debug/debug_debug.h"
 
@@ -309,7 +310,7 @@ void linux_print() {
     uuid_str[UUID_STRING_LENGTH] = '\0';
 
     uuid_t out;
-    hal::UuidCopy(out);
+    UuidCopy(out);
 
     uuid_unparse(out, uuid_str);
 

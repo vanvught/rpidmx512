@@ -2,13 +2,13 @@
  * @file uuid.h
  *
  */
-/* Copyright (C) 2016-2026 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
+ * copies of thnDmxDataDirecte Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
 
  * The above copyright notice and this permission notice shall be included in
@@ -23,26 +23,11 @@
  * THE SOFTWARE.
  */
 
-#ifndef UUID_UUID_H_
-#define UUID_UUID_H_
+#ifndef H3_UUID_H_
+#define H3_UUID_H_
 
-typedef unsigned char uuid_t[16];
+#include <uuid/uuid.h>
 
-#define UUID_TYPE_DCE_TIME 1
-#define UUID_TYPE_DCE_RANDOM 4
+void UuidCopy(uuid_t out);
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-extern void uuid_generate_random(uuid_t);
-extern int uuid_parse(const char*, uuid_t);
-extern void uuid_unparse(const uuid_t, char*);
-extern void uuid_unparse_lower(const uuid_t, char*);
-extern void uuid_unparse_upper(const uuid_t, char*);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* UUID_UUID_H_ */
+#endif // H3_UUID_H_

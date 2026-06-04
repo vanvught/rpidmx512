@@ -30,7 +30,7 @@
 #include "e131controller.h"
 #include "e131.h"
 #include "e117.h"
-#include "hal_uuid.h"
+#include "uuid.h"
 #include "board.h"
 #include "network.h"
 #include "softwaretimers.h"
@@ -64,7 +64,7 @@ E131Controller::E131Controller()
     snprintf(aSourceName, e131::kSourceNameLength, "%.48s %s", network::iface::HostName(), board::BoardName(nLength));
     SetSourceName(aSourceName);
 
-    hal::UuidCopy(cid_);
+    UuidCopy(cid_);
 
     for (uint32_t nIndex = 0; nIndex < sizeof(s_SequenceNumbers) / sizeof(s_SequenceNumbers[0]); nIndex++)
     {
