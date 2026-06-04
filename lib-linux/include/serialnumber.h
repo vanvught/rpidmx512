@@ -22,12 +22,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef SERIALNUMBER_H_
-#define SERIALNUMBER_H_
+
+#ifndef LINUX_SERIALNUMBER_H_
+#define LINUX_SERIALNUMBER_H_
 
 #include <cstdint>
 
 inline constexpr uint32_t kSnSize = 4;
 void SerialNumber(uint8_t sn[kSnSize]);
 
-#endif // SERIALNUMBER_H_
+#endif // LINUX_SERIALNUMBER_H_

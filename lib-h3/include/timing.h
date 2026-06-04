@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef TIMING_H_
-#define TIMING_H_
+#ifndef H3_TIMING_H_
+#define H3_TIMING_H_
 
 #include "h3.h"
 
@@ -34,7 +34,7 @@ namespace timing {
     return H3_TIMER->AVS_CNT1;
 }
 
-[[nodiscard]]inline uint32_t Millis() {
+[[nodiscard]] inline uint32_t Millis() {
     return H3_TIMER->AVS_CNT0;
 }
 
@@ -43,4 +43,4 @@ void DelayUs(uint32_t us, uint32_t offset = 0);
 [[nodiscard]] uint32_t UpTime();
 } // namespace timing
 
-#endif // TIMING_H_
+#endif // H3_TIMING_H_

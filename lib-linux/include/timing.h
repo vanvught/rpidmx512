@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef TIMING_H_
-#define TIMING_H_
+#ifndef LINUX_TIMING_H_
+#define LINUX_TIMING_H_
 
 #include <cstdint>
 
@@ -38,4 +38,4 @@ namespace timing {
 void DelayUs(uint32_t us, uint32_t offset = 0);
 } // namespace timing
 
-#endif // TIMING_H_
+#endif // LINUX_TIMING_H_

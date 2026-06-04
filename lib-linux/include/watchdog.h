@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef WATCHDOG_H_
-#define WATCHDOG_H_
+#ifndef LINUX_WATCHDOG_H_
+#define LINUX_WATCHDOG_H_
 
 namespace watchdog {
 inline bool Watchdog() { return false;
@@ -34,4 +34,4 @@ inline void Feed() {} // Not implemented
 inline void Stop() {} // Not implemented
 } // namespace watchdog
 
-#endif // WATCHDOG_H_
+#endif // LINUX_WATCHDOG_H_

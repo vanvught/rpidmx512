@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef PANELLED_H_
-#define PANELLED_H_
+#ifndef LINUX_PANELLED_H_
+#define LINUX_PANELLED_H_
 
 #include <cstdint>
 
@@ -50,4 +50,4 @@ inline void Off([[maybe_unused]] uint32_t off) {}
 inline void Run() {}
 } // namespace panelled
 
-#endif // PANELLED_H_
+#endif // LINUX_PANELLED_H_

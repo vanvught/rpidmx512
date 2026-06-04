@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef WATCHDOG_H_
-#define WATCHDOG_H_
+#ifndef H3_WATCHDOG_H_
+#define H3_WATCHDOG_H_
 
 void H3WatchdogEnable();
 void H3WatchdogRestart();
@@ -51,4 +51,4 @@ inline bool Watchdog() {
 }
 } // namespace watchdog
 
-#endif // WATCHDOG_H_
+#endif // H3_WATCHDOG_H_

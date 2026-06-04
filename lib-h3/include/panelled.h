@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef PANELLED_H_
-#define PANELLED_H_
+#ifndef H3_PANELLED_H_
+#define H3_PANELLED_H_
 
 #include <cstdint>
 
@@ -52,4 +52,4 @@ inline void Off([[maybe_unused]] uint32_t off) {}
 inline void Run() {}
 } // namespace panelled
 
-#endif // PANELLED_H_
+#endif // H3_PANELLED_H_
