@@ -94,11 +94,11 @@ void HttpDeamonHandleRequest::HandleRequest(uint32_t bytes_received, char* recei
             } else if (request_method_ == http::RequestMethod::kPost) {
                 // If POST has Content-Length but no data in this segment,
                 // we must wait for next TCP segment(s).
-				if (request_content_length_ > sizeof(dynamic_content_)) {
-					status_ = http::Status::kRequestEntityTooLarge;
-					DEBUG_PUTS("Content too large.");
-				}
-				
+                if (request_content_length_ > sizeof(dynamic_content_)) {
+                    status_ = http::Status::kRequestEntityTooLarge;
+                    DEBUG_PUTS("Content too large.");
+                }
+
                 if ((request_content_length_ != 0U) && (request_data_length_ == 0U)) {
                     DEBUG_PRINTF("There is a POST header only -> no data, request_content_length_=%u", request_content_length_);
                     DEBUG_EXIT();
@@ -109,12 +109,11 @@ void HttpDeamonHandleRequest::HandleRequest(uint32_t bytes_received, char* recei
             }
         }
     } else if ((status_ == http::Status::kOk) && (request_method_ == http::RequestMethod::kPost)) {
-		DEBUG_PRINTF("request_data_length_=%u", request_data_length_);
         // Follow-up TCP segment containing POST body data.
         // We treat the new receive_buffer as body data.
-		
-		memcpy(&dynamic_content_[request_data_length_], receive_buffer_, bytes_received_);
-		
+
+        memcpy(&dynamic_content_[request_data_length_], receive_buffer_, bytes_received_);
+
         request_data_length_ += bytes_received_;
 
         // If we haven't received the full body yet, wait for more segments.
@@ -122,9 +121,9 @@ void HttpDeamonHandleRequest::HandleRequest(uint32_t bytes_received, char* recei
             DEBUG_EXIT();
             return;
         }
-		
-		file_data_ = dynamic_content_;
-		status_ = HandlePost();
+
+        file_data_ = dynamic_content_;
+        status_ = HandlePost();
     }
 #if defined(ENABLE_METHOD_DELETE)
     else if ((status_ == http::Status::kOk) && (request_method_ == http::RequestMethod::DELETE)) {
@@ -169,7 +168,10 @@ void HttpDeamonHandleRequest::HandleRequest(uint32_t bytes_received, char* recei
 
         request_content_type_ = http::ContentTypes::kTextHtml;
         content_ = reinterpret_cast<uint8_t*>(dynamic_content_);
-        content_size_ = static_cast<uint32_t>(snprintf(dynamic_content_, sizeof(dynamic_content_), "%u %s\n", static_cast<unsigned>(status_), status_msg));
+        content_size_ = static_cast<uint32_t>(snprintf(dynamic_content_, sizeof(dynamic_content_), 
+										"%u %s\n", 
+												static_cast<unsigned>(status_), 
+												status_msg));
 
         const auto kHeaderLength =
             static_cast<uint32_t>(snprintf(receive_buffer_, network::tcp::kTcpDataMss,
@@ -179,7 +181,11 @@ void HttpDeamonHandleRequest::HandleRequest(uint32_t bytes_received, char* recei
                                            "Content-Length: %u\r\n"
                                            "Connection: close\r\n"
                                            "\r\n",
-                                           static_cast<unsigned int>(status_), status_msg, network::iface::HostName(), http::kContentType[static_cast<uint32_t>(request_content_type_)], static_cast<unsigned int>(content_size_)));
+                                           static_cast<unsigned int>(status_), 
+										   status_msg, 
+										   network::iface::HostName(), 
+										   http::kContentType[static_cast<uint32_t>(request_content_type_)], 
+										   static_cast<unsigned int>(content_size_)));
 
         network::tcp::Send(connection_handle_, reinterpret_cast<const uint8_t*>(receive_buffer_), kHeaderLength);
     } else {
@@ -198,8 +204,7 @@ void HttpDeamonHandleRequest::HandleRequest(uint32_t bytes_received, char* recei
 																  gzip_ ? "gzip" : "identity",
 																  http::kContentType[static_cast<uint32_t>(request_content_type_)],
                                                                   static_cast<unsigned int>(content_size_), (content_ == reinterpret_cast<uint8_t*>(dynamic_content_)) ? "no-cache" : "max-age=3600", 
-																  (content_ == reinterpret_cast<uint8_t*>(dynamic_content_)) ? timing::Millis() : _TIME_STAMP_)
-															  );
+																  (content_ == reinterpret_cast<uint8_t*>(dynamic_content_)) ? timing::Millis() : _TIME_STAMP_));
 
         network::tcp::Send(connection_handle_, reinterpret_cast<const uint8_t*>(receive_buffer_), kHeaderLength);
 
@@ -605,7 +610,7 @@ http::Status HttpDeamonHandleRequest::HandlePostUpload() {
 			uint32_t data_written;
 			printf("%u\n", request_data_length_);
             if (!(FlashCodeInstall::Get()->WriteChunk(reinterpret_cast<uint8_t*>(file_data_), request_data_length_, data_written))) {
-                printf("WriteChunk failed. Data written:%u bytes\n", data_written);
+                DEBUG_PRINTF("WriteChunk failed. Data written:%u bytes", data_written);
                 DEBUG_EXIT();
                 return http::Status::kInternalServerError;
             }
@@ -618,11 +623,9 @@ http::Status HttpDeamonHandleRequest::HandlePostUpload() {
     }
 
     if (memcmp(part_uri, "_complete", 10) == 0) {
-        putchar('\n');
-
         uint32_t write_count;
         if (!(FlashCodeInstall::Get()->WriteChunkComplete(write_count))) {
-            puts("WriteChunkComplete failed.");
+            DEBUG_PUTS("WriteChunkComplete failed.");
             DEBUG_EXIT();
             return http::Status::kInternalServerError;
         }

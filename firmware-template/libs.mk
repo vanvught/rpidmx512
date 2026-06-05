@@ -180,7 +180,7 @@ else
 	LIBS+=$(CONFIG_DISPLAY_LIB)
 endif
 
-LIBS+=device hal
+LIBS+=superloop device hal
 
 ifdef LINUX 
 	LIBS+=linux

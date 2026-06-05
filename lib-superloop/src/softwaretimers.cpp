@@ -73,7 +73,7 @@ TimerHandle_t SoftwareTimerAdd(uint32_t interval_millis, const TimerCallbackFunc
     DEBUG_PRINTF("s_timers_count=%u", s_timers_count);
 
     if (s_timers_count >= hal::kSoftwareTimersMax) {
-        Error(__func__, "Max timer limit reachedß");
+        Error(__func__, "Max timer limit reached");
         return -1;
     }
 
