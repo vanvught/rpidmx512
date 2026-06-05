@@ -29,43 +29,41 @@
 
 #include "exec_cmd.h"
 
-namespace hal {
-static constexpr auto UUID_STRING_LENGTH = 36;
+static constexpr auto kUuidStringLength = 36;
 
 void UuidCopy(uuid_t out) {
-	char uuid_str[hal::UUID_STRING_LENGTH + 2];
+    char uuid_str[kUuidStringLength + 2];
 
-#if defined (__APPLE__)
-	constexpr char cmd[] = "sysctl -n kern.uuid";
+#if defined(__APPLE__)
+    constexpr char kCmd[] = "sysctl -n kern.uuid";
 #else
-	constexpr char cmd[] = "cat /etc/machine-id";
+    constexpr char kCmd[] = "cat /etc/machine-id";
 #endif
-	exec_cmd(cmd, uuid_str, sizeof(uuid_str));
+    exec_cmd(kCmd, uuid_str, sizeof(uuid_str));
 
-#if defined (__APPLE__)
+#if defined(__APPLE__)
 #else
-	for (uint32_t i = 13; i > 0; i--) {
-		uuid_str[36 - 13 + i] = uuid_str[36 - 13 + i - 4];
-	}
+    for (uint32_t i = 13; i > 0; i--) {
+        uuid_str[36 - 13 + i] = uuid_str[36 - 13 + i - 4];
+    }
 
-	for (uint32_t i = 5; i > 0; i--) {
-		uuid_str[23 - 5 + i] = uuid_str[23 - 5 + i - 3];
-	}
+    for (uint32_t i = 5; i > 0; i--) {
+        uuid_str[23 - 5 + i] = uuid_str[23 - 5 + i - 3];
+    }
 
-	for (uint32_t i = 5; i > 0; i--) {
-		uuid_str[18 - 5 + i] = uuid_str[18 - 5 + i - 2];
-	}
+    for (uint32_t i = 5; i > 0; i--) {
+        uuid_str[18 - 5 + i] = uuid_str[18 - 5 + i - 2];
+    }
 
-	for (uint32_t i = 5; i > 0; i--) {
-		uuid_str[13 - 5 + i] = uuid_str[13 - 5 + i - 1];
-	}
+    for (uint32_t i = 5; i > 0; i--) {
+        uuid_str[13 - 5 + i] = uuid_str[13 - 5 + i - 1];
+    }
 
-	uuid_str[23] = '-';
-	uuid_str[18] = '-';
-	uuid_str[13] = '-';
-	uuid_str[8] = '-';
+    uuid_str[23] = '-';
+    uuid_str[18] = '-';
+    uuid_str[13] = '-';
+    uuid_str[8] = '-';
 #endif
 
-	uuid_parse(uuid_str, out);
+    uuid_parse(uuid_str, out);
 }
-}  // namespace hal
