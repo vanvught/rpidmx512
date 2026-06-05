@@ -28,17 +28,11 @@
 
 #include <cstdint>
 
-namespace flashcode
-{
-enum class Result
-{
-    kOk,
-    kError
-};
+namespace flashcode {
+enum class Result { kOk, kError };
 } // namespace flashcode
 
-class FlashCode
-{
+class FlashCode {
    public:
     FlashCode();
     ~FlashCode();
@@ -60,4 +54,4 @@ class FlashCode
     inline static FlashCode* s_this;
 };
 
-#endif  // FLASHCODE_H_
+#endif // FLASHCODE_H_

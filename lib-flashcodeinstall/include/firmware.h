@@ -2,7 +2,7 @@
  * @file firmware.h
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,30 +30,30 @@
 
 namespace firmware {
 #if defined(__linux__) || defined (__APPLE__)
-static constexpr char FILE_NAME[] = "dummy.bin";
+inline constexpr char kFileName[] = "dummy.bin";
 #else
 # if defined (H3)
 #  if defined(ORANGE_PI)
-static constexpr char FILE_NAME[] = "orangepi_zero.uImage";
+inline constexpr char kFileName[] = "orangepi_zero.uImage.gz";
 #  else
-static constexpr char FILE_NAME[] = "orangepi_one.uImage";
+inline constexpr char kFileName[] = "orangepi_one.uImage.gz";
 #  endif
 # elif defined (GD32)
 #  if defined (GD32F10X)
-static constexpr char FILE_NAME[] = "gd32f107.bin";
+inline constexpr char kFileName[] = "gd32f107.bin";
 #  elif defined (GD32F20X)
-static constexpr char FILE_NAME[] = "gd32f207.bin";
+inline constexpr char kFileName[] = "gd32f207.bin";
 #  elif defined (GD32F4XX)
-static constexpr char FILE_NAME[] = "gd32f4xx.bin";
+inline constexpr char kFileName[] = "gd32f4xx.bin";
 #  elif defined (GD32H7XX)
-static constexpr char FILE_NAME[] = "gd32h7xx.bin";
+inline constexpr char kFileName[] = "gd32h7xx.bin";
 #  else
 #   error FAMILY is not defined
 #  endif
 # endif
 #endif
 
-static constexpr auto FILE_NAME_LENGTH = sizeof(FILE_NAME) - 1;
+inline constexpr uint32_t kFileNameLength = sizeof(kFileName) - 1U;
 
 #if defined (H3)
 // nuc-i5:~/uboot-spi/u-boot$ grep CONFIG_BOOTCOMMAND include/configs/sunxi-common.h
@@ -120,10 +120,6 @@ static constexpr auto FILE_NAME_LENGTH = sizeof(FILE_NAME) - 1;
 # define OFFSET_UIMAGE		0x0
 # define FIRMWARE_MAX_SIZE  4096	// for dummy.bin
 #endif
-
-bool firmware_install_start(const uint8_t *buffer,  uint32_t buffer_size);
-bool firmware_install_continue(const uint8_t *buffer,  uint32_t buffer_size);
-bool firmware_install_end(const uint8_t *buffer, uint32_t buffer_size);
 }  // namespace firmware
 
 #endif  // FIRMWARE_H_

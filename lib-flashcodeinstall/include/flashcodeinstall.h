@@ -2,7 +2,7 @@
  * @file flashcodeinstall.h
  *
  */
-/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2018-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,37 +30,44 @@
 #include <cstdio>
 
 #include "flashcode.h"
-#include "firmware.h" //TODO Remove
 
-class FlashCodeInstall: FlashCode {
-public:
-	FlashCodeInstall();
-	~FlashCodeInstall();
+class FlashCodeInstall : FlashCode {
+    enum class ChunkState { kStart, kWrite };
 
-	bool WriteFirmware(const uint8_t *buffer, uint32_t size);
+   public:
+    FlashCodeInstall();
+    ~FlashCodeInstall();
 
-	static FlashCodeInstall* Get() {
-		return s_this;
-	}
+    bool WriteFirmware(const uint8_t* buffer, uint32_t size);
 
-private:
-	bool Open(const char *file_name);
-	void Close();
-	bool BuffersCompare(uint32_t size);
-	bool Diff(uint32_t offset);
-	void Write(uint32_t offset);
-	void Process(const char *file_name, uint32_t offset);
+    bool Erase(uint32_t size);
 
-private:
- uint32_t erase_size_{0};
- uint32_t flash_size_{0};
- uint8_t* file_buffer_{nullptr};
- uint8_t* flash_buffer_{nullptr};
- FILE* file_{nullptr};
+    bool WriteChunk(const uint8_t* chunck, uint32_t chunk_size, uint32_t& written);
+    bool WriteChunkComplete(uint32_t& write_count);
 
- bool have_flash_{false};
+    static FlashCodeInstall* Get() { return s_this; }
 
- inline static FlashCodeInstall* s_this;
+   private:
+    bool Open(const char* file_name);
+    void Close();
+    bool BuffersCompare(uint32_t size);
+    bool Diff(uint32_t offset);
+    void Write(uint32_t offset);
+    void Process(const char* file_name, uint32_t offset);
+
+   private:
+    uint32_t erase_size_{0};
+    uint32_t flash_size_{0};
+    uint32_t firmware_size_{0};
+    uint32_t write_count_{0};
+    ChunkState chunk_state_{ChunkState::kStart};
+    uint8_t* file_buffer_{nullptr};
+    uint8_t* flash_buffer_{nullptr};
+    FILE* file_{nullptr};
+
+    bool have_flash_{false};
+
+    inline static FlashCodeInstall* s_this;
 };
 
-#endif  // FLASHCODEINSTALL_H_
+#endif // FLASHCODEINSTALL_H_

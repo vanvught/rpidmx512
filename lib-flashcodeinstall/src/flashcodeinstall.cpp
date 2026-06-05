@@ -21,13 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+ 
+#include <cstdint>
+#if defined(DEBUG_FLASHCODEINSTALL)
+#undef NDEBUG
+#endif
 
 #include <cstdio>
 #include <cassert>
 
 #include "flashcodeinstall.h"
 #include "firmware.h"
-#include "display.h"
+#include "display.h" // IWYU pragma: keep
 #include "watchdog.h"
 #include "firmware/debug/debug_debug.h"
 
@@ -83,6 +88,80 @@ bool FlashCodeInstall::WriteFirmware(const uint8_t* buffer, uint32_t size) {
     }
 
     Display::Get()->TextStatus("Done", ansi::Colours::Colour::kGreen);
+
+    DEBUG_EXIT();
+    return true;
+}
+
+bool FlashCodeInstall::Erase(uint32_t firmware_size) {
+    DEBUG_ENTRY();
+	DEBUG_PRINTF("firmware_size=%u", firmware_size);
+
+//    if (chunk_state_ != ChunkState::kStart) {
+//        DEBUG_EXIT();
+//        return false;
+//    }
+
+    firmware_size_ = firmware_size;
+	write_count_ = 0;
+	
+	const auto kSectorSize = FlashCode::GetSectorSize();
+	erase_size_ = ((firmware_size_ + kSectorSize - 1) / kSectorSize) * kSectorSize;
+
+	DEBUG_PRINTF("firmware_size_=%u, kSectorSize=%u, erase_size_=%u", firmware_size_, kSectorSize, erase_size_);
+
+    flashcode::Result result;
+    while (!FlashCode::Erase(OFFSET_UIMAGE, erase_size_, result)) {
+        watchdog::Feed();
+        Display::Get()->Progress();
+    }
+
+    putchar('\n');
+
+    if (flashcode::Result::kOk == result) {
+        chunk_state_ = ChunkState::kWrite;
+        DEBUG_EXIT();
+        return true;
+    }
+
+    DEBUG_EXIT();
+    return false;
+}
+
+bool FlashCodeInstall::WriteChunk(const uint8_t* chunck, uint32_t chunk_size, uint32_t& written) {
+    flashcode::Result result;
+    while (!FlashCode::Write(OFFSET_UIMAGE + write_count_, chunk_size, chunck, result)) {
+        watchdog::Feed();
+    }
+
+    write_count_ += chunk_size;
+	written = write_count_;
+
+    if (write_count_ > erase_size_) {
+        return false;
+    }
+
+    return (flashcode::Result::kOk == result);
+}
+
+bool FlashCodeInstall::WriteChunkComplete(uint32_t& write_count) {
+    DEBUG_ENTRY();
+
+    write_count = write_count_;
+    const auto kWriteCount = write_count_;
+    write_count_ = 0;
+    const auto kState = chunk_state_;
+    chunk_state_ = ChunkState::kStart;
+
+    if (kState != ChunkState::kWrite) {
+        DEBUG_EXIT();
+        return false;
+    }
+
+    if (firmware_size_ != kWriteCount) {
+        DEBUG_EXIT();
+        return false;
+    }
 
     DEBUG_EXIT();
     return true;

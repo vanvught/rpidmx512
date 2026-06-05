@@ -51,14 +51,12 @@ struct TImageHeader
     uint8_t ih_name[IH_NMLEN]; /* Image Name		*/
 };
 
-enum TImageHeaderCompression
-{
+enum TImageHeaderCompression {
     IH_COMP_NONE = 0, /*  No	 Compression Used	*/
     IH_COMP_GZIP      /* gzip	 Compression Used	*/
 };
 
-class UBootHeader
-{
+class UBootHeader {
    public:
     explicit UBootHeader(const uint8_t* header);
     ~UBootHeader() { is_valid_ = false; }
