@@ -41,6 +41,8 @@
 #include "artnet.h"
 #include "timing.h"
 #include "network_udp.h"
+#include "network_config.h"
+#include "network_iface.h"
 #include "firmware/debug/debug_debug.h"
 
 template <uint8_t N> 
