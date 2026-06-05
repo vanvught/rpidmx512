@@ -53,6 +53,7 @@ ifeq ($(findstring ARTNET_VERSION=4,$(DEFINES)),ARTNET_VERSION=4)
 endif
 
 DEFINES+=-DCONFIG_NETWORK_MEMORY_BLOCKS=32
+DEFINES+=-DCONFIG_HTTPD_ENABLE_UPLOAD
 
 include ../firmware-template-h3/Soc.mk
 include ../firmware-template-h3/Phy.mk

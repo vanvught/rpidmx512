@@ -72,7 +72,7 @@ bool TFTPFileServer::FileCreate(const char* file_name, tftp::Mode mode) {
         return false;
     }
 
-    if (strncmp(firmware::FILE_NAME, file_name, firmware::FILE_NAME_LENGTH) != 0) {
+    if (strncmp(firmware::kFileName, file_name, firmware::kFileNameLength) != 0) {
         DEBUG_EXIT();
         return false;
     }

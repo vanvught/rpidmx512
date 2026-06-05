@@ -86,7 +86,7 @@ class HttpDeamonHandleRequest
     char* firmwarefile_name_{nullptr};
     char* receive_buffer_{nullptr};
     const uint8_t* content_{nullptr};
-    char upload_filename_[16];
+    char upload_filename_[32];
 
     http::Status status_{http::Status::kUnknownError};
     http::RequestMethod request_method_{http::RequestMethod::kUnknown};

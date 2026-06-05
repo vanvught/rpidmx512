@@ -51,6 +51,11 @@
 #include "http/json_infos.h"
 #include "network_tcp.h"
 #include "network_iface.h"
+#if defined(CONFIG_HTTPD_ENABLE_UPLOAD)
+#include "firmware.h"
+#include "flashcodeinstall.h"
+#include "display.h" // IWYU pragma: keep
+#endif
 #include "firmware/debug/debug_dump.h"
 #include "firmware/debug/debug_debug.h"
 
@@ -72,7 +77,7 @@ void HttpDeamonHandleRequest::HandleRequest(uint32_t bytes_received, char* recei
 
     const char* status_msg = "OK";
 
-    DEBUG_PRINTF("%u: status_=%u", connection_handle_, static_cast<uint32_t>(status_));
+    DEBUG_PRINTF("%u: status=%u, bytes received=%u", connection_handle_, static_cast<uint32_t>(status_), bytes_received);
 
     // The HTTP handler keeps state across TCP segments (e.g. POST body arriving later).
     // status_ == UNKNOWN_ERROR means "we are not currently processing an in-progress request".
@@ -89,8 +94,13 @@ void HttpDeamonHandleRequest::HandleRequest(uint32_t bytes_received, char* recei
             } else if (request_method_ == http::RequestMethod::kPost) {
                 // If POST has Content-Length but no data in this segment,
                 // we must wait for next TCP segment(s).
+				if (request_content_length_ > sizeof(dynamic_content_)) {
+					status_ = http::Status::kRequestEntityTooLarge;
+					DEBUG_PUTS("Content too large.");
+				}
+				
                 if ((request_content_length_ != 0U) && (request_data_length_ == 0U)) {
-                    DEBUG_PUTS("There is a POST header only -> no data");
+                    DEBUG_PRINTF("There is a POST header only -> no data, request_content_length_=%u", request_content_length_);
                     DEBUG_EXIT();
                     return;
                 }
@@ -99,18 +109,22 @@ void HttpDeamonHandleRequest::HandleRequest(uint32_t bytes_received, char* recei
             }
         }
     } else if ((status_ == http::Status::kOk) && (request_method_ == http::RequestMethod::kPost)) {
+		DEBUG_PRINTF("request_data_length_=%u", request_data_length_);
         // Follow-up TCP segment containing POST body data.
         // We treat the new receive_buffer as body data.
-        file_data_ = receive_buffer_;
-        request_data_length_ = bytes_received_;
-
-        status_ = HandlePost();
+		
+		memcpy(&dynamic_content_[request_data_length_], receive_buffer_, bytes_received_);
+		
+        request_data_length_ += bytes_received_;
 
         // If we haven't received the full body yet, wait for more segments.
         if (request_data_length_ < request_content_length_) {
             DEBUG_EXIT();
             return;
         }
+		
+		file_data_ = dynamic_content_;
+		status_ = HandlePost();
     }
 #if defined(ENABLE_METHOD_DELETE)
     else if ((status_ == http::Status::kOk) && (request_method_ == http::RequestMethod::DELETE)) {
@@ -189,7 +203,7 @@ void HttpDeamonHandleRequest::HandleRequest(uint32_t bytes_received, char* recei
 
         network::tcp::Send(connection_handle_, reinterpret_cast<const uint8_t*>(receive_buffer_), kHeaderLength);
 
-        DEBUG_PRINTF("content_size_=%u, %s", content_size_, (content_ == dynamic_content_) ? "Dynamic" : "Static");
+        DEBUG_PRINTF("content_size_=%u, %s", content_size_, (content_ == reinterpret_cast<uint8_t*>(dynamic_content_)) ? "Dynamic" : "Static");
     }
 
     if (content_size_ != 0U) {
@@ -491,7 +505,7 @@ http::Status HttpDeamonHandleRequest::HandleGet() {
 
 http::Status HttpDeamonHandleRequest::HandlePost() {
     DEBUG_ENTRY();
-    DEBUG_PRINTF("bytes_received_=%d, request_data_length_=%u, request_content_length_=%u", bytes_received_, request_data_length_, request_content_length_);
+    DEBUG_PRINTF("bytes_received_=%u, request_data_length_=%u, request_content_length_=%u", bytes_received_, request_data_length_, request_content_length_);
     DEBUG_PUTS(uri_);
 
     if (request_content_type_ == http::ContentTypes::kApplicationJson) {
@@ -549,17 +563,6 @@ http::Status HttpDeamonHandleRequest::HandlePostJSON() {
 }
 
 #if defined(CONFIG_HTTPD_ENABLE_UPLOAD)
-static void ShowProgressSymbol() {
-    static constexpr char kProgressSymbols[] = {'/', '-', '\\', '|'};
-    static uint32_t progress_symbols_index = 0;
-
-    printf("%c\r", kProgressSymbols[progress_symbols_index++]);
-
-    if (progress_symbols_index >= sizeof(kProgressSymbols)) {
-        progress_symbols_index = 0;
-    }
-}
-
 http::Status HttpDeamonHandleRequest::HandlePostUpload() {
     DEBUG_ENTRY();
 
@@ -569,13 +572,18 @@ http::Status HttpDeamonHandleRequest::HandlePostUpload() {
         printf("Firmware: %s -> %u bytes\n", upload_filename_, upload_size_);
 
         if (strncmp(upload_filename_, firmware::kFileName, sizeof(upload_filename_)) != 0) {
+			puts("Wrong firmware file name.");
+			DEBUG_EXIT();
             return http::Status::kBadRequest;
         }
 
         if ((upload_size_ >= 64) && (upload_size_ > (FIRMWARE_MAX_SIZE))) {
+			puts("Wrong firmware file size.");
+			DEBUG_EXIT();
             return http::Status::kRequestEntityTooLarge;
         }
 
+		assert(FlashCodeInstall::Get() != nullptr);
         if (!(FlashCodeInstall::Get()->Erase(upload_size_))) {
             puts("Erase failed.");
             DEBUG_EXIT();
@@ -583,7 +591,7 @@ http::Status HttpDeamonHandleRequest::HandlePostUpload() {
         }
 
         content_size_ = static_cast<uint32_t>(snprintf(dynamic_content_, sizeof(dynamic_content_), "{\"status\":\"ok\"}"));
-        content_ = dynamic_content_;
+        content_ = reinterpret_cast<uint8_t*>(dynamic_content_);
         request_content_type_ = http::ContentTypes::kApplicationJson;
 
         DEBUG_EXIT();
@@ -592,11 +600,12 @@ http::Status HttpDeamonHandleRequest::HandlePostUpload() {
 
     if (request_content_type_ == http::ContentTypes::kApplicationOctetStream) {
         if (part_uri[0] == 0) {
-            ShowProgressSymbol();
             Display::Get()->Progress();
 
-            if (!(FlashCodeInstall::Get()->WriteChunk(reinterpret_cast<uint8_t*>(file_data_), request_data_length_))) {
-                puts("WriteChunk failed.");
+			uint32_t data_written;
+			printf("%u\n", request_data_length_);
+            if (!(FlashCodeInstall::Get()->WriteChunk(reinterpret_cast<uint8_t*>(file_data_), request_data_length_, data_written))) {
+                printf("WriteChunk failed. Data written:%u bytes\n", data_written);
                 DEBUG_EXIT();
                 return http::Status::kInternalServerError;
             }
@@ -621,7 +630,7 @@ http::Status HttpDeamonHandleRequest::HandlePostUpload() {
         printf("Written bytes -> %u [%s]\n", write_count, write_count == upload_size_ ? "Ok" : "Wrong");
 
         content_size_ = static_cast<uint32_t>(snprintf(dynamic_content_, sizeof(dynamic_content_), "{\"status\":\"ok\"}"));
-        content_ = dynamic_content_;
+        content_ = reinterpret_cast<uint8_t*>(dynamic_content_);
         request_content_type_ = http::ContentTypes::kApplicationJson;
         upload_size_ = 0;
         upload_filename_[0] = '\0';
