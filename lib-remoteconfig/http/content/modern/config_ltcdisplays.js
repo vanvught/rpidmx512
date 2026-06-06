@@ -42,11 +42,6 @@ window.ltcdisplays = {
             return false;
         };
 
-        fillDataKeys(div, {
-            oled_intensity: json.oled_intensity ?? 128,
-            rotary_fullstep: json.rotary_fullstep ?? 0,
-            max7219_type: json.max7219_type ?? "matrix",
-            max7219_intensity: json.max7219_intensity ?? 0
-        });
+        fillDataKeys(div, json);
     }
 };

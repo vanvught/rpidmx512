@@ -44,12 +44,6 @@ window.showfile = {
 		    return false;
 		};
 
-        fillDataKeys(div, {
-            show: json.show ?? 0,
-            auto_play: json.auto_play ?? 0,
-            loop: json.loop ?? 0,
-            incoming_port: json.incoming_port ?? 8000,
-            outgoing_port: json.outgoing_port ?? 9000
-        });
+        fillDataKeys(div, json);
     }
 };

@@ -53,11 +53,6 @@ window.tcnet = {
 		    return false;
 		};
 
-        fillDataKeys(div, {
-            node_name: json.node_name ?? "AvV",
-            layer: (json.layer ?? "M").toUpperCase(),
-            timecode_type: json.timecode_type ?? 30,
-            use_timecode: json.use_timecode ?? 0
-        });
+        fillDataKeys(div, json);
     }
 };

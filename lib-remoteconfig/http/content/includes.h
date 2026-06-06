@@ -50,6 +50,9 @@
 #if defined (NODE_LTC_SMPTE)
 #include "config_ltc.js.h"
 #endif // (NODE_LTC_SMPTE)
+#if defined (CONFIG_HTTPD_ENABLE_UPLOAD)
+#include "upload_index.js.h"
+#endif // (CONFIG_HTTPD_ENABLE_UPLOAD)
 #if !defined (CONFIG_HTTP_HTML_NO_TIME)
 #include "time_index.html.h"
 #endif // !defined (CONFIG_HTTP_HTML_NO_TIME)
@@ -73,3 +76,6 @@
 #include "config_e131.js.h"
 #endif // defined(NODE_E131) || defined(NODE_E131_MULTI) || (ARTNET_VERSION == 4)
 #include "status_index.js.h"
+#if defined (CONFIG_HTTPD_ENABLE_UPLOAD)
+#include "upload_index.html.h"
+#endif // (CONFIG_HTTPD_ENABLE_UPLOAD)

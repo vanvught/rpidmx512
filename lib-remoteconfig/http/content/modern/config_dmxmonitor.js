@@ -5,6 +5,7 @@ window.dmxmonitor = {
 
         const div = document.createElement("div");
         div.className = "card";
+
         div.innerHTML = `
             <h2>${name}</h2>
             <form accept-charset="utf-8">
@@ -37,10 +38,6 @@ window.dmxmonitor = {
             return false;
         };
 
-        fillDataKeys(div, {
-            dmx_start_address: json.dmx_start_address || 1,
-            dmx_max_channels: json.dmx_max_channels || 16,
-            format: json.format || "dec"
-        });
+        fillDataKeys(div, json);
     }
 };

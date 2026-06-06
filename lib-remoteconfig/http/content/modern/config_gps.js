@@ -39,10 +39,6 @@ window.gps = {
 		    return false;
 		};
 
-        fillDataKeys(div, {
-            module: json.module ?? "ATGM336H",
-            enable: json.enable ?? 0,
-            utc_offset: json.utc_offset ?? "00:00"
-        });
+        fillDataKeys(div, json);
     }
 };

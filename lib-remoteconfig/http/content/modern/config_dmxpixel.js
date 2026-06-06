@@ -1,12 +1,13 @@
 window.dmxpixel = {
     init: async function(path, name) {
-        const j = await getJSON(path);
-        if (!j) return;
+        const json = await getJSON(path);
+        if (!json) return;
 
-        const ports = Object.keys(j).filter(k => k.startsWith("start_uni_port_"));
+        const ports = Object.keys(json).filter(k => k.startsWith("start_uni_port_"));
 
         const div = document.createElement("div");
         div.className = "card";
+
         div.innerHTML = `
             <h2>${name}</h2>
             <form>
@@ -65,6 +66,6 @@ window.dmxpixel = {
             return false;
         };
 
-        fillDataKeys(div, j);
+        fillDataKeys(div, json);
     }
 };

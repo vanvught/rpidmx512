@@ -1,18 +1,18 @@
 window.artnet = {
     init: async function(path, name) {
-        const j = await getJSON(path);
-        if (!j) return;
+        const json = await getJSON(path);
+        if (!json) return;
 
         const suffixes = ["a", "b", "c", "d"].filter(function(suffix) {
-            return j["protocol_port_" + suffix] !== undefined ||
-                j["rdm_enable_port_" + suffix] !== undefined ||
-                j["destination_ip_port_" + suffix] !== undefined;
+            return json["protocol_port_" + suffix] !== undefined ||
+                json["rdm_enable_port_" + suffix] !== undefined ||
+                json["destination_ip_port_" + suffix] !== undefined;
         });
 
-        const card = document.createElement("div");
-        card.className = "card";
+        const div = document.createElement("div");
+        div.className = "card";
 
-        card.innerHTML = `
+        div.innerHTML = `
             <h2>${name}</h2>
             <form>
                 <div class="row">
@@ -30,10 +30,10 @@ window.artnet = {
             </form>
         `;
 
-        const optionalRdmContainer = card.querySelector(".optional-rdm-container");
-        const portsContainer = card.querySelector(".ports-container");
+        const optionalRdmContainer = div.querySelector(".optional-rdm-container");
+        const portsContainer = div.querySelector(".ports-container");
 
-        if (j.enable_rdm !== undefined) {
+        if (json.enable_rdm !== undefined) {
             const row = document.createElement("div");
             row.className = "row checkbox";
 
@@ -58,14 +58,14 @@ window.artnet = {
             portLabel.textContent = "Port " + suffix.toUpperCase();
             row.appendChild(portLabel);
 
-            if (j["protocol_port_" + suffix] !== undefined) {
+            if (json["protocol_port_" + suffix] !== undefined) {
                 const select = document.createElement("select");
                 select.dataset.key = "protocol_port_" + suffix;
                 select.innerHTML = "<option value='artnet'>artnet</option><option value='sacn'>sacn</option><option value='disabled'>disabled</option>";
                 row.appendChild(select);
             }
 
-            if (j["rdm_enable_port_" + suffix] !== undefined) {
+            if (json["rdm_enable_port_" + suffix] !== undefined) {
                 const rdmLabel = document.createElement("label");
                 rdmLabel.textContent = "RDM";
                 rdmLabel.style.width = "auto";
@@ -79,7 +79,7 @@ window.artnet = {
                 row.appendChild(rdmInput);
             }
 
-            if (j["destination_ip_port_" + suffix] !== undefined) {
+            if (json["destination_ip_port_" + suffix] !== undefined) {
                 const ipLabel = document.createElement("label");
                 ipLabel.textContent = "Destination IP";
                 ipLabel.style.width = "auto";
@@ -96,12 +96,12 @@ window.artnet = {
             portsContainer.appendChild(row);
         }
 
-        document.getElementById("modules").appendChild(card);
-        card.querySelector("form").onsubmit = () => {
-            saveDataKeyForm(path, card);
+        document.getElementById("modules").appendChild(div);
+        div.querySelector("form").onsubmit = () => {
+            saveDataKeyForm(path, div);
             return false;
         };
 
-        fillDataKeys(card, j);
+        fillDataKeys(div, json);
     }
 };

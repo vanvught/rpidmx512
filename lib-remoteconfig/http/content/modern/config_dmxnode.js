@@ -1,19 +1,19 @@
 window.dmxnode = {
     init: async function(path, name) {
-        const j = await getJSON(path);
-        if (!j) return;
+        const json = await getJSON(path);
+        if (!json) return;
 
         const suffixes = ["a", "b", "c", "d"].filter(function(suffix) {
-            return j["label_port_" + suffix] !== undefined ||
-                j["universe_port_" + suffix] !== undefined ||
-                j["direction_port_" + suffix] !== undefined ||
-                j["merge_mode_port_" + suffix] !== undefined;
+            return json["label_port_" + suffix] !== undefined ||
+                json["universe_port_" + suffix] !== undefined ||
+                json["direction_port_" + suffix] !== undefined ||
+                json["merge_mode_port_" + suffix] !== undefined;
         });
 
-        const card = document.createElement("div");
-        card.className = "card";
+        const div = document.createElement("div");
+        div.className = "card";
 
-        card.innerHTML = `
+        div.innerHTML = `
             <h2>${name}</h2>
             <form>
                 <div class="row">
@@ -56,7 +56,7 @@ window.dmxnode = {
             label.textContent = "Port " + suffix.toUpperCase();
             row.appendChild(label);
 
-            if (j["label_port_" + suffix] !== undefined) {
+            if (json["label_port_" + suffix] !== undefined) {
                 const input = document.createElement("input");
                 input.dataset.key = "label_port_" + suffix;
                 input.maxLength = 18;
@@ -65,7 +65,7 @@ window.dmxnode = {
                 row.appendChild(input);
             }
 
-            if (j["universe_port_" + suffix] !== undefined) {
+            if (json["universe_port_" + suffix] !== undefined) {
                 const input = document.createElement("input");
                 input.dataset.key = "universe_port_" + suffix;
                 input.type = "number";
@@ -74,14 +74,14 @@ window.dmxnode = {
                 row.appendChild(input);
             }
 
-            if (j["direction_port_" + suffix] !== undefined) {
+            if (json["direction_port_" + suffix] !== undefined) {
                 const select = document.createElement("select");
                 select.dataset.key = "direction_port_" + suffix;
                 select.innerHTML = "<option value='output'>output</option><option value='input'>input</option><option value='disable'>disable</option>";
                 row.appendChild(select);
             }
 
-            if (j["merge_mode_port_" + suffix] !== undefined) {
+            if (json["merge_mode_port_" + suffix] !== undefined) {
                 const select = document.createElement("select");
                 select.dataset.key = "merge_mode_port_" + suffix;
                 select.innerHTML = "<option value='htp'>htp</option><option value='ltp'>ltp</option>";
@@ -91,12 +91,12 @@ window.dmxnode = {
             portsContainer.appendChild(row);
         }
 
-        document.getElementById("modules").appendChild(card);
-        card.querySelector("form").onsubmit = () => {
-            saveDataKeyForm(path, card);
+        document.getElementById("modules").appendChild(div);
+        div.querySelector("form").onsubmit = () => {
+            saveDataKeyForm(path, div);
             return false;
         };
 
-        fillDataKeys(card, j);
+        fillDataKeys(div, json);
     }
 };

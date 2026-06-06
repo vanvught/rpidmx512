@@ -43,16 +43,10 @@ window.etc = {
 
 		document.getElementById("modules").appendChild(div);
 		div.querySelector("form").onsubmit = () => {
-		    saveDataKeyForm(path, card);
+		    saveDataKeyForm(path, div);
 		    return false;
 		};
 
-        fillDataKeys(div, {
-            destination_ip: json.destination_ip ?? "0.0.0.0",
-            destination_port: json.destination_port ?? 0,
-            source_multicast_ip: json.source_multicast_ip ?? "0.0.0.0",
-            source_port: json.source_port ?? 0,
-            udp_terminator: json.udp_terminator ?? "None"
-        });
+        fillDataKeys(div, json);
     }
 };

@@ -47,13 +47,6 @@ window.oscserver = {
 		    return false;
 		};
 
-        fillDataKeys(div, {
-			incoming_port: json.incoming_port ?? 8000,
-			outgoing_port: json.outgoing_port ?? 9000,
-            path: json.path ?? "/dmx1",
-            path_info: json.path_info ?? "/2",
-            path_blackout: json.path_blackout ?? "/dmx1/blackout",
-            partial_transmission: json.partial_transmission ?? 0
-        });
+        fillDataKeys(div, json);
     }
 };

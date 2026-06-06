@@ -66,23 +66,12 @@ window.dmxpca9685 = {
             </form>
         `;
 
-		document.getElementById("modules").appendChild(card);
-		card.querySelector("form").onsubmit = () => {
-		    saveDataKeyForm(path, card);
+		document.getElementById("modules").appendChild(div);
+		div.querySelector("form").onsubmit = () => {
+		    saveDataKeyForm(path, div);
 		    return false;
 		};
 
-        fillDataKeys(div, {
-            mode: json.mode ?? "led",
-            channel_count: json.channel_count ?? 16,
-            dmx_start_address: json.dmx_start_address ?? 1,
-            led_pwm_frequency: json.led_pwm_frequency ?? 120,
-            use_8bit: json.use_8bit ?? 0,
-            led_output_invert: json.led_output_invert ?? 0,
-            led_output_opendrain: json.led_output_opendrain ?? 0,
-            servo_left_us: json.servo_left_us ?? 1000,
-            servo_center_us: json.servo_center_us ?? 0,
-            servo_right_us: json.servo_right_us ?? 2000
-        });
+        fillDataKeys(div, json);
     }
 };

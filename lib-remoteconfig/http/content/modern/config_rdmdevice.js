@@ -26,6 +26,6 @@ window.rdmdevice = {
             return false;
         };
 
-        fillDataKeys(div, { label: json.label || "" });
+		fillDataKeys(div, json);
     }
 };

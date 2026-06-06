@@ -36,34 +36,25 @@ window.dmxsend = {
         `;
 
         document.getElementById("modules").appendChild(div);
-        div.querySelector("form").onsubmit = () => {
-            saveDataKeyForm(path, div, {
-                beforePost: function(out, card) {
-                    const slotsField = card.querySelector("[data-key='slots_count']");
-                    if ((out.slots_count & 1) !== 0) {
-                        slotsField.setCustomValidity("Slots count must be even.");
-                        slotsField.reportValidity();
-                        return false;
-                    }
-                    return true;
-                },
-                afterLoad: function(card, data) {
-                    fillDataKeys(card, {
-                        break_time: data.break_time ?? 176,
-                        mab_time: data.mab_time ?? 12,
-                        refresh_rate: data.refresh_rate ?? 40,
-                        slots_count: data.slots_count ?? 512
-                    });
-                }
-            });
-            return false;
-        };
+		div.querySelector("form").onsubmit = () => {
+		    saveDataKeyForm(path, div, {
+		        beforePost: function(out, card) {
+		            const slotsField = card.querySelector("[data-key='slots_count']");
+		            slotsField.setCustomValidity("");
 
-        fillDataKeys(div, {
-            break_time: json.break_time ?? 176,
-            mab_time: json.mab_time ?? 12,
-            refresh_rate: json.refresh_rate ?? 40,
-            slots_count: json.slots_count ?? 512
-        });
+		            if ((out.slots_count & 1) !== 0) {
+		                slotsField.setCustomValidity("Slots count must be even.");
+		                slotsField.reportValidity();
+		                return false;
+		            }
+
+		            return true;
+		        }
+		    });
+
+		    return false;
+		};
+
+        fillDataKeys(div, json);
     }
 };

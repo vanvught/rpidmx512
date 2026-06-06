@@ -108,28 +108,6 @@ window.oscclient = {
 		    return false;
 		};
 
-        fillDataKeys(div, {
-            server_ip: json.server_ip ?? "192.168.2.153",
-            incoming_port: json.incoming_port ?? 9000,
-            outgoing_port: json.outgoing_port ?? 8000,
-            ping_disable: json.ping_disable ?? 0,
-            ping_delay: json.ping_delay ?? 10,
-            cmd0: json.cmd0 ?? "",
-            cmd1: json.cmd1 ?? "",
-            cmd2: json.cmd2 ?? "",
-            cmd3: json.cmd3 ?? "",
-            cmd4: json.cmd4 ?? "",
-            cmd5: json.cmd5 ?? "",
-            cmd6: json.cmd6 ?? "",
-            cmd7: json.cmd7 ?? "",
-            led0: json.led0 ?? "/led0",
-            led1: json.led1 ?? "",
-            led2: json.led2 ?? "",
-            led3: json.led3 ?? "",
-            led4: json.led4 ?? "",
-            led5: json.led5 ?? "",
-            led6: json.led6 ?? "/status/led",
-            led7: json.led7 ?? ""
-        });
+        fillDataKeys(div, json);
     }
 };
