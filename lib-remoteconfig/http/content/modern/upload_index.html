@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="/styles.css" />
+<title>Firmware Upload</title>
+</head>
+<body>
+	<div id="appNav"></div>
+	<div id="appHeader"></div>
+
+	<div class="card">
+		<h2>Firmware Upload</h2>
+		<div id="dropZone" class="upload-drop">
+			<div>Select a firmware file or drop it here.</div>
+			<br>
+			<input type="file" id="firmwareInput" accept=".gz,application/octet-stream">
+		</div>
+
+		<div class="upload-meta">
+			<span>File</span><span id="fileName">-</span>
+			<span>Size</span><span id="fileSize">-</span>
+			<span>Status</span><span id="uploadStatus">Idle</span>
+		</div>
+
+		<div class="progress-wrap" aria-label="Upload progress">
+			<div id="progressBar" class="progress-bar"></div>
+		</div>
+
+		<div class="upload-actions">
+			<button id="uploadButton" onclick="uploadFirmware()">Upload</button>
+			<button id="cancelButton" onclick="cancelUpload()" disabled>Cancel</button>
+		</div>
+	</div>
+
+	<div class="card">
+		<h2>Log</h2>
+		<pre id="output" class="log-output"></pre>
+	</div>
+
+	<div id="appFooter"></div>
+	<div id="appActions"></div>
+	<script src="/common.js" type="text/javascript"></script>
+	<script src="/layout.js" type="text/javascript"></script>
+	<script src="/status/index.js" type="text/javascript"></script>
+	<script src="/upload/index.js" type="text/javascript"></script>
+	<script>bootPage('upload'); list(); version(); initUploadPage();</script>
+</body>
+</html>
