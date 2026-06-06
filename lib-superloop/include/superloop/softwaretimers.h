@@ -28,8 +28,17 @@
 
 #include <cstdint>
 
+static constexpr uint32_t kSoftwareTimersMax =
+#if defined(CONFIG_HAL_TIMERS_COUNT)
+    CONFIG_HAL_TIMERS_COUNT;
+#else
+    12;
+#endif
+
 typedef int32_t TimerHandle_t;
 typedef void (*TimerCallbackFunction_t)(TimerHandle_t);
+
+inline constexpr TimerHandle_t kTimerIdNone = -1;
 
 TimerHandle_t SoftwareTimerAdd(uint32_t interval_millis, const TimerCallbackFunction_t kCallback);
 bool SoftwareTimerDelete(TimerHandle_t& id);

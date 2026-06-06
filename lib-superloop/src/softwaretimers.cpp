@@ -52,7 +52,7 @@ struct Timer {
     TimerCallbackFunction_t callback_function; ///< Callback invoked on expiry; must be non-null.
 };
 
-static Timer s_timers[hal::kSoftwareTimersMax]; ///< Timer storage pool.
+static Timer s_timers[kSoftwareTimersMax]; ///< Timer storage pool.
 static uint32_t s_timers_count = 0;             ///< Number of active timers (0..hal::SOFTWARE_TIMERS_MAX).
 static int32_t s_next_id = 0;                   ///< Monotonically increasing ID source (may wrap, see notes).
 static uint32_t s_timer_current = 0;            ///< bRound-robin cursor for SoftwareTimerRun().
@@ -72,7 +72,7 @@ TimerHandle_t SoftwareTimerAdd(uint32_t interval_millis, const TimerCallbackFunc
     DEBUG_ENTRY();
     DEBUG_PRINTF("s_timers_count=%u", s_timers_count);
 
-    if (s_timers_count >= hal::kSoftwareTimersMax) {
+    if (s_timers_count >= kSoftwareTimersMax) {
         Error(__func__, "Max timer limit reached");
         return -1;
     }
