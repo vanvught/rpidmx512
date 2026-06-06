@@ -52,7 +52,7 @@ ENTRY("/status", "status/index.html"),
 	ENTRY("/time", "time/index.html"),
 #endif	
 #if defined(CONFIG_HTTPD_ENABLE_UPLOAD)
-	ENTRY("/upload_firmware", "upload_firmware.html")
+	ENTRY("/upload", "upload/index.html")
 #endif
 #endif
 };

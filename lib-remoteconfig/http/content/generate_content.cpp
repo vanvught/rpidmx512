@@ -107,6 +107,9 @@ static constexpr char kHaveTimeEnd[] = "#endif // !defined (CONFIG_HTTP_HTML_NO_
 static constexpr char kHaveRtcBegin[] = "#if !defined (CONFIG_HTTP_HTML_NO_RTC) && !defined (DISABLE_RTC)\n";
 static constexpr char kHaveRtcEnd[] = "#endif // !defined (CONFIG_HTTP_HTML_NO_RTC) && !defined (DISABLE_RTC)\n";
 
+static constexpr char kHaveUploadBegin[] = "#if defined (CONFIG_HTTPD_ENABLE_UPLOAD)\n";
+static constexpr char kHaveUploadEnd[] = "#endif // (CONFIG_HTTPD_ENABLE_UPLOAD)\n";
+
 struct FeatureGuard {
     const char* match;
     const char* begin;
@@ -132,7 +135,9 @@ static constexpr FeatureGuard kFeatureGuards[] = {
 	{"display.js", kHaveDisplayUdfBegin, kHaveDisplayUdfEnd},    
 	{"showfile.js", kHaveShowfileBegin, kHaveShowfileEnd}, 
 	{"time", kHaveTimeBegin, kHaveTimeEnd},       
-	{"rtc", kHaveRtcBegin, kHaveRtcEnd}};
+	{"rtc", kHaveRtcBegin, kHaveRtcEnd},
+	{"upload", kHaveUploadBegin, kHaveUploadEnd}
+};
 
 static FILE* file_content;
 static FILE* file_includes;

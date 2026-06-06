@@ -11,7 +11,8 @@
 			['/config', 'Configuration', 'config'],
 			['/status', 'Status', 'status'],
 			['/time', 'Time', 'time'],
-			['/rtc', 'RTC', 'rtc']
+			['/rtc', 'RTC', 'rtc'],
+			['/upload', 'Firmware', 'upload']
 		];
 
 		let html = '<nav><ul>';

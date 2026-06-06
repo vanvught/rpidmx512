@@ -83,16 +83,46 @@ function fillDataKeys(root, data) {
 	}
 }
 
-function saveDataKeyForm(path, root) {
-	const values = {};
-	const elements = root.querySelectorAll("[data-key]");
+async function saveDataKeyForm(path, root, options = {}) {
+    const values = {};
+    const elements = root.querySelectorAll("[data-key]");
 
-	for (let i = 0; i < elements.length; i++) {
-		const el = elements[i];
+    for (let i = 0; i < elements.length; i++) {
+        const el = elements[i];
+        const key = el.dataset.key;
 
-		values[el.dataset.key] =
-			(el.type === "checkbox") ? (el.checked ? 1 : 0) : el.value;
-	}
+        if (!key || el.disabled) {
+            continue;
+        }
 
-	postJSON(path, values);
+        if (el.type === "checkbox") {
+            values[key] = el.checked ? 1 : 0;
+        } else if (el.type === "number") {
+            values[key] = Number(el.value);
+        } else {
+            values[key] = el.value;
+        }
+    }
+
+    if (options.beforePost) {
+        if (options.beforePost(values, root) === false) {
+            return false;
+        }
+    }
+
+    await postJSON(path, values);
+
+    // Default reload
+    if (options.reload !== false) {
+        const json = await getJSON(path);
+        if (json) {
+            fillDataKeys(root, json);
+        }
+    }
+
+    if (options.afterPost) {
+        await options.afterPost(root, values);
+    }
+
+    return true;
 }
