@@ -88,11 +88,11 @@ public:
     /**
      * @brief Constructor for AT24Cxx.
      *
-     * @param nSlaveAddress I2C slave address of the EEPROM device.
+     * @param device_address I2C slave address of the EEPROM device.
      */
-	AT24Cxx(uint8_t nSlaveAddress) : m_nSlaveAddress(nSlaveAddress) {
+	AT24Cxx(uint8_t device_address) : m_device_address(device_address) {
 		static_assert(IsValidType(), "Invalid type specified for AT24Cxx.");
-		m_IsConnected = FUNC_PREFIX(I2cIsConnected(m_nSlaveAddress, 400000));;
+		m_IsConnected = FUNC_PREFIX(I2cIsConnected(m_device_address, 400000));;
 	}
 
 	/** @brief Checks if the EEPROM device is connected. */
@@ -102,7 +102,7 @@ public:
 
 	/** @brief Returns the I2C address of the EEPROM device. */
 	uint8_t GetAddress() const {
-		return m_nSlaveAddress;
+		return m_device_address;
 	}
 
 	/** @brief Returns the size of the EEPROM device. */
@@ -134,7 +134,7 @@ public:
 			return;
 		}
 
-		FUNC_PREFIX(I2cSetAddress(m_nSlaveAddress));
+		FUNC_PREFIX(I2cSetAddress(m_device_address));
 
 		while (!AckRead())
 			;
@@ -151,7 +151,7 @@ public:
 					{ static_cast<char>(nMemoryAddress & 0xFF),
 					  static_cast<char>(nData)
 					};
-			FUNC_PREFIX(I2cSetAddress(m_nSlaveAddress | ((nMemoryAddress >> 8) & 0x7)));
+			FUNC_PREFIX(I2cSetAddress(m_device_address | ((nMemoryAddress >> 8) & 0x7)));
 			FUNC_PREFIX(I2cWrite(buffer, (sizeof(buffer) / sizeof(buffer[0]))));
 		}
 	}
@@ -171,7 +171,7 @@ public:
 		char buffer[128];
 		uint32_t nIndex = 0;
 
-		FUNC_PREFIX(I2cSetAddress(m_nSlaveAddress));
+		FUNC_PREFIX(I2cSetAddress(m_device_address));
 
 		while (nLength > 0) {
 			while (!AckRead());
@@ -191,7 +191,7 @@ public:
 				buffer[0] = static_cast<char>(nMemoryAddress & 0xFF);
 				memcpy(&buffer[1], &pData[nIndex], nCount);
 
-				FUNC_PREFIX(I2cSetAddress(m_nSlaveAddress | ((nMemoryAddress >> 8) & 0x7)));
+				FUNC_PREFIX(I2cSetAddress(m_device_address | ((nMemoryAddress >> 8) & 0x7)));
 				FUNC_PREFIX(I2cWrite(buffer, 1 + nCount));
 			}
 
@@ -212,7 +212,7 @@ public:
 			return 0;
 		}
 
-		FUNC_PREFIX(I2cSetAddress(m_nSlaveAddress));
+		FUNC_PREFIX(I2cSetAddress(m_device_address));
 
 		while (!AckRead());
 
@@ -224,7 +224,7 @@ public:
 			FUNC_PREFIX(I2cWrite(buffer, sizeof(buffer) / sizeof(buffer[0])));
 		} else {
 			const char buffer[] = { static_cast<char>(nMemoryAddress & 0xFF) };
-			FUNC_PREFIX(I2cSetAddress(m_nSlaveAddress | ((nMemoryAddress >> 8) & 0x7)));
+			FUNC_PREFIX(I2cSetAddress(m_device_address | ((nMemoryAddress >> 8) & 0x7)));
 			FUNC_PREFIX(I2cWrite(buffer, sizeof(buffer) / sizeof(buffer[0])));
  		}
 
@@ -246,7 +246,7 @@ public:
 			return 1;
 		}
 
-		FUNC_PREFIX(I2cSetAddress(m_nSlaveAddress));
+		FUNC_PREFIX(I2cSetAddress(m_device_address));
 
 		while (!AckRead());
 
@@ -259,7 +259,7 @@ public:
 			FUNC_PREFIX(I2cWrite(buffer, sizeof(buffer) / sizeof(buffer[0])));
 		} else {
 			const char buffer[] = { static_cast<char>(nMemoryAddress & 0xFF) };
-			FUNC_PREFIX(I2cSetAddress(m_nSlaveAddress | ((nMemoryAddress >> 8) & 0x7)));
+			FUNC_PREFIX(I2cSetAddress(m_device_address | ((nMemoryAddress >> 8) & 0x7)));
 			FUNC_PREFIX(I2cWrite(buffer, sizeof(buffer) / sizeof(buffer[0])));
 		}
 
@@ -277,7 +277,7 @@ private:
 	static constexpr bool isAddressSizeTwoWords = type > at24cxx::ATTypes::AT24LC16;
 
 private:
-	uint8_t m_nSlaveAddress;
+	uint8_t m_device_address;
 	bool m_IsConnected { false };
 };
 
