@@ -33,8 +33,8 @@
 class RDMSubDeviceBwLcd : public RDMSubDevice
 {
    public:
-    explicit RDMSubDeviceBwLcd(uint16_t dmx_start_address = 1, char nChipSselect = 0, uint8_t nSlaveAddress = bw::lcd::address,
-                      uint32_t nSpiSpeed = bw::spi::speed::default_hz);
+    explicit RDMSubDeviceBwLcd(uint16_t dmx_start_address = 1, char chip_select = 0, uint8_t device_address = bw::lcd::address,
+                      uint32_t spi_speed_hz = bw::spi::speed::default_hz);
 
     bool Initialize() override;
 

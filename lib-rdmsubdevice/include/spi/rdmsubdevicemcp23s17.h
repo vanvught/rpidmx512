@@ -35,7 +35,7 @@
 class RDMSubDeviceMCP23S17 : public RDMSubDevice
 {
    public:
-    explicit RDMSubDeviceMCP23S17(uint16_t dmx_start_address = 1, char nChipSselect = 0, uint8_t nSlaveAddress = 0, uint32_t nSpiSpeed = 0);
+    explicit RDMSubDeviceMCP23S17(uint16_t dmx_start_address = 1, char chip_select = 0, uint8_t device_address = 0, uint32_t spi_speed_hz = 0);
 
     bool Initialize() override
     {
@@ -49,7 +49,7 @@ class RDMSubDeviceMCP23S17 : public RDMSubDevice
     void Stop() override
     {
         m_MCP23S17.WriteRegister(mcp23x17::REG_GPIOA, static_cast<uint16_t>(0x0000));
-        m_nData = 0;
+        data_ = 0;
     }
 
     void Data(const uint8_t* pData, uint32_t nLength) override;
@@ -59,7 +59,7 @@ class RDMSubDeviceMCP23S17 : public RDMSubDevice
 
    private:
     gpio::MCP23S17 m_MCP23S17;
-    uint16_t m_nData = 0;
+    uint16_t data_ = 0;
 };
 
 #endif  // SPI_RDMSUBDEVICEMCP23S17_H_

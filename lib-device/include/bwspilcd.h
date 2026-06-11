@@ -2,7 +2,7 @@
  * @file bwspilcd.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,73 +29,63 @@
 #include <cstdint>
 
 #include "timing.h"
-
 #include "bw.h"
 
-class BwSpiLcd : BwSpi
-{
-    void SpiWrite(const char* pData, uint32_t length)
-    {
-        do
-        {
-        } while ((timing::Micros() - m_nSpiWriteUs) < bw::lcd::spi::write_delay_us);
+class BwSpiLcd : BwSpi {
+    void SpiWrite(const char* data, uint32_t length) {
+        do {
+        } while ((timing::Micros() - write_us_) < bw::lcd::spi::write_delay_us);
 
-        HAL_SPI::Write(pData, length);
+        BwSpi::Write(data, length);
 
-        m_nSpiWriteUs = timing::Micros();
+        write_us_ = timing::Micros();
     }
 
    public:
-    explicit BwSpiLcd(uint8_t nChipSelect = 0, uint8_t address = bw::lcd::address) : BwSpi(nChipSelect, address, bw::lcd::id_string) {}
+    explicit BwSpiLcd(uint8_t chip_select = 0, uint8_t address = bw::lcd::address) : BwSpi(chip_select, address, bw::lcd::id_string) {}
 
-    void ReInit()
-    {
+    void ReInit() {
         char cmd[3];
 
         cmd[0] = static_cast<char>(address_);
-        cmd[1] = bw::port::write::reinit_lcd;
+        cmd[1] = bw::port::write::kReinitLcd;
         cmd[2] = ' ';
 
         SpiWrite(cmd, sizeof(cmd));
     }
 
-    void Cls()
-    {
+    void Cls() {
         char cmd[3];
 
         cmd[0] = static_cast<char>(address_);
-        cmd[1] = bw::port::write::clear_screen;
+        cmd[1] = bw::port::write::kClearScreen;
         cmd[2] = ' ';
 
         SpiWrite(cmd, sizeof(cmd));
     }
 
-    void SetCursor(uint8_t nLine, uint8_t nPosition)
-    {
+    void SetCursor(uint8_t line, uint8_t position) {
         char cmd[3];
 
         cmd[0] = static_cast<char>(address_);
-        cmd[1] = bw::port::write::move_cursor;
-        cmd[2] = static_cast<char>(((nLine & 0x03) << 5) | (nPosition & 0x1f));
+        cmd[1] = bw::port::write::kMoveCursor;
+        cmd[2] = static_cast<char>(((line & 0x03) << 5) | (position & 0x1f));
 
         SpiWrite(cmd, sizeof(cmd));
     }
 
-    void Text(const char* pText, uint8_t length)
-    {
+    void Text(const char* text, uint8_t length) {
         char data[bw::lcd::max_characters + 2];
 
         data[0] = static_cast<char>(address_);
-        data[1] = bw::port::write::display_data;
+        data[1] = bw::port::write::kDisplayData;
 
-        if (length > bw::lcd::max_characters)
-        {
+        if (length > bw::lcd::max_characters) {
             length = bw::lcd::max_characters;
         }
 
-        for (uint32_t i = 0; i < length; i++)
-        {
-            data[i + 2] = pText[i];
+        for (uint32_t i = 0; i < length; i++) {
+            data[i + 2] = text[i];
         }
 
         length = static_cast<uint8_t>(length + 2);
@@ -103,16 +93,15 @@ class BwSpiLcd : BwSpi
         SpiWrite(data, length);
     }
 
-    void TextLine(uint8_t nLine, const char* pText, uint8_t length)
-    {
-        SetCursor(nLine, 0);
-        Text(pText, length);
+    void TextLine(uint8_t line, const char* text, uint8_t length) {
+        SetCursor(line, 0);
+        Text(text, length);
     }
 
     bool IsConnected() { return m_IsConnected; }
 
    private:
-    uint32_t m_nSpiWriteUs = timing::Micros();
+    uint32_t write_us_ = timing::Micros();
 };
 
-#endif  // BWSPILCD_H_
+#endif // BWSPILCD_H_

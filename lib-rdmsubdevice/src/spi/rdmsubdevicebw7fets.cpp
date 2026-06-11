@@ -27,37 +27,35 @@
 #include <cstring>
 
 #include "spi/rdmsubdevicebw7fets.h"
-
 #include "bwspi7fets.h"
 
-static constexpr uint32_t DMX_FOOTPRINT = 7;
-static RdmPersonality *s_RDMPersonalities[] = {new RdmPersonality("Digital output 7-lines", DMX_FOOTPRINT)};
+static constexpr uint32_t kDmxFootprint = 7;
+static RdmPersonality* s_rdm_personalities[] = {new RdmPersonality("Digital output 7-lines", kDmxFootprint)};
 
-RDMSubDeviceBw7fets::RDMSubDeviceBw7fets(uint16_t dmx_start_address, char nChipSselect, uint8_t nSlaveAddress, [[maybe_unused]] uint32_t nSpiSpeed) :
-	RDMSubDevice("bw_spi_7fets", dmx_start_address), m_BwSpi7fets(nChipSselect, nSlaveAddress)
-{
-	SetDmxFootprint(DMX_FOOTPRINT);
-	SetPersonalities(s_RDMPersonalities, 1);
+RDMSubDeviceBw7fets::RDMSubDeviceBw7fets(uint16_t dmx_start_address, char chip_select, uint8_t device_address, [[maybe_unused]] uint32_t spi_speed_hz)
+    : RDMSubDevice("bw_spi_7fets", dmx_start_address), spi7fets_(chip_select, device_address) {
+    SetDmxFootprint(kDmxFootprint);
+    SetPersonalities(s_rdm_personalities, 1);
 }
 
-void RDMSubDeviceBw7fets::Data(const uint8_t *pData, uint32_t nLength) {
-	uint8_t nData = 0;
-	const uint32_t dmx_start_address = GetDmxStartAddress();
+void RDMSubDeviceBw7fets::Data(const uint8_t* data, uint32_t length) {
+    uint8_t d = 0;
+    const uint32_t kDmxStartAddress = GetDmxStartAddress();
 
-	for (uint32_t i = (dmx_start_address - 1), j = 0; (i < nLength) && (j < DMX_FOOTPRINT); i++, j++) {
-		if ((pData[i] & 0x80) != 0) {	// 0-127 is off, 128-255 is on
-			nData = static_cast<uint8_t>(nData | (1 << j));
-		}
-	}
+    for (uint32_t i = (kDmxStartAddress - 1), j = 0; (i < length) && (j < kDmxFootprint); i++, j++) {
+        if ((data[i] & 0x80) != 0) { // 0-127 is off, 128-255 is on
+            d = static_cast<uint8_t>(d | (1 << j));
+        }
+    }
 
-	if (m_nData != nData) {
-		m_BwSpi7fets.Output(nData);
-		m_nData = nData;
-	}
+    if (data_ != d) {
+        spi7fets_.Output(d);
+        data_ = d;
+    }
 }
 
-void RDMSubDeviceBw7fets::UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent) {
-	if (tUpdateEvent == RDM_SUBDEVICE_UPDATE_EVENT_DMX_STARTADDRESS) {
-		Stop();
-	}
+void RDMSubDeviceBw7fets::UpdateEvent(TRDMSubDeviceUpdateEvent event) {
+    if (event == RDM_SUBDEVICE_UPDATE_EVENT_DMX_STARTADDRESS) {
+        Stop();
+    }
 }

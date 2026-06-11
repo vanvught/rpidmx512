@@ -24,35 +24,33 @@
  */
 
 #include <cstdint>
-#include <cstring>
 
 #include "spi/rdmsubdevicebwdio.h"
-
 #include "bwspidio.h"
 
 static constexpr uint32_t DMX_FOOTPRINT = 7;
 static RdmPersonality *s_RDMPersonalities[] = {new RdmPersonality("Digital output 7-lines", DMX_FOOTPRINT)};
 
-RDMSubDeviceBwDio::RDMSubDeviceBwDio(uint16_t dmx_start_address, char nChipSselect, uint8_t nSlaveAddress, [[maybe_unused]] uint32_t nSpiSpeed) :
-	RDMSubDevice("bw_spi_dio", dmx_start_address), m_BwSpiDio(nChipSselect, nSlaveAddress)
+RDMSubDeviceBwDio::RDMSubDeviceBwDio(uint16_t dmx_start_address, char chip_select, uint8_t device_address, [[maybe_unused]] uint32_t spi_speed_hz) :
+	RDMSubDevice("bw_spi_dio", dmx_start_address), m_BwSpiDio(chip_select, device_address)
 {
 	SetDmxFootprint(DMX_FOOTPRINT);
 	SetPersonalities(s_RDMPersonalities, 1);
 }
 
-void RDMSubDeviceBwDio::Data(const uint8_t* pData, uint32_t nLength) {
+void RDMSubDeviceBwDio::Data(const uint8_t* data, uint32_t length) {
 	uint8_t nData = 0;
-	const uint32_t dmx_start_address = GetDmxStartAddress();
+	const auto dmx_start_address = GetDmxStartAddress();
 
-	for (uint32_t i = (dmx_start_address - 1), j = 0; (i < nLength) && (j < DMX_FOOTPRINT); i++, j++) {
-		if ((pData[i] & 0x80) != 0) {	// 0-127 is off, 128-255 is on
+	for (uint32_t i = (dmx_start_address - 1), j = 0; (i < length) && (j < DMX_FOOTPRINT); i++, j++) {
+		if ((data[i] & 0x80) != 0) {	// 0-127 is off, 128-255 is on
 			nData = static_cast<uint8_t>(nData | (1 << j));
 		}
 	}
 
-	if (m_nData != nData) {
+	if (data_ != nData) {
 		m_BwSpiDio.Output(nData);
-		m_nData = nData;
+		data_ = nData;
 	}
 }
 

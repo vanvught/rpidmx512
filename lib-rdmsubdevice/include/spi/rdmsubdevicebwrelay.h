@@ -35,8 +35,8 @@
 class RDMSubDeviceBwRelay : public RDMSubDevice
 {
    public:
-    explicit RDMSubDeviceBwRelay(uint16_t dmx_start_address = 1, char nChipSselect = 0, uint8_t nSlaveAddress = bw::relay::address,
-                        uint32_t nSpiSpeed = bw::spi::speed::default_hz);
+    explicit RDMSubDeviceBwRelay(uint16_t dmx_start_address = 1, char chip_select = 0, uint8_t device_address = bw::relay::address,
+                        uint32_t spi_speed_hz = bw::spi::speed::default_hz);
 
     bool Initialize() override
     {
@@ -53,7 +53,7 @@ class RDMSubDeviceBwRelay : public RDMSubDevice
     void Stop() override
     {
         m_BwSpiRelay.Output(0x00);
-        m_nData = 0;
+        data_ = 0;
     }
 
     void Data(const uint8_t* pData, uint32_t nLength) override;
@@ -63,7 +63,7 @@ class RDMSubDeviceBwRelay : public RDMSubDevice
 
    private:
     BwSpiRelay m_BwSpiRelay;
-    uint8_t m_nData = 0;
+    uint8_t data_{0};
 };
 
 #endif  // SPI_RDMSUBDEVICEBWRELAY_H_

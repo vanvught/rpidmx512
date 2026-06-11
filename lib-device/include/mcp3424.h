@@ -30,33 +30,28 @@
 
 #include "hal_i2c.h"
 
-namespace adc::mcp3424
-{
-enum class Gain
-{
+namespace adc::mcp3424 {
+enum class Gain {
     PGA_X1, ///< Default
     PGA_X2,
     PGA_X4,
     PGA_X8,
 };
 
-enum class Resolution
-{
+enum class Resolution {
     SAMPLE_12BITS, ///< Default
     SAMPLE_14BITS,
     SAMPLE_16BITS,
     SAMPLE_18BITS
 };
 
-enum class Conversion
-{
+enum class Conversion {
     ONE_SHOT,
     CONTINUOUS ///< Default
 };
 } // namespace adc::mcp3424
 
-class MCP3424 : HAL_I2C
-{
+class MCP3424 : HAL_I2C {
    public:
     explicit MCP3424(uint8_t address = 0);
 
@@ -80,4 +75,4 @@ class MCP3424 : HAL_I2C
     double m_lsb;
 };
 
-#endif  // MCP3424_H_
+#endif // MCP3424_H_

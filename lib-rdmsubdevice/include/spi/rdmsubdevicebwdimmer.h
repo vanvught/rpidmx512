@@ -29,20 +29,15 @@
 #include <cstdint>
 
 #include "rdmsubdevice.h"
-
 #include "bwspidimmer.h"
 
-class RDMSubDeviceBwDimmer : public RDMSubDevice
-{
+class RDMSubDeviceBwDimmer : public RDMSubDevice {
    public:
-    explicit RDMSubDeviceBwDimmer(uint16_t dmx_start_address = 1, char nChipSselect = 0, uint8_t nSlaveAddress = bw::dimmer::address,
-                                  uint32_t nSpiSpeed = bw::spi::speed::default_hz);
+    explicit RDMSubDeviceBwDimmer(uint16_t dmx_start_address = 1, char chip_select = 0, uint8_t device_address = bw::dimmer::address, uint32_t spi_speed_hz = bw::spi::speed::default_hz);
 
-    bool Initialize() override
-    {
-        if (m_BwSpiDimmer.IsConnected())
-        {
-            m_BwSpiDimmer.Output(0x00);
+    bool Initialize() override {
+        if (spi_dimmer_.IsConnected()) {
+            spi_dimmer_.Output(0x00);
             return true;
         }
         return false;
@@ -50,20 +45,19 @@ class RDMSubDeviceBwDimmer : public RDMSubDevice
 
     void Start() override {}
 
-    void Stop() override
-    {
-        m_BwSpiDimmer.Output(0x00);
-        m_nData = 0;
+    void Stop() override {
+        spi_dimmer_.Output(0x00);
+        data_ = 0;
     }
 
-    void Data(const uint8_t* pData, uint32_t nLength) override;
+    void Data(const uint8_t* data, uint32_t length) override;
 
    private:
-    void UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent) override;
+    void UpdateEvent(TRDMSubDeviceUpdateEvent event) override;
 
    private:
-    BwSpiDimmer m_BwSpiDimmer;
-    uint8_t m_nData = 0;
+    BwSpiDimmer spi_dimmer_;
+    uint8_t data_{0};
 };
 
-#endif  // SPI_RDMSUBDEVICEBWDIMMER_H_
+#endif // SPI_RDMSUBDEVICEBWDIMMER_H_

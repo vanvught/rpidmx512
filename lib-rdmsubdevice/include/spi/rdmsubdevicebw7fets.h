@@ -29,20 +29,15 @@
 #include <cstdint>
 
 #include "rdmsubdevice.h"
-
 #include "bwspi7fets.h"
 
-class RDMSubDeviceBw7fets : public RDMSubDevice
-{
+class RDMSubDeviceBw7fets : public RDMSubDevice {
    public:
-    explicit RDMSubDeviceBw7fets(uint16_t dmx_start_address = 1, char nChipSselect = 0, uint8_t nSlaveAddress = bw::fets::address,
-                                 uint32_t nSpiSpeed = bw::spi::speed::default_hz);
+    explicit RDMSubDeviceBw7fets(uint16_t dmx_start_address = 1, char chip_select = 0, uint8_t device_address = bw::fets::address, uint32_t spi_speed_hz = bw::spi::speed::default_hz);
 
-    bool Initialize() override
-    {
-        if (m_BwSpi7fets.IsConnected())
-        {
-            m_BwSpi7fets.Output(0x00);
+    bool Initialize() override {
+        if (spi7fets_.IsConnected()) {
+            spi7fets_.Output(0x00);
             return true;
         }
         return false;
@@ -50,20 +45,19 @@ class RDMSubDeviceBw7fets : public RDMSubDevice
 
     void Start() override {}
 
-    void Stop() override
-    {
-        m_BwSpi7fets.Output(0x00);
-        m_nData = 0;
+    void Stop() override {
+        spi7fets_.Output(0x00);
+        data_ = 0;
     }
 
-    void Data(const uint8_t* pData, uint32_t nLength) override;
+    void Data(const uint8_t* data, uint32_t length) override;
 
    private:
-    void UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent) override;
+    void UpdateEvent(TRDMSubDeviceUpdateEvent event) override;
 
    private:
-    BwSpi7fets m_BwSpi7fets;
-    uint8_t m_nData = 0;
+    BwSpi7fets spi7fets_;
+    uint8_t data_{0};
 };
 
-#endif  // SPI_RDMSUBDEVICEBW7FETS_H_
+#endif // SPI_RDMSUBDEVICEBW7FETS_H_

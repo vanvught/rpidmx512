@@ -2,7 +2,7 @@
  * @file max7219matrix.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,19 +30,17 @@
 
 #include "max7219.h"
 
-class Max7219Matrix : public MAX7219
-{
+class Max7219Matrix : public MAX7219 {
    public:
     Max7219Matrix();
     ~Max7219Matrix();
 
-    void SetIntensity(uint8_t intensity) { WriteAll(max7219::reg::INTENSITY, intensity & 0x0F); }
+    void SetIntensity(uint8_t intensity) { WriteAll(max7219::reg::kIntensity, intensity & 0x0F); }
 
     void Init(uint16_t count, uint8_t intensity);
 
-    void Cls()
-    {
-        WriteAll(max7219::reg::DIGIT0, 0);
+    void Cls() {
+        WriteAll(max7219::reg::kDigit0, 0);
         WriteAll(max7219::reg::DIGIT1, 0);
         WriteAll(max7219::reg::DIGIT2, 0);
         WriteAll(max7219::reg::DIGIT3, 0);
@@ -66,4 +64,4 @@ class Max7219Matrix : public MAX7219
     uint16_t count_{4};
 };
 
-#endif  // MAX7219MATRIX_H_
+#endif // MAX7219MATRIX_H_

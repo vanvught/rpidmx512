@@ -2,7 +2,7 @@
  * @file rdmsubdevicemcp4902.cpp
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2026 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,47 +31,44 @@
  */
 
 #include "spi/rdmsubdevicemcp4902.h"
-
 #include "mcp49x2.h"
 
-static constexpr uint32_t DMX_FOOTPRINT = 2;
-static RdmPersonality *s_RDMPersonalities[] = {new RdmPersonality("Analog output 2-lines", DMX_FOOTPRINT)};
+static constexpr uint32_t kDmxFootprint = 2;
+static RdmPersonality* s_rdm_personalities[] = {new RdmPersonality("Analog output 2-lines", kDmxFootprint)};
 
-RDMSubDeviceMCP4902::RDMSubDeviceMCP4902(uint16_t dmx_start_address, char nChipSselect, [[maybe_unused]] uint8_t nSlaveAddress, uint32_t nSpiSpeed) :
-	RDMSubDevice("mcp4902",dmx_start_address), m_MCP4902(nChipSselect, nSpiSpeed)
-{
-	SetDmxFootprint(DMX_FOOTPRINT);
-	SetPersonalities(s_RDMPersonalities, 1);
+RDMSubDeviceMCP4902::RDMSubDeviceMCP4902(uint16_t dmx_start_address, char chip_select, [[maybe_unused]] uint8_t device_address, uint32_t spi_speed_hz) : RDMSubDevice("mcp4902", dmx_start_address), m_MCP4902(chip_select, spi_speed_hz) {
+    SetDmxFootprint(kDmxFootprint);
+    SetPersonalities(s_rdm_personalities, 1);
 }
 
-void RDMSubDeviceMCP4902::Data(const uint8_t* pData, uint32_t nLength) {
-	assert(nLength <= 512);
+void RDMSubDeviceMCP4902::Data(const uint8_t* data, uint32_t length) {
+    assert(nLength <= 512);
 
-	auto nOffset = static_cast<uint16_t>(GetDmxStartAddress() - 1);
+    auto offset = static_cast<uint16_t>(GetDmxStartAddress() - 1);
 
-	if (nOffset < nLength) {
-		const uint8_t nDataA = pData[nOffset];
+    if (offset < length) {
+        const uint8_t kDataA = data[offset];
 
-		if (nDataA != m_nDataA) {
-			m_MCP4902.WriteDacA(nDataA);
-			m_nDataA = nDataA;
-		}
+        if (kDataA != m_nDataA) {
+            m_MCP4902.WriteDacA(kDataA);
+            m_nDataA = kDataA;
+        }
 
-		nOffset++;
+        offset++;
 
-		if (nOffset < nLength) {
-			const uint8_t nDataB = pData[nOffset];
+        if (offset < length) {
+            const uint8_t kDataB = data[offset];
 
-			if (nDataB != m_nDataB) {
-				m_MCP4902.WriteDacB(nDataB);
-				m_nDataB = nDataB;
-			}
-		}
-	}
+            if (kDataB != m_nDataB) {
+                m_MCP4902.WriteDacB(kDataB);
+                m_nDataB = kDataB;
+            }
+        }
+    }
 }
 
-void RDMSubDeviceMCP4902::UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent) {
-	if (tUpdateEvent == RDM_SUBDEVICE_UPDATE_EVENT_DMX_STARTADDRESS) {
-		Stop();
-	}
+void RDMSubDeviceMCP4902::UpdateEvent(TRDMSubDeviceUpdateEvent event) {
+    if (event == RDM_SUBDEVICE_UPDATE_EVENT_DMX_STARTADDRESS) {
+        Stop();
+    }
 }

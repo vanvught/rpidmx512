@@ -32,7 +32,7 @@
 
 class RDMSubDeviceDummy: public RDMSubDevice {
 public:
-	RDMSubDeviceDummy(uint16_t dmx_start_address = 1, char nChipSselect = 0, uint8_t nSlaveAddress = 0, uint32_t nSpiSpeed = 0);
+	RDMSubDeviceDummy(uint16_t dmx_start_address = 1, char chip_select = 0, uint8_t device_address = 0, uint32_t spi_speed_hz = 0);
 
 	bool Initialize() override;
 

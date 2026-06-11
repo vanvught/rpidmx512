@@ -2,7 +2,7 @@
  * @file max7219.h
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,66 +28,74 @@
 
 #include <cstdint>
 
-#include "hal_spi.h"
+#include "spi.h"
 
-namespace max7219
-{
-static constexpr uint32_t SPEED_MAX_HZ = 10000000;    // 10 MHz
-static constexpr uint32_t SPEED_DEFAULT_HZ = 2000000; // 2 MHz
+namespace max7219 {
+inline constexpr uint32_t kSpeedMaxHz = 10000000;    // 10 MHz
+inline constexpr uint32_t kSpeedDefaultHz = 2000000; // 2 MHz
 //
-static constexpr uint32_t MAX7219_OK = 0;
-static constexpr uint32_t MAX7219_ERROR = 1;
+inline constexpr uint32_t kMaX7219Ok = 0;
+inline constexpr uint32_t kMaX7219Error = 1;
 // https://datasheets.maximintegrated.com/en/ds/MAX7219-MAX7221.pdf
-namespace reg
-{
-static constexpr uint8_t NOOP = 0x00;
-static constexpr uint8_t DIGIT0 = 0x01;
-static constexpr uint8_t DIGIT1 = 0x02;
-static constexpr uint8_t DIGIT2 = 0x03;
-static constexpr uint8_t DIGIT3 = 0x04;
-static constexpr uint8_t DIGIT4 = 0x05;
-static constexpr uint8_t DIGIT5 = 0x06;
-static constexpr uint8_t DIGIT6 = 0x07;
-static constexpr uint8_t DIGIT7 = 0x08;
-static constexpr uint8_t DECODE_MODE = 0x09;
-static constexpr uint8_t INTENSITY = 0x0A;
-static constexpr uint8_t SCAN_LIMIT = 0x0B;
-static constexpr uint8_t SHUTDOWN = 0x0C;
-static constexpr uint8_t DISPLAY_TEST = 0x0F;
-namespace decode_mode
-{
-static constexpr uint8_t CODEB = 0xFF; // Code B decode for digits 7–0
+namespace reg {
+inline constexpr uint8_t kNoop = 0x00;
+inline constexpr uint8_t kDigit0 = 0x01;
+inline constexpr uint8_t DIGIT1 = 0x02;
+inline constexpr uint8_t DIGIT2 = 0x03;
+inline constexpr uint8_t DIGIT3 = 0x04;
+inline constexpr uint8_t DIGIT4 = 0x05;
+inline constexpr uint8_t DIGIT5 = 0x06;
+inline constexpr uint8_t DIGIT6 = 0x07;
+inline constexpr uint8_t DIGIT7 = 0x08;
+inline constexpr uint8_t kDecodeMode = 0x09;
+inline constexpr uint8_t kIntensity = 0x0A;
+inline constexpr uint8_t kScanLimit = 0x0B;
+inline constexpr uint8_t kShutdown = 0x0C;
+inline constexpr uint8_t kDisplayTest = 0x0F;
+namespace decode_mode {
+inline constexpr uint8_t kCodeb = 0xFF; // Code B decode for digits 7–0
 } // namespace decode_mode
-namespace shutdown
-{
-static constexpr uint8_t MODE = 0x00;
-static constexpr uint8_t NORMAL_OP = 0x01;
+namespace shutdown {
+inline constexpr uint8_t kMode = 0x00;
+inline constexpr uint8_t kNormalOp = 0x01;
 } // namespace shutdown
 } // namespace reg
-namespace digit
-{
-static constexpr uint8_t NEGATIVE = 0x0A;
-static constexpr uint8_t E = 0x0B;
-static constexpr uint8_t H = 0x0C;
-static constexpr uint8_t L = 0x0D;
-static constexpr uint8_t P = 0x0E;
-static constexpr uint8_t BLANK = 0x0F;
+namespace digit {
+inline constexpr uint8_t kNegative = 0x0A;
+inline constexpr uint8_t kE = 0x0B;
+inline constexpr uint8_t kH = 0x0C;
+inline constexpr uint8_t kL = 0x0D;
+inline constexpr uint8_t kP = 0x0E;
+inline constexpr uint8_t kBlank = 0x0F;
 } // namespace digit
 } // namespace max7219
 
-class MAX7219 : public HAL_SPI
-{
+class MAX7219 {
    public:
-    explicit MAX7219(uint32_t speed_hz = 0)
-        : HAL_SPI(SPI_CS0, speed_hz == 0 ? max7219::SPEED_DEFAULT_HZ : (speed_hz <= max7219::SPEED_MAX_HZ ? speed_hz : max7219::SPEED_MAX_HZ))
-    {
+    explicit MAX7219(uint32_t speed_hz = 0) : speed_hz_(speed_hz == 0 ? max7219::kSpeedDefaultHz : (speed_hz <= max7219::kSpeedMaxHz ? speed_hz : max7219::kSpeedMaxHz)) {
+		spi::Begin();
+	}
+
+    void WriteRegister(uint32_t reg, uint32_t data, bool spi_setup) {
+        if (spi_setup) Setup();
+        const auto kSpiData = static_cast<uint16_t>(((reg & 0xFF) << 8) | (data & 0xFF));
+        spi::Write(kSpiData);
     }
 
-    void WriteRegister(uint32_t reg, uint32_t data, bool spi_setup = true)
-    {
-        const auto kSpiData = static_cast<uint16_t>(((reg & 0xFF) << 8) | (data & 0xFF));
-        Write(kSpiData, spi_setup);
+    void Write(const char* data, uint32_t length, bool spi_setup) {
+        if (spi_setup) Setup();
+        spi::Writenb(data, length);
     }
+
+   private:
+    void Setup() {
+        spi::ChipSelect(spi::kCs);
+        spi::SetDataMode(spi::kMode0);
+        spi::SetSpeedHz(speed_hz_);
+    }
+
+   private:
+    uint32_t speed_hz_;
 };
 
-#endif  // MAX7219_H_
+#endif // MAX7219_H_

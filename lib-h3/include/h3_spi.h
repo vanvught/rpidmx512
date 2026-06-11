@@ -58,7 +58,7 @@ void H3SpiChipSelect(uint8_t chip_select);
 void H3SpiSetChipSelectPolarity(uint8_t chip_select, uint8_t polarity);
 
 extern uint8_t H3SpiTransfer(uint8_t data);
-void H3SpiTransfernb(char *tx_buffer, char *rx_buffer, uint32_t data_length);
+void H3SpiTransfernb(const char *tx_buffer, char *rx_buffer, uint32_t data_length);
 void H3SpiTransfern(char *tx_buffer, uint32_t data_length);
 
 void H3SpiWrite(uint16_t data);

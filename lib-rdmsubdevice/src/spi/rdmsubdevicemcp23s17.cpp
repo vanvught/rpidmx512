@@ -2,7 +2,7 @@
  * @file rdmsubdevicemcp23s17.cpp
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2026 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,40 +24,36 @@
  */
 
 #include <cstdint>
-#include <cstring>
 
 #include "spi/rdmsubdevicemcp23s17.h"
-
 #include "mcp23s17.h"
 
-static constexpr uint32_t DMX_FOOTPRINT = 16;
-static RdmPersonality *s_RDMPersonalities[] = {new RdmPersonality("Digital output 16-lines", DMX_FOOTPRINT)};
+static constexpr uint32_t kDmxFootprint = 16;
+static RdmPersonality* s_rdm_personalities[] = {new RdmPersonality("Digital output 16-lines", kDmxFootprint)};
 
-RDMSubDeviceMCP23S17::RDMSubDeviceMCP23S17(uint16_t dmx_start_address, char nChipSselect, uint8_t nSlaveAddress, uint32_t nSpiSpeed) :
-	RDMSubDevice("mcp23s17", dmx_start_address), m_MCP23S17(nChipSselect, nSpiSpeed, nSlaveAddress)
-{
-	SetDmxFootprint(DMX_FOOTPRINT);
-	SetPersonalities(s_RDMPersonalities, 1);
+RDMSubDeviceMCP23S17::RDMSubDeviceMCP23S17(uint16_t dmx_start_address, char chip_select, uint8_t device_address, uint32_t spi_speed_hz) : RDMSubDevice("mcp23s17", dmx_start_address), m_MCP23S17(chip_select, spi_speed_hz, device_address) {
+    SetDmxFootprint(kDmxFootprint);
+    SetPersonalities(s_rdm_personalities, 1);
 }
 
-void RDMSubDeviceMCP23S17::Data(const uint8_t *pData, uint32_t nLength) {
-	uint16_t nData = 0;
-	const uint32_t dmx_start_address = GetDmxStartAddress();
+void RDMSubDeviceMCP23S17::Data(const uint8_t* data, uint32_t length) {
+    uint16_t d = 0;
+    const auto kDmxStartAddress = GetDmxStartAddress();
 
-	for (uint32_t i = (dmx_start_address - 1), j = 0; (i < nLength) && (j < DMX_FOOTPRINT); i++, j++) {
-		if ((pData[i] & 0x80) != 0) {	// 0-127 is off, 128-255 is on
-			nData = static_cast<uint8_t>(nData | (1U << i));
-		}
-	}
+    for (uint32_t i = (kDmxStartAddress - 1), j = 0; (i < length) && (j < kDmxFootprint); i++, j++) {
+        if ((data[i] & 0x80) != 0) { // 0-127 is off, 128-255 is on
+            d = static_cast<uint8_t>(d | (1U << i));
+        }
+    }
 
-	if (m_nData != nData) {
-		m_MCP23S17.WriteRegister(mcp23x17::REG_GPIOA, nData);
-		m_nData = nData;
-	}
+    if (data_ != d) {
+        m_MCP23S17.WriteRegister(mcp23x17::REG_GPIOA, d);
+        data_ = d;
+    }
 }
 
-void RDMSubDeviceMCP23S17::UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent) {
-	if (tUpdateEvent == RDM_SUBDEVICE_UPDATE_EVENT_DMX_STARTADDRESS) {
-		Stop();
-	}
+void RDMSubDeviceMCP23S17::UpdateEvent(TRDMSubDeviceUpdateEvent event) {
+    if (event == RDM_SUBDEVICE_UPDATE_EVENT_DMX_STARTADDRESS) {
+        Stop();
+    }
 }

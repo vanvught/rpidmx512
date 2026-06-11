@@ -28,8 +28,7 @@
 
 #include <cstdint>
 
-namespace mcp23x08
-{
+namespace mcp23x08 {
 static constexpr uint8_t REG_IODIR = 0x00;
 static constexpr uint8_t REG_IPOL = 0x01;
 static constexpr uint8_t REG_GPINTEN = 0x02;
@@ -43,4 +42,4 @@ static constexpr uint8_t REG_GPIO = 0x09;
 static constexpr uint8_t REG_OLAT = 0x0A;
 } // namespace mcp23x08
 
-#endif  // MCP23X08_H_
+#endif // MCP23X08_H_

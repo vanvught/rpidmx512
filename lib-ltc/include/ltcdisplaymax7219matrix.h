@@ -2,7 +2,7 @@
  * @file ltcdisplaymax7219matrix.h
  *
  */
-/* Copyright (C) 2019-2025	 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2026	 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,13 +33,11 @@
 #include "ltc.h"
 #include "firmware/debug/debug_debug.h"
 
-namespace ltc::display::max7219::maxtrix
-{
+namespace ltc::display::max7219::maxtrix {
 static constexpr auto kSegments = 8;
 } // namespace ltc::display::max7219::maxtrix
 
-class LtcDisplayMax7219Matrix final : public LtcDisplayMax7219Set, public Max7219Matrix
-{
+class LtcDisplayMax7219Matrix final : public LtcDisplayMax7219Set, public Max7219Matrix {
     static constexpr uint8_t kCharsColon[][8] = {
         {0x3E, 0x7F, 0x71, 0x59, 0x4D, 0x7F, 0x3E, 0x66}, // 0:
         {0x40, 0x42, 0x7F, 0x7F, 0x40, 0x40, 0x00, 0x66}, // 1:
@@ -80,46 +78,35 @@ class LtcDisplayMax7219Matrix final : public LtcDisplayMax7219Set, public Max721
     };
 
    public:
-    explicit LtcDisplayMax7219Matrix(uint8_t intensity)
-    {
-		DEBUG_ENTRY();
-		
+    explicit LtcDisplayMax7219Matrix(uint8_t intensity) {
+        DEBUG_ENTRY();
+
         assert(s_this == nullptr);
         s_this = this;
 
-        for (uint32_t i = 0; i < sizeof(kCharsColon) / sizeof(kCharsColon[0]); i++)
-        {
+        for (uint32_t i = 0; i < sizeof(kCharsColon) / sizeof(kCharsColon[0]); i++) {
             Max7219Matrix::UpdateCharacter(i, kCharsColon[i]);
         }
 
-        for (uint32_t i = 10; i < 10 + sizeof(kCharsBlinkSemiColon) / sizeof(kCharsBlinkSemiColon[0]); i++)
-        {
+        for (uint32_t i = 10; i < 10 + sizeof(kCharsBlinkSemiColon) / sizeof(kCharsBlinkSemiColon[0]); i++) {
             Max7219Matrix::UpdateCharacter(i, kCharsBlinkSemiColon[i - 10]);
         }
 
-        for (uint32_t i = 20; i < 20 + sizeof(kCharsBlinkComma) / sizeof(kCharsBlinkComma[0]); i++)
-        {
+        for (uint32_t i = 20; i < 20 + sizeof(kCharsBlinkComma) / sizeof(kCharsBlinkComma[0]); i++) {
             Max7219Matrix::UpdateCharacter(i, kCharsBlinkComma[i - 20]);
         }
 
         Max7219Matrix::Init(ltc::display::max7219::maxtrix::kSegments, intensity);
         Max7219Matrix::Write("Waiting", 7);
-		
-		DEBUG_EXIT();
+
+        DEBUG_EXIT();
     }
 
-    ~LtcDisplayMax7219Matrix() override 
-    {
-		s_this = nullptr;
-	}
-  
-    void SetIntensity(uint8_t intensity) override
-    {
-		Max7219Matrix::SetIntensity(intensity);
-	}
+    ~LtcDisplayMax7219Matrix() override { s_this = nullptr; }
 
-    void Show(const char* timecode) override
-    {
+    void SetIntensity(uint8_t intensity) override { Max7219Matrix::SetIntensity(intensity); }
+
+    void Show(const char* timecode) override {
         assert(timecode != nullptr);
 
         const auto kSeconds = timecode[ltc::timecode::index::SECONDS_UNITS];
@@ -136,8 +123,7 @@ class LtcDisplayMax7219Matrix final : public LtcDisplayMax7219Set, public Max721
         Max7219Matrix::Write(buffer_, ltc::display::max7219::maxtrix::kSegments);
     }
 
-    void ShowSysTime(const char* systemtime) override
-    {
+    void ShowSysTime(const char* systemtime) override {
         assert(systemtime != nullptr);
 
         const auto kSeconds = systemtime[ltc::systemtime::index::SECONDS_UNITS];
@@ -154,24 +140,20 @@ class LtcDisplayMax7219Matrix final : public LtcDisplayMax7219Set, public Max721
         Max7219Matrix::Write(buffer_, ltc::display::max7219::maxtrix::kSegments);
     }
 
-    void WriteChar([[maybe_unused]] uint8_t ch, [[maybe_unused]] uint8_t pos) override
-    {
-		DEBUG_ENTRY();
+    void WriteChar([[maybe_unused]] uint8_t ch, [[maybe_unused]] uint8_t pos) override {
+        DEBUG_ENTRY();
         // TODO(avv): Implement WriteChar
-		DEBUG_EXIT();
+        DEBUG_EXIT();
     }
 
     static LtcDisplayMax7219Matrix* Get() { return s_this; }
 
    private:
-    int32_t Offset(char ch, char seconds)
-    {
+    int32_t Offset(char ch, char seconds) {
         const auto kEven = !((seconds & 0x01) == 0x01);
 
-        if (kEven)
-        {
-            switch (ch)
-            {
+        if (kEven) {
+            switch (ch) {
                 case ':':
                     return 0 - '0';
                     break;
@@ -193,4 +175,4 @@ class LtcDisplayMax7219Matrix final : public LtcDisplayMax7219Set, public Max721
     inline static LtcDisplayMax7219Matrix* s_this;
 };
 
-#endif  // LTCDISPLAYMAX7219MATRIX_H_
+#endif // LTCDISPLAYMAX7219MATRIX_H_

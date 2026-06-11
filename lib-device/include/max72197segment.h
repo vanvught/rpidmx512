@@ -2,7 +2,7 @@
  * @file max72197segment.h
  *
  */
-/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,39 +28,32 @@
 
 #include "max7219.h"
 
-class Max72197Segment : public MAX7219
-{
+class Max72197Segment : public MAX7219 {
    public:
     Max72197Segment() = default;
     ~Max72197Segment() = default;
 
-    void Init(uint8_t intensity)
-    {
-        WriteRegister(max7219::reg::SHUTDOWN, max7219::reg::shutdown::NORMAL_OP);
-        WriteRegister(max7219::reg::DISPLAY_TEST, 0, false);
-        WriteRegister(max7219::reg::DECODE_MODE, max7219::reg::decode_mode::CODEB, false);
-        WriteRegister(max7219::reg::SCAN_LIMIT, 7, false);
+    void Init(uint8_t intensity) {
+        WriteRegister(max7219::reg::kShutdown, max7219::reg::shutdown::kNormalOp, true);
+        WriteRegister(max7219::reg::kDisplayTest, 0, false);
+        WriteRegister(max7219::reg::kDecodeMode, max7219::reg::decode_mode::kCodeb, false);
+        WriteRegister(max7219::reg::kScanLimit, 7, false);
 
-		SetIntensity(intensity);
+        SetIntensity(intensity);
         Cls();
     }
-    
-    void SetIntensity(uint8_t intensity)
-    {
-        WriteRegister(max7219::reg::INTENSITY, intensity & 0x0F, false);		
-	}
 
-    void Cls()
-    {
-        WriteRegister(8, max7219::digit::BLANK);
+    void SetIntensity(uint8_t intensity) { WriteRegister(max7219::reg::kIntensity, intensity & 0x0F, false); }
+
+    void Cls() {
+        WriteRegister(8, max7219::digit::kBlank, true);
 
         uint32_t i = 7;
 
-        do
-        {
-            WriteRegister(i, max7219::digit::BLANK, false);
+        do {
+            WriteRegister(i, max7219::digit::kBlank, false);
         } while (--i > 0);
     }
 };
 
-#endif  // MAX72197SEGMENT_H_
+#endif // MAX72197SEGMENT_H_

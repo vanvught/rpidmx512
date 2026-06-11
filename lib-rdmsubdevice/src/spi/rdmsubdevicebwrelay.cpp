@@ -33,8 +33,8 @@
 static constexpr uint32_t DMX_FOOTPRINT = 2;
 static RdmPersonality *s_RDMPersonalities[] = {new RdmPersonality("Relays", DMX_FOOTPRINT)};
 
-RDMSubDeviceBwRelay::RDMSubDeviceBwRelay(uint16_t dmx_start_address, char nChipSselect, uint8_t nSlaveAddress, [[maybe_unused]] uint32_t nSpiSpeed) :
-	RDMSubDevice("bw_spi_relay", dmx_start_address), m_BwSpiRelay(nChipSselect, nSlaveAddress)
+RDMSubDeviceBwRelay::RDMSubDeviceBwRelay(uint16_t dmx_start_address, char chip_select, uint8_t device_address, [[maybe_unused]] uint32_t spi_speed_hz) :
+	RDMSubDevice("bw_spi_relay", dmx_start_address), m_BwSpiRelay(chip_select, device_address)
 {
 	SetDmxFootprint(DMX_FOOTPRINT);
 	SetPersonalities(s_RDMPersonalities, 1);
@@ -50,9 +50,9 @@ void RDMSubDeviceBwRelay::Data(const uint8_t* pData, uint32_t nLength) {
 		}
 	}
 
-	if (m_nData != nData) {
+	if (data_ != nData) {
 		m_BwSpiRelay.Output(nData);
-		m_nData = nData;
+		data_ = nData;
 	}
 }
 

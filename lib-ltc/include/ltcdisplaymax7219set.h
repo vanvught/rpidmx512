@@ -28,15 +28,14 @@
 
 #include <cstdint>
 
-class LtcDisplayMax7219Set
-{
+class LtcDisplayMax7219Set {
    public:
     virtual ~LtcDisplayMax7219Set() = default;
 
-	virtual void SetIntensity(uint8_t intensity) = 0;  
+    virtual void SetIntensity(uint8_t intensity) = 0;
     virtual void Show(const char* timecode) = 0;
     virtual void ShowSysTime(const char* systemtime) = 0;
     virtual void WriteChar(uint8_t ch, uint8_t pos) = 0;
 };
 
-#endif  // LTCDISPLAYMAX7219SET_H_
+#endif // LTCDISPLAYMAX7219SET_H_

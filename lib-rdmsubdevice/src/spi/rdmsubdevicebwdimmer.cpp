@@ -24,36 +24,34 @@
  */
 
 #include <cstdint>
-#include <cstring>
 
 #include "spi/rdmsubdevicebwdimmer.h"
-
 #include "bwspidimmer.h"
 
-static constexpr uint32_t DMX_FOOTPRINT = 1;
-static RdmPersonality *s_RDMPersonalities[] = {new RdmPersonality("Dimmer", DMX_FOOTPRINT)};
+static constexpr uint32_t kDmxFootprint = 1;
+static RdmPersonality *s_rdm_personalities[] = {new RdmPersonality("Dimmer", kDmxFootprint)};
 
-RDMSubDeviceBwDimmer::RDMSubDeviceBwDimmer(uint16_t dmx_start_address, char nChipSselect, uint8_t nSlaveAddress, [[maybe_unused]] uint32_t nSpiSpeed) :
-	RDMSubDevice("bw_spi_dimmer", dmx_start_address), m_BwSpiDimmer(nChipSselect, nSlaveAddress)
+RDMSubDeviceBwDimmer::RDMSubDeviceBwDimmer(uint16_t dmx_start_address, char chip_select, uint8_t device_address, [[maybe_unused]] uint32_t spi_speed_hz) :
+	RDMSubDevice("bw_spi_dimmer", dmx_start_address), spi_dimmer_(chip_select, device_address)
 {
-	SetDmxFootprint(DMX_FOOTPRINT);
-	SetPersonalities(s_RDMPersonalities, 1);
+	SetDmxFootprint(kDmxFootprint);
+	SetPersonalities(s_rdm_personalities, 1);
 }
 
-void RDMSubDeviceBwDimmer::Data(const uint8_t* pData, uint32_t nLength) {
-	const uint16_t dmx_start_address = GetDmxStartAddress();
+void RDMSubDeviceBwDimmer::Data(const uint8_t* data, uint32_t length) {
+	const auto kDmxStartAddress = GetDmxStartAddress();
 
-	if (dmx_start_address <= nLength) {
-		const uint8_t nData = pData[dmx_start_address - 1];
-		if (m_nData != nData) {
-			m_BwSpiDimmer.Output(nData);
-			m_nData = nData;
+	if (kDmxStartAddress <= length) {
+		const uint8_t kData = data[kDmxStartAddress - 1];
+		if (data_ != kData) {
+			spi_dimmer_.Output(kData);
+			data_ = kData;
 		}
 	}
 }
 
-void RDMSubDeviceBwDimmer::UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent) {
-	if (tUpdateEvent == RDM_SUBDEVICE_UPDATE_EVENT_DMX_STARTADDRESS) {
+void RDMSubDeviceBwDimmer::UpdateEvent(TRDMSubDeviceUpdateEvent event) {
+	if (event == RDM_SUBDEVICE_UPDATE_EVENT_DMX_STARTADDRESS) {
 		Stop();
 	}
 }

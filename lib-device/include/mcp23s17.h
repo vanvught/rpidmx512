@@ -28,51 +28,54 @@
 
 #include <cstdint>
 
-#include "hal_spi.h"
-
+#include "spi.h"
 #include "mcp23x17.h"
 
-namespace gpio
-{
+namespace gpio {
 
-class MCP23S17 : HAL_SPI
-{
+class MCP23S17 {
    public:
-    explicit MCP23S17(uint8_t nChipSelect = 0, uint32_t nSpeedHz = mcp23x17::SPI_SPEED_DEFAULT_HZ, uint8_t address = 0)
-        : HAL_SPI(nChipSelect, nSpeedHz == 0 ? mcp23x17::SPI_SPEED_DEFAULT_HZ
-                                             : (mcp23x17::SPI_SPEED_DEFAULT_HZ <= mcp23x17::SPI_SPEED_MAX_HZ ? nSpeedHz : mcp23x17::SPI_SPEED_MAX_HZ)),
-          address_(address)
-    {
+    explicit MCP23S17(uint8_t chip_select = 0, uint32_t speed_hz = mcp23x17::SPI_SPEED_DEFAULT_HZ, uint8_t address = 0)
+        : chip_select_(chip_select), speed_hz_(speed_hz == 0 ? mcp23x17::SPI_SPEED_DEFAULT_HZ : (mcp23x17::SPI_SPEED_DEFAULT_HZ <= mcp23x17::SPI_SPEED_MAX_HZ ? speed_hz : mcp23x17::SPI_SPEED_MAX_HZ)), address_(address) {
+        spi::Begin();
+        Setup();
         MCP23S17::WriteRegister(mcp23x17::REG_IOCON, mcp23x17::IOCON_HAEN);
     }
 
-    void WriteRegister(uint8_t nRegister, uint8_t nValue)
-    {
-        char spiData[3];
+    void WriteRegister(uint8_t reg, uint8_t value) {
+        char spi_data[3];
 
-        spiData[0] = static_cast<char>(mcp23x17::SPI_CMD_WRITE) | static_cast<char>(address_ << 1);
-        spiData[1] = static_cast<char>(nRegister);
-        spiData[2] = static_cast<char>(nValue);
+        spi_data[0] = static_cast<char>(mcp23x17::SPI_CMD_WRITE) | static_cast<char>(address_ << 1);
+        spi_data[1] = static_cast<char>(reg);
+        spi_data[2] = static_cast<char>(value);
 
-        HAL_SPI::Write(spiData, 3);
+        spi::Writenb(spi_data, 3);
     }
 
-    void WriteRegister(uint8_t nRegister, uint16_t nValue)
-    {
-        char spiData[4];
+    void WriteRegister(uint8_t reg, uint16_t value) {
+        char spi_data[4];
 
-        spiData[0] = static_cast<char>(mcp23x17::SPI_CMD_WRITE) | static_cast<char>(address_ << 1);
-        spiData[1] = static_cast<char>(nRegister);
-        spiData[2] = static_cast<char>(nValue);
-        spiData[3] = static_cast<char>(nValue >> 8);
+        spi_data[0] = static_cast<char>(mcp23x17::SPI_CMD_WRITE) | static_cast<char>(address_ << 1);
+        spi_data[1] = static_cast<char>(reg);
+        spi_data[2] = static_cast<char>(value);
+        spi_data[3] = static_cast<char>(value >> 8);
 
-        HAL_SPI::Write(spiData, 4);
+        spi::Writenb(spi_data, 4);
     }
 
    private:
-    uint8_t address_ = 0;
+    void Setup() {
+        spi::ChipSelect(chip_select_);
+        spi::SetDataMode(spi::kMode0);
+        spi::SetSpeedHz(speed_hz_);
+    }
+
+   private:
+    uint8_t chip_select_{0};
+    uint32_t speed_hz_{0};
+    uint8_t address_{0};
 };
 
 } // namespace gpio
 
-#endif  // MCP23S17_H_
+#endif // MCP23S17_H_

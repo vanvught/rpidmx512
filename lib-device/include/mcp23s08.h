@@ -2,7 +2,7 @@
  * @file mcp23s08.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,68 +28,68 @@
 
 #include <cstdint>
 
-#include "hal_spi.h"
+#include "spi.h"
 
-namespace gpio
-{
-namespace mcp23s08
-{
-namespace speed
-{
-static constexpr uint32_t max_hz = 10000000;    ///< 10 MHz
-static constexpr uint32_t default_hz = 2000000; ///< 2 MHz
+namespace gpio {
+namespace mcp23s08 {
+namespace speed {
+inline constexpr uint32_t kMaxHz = 10000000;    ///< 10 MHz
+inline constexpr uint32_t kDefaultHz = 2000000; ///< 2 MHz
 } // namespace speed
-namespace reg
-{
-static constexpr uint8_t IODIR = 0x00;   ///< I/O DIRECTION (IODIR) REGISTER
-static constexpr uint8_t IPOL = 0x01;    ///< INPUT POLARITY (IPOL) REGISTER
-static constexpr uint8_t GPINTEN = 0x02; ///< INTERRUPT-ON-CHANGE CONTROL (GPINTEN) REGISTER
-static constexpr uint8_t DEFVAL = 0x03;  ///< DEFAULT COMPARE (DEFVAL) REGISTER FOR INTERRUPT-ON-CHANGE
-static constexpr uint8_t INTCON = 0x04;  ///< INTERRUPT CONTROL (INTCON) REGISTER
-static constexpr uint8_t IOCON = 0x05;   ///< CONFIGURATION (IOCON) REGISTER
-static constexpr uint8_t GPPU = 0x06;    ///< PULL-UP RESISTOR CONFIGURATION (GPPU) REGISTER
-static constexpr uint8_t INTF = 0x07;    ///< INTERRUPT FLAG (INTF) REGISTER
-static constexpr uint8_t INTCAP = 0x08;  ///< INTERRUPT CAPTURE (INTCAP) REGISTER
-static constexpr uint8_t GPIO = 0x09;    ///< PORT (GPIO) REGISTER
-static constexpr uint8_t OLAT = 0x0A;    ///< OUTPUT LATCH REGISTER (OLAT)
-namespace iocon
-{
-static constexpr uint8_t HAEN = (1U << 3);
+namespace reg {
+inline constexpr uint8_t kIodir = 0x00;   ///< I/O DIRECTION (IODIR) REGISTER
+inline constexpr uint8_t kIpol = 0x01;    ///< INPUT POLARITY (IPOL) REGISTER
+inline constexpr uint8_t kGpinten = 0x02; ///< INTERRUPT-ON-CHANGE CONTROL (GPINTEN) REGISTER
+inline constexpr uint8_t kDefval = 0x03;  ///< DEFAULT COMPARE (DEFVAL) REGISTER FOR INTERRUPT-ON-CHANGE
+inline constexpr uint8_t kIntcon = 0x04;  ///< INTERRUPT CONTROL (INTCON) REGISTER
+inline constexpr uint8_t kIocon = 0x05;   ///< CONFIGURATION (IOCON) REGISTER
+inline constexpr uint8_t kGppu = 0x06;    ///< PULL-UP RESISTOR CONFIGURATION (GPPU) REGISTER
+inline constexpr uint8_t kIntf = 0x07;    ///< INTERRUPT FLAG (INTF) REGISTER
+inline constexpr uint8_t kIntcap = 0x08;  ///< INTERRUPT CAPTURE (INTCAP) REGISTER
+inline constexpr uint8_t kGpio = 0x09;    ///< PORT (GPIO) REGISTER
+inline constexpr uint8_t kOlat = 0x0A;    ///< OUTPUT LATCH REGISTER (OLAT)
+namespace iocon {
+inline constexpr uint8_t kHaen = (1U << 3);
 } // namespace iocon
 } // namespace reg
-namespace cmd
-{
-static constexpr uint8_t WRITE = 0x40;
-static constexpr uint8_t READ = 0x41;
+namespace cmd {
+inline constexpr uint8_t kWrite = 0x40;
+inline constexpr uint8_t kRead = 0x41;
 } // namespace cmd
 } // namespace mcp23s08
 
-class MCP23S08 : HAL_SPI
-{
+class MCP23S08 {
    public:
-    MCP23S08(uint8_t nChipSelect = 0, uint32_t nSpeedHz = mcp23s08::speed::default_hz, uint8_t address = 0)
-        : HAL_SPI(nChipSelect,
-                  nSpeedHz == 0 ? mcp23s08::speed::default_hz : (mcp23s08::speed::default_hz <= mcp23s08::speed::max_hz ? nSpeedHz : mcp23s08::speed::max_hz)),
-          address_(address)
-    {
-        MCP23S08::WriteRegister(mcp23s08::reg::IOCON, mcp23s08::reg::iocon::HAEN);
+    explicit MCP23S08(uint8_t chip_select = 0, uint32_t speed_hz = mcp23s08::speed::kDefaultHz, uint8_t address = 0)
+        : chip_select_(chip_select), speed_hz_(speed_hz == 0 ? mcp23s08::speed::kDefaultHz : (mcp23s08::speed::kDefaultHz <= mcp23s08::speed::kMaxHz ? speed_hz : mcp23s08::speed::kMaxHz)), address_(address) {
+        spi::Begin();
+        Setup();
+        MCP23S08::WriteRegister(mcp23s08::reg::kIocon, mcp23s08::reg::iocon::kHaen);
     }
 
-    void WriteRegister(uint8_t nRegister, uint8_t nValue)
-    {
-        char spiData[3];
+    void WriteRegister(uint8_t reg, uint8_t value) {
+        char spi_data[3];
 
-        spiData[0] = static_cast<char>(mcp23s08::cmd::WRITE) | static_cast<char>(address_ << 1);
-        spiData[1] = static_cast<char>(nRegister);
-        spiData[2] = static_cast<char>(nValue);
+        spi_data[0] = static_cast<char>(mcp23s08::cmd::kWrite) | static_cast<char>(address_ << 1);
+        spi_data[1] = static_cast<char>(reg);
+        spi_data[2] = static_cast<char>(value);
 
-        HAL_SPI::Write(spiData, 3);
+        Setup();
+        spi::Writenb(spi_data, 3);
     }
 
    private:
-    uint8_t address_ = 0;
-};
+    void Setup() {
+        spi::ChipSelect(chip_select_);
+        spi::SetDataMode(spi::kMode0);
+        spi::SetSpeedHz(speed_hz_);
+    }
 
+   private:
+    uint8_t chip_select_{0};
+    uint32_t speed_hz_{0};
+    uint8_t address_{0};
+};
 } // namespace gpio
 
-#endif  // MCP23S08_H_
+#endif // MCP23S08_H_

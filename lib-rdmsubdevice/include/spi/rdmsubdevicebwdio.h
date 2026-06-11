@@ -35,8 +35,8 @@
 class RDMSubDeviceBwDio : public RDMSubDevice
 {
    public:
-    explicit RDMSubDeviceBwDio(uint16_t dmx_start_address = 1, char nChipSselect = 0, uint8_t nSlaveAddress = bw::dio::address,
-                      uint32_t nSpiSpeed = bw::spi::speed::default_hz);
+    explicit RDMSubDeviceBwDio(uint16_t dmx_start_address = 1, char chip_select = 0, uint8_t device_address = bw::dio::address,
+                      uint32_t spi_speed_hz = bw::spi::speed::default_hz);
 
     bool Initialize() override
     {
@@ -54,7 +54,7 @@ class RDMSubDeviceBwDio : public RDMSubDevice
     void Stop() override
     {
         m_BwSpiDio.Output(0x00);
-        m_nData = 0;
+        data_ = 0;
     }
 
     void Data(const uint8_t* pData, uint32_t nLength) override;
@@ -64,7 +64,7 @@ class RDMSubDeviceBwDio : public RDMSubDevice
 
    private:
     BwSpiDio m_BwSpiDio;
-    uint8_t m_nData = 0;
+    uint8_t data_{0};
 };
 
 #endif  // SPI_RDMSUBDEVICEBWDIO_H_
