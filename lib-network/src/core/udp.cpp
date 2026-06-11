@@ -239,7 +239,7 @@ int32_t End(uint16_t localport) {
         }
     }
 
-    ERROR("Port not found.\n");
+    ERROR("Port not found.");
     return -1;
 }
 
