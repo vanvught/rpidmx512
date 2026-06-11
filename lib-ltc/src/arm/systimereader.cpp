@@ -62,16 +62,14 @@ static constexpr auto kRateLength = sizeof(kCmdRate) - 1;
 static constexpr uint16_t kUdpPort = 0x5443;
 
 #if defined(H3)
-static void irq_timer0_handler([[maybe_unused]] uint32_t clo)
-{
+static void irq_timer0_handler([[maybe_unused]] uint32_t clo) {
     gv_ltc_bTimeCodeAvailable = true;
 }
 #elif defined(GD32)
 // Defined in platform_ltc.cpp
 #endif
 
-SystimeReader::SystimeReader(uint8_t fps, int32_t utc_offset) : fps_(fps), utc_offset_(utc_offset)
-{
+SystimeReader::SystimeReader(uint8_t fps, int32_t utc_offset) : fps_(fps), utc_offset_(utc_offset) {
     DEBUG_ENTRY();
 
     assert(s_this == nullptr);
@@ -82,8 +80,7 @@ SystimeReader::SystimeReader(uint8_t fps, int32_t utc_offset) : fps_(fps), utc_o
     DEBUG_EXIT();
 }
 
-void SystimeReader::Start(bool auto_start)
-{
+void SystimeReader::Start(bool auto_start) {
     DEBUG_ENTRY();
 
 #if defined(H3)
@@ -106,22 +103,18 @@ void SystimeReader::Start(bool auto_start)
     LtcOutputs::Get()->Init();
     hal::statusled::SetMode(hal::statusled::Mode::kNormal);
 
-    if (auto_start)
-    {
+    if (auto_start) {
         ActionStart();
     }
 
     DEBUG_EXIT();
 }
 
-void SystimeReader::SetFps(uint8_t fps)
-{
-    if (fps != fps_)
-    {
+void SystimeReader::SetFps(uint8_t fps) {
+    if (fps != fps_) {
         fps_ = fps;
 
-        if (g_ltc_LtcTimeCode.frames >= fps_)
-        {
+        if (g_ltc_LtcTimeCode.frames >= fps_) {
             g_ltc_LtcTimeCode.frames = static_cast<uint8_t>(fps_ - 1);
         }
 
@@ -136,18 +129,15 @@ void SystimeReader::SetFps(uint8_t fps)
         platform::ltc::timer11_set_type(kType);
 #endif
 
-        if (ltc::Destination::IsEnabled(ltc::Destination::Output::LTC))
-        {
+        if (ltc::Destination::IsEnabled(ltc::Destination::Output::LTC)) {
             LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct ltc::TimeCode*>(&g_ltc_LtcTimeCode), false);
         }
 
-        if (ltc::Destination::IsEnabled(ltc::Destination::Output::ARTNET))
-        {
+        if (ltc::Destination::IsEnabled(ltc::Destination::Output::ARTNET)) {
             artnet::SendTimeCode(reinterpret_cast<const struct artnet::TimeCode*>(&g_ltc_LtcTimeCode));
         }
 
-        if (ltc::Destination::IsEnabled(ltc::Destination::Output::ETC))
-        {
+        if (ltc::Destination::IsEnabled(ltc::Destination::Output::ETC)) {
             LtcEtc::Get()->Send(reinterpret_cast<const struct midi::Timecode*>(&g_ltc_LtcTimeCode));
         }
 
@@ -155,12 +145,10 @@ void SystimeReader::SetFps(uint8_t fps)
     }
 }
 
-void SystimeReader::ActionStart()
-{
+void SystimeReader::ActionStart() {
     DEBUG_ENTRY();
 
-    if (started_)
-    {
+    if (started_) {
         DEBUG_EXIT();
         return;
     }
@@ -174,8 +162,7 @@ void SystimeReader::ActionStart()
     DEBUG_EXIT();
 }
 
-void SystimeReader::ActionStop()
-{
+void SystimeReader::ActionStop() {
     DEBUG_ENTRY();
 
     started_ = false;
@@ -185,46 +172,38 @@ void SystimeReader::ActionStop()
     DEBUG_EXIT();
 }
 
-void SystimeReader::ActionSetRate(const char* timecode_rate)
-{
+void SystimeReader::ActionSetRate(const char* timecode_rate) {
     DEBUG_ENTRY();
 
     uint8_t fps;
 
-    if (ltc::parse_timecode_rate(timecode_rate, fps))
-    {
+    if (ltc::parse_timecode_rate(timecode_rate, fps)) {
         SetFps(fps);
     }
 
     DEBUG_EXIT();
 }
 
-void SystimeReader::HandleRequest(char* buffer, uint16_t buffer_length)
-{
-    if (buffer != nullptr)
-    {
+void SystimeReader::HandleRequest(char* buffer, uint16_t buffer_length) {
+    if (buffer != nullptr) {
         assert(buffer_length >= 8);
         udp_buffer_ = buffer;
         bytes_received_ = buffer_length;
     }
 
-    if (memcmp("ltc!", udp_buffer_, 4) != 0)
-    {
+    if (memcmp("ltc!", udp_buffer_, 4) != 0) {
         return;
     }
 
-    if (udp_buffer_[bytes_received_ - 1] == '\n')
-    {
+    if (udp_buffer_[bytes_received_ - 1] == '\n') {
         DEBUG_PUTS("\'\\n\'");
         bytes_received_--;
     }
 
     debug::Dump(udp_buffer_, bytes_received_);
 
-    if (bytes_received_ == (4 + kStartLength))
-    {
-        if (memcmp(&udp_buffer_[4], kCmdStart, kStartLength) == 0)
-        {
+    if (bytes_received_ == (4 + kStartLength)) {
+        if (memcmp(&udp_buffer_[4], kCmdStart, kStartLength) == 0) {
             ActionStart();
             return;
         }
@@ -232,10 +211,8 @@ void SystimeReader::HandleRequest(char* buffer, uint16_t buffer_length)
         DEBUG_PUTS("Invalid !start command");
     }
 
-    if (bytes_received_ == (4 + kStopLength))
-    {
-        if (memcmp(&udp_buffer_[4], kCmdStop, kStopLength) == 0)
-        {
+    if (bytes_received_ == (4 + kStopLength)) {
+        if (memcmp(&udp_buffer_[4], kCmdStop, kStopLength) == 0) {
             ActionStop();
             return;
         }
@@ -243,10 +220,8 @@ void SystimeReader::HandleRequest(char* buffer, uint16_t buffer_length)
         DEBUG_PUTS("Invalid !stop command");
     }
 
-    if (bytes_received_ == (4 + kRateLength + ltc::timecode::RATE_MAX_LENGTH))
-    {
-        if (memcmp(&udp_buffer_[4], kCmdRate, kRateLength) == 0)
-        {
+    if (bytes_received_ == (4 + kRateLength + ltc::timecode::RATE_MAX_LENGTH)) {
+        if (memcmp(&udp_buffer_[4], kCmdRate, kRateLength) == 0) {
             ActionSetRate(&udp_buffer_[(4 + kRateLength)]);
             return;
         }
@@ -255,9 +230,10 @@ void SystimeReader::HandleRequest(char* buffer, uint16_t buffer_length)
     DEBUG_PUTS("Invalid command");
 }
 
-void SystimeReader::Input(const uint8_t* buffer, uint32_t size, [[maybe_unused]] uint32_t from_ip, [[maybe_unused]] uint16_t from_port)
-{
-    udp_buffer_ = reinterpret_cast<char*>(const_cast<uint8_t*>(buffer));
+void SystimeReader::Input(const uint8_t* buffer, uint32_t size, [[maybe_unused]] uint32_t from_ip, [[maybe_unused]] uint16_t from_port) {
+    debug::Dump(buffer, size);
+	
+	udp_buffer_ = reinterpret_cast<char*>(const_cast<uint8_t*>(buffer));
     bytes_received_ = size;
 
     HandleRequest();
@@ -269,11 +245,9 @@ void SystimeReader::Input(const uint8_t* buffer, uint32_t size, [[maybe_unused]]
 #pragma GCC optimize("no-tree-loop-distribute-patterns")
 #endif
 
-void SystimeReader::Run()
-{
+void SystimeReader::Run() {
     // If not started, return early
-    if (__builtin_expect((started_), 0))
-    {
+    if (__builtin_expect((started_), 0)) {
         struct timeval tv;
         gettimeofday(&tv, nullptr);
         auto time_seconds = static_cast<uint32_t>(tv.tv_sec + utc_offset_);
@@ -282,18 +256,15 @@ void SystimeReader::Run()
         g_ltc_LtcTimeCode.frames = static_cast<uint8_t>(static_cast<uint32_t>(tv.tv_usec * TimeCodeConst::FPS[g_ltc_LtcTimeCode.type]) / 1000000U);
 
         // Drop-frame adjustments BEFORE time updates
-        if (ltc::g_Type == ltc::Type::DF)
-        {
+        if (ltc::g_Type == ltc::Type::DF) {
             // Skip frames 00 and 01 in non-10th minutes
-            if ((g_ltc_LtcTimeCode.minutes % 10 != 0) && (g_ltc_LtcTimeCode.seconds == 0) && (g_ltc_LtcTimeCode.frames < 2))
-            {
+            if ((g_ltc_LtcTimeCode.minutes % 10 != 0) && (g_ltc_LtcTimeCode.seconds == 0) && (g_ltc_LtcTimeCode.frames < 2)) {
                 g_ltc_LtcTimeCode.frames = 2;
             }
         }
 
         // Update timecode components if the time has changed
-        if (__builtin_expect((time_previous_ != time_seconds), 0))
-        {
+        if (__builtin_expect((time_previous_ != time_seconds), 0)) {
             time_previous_ = time_seconds;
 
             g_ltc_LtcTimeCode.seconds = static_cast<uint8_t>(time_seconds % 60U);
@@ -303,8 +274,7 @@ void SystimeReader::Run()
             g_ltc_LtcTimeCode.hours = static_cast<uint8_t>(time_seconds % 24U);
 
             // Trigger timecode availability at the start of a second
-            if (tv.tv_usec == 0)
-            {
+            if (tv.tv_usec == 0) {
 #if defined(H3)
                 H3_TIMER->TMR0_CUR = 0;
                 H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
@@ -319,32 +289,26 @@ void SystimeReader::Run()
 
     // Update timecode outputs if available
     __DMB(); // Data memory barrier to ensure memory consistency
-    if (__builtin_expect((gv_ltc_bTimeCodeAvailable), 0))
-    {
+    if (__builtin_expect((gv_ltc_bTimeCodeAvailable), 0)) {
         gv_ltc_bTimeCodeAvailable = false;
 
-        if (ltc::Destination::IsEnabled(ltc::Destination::Output::LTC))
-        {
+        if (ltc::Destination::IsEnabled(ltc::Destination::Output::LTC)) {
             LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct ltc::TimeCode*>(&g_ltc_LtcTimeCode), false);
         }
 
-        if (__builtin_expect((!started_), 0))
-        {
+        if (__builtin_expect((!started_), 0)) {
             return;
         }
 
-        if (ltc::Destination::IsEnabled(ltc::Destination::Output::ARTNET))
-        {
+        if (ltc::Destination::IsEnabled(ltc::Destination::Output::ARTNET)) {
             artnet::SendTimeCode(reinterpret_cast<const struct artnet::TimeCode*>(&g_ltc_LtcTimeCode));
         }
 
-        if (ltc::Destination::IsEnabled(ltc::Destination::Output::ETC))
-        {
+        if (ltc::Destination::IsEnabled(ltc::Destination::Output::ETC)) {
             LtcEtc::Get()->Send(reinterpret_cast<const struct midi::Timecode*>(&g_ltc_LtcTimeCode));
         }
 
-        if (__builtin_expect((started_), 0))
-        {
+        if (__builtin_expect((started_), 0)) {
             LtcOutputs::Get()->Update(reinterpret_cast<const struct ltc::TimeCode*>(&g_ltc_LtcTimeCode));
         }
     }

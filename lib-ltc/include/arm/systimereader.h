@@ -27,12 +27,8 @@
 #define ARM_SYSTIMEREADER_H_
 
 #include <cstdint>
-#include <time.h>
 
-#include "ltc.h"
-
-class SystimeReader
-{
+class SystimeReader {
    public:
     SystimeReader(uint8_t fps, int32_t utc_offset);
 
@@ -51,10 +47,7 @@ class SystimeReader
 
    private:
     void SetFps(uint8_t fps);
-    void static StaticCallbackFunction(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port)
-    {
-        s_this->Input(buffer, size, from_ip, from_port);
-    }
+    void static StaticCallbackFunction(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port) { s_this->Input(buffer, size, from_ip, from_port); }
 
    private:
     uint8_t fps_;
@@ -68,4 +61,4 @@ class SystimeReader
     static inline SystimeReader* s_this;
 };
 
-#endif  // ARM_SYSTIMEREADER_H_
+#endif // ARM_SYSTIMEREADER_H_
