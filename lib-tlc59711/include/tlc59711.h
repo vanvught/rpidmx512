@@ -2,7 +2,7 @@
  * @file tlc59711.h
  *
  */
-/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2018-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,34 +27,25 @@
 #define TLC59711_H_
 
 #include <cstdint>
-#include <cassert>
 #include <cstring>
+#include <cassert>
 
-namespace tlc59711
-{
-enum class Type : uint8_t
-{
-    kRgb,
-    kRgbw,
-    kUndefined
-};
+namespace tlc59711 {
+enum class Type : uint8_t { kRgb, kRgbw, kUndefined };
 
 inline constexpr auto kTypesMaxNameLength = 10U;
 inline constexpr const char kTypes[static_cast<uint32_t>(tlc59711::Type::kUndefined)][kTypesMaxNameLength] = {
     "TLC59711", // RGB led's
-    "TLC59711W"   // RGBW led's
+    "TLC59711W" // RGBW led's
 };
 
-[[nodiscard]] inline constexpr const char* GetType(tlc59711::Type type)
-{
+[[nodiscard]] inline constexpr const char* GetType(tlc59711::Type type) {
     return type < tlc59711::Type::kUndefined ? kTypes[static_cast<uint32_t>(type)] : "Undefined";
 }
 
-inline tlc59711::Type GetType(const char* value)
-{
+inline tlc59711::Type GetType(const char* value) {
     assert(value != nullptr);
-    if (strcasecmp(value, kTypes[static_cast<uint32_t>(tlc59711::Type::kRgbw)]) == 0)
-    {
+    if (strcasecmp(value, kTypes[static_cast<uint32_t>(tlc59711::Type::kRgbw)]) == 0) {
         return tlc59711::Type::kRgbw;
     }
 
@@ -62,23 +53,20 @@ inline tlc59711::Type GetType(const char* value)
 }
 } // namespace tlc59711
 
-struct TLC59711SpiSpeed
-{
-    static constexpr uint32_t DEFAULT = 5000000; // 5 MHz
-    static constexpr uint32_t MAX = 10000000;    // 10 MHz
+struct TLC59711SpiSpeed {
+    static constexpr uint32_t kDefault = 5000000; // 5 MHz
+    static constexpr uint32_t kMax = 10000000;    // 10 MHz
 };
 
-struct TLC59711Channels
-{
-    static constexpr uint32_t U16BIT = 14;
-    static constexpr uint32_t OUT = 12;
-    static constexpr uint32_t RGB = 4;
+struct TLC59711Channels {
+    static constexpr uint32_t kU16Bit = 14;
+    static constexpr uint32_t kOut = 12;
+    static constexpr uint32_t kRgb = 4;
 };
 
-class TLC59711
-{
+class TLC59711 {
    public:
-    explicit TLC59711(uint8_t boards = 1, uint32_t spi_speed_hz = TLC59711SpiSpeed::DEFAULT);
+    explicit TLC59711(uint8_t boards = 1, uint32_t spi_speed_hz = TLC59711SpiSpeed::kDefault);
     ~TLC59711();
 
     int GetBlank() const;
@@ -132,4 +120,4 @@ class TLC59711
     uint32_t buffer_size_{0};
 };
 
-#endif  // TLC59711_H_
+#endif // TLC59711_H_
