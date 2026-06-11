@@ -1,8 +1,8 @@
 /**
- * @file hal_i2c.h
+ * @file hal_i2c.cpp
  *
  */
-/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +23,43 @@
  * THE SOFTWARE.
  */
 
-#ifndef LINUX_HAL_I2C_H_
-#define LINUX_HAL_I2C_H_
+#include <cstdint>
 
 #include "linux_i2c.h"
 
-#endif  // LINUX_HAL_I2C_H_
+bool LinuxI2cIsConnected(uint8_t address, const uint32_t nBaudrate) {
+    FUNC_PREFIX(I2cSetAddress(address));
+    FUNC_PREFIX(I2cSetBaudrate(nBaudrate));
+
+    uint8_t nResult;
+    char buffer;
+
+    if ((address >= 0x30 && address <= 0x37) || (address >= 0x50 && address <= 0x5F)) {
+        nResult = FUNC_PREFIX(I2cRead(&buffer, 1));
+    } else {
+        /* This is known to corrupt the Atmel AT24RF08 EEPROM */
+        nResult = FUNC_PREFIX(I2cWrite(nullptr, 0));
+    }
+
+    return (nResult == 0) ? true : false;
+}
+
+void LinuxI2cWriteReg(uint8_t nRegister, const uint8_t nValue) {
+    char buffer[2];
+
+    buffer[0] = static_cast<char>(nRegister);
+    buffer[1] = static_cast<char>(nValue);
+
+    FUNC_PREFIX(I2cWrite(buffer, 2));
+}
+
+void LinuxI2cReadReg(const uint8_t nRegister, uint8_t& nValue) {
+    char buffer[1];
+
+    buffer[0] = static_cast<char>(nRegister);
+
+    FUNC_PREFIX(I2cWrite(buffer, 1));
+    FUNC_PREFIX(I2cRead(buffer, 1));
+
+    nValue = buffer[0];
+}

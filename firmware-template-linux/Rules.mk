@@ -37,6 +37,7 @@ DEFINES+=-DCONFIG_STORE_USE_FILE
 DEFINES+=-DCONFIG_MDNS_DOMAIN_REVERSE
 DEFINES+=-DISABLE_INTERNAL_RTC
 include ../common/make/DmxNodeOutputType.mk
+
 DEFINES+=$(addprefix -I,$(EXTRA_INCLUDES))
 
 ifeq ($(findstring ARTNET_VERSION=4,$(DEFINES)),ARTNET_VERSION=4)
@@ -48,7 +49,9 @@ endif
 include ../common/make/Timestamp.mk
 
 # The variable for the firmware include directories
-INCDIRS=../common/include $(wildcard ./lib) $(wildcard ./include) $(wildcard ./*/include) ../firmware-template-linux/include
+INCDIRS=../common/include $(wildcard ./lib) $(wildcard ./include) $(wildcard ./*/include)
+INCDIRS+=../firmware-template-linux/include
+INCDIRS+=../lib-superloop/include/superloop
 INCDIRS:=$(addprefix -I,$(INCDIRS)) -I../lib-display/include
 
 # The variable for the libraries include directory
@@ -166,7 +169,7 @@ $(BUILD_DIRS) :
 		
 $(CURR_DIR) : Makefile $(LINKER) $(OBJECTS) $(LIBDEP)
 	$(info $$TARGET [${TARGET}])
-	$(CPP) $(OBJECTS) -o $(CURR_DIR) $(LIB) $(LDLIBS) -lz
+	$(CPP) $(OBJECTS) -o $(CURR_DIR) $(LIB) $(LDLIBS) -llinux -lz
 	$(PREFIX)objdump -d $(TARGET) | $(PREFIX)c++filt > linux.lst
 
 $(foreach bdir,$(SRCDIR),$(eval $(call compile-objects,$(bdir))))

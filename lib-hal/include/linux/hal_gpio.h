@@ -61,7 +61,7 @@ enum GPIO_PULL {
 	GPIO_PULL_UP, GPIO_PULL_DOWN, GPIO_PULL_DISABLE
 };
 
-# define FUNC_PREFIX(x) x
+# define FUNC_PREFIX(x) Linux##x
 # ifdef __cplusplus
 # include <cstdint>
 extern "C" {

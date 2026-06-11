@@ -2,7 +2,7 @@
  * @file hal_spi.h
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,23 +42,15 @@
 # define SPI_MODE3				0
 # define SPI_CS0				0
 # define SPI_CS_NONE			0
-# define FUNC_PREFIX(x) x
-# ifdef __cplusplus
-#  include <cstdint>
-  extern "C" {
-# else
-#  include <stdint.h>
-# endif
-  inline static void SpiBegin() {}
-  inline static void SpiChipSelect([[maybe_unused]] uint8_t _q) {}
-  inline static void SpiSetDataMode([[maybe_unused]] uint8_t _q) {}
-  inline static void SpiSetSpeedHz([[maybe_unused]] uint32_t _q) {}
-  inline static void SpiWrite([[maybe_unused]] uint16_t _q) {}
-  inline static void SpiTransfern([[maybe_unused]] const char *_p, [[maybe_unused]] uint32_t _q) {}
-  inline static void SpiWritenb([[maybe_unused]] const char *_p, [[maybe_unused]] uint32_t _q) {}
-# ifdef __cplusplus
- }
-# endif
+# define FUNC_PREFIX(x) Linux##x
+# include <cstdint>
+  inline void LinuxSpiBegin() {}
+  inline void LinuxSpiChipSelect([[maybe_unused]] uint8_t q) {}
+  inline void LinuxSpiSetDataMode([[maybe_unused]] uint8_t q) {}
+  inline void LinuxSpiSetSpeedHz([[maybe_unused]] uint32_t q) {}
+  inline void LinuxSpiWrite([[maybe_unused]] uint16_t q) {}
+  inline void LinuxSpiTransfern([[maybe_unused]] const char *p, [[maybe_unused]] uint32_t q) {}
+  inline void LinuxSpiWritenb([[maybe_unused]] const char *p, [[maybe_unused]] uint32_t q) {}
 #endif
 
 #endif /* LINUX_HAL_SPI_H_ */

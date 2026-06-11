@@ -1,0 +1,59 @@
+/*
+ * linux_i2c.h
+ *
+ */
+
+#ifndef LINUX_I2C_H_
+#define LINUX_I2C_H_
+
+#include <cstdint>
+
+#if defined(RASPPI)
+#define bcm2835_I2cSetAddress bcm2835_i2c_setSlaveAddress
+#define bcm2835_I2cWriteReg I2cWriteReg
+#define bcm2835_I2cReadReg I2cReadReg
+#define bcm2835_I2cIsConnected I2cIsConnected
+bool I2cIsConnected(const uint8_t, const uint32_t);
+void I2cSetBaudrate(uint32_t);
+void I2cSetAddress(uint8_t);
+uint8_t I2cWrite(const char*, uint32_t);
+uint8_t I2cRead(char*, uint32_t);
+void I2cWriteReg(const uint8_t, const uint8_t);
+void I2cReadReg(const uint8_t, uint8_t&);
+#if defined(LINUX_HAVE_I2C)
+#define bcm2835_I2cBegin I2cBegin
+#define bcm2835_I2cSetBaudrate I2cSetBaudrate
+#define bcm2835_i2c_setSlaveAddress I2cSetAddress
+#define bcm2835_I2cRead I2cRead
+#define bcm2835_I2cWrite I2cWrite
+void I2cBegin();
+#endif
+#else
+#define FUNC_PREFIX(x) Linux##x
+#if defined(LINUX_HAVE_I2C)
+void LinuxI2cI2cBegin();
+void LinuxI2cI2cSetBaudrate(uint32_t);
+void LinuxI2cI2cSetAddress(uint8_t);
+uint8_t LinuxI2cI2cWrite(const char*, uint32_t);
+uint8_t LinuxI2cI2cRead(char*, uint32_t);
+bool LinuxI2cI2cIsConnected(const uint8_t, const uint32_t);
+void LinuxI2cI2cWriteReg(const uint8_t, const uint8_t);
+void LinuxI2cI2cReadReg(const uint8_t, uint8_t&);
+#else
+inline static void LinuxI2cBegin() {}
+inline static void LinuxI2cSetBaudrate([[maybe_unused]] uint32_t q) {}
+inline static void LinuxI2cSetAddress([[maybe_unused]] uint8_t q) {}
+inline static uint8_t LinuxI2cWrite([[maybe_unused]] const char* p, [[maybe_unused]] uint32_t q) {
+    return 1;
+}
+inline static uint8_t LinuxI2cRead([[maybe_unused]] char* p, [[maybe_unused]] uint32_t q) {
+    return 1;
+}
+bool LinuxI2cIsConnected(const uint8_t, const uint32_t);
+void LinuxI2cWriteReg(const uint8_t, const uint8_t);
+void LinuxI2cWriteReg(const uint8_t, const uint16_t);
+void LinuxI2cReadReg(const uint8_t, uint8_t&);
+#endif
+#endif
+
+#endif // LINUX_I2C_H_

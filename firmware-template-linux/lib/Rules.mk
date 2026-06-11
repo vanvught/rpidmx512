@@ -27,7 +27,11 @@ endif
 
 include ../common/make/DmxNodeOutputType.mk
 
-INCLUDES:=-I../common/include -I./include -I../lib-configstore/include -I../lib-hal/include -I../lib-display/include -I../lib-debug/include
+INCLUDES:=-I../common/include -I./include 
+INCLUDES+=-I../lib-configstore/include 
+INCLUDES+=-I../lib-superloop/include/superloop
+INCLUDES+=-I../lib-hal/include 
+INCLUDES+=-I../lib-display/include 
 INCLUDES+=$(addprefix -I,$(EXTRA_INCLUDES))
 ifeq ($(findstring CONFIG_DISPLAY_USE_CUSTOM,$(DEFINES)),CONFIG_DISPLAY_USE_CUSTOM)
 	ifneq ($(CONFIG_DISPLAY_LIB),)

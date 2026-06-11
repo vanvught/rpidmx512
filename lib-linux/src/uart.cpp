@@ -142,7 +142,7 @@ static void s_configure_termios() {
 	puts("\nDevice connected.");
 }
 
-void UartBegin(const uint32_t nUart, uint32_t nBaudrate, uint32_t bits, uint32_t parity, uint32_t stop_bits) {
+void LinuxUartBegin(const uint32_t nUart, uint32_t nBaudrate, uint32_t bits, uint32_t parity, uint32_t stop_bits) {
 	s_nUart = nUart;
 	s_nBaudrate = nBaudrate;
 	s_nBits = bits;
@@ -152,12 +152,12 @@ void UartBegin(const uint32_t nUart, uint32_t nBaudrate, uint32_t bits, uint32_t
 	s_configure_termios();
 }
 
-void UartSetBaudrate([[maybe_unused]] const uint32_t uart_base, uint32_t nBaudrate) {
+void LinuxUartSetBaudrate([[maybe_unused]] const uint32_t uart_base, uint32_t nBaudrate) {
 	s_nBaudrate = nBaudrate;
 	s_configure_termios();
 }
 
-void UartTransmit([[maybe_unused]] const uint32_t uart_base, const uint8_t *pDate, uint32_t nLength) {
+void LinuxUartTransmit([[maybe_unused]] const uint32_t uart_base, const uint8_t *pDate, uint32_t nLength) {
 	if (fd < 0) {
 		DEBUG_EXIT();
 		return;
@@ -170,7 +170,7 @@ void UartTransmit([[maybe_unused]] const uint32_t uart_base, const uint8_t *pDat
 	}
 }
 
-void UartTransmitString([[maybe_unused]] const uint32_t uart_base, const char *pData) {
+void LinuxUartTransmitString([[maybe_unused]] const uint32_t uart_base, const char *pData) {
 	if (fd < 0) {
 		DEBUG_EXIT();
 		return;
@@ -184,7 +184,7 @@ void UartTransmitString([[maybe_unused]] const uint32_t uart_base, const char *p
 	}
 }
 
-uint32_t UartGetRxFifoLevel([[maybe_unused]] const uint32_t uart_base) {
+uint32_t LinuxUartGetRxFifoLevel([[maybe_unused]] const uint32_t uart_base) {
 	if (fd < 0) {
 		DEBUG_EXIT();
 		return 0;
@@ -201,7 +201,7 @@ uint32_t UartGetRxFifoLevel([[maybe_unused]] const uint32_t uart_base) {
     return static_cast<uint32_t>(ret);
 }
 
-uint8_t UartGetRxData([[maybe_unused]] const uint32_t uart_base) {
+uint8_t LinuxUartGetRxData([[maybe_unused]] const uint32_t uart_base) {
 	if (fd < 0) {
 		DEBUG_EXIT();
 		return ' ';
@@ -218,7 +218,7 @@ uint8_t UartGetRxData([[maybe_unused]] const uint32_t uart_base) {
 	return static_cast<uint8_t>(c);
 }
 
-uint32_t UartGetRx([[maybe_unused]] const uint32_t uart_base, char *pData, uint32_t nLength) {
+uint32_t LinuxUartGetRx([[maybe_unused]] const uint32_t uart_base, char *pData, uint32_t nLength) {
 	if (fd < 0) {
 		DEBUG_EXIT();
 		return 0;

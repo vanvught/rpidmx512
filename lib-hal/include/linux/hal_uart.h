@@ -28,26 +28,11 @@
 
 #include <cstdint>
 
-typedef enum LINUX_UART_BITS
-{
-    LINUX_UART_BITS_5 = 5,
-    LINUX_UART_BITS_6 = 6,
-    LINUX_UART_BITS_7 = 7,
-    LINUX_UART_BITS_8 = 8
-} linux_uart_bits_t;
+typedef enum LINUX_UART_BITS { LINUX_UART_BITS_5 = 5, LINUX_UART_BITS_6 = 6, LINUX_UART_BITS_7 = 7, LINUX_UART_BITS_8 = 8 } linux_uart_bits_t;
 
-typedef enum LINUX_UART_PARITY
-{
-    LINUX_UART_PARITY_NONE = 0,
-    LINUX_UART_PARITY_ODD = 1,
-    LINUX_UART_PARITY_EVEN = 2
-} linux_uart_parity_t;
+typedef enum LINUX_UART_PARITY { LINUX_UART_PARITY_NONE = 0, LINUX_UART_PARITY_ODD = 1, LINUX_UART_PARITY_EVEN = 2 } linux_uart_parity_t;
 
-typedef enum LINUX_UART_STOPBITS
-{
-    LINUX_UART_STOP_1BIT = 1,
-    LINUX_UART_STOP_2BITS = 2
-} linux_uart_stopbits_t;
+typedef enum LINUX_UART_STOPBITS { LINUX_UART_STOP_1BIT = 1, LINUX_UART_STOP_2BITS = 2 } linux_uart_stopbits_t;
 
 namespace hal::uart {
 static constexpr auto BITS_5 = LINUX_UART_BITS_5;
@@ -65,18 +50,17 @@ static constexpr auto STOP_2BITS = LINUX_UART_STOP_2BITS;
 
 #if defined(RASPPI)
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 #include <stdint.h>
-    void bcm2835_UartBegin(uint32_t uart_base, uint32_t baudrate, uint32_t bits, uint32_t parity, uint32_t stop_bits);
-    void bcm2835_UartSetBaudrate(uint32_t uart_base, uint32_t baudrate);
-    void bcm2835_UartTransmit(uint32_t uart_base, const uint8_t* data, uint32_t length);
-    void bcm2835_UartTransmitString(uint32_t uart_base, const char* data);
+void bcm2835_UartBegin(uint32_t uart_base, uint32_t baudrate, uint32_t bits, uint32_t parity, uint32_t stop_bits);
+void bcm2835_UartSetBaudrate(uint32_t uart_base, uint32_t baudrate);
+void bcm2835_UartTransmit(uint32_t uart_base, const uint8_t* data, uint32_t length);
+void bcm2835_UartTransmitString(uint32_t uart_base, const char* data);
 
-    uint32_t bcm2835_UartGetRxFifoLevel(uint32_t uart_base);
-    uint8_t bcm2835_UartGetRxData(uint32_t uart_base);
-    uint32_t bcm2835_uart_get_rx(uint32_t uart_base, char* pData, uint32_t nLength);
+uint32_t bcm2835_UartGetRxFifoLevel(uint32_t uart_base);
+uint8_t bcm2835_UartGetRxData(uint32_t uart_base);
+uint32_t bcm2835_uart_get_rx(uint32_t uart_base, char* pData, uint32_t nLength);
 
 #define bcm2835_UartBegin UartBegin
 #define bcm2835_UartSetBaudrate UartSetBaudrate
@@ -88,31 +72,22 @@ extern "C"
 }
 #endif
 #else
-#define FUNC_PREFIX(x) x
+#define FUNC_PREFIX(x) Linux##x
 #endif
 
 #define EXT_UART_NUMBER 0
 #define EXT_UART_BASE 0
 #define EXT_MIDI_UART_BASE 0
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
+#include <cstdint>
 
-#include <stdint.h>
+void LinuxUartBegin(uint32_t uart_base, uint32_t baudrate, uint32_t bits, uint32_t parity, uint32_t stop_bits);
+void LinuxUartSetBaudrate(uint32_t uart_base, uint32_t baudrate);
+void LinuxUartTransmit(uint32_t uart_base, const uint8_t* data, uint32_t length);
+void LinuxUartTransmitString(uint32_t uart_base, const char* data);
 
-    void UartBegin(uint32_t uart_base, uint32_t baudrate, uint32_t bits, uint32_t parity, uint32_t stop_bits);
-    void UartSetBaudrate(uint32_t uart_base, uint32_t baudrate);
-    void UartTransmit(uint32_t uart_base, const uint8_t* data, uint32_t length);
-    void UartTransmitString(uint32_t uart_base, const char* data);
+uint32_t LinuxUartGetRxFifoLevel(uint32_t uart_base);
+uint8_t LinuxUartGetRxData(uint32_t uart_base);
+uint32_t LinuxUartGetRx(uint32_t uart_base, char* data, uint32_t length);
 
-    uint32_t UartGetRxFifoLevel(uint32_t uart_base);
-    uint8_t UartGetRxData(uint32_t uart_base);
-    uint32_t UartGetRx(uint32_t uart_base, char* data, uint32_t length);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif  // LINUX_HAL_UART_H_
+#endif // LINUX_HAL_UART_H_
