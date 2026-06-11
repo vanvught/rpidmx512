@@ -298,9 +298,8 @@ int main() // NOLINT
     artnet::art_timecode.filler2 = 0;
 
     if (kRunArtNet) {
-        assert(handle_ == -1);
         artnet::handle = network::udp::Begin(artnet::kUdpPort, ArtNetReader::StaticCallbackFunction);
-        assert(handle_ != -1);
+        assert(artnet::handle != -1);
     }
 
     /**
