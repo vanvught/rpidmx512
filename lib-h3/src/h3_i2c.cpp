@@ -463,6 +463,16 @@ void H3I2cWriteReg(uint8_t reg, uint8_t value) {
     H3I2cWrite(buffer, 2);
 }
 
+void H3I2cWriteReg(uint8_t reg, uint16_t value) {
+    const char kBuffer[] = {
+		static_cast<char>(reg), 
+		static_cast<char>(value >> 8), 
+		static_cast<char>(value & 0xFF)
+	};
+
+    H3I2cWrite(kBuffer, 3);
+}
+
 void H3I2cReadReg(uint8_t reg, uint8_t& value) {
     char buffer[1];
 

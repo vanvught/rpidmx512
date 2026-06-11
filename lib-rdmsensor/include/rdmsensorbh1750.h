@@ -2,7 +2,7 @@
  * @file rdmsensorbh1750.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,24 +32,22 @@
 #include "bh1750.h"
 #include "rdm_e120.h"
 
-class RDMSensorBH170 : public RDMSensor, sensor::BH170
-{
+class RDMSensorBH1750 : public RDMSensor, sensor::BH1750 {
    public:
-    explicit RDMSensorBH170(uint8_t sensor, uint8_t address = 0) : RDMSensor(sensor), sensor::BH170(address)
-    {
+    explicit RDMSensorBH1750(uint8_t sensor, uint8_t address = 0) : RDMSensor(sensor), sensor::BH1750(address) {
         SetType(E120_SENS_ILLUMINANCE);
         SetUnit(E120_UNITS_LUX);
         SetPrefix(E120_PREFIX_NONE);
-        SetRangeMin(rdm::sensor::SafeRangeMin(sensor::bh1750::RANGE_MIN));
-        SetRangeMax(rdm::sensor::SafeRangeMax(sensor::bh1750::RANGE_MAX));
-        SetNormalMin(rdm::sensor::SafeRangeMin(sensor::bh1750::RANGE_MIN));
-        SetNormalMax(rdm::sensor::SafeRangeMax(sensor::bh1750::RANGE_MAX));
-        SetDescription(sensor::bh1750::DESCRIPTION);
+        SetRangeMin(rdm::sensor::SafeRangeMin(sensor::bh1750::kRangeMin));
+        SetRangeMax(rdm::sensor::SafeRangeMax(sensor::bh1750::kRangeMax));
+        SetNormalMin(rdm::sensor::SafeRangeMin(sensor::bh1750::kRangeMin));
+        SetNormalMax(rdm::sensor::SafeRangeMax(sensor::bh1750::kRangeMax));
+        SetDescription(sensor::bh1750::kDescription);
     }
 
-    bool Initialize() override { return sensor::BH170::Initialize(); }
+    bool Initialize() override { return sensor::BH1750::Initialize(); }
 
-    int16_t GetValue() override { return static_cast<int16_t>(sensor::BH170::Get() & 0x7FFF); }
+    int16_t GetValue() override { return static_cast<int16_t>(sensor::BH1750::Get() & 0x7FFF); }
 };
 
-#endif  // RDMSENSORBH1750_H_
+#endif // RDMSENSORBH1750_H_

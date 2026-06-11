@@ -36,11 +36,12 @@
  */
 
 #include <cassert>
+#include <cstdint>
 #include <time.h>
 
 #include "hwclock.h"
 #include "timing.h"
-#include "hal_i2c.h"
+#include "i2c.h"
 #include "firmware/debug/debug_debug.h"
 
 #define BCD2DEC(val) (((val) & 0x0f) + ((val) >> 4) * 10)
@@ -117,25 +118,25 @@ void HwClock::RtcProbe() {
 
     last_hc_to_sys_millis_ = timing::Millis();
 
-    FUNC_PREFIX(I2cSetBaudrate(HAL_I2C::NORMAL_SPEED));
+    i2c::SetBaudrate(i2c::kNormalSpeed);
 
     uint8_t value;
 
 #if !defined(CONFIG_RTC_DISABLE_MCP7941X)
-    FUNC_PREFIX(I2cSetAddress(rtc::i2caddress::kMcP7941X));
+    i2c::SetAddress(rtc::i2caddress::kMcP7941X);
 
     // The I2C bus is not stable at cold start? These dummy write/read helps.
     // This needs some more investigation for what is really happening here.
-    FUNC_PREFIX(I2cReadReg(rtc::reg::kYear, value));
+    i2c::ReadReg(rtc::reg::kYear, value);
 
-    if (FUNC_PREFIX(I2cWrite(nullptr, 0)) == 0) {
+    if (i2c::Write(nullptr, 0) == 0) {
         DEBUG_PUTS("MCP7941X");
 
         is_connected_ = true;
         type_ = rtc::Type::kMcP7941X;
         address_ = rtc::i2caddress::kMcP7941X;
 
-        FUNC_PREFIX(I2cReadReg(rtc::reg::kSeconds, value));
+        i2c::ReadReg(rtc::reg::kSeconds, value);
 
         if ((value & rtc::mcp7941x::bit::kSt) == 0) {
             DEBUG_PUTS("Start the on-board oscillator");
@@ -158,13 +159,13 @@ void HwClock::RtcProbe() {
 #endif
 
 #if !defined(CONFIG_RTC_DISABLE_DS3231)
-    FUNC_PREFIX(I2cSetAddress(rtc::i2caddress::kDS3231));
+    i2c::SetAddress(rtc::i2caddress::kDS3231);
 
     // The I2C bus is not stable at cold start? These dummy write/read helps.
     // This needs some more investigation for what is really happening here.
-    FUNC_PREFIX(I2cReadReg(rtc::reg::kYear, value));
+    i2c::ReadReg(rtc::reg::kYear, value);
 
-    if (FUNC_PREFIX(I2cWrite(nullptr, 0)) == 0) {
+    if (i2c::Write(nullptr, 0) == 0) {
         DEBUG_PUTS("DS3231");
 
         is_connected_ = true;
@@ -191,23 +192,23 @@ void HwClock::RtcProbe() {
 #endif
 
 #if !defined(CONFIG_RTC_DISABLE_PCF8563)
-    FUNC_PREFIX(I2cSetAddress(rtc::i2caddress::kPcF8563));
+    i2c::SetAddress(rtc::i2caddress::kPcF8563);
 
     // The I2C bus is not stable at cold start? These dummy write/read helps.
     // This needs some more investigation for what is really happening here.
-    FUNC_PREFIX(I2cReadReg(rtc::pcf8563::reg::kYear, value));
+    i2c::ReadReg(rtc::pcf8563::reg::kYear, value);
 
-    if (FUNC_PREFIX(I2cWrite(nullptr, 0)) == 0) {
+    if (i2c::Write(nullptr, 0) == 0) {
         DEBUG_PUTS("PCF8563");
 
         is_connected_ = true;
         type_ = rtc::Type::kPcF8563;
         address_ = rtc::i2caddress::kPcF8563;
 
-        FUNC_PREFIX(I2cWriteReg(rtc::pcf8563::reg::kControlStatuS1, 0));
-        FUNC_PREFIX(I2cWriteReg(rtc::pcf8563::reg::kControlStatuS2, 0));
+        i2c::WriteReg(rtc::pcf8563::reg::kControlStatuS1, static_cast<uint8_t>(0));
+        i2c::WriteReg(rtc::pcf8563::reg::kControlStatuS2, static_cast<uint8_t>(0));
 
-        FUNC_PREFIX(I2cReadReg(rtc::pcf8563::reg::kSeconds, value));
+        i2c::ReadReg(rtc::pcf8563::reg::kSeconds, value);
 
         // Register seconds has the VL bit
         // 0 - clock integrity is guaranteed
@@ -227,7 +228,7 @@ void HwClock::RtcProbe() {
             RtcSet(&rtc_time);
         }
 
-        FUNC_PREFIX(I2cReadReg(rtc::pcf8563::reg::kSeconds, value));
+        i2c::ReadReg(rtc::pcf8563::reg::kSeconds, value);
 
         if ((value & rtc::pcf8563::bit::kSecondsVl) == rtc::pcf8563::bit::kSecondsVl) {
             DEBUG_PUTS("Clock is not running -> disconnected");
@@ -285,9 +286,9 @@ bool HwClock::RtcSet(const struct tm* time) {
         data[0] = rtc::reg::kSeconds;
     }
 
-    FUNC_PREFIX(I2cSetAddress(address_));
-    FUNC_PREFIX(I2cSetBaudrate(HAL_I2C::FULL_SPEED));
-    FUNC_PREFIX(I2cWrite(data, sizeof(data) / sizeof(data[0])));
+    i2c::SetAddress(address_);
+    i2c::SetBaudrate(i2c::kFullSpeed);
+    i2c::Write(data, sizeof(data) / sizeof(data[0]));
 
     DEBUG_EXIT();
     return true;
@@ -310,10 +311,10 @@ bool HwClock::RtcGet(struct tm* time) {
         registers[0] = rtc::reg::kSeconds;
     }
 
-    FUNC_PREFIX(I2cSetAddress(address_));
-    FUNC_PREFIX(I2cSetBaudrate(HAL_I2C::FULL_SPEED));
-    FUNC_PREFIX(I2cWrite(registers, 1));
-    FUNC_PREFIX(I2cRead(registers, sizeof(registers) / sizeof(registers[0])));
+    i2c::SetAddress(address_);
+    i2c::SetBaudrate(i2c::kFullSpeed);
+    i2c::Write(registers, 1);
+    i2c::Read(registers, sizeof(registers) / sizeof(registers[0]));
 
     time->tm_sec = BCD2DEC(registers[rtc::reg::kSeconds] & 0x7f);
     time->tm_min = BCD2DEC(registers[rtc::reg::kMinutes] & 0x7f);
@@ -355,8 +356,8 @@ bool HwClock::RtcSetAlarm(const struct tm* time) {
             auto data = &registers[1];
             data[0] = rtc::mcp7941x::reg::kControl;
 
-            FUNC_PREFIX(I2cWrite(data, 1));
-            FUNC_PREFIX(I2cRead(data, 10));
+            i2c::Write(data, 1);
+            i2c::Read(data, 10);
 
             // Set alarm 0, using 24-hour and day-of-month modes.
             data[3] = DEC2BCD(time->tm_sec);
@@ -373,12 +374,12 @@ bool HwClock::RtcSetAlarm(const struct tm* time) {
             data[0] &= static_cast<char>(~rtc::mcp7941x::bit::kAlM0En);
 
             registers[0] = rtc::mcp7941x::reg::kControl;
-            FUNC_PREFIX(I2cWrite(registers, sizeof(registers) / sizeof(registers[0])));
+            i2c::Write(registers, sizeof(registers) / sizeof(registers[0]));
 
             if (alarm_enabled_) {
                 registers[0] = rtc::mcp7941x::reg::kControl;
                 registers[1] |= rtc::mcp7941x::bit::kAlM0En;
-                FUNC_PREFIX(I2cWrite(registers, 2));
+                i2c::Write(registers, 2);
             }
 
             DEBUG_EXIT();
@@ -391,10 +392,10 @@ bool HwClock::RtcSetAlarm(const struct tm* time) {
             auto data = &registers[1];
             data[0] = rtc::ds3231::reg::kAlarM1Seconds;
 
-            FUNC_PREFIX(I2cSetAddress(address_));
-            FUNC_PREFIX(I2cSetBaudrate(HAL_I2C::FULL_SPEED));
-            FUNC_PREFIX(I2cWrite(data, 1));
-            FUNC_PREFIX(I2cRead(data, 9));
+            i2c::SetAddress(address_);
+            i2c::SetBaudrate(i2c::kFullSpeed);
+            i2c::Write(data, 1);
+            i2c::Read(data, 9);
 
             const auto kControl = data[7];
             const auto kStatus = data[8];
@@ -413,13 +414,13 @@ bool HwClock::RtcSetAlarm(const struct tm* time) {
             data[8] = kStatus & static_cast<char>(~(rtc::ds3231::bit::kA1F | rtc::ds3231::bit::kA2F));
 
             registers[0] = rtc::ds3231::reg::kAlarM1Seconds;
-            FUNC_PREFIX(I2cWrite(registers, sizeof(registers) / sizeof(registers[0])));
+            i2c::Write(registers, sizeof(registers) / sizeof(registers[0]));
 
             if (alarm_enabled_) {
                 DEBUG_PUTS("Alarm is enabled");
                 registers[0] = rtc::ds3231::reg::kControl;
                 registers[1] |= rtc::ds3231::bit::kA1Ie;
-                FUNC_PREFIX(I2cWrite(registers, 2));
+                i2c::Write(registers, 2);
             }
 
             DEBUG_EXIT();
@@ -436,9 +437,9 @@ bool HwClock::RtcSetAlarm(const struct tm* time) {
             data[3] = DEC2BCD(time->tm_mday);
             data[4] = time->tm_wday & 0x07;
 
-            FUNC_PREFIX(I2cSetAddress(address_));
-            FUNC_PREFIX(I2cSetBaudrate(HAL_I2C::FULL_SPEED));
-            FUNC_PREFIX(I2cWrite(data, sizeof(data) / sizeof(data[0])));
+            i2c::SetAddress(address_);
+            i2c::SetBaudrate(i2c::kFullSpeed);
+            i2c::Write(data, sizeof(data) / sizeof(data[0]));
 
             PCF8563SetAlarmMode();
 
@@ -470,10 +471,10 @@ bool HwClock::RtcGetAlarm(struct tm* time) {
 
             registers[0] = rtc::mcp7941x::reg::kControl;
 
-            FUNC_PREFIX(I2cSetAddress(address_));
-            FUNC_PREFIX(I2cSetBaudrate(HAL_I2C::FULL_SPEED));
-            FUNC_PREFIX(I2cWrite(registers, 1));
-            FUNC_PREFIX(I2cRead(registers, sizeof(registers) / sizeof(registers[0])));
+            i2c::SetAddress(address_);
+            i2c::SetBaudrate(i2c::kFullSpeed);
+            i2c::Write(registers, 1);
+            i2c::Read(registers, sizeof(registers) / sizeof(registers[0]));
 
             time->tm_sec = BCD2DEC(registers[3] & 0x7f);
             time->tm_min = BCD2DEC(registers[4] & 0x7f);
@@ -497,10 +498,10 @@ bool HwClock::RtcGetAlarm(struct tm* time) {
 
             registers[0] = rtc::ds3231::reg::kAlarM1Seconds;
 
-            FUNC_PREFIX(I2cSetAddress(address_));
-            FUNC_PREFIX(I2cSetBaudrate(HAL_I2C::FULL_SPEED));
-            FUNC_PREFIX(I2cWrite(registers, 1));
-            FUNC_PREFIX(I2cRead(registers, sizeof(registers) / sizeof(registers[0])));
+            i2c::SetAddress(address_);
+            i2c::SetBaudrate(i2c::kFullSpeed);
+            i2c::Write(registers, 1);
+            i2c::Read(registers, sizeof(registers) / sizeof(registers[0]));
 
             time->tm_sec = BCD2DEC(registers[0] & 0x7f);
             time->tm_min = BCD2DEC(registers[1] & 0x7f);
@@ -524,10 +525,10 @@ bool HwClock::RtcGetAlarm(struct tm* time) {
 
             registers[0] = rtc::pcf8563::reg::kAlarm;
 
-            FUNC_PREFIX(I2cSetAddress(address_));
-            FUNC_PREFIX(I2cSetBaudrate(HAL_I2C::FULL_SPEED));
-            FUNC_PREFIX(I2cWrite(registers, 1));
-            FUNC_PREFIX(I2cRead(registers, sizeof(registers) / sizeof(registers[0])));
+            i2c::SetAddress(address_);
+            i2c::SetBaudrate(i2c::kFullSpeed);
+            i2c::Write(registers, 1);
+            i2c::Read(registers, sizeof(registers) / sizeof(registers[0]));
 
             DEBUG_PRINTF("raw data is min=%02x, hr=%02x, mday=%02x, wday=%02x", registers[0], registers[1], registers[2], registers[3]);
 
@@ -574,7 +575,7 @@ void HwClock::PCF8563GetAlarmMode() {
     assert(type_ == rtc::Type::kPcF8563);
 
     uint8_t value;
-    FUNC_PREFIX(I2cReadReg(rtc::pcf8563::reg::kControlStatuS2, value));
+    i2c::ReadReg(rtc::pcf8563::reg::kControlStatuS2, value);
 
     alarm_enabled_ = value & rtc::pcf8563::bit::kStatus2Aie;
     alarm_pending_ = value & rtc::pcf8563::bit::kStatus2Af;
@@ -590,8 +591,8 @@ void HwClock::PCF8563SetAlarmMode() {
 
     data[1] = rtc::pcf8563::reg::kControlStatuS2;
 
-    FUNC_PREFIX(I2cWrite(&data[1], 1));
-    FUNC_PREFIX(I2cRead(&data[1], 1));
+    i2c::Write(&data[1], 1);
+    i2c::Read(&data[1], 1);
 
     if (alarm_enabled_) {
         DEBUG_PUTS("Alarm is enabled");
@@ -603,7 +604,7 @@ void HwClock::PCF8563SetAlarmMode() {
     data[0] = rtc::pcf8563::reg::kControlStatuS2;
     data[1] &= static_cast<char>(~rtc::pcf8563::bit::kStatus2Af);
 
-    FUNC_PREFIX(I2cWrite(data, 2));
+    i2c::Write(data, 2);
 
     DEBUG_EXIT();
 }

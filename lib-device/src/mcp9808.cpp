@@ -2,7 +2,7 @@
  * @file mcp9808.cpp
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,53 +26,44 @@
 #include <cstdint>
 
 #include "mcp9808.h"
+#include "i2c.h"
 
-#include "hal_i2c.h"
-
-namespace sensor
-{
-namespace mcp9808
-{
-static constexpr uint8_t kI2CAddress = 0x18;
-namespace reg
-{
-// static constexpr uint8_t UPPER_TEMP = 0x02;
-// static constexpr uint8_t LOWER_TEMP = 0x03;
-// static constexpr uint8_t CRIT_TEMP = 0x04;
-static constexpr uint8_t kAmbientTemp = 0x05;
-static constexpr uint8_t kManufId = 0x06;
-static constexpr uint8_t kDeviceId = 0x07;
+namespace sensor {
+namespace mcp9808 {
+inline constexpr uint8_t kI2CAddress = 0x18;
+namespace reg {
+// inline constexpr uint8_t UPPER_TEMP = 0x02;
+// inline constexpr uint8_t LOWER_TEMP = 0x03;
+// inline constexpr uint8_t CRIT_TEMP = 0x04;
+inline constexpr uint8_t kAmbientTemp = 0x05;
+inline constexpr uint8_t kManufId = 0x06;
+inline constexpr uint8_t kDeviceId = 0x07;
 } // namespace reg
 } // namespace mcp9808
 
-MCP9808::MCP9808(uint8_t address) : HAL_I2C(address == 0 ? sensor::mcp9808::kI2CAddress : address)
-{
-    m_bIsInitialized = IsConnected();
+MCP9808::MCP9808(uint8_t address) : address_(address == 0 ? sensor::mcp9808::kI2CAddress : address) {
+    initialized_ = i2c::IsConnected(address_);
 
-    if (m_bIsInitialized)
-    {
-        m_bIsInitialized = (ReadRegister16(sensor::mcp9808::reg::kManufId) == 0x0054);
+    if (initialized_) {
+        initialized_ = (i2c::ReadRegister16(sensor::mcp9808::reg::kManufId) == 0x0054);
     }
 
-    if (m_bIsInitialized)
-    {
-        m_bIsInitialized = (ReadRegister16(sensor::mcp9808::reg::kDeviceId) == 0x0400);
+    if (initialized_) {
+        initialized_ = (i2c::ReadRegister16(sensor::mcp9808::reg::kDeviceId) == 0x0400);
     }
 }
 
-float MCP9808::Get()
-{
-    const auto kValue = ReadRegister16(sensor::mcp9808::reg::kAmbientTemp);
+float MCP9808::Get() {
+	i2c::SetAddress(address_);
+    const auto kValue = i2c::ReadRegister16(sensor::mcp9808::reg::kAmbientTemp);
     auto temperature = static_cast<float>(kValue & 0x0FFF);
 
     temperature /= 16.0f;
 
-    if ((kValue & 0x1000) == 0x1000)
-    {
+    if ((kValue & 0x1000) == 0x1000) {
         temperature -= 256.0f;
     }
 
     return temperature;
 }
-
 } // namespace sensor

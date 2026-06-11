@@ -2,7 +2,7 @@
  * @file rdmsensormcp9808.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,29 +30,24 @@
 
 #include "rdmsensor.h"
 #include "mcp9808.h"
-
 #include "rdm_e120.h"
 
-class RDMSensorMCP9808: public RDMSensor, sensor::MCP9808  {
-public:
-	RDMSensorMCP9808(uint8_t nSensor, uint8_t address = 0) : RDMSensor(nSensor), sensor::MCP9808(address) {
-		SetType(E120_SENS_TEMPERATURE);
-		SetUnit(E120_UNITS_CENTIGRADE);
-		SetPrefix(E120_PREFIX_NONE);
-		SetRangeMin(rdm::sensor::SafeRangeMin(sensor::mcp9808::RANGE_MIN));
-		SetRangeMax(rdm::sensor::SafeRangeMax(sensor::mcp9808::RANGE_MAX));
-		SetNormalMin(rdm::sensor::SafeRangeMin(18));
-		SetNormalMax(rdm::sensor::SafeRangeMin(40));
-		SetDescription(sensor::mcp9808::DESCRIPTION);
-	}
+class RDMSensorMCP9808 : public RDMSensor, sensor::MCP9808 {
+   public:
+    explicit RDMSensorMCP9808(uint8_t sensor, uint8_t address = 0) : RDMSensor(sensor), sensor::MCP9808(address) {
+        SetType(E120_SENS_TEMPERATURE);
+        SetUnit(E120_UNITS_CENTIGRADE);
+        SetPrefix(E120_PREFIX_NONE);
+        SetRangeMin(rdm::sensor::SafeRangeMin(sensor::mcp9808::kRangeMin));
+        SetRangeMax(rdm::sensor::SafeRangeMax(sensor::mcp9808::kRangeMax));
+        SetNormalMin(rdm::sensor::SafeRangeMin(18));
+        SetNormalMax(rdm::sensor::SafeRangeMin(40));
+        SetDescription(sensor::mcp9808::kDescription);
+    }
 
-	bool Initialize() override {
-		return sensor::MCP9808::Initialize();
-	}
+    bool Initialize() override { return sensor::MCP9808::Initialize(); }
 
-	int16_t GetValue() override {
-		return static_cast<int16_t>(sensor::MCP9808::Get());
-	}
+    int16_t GetValue() override { return static_cast<int16_t>(sensor::MCP9808::Get()); }
 };
 
-#endif /* RDMSENSORMCP9808_H_ */
+#endif // RDMSENSORMCP9808_H_

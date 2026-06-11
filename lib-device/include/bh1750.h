@@ -28,30 +28,25 @@
 
 #include <cstdint>
 
-#include "hal_i2c.h"
-
-namespace sensor
-{
-namespace bh1750
-{
-static constexpr char DESCRIPTION[] = "Ambient Light";
-static constexpr auto RANGE_MIN = 0;
-static constexpr auto RANGE_MAX = 65535;
+namespace sensor {
+namespace bh1750 {
+inline constexpr char kDescription[] = "Ambient Light";
+inline constexpr auto kRangeMin = 0;
+inline constexpr auto kRangeMax = 65535;
 } // namespace bh1750
 
-class BH170 : HAL_I2C
-{
+class BH1750 {
    public:
-    explicit BH170(uint8_t address = 0);
+    explicit BH1750(uint8_t address = 0);
 
-    bool Initialize() { return m_bIsInitialized; }
+    bool Initialize() { return initialized_; }
 
     uint16_t Get();
 
    private:
-    bool m_bIsInitialized = false;
+    uint8_t address_{0};
+    bool initialized_{false};
 };
-
 } // namespace sensor
 
-#endif  // BH1750_H_
+#endif // BH1750_H_

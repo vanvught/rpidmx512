@@ -2,7 +2,7 @@
  * @file si5351a.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,14 +28,11 @@
 
 #include <cstdint>
 
-#include "hal_i2c.h"
-
-class SI5351A : HAL_I2C
-{
+class SI5351A {
    public:
     explicit SI5351A(uint8_t address = 0);
 
-    bool IsConnected() { return is_connected_; }
+    bool IsConnected() { return connected_; }
 
     void ClockBuilder();
 
@@ -44,7 +41,8 @@ class SI5351A : HAL_I2C
     void Post();
 
    private:
-    bool is_connected_ = false;
+   uint8_t address_{0};
+   bool connected_{false};
 };
 
-#endif  // SI5351A_H_
+#endif // SI5351A_H_

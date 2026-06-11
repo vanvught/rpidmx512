@@ -2,7 +2,7 @@
  * @file rdm_sensors.h
  *
  */
-/* Copyright (C) 2023-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2023-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,25 +33,21 @@
 #include "common/utils/utils_enum.h"
 #include "json/rdmsensorsparams.h"
 
-namespace rdm::sensors
-{
-enum class Types: uint32_t
-{
-    kBH170,
-    kHTU21D,
-    kINA219,
-    kMCP9808,
-    kSI7021,
-    kMCP3424,
-    kUndefined
+namespace rdm::sensors {
+enum class Types : uint32_t { 
+	kBH170, 
+	kHTU21D, 
+	kINA219, 
+	kMCP9808, 
+	kSI7021, 
+	kMCP3424, 
+	kUndefined 
 };
 
 static_assert(json::RdmSensorsParams::KeysSize() == static_cast<size_t>(Types::kUndefined));
 
-[[nodiscard]] inline constexpr const char* GetType(Types type)
-{
-    if (type < rdm::sensors::Types::kUndefined)
-    {
+[[nodiscard]] inline constexpr const char* GetType(Types type) {
+    if (type < rdm::sensors::Types::kUndefined) {
         const auto& k = json::RdmSensorsParams::Keys();
         return k[static_cast<uint32_t>(type)].GetName();
     }
@@ -59,16 +55,14 @@ static_assert(json::RdmSensorsParams::KeysSize() == static_cast<size_t>(Types::k
     return "Unknown";
 }
 
-inline Types GetType(const char* string)
-{
+inline Types GetType(const char* string) {
     assert(string != nullptr);
     const auto& k = json::RdmSensorsParams::Keys();
 
     for (uint32_t i = 0; i < json::RdmSensorsParams::KeysSize(); i++)
 
     {
-        if (strcasecmp(string, k[i].GetName()) == 0)
-        {
+        if (strcasecmp(string, k[i].GetName()) == 0) {
             return common::FromValue<Types>(i);
         }
     }
@@ -77,4 +71,4 @@ inline Types GetType(const char* string)
 }
 } // namespace rdm::sensors
 
-#endif  // RDM_SENSORS_H_
+#endif // RDM_SENSORS_H_

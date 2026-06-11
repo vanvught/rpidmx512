@@ -2,7 +2,7 @@
  * @file rdmsensorhtu21dtemperature.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,29 +30,24 @@
 
 #include "rdmsensor.h"
 #include "htu21d.h"
-
 #include "rdm_e120.h"
 
-class RDMSensorHTU21DTemperature: public RDMSensor, sensor::HTU21D {
-public:
-	RDMSensorHTU21DTemperature(uint8_t nSensor, uint8_t address = 0) : RDMSensor(nSensor), sensor::HTU21D(address) {
-		SetType(E120_SENS_TEMPERATURE);
-		SetUnit(E120_UNITS_CENTIGRADE);
-		SetPrefix(E120_PREFIX_NONE);
-		SetRangeMin(rdm::sensor::SafeRangeMin(sensor::htu21d::temperature::RANGE_MIN));
-		SetRangeMax(rdm::sensor::SafeRangeMax(sensor::htu21d::temperature::RANGE_MAX));
-		SetNormalMin(rdm::sensor::SafeRangeMin(sensor::htu21d::temperature::RANGE_MIN));
-		SetNormalMax(rdm::sensor::SafeRangeMax(sensor::htu21d::temperature::RANGE_MAX));
-		SetDescription(sensor::htu21d::temperature::DESCRIPTION);
-	}
+class RDMSensorHTU21DTemperature : public RDMSensor, sensor::HTU21D {
+   public:
+    explicit RDMSensorHTU21DTemperature(uint8_t sensor, uint8_t address = 0) : RDMSensor(sensor), sensor::HTU21D(address) {
+        SetType(E120_SENS_TEMPERATURE);
+        SetUnit(E120_UNITS_CENTIGRADE);
+        SetPrefix(E120_PREFIX_NONE);
+        SetRangeMin(rdm::sensor::SafeRangeMin(sensor::htu21d::temperature::kRangeMin));
+        SetRangeMax(rdm::sensor::SafeRangeMax(sensor::htu21d::temperature::kRangeMax));
+        SetNormalMin(rdm::sensor::SafeRangeMin(sensor::htu21d::temperature::kRangeMin));
+        SetNormalMax(rdm::sensor::SafeRangeMax(sensor::htu21d::temperature::kRangeMax));
+        SetDescription(sensor::htu21d::temperature::kDescription);
+    }
 
-	bool Initialize() override {
-		return sensor::HTU21D::Initialize();
-	}
+    bool Initialize() override { return sensor::HTU21D::Initialize(); }
 
-	int16_t GetValue() override {
-		return static_cast<int16_t>(sensor::HTU21D::GetTemperature(	));
-	}
+    int16_t GetValue() override { return static_cast<int16_t>(sensor::HTU21D::GetTemperature()); }
 };
 
-#endif /* RDMSENSORHTU21DTEMPERATURE_H_ */
+#endif // RDMSENSORHTU21DTEMPERATURE_H_

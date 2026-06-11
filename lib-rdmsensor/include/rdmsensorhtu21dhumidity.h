@@ -2,7 +2,7 @@
  * @file rdmsensorhtu21dhumidity.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,19 +32,17 @@
 #include "htu21d.h"
 #include "rdm_e120.h"
 
-class RDMSensorHTU21DHumidity : public RDMSensor, sensor::HTU21D
-{
+class RDMSensorHTU21DHumidity : public RDMSensor, sensor::HTU21D {
    public:
-    explicit RDMSensorHTU21DHumidity(uint8_t sensor, uint8_t address = 0) : RDMSensor(sensor), sensor::HTU21D(address)
-    {
+    explicit RDMSensorHTU21DHumidity(uint8_t sensor, uint8_t address = 0) : RDMSensor(sensor), sensor::HTU21D(address) {
         SetType(E120_SENS_HUMIDITY);
         SetUnit(E120_UNITS_NONE);
         SetPrefix(E120_PREFIX_NONE);
-        SetRangeMin(rdm::sensor::SafeRangeMin(sensor::htu21d::humidity::RANGE_MIN));
-        SetRangeMax(rdm::sensor::SafeRangeMax(sensor::htu21d::humidity::RANGE_MAX));
-        SetNormalMin(rdm::sensor::SafeRangeMin(sensor::htu21d::humidity::RANGE_MIN));
-        SetNormalMax(rdm::sensor::SafeRangeMax(sensor::htu21d::humidity::RANGE_MAX));
-        SetDescription(sensor::htu21d::humidity::DESCRIPTION);
+        SetRangeMin(rdm::sensor::SafeRangeMin(sensor::htu21d::humidity::kRangeMin));
+        SetRangeMax(rdm::sensor::SafeRangeMax(sensor::htu21d::humidity::kRangeMax));
+        SetNormalMin(rdm::sensor::SafeRangeMin(sensor::htu21d::humidity::kRangeMin));
+        SetNormalMax(rdm::sensor::SafeRangeMax(sensor::htu21d::humidity::kRangeMax));
+        SetDescription(sensor::htu21d::humidity::kDescription);
     }
 
     bool Initialize() override { return sensor::HTU21D::Initialize(); }
@@ -52,4 +50,4 @@ class RDMSensorHTU21DHumidity : public RDMSensor, sensor::HTU21D
     int16_t GetValue() override { return static_cast<int16_t>(sensor::HTU21D::GetHumidity()); }
 };
 
-#endif  // RDMSENSORHTU21DHUMIDITY_H_
+#endif // RDMSENSORHTU21DHUMIDITY_H_

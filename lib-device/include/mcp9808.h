@@ -28,30 +28,25 @@
 
 #include <cstdint>
 
-#include "hal_i2c.h"
-
-namespace sensor
-{
-namespace mcp9808
-{
-static constexpr char DESCRIPTION[] = "Ambient Temperature";
-static constexpr auto RANGE_MIN = -20;
-static constexpr auto RANGE_MAX = 100;
+namespace sensor {
+namespace mcp9808 {
+static constexpr char kDescription[] = "Ambient Temperature";
+static constexpr int16_t kRangeMin = -20;
+static constexpr int16_t kRangeMax = 100;
 } // namespace mcp9808
 
-class MCP9808 : HAL_I2C
-{
+class MCP9808 {
    public:
-    MCP9808(uint8_t address = 0);
+    explicit MCP9808(uint8_t address = 0);
 
-    bool Initialize() { return m_bIsInitialized; }
+    bool Initialize() { return initialized_; }
 
     float Get();
 
    private:
-    bool m_bIsInitialized{false};
+    uint8_t address_{0};
+    bool initialized_{false};
 };
-
 } // namespace sensor
 
-#endif  // MCP9808_H_
+#endif // MCP9808_H_

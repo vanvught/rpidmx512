@@ -2,7 +2,7 @@
  * @file rdmsensorsi7021temperature.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,26 +33,22 @@
 
 #include "rdm_e120.h"
 
-class RDMSensorSI7021Temperature: public RDMSensor, sensor::SI7021 {
-public:
-	RDMSensorSI7021Temperature(uint8_t nSensor, uint8_t address = 0) : RDMSensor(nSensor), sensor::SI7021(address) {
-		SetType(E120_SENS_TEMPERATURE);
-		SetUnit(E120_UNITS_CENTIGRADE);
-		SetPrefix(E120_PREFIX_NONE);
-		SetRangeMin(rdm::sensor::SafeRangeMin(sensor::si7021::temperature::RANGE_MIN));
-		SetRangeMax(rdm::sensor::SafeRangeMax(sensor::si7021::temperature::RANGE_MAX));
-		SetNormalMin(rdm::sensor::SafeRangeMin(sensor::si7021::temperature::RANGE_MIN));
-		SetNormalMax(rdm::sensor::SafeRangeMax(sensor::si7021::temperature::RANGE_MAX));
-		SetDescription(sensor::si7021::temperature::DESCRIPTION);
-	}
+class RDMSensorSI7021Temperature : public RDMSensor, sensor::SI7021 {
+   public:
+    explicit RDMSensorSI7021Temperature(uint8_t sensor, uint8_t address = 0) : RDMSensor(sensor), sensor::SI7021(address) {
+        SetType(E120_SENS_TEMPERATURE);
+        SetUnit(E120_UNITS_CENTIGRADE);
+        SetPrefix(E120_PREFIX_NONE);
+        SetRangeMin(rdm::sensor::SafeRangeMin(sensor::si7021::temperature::kRangeMin));
+        SetRangeMax(rdm::sensor::SafeRangeMax(sensor::si7021::temperature::kRangeMax));
+        SetNormalMin(rdm::sensor::SafeRangeMin(sensor::si7021::temperature::kRangeMin));
+        SetNormalMax(rdm::sensor::SafeRangeMax(sensor::si7021::temperature::kRangeMax));
+        SetDescription(sensor::si7021::temperature::kDescription);
+    }
 
-	bool Initialize() override {
-		return sensor::SI7021::Initialize();
-	}
+    bool Initialize() override { return sensor::SI7021::Initialize(); }
 
-	int16_t GetValue() override {
-		return static_cast<int16_t>(sensor::SI7021::GetTemperature(	));
-	}
+    int16_t GetValue() override { return static_cast<int16_t>(sensor::SI7021::GetTemperature()); }
 };
 
-#endif /* RDMSENSORSI7021TEMPERATURE_H_ */
+#endif // RDMSENSORSI7021TEMPERATURE_H_

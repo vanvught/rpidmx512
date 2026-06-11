@@ -28,20 +28,23 @@
 
 #include <stdint.h>
 
-typedef enum H3_I2C_BAUDRATE
-{
-    H3_I2C_NORMAL_SPEED = 100000,
-    H3_I2C_FULL_SPEED = 400000
+typedef enum H3_I2C_BAUDRATE { 
+	H3_I2C_NORMAL_SPEED = 100000, 
+	H3_I2C_FULL_SPEED = 400000 
 } h3_i2c_baudrate_t;
 
-typedef enum H3_I2C_RC
-{
-    H3_I2C_OK = 0,
-    H3_I2C_NOK = 1,
-    H3_I2C_NACK = 2,
-    H3_I2C_NOK_LA = 3,
-    H3_I2C_NOK_TOUT = 4
+typedef enum H3_I2C_RC { 
+	H3_I2C_OK = 0, 
+	H3_I2C_NOK = 1, 
+	H3_I2C_NACK = 2, 
+	H3_I2C_NOK_LA = 3, 
+	H3_I2C_NOK_TOUT = 4 
 } h3_i2c_rc_t;
+
+namespace h3 {
+inline constexpr uint32_t kI2CNormalSpeed = H3_I2C_NORMAL_SPEED;
+inline constexpr uint32_t kI2CFullSpeed = H3_I2C_FULL_SPEED;
+} // namespace h3
 
 void H3I2cBegin();
 void H3I2cEnd();
@@ -51,6 +54,7 @@ uint8_t H3I2cWrite(const char*, uint32_t);
 uint8_t H3I2cRead(char*, uint32_t);
 bool H3I2cIsConnected(uint8_t, uint32_t baudrate = H3_I2C_NORMAL_SPEED);
 void H3I2cWriteReg(const uint8_t, const uint8_t);
+void H3I2cWriteReg(const uint8_t, const uint16_t);
 void H3I2cReadReg(const uint8_t, uint8_t&);
 
-#endif  // H3_I2C_H_
+#endif // H3_I2C_H_

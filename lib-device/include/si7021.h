@@ -28,32 +28,25 @@
 
 #include <cstdint>
 
-#include "hal_i2c.h"
-
-namespace sensor
-{
-namespace si7021
-{
-namespace temperature
-{
-static constexpr char DESCRIPTION[] = "Ambient Temperature";
-static constexpr auto RANGE_MIN = -40;
-static constexpr auto RANGE_MAX = 125;
+namespace sensor {
+namespace si7021 {
+namespace temperature {
+static constexpr char kDescription[] = "Ambient Temperature";
+static constexpr int16_t kRangeMin = -40;
+static constexpr int16_t kRangeMax = 125;
 } // namespace temperature
-namespace humidity
-{
-static constexpr char DESCRIPTION[] = "Relative Humidity";
-static constexpr int16_t RANGE_MIN = 0;
-static constexpr int16_t RANGE_MAX = 100;
+namespace humidity {
+static constexpr char kDescription[] = "Relative Humidity";
+static constexpr int16_t kRangeMin = 0;
+static constexpr int16_t kRangeMax = 100;
 } // namespace humidity
 } // namespace si7021
 
-class SI7021 : HAL_I2C
-{
+class SI7021 {
    public:
     explicit SI7021(uint8_t address = 0);
 
-    bool Initialize() { return m_bIsInitialized; }
+    bool Initialize() { return initialized_; }
 
     float GetTemperature();
     float GetHumidity();
@@ -62,9 +55,9 @@ class SI7021 : HAL_I2C
     uint16_t ReadRaw(uint8_t cmd);
 
    private:
-    bool m_bIsInitialized{false};
+    uint8_t address_{0};
+    bool initialized_{false};
 };
-
 } // namespace sensor
 
-#endif  // SI7021_H_
+#endif // SI7021_H_

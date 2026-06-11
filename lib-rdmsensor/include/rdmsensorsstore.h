@@ -32,14 +32,12 @@
 #include "configstore.h"
 #include "configurationstore.h"
 
-namespace rdmsensors_store
-{
-inline void SaveCalibration(uint32_t sensor, int32_t calibration)
-{
+namespace rdmsensors_store {
+inline void SaveCalibration(uint32_t sensor, int32_t calibration) {
     assert(sensor < common::store::rdm::sensors::kMaxSensors);
     auto c = static_cast<int16_t>(calibration);
     ConfigStore::Instance().RdmSensorsUpdateIndexed(&common::store::RdmSensors::calibrate, sensor, c);
 }
 } // namespace rdmsensors_store
 
-#endif  // RDMSENSORSSTORE_H_
+#endif // RDMSENSORSSTORE_H_

@@ -26,16 +26,13 @@
 #include <cstdint>
 
 #include "si7021.h"
+#include "i2c.h"
+#include "timing.h"
 
-#include "hal_i2c.h"
-
-namespace sensor
-{
-namespace si7021
-{
+namespace sensor {
+namespace si7021 {
 static constexpr uint8_t kI2CAddress = 0x40;
-namespace reg
-{
+namespace reg {
 // static constexpr uint8_t TRIGGER_TEMP_MEASURE_HOLD = 0xE3;
 // static constexpr uint8_t TRIGGER_HUMD_MEASURE_HOLD = 0xE5;
 static constexpr uint8_t kTriggerTempMeasureNohold = 0xF3;
@@ -46,36 +43,31 @@ static constexpr uint8_t kTriggerHumdMeasureNohold = 0xF5;
 } // namespace reg
 } // namespace si7021
 
-SI7021::SI7021(uint8_t address) : HAL_I2C(address == 0 ? sensor::si7021::kI2CAddress : address)
-{
-    m_bIsInitialized = HAL_I2C::IsConnected();
+SI7021::SI7021(uint8_t address) : address_(address == 0 ? sensor::si7021::kI2CAddress : address) {
+    initialized_ = i2c::IsConnected(address_);
 }
 
-float SI7021::GetTemperature()
-{
+float SI7021::GetTemperature() {
     const auto kTemp = static_cast<float>(ReadRaw(sensor::si7021::reg::kTriggerTempMeasureNohold)) / 65536.0f;
     return -46.85f + (175.72f * kTemp);
 }
 
-float SI7021::GetHumidity()
-{
+float SI7021::GetHumidity() {
     const auto kHumd = static_cast<float>(ReadRaw(sensor::si7021::reg::kTriggerHumdMeasureNohold)) / 65536.0f;
     return -6.0f + (125.0f * kHumd);
 }
 
-uint16_t SI7021::ReadRaw(uint8_t cmd)
-{
-    HAL_I2C::Write(cmd);
+uint16_t SI7021::ReadRaw(uint8_t cmd) {
+	i2c::SetAddress(address_);
+    i2c::Write(cmd);
 
     char buf[3] = {0};
 
-    for (uint32_t i = 0; i < 8; ++i)
-    {
+    for (uint32_t i = 0; i < 8; ++i) {
         timing::DelayUs(10000);
-        HAL_I2C::Read(buf, 3);
+        i2c::Read(buf, 3);
 
-        if ((buf[0] & 0x3) == 2)
-        {
+        if ((buf[0] & 0x3) == 2) {
             break;
         }
     }
@@ -84,5 +76,4 @@ uint16_t SI7021::ReadRaw(uint8_t cmd)
 
     return kRawValue & 0xFFFC;
 }
-
 } // namespace sensor
