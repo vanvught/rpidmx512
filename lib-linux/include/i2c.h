@@ -35,6 +35,10 @@ namespace i2c {
 inline constexpr uint32_t kNormalSpeed = 100000;
 inline constexpr uint32_t kFullSpeed = 400000;
 
+inline void Begin() {
+    LinuxI2cBegin();
+}
+
 inline void SetBaudrate(uint32_t baudrate) {
     LinuxI2cSetBaudrate(baudrate);
 }
