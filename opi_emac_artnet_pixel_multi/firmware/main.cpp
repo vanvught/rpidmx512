@@ -48,6 +48,7 @@
 #include "configstore.h"
 #include "firmwareversion.h"
 #include "software_version.h"
+#include "firmware/debug/debug_debug.h"
 
 namespace hal {
 void RebootHandler() {
@@ -68,11 +69,11 @@ int main() // NOLINT
     fw.Print("Art-Net 4 Pixel controller {8x 4 Universes}");
 
     DmxNodeNode dmxnode_node;
-    PixelTestPattern pixeltest_pattern(pixelpatterns::Pattern::kNone, 8);
 
     // Pixel - 32 Universes
     PixelDmxMulti pixeldmx_multi;
-
+	PixelTestPattern pixeltest_pattern(pixelpatterns::Pattern::kNone, 8);
+	
     json::PixelDmxParams pixeldmx_params;
     pixeldmx_params.Load();
     pixeldmx_params.Set();
