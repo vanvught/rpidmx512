@@ -2,7 +2,7 @@
  * @file time.cpp
  *
  */
-/* Copyright (C) 2016-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2016-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,7 @@
 #include <time.h>
 
 namespace global {
-int32_t g_nUtcOffset = 0;
+int32_t g_utc_offset = 0;
 } // namespace global
 
 static constexpr int kDaysOfMonth[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
@@ -56,7 +56,7 @@ struct tm* localtime(const time_t* t) {
         return nullptr;
     }
 
-    auto time = *t + global::g_nUtcOffset;
+    auto time = *t + global::g_utc_offset;
     return gmtime(&time);
 }
 

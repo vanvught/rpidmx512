@@ -37,7 +37,7 @@ namespace global
 /**
  * @brief The current UTC offset in seconds.
  */
-extern int32_t g_nUtcOffset;
+extern int32_t g_utc_offset;
 } // namespace global
 
 namespace hal::utc

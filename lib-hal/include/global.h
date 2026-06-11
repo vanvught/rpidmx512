@@ -22,7 +22,7 @@
  */
 namespace global
 {
-extern int32_t g_nUtcOffset;
+extern int32_t g_utc_offset;
 }
 
 /**
@@ -49,14 +49,14 @@ class Global
      * @brief Gets the current UTC offset in seconds.
      * @return UTC offset in seconds.
      */
-    int32_t GetUtcOffset() const { return global::g_nUtcOffset; }
+    int32_t GetUtcOffset() const { return global::g_utc_offset; }
 
     /**
      * @brief Gets the current UTC offset as (hours, minutes).
      * @param[out] hours Signed hour component.
      * @param[out] minutes Unsigned minute component.
      */
-    inline void GetUtcOffset(int32_t& hours, uint32_t& minutes) { hal::utc::SplitOffset(global::g_nUtcOffset, hours, minutes); }
+    inline void GetUtcOffset(int32_t& hours, uint32_t& minutes) { hal::utc::SplitOffset(global::g_utc_offset, hours, minutes); }
 
     /**
      * @brief Sets the global UTC offset if the value is valid.
@@ -67,7 +67,7 @@ class Global
     {
         if (hal::utc::IsValidOffset(utc_offset_seconds))
         {
-            ::global::g_nUtcOffset = utc_offset_seconds;
+            ::global::g_utc_offset = utc_offset_seconds;
             return true;
         }
         return false;
