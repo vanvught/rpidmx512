@@ -33,7 +33,7 @@
 
 static uint8_t spi_data[64] __attribute__((aligned(4)));
 
-Max7219Matrix::Max7219Matrix() : font_size_(cp437_font_size()) {
+Max7219Matrix::Max7219Matrix() : font_size_(Cp437FontSize()) {
     DEBUG_ENTRY();
 
     font_ = new uint8_t[font_size_ * 8];

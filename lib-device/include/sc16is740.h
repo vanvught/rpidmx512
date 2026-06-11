@@ -33,29 +33,16 @@
 
 #include "sc16is7x0.h"
 
-namespace sc16is740
-{
-static constexpr uint8_t kI2CAddress = 0x4D;
-static constexpr uint32_t kCristalHz = 14745600UL;
+namespace sc16is740 {
+inline constexpr uint8_t kI2CAddress = 0x4D;
+inline constexpr uint32_t kCristalHz = 14745600UL;
 } // namespace sc16is740
 
-class SC16IS740 : HAL_I2C
-{
+class SC16IS740 : HAL_I2C {
    public:
-    enum class SerialParity
-    {
-        kNone,
-        kOdd,
-        kEven,
-        kForceD0,
-        kForceD1
-    };
+    enum class SerialParity { kNone, kOdd, kEven, kForceD0, kForceD1 };
 
-    enum class TriggerLevel
-    {
-        kLevelTx,
-        kLevelRx
-    };
+    enum class TriggerLevel { kLevelTx, kLevelRx };
 
     explicit SC16IS740(uint8_t address = sc16is740::kI2CAddress, uint32_t on_board_crystal_hz = sc16is740::kCristalHz);
     ~SC16IS740() = default;
@@ -67,8 +54,7 @@ class SC16IS740 : HAL_I2C
     void SetFormat(uint32_t bits, SerialParity parity, uint32_t stop_bits);
     void SetBaud(uint32_t baud);
 
-    bool IsInterrupt()
-    {
+    bool IsInterrupt() {
         const uint32_t kRegisterIIR = ReadRegister(SC16IS7X0_IIR);
 
         return ((kRegisterIIR & 0x1) != 0x1);
@@ -76,30 +62,24 @@ class SC16IS740 : HAL_I2C
 
     // Read
 
-    int GetChar()
-    {
-        if (!is_connected_)
-        {
+    int GetChar() {
+        if (!is_connected_) {
             return -1;
         }
 
-        if (!IsReadable())
-        {
+        if (!IsReadable()) {
             return -1;
         }
 
         return ReadRegister(SC16IS7X0_RHR);
     }
 
-    int GetChar(uint32_t time_out)
-    {
-        if (!is_connected_)
-        {
+    int GetChar(uint32_t time_out) {
+        if (!is_connected_) {
             return -1;
         }
 
-        if (!IsReadable(time_out))
-        {
+        if (!IsReadable(time_out)) {
             return -1;
         }
 
@@ -107,15 +87,12 @@ class SC16IS740 : HAL_I2C
     }
 
     // Write
-    int PutChar(int value)
-    {
-        if (!is_connected_)
-        {
+    int PutChar(int value) {
+        if (!is_connected_) {
             return -1;
         }
 
-        while (!IsWritable())
-        {
+        while (!IsWritable()) {
         }
 
         WriteRegister(SC16IS7X0_THR, static_cast<uint8_t>(value));
@@ -134,13 +111,10 @@ class SC16IS740 : HAL_I2C
 
     bool IsReadable() { return (ReadRegister(SC16IS7X0_RXLVL) != 0); }
 
-    bool IsReadable(uint32_t time_out)
-    {
+    bool IsReadable(uint32_t time_out) {
         const auto kMillis = timing::Millis();
-        do
-        {
-            if (IsReadable())
-            {
+        do {
+            if (IsReadable()) {
                 return true;
             }
         } while ((timing::Millis() - time_out) < kMillis);
@@ -153,4 +127,4 @@ class SC16IS740 : HAL_I2C
     bool is_connected_{false};
 };
 
-#endif  // SC16IS740_H_
+#endif // SC16IS740_H_

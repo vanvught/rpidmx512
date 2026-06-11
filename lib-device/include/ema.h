@@ -2,7 +2,7 @@
  * @file ema.h
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,9 +26,6 @@
 #ifndef EMA_H_
 #define EMA_H_
 
-#ifndef EMA_H_
-#define EMA_H_
-
 #include <cstdint>
 
 /**
@@ -43,10 +40,9 @@
  * Higher K values mean a slower response to changes in the input, making the EMA smoother.
  */
 
-template <uint8_t K> class EMA
-{
+template <uint8_t K> class EMA {
    public:
-    EMA(uint16_t nIntitial = 0) : nState(static_cast<uint16_t>(nIntitial << K) - nIntitial) {}
+    explicit EMA(uint16_t intitial = 0) : state_(static_cast<uint16_t>(intitial << K) - intitial) {}
 
     /**
      * @brief
@@ -55,14 +51,13 @@ template <uint8_t K> class EMA
      * preparing the filter to start processing new inputs from the given value.
      * @param nValue
      */
-    void Reset(const uint16_t nValue = 0) { nState = static_cast<uint16_t>(nValue << K) - nValue; }
+    void Reset(uint16_t value = 0) { state_ = static_cast<uint16_t>(value << K) - value; }
 
-    uint16_t Filter(const uint16_t nInput)
-    {
-        nState += nInput;
-        const auto nOutput = static_cast<uint16_t>((nState + nHalf) >> K);
-        nState -= nOutput;
-        return nOutput;
+    uint16_t Filter(uint16_t input) {
+        state_ += input;
+        const auto kOutput = static_cast<uint16_t>((state_ + kHalf) >> K);
+        state_ -= kOutput;
+        return kOutput;
     }
 
     /*
@@ -70,12 +65,10 @@ template <uint8_t K> class EMA
      * It ensures that when you shift the value right by K bits,
      * it rounds to the nearest integer rather than truncating.
      */
-    static constexpr uint16_t nHalf = K > 0 ? 1 << (K - 1) : 0;
+    static constexpr uint16_t kHalf = K > 0 ? 1 << (K - 1) : 0;
 
    private:
-    uint16_t nState;
+    uint16_t state_;
 };
 
-#endif /* EMA_H_ */
-
-#endif  // EMA_H_
+#endif // EMA_H_

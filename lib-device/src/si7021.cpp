@@ -58,7 +58,8 @@ float SI7021::GetHumidity() {
 }
 
 uint16_t SI7021::ReadRaw(uint8_t cmd) {
-	i2c::SetAddress(address_);
+    i2c::SetAddress(address_);
+    i2c::SetBaudrate(i2c::kFullSpeed);
     i2c::Write(cmd);
 
     char buf[3] = {0};

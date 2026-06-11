@@ -56,7 +56,7 @@ RgbPanel::RgbPanel(uint32_t columns, uint32_t rows, uint32_t chain, rgbpanel::Ty
  */
 void RgbPanel::PutChar(char ch, uint8_t red, uint8_t green, uint8_t blue)
 {
-    if (__builtin_expect((static_cast<uint32_t>(ch) >= cp437_font_size()), 0))
+    if (__builtin_expect((static_cast<uint32_t>(ch) >= Cp437FontSize()), 0))
     {
         ch = ' ';
     }

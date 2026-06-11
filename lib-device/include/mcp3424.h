@@ -28,34 +28,32 @@
 
 #include <cstdint>
 
-#include "hal_i2c.h"
-
 namespace adc::mcp3424 {
 enum class Gain {
-    PGA_X1, ///< Default
-    PGA_X2,
-    PGA_X4,
-    PGA_X8,
+    kPgaX1, ///< Default
+    kPgaX2,
+    kPgaX4,
+    kPgaX8,
 };
 
 enum class Resolution {
-    SAMPLE_12BITS, ///< Default
-    SAMPLE_14BITS,
-    SAMPLE_16BITS,
-    SAMPLE_18BITS
+    kSample12Bits, ///< Default
+    kSample14Bits,
+    kSample16Bits,
+    kSample18Bits
 };
 
 enum class Conversion {
-    ONE_SHOT,
-    CONTINUOUS ///< Default
+    kOneShot,
+    kContinuous ///< Default
 };
 } // namespace adc::mcp3424
 
-class MCP3424 : HAL_I2C {
+class MCP3424 {
    public:
     explicit MCP3424(uint8_t address = 0);
 
-    bool IsConnected() { return m_IsConnected; }
+    bool IsConnected() { return is_connected_; }
 
     void SetGain(adc::mcp3424::Gain gain);
     adc::mcp3424::Gain GetGain() const;
@@ -70,9 +68,10 @@ class MCP3424 : HAL_I2C {
     double GetVoltage(uint32_t channel);
 
    private:
-    bool m_IsConnected{false};
-    uint8_t m_nConfig;
-    double m_lsb;
+    uint8_t address_{0};
+    bool is_connected_{false};
+    uint8_t config_;
+    double lsb_;
 };
 
 #endif // MCP3424_H_

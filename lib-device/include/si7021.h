@@ -31,14 +31,14 @@
 namespace sensor {
 namespace si7021 {
 namespace temperature {
-static constexpr char kDescription[] = "Ambient Temperature";
-static constexpr int16_t kRangeMin = -40;
-static constexpr int16_t kRangeMax = 125;
+inline constexpr char kDescription[] = "Ambient Temperature";
+inline constexpr int16_t kRangeMin = -40;
+inline constexpr int16_t kRangeMax = 125;
 } // namespace temperature
 namespace humidity {
-static constexpr char kDescription[] = "Relative Humidity";
-static constexpr int16_t kRangeMin = 0;
-static constexpr int16_t kRangeMax = 100;
+inline constexpr char kDescription[] = "Relative Humidity";
+inline constexpr int16_t kRangeMin = 0;
+inline constexpr int16_t kRangeMax = 100;
 } // namespace humidity
 } // namespace si7021
 

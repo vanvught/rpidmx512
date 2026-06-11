@@ -45,6 +45,7 @@ static constexpr uint8_t kContinuousHighResMode = 0x10;
 } // namespace bh1750
 
 BH1750::BH1750(uint8_t address) : address_(address == 0 ? sensor::bh1750::kI2CAddress : address) {
+    i2c::Begin();
     initialized_ = i2c::IsConnected(address_);
 
     if (initialized_) {
@@ -54,7 +55,8 @@ BH1750::BH1750(uint8_t address) : address_(address == 0 ? sensor::bh1750::kI2CAd
 }
 
 uint16_t BH1750::Get() {
-	i2c::SetAddress(address_);
+    i2c::SetAddress(address_);
+    i2c::SetBaudrate(i2c::kFullSpeed);
     const auto kLevel = static_cast<uint16_t>(static_cast<float>(i2c::Read16()) / 1.2f);
     return kLevel;
 }

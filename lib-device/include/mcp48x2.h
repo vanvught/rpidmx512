@@ -39,59 +39,59 @@
 namespace dac {
 namespace mcp48x2 {
 namespace speed {
-static constexpr uint32_t max_hz = 20000000;     ///< 20 MHz
-static constexpr uint32_t default_hz = 10000000; ///< 10 MHz
+inline constexpr uint32_t kMaxHz = 20000000;     ///< 20 MHz
+inline constexpr uint32_t kDefaultHz = 10000000; ///< 10 MHz
 } // namespace speed
 namespace mask {
-static constexpr uint16_t dac_selection = (1U << 15);
-static constexpr uint16_t gain = (1U << 13);
-static constexpr uint16_t shutdown = (1U << 12);
-static constexpr uint16_t data_12bit = 0x0FFF;
-static constexpr uint16_t data_10bit = 0x03FF;
-static constexpr uint16_t data_8bit = 0x00FF;
+inline constexpr uint16_t kDacSelection = (1U << 15);
+inline constexpr uint16_t kGain = (1U << 13);
+inline constexpr uint16_t kShutdown = (1U << 12);
+inline constexpr uint16_t kData12bit = 0x0FFF;
+inline constexpr uint16_t kData10bit = 0x03FF;
+inline constexpr uint16_t kData8bit = 0x00FF;
 } // namespace mask
 namespace shift {
-static constexpr uint16_t data_12bit = 0;
-static constexpr uint16_t data_10bit = 2;
-static constexpr uint16_t data_8bit = 4;
+inline constexpr uint16_t kData12bit = 0;
+inline constexpr uint16_t kData10bit = 2;
+inline constexpr uint16_t kData8bit = 4;
 } // namespace shift
 namespace reg {
-static constexpr uint16_t write_dac_a = (0 << 15);
-static constexpr uint16_t write_dac_b = (1U << 15);
-static constexpr uint16_t gain_2x = (0 << 13);
-static constexpr uint16_t gain_1x = (1U << 13);
-static constexpr uint16_t shutdown_on = (0 << 12);
-static constexpr uint16_t shutdown_off = (1U << 12);
+inline constexpr uint16_t kWriteDacA = (0 << 15);
+inline constexpr uint16_t kWriteDacB = (1U << 15);
+inline constexpr uint16_t kGain2x = (0 << 13);
+inline constexpr uint16_t kGain1x = (1U << 13);
+inline constexpr uint16_t kShutdownOn = (0 << 12);
+inline constexpr uint16_t kShutdownOff = (1U << 12);
 } // namespace reg
 } // namespace mcp48x2
 
 class MCP4822 {
    public:
-    explicit MCP4822(uint8_t chip_select = 0, uint32_t speed_hz = mcp48x2::speed::default_hz)
-        : chip_select_(chip_select), speed_hz_(speed_hz == 0 ? mcp48x2::speed::default_hz : (mcp48x2::speed::default_hz <= mcp48x2::speed::max_hz ? speed_hz : mcp48x2::speed::max_hz)) {
+    explicit MCP4822(uint8_t chip_select = 0, uint32_t speed_hz = mcp48x2::speed::kDefaultHz)
+        : chip_select_(chip_select), speed_hz_(speed_hz == 0 ? mcp48x2::speed::kDefaultHz : (mcp48x2::speed::kDefaultHz <= mcp48x2::speed::kMaxHz ? speed_hz : mcp48x2::speed::kMaxHz)) {
         spi::Begin();
         Setup();
     }
 
     void WriteDacA(uint16_t data) {
-        const uint16_t kSpiData = mcp48x2::reg::write_dac_a | mcp48x2::reg::gain_1x | mcp48x2::reg::shutdown_off | Data12Bit(data);
+        const uint16_t kSpiData = mcp48x2::reg::kWriteDacA | mcp48x2::reg::kGain1x | mcp48x2::reg::kShutdownOff | Data12Bit(data);
         Setup();
         spi::Write(kSpiData);
     }
 
     void WriteDacB(uint16_t data) {
-        const uint16_t kSpiData = mcp48x2::reg::write_dac_b | mcp48x2::reg::gain_1x | mcp48x2::reg::shutdown_off | Data12Bit(data);
+        const uint16_t kSpiData = mcp48x2::reg::kWriteDacB | mcp48x2::reg::kGain1x | mcp48x2::reg::kShutdownOff | Data12Bit(data);
         Setup();
         spi::Write(kSpiData);
     }
 
     void WriteDacAB(uint16_t data_a, uint16_t data_b) {
-        const uint16_t nSpiDataA = mcp48x2::reg::write_dac_a | mcp48x2::reg::gain_1x | mcp48x2::reg::shutdown_off | Data12Bit(data_a);
-        const uint16_t nSpiDataB = mcp48x2::reg::write_dac_b | mcp48x2::reg::gain_1x | mcp48x2::reg::shutdown_off | Data12Bit(data_b);
+        const uint16_t kSpiDataA = mcp48x2::reg::kWriteDacA | mcp48x2::reg::kGain1x | mcp48x2::reg::kShutdownOff | Data12Bit(data_a);
+        const uint16_t kSpiDataB = mcp48x2::reg::kWriteDacB | mcp48x2::reg::kGain1x | mcp48x2::reg::kShutdownOff | Data12Bit(data_b);
 
         Setup();
-        spi::Write(nSpiDataA);
-        spi::Write(nSpiDataB);
+        spi::Write(kSpiDataA);
+        spi::Write(kSpiDataB);
     }
 
    private:
@@ -101,7 +101,7 @@ class MCP4822 {
         spi::SetSpeedHz(speed_hz_);
     }
 
-    uint16_t Data12Bit(uint16_t data) { return (data & mcp48x2::mask::data_12bit) << mcp48x2::shift::data_12bit; }
+    uint16_t Data12Bit(uint16_t data) { return (data & mcp48x2::mask::kData12bit) << mcp48x2::shift::kData12bit; }
 
    private:
     uint8_t chip_select_{0};

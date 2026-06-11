@@ -54,7 +54,9 @@ MCP9808::MCP9808(uint8_t address) : address_(address == 0 ? sensor::mcp9808::kI2
 }
 
 float MCP9808::Get() {
-	i2c::SetAddress(address_);
+    i2c::SetAddress(address_);
+    i2c::SetBaudrate(i2c::kFullSpeed);
+	
     const auto kValue = i2c::ReadRegister16(sensor::mcp9808::reg::kAmbientTemp);
     auto temperature = static_cast<float>(kValue & 0x0FFF);
 

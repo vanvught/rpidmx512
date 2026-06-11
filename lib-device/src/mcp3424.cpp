@@ -2,7 +2,7 @@
  * @file mcp3424.cpp
  *
  */
-/* Copyright (C) 2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2023-2026 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,81 +29,69 @@
 #include <cassert>
 
 #include "mcp3424.h"
-#include "hal_i2c.h"
+#include "i2c.h"
+#include "firmware/debug/debug_debug.h"
 
- #include "firmware/debug/debug_debug.h"
-
-namespace adc::mcp3424
-{
+namespace adc::mcp3424 {
 static constexpr uint8_t kI2CAddress = 0x68;
 
-static constexpr uint8_t GAIN(Gain gain)
-{
+static constexpr uint8_t GAIN(Gain gain) {
     return static_cast<uint8_t>(gain) & 0x03;
 }
 
-static constexpr uint8_t RESOLUTION(Resolution resolution)
-{
+static constexpr uint8_t RESOLUTION(Resolution resolution) {
     return (static_cast<uint8_t>(resolution) & 0x03) << 2;
 }
 
-static constexpr uint8_t CONVERSION(Conversion conversion)
-{
+static constexpr uint8_t CONVERSION(Conversion conversion) {
     return (static_cast<uint8_t>(conversion) & 0x01) << 4;
 }
 
-static constexpr uint8_t CHANNEL(uint32_t channel)
-{
+static constexpr uint8_t CHANNEL(uint32_t channel) {
     return (channel & 0x03) << 5;
 }
 } // namespace adc::mcp3424
 
-MCP3424::MCP3424(uint8_t address) : HAL_I2C(address == 0 ? adc::mcp3424::kI2CAddress : address)
-{
+MCP3424::MCP3424(uint8_t address) : address_(address == 0 ? adc::mcp3424::kI2CAddress : address) {
     DEBUG_ENTRY();
     DEBUG_PRINTF("address=%x", address);
+	i2c::Begin();
+    is_connected_ = i2c::IsConnected(address_);
 
-    m_IsConnected = HAL_I2C::IsConnected();
-
-    if (m_IsConnected)
-    {
-        SetGain(adc::mcp3424::Gain::PGA_X1);
-        SetResolution(adc::mcp3424::Resolution::SAMPLE_12BITS);
-        SetConversion(adc::mcp3424::Conversion::CONTINUOUS);
+    if (is_connected_) {
+        SetGain(adc::mcp3424::Gain::kPgaX1);
+        SetResolution(adc::mcp3424::Resolution::kSample12Bits);
+        SetConversion(adc::mcp3424::Conversion::kContinuous);
     }
 
-    DEBUG_PRINTF("m_IsConnected=%u", m_IsConnected);
+    DEBUG_PRINTF("is_connected_=%u", is_connected_);
     DEBUG_EXIT();
 }
 
-void MCP3424::SetGain(adc::mcp3424::Gain gain)
-{
-    m_nConfig &= static_cast<uint8_t>(~0x03);
-    m_nConfig |= adc::mcp3424::GAIN(gain);
+void MCP3424::SetGain(adc::mcp3424::Gain gain) {
+    config_ &= static_cast<uint8_t>(~0x03);
+    config_ |= adc::mcp3424::GAIN(gain);
 }
-adc::mcp3424::Gain MCP3424::GetGain() const
-{
-    return static_cast<adc::mcp3424::Gain>(m_nConfig & 0x3);
+adc::mcp3424::Gain MCP3424::GetGain() const {
+    return static_cast<adc::mcp3424::Gain>(config_ & 0x3);
 }
 
-void MCP3424::SetResolution(adc::mcp3424::Resolution resolution)
-{
-    m_nConfig &= static_cast<uint8_t>(~((0x03) << 2));
-    m_nConfig |= adc::mcp3424::RESOLUTION(resolution);
+void MCP3424::SetResolution(adc::mcp3424::Resolution resolution) {
+    config_ &= static_cast<uint8_t>(~((0x03) << 2));
+    config_ |= adc::mcp3424::RESOLUTION(resolution);
 
-    switch (resolution)
-    {
-        case adc::mcp3424::Resolution::SAMPLE_12BITS:
-            m_lsb = 0.0005;
+    switch (resolution) {
+        case adc::mcp3424::Resolution::kSample12Bits:
+            lsb_ = 0.0005;
             break;
-        case adc::mcp3424::Resolution::SAMPLE_14BITS:
-            m_lsb = 0.000125;
+        case adc::mcp3424::Resolution::kSample14Bits:
+            lsb_ = 0.000125;
             break;
-        case adc::mcp3424::Resolution::SAMPLE_16BITS:
-            m_lsb = 0.00003125;
+        case adc::mcp3424::Resolution::kSample16Bits:
+            lsb_ = 0.00003125;
             break;
-        case adc::mcp3424::Resolution::SAMPLE_18BITS:
-            m_lsb = 0.0000078125;
+        case adc::mcp3424::Resolution::kSample18Bits:
+            lsb_ = 0.0000078125;
             break;
         default:
             [[unlikely]] assert(0);
@@ -111,75 +99,65 @@ void MCP3424::SetResolution(adc::mcp3424::Resolution resolution)
             break;
     }
 }
-adc::mcp3424::Resolution MCP3424::GetResolution() const
-{
-    return static_cast<adc::mcp3424::Resolution>((m_nConfig >> 2) & 0x03);
+adc::mcp3424::Resolution MCP3424::GetResolution() const {
+    return static_cast<adc::mcp3424::Resolution>((config_ >> 2) & 0x03);
 }
 
-void MCP3424::SetConversion(adc::mcp3424::Conversion conversion)
-{
-    m_nConfig &= static_cast<uint8_t>(~((0x01) << 4));
-    m_nConfig |= adc::mcp3424::CONVERSION(conversion);
+void MCP3424::SetConversion(adc::mcp3424::Conversion conversion) {
+    config_ &= static_cast<uint8_t>(~((0x01) << 4));
+    config_ |= adc::mcp3424::CONVERSION(conversion);
 }
 
-adc::mcp3424::Conversion MCP3424::GetConversion() const
-{
-    return static_cast<adc::mcp3424::Conversion>((m_nConfig >> 4) & 0x01);
+adc::mcp3424::Conversion MCP3424::GetConversion() const {
+    return static_cast<adc::mcp3424::Conversion>((config_ >> 4) & 0x01);
 }
 
-uint32_t MCP3424::GetRaw(uint32_t channel)
-{
-    m_nConfig &= static_cast<uint8_t>(~((0x03) << 5));
-    m_nConfig |= adc::mcp3424::CHANNEL(channel);
+uint32_t MCP3424::GetRaw(uint32_t channel) {
+    config_ &= static_cast<uint8_t>(~((0x03) << 5));
+    config_ |= adc::mcp3424::CHANNEL(channel);
 
     uint32_t bytes = 3;
 
-    if ((m_nConfig & RESOLUTION(adc::mcp3424::Resolution::SAMPLE_18BITS)) == RESOLUTION(adc::mcp3424::Resolution::SAMPLE_18BITS))
-    {
+    if ((config_ & RESOLUTION(adc::mcp3424::Resolution::kSample18Bits)) == RESOLUTION(adc::mcp3424::Resolution::kSample18Bits)) {
         bytes = 4;
     }
 
     char buffer[4] = {0, 0, 0, 0};
     int32_t timeout = 8000;
 
-    while (true)
-    {
-        HAL_I2C::Write(m_nConfig);
-        HAL_I2C::Read(buffer, bytes);
+    i2c::SetAddress(address_);
+    i2c::SetBaudrate(i2c::kFullSpeed);
+	
+    while (true) {
+        i2c::Write(config_);
+        i2c::Read(buffer, bytes);
 
-        if (bytes == 4)
-        {
-            if ((buffer[3] >> 7) == 0)
-            {
+        if (bytes == 4) {
+            if ((buffer[3] >> 7) == 0) {
                 break;
             }
-        }
-        else
-        {
-            if ((buffer[2] >> 7) == 0)
-            {
+        } else {
+            if ((buffer[2] >> 7) == 0) {
                 break;
             }
         }
 
-        if (timeout-- == 0)
-        {
+        if (timeout-- == 0) {
             return UINT32_MAX;
         }
     }
 
-    switch (static_cast<adc::mcp3424::Resolution>((m_nConfig >> 2) & 0x03))
-    {
-        case adc::mcp3424::Resolution::SAMPLE_12BITS:
+    switch (static_cast<adc::mcp3424::Resolution>((config_ >> 2) & 0x03)) {
+        case adc::mcp3424::Resolution::kSample12Bits:
             return static_cast<uint32_t>(((buffer[0] & 0x0f) << 8) | buffer[1]);
             break;
-        case adc::mcp3424::Resolution::SAMPLE_14BITS:
+        case adc::mcp3424::Resolution::kSample14Bits:
             return static_cast<uint32_t>(((buffer[0] & 0x3f) << 8) | buffer[1]);
             break;
-        case adc::mcp3424::Resolution::SAMPLE_16BITS:
+        case adc::mcp3424::Resolution::kSample16Bits:
             return static_cast<uint32_t>((buffer[0] << 8) | buffer[1]);
             break;
-        case adc::mcp3424::Resolution::SAMPLE_18BITS:
+        case adc::mcp3424::Resolution::kSample18Bits:
             return static_cast<uint32_t>(((buffer[0] & 0x03) << 16) | (buffer[1] << 8) | buffer[2]);
             break;
         default:
@@ -193,8 +171,7 @@ uint32_t MCP3424::GetRaw(uint32_t channel)
     return UINT32_MAX;
 }
 
-double MCP3424::GetVoltage(uint32_t channel)
-{
-    const auto kVout = static_cast<double>(GetRaw(channel)) * 2 * m_lsb;
+double MCP3424::GetVoltage(uint32_t channel) {
+    const auto kVout = static_cast<double>(GetRaw(channel)) * 2 * lsb_;
     return kVout;
 }

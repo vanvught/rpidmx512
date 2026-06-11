@@ -54,6 +54,7 @@ static constexpr auto kReadDelayUs = 800;
 } // namespace ina219
 
 INA219::INA219(uint8_t address) : address_(address == 0 ? sensor::ina219::kI2CAddress : address) {
+    i2c::Begin();
     initialized_ = i2c::IsConnected(address_);
 
     if (initialized_) {

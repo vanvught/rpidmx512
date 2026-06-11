@@ -52,7 +52,7 @@ class HTU21D  {
     float GetHumidity();
 
    private:
-    uint16_t ReadRaw(uint8_t nCmd);
+    uint16_t ReadRaw(uint8_t cmd);
 
    private:
    uint8_t address_{0};

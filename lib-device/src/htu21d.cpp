@@ -44,6 +44,7 @@ static constexpr uint8_t kTriggerHumdMeasureNohold = 0xF5;
 } // namespace htu21d
 
 HTU21D::HTU21D(uint8_t address) : address_(address == 0 ? sensor::htu21d::kI2CAddress : address) {
+    i2c::Begin();
     initialized_ = i2c::IsConnected(address_);
 }
 
@@ -59,6 +60,7 @@ float HTU21D::GetHumidity() {
 
 uint16_t HTU21D::ReadRaw(uint8_t cmd) {
     i2c::SetAddress(address_);
+    i2c::SetBaudrate(i2c::kFullSpeed);
     i2c::Write(cmd);
 
     char buf[3] = {0};

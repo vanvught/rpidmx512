@@ -62,8 +62,9 @@ SI5351A::SI5351A(uint8_t address) : address_(address == 0 ? si5351a::kI2CAddress
 void SI5351A::ClockBuilder() {
     DEBUG_ENTRY();
     assert(connected_);
-	
-	i2c::SetAddress(address_);
+
+    i2c::SetAddress(address_);
+    i2c::SetBaudrate(i2c::kFullSpeed);
 
     Pre();
 

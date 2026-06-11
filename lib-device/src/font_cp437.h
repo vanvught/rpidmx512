@@ -2,7 +2,7 @@
  * @file font_cp437.h
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,11 +28,11 @@
 
 #include <cstdint>
 
-#define FONT_CP437_CHAR_W	8
-#define FONT_CP437_CHAR_H	8
+#define FONT_CP437_CHAR_W 8
+#define FONT_CP437_CHAR_H 8
 
 extern uint8_t cp437_font[][8];
 
-uint32_t cp437_font_size();
+uint32_t Cp437FontSize();
 
-#endif /* FONT_CP437_H_ */
+#endif // FONT_CP437_H_

@@ -88,7 +88,7 @@ WS28xxDisplayMatrix::~WS28xxDisplayMatrix()
 
 void WS28xxDisplayMatrix::PutChar(char nChar, uint8_t red, uint8_t green, uint8_t blue)
 {
-    if (static_cast<uint32_t>(nChar) >= cp437_font_size())
+    if (static_cast<uint32_t>(nChar) >= Cp437FontSize())
     {
         nChar = ' ';
     }

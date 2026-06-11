@@ -2,7 +2,7 @@
  * @file font_cp437.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2026 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -289,6 +289,6 @@ uint8_t cp437_font [][8] = {
 #endif
 };
 
-uint32_t cp437_font_size() {
+uint32_t Cp437FontSize() {
 	return sizeof(cp437_font) / sizeof(cp437_font[0]);
 }
