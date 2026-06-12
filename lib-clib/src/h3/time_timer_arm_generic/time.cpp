@@ -2,7 +2,7 @@
  * @file time.cpp
  *
  */
-/* Copyright (C) 2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,28 +34,27 @@
 #include <time.h>
 #include <sys/time.h>
 #include <cassert>
-
 #include "h3.h"
 
 static uint64_t set_timer = 0;
 static struct timeval s_tv;
 
-static inline uint64_t read_cntpct() {
+static inline uint64_t ReadCntpct() {
     uint32_t lo, hi;
     asm volatile ("mrrc p15, 0, %0, %1, c14" : "=r" (lo), "=r" (hi));
-    return ((uint64_t)hi << 32) | lo;
+    return (static_cast<uint64_t>(hi) << 32) | lo;
 }
 
 extern "C" {
 int gettimeofday(struct timeval *tv, __attribute__((unused)) struct timezone *tz) {
 	assert(tv != nullptr);
 
-	const uint64_t current_cntvct = read_cntpct();
-	const uint64_t elapsed_ticks = current_cntvct - set_timer; // No roll-over issues with 64-bit arithmetic
+	const uint64_t kCurrentCntvct = ReadCntpct();
+	const uint64_t kElapsedTicks = kCurrentCntvct - set_timer; // No roll-over issues with 64-bit arithmetic
 
 	// Convert ticks to microseconds with fractional correction
 	static uint64_t fractional_ticks = 0; // Persistent fractional part
-	const uint64_t total_usec = elapsed_ticks * 1000000ULL + fractional_ticks; // Scaled to microseconds
+	const uint64_t total_usec = kElapsedTicks * 1000000ULL + fractional_ticks; // Scaled to microseconds
 	const uint64_t elapsed_usec = total_usec / 24000000ULL; // Correctly divide by clock frequency
 	fractional_ticks = total_usec % 24000000ULL; // Keep the fractional remainder
 
@@ -82,7 +81,7 @@ int settimeofday(const struct timeval *tv, __attribute__((unused)) const struct 
     assert(tv != nullptr);
 
     // Capture the current counter value as the reference point
-    const uint64_t current_cntvct = read_cntpct();
+    const uint64_t current_cntvct = ReadCntpct();
 
     // Calculate the elapsed microseconds since the last set_timer
     const uint64_t elapsed_ticks = current_cntvct - set_timer;

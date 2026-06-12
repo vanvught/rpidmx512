@@ -2,7 +2,7 @@
  * @file mcp9808.h
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2018-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,24 +28,55 @@
 
 #include <cstdint>
 
+#include "i2c.h"
+
 namespace sensor {
 namespace mcp9808 {
-static constexpr char kDescription[] = "Ambient Temperature";
-static constexpr int16_t kRangeMin = -20;
-static constexpr int16_t kRangeMax = 100;
+inline constexpr uint8_t kI2CAddress = 0x18;
+namespace reg {
+// inline constexpr uint8_t UPPER_TEMP = 0x02;
+// inline constexpr uint8_t LOWER_TEMP = 0x03;
+// inline constexpr uint8_t CRIT_TEMP = 0x04;
+inline constexpr uint8_t kAmbientTemp = 0x05;
+inline constexpr uint8_t kManufId = 0x06;
+inline constexpr uint8_t kDeviceId = 0x07;
+} // namespace reg
+inline constexpr char kDescription[] = "Ambient Temperature";
+inline constexpr int16_t kRangeMin = -20;
+inline constexpr int16_t kRangeMax = 100;
 } // namespace mcp9808
 
-class MCP9808 {
+class MCP9808 : I2c {
    public:
-    explicit MCP9808(uint8_t address = 0);
+    explicit MCP9808(uint8_t address) : I2c(address == 0 ? sensor::mcp9808::kI2CAddress : address) {
+        initialized_ = IsConnected();
+
+        if (initialized_) {
+            initialized_ = (ReadRegister16(sensor::mcp9808::reg::kManufId, false) == 0x0054);
+        }
+
+        if (initialized_) {
+            initialized_ = (ReadRegister16(sensor::mcp9808::reg::kDeviceId, false) == 0x0400);
+        }
+    }
+
+    float Get() {
+        const auto kValue = ReadRegister16(sensor::mcp9808::reg::kAmbientTemp, true);
+        auto temperature = static_cast<float>(kValue & 0x0FFF);
+
+        temperature /= 16.0f;
+
+        if ((kValue & 0x1000) == 0x1000) {
+            temperature -= 256.0f;
+        }
+
+        return temperature;
+    }
 
     bool Initialize() { return initialized_; }
 
-    float Get();
-
    private:
-    uint8_t address_{0};
-    bool initialized_{false};
+     bool initialized_{false};
 };
 } // namespace sensor
 

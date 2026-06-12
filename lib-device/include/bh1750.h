@@ -28,23 +28,46 @@
 
 #include <cstdint>
 
+#include "i2c.h"
+
 namespace sensor {
 namespace bh1750 {
+static constexpr uint8_t kI2CAddress = 0x23;
 inline constexpr char kDescription[] = "Ambient Light";
 inline constexpr auto kRangeMin = 0;
 inline constexpr auto kRangeMax = 65535;
+namespace reg {
+// static constexpr uint8_t POWER_DOWN = 0x00;
+static constexpr uint8_t kPowerOn = 0x01;
+// static constexpr uint8_t RESET = 0x07;
+static constexpr uint8_t kContinuousHighResMode = 0x10;
+// static constexpr uint8_t CONTINUOUS_HIGH_RES_MODE_2 = 0x11;
+// static constexpr uint8_t CONTINUOUS_LOW_RES_MODE = 0x13;
+// static constexpr uint8_t ONE_TIME_HIGH_RES_MODE = 0x20;
+// static constexpr uint8_t ONE_TIME_HIGH_RES_MODE_2 = 0x21;
+// static constexpr uint8_t ONE_TIME_LOW_RES_MODE = 0x23;
+} // namespace reg
 } // namespace bh1750
 
-class BH1750 {
+class BH1750 : I2c {
    public:
-    explicit BH1750(uint8_t address = 0);
+    explicit BH1750(uint8_t address = 0) : I2c(address == 0 ? sensor::bh1750::kI2CAddress : address) {
+        initialized_ = IsConnected();
+
+        if (initialized_) {
+            Write(sensor::bh1750::reg::kPowerOn, true);
+            Write(sensor::bh1750::reg::kContinuousHighResMode, false);
+        }
+    }
 
     bool Initialize() { return initialized_; }
 
-    uint16_t Get();
+    uint16_t Get() {
+        const auto kLevel = static_cast<uint16_t>(static_cast<float>(Read16(true)) / 1.2f);
+        return kLevel;
+    }
 
    private:
-    uint8_t address_{0};
     bool initialized_{false};
 };
 } // namespace sensor

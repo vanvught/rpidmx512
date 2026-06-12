@@ -2,7 +2,7 @@
  * @file serial.cpp
  *
  */
-/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,12 +29,11 @@
 
 #include "serial/serial.h"
 #include "hal_uart.h"
-#include "hal_i2c.h"
+#include "i2c.h"
 #include "firmware/debug/debug_dump.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
-Serial::Serial()
-{
+Serial::Serial() {
     DEBUG_ENTRY();
 
     assert(s_this == nullptr);
@@ -49,13 +48,12 @@ Serial::Serial()
     spi_configuration_.mode = 0;
 
     i2c_configuration_.address = 0x30;
-    i2c_configuration_.speed_hz = HAL_I2C::FULL_SPEED;
+    i2c_configuration_.speed_hz = i2c::kFullSpeed;
 
     DEBUG_EXIT();
 }
 
-Serial::~Serial()
-{
+Serial::~Serial() {
     DEBUG_ENTRY();
 
     s_this = nullptr;
@@ -63,22 +61,18 @@ Serial::~Serial()
     DEBUG_EXIT();
 }
 
-bool Serial::Init()
-{
+bool Serial::Init() {
     DEBUG_ENTRY();
 
-    if (type_ == serial::Type::kUart)
-    {
+    if (type_ == serial::Type::kUart) {
         return InitUart();
     }
 
-    if (type_ == serial::Type::kSpi)
-    {
+    if (type_ == serial::Type::kSpi) {
         return InitSpi();
     }
 
-    if (type_ == serial::Type::kI2C)
-    {
+    if (type_ == serial::Type::kI2C) {
         return InitI2c();
     }
 
@@ -87,25 +81,21 @@ bool Serial::Init()
     DEBUG_EXIT();
 }
 
-void Serial::Send(const uint8_t* data, uint32_t length)
-{
+void Serial::Send(const uint8_t* data, uint32_t length) {
     DEBUG_ENTRY();
     debug::Dump(const_cast<uint8_t*>(data), length);
 
-    if (type_ == serial::Type::kUart)
-    {
+    if (type_ == serial::Type::kUart) {
         SendUart(data, length);
         return;
     }
 
-    if (type_ == serial::Type::kSpi)
-    {
+    if (type_ == serial::Type::kSpi) {
         SendSpi(data, length);
         return;
     }
 
-    if (type_ == serial::Type::kI2C)
-    {
+    if (type_ == serial::Type::kI2C) {
         SendI2c(data, length);
         return;
     }
@@ -113,12 +103,10 @@ void Serial::Send(const uint8_t* data, uint32_t length)
     DEBUG_EXIT();
 }
 
-void Serial::Print()
-{
+void Serial::Print() {
     printf("Serial [%s]\n", serial::GetType(type_));
 
-    switch (type_)
-    {
+    switch (type_) {
         case serial::Type::kUart:
             printf(" Baud     : %d\n", uart_configuration_.baud);
             printf(" Bits     : %d\n", uart_configuration_.bits);

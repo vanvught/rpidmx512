@@ -52,11 +52,10 @@ static constexpr uint8_t CHANNEL(uint32_t channel) {
 }
 } // namespace adc::mcp3424
 
-MCP3424::MCP3424(uint8_t address) : address_(address == 0 ? adc::mcp3424::kI2CAddress : address) {
+MCP3424::MCP3424(uint8_t address) : I2c(address == 0 ? adc::mcp3424::kI2CAddress : address) {
     DEBUG_ENTRY();
     DEBUG_PRINTF("address=%x", address);
-	i2c::Begin();
-    is_connected_ = i2c::IsConnected(address_);
+    is_connected_ = IsConnected();
 
     if (is_connected_) {
         SetGain(adc::mcp3424::Gain::kPgaX1);
@@ -124,13 +123,12 @@ uint32_t MCP3424::GetRaw(uint32_t channel) {
 
     char buffer[4] = {0, 0, 0, 0};
     int32_t timeout = 8000;
-
-    i2c::SetAddress(address_);
-    i2c::SetBaudrate(i2c::kFullSpeed);
 	
+	Setup();
+
     while (true) {
-        i2c::Write(config_);
-        i2c::Read(buffer, bytes);
+        Write(config_, false);
+        Read(buffer, bytes, false);
 
         if (bytes == 4) {
             if ((buffer[3] >> 7) == 0) {

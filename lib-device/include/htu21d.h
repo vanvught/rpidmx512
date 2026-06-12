@@ -28,8 +28,11 @@
 
 #include <cstdint>
 
+#include "i2c.h"
+
 namespace sensor {
 namespace htu21d {
+inline constexpr uint8_t kI2CAddress = 0x40;
 namespace temperature {
 inline constexpr char kDescription[] = "Ambient Temperature";
 inline constexpr int16_t kRangeMin = -40;
@@ -40,25 +43,58 @@ inline constexpr char kDescription[] = "Relative Humidity";
 inline constexpr int16_t kRangeMin = 0;
 inline constexpr int16_t kRangeMax = 100;
 } // namespace humidity
+namespace reg {
+// static constexpr uint8_t TRIGGER_TEMP_MEASURE_HOLD = 0xE3;
+// static constexpr uint8_t TRIGGER_HUMD_MEASURE_HOLD = 0xE5;
+inline constexpr uint8_t kTriggerTempMeasureNohold = 0xF3;
+inline constexpr uint8_t kTriggerHumdMeasureNohold = 0xF5;
+// static constexpr uint8_t WRITE_USER_REG = 0xE6;
+// static constexpr uint8_t READ_USER_REG = 0xE7;
+// static constexpr uint8_t SOFT_RESET = 0xFE;
+} // namespace reg
 } // namespace htu21d
 
-class HTU21D  {
+class HTU21D: I2c {
    public:
-    explicit HTU21D(uint8_t address = 0);
+    explicit HTU21D(uint8_t address = 0) : I2c(address == 0 ? sensor::htu21d::kI2CAddress : address) {
+        initialized_ = IsConnected();
+    }
 
-    bool Initialize() { return initialized_; }
+    float GetTemperature() {
+        const auto kTemp = static_cast<float>(ReadRaw(sensor::htu21d::reg::kTriggerTempMeasureNohold)) / 65536.0f;
+        return -46.85f + (175.72f * kTemp);
+    }
 
-    float GetTemperature();
-    float GetHumidity();
+    float GetHumidity() {
+        const auto kHumd = static_cast<float>(ReadRaw(sensor::htu21d::reg::kTriggerHumdMeasureNohold)) / 65536.0f;
+        return -6.0f + (125.0f * kHumd);
+    }
+	
+	bool Initialize() { return initialized_; }
 
    private:
-    uint16_t ReadRaw(uint8_t cmd);
+    uint16_t ReadRaw(uint8_t cmd) {
+        Write(cmd, true);
+
+        char buf[3] = {0};
+
+        for (uint32_t i = 0; i < 8; ++i) {
+            timing::DelayUs(10000);
+            Read(buf, 3, false);
+
+            if ((buf[0] & 0x3) == 2) {
+                break;
+            }
+        }
+
+        const auto kRawValue = static_cast<uint16_t>((buf[0] << 8) | buf[1]);
+
+        return kRawValue & 0xFFFC;
+    }
 
    private:
-   uint8_t address_{0};
-   bool initialized_{false};
+    bool initialized_{false};
 };
-
 } // namespace sensor
 
 #endif // HTU21D_H_

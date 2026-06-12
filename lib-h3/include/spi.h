@@ -26,6 +26,15 @@
 #ifndef SPI_H_
 #define SPI_H_
 
+#if defined(CONFIG_SPI_OPTIMIZE_O2) || defined(CONFIG_SPI_OPTIMIZE_O3)
+#pragma GCC push_options
+#if defined(CONFIG_SPIOPTIMIZE_O2)
+#pragma GCC optimize("O2")
+#else
+#pragma GCC optimize("O3")
+#endif
+#endif
+
 #include <cstdint>
 
 #include "h3_spi.h"
@@ -115,5 +124,9 @@ class Spi {
     uint8_t chip_select_;
     uint8_t mode_;
 };
+
+#if defined(CONFIG_SPI_OPTIMIZE_O2) || defined(CONFIG_SPI_OPTIMIZE_O3)
+#pragma GCC pop_options
+#endif
 
 #endif // SPI_H_

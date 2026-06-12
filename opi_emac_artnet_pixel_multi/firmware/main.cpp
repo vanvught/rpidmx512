@@ -48,7 +48,6 @@
 #include "configstore.h"
 #include "firmwareversion.h"
 #include "software_version.h"
-#include "firmware/debug/debug_debug.h"
 
 namespace hal {
 void RebootHandler() {

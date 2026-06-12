@@ -28,7 +28,9 @@
 
 #include <cstdint>
 
-class SI5351A {
+#include "i2c.h"
+
+class SI5351A : I2c {
    public:
     explicit SI5351A(uint8_t address = 0);
 
@@ -41,7 +43,6 @@ class SI5351A {
     void Post();
 
    private:
-   uint8_t address_{0};
    bool connected_{false};
 };
 

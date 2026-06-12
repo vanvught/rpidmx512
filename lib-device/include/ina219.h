@@ -28,20 +28,35 @@
 
 #include <cstdint>
 
+#include "i2c.h"
+#include "firmware/debug/debug_debug.h"
+
 namespace sensor {
 namespace ina219 {
-inline constexpr uint16_t RANGE_16V = 0x0000; ///< 0-16V Range
-inline constexpr uint16_t RANGE_32V = 0x2000; ///< 0-32V Range
+inline constexpr uint8_t kI2CAddress = 0x40;
+namespace reg {
+inline constexpr uint8_t kConfig = 0x00;
+// static constexpr uint8_t SHUNTVOLTAGE = 0x01;
+inline constexpr uint8_t kBusvoltage = 0x02;
+inline constexpr uint8_t kPower = 0x03;
+inline constexpr uint8_t kCurrent = 0x04;
+inline constexpr uint8_t kCalibration = 0x05;
+namespace value {
+inline constexpr auto kReadDelayUs = 800;
+} // namespace value
+} // namespace reg
+inline constexpr uint16_t kRange16V = 0x0000; ///< 0-16V Range
+inline constexpr uint16_t kRange32V = 0x2000; ///< 0-32V Range
 
 inline constexpr uint16_t GAIN_40MV = 0x0000;  ///< Gain 1, 40mV Range
 inline constexpr uint16_t GAIN_80MV = 0x0800;  ///< Gain 2, 80mV Range
 inline constexpr uint16_t GAIN_160MV = 0x1000; ///< Gain 4, 160mV Range
 inline constexpr uint16_t GAIN_320MV = 0x1800; ///< Gain 8, 320mV Range
 
-inline constexpr uint16_t BUS_RES_9BIT = 0x0080;  ///< 9-bit bus res = 0..511
-inline constexpr uint16_t BUS_RES_10BIT = 0x0100; ///< 10-bit bus res = 0..1023
-inline constexpr uint16_t BUS_RES_11BIT = 0x0200; ///< 11-bit bus res = 0..2047
-inline constexpr uint16_t BUS_RES_12BIT = 0x0400; ///< 12-bit bus res = 0..4097
+inline constexpr uint16_t kBusRes9Bit = 0x0080;  ///< 9-bit bus res = 0..511
+inline constexpr uint16_t kBusRes10Bit = 0x0100; ///< 10-bit bus res = 0..1023
+inline constexpr uint16_t kBusRes11Bit = 0x0200; ///< 11-bit bus res = 0..2047
+inline constexpr uint16_t kBusRes12Bit = 0x0400; ///< 12-bit bus res = 0..4097
 
 inline constexpr uint16_t SHUNT_RES_9BIT_1S = 0x0000;    ///< 1 x 9-bit shunt sample
 inline constexpr uint16_t SHUNT_RES_10BIT_1S = 0x0008;   ///< 1 x 10-bit shunt sample
@@ -53,23 +68,23 @@ inline constexpr uint16_t SHUNT_RES_12BIT_8S = 0x0058;   ///< 8 x 12-bit shunt s
 inline constexpr uint16_t SHUNT_RES_12BIT_16S = 0x0060;  ///< 16 x 12-bit shunt samples averaged together
 inline constexpr uint16_t SHUNT_RES_12BIT_32S = 0x0068;  ///< 32 x 12-bit shunt samples averaged together
 inline constexpr uint16_t SHUNT_RES_12BIT_64S = 0x0070;  ///< 64 x 12-bit shunt samples averaged together
-inline constexpr uint16_t SHUNT_RES_12BIT_128S = 0x0078; ///< 128 x 12-bit shunt samples averaged together
+inline constexpr uint16_t kShuntRes12Bit128S = 0x0078; ///< 128 x 12-bit shunt samples averaged together
 
-inline constexpr uint16_t MODE_POWER_DOWN = 0x0000;
-inline constexpr uint16_t MODE_SHUNT_TRIG = 0x0001;
-inline constexpr uint16_t MODE_BUS_TRIG = 0x0002;
-inline constexpr uint16_t MODE_SHUNT_BUS_TRIG = 0x0003;
-inline constexpr uint16_t MODE_ADC_OFF = 0x0004;
-inline constexpr uint16_t MODE_SHUNT_CONT = 0x0005;
-inline constexpr uint16_t MODE_BUS_CONT = 0x0006;
-inline constexpr uint16_t MODE_SHUNT_BUS_CONT = 0x0007;
+inline constexpr uint16_t kModePowerDown = 0x0000;
+inline constexpr uint16_t kModeShuntTrig = 0x0001;
+inline constexpr uint16_t kModeBusTrig = 0x0002;
+inline constexpr uint16_t kModeShuntBusTrig = 0x0003;
+inline constexpr uint16_t kModeAdcOff = 0x0004;
+inline constexpr uint16_t kModeShuntCont = 0x0005;
+inline constexpr uint16_t kModeBusCont = 0x0006;
+inline constexpr uint16_t kModeShuntBusCont = 0x0007;
 
 struct Config {
-    uint16_t range = RANGE_32V;
+    uint16_t range = kRange32V;
     uint16_t gain = GAIN_320MV;
-    uint16_t bus_res = BUS_RES_12BIT;
+    uint16_t bus_res = kBusRes12Bit;
     uint16_t shunt_res = SHUNT_RES_12BIT_1S;
-    uint16_t mode = MODE_SHUNT_BUS_CONT;
+    uint16_t mode = kModeShuntBusCont;
 };
 
 namespace current {
@@ -89,25 +104,102 @@ inline constexpr int16_t kRangeMax = 64;  // W
 } // namespace power
 } // namespace ina219
 
-class INA219 {
+class INA219 : I2c {
    public:
-    explicit INA219(uint8_t address = 0);
+    explicit INA219(uint8_t address) : I2c(address == 0 ? sensor::ina219::kI2CAddress : address) {
+        initialized_ = IsConnected();
 
-    void Configure(ina219::Config& config);
-    void Calibrate(float r_shunt_value = 0.1f, float i_max_expected = 2.0f);
+        if (initialized_) {
+            sensor::ina219::Config config;
+            Configure(config);
+            Calibrate(0.1f, 2.0f);
+        }
+    }
 
-    bool Initialize() { return initialized_; }
+    void Configure(sensor::ina219::Config& config) {
+        switch (config.range) {
+            case sensor::ina219::kRange32V:
+                info_.v_bus_max = 32.0f;
+                break;
+            case sensor::ina219::kRange16V:
+                info_.v_bus_max = 16.0f;
+                break;
+        }
 
-    float GetShuntCurrent();
-    float GetBusVoltage();
-    float GetBusPower();
+        switch (config.gain) {
+            case sensor::ina219::GAIN_320MV:
+                info_.v_shunt_max = 0.32f;
+                break;
+            case sensor::ina219::GAIN_160MV:
+                info_.v_shunt_max = 0.16f;
+                break;
+            case sensor::ina219::GAIN_80MV:
+                info_.v_shunt_max = 0.08f;
+                break;
+            case sensor::ina219::GAIN_40MV:
+                info_.v_shunt_max = 0.04f;
+                break;
+        }
+
+        const uint16_t kConfig = config.range | config.gain | config.bus_res | config.shunt_res | config.mode;
+
+        DEBUG_PRINTF("kConfig=%x", kConfig);
+
+        i2c::WriteReg(sensor::ina219::reg::kConfig, kConfig);
+    }
+
+    void Calibrate(float r_shunt_value, float i_max_expected) {
+        const float kMinimumLsb = i_max_expected / 32767;
+
+        info_.r_shunt = r_shunt_value;
+
+        info_.current_lsb = (static_cast<uint16_t>(kMinimumLsb * 100000000));
+        info_.current_lsb /= 100000000;
+        info_.current_lsb /= 0.0001f;
+        info_.current_lsb = CeilingPos(info_.current_lsb);
+        info_.current_lsb *= 0.0001f;
+
+        info_.power_lsb = info_.current_lsb * 20;
+
+        const auto kCalibrationValue = static_cast<uint16_t>((0.04096f / (info_.current_lsb * info_.r_shunt)));
+
+        DEBUG_PRINTF("kCalibrationValue=%x", kCalibrationValue);
+
+        i2c::WriteReg(sensor::ina219::reg::kCalibration, kCalibrationValue);
+    }
+
+    float GetShuntCurrent() {
+        const float kValue = ReadRegister16DelayUs(sensor::ina219::reg::kCurrent, sensor::ina219::reg::value::kReadDelayUs) * info_.current_lsb;
+        return kValue;
+    }
+
+    float GetBusVoltage() { return GetBusVoltageRaw() * 0.001f; }
+
+    float GetBusPower() {
+        const float kValue = ReadRegister16DelayUs(sensor::ina219::reg::kPower, sensor::ina219::reg::value::kReadDelayUs) * info_.power_lsb;
+        return kValue;
+    }
+	
+	bool Initialize() { return initialized_; }
 
    private:
-    int16_t GetBusVoltageRaw();
+    int16_t GetBusVoltageRaw() {
+        auto voltage = ReadRegister16DelayUs(sensor::ina219::reg::kBusvoltage, sensor::ina219::reg::value::kReadDelayUs);
+        voltage = static_cast<uint16_t>(voltage >> 3);
+
+        return static_cast<int16_t>(voltage * 4);
+    }
+
+    float CeilingPos(float f) {
+        const auto kI = static_cast<int>(f);
+        if (f == static_cast<float>(kI)) {
+            return static_cast<float>(kI);
+        }
+        return static_cast<float>(kI + 1);
+    }
 
    private:
-    uint8_t address_{0};
-    bool initialized_{false};
+     bool initialized_{false};
 
     struct Info {
         float current_lsb;

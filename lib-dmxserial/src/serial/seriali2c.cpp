@@ -2,7 +2,7 @@
  * @file seriali2c.cpp
  *
  */
-/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,47 +26,40 @@
 #include <cstdint>
 
 #include "serial/serial.h"
-#include "hal_i2c.h"
- #include "firmware/debug/debug_debug.h"
+#include "i2c.h"
+#include "firmware/debug/debug_debug.h"
 
-void Serial::SetI2cAddress(uint8_t address)
-{
+void Serial::SetI2cAddress(uint8_t address) {
     DEBUG_PRINTF("address=%.x", address);
 
     i2c_configuration_.address = address;
 }
 
-void Serial::SetI2cSpeedMode(serial::i2c::Speed speed_mode)
-{
-    DEBUG_PRINTF("tSpeedMode=%.x", speed_mode);
+void Serial::SetI2cSpeedMode(serial::i2c::Speed speed_mode) {
+    DEBUG_PRINTF("speed_mode=%.x", speed_mode);
 
-    if (speed_mode == serial::i2c::Speed::kNormal)
-    {
-        i2c_configuration_.speed_hz = HAL_I2C::NORMAL_SPEED;
-    }
-    else
-    {
-        i2c_configuration_.speed_hz = HAL_I2C::FULL_SPEED;
+    if (speed_mode == serial::i2c::Speed::kNormal) {
+        i2c_configuration_.speed_hz = i2c::kNormalSpeed;
+    } else {
+        i2c_configuration_.speed_hz = i2c::kFullSpeed;
     }
 }
 
-bool Serial::InitI2c()
-{
+bool Serial::InitI2c() {
     DEBUG_ENTRY();
 
-    FUNC_PREFIX(I2cBegin());
-    FUNC_PREFIX(I2cSetBaudrate(i2c_configuration_.speed_hz));
+    i2c::Begin();
 
     DEBUG_EXIT();
     return true;
 }
 
-void Serial::SendI2c(const uint8_t* data, uint32_t length)
-{
+void Serial::SendI2c(const uint8_t* data, uint32_t length) {
     DEBUG_ENTRY();
 
-    FUNC_PREFIX(I2cSetAddress(i2c_configuration_.address));
-    FUNC_PREFIX(I2cWrite(reinterpret_cast<const char*>(data), length));
+	i2c::SetBaudrate(i2c_configuration_.speed_hz);
+    i2c::SetAddress(i2c_configuration_.address);
+    i2c::Write(reinterpret_cast<const char*>(data), length);
 
     DEBUG_EXIT();
 }

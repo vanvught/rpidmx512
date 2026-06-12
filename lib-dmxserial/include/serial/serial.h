@@ -32,7 +32,7 @@
 
 #include "common/utils/utils_enum.h"
 #include "spi.h"
-#include "hal_i2c.h"
+#include "i2c.h"
 
 namespace serial {
 enum class Type : uint8_t { kUart, kSpi, kI2C, kUndefined };
@@ -88,11 +88,11 @@ inline const char* GetSpeedMode(serial::i2c::Speed speed) {
 }
 
 inline const char* GetSpeedMode(uint32_t speed) {
-    if (speed == HAL_I2C::NORMAL_SPEED) {
+    if (speed == ::i2c::kNormalSpeed) {
         return kSpeed[0];
     }
 
-    if (speed == HAL_I2C::FULL_SPEED) {
+    if (speed == ::i2c::kFullSpeed) {
         return kSpeed[1];
     }
 

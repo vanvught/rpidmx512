@@ -28,6 +28,8 @@
 
 #include <cstdint>
 
+#include "i2c.h"
+
 namespace adc::mcp3424 {
 enum class Gain {
     kPgaX1, ///< Default
@@ -49,7 +51,7 @@ enum class Conversion {
 };
 } // namespace adc::mcp3424
 
-class MCP3424 {
+class MCP3424 : I2c {
    public:
     explicit MCP3424(uint8_t address = 0);
 
@@ -68,7 +70,6 @@ class MCP3424 {
     double GetVoltage(uint32_t channel);
 
    private:
-    uint8_t address_{0};
     bool is_connected_{false};
     uint8_t config_;
     double lsb_;

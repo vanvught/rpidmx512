@@ -26,6 +26,15 @@
 #ifndef I2C_H_
 #define I2C_H_
 
+#if defined(CONFIG_I2C_OPTIMIZE_O2) || defined(CONFIG_I2C_OPTIMIZE_O3)
+#pragma GCC push_options
+#if defined(CONFIG_I2C_OPTIMIZE_O2)
+#pragma GCC optimize("O2")
+#else
+#pragma GCC optimize("O3")
+#endif
+#endif
+
 #include <cstdint>
 
 #include "h3_i2c.h"
@@ -59,11 +68,6 @@ inline uint8_t Write(const char* buffer, uint32_t length) {
     return H3I2cWrite(buffer, length);
 }
 
-inline void Write(uint8_t data) {
-    const char kBuffer[] = {static_cast<char>(data)};
-    Write(kBuffer, 1);
-}
-
 inline void WriteReg(uint8_t reg, uint8_t value) {
     H3I2cWriteReg(reg, value);
 }
@@ -76,12 +80,6 @@ inline uint8_t Read(char* buffer, uint32_t length) {
     return H3I2cRead(buffer, length);
 }
 
-inline uint16_t Read16() {
-    char buf[2] = {0};
-    Read(buf, 2);
-    return static_cast<uint16_t>(static_cast<uint16_t>(buf[0]) << 8 | static_cast<uint16_t>(buf[1]));
-}
-
 inline bool IsConnected(uint8_t address, uint32_t baudrate = kNormalSpeed) {
     return H3I2cIsConnected(address, baudrate);
 }
@@ -89,19 +87,115 @@ inline bool IsConnected(uint8_t address, uint32_t baudrate = kNormalSpeed) {
 inline void ReadReg(uint8_t reg, uint8_t& value) {
     H3I2cReadReg(reg, value);
 }
-
-inline uint16_t ReadRegister16(uint8_t reg) {
-    const char kBuffer[] = {static_cast<char>(reg)};
-    i2c::Write(&kBuffer[0], 1);
-    return Read16();
-}
-
-inline uint16_t ReadRegister16DelayUs(uint8_t reg, uint32_t delay_us) {
-    const char kBuffer[] = {static_cast<char>(reg)};
-    i2c::Write(&kBuffer[0], 1);
-    timing::DelayUs(delay_us);
-    return Read16();
-}
 } // namespace i2c
+
+class I2c {
+   public:
+    explicit I2c(uint8_t address, uint32_t baud_rate = i2c::kFullSpeed) : address_(address), baudrate_(baud_rate) {}
+
+    uint8_t GetAddress() const { return address_; }
+    uint32_t GetBaudrate() const { return baudrate_; }
+
+    bool IsConnected() { return H3I2cIsConnected(address_, baudrate_); }
+
+    void Write(uint8_t data, bool do_setup) {
+        const char kBuffer[] = {static_cast<char>(data)};
+        if (do_setup) Setup();
+        H3I2cWrite(kBuffer, 1);
+    }
+
+    void Write(const char* data, uint32_t length) {
+        Setup();
+        H3I2cWrite(data, length);
+    }
+
+    void WriteRegister(uint8_t reg, uint8_t value, bool do_setup) {
+        const char kBuffer[] = {static_cast<char>(reg), static_cast<char>(value)};
+
+        if (do_setup) Setup();
+        H3I2cWrite(kBuffer, 2);
+    }
+
+    void WriteRegister(uint8_t reg, uint16_t value) {
+        const char kBuffer[] = {static_cast<char>(reg), static_cast<char>(value >> 8), static_cast<char>(value & 0xFF)};
+
+        Setup();
+        H3I2cWrite(kBuffer, 3);
+    }
+
+    uint8_t Read(bool do_setup) {
+        char buf[1] = {0};
+
+        if (do_setup) Setup();
+        H3I2cRead(buf, 1);
+
+        return static_cast<uint8_t>(buf[0]);
+    }
+
+    uint8_t Read(char* buffer, uint32_t length, bool do_setup) {
+        if (do_setup) Setup();
+        return H3I2cRead(buffer, length);
+    }
+
+    uint16_t Read16(bool do_setup) {
+        char buffer[2] = {0};
+
+        if (do_setup) Setup();
+        H3I2cRead(buffer, 2);
+
+        return static_cast<uint16_t>(static_cast<uint16_t>(buffer[0]) << 8 | static_cast<uint16_t>(buffer[1]));
+    }
+
+    uint8_t ReadRegister(uint8_t reg, bool do_setup) {
+        const char kBuffer[] = {static_cast<char>(reg)};
+
+        if (do_setup) Setup();
+        H3I2cWrite(&kBuffer[0], 1);
+
+        return Read(false);
+    }
+
+    uint16_t ReadRegister16(uint8_t reg, bool do_setup) {
+        const char kBuf[] = {static_cast<char>(reg)};
+
+        if (do_setup) Setup();
+        H3I2cWrite(&kBuf[0], 1);
+
+        return Read16(false);
+    }
+
+    uint16_t ReadRegister16DelayUs(uint8_t reg, uint32_t delay_us) {
+        char buffer[2] = {0};
+
+        buffer[0] = static_cast<char>(reg);
+
+        Setup();
+        H3I2cWrite(&buffer[0], 1);
+
+        timing::DelayUs(delay_us);
+
+        H3I2cRead(buffer, 2);
+
+        return static_cast<uint16_t>(static_cast<uint16_t>(buffer[0]) << 8 | static_cast<uint16_t>(buffer[1]));
+    }
+
+    bool AckRead() {
+        char buf;
+        return H3I2cRead(&buf, 1) == 0;
+    }
+
+    void Setup() {
+        H3I2cSetAddress(address_);
+        H3I2cSetBaudrate(baudrate_);
+    }
+
+   private:
+    uint8_t address_;
+    uint32_t baudrate_;
+};
+
+#if defined(CONFIG_I2C_OPTIMIZE_O2) || defined(CONFIG_I2C_OPTIMIZE_O3)
+#pragma GCC pop_options
+#endif
 
 #endif // I2C_H_

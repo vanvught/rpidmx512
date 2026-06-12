@@ -28,21 +28,14 @@
 
 #include <stdint.h>
 
-#include "hal_i2c.h"
+#include "i2c.h"
 #include "displayedittimecode.h"
 #include "displayeditfps.h"
 #include "rotaryencoder.h"
 
-enum class RunStatus
-{
-    kIdle,
-    kContinue,
-    kReboot,
-    kTcReset
-};
+enum class RunStatus { kIdle, kContinue, kReboot, kTcReset };
 
-class McpButtons
-{
+class McpButtons {
    public:
     McpButtons(ltc::Source source, bool use_alt_function, uint32_t skip_seconds, bool rotary_half_step);
 
@@ -72,16 +65,10 @@ class McpButtons
     void HandleInternalKeyEsc();
 
    private:
-    HAL_I2C hal_i2c_;
+    I2c i2c_;
     DisplayEditTimeCode display_edit_time_code_;
     DisplayEditFps display_edit_fps_;
-    enum
-    {
-        kSourceSelect,
-        kEditTimecodeStart,
-        kEditTimecodeStop,
-        kEditFps
-    } state_{kSourceSelect};
+    enum { kSourceSelect, kEditTimecodeStart, kEditTimecodeStop, kEditFps } state_{kSourceSelect};
     ltc::Source source_;
     bool use_alt_function_;
     uint32_t skip_seconds_;

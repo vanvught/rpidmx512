@@ -96,4 +96,109 @@ inline uint16_t ReadRegister16DelayUs(uint8_t reg, uint32_t delay_us) {
 }
 } // namespace i2c
 
+
+class I2c {
+   public:
+    explicit I2c(uint8_t address, uint32_t baud_rate = i2c::kFullSpeed) : address_(address), baudrate_(baud_rate) {}
+
+    uint8_t GetAddress() const { return address_; }
+    uint32_t GetBaudrate() const { return baudrate_; }
+
+    bool IsConnected() { return LinuxI2cIsConnected(address_, baudrate_); }
+
+    void Write(uint8_t data, bool do_setup) {
+        const char kBuffer[] = {static_cast<char>(data)};
+        if (do_setup) Setup();
+        LinuxI2cWrite(kBuffer, 1);
+    }
+
+    void Write(const char* data, uint32_t length) {
+        Setup();
+        LinuxI2cWrite(data, length);
+    }
+
+    void WriteRegister(uint8_t reg, uint8_t value, bool do_setup) {
+        const char kBuffer[] = {static_cast<char>(reg), static_cast<char>(value)};
+
+        if (do_setup) Setup();
+        LinuxI2cWrite(kBuffer, 2);
+    }
+
+    void WriteRegister(uint8_t reg, uint16_t value) {
+        const char kBuffer[] = {static_cast<char>(reg), static_cast<char>(value >> 8), static_cast<char>(value & 0xFF)};
+
+        Setup();
+        LinuxI2cWrite(kBuffer, 3);
+    }
+
+    uint8_t Read(bool do_setup) {
+        char buf[1] = {0};
+
+        if (do_setup) Setup();
+        LinuxI2cRead(buf, 1);
+
+        return static_cast<uint8_t>(buf[0]);
+    }
+
+    uint8_t Read(char* buffer, uint32_t length, bool do_setup) {
+        if (do_setup) Setup();
+        return LinuxI2cRead(buffer, length);
+    }
+
+    uint16_t Read16(bool do_setup) {
+        char buffer[2] = {0};
+
+        if (do_setup) Setup();
+        LinuxI2cRead(buffer, 2);
+
+        return static_cast<uint16_t>(static_cast<uint16_t>(buffer[0]) << 8 | static_cast<uint16_t>(buffer[1]));
+    }
+
+    uint8_t ReadRegister(uint8_t reg, bool do_setup) {
+        const char kBuffer[] = {static_cast<char>(reg)};
+
+        if (do_setup) Setup();
+        LinuxI2cWrite(&kBuffer[0], 1);
+
+        return Read(false);
+    }
+
+    uint16_t ReadRegister16(uint8_t reg, bool do_setup) {
+        const char kBuf[] = {static_cast<char>(reg)};
+
+        if (do_setup) Setup();
+        LinuxI2cWrite(&kBuf[0], 1);
+
+        return Read16(false);
+    }
+
+    uint16_t ReadRegister16DelayUs(uint8_t reg, uint32_t delay_us) {
+        char buffer[2] = {0};
+
+        buffer[0] = static_cast<char>(reg);
+
+        Setup();
+        LinuxI2cWrite(&buffer[0], 1);
+
+        timing::DelayUs(delay_us);
+
+        LinuxI2cRead(buffer, 2);
+
+        return static_cast<uint16_t>(static_cast<uint16_t>(buffer[0]) << 8 | static_cast<uint16_t>(buffer[1]));
+    }
+
+    bool AckRead() {
+        char buf;
+        return LinuxI2cRead(&buf, 1) == 0;
+    }
+
+    void Setup() {
+        LinuxI2cSetAddress(address_);
+        LinuxI2cSetBaudrate(baudrate_);
+    }
+
+   private:
+    uint8_t address_;
+    uint32_t baudrate_;
+};
 #endif // I2C_H_

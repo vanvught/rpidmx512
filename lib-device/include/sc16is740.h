@@ -2,7 +2,7 @@
  * @file sc16is740.h
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@
 
 #include <cstdint>
 
-#include "hal_i2c.h"
+#include "i2c.h"
 #include "timing.h"
 
 #include "sc16is7x0.h"
@@ -38,7 +38,7 @@ inline constexpr uint8_t kI2CAddress = 0x4D;
 inline constexpr uint32_t kCristalHz = 14745600UL;
 } // namespace sc16is740
 
-class SC16IS740 : HAL_I2C {
+class SC16IS740 : I2c {
    public:
     enum class SerialParity { kNone, kOdd, kEven, kForceD0, kForceD1 };
 
@@ -55,13 +55,11 @@ class SC16IS740 : HAL_I2C {
     void SetBaud(uint32_t baud);
 
     bool IsInterrupt() {
-        const uint32_t kRegisterIIR = ReadRegister(SC16IS7X0_IIR);
-
+        const uint32_t kRegisterIIR = ReadRegister(SC16IS7X0_IIR, true);
         return ((kRegisterIIR & 0x1) != 0x1);
     }
 
     // Read
-
     int GetChar() {
         if (!is_connected_) {
             return -1;
@@ -71,7 +69,7 @@ class SC16IS740 : HAL_I2C {
             return -1;
         }
 
-        return ReadRegister(SC16IS7X0_RHR);
+        return ReadRegister(SC16IS7X0_RHR, false);
     }
 
     int GetChar(uint32_t time_out) {
@@ -83,7 +81,7 @@ class SC16IS740 : HAL_I2C {
             return -1;
         }
 
-        return ReadRegister(SC16IS7X0_RHR);
+        return ReadRegister(SC16IS7X0_RHR, false);
     }
 
     // Write
@@ -101,15 +99,14 @@ class SC16IS740 : HAL_I2C {
     }
 
     // Multiple read/write
-
     void WriteBytes(const uint8_t* bytes, uint32_t size);
     void ReadBytes(uint8_t* bytes, uint32_t& size, uint32_t time_out);
     void FlushRead(uint32_t time_out);
 
    private:
-    bool IsWritable() { return (ReadRegister(SC16IS7X0_TXLVL) != 0); }
+    bool IsWritable() { return (ReadRegister(SC16IS7X0_TXLVL, true) != 0); }
 
-    bool IsReadable() { return (ReadRegister(SC16IS7X0_RXLVL) != 0); }
+    bool IsReadable() { return (ReadRegister(SC16IS7X0_RXLVL, true) != 0); }
 
     bool IsReadable(uint32_t time_out) {
         const auto kMillis = timing::Millis();

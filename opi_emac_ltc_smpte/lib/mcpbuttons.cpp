@@ -22,6 +22,7 @@
  * THE SOFTWARE.
  */
 
+#include "i2c.h"
 #include "mcpbuttons.h"
 #include "displayset.h"
 #include "hal.h"
@@ -69,14 +70,14 @@ static constexpr auto kResume = 7;
 #define BUTTON_STATE(x) ((nButtonsChanged & (1U << x)) == (1U << x))
 
 McpButtons::McpButtons(ltc::Source source, bool use_alt_function, uint32_t skip_seconds, bool rotary_half_step)
-    : hal_i2c_(mcp23017::kI2CAddress), source_(source), use_alt_function_(use_alt_function), skip_seconds_(skip_seconds), rotary_encoder_(rotary_half_step) {
+    : i2c_(mcp23017::kI2CAddress), source_(source), use_alt_function_(use_alt_function), skip_seconds_(skip_seconds), rotary_encoder_(rotary_half_step) {
     ltc::init_timecode(timecode_);
 }
 
 bool McpButtons::Check() {
     DEBUG_ENTRY();
 
-    is_connected_ = hal_i2c_.IsConnected();
+    is_connected_ = i2c_.IsConnected();
 
     if (!is_connected_) {
         DEBUG_EXIT();
@@ -84,15 +85,15 @@ bool McpButtons::Check() {
     }
 
     // Rotary and buttons
-    hal_i2c_.WriteRegister(mcp23x17::REG_IODIRA, static_cast<uint8_t>(0xFF)); // All input
-    hal_i2c_.WriteRegister(mcp23x17::REG_GPPUA, static_cast<uint8_t>(0xFF));  // Pull-up
-    hal_i2c_.WriteRegister(mcp23x17::REG_IPOLA, static_cast<uint8_t>(0xFF));  // Invert read
-    hal_i2c_.WriteRegister(mcp23x17::REG_INTCONA, static_cast<uint8_t>(0x00));
-    hal_i2c_.WriteRegister(mcp23x17::REG_GPINTENA, static_cast<uint8_t>(0xFF)); // Interrupt on Change
-    hal_i2c_.ReadRegister(mcp23x17::REG_INTCAPA);                               // Clear interrupts
+    i2c_.WriteRegister(mcp23x17::REG_IODIRA, static_cast<uint8_t>(0xFF), false); // All input
+    i2c_.WriteRegister(mcp23x17::REG_GPPUA, static_cast<uint8_t>(0xFF), false);  // Pull-up
+    i2c_.WriteRegister(mcp23x17::REG_IPOLA, static_cast<uint8_t>(0xFF), false);  // Invert read
+    i2c_.WriteRegister(mcp23x17::REG_INTCONA, static_cast<uint8_t>(0x00), false);
+    i2c_.WriteRegister(mcp23x17::REG_GPINTENA, static_cast<uint8_t>(0xFF), false); // Interrupt on Change
+    i2c_.ReadRegister(mcp23x17::REG_INTCAPA, false);                               // Clear interrupts
     // Led's
-    hal_i2c_.WriteRegister(mcp23x17::REG_IODIRB, static_cast<uint8_t>(0x00)); // All output
-    hal_i2c_.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(1U << static_cast<uint8_t>(source_)));
+    i2c_.WriteRegister(mcp23x17::REG_IODIRB, static_cast<uint8_t>(0x00), false); // All output
+    i2c_.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(1U << static_cast<uint8_t>(source_)), false);
 
     UpdateDisplays(source_);
 
@@ -109,8 +110,8 @@ void McpButtons::HandleActionSelect(const ltc::Source& source) {
         ltc_store::SaveSource(static_cast<uint8_t>(source_));
     }
 
-    hal_i2c_.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(1U << static_cast<uint8_t>(source)));
-    hal_i2c_.ReadRegister(mcp23x17::REG_INTCAPA); // Clear interrupts
+    i2c_.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(1U << static_cast<uint8_t>(source)), true);
+    i2c_.ReadRegister(mcp23x17::REG_INTCAPA, false); // Clear interrupts
 
     Display::Get()->SetCursor(display::cursor::kOff);
     Display::Get()->SetCursorPos(0, 0);
@@ -122,14 +123,14 @@ bool McpButtons::Wait(ltc::Source& source, struct ltc::TimeCode& start_timecode,
     const auto kSource = static_cast<uint32_t>(source);
 
     if (__builtin_expect((LedBlink(static_cast<uint8_t>(1U << kSource)) >= led_ticker_max_), 0)) {
-        hal_i2c_.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(1U << kSource));
+        i2c_.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(1U << kSource), true);
         return false;
     }
 
     if (__builtin_expect(FUNC_PREFIX(GpioLev(gpio::kInta)) == 0, 0)) {
         led_ticker_max_ = UINT32_MAX;
 
-        const auto kPortA = hal_i2c_.ReadRegister(mcp23x17::REG_GPIOA);
+        const auto kPortA = i2c_.ReadRegister(mcp23x17::REG_GPIOA, false);
         const uint8_t nButtonsChanged = (kPortA ^ port_a_previous_) & kPortA;
 
         port_a_previous_ = kPortA;
@@ -228,7 +229,7 @@ void McpButtons::Run() {
     }
 
     if (__builtin_expect(FUNC_PREFIX(GpioLev(gpio::kInta)) == 0, 0)) {
-        const auto nPortA = hal_i2c_.ReadRegister(mcp23x17::REG_GPIOA);
+        const auto nPortA = i2c_.ReadRegister(mcp23x17::REG_GPIOA, true);
         const uint8_t nButtonsChanged = (nPortA ^ port_a_previous_) & nPortA;
 
         port_a_previous_ = nPortA;
@@ -351,7 +352,7 @@ uint32_t McpButtons::LedBlink(uint8_t port) {
 
     millis_previous_ = kMillisNow;
     port_b_ ^= port;
-    hal_i2c_.WriteRegister(mcp23x17::REG_GPIOB, port_b_);
+    i2c_.WriteRegister(mcp23x17::REG_GPIOB, port_b_);
 
     return ++led_ticker_;
 }
@@ -469,7 +470,7 @@ void McpButtons::HandleRunActionSelect() {
     }
 
     if (run_status_ == RunStatus::kReboot) {
-        hal_i2c_.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(0xFF));
+        i2c_.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(0xFF));
 
         Display::Get()->SetSleep(false);
         Display::Get()->Cls();
@@ -494,19 +495,19 @@ void McpButtons::SetRunState(RunStatus run_state) {
 
     switch (run_state) {
         case RunStatus::kIdle:
-            hal_i2c_.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(1U << static_cast<uint32_t>(source_)));
+            i2c_.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(1U << static_cast<uint32_t>(source_)));
             ltc::source::Show(source_, run_gps_time_client_);
             break;
         case RunStatus::kContinue:
-            hal_i2c_.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(0x0F));
+            i2c_.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(0x0F));
             Display::Get()->TextLine(4, ">CONTINUE?< ", 12);
             break;
         case RunStatus::kReboot:
-            hal_i2c_.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(0xF0));
+            i2c_.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(0xF0));
             Display::Get()->TextLine(4, ">REBOOT?  < ", 12);
             break;
         case RunStatus::kTcReset:
-            hal_i2c_.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(0xAA));
+            i2c_.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(0xAA));
             Display::Get()->TextLine(4, ">RESET TC?< ", 12);
             break;
         default:

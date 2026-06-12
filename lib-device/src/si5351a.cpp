@@ -50,10 +50,10 @@ Register static constexpr kRegisters[si5351a::clock_builder::kRegs] = {
     {0x0097, 0x00}, {0x0098, 0x00}, {0x0099, 0x00}, {0x009A, 0x00}, {0x009B, 0x00}, {0x00A2, 0x00}, {0x00A3, 0x00}, {0x00A4, 0x00}, {0x00B7, 0xD2},
 };
 
-SI5351A::SI5351A(uint8_t address) : address_(address == 0 ? si5351a::kI2CAddress : address) {
+SI5351A::SI5351A(uint8_t address) : I2c(address == 0 ? si5351a::kI2CAddress : address) {
     DEBUG_ENTRY();
 
-    connected_ = i2c::IsConnected(address_);
+    connected_ = IsConnected();
 
     DEBUG_PRINTF("connected_=%d", connected_);
     DEBUG_EXIT();
@@ -63,13 +63,12 @@ void SI5351A::ClockBuilder() {
     DEBUG_ENTRY();
     assert(connected_);
 
-    i2c::SetAddress(address_);
-    i2c::SetBaudrate(i2c::kFullSpeed);
+	Setup();
 
     Pre();
 
     for (uint32_t i = 0; i < si5351a::clock_builder::kRegs; i++) {
-        i2c::WriteReg(kRegisters[i].address, kRegisters[i].value);
+        WriteRegister(kRegisters[i].address, kRegisters[i].value, false);
     }
 
     Post();
@@ -79,18 +78,17 @@ void SI5351A::ClockBuilder() {
 
 void SI5351A::Pre() {
     // Disable Outputs. Set CLKx_DIS high; Reg. 3 = 0xFF
-    i2c::WriteReg(3, static_cast<uint8_t>(0xFF));
+    WriteRegister(3, static_cast<uint8_t>(0xFF), false);
 
     // Powerdown all output drivers Reg. 16, 17, 18, 19, 20, 21, 22, 23 = 0x80
     for (uint32_t i = 16; i <= 23; i++) {
-        i2c::WriteReg(static_cast<uint8_t>(i), static_cast<uint8_t>(0x80));
+        WriteRegister(static_cast<uint8_t>(i), static_cast<uint8_t>(0x80), false);
     }
 }
 
 void SI5351A::Post() {
     // Apply PLLA and PLLB soft reset Reg. 177 = 0xAC
-    i2c::WriteReg(177, static_cast<uint8_t>(0xAC));
-
+    WriteRegister(177, static_cast<uint8_t>(0xAC), false);
     // Enable outputs
-    i2c::WriteReg(3, static_cast<uint8_t>(0x00));
+    WriteRegister(3, static_cast<uint8_t>(0x00), false);
 }

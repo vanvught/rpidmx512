@@ -2,7 +2,7 @@
  * @file sc16is740.cpp
  *
  */
-/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,11 +28,11 @@
 #include "sc16is740.h"
 #include "sc16is7x0.h"
 #include "timing.h"
-#include "hal_i2c.h"
+#include "i2c.h"
 #include "firmware/debug/debug_printbits.h"
 #include "firmware/debug/debug_debug.h"
 
-SC16IS740::SC16IS740(uint8_t address, uint32_t on_board_crystal) : HAL_I2C(address, HAL_I2C::FULL_SPEED), on_board_crystal_hz_(on_board_crystal) {
+SC16IS740::SC16IS740(uint8_t address, uint32_t on_board_crystal) : I2c(address, i2c::kFullSpeed), on_board_crystal_hz_(on_board_crystal) {
     is_connected_ = IsConnected();
 
     if (!is_connected_) {
@@ -46,17 +46,17 @@ SC16IS740::SC16IS740(uint8_t address, uint32_t on_board_crystal) : HAL_I2C(addre
     const uint8_t kTestCharacter = 'A';
     WriteRegister(SC16IS7X0_SPR, kTestCharacter);
 
-    if ((ReadRegister(SC16IS7X0_SPR) != kTestCharacter)) {
+    if ((ReadRegister(SC16IS7X0_SPR, false) != kTestCharacter)) {
         DEBUG_PUTS("Test character failed");
         is_connected_ = false;
         return;
     }
 
-    auto register_mcr = ReadRegister(SC16IS7X0_MCR);
+    auto register_mcr = ReadRegister(SC16IS7X0_MCR, false);
     register_mcr |= MCR_ENABLE_TCR_TLR;
     WriteRegister(SC16IS7X0_MCR, register_mcr);
 
-    auto register_efr = ReadRegister(SC16IS7X0_EFR);
+    auto register_efr = ReadRegister(SC16IS7X0_EFR, false);
     WriteRegister(SC16IS7X0_EFR, static_cast<uint8_t>(register_efr | EFR_ENABLE_ENHANCED_FUNCTIONS));
 
     WriteRegister(SC16IS7X0_TLR, static_cast<uint8_t>(0x10));
@@ -67,14 +67,14 @@ SC16IS740::SC16IS740(uint8_t address, uint32_t on_board_crystal) : HAL_I2C(addre
     WriteRegister(SC16IS7X0_FCR, FCR_ENABLE_FIFO);
     WriteRegister(SC16IS7X0_IER, static_cast<uint8_t>(IER_ELSI | IER_ERHRI));
 
-    DEBUG_PRINTF("TLR=%.2x", ReadRegister(SC16IS7X0_TLR));
-    debug::PrintBits(ReadRegister(SC16IS7X0_TLR));
+    DEBUG_PRINTF("TLR=%.2x", ReadRegister(SC16IS7X0_TLR, false));
+    debug::PrintBits(ReadRegister(SC16IS7X0_TLR, false));
 
-    DEBUG_PRINTF("IER=%.2x", ReadRegister(SC16IS7X0_IER));
-    debug::PrintBits(ReadRegister(SC16IS7X0_IER));
+    DEBUG_PRINTF("IER=%.2x", ReadRegister(SC16IS7X0_IER, false));
+    debug::PrintBits(ReadRegister(SC16IS7X0_IER, false));
 
-    DEBUG_PRINTF("IIR=%.2x", ReadRegister(SC16IS7X0_IIR));
-    debug::PrintBits(ReadRegister(SC16IS7X0_IIR));
+    DEBUG_PRINTF("IIR=%.2x", ReadRegister(SC16IS7X0_IIR, false));
+    debug::PrintBits(ReadRegister(SC16IS7X0_IIR, false));
 }
 
 void SC16IS740::SetFormat(uint32_t bits, SerialParity parity, uint32_t stop_bits) {
@@ -128,22 +128,22 @@ void SC16IS740::SetFormat(uint32_t bits, SerialParity parity, uint32_t stop_bits
             register_lcr |= LCR_BITS1;
     }
 
-    WriteRegister(SC16IS7X0_LCR, register_lcr);
+    WriteRegister(SC16IS7X0_LCR, register_lcr, true);
 
-    DEBUG_PRINTF("LCR=%.2x:%.2x", ReadRegister(SC16IS7X0_LCR), register_lcr);
+    DEBUG_PRINTF("LCR=%.2x:%.2x", ReadRegister(SC16IS7X0_LCR, false), register_lcr);
 }
 
 void SC16IS740::SetBaud(uint32_t baud) {
     uint32_t prescaler;
 
-    if ((ReadRegister(SC16IS7X0_MCR) & MCR_PRESCALE_4) == MCR_PRESCALE_4) {
+    if ((ReadRegister(SC16IS7X0_MCR, true) & MCR_PRESCALE_4) == MCR_PRESCALE_4) {
         prescaler = 4;
     } else {
         prescaler = 1;
     }
 
     const uint32_t kDivisor = ((on_board_crystal_hz_ / prescaler) / (baud * 16U));
-    const auto kRegisterLcr = ReadRegister(SC16IS7X0_LCR);
+    const auto kRegisterLcr = ReadRegister(SC16IS7X0_LCR, false);
 
     WriteRegister(SC16IS7X0_LCR, static_cast<uint8_t>(kRegisterLcr | LCR_ENABLE_DIV));
     WriteRegister(SC16IS7X0_DLL, static_cast<uint8_t>(kDivisor & 0xFF));
@@ -154,7 +154,7 @@ void SC16IS740::SetBaud(uint32_t baud) {
     DEBUG_PRINTF("kDivisor=%u", kDivisor);
     DEBUG_PRINTF("on_board_crystal_hz_=%u", on_board_crystal_hz_);
 
-    DEBUG_PRINTF("LCR=%.2x:%.2x", ReadRegister(SC16IS7X0_LCR), kRegisterLcr);
+    DEBUG_PRINTF("LCR=%.2x:%.2x", ReadRegister(SC16IS7X0_LCR, false), kRegisterLcr);
 }
 
 void SC16IS740::WriteBytes(const uint8_t* bytes, uint32_t size) {
@@ -164,8 +164,10 @@ void SC16IS740::WriteBytes(const uint8_t* bytes, uint32_t size) {
 
     auto* p = const_cast<uint8_t*>(bytes);
 
+    Setup();
+
     while (size > 0) {
-        uint32_t available = ReadRegister(SC16IS7X0_TXLVL);
+        uint32_t available = ReadRegister(SC16IS7X0_TXLVL, false);
 
         while ((size > 0) && (available > 0)) {
             WriteRegister(SC16IS7X0_THR, *p);
@@ -185,11 +187,13 @@ void SC16IS740::ReadBytes(uint8_t* bytes, uint32_t& size, uint32_t time_out) {
     auto* destination = bytes;
     uint32_t remaining = size;
 
+    Setup();
+
     while (remaining > 0) {
         const uint32_t kMillis = timing::Millis();
         uint32_t available;
 
-        while ((available = ReadRegister(SC16IS7X0_RXLVL)) == 0) {
+        while ((available = ReadRegister(SC16IS7X0_RXLVL, false)) == 0) {
             if ((timing::Millis() - time_out) > kMillis) {
                 remaining = 0;
                 break;
@@ -197,7 +201,7 @@ void SC16IS740::ReadBytes(uint8_t* bytes, uint32_t& size, uint32_t time_out) {
         }
 
         while ((remaining > 0) && (available > 0)) {
-            *destination++ = ReadRegister(SC16IS7X0_RHR);
+            *destination++ = ReadRegister(SC16IS7X0_RHR, false);
             remaining--;
             available--;
         }
@@ -213,11 +217,13 @@ void SC16IS740::FlushRead(uint32_t time_out) {
 
     bool is_remaining = true;
 
+    Setup();
+
     while (is_remaining) {
         const auto kMillis = timing::Millis();
         uint32_t available;
 
-        while ((available = ReadRegister(SC16IS7X0_RXLVL)) == 0) {
+        while ((available = ReadRegister(SC16IS7X0_RXLVL, false)) == 0) {
             if ((timing::Millis() - time_out) > kMillis) {
                 is_remaining = false;
                 break;
@@ -225,7 +231,7 @@ void SC16IS740::FlushRead(uint32_t time_out) {
         }
 
         while (available > 0) {
-            ReadRegister(SC16IS7X0_RHR);
+            ReadRegister(SC16IS7X0_RHR, false);
             available--;
         }
     }
