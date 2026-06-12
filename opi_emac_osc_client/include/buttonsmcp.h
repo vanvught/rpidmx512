@@ -2,7 +2,7 @@
  * @file buttonsmcp.h
  *
  */
-/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,7 @@
 #include "buttonsset.h"
 #include "oscclientled.h"
 #include "oscclient.h"
-#include "hal_i2c.h"
+#include "i2c.h"
 
 class ButtonsMcp final: public ButtonsSet, public OscClientLed
 {
@@ -45,7 +45,7 @@ class ButtonsMcp final: public ButtonsSet, public OscClientLed
     void SetLed(uint32_t led, bool on) override;
 
    private:
-    HAL_I2C hal_i2c_;
+    I2c i2c_;
     OscClient* oscclient_;
     bool is_connected_{false};
     uint8_t buttons_previous_{0};
