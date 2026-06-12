@@ -38,7 +38,7 @@
 #include "l6470dmxmodes.h"
 #include "modestore.h"
 #include "hal_api.h"
-#include "hal_spi.h"
+#include "spi.h"
 #include "hal_gpio.h"
 #include "timing.h"
 
@@ -46,9 +46,8 @@
 
 SparkFunDmx::SparkFunDmx() : dmx_start_address_(dmxnode::kAddressInvalid) {
     DEBUG_ENTRY();
-    ;
 
-    m_nGlobalSpiCs = SPI_CS0;
+    m_nGlobalSpiCs = spi::kCs;
     m_nGlobalResetPin = GPIO_RESET_OUT;
     m_nGlobalBusyPin = GPIO_BUSY_IN;
 
@@ -57,7 +56,7 @@ SparkFunDmx::SparkFunDmx() : dmx_start_address_(dmxnode::kAddressInvalid) {
     m_bIsGlobalBusyPinSet = false;
 
     m_nLocalPosition = 0;
-    m_nLocalSpiCs = SPI_CS0;
+    m_nLocalSpiCs = spi::kCs;
     m_nLocalResetPin = GPIO_RESET_OUT;
     m_nLocalBusyPin = GPIO_BUSY_IN;
 
@@ -73,7 +72,6 @@ SparkFunDmx::SparkFunDmx() : dmx_start_address_(dmxnode::kAddressInvalid) {
     }
 
     DEBUG_EXIT();
-    ;
 }
 
 SparkFunDmx::~SparkFunDmx() {
@@ -136,7 +134,7 @@ void SparkFunDmx::ReadConfigFiles() {
     m_bIsGlobalSpiCsSet = false;
 #else
     m_bIsGlobalSpiCsSet = true;
-    m_nGlobalSpiCs = SPI_CS0;
+    m_nGlobalSpiCs = spi::kCs;
 #endif
     m_bIsGlobalResetSet = false;
     m_bIsGlobalBusyPinSet = false;
@@ -189,7 +187,7 @@ void SparkFunDmx::ReadConfigFiles() {
         }
     }
 
-    printf("NumBoards : %d\n", static_cast<int>(AutoDriver::getNumBoards()));
+    printf("NumBoards : %d\n", static_cast<int>(AutoDriver::GetNumBoards()));
 
     for (uint32_t i = 0; i < common::store::l6470dmx::kMaxMotors; i++) {
 #ifndef NDEBUG
@@ -213,7 +211,7 @@ void SparkFunDmx::ReadConfigFiles() {
                 if (autodriver_[i]->IsConnected()) {
                     printf("Motor %d is connected\n", i);
 
-                    autodriver_[i]->setMotorNumber(i);
+                    autodriver_[i]->SetMotorNumber(i);
                     autodriver_[i]->Dump();
 
                     json::MotorParams motor_params(i);
@@ -308,29 +306,28 @@ void SparkFunDmx::ReadConfigFiles() {
     ;
 }
 
-template <bool doUpdate> 
-void SparkFunDmx::SetData(uint32_t port_index, const uint8_t* pData, uint32_t length) {
+template <bool doUpdate> void SparkFunDmx::SetData(uint32_t port_index, const uint8_t* data, uint32_t length) {
     // delegate to single function
-    SetDataImpl(port_index, pData, length);
+    SetDataImpl(port_index, data, length);
 }
 
-void SparkFunDmx::SetDataImpl([[maybe_unused]] uint32_t port_index, const uint8_t* pData, uint32_t length) {
+void SparkFunDmx::SetDataImpl([[maybe_unused]] uint32_t port_index, const uint8_t* data, uint32_t length) {
     DEBUG_ENTRY();
     ;
     assert(pData != nullptr);
     assert(length <= dmxnode::kUniverseSize);
 
-    bool bIsDmxDataChanged[common::store::l6470dmx::kMaxMotors];
+    bool data_changed[common::store::l6470dmx::kMaxMotors];
 
     for (uint32_t i = 0; i < common::store::l6470dmx::kMaxMotors; i++) {
         if (l6470dmx_modes_[i] != nullptr) {
-            bIsDmxDataChanged[i] = l6470dmx_modes_[i]->IsDmxDataChanged(pData, length);
+            data_changed[i] = l6470dmx_modes_[i]->IsDmxDataChanged(data, length);
 
-            if (bIsDmxDataChanged[i]) {
+            if (data_changed[i]) {
                 l6470dmx_modes_[i]->HandleBusy();
             }
         } else {
-            bIsDmxDataChanged[i] = false;
+            data_changed[i] = false;
         }
 #ifndef NDEBUG
         printf("bIsDmxDataChanged[%d]=%d\n", i, bIsDmxDataChanged[i]);
@@ -338,15 +335,15 @@ void SparkFunDmx::SetDataImpl([[maybe_unused]] uint32_t port_index, const uint8_
     }
 
     for (uint32_t i = 0; i < common::store::l6470dmx::kMaxMotors; i++) {
-        if (bIsDmxDataChanged[i]) {
+        if (data_changed[i]) {
             while (l6470dmx_modes_[i]->BusyCheck()) {
             }
         }
     }
 
     for (uint32_t i = 0; i < common::store::l6470dmx::kMaxMotors; i++) {
-        if (bIsDmxDataChanged[i]) {
-            l6470dmx_modes_[i]->DmxData(pData, length);
+        if (data_changed[i]) {
+            l6470dmx_modes_[i]->DmxData(data, length);
         }
     }
 
@@ -354,7 +351,7 @@ void SparkFunDmx::SetDataImpl([[maybe_unused]] uint32_t port_index, const uint8_
     ;
 }
 
-void SparkFunDmx::Sync([[maybe_unused]] uint32_t const port_index) {
+void SparkFunDmx::Sync([[maybe_unused]] uint32_t port_index) {
     // TODO (a) Implement Sync
 }
 

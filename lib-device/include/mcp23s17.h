@@ -2,7 +2,7 @@
  * @file mcp23s17.h
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,12 +33,10 @@
 
 namespace gpio {
 
-class MCP23S17 {
+class MCP23S17 : Spi {
    public:
     explicit MCP23S17(uint8_t chip_select = 0, uint32_t speed_hz = mcp23x17::SPI_SPEED_DEFAULT_HZ, uint8_t address = 0)
-        : chip_select_(chip_select), speed_hz_(speed_hz == 0 ? mcp23x17::SPI_SPEED_DEFAULT_HZ : (mcp23x17::SPI_SPEED_DEFAULT_HZ <= mcp23x17::SPI_SPEED_MAX_HZ ? speed_hz : mcp23x17::SPI_SPEED_MAX_HZ)), address_(address) {
-        spi::Begin();
-        Setup();
+        : Spi(chip_select, (speed_hz == 0 ? mcp23x17::SPI_SPEED_DEFAULT_HZ : (mcp23x17::SPI_SPEED_DEFAULT_HZ <= mcp23x17::SPI_SPEED_MAX_HZ ? speed_hz : mcp23x17::SPI_SPEED_MAX_HZ))), address_(address) {
         MCP23S17::WriteRegister(mcp23x17::REG_IOCON, mcp23x17::IOCON_HAEN);
     }
 
@@ -49,7 +47,7 @@ class MCP23S17 {
         spi_data[1] = static_cast<char>(reg);
         spi_data[2] = static_cast<char>(value);
 
-        spi::Writenb(spi_data, 3);
+        Spi::Write(spi_data, 3, true);
     }
 
     void WriteRegister(uint8_t reg, uint16_t value) {
@@ -60,7 +58,7 @@ class MCP23S17 {
         spi_data[2] = static_cast<char>(value);
         spi_data[3] = static_cast<char>(value >> 8);
 
-        spi::Writenb(spi_data, 4);
+        Spi::Write(spi_data, 4, true);
     }
 
    private:

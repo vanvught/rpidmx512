@@ -28,14 +28,9 @@
 
 #include "timing.h"
 #include "spi/config.h"
-#include "hal_spi.h"
+#include "spi.h"
+#include "hal_gpio.h"
 #include "firmware/debug/debug_debug.h"
-
-#if defined CONFIG_LCD_SPI_BITBANG
-#define SPI_PREFIX(x) FUNC_PREFIX(Bitbang##x);
-#else
-#define SPI_PREFIX(x) FUNC_PREFIX(x);
-#endif
 
 class SpiLcd {
    public:
@@ -43,10 +38,10 @@ class SpiLcd {
         DEBUG_ENTRY();
         DEBUG_PRINTF("cs=%u", cs);
 
-        SPI_PREFIX(SpiBegin());
-        SPI_PREFIX(SpiChipSelect(SPI_CS_NONE));
-        SPI_PREFIX(SpiSetSpeedHz(20000000));
-        SPI_PREFIX(SpiSetDataMode(SPI_MODE0));
+        spi::Begin();
+        spi::ChipSelect(spi::kCsNone);
+        spi::SetSpeedHz(20000000);
+        spi::SetDataMode(spi::kMode0);
 
 #if defined(SPI_LCD_RST_GPIO)
         FUNC_PREFIX(GpioFsel(SPI_LCD_RST_GPIO, GPIO_FSEL_OUTPUT));
@@ -89,14 +84,14 @@ class SpiLcd {
     void WriteCommand(uint8_t data) {
         ClearCS();
         ClearDC();
-        SPI_PREFIX(SpiWritenb(reinterpret_cast<char*>(&data), 1));
+        spi::Writenb(reinterpret_cast<char*>(&data), 1);
         SetCS();
     }
 
     void WriteData(const uint8_t* data, uint32_t length) {
         ClearCS();
         SetDC();
-        SPI_PREFIX(SpiWritenb(reinterpret_cast<const char*>(data), length));
+        spi::Writenb(reinterpret_cast<const char*>(data), length);
         SetCS();
     }
 
@@ -109,27 +104,29 @@ class SpiLcd {
     void WriteDataByte(uint8_t data) {
         ClearCS();
         SetDC();
-        SPI_PREFIX(SpiWritenb(reinterpret_cast<char*>(&data), 1));
+        spi::Writenb(reinterpret_cast<char*>(&data), 1);
         SetCS();
     }
 
     void WriteDataWord(uint16_t data) {
         ClearCS();
         SetDC();
-        SPI_PREFIX(SpiWrite(data));
+        spi::Write(data);
         SetCS();
     }
 
     void WriteDataStart(uint8_t* data, uint32_t length) {
         ClearCS();
         SetDC();
-        SPI_PREFIX(SpiWritenb(reinterpret_cast<char*>(data), length));
+        spi::Writenb(reinterpret_cast<char*>(data), length);
     }
 
-    void WriteDataContinue(uint8_t* data, uint32_t length) { SPI_PREFIX(SpiWritenb(reinterpret_cast<char*>(data), length)); }
+    void WriteDataContinue(uint8_t* data, uint32_t length) { 
+		spi::Writenb(reinterpret_cast<char*>(data), length); 
+	}
 
     void WriteDataEnd(uint8_t* data, uint32_t length) {
-        SPI_PREFIX(SpiWritenb(reinterpret_cast<char*>(data), length));
+        spi::Writenb(reinterpret_cast<char*>(data), length);
         SetCS();
     }
 

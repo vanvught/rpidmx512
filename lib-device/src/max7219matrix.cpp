@@ -110,7 +110,7 @@ void Max7219Matrix::Write(const char* buffer, uint16_t count) {
             spi_data[j++] = kP[i - 1];
         }
 
-        MAX7219::Write(reinterpret_cast<const char*>(spi_data), j, true);
+        Spi::Write(reinterpret_cast<const char*>(spi_data), j, true);
     }
 }
 
@@ -141,7 +141,7 @@ void Max7219Matrix::WriteAll(uint8_t reg, uint8_t data) {
         spi_data[i + 1] = data;
     }
 
-    MAX7219::Write(reinterpret_cast<const char*>(spi_data), static_cast<uint32_t>(count_ * 2), true);
+    Spi::Write(reinterpret_cast<const char*>(spi_data), static_cast<uint32_t>(count_ * 2), true);
 
     DEBUG_EXIT();
 }

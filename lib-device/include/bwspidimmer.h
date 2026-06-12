@@ -41,10 +41,10 @@ class BwSpiDimmer : BwSpi {
         cmd[1] = bw::port::write::kSetAllOutputs;
         cmd[2] = static_cast<char>(value);
 
-        BwSpi::Write(cmd, sizeof(cmd));
+        Spi::Write(cmd, sizeof(cmd), true);
     }
 
-    bool IsConnected() { return m_IsConnected; }
+    bool IsConnected() { return connected_; }
 };
 
 #endif // BWSPIDIMMER_H_

@@ -78,7 +78,7 @@ inline constexpr char id_string[] = "spi_dimmer";
 
 namespace port {
 namespace read {
-inline constexpr uint8_t id_string = 0x01;
+inline constexpr uint8_t kIdString = 0x01;
 } // namespace read
 namespace write {
 inline constexpr uint8_t kSetAllOutputs = 0x10;
@@ -94,44 +94,25 @@ inline constexpr uint8_t kReinitLcd = 0x14;
 
 } // namespace bw
 
-class BwSpi {
+class BwSpi : public Spi {
    public:
-    BwSpi(uint8_t chip_select, uint8_t address, const char* string) : chip_select_(chip_select), address_(address) {
-        spi::Begin();
-        Setup();
-
+    BwSpi(uint8_t chip_select, uint8_t address, const char* string) : Spi(chip_select, bw::spi::speed::default_hz), address_(address) {
         char buffer[bw::id_string::kLength + 2];
 
         buffer[0] = static_cast<char>(address_ | 1);
-        buffer[1] = bw::port::read::id_string;
+        buffer[1] = bw::port::read::kIdString;
 
         spi::Transfern(buffer, sizeof(buffer));
 
         if (string != nullptr) {
             const auto kLength = std::min(bw::id_string::kLength, strlen(string));
-            m_IsConnected = (strncmp(&buffer[2], string, kLength) == 0);
+            connected_ = (strncmp(&buffer[2], string, kLength) == 0);
         }
-    }
-
-    void Write(const char* data, uint32_t length, bool do_setup = true) {
-        if (do_setup) {
-            Setup();
-        }
-
-        spi::Transfern(const_cast<char*>(data), length);
-    }
-
-   private:
-    void Setup() {
-        spi::ChipSelect(chip_select_);
-        spi::SetDataMode(spi::kMode0);
-        spi::SetSpeedHz(bw::spi::speed::default_hz);
     }
 
    protected:
-    uint8_t chip_select_;
     uint8_t address_;
-    bool m_IsConnected = false;
+    bool connected_{false};
 };
 
 #endif // BW_H_

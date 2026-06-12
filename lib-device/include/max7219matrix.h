@@ -41,13 +41,13 @@ class Max7219Matrix : public MAX7219 {
 
     void Cls() {
         WriteAll(max7219::reg::kDigit0, 0);
-        WriteAll(max7219::reg::DIGIT1, 0);
-        WriteAll(max7219::reg::DIGIT2, 0);
-        WriteAll(max7219::reg::DIGIT3, 0);
-        WriteAll(max7219::reg::DIGIT4, 0);
-        WriteAll(max7219::reg::DIGIT5, 0);
-        WriteAll(max7219::reg::DIGIT6, 0);
-        WriteAll(max7219::reg::DIGIT7, 0);
+        WriteAll(max7219::reg::kDigit1, 0);
+        WriteAll(max7219::reg::kDigit2, 0);
+        WriteAll(max7219::reg::kDigit3, 0);
+        WriteAll(max7219::reg::kDigit4, 0);
+        WriteAll(max7219::reg::kDigit5, 0);
+        WriteAll(max7219::reg::kDigit6, 0);
+        WriteAll(max7219::reg::kDigit7, 0);
     }
 
     void Write(const char* buffer, uint16_t count);

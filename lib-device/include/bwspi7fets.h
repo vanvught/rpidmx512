@@ -31,20 +31,8 @@
 #include "bw.h"
 
 class BwSpi7fets : BwSpi {
-    void SetDirection(uint8_t mask) {
-        char cmd[3];
-
-        cmd[0] = static_cast<char>(address_);
-        cmd[1] = bw::port::write::kIoDirection;
-        cmd[2] = static_cast<char>(mask);
-
-        Write(cmd, sizeof(cmd));
-    }
-
    public:
-    explicit BwSpi7fets(uint8_t chip_select = 0, uint8_t address = bw::fets::address) : BwSpi(chip_select, address, bw::fets::id_string) { 
-		SetDirection(0x7F);
-	 }
+    explicit BwSpi7fets(uint8_t chip_select = 0, uint8_t address = bw::fets::address) : BwSpi(chip_select, address, bw::fets::id_string) { SetDirection(0x7F); }
 
     void Output(uint8_t pins) {
         char cmd[3];
@@ -53,10 +41,21 @@ class BwSpi7fets : BwSpi {
         cmd[1] = bw::port::write::kSetAllOutputs;
         cmd[2] = static_cast<char>(pins);
 
-        Write(cmd, sizeof(cmd));
+        Spi::Write(cmd, sizeof(cmd), true);
     }
 
-    bool IsConnected() { return m_IsConnected; }
+    bool IsConnected() { return connected_; }
+
+   private:
+    void SetDirection(uint8_t mask) {
+        char cmd[3];
+
+        cmd[0] = static_cast<char>(address_);
+        cmd[1] = bw::port::write::kIoDirection;
+        cmd[2] = static_cast<char>(mask);
+
+        Spi::Write(cmd, sizeof(cmd), true);
+    }
 };
 
 #endif // BWSPI7FETS_H_

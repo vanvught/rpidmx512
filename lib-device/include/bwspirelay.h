@@ -41,7 +41,7 @@ class BwSpiRelay : BwSpi {
         cmd[1] = bw::port::write::kIoDirection;
         cmd[2] = static_cast<char>(mask);
 
-        BwSpi::Write(cmd, sizeof(cmd));
+        Spi::Write(cmd, sizeof(cmd), true);
     }
 
     void Output(uint8_t pins) {
@@ -51,10 +51,10 @@ class BwSpiRelay : BwSpi {
         cmd[1] = bw::port::write::kSetAllOutputs;
         cmd[2] = static_cast<char>(pins);
 
-        BwSpi::Write(cmd, sizeof(cmd));
+        BwSpi::Write(cmd, sizeof(cmd), true);
     }
 
-    bool IsConnected() { return m_IsConnected; }
+    bool IsConnected() { return connected_; }
 };
 
 #endif // BWSPIRELAY_H_

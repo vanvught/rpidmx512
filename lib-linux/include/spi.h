@@ -69,4 +69,42 @@ inline void Writenb(const char* data, uint32_t length) {
 }
 } // namespace spi
 
+class Spi {
+   public:
+    Spi(uint8_t chip_select, uint32_t speed_hz, uint8_t mode = spi::kMode0) : speed_hz_(speed_hz), chip_select_(chip_select), mode_(mode & 0x3) { LinuxSpiBegin(); }
+
+    void Write(const char* data, uint32_t length, bool do_setup) {
+        if (do_setup) {
+            Setup();
+        }
+        LinuxSpiWritenb(data, length);
+    }
+
+    void Write(uint16_t data, bool do_setup = true) {
+        if (do_setup) {
+            Setup();
+        }
+        LinuxSpiWrite(data);
+    }
+
+    void WriteRead(char* data, uint32_t length, bool do_setup) {
+        if (do_setup) {
+            Setup();
+        }
+        LinuxSpiTransfern(data, length);
+    }
+
+   private:
+    void Setup() {
+        LinuxSpiChipSelect(chip_select_);
+        LinuxSpiSetDataMode(mode_);
+        LinuxSpiSetSpeedHz(speed_hz_);
+    }
+
+   private:
+    uint32_t speed_hz_;
+    uint8_t chip_select_;
+    uint8_t mode_;
+};
+
 #endif // SPI_H_

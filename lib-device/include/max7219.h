@@ -40,13 +40,13 @@ inline constexpr uint32_t kMaX7219Error = 1;
 namespace reg {
 inline constexpr uint8_t kNoop = 0x00;
 inline constexpr uint8_t kDigit0 = 0x01;
-inline constexpr uint8_t DIGIT1 = 0x02;
-inline constexpr uint8_t DIGIT2 = 0x03;
-inline constexpr uint8_t DIGIT3 = 0x04;
-inline constexpr uint8_t DIGIT4 = 0x05;
-inline constexpr uint8_t DIGIT5 = 0x06;
-inline constexpr uint8_t DIGIT6 = 0x07;
-inline constexpr uint8_t DIGIT7 = 0x08;
+inline constexpr uint8_t kDigit1 = 0x02;
+inline constexpr uint8_t kDigit2 = 0x03;
+inline constexpr uint8_t kDigit3 = 0x04;
+inline constexpr uint8_t kDigit4 = 0x05;
+inline constexpr uint8_t kDigit5 = 0x06;
+inline constexpr uint8_t kDigit6 = 0x07;
+inline constexpr uint8_t kDigit7 = 0x08;
 inline constexpr uint8_t kDecodeMode = 0x09;
 inline constexpr uint8_t kIntensity = 0x0A;
 inline constexpr uint8_t kScanLimit = 0x0B;
@@ -70,32 +70,14 @@ inline constexpr uint8_t kBlank = 0x0F;
 } // namespace digit
 } // namespace max7219
 
-class MAX7219 {
+class MAX7219 : public Spi {
    public:
-    explicit MAX7219(uint32_t speed_hz = 0) : speed_hz_(speed_hz == 0 ? max7219::kSpeedDefaultHz : (speed_hz <= max7219::kSpeedMaxHz ? speed_hz : max7219::kSpeedMaxHz)) {
-		spi::Begin();
-	}
+    explicit MAX7219(uint32_t speed_hz = 0) : Spi(spi::kCs, speed_hz == 0 ? max7219::kSpeedDefaultHz : (speed_hz <= max7219::kSpeedMaxHz ? speed_hz : max7219::kSpeedMaxHz)) {}
 
     void WriteRegister(uint32_t reg, uint32_t data, bool spi_setup) {
-        if (spi_setup) Setup();
         const auto kSpiData = static_cast<uint16_t>(((reg & 0xFF) << 8) | (data & 0xFF));
-        spi::Write(kSpiData);
+        Spi::Write(kSpiData, spi_setup);
     }
-
-    void Write(const char* data, uint32_t length, bool spi_setup) {
-        if (spi_setup) Setup();
-        spi::Writenb(data, length);
-    }
-
-   private:
-    void Setup() {
-        spi::ChipSelect(spi::kCs);
-        spi::SetDataMode(spi::kMode0);
-        spi::SetSpeedHz(speed_hz_);
-    }
-
-   private:
-    uint32_t speed_hz_;
 };
 
 #endif // MAX7219_H_

@@ -47,14 +47,13 @@
 #include "hwclock.h"
 #endif
 
-#include "hal_i2c.h"
-#include "hal_spi.h"
-
 #if defined(DEBUG_I2C)
 #include "i2cdetect.h"
 #endif
 
 #include "hal.h"
+#include "spi.h"
+#include "i2c.h"
 #include "uuid.h"
 #include "configstore.h"
 #include "firmware/debug/debug_debug.h"
@@ -218,8 +217,8 @@ void Init() {
         m_nBoardId = static_cast<uint32_t>(strtol(aResult, nullptr, 16));
     }
 
-    FUNC_PREFIX(I2cBegin());
-    FUNC_PREFIX(SpiBegin());
+    LinuxI2cBegin();
+    LinuxSpiBegin();
 
 #if defined(DEBUG_I2C)
     I2cDetect();

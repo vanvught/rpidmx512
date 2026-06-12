@@ -32,15 +32,6 @@
 #include "bw.h"
 
 class BwSpiLcd : BwSpi {
-    void SpiWrite(const char* data, uint32_t length) {
-        do {
-        } while ((timing::Micros() - write_us_) < bw::lcd::spi::write_delay_us);
-
-        BwSpi::Write(data, length);
-
-        write_us_ = timing::Micros();
-    }
-
    public:
     explicit BwSpiLcd(uint8_t chip_select = 0, uint8_t address = bw::lcd::address) : BwSpi(chip_select, address, bw::lcd::id_string) {}
 
@@ -98,7 +89,17 @@ class BwSpiLcd : BwSpi {
         Text(text, length);
     }
 
-    bool IsConnected() { return m_IsConnected; }
+    bool IsConnected() { return connected_; }
+
+   private:
+    void SpiWrite(const char* data, uint32_t length) {
+        do {
+        } while ((timing::Micros() - write_us_) < bw::lcd::spi::write_delay_us);
+
+        Spi::Write(data, length, true);
+
+        write_us_ = timing::Micros();
+    }
 
    private:
     uint32_t write_us_ = timing::Micros();

@@ -66,46 +66,30 @@ inline constexpr uint16_t kShutdownOff = (1U << 12);
 } // namespace reg
 } // namespace mcp49x2
 
-class MCP4902 {
+class MCP4902 : Spi {
    public:
     explicit MCP4902(uint8_t chip_select = 0, uint32_t speed_hz = mcp49x2::speed::kDefaultHz)
-        : chip_select_(chip_select), speed_hz_(speed_hz == 0 ? mcp49x2::speed::kDefaultHz : (mcp49x2::speed::kDefaultHz <= mcp49x2::speed::kMaxHz ? speed_hz : mcp49x2::speed::kMaxHz)) {}
+        : Spi(chip_select, (speed_hz == 0 ? mcp49x2::speed::kDefaultHz : (mcp49x2::speed::kDefaultHz <= mcp49x2::speed::kMaxHz ? speed_hz : mcp49x2::speed::kMaxHz))) {}
 
     void WriteDacA(uint8_t data) {
         const uint16_t kSpiData = mcp49x2::reg::kWriteDacA | mcp49x2::reg::kGain1x | mcp49x2::reg::kShutdownOff | Data8Bit(data);
-
-        Setup();
-        spi::Write(kSpiData);
+        Spi::Write(kSpiData, true);
     }
 
     void WriteDacB(uint8_t data) {
         const uint16_t kSpiData = mcp49x2::reg::kWriteDacB | mcp49x2::reg::kGain1x | mcp49x2::reg::kShutdownOff | Data8Bit(data);
-
-        Setup();
-        spi::Write(kSpiData);
+        Spi::Write(kSpiData, true);
     }
 
     void WriteDacAB(uint8_t data_a, uint8_t data_b) {
         const uint16_t kSpiDataA = mcp49x2::reg::kWriteDacA | mcp49x2::reg::kGain1x | mcp49x2::reg::kShutdownOff | Data8Bit(data_a);
         const uint16_t kSpiDataB = mcp49x2::reg::kWriteDacB | mcp49x2::reg::kGain1x | mcp49x2::reg::kShutdownOff | Data8Bit(data_b);
-
-        Setup();
-        spi::Write(kSpiDataA);
-        spi::Write(kSpiDataB);
+        Spi::Write(kSpiDataA, true);
+        Spi::Write(kSpiDataB, false);
     }
 
    private:
     uint16_t Data8Bit(uint8_t data) { return static_cast<uint16_t>((data & mcp49x2::mask::kData8bit) << mcp49x2::shift::kData8bit); }
-
-    void Setup() {
-        spi::ChipSelect(chip_select_);
-        spi::SetDataMode(spi::kMode0);
-        spi::SetSpeedHz(speed_hz_);
-    }
-
-   private:
-    uint8_t chip_select_{0};
-    uint32_t speed_hz_{0};
 };
 } // namespace dac
 

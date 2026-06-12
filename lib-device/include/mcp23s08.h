@@ -58,12 +58,10 @@ inline constexpr uint8_t kRead = 0x41;
 } // namespace cmd
 } // namespace mcp23s08
 
-class MCP23S08 {
+class MCP23S08 : Spi {
    public:
     explicit MCP23S08(uint8_t chip_select = 0, uint32_t speed_hz = mcp23s08::speed::kDefaultHz, uint8_t address = 0)
-        : chip_select_(chip_select), speed_hz_(speed_hz == 0 ? mcp23s08::speed::kDefaultHz : (mcp23s08::speed::kDefaultHz <= mcp23s08::speed::kMaxHz ? speed_hz : mcp23s08::speed::kMaxHz)), address_(address) {
-        spi::Begin();
-        Setup();
+        : Spi(chip_select, (speed_hz == 0 ? mcp23s08::speed::kDefaultHz : (mcp23s08::speed::kDefaultHz <= mcp23s08::speed::kMaxHz ? speed_hz : mcp23s08::speed::kMaxHz))), address_(address) {
         MCP23S08::WriteRegister(mcp23s08::reg::kIocon, mcp23s08::reg::iocon::kHaen);
     }
 
@@ -74,20 +72,10 @@ class MCP23S08 {
         spi_data[1] = static_cast<char>(reg);
         spi_data[2] = static_cast<char>(value);
 
-        Setup();
-        spi::Writenb(spi_data, 3);
+        Spi::Write(spi_data, 3, true);
     }
 
    private:
-    void Setup() {
-        spi::ChipSelect(chip_select_);
-        spi::SetDataMode(spi::kMode0);
-        spi::SetSpeedHz(speed_hz_);
-    }
-
-   private:
-    uint8_t chip_select_{0};
-    uint32_t speed_hz_{0};
     uint8_t address_{0};
 };
 } // namespace gpio

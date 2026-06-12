@@ -31,55 +31,35 @@
 #include <cstring>
 
 #include "common/utils/utils_enum.h"
-#include "hal_spi.h"
+#include "spi.h"
 #include "hal_i2c.h"
 
-namespace serial
-{
-enum class Type : uint8_t
-{
-    kUart,
-    kSpi,
-    kI2C,
-    kUndefined
-};
+namespace serial {
+enum class Type : uint8_t { kUart, kSpi, kI2C, kUndefined };
 
-namespace uart
-{
-enum class Parity : uint8_t
-{
-    kNone,
-    kOdd,
-    kEven,
-    kUndefined
-};
+namespace uart {
+enum class Parity : uint8_t { kNone, kOdd, kEven, kUndefined };
 
 inline constexpr const char kParities[static_cast<uint32_t>(serial::uart::Parity::kUndefined)][5] = {"none", "odd", "even"};
 
-inline const char* GetParity(Parity parity)
-{
-    if (parity < Parity::kUndefined)
-    {
+inline const char* GetParity(Parity parity) {
+    if (parity < Parity::kUndefined) {
         return kParities[static_cast<uint32_t>(parity)];
     }
 
     return "UNDEFINED";
 }
 
-inline const char* GetParity(uint32_t parity)
-{
+inline const char* GetParity(uint32_t parity) {
     return GetParity(static_cast<Parity>(parity));
 }
 
-inline Parity GetParity(const char* string)
-{
+inline Parity GetParity(const char* string) {
     assert(string != nullptr);
     uint32_t index = 0;
 
-    for (const char(&parity)[5] : kParities)
-    {
-        if (strcasecmp(string, parity) == 0)
-        {
+    for (const char (&parity)[5] : kParities) {
+        if (strcasecmp(string, parity) == 0) {
             return static_cast<Parity>(index);
         }
         ++index;
@@ -90,56 +70,41 @@ inline Parity GetParity(const char* string)
 
 } // namespace uart
 
-namespace i2c
-{
-enum class Speed : uint8_t
-{
-    kNormal,
-    kFast,
-    kUndefined
-};
+namespace i2c {
+enum class Speed : uint8_t { kNormal, kFast, kUndefined };
 
 inline constexpr const char kSpeed[static_cast<uint32_t>(serial::i2c::Speed::kUndefined)][9] = {"standard", "fast"};
 
-inline const char* GetSpeedMode(serial::i2c::Speed speed)
-{
-    if (speed == serial::i2c::Speed::kNormal)
-    {
+inline const char* GetSpeedMode(serial::i2c::Speed speed) {
+    if (speed == serial::i2c::Speed::kNormal) {
         return kSpeed[0];
     }
 
-    if (speed == serial::i2c::Speed::kFast)
-    {
+    if (speed == serial::i2c::Speed::kFast) {
         return kSpeed[1];
     }
 
     return "Unknown";
 }
 
-inline const char* GetSpeedMode(uint32_t speed)
-{
-    if (speed == HAL_I2C::NORMAL_SPEED)
-    {
+inline const char* GetSpeedMode(uint32_t speed) {
+    if (speed == HAL_I2C::NORMAL_SPEED) {
         return kSpeed[0];
     }
 
-    if (speed == HAL_I2C::FULL_SPEED)
-    {
+    if (speed == HAL_I2C::FULL_SPEED) {
         return kSpeed[1];
     }
 
     return "Unknown";
 }
 
-inline serial::i2c::Speed GetSpeedMode(const char* string)
-{
+inline serial::i2c::Speed GetSpeedMode(const char* string) {
     assert(string != nullptr);
     uint32_t index = 0;
 
-    for (const char(&speed)[9] : kSpeed)
-    {
-        if (strcasecmp(string, speed) == 0)
-        {
+    for (const char (&speed)[9] : kSpeed) {
+        if (strcasecmp(string, speed) == 0) {
             return static_cast<serial::i2c::Speed>(index);
         }
         ++index;
@@ -152,20 +117,16 @@ inline serial::i2c::Speed GetSpeedMode(const char* string)
 
 inline constexpr const char kTypes[static_cast<uint32_t>(serial::Type::kUndefined)][5] = {"uart", "spi", "i2c"};
 
-[[nodiscard]] inline constexpr const char* GetType(Type type)
-{
-	    return type < Type::kUndefined ? kTypes[static_cast<uint32_t>(type)] : "UNDEFINED";
+[[nodiscard]] inline constexpr const char* GetType(Type type) {
+    return type < Type::kUndefined ? kTypes[static_cast<uint32_t>(type)] : "UNDEFINED";
 }
 
-inline Type GetType(const char* string)
-{
+inline Type GetType(const char* string) {
     assert(string != nullptr);
     uint32_t index = 0;
 
-    for (const char(&module)[5] : kTypes)
-    {
-        if (strcasecmp(string, module) == 0)
-        {
+    for (const char (&module)[5] : kTypes) {
+        if (strcasecmp(string, module) == 0) {
             return static_cast<Type>(index);
         }
         ++index;
@@ -175,16 +136,13 @@ inline Type GetType(const char* string)
 }
 } // namespace serial
 
-class Serial
-{
+class Serial {
    public:
     Serial();
     ~Serial();
 
-    void SetType(serial::Type type = serial::Type::kUart)
-    {
-        if (type < serial::Type::kUndefined)
-        {
+    void SetType(serial::Type type = serial::Type::kUart) {
+        if (type < serial::Type::kUndefined) {
             type_ = type;
         }
     }
@@ -208,7 +166,7 @@ class Serial
     void SetSpiSpeedHz(uint32_t speed_hz);
     uint32_t GetSpiSpeedHz() const { return spi_configuration_.speed_hz; }
 
-    void SetSpiMode(uint32_t mode = SPI_MODE0);
+    void SetSpiMode(uint8_t mode = spi::kMode0);
     uint8_t GetSpiMode() const { return spi_configuration_.mode; }
 
     // I2C
@@ -239,20 +197,17 @@ class Serial
 
    private:
     serial::Type type_{serial::Type::kUart};
-    struct
-    {
+    struct {
         uint32_t baud;
         uint8_t bits;
         uint8_t parity;
         uint8_t stop_bits;
     } uart_configuration_;
-    struct
-    {
+    struct {
         uint32_t speed_hz;
         uint8_t mode;
     } spi_configuration_;
-    struct
-    {
+    struct {
         uint32_t speed_hz;
         uint8_t address;
     } i2c_configuration_;
@@ -260,4 +215,4 @@ class Serial
     static inline Serial* s_this;
 };
 
-#endif  // SERIAL_SERIAL_H_
+#endif // SERIAL_SERIAL_H_

@@ -26,51 +26,45 @@
 #include <cstdint>
 
 #include "serial/serial.h"
-#include "hal_spi.h"
- #include "firmware/debug/debug_debug.h"
+#include "spi.h"
+#include "firmware/debug/debug_debug.h"
 
-void Serial::SetSpiSpeedHz(uint32_t speed_hz)
-{
+void Serial::SetSpiSpeedHz(uint32_t speed_hz) {
     DEBUG_PRINTF("speed_hz=%d", speed_hz);
 
-    if (speed_hz == 0)
-    {
+    if (speed_hz == 0) {
         return;
     }
 
     spi_configuration_.speed_hz = speed_hz;
 }
 
-void Serial::SetSpiMode(uint32_t mode)
-{
+void Serial::SetSpiMode(uint8_t mode) {
     DEBUG_PRINTF("mode=%d", mode);
 
-    if (mode > 3)
-    {
+    if (mode > 3) {
         return;
     }
 
     spi_configuration_.mode = static_cast<uint8_t>(mode);
 }
 
-bool Serial::InitSpi()
-{
+bool Serial::InitSpi() {
     DEBUG_ENTRY();
 
-    FUNC_PREFIX(SpiBegin());
-    FUNC_PREFIX(SpiSetSpeedHz(spi_configuration_.speed_hz));
-    FUNC_PREFIX(SpiChipSelect(SPI_CS0));
-    FUNC_PREFIX(SpiSetDataMode(spi_configuration_.mode));
+    spi::Begin();
 
     DEBUG_EXIT();
     return true;
 }
 
-void Serial::SendSpi(const uint8_t* data, uint32_t length)
-{
+void Serial::SendSpi(const uint8_t* data, uint32_t length) {
     DEBUG_ENTRY();
 
-    FUNC_PREFIX(SpiWritenb(reinterpret_cast<const char*>(data), length));
+    spi::SetSpeedHz(spi_configuration_.speed_hz);
+    spi::ChipSelect(spi::kCs);
+    spi::SetDataMode(spi_configuration_.mode);
+    spi::Writenb(reinterpret_cast<const char*>(data), length);
 
     DEBUG_EXIT();
 }

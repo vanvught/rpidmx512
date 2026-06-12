@@ -65,47 +65,30 @@ inline constexpr uint16_t kShutdownOff = (1U << 12);
 } // namespace reg
 } // namespace mcp48x2
 
-class MCP4822 {
+class MCP4822 : Spi {
    public:
     explicit MCP4822(uint8_t chip_select = 0, uint32_t speed_hz = mcp48x2::speed::kDefaultHz)
-        : chip_select_(chip_select), speed_hz_(speed_hz == 0 ? mcp48x2::speed::kDefaultHz : (mcp48x2::speed::kDefaultHz <= mcp48x2::speed::kMaxHz ? speed_hz : mcp48x2::speed::kMaxHz)) {
-        spi::Begin();
-        Setup();
-    }
+        : Spi(chip_select, (speed_hz == 0 ? mcp48x2::speed::kDefaultHz : (mcp48x2::speed::kDefaultHz <= mcp48x2::speed::kMaxHz ? speed_hz : mcp48x2::speed::kMaxHz))) {}
 
     void WriteDacA(uint16_t data) {
         const uint16_t kSpiData = mcp48x2::reg::kWriteDacA | mcp48x2::reg::kGain1x | mcp48x2::reg::kShutdownOff | Data12Bit(data);
-        Setup();
-        spi::Write(kSpiData);
+        Spi::Write(kSpiData, true);
     }
 
     void WriteDacB(uint16_t data) {
         const uint16_t kSpiData = mcp48x2::reg::kWriteDacB | mcp48x2::reg::kGain1x | mcp48x2::reg::kShutdownOff | Data12Bit(data);
-        Setup();
-        spi::Write(kSpiData);
+        Spi::Write(kSpiData, true);
     }
 
     void WriteDacAB(uint16_t data_a, uint16_t data_b) {
         const uint16_t kSpiDataA = mcp48x2::reg::kWriteDacA | mcp48x2::reg::kGain1x | mcp48x2::reg::kShutdownOff | Data12Bit(data_a);
         const uint16_t kSpiDataB = mcp48x2::reg::kWriteDacB | mcp48x2::reg::kGain1x | mcp48x2::reg::kShutdownOff | Data12Bit(data_b);
-
-        Setup();
-        spi::Write(kSpiDataA);
-        spi::Write(kSpiDataB);
+        Spi::Write(kSpiDataA, true);
+        Spi::Write(kSpiDataB, false);
     }
 
    private:
-    void Setup() {
-        spi::ChipSelect(chip_select_);
-        spi::SetDataMode(spi::kMode0);
-        spi::SetSpeedHz(speed_hz_);
-    }
-
     uint16_t Data12Bit(uint16_t data) { return (data & mcp48x2::mask::kData12bit) << mcp48x2::shift::kData12bit; }
-
-   private:
-    uint8_t chip_select_{0};
-    uint32_t speed_hz_{0};
 };
 } // namespace dac
 
