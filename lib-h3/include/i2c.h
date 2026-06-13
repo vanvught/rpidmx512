@@ -91,7 +91,9 @@ inline void ReadReg(uint8_t reg, uint8_t& value) {
 
 class I2c {
    public:
-    explicit I2c(uint8_t address, uint32_t baud_rate = i2c::kFullSpeed) : address_(address), baudrate_(baud_rate) {}
+    explicit I2c(uint8_t address, uint32_t baud_rate = i2c::kFullSpeed) : address_(address), baudrate_(baud_rate) {
+		H3I2cBegin();
+	}
 
     uint8_t GetAddress() const { return address_; }
     uint32_t GetBaudrate() const { return baudrate_; }
@@ -116,10 +118,10 @@ class I2c {
         H3I2cWrite(kBuffer, 2);
     }
 
-    void WriteRegister(uint8_t reg, uint16_t value) {
+    void WriteRegister(uint8_t reg, uint16_t value, bool do_setup) {
         const char kBuffer[] = {static_cast<char>(reg), static_cast<char>(value >> 8), static_cast<char>(value & 0xFF)};
 
-        Setup();
+        if (do_setup) Setup();
         H3I2cWrite(kBuffer, 3);
     }
 

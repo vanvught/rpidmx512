@@ -31,10 +31,8 @@
 #include <sys/time.h>
 
 #include "hwclock.h"
-
 #include "watchdog.h"
 #include "timing.h"
-
 #include "firmware/debug/debug_debug.h"
 
 HwClock::HwClock() {

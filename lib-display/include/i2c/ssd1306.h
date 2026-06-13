@@ -2,7 +2,7 @@
  * @file ssd1306.h
  *
  */
-/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2017-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,25 +29,22 @@
 #include <cstdint>
 
 #include "displayset.h"
-#include "hal_i2c.h"
+#include "i2c.h"
 
 #define OLED_I2C_ADDRESS_DEFAULT 0x3C
 
-enum class OledPanel
-{
+enum class OledPanel {
     k128x648Rows, ///< Default
     k128x644Rows,
     k128x324Rows
 };
 
-class Ssd1306 final : public DisplaySet
-{
+class Ssd1306 final : public DisplaySet {
    public:
     Ssd1306();
     explicit Ssd1306(OledPanel);
     Ssd1306(uint8_t, OledPanel);
-    ~Ssd1306() override
-    {
+    ~Ssd1306() override {
 #if defined(CONFIG_DISPLAY_ENABLE_CURSOR_MODE)
         delete[] shadow_ram_;
         shadow_ram_ = nullptr;
@@ -93,7 +90,7 @@ class Ssd1306 final : public DisplaySet
     void DumpShadowRam();
 
    private:
-    HAL_I2C hal_i2c_;
+    I2c i2c_;
     OledPanel oled_panel_{OledPanel::k128x648Rows};
     bool have_sh1106_{false};
     uint32_t pages_;
@@ -111,4 +108,4 @@ class Ssd1306 final : public DisplaySet
     static inline Ssd1306* s_this;
 };
 
-#endif  // I2C_SSD1306_H_
+#endif // I2C_SSD1306_H_

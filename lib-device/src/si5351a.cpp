@@ -79,7 +79,6 @@ void SI5351A::ClockBuilder() {
 void SI5351A::Pre() {
     // Disable Outputs. Set CLKx_DIS high; Reg. 3 = 0xFF
     WriteRegister(3, static_cast<uint8_t>(0xFF), false);
-
     // Powerdown all output drivers Reg. 16, 17, 18, 19, 20, 21, 22, 23 = 0x80
     for (uint32_t i = 16; i <= 23; i++) {
         WriteRegister(static_cast<uint8_t>(i), static_cast<uint8_t>(0x80), false);

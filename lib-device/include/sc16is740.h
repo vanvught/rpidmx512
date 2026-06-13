@@ -93,7 +93,7 @@ class SC16IS740 : I2c {
         while (!IsWritable()) {
         }
 
-        WriteRegister(SC16IS7X0_THR, static_cast<uint8_t>(value));
+        WriteRegister(SC16IS7X0_THR, static_cast<uint8_t>(value), false);
 
         return value;
     }

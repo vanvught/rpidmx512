@@ -41,64 +41,45 @@ inline constexpr uint8_t kMode3 = LINUX_SPI_MODE3; ///< CPOL = 1, CPHA = 1
 inline constexpr uint8_t kCs = LINUX_SPI_CS0;         ///< Chip Select
 inline constexpr uint8_t kCsNone = LINUX_SPI_CS_NONE; ///< No CS, control it yourself
 
-inline void Begin() {
-    LinuxSpiBegin();
-}
-
-inline void SetSpeedHz(uint32_t speed_hz) {
-    LinuxSpiSetSpeedHz(speed_hz);
-}
-
-inline void SetDataMode(uint8_t mode) {
-    LinuxSpiSetDataMode(mode);
-}
-inline void ChipSelect(uint8_t chip_select) {
-    LinuxSpiChipSelect(chip_select);
-}
-
-inline void Transfern(char* tx_buffer, uint32_t length) {
-    LinuxSpiTransfern(tx_buffer, length);
-}
-
-inline void Write(uint16_t data) {
-    LinuxSpiWrite(data);
-}
-
-inline void Writenb(const char* data, uint32_t length) {
-    LinuxSpiWritenb(data, length);
-}
+void Begin();
+void SetSpeedHz(uint32_t speed_hz);
+void SetDataMode(uint8_t mode);
+void ChipSelect(uint8_t chip_select);
+void Transfern(char* tx_buffer, uint32_t length);
+void Write(uint16_t data);
+void Writenb(const char* data, uint32_t length);
 } // namespace spi
 
 class Spi {
    public:
-    Spi(uint8_t chip_select, uint32_t speed_hz, uint8_t mode = spi::kMode0) : speed_hz_(speed_hz), chip_select_(chip_select), mode_(mode & 0x3) { LinuxSpiBegin(); }
+    Spi(uint8_t chip_select, uint32_t speed_hz, uint8_t mode = spi::kMode0) : speed_hz_(speed_hz), chip_select_(chip_select), mode_(mode & 0x3) { spi::Begin(); }
 
     void Write(const char* data, uint32_t length, bool do_setup) {
         if (do_setup) {
             Setup();
         }
-        LinuxSpiWritenb(data, length);
+        spi::Writenb(data, length);
     }
 
     void Write(uint16_t data, bool do_setup = true) {
         if (do_setup) {
             Setup();
         }
-        LinuxSpiWrite(data);
+        spi::Write(data);
     }
 
     void WriteRead(char* data, uint32_t length, bool do_setup) {
         if (do_setup) {
             Setup();
         }
-        LinuxSpiTransfern(data, length);
+        spi::Transfern(data, length);
     }
 
    private:
     void Setup() {
-        LinuxSpiChipSelect(chip_select_);
-        LinuxSpiSetDataMode(mode_);
-        LinuxSpiSetSpeedHz(speed_hz_);
+        spi::ChipSelect(chip_select_);
+        spi::SetDataMode(mode_);
+        spi::SetSpeedHz(speed_hz_);
     }
 
    private:

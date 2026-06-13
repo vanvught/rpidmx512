@@ -2,7 +2,7 @@
  * @file ssd1311.h
  *
  */
-/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,10 +29,9 @@
 #include <cstdint>
 
 #include "displayset.h"
-#include "hal_i2c.h"
+#include "i2c.h"
 
-class Ssd1311 final : public DisplaySet
-{
+class Ssd1311 final : public DisplaySet {
    public:
     Ssd1311();
     ~Ssd1311() override = default;
@@ -63,27 +62,19 @@ class Ssd1311 final : public DisplaySet
     void SelectRamRom(uint32_t ram, uint32_t rom);
     void SetDDRAM(uint8_t address);
     void SetCGRAM(uint8_t address);
-    enum class FunctionSet
-    {
-        kReZero = (0 << 1),
-        kReOne = (1 << 1)
-    };
+    enum class FunctionSet { kReZero = (0 << 1), kReOne = (1 << 1) };
     void SetRE(FunctionSet re);
-    enum class CommandSet
-    {
-        kDisabled = 0,
-        kEnabled = 1
-    };
+    enum class CommandSet { kDisabled = 0, kEnabled = 1 };
     void SetSD(CommandSet sd);
     void SendCommand(uint8_t command);
     void SendData(uint8_t data);
     void SendData(const uint8_t* data, uint32_t length);
 
    private:
-    HAL_I2C hal_i2_c_;
+    I2c i2c_;
     uint8_t display_control_{1U << 3}; // Section 9.1.4 Display ON/OFF Control
 
     static inline Ssd1311* s_this;
 };
 
-#endif  // I2C_SSD1311_H_
+#endif // I2C_SSD1311_H_

@@ -47,9 +47,6 @@
 #include "board.h"
 #include "console.h"
 #include "../ff14b/source/ff.h"
-#if defined(DEBUG_I2C)
-#include "i2cdetect.h"
-#endif
 #if !defined(DISABLE_RTC)
 #include "hwclock.h"
 static HwClock hwClock;
@@ -58,6 +55,9 @@ static HwClock hwClock;
 #include "logic_analyzer.h"
 
 #include "firmware/debug/debug_debug.h"
+#if defined(DEBUG_I2C)
+#include "firmware/debug/debug_i2cdetect.h"
+#endif
 
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC push_options
@@ -232,7 +232,7 @@ void __attribute__((cold)) Init() {
     h3_cpu_set_clock(0); // default
 
 #if defined(DEBUG_I2C)
-    I2cDetect();
+    debug::i2c::Detect();
 #endif
 
 #if !defined(DISABLE_RTC)

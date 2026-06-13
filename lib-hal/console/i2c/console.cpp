@@ -2,7 +2,7 @@
  * @file console.cpp
  *
  */
-/* Copyright (C) 2022-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2022-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@
 #include <cstdint>
 
 #include "console.h"
-#include "hal_i2c.h"
+#include "i2c.h"
 
 static bool s_is_connected;
 
@@ -83,76 +83,65 @@ static bool s_is_connected;
  */
 #define EFR_ENABLE_ENHANCED_FUNCTIONS (1U << 4)
 
-static bool IsConnected(uint8_t address, uint32_t baudrate)
-{
+static bool IsConnected(uint8_t address, uint32_t baudrate) {
     char buf;
 
-    FUNC_PREFIX(I2cSetAddress(address));
-    FUNC_PREFIX(I2cSetBaudrate(baudrate));
+    i2c::SetAddress(address);
+    i2c::SetBaudrate(baudrate);
 
-    if ((address >= 0x30 && address <= 0x37) || (address >= 0x50 && address <= 0x5F))
-    {
-        return FUNC_PREFIX(I2cRead(&buf, 1)) == 0;
+    if ((address >= 0x30 && address <= 0x37) || (address >= 0x50 && address <= 0x5F)) {
+        return i2c::Read(&buf, 1) == 0;
     }
 
     /* This is known to corrupt the Atmel AT24RF08 EEPROM */
-    return FUNC_PREFIX(I2cWrite(nullptr, 0)) == 0;
+    return i2c::Write(nullptr, 0) == 0;
 }
 
-static void Setup()
-{
-    FUNC_PREFIX(I2cSetAddress(CONSOLE_I2C_ADDRESS));
-    FUNC_PREFIX(I2cSetBaudrate(400000));
+static void Setup() {
+    i2c::SetAddress(CONSOLE_I2C_ADDRESS);
+    i2c::SetBaudrate(400000);
 }
 
-static void WriteRegister(uint8_t reg, uint8_t value)
-{
+static void WriteRegister(uint8_t reg, uint8_t value) {
     char buffer[2];
 
     buffer[0] = static_cast<char>(reg);
     buffer[1] = static_cast<char>(value);
 
     Setup();
-    FUNC_PREFIX(I2cWrite(buffer, 2));
+    i2c::Write(buffer, 2);
 }
 
-static uint8_t ReadByte()
-{
+static uint8_t ReadByte() {
     char buffer[1];
 
     Setup();
-    FUNC_PREFIX(I2cRead(buffer, 1));
+    i2c::Read(buffer, 1);
 
     return static_cast<uint8_t>(buffer[0]);
 }
 
-static uint8_t ReadRegister(uint8_t reg)
-{
+static uint8_t ReadRegister(uint8_t reg) {
     char buffer[1];
 
     buffer[0] = static_cast<char>(reg);
 
     Setup();
-    FUNC_PREFIX(I2cWrite(buffer, 1));
+    i2c::Write(buffer, 1);
 
     return ReadByte();
 }
 
-static bool IsWritable()
-{
+static bool IsWritable() {
     return (ReadRegister(SC16IS7X0_TXLVL) != 0);
 }
 
-static void SetBaud(uint32_t baud)
-{
+static void SetBaud(uint32_t baud) {
     uint32_t nPrescaler;
 
-    if ((ReadRegister(SC16IS7X0_MCR) & MCR_PRESCALE_4) == MCR_PRESCALE_4)
-    {
+    if ((ReadRegister(SC16IS7X0_MCR) & MCR_PRESCALE_4) == MCR_PRESCALE_4) {
         nPrescaler = 4;
-    }
-    else
-    {
+    } else {
         nPrescaler = 1;
     }
 
@@ -165,17 +154,14 @@ static void SetBaud(uint32_t baud)
     WriteRegister(SC16IS7X0_LCR, nRegisterLCR);
 }
 
-namespace console
-{
+namespace console {
 
-void __attribute__((cold)) Init()
-{
-    FUNC_PREFIX(I2cBegin());
+void __attribute__((cold)) Init() {
+    i2c::Begin();
 
     s_is_connected = IsConnected(CONSOLE_I2C_ADDRESS, 100000);
 
-    if (!s_is_connected)
-    {
+    if (!s_is_connected) {
         return;
     }
 
@@ -189,8 +175,7 @@ void __attribute__((cold)) Init()
     uint8_t test_character = 'A';
     WriteRegister(SC16IS7X0_SPR, test_character);
 
-    if ((ReadRegister(SC16IS7X0_SPR) != test_character))
-    {
+    if ((ReadRegister(SC16IS7X0_SPR) != test_character)) {
         s_is_connected = false;
         return;
     }
@@ -212,44 +197,35 @@ void __attribute__((cold)) Init()
     WriteRegister(SC16IS7X0_FCR, FCR_ENABLE_FIFO);
 }
 
-void PutChar(int c)
-{
-    if (!s_is_connected)
-    {
+void PutChar(int c) {
+    if (!s_is_connected) {
         return;
     }
 
-    if (c == '\n')
-    {
-        while (!IsWritable())
-        {
+    if (c == '\n') {
+        while (!IsWritable()) {
         }
 
         WriteRegister(SC16IS7X0_THR, static_cast<uint8_t>('\r'));
     }
 
-    while (!IsWritable())
-    {
+    while (!IsWritable()) {
     }
 
     WriteRegister(SC16IS7X0_THR, static_cast<uint8_t>(c));
 }
 
-void Puts(const char* s)
-{
-    if (!s_is_connected)
-    {
+void Puts(const char* s) {
+    if (!s_is_connected) {
         return;
     }
 
     uint8_t* p = (uint8_t*)(s);
 
-    while (*p != '\0')
-    {
+    while (*p != '\0') {
         uint32_t tx_level = ReadRegister(SC16IS7X0_TXLVL);
 
-        while ((*p != '\0') && (tx_level > 0))
-        {
+        while ((*p != '\0') && (tx_level > 0)) {
             WriteRegister(SC16IS7X0_THR, *p);
             tx_level--;
             p++;
@@ -257,21 +233,17 @@ void Puts(const char* s)
     }
 }
 
-void Write(const char* s, unsigned int n)
-{
-    if (!s_is_connected)
-    {
+void Write(const char* s, unsigned int n) {
+    if (!s_is_connected) {
         return;
     }
 
     uint8_t* p = (uint8_t*)(s);
 
-    while (n > 0)
-    {
+    while (n > 0) {
         uint32_t tx_level = ReadRegister(SC16IS7X0_TXLVL);
 
-        while ((n > 0) && (tx_level > 0))
-        {
+        while ((n > 0) && (tx_level > 0)) {
             WriteRegister(SC16IS7X0_THR, *p);
             n--;
             tx_level--;
@@ -280,10 +252,8 @@ void Write(const char* s, unsigned int n)
     }
 }
 
-void Error(const char* s)
-{
-    if (!s_is_connected)
-    {
+void Error(const char* s) {
+    if (!s_is_connected) {
         return;
     }
 
@@ -292,10 +262,8 @@ void Error(const char* s)
     Puts("\x1b[37m");
 }
 
-void SetFgColour(Colour fg)
-{
-    switch (fg)
-    {
+void SetFgColour(Colour fg) {
+    switch (fg) {
         case Colour::kConsoleBlack:
             Puts("\x1b[30m");
             break;
@@ -317,10 +285,8 @@ void SetFgColour(Colour fg)
     }
 }
 
-void SetBgColour(Colour bg)
-{
-    switch (bg)
-    {
+void SetBgColour(Colour bg) {
+    switch (bg) {
         case Colour::kConsoleBlack:
             Puts("\x1b[40m");
             break;
@@ -336,10 +302,8 @@ void SetBgColour(Colour bg)
     }
 }
 
-void Status(Colour colour, const char* s)
-{
-    if (!s_is_connected)
-    {
+void Status(Colour colour, const char* s) {
+    if (!s_is_connected) {
         return;
     }
 

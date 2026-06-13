@@ -2,7 +2,7 @@
  * @file hd44780.h
  *
  */
-/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2017-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,17 +29,15 @@
 #include <cstdint>
 
 #include "displayset.h"
-#include "hal_i2c.h"
+#include "i2c.h"
 
-namespace hd44780::pcf8574t
-{
+namespace hd44780::pcf8574t {
 inline constexpr uint8_t kDefaultAddress = 0x27;
 inline constexpr uint8_t kTC2004Address = kDefaultAddress;
 inline constexpr uint8_t kTC1602Address = 0x26;
 } // namespace hd44780::pcf8574t
 
-class Hd44780 final : public DisplaySet
-{
+class Hd44780 final : public DisplaySet {
    public:
     Hd44780();
     Hd44780(uint8_t cols, uint8_t rows);
@@ -67,7 +65,7 @@ class Hd44780 final : public DisplaySet
     void WriteReg(uint8_t reg);
 
    private:
-    HAL_I2C hal_i2c_;
+    I2c i2c_;
 };
 
-#endif  // I2C_HD44780_H_
+#endif // I2C_HD44780_H_

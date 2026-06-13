@@ -2,7 +2,7 @@
  * @file ssd1311.cpp
  *
  */
-/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,11 +23,14 @@
  * THE SOFTWARE.
  */
 
+#if defined(DEBUG_DISPLAY)
+#undef NDEBUG
+#endif
+
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
 #include <cassert>
-#include "displayset.h"
 
 #include "i2c/ssd1311.h"
 
@@ -35,22 +38,15 @@
 // D/C# – Data / Command Selection bit
 // A control byte mainly consists of Co and D/C# bits following by six “0”’s.
 
-namespace ssd1311
-{
+namespace ssd1311 {
 static constexpr uint8_t kDefaultI2CAddress = 0x3C;
 static constexpr uint32_t kMaxColumns = 20;
 static constexpr uint32_t kMaxRows = 4;
 static constexpr uint8_t kModeData = 0x40; // Co = 0, D/C# = 1
 static constexpr uint8_t kModeCmd = 0x80;  // Co = 1, D/C# = 0
 } // namespace ssd1311
-enum class Rom : uint8_t
-{
-    kA,
-    kB,
-    kC
-};
-namespace cmd
-{
+enum class Rom : uint8_t { kA, kB, kC };
+namespace cmd {
 static constexpr uint8_t kClearDisplay = 0x01;
 static constexpr uint8_t kCgramAddress = 0x40;
 static constexpr uint8_t kFunctionSelectionB = 0x72;
@@ -61,8 +57,7 @@ static constexpr uint8_t kContrast = 0x81;
 static uint8_t clear_buffer[1 + ssd1311::kMaxColumns] __attribute__((aligned(4)));
 static uint8_t text_buffer[1 + ssd1311::kMaxColumns] __attribute__((aligned(4)));
 
-Ssd1311::Ssd1311() : hal_i2_c_(ssd1311::kDefaultI2CAddress)
-{
+Ssd1311::Ssd1311() : i2c_(ssd1311::kDefaultI2CAddress) {
     assert(s_this == nullptr);
     s_this = this;
 
@@ -70,20 +65,16 @@ Ssd1311::Ssd1311() : hal_i2_c_(ssd1311::kDefaultI2CAddress)
     cols_ = ssd1311::kMaxColumns;
 }
 
-bool Ssd1311::Start()
-{
-    if (!hal_i2_c_.IsConnected())
-    {
+bool Ssd1311::Start() {
+    if (!i2c_.IsConnected()) {
         return false;
     }
 
-    if (!CheckSSD1311())
-    {
+    if (!CheckSSD1311()) {
         return false;
     }
 
-    for (uint32_t i = 0; i < sizeof(clear_buffer); i++)
-    {
+    for (uint32_t i = 0; i < sizeof(clear_buffer); i++) {
         clear_buffer[i] = ' ';
     }
 
@@ -107,41 +98,34 @@ bool Ssd1311::Start()
     return true;
 }
 
-void Ssd1311::PrintInfo()
-{
+void Ssd1311::PrintInfo() {
     printf("SSD1311 (%u,%u)\n", static_cast<unsigned int>(rows_), static_cast<unsigned int>(cols_));
 }
 
-void Ssd1311::Cls()
-{
+void Ssd1311::Cls() {
     SendCommand(cmd::kClearDisplay);
 }
 
-void Ssd1311::PutChar(int c)
-{
+void Ssd1311::PutChar(int c) {
     SendData(c & 0x7F);
 }
 
-void Ssd1311::PutString(const char* string)
-{
+void Ssd1311::PutString(const char* string) {
     assert(string != nullptr);
 
     uint32_t n = ssd1311::kMaxColumns;
     auto* src = string;
     auto* dst = reinterpret_cast<char*>(&text_buffer[1]);
 
-    while (n > 0 && *src != '\0')
-    {
+    while (n > 0 && *src != '\0') {
         *dst++ = *src++;
         --n;
     }
 
-    if (clear_end_of_line_)
-    {
+    if (clear_end_of_line_) {
         clear_end_of_line_ = false;
 
-        for (auto i = static_cast<uint32_t>(src - string); i < ssd1311::kMaxColumns; i++)
-        {
+        for (auto i = static_cast<uint32_t>(src - string); i < ssd1311::kMaxColumns; i++) {
             *dst++ = ' ';
         }
 
@@ -155,10 +139,8 @@ void Ssd1311::PutString(const char* string)
 /**
  * line [1..4]
  */
-void Ssd1311::ClearLine(uint32_t line)
-{
-    if (__builtin_expect((!((line > 0) && (line <= ssd1311::kMaxRows))), 0))
-    {
+void Ssd1311::ClearLine(uint32_t line) {
+    if (__builtin_expect((!((line > 0) && (line <= ssd1311::kMaxRows))), 0)) {
         return;
     }
 
@@ -167,10 +149,8 @@ void Ssd1311::ClearLine(uint32_t line)
     Ssd1311::SetCursorPos(0, static_cast<uint8_t>(line - 1));
 }
 
-void Ssd1311::TextLine(uint32_t line, const char* data, uint32_t length)
-{
-    if (__builtin_expect((!((line > 0) && (line <= ssd1311::kMaxRows))), 0))
-    {
+void Ssd1311::TextLine(uint32_t line, const char* data, uint32_t length) {
+    if (__builtin_expect((!((line > 0) && (line <= ssd1311::kMaxRows))), 0)) {
         return;
     }
 
@@ -178,17 +158,14 @@ void Ssd1311::TextLine(uint32_t line, const char* data, uint32_t length)
     Text(data, length);
 }
 
-void Ssd1311::Text(const char* data, uint32_t length)
-{
-    if (length > ssd1311::kMaxColumns)
-    {
+void Ssd1311::Text(const char* data, uint32_t length) {
+    if (length > ssd1311::kMaxColumns) {
         length = ssd1311::kMaxColumns;
     }
 
     memcpy(&text_buffer[1], data, length);
 
-    if (clear_end_of_line_)
-    {
+    if (clear_end_of_line_) {
         clear_end_of_line_ = false;
 
         memset(&text_buffer[length + 1], ' ', ssd1311::kMaxColumns - length);
@@ -203,10 +180,8 @@ void Ssd1311::Text(const char* data, uint32_t length)
 /**
  * (0,0)
  */
-void Ssd1311::SetCursorPos(uint32_t col, uint32_t row)
-{
-    if (__builtin_expect((!((col < ssd1311::kMaxColumns) && (row < ssd1311::kMaxRows))), 0))
-    {
+void Ssd1311::SetCursorPos(uint32_t col, uint32_t row) {
+    if (__builtin_expect((!((col < ssd1311::kMaxColumns) && (row < ssd1311::kMaxRows))), 0)) {
         return;
     }
 
@@ -225,8 +200,7 @@ void Ssd1311::SetCursorPos(uint32_t col, uint32_t row)
  * It is recommended to turn off the display (cmd 08h) before setting no. of CGRAM and defining character ROM,
  * while clear display (cmd 01h) is recommended to sent afterwards
  */
-void Ssd1311::SelectRamRom(uint32_t ram, uint32_t rom)
-{
+void Ssd1311::SelectRamRom(uint32_t ram, uint32_t rom) {
     // [IS=X,RE=1,SD=0]
     Ssd1311::SetSleep(true);
 
@@ -241,27 +215,23 @@ void Ssd1311::SelectRamRom(uint32_t ram, uint32_t rom)
     Ssd1311::Cls();
 }
 
-void Ssd1311::SetDDRAM(uint8_t address)
-{
+void Ssd1311::SetDDRAM(uint8_t address) {
     // [IS=X,RE=0,SD=0]
     SendCommand(cmd::kDdramAddress | (address & 0x7F));
 }
 
-void Ssd1311::SetCGRAM(uint8_t address)
-{
+void Ssd1311::SetCGRAM(uint8_t address) {
     // [IS=0,RE=0,SD=0]
     SendCommand(cmd::kCgramAddress | (address & 0x3F));
 }
 
-void Ssd1311::SetRE(FunctionSet re)
-{
+void Ssd1311::SetRE(FunctionSet re) {
     uint8_t cmd = 0x20;
 
     constexpr auto kN = 1;
     constexpr auto kDh = 0;
 
-    if (re == FunctionSet::kReZero)
-    {
+    if (re == FunctionSet::kReZero) {
         // 0 0 1 0 N DH RE IS
         // N - Numbers of display line
         // DH - Double height font control
@@ -272,9 +242,7 @@ void Ssd1311::SetRE(FunctionSet re)
         cmd |= (kDh << 2);
         cmd |= (0 << 1);
         cmd |= (kIs << 0);
-    }
-    else
-    {
+    } else {
         // 0 0 1 0 N BE RE REV
         // N - Numbers of display line
         // BE - CGRAM blink enable
@@ -291,29 +259,24 @@ void Ssd1311::SetRE(FunctionSet re)
     SendCommand(cmd);
 }
 
-void Ssd1311::SetSD(CommandSet sd)
-{
+void Ssd1311::SetSD(CommandSet sd) {
     SetRE(FunctionSet::kReOne);
     SendCommand(sd == CommandSet::kDisabled ? 0x78 : 0x79);
 }
 
-void Ssd1311::SendCommand(uint8_t command)
-{
-    hal_i2_c_.WriteRegister(ssd1311::kModeCmd, command);
+void Ssd1311::SendCommand(uint8_t command) {
+    i2c_.WriteRegister(ssd1311::kModeCmd, command, true);
 }
 
-void Ssd1311::SendData(uint8_t data)
-{
-    hal_i2_c_.WriteRegister(ssd1311::kModeData, data);
+void Ssd1311::SendData(uint8_t data) {
+    i2c_.WriteRegister(ssd1311::kModeData, data, true);
 }
 
-void Ssd1311::SendData(const uint8_t* data, uint32_t length)
-{
-    hal_i2_c_.Write(reinterpret_cast<const char*>(data), length);
+void Ssd1311::SendData(const uint8_t* data, uint32_t length) {
+    i2c_.Write(reinterpret_cast<const char*>(data), length);
 }
 
-bool Ssd1311::CheckSSD1311()
-{
+bool Ssd1311::CheckSSD1311() {
     SetCGRAM(0);
 
     const uint8_t kDataSend[] = {ssd1311::kModeData, 0xAA, 0x55, 0xAA, 0x55};
@@ -325,8 +288,8 @@ bool Ssd1311::CheckSSD1311()
     static_assert((1 + sizeof(kDataSend)) == sizeof(data_receive), "Mismatch buffers");
 
     SetCGRAM(0);
-    hal_i2_c_.Write(ssd1311::kModeData);
-    hal_i2_c_.Read(reinterpret_cast<char*>(data_receive), sizeof(data_receive));
+    i2c_.Write(ssd1311::kModeData, true);
+    i2c_.Read(reinterpret_cast<char*>(data_receive), sizeof(data_receive), false);
 
     const auto kIsEqual = (memcmp(&kDataSend[1], &data_receive[1], sizeof(kDataSend) - 1) == 0);
 
@@ -347,22 +310,17 @@ constexpr auto kCursorOnOff = (1U << 1);
 constexpr auto kCursorBlinkOnOff = (1U << 0);
 #endif
 
-void Ssd1311::SetSleep(bool sleep)
-{
-    if (sleep)
-    {
+void Ssd1311::SetSleep(bool sleep) {
+    if (sleep) {
         display_control_ &= static_cast<uint8_t>(~kDisplayOnOff);
-    }
-    else
-    {
+    } else {
         display_control_ |= kDisplayOnOff;
     }
 
     SendCommand(display_control_);
 }
 
-void Ssd1311::SetContrast(uint8_t contrast)
-{
+void Ssd1311::SetContrast(uint8_t contrast) {
     // [IS=X,RE=1,SD=1]
     SetRE(FunctionSet::kReOne);
     SetSD(CommandSet::kEnabled);
@@ -375,11 +333,9 @@ void Ssd1311::SetContrast(uint8_t contrast)
     SetRE(FunctionSet::kReZero);
 }
 
-void Ssd1311::SetCursor([[maybe_unused]] uint32_t mode)
-{
+void Ssd1311::SetCursor([[maybe_unused]] uint32_t mode) {
 #if defined(CONFIG_DISPLAY_ENABLE_CURSOR_MODE)
-    switch (static_cast<int>(mode))
-    {
+    switch (static_cast<int>(mode)) {
         case display::cursor::kOff:
             display_control_ &= static_cast<uint8_t>(~kCursorOnOff);
             break;

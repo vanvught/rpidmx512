@@ -27,7 +27,7 @@
 #include <cstdio>
 #include <cassert>
 
-#include "hal_i2c.h"
+#include "i2c.h"
 #include "pca9685.h"
 
 #define DIV_ROUND_UP(n, d) (((n) + static_cast<float>(d) - 1) / static_cast<float>(d))
@@ -81,7 +81,7 @@ enum TPCA9685Och {
 };
 
 PCA9685::PCA9685(uint8_t address) : address_(address) {
-    FUNC_PREFIX(I2cBegin());
+    i2c::Begin();
 
     AutoIncrement(true);
 
@@ -354,8 +354,8 @@ void PCA9685::AutoIncrement(bool mode) {
 }
 
 void PCA9685::I2cSetup() {
-    FUNC_PREFIX(I2cSetAddress(address_));
-    FUNC_PREFIX(I2cSetBaudrate(HAL_I2C::FULL_SPEED));
+    i2c::SetAddress(address_);
+    i2c::SetBaudrate(i2c::kFullSpeed);
 }
 
 void PCA9685::I2cWriteReg(uint8_t reg, uint8_t data) {
@@ -366,7 +366,7 @@ void PCA9685::I2cWriteReg(uint8_t reg, uint8_t data) {
 
     I2cSetup();
 
-    FUNC_PREFIX(I2cWrite(buffer, 2));
+    i2c::Write(buffer, 2);
 }
 
 uint8_t PCA9685::I2cReadReg(uint8_t reg) {
@@ -374,8 +374,8 @@ uint8_t PCA9685::I2cReadReg(uint8_t reg) {
 
     I2cSetup();
 
-    FUNC_PREFIX(I2cWrite(&data, 1));
-    FUNC_PREFIX(I2cRead(&data, 1));
+    i2c::Write(&data, 1);
+    i2c::Read(&data, 1);
 
     return data;
 }
@@ -389,7 +389,7 @@ void PCA9685::I2cWriteReg(uint8_t reg, uint16_t data) {
 
     I2cSetup();
 
-    FUNC_PREFIX(I2cWrite(buffer, 3));
+    i2c::Write(buffer, 3);
 }
 
 uint16_t PCA9685::I2cReadReg16(uint8_t reg) {
@@ -398,8 +398,8 @@ uint16_t PCA9685::I2cReadReg16(uint8_t reg) {
 
     I2cSetup();
 
-    FUNC_PREFIX(I2cWrite(&data, 1));
-    FUNC_PREFIX(I2cRead(reinterpret_cast<char*>(&buffer), 2));
+    i2c::Write(&data, 1);
+    i2c::Read(reinterpret_cast<char*>(&buffer), 2);
 
     return static_cast<uint16_t>((buffer[1] << 8) | buffer[0]);
 }
@@ -415,5 +415,5 @@ void PCA9685::I2cWriteReg(uint8_t reg, uint16_t data, uint16_t data2) {
 
     I2cSetup();
 
-    FUNC_PREFIX(I2cWrite(buffer, 5));
+    i2c::Write(buffer, 5);
 }

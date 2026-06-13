@@ -1,6 +1,6 @@
 #if !defined(CONFIG_HAL_USE_MINIMUM)
 /**
- * @file hal_init.cpp
+ * @file board.cpp
  *
  */
 /* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
@@ -40,23 +40,19 @@
 #include <sys/reboot.h>
 #include <sys/utsname.h>
 #include <uuid/uuid.h>
-
 #include "exec_cmd.h"
-
 #if !defined(DISABLE_RTC)
 #include "hwclock.h"
 #endif
-
-#if defined(DEBUG_I2C)
-#include "i2cdetect.h"
-#endif
-
 #include "hal.h"
 #include "spi.h"
 #include "i2c.h"
 #include "uuid.h"
 #include "configstore.h"
 #include "firmware/debug/debug_debug.h"
+#if defined(DEBUG_I2C)
+#include "firmware/debug/debug_i2cdetect.h"
+#endif
 
 static constexpr char UNKNOWN[] = "Unknown";
 
@@ -217,11 +213,11 @@ void Init() {
         m_nBoardId = static_cast<uint32_t>(strtol(aResult, nullptr, 16));
     }
 
-    LinuxI2cBegin();
-    LinuxSpiBegin();
+    i2c::Begin();
+    spi::Begin();
 
 #if defined(DEBUG_I2C)
-    I2cDetect();
+    debug::i2c::Detect();
 #endif
 
 #if !defined(DISABLE_RTC)
@@ -372,7 +368,7 @@ const char* CpuName(uint8_t& length) {
 }
 
 bool Reboot() {
-	return hal::Reboot();
+    return hal::Reboot();
 }
 
 const char* Website() {

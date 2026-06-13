@@ -44,7 +44,7 @@ SC16IS740::SC16IS740(uint8_t address, uint32_t on_board_crystal) : I2c(address, 
     SetBaud(SC16IS7X0_DEFAULT_BAUDRATE);
 
     const uint8_t kTestCharacter = 'A';
-    WriteRegister(SC16IS7X0_SPR, kTestCharacter);
+    WriteRegister(SC16IS7X0_SPR, kTestCharacter, true);
 
     if ((ReadRegister(SC16IS7X0_SPR, false) != kTestCharacter)) {
         DEBUG_PUTS("Test character failed");
@@ -54,18 +54,18 @@ SC16IS740::SC16IS740(uint8_t address, uint32_t on_board_crystal) : I2c(address, 
 
     auto register_mcr = ReadRegister(SC16IS7X0_MCR, false);
     register_mcr |= MCR_ENABLE_TCR_TLR;
-    WriteRegister(SC16IS7X0_MCR, register_mcr);
+    WriteRegister(SC16IS7X0_MCR, register_mcr, false);
 
     auto register_efr = ReadRegister(SC16IS7X0_EFR, false);
-    WriteRegister(SC16IS7X0_EFR, static_cast<uint8_t>(register_efr | EFR_ENABLE_ENHANCED_FUNCTIONS));
+    WriteRegister(SC16IS7X0_EFR, static_cast<uint8_t>(register_efr | EFR_ENABLE_ENHANCED_FUNCTIONS), false);
 
-    WriteRegister(SC16IS7X0_TLR, static_cast<uint8_t>(0x10));
+    WriteRegister(SC16IS7X0_TLR, static_cast<uint8_t>(0x10), false);
 
-    WriteRegister(SC16IS7X0_EFR, register_efr);
+    WriteRegister(SC16IS7X0_EFR, register_efr, false);
 
-    WriteRegister(SC16IS7X0_FCR, static_cast<uint8_t>(FCR_RX_FIFO_RST | FCR_TX_FIFO_RST));
-    WriteRegister(SC16IS7X0_FCR, FCR_ENABLE_FIFO);
-    WriteRegister(SC16IS7X0_IER, static_cast<uint8_t>(IER_ELSI | IER_ERHRI));
+    WriteRegister(SC16IS7X0_FCR, static_cast<uint8_t>(FCR_RX_FIFO_RST | FCR_TX_FIFO_RST), false);
+    WriteRegister(SC16IS7X0_FCR, FCR_ENABLE_FIFO, false);
+    WriteRegister(SC16IS7X0_IER, static_cast<uint8_t>(IER_ELSI | IER_ERHRI), false);
 
     DEBUG_PRINTF("TLR=%.2x", ReadRegister(SC16IS7X0_TLR, false));
     debug::PrintBits(ReadRegister(SC16IS7X0_TLR, false));
@@ -145,10 +145,10 @@ void SC16IS740::SetBaud(uint32_t baud) {
     const uint32_t kDivisor = ((on_board_crystal_hz_ / prescaler) / (baud * 16U));
     const auto kRegisterLcr = ReadRegister(SC16IS7X0_LCR, false);
 
-    WriteRegister(SC16IS7X0_LCR, static_cast<uint8_t>(kRegisterLcr | LCR_ENABLE_DIV));
-    WriteRegister(SC16IS7X0_DLL, static_cast<uint8_t>(kDivisor & 0xFF));
-    WriteRegister(SC16IS7X0_DLH, static_cast<uint8_t>((kDivisor >> 8) & 0xFF));
-    WriteRegister(SC16IS7X0_LCR, kRegisterLcr);
+    WriteRegister(SC16IS7X0_LCR, static_cast<uint8_t>(kRegisterLcr | LCR_ENABLE_DIV), false);
+    WriteRegister(SC16IS7X0_DLL, static_cast<uint8_t>(kDivisor & 0xFF), false);
+    WriteRegister(SC16IS7X0_DLH, static_cast<uint8_t>((kDivisor >> 8) & 0xFF), false);
+    WriteRegister(SC16IS7X0_LCR, kRegisterLcr, false);
 
     DEBUG_PRINTF("prescaler=%u", prescaler);
     DEBUG_PRINTF("kDivisor=%u", kDivisor);
@@ -170,7 +170,7 @@ void SC16IS740::WriteBytes(const uint8_t* bytes, uint32_t size) {
         uint32_t available = ReadRegister(SC16IS7X0_TXLVL, false);
 
         while ((size > 0) && (available > 0)) {
-            WriteRegister(SC16IS7X0_THR, *p);
+            WriteRegister(SC16IS7X0_THR, *p, false);
             size--;
             available--;
             p++;

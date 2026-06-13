@@ -1,8 +1,8 @@
 /**
- * @file hal_i2c.h
+ * @file spi.cpp
  *
  */
-/* Copyright (C) 2020-2026 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +23,36 @@
  * THE SOFTWARE.
  */
 
-#ifndef H3_HAL_I2C_H_
-#define H3_HAL_I2C_H_
+#include <cstdio>
 
-#include "h3_i2c.h"
+#include "spi.h"
 
-#endif // H3_HAL_I2C_H_
+namespace spi {
+void Begin() {
+    puts("spi::Begin");
+}
+
+void SetSpeedHz(uint32_t speed_hz) {
+    printf("spi::SetSpeedHz=%u\n", speed_hz);
+}
+
+void SetDataMode(uint8_t mode) {
+    printf("spi::SetDataMode=%u\n", mode);
+}
+
+void ChipSelect(uint8_t chip_select) {
+    printf("spi::ChipSelect=%u\n", chip_select);
+}
+
+void Transfern(char* tx_buffer, uint32_t length) {
+    printf("spi::Transfern=%p:%u\n", reinterpret_cast<void*>(tx_buffer), length);
+}
+
+void Write(uint16_t data) {
+    printf("spi::Write=%u\n", data);
+}
+
+void Writenb(const char* data, uint32_t length) {
+    printf("spi::Writenb=%p:%u\n", reinterpret_cast<const void*>(data), length);
+}
+} // namespace spi

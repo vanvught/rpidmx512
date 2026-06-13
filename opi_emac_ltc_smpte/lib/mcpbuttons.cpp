@@ -1,7 +1,7 @@
 /**
  * @file mcpbuttons.cpp
  */
-/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,6 @@
 #include "display.h"
 #include "ltcdisplaymax7219.h"
 #include "rotaryencoder.h"
-#include "hal_i2c.h"
 #include "hal_gpio.h"
 #include "timing.h"
 #include "mcp23x17.h"
@@ -352,7 +351,7 @@ uint32_t McpButtons::LedBlink(uint8_t port) {
 
     millis_previous_ = kMillisNow;
     port_b_ ^= port;
-    i2c_.WriteRegister(mcp23x17::REG_GPIOB, port_b_);
+    i2c_.WriteRegister(mcp23x17::REG_GPIOB, port_b_, true);
 
     return ++led_ticker_;
 }
@@ -470,7 +469,7 @@ void McpButtons::HandleRunActionSelect() {
     }
 
     if (run_status_ == RunStatus::kReboot) {
-        i2c_.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(0xFF));
+        i2c_.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(0xFF), true);
 
         Display::Get()->SetSleep(false);
         Display::Get()->Cls();
@@ -495,19 +494,19 @@ void McpButtons::SetRunState(RunStatus run_state) {
 
     switch (run_state) {
         case RunStatus::kIdle:
-            i2c_.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(1U << static_cast<uint32_t>(source_)));
+            i2c_.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(1U << static_cast<uint32_t>(source_)), true);
             ltc::source::Show(source_, run_gps_time_client_);
             break;
         case RunStatus::kContinue:
-            i2c_.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(0x0F));
+            i2c_.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(0x0F), true);
             Display::Get()->TextLine(4, ">CONTINUE?< ", 12);
             break;
         case RunStatus::kReboot:
-            i2c_.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(0xF0));
+            i2c_.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(0xF0), true);
             Display::Get()->TextLine(4, ">REBOOT?  < ", 12);
             break;
         case RunStatus::kTcReset:
-            i2c_.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(0xAA));
+            i2c_.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(0xAA), true);
             Display::Get()->TextLine(4, ">RESET TC?< ", 12);
             break;
         default:

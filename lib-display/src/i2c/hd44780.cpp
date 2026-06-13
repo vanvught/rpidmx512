@@ -2,7 +2,7 @@
  * @file hd44780.cpp
  *
  */
-/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2017-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,47 +23,45 @@
  * THE SOFTWARE.
  */
 
+#if defined(DEBUG_DISPLAY)
+#undef NDEBUG
+#endif
+
 #include <cstdint>
 #include <stdio.h>
 #include <cassert>
 
 #include "i2c/hd44780.h"
-#include "displayset.h"
-#include "hal_i2c.h"
+#include "i2c.h"
 
-namespace hd44780
-{
+namespace hd44780 {
 static constexpr uint8_t kBitRs = (1U << 0); ///< Register select
 // static constexpr uint8_t BIT_RW = (1U << 1);	///< Read/Write
 static constexpr uint8_t kBitEn = (1U << 2); ///< Enable
 static constexpr uint8_t kBitBl = (1U << 3); ///< Backlight
 /// https://cdn-shop.adafruit.com/datasheets/TC1602A-01T.pdf
-namespace cmd
-{
+namespace cmd {
 static constexpr uint8_t kCls = (1U << 0); ///< Clear all the display data by writing "20H" (space code) to all DDRAM address.
 // static constexpr uint8_t RETURNHOME = (1U << 1);///< Return cursor to its original site and return display to its original status, if shifted. Contents of
 // DDRAM do not change.
 static constexpr uint8_t kEntryMode = (1U << 2); ///< Set the moving direction of cursor and display.
-static constexpr uint8_t kDisplay = (1U << 3);    ///< Set display(D), cursor(C), and blinking of cursor(B) on/off control bit
-static constexpr uint8_t kFunc = (1U << 5);       ///< Set interface data length, numbers of display lines, display font type
+static constexpr uint8_t kDisplay = (1U << 3);   ///< Set display(D), cursor(C), and blinking of cursor(B) on/off control bit
+static constexpr uint8_t kFunc = (1U << 5);      ///< Set interface data length, numbers of display lines, display font type
 static constexpr uint8_t kSetddramaddr = 0x80;
-namespace entrymode
-{
+namespace entrymode {
 // static constexpr uint8_t SH = (1U << 0);		///< Shift of entire display
 // static constexpr uint8_t DEC = 0;				///< cursor/blink moves to left and DDRAM address is decreased by 1.
 static constexpr uint8_t kInc = (1U << 1); ///< cursor/blink moves to right and DDRAM address is increased by 1.
 } // namespace entrymode
-namespace display
-{
-static constexpr uint8_t kBlinkOff = 0; ///< Cursor blink is off.
-static constexpr uint8_t kBlinkOn = (1U << 0); ///< Cursor blink is on, that performs alternate between all the high data and display character at the cursor position.
+namespace display {
+static constexpr uint8_t kBlinkOff = 0;         ///< Cursor blink is off.
+static constexpr uint8_t kBlinkOn = (1U << 0);  ///< Cursor blink is on, that performs alternate between all the high data and display character at the cursor position.
 static constexpr uint8_t kCursorOff = 0;        ///< Cursor is disappeared in current display, but I/D register remains its data.
 static constexpr uint8_t kCursorOn = (1U << 1); ///< Cursor is turned on.
 // static constexpr uint8_t DISPLAY_OFF = 0;		///< The display is turned off, but display data is remained in DDRAM.
 static constexpr uint8_t kOn = (1U << 2); ///< The entire display is turned on.
 } // namespace display
-namespace func
-{
+namespace func {
 static constexpr uint8_t kF4Bit = 0; ///< 4-bit bus mode with MPU.
 // static constexpr uint8_t F8BIT = (1U << 4);		///< 8-bit bus mode with MPU.
 // static constexpr uint8_t F1LINE = 0;			///< 1-line display mode.
@@ -72,15 +70,13 @@ static constexpr uint8_t kF5x8Dots = 0;       ///< 5 x 8 dots format display mod
 // static constexpr uint8_t F5x11DOTS = (1U << 2);	///< 5 x11 dots format display mode.
 } // namespace func
 } // namespace cmd
-namespace exectime
-{
+namespace exectime {
 static constexpr auto kCmd = 37U;   ///< 37us
 static constexpr auto kReg = 43U;   ///< 43us
 static constexpr auto kCls = 1520U; ///< 1.52ms
 } // namespace exectime
 
-namespace lcd
-{
+namespace lcd {
 static constexpr auto kMinColumns = 16;
 static constexpr auto kMinRows = 2;
 static constexpr auto kMaxColumns = 20;
@@ -88,38 +84,31 @@ static constexpr auto kMaxRows = 4;
 } // namespace lcd
 } // namespace hd44780
 
-Hd44780::Hd44780() : hal_i2c_(hd44780::pcf8574t::kDefaultAddress)
-{
+Hd44780::Hd44780() : i2c_(hd44780::pcf8574t::kDefaultAddress) {
     cols_ = hd44780::lcd::kMinColumns;
     rows_ = hd44780::lcd::kMinRows;
 }
 
-Hd44780::Hd44780(uint8_t columns, uint8_t rows) : hal_i2c_(hd44780::pcf8574t::kDefaultAddress)
-{
+Hd44780::Hd44780(uint8_t columns, uint8_t rows) : i2c_(hd44780::pcf8574t::kDefaultAddress) {
     cols_ = (columns < hd44780::lcd::kMaxColumns) ? ((columns < hd44780::lcd::kMinColumns) ? hd44780::lcd::kMinColumns : columns) : hd44780::lcd::kMaxColumns;
     rows_ = (rows < hd44780::lcd::kMaxRows) ? ((rows < hd44780::lcd::kMinRows) ? hd44780::lcd::kMinRows : rows) : hd44780::lcd::kMaxRows;
 }
 
-Hd44780::Hd44780(uint8_t address, uint8_t columns, uint8_t rows) : hal_i2c_(address == 0 ? hd44780::pcf8574t::kDefaultAddress : address)
-{
+Hd44780::Hd44780(uint8_t address, uint8_t columns, uint8_t rows) : i2c_(address == 0 ? hd44780::pcf8574t::kDefaultAddress : address) {
     cols_ = (columns < hd44780::lcd::kMaxColumns) ? ((columns < hd44780::lcd::kMinColumns) ? hd44780::lcd::kMinColumns : columns) : hd44780::lcd::kMaxColumns;
     rows_ = (rows < hd44780::lcd::kMaxRows) ? ((rows < hd44780::lcd::kMinRows) ? hd44780::lcd::kMinRows : rows) : hd44780::lcd::kMaxRows;
 }
 
-bool Hd44780::Start()
-{
-    if (!hal_i2c_.IsConnected())
-    {
+bool Hd44780::Start() {
+    if (!i2c_.IsConnected()) {
         return false;
     }
 
     WriteCmd(0x33); ///< 110011 Initialize
     WriteCmd(0x32); ///< 110010 Initialize
 
-    WriteCmd((hd44780::cmd::kFunc | hd44780::cmd::func::kF4Bit | hd44780::cmd::func::kF2Line |
-              hd44780::cmd::func::kF5x8Dots)); ///< Data length, number of lines, font size
-    WriteCmd((hd44780::cmd::kDisplay | hd44780::cmd::display::kOn | hd44780::cmd::display::kCursorOff |
-              hd44780::cmd::display::kBlinkOff)); ///< Display On,Cursor Off, Blink Off
+    WriteCmd((hd44780::cmd::kFunc | hd44780::cmd::func::kF4Bit | hd44780::cmd::func::kF2Line | hd44780::cmd::func::kF5x8Dots));             ///< Data length, number of lines, font size
+    WriteCmd((hd44780::cmd::kDisplay | hd44780::cmd::display::kOn | hd44780::cmd::display::kCursorOff | hd44780::cmd::display::kBlinkOff)); ///< Display On,Cursor Off, Blink Off
 
     WriteCmd(hd44780::cmd::kCls);
     timing::DelayUs(hd44780::exectime::kCls - hd44780::exectime::kCmd);
@@ -129,45 +118,36 @@ bool Hd44780::Start()
     return true;
 }
 
-void Hd44780::Cls()
-{
+void Hd44780::Cls() {
     WriteCmd(hd44780::cmd::kCls);
     timing::DelayUs(hd44780::exectime::kCls - hd44780::exectime::kCmd);
 }
 
-void Hd44780::PutChar(int c)
-{
+void Hd44780::PutChar(int c) {
     WriteReg(static_cast<uint8_t>(c));
 }
 
-void Hd44780::PutString(const char* string)
-{
+void Hd44780::PutString(const char* string) {
     const char* p = string;
 
-    while (*p != '\0')
-    {
+    while (*p != '\0') {
         Hd44780::PutChar(static_cast<int>(*p));
         p++;
     }
 }
 
-void Hd44780::Text(const char* data, uint32_t length)
-{
-    if (length > cols_)
-    {
+void Hd44780::Text(const char* data, uint32_t length) {
+    if (length > cols_) {
         length = cols_;
     }
 
-    for (uint32_t i = 0; i < length; i++)
-    {
+    for (uint32_t i = 0; i < length; i++) {
         WriteReg(static_cast<uint8_t>(data[i]));
     }
 }
 
-void Hd44780::TextLine(uint32_t line, const char* data, uint32_t length)
-{
-    if (line > rows_)
-    {
+void Hd44780::TextLine(uint32_t line, const char* data, uint32_t length) {
+    if (line > rows_) {
         return;
     }
 
@@ -175,30 +155,25 @@ void Hd44780::TextLine(uint32_t line, const char* data, uint32_t length)
     Hd44780::Text(data, length);
 }
 
-void Hd44780::ClearLine(uint32_t line)
-{
-    if (line > rows_)
-    {
+void Hd44780::ClearLine(uint32_t line) {
+    if (line > rows_) {
         return;
     }
 
     Hd44780::SetCursorPos(0, static_cast<uint8_t>(line - 1));
 
-    for (uint32_t i = 0; i < cols_; i++)
-    {
+    for (uint32_t i = 0; i < cols_; i++) {
         WriteReg(' ');
     }
 
     Hd44780::SetCursorPos(0, static_cast<uint8_t>(line - 1));
 }
 
-void Hd44780::PrintInfo()
-{
+void Hd44780::PrintInfo() {
     printf("HD44780 [PCF8574T] (%u,%u)\n", static_cast<unsigned int>(rows_), static_cast<unsigned int>(cols_));
 }
 
-void Hd44780::SetCursorPos(uint32_t column, uint32_t row)
-{
+void Hd44780::SetCursorPos(uint32_t column, uint32_t row) {
     assert(row <= 3);
 
     constexpr uint8_t kRowOffsets[] = {0x00, 0x40, 0x14, 0x54};
@@ -206,39 +181,33 @@ void Hd44780::SetCursorPos(uint32_t column, uint32_t row)
     WriteCmd(static_cast<uint8_t>(hd44780::cmd::kSetddramaddr | (column + kRowOffsets[row & 0x03])));
 }
 
-void Hd44780::Write4bits(uint8_t data)
-{
-    hal_i2c_.Write(static_cast<char>(data));
-    hal_i2c_.Write(static_cast<char>(data | hd44780::kBitEn | hd44780::kBitBl));
-    hal_i2c_.Write(static_cast<char>((data & ~hd44780::kBitEn) | hd44780::kBitBl));
+void Hd44780::Write4bits(uint8_t data) {
+    i2c_.Write(static_cast<char>(data), true);
+    i2c_.Write(static_cast<char>(data | hd44780::kBitEn | hd44780::kBitBl), false);
+    i2c_.Write(static_cast<char>((data & ~hd44780::kBitEn) | hd44780::kBitBl), false);
 }
 
-void Hd44780::WriteCmd(uint8_t cmd)
-{
+void Hd44780::WriteCmd(uint8_t cmd) {
     Write4bits(cmd & 0xF0);
     Write4bits(static_cast<uint8_t>((cmd << 4) & 0xF0));
     timing::DelayUs(hd44780::exectime::kCmd);
 }
 
-void Hd44780::WriteReg(uint8_t reg)
-{
+void Hd44780::WriteReg(uint8_t reg) {
     Write4bits(static_cast<uint8_t>(hd44780::kBitRs | (reg & 0xF0)));
     Write4bits(static_cast<uint8_t>(hd44780::kBitRs | ((reg << 4) & 0xF0)));
     timing::DelayUs(hd44780::exectime::kReg);
 }
 
-void Hd44780::SetCursor([[maybe_unused]] uint32_t mode)
-{
+void Hd44780::SetCursor([[maybe_unused]] uint32_t mode) {
 #if defined(CONFIG_DISPLAY_ENABLE_CURSOR_MODE)
     uint8_t cmd = hd44780::cmd::kDisplay | hd44780::cmd::display::kOn;
 
-    if ((mode & display::cursor::kOn) == display::cursor::kOn)
-    {
+    if ((mode & display::cursor::kOn) == display::cursor::kOn) {
         cmd |= hd44780::cmd::display::kCursorOn;
     }
 
-    if ((mode & display::cursor::kBlinkOn) == display::cursor::kBlinkOn)
-    {
+    if ((mode & display::cursor::kBlinkOn) == display::cursor::kBlinkOn) {
         cmd |= hd44780::cmd::display::kBlinkOn;
     }
 

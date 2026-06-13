@@ -1,5 +1,5 @@
 /**
- * @file linux_spi.h
+ * @file i2c.cpp
  *
  */
 /* Copyright (C) 2026 by Arjan van Vught mailto:info@gd32-dmx.org
@@ -23,25 +23,48 @@
  * THE SOFTWARE.
  */
 
-#ifndef LINUX_SPI_H_
-#define LINUX_SPI_H_
+#include <cstdio>
 
-#if defined(RASPPI)
-#define LINUX_SPI_BIT_ORDER_MSBFIRST	BCM2835_SPI_BIT_ORDER_MSBFIRST
-#define LINUX_SPI_MODE0					BCM2835_SPI_MODE0
-#define LINUX_SPI_MODE1					BCM2835_SPI_MODE1
-#define LINUX_SPI_MODE2					BCM2835_SPI_MODE2
-#define LINUX_SPI_MODE3					BCM2835_SPI_MODE3
-#define LINUX_SPI_CS0					BCM2835_SPI_CS0
-#define LINUX_SPI_CS_NONE 				BCM2835_SPI_CS_NONE
-#else
-#define LINUX_SPI_BIT_ORDER_MSBFIRST 	0
-#define LINUX_SPI_MODE0					0
-#define LINUX_SPI_MODE1					1
-#define LINUX_SPI_MODE2					2
-#define LINUX_SPI_MODE3					3
-#define LINUX_SPI_CS0					0
-#define LINUX_SPI_CS_NONE				1
-#endif
+#include "i2c.h"
 
-#endif // LINUX_SPI_H_
+namespace i2c {
+
+void Begin() {
+    puts("i2c::Begin");
+}
+
+void SetBaudrate(uint32_t baudrate) {
+    printf("i2c::SetBaudrate=%u\n", baudrate);
+}
+
+void SetAddress(uint8_t address) {
+    printf("i2c::SetAddress=0x%.2x\n", address);
+}
+
+bool IsConnected(uint8_t address, uint32_t baudrate) {
+    printf("i2c::IsConnected=0x%.2x:%u\n", address, baudrate);
+    return false;
+}
+
+uint8_t Read(char* buffer, uint32_t length) {
+    printf("i2c::Read=%p:%u\n", reinterpret_cast<void*>(buffer), length);
+    return i2c::ReturnCode::kNack;
+}
+
+uint8_t Write(const char* buffer, uint32_t length) {
+    printf("i2c::Write=%p:%u\n", reinterpret_cast<const void*>(buffer), length);
+    return i2c::ReturnCode::kNack;
+}
+
+void WriteReg(uint8_t reg, uint8_t value) {
+    printf("i2c::WriteReg=%u:%u[8]\n", reg, value);
+}
+
+void WriteReg(uint8_t reg, uint16_t value) {
+    printf("i2c::WriteReg=%u:%u[16]\n", reg, value);
+}
+
+void ReadReg(uint8_t reg, uint8_t& value) {
+    printf("i2c::ReadReg=%u:%u[w]\n", reg, value);
+}
+} // namespace i2c

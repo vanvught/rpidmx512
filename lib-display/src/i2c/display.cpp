@@ -39,14 +39,13 @@
 #if defined(CONFIG_DISPLAY_ENABLE_HD44780)
 #include "i2c/hd44780.h"
 #endif
-#include "hal_i2c.h"
+#include "i2c.h"
 #include "hal_gpio.h"
+#include "firmware/debug/debug_debug.h"
 
-namespace display::timeout
-{
+namespace display::timeout {
 void irq_init();
-static void GpioInit()
-{
+static void GpioInit() {
 #if defined(DISPLAYTIMEOUT_GPIO)
     FUNC_PREFIX(GpioFsel(DISPLAYTIMEOUT_GPIO, GPIO_FSEL_INPUT));
     FUNC_PREFIX(GpioSetPud(DISPLAYTIMEOUT_GPIO, GPIO_PULL_UP));
@@ -55,8 +54,8 @@ static void GpioInit()
 }
 } // namespace display::timeout
 
-Display::Display()
-{
+Display::Display() {
+	DEBUG_ENTRY();
     assert(s_this == nullptr);
     s_this = this;
 
@@ -64,53 +63,53 @@ Display::Display()
     Detect(display::Type::kSsd1311);
 #endif
 
-    if (lcd_display_ == nullptr)
-    {
+    if (lcd_display_ == nullptr) {
         Detect(display::Type::kSsd1306);
     }
 
-    if (lcd_display_ != nullptr)
-    {
+    if (lcd_display_ != nullptr) {
         display::timeout::GpioInit();
     }
 
     PrintInfo();
+	DEBUG_EXIT();
 }
 
-Display::Display(uint32_t rows)
-{
+Display::Display(uint32_t rows) {
+	DEBUG_ENTRY();
+	DEBUG_PRINTF("rows=%u", rows);
+	
     assert(s_this == nullptr);
     s_this = this;
 
     Detect(rows);
 
-    if (lcd_display_ != nullptr)
-    {
+    if (lcd_display_ != nullptr) {
         display::timeout::GpioInit();
     }
 
     PrintInfo();
+	DEBUG_EXIT();
 }
 
-Display::Display(display::Type type) : type_(type)
-{
+Display::Display(display::Type type) : type_(type) {
     assert(s_this == nullptr);
     s_this = this;
 
     Detect(type);
 
-    if (lcd_display_ != nullptr)
-    {
+    if (lcd_display_ != nullptr) {
         display::timeout::GpioInit();
     }
 
     PrintInfo();
 }
 
-void Display::Detect(display::Type display_type)
-{
-    switch (display_type)
-    {
+void Display::Detect(display::Type display_type) {
+	DEBUG_ENTRY();
+	DEBUG_PRINTF("type=%u", static_cast<uint32_t>(display_type));
+	
+    switch (display_type) {
 #if defined(CONFIG_DISPLAY_ENABLE_HD44780)
         case display::Type::kPcf8574T1602:
             lcd_display_ = new Hd44780(16, 2);
@@ -138,87 +137,70 @@ void Display::Detect(display::Type display_type)
             break;
     }
 
-    if (lcd_display_ != nullptr)
-    {
-        if (!lcd_display_->Start())
-        {
+    if (lcd_display_ != nullptr) {
+        if (!lcd_display_->Start()) {
             delete lcd_display_;
             lcd_display_ = nullptr;
             type_ = display::Type::kUnknown;
-        }
-        else
-        {
+        } else {
             lcd_display_->Cls();
         }
     }
 
-    if (lcd_display_ == nullptr)
-    {
+    if (lcd_display_ == nullptr) {
         sleep_timeout_ = 0;
     }
+	
+	DEBUG_EXIT();
 }
 
-void Display::Detect(uint32_t rows)
-{
-    if (HAL_I2C::IsConnected(OLED_I2C_ADDRESS_DEFAULT))
-    {
-        if (rows <= 4)
-        {
+void Display::Detect(uint32_t rows) {
+    if (i2c::IsConnected(OLED_I2C_ADDRESS_DEFAULT)) {
+        if (rows <= 4) {
 #if defined(CONFIG_DISPLAY_ENABLE_SSD1311)
             lcd_display_ = new Ssd1311;
             assert(lcd_display_ != nullptr);
 
-            if (lcd_display_->Start())
-            {
+            if (lcd_display_->Start()) {
                 type_ = display::Type::kSsd1311;
                 Printf(1, "SSD1311");
-            }
-            else
+            } else
 #endif
             {
                 lcd_display_ = new Ssd1306(OledPanel::k128x644Rows);
                 assert(lcd_display_ != nullptr);
             }
-        }
-        else
-        {
+        } else {
             lcd_display_ = new Ssd1306(OledPanel::k128x648Rows);
             assert(lcd_display_ != nullptr);
         }
 
-        if (lcd_display_->Start())
-        {
+        if (lcd_display_->Start()) {
             type_ = display::Type::kSsd1306;
             Printf(1, "SSD1306");
         }
     }
 #if defined(CONFIG_DISPLAY_ENABLE_HD44780)
-    else if (HAL_I2C::IsConnected(hd44780::pcf8574t::kTC2004Address))
-    {
+    else if (i2c::IsConnected(hd44780::pcf8574t::kTC2004Address)) {
         lcd_display_ = new Hd44780(hd44780::pcf8574t::kTC2004Address, 20, 4);
         assert(lcd_display_ != nullptr);
 
-        if (lcd_display_->Start())
-        {
+        if (lcd_display_->Start()) {
             type_ = display::Type::kPcf8574T2004;
             Printf(1, "TC2004_PCF8574T");
         }
-    }
-    else if (HAL_I2C::IsConnected(hd44780::pcf8574t::kTC1602Address))
-    {
+    } else if (i2c::IsConnected(hd44780::pcf8574t::kTC1602Address)) {
         lcd_display_ = new Hd44780(hd44780::pcf8574t::kTC1602Address, 16, 2);
         assert(lcd_display_ != nullptr);
 
-        if (lcd_display_->Start())
-        {
+        if (lcd_display_->Start()) {
             type_ = display::Type::kPcf8574T1602;
             Printf(1, "TC1602_PCF8574T");
         }
     }
 #endif
 
-    if (lcd_display_ == nullptr)
-    {
+    if (lcd_display_ == nullptr) {
         sleep_timeout_ = 0;
     }
 }
