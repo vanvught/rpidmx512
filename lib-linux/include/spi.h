@@ -1,6 +1,6 @@
-/*
- * spi.h
- *
+/**
+ * @file spi.h
+ * @brief Linux
  */
 /* Copyright (C) 2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
@@ -28,18 +28,16 @@
 
 #include <cstdint>
 
-#include "linux_spi.h"
-
 namespace spi {
-inline constexpr uint8_t kBitOrderMsbfirst = LINUX_SPI_BIT_ORDER_MSBFIRST; ///< MSB First
+inline constexpr uint8_t kBitOrderMsbfirst = 1; ///< MSB First
 
-inline constexpr uint8_t kMode0 = LINUX_SPI_MODE0; ///< CPOL = 0, CPHA = 0
-inline constexpr uint8_t kMode1 = LINUX_SPI_MODE1; ///< CPOL = 0, CPHA = 1
-inline constexpr uint8_t kMode2 = LINUX_SPI_MODE2; ///< CPOL = 1, CPHA = 0
-inline constexpr uint8_t kMode3 = LINUX_SPI_MODE3; ///< CPOL = 1, CPHA = 1
+inline constexpr uint8_t kMode0 = 0; ///< CPOL = 0, CPHA = 0
+inline constexpr uint8_t kMode1 = 1; ///< CPOL = 0, CPHA = 1
+inline constexpr uint8_t kMode2 = 2; ///< CPOL = 1, CPHA = 0
+inline constexpr uint8_t kMode3 = 3; ///< CPOL = 1, CPHA = 1
 
-inline constexpr uint8_t kCs = LINUX_SPI_CS0;         ///< Chip Select
-inline constexpr uint8_t kCsNone = LINUX_SPI_CS_NONE; ///< No CS, control it yourself
+inline constexpr uint8_t kCs = 0;     ///< Chip Select
+inline constexpr uint8_t kCsNone = 1; ///< No CS, control it yourself
 
 void Begin();
 void SetSpeedHz(uint32_t speed_hz);
