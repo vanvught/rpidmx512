@@ -76,21 +76,28 @@ LIB:=$(addsuffix /lib_linux, $(LIB))
 LDLIBS+=$(addprefix -l,$(LIBS))
 
 ifdef LINUX
-	ifneq (, $(shell which vcgencmd))
-		BCM2835 = ./../lib-bcm2835_raspbian
-		ifneq "$(wildcard $(BCM2835) )" ""
-			LIB+=-L../lib-bcm2835_raspbian/lib_linux
-			LDLIBS+=-lbcm2835_raspbian
-			DEFINES+=-I../lib-bcm2835_raspbian/include
-		else
-			LDLIBS+=-lbcm2835
-		endif
-		DEFINES+=-DRASPPI
-		DEFINES+=-DBCM2835_NO_DELAY_COMPATIBILITY
-	endif
-	ifndef DARWIN
-		LDLIBS+=-luuid
-	endif
+DEFINES += -DLINUX
+
+ifneq ($(wildcard /sys/firmware/devicetree/base/model),)
+DT_MODEL := $(shell tr -d '\0' < /sys/firmware/devicetree/base/model)
+$(info DT_MODEL [$(DT_MODEL)])
+
+ifneq ($(findstring Raspberry Pi,$(DT_MODEL)),)
+ifeq ($(findstring Raspberry Pi 5,$(DT_MODEL)),)
+DEFINES += -DRASPPI
+endif
+endif
+
+ifneq ($(findstring ODROID-C5,$(DT_MODEL)),)
+DEFINES += -DODROID
+endif
+
+endif
+
+ifndef DARWIN
+LDLIBS += -luuid
+endif
+
 endif
 
 $(info $$LDLIBS [${LDLIBS}])
