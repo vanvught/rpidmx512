@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_NET_APPS_MDNS)
+#if defined(DEBUG_NETWORK_APPS_MDNS)
 #undef NDEBUG
 #endif
 
@@ -32,15 +32,17 @@
 #include <algorithm>
 #include <cassert>
 
-#include "network.h"
 #include "apps/mdns.h"
+#include "network_udp.h"
+#include "network_iface.h"
+#include "network_igmp.h"
+#include "network_config.h"
 #include "core/protocol/ip4.h"
 #include "core/protocol/dns.h"
 #include "core/protocol/iana.h"
 #include "firmware/debug/debug_debug.h"
 
-namespace network::apps::mdns
-{
+namespace network::apps::mdns {
 #if !defined(MDNS_SERVICE_RECORDS_MAX)
 static constexpr auto kServiceRecordsMax = 8;
 #else
@@ -67,60 +69,46 @@ static constexpr char kDomainOsc[] = {4, '_', 'o', 's', 'c'};
 static constexpr char kDomainDdp[] = {4, '_', 'd', 'd', 'p'};
 static constexpr char kDomainPp[] = {3, '_', 'p', 'p'};
 
-struct HostReply
-{
+struct HostReply {
     static constexpr uint32_t kA = 0x01;
     static constexpr uint32_t kPtr = 0x02;
 };
 
-struct ServiceReply
-{
+struct ServiceReply {
     static constexpr uint32_t kTypePtr = 0x10;
     static constexpr uint32_t kNamePtr = 0x20;
     static constexpr uint32_t kSrv = 0x40;
     static constexpr uint32_t kTxt = 0x80;
 };
 
-enum class OpCodes
-{
-    kQuery = 0,
-    kIQuery = 1,
-    kStatus = 2,
-    kNotify = 4,
-    kUpdate = 5
-};
+enum class OpCodes { kQuery = 0, kIQuery = 1, kStatus = 2, kNotify = 4, kUpdate = 5 };
 
-enum class Protocols
-{
-    kUdp,
-    kTcp
-};
+enum class Protocols { kUdp, kTcp };
 
-struct Service
-{
+struct Service {
     const char* domain;
     const uint16_t kLength;
     const Protocols kProtocols;
     const uint16_t kPortDefault;
 };
 
-static constexpr Service kServices[]{{kDomainConfig, sizeof(kDomainConfig), Protocols::kUdp, 0x2905},
-                                     {kDomainTftp, sizeof(kDomainTftp), Protocols::kUdp, 69},
-                                     {kDomainHttp, sizeof(kDomainHttp), Protocols::kTcp, 80},
-                                     {kDomainRdmnetLlrp, sizeof(kDomainRdmnetLlrp), Protocols::kUdp, 5569},
-                                     {kDomainNtp, sizeof(kDomainNtp), Protocols::kUdp, 123},
-                                     {kDomainMidi, sizeof(kDomainMidi), Protocols::kUdp, 5004},
-                                     {kDomainOsc, sizeof(kDomainOsc), Protocols::kUdp, 0},
-                                     {kDomainDdp, sizeof(kDomainDdp), Protocols::kUdp, 4048},
-                                     {kDomainPp, sizeof(kDomainPp), Protocols::kUdp, 5078}};
+static constexpr Service kServices[]{
+	{kDomainConfig, sizeof(kDomainConfig), Protocols::kUdp, 0x2905},
+	{kDomainTftp, sizeof(kDomainTftp), Protocols::kUdp,network::iana::Ports::kPortTftp},
+	{kDomainHttp, sizeof(kDomainHttp), Protocols::kTcp, network::iana::Ports::kPortHttp},
+	{kDomainHttp, sizeof(kDomainHttp), Protocols::kTcp, network::iana::Ports::kPortHttpAlt},
+	{kDomainRdmnetLlrp, sizeof(kDomainRdmnetLlrp), Protocols::kUdp, 5569},
+	{kDomainNtp, sizeof(kDomainNtp), Protocols::kUdp, network::iana::Ports::kPortNtp},
+	{kDomainMidi, sizeof(kDomainMidi), Protocols::kUdp, 5004},
+	{kDomainOsc, sizeof(kDomainOsc), Protocols::kUdp, 0},
+	{kDomainDdp, sizeof(kDomainDdp), Protocols::kUdp, 4048},
+	{kDomainPp, sizeof(kDomainPp), Protocols::kUdp, 5078}};
 
-struct Domain
-{
+struct Domain {
     uint8_t a_name[kDomainMaxlen];
     uint16_t length;
 
-    void AddLabel(const char* label, size_t label_length)
-    {
+    void AddLabel(const char* label, size_t label_length) {
         assert(!(label_length > kLabelMaxlen));
         assert(!(label_length > 0 && (1 + label_length + length >= kDomainMaxlen)));
         assert(!(label_length == 0 && (1U + length > kDomainMaxlen)));
@@ -132,10 +120,8 @@ struct Domain
         length += static_cast<uint16_t>(label_length);
     }
 
-    void AddProtocol(mdns::Protocols protocols)
-    {
-        if (protocols == mdns::Protocols::kUdp)
-        {
+    void AddProtocol(mdns::Protocols protocols) {
+        if (protocols == mdns::Protocols::kUdp) {
             memcpy(&a_name[length], kDomainUdp, sizeof(kDomainUdp));
             length += static_cast<uint16_t>(sizeof(kDomainUdp));
             return;
@@ -145,43 +131,35 @@ struct Domain
         length += static_cast<uint16_t>(sizeof(kDomainTcp));
     }
 
-    void AddDotLocal()
-    {
+    void AddDotLocal() {
         memcpy(&a_name[length], kDomainLocal, sizeof(kDomainLocal));
         length += static_cast<uint16_t>(sizeof(kDomainLocal));
     }
 
-    void Print(bool new_line = false)
-    {
+    void Print(bool new_line = false) {
         auto const* name = a_name;
-        while (*name && (name < &a_name[length]))
-        {
+        while (*name && (name < &a_name[length])) {
             const auto kLength = static_cast<size_t>(*name);
             name++;
             printf("%.*s.", static_cast<int>(kLength), name);
             name += kLength;
         }
 
-        if (new_line)
-        {
+        if (new_line) {
             putchar('\n');
         }
     }
 
-    friend bool operator==(Domain const& domain_a, Domain const& domain_b)
-    {
-        if (domain_a.length != domain_b.length)
-        {
+    friend bool operator==(Domain const& domain_a, Domain const& domain_b) {
+        if (domain_a.length != domain_b.length) {
             return false;
         }
 
         auto const* name_a = domain_a.a_name;
         auto const* name_b = domain_b.a_name;
 
-        while (*name_a && *name_b && (name_a < &domain_a.a_name[domain_a.length]))
-        {
-            if (*name_a != *name_b)
-            {
+        while (*name_a && *name_b && (name_a < &domain_a.a_name[domain_a.length])) {
+            if (*name_a != *name_b) {
                 return false;
             }
 
@@ -189,8 +167,7 @@ struct Domain
             name_a++;
             name_b++;
 
-            if (strncasecmp(reinterpret_cast<const char*>(name_a), reinterpret_cast<const char*>(name_b), length) != 0)
-            {
+            if (strncasecmp(reinterpret_cast<const char*>(name_a), reinterpret_cast<const char*>(name_b), length) != 0) {
                 return false;
             }
 
@@ -216,20 +193,15 @@ static uint16_t s_n_remote_port;
 static bool s_is_unicast;
 static bool s_is_legacy_query;
 
-static void CreateServiceDomain(mdns::Domain& domain, ServiceRecord const& service_record, bool include_name)
-{
+static void CreateServiceDomain(mdns::Domain& domain, ServiceRecord const& service_record, bool include_name) {
     DEBUG_ENTRY();
 
     domain.length = 0;
 
-    if (include_name)
-    {
-        if (service_record.name != nullptr)
-        {
+    if (include_name) {
+        if (service_record.name != nullptr) {
             domain.AddLabel(service_record.name, strlen(service_record.name));
-        }
-        else
-        {
+        } else {
             domain.AddLabel(network::iface::HostName(), strlen(network::iface::HostName()));
         }
     }
@@ -245,24 +217,21 @@ static void CreateServiceDomain(mdns::Domain& domain, ServiceRecord const& servi
     DEBUG_EXIT();
 }
 
-static void CreateHostDomain(Domain& domain)
-{
+static void CreateHostDomain(Domain& domain) {
     domain.length = 0;
     domain.AddLabel(network::iface::HostName(), strlen(network::iface::HostName()));
     domain.AddDotLocal();
 }
 
 #if defined(CONFIG_MDNS_DOMAIN_REVERSE)
-static void CreateReverseDomain(Domain& domain)
-{
+static void CreateReverseDomain(Domain& domain) {
     DEBUG_ENTRY();
 
     domain.length = 0;
     auto primary_ip = network::GetPrimaryIp();
     const auto* const kIp = reinterpret_cast<const uint8_t*>(&primary_ip);
 
-    for (int32_t i = ip4::kAddressLength - 1; i >= 0; i--)
-    {
+    for (int32_t i = ip4::kAddressLength - 1; i >= 0; i--) {
         char buffer[3];
         uint32_t length = 1;
 
@@ -270,8 +239,7 @@ static void CreateReverseDomain(Domain& domain)
 
         const auto kH = d / 100U;
 
-        if (kH != 0)
-        {
+        if (kH != 0) {
             length = 3;
             buffer[0] = '0' + static_cast<char>(kH);
             d -= static_cast<uint8_t>(kH * 100U);
@@ -279,12 +247,9 @@ static void CreateReverseDomain(Domain& domain)
 
         const auto kT = d / 10U;
 
-        if (kT != 0)
-        {
+        if (kT != 0) {
             length = std::max(static_cast<uint32_t>(2), length);
-        }
-        else
-        {
+        } else {
             length = std::max(static_cast<uint32_t>(1), length);
         }
 
@@ -305,73 +270,59 @@ static void CreateReverseDomain(Domain& domain)
  * https://opensource.apple.com/source/mDNSResponder/mDNSResponder-26.2/mDNSCore/mDNS.c.auto.html
  * mDNSlocal const mDNSu8 *FindCompressionPointer(const mDNSu8 *const base, const mDNSu8 *const end, const mDNSu8 *const domname)
  */
-static uint8_t* FindCompressionPointer(const uint8_t* const kBase, const uint8_t* const kEnd, const uint8_t* const kDomname)
-{
+static uint8_t* FindCompressionPointer(const uint8_t* const kBase, const uint8_t* const kEnd, const uint8_t* const kDomname) {
     const auto* result = kEnd - *kDomname - 1;
 
-    while (result >= kBase)
-    {
-        if (result[0] == kDomname[0] && result[1] == kDomname[1])
-        {
+    while (result >= kBase) {
+        if (result[0] == kDomname[0] && result[1] == kDomname[1]) {
             const auto* name = kDomname;
             const auto* targ = result;
 
-            while (targ + *name < kEnd)
-            {
+            while (targ + *name < kEnd) {
                 // First see if this label matches
                 int i;
 
-                for (i = 0; i <= *name; i++)
-                {
-                    if (targ[i] != name[i])
-                    {
+                for (i = 0; i <= *name; i++) {
+                    if (targ[i] != name[i]) {
                         break;
                     }
                 }
 
-                if (i <= *name)
-                {
+                if (i <= *name) {
                     break; // If label did not match, bail out
                 }
 
                 targ += 1 + *name; // Else, did match, so advance target pointer
                 name += 1 + *name; // and proceed to check next label
 
-                if (*name == 0 && *targ == 0)
-                { // If no more labels, we found a match!
+                if (*name == 0 && *targ == 0) { // If no more labels, we found a match!
                     return const_cast<uint8_t*>(result);
                 }
 
-                if (*name == 0)
-                { // If no more labels to match, we failed, so bail out
+                if (*name == 0) { // If no more labels to match, we failed, so bail out
                     break;
                 }
 
                 // The label matched, so now follow the pointer (if appropriate) and then see if the next label matches
-                if (targ[0] < 0x40)
-                {
+                if (targ[0] < 0x40) {
                     continue; // If length value, continue to check next label
                 }
 
-                if (targ[0] < 0xC0)
-                {
+                if (targ[0] < 0xC0) {
                     break; // If 40-BF, not valid
                 }
 
-                if (targ + 1 >= kEnd)
-                {
+                if (targ + 1 >= kEnd) {
                     break; // Second byte not present!
                 }
 
                 const uint8_t* pointertarget = kBase + ((static_cast<uint16_t>(targ[0] & 0x3F)) << 8) + targ[1];
 
-                if (targ < pointertarget)
-                {
+                if (targ < pointertarget) {
                     break; // Pointertarget must point *backwards* in the packet
                 }
 
-                if (pointertarget[0] >= 0x40)
-                {
+                if (pointertarget[0] >= 0x40) {
                     break; // Pointertarget must point to a valid length byte
                 }
 
@@ -389,30 +340,24 @@ static uint8_t* FindCompressionPointer(const uint8_t* const kBase, const uint8_t
  * https://opensource.apple.com/source/mDNSResponder/mDNSResponder-26.2/mDNSCore/mDNS.c.auto.html
  * mDNSlocal mDNSu8 *putDomainNameAsLabels(const DNSMessage *const msg, mDNSu8 *ptr, const mDNSu8 *const limit, const domainname *const name)
  */
-static uint8_t* PutDomainNameAsLabels(uint8_t* ptr, Domain const& domain)
-{
+static uint8_t* PutDomainNameAsLabels(uint8_t* ptr, Domain const& domain) {
     const uint8_t* const kBase = s_records_data;
     const auto* np = domain.a_name;
     uint8_t* pointer = nullptr;
     const auto* const kSearchlimit = ptr;
 
-    while (*np)
-    {
+    while (*np) {
         pointer = FindCompressionPointer(kBase, kSearchlimit, np);
 
-        if (pointer != nullptr)
-        {
+        if (pointer != nullptr) {
             auto offset = static_cast<uint16_t>(pointer - kBase);
             *ptr++ = static_cast<uint8_t>(0xC0 | (offset >> 8));
             *ptr++ = static_cast<uint8_t>(offset);
             return ptr;
-        }
-        else
-        {
+        } else {
             auto len = *np++;
             *ptr++ = len;
-            for (uint32_t i = 0; i < len; i++)
-            {
+            for (uint32_t i = 0; i < len; i++) {
                 *ptr++ = *np++;
             }
         }
@@ -422,8 +367,7 @@ static uint8_t* PutDomainNameAsLabels(uint8_t* ptr, Domain const& domain)
     return ptr;
 }
 
-static uint8_t* AddQuestion(uint8_t* destination, const mdns::Domain& domain, network::dns::RRType type, bool do_flush)
-{
+static uint8_t* AddQuestion(uint8_t* destination, const mdns::Domain& domain, network::dns::RRType type, bool do_flush) {
     auto* dst = PutDomainNameAsLabels(destination, domain);
 
     *reinterpret_cast<volatile uint16_t*>(dst) = __builtin_bswap16(static_cast<uint16_t>(type));
@@ -434,8 +378,7 @@ static uint8_t* AddQuestion(uint8_t* destination, const mdns::Domain& domain, ne
     return dst;
 }
 
-static uint32_t AddAnswerSrv(mdns::ServiceRecord const& service_record, uint8_t* destination, uint32_t ttl)
-{
+static uint32_t AddAnswerSrv(mdns::ServiceRecord const& service_record, uint8_t* destination, uint32_t ttl) {
     DEBUG_ENTRY();
 
     Domain domain;
@@ -462,8 +405,7 @@ static uint32_t AddAnswerSrv(mdns::ServiceRecord const& service_record, uint8_t*
     return static_cast<uint32_t>(dst - destination);
 }
 
-static uint32_t AddAnswerTxt(mdns::ServiceRecord const& service_record, uint8_t* destination, uint32_t ttl)
-{
+static uint32_t AddAnswerTxt(mdns::ServiceRecord const& service_record, uint8_t* destination, uint32_t ttl) {
     DEBUG_ENTRY();
 
     Domain domain;
@@ -474,15 +416,12 @@ static uint32_t AddAnswerTxt(mdns::ServiceRecord const& service_record, uint8_t*
     *reinterpret_cast<uint32_t*>(dst) = __builtin_bswap32(ttl);
     dst += 4;
 
-    if (service_record.text_content == nullptr)
-    {
+    if (service_record.text_content == nullptr) {
         *reinterpret_cast<uint16_t*>(dst) = __builtin_bswap16(0x0001); // Data length
         dst += 2;
         *dst = 0; // Text length
         dst++;
-    }
-    else
-    {
+    } else {
         const auto kSize = service_record.text_content_length;
         *reinterpret_cast<uint16_t*>(dst) = __builtin_bswap16(static_cast<uint16_t>(1U + kSize)); // Data length
         dst += 2;
@@ -496,8 +435,7 @@ static uint32_t AddAnswerTxt(mdns::ServiceRecord const& service_record, uint8_t*
     return static_cast<uint32_t>(dst - destination);
 }
 
-static uint32_t AddAnswerPtr(mdns::ServiceRecord const& service_record, uint8_t* destination, uint32_t ttl)
-{
+static uint32_t AddAnswerPtr(mdns::ServiceRecord const& service_record, uint8_t* destination, uint32_t ttl) {
     DEBUG_ENTRY();
 
     Domain domain;
@@ -520,8 +458,7 @@ static uint32_t AddAnswerPtr(mdns::ServiceRecord const& service_record, uint8_t*
     return static_cast<uint32_t>(dst - destination);
 }
 
-static uint32_t AddAnswerDnsdPtr(mdns::ServiceRecord const& service_record, uint8_t* destination, uint32_t ttl)
-{
+static uint32_t AddAnswerDnsdPtr(mdns::ServiceRecord const& service_record, uint8_t* destination, uint32_t ttl) {
     DEBUG_ENTRY();
 
     auto* dst = AddQuestion(destination, kDomainDnssd, network::dns::RRType::kPtr, false);
@@ -543,8 +480,7 @@ static uint32_t AddAnswerDnsdPtr(mdns::ServiceRecord const& service_record, uint
     return static_cast<uint32_t>(dst - destination);
 }
 
-static uint32_t AddAnswerA(uint8_t* destination, uint32_t ttl)
-{
+static uint32_t AddAnswerA(uint8_t* destination, uint32_t ttl) {
     DEBUG_ENTRY();
 
     Domain domain;
@@ -564,8 +500,7 @@ static uint32_t AddAnswerA(uint8_t* destination, uint32_t ttl)
 }
 
 #if defined(CONFIG_MDNS_DOMAIN_REVERSE)
-static uint32_t AddAnswerHostv4Ptr(uint8_t* destination, uint32_t ttl)
-{
+static uint32_t AddAnswerHostv4Ptr(uint8_t* destination, uint32_t ttl) {
     DEBUG_ENTRY();
 
     Domain domain;
@@ -595,14 +530,12 @@ static uint32_t AddAnswerHostv4Ptr(uint8_t* destination, uint32_t ttl)
  *
  * Routine to fetch an FQDN from the DNS message, following compression pointers if necessary.
  */
-static const uint8_t* GetDomainName(const uint8_t* const kMsg, const uint8_t* ptr, const uint8_t* const kEnd, uint8_t* const kName)
-{
+static const uint8_t* GetDomainName(const uint8_t* const kMsg, const uint8_t* ptr, const uint8_t* const kEnd, uint8_t* const kName) {
     const uint8_t* nextbyte = nullptr;                // Record where we got to before we started following pointers
     uint8_t* np = kName;                              // Name pointer
     const uint8_t* const kLimit = np + kDomainMaxlen; // Limit so we don't overrun buffer
 
-    if (ptr < reinterpret_cast<const uint8_t*>(kMsg) || ptr >= kEnd)
-    {
+    if (ptr < reinterpret_cast<const uint8_t*>(kMsg) || ptr >= kEnd) {
         DEBUG_PUTS("Illegal ptr not within packet boundaries");
         return nullptr;
     }
@@ -613,8 +546,7 @@ static const uint8_t* GetDomainName(const uint8_t* const kMsg, const uint8_t* pt
     {
         const auto kLen = *ptr++; // Read length of this label
         if (kLen == 0) break;     // If length is zero, that means this name is complete
-        switch (kLen & 0xC0)
-        {
+        switch (kLen & 0xC0) {
             int i;
             uint16_t offset;
 
@@ -646,13 +578,11 @@ static const uint8_t* GetDomainName(const uint8_t* const kMsg, const uint8_t* pt
                 offset = static_cast<uint16_t>(((static_cast<uint16_t>(kLen & 0x3F)) << 8) | *ptr++);
                 if (!nextbyte) nextbyte = ptr; // Record where we got to before we started following pointers
                 ptr = reinterpret_cast<const uint8_t*>(kMsg) + offset;
-                if (ptr < reinterpret_cast<const uint8_t*>(kMsg) || ptr >= kEnd)
-                {
+                if (ptr < reinterpret_cast<const uint8_t*>(kMsg) || ptr >= kEnd) {
                     DEBUG_PUTS("Illegal compression pointer not within packet boundaries");
                     return nullptr;
                 }
-                if (*ptr & 0xC0)
-                {
+                if (*ptr & 0xC0) {
                     DEBUG_PUTS("Compression pointer must point to real label");
                     return nullptr;
                 }
@@ -660,18 +590,14 @@ static const uint8_t* GetDomainName(const uint8_t* const kMsg, const uint8_t* pt
         }
     }
 
-    if (nextbyte)
-    {
+    if (nextbyte) {
         return (nextbyte);
-    }
-    else
-    {
+    } else {
         return (ptr);
     }
 }
 
-void Start()
-{
+void Start() {
     DEBUG_ENTRY();
 
     network::igmp::JoinGroup(s_handle, network::dns::kMulticastAddress);
@@ -686,21 +612,17 @@ void Start()
     DEBUG_EXIT();
 }
 
-void Stop()
-{
+void Stop() {
     DEBUG_ENTRY();
 
     mdns::SendAnnouncement(0);
 
-    for (auto& record : s_service_records)
-    {
-        if (record.name != nullptr)
-        {
+    for (auto& record : s_service_records) {
+        if (record.name != nullptr) {
             delete[] record.name;
         }
 
-        if (record.text_content != nullptr)
-        {
+        if (record.text_content != nullptr) {
             delete[] record.text_content;
         }
     }
@@ -712,10 +634,8 @@ void Stop()
     DEBUG_EXIT();
 }
 
-static void Send(uint32_t length)
-{
-    if (!s_is_unicast)
-    {
+static void Send(uint32_t length) {
+    if (!s_is_unicast) {
         network::udp::Send(s_handle, s_records_data, length, network::dns::kMulticastAddress, network::iana::Ports::kPortMdns);
         return;
     }
@@ -723,18 +643,15 @@ static void Send(uint32_t length)
     network::udp::Send(s_handle, s_records_data, length, s_n_remote_ip, s_n_remote_port);
 }
 
-static void SendAnswerLocalIpAddress(uint16_t trans_action_id, uint32_t ttl)
-{
+static void SendAnswerLocalIpAddress(uint16_t trans_action_id, uint32_t ttl) {
     DEBUG_ENTRY();
 
     uint32_t answers = 0;
     uint8_t* dst = reinterpret_cast<uint8_t*>(&s_records_data) + sizeof(struct network::dns::Header);
 
 #if defined(CONFIG_MDNS_DOMAIN_REVERSE)
-    if ((HostReply::kPtr & s_host_replies) == HostReply::kPtr)
-    {
-        if (s_is_legacy_query)
-        {
+    if ((HostReply::kPtr & s_host_replies) == HostReply::kPtr) {
+        if (s_is_legacy_query) {
             Domain domain;
             CreateReverseDomain(domain);
             dst = AddQuestion(dst, domain, network::dns::RRType::kPtr, false);
@@ -742,14 +659,12 @@ static void SendAnswerLocalIpAddress(uint16_t trans_action_id, uint32_t ttl)
     }
 #endif
 
-    if ((HostReply::kA & s_host_replies) == HostReply::kA)
-    {
+    if ((HostReply::kA & s_host_replies) == HostReply::kA) {
         answers++;
         dst += AddAnswerA(dst, ttl);
     }
 #if defined(CONFIG_MDNS_DOMAIN_REVERSE)
-    if ((HostReply::kPtr & s_host_replies) == HostReply::kPtr)
-    {
+    if ((HostReply::kPtr & s_host_replies) == HostReply::kPtr) {
         answers++;
         dst += AddAnswerHostv4Ptr(dst, ttl);
     }
@@ -775,33 +690,28 @@ static void SendAnswerLocalIpAddress(uint16_t trans_action_id, uint32_t ttl)
     DEBUG_EXIT();
 }
 
-static void SendMessage(mdns::ServiceRecord const& record, uint16_t transaction_id, uint32_t ttl)
-{
+static void SendMessage(mdns::ServiceRecord const& record, uint16_t transaction_id, uint32_t ttl) {
     DEBUG_ENTRY();
 
     uint32_t answers = 0;
     auto* dst = reinterpret_cast<uint8_t*>(&s_records_data) + sizeof(struct network::dns::Header);
 
-    if ((s_service_replies & ServiceReply::kTypePtr) == ServiceReply::kTypePtr)
-    {
+    if ((s_service_replies & ServiceReply::kTypePtr) == ServiceReply::kTypePtr) {
         answers++;
         dst += AddAnswerDnsdPtr(record, dst, ttl);
     }
 
-    if ((s_service_replies & ServiceReply::kNamePtr) == ServiceReply::kNamePtr)
-    {
+    if ((s_service_replies & ServiceReply::kNamePtr) == ServiceReply::kNamePtr) {
         answers++;
         dst += AddAnswerPtr(record, dst, ttl);
     }
 
-    if ((s_service_replies & ServiceReply::kSrv) == ServiceReply::kSrv)
-    {
+    if ((s_service_replies & ServiceReply::kSrv) == ServiceReply::kSrv) {
         answers++;
         dst += AddAnswerSrv(record, dst, ttl);
     }
 
-    if ((s_service_replies & ServiceReply::kTxt) == ServiceReply::kTxt)
-    {
+    if ((s_service_replies & ServiceReply::kTxt) == ServiceReply::kTxt) {
         answers++;
         dst += AddAnswerTxt(record, dst, ttl);
     }
@@ -824,8 +734,7 @@ static void SendMessage(mdns::ServiceRecord const& record, uint16_t transaction_
     DEBUG_EXIT();
 }
 
-void SendAnnouncement(uint32_t ttl)
-{
+void SendAnnouncement(uint32_t ttl) {
     DEBUG_ENTRY();
 
     s_n_remote_port = network::iana::Ports::kPortMdns; // FIXME Hack ;-)
@@ -833,10 +742,8 @@ void SendAnnouncement(uint32_t ttl)
 
     SendAnswerLocalIpAddress(0, ttl);
 
-    for (auto& record : s_service_records)
-    {
-        if (record.services < Services::kLastNotUsed)
-        {
+    for (auto& record : s_service_records) {
+        if (record.services < Services::kLastNotUsed) {
             s_service_replies = ServiceReply::kTypePtr | ServiceReply::kNamePtr | ServiceReply::kSrv | ServiceReply::kTxt;
             SendMessage(record, 0, ttl);
         }
@@ -845,20 +752,15 @@ void SendAnnouncement(uint32_t ttl)
     DEBUG_EXIT();
 }
 
-bool ServiceRecordAdd(const char* name, mdns::Services services, const char* text, uint16_t port)
-{
+bool ServiceRecordAdd(const char* name, mdns::Services services, const char* text, uint16_t port) {
     DEBUG_ENTRY();
     assert(services < mdns::Services::kLastNotUsed);
 
-    for (auto& record : s_service_records)
-    {
-        if (record.services == Services::kLastNotUsed)
-        {
-            if (name != nullptr)
-            {
+    for (auto& record : s_service_records) {
+        if (record.services == Services::kLastNotUsed) {
+            if (name != nullptr) {
                 const auto kLength = std::min(kLabelMaxlen, strlen(name));
-                if (kLength == 0)
-                {
+                if (kLength == 0) {
                     assert(0);
                     return false;
                 }
@@ -872,17 +774,13 @@ bool ServiceRecordAdd(const char* name, mdns::Services services, const char* tex
 
             record.services = services;
 
-            if (port == 0)
-            {
+            if (port == 0) {
                 record.port = __builtin_bswap16(kServices[static_cast<uint32_t>(services)].kPortDefault);
-            }
-            else
-            {
+            } else {
                 record.port = __builtin_bswap16(port);
             }
 
-            if (text != nullptr)
-            {
+            if (text != nullptr) {
                 const auto kLength = std::min(kTxtMaxlen, strlen(text));
                 record.text_content = new char[kLength];
 
@@ -911,24 +809,19 @@ bool ServiceRecordAdd(const char* name, mdns::Services services, const char* tex
     return false;
 }
 
-bool ServiceRecordDelete(mdns::Services service)
-{
+bool ServiceRecordDelete(mdns::Services service) {
     DEBUG_ENTRY();
     assert(service < mdns::Services::kLastNotUsed);
 
-    for (auto& record : s_service_records)
-    {
-        if (record.services == service)
-        {
+    for (auto& record : s_service_records) {
+        if (record.services == service) {
             SendMessage(record, 0, 0);
 
-            if (record.name != nullptr)
-            {
+            if (record.name != nullptr) {
                 delete[] record.name;
             }
 
-            if (record.text_content != nullptr)
-            {
+            if (record.text_content != nullptr) {
                 delete[] record.text_content;
             }
 
@@ -941,8 +834,7 @@ bool ServiceRecordDelete(mdns::Services service)
     return false;
 }
 
-static void HandleQuestions(uint32_t questions)
-{
+static void HandleQuestions(uint32_t questions) {
     DEBUG_ENTRY();
     DEBUG_PRINTF("questions=%u", questions);
 
@@ -954,13 +846,11 @@ static void HandleQuestions(uint32_t questions)
 
     uint32_t offset = sizeof(struct network::dns::Header);
 
-    for (uint32_t i = 0; i < questions; i++)
-    {
+    for (uint32_t i = 0; i < questions; i++) {
         Domain resource_domain;
 
         auto* result = GetDomainName(s_p_receive_buffer, &s_p_receive_buffer[offset], &s_p_receive_buffer[s_n_bytes_received], resource_domain.a_name);
-        if (result == nullptr)
-        {
+        if (result == nullptr) {
             DEBUG_EXIT();
             return;
         }
@@ -979,8 +869,7 @@ static void HandleQuestions(uint32_t questions)
         printf(" ==> Type : %d, Class: %d\n", static_cast<int>(kType), static_cast<int>(kClass));
 #endif
 
-        if ((kClass != network::dns::RRClass::kInternet) && (kClass != network::dns::RRClass::kAny))
-        {
+        if ((kClass != network::dns::RRClass::kInternet) && (kClass != network::dns::RRClass::kAny)) {
             continue;
         }
 
@@ -990,34 +879,28 @@ static void HandleQuestions(uint32_t questions)
 
         Domain domain_host;
 
-        if ((kType == network::dns::RRType::kA) || (kType == network::dns::RRType::kAll))
-        {
+        if ((kType == network::dns::RRType::kA) || (kType == network::dns::RRType::kAll)) {
             DEBUG_PUTS("");
             CreateHostDomain(domain_host);
 
-            if (domain_host == resource_domain)
-            {
+            if (domain_host == resource_domain) {
                 s_host_replies = s_host_replies | HostReply::kA;
             }
         }
 
 #if defined(CONFIG_MDNS_DOMAIN_REVERSE)
-        if (kType == network::dns::RRType::kPtr || kType == network::dns::RRType::kAll)
-        {
+        if (kType == network::dns::RRType::kPtr || kType == network::dns::RRType::kAll) {
             DEBUG_PUTS("");
             CreateReverseDomain(domain_host);
 
-            if (domain_host == resource_domain)
-            {
+            if (domain_host == resource_domain) {
                 s_host_replies = s_host_replies | HostReply::kPtr;
             }
         }
 #endif
 
-        for (auto& record : s_service_records)
-        {
-            if (record.services < Services::kLastNotUsed)
-            {
+        for (auto& record : s_service_records) {
+            if (record.services < Services::kLastNotUsed) {
                 /*
                  * Check service
                  */
@@ -1025,17 +908,14 @@ static void HandleQuestions(uint32_t questions)
                 s_service_replies = 0;
                 Domain service_domain;
 
-                if (kType == network::dns::RRType::kPtr || kType == network::dns::RRType::kAll)
-                {
-                    if (kDomainDnssd == resource_domain)
-                    {
+                if (kType == network::dns::RRType::kPtr || kType == network::dns::RRType::kAll) {
+                    if (kDomainDnssd == resource_domain) {
                         s_service_replies = s_service_replies | ServiceReply::kTypePtr;
                     }
 
                     CreateServiceDomain(service_domain, record, false);
 
-                    if (service_domain == resource_domain)
-                    {
+                    if (service_domain == resource_domain) {
                         s_service_replies = s_service_replies | ServiceReply::kNamePtr;
                         s_service_replies = s_service_replies | ServiceReply::kSrv;
                         s_service_replies = s_service_replies | ServiceReply::kTxt;
@@ -1044,29 +924,24 @@ static void HandleQuestions(uint32_t questions)
 
                 CreateServiceDomain(service_domain, record, true);
 
-                if (service_domain == resource_domain)
-                {
-                    if ((kType == network::dns::RRType::kSrv) || (kType == network::dns::RRType::kAll))
-                    {
+                if (service_domain == resource_domain) {
+                    if ((kType == network::dns::RRType::kSrv) || (kType == network::dns::RRType::kAll)) {
                         s_service_replies = s_service_replies | ServiceReply::kSrv;
                     }
 
-                    if ((kType == network::dns::RRType::kTxt) || (kType == network::dns::RRType::kAll))
-                    {
+                    if ((kType == network::dns::RRType::kTxt) || (kType == network::dns::RRType::kAll)) {
                         s_service_replies = s_service_replies | ServiceReply::kTxt;
                     }
                 }
 
-                if (s_service_replies != 0)
-                {
+                if (s_service_replies != 0) {
                     SendMessage(record, kTransactionID, kMdnsResponseTtl);
                 }
             }
         }
     }
 
-    if (s_host_replies != 0)
-    {
+    if (s_host_replies != 0) {
         DEBUG_PUTS("");
         SendAnswerLocalIpAddress(kTransactionID, kMdnsResponseTtl);
     }
@@ -1074,8 +949,7 @@ static void HandleQuestions(uint32_t questions)
     DEBUG_EXIT();
 }
 
-static void Input(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port)
-{
+static void Input(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port) {
     s_p_receive_buffer = const_cast<uint8_t*>(buffer);
     s_n_bytes_received = size;
     s_n_remote_ip = from_ip;
@@ -1084,20 +958,17 @@ static void Input(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16
     const auto* const kHeader = reinterpret_cast<network::dns::Header*>(s_p_receive_buffer);
     const auto kFlag1 = kHeader->flag1;
 
-    if ((kFlag1 >> 3) & 0xF)
-    {
+    if ((kFlag1 >> 3) & 0xF) {
         return;
     }
 
     HandleQuestions(static_cast<uint32_t>(__builtin_bswap16(kHeader->query_count)));
 }
 
-void Init()
-{
+void Init() {
     DEBUG_ENTRY();
 
-    for (auto& record : s_service_records)
-    {
+    for (auto& record : s_service_records) {
         record.services = Services::kLastNotUsed;
     }
 

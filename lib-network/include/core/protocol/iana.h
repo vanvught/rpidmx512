@@ -36,6 +36,7 @@ struct Ports {
     static constexpr uint16_t kPortHttp = 80;
     static constexpr uint16_t kPortNtp = 123;
     static constexpr uint16_t kPortMdns = 5353;
+	static constexpr uint16_t kPortHttpAlt = 8080;
 };
 } // namespace network::iana
 

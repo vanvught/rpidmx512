@@ -40,13 +40,28 @@
 #include "../../lib-network/config/net_config.h"
 #include "firmware/debug/debug_debug.h"
 
+namespace httpd {
+inline constexpr auto kPort =
+#if defined(LINUX)
+    network::iana::Ports::kPortHttpAlt;
+#else
+    network::iana::Ports::kPortHttp;
+#endif
+inline constexpr auto kService =
+#if defined(LINUX)
+    network::apps::mdns::Services::kHttpAlt;
+#else
+    network::apps::mdns::Services::kHttp;
+#endif
+} // namespace httpd
+
 class HttpDaemon {
    public:
     HttpDaemon() {
         DEBUG_ENTRY();
         assert(is_listening_ == false);
 
-        is_listening_ = network::tcp::Listen(network::iana::Ports::kPortHttp, Data);
+        is_listening_ = network::tcp::Listen(httpd::kPort, Data);
         assert(is_listening_ == true);
 
         // IMPORTANT:
@@ -58,7 +73,7 @@ class HttpDaemon {
             new (&s_handle_request[i]) HttpDeamonHandleRequest(i);
         }
 
-        network::apps::mdns::ServiceRecordAdd(nullptr, network::apps::mdns::Services::kHttp);
+        network::apps::mdns::ServiceRecordAdd(nullptr, httpd::kService);
 
         DEBUG_EXIT();
     }

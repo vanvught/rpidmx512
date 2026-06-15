@@ -31,7 +31,19 @@
 namespace network::apps::mdns {
 static constexpr uint32_t kMdnsResponseTtl = 3600; ///< (in seconds)
 
-enum class Services { kConfig, kTftp, kHttp, kRdmnetLlrp, kNtp, kMidi, kOsc, kDdp, kPp, kLastNotUsed };
+enum class Services { 
+	kConfig, 
+	kTftp, 
+	kHttp, 
+	kHttpAlt, 
+	kRdmnetLlrp, 
+	kNtp, 
+	kMidi, 
+	kOsc, 
+	kDdp, 
+	kPp, 
+	kLastNotUsed 
+};
 
 struct ServiceRecord {
     char* name;
