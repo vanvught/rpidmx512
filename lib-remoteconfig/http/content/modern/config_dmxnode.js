@@ -45,7 +45,7 @@ window.dmxnode = {
             </form>
         `;
 
-        const portsContainer = card.querySelector(".ports-container");
+        const portsContainer = div.querySelector(".ports-container");
 
         for (let i = 0; i < suffixes.length; i++) {
             const suffix = suffixes[i];

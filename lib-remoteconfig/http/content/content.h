@@ -154,7 +154,7 @@ inline constexpr struct FilesContent kHttpContent[] = {
 	{ 2057353734,"time_index.html", time_index_html_gz, 520, static_cast<http::ContentTypes>(0), true },
 #endif // !defined (CONFIG_HTTP_HTML_NO_TIME)
 #if defined (DMXNODE_PORTS)
-	{ 3906326706,"config_dmxnode.js", config_dmxnode_js_gz, 1014, static_cast<http::ContentTypes>(2), true },
+	{ 3906326706,"config_dmxnode.js", config_dmxnode_js_gz, 1013, static_cast<http::ContentTypes>(2), true },
 #endif // (DMXNODE_PORTS)
 #if !defined (CONFIG_HTTP_HTML_NO_RDM) && (defined (RDM_CONTROLLER) || defined (RDM_RESPONDER))
 	{ 1557939568,"config_rdmdevice.js", config_rdmdevice_js_gz, 433, static_cast<http::ContentTypes>(2), true },
