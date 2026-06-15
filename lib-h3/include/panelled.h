@@ -1,6 +1,6 @@
 /**
  * @file panelled.h
- *
+ * @brief H2+/H3
  */
 /* Copyright (C) 2021-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
