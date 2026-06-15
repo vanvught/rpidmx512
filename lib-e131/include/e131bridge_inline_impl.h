@@ -59,7 +59,7 @@ inline const char* E131Bridge::GetLongName() {
 
 inline void E131Bridge::SetShortName(uint32_t port_index, const char* name) {
     DmxNode::Instance().SetShortName(port_index, name);
-};
+}
 
 inline const char* E131Bridge::GetShortName(uint32_t port_index) const {
     return DmxNode::Instance().GetPortName(port_index);
