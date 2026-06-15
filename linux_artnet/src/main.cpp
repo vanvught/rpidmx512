@@ -25,9 +25,12 @@
 
 #include <signal.h>
 
+#include "displayudf.h"
 #include "hal.h"
 #include "network.h"
-#include "display.h"
+#include "displayudf.h"
+#include "json/displayudfparams.h"
+#include "json/dmxsendparams.h"
 #include "json/dmxnodenode.h"
 #include "dmxnodemsgconst.h"
 #include "artnetrdmresponder.h"
@@ -45,23 +48,22 @@
 
 static bool keep_running = true;
 
-void IntHandler(int)
-{
+void IntHandler(int) {
     keep_running = false;
 }
 
-int main(int argc, char** argv) //NOLINT
+int main(int argc, char** argv) // NOLINT
 {
     struct sigaction act;
     act.sa_handler = IntHandler;
     sigaction(SIGINT, &act, nullptr);
     hal::Init();
-    Display display;
+    DisplayUdf display;
     ConfigStore config_store;
     Network nw(argc, argv);
     FirmwareVersion fw(kSoftwareVersion, __DATE__, __TIME__);
 
-    hal::print();
+    board::Print();
     fw.Print();
     nw.Print();
 
@@ -88,12 +90,22 @@ int main(int argc, char** argv) //NOLINT
     showfile.Print();
 #endif
 
+    display.SetTitle("Art-Net 4 %s", dmx_node_node.GetRdm() ? "RDM" : "DMX/RDM");
+    display.Set(2, displayudf::Labels::kIp);
+    display.Set(3, displayudf::Labels::kVersion);
+    display.Set(4, displayudf::Labels::kHostname);
+	display.Set(5, displayudf::Labels::kBoardname);
+	display.Set(6, displayudf::Labels::kIp);
+
+    json::DisplayUdfParams displayudf_params;
+    displayudf_params.Load();
+    displayudf_params.SetAndShow();
+
     RemoteConfig remote_config(remoteconfig::Output::MONITOR, dmx_node_node.GetActiveOutputPorts());
 
     dmx_node_node.Start();
 
-    while (keep_running)
-    {
+    while (keep_running) {
         network::Run();
         dmx_node_node.Run();
 #if defined(NODE_SHOWFILE)

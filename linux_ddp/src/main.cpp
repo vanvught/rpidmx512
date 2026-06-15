@@ -57,7 +57,7 @@ int main(int argc, char** argv) // NOLINT
     Network nw(argc, argv);
     FirmwareVersion fw(kSoftwareVersion, __DATE__, __TIME__);
 
-    hal::print();
+    board::Print();
     fw.Print();
     nw.Print();
 

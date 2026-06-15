@@ -1,0 +1,5 @@
+{
+	"dmx_start_address": 1,
+	"dmx_max_channels": 32,
+	"format": "hex"
+}

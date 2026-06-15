@@ -1,0 +1,10 @@
+{
+	"universe_port_a": 1,
+	"direction_port_a": "output",
+	"universe_port_b": 2,
+	"direction_port_b": "output",
+	"universe_port_c": 3,
+	"direction_port_c": "output",
+	"universe_port_d": 4,
+	"direction_port_d": "output"
+}
