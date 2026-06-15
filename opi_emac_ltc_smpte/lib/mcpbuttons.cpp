@@ -30,7 +30,7 @@
 #include "display.h"
 #include "ltcdisplaymax7219.h"
 #include "rotaryencoder.h"
-#include "hal_gpio.h"
+#include "gpio.h"
 #include "timing.h"
 #include "mcp23x17.h"
 #include "displayedittimecode.h"
@@ -96,8 +96,8 @@ bool McpButtons::Check() {
 
     UpdateDisplays(source_);
 
-    FUNC_PREFIX(GpioFsel(gpio::kInta, GPIO_FSEL_INPUT));
-    FUNC_PREFIX(GpioSetPud(gpio::kInta, GPIO_PULL_UP));
+    gpio::Fsel(gpio::kInta, GPIO_FSEL_INPUT);
+    gpio::SetPud(gpio::kInta, gpio::Pull::kUp);
 
     DEBUG_EXIT();
     return true;
@@ -126,7 +126,7 @@ bool McpButtons::Wait(ltc::Source& source, struct ltc::TimeCode& start_timecode,
         return false;
     }
 
-    if (__builtin_expect(FUNC_PREFIX(GpioLev(gpio::kInta)) == 0, 0)) {
+    if (__builtin_expect(gpio::Lev(gpio::kInta) == 0, 0)) {
         led_ticker_max_ = UINT32_MAX;
 
         const auto kPortA = i2c_.ReadRegister(mcp23x17::REG_GPIOA, false);
@@ -227,7 +227,7 @@ void McpButtons::Run() {
         return;
     }
 
-    if (__builtin_expect(FUNC_PREFIX(GpioLev(gpio::kInta)) == 0, 0)) {
+    if (__builtin_expect(gpio::Lev(gpio::kInta) == 0, 0)) {
         const auto nPortA = i2c_.ReadRegister(mcp23x17::REG_GPIOA, true);
         const uint8_t nButtonsChanged = (nPortA ^ port_a_previous_) & nPortA;
 

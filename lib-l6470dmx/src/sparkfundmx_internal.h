@@ -27,7 +27,7 @@
 #define SPARKFUNDMX_INTERNAL_H_
 
 #include "spi.h"
-#include "hal_gpio.h"
+#include "gpio.h"
 
 #define GPIO_BUSY_IN GPIO_EXT_11
 #define GPIO_RESET_OUT GPIO_EXT_13

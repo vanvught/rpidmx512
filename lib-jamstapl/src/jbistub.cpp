@@ -23,12 +23,13 @@
  * THE SOFTWARE.
  */
 
+#include <cstdint>
 #include <cstdlib>
 #include <cstdio>
 
 #include "jbiport.h"
 #include "jamstapl.h"
-#include "hal_gpio.h"
+#include "gpio.h"
 #include "timing.h"
 
 namespace uart0 {
@@ -68,33 +69,33 @@ void jbi_jtag_io_init(JamSTAPL* pJamSTAPL, bool bVerbose) {
     s_pJamSTAPL = pJamSTAPL;
     s_bVerbose = bVerbose;
 
-    FUNC_PREFIX(GpioFsel(GPIO_TDO, GPIO_FSEL_INPUT));
-    FUNC_PREFIX(GpioFsel(GPIO_TDI, GPIO_FSEL_OUTPUT));
-    FUNC_PREFIX(GpioFsel(GPIO_TCK, GPIO_FSEL_OUTPUT));
-    FUNC_PREFIX(GpioFsel(GPIO_TMS, GPIO_FSEL_OUTPUT));
+    gpio::Fsel(GPIO_TDO, GPIO_FSEL_INPUT);
+    gpio::Fsel(GPIO_TDI, GPIO_FSEL_OUTPUT);
+    gpio::Fsel(GPIO_TCK, GPIO_FSEL_OUTPUT);
+    gpio::Fsel(GPIO_TMS, GPIO_FSEL_OUTPUT);
 }
 
 int jbi_jtag_io(int tms, int tdi, int read_tdo) {
     int tdo = 0;
 
     if (tdi) {
-        FUNC_PREFIX(GpioSet(GPIO_TDI));
+        gpio::Set(GPIO_TDI);
     } else {
-        FUNC_PREFIX(GpioClr(GPIO_TDI));
+        gpio::Clr(GPIO_TDI);
     }
 
     if (tms) {
-        FUNC_PREFIX(GpioSet(GPIO_TMS));
+        gpio::Set(GPIO_TMS);
     } else {
-        FUNC_PREFIX(GpioClr(GPIO_TMS));
+        gpio::Clr(GPIO_TMS);
     }
 
     if (read_tdo) {
-        tdo = FUNC_PREFIX(GpioLev(GPIO_TDO));
+        tdo = gpio::Lev(GPIO_TDO);
     }
 
-    FUNC_PREFIX(GpioSet(GPIO_TCK));
-    FUNC_PREFIX(GpioClr(GPIO_TCK));
+    gpio::Set(GPIO_TCK);
+    gpio::Clr(GPIO_TCK);
 
     return tdo;
 }
@@ -127,7 +128,7 @@ void jbi_export_integer(char* key, long value) {
 #define HEX_LINE_CHARS 72
 #define HEX_LINE_BITS (HEX_LINE_CHARS * 4)
 
-static char ConvToHex(unsigned long value) {
+static char ConvToHex(uint32_t value) {
     char c;
 
     if (value > 9) {
@@ -139,10 +140,10 @@ static char ConvToHex(unsigned long value) {
     return c;
 }
 
-void jbi_export_boolean_array(char* key, unsigned char* data, long count) {
+void jbi_export_boolean_array(char* key, unsigned char* data, int32_t count) {
     char string[HEX_LINE_CHARS + 1];
-    long i, offset;
-    unsigned long size, line, lines, linebits, value, j, k;
+    int32_t i, offset;
+    uint32_t size, line, lines, linebits, value, j, k;
 
     if (s_bVerbose) {
         if (count > HEX_LINE_BITS) {

@@ -29,40 +29,36 @@
 #include <cstdint>
 
 #include "spi/paint.h"
-#include "spi/spilcd.h"
-#include "hal_gpio.h"
- #include "firmware/debug/debug_debug.h"
+#include "gpio.h"
+#include "firmware/debug/debug_debug.h"
 
-namespace st77xx
-{
-namespace cmd
-{
+namespace st77xx {
+namespace cmd {
 inline constexpr uint8_t kNop = 0x00;
 inline constexpr uint8_t kSwreset = 0x01; ///< Software Reset
 inline constexpr uint8_t kRddid = 0x04;   ///< Read Display ID
 inline constexpr uint8_t kRddst = 0x09;   ///< Read Display Status
-inline constexpr uint8_t kSlpin = 0x10;    ///< Sleep In
-inline constexpr uint8_t kSlpout = 0x11;   ///< Sleep Out
-inline constexpr uint8_t kPtlon = 0x12;    ///< Partial Display Mode On
-inline constexpr uint8_t kNoron = 0x13;    ///< Normal Display Mode On
-inline constexpr uint8_t kInvoff = 0x20;   ///< Display Inversion Off
-inline constexpr uint8_t kInvon = 0x21;    ///< Display Inversion On
-inline constexpr uint8_t kGamset = 0x26;   ///< Gamma Set
-inline constexpr uint8_t kDispoff = 0x28;  ///< Display Offs
-inline constexpr uint8_t kDispon = 0x29;   ///< Display On
+inline constexpr uint8_t kSlpin = 0x10;   ///< Sleep In
+inline constexpr uint8_t kSlpout = 0x11;  ///< Sleep Out
+inline constexpr uint8_t kPtlon = 0x12;   ///< Partial Display Mode On
+inline constexpr uint8_t kNoron = 0x13;   ///< Normal Display Mode On
+inline constexpr uint8_t kInvoff = 0x20;  ///< Display Inversion Off
+inline constexpr uint8_t kInvon = 0x21;   ///< Display Inversion On
+inline constexpr uint8_t kGamset = 0x26;  ///< Gamma Set
+inline constexpr uint8_t kDispoff = 0x28; ///< Display Offs
+inline constexpr uint8_t kDispon = 0x29;  ///< Display On
 inline constexpr uint8_t kCaSet = 0x2A;   ///< Column Address Set
-inline constexpr uint8_t kRaset = 0x2B;    ///< Row Address Set
-inline constexpr uint8_t kRamwr = 0x2C;    ///< Memory Write
-inline constexpr uint8_t kRamrd = 0x2E;    ///< Memory Read
-inline constexpr uint8_t kPtlar = 0x30;    ///< Partial Area
+inline constexpr uint8_t kRaset = 0x2B;   ///< Row Address Set
+inline constexpr uint8_t kRamwr = 0x2C;   ///< Memory Write
+inline constexpr uint8_t kRamrd = 0x2E;   ///< Memory Read
+inline constexpr uint8_t kPtlar = 0x30;   ///< Partial Area
 inline constexpr uint8_t kTeoff = 0x34;   ///< Tearing Effect Line OFF
 inline constexpr uint8_t kTeon = 0x35;    ///< Tearing Effect Line ON .
 inline constexpr uint8_t kMadctl = 0x36;  ///< Memory Data Access Control.
 inline constexpr uint8_t kIdmoff = 0x38;  ///< Idle Mode Off .
 inline constexpr uint8_t kColmod = 0x3A;  ///< Interface Pixel Format
 } // namespace cmd
-namespace data
-{
+namespace data {
 /**
  * Memory Data Access Control Register (0x36H)
  * MAP:     D7  D6  D5  D4  D3  D2  D1  D0
@@ -82,8 +78,7 @@ inline constexpr uint8_t kMadctlRgb = 0x00;
 inline constexpr uint8_t kMadctlBgr = 0x08;
 } // namespace data
 
-namespace colour
-{
+namespace colour {
 inline constexpr uint16_t kBlack = 0x0000;
 inline constexpr uint16_t kBlue = 0x001F;
 inline constexpr uint16_t kCyan = 0x07FF;
@@ -99,11 +94,9 @@ inline constexpr uint16_t kYellow = 0xFFE0;
 
 } // namespace st77xx
 
-class ST77XX : public Paint
-{
+class ST77XX : public Paint {
    public:
-    explicit ST77XX(uint32_t cs) : Paint(cs)
-    {
+    explicit ST77XX(uint32_t cs) : Paint(cs) {
         DEBUG_ENTRY();
         DEBUG_EXIT();
     }
@@ -114,10 +107,9 @@ class ST77XX : public Paint
 
     void EnableSleep(bool enable) { WriteCommand(enable ? st77xx::cmd::kSlpin : st77xx::cmd::kSlpout); }
 
-    void SetBackLight(uint32_t value) { FUNC_PREFIX(GpioWrite(SPI_LCD_BL_GPIO, value == 0 ? 0 : 1)); }
+    void SetBackLight(uint32_t value) { gpio::Write(SPI_LCD_BL_GPIO, value == 0 ? 0 : 1); }
 
-    void SetAddressWindow(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1) override
-    {
+    void SetAddressWindow(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1) override {
         const auto kStartX = x0 + shift_x_;
         const auto kEndX = x1 + shift_x_;
         const auto kStartY = y0 + shift_y_;
@@ -143,4 +135,4 @@ class ST77XX : public Paint
     uint32_t shift_y_{0};
 };
 
-#endif  // SPI_ST77XX_H_
+#endif // SPI_ST77XX_H_

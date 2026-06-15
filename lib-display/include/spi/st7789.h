@@ -31,12 +31,10 @@
 
 #include "spi/config.h"
 #include "spi/st77xx.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
-namespace st7789
-{
-namespace cmd
-{
+namespace st7789 {
+namespace cmd {
 inline constexpr uint8_t kGctrl = 0xB7;    ///< Gate Control
 inline constexpr uint8_t kVcoms = 0xBB;    ///< VCOM Setting
 inline constexpr uint8_t kLcmctrl = 0xC0;  ///< LCM Control
@@ -67,16 +65,13 @@ inline constexpr uint32_t kRotation3ShiftY = 0;
 #endif
 } // namespace st7789
 
-class ST7789 : public ST77XX
-{
+class ST7789 : public ST77XX {
    public:
-    explicit ST7789(uint32_t cs) : ST77XX(cs)
-    {
+    explicit ST7789(uint32_t cs) : ST77XX(cs) {
         DEBUG_ENTRY();
 
 #if defined(SPI_LCD_RST_GPIO)
-        if (s_instance == 0)
-        {
+        if (s_instance == 0) {
             HardwareReset();
         }
         s_instance++;
@@ -120,8 +115,7 @@ class ST7789 : public ST77XX
 
         uint32_t arg_length = 0;
 
-        for (uint32_t i = 0; i < sizeof(kConfig); i += (arg_length + 2))
-        {
+        for (uint32_t i = 0; i < sizeof(kConfig); i += (arg_length + 2)) {
             arg_length = kConfig[i];
             DEBUG_PRINTF("i=%u, arg_length=%u", i, arg_length);
             WriteCommand(&kConfig[i + 1], arg_length);
@@ -135,14 +129,15 @@ class ST7789 : public ST77XX
         DEBUG_EXIT();
     }
 
-    ~ST7789() override { DEBUG_ENTRY(); DEBUG_EXIT(); };
+    ~ST7789() override {
+        DEBUG_ENTRY();
+        DEBUG_EXIT();
+    };
 
-    void SetRotation(uint32_t rotation)
-    {
+    void SetRotation(uint32_t rotation) {
         WriteCommand(st77xx::cmd::kMadctl);
 
-        switch (rotation)
-        {
+        switch (rotation) {
             case 0:
                 WriteDataByte(st77xx::data::kMadctlMx | st77xx::data::kMadctlMy | st77xx::data::kMadctlRgb);
                 shift_x_ = st7789::kRotation0ShiftX;
@@ -186,4 +181,4 @@ class ST7789 : public ST77XX
 #endif
 };
 
-#endif  // SPI_ST7789_H_
+#endif // SPI_ST7789_H_

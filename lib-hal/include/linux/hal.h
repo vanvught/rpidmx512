@@ -2,7 +2,7 @@
  * @file hal.h
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,43 +27,30 @@
 #define LINUX_HAL_H_
 
 #include <cstdint>
-#include <time.h>
 
 #include "superloop/softwaretimers.h"
 
- #include "firmware/debug/debug_debug.h"
+enum class Board { TYPE_LINUX, TYPE_RASPBIAN, TYPE_ODROID, TYPE_OSX, TYPE_UNKNOWN };
 
-enum class Board
-{
-    TYPE_LINUX,
-    TYPE_RASPBIAN,
-    TYPE_OSX,
-    TYPE_UNKNOWN
-};
-
-Board linux_board_type();
-void linux_print();
 float linux_CoreTemperatureCurrent();
 uint32_t linux_micros();
 uint32_t linux_millis();
 bool linux_reboot();
 
-namespace hal
-{
+namespace board {
+void Init();
+void Print();
+} // namespace board
+
+namespace hal {
 static constexpr uint32_t kReleaseId = 0;
 static constexpr const char kWebsite[] = "www.gd32-dmx.org";
 static constexpr float kCoreTemperatureMin = -40.0;
 static constexpr float kCoreTemperatureMax = +90.0;
 
-inline void print()
-{
-    linux_print();
-}
-
-inline void Run()
-{
+inline void Run() {
     SoftwareTimerRun();
 }
 } // namespace hal
 
-#endif  // LINUX_HAL_H_
+#endif // LINUX_HAL_H_

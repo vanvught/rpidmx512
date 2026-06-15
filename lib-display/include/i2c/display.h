@@ -50,7 +50,7 @@
 #include "displayset.h"
 #include "ansi_colour.h"
 #if defined(DISPLAYTIMEOUT_GPIO)
-#include "hal_gpio.h"
+#include "gpio.h"
 #endif
 
 namespace display {
@@ -303,7 +303,7 @@ class Display {
 
         if (is_sleep_) {
 #if defined(DISPLAYTIMEOUT_GPIO)
-            if (__builtin_expect(((FUNC_PREFIX(GpioLev(DISPLAYTIMEOUT_GPIO)) == 0)), 0)) {
+            if (__builtin_expect(((gpio::Lev(DISPLAYTIMEOUT_GPIO) == 0)), 0)) {
                 SetSleep(false);
             }
 #endif

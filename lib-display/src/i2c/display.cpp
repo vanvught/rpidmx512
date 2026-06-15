@@ -2,7 +2,7 @@
  * @file display.cpp
  *
  */
-/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2017-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,15 +40,15 @@
 #include "i2c/hd44780.h"
 #endif
 #include "i2c.h"
-#include "hal_gpio.h"
+#include "gpio.h"
 #include "firmware/debug/debug_debug.h"
 
 namespace display::timeout {
 void irq_init();
 static void GpioInit() {
 #if defined(DISPLAYTIMEOUT_GPIO)
-    FUNC_PREFIX(GpioFsel(DISPLAYTIMEOUT_GPIO, GPIO_FSEL_INPUT));
-    FUNC_PREFIX(GpioSetPud(DISPLAYTIMEOUT_GPIO, GPIO_PULL_UP));
+    gpio::Fsel(DISPLAYTIMEOUT_GPIO, GPIO_FSEL_INPUT);
+    gpio::SetPud(DISPLAYTIMEOUT_GPIO, gpio::Pull::kUp);
     irq_init();
 #endif
 }

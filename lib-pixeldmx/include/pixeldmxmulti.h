@@ -47,7 +47,7 @@
 #include "pixeldmxconfiguration.h"
 #include "logic_analyzer.h"
 #if defined(PIXELDMXSTARTSTOP_GPIO)
-#include "hal_gpio.h"
+#include "gpio.h"
 #endif
 #include "firmware/debug/debug_debug.h"
 
@@ -72,8 +72,8 @@ class PixelDmxMulti final : public PixelDmxConfiguration
         ApplyConfiguration();
 
 #if defined(PIXELDMXSTARTSTOP_GPIO)
-        FUNC_PREFIX(GpioFsel(PIXELDMXSTARTSTOP_GPIO, GPIO_FSEL_OUTPUT));
-        FUNC_PREFIX(GpioClr(PIXELDMXSTARTSTOP_GPIO));
+        gpio::Fsel(PIXELDMXSTARTSTOP_GPIO, GPIO_FSEL_OUTPUT);
+        gpio::Clr(PIXELDMXSTARTSTOP_GPIO);
 #endif
 
         DEBUG_EXIT();
@@ -118,7 +118,7 @@ class PixelDmxMulti final : public PixelDmxConfiguration
 #if defined(PIXELDMXSTARTSTOP_GPIO)
         if ((started_[0] != 0) || (started_[1] != 0))
         {
-            FUNC_PREFIX(GpioSet(PIXELDMXSTARTSTOP_GPIO));
+            gpio::Set(PIXELDMXSTARTSTOP_GPIO);
         }
 #endif
     }
@@ -146,7 +146,7 @@ class PixelDmxMulti final : public PixelDmxConfiguration
 #if defined(PIXELDMXSTARTSTOP_GPIO)
         if ((started_[0] == 0) && (started_[1] == 0))
         {
-            FUNC_PREFIX(GpioClr(PIXELDMXSTARTSTOP_GPIO));
+            gpio::Clr(PIXELDMXSTARTSTOP_GPIO);
         }
 #endif
     }

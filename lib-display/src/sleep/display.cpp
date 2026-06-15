@@ -33,26 +33,22 @@
 
 static TimerHandle_t s_timer_id = kTimerIdNone;
 
-static void SleepTimer([[maybe_unused]] TimerHandle_t handle)
-{
+static void SleepTimer([[maybe_unused]] TimerHandle_t handle) {
     Display::Get()->SetSleep(true);
     SoftwareTimerDelete(s_timer_id);
 }
 
-void Display::SetSleepTimer(bool active)
-{
+void Display::SetSleepTimer(bool active) {
     DEBUG_ENTRY();
     DEBUG_PRINTF("active=%d, sleep_timeout_=%u, s_timer_id=%d", active, sleep_timeout_, s_timer_id);
 
-    if (!active)
-    {
+    if (!active) {
         SoftwareTimerDelete(s_timer_id);
         DEBUG_EXIT();
         return;
     }
 
-    if (s_timer_id == kTimerIdNone)
-    {
+    if (s_timer_id == kTimerIdNone) {
         s_timer_id = SoftwareTimerAdd(sleep_timeout_, SleepTimer);
         DEBUG_EXIT();
         return;

@@ -30,7 +30,7 @@
 #include <cstdio>
 
 #include "spi.h"
-#include "hal_gpio.h"
+#include "gpio.h"
 #include "autodriver.h"
 #include "l6470constants.h"
 #include "firmware/debug/debug_debug.h"
@@ -82,7 +82,7 @@ int AutoDriver::busyCheck() {
             }
         }
         // By default, the BUSY pin is forced low when the device is performing a command
-        if (FUNC_PREFIX(GpioLev(busy_pin_)) == HIGH) {
+        if (gpio::Lev(busy_pin_) == HIGH) {
             busy_ = false;
             return 0;
         } else {

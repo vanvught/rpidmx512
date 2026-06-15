@@ -39,7 +39,7 @@
 #include "modestore.h"
 #include "hal_api.h"
 #include "spi.h"
-#include "hal_gpio.h"
+#include "gpio.h"
 #include "timing.h"
 
 #include "firmware/debug/debug_debug.h"
@@ -96,7 +96,6 @@ SparkFunDmx::~SparkFunDmx() {
     }
 
     DEBUG_EXIT();
-    ;
 }
 
 void SparkFunDmx::Start([[maybe_unused]] uint32_t port_index) {
@@ -110,12 +109,10 @@ void SparkFunDmx::Start([[maybe_unused]] uint32_t port_index) {
     }
 
     DEBUG_EXIT();
-    ;
 }
 
 void SparkFunDmx::Stop([[maybe_unused]] uint32_t port_index) {
     DEBUG_ENTRY();
-    ;
 
     for (uint32_t i = 0; i < common::store::l6470dmx::kMaxMotors; i++) {
         if (l6470dmx_modes_[i] != nullptr) {
@@ -124,12 +121,10 @@ void SparkFunDmx::Stop([[maybe_unused]] uint32_t port_index) {
     }
 
     DEBUG_EXIT();
-    ;
 }
 
 void SparkFunDmx::ReadConfigFiles() {
     DEBUG_ENTRY();
-    ;
 #if !defined(H3)
     m_bIsGlobalSpiCsSet = false;
 #else
@@ -144,18 +139,18 @@ void SparkFunDmx::ReadConfigFiles() {
     sparkfun_dmxparams.Set(this);
 
     if (m_bIsGlobalBusyPinSet) {
-        FUNC_PREFIX(GpioFsel(m_nGlobalBusyPin, GPIO_FSEL_INPUT));
+        gpio::Fsel(m_nGlobalBusyPin, GPIO_FSEL_INPUT);
     }
 
-    FUNC_PREFIX(GpioFsel(m_nGlobalResetPin, GPIO_FSEL_OUTPUT));
-    FUNC_PREFIX(GpioSet(m_nGlobalResetPin));
+    gpio::Fsel(m_nGlobalResetPin, GPIO_FSEL_OUTPUT);
+    gpio::Set(m_nGlobalResetPin);
 
-    FUNC_PREFIX(GpioClr(m_nGlobalResetPin));
+    gpio::Clr(m_nGlobalResetPin);
     timing::DelayUs(10000);
-    FUNC_PREFIX(GpioSet(m_nGlobalResetPin));
+    gpio::Set(m_nGlobalResetPin);
     timing::DelayUs(10000);
 
-    FUNC_PREFIX(SpiBegin());
+    spi::Begin();
 
     for (uint32_t i = 0; i < common::store::l6470dmx::kMaxMotors; i++) {
         printf("SparkFun motor%d.txt:\n", i);
@@ -313,7 +308,6 @@ template <bool doUpdate> void SparkFunDmx::SetData(uint32_t port_index, const ui
 
 void SparkFunDmx::SetDataImpl([[maybe_unused]] uint32_t port_index, const uint8_t* data, uint32_t length) {
     DEBUG_ENTRY();
-    ;
     assert(pData != nullptr);
     assert(length <= dmxnode::kUniverseSize);
 
@@ -348,7 +342,6 @@ void SparkFunDmx::SetDataImpl([[maybe_unused]] uint32_t port_index, const uint8_
     }
 
     DEBUG_EXIT();
-    ;
 }
 
 void SparkFunDmx::Sync([[maybe_unused]] uint32_t port_index) {
@@ -361,7 +354,6 @@ void SparkFunDmx::Sync() {
 
 bool SparkFunDmx::SetDmxStartAddress(uint16_t dmx_start_address) {
     DEBUG_ENTRY();
-    ;
 
     if (dmx_start_address == 0) {
         return false;
@@ -386,13 +378,11 @@ bool SparkFunDmx::SetDmxStartAddress(uint16_t dmx_start_address) {
     dmx_start_address_ = dmx_start_address;
 
     DEBUG_EXIT();
-    ;
     return true;
 }
 
 bool SparkFunDmx::GetSlotInfo(uint16_t slot_offset, dmxnode::SlotInfo& slot_info) {
     DEBUG_ENTRY();
-    ;
 
     if (slot_offset > dmx_footprint_) {
         DEBUG_EXIT();

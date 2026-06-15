@@ -60,7 +60,7 @@ using LcdDriver = ST7789;
 #include "spi/spilcd.h"
 #include "ansi_colour.h"
 #if defined(DISPLAYTIMEOUT_GPIO)
-#include "hal_gpio.h"
+#include "gpio.h"
 #endif
 
 #if defined(SPI_LCD_HAVE_CS_GPIO)
@@ -85,8 +85,8 @@ class Display : public LcdDriver {
         cols_ = (GetWidth() / s_pFONT->kWidth);
         rows_ = (GetHeight() / s_pFONT->kHeight);
 #if defined(DISPLAYTIMEOUT_GPIO)
-        FUNC_PREFIX(GpioFsel(DISPLAYTIMEOUT_GPIO, GPIO_FSEL_INPUT));
-        FUNC_PREFIX(GpioSetPud(DISPLAYTIMEOUT_GPIO, GPIO_PULL_UP));
+        gpio::Fsel(DISPLAYTIMEOUT_GPIO, GPIO_FSEL_INPUT);
+        gpio::SetPud(DISPLAYTIMEOUT_GPIO, gpio::Pull::kUp);
 #endif
 
         PrintInfo();
@@ -271,7 +271,7 @@ class Display : public LcdDriver {
 
         if (is_sleep_) {
 #if defined(DISPLAYTIMEOUT_GPIO)
-            if (__builtin_expect(((FUNC_PREFIX(GpioLev(DISPLAYTIMEOUT_GPIO)) == 0)), 0)) {
+            if (__builtin_expect(((gpio::Lev(DISPLAYTIMEOUT_GPIO) == 0)), 0)) {
                 SetSleep(false);
             }
 #endif

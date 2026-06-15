@@ -2,7 +2,7 @@
  * @file buttonsmcp.cpp
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2026 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@
 
 #include "buttonsmcp.h"
 #include "oscclient.h"
-#include "hal_gpio.h"
+#include "gpio.h"
 #include "i2c.h"
 #include "mcp23x17.h"
 
@@ -67,8 +67,8 @@ bool ButtonsMcp::Start() {
     i2c_.WriteRegister(mcp23x17::REG_IODIRB, static_cast<uint8_t>(0x00), false); // All output
     i2c_.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(0x00), false);  // All led's Off
 
-    FUNC_PREFIX(GpioFsel(gpio::kInterrupt, GPIO_FSEL_INPUT));
-    FUNC_PREFIX(GpioSetPud(gpio::kInterrupt, GPIO_PULL_UP));
+    gpio::Fsel(gpio::kInterrupt, GPIO_FSEL_INPUT);
+    gpio::SetPud(gpio::kInterrupt, gpio::Pull::kUp);
 
     buttons_count_ = 8;
 
@@ -83,7 +83,7 @@ void ButtonsMcp::Stop() {
 }
 
 void ButtonsMcp::Run() {
-    if (__builtin_expect(FUNC_PREFIX(GpioLev(gpio::kInterrupt)) == LOW, 0)) {
+    if (__builtin_expect(gpio::Lev(gpio::kInterrupt) == LOW, 0)) {
         const auto buttons = i2c_.ReadRegister(mcp23x17::REG_GPIOA, true);
         const uint8_t buttons_changed = (buttons ^ buttons_previous_) & buttons;
 

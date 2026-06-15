@@ -29,7 +29,7 @@
 #include "timing.h"
 #include "spi/config.h"
 #include "spi.h"
-#include "hal_gpio.h"
+#include "gpio.h"
 #include "firmware/debug/debug_debug.h"
 
 class SpiLcd {
@@ -44,12 +44,12 @@ class SpiLcd {
         spi::SetDataMode(spi::kMode0);
 
 #if defined(SPI_LCD_RST_GPIO)
-        FUNC_PREFIX(GpioFsel(SPI_LCD_RST_GPIO, GPIO_FSEL_OUTPUT));
+        gpio::Fsel(SPI_LCD_RST_GPIO, GPIO_FSEL_OUTPUT);
 #endif
-        FUNC_PREFIX(GpioFsel(SPI_LCD_DC_GPIO, GPIO_FSEL_OUTPUT));
-        FUNC_PREFIX(GpioFsel(SPI_LCD_BL_GPIO, GPIO_FSEL_OUTPUT));
+        gpio::Fsel(SPI_LCD_DC_GPIO, GPIO_FSEL_OUTPUT);
+        gpio::Fsel(SPI_LCD_BL_GPIO, GPIO_FSEL_OUTPUT);
 #if defined(SPI_LCD_HAVE_CS_GPIO)
-        FUNC_PREFIX(GpioFsel(cs_, GPIO_FSEL_OUTPUT));
+        gpio::Fsel(cs_, GPIO_FSEL_OUTPUT);
 #endif
 
         DEBUG_EXIT();
@@ -58,28 +58,28 @@ class SpiLcd {
     void HardwareReset() {
 #if defined(SPI_LCD_RST_GPIO)
         timing::DelayUs(1000 * 200);
-        FUNC_PREFIX(GpioClr(SPI_LCD_RST_GPIO));
+        gpio::Clr(SPI_LCD_RST_GPIO);
         timing::DelayUs(1000 * 200);
-        FUNC_PREFIX(GpioSet(SPI_LCD_RST_GPIO));
+        gpio::Set(SPI_LCD_RST_GPIO);
         timing::DelayUs(1000 * 200);
 #endif
     }
 
     void SetCS() {
 #if defined(SPI_LCD_HAVE_CS_GPIO)
-        FUNC_PREFIX(GpioSet(cs_));
+        gpio::Set(cs_);
 #endif
     }
 
     void ClearCS() {
 #if defined(SPI_LCD_HAVE_CS_GPIO)
-        FUNC_PREFIX(GpioClr(cs_));
+        gpio::Clr(cs_);
 #endif
     }
 
-    void SetDC() { FUNC_PREFIX(GpioSet(SPI_LCD_DC_GPIO)); }
+    void SetDC() { gpio::Set(SPI_LCD_DC_GPIO); }
 
-    void ClearDC() { FUNC_PREFIX(GpioClr(SPI_LCD_DC_GPIO)); }
+    void ClearDC() { gpio::Clr(SPI_LCD_DC_GPIO); }
 
     void WriteCommand(uint8_t data) {
         ClearCS();

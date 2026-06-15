@@ -28,8 +28,7 @@
 
 #include <cstdint>
 
-namespace config
-{
+namespace config {
 #if defined(SPI_LCD_240X240)
 inline constexpr uint32_t kWidth = 240;
 inline constexpr uint32_t kHeight = 240;
@@ -65,4 +64,4 @@ inline constexpr uint32_t kHeight = 160;
 #endif
 #endif
 
-#endif  // SPI_CONFIG_H_
+#endif // SPI_CONFIG_H_

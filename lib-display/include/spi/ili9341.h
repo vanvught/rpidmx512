@@ -30,12 +30,9 @@
 #include <cassert>
 
 #include "spi/config.h"
-#include "spi/spilcd.h"
 
-namespace ili9341
-{
-namespace cmd
-{
+namespace ili9341 {
+namespace cmd {
 inline constexpr uint8_t kNop = 0x00;
 inline constexpr uint8_t SWRESET = 0x01;
 inline constexpr uint8_t RDDID = 0x04;
@@ -56,8 +53,7 @@ inline constexpr uint8_t PTLAR = 0x30;
 inline constexpr uint8_t MADCTL = 0x36;
 inline constexpr uint8_t PIXFMT = 0x3A;
 } // namespace cmd
-namespace data
-{
+namespace data {
 /**
  * Memory Data Access Control Register (0x36H)
  * MAP:     D7  D6  D5  D4  D3  D2  D1  D0
@@ -72,8 +68,7 @@ inline constexpr uint8_t kMadctlRgb = 0x00; ///< Red-Green-Blue pixel order
 inline constexpr uint8_t kMadctlBgr = 0x08; ///< Blue-Green-Red pixel order
 } // namespace data
 
-namespace colour
-{
+namespace colour {
 inline constexpr uint16_t kBlack = 0x0000;
 inline constexpr uint16_t kBlue = 0x001F;
 inline constexpr uint16_t kCyan = 0x07FF;
@@ -90,11 +85,9 @@ inline constexpr uint16_t kYellow = 0xFFE0;
 
 #include "paint.h"
 
-class ILI9341 : public Paint
-{
+class ILI9341 : public Paint {
    public:
-    ILI9341(uint32_t nCS) : Paint(nCS)
-    {
+    ILI9341(uint32_t nCS) : Paint(nCS) {
         DEBUG_ENTRY();
 
 #if defined(SPI_LCD_RST_GPIO)
@@ -174,18 +167,15 @@ class ILI9341 : public Paint
         DEBUG_EXIT();
     }
 
-    ~ILI9341() override
-    {
+    ~ILI9341() override {
         DEBUG_ENTRY();
         DEBUG_EXIT();
     }
 
-    void SetRotation(const uint32_t nRotation)
-    {
+    void SetRotation(const uint32_t nRotation) {
         WriteCommand(ili9341::cmd::MADCTL);
 
-        switch (nRotation)
-        {
+        switch (nRotation) {
             case 0:
                 WriteDataByte(ili9341::data::kMadctlBgr);
                 width_ = config::kWidth;
@@ -224,8 +214,7 @@ class ILI9341 : public Paint
     void EnableColourInversion(bool enable) { WriteCommand(enable ? ili9341::cmd::INVON : ili9341::cmd::INVOFF); }
 
    private:
-    void SetAddressWindow(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1) override
-    {
+    void SetAddressWindow(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1) override {
         WriteCommand(ili9341::cmd::kCaSet);
         {
             uint8_t data[] = {static_cast<uint8_t>(x0 >> 8), static_cast<uint8_t>(x0), static_cast<uint8_t>(x1 >> 8), static_cast<uint8_t>(x1)};
@@ -246,4 +235,4 @@ class ILI9341 : public Paint
     uint32_t shift_y_{0};
 };
 
-#endif  // SPI_ILI9341_H_
+#endif // SPI_ILI9341_H_

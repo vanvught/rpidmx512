@@ -46,7 +46,7 @@
 #include "pixeldmxconfiguration.h"
 #include "pixeldmxstore.h"
 #if defined(PIXELDMXSTARTSTOP_GPIO)
-#include "hal_gpio.h"
+#include "gpio.h"
 #endif
 #include "dmxnode.h"
 #include "firmware/debug/debug_debug.h"
@@ -68,8 +68,8 @@ class PixelDmx final : public PixelDmxConfiguration {
         s_this = this;
 
 #if defined(PIXELDMXSTARTSTOP_GPIO)
-        FUNC_PREFIX(GpioFsel(PIXELDMXSTARTSTOP_GPIO, GPIO_FSEL_OUTPUT));
-        FUNC_PREFIX(GpioClr(PIXELDMXSTARTSTOP_GPIO));
+        gpio::Fsel(PIXELDMXSTARTSTOP_GPIO, GPIO_FSEL_OUTPUT);
+        gpio::Clr(PIXELDMXSTARTSTOP_GPIO);
 #endif
 
         ApplyConfiguration();
@@ -105,7 +105,7 @@ class PixelDmx final : public PixelDmxConfiguration {
         started_ = true;
 
 #if defined(PIXELDMXSTARTSTOP_GPIO)
-        FUNC_PREFIX(GpioSet(PIXELDMXSTARTSTOP_GPIO));
+        gpio::Set(PIXELDMXSTARTSTOP_GPIO);
 #endif
     }
 
@@ -117,7 +117,7 @@ class PixelDmx final : public PixelDmxConfiguration {
         started_ = false;
 
 #if defined(PIXELDMXSTARTSTOP_GPIO)
-        FUNC_PREFIX(GpioClr(PIXELDMXSTARTSTOP_GPIO));
+        gpio::Clr(PIXELDMXSTARTSTOP_GPIO);
 #endif
     }
 

@@ -2,7 +2,7 @@
  * @file display.cpp
  *
  */
-/* Copyright (C) 2024-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2024-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,15 +30,13 @@
 #include "h3.h"
 #include "h3_board.h"
 #include "h3_gpio.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
-namespace display::timeout
-{
+namespace display::timeout {
 #define GPIO_PORTx (H3_GPIO_TO_PORT(DISPLAYTIMEOUT_GPIO))
 #define INT_MASK (1U << H3_GPIO_TO_NUMBER(DISPLAYTIMEOUT_GPIO))
 
-void irq_init()
-{
+void irq_init() {
     DEBUG_ENTRY();
     DEBUG_PRINTF("GPIO_PORTx=%u, INT_MASK=0x%x", GPIO_PORTx, INT_MASK);
 #if 0

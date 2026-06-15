@@ -2,7 +2,7 @@
  * @file buttonsgpio.cpp
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2026 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,9 +27,8 @@
 
 #include "buttonsgpio.h"
 #include "oscclient.h"
-#include "hal_gpio.h"
-
- #include "firmware/debug/debug_debug.h"
+#include "gpio.h"
+#include "firmware/debug/debug_debug.h"
 
 #define BUTTON(x) ((buttons_ >> x) & 0x01)
 #define BUTTON_STATE(x) ((buttons_ & (1U << x)) == (1U << x))
@@ -46,32 +45,30 @@
 #define LED2_GPIO GPIO_EXT_26
 #define LED3_GPIO GPIO_EXT_18
 
-ButtonsGpio::ButtonsGpio(OscClient* pOscClient) : oscclient_(pOscClient)
-{
+ButtonsGpio::ButtonsGpio(OscClient* pOscClient) : oscclient_(pOscClient) {
     assert(oscclient_ != nullptr);
 }
 
-bool ButtonsGpio::Start()
-{
-    FUNC_PREFIX(GpioFsel(LED0_GPIO, GPIO_FSEL_OUTPUT));
-    FUNC_PREFIX(GpioFsel(LED1_GPIO, GPIO_FSEL_OUTPUT));
-    FUNC_PREFIX(GpioFsel(LED2_GPIO, GPIO_FSEL_OUTPUT));
-    FUNC_PREFIX(GpioFsel(LED3_GPIO, GPIO_FSEL_OUTPUT));
+bool ButtonsGpio::Start() {
+    gpio::Fsel(LED0_GPIO, GPIO_FSEL_OUTPUT);
+    gpio::Fsel(LED1_GPIO, GPIO_FSEL_OUTPUT);
+    gpio::Fsel(LED2_GPIO, GPIO_FSEL_OUTPUT);
+    gpio::Fsel(LED3_GPIO, GPIO_FSEL_OUTPUT);
 
-    FUNC_PREFIX(GpioFsel(BUTTON0_GPIO, GPIO_FSEL_EINT));
-    FUNC_PREFIX(GpioFsel(BUTTON1_GPIO, GPIO_FSEL_EINT));
-    FUNC_PREFIX(GpioFsel(BUTTON2_GPIO, GPIO_FSEL_EINT));
-    FUNC_PREFIX(GpioFsel(BUTTON3_GPIO, GPIO_FSEL_EINT));
+    gpio::Fsel(BUTTON0_GPIO, GPIO_FSEL_EINT);
+    gpio::Fsel(BUTTON1_GPIO, GPIO_FSEL_EINT);
+    gpio::Fsel(BUTTON2_GPIO, GPIO_FSEL_EINT);
+    gpio::Fsel(BUTTON3_GPIO, GPIO_FSEL_EINT);
 
-    FUNC_PREFIX(GpioSetPud(BUTTON0_GPIO, GPIO_PULL_UP));
-    FUNC_PREFIX(GpioSetPud(BUTTON1_GPIO, GPIO_PULL_UP));
-    FUNC_PREFIX(GpioSetPud(BUTTON2_GPIO, GPIO_PULL_UP));
-    FUNC_PREFIX(GpioSetPud(BUTTON3_GPIO, GPIO_PULL_UP));
+    gpio::SetPud(BUTTON0_GPIO, gpio::Pull::kUp);
+    gpio::SetPud(BUTTON1_GPIO, gpio::Pull::kUp);
+    gpio::SetPud(BUTTON2_GPIO, gpio::Pull::kUp);
+    gpio::SetPud(BUTTON3_GPIO, gpio::Pull::kUp);
 
-    FUNC_PREFIX(GpioIntCfg(BUTTON0_GPIO, GPIO_INT_CFG_NEG_EDGE));
-    FUNC_PREFIX(GpioIntCfg(BUTTON1_GPIO, GPIO_INT_CFG_NEG_EDGE));
-    FUNC_PREFIX(GpioIntCfg(BUTTON2_GPIO, GPIO_INT_CFG_NEG_EDGE));
-    FUNC_PREFIX(GpioIntCfg(BUTTON3_GPIO, GPIO_INT_CFG_NEG_EDGE));
+    gpio::IntCfg(BUTTON0_GPIO, gpio::IntConfig::kNegEdge);
+    gpio::IntCfg(BUTTON1_GPIO, gpio::IntConfig::kNegEdge);
+    gpio::IntCfg(BUTTON2_GPIO, gpio::IntConfig::kNegEdge);
+    gpio::IntCfg(BUTTON3_GPIO, gpio::IntConfig::kNegEdge);
 
     H3_PIO_PA_INT->CTL |= INT_MASK;
     H3_PIO_PA_INT->STA = INT_MASK;
@@ -82,72 +79,63 @@ bool ButtonsGpio::Start()
     return true;
 }
 
-void ButtonsGpio::Stop()
-{
-    FUNC_PREFIX(GpioFsel(BUTTON0_GPIO, GPIO_FSEL_DISABLE));
-    FUNC_PREFIX(GpioFsel(BUTTON1_GPIO, GPIO_FSEL_DISABLE));
-    FUNC_PREFIX(GpioFsel(BUTTON2_GPIO, GPIO_FSEL_DISABLE));
-    FUNC_PREFIX(GpioFsel(BUTTON3_GPIO, GPIO_FSEL_DISABLE));
+void ButtonsGpio::Stop() {
+    gpio::Fsel(BUTTON0_GPIO, GPIO_FSEL_DISABLE);
+    gpio::Fsel(BUTTON1_GPIO, GPIO_FSEL_DISABLE);
+    gpio::Fsel(BUTTON2_GPIO, GPIO_FSEL_DISABLE);
+    gpio::Fsel(BUTTON3_GPIO, GPIO_FSEL_DISABLE);
 
-    FUNC_PREFIX(GpioFsel(LED0_GPIO, GPIO_FSEL_DISABLE));
-    FUNC_PREFIX(GpioFsel(LED1_GPIO, GPIO_FSEL_DISABLE));
-    FUNC_PREFIX(GpioFsel(LED2_GPIO, GPIO_FSEL_DISABLE));
-    FUNC_PREFIX(GpioFsel(LED3_GPIO, GPIO_FSEL_DISABLE));
+    gpio::Fsel(LED0_GPIO, GPIO_FSEL_DISABLE);
+    gpio::Fsel(LED1_GPIO, GPIO_FSEL_DISABLE);
+    gpio::Fsel(LED2_GPIO, GPIO_FSEL_DISABLE);
+    gpio::Fsel(LED3_GPIO, GPIO_FSEL_DISABLE);
 }
 
-void ButtonsGpio::Run()
-{
+void ButtonsGpio::Run() {
     buttons_ = H3_PIO_PA_INT->STA & INT_MASK;
 
-    if (__builtin_expect((buttons_ != 0), 0))
-    {
+    if (__builtin_expect((buttons_ != 0), 0)) {
         H3_PIO_PA_INT->STA = INT_MASK;
 
         DEBUG_PRINTF("%d-%d-%d-%d", BUTTON(BUTTON0_GPIO), BUTTON(BUTTON1_GPIO), BUTTON(BUTTON2_GPIO), BUTTON(BUTTON3_GPIO));
 
-        if (BUTTON_STATE(BUTTON0_GPIO))
-        {
+        if (BUTTON_STATE(BUTTON0_GPIO)) {
             oscclient_->SendCmd(0);
             DEBUG_PUTS("BUTTON0_GPIO");
         }
 
-        if (BUTTON_STATE(BUTTON1_GPIO))
-        {
+        if (BUTTON_STATE(BUTTON1_GPIO)) {
             oscclient_->SendCmd(1);
             DEBUG_PUTS("BUTTON1_GPIO");
         }
 
-        if (BUTTON_STATE(BUTTON2_GPIO))
-        {
+        if (BUTTON_STATE(BUTTON2_GPIO)) {
             oscclient_->SendCmd(2);
             DEBUG_PUTS("BUTTON2_GPIO");
         }
 
-        if (BUTTON_STATE(BUTTON3_GPIO))
-        {
+        if (BUTTON_STATE(BUTTON3_GPIO)) {
             oscclient_->SendCmd(3);
             DEBUG_PUTS("BUTTON3_GPIO");
         }
     }
 }
 
-void ButtonsGpio::SetLed(uint32_t led, bool on)
-{
+void ButtonsGpio::SetLed(uint32_t led, bool on) {
     DEBUG_PRINTF("led%d %s", led, on ? "On" : "Off");
 
-    switch (led)
-    {
+    switch (led) {
         case 0:
-            on ? FUNC_PREFIX(GpioSet(LED0_GPIO)) : FUNC_PREFIX(GpioClr(LED0_GPIO));
+            on ? gpio::Set(LED0_GPIO) : gpio::Clr(LED0_GPIO);
             break;
         case 1:
-            on ? FUNC_PREFIX(GpioSet(LED1_GPIO)) : FUNC_PREFIX(GpioClr(LED1_GPIO));
+            on ? gpio::Set(LED1_GPIO) : gpio::Clr(LED1_GPIO);
             break;
         case 2:
-            on ? FUNC_PREFIX(GpioSet(LED2_GPIO)) : FUNC_PREFIX(GpioClr(LED2_GPIO));
+            on ? gpio::Set(LED2_GPIO) : gpio::Clr(LED2_GPIO);
             break;
         case 3:
-            on ? FUNC_PREFIX(GpioSet(LED3_GPIO)) : FUNC_PREFIX(GpioClr(LED3_GPIO));
+            on ? gpio::Set(LED3_GPIO) : gpio::Clr(LED3_GPIO);
             break;
         default:
             break;
