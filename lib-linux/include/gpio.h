@@ -29,16 +29,17 @@
 #include <cstdint>
 
 namespace gpio {
+enum class Select { kInput, kOutput, kEint, kDisable };
 enum class Pull { kDisable, kUp, kDown };
 enum class IntConfig { kPosEdge, kNegEdge, kHighLev, kLowLev, kDoubleEdge };
 
-void Fsel(uint32_t gpio, uint32_t fsel);
+void Fsel(uint32_t gpio, Select fsel);
+void SetPud(uint32_t gpio, Pull pull);
+void IntCfg(uint32_t gpio, IntConfig int_cfg);
 void Set(uint32_t pin);
 void Clr(uint32_t pin);
 void Write(uint32_t pin, uint32_t value);
 uint8_t Lev(uint32_t pin);
-void SetPud(uint32_t gpio, Pull pull);
-void IntCfg(uint32_t gpio, IntConfig int_cfg);
 } // namespace gpio
 
 #endif // GPIO_H_

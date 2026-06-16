@@ -29,8 +29,8 @@
 #include "gpio.h"
 
 namespace gpio {
-void Fsel(uint32_t gpio, uint32_t fsel) {
-    printf("gpio::Fsel(gpio=%u,gpio=%u)\n", gpio, fsel);
+void Fsel(uint32_t gpio, Select fsel) {
+    printf("gpio::Fsel(gpio=%u,fsel=%u)\n", gpio, static_cast<unsigned>(fsel));
 }
 
 void Set(uint32_t pin) {
@@ -50,10 +50,10 @@ void Write(uint32_t pin, uint32_t value) {
 }
 
 void SetPud(uint32_t gpio, Pull pull) {
-    printf("gpio::SetPud(gpio=%u,pull=%u)\n", gpio, static_cast<uint32_t>(pull));
+    printf("gpio::SetPud(gpio=%u,pull=%u)\n", gpio, static_cast<unsigned>(pull));
 }
 
 void IntCfg(uint32_t gpio, IntConfig int_cfg) {
-    printf("gpio::IntCfg(gpio=%u,int_cfg=%u)\n", gpio, static_cast<uint32_t>(int_cfg));
+    printf("gpio::IntCfg(gpio=%u,int_cfg=%u)\n", gpio, static_cast<unsigned>(int_cfg));
 }
 } // namespace gpio
