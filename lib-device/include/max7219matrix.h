@@ -55,12 +55,9 @@ class Max7219Matrix : public MAX7219 {
     void UpdateCharacter(uint32_t c, const uint8_t bytes[8]);
 
    private:
-    uint8_t Rotate(uint32_t r, uint32_t x);
     void WriteAll(uint8_t reg, uint8_t data);
 
    private:
-    uint32_t font_size_;
-    uint8_t* font_;
     uint16_t count_{4};
 };
 

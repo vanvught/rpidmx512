@@ -24,7 +24,6 @@
  */
 
 #include <cstdint>
-#include <cassert>
 #include <algorithm>
 
 #include "max7219matrix.h"
@@ -32,16 +31,26 @@
 #include "firmware/debug/debug_debug.h"
 
 static uint8_t spi_data[64] __attribute__((aligned(4)));
+static constexpr auto kFontSize = Cp437FontSize();
+static uint8_t s_font[kFontSize] __attribute__((aligned(4)));
 
-Max7219Matrix::Max7219Matrix() : font_size_(Cp437FontSize()) {
+static constexpr uint8_t Rotate(uint32_t r, uint32_t x) {
+    uint8_t byte = 0;
+
+    for (uint32_t y = 0; y < 8; y++) {
+        const auto kSet = kCp437Font[r][y] & (1U << x);
+        byte |= static_cast<uint8_t>((kSet != 0) ? (1U << y) : 0);
+    }
+
+    return byte;
+}
+
+Max7219Matrix::Max7219Matrix() {
     DEBUG_ENTRY();
 
-    font_ = new uint8_t[font_size_ * 8];
-    assert(font_ != nullptr);
+    auto dst = s_font;
 
-    auto dst = font_;
-
-    for (uint32_t i = 0; i < font_size_; i++) {
+    for (uint32_t i = 0; i < kFontSize; i++) {
         for (uint32_t j = 0; j < 8; j++) {
             *dst++ = Rotate(i, 7 - j);
         }
@@ -52,8 +61,6 @@ Max7219Matrix::Max7219Matrix() : font_size_(Cp437FontSize()) {
 
 Max7219Matrix::~Max7219Matrix() {
     DEBUG_ENTRY();
-
-    delete[] font_;
 
     DEBUG_EXIT();
 }
@@ -79,7 +86,7 @@ void Max7219Matrix::Init(uint16_t count, uint8_t intensity) {
 }
 
 void Max7219Matrix::Write(const char* buffer, uint16_t count) {
-    DEBUG_PRINTF("nByte=%d", count);
+    DEBUG_PRINTF("count=%d", count);
 
     if (count > count_) {
         count = count_;
@@ -100,11 +107,11 @@ void Max7219Matrix::Write(const char* buffer, uint16_t count) {
         while (--k >= 0) {
             auto c = static_cast<uint32_t>(buffer[k]);
 
-            if (c >= font_size_) {
+            if (c >= kFontSize) {
                 c = ' ';
             }
 
-            const auto kP = &font_[c * 8];
+            const auto kP = &s_font[c * 8];
 
             spi_data[j++] = static_cast<uint8_t>(i);
             spi_data[j++] = kP[i - 1];
@@ -115,11 +122,11 @@ void Max7219Matrix::Write(const char* buffer, uint16_t count) {
 }
 
 void Max7219Matrix::UpdateCharacter(uint32_t c, const uint8_t bytes[8]) {
-    if (c > font_size_) {
+    if (c > kFontSize) {
         return;
     }
 
-    auto font = &font_[c * 8];
+    auto font = &s_font[c * 8];
 
     for (uint32_t j = 0; j < 8; j++) {
         uint8_t b = 0;
@@ -144,15 +151,4 @@ void Max7219Matrix::WriteAll(uint8_t reg, uint8_t data) {
     Spi::Write(reinterpret_cast<const char*>(spi_data), static_cast<uint32_t>(count_ * 2), true);
 
     DEBUG_EXIT();
-}
-
-uint8_t Max7219Matrix::Rotate(uint32_t r, uint32_t x) {
-    uint8_t byte = 0;
-
-    for (uint32_t y = 0; y < 8; y++) {
-        const auto kSet = cp437_font[r][y] & (1U << x);
-        byte |= static_cast<uint8_t>((kSet != 0) ? (1U << y) : 0);
-    }
-
-    return byte;
 }

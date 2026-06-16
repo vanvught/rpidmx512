@@ -2,7 +2,7 @@
  * @file mcp3424.cpp
  *
  */
-/* Copyright (C) 2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2023-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,8 +28,6 @@
 #include <unistd.h>
 #include <time.h>
 
-#include "bcm2835.h"
-
 #include "mcp3424.h"
 #include "thermistor.h"
 
@@ -47,79 +45,64 @@
  * Channel 8 -> 5V0
  */
 
-static constexpr uint32_t R_GND  =  6800;	// 6K8
-static constexpr uint32_t R_HIGH = 10000;	// 10K
-static constexpr uint32_t R_ADDED[4] = { 12000, 10000, 8200, 4700 }; // 12K, 10K, 8K2, 4K7
+static constexpr uint32_t kRGnd = 6800;                            // 6K8
+static constexpr uint32_t kRHigh = 10000;                          // 10K
+static constexpr uint32_t kRAdded[4] = {12000, 10000, 8200, 4700}; // 12K, 10K, 8K2, 4K7
 
-static double voltage(const double vout, const uint32_t r = 0) {
-	const double vin = vout * ((static_cast<double>(R_GND + R_HIGH + r) / static_cast<double>(R_GND)));
-	return vin;
+static double Voltage(double vout, uint32_t r = 0) {
+    const double kVin = vout * ((static_cast<double>(kRGnd + kRHigh + r) / static_cast<double>(kRGnd)));
+    return kVin;
 }
 
-static uint32_t resistor(const double vout) {
-	const double d = (5 * R_GND) / vout;
-	return static_cast<uint32_t>(d) - R_GND;
+static uint32_t Resistor(double vout) {
+    const double kD = (5 * kRGnd) / vout;
+    return static_cast<uint32_t>(kD) - kRGnd;
 }
 
-int main(int argc, char **argv) {
-	if (getuid() != 0) {
-		fprintf(stderr, "Error: Not started with 'root'\n");
-		return -1;
-	}
+int main(int argc, char** argv) { // NOLINT
+    MCP3424 adc1(0x68);
+    MCP3424 adc2(0x69);
 
-	if (bcm2835_init() != 1) {
-		fprintf(stderr, "bcm2835_init() failed\n");
-		return -2;
-	}
+    //	adc1.SetResolution(adc::mcp3424::Resolution::SAMPLE_14BITS);
+    //	adc2.SetResolution(adc::mcp3424::Resolution::SAMPLE_14BITS);
 
-	if (bcm2835_I2cBegin() != 1) {
-		fprintf(stderr, "bcm2835_I2cBegin() failed\n");
-		return -3;
-	}
+    if (adc1.IsConnected() || adc2.IsConnected()) {
+        auto prev_seconds = 60; // Force initial update
 
-	MCP3424 adc1(0x68);
-	MCP3424 adc2(0x69);
+        for (;;) {
+            const auto kTime = time(nullptr);
+            const auto kTm = localtime(&kTime);
 
-//	adc1.SetResolution(adc::mcp3424::Resolution::SAMPLE_14BITS);
-//	adc2.SetResolution(adc::mcp3424::Resolution::SAMPLE_14BITS);
+            if (kTm->tm_sec != prev_seconds) {
+                prev_seconds = kTm->tm_sec;
+                printf("\033c%s", asctime(kTm));
 
-	if (adc1.IsConnected() || adc2.IsConnected()) {
-		auto nPrevSeconds = 60; // Force initial update
+                if (adc1.IsConnected()) {
+                    for (uint32_t channel = 0; channel < 4; channel++) {
+                        const auto adcValue = adc1.GetRaw(channel);
+                        const auto vRef = adc1.GetVoltage(channel);
+                        const auto v = Voltage(vRef);
+                        const auto r = Resistor(vRef) - kRHigh;
+                        const auto t = sensor::thermistor::Temperature(r);
+                        printf("%u:%u 0x%04x %1.3fV %1.1fV %uR -> %3.1fC\n", 1 + channel, channel, adcValue, vRef, v, r, t);
+                    }
+                }
 
-		for (;;) {
-			const auto ltime = time(nullptr);
-			const auto tm = localtime(&ltime);
+                if (adc2.IsConnected()) {
+                    for (uint32_t channel = 0; channel < 4; channel++) {
+                        const auto adcValue = adc2.GetRaw(channel);
+                        const auto vRef = adc2.GetVoltage(channel);
+                        const auto v = Voltage(vRef, kRAdded[channel]);
+                        const auto r = Resistor(vRef);
+                        const auto t = sensor::thermistor::Temperature(r);
+                        printf("%u:%u 0x%04x %1.3fV %1.1fV %uR -> %3.1fC\n", 5 + channel, channel, adcValue, vRef, v, r, t);
+                    }
+                }
+            }
+        }
+    } else {
+        puts("Not connected.");
+    }
 
-			if (tm->tm_sec != nPrevSeconds) {
-				nPrevSeconds = tm->tm_sec;
-				printf("\033c%s", asctime (tm));
-
-				if (adc1.IsConnected()) {
-					for (uint32_t channel = 0; channel < 4; channel++) {
-						const auto adcValue = adc1.GetRaw(channel);
-						const auto vRef = adc1.GetVoltage(channel);
-						const auto v = voltage(vRef);
-						const auto r = resistor(vRef) - R_HIGH;
-						const auto t = sensor::thermistor::Temperature(r);
-						printf("%u:%u 0x%04x %1.3fV %1.1fV %uR -> %3.1fC\n", 1 + channel, channel, adcValue, vRef, v, r, t);
-					}
-				}
-
-				if (adc2.IsConnected()) {
-					for (uint32_t channel = 0; channel < 4; channel++) {
-						const auto adcValue = adc2.GetRaw(channel);
-						const auto vRef = adc2.GetVoltage(channel);
-						const auto v = voltage(vRef, R_ADDED[channel]);
-						const auto r = resistor(vRef);
-						const auto t = sensor::thermistor::Temperature(r);
-						printf("%u:%u 0x%04x %1.3fV %1.1fV %uR -> %3.1fC\n", 5 + channel, channel, adcValue, vRef, v, r, t);
-					}
-				}
-			}
-		}
-	} else {
-		puts("Not connected.");
-	}
-
-	return 0;
+    return 0;
 }

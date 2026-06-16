@@ -8,23 +8,12 @@ AR	= $(PREFIX)ar
 
 ROOT = ./../..
 
-LIB := -L$(ROOT)/lib-device/lib_linux
-LDLIBS := -ldevice
-LIBDEP := $(ROOT)/lib-device/lib_linux/libdevice.a
-
-INCLUDES := -I$(ROOT)/lib-device/include -I$(ROOT)/lib-hal/include
-
-COPS := -Wall -Werror -O2 -fno-rtti -std=c++11 -DRASPPI -DNDEBUG
-
-BCM2835 = $(ROOT)/lib-bcm2835_raspbian
-
-ifneq "$(wildcard $(BCM2835) )" ""
-	LIB += -L$(BCM2835)/lib_linux
-	LDLIBS += -lbcm2835_raspbian
-	INCLUDES += -I$(BCM2835)/include
-else
-	LDLIBS += -lbcm2835
-endif
+LIB := -L$(ROOT)/lib-device/lib_linux -L$(ROOT)/lib-linux/lib_linux
+LDLIBS := -ldevice -llinux
+LIBDEP := $(ROOT)/lib-device $(ROOT)/lib-linux
+INCLUDES := -I$(ROOT)/lib-device/include -I$(ROOT)/lib-linux/include
+COPS := -Wall -Werror -O2 -fno-rtti -std=c++20 -DNDEBUG
+DEFINES := -DDISABLE_RTC -I./../lib-superloop/include
 
 all : max7219matrix mcp3424
 
@@ -32,15 +21,17 @@ clean :
 	rm -f *.o
 	rm -f max7219matrix
 	cd $(ROOT)/lib-device && make -f Makefile.Linux clean
+	cd $(ROOT)/lib-linux && make -f Makefile.Linux clean
 	
-$(ROOT)/lib-device/lib_linux/libdevice.a :
-	cd $(ROOT)/lib-device && make -f Makefile.Linux 'DEFINES=-DRASPPI -DNDEBUG'
+.PHONY: libdep $(LIBDEP)
 
-$(ROOT)/lib-i2c/lib_linux/libi2c.a :
-	cd $(ROOT)/lib-i2c && make -f Makefile.Linux 'DEFINES=-DRASPPI -DNDEBUG'
+lisdep: $(LIBDEP)
 	
-max7219matrix : Makefile max7219matrix.cpp $(ROOT)/lib-device/lib_linux/libdevice.a
+$(LIBDEP):
+	$(MAKE) -f Makefile.Linux 'MAKE_FLAGS=$(DEFINES)' -C $@ 
+	
+max7219matrix : Makefile max7219matrix.cpp $(LIBDEP)
 	$(CPP) max7219matrix.cpp $(INCLUDES) $(COPS) -o max7219matrix $(LIB) $(LDLIBS) 
 	
-mcp3424 : Makefile mcp3424.cpp $(ROOT)/lib-device/lib_linux/libdevice.a
+mcp3424 : Makefile mcp3424.cpp $(LIBDEP)
 	$(CPP) mcp3424.cpp $(INCLUDES) $(COPS) -o mcp3424 $(LIB) $(LDLIBS) 
