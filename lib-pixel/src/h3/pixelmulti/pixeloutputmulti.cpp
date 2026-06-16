@@ -49,30 +49,26 @@
 #include "irq_timer.h"
 #include "h3_dma_memcpy32.h"
 #include "logic_analyzer.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
 static volatile uint32_t sv_nUpdatesPerSecond;
 static volatile uint32_t sv_nUpdatesPrevious;
 static volatile uint32_t sv_nUpdates;
 
-static void arm_timer_handler()
-{
+static void arm_timer_handler() {
     sv_nUpdatesPerSecond = sv_nUpdates - sv_nUpdatesPrevious;
     sv_nUpdatesPrevious = sv_nUpdates;
 }
 
-inline uint8_t PixelOutputMulti::ReverseBits(uint8_t bits)
-{
+inline uint8_t PixelOutputMulti::ReverseBits(uint8_t bits) {
     const uint32_t kInput = bits;
     uint32_t output;
     asm("rbit %0, %1" : "=r"(output) : "r"(kInput));
     return static_cast<uint8_t>((output >> 24));
 }
 
-void PixelOutputMulti::Update()
-{
-    do
-    { // https://github.com/vanvught/rpidmx512/issues/281
+void PixelOutputMulti::Update() {
+    do { // https://github.com/vanvught/rpidmx512/issues/281
         __ISB();
     } while (H3SpiDmaTxIsActive());
 
@@ -89,59 +85,47 @@ void PixelOutputMulti::Update()
     sv_nUpdates = sv_nUpdates + 1;
 }
 
-void PixelOutputMulti::Blackout()
-{
+void PixelOutputMulti::Blackout() {
     DEBUG_ENTRY();
 
     auto& pixel_configuration = PixelConfiguration::Get();
     const auto kType = pixel_configuration.GetType();
     const auto kCount = pixel_configuration.GetCount();
 
-    if ((kType == pixel::LedType::kAPA102) || (kType == pixel::LedType::kSK9822) || (kType == pixel::LedType::kP9813))
-    {
-        for (uint32_t port_index = 0; port_index < 8; port_index++)
-        {
+    if ((kType == pixel::LedType::kAPA102) || (kType == pixel::LedType::kSK9822) || (kType == pixel::LedType::kP9813)) {
+        for (uint32_t port_index = 0; port_index < 8; port_index++) {
             SetPixel4Bytes(port_index, 0, 0, 0, 0, 0);
 
-            for (uint32_t nPixelIndex = 1; nPixelIndex <= kCount; nPixelIndex++)
-            {
+            for (uint32_t nPixelIndex = 1; nPixelIndex <= kCount; nPixelIndex++) {
                 SetPixel4Bytes(port_index, nPixelIndex, 0, 0xE0, 0, 0);
             }
 
-            if ((kType == pixel::LedType::kAPA102) || (kType == pixel::LedType::kSK9822))
-            {
+            if ((kType == pixel::LedType::kAPA102) || (kType == pixel::LedType::kSK9822)) {
                 SetPixel4Bytes(port_index, 1U + kCount, 0xFF, 0xFF, 0xFF, 0xFF);
-            }
-            else
-            {
+            } else {
                 SetPixel4Bytes(port_index, 1U + kCount, 0, 0, 0, 0);
             }
         }
-    }
-    else
-    {
+    } else {
         memset(kPixelDatabuffer, 0, buffer_size_);
     }
 
     // Can be called any time.
-    do
-    {
+    do {
         asm volatile("isb" ::: "memory");
     } while (H3SpiDmaTxIsActive());
 
     Update();
 
     // May not be interrupted.
-    do
-    {
+    do {
         asm volatile("isb" ::: "memory");
     } while (H3SpiDmaTxIsActive());
 
     DEBUG_EXIT();
 }
 
-void PixelOutputMulti::FullOn()
-{
+void PixelOutputMulti::FullOn() {
     DEBUG_ENTRY();
 
     auto& pixel_configuration = PixelConfiguration::Get();
@@ -149,75 +133,61 @@ void PixelOutputMulti::FullOn()
     const auto kType = pixel_configuration.GetType();
     const auto kCount = pixel_configuration.GetCount();
 
-    if ((kType == pixel::LedType::kAPA102) || (kType == pixel::LedType::kSK9822) || (kType == pixel::LedType::kP9813))
-    {
-        for (uint32_t port_index = 0; port_index < 8; port_index++)
-        {
+    if ((kType == pixel::LedType::kAPA102) || (kType == pixel::LedType::kSK9822) || (kType == pixel::LedType::kP9813)) {
+        for (uint32_t port_index = 0; port_index < 8; port_index++) {
             SetPixel4Bytes(port_index, 0, 0, 0, 0, 0);
 
-            for (uint32_t pixel_index = 1; pixel_index <= kCount; pixel_index++)
-            {
+            for (uint32_t pixel_index = 1; pixel_index <= kCount; pixel_index++) {
                 SetPixel4Bytes(port_index, pixel_index, 0xFF, 0xE0, 0xFF, 0xFF);
             }
 
-            if ((kType == pixel::LedType::kAPA102) || (kType == pixel::LedType::kSK9822))
-            {
+            if ((kType == pixel::LedType::kAPA102) || (kType == pixel::LedType::kSK9822)) {
                 SetPixel4Bytes(port_index, 1U + kCount, 0xFF, 0xFF, 0xFF, 0xFF);
-            }
-            else
-            {
+            } else {
                 SetPixel4Bytes(port_index, 1U + kCount, 0, 0, 0, 0);
             }
         }
-    }
-    else
-    {
+    } else {
         memset(kPixelDatabuffer, 0xFF, buffer_size_);
     }
 
     // Can be called any time.
-    do
-    {
+    do {
         asm volatile("isb" ::: "memory");
     } while (H3SpiDmaTxIsActive());
 
     Update();
 
     // May not be interrupted.
-    do
-    {
+    do {
         asm volatile("isb" ::: "memory");
     } while (H3SpiDmaTxIsActive());
 
     DEBUG_EXIT();
 }
 
-uint32_t PixelOutputMulti::GetUserData()
-{
+uint32_t PixelOutputMulti::GetUserData() {
     return sv_nUpdatesPerSecond;
 }
 
-void PixelOutputMulti::ApplyConfiguration()
-{
-	DEBUG_ENTRY();
+void PixelOutputMulti::ApplyConfiguration() {
+    DEBUG_ENTRY();
 
     auto& pixel_configuration = PixelConfiguration::Get();
 
     pixel_configuration.Validate();
-    
-        if (!pixel_configuration.RefreshNeeded())
-    {
-		DEBUG_EXIT();
-		return;
-	}
+
+    if (!pixel_configuration.RefreshNeeded()) {
+        DEBUG_EXIT();
+        return;
+    }
 
     const auto kCount = pixel_configuration.GetCount();
     buffer_size_ = kCount * pixel_configuration.GetLedsPerPixel();
 
     const auto kType = pixel_configuration.GetType();
 
-    if ((kType == pixel::LedType::kAPA102) || (kType == pixel::LedType::kSK9822) || (kType == pixel::LedType::kP9813))
-    {
+    if ((kType == pixel::LedType::kAPA102) || (kType == pixel::LedType::kSK9822) || (kType == pixel::LedType::kP9813)) {
         buffer_size_ += kCount;
         buffer_size_ += 8;
     }
@@ -231,18 +201,12 @@ void PixelOutputMulti::ApplyConfiguration()
 
     SetupHC595(ReverseBits(kLowCode), ReverseBits(kHighCode));
 
-    if (pixel_configuration.IsRTZProtocol())
-    {
+    if (pixel_configuration.IsRTZProtocol()) {
         SetupSPI(pixel_configuration.GetClockSpeedHz());
-    }
-    else
-    {
-        if (has_cpld_)
-        {
+    } else {
+        if (has_cpld_) {
             SetupSPI(pixel_configuration.GetClockSpeedHz() * 6);
-        }
-        else
-        {
+        } else {
             SetupSPI(pixel_configuration.GetClockSpeedHz() * 4);
         }
     }
@@ -254,7 +218,7 @@ void PixelOutputMulti::ApplyConfiguration()
     sv_nUpdatesPerSecond = 0;
     sv_nUpdatesPrevious = 0;
     sv_nUpdates = 0;
-    
+
     DEBUG_EXIT();
 }
 
@@ -262,8 +226,7 @@ void PixelOutputMulti::ApplyConfiguration()
 #pragma GCC push_options
 #pragma GCC optimize("Os")
 
-PixelOutputMulti::PixelOutputMulti()
-{
+PixelOutputMulti::PixelOutputMulti() {
     DEBUG_ENTRY();
 
     assert(s_this == nullptr);
@@ -279,20 +242,18 @@ PixelOutputMulti::PixelOutputMulti()
     printf("Board: %s\n", has_cpld_ ? "CPLD" : "74-logic");
 
     ApplyConfiguration();
-    
+
     DEBUG_EXIT();
 }
 
-PixelOutputMulti::~PixelOutputMulti()
-{
-	Blackout();
-	
+PixelOutputMulti::~PixelOutputMulti() {
+    Blackout();
+
     dma_buffer_ = nullptr;
     s_this = nullptr;
 }
 
-void PixelOutputMulti::SetupBuffers()
-{
+void PixelOutputMulti::SetupBuffers() {
     DEBUG_ENTRY();
 
     uint32_t size;
@@ -308,8 +269,7 @@ void PixelOutputMulti::SetupBuffers()
 
 #define SPI_CS1 GPIO_EXT_26
 
-void PixelOutputMulti::SetupHC595(uint8_t t0h, uint8_t t1h)
-{
+void PixelOutputMulti::SetupHC595(uint8_t t0h, uint8_t t1h) {
     DEBUG_ENTRY();
 
     t0h = static_cast<uint8_t>(t0h << 1);
@@ -331,8 +291,7 @@ void PixelOutputMulti::SetupHC595(uint8_t t0h, uint8_t t1h)
     DEBUG_EXIT();
 }
 
-void PixelOutputMulti::SetupSPI(uint32_t speed_hz)
-{
+void PixelOutputMulti::SetupSPI(uint32_t speed_hz) {
     DEBUG_ENTRY();
 
     H3SpiBegin();
@@ -345,28 +304,22 @@ void PixelOutputMulti::SetupSPI(uint32_t speed_hz)
 
 extern uint32_t PIXEL8X4_PROGRAM;
 
-extern "C"
-{
-    uint32_t getPIXEL8X4_SIZE();
+extern "C" {
+uint32_t getPIXEL8X4_SIZE();
 }
 
-bool PixelOutputMulti::SetupCPLD()
-{
+bool PixelOutputMulti::SetupCPLD() {
     DEBUG_ENTRY();
 
     JamSTAPL jbc(reinterpret_cast<uint8_t*>(&PIXEL8X4_PROGRAM), getPIXEL8X4_SIZE(), true);
     jbc.SetJamSTAPLDisplay(jamstapl_display_);
 
-    if (jbc.PrintInfo() == JBIC_SUCCESS)
-    {
-        if ((jbc.CheckCRC() == JBIC_SUCCESS) && (jbc.GetCRC() == 0x1D3C))
-        {
+    if (jbc.PrintInfo() == JBIC_SUCCESS) {
+        if ((jbc.CheckCRC() == JBIC_SUCCESS) && (jbc.GetCRC() == 0x1D3C)) {
             jbc.CheckIdCode();
-            if (jbc.GetExitCode() == 0)
-            {
+            if (jbc.GetExitCode() == 0) {
                 jbc.ReadUsercode();
-                if ((jbc.GetExitCode() == 0) && (jbc.GetExportIntegerInt() != 0x0018ad81))
-                {
+                if ((jbc.GetExitCode() == 0) && (jbc.GetExportIntegerInt() != 0x0018ad81)) {
                     jbc.Program();
                 }
                 DEBUG_EXIT();

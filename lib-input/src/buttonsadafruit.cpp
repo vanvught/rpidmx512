@@ -42,7 +42,7 @@
 #define MASK_GPLEV0 static_cast<uint32_t>((1 << PIN_L) | (1 << PIN_R) | (1 << PIN_C) | (1 << PIN_U) | (1 << PIN_D) | (1 << PIN_A) | (1 << PIN_B))
 
 static void init_gpio_pin(const uint8_t nPin) {
-    gpio::Fsel(nPin, GPIO_FSEL_INPUT);
+    gpio::Fsel(nPin, gpio::Select::kInput);
     gpio::SetPud(nPin, gpio::Pull::kUp);
 }
 

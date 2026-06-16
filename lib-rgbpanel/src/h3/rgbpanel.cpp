@@ -2,7 +2,7 @@
  * @file rgbpanel.cpp
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2026 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,21 +31,17 @@
 #include <cstdio>
 
 #include "rgbpanel.h"
-
 #include "h3_spi.h"
 #include "h3_i2c.h"
 #include "h3_gpio.h"
 #include "board/h3_opi_zero.h"
 #include "h3_cpu.h"
 #include "h3_smp.h"
-
 #include "arm/synchronize.h"
+#include "firmware/debug/debug_debug.h"
 
- #include "firmware/debug/debug_debug.h"
-
-extern "C"
-{
-    void core1_task();
+extern "C" {
+void core1_task();
 }
 
 #define HUB75B_A GPIO_EXT_13 // PA0
@@ -81,8 +77,7 @@ static bool s_is_core_running;
 
 using namespace rgbpanel;
 
-void RgbPanel::PlatformInit()
-{
+void RgbPanel::PlatformInit() {
     h3_cpu_off(H3_CPU2);
     h3_cpu_off(H3_CPU3);
 
@@ -140,8 +135,7 @@ void RgbPanel::PlatformInit()
 
     DEBUG_PRINTF("%p %p", s_pFramebuffer1, s_pFramebuffer2);
 
-    for (uint32_t i = 0; i < s_nBufferSize; i++)
-    {
+    for (uint32_t i = 0; i < s_nBufferSize; i++) {
         s_pFramebuffer1[i] = 0;
         s_pFramebuffer2[i] = 0;
     }
@@ -149,23 +143,19 @@ void RgbPanel::PlatformInit()
     s_pTablePWM = new uint8_t[256];
     assert(s_pTablePWM != nullptr);
 
-    for (uint32_t i = 0; i < 256; i++)
-    {
+    for (uint32_t i = 0; i < 256; i++) {
         s_pTablePWM[i] = static_cast<uint8_t>((i * kPwmWidth) / 255);
     }
 }
 
-void RgbPanel::PlatformCleanUp()
-{
+void RgbPanel::PlatformCleanUp() {
     delete[] s_pFramebuffer1;
     delete[] s_pFramebuffer2;
     delete[] s_pTablePWM;
 }
 
-void RgbPanel::Start()
-{
-    if (started_)
-    {
+void RgbPanel::Start() {
+    if (started_) {
         return;
     }
 
@@ -177,8 +167,7 @@ void RgbPanel::Start()
      * Starting an already running core can crash the system.
      */
 
-    if (s_is_core_running)
-    {
+    if (s_is_core_running) {
         return;
     }
 
@@ -195,27 +184,22 @@ void RgbPanel::Start()
     s_is_core_running = true;
 }
 
-void RgbPanel::Dump()
-{
-    for (uint32_t row = 0; row < (rows_ / 2); row++)
-    {
+void RgbPanel::Dump() {
+    for (uint32_t row = 0; row < (rows_ / 2); row++) {
         printf("[");
-        for (uint32_t i = 0; i < columns_; i++)
-        {
-            const uint32_t nIndex = (row * columns_) + i;
-            printf("%x ", s_pFramebuffer1[nIndex]);
+        for (uint32_t i = 0; i < columns_; i++) {
+            const uint32_t kIndex = (row * columns_) + i;
+            printf("%x ", s_pFramebuffer1[kIndex]);
         }
         puts("]");
     }
 }
 
-void RgbPanel::Cls()
-{
+void RgbPanel::Cls() {
     auto lp = reinterpret_cast<uint64_t*>(s_pFramebuffer1);
     uint32_t n = s_nBufferSize * 4;
 
-    while ((n / 8) > 0)
-    {
+    while ((n / 8) > 0) {
         *(lp++) = 0;
         n -= 8;
     }
@@ -227,90 +211,73 @@ void RgbPanel::Cls()
 #pragma GCC push_options
 #pragma GCC optimize("O3")
 
-uint32_t RgbPanel::GetShowCounter()
-{
+uint32_t RgbPanel::GetShowCounter() {
     __DMB();
     return s_nShowCounter;
 }
 
-uint32_t RgbPanel::GetUpdatesCounter()
-{
+uint32_t RgbPanel::GetUpdatesCounter() {
     __DMB();
     return s_nUpdatesCounter;
 }
 
-void RgbPanel::SetPixel(uint32_t column, uint32_t row, uint8_t red, uint8_t green, uint8_t blue)
-{
-    if (__builtin_expect(((column >= columns_) || (row >= rows_)), 0))
-    {
+void RgbPanel::SetPixel(uint32_t column, uint32_t row, uint8_t red, uint8_t green, uint8_t blue) {
+    if (__builtin_expect(((column >= columns_) || (row >= rows_)), 0)) {
         return;
     }
 
-    if (row < (rows_ / 2))
-    {
+    if (row < (rows_ / 2)) {
         const uint32_t kBaseIndex = (row * columns_ * kPwmWidth) + column;
 
-        for (uint32_t nPWM = 0; nPWM < kPwmWidth; nPWM++)
-        {
-            const uint32_t kIndex = kBaseIndex + (nPWM * columns_);
+        for (uint32_t pwm = 0; pwm < kPwmWidth; pwm++) {
+            const uint32_t kIndex = kBaseIndex + (pwm * columns_);
 
-            uint32_t nValue = s_pFramebuffer1[kIndex];
+            uint32_t value = s_pFramebuffer1[kIndex];
 
-            nValue &= ~((1U << HUB75B_R1) | (1U << HUB75B_G1) | (1U << HUB75B_B1));
+            value &= ~((1U << HUB75B_R1) | (1U << HUB75B_G1) | (1U << HUB75B_B1));
 
-            if (s_pTablePWM[red] > nPWM)
-            {
-                nValue |= (1U << HUB75B_R1);
+            if (s_pTablePWM[red] > pwm) {
+                value |= (1U << HUB75B_R1);
             }
 
-            if (s_pTablePWM[green] > nPWM)
-            {
-                nValue |= (1U << HUB75B_G1);
+            if (s_pTablePWM[green] > pwm) {
+                value |= (1U << HUB75B_G1);
             }
 
-            if (s_pTablePWM[blue] > nPWM)
-            {
-                nValue |= (1U << HUB75B_B1);
+            if (s_pTablePWM[blue] > pwm) {
+                value |= (1U << HUB75B_B1);
             }
 
-            s_pFramebuffer1[kIndex] = nValue;
+            s_pFramebuffer1[kIndex] = value;
         }
-    }
-    else
-    {
-        const uint32_t nBaseIndex = ((row - (rows_ / 2U)) * columns_ * kPwmWidth) + column;
+    } else {
+        const uint32_t kBaseIndex = ((row - (rows_ / 2U)) * columns_ * kPwmWidth) + column;
 
-        for (uint32_t nPWM = 0; nPWM < kPwmWidth; nPWM++)
-        {
-            const uint32_t nIndex = nBaseIndex + (nPWM * columns_);
+        for (uint32_t pwm = 0; pwm < kPwmWidth; pwm++) {
+            const uint32_t kIndex = kBaseIndex + (pwm * columns_);
 
-            uint32_t nValue = s_pFramebuffer1[nIndex];
-            nValue &= ~((1U << HUB75B_R2) | (1U << HUB75B_G2) | (1U << HUB75B_B2));
+            uint32_t value = s_pFramebuffer1[kIndex];
+            value &= ~((1U << HUB75B_R2) | (1U << HUB75B_G2) | (1U << HUB75B_B2));
 
-            if (s_pTablePWM[red] > nPWM)
-            {
-                nValue |= (1U << HUB75B_R2);
+            if (s_pTablePWM[red] > pwm) {
+                value |= (1U << HUB75B_R2);
             }
 
-            if (s_pTablePWM[green] > nPWM)
-            {
-                nValue |= (1U << HUB75B_G2);
+            if (s_pTablePWM[green] > pwm) {
+                value |= (1U << HUB75B_G2);
             }
 
-            if (s_pTablePWM[blue] > nPWM)
-            {
-                nValue |= (1U << HUB75B_B2);
+            if (s_pTablePWM[blue] > pwm) {
+                value |= (1U << HUB75B_B2);
             }
 
-            s_pFramebuffer1[nIndex] = nValue;
+            s_pFramebuffer1[kIndex] = value;
         }
     }
 }
 
-void RgbPanel::Show()
-{
-    do
-    {
+void RgbPanel::Show() {
+    do {
         __DMB();
     } while (s_bDoSwap);
 
@@ -318,59 +285,52 @@ void RgbPanel::Show()
     s_nShowCounter++;
 }
 
-void core1_task()
-{
+void core1_task() {
     const uint32_t kMultiplier = s_nColumns * kPwmWidth;
 
-    uint32_t nGPIO =
-        H3_PIO_PORTA->DAT & ~((1U << HUB75B_R1) | (1U << HUB75B_G1) | (1U << HUB75B_B1) | (1U << HUB75B_R2) | (1U << HUB75B_G2) | (1U << HUB75B_B2));
+    uint32_t gpio = H3_PIO_PORTA->DAT & ~((1U << HUB75B_R1) | (1U << HUB75B_G1) | (1U << HUB75B_B1) | (1U << HUB75B_R2) | (1U << HUB75B_G2) | (1U << HUB75B_B2));
 
-    for (;;)
-    {
-        for (uint32_t row = 0; row < (s_nRows / 2); row++)
-        {
-            const uint32_t nBaseIndex = row * kMultiplier;
+    for (;;) {
+        for (uint32_t row = 0; row < (s_nRows / 2); row++) {
+            const uint32_t kBaseIndex = row * kMultiplier;
 
-            for (uint32_t nPWM = 0; nPWM < kPwmWidth; nPWM++)
-            {
-                uint32_t nIndex = nBaseIndex + (nPWM * s_nColumns);
+            for (uint32_t pwm = 0; pwm < kPwmWidth; pwm++) {
+                uint32_t index = kBaseIndex + (pwm * s_nColumns);
 
                 /* Shift in next data */
-                for (uint32_t i = 0; i < s_nColumns; i++)
-                {
-                    const uint32_t nValue = s_pFramebuffer2[nIndex++];
+                for (uint32_t i = 0; i < s_nColumns; i++) {
+                    const uint32_t kValue = s_pFramebuffer2[index++];
                     // Clock high with data
-                    H3_PIO_PORTA->DAT = nGPIO | (1U << HUB75B_CK) | nValue;
+                    H3_PIO_PORTA->DAT = gpio | (1U << HUB75B_CK) | kValue;
                     // Clock low
-                    H3_PIO_PORTA->DAT = nGPIO | nValue;
+                    H3_PIO_PORTA->DAT = gpio | kValue;
                 }
 
                 /* Blank the display */
-                H3_PIO_PORTA->DAT = nGPIO | (1U << HUB75B_OE);
+                H3_PIO_PORTA->DAT = gpio | (1U << HUB75B_OE);
 
                 /* Latch the previous data */
-                H3_PIO_PORTA->DAT = nGPIO | (1U << HUB75B_LA) | (1U << HUB75B_OE);
-                nGPIO |= (1U << HUB75B_OE);
-                H3_PIO_PORTA->DAT = nGPIO;
+                H3_PIO_PORTA->DAT = gpio | (1U << HUB75B_LA) | (1U << HUB75B_OE);
+                gpio |= (1U << HUB75B_OE);
+                H3_PIO_PORTA->DAT = gpio;
 
                 /* Update the row select */
-                nGPIO &= ~(0xFU);
-                nGPIO |= row;
-                H3_PIO_PORTA->DAT = nGPIO;
+                gpio &= ~(0xFU);
+                gpio |= row;
+                H3_PIO_PORTA->DAT = gpio;
 
                 /* Enable the display */
-                nGPIO &= ~(1U << HUB75B_OE);
-                H3_PIO_PORTA->DAT = nGPIO;
+                gpio &= ~(1U << HUB75B_OE);
+                H3_PIO_PORTA->DAT = gpio;
             }
         }
 
         s_nUpdatesCounter = s_nUpdatesCounter + 1;
 
-        if (s_bDoSwap)
-        {
-            auto pTmp = s_pFramebuffer1;
+        if (s_bDoSwap) {
+            auto t = s_pFramebuffer1;
             s_pFramebuffer1 = s_pFramebuffer2;
-            s_pFramebuffer2 = pTmp;
+            s_pFramebuffer2 = t;
             __DMB();
             s_bDoSwap = false;
         }

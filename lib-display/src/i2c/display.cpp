@@ -47,7 +47,7 @@ namespace display::timeout {
 void irq_init();
 static void GpioInit() {
 #if defined(DISPLAYTIMEOUT_GPIO)
-    gpio::Fsel(DISPLAYTIMEOUT_GPIO, GPIO_FSEL_INPUT);
+    gpio::Fsel(DISPLAYTIMEOUT_GPIO, gpio::Select::kInput);
     gpio::SetPud(DISPLAYTIMEOUT_GPIO, gpio::Pull::kUp);
     irq_init();
 #endif

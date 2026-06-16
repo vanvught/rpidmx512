@@ -68,7 +68,7 @@ class PixelDmx final : public PixelDmxConfiguration {
         s_this = this;
 
 #if defined(PIXELDMXSTARTSTOP_GPIO)
-        gpio::Fsel(PIXELDMXSTARTSTOP_GPIO, GPIO_FSEL_OUTPUT);
+        gpio::Fsel(PIXELDMXSTARTSTOP_GPIO, gpio::Select::kOutput);
         gpio::Clr(PIXELDMXSTARTSTOP_GPIO);
 #endif
 

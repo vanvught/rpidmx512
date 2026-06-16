@@ -28,21 +28,20 @@
 
 #include "h3_board.h"
 #include "h3_gpio.h"
-
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
 void config_mode_init() {
-	H3GpioFsel(KEY1_GPIO, GPIO_FSEL_INPUT);
-	H3GpioSetPud(KEY1_GPIO, GPIO_PULL_UP);
+    H3GpioFsel(KEY1_GPIO, GPIO_FSEL_INPUT);
+    H3GpioSetPud(KEY1_GPIO, GPIO_PULL_UP);
 }
 
 bool is_config_mode() {
-	const auto nLevel = H3GpioLev(KEY1_GPIO);
-    const auto isConfigMode = (nLevel == LOW);
+    const auto kLevel = H3GpioLev(KEY1_GPIO);
+    const auto kConfigMode = (kLevel == LOW);
 
     DEBUG_PRINTF("isConfigMode=%s %u %u->%p", isConfigMode ? "Yes" : "No", KEY1_GPIO, nLevel, H3_PIO_PORTA->DAT);
 
-    return isConfigMode;
+    return kConfigMode;
 }
 
-#endif /* IS_CONFIG_MODE_H_ */
+#endif // IS_CONFIG_MODE_H_

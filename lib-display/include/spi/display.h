@@ -85,7 +85,7 @@ class Display : public LcdDriver {
         cols_ = (GetWidth() / s_pFONT->kWidth);
         rows_ = (GetHeight() / s_pFONT->kHeight);
 #if defined(DISPLAYTIMEOUT_GPIO)
-        gpio::Fsel(DISPLAYTIMEOUT_GPIO, GPIO_FSEL_INPUT);
+        gpio::Fsel(DISPLAYTIMEOUT_GPIO, gpio::Select::kInput);
         gpio::SetPud(DISPLAYTIMEOUT_GPIO, gpio::Pull::kUp);
 #endif
 

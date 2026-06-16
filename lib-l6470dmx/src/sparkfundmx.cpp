@@ -139,10 +139,10 @@ void SparkFunDmx::ReadConfigFiles() {
     sparkfun_dmxparams.Set(this);
 
     if (m_bIsGlobalBusyPinSet) {
-        gpio::Fsel(m_nGlobalBusyPin, GPIO_FSEL_INPUT);
+        gpio::Fsel(m_nGlobalBusyPin, gpio::Select::kInput);
     }
 
-    gpio::Fsel(m_nGlobalResetPin, GPIO_FSEL_OUTPUT);
+    gpio::Fsel(m_nGlobalResetPin, gpio::Select::kOutput);
     gpio::Set(m_nGlobalResetPin);
 
     gpio::Clr(m_nGlobalResetPin);

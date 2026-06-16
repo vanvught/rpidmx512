@@ -44,12 +44,12 @@ class SpiLcd {
         spi::SetDataMode(spi::kMode0);
 
 #if defined(SPI_LCD_RST_GPIO)
-        gpio::Fsel(SPI_LCD_RST_GPIO, GPIO_FSEL_OUTPUT);
+        gpio::Fsel(SPI_LCD_RST_GPIO, gpio::Select::kOutput);
 #endif
-        gpio::Fsel(SPI_LCD_DC_GPIO, GPIO_FSEL_OUTPUT);
-        gpio::Fsel(SPI_LCD_BL_GPIO, GPIO_FSEL_OUTPUT);
+        gpio::Fsel(SPI_LCD_DC_GPIO, gpio::Select::kOutput);
+        gpio::Fsel(SPI_LCD_BL_GPIO, gpio::Select::kOutput);
 #if defined(SPI_LCD_HAVE_CS_GPIO)
-        gpio::Fsel(cs_, GPIO_FSEL_OUTPUT);
+        gpio::Fsel(cs_, gpio::Select::kOutput);
 #endif
 
         DEBUG_EXIT();

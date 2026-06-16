@@ -96,7 +96,7 @@ bool McpButtons::Check() {
 
     UpdateDisplays(source_);
 
-    gpio::Fsel(gpio::kInta, GPIO_FSEL_INPUT);
+    gpio::Fsel(gpio::kInta, gpio::Select::kInput);
     gpio::SetPud(gpio::kInta, gpio::Pull::kUp);
 
     DEBUG_EXIT();

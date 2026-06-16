@@ -72,7 +72,7 @@ class PixelDmxMulti final : public PixelDmxConfiguration
         ApplyConfiguration();
 
 #if defined(PIXELDMXSTARTSTOP_GPIO)
-        gpio::Fsel(PIXELDMXSTARTSTOP_GPIO, GPIO_FSEL_OUTPUT);
+        gpio::Fsel(PIXELDMXSTARTSTOP_GPIO, gpio::Select::kOutput);
         gpio::Clr(PIXELDMXSTARTSTOP_GPIO);
 #endif
 

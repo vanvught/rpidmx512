@@ -69,10 +69,10 @@ void jbi_jtag_io_init(JamSTAPL* pJamSTAPL, bool bVerbose) {
     s_pJamSTAPL = pJamSTAPL;
     s_bVerbose = bVerbose;
 
-    gpio::Fsel(GPIO_TDO, GPIO_FSEL_INPUT);
-    gpio::Fsel(GPIO_TDI, GPIO_FSEL_OUTPUT);
-    gpio::Fsel(GPIO_TCK, GPIO_FSEL_OUTPUT);
-    gpio::Fsel(GPIO_TMS, GPIO_FSEL_OUTPUT);
+    gpio::Fsel(GPIO_TDO, gpio::Select::kInput);
+    gpio::Fsel(GPIO_TDI, gpio::Select::kOutput);
+    gpio::Fsel(GPIO_TCK, gpio::Select::kOutput);
+    gpio::Fsel(GPIO_TMS, gpio::Select::kOutput);
 }
 
 int jbi_jtag_io(int tms, int tdi, int read_tdo) {

@@ -67,7 +67,7 @@ bool ButtonsMcp::Start() {
     i2c_.WriteRegister(mcp23x17::REG_IODIRB, static_cast<uint8_t>(0x00), false); // All output
     i2c_.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(0x00), false);  // All led's Off
 
-    gpio::Fsel(gpio::kInterrupt, GPIO_FSEL_INPUT);
+    gpio::Fsel(gpio::kInterrupt, gpio::Select::kInput);
     gpio::SetPud(gpio::kInterrupt, gpio::Pull::kUp);
 
     buttons_count_ = 8;

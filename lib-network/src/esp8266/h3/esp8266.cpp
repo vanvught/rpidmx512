@@ -71,16 +71,16 @@ static void data_GpioFsel_output() {
 
 	uint32_t value = H3_PIO_PORTA->CFG0;
 	value &= (uint32_t) ~(GPIO_SELECT_MASK << PA2_SELECT_CFG0_SHIFT);
-	value |= (GPIO_FSEL_OUTPUT << PA2_SELECT_CFG0_SHIFT);
+	value |= (gpio::Select::kOutput << PA2_SELECT_CFG0_SHIFT);
 	value &= (uint32_t) ~(GPIO_SELECT_MASK << PA3_SELECT_CFG0_SHIFT);
-	value |= (GPIO_FSEL_OUTPUT << PA3_SELECT_CFG0_SHIFT);
+	value |= (gpio::Select::kOutput << PA3_SELECT_CFG0_SHIFT);
 	H3_PIO_PORTA->CFG0 = value;
 
 	value = H3_PIO_PORTA->CFG2;
 	value &= (uint32_t) ~(GPIO_SELECT_MASK << PA18_SELECT_CFG2_SHIFT);
-	value |= (GPIO_FSEL_OUTPUT << PA18_SELECT_CFG2_SHIFT);
+	value |= (gpio::Select::kOutput << PA18_SELECT_CFG2_SHIFT);
 	value &= (uint32_t) ~(GPIO_SELECT_MASK << PA19_SELECT_CFG2_SHIFT);
-	value |= (GPIO_FSEL_OUTPUT << PA19_SELECT_CFG2_SHIFT);
+	value |= (gpio::Select::kOutput << PA19_SELECT_CFG2_SHIFT);
 	H3_PIO_PORTA->CFG2 = value;
 
 	__DMB();
@@ -91,24 +91,24 @@ static void data_GpioFsel_input() {
 
 	uint32_t value = H3_PIO_PORTA->CFG0;
 	value &= (uint32_t) ~(GPIO_SELECT_MASK << PA2_SELECT_CFG0_SHIFT);
-	value |= (GPIO_FSEL_INPUT << PA2_SELECT_CFG0_SHIFT);
+	value |= (gpio::Select::kInput << PA2_SELECT_CFG0_SHIFT);
 	value &= (uint32_t) ~(GPIO_SELECT_MASK << PA3_SELECT_CFG0_SHIFT);
-	value |= (GPIO_FSEL_INPUT << PA3_SELECT_CFG0_SHIFT);
+	value |= (gpio::Select::kInput << PA3_SELECT_CFG0_SHIFT);
 	H3_PIO_PORTA->CFG0 = value;
 
 	value = H3_PIO_PORTA->CFG2;
 	value &= (uint32_t) ~(GPIO_SELECT_MASK << PA18_SELECT_CFG2_SHIFT);
-	value |= (GPIO_FSEL_INPUT << PA18_SELECT_CFG2_SHIFT);
+	value |= (gpio::Select::kInput << PA18_SELECT_CFG2_SHIFT);
 	value &= (uint32_t) ~(GPIO_SELECT_MASK << PA19_SELECT_CFG2_SHIFT);
-	value |= (GPIO_FSEL_INPUT << PA19_SELECT_CFG2_SHIFT);
+	value |= (gpio::Select::kInput << PA19_SELECT_CFG2_SHIFT);
 	H3_PIO_PORTA->CFG2 = value;
 
 	__DMB();
 }
 
 void __attribute__((cold)) esp8266_init() {
-	H3GpioFsel(GPIO_EXT_13, GPIO_FSEL_INPUT);
-	H3GpioFsel(GPIO_EXT_11, GPIO_FSEL_OUTPUT);
+	H3GpioFsel(GPIO_EXT_13, gpio::Select::kInput);
+	H3GpioFsel(GPIO_EXT_11, gpio::Select::kOutput);
 
 
 

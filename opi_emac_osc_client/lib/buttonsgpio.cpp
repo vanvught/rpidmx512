@@ -50,15 +50,15 @@ ButtonsGpio::ButtonsGpio(OscClient* pOscClient) : oscclient_(pOscClient) {
 }
 
 bool ButtonsGpio::Start() {
-    gpio::Fsel(LED0_GPIO, GPIO_FSEL_OUTPUT);
-    gpio::Fsel(LED1_GPIO, GPIO_FSEL_OUTPUT);
-    gpio::Fsel(LED2_GPIO, GPIO_FSEL_OUTPUT);
-    gpio::Fsel(LED3_GPIO, GPIO_FSEL_OUTPUT);
+    gpio::Fsel(LED0_GPIO, gpio::Select::kOutput);
+    gpio::Fsel(LED1_GPIO, gpio::Select::kOutput);
+    gpio::Fsel(LED2_GPIO, gpio::Select::kOutput);
+    gpio::Fsel(LED3_GPIO, gpio::Select::kOutput);
 
-    gpio::Fsel(BUTTON0_GPIO, GPIO_FSEL_EINT);
-    gpio::Fsel(BUTTON1_GPIO, GPIO_FSEL_EINT);
-    gpio::Fsel(BUTTON2_GPIO, GPIO_FSEL_EINT);
-    gpio::Fsel(BUTTON3_GPIO, GPIO_FSEL_EINT);
+    gpio::Fsel(BUTTON0_GPIO, gpio::Select::kEint);
+    gpio::Fsel(BUTTON1_GPIO, gpio::Select::kEint);
+    gpio::Fsel(BUTTON2_GPIO, gpio::Select::kEint);
+    gpio::Fsel(BUTTON3_GPIO, gpio::Select::kEint);
 
     gpio::SetPud(BUTTON0_GPIO, gpio::Pull::kUp);
     gpio::SetPud(BUTTON1_GPIO, gpio::Pull::kUp);
@@ -80,15 +80,15 @@ bool ButtonsGpio::Start() {
 }
 
 void ButtonsGpio::Stop() {
-    gpio::Fsel(BUTTON0_GPIO, GPIO_FSEL_DISABLE);
-    gpio::Fsel(BUTTON1_GPIO, GPIO_FSEL_DISABLE);
-    gpio::Fsel(BUTTON2_GPIO, GPIO_FSEL_DISABLE);
-    gpio::Fsel(BUTTON3_GPIO, GPIO_FSEL_DISABLE);
+    gpio::Fsel(BUTTON0_GPIO, gpio::Select::kDisable);
+    gpio::Fsel(BUTTON1_GPIO, gpio::Select::kDisable);
+    gpio::Fsel(BUTTON2_GPIO, gpio::Select::kDisable);
+    gpio::Fsel(BUTTON3_GPIO, gpio::Select::kDisable);
 
-    gpio::Fsel(LED0_GPIO, GPIO_FSEL_DISABLE);
-    gpio::Fsel(LED1_GPIO, GPIO_FSEL_DISABLE);
-    gpio::Fsel(LED2_GPIO, GPIO_FSEL_DISABLE);
-    gpio::Fsel(LED3_GPIO, GPIO_FSEL_DISABLE);
+    gpio::Fsel(LED0_GPIO, gpio::Select::kDisable);
+    gpio::Fsel(LED1_GPIO, gpio::Select::kDisable);
+    gpio::Fsel(LED2_GPIO, gpio::Select::kDisable);
+    gpio::Fsel(LED3_GPIO, gpio::Select::kDisable);
 }
 
 void ButtonsGpio::Run() {

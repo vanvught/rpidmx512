@@ -70,7 +70,7 @@ private:
 private:
 	uint8_t columns_;
 	uint8_t rows_;
-	uint32_t m_nOffset;
+	uint32_t offset_;
 	uint16_t m_nMaxLeds;
 	uint16_t max_position_;
 	uint8_t max_line_;
