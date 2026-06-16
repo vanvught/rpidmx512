@@ -32,6 +32,13 @@
 #include "h3_board.h" // IWYU pragma: keep
 
 namespace gpio {
+enum class Select {
+	kInput = GPIO_FSEL_INPUT,
+	kOutput = GPIO_FSEL_OUTPUT,
+	kEint = GPIO_FSEL_EINT,
+	kDisable = GPIO_FSEL_DISABLE
+};
+	
 enum class Pull { 
 	kDisable = GPIO_PULL_DISABLE, 
 	kUp = GPIO_PULL_UP, 
@@ -46,8 +53,16 @@ enum class IntConfig {
 	kDoubleEdge = GPIO_INT_CFG_DOUBLE_EDGE	
 };
 
-inline void Fsel(uint32_t gpio, uint32_t fsel) {
-    H3GpioFsel(gpio, fsel);
+inline void Fsel(uint32_t gpio, Select fsel) {
+    H3GpioFsel(gpio, static_cast<GpioFsel_t>(fsel));
+}
+
+inline void SetPud(uint32_t gpio, Pull pull) {
+    H3GpioSetPud(gpio, static_cast<gpio_pull_t>(pull));
+}
+
+inline void IntCfg(uint32_t gpio, IntConfig int_cfg) {
+    H3GpioIntCfg(gpio, static_cast<GpioIntCfg_t>(int_cfg));
 }
 
 inline void Set(uint32_t pin) {
@@ -68,14 +83,6 @@ inline void Write(uint32_t pin, uint32_t value) {
 
 inline uint8_t Lev(uint32_t pin) {
     return H3GpioLev(pin);
-}
-
-inline void SetPud(uint32_t gpio, Pull pull) {
-    H3GpioSetPud(gpio, static_cast<gpio_pull_t>(pull));
-}
-
-inline void IntCfg(uint32_t gpio, IntConfig int_cfg) {
-	H3GpioIntCfg(gpio, static_cast<GpioIntCfg_t>(int_cfg));
 }
 } // namespace gpio
 
