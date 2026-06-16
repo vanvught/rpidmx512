@@ -76,28 +76,28 @@
  */
 static void data_GpioFsel_output() {
 	uint32_t value = H3_PIO_PORTA->CFG0;
-	value &= (uint32_t) ~(GPIO_SELECT_MASK << PA6_SELECT_CFG0_SHIFT);	// D2
-	value |= (gpio::Select::kOutput << PA6_SELECT_CFG0_SHIFT);
+	value &= static_cast<uint32_t>(~(GPIO_SELECT_MASK << PA6_SELECT_CFG0_SHIFT));	// D2
+	value |= (GPIO_FSEL_OUTPUT << PA6_SELECT_CFG0_SHIFT);
 	H3_PIO_PORTA->CFG0 = value;
 
 	value = H3_PIO_PORTA->CFG1;
 	value &= (uint32_t) ~(GPIO_SELECT_MASK << PA12_SELECT_CFG1_SHIFT);	// D0
-	value |= (gpio::Select::kOutput << PA12_SELECT_CFG1_SHIFT);
+	value |= (GPIO_FSEL_OUTPUT << PA12_SELECT_CFG1_SHIFT);
 	value &= (uint32_t) ~(GPIO_SELECT_MASK << PA11_SELECT_CFG1_SHIFT);	// D1
-	value |= (gpio::Select::kOutput << PA11_SELECT_CFG1_SHIFT);
+	value |= (GPIO_FSEL_OUTPUT << PA11_SELECT_CFG1_SHIFT);
 	value &= (uint32_t) ~(GPIO_SELECT_MASK << PA10_SELECT_CFG1_SHIFT);	// D3
-	value |= (gpio::Select::kOutput << PA10_SELECT_CFG1_SHIFT);
+	value |= (GPIO_FSEL_OUTPUT << PA10_SELECT_CFG1_SHIFT);
 	value &= (uint32_t) ~(GPIO_SELECT_MASK << PA13_SELECT_CFG1_SHIFT);	// D4
-	value |= (gpio::Select::kOutput << PA13_SELECT_CFG1_SHIFT);
+	value |= (GPIO_FSEL_OUTPUT << PA13_SELECT_CFG1_SHIFT);
 	value &= (uint32_t) ~(GPIO_SELECT_MASK << PA15_SELECT_CFG1_SHIFT);	// D6
-	value |= (gpio::Select::kOutput << PA15_SELECT_CFG1_SHIFT);
+	value |= (GPIO_FSEL_OUTPUT << PA15_SELECT_CFG1_SHIFT);
 	value &= (uint32_t) ~(GPIO_SELECT_MASK << PA14_SELECT_CFG1_SHIFT);	// D7
-	value |= (gpio::Select::kOutput << PA14_SELECT_CFG1_SHIFT);
+	value |= (GPIO_FSEL_OUTPUT << PA14_SELECT_CFG1_SHIFT);
 	H3_PIO_PORTA->CFG1 = value;
 
 	value = H3_PIO_PORTA->CFG2;
 	value &= (uint32_t) ~(GPIO_SELECT_MASK << PA16_SELECT_CFG2_SHIFT);	// D5
-	value |= (gpio::Select::kOutput << PA16_SELECT_CFG2_SHIFT);
+	value |= (GPIO_FSEL_OUTPUT << PA16_SELECT_CFG2_SHIFT);
 	H3_PIO_PORTA->CFG2 = value;
 }
 
@@ -107,27 +107,27 @@ static void data_GpioFsel_output() {
 static void data_GpioFsel_input() {
 	uint32_t value = H3_PIO_PORTA->CFG0;
 	value &= (uint32_t) ~(GPIO_SELECT_MASK << PA6_SELECT_CFG0_SHIFT);	// D2
-	value |= (gpio::Select::kInput << PA6_SELECT_CFG0_SHIFT);
+	value |= (GPIO_FSEL_INPUT << PA6_SELECT_CFG0_SHIFT);
 	H3_PIO_PORTA->CFG0 = value;
 
 	value = H3_PIO_PORTA->CFG1;
 	value &= (uint32_t) ~(GPIO_SELECT_MASK << PA12_SELECT_CFG1_SHIFT);	// D0
-	value |= (gpio::Select::kInput << PA12_SELECT_CFG1_SHIFT);
+	value |= (GPIO_FSEL_INPUT << PA12_SELECT_CFG1_SHIFT);
 	value &= (uint32_t) ~(GPIO_SELECT_MASK << PA11_SELECT_CFG1_SHIFT);	// D1
-	value |= (gpio::Select::kInput << PA11_SELECT_CFG1_SHIFT);
+	value |= (GPIO_FSEL_INPUT << PA11_SELECT_CFG1_SHIFT);
 	value &= (uint32_t) ~(GPIO_SELECT_MASK << PA10_SELECT_CFG1_SHIFT);	// D3
-	value |= (gpio::Select::kInput << PA10_SELECT_CFG1_SHIFT);
+	value |= (GPIO_FSEL_INPUT << PA10_SELECT_CFG1_SHIFT);
 	value &= (uint32_t) ~(GPIO_SELECT_MASK << PA13_SELECT_CFG1_SHIFT);	// D4
-	value |= (gpio::Select::kInput << PA13_SELECT_CFG1_SHIFT);
+	value |= (GPIO_FSEL_INPUT << PA13_SELECT_CFG1_SHIFT);
 	value &= (uint32_t) ~(GPIO_SELECT_MASK << PA15_SELECT_CFG1_SHIFT);	// D6
-	value |= (gpio::Select::kInput << PA15_SELECT_CFG1_SHIFT);
+	value |= (GPIO_FSEL_INPUT << PA15_SELECT_CFG1_SHIFT);
 	value &= (uint32_t) ~(GPIO_SELECT_MASK << PA14_SELECT_CFG1_SHIFT);	// D7
-	value |= (gpio::Select::kInput << PA14_SELECT_CFG1_SHIFT);
+	value |= (GPIO_FSEL_INPUT << PA14_SELECT_CFG1_SHIFT);
 	H3_PIO_PORTA->CFG1 = value;
 
 	value = H3_PIO_PORTA->CFG2;
-	value &= (uint32_t) ~(GPIO_SELECT_MASK << PA16_SELECT_CFG2_SHIFT);	// D5
-	value |= (gpio::Select::kInput << PA16_SELECT_CFG2_SHIFT);
+	value &= static_cast<uint32_t>(~(GPIO_SELECT_MASK << PA16_SELECT_CFG2_SHIFT));	// D5
+	value |= (GPIO_FSEL_INPUT << PA16_SELECT_CFG2_SHIFT);
 	H3_PIO_PORTA->CFG2 = value;
 }
 
@@ -138,24 +138,24 @@ static void data_GpioFsel_input() {
 void FT245RL_init() {
 	// RD#, WR output
 	uint32_t value = H3_PIO_PORTA->CFG0;
-	value &= (uint32_t) ~(GPIO_SELECT_MASK << PA3_SELECT_CFG0_SHIFT);	// WR
-	value |= (gpio::Select::kOutput << PA3_SELECT_CFG0_SHIFT);
+	value &= static_cast<uint32_t>(~(GPIO_SELECT_MASK << PA3_SELECT_CFG0_SHIFT));	// WR
+	value |= (GPIO_FSEL_OUTPUT << PA3_SELECT_CFG0_SHIFT);
 	H3_PIO_PORTA->CFG0 = value;
 
 	value = H3_PIO_PORTA->CFG2;
-	value &= (uint32_t) ~(GPIO_SELECT_MASK << PA19_SELECT_CFG2_SHIFT);	// RD#
-	value |= (gpio::Select::kOutput << PA19_SELECT_CFG2_SHIFT);
+	value &= static_cast<uint32_t>(~(GPIO_SELECT_MASK << PA19_SELECT_CFG2_SHIFT));	// RD#
+	value |= (GPIO_FSEL_OUTPUT << PA19_SELECT_CFG2_SHIFT);
 	H3_PIO_PORTA->CFG2 = value;
 
 	// TXE#, RXF# input
 	value = H3_PIO_PORTA->CFG0;
-	value &= (uint32_t) ~(GPIO_SELECT_MASK << PA2_SELECT_CFG0_SHIFT);	// RXF#
-	value |= (gpio::Select::kInput << PA2_SELECT_CFG0_SHIFT);
+	value &= static_cast<uint32_t>(~(GPIO_SELECT_MASK << PA2_SELECT_CFG0_SHIFT));	// RXF#
+	value |= (GPIO_FSEL_INPUT << PA2_SELECT_CFG0_SHIFT);
 	H3_PIO_PORTA->CFG0 = value;
 
 	value = H3_PIO_PORTA->CFG2;
-	value &= (uint32_t) ~(GPIO_SELECT_MASK << PA18_SELECT_CFG2_SHIFT);	// TXE#
-	value |= (gpio::Select::kInput << PA18_SELECT_CFG2_SHIFT);
+	value &= static_cast<uint32_t>(~(GPIO_SELECT_MASK << PA18_SELECT_CFG2_SHIFT));	// TXE#
+	value |= (GPIO_FSEL_INPUT << PA18_SELECT_CFG2_SHIFT);
 	H3_PIO_PORTA->CFG2 = value;
 
 	// RD#	high
@@ -177,7 +177,7 @@ void FT245RL_write_data(uint8_t data) {
 		asm volatile("nop"::);
 	}
 	// Put the data on the bus.
-	uint32_t out_gpio = H3_PIO_PORTA->DAT & (uint32_t)~( (1 << D0) | (1 << D1) | (1 << D2) | (1 << D3) | (1 << D4) | (1 << D5) | (1 << D6) | (1 << D7));
+	uint32_t out_gpio = H3_PIO_PORTA->DAT & static_cast<uint32_t>(~( (1 << D0) | (1 << D1) | (1 << D2) | (1 << D3) | (1 << D4) | (1 << D5) | (1 << D6) | (1 << D7)));
 	out_gpio |= (data & 1) ? (1 << D0) : 0;
 	out_gpio |= (data & 2) ? (1 << D1) : 0;
 	out_gpio |= (data & 4) ? (1 << D2) : 0;
