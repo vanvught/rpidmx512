@@ -2,7 +2,7 @@
  * @file hal_statusled.cpp
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,54 +23,50 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_HAL)
-#undef NDEBUG
-#endif
-
 #include <cstdint>
 #include <cstdlib>
 
 #include "hal_statusled.h"
-#include "firmware/debug/debug_debug.h"
 
-enum class LedStatus { OFF, ON, HEARTBEAT, FLASH };
+enum class LedStatus { kOff, kOn, kHeartbeat, kFlash };
 
 #if defined(RASPPI)
-static constexpr char RASPBIAN_LED_INIT[] = "echo gpio | sudo tee /sys/class/leds/led0/trigger";
-static constexpr char RASPBIAN_LED_OFF[] = "echo 0 | sudo tee /sys/class/leds/led0/brightness";
-static constexpr char RASPBIAN_LED_ON[] = "echo 1 | sudo tee /sys/class/leds/led0/brightness";
-static constexpr char RASPBIAN_LED_HB[] = "echo heartbeat | sudo tee /sys/class/leds/led0/trigger";
-static constexpr char RASPBIAN_LED_FLASH[] = "echo timer | sudo tee /sys/class/leds/led0/trigger";
-
-static LedStatus s_ledStatus;
+namespace rasppi {
+static constexpr char kRaspbianLedInit[] = "echo gpio | sudo tee /sys/class/leds/ACT/trigger";
+static constexpr char kRaspbianLedOff[] = "echo 0 | sudo tee /sys/class/leds/ACT/brightness";
+static constexpr char kRaspbianLedOn[] = "echo 1 | sudo tee /sys/class/leds/ACT/brightness";
+static constexpr char kRaspbianLedHb[] = "echo heartbeat | sudo tee /sys/class/leds/ACT/trigger";
+static constexpr char kRaspbianLedFlash[] = "echo timer | sudo tee /sys/class/leds/ACT/trigger";
+} // namespace rasppi
 #endif
+static LedStatus s_led_status;
 
 static void SetLed([[maybe_unused]] LedStatus led_status) {
-#if defined(RASPPI)
-    if (s_ledStatus == led_status) {
+    if (s_led_status == led_status) {
         return;
     }
-    s_ledStatus = led_status;
-    char* p = 0;
+    s_led_status = led_status;
+#if defined(RASPPI)
+    char* p = nullptr;
 
     switch (led_status) {
-        case LedStatus::OFF:
-            p = const_cast<char*>(RASPBIAN_LED_OFF);
+        case LedStatus::kOff:
+            p = const_cast<char*>(rasppi::kRaspbianLedOff);
             break;
-        case LedStatus::ON:
-            p = const_cast<char*>(RASPBIAN_LED_ON);
+        case LedStatus::kOn:
+            p = const_cast<char*>(rasppi::kRaspbianLedOn);
             break;
-        case LedStatus::HEARTBEAT:
-            p = const_cast<char*>(RASPBIAN_LED_HB);
+        case LedStatus::kHeartbeat:
+            p = const_cast<char*>(rasppi::kRaspbianLedHb);
             break;
-        case LedStatus::FLASH:
-            p = const_cast<char*>(RASPBIAN_LED_FLASH);
+        case LedStatus::kFlash:
+            p = const_cast<char*>(rasppi::kRaspbianLedFlash);
             break;
         default:
             break;
     }
 
-    if (p != 0) {
+    if (p != nullptr) {
         if (system(p) == 0) {
             // Just make the compile happy
         }
@@ -81,14 +77,14 @@ static void SetLed([[maybe_unused]] LedStatus led_status) {
 namespace hal::statusled {
 void SetFrequency(uint32_t frequency_hz) {
     if (frequency_hz == 0) {
-        SetLed(LedStatus::OFF);
+        SetLed(LedStatus::kOff);
     } else if (frequency_hz > 20) {
-        SetLed(LedStatus::ON);
+        SetLed(LedStatus::kOn);
     } else {
         if (frequency_hz > 1) {
-            SetLed(LedStatus::HEARTBEAT);
+            SetLed(LedStatus::kHeartbeat);
         } else {
-            SetLed(LedStatus::FLASH);
+            SetLed(LedStatus::kFlash);
         }
     }
 }
