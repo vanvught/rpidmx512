@@ -126,7 +126,7 @@ class Allocator {
             }
         }
 
-        assert(false); // pointer not from pool
+        assert(false && "Pointer is not from pool"); 
     }
 
     void Free(uint16_t index) {
@@ -135,7 +135,7 @@ class Allocator {
         assert(index < kBlocks);
 
         const uint32_t kBit = (1U << index);
-        assert((free_mask_ & kBit) == 0); // detect double free
+        assert(((free_mask_ & kBit) == 0) && "Double free");
         free_mask_ |= kBit;
 
         size_[index] = 0;

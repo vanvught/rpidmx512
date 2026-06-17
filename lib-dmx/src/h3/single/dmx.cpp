@@ -495,11 +495,11 @@ Dmx::Dmx() {
     H3GpioClr(GPIO_ANALYZER_CH5);
 #endif
 #if defined GPIO_ANALYZER_CH6
-    H3GpioFsel(GPIO_ANALYZER_CH6, GPIO_FSEL_OUTPUT);
+    H3GpioFsel(GPIO_ANALYZER_CH6, gpio::Select::kOutput);
     H3GpioClr(GPIO_ANALYZER_CH6);
 #endif
 #if defined GPIO_ANALYZER_CH7
-    H3GpioFsel(GPIO_ANALYZER_CH7, GPIO_FSEL_OUTPUT);
+    H3GpioFsel(GPIO_ANALYZER_CH7, gpio::Select::kOutput);
     H3GpioClr(GPIO_ANALYZER_CH7);
 #endif
 #endif

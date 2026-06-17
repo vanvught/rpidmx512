@@ -41,14 +41,15 @@
 namespace rdm::discovery {
 #ifndef NDEBUG
 static constexpr const char* kStateName[] = {
-	"IDLE", 
-	"UNMUTE", 
-	"MUTE", 
-	"DISCOVERY", 
-	"DISCOVERY_SINGLE_DEVICE", 
-	"DUB", "QUICKFIND", 
-	"QUICKFIND_DISCOVERY", 
-	"LATE_RESPONSE", 
+	"IDLE",
+	"UNMUTE",
+	"MUTE",
+	"DISCOVERY",
+	"DISCOVERY_SINGLE_DEVICE",
+	"DUB",
+	"QUICKFIND",
+	"QUICKFIND_DISCOVERY",
+	"LATE_RESPONSE",
 	"FINISHED"
 };
 #endif
@@ -96,10 +97,8 @@ uint32_t StateMachine::CopyWorkingQueue(char* out_buffer, uint32_t out_buffer_si
         memcpy(lower_bound, rdm::discovery::ConvertUid(discovery_.stack.items[index].lower_bound), rdm::kUidSize);
         memcpy(upper_bound, rdm::discovery::ConvertUid(discovery_.stack.items[index].upper_bound), rdm::kUidSize);
 
-        length += snprintf(&out_buffer[length], static_cast<size_t>(kSize - length), 
-		"\"%.2x%.2x:%.2x%.2x%.2x%.2x-%.2x%.2x:%.2x%.2x%.2x%.2x\",", 
-		lower_bound[0], lower_bound[1], lower_bound[2], lower_bound[3], lower_bound[4], lower_bound[5],
-        upper_bound[0], upper_bound[1], upper_bound[2], upper_bound[3], upper_bound[4], upper_bound[5]);
+        length += snprintf(&out_buffer[length], static_cast<size_t>(kSize - length), "\"%.2x%.2x:%.2x%.2x%.2x%.2x-%.2x%.2x:%.2x%.2x%.2x%.2x\",", lower_bound[0], lower_bound[1], lower_bound[2], lower_bound[3], lower_bound[4], lower_bound[5],
+                           upper_bound[0], upper_bound[1], upper_bound[2], upper_bound[3], upper_bound[4], upper_bound[5]);
 
         index++;
     }
@@ -235,18 +234,15 @@ void StateMachine::NewState(rdm::discovery::State state, bool do_state_late_resp
     if (do_state_late_response && (state_ != rdm::discovery::State::kLateResponse)) {
 #ifndef NDEBUG
         assert(static_cast<uint32_t>(state) < sizeof(rdm::discovery::kStateName) / sizeof(rdm::discovery::kStateName[0]));
-        printf("State %s->%s [%s] at line %u\n", 
-			rdm::discovery::kStateName[static_cast<uint32_t>(state_)], 
-			rdm::discovery::kStateName[static_cast<uint32_t>(rdm::discovery::State::kLateResponse)],
-            rdm::discovery::kStateName[static_cast<uint32_t>(state)], line);
+        printf("State %s->%s [%s] at line %u\n", rdm::discovery::kStateName[static_cast<uint32_t>(state_)], rdm::discovery::kStateName[static_cast<uint32_t>(rdm::discovery::State::kLateResponse)],
+               rdm::discovery::kStateName[static_cast<uint32_t>(state)], line);
 #endif
         late_response_.micros = timing::Micros();
         saved_state_ = state;
         state_ = rdm::discovery::State::kLateResponse;
     } else {
 #ifndef NDEBUG
-        printf("State %s->%s at line %u\n", rdm::discovery::kStateName[static_cast<uint32_t>(state_)],
-		rdm::discovery::kStateName[static_cast<uint32_t>(state)], line);
+        printf("State %s->%s at line %u\n", rdm::discovery::kStateName[static_cast<uint32_t>(state_)], rdm::discovery::kStateName[static_cast<uint32_t>(state)], line);
 #endif
         state_ = state;
     }
@@ -628,9 +624,9 @@ void StateMachine::Process() {
             NEW_STATE(rdm::discovery::State::kIdle, false);
         } break;
         default:
-            assert(false);
+            assert(false && "switch");
             __builtin_unreachable();
             break;
     }
 }
-    } // namespace rdm::discovery
+} // namespace rdm::discovery
