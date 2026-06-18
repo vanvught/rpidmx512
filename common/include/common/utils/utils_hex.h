@@ -85,7 +85,7 @@ constexpr uint32_t FromHex(const char (&string)[N]) {
     for (size_t i = 0; i < N - 1; ++i) {
         const uint8_t kNibble = FromChar(string[i]);
         if constexpr (kNibble == 0xFF) {
-            static_assert(false, "Invalid hex digit");
+            assert(false && "Invalid hex digit");
         }
         result = (result << 4) | kNibble;
     }
