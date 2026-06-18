@@ -46,7 +46,7 @@ struct Defaults {
 #define STR(x) STR_HELPER(x)
 #endif
 #define EXPAND(x) x
-#include STR(EXPAND(DISPLAY_USE_CUSTOM_INCLUDE) / custom / display.h)
+#include STR(EXPAND(DISPLAY_USE_CUSTOM_INCLUDE)/custom/display.h)
 #endif
 
 #endif // DISPLAY_H_
