@@ -131,12 +131,11 @@ class Display : public LcdDriver {
         }
     }
 
-    void PutString(const char* p) {
-        for (uint32_t i = 0; *p != '\0'; i++) {
-            PutChar(static_cast<int>(*p));
-            p++;
-        }
-    }
+	void PutString(const char* p) {
+	    while (*p != '\0') {
+	        PutChar(static_cast<int>(*p++));
+	    }
+	}
 
     void ClearLine(const uint32_t nLine) {
         if (__builtin_expect((!(nLine <= rows_)), 0)) {

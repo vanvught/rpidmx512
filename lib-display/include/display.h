@@ -2,7 +2,7 @@
  * @file display.h
  *
  */
-/* Copyright (C) 2022-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2022-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,10 +28,8 @@
 
 #include <cstdint>
 
-namespace display
-{
-struct Defaults
-{
+namespace display {
+struct Defaults {
     static constexpr uint32_t kSleepTimeout = 5;
 };
 } // namespace display
@@ -48,7 +46,7 @@ struct Defaults
 #define STR(x) STR_HELPER(x)
 #endif
 #define EXPAND(x) x
-#include STR(EXPAND(DISPLAY_USE_CUSTOM_INCLUDE)/custom/display.h)
+#include STR(EXPAND(DISPLAY_USE_CUSTOM_INCLUDE) / custom / display.h)
 #endif
 
-#endif  // DISPLAY_H_
+#endif // DISPLAY_H_

@@ -2,7 +2,7 @@
  * @file config.h
  *
  */
-/* Copyright (C) 2022-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2022-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,21 +47,29 @@ inline constexpr uint32_t kHeight = 160;
 } // namespace config
 
 #if defined(H3)
-#define SPI_LCD_RST_GPIO GPIO_EXT_7 // GPIO6
-#define SPI_LCD_DC_GPIO GPIO_EXT_26 // GPIO10
-#define SPI_LCD_BL_GPIO GPIO_EXT_22 // GPIO2
+#define SPI_LCD_RST_GPIO	GPIO_EXT_7	// GPIO6
+#define SPI_LCD_DC_GPIO		GPIO_EXT_26	// GPIO10
+#define SPI_LCD_BL_GPIO		GPIO_EXT_22	// GPIO2
 #if defined(SPI_LCD_HAVE_CS_GPIO)
-#define SPI_LCD_CS_GPIO GPIO_EXT_24 // GPIO13 / SPI CS0
-#endif
+#define SPI_LCD_CS_GPIO 	GPIO_EXT_24	// GPIO13 / SPI CS0
+#endif // defined(SPI_LCD_HAVE_CS_GPIO)
 #elif defined(GD32) // See board file
-#else
-#include "bcm2835.h"
-#define SPI_LCD_RST_GPIO RPI_V2_GPIO_P1_07 // GPIO4
-#define SPI_LCD_DC_GPIO RPI_V2_GPIO_P1_31  // GPIO6
-#define SPI_LCD_BL_GPIO RPI_V2_GPIO_P1_29  // GPIO5
+#elif defined(RASPPI)
+#include "gpio_rasppi.h"
+#define SPI_LCD_RST_GPIO	GPIO_EXT_7	// GPIO4
+#define SPI_LCD_DC_GPIO		GPIO_EXT_31	// GPIO6
+#define SPI_LCD_BL_GPIO		GPIO_EXT_29	// GPIO5
 #if defined(SPI_LCD_HAVE_CS_GPIO)
-#define SPI_LCD_CS_GPIO RPI_V2_GPIO_P1_24 // GPIO8 / SPI CS0
-#endif
+#define SPI_LCD_CS_GPIO 	GPIO_EXT_22	// GPIO25
+#endif // defined(SPI_LCD_HAVE_CS_GPIO)
+#elif defined(ODROID)
+#else
+#define SPI_LCD_RST_GPIO	0
+#define SPI_LCD_DC_GPIO		0
+#define SPI_LCD_BL_GPIO		0
+#if defined(SPI_LCD_HAVE_CS_GPIO)
+#define SPI_LCD_CS_GPIO 	0
+#endif // defined(SPI_LCD_HAVE_CS_GPIO)
 #endif
 
 #endif // SPI_CONFIG_H_
