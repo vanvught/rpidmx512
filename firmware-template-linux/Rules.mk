@@ -96,6 +96,7 @@ endif
 
 ifndef DARWIN
 LDLIBS += -luuid
+LGPIOD:= -lgpiod
 endif
 
 endif
@@ -176,7 +177,7 @@ $(BUILD_DIRS) :
 		
 $(CURR_DIR) : Makefile $(LINKER) $(OBJECTS) $(LIBDEP)
 	$(info $$TARGET [${TARGET}])
-	$(CPP) $(OBJECTS) -o $(CURR_DIR) $(LIB) $(LDLIBS) -llinux -lz
+	$(CPP) $(OBJECTS) -o $(CURR_DIR) $(LIB) $(LDLIBS) -llinux $(LGPIOD) -lz
 	$(PREFIX)objdump -d $(TARGET) | $(PREFIX)c++filt > linux.lst
 
 $(foreach bdir,$(SRCDIR),$(eval $(call compile-objects,$(bdir))))
