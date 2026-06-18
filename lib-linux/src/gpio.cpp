@@ -43,7 +43,7 @@ const char* gpio_chip = "gpiochip0";
 static struct gpiod_chip* s_chip;
 static struct gpiod_line* s_line[100];
 
-static constexpr auto kMakLines = sizeof(s_line) / sizeof(s_line[0]);
+static constexpr auto kMaxLines = sizeof(s_line) / sizeof(s_line[0]);
 
 static bool GetLine(uint32_t line_number) {
     assert(line_number < kMaxLines);
@@ -70,7 +70,7 @@ static void Init() {
         return;
     }
 
-    for (size_t i = 0; i < kMakLines; i++) {
+    for (size_t i = 0; i < kMaxLines; i++) {
         s_line[i] = nullptr;
     }
 
