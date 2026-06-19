@@ -28,7 +28,7 @@
 
 #include "timecode.h"
 #include "artnettimecode.h"
-#include "h3/console_fb.h"
+#include "console/console_fb.h"
 
 static char s_timecode[] = "--:--:--.-- -----";
 static uint8_t nTypePrevious = 0xFF;	///< Invalid type. Force initial update.

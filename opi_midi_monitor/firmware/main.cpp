@@ -26,7 +26,7 @@
 #include <cstdio>
 
 #include "h3/hal.h"
-#include "h3/console_fb.h"
+#include "console/console_fb.h"
 #include "watchdog.h"
 #include "display.h"
 #include "flashcodeinstall.h"
