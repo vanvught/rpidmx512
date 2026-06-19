@@ -174,9 +174,13 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="device|device/emac|device/fb|device/mmc|CMSIS/Core_A/Source|arm|src|src/debug" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="device|device/emac|device/fb|device/mmc|console|console/fb|console/i2c|console/null|console/uart0|src|src/debug|CMSIS/Core_A/Source" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="CMSIS/Core_A/Source"/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="arm"/>
+						<entry excluding="fb|i2c|null|uart0" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="console"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="console/fb"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="console/i2c"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="console/null"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="console/uart0"/>
 						<entry excluding="emac|fb|mmc" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="device"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="device/emac"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="device/fb"/>
