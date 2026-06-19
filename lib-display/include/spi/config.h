@@ -63,6 +63,13 @@ inline constexpr uint32_t kHeight = 160;
 #define SPI_LCD_CS_GPIO 	GPIO_EXT_22	// GPIO25
 #endif // defined(SPI_LCD_HAVE_CS_GPIO)
 #elif defined(ODROID)
+#include "gpio_odroid.h"
+#define SPI_LCD_RST_GPIO	GPIO_EXT_7	// GPIO4
+#define SPI_LCD_DC_GPIO		GPIO_EXT_31	// GPIO6
+#define SPI_LCD_BL_GPIO		GPIO_EXT_29	// GPIO5
+#if defined(SPI_LCD_HAVE_CS_GPIO)
+#define SPI_LCD_CS_GPIO 	GPIO_EXT_22	// GPIO25
+#endif // defined(SPI_LCD_HAVE_CS_GPIO)
 #else
 #define SPI_LCD_RST_GPIO	0
 #define SPI_LCD_DC_GPIO		0

@@ -37,7 +37,11 @@
 
 namespace i2c {
 #if defined(__linux__)
+#if defined (ODROID)
+static constexpr char kDevice[] = "/dev/i2c-0";
+#else
 static constexpr char kDevice[] = "/dev/i2c-1";
+#endif
 int file = -1;
 #endif
 

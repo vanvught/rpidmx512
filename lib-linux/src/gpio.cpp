@@ -131,6 +131,10 @@ void IntCfg(uint32_t gpio, IntConfig int_cfg) {
 
 void Set(uint32_t pin) {
 #if defined(__linux__)
+    if (pin >= kMaxLines) {
+        return;
+    }
+
     if (s_line[pin]) {
         gpiod_line_set_value(s_line[pin], 1);
         return;
@@ -141,6 +145,10 @@ void Set(uint32_t pin) {
 
 void Clr(uint32_t pin) {
 #if defined(__linux__)
+    if (pin >= kMaxLines) {
+        return;
+    }
+
     if (s_line[pin]) {
         gpiod_line_set_value(s_line[pin], 0);
         return;
@@ -159,6 +167,9 @@ void Write(uint32_t pin, uint32_t value) {
 
 uint8_t Lev(uint32_t pin) {
 #if defined(__linux__)
+    if (pin >= kMaxLines) {
+        return UINT8_MAX;
+    }
     if (s_line[pin]) {
         const auto kVal = gpiod_line_get_value(s_line[pin]);
         return static_cast<uint8_t>(kVal);
