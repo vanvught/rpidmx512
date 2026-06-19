@@ -1,8 +1,8 @@
 /**
- * @file console_fb.h
+ * @file font.S
  *
  */
-/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,17 +23,7 @@
  * THE SOFTWARE.
  */
 
-#ifndef CONSOLE_CONSOLE_FB_H_
-#define CONSOLE_CONSOLE_FB_H_
-
-#if !defined(CONSOLE_FB)
-#error File should not be included
-#endif
-
-#if defined(H3)
-#include "h3/console_fb.h"
-#else
-#include "rpi/console_fb.h"
-#endif
-
-#endif // CONSOLE_CONSOLE_FB_H_
+.align 4
+.global font
+font:
+	.incbin "../console/font.bin"

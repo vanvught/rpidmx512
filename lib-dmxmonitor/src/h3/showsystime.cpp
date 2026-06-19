@@ -26,7 +26,7 @@
 #include <time.h>
 
 #include "h3/showsystime.h"
-#include "h3/console_fb.h"
+#include "console/console_fb.h"
 
 static constexpr auto kRow = 0;
 static constexpr auto kColumn = 80;

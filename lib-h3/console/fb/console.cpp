@@ -32,7 +32,7 @@
 #include <cstdint>
 #include <cstring>
 
-#include "h3/console_fb.h"
+#include "console/console_fb.h"
 #include "device/fb.h"
 #include "common/utils/utils_hex.h"
 #include "arm/arm.h"

@@ -26,10 +26,9 @@
 #ifndef H3_HAL_H_
 #define H3_HAL_H_
 
-#include "superloop/softwaretimers.h"
-
+#include "softwaretimers.h"
 #if defined(DEBUG_STACK)
-void stack_debug_run();
+#include "firmware/debug/debug_stack.h"
 #endif
 
 namespace hal {
@@ -41,7 +40,7 @@ inline constexpr float kCoreTemperatureMax = +90.0;
 inline void Run() {
     SoftwareTimerRun();
 #if defined(DEBUG_STACK)
-    stack_debug_run();
+    debug::stack::Run();
 #endif
 }
 } // namespace hal

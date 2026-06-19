@@ -25,7 +25,6 @@
 
 #include <cstdio>
 
-#include "console.h"
 #include "ansi_colour.h"
 
 namespace console {

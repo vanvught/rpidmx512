@@ -29,7 +29,7 @@
 #include <cassert>
 
 #include "dmxmonitor.h"
-#include "h3/console_fb.h"
+#include "console/console_fb.h"
 
 static constexpr uint32_t kTopRow = 2;
 static constexpr uint32_t kHexColumns = 32;
