@@ -63,8 +63,9 @@
 #if !defined(DISABLE_RTC)
 #include "hwclock.h"
 #endif
-#include "hal_statusled.h"
 #include "timing.h"
+#include "board.h"
+#include "board_statusled.h"
 #include "firmware/debug/debug_debug.h"
 
 #if defined(ARTNET_SHOWFILE)
@@ -237,7 +238,7 @@ void ArtNetNode::Start() {
 #endif
 
     state_.status = artnet::Status::kOn;
-    hal::statusled::SetMode(hal::statusled::Mode::kNormal);
+    board::statusled::SetMode(board::statusled::Mode::kNormal);
 
     DEBUG_EXIT();
 }
@@ -267,7 +268,7 @@ void ArtNetNode::Stop() {
     }
 #endif
 
-    hal::statusled::SetMode(hal::statusled::Mode::kOffOff);
+    board::statusled::SetMode(board::statusled::Mode::kOffOff);
     panelled::Off(panelled::kArtnet);
 
     art_poll_reply_.status1 = static_cast<uint8_t>((art_poll_reply_.status1 & ~artnet::Status1::kIndicatorMask) | artnet::Status1::kIndicatorMuteMode);
@@ -636,7 +637,7 @@ void ArtNetNode::SetNetworkDataLossCondition() {
         dmxnode::Data::ClearLength(i);
     }
 
-    hal::statusled::SetMode(hal::statusled::Mode::kNormal);
+    board::statusled::SetMode(board::statusled::Mode::kNormal);
     panelled::Off(panelled::kArtnet);
 
 #if defined(ARTNET_HAVE_DMXIN)

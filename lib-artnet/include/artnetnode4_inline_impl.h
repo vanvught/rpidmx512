@@ -146,15 +146,15 @@ inline uint8_t ArtNetNode::GetGoodOutput4(uint32_t port_index) {
     return 0;
 }
 
-inline void ArtNetNode::SetLedBlinkMode4(hal::statusled::Mode mode) {
-    static hal::statusled::Mode s_mode;
+inline void ArtNetNode::SetLedBlinkMode4(board::statusled::Mode mode) {
+    static board::statusled::Mode s_mode;
 
     if (s_mode != mode) {
         s_mode = mode;
         DEBUG_PRINTF("mode=%u", static_cast<uint32_t>(mode));
     }
 
-    E131Bridge::SetEnableDataIndicator(mode == hal::statusled::Mode::kNormal);
+    E131Bridge::SetEnableDataIndicator(mode == board::statusled::Mode::kNormal);
 
     for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++) {
         if (E131Bridge::IsTransmitting(port_index)) {
@@ -162,7 +162,7 @@ inline void ArtNetNode::SetLedBlinkMode4(hal::statusled::Mode mode) {
         }
     }
 
-    hal::statusled::SetMode(mode);
+    board::statusled::SetMode(mode);
 }
 
 #endif // ARTNETNODE4_INLINE_IMPL_H_

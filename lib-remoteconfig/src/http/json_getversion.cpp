@@ -26,7 +26,7 @@
 #include <cstdio>
 
 #include "board.h"
-#include "firmwareversion.h"
+#include "firmware/firmwareversion.h"
 
 namespace json {
 uint32_t GetVersion(char* out_buffer, uint32_t out_buffer_size) {

@@ -36,7 +36,7 @@
 #include "artnetdisplay.h"
 #include "dmxnodedata.h"
 #include "dmxnode_data.h"
-#include "hal_statusled.h"
+#include "board_statusled.h"
 #include "firmware/debug/debug_debug.h"
 
 void ArtNetNode::SetSwitch(uint32_t port_index, uint8_t sw)
@@ -163,7 +163,7 @@ void ArtNetNode::HandleAddress()
             break;
 
         case artnet::PortCommand::kLedNormal:
-            hal::statusled::SetModeWithLock(hal::statusled::Mode::kNormal, false);
+            board::statusled::SetModeWithLock(board::statusled::Mode::kNormal, false);
             art_poll_reply_.status1 =
                 static_cast<uint8_t>((art_poll_reply_.status1 & ~artnet::Status1::kIndicatorMask) | artnet::Status1::kIndicatorNormalMode);
 #if (ARTNET_VERSION >= 4)
@@ -172,7 +172,7 @@ void ArtNetNode::HandleAddress()
             break;
 
         case artnet::PortCommand::kLedMute:
-            hal::statusled::SetModeWithLock(hal::statusled::Mode::kOffOff, true);
+            board::statusled::SetModeWithLock(board::statusled::Mode::kOffOff, true);
             art_poll_reply_.status1 = static_cast<uint8_t>((art_poll_reply_.status1 & ~artnet::Status1::kIndicatorMask) | artnet::Status1::kIndicatorMuteMode);
 #if (ARTNET_VERSION >= 4)
             E131Bridge::SetEnableDataIndicator(false);
@@ -180,7 +180,7 @@ void ArtNetNode::HandleAddress()
             break;
 
         case artnet::PortCommand::kLedLocate:
-            hal::statusled::SetModeWithLock(hal::statusled::Mode::kFast, true);
+            board::statusled::SetModeWithLock(board::statusled::Mode::kFast, true);
             art_poll_reply_.status1 =
                 static_cast<uint8_t>((art_poll_reply_.status1 & ~artnet::Status1::kIndicatorMask) | artnet::Status1::kIndicatorLocateMode);
 #if (ARTNET_VERSION >= 4)

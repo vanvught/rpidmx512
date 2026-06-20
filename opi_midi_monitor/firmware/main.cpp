@@ -25,7 +25,7 @@
 
 #include <cstdio>
 
-#include "h3/hal.h"
+#include "board.h"
 #include "console/console_fb.h"
 #include "watchdog.h"
 #include "display.h"
@@ -38,15 +38,14 @@
 #include "midi.h"
 #include "midimonitor.h"
 #include "software_version.h"
-#include "firmwareversion.h"
+#include "firmware/firmwareversion.h"
 
-namespace hal {
+namespace board {
 void RebootHandler() {}
-} // namespace hal
+} // namespace board
 
-int main() // NOLINT
-{
-    hal::Init();
+int main() { // NOLINT
+    board::Init();
     Display display;
 #if !defined(NO_EMAC)
     ConfigStore config_store;
@@ -79,6 +78,6 @@ int main() // NOLINT
 #if !defined(NO_EMAC)
         network::Run();
 #endif
-        hal::Run();
+        board::Run();
     }
 }

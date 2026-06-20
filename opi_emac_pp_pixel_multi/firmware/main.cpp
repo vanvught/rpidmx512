@@ -29,7 +29,7 @@
 #include <cstdint>
 #include <cstdio>
 
-#include "h3/hal.h"
+#include "board.h"
 #include "watchdog.h"
 #include "network.h"
 #include "apps/mdns.h"
@@ -48,21 +48,20 @@
 #include "remoteconfig.h"
 #include "flashcodeinstall.h"
 #include "configstore.h"
-#include "firmwareversion.h"
+#include "firmware/firmwareversion.h"
 #include "software_version.h"
 #include "common/utils/utils_enum.h"
 #include "configurationstore.h"
 
-namespace hal {
+namespace board {
 void RebootHandler() {
     PixelDmxMulti::Get().Blackout();
     PixelPusher::Get()->Stop();
 }
-} // namespace hal
+} // namespace board
 
-int main() // NOLINT
-{
-    hal::Init();
+int main() { // NOLINT
+    board::Init();
     DisplayUdf display;
     ConfigStore config_store;
     network::Init();
@@ -128,6 +127,6 @@ int main() // NOLINT
         pp.Run();
         pixeltest_pattern.Run();
         display.Run();
-        hal::Run();
+        board::Run();
     }
 }

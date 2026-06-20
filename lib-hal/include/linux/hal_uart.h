@@ -46,7 +46,7 @@ static constexpr auto PARITY_EVEN = LINUX_UART_PARITY_EVEN;
 
 static constexpr auto STOP_1BIT = LINUX_UART_STOP_1BIT;
 static constexpr auto STOP_2BITS = LINUX_UART_STOP_2BITS;
-} // namespace hal::uart
+} // namespace board::uart
 
 #if defined(RASPPI)
 #ifdef __cplusplus

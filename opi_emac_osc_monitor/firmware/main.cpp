@@ -25,7 +25,7 @@
 
 #include <cstdint>
 
-#include "h3/hal.h"
+#include "board.h"
 #include "console/console_fb.h"
 #include "watchdog.h"
 #include "board.h"
@@ -38,19 +38,18 @@
 #include "json/oscserverparams.h"
 #include "oscservermsgconst.h"
 #include "dmxmonitor.h"
-#include "firmwareversion.h"
+#include "firmware/firmwareversion.h"
 #include "software_version.h"
 #include "flashcodeinstall.h"
 #include "configstore.h"
 #include "remoteconfig.h"
 
-namespace hal {
+namespace board {
 void RebootHandler() {}
-} // namespace hal
+} // namespace board
 
-int main() // NOLINT
-{
-    hal::Init();
+int main() { // NOLINT
+    board::Init();
     Display display;
     ConfigStore config_store;
     network::Init();
@@ -107,6 +106,6 @@ int main() // NOLINT
         network::Run();
         show_systime.Run();
         display.Run();
-        hal::Run();
+        board::Run();
     }
 }

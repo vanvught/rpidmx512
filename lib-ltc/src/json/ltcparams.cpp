@@ -154,13 +154,13 @@ void LtcParams::SetUtcOffset(const char* val, uint32_t len)
     int32_t hours;
     uint32_t minutes;
 
-    if (hal::utc::ParseOffset(val, len, hours, minutes))
+    if (utc::ParseOffset(val, len, hours, minutes))
     {
         DEBUG_PUTS("Parse OK");
 
         int32_t utc_offset;
 
-        if (hal::utc::ValidateOffset(hours, minutes, utc_offset))
+        if (utc::ValidateOffset(hours, minutes, utc_offset))
         {
             DEBUG_PUTS("Validate OK");
             store_ltc.utc_offset = utc_offset;

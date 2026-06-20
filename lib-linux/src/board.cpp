@@ -43,7 +43,7 @@
 #if !defined(DISABLE_RTC)
 #include "hwclock.h"
 #endif
-#include "linux/hal.h"
+#include "board.h"
 #include "spi.h"
 #include "i2c.h"
 #include "uuid.h"
@@ -98,7 +98,7 @@ static char* StrFindReplace(char* str, const char* find, const char* replace) {
     return str;
 }
 
-namespace hal {
+namespace board {
 void Init() {
     DEBUG_ENTRY();
 
@@ -173,7 +173,7 @@ float CoreTemperatureCurrent() {
     return atof(result);
 #endif
 }
-} // namespace hal
+} // namespace board
 
 bool PowerOff() {
 #if defined(__APPLE__)
@@ -236,7 +236,7 @@ bool Reboot() {
 }
 
 const char* Website() {
-    return hal::kWebsite;
+    return "https://gd32-dmx.org";
 }
 
 void Print() {
@@ -255,9 +255,3 @@ void Print() {
     printf("UUID : %s\n", uuid_str);
 }
 } // namespace board
-
-namespace hal {
-bool Reboot() {
-    return board::Reboot();
-}
-} // namespace hal

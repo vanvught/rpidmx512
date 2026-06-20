@@ -26,6 +26,7 @@
 #include <cstdint>
 #include <cstdio>
 
+#include "board.h"
 #include "watchdog.h"
 #include "network.h"
 #include "displayudf.h"
@@ -42,20 +43,18 @@
 #include "flashcodeinstall.h"
 #include "configstore.h"
 #include "remoteconfig.h"
-#include "firmwareversion.h"
+#include "firmware/firmwareversion.h"
 #include "software_version.h"
 
-namespace hal
-{
-void RebootHandler()
-{
+namespace board {
+void RebootHandler() {
     ArtNetNode::Get()->Stop();
 }
-} // namespace hal
+} // namespace board
 
 int main() // NOLINT
 {
-    hal::Init();
+    board::Init();
     DisplayUdf display;
     ConfigStore config_store;
     network::Init();
@@ -73,15 +72,15 @@ int main() // NOLINT
     DmxNodeNode dmxnode_node;
     dmxnode_node.SetRdm(static_cast<uint32_t>(0), true);
     dmxnode_node.SetOutput(pca9685_dmx.GetPCA9685DmxSet());
-	
-	char description[64];
-	snprintf(description, sizeof(description) - 1, "PCA9685");
-	RdmPersonality* rdm_personalities[1] = {new RdmPersonality(description, pca9685_dmx.GetPCA9685DmxSet())};
 
-	ArtNetRdmResponder rdm_responder(rdm_personalities, 1);
-	rdm_responder.Init();	
-	rdm_responder.Print();
-	
+    char description[64];
+    snprintf(description, sizeof(description) - 1, "PCA9685");
+    RdmPersonality* rdm_personalities[1] = {new RdmPersonality(description, pca9685_dmx.GetPCA9685DmxSet())};
+
+    ArtNetRdmResponder rdm_responder(rdm_personalities, 1);
+    rdm_responder.Init();
+    rdm_responder.Print();
+
     dmxnode_node.SetRdmResponder(&rdm_responder);
     dmxnode_node.Print();
 
@@ -112,8 +111,7 @@ int main() // NOLINT
 
     watchdog::Init();
 
-    for (;;)
-    {
+    for (;;) {
         watchdog::Feed();
         network::Run();
         dmxnode_node.Run();
@@ -121,6 +119,6 @@ int main() // NOLINT
         showfile.Run();
 #endif
         display.Run();
-        hal::Run();
+        board::Run();
     }
 }

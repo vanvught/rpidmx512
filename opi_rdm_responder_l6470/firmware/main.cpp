@@ -25,7 +25,7 @@
 
 #include <cstdio>
 
-#include "h3/hal.h"
+#include "board.h"
 #include "watchdog.h"
 #include "display.h"
 #include "rdmresponder.h"
@@ -36,7 +36,7 @@
 #include "dmxnodechain.h"
 #include "flashcodeinstall.h"
 #include "configstore.h"
-#include "firmwareversion.h"
+#include "firmware/firmwareversion.h"
 #include "software_version.h"
 #include "sparkfundmx.h"
 #include "common/utils/utils_enum.h"
@@ -47,19 +47,18 @@
 #include "network.h"
 #endif
 
-namespace hal
-{
+namespace board {
 void RebootHandler() {}
-} // namespace hal
+} // namespace board
 
 int main() // NOLINT
 {
-    hal::Init();
+    board::Init();
     Display display;
     ConfigStore config_store;
-#if !defined(NO_EMAC)    
+#if !defined(NO_EMAC)
     NetworkInit();
-#endif    
+#endif
     FirmwareVersion fw(kSoftwareVersion, __DATE__, __TIME__);
     FlashCodeInstall spiflash_install;
 
@@ -73,7 +72,7 @@ int main() // NOLINT
     sparkFunDmx.ReadConfigFiles();
 
     const auto kMotorsConnected = sparkFunDmx.GetMotorsConnected();
- 
+
     TLC59711Dmx tlc59711dmx;
 
     json::Tlc59711DmxParams pwmledparms;
@@ -85,19 +84,15 @@ int main() // NOLINT
 
     char description[64];
 
-    if (kIsLedTypeSet)
-    {
+    if (kIsLedTypeSet) {
         dmxNodeChain.SetTLC59711Dmx(&tlc59711dmx);
         display.Printf(7, "%s:%d", tlc59711::GetType(tlc59711dmx.GetType()), tlc59711dmx.GetCount());
 
-        snprintf(description, sizeof(description) - 1, "Sparkfun [%d] with %s [%d]", kMotorsConnected, tlc59711::GetType(tlc59711dmx.GetType()),
-                 tlc59711dmx.GetCount());
-    }
-    else
-    {
+        snprintf(description, sizeof(description) - 1, "Sparkfun [%d] with %s [%d]", kMotorsConnected, tlc59711::GetType(tlc59711dmx.GetType()), tlc59711dmx.GetCount());
+    } else {
         snprintf(description, sizeof(description) - 1, "Sparkfun [%d]", kMotorsConnected);
     }
-	
+
     RdmPersonality* rdm_personalities[1] = {new RdmPersonality(description, &dmxNodeChain)};
 
     RDMResponder rdm_responder(rdm_personalities, 1);
@@ -105,13 +100,12 @@ int main() // NOLINT
     rdm_responder.Start();
     rdm_responder.Print();
 
-    hal::statusled::SetMode(hal::statusled::Mode::kNormal);
+    board::statusled::SetMode(board::statusled::Mode::kNormal);
     watchdog::Init();
 
-    for (;;)
-    {
+    for (;;) {
         watchdog::Feed();
         rdm_responder.Run();
-        hal::Run();
+        board::Run();
     }
 }

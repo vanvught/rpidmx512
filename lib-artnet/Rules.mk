@@ -1,3 +1,4 @@
+EXTRA_INCLUDES+=../lib-board/include
 EXTRA_INCLUDES+=../lib-hwclock/include ../lib-network/include
 
 ifneq ($(MAKE_FLAGS),)

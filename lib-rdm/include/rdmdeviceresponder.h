@@ -30,7 +30,7 @@
 #include <cstring>
 
 #include "firmware/debug/debug_debug.h"
-#include "hal.h"
+#include "board.h"
 #include "rdmconst.h"
 #include "rdmdevice.h"
 #include "rdmidentify.h"

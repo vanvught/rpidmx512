@@ -26,7 +26,7 @@
 #include <cstdint>
 #include <signal.h>
 
-#include "hal.h"
+#include "board.h"
 #include "network.h"
 #include "display.h"
 #include "pp.h"
@@ -36,7 +36,7 @@
 #include "rdmdevice.h"
 #include "remoteconfig.h"
 #include "configstore.h"
-#include "firmwareversion.h"
+#include "firmware/firmwareversion.h"
 #include "software_version.h"
 
 static bool keep_running = true;
@@ -51,7 +51,7 @@ int main(int argc, char** argv)
     struct sigaction act;
     act.sa_handler = IntHandler;
     sigaction(SIGINT, &act, nullptr);
-    hal::Init();
+    board::Init();
     Display display;
     ConfigStore config_store;
     Network nw(argc, argv);
@@ -88,7 +88,7 @@ int main(int argc, char** argv)
     {
         network::Run();
         pp.Run();
-        hal::Run();
+        board::Run();
     }
 
     return 0;

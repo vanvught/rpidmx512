@@ -27,7 +27,7 @@
 #include <cstdint>
 #include <algorithm>
 
-#include "h3/hal.h"
+#include "board.h"
 #include "console/console_fb.h"
 #include "watchdog.h"
 #include "timing.h"
@@ -47,13 +47,12 @@
 
 static constexpr auto kTopRowStats = 26;
 
-namespace hal {
+namespace board {
 void RebootHandler() {}
-} // namespace hal
+} // namespace board
 
-int main() // NOLINT
-{
-    hal::Init();
+int main() { // NOLINT
+    board::Init();
     DisplayUdf display;
 #if !defined(NO_EMAC)
     ConfigStore config_store;
@@ -153,6 +152,6 @@ int main() // NOLINT
 #if !defined(NO_EMAC)
         network::Run();
 #endif
-        hal::Run();
+        board::Run();
     }
 }

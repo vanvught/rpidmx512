@@ -42,7 +42,7 @@
 #include "arm/ltcreader.h"
 #include "ltc.h"
 #include "timecodeconst.h"
-#include "hal_statusled.h"
+#include "board_statusled.h"
 // Output
 #include "midi.h"
 #include "ltcetc.h"
@@ -249,7 +249,7 @@ void LtcReader::Start() {
 #endif
 
     LtcOutputs::Get()->Init();
-    hal::statusled::SetMode(hal::statusled::Mode::kNormal);
+    board::statusled::SetMode(board::statusled::Mode::kNormal);
 }
 
 #if defined(__GNUC__) && !defined(__clang__)
@@ -301,8 +301,8 @@ void LtcReader::Run() {
 
     __DMB();
     if ((gv_ltc_nUpdatesPerSecond >= 24) && (gv_ltc_nUpdatesPerSecond <= 30)) {
-        hal::statusled::SetMode(hal::statusled::Mode::kData);
+        board::statusled::SetMode(board::statusled::Mode::kData);
     } else {
-        hal::statusled::SetMode(hal::statusled::Mode::kNormal);
+        board::statusled::SetMode(board::statusled::Mode::kNormal);
     }
 }

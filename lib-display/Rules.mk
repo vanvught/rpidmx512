@@ -1,3 +1,5 @@
+EXTRA_INCLUDES+=../lib-board/include
+
 ifneq ($(MAKE_FLAGS),)
 	ifneq (,$(findstring CONFIG_DISPLAY_USE_SPI,$(MAKE_FLAGS)))
 		EXTRA_SRCDIR+=src/spi src/sleep

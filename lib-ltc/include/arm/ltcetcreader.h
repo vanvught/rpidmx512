@@ -29,7 +29,7 @@
 #include "midi.h"
 #include "ltcoutputs.h"
 #include "timing.h"
-#include "hal_statusled.h"
+#include "board_statusled.h"
 
 class LtcEtcReader final : public LtcEtcHandler
 {
@@ -44,12 +44,12 @@ class LtcEtcReader final : public LtcEtcHandler
         if ((kTimeStamp - timestamp_) >= 50U)
         {
             LtcOutputs::Get()->ShowSysTime();
-            hal::statusled::SetMode(hal::statusled::Mode::kNormal);
+            board::statusled::SetMode(board::statusled::Mode::kNormal);
             Reset(true);
         }
         else
         {
-            hal::statusled::SetMode(hal::statusled::Mode::kData);
+            board::statusled::SetMode(board::statusled::Mode::kData);
             Reset(false);
         }
     }

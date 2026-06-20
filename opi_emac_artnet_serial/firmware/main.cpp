@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include "h3/hal.h"
+#include "board.h"
 #include "watchdog.h"
 #include "network.h"
 #include "displayudf.h"
@@ -38,20 +38,17 @@
 #include "remoteconfig.h"
 #include "flashcodeinstall.h"
 #include "configstore.h"
-#include "firmwareversion.h"
+#include "firmware/firmwareversion.h"
 #include "software_version.h"
 
-namespace hal
-{
-void RebootHandler()
-{
+namespace board {
+void RebootHandler() {
     ArtNetNode::Get()->Stop();
 }
-} // namespace hal
+} // namespace board
 
-int main()
-{
-    hal::Init();
+int main() {
+    board::Init();
     DisplayUdf display;
     ConfigStore config_store;
     network::Init();
@@ -93,12 +90,9 @@ int main()
 
     const auto kFilesCount = dmx_serial.GetFilesCount();
 
-    if (kFilesCount == 0)
-    {
+    if (kFilesCount == 0) {
         display.Printf(7, "No files [SDCard?]");
-    }
-    else
-    {
+    } else {
         display.Printf(7, "Channel%s: %d", kFilesCount == 1 ? "" : "s", kFilesCount);
     }
 
@@ -112,8 +106,7 @@ int main()
 
     watchdog::Init();
 
-    for (;;)
-    {
+    for (;;) {
         watchdog::Feed();
         network::Run();
         dmx_node_node.Run();
@@ -121,6 +114,6 @@ int main()
         showfile.Run();
 #endif
         display.Run();
-        hal::Run();
+        board::Run();
     }
 }

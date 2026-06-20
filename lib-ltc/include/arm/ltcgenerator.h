@@ -28,7 +28,7 @@
 #include <cstdint>
 
 #include "ltc.h"
-#include "hal_statusled.h"
+#include "board_statusled.h"
 
 namespace ltcgenerator {
 enum class Direction { kDirectionForward, kDirectionBackward };
@@ -49,9 +49,9 @@ class LtcGenerator {
         HandleButtons();
 
         if (state_ == kStarted) {
-            hal::statusled::SetMode(hal::statusled::Mode::kData);
+            board::statusled::SetMode(board::statusled::Mode::kData);
         } else {
-            hal::statusled::SetMode(hal::statusled::Mode::kNormal);
+            board::statusled::SetMode(board::statusled::Mode::kNormal);
         }
     }
 

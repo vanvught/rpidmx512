@@ -35,7 +35,7 @@
 #include "ltc.h"
 #include "timecodeconst.h"
 #include "network_udp.h"
-#include "hal_statusled.h"
+#include "board_statusled.h"
 // Output
 #include "ltcetc.h"
 #include "ltcsender.h"
@@ -182,7 +182,7 @@ void LtcGenerator::Start() {
 
     LtcOutputs::Get()->Init();
 
-    hal::statusled::SetMode(hal::statusled::Mode::kNormal);
+    board::statusled::SetMode(board::statusled::Mode::kNormal);
 
     DEBUG_EXIT();
 }

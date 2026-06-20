@@ -30,7 +30,7 @@
 
 #include "dmx.h" // IWYU pragma: keep
 #include "dmxnode_outputtype.h"
-#include "hal_statusled.h"
+#include "board_statusled.h"
 
 class DMXReceiver : Dmx {
    public:
@@ -75,7 +75,7 @@ class DMXReceiver : Dmx {
             if (!is_active_) {
                 dmx_node_output_type_->Start(0);
                 is_active_ = true;
-                hal::statusled::SetMode(hal::statusled::Mode::kData);
+                board::statusled::SetMode(board::statusled::Mode::kData);
             }
 
             return const_cast<uint8_t*>(dmx_available);
@@ -83,7 +83,7 @@ class DMXReceiver : Dmx {
             if (is_active_) {
                 dmx_node_output_type_->Stop(0);
                 is_active_ = false;
-                hal::statusled::SetMode(hal::statusled::Mode::kNormal);
+                board::statusled::SetMode(board::statusled::Mode::kNormal);
             }
 
             length = -1;

@@ -22,10 +22,11 @@
  * THE SOFTWARE.
  */
 
+#include "board.h"
 #include "i2c.h"
 #include "mcpbuttons.h"
 #include "displayset.h"
-#include "hal.h"
+#include "board.h"
 #include "mcpbuttons.h"
 #include "display.h"
 #include "ltcdisplaymax7219.h"
@@ -475,7 +476,7 @@ void McpButtons::HandleRunActionSelect() {
         Display::Get()->Cls();
         Display::Get()->TextStatus("Reboot ...");
 
-        hal::Reboot();
+        board::Reboot();
         __builtin_unreachable();
         return;
     }

@@ -39,7 +39,7 @@
 #include "arm/midireader.h"
 #include "ltc.h"
 #include "timecodeconst.h"
-#include "hal_statusled.h"
+#include "board_statusled.h"
 // Input
 #include "midi.h"
 // Output
@@ -73,7 +73,7 @@ void MidiReader::Start() {
     Midi::Get()->Init(midi::Direction::INPUT);
 
     LtcOutputs::Get()->Init(true);
-    hal::statusled::SetMode(hal::statusled::Mode::kNormal);
+    board::statusled::SetMode(board::statusled::Mode::kNormal);
 
     DEBUG_EXIT();
 }
@@ -257,8 +257,8 @@ void MidiReader::Run() {
     }
 
     if (Midi::Get()->GetUpdatesPerSecond() != 0) {
-        hal::statusled::SetMode(hal::statusled::Mode::kData);
+        board::statusled::SetMode(board::statusled::Mode::kData);
     } else {
-        hal::statusled::SetMode(hal::statusled::Mode::kNormal);
+        board::statusled::SetMode(board::statusled::Mode::kNormal);
     }
 }

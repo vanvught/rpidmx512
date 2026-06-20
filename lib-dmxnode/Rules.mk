@@ -1,4 +1,4 @@
-EXTRA_INCLUDES+=
+EXTRA_INCLUDES+=../lib-board/include
 EXTRA_SRCDIR+=src/json
 	
 ifneq ($(MAKE_FLAGS),)

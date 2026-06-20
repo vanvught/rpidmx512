@@ -1,6 +1,6 @@
 EXTRA_INCLUDES+=../lib-tlc59711/include
 EXTRA_INCLUDES+=../lib-dmxled/include
-EXTRA_INCLUDES+=
+EXTRA_INCLUDES+=../lib-board/include
 
 EXTRA_SRCDIR+=src/json
 

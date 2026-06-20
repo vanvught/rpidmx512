@@ -43,7 +43,7 @@ uint32_t GetGps(char* buffer, uint32_t length) {
 
     int32_t hours = 0;
     uint32_t minutes = 0;
-    hal::utc::SplitOffset(gps.GetUtcOffset(), hours, minutes);
+    utc::SplitOffset(gps.GetUtcOffset(), hours, minutes);
     const auto kFlags = ConfigStore::Instance().GpsGet(&common::store::Gps::flags);
 
     return json::helpers::Serialize(buffer, length, [&](JsonDoc& doc) {

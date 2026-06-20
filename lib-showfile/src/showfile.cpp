@@ -37,7 +37,7 @@
 #include "device/usb/host.h"
 #endif
 
-#include "hal_statusled.h"
+#include "board_statusled.h"
 
  #include "firmware/debug/debug_debug.h"
 
@@ -370,17 +370,17 @@ void ShowFile::SetStatus(showfile::Status status)
     {
         case showfile::Status::kIdle:
             ShowFileFormat::DoRunCleanupProcess(true);
-            hal::statusled::SetMode(hal::statusled::Mode::kNormal);
+            board::statusled::SetMode(board::statusled::Mode::kNormal);
             break;
         case showfile::Status::kPlaying:
         case showfile::Status::kRecording:
             ShowFileFormat::DoRunCleanupProcess(false);
-            hal::statusled::SetMode(hal::statusled::Mode::kData);
+            board::statusled::SetMode(board::statusled::Mode::kData);
             break;
         case showfile::Status::kStopped:
         case showfile::Status::kEnded:
             ShowFileFormat::DoRunCleanupProcess(true);
-            hal::statusled::SetMode(hal::statusled::Mode::kNormal);
+            board::statusled::SetMode(board::statusled::Mode::kNormal);
             break;
         default:
             break;

@@ -1,5 +1,6 @@
 $(info $$MAKE_FLAGS [${MAKE_FLAGS}])
 
+EXTRA_INCLUDES+=../lib-board/include
 EXTRA_INCLUDES+=../lib-network/include ../lib-display/include 
 EXTRA_SRCDIR+=src/json
 

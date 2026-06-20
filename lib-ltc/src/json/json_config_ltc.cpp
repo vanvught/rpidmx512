@@ -98,7 +98,7 @@ uint32_t GetLtc(char* buffer, uint32_t length)
 	    doc[LtcParamsConst::kGpsStart.name] = common::IsFlagSet(kFlags, Flags::Flag::kGpsStart);
 	    int32_t hours = 0;
     	uint32_t minutes = 0;
-    	hal::utc::SplitOffset(kUtcOffset, hours, minutes);
+    	utc::SplitOffset(kUtcOffset, hours, minutes);
     	char offset[format::kOffsetBufferSize];
 	    doc[LtcParamsConst::kUtcOffset.name] = format::UtcOffset(hours, minutes, offset);
 	    // source=internal

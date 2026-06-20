@@ -26,7 +26,7 @@
 #include <cstdint>
 #include <signal.h>
 
-#include "hal.h"
+#include "board.h"
 #include "network.h"
 #include "display.h"
 #include "json/dmxnodenode.h"
@@ -40,7 +40,7 @@
 #if defined(NODE_SHOWFILE)
 #include "showfile.h"
 #endif
-#include "firmwareversion.h"
+#include "firmware/firmwareversion.h"
 #include "software_version.h"
 
 static bool keep_running = true;
@@ -55,7 +55,7 @@ int main(int argc, char** argv)
     struct sigaction act;
     act.sa_handler = IntHandler;
     sigaction(SIGINT, &act, nullptr);
-    hal::Init();
+    board::Init();
     Display display;
     ConfigStore config_store;
     Network nw(argc, argv);
@@ -91,7 +91,7 @@ int main(int argc, char** argv)
 #if defined(NODE_SHOWFILE)
         showfile.Run();
 #endif
-        hal::Run();
+        board::Run();
     }
 
     return 0;

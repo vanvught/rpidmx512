@@ -28,7 +28,7 @@
 #include <cstdint>
 #include <cassert>
 
-#include "hal_statusled.h"
+#include "board_statusled.h"
 
 class RDMIdentify {
    public:
@@ -46,7 +46,7 @@ class RDMIdentify {
 
     void On() {
         s_is_enabled = true;
-        hal::statusled::SetModeWithLock(hal::statusled::Mode::kFast, true);
+        board::statusled::SetModeWithLock(board::statusled::Mode::kFast, true);
 
         if (s_mode != Mode::kQuiet) {
             On(s_mode);
@@ -55,7 +55,7 @@ class RDMIdentify {
 
     void Off() {
         s_is_enabled = false;
-        hal::statusled::SetModeWithLock(hal::statusled::Mode::kNormal, false);
+        board::statusled::SetModeWithLock(board::statusled::Mode::kNormal, false);
 
         if (s_mode != Mode::kQuiet) {
             Off(s_mode);

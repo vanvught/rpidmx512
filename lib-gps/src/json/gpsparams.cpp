@@ -68,12 +68,12 @@ void GpsParams::SetUtcOffset(const char* val, uint32_t len) {
     int32_t hours;
     uint32_t minutes;
 
-    if (hal::utc::ParseOffset(val, len, hours, minutes)) {
+    if (utc::ParseOffset(val, len, hours, minutes)) {
         DEBUG_PUTS("Parse OK");
 
         int32_t utc_offset;
 
-        if (hal::utc::ValidateOffset(hours, minutes, utc_offset)) {
+        if (utc::ValidateOffset(hours, minutes, utc_offset)) {
             DEBUG_PUTS("Validate OK");
             store_gps.utc_offset = utc_offset;
         }
@@ -107,7 +107,7 @@ void GpsParams::Dump() {
     printf(" %s=%u\n", GpsParamsConst::kEnable.name, common::IsFlagSet(store_gps.flags, Flags::Flag::kEnable));
     int32_t hours;
     uint32_t minutes;
-    hal::utc::SplitOffset(store_gps.utc_offset, hours, minutes);
+    utc::SplitOffset(store_gps.utc_offset, hours, minutes);
     printf(" %s=%d:%u [%d] \n", GpsParamsConst::kUtcOffset.name, hours, minutes, store_gps.utc_offset);
 }
 } // namespace json

@@ -26,7 +26,7 @@
 #include <cstdint>
 #include <cassert>
 
-#include "h3/hal.h"
+#include "board.h"
 #include "watchdog.h"
 #include "emac/network.h"
 #include "display.h"
@@ -40,17 +40,16 @@
 #include "flashcodeinstall.h"
 #include "configstore.h"
 #include "remoteconfig.h"
-#include "firmwareversion.h"
+#include "firmware/firmwareversion.h"
 #include "software_version.h"
 #include "displayhandler.h"
 
-namespace hal {
+namespace board {
 void RebootHandler() {}
-} // namespace hal
+} // namespace board
 
-int main() // NOLINT
-{
-    hal::Init();
+int main() { // NOLINT
+    board::Init();
     Display display;
     ConfigStore config_store;
     network::Init();
@@ -106,7 +105,7 @@ int main() // NOLINT
 
     display.TextStatus(OscClientMsgConst::kStarted, ansi::Colours::Colour::kGreen);
 
-    hal::statusled::SetMode(hal::statusled::Mode::kNormal);
+    board::statusled::SetMode(board::statusled::Mode::kNormal);
     watchdog::Init();
 
     for (;;) {
@@ -115,6 +114,6 @@ int main() // NOLINT
         osc_client.Run();
         buttons_set->Run();
         display.Run();
-        hal::Run();
+        board::Run();
     }
 }

@@ -180,12 +180,14 @@ else
 	LIBS+=$(CONFIG_DISPLAY_LIB)
 endif
 
-LIBS+=superloop device hal
+LIBS+=superloop device
 
 ifdef LINUX 
 	LIBS+=linux
 else
 endif
+
+LIBS+=board
 
 ifeq (,$(findstring DISABLE_RTC,$(DEFINES)))
 	LIBS+=hwclock

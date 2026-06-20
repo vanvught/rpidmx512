@@ -27,7 +27,7 @@
 #pragma GCC optimize("no-tree-loop-distribute-patterns")
 #pragma GCC optimize("-fprefetch-loop-arrays")
 
-#include "h3/hal.h"
+#include "board.h"
 #include "watchdog.h"
 #include "network.h"
 #include "displayudf.h"
@@ -45,23 +45,20 @@
 #include "remoteconfig.h"
 #include "flashcodeinstall.h"
 #include "configstore.h"
-#include "firmwareversion.h"
+#include "firmware/firmwareversion.h"
 #include "software_version.h"
 #include "common/utils/utils_enum.h"
 #include "configurationstore.h"
 
-namespace hal
-{
-void RebootHandler()
-{
+namespace board {
+void RebootHandler() {
     PixelDmxMulti::Get().Blackout();
     DdpDisplay::Get()->Stop();
 }
-} // namespace hal
+} // namespace board
 
-int main() // NOLINT
-{
-    hal::Init();
+int main() { // NOLINT
+    board::Init();
     DisplayUdf display;
     ConfigStore config_store;
     network::Init();
@@ -73,7 +70,7 @@ int main() // NOLINT
     DdpDisplay ddpdisplay;
 
     PixelDmxMulti pixeldmx_multi;
-	PixelTestPattern pixeltest_pattern(pixelpatterns::Pattern::kNone, 8);
+    PixelTestPattern pixeltest_pattern(pixelpatterns::Pattern::kNone, 8);
 
     json::PixelDmxParams pixeldmx_params;
     pixeldmx_params.Load();
@@ -91,8 +88,8 @@ int main() // NOLINT
     ddpdisplay.Print();
 
 #if defined(NODE_RDMNET_LLRP_ONLY)
-	RdmNetDevice llrp_only_device;
-	llrp_only_device.Print();
+    RdmNetDevice llrp_only_device;
+    llrp_only_device.Print();
 #endif
 
     display.SetTitle("DDP Pixel %d", kActivePorts);
@@ -118,12 +115,11 @@ int main() // NOLINT
 
     watchdog::Init();
 
-    for (;;)
-    {
+    for (;;) {
         watchdog::Feed();
         network::Run();
         pixeltest_pattern.Run();
         display.Run();
-        hal::Run();
+        board::Run();
     }
 }

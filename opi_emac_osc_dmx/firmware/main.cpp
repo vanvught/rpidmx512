@@ -25,7 +25,7 @@
 
 #include <cstdint>
 
-#include "h3/hal.h"
+#include "board.h"
 #include "watchdog.h"
 #include "board.h"
 #include "emac/network.h"
@@ -38,17 +38,17 @@
 #include "flashcodeinstall.h"
 #include "configstore.h"
 #include "remoteconfig.h"
-#include "firmwareversion.h"
+#include "firmware/firmwareversion.h"
 #include "software_version.h"
 
-namespace hal {
+namespace board {
 void RebootHandler() {
     Dmx::Get()->Blackout();
 }
-} // namespace hal
+} // namespace board
 
-int main() {
-    hal::Init();
+int main() { // NOLINT
+    board::Init();
     Display display;
     ConfigStore config_store;
     network::Init();
@@ -97,6 +97,6 @@ int main() {
         watchdog::Feed();
         network::Run();
         display.Run();
-        hal::Run();
+        board::Run();
     }
 }

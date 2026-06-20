@@ -25,7 +25,7 @@
 
 #include <cstdint>
 
-#include "h3/hal.h"
+#include "board.h"
 #include "watchdog.h"
 #include "board.h"
 #include "emac/network.h"
@@ -42,20 +42,19 @@
 #include "remoteconfig.h"
 #include "flashcodeinstall.h"
 #include "configstore.h"
-#include "firmwareversion.h"
+#include "firmware/firmwareversion.h"
 #include "software_version.h"
 #include "common/utils/utils_enum.h"
 #include "configurationstore.h"
 
-namespace hal {
+namespace board {
 void RebootHandler() {
     PixelDmx::Get().Blackout();
 }
-} // namespace hal
+} // namespace board
 
-int main() // NOLINT
-{
-    hal::Init();
+int main() { // NOLINT
+    board::Init();
     Display display;
     ConfigStore config_store;
     network::Init();
@@ -71,8 +70,8 @@ int main() // NOLINT
     oscserver_params.Set();
 
     PixelDmx pixeldmx;
-	PixelTestPattern pixeltest_pattern(pixelpatterns::Pattern::kNone, 1);
-	
+    PixelTestPattern pixeltest_pattern(pixelpatterns::Pattern::kNone, 1);
+
     json::PixelDmxParams pixeldmx_params;
     pixeldmx_params.Load();
     pixeldmx_params.Set();
@@ -112,6 +111,6 @@ int main() // NOLINT
         network::Run();
         pixeltest_pattern.Run();
         display.Run();
-        hal::Run();
+        board::Run();
     }
 }

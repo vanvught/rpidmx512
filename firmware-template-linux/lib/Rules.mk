@@ -30,6 +30,7 @@ include ../common/make/DmxNodeOutputType.mk
 INCLUDES:=-I../common/include -I./include 
 INCLUDES+=-I../lib-configstore/include 
 INCLUDES+=-I../lib-superloop/include/superloop
+INCLUDES+=-I../lib-board/include 
 INCLUDES+=-I../lib-hal/include 
 INCLUDES+=-I../lib-linux/include 
 INCLUDES+=-I../lib-display/include 

@@ -30,7 +30,7 @@
 #include <cstdarg>
 
 #include "display.h"
-#include "firmwareversion.h"
+#include "firmware/firmwareversion.h"
 #if !defined(NO_EMAC)
 #include "network.h"
 #include "core/protocol/dhcp.h"

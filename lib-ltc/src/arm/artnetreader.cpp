@@ -38,7 +38,7 @@
 #include "network_udp.h"
 #include "arm/artnetreader.h"
 #include "ltc.h"
-#include "hal_statusled.h"
+#include "board_statusled.h"
 // Input
 #include "artnettimecode.h"
 // Output
@@ -67,7 +67,7 @@ void ArtNetReader::Start() {
 #endif
 
     LtcOutputs::Get()->Init();
-    hal::statusled::SetMode(hal::statusled::Mode::kNormal);
+    board::statusled::SetMode(board::statusled::Mode::kNormal);
 
     DEBUG_EXIT();
 }

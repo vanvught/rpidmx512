@@ -25,11 +25,11 @@
 #include <cstdint>
 #include <cstdio>
 
-#include "hal_statusled.h"
+#include "board_statusled.h"
 
 namespace json::status {
 uint32_t Identify(char* out_buffer, uint32_t out_buffer_size) {
-    const bool kIsOn = hal::statusled::GetMode() == hal::statusled::Mode::kFast;
+    const bool kIsOn = board::statusled::GetMode() == board::statusled::Mode::kFast;
     const auto kLength = static_cast<uint32_t>(snprintf(out_buffer, out_buffer_size, 
 		"{\"identify\":%d}", 
 		kIsOn));

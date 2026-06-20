@@ -1,3 +1,4 @@
+EXTRA_INCLUDES+=../lib-board/include
 
 ifneq ($(MAKE_FLAGS),)
 	ifeq ($(findstring NODE_E131,$(MAKE_FLAGS)), NODE_E131)

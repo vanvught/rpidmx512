@@ -51,10 +51,6 @@
 #include "display.h"
 #include "firmware/debug/debug_debug.h"
 
-namespace hal {
-bool Reboot();
-} // namespace hal
-
 enum class PowerState : uint8_t {
     kFullOff = 0x00,  ///< Completely disengages power to device. Device can no longer respond.
     kShutdown = 0x01, ///< Reduced power mode, may require device reset to return to normal operation. Device still responds to messages.

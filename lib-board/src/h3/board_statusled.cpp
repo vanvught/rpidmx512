@@ -1,5 +1,5 @@
 /**
- * @file hal.h
+ * @file hal_statusled.cpp
  *
  */
 /* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
@@ -23,36 +23,47 @@
  * THE SOFTWARE.
  */
 
-#ifndef HAL_H_
-#define HAL_H_
-
-namespace hal {
-enum class BootDevice { UNKOWN, FEL, MMC0, SPI, HDD, FLASH, RAM };
-
-BootDevice GetBootDevice();
-
-void Init();
-
-float CoreTemperatureCurrent();
-
-bool Reboot();
-void RebootHandler();
-} // namespace hal
-
-#if defined(__linux__) || defined(__APPLE__)
-#if defined(CONFIG_HAL_USE_MINIMUM)
-#include "linux/minimum/hal.h"
-#else
-#include "linux/hal.h"
-#endif
-#else
-#if defined(H3)
-#include "h3/hal.h"
-#elif defined(GD32)
-#include "gd32/hal.h"
-#else
-#include "rpi/hal.h"
-#endif
+#if defined(DEBUG_HAL)
+#undef NDEBUG
 #endif
 
-#endif // HAL_H_
+#include <cstdint>
+
+#include "board_statusled.h"
+#include "softwaretimers.h"
+#include "firmware/debug/debug_debug.h"
+
+void h3_status_led_set(int);
+
+static int32_t s_timer_id = -1;
+static int32_t s_toggle_led;
+
+static void Ledblink([[maybe_unused]] TimerHandle_t handle) {
+    s_toggle_led ^= 0x1;
+    h3_status_led_set(s_toggle_led);
+}
+
+namespace board::statusled {
+void SetFrequency(uint32_t frequency_hz) {
+    if (frequency_hz == 0) {
+        SoftwareTimerDelete(s_timer_id);
+        h3_status_led_set(0);
+        return;
+    }
+
+    if (frequency_hz == 255) {
+        SoftwareTimerDelete(s_timer_id);
+        h3_status_led_set(1);
+        return;
+    }
+
+    if (s_timer_id < 0) {
+        s_timer_id = SoftwareTimerAdd((1000U / frequency_hz), Ledblink);
+        DEBUG_PRINTF("s_timer_id=%d", s_timer_id);
+        return;
+    }
+
+    DEBUG_PRINTF("s_timer_id=%d", s_timer_id);
+    SoftwareTimerChange(s_timer_id, (1000U / frequency_hz));
+}
+} // namespace board::statusled

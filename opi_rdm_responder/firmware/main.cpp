@@ -26,7 +26,7 @@
 #include <cstdio>
 #include <cstdint>
 
-#include "h3/hal.h"
+#include "board.h"
 #include "watchdog.h"
 #include "displayudf.h"
 #include "json/displayudfparams.h"
@@ -43,22 +43,21 @@
 #endif
 #include "flashcodeinstall.h"
 #include "configstore.h"
-#include "firmwareversion.h"
+#include "firmware/firmwareversion.h"
 #include "software_version.h"
 #include "is_config_mode.h"
 #include "common/utils/utils_enum.h"
 #include "configurationstore.h"
 
-namespace hal {
+namespace board {
 void RebootHandler() {
     PixelDmx::Get().Blackout();
 }
-} // namespace hal
+} // namespace board
 
-int main() // NOLINT
-{
+int main() { // NOLINT
     config_mode_init();
-    hal::Init();
+    board::Init();
     DisplayUdf display;
     ConfigStore config_store;
 #if !defined(NO_EMAC)
@@ -134,7 +133,7 @@ int main() // NOLINT
         display.ClearLine(5);
     }
 
-    hal::statusled::SetMode(hal::statusled::Mode::kNormal);
+    board::statusled::SetMode(board::statusled::Mode::kNormal);
     watchdog::Init();
 
     for (;;) {
@@ -145,6 +144,6 @@ int main() // NOLINT
 #endif
         pixel_test_pattern.Run();
         display.Run();
-        hal::Run();
+        board::Run();
     }
 }

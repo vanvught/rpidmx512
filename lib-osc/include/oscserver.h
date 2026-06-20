@@ -30,7 +30,7 @@
 #include <cassert>
 
 #include "apps/mdns.h"
-#include "hal_statusled.h"
+#include "board_statusled.h"
 #include "network_udp.h"
 #include "dmxnode.h"
 #include "dmxnode_outputtype.h"
@@ -70,7 +70,7 @@ class OscServer {
 
         network::apps::mdns::ServiceRecordAdd(nullptr, network::apps::mdns::Services::kOsc, "type=server", port_incoming_);
 
-        hal::statusled::SetMode(hal::statusled::Mode::kNormal);
+        board::statusled::SetMode(board::statusled::Mode::kNormal);
 
         DEBUG_EXIT();
     }

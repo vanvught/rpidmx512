@@ -24,7 +24,7 @@
  */
 
 #include "ansi_colour.h"
-#include "h3/hal.h"
+#include "board.h"
 #include "console/console_fb.h"
 #include "watchdog.h"
 #include "network.h"
@@ -43,16 +43,15 @@
 #include "remoteconfig.h"
 #include "flashcodeinstall.h"
 #include "configstore.h"
-#include "firmwareversion.h"
+#include "firmware/firmwareversion.h"
 #include "software_version.h"
 
-namespace hal {
+namespace board {
 void RebootHandler() {}
-} // namespace hal
+} // namespace board
 
-int main() // NOLINT
-{
-    hal::Init();
+int main() { // NOLINT
+    board::Init();
     DisplayUdf display;
     ConfigStore config_store;
     network::Init();
@@ -120,6 +119,6 @@ int main() // NOLINT
 #endif
         show_systime.Run();
         display.Run();
-        hal::Run();
+        board::Run();
     }
 }

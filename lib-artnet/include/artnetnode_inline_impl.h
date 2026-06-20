@@ -40,7 +40,7 @@
 #endif
 #include "timing.h"
 #include "panelled.h"
-#include "hal_statusled.h"
+#include "board_statusled.h"
 #if defined(ARTNET_ENABLE_SENDDIAG)
 #include "network_udp.h"
 #endif
@@ -270,18 +270,18 @@ inline void ArtNetNode::Run() {
     }
 
 #if (DMXNODE_PORTS > 0)
-    if ((((art_poll_reply_.status1 & artnet::Status1::kIndicatorMask) == artnet::Status1::kIndicatorNormalMode)) && (hal::statusled::GetMode() != hal::statusled::Mode::kFast)) {
+    if ((((art_poll_reply_.status1 & artnet::Status1::kIndicatorMask) == artnet::Status1::kIndicatorNormalMode)) && (board::statusled::GetMode() != board::statusled::Mode::kFast)) {
 #if (ARTNET_VERSION >= 4)
         if (state_.receiving_dmx != 0) {
-            SetLedBlinkMode4(hal::statusled::Mode::kData);
+            SetLedBlinkMode4(board::statusled::Mode::kData);
         } else {
-            SetLedBlinkMode4(hal::statusled::Mode::kNormal);
+            SetLedBlinkMode4(board::statusled::Mode::kNormal);
         }
 #else
         if (state_.receiving_dmx != 0) {
-            hal::statusled::SetMode(hal::statusled::Mode::kData);
+            board::statusled::SetMode(board::statusled::Mode::kData);
         } else {
-            hal::statusled::SetMode(hal::statusled::Mode::kNormal);
+            board::statusled::SetMode(board::statusled::Mode::kNormal);
         }
 #endif
     }

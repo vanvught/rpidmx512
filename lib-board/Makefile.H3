@@ -1,0 +1,10 @@
+DEFINES=NDEBUG
+
+EXTRA_SRCDIR=
+EXTRA_INCLUDES=
+
+ifeq (,$(findstring DISABLE_FS,$(MAKE_FLAGS)))
+	EXTRA_INCLUDES+=../lib-fatfs/ff14b
+endif
+
+include ../firmware-template-h3/lib/Rules.mk

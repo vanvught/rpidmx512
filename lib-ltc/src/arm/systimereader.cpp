@@ -41,7 +41,7 @@
 #include "network_udp.h"
 #include "ltc.h"
 #include "timecodeconst.h"
-#include "hal_statusled.h"
+#include "board_statusled.h"
 // Output
 #include "ltcetc.h"
 #include "ltcsender.h"
@@ -101,7 +101,7 @@ void SystimeReader::Start(bool auto_start) {
     assert(handle_ != -1);
 
     LtcOutputs::Get()->Init();
-    hal::statusled::SetMode(hal::statusled::Mode::kNormal);
+    board::statusled::SetMode(board::statusled::Mode::kNormal);
 
     if (auto_start) {
         ActionStart();
@@ -157,7 +157,7 @@ void SystimeReader::ActionStart() {
 
     LtcOutputs::Get()->ResetTimeCodeTypePrevious();
 
-    hal::statusled::SetMode(hal::statusled::Mode::kData);
+    board::statusled::SetMode(board::statusled::Mode::kData);
 
     DEBUG_EXIT();
 }
@@ -167,7 +167,7 @@ void SystimeReader::ActionStop() {
 
     started_ = false;
 
-    hal::statusled::SetMode(hal::statusled::Mode::kNormal);
+    board::statusled::SetMode(board::statusled::Mode::kNormal);
 
     DEBUG_EXIT();
 }

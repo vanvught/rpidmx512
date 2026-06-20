@@ -3,7 +3,7 @@ $(info $$MAKE_FLAGS [${MAKE_FLAGS}])
 EXTRA_INCLUDES+=../lib-display/include ../lib-artnet/include ../lib-tcnet/include ../lib-midi/include
 EXTRA_INCLUDES+=../lib-dmxled/include
 EXTRA_INCLUDES+=../lib-network/include
-EXTRA_INCLUDES+=
+EXTRA_INCLUDES+=../lib-board/include
 
 EXTRA_SRCDIR+=src/json
 

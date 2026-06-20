@@ -40,6 +40,6 @@ inline constexpr auto PARITY_EVEN = H3_UART_PARITY_EVEN;
 
 inline constexpr auto STOP_1BIT = H3_UART_STOP_1BIT;
 inline constexpr auto STOP_2BITS = H3_UART_STOP_2BITS;
-} // namespace hal::uart
+} // namespace board::uart
 
 #endif // H3_HAL_UART_H_

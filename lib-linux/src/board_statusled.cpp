@@ -26,7 +26,7 @@
 #include <cstdint>
 #include <cstdlib>
 
-#include "hal_statusled.h"
+#include "board_statusled.h"
 
 enum class LedStatus { kOff, kOn, kHeartbeat, kFlash };
 
@@ -74,7 +74,7 @@ static void SetLed([[maybe_unused]] LedStatus led_status) {
 #endif
 }
 
-namespace hal::statusled {
+namespace board::statusled {
 void SetFrequency(uint32_t frequency_hz) {
     if (frequency_hz == 0) {
         SetLed(LedStatus::kOff);
@@ -88,4 +88,4 @@ void SetFrequency(uint32_t frequency_hz) {
         }
     }
 }
-} // namespace hal::statusled
+} // namespace board::statusled

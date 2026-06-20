@@ -28,10 +28,10 @@
 
 #include <cstdint>
 
-#include "hal_statusled.h"
+#include "board_statusled.h"
 #include "firmware/debug/debug_debug.h"
 
-namespace hal::statusled {
+namespace board::statusled {
 namespace global {
 Mode g_status_led_mode;
 } // namespace global
@@ -52,7 +52,7 @@ void SetModeWithLock(Mode mode, bool do_lock) {
     s_do_lock = do_lock;
 }
 
-void SetMode(hal::statusled::Mode mode) {
+void SetMode(board::statusled::Mode mode) {
     if (s_do_lock || (global::g_status_led_mode == mode)) {
         return;
     }
@@ -60,22 +60,22 @@ void SetMode(hal::statusled::Mode mode) {
     global::g_status_led_mode = mode;
 
     switch (global::g_status_led_mode) {
-        case hal::statusled::Mode::kOffOff:
+        case board::statusled::Mode::kOffOff:
             SetFrequency(static_cast<uint32_t>(ModeToFrequency::kOffOff));
             break;
-        case hal::statusled::Mode::kOffOn:
+        case board::statusled::Mode::kOffOn:
             SetFrequency(static_cast<uint32_t>(ModeToFrequency::kOffOn));
             break;
-        case hal::statusled::Mode::kNormal:
+        case board::statusled::Mode::kNormal:
             SetFrequency(static_cast<uint32_t>(ModeToFrequency::kNormal));
             break;
-        case hal::statusled::Mode::kData:
+        case board::statusled::Mode::kData:
             SetFrequency(static_cast<uint32_t>(ModeToFrequency::kData));
             break;
-        case hal::statusled::Mode::kFast:
+        case board::statusled::Mode::kFast:
             SetFrequency(static_cast<uint32_t>(ModeToFrequency::kFast));
             break;
-        case hal::statusled::Mode::kReboot:
+        case board::statusled::Mode::kReboot:
             SetFrequency(static_cast<uint32_t>(ModeToFrequency::kReboot));
             break;
         default:
@@ -83,9 +83,9 @@ void SetMode(hal::statusled::Mode mode) {
             break;
     }
 
-    hal::statusled::Event(global::g_status_led_mode);
+    board::statusled::Event(global::g_status_led_mode);
 
     DEBUG_PRINTF("global::g_status_led_mode=%u", static_cast<uint32_t>(global::g_status_led_mode));
 }
 #endif
-} // namespace hal::statusled
+} // namespace board::statusled

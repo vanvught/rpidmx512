@@ -33,7 +33,7 @@
 #include <cassert>
 
 #include "remoteconfig.h"
-#include "firmwareversion.h"
+#include "firmware/firmwareversion.h"
 #include "timing.h"
 #include "network_udp.h"
 #if !defined(CONFIG_REMOTECONFIG_MINIMUM)
@@ -354,13 +354,12 @@ void RemoteConfig::HandleTftpGet() {
     DEBUG_EXIT();
 }
 
-namespace hal {
+namespace board {
 bool Reboot();
-} // namespace hal
+} // namespace board
 
 void RemoteConfig::HandleReboot() {
     DEBUG_ENTRY();
-    is_reboot_ = true;
-    hal::Reboot();
+    board::Reboot();
     __builtin_unreachable();
 }

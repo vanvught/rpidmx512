@@ -25,7 +25,7 @@
 #include <cstdint>
 
 #include "display.h"
-#include "hal_statusled.h"
+#include "board_statusled.h"
 #include "board.h"
 #include "json/json_key.h"
 #include "json/json_parser.h"
@@ -40,9 +40,9 @@ static void SetIdentify(const char* val, uint32_t len) {
     if (len != 1) return;
 
     if (val[0] != '0') {
-        hal::statusled::SetMode(hal::statusled::Mode::kFast);
+        board::statusled::SetMode(board::statusled::Mode::kFast);
     } else {
-        hal::statusled::SetMode(hal::statusled::Mode::kNormal);
+        board::statusled::SetMode(board::statusled::Mode::kNormal);
     }
 }
 

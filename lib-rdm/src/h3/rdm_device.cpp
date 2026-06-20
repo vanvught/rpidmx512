@@ -26,7 +26,7 @@
 #include <cstdint>
 
 #include "h3_board.h"
-#include "firmwareversion.h"
+#include "firmware/firmwareversion.h"
 
 namespace rdm::device
 {

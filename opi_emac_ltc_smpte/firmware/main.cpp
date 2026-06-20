@@ -30,8 +30,8 @@
 #include <cstdint>
 #include <cstring>
 
-#include "h3/hal.h"
-#include "hal.h"
+#include "board.h"
+#include "board.h"
 #if defined(H3)
 #include "watchdog.h"
 #include "flashcodeinstall.h"
@@ -72,7 +72,7 @@
 #include "apps/ntpclient.h"
 #include "gpstimeclient.h"
 #include "json/gpsparams.h"
-#include "firmwareversion.h"
+#include "firmware/firmwareversion.h"
 #include "software_version.h"
 #include "core/protocol/ntp.h"
 #include "common/utils/utils_flags.h"
@@ -114,7 +114,7 @@ void DisplayStatus(::ntp::Status status) {
 }
 } // namespace network::apps::ntpclient
 
-namespace hal {
+namespace board {
 void RebootHandler() {
     switch (ltc_source) {
         case ::ltc::Source::TCNET:
@@ -138,7 +138,7 @@ void RebootHandler() {
         Display::Get()->TextStatus("Rebooting ...");
     }
 }
-} // namespace hal
+} // namespace board
 
 #if !defined(CONFIG_LTC_DISABLE_RGB_PANEL)
 extern "C" {
@@ -162,7 +162,7 @@ using common::store::gps::Flags;
 
 int main() // NOLINT
 {
-    hal::Init();
+    board::Init();
     Display display(4);
     ConfigStore config_store;
     network::Init();
@@ -579,6 +579,6 @@ int main() // NOLINT
             source_select.Run();
         }
 
-        hal::Run();
+        board::Run();
     }
 }

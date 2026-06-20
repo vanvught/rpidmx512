@@ -46,7 +46,7 @@
 #include "softwaretimers.h"
 #include "timing.h"
 #include "panelled.h"
-#include "hal_statusled.h"
+#include "board_statusled.h"
 #include "board.h"
 #include "firmware/debug/debug_debug.h"
 
@@ -140,7 +140,7 @@ void E131Bridge::Start() {
 #endif
 
     state_.status = e131bridge::Status::kOn;
-    hal::statusled::SetMode(hal::statusled::Mode::kNormal);
+    board::statusled::SetMode(board::statusled::Mode::kNormal);
 }
 
 void E131Bridge::Stop() {
@@ -164,7 +164,7 @@ void E131Bridge::Stop() {
 #endif
 
     state_.status = e131bridge::Status::kOff;
-    hal::statusled::SetMode(hal::statusled::Mode::kOffOff);
+    board::statusled::SetMode(board::statusled::Mode::kOffOff);
 }
 
 void E131Bridge::SetSynchronizationAddress(bool source_a, bool source_b, uint16_t synchronization_address) {
@@ -493,7 +493,7 @@ void E131Bridge::HandleSynchronization() {
     const auto kSynchronizationAddress = __builtin_bswap16(synchronization_packet.frame_layer.universe_number);
 
     if ((kSynchronizationAddress != state_.synchronization_address_source_a) && (kSynchronizationAddress != state_.synchronization_address_source_b)) {
-        hal::statusled::SetMode(hal::statusled::Mode::kNormal);
+        board::statusled::SetMode(board::statusled::Mode::kNormal);
         DEBUG_PUTS("");
         return;
     }
@@ -895,9 +895,9 @@ void E131Bridge::SetNetworkDataLossCondition(bool source_a, bool source_b) {
 
     state_.receiving_dmx &= static_cast<uint8_t>(~(1U << static_cast<uint8_t>(dmxnode::Direction::kOutput)));
 
-    // The hal::statusled::Mode::FAST is for RDM Identify (Art-Net 4)
-    if (enable_data_indicator_ && (hal::statusled::GetMode() != hal::statusled::Mode::kFast)) {
-        hal::statusled::SetMode(hal::statusled::Mode::kNormal);
+    // The board::statusled::Mode::FAST is for RDM Identify (Art-Net 4)
+    if (enable_data_indicator_ && (board::statusled::GetMode() != board::statusled::Mode::kFast)) {
+        board::statusled::SetMode(board::statusled::Mode::kNormal);
     }
 
     panelled::Off(panelled::kSacn);

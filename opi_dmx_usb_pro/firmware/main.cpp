@@ -26,7 +26,7 @@
 #include <cstdio>
 #include <cstdint>
 
-#include "h3/hal.h"
+#include "board.h"
 #include "watchdog.h"
 #include "rdmdevice.h"
 #include "widget.h"
@@ -40,22 +40,16 @@
 #define ALIGNED __attribute__((aligned(4)))
 #endif
 
-static constexpr char kWidgetModeNames[4][12] ALIGNED = {
-	"DMX_RDM", 
-	"DMX", 
-	"RDM", 
-	"RDM_SNIFFER"
-};
+static constexpr char kWidgetModeNames[4][12] ALIGNED = {"DMX_RDM", "DMX", "RDM", "RDM_SNIFFER"};
 
 static constexpr struct rdm::device::InfoData kDeviceLabel ALIGNED = {const_cast<char*>("Orange Pi Zero DMX USB Pro"), 26};
 
-namespace hal {
+namespace board {
 void RebootHandler() {}
-} // namespace hal
+} // namespace board
 
-int main() // NOLINT
-{
-    hal::Init();
+int main() { // NOLINT
+    board::Init();
     ConfigStore config_store;
     FlashCodeInstall spiflash_install;
 
@@ -90,6 +84,6 @@ int main() // NOLINT
     for (;;) {
         watchdog::Feed();
         widget.Run();
-        hal::Run();
+        board::Run();
     }
 }

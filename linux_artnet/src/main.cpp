@@ -26,7 +26,7 @@
 #include <signal.h>
 
 #include "displayudf.h"
-#include "hal.h"
+#include "board.h"
 #include "network.h"
 #include "displayudf.h"
 #include "json/displayudfparams.h"
@@ -43,7 +43,7 @@
 #if defined(NODE_SHOWFILE)
 #include "showfile.h"
 #endif
-#include "firmwareversion.h"
+#include "firmware/firmwareversion.h"
 #include "software_version.h"
 
 static bool keep_running = true;
@@ -57,7 +57,7 @@ int main(int argc, char** argv) // NOLINT
     struct sigaction act;
     act.sa_handler = IntHandler;
     sigaction(SIGINT, &act, nullptr);
-    hal::Init();
+    board::Init();
     DisplayUdf display;
     ConfigStore config_store;
     Network nw(argc, argv);
@@ -94,8 +94,8 @@ int main(int argc, char** argv) // NOLINT
     display.Set(2, displayudf::Labels::kIp);
     display.Set(3, displayudf::Labels::kVersion);
     display.Set(4, displayudf::Labels::kHostname);
-	display.Set(5, displayudf::Labels::kBoardname);
-	display.Set(6, displayudf::Labels::kIp);
+    display.Set(5, displayudf::Labels::kBoardname);
+    display.Set(6, displayudf::Labels::kIp);
 
     json::DisplayUdfParams displayudf_params;
     displayudf_params.Load();
@@ -111,7 +111,7 @@ int main(int argc, char** argv) // NOLINT
 #if defined(NODE_SHOWFILE)
         showfile.Run();
 #endif
-        hal::Run();
+        board::Run();
     }
 
     return 0;

@@ -95,7 +95,7 @@ static void SetDate(const char* date, uint32_t date_length) {
 
             int32_t utc_offset;
 
-            if (hal::utc::ValidateOffset(kHours, kMinutes, utc_offset)) {
+            if (utc::ValidateOffset(kHours, kMinutes, utc_offset)) {
                 ConfigStore::Instance().GlobalUpdate(&common::store::Global::utc_offset, utc_offset);
                 Global::Instance().SetUtcOffsetIfValid(kHours, kMinutes);
             }

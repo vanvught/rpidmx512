@@ -36,7 +36,7 @@
 
 #include "arm/ltcetcreader.h"
 #include "ltc.h"
-#include "hal_statusled.h"
+#include "board_statusled.h"
 // Output
 #include "ltcsender.h"
 #include "tcnetdisplay.h"
@@ -62,7 +62,7 @@ void LtcEtcReader::Start() {
 #endif
 
     LtcOutputs::Get()->Init();
-    hal::statusled::SetMode(hal::statusled::Mode::kNormal);
+    board::statusled::SetMode(board::statusled::Mode::kNormal);
 
     DEBUG_EXIT();
 }

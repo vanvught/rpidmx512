@@ -1,6 +1,7 @@
 EXTRA_INCLUDES+=../lib-pixel/include
 EXTRA_INCLUDES+=../lib-dmxled/include
 EXTRA_INCLUDES+=../lib-displayudf/include ../lib-display/include
+EXTRA_INCLUDES+=../lib-board/include
 EXTRA_INCLUDES+=../lib-network/include
 
 EXTRA_SRCDIR+=src/json

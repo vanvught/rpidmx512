@@ -1,6 +1,6 @@
 EXTRA_INCLUDES=../lib-rdmsensor/include ../lib-rdmsubdevice/include ../lib-dmx/include 
 EXTRA_INCLUDES+=../lib-network/include ../lib-display/include
-EXTRA_INCLUDES+=../lib-hwclock/include
+EXTRA_INCLUDES+=../lib-hwclock/include ../lib-board/include
 EXTRA_INCLUDES+=../lib-e131/include
 
 EXTRA_SRCDIR+=src/json

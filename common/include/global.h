@@ -6,7 +6,7 @@
  * which is used to get and set the current UTC offset. It also contains validation logic
  * for standard and non-standard UTC offsets.
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  */
 
 #ifndef GLOBAL_H_
@@ -20,8 +20,7 @@
  * @namespace global
  * @brief Contains global variables related to time configuration.
  */
-namespace global
-{
+namespace global {
 extern int32_t g_utc_offset;
 }
 
@@ -32,15 +31,13 @@ extern int32_t g_utc_offset;
  * The Global class provides methods to set and get the UTC offset in seconds.
  * It also includes validation logic for standard UTC time zones.
  */
-class Global
-{
+class Global {
    public:
     /**
      * @brief Get the singleton instance of the Global class.
      * @return Reference to the singleton Global object.
      */
-    static Global& Instance()
-    {
+    static Global& Instance() {
         static Global instance;
         return instance;
     }
@@ -56,17 +53,15 @@ class Global
      * @param[out] hours Signed hour component.
      * @param[out] minutes Unsigned minute component.
      */
-    inline void GetUtcOffset(int32_t& hours, uint32_t& minutes) { hal::utc::SplitOffset(global::g_utc_offset, hours, minutes); }
+    inline void GetUtcOffset(int32_t& hours, uint32_t& minutes) { utc::SplitOffset(global::g_utc_offset, hours, minutes); }
 
     /**
      * @brief Sets the global UTC offset if the value is valid.
      * @param utc_offset_seconds Offset in seconds
      * @return true if successfully set; false otherwise
      */
-    inline bool SetUtcOffsetIfValid(int32_t utc_offset_seconds)
-    {
-        if (hal::utc::IsValidOffset(utc_offset_seconds))
-        {
+    inline bool SetUtcOffsetIfValid(int32_t utc_offset_seconds) {
+        if (utc::IsValidOffset(utc_offset_seconds)) {
             ::global::g_utc_offset = utc_offset_seconds;
             return true;
         }
@@ -79,11 +74,9 @@ class Global
      * @param minutes Unsigned minute component
      * @return true if valid and set; false otherwise
      */
-    inline bool SetUtcOffsetIfValid(int32_t hours, uint32_t minutes)
-    {
+    inline bool SetUtcOffsetIfValid(int32_t hours, uint32_t minutes) {
         int32_t offset_seconds;
-        if (hal::utc::ValidateOffset(hours, minutes, offset_seconds))
-        {
+        if (utc::ValidateOffset(hours, minutes, offset_seconds)) {
             return SetUtcOffsetIfValid(offset_seconds);
         }
         return false;
@@ -98,4 +91,4 @@ class Global
     Global& operator=(Global&&) = delete;
 };
 
-#endif  // GLOBAL_H_
+#endif // GLOBAL_H_

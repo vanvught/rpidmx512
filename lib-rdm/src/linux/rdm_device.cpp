@@ -25,7 +25,7 @@
 
 #include <cstdint>
 
-#include "firmwareversion.h"
+#include "firmware/firmwareversion.h"
 
 namespace rdm::device
 {

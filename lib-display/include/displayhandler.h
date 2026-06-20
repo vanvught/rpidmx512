@@ -27,33 +27,29 @@
 #define DISPLAYHANDLER_H_
 
 #include "display.h"
-#include "hal_statusled.h"
+#include "board_statusled.h"
 
-namespace hal
-{
-void DisplayStatusled(hal::statusled::Mode status_led_mode)
-{
-    if (Display::Get()->IsDetected())
-    {
+namespace board {
+void DisplayStatusled(board::statusled::Mode status_led_mode) {
+    if (Display::Get()->IsDetected()) {
         char c;
-        switch (status_led_mode)
-        {
-            case hal::statusled::Mode::kOffOff:
+        switch (status_led_mode) {
+            case board::statusled::Mode::kOffOff:
                 c = 'O';
                 break;
-            case hal::statusled::Mode::kOffOn:
+            case board::statusled::Mode::kOffOn:
                 c = 'O';
                 break;
-            case hal::statusled::Mode::kNormal:
+            case board::statusled::Mode::kNormal:
                 c = 'N';
                 break;
-            case hal::statusled::Mode::kData:
+            case board::statusled::Mode::kData:
                 c = 'D';
                 break;
-            case hal::statusled::Mode::kFast:
+            case board::statusled::Mode::kFast:
                 c = 'F';
                 break;
-            case hal::statusled::Mode::kReboot:
+            case board::statusled::Mode::kReboot:
                 c = 'R';
                 break;
             default:
@@ -65,6 +61,6 @@ void DisplayStatusled(hal::statusled::Mode status_led_mode)
         Display::Get()->PutChar(c);
     }
 }
-} // namespace hal
+} // namespace board
 
-#endif  // DISPLAYHANDLER_H_
+#endif // DISPLAYHANDLER_H_

@@ -1,8 +1,8 @@
 /**
- * @file rtc.h
+ * @file board.h
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,35 +23,40 @@
  * THE SOFTWARE.
  */
 
-#ifndef RTC_H_
-#define RTC_H_
+#ifndef BOARD_H_
+#define BOARD_H_
 
-#include <stdint.h>
-#include <stdbool.h>
-#include <time.h>
+#include <cstdint>
 
-typedef enum rtc_types {
-	RTC_MCP7941X,
-	RTC_DS3231,
-	RTC_PROBE
-} rtc_types_t;
+namespace board {
+enum class BootDevice { kUnkown, kFel, kMmc0, kSpi, kHdd, kFlash, kRam };
 
-#define RTC_OK			0
-#define RTC_ERROR		1
+void Init();
+void Print();
+bool Reboot();
+void RebootHandler();
 
-#ifdef __cplusplus
-extern "C" {
+BootDevice GetBootDevice();
+
+const char* BoardName(uint8_t& length);
+const char* SocName(uint8_t& length);
+const char* CpuName(uint8_t& length);
+const char* MachineName(uint8_t& length);
+const char* SysName(uint8_t& length);
+
+float CoreTemperatureMin();
+float CoreTemperatureMax();
+float CoreTemperatureCurrent();
+
+const char* Website();
+} // namespace board
+
+#if defined(GD32)
+#include "gd32_board.h"
+#elif defined(H3)
+#include "h3_board.h"
+#else
+#include "linux_board.h"
 #endif
 
-extern bool rtc_start(rtc_types_t type);
-extern bool rtc_is_connected(void);
-extern rtc_types_t rtc_get_type(void);
-
-extern void rtc_get_date_time(struct tm *tm);
-extern void rtc_set_date_time(/*@out@*/const struct tm *tm);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* RTC_H_ */
+#endif // BOARD_H_

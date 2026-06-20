@@ -38,7 +38,7 @@
 #include "arm/tcnetreader.h"
 #include "ltc.h"
 #include "timecodeconst.h"
-#include "hal_statusled.h"
+#include "board_statusled.h"
 // Input
 #include "tcnet.h"
 // Output
@@ -100,7 +100,7 @@ void TCNetReader::Start()
     assert(handle_ != -1);
 
     LtcOutputs::Get()->Init();
-    hal::statusled::SetMode(hal::statusled::Mode::kNormal);
+    board::statusled::SetMode(board::statusled::Mode::kNormal);
 
     DEBUG_EXIT();
 }
@@ -282,13 +282,13 @@ void TCNetReader::Run()
     __DMB();
     if (gv_ltc_nUpdatesPerSecond != 0)
     {
-        hal::statusled::SetMode(hal::statusled::Mode::kData);
+        board::statusled::SetMode(board::statusled::Mode::kData);
         Reset(false);
     }
     else
     {
         LtcOutputs::Get()->ShowSysTime();
-        hal::statusled::SetMode(hal::statusled::Mode::kNormal);
+        board::statusled::SetMode(board::statusled::Mode::kNormal);
         Reset(true);
     }
 }

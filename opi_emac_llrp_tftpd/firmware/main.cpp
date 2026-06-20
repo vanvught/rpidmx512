@@ -31,9 +31,9 @@
 #include <cstring>
 #include <time.h>
 
-#include "h3/hal.h"
+#include "board.h"
 #include "watchdog.h"
-#include "hal_statusled.h"
+#include "board_statusled.h"
 #include "hwclock.h"
 #include "network.h"
 #include "displayudf.h"
@@ -42,25 +42,21 @@
 #include "configstore.h"
 #include "remoteconfig.h"
 #include "rdmnetdevice.h"
-#include "firmwareversion.h"
+#include "firmware/firmwareversion.h"
 #include "software_version.h"
 
-namespace hal
-{
-void RebootHandler()
-{
-    if (!RemoteConfig::Get()->IsReboot())
-    {
+namespace board {
+void RebootHandler() {
+    if (!RemoteConfig::Get()->IsReboot()) {
         Display::Get()->SetSleep(false);
         Display::Get()->Cls();
         Display::Get()->TextStatus("Rebooting ...");
     }
 }
-} // namespace hal
+} // namespace board
 
-int main() // NOLINT
-{
-    hal::Init();
+int main() { // NOLINT
+    board::Init();
     DisplayUdf display;
     ConfigStore config_store;
     network::Init();
@@ -69,8 +65,8 @@ int main() // NOLINT
 
     fw.Print("RDMNet LLRP device only");
 
-	RdmNetDevice llrp_only_device;
-	llrp_only_device.Print();
+    RdmNetDevice llrp_only_device;
+    llrp_only_device.Print();
 
     RemoteConfig remote_config(remoteconfig::Output::CONFIG, 0);
 
@@ -90,19 +86,17 @@ int main() // NOLINT
     auto t1 = time(nullptr);
     struct tm hw_clock;
     memset(&hw_clock, 0, sizeof(struct tm));
-	
-	hal::statusled::SetMode(hal::statusled::Mode::kNormal);
 
-    for (;;)
-    {
+    board::statusled::SetMode(board::statusled::Mode::kNormal);
+
+    for (;;) {
         network::Run();
         display.Run();
-        hal::Run();
+        board::Run();
 
         time_t ltime;
         auto t2 = time(&ltime);
-        if (t1 != t2)
-        {
+        if (t1 != t2) {
             t1 = t2;
             auto* tm = localtime(&ltime);
             struct tm tmlocal;

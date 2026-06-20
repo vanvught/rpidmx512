@@ -32,7 +32,7 @@
 #include "dmxnode_outputtype.h"
 #include "dmxnode_data.h"
 #include "timing.h"
-#include "hal_statusled.h"
+#include "board_statusled.h"
 #include "network.h"
 
 inline void E131Bridge::SetOutput(DmxNodeOutputType* dmx_node_output_type) {
@@ -266,12 +266,12 @@ inline void E131Bridge::Run() {
         }
     }
 
-    // The hal::statusled::Mode::FAST is for RDM Identify (Art-Net 4)
-    if (enable_data_indicator_ && (hal::statusled::GetMode() != hal::statusled::Mode::kFast)) {
+    // The board::statusled::Mode::FAST is for RDM Identify (Art-Net 4)
+    if (enable_data_indicator_ && (board::statusled::GetMode() != board::statusled::Mode::kFast)) {
         if (state_.receiving_dmx != 0) {
-            hal::statusled::SetMode(hal::statusled::Mode::kData);
+            board::statusled::SetMode(board::statusled::Mode::kData);
         } else {
-            hal::statusled::SetMode(hal::statusled::Mode::kNormal);
+            board::statusled::SetMode(board::statusled::Mode::kNormal);
         }
     }
 }

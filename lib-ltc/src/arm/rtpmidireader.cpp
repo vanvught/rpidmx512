@@ -37,7 +37,7 @@
 
 #include "arm/rtpmidireader.h"
 #include "timecodeconst.h"
-#include "hal_statusled.h"
+#include "board_statusled.h"
 // Output
 #include "midi.h"
 #include "ltcetc.h"
@@ -70,7 +70,7 @@ void RtpMidiReader::Start() {
 #endif
 
     LtcOutputs::Get()->Init();
-    hal::statusled::SetMode(hal::statusled::Mode::kNormal);
+    board::statusled::SetMode(board::statusled::Mode::kNormal);
 }
 
 void RtpMidiReader::Stop() {
@@ -264,9 +264,9 @@ void RtpMidiReader::Run() {
 
     __DMB();
     if (gv_ltc_nUpdatesPerSecond != 0) {
-        hal::statusled::SetMode(hal::statusled::Mode::kData);
+        board::statusled::SetMode(board::statusled::Mode::kData);
     } else {
         LtcOutputs::Get()->ShowSysTime();
-        hal::statusled::SetMode(hal::statusled::Mode::kNormal);
+        board::statusled::SetMode(board::statusled::Mode::kNormal);
     }
 }

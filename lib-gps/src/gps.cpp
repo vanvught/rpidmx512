@@ -53,7 +53,7 @@ static constexpr char kTag[static_cast<int>(gps::nmea::kUndefined)][gps::nmea::l
 
 GPS* GPS::s_this = nullptr;
 
-GPS::GPS(int32_t utc_offset, gps::Module module) : utc_offset_(hal::utc::IsValidOffset((utc_offset))), module_(module) {
+GPS::GPS(int32_t utc_offset, gps::Module module) : utc_offset_(utc::IsValidOffset((utc_offset))), module_(module) {
     DEBUG_ENTRY();
     assert(s_this == nullptr);
     s_this = this;

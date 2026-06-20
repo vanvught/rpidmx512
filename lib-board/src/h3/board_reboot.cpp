@@ -23,22 +23,19 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_HAL)
+#if defined(DEBUG_BOARD)
 #undef NDEBUG
 #endif
 
-#include "hal.h"
+#include "board.h"
 #include "display.h"
 #include "h3_watchdog.h"
-#include "h3_gpio.h"
-#include "h3_board.h"
 #include "arm/synchronize.h"
-#include "hal_statusled.h"
+#include "board_statusled.h"
 #include "configstore.h"
 #if !defined(DISABLE_RTC)
 #include "hwclock.h"
 #endif
-
 
 #if !defined(NO_EMAC)
 namespace network {
@@ -46,11 +43,11 @@ void Shutdown();
 } // namespace network
 #endif
 
-namespace hal {
+namespace board {
 bool Reboot() {
-	Display::Get()->SetSleep(false);
-	Display::Get()->Cls();
-	Display::Get()->TextStatus("Rebooting ...");
+    Display::Get()->SetSleep(false);
+    Display::Get()->Cls();
+    Display::Get()->TextStatus("Rebooting ...");
 
     H3WatchdogDisable();
 
@@ -72,7 +69,7 @@ bool Reboot() {
     H3GpioFsel(EXT_SPI_CS, GPIO_FSEL_INPUT);
     H3GpioSetPud(EXT_SPI_CS, GPIO_PULL_DOWN);
 
-    hal::statusled::SetMode(hal::statusled::Mode::kReboot);
+    board::statusled::SetMode(board::statusled::Mode::kReboot);
 
     H3WatchdogEnable();
 
@@ -82,11 +79,5 @@ bool Reboot() {
 
     __builtin_unreachable();
     return true;
-}
-} // namespace hal
-
-namespace board {
-void Reboot() {
-    hal::Reboot();
 }
 } // namespace board

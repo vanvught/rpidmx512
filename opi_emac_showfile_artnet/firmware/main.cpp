@@ -23,9 +23,9 @@
  * THE SOFTWARE.
  */
 
-#include "h3/hal.h"
+#include "board.h"
 #include "watchdog.h"
-#include "hal_statusled.h"
+#include "board_statusled.h"
 #include "network.h"
 #include "displayudf.h"
 #include "json/displayudfparams.h"
@@ -37,30 +37,26 @@
 #include "remoteconfig.h"
 #include "flashcodeinstall.h"
 #include "configstore.h"
-#include "firmwareversion.h"
+#include "firmware/firmwareversion.h"
 #include "software_version.h"
 #include "common/utils/utils_flags.h"
 
-namespace hal
-{
-void RebootHandler()
-{
+namespace board {
+void RebootHandler() {
     ShowFile::Instance().Stop();
 
-    if (!RemoteConfig::Get()->IsReboot())
-    {
+    if (!RemoteConfig::Get()->IsReboot()) {
         Display::Get()->SetSleep(false);
         Display::Get()->Cls();
         Display::Get()->TextStatus("Rebooting ...");
     }
 }
-} // namespace hal
+} // namespace board
 
 using common::store::showfile::Flags;
 
-int main() // NOLINT
-{
-    hal::Init();
+int main() { // NOLINT
+    board::Init();
     DisplayUdf display;
     ConfigStore config_store;
     network::Init();
@@ -74,7 +70,7 @@ int main() // NOLINT
 
 #if defined(NODE_RDMNET_LLRP_ONLY)
     RdmNetDevice llrp_only_device;
-	llrp_only_device.Print();
+    llrp_only_device.Print();
 #endif
 
     RemoteConfig remote_config(remoteconfig::Output::PLAYER, 0);
@@ -92,27 +88,24 @@ int main() // NOLINT
 
     const auto kFlags = ConfigStore::Instance().ShowFileGet(&common::store::ShowFile::flags);
 
-    if (common::IsFlagSet(kFlags, Flags::Flag::kOptionArtnetDisableUnicast))
-    {
+    if (common::IsFlagSet(kFlags, Flags::Flag::kOptionArtnetDisableUnicast)) {
         Display::Get()->PutString(" <Broadcast>");
     }
 
-    if (showfile.IsSyncDisabled())
-    {
+    if (showfile.IsSyncDisabled()) {
         display.Printf(6, "<No synchronization>");
     }
 
     showfile::DisplayStatus();
 
-    hal::statusled::SetMode(hal::statusled::Mode::kNormal);
+    board::statusled::SetMode(board::statusled::Mode::kNormal);
     watchdog::Init();
 
-    for (;;)
-    {
+    for (;;) {
         watchdog::Feed();
         network::Run();
         showfile.Run();
         display.Run();
-        hal::Run();
+        board::Run();
     }
 }

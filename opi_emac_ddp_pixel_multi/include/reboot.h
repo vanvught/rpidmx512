@@ -26,7 +26,7 @@
 #ifndef REBOOT_H_
 #define REBOOT_H_
 
-#include "hal.h"
+#include "board.h"
 #include "pixelmulti.h"
 
 class Reboot final : public RebootHandler {

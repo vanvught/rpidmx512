@@ -150,7 +150,7 @@ void h3_status_led_set(int state) {
 #endif
 }
 
-namespace hal {
+namespace board {
 void __attribute__((cold)) Init() {
     H3GpioFsel(EXT_SPI_MOSI, GPIO_FSEL_INPUT);
     H3GpioSetPud(EXT_SPI_MOSI, GPIO_PULL_DOWN);
@@ -254,7 +254,7 @@ void __attribute__((cold)) Init() {
     arm_install_handler((unsigned)IRQ_Handler, ARM_VECTOR(ARM_VECTOR_IRQ));
 }
 
-} // namespace hal
+} // namespace board
 
 namespace timing {
 uint32_t UpTime() {

@@ -185,7 +185,7 @@ private:
 	TSocType m_tSocType;
 	bool m_bIsWatchdog { false };
 
-	hardware::ledblink::Mode m_Mode { hal::statusled::Mode::UNKNOWN };
+	hardware::ledblink::Mode m_Mode { board::statusled::Mode::UNKNOWN };
 	bool m_doLock { false };
 	//
 	uint32_t m_nTicksPerSecond { 1000000 / 2 };

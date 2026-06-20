@@ -325,7 +325,7 @@ class ArtNetNode
    private:
     void SetUniverse4(uint32_t port_index);
     void SetDirection4(uint32_t port_index);
-    void SetLedBlinkMode4(hal::statusled::Mode mode);
+    void SetLedBlinkMode4(board::statusled::Mode mode);
     void HandleAddress4(uint8_t command, uint32_t port_index);
     uint8_t GetGoodOutput4(uint32_t port_index);
 

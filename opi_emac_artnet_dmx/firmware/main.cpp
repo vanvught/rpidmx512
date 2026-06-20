@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2018-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,7 @@
 
 #include <cstdint>
 
-#include "hal.h"
+#include "board.h"
 #include "watchdog.h"
 #include "configstore.h"
 #include "network.h"
@@ -41,23 +41,20 @@
 #include "remoteconfig.h"
 #include "flashcodeinstall.h"
 #include "configstore.h"
-#include "firmwareversion.h"
+#include "firmware/firmwareversion.h"
 #include "software_version.h"
 
-namespace hal
-{
-void RebootHandler()
-{
+namespace board {
+void RebootHandler() {
     Dmx::Get()->Blackout();
     ArtNetNode::Get()->Stop();
 }
-} // namespace hal
+} // namespace board
 
 static constexpr uint32_t kPortIndex = 0;
 
-int main() // NOLINT
-{
-    hal::Init();
+int main() { // NOLINT
+    board::Init();
     DisplayUdf display;
     ConfigStore config_store;
     network::Init();
@@ -78,12 +75,11 @@ int main() // NOLINT
     DmxNodeNode dmx_node_node;
     dmx_node_node.SetOutput(&dmx_send);
 
-    const auto kPortDirection =
-        (dmx_node_node.PortDirection(kPortIndex) == dmxnode::Direction::kOutput ? dmx::Direction::kOutput : dmx::Direction::kInput);
+    const auto kPortDirection = (dmx_node_node.PortDirection(kPortIndex) == dmxnode::Direction::kOutput ? dmx::Direction::kOutput : dmx::Direction::kInput);
     dmx.SetPortDirection(kPortIndex, kPortDirection, false);
 
     const auto kIsRdmEnabled = dmx_node_node.GetRdm();
- 
+
 #if defined(NODE_SHOWFILE)
     ShowFile showfile;
     showfile.Print();
@@ -113,8 +109,7 @@ int main() // NOLINT
 
     watchdog::Init();
 
-    for (;;)
-    {
+    for (;;) {
         watchdog::Feed();
         network::Run();
         dmx_node_node.Run();
@@ -122,6 +117,6 @@ int main() // NOLINT
         showfile.Run();
 #endif
         display.Run();
-        hal::Run();
+        board::Run();
     }
 }

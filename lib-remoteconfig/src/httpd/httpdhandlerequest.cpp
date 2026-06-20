@@ -59,9 +59,9 @@
 #include "firmware/debug/debug_dump.h"
 #include "firmware/debug/debug_debug.h"
 
-namespace hal {
+namespace board {
 void Reboot();
-}
+} // namespace board
 
 #if !defined(_TIME_STAMP_)
 #define _TIME_STAMP_ 0
@@ -168,10 +168,7 @@ void HttpDeamonHandleRequest::HandleRequest(uint32_t bytes_received, char* recei
 
         request_content_type_ = http::ContentTypes::kTextHtml;
         content_ = reinterpret_cast<uint8_t*>(dynamic_content_);
-        content_size_ = static_cast<uint32_t>(snprintf(dynamic_content_, sizeof(dynamic_content_), 
-										"%u %s\n", 
-												static_cast<unsigned>(status_), 
-												status_msg));
+        content_size_ = static_cast<uint32_t>(snprintf(dynamic_content_, sizeof(dynamic_content_), "%u %s\n", static_cast<unsigned>(status_), status_msg));
 
         const auto kHeaderLength =
             static_cast<uint32_t>(snprintf(receive_buffer_, network::tcp::kTcpDataMss,
@@ -181,30 +178,23 @@ void HttpDeamonHandleRequest::HandleRequest(uint32_t bytes_received, char* recei
                                            "Content-Length: %u\r\n"
                                            "Connection: close\r\n"
                                            "\r\n",
-                                           static_cast<unsigned int>(status_), 
-										   status_msg, 
-										   network::iface::HostName(), 
-										   http::kContentType[static_cast<uint32_t>(request_content_type_)], 
-										   static_cast<unsigned int>(content_size_)));
+                                           static_cast<unsigned int>(status_), status_msg, network::iface::HostName(), http::kContentType[static_cast<uint32_t>(request_content_type_)], static_cast<unsigned int>(content_size_)));
 
         network::tcp::Send(connection_handle_, reinterpret_cast<const uint8_t*>(receive_buffer_), kHeaderLength);
     } else {
         const auto kHeaderLength = static_cast<uint32_t>(snprintf(receive_buffer_, network::tcp::kTcpDataMss,
                                                                   "HTTP/1.1 %u %s\r\n"
                                                                   "Server: %s\r\n"
-																  "Content-Encoding: %s\r\n"
+                                                                  "Content-Encoding: %s\r\n"
                                                                   "Content-Type: %s\r\n"
                                                                   "Content-Length: %u\r\n"
                                                                   "Cache-Control: %s\r\n"
                                                                   "ETag: \"%u\"\r\n"
                                                                   "Connection: close\r\n"
                                                                   "\r\n",
-                                                                  static_cast<unsigned int>(status_),
-																  status_msg, network::iface::HostName(),
-																  gzip_ ? "gzip" : "identity",
-																  http::kContentType[static_cast<uint32_t>(request_content_type_)],
-                                                                  static_cast<unsigned int>(content_size_), (content_ == reinterpret_cast<uint8_t*>(dynamic_content_)) ? "no-cache" : "max-age=3600", 
-																  (content_ == reinterpret_cast<uint8_t*>(dynamic_content_)) ? timing::Millis() : _TIME_STAMP_));
+                                                                  static_cast<unsigned int>(status_), status_msg, network::iface::HostName(), gzip_ ? "gzip" : "identity", http::kContentType[static_cast<uint32_t>(request_content_type_)],
+                                                                  static_cast<unsigned int>(content_size_), (content_ == reinterpret_cast<uint8_t*>(dynamic_content_)) ? "no-cache" : "max-age=3600",
+                                                                  (content_ == reinterpret_cast<uint8_t*>(dynamic_content_)) ? timing::Millis() : _TIME_STAMP_));
 
         network::tcp::Send(connection_handle_, reinterpret_cast<const uint8_t*>(receive_buffer_), kHeaderLength);
 
@@ -439,7 +429,7 @@ uint32_t RdmTod(char*, uint32_t, uint32_t);
 http::Status HttpDeamonHandleRequest::HandleGet() {
     DEBUG_ENTRY();
 
-	gzip_ = false;
+    gzip_ = false;
     uint32_t length = 0;
     content_ = reinterpret_cast<uint8_t*>(dynamic_content_);
     DEBUG_PUTS(uri_);
@@ -527,7 +517,7 @@ http::Status HttpDeamonHandleRequest::HandlePost() {
 
     if (memcmp(uri_, "/action/command=reboot", 23) == 0) {
         network::tcp::Abort(connection_handle_);
-        hal::Reboot();
+        board::Reboot();
     }
 
     DEBUG_EXIT();
@@ -577,18 +567,18 @@ http::Status HttpDeamonHandleRequest::HandlePostUpload() {
         printf("Firmware: %s -> %u bytes\n", upload_filename_, upload_size_);
 
         if (strncmp(upload_filename_, firmware::kFileName, sizeof(upload_filename_)) != 0) {
-			puts("Wrong firmware file name.");
-			DEBUG_EXIT();
+            puts("Wrong firmware file name.");
+            DEBUG_EXIT();
             return http::Status::kBadRequest;
         }
 
         if ((upload_size_ >= 64) && (upload_size_ > (FIRMWARE_MAX_SIZE))) {
-			puts("Wrong firmware file size.");
-			DEBUG_EXIT();
+            puts("Wrong firmware file size.");
+            DEBUG_EXIT();
             return http::Status::kRequestEntityTooLarge;
         }
 
-		assert(FlashCodeInstall::Get() != nullptr);
+        assert(FlashCodeInstall::Get() != nullptr);
         if (!(FlashCodeInstall::Get()->Erase(upload_size_))) {
             puts("Erase failed.");
             DEBUG_EXIT();
@@ -607,8 +597,8 @@ http::Status HttpDeamonHandleRequest::HandlePostUpload() {
         if (part_uri[0] == 0) {
             Display::Get()->Progress();
 
-			uint32_t data_written;
-			printf("%u\n", request_data_length_);
+            uint32_t data_written;
+            printf("%u\n", request_data_length_);
             if (!(FlashCodeInstall::Get()->WriteChunk(reinterpret_cast<uint8_t*>(file_data_), request_data_length_, data_written))) {
                 DEBUG_PRINTF("WriteChunk failed. Data written:%u bytes", data_written);
                 DEBUG_EXIT();

@@ -23,10 +23,10 @@
  * THE SOFTWARE.
  */
 
-#include "hal.h"
+#include "board.h"
 #include "network.h"
 #include "configstore.h"
-#include "firmwareversion.h"
+#include "firmware/firmwareversion.h"
 #include "software_version.h"
 #include "rdmdevice.h"
 #include "rdmnetdevice.h"

@@ -1,8 +1,8 @@
-/**
- * @file hardware_reboot.c
+/*
+ * linux_board.h
  *
  */
-/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,23 +23,15 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#ifndef LINUX_BOARD_H_
+#define LINUX_BOARD_H_
 
-#include "arm/synchronize.h"
+#include "superloop/softwaretimers.h"
 
-#include "bcm2835_wdog.h"
-
-extern void hardware_led_set(uint32_t );
-
-void hardware_reboot(void) {
-	hardware_led_set(1);
-
-	bcm2835_watchdog_init();
-
-	invalidate_instruction_cache();
-	clean_data_cache();
-	invalidate_data_cache();
-
-	for (;;)
-		;
+namespace board {
+inline void Run() {
+    SoftwareTimerRun();
 }
+} // namespace board
+
+#endif // LINUX_BOARD_H_

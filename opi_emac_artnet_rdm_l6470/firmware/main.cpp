@@ -25,7 +25,7 @@
 
 #include <cstdio>
 
-#include "h3/hal.h"
+#include "board.h"
 #include "watchdog.h"
 #include "network.h"
 #include "displayudf.h"
@@ -46,22 +46,20 @@
 #if defined(NODE_SHOWFILE)
 #include "showfile.h"
 #endif
-#include "firmwareversion.h"
+#include "firmware/firmwareversion.h"
 #include "software_version.h"
 #include "common/utils/utils_enum.h"
 #include "configurationstore.h"
 
-namespace hal
-{
-void RebootHandler()
-{
+namespace board {
+void RebootHandler() {
     ArtNetNode::Get()->Stop();
 }
-} // namespace hal
+} // namespace board
 
 int main() // NOLINT
 {
-    hal::Init();
+    board::Init();
     DisplayUdf display;
     ConfigStore config_store;
     network::Init();
@@ -92,14 +90,10 @@ int main() // NOLINT
 
     char description[64];
 
-    if (kIsLedTypeSet)
-    {
+    if (kIsLedTypeSet) {
         dmxnode_chain.SetTLC59711Dmx(&tlc59711dmx);
-        snprintf(description, sizeof(description) - 1, "Sparkfun [%d] with %s [%d]", motors_connected, tlc59711::GetType(tlc59711dmx.GetType()),
-                 tlc59711dmx.GetCount());
-    }
-    else
-    {
+        snprintf(description, sizeof(description) - 1, "Sparkfun [%d] with %s [%d]", motors_connected, tlc59711::GetType(tlc59711dmx.GetType()), tlc59711dmx.GetCount());
+    } else {
         snprintf(description, sizeof(description) - 1, "Sparkfun [%d]", motors_connected);
     }
 
@@ -107,7 +101,7 @@ int main() // NOLINT
 
     dmxnode_node.SetLongName(description);
     dmxnode_node.SetOutput(&dmxnode_chain);
-	
+
     RdmPersonality* rdm_personalities[1] = {new RdmPersonality(description, &dmxnode_chain)};
     ArtNetRdmResponder rdm_responder(rdm_personalities, 1);
 
@@ -135,8 +129,7 @@ int main() // NOLINT
     displayudf_params.Load();
     displayudf_params.SetAndShow();
 
-    if (kIsLedTypeSet)
-    {
+    if (kIsLedTypeSet) {
         display.Printf(7, "%s:%d", tlc59711::GetType(tlc59711dmx.GetType()), tlc59711dmx.GetCount());
     }
 
@@ -150,8 +143,7 @@ int main() // NOLINT
 
     watchdog::Init();
 
-    for (;;)
-    {
+    for (;;) {
         watchdog::Feed();
         network::Run();
         dmxnode_node.Run();
@@ -159,6 +151,6 @@ int main() // NOLINT
         showfile.Run();
 #endif
         display.Run();
-        hal::Run();
+        board::Run();
     }
 }
