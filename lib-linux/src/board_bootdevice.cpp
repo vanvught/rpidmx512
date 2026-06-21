@@ -1,5 +1,5 @@
 /**
- * @file hal_bootdevice.cpp
+ * @file board_bootdevice.cpp
  *
  */
 /* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org

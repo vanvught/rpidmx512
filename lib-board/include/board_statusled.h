@@ -1,5 +1,5 @@
 /**
- * @file hal_statusled.h
+ * @file board_statusled.h
  *
  */
 /* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org

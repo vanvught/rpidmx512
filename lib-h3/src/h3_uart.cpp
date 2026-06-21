@@ -1,5 +1,5 @@
 /**
- * @file h3_uart.c
+ * @file h3_uart.cpp
  *
  */
 /* Copyright (C) 2021-2026 by Arjan van Vught mailto:info@orangepi-dmx.nl

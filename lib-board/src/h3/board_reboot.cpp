@@ -1,5 +1,5 @@
 /**
- * @file hal_reboot.cpp
+ * @file board_reboot.cpp
  *
  */
 /* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
