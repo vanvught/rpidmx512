@@ -2,7 +2,7 @@
  * @file h3_uart.c
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2026 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,6 @@
 #include <assert.h>
 
 #include "h3_uart.h"
-
 #include "h3.h"
 #include "h3_gpio.h"
 #include "h3_ccu.h"

@@ -37,7 +37,6 @@
 #include "json/l6470params.h"
 #include "l6470dmxmodes.h"
 #include "modestore.h"
-#include "hal_api.h"
 #include "spi.h"
 #include "gpio.h"
 #include "timing.h"
@@ -76,7 +75,6 @@ SparkFunDmx::SparkFunDmx() : dmx_start_address_(dmxnode::kAddressInvalid) {
 
 SparkFunDmx::~SparkFunDmx() {
     DEBUG_ENTRY();
-    ;
 
     for (uint32_t i = 0; i < common::store::l6470dmx::kMaxMotors; i++) {
         if (autodriver_[i] != nullptr) {
@@ -298,7 +296,6 @@ void SparkFunDmx::ReadConfigFiles() {
     }
 
     DEBUG_EXIT();
-    ;
 }
 
 template <bool doUpdate> void SparkFunDmx::SetData(uint32_t port_index, const uint8_t* data, uint32_t length) {

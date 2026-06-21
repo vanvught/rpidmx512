@@ -25,7 +25,8 @@
 #include <cassert>
 
 #include "gps.h"
-#include "hal_uart.h"
+#include "uart.h"
+#include "board.h" // IWYU pragma: keep // Needed for EXT_UART_NUMBER
 #include "firmware/debug/debug_debug.h"
 
 namespace gps {
@@ -49,7 +50,7 @@ void GPS::UartInit() {
     s_ring_buffer_index_tail = 0;
     s_state = gps::State::kStartDelimiter;
 
-    FUNC_PREFIX(UartBegin(EXT_UART_BASE, 9600, hal::uart::BITS_8, hal::uart::PARITY_NONE, hal::uart::STOP_1BIT));
+    uart::Begin(EXT_UART_BASE, 9600, uart::BITS_8, uart::PARITY_NONE, uart::STOP_1BIT);
 
     DEBUG_EXIT();
 }
@@ -58,7 +59,7 @@ void GPS::UartSetBaud(uint32_t baud) {
     DEBUG_ENTRY();
     assert(baud != 0);
 
-    FUNC_PREFIX(UartSetBaudrate(EXT_UART_BASE, baud));
+    uart::SetBaudrate(EXT_UART_BASE, baud);
     baud_ = baud;
 
     DEBUG_EXIT();
@@ -67,16 +68,16 @@ void GPS::UartSetBaud(uint32_t baud) {
 void GPS::UartSend(const char* sentence) {
     DEBUG_ENTRY();
 
-    FUNC_PREFIX(UartTransmitString(EXT_UART_BASE, sentence));
+    uart::TransmitString(EXT_UART_BASE, sentence);
 
     DEBUG_EXIT();
 }
 
 const char* GPS::UartGetSentence() {
-    uint32_t rfl = FUNC_PREFIX(UartGetRxFifoLevel(EXT_UART_BASE));
+    uint32_t rfl = uart::GetRxFifoLevel(EXT_UART_BASE);
 
     while (rfl--) {
-        const auto kByte = FUNC_PREFIX(UartGetRxData(EXT_UART_BASE));
+        const auto kByte = uart::GetRxData(EXT_UART_BASE);
 
         switch (s_state) {
             case gps::State::kStartDelimiter:

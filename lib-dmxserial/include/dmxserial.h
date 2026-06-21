@@ -31,16 +31,15 @@
 #include "dmxserialchanneldata.h"
 #include "dmxserialtftp.h"
 #include "serial/serial.h"
-#include "hal_uart.h"
+#include "uart.h"
 #include "dmxnode.h"
 
-namespace DmxSerialDefaults
-{
+namespace DmxSerialDefaults {
 inline constexpr auto TYPE = serial::Type::kUart;
 inline constexpr auto UART_BAUD = 115200;
-inline constexpr auto UART_BITS = hal::uart::BITS_8;
-inline constexpr auto UART_PARITY = hal::uart::PARITY_NONE;
-inline constexpr auto UART_STOPBITS = hal::uart::STOP_1BIT;
+inline constexpr auto UART_BITS = uart::BITS_8;
+inline constexpr auto UART_PARITY = uart::PARITY_NONE;
+inline constexpr auto UART_STOPBITS = uart::STOP_1BIT;
 inline constexpr auto SPI_SPEED_HZ = 1000000; ///< 1 MHz
 inline constexpr auto SPI_MODE = 0;
 inline constexpr auto I2C_ADDRESS = 0x30;
@@ -50,15 +49,13 @@ inline constexpr auto I2C_SPEED_MODE = serial::i2c::Speed::kFast;
 #define DMXSERIAL_FILE_PREFIX "chl"
 #define DMXSERIAL_FILE_SUFFIX ".txt"
 
-namespace DmxSerialFile
-{
+namespace DmxSerialFile {
 inline constexpr auto NAME_LENGTH = sizeof(DMXSERIAL_FILE_PREFIX "NNN" DMXSERIAL_FILE_SUFFIX) - 1;
 inline constexpr auto MIN_NUMBER = 1;
 inline constexpr auto MAX_NUMBER = dmxnode::kUniverseSize;
 } // namespace DmxSerialFile
 
-class DmxSerial final: public Serial
-{
+class DmxSerial final : public Serial {
    public:
     DmxSerial();
     ~DmxSerial();
@@ -84,8 +81,7 @@ class DmxSerial final: public Serial
 
     uint16_t GetDmxFootprint() { return dmxnode::kUniverseSize; }
 
-    bool GetSlotInfo([[maybe_unused]] uint16_t slot_offset, dmxnode::SlotInfo& slot_info)
-    {
+    bool GetSlotInfo([[maybe_unused]] uint16_t slot_offset, dmxnode::SlotInfo& slot_info) {
         slot_info.type = 0x00;       // ST_PRIMARY
         slot_info.category = 0x0001; // SD_INTENSITY
         return true;
@@ -111,10 +107,7 @@ class DmxSerial final: public Serial
     void ScanDirectory();
     void Update(const uint8_t* pData, uint32_t length);
 
-    void static StaticCallbackFunction(const uint8_t* pBuffer, uint32_t size, uint32_t from_ip, uint16_t from_port)
-    {
-        s_this->Input(pBuffer, size, from_ip, from_port);
-    }
+    void static StaticCallbackFunction(const uint8_t* pBuffer, uint32_t size, uint32_t from_ip, uint16_t from_port) { s_this->Input(pBuffer, size, from_ip, from_port); }
 
    private:
     uint32_t m_nFilesCount{0};
@@ -123,8 +116,7 @@ class DmxSerial final: public Serial
     DmxSerialChannelData* m_pDmxSerialChannelData[DmxSerialFile::MAX_NUMBER];
     uint16_t m_nDmxLastSlot{dmxnode::kUniverseSize};
     uint8_t dmx_data_[dmxnode::kUniverseSize];
-    struct SyncData
-    {
+    struct SyncData {
         uint8_t data[dmxnode::kUniverseSize];
         uint32_t length;
     };
@@ -135,4 +127,4 @@ class DmxSerial final: public Serial
     static inline DmxSerial* s_this;
 };
 
-#endif  // DMXSERIAL_H_
+#endif // DMXSERIAL_H_

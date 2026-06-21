@@ -31,7 +31,7 @@
 #include <cassert>
 
 #include "midi.h"
-#include "hal_uart.h"
+#include "uart.h"
 #include "platform_midi.h"
 #include "logic_analyzer.h"
 
@@ -211,7 +211,7 @@ static void timer3_config() {
 void Midi::Init(midi::Direction direction) {
     direction_ = direction;
 
-    FUNC_PREFIX(UartBegin(EXT_MIDI_UART_BASE, baudrate_ == 0 ? 31250 : baudrate_, hal::uart::BITS_8, hal::uart::PARITY_NONE, hal::uart::STOP_1BIT));
+    uart::Begin(EXT_MIDI_UART_BASE, baudrate_ == 0 ? 31250 : baudrate_, uart::BITS_8, uart::PARITY_NONE, uart::STOP_1BIT);
 
     if ((static_cast<uint32_t>(direction) & static_cast<uint32_t>(midi::Direction::INPUT)) == static_cast<uint32_t>(midi::Direction::INPUT)) {
         ResetInput();

@@ -205,7 +205,7 @@ class ILI9341 : public Paint {
         rotate_ = nRotation;
     }
 
-    void SetBackLight(uint32_t value) { FUNC_PREFIX(GpioWrite(SPI_LCD_BL_GPIO, value == 0 ? LOW : HIGH)); }
+    void SetBackLight(uint32_t value) { gpio::Write(SPI_LCD_BL_GPIO, value == 0 ? LOW : HIGH); }
 
     void EnableDisplay(bool enable) { WriteCommand(enable ? ili9341::cmd::DISPON : ili9341::cmd::DISPOFF); }
 

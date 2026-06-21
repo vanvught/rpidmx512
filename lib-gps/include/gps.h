@@ -35,60 +35,51 @@
 
 #include "common/utils/utils_enum.h"
 
-namespace gps
-{
-namespace nmea
-{
+namespace gps {
+namespace nmea {
 inline static constexpr uint32_t kMaxSentenceLength = 82; ///< including the $ and <CR><LF>
 inline static constexpr char kStartDelimiter = '$';       ///< The start delimiter is normally '$' (ASCII 36)
 } // namespace nmea
-namespace module
-{
+namespace module {
 inline static constexpr uint32_t kMaxNameLength = 11; // + '\0'
 } // namespace module
 
-enum class Status
-{
-    kIdle,
-    kWarning,
-    kValid,
-    kUndefined
+enum class Status { 
+	kIdle, 
+	kWarning, 
+	kValid, 
+	kUndefined 
 };
 
-enum class Module: uint8_t
-{
-    kAtgM336H,
-    kUbloxNeo,
-    kMtK3339,
-    kUndefined
+enum class Module : uint8_t { 
+	kAtgM336H, 
+	kUbloxNeo, 
+	kMtK3339, 
+	kUndefined
 };
 
-inline constexpr const char kModule[static_cast<uint32_t>(Module::kUndefined)][module::kMaxNameLength] = 
-{
+inline constexpr const char kModule[static_cast<uint32_t>(Module::kUndefined)][module::kMaxNameLength] = {
 	"ATGM336H", 
 	"ublox-NEO7", 
 	"MTK3339"
 };
 
 inline constexpr const char kBaud115200[static_cast<uint32_t>(Module::kUndefined)][nmea::kMaxSentenceLength] = {
-    "$PCAS01,5*19\r\n", 
+	"$PCAS01,5*19\r\n", 
 	"$PUBX,41,1,0007,0003,115200,0*18\r\n", 
-	"$PMTK251,115200*1F\r\n"};
+	"$PMTK251,115200*1F\r\n"
+};
 
-[[nodiscard]] inline constexpr const char* GetModule(Module module)
-{
+[[nodiscard]] inline constexpr const char* GetModule(Module module) {
     return module < Module::kUndefined ? kModule[static_cast<uint32_t>(module)] : "UNDEFINED";
 }
 
-inline Module GetModule(const char* string)
-{
+inline Module GetModule(const char* string) {
     assert(string != nullptr);
     uint8_t index = 0;
 
-    for (const char(&module)[module::kMaxNameLength] : kModule)
-    {
-        if (strcasecmp(string, module) == 0)
-        {
+    for (const char (&module)[module::kMaxNameLength] : kModule) {
+        if (strcasecmp(string, module) == 0) {
             return common::FromValue<Module>(index);
         }
         ++index;
@@ -98,8 +89,7 @@ inline Module GetModule(const char* string)
 }
 } // namespace gps
 
-class GPS
-{
+class GPS {
    public:
     explicit GPS(int32_t utc_offset, gps::Module module = gps::Module::kUndefined);
 
@@ -114,14 +104,12 @@ class GPS
 
     uint32_t GetTimeTimestampMillis() const { return time_timestamp_millis_; }
 
-    const struct tm* GetDateTime()
-    {
+    const struct tm* GetDateTime() {
         is_time_updated_ = is_date_updated_ = false;
         return &tm_;
     }
 
-    time_t GetLocalSeconds()
-    {
+    time_t GetLocalSeconds() {
         is_time_updated_ = is_date_updated_ = false;
         return mktime(&tm_) + utc_offset_;
     }
@@ -165,4 +153,4 @@ class GPS
     static GPS* s_this;
 };
 
-#endif  // GPS_H_
+#endif // GPS_H_

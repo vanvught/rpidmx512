@@ -33,7 +33,7 @@
 #include "gps.h"
 #include "utc.h"
 #include "timing.h"
-#include "hal_uart.h" // Needed for EXT_UART_NUMBER
+#include "board.h" // IWYU pragma: keep // Needed for EXT_UART_NUMBER
 #include "firmware/debug/debug_debug.h"
 
 // Maximum sentence length, including the $ and <CR><LF> is 82 bytes.

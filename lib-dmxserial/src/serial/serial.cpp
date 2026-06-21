@@ -28,7 +28,7 @@
 #include <cassert>
 
 #include "serial/serial.h"
-#include "hal_uart.h"
+#include "uart.h"
 #include "i2c.h"
 #include "firmware/debug/debug_dump.h"
 #include "firmware/debug/debug_debug.h"
@@ -40,9 +40,9 @@ Serial::Serial() {
     s_this = this;
 
     uart_configuration_.baud = 115200;
-    uart_configuration_.bits = hal::uart::BITS_8;
-    uart_configuration_.parity = hal::uart::PARITY_NONE;
-    uart_configuration_.stop_bits = hal::uart::STOP_1BIT;
+    uart_configuration_.bits = uart::BITS_8;
+    uart_configuration_.parity = uart::PARITY_NONE;
+    uart_configuration_.stop_bits = uart::STOP_1BIT;
 
     spi_configuration_.speed_hz = 1000000; // 1MHz
     spi_configuration_.mode = 0;

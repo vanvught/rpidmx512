@@ -29,10 +29,10 @@
 #include <cstdint>
 #include <cstdio>
 
-#include "hal_uart.h"
+#include "board.h" // IWYU pragma: keep // Needed for EXT_UART_NUMBER
+#include "uart.h"
 
-namespace midi
-{
+namespace midi {
 /**
  * NoteOn with 0 velocity should be handled as NoteOf.
  * Set to true  to get NoteOff events when receiving null-velocity NoteOn messages.
@@ -40,33 +40,19 @@ namespace midi
  */
 inline constexpr auto HANDLE_NULL_VELOCITY_NOTE_ON_AS_NOTE_OFF = true;
 
-namespace defaults
-{
+namespace defaults {
 inline constexpr auto BAUDRATE = 31250;
 } // namespace defaults
 
-namespace pitchbend
-{
+namespace pitchbend {
 inline constexpr auto MIN = -8192;
 inline constexpr auto MAX = 8191;
 } // namespace pitchbend
 
-namespace control
-{
-enum class Change : uint8_t
-{
-    ALL_SOUND_OFF = 0x78,
-    RESET_ALL_CONTROLLERS = 0x79,
-    LOCAL_CONTROL = 0x7A,
-    ALL_NOTES_OFF = 0x7B,
-    OMNI_MODE_OFF = 0x7C,
-    OMNI_MODE_ON = 0x7D,
-    MONO_MODE_ON = 0x7E,
-    POLY_MODE_ON = 0x7F
-};
+namespace control {
+enum class Change : uint8_t { ALL_SOUND_OFF = 0x78, RESET_ALL_CONTROLLERS = 0x79, LOCAL_CONTROL = 0x7A, ALL_NOTES_OFF = 0x7B, OMNI_MODE_OFF = 0x7C, OMNI_MODE_ON = 0x7D, MONO_MODE_ON = 0x7E, POLY_MODE_ON = 0x7F };
 
-enum class Function : uint8_t
-{
+enum class Function : uint8_t {
     BANK_SELECT = 0x00,           ///< MSB
     MODULATION_WHEEL = 0x01,      ///< MSB
     BREATH_CONTROLLER = 0x02,     ///< MSB
@@ -96,21 +82,11 @@ enum class Function : uint8_t
 };
 } // namespace control
 
-enum class Channel : uint8_t
-{
-    OMNI = 0,
-    OFF = 17
-};
+enum class Channel : uint8_t { OMNI = 0, OFF = 17 };
 
-enum class ActiveSenseState
-{
-    NOT_ENABLED,
-    ENABLED,
-    FAILED
-};
+enum class ActiveSenseState { NOT_ENABLED, ENABLED, FAILED };
 
-enum class Types : uint8_t
-{
+enum class Types : uint8_t {
     INVALIDE_TYPE = 0x00,           ///< For notifying errors
     NOTE_OFF = 0x80,                ///< Note Off
     NOTE_ON = 0x90,                 ///< Note On
@@ -134,8 +110,7 @@ enum class Types : uint8_t
 
 #define MIDI_SYSTEM_EXCLUSIVE_INDEX_ENTRIES 128
 
-struct Message
-{
+struct Message {
     uint32_t timestamp;
     midi::Types type;
     uint8_t channel;
@@ -145,14 +120,9 @@ struct Message
     uint8_t bytes_count;
 };
 
-enum class Direction
-{
-    INPUT = (1U << 0),
-    OUTPUT = (1U << 1)
-};
+enum class Direction { INPUT = (1U << 0), OUTPUT = (1U << 1) };
 
-struct Timecode
-{
+struct Timecode {
     uint8_t frames;
     uint8_t seconds;
     uint8_t minutes;
@@ -160,17 +130,9 @@ struct Timecode
     uint8_t type;
 } __attribute__((packed));
 
-enum class TimecodeType
-{
-    FILM = 0,
-    EBU,
-    DF,
-    SMPTE,
-    UNKNOWN = 255
-};
+enum class TimecodeType { FILM = 0, EBU, DF, SMPTE, UNKNOWN = 255 };
 
-namespace bpm
-{
+namespace bpm {
 inline constexpr auto MIN = 8;
 inline constexpr auto MAX = 300;
 } // namespace bpm
@@ -179,8 +141,7 @@ typedef void (*thunk_irq_timer1_t)();
 
 } // namespace midi
 
-class Midi
-{
+class Midi {
    public:
     Midi() { s_this = this; }
 
@@ -201,8 +162,7 @@ class Midi
 
     uint8_t GetChannel() const { return input_channel_; }
 
-    void SendTimeCode(const struct midi::Timecode* timecode)
-    {
+    void SendTimeCode(const struct midi::Timecode* timecode) {
         uint8_t data[10] = {0xF0, 0x7F, 0x7F, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0xF7};
 
         data[5] = static_cast<uint8_t>((((timecode->type) & 0x03) << 5) | (timecode->hours & 0x1F));
@@ -213,8 +173,7 @@ class Midi
         TransmitRaw(data, 10);
     }
 
-    void SendQf(uint8_t value)
-    {
+    void SendQf(uint8_t value) {
         uint8_t data[2];
 
         data[0] = 0xF1;
@@ -223,12 +182,10 @@ class Midi
         TransmitRaw(data, 2);
     }
 
-    void SendQf(const struct midi::Timecode* timecode, uint32_t& quarter_frame_piece)
-    {
+    void SendQf(const struct midi::Timecode* timecode, uint32_t& quarter_frame_piece) {
         auto data = static_cast<uint8_t>(quarter_frame_piece << 4);
 
-        switch (quarter_frame_piece)
-        {
+        switch (quarter_frame_piece) {
             case 0:
                 data = data | (timecode->frames & 0x0F);
                 break;
@@ -262,21 +219,18 @@ class Midi
         quarter_frame_piece = (quarter_frame_piece + 1) & 0x07;
     }
 
-    void TransmitRaw(const uint8_t* data, uint32_t length) { FUNC_PREFIX(UartTransmit(EXT_MIDI_UART_BASE, data, length)); }
+    void TransmitRaw(const uint8_t* data, uint32_t length) { uart::Transmit(EXT_MIDI_UART_BASE, data, length); }
 
     void TransmitRaw(uint8_t byte) { TransmitRaw(&byte, 1); }
 
     void TransmitRaw(midi::Types type) { TransmitRaw(static_cast<uint8_t>(type)); }
 
-    bool Read(uint8_t channel)
-    {
-        if (channel >= static_cast<uint8_t>(midi::Channel::OFF))
-        {
+    bool Read(uint8_t channel) {
+        if (channel >= static_cast<uint8_t>(midi::Channel::OFF)) {
             return false; // MIDI Input disabled.
         }
 
-        if (!Parse())
-        {
+        if (!Parse()) {
             return false;
         }
 
@@ -294,14 +248,12 @@ class Midi
 
     midi::Types GetMessageType() const { return static_cast<midi::Types>(message_.type); }
 
-    void GetMessageData(uint8_t& data1, uint8_t& data2) const
-    {
+    void GetMessageData(uint8_t& data1, uint8_t& data2) const {
         data1 = message_.data1;
         data2 = message_.data2;
     }
 
-    const uint8_t* GetSystemExclusive(uint8_t& length) const
-    {
+    const uint8_t* GetSystemExclusive(uint8_t& length) const {
         length = message_.bytes_count;
         return reinterpret_cast<const uint8_t*>(message_.system_exclusive);
     }
@@ -312,12 +264,10 @@ class Midi
 
     midi::ActiveSenseState GetActiveSenseState();
 
-    void Print()
-    {
+    void Print() {
         printf("MIDI\n");
         printf(" Direction    : %s\n", direction_ == midi::Direction::INPUT ? "Input" : "Output");
-        if (direction_ == midi::Direction::INPUT)
-        {
+        if (direction_ == midi::Direction::INPUT) {
             printf(" Channel      : %d %s\n", input_channel_, input_channel_ == 0 ? "(OMNI mode)" : "");
         }
         printf(" Active sense : %s\n", active_sense_ ? "Enabled" : "Disabled");
@@ -327,41 +277,31 @@ class Midi
     static Midi* Get() { return s_this; }
 
    private:
-    bool InputFilter(uint8_t channel) const
-    {
+    bool InputFilter(uint8_t channel) const {
         if (message_.type == midi::Types::INVALIDE_TYPE) return false;
 
         // First, check if the received message is Channel
-        if (message_.type >= midi::Types::NOTE_OFF && message_.type <= midi::Types::PITCH_BEND)
-        {
+        if (message_.type >= midi::Types::NOTE_OFF && message_.type <= midi::Types::PITCH_BEND) {
             // Then we need to know if we listen to it
-            if ((message_.channel == channel) || (channel == static_cast<uint8_t>(midi::Channel::OMNI)))
-            {
+            if ((message_.channel == channel) || (channel == static_cast<uint8_t>(midi::Channel::OMNI))) {
                 return true;
-            }
-            else
-            {
+            } else {
                 // We don't listen to this channel
                 return false;
             }
-        }
-        else
-        {
+        } else {
             // System messages are always received
             return true;
         }
     }
 
-    midi::Types GetTypeFromStatusByte(uint8_t status_byte) const
-    {
-        if ((status_byte < 0x80) || (status_byte == 0xf4) || (status_byte == 0xf5) || (status_byte == 0xf9) || (status_byte == 0xfD))
-        {
+    midi::Types GetTypeFromStatusByte(uint8_t status_byte) const {
+        if ((status_byte < 0x80) || (status_byte == 0xf4) || (status_byte == 0xf5) || (status_byte == 0xf9) || (status_byte == 0xfD)) {
             // Data bytes and undefined.
             return midi::Types::INVALIDE_TYPE;
         }
 
-        if (status_byte < 0xF0)
-        {
+        if (status_byte < 0xF0) {
             // Channel message, remove channel nibble.
             return static_cast<midi::Types>(status_byte & 0xF0);
         }
@@ -371,22 +311,18 @@ class Midi
 
     uint8_t GetChannelFromStatusByte(uint8_t status_byte) const { return static_cast<uint8_t>((status_byte & 0x0F) + 1); }
 
-    bool IsChannelMessage(midi::Types type) const
-    {
-        return type == midi::Types::NOTE_OFF || type == midi::Types::NOTE_ON || type == midi::Types::CONTROL_CHANGE || type == midi::Types::AFTER_TOUCH_POLY ||
-               type == midi::Types::AFTER_TOUCH_CHANNEL || type == midi::Types::PITCH_BEND || type == midi::Types::PROGRAM_CHANGE;
+    bool IsChannelMessage(midi::Types type) const {
+        return type == midi::Types::NOTE_OFF || type == midi::Types::NOTE_ON || type == midi::Types::CONTROL_CHANGE || type == midi::Types::AFTER_TOUCH_POLY || type == midi::Types::AFTER_TOUCH_CHANNEL || type == midi::Types::PITCH_BEND ||
+               type == midi::Types::PROGRAM_CHANGE;
     }
 
-    void HandleNullVelocityNoteOnAsNoteOff()
-    {
-        if (midi::HANDLE_NULL_VELOCITY_NOTE_ON_AS_NOTE_OFF && (message_.type == midi::Types::NOTE_ON) && (message_.data2 == 0))
-        {
+    void HandleNullVelocityNoteOnAsNoteOff() {
+        if (midi::HANDLE_NULL_VELOCITY_NOTE_ON_AS_NOTE_OFF && (message_.type == midi::Types::NOTE_ON) && (message_.data2 == 0)) {
             message_.type = midi::Types::NOTE_OFF;
         }
     }
 
-    void ResetInput()
-    {
+    void ResetInput() {
         pending_message_index_ = 0;
         pending_message_expected_lenght_ = 0;
         running_status_rx_ = static_cast<uint8_t>(midi::Types::INVALIDE_TYPE);
@@ -409,4 +345,4 @@ class Midi
     inline static Midi* s_this;
 };
 
-#endif  // MIDI_H_
+#endif // MIDI_H_

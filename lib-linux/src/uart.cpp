@@ -1,8 +1,8 @@
-#if defined(__GNUC__) && !defined(__clang__)	
-//FIXME Remove #pragma GCC push_options
-# pragma GCC push_options
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wsign-conversion"
+#if defined(__GNUC__) && !defined(__clang__)
+// FIXME Remove #pragma GCC push_options
+#pragma GCC push_options
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsign-conversion"
 #endif
 /**
  * @file uart.cpp
@@ -30,7 +30,7 @@
  */
 
 #ifndef NDEBUG
-# define NDEBUG
+#define NDEBUG
 #endif
 
 #include <cstdint>
@@ -43,20 +43,16 @@
 #include <unistd.h>
 #include <sys/ioctl.h>
 
-#include "hal_uart.h"
+#include "firmware/debug/debug_debug.h"
 
- #include "firmware/debug/debug_debug.h"
-
+namespace uart {
 #if defined(__APPLE__)
- static constexpr char DEV[2][64] = {
-		 { "/dev/tty.usbserial-*" },
-		 { "/dev/tty.usbserial-*" }
- };
+static constexpr char DEV[2][64] = {{"/dev/tty.usbserial-*"}, {"/dev/tty.usbserial-*"}};
 #else
- static constexpr char DEV[2][64] = {
-		 { "/dev/ttyUSB*" },
-		 { "/dev/ttyUSB*" },
- };
+static constexpr char DEV[2][64] = {
+    {"/dev/ttyUSB*"},
+    {"/dev/ttyUSB*"},
+};
 #endif
 
 static int fd = -1;
@@ -68,167 +64,168 @@ static uint32_t s_nParity;
 static uint32_t s_nStopBits;
 
 static void s_configure_termios() {
-	glob_t globbuf;
+    glob_t globbuf;
 
-	if (s_nUart > sizeof(DEV) / sizeof(DEV[0])) {
-		s_nUart = 0;
-	}
+    if (s_nUart > sizeof(DEV) / sizeof(DEV[0])) {
+        s_nUart = 0;
+    }
 
-	glob(DEV[s_nUart], 0, nullptr, &globbuf);
+    glob(DEV[s_nUart], 0, nullptr, &globbuf);
 
-	if (fd > 0) {
-		close(fd);
-	}
+    if (fd > 0) {
+        close(fd);
+    }
 
-	if (globbuf.gl_pathc > 0) {
-		fd = open(globbuf.gl_pathv[0], O_RDWR | O_NOCTTY | O_NDELAY);
-	} else {
-		fprintf(stderr, "No serial device found in %s\n", DEV[s_nUart]);
-		return;
-	}
+    if (globbuf.gl_pathc > 0) {
+        fd = open(globbuf.gl_pathv[0], O_RDWR | O_NOCTTY | O_NDELAY);
+    } else {
+        fprintf(stderr, "No serial device found in %s\n", DEV[s_nUart]);
+        return;
+    }
 
-	if (fd < 0) {
-		printf("Error %i from open: %s\n", errno, strerror(errno));
-		return;
-	}
+    if (fd < 0) {
+        printf("Error %i from open: %s\n", errno, strerror(errno));
+        return;
+    }
 
-	printf("Using serial device at %s\n", globbuf.gl_pathv[0]);
+    printf("Using serial device at %s\n", globbuf.gl_pathv[0]);
 
-	globfree(&globbuf);
+    globfree(&globbuf);
 
-	fcntl(fd, F_SETFL, 0);
+    fcntl(fd, F_SETFL, 0);
 
-	struct termios options;
+    struct termios options;
 
-	if (tcgetattr(fd, &options) != 0) {
-		printf("Error %i from tcgetattr: %s\n", errno, strerror(errno));
-		return;
-	}
+    if (tcgetattr(fd, &options) != 0) {
+        printf("Error %i from tcgetattr: %s\n", errno, strerror(errno));
+        return;
+    }
 
-	if (s_nBaudrate == 115200) {
-		cfsetispeed(&options, B115200);
-		cfsetospeed(&options, B115200);
-	} else if (s_nBaudrate == 38400) {
-			cfsetispeed(&options, B38400);
-			cfsetospeed(&options, B38400);
-	} else {
-		cfsetispeed(&options, B9600);
-		cfsetospeed(&options, B9600);
-	}
+    if (s_nBaudrate == 115200) {
+        cfsetispeed(&options, B115200);
+        cfsetospeed(&options, B115200);
+    } else if (s_nBaudrate == 38400) {
+        cfsetispeed(&options, B38400);
+        cfsetospeed(&options, B38400);
+    } else {
+        cfsetispeed(&options, B9600);
+        cfsetospeed(&options, B9600);
+    }
 
-	options.c_cflag &= ~PARENB; // Clear parity bit, disabling parity (most common)
-	options.c_cflag &= ~CSTOPB; // Clear stop field, only one stop bit used in communication (most common)
-	options.c_cflag &= ~CSIZE; // Clear all bits that set the data size
-	options.c_cflag |= CS8; // 8 bits per byte (most common)
-	options.c_cflag &= ~CRTSCTS; // Disable RTS/CTS hardware flow control (most common)
-	options.c_cflag |= CREAD | CLOCAL; // Turn on READ & ignore ctrl lines (CLOCAL = 1)
+    options.c_cflag &= ~PARENB;        // Clear parity bit, disabling parity (most common)
+    options.c_cflag &= ~CSTOPB;        // Clear stop field, only one stop bit used in communication (most common)
+    options.c_cflag &= ~CSIZE;         // Clear all bits that set the data size
+    options.c_cflag |= CS8;            // 8 bits per byte (most common)
+    options.c_cflag &= ~CRTSCTS;       // Disable RTS/CTS hardware flow control (most common)
+    options.c_cflag |= CREAD | CLOCAL; // Turn on READ & ignore ctrl lines (CLOCAL = 1)
 
-	options.c_lflag &= ~ICANON;
-	options.c_lflag &= ~ECHO; // Disable echo
-	options.c_lflag &= ~ECHOE; // Disable erasure
-	options.c_lflag &= ~ECHONL; // Disable new-line echo
-	options.c_lflag &= ~ISIG; // Disable interpretation of INTR, QUIT and SUSP
-	options.c_iflag &= ~(IXON | IXOFF | IXANY); // Turn off s/w flow ctrl
-	options.c_iflag &= ~(IGNBRK|BRKINT|PARMRK|ISTRIP|INLCR|IGNCR|ICRNL); // Disable any special handling of received bytes
+    options.c_lflag &= ~ICANON;
+    options.c_lflag &= ~ECHO;                                                        // Disable echo
+    options.c_lflag &= ~ECHOE;                                                       // Disable erasure
+    options.c_lflag &= ~ECHONL;                                                      // Disable new-line echo
+    options.c_lflag &= ~ISIG;                                                        // Disable interpretation of INTR, QUIT and SUSP
+    options.c_iflag &= ~(IXON | IXOFF | IXANY);                                      // Turn off s/w flow ctrl
+    options.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL); // Disable any special handling of received bytes
 
-	options.c_oflag &= ~OPOST; // Prevent special interpretation of output bytes (e.g. newline chars)
-	options.c_oflag &= ~ONLCR; // Prevent conversion of newline to carriage return/line feed
+    options.c_oflag &= ~OPOST; // Prevent special interpretation of output bytes (e.g. newline chars)
+    options.c_oflag &= ~ONLCR; // Prevent conversion of newline to carriage return/line feed
 
-	options.c_cc[VTIME] = 1;    // Wait for up to 1 deciseconds, returning as soon as any data is received.
-	options.c_cc[VMIN] = 0;
+    options.c_cc[VTIME] = 1; // Wait for up to 1 deciseconds, returning as soon as any data is received.
+    options.c_cc[VMIN] = 0;
 
-	tcsetattr(fd, TCSANOW, &options);
+    tcsetattr(fd, TCSANOW, &options);
 
-	puts("\nDevice connected.");
+    puts("\nDevice connected.");
 }
 
-void LinuxUartBegin(const uint32_t nUart, uint32_t nBaudrate, uint32_t bits, uint32_t parity, uint32_t stop_bits) {
-	s_nUart = nUart;
-	s_nBaudrate = nBaudrate;
-	s_nBits = bits;
-	s_nParity = parity;
-	s_nStopBits = stop_bits;
+void Begin(const uint32_t nUart, uint32_t nBaudrate, uint32_t bits, uint32_t parity, uint32_t stop_bits) {
+    s_nUart = nUart;
+    s_nBaudrate = nBaudrate;
+    s_nBits = bits;
+    s_nParity = parity;
+    s_nStopBits = stop_bits;
 
-	s_configure_termios();
+    s_configure_termios();
 }
 
-void LinuxUartSetBaudrate([[maybe_unused]] const uint32_t uart_base, uint32_t nBaudrate) {
-	s_nBaudrate = nBaudrate;
-	s_configure_termios();
+void SetBaudrate([[maybe_unused]] const uint32_t uart_base, uint32_t nBaudrate) {
+    s_nBaudrate = nBaudrate;
+    s_configure_termios();
 }
 
-void LinuxUartTransmit([[maybe_unused]] const uint32_t uart_base, const uint8_t *pDate, uint32_t nLength) {
-	if (fd < 0) {
-		DEBUG_EXIT();
-		return;
-	}
+void Transmit([[maybe_unused]] const uint32_t uart_base, const uint8_t* pDate, uint32_t nLength) {
+    if (fd < 0) {
+        DEBUG_EXIT();
+        return;
+    }
 
-	const auto i = static_cast<uint32_t>(write(fd, pDate, nLength));
+    const auto i = static_cast<uint32_t>(write(fd, pDate, nLength));
 
-	if (i != nLength) {
-		fprintf(stderr, "UartTransmit: bytes written %u [%u]\n", i, nLength);
-	}
+    if (i != nLength) {
+        fprintf(stderr, "UartTransmit: bytes written %u [%u]\n", i, nLength);
+    }
 }
 
-void LinuxUartTransmitString([[maybe_unused]] const uint32_t uart_base, const char *pData) {
-	if (fd < 0) {
-		DEBUG_EXIT();
-		return;
-	}
+void TransmitString([[maybe_unused]] const uint32_t uart_base, const char* pData) {
+    if (fd < 0) {
+        DEBUG_EXIT();
+        return;
+    }
 
-	auto nLength = strlen(pData);
-	const auto i = static_cast<uint32_t>(write(fd, pData, nLength));
+    auto nLength = strlen(pData);
+    const auto i = static_cast<uint32_t>(write(fd, pData, nLength));
 
-	if (i != nLength) {
-		fprintf(stderr, "UartTransmitString: bytes written %u [%u]\n", i, static_cast<uint32_t>(nLength));
-	}
+    if (i != nLength) {
+        fprintf(stderr, "UartTransmitString: bytes written %u [%u]\n", i, static_cast<uint32_t>(nLength));
+    }
 }
 
-uint32_t LinuxUartGetRxFifoLevel([[maybe_unused]] const uint32_t uart_base) {
-	if (fd < 0) {
-		DEBUG_EXIT();
-		return 0;
-	}
+uint32_t GetRxFifoLevel([[maybe_unused]] const uint32_t uart_base) {
+    if (fd < 0) {
+        DEBUG_EXIT();
+        return 0;
+    }
 
-	int32_t ret = 0;
+    int32_t ret = 0;
     const auto i = ioctl(fd, FIONREAD, &ret);
 
     if (i == -1) {
-    	perror("ioctl");
-    	return 0;
+        perror("ioctl");
+        return 0;
     }
 
     return static_cast<uint32_t>(ret);
 }
 
-uint8_t LinuxUartGetRxData([[maybe_unused]] const uint32_t uart_base) {
-	if (fd < 0) {
-		DEBUG_EXIT();
-		return ' ';
-	}
+uint8_t GetRxData([[maybe_unused]] const uint32_t uart_base) {
+    if (fd < 0) {
+        DEBUG_EXIT();
+        return ' ';
+    }
 
-	char c;
+    char c;
 
-	const auto i = read(fd, &c, 1);
+    const auto i = read(fd, &c, 1);
 
-	if (i <= 0) {
-		return static_cast<uint8_t>(' ');
-	}
+    if (i <= 0) {
+        return static_cast<uint8_t>(' ');
+    }
 
-	return static_cast<uint8_t>(c);
+    return static_cast<uint8_t>(c);
 }
 
-uint32_t LinuxUartGetRx([[maybe_unused]] const uint32_t uart_base, char *pData, uint32_t nLength) {
-	if (fd < 0) {
-		DEBUG_EXIT();
-		return 0;
-	}
+uint32_t GetRx([[maybe_unused]] const uint32_t uart_base, char* pData, uint32_t nLength) {
+    if (fd < 0) {
+        DEBUG_EXIT();
+        return 0;
+    }
 
-	auto i = read(fd, pData, nLength);
+    auto i = read(fd, pData, nLength);
 
-	if (i <= 0) {
-		return i;
-	}
+    if (i <= 0) {
+        return i;
+    }
 
-	return static_cast<uint32_t>(i);
+    return static_cast<uint32_t>(i);
 }
+} // namespace uart

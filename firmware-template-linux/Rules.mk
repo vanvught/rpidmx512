@@ -53,7 +53,6 @@ INCDIRS=../common/include $(wildcard ./lib) $(wildcard ./include) $(wildcard ./*
 INCDIRS+=../firmware-template-linux/include
 INCDIRS+=../lib-superloop/include/superloop
 INCDIRS+=../lib-board/include
-INCDIRS+=../lib-hal/include
 INCDIRS:=$(addprefix -I,$(INCDIRS)) -I../lib-display/include
 
 # The variable for the libraries include directory
