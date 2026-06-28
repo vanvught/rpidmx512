@@ -45,8 +45,8 @@
 
 #if defined(H3)
 static void arm_timer_handler() {
-    gv_ltc_nUpdatesPerSecond = gv_ltc_nUpdates - gv_ltc_nUpdatesPrevious;
-    gv_ltc_nUpdatesPrevious = gv_ltc_nUpdates;
+    gv_ltc_updates_per_second = gv_ltc_updates - gv_ltc_updates_previous;
+    gv_ltc_updates_previous = gv_ltc_updates;
 }
 #elif defined(GD32)
 // Defined in platform_ltc.cpp
@@ -87,7 +87,7 @@ void LtcEtcReader::Stop() {
 static bool TimecodeIsEqual(const struct ltc::TimeCode* timecode) {
     auto is_equal = false;
     const auto* src = reinterpret_cast<const uint8_t*>(timecode);
-    auto* dst = reinterpret_cast<uint8_t*>(&g_ltc_LtcTimeCode);
+    auto* dst = reinterpret_cast<uint8_t*>(&g_ltc_timecode);
 
     for (uint32_t i = 0; i < sizeof(struct ltc::TimeCode); i++) {
         is_equal |= (*src == *dst);
@@ -109,8 +109,8 @@ void LtcEtcReader::Handler(const midi::Timecode* timecode) {
     }
 
     if (!TimecodeIsEqual(reinterpret_cast<const struct ltc::TimeCode*>(timecode))) {
-        LtcOutputs::Get()->Update(const_cast<const struct ltc::TimeCode*>(&g_ltc_LtcTimeCode));
+        LtcOutputs::Get()->Update(const_cast<const struct ltc::TimeCode*>(&g_ltc_timecode));
     }
 
-    gv_ltc_nUpdates = gv_ltc_nUpdates + 1;
+    gv_ltc_updates = gv_ltc_updates + 1;
 }

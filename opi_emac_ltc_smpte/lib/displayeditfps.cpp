@@ -30,20 +30,14 @@
 #include "input.h"
 #include "ltc.h"
 
-void DisplayEditFps::HandleKey(int key, uint8_t& type)
-{
-    if (state_ == kIdle)
-    {
-        if (key == input::KEY_ENTER)
-        {
+void DisplayEditFps::HandleKey(int key, uint8_t& type) {
+    if (state_ == kIdle) {
+        if (key == input::KEY_ENTER) {
             state_ = kEdit;
             cursor_on_ = true;
         }
-    }
-    else
-    {
-        switch (key)
-        {
+    } else {
+        switch (key) {
             case input::KEY_ESC:
                 state_ = kIdle;
                 cursor_on_ = false;
@@ -61,33 +55,26 @@ void DisplayEditFps::HandleKey(int key, uint8_t& type)
         }
     }
 
-    Display::Get()->TextLine(2, ltc::get_type(static_cast<ltc::Type>(type)), ltc::timecode::TYPE_MAX_LENGTH);
+    Display::Get()->TextLine(2, ltc::GetType(static_cast<ltc::Type>(type)), ltc::timecode::TYPE_MAX_LENGTH);
 
-    if (cursor_on_)
-    {
+    if (cursor_on_) {
         Display::Get()->SetCursor(display::cursor::kOn);
         Display::Get()->SetCursorPos(0, 1);
-    }
-    else
-    {
+    } else {
         Display::Get()->SetCursor(display::cursor::kOff);
     }
 }
 
-void DisplayEditFps::KeyLeft(uint8_t& type)
-{
-    if (type > 0)
-    {
+void DisplayEditFps::KeyLeft(uint8_t& type) {
+    if (type > 0) {
         type--;
         return;
     }
     type = 3;
 }
 
-void DisplayEditFps::KeyRight(uint8_t& type)
-{
-    if (type < 3)
-    {
+void DisplayEditFps::KeyRight(uint8_t& type) {
+    if (type < 3) {
         type++;
         return;
     }

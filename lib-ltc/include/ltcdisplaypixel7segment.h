@@ -32,8 +32,7 @@
 #include "pixeldisplay7segment.h"
 #include "ltcdisplayrgbset.h"
 
-class LtcDisplayPixel7Segment final : public LtcDisplayRgbSet
-{
+class LtcDisplayPixel7Segment final : public LtcDisplayRgbSet {
    public:
     LtcDisplayPixel7Segment(pixel::LedType led_type, pixel::LedMap led_map);
 

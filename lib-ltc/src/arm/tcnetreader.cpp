@@ -63,7 +63,7 @@ static constexpr auto kUdpPort = 0x0ACA;
 #if defined(H3)
 static void irq_timer0_handler([[maybe_unused]] uint32_t clo)
 {
-    gv_ltc_bTimeCodeAvailable = true;
+    gv_ltc_timecode_available = true;
 }
 #elif defined(GD32)
 // Defined in platform_ltc.cpp
@@ -72,8 +72,8 @@ static void irq_timer0_handler([[maybe_unused]] uint32_t clo)
 #if defined(H3)
 static void arm_timer_handler()
 {
-    gv_ltc_nUpdatesPerSecond = gv_ltc_nUpdates - gv_ltc_nUpdatesPrevious;
-    gv_ltc_nUpdatesPrevious = gv_ltc_nUpdates;
+    gv_ltc_updates_per_second = gv_ltc_updates - gv_ltc_updates_previous;
+    gv_ltc_updates_previous = gv_ltc_updates;
 }
 #elif defined(GD32)
 // Defined in platform_ltc.cpp
@@ -136,7 +136,7 @@ void TCNetReader::Input(const uint8_t* buffer, uint32_t size, [[maybe_unused]] u
         const auto kLayer = tcnet::GetLayer(buffer[6 + kTypeLength]);
 
         TCNet::Get()->SetLayer(kLayer);
-        tcnet::display::show();
+        tcnet::display::Show();
 
         DEBUG_PRINTF("tcnet!layer#%c -> %d", buffer[6 + kLayerLength + 1], kLayer);
         return;
@@ -164,7 +164,7 @@ void TCNetReader::Input(const uint8_t* buffer, uint32_t size, [[maybe_unused]] u
                     break;
             }
 
-            tcnet::display::show();
+            tcnet::display::Show();
 
             DEBUG_PRINTF("tcnet!type#%d", kValue);
             return;
@@ -173,7 +173,7 @@ void TCNetReader::Input(const uint8_t* buffer, uint32_t size, [[maybe_unused]] u
         if ((buffer[6 + kTypeLength] == '3') && (buffer[6 + kTypeLength + 1] == '0'))
         {
             TCNet::Get()->SetTimeCodeType(tcnet::TimeCodeType::kTimecodeTypeSmpte30Fps);
-            tcnet::display::show();
+            tcnet::display::Show();
 
             DEBUG_PUTS("tcnet!type#30");
             return;
@@ -189,7 +189,7 @@ void TCNetReader::Input(const uint8_t* buffer, uint32_t size, [[maybe_unused]] u
         const auto kUseTimeCode = ((kChar == 'y') || (kChar == 'Y'));
 
         TCNet::Get()->SetUseTimeCode(kUseTimeCode);
-        tcnet::display::show();
+        tcnet::display::Show();
 
         DEBUG_PRINTF("tcnet!timecode#%c -> %d", kChar, static_cast<int>(kUseTimeCode));
         return;
@@ -221,7 +221,7 @@ void TCNetReader::ResetTimer(bool do_reset, const struct tcnet::TimeCode* timeco
 #elif defined(GD32)
             platform::ltc::timer11_set_type(timecode->type);
 #endif
-            gv_ltc_bTimeCodeAvailable = true;
+            gv_ltc_timecode_available = true;
         }
     }
 }
@@ -236,14 +236,14 @@ void TCNetReader::Handler(const struct tcnet::TimeCode* timecode)
 
     ResetTimer(!(timecode->frames != 0), timecode);
 
-    gv_ltc_nUpdates = gv_ltc_nUpdates + 1;
+    gv_ltc_updates = gv_ltc_updates + 1;
 }
 
 void TCNetReader::Run()
 {
     // Update timecode outputs if available
     __DMB(); // Data memory barrier to ensure memory consistency
-    if (__builtin_expect((gv_ltc_bTimeCodeAvailable), 0))
+    if (__builtin_expect((gv_ltc_timecode_available), 0))
     {
         if (ltc::Destination::IsEnabled(ltc::Destination::Output::LTC))
         {
@@ -260,9 +260,9 @@ void TCNetReader::Run()
             LtcEtc::Get()->Send(reinterpret_cast<const struct midi::Timecode*>(&timecode_));
         }
 
-        memcpy(&g_ltc_LtcTimeCode, &timecode_, sizeof(struct midi::Timecode));
+        memcpy(&g_ltc_timecode, &timecode_, sizeof(struct midi::Timecode));
 
-        LtcOutputs::Get()->Update(const_cast<const struct ltc::TimeCode*>(&g_ltc_LtcTimeCode));
+        LtcOutputs::Get()->Update(const_cast<const struct ltc::TimeCode*>(&g_ltc_timecode));
 
         timecode_.frames++;
 
@@ -276,11 +276,11 @@ void TCNetReader::Run()
             timecode_.frames = 0;
         }
 
-        gv_ltc_bTimeCodeAvailable = false;
+        gv_ltc_timecode_available = false;
     }
 
     __DMB();
-    if (gv_ltc_nUpdatesPerSecond != 0)
+    if (gv_ltc_updates_per_second != 0)
     {
         board::statusled::SetMode(board::statusled::Mode::kData);
         Reset(false);

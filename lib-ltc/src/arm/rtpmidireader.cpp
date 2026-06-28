@@ -48,13 +48,13 @@ static uint8_t s_qf[8] __attribute__((aligned(4))) = {0, 0, 0, 0, 0, 0, 0, 0};
 
 #if defined(H3)
 static void arm_timer_handler() {
-    gv_ltc_nUpdatesPerSecond = gv_ltc_nUpdates - gv_ltc_nUpdatesPrevious;
-    gv_ltc_nUpdatesPrevious = gv_ltc_nUpdates;
+    gv_ltc_updates_per_second = gv_ltc_updates - gv_ltc_updates_previous;
+    gv_ltc_updates_previous = gv_ltc_updates;
 }
 
 static void irq_timer0_handler([[maybe_unused]] uint32_t clo) {
-    gv_ltc_bTimeCodeAvailable = true;
-    gv_ltc_nTimeCodeCounter = gv_ltc_nTimeCodeCounter + 1;
+    gv_ltc_timecode_available = true;
+    gv_ltc_timecode_counter = gv_ltc_timecode_counter + 1;
 }
 #elif defined(GD32)
 // Defined in platform_ltc.cpp
@@ -120,8 +120,8 @@ void RtpMidiReader::HandleMtc(const struct midi::Message* message) {
 
     Update();
 
-    gv_ltc_bTimeCodeAvailable = false;
-    gv_ltc_nTimeCodeCounter = 0;
+    gv_ltc_timecode_available = false;
+    gv_ltc_timecode_counter = 0;
 }
 
 void RtpMidiReader::HandleMtcQf(const struct midi::Message* midi_message) {
@@ -156,7 +156,7 @@ void RtpMidiReader::HandleMtcQf(const struct midi::Message* midi_message) {
 
         __DMB();
 
-        if (gv_ltc_nTimeCodeCounter < mtc_qf_delta_) {
+        if (gv_ltc_timecode_counter < mtc_qf_delta_) {
             Update();
         }
 
@@ -167,8 +167,8 @@ void RtpMidiReader::HandleMtcQf(const struct midi::Message* midi_message) {
 #elif defined(GD32)
         platform::ltc::timer11_set_type(timecode_.type);
 #endif
-        gv_ltc_bTimeCodeAvailable = false;
-        gv_ltc_nTimeCodeCounter = 0;
+        gv_ltc_timecode_available = false;
+        gv_ltc_timecode_counter = 0;
     }
 
     part_previous_ = kPart;
@@ -187,18 +187,18 @@ void RtpMidiReader::Update() {
         LtcEtc::Get()->Send(reinterpret_cast<const midi::Timecode*>(&timecode_));
     }
 
-    memcpy(&g_ltc_LtcTimeCode, &timecode_, sizeof(struct midi::Timecode));
+    memcpy(&g_ltc_timecode, &timecode_, sizeof(struct midi::Timecode));
 
-    LtcOutputs::Get()->Update(reinterpret_cast<const struct ltc::TimeCode*>(&g_ltc_LtcTimeCode));
+    LtcOutputs::Get()->Update(reinterpret_cast<const struct ltc::TimeCode*>(&g_ltc_timecode));
 
-    gv_ltc_nUpdates = gv_ltc_nUpdates + 1;
+    gv_ltc_updates = gv_ltc_updates + 1;
 }
 
 void RtpMidiReader::Run() {
     __DMB();
 
-    if (gv_ltc_bTimeCodeAvailable) {
-        gv_ltc_bTimeCodeAvailable = false;
+    if (gv_ltc_timecode_available) {
+        gv_ltc_timecode_available = false;
 
         const auto kFps = TimeCodeConst::FPS[timecode_.type];
 
@@ -263,7 +263,7 @@ void RtpMidiReader::Run() {
     }
 
     __DMB();
-    if (gv_ltc_nUpdatesPerSecond != 0) {
+    if (gv_ltc_updates_per_second != 0) {
         board::statusled::SetMode(board::statusled::Mode::kData);
     } else {
         LtcOutputs::Get()->ShowSysTime();

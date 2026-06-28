@@ -31,18 +31,18 @@
 #include "ltc.h"
 
 namespace ltc {
-uint32_t g_nDisabledOutputs;
+uint32_t g_ltc_disabled_outputs;
 ltc::Type g_Type;
 
 static constexpr char kTypes[5][ltc::timecode::TYPE_MAX_LENGTH + 1] = {
-	"Film 24fps ", 
-	"EBU 25fps  ", 
-	"DF 29.97fps", 
-	"SMPTE 30fps", 
-	"----- -----"
+    "Film 24fps ", //
+    "EBU 25fps  ", //
+    "DF 29.97fps", //
+    "SMPTE 30fps", //
+    "----- -----"  //
 };
 
-const char* get_type(ltc::Type type) {
+const char* GetType(ltc::Type type) {
     if (type > ltc::Type::UNKNOWN) {
         return kTypes[static_cast<uint32_t>(ltc::Type::UNKNOWN)];
     }
@@ -50,7 +50,7 @@ const char* get_type(ltc::Type type) {
     return kTypes[static_cast<uint32_t>(type)];
 }
 
-const char* get_type() {
+const char* GetType() {
     if (ltc::g_Type > ltc::Type::UNKNOWN) {
         return kTypes[static_cast<uint32_t>(ltc::Type::UNKNOWN)];
     }
@@ -58,7 +58,7 @@ const char* get_type() {
     return kTypes[static_cast<uint32_t>(ltc::g_Type)];
 }
 
-ltc::Type get_type(uint8_t fps) {
+ltc::Type GetType(uint8_t fps) {
     switch (fps) {
         case 24:
             return ltc::Type::FILM;
@@ -79,11 +79,11 @@ ltc::Type get_type(uint8_t fps) {
     return ltc::Type::UNKNOWN;
 }
 
-void set_type(uint8_t fps) {
-    ltc::g_Type = get_type(fps);
+void SetType(uint8_t fps) {
+    ltc::g_Type = GetType(fps);
 }
 
-void init_timecode(char* timecode) {
+void InitTimecode(char* timecode) {
     assert(timecode != nullptr);
 
     memset(timecode, ' ', ltc::timecode::CODE_MAX_LENGTH);
@@ -93,7 +93,7 @@ void init_timecode(char* timecode) {
     timecode[ltc::timecode::index::COLON_3] = ':';
 }
 
-void init_systemtime(char* systemtime) {
+void InitSystemtime(char* systemtime) {
     assert(systemtime != nullptr);
 
     memset(systemtime, ' ', ltc::timecode::SYSTIME_MAX_LENGTH);
@@ -115,7 +115,7 @@ static void Itoa(uint32_t value, char* buffer) {
     *p = static_cast<char>('0' + (value % 10U));
 }
 
-void itoa_base10(const struct ltc::TimeCode* ltc_timecode, char* timecode) {
+void ItoaBase10(const struct ltc::TimeCode* ltc_timecode, char* timecode) {
     assert(ltc_timecode != nullptr);
     assert(timecode != nullptr);
 
@@ -125,7 +125,7 @@ void itoa_base10(const struct ltc::TimeCode* ltc_timecode, char* timecode) {
     Itoa(ltc_timecode->frames, &timecode[ltc::timecode::index::FRAMES]);
 }
 
-void itoa_base10(const struct tm* local_time, char* system_time) {
+void ItoaBase10(const struct tm* local_time, char* system_time) {
     assert(local_time != nullptr);
     assert(system_time != nullptr);
 
@@ -137,7 +137,7 @@ void itoa_base10(const struct tm* local_time, char* system_time) {
 #define DIGIT(x) ((x) - '0')
 #define VALUE(x, y) static_cast<uint8_t>(((x) * 10) + (y))
 
-bool parse_timecode(const char* time_code, uint8_t fps, struct ltc::TimeCode* timecode) {
+bool ParseTimecode(const char* time_code, uint8_t fps, struct ltc::TimeCode* timecode) {
     assert(time_code != nullptr);
     assert(timecode != nullptr);
 
@@ -235,7 +235,7 @@ bool parse_timecode(const char* time_code, uint8_t fps, struct ltc::TimeCode* ti
     return true;
 }
 
-bool parse_timecode_rate(const char* timecode_rate, uint8_t& fps) {
+bool ParseTimecodeRate(const char* timecode_rate, uint8_t& fps) {
     assert(timecode_rate != nullptr);
 
     const auto kTenths = DIGIT(timecode_rate[0]);

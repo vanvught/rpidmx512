@@ -405,7 +405,7 @@ int main() // NOLINT
     const auto kGpsModule = common::FromValue<gps::Module>(ConfigStore::Instance().GpsGet(&common::store::Gps::module));
     const auto kIsGpsEnabled = common::IsFlagSet(kGpsFlags, Flags::Flag::kEnable);
 
-    const auto kRunGpsTimeClient = (kIsGpsEnabled && (ltc_source == ltc::Source::SYSTIME) && ltc::Destination::is_disabled(ltc::Destination::Output::RGBPANEL));
+    const auto kRunGpsTimeClient = (kIsGpsEnabled && (ltc_source == ltc::Source::SYSTIME) && ltc::Destination::IsDisabled(ltc::Destination::Output::RGBPANEL));
     const auto kGpsStart = kRunGpsTimeClient && common::IsFlagSet(kLtcFlags, common::store::ltc::Flags::Flag::kGpsStart);
 
     GPSTimeClient gpstime_client(kGpsUtcOffset, kGpsModule);

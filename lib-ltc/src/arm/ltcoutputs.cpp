@@ -59,12 +59,10 @@
 static volatile bool sv_is_midi_quarter_frame_message;
 static volatile uint32_t sv_n_midi_quarter_frame_piece;
 
-static uint8_t CreateQuarterFrame(const struct midi::Timecode* timecode)
-{
+static uint8_t CreateQuarterFrame(const struct midi::Timecode* timecode) {
     uint8_t data = 0;
 
-    switch (sv_n_midi_quarter_frame_piece)
-    {
+    switch (sv_n_midi_quarter_frame_piece) {
         case 0:
             data = 0x00 | (timecode->frames & 0x0F);
             break;
@@ -99,29 +97,23 @@ static uint8_t CreateQuarterFrame(const struct midi::Timecode* timecode)
 }
 
 #if defined(H3)
-static void IrqTimer1MidiHandler([[maybe_unused]] uint32_t clo)
-{
+static void IrqTimer1MidiHandler([[maybe_unused]] uint32_t clo) {
 #elif defined(GD32)
-extern "C" void TIMER0_TRG_CMT_TIMER10_IRQHandler()
-{
+extern "C" void TIMER0_TRG_CMT_TIMER10_IRQHandler() {
     const auto nIntFlag = TIMER_INTF(TIMER10);
-    if ((nIntFlag & TIMER_INT_FLAG_UP) == TIMER_INT_FLAG_UP)
-    {
+    if ((nIntFlag & TIMER_INT_FLAG_UP) == TIMER_INT_FLAG_UP) {
 #endif
-    if ((sv_n_midi_quarter_frame_piece == 0) || (sv_n_midi_quarter_frame_piece == 4))
-    {
+    if ((sv_n_midi_quarter_frame_piece == 0) || (sv_n_midi_quarter_frame_piece == 4)) {
         return;
     }
 
-    const auto kData = CreateQuarterFrame(reinterpret_cast<const struct midi::Timecode*>(&g_ltc_LtcTimeCode));
+    const auto kData = CreateQuarterFrame(reinterpret_cast<const struct midi::Timecode*>(&g_ltc_timecode));
 
-    if (ltc::Destination::IsEnabled(ltc::Destination::Output::RTPMIDI))
-    {
+    if (ltc::Destination::IsEnabled(ltc::Destination::Output::RTPMIDI)) {
         RtpMidi::Get()->SendQf(kData);
     }
 
-    if (ltc::Destination::IsEnabled(ltc::Destination::Output::MIDI))
-    {
+    if (ltc::Destination::IsEnabled(ltc::Destination::Output::MIDI)) {
         Midi::Get()->SendQf(kData);
     }
 
@@ -136,8 +128,7 @@ timer_interrupt_flag_clear(TIMER10, nIntFlag);
 #endif
 }
 
-LtcOutputs::LtcOutputs(ltc::Source source, bool show_systime) : m_bShowSysTime(show_systime)
-{
+LtcOutputs::LtcOutputs(ltc::Source source, bool show_systime) : m_bShowSysTime(show_systime) {
     DEBUG_ENTRY();
 
     assert(s_this == nullptr);
@@ -154,21 +145,19 @@ LtcOutputs::LtcOutputs(ltc::Source source, bool show_systime) : m_bShowSysTime(s
     ltc::Destination::SetDisabled(ltc::Destination::Output::ETC, source == ltc::Source::ETC);
     // Display's
     ltc::Destination::SetDisabled(ltc::Destination::Output::RGBPANEL, (source == ltc::Source::LTC) || (source == ltc::Source::MIDI));
-    ltc::Destination::SetDisabled(ltc::Destination::Output::MAX7219, ltc::Destination::IsEnabled(ltc::Destination::Output::WS28XX) ||
-                                                                         ltc::Destination::IsEnabled(ltc::Destination::Output::RGBPANEL));
+    ltc::Destination::SetDisabled(ltc::Destination::Output::MAX7219, ltc::Destination::IsEnabled(ltc::Destination::Output::WS28XX) || ltc::Destination::IsEnabled(ltc::Destination::Output::RGBPANEL));
     ltc::Destination::SetDisabled(ltc::Destination::Output::DISPLAY_OLED, ltc::Destination::IsEnabled(ltc::Destination::Output::RGBPANEL));
     // Do not change the order
     ltc::Destination::SetDisabled(ltc::Destination::Output::MIDI, ltc::Destination::IsEnabled(ltc::Destination::Output::RGBPANEL));
     ltc::Destination::SetDisabled(ltc::Destination::Output::LTC, ltc::Destination::IsEnabled(ltc::Destination::Output::RGBPANEL));
 
-    ltc::init_timecode(timecode_);
-    ltc::init_systemtime(m_aSystemTime);
+    ltc::InitTimecode(timecode_);
+    ltc::InitSystemtime(m_aSystemTime);
 
     DEBUG_EXIT();
 }
 
-void LtcOutputs::Init(bool disable_rtp_midi)
-{
+void LtcOutputs::Init(bool disable_rtp_midi) {
     DEBUG_ENTRY();
 
     m_bEnableRtpMidi = ltc::Destination::IsEnabled(ltc::Destination::Output::RTPMIDI) && !disable_rtp_midi;
@@ -176,8 +165,7 @@ void LtcOutputs::Init(bool disable_rtp_midi)
     m_bMidiQuarterFramePieceRunning = false;
     sv_n_midi_quarter_frame_piece = 0;
 
-    if (m_bEnableRtpMidi || ltc::Destination::IsEnabled(ltc::Destination::Output::MIDI))
-    {
+    if (m_bEnableRtpMidi || ltc::Destination::IsEnabled(ltc::Destination::Output::MIDI)) {
 #if defined(H3)
         irq_timer_set(IRQ_TIMER_1, static_cast<thunk_irq_timer_t>(IrqTimer1MidiHandler));
 #elif defined(GD32)
@@ -185,20 +173,17 @@ void LtcOutputs::Init(bool disable_rtp_midi)
 #endif
     }
 
-    if (ltc::Destination::IsEnabled(ltc::Destination::Output::DISPLAY_OLED))
-    {
-        Display::Get()->TextLine(2, ltc::get_type(ltc::Type::UNKNOWN), ltc::timecode::TYPE_MAX_LENGTH);
+    if (ltc::Destination::IsEnabled(ltc::Destination::Output::DISPLAY_OLED)) {
+        Display::Get()->TextLine(2, ltc::GetType(ltc::Type::UNKNOWN), ltc::timecode::TYPE_MAX_LENGTH);
     }
 
     DEBUG_EXIT();
 }
 
-void LtcOutputs::Update(const struct ltc::TimeCode* timecode)
-{
+void LtcOutputs::Update(const struct ltc::TimeCode* timecode) {
     assert(timecode != nullptr);
 
-    if (timecode->type != static_cast<uint8_t>(type_previous_))
-    {
+    if (timecode->type != static_cast<uint8_t>(type_previous_)) {
         DEBUG_PRINTF("pLtcTimeCode->type=%u, m_TypePrevious=%u", timecode->type, type_previous_);
         type_previous_ = static_cast<ltc::Type>(timecode->type);
 
@@ -212,24 +197,20 @@ void LtcOutputs::Update(const struct ltc::TimeCode* timecode)
         m_bMidiQuarterFramePieceRunning = false;
         sv_n_midi_quarter_frame_piece = 0;
 
-        if (m_bEnableRtpMidi)
-        {
+        if (m_bEnableRtpMidi) {
             RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode*>(timecode));
         }
 
-        if (ltc::Destination::IsEnabled(ltc::Destination::Output::MIDI))
-        {
+        if (ltc::Destination::IsEnabled(ltc::Destination::Output::MIDI)) {
             Midi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode*>(timecode));
         }
 
-        if (ltc::Destination::IsEnabled(ltc::Destination::Output::DISPLAY_OLED))
-        {
-            Display::Get()->TextLine(2, ltc::get_type(static_cast<ltc::Type>(timecode->type)), ltc::timecode::TYPE_MAX_LENGTH);
+        if (ltc::Destination::IsEnabled(ltc::Destination::Output::DISPLAY_OLED)) {
+            Display::Get()->TextLine(2, ltc::GetType(static_cast<ltc::Type>(timecode->type)), ltc::timecode::TYPE_MAX_LENGTH);
         }
 
 #if !defined(CONFIG_LTC_DISABLE_RGB_PANEL)
-        if (ltc::Destination::IsEnabled(ltc::Destination::Output::RGBPANEL))
-        {
+        if (ltc::Destination::IsEnabled(ltc::Destination::Output::RGBPANEL)) {
             LtcDisplayRgb::Get()->ShowFPS(static_cast<ltc::Type>(timecode->type));
         }
 #endif
@@ -237,8 +218,7 @@ void LtcOutputs::Update(const struct ltc::TimeCode* timecode)
         timecode_[ltc::timecode::index::COLON_3] = (timecode->type != static_cast<uint8_t>(ltc::Type::DF) ? ':' : ';');
     }
 
-    if (m_bMidiQuarterFramePieceRunning)
-    {
+    if (m_bMidiQuarterFramePieceRunning) {
 #if defined(H3)
         H3_TIMER->TMR1_CTRL &= ~TIMER_CTRL_EN_START;
         H3_TIMER->TMR1_INTV = TimeCodeConst::TMR_INTV[timecode->type] / 4;
@@ -248,20 +228,17 @@ void LtcOutputs::Update(const struct ltc::TimeCode* timecode)
 #endif
 
         __DMB();
-        if (!((sv_n_midi_quarter_frame_piece == 0) || (sv_n_midi_quarter_frame_piece == 4)))
-        {
+        if (!((sv_n_midi_quarter_frame_piece == 0) || (sv_n_midi_quarter_frame_piece == 4))) {
             sv_n_midi_quarter_frame_piece = 0;
         }
 
         const auto kData = CreateQuarterFrame(reinterpret_cast<const struct midi::Timecode*>(timecode));
 
-        if (m_bEnableRtpMidi)
-        {
+        if (m_bEnableRtpMidi) {
             RtpMidi::Get()->SendQf(kData);
         }
 
-        if (ltc::Destination::IsEnabled(ltc::Destination::Output::MIDI))
-        {
+        if (ltc::Destination::IsEnabled(ltc::Destination::Output::MIDI)) {
             Midi::Get()->SendQf(kData);
         }
 
@@ -278,60 +255,50 @@ void LtcOutputs::Update(const struct ltc::TimeCode* timecode)
 
     m_bMidiQuarterFramePieceRunning = (m_bEnableRtpMidi || ltc::Destination::IsEnabled(ltc::Destination::Output::MIDI));
 
-    if (ltc::Destination::IsEnabled(ltc::Destination::Output::NTP_SERVER))
-    {
+    if (ltc::Destination::IsEnabled(ltc::Destination::Output::NTP_SERVER)) {
         NtpServer::Get()->SetTimeCode(timecode);
     }
 
-    ltc::itoa_base10(timecode, timecode_);
+    ltc::ItoaBase10(timecode, timecode_);
 
-    if (ltc::Destination::IsEnabled(ltc::Destination::Output::DISPLAY_OLED))
-    {
+    if (ltc::Destination::IsEnabled(ltc::Destination::Output::DISPLAY_OLED)) {
         Display::Get()->TextLine(1, timecode_, ltc::timecode::CODE_MAX_LENGTH);
     }
 
-    if (ltc::Destination::IsEnabled(ltc::Destination::Output::MAX7219))
-    {
+    if (ltc::Destination::IsEnabled(ltc::Destination::Output::MAX7219)) {
         LtcDisplayMax7219::Get()->Show(timecode_);
     }
 
 #if !defined(LTC_NO_DISPLAY_RGB)
-    if (ltc::Destination::IsEnabled(ltc::Destination::Output::WS28XX) || ltc::Destination::IsEnabled(ltc::Destination::Output::RGBPANEL))
-    {
+    if (ltc::Destination::IsEnabled(ltc::Destination::Output::WS28XX) || ltc::Destination::IsEnabled(ltc::Destination::Output::RGBPANEL)) {
         LtcDisplayRgb::Get()->Show(timecode_);
     }
 #endif
 }
 
-void LtcOutputs::ShowSysTime()
-{
-    if (m_bShowSysTime)
-    {
+void LtcOutputs::ShowSysTime() {
+    if (m_bShowSysTime) {
         const auto kTime = time(nullptr);
         const auto* const kLocaltime = localtime(&kTime);
 
-        if (__builtin_expect((seconds_previous_ == kLocaltime->tm_sec), 1))
-        {
+        if (__builtin_expect((seconds_previous_ == kLocaltime->tm_sec), 1)) {
             return;
         }
 
         seconds_previous_ = kLocaltime->tm_sec;
 
-        ltc::itoa_base10(kLocaltime, m_aSystemTime);
+        ltc::ItoaBase10(kLocaltime, m_aSystemTime);
 
-        if (ltc::Destination::IsEnabled(ltc::Destination::Output::DISPLAY_OLED))
-        {
+        if (ltc::Destination::IsEnabled(ltc::Destination::Output::DISPLAY_OLED)) {
             Display::Get()->TextLine(1, m_aSystemTime, ltc::timecode::SYSTIME_MAX_LENGTH);
         }
 
-        if (ltc::Destination::IsEnabled(ltc::Destination::Output::MAX7219))
-        {
+        if (ltc::Destination::IsEnabled(ltc::Destination::Output::MAX7219)) {
             LtcDisplayMax7219::Get()->ShowSysTime(m_aSystemTime);
         }
 
 #if !defined(LTC_NO_DISPLAY_RGB)
-        if (ltc::Destination::IsEnabled(ltc::Destination::Output::WS28XX) || ltc::Destination::IsEnabled(ltc::Destination::Output::RGBPANEL))
-        {
+        if (ltc::Destination::IsEnabled(ltc::Destination::Output::WS28XX) || ltc::Destination::IsEnabled(ltc::Destination::Output::RGBPANEL)) {
             LtcDisplayRgb::Get()->ShowSysTime(m_aSystemTime);
         }
 #endif
@@ -339,66 +306,51 @@ void LtcOutputs::ShowSysTime()
     }
 }
 
-void LtcOutputs::ShowBPM(uint32_t bpm)
-{
-    if ((bpm < midi::bpm::MIN) || (bpm > midi::bpm::MAX))
-    {
+void LtcOutputs::ShowBPM(uint32_t bpm) {
+    if ((bpm < midi::bpm::MIN) || (bpm > midi::bpm::MAX)) {
         m_cBPM[5] = '-';
         m_cBPM[6] = '-';
         m_cBPM[7] = '-';
-    }
-    else
-    {
+    } else {
         m_cBPM[7] = static_cast<char>(bpm % 10U + '0');
         bpm /= 10U;
         const uint32_t kDigit1 = bpm % 10U;
 
-        if (bpm != 0)
-        {
+        if (bpm != 0) {
             m_cBPM[6] = static_cast<char>(kDigit1 + '0');
             bpm /= 10U;
             const uint32_t kDigit2 = bpm % 10U;
 
-            if (bpm != 0)
-            {
+            if (bpm != 0) {
                 m_cBPM[5] = static_cast<char>(kDigit2 + '0');
-            }
-            else
-            {
+            } else {
                 m_cBPM[5] = ' ';
             }
-        }
-        else
-        {
+        } else {
             m_cBPM[6] = ' ';
             m_cBPM[5] = ' ';
         }
     }
 
-    if (ltc::Destination::IsEnabled(ltc::Destination::Output::DISPLAY_OLED))
-    {
+    if (ltc::Destination::IsEnabled(ltc::Destination::Output::DISPLAY_OLED)) {
         Display::Get()->SetCursorPos(static_cast<uint8_t>(Display::Get()->GetColumns() - 3U), 1);
         Display::Get()->PutString(&m_cBPM[5]);
     }
 
 #if !defined(LTC_NO_DISPLAY_RGB)
-    if (ltc::Destination::IsEnabled(ltc::Destination::Output::RGBPANEL))
-    {
+    if (ltc::Destination::IsEnabled(ltc::Destination::Output::RGBPANEL)) {
         LtcDisplayRgb::Get()->ShowInfo(m_cBPM);
     }
 #endif
 }
 
-static void PrintDisabled(ltc::Destination::Output output)
-{
-    if (ltc::Destination::is_disabled(output))
-    {
+static void PrintDisabled(ltc::Destination::Output output) {
+    if (ltc::Destination::IsDisabled(output)) {
         printf(" %s output is disabled\n", ltc::Destination::GetOutputString(output));
     }
 }
 
-void LtcOutputs::Print()
-{
+void LtcOutputs::Print() {
     PrintDisabled(ltc::Destination::Output::LTC);
     PrintDisabled(ltc::Destination::Output::ARTNET);
     PrintDisabled(ltc::Destination::Output::RTPMIDI);

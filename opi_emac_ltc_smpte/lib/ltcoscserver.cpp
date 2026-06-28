@@ -353,7 +353,7 @@ void LtcOscServer::Input(const uint8_t* data, uint32_t size, [[maybe_unused]] ui
                     const auto kLayer = tcnet::GetLayer(data_char[kOffset]);
 
                     TCNet::Get()->SetLayer(kLayer);
-                    tcnet::display::show();
+                    tcnet::display::Show();
 
                     DEBUG_PRINTF("*/tcnet/layer/%c -> %d", data_char[kOffset], static_cast<int>(kLayer));
                     return;
@@ -373,19 +373,19 @@ void LtcOscServer::Input(const uint8_t* data, uint32_t size, [[maybe_unused]] ui
                     switch (kValue) {
                         case 24:
                             TCNet::Get()->SetTimeCodeType(tcnet::TimeCodeType::kTimecodeTypeFilm);
-                            tcnet::display::show();
+                            tcnet::display::Show();
                             break;
                         case 25:
                             TCNet::Get()->SetTimeCodeType(tcnet::TimeCodeType::kTimecodeTypeEbu25Fps);
-                            tcnet::display::show();
+                            tcnet::display::Show();
                             break;
                         case 29:
                             TCNet::Get()->SetTimeCodeType(tcnet::TimeCodeType::kTimecodeTypeDf);
-                            tcnet::display::show();
+                            tcnet::display::Show();
                             break;
                         case 30:
                             TCNet::Get()->SetTimeCodeType(tcnet::TimeCodeType::kTimecodeTypeSmpte30Fps);
-                            tcnet::display::show();
+                            tcnet::display::Show();
                             break;
                         default:
                             break;
@@ -408,7 +408,7 @@ void LtcOscServer::Input(const uint8_t* data, uint32_t size, [[maybe_unused]] ui
                     const auto kUseTimecode = (kValue > 0);
 
                     TCNet::Get()->SetUseTimeCode(kUseTimecode);
-                    tcnet::display::show();
+                    tcnet::display::Show();
 
                     DEBUG_PRINTF("*/tcnet/timecode -> %d", static_cast<int>(kUseTimecode));
                     return;

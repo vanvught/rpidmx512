@@ -63,7 +63,7 @@ static constexpr uint16_t kUdpPort = 0x5443;
 
 #if defined(H3)
 static void irq_timer0_handler([[maybe_unused]] uint32_t clo) {
-    gv_ltc_bTimeCodeAvailable = true;
+    gv_ltc_timecode_available = true;
 }
 #elif defined(GD32)
 // Defined in platform_ltc.cpp
@@ -75,7 +75,7 @@ SystimeReader::SystimeReader(uint8_t fps, int32_t utc_offset) : fps_(fps), utc_o
     assert(s_this == nullptr);
     s_this = this;
 
-    g_ltc_LtcTimeCode.type = static_cast<uint8_t>(ltc::g_Type);
+    g_ltc_timecode.type = static_cast<uint8_t>(ltc::g_Type);
 
     DEBUG_EXIT();
 }
@@ -114,12 +114,12 @@ void SystimeReader::SetFps(uint8_t fps) {
     if (fps != fps_) {
         fps_ = fps;
 
-        if (g_ltc_LtcTimeCode.frames >= fps_) {
-            g_ltc_LtcTimeCode.frames = static_cast<uint8_t>(fps_ - 1);
+        if (g_ltc_timecode.frames >= fps_) {
+            g_ltc_timecode.frames = static_cast<uint8_t>(fps_ - 1);
         }
 
         const auto kType = static_cast<uint8_t>(ltc::g_Type);
-        g_ltc_LtcTimeCode.type = kType;
+        g_ltc_timecode.type = kType;
 
 #if defined(H3)
         H3_TIMER->TMR0_CUR = 0;
@@ -130,18 +130,18 @@ void SystimeReader::SetFps(uint8_t fps) {
 #endif
 
         if (ltc::Destination::IsEnabled(ltc::Destination::Output::LTC)) {
-            LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct ltc::TimeCode*>(&g_ltc_LtcTimeCode), false);
+            LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct ltc::TimeCode*>(&g_ltc_timecode), false);
         }
 
         if (ltc::Destination::IsEnabled(ltc::Destination::Output::ARTNET)) {
-            artnet::SendTimeCode(reinterpret_cast<const struct artnet::TimeCode*>(&g_ltc_LtcTimeCode));
+            artnet::SendTimeCode(reinterpret_cast<const struct artnet::TimeCode*>(&g_ltc_timecode));
         }
 
         if (ltc::Destination::IsEnabled(ltc::Destination::Output::ETC)) {
-            LtcEtc::Get()->Send(reinterpret_cast<const struct midi::Timecode*>(&g_ltc_LtcTimeCode));
+            LtcEtc::Get()->Send(reinterpret_cast<const struct midi::Timecode*>(&g_ltc_timecode));
         }
 
-        LtcOutputs::Get()->Update(reinterpret_cast<const struct ltc::TimeCode*>(&g_ltc_LtcTimeCode));
+        LtcOutputs::Get()->Update(reinterpret_cast<const struct ltc::TimeCode*>(&g_ltc_timecode));
     }
 }
 
@@ -177,7 +177,7 @@ void SystimeReader::ActionSetRate(const char* timecode_rate) {
 
     uint8_t fps;
 
-    if (ltc::parse_timecode_rate(timecode_rate, fps)) {
+    if (ltc::ParseTimecodeRate(timecode_rate, fps)) {
         SetFps(fps);
     }
 
@@ -253,13 +253,13 @@ void SystimeReader::Run() {
         auto time_seconds = static_cast<uint32_t>(tv.tv_sec + utc_offset_);
 
         // Calculate frames
-        g_ltc_LtcTimeCode.frames = static_cast<uint8_t>(static_cast<uint32_t>(tv.tv_usec * TimeCodeConst::FPS[g_ltc_LtcTimeCode.type]) / 1000000U);
+        g_ltc_timecode.frames = static_cast<uint8_t>(static_cast<uint32_t>(tv.tv_usec * TimeCodeConst::FPS[g_ltc_timecode.type]) / 1000000U);
 
         // Drop-frame adjustments BEFORE time updates
         if (ltc::g_Type == ltc::Type::DF) {
             // Skip frames 00 and 01 in non-10th minutes
-            if ((g_ltc_LtcTimeCode.minutes % 10 != 0) && (g_ltc_LtcTimeCode.seconds == 0) && (g_ltc_LtcTimeCode.frames < 2)) {
-                g_ltc_LtcTimeCode.frames = 2;
+            if ((g_ltc_timecode.minutes % 10 != 0) && (g_ltc_timecode.seconds == 0) && (g_ltc_timecode.frames < 2)) {
+                g_ltc_timecode.frames = 2;
             }
         }
 
@@ -267,11 +267,11 @@ void SystimeReader::Run() {
         if (__builtin_expect((time_previous_ != time_seconds), 0)) {
             time_previous_ = time_seconds;
 
-            g_ltc_LtcTimeCode.seconds = static_cast<uint8_t>(time_seconds % 60U);
+            g_ltc_timecode.seconds = static_cast<uint8_t>(time_seconds % 60U);
             time_seconds /= 60U;
-            g_ltc_LtcTimeCode.minutes = static_cast<uint8_t>(time_seconds % 60U);
+            g_ltc_timecode.minutes = static_cast<uint8_t>(time_seconds % 60U);
             time_seconds /= 60U;
-            g_ltc_LtcTimeCode.hours = static_cast<uint8_t>(time_seconds % 24U);
+            g_ltc_timecode.hours = static_cast<uint8_t>(time_seconds % 24U);
 
             // Trigger timecode availability at the start of a second
             if (tv.tv_usec == 0) {
@@ -282,18 +282,18 @@ void SystimeReader::Run() {
                 TIMER_CNT(TIMER11) = 0;
                 TIMER_CTL0(TIMER11) |= TIMER_CTL0_CEN;
 #endif
-                gv_ltc_bTimeCodeAvailable = true;
+                gv_ltc_timecode_available = true;
             }
         }
     }
 
     // Update timecode outputs if available
     __DMB(); // Data memory barrier to ensure memory consistency
-    if (__builtin_expect((gv_ltc_bTimeCodeAvailable), 0)) {
-        gv_ltc_bTimeCodeAvailable = false;
+    if (__builtin_expect((gv_ltc_timecode_available), 0)) {
+        gv_ltc_timecode_available = false;
 
         if (ltc::Destination::IsEnabled(ltc::Destination::Output::LTC)) {
-            LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct ltc::TimeCode*>(&g_ltc_LtcTimeCode), false);
+            LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct ltc::TimeCode*>(&g_ltc_timecode), false);
         }
 
         if (__builtin_expect((!started_), 0)) {
@@ -301,15 +301,15 @@ void SystimeReader::Run() {
         }
 
         if (ltc::Destination::IsEnabled(ltc::Destination::Output::ARTNET)) {
-            artnet::SendTimeCode(reinterpret_cast<const struct artnet::TimeCode*>(&g_ltc_LtcTimeCode));
+            artnet::SendTimeCode(reinterpret_cast<const struct artnet::TimeCode*>(&g_ltc_timecode));
         }
 
         if (ltc::Destination::IsEnabled(ltc::Destination::Output::ETC)) {
-            LtcEtc::Get()->Send(reinterpret_cast<const struct midi::Timecode*>(&g_ltc_LtcTimeCode));
+            LtcEtc::Get()->Send(reinterpret_cast<const struct midi::Timecode*>(&g_ltc_timecode));
         }
 
         if (__builtin_expect((started_), 0)) {
-            LtcOutputs::Get()->Update(reinterpret_cast<const struct ltc::TimeCode*>(&g_ltc_LtcTimeCode));
+            LtcOutputs::Get()->Update(reinterpret_cast<const struct ltc::TimeCode*>(&g_ltc_timecode));
         }
     }
 }

@@ -55,8 +55,8 @@ static uint8_t s_qf[8] __attribute__((aligned(4))) = {0, 0, 0, 0, 0, 0, 0, 0};
 
 #if defined(H3)
 static void irq_timer1_handler() {
-    gv_ltc_bTimeCodeAvailable = true;
-    gv_ltc_nTimeCodeCounter = gv_ltc_nTimeCodeCounter + 1;
+    gv_ltc_timecode_available = true;
+    gv_ltc_timecode_counter = gv_ltc_timecode_counter + 1;
 }
 #elif defined(GD32)
 // Defined in platform_ltc.cpp
@@ -88,19 +88,19 @@ void MidiReader::HandleMtc() {
     uint8_t nSystemExclusiveLength;
     const auto* pSystemExclusive = Midi::Get()->GetSystemExclusive(nSystemExclusiveLength);
 
-    g_ltc_LtcTimeCode.hours = pSystemExclusive[5] & 0x1F;
-    g_ltc_LtcTimeCode.minutes = pSystemExclusive[6];
-    g_ltc_LtcTimeCode.seconds = pSystemExclusive[7];
-    g_ltc_LtcTimeCode.frames = pSystemExclusive[8];
-    g_ltc_LtcTimeCode.type = static_cast<uint8_t>(pSystemExclusive[5] >> 5);
+    g_ltc_timecode.hours = pSystemExclusive[5] & 0x1F;
+    g_ltc_timecode.minutes = pSystemExclusive[6];
+    g_ltc_timecode.seconds = pSystemExclusive[7];
+    g_ltc_timecode.frames = pSystemExclusive[8];
+    g_ltc_timecode.type = static_cast<uint8_t>(pSystemExclusive[5] >> 5);
 
     if (ltc::Destination::IsEnabled(ltc::Destination::Output::RTPMIDI)) {
-        RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode*>(&g_ltc_LtcTimeCode));
+        RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode*>(&g_ltc_timecode));
     }
 
     Update();
 
-    gv_ltc_bTimeCodeAvailable = false;
+    gv_ltc_timecode_available = false;
 }
 
 void MidiReader::HandleMtcQf() {
@@ -121,39 +121,39 @@ void MidiReader::HandleMtcQf() {
     }
 
     if ((direction_ && (nPart == 7)) || (!direction_ && (nPart == 0))) {
-        g_ltc_LtcTimeCode.hours = static_cast<uint8_t>(s_qf[6] | ((s_qf[7] & 0x1) << 4));
-        g_ltc_LtcTimeCode.minutes = static_cast<uint8_t>(s_qf[4] | (s_qf[5] << 4));
-        g_ltc_LtcTimeCode.seconds = static_cast<uint8_t>(s_qf[2] | (s_qf[3] << 4));
-        g_ltc_LtcTimeCode.frames = static_cast<uint8_t>(s_qf[0] | (s_qf[1] << 4));
-        g_ltc_LtcTimeCode.type = static_cast<uint8_t>(s_qf[7] >> 1);
+        g_ltc_timecode.hours = static_cast<uint8_t>(s_qf[6] | ((s_qf[7] & 0x1) << 4));
+        g_ltc_timecode.minutes = static_cast<uint8_t>(s_qf[4] | (s_qf[5] << 4));
+        g_ltc_timecode.seconds = static_cast<uint8_t>(s_qf[2] | (s_qf[3] << 4));
+        g_ltc_timecode.frames = static_cast<uint8_t>(s_qf[0] | (s_qf[1] << 4));
+        g_ltc_timecode.type = static_cast<uint8_t>(s_qf[7] >> 1);
 
-        if (g_ltc_LtcTimeCode.frames < mtc_qf_previous_) {
-            mtc_qf_delta_ = mtc_qf_previous_ - g_ltc_LtcTimeCode.frames;
+        if (g_ltc_timecode.frames < mtc_qf_previous_) {
+            mtc_qf_delta_ = mtc_qf_previous_ - g_ltc_timecode.frames;
         } else {
-            mtc_qf_delta_ = g_ltc_LtcTimeCode.frames - mtc_qf_previous_;
+            mtc_qf_delta_ = g_ltc_timecode.frames - mtc_qf_previous_;
         }
 
-        mtc_qf_previous_ = g_ltc_LtcTimeCode.frames;
+        mtc_qf_previous_ = g_ltc_timecode.frames;
 
-        if (mtc_qf_delta_ >= static_cast<uint32_t>(TimeCodeConst::FPS[g_ltc_LtcTimeCode.type] - 2)) {
+        if (mtc_qf_delta_ >= static_cast<uint32_t>(TimeCodeConst::FPS[g_ltc_timecode.type] - 2)) {
             mtc_qf_delta_ = 2;
         }
 
         __DMB();
 
-        if (gv_ltc_nTimeCodeCounter < mtc_qf_delta_) {
+        if (gv_ltc_timecode_counter < mtc_qf_delta_) {
             Update();
         }
 
 #if defined(H3)
         H3_TIMER->TMR1_CTRL |= TIMER_CTRL_SINGLE_MODE;
-        H3_TIMER->TMR1_INTV = TimeCodeConst::TMR_INTV[g_ltc_LtcTimeCode.type];
+        H3_TIMER->TMR1_INTV = TimeCodeConst::TMR_INTV[g_ltc_timecode.type];
         H3_TIMER->TMR1_CTRL |= (TIMER_CTRL_EN_START);
 #elif defined(GD32)
-        platform::ltc::timer11_set_type(g_ltc_LtcTimeCode.type);
+        platform::ltc::timer11_set_type(g_ltc_timecode.type);
 #endif
-        gv_ltc_bTimeCodeAvailable = false;
-        gv_ltc_nTimeCodeCounter = 0;
+        gv_ltc_timecode_available = false;
+        gv_ltc_timecode_counter = 0;
     }
 
     part_previous_ = nPart;
@@ -161,18 +161,18 @@ void MidiReader::HandleMtcQf() {
 
 void MidiReader::Update() {
     if (ltc::Destination::IsEnabled(ltc::Destination::Output::LTC)) {
-        LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct ltc::TimeCode*>(&g_ltc_LtcTimeCode));
+        LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct ltc::TimeCode*>(&g_ltc_timecode));
     }
 
     if (ltc::Destination::IsEnabled(ltc::Destination::Output::ARTNET)) {
-        artnet::SendTimeCode(reinterpret_cast<const struct artnet::TimeCode*>(&g_ltc_LtcTimeCode));
+        artnet::SendTimeCode(reinterpret_cast<const struct artnet::TimeCode*>(&g_ltc_timecode));
     }
 
     if (ltc::Destination::IsEnabled(ltc::Destination::Output::ETC)) {
-        LtcEtc::Get()->Send(reinterpret_cast<const struct midi::Timecode*>(&g_ltc_LtcTimeCode));
+        LtcEtc::Get()->Send(reinterpret_cast<const struct midi::Timecode*>(&g_ltc_timecode));
     }
 
-    LtcOutputs::Get()->Update(reinterpret_cast<const struct ltc::TimeCode*>(&g_ltc_LtcTimeCode));
+    LtcOutputs::Get()->Update(reinterpret_cast<const struct ltc::TimeCode*>(&g_ltc_timecode));
 }
 
 void MidiReader::Run() {
@@ -203,50 +203,50 @@ void MidiReader::Run() {
 
     __DMB();
 
-    if (gv_ltc_bTimeCodeAvailable) {
-        gv_ltc_bTimeCodeAvailable = false;
-        const auto nFps = TimeCodeConst::FPS[g_ltc_LtcTimeCode.type];
+    if (gv_ltc_timecode_available) {
+        gv_ltc_timecode_available = false;
+        const auto nFps = TimeCodeConst::FPS[g_ltc_timecode.type];
 
         if (direction_) {
-            g_ltc_LtcTimeCode.frames++;
-            if (nFps == g_ltc_LtcTimeCode.frames) {
-                g_ltc_LtcTimeCode.frames = 0;
+            g_ltc_timecode.frames++;
+            if (nFps == g_ltc_timecode.frames) {
+                g_ltc_timecode.frames = 0;
 
-                g_ltc_LtcTimeCode.seconds++;
-                if (g_ltc_LtcTimeCode.seconds == 60) {
-                    g_ltc_LtcTimeCode.seconds = 0;
+                g_ltc_timecode.seconds++;
+                if (g_ltc_timecode.seconds == 60) {
+                    g_ltc_timecode.seconds = 0;
 
-                    g_ltc_LtcTimeCode.minutes++;
-                    if (g_ltc_LtcTimeCode.minutes == 60) {
-                        g_ltc_LtcTimeCode.minutes = 0;
+                    g_ltc_timecode.minutes++;
+                    if (g_ltc_timecode.minutes == 60) {
+                        g_ltc_timecode.minutes = 0;
 
-                        g_ltc_LtcTimeCode.hours++;
-                        if (g_ltc_LtcTimeCode.hours == 24) {
-                            g_ltc_LtcTimeCode.hours = 0;
+                        g_ltc_timecode.hours++;
+                        if (g_ltc_timecode.hours == 24) {
+                            g_ltc_timecode.hours = 0;
                         }
                     }
                 }
             }
         } else {
-            if (g_ltc_LtcTimeCode.frames == nFps - 1) {
-                if (g_ltc_LtcTimeCode.seconds > 0) {
-                    g_ltc_LtcTimeCode.seconds--;
+            if (g_ltc_timecode.frames == nFps - 1) {
+                if (g_ltc_timecode.seconds > 0) {
+                    g_ltc_timecode.seconds--;
                 } else {
-                    g_ltc_LtcTimeCode.seconds = 59;
+                    g_ltc_timecode.seconds = 59;
                 }
 
-                if (g_ltc_LtcTimeCode.seconds == 59) {
-                    if (g_ltc_LtcTimeCode.minutes > 0) {
-                        g_ltc_LtcTimeCode.minutes--;
+                if (g_ltc_timecode.seconds == 59) {
+                    if (g_ltc_timecode.minutes > 0) {
+                        g_ltc_timecode.minutes--;
                     } else {
-                        g_ltc_LtcTimeCode.minutes = 59;
+                        g_ltc_timecode.minutes = 59;
                     }
 
-                    if (g_ltc_LtcTimeCode.minutes == 59) {
-                        if (g_ltc_LtcTimeCode.hours > 0) {
-                            g_ltc_LtcTimeCode.hours--;
+                    if (g_ltc_timecode.minutes == 59) {
+                        if (g_ltc_timecode.hours > 0) {
+                            g_ltc_timecode.hours--;
                         } else {
-                            g_ltc_LtcTimeCode.hours = 23;
+                            g_ltc_timecode.hours = 23;
                         }
                     }
                 }

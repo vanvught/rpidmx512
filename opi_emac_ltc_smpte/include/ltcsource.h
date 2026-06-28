@@ -34,32 +34,21 @@
 #include "tcnetdisplay.h"
 #include "hwclock.h"
 
-namespace ltc::source
-{
-inline static void Show(ltc::Source ltc_source, bool run_gps_time_client)
-{
+namespace ltc::source {
+inline static void Show(ltc::Source ltc_source, bool run_gps_time_client) {
     Display::Get()->TextStatus(LtcSourceConst::NAME[static_cast<uint32_t>(ltc_source)]);
 
-    if (ltc_source == ltc::Source::SYSTIME)
-    {
+    if (ltc_source == ltc::Source::SYSTIME) {
         Display::Get()->SetCursorPos(static_cast<uint8_t>(Display::Get()->GetColumns() - 3U), 3);
-        if (run_gps_time_client)
-        {
+        if (run_gps_time_client) {
             GPS::Get()->Display(GPS::Get()->GetStatus());
-        }
-        else if ((network::apps::ntpclient::GetStatus() != ::ntp::Status::kFailed) && (network::apps::ntpclient::GetStatus() != ::ntp::Status::kStopped) &&
-                 (network::apps::ntpclient::GetStatus() != ::ntp::Status::kDisabled))
-        {
+        } else if ((network::apps::ntpclient::GetStatus() != ::ntp::Status::kFailed) && (network::apps::ntpclient::GetStatus() != ::ntp::Status::kStopped) && (network::apps::ntpclient::GetStatus() != ::ntp::Status::kDisabled)) {
             Display::Get()->PutString("NTP");
-        }
-        else if (HwClock::Get()->IsConnected())
-        {
+        } else if (HwClock::Get()->IsConnected()) {
             Display::Get()->PutString("RTC");
         }
-    }
-    else if (ltc_source == ltc::Source::TCNET)
-    {
-        tcnet::display::show();
+    } else if (ltc_source == ltc::Source::TCNET) {
+        tcnet::display::Show();
     }
 }
 } // namespace ltc::source

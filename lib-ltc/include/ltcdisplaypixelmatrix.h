@@ -30,8 +30,7 @@
 #include "ltcdisplayrgbset.h"
 #include "pixeldisplaymatrix.h"
 
-class LtcDisplayPixelMatrix final : public LtcDisplayRgbSet
-{
+class LtcDisplayPixelMatrix final : public LtcDisplayRgbSet {
    public:
     LtcDisplayPixelMatrix(pixel::LedType led_type, pixel::LedMap led_map);
 

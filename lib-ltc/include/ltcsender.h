@@ -2,7 +2,7 @@
  * @file ltcsender.h
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,19 +23,19 @@
  * THE SOFTWARE.
  */
 
-#ifndef H3_LTCSENDER_H_
-#define H3_LTCSENDER_H_
+#ifndef LTCSENDER_H_
+#define LTCSENDER_H_
 
 #include "ltcencoder.h"
 
 class LtcSender: public LtcEncoder {
 public:
-	LtcSender(uint32_t nVolume);
+	explicit LtcSender(uint32_t volume);
 
 	void Start();
 	void Stop() {}
 
-	void SetTimeCode(const struct ltc::TimeCode *pLtcTimeCode, bool nExternalClock = true);
+	void SetTimeCode(const struct ltc::TimeCode *timecode, bool external_clock = true);
 
 	static LtcSender* Get() {
 		return s_this;
@@ -47,4 +47,4 @@ private:
 	static LtcSender *s_this;
 };
 
-#endif /* H3_LTCSENDER_H_ */
+#endif // LTCSENDER_H_

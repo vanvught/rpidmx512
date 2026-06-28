@@ -2,7 +2,7 @@
  * @file ltcdisplayrgbpanel.h
  */
 /*
- * Copyright (C) 2020 by Arjan van Vught mailto:info@gd32-dmx.org
+ * Copyright (C) 2020-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,8 +31,7 @@
 #include "ltcdisplayrgbset.h"
 #include "rgbpanel.h"
 
-class LtcDisplayRgbPanel final : public LtcDisplayRgbSet
-{
+class LtcDisplayRgbPanel final : public LtcDisplayRgbSet {
    public:
     LtcDisplayRgbPanel();
     ~LtcDisplayRgbPanel() override;
@@ -55,4 +54,4 @@ class LtcDisplayRgbPanel final : public LtcDisplayRgbSet
     struct ltc::display::rgb::Colours line_colours_[4];
 };
 
-#endif  // LTCDISPLAYRGBPANEL_H_
+#endif // LTCDISPLAYRGBPANEL_H_

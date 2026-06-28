@@ -86,8 +86,8 @@ static volatile struct midi::Timecode s_midiTimeCode = {0, 0, 0, 0, static_cast<
 
 #if defined(H3)
 static void arm_timer_handler() {
-    gv_ltc_nUpdatesPerSecond = gv_ltc_nUpdates - gv_ltc_nUpdatesPrevious;
-    gv_ltc_nUpdatesPrevious = gv_ltc_nUpdates;
+    gv_ltc_updates_per_second = gv_ltc_updates - gv_ltc_updates_previous;
+    gv_ltc_updates_previous = gv_ltc_updates;
 }
 
 static void __attribute__((interrupt("FIQ"))) fiq_handler() {
@@ -172,7 +172,7 @@ void EXTI10_15_IRQHandler() {
         }
 
         if (bTimeCodeValid) {
-            gv_ltc_nUpdates = gv_ltc_nUpdates + 1;
+            gv_ltc_updates = gv_ltc_updates + 1;
 
             bTimeCodeValid = false;
 
@@ -269,11 +269,11 @@ void LtcReader::Run() {
         if (bIsDropFrameFlagSet) {
             time_code_type = ltc::Type::DF;
         } else {
-            if (gv_ltc_nUpdatesPerSecond <= 24) {
+            if (gv_ltc_updates_per_second <= 24) {
                 time_code_type = ltc::Type::FILM;
-            } else if (gv_ltc_nUpdatesPerSecond <= 26) {
+            } else if (gv_ltc_updates_per_second <= 26) {
                 time_code_type = ltc::Type::EBU;
-            } else if (gv_ltc_nUpdatesPerSecond >= 28) {
+            } else if (gv_ltc_updates_per_second >= 28) {
                 time_code_type = ltc::Type::SMPTE;
             } else {
                 return;
@@ -282,25 +282,25 @@ void LtcReader::Run() {
 
         s_midiTimeCode.type = static_cast<uint8_t>(time_code_type);
 
-        g_ltc_LtcTimeCode.frames = s_midiTimeCode.frames;
-        g_ltc_LtcTimeCode.seconds = s_midiTimeCode.seconds;
-        g_ltc_LtcTimeCode.minutes = s_midiTimeCode.minutes;
-        g_ltc_LtcTimeCode.hours = s_midiTimeCode.hours;
-        g_ltc_LtcTimeCode.type = s_midiTimeCode.type;
+        g_ltc_timecode.frames = s_midiTimeCode.frames;
+        g_ltc_timecode.seconds = s_midiTimeCode.seconds;
+        g_ltc_timecode.minutes = s_midiTimeCode.minutes;
+        g_ltc_timecode.hours = s_midiTimeCode.hours;
+        g_ltc_timecode.type = s_midiTimeCode.type;
 
         if (ltc::Destination::IsEnabled(ltc::Destination::Output::ARTNET)) {
-            artnet::SendTimeCode(reinterpret_cast<const struct artnet::TimeCode*>(&g_ltc_LtcTimeCode));
+            artnet::SendTimeCode(reinterpret_cast<const struct artnet::TimeCode*>(&g_ltc_timecode));
         }
 
         if (ltc::Destination::IsEnabled(ltc::Destination::Output::ETC)) {
             LtcEtc::Get()->Send(reinterpret_cast<const struct midi::Timecode*>(const_cast<struct midi::Timecode*>(&s_midiTimeCode)));
         }
 
-        LtcOutputs::Get()->Update(reinterpret_cast<const struct ltc::TimeCode*>(&g_ltc_LtcTimeCode));
+        LtcOutputs::Get()->Update(reinterpret_cast<const struct ltc::TimeCode*>(&g_ltc_timecode));
     }
 
     __DMB();
-    if ((gv_ltc_nUpdatesPerSecond >= 24) && (gv_ltc_nUpdatesPerSecond <= 30)) {
+    if ((gv_ltc_updates_per_second >= 24) && (gv_ltc_updates_per_second <= 30)) {
         board::statusled::SetMode(board::statusled::Mode::kData);
     } else {
         board::statusled::SetMode(board::statusled::Mode::kNormal);

@@ -1,7 +1,7 @@
 /**
  * @file ltcdisplayrgbset.h
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,10 +29,8 @@
 
 #include "ltc.h"
 
-namespace ltc::display::rgb
-{
-struct Colours
-{
+namespace ltc::display::rgb {
+struct Colours {
     uint8_t red;
     uint8_t green;
     uint8_t blue;
@@ -40,8 +38,7 @@ struct Colours
 static constexpr auto kMaxMessageSize = 8;
 } // namespace ltc::display::rgb
 
-class LtcDisplayRgbSet
-{
+class LtcDisplayRgbSet {
    public:
     virtual ~LtcDisplayRgbSet() {}
 
@@ -60,4 +57,4 @@ class LtcDisplayRgbSet
     virtual void Print() = 0;
 };
 
-#endif  // LTCDISPLAYRGBSET_H_
+#endif // LTCDISPLAYRGBSET_H_

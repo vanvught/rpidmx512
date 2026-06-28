@@ -71,7 +71,7 @@ static constexpr auto kResume = 7;
 
 McpButtons::McpButtons(ltc::Source source, bool use_alt_function, uint32_t skip_seconds, bool rotary_half_step)
     : i2c_(mcp23017::kI2CAddress), source_(source), use_alt_function_(use_alt_function), skip_seconds_(skip_seconds), rotary_encoder_(rotary_half_step) {
-    ltc::init_timecode(timecode_);
+    ltc::InitTimecode(timecode_);
 }
 
 bool McpButtons::Check() {

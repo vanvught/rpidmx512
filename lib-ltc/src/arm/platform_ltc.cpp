@@ -27,11 +27,11 @@
 
 #include "ltc.h"
 
-volatile uint32_t gv_ltc_nUpdatesPerSecond;
-volatile uint32_t gv_ltc_nUpdatesPrevious;
-volatile uint32_t gv_ltc_nUpdates;
+volatile uint32_t gv_ltc_updates_per_second;
+volatile uint32_t gv_ltc_updates_previous;
+volatile uint32_t gv_ltc_updates;
 
-volatile bool gv_ltc_bTimeCodeAvailable;
-volatile uint32_t gv_ltc_nTimeCodeCounter;
+volatile bool gv_ltc_timecode_available;
+volatile uint32_t gv_ltc_timecode_counter;
 
-struct ltc::TimeCode g_ltc_LtcTimeCode;
+struct ltc::TimeCode g_ltc_timecode;

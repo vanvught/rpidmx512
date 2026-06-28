@@ -56,7 +56,7 @@
 
 #if defined(H3)
 static void irq_timer0_handler([[maybe_unused]] uint32_t clo) {
-    gv_ltc_bTimeCodeAvailable = true;
+    gv_ltc_timecode_available = true;
 }
 #elif defined(GD32)
 // Defined in platform_ltc.cpp
@@ -124,9 +124,9 @@ LtcGenerator::LtcGenerator(const struct ltc::TimeCode* pStartLtcTimeCode, const 
     assert(s_this == nullptr);
     s_this = this;
 
-    gv_ltc_bTimeCodeAvailable = false;
+    gv_ltc_timecode_available = false;
 
-    memcpy(&g_ltc_LtcTimeCode, pStartLtcTimeCode, sizeof(struct ltc::TimeCode));
+    memcpy(&g_ltc_timecode, pStartLtcTimeCode, sizeof(struct ltc::TimeCode));
 
     fps_ = TimeCodeConst::FPS[pStartLtcTimeCode->type];
 
@@ -241,7 +241,7 @@ void LtcGenerator::ActionResume() {
 void LtcGenerator::ActionSetStart(const char* time_code) {
     DEBUG_ENTRY();
 
-    const auto kSucces = ltc::parse_timecode(time_code, fps_, m_pStartLtcTimeCode);
+    const auto kSucces = ltc::ParseTimecode(time_code, fps_, m_pStartLtcTimeCode);
 
     if (kSucces) {
         m_nStartSeconds = GetSeconds(*m_pStartLtcTimeCode);
@@ -253,7 +253,7 @@ void LtcGenerator::ActionSetStart(const char* time_code) {
 void LtcGenerator::ActionSetStop(const char* time_code) {
     DEBUG_ENTRY();
 
-    const auto kSucces = ltc::parse_timecode(time_code, fps_, m_pStopLtcTimeCode);
+    const auto kSucces = ltc::ParseTimecode(time_code, fps_, m_pStopLtcTimeCode);
 
     if (kSucces) {
         m_nStopSeconds = GetSeconds(*m_pStopLtcTimeCode);
@@ -316,7 +316,7 @@ void LtcGenerator::ActionSetPitch(float time_code_pitch) {
 void LtcGenerator::ActionReset() {
     DEBUG_ENTRY();
 
-    memcpy(&g_ltc_LtcTimeCode, m_pStartLtcTimeCode, sizeof(struct ltc::TimeCode));
+    memcpy(&g_ltc_timecode, m_pStartLtcTimeCode, sizeof(struct ltc::TimeCode));
 
     LtcOutputs::Get()->ResetTimeCodeTypePrevious();
 
@@ -328,12 +328,12 @@ void LtcGenerator::ActionSetRate(const char* time_code_rate) {
 
     uint8_t fps;
 
-    if ((state_ == kStopped) && (ltc::parse_timecode_rate(time_code_rate, fps))) {
+    if ((state_ == kStopped) && (ltc::ParseTimecodeRate(time_code_rate, fps))) {
         if (fps != fps_) {
             fps_ = fps;
 
             const auto kType = static_cast<uint8_t>(ltc::g_Type);
-            g_ltc_LtcTimeCode.type = kType;
+            g_ltc_timecode.type = kType;
 
             m_pStartLtcTimeCode->type = kType;
 
@@ -356,18 +356,18 @@ void LtcGenerator::ActionSetRate(const char* time_code_rate) {
 #endif
 
             if (ltc::Destination::IsEnabled(ltc::Destination::Output::LTC)) {
-                LtcSender::Get()->SetTimeCode(const_cast<const struct ltc::TimeCode*>(&g_ltc_LtcTimeCode), false);
+                LtcSender::Get()->SetTimeCode(const_cast<const struct ltc::TimeCode*>(&g_ltc_timecode), false);
             }
 
             if (ltc::Destination::IsEnabled(ltc::Destination::Output::ARTNET)) {
-                artnet::SendTimeCode(reinterpret_cast<const struct artnet::TimeCode*>(&g_ltc_LtcTimeCode));
+                artnet::SendTimeCode(reinterpret_cast<const struct artnet::TimeCode*>(&g_ltc_timecode));
             }
 
             if (ltc::Destination::IsEnabled(ltc::Destination::Output::ETC)) {
-                LtcEtc::Get()->Send(reinterpret_cast<const struct midi::Timecode*>(&g_ltc_LtcTimeCode));
+                LtcEtc::Get()->Send(reinterpret_cast<const struct midi::Timecode*>(&g_ltc_timecode));
             }
 
-            LtcOutputs::Get()->Update(const_cast<const struct ltc::TimeCode*>(&g_ltc_LtcTimeCode));
+            LtcOutputs::Get()->Update(const_cast<const struct ltc::TimeCode*>(&g_ltc_timecode));
         }
     }
 
@@ -386,14 +386,14 @@ void LtcGenerator::ActionForward(uint32_t seconds) {
         state_ = kStarted;
     }
 
-    const uint32_t kSeconds = GetSeconds(g_ltc_LtcTimeCode) + seconds;
+    const uint32_t kSeconds = GetSeconds(g_ltc_timecode) + seconds;
     constexpr uint32_t kMaxSeconds = ((23 * 60) + 59) * 60 + 59;
     const auto kLimitSeconds = skip_free_ ? kMaxSeconds : m_nStopSeconds;
 
     if (kSeconds <= kLimitSeconds) {
         SetTimeCode(kSeconds);
     } else {
-        memcpy(&g_ltc_LtcTimeCode, m_pStopLtcTimeCode, sizeof(struct ltc::TimeCode));
+        memcpy(&g_ltc_timecode, m_pStopLtcTimeCode, sizeof(struct ltc::TimeCode));
     }
 
     DEBUG_EXIT();
@@ -411,13 +411,13 @@ void LtcGenerator::ActionBackward(uint32_t seconds) {
         state_ = kStarted;
     }
 
-    const auto kSeconds = GetSeconds(g_ltc_LtcTimeCode) - seconds;
+    const auto kSeconds = GetSeconds(g_ltc_timecode) - seconds;
     const auto kLimitSeconds = skip_free_ ? 0 : m_nStartSeconds;
 
     if (kSeconds >= kLimitSeconds) {
         SetTimeCode(kSeconds);
     } else {
-        memcpy(&g_ltc_LtcTimeCode, m_pStartLtcTimeCode, sizeof(struct ltc::TimeCode));
+        memcpy(&g_ltc_timecode, m_pStartLtcTimeCode, sizeof(struct ltc::TimeCode));
     }
 
     DEBUG_EXIT();
@@ -595,7 +595,7 @@ void LtcGenerator::HandleButtons() {
 
 void LtcGenerator::Print() {
     printf("Internal\n");
-    printf(" %s\n", ltc::get_type(static_cast<ltc::Type>(m_pStartLtcTimeCode->type)));
+    printf(" %s\n", ltc::GetType(static_cast<ltc::Type>(m_pStartLtcTimeCode->type)));
     printf(" Start : %.2d.%.2d.%.2d:%.2d\n", m_pStartLtcTimeCode->hours, m_pStartLtcTimeCode->minutes, m_pStartLtcTimeCode->seconds, m_pStartLtcTimeCode->frames);
     printf(" Stop  : %.2d.%.2d.%.2d:%.2d\n", m_pStopLtcTimeCode->hours, m_pStopLtcTimeCode->minutes, m_pStopLtcTimeCode->seconds, m_pStopLtcTimeCode->frames);
 }
@@ -607,7 +607,7 @@ void LtcGenerator::Print() {
 #endif
 
 void LtcGenerator::Increment() {
-    //    if ((!m_bIgnoreStop) && (__builtin_expect((memcmp(&g_ltc_LtcTimeCode, m_pStopLtcTimeCode, sizeof(struct ltc::TimeCode)) == 0), 0)))
+    //    if ((!m_bIgnoreStop) && (__builtin_expect((memcmp(&g_ltc_timecode, m_pStopLtcTimeCode, sizeof(struct ltc::TimeCode)) == 0), 0)))
     //    {
     //        if (state_ == STARTED)
     //        {
@@ -617,31 +617,31 @@ void LtcGenerator::Increment() {
     //    }
 
     // Increment frames
-    g_ltc_LtcTimeCode.frames++;
+    g_ltc_timecode.frames++;
 
     // Drop-frame timecode handling BEFORE rolling to the next second
     if (ltc::g_Type == ltc::Type::DF) {
         // Skip frames 00 and 01 except every 10th minute
-        if ((g_ltc_LtcTimeCode.minutes % 10 != 0) && (g_ltc_LtcTimeCode.seconds == 0) && (g_ltc_LtcTimeCode.frames < 2)) {
-            g_ltc_LtcTimeCode.frames = 2;
+        if ((g_ltc_timecode.minutes % 10 != 0) && (g_ltc_timecode.seconds == 0) && (g_ltc_timecode.frames < 2)) {
+            g_ltc_timecode.frames = 2;
         }
     }
 
     // Handle frame rollover
-    if (g_ltc_LtcTimeCode.frames >= fps_) {
-        g_ltc_LtcTimeCode.frames = 0;
+    if (g_ltc_timecode.frames >= fps_) {
+        g_ltc_timecode.frames = 0;
 
         // Increment seconds
-        if (++g_ltc_LtcTimeCode.seconds >= 60) {
-            g_ltc_LtcTimeCode.seconds = 0;
+        if (++g_ltc_timecode.seconds >= 60) {
+            g_ltc_timecode.seconds = 0;
 
             // Increment minutes
-            if (++g_ltc_LtcTimeCode.minutes >= 60) {
-                g_ltc_LtcTimeCode.minutes = 0;
+            if (++g_ltc_timecode.minutes >= 60) {
+                g_ltc_timecode.minutes = 0;
 
                 // Increment hours
-                if (++g_ltc_LtcTimeCode.hours >= 24) {
-                    g_ltc_LtcTimeCode.hours = 0;
+                if (++g_ltc_timecode.hours >= 24) {
+                    g_ltc_timecode.hours = 0;
                 }
             }
         }
@@ -649,7 +649,7 @@ void LtcGenerator::Increment() {
 }
 
 void LtcGenerator::Decrement() {
-    if ((!m_bIgnoreStart) && (__builtin_expect((memcmp(&g_ltc_LtcTimeCode, m_pStartLtcTimeCode, sizeof(struct ltc::TimeCode)) == 0), 0))) {
+    if ((!m_bIgnoreStart) && (__builtin_expect((memcmp(&g_ltc_timecode, m_pStartLtcTimeCode, sizeof(struct ltc::TimeCode)) == 0), 0))) {
         if (state_ == kStarted) {
             state_ = kLimit;
         }
@@ -657,39 +657,39 @@ void LtcGenerator::Decrement() {
     }
 
     // Decrement frames
-    if (g_ltc_LtcTimeCode.frames > 0) {
-        g_ltc_LtcTimeCode.frames--;
+    if (g_ltc_timecode.frames > 0) {
+        g_ltc_timecode.frames--;
     } else {
-        g_ltc_LtcTimeCode.frames = static_cast<uint8_t>(fps_ - 1);
+        g_ltc_timecode.frames = static_cast<uint8_t>(fps_ - 1);
     }
 
     // Handle drop-frame logic after frames decrement
     if (ltc::g_Type == ltc::Type::DF) {
-        if ((g_ltc_LtcTimeCode.minutes % 10 != 0) && (g_ltc_LtcTimeCode.seconds == 0) && (g_ltc_LtcTimeCode.frames == fps_ - 1)) {
-            g_ltc_LtcTimeCode.frames = 1; // Skip to frame 01
+        if ((g_ltc_timecode.minutes % 10 != 0) && (g_ltc_timecode.seconds == 0) && (g_ltc_timecode.frames == fps_ - 1)) {
+            g_ltc_timecode.frames = 1; // Skip to frame 01
         }
     }
 
     // Handle seconds rollover
-    if (g_ltc_LtcTimeCode.frames == fps_ - 1) {
-        if (g_ltc_LtcTimeCode.seconds > 0) {
-            g_ltc_LtcTimeCode.seconds--;
+    if (g_ltc_timecode.frames == fps_ - 1) {
+        if (g_ltc_timecode.seconds > 0) {
+            g_ltc_timecode.seconds--;
         } else {
-            g_ltc_LtcTimeCode.seconds = 59;
+            g_ltc_timecode.seconds = 59;
         }
 
         // Handle minutes rollover
-        if (g_ltc_LtcTimeCode.minutes > 0) {
-            g_ltc_LtcTimeCode.minutes--;
+        if (g_ltc_timecode.minutes > 0) {
+            g_ltc_timecode.minutes--;
         } else {
-            g_ltc_LtcTimeCode.minutes = 59;
+            g_ltc_timecode.minutes = 59;
         }
 
         // Handle hours rollover
-        if (g_ltc_LtcTimeCode.hours > 0) {
-            g_ltc_LtcTimeCode.hours--;
+        if (g_ltc_timecode.hours > 0) {
+            g_ltc_timecode.hours--;
         } else {
-            g_ltc_LtcTimeCode.hours = 23;
+            g_ltc_timecode.hours = 23;
         }
     }
 }
@@ -705,21 +705,21 @@ bool LtcGenerator::PitchControl() {
 }
 
 void LtcGenerator::SetTimeCode(uint32_t seconds) {
-    g_ltc_LtcTimeCode.hours = static_cast<uint8_t>(seconds / 3600U);
-    seconds -= g_ltc_LtcTimeCode.hours * 3600;
-    g_ltc_LtcTimeCode.minutes = static_cast<uint8_t>(seconds / 60U);
-    seconds -= g_ltc_LtcTimeCode.minutes * 60;
-    g_ltc_LtcTimeCode.seconds = static_cast<uint8_t>(seconds);
+    g_ltc_timecode.hours = static_cast<uint8_t>(seconds / 3600U);
+    seconds -= g_ltc_timecode.hours * 3600;
+    g_ltc_timecode.minutes = static_cast<uint8_t>(seconds / 60U);
+    seconds -= g_ltc_timecode.minutes * 60;
+    g_ltc_timecode.seconds = static_cast<uint8_t>(seconds);
 }
 
 void LtcGenerator::Update() {
     if (__builtin_expect((state_ == kStopped), 0)) {
         __DMB(); // Data memory barrier to ensure memory consistency
-        if (gv_ltc_bTimeCodeAvailable) {
-            gv_ltc_bTimeCodeAvailable = false;
+        if (gv_ltc_timecode_available) {
+            gv_ltc_timecode_available = false;
 
             if (ltc::Destination::IsEnabled(ltc::Destination::Output::LTC)) {
-                LtcSender::Get()->SetTimeCode(static_cast<const struct ltc::TimeCode*>(&g_ltc_LtcTimeCode), false);
+                LtcSender::Get()->SetTimeCode(static_cast<const struct ltc::TimeCode*>(&g_ltc_timecode), false);
             }
         }
 
@@ -727,8 +727,8 @@ void LtcGenerator::Update() {
     }
 
     __DMB(); // Data memory barrier to ensure memory consistency
-    if (gv_ltc_bTimeCodeAvailable) {
-        gv_ltc_bTimeCodeAvailable = false;
+    if (gv_ltc_timecode_available) {
+        gv_ltc_timecode_available = false;
         if (__builtin_expect((m_tDirection == ltcgenerator::Direction::kDirectionForward), 1)) {
             if (__builtin_expect((m_tPitch == ltcgenerator::Pitch::kPitchNormal), 1)) {
                 Increment();
@@ -762,17 +762,17 @@ void LtcGenerator::Update() {
         }
 
         if (ltc::Destination::IsEnabled(ltc::Destination::Output::LTC)) {
-            LtcSender::Get()->SetTimeCode(static_cast<const struct ltc::TimeCode*>(&g_ltc_LtcTimeCode), false);
+            LtcSender::Get()->SetTimeCode(static_cast<const struct ltc::TimeCode*>(&g_ltc_timecode), false);
         }
 
         if (ltc::Destination::IsEnabled(ltc::Destination::Output::ARTNET)) {
-            artnet::SendTimeCode(reinterpret_cast<const struct artnet::TimeCode*>(&g_ltc_LtcTimeCode));
+            artnet::SendTimeCode(reinterpret_cast<const struct artnet::TimeCode*>(&g_ltc_timecode));
         }
 
         if (ltc::Destination::IsEnabled(ltc::Destination::Output::ETC)) {
-            LtcEtc::Get()->Send(reinterpret_cast<const struct midi::Timecode*>(&g_ltc_LtcTimeCode));
+            LtcEtc::Get()->Send(reinterpret_cast<const struct midi::Timecode*>(&g_ltc_timecode));
         }
 
-        LtcOutputs::Get()->Update(static_cast<const struct ltc::TimeCode*>(&g_ltc_LtcTimeCode));
+        LtcOutputs::Get()->Update(static_cast<const struct ltc::TimeCode*>(&g_ltc_timecode));
     }
 }

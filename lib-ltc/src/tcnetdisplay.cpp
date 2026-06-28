@@ -2,7 +2,7 @@
  * @file tcnetdisplay.cpp
  *
  */
-/* Copyright (C) 2019-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,6 @@
  */
 
 #include "tcnetdisplay.h"
-
 #include "tcnet.h"
 #include "display.h"
 #if !(defined(CONFIG_LTC_DISABLE_RGB_PANEL) && defined(CONFIG_LTC_DISABLE_WS28XX))
@@ -33,22 +32,17 @@
 #define LTC_NO_DISPLAY_RGB
 #endif
 
-namespace tcnet::display
-{
+namespace tcnet::display {
 static constexpr char kFps[4][6] = {" T24", " T25", " T29", " T30"};
 
-void show()
-{
+void Show() {
     Display::Get()->SetCursorPos(6, 3);
     Display::Get()->PutChar('L');
     Display::Get()->PutChar(tcnet::GetLayer(TCNet::Get()->GetLayer()));
 
-    if (TCNet::Get()->GetUseTimeCode())
-    {
+    if (TCNet::Get()->GetUseTimeCode()) {
         Display::Get()->PutString(" TC ");
-    }
-    else
-    {
+    } else {
         Display::Get()->PutString(kFps[static_cast<uint32_t>(TCNet::Get()->GetTimeCodeType())]);
     }
 

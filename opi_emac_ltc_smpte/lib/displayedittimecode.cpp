@@ -84,7 +84,7 @@ void DisplayEditTimeCode::HandleKey(int key, struct ltc::TimeCode& timecode, cha
     }
 
     const auto* pTimeCode = &timecode;
-    ltc::itoa_base10(pTimeCode, time_code);
+    ltc::ItoaBase10(pTimeCode, time_code);
     Display::Get()->TextLine(1, time_code, ltc::timecode::CODE_MAX_LENGTH);
 
     if (cursor_on_)

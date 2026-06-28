@@ -2,7 +2,7 @@
  * @file tcnetdisplay.h
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,10 +26,8 @@
 #ifndef TCNETDISPLAY_H_
 #define TCNETDISPLAY_H_
 
-
 namespace tcnet::display {
-void show();
+void Show();
 } // namespace tcnet::display
 
-
-#endif /* TCNETDISPLAY_H_ */
+#endif // TCNETDISPLAY_H_
