@@ -31,41 +31,34 @@
 #include <ctype.h>
 
 #if defined(H3)
-namespace uart0
-{
+namespace uart0 {
 int Printf(const char* fmt, ...);
 }
 #define printf uart0::Printf // NOLINT
 #endif
 
-namespace debug
-{
-namespace dump
-{
+namespace debug {
+namespace dump {
 inline constexpr uint32_t kCharsPerLine = 16;
 }
 #ifdef NDEBUG
-inline void Dump([[maybe_unused]] const void* data, [[maybe_unused]] uint32_t size) {}
+static inline void Dump([[maybe_unused]] const void* data, [[maybe_unused]] uint32_t size) {}
 #else
-inline void Dump(const void* data, uint32_t size)
-{
+inline void Dump(const void* data, uint32_t size) {
     uint32_t chars = 0;
     const auto* p = reinterpret_cast<const uint8_t*>(data);
 
     printf("%p:%d\n", data, size);
 
-    do
-    {
+    do {
         uint32_t chars_this_line = 0;
 
         printf("%04x ", chars);
 
         const auto* q = p;
 
-        while ((chars_this_line < dump::kCharsPerLine) && (chars < size))
-        {
-            if (chars_this_line % 8 == 0)
-            {
+        while ((chars_this_line < dump::kCharsPerLine) && (chars < size)) {
+            if (chars_this_line % 8 == 0) {
                 printf(" ");
             }
 
@@ -78,10 +71,8 @@ inline void Dump(const void* data, uint32_t size)
 
         auto chars_dot_line = chars_this_line;
 
-        for (; chars_this_line < dump::kCharsPerLine; chars_this_line++)
-        {
-            if (chars_this_line % 8 == 0)
-            {
+        for (; chars_this_line < dump::kCharsPerLine; chars_this_line++) {
+            if (chars_this_line % 8 == 0) {
                 printf(" ");
             }
             printf("   ");
@@ -89,20 +80,15 @@ inline void Dump(const void* data, uint32_t size)
 
         chars_this_line = 0;
 
-        while (chars_this_line < chars_dot_line)
-        {
-            if (chars_this_line % 8 == 0)
-            {
+        while (chars_this_line < chars_dot_line) {
+            if (chars_this_line % 8 == 0) {
                 printf(" ");
             }
 
             int ch = *q;
-            if (isprint(ch))
-            {
+            if (isprint(ch)) {
                 printf("%c", ch);
-            }
-            else
-            {
+            } else {
                 printf(".");
             }
 
