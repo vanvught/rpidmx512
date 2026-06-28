@@ -1,5 +1,6 @@
 /**
  * @file main.cpp
+ *
  */
 /* Copyright (C) 2017-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
@@ -26,7 +27,8 @@
 
 #include "board.h"
 #include "network.h"
-#include "display.h"
+#include "displayudf.h"
+#include "json/displayudfparams.h"
 #include "handler.h"
 #include "oscserver.h"
 #include "json/oscserverparams.h"
@@ -41,18 +43,16 @@
 
 static bool keep_running = true;
 
-void IntHandler(int)
-{
+void IntHandler(int) {
     keep_running = false;
 }
 
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv) { // NOLINT
     struct sigaction act;
     act.sa_handler = IntHandler;
     sigaction(SIGINT, &act, nullptr);
     board::Init();
-    Display display;
+    DisplayUdf display;
     ConfigStore config_store;
     Network nw(argc, argv);
     FirmwareVersion fw(kSoftwareVersion, __DATE__, __TIME__);
@@ -76,17 +76,27 @@ int main(int argc, char** argv)
     server.SetOscServerHandler(new Handler);
     server.SetOutput(&monitor);
 
-	RdmNetDevice llrp_only_device;
-	llrp_only_device.Print();
+    RdmNetDevice llrp_only_device;
+    llrp_only_device.Print();
 
     server.Print();
+
+    display.SetTitle("OSC Server");
+    display.Set(2, displayudf::Labels::kIp);
+    display.Set(3, displayudf::Labels::kVersion);
+    display.Set(4, displayudf::Labels::kHostname);
+    display.Set(5, displayudf::Labels::kBoardname);
+    display.Set(6, displayudf::Labels::kIp);
+
+    json::DisplayUdfParams displayudf_params;
+    displayudf_params.Load();
+    displayudf_params.SetAndShow();
 
     RemoteConfig remote_config(remoteconfig::Output::MONITOR, 1);
 
     server.Start();
 
-    while (keep_running)
-    {
+    while (keep_running) {
         network::Run();
         board::Run();
     }

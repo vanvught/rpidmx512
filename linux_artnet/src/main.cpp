@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2017-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,6 @@
 
 #include <signal.h>
 
-#include "displayudf.h"
 #include "board.h"
 #include "network.h"
 #include "displayudf.h"
@@ -52,8 +51,7 @@ void IntHandler(int) {
     keep_running = false;
 }
 
-int main(int argc, char** argv) // NOLINT
-{
+int main(int argc, char** argv) { // NOLINT
     struct sigaction act;
     act.sa_handler = IntHandler;
     sigaction(SIGINT, &act, nullptr);
