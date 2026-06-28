@@ -49,12 +49,15 @@ void Begin() {
     file = open(kDevice, O_RDWR | O_CLOEXEC);
     if (file < 0) {
         perror(kDevice);
+        return;
     }
 
     uint8_t bits = 8;
 
     if (ioctl(file, SPI_IOC_WR_BITS_PER_WORD, &bits) == -1) {
         perror("SPI_IOC_WR_BITS_PER_WORD");
+        close(file);
+        file = -1;
     }
 #else
     puts("spi::Begin");
@@ -63,6 +66,10 @@ void Begin() {
 
 void SetSpeedHz(uint32_t speed_hz) {
 #if defined(__linux__)
+    if (file < 0) [[unlikely]] {
+        return;
+    }
+
     if (ioctl(file, SPI_IOC_WR_MAX_SPEED_HZ, &speed_hz) == -1) {
         perror("SetSpeedHz");
     }
@@ -73,6 +80,10 @@ void SetSpeedHz(uint32_t speed_hz) {
 
 void SetDataMode([[maybe_unused]] uint8_t mode) {
 #if defined(__linux__)
+    if (file < 0) [[unlikely]] {
+        return;
+    }
+
     uint8_t ioctl_mode = SPI_MODE_0;
     if (ioctl(file, SPI_IOC_WR_MODE, &ioctl_mode) == -1) {
         perror("SPI_IOC_WR_MODE");
@@ -91,6 +102,10 @@ void ChipSelect([[maybe_unused]] uint8_t chip_select) {
 
 void Transfern(char* tx_buffer, uint32_t length) {
 #if defined(__linux__)
+    if (file < 0) [[unlikely]] {
+        return;
+    }
+
     struct spi_ioc_transfer tr{};
 
     tr.tx_buf = reinterpret_cast<unsigned long>(tx_buffer);
@@ -98,7 +113,7 @@ void Transfern(char* tx_buffer, uint32_t length) {
     tr.len = length;
 
     if (ioctl(file, SPI_IOC_MESSAGE(1), &tr) < 1) {
-        perror("Writenb");
+        perror("Transfern");
     }
 #else
     printf("spi::Transfern=%p:%u\n", reinterpret_cast<void*>(tx_buffer), length);

@@ -85,6 +85,14 @@ void Fsel(uint32_t gpio, Select fsel) {
     if (!s_init) [[unlikely]] {
         Init();
     }
+	
+	if (!s_init || s_chip == nullptr) {
+	    return;
+	}
+
+	if (gpio >= kMaxLines) {
+	    return;
+	}
 #endif
     printf("gpio::Fsel(gpio=%u,fsel=%u)\n", gpio, static_cast<unsigned>(fsel));
 #if defined(__linux__)
@@ -134,6 +142,10 @@ void Set(uint32_t pin) {
     if (pin >= kMaxLines) {
         return;
     }
+	
+	if (!s_init || s_chip == nullptr) {
+	    return;
+	}
 
     if (s_line[pin]) {
         gpiod_line_set_value(s_line[pin], 1);
@@ -148,6 +160,10 @@ void Clr(uint32_t pin) {
     if (pin >= kMaxLines) {
         return;
     }
+	
+	if (!s_init || s_chip == nullptr) {
+	    return;
+	}
 
     if (s_line[pin]) {
         gpiod_line_set_value(s_line[pin], 0);

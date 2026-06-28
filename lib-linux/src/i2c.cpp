@@ -37,7 +37,7 @@
 
 namespace i2c {
 #if defined(__linux__)
-#if defined (ODROID)
+#if defined(ODROID)
 static constexpr char kDevice[] = "/dev/i2c-0";
 #else
 static constexpr char kDevice[] = "/dev/i2c-1";
@@ -55,6 +55,7 @@ void Begin() {
     file = open(kDevice, O_RDWR | O_CLOEXEC);
     if (file < 0) {
         perror(kDevice);
+        return;
     }
 #else
     puts("i2c::Begin");
@@ -70,6 +71,10 @@ void SetBaudrate([[maybe_unused]] uint32_t baudrate) {
 
 void SetAddress(uint8_t address) {
 #if defined(__linux__)
+    if (file < 0) {
+        return;
+    }
+
     if (ioctl(file, I2C_SLAVE, address) < 0) {
         close(file);
         file = -1;
