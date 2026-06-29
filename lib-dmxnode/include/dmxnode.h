@@ -80,7 +80,7 @@ inline static constexpr const char kLtpUpper[] = "LTP";
 
 enum class Direction { kInput, kOutput, kDisable };
 
-enum class FailSafe { kHold, kOff, kOn, kPlayback, kRecord };
+enum class FailSafe : uint8_t { kHold, kOff, kOn, kPlayback, kRecord };
 
 namespace failsafe {
 inline static constexpr const char kHold[] = "hold";

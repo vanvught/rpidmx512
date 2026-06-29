@@ -72,12 +72,12 @@ inline void PlatformGpioInit() {
 }
 
 inline bool PlatformIsPps() {
-    const uint32_t flag_left = EXTI_PD & (uint32_t)EXTI_13;
-    const uint32_t flag_right = EXTI_INTEN & (uint32_t)EXTI_13;
+    const uint32_t kFlagLeft = EXTI_PD & EXTI_13;
+    const uint32_t kFlagRight = EXTI_INTEN & EXTI_13;
 
-    if ((RESET != flag_left) && (RESET != flag_right)) {
+    if ((RESET != kFlagLeft) && (RESET != kFlagRight)) {
         // exti_interrupt_flag_clear(EXTI_13);
-        EXTI_PD = (uint32_t)EXTI_13;
+        EXTI_PD = EXTI_13;
         return true;
     }
 

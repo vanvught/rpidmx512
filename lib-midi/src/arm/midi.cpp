@@ -147,9 +147,9 @@ void TIMER3_IRQHandler() {
 #else
 void TIMER0_BRK_TIMER8_IRQHandler() {
 #endif
-    const auto nIntFlag = TIMER_INTF(TIMERx);
+    const auto kIntFlag = TIMER_INTF(TIMERx);
 
-    if ((nIntFlag & TIMER_INT_FLAG_UP) == TIMER_INT_FLAG_UP) {
+    if ((kIntFlag & TIMER_INT_FLAG_UP) == TIMER_INT_FLAG_UP) {
         if (sv_nTick100ms == 10) {
             sv_nTick100ms = 0;
             sv_nUpdatesPerSecond = sv_nUpdates - sv_nUpdatesPrevious;
@@ -166,7 +166,7 @@ void TIMER0_BRK_TIMER8_IRQHandler() {
         }
     }
 
-    TIMER_INTF(TIMERx) = static_cast<uint32_t>(~nIntFlag);
+    TIMER_INTF(TIMERx) = ~kIntFlag;
 }
 
 void USART5_IRQHandler() {
