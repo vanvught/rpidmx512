@@ -31,7 +31,7 @@
 #include "ltc.h"
 
 namespace ltc {
-uint32_t g_ltc_disabled_outputs;
+uint32_t g_disabled_outputs;
 ltc::Type g_Type;
 
 static constexpr char kTypes[5][ltc::timecode::TYPE_MAX_LENGTH + 1] = {

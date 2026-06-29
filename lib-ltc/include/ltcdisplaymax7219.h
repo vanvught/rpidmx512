@@ -35,7 +35,7 @@
 #include "firmware/debug/debug_debug.h"
 
 namespace ltc::display::max7219 {
-enum class Types { kMatrix, kSegment };
+enum class Types : uint8_t { kMatrix, kSegment };
 } // namespace ltc::display::max7219
 
 class LtcDisplayMax7219 {
@@ -79,7 +79,7 @@ class LtcDisplayMax7219 {
         return "matrix";
     }
 
-    ltc::display::max7219::Types GetType(const char* val, uint8_t len) {
+    ltc::display::max7219::Types GetType(const char* val, uint32_t len) {
         if (len == 8) {
             if (memcmp(val, "7segment", 8) == 0) {
                 return ltc::display::max7219::Types::kSegment;

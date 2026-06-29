@@ -114,7 +114,7 @@ struct DisabledOutputs {
     bool bRgbPanel;
 };
 
-extern uint32_t g_ltc_disabled_outputs;
+extern uint32_t g_disabled_outputs;
 
 struct Destination {
     enum class Output : uint32_t {
@@ -150,11 +150,11 @@ struct Destination {
 
     static void SetDisabled(Output output, bool disable = true) {
         if (disable) {
-            g_ltc_disabled_outputs |= static_cast<uint32_t>(output);
+            g_disabled_outputs |= static_cast<uint32_t>(output);
         }
     }
 
-    static bool IsDisabled(Output output) { return (g_ltc_disabled_outputs & static_cast<uint32_t>(output)) == static_cast<uint32_t>(output); }
+    static bool IsDisabled(Output output) { return (g_disabled_outputs & static_cast<uint32_t>(output)) == static_cast<uint32_t>(output); }
     static bool IsEnabled(Output output) { return !IsDisabled(output); }
 };
 

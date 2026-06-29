@@ -35,8 +35,8 @@
 #include "ltc.h"
 #include "common/utils/utils_enum.h"
 #include "common/utils/utils_flags.h"
-#include "network.h"
 #include "firmware/debug/debug_debug.h"
+#include "network_config.h"
 
 using common::store::ltc::Flags;
 
@@ -57,12 +57,17 @@ void LtcParams::SetSource(const char* val, uint32_t len) {
     store_ltc.source = common::ToValue(ltc::GetSourceType(source));
 }
 
-template <ltc::Destination::Output output> static uint8_t HandleDisabledOutput(uint8_t disabled_outputs, char val) {
+template <ltc::Destination::Output output>
+static uint8_t HandleDisabledOutput(uint8_t disabled_outputs, char val) {
+    constexpr auto kMask = static_cast<uint8_t>(common::ToValue(output));
+
     if (val == '0') {
-        return disabled_outputs &= ~common::ToValue(output);
+        disabled_outputs &= static_cast<uint8_t>(~kMask);
+    } else {
+        disabled_outputs |= kMask;
     }
 
-    return disabled_outputs |= common::ToValue(output);
+    return disabled_outputs;
 }
 
 void LtcParams::SetDisableDisplayOled(const char* val, uint32_t len) {
@@ -154,41 +159,41 @@ void LtcParams::SetUtcOffset(const char* val, uint32_t len) {
 void LtcParams::SetFps(const char* val, uint32_t len) {
     if (len != 2) return;
 
-    const auto kFps = net::ParseIpString(val, len);
+    const auto kFps = json::ParseValue<uint8_t>(val, 2);
     store_ltc.fps = common::ToValue(ltc::GetType(kFps));
 }
 
 void LtcParams::SetStartFrame(const char* val, uint32_t len) {
     if (len != 2) return;
 
-    const auto kFrame = net::ParseIpString(val, len);
+    const auto kFrame = json::ParseValue<uint8_t>(val, 2);
     if (kFrame <= 30) {
         store_ltc.start_frame = kFrame;
     }
 }
 
 void LtcParams::SetStartSecond(const char* val, uint32_t len) {
-    if (len != 2) return;
+    if (len > 2) return;
 
-    const auto kSecond = net::ParseIpString(val, len);
+    const auto kSecond = json::ParseValue<uint8_t>(val, len);
     if (kSecond <= 59) {
         store_ltc.start_second = kSecond;
     }
 }
 
 void LtcParams::SetStartMinute(const char* val, uint32_t len) {
-    if (len != 2) return;
+    if (len > 2) return;
 
-    const auto kMinute = net::ParseIpString(val, len);
+    const auto kMinute = json::ParseValue<uint8_t>(val, len);
     if (kMinute <= 59) {
         store_ltc.start_minute = kMinute;
     }
 }
 
 void LtcParams::SetStartHour(const char* val, uint32_t len) {
-    if (len != 2) return;
+    if (len > 2) return;
 
-    const auto kHour = net::ParseIpString(val, len);
+    const auto kHour = json::ParseValue<uint8_t>(val, len);
     if (kHour <= 59) {
         store_ltc.start_hour = kHour;
     }
@@ -203,34 +208,34 @@ void LtcParams::SetIgnoreStart(const char* val, uint32_t len) {
 void LtcParams::SetStopFrame(const char* val, uint32_t len) {
     if (len != 2) return;
 
-    const auto kFrame = net::ParseIpString(val, len);
+    const auto kFrame = json::ParseValue<uint8_t>(val, len);
     if (kFrame <= 30) {
         store_ltc.stop_frame = kFrame;
     }
 }
 
 void LtcParams::SetStopSecond(const char* val, uint32_t len) {
-    if (len != 2) return;
+    if (len > 2) return;
 
-    const auto kSecond = net::ParseIpString(val, len);
+    const auto kSecond = json::ParseValue<uint8_t>(val, len);
     if (kSecond <= 59) {
         store_ltc.stop_second = kSecond;
     }
 }
 
 void LtcParams::SetStopMinute(const char* val, uint32_t len) {
-    if (len != 2) return;
+    if (len > 2) return;
 
-    const auto kMinute = net::ParseIpString(val, len);
+    const auto kMinute = json::ParseValue<uint8_t>(val, len);
     if (kMinute <= 59) {
         store_ltc.stop_minute = kMinute;
     }
 }
 
 void LtcParams::SetStopHour(const char* val, uint32_t len) {
-    if (len != 2) return;
+    if (len > 2) return;
 
-    const auto kHour = net::ParseIpString(val, len);
+    const auto kHour = json::ParseValue<uint8_t>(val, len);
     if (kHour <= 59) {
         store_ltc.stop_hour = kHour;
     }
@@ -299,7 +304,7 @@ void LtcParams::Store(const char* buffer, uint32_t buffer_size) {
 void LtcParams::Set(struct ltc::TimeCode* start_time_code, struct ltc::TimeCode* stop_time_code) {
     const auto kFlags = store_ltc.flags;
 
-    ltc::g_ltc_disabled_outputs = store_ltc.disabled_outputs;
+    ltc::g_disabled_outputs = store_ltc.disabled_outputs;
     ltc::Destination::SetDisabled(ltc::Destination::Output::NTP_SERVER, !common::IsFlagSet(kFlags, common::store::ltc::Flags::Flag::kNtpEnable));
 #if !defined(CONFIG_LTC_DISABLE_WS28XX)
     ltc::Destination::SetDisabled(ltc::Destination::Output::WS28XX, (store_ltc.rgb_led_type != LtcParams::RgbLedType::kWS28Xx));
