@@ -5,3 +5,4 @@ CPPOPS+=-Wnon-virtual-dtor -Woverloaded-virtual -Wnull-dereference -fno-rtti -fn
 CPPOPS+=-Wuseless-cast -Wold-style-cast
 CPPOPS+=-fno-threadsafe-statics -fno-use-cxa-atexit
 CPPOPS+=-Wshadow -Wshadow=local
+CPPOPS+=-Dcplusplus
