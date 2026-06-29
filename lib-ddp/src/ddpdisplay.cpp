@@ -39,10 +39,7 @@
 #include "firmware/debug/debug_dump.h"
 #include "firmware/debug/debug_debug.h"
 
-using namespace ddp;
-
-namespace json
-{
+namespace json {
 static constexpr char kStart[] = "{\"status\":{\"update\":\"change\",\"state\":\"up\"}}";
 static constexpr char kDiscoverReply[] = "{\"status\":{\"man\":\"%s\",\"mod\":\"Pixel\",\"ver\":\"1.0\",\"mac\":\"%.2x:%.2x:%.2x:%.2x:%.2x:%.2x\"}}";
 static constexpr char kConfigReply[] =
@@ -73,14 +70,12 @@ static constexpr char kConfigReply[] =
 #endif
     "]}}";
 
-namespace size
-{
+namespace size {
 static constexpr auto kStart = sizeof(json::kStart) - 1U;
 } // namespace size
 } // namespace json
 
-DdpDisplay::DdpDisplay()
-{
+DdpDisplay::DdpDisplay() {
     DEBUG_ENTRY();
     assert(s_this == nullptr);
     s_this = this;
@@ -90,8 +85,7 @@ DdpDisplay::DdpDisplay()
     DEBUG_EXIT();
 }
 
-DdpDisplay::~DdpDisplay()
-{
+DdpDisplay::~DdpDisplay() {
     DEBUG_ENTRY();
 
     Stop();
@@ -99,12 +93,10 @@ DdpDisplay::~DdpDisplay()
     DEBUG_EXIT();
 }
 
-void DdpDisplay::CalculateOffsets()
-{
+void DdpDisplay::CalculateOffsets() {
     uint32_t sum = 0;
 
-    for (uint32_t pixel_port_index = 0; pixel_port_index < ddpdisplay::configuration::pixel::kMaxPorts; pixel_port_index++)
-    {
+    for (uint32_t pixel_port_index = 0; pixel_port_index < ddpdisplay::configuration::pixel::kMaxPorts; pixel_port_index++) {
         sum = sum + strip_data_length_;
         s_offset_compare[pixel_port_index] = sum;
     }
@@ -119,8 +111,7 @@ void DdpDisplay::CalculateOffsets()
 #pragma GCC diagnostic ignored "-Wtype-limits" // FIXME ignored "-Wtype-limits"
 #endif
 
-    for (uint32_t dmx_port_index = 0; dmx_port_index < ddpdisplay::configuration::dmx::kMaxPorts; dmx_port_index++)
-    {
+    for (uint32_t dmx_port_index = 0; dmx_port_index < ddpdisplay::configuration::dmx::kMaxPorts; dmx_port_index++) {
         sum = sum + dmxnode::kUniverseSize;
         const auto kIndexOffset = dmx_port_index + ddpdisplay::configuration::pixel::kMaxPorts;
         s_offset_compare[kIndexOffset] = sum;
@@ -131,8 +122,7 @@ void DdpDisplay::CalculateOffsets()
 #endif
 }
 
-void DdpDisplay::Start()
-{
+void DdpDisplay::Start() {
     DEBUG_ENTRY();
     assert(dmxnode_output_type_ != nullptr);
 
@@ -143,23 +133,21 @@ void DdpDisplay::Start()
 
     ddp::Packet packet;
 
-    memset(&packet.header, 0, HEADER_LEN);
-    packet.header.flags1 = flags1::VER1 | flags1::REPLY;
-    packet.header.id = id::STATUS;
+    memset(&packet.header, 0, ddp::HEADER_LEN);
+    packet.header.flags1 = ddp::flags1::VER1 | ddp::flags1::REPLY;
+    packet.header.id = ddp::id::STATUS;
     packet.header.len[1] = json::size::kStart;
     memcpy(packet.data, json::kStart, json::size::kStart);
 
-    network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&packet), HEADER_LEN + json::size::kStart, network::GetPrimaryIp() | ~(network::GetNetmask()),
-                       ddp::kUdpPort);
+    network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&packet), ddp::HEADER_LEN + json::size::kStart, network::GetPrimaryIp() | ~(network::GetNetmask()), ddp::kUdpPort);
 
-    debug::Dump(&packet, HEADER_LEN + json::size::kStart);
+    debug::Dump(&packet, ddp::HEADER_LEN + json::size::kStart);
 
     CalculateOffsets();
     DEBUG_EXIT();
 }
 
-void DdpDisplay::Stop()
-{
+void DdpDisplay::Stop() {
     DEBUG_ENTRY();
 
     network::apps::mdns::ServiceRecordDelete(network::apps::mdns::Services::kDdp);
@@ -170,76 +158,65 @@ void DdpDisplay::Stop()
     DEBUG_EXIT();
 }
 
-void DdpDisplay::HandleQuery()
-{
+void DdpDisplay::HandleQuery() {
     DEBUG_ENTRY();
 
     auto* packet = reinterpret_cast<ddp::Packet*>(receive_buffer_);
 
-    if ((packet->header.id & id::STATUS) == id::STATUS)
-    {
+    if ((packet->header.id & ddp::id::STATUS) == ddp::id::STATUS) {
         DEBUG_PUTS("id::STATUS");
 
-        const auto kLength =
-            snprintf(reinterpret_cast<char*>(packet->data), network::udp::kDataSize - 1, json::kDiscoverReply, board::Website(), MAC2STR(mac_address_));
+        const auto kLength = snprintf(reinterpret_cast<char*>(packet->data), network::udp::kDataSize - 1, json::kDiscoverReply, board::Website(), MAC2STR(mac_address_));
 
-        packet->header.flags1 = flags1::VER1 | flags1::REPLY | flags1::PUSH;
+        packet->header.flags1 = ddp::flags1::VER1 | ddp::flags1::REPLY | ddp::flags1::PUSH;
         packet->header.len[0] = static_cast<uint8_t>(kLength >> 8);
         packet->header.len[1] = static_cast<uint8_t>(kLength);
 
-        network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&packet), (HEADER_LEN + static_cast<uint16_t>(kLength)),
-                           network::GetPrimaryIp() | ~(network::GetNetmask()), ddp::kUdpPort);
+        network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&packet), (ddp::HEADER_LEN + static_cast<uint16_t>(kLength)), network::GetPrimaryIp() | ~(network::GetNetmask()), ddp::kUdpPort);
     }
 
-    if ((packet->header.id & id::STATUS) == id::CONFIG)
-    {
+    if ((packet->header.id & ddp::id::STATUS) == ddp::id::CONFIG) {
         DEBUG_PUTS("id::CONFIG");
 
         const auto kLength =
-            snprintf(reinterpret_cast<char*>(packet->data), network::udp::kDataSize - 1, json::kConfigReply, IP2STR(network::GetPrimaryIp()),
-                     IP2STR(network::GetNetmask()), IP2STR(network::GetGatewayIp()), active_ports_ > 0 ? count_ : 0, active_ports_ > 1 ? count_ : 0,
+            static_cast<uint32_t>(snprintf(reinterpret_cast<char*>(packet->data), network::udp::kDataSize - 1, json::kConfigReply, IP2STR(network::GetPrimaryIp()), IP2STR(network::GetNetmask()), IP2STR(network::GetGatewayIp()),
+                                           active_ports_ > 0 ? count_ : 0, active_ports_ > 1 ? count_ : 0,
 #if CONFIG_DMXNODE_PIXEL_MAX_PORTS > 2
-                     active_ports_ > 2 ? count_ : 0, active_ports_ > 3 ? count_ : 0, active_ports_ > 4 ? count_ : 0, active_ports_ > 5 ? count_ : 0,
-                     active_ports_ > 6 ? count_ : 0, active_ports_ > 7 ? count_ : 0,
+                                           active_ports_ > 2 ? count_ : 0, active_ports_ > 3 ? count_ : 0, active_ports_ > 4 ? count_ : 0, active_ports_ > 5 ? count_ : 0, active_ports_ > 6 ? count_ : 0, active_ports_ > 7 ? count_ : 0,
 #endif
 #if CONFIG_DMXNODE_PIXEL_MAX_PORTS == 16
-                     active_ports_ > 8 ? count_ : 0, active_ports_ > 9 ? count_ : 0, active_ports_ > 10 ? count_ : 0, active_ports_ > 11 ? count_ : 0,
-                     active_ports_ > 12 ? count_ : 0, active_ports_ > 13 ? count_ : 0, active_ports_ > 14 ? count_ : 0, active_ports_ > 15 ? count_ : 0,
+                                           active_ports_ > 8 ? count_ : 0, active_ports_ > 9 ? count_ : 0, active_ports_ > 10 ? count_ : 0, active_ports_ > 11 ? count_ : 0, active_ports_ > 12 ? count_ : 0, active_ports_ > 13 ? count_ : 0,
+                                           active_ports_ > 14 ? count_ : 0, active_ports_ > 15 ? count_ : 0,
 #endif
-                     ddpdisplay::configuration::dmx::kMaxPorts == 0 ? 0 : dmxnode::kUniverseSize,
-                     ddpdisplay::configuration::dmx::kMaxPorts == 0 ? 0 : dmxnode::kUniverseSize);
+                                           ddpdisplay::configuration::dmx::kMaxPorts == 0 ? 0 : dmxnode::kUniverseSize, ddpdisplay::configuration::dmx::kMaxPorts == 0 ? 0 : dmxnode::kUniverseSize));
 
-        packet->header.flags1 = flags1::VER1 | flags1::REPLY | flags1::PUSH;
+        packet->header.flags1 = ddp::flags1::VER1 | ddp::flags1::REPLY | ddp::flags1::PUSH;
         packet->header.len[0] = static_cast<uint8_t>(kLength >> 8);
         packet->header.len[1] = static_cast<uint8_t>(kLength);
 
-        network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&packet), HEADER_LEN + kLength, from_ip_, ddp::kUdpPort);
+        network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&packet), ddp::HEADER_LEN + kLength, from_ip_, ddp::kUdpPort);
 
-        debug::Dump(&packet, HEADER_LEN + kLength);
+        debug::Dump(&packet, ddp::HEADER_LEN + kLength);
     }
 
     DEBUG_EXIT();
 }
 
-void DdpDisplay::HandleData()
-{
+void DdpDisplay::HandleData() {
     const auto* const kPacket = reinterpret_cast<ddp::Packet*>(receive_buffer_);
-    auto offset = static_cast<uint32_t>((kPacket->header.offset[0] << 24) | (kPacket->header.offset[1] << 16) | (kPacket->header.offset[2] << 8) |
-                                        kPacket->header.offset[3]);
+    auto offset = static_cast<uint32_t>((kPacket->header.offset[0] << 24) | (kPacket->header.offset[1] << 16) | (kPacket->header.offset[2] << 8) | kPacket->header.offset[3]);
     auto length = ((static_cast<uint32_t>(kPacket->header.len[0]) << 8) | kPacket->header.len[1]);
     const auto* const kReceivedData = kPacket->data;
 
     uint32_t data_source_index = 0;
     uint32_t receiver_buffer_index = 0;
 
-    for (uint32_t port_index = 0; (port_index < active_ports_) && (length != 0); port_index++)
-    {
+    for (uint32_t port_index = 0; (port_index < active_ports_) && (length != 0); port_index++) {
         data_source_index = port_index * 4;
 
         const auto kOutportIndexEnd = data_source_index + 4;
 
-        while ((offset < s_offset_compare[port_index]) && (data_source_index < kOutportIndexEnd))
-        {
+        while ((offset < s_offset_compare[port_index]) && (data_source_index < kOutportIndexEnd)) {
             const auto kOutLength = std::min(std::min(length, dmxnode_output_type_data_max_length_), strip_data_length_);
 
             dmxnode::Data::SetSourceA(data_source_index, &kReceivedData[receiver_buffer_index], kOutLength);
@@ -260,10 +237,8 @@ void DdpDisplay::HandleData()
 
     DEBUG_PRINTF("nLightSetPortIndex=%u", data_source_index);
 
-    for (uint32_t port_index = ddpdisplay::configuration::pixel::kMaxPorts; (port_index < ddpdisplay::configuration::kMaxPorts) && (length != 0); port_index++)
-    {
-        if (offset < s_offset_compare[port_index])
-        {
+    for (uint32_t port_index = ddpdisplay::configuration::pixel::kMaxPorts; (port_index < ddpdisplay::configuration::kMaxPorts) && (length != 0); port_index++) {
+        if (offset < s_offset_compare[port_index]) {
             const auto kLength = std::min(length, dmxnode::kUniverseSize);
 
             //			DEBUG_PRINTF("==> nPortIndex=%u, nOffset=%u, nLength=%u, nLightSetLength=%u, nLightSetPortIndex=%u", nPortIndex, nOffset, nLength,
@@ -282,52 +257,43 @@ void DdpDisplay::HandleData()
         }
     }
 
-    if ((kPacket->header.flags1 & flags1::PUSH) == flags1::PUSH)
-    {
-        for (uint32_t data_output_port_index = 0; data_output_port_index < ddpdisplay::lightset::kMaxPorts; data_output_port_index++)
-        {
+    if ((kPacket->header.flags1 & ddp::flags1::PUSH) == ddp::flags1::PUSH) {
+        for (uint32_t data_output_port_index = 0; data_output_port_index < ddpdisplay::lightset::kMaxPorts; data_output_port_index++) {
             dmxnode::DataOutput(dmxnode_output_type_, data_output_port_index);
             dmxnode::Data::ClearLength(data_output_port_index);
         }
     }
 }
 
-void DdpDisplay::Input(const uint8_t* buffer, uint32_t size, [[maybe_unused]] uint32_t from_ip, [[maybe_unused]] uint16_t from_port)
-{
-    if (__builtin_expect((size < HEADER_LEN), 0))
-    {
+void DdpDisplay::Input(const uint8_t* buffer, uint32_t size, [[maybe_unused]] uint32_t from_ip, [[maybe_unused]] uint16_t from_port) {
+    if (__builtin_expect((size < ddp::HEADER_LEN), 0)) {
         return;
     }
 
-    if (from_ip_ == network::GetPrimaryIp())
-    {
+    if (from_ip_ == network::GetPrimaryIp()) {
         DEBUG_PUTS("Own message");
         return;
     }
 
     const auto* packet = reinterpret_cast<const ddp::Packet*>(buffer);
 
-    if ((packet->header.flags1 & flags1::VER_MASK) != flags1::VER1)
-    {
+    if ((packet->header.flags1 & ddp::flags1::VER_MASK) != ddp::flags1::VER1) {
         DEBUG_PUTS("Invalid version");
         return;
     }
 
-    if (packet->header.id == id::DISPLAY)
-    {
+    if (packet->header.id == ddp::id::DISPLAY) {
         HandleData();
         return;
     }
 
-    if ((packet->header.flags1 & flags1::QUERY) == flags1::QUERY)
-    {
+    if ((packet->header.flags1 & ddp::flags1::QUERY) == ddp::flags1::QUERY) {
         HandleQuery();
         return;
     }
 }
 
-void DdpDisplay::Print()
-{
+void DdpDisplay::Print() {
     puts("DDP Display");
     printf(" Count             : %u\n", count_);
     printf(" Channels per pixel: %u\n", GetChannelsPerPixel());
