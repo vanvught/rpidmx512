@@ -33,8 +33,7 @@
 #include "network_tcp.h"
 #include "firmware/debug/debug_debug.h"
 
-namespace httpd
-{
+namespace httpd {
 static constexpr uint32_t kBufsize =
 #if !defined(HTTPD_CONTENT_SIZE)
     network::tcp::kTcpDataMss;
@@ -43,18 +42,15 @@ static constexpr uint32_t kBufsize =
 #endif
 } // namespace httpd
 
-class HttpDeamonHandleRequest
-{
+class HttpDeamonHandleRequest {
    public:
-    explicit HttpDeamonHandleRequest(network::tcp::ConnHandle connection_handle) : connection_handle_(connection_handle)
-    {
+    explicit HttpDeamonHandleRequest(network::tcp::ConnHandle connection_handle) : connection_handle_(connection_handle) {
         DEBUG_ENTRY();
         DEBUG_PRINTF("[%u] connection_handle=%u", httpd::kBufsize, connection_handle);
         DEBUG_EXIT();
     }
 
-    HttpDeamonHandleRequest() : connection_handle_(network::tcp::kInvalidConnHandle)
-    {
+    HttpDeamonHandleRequest() : connection_handle_(network::tcp::kInvalidConnHandle) {
         DEBUG_ENTRY();
         DEBUG_EXIT();
     }
@@ -66,8 +62,6 @@ class HttpDeamonHandleRequest
     http::Status ParseMethod(char* line);
     http::Status ParseHeaderField(char* line);
     http::Status HandleGet();
-    http::Status HandleGetTxt();
-    http::Status HandleGetJson();
     http::Status HandlePost();
     http::Status HandleDelete();
     http::Status HandlePostJSON();
@@ -91,7 +85,7 @@ class HttpDeamonHandleRequest
     http::Status status_{http::Status::kUnknownError};
     http::RequestMethod request_method_{http::RequestMethod::kUnknown};
     http::ContentTypes request_content_type_{http::ContentTypes::kNotDefined};
-	bool gzip_{false};
+    bool gzip_{false};
 
     char dynamic_content_[httpd::kBufsize];
 };
