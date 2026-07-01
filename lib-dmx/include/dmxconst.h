@@ -29,18 +29,29 @@
 #include <cstdint>
 
 namespace dmx {
-enum class Direction { kInput, kOutput, kDisable };
+enum class Direction {
+    kInput,  ///<
+    kOutput, ///<
+    kDisable ///<
+};
 
 enum class OutputStyle {
     kDelta,   ///< DMX frame is triggered
     kConstant ///< DMX output is continuous
 };
 
-enum class SendStyle { kDirect, kSync };
+enum class SendStyle {
+    kDirect, ///<
+    kSync    ///<
+};
 
 inline constexpr uint32_t kStartCode = 0; ///< The start code for DMX512 data. This is often referred to as NSC for "Null Start Code".
 inline constexpr uint32_t kChannelsMin = 2;
 inline constexpr uint32_t kChannelsMax = 512;
+inline constexpr uint32_t kSlotsMax = 1 + kChannelsMax; ///< Start code + channels
+inline constexpr uint32_t kSlotTime = 44; ///< 40us + 4us space 
+inline constexpr uint32_t kBaudRate = 250000;
+
 
 namespace transmit {
 inline constexpr uint32_t kBreakTimeMin = 92;                                ///< 92 us
