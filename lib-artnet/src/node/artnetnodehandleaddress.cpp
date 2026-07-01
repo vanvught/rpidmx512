@@ -39,8 +39,7 @@
 #include "board_statusled.h"
 #include "firmware/debug/debug_debug.h"
 
-void ArtNetNode::SetSwitch(uint32_t port_index, uint8_t sw)
-{
+void ArtNetNode::SetSwitch(uint32_t port_index, uint8_t sw) {
     DEBUG_ENTRY();
     assert(port_index < dmxnode::kMaxPorts);
     assert(state_.status == artnet::Status::kOn);
@@ -62,8 +61,7 @@ void ArtNetNode::SetSwitch(uint32_t port_index, uint8_t sw)
     DEBUG_EXIT();
 }
 
-void ArtNetNode::HandleAddress()
-{
+void ArtNetNode::HandleAddress() {
     const auto* const kArtAddress = reinterpret_cast<artnet::ArtAddress*>(receive_buffer_);
     state_.report_code = artnet::ReportCode::kRcpowerok;
 
@@ -71,91 +69,66 @@ void ArtNetNode::HandleAddress()
 
     DEBUG_PRINTF("kPortIndex=%u", kPortIndex);
 
-    if (kArtAddress->port_name[0] != 0)
-    {
+    if (kArtAddress->port_name[0] != 0) {
         SetShortName(kPortIndex, reinterpret_cast<const char*>(kArtAddress->port_name));
         state_.report_code = artnet::ReportCode::kRcshnameok;
     }
 
-    if (kArtAddress->long_name[0] != 0)
-    {
+    if (kArtAddress->long_name[0] != 0) {
         SetLongName(reinterpret_cast<const char*>(kArtAddress->long_name));
         state_.report_code = artnet::ReportCode::kRclonameok;
     }
 
-    if (kArtAddress->sub_switch == artnet::Program::kDefaults)
-    {
+    if (kArtAddress->sub_switch == artnet::Program::kDefaults) {
         node_.port[kPortIndex].sub_switch = artnet::defaults::kSubnetSwitch;
-    }
-    else if (kArtAddress->sub_switch & artnet::Program::kChangeMask)
-    {
+    } else if (kArtAddress->sub_switch & artnet::Program::kChangeMask) {
         node_.port[kPortIndex].sub_switch = static_cast<uint8_t>(kArtAddress->sub_switch & ~artnet::Program::kChangeMask);
     }
 
-    if (kArtAddress->net_switch == artnet::Program::kDefaults)
-    {
+    if (kArtAddress->net_switch == artnet::Program::kDefaults) {
         node_.port[kPortIndex].net_switch = artnet::defaults::kNetSwitch;
-    }
-    else if (kArtAddress->net_switch & artnet::Program::kChangeMask)
-    {
+    } else if (kArtAddress->net_switch & artnet::Program::kChangeMask) {
         node_.port[kPortIndex].net_switch = static_cast<uint8_t>(kArtAddress->net_switch & ~artnet::Program::kChangeMask);
     }
 
-    if (kArtAddress->sw_out[0] == artnet::Program::kNoChange)
-    {
+    if (kArtAddress->sw_out[0] == artnet::Program::kNoChange) {
         SetSwitch(kPortIndex, node_.port[kPortIndex].sw);
-    }
-    else
-    {
-        if (node_.port[kPortIndex].direction == dmxnode::Direction::kOutput)
-        {
-            if (kArtAddress->sw_out[0] == artnet::Program::kDefaults)
-            {
+    } else {
+        if (node_.port[kPortIndex].direction == dmxnode::Direction::kOutput) {
+            if (kArtAddress->sw_out[0] == artnet::Program::kDefaults) {
                 SetSwitch(kPortIndex, artnet::defaults::kSwitch);
-            }
-            else if (kArtAddress->sw_out[0] & artnet::Program::kChangeMask)
-            {
+            } else if (kArtAddress->sw_out[0] & artnet::Program::kChangeMask) {
                 SetSwitch(kPortIndex, static_cast<uint8_t>(kArtAddress->sw_out[0] & ~artnet::Program::kChangeMask));
             }
         }
     }
 
-    if (kArtAddress->sw_in[0] == artnet::Program::kNoChange)
-    {
+    if (kArtAddress->sw_in[0] == artnet::Program::kNoChange) {
         SetSwitch(kPortIndex, node_.port[kPortIndex].sw);
-    }
-    else
-    {
-        if (node_.port[kPortIndex].direction == dmxnode::Direction::kInput)
-        {
-            if (kArtAddress->sw_in[0] == artnet::Program::kDefaults)
-            {
+    } else {
+        if (node_.port[kPortIndex].direction == dmxnode::Direction::kInput) {
+            if (kArtAddress->sw_in[0] == artnet::Program::kDefaults) {
                 SetSwitch(kPortIndex, artnet::defaults::kSwitch);
-            }
-            else if (kArtAddress->sw_in[0] & artnet::Program::kChangeMask)
-            {
+            } else if (kArtAddress->sw_in[0] & artnet::Program::kChangeMask) {
                 SetSwitch(kPortIndex, static_cast<uint8_t>(kArtAddress->sw_in[0] & ~artnet::Program::kChangeMask));
             }
         }
     }
 
 #if (ARTNET_VERSION >= 4)
-    if ((kArtAddress->acn_priority != 255) && (kArtAddress->acn_priority <= 200))
-    {
+    if ((kArtAddress->acn_priority != 255) && (kArtAddress->acn_priority <= 200)) {
         SetPriority4(kPortIndex, kArtAddress->acn_priority);
     }
 
 #endif
 
-    switch (kArtAddress->command)
-    {
+    switch (kArtAddress->command) {
         case artnet::PortCommand::kNone:
             DEBUG_PUTS("No action.");
             break;
         case artnet::PortCommand::kCancel:
             state_.is_merge_mode = false;
-            for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++)
-            {
+            for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++) {
                 output_port_[port_index].source_a.ip = 0;
                 output_port_[port_index].source_b.ip = 0;
                 output_port_[port_index].good_output &= static_cast<uint8_t>(~artnet::GoodOutput::kOutputIsMerging);
@@ -164,8 +137,7 @@ void ArtNetNode::HandleAddress()
 
         case artnet::PortCommand::kLedNormal:
             board::statusled::SetModeWithLock(board::statusled::Mode::kNormal, false);
-            art_poll_reply_.status1 =
-                static_cast<uint8_t>((art_poll_reply_.status1 & ~artnet::Status1::kIndicatorMask) | artnet::Status1::kIndicatorNormalMode);
+            art_poll_reply_.status1 = static_cast<uint8_t>((art_poll_reply_.status1 & ~artnet::Status1::kIndicatorMask) | artnet::Status1::kIndicatorNormalMode);
 #if (ARTNET_VERSION >= 4)
             E131Bridge::SetEnableDataIndicator(true);
 #endif
@@ -181,8 +153,7 @@ void ArtNetNode::HandleAddress()
 
         case artnet::PortCommand::kLedLocate:
             board::statusled::SetModeWithLock(board::statusled::Mode::kFast, true);
-            art_poll_reply_.status1 =
-                static_cast<uint8_t>((art_poll_reply_.status1 & ~artnet::Status1::kIndicatorMask) | artnet::Status1::kIndicatorLocateMode);
+            art_poll_reply_.status1 = static_cast<uint8_t>((art_poll_reply_.status1 & ~artnet::Status1::kIndicatorMask) | artnet::Status1::kIndicatorLocateMode);
 #if (ARTNET_VERSION >= 4)
             E131Bridge::SetEnableDataIndicator(false);
 #endif
@@ -190,10 +161,8 @@ void ArtNetNode::HandleAddress()
 
 #if defined(ARTNET_HAVE_DMXIN)
         case artnet::PortCommand::kReset:
-            for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++)
-            {
-                const auto kMask =
-                    artnet::GoodInput::kIncludesTestPackets | artnet::GoodInput::kIncludesSip | artnet::GoodInput::kIncludesText | artnet::GoodInput::kErrors;
+            for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++) {
+                const auto kMask = artnet::GoodInput::kIncludesTestPackets | artnet::GoodInput::kIncludesSip | artnet::GoodInput::kIncludesText | artnet::GoodInput::kErrors;
                 input_port_[port_index].good_input &= static_cast<uint8_t>(~kMask);
             }
             break;
@@ -269,14 +238,12 @@ void ArtNetNode::HandleAddress()
         case artnet::PortCommand::kClr2:
         case artnet::PortCommand::kClr3:
 #endif
-            if (node_.port[kPortIndex].protocol == artnet::PortProtocol::kArtnet)
-            {
+            if (node_.port[kPortIndex].protocol == artnet::PortProtocol::kArtnet) {
                 dmxnode::Data::Clear(kPortIndex);
                 dmxnode::DataOutput(dmxnode_output_type_, kPortIndex);
             }
 #if (ARTNET_VERSION >= 4)
-            if (node_.port[kPortIndex].protocol == artnet::PortProtocol::kSacn)
-            {
+            if (node_.port[kPortIndex].protocol == artnet::PortProtocol::kSacn) {
                 E131Bridge::Clear(kPortIndex);
             }
 #endif

@@ -46,16 +46,16 @@
 #include "firmware/debug/debug_debug.h"
 
 template <uint8_t N> 
-static inline void Uitoa(uint32_t v, uint8_t* p) {
+static inline void Uitoa(uint32_t value, uint8_t* out) {
     static_assert(N >= 1);
-    auto* o = p + (N - 1);
+    auto* o = out + (N - 1);
     do {
-        *o-- = static_cast<uint8_t>('0' + (v % 10U));
-        v /= 10U;
-    } while ((o >= p) && (v > 0));
+        *o-- = static_cast<uint8_t>('0' + (value % 10U));
+        value /= 10U;
+    } while ((o >= out) && (value > 0));
 
     // If there are remaining digits, fill with zeros
-    while (o >= p) {
+    while (o >= out) {
         *o-- = '0';
     }
 }
@@ -132,7 +132,7 @@ static void CreateNodeReport(uint8_t* node_report, artnet::ReportCode code, uint
 union uip {
     uint32_t u32;
     uint8_t u8[4];
-} static ip;
+} static ip_address;
 
 void ArtNetNode::ProcessPollReply(uint32_t port_index) {
     // preventing: src/node/artnetnodehandlepoll.cpp:157:36: error: array subscript 2 is above array bounds of 'artnetnode::OutputPort [2]'
@@ -199,10 +199,10 @@ void ArtNetNode::SendPollReply(uint32_t port_index, uint32_t destination_ip, art
         return;
     }
 
-    ip.u32 = network::GetPrimaryIp();
-    memcpy(art_poll_reply_.ip_address, ip.u8, sizeof(art_poll_reply_.ip_address));
+    ip_address.u32 = network::GetPrimaryIp();
+    memcpy(art_poll_reply_.ip_address, ip_address.u8, sizeof(art_poll_reply_.ip_address));
 #if (ARTNET_VERSION >= 4)
-    memcpy(art_poll_reply_.bind_ip, ip.u8, sizeof(art_poll_reply_.bind_ip));
+    memcpy(art_poll_reply_.bind_ip, ip_address.u8, sizeof(art_poll_reply_.bind_ip));
 #endif
 
     if (queue != nullptr) {

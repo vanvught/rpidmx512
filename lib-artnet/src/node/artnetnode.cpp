@@ -746,7 +746,9 @@ static artnet::OpCodes GetOpCode(uint32_t bytes_received, const uint8_t* buffer)
 void ArtNetNode::InputUdp(const uint8_t* buffer, uint32_t size, uint32_t from_ip, [[maybe_unused]] uint16_t from_port) {
     const auto kOpCode = GetOpCode(size, buffer);
 
-    if (__builtin_expect((kOpCode == artnet::OpCodes::kOpNotDefined), 0)) return;
+    if (__builtin_expect((kOpCode == artnet::OpCodes::kOpNotDefined), 0)) {
+        return;
+    }
 
     receive_buffer_ = const_cast<uint8_t*>(buffer);
     ip_address_from_ = from_ip;
@@ -810,7 +812,7 @@ void ArtNetNode::InputUdp(const uint8_t* buffer, uint32_t size, uint32_t from_ip
         case artnet::OpCodes::kOpTimesync:
             HandleTimeSync();
             break;
-#endif			
+#endif
 #if defined(RDM_CONTROLLER) || defined(RDM_RESPONDER)
         case artnet::OpCodes::kOpTodrequest:
             if (state_.is_rdm_enabled) {
