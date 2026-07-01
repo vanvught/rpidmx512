@@ -2,7 +2,7 @@
  * @file new.cpp
  *
  */
-/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2017-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,6 +49,6 @@ void *operator new[](std::size_t size) {
  * Placement new does not allocate memory.
  */
 
-void *operator new([[maybe_unused]] std::size_t, void *ptr) noexcept {
+void *operator new([[maybe_unused]] std::size_t size, void *ptr) noexcept {
     return ptr;
 }

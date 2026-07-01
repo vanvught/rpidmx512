@@ -2,7 +2,7 @@
  * @file delete.cpp
  *
  */
-/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@info@gd32-dmx.org
+/* Copyright (C) 2017-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,12 +31,12 @@
  * These are the global operator delete overloads for single objects (delete) and arrays (delete[]).
  */
 
-void operator delete(void *p) {
-	free(p);
+void operator delete(void *pointer) noexcept {
+	free(pointer);
 }
 
-void operator delete[](void *p) {
-	free(p);
+void operator delete[](void *pointer) noexcept {
+	free(pointer);
 }
 
 /*
@@ -44,12 +44,12 @@ void operator delete[](void *p) {
  * These overloads include the size of the object being deleted as an additional parameter (std::size_t size).
  */
 
-void operator delete(void *p, [[maybe_unused]] std::size_t size) noexcept {
-	free(p);
+void operator delete(void *pointer, [[maybe_unused]] std::size_t size) noexcept {
+	free(pointer);
 }
 
-void operator delete[](void *p, [[maybe_unused]]std::size_t size) noexcept {
-	free(p);
+void operator delete[](void *pointer, [[maybe_unused]]std::size_t size) noexcept {
+	free(pointer);
 }
 
 /*
