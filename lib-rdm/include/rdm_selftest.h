@@ -28,11 +28,10 @@
 
 #include <cstdint>
 
-namespace rdm::selftest
-{
+namespace rdm::selftest {
 uint8_t Get();
 bool Set(uint8_t self_test);
 const char* GetDescription(uint8_t self_test, uint32_t& length);
 } // namespace rdm::selftest
 
-#endif  // RDM_SELFTEST_H_
+#endif // RDM_SELFTEST_H_

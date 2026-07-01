@@ -28,8 +28,7 @@
 
 #include <cstdint>
 
-namespace rdm::message
-{
+namespace rdm::message {
 void Print(const uint8_t* rdm_data);
 void PrintNoStartcode(const uint8_t* rdm_data_no_sc);
 } // namespace rdm::message

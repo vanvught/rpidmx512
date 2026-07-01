@@ -71,7 +71,7 @@ class Discovery : rdm::discovery::StateMachine {
         enabled_ &= static_cast<uint8_t>(~Bit(port_index));
     }
 
-    void EnableBackground(uint32_t port_index) {
+    void EnableBackground(uint32_t port_index) const {
         assert(port_index < kPorts);
         if ((Bit(port_index) & enabled_) == Bit(port_index)) {
             s_bg_discovery |= Bit(port_index);
@@ -159,7 +159,7 @@ class Discovery : rdm::discovery::StateMachine {
     }
 
     void SetBackgroundIntervalMinutes(uint8_t background_interval_minutes) {
-        if ((background_interval_minutes > 0) && (background_interval_minutes <= 240))  {
+        if ((background_interval_minutes > 0) && (background_interval_minutes <= 240)) {
             background_interval_minutes_ = background_interval_minutes;
         }
     }
@@ -175,7 +175,9 @@ class Discovery : rdm::discovery::StateMachine {
             return;
         }
 
-        if (rdm::discovery::StateMachine::IsRunning()) return;
+        if (rdm::discovery::StateMachine::IsRunning()) {
+            return;
+        }
 
         bool is_incremental;
 
@@ -186,7 +188,9 @@ class Discovery : rdm::discovery::StateMachine {
             rdm::discovery::Finished(port_index_, is_incremental ? rdm::discovery::Type::kIncremental : rdm::discovery::Type::kFull);
 
             port_index_++;
-            if (port_index_ == kPorts) port_index_ = 0;
+            if (port_index_ == kPorts) {
+                port_index_ = 0;
+            }
 
             if (waiting_ == 0) {
                 running_ = false;
@@ -194,7 +198,7 @@ class Discovery : rdm::discovery::StateMachine {
             }
         }
 
-        if (waiting_) {
+        if (waiting_ != 0) {
             if ((Bit(port_index_) & waiting_) == Bit(port_index_)) {
                 if ((Bit(port_index_) & type_) == Bit(port_index_)) {
                     rdm::discovery::Starting(port_index_, rdm::discovery::Type::kFull);

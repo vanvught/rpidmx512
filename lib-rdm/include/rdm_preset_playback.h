@@ -28,8 +28,7 @@
 
 #include <cstdint>
 
-namespace rdm::preset_playback
-{
+namespace rdm::preset_playback {
 inline constexpr uint16_t kOff = 0x0000;
 inline constexpr uint16_t kAll = 0xFFFF;
 
