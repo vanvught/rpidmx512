@@ -29,7 +29,7 @@
 #include <cstdint>
 #include <cassert>
 
-#include "spi/config.h"
+#include "spi/config/config_lcd.h"
 #include "spi/st77xx.h"
 #include "timing.h"
 #include "firmware/debug/debug_debug.h"
@@ -143,29 +143,29 @@ class ST7789 : public ST77XX {
                 WriteDataByte(st77xx::data::kMadctlMx | st77xx::data::kMadctlMy | st77xx::data::kMadctlRgb);
                 shift_x_ = st7789::kRotation0ShiftX;
                 shift_y_ = st7789::kRotation0ShiftY;
-                width_ = config::kWidth;
-                height_ = config::kHeight;
+                width_ = config::lcd::kWidth;
+                height_ = config::lcd::kHeight;
                 break;
             case 1:
                 WriteDataByte(st77xx::data::kMadctlMy | st77xx::data::kMadctlMv | st77xx::data::kMadctlRgb);
                 shift_x_ = st7789::kRotation1ShiftX;
                 shift_y_ = st7789::kRotation1ShiftY;
-                width_ = config::kHeight;
-                height_ = config::kWidth;
+                width_ = config::lcd::kHeight;
+                height_ = config::lcd::kWidth;
                 break;
             case 2:
                 WriteDataByte(st77xx::data::kMadctlRgb);
                 shift_x_ = st7789::kRotation2ShiftX;
                 shift_y_ = st7789::kRotation2ShiftY;
-                width_ = config::kWidth;
-                height_ = config::kHeight;
+                width_ = config::lcd::kWidth;
+                height_ = config::lcd::kHeight;
                 break;
             case 3:
                 WriteDataByte(st77xx::data::kMadctlMx | st77xx::data::kMadctlMv | st77xx::data::kMadctlRgb);
                 shift_x_ = st7789::kRotation3ShiftX;
                 shift_y_ = st7789::kRotation3ShiftY;
-                width_ = config::kHeight;
-                height_ = config::kWidth;
+                width_ = config::lcd::kHeight;
+                height_ = config::lcd::kWidth;
                 break;
             default:
                 assert(0);

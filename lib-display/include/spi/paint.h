@@ -32,7 +32,7 @@
 
 #include "spi/lcd_font.h"
 #include "spi/spilcd.h"
-#include "spi/config.h"
+#include "spi/config/config_lcd.h"
 #include "firmware/debug/debug_debug.h"
 
 class Paint : public SpiLcd {
@@ -57,7 +57,7 @@ class Paint : public SpiLcd {
         ClearCS();
         SetDC();
 
-        for (uint32_t i = 0; i < config::kHeight / kFrameBufferRows; i++) {
+        for (uint32_t i = 0; i < config::lcd::kHeight / kFrameBufferRows; i++) {
             WriteDataContinue(reinterpret_cast<uint8_t*>(s_frame_buffer), sizeof(s_frame_buffer));
         }
 
@@ -225,8 +225,8 @@ class Paint : public SpiLcd {
     }
 
    protected:
-    uint32_t width_{config::kWidth};
-    uint32_t height_{config::kHeight};
+    uint32_t width_{config::lcd::kWidth};
+    uint32_t height_{config::lcd::kHeight};
     uint32_t rotate_{0};
 
 #if !defined(SPI_LCD_kFrameBufferRows)
@@ -235,7 +235,7 @@ class Paint : public SpiLcd {
     static constexpr uint32_t kFrameBufferRows = SPI_LCD_kFrameBufferRows;
 #endif
 
-    static inline uint16_t s_frame_buffer[config::kWidth * kFrameBufferRows];
+    static inline uint16_t s_frame_buffer[config::lcd::kWidth * kFrameBufferRows];
 };
 
 #endif // SPI_PAINT_H_

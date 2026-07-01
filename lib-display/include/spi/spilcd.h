@@ -27,7 +27,7 @@
 #define SPI_SPILCD_H_
 
 #include "timing.h"
-#include "spi/config.h"
+#include "spi/config/config_lcd.h"
 #include "spi.h"
 #include "gpio.h"
 #include "firmware/debug/debug_debug.h"

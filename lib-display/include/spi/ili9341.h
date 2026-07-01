@@ -29,7 +29,7 @@
 #include <cstdint>
 #include <cassert>
 
-#include "spi/config.h"
+#include "spi/config/config_lcd.h"
 
 namespace ili9341 {
 namespace cmd {
@@ -178,23 +178,23 @@ class ILI9341 : public Paint {
         switch (nRotation) {
             case 0:
                 WriteDataByte(ili9341::data::kMadctlBgr);
-                width_ = config::kWidth;
-                height_ = config::kHeight;
+                width_ = config::lcd::kWidth;
+                height_ = config::lcd::kHeight;
                 break;
             case 1:
                 WriteDataByte(ili9341::data::kMadctlMx | ili9341::data::kMadctlMv | ili9341::data::kMadctlBgr);
-                width_ = config::kHeight;
-                height_ = config::kWidth;
+                width_ = config::lcd::kHeight;
+                height_ = config::lcd::kWidth;
                 break;
             case 2:
                 WriteDataByte(ili9341::data::kMadctlMx | ili9341::data::kMadctlMy | ili9341::data::kMadctlBgr);
-                width_ = config::kWidth;
-                height_ = config::kHeight;
+                width_ = config::lcd::kWidth;
+                height_ = config::lcd::kHeight;
                 break;
             case 3:
                 WriteDataByte(ili9341::data::kMadctlMy | ili9341::data::kMadctlMv | ili9341::data::kMadctlBgr);
-                width_ = config::kHeight;
-                height_ = config::kWidth;
+                width_ = config::lcd::kHeight;
+                height_ = config::lcd::kWidth;
                 break;
             default:
                 assert(0);
