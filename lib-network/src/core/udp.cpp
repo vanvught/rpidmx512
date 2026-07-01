@@ -197,7 +197,6 @@ template <network::arp::EthSend S> static void SendImplementation(int index, con
         emac::eth::SendTimestamp(size);
     }
 #endif
-    return;
 }
 
 int32_t Begin(uint16_t localport, UdpCallbackFunctionPtr callback) {
@@ -264,19 +263,19 @@ uint32_t Recv(int32_t index, const uint8_t** data, uint32_t* from_ip, uint16_t* 
         return 0;
     }
 
-    auto& d = s_ports[index].data;
+    auto& port_data = s_ports[index].data;
 
-    if (__builtin_expect((d.size == 0), 1)) {
+    if (__builtin_expect((port_data.size == 0), 1)) {
         return 0;
     }
 
-    *data = d.data;
-    *from_ip = d.from_ip;
-    *from_port = d.from_port;
+    *data = port_data.data;
+    *from_ip = port_data.from_ip;
+    *from_port = port_data.from_port;
 
-    const auto kSize = d.size;
+    const auto kSize = port_data.size;
 
-    d.size = 0;
+    port_data.size = 0;
 
     return kSize;
 }

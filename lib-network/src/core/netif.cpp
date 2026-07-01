@@ -80,7 +80,7 @@ static void NetifDoIpAddrChanged([[maybe_unused]] network::ip4_addr_t old_addr, 
 static void NetifIssueReports() {
     const auto& netif = netif::global::netif_default;
 
-    if (!(netif.flags & Netif::kNetifFlagLinkUp)) {
+    if (!((netif.flags & Netif::kNetifFlagLinkUp) == Netif::kNetifFlagLinkUp)) {
         return;
     }
 
@@ -134,14 +134,14 @@ static bool NetifDoSetNetmask(network::ip4_addr_t netmask, network::ip4_addr_t& 
     return false; // netmask unchanged
 }
 
-static bool NetifDoSetGw(network::ip4_addr_t gw, network::ip4_addr_t& old_gw) {
+static bool NetifDoSetGw(network::ip4_addr_t gateway, network::ip4_addr_t& old_gw) {
     DEBUG_ENTRY();
 
     auto& netif = netif::global::netif_default;
 
-    if (gw.addr != netif.gw.addr) {
+    if (gateway.addr != netif.gw.addr) {
         old_gw.addr = netif.gw.addr;
-        netif.gw.addr = gw.addr;
+        netif.gw.addr = gateway.addr;
 
         DEBUG_EXIT();
         return true; // gateway changed
@@ -171,17 +171,17 @@ void SetNetmask(network::ip4_addr_t netmask) {
     }
 }
 
-void SetGw(network::ip4_addr_t gw) {
+void SetGw(network::ip4_addr_t gateway) {
     network::ip4_addr_t old_gw;
 
-    if (NetifDoSetGw(gw, old_gw)) {
+    if (NetifDoSetGw(gateway, old_gw)) {
         netif_ext_callback_args_t args;
         args.ipv4_changed.old_gw = old_gw;
         callback_fn(NetifReason::kIpv4GatewayChanged, &args);
     }
 }
 
-void SetAddr(network::ip4_addr_t ipaddr, network::ip4_addr_t netmask, network::ip4_addr_t gw) {
+void SetAddr(network::ip4_addr_t ipaddr, network::ip4_addr_t netmask, network::ip4_addr_t gateway) {
     DEBUG_ENTRY();
     DEBUG_PRINTF(IPSTR " " IPSTR " " IPSTR, IP2STR(ipaddr.addr), IP2STR(netmask.addr), IP2STR(gw.addr));
 
@@ -208,7 +208,7 @@ void SetAddr(network::ip4_addr_t ipaddr, network::ip4_addr_t netmask, network::i
         cb_args.ipv4_changed.old_netmask.addr = old_nm.addr;
     }
 
-    if (NetifDoSetGw(gw, old_gw)) {
+    if (NetifDoSetGw(gateway, old_gw)) {
         change_reason |= NetifReason::kIpv4GatewayChanged;
         cb_args.ipv4_changed.old_gw = old_gw;
     }
@@ -239,8 +239,8 @@ void SetAddr(network::ip4_addr_t ipaddr, network::ip4_addr_t netmask, network::i
     DEBUG_EXIT();
 }
 
-void AddExtCallback(netif_ext_callback_fn fn) {
-    callback_fn = fn;
+void AddExtCallback(netif_ext_callback_fn ext_callback_fn) {
+    callback_fn = ext_callback_fn;
 }
 
 // Link
@@ -249,7 +249,7 @@ void SetLinkUp() {
     DEBUG_ENTRY();
     const auto& netif = netif::global::netif_default;
 
-    if (!(netif.flags & Netif::kNetifFlagLinkUp)) {
+    if (!((netif.flags & Netif::kNetifFlagLinkUp) == Netif::kNetifFlagLinkUp)) {
         netif::SetFlags(Netif::kNetifFlagLinkUp);
 
         network::dhcp::NetworkChangedLinkUp();
@@ -273,7 +273,7 @@ void SetLinkDown() {
 
     const auto& netif = netif::global::netif_default;
 
-    if (netif.flags & Netif::kNetifFlagLinkUp) {
+    if ((netif.flags & Netif::kNetifFlagLinkUp) == Netif::kNetifFlagLinkUp) {
         netif::ClearFlags(Netif::kNetifFlagLinkUp);
 
         network::autoip::NetworkChangedLinkDown();

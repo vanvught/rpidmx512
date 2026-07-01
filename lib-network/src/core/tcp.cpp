@@ -179,8 +179,8 @@ struct SendInfo {
 
 static void RtxClear(Tcb* tcb) {
     while (tcb->rtx.count > 0) {
-        auto& r = tcb->rtx.q[tcb->rtx.head];
-        network::memory::Allocator::Instance().Free(r.pool_idx);
+        auto& rtx = tcb->rtx.q[tcb->rtx.head];
+        network::memory::Allocator::Instance().Free(rtx.pool_idx);
         tcb->rtx.head = (tcb->rtx.head + 1) % kTcpUnackMax;
         tcb->rtx.count--;
     }
@@ -291,16 +291,16 @@ static constexpr bool Gt(uint32_t x, uint32_t y) {
 //	return SEQ_LT(l, x) && SEQ_LT(x, h);
 // }
 
-static constexpr bool BetweenL(uint32_t l, uint32_t x, uint32_t h) {
-    return Leq(l, x) && Lt(x, h); // low border inclusive
+static constexpr bool BetweenL(uint32_t high, uint32_t x, uint32_t h) {
+    return Leq(high, x) && Lt(x, h); // low border inclusive
 }
 
-static constexpr bool BetweenH(uint32_t l, uint32_t x, uint32_t h) {
-    return Lt(l, x) && Leq(x, h); // high border inclusive
+static constexpr bool BetweenH(uint32_t left, uint32_t x, uint32_t high) {
+    return Lt(left, x) && Leq(x, high); // high border inclusive
 }
 
-static constexpr bool BetweenLh(uint32_t l, uint32_t x, uint32_t h) {
-    return Leq(l, x) && Leq(x, h); // both borders inclusive
+static constexpr bool BetweenLh(uint32_t left, uint32_t x, uint32_t high) {
+    return Leq(left, x) && Leq(x, high); // both borders inclusive
 }
 
 typedef union pcast32 {
@@ -346,9 +346,9 @@ static void TcpInitTcb(struct Tcb* tcb, uint16_t local_port) {
 
 static void RtxOnAck(Tcb* tcb, uint32_t ack) {
     while (tcb->rtx.count > 0) {
-        auto& r = tcb->rtx.q[tcb->rtx.head];
-        if (Leq(r.seq + r.consumed, ack)) {
-            memory::Allocator::Instance().Free(r.pool_idx);
+        auto& rtx = tcb->rtx.q[tcb->rtx.head];
+        if (Leq(rtx.seq + rtx.consumed, ack)) {
+            memory::Allocator::Instance().Free(rtx.pool_idx);
             tcb->rtx.head = (tcb->rtx.head + 1) % kTcpUnackMax;
             tcb->rtx.count--;
         } else {
@@ -416,7 +416,8 @@ static constexpr uint8_t kZeromac[network::ethernet::kAddressLength] = {0, 0, 0,
 static void Ip4SendSegment(const Tcb* tcb, void* data, uint32_t size) {
     if (memcmp(tcb->remote_eth_addr, kZeromac, network::ethernet::kAddressLength) != 0) // Server
     {
-        return emac::eth::Send(data, size);
+        emac::eth::Send(data, size);
+        return;
     }
 
     // Client the destination Ethernet address (MAC) is not known
@@ -681,28 +682,28 @@ __attribute__((hot)) void Run() {
         }
 
         // Flush per-connection queue
-        auto& q = tcb.tx_queue;
+        auto& queue = tcb.tx_queue;
 
-        while (!q.IsEmpty() && q.GetFront().length <= tcb.SND.WND) {
-            const auto& seg = q.GetFront();
+        while (!queue.IsEmpty() && queue.GetFront().length <= tcb.SND.WND) {
+            const auto& seg = queue.GetFront();
             SendData(&tcb, seg.buffer, seg.length, seg.is_last_segment);
-            q.Pop();
+            queue.Pop();
         }
 
         // ---- Retransmission timeout ----
         if (tcb.rtx.count > 0 && tcb.rtx_deadline != 0 && timing::Millis() >= tcb.rtx_deadline) {
-            auto& r = tcb.rtx.q[tcb.rtx.head];
+            auto& rtx = tcb.rtx.q[tcb.rtx.head];
 
             SendInfo info;
-            info.SEQ = r.seq;
+            info.SEQ = rtx.seq;
             info.ACK = tcb.RCV.NXT;
-            info.CTL = r.ctl | Control::ACK;
+            info.CTL = rtx.ctl | Control::ACK;
 
             tcb.TX.data = nullptr;
             tcb.TX.size = 0;
 
-            if (r.pool_idx != 0xFFFF) {
-                tcb.TX.data = memory::Allocator::Instance().Get(r.pool_idx, tcb.TX.size);
+            if (rtx.pool_idx != 0xFFFF) {
+                tcb.TX.data = memory::Allocator::Instance().Get(rtx.pool_idx, tcb.TX.size);
             }
 
             SendSegment(&tcb, info, false);
@@ -710,10 +711,10 @@ __attribute__((hot)) void Run() {
             tcb.TX.data = nullptr;
             tcb.TX.size = 0;
 
-            r.last_sent = timing::Millis();
-            r.retries++;
+            rtx.last_sent = timing::Millis();
+            rtx.retries++;
 
-            if (r.retries > kTcpRtxMaxRetry) {
+            if (rtx.retries > kTcpRtxMaxRetry) {
                 FreeTcb(&tcb);
                 continue;
             }
@@ -1444,10 +1445,10 @@ __attribute__((hot)) void Input(struct Header* eth_frame) {
 }
 
 static Listener* AllocListenerSlot() {
-    for (auto& l : s_listeners) {
-        if (!l.in_use) {
-            l.in_use = true;
-            return &l;
+    for (auto& listener : s_listeners) {
+        if (!listener.in_use) {
+            listener.in_use = true;
+            return &listener;
         }
     }
     return nullptr;
@@ -1460,29 +1461,29 @@ bool Listen(uint16_t local_port, network::tcp::CallbackData cb) {
         return false; // already listening
     }
 
-    Listener* l = AllocListenerSlot();
+    Listener* listener = AllocListenerSlot();
 
-    if (l == nullptr) {
+    if (listener == nullptr) {
         return false; // no space
     }
 
-    l->local_port = local_port;
-    l->cb = cb;
+    listener->local_port = local_port;
+    listener->cb = cb;
 
     return true;
 }
 
 // Public API:
 bool Unlisten(uint16_t local_port) {
-    Listener* l = FindListenerByPort(local_port);
+    Listener* listener = FindListenerByPort(local_port);
 
-    if (l == nullptr) {
+    if (listener == nullptr) {
         return false;
     }
 
-    l->cb = nullptr;
-    l->local_port = 0;
-    l->in_use = false;
+    listener->cb = nullptr;
+    listener->local_port = 0;
+    listener->in_use = false;
 
     return true;
 }
@@ -1515,12 +1516,12 @@ ConnHandle Connect(uint32_t remote_ip, uint16_t remote_port, CallbackConnect cb_
 
     tcb->remote_port = remote_port;
 
-    _pcast32 ip;
-    ip.u32 = netif.ip.addr;
-    memcpy(tcb->local_ip, ip.u8, 4);
+    _pcast32 ip_address;
+    ip_address.u32 = netif.ip.addr;
+    memcpy(tcb->local_ip, ip_address.u8, 4);
 
-    ip.u32 = remote_ip;
-    memcpy(tcb->remote_ip, ip.u8, 4);
+    ip_address.u32 = remote_ip;
+    memcpy(tcb->remote_ip, ip_address.u8, 4);
 
     tcb->cb_data = cb_data;
     tcb->cb_connect = cb_connect;
@@ -1548,15 +1549,15 @@ int32_t Close(ConnHandle conn_handle) // graceful FIN
         return -1;
     }
 
-    auto* c = &s_tcbs[conn_handle];
+    auto* tcb = &s_tcbs[conn_handle];
 
-    if (!c->in_use || c->state == kStateClosed) {
+    if (!tcb->in_use || tcb->state == kStateClosed) {
         ERROR("Close: TCB!");
         return -1;
     }
 
     // If we’re already closing/closed-ish, treat as success (idempotent close).
-    switch (c->state) {
+    switch (tcb->state) {
         case kStateFinWait1:
         case kStateFinWait2:
         case kStateClosing:
@@ -1569,29 +1570,29 @@ int32_t Close(ConnHandle conn_handle) // graceful FIN
     }
 
     // We only support graceful close from states where FIN makes sense here.
-    if (c->state != kStateEstablished && c->state != kStateCloseWait) {
+    if (tcb->state != kStateEstablished && tcb->state != kStateCloseWait) {
         ERROR("Close: Not graceful!");
         return -1;
     }
 
     // No payload for a pure FIN segment.
-    c->TX.data = nullptr;
-    c->TX.size = 0;
+    tcb->TX.data = nullptr;
+    tcb->TX.size = 0;
 
     SendInfo info{};
-    info.SEQ = c->SND.NXT;
-    info.ACK = c->RCV.NXT;
+    info.SEQ = tcb->SND.NXT;
+    info.ACK = tcb->RCV.NXT;
     info.CTL = static_cast<uint8_t>(Control::FIN | Control::ACK);
 
-    SendSegment(c, info);
+    SendSegment(tcb, info);
 
     // FIN consumes 1 sequence number.
-    c->SND.NXT += 1;
+    tcb->SND.NXT += 1;
 
-    if (c->state == kStateEstablished) {
-        NEW_STATE(c, kStateFinWait1);
+    if (tcb->state == kStateEstablished) {
+        NEW_STATE(tcb, kStateFinWait1);
     } else {
-        NEW_STATE(c, kStateLastAck);
+        NEW_STATE(tcb, kStateLastAck);
     }
 
     return 0;
@@ -1601,20 +1602,20 @@ int32_t Close(ConnHandle conn_handle) // graceful FIN
 void Abort(uint32_t conn_handle) {
     assert(conn_handle < TCP_MAX_TCBS_ALLOWED);
 
-    auto* c = &s_tcbs[conn_handle];
+    auto* tcb = &s_tcbs[conn_handle];
 
-    if (!c->in_use || c->state == kStateClosed) {
+    if (!tcb->in_use || tcb->state == kStateClosed) {
         return;
     }
 
     SendInfo info;
     info.CTL = Control::RST;
-    info.SEQ = c->SND.NXT;
-    info.ACK = c->RCV.NXT;
+    info.SEQ = tcb->SND.NXT;
+    info.ACK = tcb->RCV.NXT;
 
-    SendSegment(c, info);
+    SendSegment(tcb, info);
 
-    FreeTcb(c);
+    FreeTcb(tcb);
 }
 
 // Public API:
@@ -1626,16 +1627,16 @@ int32_t Send(ConnHandle conn_handle, const uint8_t* buffer, uint32_t length) {
         return -1;
     }
 
-    auto* c = &s_tcbs[conn_handle];
+    auto* tcb = &s_tcbs[conn_handle];
 
     // If this slot isn't in use, it's a stale/invalid handle.
-    if (!c->in_use) {
+    if (!tcb->in_use) {
         return -1;
     }
 
     // For now, only allow sending in states where your legacy code expects it.
     // Most stacks allow in ESTABLISHED and also in CLOSE_WAIT (server can still send).
-    if (c->state != kStateEstablished && c->state != kStateCloseWait) {
+    if (tcb->state != kStateEstablished && tcb->state != kStateCloseWait) {
         return -1;
     }
 
@@ -1646,11 +1647,11 @@ int32_t Send(ConnHandle conn_handle, const uint8_t* buffer, uint32_t length) {
     // Legacy behavior preserved:
     // Only send if the FULL remaining length fits inside SND.WND.
     // NOTE: Many stacks instead send min(length, wnd)
-    while ((length > 0) && (length <= c->SND.WND)) {
+    while ((length > 0) && (length <= tcb->SND.WND)) {
         const uint32_t kWriteLen = (length > kTcpDataMss) ? kTcpDataMss : length;
         const bool kIsLast = (length < kTcpDataMss);
 
-        SendData(c, p, kWriteLen, kIsLast);
+        SendData(tcb, p, kWriteLen, kIsLast);
 
         p += kWriteLen;
         length -= kWriteLen;
@@ -1661,16 +1662,16 @@ int32_t Send(ConnHandle conn_handle, const uint8_t* buffer, uint32_t length) {
         return 0; // everything sent immediately
     }
 
-    auto& q = c->tx_queue;
+    auto& queue = tcb->tx_queue;
 
-    if (!q.IsEmpty()) {
+    if (!queue.IsEmpty()) {
         // Already queued something.
         DEBUG_EXIT();
         return -2;
     }
 
     while (length > 0) {
-        if (q.IsFull()) {
+        if (queue.IsFull()) {
             // Can't queue everything.
             DEBUG_EXIT();
             return -2;
@@ -1679,7 +1680,7 @@ int32_t Send(ConnHandle conn_handle, const uint8_t* buffer, uint32_t length) {
         const uint32_t kWriteLen = (length > kTcpDataMss) ? kTcpDataMss : length;
         const bool kIsLast = (length < kTcpDataMss);
 
-        q.Push(p, kWriteLen, kIsLast);
+        queue.Push(p, kWriteLen, kIsLast);
 
         p += kWriteLen;
         length -= kWriteLen;

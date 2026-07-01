@@ -41,8 +41,8 @@
 
 namespace emac::eth {
 uint8_t* SendGetDmaBuffer();
-void Send(const uint32_t);
-void Send(void*, const uint32_t);
+void Send(uint32_t);
+void Send(void*, uint32_t);
 #if defined CONFIG_NET_ENABLE_PTP
 void SendTimestamp(uint32_t);
 void SendTimestamp(void*, uint32_t);
@@ -52,11 +52,11 @@ void FreePkt();
 } // namespace emac::eth
 
 namespace network {
-inline void Error(const char* func, const char* s) {
-    printf("%s: %s\n", func, s);
+inline void Error(const char* func, const char* string) {
+    printf("%s: %s\n", func, string);
 }
 
-#define ERROR(s)	Error(__func__, (s))
+#define ERROR(s) Error(__func__, (s))
 
 namespace global {
 extern uint32_t broadcast_mask;
@@ -64,7 +64,7 @@ extern uint32_t on_network_mask;
 } // namespace global
 
 inline uint16_t Chksum(const void* data, uint32_t length) {
-    auto* ptr = reinterpret_cast<const uint16_t*>(data);
+    const auto* ptr = reinterpret_cast<const uint16_t*>(data);
     uint32_t sum = 0;
 
     while (length > 1) {
@@ -79,7 +79,7 @@ inline uint16_t Chksum(const void* data, uint32_t length) {
     }
 
     // Fold 32-bit sum into 16 bits
-    while (sum >> 16) {
+    while ((sum >> 16) != 0) {
         sum = (sum >> 16) + (sum & 0xFFFF);
     }
 

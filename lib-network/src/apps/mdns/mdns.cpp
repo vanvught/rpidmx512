@@ -92,17 +92,16 @@ struct Service {
     const uint16_t kPortDefault;
 };
 
-static constexpr Service kServices[]{
-	{kDomainConfig, sizeof(kDomainConfig), Protocols::kUdp, 0x2905},
-	{kDomainTftp, sizeof(kDomainTftp), Protocols::kUdp,network::iana::Ports::kPortTftp},
-	{kDomainHttp, sizeof(kDomainHttp), Protocols::kTcp, network::iana::Ports::kPortHttp},
-	{kDomainHttp, sizeof(kDomainHttp), Protocols::kTcp, network::iana::Ports::kPortHttpAlt},
-	{kDomainRdmnetLlrp, sizeof(kDomainRdmnetLlrp), Protocols::kUdp, 5569},
-	{kDomainNtp, sizeof(kDomainNtp), Protocols::kUdp, network::iana::Ports::kPortNtp},
-	{kDomainMidi, sizeof(kDomainMidi), Protocols::kUdp, 5004},
-	{kDomainOsc, sizeof(kDomainOsc), Protocols::kUdp, 0},
-	{kDomainDdp, sizeof(kDomainDdp), Protocols::kUdp, 4048},
-	{kDomainPp, sizeof(kDomainPp), Protocols::kUdp, 5078}};
+static constexpr Service kServices[]{{kDomainConfig, sizeof(kDomainConfig), Protocols::kUdp, 0x2905},
+                                     {kDomainTftp, sizeof(kDomainTftp), Protocols::kUdp, network::iana::Ports::kPortTftp},
+                                     {kDomainHttp, sizeof(kDomainHttp), Protocols::kTcp, network::iana::Ports::kPortHttp},
+                                     {kDomainHttp, sizeof(kDomainHttp), Protocols::kTcp, network::iana::Ports::kPortHttpAlt},
+                                     {kDomainRdmnetLlrp, sizeof(kDomainRdmnetLlrp), Protocols::kUdp, 5569},
+                                     {kDomainNtp, sizeof(kDomainNtp), Protocols::kUdp, network::iana::Ports::kPortNtp},
+                                     {kDomainMidi, sizeof(kDomainMidi), Protocols::kUdp, 5004},
+                                     {kDomainOsc, sizeof(kDomainOsc), Protocols::kUdp, 0},
+                                     {kDomainDdp, sizeof(kDomainDdp), Protocols::kUdp, 4048},
+                                     {kDomainPp, sizeof(kDomainPp), Protocols::kUdp, 5078}};
 
 struct Domain {
     uint8_t a_name[kDomainMaxlen];
@@ -354,12 +353,13 @@ static uint8_t* PutDomainNameAsLabels(uint8_t* ptr, Domain const& domain) {
             *ptr++ = static_cast<uint8_t>(0xC0 | (offset >> 8));
             *ptr++ = static_cast<uint8_t>(offset);
             return ptr;
-        } else {
-            auto len = *np++;
-            *ptr++ = len;
-            for (uint32_t i = 0; i < len; i++) {
-                *ptr++ = *np++;
-            }
+        }
+
+        auto len = *np++;
+        *ptr++ = len;
+
+        for (uint32_t i = 0; i < len; i++) {
+            *ptr++ = *np++;
         }
     }
 
@@ -590,11 +590,11 @@ static const uint8_t* GetDomainName(const uint8_t* const kMsg, const uint8_t* pt
         }
     }
 
-    if (nextbyte) {
-        return (nextbyte);
-    } else {
-        return (ptr);
+    if (nextbyte != nullptr) {
+        return nextbyte;
     }
+
+    return (ptr);
 }
 
 void Start() {
@@ -618,13 +618,8 @@ void Stop() {
     mdns::SendAnnouncement(0);
 
     for (auto& record : s_service_records) {
-        if (record.name != nullptr) {
-            delete[] record.name;
-        }
-
-        if (record.text_content != nullptr) {
-            delete[] record.text_content;
-        }
+        delete[] record.name;
+        delete[] record.text_content;
     }
 
     network::igmp::LeaveGroup(s_handle, network::dns::kMulticastAddress);

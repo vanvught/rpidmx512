@@ -89,7 +89,7 @@ class Allocator {
         }
 
         const uint32_t kIndex = static_cast<uint32_t>(__builtin_ctz(free_mask_));
-        free_mask_ &= ~(1u << kIndex);
+        free_mask_ &= ~(1U << kIndex);
 
         Status();
 
@@ -107,7 +107,7 @@ class Allocator {
         }
 
         const uint32_t kIndex = static_cast<uint32_t>(__builtin_ctz(free_mask_));
-        free_mask_ &= ~(1u << kIndex);
+        free_mask_ &= ~(1U << kIndex);
 
         size_[kIndex] = size;
         memcpy(pool[kIndex], data, size);
@@ -122,15 +122,18 @@ class Allocator {
 
         for (uint32_t index = 0; index < kBlocks; ++index) {
             if (static_cast<void*>(pool[index]) == pointer) {
-                return Free(static_cast<uint16_t>(index));
+                Free(static_cast<uint16_t>(index));
+                return;
             }
         }
 
-        assert(false && "Pointer is not from pool"); 
+        assert(false && "Pointer is not from pool");
     }
 
     void Free(uint16_t index) {
-        if (index == UINT16_MAX) return;
+        if (index == UINT16_MAX) {
+            return;
+        }
 
         assert(index < kBlocks);
 

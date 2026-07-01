@@ -50,9 +50,9 @@ using CallbackConnect = void (*)(ConnHandle, Event, void*);
 ConnHandle Connect(uint32_t remote_ip, uint16_t remote_port, CallbackConnect cb_connect, CallbackData cb_data, void* context);
 
 // Common
-int32_t Send(ConnHandle connection_handle, const uint8_t* buffer, uint32_t length);
-int32_t Close(ConnHandle connection_handle); // graceful FIN
-void Abort(ConnHandle connection_handle);    // RST
+int32_t Send(ConnHandle conn_handle, const uint8_t* buffer, uint32_t length);
+int32_t Close(ConnHandle conn_handle); // graceful FIN
+void Abort(ConnHandle conn_handle);    // RST
 } // namespace network::tcp
 
 #endif // NETWORK_TCP_H_

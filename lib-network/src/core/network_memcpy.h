@@ -130,10 +130,10 @@ inline uint32_t MemcpyIp(const uint8_t* ip) {
 
         _pcast32 cast;
 #ifdef __ARM_ARCH_7A__
-        volatile auto* src = ip;
+        volatile const auto* src = ip;
         volatile auto* dst = cast.u8;
 #else
-        auto* src = ip;
+        const auto* src = ip;
         auto* dst = cast.u8;
 #endif
         for (size_t i = 0; i < network::ip4::kAddressLength; i++) {

@@ -118,15 +118,15 @@ inline uint32_t Netmask() {
     return netif::global::netif_default.netmask.addr;
 }
 
-void SetGw(network::ip4_addr_t gw);
+void SetGw(network::ip4_addr_t gateway);
 
 inline uint32_t Gw() {
     return netif::global::netif_default.gw.addr;
 }
 
-void SetAddr(network::ip4_addr_t ipaddr, network::ip4_addr_t netmask, network::ip4_addr_t gw);
+void SetAddr(network::ip4_addr_t ipaddr, network::ip4_addr_t netmask, network::ip4_addr_t gateway);
 
-void AddExtCallback(netif_ext_callback_fn fn);
+void AddExtCallback(netif_ext_callback_fn ext_callback_fn);
 
 inline uint32_t BroadcastIpAddr() {
     return netif::global::netif_default.broadcast_ip.addr;
