@@ -1,7 +1,7 @@
 PREFIX ?=
 
-CC=$(PREFIX)gcc
-CPP=$(PREFIX)g++
+CC=$(PREFIX)gcc-15
+CPP=$(PREFIX)g++-15
 AS=$(CC)
 LD=$(PREFIX)ld
 AR=$(PREFIX)ar
