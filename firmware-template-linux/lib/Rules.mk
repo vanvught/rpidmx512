@@ -77,7 +77,7 @@ else
 endif
 
 CCPOPS=-fno-rtti -fno-exceptions -fno-unwind-tables -Wnon-virtual-dtor
-CCPOPS+=-std=c++20
+CCPOPS+=-std=c++23
 
 COPS+=-ffunction-sections -fdata-sections
 

@@ -119,7 +119,7 @@ else
 	COPS+=-Wduplicated-cond -Wlogical-op #-Wduplicated-branches
 #	CCPOPS+=-Wuseless-cast -Wold-style-cast
 endif
-CCPOPS+=-std=c++20
+CCPOPS+=-std=c++23
 
 COPS+=-ffunction-sections -fdata-sections
 
