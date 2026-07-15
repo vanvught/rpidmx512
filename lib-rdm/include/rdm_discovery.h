@@ -79,7 +79,7 @@ class Discovery : rdm::discovery::StateMachine {
 
         if (s_timer_id < 0) {
             s_timer_id = SoftwareTimerAdd((1000U * 60U) * background_interval_minutes_, TimerBackGround);
-            printf("s_timer_id=%d\n", s_timer_id);
+            printf("s_timer_id=%d\n", static_cast<unsigned>(s_timer_id));
         }
     }
 
@@ -95,7 +95,7 @@ class Discovery : rdm::discovery::StateMachine {
         }
     }
 
-    bool IsEnabledBackground(uint32_t port_index) const { return ((Bit(port_index) & s_bg_discovery) == Bit(port_index)); }
+    [[nodiscard]] bool IsEnabledBackground(uint32_t port_index) const { return ((Bit(port_index) & s_bg_discovery) == Bit(port_index)); }
 
     void Full(uint32_t port_index) {
         assert(port_index < kPorts);
