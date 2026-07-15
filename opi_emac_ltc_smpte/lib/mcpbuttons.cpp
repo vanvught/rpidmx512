@@ -445,7 +445,7 @@ void McpButtons::UpdateDisplays(ltc::Source source) {
 // Running mode
 
 void McpButtons::HandleRunActionSelect() {
-    DEBUG_PRINTF("%d", run_status_);
+    DEBUG_PRINTF("%u", static_cast<unsigned>(run_status_));
 
     if (Display::Get()->IsSleep()) {
         Display::Get()->SetSleep(false);
@@ -489,7 +489,7 @@ void McpButtons::HandleRunActionSelect() {
 }
 
 void McpButtons::SetRunState(RunStatus run_state) {
-    DEBUG_PRINTF("%d %d", run_state, run_status_);
+    DEBUG_PRINTF("%u %u", static_cast<unsigned>(run_state), static_cast<unsigned>(run_status_));
 
     run_status_ = run_state;
 

@@ -148,7 +148,7 @@ LtcOscServer::LtcOscServer() : port_incoming_(osc::port::kDefaultIncoming) {
 
     path_length_ = static_cast<uint32_t>(snprintf(path_, sizeof(path_) - 1, "/%s/tc/*", network::iface::HostName()) - 1);
 
-    DEBUG_PRINTF("%d [%s]", path_length_, path_);
+    DEBUG_PRINTF("%u [%s]", static_cast<unsigned>(path_length_), path_);
     DEBUG_EXIT();
 }
 
@@ -164,7 +164,7 @@ void LtcOscServer::Start() {
 
 void LtcOscServer::Print() {
     puts("OSC Server");
-    printf(" Port : %u\n", port_incoming_);
+    printf(" Port : %u\n", static_cast<unsigned>(port_incoming_));
     printf(" Path : [%s]\n", path_);
 }
 
@@ -178,7 +178,7 @@ void LtcOscServer::Input(const uint8_t* data, uint32_t size, [[maybe_unused]] ui
     if (osc::IsMatch(data_char, path_)) {
         const auto kCommandLength = strlen(data_char);
 
-        DEBUG_PRINTF("[%s]:%d %d:|%s|", data_char, static_cast<int>(kCommandLength), path_length_, &data_char[path_length_]);
+        DEBUG_PRINTF("[%s]:%u %u:|%s|", data_char, static_cast<unsigned>(kCommandLength), static_cast<unsigned>(path_length_), &data_char[path_length_]);
 
         // */pitch f
         if (memcmp(&data_char[path_length_], cmd::kPitch, length::kPitch) == 0) {
@@ -219,7 +219,7 @@ void LtcOscServer::Input(const uint8_t* data, uint32_t size, [[maybe_unused]] ui
                     LtcGenerator::Get()->ActionStop();
                     LtcGenerator::Get()->ActionStart();
 
-                    DEBUG_PRINTF("%.*s", kValueLength, timecode);
+                    DEBUG_PRINTF("%.*s", static_cast<int>(kValueLength), timecode);
                 }
             } else if ((kCommandLength == (path_length_ + length::kStart + length::kSet + kValueLength))) {
                 if (memcmp(&data_char[path_length_ + length::kStart], cmd::kSet, length::kSet) == 0) {
@@ -234,7 +234,7 @@ void LtcOscServer::Input(const uint8_t* data, uint32_t size, [[maybe_unused]] ui
 
                     LtcGenerator::Get()->ActionSetStart(timecode);
 
-                    DEBUG_PRINTF("%.*s", kValueLength, timecode);
+                    DEBUG_PRINTF("%.*s", static_cast<int>(kValueLength), timecode);
                 }
             }
             return;
@@ -259,7 +259,7 @@ void LtcOscServer::Input(const uint8_t* data, uint32_t size, [[maybe_unused]] ui
 
                     LtcGenerator::Get()->ActionSetStop(timecode);
 
-                    DEBUG_PRINTF("%.*s", kValueLength, timecode);
+                    DEBUG_PRINTF("%.*s", static_cast<int>(kValueLength), timecode);
                 }
             }
 
@@ -457,7 +457,7 @@ void LtcOscServer::Input(const uint8_t* data, uint32_t size, [[maybe_unused]] ui
                 LtcMidiSystemRealtime::Get()->SetBPM(bpm);
                 LtcOutputs::Get()->ShowBPM(bpm);
 
-                DEBUG_PRINTF("MIDI BPM: %u", bpm);
+                DEBUG_PRINTF("MIDI BPM: %u", static_cast<unsigned>(bpm));
                 return;
             }
         }
