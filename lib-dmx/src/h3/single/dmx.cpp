@@ -231,7 +231,7 @@ static void IrqTimer0DmxSender([[maybe_unused]] uint32_t clo) {
             H3GpioClr(GPIO_ANALYZER_CH4);
         } break;
         case dmx::State::kDmxdata:
-            printf("Output period too short (%d, slot %d)\n", s_nDmxSendDataLength, sv_DmxTransmitCurrentSlot);
+            printf("Output period too short (%u, slot %u)\n", static_cast<unsigned>(s_nDmxSendDataLength), static_cast<unsigned>(sv_DmxTransmitCurrentSlot));
             //		assert(0);
             break;
         default:

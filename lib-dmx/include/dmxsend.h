@@ -44,7 +44,7 @@ class DmxSend {
    public:
     void Start(uint32_t port_index) {
         DEBUG_ENTRY();
-        DEBUG_PRINTF("port_index=%d", port_index);
+        DEBUG_PRINTF("port_index=%u", static_cast<unsigned>(port_index));
 
         assert(port_index < CHAR_BIT);
 
@@ -66,7 +66,7 @@ class DmxSend {
 
     void Stop(uint32_t port_index) {
         DEBUG_ENTRY();
-        DEBUG_PRINTF("port_index=%d -> %u", port_index, IsStarted(started_, static_cast<uint8_t>(port_index)));
+        DEBUG_PRINTF("port_index=%u -> %u", static_cast<unsigned>(port_index), IsStarted(started_, static_cast<uint8_t>(port_index)));
 
         assert(port_index < CHAR_BIT);
 
@@ -121,7 +121,7 @@ class DmxSend {
 		Dmx::Get()->SetOutputStyle(port_index, output_style == dmxnode::OutputStyle::kConstant ? dmx::OutputStyle::kConstant : dmx::OutputStyle::kDelta);
 	}
 
-    dmxnode::OutputStyle GetOutputStyle(uint32_t port_index) const { 
+    [[nodiscard]] dmxnode::OutputStyle GetOutputStyle(uint32_t port_index) const { 
 		return Dmx::Get()->GetOutputStyle(port_index) == dmx::OutputStyle::kConstant ? dmxnode::OutputStyle::kConstant : dmxnode::OutputStyle::kDelta;
 	}
 #endif
@@ -154,7 +154,6 @@ class DmxSend {
    private:
     static constexpr bool IsStarted(uint8_t v, uint32_t p) { return (v & (1U << p)) == (1U << p); }
 
-   private:
 #if defined(CONFIG_DMXSEND_ENABLE_CONFIGUDP)
     DmxConfigUdp dmx_config_udp_;
 #endif
