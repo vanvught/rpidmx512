@@ -244,7 +244,7 @@ template <network::arp::EthSend S> static void Query(uint32_t destination_ip, vo
             network::memory::Allocator::Instance().Free(record_found->packet.p);
         }
 
-        printf("size=%u\n", size);
+        printf("size=%u\n", static_cast<unsigned>(size));
         assert(size <= network::memory::kBlockSize);
         record_found->packet.p = network::memory::Allocator::Instance().Allocate();
         assert(record_found->packet.p != nullptr);

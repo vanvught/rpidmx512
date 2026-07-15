@@ -128,7 +128,7 @@ void NetworkParams::Dump() {
     const auto kUseStaticIp = common::IsFlagSet(store_network.flags, Flags::Flag::kUseStaticIp);
 
     printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, json::NetworkParamsConst::kFileName);
-    printf(" %s=%u [%s]\n", json::NetworkParamsConst::kUseStaticIp.name, static_cast<uint32_t>(kUseStaticIp), kUseStaticIp ? "Yes" : "No");
+    printf(" %s=%u [%s]\n", json::NetworkParamsConst::kUseStaticIp.name, static_cast<unsigned int>(kUseStaticIp), kUseStaticIp ? "Yes" : "No");
     printf(" %s=" IPSTR "\n", json::NetworkParamsConst::kIpAddress.name, IP2STR(store_network.local_ip));
     printf(" %s=" IPSTR "\n", json::NetworkParamsConst::kNetMask.name, IP2STR(store_network.netmask));
     printf(" %s=" IPSTR "\n", json::NetworkParamsConst::kDefaultGateway.name, IP2STR(store_network.gateway_ip));

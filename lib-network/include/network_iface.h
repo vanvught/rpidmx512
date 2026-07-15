@@ -46,7 +46,7 @@ void SetDomainName(const char* domainname);
 const char* DomainName();
 
 #if defined(H3) || defined(GD32)
-[[nodiscard]] inline constexpr const char* InterfaceName() {
+[[nodiscard]] constexpr const char* InterfaceName() {
     return "eth0";
 }
 #else
@@ -54,7 +54,7 @@ const char* InterfaceName();
 #endif
 
 #if defined(H3) || defined(GD32)
-inline constexpr uint32_t InterfaceIndex() {
+constexpr uint32_t InterfaceIndex() {
     return 1;
 }
 #else
@@ -73,11 +73,11 @@ void SetAutoIp();
 bool AutoIp();
 
 // DHCP
-inline constexpr bool IsDhcpCapable() {
+constexpr bool IsDhcpCapable() {
     return true;
 }
 
-inline constexpr bool IsDhcpKnown() {
+constexpr bool IsDhcpKnown() {
     return true;
 }
 
@@ -85,9 +85,13 @@ void EnableDhcp();
 bool Dhcp();
 
 inline char AddressingMode() {
-    if (AutoIp()) return 'Z';                     // Zeroconf
-    if (IsDhcpKnown()) return Dhcp() ? 'D' : 'S'; // DHCP or Static
-    return 'U';                                   // Unknown
+    if (AutoIp()) {
+        return 'Z'; // Zeroconf
+    }
+    if (IsDhcpKnown()) {
+        return Dhcp() ? 'D' : 'S'; // DHCP or Static
+    }
+    return 'U'; // Unknown
 }
 
 struct Counters {
@@ -99,7 +103,7 @@ struct Counters {
     } tx;
 };
 
-void GetCounters(Counters& out);
+void GetCounters(Counters& counters);
 } // namespace network::iface
 
 #endif // NETWORK_IFACE_H_
