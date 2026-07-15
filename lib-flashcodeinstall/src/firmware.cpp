@@ -2,7 +2,7 @@
  * @file firmware.cpp
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,76 +33,75 @@
 
 #include "firmware.h"
 #include "ubootheader.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
 namespace firmware {
 enum class State {
-	IDLE, START, CONTINUE
+	kIdle, kStart, kContinue
 };
 
-static auto s_State = State::IDLE;
+static auto s_State = State::kIdle;
 static uint32_t s_nCRC;
 
-bool firmware_install_start(const uint8_t *pBuffer, const uint32_t nBufferSize) {
+bool firmware_install_start(const uint8_t *buffer, uint32_t buffer_size) {
 	DEBUG_ENTRY();
-	DEBUG_PRINTF("Firmware: Buffer = %p, Buffer size = %u", reinterpret_cast<const void *>(pBuffer), nBufferSize);
+	DEBUG_PRINTF("Firmware: Buffer = %p, Buffer size = %u", reinterpret_cast<const void *>(buffer), static_cast<unsigned>(buffer_size));
 
-	assert(s_State == State::IDLE);
-	s_State = State::START;
+	assert(s_State == State::kIdle);
+	s_State = State::kStart;
 
-	assert(sizeof(struct TImageHeader) <= nBufferSize);
+	assert(sizeof(struct TImageHeader) <= buffer_size);
 
-	UBootHeader uBootHeader(pBuffer);
-	uBootHeader.Dump();
+	UBootHeader uboot_header(buffer);
+	uboot_header.Dump();
 
-	const auto isValid = uBootHeader.IsValid();
-	DEBUG_PRINTF("Firmware is valid? %s", isValid ? "Yes" : "No");
+	const auto kIsValid = uboot_header.IsValid();
+	DEBUG_PRINTF("Firmware is valid? %s", kIsValid ? "Yes" : "No");
 
-	if (!isValid) {
+	if (!kIsValid) {
 		DEBUG_EXIT();
 		return false;
 	}
 
-	const uint32_t nFirmwareChunk = nBufferSize - sizeof(struct TImageHeader);
+	const uint32_t kFirmwareChunk = buffer_size - sizeof(struct TImageHeader);
 
-	if (nFirmwareChunk > 0) {
-		DEBUG_PRINTF("Firmware: Chunk = %u", nFirmwareChunk);
+	if (kFirmwareChunk > 0) {
+		DEBUG_PRINTF("Firmware: Chunk = %u", static_cast<unsigned>(kFirmwareChunk));
 
-		const auto *pFirmware = pBuffer + sizeof(struct TImageHeader);
+		const auto *firmware = buffer + sizeof(struct TImageHeader);
 
-		s_nCRC = crc32(0, pFirmware, nFirmwareChunk);
+		s_nCRC = crc32(0, firmware, kFirmwareChunk);
 	}
 
 	DEBUG_EXIT();
 	return true;
 }
 
-bool firmware_install_continue(const uint8_t *pBuffer, const uint32_t nBufferSize) {
+bool firmware_install_continue(const uint8_t *buffer, uint32_t buffer_size) {
 	DEBUG_ENTRY();
-	DEBUG_PRINTF("Firmware: Buffer = %p, Buffer size = %u", reinterpret_cast<const void *>(pBuffer), nBufferSize);
+	DEBUG_PRINTF("Firmware: Buffer = %p, Buffer size = %u", reinterpret_cast<const void *>(buffer), static_cast<unsigned>(buffer_size));
 
-	assert((s_State == State::START) || (s_State == State::CONTINUE));
-	s_State = State::CONTINUE;
+	assert((s_State == State::kStart) || (s_State == State::kContinue));
+	s_State = State::kContinue;
 
-	s_nCRC = crc32(s_nCRC, pBuffer, nBufferSize);
+	s_nCRC = crc32(s_nCRC, buffer, buffer_size);
 
 	DEBUG_EXIT();
 	return true;
 }
 
-bool firmware_install_end(const uint8_t *pBuffer, const uint32_t nBufferSize) {
+bool firmware_install_end(const uint8_t *buffer, uint32_t buffer_size) {
 	DEBUG_ENTRY();
-	DEBUG_PRINTF("Firmware: Buffer = %p, Buffer size = %u", reinterpret_cast<const void *>(pBuffer), nBufferSize);
+	DEBUG_PRINTF("Firmware: Buffer = %p, Buffer size = %u", reinterpret_cast<const void *>(buffer), static_cast<unsigned>(buffer_size));
 
-	assert(s_State == State::CONTINUE);
-	s_State = State::IDLE;
+	assert(s_State == State::kContinue);
+	s_State = State::kIdle;
 
-	s_nCRC = crc32(s_nCRC, pBuffer, nBufferSize);
+	s_nCRC = crc32(s_nCRC, buffer, buffer_size);
 
-	DEBUG_PRINTF("CRC: %x", s_nCRC);
+	DEBUG_PRINTF("CRC: %x", static_cast<unsigned>(s_nCRC));
 
 	DEBUG_EXIT();
 	return true;
 }
-
 }  // namespace firmware
