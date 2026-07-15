@@ -2,7 +2,7 @@
  * @file stdio.h
  *
  */
-/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2017-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -93,10 +93,14 @@ void clearerr(FILE *stream);
 int ferror(FILE *stream);
 int feof(FILE *stream);
 
-int printf(const char *format, ...);
+int printf(const char* format, ...)
+    __attribute__((format(printf, 1, 2)));
 
-int sprintf(char *str, const char *format, ...);
-int snprintf(char *str, size_t size, const char *format, ...);
+int sprintf(char* buffer, const char* format, ...)
+    __attribute__((format(printf, 2, 3)));
+
+int snprintf(char* buffer, size_t size, const char* format, ...)
+    __attribute__((format(printf, 3, 4)));
 
 int vprintf(const char *format, va_list ap);
 int vsnprintf(char *str, size_t size, const char *format, va_list);
