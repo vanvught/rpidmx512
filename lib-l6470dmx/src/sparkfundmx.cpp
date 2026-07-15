@@ -151,7 +151,7 @@ void SparkFunDmx::ReadConfigFiles() {
     spi::Begin();
 
     for (uint32_t i = 0; i < common::store::l6470dmx::kMaxMotors; i++) {
-        printf("SparkFun motor%d.txt:\n", i);
+        printf("SparkFun motor%u.txt:\n", static_cast<unsigned>(i));
 
         m_bIsLocalPositionSet = false;
         m_bIsLocalSpiCsSet = false;
@@ -195,14 +195,14 @@ void SparkFunDmx::ReadConfigFiles() {
 
 #ifndef NDEBUG
             printf("\t-----------------------------\n");
-            printf("\tkDmxMode=%d (DMX footprint=%d)\n", kDmxMode, L6470DmxModes::GetDmxFootPrintMode(kDmxMode));
-            printf("\kDmxStartAddressMode=%d\n", kDmxStartAddressMode);
+            printf("\tkDmxMode=%u (DMX footprint=%u)\n", static_cast<unsigned>(kDmxMode), static_cast<unsigned>(L6470DmxModes::GetDmxFootPrintMode(kDmxMode)));
+            printf("\tkDmxStartAddressMode=%u\n", static_cast<unsigned>(kDmxStartAddressMode));
             printf("\t=============================\n");
 #endif
 
             if ((kDmxStartAddressMode <= dmxnode::kUniverseSize) && (L6470DmxModes::GetDmxFootPrintMode(kDmxMode) != 0)) {
                 if (autodriver_[i]->IsConnected()) {
-                    printf("Motor %d is connected\n", i);
+                    printf("Motor %u is connected\n", static_cast<unsigned>(i));
 
                     autodriver_[i]->SetMotorNumber(i);
                     autodriver_[i]->Dump();
@@ -231,12 +231,12 @@ void SparkFunDmx::ReadConfigFiles() {
                         dmx_footprint_ = std::max(kDmxChannelLastCurrent, kDmxChannelLastNew) - dmx_start_address_;
                     }
 #ifndef NDEBUG
-                    printf("DMX Mode: %d, DMX Start Address: %d\n", l6470dmx_modes_[i]->GetMode(), l6470dmx_modes_[i]->GetDmxStartAddress());
-                    printf("DMX Start Address:%d, DMX Footprint:%d\n", static_cast<int>(dmx_start_address_), static_cast<int>(dmx_footprint_));
+                    printf("DMX Mode: %u, DMX Start Address: %u\n", static_cast<unsigned>(l6470dmx_modes_[i]->GetMode()), static_cast<unsigned>(l6470dmx_modes_[i]->GetDmxStartAddress()));
+                    printf("DMX Start Address:%u, DMX Footprint:%u\n", static_cast<unsigned>(dmx_start_address_), static_cast<unsigned>(dmx_footprint_));
 #endif
                     const uint32_t kMaxSlots = std::min(common::store::l6470dmx::mode::kMaxDmxFootprint, l6470dmx_modes_[i]->GetDmxFootPrint());
 #ifndef NDEBUG
-                    printf("SlotInfo slots: %d\n", static_cast<int>(kMaxSlots));
+                    printf("SlotInfo slots: %u\n", static_cast<unsigned>(kMaxSlots));
 #endif
                     slotinfo_[i] = new dmxnode::SlotInfo[kMaxSlots];
                     assert(slotinfo_[i] != nullptr);
@@ -244,31 +244,34 @@ void SparkFunDmx::ReadConfigFiles() {
                     for (uint32_t j = 0; j < kMaxSlots; j++) {
                         //                       m_pModeParams[i]->GetSlotInfo(j, slotinfo_[i][j]);
 #ifndef NDEBUG
-                        printf(" Slot:%d %2x:%4x\n", j, slotinfo_[i][j].type, slotinfo_[i][j].category);
+                        printf(" Slot:%u %2x:%4x\n", 
+							static_cast<unsigned>(j), 
+							static_cast<unsigned>(slotinfo_[i][j].type), 
+							static_cast<unsigned>(slotinfo_[i][j].category));
 #endif
                     }
                 } else {
                     delete autodriver_[i];
                     autodriver_[i] = nullptr;
-                    printf("Motor %d - Communication issues! Check SPI configuration and cables\n", i);
+                    printf("Motor %u - Communication issues! Check SPI configuration and cables\n", static_cast<unsigned>(i));
                 }
             } else {
                 delete autodriver_[i];
                 autodriver_[i] = nullptr;
-                printf("Motor %d - Configuration error! Check Mode parameters\n", i);
+                printf("Motor %u - Configuration error! Check Mode parameters\n", static_cast<unsigned>(i));
             }
 #ifndef NDEBUG
-            printf("Motor %d --------- end ---------\n", i);
+            printf("Motor %u --------- end ---------\n", static_cast<unsigned>(i));
 #endif
         } else {
-            printf("Skipping Motor %d\n", i);
+            printf("Skipping Motor %u\n", static_cast<unsigned>(i));
         }
     }
 
     printf("InitSwitch()\n");
     for (uint32_t i = 0; i < common::store::l6470dmx::kMaxMotors; i++) {
         if (l6470dmx_modes_[i] != nullptr) {
-            printf(" Motor %d\n", i);
+            printf(" Motor %u\n", static_cast<unsigned>(i));
             l6470dmx_modes_[i]->InitSwitch();
         }
     }
@@ -276,7 +279,7 @@ void SparkFunDmx::ReadConfigFiles() {
     printf("busyCheck()\n");
     for (uint32_t i = 0; i < common::store::l6470dmx::kMaxMotors; i++) {
         if (autodriver_[i] != nullptr) {
-            printf(" Motor %d\n", i);
+            printf(" Motor %u\n", static_cast<unsigned>(i));
             const uint32_t kMillis = timing::Millis();
             while (autodriver_[i]->busyCheck()) {
                 if ((timing::Millis() - kMillis) > 1000) {
@@ -290,7 +293,7 @@ void SparkFunDmx::ReadConfigFiles() {
     printf("InitPos()\n");
     for (uint32_t i = 0; i < common::store::l6470dmx::kMaxMotors; i++) {
         if (l6470dmx_modes_[i] != nullptr) {
-            printf(" Motor %d\n", i);
+            printf(" Motor %u\n", static_cast<unsigned>(i));
             l6470dmx_modes_[i]->InitPos();
         }
     }
@@ -298,7 +301,8 @@ void SparkFunDmx::ReadConfigFiles() {
     DEBUG_EXIT();
 }
 
-template <bool doUpdate> void SparkFunDmx::SetData(uint32_t port_index, const uint8_t* data, uint32_t length) {
+template <bool doUpdate> 
+void SparkFunDmx::SetData(uint32_t port_index, const uint8_t* data, uint32_t length) {
     // delegate to single function
     SetDataImpl(port_index, data, length);
 }
@@ -321,7 +325,7 @@ void SparkFunDmx::SetDataImpl([[maybe_unused]] uint32_t port_index, const uint8_
             data_changed[i] = false;
         }
 #ifndef NDEBUG
-        printf("bIsDmxDataChanged[%d]=%d\n", i, bIsDmxDataChanged[i]);
+        printf("bIsDmxDataChanged[%u]=%u\n", static_cast<unsigned>(i), static_cast<unsigned>(bIsDmxDataChanged[i]));
 #endif
     }
 

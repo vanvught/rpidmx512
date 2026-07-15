@@ -38,21 +38,17 @@
 
 using common::store::l6470dmx::l6470::Flags;
 
-namespace json
-{
-template <typename EnumFlag> inline uint32_t SetFlag(const char* val, uint32_t len, uint32_t flags, EnumFlag flag_bit)
-{
-    if ((len == 0) || !isdigit(static_cast<int>(val[0])))
-    {
+namespace json {
+template <typename EnumFlag> inline uint32_t SetFlag(const char* val, uint32_t len, uint32_t flags, EnumFlag flag_bit) {
+    if ((len == 0) || !isdigit(static_cast<int>(val[0]))) {
         return common::SetFlagValue(flags, flag_bit, false);
     }
 
     return common::SetFlagValue(flags, flag_bit, true);
 }
 
-L6470Params::L6470Params(uint32_t motor_index) : motor_index_(motor_index)
-{
-    DEBUG_PRINTF("L6470 index: %u", motor_index_);
+L6470Params::L6470Params(uint32_t motor_index) : motor_index_(motor_index) {
+    DEBUG_PRINTF("L6470 index: %u", static_cast<unsigned>(motor_index_));
 
     assert(motor_index < common::store::l6470dmx::kMaxMotors);
     strncpy(file_name_, SparkFunDmxParamsConst::kFileNameMotor, sizeof(file_name_));
@@ -61,62 +57,52 @@ L6470Params::L6470Params(uint32_t motor_index) : motor_index_(motor_index)
     ConfigStore::Instance().DmxL6470CopyL6470Indexed(motor_index, &store_l6470);
 }
 
-void L6470Params::SetMinSpeed(const char* val, uint32_t len)
-{
+void L6470Params::SetMinSpeed(const char* val, uint32_t len) {
     store_l6470.flags = SetFlag(val, len, store_l6470.flags, Flags::Flag::kIsSetMinSpeed);
     store_l6470.min_speed = ParseValue<uint32_t>(val, len);
 }
 
-void L6470Params::SetMaxSpeed(const char* val, uint32_t len)
-{
+void L6470Params::SetMaxSpeed(const char* val, uint32_t len) {
     store_l6470.flags = SetFlag(val, len, store_l6470.flags, Flags::Flag::kIsSetMaxSpeed);
     store_l6470.max_speed = ParseValue<uint32_t>(val, len);
 }
 
-void L6470Params::SetAcc(const char* val, uint32_t len)
-{
+void L6470Params::SetAcc(const char* val, uint32_t len) {
     store_l6470.flags = SetFlag(val, len, store_l6470.flags, Flags::Flag::kIsSetDec);
     store_l6470.acc = ParseValue<uint32_t>(val, len);
 }
 
-void L6470Params::SetDec(const char* val, uint32_t len)
-{
+void L6470Params::SetDec(const char* val, uint32_t len) {
     store_l6470.flags = SetFlag(val, len, store_l6470.flags, Flags::Flag::kIsSetDec);
     store_l6470.dec = ParseValue<uint32_t>(val, len);
 }
 
-void L6470Params::SetKvalHold(const char* val, uint32_t len)
-{
+void L6470Params::SetKvalHold(const char* val, uint32_t len) {
     store_l6470.flags = SetFlag(val, len, store_l6470.flags, Flags::Flag::kIsSetKvalHold);
     store_l6470.kval_hold = ParseValue<uint8_t>(val, len);
 }
 
-void L6470Params::SetKvalRun(const char* val, uint32_t len)
-{
+void L6470Params::SetKvalRun(const char* val, uint32_t len) {
     store_l6470.flags = SetFlag(val, len, store_l6470.flags, Flags::Flag::kIsSetKvalRun);
     store_l6470.kval_run = ParseValue<uint8_t>(val, len);
 }
 
-void L6470Params::SetKvalAcc(const char* val, uint32_t len)
-{
+void L6470Params::SetKvalAcc(const char* val, uint32_t len) {
     store_l6470.flags = SetFlag(val, len, store_l6470.flags, Flags::Flag::kIsSetKvalAcc);
     store_l6470.kval_acc = ParseValue<uint8_t>(val, len);
 }
 
-void L6470Params::SetKvalDec(const char* val, uint32_t len)
-{
+void L6470Params::SetKvalDec(const char* val, uint32_t len) {
     store_l6470.flags = SetFlag(val, len, store_l6470.flags, Flags::Flag::kIsSetKvalDec);
     store_l6470.kval_dec = ParseValue<uint8_t>(val, len);
 }
 
-void L6470Params::SetMicroSteps(const char* val, uint32_t len)
-{
+void L6470Params::SetMicroSteps(const char* val, uint32_t len) {
     store_l6470.flags = SetFlag(val, len, store_l6470.flags, Flags::Flag::kIsSetMicroSteps);
     store_l6470.micro_steps = ParseValue<uint8_t>(val, len);
 }
 
-void L6470Params::Store(const char* buffer, uint32_t buffer_size)
-{
+void L6470Params::Store(const char* buffer, uint32_t buffer_size) {
     store_l6470.flags = 0;
 
     ParseJsonWithTable(buffer, buffer_size, kL6470Keys);
@@ -127,44 +113,38 @@ void L6470Params::Store(const char* buffer, uint32_t buffer_size)
 #endif
 }
 
-void L6470Params::Set(L6470* l6470)
-{
+void L6470Params::Set(L6470* l6470) {
     assert(l6470 != nullptr);
 
     const auto kFlags = store_l6470.flags;
 
-    if (common::IsFlagSet(kFlags, Flags::Flag::kIsSetMinSpeed))
-    {
+    if (common::IsFlagSet(kFlags, Flags::Flag::kIsSetMinSpeed)) {
         l6470->setMinSpeed(store_l6470.min_speed);
     }
 
-    if (common::IsFlagSet(kFlags, Flags::Flag::kIsSetMaxSpeed))
-    {
+    if (common::IsFlagSet(kFlags, Flags::Flag::kIsSetMaxSpeed)) {
         l6470->setMinSpeed(store_l6470.max_speed);
     }
 
-    if (common::IsFlagSet(kFlags, Flags::Flag::kIsSetAcc))
-    {
+    if (common::IsFlagSet(kFlags, Flags::Flag::kIsSetAcc)) {
         l6470->setAcc(store_l6470.acc);
     }
 
-    if (common::IsFlagSet(kFlags, Flags::Flag::kIsSetDec))
-    {
+    if (common::IsFlagSet(kFlags, Flags::Flag::kIsSetDec)) {
         l6470->setDec(store_l6470.dec);
     }
 }
 
-void L6470Params::Dump()
-{
-    printf("flags=%.4x\n", store_l6470.flags);
-    printf(" %s=%u\n", L6470ParamsConst::kMinSpeed.name, store_l6470.min_speed);
-    printf(" %s=%u\n", L6470ParamsConst::kMaxSpeed.name, store_l6470.max_speed);
-    printf(" %s=%u\n", L6470ParamsConst::kAcc.name, store_l6470.acc);
-    printf(" %s=%u\n", L6470ParamsConst::kDec.name, store_l6470.dec);
-    printf(" %s=%u\n", L6470ParamsConst::kKvalHold.name, store_l6470.kval_hold);
-    printf(" %s=%u\n", L6470ParamsConst::kKvalRun.name, store_l6470.kval_run);
-    printf(" %s=%u\n", L6470ParamsConst::kKvalAcc.name, store_l6470.kval_acc);
-    printf(" %s=%u\n", L6470ParamsConst::kKvalDec.name, store_l6470.kval_dec);
-    printf(" %s=%u\n", L6470ParamsConst::kMicroSteps.name, store_l6470.micro_steps);
+void L6470Params::Dump() {
+    printf("flags=%.4x\n", static_cast<unsigned>(store_l6470.flags));
+    printf(" %s=%u\n", L6470ParamsConst::kMinSpeed.name, static_cast<unsigned>(store_l6470.min_speed));
+    printf(" %s=%u\n", L6470ParamsConst::kMaxSpeed.name, static_cast<unsigned>(store_l6470.max_speed));
+    printf(" %s=%u\n", L6470ParamsConst::kAcc.name, static_cast<unsigned>(store_l6470.acc));
+    printf(" %s=%u\n", L6470ParamsConst::kDec.name, static_cast<unsigned>(store_l6470.dec));
+    printf(" %s=%u\n", L6470ParamsConst::kKvalHold.name, static_cast<unsigned>(store_l6470.kval_hold));
+    printf(" %s=%u\n", L6470ParamsConst::kKvalRun.name, static_cast<unsigned>(store_l6470.kval_run));
+    printf(" %s=%u\n", L6470ParamsConst::kKvalAcc.name, static_cast<unsigned>(store_l6470.kval_acc));
+    printf(" %s=%u\n", L6470ParamsConst::kKvalDec.name, static_cast<unsigned>(store_l6470.kval_dec));
+    printf(" %s=%u\n", L6470ParamsConst::kMicroSteps.name, static_cast<unsigned>(store_l6470.micro_steps));
 }
 } // namespace json

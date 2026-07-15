@@ -35,10 +35,9 @@
 #include "json/json_parsehelper.h"
 #include "configstore.h"
 #include "configurationstore.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
-namespace json
-{
+namespace json {
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846f
@@ -46,9 +45,8 @@ namespace json
 
 static constexpr float kTickS = 0.00000025f; ///< 250ns
 
-MotorParams::MotorParams(uint32_t motor_index) : motor_index_(motor_index)
-{
-    DEBUG_PRINTF("Motor index: %u", motor_index_);
+MotorParams::MotorParams(uint32_t motor_index) : motor_index_(motor_index) {
+    DEBUG_PRINTF("Motor index: %u", static_cast<unsigned>(motor_index_));
 
     assert(motor_index < common::store::l6470dmx::kMaxMotors);
     strncpy(file_name_, SparkFunDmxParamsConst::kFileNameMotor, sizeof(file_name_));
@@ -57,38 +55,27 @@ MotorParams::MotorParams(uint32_t motor_index) : motor_index_(motor_index)
     ConfigStore::Instance().DmxL6470CopyMotorIndexed(motor_index, &store_motor);
 }
 
-void MotorParams::SetStepAngel(const char* val, uint32_t len)
-{
-    auto v = (json::Atof(val, len));
-    store_motor.step_angel = v;
+void MotorParams::SetStepAngel(const char* val, uint32_t len) {
+    store_motor.step_angel = json::Atof(val, len);
 }
 
-void MotorParams::SetVoltage(const char* val, uint32_t len)
-{
-    auto v = (json::Atof(val, len));
-    store_motor.step_angel = v;
+void MotorParams::SetVoltage(const char* val, uint32_t len) {
+    store_motor.step_angel = json::Atof(val, len);
 }
 
-void MotorParams::SetCurrent(const char* val, uint32_t len)
-{
-    auto v = (json::Atof(val, len));
-    store_motor.step_angel = v;
+void MotorParams::SetCurrent(const char* val, uint32_t len) {
+    store_motor.step_angel = json::Atof(val, len);
 }
 
-void MotorParams::SetResistance(const char* val, uint32_t len)
-{
-    auto v = (json::Atof(val, len));
-    store_motor.step_angel = v;
+void MotorParams::SetResistance(const char* val, uint32_t len) {
+    store_motor.step_angel = json::Atof(val, len);
 }
 
-void MotorParams::SetInductance(const char* val, uint32_t len)
-{
-    auto v = (json::Atof(val, len));
-    store_motor.step_angel = v;
+void MotorParams::SetInductance(const char* val, uint32_t len) {
+    store_motor.step_angel = json::Atof(val, len);
 }
 
-void MotorParams::Store(const char* buffer, uint32_t buffer_size)
-{
+void MotorParams::Store(const char* buffer, uint32_t buffer_size) {
     ParseJsonWithTable(buffer, buffer_size, kMotorKeys);
     ConfigStore::Instance().DmxL6470StoreMotorIndexed(motor_index_, &store_motor);
 
@@ -97,37 +84,34 @@ void MotorParams::Store(const char* buffer, uint32_t buffer_size)
 #endif
 }
 
-static float CalcIntersectSpeed(float resistance, float inductance)
-{
-    if (inductance == 0) return 0;
+static float CalcIntersectSpeed(float resistance, float inductance) {
+    if (inductance == 0) {
+        return 0;
+    }
 
     return (4.0f * resistance) / (2.0f * M_PI * inductance * 0.001f);
 }
 
-static uint32_t CalcIntersectSpeedReg(float f)
-{
+static uint32_t CalcIntersectSpeedReg(float f) {
     return static_cast<uint32_t>(f * (kTickS * (1U << 26)));
 }
 
-void MotorParams::Set(L6470* l6470)
-{
+void MotorParams::Set(L6470* l6470) {
     assert(l6470 != nullptr);
 
     const auto kF = CalcIntersectSpeed(store_motor.resistance, store_motor.inductance);
 
-    if (kF != 0)
-    {
+    if (kF != 0) {
         l6470->setParam(L6470_PARAM_INT_SPD, CalcIntersectSpeedReg(kF));
     }
 }
 
-void MotorParams::Dump()
-{
+void MotorParams::Dump() {
     printf(" %s=%.1f degree\n", MotorParamsConst::kStepAngel.name, store_motor.step_angel);
     printf(" %s=%.2f V\n", MotorParamsConst::kVoltage.name, store_motor.voltage);
-    printf(" %s=%.1f A/phase\n", MotorParamsConst::kCurrent, store_motor.current);
-    printf(" %s=%.1f Ohm/phase\n", MotorParamsConst::kResistance, store_motor.resistance);
-    printf(" %s=%.1f mH/phase\n", MotorParamsConst::kInductance, store_motor.inductance);
+    printf(" %s=%.1f A/phase\n", MotorParamsConst::kCurrent.name, store_motor.current);
+    printf(" %s=%.1f Ohm/phase\n", MotorParamsConst::kResistance.name, store_motor.resistance);
+    printf(" %s=%.1f mH/phase\n", MotorParamsConst::kInductance.name, store_motor.inductance);
 
     const auto kF = CalcIntersectSpeed(store_motor.resistance, store_motor.inductance);
 
