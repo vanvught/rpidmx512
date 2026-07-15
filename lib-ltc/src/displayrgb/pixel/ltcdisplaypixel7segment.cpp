@@ -41,8 +41,7 @@
 #include "pixeltype.h"
 #include "firmware/debug/debug_debug.h"
 
-LtcDisplayPixel7Segment::LtcDisplayPixel7Segment(pixel::LedType led_type, pixel::LedMap led_map)
-{
+LtcDisplayPixel7Segment::LtcDisplayPixel7Segment(pixel::LedType led_type, pixel::LedMap led_map) {
     DEBUG_ENTRY();
 
     pixel_7segment_ = new WS28xxDisplay7Segment(led_type, led_map);
@@ -51,8 +50,7 @@ LtcDisplayPixel7Segment::LtcDisplayPixel7Segment(pixel::LedType led_type, pixel:
     DEBUG_EXIT();
 }
 
-void LtcDisplayPixel7Segment::Show(const char* timecode, struct ltc::display::rgb::Colours& colours, struct ltc::display::rgb::Colours& colours_colons)
-{
+void LtcDisplayPixel7Segment::Show(const char* timecode, struct ltc::display::rgb::Colours& colours, struct ltc::display::rgb::Colours& colours_colons) {
     auto red = colours.red;
     auto green = colours.green;
     auto blue = colours.blue;
@@ -72,9 +70,7 @@ void LtcDisplayPixel7Segment::Show(const char* timecode, struct ltc::display::rg
     pixel_7segment_->Show();
 }
 
-void LtcDisplayPixel7Segment::ShowSysTime(const char* system_time, struct ltc::display::rgb::Colours& colours,
-                                          struct ltc::display::rgb::Colours& colours_colons)
-{
+void LtcDisplayPixel7Segment::ShowSysTime(const char* system_time, struct ltc::display::rgb::Colours& colours, struct ltc::display::rgb::Colours& colours_colons) {
     auto red = colours.red;
     auto green = colours.green;
     auto blue = colours.blue;
@@ -94,8 +90,7 @@ void LtcDisplayPixel7Segment::ShowSysTime(const char* system_time, struct ltc::d
     pixel_7segment_->Show();
 }
 
-void LtcDisplayPixel7Segment::ShowMessage(const char* message, struct ltc::display::rgb::Colours& colours)
-{
+void LtcDisplayPixel7Segment::ShowMessage(const char* message, struct ltc::display::rgb::Colours& colours) {
     assert(WS28xxDisplay7SegmentConfig::NUM_OF_DIGITS == ltc::display::rgb::kMaxMessageSize);
 
     const auto kRed = colours.red;
@@ -107,14 +102,12 @@ void LtcDisplayPixel7Segment::ShowMessage(const char* message, struct ltc::displ
     pixel_7segment_->Show();
 }
 
-void LtcDisplayPixel7Segment::WriteChar(uint8_t ch, uint8_t pos, struct ltc::display::rgb::Colours& colours)
-{
+void LtcDisplayPixel7Segment::WriteChar(uint8_t ch, uint8_t pos, struct ltc::display::rgb::Colours& colours) {
     pixel_7segment_->WriteChar(static_cast<char>(ch), pos, colours.red, colours.green, colours.blue);
     pixel_7segment_->Show();
 }
 
-void LtcDisplayPixel7Segment::Print()
-{
-    printf(" 7-Segment %d Digit(s), %d Colons, %d LEDs\n", WS28xxDisplay7SegmentConfig::NUM_OF_DIGITS, WS28xxDisplay7SegmentConfig::NUM_OF_COLONS,
-           WS28xxDisplay7SegmentConfig::LED_COUNT);
+void LtcDisplayPixel7Segment::Print() {
+    printf(" 7-Segment %u Digit(s), %u Colons, %u LEDs\n", static_cast<unsigned>(WS28xxDisplay7SegmentConfig::NUM_OF_DIGITS), static_cast<unsigned>(WS28xxDisplay7SegmentConfig::NUM_OF_COLONS),
+           static_cast<unsigned>(WS28xxDisplay7SegmentConfig::LED_COUNT));
 }

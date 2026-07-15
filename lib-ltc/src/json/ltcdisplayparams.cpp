@@ -119,9 +119,9 @@ void LtcDisplayParams::Dump() {
     printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, json::LtcDisplayParamsConst::kFileName);
 
 #if !defined(CONFIG_LTC_DISABLE_WS28XX)
-    printf(" %s=%s [%u]\n", LtcDisplayParamsConst::kPixelType.name, store_ltcdisplay.ws28xx_display_type == static_cast<uint8_t>(ltc::display::rgb::WS28xxType::SEGMENT) ? "7segment" : "matrix", store_ltcdisplay.ws28xx_display_type);
-    printf(" %s=%s [%u]\n", DmxLedParamsConst::kType.name, pixel::GetTypeName(static_cast<pixel::LedType>(store_ltcdisplay.ws28xx_type)), static_cast<int>(store_ltcdisplay.ws28xx_type));
-    printf(" %s=%s [%u]\n", DmxLedParamsConst::kMap.name, pixel::GetMapName(static_cast<pixel::LedMap>(store_ltcdisplay.ws28xx_rgb_mapping)), static_cast<int>(store_ltcdisplay.ws28xx_rgb_mapping));
+    printf(" %s=%s [%u]\n", LtcDisplayParamsConst::kPixelType.name, store_ltcdisplay.ws28xx_display_type == static_cast<uint8_t>(ltc::display::rgb::WS28xxType::SEGMENT) ? "7segment" : "matrix", static_cast<unsigned>(store_ltcdisplay.ws28xx_display_type));
+    printf(" %s=%s [%u]\n", DmxLedParamsConst::kType.name, pixel::GetTypeName(static_cast<pixel::LedType>(store_ltcdisplay.ws28xx_type)), static_cast<unsigned>(store_ltcdisplay.ws28xx_type));
+    printf(" %s=%s [%u]\n", DmxLedParamsConst::kMap.name, pixel::GetMapName(static_cast<pixel::LedMap>(store_ltcdisplay.ws28xx_rgb_mapping)), static_cast<unsigned>(store_ltcdisplay.ws28xx_rgb_mapping));
 #endif
 
     //    printf(" %s=%d\n", LtcDisplayParamsConst::INTENSITY, store_ltcdisplay.display_rgb_intensity);
@@ -132,9 +132,9 @@ void LtcDisplayParams::Dump() {
     //        printf(" %s=%.6x\n", LtcDisplayParamsConst::COLOUR[index], store_ltcdisplay.display_rgb_colour[index]);
     //    }
 
-    printf(" %s=%s [%u]\n", LtcDisplayParamsConst::kMax7219Type.name, store_ltcdisplay.max7219_type == static_cast<uint8_t>(ltc::display::max7219::Types::kSegment) ? "7segment" : "matrix", store_ltcdisplay.max7219_type);
-    printf(" %s=%u\n", LtcDisplayParamsConst::kMax7219Intensity.name, store_ltcdisplay.max7219_intensity);
-    printf(" %s=%u\n", LtcDisplayParamsConst::kOledIntensity.name, store_ltcdisplay.oled_intensity);
-    printf(" %s=%u\n", LtcDisplayParamsConst::kRotaryFullstep, common::IsFlagSet(store_ltcdisplay.flags, Flags::Flag::kRotaryFullStep));
+    printf(" %s=%s [%u]\n", LtcDisplayParamsConst::kMax7219Type.name, store_ltcdisplay.max7219_type == static_cast<uint8_t>(ltc::display::max7219::Types::kSegment) ? "7segment" : "matrix", static_cast<unsigned>(store_ltcdisplay.max7219_type));
+    printf(" %s=%u\n", LtcDisplayParamsConst::kMax7219Intensity.name, static_cast<unsigned>(store_ltcdisplay.max7219_intensity));
+    printf(" %s=%u\n", LtcDisplayParamsConst::kOledIntensity.name, static_cast<unsigned>(store_ltcdisplay.oled_intensity));
+    printf(" %s=%u\n", LtcDisplayParamsConst::kRotaryFullstep.name, static_cast<unsigned>(common::IsFlagSet(store_ltcdisplay.flags, Flags::Flag::kRotaryFullStep)));
 }
 } // namespace json

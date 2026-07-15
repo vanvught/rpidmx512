@@ -206,7 +206,7 @@ void LtcEncoder::Dump() {
 		}
 	}
 
-	printf("\n\nZero's=%d (%s), Ones's=%d\n", zeros, (zeros % 2 == 0) ? "even" : "odd!", ones);
+	printf("\n\nZero's=%u (%s), Ones's=%u\n", static_cast<unsigned>(zeros), (zeros % 2 == 0) ? "even" : "odd!", static_cast<unsigned>(ones));
 }
 
 void LtcEncoder::DumpBuffer() {

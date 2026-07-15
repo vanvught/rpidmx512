@@ -39,8 +39,7 @@
 #include "pixeltype.h"
 #include "firmware/debug/debug_debug.h"
 
-LtcDisplayPixelMatrix::LtcDisplayPixelMatrix(pixel::LedType led_type, pixel::LedMap led_map)
-{
+LtcDisplayPixelMatrix::LtcDisplayPixelMatrix(pixel::LedType led_type, pixel::LedMap led_map) {
     DEBUG_ENTRY();
 
     pixel_matrix_ = new WS28xxDisplayMatrix(64, 8, led_type, led_map);
@@ -49,8 +48,7 @@ LtcDisplayPixelMatrix::LtcDisplayPixelMatrix(pixel::LedType led_type, pixel::Led
     DEBUG_EXIT();
 }
 
-void LtcDisplayPixelMatrix::Show(const char* timecode, struct ltc::display::rgb::Colours& colours, struct ltc::display::rgb::Colours& colours_colons)
-{
+void LtcDisplayPixelMatrix::Show(const char* timecode, struct ltc::display::rgb::Colours& colours, struct ltc::display::rgb::Colours& colours_colons) {
     pixel_matrix_->SetColonsOff();
     pixel_matrix_->SetColon(timecode[ltc::timecode::index::COLON_1], 1, colours_colons.red, colours_colons.green, colours_colons.blue);
     pixel_matrix_->SetColon(timecode[ltc::timecode::index::COLON_2], 3, colours_colons.red, colours_colons.green, colours_colons.blue);
@@ -62,8 +60,7 @@ void LtcDisplayPixelMatrix::Show(const char* timecode, struct ltc::display::rgb:
     pixel_matrix_->Show();
 }
 
-void LtcDisplayPixelMatrix::ShowSysTime(const char* systemtime, struct ltc::display::rgb::Colours& colours, struct ltc::display::rgb::Colours& colours_colons)
-{
+void LtcDisplayPixelMatrix::ShowSysTime(const char* systemtime, struct ltc::display::rgb::Colours& colours, struct ltc::display::rgb::Colours& colours_colons) {
     pixel_matrix_->SetColonsOff();
     pixel_matrix_->SetColon(systemtime[ltc::systemtime::index::COLON_1], 2, colours_colons.red, colours_colons.green, colours_colons.blue);
     pixel_matrix_->SetColon(systemtime[ltc::systemtime::index::COLON_2], 4, colours_colons.red, colours_colons.green, colours_colons.blue);
@@ -74,21 +71,18 @@ void LtcDisplayPixelMatrix::ShowSysTime(const char* systemtime, struct ltc::disp
     pixel_matrix_->Show();
 }
 
-void LtcDisplayPixelMatrix::ShowMessage(const char* message, struct ltc::display::rgb::Colours& colours)
-{
+void LtcDisplayPixelMatrix::ShowMessage(const char* message, struct ltc::display::rgb::Colours& colours) {
     pixel_matrix_->SetColonsOff();
     pixel_matrix_->TextLine(1, message, ltc::display::rgb::kMaxMessageSize, colours.red, colours.green, colours.blue);
     pixel_matrix_->Show();
 }
 
-void LtcDisplayPixelMatrix::WriteChar(uint8_t ch, uint8_t pos, struct ltc::display::rgb::Colours& colours)
-{
+void LtcDisplayPixelMatrix::WriteChar(uint8_t ch, uint8_t pos, struct ltc::display::rgb::Colours& colours) {
     pixel_matrix_->SetCursorPos(pos, 0);
     pixel_matrix_->PutChar(static_cast<char>(ch), colours.red, colours.green, colours.blue);
     pixel_matrix_->Show();
 }
 
-void LtcDisplayPixelMatrix::Print()
-{
-    printf(" Matrix %dx%d\n", pixel_matrix_->GetMaxPosition(), pixel_matrix_->GetMaxLine());
+void LtcDisplayPixelMatrix::Print() {
+    printf(" Matrix %dx%d\n", static_cast<unsigned>(pixel_matrix_->GetMaxPosition()), static_cast<unsigned>(pixel_matrix_->GetMaxLine()));
 }
