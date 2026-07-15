@@ -28,26 +28,24 @@
 
 #include "dmxnode.h"
 
-namespace json::status
-{
-uint32_t PixelDmx(char* out_buffer, uint32_t out_buffer_size)
-{
+namespace json::status {
+uint32_t PixelDmx(char* out_buffer, uint32_t out_buffer_size) {
     const auto kBufferSize = out_buffer_size - 2U;
     out_buffer[0] = '{';
     uint32_t length = 1;
 
-	static_assert(dmxnode::kMaxPorts != 0);
+    static_assert(dmxnode::kMaxPorts != 0);
 
-    for (uint32_t i = 0; i < dmxnode::kMaxPorts; i++)
-    {
+    for (uint32_t i = 0; i < dmxnode::kMaxPorts; i++) {
         length += static_cast<uint32_t>(snprintf(&out_buffer[length], kBufferSize - length, 
-        "\"Dmx Output %u\":\"%s\",", 
-        i + 1, 
-        DmxNode::Instance().GetPortName(i)));
+			"\"Dmx Output %u\":\"%s\",", 
+			static_cast<unsigned>(i + 1), 
+			DmxNode::Instance().GetPortName(i))
+		);
     }
 
     out_buffer[length - 1] = '}';
-    
+
     return length;
 }
 } // namespace json::status

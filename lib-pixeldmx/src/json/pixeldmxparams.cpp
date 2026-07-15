@@ -120,10 +120,10 @@ void PixelDmxParams::SetSpiSpeedHz(const char* val, uint32_t len) {
 }
 
 void PixelDmxParams::SetGlobalBrightness(const char* val, uint32_t len) {
-    uint8_t v;
+    uint8_t value;
 
-    if (ParseInRange<uint16_t, uint8_t>(val, len, 0U, 255U, &v)) {
-        store_dmxled.global_brightness = v;
+    if (ParseInRange<uint16_t, uint8_t>(val, len, 0U, 255U, &value)) {
+        store_dmxled.global_brightness = value;
     }
 }
 
@@ -135,8 +135,7 @@ void PixelDmxParams::SetStartUniPort(const char* key, uint32_t key_len, const ch
         index += 10;
     }
 
-    auto v = ParseValue<uint16_t>(val, val_len);
-    store_dmxled.start_universe[index] = v;
+    store_dmxled.start_universe[index] = ParseValue<uint16_t>(val, val_len);
 }
 
 #if defined(RDM_RESPONDER)
@@ -216,7 +215,11 @@ void PixelDmxParams::Set() {
                 DmxNodeNodeType::Get()->SetDirection(protocol_port_index, dmxnode::Direction::kOutput);
 
                 char label[dmxnode::kPortNameLength];
-                snprintf(label, dmxnode::kPortNameLength - 1, "Pixel %c -> %u:%u", static_cast<char>('A' + pixel_port_index), protocol_port_index, kStartUniverse + universe);
+                snprintf(label, dmxnode::kPortNameLength - 1, "Pixel %c -> %u:%u", 
+					static_cast<char>('A' + pixel_port_index), 
+					static_cast<unsigned>(protocol_port_index), 
+					static_cast<unsigned>(kStartUniverse + universe)
+				);
                 DmxNode::Instance().SetShortName(protocol_port_index, label);
             }
             protocol_port_index++;
@@ -266,19 +269,19 @@ void PixelDmxParams::Dump() {
     printf(" %s=%.2f [0x%X]\n", DmxLedParamsConst::kT0H.name, pixel::ConvertTxH(store_dmxled.low_code), store_dmxled.low_code);
     printf(" %s=%.2f [0x%X]\n", DmxLedParamsConst::kT1H.name, pixel::ConvertTxH(store_dmxled.high_code), store_dmxled.high_code);
     printf(" %s=%s\n", DmxLedParamsConst::kMap.name, pixel::GetMapName(common::FromValue<pixel::LedMap>(store_dmxled.map)));
-    printf(" %s=%u\n", DmxLedParamsConst::kCount.name, store_dmxled.count);
-    printf(" %s=%u\n", DmxLedParamsConst::kGroupingCount.name, store_dmxled.grouping_count);
+    printf(" %s=%u\n", DmxLedParamsConst::kCount.name, static_cast<unsigned>(store_dmxled.count));
+    printf(" %s=%u\n", DmxLedParamsConst::kGroupingCount.name, static_cast<unsigned>(store_dmxled.grouping_count));
     for (uint32_t i = 0; i < kMaxStartUniverses; i++) {
         printf(" %s=%d\n", PixelDmxParamsConst::kStartUniPort[i].name, store_dmxled.start_universe[i]);
     }
 #if defined(OUTPUT_DMX_PIXEL_MULTI)
     printf(" %s=%d\n", DmxLedParamsConst::kActiveOutputPorts.name, store_dmxled.active_outputs);
 #endif
-    printf(" %s=%d\n", DmxLedParamsConst::kTestPattern.name, store_dmxled.test_pattern);
-    printf(" %s=%u\n", DmxLedParamsConst::kSpiSpeedHz.name, store_dmxled.spi_speed_hz);
-    printf(" %s=%d\n", DmxLedParamsConst::kGlobalBrightness.name, store_dmxled.global_brightness);
+    printf(" %s=%u\n", DmxLedParamsConst::kTestPattern.name, static_cast<unsigned>(store_dmxled.test_pattern));
+    printf(" %s=%u\n", DmxLedParamsConst::kSpiSpeedHz.name, static_cast<unsigned>(store_dmxled.spi_speed_hz));
+    printf(" %s=%u\n", DmxLedParamsConst::kGlobalBrightness.name, static_cast<unsigned>(store_dmxled.global_brightness));
 #if defined(RDM_RESPONDER)
-    printf(" %s=%d\n", PixelDmxParamsConst::kDmxStartAddress.name, store_dmxled.dmx_start_address);
+    printf(" %s=%u\n", PixelDmxParamsConst::kDmxStartAddress.name, static_cast<unsigned>(store_dmxled.dmx_start_address));
 #endif
 #if defined(CONFIG_PIXELDMX_ENABLE_GAMMATABLE)
     printf(" %s=%d\n", DmxLedParamsConst::kGammaCorrection.name, common::IsFlagSet(store_dmxled.flags, Flags::Flag::kEnableGamma));

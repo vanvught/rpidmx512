@@ -41,10 +41,8 @@
 #include "pixelconfiguration.h"
 #include "pixeltype.h"
 
-namespace pixeldmxconfiguration
-{
-struct PortInfo
-{
+namespace pixeldmxconfiguration {
+struct PortInfo {
     uint16_t begin_index_port[4];
     uint16_t protocol_port_index_last;
 };
@@ -52,8 +50,7 @@ struct PortInfo
 
 class PixelDmxConfiguration : public PixelConfiguration {
    public:
-    PixelDmxConfiguration()
-    {
+    PixelDmxConfiguration() {
         DEBUG_ENTRY();
 
         assert(s_this == nullptr);
@@ -79,10 +76,8 @@ class PixelDmxConfiguration : public PixelConfiguration {
 
     pixeldmxconfiguration::PortInfo& GetPortInfo() { return port_info_; }
 
-    void SetDmxStartAddress(uint16_t dmx_start_address)
-    {
-        if ((dmx_start_address > 0) && (dmx_start_address <= dmxnode::kUniverseSize))
-        {
+    void SetDmxStartAddress(uint16_t dmx_start_address) {
+        if ((dmx_start_address > 0) && (dmx_start_address <= dmxnode::kUniverseSize)) {
             dmx_start_address_ = dmx_start_address;
             return;
         }
@@ -92,17 +87,13 @@ class PixelDmxConfiguration : public PixelConfiguration {
 
     uint16_t GetDmxFootprint() const { return dmx_footprint_; }
 
-    void Validate(uint32_t ports_max)
-    {
+    void Validate(uint32_t ports_max) {
         DEBUG_ENTRY();
 
         PixelConfiguration::Validate();
 
-        if (!PixelConfiguration::IsRTZProtocol())
-        {
-            if (!((PixelConfiguration::GetType() == pixel::LedType::kWS2801) || (PixelConfiguration::GetType() == pixel::LedType::kAPA102) ||
-                  (PixelConfiguration::GetType() == pixel::LedType::kSK9822)))
-            {
+        if (!PixelConfiguration::IsRTZProtocol()) {
+            if ((PixelConfiguration::GetType() != pixel::LedType::kWS2801) && (PixelConfiguration::GetType() != pixel::LedType::kAPA102) && (PixelConfiguration::GetType() != pixel::LedType::kSK9822)) {
                 PixelConfiguration::SetType(pixel::LedType::kWS2801);
             }
 
@@ -111,21 +102,17 @@ class PixelDmxConfiguration : public PixelConfiguration {
 
         port_info_.begin_index_port[0] = 0;
 
-        if (PixelConfiguration::GetType() == pixel::LedType::kSK6812W)
-        {
+        if (PixelConfiguration::GetType() == pixel::LedType::kSK6812W) {
             port_info_.begin_index_port[1] = 128;
             port_info_.begin_index_port[2] = 256;
             port_info_.begin_index_port[3] = 384;
-        }
-        else
-        {
+        } else {
             port_info_.begin_index_port[1] = 170;
             port_info_.begin_index_port[2] = 340;
             port_info_.begin_index_port[3] = 510;
         }
 
-        if ((grouping_count_ == 0) || (grouping_count_ > PixelConfiguration::GetCount()))
-        {
+        if ((grouping_count_ == 0) || (grouping_count_ > PixelConfiguration::GetCount())) {
             grouping_count_ = PixelConfiguration::GetCount();
         }
 
@@ -133,14 +120,14 @@ class PixelDmxConfiguration : public PixelConfiguration {
         output_ports_ = std::min(ports_max, output_ports_);
         universes_ = (1U + (groups_ / (1U + port_info_.begin_index_port[1])));
         dmx_footprint_ = static_cast<uint16_t>(PixelConfiguration::GetLedsPerPixel() * groups_);
-        if (dmx_start_address_ == 0) dmx_start_address_ = dmxnode::kStartAddressDefault;
-
-        if (ports_max == 1)
-        {
-            port_info_.protocol_port_index_last = static_cast<uint16_t>(groups_ / (1U + port_info_.begin_index_port[1]));
+        
+		if (dmx_start_address_ == 0) {
+            dmx_start_address_ = dmxnode::kStartAddressDefault;
         }
-        else
-        {
+
+        if (ports_max == 1) {
+            port_info_.protocol_port_index_last = static_cast<uint16_t>(groups_ / (1U + port_info_.begin_index_port[1]));
+        } else {
 #if defined(NODE_DDP_DISPLAY)
             port_info_.protocol_port_index_last = static_cast<uint16_t>(((output_ports_ - 1U) * 4U) + universes_ - 1U);
 #else
@@ -151,23 +138,26 @@ class PixelDmxConfiguration : public PixelConfiguration {
         DEBUG_EXIT();
     }
 
-    void Print()
-    {
+    void Print() {
         PixelConfiguration::Print();
         puts("Pixel DMX configuration");
-        printf(" Outputs        : %u\n", output_ports_);
-        printf(" Grouping count : %u [Groups : %u]\n", grouping_count_, groups_);
-        printf(" Universes      : %u\n", universes_);
-        printf(" DmxFootprint   : %u\n", dmx_footprint_);
+        printf(" Outputs        : %u\n", static_cast<unsigned>(output_ports_));
+        printf(" Grouping count : %u [Groups : %u]\n", static_cast<unsigned>(grouping_count_), static_cast<unsigned>(groups_));
+        printf(" Universes      : %u\n", static_cast<unsigned>(universes_));
+        printf(" DmxFootprint   : %u\n", static_cast<unsigned>(dmx_footprint_));
 
 #ifndef NDEBUG
         const auto& begin_index_port = port_info_.begin_index_port;
-        printf(" %u:%u:%u:%u -> %u\n", begin_index_port[0], begin_index_port[1], begin_index_port[2], begin_index_port[3], port_info_.protocol_port_index_last);
+        printf(" %u:%u:%u:%u -> %u\n", 
+			static_cast<unsigned>(begin_index_port[0]), 
+			static_cast<unsigned>(begin_index_port[1]), 
+			static_cast<unsigned>(begin_index_port[2]), 
+			static_cast<unsigned>(begin_index_port[3]),
+			static_cast<unsigned>(port_info_.protocol_port_index_last));
 #endif
     }
 
-    static PixelDmxConfiguration& Get()
-    {
+    static PixelDmxConfiguration& Get() {
         assert(s_this != nullptr);
         return *s_this;
     }
@@ -184,4 +174,4 @@ class PixelDmxConfiguration : public PixelConfiguration {
     static inline PixelDmxConfiguration* s_this;
 };
 
-#endif  // PIXELDMXCONFIGURATION_H_
+#endif // PIXELDMXCONFIGURATION_H_

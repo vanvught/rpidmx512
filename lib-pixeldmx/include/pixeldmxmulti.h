@@ -96,7 +96,7 @@ class PixelDmxMulti final : public PixelDmxConfiguration {
 
     void Start(uint32_t port_index) {
         const auto kIndex = (port_index <= 31) ? 0 : 1;
-        DEBUG_PRINTF("%u [%u]", port_index, kIndex);
+        DEBUG_PRINTF("%u [%u]", static_cast<unsigned>(port_index), static_cast<unsigned>(kIndex));
 
         if (kIndex == 0) {
             started_[0] |= (1U << port_index);
@@ -113,7 +113,7 @@ class PixelDmxMulti final : public PixelDmxConfiguration {
 
     void Stop(uint32_t port_index) {
         const auto kIndex = (port_index <= 31) ? 0 : 1;
-        DEBUG_PRINTF("%u [%u]", port_index, kIndex);
+        DEBUG_PRINTF("%u [%u]", static_cast<unsigned>(port_index), static_cast<unsigned>(kIndex));
 
         if (kIndex == 0) {
             if (started_[0] & (1U << port_index)) {
