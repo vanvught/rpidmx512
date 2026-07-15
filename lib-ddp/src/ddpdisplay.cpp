@@ -44,28 +44,28 @@ static constexpr char kStart[] = "{\"status\":{\"update\":\"change\",\"state\":\
 static constexpr char kDiscoverReply[] = "{\"status\":{\"man\":\"%s\",\"mod\":\"Pixel\",\"ver\":\"1.0\",\"mac\":\"%.2x:%.2x:%.2x:%.2x:%.2x:%.2x\"}}";
 static constexpr char kConfigReply[] =
     "{\"config\":{\"ip\":\"%d.%d.%d.%d\",\"nm\":\"%d.%d.%d.%d\",\"gw\":\"%d.%d.%d.%d\",\"ports\":["
-    "{\"port\":\"0\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
-    "{\"port\":\"1\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
-    "{\"port\":\"2\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
-    "{\"port\":\"3\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
+    "{\"port\":\"0\",\"ts\":\"0\",\"l\":\"%u\",\"ss\":\"0\"},"
+    "{\"port\":\"1\",\"ts\":\"0\",\"l\":\"%u\",\"ss\":\"0\"},"
+    "{\"port\":\"2\",\"ts\":\"0\",\"l\":\"%u\",\"ss\":\"0\"},"
+    "{\"port\":\"3\",\"ts\":\"0\",\"l\":\"%u\",\"ss\":\"0\"},"
 #if CONFIG_DMXNODE_PIXEL_MAX_PORTS > 2
-    "{\"port\":\"4\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
-    "{\"port\":\"5\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
-    "{\"port\":\"6\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
-    "{\"port\":\"7\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
-    "{\"port\":\"8\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
-    "{\"port\":\"9\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"}"
+    "{\"port\":\"4\",\"ts\":\"0\",\"l\":\"%u\",\"ss\":\"0\"},"
+    "{\"port\":\"5\",\"ts\":\"0\",\"l\":\"%u\",\"ss\":\"0\"},"
+    "{\"port\":\"6\",\"ts\":\"0\",\"l\":\"%u\",\"ss\":\"0\"},"
+    "{\"port\":\"7\",\"ts\":\"0\",\"l\":\"%u\",\"ss\":\"0\"},"
+    "{\"port\":\"8\",\"ts\":\"0\",\"l\":\"%u\",\"ss\":\"0\"},"
+    "{\"port\":\"9\",\"ts\":\"0\",\"l\":\"%u\",\"ss\":\"0\"}"
 #endif
 #if CONFIG_DMXNODE_PIXEL_MAX_PORTS == 16
     ","
-    "{\"port\":\"10\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
-    "{\"port\":\"11\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
-    "{\"port\":\"12\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
-    "{\"port\":\"13\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
-    "{\"port\":\"14\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
-    "{\"port\":\"15\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
-    "{\"port\":\"16\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"},"
-    "{\"port\":\"17\",\"ts\":\"0\",\"l\":\"%d\",\"ss\":\"0\"}"
+    "{\"port\":\"10\",\"ts\":\"0\",\"l\":\"%u\",\"ss\":\"0\"},"
+    "{\"port\":\"11\",\"ts\":\"0\",\"l\":\"%u\",\"ss\":\"0\"},"
+    "{\"port\":\"12\",\"ts\":\"0\",\"l\":\"%u\",\"ss\":\"0\"},"
+    "{\"port\":\"13\",\"ts\":\"0\",\"l\":\"%u\",\"ss\":\"0\"},"
+    "{\"port\":\"14\",\"ts\":\"0\",\"l\":\"%u\",\"ss\":\"0\"},"
+    "{\"port\":\"15\",\"ts\":\"0\",\"l\":\"%u\",\"ss\":\"0\"},"
+    "{\"port\":\"16\",\"ts\":\"0\",\"l\":\"%u\",\"ss\":\"0\"},"
+    "{\"port\":\"17\",\"ts\":\"0\",\"l\":\"%u\",\"ss\":\"0\"}"
 
 #endif
     "]}}";
@@ -180,15 +180,15 @@ void DdpDisplay::HandleQuery() {
 
         const auto kLength =
             static_cast<uint32_t>(snprintf(reinterpret_cast<char*>(packet->data), network::udp::kDataSize - 1, json::kConfigReply, IP2STR(network::GetPrimaryIp()), IP2STR(network::GetNetmask()), IP2STR(network::GetGatewayIp()),
-                                           active_ports_ > 0 ? count_ : 0, active_ports_ > 1 ? count_ : 0,
+                                           active_ports_ > 0 ? static_cast<unsigned>(count_) : 0, active_ports_ > 1 ? static_cast<unsigned>(count_) : 0,
 #if CONFIG_DMXNODE_PIXEL_MAX_PORTS > 2
-                                           active_ports_ > 2 ? count_ : 0, active_ports_ > 3 ? count_ : 0, active_ports_ > 4 ? count_ : 0, active_ports_ > 5 ? count_ : 0, active_ports_ > 6 ? count_ : 0, active_ports_ > 7 ? count_ : 0,
+                                           active_ports_ > 2 ? static_cast<unsigned>(count_) : 0, active_ports_ > 3 ? static_cast<unsigned>(count_) : 0, active_ports_ > 4 ? static_cast<unsigned>(count_) : 0, active_ports_ > 5 ? static_cast<unsigned>(count_) : 0, active_ports_ > 6 ? static_cast<unsigned>(count_) : 0, active_ports_ > 7 ? static_cast<unsigned>(count_) : 0,
 #endif
 #if CONFIG_DMXNODE_PIXEL_MAX_PORTS == 16
-                                           active_ports_ > 8 ? count_ : 0, active_ports_ > 9 ? count_ : 0, active_ports_ > 10 ? count_ : 0, active_ports_ > 11 ? count_ : 0, active_ports_ > 12 ? count_ : 0, active_ports_ > 13 ? count_ : 0,
-                                           active_ports_ > 14 ? count_ : 0, active_ports_ > 15 ? count_ : 0,
+                                           active_ports_ > 8 ? static_cast<unsigned>(count_) : 0, active_ports_ > 9 ? static_cast<unsigned>(count_) : 0, active_ports_ > 10 ? static_cast<unsigned>(count_) : 0, active_ports_ > 11 ? static_cast<unsigned>(count_) : 0, active_ports_ > 12 ? static_cast<unsigned>(count_) : 0, active_ports_ > 13 ? static_cast<unsigned>(count_) : 0,
+                                           active_ports_ > 14 ? static_cast<unsigned>(count_) : 0, active_ports_ > 15 ? static_cast<unsigned>(count_) : 0,
 #endif
-                                           ddpdisplay::configuration::dmx::kMaxPorts == 0 ? 0 : dmxnode::kUniverseSize, ddpdisplay::configuration::dmx::kMaxPorts == 0 ? 0 : dmxnode::kUniverseSize));
+                                           ddpdisplay::configuration::dmx::kMaxPorts == 0 ? 0 : static_cast<unsigned>(dmxnode::kUniverseSize), ddpdisplay::configuration::dmx::kMaxPorts == 0 ? 0 : static_cast<unsigned>(dmxnode::kUniverseSize)));
 
         packet->header.flags1 = ddp::flags1::VER1 | ddp::flags1::REPLY | ddp::flags1::PUSH;
         packet->header.len[0] = static_cast<uint8_t>(kLength >> 8);
