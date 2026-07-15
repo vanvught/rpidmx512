@@ -269,7 +269,7 @@ class DmxNode {
         assert(port_index < dmxnode::kMaxPorts);
         auto& port = port_[port_index];
 
-        snprintf(port.label, dmxnode::kPortNameLength - 1, "Port %u", (1U + port_index));
+        snprintf(port.label, dmxnode::kPortNameLength - 1, "Port %u", static_cast<unsigned>((1U + port_index)));
         port.label[dmxnode::kPortNameLength - 1] = '\0';
     }
 
