@@ -8,18 +8,25 @@
 	<div id="appNav"></div>
 	<div id="appHeader"></div>
 	<div class="card">
-		<h2>General</h2>
-		<form onsubmit="saveField('display_name','config/remote','display_name',list); return false;">
-			<div class="row">
-				<label>Display name</label><input id="display_name" pattern="[A-Za-z0-9\-]{1,20}" maxlength="20" required>
-				<button type="submit">Save</button>
-			</div>
-		</form>
-		<div class="row">
-			<label>UTC offset</label>
-			<input id="utc_offset" pattern="[+\-][0-9]{2}:[0-9]{2}">
-			<button onclick="saveField('utc_offset','config/global','utc_offset',display);">Save</button>
-		</div>
+	    <h2>General</h2>
+	    <form onsubmit="saveField('display_name','config/remote','display_name',list); return false;">
+	        <div class="row">
+	            <label>Display name</label>
+	            <input id="display_name"
+	                   pattern="[A-Za-z0-9\-]{1,20}"
+	                   maxlength="20"
+	                   required>
+	            <button type="submit">Save</button>
+	        </div>
+	    </form>
+	    <form onsubmit="saveField('utc_offset','config/global','utc_offset',display); return false;">
+	        <div class="row">
+	            <label>UTC offset</label>
+	            <input id="utc_offset"
+	                   pattern="[+\-][0-9]{2}:[0-9]{2}">
+	            <button type="submit">Save</button>
+	        </div>
+	    </form>
 	</div>
 	<div class="card">
 		<h2>Network</h2>
