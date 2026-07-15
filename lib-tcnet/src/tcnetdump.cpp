@@ -27,25 +27,22 @@
 #include <cstdio>
 
 #include "tcnet.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
 static uint32_t s_timestamp_previous = 0;
 
-void TCNet::DumpManagementHeader(const uint8_t* buffer)
-{
+void TCNet::DumpManagementHeader(const uint8_t* buffer) {
     const auto* management_header = reinterpret_cast<const struct TTCNetPacketManagementHeader*>(buffer);
 
     printf("ManagementHeader\n");
-    printf(" %.3s V%d.%d %.8s\n", management_header->Header, management_header->ProtocolVersionMajor, management_header->ProtocolVersionMinor,
-           management_header->NodeName);
+    printf(" %.3s V%u.%u %.8s\n", management_header->Header, static_cast<unsigned>(management_header->ProtocolVersionMajor), static_cast<unsigned>(management_header->ProtocolVersionMinor), management_header->NodeName);
     printf(" %s\n", management_header->NodeType == TCNET_TYPE_SLAVE ? "SLAVE" : (management_header->NodeType == TCNET_TYPE_MASTER ? "MASTER" : "AUTO"));
-    printf(" %u [%u] %d\n", management_header->TimeStamp, management_header->TimeStamp - s_timestamp_previous, management_header->SEQ);
+    printf(" %u [%u] %u\n", static_cast<unsigned>(management_header->TimeStamp), static_cast<unsigned>(management_header->TimeStamp - s_timestamp_previous), static_cast<unsigned>(management_header->SEQ));
 
     s_timestamp_previous = management_header->TimeStamp;
 }
 
-void TCNet::DumpOptIn(const uint8_t* buffer)
-{
+void TCNet::DumpOptIn(const uint8_t* buffer) {
     DEBUG_ENTRY();
 
     DumpManagementHeader(buffer);
@@ -53,10 +50,9 @@ void TCNet::DumpOptIn(const uint8_t* buffer)
     const auto* opt_in = reinterpret_cast<const struct TTCNetPacketOptIn*>(buffer);
 
     printf(" OptIn\n");
-    printf("  %d %d\n", opt_in->NodeCount, opt_in->NodeListenerPort);
-    printf("  %d %d\n", opt_in->NodeCount, opt_in->UpTime);
-    printf("  %.16s %.16s %d.%d.%d [%d]\n", opt_in->VendorName, opt_in->DeviceName, opt_in->DeviceMajorVersion,
-           opt_in->DeviceMinorVersion, opt_in->DeviceBugVersion, opt_in->NodeCount);
+    printf("  %u %u\n", static_cast<unsigned>(opt_in->NodeCount), static_cast<unsigned>(opt_in->NodeListenerPort));
+    printf("  %u %u\n", static_cast<unsigned>(opt_in->NodeCount), static_cast<unsigned>(opt_in->UpTime));
+    printf("  %.16s %.16s %d.%d.%d [%d]\n", opt_in->VendorName, opt_in->DeviceName, opt_in->DeviceMajorVersion, opt_in->DeviceMinorVersion, opt_in->DeviceBugVersion, opt_in->NodeCount);
 
     DEBUG_EXIT();
 }

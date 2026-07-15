@@ -50,7 +50,7 @@ inline constexpr char kNodeNameDefault[] = "AvV";
 
 enum class Layer : uint8_t { kLayer1, kLayer2, kLayer3, kLayer4, kLayerA, kLayerB, kLayerM, kLayerC, kLayerUndefined };
 
-[[nodiscard]] inline constexpr char GetLayer(Layer layer) {
+[[nodiscard]] constexpr char GetLayer(Layer layer) {
     switch (layer) {
         case Layer::kLayer1:
         case Layer::kLayer2:
@@ -77,7 +77,7 @@ enum class Layer : uint8_t { kLayer1, kLayer2, kLayer3, kLayer4, kLayerA, kLayer
     return ' ';
 }
 
-[[nodiscard]] inline constexpr Layer GetLayer(char c) {
+[[nodiscard]] constexpr Layer GetLayer(char c) {
     switch (c | 0x20) { // to lower case
         case '1':
         case '2':
@@ -183,10 +183,10 @@ class TCNet {
         if (use_time_code_) {
             puts(" TC");
         } else {
-            printf(" T%u\n", tcnet::kFps[static_cast<uint32_t>(timecode_type_)]);
+            printf(" T%u\n", static_cast<unsigned>(tcnet::kFps[static_cast<uint32_t>(timecode_type_)]));
         }
 
-        printf("%u:%u:%u\n", static_cast<unsigned>(layer_), lx_time_offset_, lx_time_code_offset_);
+        printf("%u:%u:%u\n", static_cast<unsigned>(layer_), static_cast<unsigned>(lx_time_offset_), static_cast<unsigned>(lx_time_code_offset_));
     }
 
     TTCNetNodeType GetNodeType() const { return static_cast<TTCNetNodeType>(packet_opt_in_.ManagementHeader.NodeType); }
@@ -246,7 +246,7 @@ class TCNet {
         const auto* packet = reinterpret_cast<const struct TTCNetPacketManagementHeader*>(buffer);
         const auto kMessageType = static_cast<TTCNetMessageType>(packet->MessageType);
 
-        DEBUG_PRINTF("kMessageType=%u", static_cast<uint32_t>(kMessageType));
+        DEBUG_PRINTF("kMessageType=%u", static_cast<unsigned>(kMessageType));
 
         if (kMessageType == TCNET_MESSAGE_TYPE_OPTIN) {
 #ifndef NDEBUG
