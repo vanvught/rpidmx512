@@ -92,9 +92,9 @@ int main() // NOLINT
 
     if (kIsLedTypeSet) {
         dmxnode_chain.SetTLC59711Dmx(&tlc59711dmx);
-        snprintf(description, sizeof(description) - 1, "Sparkfun [%d] with %s [%d]", motors_connected, tlc59711::GetType(tlc59711dmx.GetType()), tlc59711dmx.GetCount());
+        snprintf(description, sizeof(description) - 1, "Sparkfun [%u] with %s [%u]", static_cast<unsigned>(motors_connected), tlc59711::GetType(tlc59711dmx.GetType()), static_cast<unsigned>(tlc59711dmx.GetCount()));
     } else {
-        snprintf(description, sizeof(description) - 1, "Sparkfun [%d]", motors_connected);
+        snprintf(description, sizeof(description) - 1, "Sparkfun [%u]", static_cast<unsigned>(motors_connected));
     }
 
     DmxNodeNode dmxnode_node;
