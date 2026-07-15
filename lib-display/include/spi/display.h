@@ -105,17 +105,17 @@ class Display : public LcdDriver {
 #else
         printf("ST7789 ");
 #endif
-        printf("(%u,%u)\n", rows_, cols_);
+        printf("(%u,%u)\n", static_cast<unsigned>(rows_), static_cast<unsigned>(cols_));
     }
 
     void Cls() { FillColour(kColorBackground); }
 
-    void SetCursorPos(const uint32_t nCol, const uint32_t row) {
+    void SetCursorPos(uint32_t nCol, uint32_t row) {
         cursor_x_ = nCol * s_pFONT->kWidth;
         cursor_y_ = row * s_pFONT->kHeight;
     }
 
-    void PutChar(const int c) {
+    void PutChar(int c) {
         DrawChar(cursor_x_, cursor_y_, static_cast<char>(c), s_pFONT, kColorBackground, kColorForeground);
 
         cursor_x_ += s_pFONT->kWidth;
@@ -137,7 +137,7 @@ class Display : public LcdDriver {
 	    }
 	}
 
-    void ClearLine(const uint32_t nLine) {
+    void ClearLine(uint32_t nLine) {
         if (__builtin_expect((!(nLine <= rows_)), 0)) {
             return;
         }
@@ -151,7 +151,7 @@ class Display : public LcdDriver {
         SetCursorPos(0, (nLine - 1U));
     }
 
-    void TextLine(const uint32_t nLine, const char* pText, const uint32_t nLength) {
+    void TextLine(uint32_t nLine, const char* pText, const uint32_t nLength) {
         if (__builtin_expect((!(nLine <= rows_)), 0)) {
             return;
         }
@@ -172,7 +172,7 @@ class Display : public LcdDriver {
         }
     }
 
-    int Write(const uint32_t nLine, const char* pText) {
+    int Write(uint32_t nLine, const char* pText) {
         const auto* p = pText;
         int nCount = 0;
 
@@ -187,7 +187,7 @@ class Display : public LcdDriver {
         return nCount;
     }
 
-    int Printf(const uint8_t nLine, const char* format, ...) {
+    int Printf(uint8_t nLine, const char* format, ...) {
         char buffer[32];
 
         va_list arp;
