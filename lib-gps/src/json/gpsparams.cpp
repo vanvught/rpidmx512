@@ -104,10 +104,10 @@ void GpsParams::Set() {
 void GpsParams::Dump() {
     printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, json::GpsParamsConst::kFileName);
     printf(" %s=%s [%u]\n", GpsParamsConst::kModule.name, gps::GetModule(static_cast<gps::Module>(store_gps.module)), store_gps.module);
-    printf(" %s=%u\n", GpsParamsConst::kEnable.name, common::IsFlagSet(store_gps.flags, Flags::Flag::kEnable));
+    printf(" %s=%u\n", GpsParamsConst::kEnable.name, static_cast<unsigned>(common::IsFlagSet(store_gps.flags, Flags::Flag::kEnable)));
     int32_t hours;
     uint32_t minutes;
     utc::SplitOffset(store_gps.utc_offset, hours, minutes);
-    printf(" %s=%d:%u [%d] \n", GpsParamsConst::kUtcOffset.name, hours, minutes, store_gps.utc_offset);
+    printf(" %s=%d:%u [%u] \n", GpsParamsConst::kUtcOffset.name, static_cast<int>(hours), static_cast<unsigned>(minutes), static_cast<unsigned>(store_gps.utc_offset));
 }
 } // namespace json

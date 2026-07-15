@@ -143,7 +143,7 @@ void GPS::Start() {
             if (sentence_ != nullptr) {
                 DumpSentence(sentence_);
 #ifndef NDEBUG
-                printf("[%u]\n", Millis() - kMillis);
+                printf("[%u]\n", reinterpret_cast<unsigned>(Millis() - kMillis));
 #endif
                 break;
             }
@@ -231,8 +231,8 @@ void GPS::DumpSentence([[maybe_unused]] const char* sentence) {
 
 void GPS::Print() {
     printf("GPS [UART%u]\n", EXT_UART_NUMBER);
-    printf(" Module : %s [%u]\n", gps::GetModule(module_), baud_);
-    printf(" UTC offset : %d (seconds)\n", utc_offset_);
+    printf(" Module : %s [%u]\n", gps::GetModule(module_), static_cast<unsigned>(baud_));
+    printf(" UTC offset : %d (seconds)\n", static_cast<unsigned>(utc_offset_));
     switch (status_current_) {
         case gps::Status::kWarning:
             puts(" No Fix");
