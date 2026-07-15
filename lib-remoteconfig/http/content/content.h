@@ -133,7 +133,7 @@ inline constexpr struct FilesContent kHttpContent[] = {
 	{ 1186793998,"config_dmxmonitor.js", config_dmxmonitor_js_gz, 538, static_cast<http::ContentTypes>(2), true },
 #endif // !defined (CONFIG_HTTP_HTML_NO_DMX) && defined(OUTPUT_DMX_MONITOR)
 	{ 3282278349,"config_oscclient.js", config_oscclient_js_gz, 718, static_cast<http::ContentTypes>(2), true },
-	{ 4024653090,"index.html", index_html_gz, 725, static_cast<http::ContentTypes>(0), true },
+	{ 4024653090,"index.html", index_html_gz, 735, static_cast<http::ContentTypes>(0), true },
 	{ 2226674728,"layout.js", layout_js_gz, 570, static_cast<http::ContentTypes>(2), true },
 #if !defined (CONFIG_HTTP_HTML_NO_DMX_PCA9685) && defined(OUTPUT_DMX_PCA9685)
 	{ 1666579856,"config_dmxpca9685.js", config_dmxpca9685_js_gz, 704, static_cast<http::ContentTypes>(2), true },
@@ -145,7 +145,7 @@ inline constexpr struct FilesContent kHttpContent[] = {
 	{ 2902032383,"config_display.js", config_display_js_gz, 1422, static_cast<http::ContentTypes>(2), true },
 #endif // (DISPLAY_UDF)
 #if defined (NODE_LTC_SMPTE)
-	{ 1947358610,"config_ltc.js", config_ltc_js_gz, 1913, static_cast<http::ContentTypes>(2), true },
+	{ 1947358610,"config_ltc.js", config_ltc_js_gz, 1972, static_cast<http::ContentTypes>(2), true },
 #endif // (NODE_LTC_SMPTE)
 #if defined (CONFIG_HTTPD_ENABLE_UPLOAD)
 	{ 1750204712,"upload_index.js", upload_index_js_gz, 1631, static_cast<http::ContentTypes>(2), true },
