@@ -49,26 +49,34 @@ DisplayUdfParams::DisplayUdfParams() {
 }
 
 void DisplayUdfParams::SetIntensity(const char* val, uint32_t len) {
-    if (len > 3) return;
+    if (len > 3) {
+        return;
+    }
     store_displayudf.intensity = ParseValue<uint8_t>(val, len);
 }
 
 void DisplayUdfParams::SetSleepTimeout(const char* val, uint32_t len) {
-    if (len > 3) return;
+    if (len > 3) {
+        return;
+    }
     store_displayudf.sleep_timeout = ParseValue<uint8_t>(val, len);
 }
 
 void DisplayUdfParams::SetFlipVertically(const char* val, uint32_t len) {
-    if (len != 1) return;
+    if (len != 1) {
+        return;
+    }
     store_displayudf.flags = common::SetFlagValue(store_displayudf.flags, Flags::Flag::kFlipVertically, val[0] != '0');
 }
 
 void DisplayUdfParams::SetLabel(const char* key, uint32_t key_len, const char* val, uint32_t val_len) {
-    if (val_len > 1) return;
+    if (val_len > 1) {
+        return;
+    }
 
     DEBUG_PRINTF("%.*s ->%.*s", key_len, key, val_len, val);
 
-    const uint32_t kHash = Fnv1a32Runtime(key, static_cast<uint32_t>(key_len));
+    const uint32_t kHash = Fnv1a32Runtime(key, key_len);
     bool matched = false;
     size_t i = 0;
     size_t j = 0;
