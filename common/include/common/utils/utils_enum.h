@@ -28,8 +28,7 @@
 
 #include <type_traits>
 
-namespace common
-{
+namespace common {
 // Converts an enum class value to its underlying integer type.
 template <typename Enum> 
 constexpr auto ToValue(Enum e) noexcept -> std::underlying_type_t<Enum> {

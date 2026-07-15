@@ -73,7 +73,7 @@ inline bool ValidateOffset(int32_t hours, uint32_t minutes, int32_t& utc_offset_
         }
         for (const auto& offset : kValidOffsets) {
             if (offset.hours == hours && offset.minutes == minutes) {
-                utc_offset_seconds = (hours >= 0) ? (hours * 3600 + static_cast<int32_t>(minutes) * 60) : (hours * 3600 - static_cast<int32_t>(minutes) * 60);
+                utc_offset_seconds = (hours >= 0) ? ((hours * 3600) + static_cast<int32_t>(minutes) * 60) : (hours * 3600 - static_cast<int32_t>(minutes) * 60);
                 return true;
             }
         }
@@ -87,7 +87,9 @@ inline bool ValidateOffset(int32_t hours, uint32_t minutes, int32_t& utc_offset_
  * @return true if offset is valid; false otherwise
  */
 inline bool IsValidOffset(int32_t utc_offset_seconds) {
-    if (utc_offset_seconds == 0) return true;
+    if (utc_offset_seconds == 0) {
+        return true;
+    }
     int32_t hours = utc_offset_seconds / 3600;
     uint32_t minutes = (utc_offset_seconds >= 0) ? static_cast<uint32_t>(utc_offset_seconds - hours * 3600) / 60 : static_cast<uint32_t>((hours * 3600 - utc_offset_seconds)) / 60;
 
@@ -96,8 +98,10 @@ inline bool IsValidOffset(int32_t utc_offset_seconds) {
     }
 
     for (const auto& offset : kValidOffsets) {
-        int32_t offset_seconds = (offset.hours >= 0) ? offset.hours * 3600 + static_cast<int32_t>(offset.minutes * 60) : offset.hours * 3600 - static_cast<int32_t>(offset.minutes * 60);
-        if (utc_offset_seconds == offset_seconds) return true;
+        int32_t offset_seconds = (offset.hours >= 0) ? (offset.hours * 3600) + static_cast<int32_t>(offset.minutes * 60) : offset.hours * 3600 - static_cast<int32_t>(offset.minutes * 60);
+        if (utc_offset_seconds == offset_seconds) {
+            return true;
+        }
     }
     return false;
 }
@@ -149,9 +153,13 @@ inline bool ParseOffset(const char* buffer, uint32_t buffer_length, int32_t& hou
     if (buffer[5] < '0' || buffer[5] > '9') return false;
 
     int32_t h = (buffer[1] - '0') * 10 + (buffer[2] - '0');
-    if (h > 14) return false;
+    if (h > 14) {
+        return false;
+    }
     uint32_t m = static_cast<uint32_t>((buffer[4] - '0') * 10 + (buffer[5] - '0'));
-    if (m >= 60) return false;
+    if (m >= 60) {
+        return false;
+    }
 
     hours = negative ? -h : h;
     minutes = m;

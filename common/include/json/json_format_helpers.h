@@ -34,11 +34,6 @@ namespace format {
 constexpr size_t kFloatBufferSize = 8;   // For "%.2f", "%.1f"
 constexpr size_t kOffsetBufferSize = 12; // For timezone offsets e.g. "+01:00"
 
-inline void Append2Digits(char*& p, uint32_t v) {
-    *p++ = static_cast<char>('0' + (v / 10));
-    *p++ = static_cast<char>('0' + (v % 10));
-}
-
 inline const char* Float(float value, char (&buf)[kFloatBufferSize], const char* fmt = "%.2f") {
     snprintf(buf, sizeof(buf), fmt, value);
     return buf;
@@ -46,21 +41,10 @@ inline const char* Float(float value, char (&buf)[kFloatBufferSize], const char*
 
 inline const char* UtcOffset(int32_t hours, uint32_t minutes, char (&buf)[kOffsetBufferSize]) {
     const auto kNegative = hours < 0;
-    if (kNegative) hours = -hours;
-
-    auto* p = buf;
-
-    if (hours != 0) {
-        *p++ = kNegative ? '-' : '+';
+    if (kNegative) {
+        hours = -hours;
     }
-
-    Append2Digits(p, static_cast<uint32_t>(hours));
-    *p++ = ':';
-    Append2Digits(p, minutes);
-    *p = '\0';
-
-    assert(static_cast<size_t>((p - buf) + 1) <= kOffsetBufferSize);
-
+    snprintf(buf, sizeof(buf), "%c%02d:%02u", kNegative ? '-' : '+', hours, minutes);
     return buf;
 }
 } // namespace format

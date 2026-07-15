@@ -17,14 +17,6 @@
 #include "utc.h"
 
 /**
- * @namespace global
- * @brief Contains global variables related to time configuration.
- */
-namespace global {
-extern int32_t g_utc_offset;
-}
-
-/**
  * @class Global
  * @brief Singleton class for managing and validating UTC offsets.
  *
@@ -53,14 +45,14 @@ class Global {
      * @param[out] hours Signed hour component.
      * @param[out] minutes Unsigned minute component.
      */
-    inline void GetUtcOffset(int32_t& hours, uint32_t& minutes) { utc::SplitOffset(global::g_utc_offset, hours, minutes); }
+    void GetUtcOffset(int32_t& hours, uint32_t& minutes) { utc::SplitOffset(global::g_utc_offset, hours, minutes); }
 
     /**
      * @brief Sets the global UTC offset if the value is valid.
      * @param utc_offset_seconds Offset in seconds
      * @return true if successfully set; false otherwise
      */
-    inline bool SetUtcOffsetIfValid(int32_t utc_offset_seconds) {
+    bool SetUtcOffsetIfValid(int32_t utc_offset_seconds) {
         if (utc::IsValidOffset(utc_offset_seconds)) {
             ::global::g_utc_offset = utc_offset_seconds;
             return true;
@@ -74,7 +66,7 @@ class Global {
      * @param minutes Unsigned minute component
      * @return true if valid and set; false otherwise
      */
-    inline bool SetUtcOffsetIfValid(int32_t hours, uint32_t minutes) {
+    bool SetUtcOffsetIfValid(int32_t hours, uint32_t minutes) {
         int32_t offset_seconds;
         if (utc::ValidateOffset(hours, minutes, offset_seconds)) {
             return SetUtcOffsetIfValid(offset_seconds);
