@@ -45,18 +45,18 @@ inline void Print() {
 	assert(end > start);
     const auto kSize = static_cast<uint32_t>(end - start);
 
-    auto* p = start;
+    const auto* ptr = start;
 
-    while (p < end) {
-        if (*p != kMagicWord) {
+    while (ptr < end) {
+        if (*ptr != kMagicWord) {
             break;
         }
-        p++;
+        ptr++;
     }
 
-    const auto kUsedBytes = static_cast<uint32_t>(4 * (end - p));
-    const auto kFreeBytes = static_cast<uint32_t>(4 * (p - start));
-    const auto kFreePct = (static_cast<uint32_t>(p - start) * 100U) / kSize;
+    const auto kUsedBytes = static_cast<uint32_t>(4 * (end - ptr));
+    const auto kFreeBytes = static_cast<uint32_t>(4 * (ptr - start));
+    const auto kFreePct = (static_cast<uint32_t>(ptr - start) * 100U) / kSize;
 
     if (s_used_bytes_previous != kUsedBytes) {
         s_used_bytes_previous = kUsedBytes;
@@ -70,9 +70,9 @@ inline void Print() {
         }
 
 #ifndef NDEBUG
-        printf("Stack: Size %uKB, [%p:%p:%p], Used: %u, Free: %u [%u]", kSize / (1024 / 4), start, p, end, kUsedBytes, kFreeBytes, kFreePct);
+        printf("Stack: Size %uKB, [%p:%p:%p], Used: %u, Free: %u [%u]", static_cast<unsigned>(kSize / (1024 / 4)), reinterpret_cast<const void *>(start), reinterpret_cast<const void *>(ptr), reinterpret_cast<const void *>(end), static_cast<unsigned>(kUsedBytes), static_cast<unsigned>(kFreeBytes), static_cast<unsigned>(kFreePct));
 #else
-        printf("Stack: Size %uKB, Used: %u, Free: %u", kSize / (1024 / 4), kUsedBytes, kFreeBytes);
+        printf("Stack: Size %uKB, Used: %u, Free: %u", static_cast<unsigned>(kSize / (1024 / 4)), static_cast<unsigned>(kUsedBytes), static_cast<unsigned>(kFreeBytes));
 #endif
         printf("\x1b[39m\n");
     }
@@ -81,7 +81,7 @@ inline void Print() {
 inline void Run() {
 	static uint32_t s_millis_previous;
     const auto kMillis = timing::Millis();
-    if (kMillis - s_millis_previous >= 1000) {
+    if (kMillis - s_millis_previous >= 1000U) {
         s_millis_previous = kMillis;
         Print();
     }

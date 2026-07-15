@@ -35,7 +35,7 @@
 
 namespace common::firmware::pixeldmx {
 inline void Show(uint32_t line, pixelpatterns::Pattern pattern) {
-	DEBUG_PRINTF("line=%u, pattern=%u", line, static_cast<uint32_t>(pattern));
+	DEBUG_PRINTF("line=%u, pattern=%u", static_cast<unsigned>(line), static_cast<unsigned>(pattern));
 	
     auto& configuration = PixelDmxConfiguration::Get();
     auto* display = Display::Get();
@@ -44,8 +44,8 @@ inline void Show(uint32_t line, pixelpatterns::Pattern pattern) {
     display->ClearEndOfLine();
     display->Printf(line, "%s:%d G%d %s", 
 		pixel::GetTypeName(configuration.GetType()), 
-		configuration.GetCount(), 
-		configuration.GetGroupingCount(), 
+		static_cast<unsigned>(configuration.GetCount()), 
+		static_cast<unsigned>(configuration.GetGroupingCount()), 
 		pixel::GetMapName(configuration.GetMap())
 	);
 
@@ -55,7 +55,7 @@ inline void Show(uint32_t line, pixelpatterns::Pattern pattern) {
     if (pattern != pixelpatterns::Pattern::kNone) {
         display->Printf(6, "%s:%u", 
 			PixelPatterns::GetName(pattern), 
-			static_cast<uint32_t>(pattern)
+			static_cast<unsigned>(pattern)
 		);
     }
 }

@@ -38,19 +38,27 @@ inline void ParseJsonWithTable(const char* buffer, size_t size, const json::Key*
     JsonTokenizer tok(buffer, size);
     tok.SkipWhitespace();
 
-    if (tok.p >= tok.end || *tok.p != '{') return;
+    if (tok.p >= tok.end || *tok.p != '{') {
+        return;
+    }
     ++tok.p;
 
     while (tok.p < tok.end) {
         const char* json_key;
         size_t json_key_len;
-        if (!tok.NextString(json_key, json_key_len)) break;
+        if (!tok.NextString(json_key, json_key_len)) {
+            break;
+        }
 
-        if (!tok.Expect(':')) break;
+        if (!tok.Expect(':')) {
+            break;
+        }
 
         const char* val;
         size_t val_len;
-        if (!tok.NextValue(val, val_len)) break;
+        if (!tok.NextValue(val, val_len)) {
+            break;
+        }
 
         uint32_t h = Fnv1a32Runtime(json_key, static_cast<uint32_t>(json_key_len));
         bool matched = false;

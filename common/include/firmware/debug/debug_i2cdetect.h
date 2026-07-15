@@ -44,7 +44,7 @@ void Detect() {
     puts("\n     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f");
 
     for (uint32_t i = 0; i < 128; i = (i + 16)) {
-        printf("%02x: ", i);
+        printf("%02x: ", static_cast<unsigned>(i));
         for (uint32_t j = 0; j < 16; j++) {
             // Skip unwanted addresses
             if ((i + j < kFirst) || (i + j > kLast)) {
@@ -53,7 +53,7 @@ void Detect() {
             }
 
             if (::i2c::IsConnected(static_cast<uint8_t>(i + j))) {
-                printf("%02x ", i + j);
+                printf("%02x ", static_cast<unsigned>(i + j));
             } else {
                 printf("-- ");
             }

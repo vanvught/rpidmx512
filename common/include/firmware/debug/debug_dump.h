@@ -2,7 +2,7 @@
  * @file debug_dump.h
  *
  */
-/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2018-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,27 +46,27 @@ static inline void Dump([[maybe_unused]] const void* data, [[maybe_unused]] uint
 #else
 inline void Dump(const void* data, uint32_t size) {
     uint32_t chars = 0;
-    const auto* p = reinterpret_cast<const uint8_t*>(data);
+    const auto* ptr = reinterpret_cast<const uint8_t*>(data);
 
-    printf("%p:%d\n", data, size);
+    printf("%p:%u\n", data, static_cast<int>(size));
 
     do {
         uint32_t chars_this_line = 0;
 
-        printf("%04x ", chars);
+        printf("%04x ", static_cast<unsigned>(chars));
 
-        const auto* q = p;
+        const auto* q = ptr;
 
         while ((chars_this_line < dump::kCharsPerLine) && (chars < size)) {
             if (chars_this_line % 8 == 0) {
                 printf(" ");
             }
 
-            printf("%02x ", *p);
+            printf("%02x ", *ptr);
 
             chars_this_line++;
             chars++;
-            p++;
+            ptr++;
         }
 
         auto chars_dot_line = chars_this_line;

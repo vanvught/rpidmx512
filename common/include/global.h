@@ -16,71 +16,51 @@
 
 #include "utc.h"
 
+namespace global {
+
 /**
- * @class Global
- * @brief Singleton class for managing and validating UTC offsets.
- *
- * The Global class provides methods to set and get the UTC offset in seconds.
- * It also includes validation logic for standard UTC time zones.
+ * @brief Gets the current UTC offset in seconds.
+ * @return UTC offset in seconds.
  */
-class Global {
-   public:
-    /**
-     * @brief Get the singleton instance of the Global class.
-     * @return Reference to the singleton Global object.
-     */
-    static Global& Instance() {
-        static Global instance;
-        return instance;
+inline int32_t GetUtcOffset() {
+    return global::g_utc_offset;
+}
+
+/**
+ * @brief Gets the current UTC offset as (hours, minutes).
+ * @param[out] hours Signed hour component.
+ * @param[out] minutes Unsigned minute component.
+ */
+inline void GetUtcOffset(int32_t& hours, uint32_t& minutes) {
+    utc::SplitOffset(global::g_utc_offset, hours, minutes);
+}
+
+/**
+ * @brief Sets the global UTC offset if the value is valid.
+ * @param utc_offset_seconds Offset in seconds
+ * @return true if successfully set; false otherwise
+ */
+inline bool SetUtcOffsetIfValid(int32_t utc_offset_seconds) {
+    if (utc::IsValidOffset(utc_offset_seconds)) {
+        ::global::g_utc_offset = utc_offset_seconds;
+        return true;
     }
+    return false;
+}
 
-    /**
-     * @brief Gets the current UTC offset in seconds.
-     * @return UTC offset in seconds.
-     */
-    int32_t GetUtcOffset() const { return global::g_utc_offset; }
-
-    /**
-     * @brief Gets the current UTC offset as (hours, minutes).
-     * @param[out] hours Signed hour component.
-     * @param[out] minutes Unsigned minute component.
-     */
-    void GetUtcOffset(int32_t& hours, uint32_t& minutes) { utc::SplitOffset(global::g_utc_offset, hours, minutes); }
-
-    /**
-     * @brief Sets the global UTC offset if the value is valid.
-     * @param utc_offset_seconds Offset in seconds
-     * @return true if successfully set; false otherwise
-     */
-    bool SetUtcOffsetIfValid(int32_t utc_offset_seconds) {
-        if (utc::IsValidOffset(utc_offset_seconds)) {
-            ::global::g_utc_offset = utc_offset_seconds;
-            return true;
-        }
-        return false;
+/**
+ * @brief Sets the global UTC offset from (hours, minutes) if valid.
+ * @param hours Signed hour component
+ * @param minutes Unsigned minute component
+ * @return true if valid and set; false otherwise
+ */
+inline bool SetUtcOffsetIfValid(int32_t hours, uint32_t minutes) {
+    int32_t offset_seconds;
+    if (utc::ValidateOffset(hours, minutes, offset_seconds)) {
+        return SetUtcOffsetIfValid(offset_seconds);
     }
-
-    /**
-     * @brief Sets the global UTC offset from (hours, minutes) if valid.
-     * @param hours Signed hour component
-     * @param minutes Unsigned minute component
-     * @return true if valid and set; false otherwise
-     */
-    bool SetUtcOffsetIfValid(int32_t hours, uint32_t minutes) {
-        int32_t offset_seconds;
-        if (utc::ValidateOffset(hours, minutes, offset_seconds)) {
-            return SetUtcOffsetIfValid(offset_seconds);
-        }
-        return false;
-    }
-
-   private:
-    Global() = default;
-    // Delete copy/move constructors and assignment operators
-    Global(const Global&) = delete;
-    Global& operator=(const Global&) = delete;
-    Global(Global&&) = delete;
-    Global& operator=(Global&&) = delete;
-};
+    return false;
+}
+} // namespace global
 
 #endif // GLOBAL_H_
