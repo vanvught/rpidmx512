@@ -280,10 +280,10 @@ bool TLC59711Dmx::GetSlotInfo(uint16_t slot_offset, dmxnode::SlotInfo& slot_info
 
 void TLC59711Dmx::Print() {
     puts("TLC59711 parameters");
-    printf(" Type  : %s [%d]\n", tlc59711::GetType(type_), static_cast<uint32_t>(type_));
-    printf(" Count : %d %s\n", count_, type_ == tlc59711::Type::kRgb ? "RGB" : "RGBW");
-    printf(" Clock : %d Hz %s {Default: %d Hz, Maximum %d Hz}\n", spi_speed_hz_, (spi_speed_hz_ == 0 ? "Default" : ""), TLC59711SpiSpeed::kDefault, TLC59711SpiSpeed::kMax);
-    printf(" DMX   : StartAddress=%d, FootPrint=%d\n", dmx_start_address_, dmx_footprint_);
+    printf(" Type  : %s [%u]\n", tlc59711::GetType(type_), static_cast<unsigned>(type_));
+    printf(" Count : %u %s\n", static_cast<unsigned>(count_), type_ == tlc59711::Type::kRgb ? "RGB" : "RGBW");
+    printf(" Clock : %u Hz %s {Default: %u Hz, Maximum %u Hz}\n", static_cast<unsigned>(spi_speed_hz_), (spi_speed_hz_ == 0 ? "Default" : ""), static_cast<unsigned>(TLC59711SpiSpeed::kDefault), static_cast<unsigned>(TLC59711SpiSpeed::kMax));
+    printf(" DMX   : StartAddress=%u, FootPrint=%u\n", static_cast<unsigned>(dmx_start_address_), static_cast<unsigned>(dmx_footprint_));
 }
 
 // Explicit template instantiations

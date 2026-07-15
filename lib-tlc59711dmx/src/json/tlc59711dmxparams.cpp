@@ -35,66 +35,57 @@
 #include "tlc59711dmx.h"
 #include "tlc59711.h"
 
-namespace json
-{
-Tlc59711DmxParams::Tlc59711DmxParams()
-{
+namespace json {
+Tlc59711DmxParams::Tlc59711DmxParams() {
     ConfigStore::Instance().Copy(&store_dmxled, &ConfigurationStore::dmx_led);
 }
 
-void Tlc59711DmxParams::SetType(const char* val, uint32_t len)
-{
-	if (len >= tlc59711::kTypesMaxNameLength) return;
-	
-	char type[tlc59711::kTypesMaxNameLength];
-	memcpy(type, val, len);
-	type[len] = '\0';
-	
+void Tlc59711DmxParams::SetType(const char* val, uint32_t len) {
+    if (len >= tlc59711::kTypesMaxNameLength) return;
+
+    char type[tlc59711::kTypesMaxNameLength];
+    memcpy(type, val, len);
+    type[len] = '\0';
+
     store_dmxled.type = common::ToValue(tlc59711::GetType(type));
 }
 
-void Tlc59711DmxParams::SetCount(const char* val, uint32_t len)
-{
+void Tlc59711DmxParams::SetCount(const char* val, uint32_t len) {
     store_dmxled.count = ParseValue<uint16_t>(val, len);
 }
 
-void Tlc59711DmxParams::SetSpiSpeedHz(const char* val, uint32_t len)
-{
+void Tlc59711DmxParams::SetSpiSpeedHz(const char* val, uint32_t len) {
     store_dmxled.spi_speed_hz = ParseValue<uint32_t>(val, len);
 }
 
-void Tlc59711DmxParams::SetDmxStartAddress(const char* val, uint32_t len)
-{
+void Tlc59711DmxParams::SetDmxStartAddress(const char* val, uint32_t len) {
     store_dmxled.dmx_start_address = ParseValue<uint16_t>(val, len);
 }
 
-void Tlc59711DmxParams::Store(const char* buffer, uint32_t buffer_size)
-{
+void Tlc59711DmxParams::Store(const char* buffer, uint32_t buffer_size) {
     ParseJsonWithTable(buffer, buffer_size, kPixelDmxKeys);
     ConfigStore::Instance().Store(&store_dmxled, &ConfigurationStore::dmx_led);
 }
 
-void Tlc59711DmxParams::Set()
-{
+void Tlc59711DmxParams::Set() {
     auto& tcl59711dmx = *TLC59711Dmx::Get();
 
     tcl59711dmx.SetType(common::FromValue<tlc59711::Type>(store_dmxled.type));
     tcl59711dmx.SetCount(store_dmxled.count);
-	tcl59711dmx.SetSpiSpeedHz(store_dmxled.spi_speed_hz);
-	tcl59711dmx.SetDmxStartAddress(store_dmxled.dmx_start_address);
+    tcl59711dmx.SetSpiSpeedHz(store_dmxled.spi_speed_hz);
+    tcl59711dmx.SetDmxStartAddress(store_dmxled.dmx_start_address);
 
 #ifndef NDEBUG
-	tcl59711dmx.Print();
+    tcl59711dmx.Print();
     Dump();
 #endif
 }
 
-void Tlc59711DmxParams::Dump()
-{
+void Tlc59711DmxParams::Dump() {
     printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, DmxLedParamsConst::kFileName);
     printf(" %s=%s\n", DmxLedParamsConst::kType.name, tlc59711::GetType(static_cast<tlc59711::Type>(store_dmxled.type)));
-    printf(" %s=%u\n", DmxLedParamsConst::kCount.name, store_dmxled.count);
-    printf(" %s=%u\n", DmxLedParamsConst::kSpiSpeedHz.name, store_dmxled.spi_speed_hz);
-    printf(" %s=%d\n", DmxNodeParamsConst::kDmxStartAddress.name, store_dmxled.dmx_start_address);
+    printf(" %s=%u\n", DmxLedParamsConst::kCount.name, static_cast<unsigned>(store_dmxled.count));
+    printf(" %s=%u\n", DmxLedParamsConst::kSpiSpeedHz.name, static_cast<unsigned>(store_dmxled.spi_speed_hz));
+    printf(" %s=%d\n", DmxNodeParamsConst::kDmxStartAddress.name, static_cast<unsigned>(store_dmxled.dmx_start_address));
 }
 } // namespace json
