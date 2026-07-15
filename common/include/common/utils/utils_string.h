@@ -28,13 +28,10 @@
 
 #include <cstdint>
 
-namespace common
-{
-constexpr uint32_t ConstStrLen(const char* s)
-{
+namespace common {
+constexpr uint32_t ConstStrLen(const char* str) {
     uint32_t len = 0;
-    while (s[len] != '\0')
-    {
+    while (str[len] != '\0') {
         ++len;
     }
     return len;

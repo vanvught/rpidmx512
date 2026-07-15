@@ -28,18 +28,17 @@
 
 #include <cstdint>
 
-namespace common
-{
-template <class S> void PortSet(uint32_t port_index, S s, uint16_t& n)
-{
+namespace common {
+template <class S> 
+void PortSet(uint32_t port_index, S s, uint16_t& n) {
     uint16_t value = n; // Create a local copy
     value &= static_cast<uint16_t>(~(0x3 << (port_index * 2)));
     value |= static_cast<uint16_t>((static_cast<uint32_t>(s) & 0x3) << (port_index * 2));
     n = value; // Write back to the original field
 }
 
-template <class S> S PortGet(uint32_t port_index, uint16_t n)
-{
+template <class S> 
+S PortGet(uint32_t port_index, uint16_t n) {
     return static_cast<S>((n >> (port_index * 2)) & 0x3);
 }
 } // namespace common

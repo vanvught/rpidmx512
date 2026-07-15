@@ -31,80 +31,64 @@
 
 #include "common/utils/utils_enum.h" // Ensure this provides ToValue and FromValue
 
-namespace common
-{
-
+namespace common {
 template <typename E>
     requires std::is_enum_v<E>
-constexpr E operator|(E lhs, E rhs)
-{
+constexpr E operator|(E lhs, E rhs) {
     return static_cast<E>(ToValue(lhs) | ToValue(rhs));
 }
 
 template <typename E>
     requires std::is_enum_v<E>
-constexpr E operator&(E lhs, E rhs)
-{
+constexpr E operator&(E lhs, E rhs) {
     return static_cast<E>(ToValue(lhs) & ToValue(rhs));
 }
 
 template <typename E>
     requires std::is_enum_v<E>
-constexpr E operator~(E e)
-{
+constexpr E operator~(E e) {
     return static_cast<E>(~ToValue(e));
 }
 
 template <typename E>
     requires std::is_enum_v<E>
-constexpr E& operator|=(E& lhs, E rhs)
-{
+constexpr E& operator|=(E& lhs, E rhs) {
     lhs = lhs | rhs;
     return lhs;
 }
 
 template <typename E>
     requires std::is_enum_v<E>
-constexpr E& operator&=(E& lhs, E rhs)
-{
+constexpr E& operator&=(E& lhs, E rhs) {
     lhs = lhs & rhs;
     return lhs;
 }
 
 template <typename E>
     requires std::is_enum_v<E>
-constexpr void SetFlag(uint32_t& flags, E bit, bool enable)
-{
-    if (enable)
-    {
+constexpr void SetFlag(uint32_t& flags, E bit, bool enable) {
+    if (enable) {
         flags |= ToValue(bit);
-    }
-    else
-    {
+    } else {
         flags &= ~ToValue(bit);
     }
 }
 
 template <typename E>
     requires std::is_enum_v<E>
-constexpr uint32_t SetFlagValue(uint32_t flags, E bit, bool enable)
-{
-    if (enable)
-    {
+constexpr uint32_t SetFlagValue(uint32_t flags, E bit, bool enable) {
+    if (enable) {
         return flags | ToValue(bit);
     }
-    else
-    {
-        return flags & ~ToValue(bit);
-    }
+         
+	return flags & ~ToValue(bit);
 }
 
 template <typename E>
-requires std::is_enum_v<E>
+    requires std::is_enum_v<E>
 constexpr bool IsFlagSet(uint32_t flags, E bit) {
     return (flags & ToValue(bit)) != 0;
 }
-
 } // namespace common
 
-#endif  // COMMON_UTILS_UTILS_FLAGS_H_
+#endif // COMMON_UTILS_UTILS_FLAGS_H_
