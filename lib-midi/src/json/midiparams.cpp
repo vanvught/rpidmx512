@@ -36,36 +36,30 @@
 
 using common::store::midi::Flags;
 
-namespace json
-{
-MidiParams::MidiParams()
-{
+namespace json {
+MidiParams::MidiParams() {
     ConfigStore::Instance().Copy(&store_midi, &ConfigurationStore::midi);
 }
 
-void MidiParams::SetBaudrate(const char* val, uint32_t len)
-{
+void MidiParams::SetBaudrate(const char* val, uint32_t len) {
     const auto kValue = ParseValue<uint32_t>(val, len);
 
-    if (kValue == 0)
-    {
+    if (kValue == 0) {
         store_midi.baudrate = midi::defaults::BAUDRATE;
-    }
-    else
-    {
+    } else {
         store_midi.baudrate = kValue;
     }
 }
 
-void MidiParams::SetActiveSense(const char* val, uint32_t len)
-{
-    if (len != 1) return;
+void MidiParams::SetActiveSense(const char* val, uint32_t len) {
+    if (len != 1) {
+        return;
+    }
 
     store_midi.flags = common::SetFlagValue(store_midi.flags, Flags::Flag::kActiveSense, val[0] != '0');
 }
 
-void MidiParams::Store(const char* buffer, uint32_t buffer_size)
-{
+void MidiParams::Store(const char* buffer, uint32_t buffer_size) {
     ParseJsonWithTable(buffer, buffer_size, kMidiKeys);
     ConfigStore::Instance().Store(&store_midi, &ConfigurationStore::midi);
 
@@ -74,17 +68,15 @@ void MidiParams::Store(const char* buffer, uint32_t buffer_size)
 #endif
 }
 
-void MidiParams::Set()
-{
+void MidiParams::Set() {
 #ifndef NDEBUG
     Dump();
 #endif
 }
 
-void MidiParams::Dump()
-{
+void MidiParams::Dump() {
     printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, json::MidiParamsConst::kFileName);
-    printf(" %s=%s [%u]\n", MidiParamsConst::kBaudrate.name, store_midi.baudrate);
-    printf(" %s=%u\n", MidiParamsConst::kActiveSense.name, common::IsFlagSet(store_midi.flags, Flags::Flag::kActiveSense));
+    printf(" %s=%u\n", MidiParamsConst::kBaudrate.name, static_cast<unsigned>(store_midi.baudrate));
+    printf(" %s=%u\n", MidiParamsConst::kActiveSense.name, static_cast<unsigned>(common::IsFlagSet(store_midi.flags, Flags::Flag::kActiveSense)));
 }
 } // namespace json
