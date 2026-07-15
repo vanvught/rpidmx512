@@ -44,7 +44,10 @@ inline const char* UtcOffset(int32_t hours, uint32_t minutes, char (&buf)[kOffse
     if (kNegative) {
         hours = -hours;
     }
-    snprintf(buf, sizeof(buf), "%c%02d:%02u", kNegative ? '-' : '+', hours, minutes);
+	snprintf(buf, sizeof(buf), "%c%02d:%02d", 
+	         kNegative ? '-' : '+', 
+	         static_cast<int8_t>(hours), 
+	         static_cast<int8_t>(minutes));
     return buf;
 }
 } // namespace format
