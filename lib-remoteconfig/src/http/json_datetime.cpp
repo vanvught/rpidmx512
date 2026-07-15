@@ -47,20 +47,29 @@ uint32_t GetTimeofday(char* out_buffer, uint32_t out_buffer_size) {
 
         int32_t hours;
         uint32_t minutes;
-        Global::Instance().GetUtcOffset(hours, minutes);
+        global::GetUtcOffset(hours, minutes);
 
         if ((hours == 0) && (minutes == 0)) {
             const auto kLength = static_cast<uint32_t>(snprintf(out_buffer, out_buffer_size, "{\"date\":\"%d-%.2d-%.2dT%.2d:%.2d:%.2dZ\"}\n", 1900 + tm->tm_year, 1 + tm->tm_mon, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec));
 
             DEBUG_EXIT();
             return kLength;
-        } else {
+        } 
             const auto kLength = static_cast<uint32_t>(
-                snprintf(out_buffer, out_buffer_size, "{\"date\":\"%d-%.2d-%.2dT%.2d:%.2d:%.2d%s%.2d:%.2u\"}\n", 1900 + tm->tm_year, 1 + tm->tm_mon, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec, hours > 0 ? "+" : "", hours, minutes));
+                snprintf(out_buffer, out_buffer_size, "{\"date\":\"%d-%.2d-%.2dT%.2d:%.2d:%.2d%s%.2d:%.2u\"}\n", 
+                  1900 + tm->tm_year, 
+                  1 + tm->tm_mon, 
+                  tm->tm_mday, 
+                  tm->tm_hour, 
+                  tm->tm_min, 
+                  tm->tm_sec, 
+                  hours > 0 ? "+" : "", 
+                  static_cast<int>(hours), 
+                  static_cast<unsigned int>(minutes)));
 
             DEBUG_EXIT();
             return kLength;
-        }
+        
     }
 
     DEBUG_EXIT();
@@ -97,10 +106,10 @@ static void SetDate(const char* date, uint32_t date_length) {
 
             if (utc::ValidateOffset(kHours, kMinutes, utc_offset)) {
                 ConfigStore::Instance().GlobalUpdate(&common::store::Global::utc_offset, utc_offset);
-                Global::Instance().SetUtcOffsetIfValid(kHours, kMinutes);
+                global::SetUtcOffsetIfValid(kHours, kMinutes);
             }
 
-            tv.tv_sec = tv.tv_sec - Global::Instance().GetUtcOffset();
+            tv.tv_sec = tv.tv_sec - global::GetUtcOffset();
         }
 
         settimeofday(&tv, nullptr);

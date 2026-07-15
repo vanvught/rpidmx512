@@ -194,7 +194,7 @@ void HttpDeamonHandleRequest::HandleRequest(uint32_t bytes_received, char* recei
                                                                   "\r\n",
                                                                   static_cast<unsigned int>(status_), status_msg, network::iface::HostName(), gzip_ ? "gzip" : "identity", http::kContentType[static_cast<uint32_t>(request_content_type_)],
                                                                   static_cast<unsigned int>(content_size_), (content_ == reinterpret_cast<uint8_t*>(dynamic_content_)) ? "no-cache" : "max-age=3600",
-                                                                  (content_ == reinterpret_cast<uint8_t*>(dynamic_content_)) ? timing::Millis() : _TIME_STAMP_));
+                                                                  (content_ == reinterpret_cast<uint8_t*>(dynamic_content_)) ? static_cast<unsigned int>(timing::Millis()) : static_cast<unsigned int>(_TIME_STAMP_)));
 
         network::tcp::Send(connection_handle_, reinterpret_cast<const uint8_t*>(receive_buffer_), kHeaderLength);
 

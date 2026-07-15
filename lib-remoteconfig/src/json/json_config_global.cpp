@@ -33,7 +33,7 @@ namespace json::config
 uint32_t GetGlobal(char* buffer, uint32_t length) {
     int32_t hours;
     uint32_t minutes;
-    Global::Instance().GetUtcOffset(hours, minutes);
+    global::GetUtcOffset(hours, minutes);
 
     return json::helpers::Serialize(buffer, length, [&](JsonDoc& doc) {
         char offset[format::kOffsetBufferSize];

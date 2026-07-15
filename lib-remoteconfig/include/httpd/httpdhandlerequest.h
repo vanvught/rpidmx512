@@ -46,7 +46,7 @@ class HttpDeamonHandleRequest {
    public:
     explicit HttpDeamonHandleRequest(network::tcp::ConnHandle connection_handle) : connection_handle_(connection_handle) {
         DEBUG_ENTRY();
-        DEBUG_PRINTF("[%u] connection_handle=%u", httpd::kBufsize, connection_handle);
+        DEBUG_PRINTF("[%u] connection_handle=%u", static_cast<unsigned>(httpd::kBufsize), static_cast<unsigned>(connection_handle));
         DEBUG_EXIT();
     }
 
@@ -67,7 +67,6 @@ class HttpDeamonHandleRequest {
     http::Status HandlePostJSON();
     http::Status HandlePostUpload();
 
-   private:
     network::tcp::ConnHandle connection_handle_;
     uint32_t content_size_{0};
     uint32_t request_data_length_{0};

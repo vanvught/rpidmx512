@@ -36,39 +36,31 @@
 #include "global.h"
 #include "firmware/debug/debug_debug.h"
 
-namespace json
-{
+namespace json {
 
-GlobalParams::GlobalParams()
-{
+GlobalParams::GlobalParams() {
     ConfigStore::Instance().Copy(&store_global, &ConfigurationStore::global);
 }
 
-void GlobalParams::SetUtcOffset(const char* val, uint32_t len)
-{
+void GlobalParams::SetUtcOffset(const char* val, uint32_t len) {
     int32_t hours;
     uint32_t minutes;
 
-    if (utc::ParseOffset(val, len, hours, minutes))
-    {
+    if (utc::ParseOffset(val, len, hours, minutes)) {
         DEBUG_PUTS("Parse OK");
 
         int32_t utc_offset;
 
-        if (utc::ValidateOffset(hours, minutes, utc_offset))
-        {
+        if (utc::ValidateOffset(hours, minutes, utc_offset)) {
             DEBUG_PUTS("Validate OK");
             store_global.utc_offset = utc_offset;
         }
-    }
-    else
-    {
+    } else {
         DEBUG_PUTS("Parse ERROR");
     }
 }
 
-void GlobalParams::Store(const char* buffer, uint32_t buffer_size)
-{
+void GlobalParams::Store(const char* buffer, uint32_t buffer_size) {
     ParseJsonWithTable(buffer, buffer_size, kGlobalKeys);
     ConfigStore::Instance().Store(&store_global, &ConfigurationStore::global);
 
@@ -77,26 +69,24 @@ void GlobalParams::Store(const char* buffer, uint32_t buffer_size)
 #endif
 }
 
-void GlobalParams::Set()
-{
+void GlobalParams::Set() {
     int32_t hours;
     uint32_t minutes;
 
     utc::SplitOffset(store_global.utc_offset, hours, minutes);
-    Global::Instance().SetUtcOffsetIfValid(hours, minutes);
+    global::SetUtcOffsetIfValid(hours, minutes);
 
 #ifndef NDEBUG
     Dump();
 #endif
 }
 
-void GlobalParams::Dump()
-{
+void GlobalParams::Dump() {
     printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, json::GlobalParamsConst::kFileName);
 
     int32_t hours;
     uint32_t minutes;
     utc::SplitOffset(store_global.utc_offset, hours, minutes);
-    printf("  %s=%d:%u [%d]\n", GlobalParamsConst::kUtcOffset.name, hours, minutes, store_global.utc_offset);
+    printf("  %s=%d:%u [%d]\n", GlobalParamsConst::kUtcOffset.name, static_cast<int>(hours), static_cast<unsigned>(minutes), static_cast<unsigned>(store_global.utc_offset));
 }
 } // namespace json

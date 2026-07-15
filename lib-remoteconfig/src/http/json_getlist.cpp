@@ -51,8 +51,12 @@ uint32_t GetList(char* out_buffer, uint32_t out_buffer_size) {
     const uint32_t kPortCount = 0;
 #endif
 
-    const auto kLength = static_cast<uint32_t>(snprintf(out_buffer, out_buffer_size, "{\"list\":{\"ip\":\"" IPSTR "\",\"name\":\"%s\",\"node\":{\"type\":\"%s\",\"output\":{\"type\":\"%s\",\"count\":%d}}}}", IP2STR(network::GetPrimaryIp()),
-                                                        display_name, dmxnode::GetNodeType(dmxnode::kNodeType), dmxnode::GetOutputType(dmxnode::kOutputType), kPortCount));
+    const auto kLength = static_cast<uint32_t>(snprintf(out_buffer, out_buffer_size, "{\"list\":{\"ip\":\"" IPSTR "\",\"name\":\"%s\",\"node\":{\"type\":\"%s\",\"output\":{\"type\":\"%s\",\"count\":%d}}}}", 
+      IP2STR(network::GetPrimaryIp()),                                 
+      display_name, 
+      dmxnode::GetNodeType(dmxnode::kNodeType), 
+      dmxnode::GetOutputType(dmxnode::kOutputType), 
+      static_cast<unsigned int>(kPortCount)));
 
     return kLength;
 }
