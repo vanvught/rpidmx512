@@ -22,47 +22,44 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
- 
+
+#include <cassert>
 #include <cstdint>
 #include <cstdio>
 
 #include "showfile.h"
 
-namespace json
-{
-uint32_t ShowFileDirectory(char* out_buffer, uint32_t out_buffer_size)
-{
+namespace json {
+uint32_t ShowFileDirectory(char* out_buffer, uint32_t out_buffer_size) {
     const auto kBufferSize = out_buffer_size - 2U;
     auto length = static_cast<uint32_t>(snprintf(out_buffer, kBufferSize, "{\"shows\":["));
 
-    for (uint32_t show_index = 0; show_index < ShowFile::Instance().GetShows(); show_index++)
-    {
+    for (uint32_t show_index = 0; show_index < ShowFile::Instance().GetShows(); show_index++) {
         const auto kShow = ShowFile::Instance().GetPlayerShowFile(show_index);
-        if (kShow >= 0)
-        {
+        if (kShow >= 0) {
             uint32_t file_size;
-            if (ShowFile::Instance().GetShowFileSize(kShow, file_size))
-            {
+            if (ShowFile::Instance().GetShowFileSize(kShow, file_size)) {
                 const auto kSize = kBufferSize - length;
-                const auto kCharacters = static_cast<uint32_t>(snprintf(&out_buffer[length], kSize, "{\"show\":%d,\"size\":%u},", kShow, file_size));
+                const auto kCharacters = static_cast<uint32_t>(snprintf(&out_buffer[length], kSize, 
+					"{\"show\":%d,\"size\":%u},", 
+					static_cast<unsigned>(kShow), 
+					static_cast<unsigned>(file_size))
+				);
 
-                if (kCharacters > kSize)
-                {
+                if (kCharacters > kSize) {
                     break;
                 }
 
                 length += kCharacters;
 
-                if (length >= kBufferSize)
-                {
+                if (length >= kBufferSize) {
                     break;
                 }
             }
         }
     }
 
-    if (out_buffer[length - 1] == ',')
-    {
+    if (out_buffer[length - 1] == ',') {
         length--;
     }
 
