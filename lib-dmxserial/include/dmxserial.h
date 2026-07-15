@@ -89,7 +89,7 @@ class DmxSerial final : public Serial {
 
     void Print();
 
-    uint32_t GetFilesCount() { return m_nFilesCount; }
+    uint32_t GetFilesCount() { return files_count_; }
 
     void EnableTFTP(bool enable_tftp);
 
@@ -110,7 +110,7 @@ class DmxSerial final : public Serial {
     void static StaticCallbackFunction(const uint8_t* pBuffer, uint32_t size, uint32_t from_ip, uint16_t from_port) { s_this->Input(pBuffer, size, from_ip, from_port); }
 
    private:
-    uint32_t m_nFilesCount{0};
+    uint32_t files_count_{0};
     int32_t m_aFileIndex[DmxSerialFile::MAX_NUMBER];
     int32_t handle_{-1};
     DmxSerialChannelData* m_pDmxSerialChannelData[DmxSerialFile::MAX_NUMBER];

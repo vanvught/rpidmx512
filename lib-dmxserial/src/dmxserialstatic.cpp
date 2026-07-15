@@ -36,7 +36,7 @@ bool DmxSerial::FileNameCopyTo(char *file_name, uint32_t length, int32_t file_nu
 	assert(length == DmxSerialFile::NAME_LENGTH + 1);
 
 	if ((file_number >= DmxSerialFile::MIN_NUMBER) && (file_number <= static_cast<int32_t>(DmxSerialFile::MAX_NUMBER))) {
-		snprintf(file_name, length, DMXSERIAL_FILE_PREFIX "%.3d" DMXSERIAL_FILE_SUFFIX, file_number);
+		snprintf(file_name, length, DMXSERIAL_FILE_PREFIX "%.3d" DMXSERIAL_FILE_SUFFIX, static_cast<int>(file_number));
 		return true;
 	}
 

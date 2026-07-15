@@ -52,7 +52,7 @@ DmxSerial::DmxSerial() {
 }
 
 DmxSerial::~DmxSerial() {
-    for (uint32_t i = 0; i < m_nFilesCount; i++) {
+    for (uint32_t i = 0; i < files_count_; i++) {
         if (m_pDmxSerialChannelData[i] != nullptr) {
             delete m_pDmxSerialChannelData[i];
         }
@@ -97,7 +97,7 @@ template <bool doUpdate> void DmxSerial::SetData([[maybe_unused]] uint32_t port_
 void DmxSerial::Update(const uint8_t* data, uint32_t length) {
     assert(data != nullptr);
 
-    for (uint32_t index = 0; index < m_nFilesCount; index++) {
+    for (uint32_t index = 0; index < files_count_; index++) {
         assert(m_aFileIndex[index] > 1);
         const int32_t kOffset = m_aFileIndex[index] - 1;
 
@@ -138,10 +138,10 @@ void DmxSerial::Sync() {
 void DmxSerial::Print() {
     Serial::Print();
 
-    printf("Files : %d\n", m_nFilesCount);
+    printf("Files : %u\n", static_cast<unsigned>(files_count_));
     puts("DMX");
-    printf(" First channel : %d\n", m_aFileIndex[0]);
-    printf(" Last channel  : %u\n", m_nDmxLastSlot);
+    printf(" First channel : %u\n", static_cast<unsigned>(m_aFileIndex[0]));
+    printf(" Last channel  : %u\n", static_cast<unsigned>(m_nDmxLastSlot));
 }
 
 void DmxSerial::ScanDirectory() {
@@ -150,7 +150,7 @@ void DmxSerial::ScanDirectory() {
 
     DIR* dirp;
     struct dirent* dp;
-    m_nFilesCount = 0;
+    files_count_ = 0;
 
     if ((dirp = opendir(".")) == nullptr) {
         perror("couldn't open '.'");
@@ -173,21 +173,21 @@ void DmxSerial::ScanDirectory() {
                 continue;
             }
 
-            m_aFileIndex[m_nFilesCount] = file_number;
+            m_aFileIndex[files_count_] = file_number;
 
-            DEBUG_PRINTF("[%d] found %s", m_nFilesCount, dp->d_name);
+            DEBUG_PRINTF("[%d] found %s", files_count_, dp->d_name);
 
-            m_nFilesCount++;
+            files_count_++;
 
-            if (m_nFilesCount == DmxSerialFile::MAX_NUMBER) {
+            if (files_count_ == DmxSerialFile::MAX_NUMBER) {
                 break;
             }
         }
     } while (dp != nullptr);
 
     // Sort
-    for (uint32_t i = 0; i < m_nFilesCount; i++) {
-        for (uint32_t j = 0; j < m_nFilesCount; j++) {
+    for (uint32_t i = 0; i < files_count_; i++) {
+        for (uint32_t j = 0; j < files_count_; j++) {
             if (m_aFileIndex[j] > m_aFileIndex[i]) {
                 auto tmp = m_aFileIndex[i];
                 m_aFileIndex[i] = m_aFileIndex[j];
@@ -196,35 +196,35 @@ void DmxSerial::ScanDirectory() {
         }
     }
 
-    m_nDmxLastSlot = static_cast<uint16_t>(m_aFileIndex[m_nFilesCount - 1]);
+    m_nDmxLastSlot = static_cast<uint16_t>(m_aFileIndex[files_count_ - 1]);
 
-    for (uint32_t i = m_nFilesCount; i < DmxSerialFile::MAX_NUMBER; i++) {
+    for (uint32_t i = files_count_; i < DmxSerialFile::MAX_NUMBER; i++) {
         m_aFileIndex[i] = -1;
     }
 
     static_cast<void>(closedir(dirp));
 
 #ifndef NDEBUG
-    printf("%d\n", m_nFilesCount);
+    printf("%u\n", static_cast<unsigned>(files_count_));
 #endif
 
-    for (uint32_t index = 0; index < m_nFilesCount; index++) {
+    for (uint32_t index = 0; index < files_count_; index++) {
 #ifndef NDEBUG
-        printf("\tnIndex=%d -> %d\n", index, m_aFileIndex[index]);
+        printf("\tnIndex=%u -> %d\n", static_cast<unsigned>(index), static_cast<int>(m_aFileIndex[index]));
 #endif
 
         m_pDmxSerialChannelData[index] = new DmxSerialChannelData;
         assert(m_pDmxSerialChannelData[index] != nullptr);
 
         char buffer[16];
-        snprintf(buffer, sizeof(buffer) - 1, DMXSERIAL_FILE_PREFIX "%.3d" DMXSERIAL_FILE_SUFFIX, m_aFileIndex[index]);
+        snprintf(buffer, sizeof(buffer) - 1, DMXSERIAL_FILE_PREFIX "%.3d" DMXSERIAL_FILE_SUFFIX, static_cast<int>(m_aFileIndex[index]));
         DEBUG_PUTS(buffer);
         m_pDmxSerialChannelData[index]->Parse(buffer);
     }
 
 #ifndef NDEBUG
-    for (uint32_t index = 0; index < m_nFilesCount; index++) {
-        printf("\tindex=%d -> %d\n", index, m_aFileIndex[index]);
+    for (uint32_t index = 0; index < files_count_; index++) {
+        printf("\tindex=%u -> %d\n", static_cast<unsigned>(index), static_cast<int>(m_aFileIndex[index]));
         m_pDmxSerialChannelData[index]->Dump();
     }
 #endif
@@ -327,8 +327,8 @@ void DmxSerial::Input(const uint8_t* p, uint32_t size, uint32_t from_ip, [[maybe
 #endif
 
     if (memcmp(buffer, cmd::kRequestFiles, length::kRequestFiles) == 0) {
-        for (uint32_t i = 0; i < m_nFilesCount; i++) {
-            const auto kLength = snprintf(reinterpret_cast<char*>(buffer), network::udp::kDataSize - 1, DMXSERIAL_FILE_PREFIX "%.3d" DMXSERIAL_FILE_SUFFIX "\n", m_aFileIndex[i]);
+        for (uint32_t i = 0; i < files_count_; i++) {
+            const auto kLength = snprintf(reinterpret_cast<char*>(buffer), network::udp::kDataSize - 1, DMXSERIAL_FILE_PREFIX "%.3d" DMXSERIAL_FILE_SUFFIX "\n", static_cast<int>(m_aFileIndex[i]));
             network::udp::Send(handle_, buffer, kLength, from_ip, UDP::PORT);
         }
         return;
