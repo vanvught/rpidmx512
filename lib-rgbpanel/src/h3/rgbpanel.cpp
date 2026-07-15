@@ -125,7 +125,7 @@ void RgbPanel::PlatformInit() {
     H3GpioClr(HUB75B_B2);
 
     s_nBufferSize = columns_ * rows_ * kPwmWidth;
-    DEBUG_PRINTF("nBufferSize=%u", s_nBufferSize);
+    DEBUG_PRINTF("nBufferSize=%u", static_cast<unsigned>(s_nBufferSize));
 
     s_pFramebuffer1 = new uint32_t[s_nBufferSize];
     assert(s_pFramebuffer1 != nullptr);
@@ -133,7 +133,7 @@ void RgbPanel::PlatformInit() {
     s_pFramebuffer2 = new uint32_t[s_nBufferSize];
     assert(s_pFramebuffer2 != nullptr);
 
-    DEBUG_PRINTF("%p %p", s_pFramebuffer1, s_pFramebuffer2);
+    DEBUG_PRINTF("%p %p", reinterpret_cast<void*>(s_pFramebuffer1), reinterpret_cast<void*>(s_pFramebuffer2));
 
     for (uint32_t i = 0; i < s_nBufferSize; i++) {
         s_pFramebuffer1[i] = 0;
@@ -189,7 +189,7 @@ void RgbPanel::Dump() {
         printf("[");
         for (uint32_t i = 0; i < columns_; i++) {
             const uint32_t kIndex = (row * columns_) + i;
-            printf("%x ", s_pFramebuffer1[kIndex]);
+            printf("%x ", static_cast<unsigned>(s_pFramebuffer1[kIndex]));
         }
         puts("]");
     }

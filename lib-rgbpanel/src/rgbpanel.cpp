@@ -216,5 +216,5 @@ void RgbPanel::Stop() {
 
 void RgbPanel::Print() {
     puts("RGB led panel");
-    printf(" %ux%ux%u\n", columns_, rows_, chain_);
+    printf(" %ux%ux%u\n", static_cast<unsigned>(columns_), static_cast<unsigned>(rows_), static_cast<unsigned>(chain_));
 }
