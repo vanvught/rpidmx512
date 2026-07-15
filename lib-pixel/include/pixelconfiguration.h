@@ -141,7 +141,8 @@ class PixelConfiguration {
                 high_code_ = 0;
             }
 
-            uint8_t low_code, high_code;
+            uint8_t low_code;
+            uint8_t high_code;
 
             pixel::GetTxH(type_, low_code, high_code);
 
@@ -208,11 +209,11 @@ class PixelConfiguration {
 
     void Print() {
         puts("Pixel configuration");
-        printf(" Type    : %s [%d] <%d leds/pixel>\n", pixel::GetTypeName(type_), static_cast<int>(type_), static_cast<int>(leds_per_pixel_));
-        printf(" Count   : %d\n", count_);
+        printf(" Type    : %s [%u] <%u leds/pixel>\n", pixel::GetTypeName(type_), static_cast<unsigned>(type_), static_cast<unsigned>(leds_per_pixel_));
+        printf(" Count   : %u\n", static_cast<unsigned>(count_));
 
         if (is_rtz_protocol_) {
-            printf(" Mapping : %s [%d]\n", pixel::GetMapName(map_), static_cast<int>(map_));
+            printf(" Mapping : %s [%u]\n", pixel::GetMapName(map_), static_cast<unsigned>(map_));
             printf(" T0H     : %.2f [0x%X]\n", pixel::ConvertTxH(low_code_), low_code_);
             printf(" T1H     : %.2f [0x%X]\n", pixel::ConvertTxH(high_code_), high_code_);
         } else {
@@ -227,7 +228,7 @@ class PixelConfiguration {
 #if defined(CONFIG_PIXELDMX_ENABLE_GAMMATABLE)
         printf(" Gamma correction %s\n", enable_gamma_correction_ ? "Yes" : "No");
         if (enable_gamma_correction_) {
-            printf("   Value = %u\n", gamma_value_);
+            printf("   Value = %u\n", static_cast<unsigned>(gamma_value_));
         }
 #endif
     }

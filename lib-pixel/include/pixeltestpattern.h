@@ -54,7 +54,7 @@ class PixelTestPattern final : PixelPatterns {
 
         pattern_ = pattern;
 
-        DEBUG_PRINTF("pattern_=%u", static_cast<uint32_t>(pattern_));
+        DEBUG_PRINTF("pattern_=%u", static_cast<unsigned>(pattern_));
 
         const auto kColour1 = pixel::GetColour(0, 0, 0);
         const auto kColour2 = pixel::GetColour(100, 100, 100);
@@ -62,7 +62,7 @@ class PixelTestPattern final : PixelPatterns {
         constexpr auto kSteps = 10;
 
         for (uint32_t i = 0; i < PixelPatterns::GetActivePorts(); i++) {
-            DEBUG_PRINTF("i=%u", i);
+            DEBUG_PRINTF("i=%u", static_cast<unsigned>(i));
 
             switch (pattern) {
                 case pixelpatterns::Pattern::kRainbowCycle:

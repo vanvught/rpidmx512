@@ -70,11 +70,11 @@ class PixelPatterns {
    public:
     explicit PixelPatterns(uint32_t active_ports) {
         DEBUG_ENTRY();
-        DEBUG_PRINTF("active_ports=%u", active_ports);
+        DEBUG_PRINTF("active_ports=%u", static_cast<unsigned>(active_ports));
 
         s_active_ports = std::min(pixelpatterns::kMaxPorts, active_ports);
 
-		DEBUG_PRINTF("s_active_ports=%u", s_active_ports);
+		DEBUG_PRINTF("s_active_ports=%u", static_cast<unsigned>(s_active_ports));
         DEBUG_EXIT();
     }
 
@@ -88,7 +88,7 @@ class PixelPatterns {
         return "Unknown";
     }
 
-    inline uint32_t GetActivePorts() const { return s_active_ports; }
+    uint32_t GetActivePorts() const { return s_active_ports; }
 
     void RainbowCycle(uint32_t port_index, uint32_t interval, pixelpatterns::Direction direction = pixelpatterns::Direction::kForward) {
         Clear(port_index);
@@ -137,7 +137,7 @@ class PixelPatterns {
 
     void None(uint32_t port_index) {
         DEBUG_ENTRY();
-        DEBUG_PRINTF("port_index=%u", port_index);
+        DEBUG_PRINTF("port_index=%u", static_cast<unsigned>(port_index));
 
         Clear(port_index);
 
@@ -210,11 +210,11 @@ class PixelPatterns {
 
         const auto kInterp = [=](uint8_t a, uint8_t b) -> uint8_t { return static_cast<uint8_t>((a * kInvIndex + b * kIndex) / kTotalSteps); };
 
-        const auto kR = kInterp(kColor1.Red(), kColor2.Red());
-        const auto kG = kInterp(kColor1.Green(), kColor2.Green());
-        const auto kB = kInterp(kColor1.Blue(), kColor2.Blue());
+        const auto kRed = kInterp(kColor1.Red(), kColor2.Red());
+        const auto kGreen = kInterp(kColor1.Green(), kColor2.Green());
+        const auto kBlue = kInterp(kColor1.Blue(), kColor2.Blue());
 
-        pixel::SetPixelColour(port_index, pixel::GetColour(kR, kG, kB));
+        pixel::SetPixelColour(port_index, pixel::GetColour(kRed, kGreen, kBlue));
 
         Increment(port_index);
     }
@@ -294,7 +294,6 @@ class PixelPatterns {
 
     void Clear(uint32_t port_index) { pixel::SetPixelColour(port_index, 0); }
 
-   private:
     static inline uint32_t s_active_ports;
 
     struct PortConfig {

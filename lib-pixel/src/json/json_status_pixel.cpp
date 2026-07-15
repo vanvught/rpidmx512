@@ -35,18 +35,16 @@
 #if defined(OUTPUT_DMX_PIXEL) || defined(OUTPUT_DMX_PIXEL_MULTI)
 #include "pixelconfiguration.h"
 
-namespace json::status
-{
-uint32_t Pixel(char* out_buffer, uint32_t out_buffer_size)
-{
+namespace json::status {
+uint32_t Pixel(char* out_buffer, uint32_t out_buffer_size) {
     auto& configuration = PixelConfiguration::Get();
     const auto kUserData = PixelOutputType::Get()->GetUserData();
 
-    return static_cast<uint32_t>(
-        snprintf(out_buffer, out_buffer_size, 
-			"{\"refresh_rate\":\"%u\",\"frame_rate\":\"%u\"}", 
-			configuration.GetRefreshRate(), 
-			kUserData));
+    return static_cast<uint32_t>(snprintf(out_buffer, out_buffer_size, 
+		"{\"refresh_rate\":\"%u\",\"frame_rate\":\"%u\"}", 
+		static_cast<unsigned>(configuration.GetRefreshRate()), 
+		static_cast<unsigned>(kUserData))
+	);
 }
 } // namespace json::status
 #endif
