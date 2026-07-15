@@ -73,7 +73,7 @@ inline void ArtNetNode::SetDirection4(uint32_t port_index) {
 }
 
 inline void ArtNetNode::SetPortProtocol4(uint32_t port_index, artnet::PortProtocol port_protocol) {
-    DEBUG_PRINTF("port_index=%u, PortProtocol=%s", port_index, artnet::GetProtocolMode(port_protocol, false));
+    DEBUG_PRINTF("port_index=%u, PortProtocol=%s", static_cast<unsigned>(port_index), artnet::GetProtocolMode(port_protocol, false));
 
     assert(port_index < dmxnode::kMaxPorts);
 
@@ -134,7 +134,11 @@ inline uint8_t ArtNetNode::GetGoodOutput4(uint32_t port_index) {
     uint16_t universe;
     const auto kIsActive = E131Bridge::GetUniverse(port_index, universe, dmxnode::Direction::kOutput);
 
-    DEBUG_PRINTF("Port %u, Active %c, Universe %d, %s", port_index, kIsActive ? 'Y' : 'N', universe, dmxnode::GetMergeMode(E131Bridge::GetMergeMode(port_index), true));
+    DEBUG_PRINTF("Port %u, Active %c, Universe %d, %s", 
+		static_cast<unsigned>(port_index), 
+		kIsActive ? 'Y' : 'N', 
+		static_cast<unsigned>(universe), 
+		dmxnode::GetMergeMode(E131Bridge::GetMergeMode(port_index), true));
 
     if (kIsActive) {
         uint8_t status = artnet::GoodOutput::kOutputIsSacn;
@@ -151,7 +155,7 @@ inline void ArtNetNode::SetLedBlinkMode4(board::statusled::Mode mode) {
 
     if (s_mode != mode) {
         s_mode = mode;
-        DEBUG_PRINTF("mode=%u", static_cast<uint32_t>(mode));
+        DEBUG_PRINTF("mode=%u", static_cast<unsigned>(mode));
     }
 
     E131Bridge::SetEnableDataIndicator(mode == board::statusled::Mode::kNormal);

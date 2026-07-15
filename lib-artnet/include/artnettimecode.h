@@ -28,10 +28,8 @@
 
 #include <cstdint>
 
-namespace artnet
-{
-struct TimeCode
-{
+namespace artnet {
+struct TimeCode {
     uint8_t frames;  ///< Frames time. 0 – 29 depending on mode.
     uint8_t seconds; ///< Seconds. 0 - 59.
     uint8_t minutes; ///< Minutes. 0 - 59.
@@ -42,4 +40,4 @@ struct TimeCode
 
 typedef void (*ArtTimeCodeCallbackFunctionPtr)(const struct artnet::TimeCode*);
 
-#endif  // ARTNETTIMECODE_H_
+#endif // ARTNETTIMECODE_H_

@@ -2,7 +2,7 @@
  * @file artnetoutput.h
  *
  */
-/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -69,7 +69,6 @@ public:
 private:
 	void SetDataImpl(uint32_t port_index, const uint8_t *data, uint32_t length);
 
-private:
 	uint16_t universe_[DMXNODE_PORTS];
 };
 

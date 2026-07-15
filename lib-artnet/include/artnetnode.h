@@ -71,21 +71,14 @@
 #define ALIGNED __attribute__((aligned(4)))
 #endif
 
-namespace artnetnode
-{
+namespace artnetnode {
 inline constexpr uint32_t kPollReplyQueueSize = 4;
 inline constexpr uint32_t kTodRequestListSize = 4;
 
-enum class PollReplyState : uint8_t
-{
-    kWaitingTimeout,
-    kRunning
-};
+enum class PollReplyState : uint8_t { kWaitingTimeout, kRunning };
 
-struct State
-{
-    struct
-    {
+struct State {
+    struct {
         uint32_t diag_ip;
         uint32_t poll_ip;
         uint32_t poll_reply_count;
@@ -117,10 +110,8 @@ struct State
     uint8_t diag_priority; ///< ArtPoll : Field 6 : The lowest priority of diagnostics message that should be sent.
 };
 
-struct Node
-{
-    struct
-    {
+struct Node {
+    struct {
         uint16_t port_address; ///< The Port-Address is a 15 bit number composed of Net+Sub-Net+Universe.
         uint8_t sw;            ///< Bits 3-0 of the 15 bit Port-Address for a given port are encoded into the bottom 4 bits of this field.
         uint8_t sub_switch;    ///< Bits 7-4 of the 15 bit Port-Address are encoded into the bottom 4 bits of this field.
@@ -134,15 +125,13 @@ struct Node
     bool map_universe0; ///< Art-Net 4
 };
 
-struct Source
-{
+struct Source {
     uint32_t millis;   ///< The latest time of the data received from port
     uint32_t ip;       ///< The IP address for port
     uint16_t physical; ///< The physical input port from which DMX512 data was input.
 };
 
-struct OutputPort
-{
+struct OutputPort {
     Source source_a ALIGNED;
     Source source_b ALIGNED;
     uint32_t rdm_destination_ip;
@@ -152,28 +141,23 @@ struct OutputPort
     bool is_data_pending;
 };
 
-struct InputPort
-{
+struct InputPort {
     uint32_t destination_ip;
     uint32_t millis;
     uint8_t sequence_number;
     uint8_t good_input;
 };
 
-inline artnet::FailSafe ConvertFailsafe(dmxnode::FailSafe failsafe)
-{
-    if (failsafe > dmxnode::FailSafe::kPlayback)
-    {
+inline artnet::FailSafe ConvertFailsafe(dmxnode::FailSafe failsafe) {
+    if (failsafe > dmxnode::FailSafe::kPlayback) {
         return artnet::FailSafe::kLast;
     }
 
     return static_cast<artnet::FailSafe>(static_cast<uint32_t>(failsafe) + static_cast<uint32_t>(artnet::FailSafe::kLast));
 }
 
-inline dmxnode::FailSafe ConvertFailsafe(artnet::FailSafe failsafe)
-{
-    if (failsafe > artnet::FailSafe::kRecord)
-    {
+inline dmxnode::FailSafe ConvertFailsafe(artnet::FailSafe failsafe) {
+    if (failsafe > artnet::FailSafe::kRecord) {
         return dmxnode::FailSafe::kHold;
     }
 
@@ -182,11 +166,9 @@ inline dmxnode::FailSafe ConvertFailsafe(artnet::FailSafe failsafe)
 } // namespace artnetnode
 
 #if (ARTNET_VERSION >= 4)
-class ArtNetNode : E131Bridge
-{
+class ArtNetNode : E131Bridge {
 #else
-class ArtNetNode
-{
+class ArtNetNode {
 #endif
    public:
     ArtNetNode();
@@ -242,8 +224,7 @@ class ArtNetNode
     void Run();
 
 #if defined(ARTNET_SHOWFILE)
-    void HandleShowFile(const artnet::ArtDmx* artdmx)
-    {
+    void HandleShowFile(const artnet::ArtDmx* artdmx) {
         current_millis_ = timing::Millis();
         ip_address_from_ = network::GetPrimaryIp();
         receive_buffer_ = reinterpret_cast<uint8_t*>(const_cast<artnet::ArtDmx*>(artdmx));
@@ -273,51 +254,37 @@ class ArtNetNode
 #endif
 
 #if defined(ARTNET_HAVE_TIMECODE)
-    void SendTimeCode(const struct artnet::TimeCode* timecode)
-    {
+    void SendTimeCode(const struct artnet::TimeCode* timecode) {
         assert(timecode != nullptr);
         memcpy(&art_time_code_.frames, timecode, sizeof(struct artnet::TimeCode));
         network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&art_time_code_), sizeof(struct artnet::ArtTimeCode), node_.ip_timecode, artnet::kUdpPort);
     }
 
-    void SetArtTimeCodeCallbackFunction(ArtTimeCodeCallbackFunctionPtr art_time_code_callback_function_ptr)
-    {
-        art_time_code_callback_function_ptr_ = art_time_code_callback_function_ptr;
-    }
+    void SetArtTimeCodeCallbackFunction(ArtTimeCodeCallbackFunctionPtr art_time_code_callback_function_ptr) { art_time_code_callback_function_ptr_ = art_time_code_callback_function_ptr; }
 
     void SetTimeCodeIp(uint32_t destination_ip) { node_.ip_timecode = destination_ip; }
 #endif
 
 #if defined(ARTNET_HAVE_TRIGGER)
-    void SetArtTriggerCallbackFunctionPtr(ArtTriggerCallbackFunctionPtr art_trigger_callback_function_ptr)
-    {
-        art_trigger_callback_function_ptr_ = art_trigger_callback_function_ptr;
-    }
+    void SetArtTriggerCallbackFunctionPtr(ArtTriggerCallbackFunctionPtr art_trigger_callback_function_ptr) { art_trigger_callback_function_ptr_ = art_trigger_callback_function_ptr; }
 #endif
 
-    void SetDestinationIp(uint32_t port_index, uint32_t destination_ip)
-    {
-        if (port_index < dmxnode::kMaxPorts)
-        {
+    void SetDestinationIp(uint32_t port_index, uint32_t destination_ip) {
+        if (port_index < dmxnode::kMaxPorts) {
             input_port_[port_index].destination_ip = destination_ip;
             DEBUG_PRINTF("destination_ip=" IPSTR, IP2STR(input_port_[port_index].destination_ip));
         }
     }
 
-    uint32_t GetDestinationIp(uint32_t port_index) const
-    {
-        if (port_index < dmxnode::kMaxPorts)
-        {
+    uint32_t GetDestinationIp(uint32_t port_index) const {
+        if (port_index < dmxnode::kMaxPorts) {
             return input_port_[port_index].destination_ip;
         }
 
         return 0;
     }
 
-    void static StaticCallbackFunction(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port)
-    {
-        s_this->InputUdp(buffer, size, from_ip, from_port);
-    }
+    void static StaticCallbackFunction(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port) { s_this->InputUdp(buffer, size, from_ip, from_port); }
 
     static ArtNetNode* Get() { return s_this; }
 
@@ -408,8 +375,7 @@ class ArtNetNode
     artnet::ArtDmx art_dmx_;
 #endif
 #if defined(RDM_CONTROLLER) || defined(RDM_RESPONDER)
-    union UArtTodPacket
-    {
+    union UArtTodPacket {
         artnet::ArtTodData art_tod_data;
         artnet::ArtTodRequest art_tod_request;
         artnet::ArtRdm art_rdm;

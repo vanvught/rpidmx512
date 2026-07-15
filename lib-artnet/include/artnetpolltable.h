@@ -2,7 +2,7 @@
  * @file artnetpolltable.h
  *
  */
-/* Copyright (C) 2017-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2017-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,23 +30,20 @@
 
 #include "artnet.h"
 
-namespace artnet
-{
+namespace artnet {
 inline constexpr uint32_t POLL_INTERVAL_SECONDS = 8;
 inline constexpr uint32_t POLL_INTERVAL_MILLIS = (POLL_INTERVAL_SECONDS * 1000U);
 inline constexpr uint32_t POLL_TABLE_SIZE_ENRIES = 255;
 inline constexpr uint32_t POLL_TABLE_SIZE_NODE_UNIVERSES = 64;
 inline constexpr uint32_t POLL_TABLE_SIZE_UNIVERSES = 512;
 
-struct NodeEntryUniverse
-{
+struct NodeEntryUniverse {
     uint8_t ShortName[artnet::kPortNameLength];
     uint32_t nLastUpdateMillis;
     uint16_t universe;
 };
 
-struct NodeEntry
-{
+struct NodeEntry {
     uint32_t IPAddress;
     uint8_t Mac[artnet::kMacSize];
     uint8_t long_name[artnet::kLongNameLength];
@@ -54,23 +51,20 @@ struct NodeEntry
     struct NodeEntryUniverse Universe[artnet::POLL_TABLE_SIZE_NODE_UNIVERSES];
 };
 
-struct PollTableUniverses
-{
+struct PollTableUniverses {
     uint16_t universe;
     uint16_t nCount;
     uint32_t* pIpAddresses;
 };
 
-struct PollTableClean
-{
+struct PollTableClean {
     uint32_t nTableIndex;
     uint16_t universe_index;
     bool bOffLine;
 };
 } // namespace artnet
 
-class ArtNetPollTable
-{
+class ArtNetPollTable {
    public:
     ArtNetPollTable();
     ~ArtNetPollTable();
@@ -91,7 +85,6 @@ class ArtNetPollTable
     void ProcessUniverse(uint32_t ip_address, uint16_t universe);
     void RemoveIpAddress(uint16_t universe, uint32_t ip_address);
 
-   private:
     artnet::NodeEntry* table_;
     artnet::PollTableUniverses* table_universes_;
     uint32_t table_entries_{0};
@@ -99,4 +92,4 @@ class ArtNetPollTable
     artnet::PollTableClean table_clean_;
 };
 
-#endif  // ARTNETPOLLTABLE_H_
+#endif // ARTNETPOLLTABLE_H_

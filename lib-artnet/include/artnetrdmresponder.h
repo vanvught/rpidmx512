@@ -37,11 +37,9 @@
 #include "rdm_message_print.h"
 #include "firmware/debug/debug_debug.h"
 
-class ArtNetRdmResponder final : public RDMDeviceResponder
-{
+class ArtNetRdmResponder final : public RDMDeviceResponder {
    public:
-    ArtNetRdmResponder(RdmPersonality** rdm_personalities, uint32_t personality_count) : RDMDeviceResponder(rdm_personalities, personality_count)
-    {
+    ArtNetRdmResponder(RdmPersonality** rdm_personalities, uint32_t personality_count) : RDMDeviceResponder(rdm_personalities, personality_count) {
         DEBUG_ENTRY();
 
         DEBUG_EXIT();
@@ -49,37 +47,27 @@ class ArtNetRdmResponder final : public RDMDeviceResponder
 
     ~ArtNetRdmResponder() override = default;
 
-    void Print()
-    {
-        RDMDeviceResponder::Print();
-    }
+    void Print() { RDMDeviceResponder::Print(); }
 
-    void TodCopy(uint32_t port_index, unsigned char* tod)
-    {
+    void TodCopy(uint32_t port_index, unsigned char* tod) {
         DEBUG_PRINTF("port_index=%u", port_index);
 
-        if (port_index == 0)
-        {
+        if (port_index == 0) {
             memcpy(tod, rdm::device::Base::Instance().GetUID(), rdm::kUidSize);
-        }
-        else
-        {
+        } else {
             memcpy(tod, rdm::kUidAll, rdm::kUidSize);
         }
     }
 
-    const uint8_t* Handler(uint32_t port_index, const uint8_t* rdm_data_no_sc)
-    {
+    const uint8_t* Handler(uint32_t port_index, const uint8_t* rdm_data_no_sc) {
         DEBUG_ENTRY();
 
-        if (port_index != 0)
-        {
+        if (port_index != 0) {
             DEBUG_EXIT();
             return nullptr;
         }
 
-        if (rdm_data_no_sc == nullptr)
-        {
+        if (rdm_data_no_sc == nullptr) {
             DEBUG_EXIT();
             return nullptr;
         }
@@ -90,8 +78,7 @@ class ArtNetRdmResponder final : public RDMDeviceResponder
 
         RDMHandler::Instance().HandleData(rdm_data_no_sc, reinterpret_cast<uint8_t*>(&s_rdm_command), RDMHandler::Type::kTypeRdm);
 
-        if (s_rdm_command.start_code != E120_SC_RDM)
-        {
+        if (s_rdm_command.start_code != E120_SC_RDM) {
             DEBUG_EXIT();
             return nullptr;
         }

@@ -33,10 +33,8 @@
 #include "artnetpolltable.h"
 #include "dmxnode.h"
 
-struct State
-{
-    struct
-    {
+struct State {
+    struct {
         uint32_t poll_reply_count;
         artnet::ArtPollQueue poll_reply_queue[4];
     } art;
@@ -44,13 +42,11 @@ struct State
     artnet::Status status;
 };
 
-struct TArtNetController
-{
+struct TArtNetController {
     uint8_t Oem[2];
 };
 
-class ArtNetController : public ArtNetPollTable
-{
+class ArtNetController : public ArtNetPollTable {
    public:
     ArtNetController();
     ~ArtNetController();
@@ -63,10 +59,8 @@ class ArtNetController : public ArtNetPollTable
 
     void Start();
     void Stop();
-    void Run()
-    {
-        if (m_bUnicast)
-        {
+    void Run() {
+        if (m_bUnicast) {
             ProcessPoll();
         }
     }
@@ -89,14 +83,10 @@ class ArtNetController : public ArtNetPollTable
     bool GetForceBroadcast() const { return m_bForceBroadcast; }
 
 #ifdef CONFIG_ARTNET_CONTROLLER_ENABLE_MASTER
-    void SetMaster(uint32_t nMaster = dmxnode::kDmxMaxValue)
-    {
-        if (nMaster < dmxnode::kDmxMaxValue)
-        {
+    void SetMaster(uint32_t nMaster = dmxnode::kDmxMaxValue) {
+        if (nMaster < dmxnode::kDmxMaxValue) {
             master_ = nMaster;
-        }
-        else
-        {
+        } else {
             master_ = dmxnode::kDmxMaxValue;
         }
     }
@@ -106,17 +96,11 @@ class ArtNetController : public ArtNetPollTable
     const uint8_t* GetSoftwareVersion();
 
 #if defined(ARTNET_HAVE_TRIGGER)
-    void SetArtTriggerCallbackFunctionPtr(ArtTriggerCallbackFunctionPtr artTriggerCallbackFunctionPtr)
-    {
-        m_ArtTriggerCallbackFunctionPtr = artTriggerCallbackFunctionPtr;
-    }
+    void SetArtTriggerCallbackFunctionPtr(ArtTriggerCallbackFunctionPtr artTriggerCallbackFunctionPtr) { m_ArtTriggerCallbackFunctionPtr = artTriggerCallbackFunctionPtr; }
 #endif
 
     void Input(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port);
-    void static StaticCallbackFunction(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port)
-    {
-        s_this->Input(buffer, size, from_ip, from_port);
-    }
+    void static StaticCallbackFunction(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port) { s_this->Input(buffer, size, from_ip, from_port); }
 
     static ArtNetController* Get() { return s_this; }
 
@@ -135,8 +119,7 @@ class ArtNetController : public ArtNetPollTable
     artnet::ArtPoll m_ArtNetPoll;
     artnet::ArtPollReply art_poll_reply_;
 
-    struct TArtNetPacket
-    {
+    struct TArtNetPacket {
         union artnet::UArtPacket ArtPacket;
         uint32_t IPAddressFrom;
         uint16_t nLength;
@@ -164,4 +147,4 @@ class ArtNetController : public ArtNetPollTable
     static inline ArtNetController* s_this;
 };
 
-#endif  // ARTNETCONTROLLER_H_
+#endif // ARTNETCONTROLLER_H_

@@ -508,8 +508,8 @@ void ArtNetController::ActiveUniversesAdd(uint16_t universe) {
 
 void ArtNetController::Print() {
     puts("Art-Net Controller");
-    printf(" Max Node's    : %u\n", POLL_TABLE_SIZE_ENRIES);
-    printf(" Max Universes : %u\n", POLL_TABLE_SIZE_UNIVERSES);
+    printf(" Max Node's    : %u\n", static_cast<unsigned>(POLL_TABLE_SIZE_ENRIES));
+    printf(" Max Universes : %u\n", static_cast<unsigned>(POLL_TABLE_SIZE_UNIVERSES));
     if (!m_bUnicast) {
         puts(" Unicast is disabled");
     }

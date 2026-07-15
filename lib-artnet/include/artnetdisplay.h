@@ -31,8 +31,7 @@
 #include "artnet.h"
 #include "dmxnode.h"
 
-namespace artnet::display
-{
+namespace artnet::display {
 void Longname(const char* long_name);
 void Universe(uint32_t port_index, uint32_t universe);
 void MergeMode(uint32_t port_index, dmxnode::MergeMode merge_mode);
@@ -42,4 +41,4 @@ void RdmEnabled(uint32_t port_index, bool is_enabled);
 void Failsafe(uint8_t failsafe);
 } // namespace artnet::display
 
-#endif  // ARTNETDISPLAY_H_
+#endif // ARTNETDISPLAY_H_
