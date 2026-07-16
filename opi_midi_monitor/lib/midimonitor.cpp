@@ -145,7 +145,7 @@ void MidiMonitor::HandleMessage() {
         const uint32_t seconds = nTime / 1000;
         const uint32_t millis = nTime - seconds * 1000;
 
-        printf("%02d:%02d.%03d ", (hours * 60) + minutes, seconds, millis);
+        printf("%02u:%02u.%03u ", static_cast<unsigned>((hours * 60) + minutes), static_cast<unsigned>(seconds), static_cast<unsigned>(millis));
 
         console::ConsolePuthex(static_cast<uint8_t>(m_pMidiMessage->type));
         console::PutChar(' ');
@@ -193,10 +193,10 @@ void MidiMonitor::HandleMessage() {
                 // Channel message
                 case Types::NOTE_OFF:
                 case Types::NOTE_ON:
-                    printf(" %d, Velocity %d\n", m_pMidiMessage->data1, m_pMidiMessage->data2);
+                    printf(" %d, Velocity %d\n", static_cast<unsigned>(m_pMidiMessage->data1), static_cast<unsigned>(m_pMidiMessage->data2));
                     break;
                 case Types::AFTER_TOUCH_POLY:
-                    printf(" %d, Pressure %d\n", m_pMidiMessage->data1, m_pMidiMessage->data2);
+                    printf(" %d, Pressure %d\n", static_cast<unsigned>(m_pMidiMessage->data1), static_cast<unsigned>(m_pMidiMessage->data2));
                     break;
                 case Types::CONTROL_CHANGE:
                     // https://www.midi.org/specifications/item/table-3-control-change-messages-data-bytes-2
@@ -239,7 +239,7 @@ void MidiMonitor::HandleMessage() {
                         console::SaveCursor();
                         console::SetCursor(81, 2);
                         console::SetFgColour(console::Colour::kCyan);
-                        printf("%3d", m_nBPM);
+                        printf("%3u", static_cast<unsigned>(m_nBPM));
                         console::RestoreCursor();
                     }
                     console::PutChar('\n');
@@ -254,15 +254,15 @@ void MidiMonitor::HandleMessage() {
                     break;
                     // 2 bytes messages
                 case Types::TIME_CODE_QUARTER_FRAME:
-                    printf(", Message number %d, Data %d\n", ((m_pMidiMessage->data1 & 0x70) >> 4), (m_pMidiMessage->data1 & 0x0F));
+                    printf(", Message number %u, Data %u\n", static_cast<unsigned>((m_pMidiMessage->data1 & 0x70) >> 4), static_cast<unsigned>(m_pMidiMessage->data1 & 0x0F));
                     HandleQf();
                     break;
                 case Types::SONG_SELECT:
-                    printf(", Song id number %d\n", m_pMidiMessage->data1);
+                    printf(", Song id number %u\n", static_cast<unsigned>(m_pMidiMessage->data1));
                     break;
                     // 3 bytes messages
                 case Types::SONG_POSITION:
-                    printf(", Song position %d\n", (m_pMidiMessage->data1 | (m_pMidiMessage->data2 << 7)));
+                    printf(", Song position %u\n", static_cast<unsigned>((m_pMidiMessage->data1 | (m_pMidiMessage->data2 << 7))));
                     break;
                     // > 3 bytes messages
                 case Types::SYSTEM_EXCLUSIVE:
@@ -322,7 +322,7 @@ void MidiMonitor::ShowActiveSenseAndUpdatesPerSecond() {
     const auto nUpdatePerSeconds = Midi::Get()->GetUpdatesPerSecond();
     if (nUpdatePerSeconds != 0) {
         console::SetFgBgColour(console::Colour::kBlack, console::Colour::kGreen);
-        printf("%3d", nUpdatePerSeconds);
+        printf("%3u", static_cast<unsigned>(nUpdatePerSeconds));
     } else {
         console::SetFgBgColour(console::Colour::kGreen, console::Colour::kWhite);
         console::Puts("--");
