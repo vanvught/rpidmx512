@@ -36,8 +36,7 @@
 #include "ip4/ip4_address.h"
 #include "firmware/debug/debug_debug.h"
 
-void DisplayUdf::ShowArtNetNode()
-{
+void DisplayUdf::ShowArtNetNode() {
     DEBUG_ENTRY();
     DEBUG_PRINTF("dmxnode::kDmxportOffset=%u", dmxnode::kDmxportOffset);
 
@@ -52,30 +51,24 @@ void DisplayUdf::ShowArtNetNode()
     DEBUG_EXIT();
 }
 
-void DisplayUdf::ShowUniverseArtNetNode()
-{
+void DisplayUdf::ShowUniverseArtNetNode() {
 #if defined(DMX_MAX_PORTS)
     DEBUG_ENTRY();
-    if constexpr (dmxnode::kConfigPortCount != 0)
-    {
+    if constexpr (dmxnode::kConfigPortCount != 0) {
         auto* artnet_node = ArtNetNode::Get();
         uint16_t universe;
 
-        for (uint32_t config_port_index = 0; config_port_index < dmxnode::kConfigPortCount; config_port_index++)
-        {
+        for (uint32_t config_port_index = 0; config_port_index < dmxnode::kConfigPortCount; config_port_index++) {
             const auto kPortIndex = config_port_index + dmxnode::kDmxportOffset;
 
-            if (kPortIndex >= dmxnode::kMaxPorts)
-            {
+            if (kPortIndex >= dmxnode::kMaxPorts) {
                 break;
             }
 
             const auto kLabelIndex = static_cast<uint32_t>(displayudf::Labels::kUniversePortA) + config_port_index;
 
-            if (kLabelIndex != 0xFF)
-            {
-                if (artnet_node->GetPortAddress(kPortIndex, universe, dmxnode::Direction::kOutput))
-                {
+            if (kLabelIndex != 0xFF) {
+                if (artnet_node->GetPortAddress(kPortIndex, universe, dmxnode::Direction::kOutput)) {
                     ClearEndOfLine();
                     Printf(labels_[kLabelIndex],
 #if defined(OUTPUT_HAVE_STYLESWITCH)
@@ -101,25 +94,20 @@ void DisplayUdf::ShowUniverseArtNetNode()
 #endif
 }
 
-void DisplayUdf::ShowDestinationIpArtNetNode()
-{
+void DisplayUdf::ShowDestinationIpArtNetNode() {
     DEBUG_ENTRY();
 #if defined(ARTNET_HAVE_DMXIN)
-    if constexpr (dmxnode::kConfigPortCount != 0)
-    {
+    if constexpr (dmxnode::kConfigPortCount != 0) {
         auto* artnet_node = ArtNetNode::Get();
 
-        for (uint32_t config_port_index = 0; config_port_index < dmxnode::kConfigPortCount; config_port_index++)
-        {
+        for (uint32_t config_port_index = 0; config_port_index < dmxnode::kConfigPortCount; config_port_index++) {
             const auto kPortIndex = config_port_index + dmxnode::kDmxportOffset;
 
-            if (kPortIndex >= dmxnode::kMaxPorts)
-            {
+            if (kPortIndex >= dmxnode::kMaxPorts) {
                 break;
             }
 
-            Printf(labels_[static_cast<uint32_t>(displayudf::Labels::kDestinationIpPortA) + config_port_index], "%c: " IPSTR, 'A' + config_port_index,
-                   IP2STR(artnet_node->GetDestinationIp(kPortIndex)));
+            Printf(labels_[static_cast<uint32_t>(displayudf::Labels::kDestinationIpPortA) + config_port_index], "%c: " IPSTR, 'A' + config_port_index, IP2STR(artnet_node->GetDestinationIp(kPortIndex)));
         }
     }
 #endif

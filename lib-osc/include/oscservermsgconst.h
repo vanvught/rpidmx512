@@ -27,9 +27,9 @@
 #define OSCSERVERMSGCONST_H_
 
 struct OscServerMsgConst {
-	static inline const char kParams[] = "Configuring OSC Server";
-	static inline const char kStart[] = "Starting the OSC Server";
-	static inline const char kStarted[]= "OSC Server started";
+    static inline const char kParams[] = "Configuring OSC Server";
+    static inline const char kStart[] = "Starting the OSC Server";
+    static inline const char kStarted[] = "OSC Server started";
 };
 
 #endif /* OSCSERVERMSGCONST_H_ */

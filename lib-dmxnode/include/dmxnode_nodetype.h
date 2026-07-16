@@ -27,42 +27,36 @@
 
 #include <cstdint>
 
-namespace dmxnode
-{
-enum class NodeType
-{
-    kArtnet,
-    kE131,
-    kDdp,
-    kPp,
-    kDmx,
-    kLtc,
-    kOscClient,
-    kOscServer,
-    kRdmResponder,
-    kRdmNet,
-    kShowfile,
-    kUndefined
+namespace dmxnode {
+enum class NodeType { 
+	kArtnet,
+	kE131,
+	kDdp,
+	kPp,
+	kDmx,
+	kLtc,
+	kOscClient,
+	kOscServer,
+	kRdmResponder,
+	kRdmNet,
+	kShowfile,
+	kUndefined
 };
 
-inline constexpr const char* kNodeTypeNames[static_cast<uint32_t>(NodeType::kUndefined)] = 
-{
-	"Art-Net",    
+inline constexpr const char* kNodeTypeNames[static_cast<uint32_t>(NodeType::kUndefined)] = {
+	"Art-Net", 
 	"sACN E1.31", 
 	"DDP Display", 
-	"PixelPusher",
-	"DMX",        
+	"PixelPusher", 
+	"DMX", 
 	"LTC SMPTE", 
 	"OSC Client", 
-	"OSC Server",  
-	"RDM Responder",
-	"RDMNet LLRP Only"
-};
+	"OSC Server", 
+	"RDM Responder", 
+	"RDMNet LLRP Only"};
 
-inline const char* GetNodeType(NodeType type)
-{
-    if (type < NodeType::kUndefined)
-    {
+inline const char* GetNodeType(NodeType type) {
+    if (type < NodeType::kUndefined) {
         return kNodeTypeNames[static_cast<uint32_t>(type)];
     }
 
@@ -91,7 +85,7 @@ using DmxNodeNodeType = E131Bridge;
 using DmxNodeNodeType = DdpDisplay;
 #endif
 
-#if defined (NODE_PP)
+#if defined(NODE_PP)
 #define DMXNODE_TYPE_PP
 #endif
 
@@ -111,7 +105,7 @@ using DmxNodeNodeType = DdpDisplay;
 #define DMXNODE_TYPE_OSCSERVER
 #endif
 
-#if defined (RDM_RESPONDER)
+#if defined(RDM_RESPONDER)
 #define DMXNODE_TYPE_RDM_RESPONDER
 #endif
 
@@ -123,33 +117,32 @@ using DmxNodeNodeType = DdpDisplay;
 #define DMXNODE_TYPE_SHOWFILE
 #endif
 
-namespace dmxnode
-{
-#if defined (DMXNODE_TYPE_LTC)
+namespace dmxnode {
+#if defined(DMXNODE_TYPE_LTC)
 inline constexpr auto kNodeType = NodeType::kLtc;
-#elif defined (DMXNODE_TYPE_ARTNET)
+#elif defined(DMXNODE_TYPE_ARTNET)
 inline constexpr auto kNodeType = NodeType::kArtnet;
-#elif defined (DMXNODE_TYPE_E131)
+#elif defined(DMXNODE_TYPE_E131)
 inline constexpr auto kNodeType = NodeType::kE131;
-#elif defined (DMXNODE_TYPE_DDP)
+#elif defined(DMXNODE_TYPE_DDP)
 inline constexpr auto kNodeType = NodeType::kDdp;
-#elif defined (DMXNODE_TYPE_PP)
+#elif defined(DMXNODE_TYPE_PP)
 inline constexpr auto kNodeType = NodeType::kPp;
-#elif defined (DMXNODE_TYPE_DMX)
+#elif defined(DMXNODE_TYPE_DMX)
 inline constexpr auto kNodeType = NodeType::kDmx;
-#elif defined (DMXNODE_TYPE_OSCCLIENT)
+#elif defined(DMXNODE_TYPE_OSCCLIENT)
 inline constexpr auto kNodeType = NodeType::kOscClient;
-#elif defined (DMXNODE_TYPE_OSCSERVER)
+#elif defined(DMXNODE_TYPE_OSCSERVER)
 inline constexpr auto kNodeType = NodeType::kOscServer;
-#elif defined (DMXNODE_TYPE_RDM_RESPONDER)
+#elif defined(DMXNODE_TYPE_RDM_RESPONDER)
 inline constexpr auto kNodeType = NodeType::kRdmResponder;
-#elif defined (DMXNODE_TYPE_RDMNET_LLRP_ONLY)
+#elif defined(DMXNODE_TYPE_RDMNET_LLRP_ONLY)
 inline constexpr auto kNodeType = NodeType::kRdmNet;
-#elif defined (DMXNODE_TYPE_SHOWFILE)
+#elif defined(DMXNODE_TYPE_SHOWFILE)
 inline constexpr auto kNodeType = NodeType::kShowfile;
 #else
 inline constexpr auto kNodeType = NodeType::kUndefined;
 #endif
 } // namespace dmxnode
 
-#endif  // DMXNODE_NODETYPE_H_
+#endif // DMXNODE_NODETYPE_H_

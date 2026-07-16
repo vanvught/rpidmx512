@@ -29,7 +29,7 @@
 #include "e131bridge.h"
 #include "e131.h"
 #include "e117.h"
-#include "network.h"
+#include "network_udp.h"
 
 void E131Bridge::FillDiscoveryPacket() {
 	state_.discovery_packet_length = static_cast<uint16_t>(e131::DiscoveryPacketSize(state_.enabled_input_ports));

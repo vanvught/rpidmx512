@@ -104,7 +104,7 @@ class OscClient {
 
     void SendCmd(uint32_t cmd) {
         DEBUG_ENTRY();
-        DEBUG_PRINTF("cmd=%d", cmd);
+        DEBUG_PRINTF("cmd=%u", static_cast<unsigned>(cmd));
 
         assert(cmd < common::store::osc::client::kCmdCount);
 
@@ -118,7 +118,7 @@ class OscClient {
     uint32_t GetServerIP() const { return server_ip_; }
 
     void SetPortOutgoing(uint16_t port_outgoing) {
-        if (port_outgoing > 1023) {
+        if (port_outgoing > 1023U) {
             port_outgoing_ = port_outgoing;
         } else {
             port_outgoing_ = oscclient::defaults::kPortOutgoing;
@@ -128,7 +128,7 @@ class OscClient {
     uint16_t GetPortOutgoing() const { return port_outgoing_; }
 
     void SetPortIncoming(uint16_t port_incoming) {
-        if (port_incoming > 1023) {
+        if (port_incoming > 1023U) {
             port_incoming_ = port_incoming;
         } else {
             port_incoming_ = oscclient::defaults::kPortIncoming;
@@ -141,10 +141,10 @@ class OscClient {
     bool GetPingDisable() const { return ping_disable_; }
 
     void SetPingDelaySeconds(uint32_t ping_delay) {
-        if ((ping_delay >= 2) && (ping_delay <= 60)) {
-            ping_delay_millis_ = ping_delay * 1000;
+        if ((ping_delay >= 2) && (ping_delay <= 60U)) {
+            ping_delay_millis_ = ping_delay * 1000U;
         } else {
-            ping_delay_millis_ = oscclient::defaults::kPingDelaySeconds * 1000;
+            ping_delay_millis_ = oscclient::defaults::kPingDelaySeconds * 1000U;
         }
     }
 
@@ -227,7 +227,6 @@ class OscClient {
 
     bool HandleLedMessage(uint32_t bytes_received);
 
-   private:
     uint16_t port_outgoing_;
     uint16_t port_incoming_;
     uint32_t ping_delay_millis_;

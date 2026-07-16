@@ -341,7 +341,6 @@ class PixelDmxMulti final : public PixelDmxConfiguration {
         }
     }
 
-   private:
     PixelOutputType output_type_;
 
     uint32_t started_[2]; ///< Support for 16x4 = 64 ports.

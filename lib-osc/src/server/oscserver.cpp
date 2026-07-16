@@ -140,16 +140,16 @@ int OscServer::GetChannel(const char* p) {
 
     auto* s = const_cast<char*>(p) + strlen(s_path) + 1;
     int channel = 0;
-    int i;
+    int index;
 
-    for (i = 0; (i < 3) && (*s != '\0'); i++) {
+    for (index = 0; (index < 3) && (*s != '\0'); index++) {
         int c = *s;
 
         if ((c < '0') || (c > '9')) {
             return -1;
         }
 
-        channel = channel * 10 + c - '0';
+        channel = (channel * 10U) + c - '0';
         s++;
     }
 

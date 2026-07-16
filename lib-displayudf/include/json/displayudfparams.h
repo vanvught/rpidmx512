@@ -35,11 +35,9 @@
 
 static_assert(common::ArraySize(json::DisplayUdfParamsConst::kLabels) == static_cast<size_t>(displayudf::Labels::kUnknown), "Mismatch between enum and kArray");
 
-namespace json
-{
-class DisplayUdfParams : public JsonParamsBase<DisplayUdfParams>
-{
-	public:
+namespace json {
+class DisplayUdfParams : public JsonParamsBase<DisplayUdfParams> {
+   public:
 
     DisplayUdfParams();
 

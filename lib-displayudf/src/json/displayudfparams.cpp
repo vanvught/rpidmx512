@@ -74,7 +74,7 @@ void DisplayUdfParams::SetLabel(const char* key, uint32_t key_len, const char* v
         return;
     }
 
-    DEBUG_PRINTF("%.*s ->%.*s", key_len, key, val_len, val);
+    DEBUG_PRINTF("%.*s ->%.*s", static_cast<int>(key_len), key, static_cast<int>(val_len), val);
 
     const uint32_t kHash = Fnv1a32Runtime(key, key_len);
     bool matched = false;
@@ -132,12 +132,12 @@ void DisplayUdfParams::SetAndShow() {
 
 void DisplayUdfParams::Dump() {
     printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, json::DisplayUdfParamsConst::kFileName);
-    printf(" %s=%u\n", DisplayUdfParamsConst::kIntensity.name, store_displayudf.intensity);
-    printf(" %s=%u\n", DisplayUdfParamsConst::kSleepTimeout.name, store_displayudf.sleep_timeout);
-    printf(" %s=%u\n", DisplayUdfParamsConst::kFlipVertically.name, common::IsFlagSet(store_displayudf.flags, Flags::Flag::kFlipVertically));
+    printf(" %s=%u\n", DisplayUdfParamsConst::kIntensity.name, static_cast<unsigned>(store_displayudf.intensity));
+    printf(" %s=%u\n", DisplayUdfParamsConst::kSleepTimeout.name, static_cast<unsigned>(store_displayudf.sleep_timeout));
+    printf(" %s=%u\n", DisplayUdfParamsConst::kFlipVertically.name, static_cast<unsigned>(common::IsFlagSet(store_displayudf.flags, Flags::Flag::kFlipVertically)));
 
     for (uint32_t i = 0; i < common::ArraySize(DisplayUdfParamsConst::kLabels); ++i) {
-        printf(" %s=%u\n", DisplayUdfParamsConst::kLabels[i].name, store_displayudf.label_index[i]);
+        printf(" %s=%u\n", DisplayUdfParamsConst::kLabels[i].name, static_cast<unsigned>(store_displayudf.label_index[i]));
     }
 }
 } // namespace json

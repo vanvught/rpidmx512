@@ -42,6 +42,8 @@
 #include "uuid.h"
 #include "board.h"
 #include "network_udp.h"
+#include "network_iface.h"
+#include "network_igmp.h"
 #include "core/ip4/igmp.h"
 #include "softwaretimers.h"
 #include "timing.h"

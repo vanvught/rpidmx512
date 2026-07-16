@@ -43,13 +43,13 @@ inline constexpr int kNoneZeroInPadding = 3;
 } // namespace validate
 inline int StringValidate(const void* data, uint32_t size) {
     uint32_t length = 0;
-    auto* src = reinterpret_cast<const char*>(data);
+    const auto* src = reinterpret_cast<const char*>(data);
 
-    uint32_t i = 0;
+    uint32_t index = 0;
 
-    for (i = 0; i < size; ++i) {
-        if (src[i] == '\0') {
-            length = 4 * (i / 4 + 1);
+    for (index = 0; index < size; ++index) {
+        if (src[index] == '\0') {
+            length = 4 * (index / 4 + 1);
             break;
         }
     }
@@ -62,8 +62,8 @@ inline int StringValidate(const void* data, uint32_t size) {
         return -osc::validate::kInvalidSize;
     }
 
-    for (; i < length; ++i) {
-        if (src[i] != '\0') {
+    for (; index < length; ++index) {
+        if (src[index] != '\0') {
             return -osc::validate::kNoneZeroInPadding;
         }
     }

@@ -2,7 +2,7 @@
  * @file json_config_displayudf.cpp
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,37 +33,30 @@
 
 using common::store::displayudf::Flags;
 
-namespace json::config
-{
-uint32_t GetDisplayUdf(char* buffer, uint32_t length)
-{
+namespace json::config {
+uint32_t GetDisplayUdf(char* buffer, uint32_t length) {
     auto& displayudf = *DisplayUdf::Get();
 
-	return json::helpers::Serialize(buffer, length, [&](JsonDoc& doc) {
-	    doc[DisplayUdfParamsConst::kIntensity.name] = displayudf.GetContrast();
-	    doc[DisplayUdfParamsConst::kSleepTimeout.name] = displayudf.GetSleepTimeout();
-	    doc[DisplayUdfParamsConst::kFlipVertically.name] = displayudf.GetFlipVertically();
-	
-	    for (uint32_t i = 0; i < common::ArraySize(DisplayUdfParamsConst::kLabels); ++i)
-	    {
+    return json::helpers::Serialize(buffer, length, [&](JsonDoc& doc) {
+        doc[DisplayUdfParamsConst::kIntensity.name] = displayudf.GetContrast();
+        doc[DisplayUdfParamsConst::kSleepTimeout.name] = displayudf.GetSleepTimeout();
+        doc[DisplayUdfParamsConst::kFlipVertically.name] = displayudf.GetFlipVertically();
+
+        for (uint32_t i = 0; i < common::ArraySize(DisplayUdfParamsConst::kLabels); ++i) {
 #if !defined(RDM_RESPONDER)
-	        if (i == 8) continue;
+            if (i == 8) continue;
 #endif
-	        const auto kLabel = displayudf.GetLabel(i);
-	        if (kLabel > common::ArraySize(DisplayUdfParamsConst::kLabels))
-	        {
-	            doc[DisplayUdfParamsConst::kLabels[i].name] = "";
-	        }
-	        else
-	        {
-	            doc[DisplayUdfParamsConst::kLabels[i].name] = static_cast<uint32_t>(kLabel);
-	        }
-	    }
+            const auto kLabel = displayudf.GetLabel(i);
+            if (kLabel > common::ArraySize(DisplayUdfParamsConst::kLabels)) {
+                doc[DisplayUdfParamsConst::kLabels[i].name] = "";
+            } else {
+                doc[DisplayUdfParamsConst::kLabels[i].name] = static_cast<uint32_t>(kLabel);
+            }
+        }
     });
 }
 
-void SetDisplayUdf(const char* buffer, uint32_t buffer_size)
-{
+void SetDisplayUdf(const char* buffer, uint32_t buffer_size) {
     ::json::DisplayUdfParams displayudf_params;
     displayudf_params.Store(buffer, buffer_size);
     displayudf_params.SetAndShow();

@@ -33,37 +33,30 @@
 #include "artnet.h"
 #include "dmxnode.h"
 
-namespace artnet::display
-{
+namespace artnet::display {
 void Longname([[maybe_unused]] const char* long_name) {}
 
-void Universe([[maybe_unused]] uint32_t port_index, [[maybe_unused]] uint32_t universe)
-{
+void Universe([[maybe_unused]] uint32_t port_index, [[maybe_unused]] uint32_t universe) {
     DisplayUdf::Get()->ShowUniverseArtNetNode();
 }
 
-void MergeMode([[maybe_unused]] uint32_t port_index, [[maybe_unused]] dmxnode::MergeMode merge_mode)
-{
+void MergeMode([[maybe_unused]] uint32_t port_index, [[maybe_unused]] dmxnode::MergeMode merge_mode) {
     DisplayUdf::Get()->ShowUniverseArtNetNode();
 }
 
-void Outputstyle([[maybe_unused]] uint32_t port_index, [[maybe_unused]] dmxnode::OutputStyle output_style)
-{
+void Outputstyle([[maybe_unused]] uint32_t port_index, [[maybe_unused]] dmxnode::OutputStyle output_style) {
     DisplayUdf::Get()->ShowUniverseArtNetNode();
 }
 
-void Protocol([[maybe_unused]] uint32_t port_index, [[maybe_unused]] artnet::PortProtocol port_protocol)
-{
+void Protocol([[maybe_unused]] uint32_t port_index, [[maybe_unused]] artnet::PortProtocol port_protocol) {
     DisplayUdf::Get()->ShowUniverseArtNetNode();
 }
 
-void RdmEnabled([[maybe_unused]] uint32_t port_index, [[maybe_unused]] bool is_enabled)
-{
+void RdmEnabled([[maybe_unused]] uint32_t port_index, [[maybe_unused]] bool is_enabled) {
     DisplayUdf::Get()->ShowUniverseArtNetNode();
 }
 
-void Failsafe([[maybe_unused]] uint8_t failsafe)
-{
+void Failsafe([[maybe_unused]] uint8_t failsafe) {
     // TODO ShowFailSafe
 }
 } // namespace artnet::display

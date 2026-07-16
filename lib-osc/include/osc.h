@@ -82,8 +82,8 @@ inline char* GetPath(void* path, unsigned size) {
     return (StringValidate(path, size) >= 4) ? reinterpret_cast<char*>(path) : nullptr;
 }
 
-inline bool IsMatch(const char* str, const char* p) {
-    return lo_pattern_match(str, p) == 0 ? false : true;
+inline bool IsMatch(const char* str, const char* pattern) {
+    return lo_pattern_match(str, pattern) != 0;
 }
 } // namespace osc
 

@@ -29,7 +29,7 @@
 #include "e131bridge.h"
 #include "e117.h"
 #include "dmx.h"
-#include "network.h"
+#include "network_udp.h"
 
 void E131Bridge::FillDataPacket()
 {

@@ -49,18 +49,18 @@ OscClientParams::OscClientParams() {
 }
 
 void OscClientParams::SetIncomingPort(const char* val, uint32_t len) {
-    uint16_t v;
+    uint16_t port;
 
-    if (ParseInRange<uint32_t, uint16_t>(val, len, 1U, 65535U, &v)) {
-        store_oscclient.incoming_port = v;
+    if (ParseInRange<uint32_t, uint16_t>(val, len, 1U, 65535U, &port)) {
+        store_oscclient.incoming_port = port;
     }
 }
 
 void OscClientParams::SetOutgoingPort(const char* val, uint32_t len) {
-    uint16_t v;
+    uint16_t port;
 
-    if (ParseInRange<uint32_t, uint16_t>(val, len, 1U, 65535U, &v)) {
-        store_oscclient.outgoing_port = v;
+    if (ParseInRange<uint32_t, uint16_t>(val, len, 1U, 65535U, &port)) {
+        store_oscclient.outgoing_port = port;
     }
 }
 
@@ -75,10 +75,10 @@ void OscClientParams::SetPingDisable(const char* val, [[maybe_unused]] uint32_t 
 }
 
 void OscClientParams::SetPingDelay(const char* val, uint32_t len) {
-    uint8_t v;
+    uint8_t ping_delay;
 
-    if (ParseInRange<uint16_t, uint8_t>(val, len, 2U, 60U, &v)) {
-        store_oscclient.ping_delay = v;
+    if (ParseInRange<uint16_t, uint8_t>(val, len, 2U, 60U, &ping_delay)) {
+        store_oscclient.ping_delay = ping_delay;
     }
 }
 
@@ -150,10 +150,10 @@ void OscClientParams::Set() {
 void OscClientParams::Dump() {
     printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, json::OscClientParamsConst::kFileName);
     printf(" %s=" IPSTR "\n", OscClientParamsConst::kServerIp.name, IP2STR(store_oscclient.server_ip));
-    printf(" %s=%u\n", OscParamsConst::kOutgoingPort, store_oscclient.outgoing_port);
-    printf(" %s=%u\n", OscParamsConst::kIncomingPort, store_oscclient.incoming_port);
-    printf(" %s=%u\n", OscClientParamsConst::kPingDisable, common::IsFlagSet(store_oscclient.flags, Flags::Flag::kPingDisable));
-    printf(" %s=%u\n", OscClientParamsConst::kPingDelay, store_oscclient.ping_delay);
+    printf(" %s=%u\n", OscParamsConst::kOutgoingPort.name, static_cast<unsigned>(store_oscclient.outgoing_port));
+    printf(" %s=%u\n", OscParamsConst::kIncomingPort.name, static_cast<unsigned>(store_oscclient.incoming_port));
+    printf(" %s=%u\n", OscClientParamsConst::kPingDisable.name, static_cast<unsigned>(common::IsFlagSet(store_oscclient.flags, Flags::Flag::kPingDisable)));
+    printf(" %s=%u\n", OscClientParamsConst::kPingDelay.name, static_cast<unsigned>(store_oscclient.ping_delay));
 
     for (uint32_t i = 0; i < common::store::osc::client::kCmdCount; i++) {
         printf(" %s=[%s]\n", OscClientParamsConst::kCmd[0].name, reinterpret_cast<char*>(&store_oscclient.cmd[i]));

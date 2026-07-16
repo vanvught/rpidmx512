@@ -27,12 +27,13 @@
 #define DISPLAYUDF_H_
 
 #include <cstdint>
-#include <cstdarg>
 
-#include "display.h"
-#include "firmware/firmwareversion.h"
+#include "display.h"                  // IWYU pragma: keep
+#include "firmware/firmwareversion.h" // IWYU pragma: keep
 #if !defined(NO_EMAC)
-#include "network.h"
+#include "network_config.h"
+#include "network_iface.h"
+#include "ip4/ip4_address.h"
 #include "core/protocol/dhcp.h"
 #endif
 #if defined(NODE_ARTNET_MULTI)
@@ -57,14 +58,12 @@
 #if defined(RDM_RESPONDER) || defined(OUTPUT_DMX_MONITOR) || defined(OUTPUT_DMX_PCA9685) || defined(OUTPUT_DMX_PIXEL) || defined(OUTPUT_DMX_TLC59711)
 #define HAVE_DMX_START_ADDRESS
 #endif
-#include "firmware/debug/debug_debug.h"
 
-namespace displayudf
-{
+namespace displayudf {
 inline constexpr uint32_t kLabelMaxRows = 6;
+inline constexpr uint32_t kTitleSize = 32;
 
-enum class Labels : uint8_t
-{
+enum class Labels : uint8_t {
     kTitle,
     kBoardname,
     kVersion,
@@ -101,14 +100,12 @@ enum class Labels : uint8_t
     kUnknown
 };
 
-namespace defaults
-{
+namespace defaults {
 inline constexpr uint8_t kIntensity = 0x7F;
 } // namespace defaults
 } // namespace displayudf
 
-class DisplayUdf final : public Display
-{
+class DisplayUdf final : public Display {
    public:
     DisplayUdf();
 
@@ -120,10 +117,8 @@ class DisplayUdf final : public Display
     void SetTitle(const char* format, ...);
     void Set(uint32_t line, displayudf::Labels label);
 
-    uint8_t GetLabel(uint32_t index) const
-    {
-        if (index < static_cast<uint32_t>(displayudf::Labels::kUnknown))
-        {
+    uint8_t GetLabel(uint32_t index) const {
+        if (index < static_cast<uint32_t>(displayudf::Labels::kUnknown)) {
             return labels_[index];
         }
 
@@ -144,8 +139,7 @@ class DisplayUdf final : public Display
      */
 
 #if defined(RDM_RESPONDER)
-    void ShowDmxStartAddress()
-    {
+    void ShowDmxStartAddress() {
         const auto dmx_start_address = RDMDeviceResponder::Get()->GetDmxStartAddress();
         const auto nDmxFootprint = RDMDeviceResponder::Get()->GetDmxFootPrint();
         Printf(labels_[static_cast<uint32_t>(displayudf::Labels::kDmxStartAddress)], "DMX S:%3u F:%3u", dmx_start_address, nDmxFootprint);
@@ -157,53 +151,44 @@ class DisplayUdf final : public Display
      */
 
 #if !defined(NO_EMAC)
-    void ShowEmacInit()
-    {
+    void ShowEmacInit() {
         ClearEndOfLine();
         Printf(labels_[static_cast<uint32_t>(displayudf::Labels::kIp)], "Ethernet init");
     }
 
-    void ShowEmacStart()
-    {
+    void ShowEmacStart() {
         ClearEndOfLine();
         Printf(labels_[static_cast<uint32_t>(displayudf::Labels::kIp)], "Ethernet start");
     }
 
-    void ShowEmacStatus(bool is_link_up)
-    {
+    void ShowEmacStatus(bool is_link_up) {
         ClearEndOfLine();
         Printf(labels_[static_cast<uint32_t>(displayudf::Labels::kIp)], "Ethernet Link %s", is_link_up ? "UP" : "DOWN");
     }
 
-    void ShowIpAddress()
-    {
+    void ShowIpAddress() {
         ClearEndOfLine();
         Printf(labels_[static_cast<uint32_t>(displayudf::Labels::kIp)], "" IPSTR "/%d %c", IP2STR(network::GetPrimaryIp()), network::GetNetmaskCIDR(), network::iface::AddressingMode());
     }
 
-    void ShowNetmask()
-    {
+    void ShowNetmask() {
         ClearEndOfLine();
         Printf(labels_[static_cast<uint32_t>(displayudf::Labels::kNetmask)], "N: " IPSTR "", IP2STR(network::GetNetmask()));
         ShowIpAddress();
     }
 
-    void ShowGatewayIp()
-    {
+    void ShowGatewayIp() {
         ClearEndOfLine();
         Printf(labels_[static_cast<uint32_t>(displayudf::Labels::kDefaultGateway)], "G: " IPSTR "", IP2STR(network::GetGatewayIp()));
     }
 
-    void ShowHostName()
-    {
+    void ShowHostName() {
         ClearEndOfLine();
         Write(labels_[static_cast<uint32_t>(displayudf::Labels::kHostname)], network::iface::HostName());
     }
 
-    void ShowDhcpStatus(network::dhcp::State state)
-    {
-        switch (state)
-        {
+    void ShowDhcpStatus(network::dhcp::State state) {
+        switch (state) {
             case network::dhcp::State::kOff:
                 break;
             case network::dhcp::State::kRenewing:
@@ -223,25 +208,17 @@ class DisplayUdf final : public Display
     static DisplayUdf* Get() { return s_this; }
 
    private:
-    /**
-     * Art-Net
-     */
-
+    // Art-Net
 #if defined(NODE_ARTNET)
     void ShowArtNetNode();
     void ShowDestinationIpArtNetNode();
 #endif
-
-    /**
-     * sACN E1.31
-     */
-
+    // sACN E1.31
 #if defined(NODE_E131)
     void ShowE131Bridge();
 #endif
 
-   private:
-    char title_[32];
+    char title_[displayudf::kTitleSize];
     uint8_t labels_[static_cast<uint32_t>(displayudf::Labels::kUnknown)];
 
     inline static DisplayUdf* s_this;

@@ -113,7 +113,7 @@ class OscServer {
     }
 
     void SetPortIncoming(uint16_t port_incoming) {
-        if (port_incoming > 1023) {
+        if (port_incoming > 1023U) {
             port_incoming_ = port_incoming;
         } else {
             port_incoming_ = osc::server::DefaultPort::kIncoming;
@@ -123,7 +123,7 @@ class OscServer {
     uint16_t GetPortIncoming() const { return port_incoming_; }
 
     void SetPortOutgoing(uint16_t port_outgoing) {
-        if (port_outgoing > 1023) {
+        if (port_outgoing > 1023U) {
             port_outgoing_ = port_outgoing;
         } else {
             port_outgoing_ = osc::server::DefaultPort::kOutgoing;
@@ -157,17 +157,8 @@ class OscServer {
     int GetChannel(const char* p);
     bool IsDmxDataChanged(const uint8_t* data, uint16_t start_channel, uint32_t length);
 
-    /**
-     * @brief Static callback function for receiving UDP packets.
-     *
-     * @param pBuffer Pointer to the packet buffer.
-     * @param nSize Size of the packet buffer.
-     * @param from_ip IP address of the sender.
-     * @param from_port Port number of the sender.
-     */
     void static StaticCallbackFunction(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port) { s_this->Input(buffer, size, from_ip, from_port); }
 
-   private:
     uint16_t port_incoming_{osc::server::DefaultPort::kIncoming};
     uint16_t port_outgoing_{osc::server::DefaultPort::kOutgoing};
     int32_t handle_{-1};

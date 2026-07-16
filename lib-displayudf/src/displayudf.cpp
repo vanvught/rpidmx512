@@ -47,17 +47,17 @@ void DisplayUdf::SetTitle(const char* format, ...) {
     va_list arp;
     va_start(arp, format);
 
-    const auto kI = vsnprintf(title_, sizeof(title_) / sizeof(title_[0]) - 1, format, arp);
+    const auto kIndex = vsnprintf(title_, sizeof(title_) / sizeof(title_[0]), format, arp);
 
     va_end(arp);
 
-    title_[kI] = '\0';
+    title_[kIndex] = '\0';
 
     DEBUG_PUTS(title_);
 }
 
 void DisplayUdf::Set(uint32_t line, displayudf::Labels label) {
-    if (!((line > 0) && (line <= displayudf::kLabelMaxRows))) {
+    if ((line == 0) || (line > displayudf::kLabelMaxRows)) {
         return;
     }
 

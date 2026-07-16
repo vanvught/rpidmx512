@@ -37,7 +37,7 @@
 #include "ltcdisplayrgb.h"
 #include "ltc.h"
 #include "timing.h"
-#include "network.h"
+#include "network_udp.h"
 #include "ltcdisplaypixel7segment.h"
 #include "ltcdisplaypixelmatrix.h"
 #include "ltcdisplayrgbpanel.h"

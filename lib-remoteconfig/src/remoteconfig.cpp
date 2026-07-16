@@ -23,6 +23,7 @@
  * THE SOFTWARE.
  */
 
+
 #if defined(DEBUG_REMOTECONFIG)
 #undef NDEBUG
 #endif
@@ -31,6 +32,7 @@
 #include <cstdio>
 #include <cstring>
 #include <cassert>
+#include <algorithm>
 
 #include "remoteconfig.h"
 #include "firmware/firmwareversion.h"
@@ -41,6 +43,7 @@
 #include "dmxnode_nodetype.h"
 #include "json/remoteconfigparams.h"
 #endif
+#include "common/utils/utils_array.h"
 #include "display.h"
 #include "configstore.h"
 #include "firmware/debug/debug_dump.h"
@@ -126,9 +129,9 @@ RemoteConfig::~RemoteConfig() {
 
 #if !defined(CONFIG_REMOTECONFIG_MINIMUM)
 #if defined(ENABLE_HTTPD)
-    if (http_daemon_ != nullptr) {
-        delete http_daemon_;
-    }
+
+    delete http_daemon_;
+
 #endif
     network::apps::mdns::ServiceRecordDelete(network::apps::mdns::Services::kConfig);
 #endif
@@ -235,7 +238,6 @@ void RemoteConfig::HandleUptime() {
 
     const auto kUptime = timing::UpTime();
     const auto kLength = snprintf(udp_buffer_, remoteconfig::udp::kBufferSize - 1, "uptime: %us\n", static_cast<unsigned int>(kUptime));
-
     network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(udp_buffer_), static_cast<uint32_t>(kLength), ip_from_, remoteconfig::udp::kPort);
 
     DEBUG_EXIT();
@@ -245,8 +247,8 @@ void RemoteConfig::HandleUptime() {
 void RemoteConfig::HandleVersion() {
     DEBUG_ENTRY();
 
-    const auto* p = FirmwareVersion::Get()->GetPrint();
-    const auto kLength = snprintf(udp_buffer_, remoteconfig::udp::kBufferSize - 1, "version:%s\n", p);
+    const auto* print = FirmwareVersion::Get()->GetPrint();
+    const auto kLength = snprintf(udp_buffer_, remoteconfig::udp::kBufferSize - 1, "version:%s\n", print);
     network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(udp_buffer_), static_cast<uint32_t>(kLength), ip_from_, remoteconfig::udp::kPort);
 
     DEBUG_EXIT();
@@ -256,28 +258,62 @@ void RemoteConfig::HandleList() {
     DEBUG_ENTRY();
 
     constexpr auto kCmdLength = kGet[static_cast<uint32_t>(remoteconfig::udp::get::Command::kList)].kLength;
+
     auto* list_response = &udp_buffer_[kCmdLength + 2U];
-    const auto kListResponseBufferLength = remoteconfig::udp::kBufferSize - (kCmdLength + 2U);
-    int32_t list_length;
+
+    constexpr auto kListResponseBufferLength = remoteconfig::udp::kBufferSize - (kCmdLength + 2U);
 
     uint8_t display_name[common::store::remoteconfig::kDisplayNameLength];
+
     ConfigStore::Instance().RemoteConfigCopyArray(display_name, &common::store::RemoteConfig::display_name);
-    display_name[common::store::remoteconfig::kDisplayNameLength - 1] = '\0'; // Just to be safe
+
+    display_name[common::store::remoteconfig::kDisplayNameLength - 1U] = '\0';
 
 #if !defined(CONFIG_REMOTECONFIG_MINIMUM)
-    const auto* const kNodeTypeName = dmxnode::GetNodeType(dmxnode::kNodeType);
+    const char* node_type_name = dmxnode::GetNodeType(dmxnode::kNodeType);
+
+    if (node_type_name == nullptr) {
+        node_type_name = "Unknown";
+    }
 #else
-    const auto* const kNodeTypeName = "Bootloader TFTP";
+    constexpr const char* node_type_name = "Bootloader TFTP";
 #endif
 
-    if (display_name[0] != '\0') {
-        list_length = snprintf(list_response, kListResponseBufferLength - 1, "" IPSTR ",%s,%s,%u,%s\n", IP2STR(network::GetPrimaryIp()), kNodeTypeName, kOutput[static_cast<uint32_t>(output_)], static_cast<unsigned int>(active_outputs_),
-                               display_name);
-    } else {
-        list_length = snprintf(list_response, kListResponseBufferLength - 1, "" IPSTR ",%s,%s,%u\n", IP2STR(network::GetPrimaryIp()), kNodeTypeName, kOutput[static_cast<uint32_t>(output_)], static_cast<unsigned int>(active_outputs_));
+    const auto kOutputIndex = static_cast<uint32_t>(output_);
+    assert(kOutputIndex < common::ArraySize(kOutput));
+
+    const char* output_name = kOutput[kOutputIndex];
+
+    if (output_name == nullptr) {
+        output_name = "Unknown";
     }
 
-    network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(list_response), static_cast<uint32_t>(list_length), ip_from_, remoteconfig::udp::kPort);
+    int list_length;
+
+    if (display_name[0] != '\0') {
+        list_length =
+            snprintf(list_response, kListResponseBufferLength, IPSTR ",%s,%s,%u,%s\n", 
+				IP2STR(network::GetPrimaryIp()), 
+				node_type_name, 
+				output_name, 
+				static_cast<unsigned>(active_outputs_), 
+				reinterpret_cast<const char*>(display_name));
+    } else {
+        list_length = snprintf(list_response, kListResponseBufferLength, IPSTR ",%s,%s,%u\n", 
+			IP2STR(network::GetPrimaryIp()), 
+			node_type_name, 
+			output_name, 
+			static_cast<unsigned>(active_outputs_));
+    }
+
+    if (list_length < 0) {
+        DEBUG_EXIT();
+        return;
+    }
+
+    const auto kBytesToSend = static_cast<uint32_t>(std::min<size_t>(static_cast<size_t>(list_length), kListResponseBufferLength - 1U));
+
+    network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(list_response), kBytesToSend, ip_from_, remoteconfig::udp::kPort);
 
     DEBUG_EXIT();
 }
@@ -353,10 +389,6 @@ void RemoteConfig::HandleTftpGet() {
 
     DEBUG_EXIT();
 }
-
-namespace board {
-bool Reboot();
-} // namespace board
 
 void RemoteConfig::HandleReboot() {
     DEBUG_ENTRY();

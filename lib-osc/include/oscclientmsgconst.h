@@ -26,11 +26,10 @@
 #ifndef OSCCLIENTMSGCONST_H_
 #define OSCCLIENTMSGCONST_H_
 
-struct OscClientMsgConst
-{
+struct OscClientMsgConst {
     static inline const char kParams[] = "Setting Client parameters";
     static inline const char kStart[] = "Starting the Client";
     static inline const char kStarted[] = "Client started";
 };
 
-#endif  // OSCCLIENTMSGCONST_H_
+#endif // OSCCLIENTMSGCONST_H_

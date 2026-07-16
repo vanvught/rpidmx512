@@ -188,7 +188,7 @@ void PixelPusher::Run() {
 
 void PixelPusher::HandlePusherCommand([[maybe_unused]] const uint8_t* buffer, [[maybe_unused]] uint32_t size) {
     DEBUG_ENTRY();
-    DEBUG_PRINTF("pBuffer=%p, nSize=%u", reinterpret_cast<const void*>(buffer), size);
+    DEBUG_PRINTF("pBuffer=%p, nSize=%u", reinterpret_cast<const void*>(buffer), static_cast<unsigned>(size));
 #if !defined(CONFIG_PP_16BITSTUFF)
 #else
 #endif
@@ -197,9 +197,9 @@ void PixelPusher::HandlePusherCommand([[maybe_unused]] const uint8_t* buffer, [[
 
 void PixelPusher::Print() {
     puts("PixelPusher");
-    printf(" Count             : %u\n", count_);
-    printf(" Channels per pixel: %u\n", pp::configuration::CHANNELS_PER_PIXEL);
-    printf(" Active ports      : %u\n", active_ports_);
-    DEBUG_PRINTF("universes_=%u", universes_);
-    DEBUG_PRINTF("port_index_last_=%u", port_index_last_);
+    printf(" Count             : %u\n", static_cast<unsigned>(count_));
+    printf(" Channels per pixel: %u\n", static_cast<unsigned>(pp::configuration::CHANNELS_PER_PIXEL));
+    printf(" Active ports      : %u\n", static_cast<unsigned>(active_ports_));
+    DEBUG_PRINTF("universes_=%u", static_cast<unsigned>(universes_));
+    DEBUG_PRINTF("port_index_last_=%u", static_cast<unsigned>(port_index_last_));
 }

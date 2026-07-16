@@ -162,18 +162,18 @@ class Display : public LcdDriver {
 
     void ClearEndOfLine() { clear_end_of_line_ = true; }
 
-    void Text(const char* pData, uint32_t nLength) {
-        if (nLength > cols_) {
-            nLength = cols_;
+    void Text(const char* data, uint32_t length) {
+        if (length > cols_) {
+            length = cols_;
         }
 
-        for (uint32_t i = 0; i < nLength; i++) {
-            PutChar(pData[i]);
+        for (uint32_t i = 0; i < length; i++) {
+            PutChar(data[i]);
         }
     }
 
-    int Write(uint32_t nLine, const char* pText) {
-        const auto* p = pText;
+    int Write(uint32_t line, const char* text) {
+        const auto* p = text;
         int nCount = 0;
 
         const auto columns = static_cast<int>(cols_);
@@ -182,28 +182,28 @@ class Display : public LcdDriver {
             ++p;
         }
 
-        TextLine(nLine, pText, static_cast<uint8_t>(nCount));
+        TextLine(line, text, static_cast<uint8_t>(nCount));
 
         return nCount;
     }
 
-    int Printf(uint8_t nLine, const char* format, ...) {
+    int Printf(uint8_t line, const char* format, ...) {
         char buffer[32];
 
         va_list arp;
 
         va_start(arp, format);
 
-        auto i = vsnprintf(buffer, sizeof(buffer) / sizeof(buffer[0]), format, arp);
+        const auto kSize = vsnprintf(buffer, sizeof(buffer) / sizeof(buffer[0]), format, arp);
 
         va_end(arp);
 
-        TextLine(nLine, buffer, static_cast<uint16_t>(i));
+        TextLine(line, buffer, static_cast<uint16_t>(kSize));
 
-        return i;
+        return kSize;
     }
 
-    void TextStatus(const char* pText) {
+    void TextStatus(const char* text) {
         SetCursorPos(0, static_cast<uint8_t>(rows_ - 1));
 
         for (uint32_t i = 0; i < (cols_ - 1); i++) {
@@ -212,7 +212,7 @@ class Display : public LcdDriver {
 
         SetCursorPos(0, static_cast<uint8_t>(rows_ - 1));
 
-        Write(rows_, pText);
+        Write(rows_, text);
     }
 
 	void TextStatus(const char* text, ansi::Colours::Colour colour) {
@@ -221,20 +221,20 @@ class Display : public LcdDriver {
 	}
 
     void Progress() {
-        static constexpr char SYMBOLS[] = {'/', '-', '\\', '|'};
+        static constexpr char kSymbols[] = {'/', '-', '\\', '|'};
         static uint32_t nSymbolsIndex;
 
         SetCursorPos(GetColumns() - 1U, GetRows() - 1U);
-        PutChar(SYMBOLS[nSymbolsIndex++]);
+        PutChar(kSymbols[nSymbolsIndex++]);
 
-        if (nSymbolsIndex >= sizeof(SYMBOLS)) {
+        if (nSymbolsIndex >= sizeof(kSymbols)) {
             nSymbolsIndex = 0;
         }
     }
 
-    void SetContrast(const uint8_t nContrast) { SetBackLight(nContrast); }
+    void SetContrast(uint8_t nContrast) { SetBackLight(nContrast); }
 
-    void SetSleep(const bool bSleep) {
+    void SetSleep(bool bSleep) {
         is_sleep_ = bSleep;
 
         EnableSleep(bSleep);
@@ -282,7 +282,6 @@ class Display : public LcdDriver {
    private:
     void SetSleepTimer(const bool bActive);
 
-   private:
     uint32_t cols_;
     uint32_t rows_;
     uint32_t sleep_timeout_{1000U * 60U * display::Defaults::kSleepTimeout};

@@ -31,38 +31,36 @@
 
 #include "dmxnode.h"
 #include "dmxnodeoutputrdmpixel.h"
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 #include "rdmpersonality.h"
 
-namespace pixeldmx::paramsdmx
-{
-enum class SlotsInfo
-{
-    TYPE,
-    COUNT,
-    GROUPING_COUNT,
-    MAP,
-    TEST_PATTERN,
-    PROGRAM,
-    LAST
+namespace pixeldmx::paramsdmx {
+enum class SlotsInfo { 
+	TYPE, 
+	COUNT, 
+	GROUPING_COUNT, 
+	MAP, 
+	TEST_PATTERN, 
+	PROGRAM, 
+	LAST 
 };
 inline constexpr auto kDmxFootprint = static_cast<uint16_t>(SlotsInfo::LAST);
 
-inline void SetPersonalityDescription(char description[rdm::personality::kDescriptionMaxLength])
-{
+inline void SetPersonalityDescription(char description[rdm::personality::kDescriptionMaxLength]) {
     auto& configuration = PixelDmxConfiguration::Get();
-    snprintf(description, rdm::personality::kDescriptionMaxLength - 1U, "%s:%u G%u [%s]", pixel::GetTypeName(configuration.GetType()), configuration.GetCount(),
-             configuration.GetGroupingCount(), pixel::GetMapName(configuration.GetMap()));
+    snprintf(description, rdm::personality::kDescriptionMaxLength - 1U, "%s:%u G%u [%s]", 
+		pixel::GetTypeName(configuration.GetType()), 
+		static_cast<unsigned>(configuration.GetCount()), 
+		static_cast<unsigned>(configuration.GetGroupingCount()), 
+		pixel::GetMapName(configuration.GetMap()));
 }
 
 void Display(const uint8_t data[kDmxFootprint]);
 } // namespace pixeldmx::paramsdmx
 
-class PixelDmxParamsRdm final : public DmxNodeOutputRdmPixel
-{
+class PixelDmxParamsRdm final : public DmxNodeOutputRdmPixel {
    public:
-    PixelDmxParamsRdm()
-    {
+    PixelDmxParamsRdm() {
         DEBUG_ENTRY();
         DEBUG_EXIT();
     }
@@ -74,10 +72,8 @@ class PixelDmxParamsRdm final : public DmxNodeOutputRdmPixel
 
     uint16_t GetDmxFootprint() override { return pixeldmx::paramsdmx::kDmxFootprint; }
 
-    bool GetSlotInfo(uint16_t slot_offset, dmxnode::SlotInfo& slot_info) override
-    {
-        if (slot_offset >= pixeldmx::paramsdmx::kDmxFootprint)
-        {
+    bool GetSlotInfo(uint16_t slot_offset, dmxnode::SlotInfo& slot_info) override {
+        if (slot_offset >= pixeldmx::paramsdmx::kDmxFootprint) {
             return false;
         }
 
@@ -91,4 +87,4 @@ class PixelDmxParamsRdm final : public DmxNodeOutputRdmPixel
     uint8_t data_{0};
 };
 
-#endif  // PIXELDMXPARAMSRDM_H_
+#endif // PIXELDMXPARAMSRDM_H_

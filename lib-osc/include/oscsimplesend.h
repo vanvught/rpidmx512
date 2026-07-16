@@ -45,7 +45,6 @@ class OscSimpleSend {
     void UpdateMessage(const char* path, uint32_t path_length, char type);
     void Send(uint32_t message_length, int32_t handle, uint32_t ip_address, uint16_t port);
 
-   private:
     inline static uint8_t s_message[kBufferSize];
 };
 

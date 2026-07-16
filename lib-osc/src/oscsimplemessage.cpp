@@ -94,7 +94,7 @@ const char* OscSimpleMessage::GetString([[maybe_unused]] unsigned argc) {
 OSCBlob OscSimpleMessage::GetBlob([[maybe_unused]] unsigned argc) {
     if (arg_[0] == osc::type::kBlob) {
         auto size = __builtin_bswap32(*reinterpret_cast<const uint32_t*>(osc_message_data_));
-        auto* data = osc_message_data_ + 4;
+        const auto* data = osc_message_data_ + 4;
 
         if ((size + 4) <= osc_message_data_length_) {
             return OSCBlob(data, size);

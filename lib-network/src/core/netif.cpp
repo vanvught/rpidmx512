@@ -183,7 +183,7 @@ void SetGw(network::ip4_addr_t gateway) {
 
 void SetAddr(network::ip4_addr_t ipaddr, network::ip4_addr_t netmask, network::ip4_addr_t gateway) {
     DEBUG_ENTRY();
-    DEBUG_PRINTF(IPSTR " " IPSTR " " IPSTR, IP2STR(ipaddr.addr), IP2STR(netmask.addr), IP2STR(gw.addr));
+    DEBUG_PRINTF(IPSTR " " IPSTR " " IPSTR, IP2STR(ipaddr.addr), IP2STR(netmask.addr), IP2STR(gateway.addr));
 
     auto change_reason = NetifReason::kNone;
     netif_ext_callback_args_t cb_args;

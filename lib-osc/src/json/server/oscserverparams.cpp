@@ -139,11 +139,11 @@ void OscServerParams::Set() {
 
 void OscServerParams::Dump() {
     printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, json::OscServerParamsConst::kFileName);
-    printf(" %s=%u\n", OscParamsConst::kIncomingPort.name, store_oscserver.incoming_port);
-    printf(" %s=%u\n", OscParamsConst::kOutgoingPort.name, store_oscserver.outgoing_port);
+    printf(" %s=%u\n", OscParamsConst::kIncomingPort.name, static_cast<unsigned>(store_oscserver.incoming_port));
+    printf(" %s=%u\n", OscParamsConst::kOutgoingPort.name, static_cast<unsigned>(store_oscserver.outgoing_port));
     printf(" %s=%s\n", OscServerParamsConst::kPath.name, store_oscserver.path);
     printf(" %s=%s\n", OscServerParamsConst::kPathInfo.name, store_oscserver.path_info);
     printf(" %s=%s\n", OscServerParamsConst::kPathBlackout.name, store_oscserver.path_blackout);
-    printf(" %s=%d\n", OscServerParamsConst::kTransmission.name, common::IsFlagSet(store_oscserver.flags, Flags::Flag::kPartialTransmission));
+    printf(" %s=%u\n", OscServerParamsConst::kTransmission.name, static_cast<unsigned>(common::IsFlagSet(store_oscserver.flags, Flags::Flag::kPartialTransmission)));
 }
 } // namespace json

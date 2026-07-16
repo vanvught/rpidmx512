@@ -24,14 +24,11 @@
  */
 
 #include "core/protocol/ntp.h"
-#include "display.h"
+#include "display.h" // IWYU pragma: keep
 
-namespace network::apps::ntpclient
-{
-void DisplayStatus(::ntp::Status status)
-{
-    switch (status)
-    {
+namespace network::apps::ntpclient {
+void DisplayStatus(::ntp::Status status) {
+    switch (status) {
         case ::ntp::Status::kStopped:
             Display::Get()->TextStatus("No NTP Client");
             break;

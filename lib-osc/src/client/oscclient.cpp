@@ -38,7 +38,7 @@
 #include "ip4/ip4_address.h"
 #include "firmware/debug/debug_debug.h"
 
-OscClient::OscClient() : port_outgoing_(oscclient::defaults::kPortOutgoing), port_incoming_(oscclient::defaults::kPortIncoming), ping_delay_millis_(oscclient::defaults::kPingDelaySeconds * 1000) {
+OscClient::OscClient() : port_outgoing_(oscclient::defaults::kPortOutgoing), port_incoming_(oscclient::defaults::kPortIncoming), ping_delay_millis_(oscclient::defaults::kPingDelaySeconds * 1000U) {
     DEBUG_ENTRY();
 
     assert(s_this == nullptr);
@@ -115,25 +115,25 @@ bool OscClient::HandleLedMessage(uint32_t bytes_received) {
 void OscClient::Print() {
     puts("OSC Client");
     printf(" Server        : " IPSTR "\n", IP2STR(server_ip_));
-    printf(" Outgoing Port : %d\n", port_outgoing_);
-    printf(" Incoming Port : %d\n", port_incoming_);
+    printf(" Outgoing Port : %u\n", static_cast<unsigned>(port_outgoing_));
+    printf(" Incoming Port : %u\n", static_cast<unsigned>(port_incoming_));
     printf(" Disable /ping : %s\n", ping_disable_ ? "Yes" : "No");
 
     if (!ping_disable_) {
-        printf(" Ping delay        : %ds\n", ping_delay_millis_ / 1000);
+        printf(" Ping delay        : %us\n", static_cast<unsigned>(ping_delay_millis_ / 1000U));
     }
 
     for (uint32_t i = 0; i < common::store::osc::client::kCmdCount; i++) {
         const char* p = &s_cmds[i * common::store::osc::client::kCmdPathLength];
         if (*p != '\0') {
-            printf("  cmd%c             : [%s]\n", i + '0', p);
+            printf("  cmd%c             : [%s]\n", static_cast<int>(i + '0'), p);
         }
     }
 
     for (uint32_t i = 0; i < common::store::osc::client::kLedCount; i++) {
         const char* p = &s_leds[i * common::store::osc::client::kLedPathLength];
         if (*p != '\0') {
-            printf("  led%c             : [%s]\n", i + '0', p);
+            printf("  led%c             : [%s]\n", static_cast<int>(i + '0'), p);
         }
     }
 }

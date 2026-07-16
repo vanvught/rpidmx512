@@ -109,7 +109,7 @@ int main() { // NOLINT
     if (kIsConfigMode) {
         puts("Config mode");
     } else if (pixel_test_pattern.GetPattern() != pixelpatterns::Pattern::kNone) {
-        printf("Test pattern : %s [%u]\n", PixelPatterns::GetName(pixel_test_pattern.GetPattern()), static_cast<uint32_t>(pixel_test_pattern.GetPattern()));
+        printf("Test pattern : %s [%u]\n", PixelPatterns::GetName(pixel_test_pattern.GetPattern()), static_cast<unsigned>(pixel_test_pattern.GetPattern()));
     }
 
 #if !defined(NO_EMAC)

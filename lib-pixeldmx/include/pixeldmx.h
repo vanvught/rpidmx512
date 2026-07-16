@@ -341,9 +341,7 @@ class PixelDmx final : public PixelDmxConfiguration {
         return true;
     }
 
-    /*
-     * Art-Net ArtPollReply
-     */
+    // Art-Net ArtPollReply
     uint32_t GetUserData() { return 0; }
     uint32_t GetRefreshRate() { return 0; }
 

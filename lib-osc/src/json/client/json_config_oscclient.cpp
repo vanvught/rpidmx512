@@ -42,8 +42,8 @@ uint32_t GetOscClient(char* buffer, uint32_t length) {
     const auto kFlags = ConfigStore::Instance().OscClientGet(&common::store::OscClient::flags);
 
     return json::helpers::Serialize(buffer, length, [&](JsonDoc& doc) {
-        char ip[net::kIpBufferSize];
-        doc[OscClientParamsConst::kServerIp.name] = net::FormatIp(oscclient.GetServerIP(), ip);
+        char ip_address[net::kIpBufferSize];
+        doc[OscClientParamsConst::kServerIp.name] = net::FormatIp(oscclient.GetServerIP(), ip_address);
         doc[OscParamsConst::kIncomingPort.name] = oscclient.GetPortIncoming();
         doc[OscParamsConst::kOutgoingPort.name] = oscclient.GetPortOutgoing();
         doc[OscClientParamsConst::kPingDisable.name] = common::IsFlagSet(kFlags, Flags::Flag::kPingDisable);

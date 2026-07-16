@@ -42,7 +42,7 @@ class OSCBlob {
 
     const uint8_t* GetDataPtr() const { return data_; }
 
-    uint32_t GetSize() {
+    uint32_t GetSize() const {
         const uint32_t kBlobSize = sizeof(int32_t) + size_;
         return (4 * ((kBlobSize + 3) / 4));
     }

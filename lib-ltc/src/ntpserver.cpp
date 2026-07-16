@@ -40,11 +40,9 @@
 #include "ntpserver.h"
 #include "core/protocol/ntp.h"
 #include "core/protocol/iana.h"
-#include "network.h"
 #include "firmware/debug/debug_debug.h"
 
-NtpServer::NtpServer(uint32_t year, uint32_t month, uint32_t day)
-{
+NtpServer::NtpServer(uint32_t year, uint32_t month, uint32_t day) {
     DEBUG_ENTRY();
     DEBUG_PRINTF("year=%u, month=%u, day=%u", year, month, day);
 
@@ -69,13 +67,11 @@ NtpServer::NtpServer(uint32_t year, uint32_t month, uint32_t day)
     DEBUG_EXIT();
 }
 
-NtpServer::~NtpServer()
-{
+NtpServer::~NtpServer() {
     Stop();
 }
 
-void NtpServer::Start()
-{
+void NtpServer::Start() {
     DEBUG_ENTRY();
 
     assert(handle_ == -1);
@@ -92,8 +88,7 @@ void NtpServer::Start()
     DEBUG_EXIT();
 }
 
-void NtpServer::Stop()
-{
+void NtpServer::Stop() {
     DEBUG_ENTRY();
 
     assert(handle_ != -1);
@@ -103,11 +98,10 @@ void NtpServer::Stop()
     DEBUG_EXIT();
 }
 
-void NtpServer::Print()
-{
-    printf("NTP v%d Server\n", ntp::kVersion >> 3);
-    printf(" Port : %d\n", network::iana::Ports::kPortNtp);
-    printf(" Stratum : %d\n", ntp::kStratum);
+void NtpServer::Print() {
+    printf("NTP v%u Server\n", static_cast<unsigned>(ntp::kVersion >> 3));
+    printf(" Port : %u\n", static_cast<unsigned>(network::iana::Ports::kPortNtp));
+    printf(" Stratum : %u\n", static_cast<unsigned>(ntp::kStratum));
 
     const auto kTime = static_cast<time_t>(static_cast<uint32_t>(time_) - ntp::kJan1970);
 
