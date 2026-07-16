@@ -86,11 +86,11 @@ int main() // NOLINT
 
     if (kIsLedTypeSet) {
         dmxNodeChain.SetTLC59711Dmx(&tlc59711dmx);
-        display.Printf(7, "%s:%d", tlc59711::GetType(tlc59711dmx.GetType()), tlc59711dmx.GetCount());
+        display.Printf(7, "%s:%d", tlc59711::GetType(tlc59711dmx.GetType()), static_cast<unsigned>(tlc59711dmx.GetCount()));
 
-        snprintf(description, sizeof(description) - 1, "Sparkfun [%d] with %s [%d]", kMotorsConnected, tlc59711::GetType(tlc59711dmx.GetType()), tlc59711dmx.GetCount());
+        snprintf(description, sizeof(description) - 1, "Sparkfun [%u] with %s [%u]", static_cast<unsigned>(kMotorsConnected), tlc59711::GetType(tlc59711dmx.GetType()), static_cast<unsigned>(tlc59711dmx.GetCount()));
     } else {
-        snprintf(description, sizeof(description) - 1, "Sparkfun [%d]", kMotorsConnected);
+        snprintf(description, sizeof(description) - 1, "Sparkfun [%u]", static_cast<unsigned>(kMotorsConnected));
     }
 
     RdmPersonality* rdm_personalities[1] = {new RdmPersonality(description, &dmxNodeChain)};

@@ -40,9 +40,15 @@
 #define ALIGNED __attribute__((aligned(4)))
 #endif
 
-static constexpr char kWidgetModeNames[4][12] ALIGNED = {"DMX_RDM", "DMX", "RDM", "RDM_SNIFFER"};
+static constexpr char kWidgetModeNames[4][12] ALIGNED = {
+	"DMX_RDM", 
+	"DMX", 
+	"RDM", 
+	"RDM_SNIFFER"};
 
-static constexpr struct rdm::device::InfoData kDeviceLabel ALIGNED = {const_cast<char*>("Orange Pi Zero DMX USB Pro"), 26};
+static constexpr struct rdm::device::InfoData kDeviceLabel ALIGNED = {
+	const_cast<char*>("Orange Pi Zero DMX USB Pro"), 
+	26};
 
 namespace board {
 void RebootHandler() {}
@@ -70,7 +76,7 @@ int main() { // NOLINT
 
     uint8_t hw_text_length;
     printf("[V%s] %s Compiled on %s at %s\n", kSoftwareVersion, board::BoardName(hw_text_length), __DATE__, __TIME__);
-    printf("RDM Controller with USB [Compatible with Enttec USB Pro protocol], Widget mode : %d (%s)\n", kWidgetMode, kWidgetModeNames[static_cast<uint32_t>(kWidgetMode)]);
+    printf("RDM Controller with USB [Compatible with Enttec USB Pro protocol], Widget mode : %u (%s)\n", static_cast<unsigned>(kWidgetMode), kWidgetModeNames[static_cast<uint32_t>(kWidgetMode)]);
     printf("Device UUID : %.2x%.2x:%.2x%.2x%.2x%.2x, ", device_uid[0], device_uid[1], device_uid[2], device_uid[3], device_uid[4], device_uid[5]);
     printf("Label : %.*s\n", static_cast<int>(rdm_device_label.length), reinterpret_cast<const char*>(rdm_device_label.data));
 
