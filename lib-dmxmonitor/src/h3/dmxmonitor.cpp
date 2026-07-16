@@ -85,14 +85,14 @@ void DmxMonitor::Start([[maybe_unused]] uint32_t port_index) {
 
         for (uint32_t i = 1; i < (kHexRows * kHexColumns); i = i + kHexColumns) {
             console::SetCursor(0, ++row);
-            printf("%3d", i);
+            printf("%3u", static_cast<unsigned>(i));
         }
     } else {
         console::Puts("     1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19  20  21  22  23  24");
 
         for (uint32_t i = 1; i < (kDecRows * kDecColumns); i = i + kDecColumns) {
             console::SetCursor(0, ++row);
-            printf("%3d", i);
+            printf("%3u", static_cast<unsigned>(i));
         }
     }
 

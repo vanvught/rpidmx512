@@ -137,13 +137,13 @@ int main() { // NOLINT
                 break_to_break_max = std::max(dmx_statistics->statistics.break_to_break, break_to_break_max);
 
                 console::SetCursor(20, kTopRowStats);
-                printf("%3d     %3d / %d", kDmxUpdatesPerSeconde, nUpdatesPerSecondeMin, nUpdatesPerSecondeMax);
+                printf("%3u     %3u / %u", static_cast<unsigned>(kDmxUpdatesPerSeconde), static_cast<unsigned>(nUpdatesPerSecondeMin), static_cast<unsigned>(nUpdatesPerSecondeMax));
                 console::SetCursor(20, kTopRowStats + 1);
-                printf("%3d     %3d / %d", dmx_statistics->statistics.slots_in_packet, nSlotsInPacketMin, nSlotsInPacketMax);
+                printf("%3u     %3u / %u", static_cast<unsigned>(dmx_statistics->statistics.slots_in_packet), static_cast<unsigned>(nSlotsInPacketMin), static_cast<unsigned>(nSlotsInPacketMax));
                 console::SetCursor(20, kTopRowStats + 2);
-                printf("%3d     %3d / %d", dmx_statistics->statistics.slot_to_slot, nSotToSlotMin, nSlotToSlotMax);
+                printf("%3u     %3u / %u", static_cast<unsigned>(dmx_statistics->statistics.slot_to_slot), static_cast<unsigned>(nSotToSlotMin), static_cast<unsigned>(nSlotToSlotMax));
                 console::SetCursor(17, kTopRowStats + 3);
-                printf("%6d  %6d / %d", dmx_statistics->statistics.break_to_break, break_to_break_min, break_to_break_max);
+                printf("%6u  %6u / %u", static_cast<unsigned>(dmx_statistics->statistics.break_to_break), static_cast<unsigned>(break_to_break_min), static_cast<unsigned>(break_to_break_max));
             }
 
             console::RestoreCursor();

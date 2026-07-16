@@ -135,22 +135,22 @@ void OscServer::SetPathBlackOut(const char* path_black_out) {
     DEBUG_PUTS(s_path_blackout);
 }
 
-int OscServer::GetChannel(const char* p) {
-    assert(p != nullptr);
+int OscServer::GetChannel(const char* path) {
+    assert(path != nullptr);
 
-    auto* s = const_cast<char*>(p) + strlen(s_path) + 1;
+    auto* str = const_cast<char*>(path) + strlen(s_path) + 1;
     int channel = 0;
     int index;
 
-    for (index = 0; (index < 3) && (*s != '\0'); index++) {
-        int c = *s;
+    for (index = 0; (index < 3) && (*str != '\0'); index++) {
+        int c = *str;
 
         if ((c < '0') || (c > '9')) {
             return -1;
         }
 
-        channel = (channel * 10U) + c - '0';
-        s++;
+        channel = (channel * 10) + c - '0';
+        str++;
     }
 
     if (channel > static_cast<int32_t>(dmxnode::kUniverseSize)) {
