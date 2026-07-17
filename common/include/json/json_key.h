@@ -28,6 +28,8 @@
 
 #include <cstdint>
 
+#include "common/utils/utils_hash.h"
+
 namespace json {
 struct SimpleKey {
     const char* name;
@@ -54,11 +56,11 @@ struct Key {
 
     enum { kSimple, kKeyed } type;
 
-    constexpr const char* GetName() const noexcept { return type == kSimple ? simple_key->name : port_key->name; }
+    [[nodiscard]] constexpr const char* GetName() const noexcept { return type == kSimple ? simple_key->name : port_key->name; }
 
-    constexpr uint8_t GetLength() const noexcept { return type == kSimple ? simple_key->length : port_key->length; }
+    [[nodiscard]] constexpr uint8_t GetLength() const noexcept { return type == kSimple ? simple_key->length : port_key->length; }
 
-    constexpr uint32_t GetHash() const noexcept { return type == kSimple ? simple_key->hash : port_key->hash; }
+    [[nodiscard]] constexpr uint32_t GetHash() const noexcept { return type == kSimple ? simple_key->hash : port_key->hash; }
 };
 
 constexpr Key MakeKey(void (*set)(const char*, uint32_t), const SimpleKey& simple) noexcept {
@@ -67,6 +69,18 @@ constexpr Key MakeKey(void (*set)(const char*, uint32_t), const SimpleKey& simpl
 
 constexpr Key MakeKey(void (*set)(const char*, uint32_t, const char*, uint32_t), const PortKey& port) noexcept {
     return Key{.port_key = &port, .set_keyed = set, .type = Key::kKeyed};
+}
+
+template <std::size_t N>
+constexpr SimpleKey MakeSimpleKey(const char (&name)[N]) noexcept {
+    static_assert(N > 1);
+    static_assert(N - 1 <= UINT8_MAX);
+
+    return {
+        .name = name,
+        .length = static_cast<uint8_t>(N - 1),
+        .hash = Fnv1a32(name, N - 1)
+    };
 }
 } // namespace json
 

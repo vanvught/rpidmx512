@@ -27,18 +27,17 @@
 #define JSON_RDMSENSORSPARAMSCONST_H_
 
 #include "json/json_key.h"
-#include "common/utils/utils_hash.h"
 
 namespace json {
 struct RdmSensorsParamsConst {
     static constexpr char kFileName[] = "sensors.json";
 
-    static constexpr json::SimpleKey kBH170{"bh1750", 6, Fnv1a32("bh1750", 6)};
-    static constexpr json::SimpleKey kHTU21D{"htu21d", 6, Fnv1a32("htu21d", 6)};
-    static constexpr json::SimpleKey kINA219{"ina219", 6, Fnv1a32("ina219", 6)};
-    static constexpr json::SimpleKey kMCP9808{"mcp9808", 7, Fnv1a32("mcp9808", 7)};
-    static constexpr json::SimpleKey kSI7021{"si7021", 6, Fnv1a32("si7021", 6)};
-    static constexpr json::SimpleKey kMCP3424{"mcp3424", 7, Fnv1a32("mcp3424", 7)};
+    static constexpr auto kBH170 = json::MakeSimpleKey("bh1750");
+    static constexpr auto kHTU21D = json::MakeSimpleKey("htu21d");
+    static constexpr auto kINA219 = json::MakeSimpleKey("ina219");
+    static constexpr auto kMCP9808 = json::MakeSimpleKey("mcp9808");
+    static constexpr auto kSI7021 = json::MakeSimpleKey("si7021");
+    static constexpr auto kMCP3424 = json::MakeSimpleKey("mcp3424");
 };
 } // namespace json
 

@@ -27,15 +27,14 @@
 #define JSON_MOTORPARAMSCONST_H_
 
 #include "json/json_key.h"
-#include "common/utils/utils_hash.h"
 
 namespace json {
 struct MotorParamsConst {
-    static constexpr json::SimpleKey kStepAngel{"motor_step_angel", 16, Fnv1a32("motor_step_angel", 16)};
-    static constexpr json::SimpleKey kVoltage{"motor_voltage", 13, Fnv1a32("motor_voltage", 13)};
-    static constexpr json::SimpleKey kCurrent{"motor_current", 13, Fnv1a32("motor_current", 13)};
-    static constexpr json::SimpleKey kResistance{"motor_resistance", 16, Fnv1a32("motor_resistance", 16)};
-    static constexpr json::SimpleKey kInductance{"motor_inductance", 16, Fnv1a32("motor_inductance", 16)};
+    static constexpr auto kStepAngel = json::MakeSimpleKey("motor_step_angel");
+    static constexpr auto kVoltage = json::MakeSimpleKey("motor_voltage");
+    static constexpr auto kCurrent = json::MakeSimpleKey("motor_current");
+    static constexpr auto kResistance = json::MakeSimpleKey("motor_resistance");
+    static constexpr auto kInductance = json::MakeSimpleKey("motor_inductance");
 };
 } // namespace json
 

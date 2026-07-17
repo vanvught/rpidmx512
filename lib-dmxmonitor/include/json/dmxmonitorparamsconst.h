@@ -26,15 +26,14 @@
 #define JSON_DMXMONITORPARAMSCONST_H_
 
 #include "json/json_key.h"
-#include "common/utils/utils_hash.h"
 
 namespace json {
 struct DmxMonitorParamsConst {
     static constexpr char kFileName[] = "monitor.json";
 
-    static constexpr json::SimpleKey kDmxStartAddress{"dmx_start_address", 17, Fnv1a32("dmx_start_address", 17)};
-    static constexpr json::SimpleKey kDmxMaxChannels{"dmx_max_channels", 16, Fnv1a32("dmx_max_channels", 16)};
-    static constexpr json::SimpleKey kFormat{"format", 6, Fnv1a32("format", 6)};
+    static constexpr auto kDmxStartAddress = json::MakeSimpleKey("dmx_start_address");
+    static constexpr auto kDmxMaxChannels = json::MakeSimpleKey("dmx_max_channels");
+    static constexpr auto kFormat = json::MakeSimpleKey("format");
 };
 } // namespace json
 

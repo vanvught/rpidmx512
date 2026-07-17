@@ -27,19 +27,18 @@
 #define JSON_SPARKFUNDMXPARAMSCONST_H_
 
 #include "json/json_key.h"
-#include "common/utils/utils_hash.h"
 
 namespace json {
 struct SparkFunDmxParamsConst {
     static constexpr char kFileName[] = "sparkfun.json";
     static constexpr char kFileNameMotor[] = "motor?.json";
 
-    static constexpr json::SimpleKey kPosition{"sparkfun_position", 17, Fnv1a32("sparkfun_position", 17)};
+    static constexpr auto kPosition = json::MakeSimpleKey("sparkfun_position");
     // #if !defined (H3)
-    static constexpr json::SimpleKey kSpiCs{"sparkfun_spi_cs", 15, Fnv1a32("sparkfun_spi_cs", 15)};
+    static constexpr auto kSpiCs = json::MakeSimpleKey("sparkfun_spi_cs");
     // #endif
-    static constexpr json::SimpleKey kResetPin{"sparkfun_reset_pin", 18, Fnv1a32("sparkfun_reset_pin", 18)};
-    static constexpr json::SimpleKey kBusyPin{"sparkfun_busy_pin", 17, Fnv1a32("sparkfun_busy_pin", 17)};
+    static constexpr auto kResetPin = json::MakeSimpleKey("sparkfun_reset_pin");
+    static constexpr auto kBusyPin = json::MakeSimpleKey("sparkfun_busy_pin");
 };
 } // namespace json
 

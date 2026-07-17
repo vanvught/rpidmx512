@@ -26,24 +26,23 @@
 #ifndef JSON_PCA9685DMXPARAMSCONST_H_
 #define JSON_PCA9685DMXPARAMSCONST_H_
 
-#include "common/utils/utils_hash.h"
 #include "json/json_key.h"
 
 namespace json {
 struct Pca9685DmxParamsConst {
     static constexpr char kFileName[] = "dmxpca9685.json";
 
-    static constexpr json::SimpleKey kI2cAddres{"i2c_address", 11, Fnv1a32("i2c_address", 11)};
-    static constexpr json::SimpleKey kDmxStartAddress{"dmx_start_address", 17, Fnv1a32("dmx_start_address", 17)};
-    static constexpr json::SimpleKey kMode{"mode", 4, Fnv1a32("mode", 4)};
-    static constexpr json::SimpleKey kChannelCount{"channel_count", 13, Fnv1a32("channel_count", 13)};
-    static constexpr json::SimpleKey kUse8Bit{"use_8bit", 8, Fnv1a32("use_8bit", 8)};
-    static constexpr json::SimpleKey kLedPwmFrequency{"led_pwm_frequency", 8, Fnv1a32("led_pwm_frequency", 8)};
-    static constexpr json::SimpleKey kLedOutputInvert{"led_output_invert", 8, Fnv1a32("led_output_invert", 8)};
-    static constexpr json::SimpleKey kLedOutputOpendrain{"led_output_opendrain", 8, Fnv1a32("led_output_opendrain", 8)};
-    static constexpr json::SimpleKey kServoLeftUs{"servo_left_us", 8, Fnv1a32("servo_left_us", 8)};
-    static constexpr json::SimpleKey kServoCenterUs{"servo_center_us", 8, Fnv1a32("servo_center_us", 8)};
-    static constexpr json::SimpleKey kServoRightUs{"servo_right_us", 8, Fnv1a32("servo_right_us", 8)};
+    static constexpr auto kI2cAddres = json::MakeSimpleKey("i2c_address");
+    static constexpr auto kDmxStartAddress = json::MakeSimpleKey("dmx_start_address");
+    static constexpr auto kMode = json::MakeSimpleKey("mode");
+    static constexpr auto kChannelCount = json::MakeSimpleKey("channel_count");
+    static constexpr auto kUse8Bit = json::MakeSimpleKey("use_8bit");
+    static constexpr auto kLedPwmFrequency = json::MakeSimpleKey("led_pwm_frequency");
+    static constexpr auto kLedOutputInvert = json::MakeSimpleKey("led_output_invert");
+    static constexpr auto kLedOutputOpendrain = json::MakeSimpleKey("led_output_opendrain");
+    static constexpr auto kServoLeftUs = json::MakeSimpleKey("servo_left_us");
+    static constexpr auto kServoCenterUs = json::MakeSimpleKey("servo_center_us");
+    static constexpr auto kServoRightUs = json::MakeSimpleKey("servo_right_us");
 };
 } // namespace json
 

@@ -70,9 +70,9 @@ struct ArtNetParamsConst {
     };
 
     // Art-Net 4
-    static constexpr SimpleKey kEnableRdm{"enable_rdm", 10, Fnv1a32("enable_rdm", 10)};
+    static constexpr auto kEnableRdm = json::MakeSimpleKey("enable_rdm");
 
-    static constexpr SimpleKey kMapUniverse0{"map_universe0", 13, Fnv1a32("map_universe0", 13)};
+    static constexpr auto kMapUniverse0 = json::MakeSimpleKey("map_universe0");
 
     static constexpr json::PortKey kProtocolPortA{"protocol_port_a", 15, Fnv1a32("protocol_port_a", 15)};
 #if (MAX_ARRAY_SIZE > 1)

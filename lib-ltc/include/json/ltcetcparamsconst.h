@@ -27,17 +27,16 @@
 #define JSON_LTCETCPARAMSCONST_H_
 
 #include "json/json_key.h"
-#include "common/utils/utils_hash.h"
 
 namespace json {
 struct LtcEtcParamsConst {
     static constexpr char kFileName[] = "ltcetc.json";
 
-    static constexpr json::SimpleKey kDestinationIp{"destination_ip", 14, Fnv1a32("destination_ip", 14)};
-    static constexpr json::SimpleKey kDestinationPort{"destination_port", 16, Fnv1a32("destination_port", 16)};
-    static constexpr json::SimpleKey kSourceMulticastIp{"source_multicast_ip", 19, Fnv1a32("source_multicast_ip", 19)};
-    static constexpr json::SimpleKey kSourcePort{"source_port", 11, Fnv1a32("source_port", 11)};
-    static constexpr json::SimpleKey kUdpTerminator{"udp_terminator", 14, Fnv1a32("udp_terminator", 14)};
+    static constexpr auto kDestinationIp = json::MakeSimpleKey("destination_ip");
+    static constexpr auto kDestinationPort = json::MakeSimpleKey("destination_port");
+    static constexpr auto kSourceMulticastIp = json::MakeSimpleKey("source_multicast_ip");
+    static constexpr auto kSourcePort = json::MakeSimpleKey("source_port");
+    static constexpr auto kUdpTerminator = json::MakeSimpleKey("udp_terminator");
 };
 } // namespace json
 

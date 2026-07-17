@@ -2,7 +2,7 @@
  * @file l6470paramsconst.h
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,19 +27,18 @@
 #define JSON_L6470PARAMSCONST_H_
 
 #include "json/json_key.h"
-#include "common/utils/utils_hash.h"
 
 namespace json {
 struct L6470ParamsConst {
-    static constexpr json::SimpleKey kMinSpeed{"l6470_min_speed", 15, Fnv1a32("l6470_min_speed", 15)};
-    static constexpr json::SimpleKey kMaxSpeed{"l6470_max_speed", 15, Fnv1a32("l6470_max_speed", 15)};
-    static constexpr json::SimpleKey kAcc{"l6470_acc", 9, Fnv1a32("l6470_acc", 9)};
-    static constexpr json::SimpleKey kDec{"l6470_dec", 9, Fnv1a32("l6470_dec", 9)};
-    static constexpr json::SimpleKey kKvalHold{"l6470_kval_hold", 15, Fnv1a32("l6470_kval_hold", 15)};
-    static constexpr json::SimpleKey kKvalRun{"l6470_kval_run", 14, Fnv1a32("l6470_kval_run", 14)};
-    static constexpr json::SimpleKey kKvalAcc{"l6470_kval_acc", 14, Fnv1a32("l6470_kval_acc", 14)};
-    static constexpr json::SimpleKey kKvalDec{"l6470_kval_dec", 14, Fnv1a32("l6470_kval_dec", 14)};
-    static constexpr json::SimpleKey kMicroSteps{"l6470_micro_steps", 17, Fnv1a32("l6470_micro_steps", 17)};
+    static constexpr auto kMinSpeed = json::MakeSimpleKey("l6470_min_speed");
+    static constexpr auto kMaxSpeed = json::MakeSimpleKey("l6470_max_speed");
+    static constexpr auto kAcc = json::MakeSimpleKey("l6470_acc");
+    static constexpr auto kDec = json::MakeSimpleKey("l6470_dec");
+    static constexpr auto kKvalHold = json::MakeSimpleKey("l6470_kval_hold");
+    static constexpr auto kKvalRun = json::MakeSimpleKey("l6470_kval_run");
+    static constexpr auto kKvalAcc = json::MakeSimpleKey("l6470_kval_acc");
+    static constexpr auto kKvalDec = json::MakeSimpleKey("l6470_kval_dec");
+    static constexpr auto kMicroSteps = json::MakeSimpleKey("l6470_micro_steps");
 };
 } // namespace json
 

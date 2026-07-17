@@ -26,13 +26,12 @@
 #define JSON_GLOBALPARAMSCONST_H_
 
 #include "json/json_key.h"
-#include "common/utils/utils_hash.h"
 
 namespace json {
 struct GlobalParamsConst {
     static constexpr char kFileName[] = "global.json";
 
-    inline static constexpr json::SimpleKey kUtcOffset{"utc_offset", 10, Fnv1a32("utc_offset", 10)};
+    inline static constexpr auto kUtcOffset = json::MakeSimpleKey("utc_offset");
 };
 } // namespace json
 

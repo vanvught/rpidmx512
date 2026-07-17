@@ -33,8 +33,8 @@ namespace json {
 struct MidiParamsConst {
     static constexpr char kFileName[] = "midi.json";
 
-    static constexpr json::SimpleKey kBaudrate{"baudrate", 8, Fnv1a32("baudrate", 8)};
-    static constexpr json::SimpleKey kActiveSense{"active_sense", 12, Fnv1a32("active_sense", 12)};
+    static constexpr auto kBaudrate = json::MakeSimpleKey("baudrate");
+    static constexpr auto kActiveSense = json::MakeSimpleKey("active_sense");
 };
 } // namespace json
 

@@ -33,53 +33,53 @@ namespace json {
 struct LtcParamsConst {
     static constexpr char kFileName[] = "ltc.json";
 
-    static constexpr json::SimpleKey kSource{"source", 6, Fnv1a32("source", 6)};
+	static constexpr auto kSource = json::MakeSimpleKey("source");
     // System time
-    static constexpr json::SimpleKey kAutoStart{"auto_start", 10, Fnv1a32("auto_start", 10)};
-    static constexpr json::SimpleKey kGpsStart{"gps_start", 9, Fnv1a32("gps_start", 9)};
-    static constexpr json::SimpleKey kUtcOffset{"utc_offset", 11, Fnv1a32("utc_offset", 11)};
+    static constexpr auto kAutoStart = json::MakeSimpleKey("auto_start");
+    static constexpr auto kGpsStart = json::MakeSimpleKey("gps_start");
+    static constexpr auto kUtcOffset = json::MakeSimpleKey("utc_offset");
     // Output options
-    static constexpr json::SimpleKey kDisableDisplayOled{"disable_display", 14, Fnv1a32("disable_display", 14)};
-    static constexpr json::SimpleKey kDisableMax7219{"disable_max7219", 14, Fnv1a32("disable_max7219", 14)};
-    static constexpr json::SimpleKey kDisableMidi{"disable_midi", 12, Fnv1a32("disable_midi", 12)};
-    static constexpr json::SimpleKey kDisableArtnet{"disable_artnet", 13, Fnv1a32("disable_artnet", 13)};
-    static constexpr json::SimpleKey kDisableLtc{"disable_ltc", 11, Fnv1a32("disable_ltc", 11)};
-    static constexpr json::SimpleKey kDisableRtpmidi{"disable_rtp-midi", 16, Fnv1a32("disable_rtp-midi", 16)};
-    static constexpr json::SimpleKey kDisableEtc{"disable_etc", 11, Fnv1a32("disable_etc", 11)};
+    static constexpr auto kDisableDisplayOled = json::MakeSimpleKey("disable_display");
+    static constexpr auto kDisableMax7219 = json::MakeSimpleKey("disable_max7219");
+    static constexpr auto kDisableMidi = json::MakeSimpleKey("disable_midi");
+    static constexpr auto kDisableArtnet = json::MakeSimpleKey("disable_artnet");
+    static constexpr auto kDisableLtc = json::MakeSimpleKey("disable_ltc");
+    static constexpr auto kDisableRtpmidi = json::MakeSimpleKey("disable_rtp-midi");
+    static constexpr auto kDisableEtc = json::MakeSimpleKey("disable_etc");
     // System clock / RTC
-    static constexpr json::SimpleKey kShowSystime{"show_systime", 12, Fnv1a32("show_systime", 12)};
-    static constexpr json::SimpleKey kDisableTimesync{"disable_timesync", 16, Fnv1a32("disable_timesync", 16)};
+    static constexpr auto kShowSystime = json::MakeSimpleKey("show_systime");
+    static constexpr auto kDisableTimesync = json::MakeSimpleKey("disable_timesync");
     // NTP
-    static constexpr json::SimpleKey kNtpEnable{"ntp_enable", 10, Fnv1a32("ntp_enable", 10)};
-    static constexpr json::SimpleKey kNtpYear{"year", 4, Fnv1a32("year", 4)};
-    static constexpr json::SimpleKey kNtpMonth{"month", 5, Fnv1a32("month", 5)};
-    static constexpr json::SimpleKey kNtpDay{"day", 3, Fnv1a32("day", 3)};
+    static constexpr auto kNtpEnable = json::MakeSimpleKey("ntp_enable");
+    static constexpr auto kNtpYear = json::MakeSimpleKey("year");
+    static constexpr auto kNtpMonth = json::MakeSimpleKey("month");
+    static constexpr auto kNtpDay = json::MakeSimpleKey("day");
     // LTC
-    static constexpr json::SimpleKey kLtcVolume{"volume", 6, Fnv1a32("volume", 6)};
+    static constexpr auto kLtcVolume = json::MakeSimpleKey("volume");
     // Art-Net
-    static constexpr json::SimpleKey kTimecodeIp{"timecode_ip", 11, Fnv1a32("timecode_ip", 11)};
+    static constexpr auto kTimecodeIp = json::MakeSimpleKey("timecode_ip");
     // source=internal
-    static constexpr json::SimpleKey kFps{"fps", 3, Fnv1a32("fps", 3)};
-    static constexpr json::SimpleKey kStartFrame{"start_frame", 11, Fnv1a32("start_frame", 11)};
-    static constexpr json::SimpleKey kStartSecond{"start_second", 12, Fnv1a32("start_second", 12)};
-    static constexpr json::SimpleKey kStartMinute{"start_minute", 12, Fnv1a32("start_minute", 12)};
-    static constexpr json::SimpleKey kStartHour{"start_hour", 10, Fnv1a32("start_hour", 10)};
-    static constexpr json::SimpleKey kIgnoreStart{"ignore_start", 12, Fnv1a32("ignore_start", 12)};
-    static constexpr json::SimpleKey kStopFrame{"stop_frame", 10, Fnv1a32("stop_frame", 10)};
-    static constexpr json::SimpleKey kStopSecond{"stop_second", 11, Fnv1a32("stop_second", 11)};
-    static constexpr json::SimpleKey kStopMinute{"stop_minute", 11, Fnv1a32("stop_minute", 11)};
-    static constexpr json::SimpleKey kStopHour{"stop_hour", 9, Fnv1a32("stop_hour", 9)};
-    static constexpr json::SimpleKey kIgnoreStop{"ignore_stop", 11, Fnv1a32("ignore_stop", 11)};
-    static constexpr json::SimpleKey kAltFunction{"alt_function", 12, Fnv1a32("alt_function", 12)};
-    static constexpr json::SimpleKey kSkipSeconds{"skip_seconds", 12, Fnv1a32("skip_seconds", 12)};
-    static constexpr json::SimpleKey kSkipFree{"skip_free", 9, Fnv1a32("skip_free", 9)};
+    static constexpr auto kFps = json::MakeSimpleKey("fps");
+    static constexpr auto kStartFrame = json::MakeSimpleKey("start_frame");
+    static constexpr auto kStartSecond = json::MakeSimpleKey("start_second");
+    static constexpr auto kStartMinute = json::MakeSimpleKey("start_minute");
+    static constexpr auto kStartHour = json::MakeSimpleKey("start_hour");
+    static constexpr auto kIgnoreStart = json::MakeSimpleKey("ignore_start");
+    static constexpr auto kStopFrame = json::MakeSimpleKey("stop_frame");
+    static constexpr auto kStopSecond = json::MakeSimpleKey("stop_second");
+    static constexpr auto kStopMinute = json::MakeSimpleKey("stop_minute");
+    static constexpr auto kStopHour = json::MakeSimpleKey("stop_hour");
+    static constexpr auto kIgnoreStop = json::MakeSimpleKey("ignore_stop");
+    static constexpr auto kAltFunction = json::MakeSimpleKey("alt_function");
+    static constexpr auto kSkipSeconds = json::MakeSimpleKey("skip_seconds");
+    static constexpr auto kSkipFree = json::MakeSimpleKey("skip_free");
     // OSC
-    static constexpr json::SimpleKey kOscEnable{"osc_enable", 10, Fnv1a32("osc_enable", 10)};
-    static constexpr json::SimpleKey kOscPort{"osc_port", 8, Fnv1a32("osc_port", 8)};
+    static constexpr auto kOscEnable = json::MakeSimpleKey("osc_enable");
+    static constexpr auto kOscPort = json::MakeSimpleKey("osc_port");
     // WS28xx Display
-    static constexpr json::SimpleKey kWS28xxEnable{"ws28xx_enable", 13, Fnv1a32("ws28xx_enable", 13)};
+    static constexpr auto kWS28xxEnable = json::MakeSimpleKey("ws28xx_enable");
     // RGB panel
-    static constexpr json::SimpleKey kRgbpanelEnable{"rgbpanel_enable", 15, Fnv1a32("rgbpanel_enable", 15)};
+    static constexpr auto kRgbpanelEnable = json::MakeSimpleKey("rgbpanel_enable");
 };
 } // namespace json
 

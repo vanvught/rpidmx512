@@ -33,9 +33,9 @@ namespace json {
 struct GpsParamsConst {
     static constexpr char kFileName[] = "gps.json";
 
-    static constexpr json::SimpleKey kModule{"module", 6, Fnv1a32("module", 6)};
-    static constexpr json::SimpleKey kEnable{"enable", 6, Fnv1a32("enable", 6)};
-    static constexpr json::SimpleKey kUtcOffset{"utc_offset", 10, Fnv1a32("utc_offset", 10)};
+    static constexpr auto kModule = json::MakeSimpleKey("module");
+    static constexpr auto kEnable = json::MakeSimpleKey("enable");
+    static constexpr auto kUtcOffset = json::MakeSimpleKey("utc_offset");
 };
 } // namespace json
 

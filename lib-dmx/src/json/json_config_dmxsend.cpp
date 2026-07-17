@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
- 
+
 #include <cstdint>
 
 #include "json/dmxsendparams.h"
@@ -29,24 +29,21 @@
 #include "json/json_helpers.h"
 #include "dmx.h"
 
-namespace json::config
-{
-uint32_t GetDmxSend(char* buffer, uint32_t length)
-{
-	auto& dmx = *Dmx::Get();
-	const auto kPeriod = dmx.TransmitPeriodTime();
+namespace json::config {
+uint32_t GetDmxSend(char* buffer, uint32_t length) {
+    auto& dmx = *Dmx::Get();
+    const auto kPeriod = dmx.TransmitPeriodTime();
 
- 	return json::helpers::Serialize(buffer, length, [&](JsonDoc& doc) {	
-	    doc[DmxSendParamsConst::kBreakTime.name] = dmx.TransmitBreakTime();
-	    doc[DmxSendParamsConst::kMabTime.name] = dmx.TransmitMabTime();	
-	    doc[DmxSendParamsConst::kRefreshRate.name] = 1000000U / kPeriod;
-	    doc[DmxSendParamsConst::kSlotsCount.name] = dmx.TransmitSlots();
+    return json::helpers::Serialize(buffer, length, [&](JsonDoc& doc) {
+        doc[DmxSendParamsConst::kBreakTime.name] = dmx.TransmitBreakTime();
+        doc[DmxSendParamsConst::kMabTime.name] = dmx.TransmitMabTime();
+        doc[DmxSendParamsConst::kRefreshRate.name] = 1000000U / kPeriod;
+        doc[DmxSendParamsConst::kSlotsCount.name] = dmx.TransmitSlots();
     });
 }
 
-void SetDmxSend(const char* buffer, uint32_t buffer_size)
-{
-   ::json::DmxSendParams dmx_send_params;
+void SetDmxSend(const char* buffer, uint32_t buffer_size) {
+    ::json::DmxSendParams dmx_send_params;
     dmx_send_params.Store(buffer, buffer_size);
     dmx_send_params.Set();
 }

@@ -27,23 +27,22 @@
 #define JSON_LTCDISPLAYPARAMSCONST_H_
 
 #include "json/json_key.h"
-#include "common/utils/utils_hash.h"
 
 namespace json {
 struct LtcDisplayParamsConst {
     static constexpr char kFileName[] = "ltcdisplay.json";
 
     // OLED SSD1306 / SSD1311
-    static constexpr json::SimpleKey kOledIntensity{"oled_intensity", 14, Fnv1a32("oled_intensity", 14)};
+    static constexpr auto kOledIntensity = json::MakeSimpleKey("oled_intensity");
     // Rotary control
-    static constexpr json::SimpleKey kRotaryFullstep{"rotary_fullstep", 15, Fnv1a32("rotary_fullstep", 15)};
+    static constexpr auto kRotaryFullstep = json::MakeSimpleKey("rotary_fullstep");
     // MAX7219 7-segment / matrix
-    static constexpr json::SimpleKey kMax7219Type{"max7219_type", 12, Fnv1a32("max7219_type", 12)};
-    static constexpr json::SimpleKey kMax7219Intensity{"max7219_intensity", 17, Fnv1a32("max7219_intensity", 17)};
+    static constexpr auto kMax7219Type = json::MakeSimpleKey("max7219_type");
+    static constexpr auto kMax7219Intensity = json::MakeSimpleKey("max7219_intensity");
     // PixelOutput specific
-    static constexpr json::SimpleKey kPixelType{"pixel_type", 10, Fnv1a32("pixel_type", 10)};
+    static constexpr auto kPixelType = json::MakeSimpleKey("pixel_type");
     // RGB panel specific
-    static constexpr json::SimpleKey kInfoMsg{"info_msg", 8, Fnv1a32("info_msg", 8)};
+    static constexpr auto kInfoMsg = json::MakeSimpleKey("info_msg");
 };
 } // namespace json
 

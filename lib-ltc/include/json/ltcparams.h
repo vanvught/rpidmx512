@@ -32,13 +32,10 @@
 #include "json/json_params_base.h"
 #include "ltc.h"
 
-namespace json
-{
-class LtcParams : public JsonParamsBase<LtcParams>
-{
+namespace json {
+class LtcParams : public JsonParamsBase<LtcParams> {
    public:
-    struct RgbLedType
-    {
+    struct RgbLedType {
         static constexpr uint32_t kWS28Xx = (1U << 0);
         static constexpr uint32_t kRgbpanel = (1U << 1);
     };
@@ -121,17 +118,17 @@ class LtcParams : public JsonParamsBase<LtcParams>
         // LTC output
         MakeKey(SetLtcVolume, LtcParamsConst::kLtcVolume), //
         // source=internal
-        MakeKey(SetFps, LtcParamsConst::kFps), //
-        MakeKey(SetStartFrame, LtcParamsConst::kStartFrame), //
+        MakeKey(SetFps, LtcParamsConst::kFps),                 //
+        MakeKey(SetStartFrame, LtcParamsConst::kStartFrame),   //
         MakeKey(SetStartSecond, LtcParamsConst::kStartSecond), //
         MakeKey(SetStartMinute, LtcParamsConst::kStartMinute), //
-        MakeKey(SetStartHour, LtcParamsConst::kStartHour), //
+        MakeKey(SetStartHour, LtcParamsConst::kStartHour),     //
         MakeKey(SetIgnoreStart, LtcParamsConst::kIgnoreStart), //
-        MakeKey(SetStopFrame, LtcParamsConst::kStopFrame), //
-        MakeKey(SetStopSecond, LtcParamsConst::kStopSecond), //
-        MakeKey(SetStopMinute, LtcParamsConst::kStopMinute), //
-        MakeKey(SetStopHour, LtcParamsConst::kStopHour), //
-        MakeKey(SetIgnoreStop, LtcParamsConst::kIgnoreStop), //
+        MakeKey(SetStopFrame, LtcParamsConst::kStopFrame),     //
+        MakeKey(SetStopSecond, LtcParamsConst::kStopSecond),   //
+        MakeKey(SetStopMinute, LtcParamsConst::kStopMinute),   //
+        MakeKey(SetStopHour, LtcParamsConst::kStopHour),       //
+        MakeKey(SetIgnoreStop, LtcParamsConst::kIgnoreStop),   //
         // Art-Net
         MakeKey(SetTimecodeIp, LtcParamsConst::kTimecodeIp), //
 #if !defined(CONFIG_LTC_DISABLE_WS28XX)
@@ -150,4 +147,4 @@ class LtcParams : public JsonParamsBase<LtcParams>
 };
 } // namespace json
 
-#endif  // JSON_LTCPARAMS_H_
+#endif // JSON_LTCPARAMS_H_

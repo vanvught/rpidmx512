@@ -30,9 +30,9 @@
 
 namespace json {
 struct OscParamsConst {
-    static constexpr json::SimpleKey kIncomingPort{"incoming_port", 13, Fnv1a32("incoming_port", 13)};
+    static constexpr auto kIncomingPort = json::MakeSimpleKey("incoming_port");
 
-    static constexpr json::SimpleKey kOutgoingPort{"outgoing_port", 13, Fnv1a32("outgoing_port", 13)};
+    static constexpr auto kOutgoingPort = json::MakeSimpleKey("outgoing_port");
 };
 } // namespace json
 

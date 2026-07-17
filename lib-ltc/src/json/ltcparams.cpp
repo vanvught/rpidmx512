@@ -23,6 +23,8 @@
 * THE SOFTWARE.
 */
 
+#undef NDEBUG
+
 #include <cstdint>
 
 #include "json/ltcparams.h"
@@ -57,9 +59,8 @@ void LtcParams::SetSource(const char* val, uint32_t len) {
     store_ltc.source = common::ToValue(ltc::GetSourceType(source));
 }
 
-template <ltc::Destination::Output output>
-static uint8_t HandleDisabledOutput(uint8_t disabled_outputs, char val) {
-    constexpr auto kMask = static_cast<uint8_t>(common::ToValue(output));
+template <ltc::Destination::Output kOutput> static uint8_t HandleDisabledOutput(uint8_t disabled_outputs, char val) {
+    constexpr auto kMask = static_cast<uint8_t>(common::ToValue(kOutput));
 
     if (val == '0') {
         disabled_outputs &= static_cast<uint8_t>(~kMask);
@@ -157,7 +158,9 @@ void LtcParams::SetUtcOffset(const char* val, uint32_t len) {
 
 // source=internal
 void LtcParams::SetFps(const char* val, uint32_t len) {
-    if (len != 2) return;
+    if (len != 2) {
+        return;
+    }
 
     const auto kFps = json::ParseValue<uint8_t>(val, 2);
     store_ltc.fps = common::ToValue(ltc::GetType(kFps));

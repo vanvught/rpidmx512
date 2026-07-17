@@ -26,19 +26,18 @@
 #define JSON_NETWORKPARAMSCONST_H_
 
 #include "json/json_key.h"
-#include "common/utils/utils_hash.h"
 
 namespace json {
 struct NetworkParamsConst {
     static constexpr char kFileName[] = "network.json";
 
-    static constexpr json::SimpleKey kSecondaryIp{"secondary_ip", 12, Fnv1a32("secondary_ip", 12)};
-    static constexpr json::SimpleKey kUseStaticIp{"use_static_ip", 13, Fnv1a32("use_static_ip", 13)};
-    static constexpr json::SimpleKey kIpAddress{"ip_address", 10, Fnv1a32("ip_address", 10)};
-    static constexpr json::SimpleKey kNetMask{"net_mask", 8, Fnv1a32("net_mask", 8)};
-    static constexpr json::SimpleKey kDefaultGateway{"default_gateway", 15, Fnv1a32("default_gateway", 15)};
-    static constexpr json::SimpleKey kHostname{"hostname", 8, Fnv1a32("hostname", 8)};
-    static constexpr json::SimpleKey kNtpServer{"ntp_server", 10, Fnv1a32("ntp_server", 10)};
+    static constexpr auto kSecondaryIp = json::MakeSimpleKey("secondary_ip");
+    static constexpr auto kUseStaticIp = json::MakeSimpleKey("use_static_ip");
+    static constexpr auto kIpAddress = json::MakeSimpleKey("ip_address");
+    static constexpr auto kNetMask = json::MakeSimpleKey("net_mask");
+    static constexpr auto kDefaultGateway = json::MakeSimpleKey("default_gateway");
+    static constexpr auto kHostname = json::MakeSimpleKey("hostname");
+    static constexpr auto kNtpServer = json::MakeSimpleKey("ntp_server");
 };
 } // namespace json
 

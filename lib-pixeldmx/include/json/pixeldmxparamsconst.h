@@ -31,9 +31,9 @@
 
 namespace json {
 struct PixelDmxParamsConst {
-    static constexpr json::SimpleKey kDmxStartAddress{"dmx_start_address", 17, Fnv1a32("dmx_start_address", 17)};
+    static constexpr auto kDmxStartAddress = json::MakeSimpleKey("dmx_start_address");
 
-    static constexpr json::SimpleKey kDmxSlotInfo{"dmx_slot_info", 13, Fnv1a32("dmx_slot_info", 13)};
+    static constexpr auto kDmxSlotInfo = json::MakeSimpleKey("dmx_slot_info");
     static constexpr json::PortKey kStartUniPort1{"start_uni_port_1", 16, Fnv1a32("start_uni_port_1", 16)};
 #if (CONFIG_DMXNODE_PIXEL_MAX_PORTS > 1)
     static constexpr json::PortKey kStartUniPort2{"start_uni_port_2", 16, Fnv1a32("start_uni_port_2", 16)};

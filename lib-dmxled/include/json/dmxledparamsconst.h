@@ -26,25 +26,23 @@
 #define JSON_DMXLEDPARAMSCONST_H_
 
 #include "json/json_key.h"
-#include "common/utils/utils_hash.h"
 
 namespace json {
 struct DmxLedParamsConst {
     static constexpr char kFileName[] = "dmxled.json";
 
-    static constexpr json::SimpleKey kType{"type", 4, Fnv1a32("type", 4)};
-    static constexpr json::SimpleKey kMap{"map", 3, Fnv1a32("map", 3)};
-    static constexpr json::SimpleKey kCount{"count", 5, Fnv1a32("count", 5)};
-    static constexpr json::SimpleKey kGroupingCount{"group_count", 11, Fnv1a32("group_count", 11)};
-    static constexpr json::SimpleKey kT0H{"t0h", 3, Fnv1a32("t0h", 3)};
-
-    static constexpr json::SimpleKey kT1H{"t1h", 3, Fnv1a32("t1h", 3)};
-    static constexpr json::SimpleKey kActiveOutputPorts{"active_out", 10, Fnv1a32("active_out", 10)};
-    static constexpr json::SimpleKey kTestPattern{"test_pattern", 12, Fnv1a32("test_pattern", 12)};
-    static constexpr json::SimpleKey kSpiSpeedHz{"clock_speed_hz", 14, Fnv1a32("clock_speed_hz", 14)};
-    static constexpr json::SimpleKey kGlobalBrightness{"global_brightness", 17, Fnv1a32("global_brightness", 17)};
-    static constexpr json::SimpleKey kGammaCorrection{"gamma_correction", 16, Fnv1a32("gamma_correction", 16)};
-    static constexpr json::SimpleKey kGammaValue{"gamma_value", 11, Fnv1a32("gamma_value", 11)};
+    static constexpr auto kType = json::MakeSimpleKey("type");
+    static constexpr auto kMap = json::MakeSimpleKey("map");
+    static constexpr auto kCount = json::MakeSimpleKey("count");
+    static constexpr auto kGroupingCount = json::MakeSimpleKey("group_count");
+    static constexpr auto kT0H = json::MakeSimpleKey("t0h");
+    static constexpr auto kT1H = json::MakeSimpleKey("t1h");
+    static constexpr auto kActiveOutputPorts = json::MakeSimpleKey("active_out");
+    static constexpr auto kTestPattern = json::MakeSimpleKey("test_pattern");
+    static constexpr auto kSpiSpeedHz = json::MakeSimpleKey("clock_speed_hz");
+    static constexpr auto kGlobalBrightness = json::MakeSimpleKey("global_brightness");
+    static constexpr auto kGammaCorrection = json::MakeSimpleKey("gamma_correction");
+    static constexpr auto kGammaValue = json::MakeSimpleKey("gamma_value");
 };
 } // namespace json
 

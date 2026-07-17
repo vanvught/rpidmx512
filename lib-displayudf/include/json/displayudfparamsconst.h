@@ -42,9 +42,9 @@ namespace json {
 struct DisplayUdfParamsConst {
     static constexpr char kFileName[] = "display.json";
 
-    static constexpr json::SimpleKey kIntensity{"intensity", 9, Fnv1a32("intensity", 9)};
-    static constexpr json::SimpleKey kSleepTimeout{"sleep_timeout", 13, Fnv1a32("sleep_timeout", 13)};
-    static constexpr json::SimpleKey kFlipVertically{"flip_vertically", 15, Fnv1a32("flip_vertically", 15)};
+    static constexpr auto kIntensity = json::MakeSimpleKey("intensity");
+    static constexpr auto kSleepTimeout = json::MakeSimpleKey("sleep_timeout");
+    static constexpr auto kFlipVertically = json::MakeSimpleKey("flip_vertically");
     static constexpr json::PortKey kTitle{"title", 5, Fnv1a32("title", 5)};
     static constexpr json::PortKey kBoardName{"board_name", 10, Fnv1a32("board_name", 10)};
     static constexpr json::PortKey kVersion{"version", 7, Fnv1a32("version", 7)};
