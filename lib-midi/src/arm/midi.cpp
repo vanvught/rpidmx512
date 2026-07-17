@@ -171,7 +171,7 @@ void TIMER0_BRK_TIMER8_IRQHandler() {
 
 void USART5_IRQHandler() {
     if (RESET != usart_interrupt_flag_get(USART5, USART_INT_FLAG_RBNE)) {
-        sv_RxBuffer.midi[sv_RxBuffer.nIndexHead].nData = Gd32UartGetRxData(USART5);
+        sv_RxBuffer.midi[sv_RxBuffer.nIndexHead].nData = gd32::UartGetRxData(USART5);
         //		sv_RxBuffer[sv_RxBuffer.nIndexHead].timestamp =
         sv_RxBuffer.nIndexHead = (sv_RxBuffer.nIndexHead + 1) & midi::kRxBufferIndexMask;
     }
