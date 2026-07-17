@@ -28,8 +28,9 @@ jobs:
         sudo mkdir -p /opt
         wget -qO /tmp/arm-toolchain.tar.xz "$TOOLCHAIN_URL"
         sudo tar -xJf /tmp/arm-toolchain.tar.xz -C /opt
-        echo "$TOOLCHAIN_DIR/bin" >> "$GITHUB_PATH"    - name: version
-          run: arm-none-eabi-g++ --version
+        echo "$TOOLCHAIN_DIR/bin" >> "$GITHUB_PATH"    
+    - name: version
+      run: arm-none-eabi-g++ --version
     - name: Install U-Boot tools
       run: sudo apt install u-boot-tools
     - name: make
