@@ -30,6 +30,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
+#include <utility>
 #if !defined(DISABLE_RTC)
 #include <ctime>
 #endif
@@ -40,7 +41,6 @@
 #include "artnet.h"
 #include "artnetdisplay.h"
 #include "artnetstore.h"
-#include "common/utils/utils_enum.h"
 #if defined(ARTNET_HAVE_TRIGGER)
 #include "artnettrigger.h"
 #endif
@@ -87,7 +87,7 @@ ArtNetNode::ArtNetNode() {
 
     memset(&art_poll_reply_, 0, sizeof(struct artnet::ArtPollReply));
     memcpy(art_poll_reply_.id, artnet::kNodeId, sizeof(art_poll_reply_.id));
-    art_poll_reply_.op_code = common::ToValue(artnet::OpCodes::kOpPollreply);
+    art_poll_reply_.op_code = std::to_underlying(artnet::OpCodes::kOpPollreply);
     art_poll_reply_.port = artnet::kUdpPort;
     art_poll_reply_.vers_info_h = ArtNetConst::kVersion[0];
     art_poll_reply_.vers_info_l = ArtNetConst::kVersion[1];
@@ -138,7 +138,7 @@ ArtNetNode::ArtNetNode() {
 
 #if defined(ARTNET_HAVE_TIMECODE)
     memcpy(art_time_code_.id, artnet::kNodeId, sizeof(art_poll_reply_.id));
-    art_time_code_.op_code = common::ToValue(artnet::OpCodes::kOpTimecode);
+    art_time_code_.op_code = std::to_underlying(artnet::OpCodes::kOpTimecode);
     art_time_code_.prot_ver_hi = 0;
     art_time_code_.prot_ver_lo = artnet::kProtocolRevision;
     art_time_code_.filler1 = 0;
@@ -148,7 +148,7 @@ ArtNetNode::ArtNetNode() {
 #if defined(ARTNET_ENABLE_SENDDIAG)
     memset(&diag_data_, 0, sizeof(struct artnet::ArtDiagData));
     memcpy(diag_data_.id, artnet::kNodeId, sizeof(diag_data_.id));
-    diag_data_.op_code = common::ToValue(artnet::OpCodes::kOpDiagdata);
+    diag_data_.op_code = std::to_underlying(artnet::OpCodes::kOpDiagdata);
     diag_data_.prot_ver_lo = artnet::kProtocolRevision;
 #endif
 

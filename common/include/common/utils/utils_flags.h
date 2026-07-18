@@ -1,8 +1,8 @@
 /**
  * @file utils_flags.h
- * Generic enum class bitmask helpers (C++20, freestanding-safe, Google Style)
+ * Generic enum class bitmask helpers (C++23, freestanding-safe, Google Style)
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,26 +28,25 @@
 
 #include <cstdint>
 #include <type_traits>
-
-#include "common/utils/utils_enum.h" // Ensure this provides ToValue and FromValue
+#include <utility>
 
 namespace common {
 template <typename E>
     requires std::is_enum_v<E>
 constexpr E operator|(E lhs, E rhs) {
-    return static_cast<E>(ToValue(lhs) | ToValue(rhs));
+    return static_cast<E>(std::to_underlying(lhs) | std::to_underlying(rhs));
 }
 
 template <typename E>
     requires std::is_enum_v<E>
 constexpr E operator&(E lhs, E rhs) {
-    return static_cast<E>(ToValue(lhs) & ToValue(rhs));
+    return static_cast<E>(std::to_underlying(lhs) & std::to_underlying(rhs));
 }
 
 template <typename E>
     requires std::is_enum_v<E>
 constexpr E operator~(E e) {
-    return static_cast<E>(~ToValue(e));
+    return static_cast<E>(~std::to_underlying(e));
 }
 
 template <typename E>
@@ -68,9 +67,9 @@ template <typename E>
     requires std::is_enum_v<E>
 constexpr void SetFlag(uint32_t& flags, E bit, bool enable) {
     if (enable) {
-        flags |= ToValue(bit);
+        flags |= std::to_underlying(bit);
     } else {
-        flags &= ~ToValue(bit);
+        flags &= ~std::to_underlying(bit);
     }
 }
 
@@ -78,16 +77,16 @@ template <typename E>
     requires std::is_enum_v<E>
 constexpr uint32_t SetFlagValue(uint32_t flags, E bit, bool enable) {
     if (enable) {
-        return flags | ToValue(bit);
+        return flags | std::to_underlying(bit);
     }
          
-	return flags & ~ToValue(bit);
+	return flags & ~std::to_underlying(bit);
 }
 
 template <typename E>
     requires std::is_enum_v<E>
 constexpr bool IsFlagSet(uint32_t flags, E bit) {
-    return (flags & ToValue(bit)) != 0;
+    return (flags & std::to_underlying(bit)) != 0;
 }
 } // namespace common
 

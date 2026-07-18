@@ -25,13 +25,13 @@
 
 #include <cstdint>
 #include <algorithm>
+#include <utility>
 
 #include "json/pixeldmxparams.h"
 #include "json/json_helpers.h"
 #include "pixeldmxconfiguration.h"
 #include "pixeltype.h"
 #include "pixeltestpattern.h"
-#include "common/utils/utils_enum.h"
 #include "configstore.h"
 #include "configurationstore.h"
 #include "json/pixeldmxparamsconst.h"
@@ -74,7 +74,7 @@ uint32_t GetPixelDmx(char* buffer, uint32_t length) {
             doc[PixelDmxParamsConst::kStartUniPort[i].name] = ConfigStore::Instance().DmxLedIndexedGetStartUniverse(i);
         }
 
-        doc[DmxLedParamsConst::kTestPattern.name] = common::ToValue(PixelTestPattern::Get()->GetPattern());
+        doc[DmxLedParamsConst::kTestPattern.name] = std::to_underlying(PixelTestPattern::Get()->GetPattern());
     });
 }
 

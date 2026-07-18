@@ -30,7 +30,6 @@
 #include <cstring>
 #include <cassert>
 
-#include "common/utils/utils_enum.h"
 
 namespace rdm::subdevices
 {
@@ -76,7 +75,7 @@ inline Types GetTypeString(const char* string)
     {
         if (strcasecmp(string, type) == 0)
         {
-            return common::FromValue<Types>(index);
+            return static_cast<Types>(index);
         }
         ++index;
     }

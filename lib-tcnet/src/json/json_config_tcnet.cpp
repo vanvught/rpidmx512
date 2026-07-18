@@ -24,12 +24,12 @@
  */
 
 #include <cstdint>
+#include <utility>
 
 #include "json/tcnetparams.h"
 #include "json/json_helpers.h"
 #include "json/tcnetparamsconst.h"
 #include "tcnet.h"
-#include "common/utils/utils_enum.h"
 
 namespace json::config {
 uint32_t GetTcNet(char* buffer, uint32_t length) {
@@ -39,7 +39,7 @@ uint32_t GetTcNet(char* buffer, uint32_t length) {
     return json::helpers::Serialize(buffer, length, [&](JsonDoc& doc) {
         doc[TcNetParamsConst::kNodeName.name] = tcnet.GetNodeName();
         doc[TcNetParamsConst::kLayer.name] = layer;
-        doc[TcNetParamsConst::kTimecodeType.name] = tcnet::kFps[common::ToValue(tcnet.GetTimeCodeType())];
+        doc[TcNetParamsConst::kTimecodeType.name] = tcnet::kFps[std::to_underlying(tcnet.GetTimeCodeType())];
         doc[TcNetParamsConst::kUseTimecode.name] = tcnet.GetUseTimeCode();
     });
 }

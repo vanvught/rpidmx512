@@ -28,6 +28,7 @@
 #endif
 
 #include <cstdint>
+#include <utility>
 
 #include "gps.h"
 #include "json/gpsparams.h"
@@ -36,7 +37,6 @@
 #include "configstore.h"
 #include "configurationstore.h"
 #include "common/utils/utils_flags.h"
-#include "common/utils/utils_enum.h"
 #include "firmware/debug/debug_debug.h"
 
 using common::store::gps::Flags;
@@ -55,7 +55,7 @@ void GpsParams::SetModule(const char* val, uint32_t len) {
     memcpy(module, val, len);
     module[len] = '\0';
 
-    store_gps.module = common::ToValue(gps::GetModule(module));
+    store_gps.module = std::to_underlying(gps::GetModule(module));
 }
 
 void GpsParams::SetEnable(const char* val, [[maybe_unused]] uint32_t len) {

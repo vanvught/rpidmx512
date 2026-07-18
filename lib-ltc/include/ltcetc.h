@@ -30,7 +30,6 @@
 #include <cstring>
 #include <cassert>
 
-#include "common/utils/utils_enum.h"
 #include "midi.h"
 #include "ip4/ip4_address.h"
 
@@ -57,7 +56,7 @@ inline UdpTerminator GetUdpTerminator(const char* string) {
 
         for (const char (&module)[kMaxNameLength] : kUdpTerminator) {
             if (strcasecmp(string, module) == 0) {
-                return common::FromValue<UdpTerminator>(index);
+                return static_cast<UdpTerminator>(index);
             }
             ++index;
         }

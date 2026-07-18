@@ -29,6 +29,7 @@
 
 #include <cstdint>
 #include <cstring>
+#include <utility>
 
 #include "board.h"
 #include "board.h"
@@ -76,7 +77,6 @@
 #include "software_version.h"
 #include "core/protocol/ntp.h"
 #include "common/utils/utils_flags.h"
-#include "common/utils/utils_enum.h"
 #include "configurationstore.h"
 #include "hwclock.h"
 #if defined(NODE_RDMNET_LLRP_ONLY)
@@ -202,7 +202,7 @@ int main() // NOLINT
 
 #endif
 
-    ltc_source = common::FromValue<ltc::Source>(kSource);
+    ltc_source = static_cast<ltc::Source>(kSource);
 
     LtcReader ltc_reader;
     MidiReader midi_reader;
@@ -224,7 +224,7 @@ int main() // NOLINT
     }
 
 #if !defined(CONFIG_LTC_DISABLE_WS28XX)
-    const auto kLtcDisplayWs28xxType = common::FromValue<ltc::display::rgb::WS28xxType>(ConfigStore::Instance().LtcDisplayGet(&common::store::LtcDisplay::ws28xx_type));
+    const auto kLtcDisplayWs28xxType = static_cast<ltc::display::rgb::WS28xxType>(ConfigStore::Instance().LtcDisplayGet(&common::store::LtcDisplay::ws28xx_type));
     const auto kIsRgbPanelEnabled(kRgbLedType == json::LtcParams::RgbLedType::kRgbpanel);
 
     LtcDisplayRgb display_rgb(kIsRgbPanelEnabled ? ltc::display::rgb::Type::kRgbpanel : ltc::display::rgb::Type::kWS28Xx, kLtcDisplayWs28xxType);
@@ -264,7 +264,7 @@ int main() // NOLINT
             display_rgb.ShowInfo(info_nt);
         } else {
             const auto kWs28xxType = ConfigStore::Instance().LtcDisplayGet(&common::store::LtcDisplay::ws28xx_type);
-            display_rgb.Init(common::FromValue<pixel::LedType>(kWs28xxType));
+            display_rgb.Init(static_cast<pixel::LedType>(kWs28xxType));
         }
 
         display_rgb.Print();
@@ -291,7 +291,7 @@ int main() // NOLINT
     const auto kRunArtNet = ((ltc_source == ltc::Source::ARTNET) || ltc::Destination::IsEnabled(ltc::Destination::Output::ARTNET));
 
     memcpy(artnet::art_timecode.id, artnet::kNodeId, sizeof(artnet::art_timecode.id));
-    artnet::art_timecode.op_code = common::ToValue(artnet::OpCodes::kOpTimecode);
+    artnet::art_timecode.op_code = std::to_underlying(artnet::OpCodes::kOpTimecode);
     artnet::art_timecode.prot_ver_hi = 0;
     artnet::art_timecode.prot_ver_lo = artnet::kProtocolRevision;
     artnet::art_timecode.filler1 = 0;
@@ -402,7 +402,7 @@ int main() // NOLINT
 
     const auto kGpsFlags = ConfigStore::Instance().GpsGet(&common::store::Gps::flags);
     const auto kGpsUtcOffset = ConfigStore::Instance().GpsGet(&common::store::Gps::utc_offset);
-    const auto kGpsModule = common::FromValue<gps::Module>(ConfigStore::Instance().GpsGet(&common::store::Gps::module));
+    const auto kGpsModule = static_cast<gps::Module>(ConfigStore::Instance().GpsGet(&common::store::Gps::module));
     const auto kIsGpsEnabled = common::IsFlagSet(kGpsFlags, Flags::Flag::kEnable);
 
     const auto kRunGpsTimeClient = (kIsGpsEnabled && (ltc_source == ltc::Source::SYSTIME) && ltc::Destination::IsDisabled(ltc::Destination::Output::RGBPANEL));

@@ -33,8 +33,6 @@
 #include <cassert>
 #include <cstring>
 
-#include "common/utils/utils_enum.h"
-
 namespace gps {
 namespace nmea {
 inline static constexpr uint32_t kMaxSentenceLength = 82; ///< including the $ and <CR><LF>
@@ -80,7 +78,7 @@ inline Module GetModule(const char* string) {
 
     for (const char (&module)[module::kMaxNameLength] : kModule) {
         if (strcasecmp(string, module) == 0) {
-            return common::FromValue<Module>(index);
+            return static_cast<Module>(index);
         }
         ++index;
     }

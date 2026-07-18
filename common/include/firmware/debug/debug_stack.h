@@ -39,10 +39,10 @@ namespace debug::stack {
 inline static constexpr uint32_t kMagicWord = 0xABCDABCD;
 
 inline void Print() {
-	static uint32_t s_used_bytes_previous;
+    static uint32_t s_used_bytes_previous;
     const auto* start = reinterpret_cast<uint32_t*>(&stack_low);
     const auto* end = reinterpret_cast<uint32_t*>(&_sp);
-	assert(end > start);
+    assert(end > start);
     const auto kSize = static_cast<uint32_t>(end - start);
 
     const auto* ptr = start;
@@ -70,16 +70,25 @@ inline void Print() {
         }
 
 #ifndef NDEBUG
-        printf("Stack: Size %uKB, [%p:%p:%p], Used: %u, Free: %u [%u]", static_cast<unsigned>(kSize / (1024 / 4)), reinterpret_cast<const void *>(start), reinterpret_cast<const void *>(ptr), reinterpret_cast<const void *>(end), static_cast<unsigned>(kUsedBytes), static_cast<unsigned>(kFreeBytes), static_cast<unsigned>(kFreePct));
+        printf("Stack: Size %uKB, [%p:%p:%p], Used: %u, Free: %u [%u]", 
+			static_cast<unsigned>(kSize / (1024 / 4)), 
+			reinterpret_cast<const void*>(start), 
+			reinterpret_cast<const void*>(ptr), 
+			reinterpret_cast<const void*>(end),
+			static_cast<unsigned>(kUsedBytes), 
+			static_cast<unsigned>(kFreeBytes), 
+			static_cast<unsigned>(kFreePct));
 #else
-        printf("Stack: Size %uKB, Used: %u, Free: %u", static_cast<unsigned>(kSize / (1024 / 4)), static_cast<unsigned>(kUsedBytes), static_cast<unsigned>(kFreeBytes));
+        printf("Stack: Size %uKB, Used: %u, Free: %u", static_cast<unsigned>(kSize / (1024 / 4)), 
+			static_cast<unsigned>(kUsedBytes), 
+			static_cast<unsigned>(kFreeBytes));
 #endif
         printf("\x1b[39m\n");
     }
 }
 
 inline void Run() {
-	static uint32_t s_millis_previous;
+    static uint32_t s_millis_previous;
     const auto kMillis = timing::Millis();
     if (kMillis - s_millis_previous >= 1000U) {
         s_millis_previous = kMillis;

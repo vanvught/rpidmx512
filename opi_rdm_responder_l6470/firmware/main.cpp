@@ -39,7 +39,6 @@
 #include "firmware/firmwareversion.h"
 #include "software_version.h"
 #include "sparkfundmx.h"
-#include "common/utils/utils_enum.h"
 #include "configurationstore.h"
 #if !defined(NO_EMAC)
 #include "networkconst.h"
@@ -79,7 +78,7 @@ int main() // NOLINT
     pwmledparms.Load();
     pwmledparms.Set();
 
-    const auto kType = common::FromValue<tlc59711::Type>(ConfigStore::Instance().DmxLedGet(&common::store::DmxLed::type));
+    const auto kType = static_cast<tlc59711::Type>(ConfigStore::Instance().DmxLedGet(&common::store::DmxLed::type));
     const auto kIsLedTypeSet = kType != tlc59711::Type::kUndefined;
 
     char description[64];

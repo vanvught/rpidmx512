@@ -60,8 +60,8 @@ void L6470DmxMode5::InitSwitch()
 	const auto kFlags = ConfigStore::Instance().DmxL6470GetModeIndexed(motor_index_, &common::store::l6470dmx::Mode::flags);
 
 	if (common::IsFlagSet(kFlags, common::store::l6470dmx::mode::Flags::Flag::kUseSwitch)) {
-		const auto kAction = common::FromValue<TL6470Action>(ConfigStore::Instance().DmxL6470GetModeIndexed(motor_index_, &common::store::l6470dmx::Mode::switch_action));
-		const auto kDir = common::FromValue<TL6470Direction>(ConfigStore::Instance().DmxL6470GetModeIndexed(motor_index_, &common::store::l6470dmx::Mode::switch_dir));
+		const auto kAction = static_cast<TL6470Action>(ConfigStore::Instance().DmxL6470GetModeIndexed(motor_index_, &common::store::l6470dmx::Mode::switch_action));
+		const auto kDir = static_cast<TL6470Direction>(ConfigStore::Instance().DmxL6470GetModeIndexed(motor_index_, &common::store::l6470dmx::Mode::switch_dir));
 		const auto kStepsPerSec = ConfigStore::Instance().DmxL6470GetModeIndexed(motor_index_, &common::store::l6470dmx::Mode::switch_steps_per_sec);
 
 		l6470_->goUntil(kAction, kDir, kStepsPerSec);

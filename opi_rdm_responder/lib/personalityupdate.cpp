@@ -25,7 +25,6 @@
 
 #include <cstdint>
 
-#include "common/utils/utils_enum.h"
 #include "pixeltype.h"
 #include "rdmresponder.h"
 #include "pixeldmxconfiguration.h"
@@ -44,7 +43,7 @@ void RDMResponder::PersonalityUpdate(uint32_t personality) {
 
     const auto kType = static_cast<uint8_t>(personality - 1);
     auto& configuration = PixelDmxConfiguration::Get();
-    configuration.SetType(common::FromValue<pixel::LedType>(kType));
+    configuration.SetType(static_cast<pixel::LedType>(kType));
     configuration.Validate(1);
 
     dmxled_store::SaveType(kType);

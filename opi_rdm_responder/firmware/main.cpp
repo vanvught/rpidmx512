@@ -46,7 +46,6 @@
 #include "firmware/firmwareversion.h"
 #include "software_version.h"
 #include "is_config_mode.h"
-#include "common/utils/utils_enum.h"
 #include "configurationstore.h"
 
 namespace board {

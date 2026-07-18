@@ -28,6 +28,7 @@
 
 #include <cstdint>
 #include <cstring>
+#include <utility>
 
 #include "json/dmxnodeparams.h"
 #include "json/dmxnodeparamsconst.h"
@@ -39,7 +40,6 @@
 #include "configstore.h"
 #include "configurationstore.h"
 #include "common/utils/utils_flags.h"
-#include "common/utils/utils_enum.h"
 #include "firmware/debug/debug_debug.h"
 
 using common::store::dmxnode::Flags;
@@ -59,7 +59,7 @@ void DmxNodeParams::SetNodeName(const char* val, uint32_t len) {
 }
 
 void DmxNodeParams::SetFailsafe(const char* val, [[maybe_unused]] uint32_t len) {
-    store_dmxnode.fail_safe = common::ToValue(dmxnode::GetFailsafe(val));
+    store_dmxnode.fail_safe = std::to_underlying(dmxnode::GetFailsafe(val));
 }
 
 void DmxNodeParams::SetDisableMergeTimeout(const char* val, [[maybe_unused]] uint32_t len) {

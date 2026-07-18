@@ -32,7 +32,6 @@
 
 #if defined(WIDGET_HAVE_FLASHROM)
 #else
-#include "../lib-hal/ff14b/source/ff.h"
 #endif
 
 #define DEVICE_TYPE_ID_LENGTH 2 ///<

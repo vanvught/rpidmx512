@@ -32,7 +32,6 @@
 #include <cstring>
 #include <cassert>
 
-#include "common/utils/utils_enum.h"
 
 namespace ltc {
 enum class Source : uint8_t {
@@ -74,7 +73,7 @@ inline Source GetSourceType(const char* string) {
 
     for (const char (&source)[kSourceMaxNameLength] : kSource) {
         if (strcasecmp(string, source) == 0) {
-            return common::FromValue<Source>(index);
+            return static_cast<Source>(index);
         }
         ++index;
     }

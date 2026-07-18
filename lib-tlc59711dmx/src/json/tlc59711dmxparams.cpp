@@ -24,8 +24,8 @@
  */
 
 #include <cstdint>
+#include <utility>
 
-#include "common/utils/utils_enum.h"
 #include "json/tlc59711dmxparams.h"
 #include "json/dmxnodeparamsconst.h"
 #include "json/json_parser.h"
@@ -47,7 +47,7 @@ void Tlc59711DmxParams::SetType(const char* val, uint32_t len) {
     memcpy(type, val, len);
     type[len] = '\0';
 
-    store_dmxled.type = common::ToValue(tlc59711::GetType(type));
+    store_dmxled.type = std::to_underlying(tlc59711::GetType(type));
 }
 
 void Tlc59711DmxParams::SetCount(const char* val, uint32_t len) {
@@ -70,7 +70,7 @@ void Tlc59711DmxParams::Store(const char* buffer, uint32_t buffer_size) {
 void Tlc59711DmxParams::Set() {
     auto& tcl59711dmx = *TLC59711Dmx::Get();
 
-    tcl59711dmx.SetType(common::FromValue<tlc59711::Type>(store_dmxled.type));
+    tcl59711dmx.SetType(static_cast<tlc59711::Type>(store_dmxled.type));
     tcl59711dmx.SetCount(store_dmxled.count);
     tcl59711dmx.SetSpiSpeedHz(store_dmxled.spi_speed_hz);
     tcl59711dmx.SetDmxStartAddress(store_dmxled.dmx_start_address);

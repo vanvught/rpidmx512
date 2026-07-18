@@ -28,23 +28,21 @@
 #endif
 
 #include <cstdint>
+#include <utility>
 #include <cassert>
 
 #include "pixeldmxparamsrdm.h"
 #include "pixeldmxstore.h"
 #include "pixeltype.h"
-#include "common/utils/utils_enum.h"
 #include "pixeldmxconfiguration.h"
 #include "rdmdeviceresponder.h"
 #include "firmware/debug/debug_debug.h"
 
-void PixelDmxParamsRdm::SetDataImpl([[maybe_unused]] uint32_t port_index, const uint8_t* data, uint32_t length, [[maybe_unused]] bool do_update)
-{
+void PixelDmxParamsRdm::SetDataImpl([[maybe_unused]] uint32_t port_index, const uint8_t* data, uint32_t length, [[maybe_unused]] bool do_update) {
     DEBUG_PRINTF("port_index=%u, length=%u", port_index, length);
     assert(port_index == 0);
 
-    if (length < pixeldmx::paramsdmx::kDmxFootprint)
-    {
+    if (length < pixeldmx::paramsdmx::kDmxFootprint) {
         return;
     }
 
@@ -61,29 +59,25 @@ void PixelDmxParamsRdm::SetDataImpl([[maybe_unused]] uint32_t port_index, const 
 
     const auto kLastIndex = pixeldmx::paramsdmx::kDmxFootprint - 1U;
 
-    if (data[kLastIndex] == 0x00)
-    {
+    if (data[kLastIndex] == 0x00) {
         data_ = 0x00;
-    }
-    else
-    {
-        if ((data[kLastIndex] == 0xFF) && (data_ == 0x00))
-        {
+    } else {
+        if ((data[kLastIndex] == 0xFF) && (data_ == 0x00)) {
             DEBUG_PUTS("Program");
             data_ = 0xFF;
 
             auto slot_data = data[static_cast<uint32_t>(pixeldmx::paramsdmx::SlotsInfo::TYPE)];
-            uint8_t undefined = common::ToValue(pixel::LedType::kUndefined);
+            uint8_t undefined = std::to_underlying(pixel::LedType::kUndefined);
             const auto kType = slot_data < undefined ? slot_data : undefined;
             slot_data = data[static_cast<uint32_t>(pixeldmx::paramsdmx::SlotsInfo::MAP)];
-            undefined = common::ToValue(pixel::LedMap::kUndefined);
+            undefined = std::to_underlying(pixel::LedMap::kUndefined);
             const auto kMap = slot_data < undefined ? slot_data : undefined;
             const auto kCount = data[static_cast<uint32_t>(pixeldmx::paramsdmx::SlotsInfo::COUNT)];
             const auto kGroupingCount = data[static_cast<uint32_t>(pixeldmx::paramsdmx::SlotsInfo::GROUPING_COUNT)];
 
             auto& configuration = PixelDmxConfiguration::Get();
-            configuration.SetType(common::FromValue<pixel::LedType>(kType));
-            configuration.SetMap(common::FromValue<pixel::LedMap>(kMap));
+            configuration.SetType(static_cast<pixel::LedType>(kType));
+            configuration.SetMap(static_cast<pixel::LedMap>(kMap));
             configuration.SetCount(kCount);
             configuration.SetGroupingCount(kGroupingCount);
             configuration.Validate(1);
@@ -93,16 +87,15 @@ void PixelDmxParamsRdm::SetDataImpl([[maybe_unused]] uint32_t port_index, const 
             auto* personality = RDMDeviceResponder::Get()->GetPersonality(rdm::kRootDevice, 1);
             personality->SetDescription(description);
 
-            dmxled_store::SaveType(common::ToValue(configuration.GetType()));
-            dmxled_store::SaveMap(common::ToValue(configuration.GetMap()));
+            dmxled_store::SaveType(std::to_underlying(configuration.GetType()));
+            dmxled_store::SaveMap(std::to_underlying(configuration.GetMap()));
             dmxled_store::SaveCount(static_cast<uint16_t>(configuration.GetCount()));
             dmxled_store::SaveGroupingCount(static_cast<uint16_t>(configuration.GetGroupingCount()));
             dmxled_store::SaveTestPattern(data[static_cast<uint32_t>(pixeldmx::paramsdmx::SlotsInfo::TEST_PATTERN)]);
         }
     }
 
-    if ((data[kLastIndex] == 0x00) || (data[kLastIndex] == 0xFF))
-    {
+    if ((data[kLastIndex] == 0x00) || (data[kLastIndex] == 0xFF)) {
         pixeldmx::paramsdmx::Display(data);
     }
 }

@@ -2,7 +2,7 @@
  * @file dmxserialparams.cpp
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+ 
+ #include <utility>
 
 #include "json/dmxserialparams.h"
 #include "json/dmxserialparamsconst.h"
@@ -36,7 +38,7 @@ DmxSerialParams::DmxSerialParams() {
 }
 
 void DmxSerialParams::SetType(const char* val, [[maybe_unused]] uint32_t len) {
-    store_dmxserial.type = common::ToValue(serial::GetType(val));
+    store_dmxserial.type = std::to_underlying(serial::GetType(val));
 }
 
 void DmxSerialParams::Store(const char* buffer, uint32_t buffer_size) {
@@ -53,7 +55,7 @@ void DmxSerialParams::Set() {
 void DmxSerialParams::Dump() {
     printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, json::DmxSerialParamsConst::kFileName);
 
-    printf(" %s=%s [%d\n", DmxSerialParamsConst::kType.name, serial::GetType(common::FromValue<serial::Type>(store_dmxserial.type)), static_cast<unsigned>(store_dmxserial.type));
+    printf(" %s=%s [%d\n", DmxSerialParamsConst::kType.name, serial::GetType(static_cast<serial::Type>(store_dmxserial.type)), static_cast<unsigned>(store_dmxserial.type));
     // UART
     printf(" %s=%u\n", DmxSerialParamsConst::kUartBaud.name, static_cast<unsigned>(store_dmxserial.baud));
     printf(" %s=%u\n", DmxSerialParamsConst::kUartBits.name, static_cast<unsigned>(store_dmxserial.bits));
@@ -64,6 +66,6 @@ void DmxSerialParams::Dump() {
     printf(" %s=%u\n", DmxSerialParamsConst::kSpiMode.name, static_cast<unsigned>(store_dmxserial.spi_mode));
     // I2C
     printf(" %s=%.2x\n", DmxSerialParamsConst::kI2CAddress.name, static_cast<unsigned>(store_dmxserial.i2c_address));
-    printf(" %s=%s [%u]\n", DmxSerialParamsConst::kI2CSpeedMode.name, serial::i2c::GetSpeedMode(common::FromValue<serial::i2c::Speed>(store_dmxserial.i2c_speed_mode)), static_cast<unsigned>(store_dmxserial.i2c_speed_mode));
+    printf(" %s=%s [%u]\n", DmxSerialParamsConst::kI2CSpeedMode.name, serial::i2c::GetSpeedMode(static_cast<serial::i2c::Speed>(store_dmxserial.i2c_speed_mode)), static_cast<unsigned>(store_dmxserial.i2c_speed_mode));
 }
 } // namespace json

@@ -37,7 +37,6 @@
 #include "configurationstore.h"
 #include "common/utils/utils_flags.h"
 #include "common/utils/utils_array.h"
-#include "common/utils/utils_enum.h"
 #include "firmware/debug/debug_debug.h"
 #include "displayudf.h"
 
@@ -117,9 +116,9 @@ void DisplayUdfParams::SetAndShow() {
     for (uint8_t i = 0; i < common::ArraySize(DisplayUdfParamsConst::kLabels); ++i) {
         const auto kLabelIndex = store_displayudf.label_index[i];
         if (kLabelIndex != 0) {
-            displayudf.Set(kLabelIndex, common::FromValue<displayudf::Labels>(i));
+            displayudf.Set(kLabelIndex, static_cast<displayudf::Labels>(i));
         } else {
-            displayudf.Set(255, common::FromValue<displayudf::Labels>(i));
+            displayudf.Set(255, static_cast<displayudf::Labels>(i));
         }
     }
 

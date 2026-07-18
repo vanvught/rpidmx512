@@ -2,7 +2,7 @@
  * @file json_config_ltc.cpp
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,7 @@
  */
 
 #include <cstdint>
+#include <utility>
 
 #include "json/json_format_helpers.h"
 #include "json/json_helpers.h"
@@ -32,22 +33,18 @@
 #include "ltcdisplayrgb.h"
 #include "configstore.h"
 #include "configurationstore.h"
-#include "common/utils/utils_enum.h"
 #include "common/utils/utils_flags.h"
 #include "ip4/ip4_helpers.h"
 #include "ltc.h"
 
 using common::store::ltc::Flags;
 
-namespace json::config
-{
-template <ltc::Destination::Output output> bool IsDisabledOutputSet(uint8_t disabled_outputs)
-{
-    return (disabled_outputs & common::ToValue(output)) == common::ToValue(output);
+namespace json::config {
+template <ltc::Destination::Output output> bool IsDisabledOutputSet(uint8_t disabled_outputs) {
+    return (disabled_outputs & std::to_underlying(output)) == std::to_underlying(output);
 }
 
-uint32_t GetLtc(char* buffer, uint32_t length)
-{
+uint32_t GetLtc(char* buffer, uint32_t length) {
     const auto kFlags = ConfigStore::Instance().LtcGet(&common::store::Ltc::flags);
     // source
     const auto kSource = ConfigStore::Instance().LtcGet(&common::store::Ltc::source);
@@ -78,67 +75,66 @@ uint32_t GetLtc(char* buffer, uint32_t length)
     const auto kOscPort = ConfigStore::Instance().LtcGet(&common::store::Ltc::osc_port);
     //
     const auto kRgbLedType = ConfigStore::Instance().LtcGet(&common::store::Ltc::rgb_led_type);
-    
+
     return json::helpers::Serialize(buffer, length, [&](JsonDoc& doc) {
-	    // source
-	    doc[LtcParamsConst::kSource.name] = ltc::GetSourceType(common::FromValue<ltc::Source>(kSource));
-	    // Disabled outputs
-	    doc[LtcParamsConst::kDisableDisplayOled.name] = IsDisabledOutputSet<ltc::Destination::Output::DISPLAY_OLED>(kDisabledOutputs);
-	    doc[LtcParamsConst::kDisableMax7219.name] = IsDisabledOutputSet<ltc::Destination::Output::MAX7219>(kDisabledOutputs);
-	    doc[LtcParamsConst::kDisableLtc.name] = IsDisabledOutputSet<ltc::Destination::Output::LTC>(kDisabledOutputs);
-	    doc[LtcParamsConst::kDisableMidi.name] = IsDisabledOutputSet<ltc::Destination::Output::MIDI>(kDisabledOutputs);
-	    doc[LtcParamsConst::kDisableArtnet.name] = IsDisabledOutputSet<ltc::Destination::Output::ARTNET>(kDisabledOutputs);
-	    doc[LtcParamsConst::kDisableRtpmidi.name] = IsDisabledOutputSet<ltc::Destination::Output::RTPMIDI>(kDisabledOutputs);
-	    doc[LtcParamsConst::kDisableEtc.name] = IsDisabledOutputSet<ltc::Destination::Output::ETC>(kDisabledOutputs);
-	    // System clock / RTC
-	    doc[LtcParamsConst::kShowSystime.name] = common::IsFlagSet(kFlags, Flags::Flag::kShowSystime);
-	    doc[LtcParamsConst::kDisableTimesync.name] = common::IsFlagSet(kFlags, Flags::Flag::kTimeSyncDisabled);
-	    // source=systime
-	    doc[LtcParamsConst::kAutoStart.name] = common::IsFlagSet(kFlags, Flags::Flag::kAutoStart);
-	    doc[LtcParamsConst::kGpsStart.name] = common::IsFlagSet(kFlags, Flags::Flag::kGpsStart);
-	    int32_t hours = 0;
-    	uint32_t minutes = 0;
-    	utc::SplitOffset(kUtcOffset, hours, minutes);
-    	char offset[format::kOffsetBufferSize];
-	    doc[LtcParamsConst::kUtcOffset.name] = format::UtcOffset(hours, minutes, offset);
-	    // source=internal
-	    doc[LtcParamsConst::kFps.name] = kFps;
-	    doc[LtcParamsConst::kStartFrame.name] = kStartFrame;
-	    doc[LtcParamsConst::kStartSecond.name] = kStartSecond;
-	    doc[LtcParamsConst::kStartMinute.name] = kStartMinute;
-	    doc[LtcParamsConst::kStartHour.name] = kStartHour;
-	    doc[LtcParamsConst::kIgnoreStart.name] = common::IsFlagSet(kFlags, Flags::Flag::kIgnoreStart);
-	    doc[LtcParamsConst::kStopFrame.name] = kStopFrame;
-	    doc[LtcParamsConst::kStopSecond.name] = kStopSecond;
-	    doc[LtcParamsConst::kStopMinute.name] = kStopMinute;
-	    doc[LtcParamsConst::kStopHour.name] = kStopHour;
-	    doc[LtcParamsConst::kIgnoreStop.name] = common::IsFlagSet(kFlags, Flags::Flag::kIgnoreStop);
-	    doc[LtcParamsConst::kAltFunction.name] = common::IsFlagSet(kFlags, Flags::Flag::kIsAltFuntion);
-	    doc[LtcParamsConst::kSkipSeconds.name] = kSkipSeconds;
-	    doc[LtcParamsConst::kSkipFree.name] = common::IsFlagSet(kFlags, Flags::Flag::kSkipFree);
-	    // Art-Net
-	    char ip[net::kIpBufferSize];
-	    doc[LtcParamsConst::kTimecodeIp.name] = net::FormatIp(kTimecodeIp, ip);
-	    // LTC output
-	    doc[LtcParamsConst::kLtcVolume.name] = kVolume;
-	    // NTP
-	    doc[LtcParamsConst::kNtpEnable.name] = common::IsFlagSet(kFlags, Flags::Flag::kNtpEnable);
-	    doc[LtcParamsConst::kNtpYear.name] = kNtpYear;
-	    doc[LtcParamsConst::kNtpMonth.name] = kNtpMonth;
-	    doc[LtcParamsConst::kNtpDay.name] = kNtpDay;
-	    // OSC
-	    doc[LtcParamsConst::kOscEnable.name] = common::IsFlagSet(kFlags, Flags::Flag::kOscEnabled);
-	    doc[LtcParamsConst::kOscPort.name] = kOscPort;
-	    // WS28xx Display
-	    doc[LtcParamsConst::kWS28xxEnable.name] = (kRgbLedType == common::ToValue(ltc::display::rgb::Type::kWS28Xx));
-#if !defined (CONFIG_LTC_DISABLE_RGB_PANEL)
-	    doc[LtcParamsConst::kRgbpanelEnable.name] = (kRgbLedType == common::ToValue(ltc::display::rgb::Type::kRgbpanel));
+        // source
+        doc[LtcParamsConst::kSource.name] = ltc::GetSourceType(static_cast<ltc::Source>(kSource));
+        // Disabled outputs
+        doc[LtcParamsConst::kDisableDisplayOled.name] = IsDisabledOutputSet<ltc::Destination::Output::DISPLAY_OLED>(kDisabledOutputs);
+        doc[LtcParamsConst::kDisableMax7219.name] = IsDisabledOutputSet<ltc::Destination::Output::MAX7219>(kDisabledOutputs);
+        doc[LtcParamsConst::kDisableLtc.name] = IsDisabledOutputSet<ltc::Destination::Output::LTC>(kDisabledOutputs);
+        doc[LtcParamsConst::kDisableMidi.name] = IsDisabledOutputSet<ltc::Destination::Output::MIDI>(kDisabledOutputs);
+        doc[LtcParamsConst::kDisableArtnet.name] = IsDisabledOutputSet<ltc::Destination::Output::ARTNET>(kDisabledOutputs);
+        doc[LtcParamsConst::kDisableRtpmidi.name] = IsDisabledOutputSet<ltc::Destination::Output::RTPMIDI>(kDisabledOutputs);
+        doc[LtcParamsConst::kDisableEtc.name] = IsDisabledOutputSet<ltc::Destination::Output::ETC>(kDisabledOutputs);
+        // System clock / RTC
+        doc[LtcParamsConst::kShowSystime.name] = common::IsFlagSet(kFlags, Flags::Flag::kShowSystime);
+        doc[LtcParamsConst::kDisableTimesync.name] = common::IsFlagSet(kFlags, Flags::Flag::kTimeSyncDisabled);
+        // source=systime
+        doc[LtcParamsConst::kAutoStart.name] = common::IsFlagSet(kFlags, Flags::Flag::kAutoStart);
+        doc[LtcParamsConst::kGpsStart.name] = common::IsFlagSet(kFlags, Flags::Flag::kGpsStart);
+        int32_t hours = 0;
+        uint32_t minutes = 0;
+        utc::SplitOffset(kUtcOffset, hours, minutes);
+        char offset[format::kOffsetBufferSize];
+        doc[LtcParamsConst::kUtcOffset.name] = format::UtcOffset(hours, minutes, offset);
+        // source=internal
+        doc[LtcParamsConst::kFps.name] = kFps;
+        doc[LtcParamsConst::kStartFrame.name] = kStartFrame;
+        doc[LtcParamsConst::kStartSecond.name] = kStartSecond;
+        doc[LtcParamsConst::kStartMinute.name] = kStartMinute;
+        doc[LtcParamsConst::kStartHour.name] = kStartHour;
+        doc[LtcParamsConst::kIgnoreStart.name] = common::IsFlagSet(kFlags, Flags::Flag::kIgnoreStart);
+        doc[LtcParamsConst::kStopFrame.name] = kStopFrame;
+        doc[LtcParamsConst::kStopSecond.name] = kStopSecond;
+        doc[LtcParamsConst::kStopMinute.name] = kStopMinute;
+        doc[LtcParamsConst::kStopHour.name] = kStopHour;
+        doc[LtcParamsConst::kIgnoreStop.name] = common::IsFlagSet(kFlags, Flags::Flag::kIgnoreStop);
+        doc[LtcParamsConst::kAltFunction.name] = common::IsFlagSet(kFlags, Flags::Flag::kIsAltFuntion);
+        doc[LtcParamsConst::kSkipSeconds.name] = kSkipSeconds;
+        doc[LtcParamsConst::kSkipFree.name] = common::IsFlagSet(kFlags, Flags::Flag::kSkipFree);
+        // Art-Net
+        char ip[net::kIpBufferSize];
+        doc[LtcParamsConst::kTimecodeIp.name] = net::FormatIp(kTimecodeIp, ip);
+        // LTC output
+        doc[LtcParamsConst::kLtcVolume.name] = kVolume;
+        // NTP
+        doc[LtcParamsConst::kNtpEnable.name] = common::IsFlagSet(kFlags, Flags::Flag::kNtpEnable);
+        doc[LtcParamsConst::kNtpYear.name] = kNtpYear;
+        doc[LtcParamsConst::kNtpMonth.name] = kNtpMonth;
+        doc[LtcParamsConst::kNtpDay.name] = kNtpDay;
+        // OSC
+        doc[LtcParamsConst::kOscEnable.name] = common::IsFlagSet(kFlags, Flags::Flag::kOscEnabled);
+        doc[LtcParamsConst::kOscPort.name] = kOscPort;
+        // WS28xx Display
+        doc[LtcParamsConst::kWS28xxEnable.name] = (kRgbLedType == std::to_underlying(ltc::display::rgb::Type::kWS28Xx));
+#if !defined(CONFIG_LTC_DISABLE_RGB_PANEL)
+        doc[LtcParamsConst::kRgbpanelEnable.name] = (kRgbLedType == std::to_underlying(ltc::display::rgb::Type::kRgbpanel));
 #endif
     });
 }
 
-void SetLtc(const char* buffer, uint32_t buffer_size)
-{
+void SetLtc(const char* buffer, uint32_t buffer_size) {
     ::json::LtcParams ltc_params;
     ltc_params.Store(buffer, buffer_size);
 }

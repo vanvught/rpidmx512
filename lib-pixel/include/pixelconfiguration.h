@@ -28,10 +28,10 @@
 
 #include <cstdint>
 #include <cstdio>
+#include <utility>
 #include <cassert>
 
 #include "pixeltype.h"
-#include "common/utils/utils_enum.h"
 #if defined(CONFIG_PIXELDMX_ENABLE_GAMMATABLE)
 #include "gamma/gamma_tables.h"
 #endif
@@ -122,7 +122,7 @@ class PixelConfiguration {
 
         const auto& info = GetTypeInfo(type_);
 
-        leds_per_pixel_ = common::ToValue(info.led_count);
+        leds_per_pixel_ = std::to_underlying(info.led_count);
         is_rtz_protocol_ = info.protocol_type == pixel::ProtocolType::kRtz;
 
         if (map_ == pixel::LedMap::kUndefined) {

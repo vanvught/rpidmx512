@@ -28,8 +28,8 @@
 #endif
 
 #include <cstdint>
+#include <utility>
 
-#include "common/utils/utils_enum.h"
 #include "rgbpanel.h"
 #include "json/rgbpanelparams.h"
 #include "json/rgbpanelparamsconst.h"
@@ -62,7 +62,7 @@ void RgbPanelParams::SetChain(const char* val, uint32_t len)
 
 void RgbPanelParams::SetType(const char* val, [[maybe_unused]] uint32_t len)
 {
-    store_rgbpanel.type = common::ToValue(rgbpanel::GetType(val));
+    store_rgbpanel.type = std::to_underlying(rgbpanel::GetType(val));
 }
 
 void RgbPanelParams::Store(const char* buffer, uint32_t buffer_size)
@@ -84,7 +84,7 @@ void RgbPanelParams::Dump()
     printf(" %s=%d\n", RgbPanelParamsConst::kCols.name, store_rgbpanel.cols);
     printf(" %s=%d\n", RgbPanelParamsConst::kRows.name, store_rgbpanel.rows);
     printf(" %s=%d\n", RgbPanelParamsConst::kChain.name, store_rgbpanel.chain);
-    printf(" %s=%s [%d]]\n", RgbPanelParamsConst::kType.name, rgbpanel::GetType(common::FromValue<rgbpanel::Types>(store_rgbpanel.type)) , store_rgbpanel.type);
+    printf(" %s=%s [%d]]\n", RgbPanelParamsConst::kType.name, rgbpanel::GetType(static_cast<rgbpanel::Types>(store_rgbpanel.type)) , store_rgbpanel.type);
 
 }
 } // namespace json

@@ -26,6 +26,7 @@
 #undef NDEBUG
 
 #include <cstdint>
+#include <utility>
 
 #include "json/ltcparams.h"
 #include "json/ltcparamsconst.h"
@@ -35,7 +36,6 @@
 #include "configstore.h"
 #include "configurationstore.h"
 #include "ltc.h"
-#include "common/utils/utils_enum.h"
 #include "common/utils/utils_flags.h"
 #include "firmware/debug/debug_debug.h"
 #include "network_config.h"
@@ -56,11 +56,11 @@ void LtcParams::SetSource(const char* val, uint32_t len) {
     memcpy(source, val, len);
     source[len] = '\0';
 
-    store_ltc.source = common::ToValue(ltc::GetSourceType(source));
+    store_ltc.source = std::to_underlying(ltc::GetSourceType(source));
 }
 
 template <ltc::Destination::Output kOutput> static uint8_t HandleDisabledOutput(uint8_t disabled_outputs, char val) {
-    constexpr auto kMask = static_cast<uint8_t>(common::ToValue(kOutput));
+    constexpr auto kMask = static_cast<uint8_t>(std::to_underlying(kOutput));
 
     if (val == '0') {
         disabled_outputs &= static_cast<uint8_t>(~kMask);
@@ -163,7 +163,7 @@ void LtcParams::SetFps(const char* val, uint32_t len) {
     }
 
     const auto kFps = json::ParseValue<uint8_t>(val, 2);
-    store_ltc.fps = common::ToValue(ltc::GetType(kFps));
+    store_ltc.fps = std::to_underlying(ltc::GetType(kFps));
 }
 
 void LtcParams::SetStartFrame(const char* val, uint32_t len) {
@@ -326,7 +326,7 @@ void LtcParams::Set(struct ltc::TimeCode* start_time_code, struct ltc::TimeCode*
     start_time_code->seconds = store_ltc.start_second;
     start_time_code->minutes = store_ltc.start_minute;
     start_time_code->hours = store_ltc.start_hour;
-    start_time_code->type = common::ToValue(ltc::g_Type);
+    start_time_code->type = std::to_underlying(ltc::g_Type);
 
     assert(stop_time_code != nullptr);
 
@@ -335,7 +335,7 @@ void LtcParams::Set(struct ltc::TimeCode* start_time_code, struct ltc::TimeCode*
     stop_time_code->minutes = store_ltc.stop_minute;
     stop_time_code->hours = store_ltc.stop_hour;
 
-    stop_time_code->type = common::ToValue(ltc::g_Type);
+    stop_time_code->type = std::to_underlying(ltc::g_Type);
 
 #ifndef NDEBUG
     Dump();
@@ -344,6 +344,6 @@ void LtcParams::Set(struct ltc::TimeCode* start_time_code, struct ltc::TimeCode*
 
 void LtcParams::Dump() {
     printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, LtcParamsConst::kFileName);
-    printf(" %s=%s\n", LtcParamsConst::kSource.name, ltc::GetSourceType(common::FromValue<ltc::Source>(store_ltc.source)));
+    printf(" %s=%s\n", LtcParamsConst::kSource.name, ltc::GetSourceType(static_cast<ltc::Source>(store_ltc.source)));
 }
 } // namespace json

@@ -2,7 +2,7 @@
  * @file ltcetcparams.cpp
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -25,9 +25,9 @@
 
 #include <cstdint>
 #include <cstring>
+#include <utility>
 
 #include "json/ltcetcparams.h"
-#include "common/utils/utils_enum.h"
 #include "json/ltcetcparamsconst.h"
 #include "json/json_parser.h"
 #include "json/json_parsehelper.h"
@@ -71,7 +71,7 @@ void LtcEtcParams::SetUdpTerminator(const char* val, uint32_t len)
         memcpy(a, val, len);
         a[len] = '\0';
 
-        store_ltcetc.udp_terminator = common::ToValue(ltcetc::GetUdpTerminator(a));
+        store_ltcetc.udp_terminator = std::to_underlying(ltcetc::GetUdpTerminator(a));
     }
 }
 
@@ -94,7 +94,7 @@ void LtcEtcParams::Set()
     etc->SetDestinationPort(store_ltcetc.destination_port);
     etc->SetSourceMulticastIp(store_ltcetc.source_multicast_ip);
     etc->SetSourcePort(store_ltcetc.source_port);
-    etc->SetUdpTerminator(common::FromValue<ltcetc::UdpTerminator>(store_ltcetc.udp_terminator));
+    etc->SetUdpTerminator(static_cast<ltcetc::UdpTerminator>(store_ltcetc.udp_terminator));
 
 #ifndef NDEBUG
     etc->Print();

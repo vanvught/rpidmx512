@@ -36,7 +36,6 @@
 #include "pixeldmxstore.h"
 #include "firmware/debug/debug_debug.h"
 #include "pixeldmxconfiguration.h"
-#include "common/utils/utils_enum.h"
 #include "pixeloutput.h"
 
 #if !defined(OUTPUT_DMX_PIXEL)
@@ -48,23 +47,19 @@ using E120_MANUFACTURER_PIXEL_COUNT = rdmhandler::ManufacturerPid<0x8501>;
 using E120_MANUFACTURER_PIXEL_GROUPING_COUNT = rdmhandler::ManufacturerPid<0x8502>;
 using E120_MANUFACTURER_PIXEL_MAP = rdmhandler::ManufacturerPid<0x8503>;
 
-struct PixelType
-{
+struct PixelType {
     static constexpr char kDescription[] = "Pixel type";
 };
 
-struct PixelCount
-{
+struct PixelCount {
     static constexpr char kDescription[] = "Pixel count";
 };
 
-struct PixelGroupingCount
-{
+struct PixelGroupingCount {
     static constexpr char kDescription[] = "Pixel grouping count";
 };
 
-struct PixelMap
-{
+struct PixelMap {
     static constexpr char kDescription[] = "Pixel map";
 };
 
@@ -80,24 +75,22 @@ const rdmhandler::ParameterDescription RDMHandler::PARAMETER_DESCRIPTIONS[] = {
 #else
      E120_CC_GET,
 #endif
-     0, E120_UNITS_NONE, E120_PREFIX_NONE, 0, 0, 0, rdmhandler::Description<PixelType, sizeof(PixelType::kDescription)>::kValue,
-     RDMHandler::PdlParameterDescription(sizeof(PixelType::kDescription))},
+     0, E120_UNITS_NONE, E120_PREFIX_NONE, 0, 0, 0, rdmhandler::Description<PixelType, sizeof(PixelType::kDescription)>::kValue, RDMHandler::PdlParameterDescription(sizeof(PixelType::kDescription))},
     {E120_MANUFACTURER_PIXEL_COUNT::kCode, 2, E120_DS_UNSIGNED_WORD,
 #if defined(CONFIG_RDM_MANUFACTURER_PIDS_SET)
      E120_CC_GET_SET,
 #else
      E120_CC_GET,
 #endif
-     0, E120_UNITS_NONE, E120_PREFIX_NONE, 0, __builtin_bswap32(pixel::defaults::kCount), __builtin_bswap32(pixel::max::ledcount::kRgb),
-     rdmhandler::Description<PixelCount, sizeof(PixelCount::kDescription)>::kValue, RDMHandler::PdlParameterDescription(sizeof(PixelCount::kDescription))},
+     0, E120_UNITS_NONE, E120_PREFIX_NONE, 0, __builtin_bswap32(pixel::defaults::kCount), __builtin_bswap32(pixel::max::ledcount::kRgb), rdmhandler::Description<PixelCount, sizeof(PixelCount::kDescription)>::kValue,
+     RDMHandler::PdlParameterDescription(sizeof(PixelCount::kDescription))},
     {E120_MANUFACTURER_PIXEL_GROUPING_COUNT::kCode, 2, E120_DS_UNSIGNED_WORD,
 #if defined(CONFIG_RDM_MANUFACTURER_PIDS_SET)
      E120_CC_GET_SET,
 #else
      E120_CC_GET,
 #endif
-     0, E120_UNITS_NONE, E120_PREFIX_NONE, 0, __builtin_bswap32(pixel::defaults::kCount), __builtin_bswap32(pixel::max::ledcount::kRgb),
-     rdmhandler::Description<PixelGroupingCount, sizeof(PixelGroupingCount::kDescription)>::kValue,
+     0, E120_UNITS_NONE, E120_PREFIX_NONE, 0, __builtin_bswap32(pixel::defaults::kCount), __builtin_bswap32(pixel::max::ledcount::kRgb), rdmhandler::Description<PixelGroupingCount, sizeof(PixelGroupingCount::kDescription)>::kValue,
      RDMHandler::PdlParameterDescription(sizeof(PixelGroupingCount::kDescription))},
     {E120_MANUFACTURER_PIXEL_MAP::kCode, rdmhandler::kDeviceDescriptionMaxLength, E120_DS_ASCII,
 #if defined(CONFIG_RDM_MANUFACTURER_PIDS_SET)
@@ -105,49 +98,40 @@ const rdmhandler::ParameterDescription RDMHandler::PARAMETER_DESCRIPTIONS[] = {
 #else
      E120_CC_GET,
 #endif
-     0, E120_UNITS_NONE, E120_PREFIX_NONE, 0, 0, 0, rdmhandler::Description<PixelMap, sizeof(PixelMap::kDescription)>::kValue,
-     RDMHandler::PdlParameterDescription(sizeof(PixelMap::kDescription))}};
+     0, E120_UNITS_NONE, E120_PREFIX_NONE, 0, 0, 0, rdmhandler::Description<PixelMap, sizeof(PixelMap::kDescription)>::kValue, RDMHandler::PdlParameterDescription(sizeof(PixelMap::kDescription))}};
 
-uint32_t RDMHandler::GetParameterDescriptionCount() const
-{
+uint32_t RDMHandler::GetParameterDescriptionCount() const {
     return sizeof(RDMHandler::PARAMETER_DESCRIPTIONS) / sizeof(RDMHandler::PARAMETER_DESCRIPTIONS[0]);
 }
 
-namespace rdmhandler
-{
-bool HandleManufactureerPidGet(uint16_t pid, [[maybe_unused]] const ManufacturerParamData* in, ManufacturerParamData* out, uint16_t& reason)
-{
+namespace rdmhandler {
+bool HandleManufactureerPidGet(uint16_t pid, [[maybe_unused]] const ManufacturerParamData* in, ManufacturerParamData* out, uint16_t& reason) {
     DEBUG_PRINTF("pid=%x", __builtin_bswap16(pid));
 
     auto& pixeldmx_configuration = PixelDmxConfiguration::Get();
 
-    switch (pid)
-    {
-        case E120_MANUFACTURER_PIXEL_TYPE::kCode:
-        {
+    switch (pid) {
+        case E120_MANUFACTURER_PIXEL_TYPE::kCode: {
             const auto* string = ::pixel::GetTypeName(pixeldmx_configuration.GetType());
             out->nPdl = static_cast<uint8_t>(strlen(string));
             memcpy(out->pParamData, string, out->nPdl);
             return true;
         }
-        case E120_MANUFACTURER_PIXEL_COUNT::kCode:
-        {
+        case E120_MANUFACTURER_PIXEL_COUNT::kCode: {
             const auto kCount = pixeldmx_configuration.GetCount();
             out->nPdl = 2;
             out->pParamData[0] = static_cast<uint8_t>(kCount >> 8);
             out->pParamData[1] = static_cast<uint8_t>(kCount);
             return true;
         }
-        case E120_MANUFACTURER_PIXEL_GROUPING_COUNT::kCode:
-        {
+        case E120_MANUFACTURER_PIXEL_GROUPING_COUNT::kCode: {
             const auto kGrouingCount = pixeldmx_configuration.GetGroupingCount();
             out->nPdl = 2;
             out->pParamData[0] = static_cast<uint8_t>(kGrouingCount >> 8);
             out->pParamData[1] = static_cast<uint8_t>(kGrouingCount);
             return true;
         }
-        case E120_MANUFACTURER_PIXEL_MAP::kCode:
-        {
+        case E120_MANUFACTURER_PIXEL_MAP::kCode: {
             const auto* string = ::pixel::GetMapName(pixeldmx_configuration.GetMap());
             out->nPdl = static_cast<uint8_t>(strlen(string));
             memcpy(out->pParamData, string, out->nPdl);
@@ -162,28 +146,21 @@ bool HandleManufactureerPidGet(uint16_t pid, [[maybe_unused]] const Manufacturer
 }
 
 #if defined(CONFIG_RDM_MANUFACTURER_PIDS_SET)
-bool HandleManufactureerPidSet(bool is_broadcast, uint16_t pid, const ParameterDescription& parameter_description, const ManufacturerParamData* in,
-                               [[maybe_unused]] ManufacturerParamData* out, uint16_t& reason)
-{
+bool HandleManufactureerPidSet(bool is_broadcast, uint16_t pid, const ParameterDescription& parameter_description, const ManufacturerParamData* in, [[maybe_unused]] ManufacturerParamData* out, uint16_t& reason) {
     DEBUG_PRINTF("pid=%x", __builtin_bswap16(pid));
 
-    if (is_broadcast)
-    {
+    if (is_broadcast) {
         return false;
     }
 
     auto& pixeldmx_configuration = PixelDmxConfiguration::Get();
 
-    switch (pid)
-    {
-        case E120_MANUFACTURER_PIXEL_COUNT::kCode:
-        {
-            if (in->nPdl == 2)
-            {
+    switch (pid) {
+        case E120_MANUFACTURER_PIXEL_COUNT::kCode: {
+            if (in->nPdl == 2) {
                 const uint16_t kCount = in->pParamData[1] | in->pParamData[0] << 8;
 
-                if ((kCount < parameter_description.min_value) && (kCount > parameter_description.max_value))
-                {
+                if ((kCount < parameter_description.min_value) && (kCount > parameter_description.max_value)) {
                     reason = E120_NR_DATA_OUT_OF_RANGE;
                     return false;
                 }
@@ -197,14 +174,11 @@ bool HandleManufactureerPidSet(bool is_broadcast, uint16_t pid, const ParameterD
             reason = E120_NR_FORMAT_ERROR;
             return false;
         }
-        case E120_MANUFACTURER_PIXEL_GROUPING_COUNT::kCode:
-        {
-            if (in->nPdl == 2)
-            {
+        case E120_MANUFACTURER_PIXEL_GROUPING_COUNT::kCode: {
+            if (in->nPdl == 2) {
                 const uint16_t kGrouingCount = in->pParamData[1] | in->pParamData[0] << 8;
 
-                if ((kGrouingCount < parameter_description.min_value) && (kGrouingCount > parameter_description.max_value))
-                {
+                if ((kGrouingCount < parameter_description.min_value) && (kGrouingCount > parameter_description.max_value)) {
                     reason = E120_NR_DATA_OUT_OF_RANGE;
                     return false;
                 }
@@ -218,20 +192,17 @@ bool HandleManufactureerPidSet(bool is_broadcast, uint16_t pid, const ParameterD
             reason = E120_NR_FORMAT_ERROR;
             return false;
         }
-        case E120_MANUFACTURER_PIXEL_MAP::kCode:
-        {
-            if (in->nPdl == 3)
-            {
+        case E120_MANUFACTURER_PIXEL_MAP::kCode: {
+            if (in->nPdl == 3) {
                 const auto kMap = ::pixel::GetMapByName(reinterpret_cast<const char*>(in->pParamData));
 
-                if (kMap == pixel::LedMap::kUndefined)
-                {
+                if (kMap == pixel::LedMap::kUndefined) {
                     reason = E120_NR_DATA_OUT_OF_RANGE;
                     return false;
                 }
 
                 pixeldmx_configuration.SetMap(kMap);
-                dmxled_store::SaveMap(common::ToValue(kMap));
+                dmxled_store::SaveMap(std::to_underlying(kMap));
                 PixelOutputType::Get()->ApplyConfiguration();
                 return true;
             }

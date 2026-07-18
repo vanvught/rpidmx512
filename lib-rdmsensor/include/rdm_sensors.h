@@ -30,7 +30,6 @@
 #include <cstring>
 #include <cassert>
 
-#include "common/utils/utils_enum.h"
 #include "json/rdmsensorsparams.h"
 
 namespace rdm::sensors {
@@ -63,7 +62,7 @@ inline Types GetType(const char* string) {
 
     {
         if (strcasecmp(string, k[i].GetName()) == 0) {
-            return common::FromValue<Types>(i);
+            return static_cast<Types>(i);
         }
     }
 

@@ -30,7 +30,6 @@
 #include <cstdint>
 #include <cstring>
 
-#include "common/utils/utils_enum.h"
 #include "spi.h"
 #include "i2c.h"
 
@@ -157,7 +156,7 @@ class Serial {
     uint32_t GetUartBits() const { return uart_configuration_.bits; }
 
     void SetUartParity(serial::uart::Parity parity = serial::uart::Parity::kNone);
-    serial::uart::Parity GetUartParity() const { return common::FromValue<serial::uart::Parity>(uart_configuration_.parity); }
+    serial::uart::Parity GetUartParity() const { return static_cast<serial::uart::Parity>(uart_configuration_.parity); }
 
     void SetUartStopBits(uint32_t stop_bits);
     uint32_t GetUartStopBits() const { return uart_configuration_.stop_bits; }

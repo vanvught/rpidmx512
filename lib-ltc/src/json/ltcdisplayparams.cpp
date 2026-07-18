@@ -23,12 +23,10 @@
 * THE SOFTWARE.
 */
 
-#undef NDEBUG
-
 #include <cstdint>
+#include <utility>
 
 #include "json/ltcdisplayparams.h"
-#include "common/utils/utils_enum.h"
 #include "json/ltcdisplayparamsconst.h"
 #include "json/dmxledparamsconst.h"
 #include "json/json_parser.h"
@@ -58,7 +56,7 @@ void LtcDisplayParams::SetRotaryFullstep(const char* val, uint32_t len) {
 }
 
 void LtcDisplayParams::SetMaX7219Type(const char* val, uint32_t len) {
-    store_ltcdisplay.max7219_type = common::ToValue(LtcDisplayMax7219::Get()->GetType(val, len));
+    store_ltcdisplay.max7219_type = std::to_underlying(LtcDisplayMax7219::Get()->GetType(val, len));
 }
 
 void LtcDisplayParams::SetMaX7219Intensity(const char* val, uint32_t len) {
@@ -70,12 +68,12 @@ void LtcDisplayParams::SetMaX7219Intensity(const char* val, uint32_t len) {
 void LtcDisplayParams::SetPixelType(const char* val, uint32_t len) {
     if (len == 8) {
         if (memcmp(val, "7segment", 8) == 0) {
-            store_ltcdisplay.ws28xx_type = common::ToValue(ltc::display::rgb::WS28xxType::SEGMENT);
+            store_ltcdisplay.ws28xx_type = std::to_underlying(ltc::display::rgb::WS28xxType::SEGMENT);
             return;
         }
     }
 
-    store_ltcdisplay.ws28xx_type = common::ToValue(ltc::display::rgb::WS28xxType::MATRIX);
+    store_ltcdisplay.ws28xx_type = std::to_underlying(ltc::display::rgb::WS28xxType::MATRIX);
 }
 #endif
 
@@ -107,7 +105,7 @@ void LtcDisplayParams::Set() {
     assert(max7219 != nullptr);
 
     display->SetContrast(store_ltcdisplay.oled_intensity);
-    max7219->SetType(common::FromValue<ltc::display::max7219::Types>(store_ltcdisplay.max7219_type));
+    max7219->SetType(static_cast<ltc::display::max7219::Types>(store_ltcdisplay.max7219_type));
     max7219->SetIntensity(store_ltcdisplay.max7219_intensity);
 
 #ifndef NDEBUG
