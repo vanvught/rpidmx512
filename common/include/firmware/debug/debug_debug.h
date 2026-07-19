@@ -2,58 +2,54 @@
  * @file debug_debug.h
  *
  */
-/* Copyright (C) 2018-2025 by Arjan van Vught mailto:info@gd32-dmx.org */
+/* Copyright (C) 2018-2026 by Arjan van Vught mailto:info@gd32-dmx.org */
 
 #ifndef FIRMWARE_DEBUG_DEBUG_H_
 #define FIRMWARE_DEBUG_DEBUG_H_
 
 #if !defined(NDEBUG)
 #include <cstdio>
+#include <source_location>
 
-#define DEBUG_ENTRY()                                          \
-    do                                                         \
-    {                                                          \
-        printf("-> %s:%s:%d\n", __FILE__, __func__, __LINE__); \
+#define DEBUG_ENTRY()                                                                                      \
+    do {                                                                                                   \
+        const std::source_location loc = std::source_location::current();                                  \
+        printf("-> %s(%u):%s\n", loc.file_name(), static_cast<unsigned>(loc.line()), loc.function_name()); \
     } while (0)
 
-#define DEBUG_EXIT()                                           \
-    do                                                         \
-    {                                                          \
-        printf("<- %s:%s:%d\n", __FILE__, __func__, __LINE__); \
+#define DEBUG_EXIT()                                                                                       \
+    do {                                                                                                   \
+        const std::source_location loc = std::source_location::current();                                  \
+        printf("<- %s(%u):%s\n", loc.file_name(), static_cast<unsigned>(loc.line()), loc.function_name()); \
     } while (0)
 
-#define DEBUG_PRINTF(fmt, ...)                                                                    \
-    do                                                                                            \
-    {                                                                                             \
-        printf("%s() %s:%d: " fmt "\n", __func__, __FILE__, __LINE__ __VA_OPT__(, ) __VA_ARGS__); \
+#define DEBUG_PRINTF(fmt, ...)                                                                                                                   \
+    do {                                                                                                                                         \
+        const std::source_location loc = std::source_location::current();                                                                        \
+        printf("   %s(%u):%s: " fmt "\n", loc.file_name(), static_cast<unsigned>(loc.line()), loc.function_name() __VA_OPT__(, ) __VA_ARGS__); \
     } while (0)
 
 #define DEBUG_PUTS(msg)            \
-    do                             \
-    {                              \
+    do {                           \
         DEBUG_PRINTF("%s", (msg)); \
     } while (0)
 
 #else
 
 #define DEBUG_ENTRY() \
-    do                \
-    {                 \
+    do {              \
     } while (0)
 
 #define DEBUG_EXIT() \
-    do               \
-    {                \
+    do {             \
     } while (0)
 
 #define DEBUG_PRINTF(...) \
-    do                    \
-    {                     \
+    do {                  \
     } while (0)
 
 #define DEBUG_PUTS(...) \
-    do                  \
-    {                   \
+    do {                \
     } while (0)
 
 #endif

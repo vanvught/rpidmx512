@@ -30,35 +30,26 @@
 #include <cstdio>
 #include <ctype.h>
 
-#if defined(H3)
-namespace uart0 {
-int Printf(const char* fmt, ...);
-}
-#define printf uart0::Printf // NOLINT
-#endif
-
 namespace debug {
-namespace dump {
-inline constexpr uint32_t kCharsPerLine = 16;
-}
 #ifdef NDEBUG
 static inline void Dump([[maybe_unused]] const void* data, [[maybe_unused]] uint32_t size) {}
 #else
 inline void Dump(const void* data, uint32_t size) {
-    uint32_t chars = 0;
+    constexpr uint32_t kCharsPerLine = 16;
+    constexpr uint32_t kBytesPerGroup = 8; // Visual separator every 8 bytes
     const auto* ptr = reinterpret_cast<const uint8_t*>(data);
+    uint32_t chars = 0;
 
-    printf("%p:%u\n", data, static_cast<int>(size));
+    printf("%p:%u\n", data, static_cast<unsigned>(size));
 
     do {
-        uint32_t chars_this_line = 0;
-
         printf("%04x ", static_cast<unsigned>(chars));
 
-        const auto* q = ptr;
+        uint32_t chars_this_line = 0;
+        const auto* line_start_ptr = ptr;
 
-        while ((chars_this_line < dump::kCharsPerLine) && (chars < size)) {
-            if (chars_this_line % 8 == 0) {
+        while ((chars_this_line < kCharsPerLine) && (chars < size)) {
+            if (chars_this_line % kBytesPerGroup == 0) {
                 printf(" ");
             }
 
@@ -71,8 +62,8 @@ inline void Dump(const void* data, uint32_t size) {
 
         auto chars_dot_line = chars_this_line;
 
-        for (; chars_this_line < dump::kCharsPerLine; chars_this_line++) {
-            if (chars_this_line % 8 == 0) {
+        for (; chars_this_line < kCharsPerLine; chars_this_line++) {
+            if (chars_this_line % kBytesPerGroup == 0) {
                 printf(" ");
             }
             printf("   ");
@@ -81,19 +72,19 @@ inline void Dump(const void* data, uint32_t size) {
         chars_this_line = 0;
 
         while (chars_this_line < chars_dot_line) {
-            if (chars_this_line % 8 == 0) {
+            if (chars_this_line % kBytesPerGroup == 0) {
                 printf(" ");
             }
 
-            int ch = *q;
-            if (isprint(ch)) {
-                printf("%c", ch);
+            int character = *line_start_ptr;
+            if (0 != isprint(character)) {
+                printf("%c", character);
             } else {
                 printf(".");
             }
 
             chars_this_line++;
-            q++;
+            line_start_ptr++;
         }
 
         puts("");
