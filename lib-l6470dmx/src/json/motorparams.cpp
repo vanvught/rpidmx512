@@ -99,10 +99,10 @@ static uint32_t CalcIntersectSpeedReg(float f) {
 void MotorParams::Set(L6470* l6470) {
     assert(l6470 != nullptr);
 
-    const auto kF = CalcIntersectSpeed(store_motor.resistance, store_motor.inductance);
+    const auto kFloat = CalcIntersectSpeed(store_motor.resistance, store_motor.inductance);
 
-    if (kF != 0) {
-        l6470->setParam(L6470_PARAM_INT_SPD, CalcIntersectSpeedReg(kF));
+    if (kFloat != 0) {
+        l6470->setParam(L6470_PARAM_INT_SPD, CalcIntersectSpeedReg(kFloat));
     }
 }
 
@@ -113,8 +113,8 @@ void MotorParams::Dump() {
     printf(" %s=%.1f Ohm/phase\n", MotorParamsConst::kResistance.name, store_motor.resistance);
     printf(" %s=%.1f mH/phase\n", MotorParamsConst::kInductance.name, store_motor.inductance);
 
-    const auto kF = CalcIntersectSpeed(store_motor.resistance, store_motor.inductance);
+    const auto kFloat = CalcIntersectSpeed(store_motor.resistance, store_motor.inductance);
 
-    printf(" Intersect speed = %f step/s (register:INT_SPEED=0x%.4X)\n", kF, static_cast<unsigned int>(CalcIntersectSpeedReg(kF)));
+    printf(" Intersect speed = %f step/s (register:INT_SPEED=0x%.4X)\n", kFloat, static_cast<unsigned int>(CalcIntersectSpeedReg(kFloat)));
 }
 } // namespace json

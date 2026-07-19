@@ -59,11 +59,11 @@ void SetFrequency(uint32_t frequency_hz) {
 
     if (s_timer_id < 0) {
         s_timer_id = SoftwareTimerAdd((1000U / frequency_hz), Ledblink);
-        DEBUG_PRINTF("s_timer_id=%d", s_timer_id);
+        DEBUG_PRINTF("s_timer_id=%u", static_cast<unsigned>(s_timer_id));
         return;
     }
 
-    DEBUG_PRINTF("s_timer_id=%d", s_timer_id);
+    DEBUG_PRINTF("s_timer_id=%u", static_cast<unsigned>(s_timer_id));
     SoftwareTimerChange(s_timer_id, (1000U / frequency_hz));
 }
 } // namespace board::statusled

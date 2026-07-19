@@ -108,14 +108,14 @@ void Serial::Print() {
 
     switch (type_) {
         case serial::Type::kUart:
-            printf(" Baud     : %d\n", uart_configuration_.baud);
-            printf(" Bits     : %d\n", uart_configuration_.bits);
+            printf(" Baud     : %u\n", static_cast<unsigned>(uart_configuration_.baud));
+            printf(" Bits     : %u\n", static_cast<unsigned>(uart_configuration_.bits));
             printf(" Parity   : %s\n", serial::uart::GetParity(uart_configuration_.parity));
-            printf(" StopBits : %d\n", uart_configuration_.stop_bits);
+            printf(" StopBits : %u\n", static_cast<unsigned>(uart_configuration_.stop_bits));
             break;
         case serial::Type::kSpi:
-            printf(" Speed : %d Hz\n", spi_configuration_.speed_hz);
-            printf(" Mode  : %d\n", spi_configuration_.mode);
+            printf(" Speed : %u Hz\n", static_cast<unsigned>(spi_configuration_.speed_hz));
+            printf(" Mode  : %u\n", static_cast<unsigned>(spi_configuration_.mode));
             break;
         case serial::Type::kI2C:
             printf(" Address    : %.2x\n", i2c_configuration_.address);
@@ -124,6 +124,4 @@ void Serial::Print() {
         default:
             break;
     }
-
-    return;
 }

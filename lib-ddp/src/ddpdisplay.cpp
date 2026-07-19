@@ -295,7 +295,7 @@ void DdpDisplay::Input(const uint8_t* buffer, uint32_t size, [[maybe_unused]] ui
 
 void DdpDisplay::Print() {
     puts("DDP Display");
-    printf(" Count             : %u\n", count_);
-    printf(" Channels per pixel: %u\n", GetChannelsPerPixel());
-    printf(" Active ports      : %u\n", active_ports_);
+    printf(" Count             : %u\n", static_cast<unsigned>(count_));
+    printf(" Channels per pixel: %u\n", static_cast<unsigned>(GetChannelsPerPixel()));
+    printf(" Active ports      : %u\n", static_cast<unsigned>(active_ports_));
 }

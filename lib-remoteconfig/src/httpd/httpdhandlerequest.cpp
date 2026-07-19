@@ -564,7 +564,7 @@ http::Status HttpDeamonHandleRequest::HandlePostUpload() {
     auto part_uri = &uri_[7];
 
     if (memcmp(part_uri, "_start", 7) == 0) {
-        printf("Firmware: %s -> %u bytes\n", upload_filename_, upload_size_);
+        printf("Firmware: %s -> %u bytes\n", upload_filename_, static_cast<unsigned>(upload_size_));
 
         if (strncmp(upload_filename_, firmware::kFileName, sizeof(upload_filename_)) != 0) {
             puts("Wrong firmware file name.");
@@ -598,7 +598,7 @@ http::Status HttpDeamonHandleRequest::HandlePostUpload() {
             Display::Get()->Progress();
 
             uint32_t data_written;
-            printf("%u\n", request_data_length_);
+            printf("%u\n", static_cast<unsigned>(request_data_length_));
             if (!(FlashCodeInstall::Get()->WriteChunk(reinterpret_cast<uint8_t*>(file_data_), request_data_length_, data_written))) {
                 DEBUG_PRINTF("WriteChunk failed. Data written:%u bytes", data_written);
                 DEBUG_EXIT();
@@ -620,7 +620,7 @@ http::Status HttpDeamonHandleRequest::HandlePostUpload() {
             return http::Status::kInternalServerError;
         }
 
-        printf("Written bytes -> %u [%s]\n", write_count, write_count == upload_size_ ? "Ok" : "Wrong");
+        printf("Written bytes -> %u [%s]\n", static_cast<unsigned>(write_count), write_count == upload_size_ ? "Ok" : "Wrong");
 
         content_size_ = static_cast<uint32_t>(snprintf(dynamic_content_, sizeof(dynamic_content_), "{\"status\":\"ok\"}"));
         content_ = reinterpret_cast<uint8_t*>(dynamic_content_);
