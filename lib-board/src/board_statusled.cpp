@@ -36,7 +36,7 @@ namespace global {
 Mode g_status_led_mode;
 } // namespace global
 
-static bool s_do_lock;
+static auto s_do_lock = false;
 
 enum class ModeToFrequency { kOffOff = 0, kNormal = 1, kData = 3, kFast = 5, kReboot = 8, kOffOn = 255 };
 
@@ -47,9 +47,15 @@ void __attribute__((weak)) Event([[maybe_unused]] Mode mode) {
 }
 
 void SetModeWithLock(Mode mode, bool do_lock) {
+	DEBUG_PRINTF("mode=%u, do_lock=%c", static_cast<unsigned>(mode), do_lock ? 'Y' : 'N');
+	
     s_do_lock = false;
     SetMode(mode);
     s_do_lock = do_lock;
+}
+
+bool GetLock() {
+	return s_do_lock;
 }
 
 void SetMode(board::statusled::Mode mode) {

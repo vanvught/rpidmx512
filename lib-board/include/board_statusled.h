@@ -34,12 +34,12 @@ enum class Mode { kOffOff, kOffOn, kNormal, kData, kFast, kReboot, kUnknown };
 namespace global {
 extern Mode g_status_led_mode;
 } // namespace global
-
 void SetModeWithLock(Mode mode, bool do_lock);
 void SetMode(Mode mode);
 inline Mode GetMode() {
     return global::g_status_led_mode;
 }
+bool GetLock();
 void SetFrequency(uint32_t frequency_hz);
 void Event(Mode mode);
 } // namespace board::statusled

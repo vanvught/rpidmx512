@@ -45,6 +45,8 @@ static void Ledblink([[maybe_unused]] TimerHandle_t handle) {
 
 namespace board::statusled {
 void SetFrequency(uint32_t frequency_hz) {
+	DEBUG_PRINTF("frequency_hz=%u", static_cast<unsigned>(frequency_hz));
+	
     if (frequency_hz == 0) {
         SoftwareTimerDelete(s_timer_id);
         h3_status_led_set(0);
