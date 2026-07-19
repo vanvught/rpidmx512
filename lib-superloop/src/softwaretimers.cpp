@@ -41,8 +41,8 @@
 #include "timing.h" // IWYU pragma: keep
 #include "firmware/debug/debug_debug.h"
 
-static void Error(const char* func, const char* s) {
-    printf("%s: %s\n", func, s);
+static void Error(const char* func, const char* string) {
+    printf("%s: %s\n", func, string);
 }
 
 struct Timer {
@@ -70,7 +70,7 @@ static uint32_t s_timer_current = 0;            ///< bRound-robin cursor for Sof
  */
 TimerHandle_t SoftwareTimerAdd(uint32_t interval_millis, const TimerCallbackFunction_t kCallbackFunction) {
     DEBUG_ENTRY();
-    DEBUG_PRINTF("s_timers_count=%u", s_timers_count);
+    DEBUG_PRINTF("s_timers_count=%u", static_cast<unsigned>(s_timers_count));
 
     if (s_timers_count >= kSoftwareTimersMax) {
         Error(__func__, "Max timer limit reached");
@@ -103,12 +103,12 @@ TimerHandle_t SoftwareTimerAdd(uint32_t interval_millis, const TimerCallbackFunc
  * @note Deletion is O(1): the removed slot is replaced with the last active timer.
  *       This changes the order of timers.
  */
-bool SoftwareTimerDelete(TimerHandle_t& id) {
+bool SoftwareTimerDelete(TimerHandle_t& handle) {
     DEBUG_ENTRY();
-    DEBUG_PRINTF("s_timers_count=%u", s_timers_count);
+    DEBUG_PRINTF("s_timers_count=%u", static_cast<unsigned>(s_timers_count));
 
     for (uint32_t i = 0; i < s_timers_count; ++i) {
-        if (s_timers[i].id == id) {
+        if (s_timers[i].id == handle) {
             // Swap with the last timer to efficiently remove the current timer
             s_timers[i] = s_timers[s_timers_count - 1];
             --s_timers_count;
@@ -117,7 +117,7 @@ bool SoftwareTimerDelete(TimerHandle_t& id) {
                 s_timer_current = 0;
             }
 
-            id = -1;
+            handle = -1;
 
             DEBUG_ENTRY();
             return true;
@@ -138,9 +138,9 @@ bool SoftwareTimerDelete(TimerHandle_t& id) {
  * @return true  On success.
  * @return false If the handle was not found.
  */
-bool SoftwareTimerChange(TimerHandle_t id, uint32_t interval_millis) {
+bool SoftwareTimerChange(TimerHandle_t handle, uint32_t interval_millis) {
     for (uint32_t i = 0; i < s_timers_count; ++i) {
-        if (s_timers[i].id == id) {
+        if (s_timers[i].id == handle) {
             const auto kCurrentTime = timing::Millis();
             s_timers[i].expire_time = kCurrentTime + interval_millis;
             s_timers[i].interval_millis = interval_millis;
@@ -169,14 +169,14 @@ void SoftwareTimerRun() {
     }
 
     const uint32_t kNow = timing::Millis();
-    Timer& t = s_timers[s_timer_current];
+    Timer& timer = s_timers[s_timer_current];
 
-    if (static_cast<int32_t>(kNow - t.expire_time) >= 0) [[unlikely]] {
-        const int32_t kId = t.id;
-        const uint32_t kInterval = t.interval_millis;
-        auto cb = t.callback_function;
+    if (static_cast<int32_t>(kNow - timer.expire_time) >= 0) [[unlikely]] {
+        const int32_t kId = timer.id;
+        const uint32_t kInterval = timer.interval_millis;
+        auto callback_function = timer.callback_function;
 
-        cb(kId);
+        callback_function(kId);
 
         // reschedule from NOW to avoid pile-ups after delays
         s_timers[s_timer_current].expire_time = kNow + kInterval;

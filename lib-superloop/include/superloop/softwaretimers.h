@@ -35,14 +35,14 @@ static constexpr uint32_t kSoftwareTimersMax =
     12;
 #endif
 
-typedef int32_t TimerHandle_t;
-typedef void (*TimerCallbackFunction_t)(TimerHandle_t);
+using TimerHandle_t = int32_t;
+using TimerCallbackFunction_t = void (*)(TimerHandle_t);
 
 inline constexpr TimerHandle_t kTimerIdNone = -1;
 
-TimerHandle_t SoftwareTimerAdd(uint32_t interval_millis, const TimerCallbackFunction_t kCallback);
-bool SoftwareTimerDelete(TimerHandle_t& id);
-bool SoftwareTimerChange(TimerHandle_t id, uint32_t interval_millis);
+TimerHandle_t SoftwareTimerAdd(uint32_t interval_millis,  TimerCallbackFunction_t k_callback);
+bool SoftwareTimerDelete(TimerHandle_t& handle);
+bool SoftwareTimerChange(TimerHandle_t handle, uint32_t interval_millis);
 
 void SoftwareTimerRun();
 
