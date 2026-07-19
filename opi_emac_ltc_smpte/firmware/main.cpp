@@ -32,12 +32,9 @@
 #include <utility>
 
 #include "board.h"
-#include "board.h"
-#if defined(H3)
 #include "watchdog.h"
+#if defined(H3)
 #include "flashcodeinstall.h"
-#else
-#include "gd32/hal_watchdog.h"
 #endif
 #include "network.h"
 #include "apps/mdns.h"
@@ -229,10 +226,8 @@ int main() // NOLINT
 
     LtcDisplayRgb display_rgb(kIsRgbPanelEnabled ? ltc::display::rgb::Type::kRgbpanel : ltc::display::rgb::Type::kWS28Xx, kLtcDisplayWs28xxType);
 #endif
-    /**
-     * Select the source using buttons/rotary
-     */
 
+    // Select the source using buttons/rotary
     McpButtons source_select(ltc_source, kIsAltFunction, kSkipSeconds, !kIsRotaryFullStep);
 
     const auto kIsAutoStart = ((ltc_source == ltc::Source::SYSTIME) && common::IsFlagSet(kLtcFlags, common::store::ltc::Flags::Flag::kAutoStart));
@@ -243,10 +238,7 @@ int main() // NOLINT
         }
     }
 
-    /**
-     * From here work with source selection
-     */
-
+    // From here work with source selection
     LtcOutputs ltc_outputs(ltc_source, kShowSystime);
 
 #if !defined(CONFIG_LTC_DISABLE_WS28XX)
@@ -284,10 +276,7 @@ int main() // NOLINT
     llrp_only_device.Print();
 #endif
 
-    /**
-     * Art-Net
-     */
-
+    // Art-Net
     const auto kRunArtNet = ((ltc_source == ltc::Source::ARTNET) || ltc::Destination::IsEnabled(ltc::Destination::Output::ARTNET));
 
     memcpy(artnet::art_timecode.id, artnet::kNodeId, sizeof(artnet::art_timecode.id));
@@ -302,10 +291,7 @@ int main() // NOLINT
         assert(artnet::handle != -1);
     }
 
-    /**
-     * TCNet
-     */
-
+    // TCNet
     const auto kRunTcNet = (ltc_source == ltc::Source::TCNET);
 
     TCNet tcnet;
