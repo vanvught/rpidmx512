@@ -145,7 +145,7 @@ inline constexpr struct FilesContent kHttpContent[] = {
 	{ 2902032383,"config_display.js", config_display_js_gz, 1422, static_cast<http::ContentTypes>(2), true },
 #endif // (DISPLAY_UDF)
 #if defined (NODE_LTC_SMPTE)
-	{ 1947358610,"config_ltc.js", config_ltc_js_gz, 1972, static_cast<http::ContentTypes>(2), true },
+	{ 1947358610,"config_ltc.js", config_ltc_js_gz, 1868, static_cast<http::ContentTypes>(2), true },
 #endif // (NODE_LTC_SMPTE)
 #if defined (CONFIG_HTTPD_ENABLE_UPLOAD)
 	{ 1750204712,"upload_index.js", upload_index_js_gz, 1631, static_cast<http::ContentTypes>(2), true },

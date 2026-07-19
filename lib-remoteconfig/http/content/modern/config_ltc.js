@@ -184,17 +184,6 @@ function validateLtcForm(values, root) {
         return false;
     }
 
-    const fps = Number(values.fps);
-    const start = timecodeTotal(values.start_hour, values.start_minute, values.start_second, values.start_frame, fps);
-    const stop = timecodeTotal(values.stop_hour, values.stop_minute, values.stop_second, values.stop_frame, fps);
-
-    if (stop <= start) {
-        const stopFrame = root.querySelector("[data-key='stop_frame']");
-        stopFrame.setCustomValidity("Stop timecode must be greater than start timecode.");
-        stopFrame.reportValidity();
-        return false;
-    }
-
     return true;
 }
 
