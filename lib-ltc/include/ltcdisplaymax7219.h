@@ -58,7 +58,7 @@ class LtcDisplayMax7219 {
             max7219set_->SetIntensity(intensity);
         }
     }
-    uint8_t GetIntensity() const { return intensity_; }
+    [[nodiscard]] uint8_t GetIntensity() const { return intensity_; }
 
     void Init() {
         DEBUG_ENTRY();
@@ -70,13 +70,12 @@ class LtcDisplayMax7219 {
         } else {
             max7219set_ = new LtcDisplayMax7219Matrix(intensity_);
         }
-
         assert(max7219set_ != nullptr);
 
         DEBUG_EXIT();
     }
 
-    const char* GetTypeString() const {
+    [[nodiscard]] const char* GetTypeString() const {
         if (type_ == ltc::display::max7219::Types::kSegment) {
             return "7segment";
         }

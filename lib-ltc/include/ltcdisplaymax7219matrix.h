@@ -23,6 +23,8 @@
  * THE SOFTWARE.
  */
 
+#undef NDEBUG
+
 #ifndef LTCDISPLAYMAX7219MATRIX_H_
 #define LTCDISPLAYMAX7219MATRIX_H_
 
@@ -88,11 +90,11 @@ class LtcDisplayMax7219Matrix final : public LtcDisplayMax7219Set, public Max721
             Max7219Matrix::UpdateCharacter(i, kCharsColon[i]);
         }
 
-        for (uint32_t i = 10; i < 10 + sizeof(kCharsBlinkSemiColon) / sizeof(kCharsBlinkSemiColon[0]); i++) {
+        for (uint32_t i = 10; i < 10 + (sizeof(kCharsBlinkSemiColon) / sizeof(kCharsBlinkSemiColon[0])); i++) {
             Max7219Matrix::UpdateCharacter(i, kCharsBlinkSemiColon[i - 10]);
         }
 
-        for (uint32_t i = 20; i < 20 + sizeof(kCharsBlinkComma) / sizeof(kCharsBlinkComma[0]); i++) {
+        for (uint32_t i = 20; i < 20 + (sizeof(kCharsBlinkComma) / sizeof(kCharsBlinkComma[0])); i++) {
             Max7219Matrix::UpdateCharacter(i, kCharsBlinkComma[i - 20]);
         }
 
