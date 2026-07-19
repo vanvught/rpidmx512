@@ -32,7 +32,7 @@
 
 static uint8_t spi_data[64] __attribute__((aligned(4)));
 static constexpr auto kFontSize = Cp437FontSize();
-static uint8_t s_font[kFontSize] __attribute__((aligned(4)));
+static uint8_t s_font[kFontSize * 8] __attribute__((aligned(4)));
 
 static constexpr uint8_t Rotate(uint32_t r, uint32_t x) {
     uint8_t byte = 0;
@@ -47,8 +47,9 @@ static constexpr uint8_t Rotate(uint32_t r, uint32_t x) {
 
 Max7219Matrix::Max7219Matrix() {
     DEBUG_ENTRY();
+    DEBUG_PRINTF("kFontSize=%u, &s_font=%p:%p", static_cast<unsigned>(kFontSize), reinterpret_cast<void*>(s_font), reinterpret_cast<void*>(s_font + kFontSize));
 
-    auto dst = s_font;
+    auto* dst = s_font;
 
     for (uint32_t i = 0; i < kFontSize; i++) {
         for (uint32_t j = 0; j < 8; j++) {
@@ -105,16 +106,16 @@ void Max7219Matrix::Write(const char* buffer, uint16_t count) {
         }
 
         while (--k >= 0) {
-            auto c = static_cast<uint32_t>(buffer[k]);
+            auto character = static_cast<uint32_t>(buffer[k]);
 
-            if (c >= kFontSize) {
-                c = ' ';
+            if (character >= kFontSize) {
+                character = ' ';
             }
 
-            const auto kP = &s_font[c * 8];
+            auto* const kCharacter = &s_font[character * 8];
 
             spi_data[j++] = static_cast<uint8_t>(i);
-            spi_data[j++] = kP[i - 1];
+            spi_data[j++] = kCharacter[i - 1];
         }
 
         Spi::Write(reinterpret_cast<const char*>(spi_data), j, true);
@@ -126,7 +127,7 @@ void Max7219Matrix::UpdateCharacter(uint32_t c, const uint8_t bytes[8]) {
         return;
     }
 
-    auto font = &s_font[c * 8];
+    auto* destination = &s_font[c * 8];
 
     for (uint32_t j = 0; j < 8; j++) {
         uint8_t b = 0;
@@ -136,7 +137,7 @@ void Max7219Matrix::UpdateCharacter(uint32_t c, const uint8_t bytes[8]) {
             b |= static_cast<uint8_t>((kSet != 0) ? (1U << y) : 0);
         }
 
-        font[j] = b;
+        destination[j] = b;
     }
 }
 
