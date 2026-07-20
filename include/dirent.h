@@ -28,21 +28,9 @@
 
 #include <stdio.h>
 
-#if !defined (FF_DEFINED)
-	typedef void *DIR;
-#endif
+#include "../lib-fatfs/ff14b/source/ff.h"
 
-enum {
-	DT_UNKNOWN = 0,
-	DT_FIFO = 1,
-	DT_CHR = 2,
-	DT_DIR = 4,
-	DT_BLK = 6,
-	DT_REG = 8,
-	DT_LNK = 10,
-	DT_SOCK = 12,
-	DT_WHT = 14
-};
+enum { DT_UNKNOWN = 0, DT_FIFO = 1, DT_CHR = 2, DT_DIR = 4, DT_BLK = 6, DT_REG = 8, DT_LNK = 10, DT_SOCK = 12, DT_WHT = 14 };
 
 /**
  * https://en.wikibooks.org/wiki/C_Programming/POSIX_Reference/dirent.h
@@ -54,8 +42,8 @@ struct dirent {
 	off_t d_off;
 	unsigned short d_reclen;
 #endif
-	unsigned char d_type;
-	char d_name[FILENAME_MAX];
+    unsigned char d_type;
+    char d_name[FILENAME_MAX];
 };
 
 typedef struct dirent dirent_t;
@@ -64,14 +52,12 @@ typedef struct dirent dirent_t;
 extern "C" {
 #endif
 
-extern DIR *opendir(const char *dirname);
-extern struct dirent *readdir(DIR *dirp);
+extern DIR* opendir([[maybe_unused]] const char* dirname);
+extern struct dirent* readdir([[maybe_unused]] DIR* dirp);
 extern int closedir(DIR* dirp);
 
 #ifdef __cplusplus
 }
 #endif
-
-
 
 #endif /* DIRENT_H_ */
