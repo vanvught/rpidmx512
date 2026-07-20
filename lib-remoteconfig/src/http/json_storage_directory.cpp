@@ -1,7 +1,8 @@
+#if !defined(DISABLE_FS)
 /**
  * @file json_storage_directory.cpp
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -91,3 +92,4 @@ uint32_t Directory(char* out_buffer, uint32_t out_buffer_size) {
     return length;
 }
 } // namespace json::storage
+#endif
