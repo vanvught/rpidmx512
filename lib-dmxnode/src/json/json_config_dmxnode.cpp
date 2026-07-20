@@ -29,6 +29,10 @@
 #include "json/dmxnodeparamsconst.h"
 #include "json/dmxnodeparams.h"
 #include "json/json_helpers.h"
+#include "dmxnode_outputtype.h"
+#if defined(DMXNODE_OUTPUT_DMX)
+#include "dmx.h"
+#endif
 
 namespace json::config {
 uint32_t GetDmxNode(char* buffer, uint32_t length) {
@@ -41,6 +45,7 @@ uint32_t GetDmxNode(char* buffer, uint32_t length) {
         doc[json::DmxNodeParamsConst::kDisableMergeTimeout.name] = dmx_node->GetDisableMergeTimeout() ? 1 : 0;
 
         if constexpr (dmxnode::kConfigPortCount != 0) {
+#if defined(DMX_MAX_PORTS)
             for (uint32_t config_port_index = 0; config_port_index < dmxnode::kConfigPortCount; config_port_index++) {
                 const auto kPortIndex = config_port_index + dmxnode::kDmxportOffset;
 
@@ -60,6 +65,7 @@ uint32_t GetDmxNode(char* buffer, uint32_t length) {
                 doc[json::DmxNodeParamsConst::kOutputStylePort[config_port_index].name] = dmxnode::GetOutputStyle(dmx_node->GetOutputStyle(kPortIndex));
 #endif
             }
+#endif
         }
     });
 }

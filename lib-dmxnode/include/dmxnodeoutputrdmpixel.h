@@ -29,8 +29,7 @@
 
 #include "dmxnode.h"
 
-class DmxNodeOutputRdmPixel
-{
+class DmxNodeOutputRdmPixel {
    public:
     DmxNodeOutputRdmPixel() = default;
     virtual ~DmxNodeOutputRdmPixel() = default;
@@ -38,7 +37,7 @@ class DmxNodeOutputRdmPixel
     virtual void Start(uint32_t port_index) = 0;
     virtual void Stop(uint32_t port_index) = 0;
 
-    template <bool doUpdate> void SetData(uint32_t port_index, const uint8_t* data, uint32_t length) { SetDataImpl(port_index, data, length, doUpdate); }
+    template <bool kDoUpdate> void SetData(uint32_t port_index, const uint8_t* data, uint32_t length) { SetDataImpl(port_index, data, length, kDoUpdate); }
 
     virtual bool SetDmxStartAddress([[maybe_unused]] uint16_t dmx_start_address) { return false; }
 
@@ -46,8 +45,7 @@ class DmxNodeOutputRdmPixel
 
     virtual uint16_t GetDmxFootprint() { return dmxnode::kUniverseSize; }
 
-    virtual bool GetSlotInfo([[maybe_unused]] uint16_t slot_offset, dmxnode::SlotInfo& slot_info)
-    {
+    virtual bool GetSlotInfo([[maybe_unused]] uint16_t slot_offset, dmxnode::SlotInfo& slot_info) {
         slot_info.type = 0x00;       // ST_PRIMARY
         slot_info.category = 0x0001; // SD_INTENSITY
         return true;
@@ -59,4 +57,4 @@ class DmxNodeOutputRdmPixel
     virtual void SetDataImpl(uint32_t port_index, const uint8_t* data, uint32_t length, bool do_update) = 0;
 };
 
-#endif  // DMXNODEOUTPUTRDMPIXEL_H_
+#endif // DMXNODEOUTPUTRDMPIXEL_H_

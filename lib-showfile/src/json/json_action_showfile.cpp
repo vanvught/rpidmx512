@@ -29,70 +29,49 @@
 #include "json/json_parsehelper.h"
 #include "showfile.h"
 
-static void SetPlayer(const char* val, uint32_t len)
-{
-    if (memcmp(val, "play", len) == 0)
-    {
+static void SetPlayer(const char* val, uint32_t len) {
+    if (memcmp(val, "play", len) == 0) {
         ShowFile::Instance().Play();
         return;
     }
 
-    if (memcmp(val, "stop", len) == 0)
-    {
+    if (memcmp(val, "stop", len) == 0) {
         ShowFile::Instance().Stop();
         return;
     }
 
-    if (memcmp(val, "resume", len) == 0)
-    {
+    if (memcmp(val, "resume", len) == 0) {
         ShowFile::Instance().Resume();
         return;
     }
 
 #if !defined(CONFIG_SHOWFILE_DISABLE_RECORD)
-    if (memcmp(val, "record", len) == 0)
-    {
+    if (memcmp(val, "record", len) == 0) {
         ShowFile::Instance().Record();
         return;
     }
 #endif
 }
 
-static void SetLoop(const char* val, uint32_t len)
-{
+static void SetLoop(const char* val, uint32_t len) {
     if (len != 1) return;
 
     ShowFile::Instance().DoLoop(val[0] != '0');
 }
 
-static void SetShow(const char* val, uint32_t len)
-{
-	if (len > 2) return;
+static void SetShow(const char* val, uint32_t len) {
+    if (len > 2) return;
 
-	ShowFile::Instance().SetPlayerShowFileCurrent(json::Atoi(val, len));
+    ShowFile::Instance().SetPlayerShowFileCurrent(json::Atoi(val, len));
 }
 
-static constexpr json::SimpleKey kPlayer {
-    "player",
-    6,
-    Fnv1a32("player", 6)
-};
-
-static constexpr json::SimpleKey kLoop {
-    "loop",
-    4,
-    Fnv1a32("loop", 4)
-};
-
-static constexpr json::SimpleKey kShow {
-    "show",
-    4,
-    Fnv1a32("show", 4)
-};
+static constexpr auto kPlayer = json::MakeSimpleKey("player");
+static constexpr auto kLoop = json::MakeSimpleKey("loop");
+static constexpr auto kShow = json::MakeSimpleKey("show");
 
 static constexpr json::Key kActionKeys[] = {
 	json::MakeKey(SetPlayer, kPlayer), 
-	json::MakeKey(SetLoop, kLoop),
+	json::MakeKey(SetLoop, kLoop), 
 	json::MakeKey(SetShow, kShow)
 };
 
@@ -100,4 +79,4 @@ namespace json::action {
 void SetShowFile(const char* buffer, uint32_t buffer_size) {
     ParseJsonWithTable(buffer, buffer_size, kActionKeys);
 }
-}
+} // namespace json::action

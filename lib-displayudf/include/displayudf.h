@@ -51,9 +51,9 @@
 #if defined(RDM_RESPONDER)
 #include "rdmdeviceresponder.h"
 #endif
-#if defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI)
+#include "dmxnode_outputtype.h"
+#if defined(DMXNODE_OUTPUT_DMX)
 #include "dmx.h"
-#include "dmxconst.h"
 #endif
 #if defined(RDM_RESPONDER) || defined(OUTPUT_DMX_MONITOR) || defined(OUTPUT_DMX_PCA9685) || defined(OUTPUT_DMX_PIXEL) || defined(OUTPUT_DMX_TLC59711)
 #define HAVE_DMX_START_ADDRESS
@@ -117,7 +117,7 @@ class DisplayUdf final : public Display {
     void SetTitle(const char* format, ...);
     void Set(uint32_t line, displayudf::Labels label);
 
-    uint8_t GetLabel(uint32_t index) const {
+    [[nodiscard]] uint8_t GetLabel(uint32_t index) const {
         if (index < static_cast<uint32_t>(displayudf::Labels::kUnknown)) {
             return labels_[index];
         }
@@ -194,8 +194,6 @@ class DisplayUdf final : public Display {
             case network::dhcp::State::kRenewing:
                 ClearEndOfLine();
                 Printf(labels_[static_cast<uint32_t>(displayudf::Labels::kIp)], "DHCP renewing");
-                break;
-            case network::dhcp::State::kBound:
                 break;
             default:
                 break;

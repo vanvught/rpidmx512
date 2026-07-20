@@ -34,11 +34,9 @@
 #include "json/e131params.h"
 #endif
 
-class DmxNodeNode final : public DmxNodeNodeType
-{
+class DmxNodeNode final : public DmxNodeNodeType {
    public:
-    DmxNodeNode()
-    {
+    DmxNodeNode() {
         {
             json::DmxNodeParams dmxnode_params;
             dmxnode_params.Load();
@@ -61,4 +59,4 @@ class DmxNodeNode final : public DmxNodeNodeType
     }
 };
 
-#endif  // DMXNODENODE_H_
+#endif // DMXNODENODE_H_

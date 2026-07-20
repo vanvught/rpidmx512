@@ -122,7 +122,7 @@ static void SetDate(const char* date, uint32_t date_length) {
     DEBUG_EXIT();
 }
 
-static constexpr json::SimpleKey kDate{"date", 4, Fnv1a32("date", 4)};
+static constexpr auto kDate = json::MakeSimpleKey("date");
 
 static constexpr json::Key kActionKeys[] = {json::MakeKey(SetDate, kDate)};
 

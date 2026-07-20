@@ -10,15 +10,13 @@
 #include "json/artnetparamsconst.h"
 #include "json/json_key.h"
 #include "json/json_params_base.h"
-
-#if !defined (MAX_ARRAY_SIZE)
-#error
+#include "dmxnode_outputtype.h"
+#if defined(DMXNODE_OUTPUT_DMX)
+#include "dmx.h"
 #endif
 
-namespace json
-{
-class ArtNetParams : public JsonParamsBase<ArtNetParams>
-{
+namespace json {
+class ArtNetParams : public JsonParamsBase<ArtNetParams> {
    public:
     ArtNetParams();
 
@@ -43,32 +41,44 @@ class ArtNetParams : public JsonParamsBase<ArtNetParams>
     static void SetRdmEnablePort(const char* key, uint32_t key_len, const char* val, uint32_t val_len);
 
     static constexpr json::Key kArtNetKeys[] = {
-        MakeKey(SetEnableRdm, ArtNetParamsConst::kEnableRdm),         
         MakeKey(SetMapUniverse0, ArtNetParamsConst::kMapUniverse0),
-        MakeKey(SetDestinationIpPort, ArtNetParamsConst::kDestinationIpPort[0]),
-        MakeKey(SetProtocolPort, ArtNetParamsConst::kProtocolPort[0]),
+#if defined(RDM_CONTROLLER) || defined(RDM_RESPONDER)
+        MakeKey(SetEnableRdm, ArtNetParamsConst::kEnableRdm),
+#if defined(DMX_MAX_PORTS)
         MakeKey(SetRdmEnablePort, ArtNetParamsConst::kRdmEnablePort[0]),
-#if (MAX_ARRAY_SIZE > 1)
-        MakeKey(SetDestinationIpPort, ArtNetParamsConst::kDestinationIpPort[1]),
-        MakeKey(SetProtocolPort, ArtNetParamsConst::kProtocolPort[1]),
+#if (DMX_MAX_PORTS > 1)
         MakeKey(SetRdmEnablePort, ArtNetParamsConst::kRdmEnablePort[1]),
 #endif
-#if (MAX_ARRAY_SIZE > 2)
-        MakeKey(SetDestinationIpPort, ArtNetParamsConst::kDestinationIpPort[2]),
-        MakeKey(SetProtocolPort, ArtNetParamsConst::kProtocolPort[2]),
+#if (DMX_MAX_PORTS > 2)
         MakeKey(SetRdmEnablePort, ArtNetParamsConst::kRdmEnablePort[2]),
 #endif
-#if (MAX_ARRAY_SIZE == 4)
+#if (DMX_MAX_PORTS == 4)
+        MakeKey(SetRdmEnablePort, ArtNetParamsConst::kRdmEnablePort[3]),
+#endif
+#endif
+#endif
+#if defined(DMX_MAX_PORTS)
+        MakeKey(SetDestinationIpPort, ArtNetParamsConst::kDestinationIpPort[0]),
+        MakeKey(SetProtocolPort, ArtNetParamsConst::kProtocolPort[0]),
+#if (DMX_MAX_PORTS > 1)
+        MakeKey(SetDestinationIpPort, ArtNetParamsConst::kDestinationIpPort[1]),
+        MakeKey(SetProtocolPort, ArtNetParamsConst::kProtocolPort[1]),
+#endif
+#if (DMX_MAX_PORTS > 2)
+        MakeKey(SetDestinationIpPort, ArtNetParamsConst::kDestinationIpPort[2]),
+        MakeKey(SetProtocolPort, ArtNetParamsConst::kProtocolPort[2]),
+#endif
+#if (DMX_MAX_PORTS == 4)
         MakeKey(SetDestinationIpPort, ArtNetParamsConst::kDestinationIpPort[3]),
         MakeKey(SetProtocolPort, ArtNetParamsConst::kProtocolPort[3]),
-        MakeKey(SetRdmEnablePort, ArtNetParamsConst::kRdmEnablePort[3]),
+#endif
 #endif
     };
 
-    inline static common::store::DmxNode store_dmxnode_;
+    inline static common::store::DmxNode store_dmxnode;
 
     friend class JsonParamsBase<ArtNetParams>;
 };
 } // namespace json
 
-#endif  // JSON_ARTNETPARAMS_H_
+#endif // JSON_ARTNETPARAMS_H_

@@ -13,15 +13,13 @@
 #include "json/dmxnodeparamsconst.h"
 #include "json/json_key.h"
 #include "json/json_params_base.h"
-
-#if !defined (MAX_ARRAY_SIZE)
-#error
+#include "dmxnode_outputtype.h"
+#if defined(DMXNODE_OUTPUT_DMX)
+#include "dmx.h"
 #endif
 
-namespace json
-{
-class DmxNodeParams : public JsonParamsBase<DmxNodeParams>
-{
+namespace json {
+class DmxNodeParams : public JsonParamsBase<DmxNodeParams> {
    public:
     DmxNodeParams();
 
@@ -39,10 +37,9 @@ class DmxNodeParams : public JsonParamsBase<DmxNodeParams>
     void Dump();
 
    private:
-   	static_assert(static_cast<uint32_t>(dmxnode::OutputStyle::kDelta) == 0);
+    static_assert(static_cast<uint32_t>(dmxnode::OutputStyle::kDelta) == 0);
     dmxnode::OutputStyle GetOutputStyleSet(uint8_t mask) const { return (store_dmxnode.output_style & mask) == mask ? dmxnode::OutputStyle::kConstant : dmxnode::OutputStyle::kDelta; }
 
-   private:
     static void SetNodeName(const char* val, uint32_t len);
     static void SetFailsafe(const char* val, uint32_t len);
     static void SetDisableMergeTimeout(const char* val, uint32_t len);
@@ -51,43 +48,45 @@ class DmxNodeParams : public JsonParamsBase<DmxNodeParams>
     static void SetDirectionPort(const char* key, uint32_t key_len, const char* val, uint32_t val_len);
     static void SetMergeModePort(const char* key, uint32_t key_len, const char* val, uint32_t val_len);
     static void SetOutputStylePort(const char* key, uint32_t key_len, const char* val, uint32_t val_len);
-    
-    static constexpr json::Key kDmxNodeKeys[] = {   
+
+    static constexpr json::Key kDmxNodeKeys[] = {
         MakeKey(SetNodeName, DmxNodeParamsConst::kNodeName),
-        MakeKey(SetFailsafe, DmxNodeParamsConst::kFailsafe),         
+        MakeKey(SetFailsafe, DmxNodeParamsConst::kFailsafe),
         MakeKey(SetDisableMergeTimeout, DmxNodeParamsConst::kDisableMergeTimeout),
+#if defined(DMX_MAX_PORTS)
         MakeKey(SetLabelPort, DmxNodeParamsConst::kLabelPort[0]),
         MakeKey(SetUniversePort, DmxNodeParamsConst::kUniversePort[0]),
         MakeKey(SetDirectionPort, DmxNodeParamsConst::kDirectionPort[0]),
         MakeKey(SetMergeModePort, DmxNodeParamsConst::kMergeModePort[0]),
         MakeKey(SetOutputStylePort, DmxNodeParamsConst::kOutputStylePort[0]),
-#if (MAX_ARRAY_SIZE > 1)
+#if (DMX_MAX_PORTS > 1)
         MakeKey(SetLabelPort, DmxNodeParamsConst::kLabelPort[1]),
         MakeKey(SetUniversePort, DmxNodeParamsConst::kUniversePort[1]),
         MakeKey(SetDirectionPort, DmxNodeParamsConst::kDirectionPort[1]),
         MakeKey(SetMergeModePort, DmxNodeParamsConst::kMergeModePort[1]),
         MakeKey(SetOutputStylePort, DmxNodeParamsConst::kOutputStylePort[1]),
 #endif
-#if (MAX_ARRAY_SIZE > 2)
+#if (DMX_MAX_PORTS > 2)
         MakeKey(SetLabelPort, DmxNodeParamsConst::kLabelPort[2]),
         MakeKey(SetUniversePort, DmxNodeParamsConst::kUniversePort[2]),
         MakeKey(SetDirectionPort, DmxNodeParamsConst::kDirectionPort[2]),
         MakeKey(SetMergeModePort, DmxNodeParamsConst::kMergeModePort[2]),
         MakeKey(SetOutputStylePort, DmxNodeParamsConst::kOutputStylePort[2]),
 #endif
-#if (MAX_ARRAY_SIZE == 4)
+#if (DMX_MAX_PORTS == 4)
         MakeKey(SetLabelPort, DmxNodeParamsConst::kLabelPort[3]),
         MakeKey(SetUniversePort, DmxNodeParamsConst::kUniversePort[3]),
         MakeKey(SetDirectionPort, DmxNodeParamsConst::kDirectionPort[3]),
         MakeKey(SetMergeModePort, DmxNodeParamsConst::kMergeModePort[3]),
         MakeKey(SetOutputStylePort, DmxNodeParamsConst::kOutputStylePort[3]),
 #endif
+#endif
     };
-   
+
     inline static common::store::DmxNode store_dmxnode;
 
     friend class JsonParamsBase<DmxNodeParams>;
 };
 } // namespace json
 
-#endif  // JSON_DMXNODEPARAMS_H_
+#endif // JSON_DMXNODEPARAMS_H_

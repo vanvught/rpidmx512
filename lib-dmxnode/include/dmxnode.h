@@ -115,7 +115,7 @@ inline Personality GetPersonality(const char* personality) {
     return Personality::kArtnet;
 }
 
-[[nodiscard]] inline constexpr const char* GetPersonality(Personality personality) {
+[[nodiscard]] constexpr const char* GetPersonality(Personality personality) {
     if (personality == Personality::kNode) {
         return "node";
     }
@@ -136,7 +136,7 @@ inline MergeMode GetMergeMode(const char* merge_mode) {
     return MergeMode::kHtp;
 }
 
-[[nodiscard]] inline constexpr const char* GetMergeMode(MergeMode merge_mode, bool to_upper = false) {
+[[nodiscard]] constexpr const char* GetMergeMode(MergeMode merge_mode, bool to_upper = false) {
     if (to_upper) {
         return (merge_mode == MergeMode::kHtp) ? mergemode::kHtpUpper : mergemode::kLtpUpper;
     }
@@ -161,7 +161,7 @@ inline Direction PortDirection(const char* port_direction) {
     return Direction::kOutput;
 }
 
-[[nodiscard]] inline constexpr const char* PortDirection(Direction port_direction) {
+[[nodiscard]] constexpr const char* PortDirection(Direction port_direction) {
     if (port_direction == Direction::kInput) {
         return "input";
     }
@@ -197,7 +197,7 @@ inline FailSafe GetFailsafe(const char* failsafe) {
     return FailSafe::kHold;
 }
 
-[[nodiscard]] inline constexpr const char* GetFailsafe(FailSafe failsafe) {
+[[nodiscard]] constexpr const char* GetFailsafe(FailSafe failsafe) {
     switch (failsafe) {
         case FailSafe::kHold:
             return failsafe::kHold;
@@ -228,7 +228,7 @@ inline OutputStyle GetOutputStyle(const char* output_style) {
     return OutputStyle::kDelta;
 }
 
-[[nodiscard]] inline constexpr const char* GetOutputStyle(OutputStyle output_style, bool to_upper = false) {
+[[nodiscard]] constexpr const char* GetOutputStyle(OutputStyle output_style, bool to_upper = false) {
     if (to_upper) {
         return (output_style == OutputStyle::kDelta) ? "DELTA" : "CONST";
     }
@@ -273,7 +273,7 @@ class DmxNode {
         port.label[dmxnode::kPortNameLength - 1] = '\0';
     }
 
-    const char* GetPortName(uint32_t port_index) const {
+    [[nodiscard]] const char* GetPortName(uint32_t port_index) const {
         assert(port_index < dmxnode::kMaxPorts);
         const auto& port = port_[port_index];
 

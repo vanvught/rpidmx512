@@ -34,7 +34,8 @@
 #if defined(NODE_ARTNET) || defined(NODE_ARTNET_MULTI)
 #include "json/artnetparamsconst.h"
 #endif
-#if defined(OUTPUT_DMX_SEND) || defined(OUTPUT_DMX_SEND_MULTI)
+#include "dmxnode_outputtype.h"
+#if defined(DMXNODE_OUTPUT_DMX)
 #include "dmx.h"
 #endif
 

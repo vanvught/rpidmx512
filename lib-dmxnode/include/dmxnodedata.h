@@ -46,13 +46,10 @@
 #define SECTION_LIGHTSET
 #endif
 
-namespace dmxnode
-{
-class Data
-{
+namespace dmxnode {
+class Data {
    public:
-    static Data& Get()
-    {
+    static Data& Get() {
         static Data instance SECTION_LIGHTSET;
         return instance;
     }
@@ -76,8 +73,7 @@ class Data
     static void Restore(uint32_t port_index, const uint8_t* data) { Get().IRestore(port_index, data); }
 
    private:
-    void IMergeSourceA(uint32_t port_index, const uint8_t* data, uint32_t length, MergeMode merge_mode)
-    {
+    void IMergeSourceA(uint32_t port_index, const uint8_t* data, uint32_t length, MergeMode merge_mode) {
         assert(port_index < kPorts);
         assert(data != nullptr);
 
@@ -85,10 +81,8 @@ class Data
 
         output_port_[port_index].length = length;
 
-        if (merge_mode == MergeMode::kHtp)
-        {
-            for (uint32_t i = 0; i < length; i++)
-            {
+        if (merge_mode == MergeMode::kHtp) {
+            for (uint32_t i = 0; i < length; i++) {
                 const auto kData = std::max(output_port_[port_index].source_a.data[i], output_port_[port_index].source_b.data[i]);
                 output_port_[port_index].data[i] = kData;
             }
@@ -99,8 +93,7 @@ class Data
         memcpy(output_port_[port_index].data, data, length);
     }
 
-    void IMergeSourceB(uint32_t port_index, const uint8_t* data, uint32_t length, MergeMode merge_mode)
-    {
+    void IMergeSourceB(uint32_t port_index, const uint8_t* data, uint32_t length, MergeMode merge_mode) {
         assert(port_index < kPorts);
         assert(data != nullptr);
 
@@ -108,10 +101,8 @@ class Data
 
         output_port_[port_index].length = length;
 
-        if (merge_mode == MergeMode::kHtp)
-        {
-            for (uint32_t i = 0; i < length; i++)
-            {
+        if (merge_mode == MergeMode::kHtp) {
+            for (uint32_t i = 0; i < length; i++) {
                 const auto kData = std::max(output_port_[port_index].source_a.data[i], output_port_[port_index].source_b.data[i]);
                 output_port_[port_index].data[i] = kData;
             }
@@ -122,41 +113,35 @@ class Data
         memcpy(output_port_[port_index].data, data, length);
     }
 
-    void IClear(uint32_t port_index)
-    {
+    void IClear(uint32_t port_index) {
         assert(port_index < kPorts);
 
         memset(output_port_[port_index].data, 0, dmxnode::kUniverseSize);
         output_port_[port_index].length = dmxnode::kUniverseSize;
     }
 
-    void IClearLength(uint32_t port_index)
-    {
+    void IClearLength(uint32_t port_index) {
         assert(port_index < kPorts);
         output_port_[port_index].length = 0;
     }
 
-    uint32_t IGetLength(uint32_t port_index) const 
-    { 
-		assert(port_index < kPorts);
-		return output_port_[port_index].length; 
-	}
+    uint32_t IGetLength(uint32_t port_index) const {
+        assert(port_index < kPorts);
+        return output_port_[port_index].length;
+    }
 
-    const uint8_t* IBackup(uint32_t port_index)
-    {
+    const uint8_t* IBackup(uint32_t port_index) {
         assert(port_index < kPorts);
         return const_cast<const uint8_t*>(output_port_[port_index].data);
     }
 
-    void IRestore(uint32_t port_index, const uint8_t* data)
-    {
+    void IRestore(uint32_t port_index, const uint8_t* data) {
         assert(port_index < kPorts);
         assert(data != nullptr);
 
         memcpy(output_port_[port_index].data, data, dmxnode::kUniverseSize);
     }
 
-   private:
 #if !defined(DMXNODE_PORTS)
 #define DMXNODE_PORTS 0
 #endif
@@ -167,13 +152,11 @@ class Data
     static constexpr auto kPorts = DMXNODE_PORTS;
 #endif
 
-    struct Source
-    {
+    struct Source {
         uint8_t data[dmxnode::kUniverseSize] __attribute__((aligned(4)));
     };
 
-    struct OutputPort
-    {
+    struct OutputPort {
         Source source_a;
         Source source_b;
         uint8_t data[dmxnode::kUniverseSize] __attribute__((aligned(4)));
@@ -184,4 +167,4 @@ class Data
 };
 } // namespace dmxnode
 
-#endif  // DMXNODEDATA_H_
+#endif // DMXNODEDATA_H_

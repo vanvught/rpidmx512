@@ -39,25 +39,24 @@
 #include "configurationstore.h"
 #include "network_config.h"
 #include "common/utils/utils_flags.h"
-#include "firmware/debug/debug_dump.h"
+#include "dmxnode_outputtype.h"
+#if defined(DMXNODE_OUTPUT_DMX)
+#include "dmx.h"
+#endif
 
 using common::store::dmxnode::Flags;
 
 namespace json {
 ArtNetParams::ArtNetParams() {
-    ConfigStore::Instance().Copy(&store_dmxnode_, &ConfigurationStore::dmx_node);
+    ConfigStore::Instance().Copy(&store_dmxnode, &ConfigurationStore::dmx_node);
 }
 
 void ArtNetParams::SetEnableRdm(const char* val, uint32_t len) {
-    DEBUG_ENTRY();
-
     if (len != 1) {
         return;
     }
 
-    store_dmxnode_.flags = common::SetFlagValue(store_dmxnode_.flags, Flags::Flag::kEnableRdm, val[0] != '0');
-
-    DEBUG_EXIT();
+    store_dmxnode.flags = common::SetFlagValue(store_dmxnode.flags, Flags::Flag::kEnableRdm, val[0] != '0');
 }
 
 void ArtNetParams::SetMapUniverse0(const char* val, uint32_t len) {
@@ -65,7 +64,7 @@ void ArtNetParams::SetMapUniverse0(const char* val, uint32_t len) {
         return;
     }
 
-    store_dmxnode_.flags = common::SetFlagValue(store_dmxnode_.flags, Flags::Flag::kMapUniverse0, val[0] != '0');
+    store_dmxnode.flags = common::SetFlagValue(store_dmxnode.flags, Flags::Flag::kMapUniverse0, val[0] != '0');
 }
 
 void ArtNetParams::SetDestinationIpPort(const char* key, uint32_t key_len, const char* val, uint32_t val_len) {
@@ -73,9 +72,9 @@ void ArtNetParams::SetDestinationIpPort(const char* key, uint32_t key_len, const
     const auto kIndex = static_cast<uint8_t>(kSuffix - 'a');
 
     if (val_len == 0) {
-        store_dmxnode_.destination_ip[kIndex] = network::GetBroadcastIp();
+        store_dmxnode.destination_ip[kIndex] = network::GetBroadcastIp();
     } else {
-        store_dmxnode_.destination_ip[kIndex] = net::ParseIpString(val, val_len);
+        store_dmxnode.destination_ip[kIndex] = net::ParseIpString(val, val_len);
     }
 }
 
@@ -83,35 +82,31 @@ void ArtNetParams::SetProtocolPort(const char* key, uint32_t key_len, const char
     const char kSuffix = key[key_len - 1];
     const auto kIndex = static_cast<uint8_t>(kSuffix - 'a');
 
-    auto protocol = store_dmxnode_.protocol;
+    auto protocol = store_dmxnode.protocol;
     if (val_len == 0) {
         common::PortSet<artnet::PortProtocol>(kIndex, artnet::PortProtocol::kArtnet, protocol);
     } else {
         common::PortSet<artnet::PortProtocol>(kIndex, artnet::GetProtocolMode(val), protocol);
     }
-    store_dmxnode_.protocol = protocol;
+    store_dmxnode.protocol = protocol;
 }
 
 void ArtNetParams::SetRdmEnablePort(const char* key, uint32_t key_len, const char* val, uint32_t val_len) {
-    DEBUG_ENTRY();
-    debug::Dump(key, key_len);
-    debug::Dump(val, val_len);
-
-    if (val_len != 1) return;
+    if (val_len != 1) {
+        return;
+    }
 
     const char kSuffix = key[key_len - 1];
     const auto kIndex = static_cast<uint8_t>(kSuffix - 'a');
 
-    auto rdm = store_dmxnode_.rdm;
+    auto rdm = store_dmxnode.rdm;
     common::PortSet<dmxnode::Rdm>(kIndex, val[0] != '0' ? dmxnode::Rdm::kEnable : dmxnode::Rdm::kDisable, rdm);
-    store_dmxnode_.rdm = rdm;
-
-    DEBUG_EXIT();
+    store_dmxnode.rdm = rdm;
 }
 
 void ArtNetParams::Store(const char* buffer, uint32_t buffer_size) {
     ParseJsonWithTable(buffer, buffer_size, kArtNetKeys);
-    ConfigStore::Instance().Store(&store_dmxnode_, &ConfigurationStore::dmx_node);
+    ConfigStore::Instance().Store(&store_dmxnode, &ConfigurationStore::dmx_node);
 }
 
 void ArtNetParams::Set() {
@@ -120,10 +115,10 @@ void ArtNetParams::Set() {
     auto& artnet = *ArtNetNode::Get();
 
 #if defined(RDM_CONTROLLER) || defined(RDM_RESPONDER)
-    artnet.SetRdm(common::IsFlagSet(store_dmxnode_.flags, Flags::Flag::kEnableRdm));
+    artnet.SetRdm(common::IsFlagSet(store_dmxnode.flags, Flags::Flag::kEnableRdm));
 #endif
 #if (ARTNET_VERSION >= 4)
-    artnet.SetMapUniverse0(common::IsFlagSet(store_dmxnode_.flags, Flags::Flag::kMapUniverse0));
+    artnet.SetMapUniverse0(common::IsFlagSet(store_dmxnode.flags, Flags::Flag::kMapUniverse0));
 #endif
 
     if constexpr (dmxnode::kConfigPortCount != 0) {
@@ -134,12 +129,12 @@ void ArtNetParams::Set() {
                 break;
             }
 
-            artnet.SetDestinationIp(kPortIndex, store_dmxnode_.destination_ip[config_port_index]);
+            artnet.SetDestinationIp(kPortIndex, store_dmxnode.destination_ip[config_port_index]);
 #if (ARTNET_VERSION >= 4)
-            artnet.SetPortProtocol4(kPortIndex, common::PortGet<artnet::PortProtocol>(config_port_index, store_dmxnode_.protocol));
+            artnet.SetPortProtocol4(kPortIndex, common::PortGet<artnet::PortProtocol>(config_port_index, store_dmxnode.protocol));
 #endif
 #if defined(RDM_CONTROLLER) || defined(RDM_RESPONDER)
-            const auto kRdm = common::PortGet<dmxnode::Rdm>(config_port_index, store_dmxnode_.rdm);
+            const auto kRdm = common::PortGet<dmxnode::Rdm>(config_port_index, store_dmxnode.rdm);
             artnet.SetRdm(kPortIndex, kRdm == dmxnode::Rdm::kEnable);
 #endif
         }
@@ -156,23 +151,25 @@ void ArtNetParams::Dump() {
     printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, json::ArtNetParamsConst::kFileName);
 
 #if defined(RDM_CONTROLLER) || defined(RDM_RESPONDER)
-    printf(" %s=%u\n", json::ArtNetParamsConst::kEnableRdm.name, common::IsFlagSet(store_dmxnode_.flags, Flags::Flag::kEnableRdm));
+    printf(" %s=%u\n", json::ArtNetParamsConst::kEnableRdm.name, static_cast<unsigned>(common::IsFlagSet(store_dmxnode.flags, Flags::Flag::kEnableRdm)));
 #endif
 #if (ARTNET_VERSION >= 4)
-    printf(" %s=%u\n", json::ArtNetParamsConst::kMapUniverse0.name, static_cast<unsigned>(common::IsFlagSet(store_dmxnode_.flags, Flags::Flag::kMapUniverse0)));
+    printf(" %s=%u\n", json::ArtNetParamsConst::kMapUniverse0.name, static_cast<unsigned>(common::IsFlagSet(store_dmxnode.flags, Flags::Flag::kMapUniverse0)));
 #endif
 
     if constexpr (dmxnode::kConfigPortCount != 0) {
         for (uint32_t port_index = 0; port_index < dmxnode::kConfigPortCount; port_index++) {
-#if (ARTNET_VERSION >= 4)
-            const auto kProtocol = common::PortGet<artnet::PortProtocol>(port_index, store_dmxnode_.protocol);
+#if (ARTNET_VERSION >= 4) && defined(DMX_MAX_PORTS)
+            const auto kProtocol = common::PortGet<artnet::PortProtocol>(port_index, store_dmxnode.protocol);
             printf(" %s=%s\n", json::ArtNetParamsConst::kProtocolPort[port_index].name, artnet::GetProtocolMode(kProtocol));
 #endif
 #if defined(RDM_CONTROLLER) || defined(RDM_RESPONDER)
-            const auto kRdm = common::PortGet<dmxnode::Rdm>(port_index, store_dmxnode_.rdm);
+            const auto kRdm = common::PortGet<dmxnode::Rdm>(port_index, store_dmxnode.rdm);
             printf(" %s=%u\n", json::ArtNetParamsConst::kRdmEnablePort[port_index].name, static_cast<unsigned>(kRdm));
 #endif
-            printf(" %s=" IPSTR "\n", json::ArtNetParamsConst::kDestinationIpPort[port_index].name, IP2STR(store_dmxnode_.destination_ip[port_index]));
+#if defined(ARTNET_HAVE_DMXIN)
+            printf(" %s=" IPSTR "\n", json::ArtNetParamsConst::kDestinationIpPort[port_index].name, IP2STR(store_dmxnode.destination_ip[port_index]));
+#endif			
         }
     }
 

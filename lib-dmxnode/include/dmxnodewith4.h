@@ -32,13 +32,10 @@
 #include "dmxsend.h"
 #include "firmware/debug/debug_debug.h"
 
-template <uint32_t nMaxPorts> class DmxNodeWith4
-{
+template <uint32_t kMaxPorts> class DmxNodeWith4 {
    public:
-    DmxNodeWith4(DmxPixelOutputType* dmx_pixel_output_type, DmxSend* dmx_send) : dmx_pixel_output_type_(dmx_pixel_output_type), dmx_send_(dmx_send)
-    {
-        DEBUG_PRINTF("nMaxPorts=%u DmxPixelOutputType=%p DmxSend=%p", nMaxPorts, reinterpret_cast<void*>(dmx_pixel_output_type_),
-                     reinterpret_cast<void*>(dmx_send_));
+    DmxNodeWith4(DmxPixelOutputType* dmx_pixel_output_type, DmxSend* dmx_send) : dmx_pixel_output_type_(dmx_pixel_output_type), dmx_send_(dmx_send) {
+        DEBUG_PRINTF("kMaxPorts=%u DmxPixelOutputType=%p DmxSend=%p", static_cast<unsigned>(kMaxPorts), reinterpret_cast<void*>(dmx_pixel_output_type_), reinterpret_cast<void*>(dmx_send_));
 
         assert(s_this == nullptr);
         s_this = this;
@@ -54,111 +51,84 @@ template <uint32_t nMaxPorts> class DmxNodeWith4
 
     DmxSend* GetDmxSend() const { return dmx_send_; }
 
-    void Start(uint32_t port_index)
-    {
-        if (port_index < nMaxPorts)
-        {
-            if (dmx_pixel_output_type_ != nullptr)
-            {
+    void Start(uint32_t port_index) {
+        if (port_index < kMaxPorts) {
+            if (dmx_pixel_output_type_ != nullptr) {
                 return dmx_pixel_output_type_->Start(port_index);
             }
             return;
         }
-        if (dmx_send_ != nullptr)
-        {
+        if (dmx_send_ != nullptr) {
             dmx_send_->Start(port_index & 0x3);
         }
     }
 
-    void Stop(uint32_t port_index)
-    {
-        if (port_index < nMaxPorts)
-        {
-            if (dmx_pixel_output_type_ != nullptr)
-            {
+    void Stop(uint32_t port_index) {
+        if (port_index < kMaxPorts) {
+            if (dmx_pixel_output_type_ != nullptr) {
                 return dmx_pixel_output_type_->Stop(port_index);
             }
             return;
         }
-        if (dmx_send_ != nullptr)
-        {
+        if (dmx_send_ != nullptr) {
             dmx_send_->Stop(port_index & 0x3);
         }
     }
 
-    template <bool doUpdate> void SetData(uint32_t port_index, const uint8_t* data, uint32_t length)
-    {
-        if (port_index < nMaxPorts)
-        {
-            if (dmx_pixel_output_type_ != nullptr)
-            {
-                return dmx_pixel_output_type_->SetData<doUpdate>(port_index, data, length);
+    template <bool kDoUpdate> void SetData(uint32_t port_index, const uint8_t* data, uint32_t length) {
+        if (port_index < kMaxPorts) {
+            if (dmx_pixel_output_type_ != nullptr) {
+                return dmx_pixel_output_type_->SetData<kDoUpdate>(port_index, data, length);
             }
             return;
         }
-        if (dmx_send_ != nullptr)
-        {
-            return dmx_send_->SetData<doUpdate>(port_index & 0x3, data, length);
+        if (dmx_send_ != nullptr) {
+            return dmx_send_->SetData<kDoUpdate>(port_index & 0x3, data, length);
         }
     }
 
-    void Sync(uint32_t port_index)
-    {
-        if (port_index < nMaxPorts)
-        {
-            if (dmx_pixel_output_type_ != nullptr)
-            {
+    void Sync(uint32_t port_index) {
+        if (port_index < kMaxPorts) {
+            if (dmx_pixel_output_type_ != nullptr) {
                 return dmx_pixel_output_type_->Sync(port_index);
             }
             return;
         }
-        if (dmx_send_ != nullptr)
-        {
+        if (dmx_send_ != nullptr) {
             return dmx_send_->Sync(port_index & 0x3);
         }
     }
 
-    void Sync()
-    {
-        if (dmx_pixel_output_type_ != nullptr)
-        {
+    void Sync() {
+        if (dmx_pixel_output_type_ != nullptr) {
             dmx_pixel_output_type_->Sync();
         }
-        if (dmx_send_ != nullptr)
-        {
+        if (dmx_send_ != nullptr) {
             dmx_send_->Sync();
         }
     }
 
 #if defined(OUTPUT_HAVE_STYLESWITCH)
-    void SetOutputStyle(uint32_t port_index, const dmxnode::OutputStyle outputStyle)
-    {
-        if (port_index < nMaxPorts)
-        {
-            if (dmx_pixel_output_type_ != nullptr)
-            {
+    void SetOutputStyle(uint32_t port_index, const dmxnode::OutputStyle outputStyle) {
+        if (port_index < kMaxPorts) {
+            if (dmx_pixel_output_type_ != nullptr) {
                 return dmx_pixel_output_type_->SetOutputStyle(port_index, outputStyle);
             }
             return;
         }
-        if (dmx_send_ != nullptr)
-        {
+        if (dmx_send_ != nullptr) {
             return dmx_send_->SetOutputStyle(port_index & 0x3, outputStyle);
         }
     }
 
-    dmxnode::OutputStyle GetOutputStyle(uint32_t port_index) const
-    {
-        if (port_index < nMaxPorts)
-        {
-            if (dmx_pixel_output_type_ != nullptr)
-            {
+    dmxnode::OutputStyle GetOutputStyle(uint32_t port_index) const {
+        if (port_index < kMaxPorts) {
+            if (dmx_pixel_output_type_ != nullptr) {
                 return dmx_pixel_output_type_->GetOutputStyle(port_index);
             }
             return dmxnode::OutputStyle::kDelta;
         }
-        if (dmx_send_ != nullptr)
-        {
+        if (dmx_send_ != nullptr) {
             return dmx_send_->GetOutputStyle(port_index & 0x3);
         }
 
@@ -166,55 +136,42 @@ template <uint32_t nMaxPorts> class DmxNodeWith4
     }
 #endif
 
-    void Blackout(bool blackout)
-    {
-        if (dmx_pixel_output_type_ != nullptr)
-        {
+    void Blackout(bool blackout) {
+        if (dmx_pixel_output_type_ != nullptr) {
             dmx_pixel_output_type_->Blackout(blackout);
         }
-        if (dmx_send_ != nullptr)
-        {
+        if (dmx_send_ != nullptr) {
             dmx_send_->Blackout(blackout);
         }
     }
 
-    void FullOn()
-    {
-        if (dmx_pixel_output_type_ != nullptr)
-        {
+    void FullOn() {
+        if (dmx_pixel_output_type_ != nullptr) {
             dmx_pixel_output_type_->FullOn();
         }
-        if (dmx_send_ != nullptr)
-        {
+        if (dmx_send_ != nullptr) {
             dmx_send_->FullOn();
         }
     }
 
-    void Print()
-    {
-        if (dmx_pixel_output_type_ != nullptr)
-        {
+    void Print() {
+        if (dmx_pixel_output_type_ != nullptr) {
             dmx_pixel_output_type_->Print();
         }
-        if (dmx_send_ != nullptr)
-        {
+        if (dmx_send_ != nullptr) {
             dmx_send_->Print();
         }
     }
 
-    uint32_t GetUserData()
-    {
-        if (dmx_pixel_output_type_ != nullptr)
-        {
+    uint32_t GetUserData() {
+        if (dmx_pixel_output_type_ != nullptr) {
             return dmx_pixel_output_type_->GetUserData();
         }
         return 0;
     }
 
-    uint32_t GetRefreshRate()
-    {
-        if (dmx_pixel_output_type_ != nullptr)
-        {
+    uint32_t GetRefreshRate() {
+        if (dmx_pixel_output_type_ != nullptr) {
             return dmx_pixel_output_type_->GetRefreshRate();
         }
         return 0;
@@ -228,8 +185,7 @@ template <uint32_t nMaxPorts> class DmxNodeWith4
 
     bool GetSlotInfo([[maybe_unused]] uint16_t slot_offset, [[maybe_unused]] dmxnode::SlotInfo& slot_info) { return false; }
 
-    static DmxNodeWith4& Get()
-    {
+    static DmxNodeWith4& Get() {
         assert(s_this != nullptr); // Ensure that s_this is valid
         return *s_this;
     }

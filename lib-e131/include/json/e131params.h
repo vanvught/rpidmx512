@@ -10,16 +10,13 @@
 #include "json/e131paramsconst.h"
 #include "json/json_key.h"
 #include "json/json_params_base.h"
-#include "configurationstore.h"
-
-#if !defined (MAX_ARRAY_SIZE)
-#error
+#include "dmxnode_outputtype.h"
+#if defined(DMXNODE_OUTPUT_DMX)
+#include "dmx.h"
 #endif
 
-namespace json
-{
-class E131Params : public JsonParamsBase<E131Params>
-{
+namespace json {
+class E131Params : public JsonParamsBase<E131Params> {
    public:
     E131Params();
 
@@ -38,24 +35,27 @@ class E131Params : public JsonParamsBase<E131Params>
 
    private:
     static void SetPriority(const char* key, uint32_t key_len, const char* val, uint32_t val_len);
-
+#if defined(DMX_MAX_PORTS)
     static constexpr json::Key kE131PriorityKeys[] = {
+
         MakeKey(SetPriority, E131ParamsConst::kPriorityPort[0]),
-#if (MAX_ARRAY_SIZE > 1)
+#if (DMX_MAX_PORTS > 1)
         MakeKey(SetPriority, E131ParamsConst::kPriorityPort[1]),
 #endif
-#if (MAX_ARRAY_SIZE > 2)
+#if (DMX_MAX_PORTS > 2)
         MakeKey(SetPriority, E131ParamsConst::kPriorityPort[2]),
 #endif
-#if (MAX_ARRAY_SIZE == 4)
+#if (DMX_MAX_PORTS == 4)
         MakeKey(SetPriority, E131ParamsConst::kPriorityPort[3]),
 #endif
-    };
 
-    inline static common::store::DmxNode store_dmxnode_;
+    };
+#endif
+
+    inline static common::store::DmxNode store_dmxnode;
 
     friend class JsonParamsBase<E131Params>;
 };
 } // namespace json
 
-#endif  // JSON_E131PARAMS_H_
+#endif // JSON_E131PARAMS_H_

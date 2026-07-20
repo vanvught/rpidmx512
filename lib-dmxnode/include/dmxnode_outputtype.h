@@ -27,49 +27,44 @@
 
 #include <cstdint>
 
-namespace dmxnode
-{
-enum class OutputType
-{
-    kDmx,
-    kDmxRdm,
-    kPixel,
-    kPixelDmx,
-    kPwm,
-    kRgbPanel,
-    kSerial,
-    kOsc,
-    kMonitor,
-    kStepper,
-    kPlayer,
-    kArtNet,
-    kTimeCode,
-    kNone,
-    kUndefined
+namespace dmxnode {
+enum class OutputType {
+    kDmx,      //
+    kDmxRdm,   //
+    kPixel,    //
+    kPixelDmx, //
+    kPwm,      //
+    kRgbPanel, //
+    kSerial,   //
+    kOsc,      //
+    kMonitor,  //
+    kStepper,  //
+    kPlayer,   //
+    kArtNet,   //
+    kTimeCode, //
+    kNone,     //
+    kUndefined //
 };
 
-inline constexpr const char* kOutputTypeNames[static_cast<uint32_t>(OutputType::kUndefined)] = 
-{
-    "DMX", 
-	"DMX/RDM", 
-	"Pixel", 
-	"Pixel/DMX", 
-	"PWM", 
-	"RGB Panel", 
-	"Serial", 
-	"OSC", 
-	"Monitor", 
-	"Stepper", 
-	"Player", 
-	"Art-Net", 
-	"Timecode", 
-	"None"
+inline constexpr const char* kOutputTypeNames[static_cast<uint32_t>(OutputType::kUndefined)] = {
+    "DMX",       //
+    "DMX/RDM",   //
+    "Pixel",     //
+    "Pixel/DMX", //
+    "PWM",       //
+    "RGB Panel", //
+    "Serial",    //
+    "OSC",       //
+    "Monitor",   //
+    "Stepper",   //
+    "Player",    //
+    "Art-Net",   //
+    "Timecode",  //
+    "None"       //
 };
 
-inline const char* GetOutputType(OutputType type)
-{
-    if (type < OutputType::kUndefined)
-    {
+inline const char* GetOutputType(OutputType type) {
+    if (type < OutputType::kUndefined) {
         return kOutputTypeNames[static_cast<uint32_t>(type)];
     }
 
@@ -171,8 +166,7 @@ using DmxNodeOutputType = PCA9685DmxSet;
 using DmxNodeOutputType = TLC59711Dmx;
 #endif
 
-namespace dmxnode
-{
+namespace dmxnode {
 #if defined(DMXNODE_OUTPUT_DMX) && defined(RDM_CONTROLLER)
 inline constexpr auto kOutputType = OutputType::kDmxRdm;
 #elif defined(DMXNODE_OUTPUT_DMX)

@@ -26,125 +26,118 @@
 #define JSON_ARTNETPARAMSCONST_H_
 
 #include "common/utils/utils_hash.h"
-#include "configurationstore.h"
 #include "json/json_key.h"
-#include "common/utils/utils_hash.h"
-
-#undef MAX_ARRAY_SIZE
+#include "dmxnode_outputtype.h"
 #if defined(DMXNODE_OUTPUT_DMX)
 #include "dmx.h"
-#define MAX_ARRAY_SIZE DMX_MAX_PORTS
-#else
-#define MAX_ARRAY_SIZE 4
 #endif
 
-static_assert(MAX_ARRAY_SIZE <= common::store::dmxnode::kParamPorts);
-
-namespace json
-{
+namespace json {
 struct ArtNetParamsConst {
     static constexpr char kFileName[] = "artnet.json";
-
-    static constexpr json::PortKey kDestinationIpPortA{"destination_ip_port_a", 21, Fnv1a32("destination_ip_port_a", 21)};
-#if (MAX_ARRAY_SIZE > 1)
-    static constexpr json::PortKey kDestinationIpPortB{"destination_ip_port_b", 21, Fnv1a32("destination_ip_port_b", 21)};
-#endif
-#if (MAX_ARRAY_SIZE > 2)
-    static constexpr json::PortKey kDestinationIpPortC{"destination_ip_port_c", 21, Fnv1a32("destination_ip_port_c", 21)};
-#endif
-#if (MAX_ARRAY_SIZE == 4)
-    static constexpr json::PortKey kDestinationIpPortD{"destination_ip_port_d", 21, Fnv1a32("destination_ip_port_d", 21)};
-#endif
-
-    static constexpr json::PortKey kDestinationIpPort[] = {
-        kDestinationIpPortA,
-#if (MAX_ARRAY_SIZE > 1)
-        kDestinationIpPortB,
-#endif
-#if (MAX_ARRAY_SIZE > 2)
-        kDestinationIpPortC,
-#endif
-#if (MAX_ARRAY_SIZE == 4)
-        kDestinationIpPortD,
-#endif
-    };
-
-    // Art-Net 4
-    static constexpr auto kEnableRdm = json::MakeSimpleKey("enable_rdm");
-
     static constexpr auto kMapUniverse0 = json::MakeSimpleKey("map_universe0");
 
-    static constexpr json::PortKey kProtocolPortA{"protocol_port_a", 15, Fnv1a32("protocol_port_a", 15)};
-#if (MAX_ARRAY_SIZE > 1)
-    static constexpr json::PortKey kProtocolPortB{"protocol_port_b", 15, Fnv1a32("protocol_port_b", 15)};
-#endif
-#if (MAX_ARRAY_SIZE > 2)
-    static constexpr json::PortKey kProtocolPortC{"protocol_port_c", 15, Fnv1a32("protocol_port_c", 15)};
-#endif
-#if (MAX_ARRAY_SIZE == 4)
-    static constexpr json::PortKey kProtocolPortD{"protocol_port_d", 15, Fnv1a32("protocol_port_d", 15)};
-#endif
-
-    static constexpr json::PortKey kProtocolPort[] = {
-        kProtocolPortA,
-#if (MAX_ARRAY_SIZE > 1)
-        kProtocolPortB,
-#endif
-#if (MAX_ARRAY_SIZE > 2)
-        kProtocolPortC,
-#endif
-#if (MAX_ARRAY_SIZE == 4)
-        kProtocolPortD,
-#endif
-    };
+#if defined(RDM_CONTROLLER) || defined(RDM_RESPONDER)
+    static constexpr auto kEnableRdm = json::MakeSimpleKey("enable_rdm");
 
     static constexpr json::PortKey kRdmEnablePortA{"rdm_enable_port_a", 17, Fnv1a32("rdm_enable_port_a", 17)};
-#if (MAX_ARRAY_SIZE > 1)
+#if (DMX_MAX_PORTS > 1)
     static constexpr json::PortKey kRdmEnablePortB{"rdm_enable_port_b", 17, Fnv1a32("rdm_enable_port_b", 17)};
 #endif
-#if (MAX_ARRAY_SIZE > 2)
+#if (DMX_MAX_PORTS > 2)
     static constexpr json::PortKey kRdmEnablePortC{"rdm_enable_port_c", 17, Fnv1a32("rdm_enable_port_c", 17)};
 #endif
-#if (MAX_ARRAY_SIZE == 4)
+#if (DMX_MAX_PORTS == 4)
     static constexpr json::PortKey kRdmEnablePortD{"rdm_enable_port_d", 17, Fnv1a32("rdm_enable_port_d", 17)};
 #endif
 
     static constexpr json::PortKey kRdmEnablePort[] = {
         kRdmEnablePortA,
-#if (MAX_ARRAY_SIZE > 1)
+#if (DMX_MAX_PORTS > 1)
         kRdmEnablePortB,
 #endif
-#if (MAX_ARRAY_SIZE > 2)
+#if (DMX_MAX_PORTS > 2)
         kRdmEnablePortC,
 #endif
-#if (MAX_ARRAY_SIZE == 4)
+#if (DMX_MAX_PORTS == 4)
         kRdmEnablePortD,
+#endif
+    };
+#endif
+
+#if defined(DMX_MAX_PORTS)
+    static constexpr json::PortKey kDestinationIpPortA{"destination_ip_port_a", 21, Fnv1a32("destination_ip_port_a", 21)};
+#if (DMX_MAX_PORTS > 1)
+    static constexpr json::PortKey kDestinationIpPortB{"destination_ip_port_b", 21, Fnv1a32("destination_ip_port_b", 21)};
+#endif
+#if (DMX_MAX_PORTS > 2)
+    static constexpr json::PortKey kDestinationIpPortC{"destination_ip_port_c", 21, Fnv1a32("destination_ip_port_c", 21)};
+#endif
+#if (DMX_MAX_PORTS == 4)
+    static constexpr json::PortKey kDestinationIpPortD{"destination_ip_port_d", 21, Fnv1a32("destination_ip_port_d", 21)};
+#endif
+
+    static constexpr json::PortKey kDestinationIpPort[] = {
+        kDestinationIpPortA,
+#if (DMX_MAX_PORTS > 1)
+        kDestinationIpPortB,
+#endif
+#if (DMX_MAX_PORTS > 2)
+        kDestinationIpPortC,
+#endif
+#if (DMX_MAX_PORTS == 4)
+        kDestinationIpPortD,
+#endif
+    };
+
+    static constexpr json::PortKey kProtocolPortA{"protocol_port_a", 15, Fnv1a32("protocol_port_a", 15)};
+#if (DMX_MAX_PORTS > 1)
+    static constexpr json::PortKey kProtocolPortB{"protocol_port_b", 15, Fnv1a32("protocol_port_b", 15)};
+#endif
+#if (DMX_MAX_PORTS > 2)
+    static constexpr json::PortKey kProtocolPortC{"protocol_port_c", 15, Fnv1a32("protocol_port_c", 15)};
+#endif
+#if (DMX_MAX_PORTS == 4)
+    static constexpr json::PortKey kProtocolPortD{"protocol_port_d", 15, Fnv1a32("protocol_port_d", 15)};
+#endif
+
+    static constexpr json::PortKey kProtocolPort[] = {
+        kProtocolPortA,
+#if (DMX_MAX_PORTS > 1)
+        kProtocolPortB,
+#endif
+#if (DMX_MAX_PORTS > 2)
+        kProtocolPortC,
+#endif
+#if (DMX_MAX_PORTS == 4)
+        kProtocolPortD,
 #endif
     };
 
     static constexpr json::PortKey kBgDiscoveryPortA{"bg_discovery_port_a", 19, Fnv1a32("bg_discovery_port_a", 19)};
-#if (MAX_ARRAY_SIZE > 1)
+#if (DMX_MAX_PORTS > 1)
     static constexpr json::PortKey kBgDiscoveryPortB{"bg_discovery_port_b", 19, Fnv1a32("bg_discovery_port_b", 19)};
 #endif
-#if (MAX_ARRAY_SIZE > 2)
+#if (DMX_MAX_PORTS > 2)
     static constexpr json::PortKey kBgDiscoveryPortC{"bg_discovery_port_c", 19, Fnv1a32("bg_discovery_port_c", 19)};
 #endif
-#if (MAX_ARRAY_SIZE == 4)
+#if (DMX_MAX_PORTS == 4)
     static constexpr json::PortKey kBgDiscoveryPortD{"bg_discovery_port_d", 19, Fnv1a32("bg_discovery_port_d", 19)};
 #endif
 
     static constexpr json::PortKey kBgDiscoveryPort[] = {
         kBgDiscoveryPortA,
-#if (MAX_ARRAY_SIZE > 1)
+#if (DMX_MAX_PORTS > 1)
         kBgDiscoveryPortB,
 #endif
-#if (MAX_ARRAY_SIZE > 2)
+#if (DMX_MAX_PORTS > 2)
         kBgDiscoveryPortC,
 #endif
-#if (MAX_ARRAY_SIZE == 4)
+#if (DMX_MAX_PORTS == 4)
         kBgDiscoveryPortD,
 #endif
     };
+#endif
 };
 } // namespace json
 

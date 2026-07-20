@@ -41,6 +41,10 @@
 #include "configurationstore.h"
 #include "common/utils/utils_flags.h"
 #include "firmware/debug/debug_debug.h"
+#include "dmxnode_outputtype.h"
+#if defined(DMXNODE_OUTPUT_DMX)
+#include "dmx.h"
+#endif
 
 using common::store::dmxnode::Flags;
 
@@ -63,7 +67,9 @@ void DmxNodeParams::SetFailsafe(const char* val, [[maybe_unused]] uint32_t len) 
 }
 
 void DmxNodeParams::SetDisableMergeTimeout(const char* val, [[maybe_unused]] uint32_t len) {
-    if (len != 1) return;
+    if (len != 1) {
+        return;
+    }
 
     store_dmxnode.flags = common::SetFlagValue(store_dmxnode.flags, Flags::Flag::kDisableMergeTimeout, val[0] != '0');
 }
@@ -83,9 +89,7 @@ void DmxNodeParams::SetLabelPort(const char* key, uint32_t key_len, const char* 
 void DmxNodeParams::SetUniversePort(const char* key, uint32_t key_len, const char* val, uint32_t val_len) {
     const char kSuffix = key[key_len - 1];
     const auto kIndex = static_cast<uint8_t>(kSuffix - 'a');
-
-    auto v = ParseValue<uint16_t>(val, val_len);
-    store_dmxnode.universe[kIndex] = v;
+    store_dmxnode.universe[kIndex] = ParseValue<uint16_t>(val, val_len);
 }
 
 void DmxNodeParams::SetDirectionPort(const char* key, uint32_t key_len, const char* val, [[maybe_unused]] uint32_t val_len) {
@@ -164,9 +168,10 @@ void DmxNodeParams::Dump() {
     printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, json::DmxNodeParamsConst::kFileName);
     printf(" %s=%s\n", json::DmxNodeParamsConst::kNodeName.name, store_dmxnode.node_name);
     printf(" %s=%s [%u]\n", json::DmxNodeParamsConst::kFailsafe.name, dmxnode::GetFailsafe(static_cast<dmxnode::FailSafe>(store_dmxnode.fail_safe)), store_dmxnode.fail_safe);
-    printf(" %s=%u\n", json::DmxNodeParamsConst::kDisableMergeTimeout.name, common::IsFlagSet(store_dmxnode.flags, Flags::Flag::kDisableMergeTimeout));
+    printf(" %s=%u\n", json::DmxNodeParamsConst::kDisableMergeTimeout.name, static_cast<unsigned>(common::IsFlagSet(store_dmxnode.flags, Flags::Flag::kDisableMergeTimeout)));
 
     if constexpr (dmxnode::kConfigPortCount != 0) {
+#if defined(DMX_MAX_PORTS)
         for (uint32_t port_index = 0; port_index < dmxnode::kConfigPortCount; port_index++) {
             printf(" %s=%s\n", json::DmxNodeParamsConst::kLabelPort[port_index].name, reinterpret_cast<char*>(store_dmxnode.port_name[port_index]));
             printf(" %s=%u\n", json::DmxNodeParamsConst::kUniversePort[port_index].name, store_dmxnode.universe[port_index]);
@@ -177,6 +182,7 @@ void DmxNodeParams::Dump() {
             const auto kOutputStyle = GetOutputStyleSet(1U << port_index);
             printf(" %s=%s\n", DmxNodeParamsConst::kOutputStylePort[port_index].name, dmxnode::GetOutputStyle(kOutputStyle));
         }
+#endif
     }
 
     auto& dmx_node = *DmxNodeNodeType::Get();

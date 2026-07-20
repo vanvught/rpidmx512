@@ -31,19 +31,16 @@
 #include "dmxnode_outputtype.h"
 #include "dmxnodedata.h"
 
-namespace dmxnode
-{
-inline void DataSet(DmxNodeOutputType* const kDmxNodeOutputType, uint32_t port_index)
-{
+namespace dmxnode {
+inline void DataSet(DmxNodeOutputType* const kDmxNodeOutputType, uint32_t port_index) {
     assert(kDmxNodeOutputType != nullptr);
     kDmxNodeOutputType->SetData<false>(port_index, dmxnode::Data::Backup(port_index), dmxnode::Data::GetLength(port_index));
 }
 
-inline void DataOutput(DmxNodeOutputType* const kDmxNodeOutputType, uint32_t port_index)
-{
+inline void DataOutput(DmxNodeOutputType* const kDmxNodeOutputType, uint32_t port_index) {
     assert(kDmxNodeOutputType != nullptr);
     kDmxNodeOutputType->SetData<true>(port_index, dmxnode::Data::Backup(port_index), dmxnode::Data::GetLength(port_index));
 }
 } // namespace dmxnode
 
-#endif  // DMXNODE_DATA_H_
+#endif // DMXNODE_DATA_H_

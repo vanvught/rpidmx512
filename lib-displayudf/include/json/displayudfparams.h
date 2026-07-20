@@ -32,6 +32,10 @@
 #include "json/json_params_base.h"
 #include "displayudf.h"
 #include "common/utils/utils_array.h"
+#include "dmxnode_outputtype.h"
+#if defined(DMXNODE_OUTPUT_DMX)
+#include "dmx.h"
+#endif
 
 static_assert(common::ArraySize(json::DisplayUdfParamsConst::kLabels) == static_cast<size_t>(displayudf::Labels::kUnknown), "Mismatch between enum and kArray");
 

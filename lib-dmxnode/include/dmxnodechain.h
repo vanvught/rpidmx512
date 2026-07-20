@@ -21,7 +21,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
- 
 
 #ifndef DMXNODECHAIN_H_
 #define DMXNODECHAIN_H_
@@ -34,16 +33,14 @@
 #include "sparkfundmx.h"
 #include "tlc59711dmx.h"
 
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
-class DmxNodeChain
-{
+class DmxNodeChain {
    public:
     DmxNodeChain() = default;
     ~DmxNodeChain() = default;
 
-    void SetSparkfunDmx(SparkFunDmx* spark_fun_dmx)
-    {
+    void SetSparkfunDmx(SparkFunDmx* spark_fun_dmx) {
         DEBUG_ENTRY();
         assert(spark_fun_dmx != nullptr);
         spark_fun_dmx_ = spark_fun_dmx;
@@ -52,13 +49,11 @@ class DmxNodeChain
         DEBUG_EXIT();
     }
 
-    void SetTLC59711Dmx(TLC59711Dmx* tlc59711_dmx)
-    {
+    void SetTLC59711Dmx(TLC59711Dmx* tlc59711_dmx) {
         DEBUG_ENTRY();
         tlc59711_dmx_ = tlc59711_dmx;
 
-        if (tlc59711_dmx_ == nullptr)
-        {
+        if (tlc59711_dmx_ == nullptr) {
             DEBUG_EXIT();
             return;
         }
@@ -67,83 +62,67 @@ class DmxNodeChain
         DEBUG_EXIT();
     }
 
-    void Start(uint32_t port_index)
-    {
+    void Start(uint32_t port_index) {
         assert(spark_fun_dmx_ != nullptr);
         spark_fun_dmx_->Start(port_index);
 
-        if (tlc59711_dmx_ != nullptr)
-        {
+        if (tlc59711_dmx_ != nullptr) {
             tlc59711_dmx_->Start(port_index);
         }
     }
 
-    void Stop(uint32_t port_index)
-    {
+    void Stop(uint32_t port_index) {
         assert(spark_fun_dmx_ != nullptr);
         spark_fun_dmx_->Stop(port_index);
 
-        if (tlc59711_dmx_ != nullptr)
-        {
+        if (tlc59711_dmx_ != nullptr) {
             tlc59711_dmx_->Stop(port_index);
         }
     }
 
-    template <bool doUpdate> void SetData(uint32_t port_index, const uint8_t* data, uint32_t length)
-    {
+    template <bool doUpdate> void SetData(uint32_t port_index, const uint8_t* data, uint32_t length) {
         assert(data != nullptr);
         assert(spark_fun_dmx_ != nullptr);
         spark_fun_dmx_->SetData<doUpdate>(port_index, data, length);
 
-        if (tlc59711_dmx_ != nullptr)
-        {
+        if (tlc59711_dmx_ != nullptr) {
             tlc59711_dmx_->SetData<doUpdate>(port_index, data, length);
         }
     }
 
-    void Sync(uint32_t port_index)
-    {
+    void Sync(uint32_t port_index) {
         assert(spark_fun_dmx_ != nullptr);
         spark_fun_dmx_->Sync(port_index);
 
-        if (tlc59711_dmx_ != nullptr)
-        {
+        if (tlc59711_dmx_ != nullptr) {
             tlc59711_dmx_->Sync(port_index);
         }
     }
 
-    void Sync()
-    {
+    void Sync() {
         assert(spark_fun_dmx_ != nullptr);
         spark_fun_dmx_->Sync();
 
-        if (tlc59711_dmx_ != nullptr)
-        {
+        if (tlc59711_dmx_ != nullptr) {
             tlc59711_dmx_->Sync();
         }
     }
 
 #if defined(OUTPUT_HAVE_STYLESWITCH)
-    void SetOutputStyle([[maybe_unused]] uint32_t port_index, [[maybe_unused]] dmxnode::OutputStyle output_style)
-    {
-		DEBUG_ENTRY(); 
-		DEBUG_EXIT();
+    void SetOutputStyle([[maybe_unused]] uint32_t port_index, [[maybe_unused]] dmxnode::OutputStyle output_style) {
+        DEBUG_ENTRY();
+        DEBUG_EXIT();
     }
 
-    dmxnode::OutputStyle GetOutputStyle([[maybe_unused]] uint32_t port_index) const
-    {
-        return dmxnode::OutputStyle::kDelta;
-    }
+    dmxnode::OutputStyle GetOutputStyle([[maybe_unused]] uint32_t port_index) const { return dmxnode::OutputStyle::kDelta; }
 #endif
 
     uint16_t GetDmxFootprint() { return dmx_footprint_; }
 
-    bool SetDmxStartAddress(uint16_t dmx_start_address)
-    {
+    bool SetDmxStartAddress(uint16_t dmx_start_address) {
         DEBUG_ENTRY();
 
-        if (dmx_start_address == dmx_start_address_)
-        {
+        if (dmx_start_address == dmx_start_address_) {
             DEBUG_EXIT();
             return true;
         }
@@ -152,8 +131,7 @@ class DmxNodeChain
         const auto kNewDmxStartAddressSparkfun = static_cast<uint16_t>((kCurrentDmxStartAddressSparkfun - dmx_start_address_) + dmx_start_address);
         spark_fun_dmx_->SetDmxStartAddress(kNewDmxStartAddressSparkfun);
 
-        if (tlc59711_dmx_ != nullptr)
-        {
+        if (tlc59711_dmx_ != nullptr) {
             const auto kCurrentDmxStartAddress = tlc59711_dmx_->GetDmxStartAddress();
             const auto kNewDmxStartAddress = static_cast<uint16_t>((kCurrentDmxStartAddress - dmx_start_address_) + dmx_start_address);
             tlc59711_dmx_->SetDmxStartAddress(kNewDmxStartAddress);
@@ -167,20 +145,17 @@ class DmxNodeChain
 
     uint16_t GetDmxStartAddress() { return dmx_start_address_; }
 
-    bool GetSlotInfo(uint16_t slot_offset, dmxnode::SlotInfo& slot_info)
-    {
+    bool GetSlotInfo(uint16_t slot_offset, dmxnode::SlotInfo& slot_info) {
         DEBUG_ENTRY();
 
-        if (slot_offset > dmx_footprint_)
-        {
+        if (slot_offset > dmx_footprint_) {
             DEBUG_EXIT();
             return false;
         }
 
         auto b = GetSlotInfo<SparkFunDmx>(spark_fun_dmx_, slot_offset, slot_info);
 
-        if (b)
-        {
+        if (b) {
             DEBUG_EXIT();
             return true;
         }
@@ -194,37 +169,31 @@ class DmxNodeChain
     uint32_t GetUserData() { return 0; }    ///< Art-Net ArtPollReply
     uint32_t GetRefreshRate() { return 0; } ///< Art-Net ArtPollReply
 
-    void Blackout([[maybe_unused]] bool blackout)
-    {
+    void Blackout([[maybe_unused]] bool blackout) {
         DEBUG_ENTRY();
         DEBUG_EXIT();
     }
 
-    void FullOn()
-    {
+    void FullOn() {
         DEBUG_ENTRY();
         DEBUG_EXIT();
     }
 
-    void Print()
-    {
+    void Print() {
         spark_fun_dmx_->Print();
-        if (tlc59711_dmx_ != nullptr)
-        {
+        if (tlc59711_dmx_ != nullptr) {
             tlc59711_dmx_->Print();
         }
     }
 
    private:
-    template <class T> void Set(T* t)
-    {
-		DEBUG_ENTRY();
+    template <class T> void Set(T* t) {
+        DEBUG_ENTRY();
         assert(t != nullptr);
-        
-        DEBUG_PRINTF("t->GetDmxStartAddress()=%u,t->GetDmxFootprint()=%u", t->GetDmxStartAddress(),t->GetDmxFootprint());
 
-        if (dmx_start_address_ == dmxnode::kAddressInvalid)
-        {
+        DEBUG_PRINTF("t->GetDmxStartAddress()=%u,t->GetDmxFootprint()=%u", t->GetDmxStartAddress(), t->GetDmxFootprint());
+
+        if (dmx_start_address_ == dmxnode::kAddressInvalid) {
             dmx_start_address_ = t->GetDmxStartAddress();
             dmx_footprint_ = t->GetDmxFootprint();
 
@@ -245,8 +214,7 @@ class DmxNodeChain
         DEBUG_EXIT();
     }
 
-    template <class T> bool GetSlotInfo(T* t, uint16_t slot_offset, dmxnode::SlotInfo& slot_info)
-    {
+    template <class T> bool GetSlotInfo(T* t, uint16_t slot_offset, dmxnode::SlotInfo& slot_info) {
         assert(t != nullptr);
 
         const auto kDmxAddress = dmx_start_address_ + slot_offset;
@@ -259,8 +227,7 @@ class DmxNodeChain
         printf("\nkOffset=%d\n", kOffset);
 #endif
 
-        if ((t->GetDmxStartAddress() + t->GetDmxFootprint() <= kDmxAddress) || (kOffset < 0))
-        {
+        if ((t->GetDmxStartAddress() + t->GetDmxFootprint() <= kDmxAddress) || (kOffset < 0)) {
             DEBUG_EXIT();
             return false;
         }
@@ -270,11 +237,10 @@ class DmxNodeChain
         return kB;
     }
 
-   private:
     SparkFunDmx* spark_fun_dmx_{nullptr};
     TLC59711Dmx* tlc59711_dmx_{nullptr};
     uint16_t dmx_start_address_{dmxnode::kAddressInvalid};
     uint16_t dmx_footprint_{0};
 };
 
-#endif  // DMXNODECHAIN_H_
+#endif // DMXNODECHAIN_H_
