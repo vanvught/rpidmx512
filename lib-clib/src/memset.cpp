@@ -1,3 +1,6 @@
+#pragma GCC push_options
+#pragma GCC optimize("O3")
+#pragma GCC optimize("no-tree-loop-distribute-patterns")
 /*
  * Copyright (c) 2013-2025, Arm Limited and Contributors. All rights reserved.
  *

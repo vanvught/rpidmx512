@@ -30,252 +30,214 @@
 #include <stddef.h>
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
-    extern char* strerror(int errnum);                              // NOLINT
-    extern char* strtok(char* str, const char* delim);              // NOLINT
-    extern char* strstr(const char* string, const char* substring); // NOLINT
+extern char* strerror(int errnum);                              // NOLINT
+extern char* strtok(char* str, const char* delim);              // NOLINT
+extern char* strstr(const char* string, const char* substring); // NOLINT
 
-    inline int memcmp(const void* s1, const void* s2, size_t n) // NOLINT
-    {
-        unsigned char u1, u2;
-        unsigned char *t1, *t2;
+inline int memcmp(const void* s1, const void* s2, size_t n) // NOLINT
+{
+    unsigned char u1;
+    unsigned char u2;
+    unsigned char *t1;
+    unsigned char *t2;
 
-        t1 = (unsigned char*)s1;
-        t2 = (unsigned char*)s2;
+    t1 = (unsigned char*)s1;
+    t2 = (unsigned char*)s2;
 
-        for (; n-- != (size_t)0; t1++, t2++)
-        {
-            u1 = *t1;
-            u2 = *t2;
-            if (u1 != u2)
-            {
-                return (u1 - u2);
-            }
+    for (; n-- != (size_t)0; t1++, t2++) {
+        u1 = *t1;
+        u2 = *t2;
+        if (u1 != u2) {
+            return (u1 - u2);
         }
-
-        return 0;
     }
 
-    inline void* memcpy(void* __restrict__ dest, const void* __restrict__ src, size_t n) // NOLINT
-    {
-        char* dp = (char*)dest;
-        const char* sp = (const char*)src;
+    return 0;
+}
 
-        while (n-- != (size_t)0)
-        {
+inline void* memcpy(void* __restrict__ dest, const void* __restrict__ src, size_t n) // NOLINT
+{
+    char* dp = (char*)dest;
+    const char* sp = (const char*)src;
+
+    while (n-- != (size_t)0) {
+        *dp++ = *sp++;
+    }
+
+    return dest;
+}
+
+inline void* mempcpy(void* __restrict__ dest, const void* __restrict__ src, size_t n) // NOLINT
+{
+    return (char*)memcpy(dest, src, n) + n;
+}
+
+inline void* memmove(void* dst, const void* src, size_t n) // NOLINT
+{
+    char* dp = (char*)dst;
+    const char* sp = (const char*)src;
+
+    if (dp < sp) {
+        while (n-- != (size_t)0) {
             *dp++ = *sp++;
         }
-
-        return dest;
-    }
-
-    inline void* mempcpy(void* __restrict__ dest, const void* __restrict__ src, size_t n) // NOLINT
-    {
-        return (char*)memcpy(dest, src, n) + n;
-    }
-
-    inline void* memmove(void* dst, const void* src, size_t n) // NOLINT
-    {
-        char* dp = (char*)dst;
-        const char* sp = (const char*)src;
-
-        if (dp < sp)
-        {
-            while (n-- != (size_t)0)
-            {
-                *dp++ = *sp++;
-            }
+    } else {
+        sp += n;
+        dp += n;
+        while (n-- != (size_t)0) {
+            *--dp = *--sp;
         }
-        else
-        {
-            sp += n;
-            dp += n;
-            while (n-- != (size_t)0)
-            {
-                *--dp = *--sp;
-            }
+    }
+
+    return dst;
+}
+
+void* memset(void* dest, int c, size_t n); // NOLINT
+
+inline size_t strlen(const char* s) // NOLINT
+{
+    const char* p = s;
+
+    while (*s != (char)0) {
+        ++s;
+    }
+
+    return (size_t)(s - p);
+}
+
+inline size_t strnlen(const char* s, size_t maxlen) // NOLINT
+{
+    size_t len;
+
+    for (len = 0; len < maxlen; len++, s++) {
+        if (!*s) break;
+    }
+    return (len);
+}
+
+inline char* strcpy(char* __restrict__ s1, const char* __restrict__ s2) // NOLINT
+{
+    char* s = s1;
+
+    while ((*s++ = *s2++) != '\0');
+    return s1;
+}
+
+inline char* strncpy(char* __restrict__ s1, const char* __restrict__ s2, size_t n) // NOLINT
+{
+    char* s = s1;
+
+    while (n > 0 && *s2 != '\0') {
+        *s++ = *s2++;
+        --n;
+    }
+
+    while (n > 0) {
+        *s++ = '\0';
+        --n;
+    }
+
+    return s1;
+}
+
+inline int strcmp(const char* s1, const char* s2) // NOLINT
+{
+    unsigned char* p1 = (unsigned char*)s1;
+    unsigned char* p2 = (unsigned char*)s2;
+
+    for (; *p1 == *p2; p1++, p2++) {
+        if (*p1 == (unsigned char)'\0') {
+            return 0;
         }
-
-        return dst;
     }
 
-    inline void* memset(void* dest, int c, size_t n) // NOLINT
-    {
-        char* dp = (char*)dest;
+    return (*p1 - *p2);
+}
 
-        while (n-- != (size_t)0)
-        {
-            *dp++ = (char)c;
+inline int strncmp(const char* s1, const char* s2, size_t n) // NOLINT
+{
+    unsigned char* p1 = (unsigned char*)s1;
+    unsigned char* p2 = (unsigned char*)s2;
+
+    for (; n > 0; p1++, p2++, --n) {
+        if (*p1 != *p2) {
+            return (*p1 - *p2);
+        } else if (*p1 == (unsigned char)'\0') {
+            return 0;
         }
-
-        return dest;
     }
 
-    inline size_t strlen(const char* s) // NOLINT
-    {
-        const char* p = s;
+    return 0;
+}
 
-        while (*s != (char)0)
-        {
-            ++s;
+inline int strcasecmp(const char* s1, const char* s2) // NOLINT
+{
+    unsigned char* p1 = (unsigned char*)s1;
+    unsigned char* p2 = (unsigned char*)s2;
+
+    for (; tolower((int)*p1) == tolower((int)*p2); p1++, p2++) {
+        if (*p1 == (unsigned char)'\0') {
+            return 0;
         }
-
-        return (size_t)(s - p);
     }
 
-    inline size_t strnlen(const char* s, size_t maxlen) // NOLINT
-    {
-        size_t len;
+    return (tolower((int)*p1) - tolower((int)*p2));
+}
 
-        for (len = 0; len < maxlen; len++, s++)
-        {
-            if (!*s) break;
+inline int strncasecmp(const char* s1, const char* s2, size_t n) // NOLINT
+{
+    unsigned char* p1 = (unsigned char*)s1;
+    unsigned char* p2 = (unsigned char*)s2;
+
+    for (; n > 0; p1++, p2++, --n) {
+        if (tolower((int)*p1) != tolower((int)*p2)) {
+            return (tolower((int)*p1) - tolower((int)*p2));
+        } else if (*p1 == (unsigned char)'\0') {
+            return 0;
         }
-        return (len);
     }
 
-    inline char* strcpy(char* __restrict__ s1, const char* __restrict__ s2) // NOLINT
-    {
-        char* s = s1;
+    return 0;
+}
 
-        while ((*s++ = *s2++) != '\0');
-        return s1;
+inline char* strcat(char* s1, const char* s2) // NOLINT
+{
+    strcpy(s1 + strlen(s1), s2);
+    return s1;
+}
+
+inline char* strncat(char* dst, const char* src, size_t n) // NOLINT
+{
+    if (n != 0) {
+        char* d = dst;
+        const char* s = src;
+        while (*d != 0) d++;
+        do {
+            if ((*d = *s++) == 0) break;
+            d++;
+        } while (--n != 0);
+        *d = 0;
     }
+    return (dst);
+}
 
-    inline char* strncpy(char* __restrict__ s1, const char* __restrict__ s2, size_t n) // NOLINT
-    {
-        char* s = s1;
+inline char* strchr(const char* p, int ch) // NOLINT
+{
+    char c = (char)ch;
 
-        while (n > 0 && *s2 != '\0')
-        {
-            *s++ = *s2++;
-            --n;
+    for (;; ++p) {
+        if (*p == c) {
+            return (char*)p;
         }
-
-        while (n > 0)
-        {
-            *s++ = '\0';
-            --n;
+        if (*p == '\0') {
+            return NULL;
         }
-
-        return s1;
     }
-
-    inline int strcmp(const char* s1, const char* s2) // NOLINT
-    {
-        unsigned char* p1 = (unsigned char*)s1;
-        unsigned char* p2 = (unsigned char*)s2;
-
-        for (; *p1 == *p2; p1++, p2++)
-        {
-            if (*p1 == (unsigned char)'\0')
-            {
-                return 0;
-            }
-        }
-
-        return (*p1 - *p2);
-    }
-
-    inline int strncmp(const char* s1, const char* s2, size_t n) // NOLINT
-    {
-        unsigned char* p1 = (unsigned char*)s1;
-        unsigned char* p2 = (unsigned char*)s2;
-
-        for (; n > 0; p1++, p2++, --n)
-        {
-            if (*p1 != *p2)
-            {
-                return (*p1 - *p2);
-            }
-            else if (*p1 == (unsigned char)'\0')
-            {
-                return 0;
-            }
-        }
-
-        return 0;
-    }
-
-    inline int strcasecmp(const char* s1, const char* s2) // NOLINT
-    {
-        unsigned char* p1 = (unsigned char*)s1;
-        unsigned char* p2 = (unsigned char*)s2;
-
-        for (; tolower((int)*p1) == tolower((int)*p2); p1++, p2++)
-        {
-            if (*p1 == (unsigned char)'\0')
-            {
-                return 0;
-            }
-        }
-
-        return (tolower((int)*p1) - tolower((int)*p2));
-    }
-
-    inline int strncasecmp(const char* s1, const char* s2, size_t n) // NOLINT
-    {
-        unsigned char* p1 = (unsigned char*)s1;
-        unsigned char* p2 = (unsigned char*)s2;
-
-        for (; n > 0; p1++, p2++, --n)
-        {
-            if (tolower((int)*p1) != tolower((int)*p2))
-            {
-                return (tolower((int)*p1) - tolower((int)*p2));
-            }
-            else if (*p1 == (unsigned char)'\0')
-            {
-                return 0;
-            }
-        }
-
-        return 0;
-    }
-
-    inline char* strcat(char* s1, const char* s2) // NOLINT
-    {
-        strcpy(s1 + strlen(s1), s2);
-        return s1;
-    }
-
-    inline char* strncat(char* dst, const char* src, size_t n) // NOLINT
-    {
-        if (n != 0)
-        {
-            char* d = dst;
-            const char* s = src;
-            while (*d != 0) d++;
-            do
-            {
-                if ((*d = *s++) == 0) break;
-                d++;
-            } while (--n != 0);
-            *d = 0;
-        }
-        return (dst);
-    }
-
-    inline char* strchr(const char* p, int ch) // NOLINT
-    {
-        char c = (char)ch;
-
-        for (;; ++p)
-        {
-            if (*p == c)
-            {
-                return (char*)p;
-            }
-            if (*p == '\0')
-            {
-                return NULL;
-            }
-        }
-        /* NOTREACHED */
-    }
+    /* NOTREACHED */
+}
 
 #ifdef __cplusplus
 }
