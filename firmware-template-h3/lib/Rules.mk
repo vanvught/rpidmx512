@@ -1,11 +1,14 @@
 $(info "lib/Rules.mk")
+
 PREFIX ?= arm-none-eabi-
 
-CC	= $(PREFIX)gcc
-CPP	= $(PREFIX)g++
-AS	= $(CC)
-LD	= $(PREFIX)gcc
-AR	= $(PREFIX)ar
+CC      = $(PREFIX)gcc
+CPP     = $(PREFIX)g++
+AS      = $(CC)
+LD      = $(PREFIX)gcc
+AR      = $(PREFIX)gcc-ar
+RANLIB  = $(PREFIX)gcc-ranlib
+NM      = $(PREFIX)gcc-nm
 
 $(info [${CURDIR}])
 

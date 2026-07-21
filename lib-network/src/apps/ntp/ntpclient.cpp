@@ -52,8 +52,7 @@
 #include "configurationstore.h"
 #include "firmware/debug/debug_debug.h"
 
-namespace network::apps::ntpclient
-{
+namespace network::apps::ntpclient {
 /*
  * How to multiply by 4294.967296 quickly (and not quite exactly)
  * without using floating point or greater than 32-bit integers.
@@ -91,8 +90,7 @@ Destination Timestamp T4   time reply received by client
  * @struct ntpClient
  * @brief Structure representing the state and configuration of the NTP client.
  */
-struct NtpClient
-{
+struct NtpClient {
     uint32_t server_ip;       ///< IP address of the NTP server.
     int32_t handle;           ///< Handle for UDP socket communication.
     TimerHandle_t timer_id;   ///< Timer ID for periodic tasks.
@@ -121,21 +119,17 @@ static void Send();
  *
  * @param handle Timer handle for the callback (unused).
  */
-static void NtpClientTimer([[maybe_unused]] TimerHandle_t handle)
-{
+static void NtpClientTimer([[maybe_unused]] TimerHandle_t handle) {
     assert(s_ntp_client.status != ntp::Status::kStopped);
     assert(s_ntp_client.status != ntp::Status::kDisabled);
 
-    if (s_ntp_client.status == ntp::Status::kWaiting)
-    {
-        if (s_ntp_client.request_timeout > 1)
-        {
+    if (s_ntp_client.status == ntp::Status::kWaiting) {
+        if (s_ntp_client.request_timeout > 1) {
             s_ntp_client.request_timeout--;
             return;
         }
 
-        if (s_ntp_client.request_timeout == 1)
-        {
+        if (s_ntp_client.request_timeout == 1) {
             s_ntp_client.status = ntp::Status::kFailed;
             ntpclient::DisplayStatus(ntp::Status::kFailed);
             s_ntp_client.poll_seconds = ntpclient::kPollSecondsMin;
@@ -144,24 +138,21 @@ static void NtpClientTimer([[maybe_unused]] TimerHandle_t handle)
         return;
     }
 
-    if (s_ntp_client.poll_seconds > 1)
-    {
+    if (s_ntp_client.poll_seconds > 1) {
         s_ntp_client.poll_seconds--;
         return;
     }
 
-    if (s_ntp_client.poll_seconds == 1)
-    {
+    if (s_ntp_client.poll_seconds == 1) {
         Send();
     }
 }
 
-static void PrintNtpTime([[maybe_unused]] const char* text, [[maybe_unused]] const struct ntp::TimeStamp* ntp_time)
-{
+static void PrintNtpTime([[maybe_unused]] const char* text, [[maybe_unused]] const struct ntp::TimeStamp* ntp_time) {
 #ifndef NDEBUG
     const auto kSeconds = static_cast<time_t>(ntp_time->seconds - ntp::kJan1970);
-    const auto* tm = localtime(&kSeconds);
-    printf("%s %02d:%02d:%02d.%06d %04d [%u]\n", text, tm->tm_hour, tm->tm_min, tm->tm_sec, USEC(ntp_time->fraction), tm->tm_year + 1900, ntp_time->seconds);
+    const auto* local_time = localtime(&kSeconds);
+    printf("%s %02d:%02d:%02d.%06d %04d [%u]\n", text, local_time->tm_hour, local_time->tm_min, local_time->tm_sec, static_cast<int>(USEC(ntp_time->fraction)), (local_time->tm_year + 1900), static_cast<unsigned>(ntp_time->seconds));
 #endif
 }
 
@@ -176,8 +167,7 @@ static struct timeval now;
  * @param[out] seconds Number of seconds since 01/01/1900.
  * @param[out] fraction Fractional part of a second in NTP format.
  */
-static void GetTimeNtpFormat(uint32_t& seconds, uint32_t& fraction)
-{
+static void GetTimeNtpFormat(uint32_t& seconds, uint32_t& fraction) {
     gettimeofday(&now, nullptr);
     seconds = static_cast<uint32_t>(now.tv_sec) + ntp::kJan1970;
     fraction = NTPFRAC(now.tv_usec);
@@ -187,8 +177,7 @@ static void GetTimeNtpFormat(uint32_t& seconds, uint32_t& fraction)
  * @brief Sends an NTP request to the configured server.
  *
  */
-static void Send()
-{
+static void Send() {
     GetTimeNtpFormat(s_ntp_client.t1.seconds, s_ntp_client.t1.fraction);
 
     s_ntp_client.request.transmit_timestamp_s = __builtin_bswap32(s_ntp_client.t1.seconds);
@@ -209,8 +198,7 @@ static void Send()
  * @param[out] nDiffSeconds Difference in seconds.
  * @param[out] nDiffMicroSeconds Difference in microseconds.
  */
-static void Difference(const struct ntp::TimeStamp& start, const struct ntp::TimeStamp& stop, int32_t& diff_seconds, int32_t& diff_micro_seconds)
-{
+static void Difference(const struct ntp::TimeStamp& start, const struct ntp::TimeStamp& stop, int32_t& diff_seconds, int32_t& diff_micro_seconds) {
     ntp::Time r;
     const ntp::Time kX = {.tv_sec = static_cast<int32_t>(stop.seconds), .tv_usec = static_cast<int32_t>(USEC(stop.fraction))};
     const ntp::Time kY = {.tv_sec = static_cast<int32_t>(start.seconds), .tv_usec = static_cast<int32_t>(USEC(start.fraction))};
@@ -226,8 +214,7 @@ static void Difference(const struct ntp::TimeStamp& start, const struct ntp::Tim
  * This function calculates the time offset using NTP timestamps and adjusts
  * the system time accordingly.
  */
-static void SetTimeOfDay()
-{
+static void SetTimeOfDay() {
     int32_t diff_seconds1, diff_seconds2;
     int32_t diff_micro_seconds1, diff_micro_seconds2;
 
@@ -248,30 +235,23 @@ static void SetTimeOfDay()
     tv.tv_sec = now.tv_sec + kOffsetSecondsAverage;
     tv.tv_usec = now.tv_usec + kOffsetMicrosAverage;
 
-    if (tv.tv_usec >= 1000000)
-    {
+    if (tv.tv_usec >= 1000000) {
         tv.tv_sec += tv.tv_usec / 1000000; // Add extra seconds
         tv.tv_usec %= 1000000;             // Keep only the remainder microseconds
-    }
-    else if (tv.tv_usec < 0)
-    {
+    } else if (tv.tv_usec < 0) {
         tv.tv_sec -= 1 + (-tv.tv_usec / 1000000);       // Subtract extra seconds
         tv.tv_usec = 1000000 - (-tv.tv_usec % 1000000); // Adjust microseconds
     }
 
     settimeofday(&tv, nullptr);
 
-    if ((ntp_offset.tv_sec == 0) && (ntp_offset.tv_usec > -999) && (ntp_offset.tv_usec < 999))
-    {
+    if ((ntp_offset.tv_sec == 0) && (ntp_offset.tv_usec > -999) && (ntp_offset.tv_usec < 999)) {
         s_ntp_client.status = ntp::Status::kLocked;
         ntpclient::DisplayStatus(ntp::Status::kLocked);
-        if (++s_ntp_client.locked_count == 4)
-        {
+        if (++s_ntp_client.locked_count == 4) {
             s_ntp_client.poll_seconds = ntpclient::kPollSecondsMax;
         }
-    }
-    else
-    {
+    } else {
         s_ntp_client.status = ntp::Status::kIdle;
         ntpclient::DisplayStatus(ntp::Status::kIdle);
         s_ntp_client.poll_seconds = ntpclient::kPollSecondsMin;
@@ -300,19 +280,22 @@ static void SetTimeOfDay()
 
     char sign = '+';
 
-    if (ntp_offset.tv_sec < 0)
-    {
+    if (ntp_offset.tv_sec < 0) {
         ntp_offset.tv_sec = -ntp_offset.tv_sec;
         sign = '-';
     }
 
-    if (ntp_offset.tv_usec < 0)
-    {
+    if (ntp_offset.tv_usec < 0) {
         ntp_offset.tv_usec = -ntp_offset.tv_usec;
         sign = '-';
     }
 
-    printf(" offset=%c%d.%06d delay=%d.%06d\n", sign, ntp_offset.tv_sec, ntp_offset.tv_usec, ntp_delay.tv_sec, ntp_delay.tv_usec);
+    printf(" offset=%c%d.%06d delay=%d.%06d\n", 
+		sign, 
+		static_cast<int>(ntp_offset.tv_sec), 
+		static_cast<int>(ntp_offset.tv_usec), 
+		static_cast<int>(ntp_delay.tv_sec), 
+		static_cast<int>(ntp_delay.tv_usec));
 #endif
 }
 
@@ -332,17 +315,14 @@ static void SetTimeOfDay()
  *       that it has a valid mode. If valid, it updates the system time using
  *       the extracted timestamps.
  */
-void Input(const uint8_t* buffer, [[maybe_unused]] uint32_t size, uint32_t from_ip, [[maybe_unused]] uint16_t from_port)
-{
+void Input(const uint8_t* buffer, [[maybe_unused]] uint32_t size, uint32_t from_ip, [[maybe_unused]] uint16_t from_port) {
     const auto* reply = reinterpret_cast<const ntp::Packet*>(buffer);
 
-    if (size < sizeof(ntp::Packet)) [[unlikely]]
-    {
+    if (size < sizeof(ntp::Packet)) [[unlikely]] {
         return;
     }
 
-    if (from_ip != s_ntp_client.server_ip) [[unlikely]]
-    {
+    if (from_ip != s_ntp_client.server_ip) [[unlikely]] {
         return;
     }
 
@@ -354,26 +334,22 @@ void Input(const uint8_t* buffer, [[maybe_unused]] uint32_t size, uint32_t from_
     const uint8_t kMode = (kLiVnMode >> 0) & 0x07;
 
     // Basic sanity: version 3 or 4, and mode "server"
-    if (!((kVn == 3) || (kVn == 4))) [[unlikely]]
-    {
+    if (!((kVn == 3) || (kVn == 4))) [[unlikely]] {
         return;
     }
 
-    if (kMode != 4) [[unlikely]]
-    { // 4 = server
+    if (kMode != 4) [[unlikely]] { // 4 = server
         return;
     }
 
     // Reject unsynchronized server
-    if (kLi == 3) [[unlikely]]
-    { // alarm condition
+    if (kLi == 3) [[unlikely]] { // alarm condition
         return;
     }
 
     const uint8_t kStratum = reply->stratum;
     // 0 = KoD/special, 16 = unsynchronized (commonly)
-    if ((kStratum == 0) || (kStratum >= 16)) [[unlikely]]
-    {
+    if ((kStratum == 0) || (kStratum >= 16)) [[unlikely]] {
         // TODO (a) Back off polling here.
         return;
     }
@@ -382,8 +358,7 @@ void Input(const uint8_t* buffer, [[maybe_unused]] uint32_t size, uint32_t from_
     const uint32_t kOrgS = __builtin_bswap32(reply->origin_timestamp_s);
     const uint32_t kOrgF = __builtin_bswap32(reply->origin_timestamp_f);
 
-    if ((kOrgS != s_ntp_client.t1.seconds) || (kOrgF != s_ntp_client.t1.fraction)) [[unlikely]]
-    {
+    if ((kOrgS != s_ntp_client.t1.seconds) || (kOrgF != s_ntp_client.t1.fraction)) [[unlikely]] {
         // Stale/unsolicited reply; ignore it.
         return;
     }
@@ -417,8 +392,7 @@ void Input(const uint8_t* buffer, [[maybe_unused]] uint32_t size, uint32_t from_
  *
  * @note This function must be called before starting the NTP client.
  */
-void Init()
-{
+void Init() {
     DEBUG_ENTRY();
 
     memset(&s_ntp_client, 0, sizeof(struct NtpClient));
@@ -429,8 +403,7 @@ void Init()
     s_ntp_client.request.reference_id = ('A' << 0) | ('V' << 8) | ('S' << 16);
     s_ntp_client.server_ip = ConfigStore::Instance().NetworkGet(&common::store::Network::ntp_server_ip);
 
-    if (s_ntp_client.server_ip == 0)
-    {
+    if (s_ntp_client.server_ip == 0) {
         s_ntp_client.status = ntp::Status::kStopped;
     }
 
@@ -446,18 +419,15 @@ void Init()
  * @note The function will not start the client if it is disabled or if the server
  *       IP address is not configured.
  */
-void Start()
-{
+void Start() {
     DEBUG_ENTRY();
 
-    if (s_ntp_client.status == ntp::Status::kDisabled)
-    {
+    if (s_ntp_client.status == ntp::Status::kDisabled) {
         DEBUG_EXIT();
         return;
     }
 
-    if (s_ntp_client.server_ip == 0)
-    {
+    if (s_ntp_client.server_ip == 0) {
         s_ntp_client.status = ntp::Status::kStopped;
         ntpclient::DisplayStatus(ntp::Status::kStopped);
         DEBUG_EXIT();
@@ -485,18 +455,15 @@ void Start()
  *
  * @param[in] do_disable Set to `true` to disable the client after stopping.
  */
-void Stop(bool do_disable)
-{
+void Stop(bool do_disable) {
     DEBUG_ENTRY();
 
-    if (do_disable)
-    {
+    if (do_disable) {
         s_ntp_client.status = ntp::Status::kDisabled;
         ntpclient::DisplayStatus(ntp::Status::kDisabled);
     }
 
-    if (s_ntp_client.status == ntp::Status::kStopped)
-    {
+    if (s_ntp_client.status == ntp::Status::kStopped) {
         return;
     }
 
@@ -505,8 +472,7 @@ void Stop(bool do_disable)
     network::udp::End(iana::Ports::kPortNtp);
     s_ntp_client.handle = -1;
 
-    if (!do_disable)
-    {
+    if (!do_disable) {
         s_ntp_client.status = ntp::Status::kStopped;
         ntpclient::DisplayStatus(ntp::Status::kStopped);
     }
@@ -521,8 +487,7 @@ void Stop(bool do_disable)
  *
  * @param[in] server_ip The IP address of the NTP server.
  */
-void SetServerIp(uint32_t server_ip)
-{
+void SetServerIp(uint32_t server_ip) {
     Stop();
 
     s_ntp_client.server_ip = server_ip;
@@ -535,8 +500,7 @@ void SetServerIp(uint32_t server_ip)
  *
  * @return The IP address of the NTP server.
  */
-uint32_t GetServerIp()
-{
+uint32_t GetServerIp() {
     return s_ntp_client.server_ip;
 }
 
@@ -547,8 +511,7 @@ uint32_t GetServerIp()
  *
  * @return The status of the NTP client as an `ntp::Status` enum.
  */
-ntp::Status GetStatus()
-{
+ntp::Status GetStatus() {
     return s_ntp_client.status;
 }
 } // namespace network::apps::ntpclient

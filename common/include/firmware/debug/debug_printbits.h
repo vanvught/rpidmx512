@@ -26,21 +26,21 @@
 #ifndef COMMON_DEBUG_DEBUG_PRINTBITS_H_
 #define COMMON_DEBUG_DEBUG_PRINTBITS_H_
 
-#include <cstdio>
 #include <cstdint>
 
 namespace debug {
 #ifdef NDEBUG
 inline void PrintBits([[maybe_unused]] uint32_t u) {}
 #else
+#include <cstdio>
 inline void PrintBits(uint32_t u) {
-    printf("%.8x ", u);
+    printf("%.8x ", static_cast<unsigned>(u));
     uint32_t b = 1U << 31;
 
     for (uint32_t i = 0; i < 32; i++) {
         if ((b & u) == b) {
             uint32_t bit_number = 31 - i;
-            printf("%-2d ", bit_number);
+            printf("%-2u ", static_cast<unsigned>(bit_number));
         }
         b = b >> 1;
     }
@@ -50,4 +50,4 @@ inline void PrintBits(uint32_t u) {
 #endif
 } // namespace debug
 
-#endif /* COMMON_DEBUG_DEBUG_PRINTBITS_H_ */
+#endif // COMMON_DEBUG_DEBUG_PRINTBITS_H_
