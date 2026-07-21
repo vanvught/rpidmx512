@@ -2,7 +2,7 @@
  * @file inet_aton.cpp
  *
  */
-/* Copyright (C) 2016-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2016-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,14 +27,18 @@
 #include <cctype>
 #include <netinet/in.h>
 
-typedef union pcast32 {
+namespace {
+using _pcast32 = union pcast32 {
     uint32_t u32;
     uint8_t u8[4];
-} _pcast32;
+};
+} // namespace
 
 extern "C" int inet_aton(const char* cp, struct in_addr* ip_address) {
     const char* b = cp;
-    int i, j, k;
+    int i;
+    int j;
+    int k;
     _pcast32 cast32;
 
     for (i = 0; i < 3; i++) {
@@ -46,12 +50,12 @@ extern "C" int inet_aton(const char* cp, struct in_addr* ip_address) {
                 return 0;
             }
 
-            if (0 == isdigit((int)*b)) {
+            if (0 == isdigit(static_cast<int>(*b))) {
                 return 0;
             }
 
             j++;
-            k = k * 10 + (int)*b - (int)'0';
+            k = (k * 10) + static_cast<int>(*b) - '0';
             b++;
         }
 
@@ -72,13 +76,13 @@ extern "C" int inet_aton(const char* cp, struct in_addr* ip_address) {
         }
 
         j++;
-        k = k * 10 + (int)*b - (int)'0';
+        k = (k * 10) + static_cast<int>(*b) - '0';
         b++;
     }
 
     cast32.u8[i] = (uint8_t)k;
 
-    if (ip_address != 0) {
+    if (ip_address != nullptr) {
         ip_address->s_addr = cast32.u32;
     }
 

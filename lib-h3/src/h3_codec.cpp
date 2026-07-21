@@ -6,7 +6,7 @@
  * Based on https://github.com/allwinner-zh/linux-3.4-sunxi/blob/master/sound/soc/sunxi/audiocodec/sun8iw7_sndcodec.c
  * Based on https://elixir.bootlin.com/linux/latest/source/sound/soc/sunxi/sun4i-codec.c
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2026 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -132,19 +132,21 @@
 #define CONFIG_TX_DESCR_NUM (1U << 1) // INFO This cannot be changed without rewriting FIQ handler
 #define CONFIG_TX_DESCR_NUM_MASK (CONFIG_TX_DESCR_NUM - 1)
 
-static uint32_t buffer_size;
+namespace {
+uint32_t buffer_size;
 
-static uint32_t s_volume;
+uint32_t s_volume;
 
-static volatile uint32_t update_counter;
-static volatile uint32_t index;
+volatile uint32_t update_counter;
+volatile uint32_t index;
 
 struct CoherentRegion {
     struct sunxi_dma_lli lli[CONFIG_TX_DESCR_NUM];
     int16_t txbuffer[CONFIG_TX_DESCR_NUM][CONFIG_BUFSIZE] ALIGNED;
 };
 
-static struct CoherentRegion* p_coherent_region = reinterpret_cast<struct CoherentRegion*>(H3_MEM_COHERENT_REGION + MEGABYTE / 2);
+struct CoherentRegion* p_coherent_region = reinterpret_cast<struct CoherentRegion*>(H3_MEM_COHERENT_REGION + MEGABYTE / 2);
+} // namespace
 
 static uint32_t read_prcm_wvalue(uint32_t addr) {
     uint32_t reg;
@@ -392,7 +394,6 @@ static void codec_hw_params(uint32_t rate, uint32_t channels) {
     WR_CONTROL(H3_AC->DAC_FIFOC, 0x1, FIFO_MODE, 0x1);
 
     /* DMA_SLAVE_BUSWIDTH_2_BYTES */
-
     CodecPrepare(rate);
 }
 
@@ -448,7 +449,8 @@ void h3_codec_begin() {
      * DMA setup
      */
 
-    uint32_t i, j;
+    uint32_t i;
+    uint32_t j;
 
     for (i = 0; i < CONFIG_TX_DESCR_NUM; i++) {
         for (j = 0; j < CONFIG_BUFSIZE; j++) {

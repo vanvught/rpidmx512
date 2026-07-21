@@ -23,6 +23,7 @@
  * THE SOFTWARE.
  */
 
+#include "h3_cpu.h"
 #pragma GCC push_options
 #pragma GCC optimize("O2")
 #pragma GCC optimize("no-tree-loop-distribute-patterns")
@@ -35,6 +36,9 @@
 #include "watchdog.h"
 #if defined(H3)
 #include "flashcodeinstall.h"
+#if !defined(CONFIG_LTC_DISABLE_RGB_PANEL)
+#include "h3_smp.h"
+#endif
 #endif
 #include "network.h"
 #include "apps/mdns.h"
@@ -136,12 +140,6 @@ void RebootHandler() {
     }
 }
 } // namespace board
-
-#if !defined(CONFIG_LTC_DISABLE_RGB_PANEL)
-extern "C" {
-void h3_cpu_off(uint32_t);
-}
-#endif
 
 namespace artnet {
 static int32_t handle;
@@ -266,7 +264,7 @@ int main() // NOLINT
 #if !defined(CONFIG_LTC_DISABLE_RGB_PANEL)
     if (ltc::Destination::IsEnabled(ltc::Destination::Output::RGBPANEL)) {
         for (uint32_t cpu_number = 1; cpu_number < 4; cpu_number++) {
-            h3_cpu_off(cpu_number);
+            h3::cpu::Off(static_cast<h3::cpu::Cpu>(cpu_number));
         }
     }
 #endif

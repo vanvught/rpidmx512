@@ -4,7 +4,7 @@ PREFIX ?= arm-none-eabi-
 CC	 = $(PREFIX)gcc
 CPP	 = $(PREFIX)g++
 AS	 = $(CC)
-LD	 = $(PREFIX)ld
+LD	 = $(PREFIX)gcc
 AR	 = $(PREFIX)ar
 GZIP = gzip
 
@@ -85,16 +85,10 @@ COPS+=-fstack-usage
 COPS+=-ffunction-sections -fdata-sections
 COPS+=-Wall -Werror -Wpedantic -Wextra -Wunused -Wsign-conversion -Wconversion -Wduplicated-cond -Wlogical-op
 COPS+=--specs=nosys.specs
+COPS+=-flto=auto
 
 include ../common/make/CppOps.mk
-
-LDOPS=--gc-sections --print-gc-sections --print-memory-usage
-
-# Why does gcc not automatically select the correct path based on -m options?
-PLATFORM_LIBGCC:=-L $(shell dirname `$(CC) $(COPS) -print-libgcc-file-name`)/armv7-a/cortex-a7/hardfp/vfpv4
-PLATFORM_LIBGCC+=-L $(shell dirname `$(CC) $(COPS) -print-libgcc-file-name`)
-
-$(info $$PLATFORM_LIBGCC [${PLATFORM_LIBGCC}])
+include ../common/make/LdOps.mk
 
 C_OBJECTS=$(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.c,$(BUILD)$(sdir)/%.o,$(wildcard $(sdir)/*.c)))
 C_OBJECTS+=$(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.cpp,$(BUILD)$(sdir)/%.o,$(wildcard $(sdir)/*.cpp)))
@@ -149,7 +143,7 @@ $(BUILD)stack_debug_init.o : $(FIRMWARE_DIR)/stack_debug_init.cpp
 	$(CPP) $(COPS) $(CPPOPS) -c $(FIRMWARE_DIR)/stack_debug_init.cpp -o $(BUILD)stack_debug_init.o
 
 $(BUILD)main.elf: Makefile.H3 $(LINKER) $(BUILD)vectors.o $(BUILD)stack_debug_init.o $(OBJECTS) $(LIBDEP)
-	$(LD) $(BUILD)vectors.o $(OBJECTS) -Map $(MAP) -T $(LINKER) $(LDOPS) -o $(BUILD)main.elf $(BUILD)stack_debug_init.o $(LIBH3) $(LDLIBS) $(PLATFORM_LIBGCC) -lgcc 
+	$(LD) $(BUILD)vectors.o $(OBJECTS) -T $(LINKER) $(LDOPS) -o $(BUILD)main.elf $(BUILD)stack_debug_init.o $(LIBH3) $(LDLIBS) -lgcc 
 	$(PREFIX)objdump -D $(BUILD)main.elf | $(PREFIX)c++filt > $(LIST)
 	$(PREFIX)size -A -x $(BUILD)main.elf
 

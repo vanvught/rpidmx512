@@ -2,7 +2,7 @@
  * @file h3_lcdc_dump.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2026 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,16 +25,14 @@
 
 #include "h3.h"
 
-namespace uart0
-{
-void Printf(const char* fmt, ...);
+namespace uart0 {
+int Printf(const char* fmt, ...);
 }
 
 /*
  * The LCD0 module is used for HDMI
  */
-void h3_lcdc_dump()
-{
+void h3_lcdc_dump() {
     uart0::Printf("LCD0\n");
     uart0::Printf(" GCTL         %p\n", H3_LCD0->GCTL);
     uart0::Printf(" GINT0        %p\n", H3_LCD0->GINT0);

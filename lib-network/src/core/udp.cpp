@@ -159,10 +159,10 @@ template <network::arp::EthSend S> static void SendImplementation(int index, con
         network::MemcpyIp(out_buffer->ip4.dst, remote_ip);
     } else {
         if ((remote_ip & 0xF0) == 0xE0) { // Multicast, we know the MAC Address
-            typedef union pcast32 {
+            using _pcast32 = union pcast32 {
                 uint32_t u32;
                 uint8_t u8[4];
-            } _pcast32;
+            };
             _pcast32 multicast_ip;
 
             multicast_ip.u32 = remote_ip;

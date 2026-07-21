@@ -65,10 +65,10 @@ struct GroupInfo {
     State state;
 };
 
-typedef union pcast32 {
+union pcast32 {
     uint32_t u32;
     uint8_t u8[4];
-} _pcast32;
+};
 
 static struct Header s_report SECTION_NETWORK ALIGNED;
 static struct Header s_leave SECTION_NETWORK ALIGNED;
@@ -79,7 +79,7 @@ static TimerHandle_t s_timer_id;
 
 static void SendReport(uint32_t group_address) {
     DEBUG_ENTRY();
-    _pcast32 multicast_ip;
+    pcast32 multicast_ip;
 
     multicast_ip.u32 = group_address;
 
@@ -247,7 +247,7 @@ __attribute__((hot)) void Input(const struct Header* p_igmp) {
 
         auto is_general_request = false;
 
-        _pcast32 igmp_generic_address;
+        pcast32 igmp_generic_address;
         igmp_generic_address.u32 = 0x010000e0;
 
         if (memcmp(p_igmp->ip4.dst, igmp_generic_address.u8, 4) == 0) {
@@ -259,7 +259,7 @@ __attribute__((hot)) void Input(const struct Header* p_igmp) {
                 continue;
             }
 
-            _pcast32 group_address;
+            pcast32 group_address;
             group_address.u32 = group.group_address;
 
             if (is_general_request || (memcmp(p_igmp->ip4.dst, group_address.u8, network::ip4::kAddressLength) == 0)) {
@@ -291,7 +291,7 @@ static void ResetHash() {
 
     for (auto& group : s_groups) {
         if (group.group_address != 0) {
-            _pcast32 multicast_ip;
+            pcast32 multicast_ip;
             multicast_ip.u32 = group.group_address;
             const uint8_t kMacAddr[6] = {0x01, 0x00, 0x5E, static_cast<uint8_t>(multicast_ip.u8[1] & 0x7F), multicast_ip.u8[2], multicast_ip.u8[3]};
 
@@ -322,7 +322,7 @@ void static Join(uint32_t group_address) {
             s_groups[i].timer = 2; // TODO(avv):
 
 #if defined(CONFIG_EMAC_HASH_MULTICAST_FILTER)
-            _pcast32 multicast_ip;
+            pcast32 multicast_ip;
             multicast_ip.u32 = group_address;
             const uint8_t kMacAddr[6] = {0x01, 0x00, 0x5E, static_cast<uint8_t>(multicast_ip.u8[1] & 0x7F), multicast_ip.u8[2], multicast_ip.u8[3]};
             DEBUG_PRINTF(MACSTR, MAC2STR(kMacAddr));

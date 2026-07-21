@@ -4,7 +4,7 @@ PREFIX ?= arm-none-eabi-
 CC	= $(PREFIX)gcc
 CPP	= $(PREFIX)g++
 AS	= $(CC)
-LD	= $(PREFIX)ld
+LD	= $(PREFIX)gcc
 AR	= $(PREFIX)ar
 
 $(info [${CURDIR}])
@@ -35,10 +35,8 @@ COPS+=-Os
 COPS+=-nostartfiles -ffreestanding -nostdlib
 COPS+=-fstack-usage
 COPS+=-ffunction-sections -fdata-sections
-COPS+=-Wall -Werror -Wpedantic -Wextra -Wunused -Wsign-conversion -Wduplicated-cond -Wlogical-op
-ifndef FREE_RTOS_PORTABLE
-COPS+=-Wconversion
-endif
+COPS+=-Wall -Werror -Wpedantic -Wextra -Wunused -Wsign-conversion -Wduplicated-cond -Wlogical-op -Wconversion
+COPS+=-flto=auto
 
 include ../common/make/CppOps.mk
 

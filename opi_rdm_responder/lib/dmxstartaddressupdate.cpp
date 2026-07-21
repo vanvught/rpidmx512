@@ -28,7 +28,6 @@
 #include "rdmresponder.h"
 #include "displayudf.h"
 
-void RDMResponder::DmxStartAddressUpdate([[maybe_unused]] uint16_t dmx_start_address)
-{
+void RDMResponder::DmxStartAddressUpdate([[maybe_unused]] uint16_t dmx_start_address) {
     DisplayUdf::Get()->Show();
 }

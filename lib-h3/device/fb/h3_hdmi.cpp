@@ -2,7 +2,7 @@
  * @file h3_hdmi.cpp
  *
  */
-/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2026 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,10 +42,9 @@
 
 #include "timing.h"
 
-namespace uart0
-{
+namespace uart0 {
 void Puts(const char*);
-void Printf(const char* fmt, ...);
+int Printf(const char* fmt, ...);
 } // namespace uart0
 
 #include "h3.h"
@@ -53,8 +52,7 @@ void Printf(const char* fmt, ...);
 #include "display_timing.h"
 #include "dw_hdmi.h"
 
-struct sunxi_dw_hdmi_priv
-{
+struct sunxi_dw_hdmi_priv {
     struct dw_hdmi hdmi;
     int mux;
 };
@@ -82,33 +80,28 @@ static struct sunxi_dw_hdmi_priv _sunxi_dw_hdmi_priv;
 
 #define BIT(nr) (1UL << (nr))
 
-static uint32_t HdmiGetDivider(uint32_t clock)
-{
+static uint32_t HdmiGetDivider(uint32_t clock) {
     /*
      * Due to missing documentation of HDMI PHY, we know correct
      * settings only for following four PHY dividers. Select one
      * based on clock speed.
      */
-    if (clock <= 27000000)
-    {
+    if (clock <= 27000000) {
         return 11;
     }
 
-    if (clock <= 74250000)
-    {
+    if (clock <= 74250000) {
         return 4;
     }
 
-    if (clock <= 148500000)
-    {
+    if (clock <= 148500000) {
         return 2;
     }
 
     return 1;
 }
 
-static void HdmiPhyInit()
-{
+static void HdmiPhyInit() {
     /*
      * HDMI PHY settings are taken as-is from Allwinner BSP code.
      * There is no documentation.
@@ -138,10 +131,8 @@ static void HdmiPhyInit()
     /* Note that Allwinner code doesn't fail in case of timeout */
     const auto t1 = H3_TIMER->AVS_CNT1;
 
-    while ((H3_HDMI_PHY->STATUS & 0x80) == 0)
-    {
-        if (H3_TIMER->AVS_CNT1 - t1 > 20000)
-        {
+    while ((H3_HDMI_PHY->STATUS & 0x80) == 0) {
+        if (H3_TIMER->AVS_CNT1 - t1 > 20000) {
             uart0::Puts("Warning: HDMI PHY init timeout!\n");
             break;
         }
@@ -173,19 +164,15 @@ static void HdmiPhyInit()
     H3_HDMI_PHY->UNSCRAMBLE = 0x42494E47;
 }
 
-static int HdmiGetPlugInStatus()
-{
+static int HdmiGetPlugInStatus() {
     return !!(H3_HDMI_PHY->STATUS & (1U << 19));
 }
 
-static int HdmiWaitForHpd()
-{
+static int HdmiWaitForHpd() {
     const auto nStart = H3_TIMER->AVS_CNT1;
 
-    do
-    {
-        if (HdmiGetPlugInStatus())
-        {
+    do {
+        if (HdmiGetPlugInStatus()) {
             return 0;
         }
         __DMB();
@@ -194,8 +181,7 @@ static int HdmiWaitForHpd()
     return -1;
 }
 
-static void HdmiPhySet(uint32_t clock)
-{
+static void HdmiPhySet(uint32_t clock) {
     uint32_t div = HdmiGetDivider(clock);
     uint32_t tmp;
 
@@ -203,8 +189,7 @@ static void HdmiPhySet(uint32_t clock)
      * Unfortunately, we don't know much about those magic
      * numbers. They are taken from Allwinner BSP driver.
      */
-    switch (div)
-    {
+    switch (div) {
         case 1:
             H3_HDMI_PHY->PLL = 0x30dc5fc0;
             H3_HDMI_PHY->CLK = 0x800863C0;
@@ -217,12 +202,9 @@ static void HdmiPhySet(uint32_t clock)
             tmp = (H3_HDMI_PHY->STATUS & 0x1f800) >> 11;
             H3_HDMI_PHY->PLL |= (BIT(31) | BIT(30));
 
-            if (tmp < 0x3d)
-            {
+            if (tmp < 0x3d) {
                 H3_HDMI_PHY->PLL |= (tmp + 2);
-            }
-            else
-            {
+            } else {
                 H3_HDMI_PHY->PLL |= 0x3f;
             }
             timing::DelayUs(1000 * 100);
@@ -282,16 +264,14 @@ static void HdmiPhySet(uint32_t clock)
     }
 }
 
-static void ClockSetPllVideoFactors(uint32_t m, uint32_t n)
-{
+static void ClockSetPllVideoFactors(uint32_t m, uint32_t n) {
     /* VIDEO rate = 24000000 * n / m */
     H3_CCU->PLL_VIDEO_CTRL = CCU_PLL_VIDEO_CTRL_EN | CCU_PLL_VIDEO_CTRL_INTEGER_MODE | CCU_PLL_VIDEO_CTRL_N(n) | CCU_PLL_VIDEO_CTRL_M(m);
 
     while (!(H3_CCU->PLL_VIDEO_CTRL & CCU_PLL_VIDEO_CTRL_LOCK));
 }
 
-static uint32_t ClockGetPllVideo()
-{
+static uint32_t ClockGetPllVideo() {
     uint32_t rval = H3_CCU->PLL_VIDEO_CTRL;
 
     const uint32_t n = ((rval & CCU_PLL_VIDEO_CTRL_N_MASK) >> CCU_PLL_VIDEO_CTRL_N_SHIFT) + 1;
@@ -301,8 +281,7 @@ static uint32_t ClockGetPllVideo()
     return (24000 * n / m) * 1000;
 }
 
-static void HdmiPllSet(uint32_t clk_khz)
-{
+static void HdmiPllSet(uint32_t clk_khz) {
     uint32_t value, n, m, div = 0, diff;
     uint32_t best_n = 0, best_m = 0, best_diff = 0x0FFFFFFF;
 
@@ -313,16 +292,13 @@ static void HdmiPllSet(uint32_t clk_khz)
      * is no match, pick the closest lower clock, as monitors tend to
      * not sync to higher frequencies.
      */
-    for (m = 1; m <= 16; m++)
-    {
+    for (m = 1; m <= 16; m++) {
         n = (m * div * clk_khz) / 24000;
 
-        if ((n >= 1) && (n <= 128))
-        {
+        if ((n >= 1) && (n <= 128)) {
             value = (24000 * n) / m / div;
             diff = clk_khz - value;
-            if (diff < best_diff)
-            {
+            if (diff < best_diff) {
                 best_diff = diff;
                 best_m = m;
                 best_n = n;
@@ -343,8 +319,7 @@ void h3_lcdc_init();
 void h3_lcdc_tcon1_mode_set(const struct display_timing*);
 void h3_lcdc_enable(const uint32_t);
 
-static void HdmiLcdcInit(const struct display_timing* edid, uint32_t bpp)
-{
+static void HdmiLcdcInit(const struct display_timing* edid, uint32_t bpp) {
     uint32_t div = HdmiGetDivider(edid->pixelclock.typ);
 
     H3_CCU->BUS_SOFT_RESET1 |= CCU_BUS_SOFT_RESET1_TCON0;
@@ -357,35 +332,30 @@ static void HdmiLcdcInit(const struct display_timing* edid, uint32_t bpp)
     h3_lcdc_enable(bpp);
 }
 
-static int HdmiPhyCfg([[maybe_unused]] struct dw_hdmi* hdmi, uint32_t mpixelclock)
-{
+static int HdmiPhyCfg([[maybe_unused]] struct dw_hdmi* hdmi, uint32_t mpixelclock) {
     HdmiPllSet(mpixelclock / 1000U);
     HdmiPhySet(mpixelclock);
     return 0;
 }
 
-__attribute__((cold)) int h3_hdmi_enable(uint32_t panel_bpp, const struct display_timing* edid)
-{
+__attribute__((cold)) int h3_hdmi_enable(uint32_t panel_bpp, const struct display_timing* edid) {
     struct sunxi_dw_hdmi_priv* priv = &_sunxi_dw_hdmi_priv;
     int ret;
 
     ret = dw_hdmi_enable(&priv->hdmi, edid);
 
-    if (ret)
-    {
+    if (ret) {
         printf("!!\n");
         return ret;
     }
 
     HdmiLcdcInit(edid, panel_bpp);
 
-    if (edid->flags & DISPLAY_FLAGS_VSYNC_LOW)
-    {
+    if (edid->flags & DISPLAY_FLAGS_VSYNC_LOW) {
         H3_HDMI_PHY->POL |= 0x200;
     }
 
-    if (edid->flags & DISPLAY_FLAGS_HSYNC_LOW)
-    {
+    if (edid->flags & DISPLAY_FLAGS_HSYNC_LOW) {
         H3_HDMI_PHY->POL |= 0x100;
     }
 
@@ -403,10 +373,8 @@ __attribute__((cold)) int h3_hdmi_enable(uint32_t panel_bpp, const struct displa
     return 0;
 }
 
-static void ClockSetPllVideo(uint32_t nClock)
-{
-    if (nClock == 0)
-    {
+static void ClockSetPllVideo(uint32_t nClock) {
+    if (nClock == 0) {
         H3_CCU->PLL_VIDEO_CTRL &= (~CCU_PLL_VIDEO_CTRL_EN);
         return;
     }
@@ -419,8 +387,7 @@ static void ClockSetPllVideo(uint32_t nClock)
  * The MUX0 module is used for HDMI
  */
 
-int __attribute__((cold)) h3_hdmi_probe()
-{
+int __attribute__((cold)) h3_hdmi_probe() {
     struct sunxi_dw_hdmi_priv* priv = &_sunxi_dw_hdmi_priv;
     ClockSetPllVideo(297000000);
 
@@ -437,8 +404,7 @@ int __attribute__((cold)) h3_hdmi_probe()
 
     const auto ret = HdmiWaitForHpd();
 
-    if (ret < 0)
-    {
+    if (ret < 0) {
         uart0::Puts("hdmi can not get hpd signal\n");
         return -1;
     }

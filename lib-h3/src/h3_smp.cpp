@@ -23,50 +23,55 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <stdbool.h>
+#include <cstdint>
 
 #include "h3_smp.h"
-
 #include "h3.h"
 #include "h3_cpu.h"
 #include "h3_spinlock.h"
-
 #include "arm/synchronize.h"
 
+namespace h3::smp {
 static volatile bool core_is_started;
 static start_fn_t start_fn;
 
-void smp_core_main(void) {
-	start_fn_t temp_fn = start_fn;
-	dmb();
+void CoreMain() {
+    start_fn_t temp_fn = start_fn;
+    dmb();
 
-	core_is_started = true;
+    core_is_started = true;
 
-	temp_fn();
+    temp_fn();
 
-	for (;;)
-		;
+    for (;;) {
+    }
 }
 
-void smp_start_core(uint32_t core_number, start_fn_t start) {
-	if (core_number == 0 || core_number >= H3_CPU_COUNT) {
-		return;
+void StartCore(uint32_t core_number, start_fn_t start) {
+    if (core_number == 0 || core_number >= H3_CPU_COUNT) {
+        return;
+    }
+
+    h3_spinlock_lock(0);
+
+    start_fn = start;
+
+    H3_CPUCFG->PRIVATE0 = (uint32_t)_init_core;
+
+    h3::cpu::On(static_cast<h3::cpu::Cpu>(core_number));
+
+    core_is_started = false;
+
+    while (!core_is_started) { // TODO blocking wait
+        dmb();
+    }
+
+    h3_spinlock_unlock(0);
+}
+} // namespace h3::smp
+
+extern "C" {
+	void smp_core_main() { // NOLINT
+		h3::smp::CoreMain();
 	}
-
-	h3_spinlock_lock(0);
-
-	start_fn = start;
-
-	H3_CPUCFG->PRIVATE0 = (uint32_t) _init_core;
-
-	h3_cpu_on(core_number);
-
-	core_is_started = false;
-
-	while (!core_is_started) { //TODO blocking wait
-		dmb();
-	}
-
-	h3_spinlock_unlock(0);
 }

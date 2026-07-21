@@ -46,8 +46,7 @@
 #include "firmware/debug/debug_dump.h"
 #include "firmware/debug/debug_debug.h"
 
-namespace applemidi {} // namespace applemidi
-
+namespace {
 enum class AppleMidiCommand : uint16_t {
     kInvitation = __builtin_bswap16(0x494e),         ///< Invitation 'IN'
     kInvitationAccepted = __builtin_bswap16(0x4f4b), ///< Invitation accepted 'OK'
@@ -67,25 +66,11 @@ struct TimestampSynchronization {
     uint64_t timestamps[3]; ///< Array of timestamps for synchronization.
 } __attribute__((packed));
 
-/**
- * @brief Timeout value in milliseconds for an Apple MIDI session.
- */
-static constexpr uint32_t kTimeout = 90 * 1000;
+constexpr uint32_t kTimeout = 90 * 1000;
 
-/**
- * @brief Timer handle for session timeout management.
- */
-static TimerHandle_t s_timer_id = kTimerIdNone;
+TimerHandle_t s_timer_id = kTimerIdNone;
 
-/**
- * @brief Timer callback function to handle session timeout.
- *
- * This function is called when the session times out, and it resets the session
- * and deletes the timer.
- *
- * @param nHandle Handle of the expired timer (unused).
- */
-static void TimeoutTimer([[maybe_unused]] TimerHandle_t handle) {
+void TimeoutTimer([[maybe_unused]] TimerHandle_t handle) {
     if (AppleMidi::GetSessionState() == applemidi::SessionState::kEstablished) {
         AppleMidi::ResetSession();
         SoftwareTimerDelete(s_timer_id);
@@ -93,10 +78,11 @@ static void TimeoutTimer([[maybe_unused]] TimerHandle_t handle) {
     }
 }
 
-typedef union pcast32 {
+using _pcast32 = union pcast32 {
     uint32_t u32;
     uint8_t u8[4];
-} _pcast32;
+};
+} // namespace
 
 AppleMidi::AppleMidi() {
     DEBUG_ENTRY();

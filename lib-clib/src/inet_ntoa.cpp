@@ -29,7 +29,7 @@
 static char buffer[18];
 
 extern "C" char* inet_ntoa(struct in_addr in) {
-    unsigned char* bytes = (unsigned char*)&in;
+    auto* bytes = (unsigned char*)&in;
     snprintf(buffer, sizeof(buffer), "%d.%d.%d.%d", bytes[0], bytes[1], bytes[2], bytes[3]);
     return buffer;
 }

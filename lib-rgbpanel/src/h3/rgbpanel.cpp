@@ -78,8 +78,8 @@ static bool s_is_core_running;
 using namespace rgbpanel;
 
 void RgbPanel::PlatformInit() {
-    h3_cpu_off(H3_CPU2);
-    h3_cpu_off(H3_CPU3);
+    h3::cpu::Off(h3::cpu::Cpu::kCpu2);
+    h3::cpu::Off(h3::cpu::Cpu::kCpu3);
 
     s_nColumns = columns_;
     s_nRows = rows_;
@@ -178,8 +178,8 @@ void RgbPanel::Start() {
     H3GpioFsel(20, GPIO_FSEL_DISABLE); // PA20
     H3GpioFsel(21, GPIO_FSEL_DISABLE); // PA21
 
-    puts("smp_start_core(1, core1_task)");
-    smp_start_core(1, core1_task);
+    puts("StartCore(1, core1_task)");
+    h3::smp::StartCore(1, core1_task);
     puts("Running");
     s_is_core_running = true;
 }

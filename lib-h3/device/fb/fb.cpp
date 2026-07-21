@@ -35,9 +35,8 @@
 void h3_de2_init(struct display_timing* timing, uint32_t fbbase);
 #endif
 
-namespace uart0
-{
-void Printf(const char* fmt, ...);
+namespace uart0 {
+int Printf(const char* fmt, ...);
 } // namespace uart0
 
 volatile uint32_t fb_width;
@@ -45,8 +44,7 @@ volatile uint32_t fb_height;
 volatile uint32_t fb_pitch;
 volatile uint32_t fb_addr;
 
-int __attribute__((cold)) fb_init()
-{
+int __attribute__((cold)) fb_init() {
 #if !defined(USE_UBOOT_HDMI)
     struct display_timing default_timing;
     memset(&default_timing, 0, sizeof(struct display_timing));
@@ -71,8 +69,7 @@ int __attribute__((cold)) fb_init()
     fb_pitch = H3_DE2_MUX0_UI->CFG[0].PITCH;
     fb_addr = H3_DE2_MUX0_UI->CFG[0].TOP_LADDR;
 
-    if (fb_addr == 0)
-    {
+    if (fb_addr == 0) {
         uart0::Printf("fb_addr == 0\n");
         fb_addr = FB_ADDRESS;
     }

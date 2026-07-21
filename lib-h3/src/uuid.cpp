@@ -29,13 +29,15 @@
 
 #include "h3_sid.h"
 
-typedef union pcast32 {
+namespace {
+union pcast32 {
     uuid_t uuid;
     uint8_t u8[16];
-} _pcast32;
+};
+} // namespace
 
 void UuidCopy(uuid_t out) {
-    _pcast32 cast;
+    pcast32 cast;
 
     h3_sid_get_rootkey(&cast.u8[0]);
 

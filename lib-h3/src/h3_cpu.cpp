@@ -56,31 +56,32 @@
 #define CPU_CLK_SRC_MASK 0x03
 #define CPU_CLK_SRC_SHIFT 16
 
-void h3_cpu_off(h3_cpu_t cpuid) {
-    assert(H3_CPU0 != cpuid);
+namespace h3::cpu {
+void Off(enum Cpu cpuid) {
+    assert(kCpu0 != cpuid);
     assert(cpuid < H3_CPU_COUNT);
 
-    const uint32_t cpu = cpuid & (H3_CPU_COUNT - 1); // Count is always power of 2
+    const auto kCpu = (static_cast<uint32_t>(cpuid) & H3_CPUS_MASK); 
 
     // step1: set up power-off signal
     uint32_t value = H3_PRCM->CPU_PWROFF;
-    value |= (1U << cpu);
+    value |= (1U << kCpu);
     H3_PRCM->CPU_PWROFF = value;
 
     timing::DelayUs(20);
 
     // step2: active the power output clamp
-    switch (cpu) {
-        case H3_CPU0:
+    switch (static_cast<enum Cpu>(kCpu)) {
+        case Cpu::kCpu0:
             // Do nothing
             break;
-        case H3_CPU1:
+        case Cpu::kCpu1:
             H3_PRCM->CPU1_PWR_CLAMP = 0xFF;
             break;
-        case H3_CPU2:
+        case Cpu::kCpu2:
             H3_PRCM->CPU2_PWR_CLAMP = 0xFF;
             break;
-        case H3_CPU3:
+        case Cpu::kCpu3:
             H3_PRCM->CPU3_PWR_CLAMP = 0xFF;
             break;
         default:
@@ -89,17 +90,17 @@ void h3_cpu_off(h3_cpu_t cpuid) {
 
     timing::DelayUs(30);
 
-    switch (cpu) {
-        case H3_CPU0:
+    switch (static_cast<enum Cpu>(kCpu)) {
+        case Cpu::kCpu0:
             // Do nothing
             break;
-        case H3_CPU1:
+        case Cpu::kCpu1:
             while (H3_PRCM->CPU1_PWR_CLAMP != 0xFF);
             break;
-        case H3_CPU2:
+        case Cpu::kCpu2:
             while (H3_PRCM->CPU2_PWR_CLAMP != 0xFF);
             break;
-        case H3_CPU3:
+        case Cpu::kCpu3:
             while (H3_PRCM->CPU3_PWR_CLAMP != 0xFF);
             break;
         default:
@@ -107,35 +108,35 @@ void h3_cpu_off(h3_cpu_t cpuid) {
     }
 }
 
-void h3_cpu_on(h3_cpu_t cpuid) {
+void On(enum Cpu cpuid) {
     assert(H3_CPU0 != cpuid);
     assert(cpuid < H3_CPU_COUNT);
 
-    const uint32_t cpu = cpuid & H3_CPUS_MASK;
+    const auto kCpu = (static_cast<uint32_t>(cpuid) & H3_CPUS_MASK); 
 
     /* Assert the CPU core in reset */
-    H3_CPUCFG->CPU[cpu].RST = 0;
+    H3_CPUCFG->CPU[kCpu].RST = 0;
 
     /* Assert the L1 cache in reset */
     uint32_t reg = H3_CPUCFG->GEN_CTRL;
-    reg &= ~(1U << cpu);
+    reg &= ~(1U << kCpu);
     H3_CPUCFG->GEN_CTRL = reg;
 
     timing::DelayUs(10);
 
     volatile uint32_t* p = nullptr;
 
-    switch (cpu) {
-        case H3_CPU0:
+    switch (static_cast<enum Cpu>(kCpu)) {
+        case Cpu::kCpu0:
             return;
             break;
-        case H3_CPU1:
+        case Cpu::kCpu1:
             p = reinterpret_cast<uint32_t*>(H3_PRCM->CPU1_PWR_CLAMP);
             break;
-        case H3_CPU2:
+        case Cpu::kCpu2:
             p = reinterpret_cast<uint32_t*>(H3_PRCM->CPU2_PWR_CLAMP);
             break;
-        case H3_CPU3:
+        case Cpu::kCpu3:
             p = reinterpret_cast<uint32_t*>(H3_PRCM->CPU3_PWR_CLAMP);
             break;
         default:
@@ -160,14 +161,14 @@ void h3_cpu_on(h3_cpu_t cpuid) {
 
     /* Clear CPU power-off gating */
     uint32_t value = H3_PRCM->CPU_PWROFF;
-    value &= ~(1U << cpu);
+    value &= ~(1U << kCpu);
     H3_PRCM->CPU_PWROFF = value;
 
     /* Deassert the CPU core reset */
-    H3_CPUCFG->CPU[cpu].RST = 3;
+    H3_CPUCFG->CPU[kCpu].RST = 3;
 }
 
-void h3_cpu_set_clock(uint64_t clock) {
+void SetClock(uint64_t clock) {
     uint32_t value;
 
     // Switch to 24MHz clock while changing CCU_PLL_CPUX
@@ -218,3 +219,4 @@ void h3_cpu_set_clock(uint64_t clock) {
     value |= CPU_CLK_SRC_PLL_CPUX;
     H3_CCU->CPU_AXI_CFG = value;
 }
+} // namespace h3::cpu

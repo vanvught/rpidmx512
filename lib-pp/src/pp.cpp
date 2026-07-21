@@ -47,14 +47,16 @@
 #include "dmxnode_data.h"
 #include "firmware/debug/debug_debug.h"
 
+namespace {
 #if !defined(CONFIG_PP_16BITSTUFF)
-static constexpr uint8_t kCommandMagic[16] = {0x40, 0x09, 0x2d, 0xa6, 0x15, 0xa5, 0xdd, 0xe5, 0x6a, 0x9d, 0x4d, 0x5a, 0xcf, 0x09, 0xaf, 0x50};
+constexpr uint8_t kCommandMagic[16] = {0x40, 0x09, 0x2d, 0xa6, 0x15, 0xa5, 0xdd, 0xe5, 0x6a, 0x9d, 0x4d, 0x5a, 0xcf, 0x09, 0xaf, 0x50};
 #endif
 
-typedef union pcast32 {
+union pcast32 {
     uint32_t u32;
     uint8_t u8[4];
-} _pcast32;
+};
+} // namespace
 
 PixelPusher::PixelPusher() : millis_(timing::Millis()) {
     DEBUG_ENTRY();
@@ -180,7 +182,7 @@ void PixelPusher::Run() {
         return;
     }
     millis_ = kMillis;
-    _pcast32 src;
+    pcast32 src;
     src.u32 = network::GetPrimaryIp();
     memcpy(discovery_packet_.header.ip_address, src.u8, 4);
     network::udp::Send(handle_discovery_, reinterpret_cast<const uint8_t*>(&discovery_packet_), sizeof(struct pp::DiscoveryPacket), UINT32_MAX, pp::UDP_PORT_DISCOVERY);

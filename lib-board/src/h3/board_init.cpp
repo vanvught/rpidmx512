@@ -192,7 +192,7 @@ void __attribute__((cold)) Init() {
 
 #ifndef ARM_ALLOW_MULTI_CORE
     for (uint32_t cpu_number = 1; cpu_number < H3_CPU_COUNT; cpu_number++) {
-        h3_cpu_off(static_cast<h3_cpu_t>(cpu_number));
+        h3::cpu::Off(static_cast<h3::cpu::Cpu>(cpu_number));
     }
 #endif
 
@@ -229,7 +229,7 @@ void __attribute__((cold)) Init() {
 
     h3_status_led_set(0);
 
-    h3_cpu_set_clock(0); // default
+    h3::cpu::SetClock(0); // default
 
 #if defined(DEBUG_I2C)
     debug::i2c::Detect();

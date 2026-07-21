@@ -2,7 +2,7 @@
  * @file h3_smp.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,20 +26,14 @@
 #ifndef H3_SMP_H_
 #define H3_SMP_H_
 
-#include <stdint.h>
+#include <cstdint>
 
-typedef void (*start_fn_t)();
-extern void _init_core();
+extern "C" void _init_core();
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace h3::smp {
+using start_fn_t = void (*)();
+uint32_t GetCoreNumber();
+void StartCore(uint32_t, start_fn_t);
+} // namespace h3::smp
 
-extern uint32_t smp_get_core_number(void);
-extern void smp_start_core(uint32_t, start_fn_t);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* H3_SMP_H_ */
+#endif // H3_SMP_H_

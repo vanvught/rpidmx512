@@ -2,7 +2,7 @@
  * @file h3_hdmi_phy_dump.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2026 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,13 +25,11 @@
 
 #include "h3.h"
 
-namespace uart0
-{
-void Printf(const char* fmt, ...);
+namespace uart0 {
+int Printf(const char* fmt, ...);
 }
 
-void h3_hdmi_phy_dump()
-{
+void h3_hdmi_phy_dump() {
     /* enable read access to HDMI controller */
     H3_HDMI_PHY->READ_EN = 0x54524545;
     /* descramble register offsets */

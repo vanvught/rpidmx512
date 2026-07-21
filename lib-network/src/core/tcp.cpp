@@ -303,25 +303,25 @@ static constexpr bool BetweenLh(uint32_t left, uint32_t x, uint32_t high) {
     return Leq(left, x) && Leq(x, high); // both borders inclusive
 }
 
-typedef union pcast32 {
+union pcast32 {
     uint32_t u32;
     uint8_t u8[4];
-} _pcast32;
+};
 
 static uint32_t TcpGetSeqnum(struct Header* const kTcp) {
-    _pcast32 src;
+    pcast32 src;
     memcpy(src.u8, &kTcp->tcp.seqnum, 4);
     return src.u32;
 }
 
 static uint32_t TcpGetAcknum(struct Header* const kTcp) {
-    _pcast32 src;
+    pcast32 src;
     memcpy(src.u8, &kTcp->tcp.acknum, 4);
     return src.u32;
 }
 
 static void TcpSwap32AcknumSeqnum(struct Header* const kTcp) {
-    _pcast32 src;
+    pcast32 src;
 
     src.u32 = __builtin_bswap32(TcpGetAcknum(kTcp));
     memcpy(&kTcp->tcp.acknum, src.u8, 4);
@@ -421,7 +421,7 @@ static void Ip4SendSegment(const Tcb* tcb, void* data, uint32_t size) {
     }
 
     // Client the destination Ethernet address (MAC) is not known
-    _pcast32 src;
+    pcast32 src;
     memcpy(src.u8, tcb->remote_ip, 4);
 
     network::arp::Send(data, size, src.u32);
@@ -619,7 +619,7 @@ static void ScanOptions(struct Header* eth_frame, struct Tcb* const kTcb, int32_
                 break;
             case Option::kKindTimestamp: // RFC 7323  3.  TCP Timestamps Option
                 if ((options->length == kOptionTimestampLength) && ((reinterpret_cast<uint8_t*>(options) + kOptionTimestampLength) <= kTcpHeaderEnd)) {
-                    _pcast32 tsval;
+                    pcast32 tsval;
                     memcpy(tsval.u8, &options->data, 4);
 #ifndef NDEBUG
                     auto bIgnore = true;
@@ -1516,7 +1516,7 @@ ConnHandle Connect(uint32_t remote_ip, uint16_t remote_port, CallbackConnect cb_
 
     tcb->remote_port = remote_port;
 
-    _pcast32 ip_address;
+    pcast32 ip_address;
     ip_address.u32 = netif.ip.addr;
     memcpy(tcb->local_ip, ip_address.u8, 4);
 
