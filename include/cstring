@@ -44,8 +44,7 @@
 #undef strstr
 #undef strtok
 
-namespace std
-{
+namespace std {
 using ::memcmp;
 using ::memcpy;
 using ::memmove;

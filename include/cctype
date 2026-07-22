@@ -2,7 +2,7 @@
  * @file cctype
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,8 +26,29 @@
 #ifndef CCTYPE_
 #define CCTYPE_
 
-#ifdef __cplusplus
-# include <ctype.h>
-#endif
+#include <ctype.h>
+
+// Get rid of those macros defined in <ctype.h> in lieu of real functions.
+#undef isalpha
+#undef isdigit
+#undef islower
+#undef isprint
+#undef isspace
+#undef isupper
+#undef isxdigit
+#undef tolower
+#undef tolower
+
+namespace std {
+using ::isalpha;
+using ::isdigit;
+using ::islower;
+using ::isprint;
+using ::isspace;
+using ::isupper;
+using ::isxdigit;
+using ::tolower;
+using ::toupper;
+} // namespace std
 
 #endif /* CCTYPE_ */

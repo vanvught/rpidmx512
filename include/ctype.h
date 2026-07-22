@@ -2,7 +2,7 @@
  * @file ctype.h
  *
  */
-/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2017-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,39 +31,39 @@ extern "C" {
 #endif
 
 inline int isdigit(int c) {
-	return (c >= (int) '0' && c <= (int) '9') ? 1 : 0;
+    return (c >= (int)'0' && c <= (int)'9') ? 1 : 0;
 }
 
 inline int isxdigit(int c) {
-	return ((isdigit(c) != 0) || (((unsigned) c | 32) - (int) 'a' < 6)) ? 1 : 0;
+    return ((isdigit(c) != 0) || (((unsigned)c | 32) - (int)'a' < 6)) ? 1 : 0;
 }
 
 inline int isprint(int c) {
-	return ((c >= (int) ' ' && c <= (int) '~')) ? 1 : 0;
+    return ((c >= (int)' ' && c <= (int)'~')) ? 1 : 0;
 }
 
 inline int isupper(int c) {
-	return (c >= (int) 'A' && c <= (int) 'Z') ? 1 : 0;
+    return (c >= (int)'A' && c <= (int)'Z') ? 1 : 0;
 }
 
 inline int islower(int c) {
-	return (c >= (int) 'a' && c <= (int) 'z') ? 1 : 0;
+    return (c >= (int)'a' && c <= (int)'z') ? 1 : 0;
 }
 
 inline int isalpha(int c) {
-	return ((isupper(c) != 0) || (islower(c) != 0)) ? 1 : 0;
+    return ((isupper(c) != 0) || (islower(c) != 0)) ? 1 : 0;
 }
 
 inline int tolower(int c) {
-	return ((isupper(c) != 0) ? (c + 32) : c);
+    return ((isupper(c) != 0) ? (c + 32) : c);
 }
 
 inline int toupper(int c) {
-	return ((islower(c) != 0) ? (c - 32) : c);
+    return ((islower(c) != 0) ? (c - 32) : c);
 }
 
 inline int isspace(int c) {
-	return (c == '\t' || c == '\n' || c == '\v' || c == '\f' || c == '\r' || c == ' ' ? 1 : 0);
+    return (c == '\t' || c == '\n' || c == '\v' || c == '\f' || c == '\r' || c == ' ' ? 1 : 0);
 }
 
 #ifdef __cplusplus
