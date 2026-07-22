@@ -30,15 +30,12 @@
 #define HTTPD_HTTPD_H_
 
 #include <cstdint>
-#include <cassert>
-#include <new>
 
 #include "core/protocol/iana.h"
 #include "httpdhandlerequest.h"
 #include "network_tcp.h"
 #include "apps/mdns.h"
 #include "../../lib-network/config/net_config.h"
-#include "firmware/debug/debug_debug.h"
 
 namespace httpd {
 inline constexpr auto kPort =
@@ -57,41 +54,34 @@ inline constexpr auto kService =
 
 class HttpDaemon {
    public:
-    HttpDaemon() {
-        DEBUG_ENTRY();
-        assert(is_listening_ == false);
+    HttpDaemon();
 
-        is_listening_ = network::tcp::Listen(httpd::kPort, Data);
-        assert(is_listening_ == true);
-
-        // IMPORTANT:
-        // Connection handles are GLOBAL indices into s_Tcbs[].
-        // Therefore the HTTP request handler table must also be global-sized.
-        for (uint32_t i = 0; i < TCP_MAX_TCBS_ALLOWED; ++i) {
-            // Each HttpDeamonHandleRequest corresponds to ONE possible TCB slot.
-            // It can be addressed directly by conn_handle.
-            new (&s_handle_request[i]) HttpDeamonHandleRequest(i);
-        }
-
-        network::apps::mdns::ServiceRecordAdd(nullptr, httpd::kService);
-
-        DEBUG_EXIT();
-    }
-
+    // The daemon and its handlers live for the lifetime of the firmware.
     ~HttpDaemon() = default;
 
-   private:
-    static void Data(network::tcp::ConnHandle conn_handle, const uint8_t* buffer, uint32_t size, [[maybe_unused]] void* context) {
-        assert(conn_handle < TCP_MAX_TCBS_ALLOWED);
-        s_handle_request[conn_handle].HandleRequest(size, const_cast<char*>(reinterpret_cast<const char*>(buffer)));
-    }
+    HttpDaemon(const HttpDaemon&) = delete;
+    HttpDaemon& operator=(const HttpDaemon&) = delete;
+    HttpDaemon(HttpDaemon&&) = delete;
+    HttpDaemon& operator=(HttpDaemon&&) = delete;
 
-#if defined(GD32F207RG) || defined(GD32F450VE) || defined(GD32F470ZK)
-#define SECTION_HTTPD __attribute__((section(".httpd")))
-#else
-#define SECTION_HTTPD
-#endif
-    static inline HttpDeamonHandleRequest s_handle_request[TCP_MAX_TCBS_ALLOWED] __attribute__((aligned(4))) SECTION_HTTPD;
+   private:
+    /**
+     * Raw storage for one HttpDeamonHandleRequest.
+     *
+     * The storage itself has trivial initialization, so it can safely be
+     * placed in a NOLOAD linker section. The actual handler object is created
+     * explicitly with placement new in HttpDaemon::HttpDaemon().
+     */
+    struct HandlerStorage {
+        alignas(HttpDeamonHandleRequest) unsigned char data[sizeof(HttpDeamonHandleRequest)];
+    };
+
+    [[nodiscard]]
+    static HttpDeamonHandleRequest& GetHandler(uint32_t index);
+
+    static void Data(network::tcp::ConnHandle conn_handle, const uint8_t* buffer, uint32_t size, void* context);
+
+    static HandlerStorage s_handle_request_storage[TCP_MAX_TCBS_ALLOWED];
 
     bool is_listening_{false};
 };
