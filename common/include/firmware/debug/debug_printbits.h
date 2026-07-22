@@ -27,27 +27,27 @@
 #define COMMON_DEBUG_DEBUG_PRINTBITS_H_
 
 #include <cstdint>
+#include <cstdio>
+
+#include "firmware/debug/debug_config.h"
 
 namespace debug {
-#ifdef NDEBUG
-inline void PrintBits([[maybe_unused]] uint32_t u) {}
-#else
-#include <cstdio>
-inline void PrintBits(uint32_t u) {
-    printf("%.8x ", static_cast<unsigned>(u));
-    uint32_t b = 1U << 31;
+inline void PrintBits([[maybe_unused]] uint32_t u) {
+    if constexpr (kIsDebug) {
+        printf("%.8x ", static_cast<unsigned>(u));
+        uint32_t bit = 1U << 31;
 
-    for (uint32_t i = 0; i < 32; i++) {
-        if ((b & u) == b) {
-            uint32_t bit_number = 31 - i;
-            printf("%-2u ", static_cast<unsigned>(bit_number));
+        for (uint32_t i = 0; i < 32; i++) {
+            if ((bit & u) == bit) {
+                uint32_t bit_number = 31 - i;
+                printf("%-2u ", static_cast<unsigned>(bit_number));
+            }
+            bit = bit >> 1;
         }
-        b = b >> 1;
-    }
 
-    puts("");
+        puts("");
+    }
 }
-#endif
 } // namespace debug
 
 #endif // COMMON_DEBUG_DEBUG_PRINTBITS_H_

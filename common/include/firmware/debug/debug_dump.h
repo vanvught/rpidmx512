@@ -30,68 +30,68 @@
 #include <cstdio>
 #include <ctype.h>
 
+#include "firmware/debug/debug_config.h"
+
 namespace debug {
-#ifdef NDEBUG
-static inline void Dump([[maybe_unused]] const void* data, [[maybe_unused]] uint32_t size) {}
-#else
-inline void Dump(const void* data, uint32_t size) {
-    constexpr uint32_t kCharsPerLine = 16;
-    constexpr uint32_t kBytesPerGroup = 8; // Visual separator every 8 bytes
-    const auto* ptr = reinterpret_cast<const uint8_t*>(data);
-    uint32_t chars = 0;
+inline void Dump([[maybe_unused]] const void* data, [[maybe_unused]] uint32_t size) {
+    if constexpr (kIsDebug) {
+        constexpr uint32_t kCharsPerLine = 16;
+        constexpr uint32_t kBytesPerGroup = 8; // Visual separator every 8 bytes
+        const auto* ptr = reinterpret_cast<const uint8_t*>(data);
+        uint32_t chars = 0;
 
-    printf("%p:%u\n", data, static_cast<unsigned>(size));
+        printf("%p:%u\n", data, static_cast<unsigned>(size));
 
-    do {
-        printf("%04x ", static_cast<unsigned>(chars));
+        do {
+            printf("%04x ", static_cast<unsigned>(chars));
 
-        uint32_t chars_this_line = 0;
-        const auto* line_start_ptr = ptr;
+            uint32_t chars_this_line = 0;
+            const auto* line_start_ptr = ptr;
 
-        while ((chars_this_line < kCharsPerLine) && (chars < size)) {
-            if (chars_this_line % kBytesPerGroup == 0) {
-                printf(" ");
+            while ((chars_this_line < kCharsPerLine) && (chars < size)) {
+                if (chars_this_line % kBytesPerGroup == 0) {
+                    printf(" ");
+                }
+
+                printf("%02x ", *ptr);
+
+                chars_this_line++;
+                chars++;
+                ptr++;
             }
 
-            printf("%02x ", *ptr);
+            auto chars_dot_line = chars_this_line;
 
-            chars_this_line++;
-            chars++;
-            ptr++;
-        }
-
-        auto chars_dot_line = chars_this_line;
-
-        for (; chars_this_line < kCharsPerLine; chars_this_line++) {
-            if (chars_this_line % kBytesPerGroup == 0) {
-                printf(" ");
-            }
-            printf("   ");
-        }
-
-        chars_this_line = 0;
-
-        while (chars_this_line < chars_dot_line) {
-            if (chars_this_line % kBytesPerGroup == 0) {
-                printf(" ");
+            for (; chars_this_line < kCharsPerLine; chars_this_line++) {
+                if (chars_this_line % kBytesPerGroup == 0) {
+                    printf(" ");
+                }
+                printf("   ");
             }
 
-            int character = *line_start_ptr;
-            if (0 != isprint(character)) {
-                printf("%c", character);
-            } else {
-                printf(".");
+            chars_this_line = 0;
+
+            while (chars_this_line < chars_dot_line) {
+                if (chars_this_line % kBytesPerGroup == 0) {
+                    printf(" ");
+                }
+
+                int character = *line_start_ptr;
+                if (0 != isprint(character)) {
+                    printf("%c", character);
+                } else {
+                    printf(".");
+                }
+
+                chars_this_line++;
+                line_start_ptr++;
             }
 
-            chars_this_line++;
-            line_start_ptr++;
-        }
+            puts("");
 
-        puts("");
-
-    } while (chars < size);
+        } while (chars < size);
+    }
 }
-#endif
 } // namespace debug
 
 #endif /* COMMON_DEBUG_DEBUG_DUMP_H_ */
