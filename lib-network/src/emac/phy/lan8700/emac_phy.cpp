@@ -27,8 +27,7 @@
 
 #include "emac/emac_phy.h"
 #include "emac/emac_link_check.h"
-#include "emac/mmi.h"
-#include "firmware/debug/debug_debug.h"
+#include "emac/emac_debug.h"
 
 #if !defined(BIT)
 #define BIT(x) static_cast<uint16_t>(1U << (x))
@@ -40,15 +39,15 @@
 
 namespace emac::phy {
 void CustomizedLed() {
-    DEBUG_ENTRY();
+    EMAC_PHY_DEBUG_ENTRY();
 
-    DEBUG_EXIT();
+    EMAC_PHY_DEBUG_EXIT();
 }
 
 void CustomizedTiming() {
-    DEBUG_ENTRY();
+    EMAC_PHY_DEBUG_ENTRY();
 
-    DEBUG_EXIT();
+    EMAC_PHY_DEBUG_EXIT();
 }
 
 /**

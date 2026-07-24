@@ -28,70 +28,82 @@
 
 #include <cstdint>
 #include <cstdio>
-#include <ctype.h>
+#include <cctype>
 
 #include "firmware/debug/debug_config.h"
 
 namespace debug {
 inline void Dump([[maybe_unused]] const void* data, [[maybe_unused]] uint32_t size) {
-    if constexpr (kIsDebug) {
-        constexpr uint32_t kCharsPerLine = 16;
-        constexpr uint32_t kBytesPerGroup = 8; // Visual separator every 8 bytes
-        const auto* ptr = reinterpret_cast<const uint8_t*>(data);
-        uint32_t chars = 0;
-
-        printf("%p:%u\n", data, static_cast<unsigned>(size));
-
-        do {
-            printf("%04x ", static_cast<unsigned>(chars));
-
-            uint32_t chars_this_line = 0;
-            const auto* line_start_ptr = ptr;
-
-            while ((chars_this_line < kCharsPerLine) && (chars < size)) {
-                if (chars_this_line % kBytesPerGroup == 0) {
-                    printf(" ");
-                }
-
-                printf("%02x ", *ptr);
-
-                chars_this_line++;
-                chars++;
-                ptr++;
-            }
-
-            auto chars_dot_line = chars_this_line;
-
-            for (; chars_this_line < kCharsPerLine; chars_this_line++) {
-                if (chars_this_line % kBytesPerGroup == 0) {
-                    printf(" ");
-                }
-                printf("   ");
-            }
-
-            chars_this_line = 0;
-
-            while (chars_this_line < chars_dot_line) {
-                if (chars_this_line % kBytesPerGroup == 0) {
-                    printf(" ");
-                }
-
-                int character = *line_start_ptr;
-                if (0 != isprint(character)) {
-                    printf("%c", character);
-                } else {
-                    printf(".");
-                }
-
-                chars_this_line++;
-                line_start_ptr++;
-            }
-
-            puts("");
-
-        } while (chars < size);
+    if constexpr (!config::kDumpnabled) {
+        return;
     }
+
+    if (size == 0) {
+        puts("<empty>");
+        return;
+    }
+
+    if (data == nullptr) {
+        puts("<null>");
+        return;
+    }
+    constexpr uint32_t kCharsPerLine = 16;
+    constexpr uint32_t kBytesPerGroup = 8; // Visual separator every 8 bytes
+    const auto* ptr = reinterpret_cast<const uint8_t*>(data);
+    uint32_t chars = 0;
+
+    printf("%p:%u\n", data, static_cast<unsigned>(size));
+
+    do {
+        printf("%04x ", static_cast<unsigned>(chars));
+
+        uint32_t chars_this_line = 0;
+        const auto* line_start_ptr = ptr;
+
+        while ((chars_this_line < kCharsPerLine) && (chars < size)) {
+            if (chars_this_line % kBytesPerGroup == 0) {
+                printf(" ");
+            }
+
+            printf("%02x ", *ptr);
+
+            chars_this_line++;
+            chars++;
+            ptr++;
+        }
+
+        auto chars_dot_line = chars_this_line;
+
+        for (; chars_this_line < kCharsPerLine; chars_this_line++) {
+            if (chars_this_line % kBytesPerGroup == 0) {
+                printf(" ");
+            }
+            printf("   ");
+        }
+
+        chars_this_line = 0;
+
+        while (chars_this_line < chars_dot_line) {
+            if (chars_this_line % kBytesPerGroup == 0) {
+                printf(" ");
+            }
+
+            const auto kCharacter = static_cast<unsigned char>(*line_start_ptr);
+
+            if (std::isprint(kCharacter) != 0) {
+                printf("%c", static_cast<int>(kCharacter));
+            } else {
+                putchar('.');
+            }
+
+            chars_this_line++;
+            line_start_ptr++;
+        }
+
+        puts("");
+
+    } while (chars < size);
 }
 } // namespace debug
 
-#endif /* COMMON_DEBUG_DEBUG_DUMP_H_ */
+#endif // COMMON_DEBUG_DEBUG_DUMP_H_

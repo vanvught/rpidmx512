@@ -28,14 +28,10 @@
 #include "e120.h"
 #include "rdm_e120.h"
 
- #include "firmware/debug/debug_debug.h"
+#include "firmware/debug/debug_debug.h"
 
-/*
- * ANSI E1.37-1
- */
-
-void RDMHandler::GetIdentifyMode([[maybe_unused]] uint16_t sub_device)
-{
+// ANSI E1.37-1
+void RDMHandler::GetIdentifyMode([[maybe_unused]] uint16_t subdevice) {
     DEBUG_ENTRY();
 
     auto& rdm_data_out = *reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
@@ -48,21 +44,18 @@ void RDMHandler::GetIdentifyMode([[maybe_unused]] uint16_t sub_device)
     DEBUG_EXIT();
 }
 
-void RDMHandler::SetIdentifyMode(bool is_broadcast, [[maybe_unused]] uint16_t sub_device)
-{
+void RDMHandler::SetIdentifyMode(bool is_broadcast, [[maybe_unused]] uint16_t subdevice) {
     DEBUG_ENTRY();
 
     const auto& rdm_data_in = *reinterpret_cast<const struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
-    if (rdm_data_in.param_data_length != 1)
-    {
+    if (rdm_data_in.param_data_length != 1) {
         RespondMessageNack(E120_NR_FORMAT_ERROR);
         DEBUG_EXIT();
         return;
     }
 
-    if ((rdm_data_in.param_data[0] != 0) && (rdm_data_in.param_data[0] != 0xFF))
-    {
+    if ((rdm_data_in.param_data[0] != 0) && (rdm_data_in.param_data[0] != 0xFF)) {
         RespondMessageNack(E120_NR_DATA_OUT_OF_RANGE);
         DEBUG_EXIT();
         return;
@@ -70,8 +63,7 @@ void RDMHandler::SetIdentifyMode(bool is_broadcast, [[maybe_unused]] uint16_t su
 
     RDMIdentify::Get()->SetMode(static_cast<RDMIdentify::Mode>(rdm_data_in.param_data[0]));
 
-    if (is_broadcast)
-    {
+    if (is_broadcast) {
         DEBUG_EXIT();
         return;
     }

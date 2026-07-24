@@ -28,7 +28,7 @@
 #include "emac/emac_phy.h"
 #include "emac/emac.h"
 #include "watchdog.h" // IWYU pragma: keep
-#include "firmware/debug/debug_debug.h"
+#include "emac/emac_debug.h"
 
 static constexpr uint16_t kAddress =
 #if !defined(PHY_ADDRESS)
@@ -60,7 +60,7 @@ emac::phy::Link StatusRead() {
 }
 
 void HandleChange(emac::phy::Link state) {
-    DEBUG_PRINTF("emac::phy::Link %s", state == emac::phy::Link::kStateUp ? "UP" : "DOWN");
+    EMAC_PHY_DEBUG_PRINTF("emac::phy::Link %s", state == emac::phy::Link::kStateUp ? "UP" : "DOWN");
 
     if (phy::Link::kStateUp == state) {
         const auto kIsWatchdog = watchdog::Watchdog();

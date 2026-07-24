@@ -31,7 +31,7 @@
 #include "http/http.h"
 #include "core/protocol/tcp.h" // IWYU pragma: keep
 #include "network_tcp.h"
-#include "firmware/debug/debug_debug.h"
+#include "httpd/httpd_debug.h"
 
 namespace httpd {
 static constexpr uint32_t kBufsize =
@@ -40,19 +40,20 @@ static constexpr uint32_t kBufsize =
 #else
     HTTPD_CONTENT_SIZE;
 #endif
+static constexpr uint32_t kUploadFilenameMaxLength = 32;
 } // namespace httpd
 
 class HttpDeamonHandleRequest {
    public:
     explicit HttpDeamonHandleRequest(network::tcp::ConnHandle connection_handle) : connection_handle_(connection_handle) {
-        DEBUG_ENTRY();
-        DEBUG_PRINTF("[%u] connection_handle=%u", static_cast<unsigned>(httpd::kBufsize), static_cast<unsigned>(connection_handle));
-        DEBUG_EXIT();
+        HTTPD_DEBUG_ENTRY();
+        HTTPD_DEBUG_PRINTF("[%u] connection_handle=%u", static_cast<unsigned>(httpd::kBufsize), static_cast<unsigned>(connection_handle));
+        HTTPD_DEBUG_EXIT();
     }
 
     HttpDeamonHandleRequest() : connection_handle_(network::tcp::kInvalidConnHandle) {
-        DEBUG_ENTRY();
-        DEBUG_EXIT();
+        HTTPD_DEBUG_ENTRY();
+        HTTPD_DEBUG_EXIT();
     }
 
     void HandleRequest(uint32_t bytes_received, char* receive_buffer);
@@ -79,7 +80,7 @@ class HttpDeamonHandleRequest {
     char* firmwarefile_name_{nullptr};
     char* receive_buffer_{nullptr};
     const uint8_t* content_{nullptr};
-    char upload_filename_[32];
+    char upload_filename_[httpd::kUploadFilenameMaxLength];
 
     http::Status status_{http::Status::kUnknownError};
     http::RequestMethod request_method_{http::RequestMethod::kUnknown};

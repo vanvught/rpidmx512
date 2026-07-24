@@ -2,7 +2,7 @@
  * @file showfiletftp.cpp
  *
  */
-/* Copyright (C) 2020-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,26 +27,22 @@
 
 #include "showfiletftp.h"
 #include "showfile.h"
+#include "showfile_debug.h"
 
- #include "firmware/debug/debug_debug.h"
-
-void ShowFileTFTP::Exit()
-{
-    DEBUG_ENTRY();
+void ShowFileTFTP::Exit() {
+    SHOWFILE_DEBUG_ENTRY();
 
     ShowFile::Instance().EnableTFTP(false);
 
-    DEBUG_EXIT();
+    SHOWFILE_DEBUG_EXIT();
 }
 
-bool ShowFileTFTP::FileOpen(const char* file_name, [[maybe_unused]] tftp::Mode mode)
-{
+bool ShowFileTFTP::FileOpen(const char* file_name, [[maybe_unused]] tftp::Mode mode) {
     DEBUG_PRINTF("file_name=%s, mode=%d", file_name, static_cast<int>(mode));
 
     int32_t show_file_number;
-    if (!showfile::FilenameCheck(file_name, show_file_number))
-    {
-        DEBUG_EXIT();
+    if (!showfile::FilenameCheck(file_name, show_file_number)) {
+        SHOWFILE_DEBUG_EXIT();
         return false;
     }
 
@@ -54,14 +50,12 @@ bool ShowFileTFTP::FileOpen(const char* file_name, [[maybe_unused]] tftp::Mode m
     return (file_ != nullptr);
 }
 
-bool ShowFileTFTP::FileCreate(const char* file_name, [[maybe_unused]] tftp::Mode mode)
-{
+bool ShowFileTFTP::FileCreate(const char* file_name, [[maybe_unused]] tftp::Mode mode) {
     DEBUG_PRINTF("file_name=%s, mode=%d", file_name, static_cast<int>(mode));
 
     int32_t show_file_number;
-    if (!showfile::FilenameCheck(file_name, show_file_number))
-    {
-        DEBUG_EXIT();
+    if (!showfile::FilenameCheck(file_name, show_file_number)) {
+        SHOWFILE_DEBUG_EXIT();
         return false;
     }
 

@@ -23,10 +23,6 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_ARTNET_RDM)
-#undef NDEBUG
-#endif
-
 #include <cstring>
 #include <cassert>
 
@@ -40,17 +36,18 @@
 #if defined(CONFIG_PANELLED_RDM_PORT) || defined(CONFIG_PANELLED_RDM_NO_PORT)
 #include "panelled.h"
 #endif
+#include "artnet_debug.h"
 
 namespace rdm::discovery {
 void Starting(uint32_t port_index, [[maybe_unused]] Type type) {
-    DEBUG_PRINTF("%u:%c", port_index, type == rdm::discovery::Type::kFull ? 'F' : 'I');
+    ARTNET_RDM_DEBUG_PRINTF("%u:%c", static_cast<unsigned>(port_index), type == rdm::discovery::Type::kFull ? 'F' : 'I');
 
     auto& artnet = *ArtNetNode::Get();
     artnet.StopOutputPort(port_index);
 }
 
 void Finished(uint32_t port_index, [[maybe_unused]] Type type) {
-    DEBUG_PRINTF("%u:%c", port_index, type == rdm::discovery::Type::kFull ? 'F' : 'I');
+    ARTNET_RDM_DEBUG_PRINTF("%u:%c", static_cast<unsigned>(port_index), type == rdm::discovery::Type::kFull ? 'F' : 'I');
 
     auto& artnet = *ArtNetNode::Get();
     artnet.SendArtTodData(port_index);
@@ -61,12 +58,12 @@ void Finished(uint32_t port_index, [[maybe_unused]] Type type) {
 // If the Output Gateway has physical DMX512 ports, discovery could take minutes.
 
 void ArtNetNode::HandleTodControl() {
-    DEBUG_ENTRY();
+    ARTNET_RDM_DEBUG_ENTRY();
 
     const auto* const kArtTodControl = reinterpret_cast<artnet::ArtTodControl*>(receive_buffer_);
 
     if (kArtTodControl->command == artnet::TodControlCommand::kAtcNone) {
-        DEBUG_EXIT();
+        ARTNET_RDM_DEBUG_EXIT();
         return;
     }
 
@@ -103,7 +100,7 @@ void ArtNetNode::HandleTodControl() {
         }
     }
 
-    DEBUG_EXIT();
+    ARTNET_RDM_DEBUG_EXIT();
 }
 
 /**
@@ -112,18 +109,18 @@ void ArtNetNode::HandleTodControl() {
  * This allows Input Gateways to respond to any physical layer RDM discovery commands they receive.
  */
 void ArtNetNode::HandleTodData() {
-    DEBUG_ENTRY();
+    ARTNET_RDM_DEBUG_ENTRY();
 
     const auto* const kArtTodData = reinterpret_cast<const artnet::ArtTodData*>(receive_buffer_);
 
     if (kArtTodData->rdm_version != 0x01) [[unlikely]] {
-        DEBUG_EXIT();
+        ARTNET_RDM_DEBUG_EXIT();
         return;
     }
 
     // Defensive: uid_count must never exceed array bound
     if (kArtTodData->uid_count > 200) [[unlikely]] {
-        DEBUG_EXIT();
+        ARTNET_RDM_DEBUG_EXIT();
         return;
     }
 
@@ -136,29 +133,29 @@ void ArtNetNode::HandleTodData() {
 
         // Validate bind_index mapping
         if (kPortIndex >= dmxnode::kMaxPorts) {
-            DEBUG_EXIT();
+            ARTNET_RDM_DEBUG_EXIT();
             return;
         }
 
         // Only Input Gateways parse ArtTodData
         if (node_.port[kPortIndex].direction != dmxnode::Direction::kInput) {
-            DEBUG_EXIT();
+            ARTNET_RDM_DEBUG_EXIT();
             return;
         }
 
         if (node_.port[kPortIndex].port_address != kPortAddress) {
-            DEBUG_EXIT();
+            ARTNET_RDM_DEBUG_EXIT();
             return;
         }
 
-        DEBUG_PRINTF("bind_index=%u -> kPortIndex=%u, kPortAddress=%u, uid_count=%u", kArtTodData->bind_index, kPortIndex, kPortAddress, kArtTodData->uid_count);
+        ARTNET_RDM_DEBUG_PRINTF("bind_index=%u -> kPortIndex=%u, kPortAddress=%u, uid_count=%u", kArtTodData->bind_index, static_cast<unsigned>(kPortIndex), static_cast<unsigned>(kPortAddress), kArtTodData->uid_count);
 
         for (uint32_t uid_index = 0; uid_index < kArtTodData->uid_count; uid_index++) {
             const uint8_t* uid = kArtTodData->tod[uid_index];
             rdm_controller_.TodAddUid(kPortIndex, uid);
         }
 
-        DEBUG_EXIT();
+        ARTNET_RDM_DEBUG_EXIT();
         return;
     }
 
@@ -169,7 +166,7 @@ void ArtNetNode::HandleTodData() {
         }
 
         if (node_.port[port_index].port_address == kPortAddress) {
-            DEBUG_PRINTF("port_index=%u, kPortAddress=%u, uid_count=%u", port_index, kPortAddress, kArtTodData->uid_count);
+            ARTNET_RDM_DEBUG_PRINTF("port_index=%u, kPortAddress=%u, uid_count=%u", static_cast<unsigned>(port_index), static_cast<unsigned>(kPortAddress), kArtTodData->uid_count);
 
             for (uint32_t uid_index = 0; uid_index < kArtTodData->uid_count; uid_index++) {
                 const uint8_t* uid = kArtTodData->tod[uid_index];
@@ -178,7 +175,7 @@ void ArtNetNode::HandleTodData() {
         }
     }
 
-    DEBUG_EXIT();
+    ARTNET_RDM_DEBUG_EXIT();
 }
 
 /**
@@ -186,8 +183,8 @@ void ArtNetNode::HandleTodData() {
  * ArtTodData packet is unicast to all IP addresses that have previously requested an ArtTodData packet.
  */
 void ArtNetNode::SendArtTodData(uint32_t port_index) {
-    DEBUG_ENTRY();
-    DEBUG_PRINTF("port_index=%u", port_index);
+    ARTNET_RDM_DEBUG_ENTRY();
+    ARTNET_RDM_DEBUG_PRINTF("port_index=%u", static_cast<unsigned>(port_index));
     assert(port_index < dmxnode::kMaxPorts);
 
     auto& tod_data = art_tod_packet_.art_tod_data;
@@ -230,13 +227,13 @@ void ArtNetNode::SendArtTodData(uint32_t port_index) {
         }
     }
 
-    DEBUG_PRINTF("kDiscovered=%u", kDiscovered);
-    DEBUG_EXIT();
+    ARTNET_RDM_DEBUG_PRINTF("kDiscovered=%u", kDiscovered);
+    ARTNET_RDM_DEBUG_EXIT();
 }
 
 // Node Input Gateway -> Input Gateway Directed Broadcasts to all nodes.
 void ArtNetNode::SendTodRequest(uint32_t port_index) {
-    DEBUG_ENTRY();
+    ARTNET_RDM_DEBUG_ENTRY();
     assert(port_index < dmxnode::kMaxPorts);
 
     rdm_controller_.TodReset(port_index);
@@ -264,14 +261,14 @@ void ArtNetNode::SendTodRequest(uint32_t port_index) {
 
     network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(tod_request), static_cast<uint16_t>(kLength), network::GetBroadcastIp(), artnet::kUdpPort);
 
-    DEBUG_EXIT();
+    ARTNET_RDM_DEBUG_EXIT();
 }
 
 void ArtNetNode::HandleRdm() {
     auto* const kArtRdm = reinterpret_cast<artnet::ArtRdm*>(receive_buffer_);
 
     if (kArtRdm->rdm_version != 0x01) {
-        DEBUG_EXIT();
+        ARTNET_RDM_DEBUG_EXIT();
         return;
     }
 
@@ -297,7 +294,7 @@ void ArtNetNode::HandleRdm() {
 
             output_port_[port_index].rdm_destination_ip = ip_address_from_;
 
-            auto* message = reinterpret_cast<const TRdmMessage*>(&kArtRdm->address);
+            const auto* message = reinterpret_cast<const TRdmMessage*>(&kArtRdm->address);
 
             kArtRdm->address = E120_SC_RDM;
             Rdm::TransmitRaw(port_index, &kArtRdm->address, message->message_length + rdm::kMessageChecksumSize);
@@ -312,7 +309,7 @@ void ArtNetNode::HandleRdm() {
             panelled::On(panelled::kRdm << port_index);
 #endif
         } else if (node_.port[port_index].direction == dmxnode::Direction::kInput) {
-            auto* rdm_message = reinterpret_cast<const TRdmMessage*>(&kArtRdm->address);
+            const auto* rdm_message = reinterpret_cast<const TRdmMessage*>(&kArtRdm->address);
 
             if ((rdm_message->command_class == E120_GET_COMMAND_RESPONSE) || (rdm_message->command_class == E120_SET_COMMAND_RESPONSE)) {
                 kArtRdm->address = E120_SC_RDM;

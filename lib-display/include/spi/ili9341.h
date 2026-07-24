@@ -30,6 +30,7 @@
 #include <cassert>
 
 #include "spi/config/config_lcd.h"
+#include "display_debug.h"
 
 namespace ili9341 {
 namespace cmd {
@@ -88,7 +89,7 @@ inline constexpr uint16_t kYellow = 0xFFE0;
 class ILI9341 : public Paint {
    public:
     ILI9341(uint32_t nCS) : Paint(nCS) {
-        DEBUG_ENTRY();
+        DISPLAY_DEBUG_ENTRY();
 
 #if defined(SPI_LCD_RST_GPIO)
         HardwareReset();
@@ -164,12 +165,12 @@ class ILI9341 : public Paint {
         WriteCommand(0x11); // Exit Sleep
         WriteCommand(0x29); // Display on
 
-        DEBUG_EXIT();
+        DISPLAY_DEBUG_EXIT();
     }
 
     ~ILI9341() override {
-        DEBUG_ENTRY();
-        DEBUG_EXIT();
+        DISPLAY_DEBUG_ENTRY();
+        DISPLAY_DEBUG_EXIT();
     }
 
     void SetRotation(const uint32_t nRotation) {

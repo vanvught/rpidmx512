@@ -29,10 +29,6 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_NTP_CLIENT)
-#undef NDEBUG
-#endif
-
 #pragma GCC push_options
 #pragma GCC optimize("O3")
 #pragma GCC optimize("no-tree-loop-distribute-patterns")
@@ -51,6 +47,26 @@
 #include "softwaretimers.h"
 #include "configurationstore.h"
 #include "firmware/debug/debug_debug.h"
+
+#ifdef DEBUG_NTP_CLIENT
+#define NTP_CLIENT_DEBUG_ENTRY() DEBUG_ENTRY()
+#define NTP_CLIENT_DEBUG_EXIT() DEBUG_EXIT()
+#define NTP_CLIENT_DEBUG_PRINTF(...) DEBUG_PRINTF(__VA_ARGS__)
+#define NTP_CLIENT_DEBUG_PUTS(...) DEBUG_PUTS(__VA_ARGS__)
+#else
+#define NTP_CLIENT_DEBUG_ENTRY() \
+    do {                    \
+    } while (false)
+#define NTP_CLIENT_DEBUG_EXIT() \
+    do {                    \
+    } while (false)
+#define NTP_CLIENT_DEBUG_PRINTF(...) \
+    do {                         \
+    } while (false)
+#define NTP_CLIENT_DEBUG_PUTS(...) \
+    do {                       \
+    } while (false)
+#endif
 
 namespace network::apps::ntpclient {
 /*
@@ -215,8 +231,10 @@ static void Difference(const struct ntp::TimeStamp& start, const struct ntp::Tim
  * the system time accordingly.
  */
 static void SetTimeOfDay() {
-    int32_t diff_seconds1, diff_seconds2;
-    int32_t diff_micro_seconds1, diff_micro_seconds2;
+    int32_t diff_seconds1;
+    int32_t diff_seconds2;
+    int32_t diff_micro_seconds1;
+    int32_t diff_micro_seconds2;
 
     Difference(s_ntp_client.t1, s_ntp_client.t2, diff_seconds1, diff_micro_seconds1);
     Difference(s_ntp_client.t4, s_ntp_client.t3, diff_seconds2, diff_micro_seconds2);
@@ -393,7 +411,7 @@ void Input(const uint8_t* buffer, [[maybe_unused]] uint32_t size, uint32_t from_
  * @note This function must be called before starting the NTP client.
  */
 void Init() {
-    DEBUG_ENTRY();
+    NTP_CLIENT_DEBUG_ENTRY();
 
     memset(&s_ntp_client, 0, sizeof(struct NtpClient));
 
@@ -407,7 +425,7 @@ void Init() {
         s_ntp_client.status = ntp::Status::kStopped;
     }
 
-    DEBUG_EXIT();
+    NTP_CLIENT_DEBUG_EXIT();
 }
 
 /**
@@ -420,17 +438,17 @@ void Init() {
  *       IP address is not configured.
  */
 void Start() {
-    DEBUG_ENTRY();
+    NTP_CLIENT_DEBUG_ENTRY();
 
     if (s_ntp_client.status == ntp::Status::kDisabled) {
-        DEBUG_EXIT();
+        NTP_CLIENT_DEBUG_EXIT();
         return;
     }
 
     if (s_ntp_client.server_ip == 0) {
         s_ntp_client.status = ntp::Status::kStopped;
         ntpclient::DisplayStatus(ntp::Status::kStopped);
-        DEBUG_EXIT();
+        NTP_CLIENT_DEBUG_EXIT();
         return;
     }
 
@@ -444,7 +462,7 @@ void Start() {
 
     Send();
 
-    DEBUG_EXIT();
+    NTP_CLIENT_DEBUG_EXIT();
 }
 
 /**
@@ -456,7 +474,7 @@ void Start() {
  * @param[in] do_disable Set to `true` to disable the client after stopping.
  */
 void Stop(bool do_disable) {
-    DEBUG_ENTRY();
+    NTP_CLIENT_DEBUG_ENTRY();
 
     if (do_disable) {
         s_ntp_client.status = ntp::Status::kDisabled;
@@ -477,7 +495,7 @@ void Stop(bool do_disable) {
         ntpclient::DisplayStatus(ntp::Status::kStopped);
     }
 
-    DEBUG_EXIT();
+    NTP_CLIENT_DEBUG_EXIT();
 }
 
 /**

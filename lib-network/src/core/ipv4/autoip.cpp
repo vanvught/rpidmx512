@@ -30,10 +30,6 @@
  * Dynamic Configuration of IPv4 Link-Local Addresses
  */
 
-#ifdef DEBUG_NETWORK_AUTOIP
-#undef NDEBUG
-#endif
-
 #include <cstring>
 #include <cassert>
 
@@ -43,6 +39,26 @@
 #include "core/ip4/acd.h"
 #include "firmware/debug/debug_debug.h"
 
+#ifdef DEBUG_NETWORK_AUTOIP
+#define AUTOIP_DEBUG_ENTRY() DEBUG_ENTRY()
+#define AUTOIP_DEBUG_EXIT() DEBUG_EXIT()
+#define AUTOIP_DEBUG_PRINTF(...) DEBUG_PRINTF(__VA_ARGS__)
+#define AUTOIP_DEBUG_PUTS(...) DEBUG_PUTS(__VA_ARGS__)
+#else
+#define AUTOIP_DEBUG_ENTRY() \
+    do {                     \
+    } while (false)
+#define AUTOIP_DEBUG_EXIT() \
+    do {                    \
+    } while (false)
+#define AUTOIP_DEBUG_PRINTF(...) \
+    do {                         \
+    } while (false)
+#define AUTOIP_DEBUG_PUTS(...) \
+    do {                       \
+    } while (false)
+#endif
+
 namespace network::autoip {
 static void Bind() {
     auto* autoip = reinterpret_cast<struct autoip::Autoip*>(netif::global::netif_default.autoip);
@@ -50,7 +66,8 @@ static void Bind() {
 
     autoip->state = autoip::State::kBound;
 
-    ip4_addr_t sn_mask, gw_addr;
+    ip4_addr_t sn_mask;
+    ip4_addr_t gw_addr;
 
     sn_mask.addr = network::ConvertToUint(255, 255, 0, 0);
     gw_addr.addr = 0;
@@ -111,7 +128,7 @@ static void CreateAddr(uint32_t& ipaddr) {
 
     ipaddr = __builtin_bswap32(ipaddr);
 
-    DEBUG_PRINTF(IPSTR, IP2STR(ipaddr));
+    AUTOIP_DEBUG_PRINTF(IPSTR, IP2STR(ipaddr));
 }
 
 /*
@@ -119,7 +136,7 @@ static void CreateAddr(uint32_t& ipaddr) {
  */
 
 void Start() {
-    DEBUG_ENTRY();
+    AUTOIP_DEBUG_ENTRY();
 
     auto* autoip = reinterpret_cast<struct autoip::Autoip*>(netif::global::netif_default.autoip);
 
@@ -145,11 +162,11 @@ void Start() {
         DEBUG_PUTS("Already started");
     }
 
-    DEBUG_EXIT();
+    AUTOIP_DEBUG_EXIT();
 }
 
 void Stop() {
-    DEBUG_ENTRY();
+    AUTOIP_DEBUG_ENTRY();
     auto* autoip = reinterpret_cast<struct autoip::Autoip*>(netif::global::netif_default.autoip);
 
     if (autoip != nullptr) {
@@ -163,7 +180,7 @@ void Stop() {
         }
     }
 
-    DEBUG_EXIT();
+    AUTOIP_DEBUG_EXIT();
 }
 
 bool SuppliedAddress() {
@@ -173,7 +190,7 @@ bool SuppliedAddress() {
 }
 
 void NetworkChangedLinkUp() {
-    DEBUG_ENTRY();
+    AUTOIP_DEBUG_ENTRY();
 
     auto* autoip = reinterpret_cast<struct autoip::Autoip*>(netif::global::netif_default.autoip);
 
@@ -181,11 +198,11 @@ void NetworkChangedLinkUp() {
         network::acd::Start(&autoip->acd, autoip->llipaddr);
     }
 
-    DEBUG_EXIT();
+    AUTOIP_DEBUG_EXIT();
 }
 
 void NetworkChangedLinkDown() {
-    DEBUG_EXIT();
+    AUTOIP_DEBUG_EXIT();
 
     const auto* autoip = reinterpret_cast<struct autoip::Autoip*>(netif::global::netif_default.autoip);
 
@@ -193,6 +210,6 @@ void NetworkChangedLinkDown() {
         autoip::Stop();
     }
 
-    DEBUG_EXIT();
+    AUTOIP_DEBUG_EXIT();
 }
 } // namespace network::autoip

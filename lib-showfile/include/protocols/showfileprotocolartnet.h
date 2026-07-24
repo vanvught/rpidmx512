@@ -29,38 +29,38 @@
 #include <cstdint>
 
 #include "artnetcontroller.h"
-#include "firmware/debug/debug_debug.h"
+#include "showfile_debug.h"
 
 class ShowFileProtocol {
    public:
     ShowFileProtocol() {
-        DEBUG_ENTRY();
+        SHOWFILE_DEBUG_ENTRY();
 
-        DEBUG_EXIT();
+        SHOWFILE_DEBUG_EXIT();
     }
 
     ~ShowFileProtocol() { controller_.Stop(); }
 
     void Start() {
-        DEBUG_ENTRY();
+        SHOWFILE_DEBUG_ENTRY();
 
         controller_.Start();
 
-        DEBUG_EXIT();
+        SHOWFILE_DEBUG_EXIT();
     }
 
     void Stop() {
-        DEBUG_ENTRY();
+        SHOWFILE_DEBUG_ENTRY();
 
         controller_.Stop();
 
-        DEBUG_EXIT();
+        SHOWFILE_DEBUG_EXIT();
     }
 
     void Record() {
-        DEBUG_ENTRY();
+        SHOWFILE_DEBUG_ENTRY();
 
-        DEBUG_EXIT();
+        SHOWFILE_DEBUG_EXIT();
     }
 
     void DmxOut(uint16_t universe, const uint8_t* data, uint32_t length) { controller_.HandleDmxOut(universe, data, length); }

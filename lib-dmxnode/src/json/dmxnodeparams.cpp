@@ -22,10 +22,6 @@
  * THE SOFTWARE.
  */
 
-#ifdef DEBUG_DMXNODEPARAMS
-#undef NDEBUG
-#endif
-
 #include <cstdint>
 #include <cstring>
 #include <utility>
@@ -37,10 +33,10 @@
 #include "json/json_parsehelper.h"
 #include "dmxnode.h"
 #include "dmxnode_nodetype.h"
+#include "dmxnode_debug.h"
 #include "configstore.h"
 #include "configurationstore.h"
 #include "common/utils/utils_flags.h"
-#include "firmware/debug/debug_debug.h"
 #include "dmxnode_outputtype.h"
 #if defined(DMXNODE_OUTPUT_DMX)
 #include "dmx.h"
@@ -128,7 +124,7 @@ void DmxNodeParams::Store(const char* buffer, uint32_t buffer_size) {
 }
 
 void DmxNodeParams::Set() {
-    DEBUG_ENTRY();
+    DMXNODE_DEBUG_ENTRY();
 
     auto* dmx_node = DmxNodeNodeType::Get();
     assert(dmx_node != nullptr);
@@ -158,10 +154,10 @@ void DmxNodeParams::Set() {
         }
     }
 
-#ifndef NDEBUG
+#ifdef DEBUG_DMXNODE
     Dump();
 #endif
-    DEBUG_EXIT();
+    DMXNODE_DEBUG_EXIT();
 }
 
 void DmxNodeParams::Dump() {

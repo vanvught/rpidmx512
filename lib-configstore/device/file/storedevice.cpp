@@ -27,159 +27,131 @@
 #error Configuration error
 #endif
 
-#if defined(DEBUG_CONFIGSTORE)
-#undef NDEBUG
-#endif
-
 #include <cstdint>
 #include <cstdio>
 #include <cassert>
 #include <unistd.h>
 
 #include "configstoredevice.h"
-#include "firmware/debug/debug_debug.h"
+#include "configstore_debug.h"
 
 static constexpr auto kFlashSectorSize = 4096U;
 static constexpr auto kFlashSize = (512 * kFlashSectorSize);
 static constexpr char kFlashFileName[] = "spiflash.bin";
 static constexpr auto kBlockWriteLength = 1024;
 
-enum class State
-{
-    kIdle,
-    kRunning,
-    kError
-};
+enum class State { kIdle, kRunning, kError };
 
 static FILE* s_file;
 static State s_state = State::kIdle;
 static uint32_t s_index = 0;
 
-StoreDevice::StoreDevice()
-{
-    DEBUG_ENTRY();
+StoreDevice::StoreDevice() {
+    CONFIGSTORE_DEBUG_ENTRY();
 
-    if ((s_file = fopen(kFlashFileName, "r+")) == nullptr)
-    {
+    if ((s_file = fopen(kFlashFileName, "r+")) == nullptr) {
         perror("fopen r+");
 
         s_file = fopen(kFlashFileName, "w+");
 
-        for (uint32_t i = 0; i < kFlashSize; i++)
-        {
-            if (fputc(0xFF, s_file) == EOF)
-            {
+        for (uint32_t i = 0; i < kFlashSize; i++) {
+            if (fputc(0xFF, s_file) == EOF) {
                 perror("fputc(0xFF, file)");
-                DEBUG_EXIT();
+                CONFIGSTORE_DEBUG_EXIT();
                 return;
             }
         }
 
-        if (fflush(s_file) != 0)
-        {
+        if (fflush(s_file) != 0) {
             perror("fflush");
         }
     }
 
     detected_ = true;
 
-    DEBUG_EXIT();
+    CONFIGSTORE_DEBUG_EXIT();
 }
 
-StoreDevice::~StoreDevice()
-{
-    DEBUG_ENTRY();
+StoreDevice::~StoreDevice() {
+    CONFIGSTORE_DEBUG_ENTRY();
 
-    if (s_file != nullptr)
-    {
+    if (s_file != nullptr) {
         fclose(s_file);
         s_file = nullptr;
     }
 
-    DEBUG_EXIT();
+    CONFIGSTORE_DEBUG_EXIT();
 }
 
-uint32_t StoreDevice::GetSize() const
-{
+uint32_t StoreDevice::GetSize() const {
     return kFlashSize;
 }
 
-uint32_t StoreDevice::GetSectorSize() const
-{
+uint32_t StoreDevice::GetSectorSize() const {
     return kFlashSectorSize;
 }
 
-bool StoreDevice::Read(uint32_t offset, uint32_t length, uint8_t* buffer, storedevice::Result& result)
-{
+bool StoreDevice::Read(uint32_t offset, uint32_t length, uint8_t* buffer, storedevice::Result& result) {
     assert(s_file != nullptr);
-    DEBUG_ENTRY();
+    CONFIGSTORE_DEBUG_ENTRY();
     DEBUG_PRINTF("offset=%u, length=%u", offset, length);
 
-    if (fseek(s_file, static_cast<long int>(offset), SEEK_SET) != 0)
-    {
+    if (fseek(s_file, static_cast<long int>(offset), SEEK_SET) != 0) {
         result = storedevice::Result::kError;
         perror("fseek");
-        DEBUG_EXIT();
+        CONFIGSTORE_DEBUG_EXIT();
         return true;
     }
 
-    if (fread(buffer, 1, length, s_file) != length)
-    {
+    if (fread(buffer, 1, length, s_file) != length) {
         result = storedevice::Result::kError;
         perror("fread");
-        DEBUG_EXIT();
+        CONFIGSTORE_DEBUG_EXIT();
         return true;
     }
 
-    DEBUG_EXIT();
+    CONFIGSTORE_DEBUG_EXIT();
     result = storedevice::Result::kOk;
     return true;
 }
 
-bool StoreDevice::Erase(uint32_t offset, uint32_t length, storedevice::Result& result)
-{
-    DEBUG_ENTRY();
+bool StoreDevice::Erase(uint32_t offset, uint32_t length, storedevice::Result& result) {
+    CONFIGSTORE_DEBUG_ENTRY();
     DEBUG_PRINTF("offset=%u, length=%u, s_State=%d", offset, length, static_cast<int>(s_state));
     assert(s_state != State::kError);
     assert(s_file != nullptr);
 
-    if (s_state == State::kIdle)
-    {
-        if (offset % kFlashSectorSize || length % kFlashSectorSize)
-        {
+    if (s_state == State::kIdle) {
+        if (offset % kFlashSectorSize || length % kFlashSectorSize) {
             s_state = State::kError;
             result = storedevice::Result::kError;
             DEBUG_PUTS("Erase offset/length not multiple of erase size");
-            DEBUG_EXIT();
+            CONFIGSTORE_DEBUG_EXIT();
             return true;
         }
 
-        if (fseek(s_file, static_cast<long int>(offset), SEEK_SET) != 0)
-        {
+        if (fseek(s_file, static_cast<long int>(offset), SEEK_SET) != 0) {
             s_state = State::kError;
             result = storedevice::Result::kError;
             perror("fseek");
-            DEBUG_EXIT();
+            CONFIGSTORE_DEBUG_EXIT();
             return true;
         }
 
         s_index = 0;
         s_state = State::kRunning;
         result = storedevice::Result::kOk;
-        DEBUG_EXIT();
+        CONFIGSTORE_DEBUG_EXIT();
         return false;
     }
 
-    if (s_state == State::kRunning)
-    {
-        for (uint32_t i = 0; i < length; i++)
-        {
-            if (fputc(0xFF, s_file) == EOF)
-            {
+    if (s_state == State::kRunning) {
+        for (uint32_t i = 0; i < length; i++) {
+            if (fputc(0xFF, s_file) == EOF) {
                 s_state = State::kError;
                 result = storedevice::Result::kError;
                 perror("fputc(0xFF, file)");
-                DEBUG_EXIT();
+                CONFIGSTORE_DEBUG_EXIT();
                 return true;
             }
         }
@@ -187,83 +159,73 @@ bool StoreDevice::Erase(uint32_t offset, uint32_t length, storedevice::Result& r
         s_state = State::kIdle;
         result = storedevice::Result::kOk;
 
-        if (fflush(s_file) != 0)
-        {
+        if (fflush(s_file) != 0) {
             perror("fflush");
         }
 
         sync();
-        DEBUG_EXIT();
+        CONFIGSTORE_DEBUG_EXIT();
         return true;
     }
 
-    DEBUG_EXIT();
+    CONFIGSTORE_DEBUG_EXIT();
     assert(0);
     return true;
 }
 
-bool StoreDevice::Write(uint32_t offset, uint32_t length, const uint8_t* buffer, storedevice::Result& result)
-{
-    DEBUG_ENTRY();
+bool StoreDevice::Write(uint32_t offset, uint32_t length, const uint8_t* buffer, storedevice::Result& result) {
+    CONFIGSTORE_DEBUG_ENTRY();
     DEBUG_PRINTF("s_State=%u, offset=%u, length=%u [%u]", static_cast<unsigned int>(s_state), offset, length, s_index);
     assert(s_state != State::kError);
     assert(s_file != nullptr);
 
-    if (s_state == State::kIdle)
-    {
-        if (fseek(s_file, static_cast<long int>(offset), SEEK_SET) != 0)
-        {
+    if (s_state == State::kIdle) {
+        if (fseek(s_file, static_cast<long int>(offset), SEEK_SET) != 0) {
             s_state = State::kError;
             result = storedevice::Result::kError;
             perror("fseek");
-            DEBUG_EXIT();
+            CONFIGSTORE_DEBUG_EXIT();
             return true;
         }
 
         s_index = 0;
         s_state = State::kRunning;
         result = storedevice::Result::kOk;
-        DEBUG_EXIT();
+        CONFIGSTORE_DEBUG_EXIT();
         return false;
-    }
-    else if (s_state == State::kRunning)
-    {
+    } else if (s_state == State::kRunning) {
         uint32_t block_write_length = length - s_index;
 
-        if (block_write_length > kBlockWriteLength)
-        {
+        if (block_write_length > kBlockWriteLength) {
             block_write_length = kBlockWriteLength;
         }
 
-        if (fwrite(&buffer[s_index], 1, block_write_length, s_file) != block_write_length)
-        {
+        if (fwrite(&buffer[s_index], 1, block_write_length, s_file) != block_write_length) {
             s_state = State::kError;
             result = storedevice::Result::kError;
             perror("fwrite");
-            DEBUG_EXIT();
+            CONFIGSTORE_DEBUG_EXIT();
             return true;
         }
 
         s_index += block_write_length;
 
-        if (s_index == length)
-        {
+        if (s_index == length) {
             s_state = State::kIdle;
 
-            if (fflush(s_file) != 0)
-            {
+            if (fflush(s_file) != 0) {
                 perror("fflush");
             }
 
-            DEBUG_EXIT();
+            CONFIGSTORE_DEBUG_EXIT();
             return true;
         }
 
         result = storedevice::Result::kOk;
-        DEBUG_EXIT();
+        CONFIGSTORE_DEBUG_EXIT();
         return false;
     }
 
-    DEBUG_EXIT();
+    CONFIGSTORE_DEBUG_EXIT();
     return true;
 }

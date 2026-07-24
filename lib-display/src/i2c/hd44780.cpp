@@ -23,12 +23,8 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_DISPLAY)
-#undef NDEBUG
-#endif
-
 #include <cstdint>
-#include <stdio.h>
+#include <cstdio>
 #include <cassert>
 
 #include "i2c/hd44780.h"

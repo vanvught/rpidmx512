@@ -32,16 +32,13 @@
 #include "showfiletftp.h"
 #include "showfileformat.h"
 #include "showfileprotocol.h"
-
 #if defined(CONFIG_SHOWFILE_ENABLE_OSC)
 #include "showfileosc.h"
 #endif
-
 #if defined(OUTPUT_DMX_PIXEL) || defined(OUTPUT_DMX_PIXEL_MULTI)
 #define CONFIG_SHOWFILE_ENABLE_MASTER
 #endif
-
-#include "firmware/debug/debug_debug.h"
+#include "showfile_debug.h"
 
 namespace showfile {
 bool FilenameCopyto(char* show_file_name, uint32_t length, int32_t show_file_number);
@@ -60,10 +57,10 @@ class ShowFile final : public ShowFileFormat {
     ShowFile& operator=(const ShowFile&) = delete;
 
     void Play() {
-        DEBUG_ENTRY();
+        SHOWFILE_DEBUG_ENTRY();
 
         if ((mode_ == showfile::Mode::kRecorder) || (status_ == showfile::Status::kPlaying) || (status_ == showfile::Status::kRecording)) {
-            DEBUG_EXIT();
+            SHOWFILE_DEBUG_EXIT();
             return;
         }
 
@@ -76,11 +73,11 @@ class ShowFile final : public ShowFileFormat {
             SetStatus(showfile::Status::kIdle);
         }
 
-        DEBUG_EXIT();
+        SHOWFILE_DEBUG_EXIT();
     }
 
     void Stop() {
-        DEBUG_ENTRY();
+        SHOWFILE_DEBUG_ENTRY();
 
         if (m_pShowFile != nullptr) {
             ShowFileFormat::ShowFileStop();
@@ -95,14 +92,14 @@ class ShowFile final : public ShowFileFormat {
             }
         }
 
-        DEBUG_EXIT();
+        SHOWFILE_DEBUG_EXIT();
     }
 
     void Resume() {
-        DEBUG_ENTRY();
+        SHOWFILE_DEBUG_ENTRY();
 
         if (status_ != showfile::Status::kStopped) {
-            DEBUG_EXIT();
+            SHOWFILE_DEBUG_EXIT();
             return;
         }
 
@@ -111,15 +108,15 @@ class ShowFile final : public ShowFileFormat {
             SetStatus(showfile::Status::kPlaying);
         }
 
-        DEBUG_EXIT();
+        SHOWFILE_DEBUG_EXIT();
     }
 
 #if !defined(CONFIG_SHOWFILE_DISABLE_RECORD)
     void Record() {
-        DEBUG_ENTRY();
+        SHOWFILE_DEBUG_ENTRY();
 
         if ((mode_ == showfile::Mode::kPlayer) || (status_ != showfile::Status::kIdle)) {
-            DEBUG_EXIT();
+            SHOWFILE_DEBUG_EXIT();
             return;
         }
 
@@ -130,7 +127,7 @@ class ShowFile final : public ShowFileFormat {
             SetStatus(showfile::Status::kIdle);
         }
 
-        DEBUG_EXIT();
+        SHOWFILE_DEBUG_EXIT();
     }
 #endif
 

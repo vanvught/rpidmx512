@@ -22,10 +22,6 @@
  * THE SOFTWARE.
  */
 
-#ifdef DEBUG_ARTNET_PARAMS
-#undef NDEBUG
-#endif
-
 #include <cstdint>
 
 #include "artnetnode.h"
@@ -42,6 +38,26 @@
 #include "dmxnode_outputtype.h"
 #if defined(DMXNODE_OUTPUT_DMX)
 #include "dmx.h"
+#endif
+
+#ifdef DEBUG_ARTNET_PARAMS
+#define ARTNET_DEBUG_ENTRY() DEBUG_ENTRY()
+#define ARTNET_DEBUG_EXIT() DEBUG_EXIT()
+#define ARTNET_DEBUG_PRINTF(...) DEBUG_PRINTF(__VA_ARGS__)
+#define ARTNET_DEBUG_PUTS(...) DEBUG_PUTS(__VA_ARGS__)
+#else
+#define ARTNET_DEBUG_ENTRY() \
+    do {                     \
+    } while (false)
+#define ARTNET_DEBUG_EXIT() \
+    do {                    \
+    } while (false)
+#define ARTNET_DEBUG_PRINTF(...) \
+    do {                         \
+    } while (false)
+#define ARTNET_DEBUG_PUTS(...) \
+    do {                       \
+    } while (false)
 #endif
 
 using common::store::dmxnode::Flags;
@@ -110,7 +126,6 @@ void ArtNetParams::Store(const char* buffer, uint32_t buffer_size) {
 }
 
 void ArtNetParams::Set() {
-    DEBUG_ENTRY();
 
     auto& artnet = *ArtNetNode::Get();
 
@@ -144,7 +159,7 @@ void ArtNetParams::Set() {
     Dump();
 #endif
 
-    DEBUG_EXIT();
+    ARTNET_DEBUG_EXIT();
 }
 
 void ArtNetParams::Dump() {

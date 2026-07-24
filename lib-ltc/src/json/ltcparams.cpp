@@ -23,8 +23,6 @@
 * THE SOFTWARE.
 */
 
-#undef NDEBUG
-
 #include <cstdint>
 #include <utility>
 
@@ -37,7 +35,7 @@
 #include "configurationstore.h"
 #include "ltc.h"
 #include "common/utils/utils_flags.h"
-#include "firmware/debug/debug_debug.h"
+#include "ltc_debug.h"
 #include "network_config.h"
 
 using common::store::ltc::Flags;
@@ -72,68 +70,90 @@ template <ltc::Destination::Output kOutput> static uint8_t HandleDisabledOutput(
 }
 
 void LtcParams::SetDisableDisplayOled(const char* val, uint32_t len) {
-    if (len != 1) return;
+    if (len != 1) {
+        return;
+    }
 
     store_ltc.disabled_outputs = HandleDisabledOutput<ltc::Destination::Output::DISPLAY_OLED>(store_ltc.disabled_outputs, val[0]);
 }
 
 void LtcParams::SetDisableMax7219(const char* val, uint32_t len) {
-    if (len != 1) return;
+    if (len != 1) {
+        return;
+    }
 
     store_ltc.disabled_outputs = HandleDisabledOutput<ltc::Destination::Output::MAX7219>(store_ltc.disabled_outputs, val[0]);
 }
 
 void LtcParams::SetDisableMidi(const char* val, uint32_t len) {
-    if (len != 1) return;
+    if (len != 1) {
+        return;
+    }
 
     store_ltc.disabled_outputs = HandleDisabledOutput<ltc::Destination::Output::MIDI>(store_ltc.disabled_outputs, val[0]);
 }
 
 void LtcParams::SetDisableArtnet(const char* val, uint32_t len) {
-    if (len != 1) return;
+    if (len != 1) {
+        return;
+    }
 
     store_ltc.disabled_outputs = HandleDisabledOutput<ltc::Destination::Output::ARTNET>(store_ltc.disabled_outputs, val[0]);
 }
 
 void LtcParams::SetDisableLtc(const char* val, uint32_t len) {
-    if (len != 1) return;
+    if (len != 1) {
+        return;
+    }
 
     store_ltc.disabled_outputs = HandleDisabledOutput<ltc::Destination::Output::LTC>(store_ltc.disabled_outputs, val[0]);
 }
 
 void LtcParams::SetDisableRtpmidi(const char* val, uint32_t len) {
-    if (len != 1) return;
+    if (len != 1) {
+        return;
+    }
 
     store_ltc.disabled_outputs = HandleDisabledOutput<ltc::Destination::Output::RTPMIDI>(store_ltc.disabled_outputs, val[0]);
 }
 
 void LtcParams::SetDisableEtc(const char* val, uint32_t len) {
-    if (len != 1) return;
+    if (len != 1) {
+        return;
+    }
 
     store_ltc.disabled_outputs = HandleDisabledOutput<ltc::Destination::Output::ETC>(store_ltc.disabled_outputs, val[0]);
 }
 
 // System clock / RTC
 void LtcParams::SetShowSystime(const char* val, uint32_t len) {
-    if (len != 1) return;
+    if (len != 1) {
+        return;
+    }
 
     store_ltc.flags = common::SetFlagValue(store_ltc.flags, Flags::Flag::kShowSystime, val[0] != '0');
 }
 void LtcParams::SetDisableTimesync(const char* val, uint32_t len) {
-    if (len != 1) return;
+    if (len != 1) {
+        return;
+    }
 
     store_ltc.flags = common::SetFlagValue(store_ltc.flags, Flags::Flag::kTimeSyncDisabled, val[0] != '0');
 }
 
 // source=systime
 void LtcParams::SetAutoStart(const char* val, uint32_t len) {
-    if (len != 1) return;
+    if (len != 1) {
+        return;
+    }
 
     store_ltc.flags = common::SetFlagValue(store_ltc.flags, Flags::Flag::kAutoStart, val[0] != '0');
 }
 
 void LtcParams::SetGpsStart(const char* val, uint32_t len) {
-    if (len != 1) return;
+    if (len != 1) {
+        return;
+    }
 
     store_ltc.flags = common::SetFlagValue(store_ltc.flags, Flags::Flag::kGpsStart, val[0] != '0');
 }
@@ -143,16 +163,16 @@ void LtcParams::SetUtcOffset(const char* val, uint32_t len) {
     uint32_t minutes;
 
     if (utc::ParseOffset(val, len, hours, minutes)) {
-        DEBUG_PUTS("Parse OK");
+        LTC_DEBUG_PUTS("Parse OK");
 
         int32_t utc_offset;
 
         if (utc::ValidateOffset(hours, minutes, utc_offset)) {
-            DEBUG_PUTS("Validate OK");
+            LTC_DEBUG_PUTS("Validate OK");
             store_ltc.utc_offset = utc_offset;
         }
     } else {
-        DEBUG_PUTS("Parse ERROR");
+        LTC_DEBUG_PUTS("Parse ERROR");
     }
 }
 
@@ -167,7 +187,9 @@ void LtcParams::SetFps(const char* val, uint32_t len) {
 }
 
 void LtcParams::SetStartFrame(const char* val, uint32_t len) {
-    if (len != 2) return;
+    if (len != 2) {
+        return;
+    }
 
     const auto kFrame = json::ParseValue<uint8_t>(val, 2);
     if (kFrame <= 30) {
@@ -176,7 +198,9 @@ void LtcParams::SetStartFrame(const char* val, uint32_t len) {
 }
 
 void LtcParams::SetStartSecond(const char* val, uint32_t len) {
-    if (len > 2) return;
+    if (len > 2) {
+        return;
+    }
 
     const auto kSecond = json::ParseValue<uint8_t>(val, len);
     if (kSecond <= 59) {
@@ -185,7 +209,9 @@ void LtcParams::SetStartSecond(const char* val, uint32_t len) {
 }
 
 void LtcParams::SetStartMinute(const char* val, uint32_t len) {
-    if (len > 2) return;
+    if (len > 2) {
+        return;
+    }
 
     const auto kMinute = json::ParseValue<uint8_t>(val, len);
     if (kMinute <= 59) {
@@ -194,7 +220,9 @@ void LtcParams::SetStartMinute(const char* val, uint32_t len) {
 }
 
 void LtcParams::SetStartHour(const char* val, uint32_t len) {
-    if (len > 2) return;
+    if (len > 2) {
+        return;
+    }
 
     const auto kHour = json::ParseValue<uint8_t>(val, len);
     if (kHour <= 59) {
@@ -203,7 +231,9 @@ void LtcParams::SetStartHour(const char* val, uint32_t len) {
 }
 
 void LtcParams::SetIgnoreStart(const char* val, uint32_t len) {
-    if (len != 1) return;
+    if (len != 1) {
+        return;
+    }
 
     store_ltc.flags = common::SetFlagValue(store_ltc.flags, Flags::Flag::kIgnoreStart, val[0] != '0');
 }
@@ -218,7 +248,9 @@ void LtcParams::SetStopFrame(const char* val, uint32_t len) {
 }
 
 void LtcParams::SetStopSecond(const char* val, uint32_t len) {
-    if (len > 2) return;
+    if (len > 2) {
+        return;
+    }
 
     const auto kSecond = json::ParseValue<uint8_t>(val, len);
     if (kSecond <= 59) {
@@ -227,7 +259,9 @@ void LtcParams::SetStopSecond(const char* val, uint32_t len) {
 }
 
 void LtcParams::SetStopMinute(const char* val, uint32_t len) {
-    if (len > 2) return;
+    if (len > 2) {
+        return;
+    }
 
     const auto kMinute = json::ParseValue<uint8_t>(val, len);
     if (kMinute <= 59) {
@@ -236,7 +270,9 @@ void LtcParams::SetStopMinute(const char* val, uint32_t len) {
 }
 
 void LtcParams::SetStopHour(const char* val, uint32_t len) {
-    if (len > 2) return;
+    if (len > 2) {
+        return;
+    }
 
     const auto kHour = json::ParseValue<uint8_t>(val, len);
     if (kHour <= 59) {
@@ -245,7 +281,9 @@ void LtcParams::SetStopHour(const char* val, uint32_t len) {
 }
 
 void LtcParams::SetIgnoreStop(const char* val, uint32_t len) {
-    if (len != 1) return;
+    if (len != 1) {
+        return;
+    }
 
     store_ltc.flags = common::SetFlagValue(store_ltc.flags, Flags::Flag::kIgnoreStop, val[0] != '0');
 }
@@ -273,7 +311,9 @@ void LtcParams::SetLtcVolume(const char* val, uint32_t len) {
 #if !defined(CONFIG_LTC_DISABLE_WS28XX)
 // WS28xx Display
 void LtcParams::SetWS28xxEnable(const char* val, uint32_t len) {
-    if (len != 1) return;
+    if (len != 1) {
+        return;
+    }
 
     store_ltc.flags = common::SetFlagValue(store_ltc.flags, Flags::Flag::kWS28xxEnable, val[0] != '0');
 }
@@ -281,7 +321,9 @@ void LtcParams::SetWS28xxEnable(const char* val, uint32_t len) {
 
 #if !defined(CONFIG_LTC_DISABLE_RGB_PANEL)
 void LtcParams::SetRgbpanelEnable(const char* val, uint32_t len) {
-    if (len != 1) return;
+    if (len != 1) {
+        return;
+    }
 
     store_ltc.flags = common::SetFlagValue(store_ltc.flags, Flags::Flag::kRgbpanelEnable, val[0] != '0');
 }
@@ -299,7 +341,7 @@ void LtcParams::Store(const char* buffer, uint32_t buffer_size) {
     ParseJsonWithTable(buffer, buffer_size, kLtcKeys);
     ConfigStore::Instance().Store(&store_ltc, &ConfigurationStore::ltc);
 
-#ifndef NDEBUG
+#ifdef DEBUG_LTC
     Dump();
 #endif
 }
@@ -337,7 +379,7 @@ void LtcParams::Set(struct ltc::TimeCode* start_time_code, struct ltc::TimeCode*
 
     stop_time_code->type = std::to_underlying(ltc::g_Type);
 
-#ifndef NDEBUG
+#ifdef DEBUG_LTC
     Dump();
 #endif
 }

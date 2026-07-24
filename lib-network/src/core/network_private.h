@@ -34,6 +34,7 @@
 #include "core/protocol/udp.h"
 #include "core/protocol/tcp.h"
 #include "net_platform.h" // IWYU pragma: keep
+#include "ansi_colour.h"
 
 #ifndef ALIGNED
 #define ALIGNED __attribute__((aligned(4)))
@@ -53,7 +54,7 @@ void FreePkt();
 
 namespace network {
 inline void Error(const char* func, const char* string) {
-    printf("%s: %s\n", func, string);
+    printf("%s%s: %s%s\n", ansi::Colours::Fg::kRed, func, string, ansi::Colours::Fg::kDefault);
 }
 
 #define ERROR(s) Error(__func__, (s))

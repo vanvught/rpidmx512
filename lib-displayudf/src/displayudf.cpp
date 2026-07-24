@@ -22,17 +22,13 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_DISPLAYUDF)
-#undef NDEBUG
-#endif
-
 #include <cstdint>
 #include <cstdarg>
 #include <cassert>
 
 #include "displayudf.h"
 #include "board.h"
-#include "firmware/debug/debug_debug.h"
+#include "displayudf_debug.h"
 
 DisplayUdf::DisplayUdf() {
     assert(s_this == nullptr);
@@ -53,7 +49,7 @@ void DisplayUdf::SetTitle(const char* format, ...) {
 
     title_[kIndex] = '\0';
 
-    DEBUG_PUTS(title_);
+    DISPLAYUDF_DEBUG_PUTS(title_);
 }
 
 void DisplayUdf::Set(uint32_t line, displayudf::Labels label) {
@@ -85,7 +81,7 @@ void DisplayUdf::Show() {
             labels_[i] = 0xFF;
         }
 
-        DEBUG_PRINTF("labels_[%d]=%d", i, labels_[i]);
+        DISPLAYUDF_DEBUG_PRINTF("labels_[%u]=%u", static_cast<unsigned>(i), static_cast<unsigned>(labels_[i]));
     }
 
     ClearEndOfLine();

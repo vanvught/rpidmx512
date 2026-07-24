@@ -22,10 +22,6 @@
  * THE SOFTWARE.
  */
 
-#ifdef DEBUG_DMXSENDPARAMS
-#undef NDEBUG
-#endif
-
 #include <cstdint>
 #include <cstdio>
 
@@ -53,13 +49,13 @@ DmxSendParams::DmxSendParams() {
 }
 
 void DmxSendParams::SetBreakTime(const char* val, uint32_t len) {
-    const auto kV = ParseValue<uint16_t>(val, len);
-    store_dmx_send.break_time = kV > dmx::transmit::kBreakTimeMin ? kV : dmx::transmit::kBreakTimeMin;
+    const auto kValue = ParseValue<uint16_t>(val, len);
+    store_dmx_send.break_time = kValue > dmx::transmit::kBreakTimeMin ? kValue : dmx::transmit::kBreakTimeMin;
 }
 
 void DmxSendParams::SetMabTime(const char* val, uint32_t len) {
-    const auto kV = ParseValue<uint16_t>(val, len);
-    store_dmx_send.mab_time = kV > dmx::transmit::kMabTimeMin ? kV : dmx::transmit::kMabTimeMin;
+    const auto kValue = ParseValue<uint16_t>(val, len);
+    store_dmx_send.mab_time = kValue > dmx::transmit::kMabTimeMin ? kValue : dmx::transmit::kMabTimeMin;
 }
 
 void DmxSendParams::SetRefreshRate(const char* val, uint32_t len) {
@@ -71,10 +67,10 @@ void DmxSendParams::SetRefreshRate(const char* val, uint32_t len) {
 }
 
 void DmxSendParams::SetSlotsCount(const char* val, uint32_t len) {
-    const auto kV = ParseValue<uint16_t>(val, len);
+    const auto kValue = ParseValue<uint16_t>(val, len);
 
-    if (kV >= 2U && kV <= dmx::kChannelsMax) {
-        store_dmx_send.slots_count = RounddownSlots(kV);
+    if (kValue >= 2U && kValue <= dmx::kChannelsMax) {
+        store_dmx_send.slots_count = RounddownSlots(kValue);
     } else {
         store_dmx_send.slots_count = RounddownSlots(dmx::kChannelsMax);
     }
@@ -99,7 +95,7 @@ void DmxSendParams::Set() {
 
     dmx.SetTransmitPeriodTime(period);
 
-#ifndef NDEBUG
+#ifdef DEBUG_DMXSEND
     Dump();
 #endif
 }

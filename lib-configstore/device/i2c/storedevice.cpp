@@ -27,17 +27,13 @@
 #error Configuration error
 #endif
 
-#if defined(DEBUG_CONFIGSTORE)
-#undef NDEBUG
-#endif
-
 #include <cstdint>
 #include <cstdio>
 #include <cassert>
 
 #include "configstoredevice.h"
 #include "i2c/at24cxx.h" // IWYU pragma: keep
-#include "firmware/debug/debug_debug.h"
+#include "configstore_debug.h"
 
 namespace storedevice {
 #if !defined(CONFIG_FLASHROM_I2C_INDEX)
@@ -50,7 +46,7 @@ static constexpr auto kRomSize = 4096U;
 } // namespace storedevice
 
 StoreDevice::StoreDevice() : AT24C32(storedevice::kI2CIndex) {
-    DEBUG_ENTRY();
+    CONFIGSTORE_DEBUG_ENTRY();
 
     detected_ = AT24C32::IsConnected();
 
@@ -60,12 +56,12 @@ StoreDevice::StoreDevice() : AT24C32(storedevice::kI2CIndex) {
         printf("StoreDevice: AT24C32 total %u bytes [%u kB]\n", static_cast<unsigned>(GetSize()), static_cast<unsigned>(GetSize() / 1024U));
     }
 
-    DEBUG_EXIT();
+    CONFIGSTORE_DEBUG_EXIT();
 }
 
 StoreDevice::~StoreDevice() {
-    DEBUG_ENTRY();
-    DEBUG_EXIT();
+    CONFIGSTORE_DEBUG_ENTRY();
+    CONFIGSTORE_DEBUG_EXIT();
 }
 
 uint32_t StoreDevice::GetSize() const {
@@ -77,34 +73,34 @@ uint32_t StoreDevice::GetSectorSize() const {
 }
 
 bool StoreDevice::Read(uint32_t offset, uint32_t length, uint8_t* buffer, storedevice::Result& result) {
-    DEBUG_ENTRY();
+    CONFIGSTORE_DEBUG_ENTRY();
     assert((offset + length) <= storedevice::ROM_SIZE);
 
     AT24C32::Read(offset, buffer, length);
 
     result = storedevice::Result::kOk;
 
-    DEBUG_EXIT();
+    CONFIGSTORE_DEBUG_EXIT();
     return true;
 }
 
 bool StoreDevice::Erase([[maybe_unused]] uint32_t offset, [[maybe_unused]] uint32_t length, storedevice::Result& result) {
-    DEBUG_ENTRY();
+    CONFIGSTORE_DEBUG_ENTRY();
 
     result = storedevice::Result::kOk;
 
-    DEBUG_EXIT();
+    CONFIGSTORE_DEBUG_EXIT();
     return true;
 }
 
 bool StoreDevice::Write(uint32_t offset, uint32_t length, const uint8_t* buffer, storedevice::Result& result) {
-    DEBUG_ENTRY();
+    CONFIGSTORE_DEBUG_ENTRY();
     assert((offset + length) <= ROM_SIZE);
 
     AT24C32::Write(offset, buffer, length);
 
     result = storedevice::Result::kOk;
 
-    DEBUG_EXIT();
+    CONFIGSTORE_DEBUG_EXIT();
     return true;
 }

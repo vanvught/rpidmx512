@@ -34,7 +34,7 @@
 #include "configurationstore.h"
 #include "global.h"
 #include "softwaretimers.h"
-#include "firmware/debug/debug_debug.h"
+#include "configstore_debug.h"
 
 class ConfigStore : StoreDevice {
     static constexpr uint32_t kStoreSize = 4 * 1024;
@@ -42,29 +42,29 @@ class ConfigStore : StoreDevice {
     static constexpr uint8_t kVersion[configurationstore::kVersionSize] = {0, 1};
     static_assert(sizeof(ConfigurationStore) <= kStoreSize);
 
-    enum class State { 
-		kIdle,
-		kChanged,
-		kChangedWaiting,
-		kErasing,
-		kErased,
-		kErasedWaiting,
-		kWriting
-	};
+    enum class State {
+        kIdle,           //
+        kChanged,        //
+        kChangedWaiting, //
+        kErasing,        //
+        kErased,         //
+        kErasedWaiting,  //
+        kWriting         //
+    };
 
     [[maybe_unused]] static constexpr char kStateNames[7][16] = {
-		"IDLE", 
-		"CHANGED", 
-		"CHANGED_WAITING", 
-		"ERASING", 
-		"ERASED", 
-		"ERASED_WAITING", 
-		"WRITING"
-	};
+        "IDLE",            //
+        "CHANGED",         //
+        "CHANGED_WAITING", //
+        "ERASING",         //
+        "ERASED",          //
+        "ERASED_WAITING",  //
+        "WRITING"          //
+    };
 
    public:
     ConfigStore() {
-        DEBUG_ENTRY();
+        CONFIGSTORE_DEBUG_ENTRY();
 
         assert(s_this == nullptr);
         s_this = this;
@@ -73,7 +73,7 @@ class ConfigStore : StoreDevice {
 
         s_have_device = StoreDevice::IsDetected();
 
-        DEBUG_PRINTF("s_have_device=%u", s_have_device);
+        CONFIGSTORE_DEBUG_PRINTF("s_have_device=%u", s_have_device);
 
         if (s_have_device) {
             assert(kStoreSize <= StoreDevice::GetSize());
@@ -83,13 +83,13 @@ class ConfigStore : StoreDevice {
 
             const auto kSectors = kStoreSize / kEraseSize;
 
-            DEBUG_PRINTF("kStoreSize=%u, kEraseSize=%u, kSectors=%u", static_cast<unsigned>(kStoreSize), static_cast<unsigned>(kEraseSize), static_cast<unsigned>(kSectors));
+            CONFIGSTORE_DEBUG_PRINTF("kStoreSize=%u, kEraseSize=%u, kSectors=%u", static_cast<unsigned>(kStoreSize), static_cast<unsigned>(kEraseSize), static_cast<unsigned>(kSectors));
 
             assert((kSectors * kEraseSize) <= StoreDevice::GetSize());
 
             s_start_address = StoreDevice::GetSize() - (kSectors * kEraseSize);
 
-            DEBUG_PRINTF("s_start_address=%p", reinterpret_cast<void*>(s_start_address));
+            CONFIGSTORE_DEBUG_PRINTF("s_start_address=%p", reinterpret_cast<void*>(s_start_address));
 
             storedevice::Result result;
             while (!StoreDevice::Read(s_start_address, kStoreSize, reinterpret_cast<uint8_t*>(&s_store), result)) {
@@ -100,7 +100,7 @@ class ConfigStore : StoreDevice {
         auto* store = GetStore();
 
         if (!IsValid()) {
-            DEBUG_PUTS("Wrong Magic number or version");
+            CONFIGSTORE_DEBUG_PUTS("Wrong Magic number or version");
 
             memset(s_store, 0, sizeof(s_store));
             memcpy(store->magic_number, &kMagicNumber, sizeof(kMagicNumber));
@@ -112,7 +112,7 @@ class ConfigStore : StoreDevice {
         // Set global
         global::SetUtcOffsetIfValid(store->global.utc_offset);
 
-        DEBUG_EXIT();
+        CONFIGSTORE_DEBUG_EXIT();
     }
 
     ConfigStore(const ConfigStore&) = delete;
@@ -251,27 +251,27 @@ class ConfigStore : StoreDevice {
     void ClearFlagRgbPanel(uint32_t flag) { ClearFlagInternal(GetStore()->rgb_panel, &common::store::RgbPanel::set_list, flag); }
     void ClearFlagWidget(uint32_t flag) { ClearFlagInternal(GetStore()->widget, &common::store::Widget::set_list, flag); }
 
-    bool IsFlagSetRemoteConfig(uint32_t flag) const { return IsFlagSetInternal(GetStore()->remote_config, &common::store::RemoteConfig::flags, flag); }
-    bool IsFlagSetNetwork(uint32_t flag) const { return IsFlagSetInternal(GetStore()->network, &common::store::Network::flags, flag); }
-    bool IsFlagSetDisplayUdf(uint32_t flag) const { return IsFlagSetInternal(GetStore()->display_udf, &common::store::DisplayUdf::flags, flag); }
-    bool IsFlagSetDmxNode(uint32_t flag) const { return IsFlagSetInternal(GetStore()->dmx_node, &common::store::DmxNode::flags, flag); }
-    bool IsFlagSetOscClient(uint32_t flag) const { return IsFlagSetInternal(GetStore()->osc_client, &common::store::OscClient::flags, flag); }
-    bool IsFlagSetOscServer(uint32_t flag) const { return IsFlagSetInternal(GetStore()->osc_server, &common::store::OscServer::flags, flag); }
-    bool IsFlagSetDmxSend(uint32_t flag) const { return IsFlagSetInternal(GetStore()->dmx_send, &common::store::DmxSend::flags, flag); }
-    bool IsFlagSetDmxLed(uint32_t flag) const { return IsFlagSetInternal(GetStore()->dmx_led, &common::store::DmxLed::flags, flag); }
-    bool IsFlagSetDmxPwm(uint32_t flag) const { return IsFlagSetInternal(GetStore()->dmx_pwm, &common::store::DmxPwm::flags, flag); }
-    bool IsFlagSetDmxSerial(uint32_t flag) const { return IsFlagSetInternal(GetStore()->dmx_serial, &common::store::DmxSerial::flags, flag); }
-    bool IsFlagSetDmxMonitor(uint32_t flag) const { return IsFlagSetInternal(GetStore()->dmx_monitor, &common::store::DmxMonitor::flags, flag); }
-    bool IsFlagSetRdmDevice(uint32_t flag) const { return IsFlagSetInternal(GetStore()->rdm_device, &common::store::RdmDevice::flags, flag); }
-    bool IsFlagSetShowFile(uint32_t flag) const { return IsFlagSetInternal(GetStore()->show_file, &common::store::ShowFile::flags, flag); }
-    bool IsFlagSetLtc(uint32_t flag) const { return IsFlagSetInternal(GetStore()->ltc, &common::store::Ltc::flags, flag); }
-    bool IsFlagSetLtcDisplay(uint32_t flag) const { return IsFlagSetInternal(GetStore()->ltc_display, &common::store::LtcDisplay::flags, flag); }
-    bool IsFlagSetLtcEtc(uint32_t flag) const { return IsFlagSetInternal(GetStore()->ltc_etc, &common::store::LtcEtc::set_list, flag); }
-    bool IsFlagSetTCNet(uint32_t flag) const { return IsFlagSetInternal(GetStore()->tcnet, &common::store::TcNet::flags, flag); }
-    bool IsFlagSetGps(uint32_t flag) const { return IsFlagSetInternal(GetStore()->gps, &common::store::Gps::flags, flag); }
-    bool IsFlagSetMidi(uint32_t flag) const { return IsFlagSetInternal(GetStore()->midi, &common::store::Midi::flags, flag); }
-    bool IsFlagSetRgbPanel(uint32_t flag) const { return IsFlagSetInternal(GetStore()->rgb_panel, &common::store::RgbPanel::set_list, flag); }
-    bool IsFlagSetWidget(uint32_t flag) const { return IsFlagSetInternal(GetStore()->widget, &common::store::Widget::set_list, flag); }
+    [[nodiscard]] bool IsFlagSetRemoteConfig(uint32_t flag) const { return IsFlagSetInternal(GetStore()->remote_config, &common::store::RemoteConfig::flags, flag); }
+    [[nodiscard]] bool IsFlagSetNetwork(uint32_t flag) const { return IsFlagSetInternal(GetStore()->network, &common::store::Network::flags, flag); }
+    [[nodiscard]] bool IsFlagSetDisplayUdf(uint32_t flag) const { return IsFlagSetInternal(GetStore()->display_udf, &common::store::DisplayUdf::flags, flag); }
+    [[nodiscard]] bool IsFlagSetDmxNode(uint32_t flag) const { return IsFlagSetInternal(GetStore()->dmx_node, &common::store::DmxNode::flags, flag); }
+    [[nodiscard]] bool IsFlagSetOscClient(uint32_t flag) const { return IsFlagSetInternal(GetStore()->osc_client, &common::store::OscClient::flags, flag); }
+    [[nodiscard]] bool IsFlagSetOscServer(uint32_t flag) const { return IsFlagSetInternal(GetStore()->osc_server, &common::store::OscServer::flags, flag); }
+    [[nodiscard]] bool IsFlagSetDmxSend(uint32_t flag) const { return IsFlagSetInternal(GetStore()->dmx_send, &common::store::DmxSend::flags, flag); }
+    [[nodiscard]] bool IsFlagSetDmxLed(uint32_t flag) const { return IsFlagSetInternal(GetStore()->dmx_led, &common::store::DmxLed::flags, flag); }
+    [[nodiscard]] bool IsFlagSetDmxPwm(uint32_t flag) const { return IsFlagSetInternal(GetStore()->dmx_pwm, &common::store::DmxPwm::flags, flag); }
+    [[nodiscard]] bool IsFlagSetDmxSerial(uint32_t flag) const { return IsFlagSetInternal(GetStore()->dmx_serial, &common::store::DmxSerial::flags, flag); }
+    [[nodiscard]] bool IsFlagSetDmxMonitor(uint32_t flag) const { return IsFlagSetInternal(GetStore()->dmx_monitor, &common::store::DmxMonitor::flags, flag); }
+    [[nodiscard]] bool IsFlagSetRdmDevice(uint32_t flag) const { return IsFlagSetInternal(GetStore()->rdm_device, &common::store::RdmDevice::flags, flag); }
+    [[nodiscard]] bool IsFlagSetShowFile(uint32_t flag) const { return IsFlagSetInternal(GetStore()->show_file, &common::store::ShowFile::flags, flag); }
+    [[nodiscard]] bool IsFlagSetLtc(uint32_t flag) const { return IsFlagSetInternal(GetStore()->ltc, &common::store::Ltc::flags, flag); }
+    [[nodiscard]] bool IsFlagSetLtcDisplay(uint32_t flag) const { return IsFlagSetInternal(GetStore()->ltc_display, &common::store::LtcDisplay::flags, flag); }
+    [[nodiscard]] bool IsFlagSetLtcEtc(uint32_t flag) const { return IsFlagSetInternal(GetStore()->ltc_etc, &common::store::LtcEtc::set_list, flag); }
+    [[nodiscard]] bool IsFlagSetTCNet(uint32_t flag) const { return IsFlagSetInternal(GetStore()->tcnet, &common::store::TcNet::flags, flag); }
+    [[nodiscard]] bool IsFlagSetGps(uint32_t flag) const { return IsFlagSetInternal(GetStore()->gps, &common::store::Gps::flags, flag); }
+    [[nodiscard]] bool IsFlagSetMidi(uint32_t flag) const { return IsFlagSetInternal(GetStore()->midi, &common::store::Midi::flags, flag); }
+    [[nodiscard]] bool IsFlagSetRgbPanel(uint32_t flag) const { return IsFlagSetInternal(GetStore()->rgb_panel, &common::store::RgbPanel::set_list, flag); }
+    [[nodiscard]] bool IsFlagSetWidget(uint32_t flag) const { return IsFlagSetInternal(GetStore()->widget, &common::store::Widget::set_list, flag); }
 
     template <std::size_t N> void RemoteConfigUpdateArray(uint8_t (common::store::RemoteConfig::*field)[N], const char* src, uint32_t length) { UpdateArray(GetStore()->remote_config, field, reinterpret_cast<const uint8_t*>(src), length); }
 
@@ -294,12 +294,12 @@ class ConfigStore : StoreDevice {
 
     template <std::size_t N> void RdmDeviceUpdateArray(uint8_t (common::store::RdmDevice::*field)[N], const uint8_t* src, uint32_t length) { UpdateArray(GetStore()->rdm_device, field, src, length); }
 
-    uint8_t RdmSensorsIndexedGetType(uint32_t index) const {
+    [[nodiscard]] uint8_t RdmSensorsIndexedGetType(uint32_t index) const {
         assert(index < common::store::rdm::sensors::kMaxDevices);
         return GetStore()->rdm_sensors.entry[index].type;
     }
 
-    uint8_t RdmSensorsIndexedGetAddress(uint32_t index) const {
+    [[nodiscard]] uint8_t RdmSensorsIndexedGetAddress(uint32_t index) const {
         assert(index < common::store::rdm::sensors::kMaxDevices);
         return GetStore()->rdm_sensors.entry[index].address;
     }
@@ -484,50 +484,50 @@ class ConfigStore : StoreDevice {
     }
 
     static void Timer([[maybe_unused]] TimerHandle_t timer_handle) {
-        DEBUG_ENTRY();
+        CONFIGSTORE_DEBUG_ENTRY();
 
         if (!Instance().Commit()) {
             Instance().TimerStop();
 
-            DEBUG_EXIT();
+            CONFIGSTORE_DEBUG_EXIT();
             return;
         }
 
-        DEBUG_EXIT();
+        CONFIGSTORE_DEBUG_EXIT();
     }
 
     void TimerStart() {
-        DEBUG_ENTRY();
-        DEBUG_PRINTF("s_timer_id=%d", static_cast<int>(s_timer_id));
+        CONFIGSTORE_DEBUG_ENTRY();
+        CONFIGSTORE_DEBUG_PRINTF("s_timer_id=%d", static_cast<int>(s_timer_id));
 
         if (s_timer_id != kTimerIdNone) {
-            DEBUG_EXIT();
+            CONFIGSTORE_DEBUG_EXIT();
             return;
         }
 
         s_timer_id = SoftwareTimerAdd(100, Timer);
 
-        DEBUG_PRINTF("s_timer_id=%d", static_cast<int>(s_timer_id));
-        DEBUG_EXIT();
+        CONFIGSTORE_DEBUG_PRINTF("s_timer_id=%d", static_cast<int>(s_timer_id));
+        CONFIGSTORE_DEBUG_EXIT();
     }
 
     void TimerStop() {
-        DEBUG_ENTRY();
-        DEBUG_PRINTF("s_timer_id=%d", static_cast<int>(s_timer_id));
+        CONFIGSTORE_DEBUG_ENTRY();
+        CONFIGSTORE_DEBUG_PRINTF("s_timer_id=%d", static_cast<int>(s_timer_id));
 
         if (s_timer_id == kTimerIdNone) {
             return;
-            DEBUG_EXIT();
+            CONFIGSTORE_DEBUG_EXIT();
         }
 
         SoftwareTimerDelete(s_timer_id);
 
-        DEBUG_PRINTF("s_timer_id=%d", static_cast<int>(s_timer_id));
-        DEBUG_EXIT();
+        CONFIGSTORE_DEBUG_PRINTF("s_timer_id=%d", static_cast<int>(s_timer_id));
+        CONFIGSTORE_DEBUG_EXIT();
     }
 
     bool Flash() {
-        DEBUG_PUTS(kStateNames[static_cast<unsigned int>(s_state)]);
+        CONFIGSTORE_DEBUG_PUTS(kStateNames[static_cast<unsigned int>(s_state)]);
 
         if (__builtin_expect((s_state == State::kIdle), 1)) {
             return false;

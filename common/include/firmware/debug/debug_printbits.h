@@ -32,21 +32,22 @@
 #include "firmware/debug/debug_config.h"
 
 namespace debug {
-inline void PrintBits([[maybe_unused]] uint32_t u) {
-    if constexpr (kIsDebug) {
-        printf("%.8x ", static_cast<unsigned>(u));
-        uint32_t bit = 1U << 31;
-
-        for (uint32_t i = 0; i < 32; i++) {
-            if ((bit & u) == bit) {
-                uint32_t bit_number = 31 - i;
-                printf("%-2u ", static_cast<unsigned>(bit_number));
-            }
-            bit = bit >> 1;
-        }
-
-        puts("");
+inline void PrintBits([[maybe_unused]] uint32_t value) {
+    if constexpr (!config::kTraceEnabled) {
+        return;
     }
+
+    printf("%.8x ", static_cast<unsigned>(value));
+
+    for (int bit_number = 31; bit_number >= 0; --bit_number) {
+        const auto kMask = uint32_t{1} << bit_number;
+
+        if ((value & kMask) != 0U) {
+            printf("%d ", bit_number);
+        }
+    }
+
+    putchar('\n');
 }
 } // namespace debug
 

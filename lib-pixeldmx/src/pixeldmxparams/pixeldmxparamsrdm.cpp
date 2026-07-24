@@ -23,10 +23,6 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_PIXELDMX)
-#undef NDEBUG
-#endif
-
 #include <cstdint>
 #include <utility>
 #include <cassert>
@@ -36,10 +32,10 @@
 #include "pixeltype.h"
 #include "pixeldmxconfiguration.h"
 #include "rdmdeviceresponder.h"
-#include "firmware/debug/debug_debug.h"
+#include "pixeldmx_debug.h"
 
 void PixelDmxParamsRdm::SetDataImpl([[maybe_unused]] uint32_t port_index, const uint8_t* data, uint32_t length, [[maybe_unused]] bool do_update) {
-    DEBUG_PRINTF("port_index=%u, length=%u", port_index, length);
+    PIXELDMX_DEBUG_PRINTF("port_index=%u, length=%u", static_cast<unsigned>(port_index), static_cast<unsigned>(length));
     assert(port_index == 0);
 
     if (length < pixeldmx::paramsdmx::kDmxFootprint) {

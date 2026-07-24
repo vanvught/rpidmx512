@@ -51,8 +51,8 @@ class Base {
         printf(" Serial Number     : %.2X%.2X%.2X%.2X\n", serial_number_[3], serial_number_[2], serial_number_[1], serial_number_[0]);
     }
 
-    const uint8_t* GetUID() const { return uid_; }
-    const uint8_t* GetSN() const { return serial_number_; }
+    [[nodiscard]] const uint8_t* GetUID() const { return uid_; }
+    [[nodiscard]] const uint8_t* GetSN() const { return serial_number_; }
 
    private:
     Base() {

@@ -31,68 +31,91 @@
 #include <cassert>
 
 #include "timing.h"
+#include "firmware/debug/debug_config.h"
 
 extern unsigned char stack_low;
 extern unsigned char _sp; // NOLINT
 
 namespace debug::stack {
-inline static constexpr uint32_t kMagicWord = 0xABCDABCD;
+constexpr uint32_t kMagicWord = 0xABCDABCD;
+namespace implementation {
 
 inline void Print() {
+    if constexpr (!config::kStackMonitoringEnabled) {
+        return;
+    }
+
     static uint32_t s_used_bytes_previous;
-    const auto* start = reinterpret_cast<uint32_t*>(&stack_low);
-    const auto* end = reinterpret_cast<uint32_t*>(&_sp);
-    assert(end > start);
-    const auto kSize = static_cast<uint32_t>(end - start);
+    const auto* start_address = reinterpret_cast<uint32_t*>(&stack_low);
+    const auto* end_address = reinterpret_cast<uint32_t*>(&_sp);
+    assert(end_address > start_address);
+    const auto kSizeWords = static_cast<uint32_t>(end_address - start_address);
+    const auto kSizeBytes = kSizeWords * sizeof(uint32_t);
+    const auto* ptr = start_address;
 
-    const auto* ptr = start;
-
-    while (ptr < end) {
+    while (ptr < end_address) {
         if (*ptr != kMagicWord) {
             break;
         }
         ptr++;
     }
 
-    const auto kUsedBytes = static_cast<uint32_t>(4 * (end - ptr));
-    const auto kFreeBytes = static_cast<uint32_t>(4 * (ptr - start));
-    const auto kFreePct = (static_cast<uint32_t>(ptr - start) * 100U) / kSize;
+    const auto kUsedBytes = static_cast<uint32_t>(end_address - ptr) * sizeof(uint32_t);
+    const auto kFreeBytes = static_cast<uint32_t>(ptr - start_address) * sizeof(uint32_t);
+    const auto kFreePct = static_cast<uint32_t>((static_cast<uint64_t>(ptr - start_address) * 100U) / kSizeWords);
 
     if (s_used_bytes_previous != kUsedBytes) {
         s_used_bytes_previous = kUsedBytes;
 
-        if (kFreePct == 0) {
+        constexpr uint32_t kCriticalFreePercent = 5;
+        constexpr uint32_t kWarningFreePercent = 15;
+
+        if (kFreePct <= kCriticalFreePercent) {
             printf("\x1b[31m");
-        } else if (kFreePct == 1) {
+        } else if (kFreePct <= kWarningFreePercent) {
             printf("\x1b[33m");
         } else {
             printf("\x1b[34m");
         }
 
-#ifndef NDEBUG
-        printf("Stack: Size %uKB, [%p:%p:%p], Used: %u, Free: %u [%u]", 
-			static_cast<unsigned>(kSize / (1024 / 4)), 
-			reinterpret_cast<const void*>(start), 
-			reinterpret_cast<const void*>(ptr), 
-			reinterpret_cast<const void*>(end),
-			static_cast<unsigned>(kUsedBytes), 
-			static_cast<unsigned>(kFreeBytes), 
-			static_cast<unsigned>(kFreePct));
-#else
-        printf("Stack: Size %uKB, Used: %u, Free: %u", static_cast<unsigned>(kSize / (1024 / 4)), 
-			static_cast<unsigned>(kUsedBytes), 
-			static_cast<unsigned>(kFreeBytes));
-#endif
+        if constexpr (!config::kAssertionsEnabled) {
+            printf("Stack: Size %uKB, [%p:%p:%p], Used: %u, Free: %u [%u]", 
+				static_cast<unsigned>(kSizeBytes / 1024U), 
+				reinterpret_cast<const void*>(start_address), 
+				reinterpret_cast<const void*>(ptr),
+                reinterpret_cast<const void*>(end_address), 
+				static_cast<unsigned>(kUsedBytes),
+				 static_cast<unsigned>(kFreeBytes), 
+				 static_cast<unsigned>(kFreePct));
+        } else {
+            printf("Stack: Size %uKB, Used: %u, Free: %u", static_cast<unsigned>(kSizeBytes / 1024U), static_cast<unsigned>(kUsedBytes), static_cast<unsigned>(kFreeBytes));
+        }
         printf("\x1b[39m\n");
     }
 }
 
 inline void Run() {
+    if constexpr (!config::kStackMonitoringEnabled) {
+        return;
+    }
+
     static uint32_t s_millis_previous;
     const auto kMillis = timing::Millis();
     if (kMillis - s_millis_previous >= 1000U) {
         s_millis_previous = kMillis;
         Print();
+    }
+}
+} // namespace implementation
+inline void Print() {
+    if constexpr (debug::config::kStackMonitoringEnabled) {
+        implementation::Print();
+    }
+}
+
+inline void Run() {
+    if constexpr (debug::config::kStackMonitoringEnabled) {
+        implementation::Run();
     }
 }
 } // namespace debug::stack

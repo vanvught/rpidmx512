@@ -23,14 +23,10 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_ARTNET_RDM)
-#undef NDEBUG
-#endif
-
 #include <cstdint>
 
 #include "artnetnode.h"
-#include "firmware/debug/debug_debug.h"
+#include "artnet_debug.h"
 
 // Node Output Gateway -> Reply with ArtTodData.
 //
@@ -39,7 +35,7 @@
 // power on or when an ArtTodControl.AtcFlush is received. The response is ArtTodData.
 
 void ArtNetNode::HandleTodRequest() {
-    DEBUG_ENTRY();
+    ARTNET_RDM_DEBUG_ENTRY();
 
     const auto* const kRequest = reinterpret_cast<artnet::ArtTodRequest*>(receive_buffer_);
     // The number of entries in Address that are used. Max value is 32.
@@ -64,17 +60,17 @@ void ArtNetNode::HandleTodRequest() {
 #if defined(RDM_CONTROLLER)
     for (auto& entry : state_.art.tod_request_ip_list) {
         if (entry == ip_address_from_) {
-            DEBUG_EXIT();
+            ARTNET_RDM_DEBUG_EXIT();
             return;
         }
 
         if (entry == 0) {
             entry = ip_address_from_;
-            DEBUG_EXIT();
+            ARTNET_RDM_DEBUG_EXIT();
             return;
         }
     }
 #endif
 
-    DEBUG_EXIT();
+    ARTNET_RDM_DEBUG_EXIT();
 }

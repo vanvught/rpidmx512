@@ -23,16 +23,10 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_CONFIGSTORE)
-#undef NDEBUG
-#endif
+#include "configstore_debug.h"
 
-#include "firmware/debug/debug_debug.h"
-
-namespace configstore
-{
-void SetFactoryDefaults()
-{
-    DEBUG_PUTS("Not implemented");
+namespace configstore {
+void SetFactoryDefaults() {
+    CONFIGSTORE_DEBUG_PUTS("Not implemented!");
 }
 } // namespace configstore

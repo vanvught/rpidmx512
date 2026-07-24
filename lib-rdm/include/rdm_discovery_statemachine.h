@@ -104,7 +104,6 @@ class StateMachine {
     void SavedState(uint32_t line);
     void NewState(rdm::discovery::State state, bool do_state_late_response, uint32_t line);
 
-   private:
     RdmMessage message_;
     uint8_t* response_{nullptr};
     uint8_t uid_[rdm::kUidSize];

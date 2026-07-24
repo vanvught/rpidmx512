@@ -23,10 +23,6 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_NETWORK_IGMP)
-#undef NDEBUG
-#endif
-
 #if !defined(CONFIG_REMOTECONFIG_MINIMUM)
 #pragma GCC push_options
 #pragma GCC optimize("O2")
@@ -47,6 +43,26 @@
 #include "core/protocol/igmp.h"
 #include "softwaretimers.h" // IWYU pragma: keep
 #include "firmware/debug/debug_debug.h"
+
+#ifdef DEBUG_NETWORK_IGMP
+#define IGMP_DEBUG_ENTRY() DEBUG_ENTRY()
+#define IGMP_DEBUG_EXIT() DEBUG_EXIT()
+#define IGMP_DEBUG_PRINTF(...) DEBUG_PRINTF(__VA_ARGS__)
+#define IGMP_DEBUG_PUTS(...) DEBUG_PUTS(__VA_ARGS__)
+#else
+#define IGMP_DEBUG_ENTRY() \
+    do {                     \
+    } while (false)
+#define IGMP_DEBUG_EXIT() \
+    do {                    \
+    } while (false)
+#define IGMP_DEBUG_PRINTF(...) \
+    do {                         \
+    } while (false)
+#define IGMP_DEBUG_PUTS(...) \
+    do {                       \
+    } while (false)
+#endif
 
 /*
  * https://www.rfc-editor.org/rfc/rfc2236.html
@@ -78,7 +94,7 @@ static uint16_t s_id SECTION_NETWORK ALIGNED;
 static TimerHandle_t s_timer_id;
 
 static void SendReport(uint32_t group_address) {
-    DEBUG_ENTRY();
+    IGMP_DEBUG_ENTRY();
     pcast32 multicast_ip;
 
     multicast_ip.u32 = group_address;
@@ -87,7 +103,7 @@ static void SendReport(uint32_t group_address) {
     s_multicast_mac[4] = multicast_ip.u8[2];
     s_multicast_mac[5] = multicast_ip.u8[3];
 
-    DEBUG_PRINTF(IPSTR " " MACSTR, IP2STR(group_address), MAC2STR(s_multicast_mac));
+    IGMP_DEBUG_PRINTF(IPSTR " " MACSTR, IP2STR(group_address), MAC2STR(s_multicast_mac));
 
     // Ethernet
     std::memcpy(s_report.ether.dst, s_multicast_mac, network::ethernet::kAddressLength);
@@ -106,7 +122,7 @@ static void SendReport(uint32_t group_address) {
 
     emac::eth::Send(reinterpret_cast<void*>(&s_report), kReportPacketSize);
 
-    DEBUG_EXIT();
+    IGMP_DEBUG_EXIT();
 }
 
 static void StartTimer(struct GroupInfo& group, uint32_t max_time) {
@@ -197,11 +213,11 @@ void __attribute__((cold)) Init() {
 static void Leave(uint32_t);
 
 void __attribute__((cold)) Shutdown() {
-    DEBUG_ENTRY();
+    IGMP_DEBUG_ENTRY();
 
     for (auto& group : s_groups) {
         if (group.group_address != 0) {
-            DEBUG_PRINTF(IPSTR, IP2STR(group.group_address));
+            IGMP_DEBUG_PRINTF(IPSTR, IP2STR(group.group_address));
 
             Leave(group.group_address);
         }
@@ -211,12 +227,12 @@ void __attribute__((cold)) Shutdown() {
     emac::multicast::DisableHashFilter();
 #endif
 
-    DEBUG_EXIT();
+    IGMP_DEBUG_EXIT();
 }
 
 static void SendLeave(uint32_t group_address) {
-    DEBUG_ENTRY();
-    DEBUG_PRINTF(IPSTR " " MACSTR, IP2STR(group_address), MAC2STR(s_multicast_mac));
+    IGMP_DEBUG_ENTRY();
+    IGMP_DEBUG_PRINTF(IPSTR " " MACSTR, IP2STR(group_address), MAC2STR(s_multicast_mac));
 
     // IPv4
     s_leave.ip4.id = s_id;
@@ -236,14 +252,14 @@ static void SendLeave(uint32_t group_address) {
 
     s_id++;
 
-    DEBUG_EXIT();
+    IGMP_DEBUG_EXIT();
 }
 
 __attribute__((hot)) void Input(const struct Header* p_igmp) {
-    DEBUG_ENTRY();
+    IGMP_DEBUG_ENTRY();
 
     if ((p_igmp->ip4.ver_ihl == 0x45) && (p_igmp->igmp.igmp.type == Type::kQuery)) {
-        DEBUG_PRINTF(IPSTR, p_igmp->ip4.dst[0], p_igmp->ip4.dst[1], p_igmp->ip4.dst[2], p_igmp->ip4.dst[3]);
+        IGMP_DEBUG_PRINTF(IPSTR, p_igmp->ip4.dst[0], p_igmp->ip4.dst[1], p_igmp->ip4.dst[2], p_igmp->ip4.dst[3]);
 
         auto is_general_request = false;
 
@@ -275,7 +291,7 @@ __attribute__((hot)) void Input(const struct Header* p_igmp) {
         }
     }
 
-    DEBUG_EXIT();
+    IGMP_DEBUG_EXIT();
 }
 
 static void DelayingMember(struct GroupInfo& group, uint32_t maxresp) {
@@ -302,17 +318,17 @@ static void ResetHash() {
 #endif
 
 void static Join(uint32_t group_address) {
-    DEBUG_ENTRY();
-    DEBUG_PRINTF(IPSTR, IP2STR(group_address));
+    IGMP_DEBUG_ENTRY();
+    IGMP_DEBUG_PRINTF(IPSTR, IP2STR(group_address));
 
     if ((group_address & 0xE0) != 0xE0) {
-        DEBUG_ENTRY();
+        IGMP_DEBUG_ENTRY();
         return;
     }
 
     for (int i = 0; i < IGMP_MAX_JOINS_ALLOWED; i++) {
         if (s_groups[i].group_address == group_address) {
-            DEBUG_EXIT();
+            IGMP_DEBUG_EXIT();
             return;
         }
 
@@ -325,23 +341,23 @@ void static Join(uint32_t group_address) {
             pcast32 multicast_ip;
             multicast_ip.u32 = group_address;
             const uint8_t kMacAddr[6] = {0x01, 0x00, 0x5E, static_cast<uint8_t>(multicast_ip.u8[1] & 0x7F), multicast_ip.u8[2], multicast_ip.u8[3]};
-            DEBUG_PRINTF(MACSTR, MAC2STR(kMacAddr));
+            IGMP_DEBUG_PRINTF(MACSTR, MAC2STR(kMacAddr));
             emac::multicast::SetHash(kMacAddr);
 #endif
             SendReport(group_address);
 
-            DEBUG_EXIT();
+            IGMP_DEBUG_EXIT();
             return;
         }
     }
 
 	ERROR("Max joins reached.\n");
-    DEBUG_ENTRY();
+    IGMP_DEBUG_ENTRY();
 }
 
 static void Leave(uint32_t group_address) {
-    DEBUG_ENTRY();
-    DEBUG_PRINTF(IPSTR, IP2STR(group_address));
+    IGMP_DEBUG_ENTRY();
+    IGMP_DEBUG_PRINTF(IPSTR, IP2STR(group_address));
 
     for (auto& group : s_groups) {
         if (group.group_address == group_address) {
@@ -354,13 +370,13 @@ static void Leave(uint32_t group_address) {
 #if defined(CONFIG_EMAC_HASH_MULTICAST_FILTER)
             ResetHash();
 #endif
-            DEBUG_EXIT();
+            IGMP_DEBUG_EXIT();
             return;
         }
     }
 
 	ERROR("Group address not found.\n");
-    DEBUG_EXIT();
+    IGMP_DEBUG_EXIT();
 }
 
 // --> Public
@@ -374,17 +390,17 @@ void LeaveGroup([[maybe_unused]] int32_t handle, uint32_t group_address) {
 }
 
 bool LookupGroup(uint32_t group_address) {
-    DEBUG_ENTRY();
-    DEBUG_PRINTF(IPSTR, IP2STR(group_address));
+    IGMP_DEBUG_ENTRY();
+    IGMP_DEBUG_PRINTF(IPSTR, IP2STR(group_address));
 
     for (auto& group : s_groups) {
         if (group.group_address == group_address) {
-            DEBUG_EXIT();
+            IGMP_DEBUG_EXIT();
             return true;
         }
     }
 
-    DEBUG_EXIT();
+    IGMP_DEBUG_EXIT();
     return (group_address == network::ConvertToUint(224, 0, 0, 1));
 }
 

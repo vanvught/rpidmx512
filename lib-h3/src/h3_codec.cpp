@@ -372,13 +372,13 @@ static void codec_hw_params(uint32_t rate, uint32_t channels) {
 
     WR_CONTROL(H3_AC->DAC_FIFOC, 0x7, DAC_FS, hw_rate);
 
-    DEBUG_PRINTF("hw_rate=%d", hw_rate);
+    DEBUG_PRINTF("hw_rate=%d", static_cast<int>(hw_rate));
 
     const uint32_t mod_freq = codec_get_mod_freq(rate);
 
     clk_set_rate_codec(mod_freq);
 
-    DEBUG_PRINTF("mod_freq=%d", mod_freq);
+    DEBUG_PRINTF("mod_freq=%d", static_cast<int>(mod_freq));
 
     /* Set the number of channels we want to use */
     if (channels == 1) {

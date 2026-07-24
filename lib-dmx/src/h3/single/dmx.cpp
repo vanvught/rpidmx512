@@ -46,7 +46,7 @@
 #include "h3_timer.h"
 #include "h3_hs_timer.h"
 #include "h3_board.h"
-#include "firmware/debug/debug_debug.h"
+#include "dmx_debug.h"
 
 #define GPIO_ANALYZER_CH1 GPIO_EXT_26
 #define GPIO_ANALYZER_CH2 GPIO_EXT_24
@@ -592,7 +592,7 @@ void Dmx::StartData([[maybe_unused]] uint32_t port_index) {
 }
 
 void Dmx::StopData([[maybe_unused]] uint32_t port_index) {
-    DEBUG_PRINTF("port_index=%u, sv_PortState=%u", port_index, sv_PortState);
+    DEBUG_PRINTF("port_index=%u, sv_PortState=%u", static_cast<unsigned>(port_index), static_cast<unsigned>(sv_PortState));
 
     if (sv_PortState == PortState::kIdle) {
         return;
@@ -625,7 +625,7 @@ void Dmx::StopData([[maybe_unused]] uint32_t port_index) {
 }
 
 void Dmx::SetPortDirection(uint32_t port_index, dmx::Direction port_direction, bool enable_data) {
-    DEBUG_PRINTF("port_index=%u %s %c", port_index, port_direction == dmx::Direction::kInput ? "Input" : "Output", bEnableData ? 'Y' : 'N');
+    DEBUG_PRINTF("port_index=%u %s %c", static_cast<unsigned>(port_index), port_direction == dmx::Direction::kInput ? "Input" : "Output", enable_data ? 'Y' : 'N');
     assert(port_index == 0);
 
     if (s_nPortDirection != port_direction) {
@@ -784,7 +784,7 @@ dmx::OutputStyle Dmx::GetOutputStyle([[maybe_unused]] uint32_t port_index) const
     return s_OutputStyle;
 }
 
-template <dmx::SendStyle dmxSendStyle> void Dmx::SetTransmitDataWithSC([[maybe_unused]] uint32_t port_index, const uint8_t* pData, uint32_t nLength) {
+template <dmx::SendStyle kDmxSendStyle> void Dmx::SetTransmitDataWithSC([[maybe_unused]] uint32_t port_index, const uint8_t* pData, uint32_t nLength) {
     assert(port_index == 0);
 
     do {
@@ -799,12 +799,12 @@ template <dmx::SendStyle dmxSendStyle> void Dmx::SetTransmitDataWithSC([[maybe_u
         SetTransmitPeriodTime(transmit_period_requested_);
     }
 
-    if constexpr (dmxSendStyle == dmx::SendStyle::kDirect) {
+    if constexpr (kDmxSendStyle == dmx::SendStyle::kDirect) {
         StartOutput(port_index);
     }
 }
 
-template <dmx::SendStyle dmxSendStyle> void Dmx::SetTransmitDataWithoutSC([[maybe_unused]] uint32_t port_index, const uint8_t* pData, uint32_t nLength) {
+template <dmx::SendStyle kDmxSendStyle> void Dmx::SetTransmitDataWithoutSC([[maybe_unused]] uint32_t port_index, const uint8_t* pData, uint32_t nLength) {
     do {
         __DMB();
     } while (sv_DmxTransmitState != dmx::State::kIdle && sv_DmxTransmitState != dmx::State::kDmxinter);
@@ -821,7 +821,7 @@ template <dmx::SendStyle dmxSendStyle> void Dmx::SetTransmitDataWithoutSC([[mayb
         SetTransmitPeriodTime(transmit_period_requested_);
     }
 
-    if constexpr (dmxSendStyle == dmx::SendStyle::kDirect) {
+    if constexpr (kDmxSendStyle == dmx::SendStyle::kDirect) {
         StartOutput(port_index);
     }
 }
@@ -934,7 +934,7 @@ void Dmx::RdmTransmit(uint32_t port_index, const uint8_t* rdm_data, uint32_t len
     Dmx::Get()->SetPortDirection(port_index, dmx::Direction::kInput, true);
 }
 
-void Dmx::RdmSendRaw([[maybe_unused]] uint32_t port_index, const uint8_t* pRdmData, uint32_t nLength) {
+void Dmx::RdmSendRaw([[maybe_unused]] uint32_t port_index, const uint8_t* data, uint32_t length) {
     assert(port_index == 0);
 
     while (!(EXT_UART->LSR & UART_LSR_TEMT));
@@ -945,9 +945,9 @@ void Dmx::RdmSendRaw([[maybe_unused]] uint32_t port_index, const uint8_t* pRdmDa
     EXT_UART->LCR = UART_LCR_8_N_2;
     timing::DelayUs(rdm::transmit::kMabTimeTypical);
 
-    for (uint32_t i = 0; i < nLength; i++) {
+    for (uint32_t i = 0; i < length; i++) {
         while (!(EXT_UART->LSR & UART_LSR_THRE));
-        EXT_UART->O00.THR = pRdmData[i];
+        EXT_UART->O00.THR = data[i];
     }
 
     while ((EXT_UART->USR & UART_USR_BUSY) == UART_USR_BUSY) {
@@ -956,7 +956,7 @@ void Dmx::RdmSendRaw([[maybe_unused]] uint32_t port_index, const uint8_t* pRdmDa
 }
 
 void Dmx::RdmTransmitDiscoveryRespondMessage([[maybe_unused]] uint32_t port_index, const uint8_t* pRdmData, uint32_t nLength) {
-    DEBUG_PRINTF("port_index=%u, pRdmData=%p, nLength=%u", port_index, pRdmData, nLength);
+    DEBUG_PRINTF("port_index=%u, pRdmData=%p, nLength=%u", static_cast<unsigned>(port_index), reinterpret_cast<const void*>(pRdmData), static_cast<unsigned>(nLength));
     assert(port_index < dmx::config::max::kPorts);
     assert(pRdmData != nullptr);
     assert(nLength != 0);

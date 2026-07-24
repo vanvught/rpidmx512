@@ -30,23 +30,20 @@
 
 #include "configstore.h"
 #include "configurationstore.h"
-#include "firmware/debug/debug_debug.h"
+#include "rdm_debug.h"
 
-namespace rdm::device::store
-{
-inline void LoadLabel(uint8_t (&label)[common::store::rdmdevice::kLabelMaxLength], uint8_t& length)
-{
-    auto& c = ConfigStore::Instance();
-	
-	c.RdmDeviceCopyArray(label, &common::store::RdmDevice::device_root_label);
-	length = c.RdmDeviceGet(&common::store::RdmDevice::device_root_label_length);
+namespace rdm::device::store {
+inline void LoadLabel(uint8_t (&label)[common::store::rdmdevice::kLabelMaxLength], uint8_t& length) {
+    auto& config_store = ConfigStore::Instance();
 
-    DEBUG_PRINTF("%.*s", length, label);
+    config_store.RdmDeviceCopyArray(label, &common::store::RdmDevice::device_root_label);
+    length = config_store.RdmDeviceGet(&common::store::RdmDevice::device_root_label_length);
+
+    RDM_DEBUG_PRINTF("%.*s", length, label);
 }
 
-inline void SaveLabel(const uint8_t* label, uint8_t length)
-{
-    DEBUG_PRINTF("%.*s", length, label);
+inline void SaveLabel(const uint8_t* label, uint8_t length) {
+    RDM_DEBUG_PRINTF("%.*s", length, label);
 
     ConfigStore::Instance().RdmDeviceUpdateArray(&common::store::RdmDevice::device_root_label, label, length);
     ConfigStore::Instance().RdmDeviceUpdate(&common::store::RdmDevice::device_root_label_length, length);

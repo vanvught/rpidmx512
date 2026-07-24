@@ -23,10 +23,6 @@
 * THE SOFTWARE.
 */
 
-#ifdef DEBUG_OSCCLIENTPARAMS
-#undef NDEBUG
-#endif
-
 #include <cstdint>
 
 #include "json/oscclientparams.h"
@@ -126,7 +122,7 @@ void OscClientParams::Store(const char* buffer, uint32_t buffer_size) {
     ParseJsonWithTable(buffer, buffer_size, kOscClientKeys);
     ConfigStore::Instance().Store(&store_oscclient, &ConfigurationStore::osc_client);
 
-#ifndef NDEBUG
+#ifdef DEBUG_OSCCLIENT
     Dump();
 #endif
 }
@@ -142,7 +138,7 @@ void OscClientParams::Set() {
     osc_client.CopyCmds(reinterpret_cast<const char*>(&store_oscclient.cmd));
     osc_client.CopyLeds(reinterpret_cast<const char*>(&store_oscclient.led));
 
-#ifndef NDEBUG
+#ifdef DEBUG_OSCCLIENT
     Dump();
 #endif
 }

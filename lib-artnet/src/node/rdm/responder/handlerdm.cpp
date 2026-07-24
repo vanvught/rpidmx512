@@ -23,10 +23,6 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_ARTNET_RDM)
-#undef NDEBUG
-#endif
-
 #include <cstring>
 #include <cassert>
 
@@ -34,13 +30,13 @@
 #include "artnetrdmresponder.h"
 #include "network_config.h"
 #include "network_udp.h"
-#include "firmware/debug/debug_debug.h"
+#include "artnet_debug.h"
 
 void ArtNetNode::HandleRdm() {
     auto* const kArtRdm = reinterpret_cast<artnet::ArtRdm*>(receive_buffer_);
 
     if (kArtRdm->rdm_version != 0x01) {
-        DEBUG_EXIT();
+        ARTNET_RDM_DEBUG_EXIT();
         return;
     }
 
@@ -71,7 +67,7 @@ void ArtNetNode::HandleRdm() {
 }
 
 void ArtNetNode::HandleTodControl() {
-    DEBUG_ENTRY();
+    ARTNET_RDM_DEBUG_ENTRY();
 
     const auto* const kArtTodControl = reinterpret_cast<artnet::ArtTodControl*>(receive_buffer_);
     const auto kPortAddress = static_cast<uint16_t>((kArtTodControl->net << 8)) | static_cast<uint16_t>((kArtTodControl->address));
@@ -79,7 +75,7 @@ void ArtNetNode::HandleTodControl() {
     const uint32_t kPortIndex = 0;
 
     if ((output_port_[kPortIndex].good_output_b & artnet::GoodOutputB::kRdmDisabled) == artnet::GoodOutputB::kRdmDisabled) {
-        DEBUG_EXIT();
+        ARTNET_RDM_DEBUG_EXIT();
         return;
     }
 
@@ -89,15 +85,15 @@ void ArtNetNode::HandleTodControl() {
         }
     }
 
-    DEBUG_EXIT();
+    ARTNET_RDM_DEBUG_EXIT();
 }
 
 /**
  * Output Gateway always Directed Broadcasts this packet.
  */
 void ArtNetNode::SendArtTodData(uint32_t port_index) {
-    DEBUG_ENTRY();
-    DEBUG_PRINTF("port_index=%u", port_index);
+    ARTNET_RDM_DEBUG_ENTRY();
+    ARTNET_RDM_DEBUG_PRINTF("port_index=%u", port_index);
     assert(port_index < dmxnode::kMaxPorts);
 
     auto& tod_data = art_tod_packet_.art_tod_data;
@@ -138,11 +134,11 @@ void ArtNetNode::SendArtTodData(uint32_t port_index) {
 
     network::udp::Send(handle_, reinterpret_cast<const uint8_t*>(&tod_data), kLength, network::GetBroadcastIp(), artnet::kUdpPort);
 
-    DEBUG_EXIT();
+    ARTNET_RDM_DEBUG_EXIT();
 }
 
 void ArtNetNode::HandleTodData() {
-    DEBUG_ENTRY();
+    ARTNET_RDM_DEBUG_ENTRY();
 
-    DEBUG_EXIT();
+    ARTNET_RDM_DEBUG_EXIT();
 }

@@ -23,10 +23,6 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_OSCCLIENT)
-#undef NDEBUG
-#endif
-
 #include <cstdint>
 
 #include "oscclient.h"
@@ -36,19 +32,19 @@
 #include "network_udp.h"
 #include "apps/mdns.h"
 #include "ip4/ip4_address.h"
-#include "firmware/debug/debug_debug.h"
+#include "osc_debug.h"
 
 OscClient::OscClient() : port_outgoing_(oscclient::defaults::kPortOutgoing), port_incoming_(oscclient::defaults::kPortIncoming), ping_delay_millis_(oscclient::defaults::kPingDelaySeconds * 1000U) {
-    DEBUG_ENTRY();
+    OSCCLIENT_DEBUG_ENTRY();
 
     assert(s_this == nullptr);
     s_this = this;
 
-    DEBUG_EXIT();
+    OSCCLIENT_DEBUG_EXIT();
 }
 
 void OscClient::Start() {
-    DEBUG_ENTRY();
+    OSCCLIENT_DEBUG_ENTRY();
 
     assert(handle_ == -1);
     handle_ = network::udp::Begin(port_incoming_, StaticCallbackFunction);
@@ -56,11 +52,11 @@ void OscClient::Start() {
 
     network::apps::mdns::ServiceRecordAdd(nullptr, network::apps::mdns::Services::kOsc, "type=client", port_incoming_);
 
-    DEBUG_EXIT();
+    OSCCLIENT_DEBUG_EXIT();
 }
 
 void OscClient::Stop() {
-    DEBUG_ENTRY();
+    OSCCLIENT_DEBUG_ENTRY();
 
     network::apps::mdns::ServiceRecordDelete(network::apps::mdns::Services::kOsc);
 
@@ -68,24 +64,24 @@ void OscClient::Stop() {
     network::udp::End(port_incoming_);
     handle_ = -1;
 
-    DEBUG_EXIT();
+    OSCCLIENT_DEBUG_EXIT();
 }
 
 bool OscClient::HandleLedMessage(uint32_t bytes_received) {
-    DEBUG_ENTRY();
+    OSCCLIENT_DEBUG_ENTRY();
 
     uint32_t i;
 
     for (i = 0; i < common::store::osc::client::kLedCount; i++) {
         const char* src = &s_leds[i * common::store::osc::client::kLedPathLength];
         if (osc::IsMatch(buffer_, src)) {
-            DEBUG_PUTS("");
+            OSCCLIENT_DEBUG_PUTS("");
             break;
         }
     }
 
     if (i == common::store::osc::client::kLedCount) {
-        DEBUG_EXIT();
+        OSCCLIENT_DEBUG_EXIT();
         return false;
     }
 
@@ -94,21 +90,21 @@ bool OscClient::HandleLedMessage(uint32_t bytes_received) {
     const int kArgc = msg.GetArgc();
 
     if (kArgc != 1) {
-        DEBUG_EXIT();
+        OSCCLIENT_DEBUG_EXIT();
         return false;
     }
 
     if (msg.GetType(0) == osc::type::kInt32) {
         oscclient_led_->SetLed(static_cast<uint8_t>(i), static_cast<uint8_t>(msg.GetInt(0)) != 0);
-        DEBUG_PRINTF("%d", msg.GetInt(0));
+        OSCCLIENT_DEBUG_PRINTF("%d", msg.GetInt(0));
     } else if (msg.GetType(0) == osc::type::kFloat) {
         oscclient_led_->SetLed(static_cast<uint8_t>(i), static_cast<uint8_t>(msg.GetFloat(0)) != 0);
-        DEBUG_PRINTF("%f", msg.GetFloat(0));
+        OSCCLIENT_DEBUG_PRINTF("%f", msg.GetFloat(0));
     } else {
         return false;
     }
 
-    DEBUG_EXIT();
+    OSCCLIENT_DEBUG_EXIT();
     return true;
 }
 

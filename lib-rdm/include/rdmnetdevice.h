@@ -31,21 +31,21 @@
 #include "e117.h"
 #include "llrp/llrpdevice.h"
 #include "uuid.h"
-#include "firmware/debug/debug_debug.h"
 #include "rdmdevice.h"
+#include "rdm_debug.h"
 
 class RdmNetDevice final : public LLRPDevice {
    public:
     RdmNetDevice() {
-        DEBUG_ENTRY();
+        RDMNET_DEBUG_ENTRY();
 
-        DEBUG_EXIT();
+        RDMNET_DEBUG_EXIT();
     }
 
     ~RdmNetDevice() {
-        DEBUG_ENTRY();
+        RDMNET_DEBUG_ENTRY();
 
-        DEBUG_EXIT();
+        RDMNET_DEBUG_EXIT();
     };
 
     void Print() {

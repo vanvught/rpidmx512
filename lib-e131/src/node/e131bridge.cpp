@@ -171,7 +171,7 @@ void E131Bridge::Stop() {
 
 void E131Bridge::SetSynchronizationAddress(bool source_a, bool source_b, uint16_t synchronization_address) {
     DEBUG_ENTRY();
-    DEBUG_PRINTF("source_a=%d, source_b=%d, synchronization_address=%d", source_a, source_b, synchronization_address);
+    DEBUG_PRINTF("source_a=%d, source_b=%d, synchronization_address=%d", static_cast<unsigned>(source_a), static_cast<unsigned>(source_b), static_cast<unsigned>(synchronization_address));
 
     assert(synchronization_address != 0);
 
@@ -207,10 +207,10 @@ void E131Bridge::SetSynchronizationAddress(bool source_a, bool source_b, uint16_
 
 void E131Bridge::JoinUniverse(uint32_t port_index, uint16_t universe) {
     DEBUG_ENTRY();
-    DEBUG_PRINTF("port_index=%d, universe=%d", port_index, universe);
+    DEBUG_PRINTF("port_index=%d, universe=%d", static_cast<unsigned>(port_index), static_cast<unsigned>(universe));
 
     for (uint32_t i = 0; i < dmxnode::kMaxPorts; i++) {
-        DEBUG_PRINTF("\toutput_Port[%d].universe=%d", i, bridge_.port[i].universe);
+        DEBUG_PRINTF("\toutput_Port[%d].universe=%d", static_cast<unsigned>(i), static_cast<unsigned>(bridge_.port[i].universe));
 
         if (i == port_index) // Check for other ports only
         {
@@ -232,10 +232,10 @@ void E131Bridge::JoinUniverse(uint32_t port_index, uint16_t universe) {
 
 void E131Bridge::LeaveUniverse(uint32_t port_index, uint16_t universe) {
     DEBUG_ENTRY();
-    DEBUG_PRINTF("port_index=%d, universe=%d", port_index, universe);
+    DEBUG_PRINTF("port_index=%u, universe=%u", static_cast<unsigned>(port_index), static_cast<unsigned>(universe));
 
     for (uint32_t i = 0; i < dmxnode::kMaxPorts; i++) {
-        DEBUG_PRINTF("\toutput_Port[%d].universe=%d", i, bridge_.port[i].universe);
+        DEBUG_PRINTF("\toutput_Port[%u].universe=%u", static_cast<unsigned>(i), static_cast<unsigned>(bridge_.port[i].universe));
 
         if (i == port_index) // Check for other ports only
         {
@@ -270,7 +270,7 @@ void E131Bridge::SetLocalMerging() {
                 continue;
             }
 
-            DEBUG_PRINTF("input_port_index=%u %u, output_port_index=%u %u", input_port_index, bridge_.port[input_port_index].universe, output_port_index, bridge_.port[output_port_index].universe);
+            DEBUG_PRINTF("input_port_index=%u %u, output_port_index=%u %u", static_cast<unsigned>(input_port_index), static_cast<unsigned>(bridge_.port[input_port_index].universe), static_cast<unsigned>(output_port_index), static_cast<unsigned>(bridge_.port[output_port_index].universe));
 
             if (bridge_.port[input_port_index].universe == bridge_.port[output_port_index].universe) {
                 if (!bridge_.port[output_port_index].local_merge) {
@@ -289,7 +289,7 @@ void E131Bridge::SetLocalMerging() {
     }
 
     for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++) {
-        DEBUG_PRINTF("port_index=%u, local_merge=%c", port_index, bridge_.port[port_index].local_merge ? 'Y' : 'N');
+        DEBUG_PRINTF("port_index=%u, local_merge=%c", static_cast<unsigned>(port_index), bridge_.port[port_index].local_merge ? 'Y' : 'N');
     }
 
     DEBUG_EXIT();
@@ -297,7 +297,7 @@ void E131Bridge::SetLocalMerging() {
 
 void E131Bridge::SetUniverse(uint32_t port_index, uint16_t universe) {
     DEBUG_ENTRY();
-    DEBUG_PRINTF("port_index=%u, universe=%u", port_index, universe);
+    DEBUG_PRINTF("port_index=%u, universe=%u", static_cast<unsigned>(port_index), static_cast<unsigned>(universe));
 
     assert(port_index < dmxnode::kMaxPorts);
     assert((universe >= e131::universe::kDefault) && (universe <= e131::universe::kMax));
@@ -326,7 +326,7 @@ void E131Bridge::SetUniverse(uint32_t port_index, uint16_t universe) {
 
 void E131Bridge::SetDirection(uint32_t port_index, dmxnode::Direction port_direction) {
     DEBUG_ENTRY();
-    DEBUG_PRINTF("port_index=%u, port_direction=%s", port_index, dmxnode::PortDirection(port_direction));
+    DEBUG_PRINTF("port_index=%u, port_direction=%s", static_cast<unsigned>(port_index), dmxnode::PortDirection(port_direction));
 
     assert(port_index < dmxnode::kMaxPorts);
     assert(port_direction <= dmxnode::Direction::kDisable);
@@ -526,7 +526,9 @@ void E131Bridge::HandleSynchronization() {
 }
 
 void E131Bridge::InputUdp(const uint8_t* buffer, [[maybe_unused]] uint32_t size, [[maybe_unused]] uint32_t from_ip, [[maybe_unused]] uint16_t from_port) {
-    if (__builtin_expect((!IsValidRoot(buffer)), 0)) return;
+    if (__builtin_expect((!IsValidRoot(buffer)), 0)) {
+        return;
+    }
 
     current_millis_ = timing::Millis();
     packet_millis_ = current_millis_;
@@ -556,7 +558,7 @@ void E131Bridge::InputUdp(const uint8_t* buffer, [[maybe_unused]] uint32_t size,
                 HandleSynchronization();
             }
         } else {
-            DEBUG_PRINTF("Not supported Root vector : 0x%x", kRootVector);
+            DEBUG_PRINTF("Not supported Root vector : 0x%x", static_cast<unsigned>(kRootVector));
         }
     }
 
@@ -635,11 +637,7 @@ bool E131Bridge::IsIpCidMatch(const e131bridge::Source* const kSource) const {
 
     const auto& raw = *reinterpret_cast<const e131::RawPacket*>(receive_buffer_);
 
-    if (memcmp(kSource->cid, raw.root_layer.cid, e117::kCidLength) != 0) {
-        return false;
-    }
-
-    return true;
+    return memcmp(kSource->cid, raw.root_layer.cid, e117::kCidLength) == 0;
 }
 
 void E131Bridge::HandleDmx() {
@@ -830,7 +828,7 @@ void E131Bridge::HandleDmx() {
 
 void E131Bridge::SetNetworkDataLossCondition(bool source_a, bool source_b) {
     DEBUG_ENTRY();
-    DEBUG_PRINTF("%d %d", source_a, source_b);
+    DEBUG_PRINTF("%u %u", static_cast<unsigned>(source_a), static_cast<unsigned>(source_b));
 
     state_.is_changed = true;
     auto do_failsafe = false;
@@ -889,7 +887,7 @@ void E131Bridge::SetNetworkDataLossCondition(bool source_a, bool source_b) {
                 dmxnode_output_type_->FullOn();
                 break;
             default:
-                DEBUG_PRINTF("state_.failsafe=%u", static_cast<uint32_t>(state_.failsafe));
+                DEBUG_PRINTF("state_.failsafe=%u", static_cast<unsigned>(state_.failsafe));
                 assert(false && "Invalid state_.failsafe");
                 break;
         }

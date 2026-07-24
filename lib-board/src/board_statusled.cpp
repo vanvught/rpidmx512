@@ -1,5 +1,6 @@
-/*
- * hal_statusled.cpp
+/**
+ * @file board_statusled.cpp
+ *
  */
 /* Copyright (C) 2025-2026 by Arjan van Vught mailto:infogd32-dmx.org
  *
@@ -22,14 +23,10 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_HAL)
-#undef NDEBUG
-#endif
-
 #include <cstdint>
 
 #include "board_statusled.h"
-#include "firmware/debug/debug_debug.h"
+#include "board_debug.h"
 
 namespace board::statusled {
 namespace global {
@@ -41,13 +38,12 @@ static auto s_do_lock = false;
 enum class ModeToFrequency { kOffOff = 0, kNormal = 1, kData = 3, kFast = 5, kReboot = 8, kOffOn = 255 };
 
 #if !defined(CONFIG_HAL_USE_MINIMUM)
-
 void __attribute__((weak)) Event([[maybe_unused]] Mode mode) {
-    DEBUG_PRINTF("mode=%u", static_cast<unsigned>(mode));
+    BOARD_DEBUG_PRINTF("mode=%u", static_cast<unsigned>(mode));
 }
 
 void SetModeWithLock(Mode mode, bool do_lock) {
-	DEBUG_PRINTF("mode=%u, do_lock=%c", static_cast<unsigned>(mode), do_lock ? 'Y' : 'N');
+	BOARD_DEBUG_PRINTF("mode=%u, do_lock=%c", static_cast<unsigned>(mode), do_lock ? 'Y' : 'N');
 	
     s_do_lock = false;
     SetMode(mode);
@@ -63,7 +59,7 @@ void SetMode(board::statusled::Mode mode) {
         return;
     }
 	
-	DEBUG_PRINTF("mode=%u", static_cast<unsigned>(mode));
+	BOARD_DEBUG_PRINTF("mode=%u", static_cast<unsigned>(mode));
 
     global::g_status_led_mode = mode;
 
@@ -93,7 +89,7 @@ void SetMode(board::statusled::Mode mode) {
 
     board::statusled::Event(global::g_status_led_mode);
 
-    DEBUG_PRINTF("global::g_status_led_mode=%u", static_cast<unsigned>(global::g_status_led_mode));
+    BOARD_DEBUG_PRINTF("global::g_status_led_mode=%u", static_cast<unsigned>(global::g_status_led_mode));
 }
 #endif
 } // namespace board::statusled

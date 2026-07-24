@@ -23,10 +23,6 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_DISPLAYUDF)
-#undef NDEBUG
-#endif
-
 #include <cstdint>
 
 #include "displayudf.h"
@@ -34,11 +30,15 @@
 #include "artnet.h"
 #include "dmxnode.h"
 #include "ip4/ip4_address.h"
-#include "firmware/debug/debug_debug.h"
+#include "displayudf_debug.h"
+#include "dmxnode_outputtype.h"
+#if defined(DMXNODE_OUTPUT_DMX)
+#include "dmx.h"
+#endif
 
 void DisplayUdf::ShowArtNetNode() {
-    DEBUG_ENTRY();
-    DEBUG_PRINTF("dmxnode::kDmxportOffset=%u", dmxnode::kDmxportOffset);
+    DISPLAYUDF_DEBUG_ENTRY();
+    DEBUG_PRINTF("dmxnode::kDmxportOffset=%u", static_cast<unsigned>(dmxnode::kDmxportOffset));
 
     auto* artnet_node = ArtNetNode::Get();
 
@@ -48,12 +48,12 @@ void DisplayUdf::ShowArtNetNode() {
 #endif
     Printf(labels_[static_cast<uint32_t>(displayudf::Labels::kAp)], "AP: %d", artnet_node->GetActiveOutputPorts() + artnet_node->GetActiveInputPorts());
 
-    DEBUG_EXIT();
+    DISPLAYUDF_DEBUG_EXIT();
 }
 
 void DisplayUdf::ShowUniverseArtNetNode() {
 #if defined(DMX_MAX_PORTS)
-    DEBUG_ENTRY();
+    DISPLAYUDF_DEBUG_ENTRY();
     if constexpr (dmxnode::kConfigPortCount != 0) {
         auto* artnet_node = ArtNetNode::Get();
         uint16_t universe;
@@ -90,12 +90,12 @@ void DisplayUdf::ShowUniverseArtNetNode() {
             }
         }
     }
-    DEBUG_EXIT();
+    DISPLAYUDF_DEBUG_EXIT();
 #endif
 }
 
 void DisplayUdf::ShowDestinationIpArtNetNode() {
-    DEBUG_ENTRY();
+    DISPLAYUDF_DEBUG_ENTRY();
 #if defined(ARTNET_HAVE_DMXIN)
     if constexpr (dmxnode::kConfigPortCount != 0) {
         auto* artnet_node = ArtNetNode::Get();
@@ -111,5 +111,5 @@ void DisplayUdf::ShowDestinationIpArtNetNode() {
         }
     }
 #endif
-    DEBUG_EXIT();
+    DISPLAYUDF_DEBUG_EXIT();
 }

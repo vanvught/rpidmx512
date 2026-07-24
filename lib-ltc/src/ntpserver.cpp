@@ -23,10 +23,6 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_NTPSERVER)
-#undef NDEBUG
-#endif
-
 /*
  * https://tools.ietf.org/html/rfc5905
  */
@@ -40,11 +36,11 @@
 #include "ntpserver.h"
 #include "core/protocol/ntp.h"
 #include "core/protocol/iana.h"
-#include "firmware/debug/debug_debug.h"
+#include "ltc_debug.h"
 
 NtpServer::NtpServer(uint32_t year, uint32_t month, uint32_t day) {
-    DEBUG_ENTRY();
-    DEBUG_PRINTF("year=%u, month=%u, day=%u", year, month, day);
+    NTP_SERVER_DEBUG_ENTRY();
+    NTP_SERVER_DEBUG_PRINTF("year=%u, month=%u, day=%u", year, month, day);
 
     assert(s_this == nullptr);
     s_this = this;
@@ -59,12 +55,12 @@ NtpServer::NtpServer(uint32_t year, uint32_t month, uint32_t day) {
     time_ = mktime(&time_date);
     assert(time_ != -1);
 
-    DEBUG_PRINTF("time_=%.8x %ld", static_cast<unsigned int>(time_), time_);
+    NTP_SERVER_DEBUG_PRINTF("time_=%.8x %ld", static_cast<unsigned int>(time_), time_);
 
     time_ += static_cast<time_t>(ntp::kJan1970);
 
-    DEBUG_PRINTF("time_=%.8x %ld", static_cast<unsigned int>(time_), time_);
-    DEBUG_EXIT();
+    NTP_SERVER_DEBUG_PRINTF("time_=%.8x %ld", static_cast<unsigned int>(time_), time_);
+    NTP_SERVER_DEBUG_EXIT();
 }
 
 NtpServer::~NtpServer() {
@@ -72,7 +68,7 @@ NtpServer::~NtpServer() {
 }
 
 void NtpServer::Start() {
-    DEBUG_ENTRY();
+    NTP_SERVER_DEBUG_ENTRY();
 
     assert(handle_ == -1);
     handle_ = network::udp::Begin(network::iana::Ports::kPortNtp, StaticCallbackFunction);
@@ -85,17 +81,17 @@ void NtpServer::Start() {
     reply_.root_delay = 0;
     reply_.root_dispersion = 0;
 
-    DEBUG_EXIT();
+    NTP_SERVER_DEBUG_EXIT();
 }
 
 void NtpServer::Stop() {
-    DEBUG_ENTRY();
+    NTP_SERVER_DEBUG_ENTRY();
 
     assert(handle_ != -1);
     network::udp::End(network::iana::Ports::kPortNtp);
     handle_ = -1;
 
-    DEBUG_EXIT();
+    NTP_SERVER_DEBUG_EXIT();
 }
 
 void NtpServer::Print() {

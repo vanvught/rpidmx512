@@ -150,9 +150,9 @@ void SC16IS740::SetBaud(uint32_t baud) {
     WriteRegister(SC16IS7X0_DLH, static_cast<uint8_t>((kDivisor >> 8) & 0xFF), false);
     WriteRegister(SC16IS7X0_LCR, kRegisterLcr, false);
 
-    DEBUG_PRINTF("prescaler=%u", prescaler);
-    DEBUG_PRINTF("kDivisor=%u", kDivisor);
-    DEBUG_PRINTF("on_board_crystal_hz_=%u", on_board_crystal_hz_);
+    DEBUG_PRINTF("prescaler=%u", static_cast<unsigned>(prescaler));
+    DEBUG_PRINTF("kDivisor=%u", static_cast<unsigned>(kDivisor));
+    DEBUG_PRINTF("on_board_crystal_hz_=%u", static_cast<unsigned>(on_board_crystal_hz_));
 
     DEBUG_PRINTF("LCR=%.2x:%.2x", ReadRegister(SC16IS7X0_LCR, false), kRegisterLcr);
 }

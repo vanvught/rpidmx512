@@ -23,22 +23,22 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_DISPLAYUDF)
-#undef NDEBUG
-#endif
-
 #include <cstdint>
 #include <algorithm>
 
 #include "displayudf.h"
 #include "e131bridge.h"
 #include "dmxnode.h"
-#include "firmware/debug/debug_debug.h"
+#include "displayudf_debug.h"
+#include "dmxnode_outputtype.h"
+#if defined(DMXNODE_OUTPUT_DMX)
+#include "dmx.h"
+#endif
 
 void DisplayUdf::ShowE131Bridge() {
 #if defined(DMX_MAX_PORTS)
-    DEBUG_ENTRY();
-    DEBUG_PRINTF("dmxnode::kDmxportOffset=%u", dmxnode::kDmxportOffset);
+    DISPLAYUDF_DEBUG_ENTRY();
+    DISPLAYUDF_DEBUG_PRINTF("dmxnode::kDmxportOffset=%u", dmxnode::kDmxportOffset);
 
     if constexpr (dmxnode::kConfigPortCount != 0) {
         auto* e131 = E131Bridge::Get();
@@ -63,6 +63,6 @@ void DisplayUdf::ShowE131Bridge() {
         }
     }
 
-    DEBUG_EXIT();
+    DISPLAYUDF_DEBUG_EXIT();
 #endif
 }

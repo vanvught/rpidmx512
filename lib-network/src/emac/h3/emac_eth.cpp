@@ -23,10 +23,6 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_EMAC)
-#undef NDEBUG
-#endif
-
 #pragma GCC push_options
 #pragma GCC optimize("O2")
 #pragma GCC optimize("no-tree-loop-distribute-patterns")
@@ -35,9 +31,9 @@
 
 #include "h3.h"
 #include "emac.h"
+#include "emac/emac_debug.h"
 #include "emac_counters.h"
 #include "firmware/debug/debug_dump.h"
-#include "firmware/debug/debug_debug.h"
 
 namespace emac::eth::globals {
 struct Counters counter;
@@ -47,7 +43,8 @@ extern struct CoherentRegion* p_coherent_region;
 
 namespace emac::eth {
 __attribute__((hot)) uint32_t Recv(uint8_t** packetp) {
-    uint32_t status, desc_num = p_coherent_region->rx_currdescnum;
+    uint32_t status;
+    uint32_t desc_num = p_coherent_region->rx_currdescnum;
     struct EmacDmaDesc* desc_p = &p_coherent_region->rx_chain[desc_num];
 
     status = desc_p->status;
@@ -57,20 +54,18 @@ __attribute__((hot)) uint32_t Recv(uint8_t** packetp) {
         uint32_t length = (desc_p->status >> 16) & 0x3FFF;
 
         if (length < 0x40) {
-            DEBUG_PUTS("Bad Packet (length < 0x40)");
+            EMAC_DEBUG_PUTS("Bad Packet (length < 0x40)");
 			emac::eth::globals::counter.received_error++;
             return 0;
         } else {
             if (length > CONFIG_ETH_RXSIZE) {
-                DEBUG_PRINTF("Received packet is too big (length=%d)\n", length);
+                DEBUG_PRINTF("Received packet is too big (length=%u)\n", static_cast<unsigned>(length));
 				emac::eth::globals::counter.received_error++;
 				return 0;
             }
 
             *packetp = reinterpret_cast<uint8_t*>(desc_p->buf_addr);
-#ifdef NDEBUG
             debug::Dump(reinterpret_cast<void*>(*packetp), static_cast<uint16_t>(length));
-#endif
             emac::eth::globals::counter.received++;
             return length;
         }
@@ -138,9 +133,7 @@ void Send(void* buffer, uint32_t length) {
     auto* dst = SendGetDmaBuffer();
 
     h3_memcpy(dst, buffer, length);
-#ifndef NDEBUG
     debug::Dump(dst, length);
-#endif
 
     Send(length);
 }

@@ -22,10 +22,6 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_NETWORK_APPS_MDNS)
-#undef NDEBUG
-#endif
-
 #include <cstdint>
 #include <cstring>
 #include <cstdio>
@@ -41,6 +37,18 @@
 #include "core/protocol/dns.h"
 #include "core/protocol/iana.h"
 #include "firmware/debug/debug_debug.h"
+
+#if defined(DEBUG_NETWORK_APPS_MDNS)
+#define MDNS_DEBUG_ENTRY() DEBUG_ENTRY()
+#define MDNS_DEBUG_EXIT() DEBUG_EXIT()
+#define MDNS_DEBUG_PRINTF(...) DEBUG_PRINTF(__VA_ARGS__)
+#define MDNS_DEBUG_PUTS(...) DEBUG_PUTS(__VA_ARGS__)
+#else
+#define MDNS_DEBUG_ENTRY() do { } while (false)
+#define MDNS_DEBUG_EXIT() do { } while (false)
+#define MDNS_DEBUG_PRINTF(...) do { } while (false)
+#define MDNS_DEBUG_PUTS(...) do { } while (false)
+#endif
 
 namespace network::apps::mdns {
 #if !defined(MDNS_SERVICE_RECORDS_MAX)
@@ -92,8 +100,8 @@ struct Service {
     const uint16_t kPortDefault;
 };
 
-static constexpr Service kServices[]{{kDomainConfig, sizeof(kDomainConfig), Protocols::kUdp, 0x2905},
-                                     {kDomainTftp, sizeof(kDomainTftp), Protocols::kUdp, network::iana::Ports::kPortTftp},
+static constexpr Service kServices[]{{.domain=kDomainConfig, .kLength=sizeof(kDomainConfig), .kProtocols=Protocols::kUdp, .kPortDefault=0x2905},
+                                     {.domain=kDomainTftp, .kLength=sizeof(kDomainTftp), .kProtocols=Protocols::kUdp, .kPortDefault=network::iana::Ports::kPortTftp},
                                      {kDomainHttp, sizeof(kDomainHttp), Protocols::kTcp, network::iana::Ports::kPortHttp},
                                      {kDomainHttp, sizeof(kDomainHttp), Protocols::kTcp, network::iana::Ports::kPortHttpAlt},
                                      {kDomainRdmnetLlrp, sizeof(kDomainRdmnetLlrp), Protocols::kUdp, 5569},
@@ -193,7 +201,7 @@ static bool s_is_unicast;
 static bool s_is_legacy_query;
 
 static void CreateServiceDomain(mdns::Domain& domain, ServiceRecord const& service_record, bool include_name) {
-    DEBUG_ENTRY();
+    MDNS_DEBUG_ENTRY();
 
     domain.length = 0;
 
@@ -213,7 +221,7 @@ static void CreateServiceDomain(mdns::Domain& domain, ServiceRecord const& servi
     domain.AddProtocol(kServices[kIndex].kProtocols);
     domain.AddDotLocal();
 
-    DEBUG_EXIT();
+    MDNS_DEBUG_EXIT();
 }
 
 static void CreateHostDomain(Domain& domain) {
@@ -224,7 +232,7 @@ static void CreateHostDomain(Domain& domain) {
 
 #if defined(CONFIG_MDNS_DOMAIN_REVERSE)
 static void CreateReverseDomain(Domain& domain) {
-    DEBUG_ENTRY();
+    MDNS_DEBUG_ENTRY();
 
     domain.length = 0;
     auto primary_ip = network::GetPrimaryIp();
@@ -261,7 +269,7 @@ static void CreateReverseDomain(Domain& domain) {
     memcpy(&domain.a_name[domain.length], kDomainReverse, sizeof(kDomainReverse));
     domain.length += static_cast<uint16_t>(sizeof(kDomainReverse));
 
-    DEBUG_EXIT();
+    MDNS_DEBUG_EXIT();
 }
 #endif
 
@@ -379,7 +387,7 @@ static uint8_t* AddQuestion(uint8_t* destination, const mdns::Domain& domain, ne
 }
 
 static uint32_t AddAnswerSrv(mdns::ServiceRecord const& service_record, uint8_t* destination, uint32_t ttl) {
-    DEBUG_ENTRY();
+    MDNS_DEBUG_ENTRY();
 
     Domain domain;
     CreateServiceDomain(domain, service_record, true);
@@ -401,12 +409,12 @@ static uint32_t AddAnswerSrv(mdns::ServiceRecord const& service_record, uint8_t*
 
     *reinterpret_cast<uint16_t*>(lengt_pointer) = __builtin_bswap16(static_cast<uint16_t>(6U + dst - begin));
 
-    DEBUG_EXIT();
+    MDNS_DEBUG_EXIT();
     return static_cast<uint32_t>(dst - destination);
 }
 
 static uint32_t AddAnswerTxt(mdns::ServiceRecord const& service_record, uint8_t* destination, uint32_t ttl) {
-    DEBUG_ENTRY();
+    MDNS_DEBUG_ENTRY();
 
     Domain domain;
     CreateServiceDomain(domain, service_record, true);
@@ -431,12 +439,12 @@ static uint32_t AddAnswerTxt(mdns::ServiceRecord const& service_record, uint8_t*
         dst += kSize;
     }
 
-    DEBUG_EXIT();
+    MDNS_DEBUG_EXIT();
     return static_cast<uint32_t>(dst - destination);
 }
 
 static uint32_t AddAnswerPtr(mdns::ServiceRecord const& service_record, uint8_t* destination, uint32_t ttl) {
-    DEBUG_ENTRY();
+    MDNS_DEBUG_ENTRY();
 
     Domain domain;
     CreateServiceDomain(domain, service_record, false);
@@ -454,12 +462,12 @@ static uint32_t AddAnswerPtr(mdns::ServiceRecord const& service_record, uint8_t*
 
     *reinterpret_cast<uint16_t*>(lengt_pointer) = __builtin_bswap16(static_cast<uint16_t>(dst - begin));
 
-    DEBUG_EXIT();
+    MDNS_DEBUG_EXIT();
     return static_cast<uint32_t>(dst - destination);
 }
 
 static uint32_t AddAnswerDnsdPtr(mdns::ServiceRecord const& service_record, uint8_t* destination, uint32_t ttl) {
-    DEBUG_ENTRY();
+    MDNS_DEBUG_ENTRY();
 
     auto* dst = AddQuestion(destination, kDomainDnssd, network::dns::RRType::kPtr, false);
 
@@ -476,12 +484,12 @@ static uint32_t AddAnswerDnsdPtr(mdns::ServiceRecord const& service_record, uint
 
     *reinterpret_cast<uint16_t*>(lengt_pointer) = __builtin_bswap16(static_cast<uint16_t>(dst - begin));
 
-    DEBUG_EXIT();
+    MDNS_DEBUG_EXIT();
     return static_cast<uint32_t>(dst - destination);
 }
 
 static uint32_t AddAnswerA(uint8_t* destination, uint32_t ttl) {
-    DEBUG_ENTRY();
+    MDNS_DEBUG_ENTRY();
 
     Domain domain;
     CreateHostDomain(domain);
@@ -495,13 +503,13 @@ static uint32_t AddAnswerA(uint8_t* destination, uint32_t ttl) {
     *reinterpret_cast<uint32_t*>(dst) = network::GetPrimaryIp();
     dst += 4;
 
-    DEBUG_EXIT();
+    MDNS_DEBUG_EXIT();
     return static_cast<uint32_t>(dst - destination);
 }
 
 #if defined(CONFIG_MDNS_DOMAIN_REVERSE)
 static uint32_t AddAnswerHostv4Ptr(uint8_t* destination, uint32_t ttl) {
-    DEBUG_ENTRY();
+    MDNS_DEBUG_ENTRY();
 
     Domain domain;
     CreateReverseDomain(domain);
@@ -519,7 +527,7 @@ static uint32_t AddAnswerHostv4Ptr(uint8_t* destination, uint32_t ttl) {
 
     *reinterpret_cast<uint16_t*>(lengt_pointer) = __builtin_bswap16(static_cast<uint16_t>(dst - begin));
 
-    DEBUG_EXIT();
+    MDNS_DEBUG_EXIT();
     return static_cast<uint32_t>(dst - destination);
 }
 #endif
@@ -536,7 +544,7 @@ static const uint8_t* GetDomainName(const uint8_t* const kMsg, const uint8_t* pt
     const uint8_t* const kLimit = np + kDomainMaxlen; // Limit so we don't overrun buffer
 
     if (ptr < reinterpret_cast<const uint8_t*>(kMsg) || ptr >= kEnd) {
-        DEBUG_PUTS("Illegal ptr not within packet boundaries");
+        MDNS_DEBUG_PUTS("Illegal ptr not within packet boundaries");
         return nullptr;
     }
 
@@ -553,12 +561,12 @@ static const uint8_t* GetDomainName(const uint8_t* const kMsg, const uint8_t* pt
             case 0x00:
                 if (ptr + kLen >= kEnd) // Remember: expect at least one more byte for the root label
                 {
-                    DEBUG_PUTS("Malformed domain name (overruns packet end)");
+                    MDNS_DEBUG_PUTS("Malformed domain name (overruns packet end)");
                     return nullptr;
                 }
                 if (np + 1 + kLen >= kLimit) // Remember: expect at least one more byte for the root label
                 {
-                    DEBUG_PUTS("Malformed domain name (more than 255 characters)");
+                    MDNS_DEBUG_PUTS("Malformed domain name (more than 255 characters)");
                     return nullptr;
                 }
                 *np++ = kLen;
@@ -567,11 +575,11 @@ static const uint8_t* GetDomainName(const uint8_t* const kMsg, const uint8_t* pt
                 break;
 
             case 0x40:
-                DEBUG_PRINTF("Extended EDNS0 label types 0x40 not supported in name %.*s", static_cast<int>(kLen), kName);
+                MDNS_DEBUG_PRINTF("Extended EDNS0 label types 0x40 not supported in name %.*s", static_cast<int>(kLen), kName);
                 return nullptr;
 
             case 0x80:
-                DEBUG_PRINTF("Illegal label length 0x80 in domain name %.*s", static_cast<int>(kLen), kName);
+                MDNS_DEBUG_PRINTF("Illegal label length 0x80 in domain name %.*s", static_cast<int>(kLen), kName);
                 return nullptr;
 
             case 0xC0:
@@ -579,11 +587,11 @@ static const uint8_t* GetDomainName(const uint8_t* const kMsg, const uint8_t* pt
                 if (!nextbyte) nextbyte = ptr; // Record where we got to before we started following pointers
                 ptr = reinterpret_cast<const uint8_t*>(kMsg) + offset;
                 if (ptr < reinterpret_cast<const uint8_t*>(kMsg) || ptr >= kEnd) {
-                    DEBUG_PUTS("Illegal compression pointer not within packet boundaries");
+                    MDNS_DEBUG_PUTS("Illegal compression pointer not within packet boundaries");
                     return nullptr;
                 }
                 if (*ptr & 0xC0) {
-                    DEBUG_PUTS("Compression pointer must point to real label");
+                    MDNS_DEBUG_PUTS("Compression pointer must point to real label");
                     return nullptr;
                 }
                 break;
@@ -598,7 +606,7 @@ static const uint8_t* GetDomainName(const uint8_t* const kMsg, const uint8_t* pt
 }
 
 void Start() {
-    DEBUG_ENTRY();
+    MDNS_DEBUG_ENTRY();
 
     network::igmp::JoinGroup(s_handle, network::dns::kMulticastAddress);
     network::iface::SetDomainName(&kDomainLocal[1]);
@@ -609,11 +617,11 @@ void Start() {
     CreateHostDomain(domain);
     domain.Print(true);
 
-    DEBUG_EXIT();
+    MDNS_DEBUG_EXIT();
 }
 
 void Stop() {
-    DEBUG_ENTRY();
+    MDNS_DEBUG_ENTRY();
 
     mdns::SendAnnouncement(0);
 
@@ -626,7 +634,7 @@ void Stop() {
     network::udp::End(network::iana::Ports::kPortMdns);
     s_handle = -1;
 
-    DEBUG_EXIT();
+    MDNS_DEBUG_EXIT();
 }
 
 static void Send(uint32_t length) {
@@ -639,7 +647,7 @@ static void Send(uint32_t length) {
 }
 
 static void SendAnswerLocalIpAddress(uint16_t trans_action_id, uint32_t ttl) {
-    DEBUG_ENTRY();
+    MDNS_DEBUG_ENTRY();
 
     uint32_t answers = 0;
     uint8_t* dst = reinterpret_cast<uint8_t*>(&s_records_data) + sizeof(struct network::dns::Header);
@@ -682,11 +690,11 @@ static void SendAnswerLocalIpAddress(uint16_t trans_action_id, uint32_t ttl) {
     const auto kSize = static_cast<uint16_t>(dst - reinterpret_cast<uint8_t*>(header));
     Send(kSize);
 
-    DEBUG_EXIT();
+    MDNS_DEBUG_EXIT();
 }
 
 static void SendMessage(mdns::ServiceRecord const& record, uint16_t transaction_id, uint32_t ttl) {
-    DEBUG_ENTRY();
+    MDNS_DEBUG_ENTRY();
 
     uint32_t answers = 0;
     auto* dst = reinterpret_cast<uint8_t*>(&s_records_data) + sizeof(struct network::dns::Header);
@@ -726,11 +734,11 @@ static void SendMessage(mdns::ServiceRecord const& record, uint16_t transaction_
     const auto kSize = static_cast<uint16_t>(dst - reinterpret_cast<uint8_t*>(header));
     Send(kSize);
 
-    DEBUG_EXIT();
+    MDNS_DEBUG_EXIT();
 }
 
 void SendAnnouncement(uint32_t ttl) {
-    DEBUG_ENTRY();
+    MDNS_DEBUG_ENTRY();
 
     s_n_remote_port = network::iana::Ports::kPortMdns; // FIXME Hack ;-)
     s_host_replies = HostReply::kA;
@@ -744,11 +752,11 @@ void SendAnnouncement(uint32_t ttl) {
         }
     }
 
-    DEBUG_EXIT();
+    MDNS_DEBUG_EXIT();
 }
 
 bool ServiceRecordAdd(const char* name, mdns::Services services, const char* text, uint16_t port) {
-    DEBUG_ENTRY();
+    MDNS_DEBUG_ENTRY();
     assert(services < mdns::Services::kLastNotUsed);
 
     for (auto& record : s_service_records) {
@@ -805,7 +813,7 @@ bool ServiceRecordAdd(const char* name, mdns::Services services, const char* tex
 }
 
 bool ServiceRecordDelete(mdns::Services service) {
-    DEBUG_ENTRY();
+    MDNS_DEBUG_ENTRY();
     assert(service < mdns::Services::kLastNotUsed);
 
     for (auto& record : s_service_records) {
@@ -820,18 +828,18 @@ bool ServiceRecordDelete(mdns::Services service) {
                 delete[] record.text_content;
             }
 
-            DEBUG_EXIT();
+            MDNS_DEBUG_EXIT();
             return true;
         }
     }
 
-    DEBUG_EXIT();
+    MDNS_DEBUG_EXIT();
     return false;
 }
 
 static void HandleQuestions(uint32_t questions) {
-    DEBUG_ENTRY();
-    DEBUG_PRINTF("questions=%u", questions);
+    MDNS_DEBUG_ENTRY();
+    MDNS_DEBUG_PRINTF("questions=%u", static_cast<unsigned>(questions));
 
     s_host_replies = 0;
     s_is_unicast = (s_n_remote_port != network::iana::Ports::kPortMdns);
@@ -846,7 +854,7 @@ static void HandleQuestions(uint32_t questions) {
 
         auto* result = GetDomainName(s_p_receive_buffer, &s_p_receive_buffer[offset], &s_p_receive_buffer[s_n_bytes_received], resource_domain.a_name);
         if (result == nullptr) {
-            DEBUG_EXIT();
+            MDNS_DEBUG_EXIT();
             return;
         }
 
@@ -875,7 +883,7 @@ static void HandleQuestions(uint32_t questions) {
         Domain domain_host;
 
         if ((kType == network::dns::RRType::kA) || (kType == network::dns::RRType::kAll)) {
-            DEBUG_PUTS("");
+            MDNS_DEBUG_PUTS("");
             CreateHostDomain(domain_host);
 
             if (domain_host == resource_domain) {
@@ -885,7 +893,7 @@ static void HandleQuestions(uint32_t questions) {
 
 #if defined(CONFIG_MDNS_DOMAIN_REVERSE)
         if (kType == network::dns::RRType::kPtr || kType == network::dns::RRType::kAll) {
-            DEBUG_PUTS("");
+            MDNS_DEBUG_PUTS("");
             CreateReverseDomain(domain_host);
 
             if (domain_host == resource_domain) {
@@ -937,11 +945,11 @@ static void HandleQuestions(uint32_t questions) {
     }
 
     if (s_host_replies != 0) {
-        DEBUG_PUTS("");
+        MDNS_DEBUG_PUTS("");
         SendAnswerLocalIpAddress(kTransactionID, kMdnsResponseTtl);
     }
 
-    DEBUG_EXIT();
+    MDNS_DEBUG_EXIT();
 }
 
 static void Input(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port) {
@@ -961,7 +969,7 @@ static void Input(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16
 }
 
 void Init() {
-    DEBUG_ENTRY();
+    MDNS_DEBUG_ENTRY();
 
     for (auto& record : s_service_records) {
         record.services = Services::kLastNotUsed;
@@ -970,6 +978,6 @@ void Init() {
     s_handle = network::udp::Begin(network::iana::Ports::kPortMdns, Input);
     assert(s_handle != -1);
 
-    DEBUG_EXIT();
+    MDNS_DEBUG_EXIT();
 }
 } // namespace network::apps::mdns

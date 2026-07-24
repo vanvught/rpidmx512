@@ -39,7 +39,7 @@
 #include "rdmhandler.h"
 #include "ip4/ip4_address.h"
 #include "rdmdevice.h"
-#include "firmware/debug/debug_debug.h"
+#include "rdm_debug.h"
 
 namespace llrp::device {
 static constexpr auto kIpV4LlrpRequest = network::ConvertToUint(239, 255, 250, 133);
@@ -50,7 +50,7 @@ static constexpr uint16_t kLlrpPort = 5569;
 class LLRPDevice {
    public:
     LLRPDevice() {
-        DEBUG_ENTRY();
+        LLRP_DEVICE_DEBUG_ENTRY();
         assert(s_this == nullptr);
         s_this = this;
 
@@ -60,11 +60,11 @@ class LLRPDevice {
 
         network::apps::mdns::ServiceRecordAdd(nullptr, network::apps::mdns::Services::kRdmnetLlrp, "node=RDMNet LLRP Only");
 
-        DEBUG_EXIT();
+        LLRP_DEVICE_DEBUG_EXIT();
     }
 
     ~LLRPDevice() {
-        DEBUG_ENTRY();
+        LLRP_DEVICE_DEBUG_ENTRY();
 
         network::apps::mdns::ServiceRecordDelete(network::apps::mdns::Services::kRdmnetLlrp);
 
@@ -73,14 +73,14 @@ class LLRPDevice {
 
         s_this = nullptr;
 
-        DEBUG_EXIT();
+        LLRP_DEVICE_DEBUG_EXIT();
     }
 
     void Input(const uint8_t* buffer, [[maybe_unused]] uint32_t size, uint32_t from_ip, [[maybe_unused]] uint16_t from_port) {
         llrp = const_cast<uint8_t*>(buffer);
         ip_address_from = from_ip;
 
-#ifndef NDEBUG
+#ifndef DEBUG_LLRP_DEVICE
         DumpCommon();
 #endif
 
@@ -133,7 +133,6 @@ class LLRPDevice {
 
     void static StaticCallbackFunction(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port) { s_this->Input(buffer, size, from_ip, from_port); }
 
-   private:
     static inline int32_t handle_llrp;
     static inline uint32_t ip_address_from;
     static inline uint8_t* llrp;

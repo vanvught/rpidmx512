@@ -28,25 +28,25 @@
 
 #include "artnetcontroller.h"
 #include "artnettrigger.h"
-#include "firmware/debug/debug_debug.h"
+#include "showfile_debug.h"
 
 class ShowFileProtocolArtNetTrigger {
    public:
     ShowFileProtocolArtNetTrigger() {
-        DEBUG_ENTRY();
+        SHOWFILE_DEBUG_ENTRY();
 
         assert(s_this == nullptr);
         s_this = this;
 
         ArtNetController::Get()->SetArtTriggerCallbackFunctionPtr(StaticCallbackFunction);
 
-        DEBUG_EXIT();
+        SHOWFILE_DEBUG_EXIT();
     }
 
    private:
     void Handler(const struct ArtNetTrigger* trigger) {
-        DEBUG_ENTRY();
-        DEBUG_PRINTF("Key=%d, SubKey=%d", trigger->key, trigger->sub_key);
+        SHOWFILE_DEBUG_ENTRY();
+        SHOWFILE_DEBUG_PRINTF("Key=%d, SubKey=%d", trigger->key, trigger->sub_key);
 
         if (trigger->key == ArtTriggerKey::ART_TRIGGER_KEY_SOFT) {
             switch (trigger->sub_key) {
@@ -71,10 +71,9 @@ class ShowFileProtocolArtNetTrigger {
             ShowFile::Get()->SetPlayerShowFileCurrent(trigger->sub_key);
         }
 
-        DEBUG_EXIT();
+        SHOWFILE_DEBUG_EXIT();
     }
 
-   private:
     static inline ShowFileProtocolArtNetTrigger* s_this;
 };
 

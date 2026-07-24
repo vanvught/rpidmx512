@@ -27,7 +27,7 @@
 
 #include "h3.h"
 #include "emac/mmi.h" // IWYU pragma: keep
-#include "firmware/debug/debug_debug.h"
+#include "emac/emac_debug.h"
 
 namespace emac::phy {
 
@@ -43,7 +43,7 @@ namespace emac::phy {
 #define MDIO_CMD_MII_PHY_ADDR_SHIFT 12
 
 bool Read(uint16_t address, uint16_t reg, uint16_t& value) {
-    DEBUG_ENTRY();
+    EMAC_DEBUG_ENTRY();
 
     uint32_t cmd = ((0x03 & 0x07) << 20);
     cmd |= ((address << MDIO_CMD_MII_PHY_ADDR_SHIFT) & MDIO_CMD_MII_PHY_ADDR_MASK);
@@ -61,7 +61,7 @@ bool Read(uint16_t address, uint16_t reg, uint16_t& value) {
     };
 
     if (!result) {
-        DEBUG_EXIT();
+        EMAC_DEBUG_EXIT();
         return false;
     }
 
@@ -78,14 +78,14 @@ bool Read(uint16_t address, uint16_t reg, uint16_t& value) {
     };
 
     if (!result) {
-        DEBUG_EXIT();
+        EMAC_DEBUG_EXIT();
         return false;
     }
 
     value = static_cast<uint16_t>(H3_EMAC->MII_DATA);
 
-    DEBUG_PRINTF("%.2x %.2x %.4x", address, reg, value);
-    DEBUG_EXIT();
+    EMAC_DEBUG_PRINTF("%.2x %.2x %.4x", static_cast<unsigned>(address), static_cast<unsigned>(reg), static_cast<unsigned>(value));
+    EMAC_DEBUG_EXIT();
     return true;
 }
 
@@ -109,12 +109,12 @@ bool Write(uint16_t address, uint16_t reg, uint16_t value) {
         }
     };
 
-    //	DEBUG_PRINTF("%d %.2x %.2x %.4x", bResult, address, reg, value);
+    //	EMAC_DEBUG_PRINTF("%d %.2x %.2x %.4x", bResult, address, reg, value);
     return result;
 }
 
 bool Config([[maybe_unused]] uint16_t address) {
-    DEBUG_ENTRY();
+    EMAC_DEBUG_ENTRY();
 
     /**
      * We are starting from U-Boot which is setting the PHY. Resetting the PHY is not
@@ -122,7 +122,7 @@ bool Config([[maybe_unused]] uint16_t address) {
      */
 #if 0
 	if (!phy::Write(address, mmi::REG_BMCR, mmi::BMCR_RESET)) {
-		DEBUG_PUTS("PHY reset failed");
+		EMAC_DEBUG_PUTS("PHY reset failed");
 		return false;
 	}
 
@@ -137,23 +137,23 @@ bool Config([[maybe_unused]] uint16_t address) {
 
 	while (H3_TIMER->AVS_CNT0 - nMilllis < 500) {
 		if (!PhyRead(address, mmi::REG_BMCR, nValue)) {
-			DEBUG_PUTS("PHY status read failed");
+			EMAC_DEBUG_PUTS("PHY status read failed");
 			return false;
 		}
 
 		if (!(nValue & mmi::BMCR_RESET)) {
-			DEBUG_PRINTF("%u", H3_TIMER->AVS_CNT0 - nMilllis);
-			DEBUG_EXIT();
+			EMAC_DEBUG_PRINTF("%u", H3_TIMER->AVS_CNT0 - nMilllis);
+			EMAC_DEBUG_EXIT();
 			return true;
 		}
 	}
 
 	if (nValue & mmi::BMCR_RESET) {
-		DEBUG_PUTS("PHY reset timed out");
+		EMAC_DEBUG_PUTS("PHY reset timed out");
 		return false;
 	}
 #endif
-    DEBUG_EXIT();
+    EMAC_DEBUG_EXIT();
     return true;
 }
 

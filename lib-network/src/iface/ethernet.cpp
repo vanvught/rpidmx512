@@ -22,10 +22,6 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_NETWORK_IFACE)
-#undef NDEBUG
-#endif
-
 #if !defined(CONFIG_REMOTECONFIG_MINIMUM)
 #pragma GCC push_options
 #pragma GCC optimize("O3")
@@ -33,14 +29,13 @@
 #endif
 
 #include <cstdint>
-#include <cstdint>
 
 #include "../src/core/network_private.h"
 #include "../src/core/network_memcpy.h"
 #include "core/ip4/arp.h"
 #include "core/protocol/ieee.h"
 #include "core/protocol/ethernet.h"
-#include "firmware/debug/debug_debug.h"
+#include "iface_debug.h"
 
 namespace network {
 namespace igmp {
@@ -66,7 +61,7 @@ void EthernetInput(const uint8_t* buffer, [[maybe_unused]] uint32_t length) {
         case __builtin_bswap16(network::ethernet::Type::kIPv4): {
             const auto* const kIp4 = reinterpret_cast<const struct network::ip4::Header*>(buffer);
 
-            DEBUG_PRINTF(IPSTR " " IPSTR, kIp4->ip4.dst[0], kIp4->ip4.dst[1], kIp4->ip4.dst[2], kIp4->ip4.dst[3], kIp4->ip4.src[0], kIp4->ip4.src[1], kIp4->ip4.src[2], kIp4->ip4.src[3]);
+            NETWORK_IFACE_DEBUG_PRINTF(IPSTR " " IPSTR, kIp4->ip4.dst[0], kIp4->ip4.dst[1], kIp4->ip4.dst[2], kIp4->ip4.dst[3], kIp4->ip4.src[0], kIp4->ip4.src[1], kIp4->ip4.src[2], kIp4->ip4.src[3]);
 
             if ((kEther->dst[0] == network::ethernet::kIP4MulticastAddr0) && (kEther->dst[1] == network::ethernet::kIP4MulticastAddr1) && (kEther->dst[2] == network::ethernet::kIP4MulticastAddr2)) {
                 if (!network::igmp::LookupGroup(network::MemcpyIp(kIp4->ip4.dst))) {
@@ -101,7 +96,7 @@ void EthernetInput(const uint8_t* buffer, [[maybe_unused]] uint32_t length) {
             network::arp::Input(reinterpret_cast<const struct network::arp::Header*>(buffer));
             break;
         default:
-            DEBUG_PRINTF("type %04x is not implemented", __builtin_bswap16(kEther->type));
+            NETWORK_IFACE_DEBUG_PRINTF("type %04x is not implemented", __builtin_bswap16(kEther->type));
             break;
     }
 
@@ -113,3 +108,5 @@ void EthernetInput(const uint8_t* buffer, [[maybe_unused]] uint32_t length) {
 #if !defined(CONFIG_REMOTECONFIG_MINIMUM)
 #pragma GCC pop_options
 #endif
+
+#undef NETWORK_IFACE_DEBUG_PRINTF

@@ -23,24 +23,18 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_ARTNET_RDMSUB)
-#undef NDEBUG
-#endif
-
 #include "artnetnode.h"
-#include "firmware/debug/debug_debug.h"
+#include "artnet_debug.h"
 
-void ArtNetNode::HandleRdmSub()
-{
-    DEBUG_ENTRY();
+void ArtNetNode::HandleRdmSub() {
+    ARTNET_RDM_DEBUG_ENTRY();
 
     auto* const kArtRdmSub = reinterpret_cast<artnet::ArtRdmSub*>(receive_buffer_);
 
-    if (kArtRdmSub->rdm_ver != 0x01)
-    {
-        DEBUG_EXIT();
+    if (kArtRdmSub->rdm_ver != 0x01) {
+        ARTNET_RDM_DEBUG_EXIT();
         return;
     }
 
-    DEBUG_EXIT();
+    ARTNET_RDM_DEBUG_EXIT();
 }

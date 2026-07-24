@@ -1,3 +1,4 @@
+#if defined(ENABLE_TFTP_SERVER)
 /**
  * @file remoteconfig.cpp
  *
@@ -23,11 +24,6 @@
  * THE SOFTWARE.
  */
 
-#if defined(ENABLE_TFTP_SERVER)
-#if defined(DEBUG_TFTP)
-#undef NDEBUG
-#endif
-
 #include <cstdint>
 #include <cassert>
 
@@ -41,7 +37,7 @@
 static uint8_t s_tftp_buffer[FIRMWARE_MAX_SIZE];
 
 void RemoteConfig::PlatformHandleTftpSet() {
-    DEBUG_ENTRY();
+    REMOTECONFIG_DEBUG_ENTRY();
 
     if (enable_tftp_ && (tftp_file_server_ == nullptr)) {
         tftp_file_server_ = new TFTPFileServer(s_tftp_buffer, FIRMWARE_MAX_SIZE);
@@ -49,7 +45,7 @@ void RemoteConfig::PlatformHandleTftpSet() {
         Display::Get()->TextStatus("TFTP On", ansi::Colours::Colour::kGreen);
     } else if (!enable_tftp_ && (tftp_file_server_ != nullptr)) {
         const uint32_t kFileSize = tftp_file_server_->GetFileSize();
-        DEBUG_PRINTF("kFileSize=%d, %d", kFileSize, tftp_file_server_->IsDone());
+        REMOTECONFIG_DEBUG_PRINTF("kFileSize=%u, %u", static_cast<unsigned>(kFileSize), static_cast<unsigned>(tftp_file_server_->IsDone()));
 
         auto succes = true;
 
@@ -69,12 +65,12 @@ void RemoteConfig::PlatformHandleTftpSet() {
         }
     }
 
-    DEBUG_EXIT();
+    REMOTECONFIG_DEBUG_EXIT();
 }
 
 void RemoteConfig::PlatformHandleTftpGet() {
-    DEBUG_ENTRY();
+    REMOTECONFIG_DEBUG_ENTRY();
 
-    DEBUG_EXIT();
+    REMOTECONFIG_DEBUG_EXIT();
 }
 #endif

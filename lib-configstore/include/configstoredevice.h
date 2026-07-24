@@ -2,7 +2,7 @@
  * @file configstoredevice.h
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,34 +28,26 @@
 
 #include <cstdint>
 
-namespace storedevice
-{
-enum class Result
-{
-    kOk,
-    kError
-};
+namespace storedevice {
+enum class Result { kOk, kError };
 } // namespace storedevice
 
 #if defined(CONFIG_STORE_USE_I2C)
 #include "i2c/at24cxx.h"
-class StoreDevice : AT24C32
-{
+class StoreDevice : AT24C32 {
 #elif defined(CONFIG_STORE_USE_ROM)
 #include "flashcode.h"
-class StoreDevice : FlashCode
-{
+class StoreDevice : FlashCode {
 #else
-class StoreDevice
-{
+class StoreDevice {
 #endif
    public:
     StoreDevice();
     ~StoreDevice();
 
-    bool IsDetected() const { return detected_; }
-    uint32_t GetSectorSize() const;
-    uint32_t GetSize() const;
+    [[nodiscard]] bool IsDetected() const { return detected_; }
+    [[nodiscard]] uint32_t GetSectorSize() const;
+    [[nodiscard]] uint32_t GetSize() const;
 
     bool Read(uint32_t offset, uint32_t length, uint8_t* buffer, storedevice::Result& result);
     bool Erase(uint32_t offset, uint32_t length, storedevice::Result& result);
@@ -65,4 +57,4 @@ class StoreDevice
     bool detected_{false};
 };
 
-#endif  // CONFIGSTOREDEVICE_H_
+#endif // CONFIGSTOREDEVICE_H_

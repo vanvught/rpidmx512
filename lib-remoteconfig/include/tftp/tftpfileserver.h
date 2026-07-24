@@ -30,21 +30,40 @@
 #include <cstdint>
 
 #include "apps/tftpdaemon.h"
+#include "firmware/debug/debug_debug.h"
 
 #if defined(GD32)
 #include "gd32.h"
 #endif
 
-namespace tftpfileserver
-{
+#ifdef DEBUG_TFTP
+#define TFTP_DEBUG_ENTRY() DEBUG_ENTRY()
+#define TFTP_DEBUG_EXIT() DEBUG_EXIT()
+#define TFTP_DEBUG_PRINTF(...) DEBUG_PRINTF(__VA_ARGS__)
+#define TFTP_DEBUG_PUTS(...) DEBUG_PUTS(__VA_ARGS__)
+#else
+#define TFTP_DEBUG_ENTRY() \
+    do {                   \
+    } while (false)
+#define TFTP_DEBUG_EXIT() \
+    do {                  \
+    } while (false)
+#define TFTP_DEBUG_PRINTF(...) \
+    do {                       \
+    } while (false)
+#define TFTP_DEBUG_PUTS(...) \
+    do {                     \
+    } while (false)
+#endif
+
+namespace tftpfileserver {
 bool is_valid(const void* buffer);
 } // namespace tftpfileserver
 
-class TFTPFileServer final : public TFTPDaemon
-{
+class TFTPFileServer final : public TFTPDaemon {
    public:
     TFTPFileServer(uint8_t* buffer, uint32_t size);
-    ~TFTPFileServer() override {}
+    ~TFTPFileServer() override = default;
 
     bool FileOpen(const char* file_name, tftp::Mode mode) override;
     bool FileCreate(const char* file_name, tftp::Mode mode) override;
@@ -53,7 +72,7 @@ class TFTPFileServer final : public TFTPDaemon
     size_t FileWrite(const void* buffer, size_t count, unsigned block_number) override;
     void Exit() override;
 
-    uint32_t GetFileSize() const { return m_nFileSize; }
+    [[nodiscard]] uint32_t GetFileSize() const { return m_nFileSize; }
 
     bool IsDone() const { return m_bDone; }
 
@@ -64,4 +83,4 @@ class TFTPFileServer final : public TFTPDaemon
     bool m_bDone{false};
 };
 
-#endif  // TFTP_TFTPFILESERVER_H_
+#endif // TFTP_TFTPFILESERVER_H_

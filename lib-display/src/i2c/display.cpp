@@ -23,14 +23,11 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_DISPLAY)
-#undef NDEBUG
-#endif
-
 #include <cstdint>
 #include <cassert>
 
 #include "display.h"
+#include "display_debug.h"
 #include "displayset.h"
 #include "i2c/ssd1306.h"
 #if defined(CONFIG_DISPLAY_ENABLE_SSD1311)
@@ -55,7 +52,7 @@ static void GpioInit() {
 } // namespace display::timeout
 
 Display::Display() {
-	DEBUG_ENTRY();
+	DISPLAY_DEBUG_ENTRY();
     assert(s_this == nullptr);
     s_this = this;
 
@@ -72,12 +69,12 @@ Display::Display() {
     }
 
     PrintInfo();
-	DEBUG_EXIT();
+	DISPLAY_DEBUG_EXIT();
 }
 
 Display::Display(uint32_t rows) {
-	DEBUG_ENTRY();
-	DEBUG_PRINTF("rows=%u", rows);
+	DISPLAY_DEBUG_ENTRY();
+	DISPLAY_DEBUG_PRINTF("rows=%u", rows);
 	
     assert(s_this == nullptr);
     s_this = this;
@@ -89,7 +86,7 @@ Display::Display(uint32_t rows) {
     }
 
     PrintInfo();
-	DEBUG_EXIT();
+	DISPLAY_DEBUG_EXIT();
 }
 
 Display::Display(display::Type type) : type_(type) {
@@ -106,8 +103,8 @@ Display::Display(display::Type type) : type_(type) {
 }
 
 void Display::Detect(display::Type display_type) {
-	DEBUG_ENTRY();
-	DEBUG_PRINTF("type=%u", static_cast<uint32_t>(display_type));
+	DISPLAY_DEBUG_ENTRY();
+	DISPLAY_DEBUG_PRINTF("type=%u", static_cast<uint32_t>(display_type));
 	
     switch (display_type) {
 #if defined(CONFIG_DISPLAY_ENABLE_HD44780)
@@ -151,7 +148,7 @@ void Display::Detect(display::Type display_type) {
         sleep_timeout_ = 0;
     }
 	
-	DEBUG_EXIT();
+	DISPLAY_DEBUG_EXIT();
 }
 
 void Display::Detect(uint32_t rows) {
@@ -204,3 +201,8 @@ void Display::Detect(uint32_t rows) {
         sleep_timeout_ = 0;
     }
 }
+
+#undef DISPLAY_DEBUG_ENTRY
+#undef DISPLAY_DEBUG_EXIT
+#undef DISPLAY_DEBUG_PRINTF
+#undef DISPLAY_DEBUG_PUTS

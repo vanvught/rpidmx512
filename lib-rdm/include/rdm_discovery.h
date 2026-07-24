@@ -164,7 +164,7 @@ class Discovery : rdm::discovery::StateMachine {
         }
     }
 
-    uint8_t GetBackgroundIntervalMinutes() const { return background_interval_minutes_; }
+    [[nodiscard]] uint8_t GetBackgroundIntervalMinutes() const { return background_interval_minutes_; }
 
     uint32_t CopyWorkingQueue(char* out_buffer, uint32_t out_buffer_size) { return rdm::discovery::StateMachine::CopyWorkingQueue(out_buffer, out_buffer_size); }
 
@@ -213,7 +213,9 @@ class Discovery : rdm::discovery::StateMachine {
                 waiting_ &= static_cast<uint8_t>(~Bit(port_index_));
             } else {
                 port_index_++;
-                if (port_index_ == kPorts) port_index_ = 0;
+                if (port_index_ == kPorts) {
+                    port_index_ = 0;
+                }
             }
 
             return;
@@ -296,7 +298,6 @@ class Discovery : rdm::discovery::StateMachine {
    private:
     static constexpr uint8_t Bit(uint32_t index) { return static_cast<uint8_t>(1U << index); }
 
-   private:
     uint8_t port_index_{0};
     uint8_t enabled_{0};
     uint8_t waiting_{0};

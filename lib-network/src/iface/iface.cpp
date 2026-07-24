@@ -39,24 +39,20 @@
 #endif
 #include "network_store.h"
 #include "network_display.h"
-#include "firmware/debug/debug_debug.h"
+#include "iface_debug.h"
 
-namespace network::iface
-{
+namespace network::iface {
 static char s_hostname[kHostnameSize];
 static char s_domain_name[kDomainnameSize];
 static uint32_t s_nameservers[kNameserversCount];
 
-void CopyMacAddressTo(uint8_t* mac_address)
-{
+void CopyMacAddressTo(uint8_t* mac_address) {
     assert(mac_address != nullptr);
     memcpy(mac_address, netif::HwAddr(), kMacSize);
 }
 
-void SetDomainName(const char* domainname)
-{
-    if (domainname == nullptr || domainname[0] == '\0')
-    {
+void SetDomainName(const char* domainname) {
+    if (domainname == nullptr || domainname[0] == '\0') {
         s_domain_name[0] = '\0';
         return;
     }
@@ -65,14 +61,12 @@ void SetDomainName(const char* domainname)
     s_domain_name[kDomainnameSize - 1] = '\0';
 }
 
-const char* DomainName()
-{
+const char* DomainName() {
     return &s_domain_name[0];
 }
 
-static void BuildDefaultHostname()
-{
-    DEBUG_ENTRY();
+static void BuildDefaultHostname() {
+    NETWORK_IFACE_DEBUG_ENTRY();
 
     uint32_t k = 0;
 
@@ -81,65 +75,54 @@ static void BuildDefaultHostname()
 
     const uint32_t kMaxPrefix = (kHostnameSize > kMinTail) ? (kHostnameSize - kMinTail) : 0;
 
-    for (uint32_t i = 0; i < (sizeof(HOST_NAME_PREFIX) - 1) && i < kMaxPrefix; ++i)
-    {
+    for (uint32_t i = 0; i < (sizeof(HOST_NAME_PREFIX) - 1) && i < kMaxPrefix; ++i) {
         s_hostname[k++] = HOST_NAME_PREFIX[i];
     }
 
-    const auto* hw = netif::global::netif_default.hwaddr; // expects at least 6 bytes
+    const auto* hwaddr = netif::global::netif_default.hwaddr; // expects at least 6 bytes
 
-    s_hostname[k++] = common::hex::ToCharUppercase(hw[3] >> 4);
-    s_hostname[k++] = common::hex::ToCharUppercase(hw[3] & 0xF);
-    s_hostname[k++] = common::hex::ToCharUppercase(hw[4] >> 4);
-    s_hostname[k++] = common::hex::ToCharUppercase(hw[4] & 0xF);
-    s_hostname[k++] = common::hex::ToCharUppercase(hw[5] >> 4);
-    s_hostname[k++] = common::hex::ToCharUppercase(hw[5] & 0xF);
+    s_hostname[k++] = common::hex::ToCharUppercase(hwaddr[3] >> 4);
+    s_hostname[k++] = common::hex::ToCharUppercase(hwaddr[3] & 0xF);
+    s_hostname[k++] = common::hex::ToCharUppercase(hwaddr[4] >> 4);
+    s_hostname[k++] = common::hex::ToCharUppercase(hwaddr[4] & 0xF);
+    s_hostname[k++] = common::hex::ToCharUppercase(hwaddr[5] >> 4);
+    s_hostname[k++] = common::hex::ToCharUppercase(hwaddr[5] & 0xF);
 
     s_hostname[k] = '\0';
 
     DEBUG_PUTS(s_hostname);
-    DEBUG_EXIT();
+    NETWORK_IFACE_DEBUG_EXIT();
 }
 
-void SetHostnameAuto()
-{
+void SetHostnameAuto() {
     BuildDefaultHostname();
 }
 
-void SetHostname(const char* hostname)
-{
-    DEBUG_ENTRY();
+void SetHostname(const char* hostname) {
+    NETWORK_IFACE_DEBUG_ENTRY();
 
 #if !defined(CONFIG_NET_APPS_NO_MDNS)
     network::apps::mdns::SendAnnouncement(0);
 #endif
 
-    if (hostname == nullptr || hostname[0] == '\0')
-    {
+    if (hostname == nullptr || hostname[0] == '\0') {
         BuildDefaultHostname();
-    }
-    else
-    {
+    } else {
         auto n = kHostnameSize - 1;
         auto* dst = s_hostname;
         const auto* src = hostname;
 
-        while (n > 0 && *src != '\0')
-        {
+        while (n > 0 && *src != '\0') {
             const int kC = *src;
-            if (isprint(kC))
-            {
+            if (isprint(kC)) {
                 *dst++ = *src++;
-				--n;
-            }
-            else
-            {
+                --n;
+            } else {
                 src++;
             }
         }
 
-        while (n > 0)
-        {
+        while (n > 0) {
             *dst++ = '\0';
             --n;
         }
@@ -157,58 +140,50 @@ void SetHostname(const char* hostname)
 #endif
     network::display::Hostname();
 
-    DEBUG_EXIT();
+    NETWORK_IFACE_DEBUG_EXIT();
 }
 
-const char* HostName()
-{
+const char* HostName() {
     return netif::global::netif_default.hostname;
 }
 
-uint32_t NameServer(uint32_t index)
-{
-    if (index < kNameserversCount)
-    {
+uint32_t NameServer(uint32_t index) {
+    if (index < kNameserversCount) {
         return s_nameservers[index];
     }
 
     return 0;
 }
 
-uint32_t NameServerCount()
-{
+uint32_t NameServerCount() {
     return kNameserversCount;
 }
 
-bool Dhcp()
-{
+bool Dhcp() {
     return (netif::global::netif_default.flags & netif::Netif::kNetifFlagDhcpOk) == netif::Netif::kNetifFlagDhcpOk;
 }
 
-void EnableDhcp()
-{
-    DEBUG_ENTRY();
+void EnableDhcp() {
+    NETWORK_IFACE_DEBUG_ENTRY();
 
     network::dhcp::Start();
 
     network::store::SaveDhcp(true);
 
-    DEBUG_EXIT();
+    NETWORK_IFACE_DEBUG_EXIT();
 }
 
-void SetAutoIp()
-{
-    DEBUG_ENTRY();
+void SetAutoIp() {
+    NETWORK_IFACE_DEBUG_ENTRY();
 
     network::autoip::Start();
 
     network::store::SaveDhcp(false);
 
-    DEBUG_EXIT();
+    NETWORK_IFACE_DEBUG_EXIT();
 }
 
-bool AutoIp()
-{
+bool AutoIp() {
     return (netif::global::netif_default.flags & netif::Netif::kNetifFlagAutoipOk) == netif::Netif::kNetifFlagAutoipOk;
 }
 } // namespace network::iface

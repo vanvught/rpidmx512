@@ -54,13 +54,7 @@
 #endif
 
 namespace display {
-enum class Type { 
-	kPcf8574T1602, 
-	kPcf8574T2004, 
-	kSsd1306, 
-	kSsd1311, 
-	kUnknown 
-};
+enum class Type { kPcf8574T1602, kPcf8574T2004, kSsd1306, kSsd1311, kUnknown };
 } // namespace display
 
 class Display {
@@ -78,9 +72,9 @@ class Display {
         lcd_display_ = nullptr;
     }
 
-    bool IsDetected() const { return lcd_display_ == nullptr ? false : true; }
+    [[nodiscard]] bool IsDetected() const { return lcd_display_ != nullptr; }
 
-    display::Type GetDetectedType() const { return type_; }
+    [[nodiscard]] display::Type GetDetectedType() const { return type_; }
 
     void PrintInfo() {
         if (lcd_display_ == nullptr) {
@@ -194,7 +188,7 @@ class Display {
 
     void TextStatus(const char* text, ansi::Colours::Colour colour) {
         TextStatus(text);
-		printf("%s%s%s\n", ansi::Colours::Foreground(colour), text, ansi::Colours::Fg::kDefault);
+        printf("%s%s%s\n", ansi::Colours::Foreground(colour), text, ansi::Colours::Fg::kDefault);
     }
 
     void SetCursor(uint32_t mode) {

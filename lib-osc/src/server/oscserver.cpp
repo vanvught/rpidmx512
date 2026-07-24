@@ -22,10 +22,6 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_OSCSERVER)
-#undef NDEBUG
-#endif
-
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
@@ -39,7 +35,7 @@
 #include "dmxnode.h"
 #include "board.h"
 #include "firmware/debug/debug_dump.h"
-#include "firmware/debug/debug_debug.h"
+#include "osc_debug.h"
 
 static constexpr char kOscserverDefaultPathPrimary[] = "/dmx1";
 static constexpr char kOscserverDefaultPathSecondary[] = "/*";
@@ -49,7 +45,7 @@ static constexpr char kOscserverDefaultPathBlackout[] = "/blackout";
 static constexpr char kSoftwareVersion[] = "1.0";
 
 OscServer::OscServer() {
-    DEBUG_ENTRY();
+    OSCSERVER_DEBUG_ENTRY();
 
     assert(s_this == nullptr);
     s_this = this;
@@ -76,7 +72,7 @@ OscServer::OscServer() {
         soc_ = board::CpuName(text_length);
     }
 
-    DEBUG_EXIT();
+    OSCSERVER_DEBUG_EXIT();
 }
 
 void OscServer::SetPath(const char* path) {
@@ -101,8 +97,8 @@ void OscServer::SetPath(const char* path) {
         s_path_second[length] = '\0';
     }
 
-    DEBUG_PUTS(s_path);
-    DEBUG_PUTS(s_path_second);
+    OSCSERVER_DEBUG_PUTS(s_path);
+    OSCSERVER_DEBUG_PUTS(s_path_second);
 }
 
 void OscServer::SetPathInfo(const char* path_info) {
@@ -117,7 +113,7 @@ void OscServer::SetPathInfo(const char* path_info) {
         }
     }
 
-    DEBUG_PUTS(s_path_info);
+    OSCSERVER_DEBUG_PUTS(s_path_info);
 }
 
 void OscServer::SetPathBlackOut(const char* path_black_out) {
@@ -132,7 +128,7 @@ void OscServer::SetPathBlackOut(const char* path_black_out) {
         }
     }
 
-    DEBUG_PUTS(s_path_blackout);
+    OSCSERVER_DEBUG_PUTS(s_path_blackout);
 }
 
 int OscServer::GetChannel(const char* path) {
@@ -188,17 +184,17 @@ void OscServer::Input(const uint8_t* buffer, uint32_t size, uint32_t from_ip, [[
 
     OscSimpleMessage msg(buffer, size);
 
-    auto* udp_buffer = reinterpret_cast<const char*>(buffer);
+    const auto* udp_buffer = reinterpret_cast<const char*>(buffer);
 
     debug::Dump(udp_buffer, size);
 
-    DEBUG_PRINTF("[%d] path : %s", size, osc::GetPath(const_cast<char*>(udp_buffer), size));
+    OSCSERVER_DEBUG_PRINTF("[%d] path : %s", size, osc::GetPath(const_cast<char*>(udp_buffer), size));
 
     if (osc::IsMatch(udp_buffer, s_path)) {
         const auto kArgc = msg.GetArgc();
 
         if ((kArgc == 1) && (msg.GetType(0) == osc::type::kBlob)) {
-            DEBUG_PUTS("Blob received");
+            OSCSERVER_DEBUG_PUTS("Blob received");
 
             OSCBlob blob = msg.GetBlob(0);
             const auto kSize = static_cast<uint16_t>(blob.GetDataSize());
@@ -222,30 +218,30 @@ void OscServer::Input(const uint8_t* buffer, uint32_t size, uint32_t from_ip, [[
                     }
                 }
             } else {
-                DEBUG_PUTS("Too many channels");
+                OSCSERVER_DEBUG_PUTS("Too many channels");
                 return;
             }
         } else if ((kArgc == 2) && (msg.GetType(0) == osc::type::kInt32)) {
             auto channel = static_cast<uint16_t>(1 + msg.GetInt(0));
 
             if ((channel < 1) || (channel > dmxnode::kUniverseSize)) {
-                DEBUG_PRINTF("Invalid channel [%d]", channel);
+                OSCSERVER_DEBUG_PRINTF("Invalid channel [%d]", channel);
                 return;
             }
 
             uint8_t data;
 
             if (msg.GetType(1) == osc::type::kInt32) {
-                DEBUG_PUTS("ii received");
+                OSCSERVER_DEBUG_PUTS("ii received");
                 data = static_cast<uint8_t>(msg.GetInt(1));
             } else if (msg.GetType(1) == osc::type::kFloat) {
-                DEBUG_PUTS("if received");
+                OSCSERVER_DEBUG_PUTS("if received");
                 data = static_cast<uint8_t>(msg.GetFloat(1) * dmxnode::kDmxMaxValue);
             } else {
                 return;
             }
 
-            DEBUG_PRINTF("channel = %d, data = %.2x", channel, data);
+            OSCSERVER_DEBUG_PRINTF("channel = %d, data = %.2x", channel, data);
 
             is_dmx_data_changed = IsDmxDataChanged(&data, channel, 1);
 
@@ -269,16 +265,16 @@ void OscServer::Input(const uint8_t* buffer, uint32_t size, uint32_t from_ip, [[
 
     if ((handler_ != nullptr) && (osc::IsMatch(udp_buffer, s_path_blackout))) {
         if (msg.GetType(0) != osc::type::kFloat) {
-            DEBUG_PUTS("No float");
+            OSCSERVER_DEBUG_PUTS("No float");
             return;
         }
 
         if (msg.GetFloat(0) != 0) {
             handler_->Blackout();
-            DEBUG_PUTS("Blackout");
+            OSCSERVER_DEBUG_PUTS("Blackout");
         } else {
             handler_->Update();
-            DEBUG_PUTS("Update");
+            OSCSERVER_DEBUG_PUTS("Update");
         }
 
         return;
@@ -294,10 +290,10 @@ void OscServer::Input(const uint8_t* buffer, uint32_t size, uint32_t from_ip, [[
                 uint8_t data;
 
                 if (msg.GetType(0) == osc::type::kInt32) {
-                    DEBUG_PUTS("i received");
+                    OSCSERVER_DEBUG_PUTS("i received");
                     data = static_cast<uint8_t>(msg.GetInt(0));
                 } else if (msg.GetType(0) == osc::type::kFloat) {
-                    DEBUG_PRINTF("f received %f", msg.GetFloat(0));
+                    OSCSERVER_DEBUG_PRINTF("f received %f", msg.GetFloat(0));
                     data = static_cast<uint8_t>(msg.GetFloat(0) * dmxnode::kDmxMaxValue);
                 } else {
                     return;
@@ -305,7 +301,7 @@ void OscServer::Input(const uint8_t* buffer, uint32_t size, uint32_t from_ip, [[
 
                 is_dmx_data_changed = IsDmxDataChanged(&data, kChannel, 1);
 
-                DEBUG_PRINTF("Channel = %d, Data = %.2x, is_dmx_data_changed=%u, enable_no_change_update_=%u", kChannel, data, static_cast<uint32_t>(is_dmx_data_changed), static_cast<uint32_t>(enable_no_change_update_));
+                OSCSERVER_DEBUG_PRINTF("Channel = %d, Data = %.2x, is_dmx_data_changed=%u, enable_no_change_update_=%u", kChannel, data, static_cast<uint32_t>(is_dmx_data_changed), static_cast<uint32_t>(enable_no_change_update_));
 
                 if (is_dmx_data_changed || enable_no_change_update_) {
                     if (!partial_transmission_) {
@@ -329,7 +325,7 @@ void OscServer::Input(const uint8_t* buffer, uint32_t size, uint32_t from_ip, [[
     if (osc::IsMatch(udp_buffer, "/ping")) {
         OscSimpleSend send(handle_, from_ip, port_outgoing_, "/pong", nullptr);
 
-        DEBUG_PUTS("ping received, pong sent");
+        OSCSERVER_DEBUG_PUTS("ping received, pong sent");
         return;
     }
 

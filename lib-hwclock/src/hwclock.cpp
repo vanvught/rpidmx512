@@ -22,10 +22,6 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_HWCLOCK)
-#undef NDEBUG
-#endif
-
 #include <cassert>
 #include <cstdio>
 #include <sys/time.h>
@@ -33,7 +29,6 @@
 #include "hwclock.h"
 #include "watchdog.h"
 #include "timing.h"
-#include "firmware/debug/debug_debug.h"
 
 HwClock::HwClock() {
     assert(s_this == nullptr);
@@ -74,9 +69,9 @@ void HwClock::Print() {
  * Set the System Clock from the Hardware Clock.
  */
 void HwClock::HcToSys() {
-    DEBUG_ENTRY();
+    HWCLOCK_DEBUG_ENTRY();
     if (!is_connected_) {
-        DEBUG_EXIT();
+        HWCLOCK_DEBUG_EXIT();
         return;
     }
 
@@ -130,16 +125,14 @@ void HwClock::HcToSys() {
         watchdog::Init();
     }
 
-    DEBUG_EXIT();
+    HWCLOCK_DEBUG_EXIT();
 }
 
-/*
- * Set the Hardware Clock from the System Clock.
- */
+// Set the Hardware Clock from the System Clock.
 void HwClock::SysToHc() {
-    DEBUG_ENTRY();
+    HWCLOCK_DEBUG_ENTRY();
     if (!is_connected_) {
-        DEBUG_EXIT();
+        HWCLOCK_DEBUG_EXIT();
         return;
     }
 
@@ -157,8 +150,8 @@ void HwClock::SysToHc() {
         gettimeofday(&tv2, nullptr);
 
         if (tv2.tv_sec >= (tv1.tv_sec + 1)) {
-            const auto* tm = gmtime(&tv2.tv_sec);
-            RtcSet(tm);
+            const auto* gm_time = gmtime(&tv2.tv_sec);
+            RtcSet(gm_time);
             break;
         }
     }
@@ -167,5 +160,5 @@ void HwClock::SysToHc() {
         watchdog::Init();
     }
 
-    DEBUG_EXIT();
+    HWCLOCK_DEBUG_EXIT();
 }

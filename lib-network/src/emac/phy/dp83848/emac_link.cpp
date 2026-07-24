@@ -26,7 +26,7 @@
 #include "emac/emac_link_check.h"
 #include "emac/emac_phy.h"
 #include "emac/mmi.h"
-#include "firmware/debug/debug_debug.h"
+#include "emac/emac_debug.h"
 
 #define PHY_REG_MICR 0x11U
 #define PHY_REG_MISR 0x12U

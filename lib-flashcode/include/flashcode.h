@@ -28,6 +28,26 @@
 
 #include <cstdint>
 
+#ifdef DEBUG_FLASHCODE
+#define FLASHCODE_DEBUG_ENTRY() DEBUG_ENTRY()
+#define FLASHCODE_DEBUG_EXIT() DEBUG_EXIT()
+#define FLASHCODE_DEBUG_PRINTF(...) DEBUG_PRINTF(__VA_ARGS__)
+#define FLASHCODE_DEBUG_PUTS(...) DEBUG_PUTS(__VA_ARGS__)
+#else
+#define FLASHCODE_DEBUG_ENTRY() \
+    do {                        \
+    } while (false)
+#define FLASHCODE_DEBUG_EXIT() \
+    do {                       \
+    } while (false)
+#define FLASHCODE_DEBUG_PRINTF(...) \
+    do {                            \
+    } while (false)
+#define FLASHCODE_DEBUG_PUTS(...) \
+    do {                          \
+    } while (false)
+#endif
+
 namespace flashcode {
 enum class Result { kOk, kError };
 } // namespace flashcode
@@ -37,11 +57,11 @@ class FlashCode {
     FlashCode();
     ~FlashCode();
 
-    bool IsDetected() const { return detected_; }
+    [[nodiscard]] bool IsDetected() const { return detected_; }
 
-    const char* GetName() const;
-    uint32_t GetSize() const;
-    uint32_t GetSectorSize() const;
+    [[nodiscard]] const char* GetName() const;
+    [[nodiscard]] uint32_t GetSize() const;
+    [[nodiscard]] uint32_t GetSectorSize() const;
 
     bool Read(uint32_t offset, uint32_t length, uint8_t* buffer, flashcode::Result& result);
     bool Erase(uint32_t offset, uint32_t length, flashcode::Result& result);

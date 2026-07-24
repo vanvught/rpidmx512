@@ -30,13 +30,13 @@
 #include "spi/config/config_lcd.h"
 #include "spi.h"
 #include "gpio.h"
-#include "firmware/debug/debug_debug.h"
+#include "display_debug.h"
 
 class SpiLcd {
    public:
-    explicit SpiLcd(uint32_t cs = 0) : cs_(cs) {
-        DEBUG_ENTRY();
-        DEBUG_PRINTF("cs=%u", cs);
+    explicit SpiLcd(uint32_t chip_select = 0) : cs_(chip_select) {
+        DISPLAY_DEBUG_ENTRY();
+        DISPLAY_DEBUG_PRINTF("chip_select=%u", static_cast<unsigned>(chip_select));
 
         spi::Begin();
         spi::ChipSelect(spi::kCsNone);
@@ -52,7 +52,7 @@ class SpiLcd {
         gpio::Fsel(cs_, gpio::Select::kOutput);
 #endif
 
-        DEBUG_EXIT();
+        DISPLAY_DEBUG_EXIT();
     }
 
     void HardwareReset() {
@@ -98,7 +98,9 @@ class SpiLcd {
     void WriteCommand(const uint8_t* data, uint32_t length) {
         auto* p = data;
         WriteCommand(p++[0]);
-        if (length != 0) WriteData(p, length);
+        if (length != 0) {
+            WriteData(p, length);
+        }
     }
 
     void WriteDataByte(uint8_t data) {
@@ -121,9 +123,7 @@ class SpiLcd {
         spi::Writenb(reinterpret_cast<char*>(data), length);
     }
 
-    void WriteDataContinue(uint8_t* data, uint32_t length) { 
-		spi::Writenb(reinterpret_cast<char*>(data), length); 
-	}
+    void WriteDataContinue(uint8_t* data, uint32_t length) { spi::Writenb(reinterpret_cast<char*>(data), length); }
 
     void WriteDataEnd(uint8_t* data, uint32_t length) {
         spi::Writenb(reinterpret_cast<char*>(data), length);

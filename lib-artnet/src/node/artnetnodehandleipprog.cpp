@@ -23,10 +23,6 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_ARTNET_IPPROG)
-#undef NDEBUG
-#endif
-
 #include <cstring>
 
 #include "artnet.h"
@@ -34,7 +30,7 @@
 #include "network_udp.h"
 #include "network_iface.h"
 #include "network_config.h"
-#include "firmware/debug/debug_debug.h"
+#include "artnet_debug.h"
 
 static constexpr uint8_t kCommandEnableProgramming = (1U << 7);
 static constexpr uint8_t kCommandEnableDhcp = (1U << 6);
@@ -49,7 +45,7 @@ union uip {
 } static ip;
 
 void ArtNetNode::HandleIpProg() {
-    DEBUG_ENTRY();
+    ARTNET_IPPROG_DEBUG_ENTRY();
 
     const auto* const kArtIpProg = reinterpret_cast<artnet::ArtIpProg*>(receive_buffer_);
     const auto kCommand = kArtIpProg->command;
@@ -115,10 +111,10 @@ void ArtNetNode::HandleIpProg() {
             PollReplyQueueAdd(artnet::kPortAddressFirst, artnet::kPortAddressLast);
         }
 
-        DEBUG_PUTS("Changed");
+        ARTNET_IPPROG_DEBUG_PUTS("Changed");
     } else {
-        DEBUG_PUTS("No changes");
+        ARTNET_IPPROG_DEBUG_PUTS("No changes");
     }
 
-    DEBUG_EXIT();
+    ARTNET_IPPROG_DEBUG_EXIT();
 }

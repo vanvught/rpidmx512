@@ -22,10 +22,6 @@
  * THE SOFTWARE.
  */
 
-#ifdef DEBUG_E131PARAMS
-#undef NDEBUG
-#endif
-
 #include <cstdint>
 
 #include "json/json_parsehelper.h"
@@ -71,7 +67,7 @@ void E131Params::Set() {
             e131bridge.SetPriority(kPortIndex, store_dmxnode.priority[config_port_index]);
         }
 
-#ifndef NDEBUG
+#ifdef DEBUG_E131BRIDGE
         Dump();
 #endif
     }

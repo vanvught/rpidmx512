@@ -23,10 +23,6 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_DISPLAY)
-#undef NDEBUG
-#endif
-
 #include <cstdint>
 #include <cstring>
 #include <cstdio>
@@ -34,7 +30,7 @@
 
 #include "i2c/ssd1306.h"
 #include "i2c.h"
-#include "firmware/debug/debug_debug.h"
+#include "display_debug.h"
 
 namespace ssd1306 {
 static constexpr auto kLcdWidth = 128;
@@ -219,34 +215,34 @@ static constexpr uint8_t kOled128x32Init[] __attribute__((aligned(4))) = {
 static uint8_t s_clear_buffer[133 + 1] __attribute__((aligned(4)));
 
 Ssd1306::Ssd1306() : i2c_(OLED_I2C_ADDRESS_DEFAULT) {
-    DEBUG_ENTRY();
+    DISPLAY_DEBUG_ENTRY();
     assert(s_this == nullptr);
     s_this = this;
 
     InitMembers();
 
-    DEBUG_EXIT();
+    DISPLAY_DEBUG_EXIT();
 }
 
 Ssd1306::Ssd1306(OledPanel oled_panel) : i2c_(OLED_I2C_ADDRESS_DEFAULT), oled_panel_(oled_panel) {
-    DEBUG_ENTRY();
+    DISPLAY_DEBUG_ENTRY();
 
     assert(s_this == nullptr);
     s_this = this;
 
     InitMembers();
 
-    DEBUG_EXIT();
+    DISPLAY_DEBUG_EXIT();
 }
 
 Ssd1306::Ssd1306(uint8_t address, OledPanel oled_panel) : i2c_(address == 0 ? OLED_I2C_ADDRESS_DEFAULT : address), oled_panel_(oled_panel) {
-    DEBUG_ENTRY();
+    DISPLAY_DEBUG_ENTRY();
     assert(s_this == nullptr);
     s_this = this;
 
     InitMembers();
 
-    DEBUG_EXIT();
+    DISPLAY_DEBUG_EXIT();
 }
 
 void Ssd1306::PrintInfo() {
@@ -284,10 +280,10 @@ void Ssd1306::CheckSH1106() {
 }
 
 bool Ssd1306::Start() {
-	DEBUG_ENTRY();
+	DISPLAY_DEBUG_ENTRY();
 	
     if (!i2c_.IsConnected()) {
-		DEBUG_EXIT();
+		DISPLAY_DEBUG_EXIT();
         return false;
     }
 
@@ -320,7 +316,7 @@ bool Ssd1306::Start() {
 
     SendCommand(ssd1306::cmd::kDisplayOn);
 	
-	DEBUG_EXIT();
+	DISPLAY_DEBUG_EXIT();
     return true;
 }
 

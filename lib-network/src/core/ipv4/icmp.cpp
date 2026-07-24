@@ -23,10 +23,6 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_NETWORK_ICMP)
-#undef NDEBUG
-#endif
-
 #if !defined(CONFIG_REMOTECONFIG_MINIMUM)
 #pragma GCC push_options
 #pragma GCC optimize("O2")
@@ -41,6 +37,26 @@
 #include "../src/core/network_private.h"
 #include "core/protocol/icmp.h"
 #include "core/protocol/ethernet.h"
+
+#ifdef DEBUG_NETWORK_ICMP
+#define ICMP_DEBUG_ENTRY() DEBUG_ENTRY()
+#define ICMP_DEBUG_EXIT() DEBUG_EXIT()
+#define ICMP_DEBUG_PRINTF(...) DEBUG_PRINTF(__VA_ARGS__)
+#define ICMP_DEBUG_PUTS(...) DEBUG_PUTS(__VA_ARGS__)
+#else
+#define ICMP_DEBUG_ENTRY() \
+    do {                     \
+    } while (false)
+#define ICMP_DEBUG_EXIT() \
+    do {                    \
+    } while (false)
+#define ICMP_DEBUG_PRINTF(...) \
+    do {                         \
+    } while (false)
+#define ICMP_DEBUG_PUTS(...) \
+    do {                       \
+    } while (false)
+#endif
 
 namespace network::icmp {
 __attribute__((hot)) void Input(struct Header* p_icmp) {

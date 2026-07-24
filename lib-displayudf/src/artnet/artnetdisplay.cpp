@@ -23,10 +23,6 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_DISPLAYUDF)
-#undef NDEBUG
-#endif
-
 #include <cstdint>
 
 #include "displayudf.h"

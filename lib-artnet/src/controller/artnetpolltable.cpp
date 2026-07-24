@@ -36,7 +36,7 @@
 #include "artnetpolltable.h"
 #include "timing.h"
 #include "ip4/ip4_address.h"
-#include "firmware/debug/debug_debug.h"
+#include "artnet_debug.h"
 
 union uip {
     uint32_t u32;
@@ -44,7 +44,7 @@ union uip {
 } static ip;
 
 ArtNetPollTable::ArtNetPollTable() {
-    DEBUG_ENTRY();
+    ARTNET_DEBUG_ENTRY();
 
     table_ = new artnet::NodeEntry[artnet::POLL_TABLE_SIZE_ENRIES];
     assert(table_ != nullptr);
@@ -65,15 +65,19 @@ ArtNetPollTable::ArtNetPollTable() {
     table_clean_.universe_index = 0;
     table_clean_.bOffLine = true;
 
-    DEBUG_PRINTF("NodeEntry[%d] = %u bytes [%u Kb]", artnet::POLL_TABLE_SIZE_ENRIES, static_cast<unsigned int>(sizeof(artnet::NodeEntry[artnet::POLL_TABLE_SIZE_ENRIES])),
-                 static_cast<unsigned int>(sizeof(artnet::NodeEntry[artnet::POLL_TABLE_SIZE_ENRIES])) / 1024U);
-    DEBUG_PRINTF("PollTableUniverses[%d] = %u bytes [%u Kb]", artnet::POLL_TABLE_SIZE_UNIVERSES, static_cast<unsigned int>(sizeof(artnet::PollTableUniverses[artnet::POLL_TABLE_SIZE_UNIVERSES])),
-                 static_cast<unsigned int>(sizeof(artnet::PollTableUniverses[artnet::POLL_TABLE_SIZE_UNIVERSES])) / 1024U);
-    DEBUG_EXIT();
+    ARTNET_DEBUG_PRINTF("NodeEntry[%d] = %u bytes [%u Kb]", 
+		artnet::POLL_TABLE_SIZE_ENRIES, 
+		static_cast<unsigned int>(sizeof(artnet::NodeEntry[artnet::POLL_TABLE_SIZE_ENRIES])),     
+		static_cast<unsigned int>(sizeof(artnet::NodeEntry[artnet::POLL_TABLE_SIZE_ENRIES])) / 1024U);
+    ARTNET_DEBUG_PRINTF("PollTableUniverses[%d] = %u bytes [%u Kb]", 
+		artnet::POLL_TABLE_SIZE_UNIVERSES, 
+		static_cast<unsigned int>(sizeof(artnet::PollTableUniverses[artnet::POLL_TABLE_SIZE_UNIVERSES])),
+        static_cast<unsigned int>(sizeof(artnet::PollTableUniverses[artnet::POLL_TABLE_SIZE_UNIVERSES])) / 1024U);
+    ARTNET_DEBUG_EXIT();
 }
 
 ArtNetPollTable::~ArtNetPollTable() {
-    DEBUG_ENTRY();
+    ARTNET_DEBUG_ENTRY();
 
     for (uint32_t nIndex = 0; nIndex < artnet::POLL_TABLE_SIZE_UNIVERSES; nIndex++) {
         delete[] table_universes_[nIndex].pIpAddresses;
@@ -86,7 +90,7 @@ ArtNetPollTable::~ArtNetPollTable() {
     delete[] table_;
     table_ = nullptr;
 
-    DEBUG_EXIT();
+    ARTNET_DEBUG_EXIT();
 }
 
 const struct artnet::PollTableUniverses* ArtNetPollTable::GetIpAddress(uint16_t universe) const {
@@ -153,7 +157,7 @@ void ArtNetPollTable::RemoveIpAddress(uint16_t universe, uint32_t nIpAddress) {
     pTableUniverses->nCount--;
 
     if (pTableUniverses->nCount == 0) {
-        DEBUG_PRINTF("Delete Universe -> universes_entries_=%u, nEntry=%u", universes_entries_, nEntry);
+        ARTNET_DEBUG_PRINTF("Delete Universe -> universes_entries_=%u, nEntry=%u", universes_entries_, nEntry);
 
         artnet::PollTableUniverses* p = table_universes_;
 
@@ -171,11 +175,11 @@ void ArtNetPollTable::RemoveIpAddress(uint16_t universe, uint32_t nIpAddress) {
 }
 
 void ArtNetPollTable::ProcessUniverse(const uint32_t nIpAddress, const uint16_t universe) {
-    DEBUG_ENTRY();
+    ARTNET_DEBUG_ENTRY();
 
     if (artnet::POLL_TABLE_SIZE_UNIVERSES == universes_entries_) {
-        DEBUG_PUTS("table_universes_ is full");
-        DEBUG_EXIT();
+        ARTNET_DEBUG_PUTS("table_universes_ is full");
+        ARTNET_DEBUG_EXIT();
         return;
     }
 
@@ -189,7 +193,7 @@ void ArtNetPollTable::ProcessUniverse(const uint32_t nIpAddress, const uint16_t 
 
         if (pTableUniverses->universe == universe) {
             bFoundUniverse = true;
-            DEBUG_PRINTF("Universe found %u", universe);
+            ARTNET_DEBUG_PRINTF("Universe found %u", universe);
             break;
         }
     }
@@ -203,7 +207,7 @@ void ArtNetPollTable::ProcessUniverse(const uint32_t nIpAddress, const uint16_t 
         for (nCount = 0; nCount < pTableUniverses->nCount; nCount++) {
             if (pTableUniverses->pIpAddresses[nCount] == nIpAddress) {
                 bFoundIp = true;
-                DEBUG_PUTS("IP found");
+                ARTNET_DEBUG_PUTS("IP found");
                 break;
             }
         }
@@ -211,24 +215,24 @@ void ArtNetPollTable::ProcessUniverse(const uint32_t nIpAddress, const uint16_t 
         // New universe
         pTableUniverses->universe = universe;
         universes_entries_++;
-        DEBUG_PRINTF("New Universe %d", static_cast<int>(universe));
+        ARTNET_DEBUG_PRINTF("New Universe %d", static_cast<int>(universe));
     }
 
     if (!bFoundIp) {
         if (pTableUniverses->nCount < artnet::POLL_TABLE_SIZE_ENRIES) {
             pTableUniverses->pIpAddresses[pTableUniverses->nCount] = nIpAddress;
             pTableUniverses->nCount++;
-            DEBUG_PUTS("It is a new IP for the Universe");
+            ARTNET_DEBUG_PUTS("It is a new IP for the Universe");
         } else {
-            DEBUG_PUTS("New IP does not fit");
+            ARTNET_DEBUG_PUTS("New IP does not fit");
         }
     }
 
-    DEBUG_EXIT();
+    ARTNET_DEBUG_EXIT();
 }
 
 void ArtNetPollTable::Add(const struct artnet::ArtPollReply* poll_reply) {
-    DEBUG_ENTRY();
+    ARTNET_DEBUG_ENTRY();
 
     auto bFound = false;
 
@@ -258,12 +262,12 @@ void ArtNetPollTable::Add(const struct artnet::ArtPollReply* poll_reply) {
 
     if (!bFound) {
         if (table_entries_ == artnet::POLL_TABLE_SIZE_ENRIES) {
-            DEBUG_PUTS("Full");
+            ARTNET_DEBUG_PUTS("Full");
             return;
         }
 
         if (table_entries_ != static_cast<uint32_t>(nHigh)) {
-            DEBUG_PUTS("Move");
+            ARTNET_DEBUG_PUTS("Move");
 
             auto* pArtNetNodeEntry = table_; // TODO
 
@@ -282,7 +286,7 @@ void ArtNetPollTable::Add(const struct artnet::ArtPollReply* poll_reply) {
             i = nLow;
         } else {
             i = static_cast<int32_t>(table_entries_);
-            DEBUG_PRINTF("Add -> i=%d", i);
+            ARTNET_DEBUG_PRINTF("Add -> i=%d", i);
         }
 
         table_[i].IPAddress = ip.u32;
@@ -331,8 +335,7 @@ void ArtNetPollTable::Add(const struct artnet::ArtPollReply* poll_reply) {
         }
     }
 
-    DEBUG_EXIT();
-    ;
+    ARTNET_DEBUG_EXIT();
 }
 
 void ArtNetPollTable::Clean() {
@@ -362,7 +365,7 @@ void ArtNetPollTable::Clean() {
 
     if (table_clean_.universe_index == artnet::POLL_TABLE_SIZE_NODE_UNIVERSES) {
         if (table_clean_.bOffLine) {
-            DEBUG_PUTS("Node is off-line");
+            ARTNET_DEBUG_PUTS("Node is off-line");
 
             auto* pArtNetNodeEntry = table_;
             // Move

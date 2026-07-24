@@ -23,12 +23,6 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_POSIX)
-#if defined(NDEBUG)
-#undef NDEBUG
-#endif
-#endif
-
 #include <stddef.h>
 #include <string.h>
 #include <stdio.h>
@@ -38,6 +32,26 @@
 
 #include "../ff14b/source/ff.h"
 #include "firmware/debug/debug_debug.h"
+
+#ifdef DEBUG_POSIX
+#define POSIX_DEBUG_ENTRY() DEBUG_ENTRY()
+#define POSIX_DEBUG_EXIT() DEBUG_EXIT()
+#define POSIX_DEBUG_PRINTF(...) DEBUG_PRINTF(__VA_ARGS__)
+#define POSIX_DEBUG_PUTS(...) DEBUG_PUTS(__VA_ARGS__)
+#else
+#define POSIX_DEBUG_ENTRY() \
+    do {                     \
+    } while (false)
+#define POSIX_DEBUG_EXIT() \
+    do {                    \
+    } while (false)
+#define POSIX_DEBUG_PRINTF(...) \
+    do {                         \
+    } while (false)
+#define POSIX_DEBUG_PUTS(...) \
+    do {                       \
+    } while (false)
+#endif
 
 #if !defined(CONFIG_POSIX_OPEN_FILES_MAX) || (CONFIG_POSIX_OPEN_FILES_MAX < 1)
 #define CONFIG_POSIX_OPEN_FILES_MAX 2
@@ -59,7 +73,7 @@ static FIL s_ff_file[posix::OPEN_FILES_MAX];
 
 static FRESULT s_fresult;
 
-static int get_file_descriptor() {
+static int GetFileDescriptor() {
     for (int nFile = 0; nFile < posix::OPEN_FILES_MAX; nFile++) {
 #if defined(CONFIG_POSIX_ENABLE_STDIN)
         if (isatty(nFile)) {
@@ -80,7 +94,7 @@ static int get_file_descriptor() {
     return -1;
 }
 
-static int fatfs_to_errno(const BYTE err) {
+static int FatfsToErrno(const BYTE err) {
     switch (static_cast<FRESULT>(err)) {
         case FR_OK:                  /* FatFS (0) Succeeded */
             return (0);              /* POSIX OK */
@@ -148,7 +162,7 @@ FILE* fopen(const char* path, const char* mode) {
     assert(path != nullptr);
     assert(mode != nullptr);
 
-    DEBUG_PRINTF("%s %s", path, mode);
+    POSIX_DEBUG_PRINTF("%s %s", path, mode);
 
     errno = 0;
     BYTE fm, fo;
@@ -185,8 +199,8 @@ FILE* fopen(const char* path, const char* mode) {
         }
     }
 
-    const auto fd = get_file_descriptor();
-    DEBUG_PRINTF("fd=%d", fd);
+    const auto fd = GetFileDescriptor();
+    POSIX_DEBUG_PRINTF("fd=%d", fd);
 
     if (fd < 0) {
         errno = EBADF;
@@ -194,9 +208,9 @@ FILE* fopen(const char* path, const char* mode) {
     }
 
     s_fresult = f_open(&s_ff_file[fd], (TCHAR*)path, (BYTE)(fm | fo));
-    errno = fatfs_to_errno(s_fresult);
+    errno = FatfsToErrno(s_fresult);
 
-    DEBUG_PRINTF("errno=%d", errno);
+    POSIX_DEBUG_PRINTF("errno=%d", errno);
 
     if (s_fresult == FR_OK) {
         return &s_file[fd];
@@ -214,7 +228,7 @@ int fclose(FILE* stream) {
     }
 
     const auto fd = fileno(stream);
-    DEBUG_PRINTF("fd=%d", fd);
+    POSIX_DEBUG_PRINTF("fd=%d", fd);
 
     if (fd < 0) {
         errno = EBADF;
@@ -222,9 +236,9 @@ int fclose(FILE* stream) {
     }
 
     s_fresult = f_close((FIL*)stream->udata);
-    errno = fatfs_to_errno(s_fresult);
+    errno = FatfsToErrno(s_fresult);
 
-    DEBUG_PRINTF("errno=%d", errno);
+    POSIX_DEBUG_PRINTF("errno=%d", errno);
 
     stream->udata = nullptr;
 
@@ -250,13 +264,13 @@ int fgetc(FILE* stream) {
         }
 
         if (bytes_read < 1) {
-            errno = fatfs_to_errno(s_fresult);
+            errno = FatfsToErrno(s_fresult);
             stream->flags |= __SEOF;
             return EOF;
         }
     }
 
-    errno = fatfs_to_errno(s_fresult);
+    errno = FatfsToErrno(s_fresult);
     return EOF;
 }
 
@@ -264,7 +278,7 @@ size_t fread(void* ptr, size_t size, size_t nmemb, FILE* stream) {
     UINT bytes_read;
 
     s_fresult = f_read((FIL*)stream->udata, ptr, (size * nmemb), &bytes_read);
-    errno = fatfs_to_errno(s_fresult);
+    errno = FatfsToErrno(s_fresult);
 
     if (s_fresult == FR_OK) {
         return bytes_read;
@@ -280,7 +294,7 @@ int fseek(FILE* stream, long offset, int whence) {
         s_fresult = f_lseek((FIL*)stream->udata, f_size((FIL*)stream->udata));
     }
 
-    errno = fatfs_to_errno(s_fresult);
+    errno = FatfsToErrno(s_fresult);
 
     if (s_fresult == FR_OK) {
         return 0;
@@ -304,7 +318,7 @@ char* fgets(char* s, int size, FILE* stream) {
 
     if (f_gets(s, size, (FIL*)stream->udata) != s) {
         *s = '\0';
-        errno = fatfs_to_errno(f_error((FIL*)stream->udata));
+        errno = FatfsToErrno(f_error((FIL*)stream->udata));
         return nullptr;
     }
 
@@ -350,7 +364,7 @@ size_t fwrite([[maybe_unused]] const void* ptr, [[maybe_unused]] size_t size, [[
     UINT bytes_write;
 
     s_fresult = f_write((FIL*)stream->udata, ptr, (size * nmemb), &bytes_write);
-    errno = fatfs_to_errno(s_fresult);
+    errno = FatfsToErrno(s_fresult);
 
     if (s_fresult == FR_OK) {
         return bytes_write;
@@ -370,7 +384,7 @@ int fputc([[maybe_unused]] int c, [[maybe_unused]] FILE* stream) {
     UINT bytes_write;
 
     s_fresult = f_write((FIL*)stream->udata, &c, 1, &bytes_write);
-    errno = fatfs_to_errno(s_fresult);
+    errno = FatfsToErrno(s_fresult);
 
     if (s_fresult == FR_OK) {
         return 1;
@@ -386,7 +400,7 @@ int unlink([[maybe_unused]] const char* pathname) {
     return -1;
 #else
     s_fresult = f_unlink(pathname);
-    errno = fatfs_to_errno(s_fresult);
+    errno = FatfsToErrno(s_fresult);
 
     if (s_fresult == FR_OK) {
         return 0;
@@ -417,7 +431,7 @@ DIR* opendir([[maybe_unused]] const char* dirname) {
         s_fresult = f_opendir(&s_dir, dirname);
     }
 
-    errno = fatfs_to_errno(s_fresult);
+    errno = FatfsToErrno(s_fresult);
 
     if (s_fresult != FR_OK) {
         return nullptr;
@@ -445,7 +459,7 @@ struct dirent* readdir([[maybe_unused]] DIR* dirp) {
     s_fresult = f_readdir(&s_dir, &fno);
 
     if (s_fresult != FR_OK) {
-        errno = fatfs_to_errno(s_fresult);
+        errno = FatfsToErrno(s_fresult);
         return nullptr;
     }
 
@@ -473,7 +487,7 @@ int closedir([[maybe_unused]] DIR* dirp) {
     return -1;
 #else
     s_fresult = f_closedir(&s_dir);
-    errno = fatfs_to_errno(s_fresult);
+    errno = FatfsToErrno(s_fresult);
 
     if (s_fresult == FR_OK) {
         return 0;

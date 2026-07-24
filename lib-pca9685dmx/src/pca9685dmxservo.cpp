@@ -43,7 +43,7 @@ PCA9685DmxServo::PCA9685DmxServo(const pca9685dmx::Configuration& configuration)
         dmx_footprint_ = 2 * channel_count_;
     }
 
-    DEBUG_PRINTF("m_bUse8Bit=%c, m_nChannelCount=%u, dmx_footprint_=%u", m_bUse8Bit ? 'Y' : 'N', m_nChannelCount, dmx_footprint_);
+    DEBUG_PRINTF("m_bUse8Bit=%c, m_nChannelCount=%u, dmx_footprint_=%u", use8_bit_ ? 'Y' : 'N', channel_count_, dmx_footprint_);
 
     board_instances_ = static_cast<uint8_t>((channel_count_ + (pca9685::kPwmChannels - 1)) / pca9685::kPwmChannels);
 

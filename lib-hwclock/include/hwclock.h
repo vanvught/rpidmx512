@@ -33,14 +33,30 @@
 #include <cassert>
 #endif
 
+#include "firmware/debug/debug_debug.h"
+
+#ifdef DEBUG_HWCLOCK
+#define HWCLOCK_DEBUG_ENTRY() DEBUG_ENTRY()
+#define HWCLOCK_DEBUG_EXIT() DEBUG_EXIT()
+#define HWCLOCK_DEBUG_PRINTF(...) DEBUG_PRINTF(__VA_ARGS__)
+#define HWCLOCK_DEBUG_PUTS(...) DEBUG_PUTS(__VA_ARGS__)
+#else
+#define HWCLOCK_DEBUG_ENTRY() \
+    do {                      \
+    } while (false)
+#define HWCLOCK_DEBUG_EXIT() \
+    do {                     \
+    } while (false)
+#define HWCLOCK_DEBUG_PRINTF(...) \
+    do {                          \
+    } while (false)
+#define HWCLOCK_DEBUG_PUTS(...) \
+    do {                        \
+    } while (false)
+#endif
+
 namespace rtc {
-enum class Type : uint8_t { 
-	kMcP7941X, 
-	kDS3231, 
-	kPcF8563, 
-	kSocInternal, 
-	kUnknown 
-};
+enum class Type : uint8_t { kMcP7941X, kDS3231, kPcF8563, kSocInternal, kUnknown };
 } // namespace rtc
 
 class HwClock {
@@ -60,9 +76,9 @@ class HwClock {
 
     void AlarmEnable(bool enable) { alarm_enabled_ = enable; }
 
-    bool AlarmIsEnabled() const { return alarm_enabled_; }
+    [[nodiscard]] bool AlarmIsEnabled() const { return alarm_enabled_; }
 
-    bool IsConnected() const { return is_connected_; }
+    [[nodiscard]] bool IsConnected() const { return is_connected_; }
 
     void Run(bool do_run) {
         if (!do_run || !is_connected_) {
@@ -85,7 +101,6 @@ class HwClock {
     void PCF8563GetAlarmMode();
     void PCF8563SetAlarmMode();
 
-   private:
     uint32_t delay_micros_{0};
     uint32_t last_hc_to_sys_millis_{0};
     uint8_t address_{0};

@@ -22,35 +22,31 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_EMAC_PHY)
-#undef NDEBUG
-#endif
-
 #include <cstdint>
 #include <cstdio>
 
 #include "emac/emac_phy.h"
 #include "emac/mmi.h"
 #include "timing.h"
-#include "firmware/debug/debug_debug.h"
+#include "emac/emac_debug.h"
 #include "firmware/debug/debug_printbits.h" // IWYU pragma: keep
 
 namespace emac::phy {
 bool GetId(uint16_t address, Identifier& phy_identifier) {
-    DEBUG_ENTRY();
-    DEBUG_PRINTF("address=%.2x", address);
+    EMAC_PHY_DEBUG_ENTRY();
+    EMAC_PHY_DEBUG_PRINTF("address=%.2x", address);
 
     uint16_t value;
 
     if (!phy::Read(address, mmi::REG_PHYSID1, value)) {
-        DEBUG_EXIT();
+        EMAC_PHY_DEBUG_EXIT();
         return false;
     }
 
     phy_identifier.oui = (static_cast<uint32_t>(value) << 14);
 
     if (!phy::Read(address, mmi::REG_PHYSID2, value)) {
-        DEBUG_EXIT();
+        EMAC_PHY_DEBUG_EXIT();
         return false;
     }
 
@@ -58,8 +54,8 @@ bool GetId(uint16_t address, Identifier& phy_identifier) {
     phy_identifier.vendor_model = ((value & 0x03f0) >> 4);
     phy_identifier.model_revision = value & 0x000f;
 
-    DEBUG_PRINTF("%.8x %.4x %.4x", phy_identifier.oui, phy_identifier.vendor_model, phy_identifier.model_revision);
-    DEBUG_EXIT();
+    EMAC_PHY_DEBUG_PRINTF("%.8x %.4x %.4x", static_cast<unsigned>(phy_identifier.oui), static_cast<unsigned>(phy_identifier.vendor_model), static_cast<unsigned>(phy_identifier.model_revision));
+    EMAC_PHY_DEBUG_EXIT();
     return true;
 }
 
@@ -77,26 +73,26 @@ bool Powerdown(uint16_t address) {
 }
 
 static int32_t ConfigAdvertisement(uint16_t address, uint16_t advertisement) {
-    DEBUG_ENTRY();
+    EMAC_PHY_DEBUG_ENTRY();
 
     uint16_t current;
 
     if (!phy::Read(address, mmi::REG_ADVERTISE, current)) {
-        DEBUG_EXIT();
+        EMAC_PHY_DEBUG_EXIT();
         return -1;
     }
 
     if (current == advertisement) {
-        DEBUG_EXIT();
+        EMAC_PHY_DEBUG_EXIT();
         return 0;
     }
 
     if (!phy::Write(address, mmi::REG_ADVERTISE, advertisement)) {
-        DEBUG_EXIT();
+        EMAC_PHY_DEBUG_EXIT();
         return -1;
     }
 
-    DEBUG_EXIT();
+    EMAC_PHY_DEBUG_EXIT();
     return 1;
 }
 
@@ -113,12 +109,12 @@ static bool RestartAutonegotiation(uint16_t address) {
 }
 
 static bool ConfigAutonegotiation(uint16_t address, uint16_t advertisement) {
-    DEBUG_ENTRY();
+    EMAC_PHY_DEBUG_ENTRY();
 
     auto result = ConfigAdvertisement(address, advertisement);
 
     if (result < 0) {
-        DEBUG_EXIT();
+        EMAC_PHY_DEBUG_EXIT();
         return false;
     }
 
@@ -128,7 +124,7 @@ static bool ConfigAutonegotiation(uint16_t address, uint16_t advertisement) {
         uint16_t bmcr;
 
         if (!phy::Read(address, mmi::REG_BMCR, bmcr)) {
-            DEBUG_EXIT();
+            EMAC_PHY_DEBUG_EXIT();
             return false;
         }
 
@@ -141,28 +137,28 @@ static bool ConfigAutonegotiation(uint16_t address, uint16_t advertisement) {
     // than we were before.
     if (result > 0) {
         const auto kResult = RestartAutonegotiation(address);
-        DEBUG_EXIT();
+        EMAC_PHY_DEBUG_EXIT();
         return kResult;
     }
 
-    DEBUG_EXIT();
+    EMAC_PHY_DEBUG_EXIT();
     return true;
 }
 
 static bool UpdateLink(uint16_t address, Status& phy_status) {
-    DEBUG_ENTRY();
+    EMAC_PHY_DEBUG_ENTRY();
 
     uint16_t bmsr;
 
     if (!phy::Read(address, mmi::REG_BMSR, bmsr)) {
-        DEBUG_EXIT();
+        EMAC_PHY_DEBUG_EXIT();
         return false;
     }
 
     // If we already saw the link up, and it hasn't gone down, then
     // we don't need to wait for autoneg again
     if ((phy_status.link == Link::kStateDown) && (bmsr & mmi::BMSR_LINKED_STATUS)) {
-        DEBUG_EXIT();
+        EMAC_PHY_DEBUG_EXIT();
         return true;
     }
 
@@ -172,7 +168,7 @@ static bool UpdateLink(uint16_t address, Status& phy_status) {
         const auto kMillis = timing::Millis();
         while (!(bmsr & mmi::BMSR_AUTONEGO_COMPLETE)) {
             if ((timing::Millis() - kMillis) > 5000) {
-                DEBUG_EXIT();
+                EMAC_PHY_DEBUG_EXIT();
                 return false;
             }
             phy::Read(address, mmi::REG_BMSR, bmsr);
@@ -180,8 +176,8 @@ static bool UpdateLink(uint16_t address, Status& phy_status) {
 
         phy_status.link = Link::kStateUp;
 
-        DEBUG_PRINTF("%u", timing::Millis() - kMillis);
-        DEBUG_EXIT();
+        EMAC_PHY_DEBUG_PRINTF("%u", static_cast<unsigned>(timing::Millis() - kMillis));
+        EMAC_PHY_DEBUG_EXIT();
         return true;
     }
 
@@ -189,7 +185,7 @@ static bool UpdateLink(uint16_t address, Status& phy_status) {
     phy::Read(address, mmi::REG_BMSR, bmsr);
     phy_status.link = bmsr & mmi::BMSR_LINKED_STATUS ? Link::kStateUp : Link::kStateDown;
 
-    DEBUG_EXIT();
+    EMAC_PHY_DEBUG_EXIT();
     return true;
 }
 
@@ -232,19 +228,19 @@ static void ParseLink(uint16_t address, Status& phy_status) {
 }
 
 bool Start(uint16_t address, Status& phy_status) {
-    DEBUG_ENTRY();
+    EMAC_PHY_DEBUG_ENTRY();
 
     phy_status = {.link = Link::kStateDown, .duplex = Duplex::kUnknown, .speed = Speed::kUnknown, .autonegotiation = false};
 
     constexpr auto kAdvertisement = emac::mmi::ADVERTISE_ALL;
 
     if (!ConfigAutonegotiation(address, kAdvertisement)) {
-        DEBUG_EXIT();
+        EMAC_PHY_DEBUG_EXIT();
         return false;
     }
 
     if (!UpdateLink(address, phy_status)) {
-        DEBUG_EXIT();
+        EMAC_PHY_DEBUG_EXIT();
         return false;
     }
 
@@ -262,8 +258,8 @@ bool Start(uint16_t address, Status& phy_status) {
         phy_status.duplex = Duplex::kUnknown;
     }
 
-    DEBUG_PRINTF("Link %s, %s, %s", ToString(phy_status.link), ToString(phy_status.speed), ToString(phy_status.duplex));
-    DEBUG_EXIT();
+    EMAC_PHY_DEBUG_PRINTF("Link %s, %s, %s", ToString(phy_status.link), ToString(phy_status.speed), ToString(phy_status.duplex));
+    EMAC_PHY_DEBUG_EXIT();
     return true;
 }
 

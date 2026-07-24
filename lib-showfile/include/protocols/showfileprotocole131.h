@@ -29,38 +29,38 @@
 #include <cstdint>
 
 #include "e131controller.h"
-#include "firmware/debug/debug_debug.h"
+#include "showfile_debug.h"
 
 class ShowFileProtocol {
    public:
     ShowFileProtocol() {
-        DEBUG_ENTRY();
+        SHOWFILE_DEBUG_ENTRY();
 
-        DEBUG_EXIT();
+        SHOWFILE_DEBUG_EXIT();
     }
 
     void SetSynchronizationAddress(uint16_t synchronization_address) { e131_controller_.SetSynchronizationAddress(synchronization_address); }
 
     void Start() {
-        DEBUG_ENTRY();
+        SHOWFILE_DEBUG_ENTRY();
 
         e131_controller_.Start();
 
-        DEBUG_EXIT();
+        SHOWFILE_DEBUG_EXIT();
     }
 
     void Stop() {
-        DEBUG_ENTRY();
+        SHOWFILE_DEBUG_ENTRY();
 
         e131_controller_.Stop();
 
-        DEBUG_EXIT();
+        SHOWFILE_DEBUG_EXIT();
     }
 
     void Record() {
-        DEBUG_ENTRY();
+        SHOWFILE_DEBUG_ENTRY();
 
-        DEBUG_EXIT();
+        SHOWFILE_DEBUG_EXIT();
     }
 
     void DmxOut(uint16_t universe, const uint8_t* dmx_data, uint32_t length) { e131_controller_.HandleDmxOut(universe, dmx_data, length); }

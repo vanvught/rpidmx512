@@ -22,10 +22,6 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_HAL_TIMERS)
-#undef NDEBUG
-#endif
-
 #if defined(__GNUC__) && !defined(__clang__)
 #if !defined(CONFIG_REMOTECONFIG_MINIMUM)
 #pragma GCC optimize("O3")
@@ -39,10 +35,35 @@
 
 #include "softwaretimers.h"
 #include "timing.h" // IWYU pragma: keep
-#include "firmware/debug/debug_debug.h"
+#include "ansi_colour.h"
 
-static void Error(const char* func, const char* string) {
-    printf("%s: %s\n", func, string);
+#ifdef DEBUG_HAL_TIMERS
+#define HAL_TIMERS_DEBUG_ENTRY() DEBUG_ENTRY()
+#define HAL_TIMERS_DEBUG_EXIT() DEBUG_EXIT()
+#define HAL_TIMERS_DEBUG_PRINTF(...) HAL_TIMERS_DEBUG_PRINTF(__VA_ARGS__)
+#define HAL_TIMERS_DEBUG_PUTS(...) DEBUG_PUTS(__VA_ARGS__)
+#else
+#define HAL_TIMERS_DEBUG_ENTRY() \
+    do {                         \
+    } while (false)
+#define HAL_TIMERS_DEBUG_EXIT() \
+    do {                        \
+    } while (false)
+#define HAL_TIMERS_DEBUG_PRINTF(...) \
+    do {                             \
+    } while (false)
+#define HAL_TIMERS_DEBUG_PUTS(...) \
+    do {                           \
+    } while (false)
+#endif
+
+namespace {
+void Error(const char* func, const char* string) {
+    printf("%s%s: %s%s\n", ansi::Colours::Fg::kRed, func, string, ansi::Colours::Fg::kDefault);
+}
+
+void Error(const char* func, const char* string, TimerHandle_t handle) {
+    printf("%s%s: %s -> %d%s\n", ansi::Colours::Fg::kRed, func, string, static_cast<int>(handle), ansi::Colours::Fg::kDefault);
 }
 
 struct Timer {
@@ -52,10 +73,11 @@ struct Timer {
     TimerCallbackFunction_t callback_function; ///< Callback invoked on expiry; must be non-null.
 };
 
-static Timer s_timers[kSoftwareTimersMax]; ///< Timer storage pool.
-static uint32_t s_timers_count = 0;             ///< Number of active timers (0..hal::SOFTWARE_TIMERS_MAX).
-static int32_t s_next_id = 0;                   ///< Monotonically increasing ID source (may wrap, see notes).
-static uint32_t s_timer_current = 0;            ///< bRound-robin cursor for SoftwareTimerRun().
+Timer s_timers[kSoftwareTimersMax]; ///< Timer storage pool.
+uint32_t s_timers_count = 0;        ///< Number of active timers (0..hal::SOFTWARE_TIMERS_MAX).
+int32_t s_next_id = 0;              ///< Monotonically increasing ID source (may wrap, see notes).
+uint32_t s_timer_current = 0;       ///< bRound-robin cursor for SoftwareTimerRun().
+} // namespace
 
 /**
  * @brief Create and start a periodic software timer.
@@ -69,8 +91,8 @@ static uint32_t s_timer_current = 0;            ///< bRound-robin cursor for Sof
  * @note    The first expiration is scheduled relative to the current @ref Millis().
  */
 TimerHandle_t SoftwareTimerAdd(uint32_t interval_millis, const TimerCallbackFunction_t kCallbackFunction) {
-    DEBUG_ENTRY();
-    DEBUG_PRINTF("s_timers_count=%u", static_cast<unsigned>(s_timers_count));
+    HAL_TIMERS_DEBUG_ENTRY();
+    HAL_TIMERS_DEBUG_PRINTF("s_timers_count=%u", static_cast<unsigned>(s_timers_count));
 
     if (s_timers_count >= kSoftwareTimersMax) {
         Error(__func__, "Max timer limit reached");
@@ -89,7 +111,7 @@ TimerHandle_t SoftwareTimerAdd(uint32_t interval_millis, const TimerCallbackFunc
 
     s_timers[s_timers_count++] = new_timer;
 
-    DEBUG_EXIT();
+    HAL_TIMERS_DEBUG_EXIT();
     return new_timer.id;
 }
 
@@ -104,8 +126,8 @@ TimerHandle_t SoftwareTimerAdd(uint32_t interval_millis, const TimerCallbackFunc
  *       This changes the order of timers.
  */
 bool SoftwareTimerDelete(TimerHandle_t& handle) {
-    DEBUG_ENTRY();
-    DEBUG_PRINTF("s_timers_count=%u", static_cast<unsigned>(s_timers_count));
+    HAL_TIMERS_DEBUG_ENTRY();
+    HAL_TIMERS_DEBUG_PRINTF("s_timers_count=%u", static_cast<unsigned>(s_timers_count));
 
     for (uint32_t i = 0; i < s_timers_count; ++i) {
         if (s_timers[i].id == handle) {
@@ -119,14 +141,14 @@ bool SoftwareTimerDelete(TimerHandle_t& handle) {
 
             handle = -1;
 
-            DEBUG_ENTRY();
+            HAL_TIMERS_DEBUG_ENTRY();
             return true;
         }
     }
 
-    Error(__func__, "Timer not found");
+    Error(__func__, "Timer not found", handle);
 
-    DEBUG_EXIT();
+    HAL_TIMERS_DEBUG_EXIT();
     return false;
 }
 

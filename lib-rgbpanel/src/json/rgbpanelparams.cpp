@@ -2,7 +2,7 @@
  * @file rgbpanelparams.cpp
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,10 +23,6 @@
  * THE SOFTWARE.
  */
 
-#ifdef DEBUG_RGBPANELPARAMS
-#undef NDEBUG
-#endif
-
 #include <cstdint>
 #include <utility>
 
@@ -38,53 +34,43 @@
 #include "configstore.h"
 #include "configurationstore.h"
 
-namespace json
-{
-RgbPanelParams::RgbPanelParams()
-{
+namespace json {
+RgbPanelParams::RgbPanelParams() {
     ConfigStore::Instance().Copy(&store_rgbpanel, &ConfigurationStore::rgb_panel);
 }
 
-void RgbPanelParams::SetCols(const char* val, uint32_t len)
-{
+void RgbPanelParams::SetCols(const char* val, uint32_t len) {
     store_rgbpanel.cols = static_cast<uint8_t>(rgbpanel::ValidateColumns(json::ParseValue<uint32_t>(val, len)));
 }
 
-void RgbPanelParams::SetRows(const char* val, uint32_t len)
-{
+void RgbPanelParams::SetRows(const char* val, uint32_t len) {
     store_rgbpanel.rows = static_cast<uint8_t>(rgbpanel::ValidateRows(json::ParseValue<uint32_t>(val, len)));
 }
 
-void RgbPanelParams::SetChain(const char* val, uint32_t len)
-{
+void RgbPanelParams::SetChain(const char* val, uint32_t len) {
     store_rgbpanel.chain = json::ParseValue<uint8_t>(val, len);
 }
 
-void RgbPanelParams::SetType(const char* val, [[maybe_unused]] uint32_t len)
-{
+void RgbPanelParams::SetType(const char* val, [[maybe_unused]] uint32_t len) {
     store_rgbpanel.type = std::to_underlying(rgbpanel::GetType(val));
 }
 
-void RgbPanelParams::Store(const char* buffer, uint32_t buffer_size)
-{
+void RgbPanelParams::Store(const char* buffer, uint32_t buffer_size) {
     ParseJsonWithTable(buffer, buffer_size, kRgbPanelKeys);
     ConfigStore::Instance().Store(&store_rgbpanel, &ConfigurationStore::rgb_panel);
 }
 
-void RgbPanelParams::Set()
-{
-#ifndef NDEBUG
+void RgbPanelParams::Set() {
+#ifdef DEBUG_RGBPANEL
     Dump();
 #endif
 }
 
-void RgbPanelParams::Dump()
-{
+void RgbPanelParams::Dump() {
     printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, json::RgbPanelParamsConst::kFileName);
     printf(" %s=%d\n", RgbPanelParamsConst::kCols.name, store_rgbpanel.cols);
     printf(" %s=%d\n", RgbPanelParamsConst::kRows.name, store_rgbpanel.rows);
     printf(" %s=%d\n", RgbPanelParamsConst::kChain.name, store_rgbpanel.chain);
-    printf(" %s=%s [%d]]\n", RgbPanelParamsConst::kType.name, rgbpanel::GetType(static_cast<rgbpanel::Types>(store_rgbpanel.type)) , store_rgbpanel.type);
-
+    printf(" %s=%s [%d]]\n", RgbPanelParamsConst::kType.name, rgbpanel::GetType(static_cast<rgbpanel::Types>(store_rgbpanel.type)), store_rgbpanel.type);
 }
 } // namespace json

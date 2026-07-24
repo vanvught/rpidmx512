@@ -23,10 +23,6 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_DISPLAY)
-#undef NDEBUG
-#endif
-
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
@@ -114,7 +110,7 @@ void Ssd1311::PutString(const char* string) {
     assert(string != nullptr);
 
     uint32_t n = ssd1311::kMaxColumns;
-    auto* src = string;
+    const auto* src = string;
     auto* dst = reinterpret_cast<char*>(&text_buffer[1]);
 
     while (n > 0 && *src != '\0') {

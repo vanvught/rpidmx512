@@ -31,10 +31,8 @@
 #include "json/json_key.h"
 #include "json/json_params_base.h"
 
-namespace json
-{
-class RdmDeviceParams : public JsonParamsBase<RdmDeviceParams>
-{
+namespace json {
+class RdmDeviceParams : public JsonParamsBase<RdmDeviceParams> {
    public:
     RdmDeviceParams();
 
@@ -54,9 +52,7 @@ class RdmDeviceParams : public JsonParamsBase<RdmDeviceParams>
    private:
     static void SetLabel(const char* val, uint32_t len);
 
-    static constexpr json::Key kRdmDeviceKeys[] = {MakeKey(SetLabel, RdmDeviceParamsConst::kLabel)
-
-    };
+    static constexpr json::Key kRdmDeviceKeys[] = {MakeKey(SetLabel, RdmDeviceParamsConst::kLabel)};
 
     inline static common::store::RdmDevice store_rdmdevice;
 

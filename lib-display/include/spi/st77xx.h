@@ -2,7 +2,7 @@
  * @file st77xx.h
  *
  */
-/* Copyright (C) 2022-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2022-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,7 @@
 
 #include "spi/paint.h"
 #include "gpio.h"
-#include "firmware/debug/debug_debug.h"
+#include "display_debug.h"
 
 namespace st77xx {
 namespace cmd {
@@ -97,8 +97,8 @@ inline constexpr uint16_t kYellow = 0xFFE0;
 class ST77XX : public Paint {
    public:
     explicit ST77XX(uint32_t cs) : Paint(cs) {
-        DEBUG_ENTRY();
-        DEBUG_EXIT();
+        DISPLAY_DEBUG_ENTRY();
+        DISPLAY_DEBUG_EXIT();
     }
 
     ~ST77XX() override = default;

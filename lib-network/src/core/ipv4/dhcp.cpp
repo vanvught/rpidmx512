@@ -25,10 +25,6 @@
  * https://savannah.nongnu.org/projects/lwip/
  */
 
-#if defined(DEBUG_NETWORK_DHCP)
-#undef NDEBUG
-#endif
-
 #include <cstdint>
 #include <cstring>
 #include <cassert>
@@ -45,6 +41,26 @@
 #include "core/ip4/acd.h"
 #endif
 #include "firmware/debug/debug_debug.h"
+
+#ifdef DEBUG_NETWORK_DHCP
+#define DHCP_DEBUG_ENTRY() DEBUG_ENTRY()
+#define DHCP_DEBUG_EXIT() DEBUG_EXIT()
+#define DHCP_DEBUG_PRINTF(...) DEBUG_PRINTF(__VA_ARGS__)
+#define DHCP_DEBUG_PUTS(...) DEBUG_PUTS(__VA_ARGS__)
+#else
+#define DHCP_DEBUG_ENTRY() \
+    do {                   \
+    } while (false)
+#define DHCP_DEBUG_EXIT() \
+    do {                  \
+    } while (false)
+#define DHCP_DEBUG_PRINTF(...) \
+    do {                       \
+    } while (false)
+#define DHCP_DEBUG_PUTS(...) \
+    do {                     \
+    } while (false)
+#endif
 
 #define REBOOT_TRIES 2
 
@@ -96,7 +112,7 @@ static void UpdateMsg(uint8_t message_type) {
 }
 
 static void SendDiscover() {
-    DEBUG_ENTRY();
+    DHCP_DEBUG_ENTRY();
     auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::global::netif_default.dhcp);
     assert(dhcp != nullptr);
 
@@ -128,11 +144,11 @@ static void SendDiscover() {
 
     network::udp::Send(dhcp->handle, reinterpret_cast<uint8_t*>(&s_dhcp_message), static_cast<uint16_t>(k + sizeof(dhcp::Message) - dhcp::kOptSize), network::kIpaddrBroadcast, network::iana::Ports::kPortDhcpServer);
 
-    DEBUG_EXIT();
+    DHCP_DEBUG_EXIT();
 }
 
 static void SendRequest() {
-    DEBUG_ENTRY();
+    DHCP_DEBUG_ENTRY();
     auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::global::netif_default.dhcp);
     assert(dhcp != nullptr);
 
@@ -180,12 +196,12 @@ static void SendRequest() {
 
     network::udp::Send(dhcp->handle, reinterpret_cast<uint8_t*>(&s_dhcp_message), static_cast<uint16_t>(k + sizeof(dhcp::Message) - dhcp::kOptSize), network::kIpaddrBroadcast, network::iana::Ports::kPortDhcpServer);
 
-    DEBUG_EXIT();
+    DHCP_DEBUG_EXIT();
 }
 
 static void SendRelease(uint32_t destination_ip) {
-    DEBUG_ENTRY();
-    DEBUG_PRINTF(IPSTR, IP2STR(destination_ip));
+    DHCP_DEBUG_ENTRY();
+    DHCP_DEBUG_PRINTF(IPSTR, IP2STR(destination_ip));
 
     auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::global::netif_default.dhcp);
     assert(dhcp != nullptr);
@@ -203,11 +219,11 @@ static void SendRelease(uint32_t destination_ip) {
 
     network::udp::Send(dhcp->handle, reinterpret_cast<uint8_t*>(&s_dhcp_message), static_cast<uint16_t>(k + sizeof(dhcp::Message) - dhcp::kOptSize), destination_ip, network::iana::Ports::kPortDhcpServer);
 
-    DEBUG_EXIT();
+    DHCP_DEBUG_EXIT();
 }
 
 void Input(const uint8_t* buffer, uint32_t size, [[maybe_unused]] uint32_t from_ip, uint16_t from_port) {
-    DEBUG_ENTRY();
+    DHCP_DEBUG_ENTRY();
 
     if (from_port == network::iana::Ports::kPortDhcpServer) {
         auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::global::netif_default.dhcp);
@@ -216,25 +232,25 @@ void Input(const uint8_t* buffer, uint32_t size, [[maybe_unused]] uint32_t from_
         const auto* const kP = reinterpret_cast<const dhcp::Message*>(buffer);
 
         if (kP->xid != dhcp->xid) {
-            DEBUG_PRINTF("pDhcpMessage->xid=%u, dhcp->xid=%u", kP->xid, dhcp->xid);
+            DHCP_DEBUG_PRINTF("pDhcpMessage->xid=%u, dhcp->xid=%u", static_cast<unsigned>(kP->xid), static_cast<unsigned>(dhcp->xid));
             return;
         }
 
         dhcp::Process(kP, size);
 
-        DEBUG_EXIT();
+        DHCP_DEBUG_EXIT();
         return;
     }
 
-    DEBUG_EXIT();
+    DHCP_DEBUG_EXIT();
 }
 
 void Inform() {
-    DEBUG_ENTRY();
+    DHCP_DEBUG_ENTRY();
 
     const auto kHandle = network::udp::Begin(network::iana::Ports::kPortDhcpClient, nullptr);
     if (kHandle < 0) {
-		ERROR("No handle\n");
+        ERROR("No handle\n");
         return;
     }
 
@@ -260,7 +276,7 @@ void Inform() {
     network::udp::Send(kHandle, reinterpret_cast<uint8_t*>(&s_dhcp_message), static_cast<uint16_t>(k + sizeof(dhcp::Message) - dhcp::kOptSize), network::kIpaddrBroadcast, network::iana::Ports::kPortDhcpServer);
     network::udp::End(network::iana::Ports::kPortDhcpClient);
 
-    DEBUG_EXIT();
+    DHCP_DEBUG_EXIT();
 }
 
 #define SET_TIMEOUT_FROM_OFFERED(result, offered, min, max)                                 \
@@ -284,7 +300,7 @@ void Inform() {
 
 static void SetState(struct dhcp::Dhcp* dhcp, dhcp::State new_state) {
     if (new_state != dhcp->state) {
-        DEBUG_PRINTF("%u -> %u", static_cast<unsigned>(dhcp->state), static_cast<unsigned>(new_state));
+        DHCP_DEBUG_PRINTF("%u -> %u", static_cast<unsigned>(dhcp->state), static_cast<unsigned>(new_state));
 
         dhcp->state = new_state;
         dhcp->tries = 0;
@@ -293,7 +309,7 @@ static void SetState(struct dhcp::Dhcp* dhcp, dhcp::State new_state) {
 }
 
 static void Bind() {
-    DEBUG_ENTRY();
+    DHCP_DEBUG_ENTRY();
 
     auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::global::netif_default.dhcp);
     assert(dhcp != nullptr);
@@ -348,18 +364,18 @@ static void Bind() {
     netif::SetFlags(netif::Netif::kNetifFlagDhcpOk);
     netif::SetAddr(dhcp->offered.offered_ip_addr, sn_mask, gw_addr);
 
-    DEBUG_EXIT();
+    DHCP_DEBUG_EXIT();
 }
 
 static void Rebind() {
-    DEBUG_ENTRY();
+    DHCP_DEBUG_ENTRY();
 
-    DEBUG_EXIT();
+    DHCP_DEBUG_EXIT();
 }
 
 #if defined(CONFIG_NET_DHCP_USE_ACD)
 static void SendDecline() {
-    DEBUG_ENTRY();
+    DHCP_DEBUG_ENTRY();
     auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::global::netif_default.dhcp);
     assert(dhcp != nullptr);
 
@@ -377,11 +393,11 @@ static void SendDecline() {
 
     network::udp::Send(dhcp->handle, reinterpret_cast<uint8_t*>(&s_dhcp_message), static_cast<uint16_t>(k + sizeof(dhcp::Message) - dhcp::OPT_SIZE), network::IPADDR_BROADCAST, net::iana::IANA_PORT_DHCP_SERVER);
 
-    DEBUG_EXIT();
+    DHCP_DEBUG_EXIT();
 }
 
 static void Decline() {
-    DEBUG_ENTRY();
+    DHCP_DEBUG_ENTRY();
 
     auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::global::netif_default.dhcp);
     assert(dhcp != nullptr);
@@ -390,7 +406,7 @@ static void Decline() {
     /* per section 4.4.4, broadcast DECLINE messages */
     SendDecline();
 
-    DEBUG_EXIT();
+    DHCP_DEBUG_EXIT();
     return;
 }
 
@@ -433,19 +449,19 @@ static void ConflictCallback(network::acd::Callback callback) {
 }
 
 static void Check() {
-    DEBUG_ENTRY();
+    DHCP_DEBUG_ENTRY();
     auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::global::netif_default.dhcp);
 
     SetState(dhcp, dhcp::State::STATE_CHECKING);
 
     network::acd::Start(&dhcp->acd, dhcp->offered.offered_ip_addr);
 
-    DEBUG_EXIT();
+    DHCP_DEBUG_EXIT();
 }
 #endif
 
 static void Discover() {
-    DEBUG_ENTRY();
+    DHCP_DEBUG_ENTRY();
     auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::global::netif_default.dhcp);
     assert(dhcp != nullptr);
 
@@ -470,7 +486,7 @@ static void Discover() {
 }
 
 static void Reboot() {
-    DEBUG_ENTRY();
+    DHCP_DEBUG_ENTRY();
     auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::global::netif_default.dhcp);
     assert(dhcp != nullptr);
 
@@ -485,11 +501,11 @@ static void Reboot() {
     const auto kMsecs = static_cast<uint16_t>(dhcp->tries < 10U ? dhcp->tries * 1000U : 10U * 1000U);
     dhcp->request_timeout = static_cast<uint16_t>((kMsecs + dhcp::kFineTimerMsecs - 1) / dhcp::kFineTimerMsecs);
 
-    DEBUG_EXIT();
+    DHCP_DEBUG_EXIT();
 }
 
 static void Select() {
-    DEBUG_ENTRY();
+    DHCP_DEBUG_ENTRY();
     auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::global::netif_default.dhcp);
 
     SetState(dhcp, dhcp::State::kRequesting);
@@ -596,26 +612,26 @@ static void FineTmr([[maybe_unused]] TimerHandle_t handle) {
 }
 
 static void HandleOffer(const dhcp::Message* const kResponse) {
-    DEBUG_ENTRY();
+    DHCP_DEBUG_ENTRY();
     auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::global::netif_default.dhcp);
 
     if (dhcp->server_ip_addr.addr != 0) {
         dhcp->request_timeout = 0; /* stop timer */
         dhcp->offered.offered_ip_addr.addr = network::MemcpyIp(kResponse->yiaddr);
-        DEBUG_PRINTF(IPSTR " -> " IPSTR, IP2STR(dhcp->server_ip_addr.addr), IP2STR(dhcp->offered.offered_ip_addr.addr));
+        DHCP_DEBUG_PRINTF(IPSTR " -> " IPSTR, IP2STR(dhcp->server_ip_addr.addr), IP2STR(dhcp->offered.offered_ip_addr.addr));
         Select();
     } else {
-        DEBUG_PUTS("did not get server ID!");
+        DHCP_DEBUG_PUTS("did not get server ID!");
     }
 
-    DEBUG_EXIT();
+    DHCP_DEBUG_EXIT();
 }
 
 static void HandleAck(const dhcp::Message* const kResponse) {
-    DEBUG_ENTRY();
+    DHCP_DEBUG_ENTRY();
     auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::global::netif_default.dhcp);
 
-    DEBUG_PRINTF("t0=%u, t1=%u, t2=%u", dhcp->offered.offered_t0_lease, dhcp->offered.offered_t1_renew, dhcp->offered.offered_t2_rebind);
+    DHCP_DEBUG_PRINTF("t0=%u, t1=%u, t2=%u", static_cast<unsigned>(dhcp->offered.offered_t0_lease), static_cast<unsigned>(dhcp->offered.offered_t1_renew), static_cast<unsigned>(dhcp->offered.offered_t2_rebind));
 
     if (dhcp->offered.offered_t1_renew == 0) {
         /* calculate safe periods for renewal */
@@ -635,12 +651,12 @@ static void HandleAck(const dhcp::Message* const kResponse) {
         dhcp->flags &= static_cast<uint8_t>(~kFlagSubnetMaskGiven);
     }
 
-    DEBUG_PRINTF("t0=%u, t1=%u, t2=%u", dhcp->offered.offered_t0_lease, dhcp->offered.offered_t1_renew, dhcp->offered.offered_t2_rebind);
-    DEBUG_EXIT();
+    DHCP_DEBUG_PRINTF("t0=%u, t1=%u, t2=%u", static_cast<unsigned>(dhcp->offered.offered_t0_lease), static_cast<unsigned>(dhcp->offered.offered_t1_renew), static_cast<unsigned>(dhcp->offered.offered_t2_rebind));
+    DHCP_DEBUG_EXIT();
 }
 
 static void HandleNak() {
-    DEBUG_ENTRY();
+    DHCP_DEBUG_ENTRY();
     auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::global::netif_default.dhcp);
 
     // Change to a defined state - set this before assigning the address
@@ -653,11 +669,11 @@ static void HandleNak() {
     // We can immediately restart discovery
     Discover();
 
-    DEBUG_EXIT();
+    DHCP_DEBUG_EXIT();
 }
 
 bool Start() {
-    DEBUG_ENTRY();
+    DHCP_DEBUG_ENTRY();
     auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::global::netif_default.dhcp);
 
     if (dhcp == nullptr) {
@@ -674,7 +690,7 @@ bool Start() {
 
     if (dhcp->handle < 0) {
         ERROR("No handle.\n");
-        DEBUG_EXIT();
+        DHCP_DEBUG_EXIT();
         return false;
     }
 
@@ -691,16 +707,16 @@ bool Start() {
 
     Discover();
 
-    DEBUG_EXIT();
+    DHCP_DEBUG_EXIT();
     return true;
 }
 
 void ReleaseAndStop() {
-    DEBUG_ENTRY();
+    DHCP_DEBUG_ENTRY();
     auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::global::netif_default.dhcp);
 
     if (dhcp == nullptr) {
-        DEBUG_EXIT();
+        DHCP_DEBUG_EXIT();
         return;
     }
 
@@ -740,11 +756,11 @@ void ReleaseAndStop() {
 }
 
 void NetworkChangedLinkUp() {
-    DEBUG_ENTRY();
+    DHCP_DEBUG_ENTRY();
     auto* dhcp = reinterpret_cast<struct dhcp::Dhcp*>(netif::global::netif_default.dhcp);
 
     if (dhcp == nullptr) {
-        DEBUG_EXIT();
+        DHCP_DEBUG_EXIT();
         return;
     }
 
@@ -766,7 +782,7 @@ void NetworkChangedLinkUp() {
 }
 
 void Process(const dhcp::Message* const kResponse, uint32_t size) {
-    DEBUG_ENTRY();
+    DHCP_DEBUG_ENTRY();
 
     assert(kResponse != nullptr);
 
@@ -845,7 +861,7 @@ void Process(const dhcp::Message* const kResponse, uint32_t size) {
         dhcp->offered.offered_ip_addr.addr = network::MemcpyIp(kResponse->yiaddr);
     }
 
-    DEBUG_PRINTF("msg_type=%u", msg_type);
+    DHCP_DEBUG_PRINTF("msg_type=%u", msg_type);
 
     if (msg_type == dhcp::Type::kAck) {
         // in requesting state or just reconnected to the network?
@@ -866,7 +882,7 @@ void Process(const dhcp::Message* const kResponse, uint32_t size) {
         HandleOffer(kResponse);
     }
 
-    DEBUG_EXIT();
+    DHCP_DEBUG_EXIT();
 }
 
 bool SuppliedAddress() {

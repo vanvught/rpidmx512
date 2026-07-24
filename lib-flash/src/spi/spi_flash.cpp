@@ -35,6 +35,26 @@
 #include "firmware/debug/debug_dump.h"
 #include "firmware/debug/debug_debug.h"
 
+#ifdef DEBUG_SPI_FLASH
+#define SPI_FLASH_DEBUG_ENTRY() DEBUG_ENTRY()
+#define SPI_FLASH_DEBUG_EXIT() DEBUG_EXIT()
+#define SPI_FLASH_DEBUG_PRINTF(...) DEBUG_PRINTF(__VA_ARGS__)
+#define SPI_FLASH_DEBUG_PUTS(...) DEBUG_PUTS(__VA_ARGS__)
+#else
+#define SPI_FLASH_DEBUG_ENTRY() \
+    do {                     \
+    } while (false)
+#define SPI_FLASH_DEBUG_EXIT() \
+    do {                    \
+    } while (false)
+#define SPI_FLASH_DEBUG_PRINTF(...) \
+    do {                         \
+    } while (false)
+#define SPI_FLASH_DEBUG_PUTS(...) \
+    do {                       \
+    } while (false)
+#endif
+
 static struct SpiFlashInfo s_flash = {"", 0, CMD_READ_STATUS};
 
 #define IDCODE_PART_LEN 5
@@ -46,20 +66,20 @@ static constexpr struct {
 /* Keep it sorted by define name */
 #ifdef CONFIG_SPI_FLASH_GIGADEVICE
     {
-        0xc8,
-        SpiFlashProbeGigadevice,
+        .kIdcode=0xc8,
+        .probe=SpiFlashProbeGigadevice,
     },
 #endif
 #ifdef CONFIG_SPI_FLASH_MACRONIX
     {
-        0xc2,
-        SpiFlashProbeMacronix,
+        .kIdcode=0xc2,
+        .probe=SpiFlashProbeMacronix,
     },
 #endif
 #ifdef CONFIG_SPI_FLASH_WINBOND
     {
-        0xef,
-        SpiFlashProbeWinbond,
+        .kIdcode=0xef,
+        .probe=SpiFlashProbeWinbond,
     },
 #endif
 };
@@ -124,7 +144,7 @@ static bool SpiFlashCmdWaitReady(uint32_t nTimeout) {
 
     SpiXfer(1, &cmd, nullptr, SPI_XFER_BEGIN);
 
-    const auto nTimebase = GetTimer(0);
+    const auto kTimebase = GetTimer(0);
     uint8_t status;
 
     do {
@@ -134,18 +154,18 @@ static bool SpiFlashCmdWaitReady(uint32_t nTimeout) {
             break;
         }
 
-    } while (GetTimer(nTimebase) < nTimeout);
+    } while (GetTimer(kTimebase) < nTimeout);
 
     SpiXfer(0, nullptr, nullptr, SPI_XFER_END);
 
     if ((status & STATUS_WIP) == 0) {
-        DEBUG_PRINTF("get_timer(nTimebase)=%u", GetTimer(nTimebase));
-        DEBUG_EXIT();
+        SPI_FLASH_DEBUG_PRINTF("get_timer(nTimebase)=%u", static_cast<unsigned>(GetTimer(kTimebase)));
+        SPI_FLASH_DEBUG_EXIT();
         return true;
     }
 
-    DEBUG_PUTS("time out");
-    DEBUG_EXIT();
+    SPI_FLASH_DEBUG_PUTS("time out");
+    SPI_FLASH_DEBUG_EXIT();
     return false;
 }
 
@@ -165,7 +185,7 @@ static bool SpiFlashWriteCommon(const uint8_t* pCommand, const uint32_t nCommand
         const auto kRet = SpiFlashCmdWaitReady(nTimeout);
 
         if (!kRet) {
-            DEBUG_PRINTF("write %s timed out", nTimeout == SPI_FLASH_PROG_TIMEOUT ? "program" : "page erase");
+            SPI_FLASH_DEBUG_PRINTF("write %s timed out", nTimeout == SPI_FLASH_PROG_TIMEOUT ? "program" : "page erase");
             return false;
         }
     }
@@ -174,10 +194,10 @@ static bool SpiFlashWriteCommon(const uint8_t* pCommand, const uint32_t nCommand
 }
 
 bool spi_flash_cmd_write_multi(uint32_t nOffset, uint32_t length, const uint8_t* pData) {
-    DEBUG_ENTRY();
+    SPI_FLASH_DEBUG_ENTRY();
 
     if (!SpiFlashCmdWaitReady(SPI_FLASH_SECTOR_ERASE_TIMEOUT)) {
-        DEBUG_EXIT();
+        SPI_FLASH_DEBUG_EXIT();
         return false;
     }
 
@@ -191,13 +211,20 @@ bool spi_flash_cmd_write_multi(uint32_t nOffset, uint32_t length, const uint8_t*
 
         SpiFlashAddr(nOffset, cmd);
 
-        DEBUG_PRINTF("0x%p => cmd = { 0x%02x 0x%02x%02x%02x } nActualLength=%d, nChunkLength=%d", pData + nActualLength, cmd[0], cmd[1], cmd[2], cmd[3], static_cast<int>(nActualLength), static_cast<int>(nChunkLength));
+        SPI_FLASH_DEBUG_PRINTF("0x%p => cmd = { 0x%02x 0x%02x%02x%02x } nActualLength=%d, nChunkLength=%d", 
+			pData + nActualLength, 
+			cmd[0], 
+			cmd[1], 
+			cmd[2], 
+			cmd[3], 
+			static_cast<int>(nActualLength), 
+			static_cast<int>(nChunkLength));
 
         const auto kRet = SpiFlashWriteCommon(cmd, sizeof(cmd), pData + nActualLength, nChunkLength, ((nActualLength + nChunkLength) != length));
 
         if (!kRet) {
-            DEBUG_PUTS("write failed");
-            DEBUG_EXIT();
+            SPI_FLASH_DEBUG_PUTS("write failed");
+            SPI_FLASH_DEBUG_EXIT();
             return false;
             break;
         }
@@ -205,7 +232,7 @@ bool spi_flash_cmd_write_multi(uint32_t nOffset, uint32_t length, const uint8_t*
         nOffset += nChunkLength;
     }
 
-    DEBUG_EXIT();
+    SPI_FLASH_DEBUG_EXIT();
     return true;
 }
 
@@ -214,10 +241,10 @@ void spi_flash_read_common(const uint8_t* pCommand, uint32_t nCommandLength, uin
 }
 
 bool spi_flash_cmd_read_fast(uint32_t nOffset, uint32_t length, uint8_t* pData) {
-    DEBUG_ENTRY();
+    SPI_FLASH_DEBUG_ENTRY();
 
     if (!SpiFlashCmdWaitReady(SPI_FLASH_PROG_TIMEOUT)) {
-        DEBUG_EXIT();
+        SPI_FLASH_DEBUG_EXIT();
         return false;
     }
 
@@ -243,21 +270,21 @@ bool spi_flash_cmd_read_fast(uint32_t nOffset, uint32_t length, uint8_t* pData) 
         pData += nReadLength;
     }
 
-    DEBUG_EXIT();
+    SPI_FLASH_DEBUG_EXIT();
     return true;
 }
 
 bool spi_flash_cmd_erase(uint32_t nOffset, uint32_t length) {
-    DEBUG_ENTRY();
+    SPI_FLASH_DEBUG_ENTRY();
 
     if ((nOffset % spi::flash::SECTOR_SIZE) || (length % spi::flash::SECTOR_SIZE)) {
-        DEBUG_PUTS("Erase offset/length not multiple of erase size");
-        DEBUG_EXIT();
+        SPI_FLASH_DEBUG_PUTS("Erase offset/length not multiple of erase size");
+        SPI_FLASH_DEBUG_EXIT();
         return false;
     }
 
     if (!SpiFlashCmdWaitReady(SPI_FLASH_PROG_TIMEOUT)) {
-        DEBUG_EXIT();
+        SPI_FLASH_DEBUG_EXIT();
         return false;
     }
 
@@ -268,13 +295,13 @@ bool spi_flash_cmd_erase(uint32_t nOffset, uint32_t length) {
     while (length) {
         SpiFlashAddr(nOffset, cmd);
 
-        DEBUG_PRINTF("erase %2x %2x %2x %2x (%x)", cmd[0], cmd[1], cmd[2], cmd[3], nOffset);
+        SPI_FLASH_DEBUG_PRINTF("erase %2x %2x %2x %2x (%x)", cmd[0], cmd[1], cmd[2], cmd[3], static_cast<unsigned>(nOffset));
 
         const auto kRet = SpiFlashWriteCommon(cmd, sizeof(cmd), nullptr, 0, (length != spi::flash::SECTOR_SIZE));
 
         if (!kRet) {
-            DEBUG_PUTS("Erase failed");
-            DEBUG_EXIT();
+            SPI_FLASH_DEBUG_PUTS("Erase failed");
+            SPI_FLASH_DEBUG_EXIT();
             return false;
         }
 
@@ -282,7 +309,7 @@ bool spi_flash_cmd_erase(uint32_t nOffset, uint32_t length) {
         length -= spi::flash::SECTOR_SIZE;
     }
 
-    DEBUG_EXIT();
+    SPI_FLASH_DEBUG_EXIT();
     return true;
 }
 
@@ -291,7 +318,7 @@ bool spi_flash_cmd_write_status(uint8_t sr) {
     const auto kRet = SpiFlashWriteCommon(&cmd, 1, &sr, 1, false);
 
     if (!kRet) {
-        DEBUG_PUTS("Fail to write status register");
+        SPI_FLASH_DEBUG_PUTS("Fail to write status register");
         return false;
     }
 
@@ -317,11 +344,11 @@ bool spi_flash_probe() {
     }
 
     if (i == ARRAY_SIZE(kFlashes)) {
-        DEBUG_PRINTF("Unsupported manufacturer %02x", idcode[0]);
+        SPI_FLASH_DEBUG_PRINTF("Unsupported manufacturer %02x", idcode[0]);
         return false;
     }
 
-    DEBUG_PRINTF("Detected %s total %d bytes", s_flash.name, s_flash.size);
+    SPI_FLASH_DEBUG_PRINTF("Detected %s total %u bytes", s_flash.name, static_cast<unsigned>(s_flash.size));
 
     return true;
 }

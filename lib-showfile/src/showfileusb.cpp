@@ -24,36 +24,29 @@
  */
 
 #include "showfile.h"
+#include "showfile_debug.h"
 
- #include "firmware/debug/debug_debug.h"
-
-namespace showfile
-{
-void usb_ready()
-{
-    DEBUG_ENTRY();
+namespace showfile {
+void usb_ready() {
+    SHOWFILE_DEBUG_ENTRY();
 
     ShowFile::Instance().SetPlayerShowFileCurrent(ShowFile::Instance().GetShowFileCurrent());
 
-    if (ShowFile::Instance().IsAutoStart())
-    {
+    if (ShowFile::Instance().IsAutoStart()) {
         ShowFile::Instance().Play();
-    }
-    else
-    {
+    } else {
         ShowFile::Instance().LoadShows();
     }
 
-    DEBUG_EXIT();
+    SHOWFILE_DEBUG_EXIT();
 }
 
-void usb_disconnected()
-{
-    DEBUG_ENTRY();
+void usb_disconnected() {
+    SHOWFILE_DEBUG_ENTRY();
 
     ShowFile::Instance().Stop();
     ShowFile::Instance().UnloadShows();
 
-    DEBUG_EXIT();
+    SHOWFILE_DEBUG_EXIT();
 }
 } // namespace showfile

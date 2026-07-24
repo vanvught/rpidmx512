@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <time.h>
+#include <ctime>
 #include <sys/time.h>
 
 #include "hwclock.h"

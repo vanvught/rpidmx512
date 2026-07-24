@@ -23,10 +23,6 @@
  * THE SOFTWARE.
  */
 
-#ifdef DEBUG_OSCSERVERPARAMS
-#undef NDEBUG
-#endif
-
 #include <cstdint>
 
 #include "json/oscserverparams.h"
@@ -49,8 +45,7 @@ void OscServerParams::SetIncomingPort(const char* val, uint32_t len) {
         return;
     }
 
-    auto v = ParseValue<uint16_t>(val, len);
-    store_oscserver.incoming_port = v;
+    store_oscserver.incoming_port = ParseValue<uint16_t>(val, len);
 }
 
 void OscServerParams::SetOutgoingPort(const char* val, uint32_t len) {
@@ -58,8 +53,7 @@ void OscServerParams::SetOutgoingPort(const char* val, uint32_t len) {
         return;
     }
 
-    auto v = ParseValue<uint16_t>(val, len);
-    store_oscserver.outgoing_port = v;
+    store_oscserver.outgoing_port = ParseValue<uint16_t>(val, len);
 }
 
 void OscServerParams::SetPath(const char* val, uint32_t len) {
@@ -117,7 +111,9 @@ void OscServerParams::SetPathBlackout(const char* val, [[maybe_unused]] uint32_t
 }
 
 void OscServerParams::SetTransmission(const char* val, [[maybe_unused]] uint32_t len) {
-    if (len != 1) return;
+    if (len != 1) {
+        return;
+    }
 
     store_oscserver.flags = common::SetFlagValue(store_oscserver.flags, Flags::Flag::kPartialTransmission, val[0] != '0');
 }
@@ -126,13 +122,13 @@ void OscServerParams::Store(const char* buffer, uint32_t buffer_size) {
     ParseJsonWithTable(buffer, buffer_size, kOscServerKeys);
     ConfigStore::Instance().Store(&store_oscserver, &ConfigurationStore::osc_server);
 
-#ifndef NDEBUG
+#ifdef DEBUG_OSCSERVER
     Dump();
 #endif
 }
 
 void OscServerParams::Set() {
-#ifndef NDEBUG
+#ifdef DEBUG_OSCSERVER
     Dump();
 #endif
 }

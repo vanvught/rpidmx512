@@ -23,13 +23,9 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_DISPLAY)
-#undef NDEBUG
-#endif
-
 #include "display.h"
 #include "softwaretimers.h"
-#include "firmware/debug/debug_debug.h"
+#include "display_debug.h"
 
 static TimerHandle_t s_timer_id = kTimerIdNone;
 
@@ -39,21 +35,26 @@ static void SleepTimer([[maybe_unused]] TimerHandle_t handle) {
 }
 
 void Display::SetSleepTimer(bool active) {
-    DEBUG_ENTRY();
-    DEBUG_PRINTF("active=%d, sleep_timeout_=%u, s_timer_id=%d", active, sleep_timeout_, s_timer_id);
+    DISPLAY_DEBUG_ENTRY();
+    DISPLAY_DEBUG_PRINTF("active=%u, sleep_timeout_=%u, s_timer_id=%d", static_cast<unsigned>(active), static_cast<unsigned>(sleep_timeout_), static_cast<int>(s_timer_id));
 
     if (!active) {
         SoftwareTimerDelete(s_timer_id);
-        DEBUG_EXIT();
+        DISPLAY_DEBUG_EXIT();
         return;
     }
 
     if (s_timer_id == kTimerIdNone) {
         s_timer_id = SoftwareTimerAdd(sleep_timeout_, SleepTimer);
-        DEBUG_EXIT();
+        DISPLAY_DEBUG_EXIT();
         return;
     }
 
     SoftwareTimerChange(s_timer_id, sleep_timeout_);
-    DEBUG_EXIT();
+    DISPLAY_DEBUG_EXIT();
 }
+
+#undef DISPLAY_DEBUG_ENTRY
+#undef DISPLAY_DEBUG_EXIT
+#undef DISPLAY_DEBUG_PRINTF
+#undef DISPLAY_DEBUG_PUTS

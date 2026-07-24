@@ -43,9 +43,6 @@
  * - Zero-window probing
  */
 
-#if defined(DEBUG_TCP)
-#undef NDEBUG
-#endif
 #pragma GCC diagnostic push
 #if (__GNUC__ < 10)
 #pragma GCC diagnostic ignored "-Wconversion"
@@ -75,6 +72,26 @@
 #include "core/protocol/ip4.h"
 #include "network_memory.h"
 #include "network_tcp_datasegmentqueue.h"
+
+#if defined(DEBUG_TCP)
+#define TCP_DEBUG_ENTRY() DEBUG_ENTRY()
+#define TCP_DEBUG_EXIT() DEBUG_EXIT()
+#define TCP_DEBUG_PRINTF(...) DEBUG_PRINTF(__VA_ARGS__)
+#define TCP_DEBUG_PUTS(...) TCP_DEBUG_PUTS(__VA_ARGS__)
+#else
+#define TCP_DEBUG_ENTRY() \
+    do {                  \
+    } while (false)
+#define TCP_DEBUG_EXIT() \
+    do {                 \
+    } while (false)
+#define TCP_DEBUG_PRINTF(...) \
+    do {                      \
+    } while (false)
+#define TCP_DEBUG_PUTS(...) \
+    do {                    \
+    } while (false)
+#endif
 
 namespace network::tcp {
 static constexpr auto kAdvertisedRxWnd = kTcpDataMss;
@@ -193,19 +210,7 @@ static struct Listener s_listeners[TCP_MAX_PORTS_ALLOWED] SECTION_NETWORK ALIGNE
 static struct Tcb s_tcbs[TCP_MAX_TCBS_ALLOWED] SECTION_NETWORK ALIGNED;
 
 #ifndef NDEBUG
-static const char* const kStateName[] = {
-	"CLOSED", 
-	"LISTEN", 
-	"SYN-SENT", 
-	"SYN-RECEIVED", 
-	"ESTABLISHED", 
-	"FIN-WAIT-1", 
-	"FIN-WAIT-2", 
-	"CLOSE-WAIT", 
-	"CLOSING", 
-	"LAST-ACK", 
-	"TIME-WAIT"
-};
+static const char* const kStateName[] = {"CLOSED", "LISTEN", "SYN-SENT", "SYN-RECEIVED", "ESTABLISHED", "FIN-WAIT-1", "FIN-WAIT-2", "CLOSE-WAIT", "CLOSING", "LAST-ACK", "TIME-WAIT"};
 
 static uint8_t NewState(struct Tcb* p_tcb, uint8_t state, const char* func, const char* file, unsigned line) {
     assert(p_tcb->state < sizeof kStateName / sizeof kStateName[0]);
@@ -364,7 +369,7 @@ static void RtxOnAck(Tcb* tcb, uint32_t ack) {
 }
 
 __attribute__((cold)) void Init() {
-    DEBUG_ENTRY();
+    TCP_DEBUG_ENTRY();
 
     // Ethernet
     std::memcpy(s_eth_frame.ether.src, netif::global::netif_default.hwaddr, ethernet::kAddressLength);
@@ -376,7 +381,7 @@ __attribute__((cold)) void Init() {
     s_eth_frame.ip4.ttl = 64;
     s_eth_frame.ip4.proto = network::ip4::Proto::kTcp;
 
-    DEBUG_EXIT();
+    TCP_DEBUG_EXIT();
 }
 
 ///< TCP Checksum Pseudo Header
@@ -483,7 +488,8 @@ static void SendSegment(Tcb* tcb, const SendInfo& send_info, bool track_rtx = tr
     memcpy(data, &tcb->TS.recent, 4);
     data += 4;
 
-    DEBUG_PRINTF("SEQ=%u, ACK=%u, kTcpLength=%u, kDataOffset=%u, tcb->TX.size=%u", s_eth_frame.tcp.seqnum, s_eth_frame.tcp.acknum, kTcpLength, kDataOffset, tcb->TX.size);
+    TCP_DEBUG_PRINTF("SEQ=%u, ACK=%u, kTcpLength=%u, kDataOffset=%u, tcb->TX.size=%u", static_cast<unsigned>(s_eth_frame.tcp.seqnum), static_cast<unsigned>(s_eth_frame.tcp.acknum), static_cast<unsigned>(kTcpLength),
+                     static_cast<unsigned>(kDataOffset), static_cast<unsigned>(tcb->TX.size));
 
     if (tcb->TX.data != nullptr) {
         for (uint32_t i = 0; i < tcb->TX.size; i++) {
@@ -524,10 +530,10 @@ static void SendSegment(Tcb* tcb, const SendInfo& send_info, bool track_rtx = tr
 }
 
 static void SendReset(struct Header* eth_frame, struct Tcb* const kTcb) {
-    DEBUG_ENTRY();
+    TCP_DEBUG_ENTRY();
 
     if (eth_frame->tcp.control & Control::RST) {
-        DEBUG_EXIT();
+        TCP_DEBUG_EXIT();
         return;
     }
 
@@ -555,7 +561,7 @@ static void SendReset(struct Header* eth_frame, struct Tcb* const kTcb) {
 
     SendSegment(kTcb, info);
 
-    DEBUG_EXIT();
+    TCP_DEBUG_EXIT();
 }
 
 static bool SendData(struct Tcb* tcb, const uint8_t* buffer, uint32_t length, bool is_last_segment) {
@@ -563,7 +569,7 @@ static bool SendData(struct Tcb* tcb, const uint8_t* buffer, uint32_t length, bo
     assert(length <= static_cast<uint32_t>(kTcpDataMss));
     assert(length <= tcb->SND.WND);
 
-    DEBUG_PRINTF("length=%u, pTCB->SND.WND=%u", length, tcb->SND.WND);
+    TCP_DEBUG_PRINTF("length=%u, pTCB->SND.WND=%u", static_cast<unsigned>(length), static_cast<unsigned>(tcb->SND.WND));
 
     tcb->TX.data = const_cast<uint8_t*>(buffer);
     tcb->TX.size = length;
@@ -635,8 +641,9 @@ static void ScanOptions(struct Header* eth_frame, struct Tcb* const kTcb, int32_
                         bIgnore = false;
 #endif
                     }
-
-                    DEBUG_PRINTF("TSVal=%u [ignore:%c]", __builtin_bswap32(tsval.u32), bIgnore ? 'Y' : 'N');
+#ifndef NDEBUG
+                    printf("TSVal=%u [ignore:%c]\n", static_cast<unsigned>(__builtin_bswap32(tsval.u32)), bIgnore ? 'Y' : 'N');
+#endif
                 }
                 options = reinterpret_cast<struct Options*>(reinterpret_cast<uint8_t*>(options) + options->length);
                 break;
@@ -788,7 +795,7 @@ static Tcb* AllocTcb(uint16_t local_port, uint32_t* out_index) {
         }
     }
 
-    DEBUG_PUTS("No free TCB slots");
+    TCP_DEBUG_PUTS("No free TCB slots");
     return nullptr;
 }
 
@@ -850,7 +857,7 @@ __attribute__((hot)) void Input(struct Header* eth_frame) {
     eth_frame->tcp.srcpt = __builtin_bswap16(eth_frame->tcp.srcpt);
     eth_frame->tcp.dstpt = __builtin_bswap16(eth_frame->tcp.dstpt);
 
-    DEBUG_PRINTF(IPSTR ":%d[%d]", eth_frame->ip4.src[0], eth_frame->ip4.src[1], eth_frame->ip4.src[2], eth_frame->ip4.src[3], eth_frame->tcp.dstpt, eth_frame->tcp.srcpt);
+    TCP_DEBUG_PRINTF(IPSTR ":%u[%u]", eth_frame->ip4.src[0], eth_frame->ip4.src[1], eth_frame->ip4.src[2], eth_frame->ip4.src[3], static_cast<unsigned>(eth_frame->tcp.dstpt), static_cast<unsigned>(eth_frame->tcp.srcpt));
 
     // Special case reject for 443 unchanged
     if (eth_frame->tcp.dstpt == 443 && (eth_frame->tcp.control & Control::SYN)) {
@@ -867,8 +874,8 @@ __attribute__((hot)) void Input(struct Header* eth_frame) {
         TcpSwap32AcknumSeqnum(eth_frame);
         SendReset(eth_frame, &temp);
 
-        DEBUG_PUTS("Rejected HTTPS port 443 with RST");
-        DEBUG_EXIT();
+        TCP_DEBUG_PUTS("Rejected HTTPS port 443 with RST");
+        TCP_DEBUG_EXIT();
         return;
     }
 
@@ -907,15 +914,15 @@ __attribute__((hot)) void Input(struct Header* eth_frame) {
             ScanOptions(eth_frame, &temp, kDataOffset);
             SendReset(eth_frame, &temp);
 
-            DEBUG_PUTS("No listener / no conn -> RST");
-            DEBUG_EXIT();
+            TCP_DEBUG_PUTS("No listener / no conn -> RST");
+            TCP_DEBUG_EXIT();
             return;
         }
     }
 
     // From here on, pTCB points to the correct global TCB.
     // conn_index is your new connection_handle.
-    DEBUG_PRINTF("conn_handle=%u", conn_index);
+    TCP_DEBUG_PRINTF("conn_handle=%u", static_cast<unsigned>(conn_index));
 
     // Now proceed with your existing logic:
 
@@ -931,10 +938,11 @@ __attribute__((hot)) void Input(struct Header* eth_frame) {
     const auto SEG_SEQ = TcpGetSeqnum(eth_frame); // NOLINT
     const auto SEG_WND = eth_frame->tcp.window;   // NOLINT
 
-    DEBUG_PRINTF("%u:[%s] %c%c%c%c%c%c SEQ=%u, ACK=%u, tcplen=%u, data_offset=%u, data_length=%u", conn_index, kStateName[tcb->state], eth_frame->tcp.control & Control::URG ? 'U' : '-', eth_frame->tcp.control & Control::ACK ? 'A' : '-',
-                 eth_frame->tcp.control & Control::PSH ? 'P' : '-', eth_frame->tcp.control & Control::RST ? 'R' : '-', eth_frame->tcp.control & Control::SYN ? 'S' : '-', eth_frame->tcp.control & Control::FIN ? 'F' : '-', SEG_SEQ, SEG_ACK,
-                 kTcplen, kDataOffset, kDataLength);
-
+#ifndef NDEBUG
+    printf("%u:[%s] %c%c%c%c%c%c SEQ=%u, ACK=%u, tcplen=%u, data_offset=%u, data_length=%u\n", conn_index, kStateName[tcb->state], eth_frame->tcp.control & Control::URG ? 'U' : '-', eth_frame->tcp.control & Control::ACK ? 'A' : '-',
+           eth_frame->tcp.control & Control::PSH ? 'P' : '-', eth_frame->tcp.control & Control::RST ? 'R' : '-', eth_frame->tcp.control & Control::SYN ? 'S' : '-', eth_frame->tcp.control & Control::FIN ? 'F' : '-', SEG_SEQ, SEG_ACK,
+           kTcplen, kDataOffset, kDataLength);
+#endif
     ScanOptions(eth_frame, tcb, kDataOffset);
     auto is_acceptable = false;
 
@@ -948,14 +956,14 @@ __attribute__((hot)) void Input(struct Header* eth_frame) {
 
         // First: ignore RST
         if (eth_frame->tcp.control & Control::RST) {
-            DEBUG_EXIT();
+            TCP_DEBUG_EXIT();
             return;
         }
 
         // Second: if ACK in LISTEN, send RST
         if (eth_frame->tcp.control & Control::ACK) {
             SendReset(eth_frame, tcb);
-            DEBUG_EXIT();
+            TCP_DEBUG_EXIT();
             return;
         }
 
@@ -973,7 +981,7 @@ __attribute__((hot)) void Input(struct Header* eth_frame) {
             return;
         }
 
-        DEBUG_EXIT();
+        TCP_DEBUG_EXIT();
         return;
     }
 
@@ -1063,7 +1071,7 @@ __attribute__((hot)) void Input(struct Header* eth_frame) {
              * - The length of the data in the received segment (payload size).
              */
 
-            DEBUG_PRINTF("RCV.WND=%u, SEG_LEN=%u, RCV.NXT=%u, SEG_SEQ=%u", tcb->RCV.WND, SEG_LEN, tcb->RCV.NXT, SEG_SEQ);
+            TCP_DEBUG_PRINTF("RCV.WND=%u, SEG_LEN=%u, RCV.NXT=%u, SEG_SEQ=%u", static_cast<unsigned>(tcb->RCV.WND), static_cast<unsigned>(SEG_LEN), static_cast<unsigned>(tcb->RCV.NXT), static_cast<unsigned>(SEG_SEQ));
 
             if (tcb->RCV.WND > 0) {
                 if (SEG_LEN == 0) {
@@ -1122,7 +1130,7 @@ __attribute__((hot)) void Input(struct Header* eth_frame) {
                  */
             }
 
-            DEBUG_PRINTF("is_acceptable=%d", is_acceptable);
+            TCP_DEBUG_PRINTF("is_acceptable=%d", is_acceptable);
 
             if (!is_acceptable) {
                 // If an incoming segment is not acceptable, an acknowledgment should be sent in reply
@@ -1130,7 +1138,7 @@ __attribute__((hot)) void Input(struct Header* eth_frame) {
                 // <SEQ=SND.NXT><ACK=RCV.NXT><CTL=ACK>
                 if (eth_frame->tcp.control & Control::RST) {
                     FreeTcb(tcb);
-                    DEBUG_EXIT();
+                    TCP_DEBUG_EXIT();
                     return;
                 }
 
@@ -1141,7 +1149,7 @@ __attribute__((hot)) void Input(struct Header* eth_frame) {
 
                 SendSegment(tcb, send_info);
 
-                DEBUG_EXIT();
+                TCP_DEBUG_EXIT();
                 return;
             }
 
@@ -1174,7 +1182,7 @@ __attribute__((hot)) void Input(struct Header* eth_frame) {
                         break;
                 }
 
-                DEBUG_EXIT();
+                TCP_DEBUG_EXIT();
                 return;
             }
 
@@ -1185,19 +1193,19 @@ __attribute__((hot)) void Input(struct Header* eth_frame) {
                 // RFC 1122 section 4.2.2.20 (e)
                 if (tcb->state == kStateSynReceived) {
                     FreeTcb(tcb);
-                    DEBUG_EXIT();
+                    TCP_DEBUG_EXIT();
                     return;
                 }
 
                 SendReset(eth_frame, tcb);
 
-                DEBUG_PUTS("pTcp->tcp.control & Control::SYN");
+                TCP_DEBUG_PUTS("pTcp->tcp.control & Control::SYN");
             }
 
             /*  fifth check the ACK field, */ /* Page 72 */
             if (!(eth_frame->tcp.control & Control::ACK)) {
                 // if the ACK bit is off drop the segment and return
-                DEBUG_EXIT();
+                TCP_DEBUG_EXIT();
                 return;
             }
 
@@ -1215,13 +1223,13 @@ __attribute__((hot)) void Input(struct Header* eth_frame) {
                         RtxOnAck(tcb, SEG_ACK); // Retransmission ACK handling
 
                         NEW_STATE(tcb, kStateEstablished);
-                        DEBUG_EXIT();
+                        TCP_DEBUG_EXIT();
                         return;
                     } else {
                         // <SEQ=SEG.ACK><CTL=RST>
                         SendReset(eth_frame, tcb);
 
-                        DEBUG_PUTS("<SEQ=SEG.ACK><CTL=RST>");
+                        TCP_DEBUG_PUTS("<SEQ=SEG.ACK><CTL=RST>");
                     }
                     break;
                 case kStateEstablished:
@@ -1229,7 +1237,7 @@ __attribute__((hot)) void Input(struct Header* eth_frame) {
                 case kStateFinWait2:
                 case kStateCloseWait:
                 case kStateClosing:
-                    DEBUG_PRINTF("SND.UNA=%u, SEG_ACK=%u, SND.NXT=%u", tcb->SND.UNA, SEG_ACK, tcb->SND.NXT);
+                    TCP_DEBUG_PRINTF("SND.UNA=%u, SEG_ACK=%u, SND.NXT=%u", static_cast<unsigned>(tcb->SND.UNA), static_cast<unsigned>(SEG_ACK), static_cast<unsigned>(tcb->SND.NXT));
 
                     if (BetweenH(tcb->SND.UNA, SEG_ACK, tcb->SND.NXT)) {
                         auto bytes_ack = SEG_ACK - tcb->SND.UNA;
@@ -1238,7 +1246,7 @@ __attribute__((hot)) void Input(struct Header* eth_frame) {
                         RtxOnAck(tcb, SEG_ACK); // Retransmission ACK handling
 
                         if (SEG_ACK == tcb->SND.NXT) {
-                            DEBUG_PUTS("All segments are acknowledged");
+                            TCP_DEBUG_PUTS("All segments are acknowledged");
                         }
 
                         auto state = tcb->state;
@@ -1250,7 +1258,7 @@ __attribute__((hot)) void Input(struct Header* eth_frame) {
 
                         if (state == kStateFinWait1 || state == kStateClosing) {
                             bytes_ack--;
-                            DEBUG_PUTS("Acknowledged FIN does not count");
+                            TCP_DEBUG_PUTS("Acknowledged FIN does not count");
                         }
 
                         if (state == kStateEstablished && bytes_ack == 1) {
@@ -1264,7 +1272,7 @@ __attribute__((hot)) void Input(struct Header* eth_frame) {
                             tcb->SND.WL2 = SEG_ACK;
                         }
                     } else if (Leq(SEG_ACK, tcb->SND.UNA)) { // RFC 1122 section 4.2.2.20 (g)
-                        DEBUG_PUTS("Ignore duplicate ACK");
+                        TCP_DEBUG_PUTS("Ignore duplicate ACK");
                         if (BetweenLh(tcb->SND.UNA, SEG_ACK, tcb->SND.NXT)) {
                             // ... but update send window
                             if (Lt(tcb->SND.WL1, SEG_SEQ) || (tcb->SND.WL1 == SEG_SEQ && Leq(tcb->SND.WL2, SEG_ACK))) {
@@ -1274,7 +1282,7 @@ __attribute__((hot)) void Input(struct Header* eth_frame) {
                             }
                         }
                     } else if (Gt(SEG_ACK, tcb->SND.NXT)) {
-                        DEBUG_PRINTF("SEG_ACK=%u, SND.NXT=%u", SEG_ACK, tcb->SND.NXT);
+                        TCP_DEBUG_PRINTF("SEG_ACK=%u, SND.NXT=%u", static_cast<unsigned>(SEG_ACK), static_cast<unsigned>(tcb->SND.NXT));
 
                         SendInfo send_info;
                         send_info.SEQ = tcb->SND.NXT;
@@ -1283,7 +1291,7 @@ __attribute__((hot)) void Input(struct Header* eth_frame) {
 
                         SendSegment(tcb, send_info);
 
-                        DEBUG_EXIT();
+                        TCP_DEBUG_EXIT();
                         return;
                     }
                     break;
@@ -1346,8 +1354,8 @@ __attribute__((hot)) void Input(struct Header* eth_frame) {
                             const SendInfo kAck{.SEQ = tcb->SND.NXT, .ACK = tcb->RCV.NXT, .CTL = Control::ACK};
                             SendSegment(tcb, kAck);
 
-                            DEBUG_PUTS("Out of order");
-                            DEBUG_EXIT();
+                            TCP_DEBUG_PUTS("Out of order");
+                            TCP_DEBUG_EXIT();
                             return;
                         }
                     }
@@ -1365,12 +1373,12 @@ __attribute__((hot)) void Input(struct Header* eth_frame) {
              */
 
             if ((tcb->state == kStateClosed) || (tcb->state == kStateListen) || (tcb->state == kStateSynSent)) {
-                DEBUG_EXIT();
+                TCP_DEBUG_EXIT();
                 return;
             }
 
             if (!(eth_frame->tcp.control & Control::FIN)) {
-                DEBUG_EXIT();
+                TCP_DEBUG_EXIT();
                 return;
             }
 
@@ -1441,7 +1449,7 @@ __attribute__((hot)) void Input(struct Header* eth_frame) {
             break;
     }
 
-    DEBUG_EXIT();
+    TCP_DEBUG_EXIT();
 }
 
 static Listener* AllocListenerSlot() {
@@ -1620,7 +1628,7 @@ void Abort(uint32_t conn_handle) {
 
 // Public API:
 int32_t Send(ConnHandle conn_handle, const uint8_t* buffer, uint32_t length) {
-    DEBUG_ENTRY();
+    TCP_DEBUG_ENTRY();
     assert(buffer != nullptr);
 
     if (conn_handle >= TCP_MAX_TCBS_ALLOWED) {
@@ -1640,7 +1648,7 @@ int32_t Send(ConnHandle conn_handle, const uint8_t* buffer, uint32_t length) {
         return -1;
     }
 
-    DEBUG_PRINTF("%u -> %u", static_cast<uint32_t>(conn_handle), length);
+    TCP_DEBUG_PRINTF("%u -> %u", static_cast<unsigned>(conn_handle), static_cast<unsigned>(length));
 
     const auto* p = buffer;
 
@@ -1658,7 +1666,7 @@ int32_t Send(ConnHandle conn_handle, const uint8_t* buffer, uint32_t length) {
     }
 
     if (length == 0) {
-        DEBUG_EXIT();
+        TCP_DEBUG_EXIT();
         return 0; // everything sent immediately
     }
 
@@ -1666,14 +1674,14 @@ int32_t Send(ConnHandle conn_handle, const uint8_t* buffer, uint32_t length) {
 
     if (!queue.IsEmpty()) {
         // Already queued something.
-        DEBUG_EXIT();
+        TCP_DEBUG_EXIT();
         return -2;
     }
 
     while (length > 0) {
         if (queue.IsFull()) {
             // Can't queue everything.
-            DEBUG_EXIT();
+            TCP_DEBUG_EXIT();
             return -2;
         }
 
@@ -1686,7 +1694,7 @@ int32_t Send(ConnHandle conn_handle, const uint8_t* buffer, uint32_t length) {
         length -= kWriteLen;
     }
 
-    DEBUG_EXIT();
+    TCP_DEBUG_EXIT();
     return 1; // queued
 }
 } // namespace network::tcp

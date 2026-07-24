@@ -21,10 +21,6 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_HAL)
-#undef NDEBUG
-#endif
-
 #include <cstdint>
 #include <cstdio>
 #include <cassert>
@@ -53,8 +49,7 @@ static HwClock hwClock;
 #endif
 
 #include "logic_analyzer.h"
-
-#include "firmware/debug/debug_debug.h"
+#include "board_debug.h"
 #if defined(DEBUG_I2C)
 #include "firmware/debug/debug_i2cdetect.h"
 #endif
@@ -68,13 +63,13 @@ static HwClock hwClock;
 #endif
 
 static void EXTIA_IRQHandler() {
-    DEBUG_PUTS("EXTIA_IRQHandler");
+    BOARD_DEBUG_PUTS("EXTIA_IRQHandler");
 
     H3_PIO_PA_INT->STA = ~0;
 }
 
 static void EXTIG_IRQHandler() {
-    DEBUG_PUTS("EXTIG_IRQHandler");
+    BOARD_DEBUG_PUTS("EXTIG_IRQHandler");
 
     H3_PIO_PG_INT->STA = ~0;
 }

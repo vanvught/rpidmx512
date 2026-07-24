@@ -26,12 +26,30 @@
 #ifndef FIRMWARE_DEBUG_DEBUG_CONFIG_H_
 #define FIRMWARE_DEBUG_DEBUG_CONFIG_H_
 
-namespace debug {
-#ifdef NDEBUG
-constexpr bool kIsDebug = false;
+namespace debug::config {
+#if defined(NDEBUG)
+inline constexpr bool kAssertionsEnabled = false;
 #else
-constexpr bool kIsDebug = true;
+inline constexpr bool kAssertionsEnabled = true;
 #endif
-} // namespace debug
+
+#if defined(CONFIG_DEBUG_TRACE) // DEBUG_ENTRY, DEBUG_EXIT, DEBUG_PRINTF
+inline constexpr bool kTraceEnabled = true;
+#else
+inline constexpr bool kTraceEnabled = false;
+#endif
+
+#if defined(CONFIG_DEBUG_DUMP) // Dump(), PrintBits()
+inline constexpr bool kDumpEnabled = true;
+#else
+inline constexpr bool kDumpnabled = false;
+#endif
+
+#if defined(CONFIG_DEBUG_STACK) // Stack monitoring
+inline constexpr bool kStackMonitoringEnabled = true;
+#else
+inline constexpr bool kStackMonitoringEnabled = false;
+#endif
+} // namespace debug::config
 
 #endif // FIRMWARE_DEBUG_DEBUG_CONFIG_H_

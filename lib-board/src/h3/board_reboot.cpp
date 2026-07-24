@@ -23,10 +23,6 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_BOARD)
-#undef NDEBUG
-#endif
-
 #include "board.h"
 #include "display.h"
 #include "h3_watchdog.h"

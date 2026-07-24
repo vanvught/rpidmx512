@@ -33,13 +33,13 @@
 #include "spi/lcd_font.h"
 #include "spi/spilcd.h"
 #include "spi/config/config_lcd.h"
-#include "firmware/debug/debug_debug.h"
+#include "display_debug.h"
 
 class Paint : public SpiLcd {
    public:
     explicit Paint(uint32_t cs) : SpiLcd(cs) {
-        DEBUG_ENTRY();
-        DEBUG_EXIT();
+        DISPLAY_DEBUG_ENTRY();
+        DISPLAY_DEBUG_EXIT();
     }
     virtual ~Paint() = default;
 
@@ -48,7 +48,7 @@ class Paint : public SpiLcd {
     uint32_t GetHeight() const { return height_; }
 
     void FillColour(uint16_t colour) {
-        DEBUG_PRINTF("colour=0x%x", colour);
+        DISPLAY_DEBUG_PRINTF("colour=0x%x", colour);
 
         SetAddressWindow(0, 0, width_ - 1, height_ - 1);
 
@@ -66,7 +66,7 @@ class Paint : public SpiLcd {
 
     void Fill(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1, uint16_t colour) {
         if (!(x0 < width_ && (y0 < height_) && (x1 < width_) && (y1 < height_))) {
-            //			DEBUG_PRINTF("[%u:%u] %u:%u-%u:%u", width_, height_, x0, y0, x1, y1);
+            //			DISPLAY_DEBUG_PRINTF("[%u:%u] %u:%u-%u:%u", width_, height_, x0, y0, x1, y1);
             return;
         }
 
@@ -117,7 +117,7 @@ class Paint : public SpiLcd {
         const auto kCharOffset = (c - ' ') * font->kHeight;
         const auto* ptr = &font->table[kCharOffset];
 
-        //	    DEBUG_PRINTF("w=%u, h=%u, nCharOffset=%u", font->kWidth , font->kHeight, nCharOffset);
+        //	    DISPLAY_DEBUG_PRINTF("w=%u, h=%u, nCharOffset=%u", font->kWidth , font->kHeight, nCharOffset);
 
         uint32_t index = 0;
 
@@ -173,10 +173,10 @@ class Paint : public SpiLcd {
      */
     // TODO (a) Can be optimized for horizontal and vertical lines
     void DrawLine(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1, uint16_t colour) {
-        const int32_t kIx0 = static_cast<int32_t>(x0);
-        const int32_t kIy0 = static_cast<int32_t>(y0);
-        const int32_t kIx1 = static_cast<int32_t>(x1);
-        const int32_t kIy1 = static_cast<int32_t>(y1);
+        const auto kIx0 = static_cast<int32_t>(x0);
+        const auto kIy0 = static_cast<int32_t>(y0);
+        const auto kIx1 = static_cast<int32_t>(x1);
+        const auto kIy1 = static_cast<int32_t>(y1);
 
         const int32_t kDx = abs(kIx1 - kIx0);
         const int32_t kDy = -abs(kIy1 - kIy0);
@@ -213,7 +213,6 @@ class Paint : public SpiLcd {
    private:
     virtual void SetAddressWindow(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1) = 0;
 
-   private:
     void SetCursor(uint32_t x, uint32_t y) { SetAddressWindow(x, y, x, y); }
 
     void FillFramebuffer(uint16_t colour) {

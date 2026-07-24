@@ -28,24 +28,20 @@
 
 #include "dmxnode_scenes.h"
 #include "flashcode.h"
- #include "firmware/debug/debug_debug.h"
+#include "dmxnode_debug.h"
 
-namespace dmxnode::scenes
-{
+namespace dmxnode::scenes {
 
 static bool s_is_detected;
 static uint32_t s_offset_base;
 
-static bool IsDetected()
-{
-    DEBUG_ENTRY();
-    DEBUG_PRINTF("isDetected=%d", s_is_detected);
+static bool IsDetected() {
+    DMXNODE_DEBUG_ENTRY();
+    DMXNODE_DEBUG_PRINTF("isDetected=%d", s_is_detected);
 
-    if (!s_is_detected)
-    {
-        if (!FlashCode::Get()->IsDetected())
-        {
-            DEBUG_EXIT();
+    if (!s_is_detected) {
+        if (!FlashCode::Get()->IsDetected()) {
+            DMXNODE_DEBUG_EXIT();
             return false;
         }
 
@@ -53,137 +49,124 @@ static bool IsDetected()
         assert(kEraseSize <= dmxnode::scenes::kBytesNeeded);
         const auto kPages = 1 + dmxnode::scenes::kBytesNeeded / kEraseSize;
 
-        DEBUG_PRINTF("Bytes needed=%u, kEraseSize=%u, kPages=%u", dmxnode::scenes::kBytesNeeded, kEraseSize, kPages);
+        DMXNODE_DEBUG_PRINTF("Bytes needed=%u, kEraseSize=%u, kPages=%u", dmxnode::scenes::kBytesNeeded, kEraseSize, kPages);
 
         assert(((kPages + 1) * kEraseSize) <= FlashCode::Get()->GetSize());
 
         s_offset_base = FlashCode::Get()->GetSize() - ((kPages + 1) * kEraseSize);
 
-        DEBUG_PRINTF("nOffsetBase=%p", s_offset_base);
+        DMXNODE_DEBUG_PRINTF("nOffsetBase=%p", s_offset_base);
     }
 
-    DEBUG_EXIT();
+    DMXNODE_DEBUG_EXIT();
     return true;
 }
 
-void WriteStart()
-{
-    DEBUG_ENTRY();
-    DEBUG_PRINTF("isDetected=%d", s_is_detected);
+void WriteStart() {
+    DMXNODE_DEBUG_ENTRY();
+    DMXNODE_DEBUG_PRINTF("isDetected=%d", s_is_detected);
 
-    if (!IsDetected())
-    {
-        DEBUG_EXIT();
+    if (!IsDetected()) {
+        DMXNODE_DEBUG_EXIT();
         return;
     }
 
     flashcode::Result result;
     uint32_t timeout = 0;
 
-    while (!FlashCode::Get()->Erase(s_offset_base, FlashCode::Get()->GetSectorSize(), result))
-    {
+    while (!FlashCode::Get()->Erase(s_offset_base, FlashCode::Get()->GetSectorSize(), result)) {
         timeout++;
     }
 
     s_is_detected = (result == flashcode::Result::kOk);
 
-    DEBUG_PRINTF("result=%d, s_is_detected=%d, timeout=%u", result, s_is_detected, timeout);
-    DEBUG_EXIT();
+    DMXNODE_DEBUG_PRINTF("result=%d, s_is_detected=%d, timeout=%u", result, s_is_detected, timeout);
+    DMXNODE_DEBUG_EXIT();
 }
 
-void Write(uint32_t port_index, const uint8_t* data)
-{
-    DEBUG_ENTRY();
+void Write(uint32_t port_index, const uint8_t* data) {
+    DMXNODE_DEBUG_ENTRY();
     assert(port_index < dmxnode::kMaxPorts);
     assert(data != nullptr);
 
-    if (!s_is_detected)
-    {
-        DEBUG_EXIT();
+    if (!s_is_detected) {
+        DMXNODE_DEBUG_EXIT();
         return;
     }
 
     const auto kOffset = s_offset_base + (port_index * dmxnode::kUniverseSize);
 
-    DEBUG_PRINTF("s_offset_base=%p, kOffset=%p", s_offset_base, kOffset);
+    DMXNODE_DEBUG_PRINTF("s_offset_base=%p, kOffset=%p", s_offset_base, kOffset);
 
     flashcode::Result result;
     uint32_t timeout = 0;
 
-    while (!FlashCode::Get()->Write(kOffset, dmxnode::kUniverseSize, data, result))
-    {
+    while (!FlashCode::Get()->Write(kOffset, dmxnode::kUniverseSize, data, result)) {
         timeout++;
     }
 
-    DEBUG_PRINTF("nResult=%d, nTimeout=%u", result, timeout);
+    DMXNODE_DEBUG_PRINTF("nResult=%d, nTimeout=%u", result, timeout);
 
     assert(result == flashcode::Result::kOk);
 
-    DEBUG_EXIT();
+    DMXNODE_DEBUG_EXIT();
 }
 
-void WriteEnd()
-{
-    DEBUG_ENTRY();
+void WriteEnd() {
+    DMXNODE_DEBUG_ENTRY();
 
     // No code needed here
 
-    DEBUG_EXIT();
+    DMXNODE_DEBUG_EXIT();
 }
 
-void ReadStart()
-{
-    DEBUG_ENTRY();
-    DEBUG_PRINTF("s_is_detected=%d", s_is_detected);
+void ReadStart() {
+    DMXNODE_DEBUG_ENTRY();
+    DMXNODE_DEBUG_PRINTF("s_is_detected=%d", s_is_detected);
 
-    if (!IsDetected())
-    {
-        DEBUG_EXIT();
+    if (!IsDetected()) {
+        DMXNODE_DEBUG_EXIT();
         return;
     }
 
     s_is_detected = true;
 
-    DEBUG_EXIT();
+    DMXNODE_DEBUG_EXIT();
 }
 
-void Read(uint32_t port_index, uint8_t* data)
-{
-    DEBUG_ENTRY();
+void Read(uint32_t port_index, uint8_t* data) {
+    DMXNODE_DEBUG_ENTRY();
     assert(port_index < dmxnode::kMaxPorts);
     assert(data != nullptr);
 
-    if (!s_is_detected)
-    {
-        DEBUG_EXIT();
+    if (!s_is_detected) {
+        DMXNODE_DEBUG_EXIT();
         return;
     }
 
     const auto kOffset = s_offset_base + (port_index * dmxnode::kUniverseSize);
 
-    DEBUG_PRINTF("nOffsetBase=%p, nOffset=%p", s_offset_base, kOffset);
+    DMXNODE_DEBUG_PRINTF("nOffsetBase=%p, nOffset=%p", s_offset_base, kOffset);
 
     flashcode::Result result;
     uint32_t timeout = 0;
 
-    while (!FlashCode::Get()->Read(kOffset, dmxnode::kUniverseSize, data, result))
-    {
+    while (!FlashCode::Get()->Read(kOffset, dmxnode::kUniverseSize, data, result)) {
         timeout++;
     }
 
-    DEBUG_PRINTF("result=%d, timeout=%u", result, timeout);
+    DMXNODE_DEBUG_PRINTF("result=%d, timeout=%u", result, timeout);
 
     assert(result == flashcode::Result::kOk);
 
-    DEBUG_EXIT();
+    DMXNODE_DEBUG_EXIT();
 }
 
-void ReadEnd()
-{
-    DEBUG_ENTRY();
+void ReadEnd() {
+    DMXNODE_DEBUG_ENTRY();
 
     // No code needed here
 
-    DEBUG_EXIT();
+    DMXNODE_DEBUG_EXIT();
 }
 } // namespace dmxnode::scenes

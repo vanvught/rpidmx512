@@ -23,10 +23,6 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_LTCETC)
-#undef NDEBUG
-#endif
-
 #include <cstdint>
 #include <cstring>
 #include <cstdio>
@@ -36,7 +32,8 @@
 #include "network_udp.h"
 #include "network_igmp.h"
 #include "common/utils/utils_hex.h"
-#include "firmware/debug/debug_debug.h"
+#include "ltc_debug.h"
+#include "firmware/debug/debug_dump.h"
 
 void LtcEtc::Start() {
     if ((config_.destination_ip != 0) && (config_.destination_port != 0)) {
@@ -63,7 +60,7 @@ void LtcEtc::Start() {
     p += sizeof(Udp::kTimecode);
     memcpy(p, Udp::kEnd, sizeof(Udp::kEnd));
 
-    DEBUG_PRINTF("handle_.Destination=%d, handle_.Source=%d", handle_.destination, handle_.source);
+    LTC_ETC_DEBUG_PRINTF("handle_.Destination=%d, handle_.Source=%d", handle_.destination, handle_.source);
 }
 
 void LtcEtc::Send(const midi::Timecode* time_code) {
@@ -110,17 +107,12 @@ void LtcEtc::Send(const midi::Timecode* time_code) {
     }
 
     network::udp::Send(handle_.destination, reinterpret_cast<const uint8_t*>(s_sendbuffer), length, config_.destination_ip, config_.destination_port);
-
-#ifndef NDEBUG
     debug::Dump(s_sendbuffer, length);
-#endif
 }
 
 void LtcEtc::Input(const uint8_t* buffer, uint32_t size, [[maybe_unused]] uint32_t from_ip, [[maybe_unused]] uint16_t from_port) {
     udp_buffer_ = reinterpret_cast<const char*>(buffer);
-#ifndef NDEBUG
     debug::Dump(udp_buffer_, size);
-#endif
 
     if (size == Udp::kMinMsgLength) {
         if (config_.terminator != ltcetc::UdpTerminator::kNone) {
@@ -130,35 +122,35 @@ void LtcEtc::Input(const uint8_t* buffer, uint32_t size, [[maybe_unused]] uint32
 
     if (size == 1 + Udp::kMinMsgLength) {
         if (config_.terminator == ltcetc::UdpTerminator::kCrlf) {
-            DEBUG_EXIT();
+            LTC_ETC_DEBUG_EXIT();
             return;
         }
 
         if ((config_.terminator == ltcetc::UdpTerminator::kCr) && (udp_buffer_[Udp::kMinMsgLength] != 0x0D)) {
-            DEBUG_EXIT();
+            LTC_ETC_DEBUG_EXIT();
             return;
         }
 
         if ((config_.terminator == ltcetc::UdpTerminator::kLf) && (udp_buffer_[Udp::kMinMsgLength] != 0x0A)) {
-            DEBUG_EXIT();
+            LTC_ETC_DEBUG_EXIT();
             return;
         }
     }
 
     if (size == 2 + Udp::kMinMsgLength) {
         if (config_.terminator != ltcetc::UdpTerminator::kCrlf) {
-            DEBUG_EXIT();
+            LTC_ETC_DEBUG_EXIT();
             return;
         }
 
         if ((udp_buffer_[Udp::kMinMsgLength] != 0x0D) || (udp_buffer_[1 + Udp::kMinMsgLength] != 0x0A)) {
-            DEBUG_EXIT();
+            LTC_ETC_DEBUG_EXIT();
             return;
         }
     }
 
     if (memcmp(udp_buffer_, s_sendbuffer, sizeof(Udp::kPrefix) + sizeof(Udp::kHeader)) != 0) {
-        DEBUG_EXIT();
+        LTC_ETC_DEBUG_EXIT();
         return;
     }
 
@@ -175,7 +167,7 @@ void LtcEtc::ParseTimeCode() {
     if (handler_ != nullptr) {
         midi::Timecode time_code;
 
-        auto* p = &udp_buffer_[sizeof(Udp::kPrefix) + sizeof(Udp::kHeader)];
+        const auto* p = &udp_buffer_[sizeof(Udp::kPrefix) + sizeof(Udp::kHeader)];
         auto data = FromHex(p);
 
         time_code.hours = data & 0x1F;
@@ -193,7 +185,7 @@ void LtcEtc::ParseTimeCode() {
 
         time_code.frames = FromHex(p);
 
-        DEBUG_PRINTF("%d:%d:%d:%d.%d", time_code.hours, time_code.minutes, time_code.seconds, time_code.frames, time_code.type);
+        LTC_ETC_DEBUG_PRINTF("%d:%d:%d:%d.%d", time_code.hours, time_code.minutes, time_code.seconds, time_code.frames, time_code.type);
 
         handler_->Handler(&time_code);
     }

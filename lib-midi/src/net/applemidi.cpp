@@ -26,10 +26,6 @@
  * https://developer.apple.com/library/archive/documentation/Audio/Conceptual/MIDINetworkDriverProtocol/MIDI/MIDI.html
  */
 
-#if defined(DEBUG_NET_APPLEMIDI)
-#undef NDEBUG
-#endif
-
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC push_options
 #pragma GCC optimize("O2")
@@ -44,7 +40,7 @@
 #include "network_iface.h"
 #include "softwaretimers.h"
 #include "firmware/debug/debug_dump.h"
-#include "firmware/debug/debug_debug.h"
+#include "midi_debug.h"
 
 namespace {
 enum class AppleMidiCommand : uint16_t {
@@ -74,7 +70,7 @@ void TimeoutTimer([[maybe_unused]] TimerHandle_t handle) {
     if (AppleMidi::GetSessionState() == applemidi::SessionState::kEstablished) {
         AppleMidi::ResetSession();
         SoftwareTimerDelete(s_timer_id);
-        DEBUG_PUTS("End Session {time-out}");
+        APPLEMIDI_DEBUG_PUTS("End Session {time-out}");
     }
 }
 
@@ -85,7 +81,7 @@ using _pcast32 = union pcast32 {
 } // namespace
 
 AppleMidi::AppleMidi() {
-    DEBUG_ENTRY();
+    APPLEMIDI_DEBUG_ENTRY();
     assert(s_this == nullptr);
     s_this = this;
 
@@ -102,29 +98,29 @@ AppleMidi::AppleMidi() {
 
     memset(&session_status_, 0, sizeof(struct applemidi::SessionStatus));
 
-    DEBUG_PRINTF("applemidi::EXCHANGE_PACKET_MIN_LENGTH = %u", static_cast<uint32_t>(applemidi::kExchangePacketMinLength));
-    DEBUG_EXIT();
+    APPLEMIDI_DEBUG_PRINTF("applemidi::EXCHANGE_PACKET_MIN_LENGTH = %u", static_cast<uint32_t>(applemidi::kExchangePacketMinLength));
+    APPLEMIDI_DEBUG_EXIT();
 }
 
 void AppleMidi::InputControlMessage(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port) {
-    DEBUG_ENTRY();
+    APPLEMIDI_DEBUG_ENTRY();
 
     if (__builtin_expect((size >= applemidi::kExchangePacketMinLength), 1)) {
         if (*reinterpret_cast<const uint16_t*>(buffer) != kSignature) {
-            DEBUG_EXIT();
+            APPLEMIDI_DEBUG_EXIT();
             return;
         }
     }
 
-    auto* packet = reinterpret_cast<const applemidi::ExchangePacket*>(buffer);
+    const auto* packet = reinterpret_cast<const applemidi::ExchangePacket*>(buffer);
 
-    DEBUG_PRINTF("Command: %.4x, session_state=%u", packet->command, static_cast<uint32_t>(session_status_.session_state));
+    APPLEMIDI_DEBUG_PRINTF("Command: %.4x, session_state=%u", packet->command, static_cast<uint32_t>(session_status_.session_state));
 
     if (session_status_.session_state == applemidi::SessionState::kWaitingInControl) {
-        DEBUG_PUTS("SESSION_STATE_WAITING_IN_CONTROL");
+        APPLEMIDI_DEBUG_PUTS("SESSION_STATE_WAITING_IN_CONTROL");
 
         if ((session_status_.remote_ip == 0) && (static_cast<AppleMidiCommand>(packet->command) == AppleMidiCommand::kInvitation)) {
-            DEBUG_PUTS("Invitation");
+            APPLEMIDI_DEBUG_PUTS("Invitation");
 
             exchange_packet_reply_.ssrc = GetSSRC();
             exchange_packet_reply_.command = static_cast<uint16_t>(AppleMidiCommand::kInvitationAccepted);
@@ -137,28 +133,28 @@ void AppleMidi::InputControlMessage(const uint8_t* buffer, uint32_t size, uint32
             session_status_.session_state = applemidi::SessionState::kWaitingInMidi;
             session_status_.remote_ip = from_ip;
 
-            DEBUG_EXIT();
+            APPLEMIDI_DEBUG_EXIT();
             return;
         } else {
-            DEBUG_EXIT();
+            APPLEMIDI_DEBUG_EXIT();
             return;
         }
     }
 
     if (session_status_.session_state == applemidi::SessionState::kEstablished) {
-        DEBUG_PUTS("SESSION_STATE_ESTABLISHED");
+        APPLEMIDI_DEBUG_PUTS("SESSION_STATE_ESTABLISHED");
 
         if ((session_status_.remote_ip == from_ip) && (static_cast<AppleMidiCommand>(packet->command) == AppleMidiCommand::kEndsession)) {
             session_status_.session_state = applemidi::SessionState::kWaitingInControl;
             session_status_.remote_ip = 0;
 
-            DEBUG_PUTS("End Session");
-            DEBUG_EXIT();
+            APPLEMIDI_DEBUG_PUTS("End Session");
+            APPLEMIDI_DEBUG_EXIT();
             return;
         }
 
         if (static_cast<AppleMidiCommand>(packet->command) == AppleMidiCommand::kInvitation) {
-            DEBUG_PUTS("Invitation rejected");
+            APPLEMIDI_DEBUG_PUTS("Invitation rejected");
 
             exchange_packet_reply_.ssrc = GetSSRC();
             exchange_packet_reply_.command = static_cast<uint16_t>(AppleMidiCommand::kInvitationRejected);
@@ -166,20 +162,20 @@ void AppleMidi::InputControlMessage(const uint8_t* buffer, uint32_t size, uint32
 
             network::udp::Send(handle_control_, reinterpret_cast<const uint8_t*>(&exchange_packet_reply_), exchange_packet_reply_size_, from_ip, from_port);
 
-            DEBUG_EXIT();
+            APPLEMIDI_DEBUG_EXIT();
             return;
         }
     }
 
-    DEBUG_EXIT();
+    APPLEMIDI_DEBUG_EXIT();
 }
 
 void AppleMidi::InputMidiMessage(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port) {
-    DEBUG_ENTRY();
+    APPLEMIDI_DEBUG_ENTRY();
 
     if (__builtin_expect((size >= 12), 0)) {
         if (session_status_.remote_ip != from_ip) {
-            DEBUG_EXIT();
+            APPLEMIDI_DEBUG_EXIT();
             return;
         }
     }
@@ -187,21 +183,21 @@ void AppleMidi::InputMidiMessage(const uint8_t* buffer, uint32_t size, uint32_t 
     if (*reinterpret_cast<const uint16_t*>(buffer) == 0x6180) {
         HandleRtpMidi(buffer);
 
-        DEBUG_EXIT();
+        APPLEMIDI_DEBUG_EXIT();
         return;
     }
 
     if (size >= applemidi::kExchangePacketMinLength) {
         if (*reinterpret_cast<const uint16_t*>(buffer) == kSignature) {
             if (session_status_.session_state == applemidi::SessionState::kWaitingInMidi) {
-                DEBUG_PUTS("SESSION_STATE_WAITING_IN_MIDI");
+                APPLEMIDI_DEBUG_PUTS("SESSION_STATE_WAITING_IN_MIDI");
 
-                auto* packet = reinterpret_cast<const applemidi::ExchangePacket*>(buffer);
+                const auto* packet = reinterpret_cast<const applemidi::ExchangePacket*>(buffer);
 
-                DEBUG_PRINTF("Command: %.4x", packet->command);
+                APPLEMIDI_DEBUG_PRINTF("Command: %.4x", packet->command);
 
                 if (static_cast<AppleMidiCommand>(packet->command) == AppleMidiCommand::kInvitation) {
-                    DEBUG_PUTS("Invitation");
+                    APPLEMIDI_DEBUG_PUTS("Invitation");
 
                     exchange_packet_reply_.ssrc = GetSSRC();
                     exchange_packet_reply_.command = static_cast<uint16_t>(AppleMidiCommand::kInvitationAccepted);
@@ -215,17 +211,17 @@ void AppleMidi::InputMidiMessage(const uint8_t* buffer, uint32_t size, uint32_t 
                     s_timer_id = SoftwareTimerAdd(kTimeout, TimeoutTimer);
                 }
 
-                DEBUG_EXIT();
+                APPLEMIDI_DEBUG_EXIT();
                 return;
             }
 
             if (session_status_.session_state == applemidi::SessionState::kEstablished) {
-                DEBUG_PUTS("SESSION_STATE_ESTABLISHED");
+                APPLEMIDI_DEBUG_PUTS("SESSION_STATE_ESTABLISHED");
 
-                auto* packet = reinterpret_cast<const applemidi::ExchangePacket*>(buffer);
+                const auto* packet = reinterpret_cast<const applemidi::ExchangePacket*>(buffer);
 
                 if (static_cast<AppleMidiCommand>(packet->command) == AppleMidiCommand::kSynchronization) {
-                    DEBUG_PUTS("Timestamp Synchronization");
+                    APPLEMIDI_DEBUG_PUTS("Timestamp Synchronization");
                     auto* t = reinterpret_cast<TimestampSynchronization*>(const_cast<uint8_t*>(buffer));
 
                     if (t->count == 0) {
@@ -257,5 +253,5 @@ void AppleMidi::InputMidiMessage(const uint8_t* buffer, uint32_t size, uint32_t 
         }
     }
 
-    DEBUG_EXIT();
+    APPLEMIDI_DEBUG_EXIT();
 }

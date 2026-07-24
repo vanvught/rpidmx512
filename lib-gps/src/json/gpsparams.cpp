@@ -23,10 +23,6 @@
 * THE SOFTWARE.
 */
 
-#ifdef DEBUG_GPSPARAMS
-#undef NDEBUG
-#endif
-
 #include <cstdint>
 #include <utility>
 
@@ -37,7 +33,7 @@
 #include "configstore.h"
 #include "configurationstore.h"
 #include "common/utils/utils_flags.h"
-#include "firmware/debug/debug_debug.h"
+#include "gps_debug.h"
 
 using common::store::gps::Flags;
 
@@ -59,7 +55,9 @@ void GpsParams::SetModule(const char* val, uint32_t len) {
 }
 
 void GpsParams::SetEnable(const char* val, [[maybe_unused]] uint32_t len) {
-    if (len != 1) return;
+    if (len != 1) {
+        return;
+    }
 
     store_gps.flags = common::SetFlagValue(store_gps.flags, Flags::Flag::kEnable, val[0] != '0');
 }
@@ -69,16 +67,16 @@ void GpsParams::SetUtcOffset(const char* val, uint32_t len) {
     uint32_t minutes;
 
     if (utc::ParseOffset(val, len, hours, minutes)) {
-        DEBUG_PUTS("Parse OK");
+        GPS_DEBUG_PUTS("Parse OK");
 
         int32_t utc_offset;
 
         if (utc::ValidateOffset(hours, minutes, utc_offset)) {
-            DEBUG_PUTS("Validate OK");
+            GPS_DEBUG_PUTS("Validate OK");
             store_gps.utc_offset = utc_offset;
         }
     } else {
-        DEBUG_PUTS("Parse ERROR");
+        GPS_DEBUG_PUTS("Parse ERROR");
     }
 }
 
@@ -86,7 +84,7 @@ void GpsParams::Store(const char* buffer, uint32_t buffer_size) {
     ParseJsonWithTable(buffer, buffer_size, kGpsKeys);
     ConfigStore::Instance().Store(&store_gps, &ConfigurationStore::gps);
 
-#ifndef NDEBUG
+#ifdef DEBUG_GPS
     Dump();
 #endif
 }
@@ -96,7 +94,7 @@ void GpsParams::Set() {
 
     gps.SetUtcOffset(store_gps.utc_offset);
 
-#ifndef NDEBUG
+#ifdef DEBUG_GPS
     Dump();
 #endif
 }

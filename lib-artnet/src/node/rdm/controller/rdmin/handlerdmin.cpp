@@ -22,10 +22,6 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_ARTNET_RDMIN)
-#undef NDEBUG
-#endif
-
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC push_options
 #pragma GCC optimize("O2")
@@ -50,7 +46,9 @@ void ArtNetNode::HandleRdmIn() {
         auto* art_rdm = &art_tod_packet_.art_rdm;
 
         if (node_.port[port_index].direction == dmxnode::Direction::kInput) {
-            if (input_port_[port_index].destination_ip == 0) continue;
+            if (input_port_[port_index].destination_ip == 0) {
+                continue;
+            }
 
             const auto* rdm_data = Rdm::Receive(port_index);
             if (rdm_data != nullptr) {
@@ -61,7 +59,7 @@ void ArtNetNode::HandleRdmIn() {
                     art_rdm->command = 0;
                     art_rdm->address = node_.port[port_index].sw;
 
-                    auto* message = reinterpret_cast<const struct TRdmMessage*>(rdm_data);
+                    const auto* message = reinterpret_cast<const struct TRdmMessage*>(rdm_data);
                     memcpy(art_rdm->rdm_packet, &rdm_data[1], message->message_length + 1U);
 
                     const auto* rdm_message = reinterpret_cast<const struct TRdmMessageNoSc*>(art_rdm->rdm_packet);
@@ -85,7 +83,7 @@ void ArtNetNode::HandleRdmIn() {
                     art_rdm->command = 0;
                     art_rdm->address = node_.port[port_index].sw;
 
-                    auto* message = reinterpret_cast<const struct TRdmMessage*>(rdm_data);
+                    const auto* message = reinterpret_cast<const struct TRdmMessage*>(rdm_data);
                     memcpy(art_rdm->rdm_packet, &rdm_data[1], message->message_length + 1U);
 
                     const auto* rdm_message = reinterpret_cast<const struct TRdmMessageNoSc*>(art_rdm->rdm_packet);

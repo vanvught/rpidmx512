@@ -33,12 +33,12 @@
 #include "e131.h"
 #include "e117.h"
 #include "uuid.h"
-#include "firmware/debug/debug_debug.h"
+#include "showfile_debug.h"
 
 class ShowFileProtocol {
    public:
     ShowFileProtocol() {
-        DEBUG_ENTRY();
+        SHOWFILE_DEBUG_ENTRY();
         // Root Layer (See Section 5)
         e131_data_packet_.root_layer.pre_amble_size = __builtin_bswap16(0x0010);
         e131_data_packet_.root_layer.post_amble_size = __builtin_bswap16(0x0000);
@@ -58,27 +58,27 @@ class ShowFileProtocol {
         e131_data_packet_.dmp_layer.address_increment = __builtin_bswap16(0x0001);
         e131_data_packet_.dmp_layer.property_values[0] = 0;
 
-        DEBUG_EXIT();
+        SHOWFILE_DEBUG_EXIT();
     }
 
     void SetSynchronizationAddress([[maybe_unused]] uint16_t synchronization_address) {}
 
     void Start() {
-        DEBUG_ENTRY();
+        SHOWFILE_DEBUG_ENTRY();
 
-        DEBUG_EXIT();
+        SHOWFILE_DEBUG_EXIT();
     }
 
     void Stop() {
-        DEBUG_ENTRY();
+        SHOWFILE_DEBUG_ENTRY();
 
-        DEBUG_EXIT();
+        SHOWFILE_DEBUG_EXIT();
     }
 
     void Record() {
-        DEBUG_ENTRY();
+        SHOWFILE_DEBUG_ENTRY();
 
-        DEBUG_EXIT();
+        SHOWFILE_DEBUG_EXIT();
     }
 
     void DmxOut(uint16_t universe, const uint8_t* dmx_data, uint32_t length) {

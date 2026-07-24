@@ -28,133 +28,119 @@
 
 #include "spi/spi_flash.h"
 #include "dmxnode.h"
- #include "firmware/debug/debug_debug.h"
+#include "dmxnode_debug.h"
 
-namespace dmxnode::scenes
-{
+namespace dmxnode::scenes {
 static bool s_has_flash;
 static uint32_t s_offset_base;
 
-static bool CheckHaveFlash()
-{
-    DEBUG_ENTRY();
-    DEBUG_PRINTF("s_hasFlash=%d", s_has_flash);
+static bool CheckHaveFlash() {
+    DMXNODE_DEBUG_ENTRY();
+    DMXNODE_DEBUG_PRINTF("s_hasFlash=%d", s_has_flash);
 
-    if (!s_has_flash)
-    {
-        if (!spi_flash_probe())
-        {
-            DEBUG_EXIT();
+    if (!s_has_flash) {
+        if (!spi_flash_probe()) {
+            DMXNODE_DEBUG_EXIT();
             return false;
         }
 
         const auto kEraseSize = spi_flash_get_sector_size();
         assert(kEraseSize <= dmxnode::scenes::kBytesNeeded);
-        const auto kPages = 1 + dmxnode::scenes::kBytesNeeded / kEraseSize;
+        const auto kPages = 1 + (dmxnode::scenes::kBytesNeeded / kEraseSize);
 
-        DEBUG_PRINTF("Bytes needed=%u, nEraseSize=%u, nPages=%u", dmxnode::scenes::kBytesNeeded, kEraseSize, kPages);
+        DMXNODE_DEBUG_PRINTF("Bytes needed=%u, nEraseSize=%u, nPages=%u", dmxnode::scenes::kBytesNeeded, kEraseSize, kPages);
 
         assert(((kPages + 1) * kEraseSize) <= spi_flash_get_size());
 
         s_offset_base = spi_flash_get_size() - ((kPages + 1) * kEraseSize);
 
-        DEBUG_PRINTF("nOffsetBase=%p", s_offset_base);
+        DMXNODE_DEBUG_PRINTF("nOffsetBase=%p", s_offset_base);
     }
 
-    DEBUG_EXIT();
+    DMXNODE_DEBUG_EXIT();
     return true;
 }
 
-void WriteStart()
-{
-    DEBUG_ENTRY();
-    DEBUG_PRINTF("s_hasFlash=%d", s_has_flash);
+void WriteStart() {
+    DMXNODE_DEBUG_ENTRY();
+    DMXNODE_DEBUG_PRINTF("s_hasFlash=%d", s_has_flash);
 
-    if (!CheckHaveFlash())
-    {
-        DEBUG_EXIT();
+    if (!CheckHaveFlash()) {
+        DMXNODE_DEBUG_EXIT();
         return;
     }
 
     s_has_flash = spi_flash_cmd_erase(s_offset_base, spi_flash_get_sector_size());
 
-    DEBUG_PRINTF("s_hasFlash=%d", s_has_flash);
-    DEBUG_EXIT();
+    DMXNODE_DEBUG_PRINTF("s_hasFlash=%d", s_has_flash);
+    DMXNODE_DEBUG_EXIT();
 }
 
-void Write(uint32_t port_index, const uint8_t* data)
-{
-    DEBUG_ENTRY();
+void Write(uint32_t port_index, const uint8_t* data) {
+    DMXNODE_DEBUG_ENTRY();
     assert(port_index < dmxnode::kMaxPorts);
     assert(data != nullptr);
 
-    if (!s_has_flash)
-    {
-        DEBUG_EXIT();
+    if (!s_has_flash) {
+        DMXNODE_DEBUG_EXIT();
         return;
     }
 
     const auto kOffset = s_offset_base + (port_index * dmxnode::kUniverseSize);
 
-    DEBUG_PRINTF("s_offset_base=%p, kOffset=%p", s_offset_base, kOffset);
+    DMXNODE_DEBUG_PRINTF("s_offset_base=%p, kOffset=%p", s_offset_base, kOffset);
 
     spi_flash_cmd_write_multi(kOffset, dmxnode::kUniverseSize, data);
 
-    DEBUG_EXIT();
+    DMXNODE_DEBUG_EXIT();
 }
 
-void WriteEnd()
-{
-    DEBUG_ENTRY();
+void WriteEnd() {
+    DMXNODE_DEBUG_ENTRY();
 
     // No code needed here
 
-    DEBUG_EXIT();
+    DMXNODE_DEBUG_EXIT();
 }
 
-void ReadStart()
-{
-    DEBUG_ENTRY();
-    DEBUG_PRINTF("s_has_flash=%d", s_has_flash);
+void ReadStart() {
+    DMXNODE_DEBUG_ENTRY();
+    DMXNODE_DEBUG_PRINTF("s_has_flash=%d", s_has_flash);
 
-    if (!CheckHaveFlash())
-    {
-        DEBUG_EXIT();
+    if (!CheckHaveFlash()) {
+        DMXNODE_DEBUG_EXIT();
         return;
     }
 
     s_has_flash = true;
 
-    DEBUG_EXIT();
+    DMXNODE_DEBUG_EXIT();
 }
 
-void Read(uint32_t port_index, uint8_t* data)
-{
-    DEBUG_ENTRY();
+void Read(uint32_t port_index, uint8_t* data) {
+    DMXNODE_DEBUG_ENTRY();
     assert(port_index < dmxnode::kMaxPorts);
     assert(data != nullptr);
 
-    if (!s_has_flash)
-    {
-        DEBUG_EXIT();
+    if (!s_has_flash) {
+        DMXNODE_DEBUG_EXIT();
         return;
     }
 
     const auto kOffset = s_offset_base + (port_index * dmxnode::kUniverseSize);
 
-    DEBUG_PRINTF("s_offset_base=%p, kOffset=%p", s_offset_base, kOffset);
+    DMXNODE_DEBUG_PRINTF("s_offset_base=%p, kOffset=%u", reinterpret_cast<void*>(s_offset_base), static_cast<unsigned>(kOffset));
 
     spi_flash_cmd_read_fast(kOffset, dmxnode::kUniverseSize, data);
 
-    DEBUG_EXIT();
+    DMXNODE_DEBUG_EXIT();
 }
 
-void ReadEnd()
-{
-    DEBUG_ENTRY();
+void ReadEnd() {
+    DMXNODE_DEBUG_ENTRY();
 
     // No code needed here
 
-    DEBUG_EXIT();
+    DMXNODE_DEBUG_EXIT();
 }
 } // namespace dmxnode::scenes

@@ -31,17 +31,13 @@
 
 #include "formats/showfileformatola.h"
 #include "showfile.h"
+#include "showfile_debug.h"
 
- #include "firmware/debug/debug_debug.h"
-
-namespace showfile
-{
-bool FilenameCopyto(char* show_file_name, uint32_t length, int32_t show_file_number)
-{
+namespace showfile {
+bool FilenameCopyto(char* show_file_name, uint32_t length, int32_t show_file_number) {
     assert(length == showfile::kFileNameLength + 1);
 
-    if (show_file_number <= showfile::kFileMaxNumber)
-    {
+    if (show_file_number <= showfile::kFileMaxNumber) {
         snprintf(show_file_name, length, "show%.2u.txt", static_cast<unsigned int>(show_file_number));
         return true;
     }
@@ -49,51 +45,46 @@ bool FilenameCopyto(char* show_file_name, uint32_t length, int32_t show_file_num
     return false;
 }
 
-bool FilenameCheck(const char* show_file_name, int32_t& show_file_number)
-{
-    DEBUG_PRINTF("show_file_name=[%s]", show_file_name);
+bool FilenameCheck(const char* show_file_name, int32_t& show_file_number) {
+	SHOWFILE_DEBUG_ENTRY();
+    SHOWFILE_DEBUG_PRINTF("show_file_name=[%s]", show_file_name);
 
-    if ((show_file_name == nullptr) || (strlen(show_file_name) != showfile::kFileNameLength))
-    {
-        DEBUG_EXIT();
+    if ((show_file_name == nullptr) || (strlen(show_file_name) != showfile::kFileNameLength)) {
+        SHOWFILE_DEBUG_EXIT();
         return false;
     }
 
-    if (memcmp(show_file_name, SHOWFILE_PREFIX, sizeof(SHOWFILE_PREFIX) - 1) != 0)
-    {
-        DEBUG_EXIT();
+    if (memcmp(show_file_name, SHOWFILE_PREFIX, sizeof(SHOWFILE_PREFIX) - 1) != 0) {
+        SHOWFILE_DEBUG_EXIT();
         return false;
     }
 
-    if (memcmp(&show_file_name[showfile::kFileNameLength - sizeof(SHOWFILE_SUFFIX) + 1], SHOWFILE_SUFFIX, sizeof(SHOWFILE_SUFFIX) - 1) != 0)
-    {
-        DEBUG_EXIT();
+    if (memcmp(&show_file_name[showfile::kFileNameLength - sizeof(SHOWFILE_SUFFIX) + 1], SHOWFILE_SUFFIX, sizeof(SHOWFILE_SUFFIX) - 1) != 0) {
+        SHOWFILE_DEBUG_EXIT();
         return false;
     }
 
     char digit = show_file_name[sizeof(SHOWFILE_PREFIX) - 1];
-    DEBUG_PRINTF("digit=%c", digit);
+    SHOWFILE_DEBUG_PRINTF("digit=%c", digit);
 
-    if (!isdigit(digit))
-    {
-        DEBUG_EXIT();
+    if (!isdigit(digit)) {
+        SHOWFILE_DEBUG_EXIT();
         return false;
     }
 
     show_file_number = 10 * (digit - '0');
 
     digit = show_file_name[sizeof(SHOWFILE_PREFIX)];
-    DEBUG_PRINTF("digit=%c", digit);
+    SHOWFILE_DEBUG_PRINTF("digit=%c", digit);
 
-    if (!isdigit(digit))
-    {
-        DEBUG_EXIT();
+    if (!isdigit(digit)) {
+        SHOWFILE_DEBUG_EXIT();
         return false;
     }
 
     show_file_number += digit - '0';
 
-    DEBUG_EXIT();
+    SHOWFILE_DEBUG_EXIT();
     return true;
 }
 

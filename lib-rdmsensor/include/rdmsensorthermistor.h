@@ -39,7 +39,7 @@ class RDMSensorThermistor final : public RDMSensor, MCP3424 {
    public:
     explicit RDMSensorThermistor(uint8_t sensor, uint8_t address = 0, uint8_t channel = 0, int32_t calibration = 0) : RDMSensor(sensor), MCP3424(address), calibration_(calibration), channel_(channel) {
         DEBUG_ENTRY();
-        DEBUG_PRINTF("nSensor=%u, address=0x%.2x, channel=%u, nCalibration=%d", sensor, address, channel, calibration);
+        DEBUG_PRINTF("nSensor=%u, address=0x%.2x, channel=%u, calibration=%d", static_cast<unsigned>(sensor), address, static_cast<unsigned>(channel), static_cast<int>(calibration));
 
         SetType(E120_SENS_TEMPERATURE);
         SetUnit(E120_UNITS_CENTIGRADE);
@@ -60,7 +60,7 @@ class RDMSensorThermistor final : public RDMSensor, MCP3424 {
         uint32_t resistor;
         const auto kMeasure = static_cast<int32_t>(GetValue(resistor) * 10);
 
-        DEBUG_PRINTF("kCalibrate=%d, kMeasure=%d", kCalibrate, kMeasure);
+        DEBUG_PRINTF("kCalibrate=%d, kMeasure=%d", static_cast<int>(kCalibrate), static_cast<int>(kMeasure));
 
         if (kCalibrate == kMeasure) {
             return true;
@@ -75,7 +75,7 @@ class RDMSensorThermistor final : public RDMSensor, MCP3424 {
         for (int32_t i = 1; i < 128; i++) {
             calibration_ = i * offset;
             const auto kMeasures = static_cast<int32_t>(GetValue(resistor) * 10);
-            DEBUG_PRINTF("kCalibrate=%d, kMeasures=%d, m_nCalibration=%d, resistor=%u", kCalibrate, kMeasures, calibration_, resistor);
+            DEBUG_PRINTF("kCalibrate=%d, kMeasures=%d, m_nCalibration=%d, resistor=%u", static_cast<int>(kCalibrate), static_cast<int>(kMeasures), static_cast<int>(calibration_), static_cast<unsigned>(resistor));
             if (kCalibrate == kMeasures) {
                 rdmsensors_store::SaveCalibration(RDMSensor::GetSensor(), calibration_);
                 return true;
@@ -98,12 +98,12 @@ class RDMSensorThermistor final : public RDMSensor, MCP3424 {
             const auto kV = MCP3424::GetVoltage(channel_);
             sum += kV;
         }
-        const auto kV = sum / 4;
-        const auto kR = Resistor(kV);
-        const auto kT = sensor::thermistor::Temperature(kR);
-        DEBUG_PRINTF("v=%1.3f, r=%u, t=%3.1f", kV, kR, kT);
-        resistor = kR;
-        return kT;
+        const auto kVoltage = sum / 4;
+        const auto kResistor = Resistor(kVoltage);
+        const auto kTemperature = sensor::thermistor::Temperature(kResistor);
+        DEBUG_PRINTF("v=%1.3f, r=%u, t=%3.1f", kVoltage, static_cast<unsigned>(kResistor), kTemperature);
+        resistor = kResistor;
+        return kTemperature;
     }
 
     int16_t GetValue() override {

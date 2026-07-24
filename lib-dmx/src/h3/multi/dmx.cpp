@@ -23,11 +23,6 @@
  * THE SOFTWARE.
  */
 
-#include "h3/multi/dmx_config.h"
-#if defined(DEBUG_DMX)
-#undef NDEBUG
-#endif
-
 #if __GNUC__ > 8
 #pragma GCC target("general-regs-only")
 #endif
@@ -54,7 +49,8 @@
 #include "rdm.h"
 #include "rdm_e120.h"
 #include "logic_analyzer.h"
-#include "firmware/debug/debug_debug.h"
+#include "h3/multi/dmx_config.h"
+#include "dmx_debug.h"
 
 #define RDM_DATA_BUFFER_SIZE 512                                       ///<
 #define RDM_DATA_BUFFER_INDEX_ENTRIES (1 << 4)                         ///<
@@ -526,7 +522,7 @@ static void UartEnableFifoRx(uint32_t port_index) { // RDM RX
 Dmx* Dmx::s_this = nullptr;
 
 Dmx::Dmx() {
-    DEBUG_ENTRY();
+    DMX_DEBUG_ENTRY();
 
     assert(s_this == nullptr);
     s_this = this;
@@ -655,11 +651,11 @@ Dmx::Dmx() {
     __ISB();
     __enable_fiq();
 
-    DEBUG_EXIT();
+    DMX_DEBUG_EXIT();
 }
 
 void Dmx::SetPortDirection(uint32_t port_index, dmx::Direction port_direction, bool enable_data) {
-    DEBUG_PRINTF("port_index=%u, port_direction=%u, enable_data=%u", port_index, port_direction, enable_data);
+    DMX_DEBUG_PRINTF("port_index=%u, port_direction=%u, enable_data=%u", port_index, port_direction, enable_data);
     assert(port_index < config::max::PORTS);
 
     const auto kUart = _port_to_uart(port_index);
@@ -779,7 +775,7 @@ void Dmx::StopData(H3_UART_TypeDef* uart, uint32_t port_index) {
 // DMX Send
 
 void Dmx::SetTransmitBreakTime(uint32_t break_time) {
-    DEBUG_PRINTF("break_time=%u", break_time);
+    DMX_DEBUG_PRINTF("break_time=%u", break_time);
 
     transmit_break_time_ = std::max(transmit::kBreakTimeMin, break_time);
     s_nDmxTransmistBreakTimeINTV = transmit_break_time_ * 12;
@@ -788,7 +784,7 @@ void Dmx::SetTransmitBreakTime(uint32_t break_time) {
 }
 
 void Dmx::SetTransmitMabTime(uint32_t mab_time) {
-    DEBUG_PRINTF("mab_time=%u", mab_time);
+    DMX_DEBUG_PRINTF("mab_time=%u", mab_time);
 
     transmit_mab_time_ = std::min(std::max(transmit::kMabTimeMin, mab_time), transmit::kMabTimeMax);
     s_nDmxTransmitMabTimeINTV = transmit_mab_time_ * 12;
@@ -797,13 +793,13 @@ void Dmx::SetTransmitMabTime(uint32_t mab_time) {
 }
 
 void Dmx::SetTransmitPeriodTime(uint32_t period_time) {
-    DEBUG_ENTRY();
+    DMX_DEBUG_ENTRY();
 
     transmit_period_requested_ = period_time;
 
     auto length_max = transmit_length_[0];
 
-    DEBUG_PRINTF("period_time=%u, length_max=%u", period_time, length_max);
+    DMX_DEBUG_PRINTF("period_time=%u, length_max=%u", period_time, length_max);
 
     for (uint32_t i = 1; i < config::max::kPorts; i++) {
         if (transmit_length_[i] > length_max) {
@@ -811,7 +807,7 @@ void Dmx::SetTransmitPeriodTime(uint32_t period_time) {
         }
     }
 
-    DEBUG_PRINTF("nLengthMax=%u", length_max);
+    DMX_DEBUG_PRINTF("nLengthMax=%u", length_max);
 
     const auto kPackageLengthMicroSeconds = transmit_break_time_ + transmit_mab_time_ + (length_max * 44) + 44;
 
@@ -827,13 +823,13 @@ void Dmx::SetTransmitPeriodTime(uint32_t period_time) {
 
     s_nDmxTransmitPeriodINTV = (transmit_period_ * 12) - s_nDmxTransmistBreakTimeINTV - s_nDmxTransmitMabTimeINTV;
 
-    DEBUG_PRINTF("period_time=%u, length_max=%u, transmit_period_=%u", period_time, length_max, transmit_period_);
-    DEBUG_EXIT();
+    DMX_DEBUG_PRINTF("period_time=%u, length_max=%u, transmit_period_=%u", period_time, length_max, transmit_period_);
+    DMX_DEBUG_EXIT();
 }
 
 void Dmx::SetTransmitSlots(uint16_t slots) {
-    DEBUG_ENTRY();
-    DEBUG_PRINTF("slots=%u", slots);
+    DMX_DEBUG_ENTRY();
+    DMX_DEBUG_PRINTF("slots=%u", slots);
 
     if ((slots >= 2) && (slots <= dmx::kChannelsMax)) {
         transmit_slots_ = slots;
@@ -845,7 +841,7 @@ void Dmx::SetTransmitSlots(uint16_t slots) {
         SetTransmitPeriodTime(transmit_period_requested_);
     }
 
-    DEBUG_EXIT();
+    DMX_DEBUG_EXIT();
 }
 
 void Dmx::SetOutputStyle([[maybe_unused]] uint32_t port_index, [[maybe_unused]] dmx::OutputStyle output_style) {
@@ -879,7 +875,7 @@ template <uint32_t port_index> void Dmx::SetSendDataInternal(const uint8_t* data
 }
 
 void Dmx::Blackout() {
-    DEBUG_ENTRY();
+    DMX_DEBUG_ENTRY();
 
     for (uint32_t port_index = 0; port_index < config::max::kPorts; port_index++) {
         if (sv_port_state[port_index] != PortState::TX) {
@@ -900,11 +896,11 @@ void Dmx::Blackout() {
         sv_nDmxDataWriteIndex[port_index] = nNext;
     }
 
-    DEBUG_EXIT();
+    DMX_DEBUG_EXIT();
 }
 
 void Dmx::FullOn() {
-    DEBUG_ENTRY();
+    DMX_DEBUG_ENTRY();
 
     for (uint32_t port_index = 0; port_index < config::max::kPorts; port_index++) {
         if (sv_port_state[port_index] != PortState::TX) {
@@ -925,7 +921,7 @@ void Dmx::FullOn() {
         sv_nDmxDataWriteIndex[port_index] = kNext;
     }
 
-    DEBUG_EXIT();
+    DMX_DEBUG_EXIT();
 }
 
 // DMX Receive
@@ -1017,7 +1013,7 @@ void Dmx::RdmSendRaw(uint32_t port_index, const uint8_t* pRdmData, uint32_t nLen
 }
 
 void Dmx::RdmTransmitDiscoveryRespondMessage(uint32_t port_index, const uint8_t* pRdmData, uint32_t nLength) {
-    DEBUG_PRINTF("port_index=%u, pRdmData=%p, nLength=%u", port_index, pRdmData, nLength);
+    DMX_DEBUG_PRINTF("port_index=%u, pRdmData=%p, nLength=%u", port_index, pRdmData, nLength);
     assert(port_index < dmx::config::max::kPorts);
     assert(pRdmData != nullptr);
     assert(nLength != 0);
@@ -1044,7 +1040,7 @@ void Dmx::RdmTransmitDiscoveryRespondMessage(uint32_t port_index, const uint8_t*
 
     sv_TotalStatistics[port_index].rdm.sent.discovery_response++;
 
-    DEBUG_EXIT();
+    DMX_DEBUG_EXIT();
 }
 
 // RDM Receive

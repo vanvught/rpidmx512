@@ -37,12 +37,11 @@
 
 #include <cassert>
 #include <cstdint>
-#include <time.h>
+#include <ctime>
 
 #include "hwclock.h"
 #include "timing.h"
 #include "i2c.h"
-#include "firmware/debug/debug_debug.h"
 
 #define BCD2DEC(val) (((val) & 0x0f) + ((val) >> 4) * 10)
 #define DEC2BCD(val) static_cast<char>((((val) / 10) << 4) + (val) % 10)
@@ -114,7 +113,7 @@ static constexpr uint8_t kDS3231 = 0x68;
 } // namespace rtc
 
 void HwClock::RtcProbe() {
-    DEBUG_ENTRY();
+    HWCLOCK_DEBUG_ENTRY();
 
     last_hc_to_sys_millis_ = timing::Millis();
 
@@ -130,7 +129,7 @@ void HwClock::RtcProbe() {
     i2c::ReadReg(rtc::reg::kYear, value);
 
     if (i2c::Write(nullptr, 0) == 0) {
-        DEBUG_PUTS("MCP7941X");
+        HWCLOCK_DEBUG_PUTS("MCP7941X");
 
         is_connected_ = true;
         type_ = rtc::Type::kMcP7941X;
@@ -139,7 +138,7 @@ void HwClock::RtcProbe() {
         i2c::ReadReg(rtc::reg::kSeconds, value);
 
         if ((value & rtc::mcp7941x::bit::kSt) == 0) {
-            DEBUG_PUTS("Start the on-board oscillator");
+            HWCLOCK_DEBUG_PUTS("Start the on-board oscillator");
 
             struct tm rtc_time;
 
@@ -153,7 +152,7 @@ void HwClock::RtcProbe() {
             RtcSet(&rtc_time);
         }
 
-        DEBUG_EXIT();
+        HWCLOCK_DEBUG_EXIT();
         return;
     }
 #endif
@@ -166,7 +165,7 @@ void HwClock::RtcProbe() {
     i2c::ReadReg(rtc::reg::kYear, value);
 
     if (i2c::Write(nullptr, 0) == 0) {
-        DEBUG_PUTS("DS3231");
+        HWCLOCK_DEBUG_PUTS("DS3231");
 
         is_connected_ = true;
         type_ = rtc::Type::kDS3231;
@@ -186,7 +185,7 @@ void HwClock::RtcProbe() {
             RtcSet(&tm);
         }
 
-        DEBUG_EXIT();
+        HWCLOCK_DEBUG_EXIT();
         return;
     }
 #endif
@@ -199,7 +198,7 @@ void HwClock::RtcProbe() {
     i2c::ReadReg(rtc::pcf8563::reg::kYear, value);
 
     if (i2c::Write(nullptr, 0) == 0) {
-        DEBUG_PUTS("PCF8563");
+        HWCLOCK_DEBUG_PUTS("PCF8563");
 
         is_connected_ = true;
         type_ = rtc::Type::kPcF8563;
@@ -214,7 +213,7 @@ void HwClock::RtcProbe() {
         // 0 - clock integrity is guaranteed
         // 1 - integrity of the clock information is not guaranteed
         if ((value & rtc::pcf8563::bit::kSecondsVl) == rtc::pcf8563::bit::kSecondsVl) {
-            DEBUG_PUTS("Integrity of the clock information is not guaranteed");
+            HWCLOCK_DEBUG_PUTS("Integrity of the clock information is not guaranteed");
 
             struct tm rtc_time;
 
@@ -231,28 +230,28 @@ void HwClock::RtcProbe() {
         i2c::ReadReg(rtc::pcf8563::reg::kSeconds, value);
 
         if ((value & rtc::pcf8563::bit::kSecondsVl) == rtc::pcf8563::bit::kSecondsVl) {
-            DEBUG_PUTS("Clock is not running -> disconnected");
+            HWCLOCK_DEBUG_PUTS("Clock is not running -> disconnected");
             is_connected_ = false;
         }
 
-        DEBUG_EXIT();
+        HWCLOCK_DEBUG_EXIT();
         return;
     }
 #endif
 
-    DEBUG_EXIT();
+    HWCLOCK_DEBUG_EXIT();
 }
 
 bool HwClock::RtcSet(const struct tm* time) {
-    DEBUG_ENTRY();
+    HWCLOCK_DEBUG_ENTRY();
     assert(time != nullptr);
 
     if (!is_connected_) {
-        DEBUG_EXIT();
+        HWCLOCK_DEBUG_EXIT();
         return false;
     }
 
-    DEBUG_PRINTF("secs=%d, mins=%d, hours=%d, mday=%d, mon=%d, year=%d, wday=%d", time->tm_sec, time->tm_min, time->tm_hour, time->tm_mday, time->tm_mon, time->tm_year, time->tm_wday);
+    HWCLOCK_DEBUG_PRINTF("secs=%d, mins=%d, hours=%d, mday=%d, mon=%d, year=%d, wday=%d", time->tm_sec, time->tm_min, time->tm_hour, time->tm_mday, time->tm_mon, time->tm_year, time->tm_wday);
 
     char data[8];
     auto registers = &data[1];
@@ -290,16 +289,16 @@ bool HwClock::RtcSet(const struct tm* time) {
     i2c::SetBaudrate(i2c::kFullSpeed);
     i2c::Write(data, sizeof(data) / sizeof(data[0]));
 
-    DEBUG_EXIT();
+    HWCLOCK_DEBUG_EXIT();
     return true;
 }
 
 bool HwClock::RtcGet(struct tm* time) {
-    DEBUG_ENTRY();
+    HWCLOCK_DEBUG_ENTRY();
     assert(time != nullptr);
 
     if (!is_connected_) {
-        DEBUG_EXIT();
+        HWCLOCK_DEBUG_EXIT();
         return false;
     }
 
@@ -334,17 +333,17 @@ bool HwClock::RtcGet(struct tm* time) {
     time->tm_mon = BCD2DEC(registers[rtc::reg::kMonth] & 0x1f) - 1;
     time->tm_year = BCD2DEC(registers[rtc::reg::kYear]) + 100;
 
-    DEBUG_PRINTF("secs=%d, mins=%d, hours=%d, mday=%d, mon=%d, year=%d, wday=%d", time->tm_sec, time->tm_min, time->tm_hour, time->tm_mday, time->tm_mon, time->tm_year, time->tm_wday);
+    HWCLOCK_DEBUG_PRINTF("secs=%d, mins=%d, hours=%d, mday=%d, mon=%d, year=%d, wday=%d", time->tm_sec, time->tm_min, time->tm_hour, time->tm_mday, time->tm_mon, time->tm_year, time->tm_wday);
 
-    DEBUG_EXIT();
+    HWCLOCK_DEBUG_EXIT();
     return true;
 }
 
 bool HwClock::RtcSetAlarm(const struct tm* time) {
-    DEBUG_ENTRY();
+    HWCLOCK_DEBUG_ENTRY();
     assert(time != nullptr);
 
-    DEBUG_PRINTF("secs=%d, mins=%d, hours=%d, mday=%d, mon=%d, year=%d, wday=%d", time->tm_sec, time->tm_min, time->tm_hour, time->tm_mday, time->tm_mon, time->tm_year, time->tm_wday);
+    HWCLOCK_DEBUG_PRINTF("secs=%d, mins=%d, hours=%d, mday=%d, mon=%d, year=%d, wday=%d", time->tm_sec, time->tm_min, time->tm_hour, time->tm_mday, time->tm_mon, time->tm_year, time->tm_wday);
 
     switch (type_) {
 #if !defined(CONFIG_RTC_DISABLE_MCP7941X)
@@ -382,7 +381,7 @@ bool HwClock::RtcSetAlarm(const struct tm* time) {
                 i2c::Write(registers, 2);
             }
 
-            DEBUG_EXIT();
+            HWCLOCK_DEBUG_EXIT();
             return true;
         } break;
 #endif
@@ -417,13 +416,13 @@ bool HwClock::RtcSetAlarm(const struct tm* time) {
             i2c::Write(registers, sizeof(registers) / sizeof(registers[0]));
 
             if (alarm_enabled_) {
-                DEBUG_PUTS("Alarm is enabled");
+                HWCLOCK_DEBUG_PUTS("Alarm is enabled");
                 registers[0] = rtc::ds3231::reg::kControl;
                 registers[1] |= rtc::ds3231::bit::kA1Ie;
                 i2c::Write(registers, 2);
             }
 
-            DEBUG_EXIT();
+            HWCLOCK_DEBUG_EXIT();
             return true;
         } break;
 #endif
@@ -443,7 +442,7 @@ bool HwClock::RtcSetAlarm(const struct tm* time) {
 
             PCF8563SetAlarmMode();
 
-            DEBUG_EXIT();
+            HWCLOCK_DEBUG_EXIT();
             return true;
         } break;
 #endif
@@ -451,16 +450,16 @@ bool HwClock::RtcSetAlarm(const struct tm* time) {
             break;
     }
 
-    DEBUG_EXIT();
+    HWCLOCK_DEBUG_EXIT();
     return false;
 }
 
 bool HwClock::RtcGetAlarm(struct tm* time) {
-    DEBUG_ENTRY();
+    HWCLOCK_DEBUG_ENTRY();
     assert(time != nullptr);
 
     if (!RtcGet(time)) {
-        DEBUG_EXIT();
+        HWCLOCK_DEBUG_EXIT();
         return false;
     }
 
@@ -485,10 +484,10 @@ bool HwClock::RtcGetAlarm(struct tm* time) {
 
             alarm_enabled_ = registers[0] & rtc::mcp7941x::bit::kAlM0En;
 
-            DEBUG_PRINTF("sec=%d min=%d hour=%d wday=%d mday=%d mon=%d enabled=%d polarity=%d irq=%d match=%u", time->tm_sec, time->tm_min, time->tm_hour, time->tm_wday, time->tm_mday, time->tm_mon, alarm_enabled_,
-                         (registers[6] & rtc::mcp7941x::bit::kAlmxPol), (registers[6] & rtc::mcp7941x::bit::kAlmxIf), (registers[6] & rtc::mcp7941x::bit::kMskAlmxMatch) >> 4);
+            HWCLOCK_DEBUG_PRINTF("sec=%d min=%d hour=%d wday=%d mday=%d mon=%d enabled=%d irq=%d match=%u", time->tm_sec, time->tm_min, time->tm_hour, time->tm_wday, time->tm_mday, time->tm_mon, alarm_enabled_,
+                                 (registers[6] & rtc::mcp7941x::bit::kAlmxIf), (registers[6] & rtc::mcp7941x::bit::kMskAlmxMatch) >> 4);
 
-            DEBUG_EXIT();
+            HWCLOCK_DEBUG_EXIT();
             return true;
         } break;
 #endif
@@ -511,9 +510,9 @@ bool HwClock::RtcGetAlarm(struct tm* time) {
             alarm_enabled_ = (registers[7] & rtc::ds3231::bit::kA1Ie);
             alarm_pending_ = (registers[8] & rtc::ds3231::bit::kA1F);
 
-            DEBUG_PRINTF("tm is sec=%d, min=%d, hour=%d, mday=%d, enabled=%d, pending=%d", time->tm_sec, time->tm_min, time->tm_hour, time->tm_mday, alarm_enabled_, alarm_pending_);
+            HWCLOCK_DEBUG_PRINTF("tm is sec=%d, min=%d, hour=%d, mday=%d, enabled=%d, pending=%d", time->tm_sec, time->tm_min, time->tm_hour, time->tm_mday, alarm_enabled_, alarm_pending_);
 
-            DEBUG_EXIT();
+            HWCLOCK_DEBUG_EXIT();
             return true;
         }
 
@@ -530,7 +529,7 @@ bool HwClock::RtcGetAlarm(struct tm* time) {
             i2c::Write(registers, 1);
             i2c::Read(registers, sizeof(registers) / sizeof(registers[0]));
 
-            DEBUG_PRINTF("raw data is min=%02x, hr=%02x, mday=%02x, wday=%02x", registers[0], registers[1], registers[2], registers[3]);
+            HWCLOCK_DEBUG_PRINTF("raw data is min=%02x, hr=%02x, mday=%02x, wday=%02x", registers[0], registers[1], registers[2], registers[3]);
 
             time->tm_sec = 0;
             time->tm_min = BCD2DEC(registers[0] & 0x7F);
@@ -540,9 +539,9 @@ bool HwClock::RtcGetAlarm(struct tm* time) {
 
             PCF8563GetAlarmMode();
 
-            DEBUG_PRINTF("tm is mins=%d, hours=%d, mday=%d, wday=%d, enabled=%d, pending=%d", time->tm_min, time->tm_hour, time->tm_mday, time->tm_wday, alarm_enabled_, alarm_pending_);
+            HWCLOCK_DEBUG_PRINTF("tm is mins=%d, hours=%d, mday=%d, wday=%d, enabled=%d, pending=%d", time->tm_min, time->tm_hour, time->tm_mday, time->tm_wday, alarm_enabled_, alarm_pending_);
 
-            DEBUG_EXIT();
+            HWCLOCK_DEBUG_EXIT();
             return true;
         } break;
 #endif
@@ -550,12 +549,12 @@ bool HwClock::RtcGetAlarm(struct tm* time) {
             break;
     }
 
-    DEBUG_EXIT();
+    HWCLOCK_DEBUG_EXIT();
     return false;
 }
 
 int HwClock::MCP794xxAlarmWeekday(struct tm* time) {
-    DEBUG_ENTRY();
+    HWCLOCK_DEBUG_ENTRY();
     assert(time != nullptr);
     assert(type_ == rtc::Type::kMcP7941X);
 
@@ -566,12 +565,12 @@ int HwClock::MCP794xxAlarmWeekday(struct tm* time) {
     const auto kDaysAlarm = mktime(time) / (24 * 60 * 60);
     const auto kI = (tm_now.tm_wday + kDaysAlarm - kDaysNow) % 7 + 1;
 
-    DEBUG_EXIT();
+    HWCLOCK_DEBUG_EXIT();
     return kI;
 }
 
 void HwClock::PCF8563GetAlarmMode() {
-    DEBUG_ENTRY();
+    HWCLOCK_DEBUG_ENTRY();
     assert(type_ == rtc::Type::kPcF8563);
 
     uint8_t value;
@@ -580,11 +579,11 @@ void HwClock::PCF8563GetAlarmMode() {
     alarm_enabled_ = value & rtc::pcf8563::bit::kStatus2Aie;
     alarm_pending_ = value & rtc::pcf8563::bit::kStatus2Af;
 
-    DEBUG_EXIT();
+    HWCLOCK_DEBUG_EXIT();
 }
 
 void HwClock::PCF8563SetAlarmMode() {
-    DEBUG_ENTRY();
+    HWCLOCK_DEBUG_ENTRY();
     assert(type_ == rtc::Type::kPcF8563);
 
     char data[2];
@@ -595,7 +594,7 @@ void HwClock::PCF8563SetAlarmMode() {
     i2c::Read(&data[1], 1);
 
     if (alarm_enabled_) {
-        DEBUG_PUTS("Alarm is enabled");
+        HWCLOCK_DEBUG_PUTS("Alarm is enabled");
         data[1] |= rtc::pcf8563::bit::kStatus2Aie;
     } else {
         data[1] &= static_cast<char>(~rtc::pcf8563::bit::kStatus2Aie);
@@ -606,5 +605,5 @@ void HwClock::PCF8563SetAlarmMode() {
 
     i2c::Write(data, 2);
 
-    DEBUG_EXIT();
+    HWCLOCK_DEBUG_EXIT();
 }

@@ -23,17 +23,13 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_ARTNET_RDM)
-#undef NDEBUG
-#endif
-
 #include <cstdint>
 
 #include "artnetnode.h"
-#include "firmware/debug/debug_debug.h"
+#include "artnet_debug.h"
 
 void ArtNetNode::SetRdm(bool do_enable) {
-    DEBUG_ENTRY();
+    ARTNET_RDM_DEBUG_ENTRY();
 
     state_.is_rdm_enabled = do_enable;
 
@@ -43,6 +39,6 @@ void ArtNetNode::SetRdm(bool do_enable) {
         art_poll_reply_.status1 &= static_cast<uint8_t>(~artnet::Status1::kRdmCapable);
     }
 
-    DEBUG_PRINTF("state_.is_rdm_enabled=%c", state_.is_rdm_enabled ? 'Y' : 'N');
-    DEBUG_EXIT();
+    ARTNET_RDM_DEBUG_PRINTF("state_.is_rdm_enabled=%c", state_.is_rdm_enabled ? 'Y' : 'N');
+    ARTNET_RDM_DEBUG_EXIT();
 }

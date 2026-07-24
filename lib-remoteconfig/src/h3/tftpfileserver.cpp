@@ -24,20 +24,20 @@
  */
 
 #include <cstdint>
-#include <cassert>
 
 #include "ubootheader.h"
 #include "remoteconfig.h"
-
- #include "firmware/debug/debug_debug.h"
+#include "tftp/tftpfileserver.h"
 
 namespace tftpfileserver {
-bool is_valid(const void *pBuffer) {
-	UBootHeader uImage(reinterpret_cast<uint8_t *>(const_cast<void*>(pBuffer)));
-	if (!uImage.IsValid()) {
-		DEBUG_PUTS("uImage is not valid");
-		return false;
-	}
-	return true;
+bool is_valid(const void* pBuffer) {
+    UBootHeader uImage(reinterpret_cast<uint8_t*>(const_cast<void*>(pBuffer)));
+    if (!uImage.IsValid()) {
+        TFTP_DEBUG_PUTS("uImage is not valid");
+        return false;
+    }
+    return true;
 }
-}  // namespace tftpfileserver
+} // namespace tftpfileserver
+
+#undef TFTP_DEBUG_PUTS

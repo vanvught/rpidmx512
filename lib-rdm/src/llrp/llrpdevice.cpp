@@ -22,10 +22,6 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_RDM_LLRPDEVICE)
-#undef NDEBUG
-#endif
-
 #include <cstdint>
 #include <cstring>
 #include <cassert>
@@ -40,7 +36,7 @@
 #include "rdm_device_base.h"
 #include "rdm_message_print.h"
 #include "firmware/debug/debug_dump.h"
-#include "firmware/debug/debug_debug.h"
+#include "rdm_debug.h"
 
 #if defined(__linux__) || defined(__APPLE__)
 #define SHOW_LLRP_MESSAGE
@@ -48,7 +44,7 @@
 #endif
 
 void LLRPDevice::HandleRequestMessage() {
-    DEBUG_ENTRY();
+    LLRP_DEVICE_DEBUG_ENTRY();
 
     const auto* request = reinterpret_cast<struct TProbeRequestPDUPacket*>(llrp);
     const auto* pdu = request->ProbeRequestPDU.flags_length;
@@ -63,7 +59,7 @@ void LLRPDevice::HandleRequestMessage() {
 
         for (uint32_t index = 0; index < kKnownUiDs; index++) {
             if (memcmp(p, uid, rdm::kUidSize) == 0) {
-                DEBUG_EXIT();
+                LLRP_DEVICE_DEBUG_EXIT();
                 return;
             }
             p += rdm::kUidSize;
@@ -73,8 +69,8 @@ void LLRPDevice::HandleRequestMessage() {
     debug::Dump(request->ProbeRequestPDU.LowerUUID, 2 * rdm::kUidSize);
 
     if (!((memcmp(request->ProbeRequestPDU.LowerUUID, uid, rdm::kUidSize) <= 0) && (memcmp(uid, request->ProbeRequestPDU.UpperUUID, rdm::kUidSize) <= 0))) {
-        DEBUG_PUTS("Not for me");
-        DEBUG_EXIT();
+        LLRP_DEVICE_DEBUG_PUTS("Not for me");
+        LLRP_DEVICE_DEBUG_EXIT();
         return;
     }
 
@@ -106,11 +102,11 @@ void LLRPDevice::HandleRequestMessage() {
 #ifndef NDEBUG
     DumpCommon();
 #endif
-    DEBUG_EXIT();
+    LLRP_DEVICE_DEBUG_EXIT();
 }
 
 void LLRPDevice::HandleRdmCommand() {
-    DEBUG_ENTRY();
+    LLRP_DEVICE_DEBUG_ENTRY();
 
     auto* pdu_packet = reinterpret_cast<struct LTRDMCommandPDUPacket*>(llrp);
 
@@ -122,7 +118,7 @@ void LLRPDevice::HandleRdmCommand() {
     const auto* reply = LLRPHandleRdmCommand(pdu_packet->RDMCommandPDU.RDMData);
 
     if ((reply == nullptr) || (*reply != E120_SC_RDM)) {
-        DEBUG_EXIT();
+        LLRP_DEVICE_DEBUG_EXIT();
         return;
     }
 
@@ -154,5 +150,5 @@ void LLRPDevice::HandleRdmCommand() {
     DumpCommon();
 #endif
 
-    DEBUG_EXIT();
+    LLRP_DEVICE_DEBUG_EXIT();
 }

@@ -78,7 +78,7 @@ uint32_t GetTimeofday(char* out_buffer, uint32_t out_buffer_size) {
 
 static void SetDate(const char* date, uint32_t date_length) {
     DEBUG_ENTRY();
-    DEBUG_PRINTF("%.*s [%u]", date_length, date, date_length);
+    DEBUG_PRINTF("%.*s [%u]", static_cast<int>(date_length), date, static_cast<unsigned>(date_length));
 
     if ((date_length == 20) || (date_length == 25)) {
         struct tm tm;
@@ -100,7 +100,7 @@ static void SetDate(const char* date, uint32_t date_length) {
             const auto kHours = static_cast<int8_t>(Atoi(&date[20], 2) * kSign);
             const auto kMinutes = static_cast<uint8_t>(Atoi(&date[23], 2));
 
-            DEBUG_PRINTF("[%d]%.2d:%.2d", kSign, kHours, kMinutes);
+            DEBUG_PRINTF("[%d]%.2d:%.2d", static_cast<int>(kSign), static_cast<int>(kHours), static_cast<int>(kMinutes));
 
             int32_t utc_offset;
 
@@ -114,7 +114,13 @@ static void SetDate(const char* date, uint32_t date_length) {
 
         settimeofday(&tv, nullptr);
 
-        DEBUG_PRINTF("%.4d-%.2d-%.2dT%.2d:%.2d:%.2d", 1900 + tm.tm_year, 1 + tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+        DEBUG_PRINTF("%.4d-%.2d-%.2dT%.2d:%.2d:%.2d", 
+			(1900 + tm.tm_year), 
+			(1 + tm.tm_mon), 
+			static_cast<int>(tm.tm_mday), 
+			static_cast<int>(tm.tm_hour), 
+			static_cast<int>(tm.tm_min), 
+			static_cast<int>(tm.tm_sec));
         DEBUG_EXIT();
         return;
     }

@@ -142,7 +142,7 @@ reset:
     strlo r0, [r1], #4
     blo   4b
 
-#if defined (DEBUG_STACK)
+#if defined (CONFIG_DEBUG_STACK)
 	  bl stack_debug_init
 #endif
 

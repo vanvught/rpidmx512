@@ -23,10 +23,6 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_PIXELDMX)
-#undef NDEBUG
-#endif
-
 #include <cstdint>
 #include <cstring>
 
@@ -34,7 +30,7 @@
 #include "rdm_e120.h"
 #include "pixeltype.h"
 #include "pixeldmxstore.h"
-#include "firmware/debug/debug_debug.h"
+#include "pixeldmx_debug.h"
 #include "pixeldmxconfiguration.h"
 #include "pixeloutput.h"
 
@@ -106,7 +102,7 @@ uint32_t RDMHandler::GetParameterDescriptionCount() const {
 
 namespace rdmhandler {
 bool HandleManufactureerPidGet(uint16_t pid, [[maybe_unused]] const ManufacturerParamData* in, ManufacturerParamData* out, uint16_t& reason) {
-    DEBUG_PRINTF("pid=%x", __builtin_bswap16(pid));
+    PIXELDMX_DEBUG_PRINTF("pid=%x", __builtin_bswap16(pid));
 
     auto& pixeldmx_configuration = PixelDmxConfiguration::Get();
 
@@ -147,7 +143,7 @@ bool HandleManufactureerPidGet(uint16_t pid, [[maybe_unused]] const Manufacturer
 
 #if defined(CONFIG_RDM_MANUFACTURER_PIDS_SET)
 bool HandleManufactureerPidSet(bool is_broadcast, uint16_t pid, const ParameterDescription& parameter_description, const ManufacturerParamData* in, [[maybe_unused]] ManufacturerParamData* out, uint16_t& reason) {
-    DEBUG_PRINTF("pid=%x", __builtin_bswap16(pid));
+    PIXELDMX_DEBUG_PRINTF("pid=%x", __builtin_bswap16(pid));
 
     if (is_broadcast) {
         return false;

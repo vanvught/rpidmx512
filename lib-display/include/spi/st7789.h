@@ -32,7 +32,7 @@
 #include "spi/config/config_lcd.h"
 #include "spi/st77xx.h"
 #include "timing.h"
-#include "firmware/debug/debug_debug.h"
+#include "display_debug.h"
 
 namespace st7789 {
 namespace cmd {
@@ -68,8 +68,8 @@ inline constexpr uint32_t kRotation3ShiftY = 0;
 
 class ST7789 : public ST77XX {
    public:
-    explicit ST7789(uint32_t cs) : ST77XX(cs) {
-        DEBUG_ENTRY();
+    explicit ST7789(uint32_t chip_select) : ST77XX(chip_select) {
+        DISPLAY_DEBUG_ENTRY();
 
 #if defined(SPI_LCD_RST_GPIO)
         if (s_instance == 0) {
@@ -118,7 +118,7 @@ class ST7789 : public ST77XX {
 
         for (uint32_t i = 0; i < sizeof(kConfig); i += (arg_length + 2)) {
             arg_length = kConfig[i];
-            DEBUG_PRINTF("i=%u, arg_length=%u", i, arg_length);
+            DISPLAY_DEBUG_PRINTF("i=%u, arg_length=%u", static_cast<unsigned>(i), static_cast<unsigned>(arg_length));
             WriteCommand(&kConfig[i + 1], arg_length);
         }
 
@@ -127,12 +127,12 @@ class ST7789 : public ST77XX {
         WriteCommand(st77xx::cmd::kSlpout); ///< Sleep Out
         WriteCommand(st77xx::cmd::kDispon); ///< Display On
 
-        DEBUG_EXIT();
+        DISPLAY_DEBUG_EXIT();
     }
 
     ~ST7789() override {
-        DEBUG_ENTRY();
-        DEBUG_EXIT();
+        DISPLAY_DEBUG_ENTRY();
+        DISPLAY_DEBUG_EXIT();
     };
 
     void SetRotation(uint32_t rotation) {

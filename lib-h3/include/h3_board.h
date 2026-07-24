@@ -90,16 +90,12 @@
 void h3_board_dump();
 
 #include "softwaretimers.h"
-#if defined(DEBUG_STACK)
 #include "firmware/debug/debug_stack.h"
-#endif
 
 namespace board {
 inline void Run() {
     SoftwareTimerRun();
-#if defined(DEBUG_STACK)
     debug::stack::Run();
-#endif
 }
 } // namespace board
 

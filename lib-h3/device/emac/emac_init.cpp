@@ -2,7 +2,7 @@
  * @file emac_init.cpp
  *
  */
-/* Copyright (C) 2022-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,33 +27,30 @@
 
 #include "h3.h"
 #include "h3_sid.h"
+#include "firmware/debug/debug_debug.h"
 
- #include "firmware/debug/debug_debug.h"
+static void WriteHwaddr(const uint8_t* mac_id) {
+    const auto kMacidLo = static_cast<uint32_t>(mac_id[0]) + static_cast<uint32_t>(mac_id[1] << 8) + static_cast<uint32_t>(mac_id[2] << 16) + static_cast<uint32_t>(mac_id[3] << 24);
+    const auto kMacidHi = static_cast<uint32_t>(mac_id[4]) + static_cast<uint32_t>(mac_id[5] << 8);
 
-static void WriteHwaddr(const uint8_t *mac_id) {
-	const auto kMacidLo = static_cast<uint32_t>(mac_id[0]) + static_cast<uint32_t>(mac_id[1] << 8) + static_cast<uint32_t>(mac_id[2] << 16) + static_cast<uint32_t>(mac_id[3] << 24);
-	const auto kMacidHi = static_cast<uint32_t>(mac_id[4]) + static_cast<uint32_t>(mac_id[5] << 8);
-
-	H3_EMAC->ADDR[0].HIGH = kMacidHi;
-	H3_EMAC->ADDR[0].LOW = kMacidLo;
+    H3_EMAC->ADDR[0].HIGH = kMacidHi;
+    H3_EMAC->ADDR[0].LOW = kMacidLo;
 }
 
 __attribute__((cold)) void emac_init() {
-	DEBUG_PRINTF("PHY{%d} ID = %08x", PHY_ADDR, PhyGetId(PHY_ADDR));
+    uint8_t mac_address[6];
+    uint8_t rootkey[16];
 
-	uint8_t mac_address[6];
-	uint8_t rootkey[16];
+    h3_sid_get_rootkey(rootkey);
 
-	h3_sid_get_rootkey(rootkey);
+    mac_address[0] = 0x2;
+    mac_address[1] = rootkey[3];
+    mac_address[2] = rootkey[12];
+    mac_address[3] = rootkey[13];
+    mac_address[4] = rootkey[14];
+    mac_address[5] = rootkey[15];
 
-	mac_address[0] = 0x2;
-	mac_address[1] = rootkey[3];
-	mac_address[2] = rootkey[12];
-	mac_address[3] = rootkey[13];
-	mac_address[4] = rootkey[14];
-	mac_address[5] = rootkey[15];
+    WriteHwaddr(mac_address);
 
-	WriteHwaddr(mac_address);
-
-	DEBUG_PRINTF("H3_EMAC->ADDR[0].LOW=%08x, H3_EMAC->ADDR[0].HIGH=%08x", H3_EMAC->ADDR[0].LOW, H3_EMAC->ADDR[0].HIGH);
+    DEBUG_PRINTF("H3_EMAC->ADDR[0].LOW=%08x, H3_EMAC->ADDR[0].HIGH=%08x", static_cast<unsigned>(H3_EMAC->ADDR[0].LOW), static_cast<unsigned>(H3_EMAC->ADDR[0].HIGH));
 }

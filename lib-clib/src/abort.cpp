@@ -6,9 +6,10 @@
 #undef NDEBUG
 #endif
 
-#include <assert.h>
+#include <cassert>
 
 extern "C" void abort() { // NOLINT
     assert(0);
-    for (;;);
+    for (;;) {
+    }
 }

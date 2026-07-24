@@ -62,6 +62,7 @@ using LcdDriver = ST7789;
 #if defined(DISPLAYTIMEOUT_GPIO)
 #include "gpio.h"
 #endif
+#include "display_debug.h"
 
 #if defined(SPI_LCD_HAVE_CS_GPIO)
 inline constexpr uint32_t CS_GPIO = SPI_LCD_CS_GPIO;
@@ -69,12 +70,10 @@ inline constexpr uint32_t CS_GPIO = SPI_LCD_CS_GPIO;
 inline constexpr uint32_t CS_GPIO = 0;
 #endif
 
-#include "firmware/debug/debug_debug.h"
-
 class Display : public LcdDriver {
    public:
     Display(uint32_t cs = CS_GPIO) : LcdDriver(cs) {
-        DEBUG_ENTRY();
+        DISPLAY_DEBUG_ENTRY();
 
         s_this = this;
 
@@ -90,12 +89,12 @@ class Display : public LcdDriver {
 #endif
 
         PrintInfo();
-        DEBUG_EXIT();
+        DISPLAY_DEBUG_EXIT();
     }
 
     ~Display() {}
 
-    bool isDetected() const { return true; }
+    bool IsDetected() const { return true; }
 
     void PrintInfo() {
 #if defined(CONFIG_USE_ILI9341)

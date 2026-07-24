@@ -87,11 +87,9 @@ class PCA9685 {
     uint8_t CalcPresScale(uint32_t);
     uint16_t CalcFrequency(uint32_t);
 
-   private:
     void Sleep(bool);
     void AutoIncrement(bool);
 
-   private:
     void I2cSetup();
 
     void I2cWriteReg(uint8_t, uint8_t);
@@ -102,7 +100,6 @@ class PCA9685 {
 
     void I2cWriteReg(uint8_t, uint16_t, uint16_t);
 
-   private:
     uint8_t address_;
 };
 

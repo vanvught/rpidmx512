@@ -37,10 +37,9 @@
 #include "rdmidentify.h"
 #include "rdmconst.h"
 #include "rdm_e120.h"
-#include "firmware/debug/debug_debug.h"
+#include "rdm_debug.h"
 
-namespace rdm::device
-{
+namespace rdm::device {
 uint16_t DeviceModel();
 uint32_t BootSoftwareVersionId();
 uint32_t SoftwareVersionId();
@@ -48,8 +47,7 @@ const char* SoftwareVersionLabel(uint32_t& length);
 const char* RootLabel(uint8_t& length);
 void SetFactoryDefaults();
 
-class Device
-{
+class Device {
     static constexpr auto kProductCategory =
 #if defined(RDM_DEVICE_PRODUCT_CATEGORY)
         RDM_DEVICE_PRODUCT_CATEGORY;
@@ -64,14 +62,12 @@ class Device
 #endif
 
    public:
-    static Device& Instance()
-    {
+    static Device& Instance() {
         static Device instance;
         return instance;
     }
 
-    void Print()
-    {
+    void Print() {
         printf("RDM Device configuration [Protocol Version %d.%d]\n", info_.protocol_major, info_.protocol_minor);
         rdm::device::Base::Instance().Print();
         printf(" Root label        : %.*s\n", root_label_length_, root_label_);
@@ -87,9 +83,8 @@ class Device
 #endif
     }
 
-    void SetFactoryDefaults()
-    {
-        DEBUG_ENTRY();
+    void SetFactoryDefaults() {
+        RDM_DEBUG_ENTRY();
 
         memset(root_label_, 0, sizeof(root_label_));
         rdm::device::store::SaveLabel(root_label_, root_label_length_);
@@ -99,29 +94,25 @@ class Device
 
         checksum_ = CalculateChecksum();
 
-        DEBUG_EXIT();
+        RDM_DEBUG_EXIT();
     }
 
     bool GetFactoryDefaults() { return (checksum_ == rdm::device::Device::CalculateChecksum()); }
 
-    void GetManufacturerId(struct rdm::device::InfoData* info_data)
-    {
+    void GetManufacturerId(struct rdm::device::InfoData* info_data) {
         info_data->data = reinterpret_cast<char*>(const_cast<uint8_t*>(rdm::Manufacturer::kId));
         info_data->length = rdm::device::kManufacturerIdLength;
     }
 
-    void GetManufacturerName(struct rdm::device::InfoData* info_data)
-    {
+    void GetManufacturerName(struct rdm::device::InfoData* info_data) {
         info_data->data = const_cast<char*>(&rdm::Manufacturer::kName[0]);
         info_data->length = static_cast<uint8_t>(std::min(static_cast<size_t>(rdm::device::kManufacturerLabelMaxLength), strlen(rdm::Manufacturer::kName)));
     }
 
-    void SetLabel(const struct rdm::device::InfoData* info_data)
-    {
+    void SetLabel(const struct rdm::device::InfoData* info_data) {
         const auto kLength = std::min(static_cast<uint8_t>(rdm::device::kLabelMaxLength), info_data->length);
 
-        if ((kLength > 1) && info_data->data[0] > ' ')
-        {
+        if ((kLength > 1) && info_data->data[0] > ' ') {
             memcpy(root_label_, info_data->data, kLength);
             root_label_length_ = kLength;
 
@@ -129,59 +120,54 @@ class Device
         }
     }
 
-    void GetLabel(struct rdm::device::InfoData* info_data)
-    {
+    void GetLabel(struct rdm::device::InfoData* info_data) {
         info_data->data = reinterpret_cast<char*>(root_label_);
         info_data->length = root_label_length_;
     }
 
-    uint16_t GetProductCategory() const { return kProductCategory; }
+    [[nodiscard]] uint16_t GetProductCategory() const { return kProductCategory; }
 
-    uint16_t GetProductDetail() const { return kProductDetail; }
+    [[nodiscard]] uint16_t GetProductDetail() const { return kProductDetail; }
 
     rdm::device::Info* GetDeviceInfo() { return &info_; }
 
     // RDM_RESPONDER
     void SetPersonalityCount(uint8_t count) { info_.personality_count = count; }
 
-    uint8_t GetPersonalityCount() const { return info_.personality_count; }
+    [[nodiscard]] uint8_t GetPersonalityCount() const { return info_.personality_count; }
 
     void SetCurrentPersonality(uint8_t current) { info_.current_personality = current; }
 
-    uint8_t GetCurrentPersonality() const { return info_.current_personality; }
+    [[nodiscard]] uint8_t GetCurrentPersonality() const { return info_.current_personality; }
 
-    void SetDmxFootprint(uint16_t dmx_footprint)
-    {
+    void SetDmxFootprint(uint16_t dmx_footprint) {
         info_.dmx_footprint[0] = static_cast<uint8_t>(dmx_footprint >> 8);
         info_.dmx_footprint[1] = static_cast<uint8_t>(dmx_footprint);
     }
 
-    uint16_t GetDmxFootprint() const { return static_cast<uint16_t>((info_.dmx_footprint[0] << 8) + info_.dmx_footprint[1]); }
+    [[nodiscard]] uint16_t GetDmxFootprint() const { return static_cast<uint16_t>((info_.dmx_footprint[0] << 8) + info_.dmx_footprint[1]); }
 
-    void SetDmxStartAddress(uint16_t dmx_start_address)
-    {
+    void SetDmxStartAddress(uint16_t dmx_start_address) {
         info_.dmx_start_address[0] = static_cast<uint8_t>(dmx_start_address >> 8);
         info_.dmx_start_address[1] = static_cast<uint8_t>(dmx_start_address);
     }
 
-    uint16_t GetDmxStartAddress() const { return static_cast<uint16_t>((info_.dmx_start_address[0] << 8) + info_.dmx_start_address[1]); }
+    [[nodiscard]] uint16_t GetDmxStartAddress() const { return static_cast<uint16_t>((info_.dmx_start_address[0] << 8) + info_.dmx_start_address[1]); }
 
-    void SetSubdeviceCount(uint16_t sub_device_count)
-    {
+    void SetSubdeviceCount(uint16_t sub_device_count) {
         info_.sub_device_count[0] = static_cast<uint8_t>(sub_device_count >> 8);
         info_.sub_device_count[1] = static_cast<uint8_t>(sub_device_count);
     }
 
-    uint16_t GetSubdeviceCount() const { return static_cast<uint16_t>((info_.sub_device_count[0] << 8) + info_.sub_device_count[1]); }
+    [[nodiscard]] uint16_t GetSubdeviceCount() const { return static_cast<uint16_t>((info_.sub_device_count[0] << 8) + info_.sub_device_count[1]); }
 
     void SetSensorCount(uint8_t sensor_count) { info_.sensor_count = sensor_count; }
 
-    uint8_t GetSensorCount() const { return info_.sensor_count; }
+    [[nodiscard]] uint8_t GetSensorCount() const { return info_.sensor_count; }
 
    private:
-    Device()
-    {
-        DEBUG_ENTRY();
+    Device() {
+        RDM_DEBUG_ENTRY();
 
         memset(&info_, 0, sizeof(struct rdm::device::Info));
 
@@ -204,30 +190,26 @@ class Device
 
         rdm::device::store::LoadLabel(root_label_, root_label_length_);
 
-        if (root_label_[0] == '\0')
-        {
+        if (root_label_[0] == '\0') {
             const auto* const kRootLabel = rdm::device::RootLabel(root_label_length_);
             memcpy(root_label_, kRootLabel, root_label_length_);
 
             checksum_ = CalculateChecksum();
         }
 
-        DEBUG_EXIT();
+        RDM_DEBUG_EXIT();
     }
 
-    uint16_t CalculateChecksum()
-    {
+    uint16_t CalculateChecksum() {
         uint16_t checksum = root_label_length_;
 
-        for (uint32_t i = 0; i < root_label_length_; i++)
-        {
+        for (uint32_t i = 0; i < root_label_length_; i++) {
             checksum = static_cast<uint16_t>(checksum + root_label_[i]);
         }
 
         return checksum;
     }
 
-   private:
     RDMIdentify identify_;
     rdm::device::Info info_;
     uint8_t root_label_[rdm::device::kLabelMaxLength];

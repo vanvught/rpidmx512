@@ -1,7 +1,7 @@
 /**
  * @file artnetnodehandlepoll.cpp
  */
-/* Copyright (C) 2021-2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,10 +22,6 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_ARTNET_POLL)
-#undef NDEBUG
-#endif
-
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC push_options
 #pragma GCC optimize("O2")
@@ -43,7 +39,7 @@
 #include "network_udp.h"
 #include "network_config.h"
 #include "network_iface.h"
-#include "firmware/debug/debug_debug.h"
+#include "artnet_debug.h"
 
 template <uint8_t N> 
 static inline void Uitoa(uint32_t value, uint8_t* out) {
@@ -169,7 +165,7 @@ void ArtNetNode::ProcessPollReply(uint32_t port_index) {
         art_poll_reply_.good_input[0] = 0;
         art_poll_reply_.sw_out[0] = node_.port[port_index].sw;
         art_poll_reply_.sw_in[0] = 0;
-        DEBUG_EXIT();
+        ARTNET_POLL_DEBUG_EXIT();
         return;
     }
 
@@ -186,7 +182,7 @@ void ArtNetNode::ProcessPollReply(uint32_t port_index) {
         art_poll_reply_.good_input[0] = input_port_[port_index].good_input;
         art_poll_reply_.sw_out[0] = 0;
         art_poll_reply_.sw_in[0] = node_.port[port_index].sw;
-        DEBUG_EXIT();
+        ARTNET_POLL_DEBUG_EXIT();
         return;
     }
 #endif
@@ -207,7 +203,7 @@ void ArtNetNode::SendPollReply(uint32_t port_index, uint32_t destination_ip, art
 
     if (queue != nullptr) {
         if (!((node_.port[port_index].port_address >= queue->art_poll_reply.target_port_address_bottom) && (node_.port[port_index].port_address <= queue->art_poll_reply.target_port_address_top))) {
-            DEBUG_PRINTF("NOT: 	%u >= %u && %u <= %u", node_.port[port_index].port_address, queue->art_poll_reply.target_port_address_bottom, node_.port[port_index].port_address, queue->art_poll_reply.target_port_address_top);
+            ARTNET_POLL_DEBUG_PRINTF("NOT: 	%u >= %u && %u <= %u", node_.port[port_index].port_address, queue->art_poll_reply.target_port_address_bottom, node_.port[port_index].port_address, queue->art_poll_reply.target_port_address_top);
             return;
         }
     }
@@ -294,7 +290,7 @@ void ArtNetNode::HandlePoll() {
 void ArtNetNode::PollReplyQueueAdd(uint16_t target_port_address_bottom, uint16_t target_port_address_top) {
     for (auto& entry : state_.art.poll_reply_queue) {
         if ((entry.art_poll_reply_ip_address == ip_address_from_) && (entry.art_poll_millis != 0)) [[unlikely]] {
-            DEBUG_PRINTF("PollReply already queued for " IPSTR, IP2STR(entry.art_poll_reply_ip_address));
+            ARTNET_POLL_DEBUG_PRINTF("PollReply already queued for " IPSTR, IP2STR(entry.art_poll_reply_ip_address));
             return;
         }
 
@@ -303,7 +299,7 @@ void ArtNetNode::PollReplyQueueAdd(uint16_t target_port_address_bottom, uint16_t
             entry.art_poll_reply_ip_address = ip_address_from_;
             entry.art_poll_reply.target_port_address_top = target_port_address_top;
             entry.art_poll_reply.target_port_address_bottom = target_port_address_bottom;
-            DEBUG_PRINTF("PollReply queued for " IPSTR, IP2STR(entry.art_poll_reply_ip_address));
+            ARTNET_POLL_DEBUG_PRINTF("PollReply queued for " IPSTR, IP2STR(entry.art_poll_reply_ip_address));
             return;
         }
     }

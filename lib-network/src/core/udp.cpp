@@ -23,11 +23,6 @@
  * THE SOFTWARE.
  */
 
-#include "core/protocol/ethernet.h"
-#if defined(DEBUG_UDP)
-#undef NDEBUG
-#endif
-
 #if !defined(CONFIG_REMOTECONFIG_MINIMUM)
 #pragma GCC push_options
 #pragma GCC optimize("O2")
@@ -38,6 +33,7 @@
 #include <algorithm>
 #include <cassert>
 
+#include "core/protocol/ethernet.h"
 #include "core/netif.h"
 #include "net_config.h"
 #include "core/protocol/ieee.h"
@@ -47,6 +43,26 @@
 #include "network_private.h"
 #include "network_memcpy.h"
 #include "firmware/debug/debug_debug.h"
+
+#if defined(DEBUG_UDP)
+#define UDP_DEBUG_ENTRY() DEBUG_ENTRY()
+#define UDP_DEBUG_EXIT() DEBUG_EXIT()
+#define UDP_DEBUG_PRINTF(...) DEBUG_PRINTF(__VA_ARGS__)
+#define UDP_DEBUG_PUTS(...) DEBUG_PUTS(__VA_ARGS__)
+#else
+#define UDP_DEBUG_ENTRY() \
+    do {                  \
+    } while (false)
+#define UDP_DEBUG_EXIT() \
+    do {                 \
+    } while (false)
+#define UDP_DEBUG_PRINTF(...) \
+    do {                      \
+    } while (false)
+#define UDP_DEBUG_PUTS(...) \
+    do {                    \
+    } while (false)
+#endif
 
 namespace network::udp {
 struct PortInfo {
@@ -78,9 +94,9 @@ void __attribute__((cold)) Init() {
 }
 
 void __attribute__((cold)) Shutdown() {
-    DEBUG_ENTRY();
+    UDP_DEBUG_ENTRY();
 
-    DEBUG_EXIT();
+    UDP_DEBUG_EXIT();
 }
 
 __attribute__((hot)) void Input(const struct Header* udp) {
@@ -93,7 +109,7 @@ __attribute__((hot)) void Input(const struct Header* udp) {
             auto& data = s_ports[port_index].data;
 
             if (__builtin_expect((data.size != 0), 0)) {
-                DEBUG_PRINTF("%d[%x]", kDestinationPort, kDestinationPort);
+                UDP_DEBUG_PRINTF("%d[%x]", kDestinationPort, kDestinationPort);
             }
 
             const auto kDataLength = __builtin_bswap16(udp->udp.len) - kHeaderSize;
@@ -116,7 +132,7 @@ __attribute__((hot)) void Input(const struct Header* udp) {
 
     emac::eth::FreePkt();
 
-    DEBUG_PRINTF(IPSTR ":%d[%x] " MACSTR, udp->ip4.src[0], udp->ip4.src[1], udp->ip4.src[2], udp->ip4.src[3], kDestinationPort, kDestinationPort, MAC2STR(udp->ether.dst));
+    UDP_DEBUG_PRINTF(IPSTR ":%d[%x] " MACSTR, udp->ip4.src[0], udp->ip4.src[1], udp->ip4.src[2], udp->ip4.src[3], kDestinationPort, kDestinationPort, MAC2STR(udp->ether.dst));
 }
 
 template <network::arp::EthSend S> static void SendImplementation(int index, const uint8_t* data, uint32_t size, uint32_t remote_ip, uint16_t remote_port) {
@@ -200,7 +216,7 @@ template <network::arp::EthSend S> static void SendImplementation(int index, con
 }
 
 int32_t Begin(uint16_t localport, UdpCallbackFunctionPtr callback) {
-    DEBUG_PRINTF("localport=%u", localport);
+    UDP_DEBUG_PRINTF("localport=%u", static_cast<unsigned>(localport));
 
     for (auto i = 0; i < UDP_MAX_PORTS_ALLOWED; i++) {
         auto& info = s_ports[i].info;
@@ -213,7 +229,7 @@ int32_t Begin(uint16_t localport, UdpCallbackFunctionPtr callback) {
             info.callback = callback;
             info.port = localport;
 
-            DEBUG_PRINTF("i=%d, localport=%d[%x], callback=%p", i, localport, localport, callback);
+            UDP_DEBUG_PRINTF("i=%d, localport=%d[%x], callback=%p", static_cast<int>(i), static_cast<unsigned>(localport), static_cast<unsigned>(localport), reinterpret_cast<void*>(callback));
             return i;
         }
     }
@@ -223,7 +239,7 @@ int32_t Begin(uint16_t localport, UdpCallbackFunctionPtr callback) {
 }
 
 int32_t End(uint16_t localport) {
-    DEBUG_PRINTF("localport=%u[%x]", localport, localport);
+    UDP_DEBUG_PRINTF("localport=%u[%x]", static_cast<unsigned>(localport), static_cast<unsigned>(localport));
 
     for (auto i = 0; i < UDP_MAX_PORTS_ALLOWED; i++) {
         auto& info = s_ports[i].info;

@@ -23,10 +23,6 @@
  * THE SOFTWARE.
  */
 
-#ifdef DEBUG_ARTNET_NODE
-#undef NDEBUG
-#endif
-
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
@@ -66,7 +62,7 @@
 #include "timing.h"
 #include "board.h"
 #include "board_statusled.h"
-#include "firmware/debug/debug_debug.h"
+#include "artnet_debug.h"
 
 #if defined(ARTNET_SHOWFILE)
 namespace showfile {
@@ -78,12 +74,12 @@ void Record(const struct artnet::ArtSync* artsync, uint32_t millis);
 static constexpr auto kArtnetMinHeaderSize = 12U;
 
 ArtNetNode::ArtNetNode() {
-    DEBUG_ENTRY();
+    ARTNET_DEBUG_ENTRY();
 
     assert(s_this == nullptr);
     s_this = this;
 
-    DEBUG_PRINTF("dmxnode::kMaxPorts=%u", dmxnode::kMaxPorts);
+    ARTNET_DEBUG_PRINTF("dmxnode::kMaxPorts=%u", dmxnode::kMaxPorts);
 
     memset(&art_poll_reply_, 0, sizeof(struct artnet::ArtPollReply));
     memcpy(art_poll_reply_.id, artnet::kNodeId, sizeof(art_poll_reply_.id));
@@ -152,11 +148,11 @@ ArtNetNode::ArtNetNode() {
     diag_data_.prot_ver_lo = artnet::kProtocolRevision;
 #endif
 
-    DEBUG_EXIT();
+    ARTNET_DEBUG_EXIT();
 }
 
 void ArtNetNode::Start() {
-    DEBUG_ENTRY();
+    ARTNET_DEBUG_ENTRY();
 
 #if defined(ARTNET_HAVE_TRIGGER)
     assert(art_trigger_callback_function_ptr_ != nullptr);
@@ -240,11 +236,11 @@ void ArtNetNode::Start() {
     state_.status = artnet::Status::kOn;
     board::statusled::SetMode(board::statusled::Mode::kNormal);
 
-    DEBUG_EXIT();
+    ARTNET_DEBUG_EXIT();
 }
 
 void ArtNetNode::Stop() {
-    DEBUG_ENTRY();
+    ARTNET_DEBUG_ENTRY();
 
 #if (ARTNET_VERSION >= 4)
     E131Bridge::Stop();
@@ -274,11 +270,11 @@ void ArtNetNode::Stop() {
     art_poll_reply_.status1 = static_cast<uint8_t>((art_poll_reply_.status1 & ~artnet::Status1::kIndicatorMask) | artnet::Status1::kIndicatorMuteMode);
     state_.status = artnet::Status::kStandby;
 
-    DEBUG_EXIT();
+    ARTNET_DEBUG_EXIT();
 }
 
 void ArtNetNode::GetLongNameDefault(char* long_name) {
-    DEBUG_ENTRY();
+    ARTNET_DEBUG_ENTRY();
 #if !defined(ARTNET_LONG_NAME)
     uint8_t board_name_length;
     const auto* const kBoardName = board::BoardName(board_name_length);
@@ -296,17 +292,17 @@ void ArtNetNode::GetLongNameDefault(char* long_name) {
 
     long_name[i] = '\0';
 #endif
-    DEBUG_EXIT();
+    ARTNET_DEBUG_EXIT();
 }
 
 void ArtNetNode::SetLongName(const char* long_name) {
-    DEBUG_ENTRY();
-    DEBUG_PRINTF("long_name=%p", reinterpret_cast<const void*>(long_name));
+    ARTNET_DEBUG_ENTRY();
+    ARTNET_DEBUG_PRINTF("long_name=%p", reinterpret_cast<const void*>(long_name));
 
     if ((long_name == nullptr) || (long_name[0] == '\0')) {
         GetLongNameDefault(reinterpret_cast<char*>(art_poll_reply_.long_name));
     } else {
-        DEBUG_PUTS(long_name);
+        ARTNET_DEBUG_PUTS(long_name);
         strncpy(reinterpret_cast<char*>(art_poll_reply_.long_name), long_name, artnet::kLongNameLength - 1);
     }
 
@@ -317,8 +313,8 @@ void ArtNetNode::SetLongName(const char* long_name) {
         artnet::display::Longname(reinterpret_cast<char*>(art_poll_reply_.long_name));
     }
 
-    DEBUG_PUTS(reinterpret_cast<char*>(art_poll_reply_.long_name));
-    DEBUG_EXIT();
+    ARTNET_DEBUG_PUTS(reinterpret_cast<char*>(art_poll_reply_.long_name));
+    ARTNET_DEBUG_EXIT();
 }
 
 void ArtNetNode::SetShortName(uint32_t port_index, const char* name) {
@@ -330,7 +326,7 @@ void ArtNetNode::SetShortName(uint32_t port_index, const char* name) {
         artnet::store::SaveShortName(port_index, label);
     }
 
-    DEBUG_PUTS(label);
+    ARTNET_DEBUG_PUTS(label);
 }
 
 const char* ArtNetNode::GetShortName(uint32_t port_index) const {
@@ -338,7 +334,7 @@ const char* ArtNetNode::GetShortName(uint32_t port_index) const {
 }
 
 void ArtNetNode::SetLocalMerging() {
-    DEBUG_ENTRY();
+    ARTNET_DEBUG_ENTRY();
 
     for (uint32_t input_port_index = 0; input_port_index < dmxnode::kMaxPorts; input_port_index++) {
         if (node_.port[input_port_index].direction == dmxnode::Direction::kOutput) {
@@ -352,16 +348,16 @@ void ArtNetNode::SetLocalMerging() {
                 continue;
             }
 
-            DEBUG_PRINTF("nInputPortIndex=%u %s %u, nOutputPortIndex=%u %s %u", input_port_index, artnet::GetProtocolMode(node_.port[input_port_index].protocol), node_.port[input_port_index].port_address, output_port_index,
+            ARTNET_DEBUG_PRINTF("nInputPortIndex=%u %s %u, nOutputPortIndex=%u %s %u", input_port_index, artnet::GetProtocolMode(node_.port[input_port_index].protocol), node_.port[input_port_index].port_address, output_port_index,
                          artnet::GetProtocolMode(node_.port[output_port_index].protocol), node_.port[output_port_index].port_address);
 
             if ((node_.port[input_port_index].protocol == node_.port[output_port_index].protocol) && (node_.port[input_port_index].port_address == node_.port[output_port_index].port_address)) {
                 if (!node_.port[output_port_index].local_merge) {
                     output_port_[output_port_index].source_a.ip = network::kIpaddrLoopback;
-                    DEBUG_PUTS("Local merge Source A");
+                    ARTNET_DEBUG_PUTS("Local merge Source A");
                 } else {
                     output_port_[output_port_index].source_b.ip = network::kIpaddrLoopback;
-                    DEBUG_PUTS("Local merge Source B");
+                    ARTNET_DEBUG_PUTS("Local merge Source B");
                 }
 
                 node_.port[input_port_index].local_merge = true;
@@ -371,20 +367,20 @@ void ArtNetNode::SetLocalMerging() {
     }
 
     for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++) {
-        DEBUG_PRINTF("port_index=%u, local_merge=%c", port_index, node_.port[port_index].local_merge ? 'Y' : 'N');
+        ARTNET_DEBUG_PRINTF("port_index=%u, local_merge=%c", port_index, node_.port[port_index].local_merge ? 'Y' : 'N');
     }
 
-    DEBUG_EXIT();
+    ARTNET_DEBUG_EXIT();
 }
 
 void ArtNetNode::SetUniverse(uint32_t port_index, uint16_t universe) {
-    DEBUG_ENTRY();
-    DEBUG_PRINTF("port_index=%u, universe=%u", port_index, universe);
+    ARTNET_DEBUG_ENTRY();
+    ARTNET_DEBUG_PRINTF("port_index=%u, universe=%u", port_index, universe);
 
     assert(port_index < dmxnode::kMaxPorts);
 
     if (node_.port[port_index].port_address == universe) {
-        DEBUG_EXIT();
+        ARTNET_DEBUG_EXIT();
         return;
     }
 
@@ -403,18 +399,18 @@ void ArtNetNode::SetUniverse(uint32_t port_index, uint16_t universe) {
     }
 #endif
 
-    DEBUG_EXIT();
+    ARTNET_DEBUG_EXIT();
 }
 
 void ArtNetNode::SetDirection(uint32_t port_index, dmxnode::Direction port_direction) {
-    DEBUG_ENTRY();
-    DEBUG_PRINTF("port_index=%u, port_direction=%s", port_index, dmxnode::Direction(port_direction));
+    ARTNET_DEBUG_ENTRY();
+    ARTNET_DEBUG_PRINTF("port_index=%u, port_direction=%s", port_index, dmxnode::Direction(port_direction));
 
     assert(port_index < dmxnode::kMaxPorts);
     assert(port_direction <= dmxnode::Direction::kDisable);
 
     if (node_.port[port_index].direction == port_direction) {
-        DEBUG_EXIT();
+        ARTNET_DEBUG_EXIT();
         return;
     }
 
@@ -471,7 +467,7 @@ void ArtNetNode::SetDirection(uint32_t port_index, dmxnode::Direction port_direc
     SetDirection4(port_index);
 #endif
 
-    DEBUG_EXIT();
+    ARTNET_DEBUG_EXIT();
 }
 
 void ArtNetNode::SetMergeMode(uint32_t port_index, dmxnode::MergeMode merge_mode) {
@@ -494,7 +490,7 @@ void ArtNetNode::SetMergeMode(uint32_t port_index, dmxnode::MergeMode merge_mode
 }
 
 void ArtNetNode::SetFailSafe(artnet::FailSafe fail_safe) {
-    DEBUG_PRINTF("fail_safe=%u", static_cast<uint32_t>(fail_safe));
+    ARTNET_DEBUG_PRINTF("fail_safe=%u", static_cast<uint32_t>(fail_safe));
 
 #if defined(ARTNET_HAVE_FAILSAFE_RECORD)
     if ((state_.status == artnet::Status::kOn) && (fail_safe == artnet::FailSafe::kRecord)) {
@@ -543,12 +539,12 @@ void ArtNetNode::SetFailSafe(artnet::FailSafe fail_safe) {
 
     if (state_.status == artnet::Status::kOn) {
         const auto kFailSafe = static_cast<uint8_t>(artnetnode::ConvertFailsafe(fail_safe));
-        DEBUG_PRINTF("kFailSafe=%u\n", kFailSafe);
+        ARTNET_DEBUG_PRINTF("kFailSafe=%u\n", kFailSafe);
         artnet::store::SaveFailSafe(kFailSafe);
         artnet::display::Failsafe(kFailSafe);
     }
 
-    DEBUG_EXIT();
+    ARTNET_DEBUG_EXIT();
 }
 
 #if defined(OUTPUT_HAVE_STYLESWITCH)
@@ -610,7 +606,7 @@ void ArtNetNode::SetNetworkDataLossCondition() {
 
     const auto kNetworkloss = (art_poll_reply_.status3 & artnet::Status3::kNetworklossMask);
 
-    DEBUG_PRINTF("kNetworkloss=%x", kNetworkloss);
+    ARTNET_DEBUG_PRINTF("kNetworkloss=%x", kNetworkloss);
 
     switch (kNetworkloss) {
         case artnet::Status3::kNetworklossLastState:
@@ -717,7 +713,7 @@ void ArtNetNode::HandleTimeSync() {
 
     rtc::Set(&tm_time);
 
-    DEBUG_PRINTF("%.4d/%.2d/%.2d %.2d:%.2d:%.2d", 1900 + tm_time.tm_year, 1 + tm_time.tm_mon, tm_time.tm_mday, tm_time.tm_hour, tm_time.tm_min, tm_time.tm_sec);
+    ARTNET_DEBUG_PRINTF("%.4d/%.2d/%.2d %.2d:%.2d:%.2d", 1900 + tm_time.tm_year, 1 + tm_time.tm_mon, tm_time.tm_mday, tm_time.tm_hour, tm_time.tm_min, tm_time.tm_sec);
 #endif
 }
 
@@ -847,7 +843,7 @@ void ArtNetNode::InputUdp(const uint8_t* buffer, uint32_t size, uint32_t from_ip
         case artnet::OpCodes::kOpTrigger: {
             const auto* const kArtTrigger = reinterpret_cast<const artnet::ArtTrigger*>(buffer);
             if ((kArtTrigger->oem_code_hi == 0xFF && kArtTrigger->oem_code_lo == 0xFF) || (kArtTrigger->oem_code_hi == ArtNetConst::kOemId[0] && kArtTrigger->oem_code_lo == ArtNetConst::kOemId[1])) {
-                DEBUG_PRINTF("Key=%d, SubKey=%d, Data[0]=%d", kArtTrigger->key, kArtTrigger->sub_key, kArtTrigger->data[0]);
+                ARTNET_DEBUG_PRINTF("Key=%d, SubKey=%d, Data[0]=%d", kArtTrigger->key, kArtTrigger->sub_key, kArtTrigger->data[0]);
                 art_trigger_callback_function_ptr_(reinterpret_cast<const struct ArtNetTrigger*>(&kArtTrigger->key));
             }
         } break;

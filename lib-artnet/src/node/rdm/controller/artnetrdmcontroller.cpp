@@ -74,7 +74,7 @@ bool ArtNetRdmController::RdmReceive(uint32_t port_index, const uint8_t* data) {
     assert(data != nullptr);
 
     auto& rdmdiscovery = rdm::Discovery::Instance();
-    auto* rdm_message = reinterpret_cast<const struct TRdmMessage*>(data);
+    const auto* rdm_message = reinterpret_cast<const struct TRdmMessage*>(data);
     auto* uid = rdm_message->destination_uid;
 
     auto is_rdm_packet_for_me = false;

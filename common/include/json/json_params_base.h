@@ -29,7 +29,7 @@
 #include <cstdio>
 #include <cstdint>
 
-#include "firmware/debug/debug_debug.h"
+#include "json/json_debug.h"
 
 namespace json {
 template <typename Derived> 
@@ -37,22 +37,22 @@ class JsonParamsBase {
    public:
     void Load([[maybe_unused]] const char* file_name) {
 #if !defined(DISABLE_FS)
-        FILE* fp = fopen(file_name, "r");
-        if (fp != nullptr) {
+        FILE* file = fopen(file_name, "r");
+        if (file != nullptr) {
             char buffer[512]; // Adjust as needed for max config size
-            size_t size = fread(buffer, 1, sizeof(buffer), fp);
-            fclose(fp);
+            size_t size = fread(buffer, 1, sizeof(buffer), file);
+            fclose(file);
 
             if (size > 0) {
                 static_cast<Derived*>(this)->Store(buffer, static_cast<uint32_t>(size));
             } else {
-                DEBUG_PUTS("Empty or failed read");
+                JSON_DEBUG_PUTS("Empty or failed read");
             }
-#ifndef NDEBUG
+#ifdef DEBUG_JSON
             static_cast<Derived*>(this)->Dump();
 #endif
         } else {
-            DEBUG_PRINTF("Failed to open file: %s", file_name);
+            JSON_DEBUG_PRINTF("Failed to open file: %s", file_name);
         }
 #endif
     }

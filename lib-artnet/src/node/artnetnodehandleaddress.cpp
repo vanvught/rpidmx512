@@ -23,10 +23,6 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_ARTNET_ADDRESS)
-#undef NDEBUG
-#endif
-
 #include <cstdint>
 #include <cassert>
 
@@ -39,8 +35,28 @@
 #include "board_statusled.h"
 #include "firmware/debug/debug_debug.h"
 
+#ifdef DEBUG_ARTNET_ADDRESS_ADDRESS
+#define ARTNET_ADDRESS_DEBUG_ENTRY() DEBUG_ENTRY()
+#define ARTNET_ADDRESS_DEBUG_EXIT() DEBUG_EXIT()
+#define ARTNET_ADDRESS_DEBUG_PRINTF(...) DEBUG_PRINTF(__VA_ARGS__)
+#define ARTNET_ADDRESS_DEBUG_PUTS(...) DEBUG_PUTS(__VA_ARGS__)
+#else
+#define ARTNET_ADDRESS_DEBUG_ENTRY() \
+    do {                             \
+    } while (false)
+#define ARTNET_ADDRESS_DEBUG_EXIT() \
+    do {                            \
+    } while (false)
+#define ARTNET_ADDRESS_DEBUG_PRINTF(...) \
+    do {                                 \
+    } while (false)
+#define ARTNET_ADDRESS_DEBUG_PUTS(...) \
+    do {                               \
+    } while (false)
+#endif
+
 void ArtNetNode::SetSwitch(uint32_t port_index, uint8_t sw) {
-    DEBUG_ENTRY();
+    ARTNET_ADDRESS_DEBUG_ENTRY();
     assert(port_index < dmxnode::kMaxPorts);
     assert(state_.status == artnet::Status::kOn);
 
@@ -58,7 +74,7 @@ void ArtNetNode::SetSwitch(uint32_t port_index, uint8_t sw) {
     SetLocalMerging();
 #endif
 
-    DEBUG_EXIT();
+    ARTNET_ADDRESS_DEBUG_EXIT();
 }
 
 void ArtNetNode::HandleAddress() {
@@ -67,7 +83,7 @@ void ArtNetNode::HandleAddress() {
 
     const auto kPortIndex = static_cast<uint32_t>(kArtAddress->bind_index > 0 ? kArtAddress->bind_index - 1 : 0);
 
-    DEBUG_PRINTF("kPortIndex=%u", kPortIndex);
+    ARTNET_ADDRESS_DEBUG_PRINTF("kPortIndex=%u", kPortIndex);
 
     if (kArtAddress->port_name[0] != 0) {
         SetShortName(kPortIndex, reinterpret_cast<const char*>(kArtAddress->port_name));
@@ -279,7 +295,7 @@ void ArtNetNode::HandleAddress() {
             break;
 #endif
         default:
-            [[unlikely]] DEBUG_PRINTF("> Not implemented: %u [%x]", kArtAddress->command, kArtAddress->command);
+            [[unlikely]] ARTNET_ADDRESS_DEBUG_PRINTF("> Not implemented: %u [%x]", kArtAddress->command, kArtAddress->command);
             break;
     }
 

@@ -23,10 +23,6 @@
  * THE SOFTWARE.
  */
 
-#ifdef DEBUG_NETWORK
-#undef NDEBUG
-#endif
-
 #include <cstdio>
 
 #include "emac/emac.h"
@@ -51,6 +47,26 @@
 #include "configurationstore.h"
 #include "firmware/debug/debug_debug.h"
 
+#ifdef DEBUG_NETWORK
+#define NETWORK_DEBUG_ENTRY() DEBUG_ENTRY()
+#define NETWORK_DEBUG_EXIT() DEBUG_EXIT()
+#define NETWORK_DEBUG_PRINTF(...) DEBUG_PRINTF(__VA_ARGS__)
+#define NETWORK_DEBUG_PUTS(...) DEBUG_PUTS(__VA_ARGS__)
+#else
+#define NETWORK_DEBUG_ENTRY() \
+    do {                      \
+    } while (false)
+#define NETWORK_DEBUG_EXIT() \
+    do {                     \
+    } while (false)
+#define NETWORK_DEBUG_PRINTF(...) \
+    do {                          \
+    } while (false)
+#define NETWORK_DEBUG_PUTS(...) \
+    do {                        \
+    } while (false)
+#endif
+
 #if !defined(PHY_ADDRESS)
 #define PHY_ADDRESS 1
 #endif
@@ -74,7 +90,7 @@ uint32_t on_network_mask;
 void Set(ip4_addr_t ipaddr, ip4_addr_t netmask, ip4_addr_t gw, bool use_dhcp);
 
 static void NetifExtCallback(uint16_t reason, [[maybe_unused]] const netif::netif_ext_callback_args_t* args) {
-    DEBUG_ENTRY();
+    NETWORK_DEBUG_ENTRY();
 
     if ((reason & netif::NetifReason::kIpv4AddressChanged) == netif::NetifReason::kIpv4AddressChanged) {
         printf("ip: " IPSTR " -> " IPSTR "\n", IP2STR(args->ipv4_changed.old_address.addr), IP2STR(netif::IpAddr()));
@@ -106,18 +122,18 @@ static void NetifExtCallback(uint16_t reason, [[maybe_unused]] const netif::neti
     if ((reason & netif::NetifReason::kLinkChanged) == netif::NetifReason::kLinkChanged) {
         if (args->link_changed.state == 0) { // Link down
             network::event::LinkDown();
-            DEBUG_EXIT();
+            NETWORK_DEBUG_EXIT();
             return;
         }
 
         network::event::LinkUp();
-        DEBUG_EXIT();
+        NETWORK_DEBUG_EXIT();
     }
 
-    DEBUG_EXIT();
+    NETWORK_DEBUG_EXIT();
 }
 void Init() {
-    DEBUG_ENTRY();
+    NETWORK_DEBUG_ENTRY();
 
     emac::display::Config();
 
@@ -184,7 +200,7 @@ void Init() {
 #elif defined(ENET_LINK_CHECK_REG_POLL)
     emac::link::StatusRead();
 #endif
-    DEBUG_EXIT();
+    NETWORK_DEBUG_EXIT();
 }
 
 static struct network::acd::Acd s_acd;
@@ -213,7 +229,7 @@ static void PrimaryIpConflictCallback(network::acd::Callback callback) {
 }
 
 void Set(network::ip4_addr_t ipaddr, network::ip4_addr_t netmask, network::ip4_addr_t gw, bool use_dhcp) {
-    DEBUG_ENTRY();
+    NETWORK_DEBUG_ENTRY();
 
     netif::global::netif_default.secondary_ip.addr = 2 + ((static_cast<uint32_t>(static_cast<uint8_t>(netif::global::netif_default.hwaddr[3] + 0xFF + 0xFF))) << 8) + ((static_cast<uint32_t>(netif::global::netif_default.hwaddr[4])) << 16) +
                                                      ((static_cast<uint32_t>(netif::global::netif_default.hwaddr[5])) << 24);
@@ -243,16 +259,16 @@ void Set(network::ip4_addr_t ipaddr, network::ip4_addr_t netmask, network::ip4_a
         }
     }
 
-    DEBUG_EXIT();
+    NETWORK_DEBUG_EXIT();
 }
 
 void SetPrimaryIp(uint32_t primary_ip_new) {
-    DEBUG_ENTRY();
+    NETWORK_DEBUG_ENTRY();
 
     auto& netif = netif::global::netif_default;
 
     if (primary_ip_new == netif.ip.addr) {
-        DEBUG_EXIT();
+        NETWORK_DEBUG_EXIT();
         return;
     }
 
@@ -272,25 +288,25 @@ void SetPrimaryIp(uint32_t primary_ip_new) {
 
     network::store::SaveIp(primary_ip_new);
 
-    DEBUG_EXIT();
+    NETWORK_DEBUG_EXIT();
 }
 
 void SetSecondaryIp() {
-    DEBUG_ENTRY();
+    NETWORK_DEBUG_ENTRY();
 
     auto& netif = netif::global::netif_default;
     network::ip4_addr_t netmask;
     netmask.addr = 255;
     netif::SetAddr(netif.secondary_ip, netmask, netif.secondary_ip);
 
-    DEBUG_EXIT();
+    NETWORK_DEBUG_EXIT();
 }
 
 void SetNetmask(uint32_t netmask_new) {
-    DEBUG_ENTRY();
+    NETWORK_DEBUG_ENTRY();
 
     if (netmask_new == netif::Netmask()) {
-        DEBUG_EXIT();
+        NETWORK_DEBUG_EXIT();
         return;
     }
 
@@ -301,14 +317,14 @@ void SetNetmask(uint32_t netmask_new) {
 
     network::store::SaveNetmask(netmask_new);
 
-    DEBUG_EXIT();
+    NETWORK_DEBUG_EXIT();
 }
 
 void SetGatewayIp(uint32_t gw_new) {
-    DEBUG_ENTRY();
+    NETWORK_DEBUG_ENTRY();
 
     if (gw_new == netif::Gw()) {
-        DEBUG_EXIT();
+        NETWORK_DEBUG_EXIT();
         return;
     }
 
@@ -319,7 +335,7 @@ void SetGatewayIp(uint32_t gw_new) {
 
     network::store::SaveGatewayIp(gw_new);
 
-    DEBUG_EXIT();
+    NETWORK_DEBUG_EXIT();
 }
 
 namespace igmp {
@@ -327,7 +343,7 @@ void Shutdown();
 } // namespace igmp
 
 void Shutdown() {
-    DEBUG_ENTRY();
+    NETWORK_DEBUG_ENTRY();
 
 #if !defined(CONFIG_NET_APPS_NO_MDNS)
     network::apps::mdns::Stop();
@@ -335,6 +351,6 @@ void Shutdown() {
     network::igmp::Shutdown();
     netif::SetLinkDown();
 
-    DEBUG_EXIT();
+    NETWORK_DEBUG_EXIT();
 }
 } // namespace network

@@ -23,10 +23,6 @@
  * THE SOFTWARE.
  */
  
-#if defined(DEBUG_PIXELDMXPARAMS)
-#undef NDEBUG
-#endif
-
 #include <cstdint>
 #include <algorithm>
 #include <utility>
@@ -48,7 +44,7 @@
 #include "dmxnode.h"
 #include "dmxnode_nodetype.h"
 #include "pixeltestpattern.h"
-#include "firmware/debug/debug_debug.h"
+#include "pixeldmx_debug.h"
 
 static constexpr uint32_t kConfigMaxPorts = CONFIG_DMXNODE_PIXEL_MAX_PORTS;
 
@@ -170,13 +166,13 @@ void PixelDmxParams::Store(const char* buffer, uint32_t buffer_size) {
     ParseJsonWithTable(buffer, buffer_size, kPixelDmxKeys);
     ConfigStore::Instance().Store(&store_dmxled, &ConfigurationStore::dmx_led);
 
-#ifndef NDEBUG
+#ifdef DEBUG_PIXELDMX
     Dump();
 #endif
 }
 
 void PixelDmxParams::Set() {
-	DEBUG_ENTRY();
+	PIXELDMX_DEBUG_ENTRY();
     auto& pixel_configuration = PixelConfiguration::Get();
 
     pixel_configuration.SetType(static_cast<pixel::LedType>(store_dmxled.type));
@@ -232,7 +228,7 @@ void PixelDmxParams::Set() {
     }
 #endif
 
-#ifndef NDEBUG
+#ifdef DEBUG_PIXELDMX
     pixel_dmx_configuration.Print();
     Dump();
 #if defined(DMXNODE_TYPE_ARTNET) || defined(DMXNODE_TYPE_E131)
@@ -258,7 +254,7 @@ void PixelDmxParams::Set() {
 
     common::firmware::pixeldmx::Show(7, kTestPattern);
 	
-	DEBUG_EXIT();
+	PIXELDMX_DEBUG_EXIT();
 }
 
 void PixelDmxParams::Dump() {

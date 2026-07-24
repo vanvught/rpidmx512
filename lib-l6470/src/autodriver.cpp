@@ -45,7 +45,7 @@ AutoDriver::AutoDriver(uint8_t position, uint8_t chip_select, uint8_t reset_pin,
 
     s_num_boards[chip_select]++;
 
-    DEBUG_PRINTF("m_nNumBoards[%d]=%d", static_cast<int>(chip_select), static_cast<int>(m_nNumBoards[chip_select]));
+    DEBUG_PRINTF("m_nNumBoards[%d]=%d", static_cast<int>(chip_select), static_cast<int>(s_num_boards[chip_select]));
     DEBUG_EXIT();
 }
 
@@ -55,7 +55,7 @@ AutoDriver::AutoDriver(uint8_t position, uint8_t chip_select, uint8_t reset_pin)
 
     s_num_boards[chip_select]++;
 
-    DEBUG_PRINTF("m_nNumBoards[%d]=%d", static_cast<int>(chip_select), static_cast<int>(m_nNumBoards[chip_select]));
+    DEBUG_PRINTF("m_nNumBoards[%d]=%d", static_cast<int>(chip_select), static_cast<int>(s_num_boards[chip_select]));
     DEBUG_EXIT();
 }
 
@@ -119,7 +119,7 @@ uint8_t AutoDriver::SPIXfer(uint8_t data) {
     spi::SetDataMode(spi::kMode3);
     spi::Transfern(data_packet, s_num_boards[chip_select_]);
 
-    DEBUG_PRINTF("data=%x, dataPacket[%d]=%x", data, position_, dataPacket[position_]);
+    DEBUG_PRINTF("data=%x, dataPacket[%d]=%x", data, position_, data_packet[position_]);
     DEBUG_EXIT();
     return static_cast<uint8_t>(data_packet[position_]);
 }

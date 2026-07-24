@@ -23,15 +23,11 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_HAL)
-#undef NDEBUG
-#endif
-
 #include <cstdint>
 
 #include "board_statusled.h"
 #include "softwaretimers.h"
-#include "firmware/debug/debug_debug.h"
+#include "board_debug.h"
 
 void h3_status_led_set(int);
 
@@ -45,8 +41,8 @@ static void Ledblink([[maybe_unused]] TimerHandle_t handle) {
 
 namespace board::statusled {
 void SetFrequency(uint32_t frequency_hz) {
-	DEBUG_PRINTF("frequency_hz=%u", static_cast<unsigned>(frequency_hz));
-	
+    BOARD_DEBUG_PRINTF("frequency_hz=%u", static_cast<unsigned>(frequency_hz));
+
     if (frequency_hz == 0) {
         SoftwareTimerDelete(s_timer_id);
         h3_status_led_set(0);
@@ -61,11 +57,11 @@ void SetFrequency(uint32_t frequency_hz) {
 
     if (s_timer_id < 0) {
         s_timer_id = SoftwareTimerAdd((1000U / frequency_hz), Ledblink);
-        DEBUG_PRINTF("s_timer_id=%u", static_cast<unsigned>(s_timer_id));
+        BOARD_DEBUG_PRINTF("s_timer_id=%u", static_cast<unsigned>(s_timer_id));
         return;
     }
 
-    DEBUG_PRINTF("s_timer_id=%u", static_cast<unsigned>(s_timer_id));
+    BOARD_DEBUG_PRINTF("s_timer_id=%u", static_cast<unsigned>(s_timer_id));
     SoftwareTimerChange(s_timer_id, (1000U / frequency_hz));
 }
 } // namespace board::statusled

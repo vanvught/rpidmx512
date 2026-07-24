@@ -23,10 +23,6 @@
 * THE SOFTWARE.
 */
 
-#ifdef DEBUG_DISPLAYUDFPARAMS
-#undef NDEBUG
-#endif
-
 #include <cstdint>
 
 #include "json/displayudfparams.h"
@@ -39,6 +35,26 @@
 #include "common/utils/utils_array.h"
 #include "firmware/debug/debug_debug.h"
 #include "displayudf.h"
+
+#ifdef DEBUG_DISPLAYUDFPARAMS
+#define DISPLAYUDFPARAMS_DEBUG_ENTRY() DEBUG_ENTRY()
+#define DISPLAYUDFPARAMS_DEBUG_EXIT() DEBUG_EXIT()
+#define DISPLAYUDFPARAMS_DEBUG_PRINTF(...) DEBUG_PRINTF(__VA_ARGS__)
+#define DISPLAYUDFPARAMS_DEBUG_PUTS(...) DEBUG_PUTS(__VA_ARGS__)
+#else
+#define DISPLAYUDFPARAMS_DEBUG_ENTRY() \
+    do {                     \
+    } while (false)
+#define DISPLAYUDFPARAMS_DEBUG_EXIT() \
+    do {                    \
+    } while (false)
+#define DISPLAYUDFPARAMS_DEBUG_PRINTF(...) \
+    do {                         \
+    } while (false)
+#define DISPLAYUDFPARAMS_DEBUG_PUTS(...) \
+    do {                       \
+    } while (false)
+#endif
 
 using common::store::displayudf::Flags;
 
@@ -73,7 +89,7 @@ void DisplayUdfParams::SetLabel(const char* key, uint32_t key_len, const char* v
         return;
     }
 
-    DEBUG_PRINTF("%.*s ->%.*s", static_cast<int>(key_len), key, static_cast<int>(val_len), val);
+    DISPLAYUDFPARAMS_DEBUG_PRINTF("%.*s ->%.*s", static_cast<int>(key_len), key, static_cast<int>(val_len), val);
 
     const uint32_t kHash = Fnv1a32Runtime(key, key_len);
     bool matched = false;

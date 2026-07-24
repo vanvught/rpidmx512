@@ -31,6 +31,26 @@
 
 #include "flashcode.h"
 
+#ifdef DEBUG_FLASHCODE_INSTALL
+#define FLASHCODE_INSTALL_DEBUG_ENTRY() DEBUG_ENTRY()
+#define FLASHCODE_INSTALL_DEBUG_EXIT() DEBUG_EXIT()
+#define FLASHCODE_INSTALL_DEBUG_PRINTF(...) DEBUG_PRINTF(__VA_ARGS__)
+#define FLASHCODE_INSTALL_DEBUG_PUTS(...) DEBUG_PUTS(__VA_ARGS__)
+#else
+#define FLASHCODE_INSTALL_DEBUG_ENTRY() \
+    do {                                \
+    } while (false)
+#define FLASHCODE_INSTALL_DEBUG_EXIT() \
+    do {                               \
+    } while (false)
+#define FLASHCODE_INSTALL_DEBUG_PRINTF(...) \
+    do {                                    \
+    } while (false)
+#define FLASHCODE_INSTALL_DEBUG_PUTS(...) \
+    do {                                  \
+    } while (false)
+#endif
+
 class FlashCodeInstall : FlashCode {
     enum class ChunkState { kStart, kWrite };
 
@@ -55,7 +75,6 @@ class FlashCodeInstall : FlashCode {
     void Write(uint32_t offset);
     void Process(const char* file_name, uint32_t offset);
 
-   private:
     uint32_t erase_size_{0};
     uint32_t flash_size_{0};
     uint32_t firmware_size_{0};

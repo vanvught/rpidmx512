@@ -22,10 +22,6 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_RDM_DISCOVERY)
-#undef NDEBUG
-#endif
-
 #include <cstdint>
 #include <cstring>
 #include <cstdio>
@@ -33,7 +29,7 @@
 
 #include "rdm_discovery_statemachine.h"
 #include "timing.h" // IWYU pragma: keep
-#include "firmware/debug/debug_debug.h"
+#include "rdm_debug.h"
 #if defined(CONFIG_PANELLED_RDM_PORT) || defined(CONFIG_PANELLED_RDM_NO_PORT)
 #include "panelled.h"
 #endif
@@ -41,23 +37,23 @@
 namespace rdm::discovery {
 #ifndef NDEBUG
 static constexpr const char* kStateName[] = {
-	"IDLE",
-	"UNMUTE",
-	"MUTE",
-	"DISCOVERY",
-	"DISCOVERY_SINGLE_DEVICE",
-	"DUB",
-	"QUICKFIND",
-	"QUICKFIND_DISCOVERY",
-	"LATE_RESPONSE",
-	"FINISHED"
+    "IDLE",                    //
+    "UNMUTE",                  //
+    "MUTE",                    //
+    "DISCOVERY",               //
+    "DISCOVERY_SINGLE_DEVICE", //
+    "DUB",                     //
+    "QUICKFIND",               //
+    "QUICKFIND_DISCOVERY",     //
+    "LATE_RESPONSE",           //
+    "FINISHED"                 //
 };
 #endif
 
-typedef union cast {
+using _cast = union cast {
     uint64_t uint;
     uint8_t uid[rdm::kUidSize];
-} _cast;
+};
 
 static _cast uuid_cast;
 
@@ -112,27 +108,27 @@ uint32_t StateMachine::CopyWorkingQueue(char* out_buffer, uint32_t out_buffer_si
 }
 
 bool StateMachine::Full(uint32_t port_index, rdm::Tod* tod) {
-    DEBUG_ENTRY();
+    RDM_DISCOVERY_DEBUG_ENTRY();
     tod->Reset();
     const auto kStart = Start(port_index, tod, false);
-    DEBUG_EXIT();
+    RDM_DISCOVERY_DEBUG_EXIT();
     return kStart;
 }
 
 bool StateMachine::Incremental(uint32_t port_index, rdm::Tod* tod) {
-    DEBUG_ENTRY();
+    RDM_DISCOVERY_DEBUG_ENTRY();
     mute_.tod_entries = tod->UidCount();
     const auto kStart = Start(port_index, tod, true);
-    DEBUG_EXIT();
+    RDM_DISCOVERY_DEBUG_EXIT();
     return kStart;
 }
 
 bool StateMachine::Start(uint32_t port_index, rdm::Tod* tod, bool do_incremental) {
-    DEBUG_ENTRY();
+    RDM_DISCOVERY_DEBUG_ENTRY();
 
     if (state_ != rdm::discovery::State::kIdle) {
-        DEBUG_PUTS("Is already running.");
-        DEBUG_EXIT();
+        RDM_DISCOVERY_DEBUG_PUTS("Is already running.");
+        RDM_DISCOVERY_DEBUG_EXIT();
         return false;
     }
 
@@ -165,16 +161,16 @@ bool StateMachine::Start(uint32_t port_index, rdm::Tod* tod, bool do_incremental
 
     NEW_STATE(rdm::discovery::State::kUnmute, false);
 
-    DEBUG_EXIT();
+    RDM_DISCOVERY_DEBUG_EXIT();
     return true;
 }
 
 bool StateMachine::Stop() {
-    DEBUG_ENTRY();
+    RDM_DISCOVERY_DEBUG_ENTRY();
 
     if (state_ == rdm::discovery::State::kIdle) {
-        DEBUG_PUTS("Not running.");
-        DEBUG_EXIT();
+        RDM_DISCOVERY_DEBUG_PUTS("Not running.");
+        RDM_DISCOVERY_DEBUG_EXIT();
         return false;
     }
 
@@ -182,7 +178,7 @@ bool StateMachine::Stop() {
 
     NEW_STATE(rdm::discovery::State::kIdle, true);
 
-    DEBUG_EXIT();
+    RDM_DISCOVERY_DEBUG_EXIT();
     return true;
 }
 

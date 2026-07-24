@@ -23,10 +23,6 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_RDMDEVICEPARAMS)
-#undef NDEBUG
-#endif
-
 #include <cstdint>
 #include <cstring>
 #include <algorithm>
@@ -37,48 +33,42 @@
 #include "json/json_parser.h"
 #include "configstore.h"
 #include "configurationstore.h"
+#include "rdm_debug.h"
 
-namespace json
-{
-RdmDeviceParams::RdmDeviceParams()
-{
+namespace json {
+RdmDeviceParams::RdmDeviceParams() {
     ConfigStore::Instance().Copy(&store_rdmdevice, &ConfigurationStore::rdm_device);
 }
 
-void RdmDeviceParams::SetLabel(const char* val, uint32_t len)
-{
+void RdmDeviceParams::SetLabel(const char* val, uint32_t len) {
     memcpy(store_rdmdevice.device_root_label, val, std::max(len, static_cast<uint32_t>(rdm::device::kLabelMaxLength)));
     store_rdmdevice.device_root_label_length = static_cast<uint8_t>(len);
 }
 
-void RdmDeviceParams::Store(const char* buffer, uint32_t buffer_size)
-{
+void RdmDeviceParams::Store(const char* buffer, uint32_t buffer_size) {
     ParseJsonWithTable(buffer, buffer_size, kRdmDeviceKeys);
     ConfigStore::Instance().Store(&store_rdmdevice, &ConfigurationStore::rdm_device);
 
-#ifndef NDEBUG
+#ifdef DEBUG_RDM_DEVICE_PARAMS
     Dump();
 #endif
 }
 
-void RdmDeviceParams::Set()
-{
-    DEBUG_ENTRY();
+void RdmDeviceParams::Set() {
+    RDM_DEVICE_PARAMS_DEBUG_ENTRY();
     auto& rdmdevice = rdm::device::Device::Instance();
 
-    struct rdm::device::InfoData info_data = {.data = reinterpret_cast<char*>(store_rdmdevice.device_root_label),
-                                              .length = store_rdmdevice.device_root_label_length};
+    struct rdm::device::InfoData info_data = {.data = reinterpret_cast<char*>(store_rdmdevice.device_root_label), .length = store_rdmdevice.device_root_label_length};
 
     rdmdevice.SetLabel(&info_data);
 
-#ifndef NDEBUG
+#ifdef DEBUG_RDM_DEVICE_PARAMS
     Dump();
 #endif
-    DEBUG_EXIT();
+    RDM_DEVICE_PARAMS_DEBUG_EXIT();
 }
 
-void RdmDeviceParams::Dump()
-{
+void RdmDeviceParams::Dump() {
     printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, RdmDeviceParamsConst::kFileName);
     printf(" %s=%.*s\n", RdmDeviceParamsConst::kLabel.name, store_rdmdevice.device_root_label_length, store_rdmdevice.device_root_label);
 }

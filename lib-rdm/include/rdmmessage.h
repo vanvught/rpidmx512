@@ -91,7 +91,7 @@ class RdmMessage final : public Rdm {
         transmit_micros_ = timing::Micros();
     }
 
-    uint32_t TransmitMicros() const { return transmit_micros_; }
+    [[nodiscard]] uint32_t TransmitMicros() const { return transmit_micros_; }
 
    private:
     uint32_t transmit_micros_{0};

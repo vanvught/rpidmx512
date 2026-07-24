@@ -40,7 +40,7 @@
 
 #include "spi/config/config_lcd.h"
 #include "spi/st77xx.h"
-#include "firmware/debug/debug_debug.h"
+#include "display_debug.h"
 
 namespace st7735s {
 namespace cmd {
@@ -77,7 +77,7 @@ inline constexpr uint32_t kRotation3ShiftY = 24;
 class ST7735S : public ST77XX {
    public:
     explicit ST7735S(uint32_t cs) : ST77XX(cs) {
-        DEBUG_ENTRY();
+        DISPLAY_DEBUG_ENTRY();
 
         if (s_instance == 0) {
             HardwareReset();
@@ -103,7 +103,7 @@ class ST7735S : public ST77XX {
 
         for (uint32_t i = 0; i < sizeof(kConfig); i += (arg_length + 2)) {
             arg_length = kConfig[i];
-            DEBUG_PRINTF("i=%u, arg_length=%u", i, arg_length);
+            DISPLAY_DEBUG_PRINTF("i=%u, arg_length=%u", i, arg_length);
             WriteCommand(&kConfig[i + 1], arg_length);
         }
 
@@ -112,14 +112,14 @@ class ST7735S : public ST77XX {
         WriteCommand(st77xx::cmd::kSlpout); ///< Sleep Out
         WriteCommand(st77xx::cmd::kDispon); ///< Display On
 
-        DEBUG_EXIT();
+        DISPLAY_DEBUG_EXIT();
     }
 
     ~ST7735S() override {};
 
     void SetRotation(uint32_t rotation) {
-        DEBUG_ENTRY();
-        DEBUG_PRINTF("rotation=%u", rotation);
+        DISPLAY_DEBUG_ENTRY();
+        DISPLAY_DEBUG_PRINTF("rotation=%u", rotation);
 
         WriteCommand(st77xx::cmd::kMadctl);
 
@@ -160,7 +160,7 @@ class ST7735S : public ST77XX {
 
         rotate_ = rotation;
 
-        DEBUG_EXIT();
+        DISPLAY_DEBUG_EXIT();
     }
 
    private:

@@ -23,10 +23,6 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_PIXEL)
-#undef NDEBUG
-#endif
-
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC push_options
 #pragma GCC optimize("O3")
@@ -49,7 +45,7 @@
 #include "irq_timer.h"
 #include "h3_dma_memcpy32.h"
 #include "logic_analyzer.h"
-#include "firmware/debug/debug_debug.h"
+#include "pixel_debug.h"
 
 static volatile uint32_t sv_nUpdatesPerSecond;
 static volatile uint32_t sv_nUpdatesPrevious;
@@ -86,7 +82,7 @@ void PixelOutputMulti::Update() {
 }
 
 void PixelOutputMulti::Blackout() {
-    DEBUG_ENTRY();
+    PIXEL_DEBUG_ENTRY();
 
     auto& pixel_configuration = PixelConfiguration::Get();
     const auto kType = pixel_configuration.GetType();
@@ -122,11 +118,11 @@ void PixelOutputMulti::Blackout() {
         asm volatile("isb" ::: "memory");
     } while (H3SpiDmaTxIsActive());
 
-    DEBUG_EXIT();
+    PIXEL_DEBUG_EXIT();
 }
 
 void PixelOutputMulti::FullOn() {
-    DEBUG_ENTRY();
+    PIXEL_DEBUG_ENTRY();
 
     auto& pixel_configuration = PixelConfiguration::Get();
 
@@ -163,7 +159,7 @@ void PixelOutputMulti::FullOn() {
         asm volatile("isb" ::: "memory");
     } while (H3SpiDmaTxIsActive());
 
-    DEBUG_EXIT();
+    PIXEL_DEBUG_EXIT();
 }
 
 uint32_t PixelOutputMulti::GetUserData() {
@@ -171,14 +167,14 @@ uint32_t PixelOutputMulti::GetUserData() {
 }
 
 void PixelOutputMulti::ApplyConfiguration() {
-    DEBUG_ENTRY();
+    PIXEL_DEBUG_ENTRY();
 
     auto& pixel_configuration = PixelConfiguration::Get();
 
     pixel_configuration.Validate();
 
     if (!pixel_configuration.RefreshNeeded()) {
-        DEBUG_EXIT();
+        PIXEL_DEBUG_EXIT();
         return;
     }
 
@@ -194,7 +190,7 @@ void PixelOutputMulti::ApplyConfiguration() {
 
     buffer_size_ *= 8;
 
-    DEBUG_PRINTF("buffer_size_=%d", buffer_size_);
+    PIXEL_DEBUG_PRINTF("buffer_size_=%d", buffer_size_);
 
     const auto kLowCode = pixel_configuration.GetLowCode();
     const auto kHighCode = pixel_configuration.GetHighCode();
@@ -219,7 +215,7 @@ void PixelOutputMulti::ApplyConfiguration() {
     sv_nUpdatesPrevious = 0;
     sv_nUpdates = 0;
 
-    DEBUG_EXIT();
+    PIXEL_DEBUG_EXIT();
 }
 
 #pragma GCC pop_options
@@ -227,7 +223,7 @@ void PixelOutputMulti::ApplyConfiguration() {
 #pragma GCC optimize("Os")
 
 PixelOutputMulti::PixelOutputMulti() {
-    DEBUG_ENTRY();
+    PIXEL_DEBUG_ENTRY();
 
     assert(s_this == nullptr);
     s_this = this;
@@ -243,7 +239,7 @@ PixelOutputMulti::PixelOutputMulti() {
 
     ApplyConfiguration();
 
-    DEBUG_EXIT();
+    PIXEL_DEBUG_EXIT();
 }
 
 PixelOutputMulti::~PixelOutputMulti() {
@@ -254,7 +250,7 @@ PixelOutputMulti::~PixelOutputMulti() {
 }
 
 void PixelOutputMulti::SetupBuffers() {
-    DEBUG_ENTRY();
+    PIXEL_DEBUG_ENTRY();
 
     uint32_t size;
 
@@ -263,19 +259,19 @@ void PixelOutputMulti::SetupBuffers() {
 
     memset(dma_buffer_, 0, size);
 
-    DEBUG_PRINTF("nSize=%x, m_pBuffer1=%p, dma_buffer_=%p", size, kPixelDatabuffer, dma_buffer_);
-    DEBUG_EXIT();
+    PIXEL_DEBUG_PRINTF("nSize=%x, m_pBuffer1=%p, dma_buffer_=%p", size, kPixelDatabuffer, dma_buffer_);
+    PIXEL_DEBUG_EXIT();
 }
 
 #define SPI_CS1 GPIO_EXT_26
 
 void PixelOutputMulti::SetupHC595(uint8_t t0h, uint8_t t1h) {
-    DEBUG_ENTRY();
+    PIXEL_DEBUG_ENTRY();
 
     t0h = static_cast<uint8_t>(t0h << 1);
     t1h = static_cast<uint8_t>(t1h << 1);
 
-    DEBUG_PRINTF("nT0H=%.2x nT1H=%.2x", t0h, t1h);
+    PIXEL_DEBUG_PRINTF("nT0H=%.2x nT1H=%.2x", t0h, t1h);
 
     H3GpioFsel(SPI_CS1, GPIO_FSEL_OUTPUT);
     H3GpioSet(SPI_CS1);
@@ -288,18 +284,18 @@ void PixelOutputMulti::SetupHC595(uint8_t t0h, uint8_t t1h) {
     H3SpiWrite(static_cast<uint16_t>((t1h << 8) | t0h));
     H3GpioSet(SPI_CS1);
 
-    DEBUG_EXIT();
+    PIXEL_DEBUG_EXIT();
 }
 
 void PixelOutputMulti::SetupSPI(uint32_t speed_hz) {
-    DEBUG_ENTRY();
+    PIXEL_DEBUG_ENTRY();
 
     H3SpiBegin();
     H3SpiChipSelect(H3_SPI_CS0);
     H3SpiSetSpeedHz(speed_hz);
 
-    DEBUG_PRINTF("nSpeedHz=%u", speed_hz);
-    DEBUG_EXIT();
+    PIXEL_DEBUG_PRINTF("nSpeedHz=%u", speed_hz);
+    PIXEL_DEBUG_EXIT();
 }
 
 extern uint32_t PIXEL8X4_PROGRAM;
@@ -309,7 +305,7 @@ uint32_t getPIXEL8X4_SIZE();
 }
 
 bool PixelOutputMulti::SetupCPLD() {
-    DEBUG_ENTRY();
+    PIXEL_DEBUG_ENTRY();
 
     JamSTAPL jbc(reinterpret_cast<uint8_t*>(&PIXEL8X4_PROGRAM), getPIXEL8X4_SIZE(), true);
     jbc.SetJamSTAPLDisplay(jamstapl_display_);
@@ -322,12 +318,12 @@ bool PixelOutputMulti::SetupCPLD() {
                 if ((jbc.GetExitCode() == 0) && (jbc.GetExportIntegerInt() != 0x0018ad81)) {
                     jbc.Program();
                 }
-                DEBUG_EXIT();
+                PIXEL_DEBUG_EXIT();
                 return true;
             }
         }
     }
 
-    DEBUG_EXIT();
+    PIXEL_DEBUG_EXIT();
     return false;
 }

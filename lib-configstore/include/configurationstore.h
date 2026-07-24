@@ -39,9 +39,7 @@
 #define PACKED
 #endif
 
-namespace common::store
-{
-
+namespace common::store {
 inline constexpr size_t kGlobalSize = 16;
 inline constexpr size_t kRemoteConfigSize = 32;
 inline constexpr size_t kNetworkSize = 96;
@@ -68,21 +66,18 @@ inline constexpr size_t kMidiSize = 16;
 inline constexpr size_t kRgbPanelSize = 16;
 inline constexpr size_t kWidgetSize = 16;
 
-struct Global
-{
+struct Global {
     int32_t utc_offset;
     uint8_t reserved[12];
 } PACKED;
 
 static_assert(sizeof(Global) == kGlobalSize);
 
-namespace remoteconfig
-{
+namespace remoteconfig {
 inline constexpr uint32_t kDisplayNameLength = 24;
 }
 
-struct RemoteConfig
-{
+struct RemoteConfig {
     uint32_t flags;
     uint8_t reserved[4];
     uint8_t display_name[remoteconfig::kDisplayNameLength];
@@ -90,14 +85,11 @@ struct RemoteConfig
 
 static_assert(sizeof(RemoteConfig) == kRemoteConfigSize);
 
-namespace network
-{
+namespace network {
 inline constexpr uint32_t kHostnameSize = 64;
 
-struct Flags
-{
-    enum class Flag : uint32_t
-    {
+struct Flags {
+    enum class Flag : uint32_t {
         kUseStaticIp = (1U << 0),
     };
 
@@ -105,8 +97,7 @@ struct Flags
 };
 } // namespace network
 
-struct Network
-{
+struct Network {
     uint32_t flags;
     uint32_t local_ip;
     uint32_t netmask;
@@ -119,14 +110,11 @@ struct Network
 
 static_assert(sizeof(Network) == kNetworkSize);
 
-namespace displayudf
-{
+namespace displayudf {
 inline constexpr uint32_t kLabelIndexSize = 28;
 
-struct Flags
-{
-    enum class Flag : uint32_t
-    {
+struct Flags {
+    enum class Flag : uint32_t {
         kFlipVertically = (1U << 0),
     };
 
@@ -134,8 +122,7 @@ struct Flags
 };
 } // namespace displayudf
 
-struct DisplayUdf
-{
+struct DisplayUdf {
     uint32_t flags;
     uint8_t label_index[displayudf::kLabelIndexSize];
     uint8_t sleep_timeout;
@@ -145,27 +132,19 @@ struct DisplayUdf
 
 static_assert(sizeof(DisplayUdf) == kDisplaySize);
 
-namespace dmxnode
-{
+namespace dmxnode {
 inline constexpr uint32_t kParamPorts = 4;
 inline constexpr uint32_t kNodeNameLength = 64;
 inline constexpr uint32_t kPortNameLength = 18;
 
-struct Flags
-{
-    enum class Flag : uint32_t
-    {
-        kEnableRdm = (1U << 0),
-        kMapUniverse0 = (1U << 1),
-        kDisableMergeTimeout = (1U << 2)
-    };
+struct Flags {
+    enum class Flag : uint32_t { kEnableRdm = (1U << 0), kMapUniverse0 = (1U << 1), kDisableMergeTimeout = (1U << 2) };
 
     static constexpr bool Has(uint32_t value, Flag flag) noexcept { return (value & static_cast<uint32_t>(flag)) != 0; }
 };
 } // namespace dmxnode
 
-struct DmxNode
-{
+struct DmxNode {
     uint32_t flags;
     uint8_t reserved[2];
     uint16_t universe[dmxnode::kParamPorts];
@@ -189,17 +168,14 @@ static_assert(offsetof(DmxNode, universe) % alignof(uint16_t) == 0, "universe mu
 static_assert(offsetof(DmxNode, protocol) % alignof(uint16_t) == 0, "protocol must be uint16_t-aligned");
 static_assert(sizeof(DmxNode) == kDmxNodeSize);
 
-namespace osc::client
-{
+namespace osc::client {
 inline constexpr uint32_t kCmdCount = 8;
 inline constexpr uint32_t kCmdPathLength = 64;
 inline constexpr uint32_t kLedCount = 8;
 inline constexpr uint32_t kLedPathLength = 48;
 
-struct Flags
-{
-    enum class Flag : uint32_t
-    {
+struct Flags {
+    enum class Flag : uint32_t {
         kPingDisable = (1U << 0),
     };
 
@@ -207,8 +183,7 @@ struct Flags
 };
 } // namespace osc::client
 
-struct OscClient
-{
+struct OscClient {
     uint32_t flags;
     uint16_t outgoing_port;
     uint16_t incoming_port;
@@ -221,14 +196,11 @@ struct OscClient
 
 static_assert(sizeof(OscClient) == kOscClientSize);
 
-namespace osc::server
-{
+namespace osc::server {
 inline constexpr uint32_t kPathLength = 128;
 
-struct Flags
-{
-    enum class Flag : uint32_t
-    {
+struct Flags {
+    enum class Flag : uint32_t {
         kPartialTransmission = (1U << 0),
     };
 
@@ -236,8 +208,7 @@ struct Flags
 };
 } // namespace osc::server
 
-struct OscServer
-{
+struct OscServer {
     uint32_t flags;
     uint16_t outgoing_port;
     uint16_t incoming_port;
@@ -251,8 +222,7 @@ struct OscServer
 
 static_assert(sizeof(OscServer) == kOscServerSize);
 
-struct DmxSend
-{
+struct DmxSend {
     uint32_t flags;
     uint16_t break_time;
     uint16_t mab_time;
@@ -264,15 +234,12 @@ struct DmxSend
 static_assert(offsetof(DmxSend, break_time) % alignof(uint16_t) == 0, "break_time must be uint16_t-aligned");
 static_assert(sizeof(DmxSend) == kDmxSendSize);
 
-namespace dmxled
-{
+namespace dmxled {
 
 inline constexpr uint32_t kMaxUniverses = 16;
 
-struct Flags
-{
-    enum class Flag : uint32_t
-    {
+struct Flags {
+    enum class Flag : uint32_t {
         kEnableGamma = (1U << 0),
     };
 
@@ -280,8 +247,7 @@ struct Flags
 };
 } // namespace dmxled
 
-struct DmxLed
-{
+struct DmxLed {
     uint32_t flags;
     uint8_t type;
     uint8_t map;
@@ -305,12 +271,9 @@ static_assert(offsetof(DmxLed, spi_speed_hz) % alignof(uint32_t) == 0, "spi_spee
 static_assert(offsetof(DmxLed, start_universe) % alignof(uint16_t) == 0, "start_universe must be uint16_t-aligned");
 static_assert(sizeof(DmxLed) == kDmxLedSize);
 
-namespace dmxpwm
-{
-struct Flags
-{
-    enum class Flag : uint32_t
-    {
+namespace dmxpwm {
+struct Flags {
+    enum class Flag : uint32_t {
         kModeServo = 1U << 0,
         kUse8Bit = 1U << 1,
         kLedOutputInvert = 1U << 2,
@@ -321,8 +284,7 @@ struct Flags
 };
 } // namespace dmxpwm
 
-struct DmxPwm
-{
+struct DmxPwm {
     uint32_t flags;
     uint8_t address;
     uint8_t reserved1;
@@ -337,8 +299,7 @@ struct DmxPwm
 
 static_assert(sizeof(DmxPwm) == kDmxPwmSize);
 
-struct DmxSerial
-{
+struct DmxSerial {
     uint32_t flags;
     uint8_t type;
     uint8_t reserved1[3];
@@ -358,8 +319,7 @@ static_assert(offsetof(DmxSerial, baud) % alignof(uint32_t) == 0, "baud must be 
 static_assert(offsetof(DmxSerial, spi_speed_hz) % alignof(uint32_t) == 0, "spi_speed_hz must be uint32_t-aligned");
 static_assert(sizeof(DmxSerial) == kDmxSerialSize);
 
-struct DmxMonitor
-{
+struct DmxMonitor {
     uint32_t flags;
     uint16_t dmx_start_address;
     uint16_t dmx_max_channels;
@@ -369,13 +329,11 @@ struct DmxMonitor
 
 static_assert(sizeof(DmxMonitor) == kDmxMonitorSize);
 
-namespace rdmdevice
-{
+namespace rdmdevice {
 inline constexpr uint32_t kLabelMaxLength = 32;
 }
 
-struct RdmDevice
-{
+struct RdmDevice {
     uint32_t flags;
     uint8_t device_root_label[rdmdevice::kLabelMaxLength];
     uint8_t device_root_label_length;
@@ -384,17 +342,14 @@ struct RdmDevice
 
 static_assert(sizeof(RdmDevice) == kRdmDeviceSize);
 
-namespace rdm::sensors
-{
+namespace rdm::sensors {
 inline constexpr uint32_t kMaxSensors = 16;
 inline constexpr uint32_t kMaxDevices = 8;
 } // namespace rdm::sensors
 
-struct RdmSensors
-{
+struct RdmSensors {
     uint32_t devices;
-    struct Entry
-    {
+    struct Entry {
         uint8_t type;
         uint8_t address;
         uint8_t reserved[2];
@@ -405,16 +360,13 @@ struct RdmSensors
 static_assert(offsetof(RdmSensors, calibrate) % alignof(uint16_t) == 0, "calibrate must be uint16_t-aligned");
 static_assert(sizeof(RdmSensors) == kRdmSensorsSize);
 
-namespace rdm::subdevices
-{
+namespace rdm::subdevices {
 inline constexpr uint32_t kMaxSubdevices = 8;
 }
 
-struct RdmSubdevices
-{
+struct RdmSubdevices {
     uint32_t count;
-    struct Entry
-    {
+    struct Entry {
         uint8_t type;
         uint8_t chip_select;
         uint8_t address;
@@ -428,23 +380,13 @@ static_assert(offsetof(RdmSubdevices::Entry, speed_hz) % alignof(uint32_t) == 0,
 static_assert(offsetof(RdmSubdevices::Entry, dmx_start_address) % alignof(uint16_t) == 0, "dmx_start_address must be uint16_t-aligned");
 static_assert(sizeof(RdmSubdevices) == kRdmSubdevicesSize);
 
-namespace showfile
-{
-struct Flags
-{
-    enum class Flag : uint32_t
-    {
-        kOptionAutoPlay = 1U << 0,
-        kOptionLoop = 1U << 1,
-        kOptionDisableSync = 1U << 2,
-        kOptionArtnetDisableUnicast = 1U << 3,
-        kOptionSacnSyncUniverse = 1U << 4
-    };
+namespace showfile {
+struct Flags {
+    enum class Flag : uint32_t { kOptionAutoPlay = 1U << 0, kOptionLoop = 1U << 1, kOptionDisableSync = 1U << 2, kOptionArtnetDisableUnicast = 1U << 3, kOptionSacnSyncUniverse = 1U << 4 };
 };
 } // namespace showfile
 
-struct ShowFile
-{
+struct ShowFile {
     uint32_t flags;
     uint8_t show;
     uint8_t reserved;
@@ -459,12 +401,9 @@ struct ShowFile
 static_assert(offsetof(ShowFile, osc_port_incoming) % alignof(uint16_t) == 0, "osc_port_incoming must be uint16_t-aligned");
 static_assert(sizeof(ShowFile) == kShowSize);
 
-namespace ltc
-{
-struct Flags
-{
-    enum class Flag : uint32_t
-    {
+namespace ltc {
+struct Flags {
+    enum class Flag : uint32_t {
         kNtpEnable = 1U << 0,
         kAutoStart = 1U << 1,
         kIsAltFuntion = 1U << 2,
@@ -483,8 +422,7 @@ struct Flags
 };
 } // namespace ltc
 
-struct Ltc
-{
+struct Ltc {
     uint32_t flags;
     uint8_t source;
     uint8_t volume;
@@ -516,15 +454,12 @@ struct Ltc
 static_assert(offsetof(Ltc, osc_port) % alignof(uint16_t) == 0, "osc_port must be uint16_t-aligned");
 static_assert(sizeof(Ltc) == kLtcSize);
 
-namespace ltc::display
-{
+namespace ltc::display {
 inline constexpr uint32_t kMaxColours = 6;
 inline constexpr uint32_t kMaxInfoMessage = 8;
 
-struct Flags
-{
-    enum class Flag : uint32_t
-    {
+struct Flags {
+    enum class Flag : uint32_t {
         kRotaryFullStep = 1U << 0,
     };
 
@@ -532,8 +467,7 @@ struct Flags
 };
 } // namespace ltc::display
 
-struct LtcDisplay
-{
+struct LtcDisplay {
     uint32_t flags;
     uint8_t max7219_type;
     uint8_t max7219_intensity;
@@ -552,8 +486,7 @@ struct LtcDisplay
 static_assert(offsetof(LtcDisplay, display_rgb_colour) % alignof(uint32_t) == 0, "display_rgb_colour must be uint32_t-aligned");
 static_assert(sizeof(LtcDisplay) == kLtcDisplaySize);
 
-struct LtcEtc
-{
+struct LtcEtc {
     uint32_t set_list;
     uint32_t destination_ip;
     uint32_t source_multicast_ip;
@@ -565,14 +498,11 @@ struct LtcEtc
 
 static_assert(sizeof(LtcEtc) == kLtcEtcSize);
 
-namespace tcnet
-{
+namespace tcnet {
 inline constexpr uint32_t kNodeNameLength = 8;
 
-struct Flags
-{
-    enum class Flag : uint32_t
-    {
+struct Flags {
+    enum class Flag : uint32_t {
         kUseTimecode = 1U << 0,
     };
 
@@ -580,8 +510,7 @@ struct Flags
 };
 } // namespace tcnet
 
-struct TcNet
-{
+struct TcNet {
     uint32_t flags;
     char node_name[tcnet::kNodeNameLength];
     uint8_t layer;
@@ -591,12 +520,9 @@ struct TcNet
 
 static_assert(sizeof(TcNet) == kTcNetSize);
 
-namespace gps
-{
-struct Flags
-{
-    enum class Flag : uint32_t
-    {
+namespace gps {
+struct Flags {
+    enum class Flag : uint32_t {
         kEnable = 1U << 0,
     };
 
@@ -604,8 +530,7 @@ struct Flags
 };
 } // namespace gps
 
-struct Gps
-{
+struct Gps {
     uint32_t flags;
     int32_t utc_offset;
     uint8_t module;
@@ -614,12 +539,9 @@ struct Gps
 
 static_assert(sizeof(Gps) == kGpsSize);
 
-namespace midi
-{
-struct Flags
-{
-    enum class Flag : uint32_t
-    {
+namespace midi {
+struct Flags {
+    enum class Flag : uint32_t {
         kActiveSense = 1U << 0,
     };
 
@@ -627,8 +549,7 @@ struct Flags
 };
 } // namespace midi
 
-struct Midi
-{
+struct Midi {
     uint32_t flags;
     uint32_t baudrate;
     uint8_t reserved[8];
@@ -636,8 +557,7 @@ struct Midi
 
 static_assert(sizeof(Midi) == kMidiSize);
 
-struct RgbPanel
-{
+struct RgbPanel {
     uint32_t set_list;
     uint8_t cols;
     uint8_t rows;
@@ -648,8 +568,7 @@ struct RgbPanel
 
 static_assert(sizeof(RgbPanel) == kRgbPanelSize);
 
-struct Widget
-{
+struct Widget {
     uint32_t set_list;
     uint8_t break_time;
     uint8_t mab_time;
@@ -661,16 +580,12 @@ struct Widget
 
 static_assert(sizeof(Widget) == kWidgetSize);
 
-namespace l6470dmx
-{
+namespace l6470dmx {
 inline constexpr uint32_t kMaxMotors = 8;
 
-namespace sparkfun
-{
-struct Flags
-{
-    enum class Flag : uint32_t
-    {
+namespace sparkfun {
+struct Flags {
+    enum class Flag : uint32_t {
         kIsSetPosition = 1U << 0,
         kIsSetSpiCs = 1U << 1,
         kIsSetResetPin = 1U << 2,
@@ -681,8 +596,7 @@ struct Flags
 };
 } // namespace sparkfun
 
-struct SparkFun
-{
+struct SparkFun {
     uint32_t flags;
     uint8_t position;
     uint8_t spi_cs;
@@ -691,21 +605,17 @@ struct SparkFun
     uint8_t reserved[8];
 } PACKED;
 
-struct SlotInfo
-{
+struct SlotInfo {
     uint16_t category;
     uint8_t type;
     uint8_t reserved;
 };
 
-namespace mode
-{
+namespace mode {
 inline constexpr uint16_t kMaxDmxFootprint = 4;
 
-struct Flags
-{
-    enum class Flag : uint32_t
-    {
+struct Flags {
+    enum class Flag : uint32_t {
         kUseSwitch = 1U << 0,
     };
 
@@ -713,8 +623,7 @@ struct Flags
 };
 } // namespace mode
 
-struct Mode
-{
+struct Mode {
     uint32_t flags;
     uint8_t dmx_mode;
     uint8_t reserved1;
@@ -727,12 +636,9 @@ struct Mode
     SlotInfo slot_info[mode::kMaxDmxFootprint];
 } PACKED;
 
-namespace l6470
-{
-struct Flags
-{
-    enum class Flag : uint32_t
-    {
+namespace l6470 {
+struct Flags {
+    enum class Flag : uint32_t {
         kIsSetMinSpeed = 1U << 0,
         kIsSetMaxSpeed = 1U << 1,
         kIsSetAcc = 1U << 2,
@@ -748,8 +654,7 @@ struct Flags
 };
 } // namespace l6470
 
-struct L6470
-{
+struct L6470 {
     uint32_t flags;
     uint32_t min_speed;
     uint32_t max_speed;
@@ -763,8 +668,7 @@ struct L6470
     uint8_t reserved[3];
 } PACKED;
 
-struct Motor
-{
+struct Motor {
     uint32_t set_list;
     float step_angel;
     float voltage;
@@ -773,8 +677,7 @@ struct Motor
     float inductance;
 } PACKED;
 
-struct Store
-{
+struct Store {
     l6470dmx::SparkFun spark_fun;
     l6470dmx::Mode mode;
     l6470dmx::L6470 l6470;
@@ -786,8 +689,7 @@ static_assert(offsetof(Store, l6470) % alignof(uint32_t) == 0, "l6470 must be ui
 static_assert(offsetof(Store, motor) % alignof(uint32_t) == 0, "motor must be uint32_t-aligned");
 } // namespace l6470dmx
 
-struct DmxL6470
-{
+struct DmxL6470 {
     l6470dmx::SparkFun spark_fun_global;
     l6470dmx::Store store[l6470dmx::kMaxMotors];
 } PACKED;
@@ -797,14 +699,12 @@ static_assert(sizeof(DmxL6470) == kDmxL6470Size);
 
 } // namespace common::store
 
-namespace configurationstore
-{
+namespace configurationstore {
 inline constexpr uint32_t kMagicNumberSize = 4;
 inline constexpr uint32_t kVersionSize = 2;
 } // namespace configurationstore
 
-struct ConfigurationStore
-{
+struct ConfigurationStore {
     uint8_t magic_number[configurationstore::kMagicNumberSize];
     uint8_t version[configurationstore::kVersionSize];
     uint8_t reserved[10];

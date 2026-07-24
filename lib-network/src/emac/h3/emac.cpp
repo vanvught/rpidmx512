@@ -24,7 +24,6 @@
  */
 
 #include <cstdint>
-#include <stdbool.h>
 #include <cstring>
 #include <cstdio>
 #include <cassert>
@@ -36,7 +35,7 @@
 #include "h3.h"
 #include "timing.h"
 #include "firmware/debug/debug_printbits.h" // IWYU pragma: keep
-#include "firmware/debug/debug_debug.h"
+#include "emac/emac_debug.h"
 
 static constexpr uint16_t kAddress =
 #if !defined(PHY_ADDRESS)
@@ -58,7 +57,7 @@ extern void MacAddress(uint8_t paddr[]);
 
 namespace emac {
 void AdjustLink(emac::phy::Status phy_status) {
-    DEBUG_ENTRY();
+    EMAC_DEBUG_ENTRY();
 
     printf("Link %s, %d, %s\n", phy_status.link == emac::phy::Link::kStateUp ? "Up" : "Down", phy_status.speed == emac::phy::Speed::kSpeed10 ? 10 : 100, phy_status.duplex == emac::phy::Duplex::kDuplexHalf ? "HALF" : "FULL");
 
@@ -83,7 +82,7 @@ void AdjustLink(emac::phy::Status phy_status) {
 
     H3_EMAC->CTL0 = value;
 
-    DEBUG_EXIT();
+    EMAC_DEBUG_EXIT();
 }
 
 static void RxDescsInit() {
@@ -129,7 +128,7 @@ static void TxDescsInit() {
 }
 
 void __attribute__((cold)) Config() {
-    DEBUG_ENTRY();
+    EMAC_DEBUG_ENTRY();
 
     H3_CCU->BUS_SOFT_RESET2 |= BUS_SOFT_RESET2_EPHY_RST;
     timing::DelayUs(1000); // 1ms
@@ -152,11 +151,11 @@ void __attribute__((cold)) Config() {
 
     emac::phy::Config(kAddress);
 
-    DEBUG_EXIT();
+    EMAC_DEBUG_EXIT();
 }
 
 void __attribute__((cold)) Start(uint8_t mac_address[], emac::phy::Link& link) {
-    DEBUG_ENTRY();
+    EMAC_DEBUG_ENTRY();
 
     MacAddress(mac_address);
 
@@ -220,8 +219,8 @@ void __attribute__((cold)) Start(uint8_t mac_address[], emac::phy::Link& link) {
     value = H3_EMAC->TX_CTL0;
     value |= TX_CTL0_TX_EN;
     H3_EMAC->TX_CTL0 = value;
-	
-	memset(&emac::eth::globals::counter, 0, sizeof(emac::eth::globals::Counters));
+
+    memset(&emac::eth::globals::counter, 0, sizeof(emac::eth::globals::Counters));
 
     //	H3_EMAC->INT_EN = (uint32_t)(UINT32_MAX);
 
@@ -250,5 +249,6 @@ void __attribute__((cold)) Start(uint8_t mac_address[], emac::phy::Link& link) {
     printf("H3_EMAC->RX_CUR_BUF=%p\n", H3_EMAC->RX_CUR_BUF);
     printf("================\n");
 #endif
+    EMAC_DEBUG_EXIT();
 }
 } // namespace emac

@@ -24,21 +24,22 @@
 
 #include <cstdint>
 #include <sys/time.h>
-#include <time.h>
+#include <ctime>
 
 #include "hwclock.h"
 #include "timing.h"
-#include "firmware/debug/debug_debug.h"
 
+namespace {
 enum class Status { kWaiting, kSampling };
 
-static Status s_status = Status::kWaiting;
-static time_t s_seconds;
-static int32_t s_seconds_t1;
-static struct tm s_rtc_t1;
-static struct timeval s_tv_t1;
-static struct tm s_rtc_t2;
-static struct timeval s_tv_t2;
+Status s_status = Status::kWaiting;
+time_t s_seconds;
+int32_t s_seconds_t1;
+struct tm s_rtc_t1;
+struct timeval s_tv_t1;
+struct tm s_rtc_t2;
+struct timeval s_tv_t2;
+} // namespace
 
 void HwClock::Process() {
     if (s_status == Status::kWaiting) {
@@ -81,8 +82,8 @@ void HwClock::Process() {
             last_hc_to_sys_millis_ = timing::Millis();
             s_status = Status::kWaiting;
 
-            DEBUG_PRINTF("%d:%d (%d %d) (%d %d) -> %d", s_seconds_t1, kSeconds2, static_cast<int>(s_tv_t1.tv_sec), static_cast<int>(s_tv_t1.tv_usec), static_cast<int>(s_tv_t2.tv_sec), static_cast<int>(s_tv_t2.tv_usec),
-                         static_cast<int>(tv.tv_usec));
+            HWCLOCK_DEBUG_PRINTF("%d:%d (%d %d) (%d %d) -> %d", static_cast<int>(s_seconds_t1), kSeconds2, static_cast<int>(s_tv_t1.tv_sec), static_cast<int>(s_tv_t1.tv_usec), static_cast<int>(s_tv_t2.tv_sec),
+                                 static_cast<int>(s_tv_t2.tv_usec), static_cast<int>(tv.tv_usec));
         }
 
         return;

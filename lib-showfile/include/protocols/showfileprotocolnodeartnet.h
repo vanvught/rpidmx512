@@ -31,43 +31,43 @@
 
 #include "artnetnode.h"
 #include "artnet.h"
-#include "firmware/debug/debug_debug.h"
+#include "showfile_debug.h"
 
 class ShowFileProtocol {
    public:
     ShowFileProtocol() {
-        DEBUG_ENTRY();
+        SHOWFILE_DEBUG_ENTRY();
 
         memcpy(dmx_.id, artnet::kNodeId, sizeof(dmx_.id));
         dmx_.op_code = static_cast<uint16_t>(artnet::OpCodes::kOpDmx);
         dmx_.prot_ver_hi = 0;
         dmx_.prot_ver_lo = artnet::kProtocolRevision;
 
-        DEBUG_EXIT();
+        SHOWFILE_DEBUG_EXIT();
     }
 
     void SetSynchronizationAddress([[maybe_unused]] uint16_t synchronization_address) {}
 
     void Start() {
-        DEBUG_ENTRY();
+        SHOWFILE_DEBUG_ENTRY();
 
-        DEBUG_EXIT();
+        SHOWFILE_DEBUG_EXIT();
     }
 
     void Stop() {
-        DEBUG_ENTRY();
+        SHOWFILE_DEBUG_ENTRY();
 
         ArtNetNode::Get()->SetRecordShowfile(false);
 
-        DEBUG_EXIT();
+        SHOWFILE_DEBUG_EXIT();
     }
 
     void Record() {
-        DEBUG_ENTRY();
+        SHOWFILE_DEBUG_ENTRY();
 
         ArtNetNode::Get()->SetRecordShowfile(true);
 
-        DEBUG_EXIT();
+        SHOWFILE_DEBUG_EXIT();
     }
 
     void DmxOut(uint16_t universe, const uint8_t* data, uint32_t length) {

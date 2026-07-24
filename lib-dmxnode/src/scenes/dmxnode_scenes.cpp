@@ -29,17 +29,14 @@
 #include "dmxnodedata.h"
 #include "dmxnode_nodetype.h"
 
-void DmxNode::SceneStore()
-{
+void DmxNode::SceneStore() {
     dmxnode::scenes::WriteStart();
 
-    for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++)
-    {
+    for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++) {
         assert(port_index < dmxnode::kMaxPorts);
         auto& port = port_[port_index];
 
-        if (port.port_direction == dmxnode::Direction::kOutput)
-        {
+        if (port.port_direction == dmxnode::Direction::kOutput) {
             dmxnode::scenes::Write(port_index, dmxnode::Data::Backup(port_index));
         }
     }
@@ -47,24 +44,20 @@ void DmxNode::SceneStore()
     dmxnode::scenes::WriteEnd();
 }
 
-void DmxNode::ScenePlayback()
-{
+void DmxNode::ScenePlayback() {
     dmxnode::scenes::ReadStart();
 
-    auto dmxnode_output_type = DmxNodeNodeType::Get()->GetOutput();
+    auto *dmxnode_output_type = DmxNodeNodeType::Get()->GetOutput();
 
-    for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++)
-    {
+    for (uint32_t port_index = 0; port_index < dmxnode::kMaxPorts; port_index++) {
         assert(port_index < dmxnode::kMaxPorts);
         auto& port = port_[port_index];
 
-        if (port.port_direction == dmxnode::Direction::kOutput)
-        {
+        if (port.port_direction == dmxnode::Direction::kOutput) {
             dmxnode::scenes::Read(port_index, const_cast<uint8_t*>(dmxnode::Data::Backup(port_index)));
             dmxnode::DataOutput(dmxnode_output_type, port_index);
 
-            if (!port.is_transmitting)
-            {
+            if (!port.is_transmitting) {
                 dmxnode_output_type->Start(port_index);
                 port.is_transmitting = true;
             }

@@ -105,7 +105,7 @@ bool SpiFlashProbeMacronix(struct SpiFlashInfo *flash, uint8_t *idcode) {
 	}
 
 	if (i == ARRAY_SIZE(kMacronixSpiFlashTable)) {
-		DEBUG_PRINTF("Unsupported Macronix ID %04x\n", id);
+		DEBUG_PRINTF("Unsupported Macronix ID %04x\n", static_cast<unsigned>(id));
 		return false;
 	}
 

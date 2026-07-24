@@ -29,17 +29,17 @@
 #include <cstdint>
 
 #include "artnetnode.h"
-#include "firmware/debug/debug_debug.h"
+#include "artnet_debug.h"
 #include "dmxnode.h"
 #include "e131bridge.h"
 #include "artnetstore.h"
 #include "artnetdisplay.h"
 
 inline void ArtNetNode::SetUniverse4(uint32_t port_index) {
-    DEBUG_ENTRY();
+    ARTNET_DEBUG_ENTRY();
 
     if (node_.port[port_index].protocol != artnet::PortProtocol::kSacn) {
-        DEBUG_EXIT();
+        ARTNET_DEBUG_EXIT();
         return;
     }
 
@@ -50,35 +50,35 @@ inline void ArtNetNode::SetUniverse4(uint32_t port_index) {
     }
 
     if (universe == 0) {
-        DEBUG_EXIT();
+        ARTNET_DEBUG_EXIT();
         return;
     }
 
     E131Bridge::SetUniverse(port_index, universe);
 
-    DEBUG_EXIT();
+    ARTNET_DEBUG_EXIT();
 }
 
 inline void ArtNetNode::SetDirection4(uint32_t port_index) {
-    DEBUG_ENTRY();
+    ARTNET_DEBUG_ENTRY();
 
     if (node_.port[port_index].protocol != artnet::PortProtocol::kSacn) {
-        DEBUG_EXIT();
+        ARTNET_DEBUG_EXIT();
         return;
     }
 
     E131Bridge::SetDirection(port_index, node_.port[port_index].direction);
 
-    DEBUG_EXIT();
+    ARTNET_DEBUG_EXIT();
 }
 
 inline void ArtNetNode::SetPortProtocol4(uint32_t port_index, artnet::PortProtocol port_protocol) {
-    DEBUG_PRINTF("port_index=%u, PortProtocol=%s", static_cast<unsigned>(port_index), artnet::GetProtocolMode(port_protocol, false));
+    ARTNET_DEBUG_PRINTF("port_index=%u, PortProtocol=%s", static_cast<unsigned>(port_index), artnet::GetProtocolMode(port_protocol, false));
 
     assert(port_index < dmxnode::kMaxPorts);
 
     if (node_.port[port_index].protocol == port_protocol) {
-        DEBUG_EXIT();
+        ARTNET_DEBUG_EXIT();
         return;
     }
 
@@ -104,7 +104,7 @@ inline void ArtNetNode::SetPortProtocol4(uint32_t port_index, artnet::PortProtoc
         artnet::display::Protocol(port_index, port_protocol);
     }
 
-    DEBUG_EXIT();
+    ARTNET_DEBUG_EXIT();
 }
 
 inline artnet::PortProtocol ArtNetNode::GetPortProtocol4(uint32_t port_index) const {
@@ -134,7 +134,7 @@ inline uint8_t ArtNetNode::GetGoodOutput4(uint32_t port_index) {
     uint16_t universe;
     const auto kIsActive = E131Bridge::GetUniverse(port_index, universe, dmxnode::Direction::kOutput);
 
-    DEBUG_PRINTF("Port %u, Active %c, Universe %d, %s", 
+    ARTNET_DEBUG_PRINTF("Port %u, Active %c, Universe %d, %s", 
 		static_cast<unsigned>(port_index), 
 		kIsActive ? 'Y' : 'N', 
 		static_cast<unsigned>(universe), 
@@ -155,7 +155,7 @@ inline void ArtNetNode::SetLedBlinkMode4(board::statusled::Mode mode) {
 
     if (s_mode != mode) {
         s_mode = mode;
-        DEBUG_PRINTF("mode=%u", static_cast<unsigned>(mode));
+        ARTNET_DEBUG_PRINTF("mode=%u", static_cast<unsigned>(mode));
     }
 
     E131Bridge::SetEnableDataIndicator(mode == board::statusled::Mode::kNormal);

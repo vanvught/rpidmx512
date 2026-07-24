@@ -23,13 +23,9 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_HTTPD)
-#undef NDEBUG
-#endif
-
 #include <cstdint>
 #include <cstring>
-#include "firmware/debug/debug_debug.h"
+#include "httpd/httpd_debug.h"
 
 #if defined(CONFIG_HTTP_CONTENT_FS)
 #include <cstdio>
@@ -37,17 +33,17 @@
 #include "httpd/httpd.h"
 
 static constexpr char kSupportedExtensions[static_cast<int>(http::ContentTypes::kNotDefined)][8] = {
-	"html", 
-	"css", 
-	"js", 
-	"json", 
-	"bin"
+    "html", //
+    "css",  //
+    "js",   //
+    "json", //
+    "bin"   //
 };
 
 static uint8_t s_static_content[4096];
 
 static http::ContentTypes GetContentType(const char* file_name) {
-    DEBUG_ENTRY();
+    HTTPD_DEBUG_ENTRY();
 
     for (int i = 0; i < static_cast<int>(http::ContentTypes::kNotDefined); i++) {
         const auto kL = strlen(file_name);
@@ -56,31 +52,31 @@ static http::ContentTypes GetContentType(const char* file_name) {
         if (kL > (kE + 2)) {
             if (file_name[kL - kE - 1] == '.') {
                 if (strcmp(&file_name[kL - kE], kSupportedExtensions[i]) == 0) {
-                    DEBUG_EXIT();
+                    HTTPD_DEBUG_EXIT();
                     return static_cast<http::ContentTypes>(i);
                 }
             }
         }
     }
 
-    DEBUG_EXIT();
+    HTTPD_DEBUG_EXIT();
     return http::ContentTypes::kNotDefined;
 }
 
 uint32_t GetFileContentFromFile(const char* file_name, char* dst, http::ContentTypes& content_type) {
-    DEBUG_PUTS(file_name);
+    HTTPD_DEBUG_PUTS(file_name);
 
     auto* file = fopen(file_name, "r");
 
     if (file == nullptr) {
-        DEBUG_EXIT();
+        HTTPD_DEBUG_EXIT();
         return 0;
     }
 
     content_type = GetContentType(file_name);
 
     if (content_type == http::ContentTypes::kNotDefined) {
-        DEBUG_EXIT();
+        HTTPD_DEBUG_EXIT();
         fclose(file);
         return 0;
     }
@@ -103,20 +99,20 @@ uint32_t GetFileContentFromFile(const char* file_name, char* dst, http::ContentT
         }
         *p++ = c;
         if ((p - dst) == sizeof(s_static_content)) {
-            DEBUG_PUTS("File too long");
+            HTTPD_DEBUG_PUTS("File too long");
             break;
         }
     }
 
     fclose(file);
 
-    DEBUG_PRINTF("%s -> %d", file_name, static_cast<int>(p - dst));
+    HTTPD_DEBUG_PRINTF("%s -> %d", file_name, static_cast<int>(p - dst));
     return static_cast<uint32_t>(p - dst);
 }
 
 const uint8_t* GetFileContent(const char* file_name, uint32_t& size, http::ContentTypes& content_type, , bool& gzip) {
-    DEBUG_ENTRY();
-    DEBUG_PUTS(file_name);
+    HTTPD_DEBUG_ENTRY();
+    HTTPD_DEBUG_PUTS(file_name);
 
     size = GetFileContentFromFile(file_name, s_static_content, content_type);
     gzip = false;
@@ -125,7 +121,7 @@ const uint8_t* GetFileContent(const char* file_name, uint32_t& size, http::Conte
         return s_static_content;
     }
 
-    DEBUG_EXIT();
+    HTTPD_DEBUG_EXIT();
     return nullptr;
 }
 #else
@@ -133,18 +129,18 @@ const uint8_t* GetFileContent(const char* file_name, uint32_t& size, http::Conte
 #include "common/utils/utils_hash.h"
 
 const uint8_t* GetFileContent(const char* file_name, uint32_t& size, http::ContentTypes& content_type, bool& gzip) {
-    DEBUG_ENTRY();
+    HTTPD_DEBUG_ENTRY();
 
     const auto kHash = Fnv1a32Runtime(file_name, strlen(file_name));
 
-    DEBUG_PRINTF("%s:%u", file_name, kHash);
+    HTTPD_DEBUG_PRINTF("%s:%u", file_name, static_cast<unsigned>(kHash));
 
-    for (auto& content : kHttpContent) {
+    for (const auto& content : kHttpContent) {
         if (kHash == content.hash) {
             size = content.content_length;
             content_type = content.content_type;
             gzip = content.gzip;
-            DEBUG_PUTS(content.file_name);
+            HTTPD_DEBUG_PUTS(content.file_name);
             return content.content;
         }
     }
@@ -152,7 +148,7 @@ const uint8_t* GetFileContent(const char* file_name, uint32_t& size, http::Conte
     size = 0;
     content_type = http::ContentTypes::kNotDefined;
 
-    DEBUG_EXIT();
+    HTTPD_DEBUG_EXIT();
     return nullptr;
 }
 #endif

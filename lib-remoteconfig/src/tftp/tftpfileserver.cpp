@@ -23,10 +23,6 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_TFTP)
-#undef NDEBUG
-#endif
-
 #include <cstdint>
 #include <cstring>
 #include <cstdio>
@@ -36,44 +32,43 @@
 #include "remoteconfig.h"
 #include "display.h"
 #include "firmware.h"
-#include "firmware/debug/debug_debug.h"
 
 TFTPFileServer::TFTPFileServer(uint8_t* buffer, uint32_t size) : buffer_(buffer), size_(size) {
-    DEBUG_ENTRY();
+    TFTP_DEBUG_ENTRY();
 
     assert(buffer_ != nullptr);
     assert(size != 0);
 
-    DEBUG_EXIT();
+    TFTP_DEBUG_EXIT();
 }
 
 void TFTPFileServer::Exit() {
-    DEBUG_ENTRY();
+    TFTP_DEBUG_ENTRY();
 
     RemoteConfig::Get()->TftpExit();
 
-    DEBUG_EXIT();
+    TFTP_DEBUG_EXIT();
 }
 
 bool TFTPFileServer::FileOpen([[maybe_unused]] const char* file_name, [[maybe_unused]] tftp::Mode mode) {
-    DEBUG_ENTRY();
+    TFTP_DEBUG_ENTRY();
 
-    DEBUG_EXIT();
+    TFTP_DEBUG_EXIT();
     return false;
 }
 
 bool TFTPFileServer::FileCreate(const char* file_name, tftp::Mode mode) {
-    DEBUG_ENTRY();
+    TFTP_DEBUG_ENTRY();
 
     assert(pFileName != nullptr);
 
     if (mode != tftp::Mode::kBinary) {
-        DEBUG_EXIT();
+        TFTP_DEBUG_EXIT();
         return false;
     }
 
     if (strncmp(firmware::kFileName, file_name, firmware::kFileNameLength) != 0) {
-        DEBUG_EXIT();
+        TFTP_DEBUG_EXIT();
         return false;
     }
 
@@ -81,30 +76,30 @@ bool TFTPFileServer::FileCreate(const char* file_name, tftp::Mode mode) {
 
     m_nFileSize = 0;
 
-    DEBUG_EXIT();
+    TFTP_DEBUG_EXIT();
     return (true);
 }
 
 bool TFTPFileServer::FileClose() {
-    DEBUG_ENTRY();
+    TFTP_DEBUG_ENTRY();
 
     m_bDone = true;
 
     Display::Get()->TextStatus("TFTP Ended", ansi::Colours::Colour::kGreen);
 
-    DEBUG_EXIT();
+    TFTP_DEBUG_EXIT();
     return true;
 }
 
 size_t TFTPFileServer::FileRead([[maybe_unused]] void* buffer, [[maybe_unused]] size_t count, [[maybe_unused]] unsigned block_number) {
-    DEBUG_ENTRY();
+    TFTP_DEBUG_ENTRY();
 
-    DEBUG_EXIT();
+    TFTP_DEBUG_EXIT();
     return 0;
 }
 
 size_t TFTPFileServer::FileWrite(const void* buffer, size_t count, unsigned block_number) {
-    DEBUG_PRINTF("buffer=%p, count=%d, count=%d (%d)", buffer, count, block_number, size_ / 512);
+    TFTP_DEBUG_PRINTF("buffer=%p, count=%d, block_number=%d (%u)", buffer, static_cast<unsigned>(count), static_cast<unsigned>(block_number), static_cast<unsigned>(size_ / 512));
 
     if (block_number > (size_ / 512)) {
         m_nFileSize = 0;
@@ -131,3 +126,8 @@ size_t TFTPFileServer::FileWrite(const void* buffer, size_t count, unsigned bloc
 
     return count;
 }
+
+#undef TFTP_DEBUG_ENTRY
+#undef TFTP_DEBUG_EXIT
+#undef TFTP_DEBUG_PRINTF
+#undef TFTP_DEBUG_PUTS

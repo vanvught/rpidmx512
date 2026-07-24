@@ -2,7 +2,7 @@
  * @file json_config_remoteconfig.cpp
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,10 +23,6 @@
  * THE SOFTWARE.
  */
 
-#ifdef DEBUG_REMOTECONFIGCONFIG
-#undef NDEBUG
-#endif
-
 #include <cstdint>
 #include <cassert>
 
@@ -36,10 +32,8 @@
 #include "json/json_jsondoc.h"
 #include "configstore.h"
 
-namespace json::config
-{
-uint32_t GetRemoteConfig(char* buffer, uint32_t length)
-{
+namespace json::config {
+uint32_t GetRemoteConfig(char* buffer, uint32_t length) {
     assert(buffer != nullptr);
     assert(length != 0);
 
@@ -49,15 +43,14 @@ uint32_t GetRemoteConfig(char* buffer, uint32_t length)
 
     JsonDoc doc(buffer, length);
 
-    doc[RemoteConfigParamsConst::kDisplayName.name] = reinterpret_cast<char *>(display_name);
+    doc[RemoteConfigParamsConst::kDisplayName.name] = reinterpret_cast<char*>(display_name);
 
     doc.End();
 
     return doc.Size();
 }
 
-void SetRemoteConfig(const char* buffer, uint32_t buffer_size)
-{
+void SetRemoteConfig(const char* buffer, uint32_t buffer_size) {
     ::json::RemoteConfigParams remoteconfig_params;
     remoteconfig_params.Store(buffer, buffer_size);
     remoteconfig_params.Set();

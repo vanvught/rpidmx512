@@ -37,7 +37,7 @@
 
 #include "osc.h"
 #include "network_udp.h"
-#include "firmware/debug/debug_debug.h"
+#include "showfile_debug.h"
 
 namespace showfileosc {
 inline constexpr char kCmdPath[] = "/showfile/";
@@ -49,22 +49,22 @@ inline constexpr uint32_t kMaxFilesEntries = 10;
 class ShowFileOSC {
    public:
     explicit ShowFileOSC(uint16_t port_incoming = osc::port::kDefaultIncoming, uint16_t port_outgoing = osc::port::kDefaultOutgoing) : port_outgoing_(port_outgoing) {
-        DEBUG_ENTRY();
+        SHOWFILE_DEBUG_ENTRY();
 
         assert(s_this == nullptr);
         s_this = this;
 
         SetPortIncoming(port_incoming);
 
-        DEBUG_EXIT();
+        SHOWFILE_DEBUG_EXIT();
     }
 
     ~ShowFileOSC() {
-        DEBUG_ENTRY();
+        SHOWFILE_DEBUG_ENTRY();
 
         network::udp::End(port_incoming_);
 
-        DEBUG_EXIT();
+        SHOWFILE_DEBUG_EXIT();
     }
 
     void Input(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port) {
@@ -80,7 +80,7 @@ class ShowFileOSC {
         }
     }
 
-    void Print() {
+    void Print() const {
         puts("OSC Server");
         printf(" Path : [%s]\n", showfileosc::kCmdPath);
         printf(" Incoming port : %u\n", port_incoming_);
@@ -106,7 +106,7 @@ class ShowFileOSC {
         assert(handle_ != -1);
     }
 
-    uint16_t GetPortIncoming() const { return port_incoming_; }
+    [[nodiscard]] uint16_t GetPortIncoming() const { return port_incoming_; }
 
     void SetPortOutgoing(uint16_t port_outgoing) {
         if (port_outgoing > 1023) {
@@ -116,7 +116,7 @@ class ShowFileOSC {
         }
     }
 
-    uint16_t GetPortOutgoing() const { return port_outgoing_; }
+    [[nodiscard]] uint16_t GetPortOutgoing() const { return port_outgoing_; }
 
    private:
     void Process();

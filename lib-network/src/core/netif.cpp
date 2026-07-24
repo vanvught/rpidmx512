@@ -23,16 +23,32 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_NETIF)
-#undef NDEBUG
-#endif
-
 #include "network_private.h"
 #include "core/netif.h"
 #include "core/ip4/acd.h"
 #include "core/ip4/autoip.h"
 #include "core/ip4/dhcp.h"
 #include "firmware/debug/debug_debug.h"
+
+#if defined(DEBUG_NETIF)
+#define NETIF_DEBUG_ENTRY() DEBUG_ENTRY()
+#define NETIF_DEBUG_EXIT() DEBUG_EXIT()
+#define NETIF_DEBUG_PRINTF(...) DEBUG_PRINTF(__VA_ARGS__)
+#define NETIF_DEBUG_PUTS(...) DEBUG_PUTS(__VA_ARGS__)
+#else
+#define NETIF_DEBUG_ENTRY() \
+    do {                    \
+    } while (false)
+#define NETIF_DEBUG_EXIT() \
+    do {                   \
+    } while (false)
+#define NETIF_DEBUG_PRINTF(...) \
+    do {                        \
+    } while (false)
+#define NETIF_DEBUG_PUTS(...) \
+    do {                      \
+    } while (false)
+#endif
 
 namespace network::igmp {
 void ReportGroups();
@@ -45,7 +61,7 @@ struct Netif netif_default;
 static netif_ext_callback_fn callback_fn;
 
 static void DefaultCallback([[maybe_unused]] uint16_t reason, [[maybe_unused]] const netif_ext_callback_args_t* args) {
-    DEBUG_PRINTF("%u", reason);
+    NETIF_DEBUG_PRINTF("%u", reason);
 }
 
 void Init() {
@@ -90,11 +106,11 @@ static void NetifIssueReports() {
 }
 
 static bool NetifDoSetIpaddr(network::ip4_addr_t ipaddr, network::ip4_addr_t& old_addr) {
-    DEBUG_ENTRY();
+    NETIF_DEBUG_ENTRY();
 
     auto& netif = netif::global::netif_default;
 
-    DEBUG_PRINTF(IPSTR " " IPSTR, IP2STR(ipaddr.addr), IP2STR(netif.ip.addr));
+    NETIF_DEBUG_PRINTF(IPSTR " " IPSTR, IP2STR(ipaddr.addr), IP2STR(netif.ip.addr));
 
     // Update the address if it's different
     if (ipaddr.addr != netif.ip.addr) {
@@ -108,16 +124,16 @@ static bool NetifDoSetIpaddr(network::ip4_addr_t ipaddr, network::ip4_addr_t& ol
         NetifDoUpdateGlobals();
         NetifIssueReports();
 
-        DEBUG_EXIT();
+        NETIF_DEBUG_EXIT();
         return true; // address changed
     }
 
-    DEBUG_EXIT();
+    NETIF_DEBUG_EXIT();
     return false; // address unchanged
 }
 
 static bool NetifDoSetNetmask(network::ip4_addr_t netmask, network::ip4_addr_t& old_nm) {
-    DEBUG_ENTRY();
+    NETIF_DEBUG_ENTRY();
     auto& netif = netif::global::netif_default;
 
     if (netmask.addr != netif.netmask.addr) {
@@ -126,16 +142,16 @@ static bool NetifDoSetNetmask(network::ip4_addr_t netmask, network::ip4_addr_t& 
 
         NetifDoUpdateGlobals();
 
-        DEBUG_EXIT();
+        NETIF_DEBUG_EXIT();
         return true; // netmask changed
     }
 
-    DEBUG_EXIT();
+    NETIF_DEBUG_EXIT();
     return false; // netmask unchanged
 }
 
 static bool NetifDoSetGw(network::ip4_addr_t gateway, network::ip4_addr_t& old_gw) {
-    DEBUG_ENTRY();
+    NETIF_DEBUG_ENTRY();
 
     auto& netif = netif::global::netif_default;
 
@@ -143,11 +159,11 @@ static bool NetifDoSetGw(network::ip4_addr_t gateway, network::ip4_addr_t& old_g
         old_gw.addr = netif.gw.addr;
         netif.gw.addr = gateway.addr;
 
-        DEBUG_EXIT();
+        NETIF_DEBUG_EXIT();
         return true; // gateway changed
     }
 
-    DEBUG_EXIT();
+    NETIF_DEBUG_EXIT();
     return false; // gateway unchanged
 }
 
@@ -182,8 +198,8 @@ void SetGw(network::ip4_addr_t gateway) {
 }
 
 void SetAddr(network::ip4_addr_t ipaddr, network::ip4_addr_t netmask, network::ip4_addr_t gateway) {
-    DEBUG_ENTRY();
-    DEBUG_PRINTF(IPSTR " " IPSTR " " IPSTR, IP2STR(ipaddr.addr), IP2STR(netmask.addr), IP2STR(gateway.addr));
+    NETIF_DEBUG_ENTRY();
+    NETIF_DEBUG_PRINTF(IPSTR " " IPSTR " " IPSTR, IP2STR(ipaddr.addr), IP2STR(netmask.addr), IP2STR(gateway.addr));
 
     auto change_reason = NetifReason::kNone;
     netif_ext_callback_args_t cb_args;
@@ -230,13 +246,13 @@ void SetAddr(network::ip4_addr_t ipaddr, network::ip4_addr_t netmask, network::i
         change_reason |= NetifReason::kIpv4AddressValid;
     }
 
-    DEBUG_PRINTF("change_reason=%u", change_reason);
+    NETIF_DEBUG_PRINTF("change_reason=%u", change_reason);
 
     if (change_reason != NetifReason::kNone) {
         callback_fn(change_reason, &cb_args);
     }
 
-    DEBUG_EXIT();
+    NETIF_DEBUG_EXIT();
 }
 
 void AddExtCallback(netif_ext_callback_fn ext_callback_fn) {
@@ -246,7 +262,7 @@ void AddExtCallback(netif_ext_callback_fn ext_callback_fn) {
 // Link
 
 void SetLinkUp() {
-    DEBUG_ENTRY();
+    NETIF_DEBUG_ENTRY();
     const auto& netif = netif::global::netif_default;
 
     if (!((netif.flags & Netif::kNetifFlagLinkUp) == Netif::kNetifFlagLinkUp)) {
@@ -261,15 +277,15 @@ void SetLinkUp() {
         args.link_changed.state = 1;
         callback_fn(NetifReason::kLinkChanged, &args);
 
-        DEBUG_EXIT();
+        NETIF_DEBUG_EXIT();
         return;
     }
 
-    DEBUG_EXIT();
+    NETIF_DEBUG_EXIT();
 }
 
 void SetLinkDown() {
-    DEBUG_ENTRY();
+    NETIF_DEBUG_ENTRY();
 
     const auto& netif = netif::global::netif_default;
 
@@ -284,10 +300,10 @@ void SetLinkDown() {
         args.link_changed.state = 0;
         callback_fn(NetifReason::kLinkChanged, &args);
 
-        DEBUG_EXIT();
+        NETIF_DEBUG_EXIT();
         return;
     }
 
-    DEBUG_EXIT();
+    NETIF_DEBUG_EXIT();
 }
 } // namespace netif

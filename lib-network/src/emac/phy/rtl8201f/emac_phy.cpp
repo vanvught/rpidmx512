@@ -28,7 +28,7 @@
 #include "emac/emac_phy.h"
 #include "emac/emac_link_check.h"
 #include "emac/mmi.h"
-#include "firmware/debug/debug_debug.h"
+#include "emac/emac_debug.h"
 
 #if !defined(BIT)
 #define BIT(x) static_cast<uint16_t>(1U << (x))
@@ -49,10 +49,10 @@ void WritePaged(uint16_t phy_page, uint16_t phy_reg, uint16_t phy_value, uint16_
 
     uint16_t tmp_value;
     phy::Read(PHY_ADDRESS, phy_reg, tmp_value);
-    DEBUG_PRINTF("tmp_value=0x%.4x, mask=0x%.4x", tmp_value, mask);
+    EMAC_PHY_DEBUG_PRINTF("tmp_value=0x%.4x, mask=0x%.4x", tmp_value, mask);
     tmp_value &= static_cast<uint16_t>(~mask);
     tmp_value |= phy_value;
-    DEBUG_PRINTF("tmp_value=0x%.4x, phy_value=0x%.4x", tmp_value, phy_value);
+    EMAC_PHY_DEBUG_PRINTF("tmp_value=0x%.4x, phy_value=0x%.4x", tmp_value, phy_value);
 
     phy::Write(PHY_ADDRESS, phy_reg, tmp_value);
     phy::Write(PHY_ADDRESS, PHY_REG_PAGE_SELECT, 0);
@@ -66,7 +66,7 @@ static void ReadPaged(uint16_t phy_page, uint16_t phy_reg, uint16_t& phy_value, 
 }
 
 void CustomizedLed() {
-    DEBUG_ENTRY();
+    EMAC_PHY_DEBUG_ENTRY();
 
 #if defined(RTL8201F_LED1_LINK_ALL) || defined(RTL8201F_LED1_LINK_ALL_ACT)
     WritePaged(0x07, PHY_REG_IER, IER_CUSTOM_LED, IER_CUSTOM_LED);
@@ -76,7 +76,7 @@ void CustomizedLed() {
     WritePaged(0x07, 0x11, (1U << 3) | (1U << 4) | (1U << 5) | (1U << 7));
 #endif
 #endif
-    DEBUG_EXIT();
+    EMAC_PHY_DEBUG_EXIT();
 }
 
 #define RMSR_RX_TIMING_SHIFT 4
@@ -138,7 +138,7 @@ void CustomizedLed() {
  */
 
 void CustomizedTiming() {
-    DEBUG_ENTRY();
+    EMAC_PHY_DEBUG_ENTRY();
 #if defined(GD32F4XX)
 #define RMSR_RX_TIMING_VAL 0x4
 #if defined(GD32F407)
@@ -152,7 +152,7 @@ void CustomizedTiming() {
     constexpr uint16_t kPhyValue = (RMSR_RX_TIMING_VAL << RMSR_RX_TIMING_SHIFT) | (RMSR_TX_TIMING_VAL << RMSR_TX_TIMING_SHIFT);
     WritePaged(0x7, PHY_REG_RMSR, kPhyValue, RMSR_RX_TIMING_MASK | RMSR_TX_TIMING_MASK);
 #endif
-    DEBUG_EXIT();
+    EMAC_PHY_DEBUG_EXIT();
 }
 
 void CustomizedStatus(phy::Status& phy_status) {

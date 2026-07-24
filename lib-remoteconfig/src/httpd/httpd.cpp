@@ -29,7 +29,7 @@
 #include <cassert>
 #include <new>
 
-#include "firmware/debug/debug_debug.h"
+#include "httpd/httpd_debug.h"
 #include "httpd/httpd.h"
 #include "network_tcp.h"
 #include "apps/mdns.h"
@@ -62,7 +62,7 @@
 HttpDaemon::HandlerStorage HttpDaemon::s_handle_request_storage[TCP_MAX_TCBS_ALLOWED];
 
 HttpDaemon::HttpDaemon() {
-    DEBUG_ENTRY();
+    HTTPD_DEBUG_ENTRY();
 
     assert(!is_listening_);
 
@@ -81,7 +81,7 @@ HttpDaemon::HttpDaemon() {
 
     network::apps::mdns::ServiceRecordAdd(nullptr, httpd::kService);
 
-    DEBUG_EXIT();
+    HTTPD_DEBUG_EXIT();
 }
 
 HttpDeamonHandleRequest& HttpDaemon::GetHandler(uint32_t index) {

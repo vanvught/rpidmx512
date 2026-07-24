@@ -2,7 +2,7 @@
  * @file emac_multicast.cpp
  *
  */
-/* Copyright (C) 2025 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2025-2026 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,10 +23,6 @@
  * THE SOFTWARE.
  */
 
-#if defined(DEBUG_EMAC_IGMP)
-#undef NDEBUG
-#endif
-
 #if !defined(CONFIG_REMOTECONFIG_MINIMUM)
 #pragma GCC push_options
 #pragma GCC optimize("O2")
@@ -39,18 +35,15 @@
 #include "h3.h"
 #include "emac.h"
 #include "ip4/ip4_address.h"
-#include "firmware/debug/debug_debug.h"
+#include "emac/emac_debug.h"
 
-namespace network
-{
+namespace network {
 uint32_t Crc(const uint8_t* data, size_t length);
 }
 
-namespace emac::multicast
-{
-void EnableHashFilter()
-{
-    DEBUG_ENTRY();
+namespace emac::multicast {
+void EnableHashFilter() {
+    EMAC_IGMP_DEBUG_ENTRY();
 
     auto reg_filter = H3_EMAC->RX_FRM_FLT;
     reg_filter &= ~RX_FRM_FLT_RX_ALL_MULTICAST;
@@ -60,12 +53,11 @@ void EnableHashFilter()
     H3_EMAC->RX_HASH_0 = 0;
     H3_EMAC->RX_HASH_1 = 0;
 
-    DEBUG_EXIT();
+    EMAC_IGMP_DEBUG_EXIT();
 }
 
-void DisableHashFilter()
-{
-    DEBUG_ENTRY();
+void DisableHashFilter() {
+    EMAC_IGMP_DEBUG_ENTRY();
 
     auto reg_filter = H3_EMAC->RX_FRM_FLT;
     reg_filter &= ~RX_FRM_FLT_HASH_MULTICAST;
@@ -75,38 +67,33 @@ void DisableHashFilter()
     H3_EMAC->RX_HASH_0 = 0;
     H3_EMAC->RX_HASH_1 = 0;
 
-    DEBUG_EXIT();
+    EMAC_IGMP_DEBUG_EXIT();
 }
 
-void SetHash(const uint8_t* mac_addr)
-{
-    DEBUG_ENTRY();
-    DEBUG_PRINTF("RX_FRM_FLT: 0x%08X", H3_EMAC->RX_FRM_FLT);
+void SetHash(const uint8_t* mac_addr) {
+    EMAC_IGMP_DEBUG_ENTRY();
+    EMAC_IGMP_DEBUG_PRINTF("RX_FRM_FLT: 0x%08X", static_cast<unsigned>(H3_EMAC->RX_FRM_FLT));
 
     const auto kCrc = network::Crc(mac_addr, 6);
     const auto kHash = (kCrc >> 26) & 0x3F;
 
-    if (kHash > 31)
-    {
+    if (kHash > 31) {
         H3_EMAC->RX_HASH_0 |= (1U << (kHash - 32));
-    }
-    else
-    {
+    } else {
         H3_EMAC->RX_HASH_1 |= (1U << kHash);
     }
 
-    DEBUG_PRINTF("MAC: " MACSTR " -> CRC32: 0x%08X -> Hash Index: %d", MAC2STR(mac_addr), kCrc, kHash);
-    DEBUG_PRINTF("RX_HASH_0: 0x%08X, RX_HASH_1: 0x%08X", H3_EMAC->RX_HASH_0, H3_EMAC->RX_HASH_1);
-    DEBUG_EXIT();
+    EMAC_IGMP_DEBUG_PRINTF("MAC: " MACSTR " -> CRC32: 0x%08X -> Hash Index: %d", MAC2STR(mac_addr), static_cast<unsigned>(kCrc), static_cast<int>(kHash));
+    EMAC_IGMP_DEBUG_PRINTF("RX_HASH_0: 0x%08X, RX_HASH_1: 0x%08X", static_cast<unsigned>(H3_EMAC->RX_HASH_0), static_cast<unsigned>(H3_EMAC->RX_HASH_1));
+    EMAC_IGMP_DEBUG_EXIT();
 }
 
-void ResetHash()
-{
-    DEBUG_ENTRY();
+void ResetHash() {
+    EMAC_IGMP_DEBUG_ENTRY();
 
     H3_EMAC->RX_HASH_0 = 0;
     H3_EMAC->RX_HASH_1 = 0;
 
-    DEBUG_EXIT();
+    EMAC_IGMP_DEBUG_EXIT();
 }
 } // namespace emac::multicast

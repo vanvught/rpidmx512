@@ -39,7 +39,7 @@ bool is_config_mode() {
     const auto kLevel = H3GpioLev(KEY1_GPIO);
     const auto kConfigMode = (kLevel == LOW);
 
-    DEBUG_PRINTF("isConfigMode=%s %u %u->%p", isConfigMode ? "Yes" : "No", KEY1_GPIO, nLevel, H3_PIO_PORTA->DAT);
+    DEBUG_PRINTF("kConfigMode=%s %u %u->%x", kConfigMode ? "Yes" : "No", KEY1_GPIO, static_cast<unsigned>(kLevel), static_cast<unsigned>(H3_PIO_PORTA->DAT));
 
     return kConfigMode;
 }
