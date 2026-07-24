@@ -26,10 +26,6 @@
 #ifndef ARTNETNODE_H_
 #define ARTNETNODE_H_
 
-#if defined(DEBUG_ARTNETNODE)
-#undef NDEBUG
-#endif
-
 #include <cstdint>
 #include <cstdarg>
 #include <cstring>
@@ -65,7 +61,8 @@
 #endif
 #include "dmxnode.h"
 #include "dmxnode_outputtype.h"
-#include "firmware/debug/debug_debug.h"
+#include "artnet_debug.h"
+#include "ip4/ip4_address.h"
 
 #ifndef ALIGNED
 #define ALIGNED __attribute__((aligned(4)))
@@ -174,32 +171,32 @@ class ArtNetNode {
     ArtNetNode();
 
     void SetOutput(DmxNodeOutputType* dmx_node_output_type);
-    DmxNodeOutputType* GetOutput() const;
+    [[nodiscard]] DmxNodeOutputType* GetOutput() const;
 
     void SetLongName(const char*);
-    const char* GetLongName() const;
+    [[nodiscard]] const char* GetLongName() const;
     void GetLongNameDefault(char*);
 
     void SetShortName(uint32_t port_index, const char*);
-    const char* GetShortName(uint32_t port_index) const;
+    [[nodiscard]] const char* GetShortName(uint32_t port_index) const;
 
     void SetDisableMergeTimeout(bool disable);
-    bool GetDisableMergeTimeout() const;
+    [[nodiscard]] bool GetDisableMergeTimeout() const;
 
-    void SetFailSafe(dmxnode::FailSafe failsafe);
+    void SetFailSafe(dmxnode::FailSafe fail_safe);
     dmxnode::FailSafe GetFailSafe();
 
     void SetUniverse(uint32_t port_index, uint16_t universe);
-    uint16_t GetUniverse(uint32_t port_index) const;
+    [[nodiscard]] uint16_t GetUniverse(uint32_t port_index) const;
 
     void SetDirection(uint32_t port_index, dmxnode::Direction port_direction);
-    dmxnode::Direction GetDirection(uint32_t port_index) const;
+    [[nodiscard]] dmxnode::Direction GetDirection(uint32_t port_index) const;
 
     void SetUniverse(uint32_t port_index, dmxnode::Direction port_direction, uint16_t universe);
     bool GetUniverse(uint32_t port_index, uint16_t& universe, dmxnode::Direction port_direction);
 
     void SetMergeMode(uint32_t port_index, dmxnode::MergeMode merge_mode);
-    dmxnode::MergeMode GetMergeMode(uint32_t port_index) const;
+    [[nodiscard]] dmxnode::MergeMode GetMergeMode(uint32_t port_index) const;
 
 #if defined(OUTPUT_HAVE_STYLESWITCH)
     void SetOutputStyle(uint32_t port_index, dmxnode::OutputStyle output_style);
@@ -210,10 +207,10 @@ class ArtNetNode {
     void GoodOutputBClear(uint32_t port_index, uint8_t b);
 
     void SetRdm(bool do_enable);
-    bool GetRdm() const { return state_.is_rdm_enabled; }
+    [[nodiscard]] bool GetRdm() const { return state_.is_rdm_enabled; }
 
     void SetRdm(uint32_t port_index, bool enable);
-    bool Rdm(uint32_t port_index) const;
+    [[nodiscard]] bool Rdm(uint32_t port_index) const;
 
     void SendArtTodData(uint32_t port_index);
 
@@ -233,14 +230,14 @@ class ArtNetNode {
 #endif
 
     void SetRecordShowfile(bool do_record) { state_.do_record = do_record; }
-    bool GetRecordShowfile() const { return state_.do_record; }
+    [[nodiscard]] bool GetRecordShowfile() const { return state_.do_record; }
 
-    uint8_t GetVersion() const { return artnet::kVersion; }
+    [[nodiscard]] uint8_t GetVersion() const { return artnet::kVersion; }
 
-    uint32_t GetActiveInputPorts() const { return state_.enabled_input_ports; }
-    uint32_t GetActiveOutputPorts() const { return state_.enabled_output_ports; }
+    [[nodiscard]] uint32_t GetActiveInputPorts() const { return state_.enabled_input_ports; }
+    [[nodiscard]] uint32_t GetActiveOutputPorts() const { return state_.enabled_output_ports; }
 
-    dmxnode::Direction PortDirection(uint32_t port_index) const;
+    [[nodiscard]] dmxnode::Direction PortDirection(uint32_t port_index) const;
 
     bool GetPortAddress(uint32_t port_index, uint16_t& address) const;
     bool GetPortAddress(uint32_t port_index, uint16_t& address, dmxnode::Direction port_direction) const;
@@ -272,11 +269,11 @@ class ArtNetNode {
     void SetDestinationIp(uint32_t port_index, uint32_t destination_ip) {
         if (port_index < dmxnode::kMaxPorts) {
             input_port_[port_index].destination_ip = destination_ip;
-            DEBUG_PRINTF("destination_ip=" IPSTR, IP2STR(input_port_[port_index].destination_ip));
+            ARTNET_DEBUG_PRINTF("destination_ip=" IPSTR, IP2STR(input_port_[port_index].destination_ip));
         }
     }
 
-    uint32_t GetDestinationIp(uint32_t port_index) const {
+    [[nodiscard]] uint32_t GetDestinationIp(uint32_t port_index) const {
         if (port_index < dmxnode::kMaxPorts) {
             return input_port_[port_index].destination_ip;
         }
@@ -298,24 +295,24 @@ class ArtNetNode {
 
    public:
     void SetPortProtocol4(uint32_t port_index, artnet::PortProtocol port_protocol);
-    artnet::PortProtocol GetPortProtocol4(uint32_t port_index) const;
+    [[nodiscard]] artnet::PortProtocol GetPortProtocol4(uint32_t port_index) const;
 
     void SetMapUniverse0(bool map_universe0 = false) { node_.map_universe0 = map_universe0; }
-    bool IsMapUniverse0() const { return node_.map_universe0; }
+    [[nodiscard]] bool IsMapUniverse0() const { return node_.map_universe0; }
 
     void SetPriority4(uint32_t priority);
     void SetPriority4(uint32_t port_index, uint8_t priority);
-    uint8_t GetPriority4(uint32_t port_index) const;
+    [[nodiscard]] uint8_t GetPriority4(uint32_t port_index) const;
 
-    uint32_t GetActiveOutputPorts4() const { return E131Bridge::GetActiveOutputPorts(); }
-    uint32_t GetActiveInputPorts4() const { return E131Bridge::GetActiveInputPorts(); }
+    [[nodiscard]] uint32_t GetActiveOutputPorts4() const { return E131Bridge::GetActiveOutputPorts(); }
+    [[nodiscard]] uint32_t GetActiveInputPorts4() const { return E131Bridge::GetActiveInputPorts(); }
 #endif
 
    private:
     void SetFailSafe(artnet::FailSafe failsafe);
     void SetSwitch(uint32_t port_index, uint8_t sw);
 
-    void SendDiag(const artnet::PriorityCodes kPriorityCode, const char* format, ...);
+    void SendDiag(artnet::PriorityCodes kPriorityCode, const char* format, ...);
 
     void HandlePoll();
     void HandleDmx();
@@ -353,7 +350,6 @@ class ArtNetNode {
 
     void InputUdp(const uint8_t* buffer, uint32_t size, uint32_t from_ip, uint16_t from_port);
 
-   private:
     int32_t handle_{-1};
     uint32_t ip_address_from_;
     uint32_t current_millis_{0};
